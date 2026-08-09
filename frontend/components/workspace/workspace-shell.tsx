@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { PROJECT_FIRST_UX } from '@/lib/feature-flags';
 import { getRecoveryCopy } from '@/lib/recovery-copy';
 import WorkspaceSidebar, {
   getWorkspaceScaffoldMessages,
@@ -90,12 +89,6 @@ import {
 } from '@heroicons/react/24/outline';
 
 let recoveryCopy = getRecoveryCopy('en');
-
-const projectFirstUxAnchors = {
-  enabled: PROJECT_FIRST_UX,
-  copy: recoveryCopy,
-};
-void projectFirstUxAnchors;
 
 function getProjectModeBackLabel(locale: string): string {
   if (locale === 'zh-TW') return zhTwMessages.common.back;
@@ -458,7 +451,6 @@ function readStoredAiPanelCollapsed(): boolean {
 
 interface WorkspaceShellProps {
   locale?: string;
-  projectFirstUxEnabled?: boolean;
   advancedDrawerInitialOpen?: boolean;
   workspaceView?: WorkspaceView;
   onWorkspaceViewChange?: (view: WorkspaceView) => void;
@@ -785,7 +777,7 @@ export function WorkspaceAdvancedDrawer(props: {
 
 export default function WorkspaceShell(props: WorkspaceShellProps) {
   const locale = props.locale ?? 'en';
-  const projectFirstUxEnabled = props.projectFirstUxEnabled ?? PROJECT_FIRST_UX;
+  const projectUxEnabled = true;
   const resolvedWorkspaceView = props.workspaceView ?? 'project';
   const scaffoldMessages = getWorkspaceScaffoldMessages(locale);
   const [advancedDrawerOpen, setAdvancedDrawerOpen] = React.useState(
@@ -1053,8 +1045,6 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     usageSummary: props.usageSummary,
     quotaSummary: props.quotaSummary,
   });
-  const headerIdentityLabel =
-    props.userSummary?.email?.trim() || 'Authenticated user';
   const selectedSession =
     props.selectedSessionId
       ? props.sessions.find((session) => session.id === props.selectedSessionId) ?? null
@@ -1081,19 +1071,19 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const isStoppingSelectedSession =
     Boolean(props.selectedSessionId) && props.stoppingSessionId === props.selectedSessionId;
   const canReopenProject =
-    projectFirstUxEnabled &&
+    projectUxEnabled &&
     Boolean(props.selectedProjectId) &&
     Boolean(props.onOpenWorkspaceProject);
   const projectHistoryRows =
-    projectFirstUxEnabled && props.selectedProjectId
+    projectUxEnabled && props.selectedProjectId
       ? computeProjectHistoryRows(
           props.workspaceSnapshots ?? [],
           props.selectedProjectId,
           recoveryMessages,
         )
       : [];
-  const latestProject = projectFirstUxEnabled ? computeLatestProject(workspaceProjects) : null;
-  const recentProjects = projectFirstUxEnabled
+  const latestProject = projectUxEnabled ? computeLatestProject(workspaceProjects) : null;
+  const recentProjects = projectUxEnabled
     ? computeRecentProjects(workspaceProjects)
     : [];
   const previousProjectActionStateRef = React.useRef<ProjectActionState>(projectActionState);
@@ -1182,7 +1172,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     [props.onSelectWorkspaceId],
   );
   const handleRestoreProjectHistoryRow =
-    projectFirstUxEnabled &&
+    projectUxEnabled &&
     props.selectedProjectId &&
     props.onRestoreWorkspaceProjectFromSnapshotById
       ? (() => {
@@ -1340,7 +1330,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     }
   }, [props.onPreviewLoad, pickerActive, injectPickerScript]);
   const handleSaveProjectHistorySnapshot =
-    projectFirstUxEnabled &&
+    projectUxEnabled &&
     props.selectedProjectId &&
     props.onSaveNamedProjectSnapshot
       ? (() => {
@@ -1379,7 +1369,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
         })()
       : undefined;
   const handleOpenRecentProject =
-    props.onResumeWorkspaceProjectById && projectFirstUxEnabled
+    props.onResumeWorkspaceProjectById && projectUxEnabled
       ? ((projectId: string) => {
           void props.onResumeWorkspaceProjectById?.(projectId);
         })
@@ -1480,7 +1470,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
         <p className="text-xs font-semibold text-gray-700 mb-2">History & Controls</p>
         <HistorySliceMessage state={historyState} />
         <HistoryCreateCheckpointPanel
-          projectFirstUxEnabled={projectFirstUxEnabled}
+          projectUxEnabled={projectUxEnabled}
           selectedSessionId={props.selectedSessionId}
           createState={props.checkpointCreateState}
           createErrorMessage={props.checkpointCreateError}
@@ -1489,7 +1479,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           onCreateCheckpoint={props.onCreateManualCheckpoint}
         />
         <HistoryProjectPanel
-          projectFirstUxEnabled={projectFirstUxEnabled}
+          projectUxEnabled={projectUxEnabled}
           selectedSessionId={props.selectedSessionId}
           listState={props.projectListState ?? 'idle'}
           actionState={props.projectActionState ?? 'idle'}
@@ -1553,7 +1543,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           onImportArchive={props.onImportWorkspaceArchive}
         />
         <ProjectHistoryPanel
-          projectFirstUxEnabled={projectFirstUxEnabled}
+          projectUxEnabled={projectUxEnabled}
           selectedProjectId={props.selectedProjectId ?? null}
           rows={projectHistoryRows}
           onRestore={handleRestoreProjectHistoryRow}
@@ -1561,7 +1551,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
         />
         {historyState === 'ready' ? (
           <HistoryCheckpointList
-            projectFirstUxEnabled={projectFirstUxEnabled}
+            projectUxEnabled={projectUxEnabled}
             selectedSessionId={props.selectedSessionId}
             checkpoints={props.checkpoints}
             hasSelectedSession={Boolean(props.selectedSessionId)}
@@ -1645,7 +1635,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           data-testid="workspace-ai-panel-chat-content"
         >
           <WorkspaceChatPanel
-            projectFirstUxEnabled={projectFirstUxEnabled}
+            projectUxEnabled={projectUxEnabled}
             aiMessages={aiMessages}
             commonMessages={commonMessages}
             globalContextActive={isGlobalContextActive}
@@ -1679,7 +1669,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
             <ShellStateMessage
               state={shellState}
               sessionError={props.sessionError}
-              projectFirstUxEnabled={projectFirstUxEnabled}
+              projectUxEnabled={projectUxEnabled}
               workspaceMessages={workspaceMessages}
               canReopenProject={canReopenProject}
               onReopenProject={canReopenProject ? handleReopenProject : undefined}
@@ -1727,7 +1717,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     <section className="bg-white border border-gray-200 rounded p-3" data-testid="editor-panel-shell">
       <p className="text-xs font-semibold text-gray-700 mb-2">Editor Panel</p>
       <WorkspaceEditorPanel
-        projectFirstUxEnabled={projectFirstUxEnabled}
+        projectUxEnabled={projectUxEnabled}
         state={props.fileSurfaceState}
         fileTree={props.workspaceFileTree}
         selectedFilePath={props.selectedFilePath}
@@ -1746,7 +1736,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     <section className="bg-white border border-gray-200 rounded p-3" data-testid="preview-panel-shell">
       <p className="text-xs font-semibold text-gray-700 mb-2">Preview Panel</p>
       <WorkspacePreviewPanel
-        projectFirstUxEnabled={projectFirstUxEnabled}
+        projectUxEnabled={projectUxEnabled}
         projectMessages={projectPanelMessages}
         previewMessages={previewMessages}
         commonMessages={commonMessages}
@@ -2293,140 +2283,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     </div>
   );
 
-  if (!projectFirstUxEnabled) {
-    return (
-      <div className="h-screen bg-gray-100 flex flex-col" data-testid="workspace-shell">
-        <header className="h-14 bg-white border-b border-gray-200 px-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-sm font-semibold text-gray-900">AI Sandbox Workspace</h1>
-            <p className="text-xs text-gray-500">Workspace</p>
-          </div>
-          <div className="text-xs text-gray-600 text-right">
-            <p>{headerIdentityLabel}</p>
-            <p className="text-[11px] text-gray-500">Session-scoped workspace</p>
-            <p className="mt-1">
-              <a
-                href="keys"
-                className="text-[11px] font-medium text-blue-600 hover:text-blue-700 hover:underline"
-                data-testid="workspace-header-api-keys-link"
-              >
-                API Keys
-              </a>
-            </p>
-            {props.onLogout ? (
-              <p className="mt-1">
-                <button
-                  type="button"
-                  onClick={props.onLogout}
-                  className="text-[11px] font-medium text-blue-600 hover:text-blue-700 hover:underline transition active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                  data-testid="workspace-header-logout-button"
-                >
-                  Log out
-                </button>
-              </p>
-            ) : null}
-          </div>
-        </header>
-
-        <div className="flex-1 min-h-0 flex flex-col md:flex-row">
-          <aside
-            className="w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-gray-200 flex flex-col"
-            data-testid="session-sidebar-shell"
-          >
-            <div className="p-3 border-b border-gray-100">
-              <button
-                type="button"
-                onClick={() => void props.onCreateSession()}
-                disabled={props.isCreatingSession}
-                className="w-full rounded bg-blue-600 text-white text-sm py-2 disabled:bg-blue-300"
-              >
-                {props.isCreatingSession
-                  ? workspaceMessages.creatingSession
-                  : workspaceMessages.newSession}
-              </button>
-              <p className="mt-2 text-xs text-gray-500">
-                Active sessions: {activeSessions}/{props.quotaSummary?.maxActiveSessions ?? 5}
-              </p>
-              {props.sessionCreateError ? (
-                <p className="mt-1 text-xs text-amber-700">{props.sessionCreateError}</p>
-              ) : null}
-              {props.sessionActionError ? (
-                <p className="mt-1 text-xs text-amber-700">{props.sessionActionError}</p>
-              ) : null}
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-2">
-              {props.sessions.map((session) => {
-                const selected = session.id === props.selectedSessionId;
-                const isUsable = isUsableSession(session);
-                const isStopping = props.stoppingSessionId === session.id;
-                return (
-                  <div
-                    key={session.id}
-                    className={`w-full rounded border p-2 mb-2 ${
-                      selected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'
-                    }`}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => props.onSelectSession(session.id)}
-                      className={`w-full text-left rounded ${selected ? '' : 'hover:bg-gray-50'}`}
-                    >
-                      <p className="text-xs font-medium text-gray-900 truncate">
-                        Session {session.id.slice(0, 8)}
-                      </p>
-                      <p className="text-xs text-gray-500">{getSessionLabel(session)}</p>
-                    </button>
-                    <div className="mt-2">
-                      {isUsable ? (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            runStopSessionWithConfirmation({
-                              sessionId: session.id,
-                              confirmStop: () =>
-                                typeof window === 'undefined'
-                                  ? true
-                                  : window.confirm(workspaceMessages.stopSessionConfirm),
-                              onStopSession: props.onStopSession,
-                            });
-                          }}
-                          disabled={isStopping}
-                          className="w-full rounded border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-800 disabled:opacity-60"
-                          data-testid={`session-stop-${session.id}`}
-                        >
-                          {isStopping ? 'Stopping...' : 'Stop'}
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => props.onRemoveSession(session.id)}
-                          className="w-full rounded border border-gray-300 bg-gray-50 px-2 py-1 text-[11px] font-medium text-gray-700"
-                          data-testid={`session-remove-${session.id}`}
-                        >
-                          Remove
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </aside>
-
-          <main className="flex-1 min-w-0 flex flex-col overflow-y-auto">{projectWorkspaceContent}</main>
-        </div>
-
-        <footer className="h-10 bg-white border-t border-gray-200 px-4 flex items-center justify-between text-xs text-gray-600">
-          <span>Workspace</span>
-          <span>Sessions: {props.sessions.length}</span>
-        </footer>
-      </div>
-    );
-  }
-
-  const shouldShowFocusedCreateWorkspacePanel =
-    projectFirstUxEnabled && isCreateWorkspacePanelOpen;
+  const shouldShowFocusedCreateWorkspacePanel = isCreateWorkspacePanelOpen;
 
   return (
     <div className="h-screen bg-gray-100 flex flex-col" data-testid="workspace-shell">
@@ -2495,7 +2352,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 workspaceMessages={workspaceMessages}
                 execPanelContent={
                   <WorkspaceExecPanel
-                    projectFirstUxEnabled={projectFirstUxEnabled}
+                    projectUxEnabled={projectUxEnabled}
                     canReopenProject={canReopenProject}
                     onReopenProject={canReopenProject ? handleReopenProject : undefined}
                     selectedSessionId={props.selectedSessionId}
@@ -2579,7 +2436,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                         data-testid="preview-panel-shell"
                       >
                         <WorkspacePreviewPanel
-                          projectFirstUxEnabled={projectFirstUxEnabled}
+                          projectUxEnabled={projectUxEnabled}
                           projectMessages={projectPanelMessages}
                           previewMessages={previewMessages}
                           commonMessages={commonMessages}
@@ -2606,7 +2463,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                         data-testid="editor-panel-shell"
                       >
                         <WorkspaceEditorPanel
-                          projectFirstUxEnabled={projectFirstUxEnabled}
+                          projectUxEnabled={projectUxEnabled}
                           state={props.fileSurfaceState}
                           fileTree={props.workspaceFileTree}
                           selectedFilePath={props.selectedFilePath}
@@ -2627,7 +2484,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                         data-testid="build-targets-panel-shell"
                       >
                         <WorkspaceBuildPanel
-                          projectFirstUxEnabled={projectFirstUxEnabled}
+                          projectUxEnabled={projectUxEnabled}
                           selectedSessionId={props.selectedSessionId}
                           selectedBuildTarget={props.selectedBuildTarget ?? ''}
                           onSelectedBuildTargetChange={props.onSelectedBuildTargetChange}
@@ -2671,7 +2528,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
 }
 
 function HistoryProjectPanel(props: {
-  projectFirstUxEnabled?: boolean;
+  projectUxEnabled?: boolean;
   selectedSessionId: string | null;
   listState: 'idle' | 'loading' | 'ready' | 'error';
   actionState: 'idle' | 'creating' | 'opening' | 'moving' | 'success' | 'error';
@@ -2803,7 +2660,7 @@ function HistoryProjectPanel(props: {
     return null;
   }
 
-  const canMutate = Boolean(props.projectFirstUxEnabled || props.selectedSessionId);
+  const canMutate = Boolean(props.projectUxEnabled || props.selectedSessionId);
   const selectedWorkspace =
     props.workspaces.find((workspace) => workspace.id === props.selectedWorkspaceId) ?? null;
   const selectedProject =
@@ -3880,13 +3737,13 @@ interface ProjectHistoryRow {
 }
 
 function ProjectHistoryPanel(props: {
-  projectFirstUxEnabled: boolean;
+  projectUxEnabled: boolean;
   selectedProjectId: string | null;
   rows: ProjectHistoryRow[];
   onRestore?: (snapshotId: string) => void;
   onSave?: () => void;
 }) {
-  if (!props.projectFirstUxEnabled || !props.selectedProjectId) {
+  if (!props.projectUxEnabled || !props.selectedProjectId) {
     return null;
   }
 
@@ -3970,7 +3827,7 @@ function ProjectHistoryPanel(props: {
 }
 
 function WorkspaceChatPanel(props: {
-  projectFirstUxEnabled: boolean;
+  projectUxEnabled: boolean;
   aiMessages: typeof enMessages.ai;
   commonMessages: typeof enMessages.common;
   globalContextActive: boolean;
@@ -4367,12 +4224,8 @@ function WorkspaceChatPanel(props: {
           </div>
           <p className="mt-1.5 text-xs text-gray-400" data-testid="workspace-chat-session-hint">
             {props.selectedSessionId
-              ? props.projectFirstUxEnabled
-                ? recoveryCopy.workspace.chatReady
-                : 'Prompt runs through the existing AI execution flow.'
-              : props.projectFirstUxEnabled
-                ? recoveryCopy.workspace.openProjectToSendPrompts
-                : 'Select an active session to send prompts.'}
+              ? recoveryCopy.workspace.chatReady
+              : recoveryCopy.workspace.openProjectToSendPrompts}
           </p>
         </form>
       </div>
@@ -4665,7 +4518,7 @@ function WorkspaceAssistantFileActionSummary(props: {
 }
 
 function WorkspaceBuildPanel(props: {
-  projectFirstUxEnabled: boolean;
+  projectUxEnabled: boolean;
   selectedSessionId: string | null;
   selectedBuildTarget: string;
   onSelectedBuildTargetChange?: (value: string) => void;
@@ -4714,12 +4567,8 @@ function WorkspaceBuildPanel(props: {
       <div className="mt-2 flex items-center justify-between gap-2">
         <p className="text-[11px] text-gray-500">
           {props.selectedSessionId
-            ? props.projectFirstUxEnabled
-              ? recoveryCopy.workspace.buildReady
-              : 'Build runs through the existing session exec path.'
-            : props.projectFirstUxEnabled
-              ? recoveryCopy.workspace.openProjectToRunBuild
-              : 'Select an active session to run a build target.'}
+            ? recoveryCopy.workspace.buildReady
+            : recoveryCopy.workspace.openProjectToRunBuild}
         </p>
         <button
           type="button"
@@ -4759,7 +4608,7 @@ function WorkspaceBuildPanel(props: {
 }
 
 function WorkspaceExecPanel(props: {
-  projectFirstUxEnabled: boolean;
+  projectUxEnabled: boolean;
   canReopenProject: boolean;
   onReopenProject?: () => void;
   selectedSessionId: string | null;
@@ -4810,7 +4659,7 @@ function WorkspaceExecPanel(props: {
       <div className="mt-2">
         <ExecStateMessage
           execState={props.execState}
-          projectFirstUxEnabled={props.projectFirstUxEnabled}
+          projectUxEnabled={props.projectUxEnabled}
           canReopenProject={props.canReopenProject}
           onReopenProject={props.onReopenProject}
         />
@@ -4824,7 +4673,7 @@ function WorkspaceExecPanel(props: {
 }
 
 function WorkspacePreviewPanel(props: {
-  projectFirstUxEnabled: boolean;
+  projectUxEnabled: boolean;
   projectMessages: Pick<
     typeof enMessages.project,
     'selectElement' | 'pickerActive' | 'deselectElement' | 'elementSelected'
@@ -4902,7 +4751,7 @@ function WorkspacePreviewPanel(props: {
 
       <PreviewStateMessage
         state={props.previewState}
-        projectFirstUxEnabled={props.projectFirstUxEnabled}
+        projectUxEnabled={props.projectUxEnabled}
         onAskAiToFixPreview={props.onAskAiToFixPreview}
         chatRequestState={props.chatRequestState}
       />
@@ -4941,7 +4790,7 @@ function WorkspacePreviewPanel(props: {
 }
 
 function WorkspaceEditorPanel(props: {
-  projectFirstUxEnabled: boolean;
+  projectUxEnabled: boolean;
   state: WorkspaceFileSurfaceState;
   fileTree: WorkspaceFileNode[];
   selectedFilePath: string | null;
@@ -4976,7 +4825,7 @@ function WorkspaceEditorPanel(props: {
       <EditorStateMessage
         state={props.state}
         errorMessage={props.errorMessage}
-        projectFirstUxEnabled={props.projectFirstUxEnabled}
+        projectUxEnabled={props.projectUxEnabled}
       />
       {props.state === 'ready' ? (
         <div className={layoutClassName}>
@@ -5137,18 +4986,14 @@ function FileTreeNode(props: {
 function EditorStateMessage(props: {
   state: WorkspaceFileSurfaceState;
   errorMessage: string | null;
-  projectFirstUxEnabled: boolean;
+  projectUxEnabled: boolean;
 }) {
   if (props.state === 'loading') {
     return (
       <StateMessage
         tone="neutral"
         heading="Editor loading"
-        body={
-          props.projectFirstUxEnabled
-            ? recoveryCopy.workspace.filesLoading
-            : 'Loading workspace files for the active session.'
-        }
+        body={recoveryCopy.workspace.filesLoading}
         action="Wait for file navigation to finish loading."
       />
     );
@@ -5159,16 +5004,8 @@ function EditorStateMessage(props: {
       <StateMessage
         tone="neutral"
         heading="No file available"
-        body={
-          props.projectFirstUxEnabled
-            ? recoveryCopy.workspace.noFilesAvailable
-            : 'No files were found for the active session workspace.'
-        }
-        action={
-          props.projectFirstUxEnabled
-            ? recoveryCopy.workspace.openOrReopenProject
-            : 'Run a command that creates files, then select the session again.'
-        }
+        body={recoveryCopy.workspace.noFilesAvailable}
+        action={recoveryCopy.workspace.openOrReopenProject}
       />
     );
   }
@@ -5179,11 +5016,7 @@ function EditorStateMessage(props: {
         tone="error"
         heading="Editor unavailable"
         body={props.errorMessage ?? 'Workspace file navigation failed to load.'}
-        action={
-          props.projectFirstUxEnabled
-            ? recoveryCopy.workspace.openOrReopenProject
-            : 'Select the session again to retry.'
-        }
+        action={recoveryCopy.workspace.openOrReopenProject}
       />
     );
   }
@@ -5192,11 +5025,7 @@ function EditorStateMessage(props: {
     <StateMessage
       tone="success"
       heading="Editor ready"
-      body={
-        props.projectFirstUxEnabled
-          ? recoveryCopy.workspace.filesReady
-          : 'Workspace file navigation is ready for this active session.'
-      }
+      body={recoveryCopy.workspace.filesReady}
       action="Choose a file from the list to view content."
     />
   );
@@ -5204,21 +5033,17 @@ function EditorStateMessage(props: {
 
 function ExecStateMessage(props: {
   execState: WorkspaceExecState;
-  projectFirstUxEnabled: boolean;
+  projectUxEnabled: boolean;
   canReopenProject: boolean;
   onReopenProject?: () => void;
 }) {
-  const { execState, projectFirstUxEnabled, canReopenProject, onReopenProject } = props;
+  const { execState, projectUxEnabled, canReopenProject, onReopenProject } = props;
   if (execState.status === 'idle') {
     return (
       <StateMessage
         tone="neutral"
         heading="Exec idle"
-        body={
-          projectFirstUxEnabled
-            ? 'Run commands inside the current workspace.'
-            : 'Submit a command for the selected active session.'
-        }
+        body="Run commands inside the current workspace."
         action="Enter a command and choose Run."
       />
     );
@@ -5229,11 +5054,7 @@ function ExecStateMessage(props: {
       <StateMessage
         tone="neutral"
         heading="Command running"
-        body={
-          projectFirstUxEnabled
-            ? 'Sending command to the current workspace.'
-            : 'Sending command to session exec endpoint.'
-        }
+        body="Sending command to the current workspace."
         action="Wait for exec result."
       />
     );
@@ -5254,27 +5075,17 @@ function ExecStateMessage(props: {
     return (
       <StateMessage
         tone="error"
-        heading={
-          projectFirstUxEnabled ? recoveryCopy.status.workspaceDisconnected : 'Session not found (404)'
-        }
-        body={
-          projectFirstUxEnabled
-            ? recoveryCopy.detail.workspaceExpired
-            : 'The selected session is no longer available.'
-        }
-        action={
-          projectFirstUxEnabled
-            ? recoveryCopy.detail.reconnectByReopening
-            : 'Select or create a session, then retry.'
-        }
+        heading={recoveryCopy.status.workspaceDisconnected}
+        body={recoveryCopy.detail.workspaceExpired}
+        action={recoveryCopy.detail.reconnectByReopening}
         primaryActionLabel={
-          projectFirstUxEnabled && canReopenProject ? recoveryCopy.actions.reopenProject : undefined
+          projectUxEnabled && canReopenProject ? recoveryCopy.actions.reopenProject : undefined
         }
         onPrimaryAction={
-          projectFirstUxEnabled && canReopenProject ? onReopenProject : undefined
+          projectUxEnabled && canReopenProject ? onReopenProject : undefined
         }
         primaryActionTestId={
-          projectFirstUxEnabled && canReopenProject ? 'workspace-exec-reopen-project' : undefined
+          projectUxEnabled && canReopenProject ? 'workspace-exec-reopen-project' : undefined
         }
       />
     );
@@ -5284,27 +5095,17 @@ function ExecStateMessage(props: {
     return (
       <StateMessage
         tone="error"
-        heading={
-          projectFirstUxEnabled ? recoveryCopy.status.workspaceDisconnected : 'Session terminated (410)'
-        }
-        body={
-          projectFirstUxEnabled
-            ? recoveryCopy.detail.workspaceExpired
-            : 'This session is terminated and cannot execute commands.'
-        }
-        action={
-          projectFirstUxEnabled
-            ? recoveryCopy.detail.reconnectByReopening
-            : 'Create or select an active session to continue.'
-        }
+        heading={recoveryCopy.status.workspaceDisconnected}
+        body={recoveryCopy.detail.workspaceExpired}
+        action={recoveryCopy.detail.reconnectByReopening}
         primaryActionLabel={
-          projectFirstUxEnabled && canReopenProject ? recoveryCopy.actions.reopenProject : undefined
+          projectUxEnabled && canReopenProject ? recoveryCopy.actions.reopenProject : undefined
         }
         onPrimaryAction={
-          projectFirstUxEnabled && canReopenProject ? onReopenProject : undefined
+          projectUxEnabled && canReopenProject ? onReopenProject : undefined
         }
         primaryActionTestId={
-          projectFirstUxEnabled && canReopenProject ? 'workspace-exec-reopen-project' : undefined
+          projectUxEnabled && canReopenProject ? 'workspace-exec-reopen-project' : undefined
         }
       />
     );
@@ -5389,12 +5190,12 @@ function ExecResultOutput(props: { result: NonNullable<WorkspaceExecState['resul
 
 function PreviewStateMessage({
   state,
-  projectFirstUxEnabled,
+  projectUxEnabled,
   onAskAiToFixPreview,
   chatRequestState,
 }: {
   state: WorkspacePreviewState;
-  projectFirstUxEnabled: boolean;
+  projectUxEnabled: boolean;
   onAskAiToFixPreview?: () => void;
   chatRequestState?: 'idle' | 'submitting' | 'queued' | 'running' | 'completed' | 'failed';
 }) {
@@ -5403,11 +5204,7 @@ function PreviewStateMessage({
       <StateMessage
         tone="neutral"
         heading="Preview loading"
-        body={
-          projectFirstUxEnabled
-            ? recoveryCopy.workspace.previewLoading
-            : 'Checking and loading the active session preview.'
-        }
+        body={recoveryCopy.workspace.previewLoading}
         action="Wait for preview to finish loading."
       />
     );
@@ -5418,11 +5215,7 @@ function PreviewStateMessage({
       <StateMessage
         tone="success"
         heading="Preview ready"
-        body={
-          projectFirstUxEnabled
-            ? recoveryCopy.workspace.previewReady
-            : 'The active session preview is rendering.'
-        }
+        body={recoveryCopy.workspace.previewReady}
         action="Use Refresh to reload only this preview."
       />
     );
@@ -5433,11 +5226,7 @@ function PreviewStateMessage({
       <StateMessage
         tone="neutral"
         heading="Preview unavailable"
-        body={
-          projectFirstUxEnabled
-            ? recoveryCopy.workspace.previewUnavailable
-            : 'No running preview is available for this active session yet.'
-        }
+        body={recoveryCopy.workspace.previewUnavailable}
         action="Choose Start Preview, then use Refresh if needed."
       />
     );
@@ -5453,31 +5242,19 @@ function PreviewStateMessage({
   return (
     <StateMessage
       tone="error"
-      heading={
-        projectFirstUxEnabled
-          ? recoveryCopy.workspace.previewErrorHeading
-          : 'Preview could not load'
-      }
-      body={
-        projectFirstUxEnabled
-          ? recoveryCopy.workspace.previewErrorBody
-          : 'The preview failed to connect after multiple retries. The app may have a build or startup error.'
-      }
-      action={
-        projectFirstUxEnabled
-          ? recoveryCopy.workspace.previewErrorAction
-          : 'Use Refresh to retry, or ask AI to diagnose and fix the issue.'
-      }
+      heading={recoveryCopy.workspace.previewErrorHeading}
+      body={recoveryCopy.workspace.previewErrorBody}
+      action={recoveryCopy.workspace.previewErrorAction}
       primaryActionLabel={
-        projectFirstUxEnabled && onAskAiToFixPreview
+        projectUxEnabled && onAskAiToFixPreview
           ? recoveryCopy.actions.askAiToFixPreview
           : undefined
       }
       onPrimaryAction={
-        projectFirstUxEnabled && onAskAiToFixPreview ? onAskAiToFixPreview : undefined
+        projectUxEnabled && onAskAiToFixPreview ? onAskAiToFixPreview : undefined
       }
       primaryActionTestId={
-        projectFirstUxEnabled && onAskAiToFixPreview ? 'workspace-preview-ask-ai-fix' : undefined
+        projectUxEnabled && onAskAiToFixPreview ? 'workspace-preview-ask-ai-fix' : undefined
       }
       primaryActionDisabled={isAiFixPending}
     />
@@ -5529,7 +5306,7 @@ function HistorySliceMessage({ state }: { state: 'loading' | 'error' | 'empty' |
 }
 
 function HistoryCreateCheckpointPanel(props: {
-  projectFirstUxEnabled: boolean;
+  projectUxEnabled: boolean;
   selectedSessionId: string | null;
   createState: WorkspaceCheckpointCreateState;
   createErrorMessage: string | null;
@@ -5569,7 +5346,7 @@ function HistoryCreateCheckpointPanel(props: {
           state={props.createState}
           errorMessage={props.createErrorMessage}
           hasSelectedSession={Boolean(props.selectedSessionId)}
-          projectFirstUxEnabled={props.projectFirstUxEnabled}
+          projectUxEnabled={props.projectUxEnabled}
         />
       </div>
     </div>
@@ -5580,7 +5357,7 @@ function HistoryCreateStateMessage(props: {
   state: WorkspaceCheckpointCreateState;
   errorMessage: string | null;
   hasSelectedSession: boolean;
-  projectFirstUxEnabled: boolean;
+  projectUxEnabled: boolean;
 }) {
   if (props.state === 'idle') {
     return (
@@ -5589,12 +5366,8 @@ function HistoryCreateStateMessage(props: {
         heading="Save point idle"
         body={
           props.hasSelectedSession
-            ? props.projectFirstUxEnabled
-              ? 'Create a manual save point for the current workspace.'
-              : 'Create a manual checkpoint for the active session.'
-            : props.projectFirstUxEnabled
-              ? recoveryCopy.workspace.openProjectToCreateSavePoint
-              : 'Select an active session to create a save point.'
+            ? 'Create a manual save point for the current workspace.'
+            : recoveryCopy.workspace.openProjectToCreateSavePoint
         }
         action="Optionally add a short description, then choose Save Point."
       />
@@ -5606,11 +5379,7 @@ function HistoryCreateStateMessage(props: {
       <StateMessage
         tone="neutral"
         heading="Creating save point"
-        body={
-          props.projectFirstUxEnabled
-            ? 'Save point request is in flight for the current workspace.'
-            : 'Checkpoint creation request is in flight for the active session.'
-        }
+        body="Save point request is in flight for the current workspace."
         action="Wait for completion."
       />
     );
@@ -5622,11 +5391,7 @@ function HistoryCreateStateMessage(props: {
         tone="success"
         heading="Save point created"
         body="Manual checkpoint created successfully."
-        action={
-          props.projectFirstUxEnabled
-            ? 'History list is refreshed for this workspace.'
-            : 'History list is refreshed for this session.'
-        }
+        action="History list is refreshed for this workspace."
       />
     );
   }
@@ -5636,11 +5401,7 @@ function HistoryCreateStateMessage(props: {
       tone="error"
       heading="Save point failed"
       body={props.errorMessage ?? 'Manual checkpoint creation failed.'}
-      action={
-        props.projectFirstUxEnabled
-          ? 'Retry Save Point for the current workspace.'
-          : 'Retry Save Point for the active session.'
-      }
+      action="Retry Save Point for the current workspace."
     />
   );
 }
@@ -5741,7 +5502,7 @@ export function getDefaultHistorySectionVisibilityPresetState(): Record<HistoryC
 }
 
 function HistoryCheckpointList(props: {
-  projectFirstUxEnabled: boolean;
+  projectUxEnabled: boolean;
   selectedSessionId: string | null;
   checkpoints: WorkspaceCheckpoint[];
   hasSelectedSession: boolean;
@@ -6869,7 +6630,7 @@ function HistoryCheckpointList(props: {
           state={props.revertState}
           errorMessage={props.revertErrorMessage}
           hasSelectedSession={props.hasSelectedSession}
-          projectFirstUxEnabled={props.projectFirstUxEnabled}
+          projectUxEnabled={props.projectUxEnabled}
         />
       </div>
       <div className="mb-2 rounded border border-gray-200 bg-white p-2" data-testid="history-section-collapse-controls">
@@ -7225,7 +6986,7 @@ function HistoryCheckpointList(props: {
             hasSelectedSession={props.hasSelectedSession}
             hasBaseSelection={hasVisibleBaseSelection}
             hasTargetSelection={hasVisibleTargetSelection}
-            projectFirstUxEnabled={props.projectFirstUxEnabled}
+            projectUxEnabled={props.projectUxEnabled}
           />
         </div>
       </div>
@@ -8238,7 +7999,7 @@ function HistoryCheckpointList(props: {
           state={props.diffState}
           errorMessage={props.diffErrorMessage}
           hasSelectedSession={props.hasSelectedSession}
-          projectFirstUxEnabled={props.projectFirstUxEnabled}
+          projectUxEnabled={props.projectUxEnabled}
         />
       </div>
       <div className="mt-2" data-testid="history-snapshot-state">
@@ -8246,7 +8007,7 @@ function HistoryCheckpointList(props: {
           state={props.snapshotState}
           errorMessage={props.snapshotErrorMessage}
           hasSelectedSession={props.hasSelectedSession}
-          projectFirstUxEnabled={props.projectFirstUxEnabled}
+          projectUxEnabled={props.projectUxEnabled}
         />
       </div>
       <div className="mt-2" data-testid="history-open-live-state">
@@ -8255,7 +8016,7 @@ function HistoryCheckpointList(props: {
           errorMessage={props.liveOpenErrorMessage}
           targetPath={props.liveOpenTargetPath}
           hasSelectedSession={props.hasSelectedSession}
-          projectFirstUxEnabled={props.projectFirstUxEnabled}
+          projectUxEnabled={props.projectUxEnabled}
         />
       </div>
       <HistoryCheckpointDiffViewer
@@ -8292,7 +8053,7 @@ function HistoryCompareStateMessage(props: {
   hasSelectedSession: boolean;
   hasBaseSelection: boolean;
   hasTargetSelection: boolean;
-  projectFirstUxEnabled: boolean;
+  projectUxEnabled: boolean;
 }) {
   if (props.state === 'idle') {
     return (
@@ -8302,9 +8063,7 @@ function HistoryCompareStateMessage(props: {
         body={
           props.hasSelectedSession
             ? 'Enter compare mode to select base and target checkpoints.'
-            : props.projectFirstUxEnabled
-              ? recoveryCopy.workspace.openProjectToCompareHistory
-              : 'Select an active session before entering compare mode.'
+            : recoveryCopy.workspace.openProjectToCompareHistory
         }
         action="Compare mode runs only inside this history surface."
       />
@@ -8360,7 +8119,7 @@ function HistoryDiffStateMessage(props: {
   state: WorkspaceCheckpointDiffState;
   errorMessage: string | null;
   hasSelectedSession: boolean;
-  projectFirstUxEnabled: boolean;
+  projectUxEnabled: boolean;
 }) {
   if (props.state === 'idle') {
     return (
@@ -8370,9 +8129,7 @@ function HistoryDiffStateMessage(props: {
         body={
           props.hasSelectedSession
             ? 'Select a checkpoint and choose View Diff.'
-            : props.projectFirstUxEnabled
-              ? recoveryCopy.workspace.openProjectToInspectDiffs
-              : 'Select an active session to inspect checkpoint diffs.'
+            : recoveryCopy.workspace.openProjectToInspectDiffs
         }
         action="Diff fetch is request-driven and scoped to selected session checkpoint."
       />
@@ -8426,7 +8183,7 @@ function HistorySnapshotStateMessage(props: {
   state: 'idle' | 'loading' | 'ready' | 'empty' | 'snapshot-error';
   errorMessage: string | null;
   hasSelectedSession: boolean;
-  projectFirstUxEnabled: boolean;
+  projectUxEnabled: boolean;
 }) {
   if (props.state === 'idle') {
     return (
@@ -8436,9 +8193,7 @@ function HistorySnapshotStateMessage(props: {
         body={
           props.hasSelectedSession
             ? 'Select a checkpoint and choose View Snapshot.'
-            : props.projectFirstUxEnabled
-              ? recoveryCopy.workspace.openProjectToInspectSnapshots
-              : 'Select an active session to inspect checkpoint snapshots.'
+            : recoveryCopy.workspace.openProjectToInspectSnapshots
         }
         action="Snapshot view is read-only and never edits workspace files."
       />
@@ -8493,7 +8248,7 @@ function HistoryOpenLiveStateMessage(props: {
   errorMessage: string | null;
   targetPath: string | null;
   hasSelectedSession: boolean;
-  projectFirstUxEnabled: boolean;
+  projectUxEnabled: boolean;
 }) {
   if (props.state === 'idle') {
     return (
@@ -8503,9 +8258,7 @@ function HistoryOpenLiveStateMessage(props: {
         body={
           props.hasSelectedSession
             ? 'Choose a history file item and use Open in Live Workspace when available.'
-            : props.projectFirstUxEnabled
-              ? recoveryCopy.workspace.openProjectToOpenLiveFile
-              : 'Select an active session to jump from history file items to live workspace files.'
+            : recoveryCopy.workspace.openProjectToOpenLiveFile
         }
         action="This action only switches focus to an existing live file and never restores checkpoint content."
       />
@@ -8932,7 +8685,7 @@ function HistoryRevertStateMessage(props: {
   state: WorkspaceCheckpointRevertState;
   errorMessage: string | null;
   hasSelectedSession: boolean;
-  projectFirstUxEnabled: boolean;
+  projectUxEnabled: boolean;
 }) {
   if (props.state === 'idle') {
     return (
@@ -8942,9 +8695,7 @@ function HistoryRevertStateMessage(props: {
         body={
           props.hasSelectedSession
             ? 'Choose a checkpoint entry and use Revert.'
-            : props.projectFirstUxEnabled
-              ? recoveryCopy.workspace.openProjectToEnableRevert
-              : 'Select an active session to enable checkpoint revert.'
+            : recoveryCopy.workspace.openProjectToEnableRevert
         }
         action="Revert requests require confirmation before submission."
       />
@@ -9268,7 +9019,7 @@ function computeRecentProjects(
 function ShellStateMessage(props: {
   state: 'loading' | 'error' | 'empty' | 'ready';
   sessionError?: string | null;
-  projectFirstUxEnabled: boolean;
+  projectUxEnabled: boolean;
   workspaceMessages: Pick<typeof enMessages.workspace, 'noSessionSelected'>;
   canReopenProject: boolean;
   onReopenProject?: () => void;
@@ -9277,7 +9028,7 @@ function ShellStateMessage(props: {
   const {
     state,
     sessionError,
-    projectFirstUxEnabled,
+    projectUxEnabled,
     workspaceMessages,
     canReopenProject,
     onReopenProject,
@@ -9288,11 +9039,7 @@ function ShellStateMessage(props: {
       <StateMessage
         tone="neutral"
         heading="Workspace is loading"
-        body={
-          projectFirstUxEnabled
-            ? recoveryCopy.workspace.loading
-            : 'Loading sessions and preparing baseline workspace panels.'
-        }
+        body={recoveryCopy.workspace.loading}
         action="Please wait a moment."
       />
     );
@@ -9305,26 +9052,18 @@ function ShellStateMessage(props: {
         heading="Workspace unavailable"
         body={
           sessionError
-            ? projectFirstUxEnabled
-              ? `Workspace load error: ${sessionError}`
-              : `Session load error: ${sessionError}`
-            : projectFirstUxEnabled
-              ? recoveryCopy.workspace.unavailable
-              : 'Unable to load sessions for the workspace shell.'
+            ? `Workspace load error: ${sessionError}`
+            : recoveryCopy.workspace.unavailable
         }
-        action={
-          projectFirstUxEnabled
-            ? recoveryCopy.workspace.openOrReopenProject
-            : 'Refresh this page or sign in again.'
-        }
+        action={recoveryCopy.workspace.openOrReopenProject}
         primaryActionLabel={
-          projectFirstUxEnabled && canReopenProject ? recoveryCopy.actions.reopenProject : undefined
+          projectUxEnabled && canReopenProject ? recoveryCopy.actions.reopenProject : undefined
         }
         onPrimaryAction={
-          projectFirstUxEnabled && canReopenProject ? onReopenProject : undefined
+          projectUxEnabled && canReopenProject ? onReopenProject : undefined
         }
         primaryActionTestId={
-          projectFirstUxEnabled && canReopenProject ? 'workspace-shell-reopen-project' : undefined
+          projectUxEnabled && canReopenProject ? 'workspace-shell-reopen-project' : undefined
         }
       />
     );
@@ -9334,25 +9073,17 @@ function ShellStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading={projectFirstUxEnabled ? 'No project open' : workspaceMessages.noSessionSelected}
-        body={
-          projectFirstUxEnabled
-            ? recoveryCopy.workspace.openProjectToStart
-            : 'Create or select a session to start using workspace panels.'
-        }
-        action={
-          projectFirstUxEnabled
-            ? recoveryCopy.workspace.help
-            : 'Use New Session in the sidebar.'
-        }
+        heading={projectUxEnabled ? 'No project open' : workspaceMessages.noSessionSelected}
+        body={recoveryCopy.workspace.openProjectToStart}
+        action={recoveryCopy.workspace.help}
         primaryActionLabel={
-          projectFirstUxEnabled && onResumeLatestProject
+          projectUxEnabled && onResumeLatestProject
             ? recoveryCopy.actions.resumeLatestProject
             : undefined
         }
-        onPrimaryAction={projectFirstUxEnabled ? onResumeLatestProject : undefined}
+        onPrimaryAction={projectUxEnabled ? onResumeLatestProject : undefined}
         primaryActionTestId={
-          projectFirstUxEnabled && onResumeLatestProject
+          projectUxEnabled && onResumeLatestProject
             ? 'workspace-shell-resume-latest-project'
             : undefined
         }
@@ -9366,16 +9097,8 @@ function ShellStateMessage(props: {
     <StateMessage
       tone="success"
       heading="Workspace ready"
-      body={
-        projectFirstUxEnabled
-          ? recoveryCopy.workspace.ready
-          : 'Shell ready. Full panel behavior remains deferred to later slices.'
-      }
-      action={
-        projectFirstUxEnabled
-          ? 'Continue with project work and history review.'
-          : 'Continue with session selection and checkpoint review.'
-      }
+      body={recoveryCopy.workspace.ready}
+      action="Continue with project work and history review."
     />
   );
 }

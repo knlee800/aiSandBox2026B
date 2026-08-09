@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter, useParams } from 'next/navigation';
 import WorkspaceShell from '@/components/workspace/workspace-shell';
-import { PROJECT_FIRST_UX } from '@/lib/feature-flags';
 import { openProjectInFreshSession } from '@/lib/open-project-in-fresh-session';
 import { attemptProjectAutosave } from '@/lib/project-autosave';
 import { attemptNamedProjectSave } from '@/lib/project-named-save';
@@ -90,20 +89,17 @@ import {
   exportWorkspaceArchive,
   importWorkspaceArchive,
   loadWorkspaceSnapshots,
-  resolveProjectScopedLatestSnapshotId,
   restoreWorkspaceSnapshot,
   saveWorkspaceSnapshot,
   type WorkspaceSnapshotSummary,
 } from '@/components/workspace/workspace-snapshots.logic';
 import {
-  associateWorkspaceProjectSession,
   createWorkspaceProject,
   forkPublicWorkspaceProject,
   loadPublicWorkspaceProjectDetail,
   loadPublicWorkspaceProjects,
   loadWorkspaceProjects,
   moveWorkspaceProject,
-  openWorkspaceProject,
   updateWorkspaceProjectVisibility,
   type WorkspacePublicProjectDetail,
   type WorkspacePublicProjectSummary,
@@ -151,12 +147,6 @@ function getCsrfTokenFromCookie(): string | null {
 
   return csrfCookie?.slice('aisandbox_csrf='.length) || null;
 }
-
-const projectFirstUxAnchors = {
-  enabled: PROJECT_FIRST_UX,
-  copy: recoveryCopy,
-};
-void projectFirstUxAnchors;
 
 const HIDDEN_UNUSABLE_SESSIONS_STORAGE_KEY = 'workspace_hidden_unusable_sessions';
 const CHAT_THREAD_STORAGE_KEY_PREFIX = 'workspace_chat_thread';
@@ -1186,51 +1176,43 @@ export default function AppPage() {
       localStorage.getItem(HIDDEN_UNUSABLE_SESSIONS_STORAGE_KEY),
     );
     setHiddenSessionIds(storedHiddenSessionIds);
-    if (PROJECT_FIRST_UX) {
-      coldMountSeededSessionIdRef.current =
-        sessionStorage.getItem(TAB_SELECTED_SESSION_STORAGE_KEY) || null;
-      coldMountSeededProjectIdRef.current =
-        sessionStorage.getItem(TAB_SELECTED_PROJECT_STORAGE_KEY) || null;
-      coldMountSeededWorkspaceIdRef.current =
-        sessionStorage.getItem(TAB_SELECTED_WORKSPACE_STORAGE_KEY) || null;
-      coldMountSeededViewRef.current =
-        sessionStorage.getItem(TAB_SELECTED_VIEW_STORAGE_KEY) === 'project' ? 'project' : null;
-      const storedEditorDraft = sessionStorage.getItem(TAB_EDITOR_DRAFT_STORAGE_KEY);
-      if (!storedEditorDraft) {
-        coldMountEditorDraftRef.current = null;
-      } else {
-        try {
-          const parsedDraft: unknown = JSON.parse(storedEditorDraft);
-          const candidateDraft =
-            parsedDraft && typeof parsedDraft === 'object'
-              ? (parsedDraft as Record<string, unknown>)
-              : null;
-          if (
-            candidateDraft &&
-            typeof candidateDraft.projectId === 'string' &&
-            typeof candidateDraft.sessionId === 'string' &&
-            typeof candidateDraft.filePath === 'string' &&
-            typeof candidateDraft.content === 'string'
-          ) {
-            coldMountEditorDraftRef.current = {
-              projectId: candidateDraft.projectId,
-              sessionId: candidateDraft.sessionId,
-              filePath: candidateDraft.filePath,
-              content: candidateDraft.content,
-            };
-          } else {
-            coldMountEditorDraftRef.current = null;
-          }
-        } catch {
+    coldMountSeededSessionIdRef.current =
+      sessionStorage.getItem(TAB_SELECTED_SESSION_STORAGE_KEY) || null;
+    coldMountSeededProjectIdRef.current =
+      sessionStorage.getItem(TAB_SELECTED_PROJECT_STORAGE_KEY) || null;
+    coldMountSeededWorkspaceIdRef.current =
+      sessionStorage.getItem(TAB_SELECTED_WORKSPACE_STORAGE_KEY) || null;
+    coldMountSeededViewRef.current =
+      sessionStorage.getItem(TAB_SELECTED_VIEW_STORAGE_KEY) === 'project' ? 'project' : null;
+    const storedEditorDraft = sessionStorage.getItem(TAB_EDITOR_DRAFT_STORAGE_KEY);
+    if (!storedEditorDraft) {
+      coldMountEditorDraftRef.current = null;
+    } else {
+      try {
+        const parsedDraft: unknown = JSON.parse(storedEditorDraft);
+        const candidateDraft =
+          parsedDraft && typeof parsedDraft === 'object'
+            ? (parsedDraft as Record<string, unknown>)
+            : null;
+        if (
+          candidateDraft &&
+          typeof candidateDraft.projectId === 'string' &&
+          typeof candidateDraft.sessionId === 'string' &&
+          typeof candidateDraft.filePath === 'string' &&
+          typeof candidateDraft.content === 'string'
+        ) {
+          coldMountEditorDraftRef.current = {
+            projectId: candidateDraft.projectId,
+            sessionId: candidateDraft.sessionId,
+            filePath: candidateDraft.filePath,
+            content: candidateDraft.content,
+          };
+        } else {
           coldMountEditorDraftRef.current = null;
         }
+      } catch {
+        coldMountEditorDraftRef.current = null;
       }
-    } else {
-      coldMountSeededSessionIdRef.current = null;
-      coldMountSeededProjectIdRef.current = null;
-      coldMountSeededWorkspaceIdRef.current = null;
-      coldMountSeededViewRef.current = null;
-      coldMountEditorDraftRef.current = null;
     }
 
     void (async () => {
@@ -1250,10 +1232,8 @@ export default function AppPage() {
         setAuthLoading(false);
         void loadSessions();
         void loadDashboardSlice();
-        if (PROJECT_FIRST_UX) {
-          void loadWorkspacesForUser();
-          void loadPublicWorkspaceProjectsList();
-        }
+        void loadWorkspacesForUser();
+        void loadPublicWorkspaceProjectsList();
       } catch {
         router.push(`/${locale}/login`);
       }
@@ -1276,10 +1256,6 @@ export default function AppPage() {
   }, []);
 
   useEffect(() => {
-    if (!PROJECT_FIRST_UX) {
-      return;
-    }
-
     if (!userId) {
       return;
     }
@@ -1394,10 +1370,6 @@ export default function AppPage() {
   }, [selectedFilePath]);
 
   useEffect(() => {
-    if (!PROJECT_FIRST_UX) {
-      return;
-    }
-
     if (selectedSessionId) {
       sessionStorage.setItem(TAB_SELECTED_SESSION_STORAGE_KEY, selectedSessionId);
       return;
@@ -1407,10 +1379,6 @@ export default function AppPage() {
   }, [selectedSessionId]);
 
   useEffect(() => {
-    if (!PROJECT_FIRST_UX) {
-      return;
-    }
-
     if (selectedWorkspaceId) {
       sessionStorage.setItem(TAB_SELECTED_WORKSPACE_STORAGE_KEY, selectedWorkspaceId);
       return;
@@ -1426,10 +1394,6 @@ export default function AppPage() {
   }, [workspaces, selectedWorkspaceId]);
 
   useEffect(() => {
-    if (!PROJECT_FIRST_UX) {
-      return;
-    }
-
     if (selectedProjectId) {
       sessionStorage.setItem(TAB_SELECTED_PROJECT_STORAGE_KEY, selectedProjectId);
       return;
@@ -1439,10 +1403,6 @@ export default function AppPage() {
   }, [selectedProjectId]);
 
   useEffect(() => {
-    if (!PROJECT_FIRST_UX) {
-      return;
-    }
-
     if (workspaceView === 'project') {
       sessionStorage.setItem(TAB_SELECTED_VIEW_STORAGE_KEY, 'project');
       return;
@@ -1452,10 +1412,6 @@ export default function AppPage() {
   }, [workspaceView]);
 
   useEffect(() => {
-    if (!PROJECT_FIRST_UX) {
-      return;
-    }
-
     if (coldMountSeededViewRef.current !== 'project') {
       return;
     }
@@ -1486,10 +1442,6 @@ export default function AppPage() {
   }, [selectedProjectId]);
 
   useEffect(() => {
-    if (!PROJECT_FIRST_UX) {
-      return;
-    }
-
     if (
       selectedProjectId &&
       selectedSessionId &&
@@ -1587,10 +1539,6 @@ export default function AppPage() {
   }, [selectedSessionId, userId]);
 
   useEffect(() => {
-    if (!PROJECT_FIRST_UX) {
-      return;
-    }
-
     if (projectOpenInProgressRef.current) {
       return;
     }
@@ -1857,7 +1805,7 @@ export default function AppPage() {
         }
       }
 
-      const seededSessionId = PROJECT_FIRST_UX ? coldMountSeededSessionIdRef.current : null;
+      const seededSessionId = coldMountSeededSessionIdRef.current;
       coldMountSeededSessionIdRef.current = null;
       if (seededSessionId) {
         const seededSession = data.find((session) => session.id === seededSessionId);
@@ -1880,7 +1828,7 @@ export default function AppPage() {
     setWorkspaces(loadedWorkspaces);
     setSelectedWorkspaceId((currentSelectedWorkspaceId) => {
       const seededWorkspaceId =
-        preferredSelectedWorkspaceId === undefined && PROJECT_FIRST_UX
+        preferredSelectedWorkspaceId === undefined
           ? coldMountSeededWorkspaceIdRef.current
           : null;
       coldMountSeededWorkspaceIdRef.current = null;
@@ -2056,9 +2004,7 @@ export default function AppPage() {
       setSnapshotActionError(
         error instanceof Error && error.message.trim()
           ? error.message
-          : PROJECT_FIRST_UX
-            ? 'Failed to load project history.'
-            : 'Failed to load workspace snapshots.',
+          : 'Failed to load project history.',
       );
     }
   }
@@ -2086,7 +2032,7 @@ export default function AppPage() {
           return currentSelectedProjectId;
         }
 
-        const seededProjectId = PROJECT_FIRST_UX ? coldMountSeededProjectIdRef.current : null;
+        const seededProjectId = coldMountSeededProjectIdRef.current;
         coldMountSeededProjectIdRef.current = null;
         if (seededProjectId && projects.some((project) => project.id === seededProjectId)) {
           return seededProjectId;
@@ -2370,83 +2316,46 @@ export default function AppPage() {
         name: trimmedName,
         workspaceId: selectedWorkspaceId ?? undefined,
       });
-      if (PROJECT_FIRST_UX) {
-        setSelectedProjectId(createdProject.id);
-        setSelectedProjectVisibility(createdProject.visibility === 'public' ? 'public' : 'private');
-        projectOpenInProgressRef.current = true;
-        try {
-          const openResult = await openProjectInFreshSession({
-            projectId: createdProject.id,
-          });
-          const openSessionId = openResult.sessionId;
-          const expectsRestoredFiles = Boolean(openResult.restoredSnapshotId);
-
-          skipNextSessionEffectFileReloadRef.current =
-            openSessionId !== selectedSessionIdRef.current;
-          setSelectedSessionId(openSessionId);
-
-          await hydrateWorkspaceForProjectOpen(openSessionId, expectsRestoredFiles);
-
-          await refreshPreviewForSession(openSessionId, true);
-          await loadCheckpoints(openSessionId);
-          await loadSessions();
-          setSelectedSessionId((current) => current ?? openSessionId);
-
-          await loadWorkspaceSnapshotsForUser();
-          await loadWorkspaceProjectsForUser(
-            createdProject.workspaceId ?? selectedWorkspaceId,
-          );
-          await loadPublicWorkspaceProjectsList();
-          await loadDashboardSlice();
-
-          setWorkspaceView('project');
-          setSelectedProjectId(createdProject.id);
-          setSelectedProjectVisibility(createdProject.visibility === 'public' ? 'public' : 'private');
-          setProjectNameInput('');
-          setProjectActionState('success');
-          setProjectActionMessage('Project created.');
-          setProjectActionError(null);
-          return true;
-        } finally {
-          projectOpenInProgressRef.current = false;
-          skipNextSessionEffectFileReloadRef.current = false;
-        }
-      }
-      let createdInitialProjectSnapshot = false;
-      if (selectedSessionId) {
-        try {
-          const currentWorkspaceTree = await loadWorkspaceFileTree({
-            sessionId: selectedSessionId,
-          });
-          const firstWorkspaceFilePath = findFirstFilePath(currentWorkspaceTree);
-          if (firstWorkspaceFilePath) {
-            const initialProjectSnapshot = await saveWorkspaceSnapshot({
-              sessionId: selectedSessionId,
-              label: buildProjectScopedSnapshotLabel(createdProject.id, 'initial'),
-            });
-            createdInitialProjectSnapshot = true;
-            await loadWorkspaceSnapshotsForUser();
-            setSelectedSnapshotId(initialProjectSnapshot.id);
-          }
-        } catch (error) {
-          // Project creation must stay successful even if initial snapshot automation fails.
-          console.error('Failed to auto-save initial project snapshot:', error);
-        }
-      }
-      await loadWorkspaceProjectsForUser(
-        createdProject.workspaceId ?? selectedWorkspaceId,
-      );
       setSelectedProjectId(createdProject.id);
       setSelectedProjectVisibility(createdProject.visibility === 'public' ? 'public' : 'private');
-      setProjectNameInput('');
-      setProjectActionState('success');
-      setProjectActionMessage(
-        createdInitialProjectSnapshot
-          ? 'Project created with initial snapshot.'
-          : 'Project created.',
-      );
-      setProjectActionError(null);
-      return true;
+      projectOpenInProgressRef.current = true;
+      try {
+        const openResult = await openProjectInFreshSession({
+          projectId: createdProject.id,
+        });
+        const openSessionId = openResult.sessionId;
+        const expectsRestoredFiles = Boolean(openResult.restoredSnapshotId);
+
+        skipNextSessionEffectFileReloadRef.current =
+          openSessionId !== selectedSessionIdRef.current;
+        setSelectedSessionId(openSessionId);
+
+        await hydrateWorkspaceForProjectOpen(openSessionId, expectsRestoredFiles);
+
+        await refreshPreviewForSession(openSessionId, true);
+        await loadCheckpoints(openSessionId);
+        await loadSessions();
+        setSelectedSessionId((current) => current ?? openSessionId);
+
+        await loadWorkspaceSnapshotsForUser();
+        await loadWorkspaceProjectsForUser(
+          createdProject.workspaceId ?? selectedWorkspaceId,
+        );
+        await loadPublicWorkspaceProjectsList();
+        await loadDashboardSlice();
+
+        setWorkspaceView('project');
+        setSelectedProjectId(createdProject.id);
+        setSelectedProjectVisibility(createdProject.visibility === 'public' ? 'public' : 'private');
+        setProjectNameInput('');
+        setProjectActionState('success');
+        setProjectActionMessage('Project created.');
+        setProjectActionError(null);
+        return true;
+      } finally {
+        projectOpenInProgressRef.current = false;
+        skipNextSessionEffectFileReloadRef.current = false;
+      }
     } catch (error) {
       setProjectActionState('error');
       setProjectActionMessage(null);
@@ -2492,7 +2401,7 @@ export default function AppPage() {
   }
 
   function handleAskAiToFixPreview(): void {
-    if (!PROJECT_FIRST_UX || workspaceView !== 'project' || !selectedSessionId) {
+    if (workspaceView !== 'project' || !selectedSessionId) {
       return;
     }
     if (
@@ -2534,17 +2443,10 @@ export default function AppPage() {
     if (!userId) {
       return;
     }
-    if (PROJECT_FIRST_UX) {
-      if (!selectedProjectId) {
-        setProjectActionState('error');
-        setProjectActionMessage(null);
-        setProjectActionError('Select a project to open.');
-        return;
-      }
-    } else if (!selectedSessionId || !selectedProjectId) {
+    if (!selectedProjectId) {
       setProjectActionState('error');
       setProjectActionMessage(null);
-      setProjectActionError('Select both an active session and a project.');
+      setProjectActionError('Select a project to open.');
       return;
     }
 
@@ -2554,66 +2456,12 @@ export default function AppPage() {
     projectOpenInProgressRef.current = true;
     try {
       const selectedSnapshotIdToOpen = selectedSnapshotId?.trim() || undefined;
-      if (PROJECT_FIRST_UX) {
-        const refreshedSessions = await loadSessions();
-        const openResult = await openProjectInFreshSession({
-          projectId: selectedProjectId,
-          existingSessions: refreshedSessions,
-          snapshotId: selectedSnapshotIdToOpen,
-        });
-        const openSessionId = openResult.sessionId;
-        const expectsRestoredFiles = Boolean(openResult.restoredSnapshotId);
-
-        skipNextSessionEffectFileReloadRef.current =
-          openSessionId !== selectedSessionIdRef.current;
-        setSelectedSessionId(openSessionId);
-
-        await hydrateWorkspaceForProjectOpen(openSessionId, expectsRestoredFiles);
-
-        await refreshPreviewForSession(openSessionId, true);
-        await loadCheckpoints(openSessionId);
-        await loadSessions();
-        setSelectedSessionId((current) => current ?? openSessionId);
-
-        await loadWorkspaceSnapshotsForUser();
-        await loadWorkspaceProjectsForUser();
-        await loadPublicWorkspaceProjectsList();
-        await loadDashboardSlice();
-
-        setWorkspaceView('project');
-        setProjectActionState('success');
-        setProjectActionMessage('Project opened.');
-        setProjectActionError(null);
-        return;
-      }
-
-      let snapshotIdToOpen: string | undefined = selectedSnapshotIdToOpen;
-      if (!snapshotIdToOpen) {
-        const freshSnapshots = await loadWorkspaceSnapshots({});
-        setWorkspaceSnapshots(freshSnapshots);
-        snapshotIdToOpen =
-          resolveProjectScopedLatestSnapshotId({ snapshots: freshSnapshots, projectId: selectedProjectId }) ?? undefined;
-      }
-
-      let openResult: { projectId: string; sessionId: string; restoredSnapshotId: string | null };
-      if (snapshotIdToOpen) {
-        openResult = await openWorkspaceProject({
-          projectId: selectedProjectId,
-          sessionId: selectedSessionId!,
-          snapshotId: snapshotIdToOpen,
-        });
-      } else {
-        await associateWorkspaceProjectSession({
-          projectId: selectedProjectId,
-          sessionId: selectedSessionId!,
-        });
-        openResult = {
-          projectId: selectedProjectId,
-          sessionId: selectedSessionId!,
-          restoredSnapshotId: null,
-        };
-      }
-
+      const refreshedSessions = await loadSessions();
+      const openResult = await openProjectInFreshSession({
+        projectId: selectedProjectId,
+        existingSessions: refreshedSessions,
+        snapshotId: selectedSnapshotIdToOpen,
+      });
       const openSessionId = openResult.sessionId;
       const expectsRestoredFiles = Boolean(openResult.restoredSnapshotId);
 
@@ -2635,7 +2483,7 @@ export default function AppPage() {
 
       setWorkspaceView('project');
       setProjectActionState('success');
-      setProjectActionMessage('Project opened in selected session.');
+      setProjectActionMessage('Project opened.');
       setProjectActionError(null);
     } catch (error) {
       setProjectActionState('error');
@@ -2652,10 +2500,6 @@ export default function AppPage() {
   }
 
   async function handleResumeWorkspaceProjectById(projectId: string): Promise<void> {
-    if (!PROJECT_FIRST_UX) {
-      return;
-    }
-
     const normalizedProjectId = projectId.trim();
     if (!normalizedProjectId) {
       return;
@@ -2716,10 +2560,6 @@ export default function AppPage() {
     projectId: string,
     snapshotId: string,
   ): Promise<void> {
-    if (!PROJECT_FIRST_UX) {
-      return;
-    }
-
     const normalizedProjectId = projectId.trim();
     if (!normalizedProjectId) {
       return;
@@ -2781,10 +2621,6 @@ export default function AppPage() {
   }
 
   async function handleSaveNamedProjectSnapshot(name: string): Promise<void> {
-    if (!PROJECT_FIRST_UX) {
-      return;
-    }
-
     if (!userId) {
       return;
     }
@@ -5057,7 +4893,6 @@ export default function AppPage() {
 
     const selectedSessionIdAtAutosave = selectedSessionIdRef.current;
     if (
-      !PROJECT_FIRST_UX ||
       !selectedProjectId ||
       !selectedSessionIdAtAutosave ||
       projectOpenInProgressRef.current
@@ -5474,7 +5309,7 @@ export default function AppPage() {
         return false;
       }
 
-      const coldMountEditorDraft = PROJECT_FIRST_UX ? coldMountEditorDraftRef.current : null;
+      const coldMountEditorDraft = coldMountEditorDraftRef.current;
       const coldMountRestoreProjectId =
         selectedProjectId ?? sessionStorage.getItem(TAB_SELECTED_PROJECT_STORAGE_KEY);
       const shouldRestoreEditorDraft =
@@ -5547,11 +5382,9 @@ export default function AppPage() {
       setSavedFileContent(selectedFileContent);
       setFileSaveState('saved');
       setFileSaveError(null);
-      if (PROJECT_FIRST_UX) {
-        sessionStorage.removeItem(TAB_EDITOR_DRAFT_STORAGE_KEY);
-      }
+      sessionStorage.removeItem(TAB_EDITOR_DRAFT_STORAGE_KEY);
 
-      if (PROJECT_FIRST_UX && selectedProjectId && !projectOpenInProgressRef.current) {
+      if (selectedProjectId && !projectOpenInProgressRef.current) {
         const autosaveAttemptedAt = Date.now();
         const autosaveResult = await attemptProjectAutosave({
           sessionId: selectedSessionId,
@@ -5768,12 +5601,7 @@ export default function AppPage() {
         }
       }
 
-      if (
-        PROJECT_FIRST_UX &&
-        selectedProjectId &&
-        selectedSessionId &&
-        !projectOpenInProgressRef.current
-      ) {
+      if (selectedProjectId && selectedSessionId && !projectOpenInProgressRef.current) {
         const autosaveAttemptedAt = Date.now();
         const autosaveResult = await attemptProjectAutosave({
           sessionId: selectedSessionId,

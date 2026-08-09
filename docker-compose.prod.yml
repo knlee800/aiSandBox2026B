@@ -190,7 +190,6 @@ services:
       dockerfile: frontend/Dockerfile
       args:
         API_GATEWAY_URL: http://api-gateway:4000
-        NEXT_PUBLIC_PROJECT_FIRST_UX: "true"
     container_name: aisandbox-frontend
     restart: unless-stopped
     env_file:

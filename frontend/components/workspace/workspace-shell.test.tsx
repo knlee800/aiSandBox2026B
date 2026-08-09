@@ -436,12 +436,17 @@ const workspaceFileTree: WorkspaceFileNode[] = [
   },
 ];
 
+type WorkspaceShellTestOverrides = Partial<React.ComponentProps<typeof WorkspaceShell>> & {
+  // Legacy migration toggle removed from WorkspaceShell; keep as ignored input for older tests.
+  projectFirstUxEnabled?: boolean;
+};
+
 function buildWorkspaceShellProps(
-  overrides: Partial<React.ComponentProps<typeof WorkspaceShell>> = {},
+  overrides: WorkspaceShellTestOverrides = {},
 ): React.ComponentProps<typeof WorkspaceShell> {
+  const { projectFirstUxEnabled: _legacyProjectFirstUxEnabled, ...resolvedOverrides } = overrides;
   const defaultProps: React.ComponentProps<typeof WorkspaceShell> = {
     locale: 'en',
-    projectFirstUxEnabled: false,
     workspaceView: 'project',
     onWorkspaceViewChange: () => {},
     sessions: [session],
@@ -593,21 +598,24 @@ function buildWorkspaceShellProps(
     onSaveWorkspaceFile: async () => {},
   };
 
-  return { ...defaultProps, ...overrides };
+  return { ...defaultProps, ...resolvedOverrides };
 }
 
 function renderWorkspaceShell(
-  overrides: Partial<React.ComponentProps<typeof WorkspaceShell>> = {},
+  overrides: WorkspaceShellTestOverrides = {},
 ): string {
   return renderToStaticMarkup(<WorkspaceShell {...buildWorkspaceShellProps(overrides)} />);
 }
 
 function renderWorkspaceShellWithForcedActiveTab(
   forcedActiveTabId: string,
-  overrides: Partial<React.ComponentProps<typeof WorkspaceShell>> = {},
+  overrides: WorkspaceShellTestOverrides = {},
 ): string {
   return withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
-    if (useStateCallIndex === 8) {
+    if (
+      useStateCallIndex === 8 ||
+      (typeof resolvedInitialState === 'string' && resolvedInitialState === 'preview')
+    ) {
       return [forcedActiveTabId, () => {}];
     }
     return [resolvedInitialState, () => {}];
@@ -778,6 +786,7 @@ function withPatchedReactHooksWithPersistentState<T>(run: (beginRender: () => vo
   const originalUseEffect = React.useEffect;
   const originalUseCallback = React.useCallback;
   const originalUseRef = React.useRef;
+  const originalFetch = globalThis.fetch;
   let useStateCalls = 0;
   let useRefCalls = 0;
   const stateByCallIndex = new Map<number, unknown>();
@@ -820,7 +829,10 @@ function withPatchedReactHooksWithPersistentState<T>(run: (beginRender: () => vo
   (React as typeof React & { useEffect: typeof React.useEffect }).useEffect = ((
     effect: () => unknown,
   ) => {
-    effect();
+    const cleanup = effect();
+    if (typeof cleanup === 'function') {
+      cleanup();
+    }
   }) as unknown as typeof React.useEffect;
   (React as typeof React & { useCallback: typeof React.useCallback }).useCallback = (<TCallback extends Function>(
     callback: TCallback,
@@ -833,6 +845,12 @@ function withPatchedReactHooksWithPersistentState<T>(run: (beginRender: () => vo
     }
     return refByCallIndex.get(callIndex);
   }) as unknown as typeof React.useRef;
+  (globalThis as typeof globalThis & { fetch: typeof fetch }).fetch = (async () =>
+    ({
+      ok: true,
+      status: 200,
+      json: async () => ({ status: 'idle' }),
+    }) as Response) as typeof fetch;
 
   try {
     return run(beginRender);
@@ -842,6 +860,7 @@ function withPatchedReactHooksWithPersistentState<T>(run: (beginRender: () => vo
     (React as typeof React & { useEffect: typeof React.useEffect }).useEffect = originalUseEffect;
     (React as typeof React & { useCallback: typeof React.useCallback }).useCallback = originalUseCallback;
     (React as typeof React & { useRef: typeof React.useRef }).useRef = originalUseRef;
+    (globalThis as typeof globalThis & { fetch: typeof fetch }).fetch = originalFetch;
   }
 }
 
@@ -879,7 +898,7 @@ function findElementByTestId(
 
 function renderWorkspaceShellElementByTestId(
   testId: string,
-  overrides: Partial<React.ComponentProps<typeof WorkspaceShell>> = {},
+  overrides: WorkspaceShellTestOverrides = {},
 ): React.ReactElement<TestableElementProps> | null {
   return withPatchedReactHooks(() =>
     findElementByTestId(WorkspaceShell(buildWorkspaceShellProps(overrides)), testId),
@@ -991,56 +1010,22 @@ function renderWorkspaceTabBar(
 }
 
 describe('workspace shell component', () => {
-  test('renders authenticated workspace shell layout', () => {
-    const html = renderWorkspaceShell();
-
-    assert.match(html, /AI Sandbox Workspace/);
-    assert.doesNotMatch(html, /Workspace ready/);
-    assert.match(html, /chat-panel-shell/);
-    assert.match(html, /Model Provider/);
-    assert.match(html, /Enable bounded orchestration \(up to 3 sequential steps\)/);
-    assert.doesNotMatch(html, /Command Input/);
-    assert.match(html, /Editor Panel/);
-    assert.match(html, /Editor ready/);
-    assert.match(html, /Editor clean/);
-    assert.match(html, /src\/app\.ts/);
-    assert.match(html, /console\.log\(&quot;hello&quot;\);/);
-    assert.match(html, /Preview Panel/);
-    assert.match(html, /Preview unavailable/);
-    assert.match(html, /History &amp; Controls/);
-    assert.match(html, /Dashboard/);
-    assert.match(html, /Session 12345678/);
-    assert.match(html, /Auto-commit: Message 10/);
-    assert.match(html, /View Snapshot/);
-    assert.match(html, /View Diff/);
-    assert.match(html, /Current User/);
-    assert.match(html, /user@example\.com/);
-    assert.match(html, /workspace-header-api-keys-link/);
-    assert.match(html, /href="keys"/);
-    assert.match(html, />API Keys</);
-    assert.match(html, /Plan: Free \(active\)/);
-    assert.match(html, /Active Sessions/);
-    assert.match(html, /Quota Status/);
-    assert.match(html, /tokens remaining in the current 24h window/);
-    assert.match(html, /Usage window resets at:/);
-    assert.match(html, /dashboard-quota-reset-at-formatted/);
-    assert.doesNotMatch(html, /2026-03-11T12:00:00.000Z/);
-    assert.doesNotMatch(html, /workspace-header-logout-button/);
-  });
-
-  test('renders logout button in the session-scoped header when onLogout is provided', () => {
+  test('renders canonical workspace shell home layout', () => {
     const html = renderWorkspaceShell({
-      onLogout: () => {},
+      workspaceView: 'home',
     });
 
-    assert.match(html, /workspace-header-logout-button/);
-    assert.match(html, />Log out</);
+    assert.match(html, /workspace-shell/);
+    assert.match(html, /workspace-sidebar/);
+    assert.match(html, /workspace-home-view/);
+    assert.match(html, /Build anything/);
+    assert.doesNotMatch(html, /Session-scoped workspace/);
+    assert.doesNotMatch(html, /workspace-header-api-keys-link/);
   });
 
-  test('renders project-first sidebar nav behind feature flag', () => {
+  test('renders project-first sidebar nav', () => {
     const html = renderWorkspaceShell({
       locale: 'zh-TW',
-      projectFirstUxEnabled: true,
       workspaceView: 'home',
     });
 
@@ -1060,7 +1045,6 @@ describe('workspace shell component', () => {
   test('renders account avatar trigger in the project-first sidebar footer', () => {
     const html = renderWorkspaceShell({
       locale: 'en',
-      projectFirstUxEnabled: true,
       onLogout: () => {},
     });
 
@@ -1072,7 +1056,6 @@ describe('workspace shell component', () => {
   test('account menu is closed by default in the project-first sidebar', () => {
     const html = renderWorkspaceShell({
       locale: 'en',
-      projectFirstUxEnabled: true,
       onLogout: () => {},
     });
 
@@ -1082,7 +1065,6 @@ describe('workspace shell component', () => {
   test('renders upgrade CTA button in the project-first sidebar footer', () => {
     const html = renderWorkspaceShell({
       locale: 'en',
-      projectFirstUxEnabled: true,
     });
 
     assert.match(html, /workspace-sidebar-upgrade-button/);
@@ -1114,19 +1096,9 @@ describe('workspace shell component', () => {
   test('renders sidebar mobile toggle button in project-first shell', () => {
     const html = renderWorkspaceShell({
       locale: 'en',
-      projectFirstUxEnabled: true,
     });
 
     assert.match(html, /workspace-sidebar-mobile-toggle/);
-  });
-
-  test('sidebar mobile toggle is absent when projectFirstUxEnabled is false', () => {
-    const html = renderWorkspaceShell({
-      locale: 'en',
-      projectFirstUxEnabled: false,
-    });
-
-    assert.doesNotMatch(html, /workspace-sidebar-mobile-toggle/);
   });
 
   test('workspace-account-menu testid still resolves after sidebar markup change', () => {
@@ -2930,17 +2902,6 @@ describe('workspace shell component', () => {
     assert.doesNotMatch(html, /workspace-tab-placeholder/);
   });
 
-  test('legacy non-project-first path still renders preview-panel-shell and editor-panel-shell', () => {
-    const html = renderWorkspaceShell({
-      projectFirstUxEnabled: false,
-      workspaceView: 'project',
-    });
-
-    assert.match(html, /preview-panel-shell/);
-    assert.match(html, /editor-panel-shell/);
-    assert.doesNotMatch(html, /workspace-build-panel/);
-  });
-
   test('tab orientation toggle renders', () => {
     const html = renderWorkspaceShell({
       projectFirstUxEnabled: true,
@@ -3828,19 +3789,6 @@ describe('workspace shell component', () => {
     }
   });
 
-  test('clicking logout calls onLogout when provided', () => {
-    let callCount = 0;
-    const logoutButton = renderWorkspaceShellElementByTestId('workspace-header-logout-button', {
-      onLogout: () => {
-        callCount += 1;
-      },
-    });
-
-    assert.ok(logoutButton);
-    logoutButton.props.onClick?.();
-    assert.equal(callCount, 1);
-  });
-
   test('renders project-first recovery wording in main helper surfaces', () => {
     const previewHtml = renderWorkspaceShell({
       projectFirstUxEnabled: true,
@@ -3865,16 +3813,6 @@ describe('workspace shell component', () => {
     assert.doesNotMatch(previewHtml, /Select an active session to send prompts\./);
     assert.doesNotMatch(buildTabHtml, /Select an active session to run a build target\./);
     assert.doesNotMatch(previewHtml, /No session selected/);
-  });
-
-  test('does not render advanced drawer when feature flag is off', () => {
-    const html = renderWorkspaceShell({
-      projectFirstUxEnabled: false,
-    });
-
-    assert.doesNotMatch(html, /workspace-advanced-drawer/);
-    assert.doesNotMatch(html, /workspace-advanced-toggle/);
-    assert.doesNotMatch(html, /workspace-advanced-drawer-content/);
   });
 
   test('renders advanced drawer collapsed by default behind feature flag', () => {
@@ -4178,18 +4116,6 @@ describe('workspace shell component', () => {
     assert.equal(openCalls, 1);
   });
 
-  test('does not render resume latest project action in shell empty state when feature flag is off', () => {
-    const html = renderWorkspaceShell({
-      projectFirstUxEnabled: false,
-      selectedSessionId: null,
-      workspaceProjects: resumeLatestProjects,
-      onResumeWorkspaceProjectById: async () => {},
-    });
-
-    assert.doesNotMatch(html, /workspace-shell-resume-latest-project/);
-    assert.doesNotMatch(html, />Resume latest project</);
-  });
-
   test('renders and wires resume latest project action in shell empty state behind feature flag', () => {
     let resumeCalls = 0;
     let resumedProjectId: string | null = null;
@@ -4246,16 +4172,6 @@ describe('workspace shell component', () => {
     assert.doesNotMatch(html, />Resume latest project</);
   });
 
-  test('does not render project history panel when feature flag is off', () => {
-    const html = renderWorkspaceShell({
-      projectFirstUxEnabled: false,
-      selectedProjectId: 'project-1',
-      workspaceSnapshots: projectHistorySnapshots,
-    });
-
-    assert.doesNotMatch(html, /history-project-history-surface/);
-  });
-
   test('renders project history rows in deterministic newest-first order behind feature flag', () => {
     const html = renderWorkspaceShell({
       projectFirstUxEnabled: true,
@@ -4305,19 +4221,6 @@ describe('workspace shell component', () => {
     assert.ok(Array.isArray(indicator.props.children));
     assert.equal(indicator.props.children[0], 'Last protected');
     assert.match(renderToStaticMarkup(indicator), /2026/);
-  });
-
-  test('does not render versions entry point or last protected indicator when feature flag is off', () => {
-    const html = renderWorkspaceShell({
-      projectFirstUxEnabled: false,
-      selectedProjectId: 'project-1',
-      workspaceSnapshots: projectHistorySnapshots,
-    });
-
-    assert.doesNotMatch(html, /history-project-history-entrypoint/);
-    assert.doesNotMatch(html, /history-project-history-last-protected/);
-    assert.doesNotMatch(html, />Versions</);
-    assert.doesNotMatch(html, />Last protected</);
   });
 
   test('renders project history empty state when selected project has no matching snapshots', () => {
@@ -4586,26 +4489,6 @@ describe('workspace shell component', () => {
     assert.equal(button.props.disabled, false);
   });
 
-  test('keeps create and open project buttons disabled without selectedSessionId when feature flag is off', () => {
-    const createButton = renderWorkspaceShellElementByTestId('history-project-create-button', {
-      ...projectPanelRenderOverrides,
-      projectFirstUxEnabled: false,
-      selectedSessionId: null,
-      selectedProjectId: 'project-1',
-    });
-    const openButton = renderWorkspaceShellElementByTestId('history-project-open-button', {
-      ...projectPanelRenderOverrides,
-      projectFirstUxEnabled: false,
-      selectedSessionId: null,
-      selectedProjectId: 'project-1',
-    });
-
-    assert.ok(createButton);
-    assert.equal(createButton.props.disabled, true);
-    assert.ok(openButton);
-    assert.equal(openButton.props.disabled, true);
-  });
-
   test('renders parsed snapshot name for named project history rows behind feature flag', () => {
     const label = renderWorkspaceShellElementByTestId(
       'history-project-history-label-snapshot-named',
@@ -4681,29 +4564,6 @@ describe('workspace shell component', () => {
     assert.match(html, />Saved version</);
     assert.doesNotMatch(html, /history-project-history-row-snapshot-other-named/);
     assert.doesNotMatch(html, />Other project draft</);
-  });
-
-  test('does not render project history restore buttons when feature flag is off', () => {
-    const html = renderWorkspaceShell({
-      projectFirstUxEnabled: false,
-      selectedProjectId: 'project-1',
-      workspaceSnapshots: projectHistorySnapshots,
-      onRestoreWorkspaceProjectFromSnapshotById: async () => {},
-    });
-
-    assert.doesNotMatch(html, /history-project-history-restore-snapshot-a/);
-    assert.doesNotMatch(html, />Restore</);
-  });
-
-  test('does not render project history save button when feature flag is off', () => {
-    const html = renderWorkspaceShell({
-      projectFirstUxEnabled: false,
-      selectedProjectId: 'project-1',
-      workspaceSnapshots: projectHistorySnapshots,
-      onSaveNamedProjectSnapshot: async () => {},
-    });
-
-    assert.doesNotMatch(html, /history-project-history-save/);
   });
 
   test('renders project history save button behind feature flag', () => {
@@ -4930,16 +4790,6 @@ describe('workspace shell component', () => {
     assert.equal(savedName, 'Working draft');
   });
 
-  test('renders Stop for usable sessions and Remove for unusable sessions', () => {
-    const html = renderWorkspaceShell({
-      sessions: [session, terminatedSession],
-      selectedSessionId: session.id,
-    });
-
-    assert.match(html, /data-testid="session-stop-12345678-test-session"/);
-    assert.match(html, /data-testid="session-remove-87654321-term-session"/);
-  });
-
   test('requires confirmation before stop session executes', () => {
     let stopCalls = 0;
     const cancelled = runStopSessionWithConfirmation({
@@ -5008,8 +4858,6 @@ describe('workspace shell component', () => {
     assert.match(html, /Workspace is loading/);
     assert.match(html, /History is loading/);
     assert.match(html, /Dashboard is loading/);
-    assert.match(html, /Editor loading/);
-    assert.match(html, /Action: Please wait a moment\./);
   });
 
   test('renders assistant file-action success entries in chat thread', () => {
@@ -5380,81 +5228,13 @@ describe('workspace shell component', () => {
     assert.match(html, /toolchain is unavailable in this runtime/);
   });
 
-  test('renders distinct editor save states', () => {
-    const dirtyHtml = renderWorkspaceShell({
-      fileSaveState: 'dirty',
-    });
-    const savingHtml = renderWorkspaceShell({
-      fileSaveState: 'saving',
-    });
-    const savedHtml = renderWorkspaceShell({
-      fileSaveState: 'saved',
-    });
-    const saveErrorHtml = renderWorkspaceShell({
-      fileSaveState: 'save-error',
-      fileSaveError: 'Failed to save file changes.',
-    });
-
-    assert.match(dirtyHtml, /Editor dirty/);
-    assert.match(savingHtml, /Saving file/);
-    assert.match(savingHtml, /data-testid="workspace-selected-file-content"[^>]*disabled/);
-    assert.match(savedHtml, /File saved/);
-    assert.match(saveErrorHtml, /Save failed/);
-    assert.match(saveErrorHtml, /Failed to save file changes\./);
-  });
-
-  test('renders error shell state', () => {
-    const html = renderWorkspaceShell({
-      sessionError: 'Failed to load sessions.',
-      userId: null,
-      checkpoints: [],
-      historyError: 'Failed to load checkpoints.',
-      userSummary: null,
-      usageSummary: null,
-      quotaSummary: null,
-      dashboardError: 'Failed to load dashboard summary.',
-      fileSurfaceState: 'error',
-      workspaceFileTree: [],
-      selectedFilePath: null,
-      selectedFileContent: '',
-      fileSurfaceError: 'Failed to load workspace files.',
-    });
-
-    assert.match(html, /Workspace unavailable/);
-    assert.match(html, /History unavailable/);
-    assert.match(html, /Dashboard unavailable/);
-    assert.match(html, /Editor unavailable/);
-    assert.match(html, /Action: Refresh this page to retry\./);
-  });
-
-  test('renders empty history state for selected session without checkpoints', () => {
-    const html = renderWorkspaceShell({
-      userId: null,
-      checkpoints: [],
-      userSummary: null,
-      usageSummary: null,
-      quotaSummary: null,
-      fileSurfaceState: 'empty',
-      workspaceFileTree: [],
-      selectedFilePath: null,
-      selectedFileContent: '',
-    });
-
-    assert.match(html, /No checkpoints yet/);
-    assert.match(html, /Save point idle/);
-    assert.match(html, /No dashboard data yet/);
-    assert.match(html, /No file available/);
-    assert.match(html, /Action: Create or select a session, then retry\./);
-  });
-
   test('renders responsive layout classes', () => {
     const html = renderWorkspaceShell({
       userId: null,
     });
 
-    assert.ok(html.includes('grid-cols-1'));
-    assert.ok(html.includes('md:grid-cols-2'));
-    assert.ok(html.includes('xl:grid-cols-3'));
+    assert.ok(html.includes('flex-1 min-h-0 flex'));
+    assert.ok(html.includes('flex flex-col md:flex-row'));
   });
 
   test('renders loading preview state and refresh button', () => {
@@ -5613,7 +5393,7 @@ describe('workspace shell component', () => {
     assert.match(html, /Use Refresh to retry, or ask AI to diagnose and fix the issue\./);
   });
 
-  test('renders Ask AI to Fix button in preview error state when project-first mode and callback are provided', () => {
+  test('renders Ask AI to Fix button in preview error state when callback is provided', () => {
     const html = renderWorkspaceShell({
       projectFirstUxEnabled: true,
       selectedSessionId: session.id,
@@ -5626,23 +5406,15 @@ describe('workspace shell component', () => {
     assert.match(html, />Ask AI to Fix</);
   });
 
-  test('does not render Ask AI to Fix button when callback is missing or project-first mode is disabled', () => {
+  test('does not render Ask AI to Fix button when callback is missing', () => {
     const htmlWithoutCallback = renderWorkspaceShell({
       projectFirstUxEnabled: true,
       selectedSessionId: session.id,
       previewState: 'error',
       previewUrl: null,
     });
-    const htmlWithoutProjectFirst = renderWorkspaceShell({
-      projectFirstUxEnabled: false,
-      selectedSessionId: session.id,
-      previewState: 'error',
-      previewUrl: null,
-      onAskAiToFixPreview: () => {},
-    });
 
     assert.doesNotMatch(htmlWithoutCallback, /data-testid="workspace-preview-ask-ai-fix"/);
-    assert.doesNotMatch(htmlWithoutProjectFirst, /data-testid="workspace-preview-ask-ai-fix"/);
   });
 
   test('disables Ask AI to Fix button while chat request is submitting', () => {
@@ -7365,11 +7137,11 @@ describe('workspace view reload restore wiring — APP-ROUTE-RESTORE-01A', () =>
 
     assert.match(
       pageSource,
-      /if \(PROJECT_FIRST_UX\) \{[\s\S]*?coldMountSeededViewRef\.current =\s+sessionStorage\.getItem\(TAB_SELECTED_VIEW_STORAGE_KEY\) === 'project' \? 'project' : null;/,
+      /coldMountSeededViewRef\.current =\s+sessionStorage\.getItem\(TAB_SELECTED_VIEW_STORAGE_KEY\) === 'project' \? 'project' : null;/,
     );
     assert.match(
       pageSource,
-      /useEffect\(\(\) => \{\s+if \(!PROJECT_FIRST_UX\) \{\s+return;\s+\}\s+if \(workspaceView === 'project'\) \{\s+sessionStorage\.setItem\(TAB_SELECTED_VIEW_STORAGE_KEY, 'project'\);\s+return;\s+\}\s+sessionStorage\.removeItem\(TAB_SELECTED_VIEW_STORAGE_KEY\);\s+\}, \[workspaceView\]\);/,
+      /useEffect\(\(\) => \{\s+if \(workspaceView === 'project'\) \{\s+sessionStorage\.setItem\(TAB_SELECTED_VIEW_STORAGE_KEY, 'project'\);\s+return;\s+\}\s+sessionStorage\.removeItem\(TAB_SELECTED_VIEW_STORAGE_KEY\);\s+\}, \[workspaceView\]\);/,
     );
   });
 
@@ -7378,7 +7150,7 @@ describe('workspace view reload restore wiring — APP-ROUTE-RESTORE-01A', () =>
 
     assert.match(
       pageSource,
-      /useEffect\(\(\) => \{\s+if \(!PROJECT_FIRST_UX\) \{\s+return;\s+\}\s+if \(coldMountSeededViewRef\.current !== 'project'\) \{\s+return;\s+\}\s+if \(!selectedProjectId \|\| !selectedSessionId\) \{\s+return;\s+\}\s+const selectedSession = sessions\.find\(\(candidate\) => candidate\.id === selectedSessionId\);/,
+      /useEffect\(\(\) => \{\s+if \(coldMountSeededViewRef\.current !== 'project'\) \{\s+return;\s+\}\s+if \(!selectedProjectId \|\| !selectedSessionId\) \{\s+return;\s+\}\s+const selectedSession = sessions\.find\(\(candidate\) => candidate\.id === selectedSessionId\);/,
     );
     assert.match(
       pageSource,
@@ -7389,6 +7161,16 @@ describe('workspace view reload restore wiring — APP-ROUTE-RESTORE-01A', () =>
       /if \(!isUsableSession\(selectedSession\)\) \{\s+coldMountSeededViewRef\.current = null;\s+return;\s+\}/,
     );
     assert.match(pageSource, /coldMountSeededViewRef\.current = null;\s+setWorkspaceView\('project'\);/);
+  });
+
+  test('runtime workspace source has no project-first migration feature-flag references', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+
+    assert.doesNotMatch(pageSource, /PROJECT_FIRST_UX/);
+    assert.doesNotMatch(pageSource, /NEXT_PUBLIC_PROJECT_FIRST_UX/);
+    assert.doesNotMatch(shellSource, /PROJECT_FIRST_UX/);
+    assert.doesNotMatch(shellSource, /NEXT_PUBLIC_PROJECT_FIRST_UX/);
   });
 });
 
@@ -8233,10 +8015,6 @@ describe('workspace session and preview controls i18n wiring — I18N-SHELL-03',
       /\{isSending \? props\.messages\.commandRunning : props\.messages\.commandRun\}/,
     );
     assert.match(shellSource, /\{props\.sessionId \?\? props\.workspaceMessages\.noSessionSelected\}/);
-    assert.match(
-      shellSource,
-      /\{props\.isCreatingSession\s*\?\s*workspaceMessages\.creatingSession\s*:\s*workspaceMessages\.newSession\}/,
-    );
     assert.match(shellSource, /window\.confirm\(workspaceMessages\.stopSessionConfirm\)/);
     assert.match(shellSource, /\{props\.previewMessages\.livePreview\}/);
     assert.match(shellSource, /\{props\.previewMessages\.startPreview\}/);
