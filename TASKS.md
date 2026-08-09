@@ -16,7 +16,7 @@ Rules:
 
 If conflicts exist, TASKS_BACKLOG_FULL.md takes precedence.
 
-**Program status:** **BILLING-READY-08 COMPLETE AND LOCKED 2026-08-07** — Controlled xAI smoke PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (500 credits) — overflow 98 ACCEPTED BY DESIGN — balance reached 0 correctly — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — QuotaGuard browser-session bypass — Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md` — **BILLING-READY-08B COMPLETE AND LOCKED 2026-08-07** — usage_records.created_at schema remediation — Checkpoint: `docs/BILLING-READY-08B-CHECKPOINT.md` — Final checkpoint: `docs/BILLING-READY-08-CHECKPOINT.md` — **PRIVATE-BETA-FUNCTIONAL-READINESS-04 COMPLETE AND LOCKED 2026-08-07** — All acceptance criteria satisfied — FR-04 parent checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-CHECKPOINT.md` — **ADMIN-CONSOLE-01 ACTIVE** — **ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07** — Checkpoint: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md` — **ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07** — Authenticated Admin Credit Grant API — Checkpoint: `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md` — **ADMIN-CONSOLE-01C COMPLETE AND LOCKED 2026-08-07** — Admin Console Shell + Users/Sessions — Checkpoint: `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md` — **ADMIN-CONSOLE-01D COMPLETE AND LOCKED 2026-08-07** — Admin Credit Grant UI — Checkpoint: `docs/ADMIN-CONSOLE-01D-CHECKPOINT.md` — Exact next: ADMIN-CONSOLE-01E Staging Operator Validation + Parent Consolidation — PRIVATE-BETA-INVITE-01 NOT STARTED (blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED) — No users invited — No new runtime enablement authorized without Keith approval — 01A migration NOT applied to staging
+**Program status:** **BILLING-READY-08 COMPLETE AND LOCKED 2026-08-07** — Controlled xAI smoke PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (500 credits) — overflow 98 ACCEPTED BY DESIGN — balance reached 0 correctly — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — QuotaGuard browser-session bypass — Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md` — **BILLING-READY-08B COMPLETE AND LOCKED 2026-08-07** — usage_records.created_at schema remediation — Checkpoint: `docs/BILLING-READY-08B-CHECKPOINT.md` — Final checkpoint: `docs/BILLING-READY-08-CHECKPOINT.md` — **PRIVATE-BETA-FUNCTIONAL-READINESS-04 COMPLETE AND LOCKED 2026-08-07** — All acceptance criteria satisfied — FR-04 parent checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-CHECKPOINT.md` — **ADMIN-CONSOLE-01 COMPLETE AND LOCKED 2026-08-08** — All children COMPLETE AND LOCKED — **ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07** — Checkpoint: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md` — **ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07** — Authenticated Admin Credit Grant API — Checkpoint: `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md` — **ADMIN-CONSOLE-01C COMPLETE AND LOCKED 2026-08-07** — Admin Console Shell + Users/Sessions — Checkpoint: `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md` — **ADMIN-CONSOLE-01D COMPLETE AND LOCKED 2026-08-07** — Admin Credit Grant UI — Checkpoint: `docs/ADMIN-CONSOLE-01D-CHECKPOINT.md` — **ADMIN-CONSOLE-01E COMPLETE AND LOCKED 2026-08-08** — Staging Operator Validation + Parent Consolidation — PASS WITH NON-BLOCKING LIMITATIONS — Checkpoint: `docs/ADMIN-CONSOLE-01E-CHECKPOINT.md` — **ADMIN-CONSOLE-01E1 COMPLETE AND LOCKED 2026-08-08** — Invalid Locale Redirect Origin Fix — Checkpoint: `docs/ADMIN-CONSOLE-01E1-CHECKPOINT.md` — Parent checkpoint: `docs/ADMIN-CONSOLE-01-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 BLOCKED** — private beta blocked by PRIVATE-BETA-BLOCKER-01 (recurring canonical landing page regression) and separate unresolved preview failure — Do not execute invitations until all blockers resolved — **PRIVATE-BETA-BLOCKER-01 COMPLETE AND LOCKED 2026-08-09** — Legacy workspace + feature-flag removal — Build-independence proven — All locales PASS — Commit `651f723447a85ec5d22139d6ba60be6680a0f8c6` — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-01-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 BLOCKED** — landing page regression resolved — preview runtime failure unresolved — exact next task: PRIVATE-BETA-BLOCKER-02 — Preview Runtime Failure — GLOBAL_EXECUTION_ENABLED remains false
 
 
 \# TASKS.md ??Master Task Index
@@ -45144,7 +45144,7 @@ AGENT-HARNESS-06E closes this gap by running a full E2E canary with ALL required
 
 ## ADMIN-CONSOLE-01 — Private Beta Operator Console
 
-**Status:** ACTIVE — 01A + 01B + 01C + 01D COMPLETE AND LOCKED (2026-08-07); exact next: ADMIN-CONSOLE-01E Staging Operator Validation + Parent Consolidation
+**Status:** COMPLETE AND LOCKED — 2026-08-08
 **Task ID:** ADMIN-CONSOLE-01
 **Family:** ADMIN CONSOLE / PRIVATE BETA OPERATIONS
 **Priority:** HIGH — blocks PRIVATE-BETA-INVITE-01
@@ -45198,7 +45198,8 @@ Provide the minimum safe browser-based admin console required to operate private
 | ADMIN-CONSOLE-01B | Authenticated Admin Credit Grant API | COMPLETE AND LOCKED — 2026-08-07 | 3-step | GPT-5.3 Codex | 01A COMPLETE |
 | ADMIN-CONSOLE-01C | Admin Console Shell + Users/Sessions | COMPLETE AND LOCKED — 2026-08-07 | 3-step | GPT-5.3 Codex | 01B COMPLETE |
 | ADMIN-CONSOLE-01D | Admin Credit Grant UI | COMPLETE AND LOCKED — 2026-08-07 | 3-step | GPT-5.3 Codex (implementation); Grok 4.5 High (registration + consolidation) | 01B + 01C COMPLETE |
-| ADMIN-CONSOLE-01E | Staging Validation + Parent Consolidation | NOT STARTED — exact next | 2-step | Sonnet 4.6 | 01A-01D COMPLETE |
+| ADMIN-CONSOLE-01E | Staging Operator Validation + Parent Consolidation | COMPLETE AND LOCKED — 2026-08-08 — PASS WITH NON-BLOCKING LIMITATIONS | 4-step HIGH-RISK | Sonnet 4.6 (stage-start / consolidation); Keith performs live browser + staging mutations | 01A-01D COMPLETE |
+| ADMIN-CONSOLE-01E1 | Invalid Locale Redirect Origin Fix | COMPLETE AND LOCKED — 2026-08-08 | 3-step blocker | Sonnet 4.6 (registration/consolidation); GPT-5.3 Codex (implementation) | 01E Step 3 PASS WITH LIMITATIONS |
 
 ### Key Architecture Decisions (locked at registration)
 
@@ -45224,9 +45225,9 @@ Provide the minimum safe browser-based admin console required to operate private
 - en / zh-TW / zh-CN render correctly
 - No direct PostgreSQL access required for any operation
 
-**ADMIN-CONSOLE-01 status:** ACTIVE — Registration COMPLETE 2026-08-07. ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07. ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07. ADMIN-CONSOLE-01C COMPLETE AND LOCKED 2026-08-07. ADMIN-CONSOLE-01D COMPLETE AND LOCKED 2026-08-07. Checkpoints: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md`, `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md`, `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md`, `docs/ADMIN-CONSOLE-01D-CHECKPOINT.md`. Exact next: ADMIN-CONSOLE-01E Staging Operator Validation + Parent Consolidation.
-**PRIVATE-BETA-INVITE-01 status:** NOT STARTED — blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED.
-**01A staging migration:** SOURCE COMPLETE / NOT APPLIED TO STAGING.
+**ADMIN-CONSOLE-01 status:** COMPLETE AND LOCKED — 2026-08-08. All children COMPLETE AND LOCKED. Checkpoints: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md`, `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md`, `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md`, `docs/ADMIN-CONSOLE-01D-CHECKPOINT.md`, `docs/ADMIN-CONSOLE-01E-CHECKPOINT.md`, `docs/ADMIN-CONSOLE-01E1-CHECKPOINT.md`. Parent checkpoint: `docs/ADMIN-CONSOLE-01-CHECKPOINT.md`.
+**PRIVATE-BETA-INVITE-01 status:** UNBLOCKED — NEXT RECOMMENDED TASK. Do not execute invitations without registration and Keith approval.
+**01A staging migration:** APPLIED TO STAGING — applied during 01E Step 3 execution.
 
 ---
 
@@ -45986,35 +45987,475 @@ Restore `frontend/tsconfig.tsbuildinfo` if unintentionally dirty. No live browse
 **Non-Goals:** No backend changes. No migration apply. No stage-start. No live browser smoke (01E). No plans/role/session architecture work.
 
 **ADMIN-CONSOLE-01D status:** COMPLETE AND LOCKED — 2026-08-07. Checkpoint: `docs/ADMIN-CONSOLE-01D-CHECKPOINT.md`. Browser/live staging validation deferred to ADMIN-CONSOLE-01E.
-**ADMIN-CONSOLE-01 status:** ACTIVE — 01A + 01B + 01C + 01D locked; exact next ADMIN-CONSOLE-01E; PRIVATE-BETA-INVITE-01 remains blocked.
+**ADMIN-CONSOLE-01 status:** ACTIVE — 01A + 01B + 01C + 01D locked; ADMIN-CONSOLE-01E ACTIVE — Step 1 COMPLETE (Registration — 2026-08-07); exact next ADMIN-CONSOLE-01E Step 2 Stage-start; PRIVATE-BETA-INVITE-01 remains blocked.
 **PRIVATE-BETA-INVITE-01 status:** NOT STARTED — blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED.
 **01A staging migration:** SOURCE COMPLETE / NOT APPLIED TO STAGING.
 
 ---
 
 
-#### ADMIN-CONSOLE-01E — Staging Validation + Parent Consolidation
+#### ADMIN-CONSOLE-01E — Staging Operator Validation + Parent Consolidation
 
-**Status:** NOT STARTED — exact next after ADMIN-CONSOLE-01D COMPLETE AND LOCKED
+**Status:** COMPLETE AND LOCKED — 2026-08-08
 **Task ID:** ADMIN-CONSOLE-01E
 **Parent:** ADMIN-CONSOLE-01
-**Family:** ADMIN CONSOLE / VALIDATION + CONSOLIDATION
-**Risk:** LOW — validation and governance only
-**Workflow:** 2-step (validation → consolidation)
-**Model:** Sonnet 4.6
+**Family:** ADMIN CONSOLE / STAGING OPERATOR VALIDATION + PARENT CONSOLIDATION
+**Risk:** HIGH — staging deployment + DB migration + real credit mutation + session termination + authenticated browser flows
+**Workflow:** 4-step HIGH-RISK (provisional 2-step classification SUPERSEDED)
+**Model:** Sonnet 4.6 (stage-start / consolidation / sequential operator guidance); Keith performs live browser smoke + staging mutations; no automatic commit/push
 **Registered:** 2026-08-07
+**Completed:** 2026-08-08
 **Depends On:** ADMIN-CONSOLE-01A + 01B + 01C + 01D COMPLETE AND LOCKED
+**Checkpoint:** `docs/ADMIN-CONSOLE-01E-CHECKPOINT.md`
 
-**Scope:**
-- Staging deployment of all 01A-01D changes
-- Browser validation: admin auth, user list, user detail with credit balance
-- Controlled admin credit grant smoke: amount=1000, reason recorded, audit record verified
-- Duplicate submit verified: status=duplicate, balance unchanged
-- Non-admin denial verified: 403 at API, redirect at frontend
-- Session visibility and termination (if active session available)
-- en/zh-TW/zh-CN locale switch verified
-- All existing tests green
-- ADMIN-CONSOLE-01 marked COMPLETE AND LOCKED
-- PRIVATE-BETA-INVITE-01 unblocked
+##### Why 4-step (supersedes provisional 2-step)
 
-**Non-Goals:** No implementation. No migration execution (already done in 01A step). No source changes.
+The original parent sketch treated 01E as low-risk validation/consolidation only. Current evidence shows 01E includes staging deployment, database migration (`1772900000000-AddAdminGrantAuditColumns`), PM2/runtime validation, authenticated browser admin flows, real credit mutation, idempotency validation, DB audit verification, possible real session termination, multilingual/browser validation, and the ADMIN-CONSOLE-01 parent readiness decision. Therefore 01E is registered as HIGH-RISK 4-step. Do not retain the earlier 2-step classification.
+
+##### Workflow
+
+1. **Registration** — COMPLETE (2026-08-07) — this step
+2. **Stage-start** — deployment + migration + backup/rollback + identity/test-user + smoke-contract lock (NO staging execution yet)
+3. **Controlled staging execution + browser validation** — deploy, migrate, health-check, Keith sequential browser smoke, controlled grant + idempotency + audit + sessions + security + locales
+4. **Consolidation + parent readiness decision** — evidence checkpoint; decide whether ADMIN-CONSOLE-01 may become COMPLETE AND LOCKED; unblock PRIVATE-BETA-INVITE-01 only if parent locks
+
+##### Goal
+
+Validate that the completed admin-console stack (01A–01D) works end-to-end on staging and provide sufficient evidence to decide whether ADMIN-CONSOLE-01 may become COMPLETE AND LOCKED (thereby unblocking PRIVATE-BETA-INVITE-01).
+
+##### Known Staging Environment (reference only — do not touch in registration)
+
+| Item | Value |
+|------|-------|
+| Repo | `/opt/aisandbox` |
+| Env | `/opt/aisandbox/.env` |
+| Backup root | `/opt/aisandbox-backups` |
+| PM2 apps | `aisandbox-ai-service`, `aisandbox-api-gateway`, `aisandbox-container-manager`, `aisandbox-frontend` |
+| Frontend | `https://staging.ainow.biz/en/app` |
+| API health | `GET http://127.0.0.1:4000/api/health` |
+| Pending migration (source) | `services/api-gateway/src/migrations/1772900000000-AddAdminGrantAuditColumns.ts` |
+| Migration status | SOURCE COMPLETE / NOT APPLIED TO STAGING |
+
+##### Pre-Deploy Source Control Gate (locked)
+
+Before Step 3 staging deployment begins, Keith must confirm that the completed ADMIN-CONSOLE-01A through 01D source/governance changes intended for deployment have been **committed and pushed** to the branch/source used by staging.
+
+- Do NOT assume local uncommitted files will appear on staging.
+- Step 2 stage-start must verify: local Git status, current branch, staging branch/deploy source, and the commit containing ADMIN-CONSOLE-01A–01D.
+- Do NOT perform Git commit/push automatically. Keith handles Git manually.
+
+##### Step 2 Stage-Start Must Lock (decision points — lock in Step 2; do not invent commands in registration)
+
+1. **Exact staging deployment procedure** — how `/opt/aisandbox` is updated; git pull/fetch/reset or other mechanism; exact branch; whether frontend/api-gateway require npm install/build; exact PM2 restart/reload sequence; whether restart is service-specific. Determine from project/runbook evidence only.
+2. **Backup / rollback** — minimum backup before mutation: current source revision, current DB schema/migration state, relevant staging env/config, PM2 state if needed. Use `/opt/aisandbox-backups` conventions. Do not create backup during registration.
+3. **Migration command** — exact existing TypeORM/package command. Lock working directory, env loading, `migration:show` / list if available, `migration:run` (or `migration:run:prod` if that is the staging-proven path), verification query. Never destructive migration reset. Never schema drop. Known package scripts exist (`migration:run`, `migration:run:prod`, `migration:show`) — Step 2 selects the staging-correct one from evidence.
+4. **Migration verification** — after apply confirm: `credit_grants.granted_by_user_id` exists; `credit_grants.reason` exists; `idx_credit_grants_granted_by` exists; migration recorded in history; no unrelated schema changes.
+5. **Runtime health** — after deploy/restart: API Gateway health; AI service health if relevant; frontend reachable. Do not restart unrelated services unless deployment requires it.
+6. **Admin identity** — which staging account is ADMIN; verify `role = admin` before browser validation. Do not silently promote a user in 01E unless explicitly approved and registered. If no admin exists: report blocker / separate minimal operator preparation decision.
+7. **Target beta/test user** — existing safe staging test user for controlled credit grant (prefer smoke/test account, not unrelated real user). Record before mutation: user UUID, current balance, monthly allocation, plan.
+8. **Controlled grant amount** — parent suggested 1000 credits. Stage-start must confirm whether 1000 remains appropriate. Real staging mutation. No provider/Stripe call.
+9. **Idempotency test method** — ONE logical grant with known idempotency key; first → granted; same key → duplicate; balance increments only once. Prefer least risky method among: browser-supported, API replay with authenticated session, or controlled server-side request.
+10. **Audit verification** — resulting `credit_grants` row must contain expected admin audit fields (see Audit DB Verification Contract).
+11. **Session validation safety** — sessions list renders; termination UI/API works; do not terminate Keith's only active admin browser session; select safe expendable test session; if none exists, decide whether creating a test session is acceptable or termination evidence is separately bounded.
+12. **Browser routes/locales** — `/en/admin`, `/zh-TW/admin`, `/zh-CN/admin`, user-detail route; list/search/filter/detail/balance/grant UI/sessions/Add Credits/translations/no raw keys/~390px.
+13. **Non-admin security** — non-admin: `/{locale}/admin` → redirect `/{locale}/platform`; admin API → 403. Do not rely only on frontend.
+14. **Unauthorized security** — where practical: unauthenticated → login / 401.
+15. **Credit-period semantics** — after grant: `monthlyAllocation` unchanged; `rolloverBalance` unchanged; plan unchanged; only current balance increases.
+16. **Rollback criteria + procedure** — define before Step 3 (see Backup/Rollback).
+
+##### Pre-Deploy Source Validation (Stage-start decides whether to rerun)
+
+API Gateway (focused): credit-grant tests, admin tests, `tsc`, build.
+Frontend (focused): admin tests, relevant workspace/admin nav tests, `tsc`, build if staging deployment requires it.
+Do not rerun giant unrelated suites without reason.
+
+##### Controlled Credit-Grant Test Contract
+
+| Field | Locked expectation (subject to Step 2 amount confirmation) |
+|-------|------------------------------------------------------------|
+| Reason | `Private beta operator validation grant` |
+| Amount | `1000` (confirm still suitable in Stage-start) |
+| Path | Internal admin CreditGrantService path only |
+| Before | Record `balanceBefore` |
+| After grant | `balanceAfter = balanceBefore + 1000` |
+| Period semantics | monthlyAllocation / rolloverBalance / plan unchanged |
+
+No Stripe checkout, webhook, billing charge, subscription change, or xAI/OpenAI/provider call.
+
+##### Idempotency Duplicate Test Contract
+
+- ONE logical grant with a known idempotency key
+- First request → `status = granted` (or equivalent success)
+- Replay same key → `status = duplicate`
+- Balance remains `balanceAfter` (no second increment)
+
+##### Audit DB Verification Contract (read-only SQL after UI action)
+
+Resulting `credit_grants` row must contain:
+- `grant_type = 'admin'`
+- `source_type = 'admin'`
+- `provider = 'admin'`
+- `granted_by_user_id` = admin actor
+- `reason` = controlled test reason
+- `amount`
+- `balance_before`
+- `balance_after`
+- `source_event_id` = idempotency key
+- `status = granted`
+
+##### Session Termination Safety Contract
+
+- Validate sessions list renders
+- Validate termination UI/API works
+- Do NOT terminate Keith's only active admin browser session
+- Select a safe expendable test session
+- If no safe session: Stage-start decides create-test-session vs separately bounded termination evidence
+
+##### Browser / Live-Smoke Contract
+
+Keith performs browser/live smoke unless an explicitly approved automation path exists.
+Step 3 guides Keith **one browser action at a time**. Do not claim browser observations without Keith evidence. Do not dump the entire checklist at once.
+
+Expected areas (sequential during Step 3):
+A. Admin login and navigation  
+B. Users list  
+C. Search/filter  
+D. User detail  
+E. Credit balance  
+F. Add Credits form  
+G. Confirmation  
+H. Successful grant  
+I. Updated balance  
+J. Sessions list  
+K. Safe session termination  
+L. en  
+M. zh-TW  
+N. zh-CN  
+O. desktop  
+P. ~390px mobile  
+Q. non-admin denial  
+
+##### Non-Admin / Unauthenticated Security Contract
+
+- Non-admin frontend: attempt `/{locale}/admin` → redirect to `/{locale}/platform`
+- Non-admin API: admin endpoint returns 403
+- Unauthenticated: login / 401 where practical
+- Do not rely only on frontend behavior
+
+##### Locale / Responsive Validation Contract
+
+- Routes: `/en/admin`, `/zh-TW/admin`, `/zh-CN/admin` + user-detail
+- Translated content; no raw translation keys
+- Responsive ~390px
+
+##### Health / Runtime Validation Contract
+
+After deployment/restart verify:
+- API Gateway health (`GET http://127.0.0.1:4000/api/health`)
+- AI service health if relevant
+- Frontend reachable (`https://staging.ainow.biz/...`)
+- Do not restart unrelated services unless required
+- `GLOBAL_EXECUTION_ENABLED` must remain `false` — 01E does NOT require enabling global AI execution
+
+##### Backup / Rollback Requirements
+
+Before staging mutation (Step 3), Stage-start locks minimum backup for:
+- current source revision
+- current database schema/migration state
+- relevant staging env/config
+- PM2 state if needed
+
+Rollback-worthy failures (minimum):
+- migration failure
+- runtime boot failure
+- admin routes unusable
+- security bypass
+- double credit
+- incorrect audit actor/reason
+- balance corruption
+
+Rollback procedure must be defined in Step 2 before Step 3 begins. Do not create backup during registration.
+
+##### No New Product Implementation
+
+01E is validation/deployment only. Do NOT add features.
+If staging validation finds a bug:
+- stop the affected validation path
+- classify it
+- do not silently fix during 01E
+- recommend smallest bounded child/fix task
+- keep parent ACTIVE
+
+Tiny deployment/config correction may only be allowed if clearly operational and within the locked stage-start contract.
+
+##### Explicit Forbidden Actions (this registration AND unless later step explicitly unlocks)
+
+- Deploy / connect to staging / run migrations / modify database
+- Modify `.env` / restart PM2/services
+- Browser smoke / grant credits / terminate sessions
+- Git commit/push (automatic)
+- Stripe checkout / webhook / billing charges / subscription changes
+- Provider/xAI/OpenAI calls
+- Enable `GLOBAL_EXECUTION_ENABLED`
+- Destructive migration reset / schema drop
+- Silent user role promotion
+- Silent product bug fixes during 01E
+- Mark ADMIN-CONSOLE-01 COMPLETE AND LOCKED before Step 4 evidence
+- Unblock PRIVATE-BETA-INVITE-01 before parent COMPLETE AND LOCKED
+
+##### 01E Acceptance Criteria
+
+Evidence that an admin can:
+1. Reach `/{locale}/admin`
+2. View users
+3. Search/filter users
+4. Open user detail
+5. See plan/quota/current credit balance
+6. Add credits safely
+7. Enter required reason
+8. Produce durable actor/reason audit
+9. Duplicate request does not double-credit
+10. See before/after balance
+11. View sessions
+12. Terminate a safe test session
+13. Use en / zh-TW / zh-CN
+14. Be denied when non-admin
+15. Operate without direct PostgreSQL mutation for operator workflow (read-only SQL after UI action allowed for audit verification)
+
+Plus: migration applied and verified; runtime health OK; period semantics preserved; no Stripe/provider side effects; `GLOBAL_EXECUTION_ENABLED` remains false.
+
+##### Parent ADMIN-CONSOLE-01 Completion Criteria
+
+ADMIN-CONSOLE-01 may become COMPLETE AND LOCKED only when:
+- 01A–01D remain COMPLETE AND LOCKED
+- 01E Step 4 consolidation records PASS (or explicitly accepted PASS WITH documented non-blocking limitations)
+- Parent acceptance criteria from ADMIN-CONSOLE-01 are evidenced on staging
+- No open rollback-worthy failures remain unresolved
+
+##### PRIVATE-BETA-INVITE-01 Unblock Criteria
+
+PRIVATE-BETA-INVITE-01 remains NOT STARTED / blocked until ADMIN-CONSOLE-01 is COMPLETE AND LOCKED after successful 01E consolidation. 01E registration alone does not unblock invites.
+
+##### Non-Goals
+
+- No product feature implementation
+- No migration apply in this registration step
+- No staging deployment in this registration step
+- No browser smoke in this registration step
+- No Git commit/push
+- No invite users / PRIVATE-BETA-INVITE-01 start
+
+##### Step Status (Final)
+
+- Step 1 Registration COMPLETE — 2026-08-07
+- Step 2 Stage-start COMPLETE — 2026-08-08
+- Step 3 Controlled staging execution COMPLETE — PASS WITH LIMITATIONS — 2026-08-08
+- Step 3 (post): ADMIN-CONSOLE-01E1 localhost redirect blocker RESOLVED — COMPLETE AND LOCKED — 2026-08-08
+- Step 4 Consolidation COMPLETE — 2026-08-08
+- Parent ADMIN-CONSOLE-01 COMPLETE AND LOCKED — 2026-08-08
+- PRIVATE-BETA-INVITE-01 UNBLOCKED
+- 01A staging migration APPLIED TO STAGING — applied during 01E Step 3 execution
+
+**ADMIN-CONSOLE-01E status:** COMPLETE AND LOCKED — 2026-08-08. Verdict: PASS WITH NON-BLOCKING LIMITATIONS. All 15 acceptance criteria satisfied. Checkpoint: `docs/ADMIN-CONSOLE-01E-CHECKPOINT.md`.
+**ADMIN-CONSOLE-01 status:** COMPLETE AND LOCKED — 2026-08-08. All children COMPLETE AND LOCKED. Checkpoint: `docs/ADMIN-CONSOLE-01-CHECKPOINT.md`.
+**PRIVATE-BETA-INVITE-01 status:** UNBLOCKED — NEXT RECOMMENDED TASK. Do not execute invitations without registration and Keith approval.
+**01A staging migration:** APPLIED TO STAGING — applied during 01E Step 3 execution.
+
+---
+
+#### ADMIN-CONSOLE-01E1 — Invalid Locale Redirect Origin Fix
+
+**Status:** COMPLETE AND LOCKED — 2026-08-08
+**Task ID:** ADMIN-CONSOLE-01E1
+**Parent:** ADMIN-CONSOLE-01E (COMPLETE AND LOCKED — 2026-08-08)
+**Grandparent:** ADMIN-CONSOLE-01 (COMPLETE AND LOCKED — 2026-08-08)
+**Family:** ADMIN CONSOLE / STAGING BLOCKER
+**Risk:** MEDIUM — middleware change affects all locale routing; staged test coverage required before staging deployment
+**Workflow:** 3-step blocker (registration + investigation → implementation + focused validation → consolidation + staging re-smoke evidence)
+**Model:** Sonnet 4.6 (registration/consolidation); GPT-5.3 Codex (implementation)
+**Registered:** 2026-08-08
+**Checkpoint:** `docs/ADMIN-CONSOLE-01E1-CHECKPOINT.md`
+
+##### Blocking Context
+
+Discovered during ADMIN-CONSOLE-01E Step 3 staging browser validation.
+
+Staging symptom:
+- User navigates to: `https://staging.ainow.biz/zh-tw/login`
+- Browser is redirected to: `https://localhost:3002/en/zh-tw/login`
+
+This exposes the internal Next.js bind address (`localhost:3002`) to the browser. It is not acceptable in any environment.
+
+##### Root Cause (Confirmed — Step 1 Investigation)
+
+**Bug A — Case-sensitive locale matching:**
+`hasLocalePrefix()` in `frontend/middleware.ts` compares the incoming path segment against the literal array `['en', 'zh-TW', 'zh-CN']`. The comparison is exact/case-sensitive. `/zh-tw/` does not match `/zh-TW/`, so `hasLocalePrefix('/zh-tw/login')` returns `false`. The path falls through to the non-root default redirect handler which prefixes `/en`, producing `/en/zh-tw/login`.
+
+**Bug B — localhost:3002 redirect origin:**
+The default redirect handler clones `request.nextUrl` (line ~38 of `frontend/middleware.ts`). In Next.js 15 middleware running behind a reverse proxy (Caddy), `request.nextUrl` is constructed from the server's internal bind address (`localhost:3002`), not from the `Host` or `X-Forwarded-Host` header. This is an architectural property of Next.js 15 confirmed by prior investigation docs (PRIVATE-BETA-STAGING-EXECUTION-04I2B, 04I2C). Cloning `request.nextUrl` and redirecting produces `Location: https://localhost:3002/en/zh-tw/login`.
+
+**Files responsible:**
+- `frontend/middleware.ts` — `hasLocalePrefix()` function (Bug A) and default redirect block (Bug B)
+
+##### Affected Redirect Paths
+
+Bug B (localhost origin) affects ALL paths routed through the default redirect block — i.e., any path that:
+1. Does not start with `/api`, `/_next`, `/favicon.ico`
+2. Does not have a file extension
+3. Does not exactly match a supported locale prefix (case-sensitive)
+4. Is not the exact root `/` (root is already fixed at Caddy level)
+
+Confirmed affected examples:
+- `/zh-tw/login` → `https://localhost:3002/en/zh-tw/login` ✗
+- `/zh-cn/login` → `https://localhost:3002/en/zh-cn/login` ✗
+- `/login` → `https://localhost:3002/en/login` ✗ (browser-only; curl from server works because `localhost:3002` is accessible on-host)
+
+Root path already fixed:
+- `/` → Caddy `redir / /en 307` — bypasses middleware (04I2C fix)
+
+Correctly handled (pass-through, no redirect):
+- `/en/login` → `NextResponse.next()` ✓
+- `/zh-TW/login` → `NextResponse.next()` ✓
+- `/zh-CN/login` → `NextResponse.next()` ✓
+
+##### Canonical Behavior Decision
+
+For malformed locale casing (`/zh-tw/login`):
+- **Option A (recommended):** Case-normalize to the canonical supported locale → `/zh-TW/login`. Respects user intent. Consistent with multilingual-first principle.
+- Option B: Treat as unsupported → `/en/login`. Loses user's locale intent.
+
+Decision: Option A — case-normalize. No existing spec prohibits this and it is the best UX-aligned behavior.
+
+##### Recommended Fix (Smallest Safe — Step 2 Scope)
+
+Two changes to `frontend/middleware.ts` only:
+
+1. **Fix `hasLocalePrefix` + add `normalizeLocale` helper** — perform case-insensitive locale segment detection; return the canonical locale string if matched, null otherwise. For `/zh-tw/login`, this returns `'zh-TW'` and triggers a canonical-casing redirect instead of falling to the default handler.
+
+2. **Fix redirect origin construction** — replace `request.nextUrl.clone()` with a URL constructed from forwarded headers: `request.headers.get('x-forwarded-host')` (falls back to `request.headers.get('host')`, then `request.nextUrl.host`); `request.headers.get('x-forwarded-proto')` (falls back to `request.nextUrl.protocol`). Caddy is confirmed to forward `X-Forwarded-Host` and `X-Forwarded-Proto` by default (evidence: 04I2B Caddy warning "unnecessary" for explicit directives).
+
+No reverse-proxy changes required. No translation file changes required (no new user-facing copy). No backend changes. No new dependencies.
+
+##### Step 2 Test Coverage Required (minimum)
+
+New test file `frontend/middleware.test.ts`:
+- `/en/login` → pass-through (NextResponse.next)
+- `/zh-TW/login` → pass-through
+- `/zh-CN/login` → pass-through
+- `/zh-tw/login` → redirect to canonical `/zh-TW/login` with correct public origin
+- `/zh-cn/login` → redirect to canonical `/zh-CN/login` with correct public origin
+- `/login` (no locale) → redirect to `/en/login` with correct public origin
+- `/` (root) → redirect to `/en` with correct public origin
+- Request with `x-forwarded-host: staging.ainow.biz` → redirect origin is `staging.ainow.biz`, NOT `localhost:3002`
+- Request with `x-forwarded-proto: https` → redirect uses `https://`
+- No redirect URL in any test contains `localhost:3002` when forwarded host is set
+- Unsupported locale `/fr/login` → redirects to `/en/fr/login` with correct public origin (current behavior preserved)
+
+##### Explicit Non-Goals
+
+- No redesign of routing architecture
+- No change to the supported locale set (`en`, `zh-TW`, `zh-CN`)
+- No new dependencies
+- No backend changes
+- No reverse-proxy config changes
+- No translation file changes (no new user-facing copy)
+- No staging deployment during Steps 1–2
+- No staging SSH / PM2 / database access during Steps 1–2
+
+##### Step 3 Staging Re-Smoke Required
+
+After Step 2 implementation is validated locally:
+- Deploy updated `frontend/middleware.ts` to staging
+- Browser smoke: `https://staging.ainow.biz/zh-tw/login` → must redirect to `https://staging.ainow.biz/zh-TW/login` (NOT localhost)
+- Browser smoke: `https://staging.ainow.biz/zh-TW/login` → must load (200)
+- Browser smoke: `https://staging.ainow.biz/en/login` → must load (200)
+- Confirm no other locale routes regressed
+
+**ADMIN-CONSOLE-01E1 status:** COMPLETE AND LOCKED — 2026-08-08. Commit: `4d431e3da9a89e548e88ba3b10d6f378eb988135`. Staging re-smoke: ALL 8 CASES PASS. Blocker resolved. Checkpoint: `docs/ADMIN-CONSOLE-01E1-CHECKPOINT.md`.
+**ADMIN-CONSOLE-01E status:** COMPLETE AND LOCKED — 2026-08-08. Checkpoint: `docs/ADMIN-CONSOLE-01E-CHECKPOINT.md`.
+**ADMIN-CONSOLE-01 status:** COMPLETE AND LOCKED — 2026-08-08. Checkpoint: `docs/ADMIN-CONSOLE-01-CHECKPOINT.md`.
+**PRIVATE-BETA-INVITE-01 status:** BLOCKED — private beta blocked by newly discovered runtime regressions. Do not execute invitations until all blockers resolved.
+
+---
+
+## PRIVATE-BETA-BLOCKER — Canonical Landing Page + Runtime Regressions
+
+### PRIVATE-BETA-BLOCKER-01: Recurring Canonical Landing Page Regression
+
+**Status:** COMPLETE AND LOCKED — 2026-08-09
+**Task ID:** PRIVATE-BETA-BLOCKER-01
+**Family:** PRIVATE-BETA-BLOCKER
+**Risk:** HIGH — blocks PRIVATE-BETA-INVITE-01 and all user-facing private beta activity
+**Workflow:** 4-step HIGH-RISK (registration + investigation → bounded implementation + regression tests → controlled staging deployment + browser validation → consolidation / lock)
+**Model:** Sonnet 4.6 (registration/investigation/consolidation); GPT-5.3 Codex (implementation)
+**Registered:** 2026-08-08
+
+**Blocking context:**
+
+After ADMIN-CONSOLE-01 COMPLETE AND LOCKED (2026-08-08), Keith discovered that the staging landing page is again NOT the canonical "Build anything" landing experience. This is a recurring regression that has manifested at least three times across the deployment lifecycle (04I series root redirect localhost, 04J workspace UI version mismatch, and now post-01E).
+
+**Root cause (confirmed by source + git investigation):**
+
+Two distinct regression vectors contribute to the recurring problem:
+
+**Vector A — Workspace "Build anything" lost:** The ADMIN-CONSOLE-01E Step 3 runbook (and the 01E1 Step 3 deployment) executed `npm run build` on staging WITHOUT first setting `NEXT_PUBLIC_PROJECT_FIRST_UX=true`. This build-time environment variable was previously activated during PRIVATE-BETA-STAGING-EXECUTION-04J (2026-08-05) to enable the project-first workspace home view showing the "Build anything" headline and prompt at `/en/app`. The 01E/01E1 rebuild compiled the frontend with `PROJECT_FIRST_UX=false` (default), reverting the workspace home view to the non-project-first state (project card list without "Build anything" headline). This is the MOST PROBABLE cause of what the user observes.
+
+**Vector B — No route-level regression protection:** No test exists that verifies the canonical "Build anything" content appears at the route level for either surface:
+- No test asserts that `/en` (public landing) renders `PublicLandingSlice` with "Build anything"
+- No test asserts that the root `/` redirects to `/en`
+- No test asserts that `/en` passes through middleware correctly
+- The middleware test suite only covers sub-routes like `/en/login`, not the landing route itself
+- No integration test links the route → component → translation chain
+
+**Vector C — Fragile Caddy workaround layer:** The staging Caddyfile contains `redir / /en 307` and `redir /app /en/app 307` workarounds from 04I2C/04I4A. Any deployment that touches Caddy or rebuilds the frontend without env parity risks breaking the landing experience. The 01E1 middleware rewrite (`buildRedirectUrl()`) partially resolves the underlying Next.js `request.nextUrl.clone()` host-leakage issue, but the Caddy workarounds remain in place and create a dual-path redirect system.
+
+**Why this has been able to regress repeatedly:**
+
+1. `NEXT_PUBLIC_PROJECT_FIRST_UX` is a build-time flag, not persisted in any deployment manifest — it was set as a transient shell variable during 04J and never recorded as a required build-time parameter
+2. No deployment runbook includes env-parity checks for build-time flags
+3. No regression test asserts the canonical landing content at the route level
+4. Staging browser validation after each deployment focused on the specific feature being deployed (admin console, locale redirects) and never tested the public landing page
+5. Two separate surfaces share the "Build anything" headline (public landing at `/en` and workspace home at `/en/app`), creating confusion about which surface is canonical
+
+**Canonical route and component inventory:**
+
+| Surface | Route | Component | "Build anything" | Source |
+|---|---|---|---|---|
+| Public landing (unauthenticated) | `/[locale]` (e.g. `/en`) | `PublicLandingSlice` | Always visible | `frontend/app/[locale]/page.tsx` → `frontend/components/public/public-landing-slice.tsx` |
+| Workspace home (authenticated) | `/[locale]/app` | `WorkspaceShell` home view | Only when `PROJECT_FIRST_UX=true` | `frontend/app/[locale]/app/page.tsx` → `frontend/components/workspace/workspace-shell.tsx` |
+
+**Current source status:**
+
+- `frontend/app/[locale]/page.tsx` — CORRECT at HEAD — renders `PublicLandingSlice` — unchanged since `64dbed3`
+- `frontend/components/public/public-landing-slice.tsx` — CORRECT at HEAD — renders "Build anything" hero — unchanged since `d2ec891`
+- `frontend/middleware.ts` — CORRECT at HEAD — routes `/en` pass-through, `/` redirects to `/en` — rewritten in `4d431e3`
+- `frontend/messages/en.json` — CORRECT — contains `landing.hero: "Build anything"` and `workspace.buildAnything: "Build anything"`
+- The canonical public landing implementation HAS NOT BEEN DELETED — it exists and is correctly wired in source
+
+**What needs to be fixed (Step 2 scope):**
+
+1. Add build-time env parity: ensure `NEXT_PUBLIC_PROJECT_FIRST_UX=true` is documented as required for staging builds
+2. Add route-level regression tests:
+   - Middleware test: `/` → redirects to `/en`; `/en` → passes through
+   - Route canary test: assert `PublicLandingSlice` component or "Build anything" text renders at the `/[locale]` page route
+   - Assert `data-testid="public-landing-slice"` is present in the rendered output
+3. Staging re-build with correct env vars and browser validation of both landing surfaces
+
+**Exact files proposed for Step 2:**
+
+- `frontend/middleware.test.ts` — add root `/` and `/en` tests
+- `frontend/app/[locale]/page.test.tsx` — NEW — route-level canary test
+- Staging deployment: rebuild frontend with `NEXT_PUBLIC_PROJECT_FIRST_UX=true`
+- No source code changes to `page.tsx`, `public-landing-slice.tsx`, or `middleware.ts` expected
+
+**Step completion:**
+
+- Step 1 — Registration + root-cause investigation — COMPLETE — 2026-08-08
+- Step 2A — Safe-removal audit — COMPLETE — 2026-08-09
+- Step 2B — Bounded implementation + regression tests (legacy workspace branch + feature-flag removal) — COMPLETE — 2026-08-09
+- Step 3 — Controlled staging deployment + browser validation — COMPLETE — PASS — 2026-08-09
+- Step 4 — Consolidation / lock — COMPLETE — 2026-08-09
+
+**PRIVATE-BETA-BLOCKER-01 status:** COMPLETE AND LOCKED — 2026-08-09. All 20/20 acceptance criteria satisfied. Implementation commit: `651f723447a85ec5d22139d6ba60be6680a0f8c6`. Staging HEAD: `651f723447a85ec5d22139d6ba60be6680a0f8c6`. All locales PASS. Legacy workspace absent. Build-independence proven. No rollback required. Checkpoint: `docs/PRIVATE-BETA-BLOCKER-01-CHECKPOINT.md`.
+**PRIVATE-BETA-INVITE-01 status:** BLOCKED — separate unresolved preview runtime failure remains. Landing page regression resolved. Do not execute invitations until preview blocker resolved.
+**Preview failure:** Separate unresolved private-beta blocker — NOT investigated in PRIVATE-BETA-BLOCKER-01 — exact next task: PRIVATE-BETA-BLOCKER-02 — Preview Runtime Failure.
