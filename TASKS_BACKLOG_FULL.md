@@ -56841,6 +56841,226 @@ Step 4 (Consolidation):
 ---
 
 **GOV-PRD-01 status:** COMPLETE AND LOCKED — 2026-08-10 — Checkpoint: `docs/GOV-PRD-01-CHECKPOINT.md`
-**Next step:** Determine whether additional governance cleanup is required before minimal operational-readiness work for Builder-first beta. PRIVATE-BETA-INVITE-01 is UNBLOCKED for registration (requires explicit Keith approval).
+**Next step:** PRIVATE-BETA-OPS-01 Step 2 — Existing Observability / Alerting Audit + Stage-Start.
 **PRIVATE-BETA-INVITE-01 status:** UNBLOCKED for registration — do not execute invitations without registration and Keith explicit approval. PRIVATE-BETA-INVITE-01 remains untouched.
 **GLOBAL_EXECUTION_ENABLED:** unchanged / false (deliberate safety gate)
+
+---
+
+### PRIVATE-BETA-OPS-01: Minimal Operational Visibility Baseline
+
+**Status:** COMPLETE AND LOCKED — 2026-08-10
+**Task ID:** PRIVATE-BETA-OPS-01
+**Title:** Minimal Operational Visibility Baseline
+**Family:** PRIVATE BETA / OPERATIONS / OBSERVABILITY / INCIDENT VISIBILITY
+**Priority:** P1 — required before AI execution activation and PRIVATE-BETA-INVITE-01; a silent crash during early trusted-Builder beta with no detection path is an unacceptable operational risk
+**Risk:** HIGH — involves staging runtime, notification infrastructure, and operator runbook; wrong changes could affect production-critical health endpoints or crash-detection paths
+**Nature:** BOUNDED OPERATIONS / OBSERVABILITY READINESS — audit existing mechanisms first; implement only the minimum gap
+**Workflow:** 4-step HIGH-risk operational lifecycle (Step 2A architecture correction; Step 3A implementation + Step 3B staging smoke)
+**Model:** Sonnet 4.6 (registration / audit / stage-start / consolidation); GPT-5.3 Codex or Codex High (implementation if runtime changes required)
+**Registered:** 2026-08-10
+**Closed:** 2026-08-10
+**Predecessor:** GOV-PRD-01 COMPLETE AND LOCKED — 2026-08-10 — Checkpoint: `docs/GOV-PRD-01-CHECKPOINT.md`
+**Checkpoint:** `docs/PRIVATE-BETA-OPS-01-CHECKPOINT.md`
+**Stage-start:** `docs/PRIVATE-BETA-OPS-01-STAGE-START.md`
+
+---
+
+#### Reason
+
+Builder-first private beta with approximately 1–3 trusted users requires minimum operational visibility before AI execution is activated and before PRIVATE-BETA-INVITE-01 is executed.
+
+The specific risk is:
+
+> If a critical ainow.biz / Builder service crashes, repeatedly restarts, becomes unhealthy, or the core execution service becomes unavailable during the private beta, Keith should have a practical way to notice it quickly enough to respond.
+
+This is NOT a broad observability-platform project. The goal is the smallest safe operational baseline that makes the beta viable without requiring Keith to manually watch the server continuously.
+
+---
+
+#### Scope
+
+PRIVATE-BETA-OPS-01 may include, only if Step 2 evidence justifies:
+
+- Audit of existing health/metrics/PM2 visibility surfaces
+- Identification of genuinely missing critical signals (gaps only)
+- Minimal crash/restart/unhealthy detection using existing mechanisms where possible
+- Minimal operator notification path using existing Resend email capability where appropriate
+- Bounded operator runbook / documented response path
+- Staging validation of the baseline
+
+Explicitly excluded from this task:
+
+- `GLOBAL_EXECUTION_ENABLED` activation
+- AI provider execution smoke
+- Agent Harness activation
+- PRIVATE-BETA-INVITE-01
+- Broad monitoring dashboard redesign
+- Distributed tracing
+- Analytics or business metrics
+- Full logging platform
+- Kubernetes, HA, or clustering
+- Broad security audit
+- API Gateway 96-test-debt cleanup
+- Multi-user isolation testing
+- Billing / payment work
+- Knowledge / collaboration / multi-agent work
+- Any new external monitoring vendor (Sentry, Datadog, Grafana, Prometheus, Better Stack, UptimeRobot, or equivalent) without explicit Step 2 evidence and Keith approval
+
+---
+
+#### Existing Observability Foundations — For Step 2 Audit
+
+The following existing mechanisms must be audited before proposing any new infrastructure:
+
+- **Phase 41A** — runtime metrics / health observability work (endpoints, metrics surfaces)
+- **`/api/health`** — basic service health check
+- **`/api/health/db`** — PostgreSQL readiness
+- **`/api/health/ready`** — full readiness probe
+- **`/api/runtime/metrics`** — runtime metrics where current
+- **PM2** — process/runtime state, restart counts, crash logs
+- **Structured Harness audit events** — existing orchestration audit trail
+- **Phase 60A / 60B** — alerting or incident-response planning/runbook artifacts (determine: designed only vs. partially implemented)
+- **Staging support/rollback procedures** — existing documented response paths
+- **Resend** — existing email capability for notification where appropriate
+
+Step 2 must determine:
+
+1. What each existing surface actually exposes
+2. Whether PM2 already surfaces useful restart/error evidence
+3. What Phase 60A/60B actually implemented versus merely designed
+4. What minimum gaps remain after auditing all existing mechanisms
+5. Whether code changes are needed at all
+6. Whether an existing mechanism can satisfy the beta requirement without adding a vendor
+
+---
+
+#### Beta Sequence Dependency
+
+Record the intended Builder-first beta sequence:
+
+1. **PRIVATE-BETA-OPS-01** — minimal operational visibility — **COMPLETE AND LOCKED — 2026-08-10**
+2. Controlled Builder-beta AI execution activation (separate task, not yet registered)
+3. Keith complete end-to-end staging user journey
+4. Final go/no-go
+5. PRIVATE-BETA-INVITE-01 — only after Keith explicit approval (currently untouched/unregistered)
+
+Steps 2–5 are not registered in this consolidation. Do not register or execute them here.
+
+---
+
+#### Desired Outcome (for Step 2 to answer)
+
+1. Can Keith determine whether the critical staging services are up?
+2. Can Keith detect a crash/restart/unhealthy state without manually watching the server?
+3. Can Keith distinguish:
+   - Frontend failure
+   - API Gateway failure
+   - AI Service/Worker failure
+   - Container-manager failure
+   - PostgreSQL readiness failure
+   - Redis/queue readiness failure where existing health surfaces support it
+4. Is there a practical notification path for a meaningful outage or repeated restart?
+5. Is there a simple documented operator response/rollback path?
+6. Can this be achieved mostly by reusing existing health/metrics/PM2/Resend infrastructure?
+
+---
+
+#### Invariants
+
+- `GLOBAL_EXECUTION_ENABLED` remains unchanged / false throughout this task
+- PRIVATE-BETA-INVITE-01 remains untouched and unregistered
+- No new external monitoring vendor without explicit Step 2 evidence and Keith approval
+- All COMPLETE AND LOCKED predecessors remain unchanged
+- No source/test/config/schema/migration/env/Docker changes in Steps 1 or 2
+- Step 2 is read-only audit only
+- No runtime/infrastructure commands in Steps 1 or 2
+- No subagents
+- No beta activation in this task
+- No invitation action in this task
+
+---
+
+#### 4-Step Workflow
+
+**Step 1 — Registration** — COMPLETE — 2026-08-10
+
+Register PRIVATE-BETA-OPS-01 in TASKS.md and TASKS_BACKLOG_FULL.md. No implementation, runtime, or infrastructure changes. No modification of any other file.
+
+**Step 2 — Existing Observability / Alerting Audit + Stage-Start** — COMPLETE — 2026-08-10
+
+Read-only audit complete. Stage-start artifact: `docs/PRIVATE-BETA-OPS-01-STAGE-START.md`. Confirmed Phase 60A/60B design-only; PM2 passive-only; no active notification path; Resend reusable.
+
+**Step 2A — Architecture Correction** — COMPLETE — 2026-08-10
+
+In-process API Gateway `OperatorAlertService` rejected (shared failure domain). Corrected architecture: independent PM2-managed Node.js operations watchdog. Appended to stage-start document.
+
+**Step 3A — Out-of-Process Watchdog Implementation + Local Tests** — COMPLETE — 2026-08-10
+
+Created `monitoring/watchdog/ops-watchdog.js` and `monitoring/watchdog/__tests__/ops-watchdog.test.js`. Local validation: 17/17 PASS. No npm dependency added. No application source outside `monitoring/watchdog/` changed.
+
+**Step 3B — Controlled Staging Activation + Alert Delivery Smoke** — COMPLETE / PASS — 2026-08-10
+
+Watchdog deployed as PM2 process `aisandbox-ops-watchdog` (online, restart count 0, `pm2 save` persisted). Baseline five probes PASS. Controlled AI Service outage detected at 2-failure threshold; outage + recovery emails sent; Keith confirmed actual receipt at `alerts@ainow.biz`. `GLOBAL_EXECUTION_ENABLED=false` throughout. No provider execution. No DB/Redis mutation. PRIVATE-BETA-INVITE-01 untouched.
+
+**Step 4 — Consolidation / Checkpoint** — COMPLETE — 2026-08-10
+
+Create checkpoint `docs/PRIVATE-BETA-OPS-01-CHECKPOINT.md`. Lock PRIVATE-BETA-OPS-01. No implementation changes during consolidation.
+
+---
+
+#### Acceptance Criteria
+
+Step 1 (Registration):
+- [x] PRIVATE-BETA-OPS-01 registered in TASKS.md
+- [x] PRIVATE-BETA-OPS-01 mirrored in TASKS_BACKLOG_FULL.md
+- [x] 4-step HIGH-risk workflow recorded
+- [x] Existing observability foundations listed for Step 2 audit
+- [x] Beta sequence dependency recorded
+- [x] No implementation, runtime, or infrastructure action taken
+- [x] No external monitoring vendor added
+- [x] `GLOBAL_EXECUTION_ENABLED` unchanged
+- [x] PRIVATE-BETA-INVITE-01 untouched
+- [x] No other files modified
+
+Step 2 (Audit + Stage-Start):
+- [x] Existing health/metrics/PM2/Phase-60/Resend surfaces audited and documented
+- [x] Phase 60A/60B: implemented vs. designed determined (design/docs only)
+- [x] Minimum gaps identified (no active notification path; Redis invisible; AI Service no health controller)
+- [x] Stage-start plan produced: smallest safe implementation defined
+- [x] No runtime changes during Step 2
+
+Step 2A (Architecture Correction):
+- [x] In-process API Gateway alert design rejected on failure-domain grounds
+- [x] Independent PM2-managed Node.js watchdog selected
+- [x] Corrected Step 3 scope recorded in stage-start
+
+Step 3A (Minimal Implementation + Local Validation):
+- [x] Only gaps confirmed by Step 2/2A addressed
+- [x] Existing mechanisms reused where possible (health endpoints, Resend, Redis URL, PM2)
+- [x] No new vendor without Keith approval
+- [x] Local unit tests 17/17 PASS; syntax checks PASS; no new npm dependency
+- [x] `GLOBAL_EXECUTION_ENABLED` remains false
+
+Step 3B (Staging Validation):
+- [x] Staging validation confirms detection path works
+- [x] Outage + recovery emails actually received by Keith at `alerts@ainow.biz`
+- [x] Watchdog online; restart count 0; `pm2 save` persisted
+- [x] All five probes healthy post-recovery
+- [x] `GLOBAL_EXECUTION_ENABLED` remains false
+- [x] PRIVATE-BETA-INVITE-01 untouched
+
+Step 4 (Consolidation):
+- [x] Checkpoint `docs/PRIVATE-BETA-OPS-01-CHECKPOINT.md` created
+- [x] PRIVATE-BETA-OPS-01 marked COMPLETE AND LOCKED
+- [x] No implementation changes in this step
+
+---
+
+**PRIVATE-BETA-OPS-01 status:** COMPLETE AND LOCKED — 2026-08-10 — Checkpoint: `docs/PRIVATE-BETA-OPS-01-CHECKPOINT.md`
+**Final architecture:** Independent PM2-managed Node.js operations watchdog (`aisandbox-ops-watchdog`) — small-beta architecture for 1–3 trusted users; not enterprise observability.
+**P1 readiness impact:** Minimal operational crash/error visibility appropriate to 1–3 trusted users — **SATISFIED**. Private beta itself is NOT approved yet.
+**Exact next recommended task:** Controlled Builder AI execution activation (separate task; NOT registered in this consolidation).
+**PRIVATE-BETA-INVITE-01 status:** UNBLOCKED for registration — do not execute invitations without registration and Keith explicit approval. PRIVATE-BETA-INVITE-01 remains untouched.
+**GLOBAL_EXECUTION_ENABLED:** unchanged / false (deliberate safety gate)
+**Remaining Builder-first beta sequence:** (1) minimal operational visibility — COMPLETE; (2) controlled Builder AI execution activation; (3) one fresh Keith full end-to-end staging journey; (4) final go/no-go; (5) PRIVATE-BETA-INVITE-01 only after Keith explicit approval.
