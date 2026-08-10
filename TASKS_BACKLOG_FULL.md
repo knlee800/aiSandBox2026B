@@ -56415,3 +56415,432 @@ Staging 2026-08-09: FF deploy to `f73da07`; backup `/opt/aisandbox-backups/priva
 
 **PRIVATE-BETA-BLOCKER-02 status:** COMPLETE AND LOCKED — 2026-08-09. All acceptance criteria satisfied. Staging live preview PASS. Implementation commit: `f73da07ef8d1acc70d43d6b4980fd1d0d57e2883`. Staging HEAD: `f73da07ef8d1acc70d43d6b4980fd1d0d57e2883`. Full-suite 96 FAIL preserved as unrelated pre-existing debt. Checkpoint: `docs/PRIVATE-BETA-BLOCKER-02-CHECKPOINT.md`.
 **PRIVATE-BETA-INVITE-01 status:** UNBLOCKED for registration — preview runtime failure resolved. Do not execute invitations without registration and Keith explicit approval.
+
+---
+
+## GOVERNANCE — Architecture Reconciliation
+
+### GOV-ARCH-01: ARCHITECTURE.md Current-State Reconciliation
+
+**Status:** COMPLETE AND LOCKED — 2026-08-10
+**Task ID:** GOV-ARCH-01
+**Title:** ARCHITECTURE.md Current-State Reconciliation
+**Family:** GOVERNANCE / ARCHITECTURE / CURRENT-STATE RECONCILIATION
+**Priority:** HIGH
+**Risk:** HIGH — incorrect architecture document actively misleads future Cursor/Claude work
+**Nature:** DOCUMENTATION / GOVERNANCE ONLY — no product, source, test, config, schema, migration, env, Docker, or runtime changes
+**Workflow:** 4-step HIGH-governance-risk lifecycle
+**Model:** Sonnet 4.6 (all steps — governance/documentation work)
+**Registered:** 2026-08-10
+
+---
+
+#### Reason
+
+`ARCHITECTURE.md` contains materially stale technical claims that conflict with the implemented and staging-proven aiSandBox2026B / ainow.biz system.
+
+Confirmed stale claims in current `ARCHITECTURE.md` (as of 2026-08-10):
+
+| Claim in ARCHITECTURE.md | Implemented Reality (evidence from locked checkpoints / source) |
+|---|---|
+| "All communication is HTTP-only." | AI execution path uses BullMQ queue (Redis-backed); Worker/WorkerProcessor processes queued jobs |
+| "No message queues." | BullMQ + Redis queue is implemented and staging-proven |
+| "No event buses." | BullMQ serves as the event transport for AI execution jobs |
+| "No background workers." | AI Service Worker / WorkerProcessor is implemented and integrated |
+| "SQLite (single-process safe)" | PostgreSQL is the implemented and staging-proven database |
+| "No background cleanup / No cron" (explicit non-goals) | May be accurate for scheduling but must be confirmed against current source — do not assume |
+
+These are investigation targets confirmed from ARCHITECTURE.md source text. Step 2 must perform a full evidence-based reconciliation; the list above is illustrative, not exhaustive.
+
+The document's authority notice ("All implementation must conform to this file") makes the drift particularly dangerous: it could cause future Cursor/Claude sessions to delete or reject correctly implemented infrastructure.
+
+---
+
+#### Scope
+
+GOV-ARCH-01 is bounded exclusively to:
+
+```
+C:\Users\knlee\aiSandBox2026B\ARCHITECTURE.md
+```
+
+Explicitly excluded from this task:
+
+- PRD.md reconciliation
+- CLAUDE.md changes
+- Execution roadmap cleanup (AINOW-EXECUTION-ROADMAP.md)
+- AGENT-PLATFORM-00 amendments
+- Agent Harness implementation work
+- Private beta activation
+- Monitoring or rate-limit work
+- Test-debt cleanup
+- Any product or source code changes
+- Deployment or runtime commands
+
+---
+
+#### 4-Step Workflow
+
+**Step 1 — Registration** (THIS STEP — COMPLETE — 2026-08-10)
+
+Register GOV-ARCH-01 in TASKS.md and TASKS_BACKLOG_FULL.md. No edits to ARCHITECTURE.md or any other document.
+
+**Step 2 — Evidence Reconciliation / Stage-Start** (COMPLETE — 2026-08-10)
+
+Read-only architecture audit. Determine:
+- What ARCHITECTURE.md currently claims (section by section)
+- What current source and locked checkpoint evidence proves
+- Which statements remain valid
+- Which statements are stale and require correction
+- Which statements are uncertain and must not be invented
+
+Key evidence sources to consult:
+- Locked checkpoints in `docs/` establishing PostgreSQL, Redis/BullMQ, WorkerProcessor, AI worker, Agent Harness runtime, API Gateway, container-manager, project persistence, billing persistence
+- Current service source in `services/ai-service/`, `services/api-gateway/`, `services/container-manager/`
+- TASKS.md and TASKS_BACKLOG_FULL.md locked task evidence
+- `docs/AGENT-HARNESS-V1-MASTER-PLAN.md`, `docs/AINOW-EXECUTION-ROADMAP.md`, `docs/AGENT-PLATFORM-00-AINOW-MULTI-AGENT-PLAN.md`
+
+No edits to any file during Step 2.
+
+**Step 3 — Bounded ARCHITECTURE.md Reconciliation** (COMPLETE — 2026-08-10)
+
+Documentation-only implementation. Modify `ARCHITECTURE.md` only as justified by Step 2 evidence. Reconciliation areas (only where evidence confirms):
+- Umbrella product/platform context (ainow.biz / aiSandBox relationship)
+- Frontend (Next.js)
+- API Gateway (NestJS)
+- AI Service and Worker/BullMQ execution architecture
+- Redis (queue transport + execution status/streaming infrastructure)
+- PostgreSQL (authoritative persistent store)
+- Container Manager (Docker workspace/runtime lifecycle)
+- Execution streaming/status flow
+- Persistence boundaries (which service owns what)
+- Agent Harness role and activation gate (implemented + gated, not fully live)
+- Service communication boundaries (HTTP where used, BullMQ where used)
+- Distinguishing current / gated / planned architecture
+
+Must NOT rewrite architecture aspirationally. Must describe what exists now. Planned/unimplemented systems must be clearly marked as planned.
+
+**Step 4 — Consolidation / Checkpoint** (COMPLETE — 2026-08-10)
+
+Create checkpoint `docs/GOV-ARCH-01-CHECKPOINT.md`. Lock GOV-ARCH-01. No implementation changes during consolidation.
+
+---
+
+#### Architecture Reconciliation Principles (for Steps 2–3)
+
+The reconciled ARCHITECTURE.md must distinguish:
+
+- **Current architecture** — implemented and evidenced
+- **Gated architecture** — implemented but disabled by default (e.g., Agent Harness multi-turn tool loop)
+- **Planned architecture** — not yet implemented (e.g., broad knowledge/collaboration/multi-agent systems)
+
+Do not describe planned systems as already live.
+Do not describe historical architecture as current.
+Do not claim cron/schedulers exist unless current evidence proves them.
+Do not replace "HTTP-only" with "everything is queue-based" — HTTP is still used for frontend→API Gateway, API Gateway→internal services, and Harness tools→API Gateway→container-manager.
+Do not invent new persistence ownership boundaries.
+Do not claim automatic Harness rollback exists — pre-apply checkpoint exists; automatic rollback does not.
+Do not write as though multi-agent knowledge/collaboration/general orchestration is implemented.
+
+---
+
+#### Known Architecture Facts to Investigate in Step 2 (Investigation Targets, Not Auto-Replacements)
+
+- **Database**: ARCHITECTURE.md says SQLite → implementation believed to be PostgreSQL → confirm from source/checkpoints
+- **Queue/Worker**: ARCHITECTURE.md says no queues, no workers, HTTP-only → implementation includes Redis + BullMQ + AI execution queue + WorkerProcessor → confirm exact boundaries
+- **HTTP scope**: Do not eliminate HTTP; clarify where HTTP is used vs where BullMQ/Redis are used
+- **Background processing**: Distinguish queued AI execution from unrelated scheduled/background automation
+- **Persistence**: Identify which service owns which persistence responsibilities from evidence
+- **Agent Harness**: Substantially implemented + Worker-integrated + read/write/browser-smoke runtime-proven; multi-turn tool-loop activation gated; single-shot Builder path is initial beta path; no automatic rollback (pre-apply checkpoint only)
+- **Multi-agent platform**: Non-Builder functional agents, knowledge runtime, work objects, general referrals, collaboration, runtime approval flows, configurable custom agents — remain planned/unfinished
+
+---
+
+#### Invariants
+
+- GLOBAL_EXECUTION_ENABLED remains unchanged / false
+- PRIVATE-BETA-INVITE-01 remains untouched
+- All COMPLETE AND LOCKED predecessors remain unchanged
+- No source/test/config/schema/migration/env/Docker changes in any step
+- No runtime commands in any step
+- No subagents
+
+---
+
+#### Acceptance Criteria
+
+Step 1 (Registration):
+- [x] GOV-ARCH-01 registered in TASKS.md
+- [x] GOV-ARCH-01 mirrored in TASKS_BACKLOG_FULL.md
+- [x] ARCHITECTURE.md NOT modified
+- [x] PRD.md NOT modified
+- [x] CLAUDE.md NOT modified
+- [x] No implementation/runtime action taken
+- [x] PRIVATE-BETA-INVITE-01 remains untouched
+- [x] All COMPLETE AND LOCKED predecessors unchanged
+
+Step 2 (Evidence Reconciliation):
+- [x] Section-by-section ARCHITECTURE.md audit complete
+- [x] Each current claim classified: valid / stale / uncertain
+- [x] Evidence sources cited for each classification
+- [x] No edits made during Step 2
+
+Step 3 (Bounded Reconciliation):
+- [x] ARCHITECTURE.md updated only where Step 2 evidence justifies
+- [x] Current / gated / planned architecture clearly distinguished
+- [x] No aspirational or invented claims introduced
+- [x] TypeScript build and test suite unaffected (documentation-only change)
+
+Step 4 (Consolidation):
+- [x] Checkpoint `docs/GOV-ARCH-01-CHECKPOINT.md` created
+- [x] GOV-ARCH-01 marked COMPLETE AND LOCKED
+- [x] No implementation changes in this step
+
+---
+
+**GOV-ARCH-01 status:** COMPLETE AND LOCKED — 2026-08-10. Checkpoint: `docs/GOV-ARCH-01-CHECKPOINT.md`.
+**Next step:** GOV-PRD-01 — PRD.md Current-State Reconciliation (NOT REGISTERED — do not start without explicit registration).
+**PRIVATE-BETA-INVITE-01 status:** UNBLOCKED for registration — preview runtime failure resolved. Do not execute invitations without registration and Keith explicit approval. PRIVATE-BETA-INVITE-01 remains untouched.
+
+---
+
+## GOVERNANCE — Product Requirements Reconciliation
+
+### GOV-PRD-01: PRD.md Current-State Reconciliation
+
+**Status:** COMPLETE AND LOCKED — 2026-08-10
+**Task ID:** GOV-PRD-01
+**Title:** PRD.md Current-State Reconciliation
+**Family:** GOVERNANCE / PRODUCT REQUIREMENTS / CURRENT-STATE RECONCILIATION
+**Priority:** HIGH
+**Risk:** HIGH — stale PRD product/architecture assumptions mislead product scope and future Cursor/Claude work
+**Nature:** DOCUMENTATION / GOVERNANCE ONLY — no product, source, test, config, schema, migration, env, Docker, or runtime changes
+**Workflow:** 4-step HIGH-governance-risk lifecycle
+**Model:** Sonnet 4.6 (all steps — governance/documentation work)
+**Registered:** 2026-08-10
+**Predecessor:** GOV-ARCH-01 COMPLETE AND LOCKED — 2026-08-10 — Checkpoint: `docs/GOV-ARCH-01-CHECKPOINT.md`
+
+---
+
+#### Reason
+
+`PRD.md` remains materially stale relative to the current approved ainow.biz / Builder product direction and the architecture now accurately documented in `ARCHITECTURE.md` (reconciled by GOV-ARCH-01).
+
+`PRD.md` currently contains stale product and architecture assumptions from the earlier standalone AI Sandbox era.
+
+Known investigation targets in current `PRD.md` (as of 2026-08-10; not automatic replacements):
+
+| Claim / framing in PRD.md | Current baseline to investigate against |
+|---|---|
+| SQLite as current persistence | PostgreSQL is the reconciled current database in ARCHITECTURE.md |
+| HTTP-only service communication | Mixed HTTP + BullMQ/Redis architecture is documented and staging-proven |
+| No background workers | AI Service Worker / WorkerProcessor is implemented |
+| Standalone AI Sandbox product framing | ainow.biz is the umbrella platform; aiSandBox is the real Builder Agent |
+| Session/container-centric product assumptions | Project-first Builder workspace + platform command-center shell are current UX scope |
+
+These are investigation targets for Step 2. Step 2 must perform a full evidence-based product reconciliation; the list above is illustrative, not exhaustive.
+
+---
+
+#### Current Mutually Reconciled Product Baseline (Registration Context)
+
+1. ainow.biz is the umbrella platform.
+2. aiSandBox is the real Builder Agent.
+3. Builder's core single-shot path is implemented and staging-proven.
+4. Agent Harness is substantially implemented but its enhanced multi-turn tool loop remains gated by default.
+5. Other built-in agents are currently placeholders / coming soon.
+6. User-created agent persistence/UI exists, but custom agents are not yet genuinely executable/configurable agents.
+7. Knowledge runtime, work objects, general referrals, broad multi-agent collaboration and runtime approval workflows remain planned/not implemented.
+8. RPG command-center is the current platform UX scope.
+9. Full walking-character RPG remains post-beta.
+10. Credit accounting/provisioning/deduction is implemented; real Stripe/payment processing is not.
+11. Builder-first private beta is the agreed direction.
+12. Genuine multi-agent ainow.biz beta remains NO-GO.
+13. PRIVATE-BETA-INVITE-01 must remain unregistered until Keith explicitly approves.
+14. `GLOBAL_EXECUTION_ENABLED=false` is a deliberate safety gate, not a product defect.
+
+---
+
+#### Scope
+
+GOV-PRD-01 is bounded exclusively to:
+
+```
+C:\Users\knlee\aiSandBox2026B\PRD.md
+```
+
+Explicitly excluded from this task:
+
+- ARCHITECTURE.md changes
+- CLAUDE.md changes
+- Execution roadmap cleanup (AINOW-EXECUTION-ROADMAP.md)
+- AGENT-PLATFORM-00 amendments
+- Agent Harness implementation work
+- Monitoring work
+- Private beta activation
+- PRIVATE-BETA-INVITE-01
+- Any product or source code changes
+- Deployment or runtime commands
+
+---
+
+#### Key Reconciliation Principle
+
+`PRD.md` should answer:
+
+> What product exists now, what problem does it solve, what is currently supported, and what is deliberately deferred?
+
+`ARCHITECTURE.md` should answer:
+
+> How is that product technically implemented?
+
+Avoid duplicating low-level architecture details unnecessarily. Architecture details should defer to `ARCHITECTURE.md`.
+
+---
+
+#### 4-Step Workflow
+
+**Step 1 — Registration** (THIS STEP — COMPLETE — 2026-08-10)
+
+Register GOV-PRD-01 in TASKS.md and TASKS_BACKLOG_FULL.md. No edits to PRD.md, ARCHITECTURE.md, CLAUDE.md, or any other document beyond task ledgers.
+
+**Step 2 — PRD Evidence Reconciliation / Stage-Start** (NOT STARTED)
+
+Read-only PRD audit. Determine:
+
+- which product assumptions remain valid
+- which are historical
+- which conflict with current ainow.biz direction
+- which architecture statements now conflict with reconciled ARCHITECTURE.md
+- which product promises are CURRENT
+- which capabilities are GATED
+- which capabilities are PLANNED / NOT IMPLEMENTED
+- which non-goals remain valid
+- what must not be promoted to current product scope
+
+Key evidence sources to consult:
+
+- Reconciled `ARCHITECTURE.md` (GOV-ARCH-01 COMPLETE AND LOCKED)
+- `docs/GOV-ARCH-01-CHECKPOINT.md`
+- `docs/AGENT-PLATFORM-00-AINOW-MULTI-AGENT-PLAN.md`
+- `docs/AINOW-EXECUTION-ROADMAP.md`
+- `docs/AGENT-PLATFORM-RPG-MVP-RESET-PLAN.md`
+- Locked checkpoints establishing Builder single-shot path, credits/accounting, platform shell, Harness gating
+- TASKS.md and TASKS_BACKLOG_FULL.md locked task evidence
+
+No edits to any file during Step 2 (except creating the authorized stage-start planning artifact if required by Step 2 instructions).
+
+**Step 3 — Bounded PRD.md Reconciliation** (NOT STARTED)
+
+Documentation-only implementation. Modify `PRD.md` only. The updated PRD should accurately reflect the CURRENT product while distinguishing:
+
+CURRENT:
+
+- ainow.biz umbrella platform
+- Builder Agent
+- platform command-center shell
+- project-first Builder workspace
+- auth
+- project persistence
+- AI single-shot execution path
+- file actions
+- preview
+- chat persistence
+- credits/accounting
+- user-created agent persistence
+
+GATED:
+
+- global AI execution activation
+- Agent Harness enhanced multi-turn tool loop where applicable
+
+PLANNED / NOT CURRENT:
+
+- functioning non-Builder agents
+- knowledge runtime
+- work objects
+- broad referrals/collaboration
+- runtime approval workflows
+- executable/configurable custom agents
+- real Stripe/payment processing
+- full walking-character RPG
+
+Do not turn PRD.md into an architecture document.
+
+**Step 4 — Consolidation / Checkpoint** (NOT STARTED)
+
+Create checkpoint `docs/GOV-PRD-01-CHECKPOINT.md`. Lock GOV-PRD-01. No implementation changes during consolidation.
+
+---
+
+#### Product Reconciliation Principles (for Steps 2–3)
+
+The reconciled PRD.md must distinguish:
+
+- **Current product** — implemented and evidenced
+- **Gated product** — implemented but disabled by default / safety-gated
+- **Planned / not current product** — not yet implemented or deliberately deferred
+
+Do not describe planned multi-agent capabilities as already live.
+Do not describe historical standalone AI Sandbox framing as the current product identity.
+Do not promote PRIVATE-BETA-INVITE-01 or genuine multi-agent beta into current scope.
+Do not treat `GLOBAL_EXECUTION_ENABLED=false` as a product defect.
+Do not duplicate low-level architecture details that belong in ARCHITECTURE.md.
+
+---
+
+#### Invariants
+
+- GLOBAL_EXECUTION_ENABLED remains unchanged / false
+- PRIVATE-BETA-INVITE-01 remains untouched
+- All COMPLETE AND LOCKED predecessors remain unchanged (including GOV-ARCH-01)
+- No source/test/config/schema/migration/env/Docker changes in any step
+- No ARCHITECTURE.md or CLAUDE.md changes in any step
+- No runtime/infrastructure commands in any step
+- No subagents
+- No beta activation
+- No invitation action
+
+---
+
+#### Acceptance Criteria
+
+Step 1 (Registration):
+- [x] GOV-PRD-01 registered in TASKS.md
+- [x] GOV-PRD-01 mirrored in TASKS_BACKLOG_FULL.md
+- [x] Scope limited to PRD.md
+- [x] 4-step HIGH-governance-risk workflow recorded
+- [x] Predecessor GOV-ARCH-01 COMPLETE AND LOCKED recorded
+- [x] PRD.md NOT modified
+- [x] ARCHITECTURE.md NOT modified
+- [x] CLAUDE.md NOT modified
+- [x] No implementation/runtime action taken
+- [x] PRIVATE-BETA-INVITE-01 remains untouched
+- [x] GLOBAL_EXECUTION_ENABLED unchanged
+- [x] All COMPLETE AND LOCKED predecessors unchanged
+
+Step 2 (PRD Evidence Reconciliation / Stage-Start):
+- [ ] Read-only PRD audit complete
+- [ ] Product assumptions classified: valid / historical / conflicting
+- [ ] CURRENT / GATED / PLANNED / non-goals classified
+- [ ] Evidence sources cited for each classification
+- [ ] No PRD.md edits during Step 2
+
+Step 3 (Bounded PRD.md Reconciliation):
+- [ ] PRD.md updated only where Step 2 evidence justifies
+- [ ] CURRENT / GATED / PLANNED product clearly distinguished
+- [ ] No aspirational or invented claims introduced
+- [ ] Architecture details deferred to ARCHITECTURE.md
+- [ ] TypeScript build and test suite unaffected (documentation-only change)
+
+Step 4 (Consolidation):
+- [x] Checkpoint `docs/GOV-PRD-01-CHECKPOINT.md` created
+- [x] GOV-PRD-01 marked COMPLETE AND LOCKED
+- [x] No implementation changes in this step
+
+---
+
+**GOV-PRD-01 status:** COMPLETE AND LOCKED — 2026-08-10 — Checkpoint: `docs/GOV-PRD-01-CHECKPOINT.md`
+**Next step:** Determine whether additional governance cleanup is required before minimal operational-readiness work for Builder-first beta. PRIVATE-BETA-INVITE-01 is UNBLOCKED for registration (requires explicit Keith approval).
+**PRIVATE-BETA-INVITE-01 status:** UNBLOCKED for registration — do not execute invitations without registration and Keith explicit approval. PRIVATE-BETA-INVITE-01 remains untouched.
+**GLOBAL_EXECUTION_ENABLED:** unchanged / false (deliberate safety gate)

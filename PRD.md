@@ -1,354 +1,542 @@
-AI Sandbox Platform – Product Requirements Document (PRD)
+ainow.biz Platform — Product Requirements Document (PRD)
 
-1. Overview
+---
 
-AI Sandbox Platform is an AI-powered coding environment that allows users to generate, run, and iterate on code through natural language interaction with AI assistants. Each user session runs inside an isolated, governed Docker container with strict lifecycle, resource, and access controls.
+## 1. Overview
 
-The platform prioritizes safety, determinism, and clear failure semantics while remaining flexible enough for interactive development workflows.
+**ainow.biz** is an AI-agent platform that enables users to create, manage, and work with AI agents on durable projects. The platform presents an RPG-inspired command-center shell from which users access agents and their workspaces.
 
-2. Product Goals
+**Builder Agent** is the first functional agent on ainow.biz and the evolution of the aiSandBox coding product. Builder allows users to create and iterate on software projects through natural language interaction with AI, inside isolated and governed container workspaces.
 
-Provide an isolated, reproducible coding sandbox per session
+Other system agents — Chief of Staff, Product Strategy, and Technology Advisor — are present in the platform registry as coming-soon placeholders. They are not yet functional AI agents.
 
-Allow AI-assisted code generation, execution, and previewing
+The broader ainow.biz multi-agent collaboration and general agent platform capabilities remain planned post-beta direction.
 
-Enforce strong governance guarantees to prevent abuse and resource exhaustion
+The platform prioritizes safety, determinism, reversibility, and clear failure semantics while enabling a productive AI-assisted development workflow.
 
-Ensure predictable lifecycle behavior for sessions and previews
+---
 
-Support future billing, quotas, and multi-tenant expansion
+## 2. Product Goals
 
-3. Core Features
-   A. Session Management
+### Current Goals
 
-Users interact with the platform through sessions, each representing an isolated sandbox environment.
+- Enable users to work on durable software projects with AI assistance inside isolated, governed container workspaces
+- Provide AI-assisted code generation, file modification, and workspace preview within Builder Agent
+- Enforce strong governance guarantees — session lifecycle controls, resource limits, credit enforcement — to prevent abuse and resource exhaustion
+- Ensure predictable, deterministic lifecycle behavior for sessions, workspaces, and previews
+- Support durable project continuity: projects persist across sessions, with save/restore, import/export, and checkpoint recovery
+- Persist Builder conversation context on the backend so users can resume work across sessions
+- Deliver a multilingual user experience supporting English, Traditional Chinese, and Simplified Chinese
+- Provide a controlled usage and credit model: free-plan credit allocation, balance enforcement, and usage tracking per execution
+- Present the ainow.biz platform with Builder as the first functional agent and a clear registry of coming-soon agents
 
-Capabilities
+### Planned Goals
 
-Create a new sandbox session
+- Extend the credit model to support commercial payment processing and subscription management (not activated in current beta)
+- Enable genuinely functional non-Builder system agents (Chief of Staff, Product Strategy, Technology Advisor)
+- Enable user-created agents to execute AI work beyond persisted profiles
+- Support general multi-agent collaboration and orchestration runtimes
 
-Start and stop a session container
+---
 
-Execute commands inside the session
+## 3. Core Features
 
-Read, write, and inspect files within the workspace
+### A. Project Persistence and Workspace Continuity
 
-Governance \& Lifecycle Guarantees
+A **project** is the durable user-owned work identity on ainow.biz. Projects persist across runtime sessions and provide continuity for all user work.
+
+#### Project Capabilities (Current)
+
+- Create and open projects
+- Persistent project identity: files, conversation history, and checkpoints survive session end
+- Import projects from ZIP archives
+- Export project state
+- Git-based checkpoints for recovery and reversal of workspace changes
+
+#### Session Relationship
+
+A **session** is the runtime container lifetime associated with opening a project workspace. It is not the primary user-facing product identity.
+
+- Sessions are created when a user opens a project workspace
+- Sessions are governed by idle timeout, max lifetime, and concurrency limits
+- Session termination does not destroy the project; the project and its files persist
+
+#### Workspace
+
+The active coding environment within a running session — containing the file tree, editor, and preview for that session.
+
+---
+
+### B. Session Lifecycle Management
+
+Users work through project-driven sessions, each representing an isolated container environment.
+
+#### Session Governance Guarantees
 
 Each session has:
 
-Idle timeout (activity-based)
+- Idle timeout (activity-based)
+- Maximum lifetime (absolute, from creation time)
+- Concurrency limits on workspace operations
 
-Maximum lifetime (absolute, from creation time)
-
-Governance limits are config-driven and enforced by the system
-
-Enforcement is request-driven (no background workers)
+Governance limits are configuration-driven and enforced by the system.
 
 When a session exceeds limits:
 
-The session is terminated persistently
+- The session is terminated persistently
+- The container is stopped and removed (best-effort)
+- All subsequent requests return HTTP 410 Gone
+- Project files and checkpoints are preserved
 
-The container is stopped and removed (best-effort)
+#### Termination Semantics
 
-All subsequent requests return HTTP 410 Gone
+- Termination state is stored durably in the database
+- Termination survives process restarts
+- Terminated sessions are irreversible and non-recoverable as runtime environments
+- The underlying project is unaffected by session termination
 
-Termination Semantics
+---
 
-Termination state is stored in the database (terminated\_at, termination\_reason)
+### C. AI Execution (Builder Agent)
 
-Termination survives process restarts
+AI execution is the primary product feature of Builder. A user expresses what they want to build or change; Builder executes an AI request; structured file actions are produced; the platform applies those changes to the workspace; and the file tree, editor, and preview reflect the result.
 
-Terminated sessions are irreversible and non-recoverable
+#### Current Builder Core Loop
 
-B. Code Execution
+```
+User describes what they want to build or change
+→ Builder executes an AI request (single-shot path)
+→ Structured file actions are produced (file writes, deletions)
+→ Platform applies file actions to the workspace
+→ File tree, editor, and preview reflect the changes
+→ A git checkpoint is created for recovery
+→ Project state persists durably across sessions
+```
 
-Sessions support command execution inside the container.
+This is the staging-proven current product promise.
 
-Execution Guarantees
+#### Execution Safety Gate
 
-Commands are executed inside the session's Docker container
+AI execution is governed by a deliberate global safety gate. When the gate is disabled, AI execution requests return a clear unavailable response (HTTP 503). This is an intentional controlled-activation mechanism, not a product failure.
 
-Output includes exit code, stdout, and stderr
+#### Credit and Balance Enforcement
 
-Execution is governed by:
+AI execution is subject to credit balance enforcement. Users must have sufficient credit balance for an execution request to proceed. Insufficient balance returns a governed error response. AI actions are subject to the same governance and lifecycle rules as other user actions — AI cannot bypass session termination or resource limits.
 
-Per-session concurrent exec limits
+#### Agent Harness (Gated)
 
-CPU, memory, and PID limits (Docker cgroups)
+An enhanced multi-turn agent execution capability (Agent Harness) is implemented and available for controlled activation. It is not the default Builder experience in the initial beta.
 
-Failure Modes
+- When enabled, the Harness supports a multi-turn tool loop for more complex task execution
+- Specific tool capabilities (file mutation, validation, browser automation) are individually gated
+- The Harness multi-turn path with real providers has not been proven in production
 
-Exceeding concurrent exec limits returns HTTP 429 Too Many Requests
+Harness activation is an operational decision, not a user-facing beta promise.
 
-Executions on terminated sessions return HTTP 410 Gone
+---
 
-C. File System Operations
+### D. Structured File Actions and Workspace Coherence
 
-Users and AI agents can interact with the session workspace.
+AI responses in Builder produce structured file-action instructions rather than raw unstructured text.
 
-Supported Operations
+#### File Action Pipeline (Current)
 
-Read files
+- AI output is parsed for structured file-action instructions (create, write, delete files)
+- Risky or batch actions surface a confirmation step before application
+- Actions are applied sequentially to the workspace
+- After actions apply, the file tree, editor state, and preview are refreshed to reflect the changes
+- A git checkpoint is created at appropriate points to enable recovery and reversal
 
-Write files
+---
 
-List directories
+### E. File System Operations
 
-Inspect file metadata
+Users and AI can interact with the project workspace files.
 
-Constraints
+#### Supported Operations
 
-All operations are sandboxed to the session workspace
+- Read files
+- Write files
+- List directories
+- Inspect file metadata
 
-Operations are subject to the same lifecycle and termination enforcement as exec
+#### Constraints
 
-D. Preview \& Run
+- All operations are sandboxed to the session workspace
+- Operations are subject to the same lifecycle and termination enforcement as other workspace operations
+- File changes initiated by AI go through the structured file-action pipeline
 
-Sessions may expose application previews via HTTP and WebSocket proxying.
+---
 
-Preview Capabilities
+### F. Preview
 
-Register a preview port (internal-only API)
+Builder sessions may expose application previews via HTTP and WebSocket proxying through the platform.
 
-Access previews via public URLs
+#### Preview Capabilities (Current)
 
-Support HTTP and WebSocket traffic (e.g. HMR, dev servers)
+- Access previews via the integrated preview panel
+- Support HTTP and WebSocket traffic (e.g., HMR, dev servers)
+- Preview is available for active sessions
+- Preview reflects the current state of workspace files after AI file-action application
 
-Health check endpoint for preview readiness
+#### Access Control
 
-Access Control
+- Preview access control is optional and configuration-driven
+- When enabled: requires JWT authentication and enforces session ownership
 
-Preview access control is optional and configuration-driven
+#### Lifecycle Guarantees
 
-When enabled:
+- Previews are only available for active sessions
+- Preview access on terminated sessions returns HTTP 410 Gone
 
-Requires JWT authentication
+---
 
-Enforces session ownership
+### G. Chat Persistence
 
-Lifecycle Guarantees
+Builder conversation context — messages and AI responses — is persisted on the backend. Users can return to an active project and resume conversation context from prior sessions. Chat is not transient or local-only.
 
-Previews are only available for active sessions
+---
 
-Preview access on terminated sessions returns HTTP 410 Gone
+### H. Usage, Credits, and Billing
 
-Health checks also respect termination state
+#### Current Credit Model
 
-E. AI Integration
+- Free-plan credit allocation is provisioned on user registration
+- Credit balances are tracked per user and enforced at execution time
+- Credit is deducted per AI execution
+- Balance enforcement gates AI execution: insufficient balance returns a governed error
+- Usage records are maintained per execution
+- Admin credit grants are supported for operational purposes
+- A billing page and balance display are available in the UI
 
-AI assistants interact with the platform via controlled APIs.
+#### Commercial Payment (Not Current — Planned)
 
-Responsibilities
+Live commercial payment processing, Stripe checkout, and subscription management are not active in the current beta. The underlying infrastructure is implemented but not activated. Activation is a future decision tied to commercial launch planning.
 
-Generate and modify code
+---
 
-Request command execution
+### I. Platform Shell and Agent Registry
 
-Inspect outputs and filesystem state
+#### ainow.biz Platform Shell (Current)
 
-Constraints
+- The ainow.biz command-center shell provides the primary user entry point after authentication
+- Presents an RPG-inspired interface with an agent registry
+- Builder Agent is accessible from the command center and routes to the project workspace
+- System agent placeholders are visible as coming-soon entries
 
-AI actions are subject to the same governance and lifecycle rules as user actions
+#### System Agents
 
-AI cannot bypass session termination or resource limits
+| Agent | Status |
+|-------|--------|
+| Builder Agent | CURRENT — functional AI coding agent |
+| Chief of Staff | COMING SOON — placeholder |
+| Product Strategy | COMING SOON — placeholder |
+| Technology Advisor | COMING SOON — placeholder |
 
-F. Usage, Quotas, and Billing (Foundation)
+#### User-Created Agent Profiles (Current)
 
-The platform provides the foundation for usage-based billing.
+Users can create persistent agent profiles on the platform:
 
-Current Guarantees
+- Create an agent record (name, role, description, status)
+- View and list created agents
+- View agent detail and profile
 
-Token usage and execution activity are observable
+User-created agents are **persistent profiles only**. They are not yet executable runtime agents. Configuring agents with tools, knowledge, or skills, and routing them to an AI execution runtime, are planned post-beta.
 
-Governance violations may result in session termination
+---
 
-Future Extensions (Out of Scope for Current Implementation)
+### J. Multilingual UX
 
-Monetary billing
+The platform delivers a multilingual user experience as a core current requirement.
 
-Cross-session quotas
+#### Supported Locales (Current)
 
-User-level aggregation
+- English (`en`)
+- Traditional Chinese (`zh-TW`)
+- Simplified Chinese (`zh-CN`)
 
-4. Architecture Summary
+All user-facing UI text — including empty states, loading/error/success messages, buttons, labels, chat status, and system feedback — must be delivered in all supported locales. Additional locales are not in current scope.
 
-Frontend: Web UI for interaction
+---
 
-API Gateway: Authentication, authorization, persistence ownership
+### K. Authentication and Identity
 
-Container Manager: Session runtime, Docker orchestration, governance enforcement
+#### Current Authentication (Beta)
 
-Docker Runtime: Isolated execution via containers
+- Email/password registration and login
+- Email verification on registration
+- Authenticated session cookies with CSRF protection
 
-Database: SQLite (current), authoritative source for session state
+#### Deferred
 
-Communication between services is HTTP-only.
+- Google OAuth authentication (configuration present but not activated in current beta)
 
-5. Governance Model
+---
+
+### L. Admin Operations
+
+An admin console provides operational support for the private beta:
+
+- View and manage users
+- View and manage sessions
+- Grant credits to users
+
+Admin operations are a current operational support capability. They are not a public product feature.
+
+---
+
+## 4. Architecture Summary
+
+The current implementation uses a multi-service architecture with durable PostgreSQL state and asynchronous AI execution infrastructure.
+
+**ARCHITECTURE.md is the authoritative document for all technical architecture, service topology, communication patterns, database schema, execution flows, and implementation constraints.**
+
+At a product level:
+
+- The platform consists of multiple cooperating services: frontend, API gateway, AI service, and container manager
+- **PostgreSQL** is the sole authoritative durable database. SQLite is not used.
+- Communication between services uses a **mixed transport model** — HTTP, queue-based messaging, and real-time channels. Services do not communicate via HTTP only.
+- AI execution is **queue-driven and asynchronous** — not a synchronous in-process call
+- Background AI execution workers are part of the implemented architecture
+- The platform supports real-time preview proxying to running containers
+- All services share a common authentication and session-governance model
+
+Do not reproduce ARCHITECTURE.md detail in this document. For service ports, communication internals, queue configuration, database schema, or specific endpoints, refer to ARCHITECTURE.md.
+
+---
+
+## 5. Governance Model
 
 The platform enforces governance at multiple layers:
 
-Container-level: CPU, memory, PID limits
+#### Container-level
 
-Session-level:
+- CPU, memory, and PID limits enforced by the container runtime
 
-Max lifetime
+#### Session-level
 
-Idle timeout
+- Maximum session lifetime (absolute, from creation)
+- Idle timeout (activity-based)
+- Concurrent operation limits
 
-Exec concurrency
+#### Access-level
 
-Access-level:
+- Optional JWT-based preview access control
 
-Optional JWT-based preview access control
+#### Execution-level
 
-All enforcement is:
+- Global AI execution safety gate: governs whether AI execution requests are accepted; operates at request time
+- Credit balance enforcement operates at request time before execution is enqueued
+- Session/lifetime/concurrency governance enforcement is request-driven
+- AI execution itself runs asynchronously via a queue-driven worker after passing governance checks
 
-Deterministic
+#### Enforcement Properties
 
-Request-driven
-
-Idempotent
-
-Persisted when terminal (termination)
-
-6. Error \& Status Semantics
-   Scenario	HTTP Status
-   Session not found	404 Not Found
-   Session terminated	410 Gone
-   Idle timeout exceeded	410 Gone
-   Max lifetime exceeded	410 Gone
-   Exec concurrency exceeded	429 Too Many Requests
-   Preview unavailable	404 / 500 / 502 (as applicable)
-7. Non-Functional Requirements
-   Security
-
-Strong isolation via Docker
-
-No cross-session access
-
-Optional authenticated preview access
-
-Reliability
-
-Deterministic failure modes
-
-Persistent termination state
-
-Safe restart behavior
-
-Performance
-
-No background workers
-
-Low overhead request-driven enforcement
-
-Scalability (Current Scope)
-
-Single-process enforcement
-
-Not yet cluster-safe (future work)
-
-8. Explicit Non-Goals (Current Phase)
-
-Background cleanup workers
-
-Distributed session coordination
-
-Automatic session resurrection
-
-WebSocket-based control APIs
-
-Billing enforcement logic
-
-9. Summary
-
-The AI Sandbox Platform provides a governed, deterministic execution environment for AI-assisted development. Session lifecycle, resource usage, and access are strictly controlled, with persistent termination semantics and clear HTTP behavior, forming a robust foundation for future expansion.
-
-
+- **Deterministic**: governance decisions follow fixed configuration-driven rules
+- **Request-driven** (governance checks): session lifecycle and concurrency enforcement operate on incoming requests
+- **Idempotent**: repeated requests in a terminal state return the same result
+- **Persisted when terminal**: terminal states survive process restarts
 
 ---
 
+## 6. Error and Status Semantics
 
+| Scenario | HTTP Status |
+|----------|-------------|
+| Resource not found | 404 Not Found |
+| Session terminated | 410 Gone |
+| Idle timeout exceeded | 410 Gone |
+| Max lifetime exceeded | 410 Gone |
+| Concurrent operation limit exceeded | 429 Too Many Requests |
+| Preview unavailable | 404 / 500 / 502 (as applicable) |
+| AI execution disabled (safety gate) | 503 Service Unavailable |
+| Insufficient credit balance | Governed error response |
 
-\## 10. Implementation Mapping
-
-
-
-This PRD is implemented and enforced through the following documents:
-
-
-
-\- Architecture Specification: `ARCHITECTURE.md`
-
-\- Master Task Backlog: `TASKS\_BACKLOG\_FULL.md`
-
-\- Active Task Index: `TASKS.md`
-
-\- Checkpoints: `/docs/`
-
-
-
-All implementation work MUST trace back to this PRD.
-
-
+The 503 on execution-disabled is an intentional product state, not a failure condition. It surfaces clearly to users as an unavailability message.
 
 ---
 
+## 7. Non-Functional Requirements
 
+#### Security
 
-\### Feature → Implementation Mapping
+- Strong isolation via Docker container runtime; no cross-session access
+- Optional authenticated preview access
+- Credit-enforced AI execution at request boundary
+- No hardcoded secrets; environment-driven configuration
+- Authentication and authorization enforced at API boundaries
 
+#### Reliability
 
+- Deterministic failure modes
+- Persistent termination state (survives process restart)
+- Safe process restart behavior
+- Durable project state independent of session lifetime
 
-| Feature Area        | Architecture Sections | Task Modules |
+#### Performance
 
-|---------------------|------------------------|--------------|
+- Low-overhead, request-driven governance enforcement for session lifecycle
+- Asynchronous queue-driven AI execution to avoid blocking request threads
+- Single-process enforcement (not yet cluster-safe — future work)
 
-| Session Management  | Sections 3, 4, 5        | Module 4, 5  |
+#### Isolation and Ownership
 
-| Code Execution      | Sections 4, 9, 10       | Module 4.2, 4.8 |
+- Each session is isolated to its project workspace
+- No cross-project or cross-session access
+- Users own their projects; ownership is enforced at the API level
 
-| File Operations     | Sections 4, 9           | Module 4.4, 9.4 |
+#### Multilingual Behavior
 
-| Preview System      | Section 6              | Module 6, 9.5 |
+- All user-facing text must be available in English, Traditional Chinese, and Simplified Chinese
+- Locale selection is applied consistently across the platform experience
 
-| AI Integration      | Section 3, 8            | Module 4.6, 4.7 |
+#### Project Continuity
 
-| Governance \& Limits | Sections 2, 5, 10       | Module 3, 4 |
+- Project identity and files persist across session boundaries
+- Import/export enables project portability
+- Git checkpoints enable recovery and reversal of workspace changes
 
-| Billing \& Quotas    | Section 7              | Module 4.10, 5.5 |
+#### Auditability
 
-| Deployment          | Section 12             | Module 14 |
-
-
+- Usage records are maintained per execution
+- Session lifecycle events are persisted
+- Credit deductions are recorded per execution
 
 ---
 
+## 8. Explicit Non-Goals (Current Phase)
 
+The following are explicitly out of scope for the initial Builder private beta:
 
-\### Governance Rule
+- **Background session cleanup / scheduled workers**: No cron-based or scheduled session cleanup workers. Session lifecycle governance remains request-driven. (The AI execution queue worker is a separate execution concern — not a cleanup worker.)
+- **Distributed session coordination**: Single-node deployment; no distributed locks or multi-node session HA
+- **Automatic session resurrection**: TERMINATED is a final state; no auto-restart of terminated sessions
+- **WebSocket-based control APIs**: WebSocket is used for preview proxying only; it is not a control plane transport
+- **Live commercial payment processing**: Stripe checkout, subscription management, and live payment collection are not active. Basic credit/balance enforcement is current; commercial billing activation is not.
+- **Functional non-Builder system agents**: Chief of Staff, Product Strategy, and Technology Advisor are platform placeholders; they are not functional AI agents in this phase
+- **Executable / configurable user-created agents**: User-created agent profiles are persistent records; routing them to an AI execution runtime, or configuring per-agent models/tools/skills, is out of scope for initial beta
+- **Multi-agent collaboration runtime**: General agent-to-agent referral routing, shared orchestration, and multi-agent collaboration runtimes are post-beta
+- **Shared and specialist knowledge runtime**: Vector/semantic knowledge ingestion and retrieval are planned; not current
+- **Work objects (tickets, decisions, referrals)**: Planned; not current
+- **RPG walking characters and pixel-map game engine**: The command-center shell has an RPG-inspired visual style; full walking characters, explorable pixel maps, and game-engine interaction are post-beta
+- **Broad external integrations**: No general third-party API integration platform in current scope
+- **Public agent ecosystem**: No open marketplace or externally published agent registry in current scope
 
+---
 
+## 9. Summary
+
+**ainow.biz** is a multi-agent work platform. **Builder Agent** is its first functional agent — an AI-assisted coding environment that enables users to create and iterate on software projects through natural language interaction in isolated, governed container workspaces.
+
+The current product delivers:
+
+- A **project-first durable coding workflow** where projects, files, conversations, and checkpoints persist across sessions
+- An **AI-driven workspace change pipeline**: user request → AI file-action output → workspace application → preview → git checkpoint
+- **Integrated preview** of running applications within the workspace
+- **Multilingual UX** in English, Traditional Chinese, and Simplified Chinese
+- A **free-plan credit model** with balance enforcement governing AI execution
+- A **platform command-center shell** with Builder active and other agents clearly marked coming soon
+- **Persistent user-created agent profiles** (not yet executable runtime agents)
+- **Admin operational support** for the private beta
+
+Other system agents (Chief of Staff, Product Strategy, Technology Advisor) are platform placeholders. The broader ainow.biz multi-agent collaboration, general agent platform capabilities, and commercial payment lifecycle remain planned post-beta direction.
+
+The initial private beta is Builder-first: a small trusted cohort, Builder as the functional tested agent, governed by free-plan credits, with multi-agent runtime outside beta scope.
+
+---
+
+## 10. Product Status Reference
+
+### CURRENT (staging-proven or implementation-confirmed)
+
+| Capability |
+|------------|
+| Email/password authentication and email verification |
+| ainow.biz platform command-center shell |
+| Builder Agent — AI-assisted coding in isolated containers |
+| Durable projects (create, open, persist, import/export) |
+| File tree and code editor |
+| AI single-shot execution path |
+| Structured AI file-action pipeline (parse → apply → coherence) |
+| Workspace preview (proxy through container runtime) |
+| Git checkpoints and recovery |
+| Chat and conversation persistence (backend) |
+| Multilingual UX (en, zh-TW, zh-CN) |
+| Free-plan credit balance provisioning and enforcement |
+| Credit deduction per execution |
+| Usage records per execution |
+| Admin operations (user / session / credit management) |
+| Persistent user-created agent profiles (create / list / detail) |
+| Static system-agent registry (Builder active; 3 coming-soon placeholders) |
+
+### GATED (implemented; not the default)
+
+| Capability | Condition |
+|------------|-----------|
+| AI execution globally | Deliberate safety gate must be enabled |
+| Agent Harness multi-turn tool loop | Harness tool-loop gate must be enabled |
+| Harness file mutation tools | Harness write-tools gate must be enabled |
+| Harness validation tools | Harness validation-tools gate must be enabled |
+| Harness browser automation tool | Harness browser-smoke gate must be enabled |
+
+GATED capabilities are implemented and operational under the appropriate conditions. They are not absent or broken.
+
+### PLANNED / NOT CURRENT
+
+| Capability |
+|------------|
+| Functional Chief of Staff agent |
+| Functional Product Strategy agent |
+| Functional Technology Advisor agent |
+| User-created agents as executable runtime agents |
+| Per-agent model / tool / skill / knowledge configuration |
+| Shared and specialist knowledge runtime |
+| Knowledge ingestion and vector/semantic retrieval |
+| Work objects (tickets, decisions, referrals) |
+| Agent-to-agent referral and collaboration runtime |
+| Runtime approval workflows (non-Builder) |
+| Live Stripe payment / subscription management |
+| RPG walking characters and pixel-map game engine |
+| Broad external integrations |
+| Public agent ecosystem |
+
+---
+
+## 11. Terminology Reference
+
+| Term | Definition |
+|------|------------|
+| **ainow.biz** | The umbrella AI-agent platform. Hosts all agents; provides UX shell, registry, billing, and identity. |
+| **Builder Agent** | The first functional AI coding agent on ainow.biz. The aiSandBox module. |
+| **Project** | A durable user-owned work identity. Persists across sessions. Contains files, conversation, and checkpoints. |
+| **Session** | The runtime container execution environment for an open project. Lifecycle: CREATED → ACTIVE → TERMINATED. |
+| **Workspace** | The active files, editor, and preview environment within a running session. Sandboxed to the container workspace directory. |
+| **User-created agent** | A persisted agent profile created by a user. Currently: name, role, description, and status stored in the platform. Not yet executable. |
+| **System agent** | A built-in agent in the platform registry. Builder is active; other system agents are coming-soon placeholders. |
+| **AI Execution** | The single-shot (current) or Harness (gated) path: user request → queue → AI worker → provider → structured file actions applied to workspace. |
+| **File actions** | Structured instructions output by AI (write/delete files). Parsed, applied, and followed by workspace coherence update. |
+| **Agent Harness** | The gated multi-turn tool loop for enhanced AI execution. Implemented; not the default Builder experience. |
+
+---
+
+## 12. Authority and Document Hierarchy
+
+**PRD.md** is authoritative for current product requirements, product scope, feature intent, and product-level distinctions between current, gated, and planned capabilities.
+
+**ARCHITECTURE.md** is authoritative for current technical architecture, service topology, communication patterns, database design, execution flows, and implementation constraints. Where this PRD and ARCHITECTURE.md appear to conflict on a technical implementation detail, ARCHITECTURE.md governs.
+
+**TASKS.md**, **TASKS_BACKLOG_FULL.md**, and locked checkpoint documents in `/docs/` are authoritative for execution history, completion evidence, and task governance.
+
+**CLAUDE.md** is the working contract governing all project work and takes precedence over convenience, assumptions, or shortcuts.
+
+These authorities are complementary, not competing. PRD governs *what* the product does. ARCHITECTURE.md governs *how* it is implemented. Both must be consistent. Neither can override the other within its own domain.
+
+All implementation work must trace back to this PRD and conform to ARCHITECTURE.md and CLAUDE.md.
 
 No feature may be implemented unless it:
 
-
-
-1\. Is defined in this PRD
-
-2\. Is architecturally permitted by ARCHITECTURE.md
-
-3\. Is listed in TASKS\_BACKLOG\_FULL.md
-
-4\. Is activated in TASKS.md
-
-5\. Produces a checkpoint
-
-
-
-If any conflict exists, this PRD takes precedence.
-
-
-
+1. Is defined in this PRD
+2. Is architecturally permitted by ARCHITECTURE.md
+3. Is listed in TASKS_BACKLOG_FULL.md
+4. Is activated in TASKS.md
+5. Produces a checkpoint
