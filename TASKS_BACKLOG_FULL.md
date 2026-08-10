@@ -57064,3 +57064,237 @@ Step 4 (Consolidation):
 **PRIVATE-BETA-INVITE-01 status:** UNBLOCKED for registration — do not execute invitations without registration and Keith explicit approval. PRIVATE-BETA-INVITE-01 remains untouched.
 **GLOBAL_EXECUTION_ENABLED:** unchanged / false (deliberate safety gate)
 **Remaining Builder-first beta sequence:** (1) minimal operational visibility — COMPLETE; (2) controlled Builder AI execution activation; (3) one fresh Keith full end-to-end staging journey; (4) final go/no-go; (5) PRIVATE-BETA-INVITE-01 only after Keith explicit approval.
+
+---
+
+## PRIVATE BETA — Builder AI Execution Activation
+
+### PRIVATE-BETA-EXEC-01: Controlled Builder AI Execution Activation
+
+**Status:** COMPLETE AND LOCKED — 2026-08-10
+**Task ID:** PRIVATE-BETA-EXEC-01
+**Title:** Controlled Builder AI Execution Activation
+**Family:** PRIVATE BETA / BUILDER / EXECUTION ACTIVATION / SAFETY GATE
+**Priority:** P1
+**Risk:** HIGH
+**Nature:** CONTROLLED STAGING RUNTIME / SAFETY-GATE ACTIVATION
+**Workflow:** 4-step HIGH-risk controlled activation lifecycle
+**Model:** Sonnet 4.6 (registration / readiness audit / stage-start / consolidation); GPT-5.3 Codex High (Step 3 controlled staging activation if authorized)
+**Registered:** 2026-08-10
+**Closed:** 2026-08-10
+**Predecessor:** PRIVATE-BETA-OPS-01 COMPLETE AND LOCKED — 2026-08-10 — Checkpoint: `docs/PRIVATE-BETA-OPS-01-CHECKPOINT.md`
+**Checkpoint:** `docs/PRIVATE-BETA-EXEC-01-CHECKPOINT.md`
+**Stage-start:** `docs/PRIVATE-BETA-EXEC-01-STAGE-START.md`
+**Current gate state (starting):** `GLOBAL_EXECUTION_ENABLED=false` (intentional safety gate, not a defect)
+**Final gate state:** `GLOBAL_EXECUTION_ENABLED=true` — deliberately left enabled for Keith full E2E staging journey
+**Operational prerequisite:** PRIVATE-BETA-OPS-01 P1 operational crash/error visibility — **SATISFIED** (independent PM2 watchdog `aisandbox-ops-watchdog` staging-proved; outage + recovery emails received by Keith)
+**Smoke execution ID:** `24acd697-b55c-40d0-b2d5-32faf9b85709` — provider `xai` — path `plain` — tokens `1078` — PASS
+
+---
+
+#### Reason
+
+Builder-first private beta requires safely activating the **existing** Builder AI execution path on staging under tightly controlled conditions, verifying that activation behaves correctly with existing operational safeguards, and establishing a known rollback path.
+
+This is NOT an implementation of a new AI execution architecture.
+
+The existing Builder core single-shot execution path is already implemented and previously staging-proven with a real xAI provider (BILLING-READY-08 historical evidence). This task is about **controlled operational activation** of that existing path.
+
+Historical real-provider evidence (do not reinterpret as proof the gate is currently enabled):
+
+- real xAI execution succeeded
+- model: grok-4.5
+- execution ID: `83acc0e9-84de-4f94-9e41-294701e38393`
+- structured file action created: `smoke-test.txt`
+- workspace state persisted after refresh
+- credit provisioning/deduction path operated
+- `GLOBAL_EXECUTION_ENABLED` was restored to `false` after that controlled smoke
+
+---
+
+#### Objective
+
+Safely move Builder staging from `GLOBAL_EXECUTION_ENABLED=false` to a deliberately activated Builder execution state only after all preconditions are verified.
+
+This task must establish:
+
+1. the exact gate/configuration that controls Builder execution
+2. the exact services that consume the gate
+3. whether changing the gate requires any service restart/reload
+4. whether all other existing kill switches/safety limits remain intact
+5. whether billing/credit/quota protections remain active
+6. whether operational watchdog monitoring remains healthy
+7. whether the existing real-provider configuration is valid
+8. whether a single controlled Builder execution succeeds after activation
+9. whether project/workspace persistence still behaves correctly
+10. whether the gate can be reverted quickly to `false`
+11. whether activation can remain safely enabled for the subsequent Keith full staging journey
+
+---
+
+#### Explicit Execution Scope
+
+**In scope:**
+
+- Builder Agent using the **existing single-shot execution path** only
+- Controlled staging safety-gate activation of the existing Builder execution path
+- Verification against existing operational watchdog / health / credit-quota safeguards
+- Known rollback path to `GLOBAL_EXECUTION_ENABLED=false`
+
+**Explicitly excluded:**
+
+- Harness activation / multi-turn Harness execution
+- Multi-agent execution
+- User-created-agent execution
+- Billing/payment task work
+- New-provider integration
+- New execution architecture
+- Performance/load testing
+- Concurrency testing
+- Broad security review
+- PRIVATE-BETA-INVITE-01 registration or user invitation
+- Genuine multi-agent ainow.biz beta (remains NO-GO)
+- New provider credential, paid service, infrastructure component, or schema migration unless a separate approved task is opened after Step 2 STOP
+- API Gateway 96-test-debt cleanup
+- Unrelated code cleanup or broad refactor
+- Watchdog configuration changes outside the activation-validation evidence path
+- Destructive Docker / PostgreSQL / Redis operations (`docker compose down -v` forbidden)
+
+---
+
+#### Keith Approval Boundary
+
+- Step 1 (Registration) and Step 2 (Activation Readiness Audit + Stage-Start) require **no additional Keith approval**.
+- Any actual change from `GLOBAL_EXECUTION_ENABLED=false` to `GLOBAL_EXECUTION_ENABLED=true` occurs **only** during the explicitly controlled Step 3 runtime task.
+- The Step 3 prompt itself constitutes the bounded authorized activation workflow once reviewed/provided by ChatGPT.
+- If Step 2 discovers that activation requires a new provider credential, new paid service, new infrastructure component, migration, materially different execution path, or security-sensitive change outside the existing gate: **STOP** and return for Keith decision rather than expanding scope.
+
+---
+
+#### Safety Invariants
+
+Throughout this lifecycle:
+
+- Watchdog (`aisandbox-ops-watchdog`) must remain operational
+- PostgreSQL and Redis must not be destructively modified
+- No destructive Docker commands; never use `docker compose down -v`
+- No schema migration unless a newly discovered blocker explicitly requires a separate approved task
+- No new provider / credential / dependency
+- No Harness activation
+- No multi-agent execution
+- No PRIVATE-BETA-INVITE-01 / no user invitation
+- No unrelated code cleanup
+- No API Gateway 96-test-debt cleanup
+- No broad refactor
+- Preserve every COMPLETE AND LOCKED predecessor (GOV-ARCH-01, GOV-PRD-01, PRIVATE-BETA-OPS-01)
+
+---
+
+#### Beta Sequence Dependency
+
+Intended Builder-first beta sequence:
+
+1. **PRIVATE-BETA-OPS-01** — minimal operational visibility — **COMPLETE AND LOCKED — 2026-08-10** (prerequisite satisfied)
+2. **PRIVATE-BETA-EXEC-01** — controlled Builder AI execution activation — **COMPLETE AND LOCKED — 2026-08-10** (this task)
+3. Keith complete end-to-end staging user journey — **NEXT recommended — NOT registered in this task**
+4. Final go/no-go — **NOT registered in this task**
+5. PRIVATE-BETA-INVITE-01 — only after Keith explicit approval — **untouched / unregistered**
+
+Do **not** register the Keith E2E staging journey or PRIVATE-BETA-INVITE-01 during PRIVATE-BETA-EXEC-01.
+
+---
+
+#### 4-Step Workflow
+
+**Step 1 — Registration** — COMPLETE — 2026-08-10
+
+Governance only. Register PRIVATE-BETA-EXEC-01 in `TASKS.md` and `TASKS_BACKLOG_FULL.md`. No application source, tests, `.env`, gate, provider, runtime, infrastructure, watchdog, invite, architecture, PRD, CLAUDE, or roadmap changes. No git commit or push.
+
+**Step 2 — Activation Readiness Audit + Stage-Start** — COMPLETE — 2026-08-10
+
+READ-ONLY. Stage-start: `docs/PRIVATE-BETA-EXEC-01-STAGE-START.md`. Verdict: READY WITH SPECIFIC PRECONDITIONS (Keith credit balance > 0). Gate location, services, restart mechanics, secondary gates, harness separation, provider readiness, activation/rollback commands, and controlled-smoke acceptance criteria documented. No runtime changes in Step 2.
+
+**Step 3 — Controlled Builder Execution Activation + Runtime Validation** — COMPLETE / PASS — 2026-08-10
+
+Preconditions PASS (Keith balance > 0; health PASS; gate initially false; harness gates false; xAI ready; watchdog online). First activation produced transient readiness/connect failure → temporary policy rollback to `false` → stability reconfirmed → successful reactivation to `true` with readiness PASS. Exactly one controlled Builder smoke: execution ID `24acd697-b55c-40d0-b2d5-32faf9b85709`; provider `xai`; path `plain`; tokens `1078`; file `beta-activation-smoke-2026-08-10.txt` with exact content; persisted after refresh; accounting appliedCredits `1078`, overflow `0`, balance 6000→4922; `BILLING_CHARGES_ENABLED=false`; harness not used (`harnessVersion:null`, `enableToolLoop:false`, `selectedPath:"plain"`); post-smoke health PASS; no outage alert; `GLOBAL_EXECUTION_ENABLED=true` deliberately left enabled. Temporary rollback is evidence the safety policy operated correctly — not a task failure.
+
+**Step 4 — Consolidation / Checkpoint** — COMPLETE — 2026-08-10
+
+Checkpoint: `docs/PRIVATE-BETA-EXEC-01-CHECKPOINT.md`. Governance/consolidation only. Next recommended task: one fresh Keith full end-to-end staging journey — **not registered during PRIVATE-BETA-EXEC-01**.
+
+---
+
+#### Acceptance Criteria
+
+Step 1 (Registration):
+- [x] PRIVATE-BETA-EXEC-01 registered in TASKS.md
+- [x] PRIVATE-BETA-EXEC-01 mirrored in TASKS_BACKLOG_FULL.md
+- [x] P1 priority recorded
+- [x] HIGH risk recorded
+- [x] Controlled staging runtime / safety-gate activation nature recorded
+- [x] Builder single-shot path only recorded
+- [x] 4-step workflow recorded
+- [x] Dependency on PRIVATE-BETA-OPS-01 COMPLETE AND LOCKED recorded
+- [x] Current starting gate state `GLOBAL_EXECUTION_ENABLED=false` recorded
+- [x] Operational watchdog prerequisite recorded as satisfied
+- [x] PRIVATE-BETA-INVITE-01 excluded / untouched
+- [x] Harness activation excluded
+- [x] Multi-agent execution excluded
+- [x] Exact next step = PRIVATE-BETA-EXEC-01 Step 2 — Activation Readiness Audit + Stage-Start
+- [x] No implementation acceptance criteria marked complete
+- [x] No activation occurred
+- [x] No provider call occurred
+- [x] No runtime/infrastructure action occurred
+- [x] No application source / tests / `.env` / gate / watchdog / invite / architecture / PRD / CLAUDE / roadmap changes
+- [x] No git commit or push
+
+Step 2 (Activation Readiness Audit + Stage-Start):
+- [x] Exact gate location/meaning documented
+- [x] Services consuming the gate documented
+- [x] Restart/reload requirement determined
+- [x] Secondary kill switches / safety limits inventoried
+- [x] Billing/credit/quota protections confirmed intact (read-only)
+- [x] Watchdog health expectations documented
+- [x] Provider configuration PRESENT/MISSING recorded without exposing secrets
+- [x] Exact activation and rollback commands documented
+- [x] Controlled execution acceptance criteria documented
+- [x] Keith manual/browser action requirement determined
+- [x] Stage-start artifact produced
+- [x] No runtime changes during Step 2
+
+Step 3 (Controlled Activation + Runtime Validation):
+- [x] Staging health verified
+- [x] Watchdog healthy verified
+- [x] Gate false verified before activation
+- [x] Provider/configuration readiness verified
+- [x] Approved Builder execution gate activated
+- [x] Only required service(s) restarted/reloaded
+- [x] Post-activation readiness verified
+- [x] Exactly one controlled Builder real-provider execution performed
+- [x] Workspace/file result verified
+- [x] Execution persistence verified
+- [x] Credit/accounting evidence verified
+- [x] No unexpected operational alerts/failures
+- [x] Gate-remain-enabled decision for Keith E2E journey recorded
+- [x] Immediate rollback ability to false retained
+- [x] Harness multi-turn not activated unless separately authorized
+
+Step 4 (Consolidation):
+- [x] Checkpoint created
+- [x] PRIVATE-BETA-EXEC-01 marked COMPLETE AND LOCKED only if acceptance evidence is complete
+- [x] Final gate state recorded
+- [x] Rollback path recorded
+- [x] Next recommended task identified without registering it here
+- [x] No unrelated implementation changes in consolidation
+
+---
+
+**PRIVATE-BETA-EXEC-01 status:** COMPLETE AND LOCKED — 2026-08-10
+**Checkpoint:** `docs/PRIVATE-BETA-EXEC-01-CHECKPOINT.md`
+**Exact next recommended task:** one fresh Keith full end-to-end staging journey — **NOT registered in this consolidation**
+**Predecessor:** PRIVATE-BETA-OPS-01 COMPLETE AND LOCKED — 2026-08-10 — Checkpoint: `docs/PRIVATE-BETA-OPS-01-CHECKPOINT.md`
+**Final gate state:** `GLOBAL_EXECUTION_ENABLED=true` (deliberately left enabled for Keith E2E journey)
+**PRIVATE-BETA-INVITE-01 status:** untouched / unregistered — do not execute invitations without registration and Keith explicit approval
+**Harness / multi-agent:** excluded; harness remained disabled (`selectedPath:"plain"`)
+**P1 readiness impact:** controlled Builder AI execution activation — **SATISFIED** — does NOT constitute final private-beta GO; does NOT authorize invitations
+**Step 4 runtime/implementation action:** NO
