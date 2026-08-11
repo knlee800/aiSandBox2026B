@@ -45,6 +45,7 @@ export interface AIExecutionRequest {
   conversationId: string;
   userId: string;
   prompt: string;
+  executionIntent?: 'conversation' | 'workspace_mutation';
   provider?: 'stub' | 'anthropic' | 'openai' | 'groq' | 'xai' | 'deepseek';
   model?: string;
   harnessVersion?: 'v1';

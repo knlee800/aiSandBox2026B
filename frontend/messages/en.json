@@ -340,6 +340,10 @@
   "ai": {
     "prompt": "Ask the assistant...",
     "promptLabel": "AI Prompt",
+    "intentAsk": "Ask",
+    "intentBuild": "Build",
+    "intentAskTooltip": "Ask questions without changing files",
+    "intentBuildTooltip": "Create or edit workspace files",
     "sending": "Sending...",
     "modelProvider": "Model",
     "modelProviderLabel": "Model Provider",

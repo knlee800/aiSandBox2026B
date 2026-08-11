@@ -44,6 +44,7 @@ export interface AiExecutionJob {
   adapter: 'openai' | 'anthropic' | 'groq' | 'xai' | 'deepseek' | 'stub' | 'test-harness-stub';
 
   prompt: string;
+  executionIntent?: 'conversation' | 'workspace_mutation';
   workspaceContext?: WorkspaceContext;
   globalInstructions?: string;
   projectInstructions?: string;

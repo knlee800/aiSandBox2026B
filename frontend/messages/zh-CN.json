@@ -340,6 +340,10 @@
   "ai": {
     "prompt": "询问助手...",
     "promptLabel": "AI 提示",
+    "intentAsk": "提问",
+    "intentBuild": "构建",
+    "intentAskTooltip": "仅提问或讨论，不更改任何文件",
+    "intentBuildTooltip": "创建或编辑工作区文件",
     "sending": "发送中...",
     "modelProvider": "模型",
     "modelProviderLabel": "模型提供方",

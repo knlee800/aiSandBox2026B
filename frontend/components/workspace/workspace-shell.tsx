@@ -68,6 +68,7 @@ import zhTwMessages from '@/messages/zh-TW.json';
 import zhCnMessages from '@/messages/zh-CN.json';
 import WorkspaceTabBar from './workspace-tab-bar';
 import type { WorkspaceTabBarTab } from './workspace-tab-bar';
+import type { WorkspaceExecutionIntent } from './workspace-execution-intent.logic';
 import {
   TAB_REGISTRY,
   DEFAULT_ACTIVE_TAB_ID,
@@ -584,6 +585,8 @@ interface WorkspaceShellProps {
   dashboardError: string | null;
   chatPromptInput?: string;
   onChatPromptInputChange?: (value: string) => void;
+  executionIntent?: WorkspaceExecutionIntent;
+  onExecutionIntentChange?: (value: WorkspaceExecutionIntent) => void;
   onCreateProjectFromPrompt?: (prompt: string) => Promise<void>;
   selectedModelProvider?: string;
   onSelectedModelProviderChange?: (value: string) => void;
@@ -1644,6 +1647,8 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
             selectedSessionId={props.selectedSessionId}
             promptInput={props.chatPromptInput ?? ''}
             onPromptInputChange={props.onChatPromptInputChange}
+            executionIntent={props.executionIntent ?? 'workspace_mutation'}
+            onExecutionIntentChange={props.onExecutionIntentChange}
             selectedModelProvider={props.selectedModelProvider ?? ''}
             onSelectedModelProviderChange={props.onSelectedModelProviderChange}
             availableModelProviders={props.availableModelProviders ?? []}
@@ -3836,6 +3841,8 @@ function WorkspaceChatPanel(props: {
   selectedSessionId: string | null;
   promptInput: string;
   onPromptInputChange?: (value: string) => void;
+  executionIntent: WorkspaceExecutionIntent;
+  onExecutionIntentChange?: (value: WorkspaceExecutionIntent) => void;
   selectedModelProvider: string;
   onSelectedModelProviderChange?: (value: string) => void;
   availableModelProviders: Array<{
@@ -4130,6 +4137,44 @@ function WorkspaceChatPanel(props: {
                 {props.aiMessages.contextIndicatorRepoDocsUnavailableMessage}
               </span>
             ) : null}
+          </div>
+          <div className="mb-2 flex items-center" data-testid="workspace-chat-intent-segmented-control">
+            <div
+              role="group"
+              aria-label={props.aiMessages.promptLabel}
+              className="inline-flex rounded-lg border border-gray-200 bg-gray-100 p-0.5"
+            >
+              <button
+                type="button"
+                data-testid="workspace-chat-intent-ask"
+                title={props.aiMessages.intentAskTooltip}
+                aria-pressed={props.executionIntent === 'conversation'}
+                disabled={!props.onExecutionIntentChange || isSending}
+                onClick={() => props.onExecutionIntentChange?.('conversation')}
+                className={`rounded-md px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 ${
+                  props.executionIntent === 'conversation'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'bg-transparent text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                {props.aiMessages.intentAsk}
+              </button>
+              <button
+                type="button"
+                data-testid="workspace-chat-intent-build"
+                title={props.aiMessages.intentBuildTooltip}
+                aria-pressed={props.executionIntent === 'workspace_mutation'}
+                disabled={!props.onExecutionIntentChange || isSending}
+                onClick={() => props.onExecutionIntentChange?.('workspace_mutation')}
+                className={`rounded-md px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 ${
+                  props.executionIntent === 'workspace_mutation'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'bg-transparent text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                {props.aiMessages.intentBuild}
+              </button>
+            </div>
           </div>
           <div className="flex min-w-0 max-w-full items-end gap-2" data-testid="workspace-chat-composer-row">
             <div className="min-w-0 flex-1">

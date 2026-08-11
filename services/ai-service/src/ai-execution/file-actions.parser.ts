@@ -1,5 +1,5 @@
 import { posix as pathPosix } from 'path';
-import { FileAction, FileActionType } from './types';
+import { FileAction, FileActionParseMethod, FileActionType } from './types';
 
 const FILE_ACTION_BLOCK_REGEX = /```file-actions\s*([\s\S]*?)```/gi;
 const VALID_ACTIONS = new Set<FileActionType>(['create', 'write', 'update', 'delete']);
@@ -92,33 +92,97 @@ function parseTopLevelFileActionsObjectPayload(rawOutput: string): FileAction[] 
   }
 }
 
+function parseStructuredJsonPayload(
+  rawOutput: string,
+): ParsedFileActionsOutput | null {
+  const trimmed = rawOutput.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(trimmed) as unknown;
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return null;
+    }
+
+    const parsedObject = parsed as Record<string, unknown>;
+    if (
+      typeof parsedObject.assistantText !== 'string' ||
+      !Array.isArray(parsedObject.fileActions)
+    ) {
+      return null;
+    }
+
+    const fileActions = parsedObject.fileActions
+      .map((item) => parseActionCandidate(item))
+      .filter((item): item is FileAction => item !== null);
+
+    const workspaceMutationAttempted =
+      typeof parsedObject.workspaceMutationAttempted === 'boolean'
+        ? parsedObject.workspaceMutationAttempted
+        : undefined;
+
+    return {
+      textOutput: parsedObject.assistantText.trim(),
+      fileActions,
+      parseMethod: 'structured_json',
+      workspaceMutationAttempted,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export interface ParsedFileActionsOutput {
   textOutput: string;
   fileActions: FileAction[];
+  parseMethod: FileActionParseMethod;
+  workspaceMutationAttempted?: boolean;
 }
 
 export function extractFileActionsFromOutput(
   rawOutput: string,
 ): ParsedFileActionsOutput {
   if (!rawOutput) {
-    return { textOutput: '', fileActions: [] };
+    return { textOutput: '', fileActions: [], parseMethod: 'none' };
   }
 
-  const collectedActions: FileAction[] = [];
-  const textOutput = rawOutput.replace(FILE_ACTION_BLOCK_REGEX, (_, payload) => {
-    const actions = parseBlockPayload(String(payload ?? ''));
-    if (actions.length > 0) {
-      collectedActions.push(...actions);
-    }
-    return '';
-  });
+  const structuredJsonParsed = parseStructuredJsonPayload(rawOutput);
+  if (structuredJsonParsed) {
+    return structuredJsonParsed;
+  }
 
-  if (collectedActions.length === 0) {
-    collectedActions.push(...parseTopLevelFileActionsObjectPayload(rawOutput));
+  const blockMatches = [...rawOutput.matchAll(FILE_ACTION_BLOCK_REGEX)];
+  const collectedActions: FileAction[] = [];
+  let textOutput = rawOutput;
+  if (blockMatches.length > 0) {
+    for (const blockMatch of blockMatches) {
+      const actions = parseBlockPayload(String(blockMatch[1] ?? ''));
+      if (actions.length > 0) {
+        collectedActions.push(...actions);
+      }
+    }
+    textOutput = rawOutput.replace(FILE_ACTION_BLOCK_REGEX, '').trim();
+    return {
+      textOutput,
+      fileActions: collectedActions,
+      parseMethod: 'fenced_block',
+    };
+  }
+
+  const fallbackActions = parseTopLevelFileActionsObjectPayload(rawOutput);
+  if (fallbackActions.length > 0) {
+    return {
+      textOutput: rawOutput.trim(),
+      fileActions: fallbackActions,
+      parseMethod: 'fallback_json',
+    };
   }
 
   return {
-    textOutput: textOutput.trim(),
-    fileActions: collectedActions,
+    textOutput: rawOutput.trim(),
+    fileActions: [],
+    parseMethod: 'none',
   };
 }

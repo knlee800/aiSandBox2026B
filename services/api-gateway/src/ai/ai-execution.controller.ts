@@ -58,6 +58,8 @@ import {
 const MAX_REPO_DOC_COUNT = 10;
 const MAX_REPO_DOC_CHARS = 8000;
 const REPO_DOC_TRUNCATION_SUFFIX = '[...truncated at 8000 characters]';
+type ExecutionIntent = 'conversation' | 'workspace_mutation';
+const DEFAULT_EXECUTION_INTENT: ExecutionIntent = 'workspace_mutation';
 
 /**
  * AIExecutionController
@@ -355,6 +357,18 @@ export class AIExecutionController {
     }
   }
 
+  private normalizeExecutionIntent(input: unknown): ExecutionIntent {
+    if (input === undefined || input === null) {
+      return DEFAULT_EXECUTION_INTENT;
+    }
+    if (input === 'conversation' || input === 'workspace_mutation') {
+      return input;
+    }
+    throw new BadRequestException(
+      "executionIntent must be 'conversation' or 'workspace_mutation' when provided",
+    );
+  }
+
   /**
    * Execute AI request (async — Phase 44.4D)
    *
@@ -414,6 +428,8 @@ export class AIExecutionController {
     if (request.harnessVersion !== undefined && identity.harnessEntitled !== true) {
       throw new ForbiddenException('Forbidden');
     }
+
+    const executionIntent = this.normalizeExecutionIntent(request.executionIntent);
 
     const {
       provider,
@@ -598,6 +614,7 @@ export class AIExecutionController {
       projectInstructions,
       requestId,
       submittedAt,
+      executionIntent,
       ...(request.harnessVersion !== undefined && { harnessVersion: request.harnessVersion }),
       ...(request.agentRole !== undefined && { agentRole: request.agentRole }),
       ...(request.builderProfileId !== undefined && { builderProfileId: request.builderProfileId }),

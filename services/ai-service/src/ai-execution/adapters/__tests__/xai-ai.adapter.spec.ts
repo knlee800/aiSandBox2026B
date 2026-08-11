@@ -102,20 +102,24 @@ describe('XAIAdapter', () => {
 
         await adapter.execute(request);
 
-        expect(mockClient.chat.completions.create).toHaveBeenCalledWith(
+        const calledRequest = mockClient.chat.completions.create.mock.calls[0][0];
+        expect(calledRequest.model).toBe('grok-4.5');
+        expect(calledRequest.max_tokens).toBe(4096);
+        expect(calledRequest.temperature).toBe(1.0);
+        expect(calledRequest.response_format).toEqual({ type: 'json_object' });
+        expect(calledRequest.messages).toEqual([
+          expect.objectContaining({
+            role: 'system',
+            content: expect.stringContaining(
+              'Your entire response MUST be a single valid JSON object',
+            ),
+          }),
           {
-            model: 'grok-4.5',
-            max_tokens: 4096,
-            temperature: 1.0,
-            messages: [
-              {
-                role: 'user',
-                content: 'Test prompt',
-              },
-            ],
+            role: 'user',
+            content: 'Test prompt',
           },
-          {},
-        );
+        ]);
+        expect(mockClient.chat.completions.create.mock.calls[0][1]).toEqual({});
       });
 
       it('should prepend a system message when systemPrompt is present', async () => {
@@ -137,24 +141,21 @@ describe('XAIAdapter', () => {
 
         await adapter.execute(request);
 
-        expect(mockClient.chat.completions.create).toHaveBeenCalledWith(
-          {
-            model: 'grok-4.5',
-            max_tokens: 4096,
-            temperature: 1.0,
-            messages: [
-              {
-                role: 'system',
-                content: 'Follow platform contract.',
-              },
-              {
-                role: 'user',
-                content: 'Test prompt',
-              },
-            ],
-          },
-          {},
+        const calledRequest = mockClient.chat.completions.create.mock.calls[0][0];
+        expect(calledRequest.response_format).toEqual({ type: 'json_object' });
+        expect(calledRequest.messages[0]).toEqual(
+          expect.objectContaining({
+            role: 'system',
+            content: expect.stringContaining('Follow platform contract.'),
+          }),
         );
+        expect(calledRequest.messages[0].content).toContain(
+          'workspaceMutationAttempted',
+        );
+        expect(calledRequest.messages[1]).toEqual({
+          role: 'user',
+          content: 'Test prompt',
+        });
       });
 
       it('should include content field when prompt is undefined (TASK-56A)', async () => {
@@ -176,8 +177,57 @@ describe('XAIAdapter', () => {
         await adapter.execute(request);
 
         const call = mockClient.chat.completions.create.mock.calls[0][0];
-        expect(call.messages[0]).toHaveProperty('content');
-        expect(call.messages[0].content).toBe('');
+        expect(call.messages[1]).toHaveProperty('content');
+        expect(call.messages[1].content).toBe('');
+      });
+
+      it('should describe the approved JSON response shape in system instructions', async () => {
+        const mockResponse = {
+          choices: [{ message: { content: 'Test output' } }],
+          usage: { total_tokens: 100 },
+          model: 'grok-beta',
+        };
+        mockClient.chat.completions.create.mockResolvedValue(mockResponse);
+
+        const request: AIExecutionRequest = {
+          sessionId: 'session-1',
+          conversationId: 'conv-1',
+          userId: 'user-1',
+          prompt: 'Test prompt',
+          provider: 'stub',
+        };
+
+        await adapter.execute(request);
+
+        const call = mockClient.chat.completions.create.mock.calls[0][0];
+        expect(call.messages[0].content).toContain('"assistantText"');
+        expect(call.messages[0].content).toContain('"fileActions"');
+        expect(call.messages[0].content).toContain('"workspaceMutationAttempted"');
+      });
+
+      it('should not introduce tool/function-calling in request payload', async () => {
+        const mockResponse = {
+          choices: [{ message: { content: 'Test output' } }],
+          usage: { total_tokens: 100 },
+          model: 'grok-beta',
+        };
+        mockClient.chat.completions.create.mockResolvedValue(mockResponse);
+
+        const request: AIExecutionRequest = {
+          sessionId: 'session-1',
+          conversationId: 'conv-1',
+          userId: 'user-1',
+          prompt: 'Test prompt',
+          provider: 'stub',
+        };
+
+        await adapter.execute(request);
+
+        const call = mockClient.chat.completions.create.mock.calls[0][0];
+        expect(call.tools).toBeUndefined();
+        expect(call.function_call).toBeUndefined();
+        expect(call.functions).toBeUndefined();
+        expect(mockClient.chat.completions.create).toHaveBeenCalledTimes(1);
       });
 
       it('should extract text content from response.choices[0].message.content', async () => {

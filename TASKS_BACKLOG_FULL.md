@@ -1,4 +1,4 @@
-﻿## Authority Notice
+## Authority Notice
 
 This document is the MASTER task backlog.
 
@@ -57298,3 +57298,1335 @@ Step 4 (Consolidation):
 **Harness / multi-agent:** excluded; harness remained disabled (`selectedPath:"plain"`)
 **P1 readiness impact:** controlled Builder AI execution activation — **SATISFIED** — does NOT constitute final private-beta GO; does NOT authorize invitations
 **Step 4 runtime/implementation action:** NO
+
+---
+
+## PRIVATE BETA — Fresh Keith Builder End-to-End Staging Journey
+
+### PRIVATE-BETA-E2E-01: Fresh Keith Builder End-to-End Staging Journey
+
+**Status:** COMPLETE AND LOCKED — 2026-08-10 — **FAIL / BLOCKER**
+**Task ID:** PRIVATE-BETA-E2E-01
+**Title:** Fresh Keith Builder End-to-End Staging Journey
+**Family:** PRIVATE BETA / BUILDER / END-TO-END / USER JOURNEY
+**Priority:** P1
+**Risk:** HIGH
+**Nature:** CONTROLLED STAGING E2E / REAL USER JOURNEY / REAL PROVIDER
+**Workflow:** 4-step HIGH-risk controlled staging E2E lifecycle
+**Model:** Sonnet 4.6 (registration / journey plan / stage-start / consolidation); Keith manual browser for Step 3 journey; Cursor may perform bounded read-only staging/runtime evidence collection before and after where explicitly authorized
+**Registered:** 2026-08-10
+**Closed:** 2026-08-10
+**Checkpoint:** `docs/PRIVATE-BETA-E2E-01-CHECKPOINT.md`
+**Stage-start:** `docs/PRIVATE-BETA-E2E-01-STAGE-START.md`
+**Step 3 evidence correction:** `docs/PRIVATE-BETA-E2E-01-STEP-3-EVIDENCE-CORRECTION.md`
+**Predecessors:**
+- PRIVATE-BETA-OPS-01 COMPLETE AND LOCKED — 2026-08-10 — Checkpoint: `docs/PRIVATE-BETA-OPS-01-CHECKPOINT.md`
+- PRIVATE-BETA-EXEC-01 COMPLETE AND LOCKED — 2026-08-10 — Checkpoint: `docs/PRIVATE-BETA-EXEC-01-CHECKPOINT.md`
+**Starting gate state:** `GLOBAL_EXECUTION_ENABLED=true` — intentional from PRIVATE-BETA-EXEC-01 at journey start
+**Final gate state:** `GLOBAL_EXECUTION_ENABLED=false` — rolled back after FAIL / BLOCKER; do not re-enable in this task
+**Operational prerequisite:** PRIVATE-BETA-OPS-01 P1 operational crash/error visibility — **SATISFIED** (independent PM2 watchdog `aisandbox-ops-watchdog` staging-proved; remains active)
+**Builder execution posture:** Builder existing single-shot execution path was enabled for the journey; xAI real-provider path exercised; core workspace mutation FAILED
+**Harness posture:** Agent Harness multi-turn tool loop remained disabled; Harness write tools remained disabled
+**Billing posture:** `BILLING_CHARGES_ENABLED=false`; Stripe charging remains disabled
+**Launch posture:** INTERNAL
+**Invite posture:** no private-beta invitation authorized; PRIVATE-BETA-INVITE-01 remains unregistered / untouched
+**Final GO/NO-GO posture:** Builder-first Private Beta Final Go/No-Go Decision — **NOT REGISTERED**; private beta remains **NO-GO PENDING BLOCKER FIX**
+**Primary blocker:** structured file-action generation / output-contract failure — completed plain-path execution `2bc73157-973a-45ec-8b71-bca8c2f7941d` returned assistant text with `fileActions: []`; no `index.html`; empty `/workspace`
+**Recommended next:** BUILDER-INTENT-01 ACTIVE — Step 1 COMPLETE (Registration — 2026-08-11) — exact next: BUILDER-INTENT-01 Step 2 — Intent Contract + UX Stage-Start — Remaining recommended ordering after BUILDER-INTENT-01: PRIVATE-BETA-BLOCKER-03C -> PRIVATE-BETA-BLOCKER-03D -> fresh PRIVATE-BETA-E2E rerun -> Final GO/NO-GO review (03C/03D remain NOT REGISTERED) — **PRIVATE-BETA-BLOCKER-03B COMPLETE AND LOCKED — 2026-08-11 — PASS** — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03B-CHECKPOINT.md` — private beta remains **NO-GO PENDING REMAINING READINESS WORK**
+
+---
+
+#### Reason
+
+The P1 operational-visibility and controlled Builder execution-activation prerequisites are COMPLETE AND LOCKED. PRIVATE-BETA-EXEC-01 already proved gate activation, xAI provider path, one structured file creation, persistence after refresh, credit accounting, and Harness separation.
+
+PRIVATE-BETA-E2E-01 is the final product-journey validation before the separate Builder-first private-beta go/no-go decision. It must verify the **user experience** and integrated product path — not merely backend service health — by having Keith personally exercise the current Builder product as an actual trusted beta user on live staging with Builder execution enabled.
+
+Core question:
+
+> Can Keith use the current Builder staging product as a real trusted beta user, from entry into the product through AI-assisted workspace changes and persistence, without relying on internal implementation knowledge or intervention?
+
+This is NOT another narrow activation smoke. Keep it bounded. Do NOT turn this into exhaustive QA.
+
+---
+
+#### Objective
+
+Perform one fresh, realistic, bounded Keith Builder staging journey that validates, where current product scope supports it:
+
+1. public staging entry
+2. authentication/session continuity
+3. navigation into Builder
+4. fresh project/workspace creation or equivalent clean starting point
+5. Builder prompt submission
+6. real-provider execution
+7. structured workspace/file changes
+8. file tree coherence
+9. editor coherence
+10. preview behavior
+11. AI/chat result surfacing
+12. project persistence
+13. browser refresh persistence
+14. project reopen/session continuity where applicable
+15. credit/accounting behavior visible through existing supported surfaces
+16. absence of unexpected crashes/errors
+17. watchdog remains healthy / no alert
+18. overall user journey is understandable enough for the initial 1–3 trusted-user beta
+
+---
+
+#### Explicit Execution Scope
+
+**In scope:**
+
+- one fresh Keith staging journey
+- one Builder project/workspace
+- one realistic but bounded AI build/edit request
+- normal navigation/UI interaction
+- workspace/file-tree/editor verification
+- preview verification
+- persistence/refresh/reopen verification
+- existing credit/accounting verification
+- operational-health verification
+- capture any genuine blocker/regression encountered
+- Builder existing single-shot execution path only
+- prefer one meaningful real-provider request; a second only if Step 2 explicitly justifies it
+
+**Journey design principle:**
+
+Use a small but realistic Builder request, more representative than “create one text file.” Appropriate scale examples: a tiny single-page app; a small existing-project UI/content change; a simple multi-file static experience. Exact prompt must be determined in Step 2 after inspecting current Builder/project/preview contracts. Do **not** choose the final smoke prompt in registration.
+
+**Explicitly excluded:**
+
+- multi-agent execution
+- Chief of Staff / Product Strategy / Technology Advisor execution
+- user-created agent execution
+- Harness activation
+- Harness write tools
+- Stripe / payment checkout
+- subscriptions
+- production rollout
+- PRIVATE-BETA-INVITE-01 / private-beta invitation
+- load testing
+- concurrency testing
+- security penetration testing
+- broad accessibility audit
+- exhaustive multilingual regression
+- full mobile matrix
+- API Gateway 96-test infrastructure debt
+- knowledge runtime
+- referrals / collaboration / work objects
+- semantic search
+- full RPG walking-character experience
+- unrelated UX polish
+- genuine multi-agent ainow.biz beta (remains NO-GO)
+- Builder-first Private Beta Final Go/No-Go Decision registration (deferred; do not register during this lifecycle)
+- changing `GLOBAL_EXECUTION_ENABLED` during registration
+- changing Harness flags
+- changing billing/Stripe flags
+- modifying `.env`
+- SSH / PM2 / Docker / PostgreSQL / Redis / deploy actions during registration
+- source / tests / watchdog / ARCHITECTURE.md / PRD.md / CLAUDE.md / AINOW-EXECUTION-ROADMAP.md changes
+
+---
+
+#### Evaluation Categories (Step 3)
+
+Classify each major journey area as PASS / PASS WITH LIMITATION / FAIL / BLOCKER / NOT APPLICABLE:
+
+1. Entry/auth
+2. Builder access
+3. Project/workspace creation/open
+4. Prompt submission
+5. AI execution
+6. Workspace changes
+7. File tree/editor coherence
+8. Preview
+9. Chat/result surfacing
+10. Persistence after refresh
+11. Reopen/session continuity
+12. Credits/accounting
+13. Operational health/watchdog
+14. Overall trusted-beta usability
+
+**Blocking severity:** A finding blocks the subsequent GO/NO-GO only when it materially prevents or makes unsafe the 1–3 trusted-user Builder beta (e.g., cannot authenticate; cannot enter Builder; AI execution consistently fails; generated workspace changes are lost; project cannot be recovered/reopened; preview fundamentally broken; major billing/credit safety defect; operational crash without recovery; unexpected Harness activation; serious data isolation/safety issue). Minor copy/polish issues should not automatically block — record accurately without expanding scope.
+
+---
+
+#### Keith Manual / Browser Role
+
+- Step 1 (Registration) and Step 2 (Journey Plan + Stage-Start) require **no live E2E journey** and **no provider call**.
+- Step 3 is Keith’s full browser/user-facing staging journey. Keith must personally confirm visible UI/UX results.
+- Cursor may perform bounded read-only staging/runtime evidence collection before and after Step 3 where explicitly authorized.
+- Prefer the minimum number of real-provider executions necessary to prove the integrated product path (prefer one meaningful request).
+
+---
+
+#### Safety Invariants
+
+Throughout this lifecycle:
+
+- Watchdog (`aisandbox-ops-watchdog`) remains active
+- Harness remains disabled
+- Stripe charging remains disabled (`BILLING_CHARGES_ENABLED=false`)
+- Launch remains INTERNAL
+- No destructive DB / Redis actions
+- No destructive Docker actions; never `docker compose down -v`
+- No migrations
+- No new dependency
+- No new provider
+- No architecture changes
+- No unrelated source changes
+- No invitations
+- Preserve every COMPLETE AND LOCKED predecessor (including PRIVATE-BETA-OPS-01 and PRIVATE-BETA-EXEC-01)
+- If a severe runtime issue occurs during Step 3, established execution-gate rollback to `GLOBAL_EXECUTION_ENABLED=false` remains available
+- Do not toggle the gate during registration; Step 2 must determine the rollback condition, but activation itself has already been completed by PRIVATE-BETA-EXEC-01
+
+---
+
+#### Beta Sequence Dependency
+
+Intended Builder-first beta sequence:
+
+1. **PRIVATE-BETA-OPS-01** — minimal operational visibility — **COMPLETE AND LOCKED — 2026-08-10** (prerequisite satisfied)
+2. **PRIVATE-BETA-EXEC-01** — controlled Builder AI execution activation — **COMPLETE AND LOCKED — 2026-08-10** (prerequisite satisfied; gate was left `true` then rolled back after E2E FAIL)
+3. **PRIVATE-BETA-E2E-01** — Fresh Keith Builder End-to-End Staging Journey — **COMPLETE AND LOCKED — 2026-08-10 — FAIL / BLOCKER**
+4. Builder-first Private Beta Final Go/No-Go Decision — **NOT registered**; blocked pending blocker fix
+5. PRIVATE-BETA-INVITE-01 — only after Keith explicit approval — **untouched / unregistered**
+
+Do **not** register the final GO/NO-GO task or PRIVATE-BETA-INVITE-01 during PRIVATE-BETA-E2E-01. Recommended next family PRIVATE-BETA-BLOCKER-03 is **not registered** here.
+
+---
+
+#### 4-Step Workflow
+
+**Step 1 — Registration** — COMPLETE — 2026-08-10
+
+Governance only. Register PRIVATE-BETA-E2E-01 in `TASKS.md` and `TASKS_BACKLOG_FULL.md`. No E2E journey. No provider call. No `GLOBAL_EXECUTION_ENABLED` change. No Harness/billing/Stripe flag changes. No `.env` / SSH / PM2 / Docker / PostgreSQL / Redis / deploy / source / tests / watchdog / ARCHITECTURE.md / PRD.md / CLAUDE.md / AINOW-EXECUTION-ROADMAP.md changes. No git commit or push. No invitation. No final GO/NO-GO registration.
+
+**Step 2 — Journey Plan + Stage-Start** — COMPLETE — 2026-08-10
+
+READ-ONLY planning completed. Stage-start artifact: `docs/PRIVATE-BETA-E2E-01-STAGE-START.md`. Exact fresh-project journey, prompt, preview/persistence checks, accounting/ops checks, PASS/limitation/blocker rubric, and rollback procedure documented. No journey performed during Step 2.
+
+**Step 3 — Keith Full End-to-End Staging Journey + Evidence Collection** — COMPLETE — 2026-08-10 — **FAIL / BLOCKER**
+
+Keith performed the browser journey. Pre-flight PASS. Entry/project setup supported. Provider executions occurred (intentional troubleshooting: 2× Grok 4.5 completed; 2× Grok 4.2 timed out/stopped). Core requested workspace mutation FAILED: completed plain-path execution `2bc73157-973a-45ec-8b71-bca8c2f7941d` returned assistant text with `fileActions: []`; no `index.html`; empty `/workspace`. Preview/editor/persistence could not be completed meaningfully. Gate rolled back to `GLOBAL_EXECUTION_ENABLED=false`. Evidence correction: `docs/PRIVATE-BETA-E2E-01-STEP-3-EVIDENCE-CORRECTION.md`.
+
+**Step 4 — Consolidation / Checkpoint** — COMPLETE — 2026-08-10
+
+Checkpoint created: `docs/PRIVATE-BETA-E2E-01-CHECKPOINT.md`. Final verdict FAIL / BLOCKER. Private-beta readiness: **NO-GO PENDING BLOCKER FIX**. Next recommended (not registered): PRIVATE-BETA-BLOCKER-03. No implementation/runtime action in consolidation.
+
+---
+
+#### Acceptance Criteria
+
+Step 1 (Registration):
+- [x] PRIVATE-BETA-E2E-01 registered in TASKS.md
+- [x] PRIVATE-BETA-E2E-01 mirrored in TASKS_BACKLOG_FULL.md
+- [x] P1 priority recorded
+- [x] HIGH risk recorded
+- [x] Controlled staging E2E / real-user journey / real-provider nature recorded
+- [x] Dependency on PRIVATE-BETA-OPS-01 COMPLETE AND LOCKED recorded
+- [x] Dependency on PRIVATE-BETA-EXEC-01 COMPLETE AND LOCKED recorded
+- [x] Starting `GLOBAL_EXECUTION_ENABLED=true` recorded (intentional from PRIVATE-BETA-EXEC-01)
+- [x] Builder single-shot only recorded
+- [x] Watchdog prerequisite recorded as satisfied / remains active
+- [x] Harness excluded / remains off
+- [x] Stripe charging excluded / remains off
+- [x] PRIVATE-BETA-INVITE-01 excluded / untouched / unregistered
+- [x] Four-step lifecycle recorded
+- [x] Exact next step = PRIVATE-BETA-E2E-01 Step 2 — Journey Plan + Stage-Start
+- [x] Final GO/NO-GO task explicitly not yet registered
+- [x] No runtime acceptance criteria marked complete
+- [x] No E2E journey performed
+- [x] No provider call occurred
+- [x] No runtime/infrastructure action occurred
+- [x] `GLOBAL_EXECUTION_ENABLED` remained true (untouched)
+- [x] Harness flags untouched
+- [x] No application source / tests / `.env` / gate / watchdog / invite / architecture / PRD / CLAUDE / roadmap changes
+- [x] No git commit or push
+
+Step 2 (Journey Plan + Stage-Start):
+- [x] Exact shortest realistic Keith journey planned
+- [x] Starting URL / auth state / account / project strategy documented
+- [x] Exact realistic Builder prompt chosen
+- [x] Expected files/result / preview / refresh/reopen / accounting / ops checks documented
+- [x] PASS vs limitation vs blocker criteria documented
+- [x] Rollback/safety response documented
+- [x] Stage-start artifact produced (`docs/PRIVATE-BETA-E2E-01-STAGE-START.md`)
+- [x] No journey performed during Step 2
+
+Step 3 (Keith Full E2E Journey + Evidence Collection):
+- [x] Pre-journey operational health verified — **PASS**
+- [x] Entry / project setup evidence supported — project `Private Beta E2E 2026-08-10` / session / container identity valid
+- [x] Provider execution occurred — intentional attempts recorded (2× Grok 4.5 completed; 2× Grok 4.2 timed out/stopped); **no duplicate-execution defect confirmed**
+- [ ] Core requested workspace mutation (`index.html` via structured file actions) — **FAILED / BLOCKER** (`fileActions: []`; empty `/workspace`)
+- [ ] Preview / editor / persistence journey completed meaningfully — **NOT COMPLETED** because `index.html` never existed
+- [x] Evaluation categories classified
+- [x] Provider/runtime evidence collected as authorized
+- [x] Accounting / watchdog / post-rollback health evidence recorded
+- [x] Blockers/limitations captured without scope expansion
+- [x] Post-journey operational health verified — gate restored `false`; services healthy
+- [x] Final private-beta GO/NO-GO remains blocked
+- [x] Invitations remain prohibited — PRIVATE-BETA-INVITE-01 untouched / unregistered
+
+Step 4 (Consolidation):
+- [x] Checkpoint created (`docs/PRIVATE-BETA-E2E-01-CHECKPOINT.md`)
+- [x] Final E2E verdict recorded — **FAIL / BLOCKER**
+- [x] Private-beta readiness impact recorded — **NO-GO PENDING BLOCKER FIX**
+- [x] Next recommended task identified without registering GO/NO-GO, INVITE, or BLOCKER-03 here
+- [x] No unrelated implementation / runtime changes in consolidation
+
+---
+
+**PRIVATE-BETA-E2E-01 status:** COMPLETE AND LOCKED — 2026-08-10 — **FAIL / BLOCKER**
+**Checkpoint:** `docs/PRIVATE-BETA-E2E-01-CHECKPOINT.md`
+**Exact next task:** BUILDER-INTENT-01 ACTIVE — Step 1 COMPLETE (Registration — 2026-08-11) — exact next step: BUILDER-INTENT-01 Step 2 — Intent Contract + UX Stage-Start — Predecessor remediation: PRIVATE-BETA-BLOCKER-03B COMPLETE AND LOCKED — 2026-08-11 — PASS — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03B-CHECKPOINT.md` — Diagnosis predecessor: PRIVATE-BETA-BLOCKER-03A COMPLETE AND LOCKED — ROOT CAUSE PROVEN — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03A-CHECKPOINT.md` — Remaining recommended ordering after BUILDER-INTENT-01: PRIVATE-BETA-BLOCKER-03C -> PRIVATE-BETA-BLOCKER-03D -> fresh PRIVATE-BETA-E2E rerun -> Final GO/NO-GO review (03C/03D remain NOT REGISTERED)
+**Family pointer:** PRIVATE-BETA-BLOCKER-03 — Builder Execution Reliability / File-Action Contract (03A COMPLETE AND LOCKED; 03B COMPLETE AND LOCKED — PASS; 03C/03D remain NOT REGISTERED) — ACTIVE successor product task: BUILDER-INTENT-01 ACTIVE — Step 1 COMPLETE
+**Predecessors:** PRIVATE-BETA-OPS-01 COMPLETE AND LOCKED; PRIVATE-BETA-EXEC-01 COMPLETE AND LOCKED
+**Final gate state:** `GLOBAL_EXECUTION_ENABLED=false` (rolled back; do not re-enable)
+**PRIVATE-BETA-INVITE-01 status:** untouched / unregistered — invitations prohibited
+**Builder-first Private Beta Final Go/No-Go Decision:** NOT REGISTERED — blocked
+**Private-beta readiness impact:** **NO-GO PENDING BLOCKER FIX** — Builder plain-path can complete with text-only zero `fileActions` for explicit file-creation request
+**Harness / multi-agent / Stripe charging:** excluded / remain off
+**Step 4 implementation/runtime action:** NO
+
+---
+
+## PRIVATE-BETA-BLOCKER-03 — Builder Execution Reliability / File-Action Contract
+
+### PRIVATE-BETA-BLOCKER-03A: Empty File-Action Contract Diagnosis
+
+**Status:** COMPLETE AND LOCKED — 2026-08-10 — ROOT CAUSE PROVEN
+**Task ID:** PRIVATE-BETA-BLOCKER-03A
+**Title:** Empty File-Action Contract Diagnosis
+**Family:** PRIVATE-BETA-BLOCKER-03 / BUILDER EXECUTION RELIABILITY / FILE-ACTION CONTRACT
+**Priority:** P0 — beta blocker remediation
+**Risk:** HIGH
+**Nature:** READ-ONLY CROSS-LAYER ROOT-CAUSE DIAGNOSIS
+**Workflow:** 3-step diagnosis lifecycle (Registration → Root-Cause Diagnosis + Evidence → Consolidation / Checkpoint)
+**Model:** Sonnet 4.6 (registration / diagnosis docs / consolidation); read-only source + staging evidence inspection in Step 2
+**Registered:** 2026-08-10
+**Closed:** 2026-08-10
+**Predecessor:** PRIVATE-BETA-E2E-01 — COMPLETE AND LOCKED — 2026-08-10 — FAIL / BLOCKER — Checkpoint: `docs/PRIVATE-BETA-E2E-01-CHECKPOINT.md` — Step 3 evidence correction: `docs/PRIVATE-BETA-E2E-01-STEP-3-EVIDENCE-CORRECTION.md`
+**Diagnosis artifact (Step 2):** `docs/PRIVATE-BETA-BLOCKER-03A-DIAGNOSIS.md` — COMPLETE — ROOT CAUSE PROVEN
+**Checkpoint (Step 3):** `docs/PRIVATE-BETA-BLOCKER-03A-CHECKPOINT.md`
+**Starting safety state:** `GLOBAL_EXECUTION_ENABLED=false` — preserve; do not re-enable even temporarily
+**Invite posture:** PRIVATE-BETA-INVITE-01 remains unregistered / untouched / invitations prohibited
+**Private-beta readiness impact:** Builder-first private beta remains **NO-GO PENDING BLOCKER FIX** — root cause understood; no new provider execution until 03B implemented and validated; E2E must eventually be rerun after blocker remediation; invitations remain prohibited
+
+---
+
+#### Reason
+
+PRIVATE-BETA-E2E-01 proved that an explicit Builder file-creation request can complete successfully at provider/execution level, surface assistant text, consume tokens/credits, yet produce `fileActions: []` and zero workspace mutation.
+
+This is the primary Builder private-beta blocker. PRIVATE-BETA-BLOCKER-03A exists only to diagnose the empty file-action contract failure with evidence before any fix is attempted.
+
+---
+
+#### Primary Blocker (authoritative)
+
+Completed Grok 4.5 Builder plain-path execution can return assistant text with zero structured file actions for an explicit file-creation request.
+
+**Target / primary blocked execution:** `2bc73157-973a-45ec-8b71-bca8c2f7941d`
+
+| Field | Confirmed evidence |
+|-------|--------------------|
+| Provider | xAI |
+| Execution path | `plain` |
+| Status | `completed` |
+| Tokens | `1251` |
+| Assistant text | Surfaced: `Creating a single self-contained index.html with the checklist behavior and minimal styling.` |
+| `fileActions` | `[]` |
+| Workspace write | None |
+| `index.html` | Not created |
+| Server `/workspace` | Empty |
+| Browser refresh recovery | Could not recover anything |
+| Harness | Not involved (`harnessVersion:null`, `selectedPath:"plain"`, tool loop false, write tools false) |
+
+This is **not** classified as a frontend apply-path failure for the target execution — no actions existed to apply.
+
+---
+
+#### Corrected Intentional Execution History
+
+Keith intentionally made troubleshooting attempts during PRIVATE-BETA-E2E-01 Step 3:
+
+| Model | Attempts | Outcome |
+|-------|----------|---------|
+| Grok 4.5 | 2 intentional submissions | Completed (text surfaced; no workspace mutation on target evidence) |
+| Grok 4.2 | 2 intentional submissions | Both timed out / were stopped |
+
+**Explicitly NOT a defect:**
+
+- frontend duplicate submission
+- backend retry / requeue
+- automatic retry
+- duplicate-execution anomaly
+
+There is **NO** confirmed duplicate-submission/retry defect. 03A must not reintroduce that framing.
+
+---
+
+#### Historical Successful Comparison Executions
+
+Use existing successful Builder plain-path real-provider executions as comparison points. Do **not** generate another provider request.
+
+| Execution ID | Context | Known outcome |
+|--------------|---------|---------------|
+| `24acd697-b55c-40d0-b2d5-32faf9b85709` | PRIVATE-BETA-EXEC-01 successful activation smoke | provider xAI; path `plain`; tokens `1078`; created `beta-activation-smoke-2026-08-10.txt`; workspace mutation + persistence succeeded |
+| `83acc0e9-84de-4f94-9e41-294701e38393` | Earlier controlled real-provider smoke (FR-04 / BILLING-READY-08) | xAI; grok-4.5; structured file action created `smoke-test.txt`; persisted successfully |
+
+Compare against failed/blocking execution `2bc73157-973a-45ec-8b71-bca8c2f7941d` where evidence supports: requested model, selected provider, prompt shape, execution path, provider response form, parser input/output, assistant text, fileActions count, status, workspace write outcome. Do not fill missing evidence with assumptions.
+
+---
+
+#### Objective
+
+Determine with evidence why an explicit Builder file-creation request can:
+
+1. complete successfully at the provider/execution level
+2. surface assistant text to the user
+3. consume tokens/credits
+4. produce `fileActions: []`
+5. therefore make zero workspace changes
+
+This task is **DIAGNOSIS ONLY**. No fix may be implemented until the exact failure point is proven.
+
+---
+
+#### Key Diagnostic Questions (Step 2 must answer)
+
+1. What exact response/output contract does the Builder plain path request from the model?
+2. Where is that contract constructed?
+3. Does the provider receive a structured-output schema, JSON instruction, tool contract, or prompt-only contract?
+4. Where are `fileActions` parsed/extracted?
+5. What happens if the provider returns normal assistant prose without structured actions?
+6. Why is that response currently allowed to become `status=completed`?
+7. Is `fileActions: []` valid parser output, parser fallback, parsing failure swallowed as success, provider-contract noncompliance, prompt-routing issue, model-specific behavior, or another evidenced cause?
+8. Was the failed execution's raw/normalized model response structurally different from successful executions?
+9. Did the failed execution ever contain action-like content that the parser failed to recognize?
+10. Is the issue specific to Grok 4.5, particular prompt structure, one response format, all plain-path models, or unknown?
+11. Is there an existing retry/repair/validation mechanism for malformed structured output?
+12. Should an explicit workspace-mutation intent be permitted to finish successfully with zero file actions?
+13. What is the smallest safe code boundary for future 03B?
+14. What tests must 03B add before any runtime retry?
+
+---
+
+#### Step 2 Source Areas to Audit
+
+Locate current source of truth (exact paths discovered from repository; do not rely on stale docs) for:
+
+- Builder AI execute request construction
+- API Gateway AI execution controller/service
+- execution job payload
+- AI Service WorkerProcessor plain path
+- xAI provider adapter
+- system/user prompt construction
+- structured response/output schema
+- response normalization
+- file-action parsing/extraction
+- execution result serialization
+- `file_actions` SSE/event emission
+- persistence into execution/usage metadata
+- failure/error semantics around malformed or missing structured output
+
+---
+
+#### Explicit Scope Exclusions
+
+Do **NOT** investigate/fix simultaneously:
+
+| Exclusion | Handling |
+|-----------|----------|
+| **Grok 4.2 timeout** | Future **03C**. Record only facts necessary to keep it separate. Out of scope for 03A except where comparison is strictly necessary to establish scope. |
+| **Credit / refund policy for empty-action completions** | Future **03D**. 03A may record that completed empty-action executions were charged; must not decide refund/charging policy. |
+| **`token_usage` missing-table anomaly** | Separate triage unless evidence directly shows it participates in the file-action generation path. |
+| **Frontend apply mechanics** | Do not assume frontend failure. Inspect only if needed to confirm the boundary that no actions existed to apply. |
+| **Duplicate-execution / double-submit / automatic-retry** | Explicitly excluded unless new independent evidence appears. |
+| **03B File-Action Reliability Fix** | NOT REGISTERED. Do not implement fixes in 03A. |
+| **03C Grok 4.2 Timeout Diagnosis** | NOT REGISTERED. |
+| **03D No-Workspace-Result Credit Policy** | NOT REGISTERED. |
+| **PRIVATE-BETA-INVITE-01** | Untouched / unregistered / prohibited. |
+| **Provider retry / new Builder execution** | Prohibited throughout 03A. |
+| **Re-enable `GLOBAL_EXECUTION_ENABLED`** | Prohibited even temporarily. |
+
+---
+
+#### Safety Invariants
+
+Throughout PRIVATE-BETA-BLOCKER-03A:
+
+- `GLOBAL_EXECUTION_ENABLED=false` — preserve; do not re-enable
+- No provider calls / no Builder retries / no inference
+- No DB mutation / Redis mutation / PM2 restart / `.env` edit / deployment / service stop-start / Docker mutation / migration
+- No source/test implementation changes in any step (diagnosis docs only in Step 2; checkpoint in Step 3)
+- Watchdog remains active / untouched operationally by this task
+- Harness remains disabled
+- Stripe charging remains disabled
+- Launch remains INTERNAL
+- PRIVATE-BETA-INVITE-01 remains untouched
+- Preserve every COMPLETE AND LOCKED predecessor, including PRIVATE-BETA-E2E-01 FAIL / BLOCKER evidence
+
+Step 2 may use authorized `ssh aisandbox-staging` for **bounded read-only** evidence only (PM2 logs, relevant application logs, targeted non-secret config checks, targeted read-only execution/accounting records / SELECT). No runtime mutation.
+
+---
+
+#### 3-Step Workflow
+
+**Step 1 — Registration** — COMPLETE — 2026-08-10
+
+Governance only. Register PRIVATE-BETA-BLOCKER-03A in `TASKS.md` and `TASKS_BACKLOG_FULL.md`. No diagnosis document yet. No source changes. No provider/runtime action. No 03B/03C/03D registration. No invitation. No gate change.
+
+**Step 2 — Root-Cause Diagnosis + Evidence Document** — COMPLETE — 2026-08-10 — **ROOT CAUSE PROVEN**
+
+Read source, existing tests, checkpoints, logs, and narrowly scoped historical execution evidence. No provider execution. No source changes. No runtime mutation. Produced `docs/PRIVATE-BETA-BLOCKER-03A-DIAGNOSIS.md`.
+
+Verdict: **ROOT CAUSE PROVEN** — PROMPT-ONLY structured file-action output contract; provider prose noncompliance silently converted to completed execution with `fileActions: []`. Defect class: **RESPONSE-FORM-SPECIFIC / MODEL-AGNOSTIC CONTRACT WEAKNESS**.
+
+**Step 3 — Consolidation / Checkpoint** — COMPLETE — 2026-08-10
+
+Created final checkpoint `docs/PRIVATE-BETA-BLOCKER-03A-CHECKPOINT.md` and locked 03A. Exact next recommended task (NOT REGISTERED): `PRIVATE-BETA-BLOCKER-03B — File-Action Reliability Fix`. 03C/03D remain NOT REGISTERED.
+
+---
+
+#### Sibling Family Slices (post-03A consolidation pointer update)
+
+- PRIVATE-BETA-BLOCKER-03B — File-Action Reliability Fix — COMPLETE AND LOCKED — 2026-08-11 — PASS — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03B-CHECKPOINT.md`
+- PRIVATE-BETA-BLOCKER-03C — Grok 4.2 Timeout Diagnosis — NOT REGISTERED
+- PRIVATE-BETA-BLOCKER-03D — No-Workspace-Result Credit Policy — NOT REGISTERED
+
+Parent family PRIVATE-BETA-BLOCKER-03 tracks Builder execution reliability / file-action contract remediation. 03A remains COMPLETE AND LOCKED.
+
+---
+
+#### Acceptance Criteria
+
+Step 1 (Registration):
+- [x] PRIVATE-BETA-BLOCKER-03A registered
+- [x] Correct primary blocker recorded
+- [x] Corrected intentional execution history recorded
+- [x] No duplicate-execution defect recorded
+- [x] Grok 4.2 timeout explicitly out of scope
+- [x] Credit policy explicitly out of scope
+- [x] token_usage anomaly explicitly separate unless proven causal
+- [x] Historical successful comparison executions recorded (`24acd697...`, `83acc0e9...`)
+- [x] 3-step diagnosis lifecycle recorded
+- [x] `GLOBAL_EXECUTION_ENABLED=false` recorded and preserved
+- [x] No provider retry permitted
+- [x] PRIVATE-BETA-INVITE-01 excluded
+- [x] 03B/03C/03D not registered
+- [x] Exact next step = PRIVATE-BETA-BLOCKER-03A Step 2 — Root-Cause Diagnosis + Evidence
+- [x] Mirrored in TASKS.md
+- [x] No application source / tests / `.env` / runtime / provider / invite / architecture / PRD / CLAUDE / roadmap changes
+- [x] No git commit or push
+
+Step 2 (Root-Cause Diagnosis + Evidence):
+- [x] Diagnosis document produced (`docs/PRIVATE-BETA-BLOCKER-03A-DIAGNOSIS.md`)
+- [x] Source-of-truth paths for contract construction / parsing / completion semantics documented
+- [x] Comparison matrix for `24acd697...` / `83acc0e9...` / `2bc73157...` completed with evidence-only cells
+- [x] Key diagnostic questions answered or explicitly marked unknown with evidence gap
+- [x] Verdict is one of: ROOT CAUSE PROVEN / ROOT CAUSE NARROWED WITH ONE SPECIFIC UNKNOWN / ROOT CAUSE NOT PROVEN — **ROOT CAUSE PROVEN**
+- [x] No provider execution / no source changes / no runtime mutation
+- [x] `GLOBAL_EXECUTION_ENABLED` remained false
+
+Step 3 (Consolidation / Checkpoint):
+- [x] Checkpoint created (`docs/PRIVATE-BETA-BLOCKER-03A-CHECKPOINT.md`)
+- [x] 03A marked COMPLETE AND LOCKED
+- [x] Next recommended task identified without automatic 03B registration — PRIVATE-BETA-BLOCKER-03B — File-Action Reliability Fix
+- [x] No unrelated implementation / runtime changes in consolidation
+
+---
+
+**PRIVATE-BETA-BLOCKER-03A status:** COMPLETE AND LOCKED — 2026-08-10 — ROOT CAUSE PROVEN
+**Checkpoint:** `docs/PRIVATE-BETA-BLOCKER-03A-CHECKPOINT.md`
+**Diagnosis:** `docs/PRIVATE-BETA-BLOCKER-03A-DIAGNOSIS.md`
+**Root cause:** PROMPT-ONLY file-action contract; prose noncompliance silently accepted as completed with `fileActions: []`
+**Contract classification:** RESPONSE-FORM-SPECIFIC / MODEL-AGNOSTIC CONTRACT WEAKNESS
+**Predecessor:** PRIVATE-BETA-E2E-01 COMPLETE AND LOCKED — FAIL / BLOCKER
+**Target execution:** `2bc73157-973a-45ec-8b71-bca8c2f7941d`
+**Comparison executions:** `24acd697-b55c-40d0-b2d5-32faf9b85709`; `83acc0e9-84de-4f94-9e41-294701e38393`
+**Safety state:** `GLOBAL_EXECUTION_ENABLED=false` — preserved; do not re-enable
+**Private-beta readiness:** **NO-GO PENDING BLOCKER FIX** — root cause understood; no new provider execution until 03B implemented and validated; E2E rerun required after remediation; invitations prohibited
+**Exact next registered task:** BUILDER-INTENT-01 ACTIVE — Step 1 COMPLETE (Registration — 2026-08-11) — exact next step: BUILDER-INTENT-01 Step 2 — Intent Contract + UX Stage-Start — Predecessor PRIVATE-BETA-BLOCKER-03B COMPLETE AND LOCKED — 2026-08-11 — PASS — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03B-CHECKPOINT.md`
+**Sibling slices:** 03B COMPLETE AND LOCKED — PASS; 03C/03D remain NOT REGISTERED; BUILDER-INTENT-01 ACTIVE — Step 1 COMPLETE
+**PRIVATE-BETA-INVITE-01 status:** untouched / unregistered — invitations prohibited
+**Provider/runtime / implementation action this consolidation:** NO
+
+### PRIVATE-BETA-BLOCKER-03B: File-Action Reliability Fix
+
+**Status:** COMPLETE AND LOCKED — 2026-08-11 — PASS
+**Task ID:** PRIVATE-BETA-BLOCKER-03B
+**Title:** File-Action Reliability Fix
+**Family:** PRIVATE-BETA-BLOCKER-03 / BUILDER EXECUTION RELIABILITY / FILE-ACTION CONTRACT
+**Priority:** P0 — beta blocker remediation
+**Risk:** HIGH
+**Nature:** BOUNDED AI-SERVICE EXECUTION-CONTRACT REMEDIATION
+**Workflow:** HIGH-risk 4-step lifecycle (Registration → Fix Design + Stage-Start → Bounded Implementation + Local Validation → Controlled Staging Validation + Consolidation)
+**Model:** Sonnet 4.6 (registration / Stage-Start / consolidation); GPT-5.3 Codex (Step 3 bounded implementation)
+**Registered:** 2026-08-11
+**Closed:** 2026-08-11
+**Stage-Start:** `docs/PRIVATE-BETA-BLOCKER-03B-STAGE-START.md`
+**Checkpoint:** `docs/PRIVATE-BETA-BLOCKER-03B-CHECKPOINT.md`
+**Dependencies:**
+- PRIVATE-BETA-E2E-01 — COMPLETE AND LOCKED — 2026-08-10 — FAIL / BLOCKER — Checkpoint: `docs/PRIVATE-BETA-E2E-01-CHECKPOINT.md`
+- PRIVATE-BETA-BLOCKER-03A — COMPLETE AND LOCKED — 2026-08-10 — ROOT CAUSE PROVEN — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03A-CHECKPOINT.md` — Diagnosis: `docs/PRIVATE-BETA-BLOCKER-03A-DIAGNOSIS.md`
+**Final safety state:** `GLOBAL_EXECUTION_ENABLED=false` — mandatory rollback completed after Step 4A; do not re-enable
+**Invite posture:** PRIVATE-BETA-INVITE-01 remains unregistered / untouched / invitations prohibited
+**Private-beta readiness impact:** original file-action reliability blocker remediated; Builder-first private beta remains **NO-GO PENDING REMAINING READINESS WORK** — gate remains false; E2E must eventually be rerun; 03C/03D remain NOT REGISTERED; BUILDER-INTENT-01 ACTIVE — Step 1 COMPLETE; invitations remain prohibited
+
+---
+
+#### Reason
+
+PRIVATE-BETA-BLOCKER-03A proved the root cause of the primary Builder private-beta blocker:
+
+> Builder plain-path execution currently uses a prompt-only file-action contract. A provider response can successfully return prose instead of the required structured file-action block; `extractFileActionsFromOutput()` silently converts that non-compliant response to `fileActions: []`; WorkerProcessor still marks the execution completed; no workspace mutation occurs; the frontend therefore has nothing to apply.
+
+Target blocker execution: `2bc73157-973a-45ec-8b71-bca8c2f7941d`
+
+Confirmed 03A facts:
+
+- xAI provider; plain execution path; status `completed`; 1251 tokens
+- provider returned 94-character prose-only response; no `file-actions` block
+- parser returned `fileActions: []`; no parser error/escalation
+- worker accepted the result as completed; no workspace write; `/workspace` remained empty
+- frontend was not at fault; Harness was not involved
+
+Successful comparisons `24acd697-b55c-40d0-b2d5-32faf9b85709` and `83acc0e9-84de-4f94-9e41-294701e38393` show the existing pipeline works when provider output conforms to the file-action convention.
+
+Defect classification (authoritative from 03A): **RESPONSE-FORM-SPECIFIC / MODEL-AGNOSTIC CONTRACT WEAKNESS**
+
+PRIVATE-BETA-BLOCKER-03B exists to implement the smallest reliable fix so this class of failure is not silently presented as successful Builder workspace execution.
+
+---
+
+#### Purpose
+
+Implement the smallest reliable remediation for the proven 03A root cause so mutation-required Builder plain-path executions cannot silently complete with zero valid applicable file actions.
+
+---
+
+#### Core Behavioral Invariant
+
+03B must establish:
+
+> When a Builder request requires workspace mutation, a provider response that contains no valid applicable file actions must NOT silently become an ordinary successful workspace execution.
+
+At the same time:
+
+> Legitimate non-mutating/conversational AI responses must not be falsely rejected merely because `fileActions=[]`.
+
+**Step 2A correction (authoritative):** The registration-time conversational allowance above was superseded. Current Builder beta plain-path authority is application-owned (`!useHarness`). Zero valid safe actions on the plain path fail with `file_action_contract_failure`. `workspaceMutationAttempted` is advisory/diagnostic only. Desired Ask/Discuss vs Build/Edit product intent is now registered as **BUILDER-INTENT-01** (ACTIVE — Step 1 COMPLETE — Registration — 2026-08-11).
+
+The fix therefore established application-owned mutation-required semantics for the current Builder beta plain path, rather than model-self-declared intent.
+
+**Do NOT** predetermine simplistic keyword matching (e.g. checking whether prompt text contains “file”, “create”, or “edit”) unless Step 2 Stage-Start proves that is the existing authoritative intent mechanism and sufficiently reliable.
+
+---
+
+#### Implementation Choice Intentionally Deferred to Step 2
+
+03B must NOT blindly implement the first suggestion from 03A.
+
+The following remain **implementation choices, NOT settled architecture**:
+
+- provider-enforced structured output
+- xAI `response_format`
+- function/tool calling
+- parser validation
+- mutation-intent validation
+- one bounded repair retry
+- execution-status changes
+- combinations of the above
+
+Step 2 must choose the smallest robust approach from current source and current contracts.
+
+---
+
+#### Scope
+
+**In scope:**
+
+- AI Service plain execution path only
+- file-action output contract reliability
+- parser/validation behavior
+- execution completion/error semantics needed for this blocker
+- bounded diagnostic logging
+- bounded repair/retry only if Stage-Start proves necessary
+- tests that reproduce the exact blocker
+- local/static validation
+- one later controlled real-provider staging validation after implementation
+
+**Expected likely source boundary (NOT locked at registration):**
+
+- `services/ai-service/src/worker/worker.processor.ts`
+- `services/ai-service/src/ai-execution/file-actions.parser.ts`
+- `services/ai-service/src/ai-execution/__tests__/file-actions.parser.spec.ts` (or equivalent existing parser test path)
+- potential new bounded WorkerProcessor / file-action validation tests
+- `services/ai-service/src/ai-execution/adapters/xai-ai.adapter.ts` — ONLY if Step 2 proves provider-side structural enforcement is part of the smallest safe fix
+
+Do not lock the final file list during registration.
+
+---
+
+#### Explicit Exclusions
+
+Do **NOT** include:
+
+| Exclusion | Handling |
+|-----------|----------|
+| **Grok 4.2 timeout diagnosis** | Future **03C**. Out of scope. Do not register 03C here. |
+| **Final credit/refund policy** | Future **03D**. 03B may change execution success/failure semantics if required; must NOT decide final refund/credit policy. Preserve accurate execution status/evidence for later 03D. Do not register 03D here. |
+| **`token_usage` missing-table triage** | Separate triage; excluded. |
+| **Frontend file-action apply redesign** | Excluded. |
+| **Harness changes / Harness activation** | Excluded / remain disabled. |
+| **Multi-agent work** | Excluded. |
+| **Stripe / payment work** | Excluded; charging remains disabled. |
+| **Broad provider abstraction rewrite** | Excluded. |
+| **New provider integration** | Excluded. |
+| **Broad execution architecture refactor** | Excluded. |
+| **Unrelated AI prompt tuning** | Excluded. |
+| **API Gateway 96-test debt** | Excluded. |
+| **UX/UI redesign** | Excluded. |
+| **PRIVATE-BETA-INVITE-01** | Untouched / unregistered / prohibited. |
+| **Rerunning full PRIVATE-BETA-E2E-01 journey** | Excluded from 03B; separate later rerun after remediation. |
+| **Provider retry / new Builder execution during Steps 1–3** | Prohibited until Step 4 explicitly authorized controlled validation. |
+| **Simplistic intent-keyword solution as predetermined architecture** | Not permitted as a precommitted design. |
+
+---
+
+#### Required Future Test Coverage
+
+03B must eventually cover, at minimum:
+
+1. explicit mutation request + valid file-actions output → normal success
+2. explicit mutation request + prose-only output → MUST NOT silently succeed
+3. explicit mutation request + empty actions → MUST NOT silently succeed
+4. explicit mutation request + malformed structured action output → safe failure/repair behavior
+5. legitimate conversational/non-mutating response + zero actions → remains permitted
+6. parser contract failure produces useful bounded diagnostics
+7. no invalid workspace write is attempted
+8. frontend is not told a false successful workspace mutation occurred
+9. successful existing file-action path remains backward-compatible
+10. Harness path remains untouched
+
+---
+
+#### Execution-Status Requirement
+
+Step 2 must determine the smallest correct status/error semantics for a mutation-required output-contract failure.
+
+Possible outcomes may include an existing failure status/error class or a bounded new semantic if truly necessary.
+
+Do not invent a broad new state machine without evidence.
+
+The user-facing result must no longer look like successful Builder file generation when zero valid actions were produced for a mutation-required request.
+
+---
+
+#### Retry / Repair Boundary
+
+One bounded content-repair retry MAY be considered. It is **not automatically required**.
+
+If Step 2 recommends retry:
+
+- maximum must remain tightly bounded
+- no unbounded loops
+- no Harness
+- no hidden repeated model activity
+- tests must prove exactly when retry occurs
+- failure after retry must surface clearly
+- provider cost/accounting implications must be recorded for later 03D policy work
+
+Do **not** implement provider retries during registration.
+
+---
+
+#### Provider Structural Enforcement Boundary
+
+Step 2 may assess whether current xAI adapter/provider capabilities can structurally constrain output.
+
+Do **not** force an xAI-specific architecture if a smaller model-agnostic validation boundary is sufficient.
+
+03B should preserve the ability to support other plain-path providers where practical.
+
+---
+
+#### Relationship to Accounting (03D)
+
+03A established that credits currently finalize when execution is completed even if workspace mutation does not occur.
+
+03B may change execution success/failure semantics if required to fix the blocker.
+
+**03B must NOT decide the final refund/credit policy for failed/no-action execution.** That belongs to `PRIVATE-BETA-BLOCKER-03D` (NOT REGISTERED).
+
+03B should merely preserve accurate execution status/evidence so 03D can make the policy decision correctly.
+
+---
+
+#### Relationship to Grok 4.2 (03C)
+
+Do not diagnose or fix Grok 4.2 timeout behavior. That belongs to `PRIVATE-BETA-BLOCKER-03C` (NOT REGISTERED).
+
+03B validation should use the model/provider configuration chosen for the known Builder success path unless Step 2 establishes another reason.
+
+---
+
+#### Safety Invariants
+
+Throughout PRIVATE-BETA-BLOCKER-03B:
+
+- `GLOBAL_EXECUTION_ENABLED=false` except during the later explicitly controlled Step 4 validation window
+- Harness remains disabled
+- no multi-agent activation
+- Stripe charging remains disabled
+- watchdog remains active
+- no destructive DB/Redis operation
+- no `docker compose down -v`
+- no migration unless a newly discovered necessity requires a separate approved scope
+- no new dependency unless Stage-Start proves unavoidable and Keith explicitly approves
+- no new provider
+- no broad refactor
+- no private-beta invitation
+- no provider calls / inference during Steps 1–2
+- no staging/provider execution during Step 3 (`GLOBAL_EXECUTION_ENABLED=false`)
+
+---
+
+#### 4-Step Workflow
+
+**Step 1 — Registration** — COMPLETE — 2026-08-11
+
+Governance only. Register PRIVATE-BETA-BLOCKER-03B in `TASKS.md` and `TASKS_BACKLOG_FULL.md`. No source changes. No provider/runtime action. No Stage-Start document yet. No 03C/03D registration. No invitation. No gate change. No implementation choice locked.
+
+**Step 2 — Fix Design + Stage-Start** — COMPLETE — 2026-08-11
+
+Read-only design complete. Artifact: `docs/PRIVATE-BETA-BLOCKER-03B-STAGE-START.md`.
+
+**Step 2A — Mutation-Intent Authority Correction** — COMPLETE — 2026-08-11
+
+`workspaceMutationAttempted` demoted to advisory/diagnostic only. Application-owned authority: `!useHarness`. Plain path zero valid safe actions —> `failed` / `file_action_contract_failure`.
+
+**Step 3 — Bounded Implementation + Local Validation** — COMPLETE — PASS WITH RECORDED VALIDATION-PROCESS DEVIATION
+
+Implemented approved 03B fix. Targeted 3/3 suites / 62/62 tests PASS. Corrected offline-safe AI Service regression 37/37 suites / 732/732 tests PASS. Build PASS. Recorded validation-process deviation: `ai-execution.phase30c.spec.ts` live-provider suite unintentionally executed during broad validation; not an implementation failure; corrected by offline-safe exclusion rerun.
+
+**Step 4A — Controlled Staging Validation** — COMPLETE — PASS
+
+Backup `/tmp/aisandbox-03b-backup-20260811-202228`. Exactly five AI Service source files deployed. Mutation execution `babb474a-59d1-47cb-9e81-2eabef052d34` PASS. Zero-action execution `40624213-9d44-4e93-b21a-6dd496d69d36` EXPECTED FAIL / `file_action_contract_failure` PASS. Exactly 2 provider requests. Mandatory gate rollback to `GLOBAL_EXECUTION_ENABLED=false`. Final operational health PASS. No code rollback required.
+
+**Step 4B — Consolidation / Checkpoint** — COMPLETE — 2026-08-11
+
+Checkpoint created: `docs/PRIVATE-BETA-BLOCKER-03B-CHECKPOINT.md`. 03B locked PASS. No source/runtime action in consolidation. No new tasks registered.
+
+---
+
+#### Sibling Family Slices Explicitly NOT Registered
+
+- PRIVATE-BETA-BLOCKER-03C — Grok 4.2 Timeout Diagnosis — NOT REGISTERED
+- PRIVATE-BETA-BLOCKER-03D — No-Workspace-Result Credit Policy — NOT REGISTERED
+
+Do **not** register 03C, 03D, BUILDER-INTENT-01, token_usage triage, E2E rerun, final GO/NO-GO, or PRIVATE-BETA-INVITE-01 during consolidation. Recommended post-03B ordering only: BUILDER-INTENT-01 -> 03C -> 03D -> fresh E2E rerun -> Final GO/NO-GO.
+
+---
+
+#### Acceptance Criteria
+
+Step 1 (Registration):
+- [x] 03B registered in TASKS.md
+- [x] mirrored in TASKS_BACKLOG_FULL.md
+- [x] P0 / HIGH recorded
+- [x] 03A proven root cause referenced
+- [x] primary invariant recorded
+- [x] legitimate zero-action conversational case preserved
+- [x] no simplistic intent-keyword solution predetermined
+- [x] implementation choice intentionally deferred to Step 2
+- [x] 4-step lifecycle recorded
+- [x] required regression tests recorded
+- [x] Grok 4.2 excluded
+- [x] credit policy excluded
+- [x] token_usage issue excluded
+- [x] frontend/Harness broad work excluded
+- [x] GLOBAL_EXECUTION_ENABLED=false preserved
+- [x] no provider retry/execution permitted yet
+- [x] PRIVATE-BETA-INVITE-01 excluded
+- [x] exact next step recorded = PRIVATE-BETA-BLOCKER-03B Step 2 — Fix Design + Stage-Start
+- [x] 03C/03D not registered
+- [x] No application source / tests / `.env` / runtime / provider / invite / architecture / PRD / CLAUDE / roadmap changes
+- [x] No git commit --trailer "Co-authored-by: Cursor <cursoragent@cursor.com>" or push
+
+Step 2 (Fix Design + Stage-Start):
+- [x] Stage-Start / fix-design artifact produced (`docs/PRIVATE-BETA-BLOCKER-03B-STAGE-START.md`)
+- [x] Mutation-required signal identified from current source/contracts
+- [x] Validation boundary chosen (smallest robust)
+- [x] Provider structural enforcement assessed; not forced if model-agnostic boundary suffices
+- [x] Bounded repair retry decision recorded (required or not)
+- [x] Execution-status/error semantics chosen without inventing a broad new state machine
+- [x] Exact source/test file scope locked
+- [x] Compatibility / accounting implications recorded
+- [x] Local + controlled staging validation plan recorded
+- [x] Rollback plan recorded
+- [x] No code changes / no provider calls in Step 2
+
+Step 2A (Mutation-Intent Authority Correction):
+- [x] `workspaceMutationAttempted` recorded as advisory/diagnostic only
+- [x] Application-owned authority `!useHarness` locked
+- [x] Plain-path zero valid safe actions —> `failed` / `file_action_contract_failure`
+
+Step 3 (Bounded Implementation + Local Validation):
+- [x] Only approved Stage-Start/2A fix implemented
+- [x] Required regression tests added/passing locally
+- [x] No staging/provider execution during Step 3
+- [x] `GLOBAL_EXECUTION_ENABLED=false` during Step 3
+- [x] Stop if scope expands materially beyond Stage-Start
+- [x] PASS WITH RECORDED VALIDATION-PROCESS DEVIATION documented
+
+Step 4A (Controlled Staging Validation):
+- [x] Approved 03B changes deployed
+- [x] Exactly two authorized controlled real-provider validations performed
+- [x] Valid file actions produced/applied when expected
+- [x] No false-success empty-action behavior
+- [x] Health/watchdog/Harness separation verified
+- [x] Gate returned to `GLOBAL_EXECUTION_ENABLED=false`
+- [x] No code rollback required
+
+Step 4B (Consolidation / Checkpoint):
+- [x] Checkpoint created (`docs/PRIVATE-BETA-BLOCKER-03B-CHECKPOINT.md`)
+- [x] 03B marked COMPLETE AND LOCKED — PASS
+- [x] No source/runtime/provider/deploy action in consolidation
+- [x] No new tasks registered
+- [x] PRIVATE-BETA-INVITE-01 untouched
+
+---
+
+**PRIVATE-BETA-BLOCKER-03B status:** COMPLETE AND LOCKED — 2026-08-11 — PASS
+**Checkpoint:** `docs/PRIVATE-BETA-BLOCKER-03B-CHECKPOINT.md`
+**Stage-Start:** `docs/PRIVATE-BETA-BLOCKER-03B-STAGE-START.md`
+**Priority:** P0
+**Risk:** HIGH
+**Nature:** BOUNDED AI-SERVICE EXECUTION-CONTRACT REMEDIATION
+**Dependencies:** PRIVATE-BETA-E2E-01 COMPLETE AND LOCKED — FAIL / BLOCKER; PRIVATE-BETA-BLOCKER-03A COMPLETE AND LOCKED — ROOT CAUSE PROVEN
+**Root cause (from 03A):** PROMPT-ONLY file-action contract; prose noncompliance silently accepted as completed with `fileActions: []`
+**Contract classification:** RESPONSE-FORM-SPECIFIC / MODEL-AGNOSTIC CONTRACT WEAKNESS
+**Remediation:** xAI JSON object structured response + structured JSON parsing + application-owned plain-path zero-action failure (`!useHarness && safeFileActions.length === 0` —> `failed` / `file_action_contract_failure`); `workspaceMutationAttempted` advisory only; no content-repair retry; Harness unchanged; no accounting policy change
+**Safety state:** `GLOBAL_EXECUTION_ENABLED=false` — final verified
+**Private-beta readiness:** **NO-GO PENDING REMAINING READINESS WORK**
+**Sibling slices 03C/03D:** NOT REGISTERED
+**BUILDER-INTENT-01:** ACTIVE — Step 1 COMPLETE (Registration — 2026-08-11) — exact next: BUILDER-INTENT-01 Step 2 — Intent Contract + UX Stage-Start
+**PRIVATE-BETA-INVITE-01 status:** untouched / unregistered — invitations prohibited
+**Provider/runtime / implementation action this consolidation:** NO
+**Exact next task:** BUILDER-INTENT-01 ACTIVE — Step 1 COMPLETE — exact next step: BUILDER-INTENT-01 Step 2 — Intent Contract + UX Stage-Start — Remaining recommended ordering after BUILDER-INTENT-01: PRIVATE-BETA-BLOCKER-03C -> PRIVATE-BETA-BLOCKER-03D -> fresh PRIVATE-BETA-E2E rerun -> Final GO/NO-GO review (03C/03D remain NOT REGISTERED)
+
+### BUILDER-INTENT-01: Ask/Discuss vs Build/Edit Execution Intent
+
+**Status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-08-11)
+**Task ID:** BUILDER-INTENT-01
+**Title:** Ask/Discuss vs Build/Edit Execution Intent
+**Family:** BUILDER EXECUTION INTENT / APPLICATION-OWNED CONTRACT / PRIVATE-BETA PRODUCT READINESS
+**Priority:** P0 — beta product blocker
+**Risk:** HIGH
+**Nature:** BOUNDED BUILDER EXECUTION-INTENT CONTRACT + UX INTEGRATION
+**Workflow:** HIGH-risk 4-step lifecycle (Registration → Intent Contract + UX Stage-Start → Bounded Implementation + Local Validation → Controlled Staging Validation + Consolidation)
+**Model:** Opus 4.6 (Step 2 Stage-Start); GPT-5.3 Codex (Step 3 bounded implementation); Sonnet 4.6 / equivalent for registration + consolidation
+**Registered:** 2026-08-11
+**Current stage:** Step 1 COMPLETE — exact next: Step 2 — Intent Contract + UX Stage-Start
+**Dependencies:**
+- PRIVATE-BETA-BLOCKER-03B — COMPLETE AND LOCKED — 2026-08-11 — PASS — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03B-CHECKPOINT.md`
+- PRIVATE-BETA-BLOCKER-03A — COMPLETE AND LOCKED — ROOT CAUSE PROVEN — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03A-CHECKPOINT.md` — Diagnosis: `docs/PRIVATE-BETA-BLOCKER-03A-DIAGNOSIS.md`
+**Starting safety state:** `GLOBAL_EXECUTION_ENABLED=false` — keep false; do not re-enable except during later explicitly controlled Step 4 validation
+**Invite posture:** PRIVATE-BETA-INVITE-01 remains unregistered / untouched / invitations prohibited
+**Private-beta readiness:** **NO-GO PENDING REMAINING READINESS WORK** — 03B remediated the original false-success file-action blocker; BUILDER-INTENT-01 addresses the intentional product limitation exposed by 03B
+
+---
+
+#### Reason / Product Limitation Exposed by 03B
+
+03B deliberately established the current plain Builder rule:
+
+`!useHarness && safeFileActions.length === 0`
+
+→ `failed` / `file_action_contract_failure`
+
+This correctly protects Build/Edit operations from falsely completing when the model fails to produce workspace actions.
+
+However, it has an intentional product limitation:
+
+A valid conversational request such as:
+
+`Explain what HTML is.`
+
+also produces zero file actions and therefore fails.
+
+Keith explicitly requires the final Builder product to support BOTH Ask/Discuss and Build/Edit. The distinction must be APPLICATION-OWNED. It must NOT rely solely on the provider/model deciding whether mutation is required.
+
+BUILDER-INTENT-01 builds on top of locked 03B. Do not revert 03B.
+
+---
+
+#### Purpose
+
+Introduce a reliable application-owned execution intent for Builder so the system can distinguish:
+
+### ASK / DISCUSS
+
+- normal conversational AI response
+- zero workspace actions permitted
+- must not falsely mutate files
+- `fileActions: []` is valid
+- execution may complete successfully with assistant text only
+
+### BUILD / EDIT
+
+- workspace mutation expected
+- at least one valid safe file action required
+- zero valid actions must remain a contract failure
+- `safeFileActions.length === 0` must continue to produce `failed` with `file_action_contract_failure`
+- the 03B false-success protection must NOT be weakened
+
+---
+
+#### Critical Architectural Principle
+
+The final semantic rule should conceptually become:
+
+`executionIntent === "workspace_mutation" && safeFileActions.length === 0`
+
+→ failure
+
+while:
+
+`executionIntent === "conversation" && safeFileActions.length === 0`
+
+→ legitimate completion
+
+Exact field name, enum, UI surface, and contract path are **NOT predetermined** during registration.
+
+Stage-Start must select the smallest reliable implementation.
+
+Prefer an explicit, typed, APPLICATION-OWNED execution contract.
+
+Conceptual examples only (names not locked):
+
+- `conversation`
+- `workspace_mutation`
+
+Avoid unless Stage-Start proves there is no simpler reliable application-owned mechanism:
+
+- free-text keyword detection
+- regex classification
+- provider/model self-classification as authority
+- hidden probabilistic intent classification
+- second LLM call merely to determine intent
+
+Provider/model self-authority is rejected. Do not make model-declared `workspaceMutationAttempted` authoritative.
+
+---
+
+#### Do NOT Revert 03B
+
+03B is COMPLETE AND LOCKED — 2026-08-11 — PASS.
+
+Do not:
+
+- remove structured JSON mode
+- remove parser improvements
+- remove safe-file-action validation
+- restore silent plain-path zero-action success globally
+- make model-declared `workspaceMutationAttempted` authoritative
+- weaken `file_action_contract_failure`
+
+---
+
+#### Questions Stage-Start Must Resolve
+
+1. Who authoritatively sets execution intent?
+2. What exact intents are required?
+3. Does the current Builder UI already expose enough user intent?
+4. Should the user explicitly choose Ask / Discuss vs Build / Edit?
+5. Or can existing application state/action reliably determine intent without another control?
+6. Should intent be represented as a typed request field?
+7. What is its default?
+8. How does it travel: frontend → API Gateway → queue/job → AI Service WorkerProcessor?
+9. How does WorkerProcessor enforce 03B semantics only for mutation intent?
+10. How does conversational completion propagate through SSE/frontend?
+11. Are existing response/status components already sufficient?
+12. Does conversational mode require any workspace context changes?
+13. What tests prevent regression to the original 03B false-success bug?
+14. How should existing API callers behave if they omit the new intent?
+15. What backward-compatible default is safest?
+
+---
+
+#### UX/UI Scope
+
+This task MAY require a bounded Builder UX change.
+
+Stage-Start must determine the smallest understandable interaction.
+
+Possible designs include, but are not limited to:
+
+- explicit Ask / Build mode selector
+- intent tied to an existing Builder action
+- another bounded interaction consistent with current Builder UX
+
+Do **not** choose one during registration. UI design is deliberately deferred to Step 2 Stage-Start.
+
+If user-facing UI is added:
+
+- multilingual-first
+- no hardcoded English
+- update:
+  - `frontend/messages/en.json`
+  - `frontend/messages/zh-TW.json`
+  - `frontend/messages/zh-CN.json`
+- use existing translation hooks/pattern
+- Heroicons v2 Outline only if icons are required
+- no Lucide / Font Awesome / Material / emoji icons
+- use existing design system
+- no broad redesign
+
+Relevant advisory skills if UX is in scope:
+
+- Impeccable for bounded screen-level UX review
+- Emil Kowalski design engineering skill for bounded component/interaction polish
+
+Skills are advisory only and must not override CLAUDE.md, TASKS.md, architecture, tests, or registered scope.
+
+---
+
+#### Harness Boundary
+
+This is primarily a normal Builder execution-path task.
+
+Harness remains separate.
+
+Do not activate Harness.
+
+Do not redesign Harness.
+
+If execution intent must exist across both paths for contract consistency, Stage-Start may identify this, but any Harness behavior change requires explicit evidence and must remain minimal.
+
+Current Harness runtime flags remain false.
+
+---
+
+#### Scope
+
+Potentially in scope after Stage-Start:
+
+- Builder execution intent contract
+- frontend request intent
+- API Gateway DTO/payload propagation
+- queue/job payload propagation
+- AI Service execution input
+- WorkerProcessor semantic validation
+- conversational completion behavior
+- bounded Builder UI control if required
+- multilingual strings if UI added
+- focused tests
+- local validation
+- later controlled staging validation
+
+---
+
+#### Explicit Exclusions
+
+Do **NOT** include:
+
+| Exclusion | Handling |
+|-----------|----------|
+| **PRIVATE-BETA-BLOCKER-03C Grok 4.2 timeout diagnosis** | Excluded. Do not register 03C. |
+| **PRIVATE-BETA-BLOCKER-03D credit policy** | Excluded. Do not register 03D. |
+| **`token_usage` issue** | Excluded. |
+| **Harness activation / Harness tool-loop changes** | Excluded / remain disabled. |
+| **Multi-agent collaboration** | Excluded. |
+| **Billing / Stripe work** | Excluded; charging remains disabled. |
+| **Provider switching** | Excluded. |
+| **Broad prompt architecture rewrite** | Excluded. |
+| **Broad chat UX redesign** | Excluded. |
+| **General workspace redesign** | Excluded. |
+| **RPG navigation work** | Excluded. |
+| **Full PRIVATE-BETA-E2E rerun** | Excluded from this task; later separate. |
+| **Final private-beta GO/NO-GO** | Excluded. Not registered. |
+| **PRIVATE-BETA-INVITE-01** | Untouched / unregistered / prohibited. |
+| **Any additional Builder-intent child task** | Do not register during Step 1. |
+| **Reverting / weakening 03B protections** | Forbidden. |
+
+---
+
+#### Required Future Regression Invariants
+
+At minimum:
+
+1. conversation intent + valid prose + zero actions → completed
+2. conversation intent + zero actions → no workspace mutation
+3. mutation intent + valid safe actions → completed
+4. mutation intent + zero actions → failed
+5. mutation intent + provider says no mutation → still failed if zero actions
+6. provider cannot override application intent
+7. intent survives request path end-to-end
+8. safe backward-compatible default exists
+9. legacy 03B structured JSON remains supported
+10. legacy fenced file actions remain supported
+11. Harness remains unaffected unless explicitly designed otherwise
+12. frontend does not falsely report mutation success
+13. conversation response remains visible normally
+14. multilingual UI strings covered if UI changes
+
+---
+
+#### Safety Invariants
+
+Throughout BUILDER-INTENT-01:
+
+- `GLOBAL_EXECUTION_ENABLED=false` except during the later explicitly controlled Step 4 validation window
+- End Step 4 with `GLOBAL_EXECUTION_ENABLED=false` unless a later explicitly approved readiness task decides otherwise
+- Harness remains disabled
+- no multi-agent activation
+- Stripe charging remains disabled
+- no private-beta invitation
+- no provider calls / inference during Steps 1–2
+- no staging/provider execution during Step 3 (`GLOBAL_EXECUTION_ENABLED=false`)
+- no weakening of 03B `file_action_contract_failure` for mutation intent
+- no provider/model self-authority over intent
+
+---
+
+#### 4-Step Workflow
+
+**Step 1 — Registration** — COMPLETE — 2026-08-11
+
+Governance only. Register BUILDER-INTENT-01 in `TASKS.md` and `TASKS_BACKLOG_FULL.md`. No source / tests / `.env` / runtime / provider / invite / architecture / PRD / CLAUDE / roadmap changes. No Stage-Start document yet. No 03C/03D registration. No E2E rerun. No invitation. No gate change. No implementation/UX choice locked.
+
+**Step 2 — Intent Contract + UX Stage-Start** — NOT STARTED
+
+Use Opus 4.6. Read-only. Determine:
+
+- product semantics
+- authoritative intent owner
+- exact intent values
+- backward-compatible default
+- exact request/data path
+- exact WorkerProcessor semantic rule
+- whether UI control is required
+- exact bounded UX if required
+- multilingual impact
+- source/test file scope
+- failure/completion semantics
+- local validation plan
+- controlled staging plan
+- rollback plan
+
+No implementation.
+
+**Step 3 — Bounded Implementation + Local Validation** — NOT STARTED
+
+Use GPT-5.3 Codex. Implement only Stage-Start-approved contract and UX. No provider/staging call. Keep `GLOBAL_EXECUTION_ENABLED=false`.
+
+**Step 4 — Controlled Staging Validation + Consolidation** — NOT STARTED
+
+Validate at minimum:
+
+A. Ask/Discuss request:
+
+- returns normal assistant answer
+- zero file actions permitted
+- status completed
+- no workspace mutation
+
+B. Build/Edit request:
+
+- valid mutation creates/applies file actions
+
+C. Build/Edit contract-failure path:
+
+- zero valid actions cannot silently complete
+
+Keep provider-call budget tightly bounded.
+
+End with `GLOBAL_EXECUTION_ENABLED=false` unless a later explicitly approved readiness task decides otherwise.
+
+---
+
+#### Sibling / Related Items Explicitly NOT Registered
+
+- PRIVATE-BETA-BLOCKER-03C — Grok 4.2 Timeout Diagnosis — NOT REGISTERED
+- PRIVATE-BETA-BLOCKER-03D — No-Workspace-Result Credit Policy — NOT REGISTERED
+- Full PRIVATE-BETA-E2E rerun — NOT REGISTERED
+- Final private-beta GO/NO-GO — NOT REGISTERED
+- PRIVATE-BETA-INVITE-01 — untouched / unregistered
+- Any additional Builder-intent child task — NOT REGISTERED
+
+---
+
+#### Acceptance Criteria
+
+Step 1 (Registration):
+- [x] BUILDER-INTENT-01 registered
+- [x] P0 / HIGH recorded
+- [x] 03B dependency recorded
+- [x] Ask/Discuss requirement recorded
+- [x] Build/Edit requirement recorded
+- [x] application-owned intent principle recorded
+- [x] provider/model self-authority rejected
+- [x] 03B safety invariant preserved
+- [x] UI design deliberately deferred to Stage-Start
+- [x] multilingual requirements recorded for any UI change
+- [x] Harness boundary recorded
+- [x] 4-step lifecycle recorded
+- [x] regression invariants recorded
+- [x] 03C/03D excluded
+- [x] E2E rerun excluded
+- [x] GLOBAL_EXECUTION_ENABLED=false preserved
+- [x] PRIVATE-BETA-INVITE-01 excluded
+- [x] no runtime/provider work performed
+- [x] exact next step recorded = BUILDER-INTENT-01 Step 2 — Intent Contract + UX Stage-Start
+- [x] No application source / tests / `.env` / runtime / provider / invite / architecture / PRD / CLAUDE / roadmap changes
+- [x] No git commit or push
+
+Step 2 (Intent Contract + UX Stage-Start):
+- [ ] Stage-Start / intent-contract + UX design artifact produced
+- [ ] Authoritative intent owner locked
+- [ ] Exact intent values + backward-compatible default locked
+- [ ] Request/data path locked end-to-end
+- [ ] WorkerProcessor semantic rule locked without weakening 03B mutation protection
+- [ ] UI control required/not-required decision locked
+- [ ] Exact bounded UX + multilingual impact locked if UI required
+- [ ] Exact source/test file scope locked
+- [ ] Local + controlled staging validation plan recorded
+- [ ] Rollback plan recorded
+- [ ] No code changes / no provider calls in Step 2
+
+Step 3 (Bounded Implementation + Local Validation):
+- [ ] Only approved Stage-Start contract/UX implemented
+- [ ] Required regression invariants covered by tests
+- [ ] No staging/provider execution during Step 3
+- [ ] `GLOBAL_EXECUTION_ENABLED=false` during Step 3
+- [ ] Stop if scope expands materially beyond Stage-Start
+
+Step 4 (Controlled Staging Validation + Consolidation):
+- [ ] Ask/Discuss path validated (completed + zero actions + no mutation)
+- [ ] Build/Edit success path validated
+- [ ] Build/Edit zero-action contract-failure path validated
+- [ ] Gate returned to `GLOBAL_EXECUTION_ENABLED=false`
+- [ ] Checkpoint created
+- [ ] BUILDER-INTENT-01 marked COMPLETE AND LOCKED only after evidence
+- [ ] PRIVATE-BETA-INVITE-01 untouched
+- [ ] 03C/03D remain NOT REGISTERED unless separately approved later
+
+---
+
+**BUILDER-INTENT-01 status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-08-11)
+**Priority:** P0 — beta product blocker
+**Risk:** HIGH
+**Nature:** BOUNDED BUILDER EXECUTION-INTENT CONTRACT + UX INTEGRATION
+**Dependencies:** PRIVATE-BETA-BLOCKER-03B COMPLETE AND LOCKED — 2026-08-11 — PASS; PRIVATE-BETA-BLOCKER-03A COMPLETE AND LOCKED — ROOT CAUSE PROVEN
+**Starting safety state:** `GLOBAL_EXECUTION_ENABLED=false`
+**Private-beta readiness:** **NO-GO PENDING REMAINING READINESS WORK**
+**Sibling slices 03C/03D:** NOT REGISTERED
+**PRIVATE-BETA-INVITE-01 status:** untouched / unregistered — invitations prohibited
+**Provider/runtime / implementation action this registration:** NO
+**Exact next step:** BUILDER-INTENT-01 Step 2 — Intent Contract + UX Stage-Start

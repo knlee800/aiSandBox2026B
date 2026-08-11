@@ -75,6 +75,76 @@ const FILE_ACTION_OUTPUT_CONTRACT = `Execution output contract:
 - Do not claim that files were created, changed, or deleted unless matching \`file-actions\` entries are present.
 - If the user request does not require file creation, modification, or deletion, respond normally in plain conversational text and do not emit \`file-actions\` blocks.`;
 
+export const FILE_ACTION_CONTRACT_FAILURE_CODE = 'file_action_contract_failure';
+export const FILE_ACTION_CONTRACT_FAILURE_MESSAGE =
+  'Builder execution produced no valid file actions';
+export type BuilderExecutionIntent = 'conversation' | 'workspace_mutation';
+export const DEFAULT_BUILDER_EXECUTION_INTENT: BuilderExecutionIntent =
+  'workspace_mutation';
+
+export function resolveWorkerExecutionIntent(
+  input: unknown,
+): BuilderExecutionIntent {
+  if (input === 'conversation' || input === 'workspace_mutation') {
+    return input;
+  }
+  return DEFAULT_BUILDER_EXECUTION_INTENT;
+}
+
+export function resolveEffectiveFileActionsForExecutionIntent<T>(input: {
+  executionIntent: BuilderExecutionIntent;
+  useHarness: boolean;
+  safeFileActions: T[];
+}): { effectiveFileActions: T[]; suppressedActionCount: number } {
+  if (
+    !input.useHarness &&
+    input.executionIntent === 'conversation' &&
+    input.safeFileActions.length > 0
+  ) {
+    return {
+      effectiveFileActions: [],
+      suppressedActionCount: input.safeFileActions.length,
+    };
+  }
+
+  return {
+    effectiveFileActions: input.safeFileActions,
+    suppressedActionCount: 0,
+  };
+}
+
+interface FileActionContractValidationResult {
+  isContractFailure: boolean;
+  finalContractResult: 'passed' | 'failed';
+  errorCode?: typeof FILE_ACTION_CONTRACT_FAILURE_CODE;
+  errorMessage?: typeof FILE_ACTION_CONTRACT_FAILURE_MESSAGE;
+}
+
+export function validatePlainPathFileActionContract(input: {
+  useHarness: boolean;
+  safeFileActionCount: number;
+  executionIntent?: BuilderExecutionIntent;
+}): FileActionContractValidationResult {
+  const executionIntent = input.executionIntent ?? DEFAULT_BUILDER_EXECUTION_INTENT;
+  if (
+    !input.useHarness &&
+    executionIntent === 'workspace_mutation' &&
+    input.safeFileActionCount === 0
+  ) {
+    return {
+      isContractFailure: true,
+      finalContractResult: 'failed',
+      errorCode: FILE_ACTION_CONTRACT_FAILURE_CODE,
+      errorMessage: FILE_ACTION_CONTRACT_FAILURE_MESSAGE,
+    };
+  }
+
+  return {
+    isContractFailure: false,
+    finalContractResult: 'passed',
+  };
+}
+
 function buildWorkspaceContextBlock(
   workspaceContext?: WorkspaceContext,
 ): string | null {
@@ -733,10 +803,22 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
 
         pollCancel();
 
+        const useHarness =
+          job.data.harnessVersion === 'v1' &&
+          DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop;
+        this.logger.log(
+          JSON.stringify({
+            event: 'agent_harness.route_evaluated',
+            executionId: job.data.executionId,
+            harnessVersion: job.data.harnessVersion ?? null,
+            enableToolLoop: DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop,
+            selectedPath: useHarness ? 'harness' : 'plain',
+          }),
+        );
+
         try {
           let aiResult: Awaited<ReturnType<AIExecutionService['execute']>>;
           let harnessPreApplyCheckpointHash: string | undefined;
-          let lastError: unknown;
           for (let attempt = 0; attempt < EXECUTION_PROVIDER_RETRY_ATTEMPTS; attempt++) {
             try {
               const promptParts = buildExecutionPromptParts(
@@ -750,18 +832,6 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                 promptParts,
                 abortController.signal,
               );
-
-              const useHarness =
-                job.data.harnessVersion === 'v1' &&
-                DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop;
-
-              this.logger.log(JSON.stringify({
-                event: 'agent_harness.route_evaluated',
-                executionId: job.data.executionId,
-                harnessVersion: job.data.harnessVersion ?? null,
-                enableToolLoop: DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop,
-                selectedPath: useHarness ? 'harness' : 'plain',
-              }));
 
               if (useHarness) {
                 const { config: resolvedConfig, metadata: configResolutionMetadata } =
@@ -895,7 +965,6 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
               }
               break;
             } catch (err) {
-              lastError = err;
               if (abortController.signal.aborted) throw err;
               if (!isRetryableError(err)) throw err;
               if (attempt === EXECUTION_PROVIDER_RETRY_ATTEMPTS - 1) throw err;
@@ -963,17 +1032,55 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
           const safeFileActions = Array.isArray(aiResult.fileActions)
             ? aiResult.fileActions
             : [];
+          const executionIntent = resolveWorkerExecutionIntent(
+            job.data.executionIntent,
+          );
+          const fileActionResolution = resolveEffectiveFileActionsForExecutionIntent(
+            {
+              executionIntent,
+              useHarness,
+              safeFileActions,
+            },
+          );
+          const effectiveFileActions = fileActionResolution.effectiveFileActions;
+          const parseMethod = aiResult.parseMethod ?? 'none';
+          const workspaceMutationAttempted =
+            typeof aiResult.workspaceMutationAttempted === 'boolean'
+              ? aiResult.workspaceMutationAttempted
+              : null;
+          const contractValidation = validatePlainPathFileActionContract({
+            useHarness,
+            safeFileActionCount: effectiveFileActions.length,
+            executionIntent,
+          });
 
-          if (aiResult.output) {
-            this.executionStreamPublisher.publishToken(
-              executionId,
-              aiResult.output,
+          if (fileActionResolution.suppressedActionCount > 0) {
+            this.logger.warn(
+              JSON.stringify({
+                event: 'file_action.conversation_actions_suppressed',
+                executionId,
+                provider: job.data.provider,
+                model: aiResult.model,
+                useHarness,
+                executionIntent,
+                suppressedActionCount: fileActionResolution.suppressedActionCount,
+              }),
             );
           }
 
-          this.executionStreamPublisher.publishFileActions(
-            executionId,
-            safeFileActions,
+          this.logger.log(
+            JSON.stringify({
+              event: 'file_action.parse_result',
+              executionId,
+              provider: job.data.provider,
+              model: aiResult.model,
+              useHarness,
+              parseMethod,
+              executionIntent,
+              fileActionCount: effectiveFileActions.length,
+              workspaceMutationAttempted,
+              finalContractResult: contractValidation.finalContractResult,
+            }),
           );
 
           const metadataRows = await this.dataSource.query(
@@ -1007,7 +1114,10 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
               tokensUsed: aiResult.tokensUsed ?? 0,
               model: aiResult.model,
               provider: job.data.provider,
-              fileActions: safeFileActions,
+              fileActions: effectiveFileActions,
+              parseMethod,
+              workspaceMutationAttempted,
+              executionIntent,
             },
           };
 
@@ -1026,6 +1136,72 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
 
           if (harnessPreApplyCheckpointHash) {
             nextMetadata.preApplyCheckpointHash = harnessPreApplyCheckpointHash;
+          }
+
+          if (aiResult.output) {
+            this.executionStreamPublisher.publishToken(
+              executionId,
+              aiResult.output,
+            );
+          }
+
+          this.executionStreamPublisher.publishFileActions(
+            executionId,
+            effectiveFileActions,
+          );
+
+          if (contractValidation.isContractFailure) {
+            nextMetadata.executionError = {
+              code: contractValidation.errorCode,
+              message: contractValidation.errorMessage,
+            };
+
+            await this.dataSource.query(
+              `
+              UPDATE usage_records
+              SET execution_status = 'failed',
+                  tokens_used = $2,
+                  metadata = $3::jsonb
+              WHERE execution_id = $1
+              `,
+              [executionId, aiResult.tokensUsed ?? 0, JSON.stringify(nextMetadata)],
+            );
+
+            this.executionStreamPublisher.publishCompletion(executionId);
+
+            incExecutionFailed();
+            this.metrics.execution_failed_total++;
+            const durationMs = Math.round(performance.now() - executionStartTime);
+            observeExecutionLatency(durationMs / 1000);
+            this.logExecutionCompletion({
+              event: 'execution_completed',
+              executionId,
+              provider,
+              workerId: this.workerId,
+              ...(queueWaitMs != null && { queue_wait_ms: queueWaitMs }),
+              duration_ms: durationMs,
+              tokens: aiResult.tokensUsed ?? 0,
+              execution_status: 'failed',
+              metrics: { ...this.metrics },
+            });
+
+            this.logger.warn(
+              JSON.stringify({
+                event: 'file_action.contract_failure',
+                executionId,
+                provider: job.data.provider,
+                model: aiResult.model,
+                useHarness,
+                parseMethod,
+                executionIntent,
+                fileActionCount: effectiveFileActions.length,
+                workspaceMutationAttempted,
+                finalContractResult: contractValidation.finalContractResult,
+                errorCode: contractValidation.errorCode,
+              }),
+            );
+
+            return;
           }
 
           await this.dataSource.query(

@@ -63,6 +63,14 @@ import {
   type WorkspaceFileAction,
 } from '@/components/workspace/workspace-ai-file-actions.logic';
 import {
+  buildExecutionIntentRequestPayload,
+  DEFAULT_WORKSPACE_EXECUTION_INTENT,
+  resolveExecutionIntentForRequest,
+  resolveExecutionIntentSelection,
+  shouldApplyFileActionsForExecutionIntent,
+  type WorkspaceExecutionIntent,
+} from '@/components/workspace/workspace-execution-intent.logic';
+import {
   acquireExecutionCoherenceGuard,
   runAiActionCoherence,
 } from '@/components/workspace/workspace-ai-coherence.logic';
@@ -973,6 +981,9 @@ export default function AppPage() {
     FRONTEND_PRIVATE_BETA_DEFAULT_SELECTION.modelId,
   );
   const [isChatOrchestrationEnabled, setIsChatOrchestrationEnabled] = useState(false);
+  const [chatExecutionIntent, setChatExecutionIntent] = useState<WorkspaceExecutionIntent>(
+    DEFAULT_WORKSPACE_EXECUTION_INTENT,
+  );
   const [chatThreadMessages, setChatThreadMessages] = useState<WorkspaceChatThreadUiMessage[]>([]);
   const [chatExecutionFileActionStates, setChatExecutionFileActionStates] = useState<
     Record<string, WorkspaceExecutionFileActionState>
@@ -1005,6 +1016,9 @@ export default function AppPage() {
   const sessionsRef = useRef<WorkspaceShellSession[]>([]);
   const executionSessionIdByExecutionIdRef = useRef<Record<string, string>>({});
   const executionAssistantMessageIdByExecutionIdRef = useRef<Record<string, string>>({});
+  const executionIntentByExecutionIdRef = useRef<
+    Record<string, WorkspaceExecutionIntent>
+  >({});
 
   const resolvedChatModelSelection = resolveFrontendProviderModelSelection({
     providerId: selectedChatProviderId,
@@ -1612,6 +1626,7 @@ export default function AppPage() {
     setChatExecutionFileActionStates({});
     executionSessionIdByExecutionIdRef.current = {};
     executionAssistantMessageIdByExecutionIdRef.current = {};
+    executionIntentByExecutionIdRef.current = {};
     executionFileActionsByExecutionIdRef.current = {};
     appliedFileActionsExecutionIdsRef.current = new Set<string>();
     pendingConfirmationExecutionIdsRef.current = new Set<string>();
@@ -3939,6 +3954,7 @@ export default function AppPage() {
     prompt: string;
     selectedSessionId: string | null;
     chosenModel: { provider: string; model: string };
+    executionIntent: WorkspaceExecutionIntent;
     assistantMessageId: string;
     isVisualEditPrompt: boolean;
   }): Promise<void> {
@@ -4014,6 +4030,7 @@ export default function AppPage() {
           model: input.chosenModel.model,
           sessionId: executionSessionId ?? crypto.randomUUID(),
           conversationId: executionSessionId ?? crypto.randomUUID(),
+          ...buildExecutionIntentRequestPayload(input.executionIntent),
           ...(workspaceContext ? { workspaceContext } : {}),
         }),
       });
@@ -4079,6 +4096,7 @@ export default function AppPage() {
         executionSessionIdByExecutionIdRef.current[executionId] = executionSessionId;
       }
       executionAssistantMessageIdByExecutionIdRef.current[executionId] = input.assistantMessageId;
+      executionIntentByExecutionIdRef.current[executionId] = input.executionIntent;
 
       let terminalPayload = queuedPayload;
       let terminalStatus = typeof terminalPayload.status === 'string' ? terminalPayload.status : 'queued';
@@ -4249,6 +4267,9 @@ export default function AppPage() {
       trimmedPrompt,
       selectedPreviewElement,
     );
+    const requestExecutionIntent = resolveExecutionIntentForRequest({
+      executionIntent: chatExecutionIntent,
+    });
     const isVisualEditPrompt = selectedPreviewElement !== null;
 
     setChatRequestState('submitting');
@@ -4297,6 +4318,7 @@ export default function AppPage() {
         prompt: promptWithSelectedPreviewElement,
         selectedSessionId,
         chosenModel,
+        executionIntent: requestExecutionIntent,
         assistantMessageId,
         isVisualEditPrompt,
       });
@@ -4334,6 +4356,7 @@ export default function AppPage() {
           model: chosenModel.model,
           sessionId: selectedSessionId ?? crypto.randomUUID(),
           conversationId: selectedSessionId ?? crypto.randomUUID(),
+          ...buildExecutionIntentRequestPayload(requestExecutionIntent),
           ...(workspaceContext ? { workspaceContext } : {}),
         }),
       });
@@ -4369,6 +4392,9 @@ export default function AppPage() {
       }
 
       setChatExecutionId(nextExecutionId);
+      if (nextExecutionId) {
+        executionIntentByExecutionIdRef.current[nextExecutionId] = requestExecutionIntent;
+      }
       if (nextExecutionId && executionSessionId) {
         executionSessionIdByExecutionIdRef.current[nextExecutionId] = executionSessionId;
         executionAssistantMessageIdByExecutionIdRef.current[nextExecutionId] = assistantMessageId;
@@ -5144,6 +5170,24 @@ export default function AppPage() {
     source: 'stream' | 'status',
     fileActions: WorkspaceFileAction[],
   ): void {
+    const executionIntent =
+      executionIntentByExecutionIdRef.current[executionId] ??
+      DEFAULT_WORKSPACE_EXECUTION_INTENT;
+    if (!shouldApplyFileActionsForExecutionIntent(executionIntent)) {
+      executionFileActionsByExecutionIdRef.current[executionId] = [];
+      pendingConfirmationExecutionIdsRef.current.delete(executionId);
+      setExecutionFileActionState(executionId, {
+        executionId,
+        source,
+        fileActions: [],
+        applyStatus: 'skipped',
+        confirmationRequired: false,
+        skipReason: 'conversation-intent',
+        results: [],
+      });
+      return;
+    }
+
     const existingFileActions = executionFileActionsByExecutionIdRef.current[executionId] ?? [];
     const shouldPreserveExistingFileActions = fileActions.length === 0 && existingFileActions.length > 0;
     const effectiveFileActions = shouldPreserveExistingFileActions ? existingFileActions : fileActions;
@@ -5813,6 +5857,15 @@ export default function AppPage() {
       dashboardError={dashboardError}
       chatPromptInput={chatPromptInput}
       onChatPromptInputChange={setChatPromptInput}
+      executionIntent={chatExecutionIntent}
+      onExecutionIntentChange={(nextIntent) => {
+        setChatExecutionIntent((currentIntent) =>
+          resolveExecutionIntentSelection({
+            currentIntent,
+            nextIntent,
+          }),
+        );
+      }}
       onCreateProjectFromPrompt={handleCreateProjectFromPrompt}
       selectedModelProvider={selectedChatModelProviderId}
       onSelectedModelProviderChange={handleSelectedChatProviderOptionChange}

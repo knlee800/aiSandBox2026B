@@ -36,9 +36,16 @@ export interface AIExecutionResult {
   model: string;
   provider?: string;
   fileActions?: FileAction[];
+  parseMethod?: FileActionParseMethod;
+  workspaceMutationAttempted?: boolean;
 }
 
 export type FileActionType = 'create' | 'write' | 'update' | 'delete';
+export type FileActionParseMethod =
+  | 'structured_json'
+  | 'fenced_block'
+  | 'fallback_json'
+  | 'none';
 
 export interface FileWriteAction {
   action: 'create' | 'write' | 'update';

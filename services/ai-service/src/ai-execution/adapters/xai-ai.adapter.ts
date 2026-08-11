@@ -11,6 +11,13 @@ import { AIAdapter } from './ai-adapter.interface';
 import { AIExecutionRequest, AIExecutionResult } from '../types';
 import { getStaticDefaultModel } from '../provider-model.catalogue';
 
+const XAI_STRUCTURED_JSON_OUTPUT_CONTRACT = `IMPORTANT: Your entire response MUST be a single valid JSON object with these fields:
+- "assistantText": (string) Your conversational response to show the user.
+- "workspaceMutationAttempted": (boolean, optional advisory field) true if you attempted to create, modify, or delete files; false otherwise.
+- "fileActions": (array) File actions to apply to the workspace. Each action object must include "action" (one of "create", "write", "update", "delete"), "path" (relative file path), and "content" (required for "create", "write", and "update"; use empty string "" for "delete"). Use [] when no file actions are produced.
+
+Do not include any text outside the JSON object. Do not use fenced code blocks. Include full file content directly in fileActions.`;
+
 /**
  * XAIAdapter
  *
@@ -107,24 +114,21 @@ export class XAIAdapter implements AIAdapter {
         typeof request.systemPrompt === 'string'
           ? request.systemPrompt.trim()
           : '';
-      const messages: OpenAI.Chat.ChatCompletionCreateParams['messages'] =
+      const structuredSystemPrompt =
         normalizedSystemPrompt.length > 0
-          ? [
-              {
-                role: 'system',
-                content: normalizedSystemPrompt,
-              },
-              {
-                role: 'user',
-                content: request.prompt ?? '',
-              },
-            ]
-          : [
-              {
-                role: 'user',
-                content: request.prompt ?? '',
-              },
-            ];
+          ? `${normalizedSystemPrompt}\n\n${XAI_STRUCTURED_JSON_OUTPUT_CONTRACT}`
+          : XAI_STRUCTURED_JSON_OUTPUT_CONTRACT;
+      const messages: OpenAI.Chat.ChatCompletionCreateParams['messages'] =
+        [
+          {
+            role: 'system',
+            content: structuredSystemPrompt,
+          },
+          {
+            role: 'user',
+            content: request.prompt ?? '',
+          },
+        ];
 
       // Transform AIExecutionRequest to xAI Chat Completions API format
       // TASK-56A: content must be string (xAI 422 if missing); coerce undefined/null to ''
@@ -133,6 +137,9 @@ export class XAIAdapter implements AIAdapter {
         max_tokens: this.defaultMaxTokens,
         temperature: this.defaultTemperature,
         messages,
+        response_format: {
+          type: 'json_object',
+        },
       };
 
       // Execute request via OpenAI SDK with xAI baseURL (Phase 47.4: forward signal for abort)

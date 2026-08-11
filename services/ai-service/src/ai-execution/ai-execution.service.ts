@@ -111,6 +111,8 @@ export class AIExecutionService {
         provider,
         output: parsed.textOutput,
         fileActions: parsed.fileActions,
+        parseMethod: parsed.parseMethod,
+        workspaceMutationAttempted: parsed.workspaceMutationAttempted,
       };
       const adapterDurationMs = Math.round(
         performance.now() - adapterStartTime,

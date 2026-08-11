@@ -7318,6 +7318,32 @@ describe('workspace prompt context — UX-IA-15C helpers', () => {
   });
 });
 
+describe('builder intent locale keys — BUILDER-INTENT-01', () => {
+  test('intent locale keys exist in en, zh-TW, and zh-CN locale files', () => {
+    const en = JSON.parse(
+      readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'),
+    );
+    const zhTw = JSON.parse(
+      readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'),
+    );
+    const zhCn = JSON.parse(
+      readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'),
+    );
+
+    const localePacks = [en, zhTw, zhCn];
+    for (const localePack of localePacks) {
+      assert.equal(typeof localePack.ai.intentAsk, 'string');
+      assert.equal(localePack.ai.intentAsk.trim().length > 0, true);
+      assert.equal(typeof localePack.ai.intentBuild, 'string');
+      assert.equal(localePack.ai.intentBuild.trim().length > 0, true);
+      assert.equal(typeof localePack.ai.intentAskTooltip, 'string');
+      assert.equal(localePack.ai.intentAskTooltip.trim().length > 0, true);
+      assert.equal(typeof localePack.ai.intentBuildTooltip, 'string');
+      assert.equal(localePack.ai.intentBuildTooltip.trim().length > 0, true);
+    }
+  });
+});
+
 describe('workspace visual edit diff preview wiring — UX-IA-16B', () => {
   test('renders diff preview for visual-edit update action', () => {
     const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');

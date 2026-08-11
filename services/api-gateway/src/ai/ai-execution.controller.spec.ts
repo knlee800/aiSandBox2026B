@@ -1293,3 +1293,146 @@ describe('AIExecutionController provider/model catalogue validation (FR-04B Step
     expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
   });
 });
+
+describe('AIExecutionController executionIntent propagation (BUILDER-INTENT-01)', () => {
+  let controller: AIExecutionController;
+  let mockUsageLedgerService: Record<string, jest.Mock>;
+  let mockQueueService: Record<string, jest.Mock>;
+
+  const VALID_SESSION_UUID = '35d53116-6723-4571-af12-ac256977c007';
+  const identity: ApiKeyIdentity = {
+    userId: 'intent-user',
+    apiKeyId: 'intent-key',
+    scopes: ['ai:execute'],
+    harnessEntitled: true,
+  };
+
+  function makeRequest(overrides?: Partial<AIExecutionRequest>): AIExecutionRequest {
+    return {
+      sessionId: VALID_SESSION_UUID,
+      conversationId: 'conv-intent',
+      userId: 'ignored',
+      prompt: 'Intent test prompt',
+      provider: 'stub',
+      ...overrides,
+    };
+  }
+
+  beforeEach(async () => {
+    mockUsageLedgerService = {
+      findByRequestId: jest.fn().mockResolvedValue(null),
+      reuseExecutionIntent: jest.fn().mockResolvedValue('exec-id'),
+      writeExecutionIntent: jest.fn().mockResolvedValue(undefined),
+      updateExecutionResult: jest.fn().mockResolvedValue(undefined),
+    };
+
+    mockQueueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+
+    const mockGuard = { canActivate: jest.fn(() => true) };
+
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [AIExecutionController],
+      providers: [
+        { provide: UsageLedgerService, useValue: mockUsageLedgerService },
+        {
+          provide: GlobalSafetyLimitService,
+          useValue: { checkAndRecord: jest.fn(), recordExecutionCost: jest.fn() },
+        },
+        { provide: QueueService, useValue: mockQueueService },
+        {
+          provide: ExecutionResultService,
+          useValue: { getExecution: jest.fn(), requestCancel: jest.fn() },
+        },
+        {
+          provide: ExecutionStreamService,
+          useValue: { subscribe: jest.fn(), unsubscribe: jest.fn() },
+        },
+        {
+          provide: UserAiInstructionsService,
+          useValue: { getByUserId: jest.fn().mockResolvedValue(null) },
+        },
+        {
+          provide: ProjectAiContextService,
+          useValue: { getByProjectId: jest.fn().mockResolvedValue(null) },
+        },
+        {
+          provide: SessionService,
+          useValue: {
+            getSessionById: jest
+              .fn()
+              .mockResolvedValue({ userId: identity.userId, projectId: null }),
+          },
+        },
+      ],
+    })
+      .overrideGuard(SessionOrApiKeyAuthGuard)
+      .useValue(mockGuard)
+      .overrideGuard(AuthorizationGuard)
+      .useValue(mockGuard)
+      .overrideGuard(QuotaGuard)
+      .useValue(mockGuard)
+      .overrideGuard(TokenQuotaGuard)
+      .useValue(mockGuard)
+      .overrideGuard(CreditBalanceGuard)
+      .useValue(mockGuard)
+      .compile();
+
+    controller = module.get<AIExecutionController>(AIExecutionController);
+  });
+
+  it('explicit conversation intent propagates into queue payload', async () => {
+    const result = await controller.execute(
+      makeRequest({ executionIntent: 'conversation' }),
+      identity,
+    );
+
+    expect(result.status).toBe('queued');
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledWith(
+      expect.objectContaining({
+        executionIntent: 'conversation',
+      }),
+    );
+  });
+
+  it('explicit workspace_mutation intent propagates into queue payload', async () => {
+    const result = await controller.execute(
+      makeRequest({ executionIntent: 'workspace_mutation' }),
+      identity,
+    );
+
+    expect(result.status).toBe('queued');
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledWith(
+      expect.objectContaining({
+        executionIntent: 'workspace_mutation',
+      }),
+    );
+  });
+
+  it('omitted intent defaults to workspace_mutation for backward compatibility', async () => {
+    const result = await controller.execute(makeRequest(), identity);
+
+    expect(result.status).toBe('queued');
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledWith(
+      expect.objectContaining({
+        executionIntent: 'workspace_mutation',
+      }),
+    );
+  });
+
+  it('invalid intent is rejected with BadRequestException before side effects', async () => {
+    await expect(
+      controller.execute(
+        makeRequest({ executionIntent: 'invalid-intent' as any }),
+        identity,
+      ),
+    ).rejects.toThrow(BadRequestException);
+
+    expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  });
+});
