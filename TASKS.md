@@ -16,7 +16,7 @@ Rules:
 
 If conflicts exist, TASKS_BACKLOG_FULL.md takes precedence.
 
-**Program status:** **BILLING-READY-08 COMPLETE AND LOCKED 2026-08-07** — Controlled xAI smoke PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (500 credits) — overflow 98 ACCEPTED BY DESIGN — balance reached 0 correctly — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — QuotaGuard browser-session bypass — Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md` — **BILLING-READY-08B COMPLETE AND LOCKED 2026-08-07** — usage_records.created_at schema remediation — Checkpoint: `docs/BILLING-READY-08B-CHECKPOINT.md` — Final checkpoint: `docs/BILLING-READY-08-CHECKPOINT.md` — **PRIVATE-BETA-FUNCTIONAL-READINESS-04 COMPLETE AND LOCKED 2026-08-07** — All acceptance criteria satisfied — FR-04 parent checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-CHECKPOINT.md` — **ADMIN-CONSOLE-01 COMPLETE AND LOCKED 2026-08-08** — All children COMPLETE AND LOCKED — **ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07** — Checkpoint: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md` — **ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07** — Authenticated Admin Credit Grant API — Checkpoint: `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md` — **ADMIN-CONSOLE-01C COMPLETE AND LOCKED 2026-08-07** — Admin Console Shell + Users/Sessions — Checkpoint: `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md` — **ADMIN-CONSOLE-01D COMPLETE AND LOCKED 2026-08-07** — Admin Credit Grant UI — Checkpoint: `docs/ADMIN-CONSOLE-01D-CHECKPOINT.md` — **ADMIN-CONSOLE-01E COMPLETE AND LOCKED 2026-08-08** — Staging Operator Validation + Parent Consolidation — PASS WITH NON-BLOCKING LIMITATIONS — Checkpoint: `docs/ADMIN-CONSOLE-01E-CHECKPOINT.md` — **ADMIN-CONSOLE-01E1 COMPLETE AND LOCKED 2026-08-08** — Invalid Locale Redirect Origin Fix — Checkpoint: `docs/ADMIN-CONSOLE-01E1-CHECKPOINT.md` — Parent checkpoint: `docs/ADMIN-CONSOLE-01-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 BLOCKED** — private beta blocked by PRIVATE-BETA-BLOCKER-01 (recurring canonical landing page regression) and separate unresolved preview failure — Do not execute invitations until all blockers resolved — **PRIVATE-BETA-BLOCKER-01 COMPLETE AND LOCKED 2026-08-09** — Legacy workspace + feature-flag removal — Build-independence proven — All locales PASS — Commit `651f723447a85ec5d22139d6ba60be6680a0f8c6` — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-01-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-02 COMPLETE AND LOCKED 2026-08-09** — Preview Runtime Failure — PreviewController fallback 4001→4002 — staging live preview PASS — Commit `f73da07ef8d1acc70d43d6b4980fd1d0d57e2883` — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-02-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 UNBLOCKED** — landing-page and preview blockers resolved — do not execute invitations without registration and Keith explicit approval — GLOBAL_EXECUTION_ENABLED remains false — **GOV-ARCH-01 COMPLETE AND LOCKED 2026-08-10** — Checkpoint: `docs/GOV-ARCH-01-CHECKPOINT.md` — **GOV-PRD-01 COMPLETE AND LOCKED 2026-08-10** — Checkpoint: `docs/GOV-PRD-01-CHECKPOINT.md` — **PRIVATE-BETA-OPS-01 COMPLETE AND LOCKED 2026-08-10** — Independent PM2 ops watchdog staging-proved — P1 operational visibility SATISFIED — Checkpoint: `docs/PRIVATE-BETA-OPS-01-CHECKPOINT.md` — **PRIVATE-BETA-EXEC-01 COMPLETE AND LOCKED 2026-08-10** — Controlled Builder AI Execution Activation — Activation smoke PASS — Execution ID `24acd697-b55c-40d0-b2d5-32faf9b85709` — provider `xai` — path `plain` — tokens `1078` — file `beta-activation-smoke-2026-08-10.txt` — credits 6000→4922 — `GLOBAL_EXECUTION_ENABLED=true` deliberately left enabled — Harness remains disabled — Stripe charging remains disabled — Checkpoint: `docs/PRIVATE-BETA-EXEC-01-CHECKPOINT.md` — **PRIVATE-BETA-E2E-01 COMPLETE AND LOCKED — 2026-08-10 — FAIL / BLOCKER** — Fresh Keith Builder End-to-End Staging Journey — Primary blocker: Builder plain-path completed execution returned text with `fileActions: []` (execution `2bc73157-973a-45ec-8b71-bca8c2f7941d`) — no `index.html` / empty workspace — Gate rolled back to `GLOBAL_EXECUTION_ENABLED=false` — PRIVATE-BETA-INVITE-01 remains untouched/unregistered — Builder-first private beta **NO-GO PENDING BLOCKER FIX** — **PRIVATE-BETA-BLOCKER-03A COMPLETE AND LOCKED — 2026-08-10 — ROOT CAUSE PROVEN** — Empty File-Action Contract Diagnosis — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03A-CHECKPOINT.md` — Diagnosis: `docs/PRIVATE-BETA-BLOCKER-03A-DIAGNOSIS.md` — PROMPT-ONLY file-action contract; prose noncompliance silently accepted as completed with `fileActions: []` — Defect class: RESPONSE-FORM-SPECIFIC / MODEL-AGNOSTIC CONTRACT WEAKNESS — Target execution `2bc73157-973a-45ec-8b71-bca8c2f7941d` — Comparison executions `24acd697-b55c-40d0-b2d5-32faf9b85709` / `83acc0e9-84de-4f94-9e41-294701e38393` — `GLOBAL_EXECUTION_ENABLED=false` preserved — Builder-first private beta remains **NO-GO PENDING BLOCKER FIX** — **PRIVATE-BETA-BLOCKER-03B COMPLETE AND LOCKED — 2026-08-11 — PASS** — File-Action Reliability Fix — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03B-CHECKPOINT.md` — original file-action reliability blocker remediated — plain-path structured JSON + application-owned zero-action failure validated on staging — `GLOBAL_EXECUTION_ENABLED=false` — Harness remains disabled — PRIVATE-BETA-INVITE-01 untouched/unregistered — Builder-first private beta remains **NO-GO PENDING REMAINING READINESS WORK** — **BUILDER-INTENT-01 ACTIVE — Step 1 COMPLETE (Registration — 2026-08-11)** — Ask/Discuss vs Build/Edit Execution Intent — exact next: BUILDER-INTENT-01 Step 2 — Intent Contract + UX Stage-Start — 03C/03D remain NOT REGISTERED — PRIVATE-BETA-INVITE-01 untouched/unregistered — `GLOBAL_EXECUTION_ENABLED=false`
+**Program status:** **BILLING-READY-08 COMPLETE AND LOCKED 2026-08-07** — Controlled xAI smoke PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (500 credits) — overflow 98 ACCEPTED BY DESIGN — balance reached 0 correctly — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — QuotaGuard browser-session bypass — Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md` — **BILLING-READY-08B COMPLETE AND LOCKED 2026-08-07** — usage_records.created_at schema remediation — Checkpoint: `docs/BILLING-READY-08B-CHECKPOINT.md` — Final checkpoint: `docs/BILLING-READY-08-CHECKPOINT.md` — **PRIVATE-BETA-FUNCTIONAL-READINESS-04 COMPLETE AND LOCKED 2026-08-07** — All acceptance criteria satisfied — FR-04 parent checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-CHECKPOINT.md` — **ADMIN-CONSOLE-01 COMPLETE AND LOCKED 2026-08-08** — All children COMPLETE AND LOCKED — **ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07** — Checkpoint: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md` — **ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07** — Authenticated Admin Credit Grant API — Checkpoint: `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md` — **ADMIN-CONSOLE-01C COMPLETE AND LOCKED 2026-08-07** — Admin Console Shell + Users/Sessions — Checkpoint: `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md` — **ADMIN-CONSOLE-01D COMPLETE AND LOCKED 2026-08-07** — Admin Credit Grant UI — Checkpoint: `docs/ADMIN-CONSOLE-01D-CHECKPOINT.md` — **ADMIN-CONSOLE-01E COMPLETE AND LOCKED 2026-08-08** — Staging Operator Validation + Parent Consolidation — PASS WITH NON-BLOCKING LIMITATIONS — Checkpoint: `docs/ADMIN-CONSOLE-01E-CHECKPOINT.md` — **ADMIN-CONSOLE-01E1 COMPLETE AND LOCKED 2026-08-08** — Invalid Locale Redirect Origin Fix — Checkpoint: `docs/ADMIN-CONSOLE-01E1-CHECKPOINT.md` — Parent checkpoint: `docs/ADMIN-CONSOLE-01-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 BLOCKED** — private beta blocked by PRIVATE-BETA-BLOCKER-01 (recurring canonical landing page regression) and separate unresolved preview failure — Do not execute invitations until all blockers resolved — **PRIVATE-BETA-BLOCKER-01 COMPLETE AND LOCKED 2026-08-09** — Legacy workspace + feature-flag removal — Build-independence proven — All locales PASS — Commit `651f723447a85ec5d22139d6ba60be6680a0f8c6` — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-01-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-02 COMPLETE AND LOCKED 2026-08-09** — Preview Runtime Failure — PreviewController fallback 4001→4002 — staging live preview PASS — Commit `f73da07ef8d1acc70d43d6b4980fd1d0d57e2883` — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-02-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 UNBLOCKED** — landing-page and preview blockers resolved — do not execute invitations without registration and Keith explicit approval — GLOBAL_EXECUTION_ENABLED remains false — **GOV-ARCH-01 COMPLETE AND LOCKED 2026-08-10** — Checkpoint: `docs/GOV-ARCH-01-CHECKPOINT.md` — **GOV-PRD-01 COMPLETE AND LOCKED 2026-08-10** — Checkpoint: `docs/GOV-PRD-01-CHECKPOINT.md` — **PRIVATE-BETA-OPS-01 COMPLETE AND LOCKED 2026-08-10** — Independent PM2 ops watchdog staging-proved — P1 operational visibility SATISFIED — Checkpoint: `docs/PRIVATE-BETA-OPS-01-CHECKPOINT.md` — **PRIVATE-BETA-EXEC-01 COMPLETE AND LOCKED 2026-08-10** — Controlled Builder AI Execution Activation — Activation smoke PASS — Execution ID `24acd697-b55c-40d0-b2d5-32faf9b85709` — provider `xai` — path `plain` — tokens `1078` — file `beta-activation-smoke-2026-08-10.txt` — credits 6000→4922 — `GLOBAL_EXECUTION_ENABLED=true` deliberately left enabled — Harness remains disabled — Stripe charging remains disabled — Checkpoint: `docs/PRIVATE-BETA-EXEC-01-CHECKPOINT.md` — **PRIVATE-BETA-E2E-01 COMPLETE AND LOCKED — 2026-08-10 — FAIL / BLOCKER** — Fresh Keith Builder End-to-End Staging Journey — Primary blocker: Builder plain-path completed execution returned text with `fileActions: []` (execution `2bc73157-973a-45ec-8b71-bca8c2f7941d`) — no `index.html` / empty workspace — Gate rolled back to `GLOBAL_EXECUTION_ENABLED=false` — PRIVATE-BETA-INVITE-01 remains untouched/unregistered — Builder-first private beta **NO-GO PENDING BLOCKER FIX** — **PRIVATE-BETA-BLOCKER-03A COMPLETE AND LOCKED — 2026-08-10 — ROOT CAUSE PROVEN** — Empty File-Action Contract Diagnosis — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03A-CHECKPOINT.md` — Diagnosis: `docs/PRIVATE-BETA-BLOCKER-03A-DIAGNOSIS.md` — PROMPT-ONLY file-action contract; prose noncompliance silently accepted as completed with `fileActions: []` — Defect class: RESPONSE-FORM-SPECIFIC / MODEL-AGNOSTIC CONTRACT WEAKNESS — Target execution `2bc73157-973a-45ec-8b71-bca8c2f7941d` — Comparison executions `24acd697-b55c-40d0-b2d5-32faf9b85709` / `83acc0e9-84de-4f94-9e41-294701e38393` — `GLOBAL_EXECUTION_ENABLED=false` preserved — Builder-first private beta remains **NO-GO PENDING BLOCKER FIX** — **PRIVATE-BETA-BLOCKER-03B COMPLETE AND LOCKED — 2026-08-11 — PASS** — File-Action Reliability Fix — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03B-CHECKPOINT.md` — original file-action reliability blocker remediated — plain-path structured JSON + application-owned zero-action failure validated on staging — `GLOBAL_EXECUTION_ENABLED=false` — Harness remains disabled — PRIVATE-BETA-INVITE-01 untouched/unregistered — Builder-first private beta remains **NO-GO PENDING REMAINING READINESS WORK** — **BUILDER-INTENT-01 ACTIVE — Step 1 COMPLETE (Registration — 2026-08-11)** — Ask/Discuss vs Build/Edit Execution Intent — exact next: BUILDER-INTENT-01 Step 2 — Intent Contract + UX Stage-Start — 03C/03D remain NOT REGISTERED — PRIVATE-BETA-INVITE-01 untouched/unregistered — `GLOBAL_EXECUTION_ENABLED=false` — **BUILDER-INTENT-01 COMPLETE AND LOCKED 2026-08-13** — Checkpoint: `docs/BUILDER-INTENT-01-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-03C COMPLETE AND LOCKED 2026-08-14** — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03C-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-03D COMPLETE AND LOCKED 2026-08-14** — No-workspace-result credit policy — 03D-A/03D-B COMPLETE AND LOCKED — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03D-CHECKPOINT.md` — **PRIVATE-BETA-E2E-02 ACTIVE — Step 2 COMPLETE 2026-08-14** — Stage Start / Exact Controlled Runbook — `docs/PRIVATE-BETA-E2E-02-STAGE-START.md` — Step 3 PENDING / READY TO EXECUTE — provider=xAI/grok-4.5 — ONE execution authorized — `GLOBAL_EXECUTION_ENABLED=false` — `BILLING_CHARGES_ENABLED=false` — PRIVATE-BETA-INVITE-01 untouched/unregistered
 
 
 \# TASKS.md ??Master Task Index
@@ -49453,7 +49453,7 @@ Prefer existing execution/accounting records and deterministic mocked/local cove
 **Step 2 correction:** Initial direction D (existing accounting sufficient, D/E deferred) replaced with direction A. Correction reason: deferring D/E was insufficient for 03D's registered objective; bounded architecture addition resolves all scenarios.
 **03D-A:** COMPLETE AND LOCKED — 2026-08-14 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03D-A-CHECKPOINT.md`
 **03D-B:** COMPLETE AND LOCKED — 2026-08-14 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03D-B-CHECKPOINT.md`
-**Exact next recommended task:** Fresh PRIVATE-BETA-E2E rerun / readiness validation (PRIVATE-BETA-E2E-02 — NOT YET REGISTERED)
+**Exact next recommended task:** PRIVATE-BETA-E2E-02 — Fresh Private-Beta End-to-End Readiness Validation — ACTIVE — Step 2 COMPLETE 2026-08-14 — Step 3 PENDING / READY TO EXECUTE
 
 ---
 
@@ -50007,3 +50007,239 @@ Tests must cover (provider mocks only — no live xAI — no real balance mutati
 **Dependencies:** PRIVATE-BETA-BLOCKER-03D-A COMPLETE AND LOCKED — 2026-08-14
 **Checkpoint:** `docs/PRIVATE-BETA-BLOCKER-03D-B-CHECKPOINT.md`
 **Exact next recommended task:** PRIVATE-BETA-BLOCKER-03D Step 4 — Final Consolidation / Combined Validation Decision
+
+---
+
+### PRIVATE-BETA-E2E-02: Fresh Private-Beta End-to-End Readiness Validation
+
+**Status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-08-14)
+**Task ID:** PRIVATE-BETA-E2E-02
+**Title:** Fresh Private-Beta End-to-End Readiness Validation
+**Family:** PRIVATE BETA / BUILDER / END-TO-END / READINESS VALIDATION
+**Priority:** P1
+**Risk:** HIGH
+**Nature:** CONTROLLED STAGING E2E / POST-REMEDIATION VALIDATION / REAL PROVIDER
+**Workflow:** HIGH-RISK 4-STEP
+**Registered:** 2026-08-14
+**Steps:**
+- Step 1 — Registration: COMPLETE — 2026-08-14
+- Step 2 — Stage Start / Exact Controlled Runbook: COMPLETE — Stage Start / Exact Controlled Runbook — 2026-08-14
+- Step 3 — Controlled Staging E2E Execution: PENDING / READY TO EXECUTE
+- Step 4 — Consolidation / Final Readiness Decision: PENDING
+**Checkpoint:** `docs/PRIVATE-BETA-E2E-02-CHECKPOINT.md` — to be created at Step 4
+**Starting gate state:** `GLOBAL_EXECUTION_ENABLED=false` — confirmed at registration prerequisite check
+**Required final gate state:** `GLOBAL_EXECUTION_ENABLED=false` — must be restored after Step 3 regardless of outcome
+**Billing posture:** `BILLING_CHARGES_ENABLED=false` — must remain false throughout
+**PRIVATE-BETA-INVITE-01 status:** untouched / unregistered — invitations prohibited until E2E-02 PASS and subsequent readiness decision
+**Keith authorization (2026-08-14):** Controlled PRIVATE-BETA-E2E-02 execution window — temporarily setting `GLOBAL_EXECUTION_ENABLED=true` on staging — exactly ONE real xAI/Grok 4.5 provider execution — restoring `GLOBAL_EXECUTION_ENABLED=false` immediately afterward — approximately $2.50 xAI provider credit confirmed available — authorization applies ONLY to this bounded E2E-02 validation — does NOT authorize multiple provider executions, arbitrary retries, leaving execution enabled, Stripe/payment activity, or broad staging modifications
+**Provider-call hard budget:** EXACTLY ONE — if timeout / error / malformed / zero actions: STOP — do NOT retry — second call requires fresh Keith authorization
+**Provider:** xAI
+**Model:** grok-4.5 — do NOT use grok-4.20 — no fallback / no substitution
+**Execution intent required:** workspace_mutation — confirmed from authoritative evidence, not visual inference
+**Execution gate policy:** `GLOBAL_EXECUTION_ENABLED=false` (pre-run verified) → `true` (bounded execution window only) → `false` (mandatory restoration regardless of PASS or FAIL)
+**PRIVATE-BETA-E2E-01 outcome:** FAIL / BLOCKER — 2026-08-10 — zero file actions — led to 03A/03B/03C/03D remediation chain
+**Remediation chain completed:**
+- PRIVATE-BETA-BLOCKER-03B COMPLETE AND LOCKED — 2026-08-11 — Build structured file-action contract — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03B-CHECKPOINT.md`
+- BUILDER-INTENT-01 COMPLETE AND LOCKED — 2026-08-13 — Ask/Build intent handling — Checkpoint: `docs/BUILDER-INTENT-01-CHECKPOINT.md`
+- PRIVATE-BETA-BLOCKER-03C COMPLETE AND LOCKED — 2026-08-14 — Grok model policy — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03C-CHECKPOINT.md`
+- PRIVATE-BETA-BLOCKER-03D COMPLETE AND LOCKED — 2026-08-14 — No-workspace-result credit policy — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03D-CHECKPOINT.md`
+- PRIVATE-BETA-BLOCKER-03D-A COMPLETE AND LOCKED — 2026-08-14 — Backend Build deduction gate + confirm-apply endpoint — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03D-A-CHECKPOINT.md`
+- PRIVATE-BETA-BLOCKER-03D-B COMPLETE AND LOCKED — 2026-08-14 — Frontend apply-result integration — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03D-B-CHECKPOINT.md`
+
+---
+
+#### Core Question
+
+Can a real private-beta user now complete the intended Builder flow end-to-end on staging with correct authentication, Build intent, provider execution, structured file actions, workspace mutation, browser apply, workspace result, accounting confirmation, exactly-once credit deduction, preview/workspace usability, and safe execution gate restoration — while preserving Ask semantics, provider/model restrictions, ownership/auth security, and billing/payment safety?
+
+---
+
+#### Controlled Build Scenario
+
+Step 3 must execute exactly ONE real provider-backed Build using xAI / grok-4.5.
+
+Build prompt requirements:
+- deterministic enough to verify
+- very small
+- expected to produce one or a few file actions
+- inexpensive
+- easy to inspect
+- non-destructive
+- inside a disposable/private-beta staging project
+
+Prefer a tiny artifact such as a small text/HTML file or similarly bounded workspace change. Do NOT choose a large application-generation prompt. Do NOT use grok-4.20. Exact prompt selected during Step 2.
+
+---
+
+#### Required E2E Evidence
+
+**Authentication:** Valid staging user/session via normal product path — authenticated user active — project/session accessible — execution ownership verified — no cross-user bypass.
+
+**Build intent:** executionIntent = workspace_mutation — confirmed from authoritative execution/accounting evidence, not visual inference alone.
+
+**Model:** provider=xAI, model=grok-4.5 — grok-4.20 must not be used or newly selectable — no fallback — no substitution.
+
+**AI result:** Provider execution starts once — provider returns — execution reaches correct terminal state — structured fileActions exist — fileActions count > 0 — actions correspond to requested bounded Build. If zero usable actions: E2E result FAIL — do NOT make another provider call.
+
+**Workspace apply:** Apply guard permits exactly one application — full action set succeeds — applyStatus=applied — successCount=totalActions — requested file/content exists afterward. Apply guard distinct from AI completion evidence.
+
+**Accounting confirmation:** Browser → authenticated Next.js confirmation route → ownership check → server-side internal-key call → API Gateway confirm-build-apply → backend qualifying validation → credit deduction. Internal service key must never appear in browser-visible response or log.
+
+**Credit policy:** Starting credit balance recorded before execution. Build AI completion alone must NOT trigger deduction. Qualifying successful apply confirmation triggers deduction. Ending balance recorded after apply. Exactly one deduction — source_event_id corresponds to executionId — no duplicate deduction record — deduction matches pricing/accounting calculation — no refund/grant side effect — no external payment charge.
+
+**Idempotency:** One execution → at most one deduction — proven via DB/accounting records and existing automated test evidence. No duplicate mutations created deliberately.
+
+**Workspace usability:** After successful apply — file tree reflects new/changed file — editor displays correct content — preview works if artifact is previewable.
+
+**Ask regression:** Provider-free/read-only/static verification only — no second real Ask provider call — confirmed via existing test evidence/code inspection/current metadata — Ask success remains immediate-accounting path and does not invoke Build confirmation.
+
+**Security:** Normal authenticated session required — execution ownership check succeeds for owner — browser never receives internal service key — no secret appears in browser-visible response/log — existing validated ownership tests relied upon for cross-user boundary.
+
+**Final safety state:** `GLOBAL_EXECUTION_ENABLED=false` — `BILLING_CHARGES_ENABLED=false` — no Stripe/payment activation — no unexpected PM2/service state changes — provider calls total: 1 maximum — recorded explicitly before declaring run complete.
+
+---
+
+#### Defect Handling
+
+If any defect appears during Step 3:
+1. Stop the E2E
+2. Restore `GLOBAL_EXECUTION_ENABLED=false`
+3. Preserve evidence
+4. Classify blocker/non-blocker
+5. Do NOT modify production source
+6. Do NOT retry provider automatically
+7. Future repair must be separately registered
+
+---
+
+#### 4-Step Workflow
+
+**Step 1 — Registration** — COMPLETE — 2026-08-14
+
+Register PRIVATE-BETA-E2E-02 in TASKS.md and TASKS_BACKLOG_FULL.md. Keith authorization and provider budget recorded. No runtime/provider/source/balance/staging mutation. No E2E journey performed.
+
+**Step 2 — Stage Start / Exact Controlled Runbook** — PENDING
+
+Create exact runbook document before any runtime mutation. Define: exact staging target, exact commands, exact environment flag transition sequence, pre-run safety checks, selected tiny Build prompt, user/project/session, starting balance capture, execution ID capture, provider-call counter, file-action evidence plan, workspace apply evidence plan, accounting evidence plan, final balance capture, final safety restoration commands, stop conditions, rollback/restoration sequence. No runtime actions occur in Step 2.
+
+**Step 3 — Controlled Staging E2E Execution** — PENDING
+
+Execute exactly per runbook from Step 2. `GLOBAL_EXECUTION_ENABLED=true` only during bounded execution window. One authorized xAI/grok-4.5 Build only. Collect all required evidence. Restore `GLOBAL_EXECUTION_ENABLED=false` regardless of outcome. Verify final safety state before declaring run complete.
+
+**Step 4 — Consolidation / Final Readiness Decision** — PENDING
+
+Create checkpoint `docs/PRIVATE-BETA-E2E-02-CHECKPOINT.md`. Record final PASS/FAIL readiness verdict against all 18 PASS criteria. Record private-beta readiness impact. No unrelated implementation/runtime changes. PRIVATE-BETA-INVITE-01 remains untouched.
+
+---
+
+#### PASS Criteria
+
+E2E-02 can PASS only if ALL of the following are confirmed:
+
+1. Staging auth works
+2. Workspace/project/session usable
+3. One authorized xAI/grok-4.5 Build executes
+4. executionIntent = workspace_mutation
+5. fileActions > 0
+6. Workspace apply fully succeeds
+7. Requested workspace result exists
+8. confirm-build-apply confirmation route reached and succeeds
+9. Ownership/auth checks hold
+10. Build AI completion alone is NOT the accounting trigger
+11. Qualifying successful apply confirms and triggers deduction
+12. Exactly one credit deduction occurs
+13. No duplicate deduction
+14. No external payment charge
+15. grok-4.20 not used
+16. Ask semantics remain unchanged (non-provider regression evidence)
+17. `GLOBAL_EXECUTION_ENABLED` restored false
+18. `BILLING_CHARGES_ENABLED` remains false
+
+Any launch-critical failure: FAIL / BLOCKED. No retry unless explicitly authorized by Keith.
+
+---
+
+#### Step 2 Runbook Requirements
+
+Step 2 must define all of the following before any runtime action:
+- Exact staging target
+- Exact commands for flag transitions
+- Exact environment flag transition sequence
+- Pre-run safety checks
+- Selected tiny Build prompt (deterministic, small, ≤few file actions, non-destructive)
+- User/project/session used
+- Starting balance capture method
+- Execution ID capture method
+- Provider-call counter
+- File-action evidence collection plan
+- Workspace apply evidence collection plan
+- Accounting/DB evidence collection plan
+- Final balance capture
+- Final safety restoration command sequence
+- Stop conditions
+- Rollback/restoration sequence
+
+---
+
+#### Acceptance Criteria
+
+Step 1 (Registration):
+- [x] PRIVATE-BETA-E2E-02 registered in TASKS.md
+- [x] PRIVATE-BETA-E2E-02 mirrored in TASKS_BACKLOG_FULL.md
+- [x] Stage Start / runbook creation required before execution recorded
+- [x] Keith authorization recorded (2026-08-14)
+- [x] Provider credit confirmation recorded (~$2.50 xAI)
+- [x] Pre-run `GLOBAL_EXECUTION_ENABLED=false` requirement recorded
+- [x] Pre-run `BILLING_CHARGES_ENABLED=false` requirement recorded
+- [x] Frontend/API Gateway internal keys present and matching — prerequisite check PASS recorded
+- [x] API_GATEWAY_URL target validated — prerequisite check PASS recorded
+- [x] Authenticated staging user/session requirement recorded
+- [x] One controlled Build only recorded
+- [x] provider=xAI recorded
+- [x] model=grok-4.5 recorded
+- [x] executionIntent=workspace_mutation requirement recorded
+- [x] No fallback/substitution policy recorded
+- [x] Provider-call hard budget (≤1) recorded
+- [x] Execution completes requirement recorded
+- [x] fileActions > 0 requirement recorded
+- [x] Full workspace apply success requirement recorded
+- [x] All action results success requirement recorded
+- [x] Requested workspace artifact must exist requirement recorded
+- [x] confirm-build-apply route must be reached recorded
+- [x] Ownership/auth validation requirement recorded
+- [x] Internal key must remain server-side policy recorded
+- [x] Build AI completion alone must NOT trigger deduction recorded
+- [x] Qualifying apply confirmation triggers deduction recorded
+- [x] Exactly one deduction record requirement recorded
+- [x] source_event_id must match executionId recorded
+- [x] No duplicate deduction requirement recorded
+- [x] Expected credit amount/accounting consistency requirement recorded
+- [x] No refund/grant side effect requirement recorded
+- [x] No Stripe/payment charge requirement recorded
+- [x] Workspace usability requirement recorded
+- [x] Ask semantics unchanged via provider-free regression evidence recorded
+- [x] `GLOBAL_EXECUTION_ENABLED` must be restored false recorded
+- [x] `BILLING_CHARGES_ENABLED` must remain false recorded
+- [x] No unauthorized second provider execution policy recorded
+- [x] All evidence must be documented requirement recorded
+- [ ] Final PASS/FAIL readiness verdict produced (Step 4)
+- [ ] Checkpoint created `docs/PRIVATE-BETA-E2E-02-CHECKPOINT.md` (Step 4)
+- [x] Four-step lifecycle recorded
+- [x] PRIVATE-BETA-INVITE-01 remains untouched/unregistered
+- [x] No runtime/provider/source/balance changes during registration
+- [x] No E2E journey performed during registration
+
+---
+
+**PRIVATE-BETA-E2E-02 status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-08-14)
+**Priority:** P1
+**Risk:** HIGH
+**Workflow:** HIGH-RISK 4-STEP
+**Family:** PRIVATE BETA / BUILDER / END-TO-END / READINESS VALIDATION
+**Registered:** 2026-08-14
+**Predecessors:** PRIVATE-BETA-BLOCKER-03D COMPLETE AND LOCKED — 2026-08-14; PRIVATE-BETA-BLOCKER-03D-A COMPLETE AND LOCKED — 2026-08-14; PRIVATE-BETA-BLOCKER-03D-B COMPLETE AND LOCKED — 2026-08-14
+**Keith authorization:** Explicitly authorized 2026-08-14 — ONE xAI/grok-4.5 execution — `GLOBAL_EXECUTION_ENABLED=true` bounded window — restore false immediately after — ~$2.50 xAI credit confirmed available — does NOT authorize PRIVATE-BETA-INVITE-01
+**Provider-call budget:** EXACTLY ONE — no auto-retry — second call requires fresh Keith authorization
+**BILLING_CHARGES_ENABLED:** must remain false
+**PRIVATE-BETA-INVITE-01:** untouched / unregistered — prohibited until E2E-02 PASS and subsequent readiness decision
+**Exact next recommended step:** PRIVATE-BETA-E2E-02 Step 2 — Stage Start / Exact Controlled Runbook
