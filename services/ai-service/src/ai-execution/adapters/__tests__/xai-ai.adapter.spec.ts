@@ -340,6 +340,83 @@ describe('XAIAdapter', () => {
       });
     });
 
+    describe('structured JSON request contract', () => {
+      const mockResponse = {
+        choices: [{ message: { content: 'Test output' } }],
+        usage: { total_tokens: 100 },
+        model: 'grok-4.5',
+      };
+
+      const baseRequest: AIExecutionRequest = {
+        sessionId: 'session-1',
+        conversationId: 'conv-1',
+        userId: 'user-1',
+        prompt: 'Create index.html',
+        provider: 'xai',
+      };
+
+      async function executeWithModel(
+        model: string,
+        extras: Partial<AIExecutionRequest> = {},
+      ) {
+        mockClient.chat.completions.create.mockResolvedValue({
+          ...mockResponse,
+          model,
+        });
+        await adapter.execute({
+          ...baseRequest,
+          model,
+          ...extras,
+        });
+        return {
+          body: mockClient.chat.completions.create.mock.calls[0][0],
+          options: mockClient.chat.completions.create.mock.calls[0][1],
+        };
+      }
+
+      it('sends response_format json_object for grok-4.5', async () => {
+        const { body } = await executeWithModel('grok-4.5');
+
+        expect(body.model).toBe('grok-4.5');
+        expect(body.response_format).toEqual({ type: 'json_object' });
+      });
+
+      it('does not omit response_format for any requested model id', async () => {
+        const { body } = await executeWithModel('grok-4.20');
+
+        expect(body.model).toBe('grok-4.20');
+        expect(body.response_format).toEqual({ type: 'json_object' });
+      });
+
+      it('still includes the structured JSON system contract', async () => {
+        const { body } = await executeWithModel('grok-4.5', {
+          systemPrompt: 'Follow platform contract.',
+        });
+
+        expect(body.messages[0].role).toBe('system');
+        expect(body.messages[0].content).toContain('Follow platform contract.');
+        expect(body.messages[0].content).toContain(
+          'Your entire response MUST be a single valid JSON object',
+        );
+        expect(body.messages[0].content).toContain('"assistantText"');
+        expect(body.messages[0].content).toContain('"fileActions"');
+        expect(body.messages[0].content).toContain(
+          '"workspaceMutationAttempted"',
+        );
+        expect(body.messages[1]).toEqual({
+          role: 'user',
+          content: 'Create index.html',
+        });
+      });
+
+      it('does not retry or fall back when constructing a request', async () => {
+        const { body } = await executeWithModel('grok-4.5');
+
+        expect(mockClient.chat.completions.create).toHaveBeenCalledTimes(1);
+        expect(body.model).toBe('grok-4.5');
+      });
+    });
+
     describe('error cases', () => {
       const request: AIExecutionRequest = {
         sessionId: 'session-1',

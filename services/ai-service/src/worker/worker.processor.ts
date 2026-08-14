@@ -82,6 +82,33 @@ export type BuilderExecutionIntent = 'conversation' | 'workspace_mutation';
 export const DEFAULT_BUILDER_EXECUTION_INTENT: BuilderExecutionIntent =
   'workspace_mutation';
 
+export const DEFAULT_EXECUTION_TIMEOUT_MS = 20000;
+
+export function parseExecutionTimeoutBaselineMs(
+  rawValue: string | undefined = process.env.EXECUTION_TIMEOUT_MS,
+): number {
+  const parsed = parseInt(
+    rawValue ?? String(DEFAULT_EXECUTION_TIMEOUT_MS),
+    10,
+  );
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return DEFAULT_EXECUTION_TIMEOUT_MS;
+  }
+  return parsed;
+}
+
+export function resolveStuckWatchdogThresholdSeconds(
+  baselineMs: number = parseExecutionTimeoutBaselineMs(),
+): number {
+  return Math.ceil((baselineMs * 2) / 1000);
+}
+
+export function resolveBullMqLockDurationMs(
+  baselineTimeoutMs: number = parseExecutionTimeoutBaselineMs(),
+): number {
+  return Math.max(baselineTimeoutMs + 10000, 30000);
+}
+
 export function resolveWorkerExecutionIntent(
   input: unknown,
 ): BuilderExecutionIntent {
@@ -512,15 +539,11 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
    * Detects executions stuck in 'running' beyond allowed timeout.
    * Read-only detection; only updates ledger when confirmed stuck.
    * Never triggers AI execution.
+   *
+   * Threshold is 2 × the global execution timeout (40s under the 20s default).
    */
   private async scanForStuckExecutions(): Promise<void> {
-    const EXECUTION_TIMEOUT_MS = parseInt(
-      process.env.EXECUTION_TIMEOUT_MS ?? '20000',
-      10,
-    );
-    const stuckThresholdSeconds = Math.ceil(
-      (EXECUTION_TIMEOUT_MS * 2) / 1000,
-    );
+    const stuckThresholdSeconds = resolveStuckWatchdogThresholdSeconds();
 
     const rows = (await this.dataSource.query(
       `
@@ -590,11 +613,8 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
       parseInt(process.env.EXECUTION_WORKER_CONCURRENCY ?? '4', 10) || 4,
     );
 
-    const EXECUTION_TIMEOUT_MS = parseInt(
-      process.env.EXECUTION_TIMEOUT_MS ?? '20000',
-      10,
-    );
-    const lockDuration = Math.max(EXECUTION_TIMEOUT_MS + 10000, 30000);
+    const EXECUTION_TIMEOUT_MS = parseExecutionTimeoutBaselineMs();
+    const lockDuration = resolveBullMqLockDurationMs(EXECUTION_TIMEOUT_MS);
 
     const EXECUTION_PROVIDER_RETRY_ATTEMPTS = Math.max(
       1,

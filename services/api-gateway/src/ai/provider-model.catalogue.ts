@@ -47,7 +47,8 @@ export class GatewayProviderModelValidationError extends Error {
   }
 }
 
-const XAI_ALLOWED_MODELS = ['grok-4.5', 'grok-4.20'] as const;
+export const XAI_RECOGNIZED_MODELS = ['grok-4.5', 'grok-4.20'] as const;
+const XAI_ALLOWED_MODELS = ['grok-4.5'] as const;
 const GROQ_ALLOWED_MODELS = ['openai/gpt-oss-120b', 'openai/gpt-oss-20b'] as const;
 const DEEPSEEK_ALLOWED_MODELS = ['deepseek-v4-flash', 'deepseek-v4-pro'] as const;
 const OPENAI_ALLOWED_MODELS = ['gpt-4o'] as const;

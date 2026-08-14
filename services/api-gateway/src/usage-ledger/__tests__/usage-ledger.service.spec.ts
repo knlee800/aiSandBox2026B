@@ -1242,4 +1242,518 @@ describe('UsageLedgerService', () => {
       expect(event.lineItems[0].unitCount).toBe(0);
     });
   });
+
+  describe('PRIVATE-BETA-BLOCKER-03D-A: intent gate + confirm-build-apply', () => {
+    let serviceWithGateway: UsageLedgerService;
+    let gatewayRepo: jest.Mocked<Repository<UsageRecord>>;
+    let mockGateway: { applyDeduction: jest.Mock };
+
+    const qualifyingConfirmation = {
+      applyStatus: 'applied',
+      totalActions: 2,
+      successCount: 2,
+    };
+
+    const buildFileActions = [
+      { action: 'write', path: 'src/a.ts', content: 'a' },
+      { action: 'write', path: 'src/b.ts', content: 'b' },
+    ];
+
+    function completedRecord(overrides: Record<string, unknown> = {}) {
+      return {
+        executionId: 'exec-03d-a',
+        userId: 'user-03d-a',
+        apiKeyId: 'key-03d-a',
+        sessionId: 'sess-03d-a',
+        model: 'grok-4-5',
+        tokensUsed: 500,
+        executionDurationMs: 2000,
+        executionStatus: 'completed',
+        metadata: {
+          aiExecutionResult: {
+            output: 'ok',
+            tokensUsed: 500,
+            model: 'grok-4-5',
+            fileActions: buildFileActions,
+            executionIntent: 'workspace_mutation',
+          },
+        },
+        ...overrides,
+      };
+    }
+
+    beforeEach(async () => {
+      mockGateway = {
+        applyDeduction: jest.fn().mockResolvedValue({
+          source: 'usage_ledger',
+          sourceEventId: 'exec-03d-a',
+          ownerId: 'user-03d-a',
+          occurredAt: new Date(),
+          totalCreditsRequested: 0,
+          totalCreditsApplied: 0,
+          totalCreditsOverflow: 0,
+          lineItems: [],
+        }),
+      };
+
+      const gatewayMockRepo = {
+        create: jest.fn(),
+        save: jest.fn(),
+        findOne: jest.fn(),
+        find: jest.fn(),
+        update: jest.fn(),
+        createQueryBuilder: jest.fn(),
+      };
+
+      const module: TestingModule = await Test.createTestingModule({
+        providers: [
+          UsageLedgerService,
+          {
+            provide: getRepositoryToken(UsageRecord),
+            useValue: gatewayMockRepo,
+          },
+          {
+            provide: CreditDeductionGateway,
+            useValue: mockGateway,
+          },
+        ],
+      }).compile();
+
+      serviceWithGateway = module.get<UsageLedgerService>(UsageLedgerService);
+      gatewayRepo = module.get(getRepositoryToken(UsageRecord));
+    });
+
+    it('charges a completed conversation execution immediately', async () => {
+      gatewayRepo.findOne.mockResolvedValue(
+        completedRecord({
+          metadata: {
+            aiExecutionResult: {
+              output: 'hello',
+              tokensUsed: 500,
+              model: 'grok-4-5',
+              fileActions: [],
+              executionIntent: 'conversation',
+            },
+          },
+        }) as any,
+      );
+
+      const result = await serviceWithGateway.triggerDeductionForExecution('exec-03d-a');
+
+      expect(result).toEqual({ triggered: true, reason: 'completed' });
+      expect(mockGateway.applyDeduction).toHaveBeenCalledTimes(1);
+      expect(mockGateway.applyDeduction.mock.calls[0][0].sourceEventId).toBe('exec-03d-a');
+    });
+
+    it('keeps duplicate Ask deduction idempotent via existing sourceEventId gateway contract', async () => {
+      gatewayRepo.findOne.mockResolvedValue(
+        completedRecord({
+          metadata: {
+            aiExecutionResult: {
+              output: 'hello',
+              tokensUsed: 500,
+              model: 'grok-4-5',
+              fileActions: [],
+              executionIntent: 'conversation',
+            },
+          },
+        }) as any,
+      );
+
+      await serviceWithGateway.triggerDeductionForExecution('exec-03d-a');
+      await serviceWithGateway.triggerDeductionForExecution('exec-03d-a');
+
+      expect(mockGateway.applyDeduction).toHaveBeenCalledTimes(2);
+      expect(mockGateway.applyDeduction.mock.calls[0][0].sourceEventId).toBe('exec-03d-a');
+      expect(mockGateway.applyDeduction.mock.calls[1][0].sourceEventId).toBe('exec-03d-a');
+    });
+
+    it('does not charge a completed workspace_mutation execution at ordinary completion', async () => {
+      gatewayRepo.findOne.mockResolvedValue(completedRecord() as any);
+
+      const result = await serviceWithGateway.triggerDeductionForExecution('exec-03d-a');
+
+      expect(result).toEqual({ triggered: false, reason: 'build_awaiting_apply' });
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('does not charge failed executions even when intent is workspace_mutation', async () => {
+      gatewayRepo.findOne.mockResolvedValue(
+        completedRecord({ executionStatus: 'failed' }) as any,
+      );
+
+      const result = await serviceWithGateway.triggerDeductionForExecution('exec-03d-a');
+
+      expect(result).toEqual({ triggered: false, reason: 'status_failed' });
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('does not charge timeout executions', async () => {
+      gatewayRepo.findOne.mockResolvedValue(
+        completedRecord({ executionStatus: 'timeout' }) as any,
+      );
+
+      const result = await serviceWithGateway.triggerDeductionForExecution('exec-03d-a');
+
+      expect(result).toEqual({ triggered: false, reason: 'status_timeout' });
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('does not charge cancelled executions', async () => {
+      gatewayRepo.findOne.mockResolvedValue(
+        completedRecord({ executionStatus: 'cancelled' }) as any,
+      );
+
+      const result = await serviceWithGateway.triggerDeductionForExecution('exec-03d-a');
+
+      expect(result).toEqual({ triggered: false, reason: 'status_cancelled' });
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('charges legacy completed records that lack executionIntent (back-compat immediate path)', async () => {
+      // Historical completed rows predate BUILDER-INTENT-01 and have no
+      // aiExecutionResult.executionIntent. They were charged at completion.
+      // Missing intent must NOT be reinterpreted as workspace_mutation.
+      gatewayRepo.findOne.mockResolvedValue(
+        completedRecord({
+          metadata: {
+            aiExecutionResult: {
+              output: 'legacy',
+              tokensUsed: 500,
+              model: 'claude-3',
+              fileActions: [],
+            },
+          },
+        }) as any,
+      );
+
+      const result = await serviceWithGateway.triggerDeductionForExecution('exec-03d-a');
+
+      expect(result).toEqual({ triggered: true, reason: 'completed' });
+      expect(mockGateway.applyDeduction).toHaveBeenCalledTimes(1);
+    });
+
+    it('charges completed records with unknown executionIntent (safe default)', async () => {
+      gatewayRepo.findOne.mockResolvedValue(
+        completedRecord({
+          metadata: {
+            aiExecutionResult: {
+              output: 'ok',
+              tokensUsed: 500,
+              model: 'grok-4-5',
+              fileActions: [],
+              executionIntent: 'unexpected_future_intent',
+            },
+          },
+        }) as any,
+      );
+
+      const result = await serviceWithGateway.triggerDeductionForExecution('exec-03d-a');
+
+      expect(result).toEqual({ triggered: true, reason: 'completed' });
+      expect(mockGateway.applyDeduction).toHaveBeenCalledTimes(1);
+    });
+
+    it('charges completed records whose metadata is missing entirely (legacy)', async () => {
+      gatewayRepo.findOne.mockResolvedValue(
+        completedRecord({ metadata: {} }) as any,
+      );
+
+      const result = await serviceWithGateway.triggerDeductionForExecution('exec-03d-a');
+
+      expect(result).toEqual({ triggered: true, reason: 'completed' });
+      expect(mockGateway.applyDeduction).toHaveBeenCalledTimes(1);
+    });
+
+    it('charges a qualifying full-success Build apply confirmation', async () => {
+      gatewayRepo.findOne.mockResolvedValue(completedRecord() as any);
+
+      const result = await serviceWithGateway.triggerBuildApplyDeduction(
+        'exec-03d-a',
+        qualifyingConfirmation,
+      );
+
+      expect(result).toEqual({ triggered: true, reason: 'completed' });
+      expect(mockGateway.applyDeduction).toHaveBeenCalledTimes(1);
+      expect(mockGateway.applyDeduction.mock.calls[0][0].sourceEventId).toBe('exec-03d-a');
+      expect(mockGateway.applyDeduction.mock.calls[0][0].ownerId).toBe('user-03d-a');
+    });
+
+    it('does not treat advisory workspaceMutationAttempted as accounting authority', async () => {
+      gatewayRepo.findOne.mockResolvedValue(
+        completedRecord({
+          metadata: {
+            aiExecutionResult: {
+              output: 'ok',
+              tokensUsed: 500,
+              model: 'grok-4-5',
+              fileActions: buildFileActions,
+              executionIntent: 'workspace_mutation',
+              workspaceMutationAttempted: false,
+            },
+          },
+        }) as any,
+      );
+
+      const result = await serviceWithGateway.triggerBuildApplyDeduction(
+        'exec-03d-a',
+        qualifyingConfirmation,
+      );
+
+      expect(result.triggered).toBe(true);
+      expect(mockGateway.applyDeduction).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not charge confirm-apply for conversation intent', async () => {
+      gatewayRepo.findOne.mockResolvedValue(
+        completedRecord({
+          metadata: {
+            aiExecutionResult: {
+              output: 'hello',
+              tokensUsed: 500,
+              model: 'grok-4-5',
+              fileActions: buildFileActions,
+              executionIntent: 'conversation',
+            },
+          },
+        }) as any,
+      );
+
+      const result = await serviceWithGateway.triggerBuildApplyDeduction(
+        'exec-03d-a',
+        qualifyingConfirmation,
+      );
+
+      expect(result).toEqual({
+        triggered: false,
+        reason: 'intent_not_workspace_mutation',
+      });
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('does not charge when persisted fileActions is empty', async () => {
+      gatewayRepo.findOne.mockResolvedValue(
+        completedRecord({
+          metadata: {
+            aiExecutionResult: {
+              output: 'ok',
+              tokensUsed: 500,
+              model: 'grok-4-5',
+              fileActions: [],
+              executionIntent: 'workspace_mutation',
+            },
+          },
+        }) as any,
+      );
+
+      const result = await serviceWithGateway.triggerBuildApplyDeduction(
+        'exec-03d-a',
+        { applyStatus: 'applied', totalActions: 1, successCount: 1 },
+      );
+
+      expect(result).toEqual({ triggered: false, reason: 'zero_file_actions' });
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('does not charge when aiExecutionResult is missing', async () => {
+      gatewayRepo.findOne.mockResolvedValue(
+        completedRecord({ metadata: {} }) as any,
+      );
+
+      const result = await serviceWithGateway.triggerBuildApplyDeduction(
+        'exec-03d-a',
+        qualifyingConfirmation,
+      );
+
+      expect(result).toEqual({
+        triggered: false,
+        reason: 'missing_ai_execution_result',
+      });
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('does not charge when persisted fileActions is not an array', async () => {
+      gatewayRepo.findOne.mockResolvedValue(
+        completedRecord({
+          metadata: {
+            aiExecutionResult: {
+              output: 'ok',
+              fileActions: 'not-an-array',
+              executionIntent: 'workspace_mutation',
+            },
+          },
+        }) as any,
+      );
+
+      const result = await serviceWithGateway.triggerBuildApplyDeduction(
+        'exec-03d-a',
+        qualifyingConfirmation,
+      );
+
+      expect(result).toEqual({ triggered: false, reason: 'missing_file_actions' });
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('does not charge when reported totalActions mismatches persisted fileActions.length', async () => {
+      gatewayRepo.findOne.mockResolvedValue(completedRecord() as any);
+
+      const result = await serviceWithGateway.triggerBuildApplyDeduction(
+        'exec-03d-a',
+        { applyStatus: 'applied', totalActions: 1, successCount: 1 },
+      );
+
+      expect(result).toEqual({ triggered: false, reason: 'total_actions_mismatch' });
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('does not charge when successCount is less than totalActions', async () => {
+      gatewayRepo.findOne.mockResolvedValue(completedRecord() as any);
+
+      const result = await serviceWithGateway.triggerBuildApplyDeduction(
+        'exec-03d-a',
+        { applyStatus: 'applied', totalActions: 2, successCount: 1 },
+      );
+
+      expect(result).toEqual({ triggered: false, reason: 'partial_apply' });
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('does not charge skipped applyStatus', async () => {
+      gatewayRepo.findOne.mockResolvedValue(completedRecord() as any);
+
+      const result = await serviceWithGateway.triggerBuildApplyDeduction(
+        'exec-03d-a',
+        { applyStatus: 'skipped', totalActions: 2, successCount: 2 },
+      );
+
+      expect(result).toEqual({
+        triggered: false,
+        reason: 'apply_status_not_applied',
+      });
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('does not charge failed applyStatus', async () => {
+      gatewayRepo.findOne.mockResolvedValue(completedRecord() as any);
+
+      const result = await serviceWithGateway.triggerBuildApplyDeduction(
+        'exec-03d-a',
+        { applyStatus: 'failed', totalActions: 2, successCount: 2 },
+      );
+
+      expect(result).toEqual({
+        triggered: false,
+        reason: 'apply_status_not_applied',
+      });
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('does not charge confirm-apply for a non-completed execution', async () => {
+      gatewayRepo.findOne.mockResolvedValue(
+        completedRecord({ executionStatus: 'failed' }) as any,
+      );
+
+      const result = await serviceWithGateway.triggerBuildApplyDeduction(
+        'exec-03d-a',
+        qualifyingConfirmation,
+      );
+
+      expect(result).toEqual({ triggered: false, reason: 'status_failed' });
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('does not charge a structurally invalid confirmation object', async () => {
+      gatewayRepo.findOne.mockResolvedValue(completedRecord() as any);
+
+      const result = await serviceWithGateway.triggerBuildApplyDeduction(
+        'exec-03d-a',
+        { applyStatus: 'applied', totalActions: 1.5, successCount: 1 } as any,
+      );
+
+      expect(result).toEqual({ triggered: false, reason: 'confirmation_invalid' });
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('does not charge confirm-apply when the execution is missing', async () => {
+      gatewayRepo.findOne.mockResolvedValue(null);
+
+      const result = await serviceWithGateway.triggerBuildApplyDeduction(
+        'exec-missing',
+        qualifyingConfirmation,
+      );
+
+      expect(result).toEqual({ triggered: false, reason: 'record_not_found' });
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('does not mutate execution status when triggering a qualifying Build confirmation', async () => {
+      const record = completedRecord();
+      gatewayRepo.findOne.mockResolvedValue(record as any);
+
+      await serviceWithGateway.triggerBuildApplyDeduction(
+        'exec-03d-a',
+        qualifyingConfirmation,
+      );
+
+      expect(record.executionStatus).toBe('completed');
+      expect(gatewayRepo.save).not.toHaveBeenCalled();
+      expect(gatewayRepo.update).not.toHaveBeenCalled();
+    });
+
+    it('sends duplicate qualifying confirmations through the same sourceEventId gateway path', async () => {
+      gatewayRepo.findOne.mockResolvedValue(completedRecord() as any);
+
+      const first = await serviceWithGateway.triggerBuildApplyDeduction(
+        'exec-03d-a',
+        qualifyingConfirmation,
+      );
+      const second = await serviceWithGateway.triggerBuildApplyDeduction(
+        'exec-03d-a',
+        qualifyingConfirmation,
+      );
+
+      expect(first.triggered).toBe(true);
+      expect(second.triggered).toBe(true);
+      expect(mockGateway.applyDeduction).toHaveBeenCalledTimes(2);
+      expect(mockGateway.applyDeduction.mock.calls[0][0].sourceEventId).toBe('exec-03d-a');
+      expect(mockGateway.applyDeduction.mock.calls[1][0].sourceEventId).toBe('exec-03d-a');
+    });
+
+    it('protects concurrent duplicate confirmations by reusing the existing gateway sourceEventId', async () => {
+      gatewayRepo.findOne.mockResolvedValue(completedRecord() as any);
+
+      const [first, second] = await Promise.all([
+        serviceWithGateway.triggerBuildApplyDeduction('exec-03d-a', qualifyingConfirmation),
+        serviceWithGateway.triggerBuildApplyDeduction('exec-03d-a', qualifyingConfirmation),
+      ]);
+
+      expect(first.triggered).toBe(true);
+      expect(second.triggered).toBe(true);
+      expect(mockGateway.applyDeduction).toHaveBeenCalledTimes(2);
+      expect(mockGateway.applyDeduction.mock.calls[0][0].sourceEventId).toBe('exec-03d-a');
+      expect(mockGateway.applyDeduction.mock.calls[1][0].sourceEventId).toBe('exec-03d-a');
+    });
+
+    it('does not add timeout, scheduled, or silence-based Build auto-charge', () => {
+      const fs = require('fs');
+      const path = require('path');
+      const source = fs.readFileSync(
+        path.join(__dirname, '..', 'usage-ledger.service.ts'),
+        'utf-8',
+      );
+
+      const buildMethodStart = source.indexOf('async triggerBuildApplyDeduction(');
+      const helpersStart = source.indexOf('private readAiExecutionResult(');
+      expect(buildMethodStart).toBeGreaterThan(-1);
+      expect(helpersStart).toBeGreaterThan(buildMethodStart);
+      const buildMethod = source.slice(buildMethodStart, helpersStart);
+
+      expect(buildMethod).not.toMatch(/setTimeout/);
+      expect(buildMethod).not.toMatch(/setInterval/);
+      expect(buildMethod).not.toMatch(/reconcil/i);
+      expect(buildMethod).not.toMatch(/refund/i);
+      expect(source).not.toMatch(/charge after N minutes/i);
+      expect(source).not.toMatch(/silence-based/i);
+    });
+  });
 });

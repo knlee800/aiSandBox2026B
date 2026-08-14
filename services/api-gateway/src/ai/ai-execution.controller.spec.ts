@@ -1214,21 +1214,19 @@ describe('AIExecutionController provider/model catalogue validation (FR-04B Step
     );
   });
 
-  it('accepts xAI grok-4.20', async () => {
-    await controller.execute(
-      makeRequest({
-        provider: 'xai',
-        model: 'grok-4.20',
-      }),
-      identity,
-    );
+  it('rejects xAI grok-4.20 before ledger and queue without substituting grok-4.5', async () => {
+    await expect(
+      controller.execute(
+        makeRequest({
+          provider: 'xai',
+          model: 'grok-4.20',
+        }),
+        identity,
+      ),
+    ).rejects.toThrow(BadRequestException);
 
-    expect(mockQueueService.enqueueExecution).toHaveBeenCalledWith(
-      expect.objectContaining({
-        provider: 'xai',
-        model: 'grok-4.20',
-      }),
-    );
+    expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
   });
 
   it('rejects xAI grok-3 before ledger and queue', async () => {

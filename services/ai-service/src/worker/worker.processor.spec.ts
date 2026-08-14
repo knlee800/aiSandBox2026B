@@ -1,12 +1,60 @@
 import {
   buildAIExecutionRequest,
   buildExecutionPromptParts,
+  DEFAULT_EXECUTION_TIMEOUT_MS,
+  parseExecutionTimeoutBaselineMs,
+  resolveBullMqLockDurationMs,
+  resolveStuckWatchdogThresholdSeconds,
+  WorkerProcessor,
 } from './worker.processor';
 import {
   createAgentHarnessConfigV1,
   DEFAULT_AGENT_HARNESS_CONFIG_V1,
 } from '../agent-harness/config/agent-harness.config';
 import { InMemoryHarnessAuditRecorder } from '../agent-harness/audit';
+
+type CapturedJobProcessor = (job: {
+  id?: string;
+  data: Record<string, unknown>;
+}) => Promise<unknown>;
+
+const capturedWorker: {
+  processor: CapturedJobProcessor | null;
+  opts: Record<string, unknown> | null;
+} = {
+  processor: null,
+  opts: null,
+};
+
+jest.mock('bullmq', () => ({
+  Worker: jest.fn(
+    (
+      _name: string,
+      processor: CapturedJobProcessor,
+      opts: Record<string, unknown>,
+    ) => {
+      capturedWorker.processor = processor;
+      capturedWorker.opts = opts;
+      return {
+        close: jest.fn().mockResolvedValue(undefined),
+      };
+    },
+  ),
+  Queue: jest.fn(() => ({
+    getJob: jest.fn().mockResolvedValue(null),
+    close: jest.fn().mockResolvedValue(undefined),
+  })),
+  QueueEvents: jest.fn(() => ({
+    on: jest.fn(),
+    close: jest.fn().mockResolvedValue(undefined),
+  })),
+}));
+
+jest.mock('ioredis', () =>
+  jest.fn(() => ({
+    quit: jest.fn().mockResolvedValue('OK'),
+  })),
+);
 
 describe('buildAIExecutionRequest', () => {
   it('passes requested model from job payload to AIExecutionService request', () => {
@@ -965,5 +1013,369 @@ describe('Agent Harness 05C9: structured audit events wiring', () => {
     const recorder = new InMemoryHarnessAuditRecorder();
     expect(recorder).toBeDefined();
     expect(recorder.getEvents()).toEqual([]);
+  });
+});
+
+describe('PRIVATE-BETA-BLOCKER-03C: restored global execution timeout policy', () => {
+  const originalTimeoutEnv = process.env.EXECUTION_TIMEOUT_MS;
+
+  afterEach(() => {
+    if (originalTimeoutEnv === undefined) {
+      delete process.env.EXECUTION_TIMEOUT_MS;
+    } else {
+      process.env.EXECUTION_TIMEOUT_MS = originalTimeoutEnv;
+    }
+  });
+
+  it('resolves the default Worker timeout to 20000 ms when EXECUTION_TIMEOUT_MS is unset', () => {
+    delete process.env.EXECUTION_TIMEOUT_MS;
+    expect(parseExecutionTimeoutBaselineMs()).toBe(DEFAULT_EXECUTION_TIMEOUT_MS);
+    expect(parseExecutionTimeoutBaselineMs()).toBe(20000);
+  });
+
+  it('does not apply a grok-4.20 60000 ms special case', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    expect(workerSource).not.toContain('GROK_4_20_EXECUTION_TIMEOUT_MS');
+    expect(workerSource).not.toContain('60000');
+    expect(parseExecutionTimeoutBaselineMs()).toBe(20000);
+  });
+
+  it('falls back to 20000 ms for invalid EXECUTION_TIMEOUT_MS values', () => {
+    process.env.EXECUTION_TIMEOUT_MS = 'not-a-number';
+    expect(parseExecutionTimeoutBaselineMs()).toBe(DEFAULT_EXECUTION_TIMEOUT_MS);
+    process.env.EXECUTION_TIMEOUT_MS = '0';
+    expect(parseExecutionTimeoutBaselineMs()).toBe(DEFAULT_EXECUTION_TIMEOUT_MS);
+    process.env.EXECUTION_TIMEOUT_MS = '-5';
+    expect(parseExecutionTimeoutBaselineMs()).toBe(DEFAULT_EXECUTION_TIMEOUT_MS);
+  });
+
+  it('keeps BullMQ lockDuration on the baseline formula', () => {
+    delete process.env.EXECUTION_TIMEOUT_MS;
+    expect(resolveBullMqLockDurationMs()).toBe(30000);
+    expect(resolveBullMqLockDurationMs(DEFAULT_EXECUTION_TIMEOUT_MS)).toBe(
+      30000,
+    );
+  });
+
+  it('restores the stuck watchdog to 40s under the default 20000 ms baseline', () => {
+    delete process.env.EXECUTION_TIMEOUT_MS;
+    expect(resolveStuckWatchdogThresholdSeconds()).toBe(40);
+    expect(resolveStuckWatchdogThresholdSeconds() * 1000).toBe(
+      DEFAULT_EXECUTION_TIMEOUT_MS * 2,
+    );
+  });
+});
+
+describe('PRIVATE-BETA-BLOCKER-03C: worker abort timeout behavior', () => {
+  const originalTimeoutEnv = process.env.EXECUTION_TIMEOUT_MS;
+  const originalRedisUrl = process.env.REDIS_URL;
+  const originalStuckScan = process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+
+  function createLedgerMock() {
+    const status = { value: 'pending' };
+    const timeoutUpdates: unknown[][] = [];
+    const failedUpdates: unknown[][] = [];
+    const query = jest.fn(async (sql: string, params: unknown[] = []) => {
+      if (
+        sql.includes("SET execution_status = 'running'") &&
+        sql.includes('RETURNING')
+      ) {
+        if (status.value === 'pending') {
+          status.value = 'running';
+          return [{ execution_id: params[0] }];
+        }
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'timeout'")) {
+        timeoutUpdates.push(params);
+        if (status.value === 'running') {
+          status.value = 'timeout';
+          return [{ execution_id: params[0] }];
+        }
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'completed'")) {
+        status.value = 'completed';
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'failed'")) {
+        failedUpdates.push(params);
+        if (sql.includes('RETURNING') && status.value === 'running') {
+          status.value = 'failed';
+          return [{ execution_id: params[0] }];
+        }
+        status.value = 'failed';
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'cancelled'")) {
+        status.value = 'cancelled';
+        return [];
+      }
+      if (sql.includes('SELECT execution_status, created_at')) {
+        return [
+          {
+            execution_status: status.value,
+            created_at: new Date().toISOString(),
+          },
+        ];
+      }
+      if (sql.includes('SELECT execution_id, timestamp')) {
+        return [];
+      }
+      if (sql.includes('SELECT metadata')) {
+        return [{ metadata: {} }];
+      }
+      if (sql.includes('SELECT execution_status')) {
+        return [{ execution_status: status.value }];
+      }
+      return [];
+    });
+    return { query, status, timeoutUpdates, failedUpdates };
+  }
+
+  function createSuccessResult(model: string) {
+    return {
+      output: 'created file',
+      tokensUsed: 1251,
+      model,
+      fileActions: [
+        {
+          action: 'create' as const,
+          path: 'index.html',
+          content: '<html></html>',
+        },
+      ],
+      parseMethod: 'structured_json' as const,
+      workspaceMutationAttempted: true,
+    };
+  }
+
+  async function startWorker(deps: {
+    query: jest.Mock;
+    execute: jest.Mock;
+    publisher: {
+      publishCompletion: jest.Mock;
+      publishToken: jest.Mock;
+      publishFileActions: jest.Mock;
+    };
+    apiGateway: { notifyExecutionComplete: jest.Mock };
+  }) {
+    const worker = new WorkerProcessor(
+      { query: deps.query } as never,
+      { execute: deps.execute, getAdapter: jest.fn() } as never,
+      deps.publisher as never,
+      deps.apiGateway as never,
+    );
+    await worker.onModuleInit();
+    if (!capturedWorker.processor) {
+      throw new Error('BullMQ worker processor was not captured');
+    }
+    return {
+      worker,
+      processJob: capturedWorker.processor,
+      workerOpts: capturedWorker.opts,
+    };
+  }
+
+  function createJob(model: string, executionId = `exec-${model}`) {
+    return {
+      id: `job-${executionId}`,
+      data: {
+        executionId,
+        provider: 'xai',
+        adapter: 'xai',
+        sessionId: 'session-1',
+        conversationId: 'conv-1',
+        userId: 'user-1',
+        prompt: 'Create index.html',
+        model,
+        executionIntent: 'workspace_mutation',
+      },
+    };
+  }
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    delete process.env.EXECUTION_TIMEOUT_MS;
+    process.env.REDIS_URL = 'redis://127.0.0.1:6379';
+    process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = '600000';
+    capturedWorker.processor = null;
+    capturedWorker.opts = null;
+  });
+
+  afterEach(async () => {
+    jest.useRealTimers();
+    if (originalTimeoutEnv === undefined) {
+      delete process.env.EXECUTION_TIMEOUT_MS;
+    } else {
+      process.env.EXECUTION_TIMEOUT_MS = originalTimeoutEnv;
+    }
+    if (originalRedisUrl === undefined) {
+      delete process.env.REDIS_URL;
+    } else {
+      process.env.REDIS_URL = originalRedisUrl;
+    }
+    if (originalStuckScan === undefined) {
+      delete process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+    } else {
+      process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = originalStuckScan;
+    }
+  });
+
+  it('does not set skipLockRenewal, so BullMQ default lock renewal remains enabled', async () => {
+    const ledger = createLedgerMock();
+    const { worker, workerOpts } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn(),
+      publisher: {
+        publishCompletion: jest.fn(),
+        publishToken: jest.fn(),
+        publishFileActions: jest.fn(),
+      },
+      apiGateway: { notifyExecutionComplete: jest.fn() },
+    });
+
+    expect(workerOpts?.skipLockRenewal).toBeUndefined();
+    expect(workerOpts?.lockDuration).toBe(30000);
+
+    await worker.onModuleDestroy();
+  });
+
+  it('aborts supported models at 20s, finalizes timeout once, and does not retry or publish file actions', async () => {
+    const ledger = createLedgerMock();
+    const execute = jest.fn((request: { signal?: AbortSignal }) => {
+      return new Promise((_resolve, reject) => {
+        const onAbort = () => {
+          const err = new Error('Request was aborted.');
+          err.name = 'AbortError';
+          reject(err);
+        };
+        if (request.signal?.aborted) {
+          onAbort();
+          return;
+        }
+        request.signal?.addEventListener('abort', onAbort, { once: true });
+      });
+    });
+    const publisher = {
+      publishCompletion: jest.fn(),
+      publishToken: jest.fn(),
+      publishFileActions: jest.fn(),
+    };
+    const apiGateway = {
+      notifyExecutionComplete: jest.fn().mockResolvedValue(undefined),
+    };
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute,
+      publisher,
+      apiGateway,
+    });
+
+    const jobPromise = processJob(createJob('grok-4.5', 'exec-grok-45-timeout-once'));
+    await jest.advanceTimersByTimeAsync(19999);
+    expect(execute.mock.calls[0][0].signal.aborted).toBe(false);
+    await jest.advanceTimersByTimeAsync(1);
+    await jobPromise;
+
+    expect(execute.mock.calls[0][0].signal).toBeDefined();
+    expect(execute.mock.calls[0][0].signal.aborted).toBe(true);
+    expect(execute).toHaveBeenCalledTimes(1);
+    expect(ledger.timeoutUpdates).toHaveLength(1);
+    expect(ledger.status.value).toBe('timeout');
+    expect(publisher.publishCompletion).toHaveBeenCalledTimes(1);
+    expect(publisher.publishFileActions).not.toHaveBeenCalled();
+    expect(apiGateway.notifyExecutionComplete).not.toHaveBeenCalled();
+
+    await worker.onModuleDestroy();
+  });
+
+  it('still aborts the default model path at 20s', async () => {
+    const ledger = createLedgerMock();
+    const execute = jest.fn((request: { signal?: AbortSignal }) => {
+      return new Promise((_resolve, reject) => {
+        const onAbort = () => {
+          const err = new Error('Request was aborted.');
+          err.name = 'AbortError';
+          reject(err);
+        };
+        if (request.signal?.aborted) {
+          onAbort();
+          return;
+        }
+        request.signal?.addEventListener('abort', onAbort, { once: true });
+      });
+    });
+    const publisher = {
+      publishCompletion: jest.fn(),
+      publishToken: jest.fn(),
+      publishFileActions: jest.fn(),
+    };
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute,
+      publisher,
+      apiGateway: { notifyExecutionComplete: jest.fn() },
+    });
+
+    const jobPromise = processJob(createJob('grok-4.5', 'exec-grok-45-timeout'));
+    await jest.advanceTimersByTimeAsync(19999);
+    expect(execute.mock.calls[0][0].signal.aborted).toBe(false);
+    await jest.advanceTimersByTimeAsync(1);
+    await jobPromise;
+
+    expect(execute).toHaveBeenCalledTimes(1);
+    expect(ledger.status.value).toBe('timeout');
+    expect(publisher.publishFileActions).not.toHaveBeenCalled();
+
+    await worker.onModuleDestroy();
+  });
+
+  it('keeps the normal grok-4.5 success path unchanged', async () => {
+    const ledger = createLedgerMock();
+    const execute = jest
+      .fn()
+      .mockResolvedValue(createSuccessResult('grok-4.5'));
+    const publisher = {
+      publishCompletion: jest.fn(),
+      publishToken: jest.fn(),
+      publishFileActions: jest.fn(),
+    };
+    const apiGateway = {
+      notifyExecutionComplete: jest.fn().mockResolvedValue(undefined),
+    };
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute,
+      publisher,
+      apiGateway,
+    });
+
+    await processJob(createJob('grok-4.5', 'exec-grok-45-ok'));
+
+    expect(execute).toHaveBeenCalledTimes(1);
+    expect(execute.mock.calls[0][0].model).toBe('grok-4.5');
+    expect(execute.mock.calls[0][0].signal).toBeDefined();
+    expect(ledger.status.value).toBe('completed');
+    expect(ledger.timeoutUpdates).toHaveLength(0);
+    expect(publisher.publishFileActions).toHaveBeenCalledTimes(1);
+    expect(apiGateway.notifyExecutionComplete).toHaveBeenCalledTimes(1);
+
+    await worker.onModuleDestroy();
+  });
+
+  it('keeps the stuck watchdog at 2x the global execution timeout', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    expect(workerSource).toContain('resolveStuckWatchdogThresholdSeconds()');
+    expect(resolveStuckWatchdogThresholdSeconds()).toBe(40);
+    expect(resolveStuckWatchdogThresholdSeconds() * 1000).toBe(
+      DEFAULT_EXECUTION_TIMEOUT_MS * 2,
+    );
   });
 });

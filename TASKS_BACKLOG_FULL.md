@@ -58900,3 +58900,651 @@ Step 4 (Consolidation / Checkpoint + BUILDER-INTENT-01 E2E Rerun):
 **PRIVATE-BETA-INVITE-01 status:** untouched / unregistered — invitations prohibited
 **No implementation/runtime/provider work this registration:** confirmed
 **Exact next step:** BUILDER-INTENT-01 Step 4 — Controlled Build E2E Rerun after 03E
+
+---
+
+### PRIVATE-BETA-BLOCKER-03C: Grok 4.2 Timeout Diagnosis → Model Availability Policy
+
+**Status:** COMPLETE AND LOCKED — 2026-08-14
+**Task ID:** PRIVATE-BETA-BLOCKER-03C
+**Title:** Grok 4.2 Timeout Diagnosis → Model Availability Policy
+**Family:** PRIVATE-BETA-BLOCKER-03 / BUILDER EXECUTION RELIABILITY / PROVIDER TIMEOUT
+**Priority:** HIGH — private-beta blocker
+**Risk:** HIGH
+**Workflow:** HIGH-RISK 4-STEP (Registration → Stage Start / Timeout Architecture Diagnosis → Bounded Implementation + Validation → Consolidation / Checkpoint)
+**Registered:** 2026-08-14
+**Completed:** 2026-08-14
+**Dependencies:**
+- PRIVATE-BETA-BLOCKER-03A COMPLETE AND LOCKED — ROOT CAUSE PROVEN
+- PRIVATE-BETA-BLOCKER-03B COMPLETE AND LOCKED — 2026-08-11 — PASS
+- PRIVATE-BETA-BLOCKER-03E COMPLETE AND LOCKED — 2026-08-13
+- BUILDER-INTENT-01 COMPLETE AND LOCKED — 2026-08-13
+**Blocking:** private-beta E2E rerun — RESOLVED for 03C
+**Safety state:** `GLOBAL_EXECUTION_ENABLED=false` — confirmed at closure
+**Invite posture:** PRIVATE-BETA-INVITE-01 remains unregistered / untouched / invitations prohibited
+**03D boundary:** PRIVATE-BETA-BLOCKER-03D owns credit/refund policy for no-workspace-result executions — not 03C
+**Checkpoint:** `docs/PRIVATE-BETA-BLOCKER-03C-CHECKPOINT.md`
+
+---
+
+#### Final Root-Cause Classification
+
+**GROK-4.20 PROVIDER/MODEL REQUEST HANG OR EXTREME LATENCY UNDER CURRENT BUILDER WORKLOAD**
+
+- Stage-Start hypothesis (timeout too short for provider) was disproved by controlled evidence
+- 20s → 60s diagnostic did NOT produce a response; both 60s executions timed out with 0 tokens
+- `response_format` isolated: one 60s call with `{ type: "json_object" }`, one without — both timed out
+- `grok-4.5` completes through the same endpoint, adapter, Worker, queue, and AbortSignal path
+- No evidence justifies raising to 120s
+- Provider diagnostic budget: 2/2 authorized calls used — EXHAUSTED — no third call authorized
+
+---
+
+#### Final Product Policy
+
+| Model | Status | Selectable | Behaviour |
+|-------|--------|------------|-----------|
+| `grok-4.5` | active | YES (default xAI Builder model) | accepted, executes normally |
+| `grok-4.20` | historically recognized | NO | rejected before provider execution (`invalid_model`) |
+
+No automatic fallback or substitution.
+
+---
+
+#### Final Implementation
+
+Production files changed:
+- `frontend/lib/ai/provider-model.catalogue.ts` — grok-4.20: enabled=true, selectable=false; stored selection migrates to grok-4.5
+- `services/api-gateway/src/ai/provider-model.catalogue.ts` — XAI_ALLOWED_MODELS: grok-4.5 only; grok-4.20 recognized historically, rejected before intent ledger write
+- `services/ai-service/src/ai-execution/provider-model.catalogue.ts` — same recognized-vs-allowed distinction; rejected before adapter/provider execution
+- `services/ai-service/src/ai-execution/adapters/xai-ai.adapter.ts` — temporary 03C-A response_format omission reverted; supported requests use `response_format: { type: "json_object" }`
+- `services/ai-service/src/worker/worker.processor.ts` — temporary 03C-A 60000ms grok-4.20 timeout override removed; default 20000ms restored; watchdog 40s restored; BullMQ lockDuration 30000ms; no retry, no fallback
+
+---
+
+#### 4-Step Workflow
+
+**Step 1 — Registration** — COMPLETE — 2026-08-14
+
+**Step 2 — Stage Start / Timeout Architecture Diagnosis** — COMPLETE — 2026-08-14
+
+Full timeout chain documented; abort propagation traced; grok-4.2 vs grok-4.5 comparison completed; Stage-Start hypothesis: APPLICATION TIMEOUT TOO SHORT FOR VALID PROVIDER RESPONSE (subsequently disproved by controlled evidence). See `docs/PRIVATE-BETA-BLOCKER-03C-STAGE-START.md`.
+
+**Step 3 — Bounded Implementation + Validation** — COMPLETE — 2026-08-14
+
+Two controlled 60s diagnostic executions (budget 2/2). Both grok-4.20, both timeout, 0 tokens. Stage-Start hypothesis disproved. response_format isolated and excluded. Implementation pivoted to model availability policy (remove grok-4.20 from new-execution availability). All catalogues updated. Adapter and Worker temporaries reverted. Full local test suites pass.
+
+**Step 4 — Consolidation / Checkpoint** — COMPLETE — 2026-08-14
+
+---
+
+#### Local Validation
+
+| Suite | Result |
+|-------|--------|
+| Frontend catalogue / history tests | 28/28 PASS |
+| Frontend workspace-shell | 438/438 PASS |
+| Full frontend test suite | 661/661 PASS |
+| Frontend `tsc --noEmit` | PASS |
+| Frontend `npm run build` | PASS |
+| AI Service catalogue / validation / xAI / Worker (targeted) | 154 PASS |
+| AI Service broader safe/offline suite | 37 suites / 759 tests PASS |
+| API Gateway relevant safe/offline tests | 66 PASS |
+| API Gateway `npm run build` | PASS |
+
+No provider calls during implementation.
+
+---
+
+#### Acceptance Criteria
+
+Step 1 (Registration):
+- [x] PRIVATE-BETA-BLOCKER-03C registered
+- [x] HIGH priority / HIGH risk / 4-step workflow recorded
+- [x] Problem statement recorded — Grok 4.2 aborted/timeout; Grok 4.5 succeeded
+- [x] Historical evidence requirement recorded — must be recovered, not guessed
+- [x] Eight Stage-Start questions A–H registered
+- [x] Scope boundaries recorded — likely ai-service; no source changes yet
+- [x] 03D boundary confirmed — 03D owns credit/refund policy
+- [x] 03E remains COMPLETE AND LOCKED — not modified
+- [x] BUILDER-INTENT-01 remains COMPLETE AND LOCKED — not modified
+- [x] `GLOBAL_EXECUTION_ENABLED=false` preserved
+- [x] PRIVATE-BETA-INVITE-01 untouched
+- [x] No implementation / runtime / provider / billing work performed
+- [x] No git commit or push
+
+Step 2 (Stage Start):
+- [x] Historical Grok 4.2 failed executions identified — IDs `6e25ad2d` and `2bcf23fe`, timeout, 0 tokens
+- [x] Full timeout chain documented — every layer, every value, every AbortSignal
+- [x] Abort propagation source determined — Node.js undici/fetch abort on AbortSignal at T+20000ms
+- [x] Grok 4.2 vs Grok 4.5 request comparison completed — only model string differs
+- [x] Provider-side vs application-side classification: APPLICATION TIMEOUT TOO SHORT (Stage Start); revised to PROVIDER HANG after 60s diagnostic evidence
+- [x] Timeout policy decided — model-aware timeout proposed (Stage Start); disproved by controlled diagnostic
+- [x] Retry/fallback policy decided — no automatic retry; no fallback; user-retry only
+- [x] Accounting boundary confirmed delegated to 03D
+- [x] No source changes / no provider calls in Step 2
+
+Step 3 (Bounded Implementation + Validation):
+- [x] Stage-Start-approved change implemented and revised per controlled evidence
+- [x] `GLOBAL_EXECUTION_ENABLED=false` during Step 3 (except controlled diagnostic: 2 calls)
+- [x] No 03D / 03E scope absorbed
+- [x] Targeted tests updated — catalogue/validation/xAI/Worker: 154 PASS; full suite: 759 PASS
+- [x] AI Service, API Gateway, Frontend builds pass
+
+Step 4 (Consolidation / Checkpoint):
+- [x] Root cause documented: GROK-4.20 PROVIDER/MODEL REQUEST HANG OR EXTREME LATENCY
+- [x] Implementation bounded and justified — model availability policy, not arbitrary timeout increase
+- [x] No arbitrary timeout increase without evidence — confirmed; 60s diagnostic disproved timeout-increase approach
+- [x] Retry/fallback semantics decided — no retry, no fallback
+- [x] Duplicate-provider-call risk addressed — no retry; budget closed at 2/2
+- [x] Accounting policy delegated to 03D — confirmed
+- [x] All relevant tests pass (see local validation)
+- [x] Controlled staging: minimum provider calls — 2/2 authorized, 0 during availability-policy phase
+- [x] `GLOBAL_EXECUTION_ENABLED=false` confirmed before and after controlled staging validation
+- [x] Harness remains disabled
+- [x] No Stripe/payment activity
+- [x] Checkpoint created — `docs/PRIVATE-BETA-BLOCKER-03C-CHECKPOINT.md`
+- [x] PRIVATE-BETA-BLOCKER-03C marked COMPLETE AND LOCKED
+
+Non-blocking pre-existing limitation (NOT a 03C acceptance criterion):
+- Historical old-session chat not visible in browser after session expiry — PRE-EXISTING UX LIMITATION — historical data integrity confirmed PASS; no 03C fix required
+
+---
+
+**PRIVATE-BETA-BLOCKER-03C status:** COMPLETE AND LOCKED — 2026-08-14
+**Priority:** HIGH — private-beta blocker — RESOLVED
+**Risk:** HIGH
+**Workflow:** HIGH-RISK 4-STEP — ALL STEPS COMPLETE
+**Family:** PRIVATE-BETA-BLOCKER-03 / BUILDER EXECUTION RELIABILITY / PROVIDER TIMEOUT
+**Registered:** 2026-08-14
+**Completed:** 2026-08-14
+**Dependencies:** 03A COMPLETE AND LOCKED; 03B COMPLETE AND LOCKED — 2026-08-11; 03E COMPLETE AND LOCKED — 2026-08-13; BUILDER-INTENT-01 COMPLETE AND LOCKED — 2026-08-13
+**Blocking:** private-beta E2E rerun — RESOLVED for 03C; 03D still required before E2E rerun
+**Safety state:** `GLOBAL_EXECUTION_ENABLED=false` — confirmed at closure
+**03D boundary:** accounting/credit policy for no-workspace-result executions belongs to 03D — not 03C
+**PRIVATE-BETA-INVITE-01 status:** untouched / unregistered — invitations prohibited
+**Checkpoint:** `docs/PRIVATE-BETA-BLOCKER-03C-CHECKPOINT.md`
+**Exact next recommended task:** PRIVATE-BETA-BLOCKER-03D — No-Workspace-Result Credit Policy — REGISTERED ACTIVE — 2026-08-14
+
+---
+
+### PRIVATE-BETA-BLOCKER-03D: No-Workspace-Result Credit Policy
+
+**Task ID:** PRIVATE-BETA-BLOCKER-03D
+**Title:** No-Workspace-Result Credit Policy
+**Status:** REGISTERED / ACTIVE — Step 1 COMPLETE (Registration — 2026-08-14) — Step 2 COMPLETE (CORRECTED — 2026-08-14) — Step 3 IN PROGRESS (03D-A COMPLETE AND LOCKED — 03D-B NOT YET REGISTERED) — Step 4 PENDING
+**Family:** PRIVATE-BETA-BLOCKER-03 / BUILDER EXECUTION RELIABILITY / CREDIT ACCOUNTING
+**Priority:** HIGH — private-beta blocker
+**Risk:** HIGH
+**Workflow:** HIGH-RISK 4-STEP
+
+- Step 1 — Registration — COMPLETE — 2026-08-14
+- Step 2 — Stage Start / Accounting Lifecycle Diagnosis + Credit Policy Matrix — COMPLETE (CORRECTED 2026-08-14) — Artifact: `docs/PRIVATE-BETA-BLOCKER-03D-STAGE-START.md` — initial conclusion (D/E deferred, validation-only Step 3) replaced with corrected architecture direction (A — delay Build deduction until qualifying workspace result)
+- Step 3 — Bounded Implementation + Validation — IN PROGRESS — 03D-A COMPLETE AND LOCKED 2026-08-14 — 03D-B NOT YET REGISTERED
+- Step 4 — Consolidation / Checkpoint — PENDING
+
+**Registered:** 2026-08-14
+**Approved:** Keith — 2026-08-14
+**Dependencies:** PRIVATE-BETA-BLOCKER-03C COMPLETE AND LOCKED — 2026-08-14; PRIVATE-BETA-BLOCKER-03B COMPLETE AND LOCKED — 2026-08-11; BUILDER-INTENT-01 COMPLETE AND LOCKED — 2026-08-13
+**Blocking:** private-beta E2E rerun and final GO/NO-GO until credit policy is deterministic and validated
+**Safety state at registration:** `GLOBAL_EXECUTION_ENABLED=false` — confirmed; `BILLING_CHARGES_ENABLED=false` — confirmed
+**PRIVATE-BETA-INVITE-01 status:** untouched / unregistered — invitations prohibited
+**Stage-Start document:** `docs/PRIVATE-BETA-BLOCKER-03D-STAGE-START.md` — COMPLETE (CORRECTED 2026-08-14)
+**Checkpoint:** not yet created
+**Selected architecture direction:** A — DELAY BUILD CREDIT DEDUCTION UNTIL QUALIFYING WORKSPACE RESULT — `triggerDeductionForExecution()` gains intent-conditional gate: conversation→immediate deduction (unchanged), workspace_mutation→skip pending confirm-apply; new confirm-apply endpoint triggers deduction for qualifying Build results; no refund mechanism; no migration; idempotency via existing `sourceEventId` UNIQUE; no reconciliation auto-charge
+**Step 2 correction reason:** Initial Stage Start declared Scenario D/E "POLICY BLOCKED" and deferred them, reducing Step 3 to validation-only. This was insufficient because 03D was registered specifically to resolve these scenarios. The architecture gap (backend lacks apply-result visibility) is closable with a bounded addition (intent gate + one endpoint + one frontend call) without new services, queues, migrations, or refund mechanisms.
+**Corrected policy:** Ask=immediate charge (unchanged); Build=charge only after qualifying workspace apply result; zero-action Build=no charge (existing); apply failure=no charge; partial apply=no charge (private beta); timeout/failure/cancellation=no charge (existing)
+
+---
+
+#### Objective
+
+Determine and implement a deterministic credit/accounting policy for execution outcomes where provider token usage exists but the requested Builder workspace result is not successfully delivered.
+
+The policy must distinguish execution intent and outcome rather than applying a simplistic "tokens consumed = always charge" or "no file actions = always refund" rule.
+
+Ask (`executionIntent=conversation`) and Build (`executionIntent=workspace_mutation`) semantics must remain explicitly distinct throughout.
+
+Implementation must not begin until a validated outcome/intent policy matrix has been defined in the Stage Start.
+
+---
+
+#### Historical Context
+
+Reference execution `2bc73157-973a-45ec-8b71-bca8c2f7941d` (xAI / grok-4.5, same session as 03C timeout executions):
+- provider returned prose rather than usable file actions
+- `fileActions = []`
+- no workspace mutation occurred
+- execution was originally treated as completed
+- provider tokens were consumed
+- credits were deducted
+
+PRIVATE-BETA-BLOCKER-03B corrected Build-mode execution semantics: a mutation-required Build execution with zero safe actions now fails deterministically rather than incorrectly completing.
+
+BUILDER-INTENT-01 separated Ask (`executionIntent=conversation`) and Build (`executionIntent=workspace_mutation`).
+
+03D owns the remaining credit policy question.
+
+---
+
+#### Accounting Scenarios — Stage Start Must Resolve
+
+**A. Ask / conversation intent — `executionIntent=conversation`**
+A successful Ask response may legitimately have `fileActions = []`. This is expected behavior. Stage Start must confirm normal credit charging for successful conversational value. Ask responses must not be made free merely because no workspace mutation occurred.
+
+**B. Successful Build — `executionIntent=workspace_mutation`**
+Provider succeeds and workspace mutation is successfully applied. Expected ordinary case: normal credit deduction. Stage Start must confirm the actual current lifecycle for this baseline path.
+
+**C. Build — zero usable file actions**
+Examples: provider returns no actions; parser produces zero safe actions; `file_action_contract_failure`; provider output cannot satisfy the required mutation contract. Provider tokens may have been consumed but the user received no requested workspace result. Stage Start must define the intended charge/refund policy. Policy must NOT be pre-decided during registration.
+
+**D. Build — actions generated but apply fails**
+Provider produced valid actions; workspace apply was attempted; apply failed; workspace did not receive the requested result. Stage Start must distinguish this from zero-action contract failure (Scenario C). Current accounting timing and appropriate policy to be determined at Stage Start.
+
+**E. Partial workspace mutation**
+If some actions succeed and some fail, Stage Start must determine: whether this exists today; how accounting currently behaves; whether 03D needs a bounded policy for it. Scope must not expand beyond existing execution semantics unless evidence requires it.
+
+**F. Provider timeout / abort / provider failure**
+03C evidence shows timeout runs with `tokens=0` and `credits_applied=0`. Stage Start must verify current behavior. 03D must not alter already-correct failure accounting without evidence of a defect.
+
+**G. Cancellation**
+Stage Start must determine current accounting behavior for user/system cancellation and whether it belongs in 03D scope. Do not widen scope unless the same credit lifecycle makes it necessary.
+
+---
+
+#### Design Questions — Stage Start Must Answer
+
+1. WHEN are credits currently deducted: at provider completion, execution completion, file-action parsing, workspace apply, or elsewhere?
+2. Does the current architecture already support: pending/reserved credits; applied deductions; refund records; idempotency keys; execution-linked deduction records?
+3. Is the current accounting schema sufficient for the correct policy, or is a minimal schema change required? If a schema change is required, Stage Start must STOP and explain the smallest safe requirement before implementation proceeds.
+
+No architecture may be invented during registration.
+
+---
+
+#### Outcome/Intent Policy Matrix Requirement
+
+Stage Start must produce an explicit policy matrix before any implementation begins.
+
+Minimum columns:
+- `executionIntent`
+- provider outcome
+- tokens reported
+- file actions produced
+- workspace mutation attempted
+- workspace mutation result
+- execution final status
+- current credit behavior
+- desired credit behavior
+- reason
+- idempotency requirement
+
+Implementation must not begin until this matrix is defined and approved.
+
+---
+
+#### Accounting Safety Invariants
+
+The final implemented policy must preserve all of the following:
+
+1. No double charging.
+2. No double refunds.
+3. No negative/refund race conditions.
+4. Idempotent accounting under duplicate completion/failure handling.
+5. Execution/accounting auditability.
+6. Existing credit ledger integrity.
+7. No silent fallback or substitution.
+8. Ask and Build intent semantics remain distinct.
+9. Historical execution/accounting records are not rewritten.
+10. Existing valid successful charges remain valid unless a proven defect requires otherwise.
+
+---
+
+#### Data Integrity / Migration Boundary
+
+Prefer no database migration. If correct policy cannot be implemented safely with the current accounting schema, Stage Start must STOP and explain the smallest schema requirement before implementation. No destructive migration. No historical balance rewrite.
+
+---
+
+#### Testing Requirements
+
+Future implementation must include tests for the final selected policy, including at minimum:
+- successful Ask (conversation intent, zero file actions)
+- successful Build (workspace mutation applied)
+- Build zero-action contract failure
+- Build apply failure (if supported by current architecture)
+- provider timeout / abort
+- duplicate finalization / idempotency
+- no double charge scenario
+- no double refund scenario
+- existing successful credit flow regression
+
+Use provider mocks. No live provider calls are needed for core implementation validation.
+
+---
+
+#### Staging Validation Expectation
+
+Prefer existing execution/accounting records and deterministic mocked/local coverage. Do NOT authorize live provider calls during registration. Any live provider call, if later genuinely necessary, requires explicit Stage Start justification. `GLOBAL_EXECUTION_ENABLED` must remain `false` except during separately authorized controlled validation.
+
+---
+
+#### Explicit Scope Boundary
+
+03D is NOT about:
+- Stripe, subscriptions, payment-provider charging, customer portal, checkout, or webhook processing
+- Price-plan redesign
+- Grok 4.20 / provider timeout diagnosis
+- Session expiry
+- Builder Intent UX
+- Harness activation
+
+03D concerns internal aiSandBox credit/accounting policy for execution outcomes only.
+
+---
+
+#### Acceptance Criteria
+
+- [ ] Current accounting lifecycle mapped (when credits deduct; what records exist)
+- [ ] Outcome/intent policy matrix defined
+- [ ] No-workspace-result policy explicitly decided for each scenario (A–G)
+- [ ] Ask semantics preserved (successful Ask with zero file actions not made free)
+- [ ] Build semantics preserved (normal successful Build charges unchanged)
+- [ ] Zero-action Build contract failure handling covered
+- [ ] Apply-failure handling assessed
+- [ ] Timeout/failure handling assessed
+- [ ] Idempotency / double-charge / double-refund safety proven
+- [ ] Bounded implementation complete
+- [ ] Relevant tests pass
+- [ ] Staging/accounting evidence passes
+- [ ] No provider-payment / Stripe scope expansion
+- [ ] Checkpoint created (`docs/PRIVATE-BETA-BLOCKER-03D-CHECKPOINT.md`)
+- [ ] Task locked only after evidence
+
+---
+
+**PRIVATE-BETA-BLOCKER-03D status:** REGISTERED / ACTIVE — Step 2 COMPLETE (CORRECTED) — 2026-08-14 — Step 3 IN PROGRESS (03D-A COMPLETE AND LOCKED — 03D-B NOT YET REGISTERED)
+**Priority:** HIGH — private-beta blocker
+**Risk:** HIGH
+**Workflow:** HIGH-RISK 4-STEP
+**Family:** PRIVATE-BETA-BLOCKER-03 / BUILDER EXECUTION RELIABILITY / CREDIT ACCOUNTING
+**Registered:** 2026-08-14
+**Completed:** NOT YET
+**Dependencies:** 03C COMPLETE AND LOCKED — 2026-08-14; 03B COMPLETE AND LOCKED — 2026-08-11; BUILDER-INTENT-01 COMPLETE AND LOCKED — 2026-08-13
+**Blocking:** private-beta E2E rerun and final GO/NO-GO
+**Safety state:** `GLOBAL_EXECUTION_ENABLED=false` — confirmed; `BILLING_CHARGES_ENABLED=false` — confirmed
+**PRIVATE-BETA-INVITE-01 status:** untouched / unregistered — invitations prohibited
+**Stage-Start:** `docs/PRIVATE-BETA-BLOCKER-03D-STAGE-START.md` — COMPLETE (CORRECTED 2026-08-14)
+**Selected policy direction (corrected):** A — DELAY BUILD CREDIT DEDUCTION UNTIL QUALIFYING WORKSPACE RESULT — intent gate in `triggerDeductionForExecution()` + new confirm-apply endpoint; no migration; no refund mechanism; all scenarios A–G resolved; no reconciliation auto-charge
+**Step 2 correction:** Initial direction D (existing accounting sufficient, D/E deferred) replaced with direction A. Correction reason: deferring D/E was insufficient for 03D's registered objective; bounded architecture addition resolves all scenarios.
+**03D-A:** COMPLETE AND LOCKED — 2026-08-14 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03D-A-CHECKPOINT.md`
+**03D-B:** NOT YET REGISTERED — exact next recommended task: PRIVATE-BETA-BLOCKER-03D-B — Frontend Apply-Result Integration + Validation
+**Exact next recommended task:** PRIVATE-BETA-BLOCKER-03D-B — Frontend Apply-Result Integration + Validation — NOT YET REGISTERED
+
+---
+
+### PRIVATE-BETA-BLOCKER-03D-A: Backend Build Deduction Gate + Confirm-Apply Endpoint
+
+**Task ID:** PRIVATE-BETA-BLOCKER-03D-A
+**Title:** Backend Build Deduction Gate + Confirm-Apply Endpoint
+**Status:** COMPLETE AND LOCKED — 2026-08-14
+**Parent:** PRIVATE-BETA-BLOCKER-03D (Step 3, child slice A of 2)
+**Family:** PRIVATE-BETA-BLOCKER-03 / BUILDER EXECUTION RELIABILITY / CREDIT ACCOUNTING
+**Priority:** HIGH — private-beta blocker
+**Risk:** HIGH
+**Workflow:** HIGH-RISK 3-STEP CHILD LIFECYCLE
+
+- Step 1 — Registration — COMPLETE — 2026-08-14
+- Step 2 — Bounded Implementation + Validation — COMPLETE — 2026-08-14
+- Step 3 — Consolidation / Checkpoint — COMPLETE — 2026-08-14
+
+**Registered:** 2026-08-14
+**Approved:** Keith — 2026-08-14
+**Dependencies:** PRIVATE-BETA-BLOCKER-03D Step 2 COMPLETE (CORRECTED 2026-08-14); Stage-Start: `docs/PRIVATE-BETA-BLOCKER-03D-STAGE-START.md`
+**Blocking:** 03D-B (frontend apply-result integration — not yet registered) cannot proceed until 03D-A complete and consolidated
+**Safety state:** `GLOBAL_EXECUTION_ENABLED=false` — confirmed; `BILLING_CHARGES_ENABLED=false` — confirmed
+**PRIVATE-BETA-INVITE-01 status:** untouched / unregistered — invitations prohibited
+**Scope:** API Gateway only — no frontend production changes — no AI Service Worker production changes
+
+---
+
+#### Scope: Backend Only
+
+03D-A is backend-only. It does NOT modify:
+- `frontend/app/[locale]/app/page.tsx`
+- `frontend/components/workspace/workspace-ai-file-actions.logic.ts`
+- Any other frontend production files
+
+03D-B owns the frontend confirmation call.
+
+After 03D-A alone:
+- Ask continues normal accounting (unchanged)
+- Build provider completion waits — no Build charge occurs at completion
+- No Build charge occurs until the confirm-build-apply endpoint is called
+- Normal product Build charging is NOT complete until 03D-B is implemented
+
+This intermediate state must NOT be deployed independently to production/staging as the final behavior unless explicitly authorized for a controlled provider-free validation.
+
+---
+
+#### Credit Policy (PRIVATE-BETA 03D FINAL — No-Confirmation = No Deduction)
+
+| Scenario | Charge? |
+|----------|---------|
+| Ask success (executionIntent=conversation) | CHARGE — immediate at completion (unchanged) |
+| Build full successful apply confirmed | CHARGE — only after qualifying confirm-apply confirmation |
+| Build zero actions (contract failure) | NO CHARGE |
+| Build apply failure | NO CHARGE |
+| Build partial apply | NO CHARGE |
+| Timeout / provider failure | NO CHARGE |
+| Cancellation | NO CHARGE |
+| No apply confirmation received | NO CHARGE |
+
+**NO CONFIRMED FULL BUILD APPLY = NO DEDUCTION.**
+
+No timeout fallback. No reconciliation auto-charge. No deduction merely because time passed. No watchdog deduction. No silence-based auto-charge.
+
+**Reconciliation explicitly excluded:** The corrected Stage Start (`docs/PRIVATE-BETA-BLOCKER-03D-STAGE-START.md`) described a potential reconciliation fallback for tab-close / network-loss scenarios. That mechanism is explicitly excluded from 03D-A and from the 03D private-beta implementation.
+
+Rationale: no apply confirmation is ambiguous — it can mean successful apply followed by tab/network loss, OR apply failure, OR partial apply, OR browser closed before apply. Occasional under-charging after a successful apply whose confirmation never arrives is preferable to charging a failed/unproven Build. Any future reconciliation mechanism requires reliable positive workspace-delivery evidence and is a separate registered task outside 03D.
+
+---
+
+#### A. Intent-Aware Deduction Gate
+
+**File:** `services/api-gateway/src/usage-ledger/usage-ledger.service.ts`
+**Method:** `triggerDeductionForExecution(executionId)`
+
+Required new semantics:
+```
+triggerDeductionForExecution(executionId)
+  → status check → if not completed: skip [unchanged]
+  → read metadata.aiExecutionResult.executionIntent from usage_records row
+  → if executionIntent === 'conversation':
+      → emitDeductionAttempt(record)  [UNCHANGED — Ask immediate path]
+  → if executionIntent === 'workspace_mutation':
+      → return { triggered: false, reason: 'build_awaiting_apply' }  [NEW]
+  → if executionIntent missing/unknown:
+      → emitDeductionAttempt(record)  [SAFE DEFAULT — charge if unsure]
+```
+
+Metadata source: `usage_records.metadata.aiExecutionResult.executionIntent` — durably written by AI Service worker at completion time via atomic SQL UPDATE. No schema migration required. `triggerDeductionForExecution()` already reads the full `usage_records` row including the JSONB metadata column.
+
+---
+
+#### B. Build Apply-Confirmation Method and Endpoint
+
+**File:** `services/api-gateway/src/usage-ledger/usage-ledger.service.ts`
+**New method:** `triggerBuildApplyDeduction(executionId, applyConfirmation)`
+
+**File:** `services/api-gateway/src/ai/internal-accounting.controller.ts`
+**New endpoint:** `POST /api/internal/executions/:executionId/confirm-build-apply`
+
+Route follows existing `@Controller('internal/executions')` convention already established in `InternalAccountingController`. The `finalize-accounting` endpoint is at `POST :executionId/finalize-accounting` — `confirm-build-apply` follows the same pattern.
+
+Authentication: global `InternalServiceAuthGuard` (`X-Internal-Service-Key`) — same as existing `finalize-accounting` endpoint. No change to internal auth behavior.
+
+Confirmation payload shape (minimum):
+```
+{
+  applyStatus: 'applied' | 'skipped' | 'failed' | string,
+  totalActions: number,
+  successCount: number
+}
+```
+
+---
+
+#### C. Validation Gate (Trust Boundary)
+
+The endpoint must NOT blindly accept `{ success: true }` and charge.
+
+Required validations before triggering deduction:
+
+1. Execution exists in `usage_records`
+2. `executionStatus === 'completed'`
+3. `executionIntent === 'workspace_mutation'` (read from `metadata.aiExecutionResult.executionIntent`)
+4. `applyConfirmation.applyStatus === 'applied'` — reject 'skipped', 'failed', or any other value
+5. `applyConfirmation.totalActions > 0` — zero-action Build must not charge
+6. `applyConfirmation.successCount === applyConfirmation.totalActions` — all actions must succeed; no partial
+7. Persisted `metadata.aiExecutionResult.fileActions.length` is available and must be consistent with `applyConfirmation.totalActions` — mismatch must reject
+8. If persisted action count is not available or is ambiguous: STOP and report rather than weakening validation
+
+Reject and return without deduction if any validation fails.
+
+---
+
+#### D. Idempotency
+
+Reuse existing mechanism: `credit_deduction_records.source_event_id = executionId` UNIQUE constraint.
+
+- Same `executionId` used as `sourceEventId` whether triggered at completion (Ask) or via confirm-apply (Build)
+- Duplicate confirmations: `PersistentCreditDeductionGateway.applyDeduction()` returns `skippedDuplicate: true` — safe no-op
+- Concurrent duplicate confirmations: `FOR UPDATE` pessimistic lock on `credit_balances` serializes balance mutations; UNIQUE constraint catches any race
+
+Do NOT introduce:
+- Refund records
+- Second accounting ledger
+- New idempotency table
+- New balance mechanism
+
+---
+
+#### E. Ask Regression Safety
+
+`triggerDeductionForExecution()` for `executionIntent === 'conversation'` must remain UNCHANGED.
+
+Completed Ask executions continue to trigger immediate deduction via `emitDeductionAttempt()` without any apply confirmation.
+
+---
+
+#### F. No Migration
+
+No schema migration. `executionIntent` and `fileActions[]` are already durably written at `usage_records.metadata.aiExecutionResult` by the worker. `triggerDeductionForExecution()` already reads the full row. No new columns, no new tables.
+
+---
+
+#### Expected Implementation Files
+
+| File | Change | Required? |
+|------|--------|-----------|
+| `services/api-gateway/src/usage-ledger/usage-ledger.service.ts` | Add intent-conditional gate in `triggerDeductionForExecution()`; add `triggerBuildApplyDeduction()` method | REQUIRED |
+| `services/api-gateway/src/ai/internal-accounting.controller.ts` | Add `POST :executionId/confirm-build-apply` endpoint calling `triggerBuildApplyDeduction()` | REQUIRED |
+| `services/api-gateway/src/usage-ledger/__tests__/usage-ledger.service.spec.ts` | Add tests for intent gate and Build apply deduction trigger | REQUIRED |
+| `services/api-gateway/src/ai/__tests__/internal-accounting.controller.spec.ts` | Add tests for confirm-apply endpoint | REQUIRED |
+
+Files NOT changed in 03D-A (unless architecture proves unavoidable and is explicitly documented):
+- `services/ai-service/src/worker/worker.processor.ts`
+- `services/api-gateway/src/usage-ledger/persistent-credit-deduction.gateway.ts`
+- Any frontend production files
+- Any `.env` files
+- No migration files
+
+---
+
+#### Acceptance Criteria
+
+- [x] 1. Status gating preserved — non-completed executions skip deduction (existing behavior)
+- [x] 2. Ask / conversation completed execution still triggers immediate deduction (existing path unchanged)
+- [x] 3. Build / workspace_mutation completion does NOT immediately deduct — returns `{ triggered: false, reason: 'build_awaiting_apply' }`
+- [x] 4. Build completion reports deterministic awaiting-apply reason/state
+- [x] 5. confirm-build-apply endpoint validates execution exists
+- [x] 6. confirm-build-apply endpoint validates completed status
+- [x] 7. confirm-build-apply endpoint validates workspace_mutation intent
+- [x] 8. confirm-build-apply endpoint validates expected action count against persisted `metadata.aiExecutionResult.fileActions.length`
+- [x] 9. Full successful confirmation triggers existing deduction machinery (`emitDeductionAttempt()`)
+- [x] 10. Partial confirmation (successCount < totalActions) does not charge
+- [x] 11. Failed / skipped confirmation does not charge
+- [x] 12. Zero-action Build does not charge
+- [x] 13. Duplicate confirmation charges at most once
+- [x] 14. Concurrent duplicate confirmation safe (UNIQUE constraint + FOR UPDATE lock)
+- [x] 15. Existing balance locking in `PersistentCreditDeductionGateway` preserved
+- [x] 16. No refund mechanism added
+- [x] 17. No reconciliation / timeout auto-charge
+- [x] 18. No schema migration
+- [x] 19. Ask regression tests pass
+- [x] 20. Existing successful accounting tests pass
+- [x] 21. Provider calls = 0
+- [x] 22. Balance mutation not required for local tests (mocked gateway)
+- [x] 23. No frontend production change
+- [x] 24. No Stripe / payment-provider changes
+
+---
+
+#### Validation Results
+
+Targeted — 03D-A direct suites: **3 suites PASS — 107 tests PASS**
+
+Relevant regression: **7 suites PASS — 134 tests PASS**
+
+Broader safe/offline API Gateway: **155 suites PASS — 6 suites FAIL (pre-existing / unrelated)**
+
+Full count: **1987 / 2048 tests PASS**
+
+API Gateway `npm run build`: **PASS**
+
+Pre-existing unrelated failures (NOT 03D-A regressions):
+- `CreditBalanceGuard` DI — pre-existing DI test setup issue
+- `Users/PlanRepository` DI — pre-existing DI test setup issue
+- `AuthService DataSource` DI — pre-existing DI test setup issue
+- `ai-execution.get-execution-file-actions.spec.ts` — stale AIExecutionController constructor arity — pre-existing
+- Cascade failures from above arity mismatch
+
+Provider calls during implementation: **0**
+Real balance mutations: **0**
+
+Integration/live infrastructure tests intentionally not run (require live Postgres + Redis):
+- `smoke.integration.spec.ts`
+- `ai-execution-two-phase.integration.spec.ts`
+- `ai-execution-deterministic-replay.integration.spec.ts`
+- `ai-execution-orphan-reconciliation.integration.spec.ts`
+- `credit-deduction-concurrency.integration.spec.ts`
+
+---
+
+#### Intermediate-State Limitation
+
+**03D-A ALONE IS NOT THE COMPLETED PRODUCT FLOW.**
+
+The `confirm-build-apply` endpoint is protected by `X-Internal-Service-Key`. The browser cannot safely possess this key. Therefore:
+
+- **Ask accounting**: fully functional (unchanged immediate deduction)
+- **Build AI completion**: correctly gated (no deduction at completion)
+- **Normal product Build**: does not yet send a `confirm-build-apply` confirmation
+- **Result**: Build deduction remains pending/no-charge until 03D-B is implemented
+
+03D-B must provide the authenticated frontend/proxy integration that calls this endpoint after a successful full workspace apply. Only after both 03D-A and 03D-B are complete does the full Build accounting flow function end-to-end.
+
+---
+
+**PRIVATE-BETA-BLOCKER-03D-A status:** COMPLETE AND LOCKED — 2026-08-14
+**Priority:** HIGH — private-beta blocker
+**Risk:** HIGH
+**Workflow:** HIGH-RISK 3-STEP CHILD
+**Parent:** PRIVATE-BETA-BLOCKER-03D (Step 3 child slice A of 2)
+**Registered:** 2026-08-14
+**Completed:** 2026-08-14
+**Dependencies:** PRIVATE-BETA-BLOCKER-03D Stage-Start COMPLETE (CORRECTED 2026-08-14)
+**Checkpoint:** `docs/PRIVATE-BETA-BLOCKER-03D-A-CHECKPOINT.md`
+**03D-B:** NOT YET REGISTERED — depends on 03D-A completion and consolidation
+**Exact next recommended task:** PRIVATE-BETA-BLOCKER-03D-B — Frontend Apply-Result Integration + Validation — NOT YET REGISTERED

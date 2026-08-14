@@ -36,6 +36,48 @@ describe('AIExecutionService provider/model validation', () => {
     await module.close();
   });
 
+  it('rejects grok-4.20 before adapter selection/execution and does not fall back to grok-4.5', async () => {
+    const getAdapterSpy = jest.spyOn(service as any, 'getAdapter');
+    const executeSpy = jest.spyOn(XAIAdapter.prototype, 'execute');
+
+    await expect(
+      service.execute({
+        ...baseRequest,
+        provider: 'xai',
+        model: 'grok-4.20',
+      }),
+    ).rejects.toThrow(BadRequestException);
+
+    expect(getAdapterSpy).not.toHaveBeenCalled();
+    expect(executeSpy).not.toHaveBeenCalled();
+  });
+
+  it('accepts grok-4.5 without substituting another model', async () => {
+    process.env.XAI_API_KEY = 'xai-test-key';
+    const adapterResult: AIExecutionResult = {
+      output: 'ok',
+      tokensUsed: 1,
+      model: 'grok-4.5',
+    };
+    const executeSpy = jest
+      .spyOn(XAIAdapter.prototype, 'execute')
+      .mockResolvedValue(adapterResult);
+
+    await service.execute({
+      ...baseRequest,
+      provider: 'xai',
+      model: 'grok-4.5',
+    });
+
+    expect(executeSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        provider: 'xai',
+        model: 'grok-4.5',
+      }),
+    );
+    expect(executeSpy).toHaveBeenCalledTimes(1);
+  });
+
   it('rejects invalid xAI model before adapter selection/execution', async () => {
     const getAdapterSpy = jest.spyOn(service as any, 'getAdapter');
     const executeSpy = jest.spyOn(XAIAdapter.prototype, 'execute');

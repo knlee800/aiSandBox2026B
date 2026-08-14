@@ -23,7 +23,7 @@ describe('frontend provider/model catalogue hardening', () => {
       (provider) => provider.providerId,
     );
     assert.deepEqual(selectableProviders, ['xai', 'groq', 'deepseek', 'openai']);
-    assert.deepEqual(catalogueModelIds('xai'), ['grok-4.5', 'grok-4.20']);
+    assert.deepEqual(catalogueModelIds('xai'), ['grok-4.5']);
     assert.deepEqual(catalogueModelIds('groq'), ['openai/gpt-oss-120b', 'openai/gpt-oss-20b']);
     assert.deepEqual(catalogueModelIds('deepseek'), ['deepseek-v4-flash', 'deepseek-v4-pro']);
     assert.deepEqual(catalogueModelIds('openai'), ['gpt-4o']);
@@ -51,8 +51,9 @@ describe('frontend provider/model catalogue hardening', () => {
     assert.equal(selectableModelIds.includes('deepseek-reasoner'), false);
   });
 
-  test('selecting xAI exposes only xAI models', () => {
-    assert.deepEqual(catalogueModelIds('xai'), ['grok-4.5', 'grok-4.20']);
+  test('selecting xAI exposes only selectable xAI models', () => {
+    assert.deepEqual(catalogueModelIds('xai'), ['grok-4.5']);
+    assert.equal(catalogueModelIds('xai').includes('grok-4.20'), false);
   });
 
   test('selecting Groq exposes only Groq models', () => {
@@ -70,19 +71,28 @@ describe('frontend provider/model catalogue hardening', () => {
   test('provider change migrates to provider default model', () => {
     const migrated = resolveFrontendProviderModelSelection({
       providerId: 'groq',
-      modelId: 'grok-4.20',
+      modelId: 'grok-4.5',
     });
     assert.equal(migrated.providerId, 'groq');
     assert.equal(migrated.modelId, 'openai/gpt-oss-120b');
   });
 
-  test('preserves valid existing provider/model selections', () => {
-    const preserved = resolveFrontendProviderModelSelection({
+  test('migrates stored grok-4.20 selection to the private-beta default', () => {
+    const migrated = resolveFrontendProviderModelSelection({
       providerId: 'xai',
       modelId: 'grok-4.20',
     });
+    assert.equal(migrated.providerId, 'xai');
+    assert.equal(migrated.modelId, 'grok-4.5');
+  });
+
+  test('preserves valid existing provider/model selections', () => {
+    const preserved = resolveFrontendProviderModelSelection({
+      providerId: 'xai',
+      modelId: 'grok-4.5',
+    });
     assert.equal(preserved.providerId, 'xai');
-    assert.equal(preserved.modelId, 'grok-4.20');
+    assert.equal(preserved.modelId, 'grok-4.5');
   });
 
   test('migrates invalid model ids to the selected provider default', () => {
@@ -120,6 +130,17 @@ describe('frontend provider/model catalogue hardening', () => {
     assert.deepEqual(payload, {
       provider: 'groq',
       model: 'openai/gpt-oss-20b',
+    });
+  });
+
+  test('request payload resolver never submits grok-4.20', () => {
+    const payload = resolveFrontendProviderModelPayload({
+      providerId: 'xai',
+      modelId: 'grok-4.20',
+    });
+    assert.deepEqual(payload, {
+      provider: 'xai',
+      model: 'grok-4.5',
     });
   });
 
@@ -177,6 +198,21 @@ describe('frontend provider/model catalogue hardening', () => {
         }
       }
     }
+  });
+
+  test('frontend catalogue keeps grok-4.20 as a non-selectable historical identifier', () => {
+    const xai = FRONTEND_PROVIDER_MODEL_CATALOGUE_ENTRIES.find(
+      (entry) => entry.providerId === 'xai',
+    );
+    const grok420 = xai?.models.find((model) => model.modelId === 'grok-4.20');
+    const grok45 = xai?.models.find((model) => model.modelId === 'grok-4.5');
+
+    assert.ok(grok420);
+    assert.equal(grok420.enabled, true);
+    assert.equal(grok420.selectable, false);
+    assert.ok(grok45);
+    assert.equal(grok45.enabled, true);
+    assert.equal(grok45.selectable, true);
   });
 
   test('frontend catalogue keeps non-selectable backend-supported entries explicit', () => {

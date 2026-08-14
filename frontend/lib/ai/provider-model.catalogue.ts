@@ -48,11 +48,13 @@ const FRONTEND_PROVIDER_MODEL_CATALOGUE: readonly FrontendProviderModelCatalogue
         selectable: true,
       },
       {
+        // PRIVATE-BETA-BLOCKER-03C: retain the identifier for historical
+        // execution metadata; hide it from new private-beta Builder selection.
         providerId: 'xai',
         modelId: 'grok-4.20',
         labelKey: 'grok-4.20',
         enabled: true,
-        selectable: true,
+        selectable: false,
       },
     ],
   },

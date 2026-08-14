@@ -75,6 +75,18 @@ export interface UpdateExecutionResultDto {
 }
 
 /**
+ * PRIVATE-BETA-BLOCKER-03D-A: Frontend-reported Build apply confirmation.
+ *
+ * Must not be treated as execution metadata. Deduction still loads
+ * authoritative persisted usage_records evidence itself.
+ */
+export interface BuildApplyConfirmation {
+  applyStatus: string;
+  totalActions: number;
+  successCount: number;
+}
+
+/**
  * UsageLedgerService
  *
  * Phase 22B: Usage Ledger Write Service
@@ -719,17 +731,19 @@ export class UsageLedgerService {
   }
 
   /**
-   * BILLING-READY-04C: Trigger credit deduction for a completed execution.
+   * BILLING-READY-04C / PRIVATE-BETA-BLOCKER-03D-A:
+   * Trigger credit deduction for a completed execution.
    *
    * Called by the internal accounting endpoint after worker finalization.
    * Reads the usage record by executionId, validates status is 'completed',
-   * then delegates to the existing emitDeductionAttempt() path.
+   * then applies an executionIntent gate before emitDeductionAttempt().
    *
    * Guardrails:
    *  - Missing record → safe skip (returns result indicating skipped)
    *  - Non-completed status → safe skip (no deduction)
-   *  - Completed status → calls emitDeductionAttempt (existing deduction path)
-   *  - Zero-token completed → still triggers deduction (produces 0-credit audit record)
+   *  - completed + conversation / missing / unknown intent → emitDeductionAttempt
+   *  - completed + workspace_mutation → no deduction (build_awaiting_apply)
+   *  - Zero-token completed Ask → still triggers deduction (0-credit audit record)
    *  - Does not mutate execution_status
    *  - Idempotency: PersistentCreditDeductionGateway deduplicates via sourceEventId
    */
@@ -763,6 +777,19 @@ export class UsageLedgerService {
       return { triggered: false, reason: `status_${record.executionStatus}` };
     }
 
+    const executionIntent = this.readPersistedExecutionIntent(record.metadata);
+    if (executionIntent === 'workspace_mutation') {
+      this.logger.log(
+        JSON.stringify({
+          event: 'finalize_accounting.build_awaiting_apply',
+          timestamp: new Date().toISOString(),
+          executionId,
+          executionIntent,
+        }),
+      );
+      return { triggered: false, reason: 'build_awaiting_apply' };
+    }
+
     await this.emitDeductionAttempt(record);
 
     this.logger.log(
@@ -771,6 +798,160 @@ export class UsageLedgerService {
         timestamp: new Date().toISOString(),
         executionId,
         tokensUsed: record.tokensUsed ?? 0,
+        executionIntent: executionIntent ?? 'missing_legacy',
+      }),
+    );
+
+    return { triggered: true, reason: 'completed' };
+  }
+
+  /**
+   * PRIVATE-BETA-BLOCKER-03D-A: Charge a Build execution only after a
+   * qualifying full-success workspace apply confirmation.
+   *
+   * Loads persisted usage_records evidence itself. Confirmation is an
+   * apply-result assertion, not execution metadata.
+   *
+   * workspaceMutationAttempted is advisory parser metadata and is not
+   * used as accounting authority.
+   */
+  async triggerBuildApplyDeduction(
+    executionId: string,
+    confirmation: BuildApplyConfirmation,
+  ): Promise<{ triggered: boolean; reason: string }> {
+    const record = await this.usageRecordRepository.findOne({
+      where: { executionId },
+    });
+
+    if (!record) {
+      this.logger.warn(
+        JSON.stringify({
+          event: 'confirm_build_apply.record_not_found',
+          timestamp: new Date().toISOString(),
+          executionId,
+        }),
+      );
+      return { triggered: false, reason: 'record_not_found' };
+    }
+
+    if (record.executionStatus !== 'completed') {
+      this.logger.log(
+        JSON.stringify({
+          event: 'confirm_build_apply.skipped_non_completed',
+          timestamp: new Date().toISOString(),
+          executionId,
+          executionStatus: record.executionStatus,
+        }),
+      );
+      return { triggered: false, reason: `status_${record.executionStatus}` };
+    }
+
+    const aiExecutionResult = this.readAiExecutionResult(record.metadata);
+    if (!aiExecutionResult) {
+      this.logger.log(
+        JSON.stringify({
+          event: 'confirm_build_apply.missing_ai_execution_result',
+          timestamp: new Date().toISOString(),
+          executionId,
+        }),
+      );
+      return { triggered: false, reason: 'missing_ai_execution_result' };
+    }
+
+    const executionIntent = this.readPersistedExecutionIntent(record.metadata);
+    if (executionIntent !== 'workspace_mutation') {
+      this.logger.log(
+        JSON.stringify({
+          event: 'confirm_build_apply.intent_not_workspace_mutation',
+          timestamp: new Date().toISOString(),
+          executionId,
+          executionIntent: executionIntent ?? 'missing',
+        }),
+      );
+      return { triggered: false, reason: 'intent_not_workspace_mutation' };
+    }
+
+    const fileActions = aiExecutionResult.fileActions;
+    if (!Array.isArray(fileActions)) {
+      this.logger.log(
+        JSON.stringify({
+          event: 'confirm_build_apply.missing_file_actions',
+          timestamp: new Date().toISOString(),
+          executionId,
+        }),
+      );
+      return { triggered: false, reason: 'missing_file_actions' };
+    }
+
+    if (fileActions.length === 0) {
+      this.logger.log(
+        JSON.stringify({
+          event: 'confirm_build_apply.zero_file_actions',
+          timestamp: new Date().toISOString(),
+          executionId,
+        }),
+      );
+      return { triggered: false, reason: 'zero_file_actions' };
+    }
+
+    if (!this.isStructurallyValidConfirmation(confirmation)) {
+      this.logger.log(
+        JSON.stringify({
+          event: 'confirm_build_apply.confirmation_invalid',
+          timestamp: new Date().toISOString(),
+          executionId,
+        }),
+      );
+      return { triggered: false, reason: 'confirmation_invalid' };
+    }
+
+    if (confirmation.applyStatus !== 'applied') {
+      this.logger.log(
+        JSON.stringify({
+          event: 'confirm_build_apply.apply_status_not_applied',
+          timestamp: new Date().toISOString(),
+          executionId,
+          applyStatus: confirmation.applyStatus,
+        }),
+      );
+      return { triggered: false, reason: 'apply_status_not_applied' };
+    }
+
+    if (confirmation.totalActions !== fileActions.length) {
+      this.logger.log(
+        JSON.stringify({
+          event: 'confirm_build_apply.total_actions_mismatch',
+          timestamp: new Date().toISOString(),
+          executionId,
+          reportedTotalActions: confirmation.totalActions,
+          persistedFileActionCount: fileActions.length,
+        }),
+      );
+      return { triggered: false, reason: 'total_actions_mismatch' };
+    }
+
+    if (confirmation.successCount !== confirmation.totalActions) {
+      this.logger.log(
+        JSON.stringify({
+          event: 'confirm_build_apply.partial_apply',
+          timestamp: new Date().toISOString(),
+          executionId,
+          successCount: confirmation.successCount,
+          totalActions: confirmation.totalActions,
+        }),
+      );
+      return { triggered: false, reason: 'partial_apply' };
+    }
+
+    await this.emitDeductionAttempt(record);
+
+    this.logger.log(
+      JSON.stringify({
+        event: 'confirm_build_apply.deduction_triggered',
+        timestamp: new Date().toISOString(),
+        executionId,
+        tokensUsed: record.tokensUsed ?? 0,
+        persistedFileActionCount: fileActions.length,
       }),
     );
 
@@ -787,8 +968,13 @@ export class UsageLedgerService {
    *  - creditsRequested is 0 (rate translation deferred to future slice)
    *  - Idempotency: PersistentCreditDeductionGateway deduplicates via sourceEventId
    *
-   * Wiring point: ONLY called from updateExecutionResult() after successful DB write.
-   * This ensures exactly ONE invocation path per completed execution.
+   * Wiring points:
+   *  - updateExecutionResult() after successful DB write (legacy completion hook)
+   *  - triggerDeductionForExecution() for completed Ask / legacy-missing intent
+   *  - triggerBuildApplyDeduction() after a qualifying Build apply confirmation
+   *
+   * Duplicate calls remain safe: PersistentCreditDeductionGateway deduplicates
+   * via sourceEventId = executionId.
    */
   private async emitDeductionAttempt(record: UsageRecord): Promise<void> {
     if (!this.creditDeductionGateway) {
@@ -861,5 +1047,46 @@ export class UsageLedgerService {
         }),
       );
     }
+  }
+
+  private readAiExecutionResult(
+    metadata: Record<string, unknown> | undefined,
+  ): Record<string, unknown> | null {
+    if (!metadata || typeof metadata !== 'object') {
+      return null;
+    }
+
+    const raw = metadata.aiExecutionResult;
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+      return null;
+    }
+
+    return raw as Record<string, unknown>;
+  }
+
+  private readPersistedExecutionIntent(
+    metadata: Record<string, unknown> | undefined,
+  ): string | undefined {
+    const aiExecutionResult = this.readAiExecutionResult(metadata);
+    if (!aiExecutionResult) {
+      return undefined;
+    }
+
+    const executionIntent = aiExecutionResult.executionIntent;
+    return typeof executionIntent === 'string' ? executionIntent : undefined;
+  }
+
+  private isStructurallyValidConfirmation(
+    confirmation: BuildApplyConfirmation | null | undefined,
+  ): confirmation is BuildApplyConfirmation {
+    return (
+      !!confirmation &&
+      typeof confirmation.applyStatus === 'string' &&
+      confirmation.applyStatus.length > 0 &&
+      Number.isInteger(confirmation.totalActions) &&
+      confirmation.totalActions >= 0 &&
+      Number.isInteger(confirmation.successCount) &&
+      confirmation.successCount >= 0
+    );
   }
 }

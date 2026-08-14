@@ -149,4 +149,23 @@ describe('workspace chat thread logic', () => {
     assert.equal(parsed[0].provider, 'openai');
     assert.equal(parsed[0].model, 'gpt-4o');
   });
+
+  test('parses persisted assistant message with historical grok-4.20 model attribution', () => {
+    const raw = JSON.stringify([
+      {
+        id: 'm4',
+        role: 'assistant',
+        content: 'Historical grok-4.20 response.',
+        executionId: 'exec-grok-420',
+        provider: 'xai',
+        model: 'grok-4.20',
+      },
+    ]);
+
+    const parsed = parseStoredChatThreadMessages(raw);
+    assert.equal(parsed.length, 1);
+    assert.equal(parsed[0].executionId, 'exec-grok-420');
+    assert.equal(parsed[0].provider, 'xai');
+    assert.equal(parsed[0].model, 'grok-4.20');
+  });
 });

@@ -577,7 +577,6 @@ function buildWorkspaceShellProps(
     ],
     availableModelOptions: [
       { value: 'grok-4.5', label: 'grok-4.5' },
-      { value: 'grok-4.20', label: 'grok-4.20' },
     ],
     execState: idleExecState,
     previewState: unavailablePreviewState,

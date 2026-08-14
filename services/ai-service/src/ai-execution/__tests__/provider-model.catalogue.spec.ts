@@ -1,5 +1,6 @@
 import {
   ProviderModelValidationError,
+  XAI_RECOGNIZED_MODELS,
   getStaticDefaultModel,
   resolveProviderModelSelection,
 } from '../provider-model.catalogue';
@@ -16,18 +17,34 @@ describe('ProviderModelCatalogue (AI Service)', () => {
       expect(selection.model).toBe('grok-4.5');
     });
 
-    it('accepts grok-4.5 and grok-4.20', () => {
+    it('accepts grok-4.5 and rejects grok-4.20 for new execution', () => {
       const modelA = resolveProviderModelSelection({
         provider: 'xai',
         model: 'grok-4.5',
       });
-      const modelB = resolveProviderModelSelection({
-        provider: 'xai',
-        model: 'grok-4.20',
-      });
 
       expect(modelA.model).toBe('grok-4.5');
-      expect(modelB.model).toBe('grok-4.20');
+      expect(XAI_RECOGNIZED_MODELS).toContain('grok-4.20');
+      expect(() =>
+        resolveProviderModelSelection({
+          provider: 'xai',
+          model: 'grok-4.20',
+        }),
+      ).toThrow(ProviderModelValidationError);
+    });
+
+    it('can still represent historical grok-4.20 execution metadata', () => {
+      const historicalMetadata = {
+        requestedModel: 'grok-4.20',
+        aiExecutionResult: { model: 'grok-4.20' },
+      };
+
+      expect(XAI_RECOGNIZED_MODELS).toContain(historicalMetadata.requestedModel);
+      expect(XAI_RECOGNIZED_MODELS).toContain(
+        historicalMetadata.aiExecutionResult.model,
+      );
+      expect(historicalMetadata.requestedModel).toBe('grok-4.20');
+      expect(historicalMetadata.aiExecutionResult.model).toBe('grok-4.20');
     });
 
     it('rejects grok-3', () => {
@@ -37,6 +54,22 @@ describe('ProviderModelCatalogue (AI Service)', () => {
           model: 'grok-3',
         }),
       ).toThrow(ProviderModelValidationError);
+    });
+
+    it('does not substitute grok-4.5 when grok-4.20 is requested', () => {
+      try {
+        resolveProviderModelSelection({
+          provider: 'xai',
+          model: 'grok-4.20',
+        });
+        fail('expected grok-4.20 to be rejected');
+      } catch (error) {
+        expect(error).toBeInstanceOf(ProviderModelValidationError);
+        expect((error as ProviderModelValidationError).code).toBe('invalid_model');
+        expect((error as ProviderModelValidationError).model).toBe('grok-4.20');
+        expect((error as Error).message).toContain('grok-4.20');
+        expect((error as Error).message).not.toContain('grok-4.5');
+      }
     });
   });
 
