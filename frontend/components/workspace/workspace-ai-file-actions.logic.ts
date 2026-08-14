@@ -313,3 +313,88 @@ export async function applySequentialFileActions(
     results,
   };
 }
+
+export interface BuildApplyConfirmationPayload {
+  applyStatus: 'applied';
+  totalActions: number;
+  successCount: number;
+}
+
+export function qualifyBuildApplyConfirmation(
+  applyResult: ApplySequentialFileActionsResult,
+): BuildApplyConfirmationPayload | null {
+  if (applyResult.applyStatus !== 'applied') {
+    return null;
+  }
+
+  const totalActions = applyResult.results.length;
+  if (totalActions <= 0) {
+    return null;
+  }
+
+  const successCount = applyResult.results.filter(
+    (result) => result.status === 'success',
+  ).length;
+  if (
+    successCount !== totalActions ||
+    applyResult.results.some((result) => result.status !== 'success')
+  ) {
+    return null;
+  }
+
+  return {
+    applyStatus: 'applied',
+    totalActions,
+    successCount,
+  };
+}
+
+export async function confirmBuildApplyIfQualifying(args: {
+  executionId: string;
+  applyResult: ApplySequentialFileActionsResult;
+  confirmBuildApply: (input: {
+    executionId: string;
+    payload: BuildApplyConfirmationPayload;
+  }) => Promise<void>;
+  onConfirmationError?: (error: unknown) => void;
+}): Promise<'confirmed' | 'skipped' | 'confirmation-failed'> {
+  const payload = qualifyBuildApplyConfirmation(args.applyResult);
+  if (!payload || !args.executionId) {
+    return 'skipped';
+  }
+
+  try {
+    await args.confirmBuildApply({
+      executionId: args.executionId,
+      payload,
+    });
+    return 'confirmed';
+  } catch (error) {
+    args.onConfirmationError?.(error);
+    return 'confirmation-failed';
+  }
+}
+
+export function buildConfirmBuildApplyRequestUrl(executionId: string): string {
+  return `/api/ai/executions/${encodeURIComponent(executionId)}/confirm-build-apply`;
+}
+
+export async function requestBuildApplyConfirmation(input: {
+  executionId: string;
+  payload: BuildApplyConfirmationPayload;
+}): Promise<void> {
+  const response = await fetch(buildConfirmBuildApplyRequestUrl(input.executionId), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      applyStatus: input.payload.applyStatus,
+      totalActions: input.payload.totalActions,
+      successCount: input.payload.successCount,
+    }),
+  });
+  if (!response.ok) {
+    throw new Error(`Build apply confirmation failed (${response.status})`);
+  }
+}

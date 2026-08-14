@@ -669,10 +669,15 @@ export class AIExecutionController {
   @UseGuards(SessionOrApiKeyAuthGuard)
   async getExecution(
     @Param('executionId') executionId: string,
+    @AuthenticatedUser() identity: ApiKeyIdentity,
   ): Promise<ExecutionResultDto> {
     const execution = await this.executionResultService.getExecution(executionId);
 
     if (!execution) {
+      throw new NotFoundException('Execution not found');
+    }
+
+    if (!identity?.userId || execution.user_id !== identity.userId) {
       throw new NotFoundException('Execution not found');
     }
 

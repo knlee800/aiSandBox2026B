@@ -1,6 +1,11 @@
 import { AIExecutionController } from '../ai-execution.controller';
 
 describe('AIExecutionController.getExecution fileActions', () => {
+  const ownerIdentity = {
+    userId: 'user-1',
+    apiKeyId: 'browser-session',
+    scopes: ['ai:execute'],
+  };
   const makeController = (executionResultService: { getExecution: jest.Mock }) =>
     new AIExecutionController(
       {} as any,
@@ -9,12 +14,15 @@ describe('AIExecutionController.getExecution fileActions', () => {
       executionResultService as any,
       {} as any,
       { getByUserId: jest.fn().mockResolvedValue(null) } as any,
+      {} as any,
+      {} as any,
     );
 
   it('returns additive fileActions for completed execution', async () => {
     const executionResultService = {
       getExecution: jest.fn().mockResolvedValue({
         execution_id: 'exec-1',
+        user_id: 'user-1',
         execution_status: 'completed',
         provider: 'openai',
         model: 'gpt-4o',
@@ -34,7 +42,7 @@ describe('AIExecutionController.getExecution fileActions', () => {
     };
 
     const controller = makeController(executionResultService);
-    const result = await controller.getExecution('exec-1');
+    const result = await controller.getExecution('exec-1', ownerIdentity);
 
     expect(result).toEqual({
       executionId: 'exec-1',
@@ -54,6 +62,7 @@ describe('AIExecutionController.getExecution fileActions', () => {
     const executionResultService = {
       getExecution: jest.fn().mockResolvedValue({
         execution_id: 'exec-delete',
+        user_id: 'user-1',
         execution_status: 'completed',
         tokens_used: 3,
         metadata: {
@@ -66,7 +75,7 @@ describe('AIExecutionController.getExecution fileActions', () => {
     };
 
     const controller = makeController(executionResultService);
-    const result = await controller.getExecution('exec-delete');
+    const result = await controller.getExecution('exec-delete', ownerIdentity);
 
     expect(result.fileActions).toEqual([{ action: 'delete', path: 'delete-test.html' }]);
   });
@@ -75,6 +84,7 @@ describe('AIExecutionController.getExecution fileActions', () => {
     const executionResultService = {
       getExecution: jest.fn().mockResolvedValue({
         execution_id: 'exec-mixed',
+        user_id: 'user-1',
         execution_status: 'completed',
         tokens_used: 7,
         metadata: {
@@ -90,7 +100,7 @@ describe('AIExecutionController.getExecution fileActions', () => {
     };
 
     const controller = makeController(executionResultService);
-    const result = await controller.getExecution('exec-mixed');
+    const result = await controller.getExecution('exec-mixed', ownerIdentity);
 
     expect(result.fileActions).toEqual([
       { action: 'create', path: 'src/a.ts', content: 'a' },
@@ -102,6 +112,7 @@ describe('AIExecutionController.getExecution fileActions', () => {
     const executionResultService = {
       getExecution: jest.fn().mockResolvedValue({
         execution_id: 'exec-invalid',
+        user_id: 'user-1',
         execution_status: 'completed',
         tokens_used: 2,
         metadata: {
@@ -117,7 +128,7 @@ describe('AIExecutionController.getExecution fileActions', () => {
     };
 
     const controller = makeController(executionResultService);
-    const result = await controller.getExecution('exec-invalid');
+    const result = await controller.getExecution('exec-invalid', ownerIdentity);
 
     expect(result.fileActions).toEqual([{ action: 'delete', path: 'src/old.ts' }]);
   });
@@ -126,6 +137,7 @@ describe('AIExecutionController.getExecution fileActions', () => {
     const executionResultService = {
       getExecution: jest.fn().mockResolvedValue({
         execution_id: 'exec-2',
+        user_id: 'user-1',
         execution_status: 'completed',
         tokens_used: 4,
         metadata: {},
@@ -133,9 +145,27 @@ describe('AIExecutionController.getExecution fileActions', () => {
     };
 
     const controller = makeController(executionResultService);
-    const result = await controller.getExecution('exec-2');
+    const result = await controller.getExecution('exec-2', ownerIdentity);
 
     expect(result.fileActions).toEqual([]);
     expect(result.tokensUsed).toBe(4);
+  });
+
+  it('rejects a different-user execution as not found', async () => {
+    const executionResultService = {
+      getExecution: jest.fn().mockResolvedValue({
+        execution_id: 'exec-other',
+        user_id: 'user-other',
+        execution_status: 'completed',
+        tokens_used: 4,
+        metadata: {},
+      }),
+    };
+
+    const controller = makeController(executionResultService);
+
+    await expect(controller.getExecution('exec-other', ownerIdentity)).rejects.toThrow(
+      'Execution not found',
+    );
   });
 });

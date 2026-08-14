@@ -49244,7 +49244,7 @@ Non-blocking pre-existing limitation (NOT a 03C acceptance criterion):
 
 **Task ID:** PRIVATE-BETA-BLOCKER-03D
 **Title:** No-Workspace-Result Credit Policy
-**Status:** REGISTERED / ACTIVE — Step 1 COMPLETE (Registration — 2026-08-14) — Step 2 COMPLETE (CORRECTED — 2026-08-14) — Step 3 IN PROGRESS (03D-A COMPLETE AND LOCKED — 03D-B NOT YET REGISTERED) — Step 4 PENDING
+**Status:** COMPLETE AND LOCKED — 2026-08-14
 **Family:** PRIVATE-BETA-BLOCKER-03 / BUILDER EXECUTION RELIABILITY / CREDIT ACCOUNTING
 **Priority:** HIGH — private-beta blocker
 **Risk:** HIGH
@@ -49252,8 +49252,8 @@ Non-blocking pre-existing limitation (NOT a 03C acceptance criterion):
 
 - Step 1 — Registration — COMPLETE — 2026-08-14
 - Step 2 — Stage Start / Accounting Lifecycle Diagnosis + Credit Policy Matrix — COMPLETE (CORRECTED 2026-08-14) — Artifact: `docs/PRIVATE-BETA-BLOCKER-03D-STAGE-START.md` — initial conclusion (D/E deferred, validation-only Step 3) replaced with corrected architecture direction (A — delay Build deduction until qualifying workspace result)
-- Step 3 — Bounded Implementation + Validation — IN PROGRESS — 03D-A COMPLETE AND LOCKED 2026-08-14 — 03D-B NOT YET REGISTERED
-- Step 4 — Consolidation / Checkpoint — PENDING
+- Step 3 — Bounded Implementation + Validation — COMPLETE — 2026-08-14 — 03D-A COMPLETE AND LOCKED — 03D-B COMPLETE AND LOCKED
+- Step 4 — Consolidation / Checkpoint — COMPLETE — 2026-08-14 — Outcome A — CLOSE 03D — all acceptance criteria satisfied — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03D-CHECKPOINT.md`
 
 **Registered:** 2026-08-14
 **Approved:** Keith — 2026-08-14
@@ -49262,7 +49262,7 @@ Non-blocking pre-existing limitation (NOT a 03C acceptance criterion):
 **Safety state at registration:** `GLOBAL_EXECUTION_ENABLED=false` — confirmed; `BILLING_CHARGES_ENABLED=false` — confirmed
 **PRIVATE-BETA-INVITE-01 status:** untouched / unregistered — invitations prohibited
 **Stage-Start document:** `docs/PRIVATE-BETA-BLOCKER-03D-STAGE-START.md` — COMPLETE (CORRECTED 2026-08-14)
-**Checkpoint:** not yet created
+**Checkpoint:** `docs/PRIVATE-BETA-BLOCKER-03D-CHECKPOINT.md` — COMPLETE AND LOCKED — 2026-08-14
 **Selected architecture direction:** A — DELAY BUILD CREDIT DEDUCTION UNTIL QUALIFYING WORKSPACE RESULT — `triggerDeductionForExecution()` gains intent-conditional gate: conversation→immediate deduction (unchanged), workspace_mutation→skip pending confirm-apply; new confirm-apply endpoint triggers deduction for qualifying Build results; no refund mechanism; no migration; idempotency via existing `sourceEventId` UNIQUE; no reconciliation auto-charge
 **Step 2 correction reason:** Initial Stage Start declared Scenario D/E "POLICY BLOCKED" and deferred them, reducing Step 3 to validation-only. This was insufficient because 03D was registered specifically to resolve these scenarios. The architecture gap (backend lacks apply-result visibility) is closable with a bounded addition (intent gate + one endpoint + one frontend call) without new services, queues, migrations, or refund mechanisms.
 **Corrected policy:** Ask=immediate charge (unchanged); Build=charge only after qualifying workspace apply result; zero-action Build=no charge (existing); apply failure=no charge; partial apply=no charge (private beta); timeout/failure/cancellation=no charge (existing)
@@ -49417,41 +49417,43 @@ Prefer existing execution/accounting records and deterministic mocked/local cove
 
 #### Acceptance Criteria
 
-- [ ] Current accounting lifecycle mapped (when credits deduct; what records exist)
-- [ ] Outcome/intent policy matrix defined
-- [ ] No-workspace-result policy explicitly decided for each scenario (A–G)
-- [ ] Ask semantics preserved (successful Ask with zero file actions not made free)
-- [ ] Build semantics preserved (normal successful Build charges unchanged)
-- [ ] Zero-action Build contract failure handling covered
-- [ ] Apply-failure handling assessed
-- [ ] Timeout/failure handling assessed
-- [ ] Idempotency / double-charge / double-refund safety proven
-- [ ] Bounded implementation complete
-- [ ] Relevant tests pass
-- [ ] Staging/accounting evidence passes
-- [ ] No provider-payment / Stripe scope expansion
-- [ ] Checkpoint created (`docs/PRIVATE-BETA-BLOCKER-03D-CHECKPOINT.md`)
-- [ ] Task locked only after evidence
+- [x] Current accounting lifecycle mapped (when credits deduct; what records exist)
+- [x] Outcome/intent policy matrix defined
+- [x] No-workspace-result policy explicitly decided for each scenario (A–G)
+- [x] Ask semantics preserved (successful Ask with zero file actions not made free)
+- [x] Build semantics preserved (normal successful Build charges unchanged)
+- [x] Zero-action Build contract failure handling covered
+- [x] Apply-failure handling assessed
+- [x] Timeout/failure handling assessed
+- [x] Idempotency / double-charge / double-refund safety proven
+- [x] Bounded implementation complete
+- [x] Relevant tests pass
+- [x] Staging/accounting evidence passes (mock-based per registration preference)
+- [x] No provider-payment / Stripe scope expansion
+- [x] Checkpoint created (`docs/PRIVATE-BETA-BLOCKER-03D-CHECKPOINT.md`)
+- [x] Task locked only after evidence
 
 ---
 
-**PRIVATE-BETA-BLOCKER-03D status:** REGISTERED / ACTIVE — Step 2 COMPLETE (CORRECTED) — 2026-08-14 — Step 3 IN PROGRESS (03D-A COMPLETE AND LOCKED — 03D-B NOT YET REGISTERED)
+**PRIVATE-BETA-BLOCKER-03D status:** COMPLETE AND LOCKED — 2026-08-14
 **Priority:** HIGH — private-beta blocker
 **Risk:** HIGH
 **Workflow:** HIGH-RISK 4-STEP
 **Family:** PRIVATE-BETA-BLOCKER-03 / BUILDER EXECUTION RELIABILITY / CREDIT ACCOUNTING
 **Registered:** 2026-08-14
-**Completed:** NOT YET
+**Completed:** 2026-08-14
 **Dependencies:** 03C COMPLETE AND LOCKED — 2026-08-14; 03B COMPLETE AND LOCKED — 2026-08-11; BUILDER-INTENT-01 COMPLETE AND LOCKED — 2026-08-13
-**Blocking:** private-beta E2E rerun and final GO/NO-GO
+**Blocking:** private-beta E2E rerun and final GO/NO-GO — UNBLOCKED by 03D completion
 **Safety state:** `GLOBAL_EXECUTION_ENABLED=false` — confirmed; `BILLING_CHARGES_ENABLED=false` — confirmed
 **PRIVATE-BETA-INVITE-01 status:** untouched / unregistered — invitations prohibited
 **Stage-Start:** `docs/PRIVATE-BETA-BLOCKER-03D-STAGE-START.md` — COMPLETE (CORRECTED 2026-08-14)
+**Checkpoint:** `docs/PRIVATE-BETA-BLOCKER-03D-CHECKPOINT.md` — COMPLETE AND LOCKED — 2026-08-14
+**Step 4 outcome:** A — CLOSE 03D — all acceptance criteria satisfied — staging not required — mock-based validation per registration preference
 **Selected policy direction (corrected):** A — DELAY BUILD CREDIT DEDUCTION UNTIL QUALIFYING WORKSPACE RESULT — intent gate in `triggerDeductionForExecution()` + new confirm-apply endpoint; no migration; no refund mechanism; all scenarios A–G resolved; no reconciliation auto-charge
 **Step 2 correction:** Initial direction D (existing accounting sufficient, D/E deferred) replaced with direction A. Correction reason: deferring D/E was insufficient for 03D's registered objective; bounded architecture addition resolves all scenarios.
 **03D-A:** COMPLETE AND LOCKED — 2026-08-14 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03D-A-CHECKPOINT.md`
-**03D-B:** NOT YET REGISTERED — exact next recommended task: PRIVATE-BETA-BLOCKER-03D-B — Frontend Apply-Result Integration + Validation
-**Exact next recommended task:** PRIVATE-BETA-BLOCKER-03D-B — Frontend Apply-Result Integration + Validation — NOT YET REGISTERED
+**03D-B:** COMPLETE AND LOCKED — 2026-08-14 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03D-B-CHECKPOINT.md`
+**Exact next recommended task:** Fresh PRIVATE-BETA-E2E rerun / readiness validation (PRIVATE-BETA-E2E-02 — NOT YET REGISTERED)
 
 ---
 
@@ -49718,5 +49720,290 @@ The `confirm-build-apply` endpoint is protected by `X-Internal-Service-Key`. The
 **Completed:** 2026-08-14
 **Dependencies:** PRIVATE-BETA-BLOCKER-03D Stage-Start COMPLETE (CORRECTED 2026-08-14)
 **Checkpoint:** `docs/PRIVATE-BETA-BLOCKER-03D-A-CHECKPOINT.md`
-**03D-B:** NOT YET REGISTERED — depends on 03D-A completion and consolidation
-**Exact next recommended task:** PRIVATE-BETA-BLOCKER-03D-B — Frontend Apply-Result Integration + Validation — NOT YET REGISTERED
+**03D-B:** REGISTERED / ACTIVE — 2026-08-14 — Step 1 COMPLETE — Step 2 Bounded Implementation + Validation IN PROGRESS
+**Exact next recommended task:** PRIVATE-BETA-BLOCKER-03D-B — Frontend Apply-Result Integration + Validation — Step 2 — Bounded Implementation + Validation
+
+---
+
+### PRIVATE-BETA-BLOCKER-03D-B: Frontend Apply-Result Integration + Validation
+
+**Task ID:** PRIVATE-BETA-BLOCKER-03D-B
+**Title:** Frontend Apply-Result Integration + Validation
+**Status:** COMPLETE AND LOCKED — 2026-08-14
+**Parent:** PRIVATE-BETA-BLOCKER-03D (Step 3, child slice B of 2)
+**Family:** PRIVATE-BETA-BLOCKER-03 / BUILDER EXECUTION RELIABILITY / CREDIT ACCOUNTING
+**Priority:** HIGH — private-beta blocker
+**Risk:** HIGH
+**Workflow:** HIGH-RISK 3-STEP CHILD LIFECYCLE
+
+- Step 1 — Registration — COMPLETE — 2026-08-14
+- Step 2 — Bounded Implementation + Validation — COMPLETE — 2026-08-14
+- Step 3 — Consolidation / Checkpoint — COMPLETE — 2026-08-14
+
+**Registered:** 2026-08-14
+**Approved:** Keith — 2026-08-14
+**Dependencies:** PRIVATE-BETA-BLOCKER-03D-A COMPLETE AND LOCKED — 2026-08-14; Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03D-A-CHECKPOINT.md`
+**Blocking:** PRIVATE-BETA-BLOCKER-03D Step 3 completion (both 03D-A and 03D-B must be complete before parent Step 4 consolidation proceeds)
+**Safety state:** `GLOBAL_EXECUTION_ENABLED=false` — confirmed; `BILLING_CHARGES_ENABLED=false` — confirmed
+**PRIVATE-BETA-INVITE-01 status:** untouched / unregistered — invitations prohibited
+**Scope:** Frontend only — Next.js authenticated server proxy route + workspace apply integration; no API Gateway production changes; no AI Service Worker production changes; no new accounting logic
+**Checkpoint:** `docs/PRIVATE-BETA-BLOCKER-03D-B-CHECKPOINT.md`
+
+---
+
+#### Objective
+
+Complete the browser/product-side delivery path so that a successful full workspace apply is securely reported through a server-side authenticated proxy to the existing `POST /api/internal/executions/:executionId/confirm-build-apply` endpoint registered in 03D-A. This allows the existing backend accounting machinery to deduct credits for qualifying Build executions.
+
+03D-B must NOT duplicate credit or accounting decisions in frontend code. The backend remains authoritative.
+
+---
+
+#### A. Secure Browser-to-Backend Boundary
+
+The browser MUST NOT call the internal endpoint directly or possess `X-Internal-Service-Key`.
+
+Required pattern:
+
+```
+browser
+→ authenticated Next.js route / server-side proxy
+→ API Gateway POST /api/internal/executions/:executionId/confirm-build-apply
+→ server-side X-Internal-Service-Key (never exposed to client bundle)
+```
+
+- Internal key remains server-side only
+- Authenticated user/session required on every proxy call
+- Execution must belong to / be accessible by the current authenticated user
+- Arbitrary execution IDs must not be confirmable by another user
+- No unauthenticated public deduction trigger
+
+If existing architecture cannot safely establish execution ownership: implementation must STOP and report rather than weaken auth.
+
+---
+
+#### B. Full-Success Qualification
+
+Confirmation may be sent ONLY when ALL of the following are true from the actual `applySequentialFileActions()` result:
+
+- `applyStatus === 'applied'`
+- at least one action exists
+- every action result succeeded
+- `successCount === totalActions`
+- `executionId` corresponds to the exact execution whose actions were applied
+
+Do NOT infer success from: provider execution completed, fileActions exist, one write succeeded, no exception was thrown, or UI reaching the end of a function.
+
+---
+
+#### C. Required Ordering
+
+```
+AI execution completed
+→ fileActions received
+→ apply full action set
+→ determine complete success
+→ send accounting confirmation
+→ backend validates
+→ backend deduction
+```
+
+Confirmation must never occur before filesystem apply completes. Deduction must never run in parallel with file writes.
+
+---
+
+#### D. Failure / Partial / No-Confirm Semantics
+
+| Apply result | Confirmation sent? |
+|---|---|
+| Full apply success | YES — qualifying confirmation |
+| First-action failure | NO |
+| Partial apply | NO |
+| Skipped / apply-once guard prevented apply | NO |
+| Zero actions | NO |
+| Contract failure | NO |
+| Session-expired / HTTP 410 apply failure | NO |
+| File-write / network failure | NO |
+| Browser/tab closes before confirmation | NO — under-charge acceptable by policy |
+
+---
+
+#### E. Confirmation Payload
+
+Conceptual payload:
+
+```json
+{
+  "applyStatus": "applied",
+  "totalActions": <actual action count>,
+  "successCount": <actual successful count>
+}
+```
+
+Counts must be derived from the real frontend apply result. Do NOT send `{ success: true }`. Do NOT send frontend assertions for `executionIntent`, expected provider action count, token usage, credit amount, balance, or billing state. Those remain backend-authoritative.
+
+---
+
+#### F. Confirmation Failure Behavior
+
+If workspace apply succeeds but confirmation HTTP request fails:
+
+- Do NOT reapply workspace actions
+- Do NOT roll back successful files
+- Do NOT locally deduct credits
+- Do NOT mark workspace apply as failed
+- Do NOT invent a refund
+- Do NOT pretend accounting succeeded
+
+Result: workspace apply succeeded, accounting confirmation unproven → possible under-charge. Acceptable under current private-beta policy. Use existing diagnostics/logging if available. No new visible UX copy unless genuinely necessary.
+
+---
+
+#### G. Retry Boundary
+
+Backend confirmation is already idempotent by `executionId`. Implementation may use a small bounded retry only if consistent with existing fetch conventions.
+
+Do NOT register: infinite retries, background reconciliation, timeout-based auto-charge, delayed silent retry worker, or file-action reapplication. Accounting-confirmation retry and workspace-apply retry are separate concerns.
+
+---
+
+#### H. Preserve Apply-Once Behavior
+
+Preserve `acquireExecutionApplyGuard()`. Do not re-run workspace actions because accounting confirmation fails.
+
+---
+
+#### I. Preserve Coherence Behavior
+
+Preserve `maybeRunExecutionCoherence()` and current workspace/editor/preview/checkpoint behavior.
+
+03D-B inserts only the smallest accounting-confirmation integration at the correct post-apply-success point. No broad workspace refactor.
+
+---
+
+#### J. Ask Regression Boundary
+
+Ask / conversation executions:
+- Must send NO Build confirmation
+- Must not be delayed
+- Must not require fileActions
+- Must keep existing immediate accounting
+- Must keep existing UX
+
+---
+
+#### K. Expected Implementation Surface
+
+- `frontend/app/[locale]/app/page.tsx`
+- `frontend/components/workspace/workspace-ai-file-actions.logic.ts`
+- Smallest secure authenticated Next.js server proxy route (exact path to be confirmed against existing conventions during implementation)
+- Directly corresponding tests
+
+Exact proxy route name is not locked until current conventions are inspected. If implementation unexpectedly requires changing locked 03D-A accounting semantics: STOP and report.
+
+---
+
+#### L. UX / UI Requirements
+
+No visible UX change expected. No translation file changes unless new visible user-facing copy becomes unavoidable.
+
+If new visible copy becomes unavoidable, update all three together:
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+Use existing translation hooks. No hardcoded English. If icons are unexpectedly needed: Heroicons v2 Outline only.
+
+---
+
+#### Acceptance Criteria
+
+- [x] Secure browser → server confirmation path implemented
+- [x] Internal service key never exposed client-side or in browser bundle
+- [x] Authenticated user/session required on proxy call
+- [x] Execution ownership/access validated server-side
+- [x] Confirmation occurs only after full successful apply
+- [x] executionId matches the exact applied execution
+- [x] totalActions/successCount derived from actual apply result
+- [x] One-action full success → confirmation sent once
+- [x] Multi-action full success → confirmation sent once
+- [x] First-action failure → zero confirmations
+- [x] Partial apply → zero confirmations
+- [x] Skipped apply → zero confirmations
+- [x] Zero actions → zero confirmations
+- [x] Session-expired apply → zero confirmations
+- [x] File-write/network failure → zero confirmations
+- [x] Ask execution → zero Build confirmations
+- [x] Confirmation failure does not reapply files
+- [x] Confirmation failure does not roll back files
+- [x] Duplicate confirmation remains backend-idempotent
+- [x] No reconciliation auto-charge
+- [x] No refund mechanism
+- [x] No migration
+- [x] No accounting decision duplicated in frontend code
+- [x] Existing apply-once behavior preserved (`acquireExecutionApplyGuard()`)
+- [x] Existing coherence behavior preserved (`maybeRunExecutionCoherence()`)
+- [x] Ask behavior preserved (no delay, no fileActions required)
+- [x] Relevant frontend tests pass
+- [x] Proxy/auth tests pass
+- [x] Frontend typecheck / build pass
+- [x] Provider calls = 0 during local validation
+- [x] Real balance mutations = 0 during local validation
+- [x] No Stripe / payment-provider changes
+- [x] Checkpoint created (`docs/PRIVATE-BETA-BLOCKER-03D-B-CHECKPOINT.md`)
+- [x] Task locked only after evidence
+
+---
+
+#### Testing Requirements
+
+Tests must cover (provider mocks only — no live xAI — no real balance mutations):
+
+- Single-action full success → confirmation sent once
+- Multi-action full success → confirmation sent once
+- Correct executionId forwarded
+- Actual totalActions/successCount values forwarded
+- First-action failure → no confirmation
+- Partial result → no confirmation
+- Skipped result → no confirmation
+- Zero actions → no confirmation
+- Session-expired result → no confirmation
+- File-write/network failure → no confirmation
+- Ask execution → no Build confirmation
+- Authenticated proxy success (session present)
+- Proxy unauthenticated rejection (no session)
+- Arbitrary/other-user execution rejected
+- Internal key not present in browser bundle/client code
+- Malformed request rejection
+- Confirmation HTTP failure does not repeat workspace writes
+- Duplicate confirmation remains safe (idempotent)
+- Apply-once regression (`acquireExecutionApplyGuard()` preserved)
+- Coherence regression (`maybeRunExecutionCoherence()` preserved)
+- Multilingual parity only if translations touched
+
+---
+
+#### Explicit Scope Boundary
+
+03D-B is NOT about:
+- Stripe, subscriptions, payment-provider charging, or webhooks
+- Refund mechanism
+- Reconciliation auto-charge
+- Timeout-based charge
+- New accounting ledger
+- New database migration
+- 03D-A backend changes
+- PRIVATE-BETA-INVITE-01
+
+---
+
+**PRIVATE-BETA-BLOCKER-03D-B status:** COMPLETE AND LOCKED — 2026-08-14
+**Priority:** HIGH — private-beta blocker
+**Risk:** HIGH
+**Workflow:** HIGH-RISK 3-STEP CHILD LIFECYCLE
+**Parent:** PRIVATE-BETA-BLOCKER-03D (Step 3 child slice B of 2)
+**Registered:** 2026-08-14
+**Completed:** 2026-08-14
+**Dependencies:** PRIVATE-BETA-BLOCKER-03D-A COMPLETE AND LOCKED — 2026-08-14
+**Checkpoint:** `docs/PRIVATE-BETA-BLOCKER-03D-B-CHECKPOINT.md`
+**Exact next recommended task:** PRIVATE-BETA-BLOCKER-03D Step 4 — Final Consolidation / Combined Validation Decision

@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "tsx --test components/workspace/*.test.ts* components/public/*.test.ts* lib/auth-module/*.test.ts"
+    "test": "tsx --test components/workspace/*.test.ts* components/public/*.test.ts* lib/*.test.ts lib/auth-module/*.test.ts"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

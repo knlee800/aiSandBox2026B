@@ -57,8 +57,10 @@ import {
 import {
   acquireExecutionApplyGuard,
   applySequentialFileActions,
+  confirmBuildApplyIfQualifying,
   isRiskyFileActionBatch,
   isWorkspaceFileAction,
+  requestBuildApplyConfirmation,
   type WorkspaceExecutionFileActionState,
   type WorkspaceFileAction,
 } from '@/components/workspace/workspace-ai-file-actions.logic';
@@ -5017,6 +5019,15 @@ export default function AppPage() {
       confirmationRequired: false,
       skipReason: applyResult.skipReason,
       results: applyResult.results,
+    });
+
+    await confirmBuildApplyIfQualifying({
+      executionId,
+      applyResult,
+      confirmBuildApply: requestBuildApplyConfirmation,
+      onConfirmationError: (error) => {
+        console.error('[BUILD_APPLY_CONFIRM_FAIL]', executionId, error);
+      },
     });
   }
 
