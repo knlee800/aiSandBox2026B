@@ -41,6 +41,13 @@ export class SessionsService {
    */
   private lastActivity: Map<string, number> = new Map();
 
+  /**
+   * PRIVATE-BETA-BLOCKER-03E-A: Sessions with fire-and-forget container cleanup
+   * already scheduled. Prevents duplicate Docker stop/remove for concurrent
+   * idle/lifetime expiration detections.
+   */
+  private scheduledContainerCleanups: Set<string> = new Set();
+
   constructor(
     private httpService: HttpService,
     private apiGatewayClient: ApiGatewayHttpClient,
@@ -422,6 +429,66 @@ export class SessionsService {
     // Task 8.3A & 8.3B: Clean up all governance tracking
     this.lastActivity.delete(sessionId);
     this.activeExecs.delete(sessionId);
+  }
+
+  /**
+   * PRIVATE-BETA-BLOCKER-03E-A: Schedule Docker container cleanup without
+   * blocking the caller. Idle/lifetime expiration must return HTTP 410
+   * immediately; Docker stop({ t: 10 }) must not race the Gateway timeout.
+   *
+   * Failures are logged and swallowed so they cannot change the already
+   * determined 410 result or become unhandled rejections. Concurrent
+   * expiration detections for the same session schedule cleanup once.
+   */
+  private scheduleContainerCleanup(
+    sessionId: string,
+    logContext: 'expired' | 'lifetime-expired',
+  ): void {
+    if (this.scheduledContainerCleanups.has(sessionId)) {
+      return;
+    }
+    this.scheduledContainerCleanups.add(sessionId);
+
+    setImmediate(() => {
+      void this.removeSessionContainer(sessionId)
+        .catch((error: unknown) => {
+          const message =
+            error instanceof Error ? error.message : String(error);
+          console.error(
+            `Failed to stop container for ${logContext} session ${sessionId}:`,
+            message,
+          );
+        })
+        .finally(() => {
+          this.scheduledContainerCleanups.delete(sessionId);
+        });
+    });
+  }
+
+  /**
+   * PRIVATE-BETA-BLOCKER-03E-B: Notify API Gateway of idle/lifetime
+   * termination without blocking the deterministic HTTP 410.
+   *
+   * Duplicate notifications are allowed: Gateway terminateSession is
+   * idempotent (`WHERE terminatedAt IS NULL`). Notification failure is
+   * logged and isolated; lazy reconciliation on a later 410 is the fallback.
+   */
+  private scheduleLifecycleNotification(
+    sessionId: string,
+    reason: 'idle_timeout' | 'max_lifetime',
+  ): void {
+    setImmediate(() => {
+      void this.apiGatewayClient
+        .notifySessionStopped(sessionId, reason)
+        .catch((error: unknown) => {
+          const message =
+            error instanceof Error ? error.message : String(error);
+          console.error(
+            `Failed to notify api-gateway of session ${reason} termination ${sessionId}:`,
+            message,
+          );
+        });
+    });
   }
 
   /**
@@ -842,20 +909,16 @@ export class SessionsService {
         new Date().toISOString(),
       );
 
+      // PRIVATE-BETA-BLOCKER-03E-A: Docker stop/remove must not block the 410.
+      // Schedule cleanup before clearing lastActivity so a concurrent request
+      // cannot treat the missing map entry as a fresh first-access.
+      this.scheduleContainerCleanup(sessionId, 'lifetime-expired');
+      // PRIVATE-BETA-BLOCKER-03E-B: Gateway notification is also non-blocking.
+      this.scheduleLifecycleNotification(sessionId, 'max_lifetime');
+
       // Clean up all in-memory tracking (must happen even if container cleanup fails)
       this.lastActivity.delete(sessionId);
       this.activeExecs.delete(sessionId);
-
-      // Try to stop container (best-effort)
-      try {
-        await this.removeSessionContainer(sessionId);
-      } catch (error) {
-        console.error(
-          `Failed to stop container for lifetime-expired session ${sessionId}:`,
-          error.message,
-        );
-        // Continue to throw GoneException even if container stop failed
-      }
 
       // Reject request
       throw new GoneException(
@@ -877,8 +940,15 @@ export class SessionsService {
     const now = Date.now();
     const lastActivityAt = this.lastActivity.get(sessionId);
 
-    // First activity for this session - initialize timestamp
+    // First activity for this session - initialize timestamp.
+    // If a concurrent request already scheduled expiration cleanup, do not
+    // treat the missing map entry as a fresh session (PRIVATE-BETA-BLOCKER-03E-A).
     if (lastActivityAt === undefined) {
+      if (this.scheduledContainerCleanups.has(sessionId)) {
+        throw new GoneException(
+          `Session ${sessionId} expired due to inactivity (reason: idle_timeout)`,
+        );
+      }
       this.lastActivity.set(sessionId, now);
       return;
     }
@@ -910,20 +980,16 @@ export class SessionsService {
         new Date().toISOString(),
       );
 
+      // PRIVATE-BETA-BLOCKER-03E-A: Docker stop/remove must not block the 410.
+      // Schedule cleanup before clearing lastActivity so a concurrent request
+      // cannot treat the missing map entry as a fresh first-access.
+      this.scheduleContainerCleanup(sessionId, 'expired');
+      // PRIVATE-BETA-BLOCKER-03E-B: Gateway notification is also non-blocking.
+      this.scheduleLifecycleNotification(sessionId, 'idle_timeout');
+
       // Clean up all in-memory tracking (must happen even if container cleanup fails)
       this.lastActivity.delete(sessionId);
       this.activeExecs.delete(sessionId);
-
-      // Try to stop container (best-effort)
-      try {
-        await this.removeSessionContainer(sessionId);
-      } catch (error) {
-        console.error(
-          `Failed to stop container for expired session ${sessionId}:`,
-          error.message,
-        );
-        // Continue to throw GoneException even if container stop failed
-      }
 
       // Reject request
       throw new GoneException(

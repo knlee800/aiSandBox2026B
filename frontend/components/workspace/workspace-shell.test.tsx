@@ -2532,26 +2532,51 @@ describe('workspace shell component', () => {
     assert.match(shellSource, /className="flex-1 min-h-0 overflow-y-auto p-3"/);
   });
 
-  test('workspace-project-view uses overflow-hidden to prevent page-level scroll', () => {
+  test('workspace-content-shell retains overflow-y-auto as workspace scroll owner', () => {
+    const contentShell = renderWorkspaceShellElementByTestId('workspace-content-shell', {
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+    assert.ok(contentShell);
+    const className = String(contentShell.props.className ?? '');
+    assert.match(className, /overflow-y-auto/);
+  });
+
+  test('workspace-project-view uses desktop-only min-height and overflow clipping constraints', () => {
     const projectView = renderWorkspaceShellElementByTestId('workspace-project-view', {
       projectFirstUxEnabled: true,
       workspaceView: 'project',
     });
     assert.ok(projectView);
     const className = String(projectView.props.className ?? '');
-    assert.match(className, /overflow-hidden/);
+    assert.match(className, /md:min-h-0/);
+    assert.match(className, /md:overflow-hidden/);
+    assert.doesNotMatch(className, /(^|\s)min-h-0(\s|$)/);
+    assert.doesNotMatch(className, /(^|\s)overflow-hidden(\s|$)/);
     assert.doesNotMatch(className, /overflow-y-auto/);
   });
 
-  test('workspace-project-ai-panel uses overflow-hidden not overflow-y-auto', () => {
+  test('workspace-project-ai-panel uses 60dvh mobile floor and restores desktop constraints', () => {
     const aiPanel = renderWorkspaceShellElementByTestId('workspace-project-ai-panel', {
       projectFirstUxEnabled: true,
       workspaceView: 'project',
     });
     assert.ok(aiPanel);
     const className = String(aiPanel.props.className ?? '');
-    assert.match(className, /overflow-hidden/);
+    assert.match(className, /min-h-\[60dvh\]/);
+    assert.match(className, /md:min-h-0/);
+    assert.match(className, /md:overflow-hidden/);
+    assert.match(className, /(^|\s)border-b(\s|$)/);
+    assert.match(className, /md:border-r/);
+    assert.doesNotMatch(className, /max-h-\[50vh\]/);
+    assert.doesNotMatch(className, /md:max-h-none/);
+    assert.doesNotMatch(className, /(^|\s)overflow-hidden(\s|$)/);
     assert.doesNotMatch(className, /overflow-y-auto/);
+  });
+
+  test('inner AI and workspace section keeps md:min-h-0 responsive chain', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /className="flex flex-1 md:min-h-0 flex-col md:flex-row"/);
   });
 
   test('workspace-shell uses h-screen not min-h-screen for definite viewport height', () => {
@@ -2852,7 +2877,7 @@ describe('workspace shell component', () => {
     assert.doesNotMatch(html, /preview-panel-shell/);
   });
 
-  test('tab content wrapper renders with full-height overflow-hidden layout', () => {
+  test('tab content wrapper applies min-height and overflow clipping at desktop only', () => {
     const tabContent = renderWorkspaceShellElementByTestId('workspace-tab-content', {
       projectFirstUxEnabled: true,
       workspaceView: 'project',
@@ -2860,11 +2885,14 @@ describe('workspace shell component', () => {
     assert.ok(tabContent);
 
     const className = String(tabContent.props.className ?? '');
-    assert.match(className, /overflow-hidden/);
+    assert.match(className, /md:min-h-0/);
+    assert.match(className, /md:overflow-hidden/);
+    assert.doesNotMatch(className, /(^|\s)min-h-0(\s|$)/);
+    assert.doesNotMatch(className, /(^|\s)overflow-hidden(\s|$)/);
     assert.doesNotMatch(className, /overflow-y-auto/);
   });
 
-  test('preview panel shell renders full-height tab content and contains workspace preview panel', () => {
+  test('preview panel shell renders desktop-only min-height and overflow clipping', () => {
     const panelShell = renderWorkspaceShellElementByTestId('preview-panel-shell', {
       projectFirstUxEnabled: true,
       workspaceView: 'project',
@@ -2880,8 +2908,10 @@ describe('workspace shell component', () => {
     assert.match(className, /flex/);
     assert.match(className, /flex-col/);
     assert.match(className, /flex-1/);
-    assert.match(className, /min-h-0/);
-    assert.match(className, /overflow-hidden/);
+    assert.match(className, /md:min-h-0/);
+    assert.match(className, /md:overflow-hidden/);
+    assert.doesNotMatch(className, /(^|\s)min-h-0(\s|$)/);
+    assert.doesNotMatch(className, /(^|\s)overflow-hidden(\s|$)/);
   });
 
   test('editor panel shell can render in Code & Files tab path where statically testable', () => {
@@ -2945,6 +2975,49 @@ describe('workspace shell component', () => {
     const contentPanelOpeningTag = html.slice(contentPanelTagStart, contentPanelTagEnd);
     assert.match(contentPanelOpeningTag, /flex-col/);
     assert.doesNotMatch(contentPanelOpeningTag, /flex-row/);
+  });
+
+  test('workspace-project-content-panel keeps min-height constraint desktop-only', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    const contentPanelTestIdIndex = html.indexOf('data-testid="workspace-project-content-panel"');
+    assert.notEqual(contentPanelTestIdIndex, -1);
+    const contentPanelTagStart = html.lastIndexOf('<main', contentPanelTestIdIndex);
+    const contentPanelTagEnd = html.indexOf('>', contentPanelTestIdIndex);
+    const contentPanelOpeningTag = html.slice(contentPanelTagStart, contentPanelTagEnd);
+    assert.match(contentPanelOpeningTag, /md:min-h-0/);
+    assert.doesNotMatch(contentPanelOpeningTag, /(^|\s)min-h-0(\s|$)/);
+  });
+
+  test('preview iframe fill-height class includes mobile and desktop min-height contract', () => {
+    const previewIframe = renderWorkspaceShellElementByTestId('workspace-preview-iframe', {
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+      previewUrl: 'https://preview.example.test',
+      previewState: 'ready',
+    });
+    assert.ok(previewIframe);
+    const className = String(previewIframe.props.className ?? '');
+    assert.match(className, /min-h-\[60dvh\]/);
+    assert.match(className, /md:min-h-0/);
+  });
+
+  test('editor textarea fill-height class includes mobile and desktop min-height contract', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /mt-2 flex-1 min-h-\[50dvh\] md:min-h-0 w-full resize-none overflow-auto/);
+  });
+
+  test('project view renders Ask and Build intent controls in composer', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+      selectedProjectId: 'project-1',
+    });
+    assert.match(html, /workspace-chat-intent-ask/);
+    assert.match(html, /workspace-chat-intent-build/);
   });
 
   test('tab bar renders icon-only buttons in vertical mode', () => {
@@ -4918,6 +4991,46 @@ describe('workspace shell component', () => {
     assert.match(html, /update src\/missing\.ts/);
     assert.match(html, />failed</);
     assert.match(html, /Failed to save file changes\./);
+  });
+
+  test('renders expired-session file-action failures with localized recovery copy', () => {
+    const html = renderWorkspaceShell({
+      chatThreadMessages: [
+        {
+          id: 'assistant-410',
+          role: 'assistant',
+          content: 'I tried to update files.',
+          executionId: 'exec-410',
+          fileActionState: {
+            executionId: 'exec-410',
+            source: 'status',
+            fileActions: [
+              { action: 'write', path: 'builder-intent-validation.txt', content: 'ok' },
+            ],
+            applyStatus: 'applied',
+            confirmationRequired: false,
+            skipReason: null,
+            results: [
+              {
+                action: 'write',
+                path: 'builder-intent-validation.txt',
+                status: 'failed',
+                error: 'session_expired',
+              },
+            ],
+          },
+        },
+      ],
+    });
+
+    assert.match(html, /write builder-intent-validation\.txt/);
+    assert.match(html, />failed</);
+    assert.match(
+      html,
+      /This workspace session has expired\. The file was not saved\. Reopen the project before trying again\./,
+    );
+    assert.doesNotMatch(html, /File write failed \(410\)/);
+    assert.doesNotMatch(html, />session_expired</);
   });
 
   test('renders assistant skipped file-action state in chat thread', () => {
@@ -7450,6 +7563,7 @@ describe('workspace visual edit i18n wiring — I18N-SHELL-01', () => {
     const zhCn = JSON.parse(readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'));
     const requiredAiKeys = [
       'fileActionResults',
+      'fileWriteSessionExpired',
       'visualEditAttribution',
       'diffPreviewLoading',
       'diffPreviewUnavailable',
@@ -7478,11 +7592,16 @@ describe('workspace visual edit i18n wiring — I18N-SHELL-01', () => {
       /Diff preview unavailable for one or more files\. You can still apply or cancel\./,
     );
     assert.doesNotMatch(shellSource, /Undo \/ Revert/);
+    assert.doesNotMatch(
+      shellSource,
+      /This workspace session has expired\. The file was not saved\. Reopen the project before trying again\./,
+    );
   });
 
   test('workspace shell file-action UI uses ai/common message values for target labels', () => {
     const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
     assert.match(shellSource, /\{props\.aiMessages\.fileActionResults\}/);
+    assert.match(shellSource, /props\.aiMessages\.fileWriteSessionExpired/);
     assert.match(shellSource, /\{props\.aiMessages\.visualEditAttribution\}/);
     assert.match(shellSource, /\{props\.aiMessages\.diffPreviewLoading\}/);
     assert.match(shellSource, /\{props\.aiMessages\.diffPreviewUnavailable\}/);

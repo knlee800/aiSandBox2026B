@@ -49,7 +49,10 @@ import type {
   WorkspaceCheckpointDiffState,
   WorkspaceCheckpointDiffResponse,
 } from './workspace-checkpoint-diff.logic';
-import type { WorkspaceExecutionFileActionState } from './workspace-ai-file-actions.logic';
+import {
+  resolveWorkspaceFileActionErrorCopy,
+  type WorkspaceExecutionFileActionState,
+} from './workspace-ai-file-actions.logic';
 import { DIFF_MAX_LINES, computeLineDiff, type FileDiffResult } from './workspace-diff.logic';
 import {
   parseProjectScopedSnapshotHint,
@@ -2389,7 +2392,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
             ? templatesWorkspaceContent
             : null}
           {!shouldShowFocusedCreateWorkspacePanel && resolvedWorkspaceView === 'project' ? (
-            <div data-testid="workspace-project-view" className="flex flex-1 min-h-0 flex-col overflow-hidden">
+            <div data-testid="workspace-project-view" className="flex flex-1 md:min-h-0 flex-col md:overflow-hidden">
               <header
                 className="flex items-center gap-3 border-b border-gray-200 bg-white px-4 py-2"
                 data-testid="workspace-project-mode-header"
@@ -2414,17 +2417,19 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                   {aiPanelCollapsed ? projectPanelMessages.expandPanel : projectPanelMessages.collapsePanel}
                 </button>
               </header>
-              <div className="flex flex-1 min-h-0 flex-col md:flex-row">
+              <div className="flex flex-1 md:min-h-0 flex-col md:flex-row">
                 {!aiPanelCollapsed ? (
                   <aside
-                    className="w-full max-h-[50vh] md:w-96 md:max-h-none border-r border-gray-200 bg-white overflow-hidden flex flex-col gap-2 p-2"
+                    className="w-full min-h-[60dvh] md:min-h-0 md:w-96 border-b md:border-b-0 md:border-r border-gray-200 bg-white md:overflow-hidden flex flex-col gap-2 p-2"
                     data-testid="workspace-project-ai-panel"
                   >
                     {projectChatSection}
                   </aside>
                 ) : null}
                 <main
-                  className={`flex-1 min-w-0 flex ${tabOrientation === 'vertical' ? 'flex-row' : 'flex-col'}`}
+                  className={`flex-1 md:min-h-0 min-w-0 flex ${
+                    tabOrientation === 'vertical' ? 'flex-row' : 'flex-col'
+                  }`}
                   data-testid="workspace-project-content-panel"
                 >
                   <WorkspaceTabBar
@@ -2434,10 +2439,10 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                     onTabChange={setActiveTabId}
                     onOrientationToggle={handleTabOrientationToggle}
                   />
-                  <div className="flex-1 min-h-0 min-w-0 overflow-hidden flex flex-col" data-testid="workspace-tab-content">
+                  <div className="flex-1 md:min-h-0 min-w-0 md:overflow-hidden flex flex-col" data-testid="workspace-tab-content">
                     {activeTabId === 'preview' ? (
                       <div
-                        className="flex flex-col flex-1 min-h-0 overflow-hidden"
+                        className="flex flex-col flex-1 md:min-h-0 md:overflow-hidden"
                         data-testid="preview-panel-shell"
                       >
                         <WorkspacePreviewPanel
@@ -2464,7 +2469,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                     ) : null}
                     {activeTabId === 'codeFiles' ? (
                       <div
-                        className="flex flex-col flex-1 min-h-0 overflow-hidden"
+                        className="flex flex-col flex-1 md:min-h-0 md:overflow-hidden"
                         data-testid="editor-panel-shell"
                       >
                         <WorkspaceEditorPanel
@@ -2485,7 +2490,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                     ) : null}
                     {activeTabId === 'buildTargets' ? (
                       <div
-                        className="flex flex-col flex-1 min-h-0 overflow-hidden p-3"
+                        className="flex flex-col flex-1 md:min-h-0 md:overflow-hidden p-3"
                         data-testid="build-targets-panel-shell"
                       >
                         <WorkspaceBuildPanel
@@ -4539,7 +4544,14 @@ function WorkspaceAssistantFileActionSummary(props: {
               >
                 {result.status}
               </p>
-              {result.error ? <p className="text-red-700">{result.error}</p> : null}
+              {result.error ? (
+                <p className="break-words text-red-700">
+                  {resolveWorkspaceFileActionErrorCopy(
+                    result.error,
+                    props.aiMessages.fileWriteSessionExpired,
+                  )}
+                </p>
+              ) : null}
             </li>
           ))}
         </ul>
@@ -4750,10 +4762,10 @@ function WorkspacePreviewPanel(props: {
     ? props.projectMessages.deselectElement
     : props.projectMessages.selectElement;
   const panelClassName = props.fillHeight
-    ? 'flex flex-col flex-1 min-h-0 overflow-hidden rounded border border-gray-200 bg-gray-50 p-2'
+    ? 'flex flex-col flex-1 md:min-h-0 md:overflow-hidden rounded border border-gray-200 bg-gray-50 p-2'
     : 'rounded border border-gray-200 bg-gray-50 p-2';
   const iframeClassName = props.fillHeight
-    ? 'mt-2 w-full flex-1 min-h-0 rounded border border-gray-200 bg-white'
+    ? 'mt-2 w-full flex-1 min-h-[60dvh] md:min-h-0 rounded border border-gray-200 bg-white'
     : 'mt-2 h-56 w-full rounded border border-gray-200 bg-white';
 
   return (
@@ -4850,19 +4862,19 @@ function WorkspaceEditorPanel(props: {
 }) {
   const canSave = props.saveState === 'dirty' || props.saveState === 'save-error';
   const panelClassName = props.fillHeight
-    ? 'flex flex-col flex-1 min-h-0 overflow-hidden rounded border border-gray-200 bg-gray-50 p-2'
+    ? 'flex flex-col flex-1 md:min-h-0 md:overflow-hidden rounded border border-gray-200 bg-gray-50 p-2'
     : 'rounded border border-gray-200 bg-gray-50 p-2';
   const layoutClassName = props.fillHeight
-    ? 'mt-2 flex flex-1 min-h-0 gap-2'
+    ? 'mt-2 flex flex-1 md:min-h-0 gap-2'
     : 'mt-2 grid gap-2 md:grid-cols-[14rem_1fr]';
   const treePaneClassName = props.fillHeight
     ? 'flex flex-col min-h-0 w-56 shrink-0 overflow-y-auto rounded border border-gray-200 bg-white p-2'
     : 'rounded border border-gray-200 bg-white p-2';
   const editorPaneClassName = props.fillHeight
-    ? 'flex flex-col flex-1 min-h-0 overflow-hidden rounded border border-gray-200 bg-white p-2'
+    ? 'flex flex-col flex-1 md:min-h-0 md:overflow-hidden rounded border border-gray-200 bg-white p-2'
     : 'rounded border border-gray-200 bg-white p-2';
   const textareaClassName = props.fillHeight
-    ? 'mt-2 flex-1 min-h-0 w-full resize-none overflow-auto rounded border border-gray-200 bg-gray-50 p-2 font-mono text-[11px] text-gray-800 disabled:bg-gray-100 disabled:text-gray-500'
+    ? 'mt-2 flex-1 min-h-[50dvh] md:min-h-0 w-full resize-none overflow-auto rounded border border-gray-200 bg-gray-50 p-2 font-mono text-[11px] text-gray-800 disabled:bg-gray-100 disabled:text-gray-500'
     : 'mt-2 h-56 w-full resize-none overflow-auto rounded border border-gray-200 bg-gray-50 p-2 font-mono text-[11px] text-gray-800 disabled:bg-gray-100 disabled:text-gray-500';
 
   return (

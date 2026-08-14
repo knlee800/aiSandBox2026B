@@ -389,6 +389,7 @@
     "waitingForResponse": "(waiting for response...)",
     "fileActions": "File Actions",
     "fileActionResults": "File Action Results",
+    "fileWriteSessionExpired": "This workspace session has expired. The file was not saved. Reopen the project before trying again.",
     "visualEditAttribution": "Source: Visual Edit mode selection.",
     "diffPreviewLoading": "Loading diff preview...",
     "diffPreviewUnavailable": "Diff preview unavailable for one or more files. You can still apply or cancel.",

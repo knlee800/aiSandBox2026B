@@ -389,6 +389,7 @@
     "waitingForResponse": "（等待回應中...）",
     "fileActions": "檔案操作",
     "fileActionResults": "檔案操作結果",
+    "fileWriteSessionExpired": "這個工作區工作階段已過期。檔案未儲存。請重新開啟專案後再試。",
     "visualEditAttribution": "來源：Visual Edit 模式選取。",
     "diffPreviewLoading": "正在載入差異預覽...",
     "diffPreviewUnavailable": "一或多個檔案無法提供差異預覽。你仍可套用或取消。",

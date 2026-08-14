@@ -389,6 +389,7 @@
     "waitingForResponse": "（等待响应中...）",
     "fileActions": "文件操作",
     "fileActionResults": "文件操作结果",
+    "fileWriteSessionExpired": "这个工作区会话已过期。文件未保存。请重新打开项目后再试。",
     "visualEditAttribution": "来源：Visual Edit 模式选择。",
     "diffPreviewLoading": "正在加载差异预览...",
     "diffPreviewUnavailable": "一个或多个文件暂无法提供差异预览。你仍可应用或取消。",

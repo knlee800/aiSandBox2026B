@@ -55,14 +55,21 @@ export class ApiGatewayHttpClient {
   /**
    * Notify api-gateway that a session has stopped
    * Called when container-manager stops a session
+   * PRIVATE-BETA-BLOCKER-03E-B: optional reason is a backward-compatible
+   * payload extension for idle/lifetime termination. Explicit stop still
+   * sends an empty body.
    * @param sessionId - Session UUID
+   * @param reason - Optional lifecycle reason (`idle_timeout` | `max_lifetime`)
    */
-  async notifySessionStopped(sessionId: string): Promise<void> {
+  async notifySessionStopped(
+    sessionId: string,
+    reason?: 'idle_timeout' | 'max_lifetime',
+  ): Promise<void> {
     try {
       await firstValueFrom(
         this.httpService.post(
           `${this.baseUrl}/api/internal/sessions/${sessionId}/stop`,
-          {},
+          reason ? { reason } : {},
           {
             headers: {
               'X-Internal-Service-Key': this.internalServiceKey,
@@ -70,7 +77,11 @@ export class ApiGatewayHttpClient {
           },
         ),
       );
-      this.logger.log(`Session stopped: ${sessionId}`);
+      this.logger.log(
+        reason
+          ? `Session stopped: ${sessionId} (reason: ${reason})`
+          : `Session stopped: ${sessionId}`,
+      );
     } catch (error) {
       this.logger.error(`Failed to notify session stop for ${sessionId}: ${error.message}`);
       throw error; // Fail fast

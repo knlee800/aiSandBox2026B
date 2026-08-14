@@ -5,8 +5,13 @@ import {
   applySequentialFileActions,
   isRiskyFileActionBatch,
   isWorkspaceFileAction,
+  resolveWorkspaceFileActionErrorCopy,
   type WorkspaceFileAction,
 } from './workspace-ai-file-actions.logic';
+import {
+  WorkspaceFileWriteError,
+  WORKSPACE_FILE_WRITE_SESSION_EXPIRED_CODE,
+} from './workspace-file-navigation.logic';
 import type { WorkspaceShellSession } from './workspace-shell.logic';
 
 const activeSession: WorkspaceShellSession = {
@@ -192,5 +197,97 @@ describe('workspace ai file-actions logic', () => {
     assert.equal(result.applyStatus, 'applied');
     assert.equal(result.results[0].status, 'failed');
     assert.equal(result.results[1].status, 'success');
+  });
+
+  test('HTTP 410 write failures mark the action failed with session_expired and do not retry', async () => {
+    const writeCalls: string[] = [];
+    const result = await applySequentialFileActions({
+      sessionId: 'session-active',
+      actions: [
+        {
+          action: 'write',
+          path: 'builder-intent-validation.txt',
+          content: 'ok',
+        },
+      ],
+      getSelectedSessionId: () => 'session-active',
+      getSessionById: () => activeSession,
+      writeFile: async (action) => {
+        writeCalls.push(action.path);
+        throw new WorkspaceFileWriteError({
+          kind: 'session_expired',
+          status: 410,
+          terminationReason: 'idle_timeout',
+          message: WORKSPACE_FILE_WRITE_SESSION_EXPIRED_CODE,
+        });
+      },
+    });
+
+    assert.deepEqual(writeCalls, ['builder-intent-validation.txt']);
+    assert.equal(result.applyStatus, 'applied');
+    assert.equal(result.results.length, 1);
+    assert.equal(result.results[0].status, 'failed');
+    assert.equal(result.results[0].path, 'builder-intent-validation.txt');
+    assert.equal(result.results[0].error, WORKSPACE_FILE_WRITE_SESSION_EXPIRED_CODE);
+    assert.notEqual(result.results[0].status, 'success');
+  });
+
+  test('generic 502 write failures stay generic and do not retry', async () => {
+    const writeCalls: string[] = [];
+    const result = await applySequentialFileActions({
+      sessionId: 'session-active',
+      actions: [{ action: 'write', path: 'src/app.ts', content: 'ok' }],
+      getSelectedSessionId: () => 'session-active',
+      getSessionById: () => activeSession,
+      writeFile: async (action) => {
+        writeCalls.push(action.path);
+        throw new WorkspaceFileWriteError({
+          kind: 'generic_write_failure',
+          status: 502,
+          message: 'File write failed (502)',
+        });
+      },
+    });
+
+    assert.deepEqual(writeCalls, ['src/app.ts']);
+    assert.equal(result.results[0].status, 'failed');
+    assert.equal(result.results[0].error, 'File write failed (502)');
+  });
+
+  test('network write failures stay generic and do not retry', async () => {
+    const writeCalls: string[] = [];
+    const result = await applySequentialFileActions({
+      sessionId: 'session-active',
+      actions: [{ action: 'write', path: 'src/app.ts', content: 'ok' }],
+      getSelectedSessionId: () => 'session-active',
+      getSessionById: () => activeSession,
+      writeFile: async (action) => {
+        writeCalls.push(action.path);
+        throw new WorkspaceFileWriteError({
+          kind: 'generic_write_failure',
+          status: null,
+          message: 'Failed to fetch',
+        });
+      },
+    });
+
+    assert.deepEqual(writeCalls, ['src/app.ts']);
+    assert.equal(result.results[0].status, 'failed');
+    assert.equal(result.results[0].error, 'Failed to fetch');
+  });
+
+  test('resolves session_expired file-action errors to localized copy', () => {
+    assert.equal(
+      resolveWorkspaceFileActionErrorCopy(
+        WORKSPACE_FILE_WRITE_SESSION_EXPIRED_CODE,
+        'This workspace session has expired. The file was not saved. Reopen the project before trying again.',
+      ),
+      'This workspace session has expired. The file was not saved. Reopen the project before trying again.',
+    );
+    assert.equal(
+      resolveWorkspaceFileActionErrorCopy('File write failed (502)', 'expired copy'),
+      'File write failed (502)',
+    );
+    assert.equal(resolveWorkspaceFileActionErrorCopy(null, 'expired copy'), null);
   });
 });

@@ -1,5 +1,6 @@
-import { HttpException, Injectable, OnModuleInit, ServiceUnavailableException } from '@nestjs/common';
+import { HttpException, Injectable, OnModuleInit, Optional, ServiceUnavailableException } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
+import { SessionService } from '../sessions/session.service';
 
 export interface WorkspaceSearchMatch {
   path: string;
@@ -26,7 +27,9 @@ export class ContainerManagerHttpClient implements OnModuleInit {
   private axiosInstance: AxiosInstance;
   private isDisabled: boolean = false;
 
-  constructor() {
+  constructor(
+    @Optional() private readonly sessionService?: SessionService,
+  ) {
     // Read configuration from environment
     this.baseUrl =
       process.env.CONTAINER_MANAGER_URL || 'http://localhost:4002';
@@ -321,17 +324,9 @@ export class ContainerManagerHttpClient implements OnModuleInit {
       fetch('http://127.0.0.1:7870/ingest/eba94f28-6765-4a01-9905-123e592de80f',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'8262b1'},body:JSON.stringify({sessionId:'8262b1',location:'container-manager-http.client.ts:execInSession:catch',message:'axios call failed',data:{isAxiosError:axios.isAxiosError(error),responseStatus:(error as any)?.response?.status,responseData:(error as any)?.response?.data,errorCode:(error as any)?.code,errorMessage:(error as any)?.message},timestamp:Date.now(),hypothesisId:'H3,H5'})}).catch(()=>{});
       // #endregion
 
-      if (axios.isAxiosError(error)) {
-        const status = error.response?.status ?? 502;
-        const responseData = error.response?.data as { message?: string; error?: string } | undefined;
-        const message =
-          responseData?.message ||
-          responseData?.error ||
-          error.message ||
-          `Failed to execute command in session ${sessionId}`;
-        throw new HttpException(message, status);
-      }
-      throw new ServiceUnavailableException(
+      await this.throwContainerManagerError(
+        error,
+        sessionId,
         `Failed to execute command in session ${sessionId}`,
       );
     }
@@ -367,14 +362,9 @@ export class ContainerManagerHttpClient implements OnModuleInit {
       );
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const status = error.response?.status ?? 502;
-        const message =
-          (error.response?.data as { message?: string } | undefined)?.message ||
-          error.message;
-        throw new HttpException(message, status);
-      }
-      throw new ServiceUnavailableException(
+      await this.throwContainerManagerError(
+        error,
+        sessionId,
         `Failed to list files for session ${sessionId}`,
       );
     }
@@ -402,14 +392,9 @@ export class ContainerManagerHttpClient implements OnModuleInit {
       );
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const status = error.response?.status ?? 502;
-        const message =
-          (error.response?.data as { message?: string } | undefined)?.message ||
-          error.message;
-        throw new HttpException(message, status);
-      }
-      throw new ServiceUnavailableException(
+      await this.throwContainerManagerError(
+        error,
+        sessionId,
         `Failed to read file for session ${sessionId}`,
       );
     }
@@ -437,14 +422,9 @@ export class ContainerManagerHttpClient implements OnModuleInit {
         },
       );
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const status = error.response?.status ?? 502;
-        const message =
-          (error.response?.data as { message?: string } | undefined)?.message ||
-          error.message;
-        throw new HttpException(message, status);
-      }
-      throw new ServiceUnavailableException(
+      await this.throwContainerManagerError(
+        error,
+        sessionId,
         `Failed to write file for session ${sessionId}`,
       );
     }
@@ -465,14 +445,9 @@ export class ContainerManagerHttpClient implements OnModuleInit {
         },
       });
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const status = error.response?.status ?? 502;
-        const message =
-          (error.response?.data as { message?: string } | undefined)?.message ||
-          error.message;
-        throw new HttpException(message, status);
-      }
-      throw new ServiceUnavailableException(
+      await this.throwContainerManagerError(
+        error,
+        sessionId,
         `Failed to delete file for session ${sessionId}`,
       );
     }
@@ -500,14 +475,9 @@ export class ContainerManagerHttpClient implements OnModuleInit {
       );
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const status = error.response?.status ?? 502;
-        const message =
-          (error.response?.data as { message?: string } | undefined)?.message ||
-          error.message;
-        throw new HttpException(message, status);
-      }
-      throw new ServiceUnavailableException(
+      await this.throwContainerManagerError(
+        error,
+        sessionId,
         `Failed to search files for session ${sessionId}`,
       );
     }
@@ -547,18 +517,68 @@ export class ContainerManagerHttpClient implements OnModuleInit {
       );
       return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const status = error.response?.status ?? 502;
-        const responseData = error.response?.data as { message?: string; error?: string } | undefined;
-        const message =
-          responseData?.message ||
-          responseData?.error ||
-          error.message ||
-          `Failed to run browser smoke for session ${sessionId}`;
-        throw new HttpException(message, status);
-      }
-      throw new ServiceUnavailableException(
+      await this.throwContainerManagerError(
+        error,
+        sessionId,
         `Failed to run browser smoke for session ${sessionId}`,
+      );
+    }
+  }
+
+  /**
+   * PRIVATE-BETA-BLOCKER-03E-B: Preserve the container-manager HTTP status
+   * (including deterministic 410) and lazily reconcile Postgres only for 410.
+   * Reconciliation failure is logged and must not convert 410 into 500/502.
+   */
+  private async throwContainerManagerError(
+    error: unknown,
+    sessionId: string,
+    fallbackMessage: string,
+  ): Promise<never> {
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status ?? 502;
+      const responseData = error.response?.data as
+        | { message?: string; error?: string }
+        | undefined;
+      const message =
+        responseData?.message ||
+        responseData?.error ||
+        error.message ||
+        fallbackMessage;
+      if (status === 410) {
+        await this.reconcileSessionTerminationFromGone(sessionId, message);
+      }
+      throw new HttpException(message, status);
+    }
+    throw new ServiceUnavailableException(fallbackMessage);
+  }
+
+  private extractLifecycleTerminationReason(message: string): string {
+    const matched = /\(reason:\s*([^)]+)\)/.exec(message);
+    if (matched?.[1]?.trim()) {
+      return matched[1].trim();
+    }
+    if (message.includes('max_lifetime') || /max lifetime/i.test(message)) {
+      return 'max_lifetime';
+    }
+    return 'idle_timeout';
+  }
+
+  private async reconcileSessionTerminationFromGone(
+    sessionId: string,
+    message: string,
+  ): Promise<void> {
+    if (!this.sessionService) {
+      return;
+    }
+    const reason = this.extractLifecycleTerminationReason(message);
+    try {
+      await this.sessionService.terminateSession(sessionId, reason);
+    } catch (error: unknown) {
+      const detail = error instanceof Error ? error.message : String(error);
+      console.error(
+        `Failed to reconcile Postgres session ${sessionId} after container-manager 410:`,
+        detail,
       );
     }
   }

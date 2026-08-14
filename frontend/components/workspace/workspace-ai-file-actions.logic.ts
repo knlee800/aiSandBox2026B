@@ -1,3 +1,7 @@
+import {
+  WORKSPACE_FILE_WRITE_SESSION_EXPIRED_CODE,
+  isWorkspaceFileWriteError,
+} from './workspace-file-navigation.logic';
 import { isUsableSession, type WorkspaceShellSession } from './workspace-shell.logic';
 
 export type WorkspaceFileActionType = 'create' | 'write' | 'update' | 'delete';
@@ -195,10 +199,26 @@ export interface ApplySequentialFileActionsResult {
 }
 
 function asErrorMessage(value: unknown): string {
+  if (isWorkspaceFileWriteError(value) && value.kind === 'session_expired') {
+    return WORKSPACE_FILE_WRITE_SESSION_EXPIRED_CODE;
+  }
   if (value instanceof Error && value.message.trim()) {
     return value.message;
   }
   return 'Unknown write failure.';
+}
+
+export function resolveWorkspaceFileActionErrorCopy(
+  error: string | null,
+  sessionExpiredCopy: string,
+): string | null {
+  if (error === null) {
+    return null;
+  }
+  if (error === WORKSPACE_FILE_WRITE_SESSION_EXPIRED_CODE) {
+    return sessionExpiredCopy;
+  }
+  return error;
 }
 
 function toSkippedResults(

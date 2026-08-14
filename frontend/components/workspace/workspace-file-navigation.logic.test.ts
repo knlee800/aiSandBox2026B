@@ -8,6 +8,7 @@ import {
   readWorkspaceFile,
   searchWorkspaceFiles,
   writeWorkspaceFile,
+  WorkspaceFileWriteError,
   type WorkspaceFileEntry,
   type WorkspaceFileNode,
 } from './workspace-file-navigation.logic';
@@ -90,8 +91,175 @@ describe('workspace file navigation logic', () => {
       'application/json',
     );
     assert.equal(
-      fetchCalls[0].init?.body,
+      (fetchCalls[0].init?.body as string),
       JSON.stringify({ path: 'src/app.ts', content: 'console.log("saved");' }),
+    );
+  });
+
+  test('classifies HTTP 410 writes as expired session and parses the body safely', async () => {
+    const fetchCalls: Array<{ url: string; init?: RequestInit }> = [];
+    const fakeFetch = async (url: string | URL, init?: RequestInit) => {
+      fetchCalls.push({ url: String(url), init });
+      return {
+        ok: false,
+        status: 410,
+        json: async () => ({
+          statusCode: 410,
+          message: 'Session session-789 expired due to inactivity (reason: idle_timeout)',
+          error: 'Gone',
+        }),
+      } as Response;
+    };
+
+    await assert.rejects(
+      writeWorkspaceFile({
+        sessionId: 'session-789',
+        filePath: 'src/app.ts',
+        content: 'console.log("saved");',
+        fetchImpl: fakeFetch as typeof fetch,
+      }),
+      (error: unknown) => {
+        assert.equal(error instanceof WorkspaceFileWriteError, true);
+        const writeError = error as WorkspaceFileWriteError;
+        assert.equal(writeError.kind, 'session_expired');
+        assert.equal(writeError.status, 410);
+        assert.equal(writeError.terminationReason, 'idle_timeout');
+        assert.equal(writeError.message, 'session_expired');
+        return true;
+      },
+    );
+    assert.equal(fetchCalls.length, 1);
+  });
+
+  test('classifies HTTP 410 idle_timeout writes as expired session', async () => {
+    const fakeFetch = async () =>
+      ({
+        ok: false,
+        status: 410,
+        json: async () => ({
+          message: 'Session session-idle expired due to inactivity (reason: idle_timeout)',
+        }),
+      }) as Response;
+
+    await assert.rejects(
+      writeWorkspaceFile({
+        sessionId: 'session-idle',
+        filePath: 'builder-intent-validation.txt',
+        content: 'ok',
+        fetchImpl: fakeFetch as typeof fetch,
+      }),
+      (error: unknown) => {
+        const writeError = error as WorkspaceFileWriteError;
+        assert.equal(writeError.kind, 'session_expired');
+        assert.equal(writeError.terminationReason, 'idle_timeout');
+        return true;
+      },
+    );
+  });
+
+  test('classifies HTTP 410 max_lifetime writes as expired session', async () => {
+    const fakeFetch = async () =>
+      ({
+        ok: false,
+        status: 410,
+        json: async () => ({
+          message: 'Session session-life expired due to max lifetime exceeded (reason: max_lifetime)',
+        }),
+      }) as Response;
+
+    await assert.rejects(
+      writeWorkspaceFile({
+        sessionId: 'session-life',
+        filePath: 'src/app.ts',
+        content: 'ok',
+        fetchImpl: fakeFetch as typeof fetch,
+      }),
+      (error: unknown) => {
+        const writeError = error as WorkspaceFileWriteError;
+        assert.equal(writeError.kind, 'session_expired');
+        assert.equal(writeError.terminationReason, 'max_lifetime');
+        return true;
+      },
+    );
+  });
+
+  test('keeps HTTP 500 and 502 writes as generic failures', async () => {
+    for (const status of [500, 502]) {
+      const fakeFetch = async () =>
+        ({
+          ok: false,
+          status,
+          json: async () => ({ message: 'upstream failed' }),
+        }) as Response;
+
+      await assert.rejects(
+        writeWorkspaceFile({
+          sessionId: 'session-generic',
+          filePath: 'src/app.ts',
+          content: 'ok',
+          fetchImpl: fakeFetch as typeof fetch,
+        }),
+        (error: unknown) => {
+          assert.equal(error instanceof WorkspaceFileWriteError, true);
+          const writeError = error as WorkspaceFileWriteError;
+          assert.equal(writeError.kind, 'generic_write_failure');
+          assert.equal(writeError.status, status);
+          assert.equal(writeError.terminationReason, null);
+          assert.equal(writeError.message, `File write failed (${status})`);
+          return true;
+        },
+      );
+    }
+  });
+
+  test('keeps network write failures as generic failures', async () => {
+    const fakeFetch = async () => {
+      throw new TypeError('Failed to fetch');
+    };
+
+    await assert.rejects(
+      writeWorkspaceFile({
+        sessionId: 'session-network',
+        filePath: 'src/app.ts',
+        content: 'ok',
+        fetchImpl: fakeFetch as typeof fetch,
+      }),
+      (error: unknown) => {
+        assert.equal(error instanceof WorkspaceFileWriteError, true);
+        const writeError = error as WorkspaceFileWriteError;
+        assert.equal(writeError.kind, 'generic_write_failure');
+        assert.equal(writeError.status, null);
+        assert.equal(writeError.terminationReason, null);
+        assert.equal(writeError.message, 'Failed to fetch');
+        return true;
+      },
+    );
+  });
+
+  test('classifies HTTP 410 as expired session even when the body cannot be parsed', async () => {
+    const fakeFetch = async () =>
+      ({
+        ok: false,
+        status: 410,
+        json: async () => {
+          throw new SyntaxError('Unexpected token < in JSON');
+        },
+      }) as unknown as Response;
+
+    await assert.rejects(
+      writeWorkspaceFile({
+        sessionId: 'session-410-html',
+        filePath: 'src/app.ts',
+        content: 'ok',
+        fetchImpl: fakeFetch as typeof fetch,
+      }),
+      (error: unknown) => {
+        const writeError = error as WorkspaceFileWriteError;
+        assert.equal(writeError.kind, 'session_expired');
+        assert.equal(writeError.status, 410);
+        assert.equal(writeError.terminationReason, null);
+        return true;
+      },
     );
   });
 

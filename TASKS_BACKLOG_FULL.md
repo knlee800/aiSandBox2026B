@@ -58222,7 +58222,7 @@ Step 4B (Consolidation / Checkpoint):
 
 ### BUILDER-INTENT-01: Ask/Discuss vs Build/Edit Execution Intent
 
-**Status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-08-11)
+**Status:** COMPLETE AND LOCKED — 2026-08-13
 **Task ID:** BUILDER-INTENT-01
 **Title:** Ask/Discuss vs Build/Edit Execution Intent
 **Family:** BUILDER EXECUTION INTENT / APPLICATION-OWNED CONTRACT / PRIVATE-BETA PRODUCT READINESS
@@ -58232,7 +58232,8 @@ Step 4B (Consolidation / Checkpoint):
 **Workflow:** HIGH-risk 4-step lifecycle (Registration → Intent Contract + UX Stage-Start → Bounded Implementation + Local Validation → Controlled Staging Validation + Consolidation)
 **Model:** Opus 4.6 (Step 2 Stage-Start); GPT-5.3 Codex (Step 3 bounded implementation); Sonnet 4.6 / equivalent for registration + consolidation
 **Registered:** 2026-08-11
-**Current stage:** Step 1 COMPLETE — exact next: Step 2 — Intent Contract + UX Stage-Start
+**Completed:** 2026-08-13
+**Current stage:** COMPLETE AND LOCKED — 2026-08-13 — all 4 steps complete — Checkpoint: `docs/BUILDER-INTENT-01-CHECKPOINT.md`
 **Dependencies:**
 - PRIVATE-BETA-BLOCKER-03B — COMPLETE AND LOCKED — 2026-08-11 — PASS — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03B-CHECKPOINT.md`
 - PRIVATE-BETA-BLOCKER-03A — COMPLETE AND LOCKED — ROOT CAUSE PROVEN — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03A-CHECKPOINT.md` — Diagnosis: `docs/PRIVATE-BETA-BLOCKER-03A-DIAGNOSIS.md`
@@ -58501,7 +58502,7 @@ Throughout BUILDER-INTENT-01:
 
 Governance only. Register BUILDER-INTENT-01 in `TASKS.md` and `TASKS_BACKLOG_FULL.md`. No source / tests / `.env` / runtime / provider / invite / architecture / PRD / CLAUDE / roadmap changes. No Stage-Start document yet. No 03C/03D registration. No E2E rerun. No invitation. No gate change. No implementation/UX choice locked.
 
-**Step 2 — Intent Contract + UX Stage-Start** — NOT STARTED
+**Step 2 — Intent Contract + UX Stage-Start** — COMPLETE — 2026-08-11
 
 Use Opus 4.6. Read-only. Determine:
 
@@ -58520,13 +58521,13 @@ Use Opus 4.6. Read-only. Determine:
 - controlled staging plan
 - rollback plan
 
-No implementation.
+No implementation. Artifact: `docs/BUILDER-INTENT-01-STAGE-START.md`
 
-**Step 3 — Bounded Implementation + Local Validation** — NOT STARTED
+**Step 3 — Bounded Implementation + Local Validation** — COMPLETE — 2026-08-13
 
 Use GPT-5.3 Codex. Implement only Stage-Start-approved contract and UX. No provider/staging call. Keep `GLOBAL_EXECUTION_ENABLED=false`.
 
-**Step 4 — Controlled Staging Validation + Consolidation** — NOT STARTED
+**Step 4 — Controlled Staging Validation + Consolidation** — IN PROGRESS — 03E blocker resolved; Build E2E rerun pending
 
 Validate at minimum:
 
@@ -58549,12 +58550,25 @@ Keep provider-call budget tightly bounded.
 
 End with `GLOBAL_EXECUTION_ENABLED=false` unless a later explicitly approved readiness task decides otherwise.
 
+**Step 4 evidence recorded (2026-08-13):**
+
+A. Ask/Discuss: **PASS** — execution `cd937e68-f440-4efa-a698-46ec2e7f4b7b` — `executionIntent=conversation` — completed — 0 file actions — no mutation — contract satisfied
+
+B. Build/Edit: **CONTRACT PASS / E2E FAIL** — execution `25eb1efb-c1ed-4136-b724-4a5a7b271600` — xAI / grok-4.5 — `executionIntent=workspace_mutation` — completed — structured JSON — exactly 1 valid file action (`builder-intent-validation.txt`) — content correct — downstream file apply failed: `File write failed (502)` — root cause: STALE WORKSPACE SESSION — session `e0c1d71a-35ff-4ea4-aad0-b897fc28ba45` ~51 min old at apply — container-manager idle threshold: 30 min — blocked by PRIVATE-BETA-BLOCKER-03E
+
+C. Build/Edit contract-failure path: NOT VALIDATED — deferred pending 03E resolution + Build E2E rerun
+
+**Gate state:** `GLOBAL_EXECUTION_ENABLED=false` — restored post Step 4A — confirmed
+
+**Third provider call:** NOT made
+
 ---
 
-#### Sibling / Related Items Explicitly NOT Registered
+#### Sibling / Related Items
 
-- PRIVATE-BETA-BLOCKER-03C — Grok 4.2 Timeout Diagnosis — NOT REGISTERED
-- PRIVATE-BETA-BLOCKER-03D — No-Workspace-Result Credit Policy — NOT REGISTERED
+- PRIVATE-BETA-BLOCKER-03C — Grok 4.2 Timeout Diagnosis — NOT REGISTERED (separate; keep separate from 03E)
+- PRIVATE-BETA-BLOCKER-03D — No-Workspace-Result Credit Policy — NOT REGISTERED (separate; keep separate from 03E)
+- PRIVATE-BETA-BLOCKER-03E — Session Idle Timeout / File-Apply Lifecycle — **COMPLETE AND LOCKED — 2026-08-13** — blocker resolved — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03E-CHECKPOINT.md`
 - Full PRIVATE-BETA-E2E rerun — NOT REGISTERED
 - Final private-beta GO/NO-GO — NOT REGISTERED
 - PRIVATE-BETA-INVITE-01 — untouched / unregistered
@@ -58588,45 +58602,301 @@ Step 1 (Registration):
 - [x] No git commit or push
 
 Step 2 (Intent Contract + UX Stage-Start):
-- [ ] Stage-Start / intent-contract + UX design artifact produced
-- [ ] Authoritative intent owner locked
-- [ ] Exact intent values + backward-compatible default locked
-- [ ] Request/data path locked end-to-end
-- [ ] WorkerProcessor semantic rule locked without weakening 03B mutation protection
-- [ ] UI control required/not-required decision locked
-- [ ] Exact bounded UX + multilingual impact locked if UI required
-- [ ] Exact source/test file scope locked
-- [ ] Local + controlled staging validation plan recorded
-- [ ] Rollback plan recorded
-- [ ] No code changes / no provider calls in Step 2
+- [x] Stage-Start / intent-contract + UX design artifact produced — `docs/BUILDER-INTENT-01-STAGE-START.md`
+- [x] Authoritative intent owner locked
+- [x] Exact intent values + backward-compatible default locked
+- [x] Request/data path locked end-to-end
+- [x] WorkerProcessor semantic rule locked without weakening 03B mutation protection
+- [x] UI control required/not-required decision locked
+- [x] Exact bounded UX + multilingual impact locked if UI required
+- [x] Exact source/test file scope locked
+- [x] Local + controlled staging validation plan recorded
+- [x] Rollback plan recorded
+- [x] No code changes / no provider calls in Step 2
 
 Step 3 (Bounded Implementation + Local Validation):
-- [ ] Only approved Stage-Start contract/UX implemented
-- [ ] Required regression invariants covered by tests
-- [ ] No staging/provider execution during Step 3
-- [ ] `GLOBAL_EXECUTION_ENABLED=false` during Step 3
-- [ ] Stop if scope expands materially beyond Stage-Start
+- [x] Only approved Stage-Start contract/UX implemented
+- [x] Required regression invariants covered by tests
+- [x] No staging/provider execution during Step 3
+- [x] `GLOBAL_EXECUTION_ENABLED=false` during Step 3
+- [x] Stop if scope expands materially beyond Stage-Start
 
 Step 4 (Controlled Staging Validation + Consolidation):
-- [ ] Ask/Discuss path validated (completed + zero actions + no mutation)
-- [ ] Build/Edit success path validated
-- [ ] Build/Edit zero-action contract-failure path validated
-- [ ] Gate returned to `GLOBAL_EXECUTION_ENABLED=false`
-- [ ] Checkpoint created
-- [ ] BUILDER-INTENT-01 marked COMPLETE AND LOCKED only after evidence
-- [ ] PRIVATE-BETA-INVITE-01 untouched
-- [ ] 03C/03D remain NOT REGISTERED unless separately approved later
+- [x] Ask/Discuss path validated (completed + zero actions + no mutation) — PASS — execution `cd937e68-f440-4efa-a698-46ec2e7f4b7b`
+- [x] Build/Edit success path validated — PASS — execution `a7b77c98-10b4-4cfb-a971-f720fc8ce2ca` — fresh session `c14e8df6` — file persisted — refresh confirmed — 2026-08-13
+- [x] Build/Edit zero-action contract-failure path validated — by test evidence per Stage-Start §28C (worker-mutation-validation.spec.ts)
+- [x] Gate returned to `GLOBAL_EXECUTION_ENABLED=false` — confirmed post Build execution — 2026-08-13
+- [x] Checkpoint created — `docs/BUILDER-INTENT-01-CHECKPOINT.md`
+- [x] BUILDER-INTENT-01 marked COMPLETE AND LOCKED — 2026-08-13
+- [x] PRIVATE-BETA-INVITE-01 untouched
+- [x] 03C/03D remain NOT REGISTERED; 03E COMPLETE AND LOCKED — 2026-08-13
 
 ---
 
-**BUILDER-INTENT-01 status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-08-11)
-**Priority:** P0 — beta product blocker
+**BUILDER-INTENT-01 status:** COMPLETE AND LOCKED — 2026-08-13
+**Priority:** P0 — beta product blocker — RESOLVED
 **Risk:** HIGH
 **Nature:** BOUNDED BUILDER EXECUTION-INTENT CONTRACT + UX INTEGRATION
 **Dependencies:** PRIVATE-BETA-BLOCKER-03B COMPLETE AND LOCKED — 2026-08-11 — PASS; PRIVATE-BETA-BLOCKER-03A COMPLETE AND LOCKED — ROOT CAUSE PROVEN
-**Starting safety state:** `GLOBAL_EXECUTION_ENABLED=false`
-**Private-beta readiness:** **NO-GO PENDING REMAINING READINESS WORK**
-**Sibling slices 03C/03D:** NOT REGISTERED
+**Blocker:** PRIVATE-BETA-BLOCKER-03E — COMPLETE AND LOCKED — 2026-08-13 — resolved — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03E-CHECKPOINT.md`
+**Safety state:** `GLOBAL_EXECUTION_ENABLED=false` — confirmed post Build execution
+**Private-beta readiness:** **NO-GO PENDING REMAINING READINESS WORK** — 03C/03D unresolved; E2E rerun not yet performed
+**Step 4 intent validation:** Ask PASS (execution `cd937e68`) — Build E2E PASS (execution `a7b77c98`) — file persisted — refresh confirmed — accounting confirmed — 03E regression absent
+**Anomaly recorded:** Manual checkpoint HTTP 500 post-file-write at ~21:52:46 — outside BUILDER-INTENT-01 acceptance boundary — separate quality follow-up recommended
+**Sibling slices 03C/03D:** NOT REGISTERED; 03E COMPLETE AND LOCKED — 2026-08-13 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03E-CHECKPOINT.md`
 **PRIVATE-BETA-INVITE-01 status:** untouched / unregistered — invitations prohibited
-**Provider/runtime / implementation action this registration:** NO
-**Exact next step:** BUILDER-INTENT-01 Step 2 — Intent Contract + UX Stage-Start
+**Checkpoint:** `docs/BUILDER-INTENT-01-CHECKPOINT.md`
+**Exact next recommended task:** PRIVATE-BETA-BLOCKER-03C — Grok 4.2 Timeout Diagnosis (NOT REGISTERED — requires Keith's explicit approval)
+
+---
+
+### PRIVATE-BETA-BLOCKER-03E: Session Idle Timeout / File-Apply Lifecycle
+
+**Status:** COMPLETE AND LOCKED — 2026-08-13
+**Task ID:** PRIVATE-BETA-BLOCKER-03E
+**Title:** Session Idle Timeout / File-Apply Lifecycle
+**Family:** PRIVATE-BETA-BLOCKER-03 / BUILDER EXECUTION RELIABILITY / SESSION LIFECYCLE
+**Priority:** HIGH — private-beta blocker
+**Risk:** HIGH
+**Workflow:** HIGH-RISK 4-STEP (Registration → Stage Start / Architecture Decision → Bounded Implementation + Validation → Consolidation / Checkpoint)
+**Registered:** 2026-08-13
+**Current stage:** COMPLETE AND LOCKED — 2026-08-13 — all 4 steps complete — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03E-CHECKPOINT.md`
+**Dependencies:**
+- BUILDER-INTENT-01 Steps 1–3 COMPLETE — Step 4 IN PROGRESS — 03E blocker resolved; Build E2E rerun pending
+- PRIVATE-BETA-BLOCKER-03B COMPLETE AND LOCKED — 2026-08-11 — PASS
+- PRIVATE-BETA-BLOCKER-03A COMPLETE AND LOCKED — ROOT CAUSE PROVEN
+**Blocking:**
+- BUILDER-INTENT-01 Step 4 Build E2E rerun — blocker resolved; rerun pending
+**Safety state:** `GLOBAL_EXECUTION_ENABLED=false` — keep false throughout; do not activate during registration or Stage Start
+**Invite posture:** PRIVATE-BETA-INVITE-01 remains unregistered / untouched / invitations prohibited
+**03C separation:** PRIVATE-BETA-BLOCKER-03C (Grok 4.2 Timeout Diagnosis) remains separate — NOT REGISTERED — do not absorb into 03E
+**03D separation:** PRIVATE-BETA-BLOCKER-03D (No-Workspace-Result Credit Policy) remains separate — NOT REGISTERED — do not absorb into 03E
+
+---
+
+#### Problem Statement
+
+A stale-but-application-active workspace session can reach AI execution successfully, generate a valid workspace mutation, then fail during downstream file apply because container-manager enforces idle termination inside the write request.
+
+**Root cause proven (2026-08-13):**
+
+Session `e0c1d71a-35ff-4ea4-aad0-b897fc28ba45` was approximately 51 minutes old at file apply time.
+
+- `SESSION_IDLE_TIMEOUT_MS=1800000` (30 minutes) — container-manager default
+- Timeout is request-driven
+- On the file-write request, container-manager detected idle timeout and executed session/container removal path before completing the request
+- Stop path includes approximately `container.stop({ t: 10 })` while API Gateway's container-manager HTTP client also has approximately 10-second request timeout
+- container-manager began stopping/removing the stale container
+- Gateway timed out before receiving the intended stale-session response
+- Gateway surfaced HTTP 502
+- Frontend displayed `File write failed (502)`
+- Write never reached Docker exec
+
+**Comparison evidence:**
+- Prior successful 03B write `babb474a-59d1-47cb-9e81-2eabef052d34` used the same file-write path and succeeded ~35 seconds after session creation
+- The file-write endpoint itself is not generally broken
+- Failure is specific to apparently-active application sessions that have crossed container-manager's idle threshold
+
+**State inconsistency proven:**
+
+At failure, the following inconsistency existed across stores:
+- container-manager / runtime: SQLite marked session terminated; reason `idle_timeout`; Docker container removed
+- API Gateway / Postgres: session still `status=active`, `terminated_at=null`
+
+---
+
+#### Four Private-Beta Problems Created
+
+1. Valid AI work can be paid for and completed before discovering the workspace runtime is stale
+2. The generated mutation can fail to persist
+3. The user sees a generic 502 rather than a deterministic session-lifecycle outcome
+4. Postgres/API Gateway session state can remain `active` after container-manager has terminated the runtime
+
+---
+
+#### Accounting Impact (Recorded — Policy Not Changed)
+
+The failed BUILDER-INTENT-01 Build consumed 2145 credits because provider execution completed before downstream file apply failed.
+
+The broader no-workspace-result credit policy belongs to `PRIVATE-BETA-BLOCKER-03D` (NOT REGISTERED). Do not absorb 03D into 03E.
+
+---
+
+#### Stage-Start Design Decisions (NOT DECIDED — Register for Step 2)
+
+**A. Session activity authority**
+
+Determine what operations count as session activity. Examples requiring analysis: preview access, file list/read, file write, AI execution submission, AI execution completion, workspace interaction, explicit heartbeat. Do not decide during registration.
+
+**B. Pre-execution stale-session protection**
+
+Determine whether a Builder mutation execution should verify/refresh runtime session viability BEFORE consuming a provider call. Compare at least: preflight runtime health, last-activity refresh, session recreation/resume, another existing lifecycle mechanism. Do not decide during registration.
+
+**C. Apply-time recovery semantics**
+
+Determine what should happen if the runtime becomes stale between provider completion and file apply. Possible classes: deterministic recoverable session error, runtime recreation/resume then apply, bounded automatic retry, explicit user recovery. Do not choose yet.
+
+**D. Idle termination request semantics**
+
+Determine whether container-manager should perform blocking container stop/remove inside the request that discovers expiration. The current 10s stop vs 10s Gateway timeout interaction must be addressed.
+
+**E. Cross-store lifecycle consistency**
+
+Determine how Postgres/API Gateway session state and container-manager session/runtime state are reconciled. A session must not indefinitely appear `active` in the application after container-manager has terminated it.
+
+**F. User-visible failure classification**
+
+A stale/expired workspace condition must not surface as an unexplained generic 502 if a deterministic lifecycle status is available.
+
+**G. Accounting implications**
+
+Do NOT change billing/accounting policy in 03E unless explicitly required. The failed Build consumed 2145 credits. The broader no-workspace-result credit policy belongs to 03D. Do not absorb 03D into 03E.
+
+**H. Grok 4.2 timeout issue**
+
+Keep PRIVATE-BETA-BLOCKER-03C separate. Do not absorb provider timeout diagnosis into 03E.
+
+---
+
+#### Proposed Scope Boundary
+
+Likely implementation surfaces may include:
+
+- container-manager session lifecycle / idle enforcement
+- API Gateway session/container-manager client behavior
+- session state synchronization/reconciliation
+- targeted tests for stale-session write behavior
+
+Registration must NOT prescribe exact source changes before Stage Start.
+
+Frontend changes only if Stage Start proves a deterministic lifecycle error needs existing UI handling. No broad UX redesign. No billing changes. No Harness work. No Stripe. No dependencies unless explicitly approved later.
+
+---
+
+#### Explicit Exclusions
+
+- PRIVATE-BETA-BLOCKER-03C — Grok 4.2 Timeout Diagnosis — separate; do not absorb into 03E
+- PRIVATE-BETA-BLOCKER-03D — No-Workspace-Result Credit Policy — separate; do not absorb into 03E
+- PRIVATE-BETA-INVITE-01 — untouched / unregistered
+- Harness activation / Harness tool-loop / Harness write-tools — excluded / remain disabled
+- Broad UX redesign — excluded
+- Billing / Stripe work — excluded; charging remains disabled
+- git commit / push — excluded during registration
+
+---
+
+#### Safety Invariants
+
+Throughout PRIVATE-BETA-BLOCKER-03E:
+
+- `GLOBAL_EXECUTION_ENABLED=false` except during the later explicitly controlled Step 4 validation window
+- Harness remains disabled
+- No multi-agent activation
+- Stripe charging remains disabled
+- No private-beta invitation
+- No provider calls during Steps 1–2
+- No destructive Docker / data behavior
+- Idle-expiration behavior must remain bounded and safe
+- No weakening of 03B `file_action_contract_failure` for mutation intent
+
+---
+
+#### 4-Step Workflow
+
+**Step 1 — Registration** — COMPLETE — 2026-08-13
+
+Governance only. Register PRIVATE-BETA-BLOCKER-03E in `TASKS.md` and `TASKS_BACKLOG_FULL.md`. No source changes. No provider/runtime action. No 03C/03D absorption. No Stage-Start decisions. No implementation choices locked.
+
+**Step 2 — Stage Start / Session Lifecycle Architecture Decision** — COMPLETE — 2026-08-13
+
+Recommended model: Opus 4.6 (if lifecycle/concurrency/state-consistency choices remain genuinely ambiguous); otherwise Sonnet 4.6 acceptable. Read-only. Answer all eight Stage-Start design decisions (A–H). Produce `docs/PRIVATE-BETA-BLOCKER-03E-STAGE-START.md`. No source changes. No provider calls.
+
+**Step 3 — Bounded Implementation + Validation** — COMPLETE — 2026-08-13
+
+Recommended model: Grok 4.6 High (default); Grok 4.6 XHigh if concurrency-sensitive or state-reconciliation-sensitive. Implement only Stage-Start-approved solution. Keep `GLOBAL_EXECUTION_ENABLED=false`. Split into child slices if Stage Start proves more than one independent lifecycle problem must be fixed. Do not fix multiple independent issues in one child slice.
+
+**Step 4 — Consolidation / Checkpoint + BUILDER-INTENT-01 E2E Rerun** — COMPLETE — 2026-08-13
+
+Validate at minimum:
+- stale-session mutation behavior is deterministic and documented
+- fresh-session writes continue to work
+- no destructive Docker/data behavior introduced
+- targeted tests pass
+- relevant service builds/tests pass
+- staging validation without enabling Harness
+- `GLOBAL_EXECUTION_ENABLED=false` confirmed before and after controlled staging validation
+- BUILDER-INTENT-01 Build E2E rerun is performed only after 03E passes
+- Create checkpoint: `docs/PRIVATE-BETA-BLOCKER-03E-CHECKPOINT.md`
+- No third-party payment activity required
+
+---
+
+#### Acceptance Criteria
+
+Step 1 (Registration):
+- [x] PRIVATE-BETA-BLOCKER-03E registered
+- [x] HIGH priority / HIGH risk / 4-step workflow recorded
+- [x] Problem statement recorded with proven root cause
+- [x] Four private-beta problems enumerated
+- [x] Proven root cause recorded (idle timeout + stop/gateway timeout interaction + state inconsistency)
+- [x] Session `e0c1d71a-35ff-4ea4-aad0-b897fc28ba45` evidence recorded
+- [x] Eight Stage-Start design decisions registered (A–H)
+- [x] BUILDER-INTENT-01 blocking relationship recorded
+- [x] 03C separation confirmed — separate — NOT REGISTERED — do not absorb
+- [x] 03D separation confirmed — separate — NOT REGISTERED — do not absorb
+- [x] Accounting impact recorded (2145 credits; policy not changed; 03D boundary preserved)
+- [x] `GLOBAL_EXECUTION_ENABLED=false` preserved
+- [x] PRIVATE-BETA-INVITE-01 untouched
+- [x] No implementation/runtime/provider/billing work performed
+- [x] No git commit or push
+- [x] Exact next step recorded = Step 2 — Stage Start / Session Lifecycle Architecture Decision
+
+Step 2 (Stage Start / Architecture Decision):
+- [x] `docs/PRIVATE-BETA-BLOCKER-03E-STAGE-START.md` produced
+- [x] All eight design decisions (A–H) answered
+- [x] Exact implementation surfaces and source files identified
+- [x] Child slices identified if multiple independent problems found
+- [x] No source changes / no provider calls in Step 2
+
+Step 3 (Bounded Implementation + Validation):
+- [x] Only Stage-Start-approved solution implemented
+- [x] Targeted stale-session mutation tests pass
+- [x] Fresh-session write regression confirmed
+- [x] Relevant service builds/tests pass
+- [x] `GLOBAL_EXECUTION_ENABLED=false` during Step 3
+- [x] No 03C / 03D scope absorbed
+
+Step 4 (Consolidation / Checkpoint + BUILDER-INTENT-01 E2E Rerun):
+- [x] Stale-session behavior deterministic and documented
+- [x] Expired session cannot produce ambiguous Gateway 502 solely from stop/proxy-timeout interaction
+- [x] Application session state does not remain `active` after runtime termination
+- [x] File mutation against stale session receives deterministic lifecycle outcome
+- [x] Chosen lifecycle design avoids silent mutation loss
+- [x] Builder mutation flow has explicit strategy for runtime viability before/at apply
+- [x] Fresh-session writes continue to work
+- [x] Idle-expiration behavior remains bounded and safe
+- [x] No destructive Docker/data behavior introduced
+- [x] Targeted tests cover stale-session mutation
+- [x] Relevant service builds/tests pass
+- [x] Staging validation proves corrected lifecycle without enabling Harness
+- [x] `GLOBAL_EXECUTION_ENABLED=false` confirmed before and after controlled staging validation
+- [x] BUILDER-INTENT-01 Build E2E rerun deferred — recorded as exact next task
+- [x] No third-party payment activity required
+- [x] Checkpoint created (`docs/PRIVATE-BETA-BLOCKER-03E-CHECKPOINT.md`)
+- [x] PRIVATE-BETA-BLOCKER-03E marked COMPLETE AND LOCKED — 2026-08-13
+
+---
+
+**PRIVATE-BETA-BLOCKER-03E status:** COMPLETE AND LOCKED — 2026-08-13 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03E-CHECKPOINT.md`
+**Priority:** HIGH — private-beta blocker
+**Risk:** HIGH
+**Workflow:** HIGH-RISK 4-STEP
+**Family:** PRIVATE-BETA-BLOCKER-03 / BUILDER EXECUTION RELIABILITY / SESSION LIFECYCLE
+**Dependencies:** BUILDER-INTENT-01 Steps 1–3 COMPLETE (blocks Step 4 Build E2E rerun); 03B COMPLETE AND LOCKED — 2026-08-11 — PASS; 03A COMPLETE AND LOCKED — ROOT CAUSE PROVEN
+**Blocking:** BUILDER-INTENT-01 Step 4 Build E2E rerun — blocker resolved; rerun pending
+**Safety state:** `GLOBAL_EXECUTION_ENABLED=false`
+**03C status:** NOT REGISTERED — separate — keep separate from 03E
+**03D status:** NOT REGISTERED — separate — keep separate from 03E
+**PRIVATE-BETA-INVITE-01 status:** untouched / unregistered — invitations prohibited
+**No implementation/runtime/provider work this registration:** confirmed
+**Exact next step:** BUILDER-INTENT-01 Step 4 — Controlled Build E2E Rerun after 03E
