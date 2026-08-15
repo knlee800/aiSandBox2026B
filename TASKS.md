@@ -50243,7 +50243,7 @@ Step 1 (Registration):
 **Provider-call budget:** CONSUMED (1/1) — no retry authorized
 **BILLING_CHARGES_ENABLED:** false — maintained throughout
 **PRIVATE-BETA-INVITE-01:** untouched / unregistered — prohibited — private-beta NO-GO / BLOCKED
-**Exact next recommended task:** PRIVATE-BETA-BLOCKER-03G — Frontend Confirm-Build-Apply Route Reachability — NOT YET REGISTERED
+**Exact next recommended task:** PRIVATE-BETA-BLOCKER-03G — Frontend Confirm-Build-Apply Route Reachability — REGISTERED — 2026-08-15
 **PRIVATE-BETA-BLOCKER-03F:** COMPLETE AND LOCKED — 2026-08-15 — FAIL / BLOCKED — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03F-CHECKPOINT.md`
 **Separate deferred follow-up:** UNRESOLVED CREDIT DISPLAY DISCREPANCY (UI 3278 ≠ DB 30577) — separate bounded task required
 **Future fresh E2E:** PRIVATE-BETA-E2E-03 — requires fresh Keith authorization — do not register now
@@ -50553,4 +50553,286 @@ Preserve evidence and classify the exact blocker.
 **PRIVATE-BETA-INVITE-01 status:** untouched / unregistered — prohibited
 **Separate open blocker:** CREDIT DISPLAY DISCREPANCY — UI 3278 ≠ authoritative DB 30577 — requires separate bounded task
 **Manual checkpoint HTTP 500:** recorded anomaly — separate triage — not in 03G scope
-**Exact next recommended task:** PRIVATE-BETA-BLOCKER-03G — Frontend Confirm-Build-Apply Route Reachability — NOT YET REGISTERED
+**Exact next recommended task:** PRIVATE-BETA-BLOCKER-03G — Frontend Confirm-Build-Apply Route Reachability — REGISTERED — 2026-08-15
+
+---
+
+### PRIVATE-BETA-BLOCKER-03G — Frontend Confirm-Build-Apply Route Reachability
+
+**Status:** ACTIVE — Step 2 COMPLETE (Routing Design + Provider-Free Validation Plan — 2026-08-15)
+**Family:** PRIVATE-BETA-BLOCKER-03 / BUILDER EXECUTION RELIABILITY / FRONTEND ROUTING REACHABILITY
+**Priority:** HIGH — private-beta blocker
+**Risk:** HIGH
+**Workflow:** HIGH-RISK 4-STEP
+**Root-cause classification:** FRONTEND CONFIRM ROUTE REACHABILITY / API REWRITE PRECEDENCE BLOCKER
+
+- Step 1 — Registration — COMPLETE — 2026-08-15
+- Step 2 — Stage Start / Routing Design + Provider-Free Validation Plan — COMPLETE — 2026-08-15
+- Step 3 — Bounded Implementation + Tests + Provider-Free Staging Deployment/Verification — PENDING / READY
+- Step 4 — Consolidation / Checkpoint — PENDING
+
+**Registered:** 2026-08-15
+**Dependencies:** PRIVATE-BETA-BLOCKER-03F COMPLETE AND LOCKED — 2026-08-15 — FAIL / BLOCKED; PRIVATE-BETA-BLOCKER-03D COMPLETE AND LOCKED — 2026-08-14
+**Blocking:** private-beta GO/NO-GO — PRIVATE-BETA-E2E-03 cannot proceed until 03G resolved
+**Safety state:** `GLOBAL_EXECUTION_ENABLED=false` — must remain; `BILLING_CHARGES_ENABLED=false` — must remain
+**Provider-call budget:** ZERO — no provider execution authorized
+**Credit-mutation budget:** ZERO — no intentional credit mutations
+**PRIVATE-BETA-INVITE-01 status:** untouched / unregistered — prohibited
+**Stage-Start document:** `docs/PRIVATE-BETA-BLOCKER-03G-STAGE-START.md` — CREATED — 2026-08-15
+**Checkpoint:** `docs/PRIVATE-BETA-BLOCKER-03G-CHECKPOINT.md` — NOT YET CREATED (Step 4)
+**Deployed SHA (inherited from 03F):** `ed34e3c220c04c81ec6784f43e8952a60f537825` — staging worktree CLEAN
+**Retained pre-03F stash:** `stash@{0}` / `0372cc1f47f82e1db060ed2dd756a938fe324803` — do NOT drop/pop/apply/repurpose
+**Separate open blocker:** CREDIT DISPLAY DISCREPANCY — UI 3278 ≠ authoritative DB 30577 — out of 03G scope
+**Manual checkpoint HTTP 500:** recorded anomaly — separate triage — out of 03G scope
+**Selected fix:** OPTION B — Move Gateway rewrite from flat array to `fallback` phase in `next.config.js`
+**NEXT_CONFIG_ONLY_FIX:** YES
+**NEXT_VERSION:** 15.5.12
+**Gateway source changes:** NO
+**Expected production file:** `frontend/next.config.js` (single file, 2-line change)
+**Rollback target:** `ed34e3c220c04c81ec6784f43e8952a60f537825`
+**Exact next recommended step:** PRIVATE-BETA-BLOCKER-03G Step 3 — Bounded Implementation + Provider-Free Staging Deployment — use NEW Cursor window — Grok 4.6 High
+
+---
+
+#### Objective
+
+Make the browser-facing Next.js `confirm-build-apply` server route reachable through the normal product path, while preserving all existing API Gateway proxy routing and all 03D security boundaries.
+
+This is a ROUTING / RUNTIME REACHABILITY defect. It is NOT:
+- a deployment parity problem (03F proved source/build parity is PASS)
+- a new accounting architecture task
+- a provider execution task
+- a balance-display task
+- a broad API routing redesign
+
+03F staging evidence confirmed: a same-origin POST to `/api/ai/executions/<id>/confirm-build-apply` on the frontend (`:3002`) is rewritten by `next.config.js` (`/api/:path*` → `${apiBase}/api/:path*`) before the Next.js App Router filesystem route can handle it. The request reaches API Gateway (`:4000`) which has no public route at that path, returning HTTP 404 instead of the expected Next.js-side HTTP 401 `{ error: 'unauthenticated' }`.
+
+---
+
+#### Root Cause
+
+**Exact rewrite rule (`frontend/next.config.js` lines 9–17):**
+```js
+async rewrites() {
+    const apiBase = process.env.API_GATEWAY_URL || 'http://localhost:4000';
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${apiBase}/api/:path*`,
+      },
+    ];
+  },
+```
+
+The flat-array return is treated as `afterFiles` rewrites by Next.js. Despite `afterFiles` semantics theoretically deferring to filesystem routes, Step 3 runtime evidence on staging proved the rewrite still intercepted the App Router route. No exception or `beforeFiles`/`afterFiles` split is currently configured for the confirm path.
+
+**Observed staging behavior:**
+```
+POST /api/ai/executions/<id>/confirm-build-apply
+→ next.config.js rewrite /api/:path*
+→ http://localhost:4000/api/ai/executions/<id>/confirm-build-apply
+→ Nest/API Gateway: HTTP 404 (no public route at that path)
+```
+
+**Expected behavior (Next.js route reached, no authenticated session):**
+```
+POST /api/ai/executions/<id>/confirm-build-apply
+→ Next.js App Router route.ts
+→ proxyConfirmBuildApply() → readSessionTokenFromCookieHeader(null) → null
+→ HTTP 401 { error: 'unauthenticated' }
+```
+
+---
+
+#### Required Product Architecture
+
+The intended 03D-B runtime chain:
+```
+browser
+→ same-origin Next.js confirm-build-apply route
+→ server-side session validation → GET /api/auth/me
+→ authenticated execution lookup / ownership validation
+→ server-only INTERNAL_SERVICE_KEY
+→ API Gateway internal confirm-build-apply
+→ triggerBuildApplyDeduction()
+```
+
+The browser must NOT call the internal Gateway route directly. `INTERNAL_SERVICE_KEY` must remain server-only.
+
+---
+
+#### Scope Boundary
+
+03G may modify only what is required to make the one frontend server route reachable while preserving existing API Gateway routing behavior.
+
+Likely relevant surfaces:
+- `frontend/next.config.js`
+- `frontend/app/api/ai/executions/[executionId]/confirm-build-apply/route.ts`
+- `frontend/lib/build-apply-confirm-proxy.server.ts`
+- tests/config tests directly necessary to verify routing behavior
+
+Do not assume `next.config.js` is the only required file until Step 2 inspects routing behavior. Do not broadly restructure API routing. Do not modify API Gateway source unless Step 2 proves it is necessary (if so: STOP and re-evaluate scope).
+
+---
+
+#### Critical Routing Requirement
+
+The fix must make:
+```
+/api/ai/executions/:executionId/confirm-build-apply
+```
+resolve to the Next.js server route.
+
+At the same time, existing API requests intentionally proxied to API Gateway (`http://localhost:4000`) must continue working.
+
+Prefer the smallest explicit exception or routing rule consistent with the existing Next.js deployment architecture. Do NOT solve this by disabling the broad API Gateway rewrite globally unless Step 2 proves that is the intended application architecture.
+
+---
+
+#### Step 2 Design Evaluation Requirements
+
+Step 2 must inspect Next.js routing semantics and the actual current config to determine the smallest correct fix. Evaluate options such as:
+- explicit rewrite exclusion
+- more specific rewrite ordering
+- route-specific handling
+- narrower Gateway rewrite patterns
+
+Do NOT implement during Step 2. Record why the chosen approach is correct for the current Next.js version and application architecture. Do not rely on the assumption that App Router routes automatically outrank rewrites — 03F staging evidence proved the current runtime behavior does not match that assumption.
+
+---
+
+#### Security Invariants
+
+Must preserve throughout 03G:
+1. browser uses same-origin frontend confirmation endpoint
+2. authenticated session cookie handled server-side
+3. execution ownership validation
+4. `INTERNAL_SERVICE_KEY` read only server-side
+5. `INTERNAL_SERVICE_KEY` never appears in browser bundle
+6. internal Gateway route remains guarded by `InternalServiceAuthGuard`
+7. browser cannot bypass the frontend proxy to perform privileged confirmation
+8. no new public internal-accounting route
+
+---
+
+#### Runtime Safety Requirements
+
+Throughout 03G:
+- `GLOBAL_EXECUTION_ENABLED=false` — must remain false
+- `BILLING_CHARGES_ENABLED=false` — must remain false
+- Provider-call budget: **ZERO**
+- Credit-mutation budget: **ZERO intentional mutations**
+
+Do NOT invoke confirm-build-apply against a real completed chargeable execution. Use fake/nonexistent IDs or unauthenticated probes only — requests must be guaranteed to stop before any deduction logic.
+
+---
+
+#### Provider-Free Success Proof (Future Step 3)
+
+**Frontend route reachability:**
+```
+POST /api/ai/executions/<fake UUID>/confirm-build-apply
+(no authenticated session)
+```
+Expected: `HTTP 401 { "error": "unauthenticated" }` from Next.js
+Must NOT return: Nest/API Gateway HTTP 404
+
+**Gateway regression:**
+Normal public API requests intended for Gateway (e.g. `GET /api/auth/me` or equivalent safe non-mutating endpoint) must still proxy correctly to API Gateway.
+
+**Build output:** Next.js build must include `/api/ai/executions/[executionId]/confirm-build-apply`.
+
+**Secret safety:** `.next/static` must contain no `INTERNAL_SERVICE_KEY` secret value. Prefer zero key-name references in static browser output.
+
+---
+
+#### Required Test Coverage (Future Step 3)
+
+Add/update bounded tests where practical:
+1. confirmation route is not Gateway-rewritten
+2. normal Gateway API rewrite remains intact
+3. unauthenticated confirmation route returns Next-side 401
+4. proxy/session behavior remains unchanged
+5. `INTERNAL_SERVICE_KEY` remains server-only
+
+Use existing test infrastructure. Do not add a new testing dependency unless absolutely necessary and separately justified.
+
+---
+
+#### Staging Deployment Boundary
+
+03G must ultimately deploy the bounded routing fix to staging using the already-established deployment mechanism. Expected affected runtime component: `aisandbox-frontend`. Gateway source should not require modification unless Step 2 proves otherwise.
+
+Step 2 must define an exact frontend rollback target and rollback command sequence before deployment. The retained pre-03F stash (`0372cc1f47f82e1db060ed2dd756a938fe324803`) must remain untouched — do NOT drop, pop, apply, or repurpose it for 03G. 03G must use its own bounded rollback mechanism.
+
+---
+
+#### PASS Definition
+
+03G PASS means: the browser-facing confirm-build-apply endpoint is demonstrably handled by the intended Next.js server route on staging, while normal Gateway API proxying and all 03D security boundaries remain intact.
+
+03G does NOT prove:
+- real provider-backed accounting
+- real deduction after successful Build
+- credit-display correctness
+
+Those remain separate validation/tasks.
+
+---
+
+#### Separate Blockers — Out of Scope
+
+**Credit display discrepancy:** UI 3278 ≠ authoritative DB 30577 — UNRESOLVED — LAUNCH-CRITICAL — separate task. Do NOT investigate in 03G.
+
+**Manual checkpoint HTTP 500:** recorded separate anomaly. Do NOT investigate/fix in 03G.
+
+---
+
+#### Future E2E Requirement
+
+PRIVATE-BETA-E2E-03 must NOT be registered or executed until:
+1. 03G complete and locked
+2. Credit balance discrepancy resolved and locked
+
+Any future provider call requires fresh explicit Keith authorization. E2E-02 authorization is consumed.
+
+---
+
+#### PRIVATE-BETA-INVITE-01
+
+Remains untouched / unregistered / prohibited. Private beta remains NO-GO.
+
+---
+
+#### Acceptance Criteria
+
+- [ ] Exact rewrite/root cause documented
+- [ ] Current Next.js runtime behavior documented
+- [ ] Smallest safe routing fix selected
+- [ ] Existing Gateway API proxy behavior preserved
+- [ ] Confirmation route resolves to Next.js server route
+- [ ] Unauthenticated confirm request returns Next-side 401
+- [ ] Confirm request no longer produces Gateway/Nest 404
+- [ ] Authenticated server proxy architecture preserved
+- [ ] Execution ownership validation preserved
+- [ ] Internal Gateway endpoint remains guarded by `InternalServiceAuthGuard`
+- [ ] `INTERNAL_SERVICE_KEY` remains server-only
+- [ ] Browser static bundle contains no secret value
+- [ ] `API_GATEWAY_URL` remains correct
+- [ ] Frontend build succeeds
+- [ ] Relevant routing/proxy tests pass
+- [ ] Frontend PM2 online after staging deployment
+- [ ] Provider-free staging route probe passes (Next.js 401 confirmed)
+- [ ] Normal safe Gateway-proxied API regression passes
+- [ ] `GLOBAL_EXECUTION_ENABLED` remains false
+- [ ] `BILLING_CHARGES_ENABLED` remains false
+- [ ] Provider calls = 0
+- [ ] Intentional credit mutations = 0
+- [ ] No Stripe/payment activation
+- [ ] No broad API routing redesign
+- [ ] No unrelated source changes
+- [ ] Rollback path documented before deployment
+- [ ] Rollback remains available after deployment
+- [ ] Stage Start document created (`docs/PRIVATE-BETA-BLOCKER-03G-STAGE-START.md`)
+- [ ] Final checkpoint created (`docs/PRIVATE-BETA-BLOCKER-03G-CHECKPOINT.md`)
+- [ ] Private-beta remains NO-GO pending separate balance blocker + fresh E2E

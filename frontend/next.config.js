@@ -8,12 +8,14 @@ const nextConfig = {
   },
   async rewrites() {
     const apiBase = process.env.API_GATEWAY_URL || 'http://localhost:4000';
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${apiBase}/api/:path*`,
-      },
-    ];
+    return {
+      fallback: [
+        {
+          source: '/api/:path*',
+          destination: `${apiBase}/api/:path*`,
+        },
+      ],
+    };
   },
 };
 
