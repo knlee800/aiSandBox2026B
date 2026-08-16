@@ -50559,7 +50559,7 @@ Preserve evidence and classify the exact blocker.
 
 ### PRIVATE-BETA-BLOCKER-03G — Frontend Confirm-Build-Apply Route Reachability
 
-**Status:** ACTIVE — Step 2 COMPLETE (Routing Design + Provider-Free Validation Plan — 2026-08-15)
+**Status:** COMPLETE AND LOCKED — 2026-08-16 — PASS
 **Family:** PRIVATE-BETA-BLOCKER-03 / BUILDER EXECUTION RELIABILITY / FRONTEND ROUTING REACHABILITY
 **Priority:** HIGH — private-beta blocker
 **Risk:** HIGH
@@ -50568,29 +50568,32 @@ Preserve evidence and classify the exact blocker.
 
 - Step 1 — Registration — COMPLETE — 2026-08-15
 - Step 2 — Stage Start / Routing Design + Provider-Free Validation Plan — COMPLETE — 2026-08-15
-- Step 3 — Bounded Implementation + Tests + Provider-Free Staging Deployment/Verification — PENDING / READY
-- Step 4 — Consolidation / Checkpoint — PENDING
+- Step 3 — Bounded Implementation + Tests + Provider-Free Staging Deployment/Verification — COMPLETE — PASS — Frontend Confirm Route Reachable — 2026-08-16
+- Step 4 — Consolidation / Checkpoint — COMPLETE — 2026-08-16
 
 **Registered:** 2026-08-15
 **Dependencies:** PRIVATE-BETA-BLOCKER-03F COMPLETE AND LOCKED — 2026-08-15 — FAIL / BLOCKED; PRIVATE-BETA-BLOCKER-03D COMPLETE AND LOCKED — 2026-08-14
-**Blocking:** private-beta GO/NO-GO — PRIVATE-BETA-E2E-03 cannot proceed until 03G resolved
-**Safety state:** `GLOBAL_EXECUTION_ENABLED=false` — must remain; `BILLING_CHARGES_ENABLED=false` — must remain
-**Provider-call budget:** ZERO — no provider execution authorized
-**Credit-mutation budget:** ZERO — no intentional credit mutations
+**Blocking:** private-beta GO/NO-GO — PRIVATE-BETA-E2E-03 cannot proceed until 03H also resolved
+**Safety state:** `GLOBAL_EXECUTION_ENABLED=false` — verified; `BILLING_CHARGES_ENABLED=false` — verified
+**Provider-call budget:** ZERO — 0 provider calls made during 03G
+**Credit-mutation budget:** ZERO — 0 intentional credit mutations during 03G
 **PRIVATE-BETA-INVITE-01 status:** untouched / unregistered — prohibited
 **Stage-Start document:** `docs/PRIVATE-BETA-BLOCKER-03G-STAGE-START.md` — CREATED — 2026-08-15
-**Checkpoint:** `docs/PRIVATE-BETA-BLOCKER-03G-CHECKPOINT.md` — NOT YET CREATED (Step 4)
-**Deployed SHA (inherited from 03F):** `ed34e3c220c04c81ec6784f43e8952a60f537825` — staging worktree CLEAN
-**Retained pre-03F stash:** `stash@{0}` / `0372cc1f47f82e1db060ed2dd756a938fe324803` — do NOT drop/pop/apply/repurpose
-**Separate open blocker:** CREDIT DISPLAY DISCREPANCY — UI 3278 ≠ authoritative DB 30577 — out of 03G scope
+**Checkpoint:** `docs/PRIVATE-BETA-BLOCKER-03G-CHECKPOINT.md` — CREATED — 2026-08-16
+**Implementation commit SHA:** `5829c4241d0f1abc0a41476bf2fe3996dd9da993`
+**Pre-deploy staging SHA:** `ed34e3c220c04c81ec6784f43e8952a60f537825`
+**Deployed SHA:** `5829c4241d0f1abc0a41476bf2fe3996dd9da993` — staging worktree CLEAN
+**Retained pre-03F stash:** `stash@{0}` / `0372cc1f47f82e1db060ed2dd756a938fe324803` — UNTOUCHED — do NOT drop/pop/apply/repurpose
+**Separate open blocker:** CREDIT DISPLAY DISCREPANCY — UI 3278 ≠ authoritative DB 30577 — UNRESOLVED — launch-critical — separate task required
 **Manual checkpoint HTTP 500:** recorded anomaly — separate triage — out of 03G scope
 **Selected fix:** OPTION B — Move Gateway rewrite from flat array to `fallback` phase in `next.config.js`
 **NEXT_CONFIG_ONLY_FIX:** YES
 **NEXT_VERSION:** 15.5.12
 **Gateway source changes:** NO
-**Expected production file:** `frontend/next.config.js` (single file, 2-line change)
-**Rollback target:** `ed34e3c220c04c81ec6784f43e8952a60f537825`
-**Exact next recommended step:** PRIVATE-BETA-BLOCKER-03G Step 3 — Bounded Implementation + Provider-Free Staging Deployment — use NEW Cursor window — Grok 4.6 High
+**Production file changed:** `frontend/next.config.js` (single file, 2-line change)
+**Test file added:** `frontend/lib/next-config-rewrites.test.ts` (3/3 PASS)
+**Rollback target:** `ed34e3c220c04c81ec6784f43e8952a60f537825` — available
+**Exact next recommended task:** PRIVATE-BETA-BLOCKER-03H — Credit Balance Display / Authoritative Balance Reconciliation — NOT YET REGISTERED
 
 ---
 
@@ -50806,33 +50809,33 @@ Remains untouched / unregistered / prohibited. Private beta remains NO-GO.
 
 #### Acceptance Criteria
 
-- [ ] Exact rewrite/root cause documented
-- [ ] Current Next.js runtime behavior documented
-- [ ] Smallest safe routing fix selected
-- [ ] Existing Gateway API proxy behavior preserved
-- [ ] Confirmation route resolves to Next.js server route
-- [ ] Unauthenticated confirm request returns Next-side 401
-- [ ] Confirm request no longer produces Gateway/Nest 404
-- [ ] Authenticated server proxy architecture preserved
-- [ ] Execution ownership validation preserved
-- [ ] Internal Gateway endpoint remains guarded by `InternalServiceAuthGuard`
-- [ ] `INTERNAL_SERVICE_KEY` remains server-only
-- [ ] Browser static bundle contains no secret value
-- [ ] `API_GATEWAY_URL` remains correct
-- [ ] Frontend build succeeds
-- [ ] Relevant routing/proxy tests pass
-- [ ] Frontend PM2 online after staging deployment
-- [ ] Provider-free staging route probe passes (Next.js 401 confirmed)
-- [ ] Normal safe Gateway-proxied API regression passes
-- [ ] `GLOBAL_EXECUTION_ENABLED` remains false
-- [ ] `BILLING_CHARGES_ENABLED` remains false
-- [ ] Provider calls = 0
-- [ ] Intentional credit mutations = 0
-- [ ] No Stripe/payment activation
-- [ ] No broad API routing redesign
-- [ ] No unrelated source changes
-- [ ] Rollback path documented before deployment
-- [ ] Rollback remains available after deployment
-- [ ] Stage Start document created (`docs/PRIVATE-BETA-BLOCKER-03G-STAGE-START.md`)
-- [ ] Final checkpoint created (`docs/PRIVATE-BETA-BLOCKER-03G-CHECKPOINT.md`)
-- [ ] Private-beta remains NO-GO pending separate balance blocker + fresh E2E
+- [x] Exact rewrite/root cause documented
+- [x] Current Next.js runtime behavior documented
+- [x] Smallest safe routing fix selected
+- [x] Existing Gateway API proxy behavior preserved
+- [x] Confirmation route resolves to Next.js server route
+- [x] Unauthenticated confirm request returns Next-side 401
+- [x] Confirm request no longer produces Gateway/Nest 404
+- [x] Authenticated server proxy architecture preserved
+- [x] Execution ownership validation preserved
+- [x] Internal Gateway endpoint remains guarded by `InternalServiceAuthGuard`
+- [x] `INTERNAL_SERVICE_KEY` remains server-only
+- [x] Browser static bundle contains no secret value
+- [x] `API_GATEWAY_URL` remains correct
+- [x] Frontend build succeeds
+- [x] Relevant routing/proxy tests pass
+- [x] Frontend PM2 online after staging deployment
+- [x] Provider-free staging route probe passes (Next.js 401 confirmed)
+- [x] Normal safe Gateway-proxied API regression passes
+- [x] `GLOBAL_EXECUTION_ENABLED` remains false
+- [x] `BILLING_CHARGES_ENABLED` remains false
+- [x] Provider calls = 0
+- [x] Intentional credit mutations = 0
+- [x] No Stripe/payment activation
+- [x] No broad API routing redesign
+- [x] No unrelated source changes
+- [x] Rollback path documented before deployment
+- [x] Rollback remains available after deployment
+- [x] Stage Start document created (`docs/PRIVATE-BETA-BLOCKER-03G-STAGE-START.md`)
+- [x] Final checkpoint created (`docs/PRIVATE-BETA-BLOCKER-03G-CHECKPOINT.md`)
+- [x] Private-beta remains NO-GO pending separate balance blocker + fresh E2E
