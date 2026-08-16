@@ -16,7 +16,7 @@ Rules:
 
 If conflicts exist, TASKS_BACKLOG_FULL.md takes precedence.
 
-**Program status:** **BILLING-READY-08 COMPLETE AND LOCKED 2026-08-07** — Controlled xAI smoke PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (500 credits) — overflow 98 ACCEPTED BY DESIGN — balance reached 0 correctly — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — QuotaGuard browser-session bypass — Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md` — **BILLING-READY-08B COMPLETE AND LOCKED 2026-08-07** — usage_records.created_at schema remediation — Checkpoint: `docs/BILLING-READY-08B-CHECKPOINT.md` — Final checkpoint: `docs/BILLING-READY-08-CHECKPOINT.md` — **PRIVATE-BETA-FUNCTIONAL-READINESS-04 COMPLETE AND LOCKED 2026-08-07** — All acceptance criteria satisfied — FR-04 parent checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-CHECKPOINT.md` — **ADMIN-CONSOLE-01 COMPLETE AND LOCKED 2026-08-08** — All children COMPLETE AND LOCKED — **ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07** — Checkpoint: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md` — **ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07** — Authenticated Admin Credit Grant API — Checkpoint: `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md` — **ADMIN-CONSOLE-01C COMPLETE AND LOCKED 2026-08-07** — Admin Console Shell + Users/Sessions — Checkpoint: `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md` — **ADMIN-CONSOLE-01D COMPLETE AND LOCKED 2026-08-07** — Admin Credit Grant UI — Checkpoint: `docs/ADMIN-CONSOLE-01D-CHECKPOINT.md` — **ADMIN-CONSOLE-01E COMPLETE AND LOCKED 2026-08-08** — Staging Operator Validation + Parent Consolidation — PASS WITH NON-BLOCKING LIMITATIONS — Checkpoint: `docs/ADMIN-CONSOLE-01E-CHECKPOINT.md` — **ADMIN-CONSOLE-01E1 COMPLETE AND LOCKED 2026-08-08** — Invalid Locale Redirect Origin Fix — Checkpoint: `docs/ADMIN-CONSOLE-01E1-CHECKPOINT.md` — Parent checkpoint: `docs/ADMIN-CONSOLE-01-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 BLOCKED** — private beta blocked by PRIVATE-BETA-BLOCKER-01 (recurring canonical landing page regression) and separate unresolved preview failure — Do not execute invitations until all blockers resolved — **PRIVATE-BETA-BLOCKER-01 COMPLETE AND LOCKED 2026-08-09** — Legacy workspace + feature-flag removal — Build-independence proven — All locales PASS — Commit `651f723447a85ec5d22139d6ba60be6680a0f8c6` — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-01-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-02 COMPLETE AND LOCKED 2026-08-09** — Preview Runtime Failure — PreviewController fallback 4001→4002 — staging live preview PASS — Commit `f73da07ef8d1acc70d43d6b4980fd1d0d57e2883` — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-02-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 UNBLOCKED** — landing-page and preview blockers resolved — do not execute invitations without registration and Keith explicit approval — GLOBAL_EXECUTION_ENABLED remains false — **GOV-ARCH-01 COMPLETE AND LOCKED 2026-08-10** — Checkpoint: `docs/GOV-ARCH-01-CHECKPOINT.md` — **GOV-PRD-01 COMPLETE AND LOCKED 2026-08-10** — Checkpoint: `docs/GOV-PRD-01-CHECKPOINT.md` — **PRIVATE-BETA-OPS-01 COMPLETE AND LOCKED 2026-08-10** — Independent PM2 ops watchdog staging-proved — P1 operational visibility SATISFIED — Checkpoint: `docs/PRIVATE-BETA-OPS-01-CHECKPOINT.md` — **PRIVATE-BETA-EXEC-01 COMPLETE AND LOCKED 2026-08-10** — Controlled Builder AI Execution Activation — Activation smoke PASS — Execution ID `24acd697-b55c-40d0-b2d5-32faf9b85709` — provider `xai` — path `plain` — tokens `1078` — file `beta-activation-smoke-2026-08-10.txt` — credits 6000→4922 — `GLOBAL_EXECUTION_ENABLED=true` deliberately left enabled — Harness remains disabled — Stripe charging remains disabled — Checkpoint: `docs/PRIVATE-BETA-EXEC-01-CHECKPOINT.md` — **PRIVATE-BETA-E2E-01 COMPLETE AND LOCKED — 2026-08-10 — FAIL / BLOCKER** — Fresh Keith Builder End-to-End Staging Journey — Primary blocker: Builder plain-path completed execution returned text with `fileActions: []` (execution `2bc73157-973a-45ec-8b71-bca8c2f7941d`) — no `index.html` / empty workspace — Gate rolled back to `GLOBAL_EXECUTION_ENABLED=false` — PRIVATE-BETA-INVITE-01 remains untouched/unregistered — Builder-first private beta **NO-GO PENDING BLOCKER FIX** — **PRIVATE-BETA-BLOCKER-03A COMPLETE AND LOCKED — 2026-08-10 — ROOT CAUSE PROVEN** — Empty File-Action Contract Diagnosis — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03A-CHECKPOINT.md` — Diagnosis: `docs/PRIVATE-BETA-BLOCKER-03A-DIAGNOSIS.md` — PROMPT-ONLY file-action contract; prose noncompliance silently accepted as completed with `fileActions: []` — Defect class: RESPONSE-FORM-SPECIFIC / MODEL-AGNOSTIC CONTRACT WEAKNESS — Target execution `2bc73157-973a-45ec-8b71-bca8c2f7941d` — Comparison executions `24acd697-b55c-40d0-b2d5-32faf9b85709` / `83acc0e9-84de-4f94-9e41-294701e38393` — `GLOBAL_EXECUTION_ENABLED=false` preserved — Builder-first private beta remains **NO-GO PENDING BLOCKER FIX** — **PRIVATE-BETA-BLOCKER-03B COMPLETE AND LOCKED — 2026-08-11 — PASS** — File-Action Reliability Fix — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03B-CHECKPOINT.md` — original file-action reliability blocker remediated — plain-path structured JSON + application-owned zero-action failure validated on staging — `GLOBAL_EXECUTION_ENABLED=false` — Harness remains disabled — PRIVATE-BETA-INVITE-01 untouched/unregistered — Builder-first private beta remains **NO-GO PENDING REMAINING READINESS WORK** — **BUILDER-INTENT-01 ACTIVE — Step 1 COMPLETE (Registration — 2026-08-11)** — Ask/Discuss vs Build/Edit Execution Intent — exact next: BUILDER-INTENT-01 Step 2 — Intent Contract + UX Stage-Start — 03C/03D remain NOT REGISTERED — PRIVATE-BETA-INVITE-01 untouched/unregistered — `GLOBAL_EXECUTION_ENABLED=false` — **BUILDER-INTENT-01 COMPLETE AND LOCKED 2026-08-13** — Checkpoint: `docs/BUILDER-INTENT-01-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-03C COMPLETE AND LOCKED 2026-08-14** — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03C-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-03D COMPLETE AND LOCKED 2026-08-14** — No-workspace-result credit policy — 03D-A/03D-B COMPLETE AND LOCKED — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03D-CHECKPOINT.md` — **PRIVATE-BETA-E2E-02 COMPLETE AND LOCKED — 2026-08-14 — FAIL / BLOCKED** — Staging did not contain/exercise 03D Build deferred-deduction confirmation architecture — old immediate-deduction path operated — confirm-build-apply route not present on staging — 15/18 PASS, 3/18 FAIL — provider=xAI/grok-4.5 — 1 call consumed, budget exhausted — UI balance 3278 ≠ DB balance 30577 UNRESOLVED — Checkpoint: `docs/PRIVATE-BETA-E2E-02-CHECKPOINT.md` — Private-beta NO-GO / BLOCKED — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited — **PRIVATE-BETA-BLOCKER-03F COMPLETE AND LOCKED — 2026-08-15 — FAIL / BLOCKED** — Staging Deployment Parity for 03D Accounting Confirmation Path — FRONTEND CONFIRM ROUTE REACHABILITY / API REWRITE PRECEDENCE BLOCKER — Deployment/source parity PASS — Runtime same-origin confirm path FAIL — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03F-CHECKPOINT.md` — Next recommended: PRIVATE-BETA-BLOCKER-03G (NOT YET REGISTERED) — GLOBAL_EXECUTION_ENABLED=false — BILLING_CHARGES_ENABLED=false — provider calls=0 — credit mutations=0 — Unresolved separate blocker: CREDIT DISPLAY DISCREPANCY (UI 3278 ≠ DB 30577) — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited
+**Program status:** **BILLING-READY-08 COMPLETE AND LOCKED 2026-08-07** — Controlled xAI smoke PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (500 credits) — overflow 98 ACCEPTED BY DESIGN — balance reached 0 correctly — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — QuotaGuard browser-session bypass — Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md` — **BILLING-READY-08B COMPLETE AND LOCKED 2026-08-07** — usage_records.created_at schema remediation — Checkpoint: `docs/BILLING-READY-08B-CHECKPOINT.md` — Final checkpoint: `docs/BILLING-READY-08-CHECKPOINT.md` — **PRIVATE-BETA-FUNCTIONAL-READINESS-04 COMPLETE AND LOCKED 2026-08-07** — All acceptance criteria satisfied — FR-04 parent checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-CHECKPOINT.md` — **ADMIN-CONSOLE-01 COMPLETE AND LOCKED 2026-08-08** — All children COMPLETE AND LOCKED — **ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07** — Checkpoint: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md` — **ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07** — Authenticated Admin Credit Grant API — Checkpoint: `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md` — **ADMIN-CONSOLE-01C COMPLETE AND LOCKED 2026-08-07** — Admin Console Shell + Users/Sessions — Checkpoint: `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md` — **ADMIN-CONSOLE-01D COMPLETE AND LOCKED 2026-08-07** — Admin Credit Grant UI — Checkpoint: `docs/ADMIN-CONSOLE-01D-CHECKPOINT.md` — **ADMIN-CONSOLE-01E COMPLETE AND LOCKED 2026-08-08** — Staging Operator Validation + Parent Consolidation — PASS WITH NON-BLOCKING LIMITATIONS — Checkpoint: `docs/ADMIN-CONSOLE-01E-CHECKPOINT.md` — **ADMIN-CONSOLE-01E1 COMPLETE AND LOCKED 2026-08-08** — Invalid Locale Redirect Origin Fix — Checkpoint: `docs/ADMIN-CONSOLE-01E1-CHECKPOINT.md` — Parent checkpoint: `docs/ADMIN-CONSOLE-01-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 BLOCKED** — private beta blocked by PRIVATE-BETA-BLOCKER-01 (recurring canonical landing page regression) and separate unresolved preview failure — Do not execute invitations until all blockers resolved — **PRIVATE-BETA-BLOCKER-01 COMPLETE AND LOCKED 2026-08-09** — Legacy workspace + feature-flag removal — Build-independence proven — All locales PASS — Commit `651f723447a85ec5d22139d6ba60be6680a0f8c6` — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-01-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-02 COMPLETE AND LOCKED 2026-08-09** — Preview Runtime Failure — PreviewController fallback 4001→4002 — staging live preview PASS — Commit `f73da07ef8d1acc70d43d6b4980fd1d0d57e2883` — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-02-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 UNBLOCKED** — landing-page and preview blockers resolved — do not execute invitations without registration and Keith explicit approval — GLOBAL_EXECUTION_ENABLED remains false — **GOV-ARCH-01 COMPLETE AND LOCKED 2026-08-10** — Checkpoint: `docs/GOV-ARCH-01-CHECKPOINT.md` — **GOV-PRD-01 COMPLETE AND LOCKED 2026-08-10** — Checkpoint: `docs/GOV-PRD-01-CHECKPOINT.md` — **PRIVATE-BETA-OPS-01 COMPLETE AND LOCKED 2026-08-10** — Independent PM2 ops watchdog staging-proved — P1 operational visibility SATISFIED — Checkpoint: `docs/PRIVATE-BETA-OPS-01-CHECKPOINT.md` — **PRIVATE-BETA-EXEC-01 COMPLETE AND LOCKED 2026-08-10** — Controlled Builder AI Execution Activation — Activation smoke PASS — Execution ID `24acd697-b55c-40d0-b2d5-32faf9b85709` — provider `xai` — path `plain` — tokens `1078` — file `beta-activation-smoke-2026-08-10.txt` — credits 6000→4922 — `GLOBAL_EXECUTION_ENABLED=true` deliberately left enabled — Harness remains disabled — Stripe charging remains disabled — Checkpoint: `docs/PRIVATE-BETA-EXEC-01-CHECKPOINT.md` — **PRIVATE-BETA-E2E-01 COMPLETE AND LOCKED — 2026-08-10 — FAIL / BLOCKER** — Fresh Keith Builder End-to-End Staging Journey — Primary blocker: Builder plain-path completed execution returned text with `fileActions: []` (execution `2bc73157-973a-45ec-8b71-bca8c2f7941d`) — no `index.html` / empty workspace — Gate rolled back to `GLOBAL_EXECUTION_ENABLED=false` — PRIVATE-BETA-INVITE-01 remains untouched/unregistered — Builder-first private beta **NO-GO PENDING BLOCKER FIX** — **PRIVATE-BETA-BLOCKER-03A COMPLETE AND LOCKED — 2026-08-10 — ROOT CAUSE PROVEN** — Empty File-Action Contract Diagnosis — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03A-CHECKPOINT.md` — Diagnosis: `docs/PRIVATE-BETA-BLOCKER-03A-DIAGNOSIS.md` — PROMPT-ONLY file-action contract; prose noncompliance silently accepted as completed with `fileActions: []` — Defect class: RESPONSE-FORM-SPECIFIC / MODEL-AGNOSTIC CONTRACT WEAKNESS — Target execution `2bc73157-973a-45ec-8b71-bca8c2f7941d` — Comparison executions `24acd697-b55c-40d0-b2d5-32faf9b85709` / `83acc0e9-84de-4f94-9e41-294701e38393` — `GLOBAL_EXECUTION_ENABLED=false` preserved — Builder-first private beta remains **NO-GO PENDING BLOCKER FIX** — **PRIVATE-BETA-BLOCKER-03B COMPLETE AND LOCKED — 2026-08-11 — PASS** — File-Action Reliability Fix — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03B-CHECKPOINT.md` — original file-action reliability blocker remediated — plain-path structured JSON + application-owned zero-action failure validated on staging — `GLOBAL_EXECUTION_ENABLED=false` — Harness remains disabled — PRIVATE-BETA-INVITE-01 untouched/unregistered — Builder-first private beta remains **NO-GO PENDING REMAINING READINESS WORK** — **BUILDER-INTENT-01 ACTIVE — Step 1 COMPLETE (Registration — 2026-08-11)** — Ask/Discuss vs Build/Edit Execution Intent — exact next: BUILDER-INTENT-01 Step 2 — Intent Contract + UX Stage-Start — 03C/03D remain NOT REGISTERED — PRIVATE-BETA-INVITE-01 untouched/unregistered — `GLOBAL_EXECUTION_ENABLED=false` — **BUILDER-INTENT-01 COMPLETE AND LOCKED 2026-08-13** — Checkpoint: `docs/BUILDER-INTENT-01-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-03C COMPLETE AND LOCKED 2026-08-14** — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03C-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-03D COMPLETE AND LOCKED 2026-08-14** — No-workspace-result credit policy — 03D-A/03D-B COMPLETE AND LOCKED — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03D-CHECKPOINT.md` — **PRIVATE-BETA-E2E-02 COMPLETE AND LOCKED — 2026-08-14 — FAIL / BLOCKED** — Staging did not contain/exercise 03D Build deferred-deduction confirmation architecture — old immediate-deduction path operated — confirm-build-apply route not present on staging — 15/18 PASS, 3/18 FAIL — provider=xAI/grok-4.5 — 1 call consumed, budget exhausted — UI balance 3278 ≠ DB balance 30577 UNRESOLVED — Checkpoint: `docs/PRIVATE-BETA-E2E-02-CHECKPOINT.md` — Private-beta NO-GO / BLOCKED — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited — **PRIVATE-BETA-BLOCKER-03F COMPLETE AND LOCKED — 2026-08-15 — FAIL / BLOCKED** — Staging Deployment Parity for 03D Accounting Confirmation Path — FRONTEND CONFIRM ROUTE REACHABILITY / API REWRITE PRECEDENCE BLOCKER — Deployment/source parity PASS — Runtime same-origin confirm path FAIL — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03F-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-03G COMPLETE AND LOCKED — 2026-08-16 — PASS** — Frontend Confirm-Build-Apply Route Reachability — next.config.js fallback-phase fix — confirm route reachable — GLOBAL_EXECUTION_ENABLED=false — BILLING_CHARGES_ENABLED=false — provider calls=0 — credit mutations=0 — Checkpoint: docs/PRIVATE-BETA-BLOCKER-03G-CHECKPOINT.md — Unresolved separate blocker: CREDIT DISPLAY DISCREPANCY (UI 3278 ≠ DB 30577) — **PRIVATE-BETA-BLOCKER-03H ACTIVE — Step 2 COMPLETE (Stage Start / Credit Data-Flow & Source-of-Truth Investigation — 2026-08-16)** — Credit Balance Display / Authoritative Balance Reconciliation — ROOT CAUSE PROVEN: stale frontend state (no auto-refresh after credit mutations) — fix is frontend-only + Cache-Control header — MIGRATION_REQUIRED=NO — ACCOUNTING_CALCULATION_CHANGE_REQUIRED=NO — Step 3 PENDING — private-beta NO-GO / BLOCKED — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited
 
 
 \# TASKS.md ??Master Task Index
@@ -50593,7 +50593,7 @@ Preserve evidence and classify the exact blocker.
 **Production file changed:** `frontend/next.config.js` (single file, 2-line change)
 **Test file added:** `frontend/lib/next-config-rewrites.test.ts` (3/3 PASS)
 **Rollback target:** `ed34e3c220c04c81ec6784f43e8952a60f537825` — available
-**Exact next recommended task:** PRIVATE-BETA-BLOCKER-03H — Credit Balance Display / Authoritative Balance Reconciliation — NOT YET REGISTERED
+**Exact next recommended task:** PRIVATE-BETA-BLOCKER-03H — Credit Balance Display / Authoritative Balance Reconciliation — REGISTERED — 2026-08-16
 
 ---
 
@@ -50839,3 +50839,267 @@ Remains untouched / unregistered / prohibited. Private beta remains NO-GO.
 - [x] Stage Start document created (`docs/PRIVATE-BETA-BLOCKER-03G-STAGE-START.md`)
 - [x] Final checkpoint created (`docs/PRIVATE-BETA-BLOCKER-03G-CHECKPOINT.md`)
 - [x] Private-beta remains NO-GO pending separate balance blocker + fresh E2E
+
+---
+
+### PRIVATE-BETA-BLOCKER-03H — Credit Balance Display / Authoritative Balance Reconciliation
+
+**Task ID:** PRIVATE-BETA-BLOCKER-03H
+**Title:** Credit Balance Display / Authoritative Balance Reconciliation
+**Status:** ACTIVE — Step 2 COMPLETE (Stage Start / Credit Data-Flow & Source-of-Truth Investigation — 2026-08-16)
+**Family:** PRIVATE-BETA-BLOCKER-03 / BUILDER EXECUTION RELIABILITY / CREDIT BALANCE DISPLAY
+**Priority:** HIGH — private-beta blocker — LAUNCH-CRITICAL
+**Risk:** HIGH
+**Workflow:** HIGH-RISK 4-STEP
+
+- Step 1 — Registration — COMPLETE — 2026-08-16
+- Step 2 — Stage Start / Credit Data-Flow & Source-of-Truth Investigation — COMPLETE — 2026-08-16
+- Step 3 — Bounded Root-Cause Fix + Tests + Provider-Free Staging Validation — PENDING
+- Step 4 — Consolidation / Checkpoint — PENDING
+
+**Registered:** 2026-08-16
+**Dependencies:** PRIVATE-BETA-BLOCKER-03G COMPLETE AND LOCKED — 2026-08-16 — PASS; PRIVATE-BETA-E2E-02 COMPLETE AND LOCKED — 2026-08-14 — FAIL / BLOCKED
+**Blocking:** private-beta GO/NO-GO — PRIVATE-BETA-E2E-03 cannot proceed until 03H resolved
+**Safety state:** `GLOBAL_EXECUTION_ENABLED=false` — must remain false; `BILLING_CHARGES_ENABLED=false` — must remain false
+**Provider-call budget:** ZERO
+**Credit-mutation budget:** ZERO intentional mutations
+**DB mutation policy:** NO writes during investigation; no migration without scope/risk reevaluation
+**GLOBAL_EXECUTION_ENABLED policy:** false — must remain false throughout
+**BILLING_CHARGES_ENABLED policy:** false — must remain false throughout
+**PRIVATE-BETA-INVITE-01 status:** untouched / unregistered — prohibited
+**Stage-Start document:** `docs/PRIVATE-BETA-BLOCKER-03H-STAGE-START.md` — CREATED — 2026-08-16
+**Checkpoint:** `docs/PRIVATE-BETA-BLOCKER-03H-CHECKPOINT.md` — NOT YET CREATED
+**E2E-02 reference user:** `7f772841-7844-401b-a3da-e928b0c7b79c`
+**Observed discrepancy:** UI 3278 ≠ authoritative DB credit_balances.balance 30577 — after E2E-02 deduction of 1146 from starting balance 31723 (31723 − 1146 = 30577 — DB internally consistent)
+**Root-cause question:** WHAT DOES UI VALUE 3278 REPRESENT and WHY DOES IT DIFFER FROM AUTHORITATIVE ACCOUNTING STATE 30577?
+**Separate open anomaly:** Manual checkpoint HTTP 500 — out of 03H scope unless Step 2 finds direct shared root cause
+**Recommended Step 2 model:** Opus 4.6 — root cause crosses accounting semantics, API contracts, frontend state, and potentially legacy representations
+**Exact next recommended task:** PRIVATE-BETA-BLOCKER-03H Step 3 — Bounded Root-Cause Fix + Tests + Provider-Free Staging Validation — use NEW Cursor window — GPT-5.3 Codex recommended
+
+---
+
+#### Observed Discrepancy (E2E-02 Evidence)
+
+E2E-02 execution:
+- starting balance:     31723
+- applied credits:       1146
+- authoritative ending: 30577  (31723 − 1146 = 30577 — DB internally consistent)
+- DB credit_balances.balance: 30577
+- Browser-visible balance: 3278
+- Unexplained difference: 30577 ≠ 3278
+
+---
+
+#### Root-Cause Question
+
+WHAT DOES THE UI VALUE 3278 REPRESENT,
+and
+WHY DOES IT DIFFER FROM THE AUTHORITATIVE ACCOUNTING STATE OF 30577?
+
+The answer must be supported by code/API/runtime/data evidence.
+
+---
+
+#### Objective
+
+Determine the precise root cause of the discrepancy between the user-visible credit balance (3278) and the authoritative accounting balance (30577) observed after PRIVATE-BETA-E2E-02.
+
+This is launch-critical: users must see a credit/balance representation that is consistent with the actual accounting system.
+
+---
+
+#### Critical Instruction
+
+Do NOT assume:
+- the UI is simply displaying the wrong field
+- 3278 is stale
+- 3278 is scaled
+- 3278 is monthly allowance
+- 30577 should necessarily be rendered verbatim
+- there is a divide-by-10 conversion
+- the discrepancy comes from caching
+- the discrepancy comes from the E2E deduction
+
+03H must trace the complete credit data path and prove the root cause before implementing a fix.
+
+No speculative accounting changes.
+
+---
+
+#### Investigation Scope
+
+03H may investigate the complete read/display chain for user credits:
+1. authoritative DB credit balance
+2. API Gateway billing/credit endpoints
+3. service/repository/DTO transformations
+4. frontend server/client fetch path
+5. frontend state/cache
+6. formatting/scaling/conversion
+7. balance refresh after deduction
+8. plan/monthly/rollover values if the UI intentionally combines them
+9. any pre-existing legacy credit representation still used by frontend
+
+---
+
+#### Required Questions for Step 2
+
+Step 2 must answer, with evidence:
+1. What database table/field is authoritative for spendable user credits?
+2. Is `credit_balances.balance` the final user-facing spendable balance, or an internal unit requiring a defined transformation?
+3. What endpoint supplies the balance shown in the current UI?
+4. Which backend method/repository constructs that response?
+5. Which frontend component displays it?
+6. Which exact JSON field does that component read?
+7. Is any scaling/division/multiplication performed?
+8. Is a stale cached balance being used?
+9. Is the frontend reading `balance` / `monthly_allocation` / `rollover_balance` / plan credits / usage / a legacy field / some derived combination?
+10. Is 3278 reproducible directly from any persisted/API value?
+11. Is the UI balance refreshed after a deduction?
+12. Are multiple credit/billing endpoints exposing conflicting representations?
+13. Are unit names (tokens / credits / milli-credits / internal credits / balance / remaining credits / allocation / rollover) being conflated?
+14. What exact value should users see?
+
+Do NOT fix anything until these are answered.
+
+---
+
+#### Possible Defect Classes
+
+Evaluate but do not assume:
+- A. Wrong API field selected
+- B. Legacy balance endpoint
+- C. Stale frontend cache/state
+- D. Missing refresh after deduction
+- E. Unit/scaling conversion mismatch
+- F. Monthly allocation confused with balance
+- G. Rollover/allocation calculation defect
+- H. Different user/account source
+- I. Different environment/source
+- J. Formatting/truncation defect
+- K. Duplicate/legacy credit systems
+- L. API response serialization issue
+- M. Frontend optimistic/local balance calculation
+- N. Other evidence-backed root cause
+
+---
+
+#### Source-of-Truth Requirement
+
+03H must finish with a documented contract:
+
+  Authoritative persisted value
+  → backend transformation, if any
+  → public API field
+  → frontend state
+  → user-visible display
+
+Every transformation must be explicit. If an internal-unit → display-unit conversion legitimately exists, document the formula, where it belongs, why, and tests proving it. If no conversion should exist, UI/API must use the authoritative balance consistently.
+
+---
+
+#### Evidence Hierarchy
+
+1. current production source
+2. database/accounting schema and repository semantics
+3. existing tests
+4. API response behavior
+5. provider-free staging runtime evidence
+6. historical docs/checkpoints
+
+Do not infer accounting semantics merely from variable names.
+
+---
+
+#### Provider / Accounting Mutation Safety
+
+- Provider-call budget: ZERO
+- Credit-mutation budget: ZERO intentional mutations
+- GLOBAL_EXECUTION_ENABLED: false throughout
+- BILLING_CHARGES_ENABLED: false throughout
+- No DB writes during investigation
+- No migration without scope/risk reevaluation
+- Do NOT run Builder, Ask, or call confirm-build-apply against a chargeable execution
+- Do NOT manually deduct, grant, or refund credits
+- Do NOT alter credit_balances or write accounting records
+
+---
+
+#### Frontend Requirements
+
+If 03H modifies user-facing credit display behavior:
+- Use existing translation infrastructure — no hardcoded English
+- Update together: `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`
+- Heroicons v2 Outline only if an icon unexpectedly enters scope
+- 03H is accounting correctness, not visual redesign
+
+---
+
+#### 03G Scope Status
+
+03G is COMPLETE AND LOCKED. Do not reopen next.config.js routing, confirm route reachability, or API Gateway rewrite precedence unless a regression test incidentally verifies it. No routing changes in 03H.
+
+---
+
+#### Checkpoint HTTP 500 Scope Status
+
+Manual checkpoint HTTP 500 is a separate recorded anomaly. Do NOT investigate in 03H unless Step 2 produces direct evidence of a shared root cause.
+
+---
+
+#### Future E2E Requirement
+
+PRIVATE-BETA-E2E-03 must NOT be registered or executed until 03H is complete and locked.
+Any future provider call requires fresh explicit Keith authorization. E2E-02 authorization is consumed.
+
+---
+
+#### PRIVATE-BETA-INVITE-01
+
+Remains untouched / unregistered / prohibited. Private beta remains NO-GO.
+
+---
+
+#### PASS Definition
+
+03H PASS means: the credit value visible to the user is proven to represent the same authoritative credit/accounting state used by the backend, with any legitimate unit conversion explicitly defined, tested, and consistently applied.
+
+Prior discrepancy: UI 3278 vs DB 30577 — must be fully explained and resolved. "Probably stale" or "likely a scaling issue" is NOT PASS.
+
+---
+
+#### Acceptance Criteria
+
+- [ ] Authoritative persisted credit source identified
+- [ ] Authoritative credit unit/semantics documented
+- [ ] E2E-02 user/account identity tied to evidence (user_id `7f772841-7844-401b-a3da-e928b0c7b79c`)
+- [ ] UI balance source endpoint identified
+- [ ] Backend response field identified
+- [ ] Frontend displayed field identified
+- [ ] Full DB → API → UI data path documented
+- [ ] All transformations/scaling documented
+- [ ] 3278 reproduced or origin identified
+- [ ] Divergence point from 30577 identified
+- [ ] Root cause proven with evidence
+- [ ] Correct user-facing balance contract defined
+- [ ] No speculative conversion introduced
+- [ ] Smallest safe fix selected
+- [ ] No accounting calculation change unless proven necessary
+- [ ] No provider execution
+- [ ] No intentional credit mutation
+- [ ] No DB writes during investigation
+- [ ] `GLOBAL_EXECUTION_ENABLED` remains false
+- [ ] `BILLING_CHARGES_ENABLED` remains false
+- [ ] No Stripe/payment activation
+- [ ] Relevant backend tests pass
+- [ ] Relevant frontend tests pass
+- [ ] Provider-free staging API evidence reconciles
+- [ ] Provider-free staging UI/display evidence reconciles
+- [ ] Same user/environment proven
+- [ ] No unrelated billing/accounting change
+- [ ] Multilingual rules followed if copy changes
+- [ ] Stage Start document created (`docs/PRIVATE-BETA-BLOCKER-03H-STAGE-START.md`)
+- [ ] Rollback strategy documented before implementation/deployment
+- [ ] Final checkpoint created (`docs/PRIVATE-BETA-BLOCKER-03H-CHECKPOINT.md`)
+- [ ] Private-beta remains NO-GO until fresh E2E
+- [ ] Future E2E requires fresh Keith authorization
+- [ ] PRIVATE-BETA-INVITE-01 remains untouched

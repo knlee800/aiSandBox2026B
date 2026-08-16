@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 export interface BillingBalance {
   balance: number;
@@ -31,10 +31,19 @@ export function useBillingData() {
   const [subscription, setSubscription] = useState<BillingSubscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const inFlightRef = useRef(false);
 
-  const fetchBillingData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const fetchBillingData = useCallback(async (options?: { silent?: boolean }) => {
+    if (inFlightRef.current) {
+      return;
+    }
+    inFlightRef.current = true;
+
+    const silent = options?.silent === true;
+    if (!silent) {
+      setLoading(true);
+      setError(null);
+    }
 
     try {
       const [balanceRes, subscriptionRes] = await Promise.all([
@@ -51,16 +60,29 @@ export function useBillingData() {
 
       setBalance(balanceData);
       setSubscription(subscriptionData);
+      setError(null);
     } catch {
       setError('FETCH_FAILED');
     } finally {
+      inFlightRef.current = false;
       setLoading(false);
     }
   }, []);
 
+  const refetch = useCallback(() => fetchBillingData(), [fetchBillingData]);
+
   useEffect(() => {
-    fetchBillingData();
+    void fetchBillingData();
+
+    const handleFocus = () => {
+      void fetchBillingData({ silent: true });
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
   }, [fetchBillingData]);
 
-  return { balance, subscription, loading, error, refetch: fetchBillingData };
+  return { balance, subscription, loading, error, refetch };
 }

@@ -6,6 +6,7 @@ import {
   Res,
   HttpCode,
   HttpStatus,
+  Header,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { SessionCookieGuard } from '../auth/session-cookie.guard';
@@ -55,6 +56,7 @@ export class BillingReadController {
 
   @Get('balance')
   @HttpCode(HttpStatus.OK)
+  @Header('Cache-Control', 'no-store')
   async getBalance(
     @Req() req: AuthenticatedRequest,
   ): Promise<BillingBalanceResponse> {

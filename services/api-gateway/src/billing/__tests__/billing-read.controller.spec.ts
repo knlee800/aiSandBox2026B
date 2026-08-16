@@ -127,6 +127,30 @@ describe('BillingReadController', () => {
       });
     });
 
+    it('should return the repository balance without numeric transformation', async () => {
+      creditBalanceRepo.findByOwner.mockResolvedValue({
+        id: 'balance-uuid',
+        ownerId: 'user-uuid-456',
+        ownerType: 'user',
+        planId: 'free',
+        balance: 3278,
+        monthlyAllocation: 500,
+        rolloverBalance: 0,
+        status: 'active',
+        periodStart: new Date('2026-07-01T00:00:00.000Z'),
+        periodEnd: new Date('2026-08-01T00:00:00.000Z'),
+        resetAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      const result = await controller.getBalance(mockReq);
+
+      expect(result.balance).toBe(3278);
+      expect(result.monthlyAllocation).toBe(500);
+      expect(result.balance / 10).not.toBe(result.balance);
+    });
+
     it('should only read own user balance (no cross-user access)', async () => {
       creditBalanceRepo.findByOwner.mockResolvedValue(null);
 
@@ -322,6 +346,86 @@ describe('BillingReadController', () => {
       app.setGlobalPrefix('api');
       await app.init();
     };
+
+    it('returns HTTP 200 with Cache-Control no-store and untransformed repository balance', async () => {
+      await buildApp();
+      const periodStart = new Date('2026-07-01T00:00:00.000Z');
+      const periodEnd = new Date('2026-08-01T00:00:00.000Z');
+      creditBalanceRepo.findByOwner.mockResolvedValue({
+        id: 'balance-http-uuid',
+        ownerId: mockUser.userId,
+        ownerType: 'user',
+        planId: 'free',
+        balance: 30577,
+        monthlyAllocation: 500,
+        rolloverBalance: 0,
+        status: 'active',
+        periodStart,
+        periodEnd,
+        resetAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      const response = await request(app!.getHttpServer())
+        .get('/api/billing/balance')
+        .expect(200);
+
+      expect(response.headers['cache-control']).toBe('no-store');
+      expect(response.body).toEqual({
+        balance: 30577,
+        monthlyAllocation: 500,
+        planId: 'free',
+        periodStart: '2026-07-01T00:00:00.000Z',
+        periodEnd: '2026-08-01T00:00:00.000Z',
+        status: 'active',
+      });
+      expect(response.body.balance).toBe(30577);
+      expect(creditBalanceRepo.findByOwner).toHaveBeenCalledWith(
+        mockUser.userId,
+        'user',
+      );
+    });
+
+    it('returns Cache-Control no-store for empty balance without transforming the contract', async () => {
+      await buildApp();
+      creditBalanceRepo.findByOwner.mockResolvedValue(null);
+
+      const response = await request(app!.getHttpServer())
+        .get('/api/billing/balance')
+        .expect(200);
+
+      expect(response.headers['cache-control']).toBe('no-store');
+      expect(response.body).toEqual({
+        balance: 0,
+        monthlyAllocation: 0,
+        planId: 'free',
+        periodStart: null,
+        periodEnd: null,
+        status: 'active',
+      });
+    });
+
+    it('does not apply Cache-Control no-store to the subscription endpoint', async () => {
+      await buildApp();
+      subscriptionRepo.findActiveByUserId.mockResolvedValue(null);
+
+      const response = await request(app!.getHttpServer())
+        .get('/api/billing/subscription')
+        .expect(200);
+
+      expect(response.headers['cache-control']).not.toBe('no-store');
+    });
+
+    it('keeps GET /api/billing/balance protected for unauthenticated requests', async () => {
+      await buildApp({ unauthenticated: true });
+
+      await request(app!.getHttpServer())
+        .get('/api/billing/balance')
+        .expect(401);
+
+      expect(creditBalanceRepo.findByOwner).not.toHaveBeenCalled();
+    });
 
     it('returns HTTP 200 and JSON null body for no active subscription', async () => {
       await buildApp();
