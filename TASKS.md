@@ -50846,7 +50846,7 @@ Remains untouched / unregistered / prohibited. Private beta remains NO-GO.
 
 **Task ID:** PRIVATE-BETA-BLOCKER-03H
 **Title:** Credit Balance Display / Authoritative Balance Reconciliation
-**Status:** ACTIVE — Step 2 COMPLETE (Stage Start / Credit Data-Flow & Source-of-Truth Investigation — 2026-08-16)
+**Status:** COMPLETE AND LOCKED — 2026-08-16 — PASS
 **Family:** PRIVATE-BETA-BLOCKER-03 / BUILDER EXECUTION RELIABILITY / CREDIT BALANCE DISPLAY
 **Priority:** HIGH — private-beta blocker — LAUNCH-CRITICAL
 **Risk:** HIGH
@@ -50854,12 +50854,30 @@ Remains untouched / unregistered / prohibited. Private beta remains NO-GO.
 
 - Step 1 — Registration — COMPLETE — 2026-08-16
 - Step 2 — Stage Start / Credit Data-Flow & Source-of-Truth Investigation — COMPLETE — 2026-08-16
-- Step 3 — Bounded Root-Cause Fix + Tests + Provider-Free Staging Validation — PENDING
-- Step 4 — Consolidation / Checkpoint — PENDING
+- Step 3 — Bounded Root-Cause Fix + Tests + Provider-Free Staging Validation + Keith Manual Browser Smoke — COMPLETE — PASS — 2026-08-16
+- Step 4 — Consolidation / Checkpoint — COMPLETE — 2026-08-16
 
 **Registered:** 2026-08-16
+**Completed:** 2026-08-16
+**Outcome:** PASS
 **Dependencies:** PRIVATE-BETA-BLOCKER-03G COMPLETE AND LOCKED — 2026-08-16 — PASS; PRIVATE-BETA-E2E-02 COMPLETE AND LOCKED — 2026-08-14 — FAIL / BLOCKED
-**Blocking:** private-beta GO/NO-GO — PRIVATE-BETA-E2E-03 cannot proceed until 03H resolved
+**Defect classification:** C — Stale frontend cache/state
+**Root-cause proven:** YES — `useBillingData` hook fetched once on mount with no auto-refresh; 3278 was a prior stale balance snapshot before admin grants brought balance to 31723
+**First divergence point:** Frontend stale `useBillingData` state
+**Fix:** Window-focus balance refresh in `useBillingData.ts` + `Cache-Control: no-store` on `GET /api/billing/balance`
+**Implementation SHA:** `e34be9bdcdeed6cc1fbc1f0ce2f7e5689a62bdd0`
+**Pre-03H / rollback SHA:** `5829c4241d0f1abc0a41476bf2fe3996dd9da993`
+**Production files changed:** `frontend/hooks/useBillingData.ts`, `services/api-gateway/src/billing/billing-read.controller.ts`
+**DB/API/UI reconciliation:** 30577 = 30577 = 30,577 — PASS
+**KEITH_MANUAL_BROWSER_SMOKE:** PASS — 2026-08-16
+**GLOBAL_EXECUTION_ENABLED:** false — unchanged
+**BILLING_CHARGES_ENABLED:** false — unchanged
+**Provider calls:** 0
+**Intentional credit mutations:** 0
+**DB writes:** 0
+**Stripe/payment activity:** 0
+**Migration:** NONE
+**Accounting calculation change:** NONE
 **Safety state:** `GLOBAL_EXECUTION_ENABLED=false` — must remain false; `BILLING_CHARGES_ENABLED=false` — must remain false
 **Provider-call budget:** ZERO
 **Credit-mutation budget:** ZERO intentional mutations
@@ -50868,13 +50886,13 @@ Remains untouched / unregistered / prohibited. Private beta remains NO-GO.
 **BILLING_CHARGES_ENABLED policy:** false — must remain false throughout
 **PRIVATE-BETA-INVITE-01 status:** untouched / unregistered — prohibited
 **Stage-Start document:** `docs/PRIVATE-BETA-BLOCKER-03H-STAGE-START.md` — CREATED — 2026-08-16
-**Checkpoint:** `docs/PRIVATE-BETA-BLOCKER-03H-CHECKPOINT.md` — NOT YET CREATED
+**Checkpoint:** `docs/PRIVATE-BETA-BLOCKER-03H-CHECKPOINT.md` — CREATED — 2026-08-16
 **E2E-02 reference user:** `7f772841-7844-401b-a3da-e928b0c7b79c`
 **Observed discrepancy:** UI 3278 ≠ authoritative DB credit_balances.balance 30577 — after E2E-02 deduction of 1146 from starting balance 31723 (31723 − 1146 = 30577 — DB internally consistent)
 **Root-cause question:** WHAT DOES UI VALUE 3278 REPRESENT and WHY DOES IT DIFFER FROM AUTHORITATIVE ACCOUNTING STATE 30577?
-**Separate open anomaly:** Manual checkpoint HTTP 500 — out of 03H scope unless Step 2 finds direct shared root cause
-**Recommended Step 2 model:** Opus 4.6 — root cause crosses accounting semantics, API contracts, frontend state, and potentially legacy representations
-**Exact next recommended task:** PRIVATE-BETA-BLOCKER-03H Step 3 — Bounded Root-Cause Fix + Tests + Provider-Free Staging Validation — use NEW Cursor window — GPT-5.3 Codex recommended
+**Root-cause answer (Step 2):** Stale frontend state — `useBillingData` hook fetches once on mount with no auto-refresh after credit mutations; 3278 was the DB balance at an earlier page load before admin grants brought balance to 31723
+**Separate open anomaly:** Manual checkpoint HTTP 500 — out of 03H scope — NO SHARED ROOT CAUSE with 03H
+**Exact next recommended task:** PRIVATE-BETA-BLOCKER-03I — Manual Checkpoint Creation HTTP 500 Investigation — NOT YET REGISTERED
 
 ---
 
@@ -51069,37 +51087,37 @@ Prior discrepancy: UI 3278 vs DB 30577 — must be fully explained and resolved.
 
 #### Acceptance Criteria
 
-- [ ] Authoritative persisted credit source identified
-- [ ] Authoritative credit unit/semantics documented
-- [ ] E2E-02 user/account identity tied to evidence (user_id `7f772841-7844-401b-a3da-e928b0c7b79c`)
-- [ ] UI balance source endpoint identified
-- [ ] Backend response field identified
-- [ ] Frontend displayed field identified
-- [ ] Full DB → API → UI data path documented
-- [ ] All transformations/scaling documented
-- [ ] 3278 reproduced or origin identified
-- [ ] Divergence point from 30577 identified
-- [ ] Root cause proven with evidence
-- [ ] Correct user-facing balance contract defined
-- [ ] No speculative conversion introduced
-- [ ] Smallest safe fix selected
-- [ ] No accounting calculation change unless proven necessary
-- [ ] No provider execution
-- [ ] No intentional credit mutation
-- [ ] No DB writes during investigation
-- [ ] `GLOBAL_EXECUTION_ENABLED` remains false
-- [ ] `BILLING_CHARGES_ENABLED` remains false
-- [ ] No Stripe/payment activation
-- [ ] Relevant backend tests pass
-- [ ] Relevant frontend tests pass
-- [ ] Provider-free staging API evidence reconciles
-- [ ] Provider-free staging UI/display evidence reconciles
-- [ ] Same user/environment proven
-- [ ] No unrelated billing/accounting change
-- [ ] Multilingual rules followed if copy changes
-- [ ] Stage Start document created (`docs/PRIVATE-BETA-BLOCKER-03H-STAGE-START.md`)
-- [ ] Rollback strategy documented before implementation/deployment
-- [ ] Final checkpoint created (`docs/PRIVATE-BETA-BLOCKER-03H-CHECKPOINT.md`)
-- [ ] Private-beta remains NO-GO until fresh E2E
-- [ ] Future E2E requires fresh Keith authorization
-- [ ] PRIVATE-BETA-INVITE-01 remains untouched
+- [x] Authoritative persisted credit source identified
+- [x] Authoritative credit unit/semantics documented
+- [x] E2E-02 user/account identity tied to evidence (user_id `7f772841-7844-401b-a3da-e928b0c7b79c`)
+- [x] UI balance source endpoint identified
+- [x] Backend response field identified
+- [x] Frontend displayed field identified
+- [x] Full DB → API → UI data path documented
+- [x] All transformations/scaling documented
+- [x] 3278 reproduced or origin identified
+- [x] Divergence point from 30577 identified
+- [x] Root cause proven with evidence
+- [x] Correct user-facing balance contract defined
+- [x] No speculative conversion introduced
+- [x] Smallest safe fix selected
+- [x] No accounting calculation change unless proven necessary
+- [x] No provider execution
+- [x] No intentional credit mutation
+- [x] No DB writes during investigation
+- [x] `GLOBAL_EXECUTION_ENABLED` remains false
+- [x] `BILLING_CHARGES_ENABLED` remains false
+- [x] No Stripe/payment activation
+- [x] Relevant backend tests pass
+- [x] Relevant frontend tests pass
+- [x] Provider-free staging API evidence reconciles
+- [x] Provider-free staging UI/display evidence reconciles
+- [x] Same user/environment proven
+- [x] No unrelated billing/accounting change
+- [x] Multilingual rules followed if copy changes
+- [x] Stage Start document created (`docs/PRIVATE-BETA-BLOCKER-03H-STAGE-START.md`)
+- [x] Rollback strategy documented before implementation/deployment
+- [x] Final checkpoint created (`docs/PRIVATE-BETA-BLOCKER-03H-CHECKPOINT.md`)
+- [x] Private-beta remains NO-GO until fresh E2E
+- [x] Future E2E requires fresh Keith authorization
+- [x] PRIVATE-BETA-INVITE-01 remains untouched
