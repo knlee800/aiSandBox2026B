@@ -51540,3 +51540,214 @@ Step 3: GO — Grok 4.6 High — NORMAL bounded — `services/container-manager/
 **Step 2:** COMPLETE — TIMEOUT_HYPOTHESIS_CONFIRMED=NO — ROOT_CAUSE_PROVEN=YES — Git 2.52 safe.directory / mixed uid 1000 workspace vs root docker exec — HTTP 500 in 2181ms — CLEANUP_RESULT=PASS — session `344ab7b5-333f-429f-8175-537d098d8159` terminated
 **Step 3:** COMPLETE — PASS — Git safe.directory Fix + Provider-Free Staging Validation — 2026-08-17 — SHA `54b5764d8645d80a44f5de1351ca8e7928c5c8f4` — POST_FIX_CHECKPOINT HTTP 201 in 2795ms — commit `502518bda5ab9498cc304bc61088712aa37b75e5` — CLEANUP_RESULT=PASS — session `6a9442be-8440-4952-9026-9c93bfc2110c` terminated
 **Step 4:** COMPLETE — PASS — Consolidation / Checkpoint — 2026-08-17 — `docs/PRIVATE-BETA-BLOCKER-03I-CHECKPOINT.md` created
+
+---
+
+### PRIVATE-BETA-E2E-03: Fresh Private-Beta Builder End-to-End Readiness Validation
+
+**Task ID:** PRIVATE-BETA-E2E-03
+**Title:** Fresh Private-Beta Builder End-to-End Readiness Validation
+**Status:** ACTIVE — Step 1 COMPLETE — Step 2 PENDING
+**Nature:** Builder-first private-beta end-to-end staging validation
+**Classification:** SEQUENTIAL
+**Priority:** P1
+**Risk:** HIGH — live staging, real provider execution, credit accounting, safety-flag transitions
+**Family:** PRIVATE BETA / BUILDER / END-TO-END / READINESS VALIDATION
+**Workflow:** HIGH-ASSURANCE 4-STEP
+
+- Step 1 — Registration — COMPLETE — 2026-08-17
+- Step 2 — Stage Start / Exact E2E Runbook + Preconditions — PENDING
+- Step 3 — Keith-Controlled Staging E2E Execution + Evidence Collection — NOT AUTHORIZED
+- Step 4 — Consolidation / Readiness Result — NOT STARTED
+
+**Registered:** 2026-08-17
+**Approved:** Keith — 2026-08-17 (Step 1 registration only)
+**Dependencies:**
+- PRIVATE-BETA-E2E-02 COMPLETE AND LOCKED — 2026-08-14 — FAIL / BLOCKED — Checkpoint: `docs/PRIVATE-BETA-E2E-02-CHECKPOINT.md`
+- PRIVATE-BETA-BLOCKER-03F COMPLETE AND LOCKED — 2026-08-15 — FAIL / BLOCKED — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03F-CHECKPOINT.md`
+- PRIVATE-BETA-BLOCKER-03G COMPLETE AND LOCKED — 2026-08-16 — PASS — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03G-CHECKPOINT.md`
+- PRIVATE-BETA-BLOCKER-03H COMPLETE AND LOCKED — 2026-08-16 — PASS — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03H-CHECKPOINT.md`
+- PRIVATE-BETA-BLOCKER-03I COMPLETE AND LOCKED — 2026-08-17 — PASS — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03I-CHECKPOINT.md`
+**Blocking:** Builder-first private-beta GO/NO-GO — PRIVATE-BETA-INVITE-01 prohibited until E2E-03 PASS
+**Safety state:** `GLOBAL_EXECUTION_ENABLED=false` — confirmed; `BILLING_CHARGES_ENABLED=false` — confirmed
+**Provider-call budget:** ONE xAI/grok-4.5 Build — NOT YET AUTHORIZED — requires fresh Keith authorization before Step 3
+**Credit-mutation budget:** ONE deduction via confirm-build-apply path — NOT YET AUTHORIZED — requires fresh Keith authorization before Step 3
+**RUNTIME_EXECUTION_AUTHORIZED:** NO
+**PROVIDER_CALL_AUTHORIZED:** NO
+**CREDIT_MUTATION_AUTHORIZED:** NO
+**GLOBAL_EXECUTION_ENABLE_AUTHORIZED:** NO
+**AGENT_HARNESS_ENABLE_TOOL_LOOP:** must remain at currently validated/default state — activation not authorized without separate explicit Keith approval
+**PRIVATE-BETA-INVITE-01 status:** untouched / unregistered — prohibited
+**Stage-Start document:** `docs/PRIVATE-BETA-E2E-03-STAGE-START.md` — NOT YET CREATED — Step 2 only
+**Checkpoint:** `docs/PRIVATE-BETA-E2E-03-CHECKPOINT.md` — NOT YET CREATED — Step 4 only
+
+---
+
+#### Purpose
+
+PRIVATE-BETA-E2E-03 exists because PRIVATE-BETA-E2E-02 failed to prove the complete Builder private-beta journey. Specifically E2E-02 failed on:
+
+1. **Deferred-deduction accounting path not exercised** — the staging deployment lacked the 03D confirm-build-apply architecture; the old immediate-deduction path operated instead. Fixed by PRIVATE-BETA-BLOCKER-03F (deployment parity restored) and PRIVATE-BETA-BLOCKER-03G (confirm route made reachable).
+2. **Credit display did not reconcile with authoritative DB balance** — UI showed 3278 vs DB 30577 (stale frontend state; useBillingData hook had no auto-refresh post-mutation). Fixed by PRIVATE-BETA-BLOCKER-03H.
+3. **Manual checkpoint creation returned HTTP 500** — Git 2.52 safe.directory ownership protection rejected /workspace inside fresh containers. Fixed by PRIVATE-BETA-BLOCKER-03I.
+
+All four blocking dependencies are now COMPLETE AND LOCKED. E2E-03 is the fresh re-validation that must prove the full intended Builder journey with all defects resolved.
+
+E2E-03 is NOT a retry of E2E-02. It is a fresh run using the current staging state.
+
+---
+
+#### Intended User Journey (to be refined in Step 2 Runbook)
+
+1. Keith enters `https://staging.ainow.biz`, authenticates
+2. Creates a fresh disposable project
+3. Submits one Build prompt requesting a small workspace file mutation
+4. Observes AI execution reach `completed` status with `fileActions > 0`
+5. Workspace apply succeeds — requested file visible in file tree / editor / preview
+6. **`build_awaiting_apply` gate is active** — no deduction occurs at AI completion
+7. Browser calls `POST /api/ai/executions/:executionId/confirm-build-apply` → deduction triggered via 03D path
+8. Exactly one credit deduction recorded; credit display reflects updated balance (reconciles with DB)
+9. Manual checkpoint creation invoked — `POST /api/sessions/:id/checkpoints` returns HTTP 201 (post-03I fix)
+10. Safety restoration: `GLOBAL_EXECUTION_ENABLED=false` verified
+11. Cleanup: session terminated, disposable container removed
+
+---
+
+#### Scope
+
+**In scope:**
+- Authenticated staging Builder journey (browser, Keith)
+- One authorized xAI/grok-4.5 provider Build execution
+- executionIntent = workspace_mutation
+- Structured file-action generation and workspace apply
+- File tree / editor / preview usability confirmation
+- confirm-build-apply deferred-deduction path (03D architecture) — full end-to-end proof
+- build_awaiting_apply gate validation (no deduction at AI completion)
+- Exactly-once credit deduction verification
+- Credit display vs authoritative DB balance reconciliation (post-03H)
+- Manual checkpoint creation (HTTP 201 confirmation) (post-03I)
+- Safety-flag transitions and final restoration
+- Disposable project/session lifecycle and cleanup
+- Git / PostgreSQL / SQLite checkpoint reconciliation
+- Ops pre-flight and post-cleanup health checks
+
+**Out of scope:**
+- Multi-agent orchestration
+- Knowledge system
+- Collaboration / referrals
+- Non-Builder agent execution (harness tool-loop path)
+- Stripe / payment processing
+- Production launch
+- Broad UX redesign
+- Unrelated API Gateway test debt
+- Task 9.5A SQLite fail-open noise
+- New feature development
+- Architecture refactoring
+- PRIVATE-BETA-INVITE-01 (prohibited)
+- Final private-beta GO/NO-GO decision (separate task after E2E-03 PASS)
+
+---
+
+#### Authorization Boundary
+
+**TASK_REGISTERED:** YES
+**STEP_2_PLANNING_AUTHORIZED:** YES — Step 2 read-only planning may proceed after Step 1 is accepted/committed; no fresh Keith authorization is required to begin Step 2
+**RUNTIME_EXECUTION_AUTHORIZED:** NO
+**PROVIDER_CALL_AUTHORIZED:** NO
+**CREDIT_MUTATION_AUTHORIZED:** NO
+**GLOBAL_EXECUTION_ENABLE_AUTHORIZED:** NO
+
+Step 2 (Stage Start / Runbook) is read-only planning only. It may proceed without fresh Keith authorization. Step 2 must NOT run E2E-03, enable GLOBAL_EXECUTION_ENABLED, call a provider, mutate credits, create sessions/containers, mutate workspace/project state, or perform checkpoint mutations.
+
+Fresh Keith explicit authorization is required immediately before Step 3 runtime execution begins.
+
+---
+
+#### PASS Criteria (20-point — established by this Step 1 registration)
+
+The E2E-03 20-point acceptance set is established by this registration, derived from the E2E-02 18-point validation baseline plus the post-03H credit-display reconciliation criterion (criterion 19) and the post-03I manual-checkpoint criterion (criterion 20). No formal E2E-03 definition pre-existed this registration — the criteria are first-established here. Step 2 may add evidence-collection detail to each criterion but must not reduce the 20-point set without explicit Keith authorization.
+
+E2E-03 can PASS only if ALL of the following are confirmed:
+
+1. Staging auth works
+2. Workspace / project / session usable
+3. One authorized xAI/grok-4.5 Build executes
+4. executionIntent = workspace_mutation (DB evidence)
+5. fileActions > 0
+6. Workspace apply fully succeeds
+7. Requested workspace result exists (file tree / editor / preview confirmed by Keith)
+8. confirm-build-apply confirmation route reached and succeeds — 03D architecture exercised end-to-end
+9. Ownership / auth checks hold
+10. Build AI completion alone is NOT the accounting trigger (build_awaiting_apply gate active; no deduction at AI completion)
+11. Qualifying successful apply confirms and triggers deduction via confirm-build-apply path
+12. Exactly one credit deduction occurs
+13. No duplicate deduction
+14. No external payment charge (BILLING_CHARGES_ENABLED=false; no Stripe activity)
+15. Forbidden model (e.g. grok-4.20) not used — model verified from DB
+16. Ask semantics remain unchanged (non-provider regression evidence)
+17. GLOBAL_EXECUTION_ENABLED restored false (verified in .env and PM2)
+18. BILLING_CHARGES_ENABLED remains false throughout
+19. Credit display reconciles with authoritative DB balance post-execution (post-03H fix validation)
+20. Manual checkpoint creation returns HTTP 201 (post-03I fix validation)
+
+Any launch-critical failure: FAIL / BLOCKED. No retry unless explicitly authorized by Keith.
+
+---
+
+#### PASS WITH LIMITATION Criteria
+
+Only applicable if all 20 PASS criteria are met except one non-launch-critical item that can be separately classified. Step 2 must define which criteria, if any, are eligible for limitation classification.
+
+---
+
+#### FAIL / BLOCKER Criteria
+
+- Any failure of criteria 8, 10, or 11 (deferred-deduction path) — FAIL / BLOCKED
+- Any failure of criterion 12 or 13 (duplicate/missing deduction) — FAIL / BLOCKED
+- Any failure of criterion 20 (manual checkpoint HTTP 500 regression) — FAIL / BLOCKED
+- Any failure of criterion 19 (credit display not reconciled) — FAIL / BLOCKED
+- GLOBAL_EXECUTION_ENABLED not restored to false — FAIL / BLOCKED
+- New unresolved launch-critical defect discovered — classify and STOP
+
+---
+
+#### Safety Defaults
+
+- `GLOBAL_EXECUTION_ENABLED` begins false — set true only for Keith's E2E journey — restored immediately after
+- `BILLING_CHARGES_ENABLED` remains false throughout all steps
+- `AGENT_HARNESS_ENABLE_TOOL_LOOP` remains at currently validated/default state (not activated)
+- No Stripe / external payment activity
+- Provider-call budget: ONE — no retry authorized
+- Credit-mutation budget: ONE deduction via confirm-build-apply — no additional mutations
+
+---
+
+#### 4-Step Lifecycle
+
+**Step 1 — Registration** — COMPLETE — 2026-08-17
+Register PRIVATE-BETA-E2E-03 in TASKS.md and TASKS_BACKLOG_FULL.md. Keith authorization recorded (registration only). No runtime / provider / source / balance / staging mutation. No E2E journey performed.
+
+**Step 2 — Stage Start / Exact E2E Runbook + Preconditions** — PENDING — READ-ONLY PLANNING — AUTHORIZED TO PROCEED
+Create `docs/PRIVATE-BETA-E2E-03-STAGE-START.md` before any runtime mutation. Define: exact staging preflight, exact authenticated browser journey, provider/accounting mutation budget, safety-flag sequence, starting-balance capture, execution-ID capture, file-action verification plan, workspace apply plan, confirm-build-apply verification plan, credit-display reconciliation plan, checkpoint verification plan, logs/DB reconciliation, cleanup, rollback/stop conditions, explicit Keith authorization gate before Step 3. Step 2 must also perform READ-ONLY verification (repository / config evidence, no SSH mutation) that the intended staging Builder provider and model (xAI/grok-4.5) remain valid and current. If current staging configuration contradicts the registered expectation, Step 2 must report the discrepancy to Keith before Step 3 runtime authorization rather than silently substituting another model. No runtime actions occur in Step 2.
+
+**Step 3 — Keith-Controlled Staging E2E Execution + Evidence Collection** — NOT AUTHORIZED
+Requires Keith's fresh explicit authorization. Keith performs browser journey on staging. One provider call executed. Evidence collected per Step 2 runbook. Safety restoration executed immediately after.
+
+**Step 4 — Consolidation / Readiness Result** — NOT STARTED
+Documentation and governance consolidation only after Step 3 evidence exists. Create `docs/PRIVATE-BETA-E2E-03-CHECKPOINT.md`. Produce final PASS / PASS WITH LIMITATION / FAIL / BLOCKER verdict. If PASS: recommend Builder-first private-beta GO/NO-GO as next step. No runtime mutations in Step 4.
+
+---
+
+#### After E2E-03 If PASS
+
+If E2E-03 returns PASS: Builder-first Private Beta Final GO/NO-GO Decision may be registered as the next task. PRIVATE-BETA-INVITE-01 registration requires that GO/NO-GO to be explicitly authorized by Keith first.
+
+If E2E-03 returns FAIL / BLOCKED: classify the new defect, stop the affected path, register a bounded blocker task with separate Keith authorization.
+
+---
+
+#### PRIVATE-BETA-INVITE-01
+
+PRIVATE-BETA-INVITE-01: UNTOUCHED — UNREGISTERED — UNAUTHORIZED — PROHIBITED
+
+E2E-03 registration does NOT authorize PRIVATE-BETA-INVITE-01. Invitations remain prohibited.
