@@ -61378,7 +61378,7 @@ Step 3: GO — Grok 4.6 High — NORMAL bounded — `services/container-manager/
 
 **Task ID:** PRIVATE-BETA-E2E-03
 **Title:** Fresh Private-Beta Builder End-to-End Readiness Validation
-**Status:** ACTIVE — Step 1 COMPLETE — Step 2 PENDING
+**Status:** ACTIVE — Step 1 COMPLETE — Step 2 COMPLETE (INDEPENDENTLY AUDITED + READ-ONLY STAGING PREFLIGHT RECONCILED) — Step 3 READY BUT NOT AUTHORIZED
 **Nature:** Builder-first private-beta end-to-end staging validation
 **Classification:** SEQUENTIAL
 **Priority:** P1
@@ -61389,8 +61389,8 @@ Step 3: GO — Grok 4.6 High — NORMAL bounded — `services/container-manager/
 **Approved:** Keith — 2026-08-17 (Step 1 registration only)
 
 - Step 1 — Registration — COMPLETE — 2026-08-17
-- Step 2 — Stage Start / Exact E2E Runbook + Preconditions — PENDING
-- Step 3 — Keith-Controlled Staging E2E Execution + Evidence Collection — NOT AUTHORIZED
+- Step 2 — Stage Start / Exact E2E Runbook + Preconditions — COMPLETE — INDEPENDENTLY AUDITED + READ-ONLY STAGING PREFLIGHT RECONCILED — 2026-08-17
+- Step 3 — Keith-Controlled Staging E2E Execution + Evidence Collection — READY — PENDING KEITH AUTHORIZATION
 - Step 4 — Consolidation / Readiness Result — NOT STARTED
 
 **Dependencies:**
@@ -61409,7 +61409,7 @@ Step 3: GO — Grok 4.6 High — NORMAL bounded — `services/container-manager/
 **GLOBAL_EXECUTION_ENABLE_AUTHORIZED:** NO
 **AGENT_HARNESS_ENABLE_TOOL_LOOP:** must remain at currently validated/default state — activation not authorized without separate explicit Keith approval
 **PRIVATE-BETA-INVITE-01 status:** untouched / unregistered — prohibited
-**Stage-Start document:** `docs/PRIVATE-BETA-E2E-03-STAGE-START.md` — NOT YET CREATED — Step 2 only
+**Stage-Start document:** `docs/PRIVATE-BETA-E2E-03-STAGE-START.md` — CREATED — 2026-08-17
 **Checkpoint:** `docs/PRIVATE-BETA-E2E-03-CHECKPOINT.md` — NOT YET CREATED — Step 4 only
 **E2E-02 provider authorization:** CONSUMED — fresh authorization required for any future provider call
 
@@ -61703,15 +61703,38 @@ Step 2 may proceed without fresh Keith authorization (STEP_2_PLANNING_AUTHORIZED
 #### Authorization Boundary
 
 **TASK_REGISTERED:** YES — 2026-08-17
-**STEP_2_PLANNING_AUTHORIZED:** YES — Step 2 read-only planning may proceed after Step 1 is accepted/committed; no fresh Keith authorization is required to begin Step 2
+**STEP_2_PLANNING_AUTHORIZED:** YES — COMPLETE — 2026-08-17
+**STEP_2_STAGE_START_DOCUMENT:** `docs/PRIVATE-BETA-E2E-03-STAGE-START.md` — CREATED — 2026-08-17 — INDEPENDENTLY AUDITED — 2026-08-17
+**STEP_2_OUTCOME:** Full runbook complete and independently audited. 20 PASS criteria documented; exact Build prompt defined; disposable project/session plan, balance capture, accounting evidence, cleanup, rollback and stop conditions defined.
+
+**STEP_2_AUDIT_RESULT (2026-08-17 — independent read-only audit):**
+- STEP2_FILES_PERSISTED=YES — all three Step 2 files present and persisted in the worktree
+- UNEXPECTED_COMMIT_FOUND=NO — HEAD remains `a72b0d00bfab198ca2f9f9690425dd0f56838a31`; no commit, no revert, no history anomaly
+- SONNET_GIT_REPORT_ACCURATE=NO — Step 2 reported empty `git status --short` and empty `git diff --stat`; actual worktree had 2 modified files (`TASKS.md`, `TASKS_BACKLOG_FULL.md`) and 1 untracked file (`docs/PRIVATE-BETA-E2E-03-STAGE-START.md`). Reporting error only; the work itself was intact.
+
+**Six material defects found and corrected (no source or test changes):**
+1. SQLite checkpoint evidence path was `/workspace/.sandbox.db`, which exists nowhere in the codebase. Authoritative DB is host-level `/opt/aisandbox/database/aisandbox.db` (container-manager resolves repo-root `database/aisandbox.db`); queries must filter by `session_id` because the file is shared across sessions.
+2. Provider/model claimed `PROVIDER_MODEL_VERIFIED_CURRENT=YES` from repository defaults and E2E-01/E2E-02 history. Downgraded: `PROVIDER_MODEL_SOURCE_CONTRACT_VERIFIED=YES`, `PROVIDER_MODEL_LAST_RUNTIME_EVIDENCE=xai/grok-4.5`, `PROVIDER_MODEL_CURRENT_STAGING_RUNTIME_VERIFIED=NO`.
+3. `54b5764d` was labelled "current staging SHA" from historical 03I evidence. Split into `LAST_VERIFIED_STAGING_SHA=54b5764d` (historical) and `CURRENT_STAGING_SHA=UNVERIFIED`, gated as a hard STOP at Step 3 Phase A.
+4. `GLOBAL_EXECUTION_ENABLED` procedure inverted primary and fallback mechanisms. `.env` edit is the durable record, not the propagation mechanism; `pm2 restart --update-env` applies the invoking shell's environment. Corrected to source the complete `/opt/aisandbox/.env` into the shell before restarting, which also prevents a bare `--update-env` from stripping required env vars and crash-looping the gateway. Explains the E2E-01 §21 two-restart incident.
+5. Phase E required querying deduction count between AI completion and apply. The chain from completion through `confirmBuildApplyIfQualifying` to deduction is fully automatic with no operator pause, making this unobservable; its STOP condition would have produced a **false FAIL of criterion 10** on a healthy system. Replaced with post-hoc timestamp-ordering evidence (`finalize_accounting.build_awaiting_apply` before `confirm_build_apply.deduction_triggered`, plus DB `created_at` ordering and absence of `finalize_accounting.deduction_triggered`).
+6. Manual checkpoint (criterion 20) would run against a clean workspace after the automatic checkpoint and return HTTP 201 with `commitHash: null` / "No changes to commit", satisfying the criterion's letter while proving no Git/PG/SQLite reconciliation. Resolved by one budgeted operator marker edit to `index.html` before the manual checkpoint; HTTP 201 with `commitHash: null` is now explicitly classified FAIL.
+
+**Mutation budget corrected:** `AUTOMATIC_POST_APPLY_CHECKPOINT_EXPECTED=1`, `MANUAL_CHECKPOINT_ATTEMPTS_AUTHORIZED_PROPOSED=1`, `TOTAL_EXPECTED_CHECKPOINT_CREATIONS=2`. The automatic coherence checkpoint is a real Git + PostgreSQL + SQLite write following necessarily from the authorized apply and is now inside the authorization budget and named in the Keith authorization statement, not treated as an unbudgeted side effect. Also added: operator workspace edit, project/session/container creation, `.env` edits, PM2 restarts, and the cleanup session DELETE.
+
+**Verified correct and retained:** deduction arithmetic (1 credit = 1 token confirmed via `CREDIT_RATES.model_tokens.creditsPerUnit = 1` and `unitCount = tokens_used`; added `overflow_credits = 0` assertion and a balance-sufficiency gate because `applied_credits = min(requested, balance)`); criterion 16 Ask semantics by source evidence as registered; criterion 9 ownership/auth by normal 2xx per E2E-02 precedent; plain-path/no-pre-apply-checkpoint finding; disposable project retention (no project delete endpoint exists, so retention is the only supported outcome).
+
+**FINAL RECONCILIATION (2026-08-17):** Grok §37 read-only staging preflight evidence received and reconciled. All 3 blocking items resolved. Four additional defects corrected: root `.env` cannot be bash-sourced (`AUTH_EMAIL_FROM` angle brackets) — gate procedure rewritten to inline PM2 env approach with zero `.env` edits; `credit_balances.user_id` corrected to `owner_id`/`owner_type`; `usage_records.updated_at` corrected to `timestamp`; SQLite queries use Python 3 read-only URI (sqlite3 CLI absent on staging).
+
+**UNRESOLVED_AMBIGUITY:** NONE
+**STAGING_PREFLIGHT_RESULT:** PASS
+**STEP_3_READINESS:** READY
 **RUNTIME_EXECUTION_AUTHORIZED:** NO
 **PROVIDER_CALL_AUTHORIZED:** NO
 **CREDIT_MUTATION_AUTHORIZED:** NO
 **GLOBAL_EXECUTION_ENABLE_AUTHORIZED:** NO
 
-Step 2 (Stage Start / Runbook) is read-only planning only — no runtime mutations. Step 2 may proceed without fresh Keith authorization. Step 2 must NOT run E2E-03, enable GLOBAL_EXECUTION_ENABLED, call a provider, mutate credits, create sessions/containers, mutate workspace/project state, or perform checkpoint mutations.
-
-Fresh Keith explicit authorization is required immediately before Step 3 runtime execution begins.
+Step 2 complete, audited, and reconciled. Step 3 requires fresh explicit Keith authorization per the revised Stage Start §35 before any runtime execution begins.
 Step 4 is documentation only after Step 3 evidence exists.
 
 ---
