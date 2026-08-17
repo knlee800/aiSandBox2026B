@@ -60723,7 +60723,7 @@ Remains untouched / unregistered / prohibited. Private beta remains NO-GO.
 **Separate open anomaly:** Manual checkpoint HTTP 500 — out of 03H scope — NO SHARED ROOT CAUSE with 03H
 **MIGRATION_REQUIRED:** NO
 **ACCOUNTING_CALCULATION_CHANGE_REQUIRED:** NO
-**Exact next recommended task:** PRIVATE-BETA-BLOCKER-03I — Manual Checkpoint Creation HTTP 500 Investigation — ACTIVE — Step 2 COMPLETE — Root Cause Proven — Step 3 PENDING GO — 2026-08-16
+**Exact next recommended task:** PRIVATE-BETA-BLOCKER-03I COMPLETE AND LOCKED — 2026-08-17 — PASS — Checkpoint: docs/PRIVATE-BETA-BLOCKER-03I-CHECKPOINT.md — next task requires Keith explicit fresh authorization — PRIVATE-BETA-E2E-03 NOT REGISTERED — PRIVATE-BETA-BLOCKER-03H COMPLETE AND LOCKED — PASS — 2026-08-16
 
 ---
 
@@ -60959,20 +60959,20 @@ Prior discrepancy: UI 3278 vs DB 30577 — must be fully explained and resolved.
 
 **Task ID:** PRIVATE-BETA-BLOCKER-03I
 **Title:** Manual Checkpoint Creation HTTP 500 Investigation
-**Status:** ACTIVE — Step 2 COMPLETE — Root Cause Proven by Authorized Bounded Reproduction — 2026-08-16
+**Status:** COMPLETE AND LOCKED — PASS — 2026-08-17
 **Family:** PRIVATE-BETA-BLOCKER-03 / BUILDER EXECUTION RELIABILITY / CHECKPOINT INTEGRITY
-**Priority:** HIGH — private-beta blocker — CURRENT_PLAIN_BUILDER_PATH_BLOCKED=NO; CHECKPOINT_SAFETY_DEFECT_PRESENT=YES; PRIVATE_BETA_03I_REQUIRES_FIX=YES
-**Risk:** HIGH — checkpoint/recovery safety defect proven; bounded Git init `safe.directory` fix remains
+**Priority:** HIGH — private-beta blocker — CURRENT_PLAIN_BUILDER_PATH_BLOCKED=NO; CHECKPOINT_SAFETY_DEFECT_PRESENT=NO (fixed); PRIVATE_BETA_03I_REQUIRES_FIX=NO (fixed and validated)
+**Risk:** RESOLVED — Git safe.directory defect fixed, staging-validated, and consolidated
 **Workflow:** HIGH-RISK 4-STEP
 
 - Step 1 — Registration — COMPLETE — 2026-08-16
 - Step 2 — Stage Start / Failure-Path & Root-Cause Investigation — COMPLETE — Root Cause Proven by Authorized Bounded Reproduction — 2026-08-16
-- Step 3 — Bounded Fix + Tests + Provider-Free Staging Validation — PENDING — GO
-- Step 4 — Consolidation / Checkpoint — PENDING
+- Step 3 — Bounded Fix + Tests + Provider-Free Staging Validation — COMPLETE — PASS — Git safe.directory Fix + Provider-Free Staging Validation — 2026-08-17
+- Step 4 — Consolidation / Checkpoint — COMPLETE — PASS — 2026-08-17
 
 **Registered:** 2026-08-16
-**Completed:** —
-**Outcome:** PENDING
+**Completed:** 2026-08-17
+**Outcome:** COMPLETE AND LOCKED — PASS — 2026-08-17
 **Dependencies:** PRIVATE-BETA-BLOCKER-03H COMPLETE AND LOCKED — 2026-08-16 — PASS; PRIVATE-BETA-BLOCKER-03G COMPLETE AND LOCKED — 2026-08-16 — PASS; PRIVATE-BETA-E2E-02 COMPLETE AND LOCKED — FAIL / BLOCKED
 **Known anomaly:** Manual checkpoint-creation operation during private-beta validation (PRIVATE-BETA-E2E-02) returned HTTP 500. Step 2 proven root cause: Git 2.52 `safe.directory` / uid-1000 `/workspace` vs root `docker exec`. 03H explicitly established NO SHARED ROOT CAUSE between stale billing frontend state and this checkpoint failure.
 **Root-cause proven:** YES — Git 2.52 safe.directory / mixed ownership (workspace uid 1000 vs root docker exec) — TIMEOUT_HYPOTHESIS_CONFIRMED=NO
@@ -60983,10 +60983,10 @@ Prior discrepancy: UI 3278 vs DB 30577 — must be fully explained and resolved.
 **BILLING_CHARGES_ENABLED policy:** false — must remain false throughout all steps
 **PRIVATE-BETA-INVITE-01 status:** untouched / unregistered — prohibited
 **Stage-Start document:** `docs/PRIVATE-BETA-BLOCKER-03I-STAGE-START.md` — CREATED — 2026-08-16 — Step 2 final evidence closure recorded
-**Checkpoint:** `docs/PRIVATE-BETA-BLOCKER-03I-CHECKPOINT.md` — NOT YET CREATED
+**Checkpoint:** `docs/PRIVATE-BETA-BLOCKER-03I-CHECKPOINT.md` — CREATED — 2026-08-17
 **Historical evidence source:** `docs/PRIVATE-BETA-E2E-02-CHECKPOINT.md` — Step 2 read and evidence recovered; historical HTTP 500 recorded; historical Git/stderr text was NOT captured
-**Exact next recommended step:** PRIVATE-BETA-BLOCKER-03I Step 3 — GO — bounded `safe.directory` fix in `services/container-manager/src/git/git.service.ts` `GitService.ensureGitInitializedInContainer()` + regression in `git.service.spec.ts` — recommended model Grok 4.6 High — risk NORMAL bounded — NOT an Axios timeout increase — cleanup of disposable session `344ab7b5-333f-429f-8175-537d098d8159` COMPLETE (DELETE HTTP 200)
-**E2E-03 status:** NOT REGISTERED — NOT AUTHORIZED — NOT EXECUTED — gated until 03I COMPLETE AND LOCKED + fresh Keith authorization
+**Exact next recommended step:** PRIVATE-BETA-BLOCKER-03I COMPLETE AND LOCKED — 2026-08-17 — PASS — next task requires Keith explicit fresh authorization — PRIVATE-BETA-E2E-03 NOT REGISTERED — PRIVATE-BETA-BLOCKER-03H COMPLETE AND LOCKED — PASS — 2026-08-16
+**E2E-03 status:** NOT REGISTERED — NOT AUTHORIZED — NOT EXECUTED — requires Keith fresh explicit authorization
 
 ---
 
@@ -61351,23 +61351,23 @@ Step 3: GO — Grok 4.6 High — NORMAL bounded — `services/container-manager/
 - [x] Migration requirement determined
 - [x] Data-integrity-change requirement determined
 - [x] Rollback strategy documented
-- [ ] Relevant automated regression tests pass
-- [ ] Provider-free staging validation passes
-- [ ] Auth/ownership protections preserved
-- [ ] No unrelated checkpoint redesign
+- [x] Relevant automated regression tests pass
+- [x] Provider-free staging validation passes
+- [x] Auth/ownership protections preserved
+- [x] No unrelated checkpoint redesign
 - [x] No provider execution
 - [x] No intentional credit mutation
 - [x] `GLOBAL_EXECUTION_ENABLED` remains false
 - [x] `BILLING_CHARGES_ENABLED` remains false
 - [x] No Stripe/payment activation
-- [ ] Multilingual rules followed if copy changes
+- [x] Multilingual rules followed if copy changes (N/A — no user-facing copy changes in this fix)
 - [x] Step 2 stage-start document created (`docs/PRIVATE-BETA-BLOCKER-03I-STAGE-START.md`)
-- [ ] Final checkpoint created (`docs/PRIVATE-BETA-BLOCKER-03I-CHECKPOINT.md`)
+- [x] Final checkpoint created (`docs/PRIVATE-BETA-BLOCKER-03I-CHECKPOINT.md`)
 - [x] Future E2E-03 remains gated until 03I closes
 - [x] Future provider E2E requires fresh Keith authorization
 - [x] PRIVATE-BETA-INVITE-01 remains untouched
 
-**PRIVATE-BETA-BLOCKER-03I status:** ACTIVE — Step 2 COMPLETE — Root Cause Proven by Authorized Bounded Reproduction — 2026-08-16
+**PRIVATE-BETA-BLOCKER-03I status:** COMPLETE AND LOCKED — PASS — 2026-08-17
 **Step 2:** COMPLETE — TIMEOUT_HYPOTHESIS_CONFIRMED=NO — ROOT_CAUSE_PROVEN=YES — Git 2.52 safe.directory / mixed uid 1000 workspace vs root docker exec — HTTP 500 in 2181ms — CLEANUP_RESULT=PASS — session `344ab7b5-333f-429f-8175-537d098d8159` terminated
-**Step 3:** PENDING — GO — bounded container-manager `ensureGitInitializedInContainer` `/workspace` safe.directory fix + `git.service.spec.ts` — recommended model Grok 4.6 High — risk NORMAL bounded — do not start Step 3 in this window
-**Step 4:** PENDING
+**Step 3:** COMPLETE — PASS — Git safe.directory Fix + Provider-Free Staging Validation — 2026-08-17 — SHA `54b5764d8645d80a44f5de1351ca8e7928c5c8f4` — POST_FIX_CHECKPOINT HTTP 201 in 2795ms — commit `502518bda5ab9498cc304bc61088712aa37b75e5` — CLEANUP_RESULT=PASS — session `6a9442be-8440-4952-9026-9c93bfc2110c` terminated
+**Step 4:** COMPLETE — PASS — Consolidation / Checkpoint — 2026-08-17 — `docs/PRIVATE-BETA-BLOCKER-03I-CHECKPOINT.md` created
