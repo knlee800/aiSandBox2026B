@@ -354,7 +354,11 @@ export class GitService {
   private async ensureGitInitializedInContainer(sessionId: string): Promise<void> {
     const checkRepo = await this.sessionsService.execInContainer(
       sessionId,
-      ['sh', '-lc', 'command -v git >/dev/null 2>&1 || apk add --no-cache git >/dev/null 2>&1; git rev-parse --is-inside-work-tree'],
+      [
+        'sh',
+        '-lc',
+        'command -v git >/dev/null 2>&1 || apk add --no-cache git >/dev/null 2>&1; git config --global --replace-all safe.directory /workspace && git rev-parse --is-inside-work-tree',
+      ],
       '/workspace',
     );
     if (checkRepo.exitCode === 0) {
@@ -366,7 +370,7 @@ export class GitService {
       [
         'sh',
         '-lc',
-        'command -v git >/dev/null 2>&1 || apk add --no-cache git >/dev/null 2>&1; git init && git config user.name "AI Sandbox" && git config user.email "sandbox@aisandbox.com"',
+        'command -v git >/dev/null 2>&1 || apk add --no-cache git >/dev/null 2>&1; git config --global --replace-all safe.directory /workspace && git init && git config user.name "AI Sandbox" && git config user.email "sandbox@aisandbox.com"',
       ],
       '/workspace',
     );
