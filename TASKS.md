@@ -16,7 +16,7 @@ Rules:
 
 If conflicts exist, TASKS_BACKLOG_FULL.md takes precedence.
 
-**Program status:** **BILLING-READY-08 COMPLETE AND LOCKED 2026-08-07** — Controlled xAI smoke PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (500 credits) — overflow 98 ACCEPTED BY DESIGN — balance reached 0 correctly — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — QuotaGuard browser-session bypass — Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md` — **BILLING-READY-08B COMPLETE AND LOCKED 2026-08-07** — usage_records.created_at schema remediation — Checkpoint: `docs/BILLING-READY-08B-CHECKPOINT.md` — Final checkpoint: `docs/BILLING-READY-08-CHECKPOINT.md` — **PRIVATE-BETA-FUNCTIONAL-READINESS-04 COMPLETE AND LOCKED 2026-08-07** — All acceptance criteria satisfied — FR-04 parent checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-CHECKPOINT.md` — **ADMIN-CONSOLE-01 COMPLETE AND LOCKED 2026-08-08** — All children COMPLETE AND LOCKED — **ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07** — Checkpoint: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md` — **ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07** — Authenticated Admin Credit Grant API — Checkpoint: `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md` — **ADMIN-CONSOLE-01C COMPLETE AND LOCKED 2026-08-07** — Admin Console Shell + Users/Sessions — Checkpoint: `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md` — **ADMIN-CONSOLE-01D COMPLETE AND LOCKED 2026-08-07** — Admin Credit Grant UI — Checkpoint: `docs/ADMIN-CONSOLE-01D-CHECKPOINT.md` — **ADMIN-CONSOLE-01E COMPLETE AND LOCKED 2026-08-08** — Staging Operator Validation + Parent Consolidation — PASS WITH NON-BLOCKING LIMITATIONS — Checkpoint: `docs/ADMIN-CONSOLE-01E-CHECKPOINT.md` — **ADMIN-CONSOLE-01E1 COMPLETE AND LOCKED 2026-08-08** — Invalid Locale Redirect Origin Fix — Checkpoint: `docs/ADMIN-CONSOLE-01E1-CHECKPOINT.md` — Parent checkpoint: `docs/ADMIN-CONSOLE-01-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 BLOCKED** — private beta blocked by PRIVATE-BETA-BLOCKER-01 (recurring canonical landing page regression) and separate unresolved preview failure — Do not execute invitations until all blockers resolved — **PRIVATE-BETA-BLOCKER-01 COMPLETE AND LOCKED 2026-08-09** — Legacy workspace + feature-flag removal — Build-independence proven — All locales PASS — Commit `651f723447a85ec5d22139d6ba60be6680a0f8c6` — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-01-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-02 COMPLETE AND LOCKED 2026-08-09** — Preview Runtime Failure — PreviewController fallback 4001→4002 — staging live preview PASS — Commit `f73da07ef8d1acc70d43d6b4980fd1d0d57e2883` — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-02-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 UNBLOCKED** — landing-page and preview blockers resolved — do not execute invitations without registration and Keith explicit approval — GLOBAL_EXECUTION_ENABLED remains false — **GOV-ARCH-01 COMPLETE AND LOCKED 2026-08-10** — Checkpoint: `docs/GOV-ARCH-01-CHECKPOINT.md` — **GOV-PRD-01 COMPLETE AND LOCKED 2026-08-10** — Checkpoint: `docs/GOV-PRD-01-CHECKPOINT.md` — **PRIVATE-BETA-OPS-01 COMPLETE AND LOCKED 2026-08-10** — Independent PM2 ops watchdog staging-proved — P1 operational visibility SATISFIED — Checkpoint: `docs/PRIVATE-BETA-OPS-01-CHECKPOINT.md` — **PRIVATE-BETA-EXEC-01 COMPLETE AND LOCKED 2026-08-10** — Controlled Builder AI Execution Activation — Activation smoke PASS — Execution ID `24acd697-b55c-40d0-b2d5-32faf9b85709` — provider `xai` — path `plain` — tokens `1078` — file `beta-activation-smoke-2026-08-10.txt` — credits 6000→4922 — `GLOBAL_EXECUTION_ENABLED=true` deliberately left enabled — Harness remains disabled — Stripe charging remains disabled — Checkpoint: `docs/PRIVATE-BETA-EXEC-01-CHECKPOINT.md` — **PRIVATE-BETA-E2E-01 COMPLETE AND LOCKED — 2026-08-10 — FAIL / BLOCKER** — Fresh Keith Builder End-to-End Staging Journey — Primary blocker: Builder plain-path completed execution returned text with `fileActions: []` (execution `2bc73157-973a-45ec-8b71-bca8c2f7941d`) — no `index.html` / empty workspace — Gate rolled back to `GLOBAL_EXECUTION_ENABLED=false` — PRIVATE-BETA-INVITE-01 remains untouched/unregistered — Builder-first private beta **NO-GO PENDING BLOCKER FIX** — **PRIVATE-BETA-BLOCKER-03A COMPLETE AND LOCKED — 2026-08-10 — ROOT CAUSE PROVEN** — Empty File-Action Contract Diagnosis — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03A-CHECKPOINT.md` — Diagnosis: `docs/PRIVATE-BETA-BLOCKER-03A-DIAGNOSIS.md` — PROMPT-ONLY file-action contract; prose noncompliance silently accepted as completed with `fileActions: []` — Defect class: RESPONSE-FORM-SPECIFIC / MODEL-AGNOSTIC CONTRACT WEAKNESS — Target execution `2bc73157-973a-45ec-8b71-bca8c2f7941d` — Comparison executions `24acd697-b55c-40d0-b2d5-32faf9b85709` / `83acc0e9-84de-4f94-9e41-294701e38393` — `GLOBAL_EXECUTION_ENABLED=false` preserved — Builder-first private beta remains **NO-GO PENDING BLOCKER FIX** — **PRIVATE-BETA-BLOCKER-03B COMPLETE AND LOCKED — 2026-08-11 — PASS** — File-Action Reliability Fix — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03B-CHECKPOINT.md` — original file-action reliability blocker remediated — plain-path structured JSON + application-owned zero-action failure validated on staging — `GLOBAL_EXECUTION_ENABLED=false` — Harness remains disabled — PRIVATE-BETA-INVITE-01 untouched/unregistered — Builder-first private beta remains **NO-GO PENDING REMAINING READINESS WORK** — **BUILDER-INTENT-01 ACTIVE — Step 1 COMPLETE (Registration — 2026-08-11)** — Ask/Discuss vs Build/Edit Execution Intent — exact next: BUILDER-INTENT-01 Step 2 — Intent Contract + UX Stage-Start — 03C/03D remain NOT REGISTERED — PRIVATE-BETA-INVITE-01 untouched/unregistered — `GLOBAL_EXECUTION_ENABLED=false` — **BUILDER-INTENT-01 COMPLETE AND LOCKED 2026-08-13** — Checkpoint: `docs/BUILDER-INTENT-01-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-03C COMPLETE AND LOCKED 2026-08-14** — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03C-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-03D COMPLETE AND LOCKED 2026-08-14** — No-workspace-result credit policy — 03D-A/03D-B COMPLETE AND LOCKED — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03D-CHECKPOINT.md` — **PRIVATE-BETA-E2E-02 COMPLETE AND LOCKED — 2026-08-14 — FAIL / BLOCKED** — Staging did not contain/exercise 03D Build deferred-deduction confirmation architecture — old immediate-deduction path operated — confirm-build-apply route not present on staging — 15/18 PASS, 3/18 FAIL — provider=xAI/grok-4.5 — 1 call consumed, budget exhausted — UI balance 3278 ≠ DB balance 30577 UNRESOLVED — Checkpoint: `docs/PRIVATE-BETA-E2E-02-CHECKPOINT.md` — Private-beta NO-GO / BLOCKED — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited — **PRIVATE-BETA-BLOCKER-03F COMPLETE AND LOCKED — 2026-08-15 — FAIL / BLOCKED** — Staging Deployment Parity for 03D Accounting Confirmation Path — FRONTEND CONFIRM ROUTE REACHABILITY / API REWRITE PRECEDENCE BLOCKER — Deployment/source parity PASS — Runtime same-origin confirm path FAIL — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03F-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-03G COMPLETE AND LOCKED — 2026-08-16 — PASS** — Frontend Confirm-Build-Apply Route Reachability — next.config.js fallback-phase fix — confirm route reachable — GLOBAL_EXECUTION_ENABLED=false — BILLING_CHARGES_ENABLED=false — provider calls=0 — credit mutations=0 — Checkpoint: docs/PRIVATE-BETA-BLOCKER-03G-CHECKPOINT.md — Unresolved separate blocker: CREDIT DISPLAY DISCREPANCY (UI 3278 ≠ DB 30577) — **PRIVATE-BETA-BLOCKER-03H ACTIVE — Step 2 COMPLETE (Stage Start / Credit Data-Flow & Source-of-Truth Investigation — 2026-08-16)** — Credit Balance Display / Authoritative Balance Reconciliation — ROOT CAUSE PROVEN: stale frontend state (no auto-refresh after credit mutations) — fix is frontend-only + Cache-Control header — MIGRATION_REQUIRED=NO — ACCOUNTING_CALCULATION_CHANGE_REQUIRED=NO — Step 3 PENDING — private-beta NO-GO / BLOCKED — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited
+**Program status:** **BILLING-READY-08 COMPLETE AND LOCKED 2026-08-07** — Controlled xAI smoke PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (500 credits) — overflow 98 ACCEPTED BY DESIGN — balance reached 0 correctly — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — QuotaGuard browser-session bypass — Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md` — **BILLING-READY-08B COMPLETE AND LOCKED 2026-08-07** — usage_records.created_at schema remediation — Checkpoint: `docs/BILLING-READY-08B-CHECKPOINT.md` — Final checkpoint: `docs/BILLING-READY-08-CHECKPOINT.md` — **PRIVATE-BETA-FUNCTIONAL-READINESS-04 COMPLETE AND LOCKED 2026-08-07** — All acceptance criteria satisfied — FR-04 parent checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-CHECKPOINT.md` — **ADMIN-CONSOLE-01 COMPLETE AND LOCKED 2026-08-08** — All children COMPLETE AND LOCKED — **ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07** — Checkpoint: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md` — **ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07** — Authenticated Admin Credit Grant API — Checkpoint: `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md` — **ADMIN-CONSOLE-01C COMPLETE AND LOCKED 2026-08-07** — Admin Console Shell + Users/Sessions — Checkpoint: `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md` — **ADMIN-CONSOLE-01D COMPLETE AND LOCKED 2026-08-07** — Admin Credit Grant UI — Checkpoint: `docs/ADMIN-CONSOLE-01D-CHECKPOINT.md` — **ADMIN-CONSOLE-01E COMPLETE AND LOCKED 2026-08-08** — Staging Operator Validation + Parent Consolidation — PASS WITH NON-BLOCKING LIMITATIONS — Checkpoint: `docs/ADMIN-CONSOLE-01E-CHECKPOINT.md` — **ADMIN-CONSOLE-01E1 COMPLETE AND LOCKED 2026-08-08** — Invalid Locale Redirect Origin Fix — Checkpoint: `docs/ADMIN-CONSOLE-01E1-CHECKPOINT.md` — Parent checkpoint: `docs/ADMIN-CONSOLE-01-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 BLOCKED** — private beta blocked by PRIVATE-BETA-BLOCKER-01 (recurring canonical landing page regression) and separate unresolved preview failure — Do not execute invitations until all blockers resolved — **PRIVATE-BETA-BLOCKER-01 COMPLETE AND LOCKED 2026-08-09** — Legacy workspace + feature-flag removal — Build-independence proven — All locales PASS — Commit `651f723447a85ec5d22139d6ba60be6680a0f8c6` — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-01-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-02 COMPLETE AND LOCKED 2026-08-09** — Preview Runtime Failure — PreviewController fallback 4001→4002 — staging live preview PASS — Commit `f73da07ef8d1acc70d43d6b4980fd1d0d57e2883` — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-02-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 UNBLOCKED** — landing-page and preview blockers resolved — do not execute invitations without registration and Keith explicit approval — GLOBAL_EXECUTION_ENABLED remains false — **GOV-ARCH-01 COMPLETE AND LOCKED 2026-08-10** — Checkpoint: `docs/GOV-ARCH-01-CHECKPOINT.md` — **GOV-PRD-01 COMPLETE AND LOCKED 2026-08-10** — Checkpoint: `docs/GOV-PRD-01-CHECKPOINT.md` — **PRIVATE-BETA-OPS-01 COMPLETE AND LOCKED 2026-08-10** — Independent PM2 ops watchdog staging-proved — P1 operational visibility SATISFIED — Checkpoint: `docs/PRIVATE-BETA-OPS-01-CHECKPOINT.md` — **PRIVATE-BETA-EXEC-01 COMPLETE AND LOCKED 2026-08-10** — Controlled Builder AI Execution Activation — Activation smoke PASS — Execution ID `24acd697-b55c-40d0-b2d5-32faf9b85709` — provider `xai` — path `plain` — tokens `1078` — file `beta-activation-smoke-2026-08-10.txt` — credits 6000→4922 — `GLOBAL_EXECUTION_ENABLED=true` deliberately left enabled — Harness remains disabled — Stripe charging remains disabled — Checkpoint: `docs/PRIVATE-BETA-EXEC-01-CHECKPOINT.md` — **PRIVATE-BETA-E2E-01 COMPLETE AND LOCKED — 2026-08-10 — FAIL / BLOCKER** — Fresh Keith Builder End-to-End Staging Journey — Primary blocker: Builder plain-path completed execution returned text with `fileActions: []` (execution `2bc73157-973a-45ec-8b71-bca8c2f7941d`) — no `index.html` / empty workspace — Gate rolled back to `GLOBAL_EXECUTION_ENABLED=false` — PRIVATE-BETA-INVITE-01 remains untouched/unregistered — Builder-first private beta **NO-GO PENDING BLOCKER FIX** — **PRIVATE-BETA-BLOCKER-03A COMPLETE AND LOCKED — 2026-08-10 — ROOT CAUSE PROVEN** — Empty File-Action Contract Diagnosis — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03A-CHECKPOINT.md` — Diagnosis: `docs/PRIVATE-BETA-BLOCKER-03A-DIAGNOSIS.md` — PROMPT-ONLY file-action contract; prose noncompliance silently accepted as completed with `fileActions: []` — Defect class: RESPONSE-FORM-SPECIFIC / MODEL-AGNOSTIC CONTRACT WEAKNESS — Target execution `2bc73157-973a-45ec-8b71-bca8c2f7941d` — Comparison executions `24acd697-b55c-40d0-b2d5-32faf9b85709` / `83acc0e9-84de-4f94-9e41-294701e38393` — `GLOBAL_EXECUTION_ENABLED=false` preserved — Builder-first private beta remains **NO-GO PENDING BLOCKER FIX** — **PRIVATE-BETA-BLOCKER-03B COMPLETE AND LOCKED — 2026-08-11 — PASS** — File-Action Reliability Fix — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03B-CHECKPOINT.md` — original file-action reliability blocker remediated — plain-path structured JSON + application-owned zero-action failure validated on staging — `GLOBAL_EXECUTION_ENABLED=false` — Harness remains disabled — PRIVATE-BETA-INVITE-01 untouched/unregistered — Builder-first private beta remains **NO-GO PENDING REMAINING READINESS WORK** — **BUILDER-INTENT-01 ACTIVE — Step 1 COMPLETE (Registration — 2026-08-11)** — Ask/Discuss vs Build/Edit Execution Intent — exact next: BUILDER-INTENT-01 Step 2 — Intent Contract + UX Stage-Start — 03C/03D remain NOT REGISTERED — PRIVATE-BETA-INVITE-01 untouched/unregistered — `GLOBAL_EXECUTION_ENABLED=false` — **BUILDER-INTENT-01 COMPLETE AND LOCKED 2026-08-13** — Checkpoint: `docs/BUILDER-INTENT-01-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-03C COMPLETE AND LOCKED 2026-08-14** — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03C-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-03D COMPLETE AND LOCKED 2026-08-14** — No-workspace-result credit policy — 03D-A/03D-B COMPLETE AND LOCKED — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03D-CHECKPOINT.md` — **PRIVATE-BETA-E2E-02 COMPLETE AND LOCKED — 2026-08-14 — FAIL / BLOCKED** — Staging did not contain/exercise 03D Build deferred-deduction confirmation architecture — old immediate-deduction path operated — confirm-build-apply route not present on staging — 15/18 PASS, 3/18 FAIL — provider=xAI/grok-4.5 — 1 call consumed, budget exhausted — UI balance 3278 ≠ DB balance 30577 UNRESOLVED — Checkpoint: `docs/PRIVATE-BETA-E2E-02-CHECKPOINT.md` — Private-beta NO-GO / BLOCKED — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited — **PRIVATE-BETA-BLOCKER-03F COMPLETE AND LOCKED — 2026-08-15 — FAIL / BLOCKED** — Staging Deployment Parity for 03D Accounting Confirmation Path — FRONTEND CONFIRM ROUTE REACHABILITY / API REWRITE PRECEDENCE BLOCKER — Deployment/source parity PASS — Runtime same-origin confirm path FAIL — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03F-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-03G COMPLETE AND LOCKED — 2026-08-16 — PASS** — Frontend Confirm-Build-Apply Route Reachability — next.config.js fallback-phase fix — confirm route reachable — GLOBAL_EXECUTION_ENABLED=false — BILLING_CHARGES_ENABLED=false — provider calls=0 — credit mutations=0 — Checkpoint: docs/PRIVATE-BETA-BLOCKER-03G-CHECKPOINT.md — Unresolved separate blocker: CREDIT DISPLAY DISCREPANCY (UI 3278 ≠ DB 30577) — **PRIVATE-BETA-BLOCKER-03H ACTIVE — Step 2 COMPLETE (Stage Start / Credit Data-Flow & Source-of-Truth Investigation — 2026-08-16)** — Credit Balance Display / Authoritative Balance Reconciliation — ROOT CAUSE PROVEN: stale frontend state (no auto-refresh after credit mutations) — fix is frontend-only + Cache-Control header — MIGRATION_REQUIRED=NO — ACCOUNTING_CALCULATION_CHANGE_REQUIRED=NO — Step 3 PENDING — private-beta NO-GO / BLOCKED — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited — **PRIVATE-BETA-BLOCKER-03I ACTIVE — Step 2 COMPLETE — Root Cause Proven by Authorized Bounded Reproduction — 2026-08-16** — TIMEOUT_HYPOTHESIS_CONFIRMED=NO — Git 2.52 safe.directory / uid-1000 /workspace vs root docker exec — CLEANUP_RESULT=PASS — Step 3 PENDING GO — bounded container-manager GitService.ensureGitInitializedInContainer /workspace safe.directory fix — NOT Axios timeout increase — private-beta remains NO-GO — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited
 
 
 \# TASKS.md ??Master Task Index
@@ -50892,7 +50892,7 @@ Remains untouched / unregistered / prohibited. Private beta remains NO-GO.
 **Root-cause question:** WHAT DOES UI VALUE 3278 REPRESENT and WHY DOES IT DIFFER FROM AUTHORITATIVE ACCOUNTING STATE 30577?
 **Root-cause answer (Step 2):** Stale frontend state — `useBillingData` hook fetches once on mount with no auto-refresh after credit mutations; 3278 was the DB balance at an earlier page load before admin grants brought balance to 31723
 **Separate open anomaly:** Manual checkpoint HTTP 500 — out of 03H scope — NO SHARED ROOT CAUSE with 03H
-**Exact next recommended task:** PRIVATE-BETA-BLOCKER-03I — Manual Checkpoint Creation HTTP 500 Investigation — NOT YET REGISTERED
+**Exact next recommended task:** PRIVATE-BETA-BLOCKER-03I — Manual Checkpoint Creation HTTP 500 Investigation — ACTIVE — Step 2 COMPLETE — Root Cause Proven — Step 3 PENDING GO — 2026-08-16
 
 ---
 
@@ -51121,3 +51121,422 @@ Prior discrepancy: UI 3278 vs DB 30577 — must be fully explained and resolved.
 - [x] Private-beta remains NO-GO until fresh E2E
 - [x] Future E2E requires fresh Keith authorization
 - [x] PRIVATE-BETA-INVITE-01 remains untouched
+
+---
+
+### PRIVATE-BETA-BLOCKER-03I — Manual Checkpoint Creation HTTP 500 Investigation
+
+**Task ID:** PRIVATE-BETA-BLOCKER-03I
+**Title:** Manual Checkpoint Creation HTTP 500 Investigation
+**Status:** ACTIVE — Step 2 COMPLETE — Root Cause Proven by Authorized Bounded Reproduction — 2026-08-16
+**Family:** PRIVATE-BETA-BLOCKER-03 / BUILDER EXECUTION RELIABILITY / CHECKPOINT INTEGRITY
+**Priority:** HIGH — private-beta blocker — CURRENT_PLAIN_BUILDER_PATH_BLOCKED=NO; CHECKPOINT_SAFETY_DEFECT_PRESENT=YES; PRIVATE_BETA_03I_REQUIRES_FIX=YES
+**Risk:** HIGH — checkpoint/recovery safety defect proven; bounded Git init `safe.directory` fix remains
+**Workflow:** HIGH-RISK 4-STEP
+
+- Step 1 — Registration — COMPLETE — 2026-08-16
+- Step 2 — Stage Start / Failure-Path & Root-Cause Investigation — COMPLETE — Root Cause Proven by Authorized Bounded Reproduction — 2026-08-16
+- Step 3 — Bounded Fix + Tests + Provider-Free Staging Validation — PENDING — GO
+- Step 4 — Consolidation / Checkpoint — PENDING
+
+**Registered:** 2026-08-16
+**Completed:** —
+**Outcome:** PENDING
+**Dependencies:** PRIVATE-BETA-BLOCKER-03H COMPLETE AND LOCKED — 2026-08-16 — PASS; PRIVATE-BETA-BLOCKER-03G COMPLETE AND LOCKED — 2026-08-16 — PASS; PRIVATE-BETA-E2E-02 COMPLETE AND LOCKED — FAIL / BLOCKED
+**Known anomaly:** Manual checkpoint-creation operation during private-beta validation (PRIVATE-BETA-E2E-02) returned HTTP 500. Step 2 proven root cause: Git 2.52 `safe.directory` / uid-1000 `/workspace` vs root `docker exec`. 03H explicitly established NO SHARED ROOT CAUSE between stale billing frontend state and this checkpoint failure.
+**Root-cause proven:** YES — Git 2.52 safe.directory / mixed ownership (workspace uid 1000 vs root docker exec) — TIMEOUT_HYPOTHESIS_CONFIRMED=NO
+**CHECKPOINT_FAILURE_PRIVATE_BETA_CRITICAL:** Nuanced — CURRENT_PLAIN_BUILDER_PATH_BLOCKED=NO; CHECKPOINT_SAFETY_DEFECT_PRESENT=YES; HARNESS_ENABLED_PATH_BLOCKED=YES; PRIVATE_BETA_03I_REQUIRES_FIX=YES; private beta remains NO-GO
+**Provider-call budget:** ZERO
+**Credit-mutation budget:** ZERO intentional mutations
+**GLOBAL_EXECUTION_ENABLED policy:** false — must remain false throughout all steps
+**BILLING_CHARGES_ENABLED policy:** false — must remain false throughout all steps
+**PRIVATE-BETA-INVITE-01 status:** untouched / unregistered — prohibited
+**Stage-Start document:** `docs/PRIVATE-BETA-BLOCKER-03I-STAGE-START.md` — CREATED — 2026-08-16 — Step 2 final evidence closure recorded
+**Checkpoint:** `docs/PRIVATE-BETA-BLOCKER-03I-CHECKPOINT.md` — NOT YET CREATED
+**Historical evidence source:** `docs/PRIVATE-BETA-E2E-02-CHECKPOINT.md` — Step 2 read first; historical HTTP 500 recorded; historical Git/stderr text was NOT captured
+**Exact next recommended step:** PRIVATE-BETA-BLOCKER-03I Step 3 — GO — bounded `safe.directory` fix in `services/container-manager/src/git/git.service.ts` `GitService.ensureGitInitializedInContainer()` + regression in `git.service.spec.ts` — recommended model Grok 4.6 High — risk NORMAL bounded — NOT an Axios timeout increase — cleanup of disposable session `344ab7b5-333f-429f-8175-537d098d8159` COMPLETE (DELETE HTTP 200)
+**E2E-03 status:** NOT REGISTERED — NOT AUTHORIZED — NOT EXECUTED — gated until 03I COMPLETE AND LOCKED + fresh Keith authorization
+
+---
+
+#### Known Anomaly
+
+A manual checkpoint-creation operation observed during PRIVATE-BETA-E2E-02 private-beta validation returned:
+
+**HTTP 500**
+
+03H explicitly established: NO SHARED ROOT CAUSE between stale billing frontend state and this checkpoint HTTP 500 failure.
+
+Do NOT infer during registration:
+- endpoint
+- service
+- database cause
+- filesystem cause
+- Git cause
+- authentication cause
+- project/session cause
+- malformed payload
+- infrastructure cause
+- migration/schema cause
+
+Step 2 must recover the exact historical evidence first.
+
+---
+
+#### Objective
+
+03I must independently determine:
+
+1. exactly which checkpoint operation failed
+2. which request/endpoint/path produced HTTP 500
+3. whether the failure is reproducible
+4. whether it is on the Builder/private-beta critical path
+5. the exact root cause
+6. the smallest safe correction, if a product defect exists
+7. the required provider-free staging validation
+
+---
+
+#### Required Step 2 Investigation Questions
+
+Step 2 must answer with evidence:
+
+1. What exact user action constituted "manual checkpoint creation"?
+2. What frontend/API/tool path initiated it?
+3. What exact HTTP endpoint returned 500?
+4. Which service owned that endpoint?
+5. What request method and payload shape were involved?
+6. Was authentication/session state valid?
+7. Was the request associated with: user / project / workspace/container / execution / Git repository / checkpoint record / or another entity?
+8. What server-side error/exception occurred?
+9. Is the same failure reproducible on the exact current staging SHA?
+10. Does failure occur: before any mutation / after partial mutation / after filesystem/Git mutation / after DB mutation / during response serialization / elsewhere?
+11. Does a failed checkpoint leave partial/inconsistent state?
+12. Is rollback/retry safe and idempotent?
+13. Is this operation required for the normal Builder/private-beta workflow?
+14. Does automatic/pre-apply checkpoint behavior use the same path?
+15. Could a failure compromise workspace recovery?
+16. Are there existing tests that should have caught it?
+17. Is the defect currently present after subsequent deployments?
+18. Is there one authoritative checkpoint implementation or multiple/legacy paths?
+19. What is the smallest safe fix?
+20. Can the complete fix be validated provider-free?
+
+---
+
+#### Historical Evidence Requirement
+
+Step 2 MUST read first:
+
+`docs/PRIVATE-BETA-E2E-02-CHECKPOINT.md`
+
+and recover the exact historical checkpoint failure evidence.
+
+If the checkpoint document does not contain enough detail: state precisely what is absent. Do not invent missing request/response details.
+
+---
+
+#### Evidence Hierarchy for Step 2
+
+1. E2E-02 historical checkpoint evidence
+2. current production source
+3. existing automated tests
+4. server logs/runtime evidence
+5. provider-free staging reproduction
+6. database/Git/filesystem read-only evidence
+7. older documentation only as secondary evidence
+
+Do not reconstruct the failure from memory if exact evidence exists.
+
+---
+
+#### Investigation Scope
+
+03I may inspect, only as necessary:
+- frontend checkpoint UI/action
+- API Gateway checkpoint endpoints
+- container-manager checkpoint/workspace/Git handlers
+- execution/checkpoint services
+- relevant entities/repositories
+- workspace Git state handling
+- filesystem checkpoint behavior
+- checkpoint metadata persistence
+- related auth/ownership validation
+- error handling
+- tests
+- relevant staging logs
+- current staging runtime behavior
+
+Determine actual files from repository evidence. Do not assume the owning service before investigation.
+
+---
+
+#### Critical Data-Integrity Requirement
+
+Step 2 must explicitly determine whether an HTTP 500 can occur:
+
+A. before any state mutation
+
+or
+
+B. after partial state mutation
+
+If partial mutation is possible, document exactly:
+- what can be changed
+- what remains unchanged
+- whether retry is safe
+- whether duplicate checkpoints are possible
+- whether Git/filesystem and DB state can diverge
+- whether cleanup/rollback exists
+
+This is required before Step 3 implementation.
+
+---
+
+#### Relationship to Existing Checkpoint Mechanisms
+
+Investigate whether the failed manual checkpoint path is related to:
+- pre-apply checkpoints
+- Builder file-action safety
+- workspace Git checkpoints
+- execution rollback/recovery
+- any user-facing manual checkpoint control
+
+Do not assume these share implementation. Map them explicitly.
+
+Do not reopen completed 03D/03G/03H unless direct evidence demonstrates a dependency.
+
+---
+
+#### Provider / Billing Safety
+
+03I provider-call budget: ZERO
+Intentional credit-mutation budget: ZERO
+GLOBAL_EXECUTION_ENABLED: false throughout
+BILLING_CHARGES_ENABLED: false throughout
+
+Do NOT:
+- run Builder
+- run Ask
+- invoke xAI/OpenAI/Anthropic providers
+- create provider-backed executions
+- perform credit deductions
+- perform credit grants/refunds
+- activate Stripe/payment flows
+
+---
+
+#### Database / Filesystem / Git Safety
+
+Registration itself: no runtime investigation.
+
+Future Step 2 may use:
+- read-only DB queries
+- read-only Git inspection
+- read-only filesystem inspection
+- read-only logs
+
+A provider-free reproduction MAY eventually require creation of a disposable checkpoint. If that operation performs writes, Step 2 must first:
+1. identify all expected mutations
+2. prove they are bounded/reversible
+3. define cleanup
+4. obtain any required authorization under existing workflow rules
+
+Do not authorize such mutation during registration. Do not use production user data destructively. No migration during investigation.
+
+---
+
+#### Reproduction Requirement
+
+Step 2 should prefer reproducing the failure using:
+- an existing disposable staging project/workspace, or
+- a safe provider-free test fixture
+
+No AI/provider execution is required. Do NOT reuse an active user workspace destructively.
+
+Before reproduction, document:
+
+`REPRO_MUTATIONS_REQUIRED=YES/NO`
+
+If YES: list exact mutations and cleanup strategy before performing them.
+
+---
+
+#### Root-Cause Standard
+
+Step 2 must return:
+
+`ROOT_CAUSE_PROVEN=YES/NO`
+
+A valid root cause must include:
+
+trigger → failing code path → concrete exception/error → why that condition occurs → why it produces HTTP 500 → whether state is partially mutated → smallest safe correction
+
+"Likely Git issue", "probably stale state", or similar is NOT sufficient.
+
+If root cause is not proven: Step 2 must stop BLOCKED rather than implement speculation.
+
+---
+
+#### Critical-Path Classification
+
+03I must explicitly answer:
+
+`CHECKPOINT_FAILURE_PRIVATE_BETA_CRITICAL=YES/NO`
+
+If YES: explain which required Builder/private-beta workflow depends on it.
+
+If NO: provide strong evidence that normal private-beta Builder flow does not rely on the failing path, and failure cannot compromise required checkpoint/recovery safety.
+
+Do not downgrade the issue merely because it is labelled "manual".
+
+---
+
+#### Step 3 Implementation Boundary
+
+Only after Step 2 proves root cause.
+
+Expected principles:
+- smallest bounded correction
+- no broad checkpoint redesign
+- no architecture refactor
+- no new dependencies unless unavoidable and separately approved
+- no migration unless proven necessary
+- preserve auth/ownership
+- preserve checkpoint idempotency
+- protect against partial state corruption
+- improve error handling only where directly relevant
+- add regression tests for exact HTTP500 condition
+- provider-free staging validation
+
+If Step 2 discovers a hard data-integrity or ambiguous root cause: recommend Grok 4.6 XHigh for Step 3.
+If bounded/routine after root cause is known: recommend Grok 4.6 High.
+
+---
+
+#### Rollback Requirement
+
+Before Step 3, record:
+- current staging SHA
+- exact affected service(s)
+- code rollback procedure
+- any data/filesystem cleanup required
+- whether checkpoint writes are reversible
+
+No implementation/deployment during registration.
+
+---
+
+#### Multilingual / UI Rules
+
+If eventual fix changes user-facing checkpoint copy:
+
+Update together:
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+No hardcoded English. Heroicons v2 Outline only if icon work unexpectedly enters scope. Do not redesign checkpoint UX.
+
+---
+
+#### PASS Definition
+
+03I PASS requires one of two evidence-backed outcomes:
+
+**Outcome A — Defect fixed:**
+- root cause proven
+- checkpoint operation repaired
+- exact HTTP500 regression covered
+- no partial-state/data-integrity issue remains
+- provider-free staging validation passes
+
+**Outcome B — Proven non-critical anomaly:**
+Only acceptable if evidence proves:
+- failing operation is outside required private-beta Builder flow
+- required checkpoint/recovery mechanisms use a healthy independent path
+- failure cannot compromise workspace/data safety
+- no launch-critical defect remains
+
+Do not use Outcome B merely to avoid fixing an issue.
+
+---
+
+#### Future E2E-03 Restriction
+
+PRIVATE-BETA-E2E-03: NOT REGISTERED — NOT AUTHORIZED — NOT EXECUTED
+
+Must NOT be registered or executed until:
+1. 03I is COMPLETE AND LOCKED
+2. Prerequisite blockers re-assessed
+3. Fresh explicit Keith authorization is obtained
+
+E2E-02 provider authorization is consumed.
+
+---
+
+#### PRIVATE-BETA-INVITE-01 Prohibition
+
+PRIVATE-BETA-INVITE-01: untouched / unregistered / PROHIBITED
+
+No invitation activity is authorized. Private beta remains NO-GO.
+
+---
+
+#### Step 2 Final Evidence Closure — 2026-08-16
+
+Disposable session `344ab7b5-333f-429f-8175-537d098d8159`: create HTTP 201, test file write HTTP 204, exactly one `POST /api/sessions/:id/checkpoints` → HTTP 500 in **2181 ms**, body `{ "statusCode": 500, "message": "Internal server error" }`.
+
+TIMEOUT_HYPOTHESIS_CONFIRMED=NO. ROOT_CAUSE_PROVEN=YES. Proven cause: Git 2.52 `safe.directory` rejects `/workspace` (uid 1000 bind mount vs root `docker exec`) inside `GitService.ensureGitInitializedInContainer()`. Failure after `apk add git` + `git init`; before git config / add / commit / DB persist. Git commit NO. PG `git_checkpoints` NO. SQLite checkpoint NO. Git/DB divergence NO. PARTIAL_STATE_POSSIBLE=YES (git package + empty `.git` + test file only).
+
+Cleanup: authenticated `DELETE` HTTP 200 — CLEANUP_RESULT=PASS — DISPOSABLE_SESSION_TERMINATED=YES. No second checkpoint. Do not manually delete retained lifecycle rows.
+
+CURRENT_PLAIN_BUILDER_PATH_BLOCKED=NO. CHECKPOINT_SAFETY_DEFECT_PRESENT=YES. HARNESS_ENABLED_PATH_BLOCKED=YES. PRIVATE_BETA_03I_REQUIRES_FIX=YES. Private beta remains NO-GO.
+
+Step 3: GO — Grok 4.6 High — NORMAL bounded — `services/container-manager/src/git/git.service.ts` + `git.service.spec.ts` — do not change Axios timeout / getGitDiff / revertToCheckpoint.
+
+---
+
+#### Acceptance Criteria
+
+- [x] Exact historical HTTP500 operation identified
+- [x] Exact endpoint/method identified
+- [x] Owning service identified
+- [x] Request path documented
+- [x] Authentication/ownership path documented
+- [x] Exact failing code path identified
+- [x] Concrete server exception/error recovered
+- [x] Current staging reproducibility determined
+- [x] Reproduction performed safely if needed
+- [x] Mutation boundary documented (`REPRO_MUTATIONS_REQUIRED=YES/NO`)
+- [x] Partial-state risk determined
+- [x] Retry/idempotency behavior determined
+- [x] DB/filesystem/Git consistency risk determined
+- [x] Manual checkpoint implementation mapped
+- [x] Automatic/pre-apply checkpoint relationship mapped
+- [x] Private-beta criticality explicitly classified (`CHECKPOINT_FAILURE_PRIVATE_BETA_CRITICAL=YES/NO`)
+- [x] Root cause proven (`ROOT_CAUSE_PROVEN=YES/NO`)
+- [x] Smallest safe fix selected
+- [x] Migration requirement determined
+- [x] Data-integrity-change requirement determined
+- [x] Rollback strategy documented
+- [ ] Relevant automated regression tests pass
+- [ ] Provider-free staging validation passes
+- [ ] Auth/ownership protections preserved
+- [ ] No unrelated checkpoint redesign
+- [x] No provider execution
+- [x] No intentional credit mutation
+- [x] `GLOBAL_EXECUTION_ENABLED` remains false
+- [x] `BILLING_CHARGES_ENABLED` remains false
+- [x] No Stripe/payment activation
+- [ ] Multilingual rules followed if copy changes
+- [x] Step 2 stage-start document created (`docs/PRIVATE-BETA-BLOCKER-03I-STAGE-START.md`)
+- [ ] Final checkpoint created (`docs/PRIVATE-BETA-BLOCKER-03I-CHECKPOINT.md`)
+- [x] Future E2E-03 remains gated until 03I closes
+- [x] Future provider E2E requires fresh Keith authorization
+- [x] PRIVATE-BETA-INVITE-01 remains untouched
+
+**PRIVATE-BETA-BLOCKER-03I status:** ACTIVE — Step 2 COMPLETE — Root Cause Proven by Authorized Bounded Reproduction — 2026-08-16
+**Step 2:** COMPLETE — TIMEOUT_HYPOTHESIS_CONFIRMED=NO — ROOT_CAUSE_PROVEN=YES — Git 2.52 safe.directory / mixed uid 1000 workspace vs root docker exec — HTTP 500 in 2181ms — CLEANUP_RESULT=PASS — session `344ab7b5-333f-429f-8175-537d098d8159` terminated
+**Step 3:** PENDING — GO — bounded container-manager `ensureGitInitializedInContainer` `/workspace` safe.directory fix + `git.service.spec.ts` — recommended model Grok 4.6 High — risk NORMAL bounded — do not start Step 3 in this window
+**Step 4:** PENDING
