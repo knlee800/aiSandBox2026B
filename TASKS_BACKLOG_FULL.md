@@ -61767,3 +61767,305 @@ Step 3 complete. Qualifying Builder workspace-mutation execution completed and a
 PRIVATE-BETA-INVITE-01: UNTOUCHED — UNREGISTERED — UNAUTHORIZED — PROHIBITED
 
 E2E-03 registration does NOT authorize PRIVATE-BETA-INVITE-01. Invitations remain prohibited until E2E-03 PASS, the subsequent GO/NO-GO decision, and fresh Keith authorization for invitation activity.
+
+#### Forward reference — PRIVATE-BETA-BLOCKER-03J (2026-08-17)
+
+Keith authorized registration of PRIVATE-BETA-BLOCKER-03J after this task locked. This forward reference does not reopen PRIVATE-BETA-E2E-03, rewrite its FAIL / BLOCKED conclusions, or convert E2E-03 into PASS. PRIVATE-BETA-BLOCKER-03J is a new bounded launch-critical blocker. Successful 03J implementation and automated tests do not make PRIVATE-BETA-E2E-03 PASS. A future fresh controlled E2E validation remains required after 03J is fixed; that E2E identifier is not registered here.
+
+---
+
+### PRIVATE-BETA-BLOCKER-03J — Investigate Missing confirm-build-apply Request After Successful Qualifying Workspace Apply
+
+**Task ID:** PRIVATE-BETA-BLOCKER-03J
+**Title:** Investigate Missing confirm-build-apply Request After Successful Qualifying Workspace Apply
+**Status:** REGISTERED / PLANNED — 2026-08-17
+**Family:** PRIVATE-BETA-BLOCKER-03 / BUILDER EXECUTION RELIABILITY / DEFERRED BUILD ACCOUNTING HANDOFF
+**Priority:** HIGH — launch-critical private-beta blocker
+**Risk:** HIGH — root-cause unknown; accounting-adjacent; frontend + API Gateway confirmation path; must not weaken PRIVATE-BETA-BLOCKER-03D safeguards
+**Classification:** SEQUENTIAL PARENT — higher-risk 4-step workflow
+**Workflow:** HIGH-RISK 4-STEP
+
+- Step 1 — Registration — COMPLETE — 2026-08-17
+- Step 2 — Stage Start / Source-Path Investigation Plan — PENDING
+- Step 3 — Bounded Implementation + Tests after root cause is proven — PENDING — not authorized by this registration
+- Step 4 — Consolidation / Checkpoint — PENDING
+
+**Registered:** 2026-08-17
+**Approved:** Keith — 2026-08-17 (Step 1 registration only)
+**Implementation status:** NOT STARTED — no source, test, runtime, or accounting mutation is authorized by this registration
+**Root-cause status:** `ROOT_CAUSE_OF_CONFIRM_FAILURE=UNINVESTIGATED`
+**Dependencies:**
+- PRIVATE-BETA-E2E-03 COMPLETE AND LOCKED — FAIL / BLOCKED — 2026-08-17 — Checkpoint: `docs/PRIVATE-BETA-E2E-03-CHECKPOINT.md` — Stage Start: `docs/PRIVATE-BETA-E2E-03-STAGE-START.md`
+- PRIVATE-BETA-BLOCKER-03D COMPLETE AND LOCKED — 2026-08-14 — deferred Build deduction / confirm-build-apply architecture — must be preserved, not weakened
+- PRIVATE-BETA-BLOCKER-03G COMPLETE AND LOCKED — 2026-08-16 — PASS — confirm-build-apply route reachability
+- PRIVATE-BETA-BLOCKER-03H COMPLETE AND LOCKED — 2026-08-16 — PASS — credit display refresh
+- PRIVATE-BETA-BLOCKER-03I COMPLETE AND LOCKED — 2026-08-17 — PASS — checkpoint safety
+**Blocking:** Builder-first private-beta GO/NO-GO — PRIVATE-BETA-INVITE-01 remains prohibited
+**Child tasks:** none pre-registered
+**Stage-Start document:** NOT CREATED — Step 2 deliverable `docs/PRIVATE-BETA-BLOCKER-03J-STAGE-START.md`
+**Checkpoint:** NOT CREATED — Step 4 only
+**Exact next recommended step:** PRIVATE-BETA-BLOCKER-03J Step 2 — Stage Start / Source-Path Investigation Plan
+**PRIVATE-BETA-INVITE-01 status:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+**Future fresh E2E after 03J:** REQUIRED before Builder private-beta readiness can return to GO — identifier not registered in this task
+**E2E-03 locked status:** COMPLETE AND LOCKED — FAIL / BLOCKED — 2026-08-17 — do not reopen; do not claim retroactive PASS
+
+---
+
+#### Problem Statement
+
+PRIVATE-BETA-E2E-03 proved a qualifying Builder workspace-mutation execution on staging, then hard-stopped because the expected confirm-build-apply handoff never appeared.
+
+Authoritative E2E-03 evidence (do not reopen or rewrite):
+
+- Authenticated user: `7f772841-7844-401b-a3da-e928b0c7b79c`
+- Project: `55a0b93e-8595-4e15-862e-2e1a6f9f6262`
+- Session: `7887f7f7-7e7a-4712-9207-31cd90375142`
+- Execution: `9192df3c-fbf7-4ced-b49a-50037793223c`
+- Provider/model: xai / grok-4.5
+- `tokens_used`: 1148
+- Execution status: completed
+- `executionIntent`: workspace_mutation
+- `fileActions`: 1
+- Workspace apply: SUCCESS
+- `index.html`: correct
+- Preview: SUCCESS
+- Automatic post-apply checkpoint: SUCCESS — `2ade268bf4febd41044b26912a9aa8d9c96e3fa0`
+- Git / PostgreSQL / SQLite checkpoint reconciliation: PASS
+- Observed accounting completion event: `finalize_accounting.build_awaiting_apply`
+- `confirm_build_apply.request_received`: 0
+- `confirm_build_apply.deduction_triggered`: 0
+- `credit_deduction_records`: 0
+- Starting balance: 30577
+- Ending balance: 30577
+- Expected balance if the qualifying confirmation had succeeded: 29429 (`30577 - 1148`)
+
+E2E-03 criteria result that defines this blocker:
+
+- Criterion 8 = FAIL
+- Criterion 10 = PASS
+- Criterion 11 = FAIL
+- Criterion 12 = FAIL
+- Criterion 19 = NOT EXECUTED DUE TO EARLIER HARD STOP
+- Criterion 20 = NOT EXECUTED DUE TO EARLIER HARD STOP
+
+Authoritative failure boundary:
+
+```
+QUALIFYING_WORKSPACE_APPLY_SUCCEEDED=YES
+CONFIRM_BUILD_APPLY_REQUEST_OBSERVED=NO
+DEFERRED_DEDUCTION_COMPLETED=NO
+ROOT_CAUSE_OF_CONFIRM_FAILURE=UNINVESTIGATED
+```
+
+Criterion 10 PASS is not the defect. The completion path correctly did not deduct immediately and remained in `build_awaiting_apply`. The blocker is the missing downstream confirm-build-apply request after a successful qualifying workspace apply.
+
+03J must determine why the normal successful workspace-apply flow did not send or reach confirm-build-apply, then restore that expected handoff without weakening PRIVATE-BETA-BLOCKER-03D accounting safeguards.
+
+---
+
+#### Required Preserved Semantics
+
+1. Ask remains charged according to its existing semantics.
+2. Build AI completion alone must NOT deduct credits.
+3. Build must remain in `build_awaiting_apply` until qualifying workspace application is confirmed.
+4. Only a qualifying successful apply may trigger the normal confirm-build-apply flow.
+5. Failed apply / zero actions / non-qualifying apply must not charge.
+6. A successful qualifying Build should result in exactly one deferred credit deduction.
+7. Duplicate confirmation must remain idempotent and must not double deduct.
+8. No direct manual credit mutation may be introduced as a workaround.
+9. No frontend-only fake success or fake accounting state may be introduced.
+10. No weakening of ownership/authentication checks.
+11. `BILLING_CHARGES_ENABLED` must remain false during engineering validation unless separately authorized.
+12. `GLOBAL_EXECUTION_ENABLED` must remain false by default.
+
+---
+
+#### Investigation Boundary
+
+Step 2 must trace the normal production path end-to-end and prove the exact stop point:
+
+successful Builder result
+→ `fileActions`
+→ workspace apply
+→ post-apply coherence/checkpoint
+→ frontend/client confirmation decision
+→ confirm-build-apply request construction
+→ API route
+→ ownership/qualification validation
+→ idempotent deduction
+
+Current source starting points, to be confirmed or narrowed by repository evidence rather than assumed as root cause:
+
+- `frontend/app/[locale]/app/page.tsx` — Builder apply path; `applyExecutionFileActions`; `confirmBuildApplyIfQualifying`; `runAiActionCoherence` sequencing
+- `frontend/components/workspace/workspace-ai-file-actions.logic.ts` — apply result, `qualifyBuildApplyConfirmation`, `confirmBuildApplyIfQualifying`, `requestBuildApplyConfirmation`
+- `frontend/components/workspace/workspace-ai-coherence.logic.ts` — `runAiActionCoherence`
+- `frontend/app/api/ai/executions/[executionId]/confirm-build-apply/route.ts` — browser-facing Next.js route
+- `frontend/lib/build-apply-confirm-proxy.server.ts` — authenticated proxy to API Gateway internal confirm route
+- `frontend/next.config.js` — 03G rewrite/fallback reachability; re-verify only if evidence requires it
+- `services/api-gateway/src/ai/internal-accounting.controller.ts` — `confirm_build_apply.request_received`
+- `services/api-gateway/src/usage-ledger/usage-ledger.service.ts` — `finalize_accounting.build_awaiting_apply`; `triggerBuildApplyDeduction`; idempotent deduction
+- PRIVATE-BETA-BLOCKER-03D / 03D-A / 03D-B implementation and tests
+- PRIVATE-BETA-BLOCKER-03G route-reachability work and tests
+
+Observed E2E-03 log fact that bounds the search: `confirm_build_apply.request_received = 0` means the request was not observed at `InternalAccountingController.confirmBuildApply`. The chain may have stopped before the browser issued the call, before the Next.js route, before the proxy, or before the internal controller log. Registration does not choose among those.
+
+---
+
+#### Investigation Hypotheses Only
+
+Do NOT treat any of the following as proven root cause during registration:
+
+- frontend normal Builder flow skipped the confirm call
+- workspace apply result handling / apply-response shape failed the qualification predicate
+- `runAiActionCoherence` sequencing or lifecycle timing prevented confirmation
+- execution ID not propagated into the confirm client
+- confirm-build-apply client invocation error swallowed
+- route URL/method mismatch
+- auth/session context missing on the confirm request
+- stale frontend deployment / source mismatch
+- 03G reachability regression
+- successful apply treated as non-qualifying
+- proxy/internal-route ownership check rejecting before `request_received` was logged
+
+These are investigation hypotheses only.
+
+---
+
+#### Scope
+
+**In scope:**
+- Prove the exact root cause of the missing confirm-build-apply request after a qualifying successful workspace apply
+- Restore the normal confirmation handoff with the smallest safe fix
+- Preserve 03D deferred-deduction safeguards
+- Focused automated tests for the proven root cause and regression path
+- Relevant broader frontend / API Gateway tests scoped to the affected implementation
+- i18n-first handling only if new user-facing copy is actually required by the proven fix
+
+**Out of scope:**
+- Reopening or rewriting PRIVATE-BETA-E2E-03 locked FAIL / BLOCKED conclusions
+- Claiming PRIVATE-BETA-E2E-03 PASS retroactively
+- Registering or executing the post-fix fresh E2E task in this registration
+- PRIVATE-BETA-INVITE-01
+- Direct manual credit mutation
+- Frontend-only fake success/accounting state
+- Weakening Ask / Build accounting semantics
+- Weakening ownership/authentication checks
+- Stripe / external payment charges
+- Provider replay as part of implementation
+- Manual confirm-build-apply invocation as a product workaround
+- Creating projects/sessions/checkpoints during registration
+- Broad UX redesign, architecture refactor, or unrelated dependency addition
+- Enabling `GLOBAL_EXECUTION_ENABLED` or `BILLING_CHARGES_ENABLED` by this registration
+- Reopening 03D / 03G / 03H / 03I unless later evidence proves a direct dependency
+- Touching retained staging stash `0372cc1f47f82e1db060ed2dd756a938fe324803`
+
+---
+
+#### Child-Slice Strategy
+
+Register the parent only.
+
+Implementation may later be broken into smaller bounded child slices if Step 2 proves multiple independent concerns.
+
+Do not pre-register speculative child tasks. Current evidence does not make a natural child split unavoidable because the stop point is uninvestigated.
+
+---
+
+#### Runtime-Validation Authorization Requirement
+
+This registration does not authorize runtime mutation.
+
+If later runtime validation is required, it must be separately bounded and explicitly authorized. No provider replay should be assumed as part of implementation. Do not invoke confirm-build-apply manually as a substitute for restoring the normal handoff. Do not consume xAI tokens, mutate credits, create projects/sessions/checkpoints, edit `.env`, restart PM2, or use Docker/Postgres/Redis during registration or Stage-Start unless a later authorized step explicitly requires a narrowly bounded read-only or provider-free check.
+
+Safety defaults for engineering work unless a later task explicitly authorizes otherwise:
+
+- `GLOBAL_EXECUTION_ENABLED=false` by default and outside any explicitly authorized runtime window
+- `BILLING_CHARGES_ENABLED=false`
+- `AGENT_HARNESS_ENABLE_TOOL_LOOP=false`
+- `AGENT_HARNESS_ENABLE_WRITE_TOOLS=false`
+- provider retries: none authorized by this task
+
+---
+
+#### Fresh Post-Fix E2E Requirement
+
+Fixing 03J is not E2E PASS.
+
+Even if 03J implementation and automated tests pass:
+
+- Do NOT claim PRIVATE-BETA-E2E-03 passed retroactively
+- PRIVATE-BETA-E2E-03 remains locked FAIL / BLOCKED historical evidence
+- A NEW fresh controlled E2E validation must occur after 03J is fixed before Builder private-beta readiness can return to GO
+- Do not register that post-fix E2E task in this registration
+- The exact future E2E identifier should be determined later according to governance state
+
+---
+
+#### PRIVATE-BETA-INVITE-01
+
+PRIVATE-BETA-INVITE-01 remains:
+
+UNREGISTERED
+UNAUTHORIZED
+UNTOUCHED
+PROHIBITED
+
+03J registration does not authorize invitations.
+
+---
+
+#### Multilingual / UI Rules
+
+If any new user-facing UX/UI text is introduced by a later proven fix:
+
+- use the existing i18n pattern
+- update `frontend/messages/en.json`
+- update `frontend/messages/zh-TW.json`
+- update `frontend/messages/zh-CN.json`
+- no hardcoded English user-facing copy
+- Heroicons v2 Outline only if icon work is required
+
+Do not add user-facing copy during registration.
+
+---
+
+#### Acceptance Criteria
+
+No implementation boxes are completed by this registration.
+
+- [ ] Exact root cause identified and documented with source/runtime evidence
+- [ ] Exact point where the successful apply → confirm-build-apply chain stops is proven
+- [ ] Minimal fix restores the normal confirmation call after a qualifying successful workspace apply
+- [ ] AI completion continues to produce `build_awaiting_apply` and does not directly deduct
+- [ ] Qualifying successful apply results in confirm-build-apply being invoked exactly once
+- [ ] confirm-build-apply reaches the intended API Gateway route
+- [ ] Correct execution ID and authenticated ownership context are preserved
+- [ ] Exactly one deduction occurs for the qualifying execution
+- [ ] Deduction amount continues to follow the existing token-to-credit contract
+- [ ] Duplicate confirmation remains idempotent and cannot double-charge
+- [ ] Apply failure does not deduct
+- [ ] Zero file actions do not deduct
+- [ ] Non-qualifying confirmation does not deduct
+- [ ] Ask accounting semantics remain unchanged
+- [ ] Automatic post-apply checkpoint behavior remains intact
+- [ ] No regression to project/session/workspace lifecycle
+- [ ] No external Stripe/payment charge
+- [ ] `BILLING_CHARGES_ENABLED` remains false unless separately authorized
+- [ ] `GLOBAL_EXECUTION_ENABLED` remains false by default and outside an explicitly authorized runtime window
+- [ ] Focused automated tests cover the actual root cause and regression path
+- [ ] Relevant broader frontend/API Gateway tests pass, scoped according to affected implementation
+- [ ] No unrelated redesign/refactor/dependency addition
+- [ ] If any new user-facing UX/UI text is introduced: existing i18n pattern; `en.json` / `zh-TW.json` / `zh-CN.json` updated; no hardcoded English; Heroicons v2 Outline for any icon work
+- [ ] A fresh post-fix E2E validation is required before Builder private-beta readiness can return to GO — that E2E task is not registered here
+- [ ] PRIVATE-BETA-INVITE-01 remains prohibited until a later private-beta readiness decision explicitly permits it
+- [ ] Step 2 stage-start / investigation-plan document created (`docs/PRIVATE-BETA-BLOCKER-03J-STAGE-START.md`)
+- [ ] Final checkpoint created only after implementation evidence exists
+- [ ] PRIVATE-BETA-E2E-03 remains COMPLETE AND LOCKED — FAIL / BLOCKED — not retroactively converted to PASS
+
+**PRIVATE-BETA-BLOCKER-03J status:** REGISTERED / PLANNED — 2026-08-17
+**Step 1:** COMPLETE — Registration — 2026-08-17
+**Step 2:** PENDING
+**Step 3:** PENDING — not started
+**Step 4:** PENDING — not started
+**ROOT_CAUSE_OF_CONFIRM_FAILURE:** UNINVESTIGATED
+
