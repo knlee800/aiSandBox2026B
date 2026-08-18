@@ -61786,14 +61786,14 @@ Keith authorized registration of PRIVATE-BETA-BLOCKER-03J after this task locked
 **Workflow:** HIGH-RISK 4-STEP
 
 - Step 1 — Registration — COMPLETE — 2026-08-17
-- Step 2 — Stage Start / Source-Path Investigation Plan — PENDING
-- Step 3 — Bounded Implementation + Tests after root cause is proven — PENDING — not authorized by this registration
+- Step 2 — Stage Start / Source-Path Investigation Plan — COMPLETE (CORRECTED 2026-08-18) — ROOT CAUSE UNPROVEN / FAILURE-HANDLING DEFECT PROVEN
+- Step 3 — Bounded Implementation + Tests after root cause is proven — PENDING — BLOCKED_PENDING_EVIDENCE
 - Step 4 — Consolidation / Checkpoint — PENDING
 
 **Registered:** 2026-08-17
 **Approved:** Keith — 2026-08-17 (Step 1 registration only)
-**Implementation status:** NOT STARTED — no source, test, runtime, or accounting mutation is authorized by this registration
-**Root-cause status:** `ROOT_CAUSE_OF_CONFIRM_FAILURE=UNINVESTIGATED`
+**Implementation status:** NOT STARTED — no source, test, runtime, or accounting mutation performed
+**Root-cause status:** `ROOT_CAUSE_OF_CONFIRM_FAILURE=UNPROVEN` — failure-handling defect proven (observability + resilience); exact E2E-03 runtime failure cause unproven; strongest candidate: INTERNAL_SERVICE_KEY env availability after PM2 restart
 **Dependencies:**
 - PRIVATE-BETA-E2E-03 COMPLETE AND LOCKED — FAIL / BLOCKED — 2026-08-17 — Checkpoint: `docs/PRIVATE-BETA-E2E-03-CHECKPOINT.md` — Stage Start: `docs/PRIVATE-BETA-E2E-03-STAGE-START.md`
 - PRIVATE-BETA-BLOCKER-03D COMPLETE AND LOCKED — 2026-08-14 — deferred Build deduction / confirm-build-apply architecture — must be preserved, not weakened
@@ -61802,9 +61802,9 @@ Keith authorized registration of PRIVATE-BETA-BLOCKER-03J after this task locked
 - PRIVATE-BETA-BLOCKER-03I COMPLETE AND LOCKED — 2026-08-17 — PASS — checkpoint safety
 **Blocking:** Builder-first private-beta GO/NO-GO — PRIVATE-BETA-INVITE-01 remains prohibited
 **Child tasks:** none pre-registered
-**Stage-Start document:** NOT CREATED — Step 2 deliverable `docs/PRIVATE-BETA-BLOCKER-03J-STAGE-START.md`
+**Stage-Start document:** CREATED — 2026-08-17 — `docs/PRIVATE-BETA-BLOCKER-03J-STAGE-START.md`
 **Checkpoint:** NOT CREATED — Step 4 only
-**Exact next recommended step:** PRIVATE-BETA-BLOCKER-03J Step 2 — Stage Start / Source-Path Investigation Plan
+**Exact next recommended step:** PRIVATE-BETA-BLOCKER-03J — Keith decision required: (a) authorize pragmatic combined fix (retry + observability) without full root-cause proof, OR (b) authorize bounded diagnostic validation to identify exact failure point first
 **PRIVATE-BETA-INVITE-01 status:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 **Future fresh E2E after 03J:** REQUIRED before Builder private-beta readiness can return to GO — identifier not registered in this task
 **E2E-03 locked status:** COMPLETE AND LOCKED — FAIL / BLOCKED — 2026-08-17 — do not reopen; do not claim retroactive PASS
@@ -62062,10 +62062,10 @@ No implementation boxes are completed by this registration.
 - [ ] Final checkpoint created only after implementation evidence exists
 - [ ] PRIVATE-BETA-E2E-03 remains COMPLETE AND LOCKED — FAIL / BLOCKED — not retroactively converted to PASS
 
-**PRIVATE-BETA-BLOCKER-03J status:** REGISTERED / PLANNED — 2026-08-17
+**PRIVATE-BETA-BLOCKER-03J status:** STEP 2 COMPLETE — ROOT CAUSE PROVEN — 2026-08-17
 **Step 1:** COMPLETE — Registration — 2026-08-17
-**Step 2:** PENDING
-**Step 3:** PENDING — not started
+**Step 2:** COMPLETE — Stage Start / Source-Path Investigation — ROOT_CAUSE_PROVEN=YES — 2026-08-17
+**Step 3:** READY — not started
 **Step 4:** PENDING — not started
-**ROOT_CAUSE_OF_CONFIRM_FAILURE:** UNINVESTIGATED
+**ROOT_CAUSE_OF_CONFIRM_FAILURE:** PROVEN — fire-and-forget confirmation invocation with zero retry; single transient proxy failure permanently prevents deduction; error swallowed client-side only
 
