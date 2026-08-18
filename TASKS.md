@@ -3,7 +3,7 @@
 **Parallel Development Architecture:** v1
 **Maximum admitted implementation lanes:** 2
 **Lane 3:** DISABLED
-**Active implementation lanes:** 0 / 2
+**Active implementation lanes:** 1 / 2
 
 Task bodies, AC, dependencies, history, and LOCKED state live in:
 `C:\Users\knlee\aiSandBox2026B\TASKS_BACKLOG_FULL.md`
@@ -12,12 +12,12 @@ This board is the only current scheduler.
 Do not determine current work from content below the LEGACY / FROZEN boundary.
 
 ## Lane 1
-- Task ID: EMPTY
-- Workstream: —
-- State: EMPTY
-- Lifecycle: —
-- Primary write scope: —
-- Mutexes/resources: —
+- Task ID: PRIVATE-BETA-E2E-04
+- Workstream: RELIABILITY
+- State: ACTIVE
+- Lifecycle: 4-step
+- Primary write scope: controlled post-03J E2E validation/evidence
+- Mutexes/resources: STAGING, PROVIDER-LIVE, CREDIT, ENV
 
 ## Lane 2
 - Task ID: EMPTY
@@ -34,19 +34,35 @@ DISABLED
 EMPTY / NONE
 
 ## Active mutex / resource ownership
-ALL UNOWNED
+- STAGING: Lane 1 / PRIVATE-BETA-E2E-04
+- PROVIDER-LIVE: Lane 1 / PRIVATE-BETA-E2E-04
+- CREDIT: Lane 1 / PRIVATE-BETA-E2E-04
+- ENV: Lane 1 / PRIVATE-BETA-E2E-04
+- GOVERNANCE: UNOWNED
+- All other resources: UNOWNED
+
+Resource ownership reserves evidence isolation only. It does not authorize runtime, provider, credit, or env mutation.
 
 ## Frozen contracts
-- none
+- PRIVATE-BETA-BLOCKER-03D deferred Build accounting semantics
+- PRIVATE-BETA-BLOCKER-03H authoritative balance/display refresh semantics
+- PRIVATE-BETA-BLOCKER-03I checkpoint/Git runtime fix
+- PRIVATE-BETA-BLOCKER-03J public authenticated Gateway confirm-build-apply route
+- existing authentication and execution ownership semantics
+- existing automatic post-apply checkpoint semantics
 
 ## Current blockers / gates
-- Fresh post-03J E2E: REQUIRED BUT UNREGISTERED / NOT ADMITTED
+- PRIVATE-BETA-E2E-04: ACTIVE — Step 1 COMPLETE — Registration / Admission — 2026-08-18
+- RUNTIME_EXECUTION_AUTHORIZED=NO
+- PROVIDER_CALL_AUTHORIZED=NO
+- CREDIT_MUTATION_AUTHORIZED=NO
+- Single-lane evidence isolation: Lane 2 MUST remain EMPTY while PRIVATE-BETA-E2E-04 is ACTIVE or LANE-DONE
 - PRIVATE-BETA-INVITE-01: UNREGISTERED / PROHIBITED
 - BUILDER_PRIVATE_BETA_READINESS: NO_GO_PENDING_FRESH_E2E
 
 ## Current next product gate
-Fresh controlled post-03J E2E — single lane — REQUIRED BUT UNREGISTERED / NOT ADMITTED.
-Not the first parallel pilot.
+PRIVATE-BETA-E2E-04 Step 2 — Stage-Start / Exact Controlled E2E Runbook.
+NEW Cursor window required. Runtime / provider / credit mutation not authorized.
 
 ============================================================
 LEGACY / FROZEN TASK HISTORY — NOT CURRENT EXECUTION STATE

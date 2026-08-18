@@ -62430,3 +62430,137 @@ Step 4 (Consolidation / Checkpoint):
 **Fresh post-03J E2E:** REQUIRED BUT UNREGISTERED / NOT ADMITTED
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E
 
+---
+
+### PRIVATE-BETA-E2E-04: Fresh Post-03J Builder End-to-End Validation
+
+**Task ID:** PRIVATE-BETA-E2E-04
+**Title:** Fresh Post-03J Builder End-to-End Validation
+**Workstream:** RELIABILITY
+**Lifecycle:** 4-step HIGH-RISK
+**Status:** ACTIVE — Step 1 COMPLETE — Registration / Admission — 2026-08-18
+**Assigned lane:** Lane 1
+**Lane 2:** EMPTY — required for entire ACTIVE / LANE-DONE lifecycle
+**Lane 3:** DISABLED
+**Registered:** 2026-08-18
+**Approved:** Keith — 2026-08-18 (Step 1 registration + OS v1 admission only)
+**Nature:** Controlled post-03J Builder journey validation / evidence
+**Evidence class:** PROVIDER-LIVE
+**Hot-file leases:** NONE
+
+**Start condition:** READY — all declared dependencies COMPLETE AND LOCKED; OS v1 admission rules satisfied; required evidence/runtime isolation available.
+
+**Depends on:**
+- PRIVATE-BETA-BLOCKER-03D — COMPLETE AND LOCKED — 2026-08-14
+- PRIVATE-BETA-BLOCKER-03H — COMPLETE AND LOCKED — PASS — 2026-08-16
+- PRIVATE-BETA-BLOCKER-03I — COMPLETE AND LOCKED — PASS — 2026-08-17
+- PRIVATE-BETA-BLOCKER-03J — COMPLETE AND LOCKED — PASS — 2026-08-18
+- GOV-OS-01 — COMPLETE AND LOCKED — PASS — 2026-08-18
+
+**Predecessor / historical failure evidence (NOT a dependency):**
+- PRIVATE-BETA-E2E-03 — COMPLETE AND LOCKED — FAIL / BLOCKED — 2026-08-17
+- Do not reopen. Do not rewrite. Do not convert to PASS.
+
+**Primary write scope:**
+- Step 1: `TASKS.md` CURRENT EXECUTION BOARD above LEGACY / FROZEN only; this canonical registry entry
+- Later steps: only specifically authorized PRIVATE-BETA-E2E-04 stage-start / execution-evidence / checkpoint artifacts
+- No application source. No tests. No PRD.md. No ARCHITECTURE.md. No CLAUDE.md. No AGENTS.md.
+
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT, ENV
+Ownership reserves evidence isolation only. It does **not** authorize runtime, provider, credit, or env mutation.
+
+**Shared contracts (frozen; do not modify inside E2E-04):**
+- PRIVATE-BETA-BLOCKER-03D deferred Build accounting semantics
+- PRIVATE-BETA-BLOCKER-03H authoritative balance/display refresh semantics
+- PRIVATE-BETA-BLOCKER-03I checkpoint/Git runtime fix
+- PRIVATE-BETA-BLOCKER-03J public authenticated Gateway confirm-build-apply route
+- existing authentication and execution ownership semantics
+- existing automatic post-apply checkpoint semantics
+
+If the E2E exposes a real defect requiring source/contract change: STOP at the hard-stop point. Do not fix inside E2E-04. Return to the control plane for a separately registered blocker/fix task.
+
+**Revert / evidence isolation:** Single-lane controlled validation. No concurrent work may contaminate staging state, provider-live evidence, credit/accounting evidence, execution gate state, or environment/gate state. Evidence must be reproducible and attributable to this task only.
+
+**Single-lane evidence-isolation rule:** YES. While PRIVATE-BETA-E2E-04 is ACTIVE or LANE-DONE: Lane 2 must remain EMPTY; do not admit another implementation task even if declared mutexes appear non-conflicting; do not use spare lane capacity for unrelated work; preserve staging/provider/credit/runtime evidence isolation until E2E-04 is consolidated and LOCKED or explicitly returned by the control plane. This is not the first parallel pilot.
+
+**Purpose:** Perform one fresh controlled post-03J Builder journey proving the complete corrected live path: Builder Build execution → qualifying workspace_mutation / fileActions → successful workspace apply → automatic post-apply checkpoint → public Gateway `POST /api/ai/executions/:executionId/confirm-build-apply` → existing deferred accounting path → exactly one credit deduction → refreshed/reconciled credit balance → retained manual checkpoint/reconciliation checks required by the final E2E runbook. A PASS may support a subsequent Builder private-beta readiness decision. Do not declare private-beta GO in Step 1.
+
+**Lifecycle steps:**
+1. Registration + OS v1 Admission — COMPLETE — 2026-08-18
+2. Stage-Start / Exact Controlled E2E Runbook — PENDING — NEW Cursor window required
+3. Authorized Controlled Staging E2E Execution + Evidence — NOT AUTHORIZED
+4. Consolidation / Final E2E Verdict + Checkpoint — PENDING
+
+**Authorization flags (Step 1):**
+- RUNTIME_EXECUTION_AUTHORIZED=NO
+- PROVIDER_CALL_AUTHORIZED=NO
+- CREDIT_MUTATION_AUTHORIZED=NO
+
+Registration/admission does not authorize Step 3 runtime. Separate explicit Keith authorization is required before provider-live Step 3. Do not enable `GLOBAL_EXECUTION_ENABLED`, alter `BILLING_CHARGES_ENABLED`, edit `.env`, SSH, deploy, restart PM2/Caddy, invoke a provider, create a live project/session/container, invoke live confirm-build-apply, mutate credits, or run browser E2E in this step.
+
+**PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+
+**Exact next lifecycle step:** PRIVATE-BETA-E2E-04 Step 2 — Stage-Start / Exact Controlled E2E Runbook
+
+---
+
+#### Acceptance Criteria
+
+Registration / control-plane:
+- [x] task registered with unique ID PRIVATE-BETA-E2E-04
+- [x] OS v1 admission rules pass
+- [x] admitted to Lane 1 only
+- [x] Lane 2 remains EMPTY
+- [x] required resources reserved (STAGING, PROVIDER-LIVE, CREDIT, ENV)
+- [x] GOVERNANCE released after Step 1
+- [x] live E2E criteria are not marked complete during Step 1
+
+Stage-start:
+- [ ] exact runbook frozen before runtime
+- [ ] exact provider-call budget defined
+- [ ] exact test user/project/session strategy defined
+- [ ] exact baseline credit evidence defined
+- [ ] hard-stop and cleanup rules defined
+- [ ] exact authoritative evidence sources defined
+
+Live E2E:
+- [ ] authentication works
+- [ ] controlled Builder execution succeeds
+- [ ] qualifying fileActions produced
+- [ ] workspace apply succeeds
+- [ ] build_awaiting_apply observed before confirmation
+- [ ] public Gateway confirm path reached
+- [ ] confirm handoff observed
+- [ ] exactly one qualifying deferred deduction observed
+- [ ] no duplicate deduction
+- [ ] authoritative balance reconciles
+- [ ] frontend/displayed balance reconciles as required
+- [ ] automatic checkpoint succeeds
+- [ ] manual checkpoint/reconciliation succeeds if required by runbook
+- [ ] workspace/preview result remains valid
+- [ ] cleanup succeeds
+- [ ] GLOBAL_EXECUTION_ENABLED restored false
+- [ ] BILLING_CHARGES_ENABLED remains false
+- [ ] no Stripe/payment activity
+
+Governance:
+- [ ] E2E-03 remains unchanged historical FAIL/BLOCKED
+- [ ] no product defect is silently fixed inside E2E-04
+- [ ] checkpoint created during Step 4
+- [ ] final verdict is explicit PASS or FAIL/BLOCKED
+- [ ] Builder private-beta readiness is updated only according to proven evidence
+- [ ] PRIVATE-BETA-INVITE-01 remains prohibited unless separately authorized later
+
+---
+
+**PRIVATE-BETA-E2E-04 status:** ACTIVE — Step 1 COMPLETE — Registration / Admission — 2026-08-18
+**Assigned lane:** Lane 1
+**Lane 2:** EMPTY
+**Lane 3:** DISABLED
+**RUNTIME_EXECUTION_AUTHORIZED:** NO
+**PROVIDER_CALL_AUTHORIZED:** NO
+**CREDIT_MUTATION_AUTHORIZED:** NO
+**Exact next lifecycle step:** PRIVATE-BETA-E2E-04 Step 2 — Stage-Start / Exact Controlled E2E Runbook
+**PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+**BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E
+
