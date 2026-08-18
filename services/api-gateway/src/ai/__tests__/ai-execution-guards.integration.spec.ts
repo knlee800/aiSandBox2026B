@@ -590,6 +590,16 @@ describe('AIExecutionController guard metadata', () => {
     expect(guards).toContain(SessionOrApiKeyAuthGuard);
   });
 
+  it('protects public confirmBuildApply with SessionOrApiKeyAuthGuard only', () => {
+    const guards =
+      Reflect.getMetadata(
+        GUARDS_METADATA,
+        AIExecutionController.prototype.confirmBuildApply,
+      ) ?? [];
+
+    expect(guards).toEqual([SessionOrApiKeyAuthGuard]);
+  });
+
   it('protects streamExecution with SessionOrApiKeyAuthGuard', () => {
     const guards =
       Reflect.getMetadata(

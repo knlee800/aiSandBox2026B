@@ -61778,7 +61778,7 @@ Keith authorized registration of PRIVATE-BETA-BLOCKER-03J after this task locked
 
 **Task ID:** PRIVATE-BETA-BLOCKER-03J
 **Title:** Investigate Missing confirm-build-apply Request After Successful Qualifying Workspace Apply
-**Status:** ACTIVE — STEP 2 COMPLETE — ROOT CAUSE PROVEN / LIVE PUBLIC ROUTING DEFECT CONFIRMED — 2026-08-18 — STEP 3 READY — NOT YET IMPLEMENTED
+**Status:** COMPLETE AND LOCKED — PASS — 2026-08-18
 **Family:** PRIVATE-BETA-BLOCKER-03 / BUILDER EXECUTION RELIABILITY / DEFERRED BUILD ACCOUNTING HANDOFF
 **Priority:** HIGH — launch-critical private-beta blocker
 **Risk:** HIGH — accounting-adjacent; public confirm route must preserve PRIVATE-BETA-BLOCKER-03D safeguards, session auth, and execution ownership; must not expose INTERNAL_SERVICE_KEY to the browser
@@ -61787,12 +61787,12 @@ Keith authorized registration of PRIVATE-BETA-BLOCKER-03J after this task locked
 
 - Step 1 — Registration — COMPLETE — 2026-08-17
 - Step 2 — Stage Start / Source-Path Investigation Plan — COMPLETE — ROOT CAUSE PROVEN / LIVE PUBLIC ROUTING DEFECT CONFIRMED — 2026-08-18
-- Step 3 — Bounded Implementation + Tests — READY — NOT YET IMPLEMENTED — ARCHITECTURE=B
-- Step 4 — Consolidation / Checkpoint — PENDING
+- Step 3 — Bounded Implementation + Tests — COMPLETE — LOCAL IMPLEMENTATION/TEST PASS — 2026-08-18 — ARCHITECTURE=B
+- Step 4 — Consolidation / Checkpoint — COMPLETE — INDEPENDENT AUDIT / CONSOLIDATION PASS — 2026-08-18
 
 **Registered:** 2026-08-17
 **Approved:** Keith — 2026-08-17 (Step 1 registration only)
-**Implementation status:** NOT STARTED — no source, test, runtime, or accounting mutation performed
+**Implementation status:** COMPLETE AND LOCKED — PASS — 2026-08-18 — public authenticated Gateway confirm-build-apply route added; 03D accounting semantics unchanged; independent audit PASS; checkpoint created
 **Root-cause status:** `ROOT_CAUSE_OF_CONFIRM_FAILURE=PROVEN` — public staging Caddy routes all `/api/*` to API Gateway; frontend confirm URL exists only on Next.js; live Schannel diagnostic proves the public confirm URL reaches Gateway Express/Nest, not Next.js
 **Public routing defect:** `PUBLIC_CONFIRM_ROUTING_DEFECT_PROVEN=YES` — `PUBLIC_CONFIRM_ROUTE_LIVE_TARGET=API_GATEWAY` — `PUBLIC_CONFIRM_ROUTE_BYPASSES_NEXTJS=YES`
 **E2E-03 exact root cause:** `E2E03_EXACT_CONFIRM_FAILURE_ROOT_CAUSE_PROVEN=YES`
@@ -61812,8 +61812,8 @@ Keith authorized registration of PRIVATE-BETA-BLOCKER-03J after this task locked
 **Blocking:** Builder-first private-beta GO/NO-GO — PRIVATE-BETA-INVITE-01 remains prohibited
 **Child tasks:** none — no child tasks required; one bounded implementation slice
 **Stage-Start document:** CREATED — 2026-08-17 — EVIDENCE RECONCILED — 2026-08-18 — `docs/PRIVATE-BETA-BLOCKER-03J-STAGE-START.md`
-**Checkpoint:** NOT CREATED — Step 4 only
-**Exact next recommended step:** PRIVATE-BETA-BLOCKER-03J Step 3 — Bounded Implementation + Tests — ARCHITECTURE=B public authenticated Gateway confirm-build-apply. Implementation + local automated tests may proceed after this governance lock. Do not treat Step 3 PASS as private-beta readiness. Fresh controlled E2E remains required after the fix and is not registered here. Provider/runtime E2E requires separate explicit Keith authorization.
+**Checkpoint:** CREATED — 2026-08-18 — `docs/PRIVATE-BETA-BLOCKER-03J-CHECKPOINT.md`
+**Exact next recommended step:** NONE — 03J is COMPLETE AND LOCKED. Fresh controlled E2E remains required before Builder private-beta readiness can return to GO. That E2E task is not registered here. Provider/runtime E2E requires separate explicit Keith authorization. PRIVATE-BETA-INVITE-01 remains prohibited.
 **PRIVATE-BETA-INVITE-01 status:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 **Future fresh E2E after 03J:** REQUIRED before Builder private-beta readiness can return to GO — identifier not registered in this task
 **E2E-03 locked status:** COMPLETE AND LOCKED — FAIL / BLOCKED — 2026-08-17 — do not reopen; do not claim retroactive PASS
@@ -61838,7 +61838,7 @@ NEXTJS_PROXY_DISPOSITION                      = RETAIN TEMPORARILY
 RETRY_REQUIRED_FOR_ROOT_CAUSE_FIX             = NO
 OBSERVABILITY_REQUIRED_FOR_ROOT_CAUSE_FIX     = NO
 STEP_3_READINESS                              = READY
-STEP_3_STATUS                                 = READY — NOT YET IMPLEMENTED
+STEP_3_STATUS                                 = COMPLETE — LOCAL IMPLEMENTATION/TEST PASS — 2026-08-18
 ```
 
 Exact proven root cause: public staging Caddy routes all browser `/api/*` to API Gateway `:4000`. After a qualifying apply, the frontend posts `/api/ai/executions/:executionId/confirm-build-apply`. That public endpoint exists only as a Next.js App Router handler on `:3002`. Gateway has no matching public route; its accounting endpoint is internal `POST /api/internal/executions/:executionId/confirm-build-apply`. One authorized Schannel `curl.exe` diagnostic to a dummy UUID on that public URL returned HTTP 400 with `Via: 1.1 Caddy` and `X-Powered-By: Express` plus Nest/Express JSON parse failure. Next.js would have returned HTTP 401 `{ "error": "unauthenticated" }` before parsing the body. Therefore the browser confirmation request cannot reach the Next.js proxy under the deployed Caddy topology. Swallowed confirmation failure does not undo the already-successful workspace apply, matching E2E-03 (`request_received=0`, balance 30577→30577).
@@ -61859,6 +61859,47 @@ Rejected Step 3 fixes: Caddy special-case routing to Next.js; moving confirmatio
 Step 3 primary production file: `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\ai\ai-execution.controller.ts`. Reuse existing DTO, `UsageLedgerService.triggerBuildApplyDeduction`, and existing session/auth/ownership mechanisms. Do not modify 03D accounting semantics unless necessary to expose existing behavior through the public authenticated route.
 
 PRIVATE-BETA-INVITE-01 remains UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED. Do not register a fresh E2E task here.
+
+---
+
+#### Step 3 Implementation Result — 2026-08-18
+
+LOCAL IMPLEMENTATION/TEST PASS. Architecture B public authenticated Gateway route added:
+
+```
+POST /api/ai/executions/:executionId/confirm-build-apply
+```
+
+Auth: existing `SessionOrApiKeyAuthGuard` (browser session cookie / API key). Ownership uses the same not-found convention as `getExecution`. Existing `ConfirmBuildApplyDto` and `UsageLedgerService.triggerBuildApplyDeduction` reused. Internal `POST /api/internal/executions/:executionId/confirm-build-apply` remains INTERNAL_SERVICE_KEY protected. Caddy, frontend confirm URL, and Next.js proxy were not changed. Retry and observability hardening were not added. No Stripe/payment path. No user-facing copy. 03D Ask / `build_awaiting_apply` / qualification / exactly-once semantics remain in the accounting layer.
+
+Focused HTTP proof: `services/api-gateway/src/ai/__tests__/ai-execution.confirm-build-apply.http.spec.ts`. Broader affected AI / internal-accounting / usage-ledger tests PASS. Typecheck PASS. Build PASS. Docker/Postgres/Redis not used. No staging, provider, or credit mutation.
+
+Step 3 PASS does not make Builder private beta GO. Fresh controlled E2E remains REQUIRED and is not registered here. Checkpoint belongs to Step 4 and was not created.
+
+---
+
+#### Step 4 Independent Audit / Consolidation Result — 2026-08-18
+
+INDEPENDENT AUDIT / CONSOLIDATION PASS. All phases completed:
+
+```
+IMPLEMENTATION_DIFF_AUDIT              = PASS
+AUTH_SECURITY_AUDIT                    = PASS
+ACCOUNTING_SEMANTICS_AUDIT             = PASS
+HTTP_ROUTE_REGRESSION_PROOF            = PASS
+EXISTING_PUBLIC_AI_ROUTE_AUDIT         = PASS
+FOCUSED_TEST (16/16)                   = PASS
+BROADER_SUITES (8 suites, 241/241)     = PASS
+TYPECHECK (npx tsc --noEmit)           = PASS
+BUILD (npm run build)                  = PASS
+DOCKER_POSTGRES_REDIS                  = NOT USED
+STAGING_PROVIDER_CREDIT_MUTATION       = NONE
+ACCEPTANCE_CRITERIA_RECONCILIATION     = NO GOVERNANCE CONFLICT
+```
+
+Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03J-CHECKPOINT.md`
+
+FRESH_POST_FIX_E2E_REQUIRED=YES. BUILDER_PRIVATE_BETA_READINESS=NO_GO_PENDING_FRESH_E2E. PRIVATE-BETA-INVITE-01 remains UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED.
 
 ---
 
@@ -62094,38 +62135,38 @@ No implementation boxes are completed by this registration.
 
 - [x] Exact root cause identified and documented with source/runtime evidence
 - [x] Exact point where the successful apply → confirm-build-apply chain stops is proven
-- [ ] Minimal fix restores the normal confirmation call after a qualifying successful workspace apply
-- [ ] AI completion continues to produce `build_awaiting_apply` and does not directly deduct
-- [ ] Qualifying successful apply results in confirm-build-apply being invoked exactly once
-- [ ] confirm-build-apply reaches the intended API Gateway route
-- [ ] Correct execution ID and authenticated ownership context are preserved
-- [ ] Exactly one deduction occurs for the qualifying execution
-- [ ] Deduction amount continues to follow the existing token-to-credit contract
-- [ ] Duplicate confirmation remains idempotent and cannot double-charge
-- [ ] Apply failure does not deduct
-- [ ] Zero file actions do not deduct
-- [ ] Non-qualifying confirmation does not deduct
-- [ ] Ask accounting semantics remain unchanged
-- [ ] Automatic post-apply checkpoint behavior remains intact
-- [ ] No regression to project/session/workspace lifecycle
-- [ ] No external Stripe/payment charge
-- [ ] `BILLING_CHARGES_ENABLED` remains false unless separately authorized
-- [ ] `GLOBAL_EXECUTION_ENABLED` remains false by default and outside an explicitly authorized runtime window
-- [ ] Focused automated tests cover the actual root cause and regression path
-- [ ] Relevant broader frontend/API Gateway tests pass, scoped according to affected implementation
-- [ ] No unrelated redesign/refactor/dependency addition
-- [ ] If any new user-facing UX/UI text is introduced: existing i18n pattern; `en.json` / `zh-TW.json` / `zh-CN.json` updated; no hardcoded English; Heroicons v2 Outline for any icon work
-- [ ] A fresh post-fix E2E validation is required before Builder private-beta readiness can return to GO — that E2E task is not registered here
-- [ ] PRIVATE-BETA-INVITE-01 remains prohibited until a later private-beta readiness decision explicitly permits it
+- [x] Minimal fix restores the normal confirmation call after a qualifying successful workspace apply — local public Gateway route now matches the frontend URL; live restore still requires fresh E2E
+- [x] AI completion continues to produce `build_awaiting_apply` and does not directly deduct — existing 03D usage-ledger tests PASS; accounting layer unchanged
+- [ ] Qualifying successful apply results in confirm-build-apply being invoked exactly once — local HTTP path proven; live E2E still required
+- [x] confirm-build-apply reaches the intended API Gateway route — HTTP tests prove `POST /api/ai/executions/:executionId/confirm-build-apply`; live E2E still required
+- [x] Correct execution ID and authenticated ownership context are preserved
+- [ ] Exactly one deduction occurs for the qualifying execution — local deferred-deduction path proven; live E2E still required
+- [x] Deduction amount continues to follow the existing token-to-credit contract — `UsageLedgerService.triggerBuildApplyDeduction` reused unchanged
+- [x] Duplicate confirmation remains idempotent and cannot double-charge — public route forwards duplicates to the existing sourceEventId path; usage-ledger tests PASS
+- [x] Apply failure does not deduct
+- [x] Zero file actions do not deduct
+- [x] Non-qualifying confirmation does not deduct
+- [x] Ask accounting semantics remain unchanged
+- [x] Automatic post-apply checkpoint behavior remains intact — frontend/checkpoint code untouched
+- [x] No regression to project/session/workspace lifecycle — existing public GET/cancel routes covered
+- [x] No external Stripe/payment charge
+- [x] `BILLING_CHARGES_ENABLED` remains false unless separately authorized
+- [x] `GLOBAL_EXECUTION_ENABLED` remains false by default and outside an explicitly authorized runtime window
+- [x] Focused automated tests cover the actual root cause and regression path
+- [x] Relevant broader frontend/API Gateway tests pass, scoped according to affected implementation — API Gateway affected suites PASS; frontend unchanged
+- [x] No unrelated redesign/refactor/dependency addition
+- [x] If any new user-facing UX/UI text is introduced: existing i18n pattern; `en.json` / `zh-TW.json` / `zh-CN.json` updated; no hardcoded English; Heroicons v2 Outline for any icon work — no new user-facing copy
+- [x] A fresh post-fix E2E validation is required before Builder private-beta readiness can return to GO — that E2E task is not registered here
+- [x] PRIVATE-BETA-INVITE-01 remains prohibited until a later private-beta readiness decision explicitly permits it
 - [x] Step 2 stage-start / investigation-plan document created (`docs/PRIVATE-BETA-BLOCKER-03J-STAGE-START.md`)
-- [ ] Final checkpoint created only after implementation evidence exists
-- [ ] PRIVATE-BETA-E2E-03 remains COMPLETE AND LOCKED — FAIL / BLOCKED — not retroactively converted to PASS
+- [x] Final checkpoint created only after implementation evidence exists — `docs/PRIVATE-BETA-BLOCKER-03J-CHECKPOINT.md` — 2026-08-18
+- [x] PRIVATE-BETA-E2E-03 remains COMPLETE AND LOCKED — FAIL / BLOCKED — not retroactively converted to PASS
 
-**PRIVATE-BETA-BLOCKER-03J status:** STEP 2 COMPLETE — ROOT CAUSE PROVEN / LIVE PUBLIC ROUTING DEFECT CONFIRMED — 2026-08-18
+**PRIVATE-BETA-BLOCKER-03J status:** COMPLETE AND LOCKED — PASS — 2026-08-18
 **Step 1:** COMPLETE — Registration — 2026-08-17
 **Step 2:** COMPLETE — ROOT CAUSE PROVEN / LIVE PUBLIC ROUTING DEFECT CONFIRMED — 2026-08-18
-**Step 3:** READY — NOT YET IMPLEMENTED — ARCHITECTURE=B
-**Step 4:** PENDING — not started
+**Step 3:** COMPLETE — LOCAL IMPLEMENTATION/TEST PASS — 2026-08-18 — ARCHITECTURE=B
+**Step 4:** COMPLETE — INDEPENDENT AUDIT / CONSOLIDATION PASS — 2026-08-18
 **ROOT_CAUSE_OF_CONFIRM_FAILURE:** PROVEN — public Caddy `/api/*` → API Gateway; public confirm URL exists only on Next.js; live Schannel diagnostic proves Gateway Express/Nest is the public confirm target
 **PUBLIC_CONFIRM_ROUTING_DEFECT_PROVEN:** YES
 **E2E03_EXACT_CONFIRM_FAILURE_ROOT_CAUSE_PROVEN:** YES
@@ -62136,7 +62177,11 @@ No implementation boxes are completed by this registration.
 **NEXTJS_PROXY_DISPOSITION:** RETAIN TEMPORARILY — do not delete in Step 3
 **RETRY_REQUIRED_FOR_ROOT_CAUSE_FIX:** NO
 **OBSERVABILITY_REQUIRED_FOR_ROOT_CAUSE_FIX:** NO
-**STEP_3_READINESS:** READY
+**STEP_3_READINESS:** SATISFIED
+**STEP_3_STATUS:** COMPLETE — LOCAL IMPLEMENTATION/TEST PASS — 2026-08-18
+**STEP_4_STATUS:** COMPLETE — INDEPENDENT AUDIT / CONSOLIDATION PASS — 2026-08-18
+**FRESH_POST_FIX_E2E_REQUIRED:** YES
+**BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E
 **CHILD_SLICE_DECISION:** NONE — one bounded implementation slice
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 

@@ -25,6 +25,7 @@ import {
 } from '../clients/ai-service-http.client';
 import { ExecutionStreamService } from '../streaming/execution-stream.service';
 import { ExecutionResultDto, FileActionDto } from './dto/execution-result.dto';
+import { ConfirmBuildApplyDto } from './dto/confirm-build-apply.dto';
 import { SessionOrApiKeyAuthGuard } from '../auth/session-or-api-key.guard';
 import { AuthorizationGuard } from '../auth/authorization.guard';
 import { QuotaGuard } from '../quota/quota.guard';
@@ -738,6 +739,48 @@ export class AIExecutionController {
     }
 
     return response;
+  }
+
+  /**
+   * Confirm a qualifying Build workspace apply (PRIVATE-BETA-BLOCKER-03J)
+   *
+   * POST /api/ai/executions/:executionId/confirm-build-apply
+   *
+   * Public authenticated browser/session route matching the frontend URL.
+   * Ownership is enforced with the same not-found convention as getExecution.
+   * Qualification, exactly-once deduction, and 03D semantics remain in
+   * UsageLedgerService.triggerBuildApplyDeduction.
+   *
+   * Does not replace POST /api/internal/executions/:executionId/confirm-build-apply.
+   */
+  @Post('executions/:executionId/confirm-build-apply')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(SessionOrApiKeyAuthGuard)
+  async confirmBuildApply(
+    @Param('executionId') executionId: string,
+    @Body() confirmation: ConfirmBuildApplyDto,
+    @AuthenticatedUser() identity: ApiKeyIdentity,
+  ): Promise<{ executionId: string; triggered: boolean; reason: string }> {
+    const execution = await this.executionResultService.getExecution(executionId);
+
+    if (!execution) {
+      throw new NotFoundException('Execution not found');
+    }
+
+    if (!identity?.userId || execution.user_id !== identity.userId) {
+      throw new NotFoundException('Execution not found');
+    }
+
+    const result = await this.usageLedgerService.triggerBuildApplyDeduction(
+      executionId,
+      confirmation,
+    );
+
+    return {
+      executionId,
+      triggered: result.triggered,
+      reason: result.reason,
+    };
   }
 
   /**
