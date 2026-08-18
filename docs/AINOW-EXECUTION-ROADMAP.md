@@ -2,8 +2,11 @@
 
 **Created:** 2026-07-06
 **Task:** ROADMAP-00
-**Status:** ACTIVE governance document
-**Authority:** This document controls execution order. Product architecture remains governed by AGENT-PLATFORM-00.
+**Status:** HISTORICAL / STRATEGIC REFERENCE — NOT CURRENT EXECUTION AUTHORITY
+**Scheduler:** TASKS.md CURRENT EXECUTION BOARD is the only current scheduler.
+**Do not use this file to determine current work, admitted lanes, or next task.**
+Historical one-ACTIVE-task / Current Next Task text in this file is not admission authority.
+The body below is historical evidence and is not reconciled by GOV-OS-01.
 
 ---
 

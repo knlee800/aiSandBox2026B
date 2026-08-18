@@ -1,7 +1,13 @@
 # AGENT-PLATFORM-00 — ainow.biz Multi-Agent Platform Master Plan
 
-**Status:** ACTIVE planning output
+**Status:** COMPLETE AND LOCKED — HISTORICAL / STRATEGIC VISION
 **Task ID:** AGENT-PLATFORM-00
+**Current product WHAT:** PRD.md
+**Current technical HOW:** ARCHITECTURE.md
+**Current execution scheduler:** TASKS.md CURRENT EXECUTION BOARD
+Preserve the long-term vision in this file.
+The body below contains historical planning assumptions that may now be stale.
+Do not treat this file as current architecture, current PRD, or scheduling authority.
 **Family:** AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
 **Scope:** Documentation only — no implementation, no source edits, no checkpoint
 

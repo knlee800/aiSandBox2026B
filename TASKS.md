@@ -1,3 +1,78 @@
+# TASKS.md — CURRENT EXECUTION BOARD
+
+**Parallel Development Architecture:** v1
+**Maximum admitted implementation lanes:** 2
+**Lane 3:** DISABLED
+**Active implementation lanes:** 0 / 2
+
+Task bodies, AC, dependencies, history, and LOCKED state live in:
+`C:\Users\knlee\aiSandBox2026B\TASKS_BACKLOG_FULL.md`
+
+This board is the only current scheduler.
+Do not determine current work from content below the LEGACY / FROZEN boundary.
+
+## Lane 1
+- Task ID: EMPTY
+- Workstream: —
+- State: EMPTY
+- Lifecycle: —
+- Primary write scope: —
+- Mutexes/resources: —
+
+## Lane 2
+- Task ID: EMPTY
+- Workstream: —
+- State: EMPTY
+- Lifecycle: —
+- Primary write scope: —
+- Mutexes/resources: —
+
+## Lane 3
+DISABLED
+
+## Governance owner / state
+EMPTY / NONE
+
+## Active mutex / resource ownership
+ALL UNOWNED
+
+## Frozen contracts
+- none
+
+## Current blockers / gates
+- Fresh post-03J E2E: REQUIRED BUT UNREGISTERED / NOT ADMITTED
+- PRIVATE-BETA-INVITE-01: UNREGISTERED / PROHIBITED
+- BUILDER_PRIVATE_BETA_READINESS: NO_GO_PENDING_FRESH_E2E
+
+## Current next product gate
+Fresh controlled post-03J E2E — single lane — REQUIRED BUT UNREGISTERED / NOT ADMITTED.
+Not the first parallel pilot.
+
+============================================================
+LEGACY / FROZEN TASK HISTORY — NOT CURRENT EXECUTION STATE
+
+DO NOT USE CONTENT BELOW THIS LINE TO DETERMINE:
+- ACTIVE work
+- admitted lanes
+- current stage
+- next task
+- blockers
+- mutex ownership
+- scheduling
+
+Historical occurrences of:
+ACTIVE
+Current Stage
+Next Recommended Task
+Program Status
+Selected
+Family Status
+
+below this boundary are historical evidence only.
+
+CURRENT EXECUTION AUTHORITY EXISTS ONLY IN THE BOARD ABOVE.
+============================================================
+
 #
 (ACTIVE -- plan phase)ity & Scope
 
@@ -16,7 +91,7 @@ Rules:
 
 If conflicts exist, TASKS_BACKLOG_FULL.md takes precedence.
 
-**Program status:** **BILLING-READY-08 COMPLETE AND LOCKED 2026-08-07** — Controlled xAI smoke PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (500 credits) — overflow 98 ACCEPTED BY DESIGN — balance reached 0 correctly — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — QuotaGuard browser-session bypass — Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md` — **BILLING-READY-08B COMPLETE AND LOCKED 2026-08-07** — usage_records.created_at schema remediation — Checkpoint: `docs/BILLING-READY-08B-CHECKPOINT.md` — Final checkpoint: `docs/BILLING-READY-08-CHECKPOINT.md` — **PRIVATE-BETA-FUNCTIONAL-READINESS-04 COMPLETE AND LOCKED 2026-08-07** — All acceptance criteria satisfied — FR-04 parent checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-CHECKPOINT.md` — **ADMIN-CONSOLE-01 COMPLETE AND LOCKED 2026-08-08** — All children COMPLETE AND LOCKED — **ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07** — Checkpoint: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md` — **ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07** — Authenticated Admin Credit Grant API — Checkpoint: `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md` — **ADMIN-CONSOLE-01C COMPLETE AND LOCKED 2026-08-07** — Admin Console Shell + Users/Sessions — Checkpoint: `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md` — **ADMIN-CONSOLE-01D COMPLETE AND LOCKED 2026-08-07** — Admin Credit Grant UI — Checkpoint: `docs/ADMIN-CONSOLE-01D-CHECKPOINT.md` — **ADMIN-CONSOLE-01E COMPLETE AND LOCKED 2026-08-08** — Staging Operator Validation + Parent Consolidation — PASS WITH NON-BLOCKING LIMITATIONS — Checkpoint: `docs/ADMIN-CONSOLE-01E-CHECKPOINT.md` — **ADMIN-CONSOLE-01E1 COMPLETE AND LOCKED 2026-08-08** — Invalid Locale Redirect Origin Fix — Checkpoint: `docs/ADMIN-CONSOLE-01E1-CHECKPOINT.md` — Parent checkpoint: `docs/ADMIN-CONSOLE-01-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 BLOCKED** — private beta blocked by PRIVATE-BETA-BLOCKER-01 (recurring canonical landing page regression) and separate unresolved preview failure — Do not execute invitations until all blockers resolved — **PRIVATE-BETA-BLOCKER-01 COMPLETE AND LOCKED 2026-08-09** — Legacy workspace + feature-flag removal — Build-independence proven — All locales PASS — Commit `651f723447a85ec5d22139d6ba60be6680a0f8c6` — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-01-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-02 COMPLETE AND LOCKED 2026-08-09** — Preview Runtime Failure — PreviewController fallback 4001→4002 — staging live preview PASS — Commit `f73da07ef8d1acc70d43d6b4980fd1d0d57e2883` — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-02-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 UNBLOCKED** — landing-page and preview blockers resolved — do not execute invitations without registration and Keith explicit approval — GLOBAL_EXECUTION_ENABLED remains false — **GOV-ARCH-01 COMPLETE AND LOCKED 2026-08-10** — Checkpoint: `docs/GOV-ARCH-01-CHECKPOINT.md` — **GOV-PRD-01 COMPLETE AND LOCKED 2026-08-10** — Checkpoint: `docs/GOV-PRD-01-CHECKPOINT.md` — **PRIVATE-BETA-OPS-01 COMPLETE AND LOCKED 2026-08-10** — Independent PM2 ops watchdog staging-proved — P1 operational visibility SATISFIED — Checkpoint: `docs/PRIVATE-BETA-OPS-01-CHECKPOINT.md` — **PRIVATE-BETA-EXEC-01 COMPLETE AND LOCKED 2026-08-10** — Controlled Builder AI Execution Activation — Activation smoke PASS — Execution ID `24acd697-b55c-40d0-b2d5-32faf9b85709` — provider `xai` — path `plain` — tokens `1078` — file `beta-activation-smoke-2026-08-10.txt` — credits 6000→4922 — `GLOBAL_EXECUTION_ENABLED=true` deliberately left enabled — Harness remains disabled — Stripe charging remains disabled — Checkpoint: `docs/PRIVATE-BETA-EXEC-01-CHECKPOINT.md` — **PRIVATE-BETA-E2E-01 COMPLETE AND LOCKED — 2026-08-10 — FAIL / BLOCKER** — Fresh Keith Builder End-to-End Staging Journey — Primary blocker: Builder plain-path completed execution returned text with `fileActions: []` (execution `2bc73157-973a-45ec-8b71-bca8c2f7941d`) — no `index.html` / empty workspace — Gate rolled back to `GLOBAL_EXECUTION_ENABLED=false` — PRIVATE-BETA-INVITE-01 remains untouched/unregistered — Builder-first private beta **NO-GO PENDING BLOCKER FIX** — **PRIVATE-BETA-BLOCKER-03A COMPLETE AND LOCKED — 2026-08-10 — ROOT CAUSE PROVEN** — Empty File-Action Contract Diagnosis — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03A-CHECKPOINT.md` — Diagnosis: `docs/PRIVATE-BETA-BLOCKER-03A-DIAGNOSIS.md` — PROMPT-ONLY file-action contract; prose noncompliance silently accepted as completed with `fileActions: []` — Defect class: RESPONSE-FORM-SPECIFIC / MODEL-AGNOSTIC CONTRACT WEAKNESS — Target execution `2bc73157-973a-45ec-8b71-bca8c2f7941d` — Comparison executions `24acd697-b55c-40d0-b2d5-32faf9b85709` / `83acc0e9-84de-4f94-9e41-294701e38393` — `GLOBAL_EXECUTION_ENABLED=false` preserved — Builder-first private beta remains **NO-GO PENDING BLOCKER FIX** — **PRIVATE-BETA-BLOCKER-03B COMPLETE AND LOCKED — 2026-08-11 — PASS** — File-Action Reliability Fix — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03B-CHECKPOINT.md` — original file-action reliability blocker remediated — plain-path structured JSON + application-owned zero-action failure validated on staging — `GLOBAL_EXECUTION_ENABLED=false` — Harness remains disabled — PRIVATE-BETA-INVITE-01 untouched/unregistered — Builder-first private beta remains **NO-GO PENDING REMAINING READINESS WORK** — **BUILDER-INTENT-01 ACTIVE — Step 1 COMPLETE (Registration — 2026-08-11)** — Ask/Discuss vs Build/Edit Execution Intent — exact next: BUILDER-INTENT-01 Step 2 — Intent Contract + UX Stage-Start — 03C/03D remain NOT REGISTERED — PRIVATE-BETA-INVITE-01 untouched/unregistered — `GLOBAL_EXECUTION_ENABLED=false` — **BUILDER-INTENT-01 COMPLETE AND LOCKED 2026-08-13** — Checkpoint: `docs/BUILDER-INTENT-01-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-03C COMPLETE AND LOCKED 2026-08-14** — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03C-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-03D COMPLETE AND LOCKED 2026-08-14** — No-workspace-result credit policy — 03D-A/03D-B COMPLETE AND LOCKED — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03D-CHECKPOINT.md` — **PRIVATE-BETA-E2E-02 COMPLETE AND LOCKED — 2026-08-14 — FAIL / BLOCKED** — Staging did not contain/exercise 03D Build deferred-deduction confirmation architecture — old immediate-deduction path operated — confirm-build-apply route not present on staging — 15/18 PASS, 3/18 FAIL — provider=xAI/grok-4.5 — 1 call consumed, budget exhausted — UI balance 3278 ≠ DB balance 30577 UNRESOLVED — Checkpoint: `docs/PRIVATE-BETA-E2E-02-CHECKPOINT.md` — Private-beta NO-GO / BLOCKED — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited — **PRIVATE-BETA-BLOCKER-03F COMPLETE AND LOCKED — 2026-08-15 — FAIL / BLOCKED** — Staging Deployment Parity for 03D Accounting Confirmation Path — FRONTEND CONFIRM ROUTE REACHABILITY / API REWRITE PRECEDENCE BLOCKER — Deployment/source parity PASS — Runtime same-origin confirm path FAIL — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03F-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-03G COMPLETE AND LOCKED — 2026-08-16 — PASS** — Frontend Confirm-Build-Apply Route Reachability — next.config.js fallback-phase fix — confirm route reachable — GLOBAL_EXECUTION_ENABLED=false — BILLING_CHARGES_ENABLED=false — provider calls=0 — credit mutations=0 — Checkpoint: docs/PRIVATE-BETA-BLOCKER-03G-CHECKPOINT.md — Unresolved separate blocker: CREDIT DISPLAY DISCREPANCY (UI 3278 ≠ DB 30577) — **PRIVATE-BETA-BLOCKER-03H ACTIVE — Step 2 COMPLETE (Stage Start / Credit Data-Flow & Source-of-Truth Investigation — 2026-08-16)** — Credit Balance Display / Authoritative Balance Reconciliation — ROOT CAUSE PROVEN: stale frontend state (no auto-refresh after credit mutations) — fix is frontend-only + Cache-Control header — MIGRATION_REQUIRED=NO — ACCOUNTING_CALCULATION_CHANGE_REQUIRED=NO — Step 3 PENDING — private-beta NO-GO / BLOCKED — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited — **PRIVATE-BETA-BLOCKER-03I COMPLETE AND LOCKED — 2026-08-17 — PASS** — Git safe.directory Fix + Provider-Free Staging Validation — SHA 54b5764d8645d80a44f5de1351ca8e7928c5c8f4 — ROOT_CAUSE_PROVEN=YES — TIMEOUT_HYPOTHESIS_CONFIRMED=NO — POST_FIX_CHECKPOINT_RUNTIME_PASS=YES — Checkpoint: docs/PRIVATE-BETA-BLOCKER-03I-CHECKPOINT.md — private-beta remains NO-GO — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited — **PRIVATE-BETA-E2E-03 COMPLETE AND LOCKED — 2026-08-17 — FAIL / BLOCKED** — Qualifying workspace apply succeeded; confirm-build-apply request never observed; criterion 10 PASS; criteria 8/11/12 FAIL; 19/20 not executed; ROOT_CAUSE_OF_CONFIRM_FAILURE=UNINVESTIGATED — Checkpoint: `docs/PRIVATE-BETA-E2E-03-CHECKPOINT.md` — private-beta remains NO-GO — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited — **PRIVATE-BETA-BLOCKER-03J COMPLETE AND LOCKED — PASS — 2026-08-18** — Public authenticated Gateway `POST /api/ai/executions/:executionId/confirm-build-apply` implemented — ROOT_CAUSE_OF_CONFIRM_FAILURE=PROVEN — PUBLIC_CONFIRM_ROUTING_DEFECT_PROVEN=YES — ARCHITECTURE=B — Caddy/frontend URL/Next.js proxy unchanged — internal confirm remains INTERNAL_SERVICE_KEY protected — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03J-CHECKPOINT.md` — FRESH_POST_FIX_E2E_REQUIRED=YES — BUILDER_PRIVATE_BETA_READINESS=NO_GO_PENDING_FRESH_E2E — private-beta remains NO-GO — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited
+**Program status:** **BILLING-READY-08 COMPLETE AND LOCKED 2026-08-07** — Controlled xAI smoke PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (500 credits) — overflow 98 ACCEPTED BY DESIGN — balance reached 0 correctly — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — QuotaGuard browser-session bypass — Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md` — **BILLING-READY-08B COMPLETE AND LOCKED 2026-08-07** — usage_records.created_at schema remediation — Checkpoint: `docs/BILLING-READY-08B-CHECKPOINT.md` — Final checkpoint: `docs/BILLING-READY-08-CHECKPOINT.md` — **PRIVATE-BETA-FUNCTIONAL-READINESS-04 COMPLETE AND LOCKED 2026-08-07** — All acceptance criteria satisfied — FR-04 parent checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-CHECKPOINT.md` — **ADMIN-CONSOLE-01 COMPLETE AND LOCKED 2026-08-08** — All children COMPLETE AND LOCKED — **ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07** — Checkpoint: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md` — **ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07** — Authenticated Admin Credit Grant API — Checkpoint: `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md` — **ADMIN-CONSOLE-01C COMPLETE AND LOCKED 2026-08-07** — Admin Console Shell + Users/Sessions — Checkpoint: `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md` — **ADMIN-CONSOLE-01D COMPLETE AND LOCKED 2026-08-07** — Admin Credit Grant UI — Checkpoint: `docs/ADMIN-CONSOLE-01D-CHECKPOINT.md` — **ADMIN-CONSOLE-01E COMPLETE AND LOCKED 2026-08-08** — Staging Operator Validation + Parent Consolidation — PASS WITH NON-BLOCKING LIMITATIONS — Checkpoint: `docs/ADMIN-CONSOLE-01E-CHECKPOINT.md` — **ADMIN-CONSOLE-01E1 COMPLETE AND LOCKED 2026-08-08** — Invalid Locale Redirect Origin Fix — Checkpoint: `docs/ADMIN-CONSOLE-01E1-CHECKPOINT.md` — Parent checkpoint: `docs/ADMIN-CONSOLE-01-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 BLOCKED** — private beta blocked by PRIVATE-BETA-BLOCKER-01 (recurring canonical landing page regression) and separate unresolved preview failure — Do not execute invitations until all blockers resolved — **PRIVATE-BETA-BLOCKER-01 COMPLETE AND LOCKED 2026-08-09** — Legacy workspace + feature-flag removal — Build-independence proven — All locales PASS — Commit `651f723447a85ec5d22139d6ba60be6680a0f8c6` — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-01-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-02 COMPLETE AND LOCKED 2026-08-09** — Preview Runtime Failure — PreviewController fallback 4001→4002 — staging live preview PASS — Commit `f73da07ef8d1acc70d43d6b4980fd1d0d57e2883` — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-02-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 UNBLOCKED** — landing-page and preview blockers resolved — do not execute invitations without registration and Keith explicit approval — GLOBAL_EXECUTION_ENABLED remains false — **GOV-ARCH-01 COMPLETE AND LOCKED 2026-08-10** — Checkpoint: `docs/GOV-ARCH-01-CHECKPOINT.md` — **GOV-PRD-01 COMPLETE AND LOCKED 2026-08-10** — Checkpoint: `docs/GOV-PRD-01-CHECKPOINT.md` — **PRIVATE-BETA-OPS-01 COMPLETE AND LOCKED 2026-08-10** — Independent PM2 ops watchdog staging-proved — P1 operational visibility SATISFIED — Checkpoint: `docs/PRIVATE-BETA-OPS-01-CHECKPOINT.md` — **PRIVATE-BETA-EXEC-01 COMPLETE AND LOCKED 2026-08-10** — Controlled Builder AI Execution Activation — Activation smoke PASS — Execution ID `24acd697-b55c-40d0-b2d5-32faf9b85709` — provider `xai` — path `plain` — tokens `1078` — file `beta-activation-smoke-2026-08-10.txt` — credits 6000→4922 — `GLOBAL_EXECUTION_ENABLED=true` deliberately left enabled — Harness remains disabled — Stripe charging remains disabled — Checkpoint: `docs/PRIVATE-BETA-EXEC-01-CHECKPOINT.md` — **PRIVATE-BETA-E2E-01 COMPLETE AND LOCKED — 2026-08-10 — FAIL / BLOCKER** — Fresh Keith Builder End-to-End Staging Journey — Primary blocker: Builder plain-path completed execution returned text with `fileActions: []` (execution `2bc73157-973a-45ec-8b71-bca8c2f7941d`) — no `index.html` / empty workspace — Gate rolled back to `GLOBAL_EXECUTION_ENABLED=false` — PRIVATE-BETA-INVITE-01 remains untouched/unregistered — Builder-first private beta **NO-GO PENDING BLOCKER FIX** — **PRIVATE-BETA-BLOCKER-03A COMPLETE AND LOCKED — 2026-08-10 — ROOT CAUSE PROVEN** — Empty File-Action Contract Diagnosis — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03A-CHECKPOINT.md` — Diagnosis: `docs/PRIVATE-BETA-BLOCKER-03A-DIAGNOSIS.md` — PROMPT-ONLY file-action contract; prose noncompliance silently accepted as completed with `fileActions: []` — Defect class: RESPONSE-FORM-SPECIFIC / MODEL-AGNOSTIC CONTRACT WEAKNESS — Target execution `2bc73157-973a-45ec-8b71-bca8c2f7941d` — Comparison executions `24acd697-b55c-40d0-b2d5-32faf9b85709` / `83acc0e9-84de-4f94-9e41-294701e38393` — `GLOBAL_EXECUTION_ENABLED=false` preserved — Builder-first private beta remains **NO-GO PENDING BLOCKER FIX** — **PRIVATE-BETA-BLOCKER-03B COMPLETE AND LOCKED — 2026-08-11 — PASS** — File-Action Reliability Fix — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03B-CHECKPOINT.md` — original file-action reliability blocker remediated — plain-path structured JSON + application-owned zero-action failure validated on staging — `GLOBAL_EXECUTION_ENABLED=false` — Harness remains disabled — PRIVATE-BETA-INVITE-01 untouched/unregistered — Builder-first private beta remains **NO-GO PENDING REMAINING READINESS WORK** — **BUILDER-INTENT-01 ACTIVE — Step 1 COMPLETE (Registration — 2026-08-11)** — Ask/Discuss vs Build/Edit Execution Intent — exact next: BUILDER-INTENT-01 Step 2 — Intent Contract + UX Stage-Start — 03C/03D remain NOT REGISTERED — PRIVATE-BETA-INVITE-01 untouched/unregistered — `GLOBAL_EXECUTION_ENABLED=false` — **BUILDER-INTENT-01 COMPLETE AND LOCKED 2026-08-13** — Checkpoint: `docs/BUILDER-INTENT-01-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-03C COMPLETE AND LOCKED 2026-08-14** — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03C-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-03D COMPLETE AND LOCKED 2026-08-14** — No-workspace-result credit policy — 03D-A/03D-B COMPLETE AND LOCKED — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03D-CHECKPOINT.md` — **PRIVATE-BETA-E2E-02 COMPLETE AND LOCKED — 2026-08-14 — FAIL / BLOCKED** — Staging did not contain/exercise 03D Build deferred-deduction confirmation architecture — old immediate-deduction path operated — confirm-build-apply route not present on staging — 15/18 PASS, 3/18 FAIL — provider=xAI/grok-4.5 — 1 call consumed, budget exhausted — UI balance 3278 ≠ DB balance 30577 UNRESOLVED — Checkpoint: `docs/PRIVATE-BETA-E2E-02-CHECKPOINT.md` — Private-beta NO-GO / BLOCKED — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited — **PRIVATE-BETA-BLOCKER-03F COMPLETE AND LOCKED — 2026-08-15 — FAIL / BLOCKED** — Staging Deployment Parity for 03D Accounting Confirmation Path — FRONTEND CONFIRM ROUTE REACHABILITY / API REWRITE PRECEDENCE BLOCKER — Deployment/source parity PASS — Runtime same-origin confirm path FAIL — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03F-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-03G COMPLETE AND LOCKED — 2026-08-16 — PASS** — Frontend Confirm-Build-Apply Route Reachability — next.config.js fallback-phase fix — confirm route reachable — GLOBAL_EXECUTION_ENABLED=false — BILLING_CHARGES_ENABLED=false — provider calls=0 — credit mutations=0 — Checkpoint: docs/PRIVATE-BETA-BLOCKER-03G-CHECKPOINT.md — Unresolved separate blocker: CREDIT DISPLAY DISCREPANCY (UI 3278 ≠ DB 30577) — **PRIVATE-BETA-BLOCKER-03H ACTIVE — Step 2 COMPLETE (Stage Start / Credit Data-Flow & Source-of-Truth Investigation — 2026-08-16)** — Credit Balance Display / Authoritative Balance Reconciliation — ROOT CAUSE PROVEN: stale frontend state (no auto-refresh after credit mutations) — fix is frontend-only + Cache-Control header — MIGRATION_REQUIRED=NO — ACCOUNTING_CALCULATION_CHANGE_REQUIRED=NO — Step 3 PENDING — private-beta NO-GO / BLOCKED — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited — **PRIVATE-BETA-BLOCKER-03I COMPLETE AND LOCKED — 2026-08-17 — PASS** — Git safe.directory Fix + Provider-Free Staging Validation — SHA 54b5764d8645d80a44f5de1351ca8e7928c5c8f4 — ROOT_CAUSE_PROVEN=YES — TIMEOUT_HYPOTHESIS_CONFIRMED=NO — POST_FIX_CHECKPOINT_RUNTIME_PASS=YES — Checkpoint: docs/PRIVATE-BETA-BLOCKER-03I-CHECKPOINT.md — private-beta remains NO-GO — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited — **PRIVATE-BETA-E2E-03 COMPLETE AND LOCKED — 2026-08-17 — FAIL / BLOCKED** — Qualifying workspace apply succeeded; confirm-build-apply request never observed; criterion 10 PASS; criteria 8/11/12 FAIL; 19/20 not executed; ROOT_CAUSE_OF_CONFIRM_FAILURE=UNINVESTIGATED — Checkpoint: `docs/PRIVATE-BETA-E2E-03-CHECKPOINT.md` — private-beta remains NO-GO — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited — **PRIVATE-BETA-BLOCKER-03J COMPLETE AND LOCKED — PASS — 2026-08-18** — Public authenticated Gateway `POST /api/ai/executions/:executionId/confirm-build-apply` implemented — ROOT_CAUSE_OF_CONFIRM_FAILURE=PROVEN — PUBLIC_CONFIRM_ROUTING_DEFECT_PROVEN=YES — ARCHITECTURE=B — Caddy/frontend URL/Next.js proxy unchanged — internal confirm remains INTERNAL_SERVICE_KEY protected — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03J-CHECKPOINT.md` — FRESH_POST_FIX_E2E_REQUIRED=YES — BUILDER_PRIVATE_BETA_READINESS=NO_GO_PENDING_FRESH_E2E — private-beta remains NO-GO — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited — **GOV-OS-01 ACTIVE — Step 1 COMPLETE (Registration — 2026-08-18)** — Development Operating System / Parallel Control Plane v1 — governance/control-plane only — no application/source/test/runtime/schema/migration change — Risk HIGH — 4-step lifecycle — exact next: GOV-OS-01 Step 2 — Stage-Start / OS v1 Freeze — fresh post-03J E2E remains REQUIRED BUT UNREGISTERED — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited — **GOV-OS-01 ACTIVE — Step 2 COMPLETE (Stage-Start / OS v1 Freeze — 2026-08-18)** — Frozen contract: `docs/GOV-OS-01-STAGE-START.md` — exact next: GOV-OS-01 Step 3 — Governance Implementation — no application/source/test/runtime/schema/migration/PRD/ARCHITECTURE/CLAUDE/AGENTS/roadmap/master-plan implementation in Step 2 — fresh post-03J E2E remains REQUIRED BUT UNREGISTERED — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited
 
 
 \# TASKS.md ??Master Task Index
@@ -52195,4 +52270,208 @@ No implementation boxes are completed by this registration.
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E
 **CHILD_SLICE_DECISION:** NONE — one bounded implementation slice
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+
+---
+
+## GOVERNANCE — Development Operating System / Parallel Control Plane
+
+### GOV-OS-01: Development Operating System / Parallel Control Plane v1
+
+**Status:** ACTIVE — Step 3 COMPLETE — Governance Implementation — 2026-08-18
+**Task ID:** GOV-OS-01
+**Title:** Development Operating System / Parallel Control Plane v1
+**Family:** GOVERNANCE / CONTROL-PLANE / OPERATING SYSTEM
+**Priority:** HIGH
+**Risk:** HIGH — splitting control-plane migration into separate tasks creates known contradictory intermediate repository states
+**Nature:** GOVERNANCE / CONTROL-PLANE ONLY — no application behavior change — no runtime/schema/migration change
+**Lifecycle:** 4-step (Registration → Stage-Start / OS v1 Freeze → Governance Implementation → Consolidation / Checkpoint)
+**Model:** Sonnet 4.6 (all steps — governance/control-plane work)
+**Registered:** 2026-08-18
+**Predecessor:** PRIVATE-BETA-BLOCKER-03J COMPLETE AND LOCKED — PASS — 2026-08-18 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03J-CHECKPOINT.md`
+
+---
+
+#### Reason
+
+TASKS.md, CLAUDE.md, and AGENTS.md form one operational control loop. Splitting their migration into separate tasks would create known contradictory intermediate repository states (board exists while CLAUDE still requires mirroring; CLAUDE references a board that does not yet exist; AGENTS retains singular/stale task-recovery behavior; roadmap still claims scheduling authority). GOV-OS-01 treats control-plane cutover as one bounded governance concern.
+
+---
+
+#### Objective
+
+Atomically install one internally consistent repository development operating system so fresh AI/Cursor windows can determine: governing rules; current admitted work; exact task scope; dependencies; lane; mutex/resource ownership; integration/LOCK authority — without relying on conversation memory, stale historical ACTIVE markers, or multiple competing scheduler documents.
+
+---
+
+#### Scope
+
+GOV-OS-01 targets exclusively governance/control-plane files:
+
+```
+C:\Users\knlee\aiSandBox2026B\CLAUDE.md
+C:\Users\knlee\aiSandBox2026B\AGENTS.md
+C:\Users\knlee\aiSandBox2026B\TASKS.md
+C:\Users\knlee\aiSandBox2026B\TASKS_BACKLOG_FULL.md
+C:\Users\knlee\aiSandBox2026B\docs\AINOW-EXECUTION-ROADMAP.md
+C:\Users\knlee\aiSandBox2026B\docs\AGENT-PLATFORM-00-AINOW-MULTI-AGENT-PLAN.md
+```
+
+Explicitly excluded: `PRD.md`, `ARCHITECTURE.md`, all application source, tests, configs, schemas, migrations, env, Docker, runtime.
+
+---
+
+#### Application behavior change: NONE
+#### Runtime/schema/migration change: NONE
+
+---
+
+#### Lifecycle Steps
+
+**Step 1 — Registration** (THIS STEP — COMPLETE — 2026-08-18)
+
+Register GOV-OS-01 in TASKS.md and TASKS_BACKLOG_FULL.md. No edits to CLAUDE.md, AGENTS.md, PRD.md, ARCHITECTURE.md, roadmap, or master plan.
+
+**Step 2 — Stage-Start / OS v1 Freeze** (COMPLETE — 2026-08-18)
+
+Frozen implementation contract: `docs/GOV-OS-01-STAGE-START.md`. Authority-by-domain, board-only scheduler, LEGACY/FROZEN semantics, lane/admission/mutex, AGENTS thin bootstrap, CLAUDE bounded OS scope, and historical-authority demotion banners are frozen. No operating-system implementation in this step.
+
+**Step 3 — Governance Implementation** (COMPLETE — 2026-08-18)
+
+Installed Parallel Development Architecture v1 across scoped governance files: TASKS CURRENT EXECUTION BOARD + LEGACY/FROZEN boundary, CLAUDE OS v1, AGENTS thin bootstrap, roadmap/Platform-00 historical demotion banners. No PRD/ARCHITECTURE/source/runtime change. No successor registration.
+
+**Step 4 — Consolidation / Checkpoint** (NOT STARTED)
+
+Verify deterministic fresh-window recovery and lock GOV-OS-01. Create checkpoint document.
+
+---
+
+#### Explicit Non-Goals
+
+GOV-OS-01 does NOT: reconcile post-03J ARCHITECTURE.md; reconcile PRD.md; execute fresh post-03J E2E; register future tasks; invite beta users; modify application code; run runtime; alter database/schema; create worktrees; archive the large historical TASKS body; clean thousands of stale historical ACTIVE entries; rewrite the strategic master plan; rewrite roadmap history.
+
+---
+
+#### Planned Successor Sequence (NOT REGISTERED)
+
+GOV-OS-01 → fresh controlled post-03J E2E (single lane) → GOV-ARCH-02 → GOV-PRD-02 → first genuine 2-source-lane pilot → pilot review → explicit future decision on Lane 3.
+
+None of these successors are registered by GOV-OS-01.
+
+---
+
+#### Invariants
+
+- GLOBAL_EXECUTION_ENABLED remains unchanged / false
+- BILLING_CHARGES_ENABLED remains unchanged / false
+- PRIVATE-BETA-INVITE-01 remains UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+- Fresh post-03J E2E remains REQUIRED BUT UNREGISTERED
+- Builder private beta remains NO_GO_PENDING_FRESH_E2E
+- All COMPLETE AND LOCKED predecessors remain unchanged
+- No application source/test/config/schema/migration/env/Docker changes in any step
+- No PRD.md or ARCHITECTURE.md changes in any step
+- No runtime/infrastructure commands in any step
+- No subagents
+- No beta activation
+- No worktrees or branches created by this task
+- No commit/push unless explicitly requested by Keith
+
+---
+
+#### Acceptance Criteria
+
+Step 1 (Registration):
+- [x] GOV-OS-01 registered in TASKS.md
+- [x] GOV-OS-01 registered in TASKS_BACKLOG_FULL.md
+- [x] Risk = HIGH
+- [x] Lifecycle = 4-step
+- [x] Step 1 status = COMPLETE
+- [x] Exact next step = GOV-OS-01 Step 2 — Stage-Start / OS v1 Freeze
+- [x] No application/source/test changes
+- [x] No PRD.md change
+- [x] No ARCHITECTURE.md change
+- [x] No CLAUDE.md change yet
+- [x] No AGENTS.md change yet
+- [x] No roadmap/master-plan change yet
+- [x] No runtime / Docker / PostgreSQL / Redis / staging / provider activity
+- [x] No E2E
+- [x] No worktrees
+- [x] No future task registration
+- [x] No locked task modified
+- [x] Fresh post-03J E2E remains unregistered
+- [x] PRIVATE-BETA-INVITE-01 remains prohibited/unregistered
+
+Step 2 (Stage-Start / OS v1 Freeze):
+- [x] GOV-OS-01-STAGE-START.md created
+- [x] authority-by-domain model frozen
+- [x] CLAUDE rules vs TASKS scheduler relationship frozen
+- [x] board design frozen
+- [x] board writer authority frozen
+- [x] LEGACY/FROZEN semantics frozen
+- [x] historical ACTIVE explicitly non-schedulable
+- [x] Program Status mega-paragraph preservation/move frozen
+- [x] lane capacity frozen at max 2
+- [x] Lane 3 explicitly disabled
+- [x] five workstreams frozen as labels only
+- [x] full mutex/resource model frozen including ENV and PROVIDER-LIVE
+- [x] I18N trio atomic ownership frozen
+- [x] admission rules frozen
+- [x] registration metadata frozen
+- [x] contract freeze/change protocol frozen
+- [x] revert/evidence isolation frozen
+- [x] lane lifecycle frozen
+- [x] LANE-DONE semantics frozen
+- [x] new-window boot sequence frozen
+- [x] AGENTS thin-bootstrap target frozen
+- [x] CLAUDE bounded Step 3 scope frozen
+- [x] current model routing frozen
+- [x] Git/operator rules frozen
+- [x] runtime/browser-smoke rules frozen
+- [x] multilingual/Heroicons/advisory rules frozen
+- [x] roadmap demotion-banner scope frozen
+- [x] Platform-00 demotion-banner scope frozen
+- [x] TASKS backlog Step 3 scope frozen
+- [x] PRD.md explicitly excluded
+- [x] ARCHITECTURE.md explicitly excluded
+- [x] no source/runtime/E2E/worktree activity
+- [x] no future task registration
+- [x] GOV-OS-01 marked Step 2 COMPLETE in both task files
+- [x] exact next step = GOV-OS-01 Step 3 — Governance Implementation
+- [x] No CLAUDE.md change yet
+- [x] No AGENTS.md change yet
+- [x] No roadmap/master-plan body or banner change yet
+
+Step 3 (Governance Implementation):
+- [x] TASKS.md board exists at absolute top with all required v1 fields
+- [x] Active implementation lanes = 0 / 2
+- [x] Lane 1 EMPTY
+- [x] Lane 2 EMPTY
+- [x] Lane 3 DISABLED
+- [x] GOV-OS-01 is governance owner, not an implementation lane
+- [x] LEGACY / FROZEN boundary installed with frozen semantics
+- [x] historical TASKS body retained below the boundary
+- [x] Program Status mega-paragraph is below the boundary and is not appended to as current state
+- [x] CLAUDE.md contains OS v1: authority-by-domain, board-only scheduler, backlog-as-registry, admission/mutex, governance-writer, LOCK/LANE-DONE, boot sequence, frozen model routing, Git/operator, runtime/live-smoke, multilingual/Heroicons/advisory, PowerShell 5.x, gVisor PLANNED correction
+- [x] anti-drift standing-governance rule added
+- [x] OS-mutation quiescence rule added
+- [x] model-routing last-reviewed date added
+- [x] AGENTS.md is a thin 30–60 line bootstrap and no longer uses a global file-rank list
+- [x] roadmap header demoted; body untouched
+- [x] Platform-00 header demoted; body untouched
+- [x] TASKS_BACKLOG_FULL.md updated for GOV-OS-01 lifecycle only
+- [x] PRD.md untouched
+- [x] ARCHITECTURE.md untouched
+- [x] no application source / test / migration / schema / env / runtime / E2E / worktree activity
+- [x] no successor task registered
+- [x] GOV-OS-01 status after Step 3: ACTIVE — Step 3 COMPLETE — Governance Implementation
+- [x] exact next step after Step 3: GOV-OS-01 Step 4 — Consolidation / Checkpoint
+
+---
+
+**GOV-OS-01 status:** ACTIVE — Step 3 COMPLETE — Governance Implementation — 2026-08-18
+**Current Stage:** Step 3 — Governance Implementation — COMPLETE
+**Exact next step:** GOV-OS-01 Step 4 — Consolidation / Checkpoint
+**Stage-start artifact:** `docs/GOV-OS-01-STAGE-START.md`
+**PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+**Fresh post-03J E2E:** REQUIRED BUT UNREGISTERED
+**BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E
 

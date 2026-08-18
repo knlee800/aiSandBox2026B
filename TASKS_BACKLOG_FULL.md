@@ -1,22 +1,32 @@
 ## Authority Notice
 
-This document is the MASTER task backlog.
+`TASKS_BACKLOG_FULL.md` is the canonical TASK REGISTRY.
 
-All implementation tasks originate here.
+It owns:
 
-Other task documents derive from this file:
+- registered task IDs
+- task bodies and registered-slice scope
+- acceptance criteria
+- dependencies
+- lifecycle/history
+- checkpoint references
+- LOCKED state
 
-- TASKS.md ??Active / selected tasks
-- Checkpoints ??Completion records
+It is NOT the source of product requirements.
+
+`PRD.md` owns PRODUCT WHAT.
+
+`TASKS.md` CURRENT EXECUTION BOARD is the only current scheduler.
+
+Registration in this backlog does NOT itself admit work.
+A task must also be explicitly admitted on the TASKS.md board before execution.
 
 Rules:
 
-- No task may be invented outside this file
-- No task may be executed unless listed here
-- All checkpoints must reference task IDs from this file
-- Deprecated tasks must be marked, never deleted
-
-This file is the single source of truth for project scope.
+- No executable task may be admitted unless it is registered here.
+- All checkpoints must reference a registered task ID.
+- Deprecated/historical tasks are marked, not silently deleted.
+- Historical task bodies are evidence/registry history, not current scheduling authority.
 
 ---
 
@@ -62184,4 +62194,239 @@ No implementation boxes are completed by this registration.
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E
 **CHILD_SLICE_DECISION:** NONE — one bounded implementation slice
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+
+---
+
+## GOVERNANCE — Development Operating System / Parallel Control Plane
+
+### GOV-OS-01: Development Operating System / Parallel Control Plane v1
+
+**Status:** COMPLETE AND LOCKED — PASS — 2026-08-18
+**Task ID:** GOV-OS-01
+**Title:** Development Operating System / Parallel Control Plane v1
+**Family:** GOVERNANCE / CONTROL-PLANE / OPERATING SYSTEM
+**Priority:** HIGH
+**Risk:** HIGH — splitting control-plane migration into separate tasks creates known contradictory intermediate repository states
+**Nature:** GOVERNANCE / CONTROL-PLANE ONLY — no application behavior change — no runtime/schema/migration change
+**Lifecycle:** 4-step (Registration → Stage-Start / OS v1 Freeze → Governance Implementation → Consolidation / Checkpoint)
+**Model:** Sonnet 4.6 (all steps — governance/control-plane work)
+**Registered:** 2026-08-18
+**Predecessor:** PRIVATE-BETA-BLOCKER-03J COMPLETE AND LOCKED — PASS — 2026-08-18 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03J-CHECKPOINT.md`
+
+---
+
+#### Reason
+
+TASKS.md, CLAUDE.md, and AGENTS.md form one operational control loop. Splitting their migration into separate tasks would create known contradictory intermediate repository states (board exists while CLAUDE still requires mirroring; CLAUDE references a board that does not yet exist; AGENTS retains singular/stale task-recovery behavior; roadmap still claims scheduling authority). GOV-OS-01 treats control-plane cutover as one bounded governance concern.
+
+---
+
+#### Objective
+
+Atomically install one internally consistent repository development operating system so fresh AI/Cursor windows can determine: governing rules; current admitted work; exact task scope; dependencies; lane; mutex/resource ownership; integration/LOCK authority — without relying on conversation memory, stale historical ACTIVE markers, or multiple competing scheduler documents.
+
+---
+
+#### Scope
+
+GOV-OS-01 targets exclusively governance/control-plane files:
+
+```
+C:\Users\knlee\aiSandBox2026B\CLAUDE.md
+C:\Users\knlee\aiSandBox2026B\AGENTS.md
+C:\Users\knlee\aiSandBox2026B\TASKS.md
+C:\Users\knlee\aiSandBox2026B\TASKS_BACKLOG_FULL.md
+C:\Users\knlee\aiSandBox2026B\docs\AINOW-EXECUTION-ROADMAP.md
+C:\Users\knlee\aiSandBox2026B\docs\AGENT-PLATFORM-00-AINOW-MULTI-AGENT-PLAN.md
+```
+
+Explicitly excluded: `PRD.md`, `ARCHITECTURE.md`, all application source, tests, configs, schemas, migrations, env, Docker, runtime.
+
+---
+
+#### Application behavior change: NONE
+#### Runtime/schema/migration change: NONE
+
+---
+
+#### Lifecycle Steps
+
+**Step 1 — Registration** (THIS STEP — COMPLETE — 2026-08-18)
+
+Register GOV-OS-01 in TASKS.md and TASKS_BACKLOG_FULL.md. No edits to CLAUDE.md, AGENTS.md, PRD.md, ARCHITECTURE.md, roadmap, or master plan.
+
+**Step 2 — Stage-Start / OS v1 Freeze** (COMPLETE — 2026-08-18)
+
+Frozen implementation contract: `docs/GOV-OS-01-STAGE-START.md`. Authority-by-domain, board-only scheduler, LEGACY/FROZEN semantics, lane/admission/mutex, AGENTS thin bootstrap, CLAUDE bounded OS scope, and historical-authority demotion banners are frozen. No operating-system implementation in this step.
+
+**Step 3 — Governance Implementation** (COMPLETE — 2026-08-18)
+
+Installed Parallel Development Architecture v1 across scoped governance files: TASKS CURRENT EXECUTION BOARD + LEGACY/FROZEN boundary, CLAUDE OS v1, AGENTS thin bootstrap, roadmap/Platform-00 historical demotion banners. No PRD/ARCHITECTURE/source/runtime change. No successor registration.
+
+**Step 4 — Consolidation / Checkpoint** (COMPLETE — PASS — 2026-08-18)
+
+Independent post-Step-3 + audit-correction verification PASS. Checkpoint created. GOV-OS-01 LOCKED. No additional OS implementation. No successor registered or admitted.
+
+---
+
+#### Explicit Non-Goals
+
+GOV-OS-01 does NOT: reconcile post-03J ARCHITECTURE.md; reconcile PRD.md; execute fresh post-03J E2E; register future tasks; invite beta users; modify application code; run runtime; alter database/schema; create worktrees; archive the large historical TASKS body; clean thousands of stale historical ACTIVE entries; rewrite the strategic master plan; rewrite roadmap history.
+
+---
+
+#### Planned Successor Sequence (NOT REGISTERED)
+
+GOV-OS-01 → fresh controlled post-03J E2E (single lane) → GOV-ARCH-02 → GOV-PRD-02 → first genuine 2-source-lane pilot → pilot review → explicit future decision on Lane 3.
+
+None of these successors are registered by GOV-OS-01.
+
+---
+
+#### Invariants
+
+- GLOBAL_EXECUTION_ENABLED remains unchanged / false
+- BILLING_CHARGES_ENABLED remains unchanged / false
+- PRIVATE-BETA-INVITE-01 remains UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+- Fresh post-03J E2E remains REQUIRED BUT UNREGISTERED
+- Builder private beta remains NO_GO_PENDING_FRESH_E2E
+- All COMPLETE AND LOCKED predecessors remain unchanged
+- No application source/test/config/schema/migration/env/Docker changes in any step
+- No PRD.md or ARCHITECTURE.md changes in any step
+- No runtime/infrastructure commands in any step
+- No subagents
+- No beta activation
+- No worktrees or branches created by this task
+- No commit/push unless explicitly requested by Keith
+
+---
+
+#### Acceptance Criteria
+
+Step 1 (Registration):
+- [x] GOV-OS-01 registered in TASKS.md
+- [x] GOV-OS-01 registered in TASKS_BACKLOG_FULL.md
+- [x] Risk = HIGH
+- [x] Lifecycle = 4-step
+- [x] Step 1 status = COMPLETE
+- [x] Exact next step = GOV-OS-01 Step 2 — Stage-Start / OS v1 Freeze
+- [x] No application/source/test changes
+- [x] No PRD.md change
+- [x] No ARCHITECTURE.md change
+- [x] No CLAUDE.md change yet
+- [x] No AGENTS.md change yet
+- [x] No roadmap/master-plan change yet
+- [x] No runtime / Docker / PostgreSQL / Redis / staging / provider activity
+- [x] No E2E
+- [x] No worktrees
+- [x] No future task registration
+- [x] No locked task modified
+- [x] Fresh post-03J E2E remains unregistered
+- [x] PRIVATE-BETA-INVITE-01 remains prohibited/unregistered
+
+Step 2 (Stage-Start / OS v1 Freeze):
+- [x] GOV-OS-01-STAGE-START.md created
+- [x] authority-by-domain model frozen
+- [x] CLAUDE rules vs TASKS scheduler relationship frozen
+- [x] board design frozen
+- [x] board writer authority frozen
+- [x] LEGACY/FROZEN semantics frozen
+- [x] historical ACTIVE explicitly non-schedulable
+- [x] Program Status mega-paragraph preservation/move frozen
+- [x] lane capacity frozen at max 2
+- [x] Lane 3 explicitly disabled
+- [x] five workstreams frozen as labels only
+- [x] full mutex/resource model frozen including ENV and PROVIDER-LIVE
+- [x] I18N trio atomic ownership frozen
+- [x] admission rules frozen
+- [x] registration metadata frozen
+- [x] contract freeze/change protocol frozen
+- [x] revert/evidence isolation frozen
+- [x] lane lifecycle frozen
+- [x] LANE-DONE semantics frozen
+- [x] new-window boot sequence frozen
+- [x] AGENTS thin-bootstrap target frozen
+- [x] CLAUDE bounded Step 3 scope frozen
+- [x] current model routing frozen
+- [x] Git/operator rules frozen
+- [x] runtime/browser-smoke rules frozen
+- [x] multilingual/Heroicons/advisory rules frozen
+- [x] roadmap demotion-banner scope frozen
+- [x] Platform-00 demotion-banner scope frozen
+- [x] TASKS backlog Step 3 scope frozen
+- [x] PRD.md explicitly excluded
+- [x] ARCHITECTURE.md explicitly excluded
+- [x] no source/runtime/E2E/worktree activity
+- [x] no future task registration
+- [x] GOV-OS-01 marked Step 2 COMPLETE in both task files
+- [x] exact next step = GOV-OS-01 Step 3 — Governance Implementation
+- [x] No CLAUDE.md change yet
+- [x] No AGENTS.md change yet
+- [x] No roadmap/master-plan body or banner change yet
+
+Step 3 (Governance Implementation):
+- [x] TASKS.md board exists at absolute top with all required v1 fields
+- [x] Active implementation lanes = 0 / 2
+- [x] Lane 1 EMPTY
+- [x] Lane 2 EMPTY
+- [x] Lane 3 DISABLED
+- [x] GOV-OS-01 is governance owner, not an implementation lane
+- [x] LEGACY / FROZEN boundary installed with frozen semantics
+- [x] historical TASKS body retained below the boundary
+- [x] Program Status mega-paragraph is below the boundary and is not appended to as current state
+- [x] CLAUDE.md contains OS v1: authority-by-domain, board-only scheduler, backlog-as-registry, admission/mutex, governance-writer, LOCK/LANE-DONE, boot sequence, frozen model routing, Git/operator, runtime/live-smoke, multilingual/Heroicons/advisory, PowerShell 5.x, gVisor PLANNED correction
+- [x] anti-drift standing-governance rule added
+- [x] OS-mutation quiescence rule added
+- [x] model-routing last-reviewed date added
+- [x] AGENTS.md is a thin 30–60 line bootstrap and no longer uses a global file-rank list
+- [x] roadmap header demoted; body untouched
+- [x] Platform-00 header demoted; body untouched
+- [x] TASKS_BACKLOG_FULL.md updated for GOV-OS-01 lifecycle only
+- [x] PRD.md untouched
+- [x] ARCHITECTURE.md untouched
+- [x] no application source / test / migration / schema / env / runtime / E2E / worktree activity
+- [x] no successor task registered
+- [x] GOV-OS-01 status after Step 3: ACTIVE — Step 3 COMPLETE — Governance Implementation
+- [x] exact next step after Step 3: GOV-OS-01 Step 4 — Consolidation / Checkpoint
+
+Step 4 (Consolidation / Checkpoint):
+- [x] independent post-Step-3 + audit-correction validation PASS
+- [x] no material discrepancy
+- [x] GOV-OS-01-CHECKPOINT.md created
+- [x] checkpoint verdict PASS
+- [x] board is still only scheduler
+- [x] lanes 0 / 2
+- [x] Lane 1 EMPTY
+- [x] Lane 2 EMPTY
+- [x] Lane 3 DISABLED
+- [x] governance owner released / EMPTY
+- [x] GOVERNANCE released
+- [x] all resources UNOWNED
+- [x] corrected backlog Authority Notice preserved
+- [x] history remains below freeze untouched
+- [x] Program Status receives no Step 4 append
+- [x] historical GOV-OS body below freeze receives no Step 4 update
+- [x] full-body mirroring remains retired
+- [x] GOV-OS-01 canonical backlog state = COMPLETE AND LOCKED — PASS — 2026-08-18
+- [x] checkpoint reference recorded
+- [x] no predecessor modified
+- [x] no PRD/ARCHITECTURE/source/test/config/env/schema/migration change
+- [x] no runtime/staging/provider/E2E/browser/worktree/subagent activity
+- [x] no successor registered
+- [x] fresh E2E remains required but unregistered/not admitted
+- [x] PRIVATE-BETA-INVITE-01 remains prohibited
+- [x] Builder private beta remains NO_GO_PENDING_FRESH_E2E
+- [x] no parallel pilot started
+- [x] Lane 3 disabled
+
+---
+
+**GOV-OS-01 status:** COMPLETE AND LOCKED — PASS — 2026-08-18
+**Current Stage:** Step 4 — Consolidation / Checkpoint — COMPLETE — PASS
+**Exact next recommended action (NOT REGISTERED / NOT ADMITTED):** register fresh controlled post-03J E2E as a single-lane task under OS v1
+**Stage-start artifact:** `docs/GOV-OS-01-STAGE-START.md`
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\GOV-OS-01-CHECKPOINT.md`
+**PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+**Fresh post-03J E2E:** REQUIRED BUT UNREGISTERED / NOT ADMITTED
+**BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E
 
