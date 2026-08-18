@@ -1,33 +1,62 @@
-# PRIVATE-BETA-BLOCKER-03J — Stage-Start / Source-Path Investigation Plan (CORRECTED)
+# PRIVATE-BETA-BLOCKER-03J — Stage-Start / Source-Path Investigation Plan (EVIDENCE RECONCILED)
 
 **Task ID:** PRIVATE-BETA-BLOCKER-03J
 **Title:** Investigate Missing confirm-build-apply Request After Successful Qualifying Workspace Apply
 **Step:** Step 2 — Stage Start / Source-Path Investigation Plan
-**Status:** COMPLETE — SOURCE PATH NARROWED / FAILURE-HANDLING DEFECT PROVEN — 2026-08-17
-**Correction date:** 2026-08-18
-**Author:** Cursor / Claude Opus 4.6 (investigation/documentation only — no source/test/runtime modification)
+**Status:** COMPLETE — ROOT CAUSE PROVEN / LIVE PUBLIC ROUTING DEFECT CONFIRMED — 2026-08-18
+**Reconciliation date:** 2026-08-18
+**Author:** Cursor / Grok 4.6 (documentation / governance reconciliation only — no source/test/runtime modification)
 
 ---
 
-## CORRECTION NOTICE
+## EVIDENCE RECONCILIATION NOTICE (2026-08-18)
 
-This document has been corrected from its original 2026-08-17 version. The original over-classified the root cause as `ROOT_CAUSE_PROVEN=YES`. The corrected classification is:
+The 2026-08-18 source-only correction that set:
 
 ```
 ROOT_CAUSE_OF_CONFIRM_FAILURE = UNPROVEN
-CONFIRMATION_FAILURE_OBSERVABILITY_DEFECT_PROVEN = YES
-CONFIRMATION_RESILIENCE_DEFECT_PROVEN = YES
-E2E03_EXACT_CONFIRM_FAILURE_ROOT_CAUSE_PROVEN = NO
 STEP_3_READINESS = BLOCKED_PENDING_EVIDENCE
+E2E03_EXACT_CONFIRM_FAILURE_ROOT_CAUSE_PROVEN = NO
 ```
 
-The failure-handling defect is proven from source. The exact runtime cause of E2E-03's missing confirmation request is not proven and cannot be proven from available evidence.
+is now superseded by completed authorized runtime evidence.
+
+Authoritative Step 2 classification:
+
+```
+ROOT_CAUSE_OF_CONFIRM_FAILURE                      = PROVEN
+E2E03_EXACT_CONFIRM_FAILURE_ROOT_CAUSE_PROVEN      = YES
+PUBLIC_CONFIRM_ROUTING_DEFECT_PROVEN               = YES
+PUBLIC_CONFIRM_ROUTE_LIVE_TARGET                   = API_GATEWAY
+PUBLIC_CONFIRM_ROUTE_BYPASSES_NEXTJS               = YES
+INTERNAL_SERVICE_KEY_HYPOTHESIS                    = DISPROVEN
+STEP_3_READINESS                                   = READY
+ARCHITECTURE                                       = B
+RETRY_REQUIRED_FOR_ROOT_CAUSE_FIX                  = NO
+OBSERVABILITY_REQUIRED_FOR_ROOT_CAUSE_FIX          = NO
+CHILD_SLICE_DECISION                               = NONE — one bounded implementation slice
+```
+
+Do not retain `INTERNAL_SERVICE_KEY` as root cause.
+
+The earlier source-only findings remain valid as supporting analysis:
+
+- confirmation failure observability defect remains proven
+- confirmation resilience / swallowed-error defect remains proven
+- those defects explain why a failed confirmation did not undo the already-successful workspace apply
+- they are NOT the proven cause of `confirm_build_apply.request_received = 0`
+
+03G remains COMPLETE AND LOCKED and is not reopened.
+
+PRIVATE-BETA-E2E-03 remains COMPLETE AND LOCKED — FAIL / BLOCKED — 2026-08-17. This reconciliation does not convert E2E-03 into PASS.
 
 ---
 
 ## 1. Task Objective
 
 Determine the exact root cause of the missing `confirm-build-apply` request observed during PRIVATE-BETA-E2E-03. The qualifying workspace apply succeeded, automatic checkpoint succeeded, but the expected deferred-deduction confirmation request was never observed at the API Gateway's `InternalAccountingController.confirmBuildApply`.
+
+**Result:** Proven. The browser confirmation URL is a public `/api/*` path. Staging Caddy routes all `/api/*` to API Gateway `:4000`. The public confirmation endpoint exists only as a Next.js App Router handler on frontend `:3002`. Gateway has no matching public `POST /api/ai/executions/:executionId/confirm-build-apply`. Live Schannel diagnostic proves that exact public URL reaches Gateway Express/Nest, not Next.js. Therefore the confirmation request cannot reach the Next.js proxy under the deployed Caddy topology.
 
 ---
 
@@ -53,7 +82,7 @@ Determine the exact root cause of the missing `confirm-build-apply` request obse
 | Expected if confirmation succeeded | 30577 → 29429 |
 | Staging SHA at run | `54b5764d8645d80a44f5de1351ca8e7928c5c8f4` |
 
-Criterion 10 PASS. Criteria 8/11/12 FAIL. Do not modify or reinterpret these conclusions.
+Criterion 10 PASS. Criteria 8/11/12 FAIL. Do not modify or reinterpret these conclusions. Do not convert E2E-03 into PASS.
 
 ---
 
@@ -71,6 +100,8 @@ Criterion 10 PASS. Criteria 8/11/12 FAIL. Do not modify or reinterpret these con
 10. No manual credit mutation workaround.
 11. No frontend fake accounting state.
 12. Ownership/auth checks remain intact.
+
+Step 3 must preserve all of the above. Do not modify accounting semantics unless necessary to expose the already-existing behavior through the correct public authenticated Gateway route.
 
 ---
 
@@ -124,7 +155,9 @@ Criterion 10 PASS. Criteria 8/11/12 FAIL. Do not modify or reinterpret these con
 | State update | page.tsx (line 5014-5022) | `setExecutionFileActionState` | Synchronous React setState + message attachment |
 | State update triggers useEffect | page.tsx (line 5245-5258) | `useEffect` on `chatExecutionFileActionStates` | Fires after re-render |
 | Coherence execution | `frontend\components\workspace\workspace-ai-coherence.logic.ts` (line 47-117) | `runAiActionCoherence` | refreshFileTree → reloadEditor → refreshPreview → createCheckpoint |
-| Checkpoint API call | `frontend\components\workspace\workspace-checkpoint-create.logic.ts` (line 35-44) | `createWorkspaceCheckpoint` | POST `/api/sessions/:id/checkpoints` — uses Next.js fallback rewrite (NOT the authenticated proxy) |
+| Checkpoint API call | `frontend\components\workspace\workspace-checkpoint-create.logic.ts` (line 35-44) | `createWorkspaceCheckpoint` | POST `/api/sessions/:id/checkpoints` |
+
+Under the deployed Caddy topology, browser `/api/sessions/:id/checkpoints` is also sent to API Gateway. Gateway has a matching authenticated checkpoint route, which is why automatic checkpoint succeeded independently of confirm-build-apply.
 
 ### 4.7 Confirm-Build-Apply Invocation (same function, after state update)
 
@@ -133,28 +166,28 @@ Criterion 10 PASS. Criteria 8/11/12 FAIL. Do not modify or reinterpret these con
 | Invocation | page.tsx (line 5024-5031) | `await confirmBuildApplyIfQualifying(...)` | Called immediately after `setExecutionFileActionState` — no intervening code |
 | Qualification check | workspace-ai-file-actions.logic.ts (line 323-350) | `qualifyBuildApplyConfirmation` | `applyStatus === 'applied'` AND `results.length > 0` AND all results `status === 'success'` |
 | Invocation gate | workspace-ai-file-actions.logic.ts (line 352-376) | `confirmBuildApplyIfQualifying` | `payload !== null` AND `executionId` is truthy |
-| Browser fetch | workspace-ai-file-actions.logic.ts (line 382-400) | `requestBuildApplyConfirmation` | POST to App Router route — default `credentials: 'same-origin'` |
-| Next.js route handler | `frontend\app\api\ai\executions\[executionId]\confirm-build-apply\route.ts` | `POST` | Passes to `proxyConfirmBuildApply` |
-| Server-side proxy | `frontend\lib\build-apply-confirm-proxy.server.ts` (line 131-236) | `proxyConfirmBuildApply` | Multi-step: validate → session → payload → env key → auth lookup → execution lookup → internal POST |
+| Browser fetch | workspace-ai-file-actions.logic.ts (line 382-400) | `requestBuildApplyConfirmation` | POST relative URL `/api/ai/executions/:executionId/confirm-build-apply` |
+| Next.js route handler | `frontend\app\api\ai\executions\[executionId]\confirm-build-apply\route.ts` | `POST` | Passes to `proxyConfirmBuildApply` — **not reached on public staging `/api/*`** |
+| Server-side proxy | `frontend\lib\build-apply-confirm-proxy.server.ts` (line 131-236) | `proxyConfirmBuildApply` | Next.js-only authenticated proxy to Gateway internal route — **bypassed by Caddy** |
 
-### 4.8 Critical Architectural Difference: Checkpoint vs Confirm
+### 4.8 Critical Architectural Difference: Checkpoint vs Confirm (RECONCILED)
 
 | Property | Checkpoint path | Confirm-build-apply path |
 |----------|----------------|--------------------------|
-| URL | `/api/sessions/:id/checkpoints` | `/api/ai/executions/:id/confirm-build-apply` |
-| Routing | Next.js fallback rewrite → Gateway directly | Next.js App Router route → server-side proxy → Gateway internal route |
-| Auth mechanism | Session cookie forwarded directly by rewrite | Proxy extracts session, does separate auth lookup, adds `INTERNAL_SERVICE_KEY` |
-| Depends on `INTERNAL_SERVICE_KEY` | NO | YES |
-| Depends on proxy auth lookup | NO | YES |
-| Depends on execution ownership lookup | NO | YES |
-| Failure observability | HTTP error propagates to caller | Caught by try/catch, logged to console.error only |
+| Browser URL | `/api/sessions/:id/checkpoints` | `/api/ai/executions/:id/confirm-build-apply` |
+| Public staging routing | Caddy `handle /api/*` → Gateway `:4000` | Caddy `handle /api/*` → Gateway `:4000` |
+| Public endpoint existence | YES — Gateway has matching authenticated checkpoint route | NO — public confirm exists only on Next.js `:3002` |
+| Gateway internal accounting route | N/A | `POST /api/internal/executions/:id/confirm-build-apply` (INTERNAL_SERVICE_KEY) |
+| Why E2E-03 checkpoint succeeded | Public `/api/sessions/*` is a real Gateway route | Public `/api/ai/executions/:id/confirm-build-apply` is not a Gateway route |
+| Failure observability | HTTP error propagates to caller | Caught by try/catch, logged to `console.error` only; does not undo apply |
 | Retry | No, but errors propagate | No, and errors are silently swallowed |
 
-**This difference explains WHY the automatic checkpoint succeeded while the confirm could fail independently.**
+**This topology difference, now live-proven, explains WHY the automatic checkpoint succeeded while confirm-build-apply never reached `InternalAccountingController.confirmBuildApply`.**
 
 ### 4.9 Execution ID Propagation
 
 Direct string propagation through call chain:
+
 ```
 consumeExecutionFileActions(executionId, source, fileActions)
 → maybeApplyExecutionFileActions(executionId, source)
@@ -165,404 +198,522 @@ consumeExecutionFileActions(executionId, source, fileActions)
 
 No intermediate transformation, no lookup, no async boundary where ID could be lost.
 
-### 4.10 Proxy Failure Points (in order of execution)
+### 4.10 Next.js Proxy Failure Points — Status After Evidence
 
-| Step | Check | Failure return | What 03G proved | What E2E-03 proves |
-|------|-------|---------------|-----------------|-------------------|
-| 1 | `executionId.trim()` non-empty | 400 `invalid_execution_id` | N/A | N/A (source proves ID is valid) |
-| 2 | `readSessionTokenFromCookieHeader` returns non-null | 401 `unauthenticated` | N/A | User was authenticated throughout |
-| 3 | `parseBuildApplyConfirmationProxyPayload` returns non-null | 400 `malformed_payload` | N/A | Source proves payload is valid |
-| 4 | `readInternalServiceKeyFromEnv()` returns non-null | 500 `confirmation_unavailable` | Claimed "key present" (PM2 env inspection) — but NOT exercised at runtime by authenticated confirm | **UNPROVEN** |
-| 5 | `GET /api/auth/me` returns 200 with valid userId | 401/502 | NOT tested (03G's probe stopped at step 2) | **UNPROVEN** |
-| 6 | `GET /api/ai/executions/:id` returns 200 | 401/404/502 | NOT tested | **UNPROVEN** |
-| 7 | `POST /api/internal/executions/:id/confirm-build-apply` with key returns 200 | upstream error code | NOT tested | **UNPROVEN** (this is where `request_received` would be logged) |
+The Next.js proxy chain remains real code, but it is **not the E2E-03 public-path stop point**. Under staging Caddy, the browser request never reaches Next.js, so proxy steps 4–7 were not exercised by E2E-03's public confirmation URL.
+
+| Step | Check | Status after 2026-08-18 evidence |
+|------|-------|----------------------------------|
+| 1–7 Next.js proxy steps | Auth, payload, INTERNAL_SERVICE_KEY, ownership, internal POST | Not the proven public-path root cause. INTERNAL_SERVICE_KEY hypothesis DISPROVEN. Proxy retained temporarily; not deleted in Step 3. |
 
 ---
 
-## 5. Section A — Was Confirmation Invocation Proven at Runtime?
+## 5. Authorized Runtime Evidence Sequence
 
-### E2E03_CONFIRM_QUALIFICATION_RUNTIME_PROVEN = NO
+### Evidence 1 — INTERNAL_SERVICE_KEY hypothesis: DISPROVEN
 
-**Evidence and reasoning:**
+The exact same frontend OS process that handled E2E-03 was still alive:
 
-The checkpoint success proves `applyExecutionFileActions` executed past line 5014 (the `setExecutionFileActionState` call that triggers coherence via useEffect). Line 5024 (`await confirmBuildApplyIfQualifying(...)`) is the NEXT statement after line 5014 with NO intervening code, returns, throws, or conditional branching.
+| Field | Value |
+|-------|-------|
+| PM2 frontend PID | 357023 |
+| next-server child | 357043 |
+| Process start | 2026-08-16T04:41:38.921Z |
 
-In JavaScript, if line 5014 completes without exception and the page remains active, line 5024 WILL execute. The page was active (coherence/checkpoint ran after the state update).
+It predates E2E-03 and never restarted.
 
-This provides extremely strong INFERENCE (near-certainty from source ordering + checkpoint evidence) that `confirmBuildApplyIfQualifying` was reached. However, there is NO direct runtime observation (no server-side log, no network trace, no client-side telemetry) proving it was actually invoked.
+`INTERNAL_SERVICE_KEY` was PRESENT and non-empty in:
 
-**Evidence limitation:** No runtime instrumentation exists at this code point. The only observable outputs of this function are: (a) a successful confirmation reaching the API Gateway (`request_received` counter), or (b) `console.error` on the client browser (not captured by any server-side logging).
+- frontend PM2 environment
+- frontend OS process
+- next-server child
+- root `.env`
+- Gateway process
 
-### E2E03_BROWSER_CONFIRM_FETCH_RUNTIME_PROVEN = NO
-
-**Evidence and reasoning:**
-
-For `requestBuildApplyConfirmation` to be invoked, `qualifyBuildApplyConfirmation` must return non-null. For E2E-03's specific parameters (1 action, 1 success, `applyStatus: 'applied'`), the qualification predicate PASSES from source analysis.
-
-Combined with the above, this is a STRONG SOURCE INFERENCE that the browser fetch was initiated. But no runtime observation exists proving the fetch actually fired.
-
-**Evidence limitation:** Same as above — no server-side or network-layer log captures the browser fetch attempt. The only proof would be `request_received > 0` at the Gateway (which is 0) or an observed client-side console.error (which was not captured).
-
----
-
-## 6. Section B — Narrowest Proven Runtime Stop Boundary
-
-### Proven facts:
-
-1. Workspace apply = SUCCESS (file exists with correct content)
-2. `setExecutionFileActionState` was called with `applyStatus: 'applied'` and successful results (proven by: coherence useEffect fired → checkpoint succeeded)
-3. Automatic checkpoint = SUCCESS at `2ade268bf4febd41044b26912a9aa8d9c96e3fa0`
-4. `confirm_build_apply.request_received` at API Gateway = 0
-
-### Narrowest justified boundary:
+Frontend and Gateway key values matched.
 
 ```
-PROVEN: workspace apply succeeded
-PROVEN: setExecutionFileActionState called (line 5014)
-STRONGLY INFERRED (not runtime-observed): confirmBuildApplyIfQualifying reached (line 5024)
-STRONGLY INFERRED (not runtime-observed): qualifyBuildApplyConfirmation returned non-null
-STRONGLY INFERRED (not runtime-observed): requestBuildApplyConfirmation invoked
-STRONGLY INFERRED (not runtime-observed): browser fetch() initiated
-UNKNOWN: fetch outcome (success/failure/timeout)
-UNKNOWN: if Next.js route handler received the request
-UNKNOWN: if proxyConfirmBuildApply was invoked
-UNKNOWN: which proxy step (4/5/6/7) failed, if proxy was reached
+INTERNAL_SERVICE_KEY_HYPOTHESIS = DISPROVEN
+```
+
+Do not retain this as root cause.
+
+### Evidence 2 — Historical reverse-proxy inspection
+
+Caddy terminates `https://staging.ainow.biz`.
+
+Caddy config:
+
+```
+handle /api/* {
+    reverse_proxy 127.0.0.1:4000
+}
+
+handle {
+    reverse_proxy 127.0.0.1:3002
+}
+```
+
+Caddy config predates E2E-03.
+
+Therefore browser `/api/*` traffic is architecturally sent to API Gateway rather than Next.js.
+
+Historical access logs were unavailable at inspection time, so routing was then a strong but not yet live-proven candidate.
+
+### Evidence 3 — First authorized diagnostic POST: INCONCLUSIVE TRANSPORT ATTEMPT
+
+One Python diagnostic POST was authorized.
+
+It failed locally during TLS verification before HTTP.
+
+No staging request occurred.
+
+No retry occurred.
+
+It produced no application mutation and did not prove routing.
+
+Record as an inconclusive transport attempt, not application evidence.
+
+### Evidence 4 — Replacement Schannel diagnostic: LIVE ROUTING PROOF
+
+Keith separately authorized exactly one replacement unauthenticated public confirm-route diagnostic using:
+
+`C:\Windows\System32\curl.exe`
+
+Target:
+
+```
+https://staging.ainow.biz/api/ai/executions/ffffffff-ffff-4fff-8fff-ffffffffffff/confirm-build-apply
+```
+
+Constraints honored:
+
+- dummy UUID only
+- no cookies
+- no auth
+- no `INTERNAL_SERVICE_KEY`
+- no real execution
+- no provider
+- no credit mutation
+- no retry
+
+The request reached staging.
+
+Response:
+
+- HTTP 400
+- Headers included `Via: 1.1 Caddy`
+- Headers included `X-Powered-By: Express`
+- Body was Nest/Express JSON parse failure:
+
+```json
+{
+  "message": "Expected property name or '}' in JSON at position 1",
+  "error": "Bad Request",
+  "statusCode": 400
+}
+```
+
+PowerShell/curl quoting mangled the diagnostic JSON body.
+
+The intended unmatched-route 404 discriminator was not reached because Nest body parsing rejected the body first.
+
+This does **not** weaken the process-routing proof.
+
+```
+PUBLIC_CONFIRM_ROUTE_LIVE_TARGET           = API_GATEWAY
+PUBLIC_CONFIRM_ROUTE_BYPASSES_NEXTJS       = YES
+PUBLIC_CONFIRM_ROUTING_DEFECT_PROVEN       = YES
+```
+
+The Next.js route would have checked authentication before parsing this body and returned:
+
+```
+HTTP 401
+{ "error": "unauthenticated" }
+```
+
+It cannot produce the observed Express/Nest parser response.
+
+No second diagnostic request was sent.
+
+---
+
+## 6. Mutation Verification After Diagnostic
+
+| Check | Result |
+|-------|--------|
+| dummy execution | does not exist |
+| dummy credit deductions | 0 |
+| dummy projects | 0 |
+| dummy sessions | 0 |
+| dummy checkpoints | 0 |
+| provider calls | 0 |
+| runtime/config/source/test mutation | none |
+
+Safety remained:
+
+- `GLOBAL_EXECUTION_ENABLED=false`
+- `BILLING_CHARGES_ENABLED=false`
+- `AGENT_HARNESS_ENABLE_TOOL_LOOP=false`
+- `AGENT_HARNESS_ENABLE_WRITE_TOOLS=false`
+
+PIDs unchanged:
+
+- Frontend PID: 357023
+- Gateway PID: 385202
+- Caddy PID: 542
+
+---
+
+## 7. Final Proven Causal Chain
+
+```
+ROOT_CAUSE_OF_CONFIRM_FAILURE                 = PROVEN
+E2E03_EXACT_CONFIRM_FAILURE_ROOT_CAUSE_PROVEN = YES
+PUBLIC_CONFIRM_ROUTING_DEFECT_PROVEN          = YES
+```
+
+Exact proven root cause:
+
+Public staging Caddy routes all browser `/api/*` to API Gateway. The frontend confirmation call uses `/api/ai/executions/:executionId/confirm-build-apply`, which exists only as a Next.js App Router endpoint. Gateway has no matching public route (its accounting endpoint is internal and service-key protected). The live Schannel diagnostic proves that exact public URL reaches Gateway Express/Nest rather than Next.js. Therefore the browser confirmation request cannot reach the Next.js proxy, Gateway `confirm_build_apply.request_received` stays 0, deferred deduction never runs, and the already-successful workspace apply is not undone because the frontend confirmation path catches/discards non-success.
+
+Causal chain:
+
+1. Successful E2E-03 Build produced one qualifying file action.
+2. Workspace apply succeeded.
+3. Source path after successful qualifying apply calls `confirmBuildApplyIfQualifying`, which constructs the relative browser URL `/api/ai/executions/:executionId/confirm-build-apply`.
+4. Browser requests to staging use `https://staging.ainow.biz/api/...`.
+5. Caddy configuration, present before E2E-03, routes ALL `/api/*` to `127.0.0.1:4000` (API Gateway).
+6. The public confirmation endpoint exists only as a Next.js App Router endpoint on frontend `:3002`.
+7. API Gateway has no matching public `POST /api/ai/executions/:executionId/confirm-build-apply`. Its accounting endpoint is instead internal: `POST /api/internal/executions/:executionId/confirm-build-apply`.
+8. The live Schannel diagnostic proves the exact public confirmation URL reaches Gateway Express/Nest rather than Next.js.
+9. Therefore the browser confirmation request cannot reach the Next.js proxy under the deployed Caddy topology.
+10. A non-success confirmation result is caught/discarded by the frontend confirmation path and does not undo the already-successful workspace apply.
+11. E2E-03 consequently showed:
+    - workspace apply: SUCCESS
+    - automatic checkpoint: SUCCESS
+    - `finalize_accounting.build_awaiting_apply`: OBSERVED
+    - `confirm_build_apply.request_received`: 0
+    - credit deduction: 0
+    - balance: 30577 → 30577
+
+This explains all required causal elements.
+
+Narrowest proven stop boundary:
+
+```
+PROVEN: qualifying workspace apply succeeded
+PROVEN: automatic checkpoint succeeded via public /api/sessions/* on Gateway
+PROVEN: frontend constructs POST /api/ai/executions/:executionId/confirm-build-apply
+PROVEN: staging Caddy sends all /api/* to API Gateway :4000
+PROVEN: that public confirm URL live-reaches Gateway Express/Nest, not Next.js
+PROVEN: Gateway has no matching public confirm-build-apply route
 PROVEN: API Gateway InternalAccountingController.confirmBuildApply was NOT reached
+PROVEN: swallowed confirmation failure cannot undo the already-successful apply
 ```
-
-### Narrowing note:
-
-The stop boundary is somewhere between "browser `fetch()` initiated" and "API Gateway `confirmBuildApply` handler". The exact point of failure within this range is **not determinable** from available evidence.
 
 ---
 
-## 7. Section C — Defect vs Root Cause Separation
+## 8. 03G Reconciliation
+
+03G remains valid and locked.
+
+03G proved the Next.js confirm route works when addressed directly at `localhost:3002`.
+
+That bypasses Caddy.
+
+03G therefore proved route implementation/rewrite reachability **inside Next.js**, but did not prove the public staging `/api/*` route reaches Next.js.
+
+```
+03G_LOCAL_NEXTJS_ROUTE_REACHABILITY_PROVEN     = YES (locked)
+03G_PUBLIC_STAGING_API_REACHES_NEXTJS_PROVEN   = NO — and now disproven by 03J live evidence
+```
+
+03J exposes the separate public reverse-proxy topology defect. Do not reopen or weaken 03G.
+
+---
+
+## 9. Defect vs Root Cause Separation (UPDATED)
 
 ### CONFIRMATION_FAILURE_OBSERVABILITY_DEFECT_PROVEN = YES
 
-**Evidence:**
-- `onConfirmationError` in `confirmBuildApplyIfQualifying` (line 372-374) only calls the provided callback
-- The callback at invocation site (page.tsx line 5028-5029) only calls `console.error`
-- `console.error` is client-side only — no server-side telemetry, no durable log, no alert
-- The proxy (`proxyConfirmBuildApply`) returns structured error responses but these are surfaced only as a thrown Error in `requestBuildApplyConfirmation` (line 397-398) which is then caught and discarded
-- There is no way to determine what went wrong after the fact without browser DevTools access at the time of failure
+Still proven from source. Not the E2E-03 root cause. Must not be bundled into Step 3.
 
 ### CONFIRMATION_RESILIENCE_DEFECT_PROVEN = YES
 
-**Evidence:**
-- `requestBuildApplyConfirmation` makes exactly ONE fetch attempt (line 386)
-- No retry logic exists anywhere in the call chain
-- `confirmBuildApplyIfQualifying` catches the error and returns `'confirmation-failed'` (line 374)
-- The return value is discarded (caller uses `await` but the parent `applyExecutionFileActions` doesn't use the return value, and the parent is invoked with `void`)
-- Any single transient or persistent failure permanently prevents the deduction for that execution
+Still proven from source (single fetch, catch/discard, fire-and-forget). Not the E2E-03 root cause. Must not be bundled into Step 3.
 
-### E2E03_EXACT_CONFIRM_FAILURE_ROOT_CAUSE_PROVEN = NO
+### E2E03_EXACT_CONFIRM_FAILURE_ROOT_CAUSE_PROVEN = YES
 
-**Evidence limitation:**
-- No server-side log shows what happened to the confirmation request
-- No network trace was captured during E2E-03
-- No client-side console output was captured during E2E-03
-- The API Gateway counter `request_received = 0` proves the request did NOT arrive, but does NOT identify WHERE it was stopped
-- Multiple failure points exist between "browser fetch" and "Gateway handler" (proxy steps 4-7, network, Next.js server error, etc.)
-- Without runtime evidence, we cannot distinguish between: transient network error, `INTERNAL_SERVICE_KEY` env var missing after PM2 restart, auth lookup failure, execution lookup failure, or any other proxy failure
+Proven cause: public reverse-proxy topology sends the frontend's existing `/api/ai/executions/:executionId/confirm-build-apply` URL to API Gateway, which has no matching public route.
+
+### INTERNAL_SERVICE_KEY_HYPOTHESIS = DISPROVEN
+
+Same live frontend process as E2E-03; key present and matching in frontend PM2/OS/next-server, root `.env`, and Gateway.
 
 ---
 
-## 8. Section D — Deterministic Source Bug Re-Inspection
-
-### Candidate-Cause Matrix
+## 10. Candidate-Cause Matrix (UPDATED)
 
 | # | Candidate | Verdict | Evidence |
 |---|-----------|---------|----------|
-| 1 | Wrong execution ID at confirmation time | **DISPROVEN** | Direct string propagation from `consumeExecutionFileActions` through to `requestBuildApplyConfirmation` — no transformation, no lookup, no async gap. Same ID that successfully applied files. |
-| 2 | Stale closure/state capturing wrong value | **DISPROVEN** | `executionId` is a function parameter of `applyExecutionFileActions`, not a closure over mutable state. `requestBuildApplyConfirmation` is a module-level pure function. |
-| 3 | Qualification predicate mismatch for E2E-03 | **DISPROVEN** | E2E-03: 1 action, 1 success, `applyStatus: 'applied'`. `qualifyBuildApplyConfirmation` returns `{ applyStatus: 'applied', totalActions: 1, successCount: 1 }` — non-null. Gate passes. |
-| 4 | Incorrect successCount / totalActions shape | **DISPROVEN** | Computed directly from `applyResult.results.filter(r => r.status === 'success').length` and `applyResult.results.length`. For 1-element array with 1 success: `successCount=1, totalActions=1`. |
-| 5 | Apply result consumed/mutated before confirmation | **DISPROVEN** | `applyResult` is a `const` local variable. `setExecutionFileActionState` receives a new object literal (spread values), does not mutate `applyResult`. |
-| 6 | Asynchronous race / timing | **UNPROVEN** | The fire-and-forget `void maybeApplyExecutionFileActions(...)` means the async function runs without supervision. However, the page remained active (checkpoint succeeded). No AbortController exists. No evidence of page navigation between apply and confirm. Timing race is theoretically possible but unlikely given the synchronous progression from line 5014 to 5024. |
-| 7 | Cancellation/unmount | **DISPROVEN** | The coherence useEffect fires AFTER the state update and runs the checkpoint successfully, proving the component was still mounted. The confirm runs as a continuation of the same async function, not in a useEffect. No cleanup function could cancel it. |
-| 8 | Request URL error | **DISPROVEN** | `buildConfirmBuildApplyRequestUrl` produces `/api/ai/executions/${encodeURIComponent(executionId)}/confirm-build-apply` — tested, correct relative URL. |
-| 9 | Wrong HTTP method | **DISPROVEN** | `method: 'POST'` is hardcoded in `requestBuildApplyConfirmation`. Route handler exports `POST`. |
-| 10 | Frontend Next.js route mismatch | **DISPROVEN** | 03G fixed the fallback-rewrite interception. Route file exists at `frontend/app/api/ai/executions/[executionId]/confirm-build-apply/route.ts`. `fallback` rewrites only apply AFTER filesystem/App Router routes are checked. |
-| 11 | Missing auth cookie propagation (browser → Next.js) | **DISPROVEN** | `requestBuildApplyConfirmation` uses `fetch()` without explicit `credentials` option. Browser default for same-origin is `credentials: 'same-origin'`, which includes cookies. The `aisandbox_session` cookie would be included. |
-| 12 | Server-side session/auth lookup failure (proxy step 5) | **UNPROVEN** | Proxy calls `GET /api/auth/me` with extracted session cookie. Could fail if: session expired between apply and confirm (unlikely, seconds apart), Redis session store unavailable, Gateway auth endpoint temporarily unavailable. Cannot be proven or disproven from source alone. |
-| 13 | Execution ownership lookup failure (proxy step 6) | **UNPROVEN** | Proxy calls `GET /api/ai/executions/:id` with session cookie. Could fail if: execution not yet visible in DB (unlikely — apply already used it), Gateway temporarily unavailable. Cannot be proven or disproven from source alone. |
-| 14 | INTERNAL_SERVICE_KEY missing/incorrect in PM2 env (proxy step 4) | **UNPROVEN** | `readInternalServiceKeyFromEnv()` reads `process.env.INTERNAL_SERVICE_KEY`. 03G checkpoint claims "key present in staging env (PM2)" but this was verified at 03G time (2026-08-16). Between 03G and E2E-03, PM2 restarts occurred for 03H/03I deployments. If the restart method did not preserve env vars (e.g., `pm2 restart` without `--update-env` when key is only in ecosystem config), the variable could be absent. **This is the strongest unproven environmental candidate.** |
-| 15 | Swallowed exception before fetch is called | **DISPROVEN** | Between `qualifyBuildApplyConfirmation` (pure, cannot throw) and `await args.confirmBuildApply(...)`, there is no code that could throw. The `try` block wraps the entire `confirmBuildApply` call. |
-| 16 | useEffect/coherence sequencing causing path divergence | **DISPROVEN** | Coherence runs in a SEPARATE async path (useEffect → `maybeRunExecutionCoherence`). The confirm runs in the SAME async function (`applyExecutionFileActions`). They are independent — coherence cannot prevent, cancel, or interfere with confirm. |
-
-### Summary of unproven candidates:
-
-- **#6 (async race):** Theoretically possible but evidence strongly suggests no — page was active, no abort mechanism exists.
-- **#12 (auth lookup failure):** Plausible transient failure but no evidence for or against.
-- **#13 (execution ownership lookup failure):** Plausible transient failure but no evidence for or against.
-- **#14 (INTERNAL_SERVICE_KEY missing after PM2 restart):** Strongest candidate — environmental, not provable from source, not exercised by 03G's unauthenticated probe.
+| 1 | Wrong execution ID at confirmation time | **DISPROVEN** | Direct string propagation from `consumeExecutionFileActions` through to `requestBuildApplyConfirmation`. |
+| 2 | Stale closure/state capturing wrong value | **DISPROVEN** | `executionId` is a function parameter; `requestBuildApplyConfirmation` is module-level. |
+| 3 | Qualification predicate mismatch for E2E-03 | **DISPROVEN** | E2E-03 1/1 success with `applyStatus: 'applied'` qualifies. |
+| 4 | Incorrect successCount / totalActions shape | **DISPROVEN** | Computed directly from apply results. |
+| 5 | Apply result consumed/mutated before confirmation | **DISPROVEN** | `applyResult` is a `const` local. |
+| 6 | Asynchronous race / timing | **DISPROVEN as root cause** | Page remained active; checkpoint succeeded; routing defect explains missing Gateway internal receive independently of timing. |
+| 7 | Cancellation/unmount | **DISPROVEN** | Coherence/checkpoint ran after the same state update. |
+| 8 | Request URL error | **DISPROVEN as construction bug** | Relative URL is correct. The URL is the problem only because public `/api/*` is Gateway-terminated. |
+| 9 | Wrong HTTP method | **DISPROVEN** | POST is hardcoded; Next.js exports POST; diagnostic also used POST. |
+| 10 | Frontend Next.js route mismatch / 03G regression | **DISPROVEN** | 03G proved Next.js local reachability. 03J proves the public path never reaches that Next.js route. |
+| 11 | Missing auth cookie propagation (browser → Next.js) | **DISPROVEN as root cause** | Public request never reaches Next.js. |
+| 12 | Server-side session/auth lookup failure (proxy step 5) | **DISPROVEN as root cause** | Proxy not reached on public staging `/api/*`. |
+| 13 | Execution ownership lookup failure (proxy step 6) | **DISPROVEN as root cause** | Proxy not reached on public staging `/api/*`. |
+| 14 | INTERNAL_SERVICE_KEY missing/incorrect in PM2 env (proxy step 4) | **DISPROVEN** | Evidence 1: key present and matching; frontend process predates E2E-03 and never restarted. |
+| 15 | Swallowed exception before fetch is called | **DISPROVEN** | No throw site between qualification and `confirmBuildApply`. Swallowed-error remains a post-failure defect, not the routing cause. |
+| 16 | useEffect/coherence sequencing causing path divergence | **DISPROVEN** | Confirm and checkpoint are independent paths. |
+| 17 | Public Caddy `/api/*` → Gateway topology; no public Gateway confirm route | **PROVEN** | Evidence 2 (Caddy config predating E2E-03) + Evidence 4 (live Schannel POST returned Caddy Via + Express/Nest JSON parser 400, which Next.js cannot produce). |
 
 ---
 
-## 9. Section E — 03G Authenticated-Path Limitation
-
-### What 03G actually proved:
-
-03G deployed the `next.config.js` fallback-rewrite fix and performed a runtime probe:
+## 11. Root-Cause Fix Architecture (LOCKED)
 
 ```
-POST /api/ai/executions/test-probe-03g/confirm-build-apply
-(unauthenticated — no session cookie)
-→ HTTP 401 from Next.js route handler
+ARCHITECTURE = B
 ```
 
-This proves:
-- The App Router route file IS resolved (not intercepted by fallback rewrite)
-- The route handler IS invoked
-- `proxyConfirmBuildApply` IS called
-- `readSessionTokenFromCookieHeader` correctly returns null for missing cookie
-- Proxy correctly returns 401 at step 2
+Add an authenticated PUBLIC API Gateway endpoint matching the URL already called by the frontend:
 
-### What 03G did NOT prove:
+```
+POST /api/ai/executions/:executionId/confirm-build-apply
+```
 
-The unauthenticated probe stops at proxy step 2 (session cookie check). It does NOT exercise:
+This route must:
 
-| Proxy step | Description | 03G tested? | Unit tested? |
-|------------|-------------|-------------|--------------|
-| 4 | `readInternalServiceKeyFromEnv()` returns non-null | NO (stopped at step 2) | YES (mock) |
-| 5 | `GET /api/auth/me` succeeds with valid session | NO | YES (mock) |
-| 6 | `GET /api/ai/executions/:id` succeeds | NO | YES (mock) |
-| 7 | `POST /api/internal/.../confirm-build-apply` with real key | NO | YES (mock) |
+1. use the existing browser/session authentication convention;
+2. identify the authenticated user;
+3. retrieve/validate the execution;
+4. enforce execution ownership before accounting;
+5. accept/reuse the existing confirm-build-apply DTO;
+6. reuse `UsageLedgerService.triggerBuildApplyDeduction`;
+7. preserve all PRIVATE-BETA-BLOCKER-03D semantics;
+8. preserve idempotency / exactly-once deduction;
+9. leave `POST /api/internal/executions/:id/confirm-build-apply` protected by `INTERNAL_SERVICE_KEY`;
+10. not expose `INTERNAL_SERVICE_KEY` to the browser.
 
-### Integration proof status:
+### Why Architecture B is correct
 
-**Individual unit tests exist for every proxy step** (`build-apply-confirm-proxy.server.test.ts` — 11 tests). Each test uses mocked `fetchImpl` to verify the proxy's branching logic.
+The established public convention is `browser /api/* → API Gateway`. The frontend already calls that URL. The live defect is that Gateway lacks the matching public authenticated route. Adding that route restores the handoff without changing Caddy, without moving the frontend URL off `/api`, and without exposing the internal service key to the browser.
 
-**No integration test exists** that proves the ASSEMBLED path works with:
-- A real `INTERNAL_SERVICE_KEY` from the PM2 environment
-- A real authenticated session cookie
-- A real Gateway `/api/auth/me` response
-- A real Gateway `/api/ai/executions/:id` response
-- A real Gateway `/api/internal/.../confirm-build-apply` handler
+### Explicitly rejected root-cause fixes
 
-**03G's probe is the closest thing to an integration test**, but it only proved steps 1-2 of the proxy, not 4-7.
+Do NOT use:
 
----
+- **A.** Caddy special-case routing to Next.js
+- **C.** moving confirmation to a non-`/api` frontend path
+- retry as the routing fix
+- manual credit mutation
+- frontend fake accounting state
+- direct browser access to internal accounting
+- weakening authentication/ownership checks
 
-## 10. Section F — Reassessed Implementation Proposal
+### Caddy
 
-### Previous proposal (RETRACTED):
+```
+CADDY_CHANGE_REQUIRED = NO
+```
 
-"Add retry to `confirmBuildApplyIfQualifying`" — this was proposed as the sole fix based on `ROOT_CAUSE_PROVEN=YES`. This is retracted because:
+No Caddy configuration change is required for the chosen architecture.
 
-1. Retry does NOT fix deterministic failures (missing env var, wrong key, persistent auth failure).
-2. Without knowing whether E2E-03's failure was transient or persistent, proposing retry as the complete fix is not justified.
-3. Even if retry IS eventually needed, it should not be the FIRST step when the exact failure is unknown.
+Established convention remains:
 
-### Correct minimal next step:
+```
+browser /api/* → API Gateway
+```
 
-**Option 1 (RECOMMENDED): Bounded observability instrumentation + diagnostic validation**
+### Frontend
 
-Add server-side logging to the proxy so that future failures are diagnosable, then perform a controlled authenticated non-provider diagnostic to verify the full proxy chain works:
+```
+FRONTEND_URL_CHANGE_REQUIRED = NO
+```
 
-1. **Observability instrumentation (source change):**
-   - Add structured `console.log` (or existing logger) at the ENTRY and EXIT points of `proxyConfirmBuildApply` — logging the result status (not secrets, not session tokens)
-   - This makes the proxy step that fails identifiable in PM2 logs
+The existing frontend request URL should remain unchanged:
 
-2. **Diagnostic validation (runtime, requires Keith authorization):**
-   - A targeted authenticated `POST` to `/api/ai/executions/<existing-execution-id>/confirm-build-apply` using a real session cookie and verifying `request_received` increments
-   - This does NOT require a provider call (no AI execution, no credits consumed by the provider)
-   - It DOES trigger the deduction path — but can use an already-completed execution that is already in `build_awaiting_apply` state, OR a purpose-built diagnostic with `PersistentCreditDeductionGateway` idempotency protecting against double-deduction
-   - If this succeeds: the proxy chain is functional and E2E-03's failure was transient → retry is the correct fix
-   - If this fails: the proxy chain has a persistent defect → the failure point is now identifiable from the new logs
+```
+/api/ai/executions/:executionId/confirm-build-apply
+```
 
-**Option 2 (ALTERNATIVE): Source-only deterministic bug proof**
+No user-facing UX change is required.
 
-If a deterministic source bug can be identified without runtime evidence, no diagnostic is needed. The candidate matrix (section 8) shows NO deterministic source bug is PROVEN. All strong candidates (#12, #13, #14) are environmental/runtime.
+### Next.js proxy
 
-**Option 3 (FALLBACK): Add retry + observability together**
+Retain temporarily during 03J.
 
-If Keith authorizes implementation without diagnostic validation, the safest combined approach is:
-- Add retry (covers transient failures)
-- Add server-side observability (makes persistent failures diagnosable)
-- Deploy and run a fresh E2E
+Do NOT delete it in the root-cause implementation slice.
 
-This is less rigorous than Option 1 because it does not first prove whether the failure is transient or persistent, but it is pragmatically viable.
+Its retirement/simplification may be handled separately after the public Gateway route is proven.
 
-### Whether retry alone is sufficient:
+Do not broaden 03J Step 3.
 
-**NO.** Retry alone is sufficient ONLY if the E2E-03 failure was proven transient. Since it is UNPROVEN, retry might not fix the underlying issue. Retry + observability is the minimum viable combination.
+### Retry / observability
 
-### Whether runtime evidence is required:
+```
+RETRY_REQUIRED_FOR_ROOT_CAUSE_FIX           = NO
+OBSERVABILITY_REQUIRED_FOR_ROOT_CAUSE_FIX   = NO
+```
 
-**YES** — to prove the exact E2E-03 root cause.
+Retry and improved confirmation error observability may be valuable resilience hardening later.
 
-**NO** — if Keith authorizes a pragmatic fix (retry + observability) without full root-cause proof.
+They are NOT part of the proven routing root-cause fix and must not be bundled into Step 3.
 
-### What runtime evidence would prove:
-
-1. **Authenticated confirm-build-apply diagnostic** (non-provider):
-   - Must observe: the request reaches `InternalAccountingController.confirmBuildApply` (`request_received` increments)
-   - If fails: PM2 logs (with new observability) identify which proxy step failed
-   - Does NOT require provider/AI execution: uses an existing completed execution ID
-   - DOES potentially trigger a credit deduction (must use idempotent replay of already-confirmed execution, or accept the deduction)
-   - Keith authorization required: explicit approval to run a non-provider diagnostic that touches the confirm path on staging
-
-2. **Alternatively: PM2 env var inspection** (read-only):
-   - Verify `INTERNAL_SERVICE_KEY` is present and matches between frontend and api-gateway PM2 processes
-   - This alone cannot prove the FULL chain works but can confirm/eliminate the strongest environmental candidate (#14)
-
-### Whether provider replay is required:
-
-**NO.** A provider replay (full AI Build execution) is not required to diagnose the confirmation path. The confirm-build-apply endpoint can be tested independently with an existing execution ID.
+The previous recommendation to treat retry + observability as the Step 3 fix is **retracted**.
 
 ---
 
-## 11. Child-Slice Reassessment
+## 12. Step 3 Implementation Boundary
 
-### Previous decision (RETRACTED):
+One bounded implementation slice.
 
-"Single bounded implementation slice — add retry" — retracted because the exact root cause is unproven.
+No child tasks required.
 
-### Corrected assessment:
+Do not register child tasks.
 
-If Keith authorizes the pragmatic combined approach (Option 3):
-- **Single slice** is viable: add retry + add server-side proxy observability in one bounded change
-- No child-slice split is strictly required
+Do not register a fresh E2E task here.
 
-If Keith requires full root-cause proof first (Option 1):
-- **Two sequential slices** are natural:
-  - Slice A: Add proxy observability instrumentation + perform diagnostic validation
-  - Slice B: Fix the identified root cause (which may or may not be "add retry")
-- These should NOT be pre-registered as formal child tasks until Keith decides the approach
+Do not register PRIVATE-BETA-INVITE-01.
 
-### Decision:
+### Expected primary production file
 
-**Child-slice registration: DEFERRED pending Keith's decision on approach (Option 1 vs Option 3).**
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\ai\ai-execution.controller.ts`
 
----
+### Reuse existing
 
-## 12. Hypotheses Tested (CORRECTED)
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\ai\dto\confirm-build-apply.dto.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\usage-ledger\usage-ledger.service.ts`
+- existing session/auth/ownership mechanisms already used by public AI execution routes (`SessionOrApiKeyAuthGuard`, authenticated user identity, execution ownership check as in `getExecution`)
 
-| ID | Hypothesis | Result | Evidence |
-|----|-----------|--------|----------|
-| A | confirm-build-apply invocation is in the exact UI flow used by E2E-03 | **CONFIRMED from source** | `confirmBuildApplyIfQualifying` is called inside `applyExecutionFileActions` (page.tsx line 5024) — same function that writes files |
-| B | invocation depends on a result/status shape that E2E-03 may not have produced | **DISPROVEN** | qualification uses `applyResult` directly from `applySequentialFileActions`, not execution status; E2E-03's 1/1 success passes |
-| C | invocation is in a different code path than automatic checkpoint | **CONFIRMED from source** | confirm is in `applyExecutionFileActions` (fire-and-forget); checkpoint is in `maybeRunExecutionCoherence` (React useEffect) — completely different routing and auth mechanisms |
-| D | automatic checkpoint can succeed even if confirm-build-apply is skipped/fails | **CONFIRMED from source** | checkpoint uses fallback rewrite (no INTERNAL_SERVICE_KEY, no proxy); confirm uses App Router + multi-step proxy |
-| E | execution ID can be lost/stale/undefined between Build completion and apply confirmation | **DISPROVEN** | direct string propagation through synchronous call chain |
-| F | a frontend early return can bypass confirmation after successful apply | **DISPROVEN** | no code between `setExecutionFileActionState` and `confirmBuildApplyIfQualifying` in `applyExecutionFileActions` |
-| G | confirmation errors are swallowed before request transmission | **CONFIRMED (DEFECT) but NOT root cause** | `onConfirmationError` only calls `console.error` (client-side). No retry. No server-side trace. This is a proven DEFECT but does not identify WHY the error occurred. |
-| H | frontend deployment/source mismatch could explain request count 0 | **DISPROVEN** | git diff shows zero differences for all confirm-path files |
-| I | API route/path/method mismatch remains possible despite 03G | **DISPROVEN** | 03G proved route reachability; no source change occurred since |
-| J | another deterministic source condition explains the missing request | **UNPROVEN** | No deterministic source bug found. Remaining candidates are environmental (#14 INTERNAL_SERVICE_KEY) or transient (#12, #13). |
+Do not modify accounting semantics unless necessary to expose the already-existing behavior through the correct public authenticated route.
 
----
+### Expected test files (existing architecture; no new harness family)
 
-## 13. Root-Cause Conclusion (CORRECTED)
+Extend / reuse:
 
-**ROOT_CAUSE_OF_CONFIRM_FAILURE = UNPROVEN**
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\ai\ai-execution.controller.spec.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\ai\__tests__\ai-execution.controller.integration.spec.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\ai\__tests__\internal-accounting.controller.spec.ts` — internal confirm remains service-key protected
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\usage-ledger\__tests__\usage-ledger.service.spec.ts` — 03D accounting-semantics regression surface
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\ai\dto\confirm-build-apply.dto.spec.ts` — reuse existing DTO tests; do not reinvent DTO validation
 
-**What IS proven:**
+A focused HTTP spec under `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\ai\__tests__\` may be added only if the existing controller specs cannot cleanly host the required cases. If added, it must use the same Nest testing-module + supertest pattern already used by `internal-accounting.controller.spec.ts`. Do not invent a broad new harness.
 
-1. A failure-handling DEFECT exists: the confirmation path has zero retry, zero server-side observability, and fire-and-forget invocation. Any single failure (transient OR persistent) permanently prevents the deduction.
-2. The checkpoint succeeds independently because it uses a fundamentally different path (fallback rewrite, no proxy, no INTERNAL_SERVICE_KEY).
-3. No deterministic source BUG has been identified that would always prevent confirmation.
-4. The source logic IS correct for E2E-03's specific parameters.
+### Required Step 3 tests (minimum)
 
-**What is NOT proven:**
+1. unauthenticated request rejected
+2. authenticated owner may reach public confirm handler
+3. execution belonging to another user is not confirmable
+4. nonexistent execution does not deduct
+5. `applyStatus != applied` does not deduct
+6. zero actions does not deduct
+7. successCount mismatch/non-qualifying confirmation does not deduct
+8. qualifying success calls the existing deferred deduction path
+9. qualifying execution deducts exactly once
+10. duplicate confirmation remains idempotent/no double deduction
+11. build completion still remains `build_awaiting_apply` before apply confirmation
+12. Ask semantics unchanged
+13. internal confirm endpoint remains service-key protected
+14. existing public AI execution routes do not regress
+15. automatic post-apply checkpoint semantics remain unchanged
+16. no Stripe/payment charge
 
-The exact runtime failure that caused E2E-03's `request_received = 0`. The evidence establishes that the request was stopped somewhere between "browser fetch initiated" and "API Gateway handler", but the specific proxy step (or pre-proxy failure) that failed cannot be identified from available evidence.
+### Files explicitly out of Step 3 scope
 
-**Why the original ROOT_CAUSE_PROVEN=YES was incorrect:**
-
-The proof standard requires explaining WHY `confirm-build-apply` did not reach the API Gateway (condition #3). The defect explains WHAT HAPPENS when the request fails (it's silently lost), but does not explain WHAT CAUSED the request to fail. "Any of five proxy failure points could have triggered" is a failure-mode enumeration, not a proven causal chain.
-
----
-
-## 14. Step 3 Readiness Decision (CORRECTED)
-
-**STEP_3_READINESS = BLOCKED_PENDING_EVIDENCE**
-
-Step 3 (implementation) cannot be authorized to merely "add retry" because:
-1. The exact failure may be persistent/deterministic (e.g., missing INTERNAL_SERVICE_KEY), in which case retry does not fix it
-2. Without observability, even after adding retry, future failures would remain invisible
-3. The correct implementation depends on whether the failure is transient or persistent
-
-Step 3 becomes READY when ONE of:
-- Keith authorizes the pragmatic combined fix (retry + observability) without full root-cause proof
-- A diagnostic validation identifies the exact failure point, enabling a targeted fix
-- A deterministic source bug is found that explains E2E-03
+| File / surface | Why |
+|----------------|-----|
+| Caddy configuration | Architecture B requires no Caddy change |
+| `frontend` confirm request URL | Remain `/api/ai/executions/:executionId/confirm-build-apply` |
+| `frontend/app/api/ai/executions/[executionId]/confirm-build-apply/route.ts` | Retain temporarily; do not delete |
+| `frontend/lib/build-apply-confirm-proxy.server.ts` | Retain temporarily; do not delete |
+| `frontend/next.config.js` | 03G remains locked; no Caddy-bypass rewrite change |
+| `frontend/messages/*.json` | No user-facing UX change |
+| `services/api-gateway/src/ai/internal-accounting.controller.ts` | Internal route remains INTERNAL_SERVICE_KEY protected |
+| Stripe / payment code | No charge path |
+| Retry / observability frontend changes | Not part of the routing root-cause fix |
 
 ---
 
-## 15. Files Expected to Change (REVISED)
+## 13. Step 3 Runtime Boundary
 
-Depends on the approach Keith authorizes. If Option 3 (retry + observability):
+Implementation + local automated tests may proceed after this governance lock.
 
-| File | Change |
-|------|--------|
-| `frontend\components\workspace\workspace-ai-file-actions.logic.ts` | Add retry to `confirmBuildApplyIfQualifying` or `requestBuildApplyConfirmation` |
-| `frontend\lib\build-apply-confirm-proxy.server.ts` | Add structured server-side logging at proxy entry/exit points |
+Do NOT treat Step 3 implementation PASS as private-beta readiness.
 
-If Option 1 (observability first, then targeted fix):
+After the fix:
 
-| File | Change (Slice A) |
-|------|--------|
-| `frontend\lib\build-apply-confirm-proxy.server.ts` | Add structured server-side logging |
+- a fresh controlled E2E validation is still REQUIRED
+- that fresh E2E task is NOT registered here
+- provider/runtime E2E execution will require separate explicit Keith authorization
+- do not invoke confirm-build-apply as a product workaround
+- do not mutate credits manually
+- do not convert E2E-03 into PASS
 
-Slice B depends on diagnostic results.
+Safety defaults remain:
 
----
-
-## 16. Files Explicitly Out of Scope
-
-| File | Why |
-|------|-----|
-| `frontend/app/api/ai/executions/[executionId]/confirm-build-apply/route.ts` | Route handler is correct |
-| `frontend/next.config.js` | 03G fix is active, no regression |
-| `services/api-gateway/src/ai/internal-accounting.controller.ts` | Controller is correct |
-| `services/api-gateway/src/usage-ledger/usage-ledger.service.ts` | Deduction logic is correct |
-| `services/api-gateway/src/guards/internal-service-auth.guard.ts` | Guard logic is correct |
-| `frontend/messages/*.json` | No user-facing text change anticipated |
+- `GLOBAL_EXECUTION_ENABLED=false` by default and outside any explicitly authorized runtime window
+- `BILLING_CHARGES_ENABLED=false`
+- `AGENT_HARNESS_ENABLE_TOOL_LOOP=false`
+- `AGENT_HARNESS_ENABLE_WRITE_TOOLS=false`
 
 ---
 
-## 17. Runtime Validation Requirements
-
-After any implementation:
-1. `npm test` — all existing + new tests pass
-2. `npx tsc --noEmit` — typecheck passes
-3. `npm run build` — production build succeeds
-4. Verify `tsconfig.tsbuildinfo` not unexpectedly modified
-
-A fresh post-fix E2E validation (separate task) is REQUIRED before Builder private-beta readiness can return to GO.
-
----
-
-## 18. PRIVATE-BETA-INVITE-01 Prohibition
+## 14. PRIVATE-BETA-INVITE-01 Prohibition
 
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 
----
-
-## 19. Step 2 Summary Fields
-
-```
-STEP_2_STATUS                                      = COMPLETE — SOURCE PATH NARROWED / FAILURE-HANDLING DEFECT PROVEN
-ROOT_CAUSE_OF_CONFIRM_FAILURE                      = UNPROVEN
-CONFIRMATION_FAILURE_OBSERVABILITY_DEFECT_PROVEN   = YES
-CONFIRMATION_RESILIENCE_DEFECT_PROVEN              = YES
-E2E03_EXACT_CONFIRM_FAILURE_ROOT_CAUSE_PROVEN      = NO
-E2E03_CONFIRM_QUALIFICATION_RUNTIME_PROVEN         = NO (strongly inferred from source + checkpoint, not directly observed)
-E2E03_BROWSER_CONFIRM_FETCH_RUNTIME_PROVEN         = NO (strongly inferred, not directly observed)
-NARROWEST_PROVEN_STOP_BOUNDARY                     = between "setExecutionFileActionState completed" and "API Gateway handler"
-DETERMINISTIC_SOURCE_BUG_FOUND                     = NO
-STRONGEST_UNPROVEN_CANDIDATE                       = INTERNAL_SERVICE_KEY env var availability after PM2 restart (#14)
-03G_AUTHENTICATED_PATH_PROVEN                      = NO (03G only proved unauthenticated probe to step 2)
-RETRY_ALONE_SUFFICIENT                             = NO (not proven — failure may be persistent)
-PROVIDER_REPLAY_REQUIRED                           = NO
-RUNTIME_EVIDENCE_REQUIRED_FOR_PROOF                = YES
-CHILD_SLICE_DECISION                               = DEFERRED pending Keith approach decision
-STEP_3_READINESS                                   = BLOCKED_PENDING_EVIDENCE
-```
+Do not register it.
 
 ---
 
-*Stage-start document corrected: 2026-08-18 — PRIVATE-BETA-BLOCKER-03J Step 2 — investigation/documentation only — no source/test/runtime/provider/balance/deployment mutation.*
+## 15. Files Expected To Change In This Reconciliation Step
+
+Documentation / governance only:
+
+- `C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-BLOCKER-03J-STAGE-START.md`
+- `C:\Users\knlee\aiSandBox2026B\TASKS.md`
+- `C:\Users\knlee\aiSandBox2026B\TASKS_BACKLOG_FULL.md`
+
+No source/test/runtime mutation in Step 2 reconciliation.
+
+---
+
+## 16. Step 2 Summary Fields
+
+```
+STEP_2_STATUS                                      = COMPLETE — ROOT CAUSE PROVEN / LIVE PUBLIC ROUTING DEFECT CONFIRMED — 2026-08-18
+ROOT_CAUSE_OF_CONFIRM_FAILURE                      = PROVEN
+PUBLIC_CONFIRM_ROUTING_DEFECT_PROVEN               = YES
+E2E03_EXACT_CONFIRM_FAILURE_ROOT_CAUSE_PROVEN      = YES
+PUBLIC_CONFIRM_ROUTE_LIVE_TARGET                   = API_GATEWAY
+PUBLIC_CONFIRM_ROUTE_BYPASSES_NEXTJS               = YES
+INTERNAL_SERVICE_KEY_HYPOTHESIS                    = DISPROVEN
+CONFIRMATION_FAILURE_OBSERVABILITY_DEFECT_PROVEN   = YES (not the root-cause fix)
+CONFIRMATION_RESILIENCE_DEFECT_PROVEN              = YES (not the root-cause fix)
+03G_STATUS                                         = COMPLETE AND LOCKED — local Next.js reachability only
+ARCHITECTURE                                       = B
+CADDY_CHANGE_REQUIRED                              = NO
+FRONTEND_URL_CHANGE_REQUIRED                       = NO
+NEXTJS_PROXY_DISPOSITION                           = RETAIN TEMPORARILY — do not delete in Step 3
+RETRY_REQUIRED_FOR_ROOT_CAUSE_FIX                  = NO
+OBSERVABILITY_REQUIRED_FOR_ROOT_CAUSE_FIX          = NO
+CHILD_SLICE_DECISION                               = NONE — one bounded implementation slice
+FRESH_E2E_REQUIRED_AFTER_FIX                       = YES — not registered here
+RUNTIME_E2E_AUTHORIZATION_REQUIRED                 = YES — separate explicit Keith authorization
+PRIVATE_BETA_INVITE_01                             = UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+STEP_3_READINESS                                   = READY
+STEP_3_STATUS                                      = READY — NOT YET IMPLEMENTED
+```
+
+---
+
+*Stage-start document evidence-reconciled: 2026-08-18 — PRIVATE-BETA-BLOCKER-03J Step 2 — documentation/governance only — no source/test/runtime/provider/balance/deployment/git mutation.*

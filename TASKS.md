@@ -16,7 +16,7 @@ Rules:
 
 If conflicts exist, TASKS_BACKLOG_FULL.md takes precedence.
 
-**Program status:** **BILLING-READY-08 COMPLETE AND LOCKED 2026-08-07** — Controlled xAI smoke PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (500 credits) — overflow 98 ACCEPTED BY DESIGN — balance reached 0 correctly — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — QuotaGuard browser-session bypass — Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md` — **BILLING-READY-08B COMPLETE AND LOCKED 2026-08-07** — usage_records.created_at schema remediation — Checkpoint: `docs/BILLING-READY-08B-CHECKPOINT.md` — Final checkpoint: `docs/BILLING-READY-08-CHECKPOINT.md` — **PRIVATE-BETA-FUNCTIONAL-READINESS-04 COMPLETE AND LOCKED 2026-08-07** — All acceptance criteria satisfied — FR-04 parent checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-CHECKPOINT.md` — **ADMIN-CONSOLE-01 COMPLETE AND LOCKED 2026-08-08** — All children COMPLETE AND LOCKED — **ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07** — Checkpoint: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md` — **ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07** — Authenticated Admin Credit Grant API — Checkpoint: `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md` — **ADMIN-CONSOLE-01C COMPLETE AND LOCKED 2026-08-07** — Admin Console Shell + Users/Sessions — Checkpoint: `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md` — **ADMIN-CONSOLE-01D COMPLETE AND LOCKED 2026-08-07** — Admin Credit Grant UI — Checkpoint: `docs/ADMIN-CONSOLE-01D-CHECKPOINT.md` — **ADMIN-CONSOLE-01E COMPLETE AND LOCKED 2026-08-08** — Staging Operator Validation + Parent Consolidation — PASS WITH NON-BLOCKING LIMITATIONS — Checkpoint: `docs/ADMIN-CONSOLE-01E-CHECKPOINT.md` — **ADMIN-CONSOLE-01E1 COMPLETE AND LOCKED 2026-08-08** — Invalid Locale Redirect Origin Fix — Checkpoint: `docs/ADMIN-CONSOLE-01E1-CHECKPOINT.md` — Parent checkpoint: `docs/ADMIN-CONSOLE-01-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 BLOCKED** — private beta blocked by PRIVATE-BETA-BLOCKER-01 (recurring canonical landing page regression) and separate unresolved preview failure — Do not execute invitations until all blockers resolved — **PRIVATE-BETA-BLOCKER-01 COMPLETE AND LOCKED 2026-08-09** — Legacy workspace + feature-flag removal — Build-independence proven — All locales PASS — Commit `651f723447a85ec5d22139d6ba60be6680a0f8c6` — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-01-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-02 COMPLETE AND LOCKED 2026-08-09** — Preview Runtime Failure — PreviewController fallback 4001→4002 — staging live preview PASS — Commit `f73da07ef8d1acc70d43d6b4980fd1d0d57e2883` — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-02-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 UNBLOCKED** — landing-page and preview blockers resolved — do not execute invitations without registration and Keith explicit approval — GLOBAL_EXECUTION_ENABLED remains false — **GOV-ARCH-01 COMPLETE AND LOCKED 2026-08-10** — Checkpoint: `docs/GOV-ARCH-01-CHECKPOINT.md` — **GOV-PRD-01 COMPLETE AND LOCKED 2026-08-10** — Checkpoint: `docs/GOV-PRD-01-CHECKPOINT.md` — **PRIVATE-BETA-OPS-01 COMPLETE AND LOCKED 2026-08-10** — Independent PM2 ops watchdog staging-proved — P1 operational visibility SATISFIED — Checkpoint: `docs/PRIVATE-BETA-OPS-01-CHECKPOINT.md` — **PRIVATE-BETA-EXEC-01 COMPLETE AND LOCKED 2026-08-10** — Controlled Builder AI Execution Activation — Activation smoke PASS — Execution ID `24acd697-b55c-40d0-b2d5-32faf9b85709` — provider `xai` — path `plain` — tokens `1078` — file `beta-activation-smoke-2026-08-10.txt` — credits 6000→4922 — `GLOBAL_EXECUTION_ENABLED=true` deliberately left enabled — Harness remains disabled — Stripe charging remains disabled — Checkpoint: `docs/PRIVATE-BETA-EXEC-01-CHECKPOINT.md` — **PRIVATE-BETA-E2E-01 COMPLETE AND LOCKED — 2026-08-10 — FAIL / BLOCKER** — Fresh Keith Builder End-to-End Staging Journey — Primary blocker: Builder plain-path completed execution returned text with `fileActions: []` (execution `2bc73157-973a-45ec-8b71-bca8c2f7941d`) — no `index.html` / empty workspace — Gate rolled back to `GLOBAL_EXECUTION_ENABLED=false` — PRIVATE-BETA-INVITE-01 remains untouched/unregistered — Builder-first private beta **NO-GO PENDING BLOCKER FIX** — **PRIVATE-BETA-BLOCKER-03A COMPLETE AND LOCKED — 2026-08-10 — ROOT CAUSE PROVEN** — Empty File-Action Contract Diagnosis — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03A-CHECKPOINT.md` — Diagnosis: `docs/PRIVATE-BETA-BLOCKER-03A-DIAGNOSIS.md` — PROMPT-ONLY file-action contract; prose noncompliance silently accepted as completed with `fileActions: []` — Defect class: RESPONSE-FORM-SPECIFIC / MODEL-AGNOSTIC CONTRACT WEAKNESS — Target execution `2bc73157-973a-45ec-8b71-bca8c2f7941d` — Comparison executions `24acd697-b55c-40d0-b2d5-32faf9b85709` / `83acc0e9-84de-4f94-9e41-294701e38393` — `GLOBAL_EXECUTION_ENABLED=false` preserved — Builder-first private beta remains **NO-GO PENDING BLOCKER FIX** — **PRIVATE-BETA-BLOCKER-03B COMPLETE AND LOCKED — 2026-08-11 — PASS** — File-Action Reliability Fix — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03B-CHECKPOINT.md` — original file-action reliability blocker remediated — plain-path structured JSON + application-owned zero-action failure validated on staging — `GLOBAL_EXECUTION_ENABLED=false` — Harness remains disabled — PRIVATE-BETA-INVITE-01 untouched/unregistered — Builder-first private beta remains **NO-GO PENDING REMAINING READINESS WORK** — **BUILDER-INTENT-01 ACTIVE — Step 1 COMPLETE (Registration — 2026-08-11)** — Ask/Discuss vs Build/Edit Execution Intent — exact next: BUILDER-INTENT-01 Step 2 — Intent Contract + UX Stage-Start — 03C/03D remain NOT REGISTERED — PRIVATE-BETA-INVITE-01 untouched/unregistered — `GLOBAL_EXECUTION_ENABLED=false` — **BUILDER-INTENT-01 COMPLETE AND LOCKED 2026-08-13** — Checkpoint: `docs/BUILDER-INTENT-01-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-03C COMPLETE AND LOCKED 2026-08-14** — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03C-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-03D COMPLETE AND LOCKED 2026-08-14** — No-workspace-result credit policy — 03D-A/03D-B COMPLETE AND LOCKED — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03D-CHECKPOINT.md` — **PRIVATE-BETA-E2E-02 COMPLETE AND LOCKED — 2026-08-14 — FAIL / BLOCKED** — Staging did not contain/exercise 03D Build deferred-deduction confirmation architecture — old immediate-deduction path operated — confirm-build-apply route not present on staging — 15/18 PASS, 3/18 FAIL — provider=xAI/grok-4.5 — 1 call consumed, budget exhausted — UI balance 3278 ≠ DB balance 30577 UNRESOLVED — Checkpoint: `docs/PRIVATE-BETA-E2E-02-CHECKPOINT.md` — Private-beta NO-GO / BLOCKED — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited — **PRIVATE-BETA-BLOCKER-03F COMPLETE AND LOCKED — 2026-08-15 — FAIL / BLOCKED** — Staging Deployment Parity for 03D Accounting Confirmation Path — FRONTEND CONFIRM ROUTE REACHABILITY / API REWRITE PRECEDENCE BLOCKER — Deployment/source parity PASS — Runtime same-origin confirm path FAIL — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03F-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-03G COMPLETE AND LOCKED — 2026-08-16 — PASS** — Frontend Confirm-Build-Apply Route Reachability — next.config.js fallback-phase fix — confirm route reachable — GLOBAL_EXECUTION_ENABLED=false — BILLING_CHARGES_ENABLED=false — provider calls=0 — credit mutations=0 — Checkpoint: docs/PRIVATE-BETA-BLOCKER-03G-CHECKPOINT.md — Unresolved separate blocker: CREDIT DISPLAY DISCREPANCY (UI 3278 ≠ DB 30577) — **PRIVATE-BETA-BLOCKER-03H ACTIVE — Step 2 COMPLETE (Stage Start / Credit Data-Flow & Source-of-Truth Investigation — 2026-08-16)** — Credit Balance Display / Authoritative Balance Reconciliation — ROOT CAUSE PROVEN: stale frontend state (no auto-refresh after credit mutations) — fix is frontend-only + Cache-Control header — MIGRATION_REQUIRED=NO — ACCOUNTING_CALCULATION_CHANGE_REQUIRED=NO — Step 3 PENDING — private-beta NO-GO / BLOCKED — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited — **PRIVATE-BETA-BLOCKER-03I COMPLETE AND LOCKED — 2026-08-17 — PASS** — Git safe.directory Fix + Provider-Free Staging Validation — SHA 54b5764d8645d80a44f5de1351ca8e7928c5c8f4 — ROOT_CAUSE_PROVEN=YES — TIMEOUT_HYPOTHESIS_CONFIRMED=NO — POST_FIX_CHECKPOINT_RUNTIME_PASS=YES — Checkpoint: docs/PRIVATE-BETA-BLOCKER-03I-CHECKPOINT.md — private-beta remains NO-GO — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited — **PRIVATE-BETA-E2E-03 COMPLETE AND LOCKED — 2026-08-17 — FAIL / BLOCKED** — Qualifying workspace apply succeeded; confirm-build-apply request never observed; criterion 10 PASS; criteria 8/11/12 FAIL; 19/20 not executed; ROOT_CAUSE_OF_CONFIRM_FAILURE=UNINVESTIGATED — Checkpoint: `docs/PRIVATE-BETA-E2E-03-CHECKPOINT.md` — private-beta remains NO-GO — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited — **PRIVATE-BETA-BLOCKER-03J STEP 2 COMPLETE — ROOT CAUSE UNPROVEN / FAILURE-HANDLING DEFECT PROVEN — 2026-08-18 (corrected)** — Investigate Missing confirm-build-apply Request After Successful Qualifying Workspace Apply — ROOT_CAUSE_OF_CONFIRM_FAILURE=UNPROVEN — CONFIRMATION_FAILURE_OBSERVABILITY_DEFECT_PROVEN=YES — CONFIRMATION_RESILIENCE_DEFECT_PROVEN=YES — E2E03_EXACT_CONFIRM_FAILURE_ROOT_CAUSE_PROVEN=NO — Stage-Start: `docs/PRIVATE-BETA-BLOCKER-03J-STAGE-START.md` — Step 3 BLOCKED_PENDING_EVIDENCE — private-beta remains NO-GO — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited
+**Program status:** **BILLING-READY-08 COMPLETE AND LOCKED 2026-08-07** — Controlled xAI smoke PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (500 credits) — overflow 98 ACCEPTED BY DESIGN — balance reached 0 correctly — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — QuotaGuard browser-session bypass — Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md` — **BILLING-READY-08B COMPLETE AND LOCKED 2026-08-07** — usage_records.created_at schema remediation — Checkpoint: `docs/BILLING-READY-08B-CHECKPOINT.md` — Final checkpoint: `docs/BILLING-READY-08-CHECKPOINT.md` — **PRIVATE-BETA-FUNCTIONAL-READINESS-04 COMPLETE AND LOCKED 2026-08-07** — All acceptance criteria satisfied — FR-04 parent checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-CHECKPOINT.md` — **ADMIN-CONSOLE-01 COMPLETE AND LOCKED 2026-08-08** — All children COMPLETE AND LOCKED — **ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07** — Checkpoint: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md` — **ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07** — Authenticated Admin Credit Grant API — Checkpoint: `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md` — **ADMIN-CONSOLE-01C COMPLETE AND LOCKED 2026-08-07** — Admin Console Shell + Users/Sessions — Checkpoint: `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md` — **ADMIN-CONSOLE-01D COMPLETE AND LOCKED 2026-08-07** — Admin Credit Grant UI — Checkpoint: `docs/ADMIN-CONSOLE-01D-CHECKPOINT.md` — **ADMIN-CONSOLE-01E COMPLETE AND LOCKED 2026-08-08** — Staging Operator Validation + Parent Consolidation — PASS WITH NON-BLOCKING LIMITATIONS — Checkpoint: `docs/ADMIN-CONSOLE-01E-CHECKPOINT.md` — **ADMIN-CONSOLE-01E1 COMPLETE AND LOCKED 2026-08-08** — Invalid Locale Redirect Origin Fix — Checkpoint: `docs/ADMIN-CONSOLE-01E1-CHECKPOINT.md` — Parent checkpoint: `docs/ADMIN-CONSOLE-01-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 BLOCKED** — private beta blocked by PRIVATE-BETA-BLOCKER-01 (recurring canonical landing page regression) and separate unresolved preview failure — Do not execute invitations until all blockers resolved — **PRIVATE-BETA-BLOCKER-01 COMPLETE AND LOCKED 2026-08-09** — Legacy workspace + feature-flag removal — Build-independence proven — All locales PASS — Commit `651f723447a85ec5d22139d6ba60be6680a0f8c6` — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-01-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-02 COMPLETE AND LOCKED 2026-08-09** — Preview Runtime Failure — PreviewController fallback 4001→4002 — staging live preview PASS — Commit `f73da07ef8d1acc70d43d6b4980fd1d0d57e2883` — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-02-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 UNBLOCKED** — landing-page and preview blockers resolved — do not execute invitations without registration and Keith explicit approval — GLOBAL_EXECUTION_ENABLED remains false — **GOV-ARCH-01 COMPLETE AND LOCKED 2026-08-10** — Checkpoint: `docs/GOV-ARCH-01-CHECKPOINT.md` — **GOV-PRD-01 COMPLETE AND LOCKED 2026-08-10** — Checkpoint: `docs/GOV-PRD-01-CHECKPOINT.md` — **PRIVATE-BETA-OPS-01 COMPLETE AND LOCKED 2026-08-10** — Independent PM2 ops watchdog staging-proved — P1 operational visibility SATISFIED — Checkpoint: `docs/PRIVATE-BETA-OPS-01-CHECKPOINT.md` — **PRIVATE-BETA-EXEC-01 COMPLETE AND LOCKED 2026-08-10** — Controlled Builder AI Execution Activation — Activation smoke PASS — Execution ID `24acd697-b55c-40d0-b2d5-32faf9b85709` — provider `xai` — path `plain` — tokens `1078` — file `beta-activation-smoke-2026-08-10.txt` — credits 6000→4922 — `GLOBAL_EXECUTION_ENABLED=true` deliberately left enabled — Harness remains disabled — Stripe charging remains disabled — Checkpoint: `docs/PRIVATE-BETA-EXEC-01-CHECKPOINT.md` — **PRIVATE-BETA-E2E-01 COMPLETE AND LOCKED — 2026-08-10 — FAIL / BLOCKER** — Fresh Keith Builder End-to-End Staging Journey — Primary blocker: Builder plain-path completed execution returned text with `fileActions: []` (execution `2bc73157-973a-45ec-8b71-bca8c2f7941d`) — no `index.html` / empty workspace — Gate rolled back to `GLOBAL_EXECUTION_ENABLED=false` — PRIVATE-BETA-INVITE-01 remains untouched/unregistered — Builder-first private beta **NO-GO PENDING BLOCKER FIX** — **PRIVATE-BETA-BLOCKER-03A COMPLETE AND LOCKED — 2026-08-10 — ROOT CAUSE PROVEN** — Empty File-Action Contract Diagnosis — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03A-CHECKPOINT.md` — Diagnosis: `docs/PRIVATE-BETA-BLOCKER-03A-DIAGNOSIS.md` — PROMPT-ONLY file-action contract; prose noncompliance silently accepted as completed with `fileActions: []` — Defect class: RESPONSE-FORM-SPECIFIC / MODEL-AGNOSTIC CONTRACT WEAKNESS — Target execution `2bc73157-973a-45ec-8b71-bca8c2f7941d` — Comparison executions `24acd697-b55c-40d0-b2d5-32faf9b85709` / `83acc0e9-84de-4f94-9e41-294701e38393` — `GLOBAL_EXECUTION_ENABLED=false` preserved — Builder-first private beta remains **NO-GO PENDING BLOCKER FIX** — **PRIVATE-BETA-BLOCKER-03B COMPLETE AND LOCKED — 2026-08-11 — PASS** — File-Action Reliability Fix — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03B-CHECKPOINT.md` — original file-action reliability blocker remediated — plain-path structured JSON + application-owned zero-action failure validated on staging — `GLOBAL_EXECUTION_ENABLED=false` — Harness remains disabled — PRIVATE-BETA-INVITE-01 untouched/unregistered — Builder-first private beta remains **NO-GO PENDING REMAINING READINESS WORK** — **BUILDER-INTENT-01 ACTIVE — Step 1 COMPLETE (Registration — 2026-08-11)** — Ask/Discuss vs Build/Edit Execution Intent — exact next: BUILDER-INTENT-01 Step 2 — Intent Contract + UX Stage-Start — 03C/03D remain NOT REGISTERED — PRIVATE-BETA-INVITE-01 untouched/unregistered — `GLOBAL_EXECUTION_ENABLED=false` — **BUILDER-INTENT-01 COMPLETE AND LOCKED 2026-08-13** — Checkpoint: `docs/BUILDER-INTENT-01-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-03C COMPLETE AND LOCKED 2026-08-14** — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03C-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-03D COMPLETE AND LOCKED 2026-08-14** — No-workspace-result credit policy — 03D-A/03D-B COMPLETE AND LOCKED — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03D-CHECKPOINT.md` — **PRIVATE-BETA-E2E-02 COMPLETE AND LOCKED — 2026-08-14 — FAIL / BLOCKED** — Staging did not contain/exercise 03D Build deferred-deduction confirmation architecture — old immediate-deduction path operated — confirm-build-apply route not present on staging — 15/18 PASS, 3/18 FAIL — provider=xAI/grok-4.5 — 1 call consumed, budget exhausted — UI balance 3278 ≠ DB balance 30577 UNRESOLVED — Checkpoint: `docs/PRIVATE-BETA-E2E-02-CHECKPOINT.md` — Private-beta NO-GO / BLOCKED — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited — **PRIVATE-BETA-BLOCKER-03F COMPLETE AND LOCKED — 2026-08-15 — FAIL / BLOCKED** — Staging Deployment Parity for 03D Accounting Confirmation Path — FRONTEND CONFIRM ROUTE REACHABILITY / API REWRITE PRECEDENCE BLOCKER — Deployment/source parity PASS — Runtime same-origin confirm path FAIL — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03F-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-03G COMPLETE AND LOCKED — 2026-08-16 — PASS** — Frontend Confirm-Build-Apply Route Reachability — next.config.js fallback-phase fix — confirm route reachable — GLOBAL_EXECUTION_ENABLED=false — BILLING_CHARGES_ENABLED=false — provider calls=0 — credit mutations=0 — Checkpoint: docs/PRIVATE-BETA-BLOCKER-03G-CHECKPOINT.md — Unresolved separate blocker: CREDIT DISPLAY DISCREPANCY (UI 3278 ≠ DB 30577) — **PRIVATE-BETA-BLOCKER-03H ACTIVE — Step 2 COMPLETE (Stage Start / Credit Data-Flow & Source-of-Truth Investigation — 2026-08-16)** — Credit Balance Display / Authoritative Balance Reconciliation — ROOT CAUSE PROVEN: stale frontend state (no auto-refresh after credit mutations) — fix is frontend-only + Cache-Control header — MIGRATION_REQUIRED=NO — ACCOUNTING_CALCULATION_CHANGE_REQUIRED=NO — Step 3 PENDING — private-beta NO-GO / BLOCKED — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited — **PRIVATE-BETA-BLOCKER-03I COMPLETE AND LOCKED — 2026-08-17 — PASS** — Git safe.directory Fix + Provider-Free Staging Validation — SHA 54b5764d8645d80a44f5de1351ca8e7928c5c8f4 — ROOT_CAUSE_PROVEN=YES — TIMEOUT_HYPOTHESIS_CONFIRMED=NO — POST_FIX_CHECKPOINT_RUNTIME_PASS=YES — Checkpoint: docs/PRIVATE-BETA-BLOCKER-03I-CHECKPOINT.md — private-beta remains NO-GO — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited — **PRIVATE-BETA-E2E-03 COMPLETE AND LOCKED — 2026-08-17 — FAIL / BLOCKED** — Qualifying workspace apply succeeded; confirm-build-apply request never observed; criterion 10 PASS; criteria 8/11/12 FAIL; 19/20 not executed; ROOT_CAUSE_OF_CONFIRM_FAILURE=UNINVESTIGATED — Checkpoint: `docs/PRIVATE-BETA-E2E-03-CHECKPOINT.md` — private-beta remains NO-GO — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited — **PRIVATE-BETA-BLOCKER-03J STEP 2 COMPLETE — ROOT CAUSE PROVEN / LIVE PUBLIC ROUTING DEFECT CONFIRMED — 2026-08-18** — Investigate Missing confirm-build-apply Request After Successful Qualifying Workspace Apply — ROOT_CAUSE_OF_CONFIRM_FAILURE=PROVEN — PUBLIC_CONFIRM_ROUTING_DEFECT_PROVEN=YES — E2E03_EXACT_CONFIRM_FAILURE_ROOT_CAUSE_PROVEN=YES — INTERNAL_SERVICE_KEY_HYPOTHESIS=DISPROVEN — ARCHITECTURE=B public authenticated Gateway confirm-build-apply — CADDY_CHANGE_REQUIRED=NO — FRONTEND_URL_CHANGE_REQUIRED=NO — Stage-Start: `docs/PRIVATE-BETA-BLOCKER-03J-STAGE-START.md` — STEP_3_READINESS=READY — Step 3 READY — NOT YET IMPLEMENTED — private-beta remains NO-GO — PRIVATE-BETA-INVITE-01 untouched/unregistered/prohibited
 
 
 \# TASKS.md ??Master Task Index
@@ -51789,36 +51789,87 @@ Keith authorized registration of PRIVATE-BETA-BLOCKER-03J after this task locked
 
 **Task ID:** PRIVATE-BETA-BLOCKER-03J
 **Title:** Investigate Missing confirm-build-apply Request After Successful Qualifying Workspace Apply
-**Status:** REGISTERED / PLANNED — 2026-08-17
+**Status:** ACTIVE — STEP 2 COMPLETE — ROOT CAUSE PROVEN / LIVE PUBLIC ROUTING DEFECT CONFIRMED — 2026-08-18 — STEP 3 READY — NOT YET IMPLEMENTED
 **Family:** PRIVATE-BETA-BLOCKER-03 / BUILDER EXECUTION RELIABILITY / DEFERRED BUILD ACCOUNTING HANDOFF
 **Priority:** HIGH — launch-critical private-beta blocker
-**Risk:** HIGH — root-cause unknown; accounting-adjacent; frontend + API Gateway confirmation path; must not weaken PRIVATE-BETA-BLOCKER-03D safeguards
+**Risk:** HIGH — accounting-adjacent; public confirm route must preserve PRIVATE-BETA-BLOCKER-03D safeguards, session auth, and execution ownership; must not expose INTERNAL_SERVICE_KEY to the browser
 **Classification:** SEQUENTIAL PARENT — higher-risk 4-step workflow
 **Workflow:** HIGH-RISK 4-STEP
 
 - Step 1 — Registration — COMPLETE — 2026-08-17
-- Step 2 — Stage Start / Source-Path Investigation Plan — COMPLETE (CORRECTED 2026-08-18) — ROOT CAUSE UNPROVEN / FAILURE-HANDLING DEFECT PROVEN
-- Step 3 — Bounded Implementation + Tests after root cause is proven — PENDING — BLOCKED_PENDING_EVIDENCE
+- Step 2 — Stage Start / Source-Path Investigation Plan — COMPLETE — ROOT CAUSE PROVEN / LIVE PUBLIC ROUTING DEFECT CONFIRMED — 2026-08-18
+- Step 3 — Bounded Implementation + Tests — READY — NOT YET IMPLEMENTED — ARCHITECTURE=B
 - Step 4 — Consolidation / Checkpoint — PENDING
 
 **Registered:** 2026-08-17
 **Approved:** Keith — 2026-08-17 (Step 1 registration only)
 **Implementation status:** NOT STARTED — no source, test, runtime, or accounting mutation performed
-**Root-cause status:** `ROOT_CAUSE_OF_CONFIRM_FAILURE=UNPROVEN` — failure-handling defect proven (observability + resilience); exact E2E-03 runtime failure cause unproven; strongest candidate: INTERNAL_SERVICE_KEY env availability after PM2 restart
+**Root-cause status:** `ROOT_CAUSE_OF_CONFIRM_FAILURE=PROVEN` — public staging Caddy routes all `/api/*` to API Gateway; frontend confirm URL exists only on Next.js; live Schannel diagnostic proves the public confirm URL reaches Gateway Express/Nest, not Next.js
+**Public routing defect:** `PUBLIC_CONFIRM_ROUTING_DEFECT_PROVEN=YES` — `PUBLIC_CONFIRM_ROUTE_LIVE_TARGET=API_GATEWAY` — `PUBLIC_CONFIRM_ROUTE_BYPASSES_NEXTJS=YES`
+**E2E-03 exact root cause:** `E2E03_EXACT_CONFIRM_FAILURE_ROOT_CAUSE_PROVEN=YES`
+**INTERNAL_SERVICE_KEY hypothesis:** `DISPROVEN` — same live frontend PID 357023 as E2E-03; key present and matching in frontend PM2/OS/next-server, root `.env`, and Gateway
+**Fix architecture:** `ARCHITECTURE=B` — add authenticated public Gateway `POST /api/ai/executions/:executionId/confirm-build-apply`; reuse existing DTO + `UsageLedgerService.triggerBuildApplyDeduction`; keep internal confirm service-key protected
+**Caddy change required:** NO
+**Frontend URL change required:** NO
+**Next.js proxy disposition:** RETAIN TEMPORARILY — do not delete in Step 3
+**Retry required for root-cause fix:** NO
+**Observability required for root-cause fix:** NO
 **Dependencies:**
 - PRIVATE-BETA-E2E-03 COMPLETE AND LOCKED — FAIL / BLOCKED — 2026-08-17 — Checkpoint: `docs/PRIVATE-BETA-E2E-03-CHECKPOINT.md` — Stage Start: `docs/PRIVATE-BETA-E2E-03-STAGE-START.md`
 - PRIVATE-BETA-BLOCKER-03D COMPLETE AND LOCKED — 2026-08-14 — deferred Build deduction / confirm-build-apply architecture — must be preserved, not weakened
-- PRIVATE-BETA-BLOCKER-03G COMPLETE AND LOCKED — 2026-08-16 — PASS — confirm-build-apply route reachability
+- PRIVATE-BETA-BLOCKER-03G COMPLETE AND LOCKED — 2026-08-16 — PASS — local Next.js confirm-route reachability at localhost:3002 (bypasses Caddy; does not prove public `/api/*` reaches Next.js)
 - PRIVATE-BETA-BLOCKER-03H COMPLETE AND LOCKED — 2026-08-16 — PASS — credit display refresh
 - PRIVATE-BETA-BLOCKER-03I COMPLETE AND LOCKED — 2026-08-17 — PASS — checkpoint safety
 **Blocking:** Builder-first private-beta GO/NO-GO — PRIVATE-BETA-INVITE-01 remains prohibited
-**Child tasks:** none pre-registered
-**Stage-Start document:** CREATED — 2026-08-17 — `docs/PRIVATE-BETA-BLOCKER-03J-STAGE-START.md`
+**Child tasks:** none — no child tasks required; one bounded implementation slice
+**Stage-Start document:** CREATED — 2026-08-17 — EVIDENCE RECONCILED — 2026-08-18 — `docs/PRIVATE-BETA-BLOCKER-03J-STAGE-START.md`
 **Checkpoint:** NOT CREATED — Step 4 only
-**Exact next recommended step:** PRIVATE-BETA-BLOCKER-03J — Keith decision required: (a) authorize pragmatic combined fix (retry + observability) without full root-cause proof, OR (b) authorize bounded diagnostic validation to identify exact failure point first
+**Exact next recommended step:** PRIVATE-BETA-BLOCKER-03J Step 3 — Bounded Implementation + Tests — ARCHITECTURE=B public authenticated Gateway confirm-build-apply. Implementation + local automated tests may proceed after this governance lock. Do not treat Step 3 PASS as private-beta readiness. Fresh controlled E2E remains required after the fix and is not registered here. Provider/runtime E2E requires separate explicit Keith authorization.
 **PRIVATE-BETA-INVITE-01 status:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 **Future fresh E2E after 03J:** REQUIRED before Builder private-beta readiness can return to GO — identifier not registered in this task
 **E2E-03 locked status:** COMPLETE AND LOCKED — FAIL / BLOCKED — 2026-08-17 — do not reopen; do not claim retroactive PASS
+
+---
+
+#### Step 2 Final Evidence Reconciliation — 2026-08-18
+
+The 2026-08-18 source-only correction (`ROOT_CAUSE_OF_CONFIRM_FAILURE=UNPROVEN`, `STEP_3_READINESS=BLOCKED_PENDING_EVIDENCE`) is superseded by completed authorized runtime evidence. Full record: `docs/PRIVATE-BETA-BLOCKER-03J-STAGE-START.md`.
+
+```
+ROOT_CAUSE_OF_CONFIRM_FAILURE                 = PROVEN
+E2E03_EXACT_CONFIRM_FAILURE_ROOT_CAUSE_PROVEN = YES
+PUBLIC_CONFIRM_ROUTING_DEFECT_PROVEN          = YES
+PUBLIC_CONFIRM_ROUTE_LIVE_TARGET              = API_GATEWAY
+PUBLIC_CONFIRM_ROUTE_BYPASSES_NEXTJS          = YES
+INTERNAL_SERVICE_KEY_HYPOTHESIS               = DISPROVEN
+ARCHITECTURE                                  = B
+CADDY_CHANGE_REQUIRED                         = NO
+FRONTEND_URL_CHANGE_REQUIRED                  = NO
+NEXTJS_PROXY_DISPOSITION                      = RETAIN TEMPORARILY
+RETRY_REQUIRED_FOR_ROOT_CAUSE_FIX             = NO
+OBSERVABILITY_REQUIRED_FOR_ROOT_CAUSE_FIX     = NO
+STEP_3_READINESS                              = READY
+STEP_3_STATUS                                 = READY — NOT YET IMPLEMENTED
+```
+
+Exact proven root cause: public staging Caddy routes all browser `/api/*` to API Gateway `:4000`. After a qualifying apply, the frontend posts `/api/ai/executions/:executionId/confirm-build-apply`. That public endpoint exists only as a Next.js App Router handler on `:3002`. Gateway has no matching public route; its accounting endpoint is internal `POST /api/internal/executions/:executionId/confirm-build-apply`. One authorized Schannel `curl.exe` diagnostic to a dummy UUID on that public URL returned HTTP 400 with `Via: 1.1 Caddy` and `X-Powered-By: Express` plus Nest/Express JSON parse failure. Next.js would have returned HTTP 401 `{ "error": "unauthenticated" }` before parsing the body. Therefore the browser confirmation request cannot reach the Next.js proxy under the deployed Caddy topology. Swallowed confirmation failure does not undo the already-successful workspace apply, matching E2E-03 (`request_received=0`, balance 30577→30577).
+
+Evidence sequence:
+
+1. INTERNAL_SERVICE_KEY hypothesis DISPROVEN — frontend PID 357023 / next-server 357043 started 2026-08-16T04:41:38.921Z, predates E2E-03, never restarted; key present and matching in frontend PM2/OS/next-server, root `.env`, and Gateway.
+2. Historical Caddy inspection — `handle /api/*` → `127.0.0.1:4000`; `handle` → `127.0.0.1:3002`; config predates E2E-03. Strong candidate, not yet live-proven at that point.
+3. First authorized Python diagnostic POST — failed locally during TLS verification before HTTP; no staging request; inconclusive transport attempt, not application evidence.
+4. Replacement authorized Schannel diagnostic — exactly one unauthenticated public POST via `C:\Windows\System32\curl.exe` to dummy UUID `ffffffff-ffff-4fff-8fff-ffffffffffff`; no cookies/auth/key/real execution/provider/credit mutation/retry. Live-proved Gateway Express/Nest as the public confirm target. No second diagnostic request.
+
+Mutation verification after diagnostic: dummy execution does not exist; dummy credit deductions/projects/sessions/checkpoints/provider calls = 0; no runtime/config/source/test mutation. Safety remained `GLOBAL_EXECUTION_ENABLED=false`, `BILLING_CHARGES_ENABLED=false`, harness write/tool-loop false. Frontend PID 357023, Gateway PID 385202, Caddy PID 542 unchanged.
+
+03G reconciliation: 03G proved Next.js confirm-route implementation/rewrite reachability at `localhost:3002`, which bypasses Caddy. 03G remains COMPLETE AND LOCKED. 03G did not prove public staging `/api/*` reaches Next.js. 03J proves the separate public reverse-proxy topology defect.
+
+Rejected Step 3 fixes: Caddy special-case routing to Next.js; moving confirmation to a non-`/api` frontend path; retry as the routing fix; manual credit mutation; frontend fake accounting; direct browser access to internal accounting; weakening auth/ownership.
+
+Step 3 primary production file: `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\ai\ai-execution.controller.ts`. Reuse existing DTO, `UsageLedgerService.triggerBuildApplyDeduction`, and existing session/auth/ownership mechanisms. Do not modify 03D accounting semantics unless necessary to expose existing behavior through the public authenticated route.
+
+PRIVATE-BETA-INVITE-01 remains UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED. Do not register a fresh E2E task here.
 
 ---
 
@@ -51920,6 +51971,8 @@ Current source starting points, to be confirmed or narrowed by repository eviden
 
 Observed E2E-03 log fact that bounds the search: `confirm_build_apply.request_received = 0` means the request was not observed at `InternalAccountingController.confirmBuildApply`. The chain may have stopped before the browser issued the call, before the Next.js route, before the proxy, or before the internal controller log. Registration does not choose among those.
 
+Step 2 evidence reconciliation (2026-08-18) has now proven the public-path stop point: staging Caddy sends the frontend's public `/api/ai/executions/:executionId/confirm-build-apply` URL to API Gateway, which has no matching public route, so Next.js is never reached. See `docs/PRIVATE-BETA-BLOCKER-03J-STAGE-START.md`.
+
 ---
 
 #### Investigation Hypotheses Only
@@ -51974,11 +52027,17 @@ These are investigation hypotheses only.
 
 #### Child-Slice Strategy
 
-Register the parent only.
+No child tasks required.
 
-Implementation may later be broken into smaller bounded child slices if Step 2 proves multiple independent concerns.
+Step 2 proved one root cause: the public confirm URL is Gateway-terminated and Gateway lacks the matching public authenticated route.
 
-Do not pre-register speculative child tasks. Current evidence does not make a natural child split unavoidable because the stop point is uninvestigated.
+Step 3 is one bounded implementation slice: add that public Gateway route, reuse existing DTO / `triggerBuildApplyDeduction` / session-auth / ownership checks, and cover the required tests on the existing API Gateway test architecture.
+
+Do not register child tasks.
+Do not bundle retry or observability into Step 3.
+Do not delete the Next.js proxy in Step 3.
+Do not change Caddy.
+Do not change the frontend confirm URL.
 
 ---
 
@@ -52044,8 +52103,8 @@ Do not add user-facing copy during registration.
 
 No implementation boxes are completed by this registration.
 
-- [ ] Exact root cause identified and documented with source/runtime evidence
-- [ ] Exact point where the successful apply → confirm-build-apply chain stops is proven
+- [x] Exact root cause identified and documented with source/runtime evidence
+- [x] Exact point where the successful apply → confirm-build-apply chain stops is proven
 - [ ] Minimal fix restores the normal confirmation call after a qualifying successful workspace apply
 - [ ] AI completion continues to produce `build_awaiting_apply` and does not directly deduct
 - [ ] Qualifying successful apply results in confirm-build-apply being invoked exactly once
@@ -52069,14 +52128,26 @@ No implementation boxes are completed by this registration.
 - [ ] If any new user-facing UX/UI text is introduced: existing i18n pattern; `en.json` / `zh-TW.json` / `zh-CN.json` updated; no hardcoded English; Heroicons v2 Outline for any icon work
 - [ ] A fresh post-fix E2E validation is required before Builder private-beta readiness can return to GO — that E2E task is not registered here
 - [ ] PRIVATE-BETA-INVITE-01 remains prohibited until a later private-beta readiness decision explicitly permits it
-- [ ] Step 2 stage-start / investigation-plan document created (`docs/PRIVATE-BETA-BLOCKER-03J-STAGE-START.md`)
+- [x] Step 2 stage-start / investigation-plan document created (`docs/PRIVATE-BETA-BLOCKER-03J-STAGE-START.md`)
 - [ ] Final checkpoint created only after implementation evidence exists
 - [ ] PRIVATE-BETA-E2E-03 remains COMPLETE AND LOCKED — FAIL / BLOCKED — not retroactively converted to PASS
 
-**PRIVATE-BETA-BLOCKER-03J status:** STEP 2 COMPLETE — ROOT CAUSE PROVEN — 2026-08-17
+**PRIVATE-BETA-BLOCKER-03J status:** STEP 2 COMPLETE — ROOT CAUSE PROVEN / LIVE PUBLIC ROUTING DEFECT CONFIRMED — 2026-08-18
 **Step 1:** COMPLETE — Registration — 2026-08-17
-**Step 2:** COMPLETE — Stage Start / Source-Path Investigation — ROOT_CAUSE_PROVEN=YES — 2026-08-17
-**Step 3:** READY — not started
+**Step 2:** COMPLETE — ROOT CAUSE PROVEN / LIVE PUBLIC ROUTING DEFECT CONFIRMED — 2026-08-18
+**Step 3:** READY — NOT YET IMPLEMENTED — ARCHITECTURE=B
 **Step 4:** PENDING — not started
-**ROOT_CAUSE_OF_CONFIRM_FAILURE:** PROVEN — fire-and-forget confirmation invocation with zero retry; single transient proxy failure permanently prevents deduction; error swallowed client-side only
+**ROOT_CAUSE_OF_CONFIRM_FAILURE:** PROVEN — public Caddy `/api/*` → API Gateway; public confirm URL exists only on Next.js; live Schannel diagnostic proves Gateway Express/Nest is the public confirm target
+**PUBLIC_CONFIRM_ROUTING_DEFECT_PROVEN:** YES
+**E2E03_EXACT_CONFIRM_FAILURE_ROOT_CAUSE_PROVEN:** YES
+**INTERNAL_SERVICE_KEY_HYPOTHESIS:** DISPROVEN
+**ARCHITECTURE:** B — authenticated public Gateway `POST /api/ai/executions/:executionId/confirm-build-apply`
+**CADDY_CHANGE_REQUIRED:** NO
+**FRONTEND_URL_CHANGE_REQUIRED:** NO
+**NEXTJS_PROXY_DISPOSITION:** RETAIN TEMPORARILY — do not delete in Step 3
+**RETRY_REQUIRED_FOR_ROOT_CAUSE_FIX:** NO
+**OBSERVABILITY_REQUIRED_FOR_ROOT_CAUSE_FIX:** NO
+**STEP_3_READINESS:** READY
+**CHILD_SLICE_DECISION:** NONE — one bounded implementation slice
+**PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 
