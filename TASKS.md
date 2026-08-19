@@ -52,17 +52,19 @@ Resource ownership reserves evidence isolation only. It does not authorize runti
 - existing automatic post-apply checkpoint semantics
 
 ## Current blockers / gates
-- PRIVATE-BETA-E2E-04: ACTIVE — Step 1 COMPLETE — Registration / Admission — 2026-08-18
+- PRIVATE-BETA-E2E-04: ACTIVE — Step 2 COMPLETE — Stage-Start / Exact Controlled E2E Runbook — 2026-08-19 — Stage-start: `docs/PRIVATE-BETA-E2E-04-STAGE-START.md`
 - RUNTIME_EXECUTION_AUTHORIZED=NO
 - PROVIDER_CALL_AUTHORIZED=NO
 - CREDIT_MUTATION_AUTHORIZED=NO
+- STAGING_MUTATION_AUTHORIZED=NO
+- REQUIRED_SOURCE_SHA=c3e39279abe3c0d6c348daa312107c8f6fc592b7 — staging deployment required before provider call
 - Single-lane evidence isolation: Lane 2 MUST remain EMPTY while PRIVATE-BETA-E2E-04 is ACTIVE or LANE-DONE
 - PRIVATE-BETA-INVITE-01: UNREGISTERED / PROHIBITED
 - BUILDER_PRIVATE_BETA_READINESS: NO_GO_PENDING_FRESH_E2E
 
 ## Current next product gate
-PRIVATE-BETA-E2E-04 Step 2 — Stage-Start / Exact Controlled E2E Runbook.
-NEW Cursor window required. Runtime / provider / credit mutation not authorized.
+PRIVATE-BETA-E2E-04 Step 3 — Authorized Controlled Staging E2E Execution + Evidence.
+REQUIRES EXPLICIT KEITH RUNTIME AUTHORIZATION. Runbook frozen at `docs/PRIVATE-BETA-E2E-04-STAGE-START.md`.
 
 ============================================================
 LEGACY / FROZEN TASK HISTORY — NOT CURRENT EXECUTION STATE

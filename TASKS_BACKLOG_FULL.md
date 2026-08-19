@@ -62438,7 +62438,7 @@ Step 4 (Consolidation / Checkpoint):
 **Title:** Fresh Post-03J Builder End-to-End Validation
 **Workstream:** RELIABILITY
 **Lifecycle:** 4-step HIGH-RISK
-**Status:** ACTIVE — Step 1 COMPLETE — Registration / Admission — 2026-08-18
+**Status:** ACTIVE — Step 2 COMPLETE — Stage-Start / Exact Controlled E2E Runbook — 2026-08-19
 **Assigned lane:** Lane 1
 **Lane 2:** EMPTY — required for entire ACTIVE / LANE-DONE lifecycle
 **Lane 3:** DISABLED
@@ -62487,20 +62487,21 @@ If the E2E exposes a real defect requiring source/contract change: STOP at the h
 
 **Lifecycle steps:**
 1. Registration + OS v1 Admission — COMPLETE — 2026-08-18
-2. Stage-Start / Exact Controlled E2E Runbook — PENDING — NEW Cursor window required
-3. Authorized Controlled Staging E2E Execution + Evidence — NOT AUTHORIZED
+2. Stage-Start / Exact Controlled E2E Runbook — COMPLETE — 2026-08-19 — Stage-start: `docs/PRIVATE-BETA-E2E-04-STAGE-START.md`
+3. Authorized Controlled Staging E2E Execution + Evidence — PENDING — EXPLICIT KEITH RUNTIME AUTHORIZATION REQUIRED
 4. Consolidation / Final E2E Verdict + Checkpoint — PENDING
 
-**Authorization flags (Step 1):**
+**Authorization flags (Step 2 end state):**
 - RUNTIME_EXECUTION_AUTHORIZED=NO
 - PROVIDER_CALL_AUTHORIZED=NO
 - CREDIT_MUTATION_AUTHORIZED=NO
+- STAGING_MUTATION_AUTHORIZED=NO
 
 Registration/admission does not authorize Step 3 runtime. Separate explicit Keith authorization is required before provider-live Step 3. Do not enable `GLOBAL_EXECUTION_ENABLED`, alter `BILLING_CHARGES_ENABLED`, edit `.env`, SSH, deploy, restart PM2/Caddy, invoke a provider, create a live project/session/container, invoke live confirm-build-apply, mutate credits, or run browser E2E in this step.
 
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 
-**Exact next lifecycle step:** PRIVATE-BETA-E2E-04 Step 2 — Stage-Start / Exact Controlled E2E Runbook
+**Exact next lifecycle step:** PRIVATE-BETA-E2E-04 Step 3 — Authorized Controlled Staging E2E Execution + Evidence — REQUIRES EXPLICIT KEITH RUNTIME AUTHORIZATION
 
 ---
 
@@ -62516,12 +62517,12 @@ Registration / control-plane:
 - [x] live E2E criteria are not marked complete during Step 1
 
 Stage-start:
-- [ ] exact runbook frozen before runtime
-- [ ] exact provider-call budget defined
-- [ ] exact test user/project/session strategy defined
-- [ ] exact baseline credit evidence defined
-- [ ] hard-stop and cleanup rules defined
-- [ ] exact authoritative evidence sources defined
+- [x] exact runbook frozen before runtime — `docs/PRIVATE-BETA-E2E-04-STAGE-START.md` — 2026-08-19
+- [x] exact provider-call budget defined — PROVIDER_CALL_BUDGET=1, PROVIDER=xai, MODEL=grok-4.5
+- [x] exact test user/project/session strategy defined — user 7f772841, fresh E2E-04 project, fresh session
+- [x] exact baseline credit evidence defined — 3-way DB/API/browser baseline, ≥10k gate
+- [x] hard-stop and cleanup rules defined — 20 pre-provider + 20 post-provider conditions, cleanup per §26
+- [x] exact authoritative evidence sources defined — PM2 logs, credit_deduction_records, credit_balances, git_checkpoints, SQLite
 
 Live E2E:
 - [ ] authentication works
