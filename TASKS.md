@@ -3,7 +3,7 @@
 **Parallel Development Architecture:** v1
 **Maximum admitted implementation lanes:** 2
 **Lane 3:** DISABLED
-**Active implementation lanes:** 2 / 2
+**Active implementation lanes:** 1 / 2
 
 Task bodies, AC, dependencies, history, and LOCKED state live in:
 `C:\Users\knlee\aiSandBox2026B\TASKS_BACKLOG_FULL.md`
@@ -15,17 +15,12 @@ Do not determine current work from content below the LEGACY / FROZEN boundary.
 - Task ID: PRIVATE-BETA-E2E-LIVE-01
 - Workstream: RELIABILITY
 - State: ACTIVE
-- Lifecycle: 3-step HIGH-RISK — Step 1 COMPLETE (2026-08-20). WAITING on PRIVATE-BETA-E2E-AUTO-01A (automation live-adapter blockers). Do not execute Step 2 / Playwright LIVE / SSH / gate enable / xAI / credit deduction until AUTO-01A is LOCKED and Keith explicitly authorizes LIVE. LIVE-01 is not cancelled and is not rewritten.
-- Primary write scope: Step 2 still no application/source/runner/package writes; disposable staging project/session + execution-gate + one provider call + qualifying credit deduction only after AUTO-01A LOCK and explicit Keith Step 2 authorization
-- Mutexes/resources: released while waiting — STAGING / PROVIDER-LIVE / CREDIT / ENV UNOWNED
+- Lifecycle: 3-step HIGH-RISK — Step 1 COMPLETE (2026-08-20). AUTOMATION_ADAPTER_BLOCKERS_RESOLVED=YES (PRIVATE-BETA-E2E-AUTO-01A COMPLETE AND LOCKED — PASS — 2026-08-20). WAITING FOR EXPLICIT STEP 2 AUTHORIZATION. Do not execute Step 2 / Playwright LIVE / SSH / gate enable / xAI / credit deduction until Keith explicitly authorizes LIVE. LIVE-01 is not cancelled and is not rewritten. Do not start LIVE-01 Step 2 in this consolidation.
+- Primary write scope: Step 2 still no application/source/runner/package writes; disposable staging project/session + execution-gate + one provider call + qualifying credit deduction only after explicit Keith Step 2 authorization
+- Mutexes/resources: released while waiting — STAGING / PROVIDER-LIVE / CREDIT / ENV UNOWNED — do not reacquire until explicit Keith Step 2 authorization
 
 ## Lane 2
-- Task ID: PRIVATE-BETA-E2E-AUTO-01A
-- Workstream: RELIABILITY
-- State: LANE-DONE
-- Lifecycle: 2-step TINY AUTOMATION_TOOLING_FIX — Step 1 COMPLETE (bounded live-adapter fix + isolated CONTRACT validation — 2026-08-20). Exact next: Step 2 consolidation. Do not run LIVE. Do not use staging/provider/credits. NOT LOCKED.
-- Primary write scope: `e2e/builder-golden-path/**` only
-- Mutexes/resources: HOTFILE:e2e/builder-golden-path/lib/staging.ts; HOTFILE:e2e/builder-golden-path/lib/live-adapters.ts
+EMPTY
 
 ## Lane 3
 DISABLED
@@ -33,7 +28,7 @@ DISABLED
 ## Governance owner / state
 EMPTY / NONE
 
-GOVERNANCE acquired for atomic AUTO-01A registration/admission + LIVE-01 wait/resource-release, then released.
+GOVERNANCE acquired for atomic AUTO-01A consolidation / LOCK, then released.
 
 ## Active mutex / resource ownership
 - GOVERNANCE: UNOWNED
@@ -43,17 +38,18 @@ GOVERNANCE acquired for atomic AUTO-01A registration/admission + LIVE-01 wait/re
 - CREDIT: UNOWNED
 - ENV: UNOWNED
 - FRONTEND: UNOWNED
-- HOTFILE:e2e/builder-golden-path/lib/staging.ts: Lane 2 / PRIVATE-BETA-E2E-AUTO-01A
-- HOTFILE:e2e/builder-golden-path/lib/live-adapters.ts: Lane 2 / PRIVATE-BETA-E2E-AUTO-01A
 - All other resources: UNOWNED
 
-LIVE-01 resource reservation released while waiting. AUTO-01A does not reserve STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE. Resource release is not LIVE Step 2 authorization.
+HOTFILE:e2e/builder-golden-path/lib/staging.ts and HOTFILE:e2e/builder-golden-path/lib/live-adapters.ts released at AUTO-01A LOCK. LIVE-01 resources remain released. Resource release is not LIVE Step 2 authorization. Do not reacquire STAGING / PROVIDER-LIVE / CREDIT / ENV until Keith explicitly authorizes LIVE-01 Step 2.
 
 ```
 RUNTIME_EXECUTION_AUTHORIZED=NO
 PROVIDER_CALL_AUTHORIZED=NO
 CREDIT_MUTATION_AUTHORIZED=NO
 STAGING_MUTATION_AUTHORIZED=NO
+AUTOMATION_ADAPTER_BLOCKERS_RESOLVED=YES
+PROVIDER_CALL_AUTHORIZED_CURRENT=0
+PROVIDER_CALL_USED=0
 ```
 
 ## Frozen contracts
@@ -66,6 +62,7 @@ STAGING_MUTATION_AUTHORIZED=NO
 - PRIVATE-BETA-E2E-04 execution evidence and final checkpoint (historical FAIL/BLOCKED)
 - PRIVATE-BETA-E2E-05 execution evidence and final checkpoint (historical FAIL/BLOCKED — core post-03J flow proven; preview not completed)
 - PRIVATE-BETA-E2E-AUTO-01 execution evidence and final checkpoint (COMPLETE AND LOCKED — PASS — 2026-08-20 — real Playwright golden-path runner ready; AUTO_APPLY; preview immediately after apply; CONTRACT/DRY default; LIVE fail-closed; LIVE staging proof still required)
+- PRIVATE-BETA-E2E-AUTO-01A execution evidence and final checkpoint (COMPLETE AND LOCKED — PASS — 2026-08-20 — AUTOMATION_TOOLING_FIX; dynamic execution-edge parity; createSshExecutor() wired; no historical E2E-05 SHA freeze; CONTRACT 29 passed; no product source change)
 - PRIVATE-BETA-E2E-LIVE-01 Step 1 live-run contract (2026-08-20): current local HEAD vs current staging HEAD exact-parity at execution edge; one xAI/grok-4.5 call; zero retries; AUTO-01 phase order; no old E2E-05 SHA freeze; no auto-deploy
 - existing authentication/ownership semantics
 - existing workspace apply semantics
@@ -74,8 +71,8 @@ STAGING_MUTATION_AUTHORIZED=NO
 - current non-risky one-file Builder AUTO_APPLY semantics (E2E-05 proven)
 
 ## Current blockers / gates
-- PRIVATE-BETA-E2E-AUTO-01A: LANE-DONE — Lane 2 — 2-step TINY AUTOMATION_TOOLING_FIX — Step 1 COMPLETE — 2026-08-20 — dynamic execution-edge parity wired; createSshExecutor() bound; CONTRACT 29 passed — NOT LOCKED — consolidation pending — LIVE-01 remains waiting
-- PRIVATE-BETA-E2E-LIVE-01: ACTIVE — Lane 1 — Step 1 COMPLETE — 2026-08-20 — WAITING on PRIVATE-BETA-E2E-AUTO-01A — STAGING / PROVIDER-LIVE / CREDIT / ENV released while waiting — current staging parity NOT YET VERIFIED — LIVE flags / GLOBAL_EXECUTION_ENABLED / xAI / credit deduction NOT authorized — do not start Step 2
+- PRIVATE-BETA-E2E-AUTO-01A: COMPLETE AND LOCKED — PASS — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01A-CHECKPOINT.md` — AUTOMATION_TOOLING_FIX — dynamic execution-edge parity; createSshExecutor() wired; CONTRACT 29 passed — Lane 2 EMPTY — HOTFILE leases released
+- PRIVATE-BETA-E2E-LIVE-01: ACTIVE — Lane 1 — Step 1 COMPLETE — 2026-08-20 — WAITING FOR EXPLICIT STEP 2 AUTHORIZATION — AUTOMATION_ADAPTER_BLOCKERS_RESOLVED=YES — STAGING / PROVIDER-LIVE / CREDIT / ENV remain UNOWNED — current staging parity NOT YET VERIFIED — LIVE flags / GLOBAL_EXECUTION_ENABLED / xAI / credit deduction NOT authorized — PROVIDER AUTHORIZED=0 USED=0 — do not start Step 2 without Keith explicit LIVE authorization
 - PRIVATE-BETA-E2E-AUTO-01: COMPLETE AND LOCKED — PASS — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01-CHECKPOINT.md` — AUTOMATED_BUILDER_GOLDEN_PATH_RUNNER_READY=YES — IMPLEMENTED_AND_CONTRACT_VALIDATED=YES — LIVE_STAGING_VALIDATED=NO — follow-up AUTO-01A does not rewrite this locked task
 - PRIVATE-BETA-E2E-05: COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-05-CHECKPOINT.md` — historical evidence source only; do not register another manual E2E; do not freeze SHA `c3e39279abe3c0d6c348daa312107c8f6fc592b7` as LIVE-01 required parity
 - PRIVATE-BETA-BLOCKER-03K: COMPLETE AND LOCKED — PASS — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03K-CHECKPOINT.md`
@@ -83,12 +80,12 @@ STAGING_MUTATION_AUTHORIZED=NO
 - PRIVATE-BETA-E2E-04: COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20 — unchanged historical failure; not a LIVE-01 dependency; do not reopen
 - BUILDER_PRIVATE_BETA_READINESS: NO_GO_PENDING_FRESH_AUTOMATED_E2E
 - PRIVATE-BETA-INVITE-01: UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED — Step 1 does not pre-authorize invites
-- Lane 1 ACTIVE waiting (PRIVATE-BETA-E2E-LIVE-01). Lane 2 LANE-DONE (PRIVATE-BETA-E2E-AUTO-01A). Lane 3 DISABLED.
+- Lane 1 ACTIVE waiting for explicit Step 2 authorization (PRIVATE-BETA-E2E-LIVE-01). Lane 2 EMPTY. Lane 3 DISABLED.
 
 ## Current next product gate
-PRIVATE-BETA-E2E-AUTO-01A Step 2 — Consolidation / checkpoint. LIVE-01 Step 2 must not start until AUTO-01A is LOCKED and Keith explicitly authorizes LIVE.
-PRIVATE-BETA-E2E-LIVE-01 Step 2 remains NOT YET AUTHORIZED and must not start while AUTO-01A is unfinished.
-After AUTO-01A LOCK, LIVE-01 Step 2 still requires fresh Keith explicit authorization for temporary `GLOBAL_EXECUTION_ENABLED=true`, exactly one xAI/grok-4.5 call, intentional qualifying E2E credit deduction, and disposable staging project/session + execution-gate mutation.
+PRIVATE-BETA-E2E-LIVE-01 Step 2 — WAITING FOR EXPLICIT STEP 2 AUTHORIZATION. AUTO-01A is LOCKED. Do not start LIVE-01 Step 2 until Keith explicitly authorizes LIVE.
+LIVE-01 Step 2 still requires fresh Keith explicit authorization for temporary `GLOBAL_EXECUTION_ENABLED=true`, exactly one xAI/grok-4.5 call, intentional qualifying E2E credit deduction, and disposable staging project/session + execution-gate mutation.
+Future explicit authorization may permit 1 provider call and 0 retries. Current state: AUTHORIZED=0 USED=0.
 Verify current local HEAD vs current staging HEAD immediately before LIVE execution. Exact parity PASS → continue. Parity FAIL → STOP. Do not auto-deploy.
 Do not return to the old manual E2E evidence marathon.
 Builder private beta remains NO_GO_PENDING_FRESH_AUTOMATED_E2E.
