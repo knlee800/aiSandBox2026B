@@ -5,7 +5,6 @@ import { isLiveAuthorized, type EnvMap } from './modes';
 export const STAGING_SSH_ALIAS = 'aisandbox-staging';
 export const STAGING_REPO_PATH = '/opt/aisandbox';
 export const STAGING_BASE_URL = 'https://staging.ainow.biz';
-export const REQUIRED_SOURCE_SHA = 'c3e39279abe3c0d6c348daa312107c8f6fc592b7';
 export const RETAINED_STASH_SHA = '0372cc1f47f82e1db060ed2dd756a938fe324803';
 
 export class StagingNotAuthorizedError extends Error {
@@ -19,6 +18,15 @@ export class UnsafeParityError extends Error {
   constructor(message: string) {
     super(message);
     this.name = 'UnsafeParityError';
+  }
+}
+
+export class SshExecutorMissingError extends Error {
+  constructor(
+    message = 'LIVE staging adapter failed closed: SSH executor is not bound.',
+  ) {
+    super(message);
+    this.name = 'SshExecutorMissingError';
   }
 }
 
@@ -54,13 +62,16 @@ export function evaluateParity(input: {
   headSha: string;
   worktreeClean: boolean;
   stashSha: string;
-  requiredHeadSha?: string;
+  requiredHeadSha: string;
 }): 'PARITY_PROVEN' | 'UNSAFE_PARITY' {
-  const requiredHead = input.requiredHeadSha ?? REQUIRED_SOURCE_SHA;
+  const requiredHead = input.requiredHeadSha.trim();
+  const stagingHead = input.headSha.trim();
   if (
-    input.headSha !== requiredHead ||
+    !requiredHead ||
+    !stagingHead ||
+    stagingHead !== requiredHead ||
     !input.worktreeClean ||
-    input.stashSha !== RETAINED_STASH_SHA
+    input.stashSha.trim() !== RETAINED_STASH_SHA
   ) {
     return 'UNSAFE_PARITY';
   }
@@ -94,25 +105,39 @@ export class StagingHelper {
     this.executeFn = options.execute;
   }
 
+  hasExecutor(): boolean {
+    return typeof this.executeFn === 'function';
+  }
+
   private assertLive(): void {
     if (!isLiveAuthorized(this.env)) {
       throw new StagingNotAuthorizedError();
     }
   }
 
-  async inspectParity(): Promise<'PARITY_PROVEN'> {
+  private requireExecutor(): (argv: string[]) => Promise<string> {
+    if (typeof this.executeFn !== 'function') {
+      throw new SshExecutorMissingError();
+    }
+    return this.executeFn;
+  }
+
+  async inspectParity(expectedHeadSha: string): Promise<'PARITY_PROVEN'> {
     this.assertLive();
-    if (!this.executeFn) {
-      throw new StagingNotAuthorizedError(
-        'No staging executor bound. Refusing to open SSH from CONTRACT/DRY.',
+    const expectedHead = expectedHeadSha.trim();
+    if (!expectedHead) {
+      throw new UnsafeParityError(
+        'Expected execution-edge HEAD is missing. Refusing to default to a historical staging SHA. No automatic deploy.',
       );
     }
-    const output = await this.executeFn(buildSshCommand(buildParityInspectCommand()));
+    const execute = this.requireExecutor();
+    const output = await execute(buildSshCommand(buildParityInspectCommand()));
     const lines = output.trim().split(/\r?\n/);
     const decision = evaluateParity({
       headSha: lines[0] ?? '',
       worktreeClean: (lines[1] ?? '') === '',
       stashSha: lines[2] ?? '',
+      requiredHeadSha: expectedHead,
     });
     refuseUnsafeParityOrSkipDeploy(decision);
     return 'PARITY_PROVEN';
@@ -120,20 +145,12 @@ export class StagingHelper {
 
   async inspectGates(): Promise<string> {
     this.assertLive();
-    if (!this.executeFn) {
-      throw new StagingNotAuthorizedError(
-        'No staging executor bound. Gate inspection is LIVE-only.',
-      );
-    }
-    return this.executeFn(buildSshCommand(buildGateInspectCommand()));
+    return this.requireExecutor()(buildSshCommand(buildGateInspectCommand()));
   }
 
   async enableExecutionGate(): Promise<void> {
     this.assertLive();
-    if (!this.executeFn) {
-      throw new StagingNotAuthorizedError();
-    }
-    await this.executeFn(buildSshCommand(buildGateEnableCommand()));
+    await this.requireExecutor()(buildSshCommand(buildGateEnableCommand()));
     this.gateTracker.recordEnabledByRunner();
   }
 
@@ -154,11 +171,57 @@ export class StagingHelper {
 
   async queryDeduction(executionId: string): Promise<string> {
     this.assertLive();
-    if (!this.executeFn) {
-      throw new StagingNotAuthorizedError();
-    }
-    return this.executeFn(buildSshCommand(buildDeductionQuery(executionId)));
+    return this.requireExecutor()(buildSshCommand(buildDeductionQuery(executionId)));
   }
+}
+
+export async function readAuthorizedLocalHead(input?: {
+  revParse?: () => Promise<string>;
+  statusShort?: () => Promise<string>;
+}): Promise<string> {
+  const status = (await (input?.statusShort ?? gitStatusShort)()).trim();
+  if (status) {
+    throw new UnsafeParityError(
+      'Local worktree is dirty. LIVE execution-edge parity requires a clean tree. No automatic deploy.',
+    );
+  }
+  const head = (await (input?.revParse ?? gitRevParseHead)()).trim();
+  if (!head) {
+    throw new UnsafeParityError(
+      'Could not read authorized local HEAD. Refusing to default to a historical staging SHA.',
+    );
+  }
+  return head;
+}
+
+function gitRevParseHead(): Promise<string> {
+  return runGit(['rev-parse', 'HEAD']);
+}
+
+function gitStatusShort(): Promise<string> {
+  return runGit(['status', '--short']);
+}
+
+function runGit(args: string[]): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const child = spawn('git', args, { shell: false });
+    let stdout = '';
+    let stderr = '';
+    child.stdout.on('data', (chunk) => {
+      stdout += String(chunk);
+    });
+    child.stderr.on('data', (chunk) => {
+      stderr += String(chunk);
+    });
+    child.on('error', reject);
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve(stdout);
+      } else {
+        reject(new Error(`git ${args.join(' ')} exited ${code}: ${stderr || stdout}`));
+      }
+    });
+  });
 }
 
 export function createSshExecutor(): (argv: string[]) => Promise<string> {

@@ -63337,11 +63337,11 @@ Inherited historical evidence only (not unfinished dependencies; do not reopen):
 
 If Step 2 exposes an actual product defect: STOP. Register a separate blocker later. Do not repair product source inside this live task.
 
-**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT, ENV reserved for Lane 1 / PRIVATE-BETA-E2E-LIVE-01.
+**Mutexes / resources:** released while waiting on PRIVATE-BETA-E2E-AUTO-01A — STAGING / PROVIDER-LIVE / CREDIT / ENV UNOWNED. PACKAGE remains UNOWNED.
 
-PACKAGE remains UNOWNED. Do not reserve FRONTEND, GATEWAY, AI-SERVICE, CONTAINER-MANAGER, MIGRATION, COMPOSE, I18N, or HOTFILE leases unless Step 2 discovery later proves a bounded adapter/product task that the control plane separately admits.
+Do not reserve FRONTEND, GATEWAY, AI-SERVICE, CONTAINER-MANAGER, MIGRATION, COMPOSE, I18N, or HOTFILE leases unless Step 2 discovery later proves a bounded adapter/product task that the control plane separately admits.
 
-Ownership is reservation only. Step 1 does **not** authorize runtime execution, provider calls, credit mutation, or staging mutation.
+Ownership is reservation only. Waiting / resource release does **not** authorize runtime execution, provider calls, credit mutation, staging mutation, or LIVE Step 2. Re-reserve STAGING / PROVIDER-LIVE / CREDIT / ENV only when AUTO-01A is LOCKED and Keith explicitly authorizes Step 2.
 
 **Shared contracts (frozen; do not modify inside LIVE-01):**
 - PRIVATE-BETA-BLOCKER-03D deferred Build-accounting semantics
@@ -63572,10 +63572,19 @@ If automated Step 2 passes all mandatory golden-path criteria, Step 3 consolidat
 
 ---
 
+#### Waiting on AUTO-01A (2026-08-20)
+
+LIVE-01 Step 2 must not start while these AUTO-01 live-adapter blockers exist:
+
+1. `e2e/builder-golden-path/lib/staging.ts` still compared staging parity against the historical E2E-05 SHA
+2. `createLiveAdapters()` did not bind `createSshExecutor()`
+
+Classification: AUTOMATION_TOOLING_FIX — not a product defect. Follow-up: PRIVATE-BETA-E2E-AUTO-01A. LIVE-01 is not cancelled and is not rewritten. STAGING / PROVIDER-LIVE / CREDIT / ENV released while waiting. Do not consume the provider call. Do not run Playwright LIVE.
+
 #### Lifecycle steps
 
 1. Registration + current staging parity / live authorization contract freeze — COMPLETE — 2026-08-20 — this entry
-2. One controlled automated LIVE golden-path execution — PENDING Keith explicit authorization — do not execute from Step 1
+2. One controlled automated LIVE golden-path execution — PENDING — WAITING on PRIVATE-BETA-E2E-AUTO-01A — then Keith explicit authorization — do not execute from Step 1
 3. Consolidation / final readiness verdict — NOT STARTED
 
 **Authorization flags (Step 1):**
@@ -63631,17 +63640,115 @@ Step 3 (NOT STARTED):
 
 ---
 
-**PRIVATE-BETA-E2E-LIVE-01 status:** ACTIVE — Step 1 COMPLETE — 2026-08-20
+**PRIVATE-BETA-E2E-LIVE-01 status:** ACTIVE — Step 1 COMPLETE — 2026-08-20 — WAITING on PRIVATE-BETA-E2E-AUTO-01A
 **Assigned lane:** Lane 1
-**Lane 2:** EMPTY
+**Lane 2:** PRIVATE-BETA-E2E-AUTO-01A ACTIVE
 **Lane 3:** DISABLED
-**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT, ENV reserved; PACKAGE UNOWNED; GOVERNANCE released
+**Mutexes / resources:** STAGING / PROVIDER-LIVE / CREDIT / ENV released while waiting; PACKAGE UNOWNED; GOVERNANCE released
 **Step 1:** COMPLETE — Registration + current staging parity / live authorization contract freeze — 2026-08-20
-**Step 2:** PENDING — One controlled automated LIVE golden-path execution — requires Keith explicit authorization
+**Step 2:** PENDING — WAITING on PRIVATE-BETA-E2E-AUTO-01A — do not execute Playwright LIVE / SSH / gate / xAI / credit until AUTO-01A is LOCKED and Keith explicitly authorizes LIVE
 **Step 3:** NOT STARTED
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_AUTOMATED_E2E
 **LIVE_STAGING_VALIDATED:** NO
-**Exact next:** PRIVATE-BETA-E2E-LIVE-01 Step 2 — pending Keith explicit LIVE authorization — current parity to be verified at execution edge — one provider call / zero retries — no live execution yet
+**Exact next:** WAITING on PRIVATE-BETA-E2E-AUTO-01A (obsolete E2E-05 SHA coupling + unbound SSH executor). Do not start LIVE-01 Step 2. Do not consume the provider call.
+
+---
+
+### PRIVATE-BETA-E2E-AUTO-01A — LIVE Adapter Tooling Fix (Dynamic Execution-Edge Parity + SSH Executor Wiring)
+
+**Task ID:** PRIVATE-BETA-E2E-AUTO-01A
+**Title:** LIVE Adapter Tooling Fix — Dynamic Execution-Edge Parity + SSH Executor Wiring
+**Workstream:** RELIABILITY
+**Lifecycle:** 2-step TINY
+**Status:** LANE-DONE — Step 1 COMPLETE — 2026-08-20 — NOT LOCKED
+**Assigned lane:** Lane 2
+**Lane 1:** PRIVATE-BETA-E2E-LIVE-01 ACTIVE — WAITING on this task
+**Lane 3:** DISABLED
+**Registered:** 2026-08-20
+**Approved:** Keith — 2026-08-20 (explicit bounded AUTO-01 follow-up to unblock LIVE-01 Step 2)
+**Nature:** AUTOMATION_TOOLING_FIX. Not a product defect. Bounded child of locked PRIVATE-BETA-E2E-AUTO-01. Does not rewrite AUTO-01. Does not run LIVE-01 Step 2.
+**Evidence class:** LOCAL-TESTS
+**Hot-file leases:** `e2e/builder-golden-path/lib/staging.ts`; `e2e/builder-golden-path/lib/live-adapters.ts`
+**Identifier search:** PRIVATE-BETA-E2E-AUTO-01A was unused. Existing E2E IDs: PRIVATE-BETA-E2E-01..05, PRIVATE-BETA-E2E-AUTO-01, PRIVATE-BETA-E2E-LIVE-01. Rejected PRIVATE-BETA-E2E-AUTO-02 (implies another runner-build) and PRIVATE-BETA-E2E-06 (implies another numbered manual E2E). AUTO-01A is the AUTO-01 live-adapter follow-up.
+
+**Start condition:** READY — PRIVATE-BETA-E2E-AUTO-01 COMPLETE AND LOCKED — PASS; PRIVATE-BETA-E2E-LIVE-01 Step 1 COMPLETE and waiting; Lane 2 EMPTY at admission; Lane 3 DISABLED; STAGING / PROVIDER-LIVE / CREDIT / ENV released from LIVE-01 before this admission; PACKAGE UNOWNED; OS v1 admission requirements pass.
+
+**Depends on:**
+- PRIVATE-BETA-E2E-AUTO-01 — COMPLETE AND LOCKED — PASS — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01-CHECKPOINT.md`
+
+Does **not** depend on unfinished LIVE-01 Step 2 output. LIVE-01 waits on this task.
+
+**Primary write scope:**
+- `e2e/builder-golden-path/**`
+- `TASKS.md` CURRENT EXECUTION BOARD above LEGACY / FROZEN only (control-plane)
+- this canonical registry entry (control-plane)
+- No production frontend/backend source. No package/lockfile change. No PRD.md. No ARCHITECTURE.md. No CLAUDE.md. No AGENTS.md. Do not rewrite locked AUTO-01. Do not rewrite LIVE-01 except waiting/status/resource-release mirroring.
+
+**Mutexes / resources:** HOTFILE:e2e/builder-golden-path/lib/staging.ts; HOTFILE:e2e/builder-golden-path/lib/live-adapters.ts. Do **not** reserve STAGING, PROVIDER-LIVE, CREDIT, ENV, PACKAGE, FRONTEND, GATEWAY, AI-SERVICE, or CONTAINER-MANAGER.
+
+**Shared contracts (frozen; do not weaken):**
+- PRIVATE-BETA-E2E-LIVE-01 Step 1 live-run contract (2026-08-20): current local HEAD vs current staging HEAD exact-parity at execution edge; one xAI/grok-4.5 call; zero retries; AUTO-01 phase order; no old E2E-05 SHA freeze; no auto-deploy
+- PRIVATE-BETA-E2E-AUTO-01 runner contract — phase order, AUTO_APPLY, preview-immediately-after-apply, fail-closed LIVE, one-call/no-retry, finally-style cleanup
+- LIVE authorization flags unchanged
+- provider budget exactly 1; retries 0
+
+**Revert / evidence isolation:** Isolated `e2e/builder-golden-path/` adapter/test files. Reverting AUTO-01A must not invalidate locked AUTO-01 / 03J / 03K / E2E-05 evidence. LIVE-01 remains waiting and must not execute during this task.
+
+**Purpose:** Remove the two deterministic LIVE adapter blockers discovered by LIVE-01 Step 1 so the first LIVE run cannot fail before provider use for those reasons.
+
+**Fix 1:** Do not compare staging HEAD against a frozen historical E2E-05 SHA. Execution-edge orchestration obtains current authorized local HEAD and passes it into the staging/parity helper. Staging HEAD is read. Exact equality is required. Mismatch fails before gate/provider. No automatic deployment. Do not replace the old SHA with today's SHA.
+
+**Fix 2:** `createLiveAdapters()` must bind the existing `createSshExecutor()` into the LIVE staging adapter path. Use existing SSH alias/conventions. Do not embed secrets. Do not invent a second SSH implementation. Absence/failure of the SSH executor fails closed.
+
+**Lifecycle steps:**
+1. Bounded implementation + isolated CONTRACT validation — COMPLETE — 2026-08-20 — `npx tsc --noEmit --project e2e/builder-golden-path/tsconfig.json` PASS; `npm run e2e:builder:contract` **29 passed**
+2. Consolidation / checkpoint — NOT STARTED
+
+**Authorization flags:**
+- RUNTIME_EXECUTION_AUTHORIZED=NO
+- PROVIDER_CALL_AUTHORIZED=NO
+- CREDIT_MUTATION_AUTHORIZED=NO
+- STAGING_MUTATION_AUTHORIZED=NO
+
+**PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+**BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_AUTOMATED_E2E
+
+---
+
+#### Acceptance Criteria
+
+- [x] unique ID PRIVATE-BETA-E2E-AUTO-01A confirmed unused before registration
+- [x] OS v1 admission rules pass; admitted to Lane 2 only
+- [x] LIVE-01 remains Lane 1 ACTIVE waiting; not cancelled; not rewritten
+- [x] STAGING / PROVIDER-LIVE / CREDIT / ENV released from LIVE-01 while waiting
+- [x] no historical fixed staging SHA is required
+- [x] current expected HEAD is supplied dynamically
+- [x] exact parity PASS when local/staging HEAD match
+- [x] parity mismatch FAILS before any provider-capable phase
+- [x] createLiveAdapters() binds the SSH executor
+- [x] absence/failure of SSH executor fails closed
+- [x] CONTRACT mode remains staging-free
+- [x] LIVE authorization guards remain unchanged
+- [x] provider budget remains exactly 1
+- [x] retries remain 0
+- [x] phase order remains AUTO_APPLY → PREVIEW → CHECKPOINT
+- [x] existing 21+ contract tests continue passing
+- [x] no LIVE / staging / provider / credit execution during this task
+- [x] no production frontend/backend source change
+- [x] no package/lockfile change
+
+---
+
+**PRIVATE-BETA-E2E-AUTO-01A status:** LANE-DONE — Step 1 COMPLETE — 2026-08-20 — NOT LOCKED
+**Assigned lane:** Lane 2
+**Lane 1:** PRIVATE-BETA-E2E-LIVE-01 ACTIVE — WAITING
+**Lane 3:** DISABLED
+**Mutexes / resources:** HOTFILE:e2e/builder-golden-path/lib/staging.ts; HOTFILE:e2e/builder-golden-path/lib/live-adapters.ts; STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE UNOWNED; GOVERNANCE released
+**Step 1:** COMPLETE — bounded live-adapter fix + isolated CONTRACT validation — 2026-08-20 — tsc PASS; `npm run e2e:builder:contract` 29 passed
+**Step 2:** NOT STARTED — consolidation
+**PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+**BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_AUTOMATED_E2E
+**Exact next:** AUTO-01A Step 2 consolidation / checkpoint. LIVE-01 Step 2 must not start until AUTO-01A is LOCKED.
 
 

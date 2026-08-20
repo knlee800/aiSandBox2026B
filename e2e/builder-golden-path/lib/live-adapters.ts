@@ -34,7 +34,13 @@ import {
   assertSafeHeadroomBeforeProvider,
   type ProviderCallGuard,
 } from './safety-gates';
-import { StagingHelper, buildSessionStopPath } from './staging';
+import {
+  StagingHelper,
+  SshExecutorMissingError,
+  buildSessionStopPath,
+  createSshExecutor,
+  readAuthorizedLocalHead,
+} from './staging';
 import type { GoldenPathAdapters } from './runner';
 import type { EnvMap } from './modes';
 
@@ -44,6 +50,34 @@ export interface LiveAdapterContext {
   locale?: string;
   gateTracker?: ExecutionGateTracker;
   staging?: StagingHelper;
+  execute?: (argv: string[]) => Promise<string>;
+  readLocalHead?: () => Promise<string>;
+}
+
+export function createLiveStagingHelper(options: {
+  env?: EnvMap;
+  gateTracker?: ExecutionGateTracker;
+  execute?: (argv: string[]) => Promise<string>;
+  staging?: StagingHelper;
+}): StagingHelper {
+  if (options.staging) {
+    return options.staging;
+  }
+  const execute = options.execute ?? createSshExecutor();
+  if (typeof execute !== 'function') {
+    throw new SshExecutorMissingError();
+  }
+  return new StagingHelper({
+    env: options.env,
+    gateTracker: options.gateTracker,
+    execute,
+  });
+}
+
+export function assertLiveStagingExecutorBound(staging: StagingHelper): void {
+  if (!staging.hasExecutor()) {
+    throw new SshExecutorMissingError();
+  }
 }
 
 export async function createLiveAdapters(
@@ -53,11 +87,19 @@ export async function createLiveAdapters(
   context: BrowserContext;
   page: Page;
   gateTracker: ExecutionGateTracker;
+  staging: StagingHelper;
 }> {
   const env = input.env ?? process.env;
   const locale = input.locale ?? LOCALE;
   const gateTracker = input.gateTracker ?? new ExecutionGateTracker();
-  const staging = input.staging ?? new StagingHelper({ env, gateTracker });
+  const staging = createLiveStagingHelper({
+    env,
+    gateTracker,
+    execute: input.execute,
+    staging: input.staging,
+  });
+  assertLiveStagingExecutorBound(staging);
+  const readLocalHead = input.readLocalHead ?? (() => readAuthorizedLocalHead());
   const credentials = assertLiveCredentials(env);
   const baseURL = String(env.E2E_BASE_URL ?? DEFAULT_BASE_URL).replace(/\/$/, '');
 
@@ -81,7 +123,8 @@ export async function createLiveAdapters(
     },
 
     async runSafetyChecks() {
-      await staging.inspectParity();
+      const expectedHead = await readLocalHead();
+      await staging.inspectParity(expectedHead);
       const gates = await staging.inspectGates();
       if (/GLOBAL_EXECUTION_ENABLED=true/.test(gates)) {
         gateTracker.recordAuthorityWithoutChange();
@@ -293,7 +336,7 @@ export async function createLiveAdapters(
     },
   };
 
-  return { adapters, context, page, gateTracker };
+  return { adapters, context, page, gateTracker, staging };
 }
 
 const BUILD_TIMEOUT_SAFE = 120_000;

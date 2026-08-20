@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { formatFailSummary, formatPassSummary, isConcisePassSummary } from '../lib/summary';
 import {
-  REQUIRED_SOURCE_SHA,
   RETAINED_STASH_SHA,
   StagingHelper,
   StagingNotAuthorizedError,
@@ -56,19 +55,22 @@ test.describe('summary and staging helpers', () => {
 
   test('staging helper stays inert in CONTRACT mode and refuses unsafe parity', async () => {
     const helper = new StagingHelper({ env: { E2E_MODE: 'contract' } });
-    await expect(helper.inspectParity()).rejects.toBeInstanceOf(StagingNotAuthorizedError);
+    await expect(helper.inspectParity('abc123')).rejects.toBeInstanceOf(StagingNotAuthorizedError);
+    const expectedHead = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
     expect(
       evaluateParity({
-        headSha: REQUIRED_SOURCE_SHA,
+        headSha: expectedHead,
         worktreeClean: true,
         stashSha: RETAINED_STASH_SHA,
+        requiredHeadSha: expectedHead,
       }),
     ).toBe('PARITY_PROVEN');
     expect(
       evaluateParity({
-        headSha: 'deadbeef',
+        headSha: 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeef',
         worktreeClean: true,
         stashSha: RETAINED_STASH_SHA,
+        requiredHeadSha: expectedHead,
       }),
     ).toBe('UNSAFE_PARITY');
   });
