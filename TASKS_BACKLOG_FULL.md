@@ -62632,12 +62632,13 @@ Unchanged balance 30577 is correct for this aborted path under locked 03D deferr
 **Title:** Builder Session Idle-Timeout Investigation
 **Workstream:** RELIABILITY
 **Lifecycle:** 4-step HIGH-RISK
-**Status:** ACTIVE — Step 1 COMPLETE — Registration / Admission — 2026-08-20
-**Assigned lane:** Lane 1
-**Lane 2:** EMPTY — this admission does not fill Lane 2
+**Status:** COMPLETE AND LOCKED — PASS — 2026-08-20
+**Assigned lane:** NONE — released at Step 4 lock
+**Lane 2:** EMPTY
 **Lane 3:** DISABLED
 **Registered:** 2026-08-20
 **Approved:** Keith — 2026-08-20 (Step 1 registration + OS v1 admission only)
+**Locked:** 2026-08-20 — Step 4 consolidation / root-cause verdict
 **Nature:** INVESTIGATION ONLY — root-cause evidence for the E2E-04 idle_timeout-before-apply failure. No source repair. No test-source writes. No E2E retry. No provider call. No credit mutation. No env/runtime-gate change.
 **Evidence class:** STAGING-RUNTIME
 **Hot-file leases:** NONE
@@ -62673,7 +62674,7 @@ Do **not** reserve PROVIDER-LIVE, CREDIT, ENV, FRONTEND, GATEWAY, AI-SERVICE, or
 
 **Revert / evidence isolation:** Preserve the failed E2E-04 evidence. No E2E retry. No provider call. No intentional credit mutation. No repair during investigation. No source modification. Prefer read-only staging/database/log/source evidence. Reverting 03K must not invalidate locked E2E-04 evidence.
 
-**Purpose:** Discover and prove why the E2E-04 workspace session entered `idle_timeout` before the qualifying workspace apply. Proven proximate failure is idle_timeout-before-apply. Underlying root cause is UNKNOWN / UNPROVEN at registration. Do not presuppose timeout-calculation, heartbeat, activity-touch, frontend, container-manager, API Gateway, provider-duration, session-lifecycle, or cleanup-race defects.
+**Purpose:** Discover and prove why the E2E-04 workspace session entered `idle_timeout` before the qualifying workspace apply. Proven proximate failure is idle_timeout-before-apply. Underlying root cause is now PROVEN as EXPECTED_TIMEOUT_TEST_PROCEDURE_CAUSE_PROVEN. Do not reinterpret this as a premature timer defect, Container Manager restart, race, or provider-duration timeout.
 
 **Proven E2E-04 symptom (frozen evidence; do not reopen E2E-04):**
 - fresh Builder execution completed
@@ -62685,20 +62686,22 @@ Do **not** reserve PROVIDER-LIVE, CREDIT, ENV, FRONTEND, GATEWAY, AI-SERVICE, or
 - no credit deduction occurred
 
 **Lifecycle steps:**
-1. Registration + OS v1 Admission — COMPLETE — 2026-08-20
+1. Registration / Admission — COMPLETE — 2026-08-20
 2. Stage-Start / Root-Cause Investigation Plan — COMPLETE — 2026-08-20 — Stage-start: `docs/PRIVATE-BETA-BLOCKER-03K-STAGE-START.md`
-3. Bounded Investigation + Root-Cause Evidence — PENDING
-4. Consolidation / Root-Cause Verdict + Next-Fix Recommendation — PENDING
+3. Root Cause Proven — EXPECTED_TIMEOUT_TEST_PROCEDURE_CAUSE_PROVEN — COMPLETE — 2026-08-20 — Investigation: `docs/PRIVATE-BETA-BLOCKER-03K-INVESTIGATION.md`
+4. Consolidation / Root-Cause Verdict — COMPLETE — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03K-CHECKPOINT.md`
 
-No source repair is part of 03K.
+Final: COMPLETE AND LOCKED — PASS — 2026-08-20
+
+No source repair is part of 03K. No source-fix task was selected or required for the E2E-04 incident. SOURCE_FIX_REQUIRED=NO. CONFIG_CHANGE_REQUIRED=NO. MIGRATION_REQUIRED=NO.
 
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 
-**Future fresh E2E after a later FIX:** REQUIRED eventually, but NOT REGISTERED by this admission. Do not reuse PRIVATE-BETA-E2E-04. Do not register PRIVATE-BETA-INVITE-01.
+**Future fresh E2E:** REQUIRED — NEW fresh controlled post-03J Builder E2E with corrected session-timing procedure — NOT REGISTERED / NOT ADMITTED by this consolidation. Do not reuse PRIVATE-BETA-E2E-04. Subsequent registration must verify the next unused E2E ID. Do not register PRIVATE-BETA-INVITE-01.
 
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E
 
-**Exact next lifecycle step:** PRIVATE-BETA-BLOCKER-03K Step 3 — Bounded Investigation + Root-Cause Evidence — NEW Cursor window. Read-only staging investigation only.
+**Exact next recommended lifecycle (NOT REGISTERED / NOT ADMITTED):** register a NEW fresh post-03J controlled Builder E2E using the corrected session-timing procedure. Do not register a code-fix blocker as the immediate next task.
 
 ---
 
@@ -62716,47 +62719,55 @@ Registration / control-plane:
 - [x] investigation criteria are not marked complete during Step 1
 - [x] no source repair selected or implemented during Step 1
 
-Investigation (Step 3 must determine with evidence; answers unknown at Step 1):
-- [ ] Exact configured idle-timeout duration and authoritative implementation location
-- [ ] Exact timestamp used to determine session inactivity
-- [ ] Which events/actions update session activity / last-active state
-- [ ] Whether an active Builder provider execution updates or suppresses idle timeout
-- [ ] Exact lifecycle sequence for E2E-04 session: creation → activity → provider request → provider completion → idle_timeout stop → attempted apply
-- [ ] Whether idle_timeout was expected under current documented semantics or a defect
-- [ ] Whether the session was actually inactive for the configured threshold
-- [ ] Whether frontend heartbeat / session-touch behavior was present and healthy
-- [ ] Whether container-manager / session sweeper behavior matched its contract
-- [ ] Whether AI execution itself is expected to keep the workspace session alive
-- [ ] Whether a race exists between completion/apply and session cleanup
-- [ ] Exact proven root cause, or explicit statement that root cause remains unproven
-- [ ] Smallest safe repair scope if root cause is proven
-- [ ] Exact service/file ownership likely required by the subsequent FIX task
-- [ ] Whether another controlled E2E / provider call is required to validate the eventual fix
+Investigation (Step 3 determined with evidence; Step 4 records the verdict):
+- [x] Exact configured idle-timeout duration and authoritative implementation location — `SESSION_IDLE_TIMEOUT_MS=1800000`; `SessionsService.lastActivity` Map; `checkAndEnforceIdleTimeout`; comparison `elapsedMs > idleTimeoutMs`
+- [x] Exact timestamp used to determine session inactivity — in-memory `lastActivity` Map only; reconstructed authoritative last activity `2026-08-19T03:29:47.277Z` (EXACT; corroborating, not sole causal foundation)
+- [x] Which events/actions update session activity / last-active state — workspace ops after success (`exec`/`read`/`write`/`delete`/`search`/`list`/`stat`); not session create, preview, Build start, streaming, AI completion, or heartbeat
+- [x] Whether an active Builder provider execution updates or suppresses idle timeout — NO
+- [x] Exact lifecycle sequence for E2E-04 session: creation → activity → provider request → provider completion → idle_timeout stop → attempted apply — proven in investigation timeline
+- [x] Whether idle_timeout was expected under current documented semantics or a defect — expected under the implemented 30-minute request-driven contract
+- [x] Whether the session was actually inactive for the configured threshold — YES; `ACTUAL_IDLE_DURATION_MS=2891367`; `DELTA_FROM_THRESHOLD=+1091367`
+- [x] Whether frontend heartbeat / session-touch behavior was present and healthy — heartbeat does not exist; contributing condition, not root cause
+- [x] Whether container-manager / session sweeper behavior matched its contract — no sweeper; request-driven enforcement matched contract; CM did not restart
+- [x] Whether AI execution itself is expected to keep the workspace session alive — NO under current implementation; this incident’s provider call lasted ~2934 ms and was not the duration cause
+- [x] Whether a race exists between completion/apply and session cleanup — FALSIFIED as causal race
+- [x] Exact proven root cause, or explicit statement that root cause remains unproven — `ROOT_CAUSE_PROVEN=YES`; `EXPECTED_TIMEOUT_TEST_PROCEDURE_CAUSE_PROVEN`
+- [x] Smallest safe repair scope if root cause is proven — procedural only; `SOURCE_FIX_REQUIRED=NO`; `CONFIG_CHANGE_REQUIRED=NO`; `MIGRATION_REQUIRED=NO`
+- [x] Exact service/file ownership likely required by the subsequent FIX task — no source-fix task required or registered for this incident
+- [x] Whether another controlled E2E / provider call is required to validate the eventual fix — no source fix to validate; a NEW fresh post-03J E2E with corrected procedure is still required for the private-beta gate and is NOT REGISTERED here
 
 Governance:
-- [ ] stage-start / investigation-plan document created in Step 2 before runtime evidence gathering
-- [ ] failed E2E-04 evidence preserved and not reused as a retry
-- [ ] no application source / test / migration / package mutation inside 03K
-- [ ] no provider call, credit mutation, env/runtime-gate change, or E2E retry inside 03K
-- [ ] if a mutating investigation action becomes necessary: STOP and return to control plane
-- [ ] final checkpoint records a root-cause verdict and next-fix recommendation only
-- [ ] any repair is a separately registered FIX task
-- [ ] Builder private-beta readiness remains NO_GO_PENDING_FRESH_E2E unless later evidence changes that gate under a separate authorized task
-- [ ] PRIVATE-BETA-INVITE-01 remains prohibited
+- [x] stage-start / investigation-plan document created in Step 2 before runtime evidence gathering
+- [x] failed E2E-04 evidence preserved and not reused as a retry
+- [x] no application source / test / migration / package mutation inside 03K
+- [x] no provider call, credit mutation, env/runtime-gate change, or E2E retry inside 03K
+- [x] if a mutating investigation action becomes necessary: STOP and return to control plane — not triggered
+- [x] final checkpoint records a root-cause verdict and next-fix recommendation only
+- [x] any repair is a separately registered FIX task — no source repair selected or required; none registered
+- [x] Builder private-beta readiness remains NO_GO_PENDING_FRESH_E2E unless later evidence changes that gate under a separate authorized task
+- [x] PRIVATE-BETA-INVITE-01 remains prohibited
 
 ---
 
-**PRIVATE-BETA-BLOCKER-03K status:** ACTIVE — Step 2 COMPLETE — Stage-Start / Root-Cause Investigation Plan — 2026-08-20
-**Assigned lane:** Lane 1
+**PRIVATE-BETA-BLOCKER-03K status:** COMPLETE AND LOCKED — PASS — 2026-08-20
+**Assigned lane:** NONE — released
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
-**Mutexes / resources:** STAGING owned by Lane 1 / PRIVATE-BETA-BLOCKER-03K
-**GOVERNANCE:** acquired for Step 2 board/registry/stage-start write, then released — EMPTY / NONE
+**Mutexes / resources:** STAGING released — UNOWNED
+**GOVERNANCE:** acquired for Step 4 board/registry/checkpoint write, then released — EMPTY / NONE
 **Step 1:** COMPLETE — Registration / Admission — 2026-08-20
 **Step 2:** COMPLETE — Stage-Start / Root-Cause Investigation Plan — 2026-08-20 — `docs/PRIVATE-BETA-BLOCKER-03K-STAGE-START.md`
-**Step 3:** PENDING — Bounded Investigation + Root-Cause Evidence — NEW Cursor window — read-only staging investigation
-**Step 4:** PENDING
+**Step 3:** COMPLETE — Root Cause Proven — EXPECTED_TIMEOUT_TEST_PROCEDURE_CAUSE_PROVEN — 2026-08-20 — `docs/PRIVATE-BETA-BLOCKER-03K-INVESTIGATION.md`
+**Step 4:** COMPLETE — Consolidation / Root-Cause Verdict — 2026-08-20
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-BLOCKER-03K-CHECKPOINT.md`
+**ROOT_CAUSE_PROVEN:** YES
+**OUTCOME:** EXPECTED_TIMEOUT_TEST_PROCEDURE_CAUSE_PROVEN
+**SOURCE_FIX_REQUIRED:** NO
+**CONFIG_CHANGE_REQUIRED:** NO
+**MIGRATION_REQUIRED:** NO
+**PRIVATE-BETA-E2E-04:** remains COMPLETE AND LOCKED — FAIL/BLOCKED — 03K does not make it PASS
+**03J live confirm-build-apply path:** still UNPROVEN
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E
-**Exact next lifecycle step:** PRIVATE-BETA-BLOCKER-03K Step 3 — Bounded Investigation + Root-Cause Evidence — NEW Cursor window
+**Exact next recommended lifecycle (NOT REGISTERED / NOT ADMITTED):** NEW fresh post-03J controlled Builder E2E with corrected session-timing procedure. Do not reuse E2E-04. Do not assume the next unused E2E ID.
 

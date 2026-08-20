@@ -3,7 +3,7 @@
 **Parallel Development Architecture:** v1
 **Maximum admitted implementation lanes:** 2
 **Lane 3:** DISABLED
-**Active implementation lanes:** 1 / 2
+**Active implementation lanes:** 0 / 2
 
 Task bodies, AC, dependencies, history, and LOCKED state live in:
 `C:\Users\knlee\aiSandBox2026B\TASKS_BACKLOG_FULL.md`
@@ -12,12 +12,12 @@ This board is the only current scheduler.
 Do not determine current work from content below the LEGACY / FROZEN boundary.
 
 ## Lane 1
-- Task ID: PRIVATE-BETA-BLOCKER-03K
-- Workstream: RELIABILITY
-- State: ACTIVE
-- Lifecycle: 4-step HIGH-RISK
-- Primary write scope: bounded idle-timeout root-cause investigation/evidence only — no application source, no tests, no repair
-- Mutexes/resources: STAGING
+- Task ID: EMPTY
+- Workstream: —
+- State: EMPTY
+- Lifecycle: —
+- Primary write scope: —
+- Mutexes/resources: —
 
 ## Lane 2
 - Task ID: EMPTY
@@ -35,7 +35,7 @@ EMPTY / NONE
 
 ## Active mutex / resource ownership
 - GOVERNANCE: UNOWNED
-- STAGING: Lane 1 / PRIVATE-BETA-BLOCKER-03K
+- STAGING: UNOWNED
 - PROVIDER-LIVE: UNOWNED
 - CREDIT: UNOWNED
 - ENV: UNOWNED
@@ -46,6 +46,8 @@ Resource ownership reserves evidence isolation only. It does not authorize runti
 ## Frozen contracts
 - PRIVATE-BETA-E2E-04 execution evidence
 - PRIVATE-BETA-E2E-04 final checkpoint
+- PRIVATE-BETA-BLOCKER-03K investigation evidence
+- PRIVATE-BETA-BLOCKER-03K final checkpoint
 - PRIVATE-BETA-BLOCKER-03J public authenticated Gateway confirm-build-apply route
 - current session/container lifecycle contract
 - current idle-timeout semantics as implemented
@@ -56,21 +58,23 @@ Resource ownership reserves evidence isolation only. It does not authorize runti
 - existing automatic post-apply checkpoint semantics
 
 ## Current blockers / gates
-- Immediate current blocker: PRIVATE-BETA-BLOCKER-03K — Builder Session Idle-Timeout Investigation — ACTIVE — Lane 1 — Step 2 COMPLETE — Stage-Start / Root-Cause Investigation Plan — 2026-08-20 — Stage-start: `docs/PRIVATE-BETA-BLOCKER-03K-STAGE-START.md`
-- PRIVATE-BETA-E2E-04: COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-04-CHECKPOINT.md`
-- Proven proximate failure: workspace session entered idle_timeout before the qualifying workspace apply
-- Underlying root cause: UNKNOWN / UNPROVEN — 03K must discover and prove it; do not presuppose a defect class
+- PRIVATE-BETA-BLOCKER-03K: COMPLETE AND LOCKED — PASS — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03K-CHECKPOINT.md` — Investigation: `docs/PRIVATE-BETA-BLOCKER-03K-INVESTIGATION.md`
+- ROOT_CAUSE_PROVEN=YES — OUTCOME=EXPECTED_TIMEOUT_TEST_PROCEDURE_CAUSE_PROVEN
+- SOURCE_FIX_REQUIRED=NO — CONFIG_CHANGE_REQUIRED=NO — MIGRATION_REQUIRED=NO
+- PRIVATE-BETA-E2E-04: COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-04-CHECKPOINT.md` — unchanged; 03K does not retroactively make E2E-04 PASS
 - 03J source deployment parity: PROVEN (`c3e39279abe3c0d6c348daa312107c8f6fc592b7`)
 - 03J public confirm-build-apply live E2E behavior: UNPROVEN — confirm route never issued because apply never succeeded
 - BUILDER_PRIVATE_BETA_READINESS: NO_GO_PENDING_FRESH_E2E
-- Fresh post-03J E2E proof still required eventually — E2E-04 was performed and FAIL/BLOCKED; the failed run does not satisfy the gate; do not reuse E2E-04 for a retry; do not register the future fresh E2E retry in this admission
+- Immediate next lifecycle: NEW fresh controlled post-03J Builder E2E with corrected session-timing procedure — REQUIRED BUT UNREGISTERED / NOT ADMITTED — do not reuse E2E-04; do not assume the next unused E2E ID in this consolidation
 - PRIVATE-BETA-INVITE-01: UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 
 ## Current next product gate
-PRIVATE-BETA-BLOCKER-03K Step 3 — Bounded Investigation + Root-Cause Evidence (NEW Cursor window).
-Read-only staging investigation only. No source repair. No E2E retry. No provider call. No credit mutation. No env/runtime-gate change. No staging mutation.
-Root-cause proof plan frozen in `docs/PRIVATE-BETA-BLOCKER-03K-STAGE-START.md`.
-Builder private beta remains NO-GO. PRIVATE-BETA-INVITE-01 remains prohibited.
+PRIVATE-BETA-BLOCKER-03K COMPLETE AND LOCKED — PASS — 2026-08-20.
+Root cause: EXPECTED_TIMEOUT_TEST_PROCEDURE_CAUSE_PROVEN. No source fix required for the E2E-04 incident.
+Builder private beta remains NO_GO_PENDING_FRESH_E2E.
+Immediate next recommended lifecycle: register a NEW fresh post-03J controlled Builder E2E using the corrected session-timing procedure — REQUIRED BUT UNREGISTERED / NOT ADMITTED.
+Do not register that E2E in this consolidation. Subsequent registration must verify the next unused E2E ID.
+PRIVATE-BETA-INVITE-01 remains prohibited.
 
 ============================================================
 LEGACY / FROZEN TASK HISTORY — NOT CURRENT EXECUTION STATE
