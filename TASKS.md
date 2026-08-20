@@ -15,7 +15,7 @@ Do not determine current work from content below the LEGACY / FROZEN boundary.
 - Task ID: PRIVATE-BETA-E2E-AUTO-01
 - Workstream: RELIABILITY
 - State: ACTIVE
-- Lifecycle: 3-step NORMAL — Step 1 COMPLETE, amended Playwright approval — 2026-08-20
+- Lifecycle: 3-step NORMAL — Step 2 COMPLETE — 2026-08-20
 - Primary write scope: `e2e/builder-golden-path/**`; root `package.json`; root `package-lock.json`
 - Mutexes/resources: PACKAGE
 
@@ -33,7 +33,7 @@ DISABLED
 ## Governance owner / state
 EMPTY / NONE
 
-GOVERNANCE acquired for this Step 1 Playwright-scope amendment, then released.
+GOVERNANCE acquired for this Step 2 lifecycle-state update, then released.
 
 ## Active mutex / resource ownership
 - GOVERNANCE: UNOWNED
@@ -47,7 +47,7 @@ GOVERNANCE acquired for this Step 1 Playwright-scope amendment, then released.
 
 PACKAGE reserved for Lane 1 / PRIVATE-BETA-E2E-AUTO-01 only.
 
-Resource ownership is reservation only. It does not authorize runtime, provider, credit, or env mutation. PACKAGE reservation authorizes the minimum `@playwright/test` add in Step 2; it does not authorize a live run.
+Resource ownership is reservation only. It does not authorize runtime, provider, credit, or env mutation. PACKAGE reservation authorized the minimum `@playwright/test` add in Step 2. It does not authorize a live run.
 
 ```
 RUNTIME_EXECUTION_AUTHORIZED=NO
@@ -74,7 +74,7 @@ PLAYWRIGHT_DEPENDENCY_AUTHORIZED=YES
 - current non-risky one-file Builder AUTO_APPLY semantics (E2E-05 proven)
 
 ## Current blockers / gates
-- PRIVATE-BETA-E2E-AUTO-01: ACTIVE — Step 1 COMPLETE, amended Playwright approval — 2026-08-20 — Lane 1 only — PACKAGE reserved — `@playwright/test` authorized for Step 2 — no live provider / credit / staging mutation — exact next: Step 2 Implement Real Automated Golden-Path Runner + Non-Live Validation
+- PRIVATE-BETA-E2E-AUTO-01: ACTIVE — Step 2 COMPLETE — 2026-08-20 — Lane 1 only — PACKAGE reserved — real Playwright runner implemented — CONTRACT/DRY validation PASS — LIVE fail-closed — no live provider / credit / staging mutation — exact next: Step 3 Consolidation + Automation-Ready Verdict
 - PRIVATE-BETA-E2E-05: COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-05-CHECKPOINT.md` — core post-03J Builder path proven; mandatory preview FAIL because session idle_timeout stopped before preview validation; PREVIEW_SUBSYSTEM_DEFECT_PROVEN=NO; historical evidence source only; do not register another manual E2E
 - PRIVATE-BETA-BLOCKER-03K: COMPLETE AND LOCKED — PASS — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03K-CHECKPOINT.md` — ROOT_CAUSE_PROVEN=YES — OUTCOME=EXPECTED_TIMEOUT_TEST_PROCEDURE_CAUSE_PROVEN — SOURCE_FIX_REQUIRED=NO — CONFIG_CHANGE_REQUIRED=NO — MIGRATION_REQUIRED=NO
 - PRIVATE-BETA-E2E-04: COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-04-CHECKPOINT.md` — unchanged historical failure; not a dependency; do not reopen or retry
@@ -89,8 +89,8 @@ PLAYWRIGHT_DEPENDENCY_AUTHORIZED=YES
 
 ## Current next product gate
 No admitted product gate.
-PRIVATE-BETA-E2E-AUTO-01 is admitted to Lane 1 — Step 1 COMPLETE, amended Playwright approval — exact next: Step 2 Implement Real Automated Golden-Path Runner + Non-Live Validation.
-AUTO-01 Step 2 implements a real Playwright browser runner and validates only CONTRACT/DRY mode. It does not consume a live provider call, mutate credits, or mutate staging.
+PRIVATE-BETA-E2E-AUTO-01 is admitted to Lane 1 — Step 2 COMPLETE — exact next: Step 3 Consolidation + Automation-Ready Verdict.
+AUTO-01 Step 2 implemented a real Playwright browser runner and validated only CONTRACT/DRY mode. It did not consume a live provider call, mutate credits, or mutate staging. The first LIVE automated golden-path run remains a later separately authorized lifecycle/task after AUTO-01 is locked.
 Builder private beta remains NO_GO_PENDING_FRESH_E2E.
 Do not register another manual E2E.
 PRIVATE-BETA-INVITE-01 remains prohibited.

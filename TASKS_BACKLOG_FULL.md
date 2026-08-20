@@ -63056,7 +63056,7 @@ Next recommended lifecycle (NOT REGISTERED / NOT ADMITTED): PRIVATE-BETA-E2E-AUT
 **Title:** Automated Builder Golden-Path Validation
 **Workstream:** RELIABILITY
 **Lifecycle:** 3-step NORMAL bounded task
-**Status:** ACTIVE — Step 1 COMPLETE, amended Playwright approval — 2026-08-20
+**Status:** ACTIVE — Step 2 COMPLETE — 2026-08-20
 **Assigned lane:** Lane 1
 **Lane 2:** EMPTY throughout ACTIVE / LANE-DONE / LOCK
 **Lane 3:** DISABLED
@@ -63217,7 +63217,7 @@ Package manager / lockfile discovery:
 
 **Lifecycle steps:**
 1. Registration + Minimal Automation Contract — COMPLETE — 2026-08-20 — amended Playwright approval + PACKAGE reservation — 2026-08-20
-2. Implement Real Automated Golden-Path Runner + Non-Live Validation — PENDING — Playwright/`@playwright/test` authorized; Chromium tooling download authorized; no live provider; no credit mutation; no staging mutation
+2. Implement Real Automated Golden-Path Runner + Non-Live Validation — COMPLETE — 2026-08-20 — `@playwright/test@1.62.1`; Chromium installed locally (not in Git); CONTRACT/DRY PASS; LIVE fail-closed; no staging/provider/credit
 3. Consolidation + Automation-Ready Verdict — PENDING
 
 **Authorization flags (after Playwright amendment):**
@@ -63231,7 +63231,7 @@ Package manager / lockfile discovery:
 
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E
 
-**Exact next step:** PRIVATE-BETA-E2E-AUTO-01 Step 2 — Implement Real Automated Golden-Path Runner + Non-Live Validation. Fresh window. Add `@playwright/test` via npm. Validate CONTRACT/DRY only. Do not run LIVE. Do not call xAI. Do not deduct credits.
+**Exact next step:** PRIVATE-BETA-E2E-AUTO-01 Step 3 — Consolidation + Automation-Ready Verdict. Fresh window. Checkpoint only. Do not run LIVE. Do not call xAI. Do not deduct credits.
 
 ---
 
@@ -63255,25 +63255,25 @@ Registration / control-plane:
 - [x] PLAYWRIGHT_DEPENDENCY_AUTHORIZED=YES
 - [x] package manager / lockfile recorded (npm + root `package-lock.json`)
 
-Step 2 (not complete; real Playwright runner + non-live validation):
-- [ ] Playwright added with minimum dependency change (`@playwright/test` via npm; root `package.json` + `package-lock.json`)
-- [ ] Chromium available (Playwright browser download for local non-live tooling)
-- [ ] isolated automation directory exists
-- [ ] fresh browser context helper exists
-- [ ] authentication helper exists (`POST /api/auth/login`; env credentials; no committed secrets)
-- [ ] AUTO_APPLY model encoded
-- [ ] preview-first sequencing encoded
-- [ ] public confirm network observation encoded
-- [ ] checkpoint/deduction/balance evidence interfaces encoded
-- [ ] cleanup/final gate restoration encoded
-- [ ] one-call/no-retry guard encoded
-- [ ] dry/non-live mode fails closed
-- [ ] tests for phase ordering and safety guards PASS
-- [ ] no staging/provider/credit execution occurs during Step 2
-- [ ] exact one-command invocation documented
-- [ ] no production source modification unless separately approved
-- [ ] LIVE mode exists but is not executed
-- [ ] no Docker / Postgres / Redis start
+Step 2 (COMPLETE — 2026-08-20; real Playwright runner + non-live validation):
+- [x] Playwright added with minimum dependency change (`@playwright/test` via npm; root `package.json` + `package-lock.json`)
+- [x] Chromium available (Playwright browser download for local non-live tooling)
+- [x] isolated automation directory exists
+- [x] fresh browser context helper exists
+- [x] authentication helper exists (`POST /api/auth/login`; env credentials; no committed secrets)
+- [x] AUTO_APPLY model encoded
+- [x] preview-first sequencing encoded
+- [x] public confirm network observation encoded
+- [x] checkpoint/deduction/balance evidence interfaces encoded
+- [x] cleanup/final gate restoration encoded
+- [x] one-call/no-retry guard encoded
+- [x] dry/non-live mode fails closed
+- [x] tests for phase ordering and safety guards PASS
+- [x] no staging/provider/credit execution occurs during Step 2
+- [x] exact one-command invocation documented
+- [x] no production source modification unless separately approved
+- [x] LIVE mode exists but is not executed
+- [x] no Docker / Postgres / Redis start
 
 Step 3 (not complete in Step 1):
 - [ ] checkpoint created
@@ -63283,16 +63283,16 @@ Step 3 (not complete in Step 1):
 
 ---
 
-**PRIVATE-BETA-E2E-AUTO-01 status:** ACTIVE — Step 1 COMPLETE, amended Playwright approval — 2026-08-20
+**PRIVATE-BETA-E2E-AUTO-01 status:** ACTIVE — Step 2 COMPLETE — 2026-08-20
 **Assigned lane:** Lane 1
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
 **Mutexes / resources:** PACKAGE owned by Lane 1 / PRIVATE-BETA-E2E-AUTO-01
 **Step 1:** COMPLETE — Registration + Minimal Automation Contract — 2026-08-20 — amended Playwright approval + PACKAGE reservation — 2026-08-20
-**Step 2:** PENDING — Implement Real Automated Golden-Path Runner + Non-Live Validation
+**Step 2:** COMPLETE — Implement Real Automated Golden-Path Runner + Non-Live Validation — 2026-08-20
 **Step 3:** PENDING — Consolidation + Automation-Ready Verdict
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E
-**Exact next step:** PRIVATE-BETA-E2E-AUTO-01 Step 2 — Implement Real Automated Golden-Path Runner + Non-Live Validation
+**Exact next step:** PRIVATE-BETA-E2E-AUTO-01 Step 3 — Consolidation + Automation-Ready Verdict
 
 
