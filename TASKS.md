@@ -3,7 +3,7 @@
 **Parallel Development Architecture:** v1
 **Maximum admitted implementation lanes:** 2
 **Lane 3:** DISABLED
-**Active implementation lanes:** 1 / 2
+**Active implementation lanes:** 0 / 2
 
 Task bodies, AC, dependencies, history, and LOCKED state live in:
 `C:\Users\knlee\aiSandBox2026B\TASKS_BACKLOG_FULL.md`
@@ -12,12 +12,12 @@ This board is the only current scheduler.
 Do not determine current work from content below the LEGACY / FROZEN boundary.
 
 ## Lane 1
-- Task ID: PRIVATE-BETA-E2E-04
-- Workstream: RELIABILITY
-- State: ACTIVE
-- Lifecycle: 4-step
-- Primary write scope: controlled post-03J E2E validation/evidence
-- Mutexes/resources: STAGING, PROVIDER-LIVE, CREDIT, ENV
+- Task ID: EMPTY
+- Workstream: —
+- State: EMPTY
+- Lifecycle: —
+- Primary write scope: —
+- Mutexes/resources: —
 
 ## Lane 2
 - Task ID: EMPTY
@@ -34,11 +34,11 @@ DISABLED
 EMPTY / NONE
 
 ## Active mutex / resource ownership
-- STAGING: Lane 1 / PRIVATE-BETA-E2E-04
-- PROVIDER-LIVE: Lane 1 / PRIVATE-BETA-E2E-04
-- CREDIT: Lane 1 / PRIVATE-BETA-E2E-04
-- ENV: Lane 1 / PRIVATE-BETA-E2E-04
 - GOVERNANCE: UNOWNED
+- STAGING: UNOWNED
+- PROVIDER-LIVE: UNOWNED
+- CREDIT: UNOWNED
+- ENV: UNOWNED
 - All other resources: UNOWNED
 
 Resource ownership reserves evidence isolation only. It does not authorize runtime, provider, credit, or env mutation.
@@ -52,19 +52,20 @@ Resource ownership reserves evidence isolation only. It does not authorize runti
 - existing automatic post-apply checkpoint semantics
 
 ## Current blockers / gates
-- PRIVATE-BETA-E2E-04: ACTIVE — Step 2 COMPLETE — Stage-Start / Exact Controlled E2E Runbook — 2026-08-19 — Stage-start: `docs/PRIVATE-BETA-E2E-04-STAGE-START.md`
-- RUNTIME_EXECUTION_AUTHORIZED=NO
-- PROVIDER_CALL_AUTHORIZED=NO
-- CREDIT_MUTATION_AUTHORIZED=NO
-- STAGING_MUTATION_AUTHORIZED=NO
-- REQUIRED_SOURCE_SHA=c3e39279abe3c0d6c348daa312107c8f6fc592b7 — staging deployment required before provider call
-- Single-lane evidence isolation: Lane 2 MUST remain EMPTY while PRIVATE-BETA-E2E-04 is ACTIVE or LANE-DONE
-- PRIVATE-BETA-INVITE-01: UNREGISTERED / PROHIBITED
+- PRIVATE-BETA-E2E-04: COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-04-CHECKPOINT.md`
+- Proven proximate failure: workspace session entered idle_timeout before the qualifying workspace apply
+- 03J source deployment parity: PROVEN (`c3e39279abe3c0d6c348daa312107c8f6fc592b7`)
+- 03J public confirm-build-apply live E2E behavior: UNPROVEN — confirm route never issued because apply never succeeded
 - BUILDER_PRIVATE_BETA_READINESS: NO_GO_PENDING_FRESH_E2E
+- Fresh post-03J E2E proof still required eventually — E2E-04 was performed and FAIL/BLOCKED; the failed run does not satisfy the gate; do not reuse E2E-04 for a retry
+- Immediate next recommended lifecycle (NOT REGISTERED / NOT ADMITTED): bounded blocker investigation/fix for Builder session idle-timeout during provider execution / before workspace apply
+- PRIVATE-BETA-INVITE-01: UNREGISTERED / PROHIBITED
 
 ## Current next product gate
-PRIVATE-BETA-E2E-04 Step 3 — Authorized Controlled Staging E2E Execution + Evidence.
-REQUIRES EXPLICIT KEITH RUNTIME AUTHORIZATION. Runbook frozen at `docs/PRIVATE-BETA-E2E-04-STAGE-START.md`.
+Register a bounded blocker investigation for Builder session idle-timeout during provider execution / before workspace apply.
+Do not assert the underlying root cause in this board. Do not reuse PRIVATE-BETA-E2E-04 for a retry.
+After that blocker is fixed and locked, a NEW fresh post-03J E2E must be registered/admitted.
+Builder private beta remains NO-GO. PRIVATE-BETA-INVITE-01 remains prohibited.
 
 ============================================================
 LEGACY / FROZEN TASK HISTORY — NOT CURRENT EXECUTION STATE

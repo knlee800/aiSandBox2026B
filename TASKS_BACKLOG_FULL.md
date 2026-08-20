@@ -62438,15 +62438,16 @@ Step 4 (Consolidation / Checkpoint):
 **Title:** Fresh Post-03J Builder End-to-End Validation
 **Workstream:** RELIABILITY
 **Lifecycle:** 4-step HIGH-RISK
-**Status:** ACTIVE — Step 2 COMPLETE — Stage-Start / Exact Controlled E2E Runbook — 2026-08-19
-**Assigned lane:** Lane 1
-**Lane 2:** EMPTY — required for entire ACTIVE / LANE-DONE lifecycle
+**Status:** COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20
+**Assigned lane:** Lane 1 (released after Step 4)
+**Lane 2:** EMPTY throughout ACTIVE / LANE-DONE / LOCK
 **Lane 3:** DISABLED
 **Registered:** 2026-08-18
-**Approved:** Keith — 2026-08-18 (Step 1 registration + OS v1 admission only)
+**Approved:** Keith — 2026-08-18 (Step 1 registration + OS v1 admission only); Step 3 runtime authorized separately; Step 4 consolidation 2026-08-20
 **Nature:** Controlled post-03J Builder journey validation / evidence
 **Evidence class:** PROVIDER-LIVE
 **Hot-file leases:** NONE
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-E2E-04-CHECKPOINT.md`
 
 **Start condition:** READY — all declared dependencies COMPLETE AND LOCKED; OS v1 admission rules satisfied; required evidence/runtime isolation available.
 
@@ -62488,20 +62489,18 @@ If the E2E exposes a real defect requiring source/contract change: STOP at the h
 **Lifecycle steps:**
 1. Registration + OS v1 Admission — COMPLETE — 2026-08-18
 2. Stage-Start / Exact Controlled E2E Runbook — COMPLETE — 2026-08-19 — Stage-start: `docs/PRIVATE-BETA-E2E-04-STAGE-START.md`
-3. Authorized Controlled Staging E2E Execution + Evidence — PENDING — EXPLICIT KEITH RUNTIME AUTHORIZATION REQUIRED
-4. Consolidation / Final E2E Verdict + Checkpoint — PENDING
+3. Authorized Controlled Staging E2E Execution + Evidence — FAIL/BLOCKED — 2026-08-19 — Evidence: `docs/PRIVATE-BETA-E2E-04-EXECUTION.md`
+4. Consolidation / Final Verdict — COMPLETE — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-04-CHECKPOINT.md`
 
-**Authorization flags (Step 2 end state):**
-- RUNTIME_EXECUTION_AUTHORIZED=NO
-- PROVIDER_CALL_AUTHORIZED=NO
-- CREDIT_MUTATION_AUTHORIZED=NO
-- STAGING_MUTATION_AUTHORIZED=NO
-
-Registration/admission does not authorize Step 3 runtime. Separate explicit Keith authorization is required before provider-live Step 3. Do not enable `GLOBAL_EXECUTION_ENABLED`, alter `BILLING_CHARGES_ENABLED`, edit `.env`, SSH, deploy, restart PM2/Caddy, invoke a provider, create a live project/session/container, invoke live confirm-build-apply, mutate credits, or run browser E2E in this step.
+**Authorization flags (final):**
+- RUNTIME_EXECUTION_AUTHORIZED=CONSUMED AND RESTORED FALSE
+- PROVIDER_CALL_AUTHORIZED=CONSUMED — 1 of 1
+- CREDIT_MUTATION_AUTHORIZED=CONSUMED WITHOUT EFFECT — 0 of 1 (qualifying apply never succeeded)
+- STAGING_MUTATION_AUTHORIZED=CONSUMED — 03J SHA deployed; stash untouched; gate restored
 
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 
-**Exact next lifecycle step:** PRIVATE-BETA-E2E-04 Step 3 — Authorized Controlled Staging E2E Execution + Evidence — REQUIRES EXPLICIT KEITH RUNTIME AUTHORIZATION
+**Exact next recommended lifecycle (NOT REGISTERED / NOT ADMITTED):** bounded blocker investigation/fix for Builder session idle-timeout during provider execution / before workspace apply. Do not reuse E2E-04 for a retry. After that blocker is fixed and locked, a NEW fresh post-03J E2E must be registered/admitted. The idle_timeout blocker was not registered in this consolidation.
 
 ---
 
@@ -62525,43 +62524,103 @@ Stage-start:
 - [x] exact authoritative evidence sources defined — PM2 logs, credit_deduction_records, credit_balances, git_checkpoints, SQLite
 
 Live E2E:
-- [ ] authentication works
-- [ ] controlled Builder execution succeeds
-- [ ] qualifying fileActions produced
-- [ ] workspace apply succeeds
-- [ ] build_awaiting_apply observed before confirmation
-- [ ] public Gateway confirm path reached
-- [ ] confirm handoff observed
-- [ ] exactly one qualifying deferred deduction observed
-- [ ] no duplicate deduction
-- [ ] authoritative balance reconciles
-- [ ] frontend/displayed balance reconciles as required
-- [ ] automatic checkpoint succeeds
-- [ ] manual checkpoint/reconciliation succeeds if required by runbook
-- [ ] workspace/preview result remains valid
-- [ ] cleanup succeeds
-- [ ] GLOBAL_EXECUTION_ENABLED restored false
-- [ ] BILLING_CHARGES_ENABLED remains false
-- [ ] no Stripe/payment activity
+- [x] authentication works — PASS
+- [x] controlled Builder execution succeeds — PASS (provider completed; qualifying proposed file action returned)
+- [x] qualifying fileActions produced — PASS (`workspace_mutation`, count=1, `e2e-04.html`)
+- [ ] workspace apply succeeds — FAIL (session already stopped for idle_timeout; `e2e-04.html` not saved)
+- [x] build_awaiting_apply observed before confirmation — PASS (`finalize_accounting.build_awaiting_apply`; pre-confirm deduction count=0)
+- [ ] public Gateway confirm path reached — NOT REACHED (confirm never issued because apply never succeeded)
+- [ ] confirm handoff observed — NOT REACHED
+- [ ] exactly one qualifying deferred deduction observed — NOT REACHED (`QUALIFYING_DEDUCTION_EXPECTED=NO`; actual=0)
+- [x] no duplicate deduction — PASS (count=0)
+- [ ] authoritative balance reconciles — NOT REACHED as post-deduction proof; final balance 30577 unchanged is correct for the aborted path
+- [ ] frontend/displayed balance reconciles as required — NOT REACHED (post-deduction 03H); pre-provider 3-way 30577 PASS
+- [ ] automatic checkpoint succeeds — NOT REACHED / NOT CREATED DUE UPSTREAM APPLY FAILURE (0 rows is not an independent checkpoint defect)
+- [ ] manual checkpoint/reconciliation succeeds if required by runbook — NOT REACHED
+- [ ] workspace/preview result remains valid — FAILED AS CONSEQUENCE OF APPLY FAILURE
+- [x] cleanup succeeds — PASS (session already stopped by idle_timeout; container already removed; project RETAIN)
+- [x] GLOBAL_EXECUTION_ENABLED restored false — PASS
+- [x] BILLING_CHARGES_ENABLED remains false — PASS
+- [x] no Stripe/payment activity — PASS
 
 Governance:
-- [ ] E2E-03 remains unchanged historical FAIL/BLOCKED
-- [ ] no product defect is silently fixed inside E2E-04
-- [ ] checkpoint created during Step 4
-- [ ] final verdict is explicit PASS or FAIL/BLOCKED
-- [ ] Builder private-beta readiness is updated only according to proven evidence
-- [ ] PRIVATE-BETA-INVITE-01 remains prohibited unless separately authorized later
+- [x] E2E-03 remains unchanged historical FAIL/BLOCKED
+- [x] no product defect is silently fixed inside E2E-04
+- [x] checkpoint created during Step 4 — `docs/PRIVATE-BETA-E2E-04-CHECKPOINT.md`
+- [x] final verdict is explicit PASS or FAIL/BLOCKED — FAIL/BLOCKED
+- [x] Builder private-beta readiness is updated only according to proven evidence — remains NO_GO_PENDING_FRESH_E2E
+- [x] PRIVATE-BETA-INVITE-01 remains prohibited unless separately authorized later
 
 ---
 
-**PRIVATE-BETA-E2E-04 status:** ACTIVE — Step 1 COMPLETE — Registration / Admission — 2026-08-18
-**Assigned lane:** Lane 1
+#### Step 3 Execution Result — FAIL/BLOCKED — 2026-08-19
+
+Evidence: `docs/PRIVATE-BETA-E2E-04-EXECUTION.md`
+
+```
+PROVIDER=xai
+MODEL=grok-4.5
+PROVIDER_CALLS_USED=1
+EXECUTION_ID=12a8e444-5f4b-4966-a4ee-e040a5bfd0b5
+tokens_used=1176
+intent=workspace_mutation
+fileActions count=1
+first_file_action_path=e2e-04.html
+STAGING_HEAD=c3e39279abe3c0d6c348daa312107c8f6fc592b7
+STAGING_03J_DEPLOYMENT_PARITY=PROVEN
+BALANCE_BEFORE=30577
+BALANCE_AFTER=30577
+QUALIFYING_DEDUCTION_EXPECTED=NO
+ACTUAL_DEDUCTION=0
+PRE_CONFIRM_DEDUCTION_RECORD_COUNT=0
+finalize_accounting.build_awaiting_apply=OBSERVED
+SESSION_ID=1492ed19-9417-4a93-a1fc-c5034d41d22e
+CONTAINER_ID=234ec446ca6954ac66e0cb7421904cb895b78fa57562ced9450e4f29caf36423
+PROJECT_ID=f5de42f3-c52d-4b48-95d5-651db1af88eb
+idle_timeout terminated_at=2026-08-19 12:17:58.819
+GLOBAL_EXECUTION_ENABLED final=false
+BILLING_CHARGES_ENABLED final=false
+RETAINED_STASH=0372cc1f47f82e1db060ed2dd756a938fe324803 EXACT / UNTOUCHED
+RETRY=NONE
+```
+
+Proven proximate failure: workspace session entered idle_timeout before the qualifying workspace apply. Therefore `e2e-04.html` was not saved and the E2E apply stage failed.
+
+Not yet proven: why the session was allowed to idle-timeout during/around Builder execution; whether timer semantics, heartbeat/activity tracking, session lifecycle, container activity, frontend behavior, or another mechanism is the underlying defect.
+
+03J source deployment parity: PROVEN. 03J public confirm-build-apply live E2E behavior: UNPROVEN. Do not say 03J failed. Do not say the public route is broken. `POST /api/ai/executions/:executionId/confirm-build-apply` was never issued.
+
+---
+
+#### Step 4 Consolidation Result — COMPLETE — 2026-08-20
+
+```
+FINAL_VERDICT=FAIL/BLOCKED
+BUILDER_PRIVATE_BETA_READINESS=NO_GO_PENDING_FRESH_E2E
+CHECKPOINT_CREATED=docs/PRIVATE-BETA-E2E-04-CHECKPOINT.md
+REPAIR_BLOCKER_REGISTERED_IN_STEP_4=NO
+FUTURE_E2E_RETRY_REGISTERED_IN_STEP_4=NO
+Lane 1=EMPTY after lock
+STAGING / PROVIDER-LIVE / CREDIT / ENV=UNOWNED
+GOVERNANCE=acquired for atomic consolidation then released — EMPTY / NONE
+```
+
+Unchanged balance 30577 is correct for this aborted path under locked 03D deferred Build-accounting semantics. Do not state that 1176 credits should have been deducted.
+
+---
+
+**PRIVATE-BETA-E2E-04 status:** COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20
+**Assigned lane:** released — Lane 1 EMPTY
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
-**RUNTIME_EXECUTION_AUTHORIZED:** NO
-**PROVIDER_CALL_AUTHORIZED:** NO
-**CREDIT_MUTATION_AUTHORIZED:** NO
-**Exact next lifecycle step:** PRIVATE-BETA-E2E-04 Step 2 — Stage-Start / Exact Controlled E2E Runbook
+**Step 1:** COMPLETE — Registration / Admission — 2026-08-18
+**Step 2:** COMPLETE — Stage-Start / Exact Controlled E2E Runbook — 2026-08-19
+**Step 3:** FAIL/BLOCKED — 2026-08-19
+**Step 4:** COMPLETE — Consolidation / Final Verdict — 2026-08-20
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-E2E-04-CHECKPOINT.md`
+**Stage-start:** `docs/PRIVATE-BETA-E2E-04-STAGE-START.md`
+**Execution evidence:** `docs/PRIVATE-BETA-E2E-04-EXECUTION.md`
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E
+**Exact next recommended lifecycle (NOT REGISTERED / NOT ADMITTED):** bounded blocker investigation/fix for Builder session idle-timeout during provider execution / before workspace apply. Do not reuse E2E-04. After that blocker is fixed and locked, register/admit a NEW fresh post-03J E2E.
 
