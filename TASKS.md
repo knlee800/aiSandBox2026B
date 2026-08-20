@@ -64,8 +64,8 @@ STAGING_MUTATION_AUTHORIZED=NO
 - current Container Manager idle-timeout contract
 
 ## Current blockers / gates
-- PRIVATE-BETA-E2E-05: ACTIVE — Step 1 COMPLETE — Registration / Admission — 2026-08-20 — admitted to Lane 1 only
-- Exact next lifecycle step: PRIVATE-BETA-E2E-05 Step 2 — Stage-Start / Exact Corrected E2E Runbook — NEW Cursor window required — not executed in Step 1
+- PRIVATE-BETA-E2E-05: ACTIVE — Step 2 COMPLETE — Stage-Start / Exact Corrected E2E Runbook — 2026-08-20 — Frozen runbook: `docs/PRIVATE-BETA-E2E-05-STAGE-START.md` — SAFE_MINIMUM_HEADROOM_MS=600000 — PROVIDER=xai/MODEL=grok-4.5/BUDGET=1 — prompt frozen (e2e-05.html) — pre-session ordering frozen — hard stops frozen
+- Exact next lifecycle step: PRIVATE-BETA-E2E-05 Step 3 — Authorized Controlled Staging E2E Execution — NEW Cursor window required — EXPLICIT KEITH RUNTIME AUTHORIZATION REQUIRED
 - PRIVATE-BETA-BLOCKER-03K: COMPLETE AND LOCKED — PASS — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03K-CHECKPOINT.md` — ROOT_CAUSE_PROVEN=YES — OUTCOME=EXPECTED_TIMEOUT_TEST_PROCEDURE_CAUSE_PROVEN — SOURCE_FIX_REQUIRED=NO — CONFIG_CHANGE_REQUIRED=NO — MIGRATION_REQUIRED=NO
 - PRIVATE-BETA-E2E-04: COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-04-CHECKPOINT.md` — unchanged historical failure; not a dependency; do not reopen or retry
 - 03J source implementation: COMPLETE AND LOCKED — PASS

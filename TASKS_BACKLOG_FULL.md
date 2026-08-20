@@ -62779,7 +62779,7 @@ Governance:
 **Title:** Fresh Post-03J Builder E2E — Corrected Session-Timing Validation
 **Workstream:** RELIABILITY
 **Lifecycle:** 4-step HIGH-RISK
-**Status:** ACTIVE — Step 1 COMPLETE — Registration / Admission — 2026-08-20
+**Status:** ACTIVE — Step 2 COMPLETE — Stage-Start / Exact Corrected E2E Runbook — 2026-08-20 — Frozen runbook: `docs/PRIVATE-BETA-E2E-05-STAGE-START.md`
 **Assigned lane:** Lane 1
 **Lane 2:** EMPTY throughout ACTIVE / LANE-DONE (single-lane evidence isolation)
 **Lane 3:** DISABLED
@@ -62883,7 +62883,7 @@ Do not hard-code a headroom number in Step 1. Step 2 must define a conservative 
 
 **Lifecycle steps:**
 1. Registration + OS v1 Admission — COMPLETE — 2026-08-20
-2. Stage-Start / Exact Corrected E2E Runbook — PENDING — NEW Cursor window required
+2. Stage-Start / Exact Corrected E2E Runbook — COMPLETE — 2026-08-20 — Frozen runbook: `docs/PRIVATE-BETA-E2E-05-STAGE-START.md` — 03K corrected timing contract frozen — SAFE_MINIMUM_HEADROOM_MS=600000 — PROVIDER=xai/MODEL=grok-4.5/BUDGET=1 — exact Builder prompt frozen (e2e-05.html) — staging parity procedure frozen — pre-session ordering frozen — hard stops frozen — evidence table frozen — Step 3 sequence frozen
 3. Authorized Controlled Staging E2E Execution + Evidence — PENDING — requires separate explicit Keith authorization
 4. Consolidation / Final E2E Verdict + Checkpoint — PENDING
 
@@ -62899,7 +62899,7 @@ Registration/admission does NOT authorize SSH to staging, deploy, enabling GLOBA
 
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E — admission of this E2E does not declare GO.
 
-**Exact next lifecycle step:** PRIVATE-BETA-E2E-05 Step 2 — Stage-Start / Exact Corrected E2E Runbook — NEW Cursor window required. Do not execute Step 2 during Step 1.
+**Exact next lifecycle step:** PRIVATE-BETA-E2E-05 Step 3 — Authorized Controlled Staging E2E Execution — NEW Cursor window required — EXPLICIT KEITH RUNTIME AUTHORIZATION REQUIRED before any live execution, provider call, or gate change.
 
 ---
 
@@ -62927,14 +62927,14 @@ Session-timing (full lifecycle; not complete in Step 1):
 - [ ] no provider retry occurs
 
 Stage-start / runbook (Step 2; not complete in Step 1):
-- [ ] exact staging source parity defined
-- [ ] 03J source present before provider call
-- [ ] safety flags defined
-- [ ] exact corrected session-timing order frozen
-- [ ] one-call budget frozen
-- [ ] exact Builder prompt frozen
-- [ ] conservative deterministic idle-headroom rule frozen
-- [ ] hard-stop/cleanup rules frozen
+- [x] exact staging source parity defined
+- [x] 03J source present before provider call
+- [x] safety flags defined
+- [x] exact corrected session-timing order frozen
+- [x] one-call budget frozen
+- [x] exact Builder prompt frozen
+- [x] conservative deterministic idle-headroom rule frozen (SAFE_MINIMUM_HEADROOM_MS=600000)
+- [x] hard-stop/cleanup rules frozen
 
 Live execution (Step 3; not complete in Step 1):
 - [ ] authentication works
