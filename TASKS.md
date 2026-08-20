@@ -3,7 +3,7 @@
 **Parallel Development Architecture:** v1
 **Maximum admitted implementation lanes:** 2
 **Lane 3:** DISABLED
-**Active implementation lanes:** 0 / 2
+**Active implementation lanes:** 1 / 2
 
 Task bodies, AC, dependencies, history, and LOCKED state live in:
 `C:\Users\knlee\aiSandBox2026B\TASKS_BACKLOG_FULL.md`
@@ -12,12 +12,12 @@ This board is the only current scheduler.
 Do not determine current work from content below the LEGACY / FROZEN boundary.
 
 ## Lane 1
-- Task ID: EMPTY
-- Workstream: —
-- State: EMPTY
-- Lifecycle: —
-- Primary write scope: —
-- Mutexes/resources: —
+- Task ID: PRIVATE-BETA-E2E-05
+- Workstream: RELIABILITY
+- State: ACTIVE
+- Lifecycle: 4-step HIGH-RISK
+- Primary write scope: fresh corrected-session-timing post-03J Builder E2E validation/evidence
+- Mutexes/resources: STAGING, PROVIDER-LIVE, CREDIT, ENV
 
 ## Lane 2
 - Task ID: EMPTY
@@ -35,45 +35,50 @@ EMPTY / NONE
 
 ## Active mutex / resource ownership
 - GOVERNANCE: UNOWNED
-- STAGING: UNOWNED
-- PROVIDER-LIVE: UNOWNED
-- CREDIT: UNOWNED
-- ENV: UNOWNED
+- STAGING: Lane 1 / PRIVATE-BETA-E2E-05
+- PROVIDER-LIVE: Lane 1 / PRIVATE-BETA-E2E-05
+- CREDIT: Lane 1 / PRIVATE-BETA-E2E-05
+- ENV: Lane 1 / PRIVATE-BETA-E2E-05
 - All other resources: UNOWNED
 
-Resource ownership reserves evidence isolation only. It does not authorize runtime, provider, credit, or env mutation.
+Resource ownership is reservation only. It does not authorize runtime, provider, credit, or env mutation.
+
+```
+RUNTIME_EXECUTION_AUTHORIZED=NO
+PROVIDER_CALL_AUTHORIZED=NO
+CREDIT_MUTATION_AUTHORIZED=NO
+STAGING_MUTATION_AUTHORIZED=NO
+```
 
 ## Frozen contracts
-- PRIVATE-BETA-E2E-04 execution evidence
-- PRIVATE-BETA-E2E-04 final checkpoint
-- PRIVATE-BETA-BLOCKER-03K investigation evidence
-- PRIVATE-BETA-BLOCKER-03K final checkpoint
+- PRIVATE-BETA-BLOCKER-03D deferred Build-accounting semantics
+- PRIVATE-BETA-BLOCKER-03H authoritative frontend balance refresh/reconciliation semantics
+- PRIVATE-BETA-BLOCKER-03I checkpoint/Git runtime contract
 - PRIVATE-BETA-BLOCKER-03J public authenticated Gateway confirm-build-apply route
-- current session/container lifecycle contract
-- current idle-timeout semantics as implemented
-- PRIVATE-BETA-BLOCKER-03D deferred Build accounting semantics
-- PRIVATE-BETA-BLOCKER-03H authoritative balance/display refresh semantics
-- PRIVATE-BETA-BLOCKER-03I checkpoint/Git runtime fix
-- existing authentication and execution ownership semantics
+- PRIVATE-BETA-BLOCKER-03K corrected E2E session-timing procedure
+- PRIVATE-BETA-BLOCKER-03K investigation evidence and final checkpoint
+- PRIVATE-BETA-E2E-04 execution evidence and final checkpoint (historical FAIL/BLOCKED)
+- existing authentication/ownership semantics
+- existing workspace apply semantics
 - existing automatic post-apply checkpoint semantics
+- current Container Manager idle-timeout contract
 
 ## Current blockers / gates
-- PRIVATE-BETA-BLOCKER-03K: COMPLETE AND LOCKED — PASS — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03K-CHECKPOINT.md` — Investigation: `docs/PRIVATE-BETA-BLOCKER-03K-INVESTIGATION.md`
-- ROOT_CAUSE_PROVEN=YES — OUTCOME=EXPECTED_TIMEOUT_TEST_PROCEDURE_CAUSE_PROVEN
-- SOURCE_FIX_REQUIRED=NO — CONFIG_CHANGE_REQUIRED=NO — MIGRATION_REQUIRED=NO
-- PRIVATE-BETA-E2E-04: COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-04-CHECKPOINT.md` — unchanged; 03K does not retroactively make E2E-04 PASS
-- 03J source deployment parity: PROVEN (`c3e39279abe3c0d6c348daa312107c8f6fc592b7`)
-- 03J public confirm-build-apply live E2E behavior: UNPROVEN — confirm route never issued because apply never succeeded
+- PRIVATE-BETA-E2E-05: ACTIVE — Step 1 COMPLETE — Registration / Admission — 2026-08-20 — admitted to Lane 1 only
+- Exact next lifecycle step: PRIVATE-BETA-E2E-05 Step 2 — Stage-Start / Exact Corrected E2E Runbook — NEW Cursor window required — not executed in Step 1
+- PRIVATE-BETA-BLOCKER-03K: COMPLETE AND LOCKED — PASS — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03K-CHECKPOINT.md` — ROOT_CAUSE_PROVEN=YES — OUTCOME=EXPECTED_TIMEOUT_TEST_PROCEDURE_CAUSE_PROVEN — SOURCE_FIX_REQUIRED=NO — CONFIG_CHANGE_REQUIRED=NO — MIGRATION_REQUIRED=NO
+- PRIVATE-BETA-E2E-04: COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-04-CHECKPOINT.md` — unchanged historical failure; not a dependency; do not reopen or retry
+- 03J source implementation: COMPLETE AND LOCKED — PASS
+- 03J source deployment parity: previously PROVEN (`c3e39279abe3c0d6c348daa312107c8f6fc592b7`)
+- 03J public confirm-build-apply live E2E behavior: UNPROVEN
 - BUILDER_PRIVATE_BETA_READINESS: NO_GO_PENDING_FRESH_E2E
-- Immediate next lifecycle: NEW fresh controlled post-03J Builder E2E with corrected session-timing procedure — REQUIRED BUT UNREGISTERED / NOT ADMITTED — do not reuse E2E-04; do not assume the next unused E2E ID in this consolidation
 - PRIVATE-BETA-INVITE-01: UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 
 ## Current next product gate
-PRIVATE-BETA-BLOCKER-03K COMPLETE AND LOCKED — PASS — 2026-08-20.
-Root cause: EXPECTED_TIMEOUT_TEST_PROCEDURE_CAUSE_PROVEN. No source fix required for the E2E-04 incident.
+PRIVATE-BETA-E2E-05 is the current admitted product gate.
 Builder private beta remains NO_GO_PENDING_FRESH_E2E.
-Immediate next recommended lifecycle: register a NEW fresh post-03J controlled Builder E2E using the corrected session-timing procedure — REQUIRED BUT UNREGISTERED / NOT ADMITTED.
-Do not register that E2E in this consolidation. Subsequent registration must verify the next unused E2E ID.
+Required fresh proof remains pending until Step 3/4 succeeds.
+Admission does not declare GO.
 PRIVATE-BETA-INVITE-01 remains prohibited.
 
 ============================================================

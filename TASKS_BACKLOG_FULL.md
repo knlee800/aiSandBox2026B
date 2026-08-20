@@ -62771,3 +62771,224 @@ Governance:
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E
 **Exact next recommended lifecycle (NOT REGISTERED / NOT ADMITTED):** NEW fresh post-03J controlled Builder E2E with corrected session-timing procedure. Do not reuse E2E-04. Do not assume the next unused E2E ID.
 
+---
+
+### PRIVATE-BETA-E2E-05: Fresh Post-03J Builder E2E — Corrected Session-Timing Validation
+
+**Task ID:** PRIVATE-BETA-E2E-05
+**Title:** Fresh Post-03J Builder E2E — Corrected Session-Timing Validation
+**Workstream:** RELIABILITY
+**Lifecycle:** 4-step HIGH-RISK
+**Status:** ACTIVE — Step 1 COMPLETE — Registration / Admission — 2026-08-20
+**Assigned lane:** Lane 1
+**Lane 2:** EMPTY throughout ACTIVE / LANE-DONE (single-lane evidence isolation)
+**Lane 3:** DISABLED
+**Registered:** 2026-08-20
+**Approved:** Keith — 2026-08-20 (Step 1 registration + OS v1 admission only)
+**Nature:** Controlled post-03J Builder journey validation / evidence using the 03K-corrected session-timing procedure. Not a keepalive/heartbeat test. Not a source-fix task.
+**Evidence class:** PROVIDER-LIVE
+**Hot-file leases:** NONE
+**Identifier search:** PRIVATE-BETA-E2E-05 was unused in the canonical registry before this registration. The 03K checkpoint mentioned it only as a non-admitted candidate.
+
+**Start condition:** READY — PRIVATE-BETA-BLOCKER-03D COMPLETE AND LOCKED; PRIVATE-BETA-BLOCKER-03H COMPLETE AND LOCKED — PASS; PRIVATE-BETA-BLOCKER-03I COMPLETE AND LOCKED — PASS; PRIVATE-BETA-BLOCKER-03J COMPLETE AND LOCKED — PASS; PRIVATE-BETA-BLOCKER-03K COMPLETE AND LOCKED — PASS — 2026-08-20; GOV-OS-01 COMPLETE AND LOCKED — PASS; required lane/resource/evidence isolation available; OS v1 admission requirements pass.
+
+**Depends on:**
+- PRIVATE-BETA-BLOCKER-03D — COMPLETE AND LOCKED
+- PRIVATE-BETA-BLOCKER-03H — COMPLETE AND LOCKED — PASS
+- PRIVATE-BETA-BLOCKER-03I — COMPLETE AND LOCKED — PASS
+- PRIVATE-BETA-BLOCKER-03J — COMPLETE AND LOCKED — PASS
+- PRIVATE-BETA-BLOCKER-03K — COMPLETE AND LOCKED — PASS — 2026-08-20
+- GOV-OS-01 — COMPLETE AND LOCKED — PASS
+
+**Predecessor / historical failure evidence (NOT a dependency):**
+- PRIVATE-BETA-E2E-04 — COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-04-CHECKPOINT.md`
+- Do not reopen. Do not rewrite. Do not convert to PASS. Do not retry E2E-04.
+
+**Primary write scope:**
+- Step 1: `TASKS.md` CURRENT EXECUTION BOARD above LEGACY / FROZEN only; this canonical registry entry
+- Later lifecycle steps may create only the specifically authorized:
+  - `docs/PRIVATE-BETA-E2E-05-STAGE-START.md`
+  - `docs/PRIVATE-BETA-E2E-05-EXECUTION.md`
+  - `docs/PRIVATE-BETA-E2E-05-CHECKPOINT.md`
+  or exact equivalents defined by the lifecycle
+- No application source. No tests. No migrations. No package/dependency changes. No PRD.md. No ARCHITECTURE.md. No CLAUDE.md. No AGENTS.md.
+
+If the E2E exposes a real source defect: STOP and return to the control plane. Do not repair inside E2E-05.
+
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT, ENV
+
+Reason:
+- controlled staging E2E
+- exactly one live provider execution
+- intentional qualifying credit deduction
+- bounded temporary runtime-gate change
+
+Ownership is reservation only. It does **not** authorize runtime, provider, credit, or env mutation in Step 1.
+
+Do **not** reserve FRONTEND, GATEWAY, AI-SERVICE, or CONTAINER-MANAGER. E2E-05 is validation, not implementation.
+
+**Shared contracts (frozen; do not modify inside E2E-05):**
+- PRIVATE-BETA-BLOCKER-03D deferred Build-accounting semantics
+- PRIVATE-BETA-BLOCKER-03H authoritative frontend balance refresh/reconciliation semantics
+- PRIVATE-BETA-BLOCKER-03I checkpoint/Git runtime contract
+- PRIVATE-BETA-BLOCKER-03J public authenticated Gateway confirm-build-apply route
+- PRIVATE-BETA-BLOCKER-03K corrected E2E session-timing procedure
+- existing authentication/ownership semantics
+- existing workspace apply semantics
+- existing automatic post-apply checkpoint semantics
+- current Container Manager idle-timeout contract
+
+**03J / 03K evidence contract (frozen; do not reinterpret):**
+- 03J source implementation: COMPLETE AND LOCKED — PASS
+- 03J staging deployment parity: previously PROVEN at `c3e39279abe3c0d6c348daa312107c8f6fc592b7`
+- 03J live public confirm-build-apply E2E: still UNPROVEN
+- 03K: COMPLETE AND LOCKED — PASS
+- 03K conclusion: EXPECTED_TIMEOUT_TEST_PROCEDURE_CAUSE_PROVEN
+- SOURCE_FIX_REQUIRED=NO
+- CONFIG_CHANGE_REQUIRED=NO
+- MIGRATION_REQUIRED=NO
+
+**Revert / evidence isolation:** Single-lane controlled evidence run. No concurrent task may contaminate staging source/runtime state, provider-call evidence, credit/accounting evidence, execution-gate state, environment state, or session-timing evidence. The run must be attributable to E2E-05 only.
+
+**Single-lane evidence-isolation rule:** YES. PRIVATE-BETA-E2E-05 is deliberately single-lane. It is NOT the first parallel pilot. For the entire E2E-05 lifecycle while ACTIVE or LANE-DONE: Lane 2 must remain EMPTY; do not admit another implementation task; do not use spare lane capacity; Lane 3 remains DISABLED. Required for staging/provider/credit/evidence isolation.
+
+**Purpose:** Run ONE new fresh controlled Builder E2E proving the complete post-03J chain, while correcting the E2E-04 procedural session-timing failure proven by 03K.
+
+Target chain:
+
+fresh workspace session → Builder Build request → one authorized provider execution → workspace_mutation / fileActions → successful workspace apply → automatic post-apply checkpoint → public API Gateway confirm-build-apply → deferred Build accounting → exactly one qualifying credit deduction → authoritative balance reconciliation → frontend balance reconciliation → workspace/preview verification → manual checkpoint/reconciliation if still required by the new runbook → cleanup → GLOBAL_EXECUTION_ENABLED=false
+
+This task must prove the live path that E2E-04 could not reach.
+
+E2E-05 validates the current product as implemented using the corrected procedure. It is NOT a keepalive/heartbeat test.
+
+**Corrected session-timing contract from 03K (mandatory procedural rules):**
+
+03K proved ROOT_CAUSE_PROVEN=YES / OUTCOME=EXPECTED_TIMEOUT_TEST_PROCEDURE_CAUSE_PROVEN. E2E-04 failed because the fresh workspace session was opened approximately 48 minutes before the qualifying workspace operation while Container Manager's implemented idle threshold was 30 minutes. No source fix is required for that historical incident.
+
+1. Complete staging deployment-parity, service-health, safety-gate and other non-session-specific preflight BEFORE opening the fresh evidence session wherever possible.
+2. Complete any authoritative credit baseline work that does not require the fresh workspace session before opening the fresh session wherever possible.
+3. Create/open the fresh E2E-05 project/session only when the run is ready to proceed promptly into Build.
+4. Capture exact fresh session creation/open timestamp.
+5. Determine the effective session idle timeout before provider execution.
+6. Track SESSION_AGE_AT_PROVIDER_CALL and, where evidence permits, REMAINING_IDLE_HEADROOM_AT_PROVIDER_CALL.
+7. Hard-stop BEFORE provider call if the fresh session has insufficient safe idle headroom to complete Build → apply → confirm.
+8. Do not spend the idle window performing unrelated diagnostics after the fresh session is opened.
+9. After provider completion, proceed promptly to qualifying workspace apply.
+10. Do not intentionally rely on heartbeat, timeout extension, execution-aware suppression, or any source behavior that 03K did not establish.
+
+Do not hard-code a headroom number in Step 1. Step 2 must define a conservative deterministic headroom rule.
+
+**Provider budget (eventual Step 3; not authorized in Step 1):** PROVIDER_CALL_BUDGET=1. Exact provider/model is to be frozen in Step 2 based on current evidence. No retry is implied by registration.
+
+**Lifecycle steps:**
+1. Registration + OS v1 Admission — COMPLETE — 2026-08-20
+2. Stage-Start / Exact Corrected E2E Runbook — PENDING — NEW Cursor window required
+3. Authorized Controlled Staging E2E Execution + Evidence — PENDING — requires separate explicit Keith authorization
+4. Consolidation / Final E2E Verdict + Checkpoint — PENDING
+
+**Authorization flags (Step 1):**
+- RUNTIME_EXECUTION_AUTHORIZED=NO
+- PROVIDER_CALL_AUTHORIZED=NO
+- CREDIT_MUTATION_AUTHORIZED=NO
+- STAGING_MUTATION_AUTHORIZED=NO
+
+Registration/admission does NOT authorize SSH to staging, deploy, enabling GLOBAL_EXECUTION_ENABLED, modifying PM2 env, altering BILLING_CHARGES_ENABLED, calling a provider, creating a live project/session/container, invoking confirm-build-apply, mutating credits, or running browser E2E.
+
+**PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+
+**BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E — admission of this E2E does not declare GO.
+
+**Exact next lifecycle step:** PRIVATE-BETA-E2E-05 Step 2 — Stage-Start / Exact Corrected E2E Runbook — NEW Cursor window required. Do not execute Step 2 during Step 1.
+
+---
+
+#### Acceptance Criteria
+
+Registration / control-plane:
+- [x] unique ID PRIVATE-BETA-E2E-05 confirmed unused before registration
+- [x] OS v1 admission rules pass
+- [x] admitted to Lane 1 only
+- [x] Lane 2 remains EMPTY
+- [x] required resources reserved (STAGING, PROVIDER-LIVE, CREDIT, ENV)
+- [x] GOVERNANCE released after Step 1
+- [x] live E2E criteria are not marked complete during Step 1
+
+Session-timing (full lifecycle; not complete in Step 1):
+- [ ] effective current session idle timeout captured before live execution
+- [ ] non-session-specific staging/safety/parity preflight completed before fresh session creation where possible
+- [ ] fresh E2E-05 project/session created specifically for this run
+- [ ] session creation/open timestamp captured
+- [ ] provider call occurs with sufficient idle-time headroom
+- [ ] exact provider-call timestamp captured
+- [ ] provider duration captured
+- [ ] qualifying workspace apply occurs promptly after completion
+- [ ] no idle_timeout occurs before apply
+- [ ] no provider retry occurs
+
+Stage-start / runbook (Step 2; not complete in Step 1):
+- [ ] exact staging source parity defined
+- [ ] 03J source present before provider call
+- [ ] safety flags defined
+- [ ] exact corrected session-timing order frozen
+- [ ] one-call budget frozen
+- [ ] exact Builder prompt frozen
+- [ ] conservative deterministic idle-headroom rule frozen
+- [ ] hard-stop/cleanup rules frozen
+
+Live execution (Step 3; not complete in Step 1):
+- [ ] authentication works
+- [ ] fresh project/session created at correct point in run
+- [ ] sufficient session headroom before provider call
+- [ ] one Builder provider call
+- [ ] qualifying workspace_mutation
+- [ ] fileActions produced
+- [ ] build_awaiting_apply observed
+- [ ] zero premature deduction before qualifying apply
+- [ ] workspace apply succeeds
+- [ ] automatic checkpoint succeeds
+- [ ] public 03J confirm route observed
+- [ ] deferred accounting handoff observed
+- [ ] exactly one qualifying deduction
+- [ ] no duplicate deduction
+- [ ] authoritative balance reconciles
+- [ ] frontend balance reconciles
+- [ ] workspace/file validation passes
+- [ ] preview validation passes
+- [ ] manual checkpoint/reconciliation if retained by Step 2
+- [ ] session/container cleanup succeeds
+- [ ] GLOBAL_EXECUTION_ENABLED restored false
+- [ ] BILLING_CHARGES_ENABLED remains false
+- [ ] no Stripe/payment path
+- [ ] provider-call count <= 1
+
+Governance:
+- [x] E2E-04 remains historical FAIL/BLOCKED
+- [x] 03K remains locked PASS
+- [x] no source defect silently repaired inside E2E-05 during Step 1
+- [ ] no source defect silently repaired inside E2E-05 during later steps
+- [ ] final checkpoint created
+- [ ] final verdict explicit PASS or FAIL/BLOCKED
+- [ ] Builder private-beta readiness updated only according to proven evidence
+- [x] PRIVATE-BETA-INVITE-01 remains prohibited unless separately authorized later
+
+---
+
+**PRIVATE-BETA-E2E-05 status:** ACTIVE — Step 1 COMPLETE — Registration / Admission — 2026-08-20
+**Assigned lane:** Lane 1
+**Lane 2:** EMPTY
+**Lane 3:** DISABLED
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT, ENV reserved for Lane 1 / PRIVATE-BETA-E2E-05
+**GOVERNANCE:** acquired for atomic registration + admission + board/registry update, then released — EMPTY / NONE
+**Step 1:** COMPLETE — Registration / Admission — 2026-08-20
+**Step 2:** PENDING — Stage-Start / Exact Corrected E2E Runbook — NEW Cursor window required
+**Step 3:** PENDING — not authorized
+**Step 4:** PENDING
+**RUNTIME_EXECUTION_AUTHORIZED:** NO
+**PROVIDER_CALL_AUTHORIZED:** NO
+**CREDIT_MUTATION_AUTHORIZED:** NO
+**STAGING_MUTATION_AUTHORIZED:** NO
+**PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+**BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E
+**Exact next lifecycle step:** PRIVATE-BETA-E2E-05 Step 2 — Stage-Start / Exact Corrected E2E Runbook
+
