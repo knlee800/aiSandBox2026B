@@ -62779,15 +62779,17 @@ Governance:
 **Title:** Fresh Post-03J Builder E2E — Corrected Session-Timing Validation
 **Workstream:** RELIABILITY
 **Lifecycle:** 4-step HIGH-RISK
-**Status:** ACTIVE — Step 2 COMPLETE — Stage-Start / Exact Corrected E2E Runbook — 2026-08-20 — Frozen runbook: `docs/PRIVATE-BETA-E2E-05-STAGE-START.md`
-**Assigned lane:** Lane 1
-**Lane 2:** EMPTY throughout ACTIVE / LANE-DONE (single-lane evidence isolation)
+**Status:** COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20
+**Assigned lane:** Lane 1 (released after Step 4)
+**Lane 2:** EMPTY throughout ACTIVE / LANE-DONE / LOCK
 **Lane 3:** DISABLED
 **Registered:** 2026-08-20
-**Approved:** Keith — 2026-08-20 (Step 1 registration + OS v1 admission only)
+**Approved:** Keith — 2026-08-20 (Step 1 registration + OS v1 admission only); Step 3 runtime authorized separately; Step 4 consolidation 2026-08-20
+**Locked:** 2026-08-20 — Step 4 consolidation / final E2E verdict
 **Nature:** Controlled post-03J Builder journey validation / evidence using the 03K-corrected session-timing procedure. Not a keepalive/heartbeat test. Not a source-fix task.
 **Evidence class:** PROVIDER-LIVE
 **Hot-file leases:** NONE
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-E2E-05-CHECKPOINT.md`
 **Identifier search:** PRIVATE-BETA-E2E-05 was unused in the canonical registry before this registration. The 03K checkpoint mentioned it only as a non-admitted candidate.
 
 **Start condition:** READY — PRIVATE-BETA-BLOCKER-03D COMPLETE AND LOCKED; PRIVATE-BETA-BLOCKER-03H COMPLETE AND LOCKED — PASS; PRIVATE-BETA-BLOCKER-03I COMPLETE AND LOCKED — PASS; PRIVATE-BETA-BLOCKER-03J COMPLETE AND LOCKED — PASS; PRIVATE-BETA-BLOCKER-03K COMPLETE AND LOCKED — PASS — 2026-08-20; GOV-OS-01 COMPLETE AND LOCKED — PASS; required lane/resource/evidence isolation available; OS v1 admission requirements pass.
@@ -62838,15 +62840,18 @@ Do **not** reserve FRONTEND, GATEWAY, AI-SERVICE, or CONTAINER-MANAGER. E2E-05 i
 - existing automatic post-apply checkpoint semantics
 - current Container Manager idle-timeout contract
 
-**03J / 03K evidence contract (frozen; do not reinterpret):**
+**03J / 03K evidence contract (final E2E-05 aggregate; do not reinterpret):**
 - 03J source implementation: COMPLETE AND LOCKED — PASS
-- 03J staging deployment parity: previously PROVEN at `c3e39279abe3c0d6c348daa312107c8f6fc592b7`
-- 03J live public confirm-build-apply E2E: still UNPROVEN
+- 03J staging deployment parity: PROVEN at `c3e39279abe3c0d6c348daa312107c8f6fc592b7`
+- 03J live public confirm-build-apply E2E: PROVEN — Chrome DevTools HTTP 200 `triggered=true` `reason="completed"`
+- deferred accounting: PROVEN
+- exactly-one deduction: PROVEN
 - 03K: COMPLETE AND LOCKED — PASS
 - 03K conclusion: EXPECTED_TIMEOUT_TEST_PROCEDURE_CAUSE_PROVEN
 - SOURCE_FIX_REQUIRED=NO
 - CONFIG_CHANGE_REQUIRED=NO
 - MIGRATION_REQUIRED=NO
+- PREVIEW_SUBSYSTEM_DEFECT_PROVEN=NO
 
 **Revert / evidence isolation:** Single-lane controlled evidence run. No concurrent task may contaminate staging source/runtime state, provider-call evidence, credit/accounting evidence, execution-gate state, environment state, or session-timing evidence. The run must be attributable to E2E-05 only.
 
@@ -62884,22 +62889,20 @@ Do not hard-code a headroom number in Step 1. Step 2 must define a conservative 
 **Lifecycle steps:**
 1. Registration + OS v1 Admission — COMPLETE — 2026-08-20
 2. Stage-Start / Exact Corrected E2E Runbook — COMPLETE — 2026-08-20 — Frozen runbook: `docs/PRIVATE-BETA-E2E-05-STAGE-START.md` — 03K corrected timing contract frozen — SAFE_MINIMUM_HEADROOM_MS=600000 — PROVIDER=xai/MODEL=grok-4.5/BUDGET=1 — exact Builder prompt frozen (e2e-05.html) — staging parity procedure frozen — pre-session ordering frozen — hard stops frozen — evidence table frozen — Step 3 sequence frozen
-3. Authorized Controlled Staging E2E Execution + Evidence — PENDING — requires separate explicit Keith authorization
-4. Consolidation / Final E2E Verdict + Checkpoint — PENDING
+3. Authorized Controlled Staging E2E Execution + Evidence — FAIL/BLOCKED — 2026-08-20 — Evidence: `docs/PRIVATE-BETA-E2E-05-EXECUTION.md`
+4. Consolidation / Final E2E Verdict + Checkpoint — COMPLETE — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-05-CHECKPOINT.md`
 
-**Authorization flags (Step 1):**
-- RUNTIME_EXECUTION_AUTHORIZED=NO
-- PROVIDER_CALL_AUTHORIZED=NO
-- CREDIT_MUTATION_AUTHORIZED=NO
-- STAGING_MUTATION_AUTHORIZED=NO
-
-Registration/admission does NOT authorize SSH to staging, deploy, enabling GLOBAL_EXECUTION_ENABLED, modifying PM2 env, altering BILLING_CHARGES_ENABLED, calling a provider, creating a live project/session/container, invoking confirm-build-apply, mutating credits, or running browser E2E.
+**Authorization flags (final):**
+- RUNTIME_EXECUTION_AUTHORIZED=CONSUMED AND RESTORED FALSE
+- PROVIDER_CALL_AUTHORIZED=CONSUMED — 1 of 1
+- CREDIT_MUTATION_AUTHORIZED=CONSUMED — exactly one qualifying deduction 1178/1178
+- STAGING_MUTATION_AUTHORIZED=CONSUMED WITHOUT DEPLOY — parity already proven; stash untouched; gate restored
 
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 
-**BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E — admission of this E2E does not declare GO.
+**BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E
 
-**Exact next lifecycle step:** PRIVATE-BETA-E2E-05 Step 3 — Authorized Controlled Staging E2E Execution — NEW Cursor window required — EXPLICIT KEITH RUNTIME AUTHORIZATION REQUIRED before any live execution, provider call, or gate change.
+**Exact next recommended lifecycle (NOT REGISTERED / NOT ADMITTED):** PRIVATE-BETA-E2E-AUTO-01 — Automated Builder Golden-Path Validation. Do not register another manual E2E. Deep forensic evidence should run only after an actual product failure.
 
 ---
 
@@ -62914,17 +62917,17 @@ Registration / control-plane:
 - [x] GOVERNANCE released after Step 1
 - [x] live E2E criteria are not marked complete during Step 1
 
-Session-timing (full lifecycle; not complete in Step 1):
-- [ ] effective current session idle timeout captured before live execution
-- [ ] non-session-specific staging/safety/parity preflight completed before fresh session creation where possible
-- [ ] fresh E2E-05 project/session created specifically for this run
-- [ ] session creation/open timestamp captured
-- [ ] provider call occurs with sufficient idle-time headroom
-- [ ] exact provider-call timestamp captured
-- [ ] provider duration captured
-- [ ] qualifying workspace apply occurs promptly after completion
-- [ ] no idle_timeout occurs before apply
-- [ ] no provider retry occurs
+Session-timing (full lifecycle):
+- [x] effective current session idle timeout captured before live execution — 1800000 ms
+- [x] non-session-specific staging/safety/parity preflight completed before fresh session creation where possible
+- [x] fresh E2E-05 project/session created specifically for this run
+- [x] session creation/open timestamp captured
+- [x] provider call occurs with sufficient idle-time headroom
+- [x] exact provider-call timestamp captured
+- [x] provider duration captured
+- [x] qualifying workspace apply occurs promptly after completion — AUTO_APPLY
+- [x] no idle_timeout occurs before apply — idle_timeout occurred later, after apply/confirm/deduction, before preview
+- [x] no provider retry occurs
 
 Stage-start / runbook (Step 2; not complete in Step 1):
 - [x] exact staging source parity defined
@@ -62936,59 +62939,304 @@ Stage-start / runbook (Step 2; not complete in Step 1):
 - [x] conservative deterministic idle-headroom rule frozen (SAFE_MINIMUM_HEADROOM_MS=600000)
 - [x] hard-stop/cleanup rules frozen
 
-Live execution (Step 3; not complete in Step 1):
-- [ ] authentication works
-- [ ] fresh project/session created at correct point in run
-- [ ] sufficient session headroom before provider call
-- [ ] one Builder provider call
-- [ ] qualifying workspace_mutation
-- [ ] fileActions produced
-- [ ] build_awaiting_apply observed
-- [ ] zero premature deduction before qualifying apply
-- [ ] workspace apply succeeds
-- [ ] automatic checkpoint succeeds
-- [ ] public 03J confirm route observed
-- [ ] deferred accounting handoff observed
-- [ ] exactly one qualifying deduction
-- [ ] no duplicate deduction
-- [ ] authoritative balance reconciles
-- [ ] frontend balance reconciles
-- [ ] workspace/file validation passes
-- [ ] preview validation passes
-- [ ] manual checkpoint/reconciliation if retained by Step 2
-- [ ] session/container cleanup succeeds
-- [ ] GLOBAL_EXECUTION_ENABLED restored false
-- [ ] BILLING_CHARGES_ENABLED remains false
-- [ ] no Stripe/payment path
-- [ ] provider-call count <= 1
+Live execution (Step 3):
+- [x] authentication works — PASS
+- [x] fresh project/session created at correct point in run — PASS
+- [x] sufficient session headroom before provider call — PASS
+- [x] one Builder provider call — PASS (xai / grok-4.5; tokens_used=1178)
+- [x] qualifying workspace_mutation — PASS
+- [x] fileActions produced — PASS (count=1, e2e-05.html)
+- [x] build_awaiting_apply observed — PASS
+- [x] zero premature deduction before qualifying apply — PASS (Phase W FAIL retracted; deduction after AUTO_APPLY)
+- [x] workspace apply succeeds — PASS (AUTO_APPLY; no separate Apply click)
+- [x] automatic checkpoint succeeds — PASS (3373a244d2ab43a9a76113fc356b25b94adf5abc)
+- [x] public 03J confirm route observed — PASS (HTTP 200 triggered=true reason="completed")
+- [x] deferred accounting handoff observed — PASS
+- [x] exactly one qualifying deduction — PASS (requested/applied=1178/1178)
+- [x] no duplicate deduction — PASS
+- [x] authoritative balance reconciles — PASS (30577 → 29399)
+- [x] frontend balance reconciles — PASS as three-way 29399 after in-page billing interaction; tab-switch-alone NOT proven
+- [x] workspace/file validation passes — PASS (exact editor contents)
+- [ ] preview validation passes — FAIL (session already idle_timeout stopped; container gone; PREVIEW_SUBSYSTEM_DEFECT_PROVEN=NO)
+- [ ] manual checkpoint/reconciliation if retained by Step 2 — NOT REACHED due terminal preview/session-expiry hard stop
+- [x] session/container cleanup succeeds — PASS (session stopped; container removed; project RETAIN)
+- [x] GLOBAL_EXECUTION_ENABLED restored false — PASS
+- [x] BILLING_CHARGES_ENABLED remains false — PASS
+- [x] no Stripe/payment path — PASS
+- [x] provider-call count <= 1 — PASS
 
 Governance:
 - [x] E2E-04 remains historical FAIL/BLOCKED
 - [x] 03K remains locked PASS
 - [x] no source defect silently repaired inside E2E-05 during Step 1
-- [ ] no source defect silently repaired inside E2E-05 during later steps
-- [ ] final checkpoint created
-- [ ] final verdict explicit PASS or FAIL/BLOCKED
-- [ ] Builder private-beta readiness updated only according to proven evidence
+- [x] no source defect silently repaired inside E2E-05 during later steps
+- [x] final checkpoint created — `docs/PRIVATE-BETA-E2E-05-CHECKPOINT.md`
+- [x] final verdict explicit PASS or FAIL/BLOCKED — FAIL/BLOCKED
+- [x] Builder private-beta readiness updated only according to proven evidence — remains NO_GO_PENDING_FRESH_E2E
 - [x] PRIVATE-BETA-INVITE-01 remains prohibited unless separately authorized later
 
 ---
 
-**PRIVATE-BETA-E2E-05 status:** ACTIVE — Step 1 COMPLETE — Registration / Admission — 2026-08-20
+#### Step 3 Execution Result — FAIL/BLOCKED — 2026-08-20
+
+Evidence: `docs/PRIVATE-BETA-E2E-05-EXECUTION.md`
+
+```
+PROVIDER=xai
+MODEL=grok-4.5
+PROVIDER_CALLS_USED=1
+NO_RETRY=YES
+EXECUTION_ID=d3b8409f-18c8-42e4-a9fc-e8fcb7574494
+tokens_used=1178
+intent=workspace_mutation
+fileActions count=1
+first_file_action_path=e2e-05.html
+APPLY=AUTO_APPLY (no separate Apply click)
+AUTOMATIC_CHECKPOINT_HASH=3373a244d2ab43a9a76113fc356b25b94adf5abc
+PUBLIC_03J_CONFIRM=PROVEN HTTP 200 triggered=true reason="completed"
+requested/applied credits=1178/1178
+DUPLICATE_DEDUCTION=NO
+BALANCE 30577 -> 29399
+DB/API/browser final=29399
+PHASE_W_PRE_APPLY_FAIL=RETRACTED
+PREVIEW=FAIL (session idle_timeout stopped; container gone)
+PREVIEW_SUBSYSTEM_DEFECT_PROVEN=NO
+MANUAL_CHECKPOINT=NOT REACHED
+GLOBAL_EXECUTION_ENABLED final=false
+BILLING_CHARGES_ENABLED final=false
+STAGING_HEAD=c3e39279abe3c0d6c348daa312107c8f6fc592b7
+RETAINED_STASH=0372cc1f47f82e1db060ed2dd756a938fe324803 EXACT / UNTOUCHED
+PROJECT_DISPOSITION=RETAIN
+```
+
+Core post-03J Builder path succeeded. Mandatory preview was not completed because the workspace session later idle-timed out before preview validation. Do not classify this as a proven preview subsystem defect.
+
+---
+
+#### Step 4 Consolidation Result — COMPLETE — 2026-08-20
+
+```
+FINAL_VERDICT=FAIL/BLOCKED
+BUILDER_PRIVATE_BETA_READINESS=NO_GO_PENDING_FRESH_E2E
+CHECKPOINT_CREATED=docs/PRIVATE-BETA-E2E-05-CHECKPOINT.md
+ANOTHER_MANUAL_E2E_REGISTERED_IN_STEP_4=NO
+REPAIR_BLOCKER_REGISTERED_IN_STEP_4=NO
+Lane 1=EMPTY after lock
+Lane 2=EMPTY
+Lane 3=DISABLED
+STAGING / PROVIDER-LIVE / CREDIT / ENV=UNOWNED
+GOVERNANCE=acquired for atomic consolidation then released — EMPTY / NONE
+All resources=UNOWNED
+```
+
+Next recommended lifecycle (NOT REGISTERED / NOT ADMITTED): PRIVATE-BETA-E2E-AUTO-01 — Automated Builder Golden-Path Validation.
+
+---
+
+**PRIVATE-BETA-E2E-05 status:** COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20
+**Assigned lane:** released — Lane 1 EMPTY
+**Lane 2:** EMPTY
+**Lane 3:** DISABLED
+**Step 1:** COMPLETE — Registration / Admission — 2026-08-20
+**Step 2:** COMPLETE — Stage-Start / Exact Corrected E2E Runbook — 2026-08-20
+**Step 3:** FAIL/BLOCKED — 2026-08-20
+**Step 4:** COMPLETE — Consolidation / Final Verdict — 2026-08-20
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-E2E-05-CHECKPOINT.md`
+**Stage-start:** `docs/PRIVATE-BETA-E2E-05-STAGE-START.md`
+**Execution evidence:** `docs/PRIVATE-BETA-E2E-05-EXECUTION.md`
+**PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+**BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E
+**Exact next recommended lifecycle (NOT REGISTERED / NOT ADMITTED):** PRIVATE-BETA-E2E-AUTO-01 — Automated Builder Golden-Path Validation. Do not register another manual E2E.
+
+---
+
+### PRIVATE-BETA-E2E-AUTO-01 — Automated Builder Golden-Path Validation
+
+**Task ID:** PRIVATE-BETA-E2E-AUTO-01
+**Title:** Automated Builder Golden-Path Validation
+**Workstream:** RELIABILITY
+**Lifecycle:** 3-step NORMAL bounded task
+**Status:** ACTIVE — Step 1 COMPLETE — Registration + Minimal Automation Contract — 2026-08-20
+**Assigned lane:** Lane 1
+**Lane 2:** EMPTY throughout ACTIVE / LANE-DONE / LOCK
+**Lane 3:** DISABLED
+**Registered:** 2026-08-20
+**Approved:** Keith — 2026-08-20 (Step 1 registration + OS v1 admission only)
+**Nature:** Build a deterministic automated golden-path runner. Does NOT consume a live provider call in this task. A later separately authorized task/run may execute the runner against staging/provider.
+**Evidence class:** LOCAL-TESTS
+**Hot-file leases:** NONE
+**Identifier search:** PRIVATE-BETA-E2E-AUTO-01 was unused as a registered task ID before this registration. E2E-05 checkpoint/registry mentioned it only as a non-admitted candidate.
+
+**Start condition:** READY — PRIVATE-BETA-E2E-05 COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20; Lane 1 EMPTY; Lane 2 EMPTY; Lane 3 DISABLED; all resources UNOWNED; OS v1 admission requirements pass.
+
+**Depends on:**
+- PRIVATE-BETA-BLOCKER-03J — COMPLETE AND LOCKED — PASS
+- PRIVATE-BETA-BLOCKER-03K — COMPLETE AND LOCKED — PASS
+- PRIVATE-BETA-E2E-05 — COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20 — current evidence source; do not reopen; do not convert to PASS
+- GOV-OS-01 — COMPLETE AND LOCKED — PASS
+
+**Primary write scope:**
+- Step 1: `TASKS.md` CURRENT EXECUTION BOARD above LEGACY / FROZEN only; this canonical registry entry
+- Step 2 exclusive write directory: `e2e/builder-golden-path/`
+- Exact Step 2 files (non-live; no new dependency):
+  - `e2e/builder-golden-path/lib/phases.mjs`
+  - `e2e/builder-golden-path/lib/modes.mjs`
+  - `e2e/builder-golden-path/lib/safety-gates.mjs`
+  - `e2e/builder-golden-path/lib/evidence.mjs`
+  - `e2e/builder-golden-path/lib/summary.mjs`
+  - `e2e/builder-golden-path/golden-path.contract.test.mjs`
+- Browser-live files are NOT authorized until Playwright/`@playwright/test` add is explicitly approved:
+  - `e2e/builder-golden-path/playwright.config.ts`
+  - `e2e/builder-golden-path/golden-path.spec.ts`
+  - `e2e/builder-golden-path/lib/auth.ts`
+  - `e2e/builder-golden-path/lib/preview.ts`
+  - `e2e/builder-golden-path/lib/network.ts`
+  - `e2e/builder-golden-path/package.json` (isolated package only; do not mutate root / frontend / service `package.json` without PACKAGE)
+- No production frontend/backend source. No PRD.md. No ARCHITECTURE.md. No CLAUDE.md. No AGENTS.md.
+
+If the runner later exposes a product defect: report FAIL and stop. A separate task fixes the product.
+
+**Mutexes / resources:** NONE reserved for AUTO-01 implementation.
+
+Do **not** reserve PROVIDER-LIVE, CREDIT, ENV, or STAGING merely to write the runner.
+Do **not** reserve FRONTEND, GATEWAY, AI-SERVICE, or CONTAINER-MANAGER.
+Do **not** reserve PACKAGE in Step 1. Adding Playwright/`@playwright/test` is a Step 2 decision requiring explicit scope approval, after which PACKAGE may be acquired.
+
+Ownership is reservation only. It does **not** authorize runtime, provider, credit, env, or staging mutation.
+
+**Shared contracts (frozen; do not modify inside AUTO-01):**
+- PRIVATE-BETA-BLOCKER-03D deferred Build-accounting semantics
+- PRIVATE-BETA-BLOCKER-03H authoritative frontend balance refresh/reconciliation semantics — verify API/DB plus deterministic browser reload/navigation; do **not** encode the manual 03H tab-switch ceremony as a golden-path blocker
+- PRIVATE-BETA-BLOCKER-03I checkpoint/Git runtime contract
+- PRIVATE-BETA-BLOCKER-03J public authenticated Gateway confirm-build-apply route
+- PRIVATE-BETA-BLOCKER-03K corrected E2E session-timing procedure — create/open the fresh session only when the runner is ready to Build immediately
+- current non-risky one-file Builder AUTO_APPLY semantics (E2E-05 proven) — `maybeApplyExecutionFileActions` auto-applies unless the batch is risky / visual-edit / already awaiting confirmation; no separate Apply click for the golden-path one-file HTML write
+- existing authentication/ownership semantics
+- existing automatic post-apply checkpoint semantics
+- current Container Manager idle-timeout contract
+
+**Revert / evidence isolation:** Single-lane. New isolated `e2e/builder-golden-path/` files only. Reverting AUTO-01 must not invalidate locked E2E-05 / 03J / 03K evidence. Lane 2 remains EMPTY for the entire AUTO-01 lifecycle. Lane 3 remains DISABLED.
+
+**Purpose:** Replace the long manual Builder E2E operator procedure with one deterministic automated golden-path validation that Claude/Cursor can execute quickly and repeatedly. Deep forensic evidence is collected ONLY when an actual product failure occurs.
+
+This task builds the runner. It does NOT consume a live provider call.
+
+**Why this task exists:**
+- E2E-04: session expired because manual pre-Build procedure consumed the idle window.
+- E2E-05: core post-03J chain succeeded (Builder execution, AUTO_APPLY, file write, automatic checkpoint, public confirm HTTP 200, exactly-one credit deduction, final balance reconciliation) but manual evidence collection continued long enough for the session to idle-timeout before mandatory preview proof.
+
+**Minimal golden path (critical path must be short; workspace checks first):**
+1. Verify current staging/browser build (fresh browser context/navigation; do not rely on a long-lived operator tab)
+2. Verify safety gates
+3. Capture starting credit balance
+4. Create fresh disposable project/session
+5. Immediately execute ONE Builder request
+6. Verify AUTO_APPLY file write
+7. Immediately verify preview while the session is alive
+8. Verify automatic checkpoint
+9. Verify public confirm-build-apply
+10. Verify exactly one credit deduction
+11. Verify resulting authoritative balance
+12. Cleanup session/container
+13. Verify GLOBAL_EXECUTION_ENABLED=false
+
+Slow DB/log/report reconciliation happens only after critical workspace checks or after cleanup.
+Preview must be tested immediately after auto-apply, before long accounting or forensic work.
+Do not spend the session idle window gathering logs before preview.
+
+**No manual Apply assumption:** current proven one-file Builder behavior is AUTO_APPLY. Do not encode a separate Apply click.
+
+**Live provider boundary:** the runner must support a later live mode (`PROVIDER_CALL_BUDGET=1`, no retry) but MUST NOT run that live mode in AUTO-01. Later explicit Keith authorization is required for staging mutation if needed, `GLOBAL_EXECUTION_ENABLED=true`, xAI/grok-4.5, and intentional credit deduction.
+
+**Fast-fail:** fail immediately on mandatory critical-path failure; always restore `GLOBAL_EXECUTION_ENABLED=false`; never automatically retry provider execution; capture concise evidence automatically; avoid giant forensic dumps on PASS. On PASS: short structured summary. On FAIL: targeted diagnostics for the failed phase.
+
+**Target automated output fields:**
+PASS/FAIL, projectId, sessionId, executionId, provider/model, tokens_used, file applied, preview PASS/FAIL, checkpoint hash, public confirm HTTP/result, deduction count, credits deducted, balance before/after, cleanup result, final execution gate.
+
+**Step 1 discovery — browser automation (READ-ONLY; 2026-08-20):**
+
+1. Existing browser/E2E framework for the **platform** Builder journey: NONE. Frontend tests are `tsx --test` / `node:test` unit/logic tests. Gateway uses Jest + supertest. Root `scripts/tests/*.test.mjs` are static script assertions. No `playwright.config.*`. No `e2e/` directory.
+2. Playwright/`@playwright/test` as a project dependency: NO. Next.js lists `@playwright/test` only as an optional peer. It is not in any workspace `package.json` and is not installed under `node_modules`.
+3. `browser_smoke` exists, but it is the **sandbox generated-app** harness tool, not platform E2E:
+   - `services/container-manager/src/browser-smoke/browser-smoke.service.ts`
+   - `services/ai-service/src/agent-harness/tools/handlers/browser-smoke-tool-handlers.ts`
+   - Playwright Chromium inside workspace containers at `/opt/browser-smoke/node_modules/playwright`
+   - gated by `enableBrowserSmoke` default false
+   - cannot log into `staging.ainow.biz` as the platform user or drive Builder AUTO_APPLY
+4. Staging operation: existing E2E-05 evidence used Keith's long-lived Chrome tab + DevTools + SSH/psql. No reusable automated staging browser helper exists.
+5. Authentication automation: NONE reusable. Login is `POST /api/auth/login` with email/password (`frontend/app/[locale]/login/page.tsx`); session cookie `aisandbox_session`; CSRF cookie `aisandbox_csrf`. Existing tests mock cookies (Jest/supertest) or render login markup; they do not perform a live browser login.
+6. Fresh browser context: not available without adding a browser framework. Playwright `browser.newContext()` is the intended later mechanism. Do not rely on Keith's long-lived tab.
+7. Preview automation: unit helpers exist (`frontend/components/workspace/workspace-preview.logic.ts` — `/api/preview/:sessionId/proxy`). No automated assertion of live preview iframe content. E2E-05 preview failed because the session idle-timed out before operator proof.
+8. Network/public-confirm observation: Playwright request/response listeners would be capable; currently only Keith DevTools. Frontend automatically POSTs `/api/ai/executions/:executionId/confirm-build-apply` after qualifying AUTO_APPLY via `requestBuildApplyConfirmation`.
+9. Read-only DB/evidence helpers: E2E-05 stage-start documents contain operator `psql` snippets, not a reusable code helper. Step 2 may wrap those as **non-live mocked** helpers. Live SSH/psql is out of AUTO-01 implementation.
+10. Step 2 files: listed under Primary write scope above.
+11. Dependency/package change required for a real browser runner: YES — explicit Step 2 approval required before adding Playwright/`@playwright/test`. Non-live contract tests can use existing `node:test` with no new dependency (`node --test e2e/builder-golden-path/golden-path.contract.test.mjs`).
+12. Non-live validation without Docker/provider/credits: YES — Step 2 implements the runner + contract tests in dry-run / live-gated-off mode.
+
+**Lifecycle steps:**
+1. Registration + Minimal Automation Contract — COMPLETE — 2026-08-20
+2. Implement Automated Golden-Path Runner + Non-Live Validation — PENDING — no live provider; no credit mutation; no staging mutation; Playwright add not authorized unless Keith explicitly expands scope
+3. Consolidation + Automation-Ready Verdict — PENDING
+
+**Authorization flags (Step 1):**
+- RUNTIME_EXECUTION_AUTHORIZED=NO
+- PROVIDER_CALL_AUTHORIZED=NO
+- CREDIT_MUTATION_AUTHORIZED=NO
+- STAGING_MUTATION_AUTHORIZED=NO
+- PLAYWRIGHT_DEPENDENCY_AUTHORIZED=NO
+
+**PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+
+**BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E
+
+**Exact next step:** PRIVATE-BETA-E2E-AUTO-01 Step 2 — Implement Automated Golden-Path Runner + Non-Live Validation. Fresh window. Do not run live provider. Do not add Playwright unless explicitly approved.
+
+---
+
+#### Acceptance Criteria
+
+Registration / control-plane:
+- [x] unique ID PRIVATE-BETA-E2E-AUTO-01 confirmed unused before registration
+- [x] OS v1 admission rules pass
+- [x] admitted to Lane 1 only
+- [x] Lane 2 remains EMPTY
+- [x] PROVIDER-LIVE / CREDIT / ENV / STAGING not reserved
+- [x] GOVERNANCE released after Step 1
+- [x] live provider / credit / staging criteria are not marked complete during Step 1
+- [x] Playwright/browser-framework discovery recorded
+- [x] AUTO_APPLY (no manual Apply click) frozen in the automation contract
+- [x] preview-immediately-after-apply frozen
+- [x] no 03H tab-switch ceremony as golden-path blocker
+- [x] live mode gated off for this task
+
+Step 2 (not complete in Step 1):
+- [ ] isolated runner files created under `e2e/builder-golden-path/`
+- [ ] non-live `node:test` contract validation PASS
+- [ ] live provider mode exists but is not executed
+- [ ] no production source mutation
+- [ ] no package/dependency change unless explicitly approved
+- [ ] fast-fail + PASS short summary + FAIL targeted diagnostics encoded
+- [ ] GLOBAL_EXECUTION_ENABLED restore-false encoded
+- [ ] PROVIDER_CALL_BUDGET=1 / no retry encoded
+- [ ] no Docker / provider / credit / staging mutation
+
+Step 3 (not complete in Step 1):
+- [ ] checkpoint created
+- [ ] automation-ready verdict explicit
+- [ ] Builder private-beta readiness updated only according to proven evidence — remains NO_GO_PENDING_FRESH_E2E unless a later authorized live run proves otherwise
+- [ ] PRIVATE-BETA-INVITE-01 remains prohibited
+
+---
+
+**PRIVATE-BETA-E2E-AUTO-01 status:** ACTIVE — Step 1 COMPLETE — Registration + Minimal Automation Contract — 2026-08-20
 **Assigned lane:** Lane 1
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
-**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT, ENV reserved for Lane 1 / PRIVATE-BETA-E2E-05
-**GOVERNANCE:** acquired for atomic registration + admission + board/registry update, then released — EMPTY / NONE
-**Step 1:** COMPLETE — Registration / Admission — 2026-08-20
-**Step 2:** PENDING — Stage-Start / Exact Corrected E2E Runbook — NEW Cursor window required
-**Step 3:** PENDING — not authorized
-**Step 4:** PENDING
-**RUNTIME_EXECUTION_AUTHORIZED:** NO
-**PROVIDER_CALL_AUTHORIZED:** NO
-**CREDIT_MUTATION_AUTHORIZED:** NO
-**STAGING_MUTATION_AUTHORIZED:** NO
+**Step 1:** COMPLETE — Registration + Minimal Automation Contract — 2026-08-20
+**Step 2:** PENDING — Implement Automated Golden-Path Runner + Non-Live Validation
+**Step 3:** PENDING — Consolidation + Automation-Ready Verdict
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E
-**Exact next lifecycle step:** PRIVATE-BETA-E2E-05 Step 2 — Stage-Start / Exact Corrected E2E Runbook
+**Exact next step:** PRIVATE-BETA-E2E-AUTO-01 Step 2 — Implement Automated Golden-Path Runner + Non-Live Validation
+
 
