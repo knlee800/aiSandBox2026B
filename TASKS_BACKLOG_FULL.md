@@ -62624,3 +62624,139 @@ Unchanged balance 30577 is correct for this aborted path under locked 03D deferr
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E
 **Exact next recommended lifecycle (NOT REGISTERED / NOT ADMITTED):** bounded blocker investigation/fix for Builder session idle-timeout during provider execution / before workspace apply. Do not reuse E2E-04. After that blocker is fixed and locked, register/admit a NEW fresh post-03J E2E.
 
+---
+
+### PRIVATE-BETA-BLOCKER-03K — Builder Session Idle-Timeout Investigation
+
+**Task ID:** PRIVATE-BETA-BLOCKER-03K
+**Title:** Builder Session Idle-Timeout Investigation
+**Workstream:** RELIABILITY
+**Lifecycle:** 4-step HIGH-RISK
+**Status:** ACTIVE — Step 1 COMPLETE — Registration / Admission — 2026-08-20
+**Assigned lane:** Lane 1
+**Lane 2:** EMPTY — this admission does not fill Lane 2
+**Lane 3:** DISABLED
+**Registered:** 2026-08-20
+**Approved:** Keith — 2026-08-20 (Step 1 registration + OS v1 admission only)
+**Nature:** INVESTIGATION ONLY — root-cause evidence for the E2E-04 idle_timeout-before-apply failure. No source repair. No test-source writes. No E2E retry. No provider call. No credit mutation. No env/runtime-gate change.
+**Evidence class:** STAGING-RUNTIME
+**Hot-file leases:** NONE
+**Priority:** HIGH — launch-critical private-beta blocker
+**Risk:** HIGH — session/container lifecycle; must preserve failed E2E-04 evidence; must not mutate staging runtime, call a provider, or select a fix before root cause is proven
+
+**Start condition:** READY — PRIVATE-BETA-E2E-04 is COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20; E2E-04 checkpoint proves idle_timeout before qualifying workspace apply; no conflicting admitted task owns STAGING; OS v1 admission requirements pass.
+
+**Depends on:**
+- PRIVATE-BETA-E2E-04 — COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-04-CHECKPOINT.md` — Execution evidence: `docs/PRIVATE-BETA-E2E-04-EXECUTION.md`
+
+**Relevant inherited evidence (not a second unfinished dependency):**
+- PRIVATE-BETA-BLOCKER-03J — COMPLETE AND LOCKED — PASS — 2026-08-18 — public authenticated Gateway confirm-build-apply contract remains frozen and unproven in live E2E because E2E-04 never reached apply
+
+**Primary write scope:**
+- Step 1: `TASKS.md` CURRENT EXECUTION BOARD above LEGACY / FROZEN only; this canonical registry entry
+- Later 03K steps: only specifically authorized investigation stage-start / evidence / checkpoint documents
+- No application source. No tests. No migrations. No package/dependency changes. No repair implementation. No PRD.md. No ARCHITECTURE.md. No CLAUDE.md. No AGENTS.md.
+
+If investigation proves a source defect: 03K must recommend a separately registered FIX task. 03K itself does not implement the fix.
+
+**Mutexes / resources:** STAGING
+Ownership reserves read-only staging-runtime evidence isolation only. It does **not** authorize SSH mutation, deploy, PM2/Caddy change, provider calls, credit mutation, or env/runtime-gate change.
+
+Do **not** reserve PROVIDER-LIVE, CREDIT, ENV, FRONTEND, GATEWAY, AI-SERVICE, or CONTAINER-MANAGER. Read-only source inspection does not justify a write mutex. If an investigation action would mutate runtime state or require reproducing the paid-provider journey: STOP and return to the control plane.
+
+**Shared contracts (frozen; 03K observes and does not change):**
+- PRIVATE-BETA-E2E-04 execution evidence
+- PRIVATE-BETA-E2E-04 final checkpoint
+- PRIVATE-BETA-BLOCKER-03J public authenticated Gateway confirm-build-apply route
+- current session/container lifecycle contract
+- current idle-timeout semantics as implemented
+
+**Revert / evidence isolation:** Preserve the failed E2E-04 evidence. No E2E retry. No provider call. No intentional credit mutation. No repair during investigation. No source modification. Prefer read-only staging/database/log/source evidence. Reverting 03K must not invalidate locked E2E-04 evidence.
+
+**Purpose:** Discover and prove why the E2E-04 workspace session entered `idle_timeout` before the qualifying workspace apply. Proven proximate failure is idle_timeout-before-apply. Underlying root cause is UNKNOWN / UNPROVEN at registration. Do not presuppose timeout-calculation, heartbeat, activity-touch, frontend, container-manager, API Gateway, provider-duration, session-lifecycle, or cleanup-race defects.
+
+**Proven E2E-04 symptom (frozen evidence; do not reopen E2E-04):**
+- fresh Builder execution completed
+- execution produced `workspace_mutation` + one fileAction (`e2e-04.html`)
+- session `1492ed19-9417-4a93-a1fc-c5034d41d22e` entered stopped / `idle_timeout` at approximately the same time as AI completion (`terminated_at=2026-08-19 12:17:58.819`)
+- qualifying workspace apply then failed because the session had expired
+- file was not saved
+- public 03J confirm-build-apply was never reached
+- no credit deduction occurred
+
+**Lifecycle steps:**
+1. Registration + OS v1 Admission — COMPLETE — 2026-08-20
+2. Stage-Start / Root-Cause Investigation Plan — PENDING — NEW Cursor window required
+3. Bounded Investigation + Root-Cause Evidence — PENDING
+4. Consolidation / Root-Cause Verdict + Next-Fix Recommendation — PENDING
+
+No source repair is part of 03K.
+
+**PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+
+**Future fresh E2E after a later FIX:** REQUIRED eventually, but NOT REGISTERED by this admission. Do not reuse PRIVATE-BETA-E2E-04. Do not register PRIVATE-BETA-INVITE-01.
+
+**BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E
+
+**Exact next lifecycle step:** PRIVATE-BETA-BLOCKER-03K Step 2 — Stage-Start / Root-Cause Investigation Plan — NEW Cursor window. Do not execute Step 2 in the Step 1 window.
+
+---
+
+#### Acceptance Criteria
+
+Registration / control-plane:
+- [x] task registered with unique ID PRIVATE-BETA-BLOCKER-03K
+- [x] identifier search confirmed unused before registration
+- [x] OS v1 admission rules pass
+- [x] admitted to Lane 1 only
+- [x] Lane 2 remains EMPTY
+- [x] STAGING reserved for evidence isolation
+- [x] PROVIDER-LIVE / CREDIT / ENV remain UNOWNED
+- [x] GOVERNANCE released after Step 1
+- [x] investigation criteria are not marked complete during Step 1
+- [x] no source repair selected or implemented during Step 1
+
+Investigation (Step 3 must determine with evidence; answers unknown at Step 1):
+- [ ] Exact configured idle-timeout duration and authoritative implementation location
+- [ ] Exact timestamp used to determine session inactivity
+- [ ] Which events/actions update session activity / last-active state
+- [ ] Whether an active Builder provider execution updates or suppresses idle timeout
+- [ ] Exact lifecycle sequence for E2E-04 session: creation → activity → provider request → provider completion → idle_timeout stop → attempted apply
+- [ ] Whether idle_timeout was expected under current documented semantics or a defect
+- [ ] Whether the session was actually inactive for the configured threshold
+- [ ] Whether frontend heartbeat / session-touch behavior was present and healthy
+- [ ] Whether container-manager / session sweeper behavior matched its contract
+- [ ] Whether AI execution itself is expected to keep the workspace session alive
+- [ ] Whether a race exists between completion/apply and session cleanup
+- [ ] Exact proven root cause, or explicit statement that root cause remains unproven
+- [ ] Smallest safe repair scope if root cause is proven
+- [ ] Exact service/file ownership likely required by the subsequent FIX task
+- [ ] Whether another controlled E2E / provider call is required to validate the eventual fix
+
+Governance:
+- [ ] stage-start / investigation-plan document created in Step 2 before runtime evidence gathering
+- [ ] failed E2E-04 evidence preserved and not reused as a retry
+- [ ] no application source / test / migration / package mutation inside 03K
+- [ ] no provider call, credit mutation, env/runtime-gate change, or E2E retry inside 03K
+- [ ] if a mutating investigation action becomes necessary: STOP and return to control plane
+- [ ] final checkpoint records a root-cause verdict and next-fix recommendation only
+- [ ] any repair is a separately registered FIX task
+- [ ] Builder private-beta readiness remains NO_GO_PENDING_FRESH_E2E unless later evidence changes that gate under a separate authorized task
+- [ ] PRIVATE-BETA-INVITE-01 remains prohibited
+
+---
+
+**PRIVATE-BETA-BLOCKER-03K status:** ACTIVE — Step 1 COMPLETE — Registration / Admission — 2026-08-20
+**Assigned lane:** Lane 1
+**Lane 2:** EMPTY
+**Lane 3:** DISABLED
+**Mutexes / resources:** STAGING owned by Lane 1 / PRIVATE-BETA-BLOCKER-03K
+**GOVERNANCE:** acquired for atomic registration + admission, then released — EMPTY / NONE
+**Step 1:** COMPLETE — Registration / Admission — 2026-08-20
+**Step 2:** PENDING — Stage-Start / Root-Cause Investigation Plan — NEW Cursor window
+**Step 3:** PENDING
+**Step 4:** PENDING
+**PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+**BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E
+**Exact next lifecycle step:** PRIVATE-BETA-BLOCKER-03K Step 2 — Stage-Start / Root-Cause Investigation Plan
+
