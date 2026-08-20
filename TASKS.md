@@ -56,7 +56,7 @@ Resource ownership reserves evidence isolation only. It does not authorize runti
 - existing automatic post-apply checkpoint semantics
 
 ## Current blockers / gates
-- Immediate current blocker: PRIVATE-BETA-BLOCKER-03K — Builder Session Idle-Timeout Investigation — ACTIVE — Lane 1 — Step 1 COMPLETE — Registration / Admission — 2026-08-20
+- Immediate current blocker: PRIVATE-BETA-BLOCKER-03K — Builder Session Idle-Timeout Investigation — ACTIVE — Lane 1 — Step 2 COMPLETE — Stage-Start / Root-Cause Investigation Plan — 2026-08-20 — Stage-start: `docs/PRIVATE-BETA-BLOCKER-03K-STAGE-START.md`
 - PRIVATE-BETA-E2E-04: COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-04-CHECKPOINT.md`
 - Proven proximate failure: workspace session entered idle_timeout before the qualifying workspace apply
 - Underlying root cause: UNKNOWN / UNPROVEN — 03K must discover and prove it; do not presuppose a defect class
@@ -67,9 +67,9 @@ Resource ownership reserves evidence isolation only. It does not authorize runti
 - PRIVATE-BETA-INVITE-01: UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 
 ## Current next product gate
-PRIVATE-BETA-BLOCKER-03K Step 2 — Stage-Start / Root-Cause Investigation Plan (NEW Cursor window).
-Investigation-only. No source repair inside 03K. No E2E retry. No provider call. No credit mutation. No env/runtime-gate change.
-Do not claim fresh E2E proof exists. Do not assert the underlying root cause.
+PRIVATE-BETA-BLOCKER-03K Step 3 — Bounded Investigation + Root-Cause Evidence (NEW Cursor window).
+Read-only staging investigation only. No source repair. No E2E retry. No provider call. No credit mutation. No env/runtime-gate change. No staging mutation.
+Root-cause proof plan frozen in `docs/PRIVATE-BETA-BLOCKER-03K-STAGE-START.md`.
 Builder private beta remains NO-GO. PRIVATE-BETA-INVITE-01 remains prohibited.
 
 ============================================================

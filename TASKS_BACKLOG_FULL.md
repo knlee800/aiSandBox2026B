@@ -62686,7 +62686,7 @@ Do **not** reserve PROVIDER-LIVE, CREDIT, ENV, FRONTEND, GATEWAY, AI-SERVICE, or
 
 **Lifecycle steps:**
 1. Registration + OS v1 Admission — COMPLETE — 2026-08-20
-2. Stage-Start / Root-Cause Investigation Plan — PENDING — NEW Cursor window required
+2. Stage-Start / Root-Cause Investigation Plan — COMPLETE — 2026-08-20 — Stage-start: `docs/PRIVATE-BETA-BLOCKER-03K-STAGE-START.md`
 3. Bounded Investigation + Root-Cause Evidence — PENDING
 4. Consolidation / Root-Cause Verdict + Next-Fix Recommendation — PENDING
 
@@ -62698,7 +62698,7 @@ No source repair is part of 03K.
 
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E
 
-**Exact next lifecycle step:** PRIVATE-BETA-BLOCKER-03K Step 2 — Stage-Start / Root-Cause Investigation Plan — NEW Cursor window. Do not execute Step 2 in the Step 1 window.
+**Exact next lifecycle step:** PRIVATE-BETA-BLOCKER-03K Step 3 — Bounded Investigation + Root-Cause Evidence — NEW Cursor window. Read-only staging investigation only.
 
 ---
 
@@ -62746,17 +62746,17 @@ Governance:
 
 ---
 
-**PRIVATE-BETA-BLOCKER-03K status:** ACTIVE — Step 1 COMPLETE — Registration / Admission — 2026-08-20
+**PRIVATE-BETA-BLOCKER-03K status:** ACTIVE — Step 2 COMPLETE — Stage-Start / Root-Cause Investigation Plan — 2026-08-20
 **Assigned lane:** Lane 1
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
 **Mutexes / resources:** STAGING owned by Lane 1 / PRIVATE-BETA-BLOCKER-03K
-**GOVERNANCE:** acquired for atomic registration + admission, then released — EMPTY / NONE
+**GOVERNANCE:** acquired for Step 2 board/registry/stage-start write, then released — EMPTY / NONE
 **Step 1:** COMPLETE — Registration / Admission — 2026-08-20
-**Step 2:** PENDING — Stage-Start / Root-Cause Investigation Plan — NEW Cursor window
-**Step 3:** PENDING
+**Step 2:** COMPLETE — Stage-Start / Root-Cause Investigation Plan — 2026-08-20 — `docs/PRIVATE-BETA-BLOCKER-03K-STAGE-START.md`
+**Step 3:** PENDING — Bounded Investigation + Root-Cause Evidence — NEW Cursor window — read-only staging investigation
 **Step 4:** PENDING
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E
-**Exact next lifecycle step:** PRIVATE-BETA-BLOCKER-03K Step 2 — Stage-Start / Root-Cause Investigation Plan
+**Exact next lifecycle step:** PRIVATE-BETA-BLOCKER-03K Step 3 — Bounded Investigation + Root-Cause Evidence — NEW Cursor window
 
