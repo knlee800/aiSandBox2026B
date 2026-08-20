@@ -63056,15 +63056,15 @@ Next recommended lifecycle (NOT REGISTERED / NOT ADMITTED): PRIVATE-BETA-E2E-AUT
 **Title:** Automated Builder Golden-Path Validation
 **Workstream:** RELIABILITY
 **Lifecycle:** 3-step NORMAL bounded task
-**Status:** ACTIVE — Step 1 COMPLETE — Registration + Minimal Automation Contract — 2026-08-20
+**Status:** ACTIVE — Step 1 COMPLETE, amended Playwright approval — 2026-08-20
 **Assigned lane:** Lane 1
 **Lane 2:** EMPTY throughout ACTIVE / LANE-DONE / LOCK
 **Lane 3:** DISABLED
 **Registered:** 2026-08-20
-**Approved:** Keith — 2026-08-20 (Step 1 registration + OS v1 admission only)
-**Nature:** Build a deterministic automated golden-path runner. Does NOT consume a live provider call in this task. A later separately authorized task/run may execute the runner against staging/provider.
+**Approved:** Keith — 2026-08-20 (Step 1 registration + OS v1 admission); Keith — 2026-08-20 (Playwright + PACKAGE amendment)
+**Nature:** Implement a real Playwright automated browser golden-path runner. Step 2 remains NON-LIVE. A later separately authorized task/run may execute LIVE mode against staging/provider.
 **Evidence class:** LOCAL-TESTS
-**Hot-file leases:** NONE
+**Hot-file leases:** NONE — PACKAGE mutex covers root `package.json` / `package-lock.json`
 **Identifier search:** PRIVATE-BETA-E2E-AUTO-01 was unused as a registered task ID before this registration. E2E-05 checkpoint/registry mentioned it only as a non-admitted candidate.
 
 **Start condition:** READY — PRIVATE-BETA-E2E-05 COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20; Lane 1 EMPTY; Lane 2 EMPTY; Lane 3 DISABLED; all resources UNOWNED; OS v1 admission requirements pass.
@@ -63077,32 +63077,33 @@ Next recommended lifecycle (NOT REGISTERED / NOT ADMITTED): PRIVATE-BETA-E2E-AUT
 
 **Primary write scope:**
 - Step 1: `TASKS.md` CURRENT EXECUTION BOARD above LEGACY / FROZEN only; this canonical registry entry
-- Step 2 exclusive write directory: `e2e/builder-golden-path/`
-- Exact Step 2 files (non-live; no new dependency):
-  - `e2e/builder-golden-path/lib/phases.mjs`
-  - `e2e/builder-golden-path/lib/modes.mjs`
-  - `e2e/builder-golden-path/lib/safety-gates.mjs`
-  - `e2e/builder-golden-path/lib/evidence.mjs`
-  - `e2e/builder-golden-path/lib/summary.mjs`
-  - `e2e/builder-golden-path/golden-path.contract.test.mjs`
-- Browser-live files are NOT authorized until Playwright/`@playwright/test` add is explicitly approved:
+- Step 2 exclusive automation directory: `e2e/builder-golden-path/`
+- Authorized Step 2 files (exact names may be refined after repo inspection):
   - `e2e/builder-golden-path/playwright.config.ts`
   - `e2e/builder-golden-path/golden-path.spec.ts`
   - `e2e/builder-golden-path/lib/auth.ts`
   - `e2e/builder-golden-path/lib/preview.ts`
   - `e2e/builder-golden-path/lib/network.ts`
-  - `e2e/builder-golden-path/package.json` (isolated package only; do not mutate root / frontend / service `package.json` without PACKAGE)
-- No production frontend/backend source. No PRD.md. No ARCHITECTURE.md. No CLAUDE.md. No AGENTS.md.
+  - `e2e/builder-golden-path/lib/safety-gates.ts`
+  - `e2e/builder-golden-path/lib/evidence.ts`
+  - `e2e/builder-golden-path/lib/summary.ts`
+  - `e2e/builder-golden-path/lib/phases.ts`
+  - `e2e/builder-golden-path/lib/modes.ts`
+- Authorized package files (minimum Playwright add only):
+  - `package.json` (root — add `@playwright/test` as a `devDependency`; optional one-command script)
+  - `package-lock.json` (root npm lockfileVersion 3)
+- Do **not** add Playwright to `frontend/package.json` or `services/*/package.json`.
+- Do **not** create a bun/yarn/pnpm lockfile.
+- No production frontend/backend behavior changes. No PRD.md. No ARCHITECTURE.md. No CLAUDE.md. No AGENTS.md.
 
 If the runner later exposes a product defect: report FAIL and stop. A separate task fixes the product.
 
-**Mutexes / resources:** NONE reserved for AUTO-01 implementation.
+**Mutexes / resources:** PACKAGE — reserved for Lane 1 / PRIVATE-BETA-E2E-AUTO-01 after Keith's 2026-08-20 Playwright amendment.
 
-Do **not** reserve PROVIDER-LIVE, CREDIT, ENV, or STAGING merely to write the runner.
+Do **not** reserve PROVIDER-LIVE, CREDIT, ENV, or STAGING for Step 2 implementation.
 Do **not** reserve FRONTEND, GATEWAY, AI-SERVICE, or CONTAINER-MANAGER.
-Do **not** reserve PACKAGE in Step 1. Adding Playwright/`@playwright/test` is a Step 2 decision requiring explicit scope approval, after which PACKAGE may be acquired.
 
-Ownership is reservation only. It does **not** authorize runtime, provider, credit, env, or staging mutation.
+Ownership is reservation only. PACKAGE authorizes the minimum `@playwright/test` add plus Playwright Chromium browser download for local non-live tooling. It does **not** authorize runtime, provider, credit, env, or staging mutation.
 
 **Shared contracts (frozen; do not modify inside AUTO-01):**
 - PRIVATE-BETA-BLOCKER-03D deferred Build-accounting semantics
@@ -63115,7 +63116,7 @@ Ownership is reservation only. It does **not** authorize runtime, provider, cred
 - existing automatic post-apply checkpoint semantics
 - current Container Manager idle-timeout contract
 
-**Revert / evidence isolation:** Single-lane. New isolated `e2e/builder-golden-path/` files only. Reverting AUTO-01 must not invalidate locked E2E-05 / 03J / 03K evidence. Lane 2 remains EMPTY for the entire AUTO-01 lifecycle. Lane 3 remains DISABLED.
+**Revert / evidence isolation:** Single-lane. Isolated `e2e/builder-golden-path/` files plus the minimum root `@playwright/test` package/lockfile change. Reverting AUTO-01 must not invalidate locked E2E-05 / 03J / 03K evidence. Lane 2 remains EMPTY for the entire AUTO-01 lifecycle. Lane 3 remains DISABLED.
 
 **Purpose:** Replace the long manual Builder E2E operator procedure with one deterministic automated golden-path validation that Claude/Cursor can execute quickly and repeatedly. Deep forensic evidence is collected ONLY when an actual product failure occurs.
 
@@ -63170,26 +63171,67 @@ PASS/FAIL, projectId, sessionId, executionId, provider/model, tokens_used, file 
 8. Network/public-confirm observation: Playwright request/response listeners would be capable; currently only Keith DevTools. Frontend automatically POSTs `/api/ai/executions/:executionId/confirm-build-apply` after qualifying AUTO_APPLY via `requestBuildApplyConfirmation`.
 9. Read-only DB/evidence helpers: E2E-05 stage-start documents contain operator `psql` snippets, not a reusable code helper. Step 2 may wrap those as **non-live mocked** helpers. Live SSH/psql is out of AUTO-01 implementation.
 10. Step 2 files: listed under Primary write scope above.
-11. Dependency/package change required for a real browser runner: YES — explicit Step 2 approval required before adding Playwright/`@playwright/test`. Non-live contract tests can use existing `node:test` with no new dependency (`node --test e2e/builder-golden-path/golden-path.contract.test.mjs`).
-12. Non-live validation without Docker/provider/credits: YES — Step 2 implements the runner + contract tests in dry-run / live-gated-off mode.
+11. Dependency/package change required for a real browser runner: YES — **now explicitly approved**. Step 2 may add `@playwright/test` only.
+12. Non-live validation without Docker/provider/credits: YES — Step 2 implements the real Playwright runner and validates only CONTRACT/DRY mode.
+
+**Step 1 amendment — Playwright scope (2026-08-20):**
+
+Keith explicitly approved adding Playwright, reserving PACKAGE, and building a real automated browser golden-path runner in Step 2. No packages were installed in this amendment. No live execution.
+
+Package manager / lockfile discovery:
+- Actual lockfile: root `package-lock.json` (`lockfileVersion` 3) — **npm**
+- Root `package.json` declares `"packageManager": "bun@1.x"` but **no bun lockfile exists**
+- Staging/docs and CLAUDE validation commands use `npm ci` / `npm test`
+- Workspaces: `services/*`, `frontend` — `e2e/` is not a workspace
+- Step 2 must use **npm** against the existing root lockfile
+- Approved package: `@playwright/test` only — no second browser-automation library
+- Step 2 may download Playwright Chromium for local non-live tooling (`npx playwright install chromium` or equivalent). That is not product runtime. Do not start Docker/Postgres/Redis. Do not access staging in Step 2.
+
+**Automation contract (frozen for Step 2):**
+1. Fresh browser context every run
+2. Current frontend loaded freshly before project/session creation
+3. No long-lived Keith browser dependency
+4. No manual Apply assumption
+5. Current non-risky one-file Builder flow = AUTO_APPLY
+6. Preview happens immediately after auto-apply
+7. Workspace-dependent checks happen before slow evidence collection
+8. No artificial keepalive
+9. One provider call maximum in eventual live mode
+10. No provider retry
+11. Always restore GLOBAL_EXECUTION_ENABLED=false
+12. PASS output concise
+13. FAIL output collects only targeted diagnostics
+14. No giant forensic dump on successful runs
+15. No manual 03H tab-switch ceremony in the golden path
+16. Authoritative balance validation should be deterministic
+17. Browser/network automation must observe public confirm-build-apply directly
+18. Runner must expose phase-level PASS/FAIL and useful IDs
+
+**Auth strategy:** drive the existing login flow `POST /api/auth/login` through the app so `aisandbox_session` / `aisandbox_csrf` are established by normal browser behavior. Credentials from environment variables (or another existing safe test mechanism). Do not hard-code Keith cookies. Do not commit secrets. Staging credentials must be optional in CONTRACT/DRY; LIVE may require them later.
+
+**Modes:**
+- CONTRACT / DRY (default): validate runner structure, sequencing, safety gates, and helpers. No staging. No provider. No credit mutation.
+- LIVE: disabled unless explicit required environment flags are present; refuse to run accidentally; `PROVIDER_CALL_BUDGET=1`; no retry; eventually targets staging. AUTO-01 Step 2 must not execute LIVE.
+
+**Safety default:** fail closed. A normal test invocation must not become a paid live test. Without explicit LIVE authorization/config: no staging mutation, no execution-gate enable, no provider, no intentional deduction.
 
 **Lifecycle steps:**
-1. Registration + Minimal Automation Contract — COMPLETE — 2026-08-20
-2. Implement Automated Golden-Path Runner + Non-Live Validation — PENDING — no live provider; no credit mutation; no staging mutation; Playwright add not authorized unless Keith explicitly expands scope
+1. Registration + Minimal Automation Contract — COMPLETE — 2026-08-20 — amended Playwright approval + PACKAGE reservation — 2026-08-20
+2. Implement Real Automated Golden-Path Runner + Non-Live Validation — PENDING — Playwright/`@playwright/test` authorized; Chromium tooling download authorized; no live provider; no credit mutation; no staging mutation
 3. Consolidation + Automation-Ready Verdict — PENDING
 
-**Authorization flags (Step 1):**
+**Authorization flags (after Playwright amendment):**
 - RUNTIME_EXECUTION_AUTHORIZED=NO
 - PROVIDER_CALL_AUTHORIZED=NO
 - CREDIT_MUTATION_AUTHORIZED=NO
 - STAGING_MUTATION_AUTHORIZED=NO
-- PLAYWRIGHT_DEPENDENCY_AUTHORIZED=NO
+- PLAYWRIGHT_DEPENDENCY_AUTHORIZED=YES
 
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E
 
-**Exact next step:** PRIVATE-BETA-E2E-AUTO-01 Step 2 — Implement Automated Golden-Path Runner + Non-Live Validation. Fresh window. Do not run live provider. Do not add Playwright unless explicitly approved.
+**Exact next step:** PRIVATE-BETA-E2E-AUTO-01 Step 2 — Implement Real Automated Golden-Path Runner + Non-Live Validation. Fresh window. Add `@playwright/test` via npm. Validate CONTRACT/DRY only. Do not run LIVE. Do not call xAI. Do not deduct credits.
 
 ---
 
@@ -63208,17 +63250,30 @@ Registration / control-plane:
 - [x] preview-immediately-after-apply frozen
 - [x] no 03H tab-switch ceremony as golden-path blocker
 - [x] live mode gated off for this task
+- [x] Keith explicitly approved Playwright + PACKAGE reservation (2026-08-20 amendment)
+- [x] PACKAGE reserved for Lane 1 / AUTO-01
+- [x] PLAYWRIGHT_DEPENDENCY_AUTHORIZED=YES
+- [x] package manager / lockfile recorded (npm + root `package-lock.json`)
 
-Step 2 (not complete in Step 1):
-- [ ] isolated runner files created under `e2e/builder-golden-path/`
-- [ ] non-live `node:test` contract validation PASS
-- [ ] live provider mode exists but is not executed
-- [ ] no production source mutation
-- [ ] no package/dependency change unless explicitly approved
-- [ ] fast-fail + PASS short summary + FAIL targeted diagnostics encoded
-- [ ] GLOBAL_EXECUTION_ENABLED restore-false encoded
-- [ ] PROVIDER_CALL_BUDGET=1 / no retry encoded
-- [ ] no Docker / provider / credit / staging mutation
+Step 2 (not complete; real Playwright runner + non-live validation):
+- [ ] Playwright added with minimum dependency change (`@playwright/test` via npm; root `package.json` + `package-lock.json`)
+- [ ] Chromium available (Playwright browser download for local non-live tooling)
+- [ ] isolated automation directory exists
+- [ ] fresh browser context helper exists
+- [ ] authentication helper exists (`POST /api/auth/login`; env credentials; no committed secrets)
+- [ ] AUTO_APPLY model encoded
+- [ ] preview-first sequencing encoded
+- [ ] public confirm network observation encoded
+- [ ] checkpoint/deduction/balance evidence interfaces encoded
+- [ ] cleanup/final gate restoration encoded
+- [ ] one-call/no-retry guard encoded
+- [ ] dry/non-live mode fails closed
+- [ ] tests for phase ordering and safety guards PASS
+- [ ] no staging/provider/credit execution occurs during Step 2
+- [ ] exact one-command invocation documented
+- [ ] no production source modification unless separately approved
+- [ ] LIVE mode exists but is not executed
+- [ ] no Docker / Postgres / Redis start
 
 Step 3 (not complete in Step 1):
 - [ ] checkpoint created
@@ -63228,15 +63283,16 @@ Step 3 (not complete in Step 1):
 
 ---
 
-**PRIVATE-BETA-E2E-AUTO-01 status:** ACTIVE — Step 1 COMPLETE — Registration + Minimal Automation Contract — 2026-08-20
+**PRIVATE-BETA-E2E-AUTO-01 status:** ACTIVE — Step 1 COMPLETE, amended Playwright approval — 2026-08-20
 **Assigned lane:** Lane 1
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
-**Step 1:** COMPLETE — Registration + Minimal Automation Contract — 2026-08-20
-**Step 2:** PENDING — Implement Automated Golden-Path Runner + Non-Live Validation
+**Mutexes / resources:** PACKAGE owned by Lane 1 / PRIVATE-BETA-E2E-AUTO-01
+**Step 1:** COMPLETE — Registration + Minimal Automation Contract — 2026-08-20 — amended Playwright approval + PACKAGE reservation — 2026-08-20
+**Step 2:** PENDING — Implement Real Automated Golden-Path Runner + Non-Live Validation
 **Step 3:** PENDING — Consolidation + Automation-Ready Verdict
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_E2E
-**Exact next step:** PRIVATE-BETA-E2E-AUTO-01 Step 2 — Implement Automated Golden-Path Runner + Non-Live Validation
+**Exact next step:** PRIVATE-BETA-E2E-AUTO-01 Step 2 — Implement Real Automated Golden-Path Runner + Non-Live Validation
 
 
