@@ -26,6 +26,7 @@ export const SAFE_MINIMUM_HEADROOM_MS = 600_000;
 export const PREVIEW_TIMEOUT_MS = 15_000;
 export const AUTO_APPLY_TIMEOUT_MS = 180_000;
 export const BUILD_TIMEOUT_MS = 180_000;
+export const SESSION_CREATE_TIMEOUT_MS = 30_000;
 
 export const SELECTORS = {
   email: '#email',

@@ -74,6 +74,128 @@ function html(res: http.ServerResponse, status: number, body: string): void {
   res.end(body);
 }
 
+export type SessionRaceMode =
+  | 'auto-on-create'
+  | 'session-before-project'
+  | 'on-card-click'
+  | 'never';
+
+export const SESSION_RACE_PROJECT_ID = 'project-race-1';
+export const SESSION_RACE_SESSION_ID = 'session-race-1';
+
+export interface SessionRaceFixtureServer extends LocalFixtureServer {
+  sessionPostCount(): number;
+}
+
+function sessionRaceAppPage(mode: SessionRaceMode): string {
+  return `<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Session race fixture</title></head>
+<body>
+  <button data-testid="workspace-sidebar-nav-projects" type="button">Projects</button>
+  <button data-testid="workspace-projects-new-project-button" type="button">New project</button>
+  <input data-testid="workspace-projects-new-project-input" />
+  <button data-testid="workspace-projects-create-confirm-button" type="button">Create</button>
+  <div id="cards"></div>
+  <textarea data-testid="workspace-chat-prompt-input" hidden></textarea>
+  <script>
+    const PROJECT_ID = ${JSON.stringify(SESSION_RACE_PROJECT_ID)};
+    const MODE = ${JSON.stringify(mode)};
+    window.__cardClicks = 0;
+    function showPrompt() {
+      document.querySelector('[data-testid="workspace-chat-prompt-input"]').hidden = false;
+    }
+    function showCard() {
+      if (document.querySelector('[data-testid="workspace-project-card-' + PROJECT_ID + '"]')) {
+        return;
+      }
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.setAttribute('data-testid', 'workspace-project-card-' + PROJECT_ID);
+      button.textContent = 'Open project';
+      button.addEventListener('click', async () => {
+        window.__cardClicks += 1;
+        if (MODE === 'never') {
+          return;
+        }
+        const sessionRes = await fetch('/api/sessions', { method: 'POST' });
+        await sessionRes.json();
+        showPrompt();
+      });
+      document.getElementById('cards').appendChild(button);
+    }
+    document.querySelector('[data-testid="workspace-projects-create-confirm-button"]')
+      .addEventListener('click', async () => {
+        if (MODE === 'session-before-project') {
+          const sessionRes = await fetch('/api/sessions', { method: 'POST' });
+          await sessionRes.json();
+          await new Promise((resolve) => setTimeout(resolve, 80));
+          const projectRes = await fetch('/api/projects', { method: 'POST' });
+          await projectRes.json();
+          showPrompt();
+          return;
+        }
+        const projectRes = await fetch('/api/projects', { method: 'POST' });
+        await projectRes.json();
+        if (MODE === 'auto-on-create') {
+          const sessionRes = await fetch('/api/sessions', { method: 'POST' });
+          await sessionRes.json();
+          showPrompt();
+          showCard();
+          return;
+        }
+        showCard();
+      });
+  </script>
+</body>
+</html>`;
+}
+
+export function createSessionRaceFixtureServer(
+  mode: SessionRaceMode,
+): Promise<SessionRaceFixtureServer> {
+  let sessionPosts = 0;
+  const appPage = sessionRaceAppPage(mode);
+  const server = http.createServer((req, res) => {
+    const url = new URL(req.url ?? '/', 'http://127.0.0.1');
+    if (req.method === 'GET' && url.pathname === '/en/app') {
+      html(res, 200, appPage);
+      return;
+    }
+    if (req.method === 'POST' && /\/api\/projects\/?$/.test(url.pathname)) {
+      json(res, 201, { id: SESSION_RACE_PROJECT_ID });
+      return;
+    }
+    if (req.method === 'POST' && /\/api\/sessions\/?$/.test(url.pathname)) {
+      sessionPosts += 1;
+      json(res, 201, { id: SESSION_RACE_SESSION_ID });
+      return;
+    }
+    json(res, 404, { error: 'not found' });
+  });
+
+  return new Promise((resolve, reject) => {
+    server.listen(0, '127.0.0.1', () => {
+      const address = server.address() as AddressInfo;
+      resolve({
+        url: `http://127.0.0.1:${address.port}`,
+        sessionPostCount: () => sessionPosts,
+        close: () =>
+          new Promise((closeResolve, closeReject) => {
+            server.close((error) => {
+              if (error) {
+                closeReject(error);
+              } else {
+                closeResolve();
+              }
+            });
+          }),
+      });
+    });
+    server.on('error', reject);
+  });
+}
+
 export function createLocalFixtureServer(): Promise<LocalFixtureServer> {
   const server = http.createServer((req, res) => {
     const url = new URL(req.url ?? '/', 'http://127.0.0.1');

@@ -1,4 +1,5 @@
 import type { Page, Response } from '@playwright/test';
+import { SESSION_CREATE_TIMEOUT_MS } from './constants';
 
 export const PUBLIC_CONFIRM_PATH_PATTERN =
   /\/api\/ai\/executions\/([^/?#]+)\/confirm-build-apply\/?$/;
@@ -140,6 +141,124 @@ export async function armConfirmBuildApplyListener(
           clearTimeout(timer);
           resolve(capture);
         });
+      });
+    },
+    async dispose() {
+      page.off('response', onResponse);
+    },
+  };
+}
+
+export const SESSION_CREATE_PATH_PATTERN = /\/api\/sessions\/?$/;
+
+export interface SessionCreateCapture {
+  url: string;
+  status: number;
+  body: unknown;
+  sessionId: string | null;
+}
+
+export interface SessionCreateListener {
+  captures: SessionCreateCapture[];
+  hasObserved(): boolean;
+  first(): SessionCreateCapture | undefined;
+  waitForFirst(timeoutMs?: number): Promise<SessionCreateCapture>;
+  dispose(): Promise<void>;
+}
+
+export class SessionObservationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'SessionObservationError';
+  }
+}
+
+export function isSessionCreateUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url, 'http://localhost');
+    return SESSION_CREATE_PATH_PATTERN.test(parsed.pathname);
+  } catch {
+    return SESSION_CREATE_PATH_PATTERN.test(url);
+  }
+}
+
+export function extractSessionIdFromCreateBody(raw: unknown): string | null {
+  if (!raw || typeof raw !== 'object') {
+    return null;
+  }
+  const id = (raw as { id?: unknown }).id;
+  return typeof id === 'string' && id.trim().length > 0 ? id : null;
+}
+
+export async function armSessionCreateListener(
+  page: Page,
+): Promise<SessionCreateListener> {
+  const captures: SessionCreateCapture[] = [];
+  const waiters: Array<(capture: SessionCreateCapture) => void> = [];
+  let observed = false;
+
+  const onResponse = (response: Response): void => {
+    if (response.request().method() !== 'POST') {
+      return;
+    }
+    if (!isSessionCreateUrl(response.url())) {
+      return;
+    }
+    if (!response.ok()) {
+      return;
+    }
+    observed = true;
+    void (async () => {
+      let body: unknown = null;
+      try {
+        body = await response.json();
+      } catch {
+        body = await response.text().catch(() => null);
+      }
+      const capture: SessionCreateCapture = {
+        url: response.url(),
+        status: response.status(),
+        body,
+        sessionId: extractSessionIdFromCreateBody(body),
+      };
+      captures.push(capture);
+      const waiter = waiters.shift();
+      waiter?.(capture);
+    })();
+  };
+
+  page.on('response', onResponse);
+
+  return {
+    captures,
+    hasObserved() {
+      return observed;
+    },
+    first() {
+      return captures[0];
+    },
+    waitForFirst(timeoutMs = SESSION_CREATE_TIMEOUT_MS) {
+      if (captures[0]) {
+        return Promise.resolve(captures[0]);
+      }
+      return new Promise<SessionCreateCapture>((resolve, reject) => {
+        let timer: ReturnType<typeof setTimeout>;
+        const onCapture = (capture: SessionCreateCapture): void => {
+          clearTimeout(timer);
+          resolve(capture);
+        };
+        timer = setTimeout(() => {
+          const index = waiters.indexOf(onCapture);
+          if (index >= 0) {
+            waiters.splice(index, 1);
+          }
+          reject(
+            new SessionObservationError(
+              `Timed out waiting for POST /api/sessions after ${timeoutMs}ms.`,
+            ),
+          );
+        }, timeoutMs);
+        waiters.push(onCapture);
       });
     },
     async dispose() {

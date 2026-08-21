@@ -6,6 +6,7 @@ import {
   assertLiveStagingExecutorBound,
   createLiveAdapters,
   createLiveStagingHelper,
+  createProjectAndObserveSession,
 } from '../lib/live-adapters';
 import {
   LIVE_GUARD_KEYS,
@@ -39,6 +40,13 @@ import {
 import { GOLDEN_PATH_PHASES } from '../lib/phases';
 import { createRecordingAdapters, runGoldenPath } from '../lib/runner';
 import { ExecutionGateTracker, ProviderCallGuard } from '../lib/safety-gates';
+import { SELECTORS, SESSION_CREATE_TIMEOUT_MS } from '../lib/constants';
+import { SessionObservationError } from '../lib/network';
+import {
+  createSessionRaceFixtureServer,
+  SESSION_RACE_PROJECT_ID,
+  SESSION_RACE_SESSION_ID,
+} from '../lib/local-fixture';
 
 const HISTORICAL_E2E05_SHA = 'c3e39279abe3c0d6c348daa312107c8f6fc592b7';
 const DYNAMIC_HEAD_A = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
@@ -712,5 +720,163 @@ test.describe('AUTO-01C post-gate gateway-ready wait', () => {
     expect(executeCalled).toBe(false);
     expect(liveConfig.retries).toBe(0);
     expect(new ProviderCallGuard(1).remaining).toBe(1);
+  });
+});
+
+test.describe('AUTO-01D CREATE_SESSION response-observation race', () => {
+  test.describe.configure({ mode: 'serial' });
+  test('arms session observation before create-project confirm and keeps AUTO-01C ready-wait', () => {
+    const liveAdaptersSource = fs.readFileSync(
+      path.join(__dirname, '../lib/live-adapters.ts'),
+      'utf8',
+    );
+    const networkSource = fs.readFileSync(path.join(__dirname, '../lib/network.ts'), 'utf8');
+    const stagingSource = fs.readFileSync(path.join(__dirname, '../lib/staging.ts'), 'utf8');
+    const armIdx = liveAdaptersSource.indexOf('armSessionCreateListener(page)');
+    const confirmClickIdx = liveAdaptersSource.indexOf(
+      'page.locator(SELECTORS.createProjectConfirm).click()',
+    );
+    expect(armIdx).toBeGreaterThan(-1);
+    expect(confirmClickIdx).toBeGreaterThan(armIdx);
+    expect(liveAdaptersSource).not.toMatch(
+      /waitForResponse\([\s\S]*\/api\\\/sessions/,
+    );
+    expect(networkSource).toContain('armSessionCreateListener');
+    expect(SESSION_CREATE_TIMEOUT_MS).toBeGreaterThanOrEqual(30_000);
+    expect(SESSION_CREATE_TIMEOUT_MS).toBeLessThanOrEqual(60_000);
+    expect(stagingSource).toContain('waitForGatewayReady');
+    expect(GOLDEN_PATH_PHASES.indexOf('PREVIEW')).toBe(
+      GOLDEN_PATH_PHASES.indexOf('WAIT_FOR_AUTO_APPLY') + 1,
+    );
+    expect(liveConfig.retries).toBe(0);
+    expect(new ProviderCallGuard(1).remaining).toBe(1);
+  });
+
+  test('captures POST /api/sessions fired immediately by create-project confirm and does not click the card', async ({
+    page,
+  }) => {
+    const fixture = await createSessionRaceFixtureServer('auto-on-create');
+    try {
+      await page.goto(`${fixture.url}/en/app`);
+      await page.locator(SELECTORS.sidebarProjects).click();
+      await page.locator(SELECTORS.newProjectButton).click();
+      await page.locator(SELECTORS.newProjectInput).fill('demo');
+      const result = await createProjectAndObserveSession(page, { timeoutMs: 5_000 });
+      expect(result.projectId).toBe(SESSION_RACE_PROJECT_ID);
+      expect(result.sessionId).toBe(SESSION_RACE_SESSION_ID);
+      expect(result.clickedProjectCard).toBe(false);
+      expect(fixture.sessionPostCount()).toBe(1);
+      expect(await page.evaluate(() => (window as { __cardClicks?: number }).__cardClicks ?? 0)).toBe(
+        0,
+      );
+    } finally {
+      await fixture.close();
+    }
+  });
+
+  test('captures a session response that arrives before project-response parsing completes', async ({
+    page,
+  }) => {
+    const fixture = await createSessionRaceFixtureServer('session-before-project');
+    try {
+      await page.goto(`${fixture.url}/en/app`);
+      const result = await createProjectAndObserveSession(page, { timeoutMs: 5_000 });
+      expect(result.projectId).toBe(SESSION_RACE_PROJECT_ID);
+      expect(result.sessionId).toBe(SESSION_RACE_SESSION_ID);
+      expect(result.clickedProjectCard).toBe(false);
+      expect(fixture.sessionPostCount()).toBe(1);
+    } finally {
+      await fixture.close();
+    }
+  });
+
+  test('falls back to one project-card click when create-project does not auto-open a session', async ({
+    page,
+  }) => {
+    const fixture = await createSessionRaceFixtureServer('on-card-click');
+    try {
+      await page.goto(`${fixture.url}/en/app`);
+      const result = await createProjectAndObserveSession(page, { timeoutMs: 5_000 });
+      expect(result.projectId).toBe(SESSION_RACE_PROJECT_ID);
+      expect(result.sessionId).toBe(SESSION_RACE_SESSION_ID);
+      expect(result.clickedProjectCard).toBe(true);
+      expect(fixture.sessionPostCount()).toBe(1);
+      expect(await page.evaluate(() => (window as { __cardClicks?: number }).__cardClicks ?? 0)).toBe(
+        1,
+      );
+    } finally {
+      await fixture.close();
+    }
+  });
+
+  test('missing session response fails inside the bounded adapter timeout', async ({ page }) => {
+    const fixture = await createSessionRaceFixtureServer('never');
+    try {
+      await page.goto(`${fixture.url}/en/app`);
+      const started = Date.now();
+      await expect(
+        createProjectAndObserveSession(page, { timeoutMs: 400 }),
+      ).rejects.toBeInstanceOf(SessionObservationError);
+      expect(Date.now() - started).toBeLessThan(5_000);
+    } finally {
+      await fixture.close();
+    }
+  });
+
+  test('CREATE_SESSION observation failure returns through runGoldenPath so CLEANUP restores the gate', async () => {
+    const recording = createRecordingAdapters({ enableGate: true });
+    recording.adapters.createSession = async () => {
+      recording.calls.push('CREATE_SESSION');
+      throw new SessionObservationError('Timed out waiting for POST /api/sessions after 400ms.');
+    };
+    const providerGuard = new ProviderCallGuard(1);
+    const result = await runGoldenPath({
+      mode: 'contract',
+      adapters: recording.adapters,
+      gateTracker: recording.gateTracker,
+      providerGuard,
+    });
+
+    expect(result.summary.verdict).toBe('FAIL');
+    if (result.summary.verdict === 'FAIL') {
+      expect(result.summary.phase).toBe('CREATE_SESSION');
+      expect(result.summary.error).toMatch(/POST \/api\/sessions/);
+      expect(result.summary.executionGateFinal).toBe('restored-false');
+      expect(result.summary.cleanup).toBe('session-stopped');
+    }
+    expect(result.phases).toContain('CLEANUP');
+    expect(result.phases).not.toContain('BUILD');
+    expect(recording.calls.at(-1)).toBe('CLEANUP');
+    expect(providerGuard.usedCount).toBe(0);
+    expect(providerGuard.remaining).toBe(1);
+    expect(liveConfig.retries).toBe(0);
+    expect(GOLDEN_PATH_PHASES.indexOf('PREVIEW')).toBe(
+      GOLDEN_PATH_PHASES.indexOf('WAIT_FOR_AUTO_APPLY') + 1,
+    );
+  });
+
+  test('LIVE createSession captures an auto-opened session without a second POST', async ({
+    browser,
+  }) => {
+    const fixture = await createSessionRaceFixtureServer('auto-on-create');
+    const helper = fastReadyHelper({
+      env: liveEnvWithCreds,
+      execute: async () => '',
+    });
+    const live = await createLiveAdapters({
+      browser,
+      env: { ...liveEnvWithCreds, E2E_BASE_URL: fixture.url },
+      staging: helper,
+      readLocalHead: async () => DYNAMIC_HEAD_B,
+    });
+    try {
+      const created = await live.adapters.createSession();
+      expect(created.projectId).toBe(SESSION_RACE_PROJECT_ID);
+      expect(created.sessionId).toBe(SESSION_RACE_SESSION_ID);
+      expect(fixture.sessionPostCount()).toBe(1);
+    } finally {
+      await live.context.close();
+      await fixture.close();
+    }
   });
 });

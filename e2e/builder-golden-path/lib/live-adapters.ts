@@ -8,6 +8,7 @@ import {
   PREVIEW_TIMEOUT_MS,
   PROVIDER,
   SELECTORS,
+  SESSION_CREATE_TIMEOUT_MS,
   disposableProjectName,
   projectCardSelector,
 } from './constants';
@@ -18,6 +19,8 @@ import {
 } from './auth';
 import {
   armConfirmBuildApplyListener,
+  armSessionCreateListener,
+  SessionObservationError,
   validateLiveConfirmResponse,
   type ConfirmListener,
 } from './network';
@@ -77,6 +80,71 @@ export function createLiveStagingHelper(options: {
 export function assertLiveStagingExecutorBound(staging: StagingHelper): void {
   if (!staging.hasExecutor()) {
     throw new SshExecutorMissingError();
+  }
+}
+
+export interface ObservedSessionCreate {
+  projectId: string;
+  sessionId: string;
+  sessionCreatedAt: number;
+  clickedProjectCard: boolean;
+}
+
+export async function createProjectAndObserveSession(
+  page: Page,
+  options?: { timeoutMs?: number },
+): Promise<ObservedSessionCreate> {
+  const timeoutMs = options?.timeoutMs ?? SESSION_CREATE_TIMEOUT_MS;
+  const startedAt = Date.now();
+  const sessionListener = await armSessionCreateListener(page);
+  try {
+    const projectResponsePromise = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'POST' &&
+        /\/api\/projects\/?$/.test(new URL(response.url()).pathname) &&
+        response.ok(),
+    );
+    await page.locator(SELECTORS.createProjectConfirm).click();
+    const projectResponse = await projectResponsePromise;
+    const projectPayload = (await projectResponse.json()) as { id?: string };
+    if (!projectPayload.id) {
+      throw new SessionObservationError('Project create response did not include id.');
+    }
+
+    let clickedProjectCard = false;
+    if (!sessionListener.hasObserved()) {
+      const card = page.locator(projectCardSelector(projectPayload.id));
+      const settleMs = Math.max(0, Math.min(1_000, timeoutMs - (Date.now() - startedAt)));
+      const settleDeadline = Date.now() + settleMs;
+      while (!sessionListener.hasObserved() && Date.now() < settleDeadline) {
+        if ((await card.count()) > 0) {
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+      if (!sessionListener.hasObserved() && (await card.count()) > 0) {
+        await card.click();
+        clickedProjectCard = true;
+      }
+    }
+
+    const remaining = timeoutMs - (Date.now() - startedAt);
+    const waitMs = sessionListener.hasObserved()
+      ? Math.max(2_000, remaining)
+      : Math.max(0, remaining);
+    const sessionCapture = await sessionListener.waitForFirst(waitMs);
+    const sessionId = sessionCapture.sessionId;
+    if (!sessionId) {
+      throw new SessionObservationError('Session create response did not include id.');
+    }
+    return {
+      projectId: projectPayload.id,
+      sessionId,
+      sessionCreatedAt: Date.now(),
+      clickedProjectCard,
+    };
+  } finally {
+    await sessionListener.dispose();
   }
 }
 
@@ -161,34 +229,12 @@ export async function createLiveAdapters(
       const projectName = disposableProjectName();
       await page.locator(SELECTORS.newProjectButton).click();
       await page.locator(SELECTORS.newProjectInput).fill(projectName);
-      const projectResponsePromise = page.waitForResponse(
-        (response) =>
-          response.request().method() === 'POST' &&
-          /\/api\/projects\/?$/.test(new URL(response.url()).pathname) &&
-          response.ok(),
-      );
-      await page.locator(SELECTORS.createProjectConfirm).click();
-      const projectResponse = await projectResponsePromise;
-      const projectPayload = (await projectResponse.json()) as { id?: string };
-      if (!projectPayload.id) {
-        throw new Error('Project create response did not include id.');
-      }
-      projectId = projectPayload.id;
-
-      const sessionResponsePromise = page.waitForResponse(
-        (response) =>
-          response.request().method() === 'POST' &&
-          /\/api\/sessions\/?$/.test(new URL(response.url()).pathname) &&
-          response.ok(),
-      );
-      await page.locator(projectCardSelector(projectId)).click();
-      const sessionResponse = await sessionResponsePromise;
-      const sessionPayload = (await sessionResponse.json()) as { id?: string };
-      if (!sessionPayload.id) {
-        throw new Error('Session create response did not include id.');
-      }
-      sessionId = sessionPayload.id;
-      sessionCreatedAt = Date.now();
+      const created = await createProjectAndObserveSession(page, {
+        timeoutMs: SESSION_CREATE_TIMEOUT_MS,
+      });
+      projectId = created.projectId;
+      sessionId = created.sessionId;
+      sessionCreatedAt = created.sessionCreatedAt;
       await page.locator(SELECTORS.promptInput).waitFor({ timeout: 60_000 });
       return { projectId, sessionId, sessionCreatedAt };
     },

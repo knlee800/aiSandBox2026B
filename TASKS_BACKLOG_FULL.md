@@ -65406,3 +65406,143 @@ Step 3 (COMPLETE — 2026-08-21 — COMPLETE AND LOCKED — FAIL/BLOCKED — AUT
 **PROVIDER_CALL_USED:** 0
 **CREDITS_DEDUCTED:** 0
 **Exact next:** Do not rerun LIVE-04. Do not retry LIVE-03. LIVE-04 remains COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CREATE_SESSION — not a product failure of session create, not ENVIRONMENT/PARITY_FAILURE, not a provider failure. LIVE-03 is not converted to PASS. AUTO-01C remains COMPLETE AND LOCKED — PASS (ready-wait held on LIVE). Do not modify AUTO-01/AUTO-01A/AUTO-01B/AUTO-01C. Do not return to manual browser testing. Do not register PRIVATE-BETA-INVITE-01. Exact blocker: CREATE_SESSION automation waits for POST /api/sessions response evidence even though the session had already been created; investigate response-listener ordering/race in a separate tooling task. Next recommended lifecycle (NOT REGISTERED HERE): PRIVATE-BETA-E2E-AUTO-01D — TINY AUTOMATION_TOOLING_FIX — CREATE_SESSION response-listener ordering/race.
+
+---
+
+### PRIVATE-BETA-E2E-AUTO-01D — CREATE_SESSION Response Observation Race Fix
+
+**Task ID:** PRIVATE-BETA-E2E-AUTO-01D
+**Title:** CREATE_SESSION Response Observation Race Fix
+**Workstream:** RELIABILITY
+**Lifecycle:** 2-step TINY
+**Status:** ACTIVE — Step 1 COMPLETE — 2026-08-21 — ready for Step 2 consolidation
+**Assigned lane:** Lane 1
+**Lane 2:** EMPTY
+**Lane 3:** DISABLED
+**Registered:** 2026-08-21
+**Approved:** Keith — 2026-08-21 (explicit TINY AUTO-01 child follow-up to LIVE-04 CREATE_SESSION adapter gap)
+**Nature:** AUTOMATION_TOOLING_FIX. Not a product defect. Bounded child of locked PRIVATE-BETA-E2E-AUTO-01. Separate follow-up from locked PRIVATE-BETA-E2E-LIVE-04. Does not rewrite AUTO-01 / AUTO-01A / AUTO-01B / AUTO-01C. Does not rerun LIVE-04. Does not retry LIVE-03. Does not register LIVE-05.
+**Evidence class:** LOCAL-TESTS
+**Hot-file leases:** `e2e/builder-golden-path/lib/live-adapters.ts`; `e2e/builder-golden-path/lib/network.ts`; `e2e/builder-golden-path/lib/constants.ts`; `e2e/builder-golden-path/lib/local-fixture.ts`; `e2e/builder-golden-path/tests/live-adapters.spec.ts`; `e2e/builder-golden-path/tests/network.spec.ts`
+**Identifier search:** PRIVATE-BETA-E2E-AUTO-01D was unused as a registered task ID before this registration. Repo-wide search found only LIVE-04 / AUTO-01C lock notes recommending it as a non-admitted next lifecycle. Existing E2E IDs: PRIVATE-BETA-E2E-01..05, PRIVATE-BETA-E2E-AUTO-01, PRIVATE-BETA-E2E-AUTO-01A, PRIVATE-BETA-E2E-AUTO-01B, PRIVATE-BETA-E2E-AUTO-01C, PRIVATE-BETA-E2E-LIVE-01, PRIVATE-BETA-E2E-LIVE-02, PRIVATE-BETA-E2E-LIVE-03, PRIVATE-BETA-E2E-LIVE-04. Rejected PRIVATE-BETA-E2E-AUTO-02 (implies another runner-build), PRIVATE-BETA-E2E-06 (implies another numbered manual E2E), and PRIVATE-BETA-E2E-LIVE-05 (LIVE re-run is out of this task). AUTO-01D is the next valid AUTO-01 child after locked AUTO-01C.
+
+**Start condition:** READY — PRIVATE-BETA-E2E-AUTO-01 COMPLETE AND LOCKED — PASS; PRIVATE-BETA-E2E-AUTO-01A COMPLETE AND LOCKED — PASS; PRIVATE-BETA-E2E-AUTO-01B COMPLETE AND LOCKED — PASS; PRIVATE-BETA-E2E-AUTO-01C COMPLETE AND LOCKED — PASS; PRIVATE-BETA-E2E-LIVE-04 COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CREATE_SESSION; Lane 1 EMPTY at admission; Lane 2 EMPTY; Lane 3 DISABLED; STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE UNOWNED at admission; OS v1 admission requirements pass.
+
+**Depends on:**
+- PRIVATE-BETA-E2E-AUTO-01 — COMPLETE AND LOCKED — PASS — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01-CHECKPOINT.md`
+- PRIVATE-BETA-E2E-AUTO-01A — COMPLETE AND LOCKED — PASS — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01A-CHECKPOINT.md`
+- PRIVATE-BETA-E2E-AUTO-01B — COMPLETE AND LOCKED — PASS — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01B-CHECKPOINT.md`
+- PRIVATE-BETA-E2E-AUTO-01C — COMPLETE AND LOCKED — PASS — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01C-CHECKPOINT.md`
+- PRIVATE-BETA-E2E-LIVE-04 — COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CREATE_SESSION — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-04-CHECKPOINT.md` — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-04-EXECUTION.md` — proven CREATE_SESSION hung waiting for POST /api/sessions response evidence after the session had already been created; do not rerun LIVE-04 until this task is implemented and validated; do not edit AUTO-01/AUTO-01A/AUTO-01B/AUTO-01C
+
+Does **not** depend on unfinished output from another lane. Does **not** authorize LIVE / staging / provider / credit activity.
+
+**LIVE-04 blocker link (failure class unchanged):**
+- LIVE-04 must **not** be rerun from this task. AUTO-01D Step 1 implements the CREATE_SESSION observer fix.
+- LIVE-04 failure remains **AUTOMATION_ADAPTER_FAILURE**, not product failure, not ENVIRONMENT/PARITY_FAILURE, not provider failure. LIVE-04 is not converted to PASS.
+- LIVE-04 preserved facts: AUTH PASS; SAFETY / AUTO-01B inspectParity PASS; AUTO-01C ready-wait PASS; STARTING_BALANCE PASS; deployment and exact HEAD parity PASS; server-side project/session/container creation succeeded (`818f9baa-98b2-40e9-bbf6-15b60824b989` / `d0e12d9f-8110-4cf3-b153-2e87de2bb721`); no second POST /api/sessions; Playwright 600000ms timeout aborted outside runGoldenPath; provider calls used = 0; credits deducted = 0; CLEANUP skipped by outer timeout.
+
+**Primary write scope:**
+- Step 1 (this window): `TASKS.md` CURRENT EXECUTION BOARD above LEGACY / FROZEN only; this canonical registry entry; `e2e/builder-golden-path/lib/live-adapters.ts`; `e2e/builder-golden-path/lib/network.ts`; `e2e/builder-golden-path/lib/constants.ts`; `e2e/builder-golden-path/lib/local-fixture.ts`; `e2e/builder-golden-path/tests/live-adapters.spec.ts`; `e2e/builder-golden-path/tests/network.spec.ts`
+- Step 2: checkpoint + board/registry end-status only
+- No production frontend/backend source. No package/lockfile change. No PRD.md. No ARCHITECTURE.md. No CLAUDE.md. No AGENTS.md. Do not rewrite locked AUTO-01 / AUTO-01A / AUTO-01B / AUTO-01C / LIVE-04 bodies.
+
+**Mutexes / resources:** GOVERNANCE acquired for this Step 1 board/registry write, then released. HOTFILE leases held until Step 2 lock. Do **not** reserve STAGING, PROVIDER-LIVE, CREDIT, ENV, PACKAGE, FRONTEND, GATEWAY, AI-SERVICE, or CONTAINER-MANAGER.
+
+**Shared contracts (frozen; do not weaken):**
+- PRIVATE-BETA-E2E-AUTO-01 runner contract — phase order, AUTO_APPLY, preview-immediately-after-apply, fail-closed LIVE, one-call/no-retry, finally-style cleanup
+- PRIVATE-BETA-E2E-AUTO-01A dynamic execution-edge parity + SSH executor wiring
+- PRIVATE-BETA-E2E-AUTO-01B labelled-sentinel inspectParity parser + LIVE-02 two-line clean-form compatibility
+- PRIVATE-BETA-E2E-AUTO-01C post-gate gateway-ready wait
+- PRIVATE-BETA-E2E-LIVE-04 Step 1 deployment+live contract (historical; do not rerun from this task)
+- LIVE authorization flags unchanged
+- provider budget exactly 1; retries 0
+- no provider call before STARTING_BALANCE succeeds
+- cleanup still restores `GLOBAL_EXECUTION_ENABLED=false`
+- no billing charges
+- no manual browser fallback
+
+**Revert / evidence isolation:** Isolated `e2e/builder-golden-path/` adapter/test files. Reverting AUTO-01D must not invalidate locked AUTO-01 / AUTO-01A / AUTO-01B / AUTO-01C / LIVE-04 / LIVE-03 / LIVE-02 / 03J / 03K evidence.
+
+**Purpose:** Make CREATE_SESSION session-response observation race-safe so an automatic POST /api/sessions during create/open-project is captured instead of hanging until the Playwright 600s test timeout.
+
+**Proven root cause (LIVE-04 + current frontend):** `handleCreateWorkspaceProject` POSTs `/api/projects` then immediately calls `openProjectInFreshSession`, which POSTs `/api/sessions`. The previous adapter armed `page.waitForResponse` for sessions only after parsing the project response, then clicked the project card. The session response could complete before that listener was armed, so the event was lost. The later card click reused the already-created session (no second POST). Playwright's 600000ms timeout then aborted outside `runGoldenPath`, skipping CLEANUP.
+
+**Step 1 implementation (2026-08-21):**
+- `armSessionCreateListener()` capture-style observer (same pattern as confirm-build-apply) armed before create-project confirm.
+- Early POST /api/sessions retained; consumed after projectId is known.
+- Project-card click only if no session has been observed and the card is present (card-only path); skipped when create already auto-opened a session.
+- Bounded `SESSION_CREATE_TIMEOUT_MS=30000`; timeout throws `SessionObservationError` inside `createSession` / `runGoldenPath`.
+- CONTRACT coverage for early capture, late card-click path, no duplicate POST, bounded timeout, and runGoldenPath CLEANUP/gate restore on CREATE_SESSION failure.
+- No LIVE / staging / provider / credit execution. No product source change.
+
+**Lifecycle steps:**
+1. Registration + bounded implementation + CONTRACT validation — COMPLETE — 2026-08-21 — this step
+2. Consolidation / checkpoint / lock — PENDING
+
+**Authorization flags:**
+- RUNTIME_EXECUTION_AUTHORIZED=NO
+- PROVIDER_CALL_AUTHORIZED=NO
+- CREDIT_MUTATION_AUTHORIZED=NO
+- STAGING_MUTATION_AUTHORIZED=NO
+
+**PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+**BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_AUTOMATED_E2E
+
+---
+
+#### Acceptance Criteria
+
+Registration / control-plane + implementation (Step 1):
+- [x] unique ID PRIVATE-BETA-E2E-AUTO-01D confirmed unused before registration
+- [x] OS v1 admission rules pass; admitted to Lane 1 only
+- [x] Lane 2 remains EMPTY
+- [x] Lane 3 remains DISABLED
+- [x] AUTO-01 / AUTO-01A / AUTO-01B / AUTO-01C remain locked and unedited
+- [x] LIVE-04 remains COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CREATE_SESSION
+- [x] LIVE-04 must not be rerun until AUTO-01D is implemented and validated
+- [x] LIVE-04 failure class remains AUTOMATION_ADAPTER_FAILURE (not product / not provider / not ENVIRONMENT/PARITY_FAILURE)
+- [x] HOTFILE leases reserved; STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE remain UNOWNED
+- [x] GOVERNANCE released after Step 1 board/registry write
+- [x] session-response observer armed before the earliest create-project action that can trigger POST /api/sessions
+- [x] early session response retained and consumed after projectId is known
+- [x] no duplicate session-triggering action after an already-captured session
+- [x] bounded CREATE_SESSION observation timeout (30s); SessionObservationError thrown inside runGoldenPath
+- [x] CREATE_SESSION observation failure executes CLEANUP and execution-gate restoration without the 600s Playwright test timeout
+- [x] provider budget remains exactly 1; retries remain 0; ProviderGuard unused when CREATE_SESSION fails
+- [x] AUTO_APPLY → PREVIEW phase ordering unchanged; AUTO-01C gateway-ready behavior unchanged
+- [x] CONTRACT tests added/updated; existing CONTRACT tests continue passing
+- [x] no LIVE / staging / provider / credit execution during this task
+- [x] no production frontend/backend source change
+- [x] no package/lockfile change
+- [x] no LIVE-04 rerun; no LIVE-03 retry; no LIVE-05 registration
+- [x] PRIVATE-BETA-INVITE-01 remains prohibited
+- [x] BUILDER_PRIVATE_BETA_READINESS remains NO_GO_PENDING_FRESH_AUTOMATED_E2E
+
+Step 2 (PENDING — Consolidation):
+- [ ] checkpoint created
+- [ ] COMPLETE AND LOCKED after required lane-local evidence
+- [ ] Lane 1 released EMPTY; HOTFILE / GOVERNANCE released
+- [ ] LIVE-04 remains unretried; LIVE-04 not converted to PASS; LIVE-05 not registered
+
+---
+
+**PRIVATE-BETA-E2E-AUTO-01D status:** ACTIVE — Step 1 COMPLETE — 2026-08-21
+**Classification:** AUTOMATION_TOOLING_FIX
+**Product defect:** NO
+**Production source modification:** NO
+**Assigned lane:** Lane 1
+**Lane 2:** EMPTY
+**Lane 3:** DISABLED
+**Mutexes / resources:** GOVERNANCE UNOWNED; HOTFILE leases held by AUTO-01D; STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE UNOWNED
+**Step 1:** COMPLETE — Registration + implementation + CONTRACT validation — 2026-08-21
+**Step 2:** PENDING — Consolidation / checkpoint / lock
+**PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+**BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_AUTOMATED_E2E
+**LIVE-04 rerun authorized:** NO
+**LIVE-04 passed:** NO
+**LIVE-05 registered:** NO
+**PROVIDER_CALL_AUTHORIZED:** 0
+**PROVIDER_CALL_USED:** 0
+**CREDITS_DEDUCTED:** 0
+**Exact next:** Step 2 consolidation / checkpoint / lock. Do not lock in Step 1. Do not rerun LIVE-04. Do not retry LIVE-03. Do not register LIVE-05. Do not modify AUTO-01/AUTO-01A/AUTO-01B/AUTO-01C. Do not return to manual browser testing. Do not claim LIVE staging golden-path validation. PRIVATE-BETA-INVITE-01 remains prohibited.
