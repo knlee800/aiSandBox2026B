@@ -173,6 +173,65 @@ export class SessionObservationError extends Error {
   }
 }
 
+export class ProjectCreateObservationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ProjectCreateObservationError';
+  }
+}
+
+export interface ProjectCreateBody {
+  id?: string;
+}
+
+function describeError(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+/**
+ * Playwright issues response-body reads with no timeout at all, so neither the
+ * config `actionTimeout` nor a per-call option can bound `Response.json()`.
+ * The bound therefore has to be owned by the runner.
+ */
+export async function readProjectCreateBody(
+  response: Pick<Response, 'json'>,
+  timeoutMs: number,
+): Promise<ProjectCreateBody> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const read = response.json().then(
+    (value: unknown) => ({ outcome: 'read' as const, value }),
+    (error: unknown) => ({ outcome: 'failed' as const, error }),
+  );
+  const expiry = new Promise<{ outcome: 'timeout' }>((resolve) => {
+    timer = setTimeout(() => resolve({ outcome: 'timeout' }), timeoutMs);
+  });
+  try {
+    const result = await Promise.race([read, expiry]);
+    if (result.outcome === 'timeout') {
+      throw new ProjectCreateObservationError(
+        `Timed out after ${timeoutMs}ms reading the project-create response body.`,
+      );
+    }
+    if (result.outcome === 'failed') {
+      throw new ProjectCreateObservationError(
+        `Could not read the project-create response body: ${describeError(result.error)}`,
+      );
+    }
+    return (result.value ?? {}) as ProjectCreateBody;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+export function projectCreateObservationTimeout(
+  timeoutMs: number,
+  error: unknown,
+): ProjectCreateObservationError {
+  return new ProjectCreateObservationError(
+    `Did not observe an ok project-create response within ${timeoutMs}ms: ${describeError(error)}`,
+  );
+}
+
 export function isSessionCreateUrl(url: string): boolean {
   try {
     const parsed = new URL(url, 'http://localhost');

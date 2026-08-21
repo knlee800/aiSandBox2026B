@@ -1,5 +1,5 @@
 import http from 'node:http';
-import type { AddressInfo } from 'node:net';
+import type { AddressInfo, Socket } from 'node:net';
 import { FROZEN_HTML, PREVIEW_HEADING, PREVIEW_PARAGRAPH } from './constants';
 
 export interface LocalFixtureServer {
@@ -78,7 +78,14 @@ export type SessionRaceMode =
   | 'auto-on-create'
   | 'session-before-project'
   | 'on-card-click'
-  | 'never';
+  | 'never'
+  | 'project-response-stalls'
+  | 'project-body-stalls'
+  | 'card-not-actionable'
+  | 'auto-open-removes-card';
+
+const AUTO_OPEN_SESSION_DELAY_MS = 150;
+const AUTO_OPEN_CARD_LIFETIME_MS = 200;
 
 export const SESSION_RACE_PROJECT_ID = 'project-race-1';
 export const SESSION_RACE_SESSION_ID = 'session-race-1';
@@ -105,6 +112,10 @@ function sessionRaceAppPage(mode: SessionRaceMode): string {
     function showPrompt() {
       document.querySelector('[data-testid="workspace-chat-prompt-input"]').hidden = false;
     }
+    function removeCard() {
+      const card = document.querySelector('[data-testid="workspace-project-card-' + PROJECT_ID + '"]');
+      card?.remove();
+    }
     function showCard() {
       if (document.querySelector('[data-testid="workspace-project-card-' + PROJECT_ID + '"]')) {
         return;
@@ -113,9 +124,12 @@ function sessionRaceAppPage(mode: SessionRaceMode): string {
       button.type = 'button';
       button.setAttribute('data-testid', 'workspace-project-card-' + PROJECT_ID);
       button.textContent = 'Open project';
+      if (MODE === 'card-not-actionable') {
+        button.disabled = true;
+      }
       button.addEventListener('click', async () => {
         window.__cardClicks += 1;
-        if (MODE === 'never') {
+        if (MODE === 'never' || MODE === 'card-not-actionable') {
           return;
         }
         const sessionRes = await fetch('/api/sessions', { method: 'POST' });
@@ -144,6 +158,14 @@ function sessionRaceAppPage(mode: SessionRaceMode): string {
           showCard();
           return;
         }
+        if (MODE === 'auto-open-removes-card') {
+          const sessionRes = await fetch('/api/sessions', { method: 'POST' });
+          await sessionRes.json();
+          showCard();
+          showPrompt();
+          setTimeout(removeCard, ${AUTO_OPEN_CARD_LIFETIME_MS});
+          return;
+        }
         showCard();
       });
   </script>
@@ -156,6 +178,8 @@ export function createSessionRaceFixtureServer(
 ): Promise<SessionRaceFixtureServer> {
   let sessionPosts = 0;
   const appPage = sessionRaceAppPage(mode);
+  const sockets = new Set<Socket>();
+  const timers = new Set<ReturnType<typeof setTimeout>>();
   const server = http.createServer((req, res) => {
     const url = new URL(req.url ?? '/', 'http://127.0.0.1');
     if (req.method === 'GET' && url.pathname === '/en/app') {
@@ -163,15 +187,38 @@ export function createSessionRaceFixtureServer(
       return;
     }
     if (req.method === 'POST' && /\/api\/projects\/?$/.test(url.pathname)) {
+      if (mode === 'project-response-stalls') {
+        // Accepted server-side, but the page never observes a response.
+        return;
+      }
+      if (mode === 'project-body-stalls') {
+        // Headers arrive, so Playwright reports an ok response, but the body never completes.
+        res.writeHead(201, { 'Content-Type': 'application/json' });
+        res.write('{');
+        return;
+      }
       json(res, 201, { id: SESSION_RACE_PROJECT_ID });
       return;
     }
     if (req.method === 'POST' && /\/api\/sessions\/?$/.test(url.pathname)) {
       sessionPosts += 1;
+      if (mode === 'auto-open-removes-card') {
+        const timer = setTimeout(() => {
+          timers.delete(timer);
+          json(res, 201, { id: SESSION_RACE_SESSION_ID });
+        }, AUTO_OPEN_SESSION_DELAY_MS);
+        timers.add(timer);
+        return;
+      }
       json(res, 201, { id: SESSION_RACE_SESSION_ID });
       return;
     }
     json(res, 404, { error: 'not found' });
+  });
+
+  server.on('connection', (socket) => {
+    sockets.add(socket);
+    socket.on('close', () => sockets.delete(socket));
   });
 
   return new Promise((resolve, reject) => {
@@ -182,6 +229,10 @@ export function createSessionRaceFixtureServer(
         sessionPostCount: () => sessionPosts,
         close: () =>
           new Promise((closeResolve, closeReject) => {
+            for (const timer of timers) {
+              clearTimeout(timer);
+            }
+            timers.clear();
             server.close((error) => {
               if (error) {
                 closeReject(error);
@@ -189,6 +240,12 @@ export function createSessionRaceFixtureServer(
                 closeResolve();
               }
             });
+            // Stalled requests hold their sockets open, which would otherwise
+            // block server.close() from ever completing.
+            for (const socket of sockets) {
+              socket.destroy();
+            }
+            sockets.clear();
           }),
       });
     });

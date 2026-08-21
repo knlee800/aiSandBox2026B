@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import liveConfig from '../playwright.live.config';
 import {
   assertLiveStagingExecutorBound,
@@ -40,8 +40,16 @@ import {
 import { GOLDEN_PATH_PHASES } from '../lib/phases';
 import { createRecordingAdapters, runGoldenPath } from '../lib/runner';
 import { ExecutionGateTracker, ProviderCallGuard } from '../lib/safety-gates';
-import { SELECTORS, SESSION_CREATE_TIMEOUT_MS } from '../lib/constants';
-import { SessionObservationError } from '../lib/network';
+import {
+  LIVE_ACTION_TIMEOUT_MS,
+  LIVE_NAVIGATION_TIMEOUT_MS,
+  PROJECT_CARD_CLICK_TIMEOUT_MS,
+  PROJECT_CREATE_BODY_TIMEOUT_MS,
+  PROJECT_CREATE_OBSERVATION_TIMEOUT_MS,
+  SELECTORS,
+  SESSION_CREATE_TIMEOUT_MS,
+} from '../lib/constants';
+import { ProjectCreateObservationError, SessionObservationError } from '../lib/network';
 import {
   createSessionRaceFixtureServer,
   SESSION_RACE_PROJECT_ID,
@@ -876,6 +884,241 @@ test.describe('AUTO-01D CREATE_SESSION response-observation race', () => {
       expect(fixture.sessionPostCount()).toBe(1);
     } finally {
       await live.context.close();
+      await fixture.close();
+    }
+  });
+});
+
+const OUTER_LIVE_TIMEOUT_MS = liveConfig.timeout ?? 0;
+const STALL_BOUND_MS = 700;
+const STALL_ASSERTION_CEILING_MS = 10_000;
+
+async function openFixtureCreateForm(page: Page, fixtureUrl: string): Promise<void> {
+  await page.goto(`${fixtureUrl}/en/app`);
+  await page.locator(SELECTORS.sidebarProjects).click();
+  await page.locator(SELECTORS.newProjectButton).click();
+  await page.locator(SELECTORS.newProjectInput).fill('demo');
+}
+
+test.describe('AUTO-01E CREATE_SESSION project-observation bounding', () => {
+  test.describe.configure({ mode: 'serial' });
+
+  test('LIVE config declares finite per-operation timeouts, keeps the 600s test timeout, and keeps trace off', () => {
+    const use = liveConfig.use;
+    expect(use?.actionTimeout).toBe(30_000);
+    expect(use?.navigationTimeout).toBe(60_000);
+    expect(liveConfig.timeout).toBe(600_000);
+    expect(use?.trace).toBe('off');
+    expect(LIVE_ACTION_TIMEOUT_MS).toBe(30_000);
+    expect(LIVE_NAVIGATION_TIMEOUT_MS).toBe(60_000);
+
+    for (const bound of [
+      use?.actionTimeout,
+      use?.navigationTimeout,
+      PROJECT_CREATE_OBSERVATION_TIMEOUT_MS,
+      PROJECT_CREATE_BODY_TIMEOUT_MS,
+      PROJECT_CARD_CLICK_TIMEOUT_MS,
+      SESSION_CREATE_TIMEOUT_MS,
+    ]) {
+      expect(Number.isFinite(bound)).toBe(true);
+      expect(bound).toBeGreaterThan(0);
+      expect(bound).toBeLessThan(OUTER_LIVE_TIMEOUT_MS);
+    }
+    expect(PROJECT_CARD_CLICK_TIMEOUT_MS).toBe(10_000);
+    expect(liveConfig.retries).toBe(0);
+  });
+
+  test('project-create observation statements carry explicit bounds in source', () => {
+    const adapterSource = fs.readFileSync(
+      path.join(__dirname, '../lib/live-adapters.ts'),
+      'utf8',
+    );
+    const configSource = fs.readFileSync(
+      path.join(__dirname, '../playwright.live.config.ts'),
+      'utf8',
+    );
+    expect(adapterSource).toMatch(
+      /\/api\\\/projects[\s\S]{0,240}\{ timeout: projectResponseTimeoutMs \}/,
+    );
+    expect(adapterSource).toContain(
+      'readProjectCreateBody(projectResponse, projectBodyTimeoutMs)',
+    );
+    expect(adapterSource).toContain('card.click({ timeout: cardClickTimeoutMs })');
+    expect(adapterSource).not.toContain('await projectResponse.json()');
+    expect(adapterSource).not.toContain('await card.click();');
+    expect(configSource).toMatch(/actionTimeout: LIVE_ACTION_TIMEOUT_MS/);
+    expect(configSource).toMatch(/navigationTimeout: LIVE_NAVIGATION_TIMEOUT_MS/);
+  });
+
+  test('a project-create response that never arrives fails with a bounded typed adapter error', async ({
+    page,
+  }) => {
+    const fixture = await createSessionRaceFixtureServer('project-response-stalls');
+    try {
+      await openFixtureCreateForm(page, fixture.url);
+      const started = Date.now();
+      await expect(
+        createProjectAndObserveSession(page, {
+          timeoutMs: 5_000,
+          projectResponseTimeoutMs: STALL_BOUND_MS,
+        }),
+      ).rejects.toBeInstanceOf(ProjectCreateObservationError);
+      const elapsed = Date.now() - started;
+      expect(elapsed).toBeGreaterThanOrEqual(STALL_BOUND_MS - 100);
+      expect(elapsed).toBeLessThan(STALL_ASSERTION_CEILING_MS);
+      expect(elapsed).toBeLessThan(OUTER_LIVE_TIMEOUT_MS);
+      expect(fixture.sessionPostCount()).toBe(0);
+    } finally {
+      await fixture.close();
+    }
+  });
+
+  test('a project-create response body that never completes fails with a bounded typed adapter error', async ({
+    page,
+  }) => {
+    const fixture = await createSessionRaceFixtureServer('project-body-stalls');
+    try {
+      await openFixtureCreateForm(page, fixture.url);
+      const started = Date.now();
+      const rejection = await createProjectAndObserveSession(page, {
+        timeoutMs: 5_000,
+        projectResponseTimeoutMs: 5_000,
+        projectBodyTimeoutMs: STALL_BOUND_MS,
+      }).then(
+        () => null,
+        (error: unknown) => error,
+      );
+      const elapsed = Date.now() - started;
+      expect(rejection).toBeInstanceOf(ProjectCreateObservationError);
+      expect((rejection as Error).message).toMatch(/response body/);
+      expect(elapsed).toBeLessThan(STALL_ASSERTION_CEILING_MS);
+      expect(elapsed).toBeLessThan(OUTER_LIVE_TIMEOUT_MS);
+      expect(fixture.sessionPostCount()).toBe(0);
+    } finally {
+      await fixture.close();
+    }
+  });
+
+  test('the fallback project-card click cannot wait indefinitely', async ({ page }) => {
+    const fixture = await createSessionRaceFixtureServer('card-not-actionable');
+    try {
+      await openFixtureCreateForm(page, fixture.url);
+      const started = Date.now();
+      const rejection = await createProjectAndObserveSession(page, {
+        timeoutMs: 5_000,
+        cardClickTimeoutMs: 400,
+      }).then(
+        () => null,
+        (error: unknown) => error,
+      );
+      const elapsed = Date.now() - started;
+      expect(rejection).toBeInstanceOf(ProjectCreateObservationError);
+      expect((rejection as Error).message).toMatch(/project-card click/);
+      expect(elapsed).toBeLessThan(STALL_ASSERTION_CEILING_MS);
+      expect(fixture.sessionPostCount()).toBe(0);
+      expect(await page.evaluate(() => (window as { __cardClicks?: number }).__cardClicks ?? 0)).toBe(
+        0,
+      );
+    } finally {
+      await fixture.close();
+    }
+  });
+
+  test('an auto-opened session that renders then removes the project card needs no card click', async ({
+    page,
+  }) => {
+    const fixture = await createSessionRaceFixtureServer('auto-open-removes-card');
+    try {
+      await openFixtureCreateForm(page, fixture.url);
+      const result = await createProjectAndObserveSession(page, { timeoutMs: 5_000 });
+      expect(result.projectId).toBe(SESSION_RACE_PROJECT_ID);
+      expect(result.sessionId).toBe(SESSION_RACE_SESSION_ID);
+      expect(result.clickedProjectCard).toBe(false);
+      expect(fixture.sessionPostCount()).toBe(1);
+      expect(await page.evaluate(() => (window as { __cardClicks?: number }).__cardClicks ?? 0)).toBe(
+        0,
+      );
+    } finally {
+      await fixture.close();
+    }
+  });
+
+  test('a stalled project-create response returns through runGoldenPath with CLEANUP and gate restore', async ({
+    page,
+  }) => {
+    const fixture = await createSessionRaceFixtureServer('project-response-stalls');
+    const recording = createRecordingAdapters({ enableGate: true });
+    recording.adapters.createSession = async () => {
+      recording.calls.push('CREATE_SESSION');
+      await openFixtureCreateForm(page, fixture.url);
+      return createProjectAndObserveSession(page, {
+        timeoutMs: 5_000,
+        projectResponseTimeoutMs: STALL_BOUND_MS,
+      });
+    };
+    const providerGuard = new ProviderCallGuard(1);
+    const started = Date.now();
+    try {
+      const result = await runGoldenPath({
+        mode: 'contract',
+        adapters: recording.adapters,
+        gateTracker: recording.gateTracker,
+        providerGuard,
+      });
+      expect(result.summary.verdict).toBe('FAIL');
+      if (result.summary.verdict === 'FAIL') {
+        expect(result.summary.phase).toBe('CREATE_SESSION');
+        expect(result.summary.error).toMatch(/project-create response/);
+        expect(result.summary.executionGateFinal).toBe('restored-false');
+        expect(result.summary.cleanup).toBe('session-stopped');
+      }
+      expect(result.phases).toContain('CLEANUP');
+      expect(result.phases).not.toContain('BUILD');
+      expect(recording.calls.at(-1)).toBe('CLEANUP');
+      expect(providerGuard.usedCount).toBe(0);
+      expect(providerGuard.remaining).toBe(1);
+      expect(Date.now() - started).toBeLessThan(OUTER_LIVE_TIMEOUT_MS);
+    } finally {
+      await fixture.close();
+    }
+  });
+
+  test('a stalled project-create body returns through runGoldenPath with CLEANUP and gate restore', async ({
+    page,
+  }) => {
+    const fixture = await createSessionRaceFixtureServer('project-body-stalls');
+    const recording = createRecordingAdapters({ enableGate: true });
+    recording.adapters.createSession = async () => {
+      recording.calls.push('CREATE_SESSION');
+      await openFixtureCreateForm(page, fixture.url);
+      return createProjectAndObserveSession(page, {
+        timeoutMs: 5_000,
+        projectResponseTimeoutMs: 5_000,
+        projectBodyTimeoutMs: STALL_BOUND_MS,
+      });
+    };
+    const providerGuard = new ProviderCallGuard(1);
+    const started = Date.now();
+    try {
+      const result = await runGoldenPath({
+        mode: 'contract',
+        adapters: recording.adapters,
+        gateTracker: recording.gateTracker,
+        providerGuard,
+      });
+      expect(result.summary.verdict).toBe('FAIL');
+      if (result.summary.verdict === 'FAIL') {
+        expect(result.summary.phase).toBe('CREATE_SESSION');
+        expect(result.summary.error).toMatch(/response body/);
+        expect(result.summary.executionGateFinal).toBe('restored-false');
+        expect(result.summary.cleanup).toBe('session-stopped');
+      }
+      expect(result.phases).toContain('CLEANUP');
+      expect(result.phases).not.toContain('BUILD');
+      expect(recording.calls.at(-1)).toBe('CLEANUP');
+      expect(providerGuard.usedCount).toBe(0);
+      expect(Date.now() - started).toBeLessThan(OUTER_LIVE_TIMEOUT_MS);
+    } finally {
       await fixture.close();
     }
   });

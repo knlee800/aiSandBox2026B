@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { defineConfig } from '@playwright/test';
+import { LIVE_ACTION_TIMEOUT_MS, LIVE_NAVIGATION_TIMEOUT_MS } from './lib/constants';
 
 const root = __dirname;
 
@@ -18,6 +19,8 @@ export default defineConfig({
     browserName: 'chromium',
     headless: process.env.E2E_HEADED === 'true' ? false : true,
     baseURL: process.env.E2E_BASE_URL ?? 'https://staging.ainow.biz',
+    actionTimeout: LIVE_ACTION_TIMEOUT_MS,
+    navigationTimeout: LIVE_NAVIGATION_TIMEOUT_MS,
     screenshot: 'only-on-failure',
     trace: 'off',
     video: 'off',

@@ -1,4 +1,4 @@
-import type { Browser, BrowserContext, Page } from '@playwright/test';
+import type { Browser, BrowserContext, Page, Response } from '@playwright/test';
 import {
   AUTO_APPLY_TIMEOUT_MS,
   BUILDER_PROMPT,
@@ -6,6 +6,9 @@ import {
   LOCALE,
   MODEL,
   PREVIEW_TIMEOUT_MS,
+  PROJECT_CARD_CLICK_TIMEOUT_MS,
+  PROJECT_CREATE_BODY_TIMEOUT_MS,
+  PROJECT_CREATE_OBSERVATION_TIMEOUT_MS,
   PROVIDER,
   SELECTORS,
   SESSION_CREATE_TIMEOUT_MS,
@@ -20,7 +23,10 @@ import {
 import {
   armConfirmBuildApplyListener,
   armSessionCreateListener,
+  ProjectCreateObservationError,
   SessionObservationError,
+  projectCreateObservationTimeout,
+  readProjectCreateBody,
   validateLiveConfirmResponse,
   type ConfirmListener,
 } from './network';
@@ -90,11 +96,23 @@ export interface ObservedSessionCreate {
   clickedProjectCard: boolean;
 }
 
+export interface CreateProjectObservationOptions {
+  timeoutMs?: number;
+  projectResponseTimeoutMs?: number;
+  projectBodyTimeoutMs?: number;
+  cardClickTimeoutMs?: number;
+}
+
 export async function createProjectAndObserveSession(
   page: Page,
-  options?: { timeoutMs?: number },
+  options?: CreateProjectObservationOptions,
 ): Promise<ObservedSessionCreate> {
   const timeoutMs = options?.timeoutMs ?? SESSION_CREATE_TIMEOUT_MS;
+  const projectResponseTimeoutMs =
+    options?.projectResponseTimeoutMs ?? PROJECT_CREATE_OBSERVATION_TIMEOUT_MS;
+  const projectBodyTimeoutMs =
+    options?.projectBodyTimeoutMs ?? PROJECT_CREATE_BODY_TIMEOUT_MS;
+  const cardClickTimeoutMs = options?.cardClickTimeoutMs ?? PROJECT_CARD_CLICK_TIMEOUT_MS;
   const startedAt = Date.now();
   const sessionListener = await armSessionCreateListener(page);
   try {
@@ -103,10 +121,16 @@ export async function createProjectAndObserveSession(
         response.request().method() === 'POST' &&
         /\/api\/projects\/?$/.test(new URL(response.url()).pathname) &&
         response.ok(),
+      { timeout: projectResponseTimeoutMs },
     );
     await page.locator(SELECTORS.createProjectConfirm).click();
-    const projectResponse = await projectResponsePromise;
-    const projectPayload = (await projectResponse.json()) as { id?: string };
+    let projectResponse: Response;
+    try {
+      projectResponse = await projectResponsePromise;
+    } catch (error) {
+      throw projectCreateObservationTimeout(projectResponseTimeoutMs, error);
+    }
+    const projectPayload = await readProjectCreateBody(projectResponse, projectBodyTimeoutMs);
     if (!projectPayload.id) {
       throw new SessionObservationError('Project create response did not include id.');
     }
@@ -123,7 +147,15 @@ export async function createProjectAndObserveSession(
         await new Promise((resolve) => setTimeout(resolve, 50));
       }
       if (!sessionListener.hasObserved() && (await card.count()) > 0) {
-        await card.click();
+        try {
+          await card.click({ timeout: cardClickTimeoutMs });
+        } catch (error) {
+          throw new ProjectCreateObservationError(
+            `Fallback project-card click did not complete within ${cardClickTimeoutMs}ms: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+        }
         clickedProjectCard = true;
       }
     }
