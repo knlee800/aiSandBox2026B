@@ -91,6 +91,7 @@ export function createProviderCallGuardFromEnv(
 export type GateRestoreStatus =
   | 'restored-false'
   | 'restore-failed'
+  | 'restore-unconfirmed-timeout'
   | 'not-changed-by-runner'
   | 'not-attempted-no-authority';
 
@@ -115,12 +116,15 @@ export class ExecutionGateTracker {
     return this.enabledByRunner;
   }
 
-  describeRestore(didRestore: boolean | null): GateRestoreStatus {
+  describeRestore(didRestore: boolean | null | 'timeout'): GateRestoreStatus {
     if (!this.enabledByRunner) {
       return this.hadAuthority ? 'not-changed-by-runner' : 'not-attempted-no-authority';
     }
     if (didRestore === true) {
       return 'restored-false';
+    }
+    if (didRestore === 'timeout') {
+      return 'restore-unconfirmed-timeout';
     }
     return 'restore-failed';
   }

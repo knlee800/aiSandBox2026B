@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { EventEmitter } from 'node:events';
 import { test, expect, type Page } from '@playwright/test';
 import liveConfig from '../playwright.live.config';
 import {
@@ -25,11 +26,14 @@ import {
   PARITY_STASH_SENTINEL,
   PARITY_STATUS_SENTINEL,
   RETAINED_STASH_SHA,
+  SshExecutionTimeoutError,
   SshExecutorMissingError,
   StagingHelper,
   StagingNotAuthorizedError,
   UnsafeParityError,
+  buildGateRestoreCommand,
   buildGatewayReadyProbeCommand,
+  buildSshCommand,
   createSshExecutor,
   evaluateParity,
   isGatewayReadyProbeSuccess,
@@ -48,6 +52,7 @@ import {
   PROJECT_CREATE_OBSERVATION_TIMEOUT_MS,
   SELECTORS,
   SESSION_CREATE_TIMEOUT_MS,
+  SSH_EXECUTION_TIMEOUT_MS,
 } from '../lib/constants';
 import { ProjectCreateObservationError, SessionObservationError } from '../lib/network';
 import {
@@ -1121,5 +1126,297 @@ test.describe('AUTO-01E CREATE_SESSION project-observation bounding', () => {
     } finally {
       await fixture.close();
     }
+  });
+});
+
+const CONTRACT_SSH_TIMEOUT_MS = 200;
+const CONTRACT_SSH_WATCHDOG_MS = 1_000;
+const CONTRACT_SSH_ASSERTION_CEILING_MS = 5_000;
+const SECRET_REMOTE_FRAGMENT = 'super-secret-credential-value';
+
+class NeverExitingSshChild extends EventEmitter {
+  readonly stdout = new EventEmitter();
+  readonly stderr = new EventEmitter();
+  killCount = 0;
+
+  kill(): boolean {
+    this.killCount += 1;
+    return true;
+  }
+}
+
+async function raceSshExecutorOutcome(
+  pending: Promise<string>,
+  watchdogMs: number,
+): Promise<
+  | { state: 'resolved'; stdout: string }
+  | { state: 'rejected'; error: unknown }
+  | { state: 'still-pending' }
+> {
+  return Promise.race([
+    pending.then(
+      (stdout) => ({ state: 'resolved' as const, stdout }),
+      (error: unknown) => ({ state: 'rejected' as const, error }),
+    ),
+    new Promise<{ state: 'still-pending' }>((resolve) => {
+      setTimeout(() => resolve({ state: 'still-pending' }), watchdogMs);
+    }),
+  ]);
+}
+
+test.describe('AUTO-01F bounded SSH execution', () => {
+  test('spawned SSH child that never exits must not remain pending past the execution timeout', async () => {
+    expect(SSH_EXECUTION_TIMEOUT_MS).toBe(30_000);
+    const child = new NeverExitingSshChild();
+    let spawnCount = 0;
+    const execute = createSshExecutor({
+      spawnFn: () => {
+        spawnCount += 1;
+        return child;
+      },
+      timeoutMs: CONTRACT_SSH_TIMEOUT_MS,
+    });
+    const started = Date.now();
+    const outcome = await raceSshExecutorOutcome(
+      execute(buildSshCommand(`echo ${SECRET_REMOTE_FRAGMENT}`)),
+      CONTRACT_SSH_WATCHDOG_MS,
+    );
+    const elapsed = Date.now() - started;
+
+    expect(outcome.state).toBe('rejected');
+    if (outcome.state !== 'rejected') {
+      return;
+    }
+    expect(outcome.error).toBeInstanceOf(SshExecutionTimeoutError);
+    const timeoutError = outcome.error as SshExecutionTimeoutError;
+    expect(timeoutError.timeoutMs).toBe(CONTRACT_SSH_TIMEOUT_MS);
+    expect(timeoutError.killInvoked).toBe(true);
+    expect(timeoutError.killAccepted).toBe(true);
+    expect(child.killCount).toBe(1);
+    expect(spawnCount).toBe(1);
+    expect(elapsed).toBeGreaterThanOrEqual(CONTRACT_SSH_TIMEOUT_MS - 50);
+    expect(elapsed).toBeLessThan(CONTRACT_SSH_ASSERTION_CEILING_MS);
+    expect(elapsed).toBeLessThan(OUTER_LIVE_TIMEOUT_MS);
+    expect(timeoutError.message).not.toContain(SECRET_REMOTE_FRAGMENT);
+    expect(timeoutError.message).toMatch(/timed out after 200ms/);
+    expect(timeoutError.message).toMatch(/kill invoked=true/);
+  });
+
+  test('timeout does not wait for child close and ignores a late close', async () => {
+    const child = new NeverExitingSshChild();
+    const execute = createSshExecutor({
+      spawnFn: () => child,
+      timeoutMs: CONTRACT_SSH_TIMEOUT_MS,
+    });
+    const pending = execute(buildSshCommand('true'));
+    const started = Date.now();
+    await expect(pending).rejects.toBeInstanceOf(SshExecutionTimeoutError);
+    expect(Date.now() - started).toBeLessThan(CONTRACT_SSH_ASSERTION_CEILING_MS);
+    expect(child.killCount).toBe(1);
+
+    const unhandled: unknown[] = [];
+    const onUnhandled = (reason: unknown) => {
+      unhandled.push(reason);
+    };
+    process.on('unhandledRejection', onUnhandled);
+    child.emit('close', 0);
+    await new Promise((resolve) => {
+      setTimeout(resolve, 30);
+    });
+    process.off('unhandledRejection', onUnhandled);
+    expect(unhandled).toEqual([]);
+    expect(child.killCount).toBe(1);
+    await expect(pending).rejects.toBeInstanceOf(SshExecutionTimeoutError);
+  });
+
+  test('timeout ignores a late child error without double-settling', async () => {
+    const child = new NeverExitingSshChild();
+    const execute = createSshExecutor({
+      spawnFn: () => child,
+      timeoutMs: CONTRACT_SSH_TIMEOUT_MS,
+    });
+    const pending = execute(buildSshCommand('true'));
+    await expect(pending).rejects.toBeInstanceOf(SshExecutionTimeoutError);
+    expect(child.killCount).toBe(1);
+
+    const unhandled: unknown[] = [];
+    const onUnhandled = (reason: unknown) => {
+      unhandled.push(reason);
+    };
+    process.on('unhandledRejection', onUnhandled);
+    child.emit('error', new Error('late spawn error'));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 30);
+    });
+    process.off('unhandledRejection', onUnhandled);
+    expect(unhandled).toEqual([]);
+    expect(child.killCount).toBe(1);
+    await expect(pending).rejects.toBeInstanceOf(SshExecutionTimeoutError);
+  });
+
+  test('normal exit code 0 still returns stdout', async () => {
+    const child = new NeverExitingSshChild();
+    const execute = createSshExecutor({
+      spawnFn: () => child,
+      timeoutMs: CONTRACT_SSH_TIMEOUT_MS,
+    });
+    const pending = execute(buildSshCommand('true'));
+    child.stdout.emit('data', 'parity-ok\n');
+    child.emit('close', 0);
+    await expect(pending).resolves.toBe('parity-ok\n');
+    expect(child.killCount).toBe(0);
+  });
+
+  test('normal nonzero exit preserves existing failure behavior', async () => {
+    const child = new NeverExitingSshChild();
+    const execute = createSshExecutor({
+      spawnFn: () => child,
+      timeoutMs: CONTRACT_SSH_TIMEOUT_MS,
+    });
+    const pending = execute(buildSshCommand('false'));
+    child.stderr.emit('data', 'Permission denied\n');
+    child.emit('close', 255);
+    await expect(pending).rejects.toThrow('ssh exited 255: Permission denied\n');
+    expect(child.killCount).toBe(0);
+  });
+
+  test('ordinary spawn error preserves existing failure behavior', async () => {
+    const child = new NeverExitingSshChild();
+    const spawnError = Object.assign(new Error('spawn ssh ENOENT'), { code: 'ENOENT' });
+    const execute = createSshExecutor({
+      spawnFn: () => {
+        queueMicrotask(() => {
+          child.emit('error', spawnError);
+        });
+        return child;
+      },
+      timeoutMs: CONTRACT_SSH_TIMEOUT_MS,
+    });
+    await expect(execute(buildSshCommand('true'))).rejects.toBe(spawnError);
+    expect(child.killCount).toBe(0);
+  });
+
+  test('timeout error contains bounded safe diagnostics and does not retry SSH', async () => {
+    const child = new NeverExitingSshChild();
+    let spawnCount = 0;
+    const execute = createSshExecutor({
+      spawnFn: () => {
+        spawnCount += 1;
+        return child;
+      },
+      timeoutMs: CONTRACT_SSH_TIMEOUT_MS,
+    });
+    const longStdout = `${'A'.repeat(500)}UNIQUE_STDOUT_TAIL`;
+    const longStderr = `${'B'.repeat(500)}UNIQUE_STDERR_TAIL`;
+    const pending = execute(
+      buildSshCommand(`export PASSWORD=${SECRET_REMOTE_FRAGMENT}; true`),
+    );
+    child.stdout.emit('data', longStdout);
+    child.stderr.emit('data', longStderr);
+    const timeoutError = await pending.then(
+      () => {
+        throw new Error('expected SSH timeout');
+      },
+      (error: unknown) => error,
+    );
+    expect(timeoutError).toBeInstanceOf(SshExecutionTimeoutError);
+    const typed = timeoutError as SshExecutionTimeoutError;
+    expect(typed.stdout.endsWith('…')).toBe(true);
+    expect(typed.stderr.endsWith('…')).toBe(true);
+    expect(typed.stdout.length).toBeLessThanOrEqual(401);
+    expect(typed.stderr.length).toBeLessThanOrEqual(401);
+    expect(typed.stdout).not.toContain('UNIQUE_STDOUT_TAIL');
+    expect(typed.stderr).not.toContain('UNIQUE_STDERR_TAIL');
+    expect(typed.message).not.toContain(SECRET_REMOTE_FRAGMENT);
+    expect(typed.message).not.toContain('PASSWORD=');
+    expect(spawnCount).toBe(1);
+    expect(child.killCount).toBe(1);
+  });
+
+  test('non-timeout SSH restore failure remains restore-failed', async () => {
+    const helper = new StagingHelper({
+      env: liveEnv,
+      execute: async () => {
+        throw new Error('ssh exited 255: Permission denied');
+      },
+    });
+    helper.gateTracker.recordEnabledByRunner();
+    await expect(helper.restoreExecutionGateIfChanged()).resolves.toBe('restore-failed');
+  });
+
+  test('successful restore remains restored-false and is not mapped to timeout', async () => {
+    const helper = new StagingHelper({
+      env: liveEnv,
+      execute: async () => '',
+    });
+    helper.gateTracker.recordEnabledByRunner();
+    await expect(helper.restoreExecutionGateIfChanged()).resolves.toBe('restored-false');
+  });
+
+  test('gate-restore SSH hang times out, cleanup continues, and restoration is unconfirmed', async () => {
+    const child = new NeverExitingSshChild();
+    let spawnCount = 0;
+    let restoreAttempts = 0;
+    let localCleanupCompleted = false;
+    const execute = createSshExecutor({
+      spawnFn: (_command, args) => {
+        spawnCount += 1;
+        if ((args[1] ?? '').includes('GLOBAL_EXECUTION_ENABLED=false pm2 restart')) {
+          restoreAttempts += 1;
+        }
+        return child;
+      },
+      timeoutMs: CONTRACT_SSH_TIMEOUT_MS,
+    });
+    const gateTracker = new ExecutionGateTracker();
+    const helper = new StagingHelper({
+      env: liveEnv,
+      execute,
+      gateTracker,
+    });
+    const recording = createRecordingAdapters();
+    recording.adapters.runSafetyChecks = async () => {
+      recording.calls.push('SAFETY');
+      gateTracker.recordEnabledByRunner();
+      throw new Error('forced SAFETY failure after execution gate enabled');
+    };
+    recording.adapters.cleanup = async () => {
+      recording.calls.push('CLEANUP');
+      const executionGateFinal = await helper.restoreExecutionGateIfChanged();
+      localCleanupCompleted = true;
+      return { cleanup: 'session-stopped', executionGateFinal };
+    };
+    const providerGuard = new ProviderCallGuard(1);
+    const started = Date.now();
+    const result = await runGoldenPath({
+      mode: 'contract',
+      adapters: recording.adapters,
+      gateTracker,
+      providerGuard,
+    });
+    const elapsed = Date.now() - started;
+
+    expect(result.summary.verdict).toBe('FAIL');
+    if (result.summary.verdict === 'FAIL') {
+      expect(result.summary.phase).toBe('SAFETY');
+      expect(result.summary.cleanup).toBe('session-stopped');
+      expect(result.summary.executionGateFinal).not.toBe('restored-false');
+      expect(result.summary.executionGateFinal).toBe('restore-unconfirmed-timeout');
+      expect(result.formatted).toMatch(/^verdict=FAIL$/m);
+      expect(result.formatted).toContain('executionGateFinal=restore-unconfirmed-timeout');
+    }
+    expect(result.phases).toContain('CLEANUP');
+    expect(result.phases.at(-1)).toBe('CLEANUP');
+    expect(recording.calls.at(-1)).toBe('CLEANUP');
+    expect(localCleanupCompleted).toBe(true);
+    expect(providerGuard.usedCount).toBe(0);
+    expect(providerGuard.remaining).toBe(1);
+    expect(liveConfig.retries).toBe(0);
+    expect(spawnCount).toBe(1);
+    expect(restoreAttempts).toBe(1);
+    expect(child.killCount).toBe(1);
+    expect(elapsed).toBeLessThan(CONTRACT_SSH_ASSERTION_CEILING_MS);
+    expect(elapsed).toBeLessThan(OUTER_LIVE_TIMEOUT_MS);
+    expect(buildGateRestoreCommand()).toContain('GLOBAL_EXECUTION_ENABLED=false');
   });
 });

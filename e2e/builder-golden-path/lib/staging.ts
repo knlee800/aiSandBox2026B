@@ -1,4 +1,5 @@
-import { spawn } from 'node:child_process';
+import { spawn, type SpawnOptions } from 'node:child_process';
+import { SSH_EXECUTION_TIMEOUT_MS } from './constants';
 import { ExecutionGateTracker, type GateRestoreStatus } from './safety-gates';
 import { isLiveAuthorized, type EnvMap } from './modes';
 
@@ -48,6 +49,63 @@ export class GatewayNotReadyError extends Error {
     super(message);
     this.name = 'GatewayNotReadyError';
   }
+}
+
+const SSH_DIAGNOSTIC_MAX_CHARS = 400;
+
+export interface SshChildProcessLike {
+  stdout: { on(event: 'data', listener: (chunk: unknown) => void): unknown } | null;
+  stderr: { on(event: 'data', listener: (chunk: unknown) => void): unknown } | null;
+  kill: (signal?: NodeJS.Signals | number) => boolean;
+  on(event: 'error', listener: (error: Error) => void): unknown;
+  on(event: 'close', listener: (code: number | null) => void): unknown;
+}
+
+export type SshSpawnFn = (
+  command: string,
+  args: readonly string[],
+  options: SpawnOptions,
+) => SshChildProcessLike;
+
+export interface SshExecutorOptions {
+  spawnFn?: SshSpawnFn;
+  timeoutMs?: number;
+}
+
+export class SshExecutionTimeoutError extends Error {
+  readonly timeoutMs: number;
+  readonly killInvoked: boolean;
+  readonly killAccepted: boolean;
+  readonly stdout: string;
+  readonly stderr: string;
+
+  constructor(input: {
+    timeoutMs: number;
+    killInvoked: boolean;
+    killAccepted: boolean;
+    stdout: string;
+    stderr: string;
+  }) {
+    const stdout = truncateSshDiagnostic(input.stdout);
+    const stderr = truncateSshDiagnostic(input.stderr);
+    super(
+      `SSH execution timed out after ${input.timeoutMs}ms. Child kill invoked=${input.killInvoked} accepted=${input.killAccepted}. stdout=${stdout} stderr=${stderr}`,
+    );
+    this.name = 'SshExecutionTimeoutError';
+    this.timeoutMs = input.timeoutMs;
+    this.killInvoked = input.killInvoked;
+    this.killAccepted = input.killAccepted;
+    this.stdout = stdout;
+    this.stderr = stderr;
+  }
+}
+
+function truncateSshDiagnostic(value: string): string {
+  const normalized = value.replace(/\r\n/g, '\n');
+  if (normalized.length <= SSH_DIAGNOSTIC_MAX_CHARS) {
+    return normalized;
+  }
+  return `${normalized.slice(0, SSH_DIAGNOSTIC_MAX_CHARS)}…`;
 }
 
 export function buildSshCommand(remoteCommand: string): string[] {
@@ -324,7 +382,10 @@ export class StagingHelper {
     try {
       await this.executeFn(buildSshCommand(buildGateRestoreCommand()));
       return this.gateTracker.describeRestore(true);
-    } catch {
+    } catch (error) {
+      if (error instanceof SshExecutionTimeoutError) {
+        return this.gateTracker.describeRestore('timeout');
+      }
       return this.gateTracker.describeRestore(false);
     }
   }
@@ -384,25 +445,70 @@ function runGit(args: string[]): Promise<string> {
   });
 }
 
-export function createSshExecutor(): (argv: string[]) => Promise<string> {
+export function createSshExecutor(
+  options: SshExecutorOptions = {},
+): (argv: string[]) => Promise<string> {
+  const spawnFn = options.spawnFn ?? (spawn as SshSpawnFn);
+  const timeoutMs = options.timeoutMs ?? SSH_EXECUTION_TIMEOUT_MS;
   return (argv) =>
     new Promise((resolve, reject) => {
-      const child = spawn('ssh', argv, { shell: false });
+      const child = spawnFn('ssh', argv, { shell: false, stdio: ['ignore', 'pipe', 'pipe'] });
       let stdout = '';
       let stderr = '';
-      child.stdout.on('data', (chunk) => {
+      let settled = false;
+
+      const settle = (action: () => void): void => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        clearTimeout(timer);
+        action();
+      };
+
+      child.stdout?.on('data', (chunk) => {
         stdout += String(chunk);
       });
-      child.stderr.on('data', (chunk) => {
+      child.stderr?.on('data', (chunk) => {
         stderr += String(chunk);
       });
-      child.on('error', reject);
+
+      const timer = setTimeout(() => {
+        settle(() => {
+          let killInvoked = false;
+          let killAccepted = false;
+          try {
+            killInvoked = true;
+            child.kill();
+            killAccepted = true;
+          } catch {
+            killAccepted = false;
+          }
+          reject(
+            new SshExecutionTimeoutError({
+              timeoutMs,
+              killInvoked,
+              killAccepted,
+              stdout,
+              stderr,
+            }),
+          );
+        });
+      }, timeoutMs);
+
+      child.on('error', (error) => {
+        settle(() => {
+          reject(error);
+        });
+      });
       child.on('close', (code) => {
-        if (code === 0) {
-          resolve(stdout);
-        } else {
-          reject(new Error(`ssh exited ${code}: ${stderr || stdout}`));
-        }
+        settle(() => {
+          if (code === 0) {
+            resolve(stdout);
+          } else {
+            reject(new Error(`ssh exited ${code}: ${stderr || stdout}`));
+          }
+        });
       });
     });
 }

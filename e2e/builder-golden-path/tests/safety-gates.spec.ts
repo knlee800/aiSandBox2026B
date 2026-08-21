@@ -72,4 +72,14 @@ test.describe('safety gates', () => {
     unchanged.recordAuthorityWithoutChange();
     expect(unchanged.describeRestore(null)).toBe('not-changed-by-runner');
   });
+
+  test('execution-gate restore timeout is unconfirmed and is not restored-false', () => {
+    const tracker = new ExecutionGateTracker();
+    tracker.recordEnabledByRunner();
+    expect(tracker.describeRestore(true)).toBe('restored-false');
+    expect(tracker.describeRestore(false)).toBe('restore-failed');
+    expect(tracker.describeRestore('timeout')).toBe('restore-unconfirmed-timeout');
+    expect(tracker.describeRestore('timeout')).not.toBe('restored-false');
+    expect(tracker.describeRestore('timeout')).not.toBe('restore-failed');
+  });
 });

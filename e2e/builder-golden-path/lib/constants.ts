@@ -35,6 +35,7 @@ export const PROJECT_CARD_CLICK_TIMEOUT_MS = 10_000;
 // so the LIVE config must state finite per-operation defaults explicitly.
 export const LIVE_ACTION_TIMEOUT_MS = 30_000;
 export const LIVE_NAVIGATION_TIMEOUT_MS = 60_000;
+export const SSH_EXECUTION_TIMEOUT_MS = 30_000;
 
 export const SELECTORS = {
   email: '#email',
