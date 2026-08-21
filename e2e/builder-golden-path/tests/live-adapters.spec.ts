@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { EventEmitter } from 'node:events';
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Browser, type Page } from '@playwright/test';
 import liveConfig from '../playwright.live.config';
 import {
   assertLiveStagingExecutorBound,
@@ -45,6 +45,7 @@ import { GOLDEN_PATH_PHASES } from '../lib/phases';
 import { createRecordingAdapters, runGoldenPath } from '../lib/runner';
 import { ExecutionGateTracker, ProviderCallGuard } from '../lib/safety-gates';
 import {
+  FROZEN_ARTIFACT_PATH,
   LIVE_ACTION_TIMEOUT_MS,
   LIVE_NAVIGATION_TIMEOUT_MS,
   PROJECT_CARD_CLICK_TIMEOUT_MS,
@@ -54,8 +55,21 @@ import {
   SESSION_CREATE_TIMEOUT_MS,
   SSH_EXECUTION_TIMEOUT_MS,
 } from '../lib/constants';
-import { ProjectCreateObservationError, SessionObservationError } from '../lib/network';
 import {
+  AutoApplyObservationError,
+  ProjectCreateObservationError,
+  SessionObservationError,
+  armFileWriteListener,
+  extractSessionIdFromFileWriteUrl,
+  inspectFileWriteRequestBody,
+  isSessionFileWriteUrl,
+} from '../lib/network';
+import {
+  AUTO_APPLY_OTHER_SESSION_ID,
+  AUTO_APPLY_PROJECT_ID,
+  AUTO_APPLY_SESSION_ID,
+  AUTO_APPLY_WRONG_PATH,
+  createAutoApplyFixtureServer,
   createSessionRaceFixtureServer,
   SESSION_RACE_PROJECT_ID,
   SESSION_RACE_SESSION_ID,
@@ -1418,5 +1432,435 @@ test.describe('AUTO-01F bounded SSH execution', () => {
     expect(elapsed).toBeLessThan(CONTRACT_SSH_ASSERTION_CEILING_MS);
     expect(elapsed).toBeLessThan(OUTER_LIVE_TIMEOUT_MS);
     expect(buildGateRestoreCommand()).toContain('GLOBAL_EXECUTION_ENABLED=false');
+  });
+});
+
+const AUTO_APPLY_BOUND_MS = 400;
+const AUTO_APPLY_ASSERTION_CEILING_MS = 5_000;
+
+async function createAutoApplyLive(
+  browser: Browser,
+  fixtureUrl: string,
+  timeoutMs = AUTO_APPLY_BOUND_MS,
+) {
+  const helper = fastReadyHelper({
+    env: liveEnvWithCreds,
+    execute: async () => '',
+  });
+  return createLiveAdapters({
+    browser,
+    env: { ...liveEnvWithCreds, E2E_BASE_URL: fixtureUrl },
+    staging: helper,
+    readLocalHead: async () => DYNAMIC_HEAD_B,
+    autoApplyTimeoutMs: timeoutMs,
+  });
+}
+
+async function fireSessionFileWrite(
+  page: Page,
+  input: { sessionId: string; path?: string; malformed?: boolean },
+): Promise<void> {
+  await page.evaluate(async (payload) => {
+    await fetch(`/api/sessions/${payload.sessionId}/files/write`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload.malformed
+        ? '{not-json'
+        : JSON.stringify({ path: payload.path, content: '<p>e2e</p>' }),
+    });
+  }, {
+    sessionId: input.sessionId,
+    path: input.path ?? FROZEN_ARTIFACT_PATH,
+    malformed: input.malformed === true,
+  });
+}
+
+test.describe('AUTO-01G WAIT_FOR_AUTO_APPLY file-write observation', () => {
+  test.describe.configure({ mode: 'serial' });
+
+  test('matches POST /api/sessions/:sessionId/files/write only and inspects path fail-closed', () => {
+    const writeUrl =
+      'https://staging.ainow.biz/api/sessions/session-auto-apply-1/files/write';
+    expect(isSessionFileWriteUrl(writeUrl)).toBe(true);
+    expect(isSessionFileWriteUrl(`${writeUrl}/`)).toBe(true);
+    expect(isSessionFileWriteUrl('https://staging.ainow.biz/api/sessions')).toBe(false);
+    expect(
+      isSessionFileWriteUrl(
+        'https://staging.ainow.biz/api/sessions/session-auto-apply-1/files/list',
+      ),
+    ).toBe(false);
+    expect(extractSessionIdFromFileWriteUrl(writeUrl)).toBe(AUTO_APPLY_SESSION_ID);
+    expect(inspectFileWriteRequestBody(JSON.stringify({ path: FROZEN_ARTIFACT_PATH }))).toEqual({
+      malformed: false,
+      path: FROZEN_ARTIFACT_PATH,
+    });
+    expect(inspectFileWriteRequestBody('{not-json')).toEqual({
+      malformed: true,
+      path: null,
+    });
+    expect(GOLDEN_PATH_PHASES.indexOf('PREVIEW')).toBe(
+      GOLDEN_PATH_PHASES.indexOf('WAIT_FOR_AUTO_APPLY') + 1,
+    );
+    expect(GOLDEN_PATH_PHASES.indexOf('ARM_LISTENERS')).toBeLessThan(
+      GOLDEN_PATH_PHASES.indexOf('CREATE_SESSION'),
+    );
+    expect(GOLDEN_PATH_PHASES.indexOf('CREATE_SESSION')).toBeLessThan(
+      GOLDEN_PATH_PHASES.indexOf('BUILD'),
+    );
+    expect(GOLDEN_PATH_PHASES.indexOf('BUILD')).toBeLessThan(
+      GOLDEN_PATH_PHASES.indexOf('WAIT_FOR_AUTO_APPLY'),
+    );
+    const liveAdaptersSource = fs.readFileSync(
+      path.join(__dirname, '../lib/live-adapters.ts'),
+      'utf8',
+    );
+    const networkSource = fs.readFileSync(path.join(__dirname, '../lib/network.ts'), 'utf8');
+    expect(networkSource).toContain('armFileWriteListener');
+    expect(networkSource).toContain('AutoApplyObservationError');
+    expect(liveAdaptersSource).toContain('armFileWriteListener(page)');
+    expect(liveAdaptersSource).not.toMatch(/locator\(SELECTORS\.autoFileNode\)\.waitFor/);
+    expect(liveAdaptersSource).not.toContain('workspace-tab-codeFiles');
+    const armIdx = liveAdaptersSource.indexOf('armFileWriteListener(page)');
+    const submitIdx = liveAdaptersSource.indexOf('async submitBuild');
+    const waitIdx = liveAdaptersSource.indexOf('waitForMatchingWrite');
+    expect(armIdx).toBeGreaterThan(-1);
+    expect(armIdx).toBeLessThan(submitIdx);
+    expect(waitIdx).toBeGreaterThan(submitIdx);
+    const waitFn = liveAdaptersSource.slice(
+      liveAdaptersSource.indexOf('async waitForAutoApply()'),
+      liveAdaptersSource.indexOf('async verifyPreview()'),
+    );
+    expect(waitFn).not.toContain('armFileWriteListener');
+    expect(waitFn).toContain('awaitingConfirmation');
+  });
+
+  test('LIVE-06 reproduction: Preview-default successful write is observed without Code & Files', async ({
+    browser,
+  }) => {
+    const fixture = await createAutoApplyFixtureServer('auto-apply-on-preview-tab');
+    const live = await createAutoApplyLive(browser, fixture.url);
+    const started = Date.now();
+    try {
+      await live.adapters.armListeners();
+      const created = await live.adapters.createSession();
+      expect(created.sessionId).toBe(AUTO_APPLY_SESSION_ID);
+      expect(created.projectId).toBe(AUTO_APPLY_PROJECT_ID);
+      expect(await live.page.locator('[data-testid="workspace-tab-preview"]').getAttribute('data-active')).toBe(
+        'true',
+      );
+      expect(await live.page.locator(SELECTORS.autoFileNode).count()).toBe(0);
+
+      await live.page.locator(SELECTORS.chatSubmit).click();
+      await expect.poll(() => fixture.fileWriteCount()).toBe(1);
+      expect(fixture.writtenPaths()).toContain(FROZEN_ARTIFACT_PATH);
+      expect(await live.page.locator('[data-testid="workspace-chat-file-actions-list"]')).toContainText(
+        FROZEN_ARTIFACT_PATH,
+      );
+      expect(await live.page.locator(SELECTORS.autoFileNode).count()).toBe(0);
+      expect(await live.page.locator('[data-testid="workspace-tab-preview"]').getAttribute('data-active')).toBe(
+        'true',
+      );
+
+      const applied = await live.adapters.waitForAutoApply();
+      expect(applied.fileApplied).toBe(true);
+      expect(applied.autoApplyAt).toBeGreaterThan(0);
+      expect(await live.page.locator(SELECTORS.autoFileNode).count()).toBe(0);
+      expect(await live.page.locator('[data-testid="workspace-tab-preview"]').getAttribute('data-active')).toBe(
+        'true',
+      );
+      expect(await live.page.locator('[data-testid="workspace-tab-codeFiles"]').getAttribute('data-active')).toBe(
+        'false',
+      );
+      expect(Date.now() - started).toBeLessThan(AUTO_APPLY_ASSERTION_CEILING_MS);
+    } finally {
+      await live.context.close();
+      await fixture.close();
+    }
+  });
+
+  test('retains a matching files/write that arrives before waitForAutoApply', async ({ page }) => {
+    const fixture = await createAutoApplyFixtureServer('auto-apply-on-preview-tab');
+    try {
+      await page.goto(`${fixture.url}/en/app`);
+      const listener = await armFileWriteListener(page);
+      await fireSessionFileWrite(page, { sessionId: AUTO_APPLY_SESSION_ID });
+      await expect.poll(() => fixture.fileWriteCount()).toBe(1);
+      const capture = await listener.waitForMatchingWrite({
+        sessionId: AUTO_APPLY_SESSION_ID,
+        path: FROZEN_ARTIFACT_PATH,
+        timeoutMs: AUTO_APPLY_BOUND_MS,
+      });
+      expect(capture.status).toBe(204);
+      expect(capture.path).toBe(FROZEN_ARTIFACT_PATH);
+      expect(capture.sessionId).toBe(AUTO_APPLY_SESSION_ID);
+      await listener.dispose();
+    } finally {
+      await fixture.close();
+    }
+  });
+
+  test('pre-sessionId capture still matches after CREATE_SESSION resolves the same session', async ({
+    browser,
+  }) => {
+    const fixture = await createAutoApplyFixtureServer('auto-apply-on-preview-tab');
+    const live = await createAutoApplyLive(browser, fixture.url);
+    try {
+      await live.page.goto(`${fixture.url}/en/app`);
+      await live.adapters.armListeners();
+      await fireSessionFileWrite(live.page, { sessionId: AUTO_APPLY_SESSION_ID });
+      await expect.poll(() => fixture.fileWriteCount()).toBe(1);
+      const created = await live.adapters.createSession();
+      expect(created.sessionId).toBe(AUTO_APPLY_SESSION_ID);
+      expect(fixture.fileWriteCount()).toBe(1);
+      const applied = await live.adapters.waitForAutoApply();
+      expect(applied.fileApplied).toBe(true);
+      expect(await live.page.locator(SELECTORS.autoFileNode).count()).toBe(0);
+    } finally {
+      await live.context.close();
+      await fixture.close();
+    }
+  });
+
+  test('a matching path from the wrong session does not satisfy AUTO_APPLY', async ({ page }) => {
+    const fixture = await createAutoApplyFixtureServer('auto-apply-on-preview-tab');
+    try {
+      await page.goto(`${fixture.url}/en/app`);
+      const listener = await armFileWriteListener(page);
+      await fireSessionFileWrite(page, { sessionId: AUTO_APPLY_OTHER_SESSION_ID });
+      await expect.poll(() => fixture.fileWriteCount()).toBe(1);
+      const started = Date.now();
+      await expect(
+        listener.waitForMatchingWrite({
+          sessionId: AUTO_APPLY_SESSION_ID,
+          path: FROZEN_ARTIFACT_PATH,
+          timeoutMs: AUTO_APPLY_BOUND_MS,
+        }),
+      ).rejects.toBeInstanceOf(AutoApplyObservationError);
+      expect(Date.now() - started).toBeLessThan(AUTO_APPLY_ASSERTION_CEILING_MS);
+      await listener.dispose();
+    } finally {
+      await fixture.close();
+    }
+  });
+
+  test('a write to the wrong path does not satisfy AUTO_APPLY', async ({ page }) => {
+    const fixture = await createAutoApplyFixtureServer('wrong-path');
+    try {
+      await page.goto(`${fixture.url}/en/app`);
+      const listener = await armFileWriteListener(page);
+      await page.locator(SELECTORS.chatSubmit).click();
+      await expect.poll(() => fixture.writtenPaths()).toEqual([AUTO_APPLY_WRONG_PATH]);
+      await expect(
+        listener.waitForMatchingWrite({
+          sessionId: AUTO_APPLY_SESSION_ID,
+          path: FROZEN_ARTIFACT_PATH,
+          timeoutMs: AUTO_APPLY_BOUND_MS,
+        }),
+      ).rejects.toBeInstanceOf(AutoApplyObservationError);
+      await listener.dispose();
+    } finally {
+      await fixture.close();
+    }
+  });
+
+  test('missing write fails closed with a bounded AutoApplyObservationError', async ({
+    browser,
+  }) => {
+    const fixture = await createAutoApplyFixtureServer('no-write');
+    const live = await createAutoApplyLive(browser, fixture.url);
+    const started = Date.now();
+    try {
+      await live.adapters.armListeners();
+      await live.adapters.createSession();
+      await live.page.locator(SELECTORS.chatSubmit).click();
+      const rejection = await live.adapters.waitForAutoApply().then(
+        () => null,
+        (error: unknown) => error,
+      );
+      expect(rejection).toBeInstanceOf(AutoApplyObservationError);
+      expect((rejection as Error).message).toMatch(/Timed out waiting for POST \/api\/sessions\/:sessionId\/files\/write/);
+      expect(fixture.fileWriteCount()).toBe(0);
+      expect(Date.now() - started).toBeLessThan(AUTO_APPLY_ASSERTION_CEILING_MS);
+    } finally {
+      await live.context.close();
+      await fixture.close();
+    }
+  });
+
+  test('a matching non-204 write does not report persistence PASS', async ({ page }) => {
+    const fixture = await createAutoApplyFixtureServer('failed-write');
+    try {
+      await page.goto(`${fixture.url}/en/app`);
+      const listener = await armFileWriteListener(page);
+      await page.locator(SELECTORS.chatSubmit).click();
+      await expect.poll(() => fixture.fileWriteCount()).toBe(1);
+      const rejection = await listener
+        .waitForMatchingWrite({
+          sessionId: AUTO_APPLY_SESSION_ID,
+          path: FROZEN_ARTIFACT_PATH,
+          timeoutMs: AUTO_APPLY_BOUND_MS,
+        })
+        .then(
+          () => null,
+          (error: unknown) => error,
+        );
+      expect(rejection).toBeInstanceOf(AutoApplyObservationError);
+      expect((rejection as Error).message).toMatch(/HTTP 500/);
+      await listener.dispose();
+    } finally {
+      await fixture.close();
+    }
+  });
+
+  test('malformed write JSON fails closed and does not satisfy AUTO_APPLY', async ({ page }) => {
+    const fixture = await createAutoApplyFixtureServer('malformed-body');
+    try {
+      await page.goto(`${fixture.url}/en/app`);
+      const listener = await armFileWriteListener(page);
+      await page.locator(SELECTORS.chatSubmit).click();
+      await expect.poll(() => fixture.fileWriteCount()).toBe(1);
+      const rejection = await listener
+        .waitForMatchingWrite({
+          sessionId: AUTO_APPLY_SESSION_ID,
+          path: FROZEN_ARTIFACT_PATH,
+          timeoutMs: AUTO_APPLY_BOUND_MS,
+        })
+        .then(
+          () => null,
+          (error: unknown) => error,
+        );
+      expect(rejection).toBeInstanceOf(AutoApplyObservationError);
+      expect((rejection as Error).message).toMatch(/malformed/);
+      expect((rejection as Error).message).not.toContain('{not-json');
+      await listener.dispose();
+    } finally {
+      await fixture.close();
+    }
+  });
+
+  test('awaiting-confirmation remains a negative AUTO_APPLY guard', async ({ browser }) => {
+    const fixture = await createAutoApplyFixtureServer('awaiting-confirmation');
+    const live = await createAutoApplyLive(browser, fixture.url);
+    try {
+      await live.adapters.armListeners();
+      await live.adapters.createSession();
+      await live.page.locator(SELECTORS.chatSubmit).click();
+      await expect(live.page.locator(SELECTORS.awaitingConfirmation)).toHaveCount(1);
+      await expect.poll(() => fixture.fileWriteCount()).toBe(1);
+      await expect(live.adapters.waitForAutoApply()).rejects.toThrow(
+        /awaiting-confirmation UI appeared/,
+      );
+    } finally {
+      await live.context.close();
+      await fixture.close();
+    }
+  });
+
+  test('dispose stops capturing further file writes', async ({ page }) => {
+    const fixture = await createAutoApplyFixtureServer('auto-apply-on-preview-tab');
+    try {
+      await page.goto(`${fixture.url}/en/app`);
+      const listener = await armFileWriteListener(page);
+      await listener.dispose();
+      await fireSessionFileWrite(page, { sessionId: AUTO_APPLY_SESSION_ID });
+      await expect.poll(() => fixture.fileWriteCount()).toBe(1);
+      expect(listener.captures).toEqual([]);
+      await expect(
+        listener.waitForMatchingWrite({
+          sessionId: AUTO_APPLY_SESSION_ID,
+          path: FROZEN_ARTIFACT_PATH,
+          timeoutMs: AUTO_APPLY_BOUND_MS,
+        }),
+      ).rejects.toBeInstanceOf(AutoApplyObservationError);
+    } finally {
+      await fixture.close();
+    }
+  });
+
+  test('a single matching write is not reported as duplicate success', async ({ page }) => {
+    const fixture = await createAutoApplyFixtureServer('auto-apply-on-preview-tab');
+    try {
+      await page.goto(`${fixture.url}/en/app`);
+      const listener = await armFileWriteListener(page);
+      await fireSessionFileWrite(page, { sessionId: AUTO_APPLY_SESSION_ID });
+      const first = await listener.waitForMatchingWrite({
+        sessionId: AUTO_APPLY_SESSION_ID,
+        path: FROZEN_ARTIFACT_PATH,
+        timeoutMs: AUTO_APPLY_BOUND_MS,
+      });
+      const second = await listener.waitForMatchingWrite({
+        sessionId: AUTO_APPLY_SESSION_ID,
+        path: FROZEN_ARTIFACT_PATH,
+        timeoutMs: AUTO_APPLY_BOUND_MS,
+      });
+      expect(second.observedAt).toBe(first.observedAt);
+      expect(listener.captures.filter((capture) => capture.status === 204)).toHaveLength(1);
+      await listener.dispose();
+    } finally {
+      await fixture.close();
+    }
+  });
+
+  test('runner ARM_LISTENERS → BUILD write → WAIT_FOR_AUTO_APPLY PASS → PREVIEW next', async ({
+    browser,
+  }) => {
+    const fixture = await createAutoApplyFixtureServer('auto-apply-on-preview-tab');
+    const live = await createAutoApplyLive(browser, fixture.url);
+    const recording = createRecordingAdapters();
+    recording.adapters.armListeners = async () => {
+      recording.calls.push('ARM_LISTENERS');
+      await live.adapters.armListeners();
+    };
+    recording.adapters.createSession = async () => {
+      recording.calls.push('CREATE_SESSION');
+      return live.adapters.createSession();
+    };
+    recording.adapters.submitBuild = async (input) => {
+      recording.calls.push('BUILD');
+      return live.adapters.submitBuild(input);
+    };
+    recording.adapters.waitForAutoApply = async () => {
+      recording.calls.push('WAIT_FOR_AUTO_APPLY');
+      const applied = await live.adapters.waitForAutoApply();
+      expect(await live.page.locator(SELECTORS.autoFileNode).count()).toBe(0);
+      expect(await live.page.locator('[data-testid="workspace-tab-preview"]').getAttribute('data-active')).toBe(
+        'true',
+      );
+      return applied;
+    };
+    recording.adapters.cleanup = async (input) => {
+      recording.calls.push('CLEANUP');
+      return live.adapters.cleanup(input);
+    };
+    const providerGuard = new ProviderCallGuard(1);
+    try {
+      const result = await runGoldenPath({
+        mode: 'contract',
+        adapters: recording.adapters,
+        gateTracker: recording.gateTracker,
+        providerGuard,
+      });
+      expect(result.summary.verdict).toBe('PASS');
+      expect(result.phases.indexOf('PREVIEW')).toBe(
+        result.phases.indexOf('WAIT_FOR_AUTO_APPLY') + 1,
+      );
+      expect(result.phases.indexOf('WAIT_FOR_AUTO_APPLY')).toBe(
+        result.phases.indexOf('BUILD') + 1,
+      );
+      expect(result.phases).toEqual([...GOLDEN_PATH_PHASES]);
+      expect(recording.calls).toContain('ARM_LISTENERS');
+      expect(recording.calls.indexOf('ARM_LISTENERS')).toBeLessThan(
+        recording.calls.indexOf('CREATE_SESSION'),
+      );
+      expect(recording.calls.indexOf('CREATE_SESSION')).toBeLessThan(recording.calls.indexOf('BUILD'));
+      expect(recording.calls.indexOf('BUILD')).toBeLessThan(
+        recording.calls.indexOf('WAIT_FOR_AUTO_APPLY'),
+      );
+      expect(fixture.writtenPaths()).toContain(FROZEN_ARTIFACT_PATH);
+      expect(providerGuard.usedCount).toBe(1);
+    } finally {
+      await live.context.close().catch(() => undefined);
+      await fixture.close();
+    }
   });
 });

@@ -1,5 +1,5 @@
 import type { Page, Response } from '@playwright/test';
-import { SESSION_CREATE_TIMEOUT_MS } from './constants';
+import { AUTO_APPLY_TIMEOUT_MS, SESSION_CREATE_TIMEOUT_MS } from './constants';
 
 export const PUBLIC_CONFIRM_PATH_PATTERN =
   /\/api\/ai\/executions\/([^/?#]+)\/confirm-build-apply\/?$/;
@@ -322,6 +322,243 @@ export async function armSessionCreateListener(
     },
     async dispose() {
       page.off('response', onResponse);
+    },
+  };
+}
+
+export const SESSION_FILE_WRITE_PATH_PATTERN =
+  /\/api\/sessions\/([^/?#]+)\/files\/write\/?$/;
+
+export interface FileWriteCapture {
+  url: string;
+  status: number;
+  sessionId: string | null;
+  path: string | null;
+  malformed: boolean;
+  observedAt: number;
+}
+
+export interface FileWriteWaitInput {
+  sessionId: string;
+  path: string;
+  timeoutMs?: number;
+}
+
+export interface FileWriteListener {
+  captures: FileWriteCapture[];
+  waitForMatchingWrite(input: FileWriteWaitInput): Promise<FileWriteCapture>;
+  dispose(): Promise<void>;
+}
+
+export class AutoApplyObservationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'AutoApplyObservationError';
+  }
+}
+
+export function isSessionFileWriteUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url, 'http://localhost');
+    return SESSION_FILE_WRITE_PATH_PATTERN.test(parsed.pathname);
+  } catch {
+    return SESSION_FILE_WRITE_PATH_PATTERN.test(url);
+  }
+}
+
+export function extractSessionIdFromFileWriteUrl(url: string): string | null {
+  try {
+    const pathname = new URL(url, 'http://localhost').pathname;
+    const match = pathname.match(SESSION_FILE_WRITE_PATH_PATTERN);
+    return match?.[1] ?? null;
+  } catch {
+    const match = url.match(SESSION_FILE_WRITE_PATH_PATTERN);
+    return match?.[1] ?? null;
+  }
+}
+
+export function inspectFileWriteRequestBody(raw: string | null): {
+  malformed: boolean;
+  path: string | null;
+} {
+  if (raw == null || raw.trim().length === 0) {
+    return { malformed: true, path: null };
+  }
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return { malformed: true, path: null };
+    }
+    const pathValue = (parsed as { path?: unknown }).path;
+    if (pathValue === undefined) {
+      return { malformed: false, path: null };
+    }
+    if (typeof pathValue !== 'string') {
+      return { malformed: true, path: null };
+    }
+    return { malformed: false, path: pathValue };
+  } catch {
+    return { malformed: true, path: null };
+  }
+}
+
+type FileWriteWaiter = {
+  sessionId: string;
+  path: string;
+  resolve: (capture: FileWriteCapture) => void;
+  reject: (error: AutoApplyObservationError) => void;
+};
+
+type FileWriteClassification =
+  | { kind: 'success'; capture: FileWriteCapture }
+  | { kind: 'failed-write'; capture: FileWriteCapture }
+  | { kind: 'malformed'; capture: FileWriteCapture }
+  | { kind: 'pending' };
+
+function classifyFileWriteCaptures(
+  captures: readonly FileWriteCapture[],
+  sessionId: string,
+  path: string,
+): FileWriteClassification {
+  const relevant = captures.filter((capture) => capture.sessionId === sessionId);
+  const success = relevant.find(
+    (capture) => !capture.malformed && capture.path === path && capture.status === 204,
+  );
+  if (success) {
+    return { kind: 'success', capture: success };
+  }
+  const failed = relevant.find(
+    (capture) => !capture.malformed && capture.path === path && capture.status !== 204,
+  );
+  if (failed) {
+    return { kind: 'failed-write', capture: failed };
+  }
+  const malformed = relevant.find((capture) => capture.malformed);
+  if (malformed) {
+    return { kind: 'malformed', capture: malformed };
+  }
+  return { kind: 'pending' };
+}
+
+function fileWriteClassificationError(
+  classification: Exclude<FileWriteClassification, { kind: 'pending' } | { kind: 'success' }>,
+): AutoApplyObservationError {
+  if (classification.kind === 'failed-write') {
+    return new AutoApplyObservationError(
+      `File write HTTP ${classification.capture.status}, expected 204.`,
+    );
+  }
+  return new AutoApplyObservationError('File write request JSON was malformed.');
+}
+
+export async function armFileWriteListener(page: Page): Promise<FileWriteListener> {
+  const captures: FileWriteCapture[] = [];
+  const waiters: FileWriteWaiter[] = [];
+  let disposed = false;
+
+  const settleWaiters = (): void => {
+    for (const waiter of [...waiters]) {
+      const classification = classifyFileWriteCaptures(
+        captures,
+        waiter.sessionId,
+        waiter.path,
+      );
+      if (classification.kind === 'pending') {
+        continue;
+      }
+      const index = waiters.indexOf(waiter);
+      if (index >= 0) {
+        waiters.splice(index, 1);
+      }
+      if (classification.kind === 'success') {
+        waiter.resolve(classification.capture);
+      } else {
+        waiter.reject(fileWriteClassificationError(classification));
+      }
+    }
+  };
+
+  const onResponse = (response: Response): void => {
+    if (disposed) {
+      return;
+    }
+    if (response.request().method() !== 'POST') {
+      return;
+    }
+    if (!isSessionFileWriteUrl(response.url())) {
+      return;
+    }
+    const inspected = inspectFileWriteRequestBody(response.request().postData());
+    captures.push({
+      url: response.url(),
+      status: response.status(),
+      sessionId: extractSessionIdFromFileWriteUrl(response.url()),
+      path: inspected.path,
+      malformed: inspected.malformed,
+      observedAt: Date.now(),
+    });
+    settleWaiters();
+  };
+
+  page.on('response', onResponse);
+
+  return {
+    captures,
+    waitForMatchingWrite(input) {
+      if (disposed) {
+        return Promise.reject(
+          new AutoApplyObservationError('File-write listener was disposed.'),
+        );
+      }
+      const timeoutMs = input.timeoutMs ?? AUTO_APPLY_TIMEOUT_MS;
+      const classification = classifyFileWriteCaptures(
+        captures,
+        input.sessionId,
+        input.path,
+      );
+      if (classification.kind === 'success') {
+        return Promise.resolve(classification.capture);
+      }
+      if (classification.kind !== 'pending') {
+        return Promise.reject(fileWriteClassificationError(classification));
+      }
+      return new Promise<FileWriteCapture>((resolve, reject) => {
+        let timer: ReturnType<typeof setTimeout>;
+        const waiter: FileWriteWaiter = {
+          sessionId: input.sessionId,
+          path: input.path,
+          resolve: (capture) => {
+            clearTimeout(timer);
+            resolve(capture);
+          },
+          reject: (error) => {
+            clearTimeout(timer);
+            reject(error);
+          },
+        };
+        timer = setTimeout(() => {
+          const index = waiters.indexOf(waiter);
+          if (index >= 0) {
+            waiters.splice(index, 1);
+          }
+          reject(
+            new AutoApplyObservationError(
+              `Timed out waiting for POST /api/sessions/:sessionId/files/write of ${input.path} after ${timeoutMs}ms.`,
+            ),
+          );
+        }, timeoutMs);
+        waiters.push(waiter);
+      });
+    },
+    async dispose() {
+      disposed = true;
+      page.off('response', onResponse);
+      const pending = waiters.splice(0, waiters.length);
+      for (const waiter of pending) {
+        waiter.reject(
+          new AutoApplyObservationError('File-write listener was disposed.'),
+        );
+      }
     },
   };
 }

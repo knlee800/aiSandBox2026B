@@ -3,6 +3,7 @@ import {
   AUTO_APPLY_TIMEOUT_MS,
   BUILDER_PROMPT,
   DEFAULT_BASE_URL,
+  FROZEN_ARTIFACT_PATH,
   LOCALE,
   MODEL,
   PREVIEW_TIMEOUT_MS,
@@ -22,13 +23,16 @@ import {
 } from './auth';
 import {
   armConfirmBuildApplyListener,
+  armFileWriteListener,
   armSessionCreateListener,
+  AutoApplyObservationError,
   ProjectCreateObservationError,
   SessionObservationError,
   projectCreateObservationTimeout,
   readProjectCreateBody,
   validateLiveConfirmResponse,
   type ConfirmListener,
+  type FileWriteListener,
 } from './network';
 import { startAndAssertPreview } from './preview';
 import {
@@ -61,6 +65,7 @@ export interface LiveAdapterContext {
   staging?: StagingHelper;
   execute?: (argv: string[]) => Promise<string>;
   readLocalHead?: () => Promise<string>;
+  autoApplyTimeoutMs?: number;
 }
 
 export function createLiveStagingHelper(options: {
@@ -202,10 +207,12 @@ export async function createLiveAdapters(
   const readLocalHead = input.readLocalHead ?? (() => readAuthorizedLocalHead());
   const credentials = assertLiveCredentials(env);
   const baseURL = String(env.E2E_BASE_URL ?? DEFAULT_BASE_URL).replace(/\/$/, '');
+  const autoApplyTimeoutMs = input.autoApplyTimeoutMs ?? AUTO_APPLY_TIMEOUT_MS;
 
   const context = await createFreshBrowserContext(input.browser);
   const page = await context.newPage();
   let confirmListener: ConfirmListener | undefined;
+  let fileWriteListener: FileWriteListener | undefined;
   let sessionCreatedAt = 0;
   let projectId = '';
   let sessionId = '';
@@ -253,6 +260,9 @@ export async function createLiveAdapters(
 
     async armListeners() {
       confirmListener = await armConfirmBuildApplyListener(page);
+      if (!fileWriteListener) {
+        fileWriteListener = await armFileWriteListener(page);
+      }
     },
 
     async createSession() {
@@ -315,13 +325,27 @@ export async function createLiveAdapters(
     },
 
     async waitForAutoApply() {
-      await page.locator(SELECTORS.autoFileNode).waitFor({ timeout: AUTO_APPLY_TIMEOUT_MS });
+      if (!fileWriteListener) {
+        throw new AutoApplyObservationError(
+          'File-write listener was not armed before Build.',
+        );
+      }
+      if (!sessionId) {
+        throw new AutoApplyObservationError(
+          'Cannot observe AUTO_APPLY without a sessionId.',
+        );
+      }
+      const capture = await fileWriteListener.waitForMatchingWrite({
+        sessionId,
+        path: FROZEN_ARTIFACT_PATH,
+        timeoutMs: autoApplyTimeoutMs,
+      });
       if (await page.locator(SELECTORS.awaitingConfirmation).count()) {
         throw new Error(
           'AUTO_APPLY expected for the one-file golden path, but awaiting-confirmation UI appeared. Do not click a manual Apply button.',
         );
       }
-      return { autoApplyAt: Date.now(), fileApplied: true };
+      return { autoApplyAt: capture.observedAt, fileApplied: true };
     },
 
     async verifyPreview() {
@@ -397,6 +421,8 @@ export async function createLiveAdapters(
 
     async cleanup({ ids }) {
       await confirmListener?.dispose();
+      await fileWriteListener?.dispose();
+      fileWriteListener = undefined;
       let cleanup = 'session-stop-not-attempted';
       if (ids.sessionId) {
         try {
