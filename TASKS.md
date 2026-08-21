@@ -3,7 +3,7 @@
 **Parallel Development Architecture:** v1
 **Maximum admitted implementation lanes:** 2
 **Lane 3:** DISABLED
-**Active implementation lanes:** 1 / 2
+**Active implementation lanes:** 0 / 2
 
 Task bodies, AC, dependencies, history, and LOCKED state live in:
 `C:\Users\knlee\aiSandBox2026B\TASKS_BACKLOG_FULL.md`
@@ -12,7 +12,7 @@ This board is the only current scheduler.
 Do not determine current work from content below the LEGACY / FROZEN boundary.
 
 ## Lane 1
-PRIVATE-BETA-E2E-AUTO-01D — ACTIVE — Step 1 COMPLETE — CREATE_SESSION response-observation race fix implemented + CONTRACT validated — ready for Step 2 consolidation / checkpoint / lock — 2026-08-21
+EMPTY
 
 ## Lane 2
 EMPTY
@@ -21,18 +21,18 @@ EMPTY
 DISABLED
 
 ## Governance owner / state
-UNOWNED — PRIVATE-BETA-E2E-AUTO-01D admitted to Lane 1 — GOVERNANCE acquired for this board/registry write, then released — Step 1 implementation+CONTRACT complete; do not lock until Step 2 consolidation
+UNOWNED — PRIVATE-BETA-E2E-AUTO-01D COMPLETE AND LOCKED — PASS — 2026-08-21 — GOVERNANCE acquired for this board/registry/checkpoint write, then released
 
-STAGING / PROVIDER-LIVE / CREDIT / ENV remain UNOWNED. LIVE-04 lock unchanged.
+STAGING / PROVIDER-LIVE / CREDIT / ENV remain UNOWNED. LIVE-04 lock unchanged. AUTO-01D HOTFILE leases released.
 
 ## Active mutex / resource ownership
 - GOVERNANCE: UNOWNED
-- HOTFILE:e2e/builder-golden-path/lib/live-adapters.ts: PRIVATE-BETA-E2E-AUTO-01D
-- HOTFILE:e2e/builder-golden-path/lib/network.ts: PRIVATE-BETA-E2E-AUTO-01D
-- HOTFILE:e2e/builder-golden-path/lib/constants.ts: PRIVATE-BETA-E2E-AUTO-01D
-- HOTFILE:e2e/builder-golden-path/lib/local-fixture.ts: PRIVATE-BETA-E2E-AUTO-01D
-- HOTFILE:e2e/builder-golden-path/tests/live-adapters.spec.ts: PRIVATE-BETA-E2E-AUTO-01D
-- HOTFILE:e2e/builder-golden-path/tests/network.spec.ts: PRIVATE-BETA-E2E-AUTO-01D
+- HOTFILE:e2e/builder-golden-path/lib/live-adapters.ts: UNOWNED
+- HOTFILE:e2e/builder-golden-path/lib/network.ts: UNOWNED
+- HOTFILE:e2e/builder-golden-path/lib/constants.ts: UNOWNED
+- HOTFILE:e2e/builder-golden-path/lib/local-fixture.ts: UNOWNED
+- HOTFILE:e2e/builder-golden-path/tests/live-adapters.spec.ts: UNOWNED
+- HOTFILE:e2e/builder-golden-path/tests/network.spec.ts: UNOWNED
 - HOTFILE:e2e/builder-golden-path/lib/staging.ts: UNOWNED
 - PACKAGE: UNOWNED
 - STAGING: UNOWNED
@@ -43,14 +43,14 @@ STAGING / PROVIDER-LIVE / CREDIT / ENV remain UNOWNED. LIVE-04 lock unchanged.
 - GATEWAY: UNOWNED
 - All other resources: UNOWNED
 
-No production/package hotfiles acquired. PACKAGE remains UNOWNED.
+All HOTFILE leases UNOWNED. PACKAGE remains UNOWNED.
 
 ```
 RUNTIME_EXECUTION_AUTHORIZED=NO
 PROVIDER_CALL_AUTHORIZED=NO
 CREDIT_MUTATION_AUTHORIZED=NO
 STAGING_MUTATION_AUTHORIZED=NO
-AUTOMATION_ADAPTER_BLOCKERS_RESOLVED=YES for AUTO-01A (locked), AUTO-01B (locked) inspectParity parser, and AUTO-01C (locked) post-gate ready-wait — AUTO-01C ready-wait held on LIVE-04 (STARTING_BALANCE PASS) — LIVE-04 COMPLETE AND LOCKED FAIL/BLOCKED at CREATE_SESSION — AUTO-01D ACTIVE Lane 1 Step 1 COMPLETE (CREATE_SESSION response-observation race fix; CONTRACT validated; not locked) — do not edit AUTO-01/AUTO-01A/AUTO-01B/AUTO-01C; do not retry LIVE-02; do not retry LIVE-03; do not rerun LIVE-04; do not register LIVE-05
+AUTOMATION_ADAPTER_BLOCKERS_RESOLVED=YES for AUTO-01A (locked), AUTO-01B (locked) inspectParity parser, AUTO-01C (locked) post-gate ready-wait, and AUTO-01D (locked) CREATE_SESSION capture-style observer — AUTO-01C ready-wait held on LIVE-04 (STARTING_BALANCE PASS) — LIVE-04 COMPLETE AND LOCKED FAIL/BLOCKED at CREATE_SESSION — AUTO-01D COMPLETE AND LOCKED — PASS — 2026-08-21 (CREATE_SESSION response-observation race; CONTRACT 56; no LIVE) — do not edit AUTO-01/AUTO-01A/AUTO-01B/AUTO-01C; do not retry LIVE-02; do not retry LIVE-03; do not rerun LIVE-04; do not register LIVE-05 in this lock
 PROVIDER_CALL_AUTHORIZED_CURRENT=0
 PROVIDER_CALL_USED=0
 ```
@@ -78,7 +78,8 @@ PROVIDER_CALL_USED=0
 - PRIVATE-BETA-E2E-AUTO-01C execution evidence and final checkpoint (COMPLETE AND LOCKED — PASS — 2026-08-21 — AUTOMATION_TOOLING_FIX; post-gate gateway-ready wait on `http://127.0.0.1:4000/api/health/ready` after `pm2 restart`; timeout 30s/500ms fail-closed `GatewayNotReadyError` before STARTING_BALANCE; cleanup still restores `GLOBAL_EXECUTION_ENABLED=false`; CONTRACT 45 passed; no product source change; LIVE staging proof still required; LIVE-03 not retried; LIVE-04 not registered in that lock)
 - PRIVATE-BETA-E2E-LIVE-04 Step 1 deployment+live contract (2026-08-21): fresh automated LIVE Builder E2E using the fixed AUTO-01C runner — not a LIVE-03 retry; after explicit Keith Step 2 authorization only — capture AUTHORIZED_LOCAL_HEAD=`git rev-parse HEAD` on a clean local tree that includes the AUTO-01C post-gate ready-wait; compare with staging HEAD; if identical do NOT redeploy; if different deploy THAT SHA to `aisandbox-staging` `/opt/aisandbox` using E2E-04 Phase E / 03F `git fetch origin main` + `git reset --hard <AUTHORIZED_LOCAL_HEAD>` + conditional rebuild/restart (do not `git pull` blindly; do not substitute historical SHA; do not deploy LIVE-03 SHA `16c0bf863d40c6890d6fa9951b38efe7aa987a77` if it lacks AUTO-01C; do not deploy `origin/main` if it differs from AUTHORIZED_LOCAL_HEAD); require STAGING_HEAD == AUTHORIZED_LOCAL_HEAD afterward; preserve retained `stash@{0}` `0372cc1f47f82e1db060ed2dd756a938fe324803`; AUTH required; SAFETY / inspectParity required; exact staging HEAD parity required; GLOBAL_EXECUTION_ENABLED=false and BILLING_CHARGES_ENABLED=false before runner authorization phase; no provider before STARTING_BALANCE succeeds; then `npm run e2e:builder:live` once; AUTO_APPLY only; no human browser; one xAI/grok-4.5 call; zero retries; never rerun after provider usage; cleanup must restore GLOBAL_EXECUTION_ENABLED=false; transient regular-user credentials (DPAPI temp file acceptable; pause for operator input is not failure); no product/runner mutation; no Git mutation by the worker
 - PRIVATE-BETA-E2E-LIVE-04 execution evidence and final checkpoint (COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CREATE_SESSION — 2026-08-21 — Playwright LIVE invoked once; AUTH/SAFETY/AUTO-01C ready-wait/STARTING_BALANCE/deploy/parity PASS; session created then hung waiting for POST /api/sessions response evidence; PROVIDER USED=0; CREDITS=0; Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-04-CHECKPOINT.md`)
-- PRIVATE-BETA-E2E-AUTO-01D Step 1 registration+implementation (2026-08-21): TINY AUTOMATION_TOOLING_FIX child of locked AUTO-01; CREATE_SESSION capture-style POST /api/sessions observer armed before create-project confirm; bounded 30s wait; runGoldenPath cleanup on timeout; CONTRACT validated; not locked; no LIVE/staging/provider/credit
+- PRIVATE-BETA-E2E-AUTO-01D Step 1 registration+implementation (2026-08-21): TINY AUTOMATION_TOOLING_FIX child of locked AUTO-01; CREATE_SESSION capture-style POST /api/sessions observer armed before create-project confirm; bounded 30s wait; runGoldenPath cleanup on timeout; CONTRACT validated; no LIVE/staging/provider/credit
+- PRIVATE-BETA-E2E-AUTO-01D execution evidence and final checkpoint (COMPLETE AND LOCKED — PASS — 2026-08-21 — AUTOMATION_TOOLING_FIX; CREATE_SESSION capture-style POST /api/sessions observer armed before create-project confirm; early capture retained; project-card click fallback only; bounded 30s SessionObservationError inside runGoldenPath; CLEANUP/gate-restore proven; ProviderGuard unused on CREATE_SESSION miss; CONTRACT 56 passed; no product source change; LIVE staging proof still required; LIVE-04 not rerun; LIVE-05 not registered)
 - existing authentication/ownership semantics
 - existing workspace apply semantics
 - existing automatic post-apply checkpoint semantics
@@ -86,8 +87,8 @@ PROVIDER_CALL_USED=0
 - current non-risky one-file Builder AUTO_APPLY semantics (E2E-05 proven)
 
 ## Current blockers / gates
-- PRIVATE-BETA-E2E-AUTO-01D: ACTIVE — Lane 1 — Step 1 COMPLETE — 2026-08-21 — TINY AUTOMATION_TOOLING_FIX — CREATE_SESSION response-observation race — capture-style listener armed before create-project confirm; bounded 30s SessionObservationError inside runGoldenPath; CLEANUP/gate-restore proven; CONTRACT validated — ready for Step 2 consolidation / checkpoint / lock — product defect NO — production source modification NO — do not lock in Step 1 — do not rerun LIVE-04 — do not retry LIVE-03 — do not register LIVE-05 — do not edit AUTO-01/AUTO-01A/AUTO-01B/AUTO-01C — PRIVATE-BETA-INVITE-01 remains prohibited
-- PRIVATE-BETA-E2E-LIVE-04: COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CREATE_SESSION — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-04-CHECKPOINT.md` — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-04-EXECUTION.md` — NOT a product failure of session create; NOT ENVIRONMENT/PARITY_FAILURE; NOT a provider failure — AUTHORIZED_LOCAL_HEAD `5bd22736c2ad717b18cde74616326d015c8be7ff` deployed — STAGING_HEAD match PASS — AUTH PASS — SAFETY inspectParity PASS — AUTO-01C ready-wait PASS — STARTING_BALANCE PASS — Playwright LIVE invoked once — CREATE_SESSION hung until Playwright 600000ms timeout after session already started at 13:33:15 — PROVIDER USED=0 — CREDITS=0 — project `818f9baa-98b2-40e9-bbf6-15b60824b989` / session `d0e12d9f-8110-4cf3-b153-2e87de2bb721` created then stopped in operator cleanup — runner finally skipped by timeout — gate restored false — BILLING_CHARGES_ENABLED=false — no human browser intervention — exact blocker: CREATE_SESSION automation waits for POST /api/sessions response evidence even though the session had already been created; follow-up PRIVATE-BETA-E2E-AUTO-01D ACTIVE Step 1 COMPLETE — do not rerun LIVE-04 — do not retry LIVE-03 — do not modify AUTO-01/AUTO-01A/AUTO-01B/AUTO-01C — do not return to manual browser testing — PRIVATE-BETA-INVITE-01 remains prohibited
+- PRIVATE-BETA-E2E-AUTO-01D: COMPLETE AND LOCKED — PASS — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01D-CHECKPOINT.md` — AUTOMATION_TOOLING_FIX — CREATE_SESSION capture-style POST /api/sessions observer armed before create-project confirm; early capture retained; project-card click fallback only; bounded 30s SessionObservationError inside runGoldenPath; CLEANUP/gate-restore proven; ProviderGuard unused on CREATE_SESSION miss; CONTRACT 56 passed — product defect NO — production source modification NO — LIVE-04 CREATE_SESSION observation race resolved in CONTRACT — do not claim LIVE staging golden-path validation — do not edit AUTO-01D — do not rerun LIVE-04 — do not retry LIVE-03 — do not register LIVE-05 in this lock — PRIVATE-BETA-INVITE-01 remains prohibited
+- PRIVATE-BETA-E2E-LIVE-04: COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CREATE_SESSION — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-04-CHECKPOINT.md` — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-04-EXECUTION.md` — NOT a product failure of session create; NOT ENVIRONMENT/PARITY_FAILURE; NOT a provider failure — AUTHORIZED_LOCAL_HEAD `5bd22736c2ad717b18cde74616326d015c8be7ff` deployed — STAGING_HEAD match PASS — AUTH PASS — SAFETY inspectParity PASS — AUTO-01C ready-wait PASS — STARTING_BALANCE PASS — Playwright LIVE invoked once — CREATE_SESSION hung until Playwright 600000ms timeout after session already started at 13:33:15 — PROVIDER USED=0 — CREDITS=0 — project `818f9baa-98b2-40e9-bbf6-15b60824b989` / session `d0e12d9f-8110-4cf3-b153-2e87de2bb721` created then stopped in operator cleanup — runner finally skipped by timeout — gate restored false — BILLING_CHARGES_ENABLED=false — no human browser intervention — exact blocker: CREATE_SESSION automation waits for POST /api/sessions response evidence even though the session had already been created; follow-up PRIVATE-BETA-E2E-AUTO-01D COMPLETE AND LOCKED — PASS — 2026-08-21 (CONTRACT 56) — do not rerun LIVE-04 — do not retry LIVE-03 — do not modify AUTO-01/AUTO-01A/AUTO-01B/AUTO-01C — do not return to manual browser testing — PRIVATE-BETA-INVITE-01 remains prohibited
 - PRIVATE-BETA-E2E-AUTO-01C: COMPLETE AND LOCKED — PASS — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01C-CHECKPOINT.md` — AUTOMATION_TOOLING_FIX — post-gate gateway-ready wait on `http://127.0.0.1:4000/api/health/ready` after `pm2 restart`; timeout 30s/500ms fail-closed `GatewayNotReadyError` before STARTING_BALANCE; cleanup still restores `GLOBAL_EXECUTION_ENABLED=false`; CONTRACT 45 passed — product defect NO — production source modification NO — LIVE-03 STARTING_BALANCE ready-wait blocker resolved in CONTRACT — prerequisite for LIVE-04 — do not claim LIVE staging golden-path validation — do not edit AUTO-01C
 - PRIVATE-BETA-E2E-LIVE-03: COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-03-CHECKPOINT.md` — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-03-EXECUTION.md` — NOT a product failure; NOT ENVIRONMENT/PARITY_FAILURE; NOT a provider failure — AUTHORIZED_LOCAL_HEAD `16c0bf863d40c6890d6fa9951b38efe7aa987a77` deployed — STAGING_HEAD match PASS — AUTH PASS — SAFETY inspectParity PASS — Playwright LIVE invoked once — STARTING_BALANCE `GET /api/billing/balance` HTTP 502 immediately after gate-enable `pm2 restart` with no ready-wait — PROVIDER USED=0 — CREDITS=0 — no session/container/project/execution created — gate restored false — BILLING_CHARGES_ENABLED=false — no human browser intervention — follow-up PRIVATE-BETA-E2E-AUTO-01C COMPLETE AND LOCKED — PASS — 2026-08-21 (CONTRACT 45) — follow-up PRIVATE-BETA-E2E-LIVE-04 COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CREATE_SESSION — 2026-08-21 — do not retry LIVE-03 — do not convert LIVE-03 to PASS — do not modify AUTO-01/AUTO-01A/AUTO-01B/AUTO-01C — do not return to manual browser testing
 - PRIVATE-BETA-E2E-AUTO-01B: COMPLETE AND LOCKED — PASS — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01B-CHECKPOINT.md` — AUTOMATION_TOOLING_FIX — labelled-sentinel inspectParity parser; LIVE-02 two-line clean-form compatibility; CONTRACT 38 passed — product defect NO — production source modification NO — LIVE-02 SAFETY parser blocker resolved — do not claim LIVE staging golden-path validation
@@ -101,10 +102,10 @@ PROVIDER_CALL_USED=0
 - PRIVATE-BETA-E2E-04: COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20 — unchanged historical failure; not a LIVE-02 dependency; do not reopen
 - BUILDER_PRIVATE_BETA_READINESS: NO_GO_PENDING_FRESH_AUTOMATED_E2E
 - PRIVATE-BETA-INVITE-01: UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
-- Lane 1: PRIVATE-BETA-E2E-AUTO-01D ACTIVE — Step 1 COMPLETE. Lane 2 EMPTY. Lane 3 DISABLED.
+- Lane 1: EMPTY. Lane 2 EMPTY. Lane 3 DISABLED.
 
 ## Current next product gate
-PRIVATE-BETA-E2E-AUTO-01D ACTIVE — Step 1 COMPLETE — CREATE_SESSION response-observation race fix implemented and CONTRACT-validated — 2026-08-21. Exact next: Step 2 consolidation / checkpoint / lock. Do not lock in this step. Do not rerun LIVE-04. Do not retry LIVE-03. Do not register LIVE-05. Do not patch AUTO-01/AUTO-01A/AUTO-01B/AUTO-01C. Do not return to manual browser testing. Do not register PRIVATE-BETA-INVITE-01.
+PRIVATE-BETA-E2E-AUTO-01D COMPLETE AND LOCKED — PASS — 2026-08-21. CREATE_SESSION response-observation race resolved in CONTRACT (56 passed). Exact next (NOT REGISTERED HERE): a NEW fresh automated LIVE Builder E2E using the AUTO-01D runner — likely PRIVATE-BETA-E2E-LIVE-05; identifier must be verified unused before registration. Do not register LIVE-05 in this lock. Do not rerun LIVE-04. Do not retry LIVE-03. Do not patch AUTO-01/AUTO-01A/AUTO-01B/AUTO-01C. Do not return to manual browser testing. Do not register PRIVATE-BETA-INVITE-01.
 LIVE-04 remains COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CREATE_SESSION. AUTO-01C ready-wait held on LIVE (STARTING_BALANCE PASS). LIVE-03 remains COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — STARTING_BALANCE and is not converted to PASS.
 Builder private beta remains NO_GO_PENDING_FRESH_AUTOMATED_E2E.
 PRIVATE-BETA-INVITE-01 remains prohibited.

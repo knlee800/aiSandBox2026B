@@ -65415,8 +65415,8 @@ Step 3 (COMPLETE — 2026-08-21 — COMPLETE AND LOCKED — FAIL/BLOCKED — AUT
 **Title:** CREATE_SESSION Response Observation Race Fix
 **Workstream:** RELIABILITY
 **Lifecycle:** 2-step TINY
-**Status:** ACTIVE — Step 1 COMPLETE — 2026-08-21 — ready for Step 2 consolidation
-**Assigned lane:** Lane 1
+**Status:** COMPLETE AND LOCKED — PASS — 2026-08-21
+**Assigned lane:** none (Lane 1 emptied at Step 2 lock)
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
 **Registered:** 2026-08-21
@@ -65447,7 +65447,7 @@ Does **not** depend on unfinished output from another lane. Does **not** authori
 - Step 2: checkpoint + board/registry end-status only
 - No production frontend/backend source. No package/lockfile change. No PRD.md. No ARCHITECTURE.md. No CLAUDE.md. No AGENTS.md. Do not rewrite locked AUTO-01 / AUTO-01A / AUTO-01B / AUTO-01C / LIVE-04 bodies.
 
-**Mutexes / resources:** GOVERNANCE acquired for this Step 1 board/registry write, then released. HOTFILE leases held until Step 2 lock. Do **not** reserve STAGING, PROVIDER-LIVE, CREDIT, ENV, PACKAGE, FRONTEND, GATEWAY, AI-SERVICE, or CONTAINER-MANAGER.
+**Mutexes / resources:** GOVERNANCE acquired for this Step 2 board/registry/checkpoint write, then released. HOTFILE leases released at lock. Do **not** reserve STAGING, PROVIDER-LIVE, CREDIT, ENV, PACKAGE, FRONTEND, GATEWAY, AI-SERVICE, or CONTAINER-MANAGER.
 
 **Shared contracts (frozen; do not weaken):**
 - PRIVATE-BETA-E2E-AUTO-01 runner contract — phase order, AUTO_APPLY, preview-immediately-after-apply, fail-closed LIVE, one-call/no-retry, finally-style cleanup
@@ -65477,8 +65477,8 @@ Does **not** depend on unfinished output from another lane. Does **not** authori
 - No LIVE / staging / provider / credit execution. No product source change.
 
 **Lifecycle steps:**
-1. Registration + bounded implementation + CONTRACT validation — COMPLETE — 2026-08-21 — this step
-2. Consolidation / checkpoint / lock — PENDING
+1. Registration + bounded implementation + CONTRACT validation — COMPLETE — 2026-08-21
+2. Consolidation / checkpoint / lock — COMPLETE — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01D-CHECKPOINT.md`
 
 **Authorization flags:**
 - RUNTIME_EXECUTION_AUTHORIZED=NO
@@ -65519,24 +65519,26 @@ Registration / control-plane + implementation (Step 1):
 - [x] PRIVATE-BETA-INVITE-01 remains prohibited
 - [x] BUILDER_PRIVATE_BETA_READINESS remains NO_GO_PENDING_FRESH_AUTOMATED_E2E
 
-Step 2 (PENDING — Consolidation):
-- [ ] checkpoint created
-- [ ] COMPLETE AND LOCKED after required lane-local evidence
-- [ ] Lane 1 released EMPTY; HOTFILE / GOVERNANCE released
-- [ ] LIVE-04 remains unretried; LIVE-04 not converted to PASS; LIVE-05 not registered
+Step 2 (COMPLETE — 2026-08-21 — COMPLETE AND LOCKED — PASS):
+- [x] checkpoint created — `docs/PRIVATE-BETA-E2E-AUTO-01D-CHECKPOINT.md`
+- [x] COMPLETE AND LOCKED after required lane-local evidence
+- [x] Lane 1 released EMPTY; HOTFILE / GOVERNANCE released
+- [x] LIVE-04 remains unretried; LIVE-04 not converted to PASS; LIVE-05 not registered
 
 ---
 
-**PRIVATE-BETA-E2E-AUTO-01D status:** ACTIVE — Step 1 COMPLETE — 2026-08-21
+**PRIVATE-BETA-E2E-AUTO-01D status:** COMPLETE AND LOCKED — PASS — 2026-08-21
 **Classification:** AUTOMATION_TOOLING_FIX
 **Product defect:** NO
 **Production source modification:** NO
-**Assigned lane:** Lane 1
+**Assigned lane:** none
+**Lane 1:** EMPTY
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
-**Mutexes / resources:** GOVERNANCE UNOWNED; HOTFILE leases held by AUTO-01D; STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE UNOWNED
-**Step 1:** COMPLETE — Registration + implementation + CONTRACT validation — 2026-08-21
-**Step 2:** PENDING — Consolidation / checkpoint / lock
+**Mutexes / resources:** GOVERNANCE UNOWNED; all HOTFILE leases UNOWNED; STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE UNOWNED
+**Checkpoint:** `docs/PRIVATE-BETA-E2E-AUTO-01D-CHECKPOINT.md`
+**Step 1:** COMPLETE — Registration + implementation + CONTRACT validation — 2026-08-21 — capture-style `armSessionCreateListener()`; `SESSION_CREATE_TIMEOUT_MS=30000`; `SessionObservationError`; CONTRACT 56 passed
+**Step 2:** COMPLETE — Consolidation / checkpoint / lock — 2026-08-21 — this lock
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_AUTOMATED_E2E
 **LIVE-04 rerun authorized:** NO
@@ -65545,4 +65547,4 @@ Step 2 (PENDING — Consolidation):
 **PROVIDER_CALL_AUTHORIZED:** 0
 **PROVIDER_CALL_USED:** 0
 **CREDITS_DEDUCTED:** 0
-**Exact next:** Step 2 consolidation / checkpoint / lock. Do not lock in Step 1. Do not rerun LIVE-04. Do not retry LIVE-03. Do not register LIVE-05. Do not modify AUTO-01/AUTO-01A/AUTO-01B/AUTO-01C. Do not return to manual browser testing. Do not claim LIVE staging golden-path validation. PRIVATE-BETA-INVITE-01 remains prohibited.
+**Exact next:** Do not rerun LIVE-04. Do not retry LIVE-03. AUTO-01D remains COMPLETE AND LOCKED — PASS. LIVE-04 remains COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CREATE_SESSION. Do not modify AUTO-01/AUTO-01A/AUTO-01B/AUTO-01C. Do not return to manual browser testing. Do not claim LIVE staging golden-path validation. PRIVATE-BETA-INVITE-01 remains prohibited. Next recommended lifecycle (NOT REGISTERED HERE): a NEW fresh automated LIVE Builder E2E using the AUTO-01D runner — likely PRIVATE-BETA-E2E-LIVE-05; identifier must be verified unused before registration.
