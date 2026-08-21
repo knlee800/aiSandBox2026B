@@ -7,6 +7,13 @@ export const STAGING_REPO_PATH = '/opt/aisandbox';
 export const STAGING_BASE_URL = 'https://staging.ainow.biz';
 export const RETAINED_STASH_SHA = '0372cc1f47f82e1db060ed2dd756a938fe324803';
 
+export const PARITY_HEAD_SENTINEL = 'AISB_PARITY_HEAD';
+export const PARITY_STATUS_SENTINEL = 'AISB_PARITY_STATUS';
+export const PARITY_STASH_SENTINEL = 'AISB_PARITY_STASH';
+export const PARITY_END_SENTINEL = 'AISB_PARITY_END';
+
+const GIT_SHA_RE = /^[0-9a-f]{40}$/i;
+
 export class StagingNotAuthorizedError extends Error {
   constructor(message = 'Staging helper refused: LIVE authorization flags are not all present.') {
     super(message);
@@ -35,7 +42,89 @@ export function buildSshCommand(remoteCommand: string): string[] {
 }
 
 export function buildParityInspectCommand(): string {
-  return `git -C ${STAGING_REPO_PATH} rev-parse HEAD && git -C ${STAGING_REPO_PATH} status --porcelain && git -C ${STAGING_REPO_PATH} rev-parse 'stash@{0}'`;
+  return [
+    `echo ${PARITY_HEAD_SENTINEL}`,
+    `git -C ${STAGING_REPO_PATH} rev-parse HEAD`,
+    `echo ${PARITY_STATUS_SENTINEL}`,
+    `git -C ${STAGING_REPO_PATH} status --porcelain`,
+    `echo ${PARITY_STASH_SENTINEL}`,
+    `git -C ${STAGING_REPO_PATH} rev-parse 'stash@{0}'`,
+    `echo ${PARITY_END_SENTINEL}`,
+  ].join(' && ');
+}
+
+export function parseParityInspectOutput(output: string): {
+  headSha: string;
+  status: string;
+  stashSha: string;
+} {
+  const labelled = tryParseLabelledParityOutput(output);
+  if (labelled) {
+    return labelled;
+  }
+
+  // LIVE-02 proven clean helper output was only HEAD then stash SHA.
+  // Porcelain emitted zero lines, so a blank placeholder never existed.
+  // Treat exactly two SHA lines as HEAD + empty STATUS + STASH.
+  const shaLines = output
+    .replace(/\r\n/g, '\n')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+  if (shaLines.length === 2 && GIT_SHA_RE.test(shaLines[0] ?? '') && GIT_SHA_RE.test(shaLines[1] ?? '')) {
+    return {
+      headSha: shaLines[0] ?? '',
+      status: '',
+      stashSha: shaLines[1] ?? '',
+    };
+  }
+
+  throw new UnsafeParityError(
+    'Staging parity inspect output is unparseable. Refusing positional empty-field shifting. No automatic deploy.',
+  );
+}
+
+function tryParseLabelledParityOutput(output: string): {
+  headSha: string;
+  status: string;
+  stashSha: string;
+} | null {
+  const normalized = output.replace(/\r\n/g, '\n');
+  if (
+    !normalized.includes(PARITY_HEAD_SENTINEL) ||
+    !normalized.includes(PARITY_STATUS_SENTINEL) ||
+    !normalized.includes(PARITY_STASH_SENTINEL) ||
+    !normalized.includes(PARITY_END_SENTINEL)
+  ) {
+    return null;
+  }
+
+  const headRaw = extractSentinelSection(normalized, PARITY_HEAD_SENTINEL, PARITY_STATUS_SENTINEL);
+  const statusRaw = extractSentinelSection(normalized, PARITY_STATUS_SENTINEL, PARITY_STASH_SENTINEL);
+  const stashRaw = extractSentinelSection(normalized, PARITY_STASH_SENTINEL, PARITY_END_SENTINEL);
+  if (headRaw === null || statusRaw === null || stashRaw === null) {
+    return null;
+  }
+
+  return {
+    headSha: headRaw.trim(),
+    status: statusRaw.replace(/^\n+/, '').replace(/\n+$/, ''),
+    stashSha: stashRaw.trim(),
+  };
+}
+
+function extractSentinelSection(
+  source: string,
+  startSentinel: string,
+  endSentinel: string,
+): string | null {
+  const lines = source.split('\n');
+  const start = lines.findIndex((line) => line.trim() === startSentinel);
+  const end = lines.findIndex((line) => line.trim() === endSentinel);
+  if (start < 0 || end < 0 || end <= start) {
+    return null;
+  }
+  return lines.slice(start + 1, end).join('\n');
 }
 
 export function buildGateInspectCommand(): string {
@@ -132,11 +221,11 @@ export class StagingHelper {
     }
     const execute = this.requireExecutor();
     const output = await execute(buildSshCommand(buildParityInspectCommand()));
-    const lines = output.trim().split(/\r?\n/);
+    const parsed = parseParityInspectOutput(output);
     const decision = evaluateParity({
-      headSha: lines[0] ?? '',
-      worktreeClean: (lines[1] ?? '') === '',
-      stashSha: lines[2] ?? '',
+      headSha: parsed.headSha,
+      worktreeClean: parsed.status === '',
+      stashSha: parsed.stashSha,
       requiredHeadSha: expectedHead,
     });
     refuseUnsafeParityOrSkipDeploy(decision);

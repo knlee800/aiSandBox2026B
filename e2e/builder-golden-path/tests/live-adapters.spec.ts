@@ -16,6 +16,10 @@ import {
   resolveMode,
 } from '../lib/modes';
 import {
+  PARITY_END_SENTINEL,
+  PARITY_HEAD_SENTINEL,
+  PARITY_STASH_SENTINEL,
+  PARITY_STATUS_SENTINEL,
   RETAINED_STASH_SHA,
   SshExecutorMissingError,
   StagingHelper,
@@ -23,6 +27,7 @@ import {
   UnsafeParityError,
   createSshExecutor,
   evaluateParity,
+  parseParityInspectOutput,
   readAuthorizedLocalHead,
   refuseUnsafeParityOrSkipDeploy,
 } from '../lib/staging';
@@ -49,7 +54,21 @@ const liveEnvWithCreds = {
 };
 
 function parityOutput(headSha: string, dirtyLine = '', stashSha = RETAINED_STASH_SHA): string {
-  return `${headSha}\n${dirtyLine}\n${stashSha}\n`;
+  const statusLines = dirtyLine === '' ? [] : [dirtyLine];
+  return [
+    PARITY_HEAD_SENTINEL,
+    headSha,
+    PARITY_STATUS_SENTINEL,
+    ...statusLines,
+    PARITY_STASH_SENTINEL,
+    stashSha,
+    PARITY_END_SENTINEL,
+    '',
+  ].join('\n');
+}
+
+function twoLineCleanOutput(headSha: string, stashSha = RETAINED_STASH_SHA): string {
+  return `${headSha}\n${stashSha}\n`;
 }
 
 test.describe('AUTO-01A live adapter tooling', () => {
@@ -305,5 +324,155 @@ test.describe('AUTO-01A live adapter tooling', () => {
         statusShort: async () => ' M e2e/builder-golden-path/lib/staging.ts',
       }),
     ).rejects.toBeInstanceOf(UnsafeParityError);
+  });
+});
+
+test.describe('AUTO-01B inspectParity clean-output parser', () => {
+  test('labelled clean porcelain with no blank line parses HEAD empty STATUS and STASH exactly', () => {
+    const output = [
+      PARITY_HEAD_SENTINEL,
+      DYNAMIC_HEAD_B,
+      PARITY_STATUS_SENTINEL,
+      PARITY_STASH_SENTINEL,
+      RETAINED_STASH_SHA,
+      PARITY_END_SENTINEL,
+    ].join('\n');
+    expect(output).not.toContain('\n\n');
+    const parsed = parseParityInspectOutput(output);
+    expect(parsed.headSha).toBe(DYNAMIC_HEAD_B);
+    expect(parsed.status).toBe('');
+    expect(parsed.stashSha).toBe(RETAINED_STASH_SHA);
+  });
+
+  test('HEAD + stash two-line form is clean and cannot be mistaken as dirty status', () => {
+    const output = twoLineCleanOutput(DYNAMIC_HEAD_B);
+    const parsed = parseParityInspectOutput(output);
+    expect(parsed.headSha).toBe(DYNAMIC_HEAD_B);
+    expect(parsed.status).toBe('');
+    expect(parsed.stashSha).toBe(RETAINED_STASH_SHA);
+    expect(parsed.status).not.toBe(RETAINED_STASH_SHA);
+    expect(
+      evaluateParity({
+        headSha: parsed.headSha,
+        worktreeClean: parsed.status === '',
+        stashSha: parsed.stashSha,
+        requiredHeadSha: DYNAMIC_HEAD_B,
+      }),
+    ).toBe('PARITY_PROVEN');
+  });
+
+  test('exact labelled clean parity PASSES inspectParity', async () => {
+    const helper = new StagingHelper({
+      env: liveEnv,
+      execute: async () => parityOutput(DYNAMIC_HEAD_B),
+    });
+    await expect(helper.inspectParity(DYNAMIC_HEAD_B)).resolves.toBe('PARITY_PROVEN');
+  });
+
+  test('LIVE-02 two-line clean helper output PASSES inspectParity', async () => {
+    const helper = new StagingHelper({
+      env: liveEnv,
+      execute: async () => twoLineCleanOutput(DYNAMIC_HEAD_B),
+    });
+    await expect(helper.inspectParity(DYNAMIC_HEAD_B)).resolves.toBe('PARITY_PROVEN');
+  });
+
+  test('dirty porcelain is detected and fails closed before gate enable', async () => {
+    const executeCalls: string[] = [];
+    const helper = new StagingHelper({
+      env: liveEnv,
+      execute: async (argv) => {
+        executeCalls.push(argv.join(' '));
+        return parityOutput(DYNAMIC_HEAD_B, ' M e2e/builder-golden-path/lib/staging.ts');
+      },
+    });
+    await expect(helper.inspectParity(DYNAMIC_HEAD_B)).rejects.toBeInstanceOf(UnsafeParityError);
+    expect(
+      executeCalls.some((call) => call.includes('GLOBAL_EXECUTION_ENABLED=true pm2 restart')),
+    ).toBe(false);
+
+    const parsed = parseParityInspectOutput(
+      parityOutput(DYNAMIC_HEAD_B, ' M e2e/builder-golden-path/lib/staging.ts'),
+    );
+    expect(parsed.status).toContain('M e2e/builder-golden-path/lib/staging.ts');
+    expect(parsed.status).not.toBe('');
+    expect(
+      evaluateParity({
+        headSha: parsed.headSha,
+        worktreeClean: parsed.status === '',
+        stashSha: parsed.stashSha,
+        requiredHeadSha: DYNAMIC_HEAD_B,
+      }),
+    ).toBe('UNSAFE_PARITY');
+  });
+
+  test('missing stash fails closed before gate enable', async () => {
+    const executeCalls: string[] = [];
+    const helper = new StagingHelper({
+      env: liveEnv,
+      execute: async (argv) => {
+        executeCalls.push(argv.join(' '));
+        return parityOutput(DYNAMIC_HEAD_B, '', '');
+      },
+    });
+    await expect(helper.inspectParity(DYNAMIC_HEAD_B)).rejects.toBeInstanceOf(UnsafeParityError);
+    expect(
+      executeCalls.some((call) => call.includes('GLOBAL_EXECUTION_ENABLED=true pm2 restart')),
+    ).toBe(false);
+
+    const oneLineHeadOnly = `${DYNAMIC_HEAD_B}\n`;
+    expect(() => parseParityInspectOutput(oneLineHeadOnly)).toThrow(UnsafeParityError);
+  });
+
+  test('incorrect stash fails closed before gate enable', async () => {
+    const wrongStash = 'cccccccccccccccccccccccccccccccccccccccc';
+    const helper = new StagingHelper({
+      env: liveEnv,
+      execute: async () => parityOutput(DYNAMIC_HEAD_B, '', wrongStash),
+    });
+    await expect(helper.inspectParity(DYNAMIC_HEAD_B)).rejects.toBeInstanceOf(UnsafeParityError);
+    await expect(
+      new StagingHelper({
+        env: liveEnv,
+        execute: async () => twoLineCleanOutput(DYNAMIC_HEAD_B, wrongStash),
+      }).inspectParity(DYNAMIC_HEAD_B),
+    ).rejects.toBeInstanceOf(UnsafeParityError);
+  });
+
+  test('HEAD mismatch fails closed before gate enable', async () => {
+    const executeCalls: string[] = [];
+    const helper = new StagingHelper({
+      env: liveEnv,
+      execute: async (argv) => {
+        executeCalls.push(argv.join(' '));
+        return parityOutput(DYNAMIC_HEAD_A);
+      },
+    });
+    await expect(helper.inspectParity(DYNAMIC_HEAD_B)).rejects.toBeInstanceOf(UnsafeParityError);
+    expect(
+      executeCalls.some((call) => call.includes('GLOBAL_EXECUTION_ENABLED=true pm2 restart')),
+    ).toBe(false);
+  });
+
+  test('CONTRACT mode remains staging-free; provider budget 1; retries 0; AUTO_APPLY then PREVIEW', async () => {
+    let executeCalled = false;
+    const helper = new StagingHelper({
+      env: { E2E_MODE: 'contract' },
+      execute: async () => {
+        executeCalled = true;
+        return parityOutput(DYNAMIC_HEAD_B);
+      },
+    });
+    await expect(helper.inspectParity(DYNAMIC_HEAD_B)).rejects.toBeInstanceOf(
+      StagingNotAuthorizedError,
+    );
+    expect(executeCalled).toBe(false);
+    expect(resolveMode({})).toBe('contract');
+    expect(new ProviderCallGuard(1).remaining).toBe(1);
+    expect(() => new ProviderCallGuard(2)).toThrow(/exactly 1/);
+    expect(liveConfig.retries).toBe(0);
+    expect(GOLDEN_PATH_PHASES.indexOf('PREVIEW')).toBe(
+      GOLDEN_PATH_PHASES.indexOf('WAIT_FOR_AUTO_APPLY') + 1,
+    );
   });
 });

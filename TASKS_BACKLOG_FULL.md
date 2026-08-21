@@ -64211,4 +64211,114 @@ Step 3 (COMPLETE — 2026-08-21 — COMPLETE AND LOCKED — FAIL/BLOCKED — AUT
 **CREDITS_DEDUCTED:** 0
 **Exact next:** Do not retry LIVE-02. Do not modify AUTO-01/AUTO-01A. Do not return to manual browser testing. Next recommended lifecycle (NOT REGISTERED HERE): one TINY automation-tooling fix for `inspectParity()` clean-output parsing, followed by contract validation.
 
+---
+
+### PRIVATE-BETA-E2E-AUTO-01B — inspectParity Clean-Output Parser Fix
+
+**Task ID:** PRIVATE-BETA-E2E-AUTO-01B
+**Title:** inspectParity Clean-Output Parser Fix
+**Workstream:** RELIABILITY
+**Lifecycle:** 2-step TINY
+**Status:** ACTIVE — Step 1 COMPLETE — READY FOR STEP 2 CONSOLIDATION
+**Assigned lane:** Lane 1
+**Lane 2:** EMPTY
+**Lane 3:** DISABLED
+**Registered:** 2026-08-21
+**Approved:** Keith — 2026-08-21 (explicit TINY AUTO-01 child follow-up to fix LIVE-02 SAFETY parser bug)
+**Nature:** AUTOMATION_TOOLING_FIX. Not a product defect. Bounded child of locked PRIVATE-BETA-E2E-AUTO-01. Does not rewrite AUTO-01 or AUTO-01A. Does not retry LIVE-02. Does not register or run LIVE-03.
+**Evidence class:** LOCAL-TESTS
+**Hot-file leases:** `e2e/builder-golden-path/lib/staging.ts`; `e2e/builder-golden-path/tests/live-adapters.spec.ts`
+**Identifier search:** PRIVATE-BETA-E2E-AUTO-01B was unused (repo-wide grep: no prior matches). Existing E2E IDs: PRIVATE-BETA-E2E-01..05, PRIVATE-BETA-E2E-AUTO-01, PRIVATE-BETA-E2E-AUTO-01A, PRIVATE-BETA-E2E-LIVE-01, PRIVATE-BETA-E2E-LIVE-02. Rejected PRIVATE-BETA-E2E-AUTO-02 (implies another runner-build), PRIVATE-BETA-E2E-06 (implies another numbered manual E2E), and PRIVATE-BETA-E2E-LIVE-03 (LIVE re-run is out of this task). AUTO-01B is the next valid AUTO-01 child after locked AUTO-01A.
+
+**Start condition:** READY — PRIVATE-BETA-E2E-AUTO-01 COMPLETE AND LOCKED — PASS; PRIVATE-BETA-E2E-AUTO-01A COMPLETE AND LOCKED — PASS; PRIVATE-BETA-E2E-LIVE-02 COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE; Lane 1 EMPTY at admission; Lane 2 EMPTY; Lane 3 DISABLED; STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE UNOWNED at admission; OS v1 admission requirements pass.
+
+**Depends on:**
+- PRIVATE-BETA-E2E-AUTO-01 — COMPLETE AND LOCKED — PASS — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01-CHECKPOINT.md`
+- PRIVATE-BETA-E2E-AUTO-01A — COMPLETE AND LOCKED — PASS — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01A-CHECKPOINT.md`
+- PRIVATE-BETA-E2E-LIVE-02 — COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-02-CHECKPOINT.md` — proven inspectParity clean-porcelain two-line parse mismatch; do not retry LIVE-02; do not edit AUTO-01/AUTO-01A
+
+Does **not** depend on unfinished output from another lane. Does **not** authorize LIVE / staging / provider / credit activity.
+
+**Primary write scope:**
+- `e2e/builder-golden-path/**`
+- `TASKS.md` CURRENT EXECUTION BOARD above LEGACY / FROZEN only (control-plane)
+- this canonical registry entry (control-plane)
+- No production frontend/backend source. No package/lockfile change. No PRD.md. No ARCHITECTURE.md. No CLAUDE.md. No AGENTS.md. Do not rewrite locked AUTO-01 / AUTO-01A / LIVE-02.
+
+**Mutexes / resources:** GOVERNANCE; HOTFILE:e2e/builder-golden-path/lib/staging.ts; HOTFILE:e2e/builder-golden-path/tests/live-adapters.spec.ts. Do **not** reserve STAGING, PROVIDER-LIVE, CREDIT, ENV, PACKAGE, FRONTEND, GATEWAY, AI-SERVICE, or CONTAINER-MANAGER.
+
+**Shared contracts (frozen; do not weaken):**
+- PRIVATE-BETA-E2E-AUTO-01 runner contract — phase order, AUTO_APPLY, preview-immediately-after-apply, fail-closed LIVE, one-call/no-retry, finally-style cleanup
+- PRIVATE-BETA-E2E-AUTO-01A dynamic execution-edge parity + SSH executor wiring
+- PRIVATE-BETA-E2E-LIVE-02 Step 1 deployment+live contract (historical; do not retry from this task)
+- LIVE authorization flags unchanged
+- provider budget exactly 1; retries 0
+
+**Revert / evidence isolation:** Isolated `e2e/builder-golden-path/` parser/test files. Reverting AUTO-01B must not invalidate locked AUTO-01 / AUTO-01A / LIVE-02 / 03J / 03K evidence.
+
+**Purpose:** Fix the LIVE-02 SAFETY `inspectParity()` parser so clean `git status --porcelain` (zero status lines; no placeholder blank line) cannot shift HEAD/stash fields.
+
+**Proven root cause (LIVE-02):** `inspectParity()` assumed clean porcelain produced a placeholder blank line as positional field 2. Actual clean helper output was only HEAD then stash SHA. The stash SHA was treated as dirty-tree status and stash as missing → `UnsafeParityError` before gate/provider.
+
+**Fix:** Replace fragile positional line parsing with labelled sentinel fields that remain stable when status is empty. Also accept the proven LIVE-02 two-SHA-line clean form as HEAD + empty STATUS + STASH so that output cannot be mistaken as dirty. Fail closed on unparseable output, dirty tree, missing/wrong stash, or HEAD mismatch — all before gate/provider.
+
+**Lifecycle steps:**
+1. Registration + bounded parser fix + isolated CONTRACT validation — COMPLETE — 2026-08-21 — `npx tsc --noEmit --project e2e/builder-golden-path/tsconfig.json` PASS; `npm run e2e:builder:contract` **38 passed** (prior 29 retained + 9 AUTO-01B regressions)
+2. Consolidation / checkpoint — PENDING
+
+**Authorization flags:**
+- RUNTIME_EXECUTION_AUTHORIZED=NO
+- PROVIDER_CALL_AUTHORIZED=NO
+- CREDIT_MUTATION_AUTHORIZED=NO
+- STAGING_MUTATION_AUTHORIZED=NO
+
+**PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+**BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_AUTOMATED_E2E
+
+---
+
+#### Acceptance Criteria
+
+- [x] unique ID PRIVATE-BETA-E2E-AUTO-01B confirmed unused before registration
+- [x] OS v1 admission rules pass; admitted to Lane 1 only
+- [x] AUTO-01 / AUTO-01A / LIVE-02 remain locked and unedited
+- [x] inspectParity HEAD parsed exactly
+- [x] inspectParity STATUS is empty string when clean (no blank-line placeholder required)
+- [x] inspectParity STASH parsed exactly
+- [x] clean tree + expected stash PASS
+- [x] dirty tree FAIL
+- [x] missing stash FAIL
+- [x] incorrect stash FAIL
+- [x] HEAD mismatch FAIL
+- [x] HEAD + stash two-line form cannot be mistaken as dirty status
+- [x] all failures remain fail-closed before gate/provider
+- [x] CONTRACT mode remains staging-free
+- [x] provider budget remains exactly 1
+- [x] retries remain 0
+- [x] phase order remains AUTO_APPLY → PREVIEW immediately
+- [x] existing 29 contract tests continue passing
+- [x] no LIVE / staging / provider / credit execution during this task
+- [x] no production frontend/backend source change
+- [x] no package/lockfile change
+- [x] no LIVE-03 registration
+- [ ] checkpoint created in Step 2
+- [ ] COMPLETE AND LOCKED — PASS after Step 2
+- [ ] Lane 1 released EMPTY; HOTFILE / GOVERNANCE released
+
+---
+
+**PRIVATE-BETA-E2E-AUTO-01B status:** ACTIVE — Step 1 COMPLETE — READY FOR STEP 2 CONSOLIDATION
+**Classification:** AUTOMATION_TOOLING_FIX
+**Product defect:** NO
+**Production source modification:** NO
+**Assigned lane:** Lane 1
+**Lane 2:** EMPTY
+**Lane 3:** DISABLED
+**Mutexes / resources:** GOVERNANCE + HOTFILE:e2e/builder-golden-path/lib/staging.ts + HOTFILE:e2e/builder-golden-path/tests/live-adapters.spec.ts OWNED; STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE UNOWNED
+**Step 1:** COMPLETE — 2026-08-21 — labelled-sentinel inspectParity parser + LIVE-02 two-line clean form — tsc PASS; `npm run e2e:builder:contract` 38 passed
+**Step 2:** PENDING
+**PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+**BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_AUTOMATED_E2E
+**Exact next:** Step 2 consolidation / checkpoint. Do not run LIVE. Do not register LIVE-03.
+
 

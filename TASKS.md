@@ -12,7 +12,14 @@ This board is the only current scheduler.
 Do not determine current work from content below the LEGACY / FROZEN boundary.
 
 ## Lane 1
-EMPTY
+PRIVATE-BETA-E2E-AUTO-01B — ACTIVE — Step 1 COMPLETE — READY FOR STEP 2 CONSOLIDATION
+Workstream: RELIABILITY
+Lifecycle: 2-step TINY
+Evidence class: LOCAL-TESTS
+Nature: AUTOMATION_TOOLING_FIX — inspectParity() clean-output parser only
+Validation: `npx tsc --noEmit --project e2e/builder-golden-path/tsconfig.json` PASS; `npm run e2e:builder:contract` **38 passed** (prior 29 retained + 9 AUTO-01B regressions)
+Primary write scope: `e2e/builder-golden-path/**`
+Does not modify AUTO-01 / AUTO-01A / LIVE-02 bodies. No production source. No LIVE / staging / provider / credit / Git mutation.
 
 ## Lane 2
 EMPTY
@@ -21,13 +28,14 @@ EMPTY
 DISABLED
 
 ## Governance owner / state
-EMPTY / NONE
+PRIVATE-BETA-E2E-AUTO-01B / ACTIVE — Step 1 COMPLETE — GOVERNANCE held pending Step 2 consolidation
 
-GOVERNANCE acquired for atomic LIVE-02 Step 3 board / registry / checkpoint write (2026-08-21), then released.
 STAGING / PROVIDER-LIVE / CREDIT / ENV remain UNOWNED.
 
 ## Active mutex / resource ownership
-- GOVERNANCE: UNOWNED
+- GOVERNANCE: OWNED by PRIVATE-BETA-E2E-AUTO-01B (Lane 1)
+- HOTFILE:e2e/builder-golden-path/lib/staging.ts: OWNED by PRIVATE-BETA-E2E-AUTO-01B (Lane 1)
+- HOTFILE:e2e/builder-golden-path/tests/live-adapters.spec.ts: OWNED by PRIVATE-BETA-E2E-AUTO-01B (Lane 1)
 - PACKAGE: UNOWNED
 - STAGING: UNOWNED
 - PROVIDER-LIVE: UNOWNED
@@ -36,14 +44,14 @@ STAGING / PROVIDER-LIVE / CREDIT / ENV remain UNOWNED.
 - FRONTEND: UNOWNED
 - All other resources: UNOWNED
 
-No product/runner/package hotfiles acquired. PACKAGE remains UNOWNED.
+No production/package hotfiles acquired. PACKAGE remains UNOWNED.
 
 ```
 RUNTIME_EXECUTION_AUTHORIZED=NO
 PROVIDER_CALL_AUTHORIZED=NO
 CREDIT_MUTATION_AUTHORIZED=NO
 STAGING_MUTATION_AUTHORIZED=NO
-AUTOMATION_ADAPTER_BLOCKERS_RESOLVED=YES for AUTO-01A (locked) — remaining inspectParity clean-porcelain parse mismatch found by LIVE-02; do not edit AUTO-01/AUTO-01A; TINY parser fix NOT REGISTERED HERE
+AUTOMATION_ADAPTER_BLOCKERS_RESOLVED=YES for AUTO-01A (locked) — AUTO-01B admitted to fix remaining inspectParity clean-porcelain parse mismatch found by LIVE-02; do not edit AUTO-01/AUTO-01A
 PROVIDER_CALL_AUTHORIZED_CURRENT=0
 PROVIDER_CALL_USED=0
 ```
@@ -70,6 +78,7 @@ PROVIDER_CALL_USED=0
 - current non-risky one-file Builder AUTO_APPLY semantics (E2E-05 proven)
 
 ## Current blockers / gates
+- PRIVATE-BETA-E2E-AUTO-01B: ACTIVE — Lane 1 — Step 1 COMPLETE — READY FOR STEP 2 CONSOLIDATION — AUTOMATION_TOOLING_FIX for `inspectParity()` clean-output parsing — CONTRACT 38 passed — do not run LIVE — do not SSH staging — do not call provider — do not mutate credits
 - PRIVATE-BETA-E2E-LIVE-02: COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-02-CHECKPOINT.md` — NOT a product failure; NOT ENVIRONMENT/PARITY_FAILURE; NOT a provider failure — AUTHORIZED_LOCAL_HEAD `1f6f83ec80892e6d105323cae91c0d302a7d5866` deployed — STAGING_HEAD match PASS — auth PASS — Playwright LIVE invoked once — SAFETY `inspectParity` clean-porcelain two-line parse mismatch — PROVIDER USED=0 — CREDITS=0 — gate never enabled — do not retry LIVE-02 — do not modify AUTO-01/AUTO-01A — do not return to manual browser testing
 - PRIVATE-BETA-E2E-AUTO-01A: COMPLETE AND LOCKED — PASS — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01A-CHECKPOINT.md` — AUTOMATION_TOOLING_FIX — dynamic execution-edge parity; createSshExecutor() wired; CONTRACT 29 passed — Lane 2 EMPTY — HOTFILE leases released
 - PRIVATE-BETA-E2E-LIVE-01: COMPLETE AND LOCKED — FAIL/BLOCKED — ENVIRONMENT/PARITY_FAILURE — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-01-CHECKPOINT.md` — NOT a product failure; NOT an automation run failure — Playwright LIVE never invoked — local HEAD `33daa1d1eb32e0165e6ae7d351b1edaad799f3b8` != staging HEAD `c3e39279abe3c0d6c348daa312107c8f6fc592b7` — PROVIDER USED=0 — CREDITS=0 — do not retry LIVE-01
@@ -83,11 +92,9 @@ PROVIDER_CALL_USED=0
 - Lane 2 EMPTY. Lane 3 DISABLED.
 
 ## Current next product gate
-No admitted implementation lane.
-PRIVATE-BETA-E2E-LIVE-02 COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — 2026-08-21.
-Staging current-HEAD deploy and exact parity PASS. Auth PASS. Playwright LIVE invoked once and fail-closed in SAFETY before gate enable / provider.
-Do not retry LIVE-02. Do not modify AUTO-01/AUTO-01A. Do not return to manual browser testing.
-Next recommended lifecycle (NOT REGISTERED HERE): one TINY automation-tooling fix for `inspectParity()` clean-output parsing, followed by contract validation.
+PRIVATE-BETA-E2E-AUTO-01B ACTIVE — Lane 1 — Step 1 COMPLETE — READY FOR STEP 2 CONSOLIDATION.
+inspectParity clean-output parser fixed. CONTRACT regression PASS (38).
+Do not retry LIVE-02. Do not register LIVE-03 in this task. Do not modify AUTO-01/AUTO-01A. Do not return to manual browser testing.
 Builder private beta remains NO_GO_PENDING_FRESH_AUTOMATED_E2E.
 PRIVATE-BETA-INVITE-01 remains prohibited.
 
