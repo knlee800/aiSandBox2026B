@@ -14,8 +14,11 @@ import {
   assertLiveAuthorized,
   inspectLiveGuards,
   resolveMode,
+  type EnvMap,
 } from '../lib/modes';
 import {
+  GATEWAY_READY_URL,
+  GatewayNotReadyError,
   PARITY_END_SENTINEL,
   PARITY_HEAD_SENTINEL,
   PARITY_STASH_SENTINEL,
@@ -25,15 +28,17 @@ import {
   StagingHelper,
   StagingNotAuthorizedError,
   UnsafeParityError,
+  buildGatewayReadyProbeCommand,
   createSshExecutor,
   evaluateParity,
+  isGatewayReadyProbeSuccess,
   parseParityInspectOutput,
   readAuthorizedLocalHead,
   refuseUnsafeParityOrSkipDeploy,
 } from '../lib/staging';
 import { GOLDEN_PATH_PHASES } from '../lib/phases';
 import { createRecordingAdapters, runGoldenPath } from '../lib/runner';
-import { ProviderCallGuard } from '../lib/safety-gates';
+import { ExecutionGateTracker, ProviderCallGuard } from '../lib/safety-gates';
 
 const HISTORICAL_E2E05_SHA = 'c3e39279abe3c0d6c348daa312107c8f6fc592b7';
 const DYNAMIC_HEAD_A = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
@@ -474,5 +479,238 @@ test.describe('AUTO-01B inspectParity clean-output parser', () => {
     expect(GOLDEN_PATH_PHASES.indexOf('PREVIEW')).toBe(
       GOLDEN_PATH_PHASES.indexOf('WAIT_FOR_AUTO_APPLY') + 1,
     );
+  });
+});
+
+function fastReadyHelper(input: {
+  execute: (argv: string[]) => Promise<string>;
+  gateTracker?: ExecutionGateTracker;
+  env?: EnvMap;
+}): StagingHelper {
+  let now = 0;
+  return new StagingHelper({
+    env: input.env ?? liveEnv,
+    gateTracker: input.gateTracker,
+    execute: input.execute,
+    now: () => now,
+    sleep: async (ms) => {
+      now += ms;
+    },
+    gatewayReadyTimeoutMs: 30,
+    gatewayReadyIntervalMs: 10,
+  });
+}
+
+test.describe('AUTO-01C post-gate gateway-ready wait', () => {
+  test('uses the existing localhost gateway readiness probe and treats only HTTP 200 as ready', () => {
+    expect(buildGatewayReadyProbeCommand()).toContain(GATEWAY_READY_URL);
+    expect(buildGatewayReadyProbeCommand()).toContain('/api/health/ready');
+    expect(isGatewayReadyProbeSuccess('200')).toBe(true);
+    expect(isGatewayReadyProbeSuccess('200\n')).toBe(true);
+    expect(isGatewayReadyProbeSuccess('502')).toBe(false);
+    expect(isGatewayReadyProbeSuccess('000')).toBe(false);
+    expect(isGatewayReadyProbeSuccess('')).toBe(false);
+    expect(isGatewayReadyProbeSuccess('200 OK')).toBe(false);
+  });
+
+  test('after gate-enable pm2 restart, waits for gateway ready before returning to STARTING_BALANCE', async () => {
+    const order: string[] = [];
+    let readyProbes = 0;
+    const helper = fastReadyHelper({
+      execute: async (argv) => {
+        const remote = argv[1] ?? '';
+        if (remote.includes('GLOBAL_EXECUTION_ENABLED=true pm2 restart')) {
+          order.push('restart');
+          return '';
+        }
+        if (remote.includes('/api/health/ready')) {
+          readyProbes += 1;
+          order.push(`ready-${readyProbes}`);
+          return readyProbes >= 2 ? '200' : '502';
+        }
+        order.push(`other:${remote}`);
+        return '';
+      },
+    });
+
+    await expect(helper.enableExecutionGate()).resolves.toBeUndefined();
+    expect(order[0]).toBe('restart');
+    expect(order.slice(1)).toEqual(['ready-1', 'ready-2']);
+    expect(order.some((item) => item.includes('/api/billing/balance'))).toBe(false);
+    expect(helper.gateTracker.shouldRestore()).toBe(true);
+  });
+
+  test('timeout after pm2 restart fails closed before STARTING_BALANCE/provider; cleanup still restores the gate', async () => {
+    const executeCalls: string[] = [];
+    const helper = fastReadyHelper({
+      execute: async (argv) => {
+        executeCalls.push(argv.join(' '));
+        const remote = argv[1] ?? '';
+        if (remote.includes('GLOBAL_EXECUTION_ENABLED=true pm2 restart')) {
+          return '';
+        }
+        if (remote.includes('/api/health/ready')) {
+          return '502';
+        }
+        if (remote.includes('GLOBAL_EXECUTION_ENABLED=false pm2 restart')) {
+          return '';
+        }
+        return '';
+      },
+    });
+
+    await expect(helper.enableExecutionGate()).rejects.toBeInstanceOf(GatewayNotReadyError);
+    expect(
+      executeCalls.some((call) => call.includes('GLOBAL_EXECUTION_ENABLED=true pm2 restart')),
+    ).toBe(true);
+    expect(executeCalls.some((call) => call.includes('/api/health/ready'))).toBe(true);
+    expect(executeCalls.some((call) => call.includes('/api/billing/balance'))).toBe(false);
+    expect(helper.gateTracker.shouldRestore()).toBe(true);
+
+    const restore = await helper.restoreExecutionGateIfChanged();
+    expect(restore).toBe('restored-false');
+    expect(
+      executeCalls.some((call) => call.includes('GLOBAL_EXECUTION_ENABLED=false pm2 restart')),
+    ).toBe(true);
+  });
+
+  test('LIVE adapter waits for ready after enabling the gate and never probes billing over SSH', async ({
+    browser,
+  }) => {
+    const executeCalls: string[] = [];
+    const helper = fastReadyHelper({
+      env: liveEnvWithCreds,
+      execute: async (argv) => {
+        executeCalls.push(argv.join(' '));
+        const remote = argv[1] ?? '';
+        if (remote.includes('rev-parse HEAD') || remote.includes(PARITY_HEAD_SENTINEL)) {
+          return parityOutput(DYNAMIC_HEAD_B);
+        }
+        if (remote.includes('GLOBAL_EXECUTION_ENABLED|BILLING_CHARGES_ENABLED')) {
+          return 'GLOBAL_EXECUTION_ENABLED=false\nBILLING_CHARGES_ENABLED=false\n';
+        }
+        if (remote.includes('GLOBAL_EXECUTION_ENABLED=true pm2 restart')) {
+          return '';
+        }
+        if (remote.includes('/api/health/ready')) {
+          return '200';
+        }
+        if (remote.includes('GLOBAL_EXECUTION_ENABLED=false pm2 restart')) {
+          return '';
+        }
+        return '';
+      },
+    });
+
+    const live = await createLiveAdapters({
+      browser,
+      env: liveEnvWithCreds,
+      staging: helper,
+      readLocalHead: async () => DYNAMIC_HEAD_B,
+    });
+    try {
+      await expect(live.adapters.runSafetyChecks()).resolves.toBeUndefined();
+      const restartIdx = executeCalls.findIndex((call) =>
+        call.includes('GLOBAL_EXECUTION_ENABLED=true pm2 restart'),
+      );
+      const readyIdx = executeCalls.findIndex((call) => call.includes('/api/health/ready'));
+      expect(restartIdx).toBeGreaterThanOrEqual(0);
+      expect(readyIdx).toBeGreaterThan(restartIdx);
+      expect(executeCalls.some((call) => call.includes('/api/billing/balance'))).toBe(false);
+    } finally {
+      await live.adapters.cleanup({ ids: {}, gateTracker: live.gateTracker });
+    }
+  });
+
+  test('already-enabled gate does not restart or ready-wait; existing safety remains intact', async ({
+    browser,
+  }) => {
+    const executeCalls: string[] = [];
+    const helper = fastReadyHelper({
+      env: liveEnvWithCreds,
+      execute: async (argv) => {
+        executeCalls.push(argv.join(' '));
+        const remote = argv[1] ?? '';
+        if (remote.includes('rev-parse HEAD') || remote.includes(PARITY_HEAD_SENTINEL)) {
+          return parityOutput(DYNAMIC_HEAD_B);
+        }
+        return 'GLOBAL_EXECUTION_ENABLED=true\nBILLING_CHARGES_ENABLED=false\n';
+      },
+    });
+
+    const live = await createLiveAdapters({
+      browser,
+      env: liveEnvWithCreds,
+      staging: helper,
+      readLocalHead: async () => DYNAMIC_HEAD_B,
+    });
+    try {
+      await expect(live.adapters.runSafetyChecks()).resolves.toBeUndefined();
+      expect(
+        executeCalls.some((call) =>
+          call.includes('GLOBAL_EXECUTION_ENABLED=true pm2 restart'),
+        ),
+      ).toBe(false);
+      expect(executeCalls.some((call) => call.includes('/api/health/ready'))).toBe(false);
+    } finally {
+      await live.context.close();
+    }
+  });
+
+  test('gateway ready timeout fails closed before STARTING_BALANCE and BUILD; provider unused; gate restored', async () => {
+    const executeCalls: string[] = [];
+    const recording = createRecordingAdapters();
+    const helper = fastReadyHelper({
+      gateTracker: recording.gateTracker,
+      execute: async (argv) => {
+        executeCalls.push(argv.join(' '));
+        const remote = argv[1] ?? '';
+        if (remote.includes('/api/health/ready')) {
+          return '502';
+        }
+        return '';
+      },
+    });
+    recording.adapters.runSafetyChecks = async () => {
+      recording.calls.push('SAFETY');
+      await helper.enableExecutionGate();
+    };
+
+    const providerGuard = new ProviderCallGuard(1);
+    const result = await runGoldenPath({
+      mode: 'contract',
+      adapters: recording.adapters,
+      gateTracker: recording.gateTracker,
+      providerGuard,
+    });
+
+    expect(result.summary.verdict).toBe('FAIL');
+    if (result.summary.verdict === 'FAIL') {
+      expect(result.summary.phase).toBe('SAFETY');
+      expect(result.summary.executionGateFinal).toBe('restored-false');
+    }
+    expect(recording.calls).toContain('SAFETY');
+    expect(recording.calls).not.toContain('STARTING_BALANCE');
+    expect(recording.calls).not.toContain('CREATE_SESSION');
+    expect(recording.calls).not.toContain('BUILD');
+    expect(recording.calls.at(-1)).toBe('CLEANUP');
+    expect(providerGuard.usedCount).toBe(0);
+    expect(executeCalls.some((call) => call.includes('/api/billing/balance'))).toBe(false);
+  });
+
+  test('CONTRACT mode remains staging-free for gate enable and ready-wait', async () => {
+    let executeCalled = false;
+    const helper = new StagingHelper({
+      env: { E2E_MODE: 'contract' },
+      execute: async () => {
+        executeCalled = true;
+        return '200';
+      },
+    });
+    await expect(helper.enableExecutionGate()).rejects.toBeInstanceOf(StagingNotAuthorizedError);
+    await expect(helper.waitForGatewayReady()).rejects.toBeInstanceOf(StagingNotAuthorizedError);
+    expect(executeCalled).toBe(false);
+    expect(liveConfig.retries).toBe(0);
+    expect(new ProviderCallGuard(1).remaining).toBe(1);
   });
 });

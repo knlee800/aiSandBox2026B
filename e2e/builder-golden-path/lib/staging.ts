@@ -12,6 +12,10 @@ export const PARITY_STATUS_SENTINEL = 'AISB_PARITY_STATUS';
 export const PARITY_STASH_SENTINEL = 'AISB_PARITY_STASH';
 export const PARITY_END_SENTINEL = 'AISB_PARITY_END';
 
+export const GATEWAY_READY_URL = 'http://127.0.0.1:4000/api/health/ready';
+export const GATEWAY_READY_TIMEOUT_MS = 30_000;
+export const GATEWAY_READY_INTERVAL_MS = 500;
+
 const GIT_SHA_RE = /^[0-9a-f]{40}$/i;
 
 export class StagingNotAuthorizedError extends Error {
@@ -34,6 +38,15 @@ export class SshExecutorMissingError extends Error {
   ) {
     super(message);
     this.name = 'SshExecutorMissingError';
+  }
+}
+
+export class GatewayNotReadyError extends Error {
+  constructor(
+    message = 'Gateway did not become ready after execution-gate pm2 restart. Refusing STARTING_BALANCE. Fail closed.',
+  ) {
+    super(message);
+    this.name = 'GatewayNotReadyError';
   }
 }
 
@@ -139,6 +152,25 @@ export function buildGateRestoreCommand(): string {
   return 'GLOBAL_EXECUTION_ENABLED=false pm2 restart aisandbox-api-gateway --update-env';
 }
 
+export function buildGatewayReadyProbeCommand(): string {
+  return `curl -sS -o /dev/null -w '%{http_code}' --max-time 2 ${GATEWAY_READY_URL} || echo 000`;
+}
+
+export function isGatewayReadyProbeSuccess(output: string): boolean {
+  const lines = output
+    .replace(/\r\n/g, '\n')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+  return lines[lines.length - 1] === '200';
+}
+
+function defaultSleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 export function buildDeductionQuery(executionId: string): string {
   return `psql "$DATABASE_URL" -c "SELECT source_event_id, requested_credits, applied_credits, overflow_credits, balance_before, balance_after, status FROM credit_deduction_records WHERE source_event_id = '${executionId.replace(/'/g, '')}';"`;
 }
@@ -181,17 +213,29 @@ export interface StagingHelperOptions {
   env?: EnvMap;
   gateTracker?: ExecutionGateTracker;
   execute?: (argv: string[]) => Promise<string>;
+  sleep?: (ms: number) => Promise<void>;
+  now?: () => number;
+  gatewayReadyTimeoutMs?: number;
+  gatewayReadyIntervalMs?: number;
 }
 
 export class StagingHelper {
   private readonly env: EnvMap;
   readonly gateTracker: ExecutionGateTracker;
   private readonly executeFn?: (argv: string[]) => Promise<string>;
+  private readonly sleepFn: (ms: number) => Promise<void>;
+  private readonly nowFn: () => number;
+  private readonly gatewayReadyTimeoutMs: number;
+  private readonly gatewayReadyIntervalMs: number;
 
   constructor(options: StagingHelperOptions = {}) {
     this.env = options.env ?? process.env;
     this.gateTracker = options.gateTracker ?? new ExecutionGateTracker();
     this.executeFn = options.execute;
+    this.sleepFn = options.sleep ?? defaultSleep;
+    this.nowFn = options.now ?? (() => Date.now());
+    this.gatewayReadyTimeoutMs = options.gatewayReadyTimeoutMs ?? GATEWAY_READY_TIMEOUT_MS;
+    this.gatewayReadyIntervalMs = options.gatewayReadyIntervalMs ?? GATEWAY_READY_INTERVAL_MS;
   }
 
   hasExecutor(): boolean {
@@ -241,6 +285,33 @@ export class StagingHelper {
     this.assertLive();
     await this.requireExecutor()(buildSshCommand(buildGateEnableCommand()));
     this.gateTracker.recordEnabledByRunner();
+    await this.waitForGatewayReady();
+  }
+
+  async waitForGatewayReady(): Promise<void> {
+    this.assertLive();
+    const execute = this.requireExecutor();
+    const deadline = this.nowFn() + this.gatewayReadyTimeoutMs;
+    let lastDetail = 'no probe attempted';
+    while (this.nowFn() < deadline) {
+      try {
+        const output = await execute(buildSshCommand(buildGatewayReadyProbeCommand()));
+        if (isGatewayReadyProbeSuccess(output)) {
+          return;
+        }
+        lastDetail = `probe HTTP ${output.trim() || 'empty'}`;
+      } catch (error) {
+        lastDetail = error instanceof Error ? error.message : String(error);
+      }
+      const remaining = deadline - this.nowFn();
+      if (remaining <= 0) {
+        break;
+      }
+      await this.sleepFn(Math.min(this.gatewayReadyIntervalMs, remaining));
+    }
+    throw new GatewayNotReadyError(
+      `Gateway did not become ready after execution-gate pm2 restart within ${this.gatewayReadyTimeoutMs}ms (${lastDetail}). Refusing STARTING_BALANCE. Fail closed.`,
+    );
   }
 
   async restoreExecutionGateIfChanged(): Promise<GateRestoreStatus> {
