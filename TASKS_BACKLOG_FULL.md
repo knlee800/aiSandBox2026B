@@ -63307,7 +63307,7 @@ Step 3 (COMPLETE — 2026-08-20; consolidation / automation-ready LOCK):
 **Title:** First Controlled LIVE Automated Builder Golden-Path Run
 **Workstream:** RELIABILITY
 **Lifecycle:** 3-step HIGH-RISK bounded task
-**Status:** ACTIVE — Step 1 COMPLETE — 2026-08-20 — WAITING FOR EXPLICIT STEP 2 AUTHORIZATION
+**Status:** LANE-DONE — FAIL/BLOCKED — 2026-08-20 — Step 2 ENVIRONMENT/PARITY_FAILURE — awaiting Step 3 consolidation
 **Assigned lane:** Lane 1
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
@@ -63337,7 +63337,7 @@ Inherited historical evidence only (not unfinished dependencies; do not reopen):
 
 If Step 2 exposes an actual product defect: STOP. Register a separate blocker later. Do not repair product source inside this live task.
 
-**Mutexes / resources:** released while waiting for explicit Step 2 authorization — STAGING / PROVIDER-LIVE / CREDIT / ENV UNOWNED. PACKAGE remains UNOWNED.
+**Mutexes / resources:** STAGING / PROVIDER-LIVE / CREDIT / ENV UNOWNED — released after Step 2 terminal FAIL. PACKAGE remains UNOWNED.
 
 Do not reserve FRONTEND, GATEWAY, AI-SERVICE, CONTAINER-MANAGER, MIGRATION, COMPOSE, I18N, or HOTFILE leases unless Step 2 discovery later proves a bounded adapter/product task that the control plane separately admits.
 
@@ -63597,10 +63597,10 @@ Do not execute or authorize Step 2 from AUTO-01A consolidation. STAGING / PROVID
 #### Lifecycle steps
 
 1. Registration + current staging parity / live authorization contract freeze — COMPLETE — 2026-08-20 — this entry
-2. One controlled automated LIVE golden-path execution — PENDING — WAITING FOR EXPLICIT STEP 2 AUTHORIZATION — AUTO-01A LOCKED — do not execute until Keith explicitly authorizes LIVE
+2. One controlled automated LIVE golden-path execution — LANE-DONE — FAIL/BLOCKED — 2026-08-20 — ENVIRONMENT/PARITY_FAILURE — stopped before gate enable / provider. Evidence: `docs/PRIVATE-BETA-E2E-LIVE-01-EXECUTION.md`
 3. Consolidation / final readiness verdict — NOT STARTED
 
-**Authorization flags (Step 1):**
+**Authorization flags (after Step 2 terminal FAIL):**
 - RUNTIME_EXECUTION_AUTHORIZED=NO
 - PROVIDER_CALL_AUTHORIZED=NO
 - CREDIT_MUTATION_AUTHORIZED=NO
@@ -63633,17 +63633,17 @@ Registration / control-plane (Step 1):
 - [x] BUILDER_PRIVATE_BETA_READINESS remains NO_GO_PENDING_FRESH_AUTOMATED_E2E
 - [x] no Playwright LIVE execution, SSH, gate enable, xAI call, credit deduction, application/source/runner/package, or Git mutation in Step 1
 
-Step 2 (NOT STARTED — WAITING FOR EXPLICIT STEP 2 AUTHORIZATION; AUTO-01A LOCKED):
-- [ ] current local HEAD vs current staging HEAD exact-parity verified immediately before execution
-- [ ] parity FAIL stops before provider execution and does not auto-deploy
-- [ ] `npm run e2e:builder:live` executed once under the frozen flags
-- [ ] one provider call maximum
-- [ ] zero retries
-- [ ] AUTO_APPLY / preview-immediately-after-apply proven or classified
-- [ ] finally-style cleanup and execution-gate false
-- [ ] failure classified as A/B/C/D/E
-- [ ] no product-source repair inside this task
-- [ ] no return to the old manual evidence marathon
+Step 2 (LANE-DONE — FAIL/BLOCKED — 2026-08-20 — ENVIRONMENT/PARITY_FAILURE; AUTO-01A LOCKED):
+- [x] current local HEAD vs current staging HEAD exact-parity verified immediately before execution
+- [x] parity FAIL stops before provider execution and does not auto-deploy
+- [ ] `npm run e2e:builder:live` executed once under the frozen flags — NOT INVOKED; stopped at parity
+- [x] one provider call maximum — USED=0
+- [x] zero retries
+- [ ] AUTO_APPLY / preview-immediately-after-apply proven or classified — NOT REACHED
+- [x] finally-style cleanup and execution-gate false — gate never enabled; remains false
+- [x] failure classified as A/B/C/D/E — C ENVIRONMENT/PARITY_FAILURE
+- [x] no product-source repair inside this task
+- [x] no return to the old manual evidence marathon
 
 Step 3 (NOT STARTED):
 - [ ] checkpoint created
@@ -63653,13 +63653,13 @@ Step 3 (NOT STARTED):
 
 ---
 
-**PRIVATE-BETA-E2E-LIVE-01 status:** ACTIVE — Step 1 COMPLETE — 2026-08-20 — WAITING FOR EXPLICIT STEP 2 AUTHORIZATION
+**PRIVATE-BETA-E2E-LIVE-01 status:** LANE-DONE — FAIL/BLOCKED — 2026-08-20 — ENVIRONMENT/PARITY_FAILURE — awaiting Step 3 consolidation
 **Assigned lane:** Lane 1
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
-**Mutexes / resources:** STAGING / PROVIDER-LIVE / CREDIT / ENV UNOWNED; PACKAGE UNOWNED; GOVERNANCE released; do not reacquire LIVE resources until Keith explicitly authorizes Step 2
+**Mutexes / resources:** STAGING / PROVIDER-LIVE / CREDIT / ENV UNOWNED; PACKAGE UNOWNED; GOVERNANCE released
 **Step 1:** COMPLETE — Registration + current staging parity / live authorization contract freeze — 2026-08-20
-**Step 2:** PENDING — WAITING FOR EXPLICIT STEP 2 AUTHORIZATION — AUTOMATION_ADAPTER_BLOCKERS_RESOLVED=YES — do not execute Playwright LIVE / SSH / gate / xAI / credit until Keith explicitly authorizes LIVE
+**Step 2:** LANE-DONE — FAIL/BLOCKED — 2026-08-20 — ENVIRONMENT/PARITY_FAILURE — local `33daa1d1eb32e0165e6ae7d351b1edaad799f3b8` != staging `c3e39279abe3c0d6c348daa312107c8f6fc592b7` — no Playwright LIVE / no xAI / no credit mutation — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-01-EXECUTION.md`
 **Step 3:** NOT STARTED
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_AUTOMATED_E2E
@@ -63667,7 +63667,7 @@ Step 3 (NOT STARTED):
 **AUTOMATION_ADAPTER_BLOCKERS_RESOLVED:** YES
 **PROVIDER_CALL_AUTHORIZED:** 0
 **PROVIDER_CALL_USED:** 0
-**Exact next:** WAITING FOR EXPLICIT STEP 2 AUTHORIZATION. AUTO-01A is LOCKED. Do not start LIVE-01 Step 2. Do not consume the provider call.
+**Exact next:** Step 3 consolidation. Do not retry Step 2. Do not auto-deploy. Do not lock LIVE-01 until Step 3.
 
 ---
 

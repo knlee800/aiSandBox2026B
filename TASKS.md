@@ -14,10 +14,10 @@ Do not determine current work from content below the LEGACY / FROZEN boundary.
 ## Lane 1
 - Task ID: PRIVATE-BETA-E2E-LIVE-01
 - Workstream: RELIABILITY
-- State: ACTIVE
-- Lifecycle: 3-step HIGH-RISK — Step 1 COMPLETE (2026-08-20). AUTOMATION_ADAPTER_BLOCKERS_RESOLVED=YES (PRIVATE-BETA-E2E-AUTO-01A COMPLETE AND LOCKED — PASS — 2026-08-20). WAITING FOR EXPLICIT STEP 2 AUTHORIZATION. Do not execute Step 2 / Playwright LIVE / SSH / gate enable / xAI / credit deduction until Keith explicitly authorizes LIVE. LIVE-01 is not cancelled and is not rewritten. Do not start LIVE-01 Step 2 in this consolidation.
-- Primary write scope: Step 2 still no application/source/runner/package writes; disposable staging project/session + execution-gate + one provider call + qualifying credit deduction only after explicit Keith Step 2 authorization
-- Mutexes/resources: released while waiting — STAGING / PROVIDER-LIVE / CREDIT / ENV UNOWNED — do not reacquire until explicit Keith Step 2 authorization
+- State: LANE-DONE — FAIL/BLOCKED
+- Lifecycle: 3-step HIGH-RISK — Step 1 COMPLETE (2026-08-20). Step 2 LANE-DONE — FAIL/BLOCKED (2026-08-20) — ENVIRONMENT/PARITY_FAILURE. Awaiting Step 3 consolidation. Do not lock. Do not retry Step 2. Do not auto-deploy.
+- Primary write scope: Step 3 checkpoint + board/registry end-status only; no application/source/runner/package writes
+- Mutexes/resources: STAGING / PROVIDER-LIVE / CREDIT / ENV UNOWNED — released after Step 2 terminal FAIL; PACKAGE UNOWNED
 
 ## Lane 2
 EMPTY
@@ -28,7 +28,7 @@ DISABLED
 ## Governance owner / state
 EMPTY / NONE
 
-GOVERNANCE acquired for atomic AUTO-01A consolidation / LOCK, then released.
+GOVERNANCE acquired for atomic LIVE-01 Step 2 terminal FAIL/resource release (2026-08-20), then released.
 
 ## Active mutex / resource ownership
 - GOVERNANCE: UNOWNED
@@ -40,7 +40,7 @@ GOVERNANCE acquired for atomic AUTO-01A consolidation / LOCK, then released.
 - FRONTEND: UNOWNED
 - All other resources: UNOWNED
 
-HOTFILE:e2e/builder-golden-path/lib/staging.ts and HOTFILE:e2e/builder-golden-path/lib/live-adapters.ts released at AUTO-01A LOCK. LIVE-01 resources remain released. Resource release is not LIVE Step 2 authorization. Do not reacquire STAGING / PROVIDER-LIVE / CREDIT / ENV until Keith explicitly authorizes LIVE-01 Step 2.
+All live resources UNOWNED after Step 2 terminal FAIL. No unrelated product hotfiles acquired.
 
 ```
 RUNTIME_EXECUTION_AUTHORIZED=NO
@@ -72,7 +72,7 @@ PROVIDER_CALL_USED=0
 
 ## Current blockers / gates
 - PRIVATE-BETA-E2E-AUTO-01A: COMPLETE AND LOCKED — PASS — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01A-CHECKPOINT.md` — AUTOMATION_TOOLING_FIX — dynamic execution-edge parity; createSshExecutor() wired; CONTRACT 29 passed — Lane 2 EMPTY — HOTFILE leases released
-- PRIVATE-BETA-E2E-LIVE-01: ACTIVE — Lane 1 — Step 1 COMPLETE — 2026-08-20 — WAITING FOR EXPLICIT STEP 2 AUTHORIZATION — AUTOMATION_ADAPTER_BLOCKERS_RESOLVED=YES — STAGING / PROVIDER-LIVE / CREDIT / ENV remain UNOWNED — current staging parity NOT YET VERIFIED — LIVE flags / GLOBAL_EXECUTION_ENABLED / xAI / credit deduction NOT authorized — PROVIDER AUTHORIZED=0 USED=0 — do not start Step 2 without Keith explicit LIVE authorization
+- PRIVATE-BETA-E2E-LIVE-01: LANE-DONE — FAIL/BLOCKED — Lane 1 — Step 2 COMPLETE 2026-08-20 — ENVIRONMENT/PARITY_FAILURE — evidence `docs/PRIVATE-BETA-E2E-LIVE-01-EXECUTION.md` — local HEAD `33daa1d1eb32e0165e6ae7d351b1edaad799f3b8` != staging HEAD `c3e39279abe3c0d6c348daa312107c8f6fc592b7` — no deploy / no Playwright LIVE / no xAI / no credit mutation — PROVIDER USED=0 — awaiting Step 3 consolidation — not locked
 - PRIVATE-BETA-E2E-AUTO-01: COMPLETE AND LOCKED — PASS — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01-CHECKPOINT.md` — AUTOMATED_BUILDER_GOLDEN_PATH_RUNNER_READY=YES — IMPLEMENTED_AND_CONTRACT_VALIDATED=YES — LIVE_STAGING_VALIDATED=NO — follow-up AUTO-01A does not rewrite this locked task
 - PRIVATE-BETA-E2E-05: COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-05-CHECKPOINT.md` — historical evidence source only; do not register another manual E2E; do not freeze SHA `c3e39279abe3c0d6c348daa312107c8f6fc592b7` as LIVE-01 required parity
 - PRIVATE-BETA-BLOCKER-03K: COMPLETE AND LOCKED — PASS — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03K-CHECKPOINT.md`
@@ -80,16 +80,13 @@ PROVIDER_CALL_USED=0
 - PRIVATE-BETA-E2E-04: COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20 — unchanged historical failure; not a LIVE-01 dependency; do not reopen
 - BUILDER_PRIVATE_BETA_READINESS: NO_GO_PENDING_FRESH_AUTOMATED_E2E
 - PRIVATE-BETA-INVITE-01: UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED — Step 1 does not pre-authorize invites
-- Lane 1 ACTIVE waiting for explicit Step 2 authorization (PRIVATE-BETA-E2E-LIVE-01). Lane 2 EMPTY. Lane 3 DISABLED.
+- Lane 1 LANE-DONE — FAIL/BLOCKED (PRIVATE-BETA-E2E-LIVE-01) awaiting Step 3 consolidation. Lane 2 EMPTY. Lane 3 DISABLED.
 
 ## Current next product gate
-PRIVATE-BETA-E2E-LIVE-01 Step 2 — WAITING FOR EXPLICIT STEP 2 AUTHORIZATION. AUTO-01A is LOCKED. Do not start LIVE-01 Step 2 until Keith explicitly authorizes LIVE.
-LIVE-01 Step 2 still requires fresh Keith explicit authorization for temporary `GLOBAL_EXECUTION_ENABLED=true`, exactly one xAI/grok-4.5 call, intentional qualifying E2E credit deduction, and disposable staging project/session + execution-gate mutation.
-Future explicit authorization may permit 1 provider call and 0 retries. Current state: AUTHORIZED=0 USED=0.
-Verify current local HEAD vs current staging HEAD immediately before LIVE execution. Exact parity PASS → continue. Parity FAIL → STOP. Do not auto-deploy.
+PRIVATE-BETA-E2E-LIVE-01 Step 3 consolidation. Step 2 is LANE-DONE — FAIL/BLOCKED — ENVIRONMENT/PARITY_FAILURE. Do not retry Step 2. Do not auto-deploy. Do not lock LIVE-01 until Step 3.
 Do not return to the old manual E2E evidence marathon.
 Builder private beta remains NO_GO_PENDING_FRESH_AUTOMATED_E2E.
-PRIVATE-BETA-INVITE-01 remains prohibited.
+PRIVATE-BETA-INVITE-01 remains prohibited until Step 3.
 
 ============================================================
 LEGACY / FROZEN TASK HISTORY — NOT CURRENT EXECUTION STATE
