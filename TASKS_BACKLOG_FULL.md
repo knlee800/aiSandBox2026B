@@ -67362,36 +67362,44 @@ NEW_PRODUCT_ENDPOINT_REQUIRED=NO
 - Residual AUTO-01E/01F surfaces remain unfixed and must not be claimed as fixed: unrelated `page.goto()`, `submitBuild()` `selectOption` fallbacks, `trace: 'off'`.
 - `aiPanelCollapsed` is storage-backed (`workspace-shell.tsx:803`), so chat-DOM evidence stays diagnostics-only; the chosen network signal is unaffected.
 
-#### Step 2 (PENDING — requires explicit Keith authorization)
-- [ ] RED regression added and observed failing before implementation
-- [ ] `armFileWriteListener` implemented in `lib/network.ts` with typed `AutoApplyObservationError`
-- [ ] listener armed in the existing ARM_LISTENERS adapter; disposed in `cleanup()`
-- [ ] `waitForAutoApply()` observes the persisted `e2e-auto.html` write with a finite bound; `awaitingConfirmation` guard preserved
-- [ ] file-tree node retained as optional diagnostics only, never a gate
-- [ ] fail-closed typed error raised inside `runGoldenPath` so CLEANUP runs last and the gate is restored
-- [ ] all pre-existing CONTRACT tests still pass; phase order unchanged; `retries: 0`; `ProviderCallGuard(1)`; no duplicate `POST /api/sessions`
-- [ ] TypeScript PASS; no product source; no package/lockfile; no LIVE / staging / SSH / provider / credit / gate activity
+#### Step 2 (COMPLETE — PASS — 2026-08-21 — bounded automation-only implementation + TDD/CONTRACT validation)
+- [x] RED regression added and observed failing before implementation
+- [x] `armFileWriteListener` implemented in `lib/network.ts` with typed `AutoApplyObservationError`
+- [x] listener armed in the existing ARM_LISTENERS adapter; disposed in `cleanup()`
+- [x] `waitForAutoApply()` observes the persisted `e2e-auto.html` write with a finite bound; `awaitingConfirmation` guard preserved
+- [x] file-tree node retained as optional diagnostics only, never a gate
+- [x] fail-closed typed error raised inside `runGoldenPath` so CLEANUP runs last and the gate is restored
+- [x] all pre-existing CONTRACT tests still pass; phase order unchanged; `retries: 0`; `ProviderCallGuard(1)`; no duplicate `POST /api/sessions`
+- [x] TypeScript PASS; no product source; no package/lockfile; no LIVE / staging / SSH / provider / credit / gate activity
 
-#### Step 3 (PENDING)
-- [ ] checkpoint `docs/PRIVATE-BETA-E2E-AUTO-01G-CHECKPOINT.md`
-- [ ] board + registry end status mirrored
-- [ ] `LIVE_STAGING_VALIDATED` and Builder readiness updated only per proven evidence (expected to remain NO / NO_GO — AUTO-01G is CONTRACT-only)
-- [ ] Lane 1 released; GOVERNANCE and HOTFILE leases released
+**Changed files:** `e2e/builder-golden-path/lib/network.ts`, `e2e/builder-golden-path/lib/live-adapters.ts`, `e2e/builder-golden-path/lib/local-fixture.ts`, `e2e/builder-golden-path/tests/live-adapters.spec.ts`
+
+**Step 2 HEAD:** `b9cba2480ea4e9c814d17342c0e6aed2b469ef69`
+
+#### Step 3 (COMPLETE — PASS — 2026-08-21 — consolidation / checkpoint / lock)
+- [x] checkpoint `docs/PRIVATE-BETA-E2E-AUTO-01G-CHECKPOINT.md` created
+- [x] board + registry end status mirrored
+- [x] `LIVE_STAGING_VALIDATED` and Builder readiness remain NO / NO_GO — AUTO-01G is CONTRACT-only
+- [x] Lane 1 released EMPTY; GOVERNANCE and all AUTO-01G HOTFILE leases released
+- [x] fresh TypeScript PASS, CONTRACT 88 passed, `git diff --check` PASS verified in Step 3
 
 ---
 
-**PRIVATE-BETA-E2E-AUTO-01G status:** ACTIVE — Step 1 COMPLETE — 2026-08-21
+**PRIVATE-BETA-E2E-AUTO-01G status:** COMPLETE AND LOCKED — PASS — 2026-08-21
 **Step 1:** COMPLETE — registration + root-cause / observation-architecture investigation — Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01G-DIAGNOSIS.md`
-**Step 2:** PENDING — bounded automation-only implementation + TDD/CONTRACT validation
-**Step 3:** PENDING — consolidation / checkpoint / lock
-**Step 1 HEAD (observation only; NOT frozen):** `d4e379a5a26eecf0c1a69ed90988af269fb60859`
+**Step 2:** COMPLETE — PASS — bounded automation-only implementation + TDD/CONTRACT validation — HEAD `b9cba2480ea4e9c814d17342c0e6aed2b469ef69` — 13 new tests; CONTRACT 88 total
+**Step 3:** COMPLETE — PASS — consolidation / checkpoint / lock — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01G-CHECKPOINT.md`
+**Step 1 HEAD (observation only):** `d4e379a5a26eecf0c1a69ed90988af269fb60859`
+**Step 2 HEAD:** `b9cba2480ea4e9c814d17342c0e6aed2b469ef69`
 **PRODUCT_FAILURE:** NO
 **PRODUCT_SOURCE_CHANGES_REQUIRED:** NO
+**PRODUCT_SOURCE_MODIFIED:** NO
 **PHASE_ORDER_CHANGE_REQUIRED:** NO
-**LIVE_RUNS / SSH / STAGING / PROVIDER / CREDITS / GATE_MUTATION in Step 1:** 0 / 0 / 0 / 0 / 0 / 0
+**WAIT_FOR_AUTO_APPLY_SIGNAL:** `POST /api/sessions/:sessionId/files/write` → 204 with `path === 'e2e-auto.html'`, armed ARM_LISTENERS, capture-style
+**LIVE_RUNS / SSH / STAGING / PROVIDER / CREDITS / GATE_MUTATION in Steps 1+2+3:** 0 / 0 / 0 / 0 / 0 / 0
 **LIVE_STAGING_VALIDATED:** NO
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_AUTOMATED_E2E
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
-**Exact next:** Await explicit Keith authorization for Step 2. Do not implement in Step 1. Do not rerun or rewrite LIVE-06. Do not rerun LIVE-05/LIVE-04. Do not retry LIVE-01/02/03. Do not reopen or modify AUTO-01/01A/01B/01C/01D/01E/01F. Do not register another LIVE task. Do not register the `submitBuild` executionId follow-up inside AUTO-01G. Do not return to manual browser testing. Do not register PRIVATE-BETA-INVITE-01.
+**Exact next (NOT REGISTERED HERE):** bounded executionId observation fix — likely `PRIVATE-BETA-E2E-AUTO-01H` (verify unused at registration) — then fresh LIVE E2E gate. Do not rerun or rewrite LIVE-06. Do not reopen AUTO-01/01A/01B/01C/01D/01E/01F. Do not register PRIVATE-BETA-INVITE-01.
 
 
