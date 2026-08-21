@@ -63307,8 +63307,8 @@ Step 3 (COMPLETE — 2026-08-20; consolidation / automation-ready LOCK):
 **Title:** First Controlled LIVE Automated Builder Golden-Path Run
 **Workstream:** RELIABILITY
 **Lifecycle:** 3-step HIGH-RISK bounded task
-**Status:** LANE-DONE — FAIL/BLOCKED — 2026-08-20 — Step 2 ENVIRONMENT/PARITY_FAILURE — awaiting Step 3 consolidation
-**Assigned lane:** Lane 1
+**Status:** COMPLETE AND LOCKED — FAIL/BLOCKED — ENVIRONMENT/PARITY_FAILURE — 2026-08-21
+**Assigned lane:** released — Lane 1 EMPTY
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
 **Registered:** 2026-08-20
@@ -63337,11 +63337,11 @@ Inherited historical evidence only (not unfinished dependencies; do not reopen):
 
 If Step 2 exposes an actual product defect: STOP. Register a separate blocker later. Do not repair product source inside this live task.
 
-**Mutexes / resources:** STAGING / PROVIDER-LIVE / CREDIT / ENV UNOWNED — released after Step 2 terminal FAIL. PACKAGE remains UNOWNED.
+**Mutexes / resources:** STAGING / PROVIDER-LIVE / CREDIT / ENV / GOVERNANCE UNOWNED after Step 3 LOCK. PACKAGE remains UNOWNED.
 
 Do not reserve FRONTEND, GATEWAY, AI-SERVICE, CONTAINER-MANAGER, MIGRATION, COMPOSE, I18N, or HOTFILE leases unless Step 2 discovery later proves a bounded adapter/product task that the control plane separately admits.
 
-Ownership is reservation only. Waiting / resource release does **not** authorize runtime execution, provider calls, credit mutation, staging mutation, or LIVE Step 2. AUTO-01A is now LOCKED. Re-reserve STAGING / PROVIDER-LIVE / CREDIT / ENV only when Keith explicitly authorizes Step 2. Do not reacquire in AUTO-01A consolidation.
+Ownership is reservation only. LIVE-01 is LOCKED. STAGING / PROVIDER-LIVE / CREDIT / ENV / GOVERNANCE remain UNOWNED. Do not reacquire from this locked task.
 
 **Shared contracts (frozen; do not modify inside LIVE-01):**
 - PRIVATE-BETA-BLOCKER-03D deferred Build-accounting semantics
@@ -63598,9 +63598,9 @@ Do not execute or authorize Step 2 from AUTO-01A consolidation. STAGING / PROVID
 
 1. Registration + current staging parity / live authorization contract freeze — COMPLETE — 2026-08-20 — this entry
 2. One controlled automated LIVE golden-path execution — LANE-DONE — FAIL/BLOCKED — 2026-08-20 — ENVIRONMENT/PARITY_FAILURE — stopped before gate enable / provider. Evidence: `docs/PRIVATE-BETA-E2E-LIVE-01-EXECUTION.md`
-3. Consolidation / final readiness verdict — NOT STARTED
+3. Consolidation / final readiness verdict — COMPLETE — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-01-CHECKPOINT.md`
 
-**Authorization flags (after Step 2 terminal FAIL):**
+**Authorization flags (after Step 3 LOCK):**
 - RUNTIME_EXECUTION_AUTHORIZED=NO
 - PROVIDER_CALL_AUTHORIZED=NO
 - CREDIT_MUTATION_AUTHORIZED=NO
@@ -63645,29 +63645,42 @@ Step 2 (LANE-DONE — FAIL/BLOCKED — 2026-08-20 — ENVIRONMENT/PARITY_FAILURE
 - [x] no product-source repair inside this task
 - [x] no return to the old manual evidence marathon
 
-Step 3 (NOT STARTED):
-- [ ] checkpoint created
-- [ ] LIVE_STAGING_VALIDATED updated only according to proven evidence
-- [ ] Builder private-beta readiness updated only according to proven evidence
-- [ ] PRIVATE-BETA-INVITE-01 remains prohibited unless a later separate governance admission is justified
+Step 3 (COMPLETE — 2026-08-21 — GOVERNANCE consolidation / LOCK):
+- [x] checkpoint created — `docs/PRIVATE-BETA-E2E-LIVE-01-CHECKPOINT.md`
+- [x] LIVE_STAGING_VALIDATED updated only according to proven evidence — remains NO (runner never invoked)
+- [x] Builder private-beta readiness updated only according to proven evidence — remains NO_GO_PENDING_FRESH_AUTOMATED_E2E
+- [x] PRIVATE-BETA-INVITE-01 remains prohibited unless a later separate governance admission is justified
+
+THIS WAS NOT A PRODUCT FAILURE. THIS WAS NOT AN AUTOMATION RUN FAILURE. Playwright LIVE was never invoked. Execution-edge preflight correctly stopped on LOCAL != STAGING.
+
+Preserved Step 2 facts: local clean PASS; staging clean PASS; retained stash@{0} `0372cc1f47f82e1db060ed2dd756a938fe324803` PASS; provider calls used=0; retries used=0; credits deducted=0; GLOBAL_EXECUTION_ENABLED final=false; BILLING_CHARGES_ENABLED final=false; no project/session/container created; no human browser intervention; no Stripe/payment activity; AUTO_APPLY / Preview / checkpoint / confirm / deduction / balance = NOT REACHED.
+
+Secondary precondition (did not cause the terminal stop; parity failed first): E2E_LOGIN_EMAIL and E2E_LOGIN_PASSWORD were not available in the runtime environment. Must be supplied transiently before the next automated LIVE execution. Do not store credentials in repo/governance files.
+
+Next recommended lifecycle (NOT REGISTERED): a fresh automated LIVE Builder E2E that explicitly authorizes deployment of the current clean local HEAD to staging before execution, then immediately runs `npm run e2e:builder:live`. Verify clean current local HEAD; deploy that HEAD; verify exact parity; supply E2E_LOGIN_EMAIL/E2E_LOGIN_PASSWORD transiently; one xAI/grok-4.5 call; zero retries; Playwright performs the entire browser flow. Do not retry this locked LIVE-01. Do not auto-deploy from this evidence. Do not modify AUTO-01/AUTO-01A. Do not return to manual browser testing. Do not create a separate debugging task from this consolidation.
 
 ---
 
-**PRIVATE-BETA-E2E-LIVE-01 status:** LANE-DONE — FAIL/BLOCKED — 2026-08-20 — ENVIRONMENT/PARITY_FAILURE — awaiting Step 3 consolidation
-**Assigned lane:** Lane 1
+**PRIVATE-BETA-E2E-LIVE-01 status:** COMPLETE AND LOCKED — FAIL/BLOCKED — ENVIRONMENT/PARITY_FAILURE — 2026-08-21
+**Assigned lane:** released — Lane 1 EMPTY
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
-**Mutexes / resources:** STAGING / PROVIDER-LIVE / CREDIT / ENV UNOWNED; PACKAGE UNOWNED; GOVERNANCE released
+**Mutexes / resources:** STAGING / PROVIDER-LIVE / CREDIT / ENV / GOVERNANCE UNOWNED; PACKAGE UNOWNED
 **Step 1:** COMPLETE — Registration + current staging parity / live authorization contract freeze — 2026-08-20
 **Step 2:** LANE-DONE — FAIL/BLOCKED — 2026-08-20 — ENVIRONMENT/PARITY_FAILURE — local `33daa1d1eb32e0165e6ae7d351b1edaad799f3b8` != staging `c3e39279abe3c0d6c348daa312107c8f6fc592b7` — no Playwright LIVE / no xAI / no credit mutation — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-01-EXECUTION.md`
-**Step 3:** NOT STARTED
+**Step 3:** COMPLETE — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-01-CHECKPOINT.md`
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_AUTOMATED_E2E
 **LIVE_STAGING_VALIDATED:** NO
 **AUTOMATION_ADAPTER_BLOCKERS_RESOLVED:** YES
+**PRODUCT_FAILURE:** NO
+**AUTOMATION_RUN_FAILURE:** NO
+**PLAYWRIGHT_LIVE_RUNNER_INVOKED:** NO
 **PROVIDER_CALL_AUTHORIZED:** 0
 **PROVIDER_CALL_USED:** 0
-**Exact next:** Step 3 consolidation. Do not retry Step 2. Do not auto-deploy. Do not lock LIVE-01 until Step 3.
+**CREDITS_DEDUCTED:** 0
+**E2E_LOGIN_CREDENTIALS_AVAILABLE_AT_STEP_2:** NO — secondary; parity failed first; do not store secrets
+**Exact next:** NONE — task LOCKED. Next recommended lifecycle is unregistered (fresh automated LIVE Builder E2E with explicit current-HEAD staging deploy, then Playwright LIVE).
 
 ---
 
