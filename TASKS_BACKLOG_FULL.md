@@ -66338,3 +66338,173 @@ Step 3 — consolidation / checkpoint / lock (COMPLETE — 2026-08-21):
 **CREDITS_DEDUCTED:** 0
 **STAGING_ACTIVITY:** NONE
 **Exact next:** AUTO-01E is CONTRACT-only, so a fresh automated LIVE Builder E2E must validate the corrected automation against staging before any private-beta readiness claim. Next recommended lifecycle (**NOT REGISTERED AND NOT AUTHORIZED HERE**): likely identifier `PRIVATE-BETA-E2E-LIVE-06` — repo-wide search found zero occurrences at this lock, but the identifier MUST be re-verified unused at registration. That lifecycle must deploy/verify the current clean authorized HEAD, run the automated golden path exactly once, consume one xAI/grok-4.5 provider-call budget, perform zero retries, allow an intentional qualifying credit deduction only if the golden path reaches it, preserve every hard safety gate, and verify cleanup regardless of verdict. It requires its own registration and explicit Keith authorization. Do not rerun LIVE-05 or LIVE-04. Do not retry LIVE-03/02/01. Do not reopen AUTO-01D. Do not register PRIVATE-BETA-INVITE-01. Do not claim the residual out-of-scope timeout surfaces are fixed.
+
+---
+
+### PRIVATE-BETA-E2E-AUTO-01F — Investigate Unbounded SSH Cleanup Execution
+
+**Task ID:** PRIVATE-BETA-E2E-AUTO-01F
+**Title:** Investigate Unbounded SSH Cleanup Execution
+**Workstream:** RELIABILITY
+**Lifecycle:** 3-step
+**Status:** ACTIVE — Step 1 COMPLETE — 2026-08-21
+**Assigned lane:** Lane 1
+**Lane 2:** EMPTY
+**Lane 3:** DISABLED
+**Registered:** 2026-08-21
+**Approved:** Keith — 2026-08-21 (explicit AUTO-01 child follow-up to locked AUTO-01E residual `createSshExecutor()` unbounded SSH execution)
+**Classification:** AUTOMATION_TOOLING_INVESTIGATION. Not a product defect. Bounded child of locked PRIVATE-BETA-E2E-AUTO-01. Does not rewrite AUTO-01 / AUTO-01A / AUTO-01B / AUTO-01C / AUTO-01D / AUTO-01E. Does not reopen AUTO-01E. Does not rerun LIVE-05 / LIVE-04. Does not retry LIVE-03 / LIVE-02 / LIVE-01. Does not register PRIVATE-BETA-E2E-LIVE-06. Does not register PRIVATE-BETA-INVITE-01.
+**Product defect:** NO
+**Evidence class:** LOCAL-TESTS
+**Hot-file leases:** `e2e/builder-golden-path/lib/staging.ts`; `e2e/builder-golden-path/lib/constants.ts`; `e2e/builder-golden-path/lib/safety-gates.ts`; `e2e/builder-golden-path/tests/live-adapters.spec.ts`; `e2e/builder-golden-path/tests/safety-gates.spec.ts`
+**Identifier search:** PRIVATE-BETA-E2E-AUTO-01F was unused as a registered task ID before this registration. Repo-wide search found zero occurrences. AUTO-01E lock/checkpoint recorded `createSshExecutor()` as a residual out-of-scope surface and did not register AUTO-01F. Existing E2E IDs: PRIVATE-BETA-E2E-01..05, PRIVATE-BETA-E2E-AUTO-01, AUTO-01A, AUTO-01B, AUTO-01C, AUTO-01D, AUTO-01E, PRIVATE-BETA-E2E-LIVE-01..LIVE-05. AUTO-01F is the next valid AUTO-01 child after locked AUTO-01E.
+
+**Start condition:** READY — PRIVATE-BETA-E2E-AUTO-01E COMPLETE AND LOCKED — PASS; Lane 1 EMPTY at admission; Lane 2 EMPTY; Lane 3 DISABLED; clean tree at admission (`git status --short` empty at HEAD `c4040cdba44758b1298ecdd9c103e4134f9ba856`); STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER UNOWNED at admission; OS v1 admission requirements pass.
+
+**Depends on:**
+- PRIVATE-BETA-E2E-AUTO-01E — COMPLETE AND LOCKED — PASS — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01E-CHECKPOINT.md` — Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01E-DIAGNOSIS.md` — do not reopen; residual `createSshExecutor()` was identified and not fixed
+
+Does **not** depend on unfinished output from another lane. Does **not** authorize LIVE / staging / provider / credit activity.
+
+**Primary write scope:**
+- Step 1 (this window, diagnostic only): `TASKS.md` CURRENT EXECUTION BOARD above LEGACY / FROZEN; this canonical registry entry; `docs/PRIVATE-BETA-E2E-AUTO-01F-DIAGNOSIS.md`. **No implementation files.**
+- Step 2: `e2e/builder-golden-path/lib/staging.ts`; `e2e/builder-golden-path/lib/constants.ts`; `e2e/builder-golden-path/lib/safety-gates.ts`; `e2e/builder-golden-path/tests/live-adapters.spec.ts`; `e2e/builder-golden-path/tests/safety-gates.spec.ts`
+- Step 3: checkpoint + board/registry end-status only
+- No production frontend/backend source. No package/lockfile change. No PRD.md. No ARCHITECTURE.md. No CLAUDE.md. No AGENTS.md. Do not rewrite locked AUTO-01 / AUTO-01A / AUTO-01B / AUTO-01C / AUTO-01D / AUTO-01E / LIVE-01..LIVE-05 bodies. Do not fix unrelated `page.goto()`, `submitBuild()` `selectOption` fallbacks, or `trace: 'off'`.
+
+**Mutexes / resources:** GOVERNANCE acquired for this Step 1 board/registry/diagnosis write, then released. HOTFILE leases held across Step 1 → Step 2, released at Step 3 lock. Do **not** reserve STAGING, PROVIDER-LIVE, CREDIT, ENV, PACKAGE, LOCAL-RUNTIME, FRONTEND, GATEWAY, AI-SERVICE, or CONTAINER-MANAGER.
+
+**Shared contracts (frozen; do not weaken):**
+- PRIVATE-BETA-E2E-AUTO-01 runner contract — phase order, AUTO_APPLY, preview-immediately-after-apply, fail-closed LIVE, one-call/no-retry, finally-style cleanup
+- PRIVATE-BETA-E2E-AUTO-01A dynamic execution-edge parity + SSH executor wiring
+- PRIVATE-BETA-E2E-AUTO-01B labelled-sentinel inspectParity parser
+- PRIVATE-BETA-E2E-AUTO-01C post-gate gateway-ready wait
+- PRIVATE-BETA-E2E-AUTO-01D capture-style `armSessionCreateListener()` + `SESSION_CREATE_TIMEOUT_MS=30000` + `SessionObservationError`
+- PRIVATE-BETA-E2E-AUTO-01E bounded CREATE_SESSION project observation (`actionTimeout`/`navigationTimeout`/`ProjectCreateObservationError`)
+- LIVE authorization flags unchanged; provider budget exactly 1; retries 0; no provider call before STARTING_BALANCE succeeds; cleanup still *attempts* to restore `GLOBAL_EXECUTION_ENABLED=false`; a restore-command timeout must not be reported as confirmed `restored-false`; no billing charges; no manual browser fallback; no second control plane
+
+**Revert / evidence isolation:** Isolated `e2e/builder-golden-path/` staging/safety-gate/test files plus this registry entry and one new diagnosis document. Reverting AUTO-01F must not invalidate locked AUTO-01 / AUTO-01A / AUTO-01B / AUTO-01C / AUTO-01D / AUTO-01E / LIVE-01..LIVE-05 evidence.
+
+**Purpose:** Prove or refute from source whether `createSshExecutor()` can remain pending indefinitely if the spawned SSH process never exits, especially on CLEANUP gate restoration; then (Step 2) apply the smallest fail-closed local child-process execution bound so cleanup cannot hang until the outer 600s Playwright timeout, while distinguishing runner-regained-control from confirmed gate restoration.
+
+---
+
+#### Step 1 — Root-cause / risk investigation (COMPLETE — 2026-08-21)
+
+Full analysis: `docs/PRIVATE-BETA-E2E-AUTO-01F-DIAGNOSIS.md`.
+
+**UNBOUNDED_SSH_EXECUTION_PROVEN=YES** from source. LIVE hang of this surface **NOT YET OBSERVED**.
+
+**Exact spawn/exec:** `spawn('ssh', argv, { shell: false })` at `e2e/builder-golden-path/lib/staging.ts:390` via `import { spawn } from 'node:child_process'`. `argv` from `buildSshCommand()` is exactly `['aisandbox-staging', <remoteCommand>]`. Not `exec` / `execFile`.
+
+**Exact awaiting Promise:** the Promise constructed at `staging.ts:389`. Completes only on child `'error'` (reject) or child `'close'` (`code === 0` resolve, else reject `ssh exited ${code}: …`).
+
+**No current bound:** no spawn `timeout`, no `AbortSignal`, no watchdog, no `Promise.race`, no `child.kill()`, no process-group termination. Node v22.14.0 spawn supports `timeout` and `signal`; this executor passes neither.
+
+**Existing ssh options in this executor:** none. BatchMode / ConnectTimeout / ConnectionAttempts / ServerAliveInterval / ServerAliveCountMax / StrictHostKeyChecking are all absent from argv. Interactive prompts are not prevented. stdin is the default pipe and is never written.
+
+**Cleanup chain:** `runGoldenPath` `finally` → `adapters.cleanup()` → `staging.restoreExecutionGateIfChanged()` → `executeFn(buildSshCommand(buildGateRestoreCommand()))` → `createSshExecutor()` → `spawn('ssh', …)`. Restore remote command is `GLOBAL_EXECUTION_ENABLED=false pm2 restart aisandbox-api-gateway --update-env`. Session-stop in cleanup is Playwright HTTP, not SSH. `BILLING_CHARGES_ENABLED` is inspect-only and is not restored. Verdict is formatted only after the cleanup await. Playwright 600000ms is not a reliable `ssh.exe` kill/bound.
+
+**If restore SSH times out:** runner can regain control; gate restoration is **unconfirmed**. Must not report `restored-false`. No second production control plane.
+
+**Test gap:** no current test spawns a child that never exits. Injected rejections and immediately-returning fake `execute` functions do not prove the hang.
+
+**Recommended Step 2 (NOT implemented):** `SSH_EXECUTION_TIMEOUT_MS=30000` from LIVE/AUTO-01C timing evidence; `child.kill()` on timeout; typed `SshExecutionTimeoutError`; preserve truncated stdout/stderr; no retry; new `GateRestoreStatus` `restore-unconfirmed-timeout`; CONTRACT fake never-exit spawn (no real SSH).
+
+**Step 1 activity ledger:** production source modified = NONE. Automation implementation modified = NONE. Playwright LIVE runs = 0. Playwright CONTRACT runs = 0. Staging/SSH = NONE. Provider calls = 0. Credits = 0. Execution gate = untouched. Dependencies added = NONE. Git mutations = NONE. Browser journeys started = 0.
+
+---
+
+#### Step 2 — Bounded SSH execution timeout + CONTRACT validation (PENDING)
+
+Do not implement in the Step 1 window.
+
+---
+
+#### Step 3 — Consolidation / checkpoint / lock (PENDING)
+
+---
+
+**Authorization flags:**
+- RUNTIME_EXECUTION_AUTHORIZED=NO
+- PROVIDER_CALL_AUTHORIZED=NO
+- CREDIT_MUTATION_AUTHORIZED=NO
+- STAGING_MUTATION_AUTHORIZED=NO
+
+**PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+**BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_AUTOMATED_E2E
+
+---
+
+#### Acceptance Criteria
+
+Step 1 — registration + root-cause/risk investigation (COMPLETE — 2026-08-21):
+- [x] unique ID PRIVATE-BETA-E2E-AUTO-01F confirmed unused before registration
+- [x] OS v1 admission rules pass; admitted to Lane 1 only
+- [x] Lane 2 remains EMPTY; Lane 3 remains DISABLED
+- [x] clean tree verified at admission
+- [x] exact `createSshExecutor` spawn/Promise/completion conditions cited from source
+- [x] existing ssh options inventoried (all absent from executor argv)
+- [x] current timeout/abort/kill behavior proven absent
+- [x] indefinite pending PROVEN YES from source
+- [x] cleanup call chain traced with actual function names
+- [x] gate-restoration dependency on this executor documented
+- [x] BILLING_CHARGES_ENABLED restoration determined (not involved)
+- [x] Playwright 600s interaction distinguished from a Node child-process bound
+- [x] runner-regained-control distinguished from confirmed gate restoration
+- [x] existing test gap recorded; injected rejection not counted as proof
+- [x] smallest deterministic RED regression designed for Step 2
+- [x] recommended timeout value derived from existing LIVE/AUTO-01C timing
+- [x] smallest safe Step 2 file scope proposed
+- [x] AUTO-01E residual `page.goto()` / `selectOption` / `trace` excluded
+- [x] NO implementation performed — no automation implementation file and no product source touched
+- [x] no Playwright LIVE run; no staging/SSH; no provider call; no credit mutation; no gate change; no dependency change; no Git mutation
+- [x] AUTO-01 / AUTO-01A / AUTO-01B / AUTO-01C / AUTO-01D / AUTO-01E remain locked and unedited
+- [x] LIVE-01..LIVE-05 remain locked and unedited; LIVE-06 not registered
+- [x] PRIVATE-BETA-INVITE-01 remains prohibited
+- [x] BUILDER_PRIVATE_BETA_READINESS remains NO_GO_PENDING_FRESH_AUTOMATED_E2E
+
+Step 2 — bounded implementation + CONTRACT validation (PENDING):
+- [ ] named finite SSH execution timeout
+- [ ] deterministic child termination on timeout
+- [ ] typed automation error
+- [ ] preserved stdout/stderr diagnostics without secrets
+- [ ] no retry / no alternate SSH attempt
+- [ ] no provider/staging interaction in CONTRACT tests
+- [ ] runner cleanup must not hang to the outer 600s timeout
+- [ ] explicit gate-restoration-unconfirmed state when the restoration command itself timed out
+- [ ] CONTRACT suite + e2e TypeScript pass
+
+Step 3 — consolidation / checkpoint / lock (PENDING):
+- [ ] checkpoint created
+- [ ] COMPLETE AND LOCKED after required lane-local evidence
+- [ ] Lane 1 released EMPTY; HOTFILE / GOVERNANCE released
+- [ ] residual excluded surfaces still not claimed as fixed
+- [ ] LIVE-06 not registered from this task unless separately authorized
+
+---
+
+**PRIVATE-BETA-E2E-AUTO-01F status:** ACTIVE — Step 1 COMPLETE — 2026-08-21
+**Diagnosis:** `docs/PRIVATE-BETA-E2E-AUTO-01F-DIAGNOSIS.md`
+**Classification:** AUTOMATION_TOOLING_INVESTIGATION
+**Product defect:** NO
+**Production source modification:** NO
+**Assigned lane:** Lane 1
+**Lane 2:** EMPTY
+**Lane 3:** DISABLED
+**Mutexes / resources:** GOVERNANCE acquired for the Step 1 write and released; listed HOTFILE leases held for Step 2; STAGING / PROVIDER-LIVE / CREDIT / ENV UNOWNED
+**Step 1:** COMPLETE — Registration + unbounded-SSH-cleanup investigation — 2026-08-21 — UNBOUNDED_SSH_EXECUTION_PROVEN=YES — LIVE hang NOT YET OBSERVED — no implementation
+**Step 2:** PENDING
+**Step 3:** PENDING
+**UNBOUNDED_SSH_EXECUTION_PROVEN:** YES
+**LIVE_FAILURE_OF_THIS_SURFACE:** NOT_YET_OBSERVED
+**PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+**BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_AUTOMATED_E2E
+**LIVE_STAGING_VALIDATED:** NO
+**PROVIDER_CALL_AUTHORIZED:** 0
+**PROVIDER_CALL_USED:** 0
+**CREDITS_DEDUCTED:** 0
+**STAGING_ACTIVITY:** NONE
+**SSH_CONNECTIONS:** 0
+**Exact next:** AUTO-01F Step 2 — smallest bounded SSH execution timeout + TDD/CONTRACT validation — in a fresh window. Do not implement in Step 1. Do not register LIVE-06 here. Do not rerun LIVE-05 or LIVE-04. Do not retry LIVE-03/02/01. Do not reopen AUTO-01E. Do not fix `page.goto()`, `selectOption` fallbacks, or `trace: 'off'`.
+
