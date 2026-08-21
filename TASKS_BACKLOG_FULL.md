@@ -63792,4 +63792,421 @@ Does **not** depend on unfinished LIVE-01 Step 2 output. LIVE-01 waited on this 
 **LIVE-01 provider AUTHORIZED/USED:** 0 / 0
 **Exact next:** LIVE-01 Step 2 remains WAITING FOR EXPLICIT STEP 2 AUTHORIZATION. Do not start LIVE-01 Step 2 from this lock.
 
+---
+
+### PRIVATE-BETA-E2E-LIVE-02 — Fresh Automated Builder LIVE E2E — Authorized Current-HEAD Staging Deployment
+
+**Task ID:** PRIVATE-BETA-E2E-LIVE-02
+**Title:** Fresh Automated Builder LIVE E2E — Authorized Current-HEAD Staging Deployment
+**Workstream:** RELIABILITY
+**Lifecycle:** 3-step HIGH-RISK bounded task
+**Status:** ACTIVE — Step 1 COMPLETE — WAITING FOR EXPLICIT STEP 2 AUTHORIZATION — 2026-08-21
+**Assigned lane:** Lane 1
+**Lane 2:** EMPTY
+**Lane 3:** DISABLED
+**Registered:** 2026-08-21
+**Approved:** Keith — 2026-08-21 (Step 1 registration + OS v1 admission + deployment/live contract freeze only — does NOT authorize Step 2 deploy or LIVE execution)
+**Nature:** Fresh automated LIVE Builder golden-path after LIVE-01 ENVIRONMENT/PARITY_FAILURE. Explicitly permits, after separate Keith Step 2 authorization, deployment of the current clean local HEAD to staging, then immediate Playwright LIVE. Not a LIVE-01 retry. Not a manual E2E. No application/source/runner/package mutation in this task.
+**Evidence class:** PROVIDER-LIVE
+**Hot-file leases:** NONE
+**Identifier search:** PRIVATE-BETA-E2E-LIVE-02 was unused before this registration (repo-wide grep: no prior matches). Existing E2E IDs: PRIVATE-BETA-E2E-01..05, PRIVATE-BETA-E2E-AUTO-01, PRIVATE-BETA-E2E-AUTO-01A, PRIVATE-BETA-E2E-LIVE-01. Rejected PRIVATE-BETA-E2E-06 (implies another numbered manual E2E), PRIVATE-BETA-E2E-AUTO-02 (implies another runner-build), and a LIVE-01 retry (LIVE-01 is LOCKED).
+
+**Start condition:** READY — PRIVATE-BETA-BLOCKER-03J COMPLETE AND LOCKED — PASS; PRIVATE-BETA-BLOCKER-03K COMPLETE AND LOCKED — PASS; PRIVATE-BETA-E2E-AUTO-01 COMPLETE AND LOCKED — PASS; PRIVATE-BETA-E2E-AUTO-01A COMPLETE AND LOCKED — PASS; PRIVATE-BETA-E2E-LIVE-01 COMPLETE AND LOCKED — FAIL/BLOCKED — ENVIRONMENT/PARITY_FAILURE only; Lane 1 EMPTY at admission; Lane 2 EMPTY; Lane 3 DISABLED; STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE UNOWNED at admission; OS v1 admission requirements pass.
+
+**Depends on:**
+- PRIVATE-BETA-BLOCKER-03J — COMPLETE AND LOCKED — PASS — 2026-08-18 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03J-CHECKPOINT.md`
+- PRIVATE-BETA-BLOCKER-03K — COMPLETE AND LOCKED — PASS — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03K-CHECKPOINT.md`
+- PRIVATE-BETA-E2E-AUTO-01 — COMPLETE AND LOCKED — PASS — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01-CHECKPOINT.md` — AUTOMATED_BUILDER_GOLDEN_PATH_RUNNER_READY=YES — IMPLEMENTED_AND_CONTRACT_VALIDATED=YES — LIVE_STAGING_VALIDATED=NO
+- PRIVATE-BETA-E2E-AUTO-01A — COMPLETE AND LOCKED — PASS — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01A-CHECKPOINT.md` — AUTOMATION_ADAPTER_BLOCKERS_RESOLVED=YES
+- PRIVATE-BETA-E2E-LIVE-01 — COMPLETE AND LOCKED — FAIL/BLOCKED — ENVIRONMENT/PARITY_FAILURE — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-01-CHECKPOINT.md`
+
+LIVE-01 preserved facts (do not reopen; do not treat as product/automation failure):
+- Playwright LIVE runner was **NOT** invoked
+- Provider calls used = **0**
+- Credits deducted = **0**
+- Stop class = ENVIRONMENT/PARITY_FAILURE (local `33daa1d1eb32e0165e6ae7d351b1edaad799f3b8` != staging `c3e39279abe3c0d6c348daa312107c8f6fc592b7`)
+- Cause: LIVE-01 contract forbade auto-deploy; staging was behind local HEAD
+
+Inherited historical evidence only (not unfinished dependencies; do not reopen):
+- PRIVATE-BETA-E2E-05 — COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20 — do not convert to PASS; do not freeze SHA `c3e39279abe3c0d6c348daa312107c8f6fc592b7` as LIVE-02 required parity
+- PRIVATE-BETA-E2E-04 — COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20 — not a LIVE-02 dependency
+
+**Primary write scope:**
+- Step 1: `TASKS.md` CURRENT EXECUTION BOARD above LEGACY / FROZEN only; this canonical registry entry
+- Step 2 (after explicit Keith authorization only): no application source; no AUTO-01 / AUTO-01A runner edits; no package/lockfile edits; no governance-doc edits except later Step 3 consolidation. Allowed staging mutation is (1) deploy AUTHORIZED_LOCAL_HEAD to `/opt/aisandbox` per the frozen deployment contract, (2) disposable E2E project/session, (3) execution-gate enable/restore, (4) one qualifying credit deduction via the runner
+- Step 3: checkpoint + board/registry end-status only
+- No PRD.md. No ARCHITECTURE.md. No CLAUDE.md. No AGENTS.md.
+
+If Step 2 exposes an actual product defect: STOP. Register a separate blocker later. Do not repair product source inside this live task.
+
+**Mutexes / resources:** STAGING / PROVIDER-LIVE / CREDIT / ENV reserved for Lane 1 / LIVE-02 (reservation only in Step 1). PACKAGE remains UNOWNED. GOVERNANCE acquired for this Step 1 write, then released.
+
+Do not reserve FRONTEND, GATEWAY, AI-SERVICE, CONTAINER-MANAGER, MIGRATION, COMPOSE, I18N, or HOTFILE leases.
+
+Ownership is reservation only until Keith authorizes Step 2. Step 1 does not deploy, enable the gate, call the provider, or mutate credits.
+
+**Shared contracts (frozen; do not modify inside LIVE-02):**
+- PRIVATE-BETA-BLOCKER-03D deferred Build-accounting semantics
+- PRIVATE-BETA-BLOCKER-03H authoritative frontend balance refresh/reconciliation semantics — deterministic API/DB plus billing-page verification; no manual 03H tab-switch ceremony
+- PRIVATE-BETA-BLOCKER-03I checkpoint/Git runtime contract
+- PRIVATE-BETA-BLOCKER-03J public authenticated Gateway confirm-build-apply route
+- PRIVATE-BETA-BLOCKER-03K corrected E2E session-timing procedure — create/open the fresh session only when the runner is ready to Build immediately
+- PRIVATE-BETA-E2E-AUTO-01 runner contract — phase order, AUTO_APPLY, preview-immediately-after-apply, fail-closed LIVE, one-call/no-retry, finally-style cleanup
+- PRIVATE-BETA-E2E-AUTO-01A dynamic execution-edge parity + SSH executor wiring
+- current non-risky one-file Builder AUTO_APPLY semantics (E2E-05 proven)
+- existing authentication/ownership semantics
+- existing automatic post-apply checkpoint semantics
+- current Container Manager idle-timeout contract
+- retained staging stash invariant `stash@{0}` = `0372cc1f47f82e1db060ed2dd756a938fe324803`
+
+**Revert / evidence isolation:** Single-lane live execution. Reverting or aborting LIVE-02 must restore `GLOBAL_EXECUTION_ENABLED=false` if this run changed it, must not rewrite/drop/apply the retained staging stash, and must not invalidate locked AUTO-01 / AUTO-01A / 03J / 03K / LIVE-01 evidence. Lane 2 remains EMPTY. Lane 3 remains DISABLED.
+
+**Purpose:** After explicit Keith Step 2 authorization, deploy the current clean local HEAD to staging, prove exact HEAD parity, then immediately run the locked AUTO-01 Playwright golden-path runner. Automation-led. No manual browser testing.
+
+**Why this identifier:** this is the next unused LIVE automated-run ID after locked LIVE-01. It is not another manual E2E and not another runner implementation.
+
+---
+
+#### Step 1 observations (NOT frozen required SHAs)
+
+Local tree at registration (2026-08-21), read-only:
+
+- `git rev-parse HEAD` = `88e4b10f6afa0d6a94963948763107670d67dafd`
+- `git status --short` = empty (clean)
+- local tracking ref `origin/main` = same SHA (not re-fetched in Step 1)
+- AUTO-01 implementation commit `7b42fef1a312e655329946f04f94bd5f0bdfc6ab` is an ancestor of HEAD
+- AUTO-01A implementation commit `41a48db192fde77175f9600f41989c6ab6a2c95d` is an ancestor of HEAD
+
+Historical E2E-05 staging SHA `c3e39279abe3c0d6c348daa312107c8f6fc592b7` is **not** the LIVE-02 required SHA. Do not freeze `88e4b10f6afa0d6a94963948763107670d67dafd` as the required SHA either. Step 2 recaptures AUTHORIZED_LOCAL_HEAD at execution edge.
+
+Read-only product-source observation (not a skip-deploy authorization): `git diff --stat c3e39279abe3c0d6c348daa312107c8f6fc592b7..HEAD -- frontend services docker-compose.yml package.json` shows only root `package.json` Playwright script lines; `frontend/` and `services/` have no source delta vs that historical SHA. Step 2 must still recompute the delta against the **actual pre-deploy staging HEAD**.
+
+---
+
+#### Authoritative runner (do not modify in this task)
+
+Path: `C:\Users\knlee\aiSandBox2026B\e2e\builder-golden-path\`
+
+Root `package.json` script verified:
+
+```
+"e2e:builder:live": "playwright test --config e2e/builder-golden-path/playwright.live.config.ts"
+```
+
+Expected command: `npm run e2e:builder:live`
+
+Playwright live config already sets `retries: 0`, `workers: 1`, Chromium, default `baseURL` `https://staging.ainow.biz`.
+
+---
+
+#### Frozen live phase order
+
+```
+PREPARE_BROWSER
+→ AUTH
+→ SAFETY
+→ STARTING_BALANCE
+→ ARM_LISTENERS
+→ CREATE_SESSION
+→ BUILD
+→ WAIT_FOR_AUTO_APPLY
+→ PREVIEW
+→ CHECKPOINT
+→ PUBLIC_CONFIRM
+→ DEDUCTION
+→ BALANCE
+→ CLEANUP
+```
+
+Critical rules:
+- fresh Playwright browser context
+- no Keith Chrome dependency
+- current frontend navigation
+- AUTO_APPLY
+- no manual Apply
+- Preview immediately after AUTO_APPLY
+- no artificial keepalive
+- no DevTools
+- no billing-tab ceremony
+- one provider call maximum
+- zero retries
+- finally-style cleanup
+- final execution gate false
+- concise automated PASS evidence
+- targeted diagnostics only on FAIL
+- no long manual forensic sequence
+
+Expected Step 2 human-browser involvement: **NO**, unless the automation itself cannot proceed.
+
+---
+
+#### Frozen deployment contract (Step 2 only; do not execute in Step 1)
+
+Step 1 does **not** authorize deployment. Future Keith Step 2 authorization must explicitly cover deploying AUTHORIZED_LOCAL_HEAD to staging.
+
+**Target host/path:** SSH alias `aisandbox-staging` / `/opt/aisandbox`
+
+**Procedure source (authoritative, adapted to AUTHORIZED_LOCAL_HEAD):**
+- `docs/PRIVATE-BETA-E2E-04-STAGE-START.md` Phase E — established mechanism: `git fetch origin main` + `git reset --hard <SHA>` → conditional `npm run build` → `pm2 restart` + health/gate checks
+- `docs/PRIVATE-BETA-BLOCKER-03F-CHECKPOINT.md` §§8–9 — `git reset --hard` onto a known SHA; retained stash invariant; staging worktree CLEAN afterward
+- Companion stash evidence: LIVE-01 / E2E-05 checkpoints (`stash@{0}` = `0372cc1f47f82e1db060ed2dd756a938fe324803`)
+
+**AUTHORIZED_LOCAL_HEAD strategy (capture at Step 2 execution edge):**
+
+```powershell
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B"
+$authorizedLocalHead = (git rev-parse HEAD).Trim()
+$localStatus = git status --short
+if ($localStatus) {
+  Write-Host "DEPLOY_ABORT LOCAL_TREE_DIRTY"
+  exit 1
+}
+Write-Host "AUTHORIZED_LOCAL_HEAD=$authorizedLocalHead"
+```
+
+Keith owns Git. The worker must **not** commit, push, branch, or create worktrees. If after `git fetch origin main` on staging the object is missing (`git cat-file -t $authorizedLocalHead` ≠ `commit`), **STOP**. Keith must push AUTHORIZED_LOCAL_HEAD to origin first. Do not scp a replacement tree. Do not `git pull` blindly. Do not `git reset --hard origin/main` if `origin/main` ≠ AUTHORIZED_LOCAL_HEAD.
+
+**Retained stash strategy:**
+- Before and after deployment: `stash@{0}` must exist and `git -C /opt/aisandbox rev-parse "stash@{0}"` must equal `0372cc1f47f82e1db060ed2dd756a938fe324803`
+- Description should still contain `pre-03F-deployment-snapshot`
+- Do **not** rewrite, drop, apply, or create a new stash
+- If missing/changed at any gate: STOP as ENVIRONMENT/PARITY_FAILURE — do not continue to provider
+
+**Exact staging mutation sequence (after Keith Step 2 authorization; do not run in Step 1):**
+
+```bash
+# On staging via: ssh aisandbox-staging
+# PRE: worktree CLEAN; stash@{0} = 0372cc1f47f82e1db060ed2dd756a938fe324803
+# PRE: GLOBAL_EXECUTION_ENABLED=false in /opt/aisandbox/.env
+git -C /opt/aisandbox status --short
+# REQUIRED: empty. If dirty → ABORT. Do NOT stash.
+git -C /opt/aisandbox stash list
+git -C /opt/aisandbox rev-parse "stash@{0}"
+# REQUIRED: 0372cc1f47f82e1db060ed2dd756a938fe324803
+git -C /opt/aisandbox fetch origin main
+git -C /opt/aisandbox cat-file -t <AUTHORIZED_LOCAL_HEAD>
+# REQUIRED: commit — else STOP (origin does not contain the authorized SHA)
+git -C /opt/aisandbox reset --hard <AUTHORIZED_LOCAL_HEAD>
+git -C /opt/aisandbox rev-parse HEAD
+# REQUIRED: exactly AUTHORIZED_LOCAL_HEAD
+git -C /opt/aisandbox status --short
+# REQUIRED: empty
+git -C /opt/aisandbox rev-parse "stash@{0}"
+# REQUIRED: 0372cc1f47f82e1db060ed2dd756a938fe324803
+```
+
+**Rebuild / restart (conditional):**
+- Compute product-source delta of pre-deploy staging HEAD vs AUTHORIZED_LOCAL_HEAD under `frontend/` and `services/`
+- If those trees are unchanged: skip `npm run build`; still verify required services healthy
+- If changed: rebuild/restart only the affected service(s) using the 03F / E2E-04 Phase E pattern (`npm run build` then `pm2 restart`)
+- No `npm ci` unless Step 2 proves a lockfile/product-dependency change that staging `node_modules` cannot satisfy (PACKAGE remains UNOWNED; stop and return to control plane if a package install becomes necessary)
+- No migration unless Step 2 proves a schema change (not expected)
+
+**Exact post-deploy parity / safety requirements (all must PASS before runner authorization phase / provider):**
+- `STAGING_HEAD == AUTHORIZED_LOCAL_HEAD` (exact SHA)
+- staging worktree CLEAN
+- local worktree still CLEAN
+- retained `stash@{0}` still `0372cc1f47f82e1db060ed2dd756a938fe324803`
+- required services healthy (api-gateway `http://127.0.0.1:4000/api/health/ready` → 200; frontend process online / expected local health as in 03F/E2E-04)
+- `GLOBAL_EXECUTION_ENABLED=false` in `/opt/aisandbox/.env` and in the running gateway process **before** the runner authorization phase
+- `BILLING_CHARGES_ENABLED=false` unless current authoritative staging config proves otherwise
+- If any of the above fail: **STOP before provider**. Do not enable the execution gate. Do not call xAI. Do not mutate credits. Do not invoke Playwright LIVE.
+
+---
+
+#### Provider / credit / gate contract (Step 2 requires fresh Keith authorization)
+
+Step 1 does **not** authorize these. Future Step 2 requires explicit Keith authorization covering **all** of:
+
+- deployment of AUTHORIZED_LOCAL_HEAD to staging
+- temporary `GLOBAL_EXECUTION_ENABLED=true`
+- disposable staging project/session mutation
+- exactly one xAI provider call
+- model `grok-4.5` unless current authoritative configuration requires another already-approved model (AUTO-01 frozen constants: provider `xai`, model `grok-4.5`)
+- zero retries
+- intentional qualifying E2E credit deduction
+- automated cleanup and restoration of `GLOBAL_EXECUTION_ENABLED=false`
+
+Provider-call budget: **1**
+Retry budget: **0**
+If the first provider execution fails: **NO RETRY.**
+
+Always restore `GLOBAL_EXECUTION_ENABLED=false` if this run changed it.
+
+---
+
+#### Required LIVE flags (do not set in Step 1)
+
+Verified from AUTO-01 `LIVE_GUARD_KEYS` / `inspectLiveGuards`:
+
+- `E2E_MODE=live`
+- `E2E_LIVE_AUTHORIZED=true`
+- `E2E_ALLOW_STAGING_MUTATION=true`
+- `E2E_ALLOW_CREDIT_MUTATION=true`
+- `PROVIDER_CALL_BUDGET=1`
+
+Set these only after post-deploy parity PASS and Keith Step 2 authorization, in the same PowerShell 5.x session as the credential procedure below.
+
+Optional: `E2E_BASE_URL` defaults to `https://staging.ainow.biz`. `E2E_HEADED=true` only if the runner cannot proceed headless and Keith explicitly authorizes headed diagnosis.
+
+---
+
+#### Transient credential strategy (do not implement or execute in Step 1)
+
+Runner requires `E2E_LOGIN_EMAIL` and `E2E_LOGIN_PASSWORD` via process environment (`e2e/builder-golden-path/lib/auth.ts`). Playwright live config does **not** load dotenv.
+
+Do **not** put credentials in Git, TASKS, backlog, checkpoint, source, prompt, chat, or shell history.
+
+Exact safe Step 2 PowerShell 5.x procedure (run only after post-deploy parity PASS and Keith Step 2 authorization):
+
+```powershell
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B"
+
+# Email: transient session environment. Do not paste into chat/files.
+$env:E2E_LOGIN_EMAIL = Read-Host -Prompt "E2E_LOGIN_EMAIL"
+
+# Password: SecureString capture; convert in-memory only immediately before Playwright.
+$securePassword = Read-Host -AsSecureString -Prompt "E2E_LOGIN_PASSWORD"
+$bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePassword)
+try {
+  $env:E2E_LOGIN_PASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)
+} finally {
+  [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
+  $securePassword.Dispose()
+}
+
+$env:E2E_MODE = "live"
+$env:E2E_LIVE_AUTHORIZED = "true"
+$env:E2E_ALLOW_STAGING_MUTATION = "true"
+$env:E2E_ALLOW_CREDIT_MUTATION = "true"
+$env:PROVIDER_CALL_BUDGET = "1"
+
+npm run e2e:builder:live
+```
+
+Always clear credentials and live flags afterward, including on failure:
+
+```powershell
+Remove-Item Env:E2E_LOGIN_PASSWORD -ErrorAction SilentlyContinue
+Remove-Item Env:E2E_LOGIN_EMAIL -ErrorAction SilentlyContinue
+Remove-Item Env:E2E_LIVE_AUTHORIZED -ErrorAction SilentlyContinue
+Remove-Item Env:E2E_ALLOW_STAGING_MUTATION -ErrorAction SilentlyContinue
+Remove-Item Env:E2E_ALLOW_CREDIT_MUTATION -ErrorAction SilentlyContinue
+Remove-Item Env:E2E_MODE -ErrorAction SilentlyContinue
+Remove-Item Env:PROVIDER_CALL_BUDGET -ErrorAction SilentlyContinue
+```
+
+Rules:
+- Do not echo the password.
+- Do not `Write-Host` / log `$env:E2E_LOGIN_PASSWORD`.
+- Do not wholesale-source the product `.env` into the Playwright process.
+- Do not create a committed or gitignored credential file in Step 1.
+- If credentials are missing/refused at Step 2: STOP as ENVIRONMENT/PARITY_FAILURE subclass CREDENTIAL_BLOCKER — do not enable the execution gate.
+
+---
+
+#### Failure classification (Step 2)
+
+- **A. PRODUCT_FAILURE** — actual application/runtime behavior failed
+- **B. AUTOMATION_ADAPTER_FAILURE** — selector/timeout/helper mismatch while product may still work
+- **C. ENVIRONMENT/PARITY_FAILURE** — staging/config/deployment/auth/credential prerequisite prevented execution
+- **D. PROVIDER_FAILURE** — the single authorized provider call failed
+- **E. PASS**
+
+Do not label selector mismatch as a product defect without evidence. Do not perform speculative source fixes during this live task.
+
+---
+
+#### Readiness consequence
+
+`BUILDER_PRIVATE_BETA_READINESS` remains `NO_GO_PENDING_FRESH_AUTOMATED_E2E` after Step 1.
+
+If automated Step 2 passes all mandatory golden-path criteria, Step 3 consolidation may evaluate whether readiness can move to the next permitted state. Step 1 does **not** pre-authorize that move.
+
+**PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED. Step 1 does not admit or pre-authorize invites.
+
+---
+
+#### Lifecycle steps
+
+1. Registration + current-HEAD staging deployment / automated LIVE contract freeze — COMPLETE — 2026-08-21 — this entry
+2. Authorized deploy + one controlled automated LIVE golden-path execution — PENDING — requires explicit Keith Step 2 authorization
+3. Consolidation / readiness verdict — PENDING
+
+**Authorization flags (after Step 1; unchanged):**
+- RUNTIME_EXECUTION_AUTHORIZED=NO
+- PROVIDER_CALL_AUTHORIZED=NO
+- CREDIT_MUTATION_AUTHORIZED=NO
+- STAGING_MUTATION_AUTHORIZED=NO
+
+---
+
+#### Acceptance Criteria
+
+Registration / control-plane (Step 1):
+- [x] unique ID PRIVATE-BETA-E2E-LIVE-02 confirmed unused before registration
+- [x] OS v1 admission rules pass
+- [x] admitted to Lane 1 only
+- [x] Lane 2 remains EMPTY
+- [x] Lane 3 remains DISABLED
+- [x] STAGING / PROVIDER-LIVE / CREDIT / ENV reserved for Lane 1
+- [x] PACKAGE remains UNOWNED
+- [x] GOVERNANCE released after Step 1
+- [x] live provider / credit / staging / execution-gate criteria are not marked complete during Step 1
+- [x] AUTO-01 runner path and `e2e:builder:live` script verified
+- [x] frozen phase order recorded
+- [x] AUTHORIZED_LOCAL_HEAD capture + current-HEAD staging deploy procedure recorded; old E2E-05 SHA not frozen as required
+- [x] retained stash invariant recorded
+- [x] exact post-deploy parity requirements recorded
+- [x] provider/model = xAI / grok-4.5 recorded
+- [x] provider-call budget = 1 recorded
+- [x] retry budget = 0 recorded
+- [x] required LIVE flags recorded and not set
+- [x] transient SecureString credential procedure recorded without secrets
+- [x] failure classifications A–E recorded
+- [x] PRIVATE-BETA-INVITE-01 remains prohibited
+- [x] BUILDER_PRIVATE_BETA_READINESS remains NO_GO_PENDING_FRESH_AUTOMATED_E2E
+- [x] no Playwright LIVE execution, SSH, deploy, gate enable, xAI call, credit deduction, application/source/runner/package, or Git mutation in Step 1
+
+Step 2 (PENDING — requires explicit Keith authorization):
+- [ ] local tree clean; AUTHORIZED_LOCAL_HEAD captured at execution edge
+- [ ] AUTHORIZED_LOCAL_HEAD deployed to `aisandbox-staging` `/opt/aisandbox`
+- [ ] STAGING_HEAD == AUTHORIZED_LOCAL_HEAD
+- [ ] staging tree CLEAN; retained stash unchanged
+- [ ] required services healthy; GLOBAL_EXECUTION_ENABLED=false before runner authorization phase
+- [ ] E2E credentials supplied transiently via the frozen PowerShell 5.x procedure
+- [ ] `npm run e2e:builder:live` executed once under the frozen flags
+- [ ] one provider call maximum
+- [ ] zero retries
+- [ ] AUTO_APPLY / preview-immediately-after-apply proven or classified
+- [ ] finally-style cleanup and execution-gate restored false
+- [ ] failure classified as A/B/C/D/E
+- [ ] no product-source repair inside this task
+- [ ] no return to the old manual evidence marathon
+
+Step 3 (PENDING):
+- [ ] checkpoint created
+- [ ] LIVE_STAGING_VALIDATED updated only according to proven evidence
+- [ ] Builder private-beta readiness updated only according to proven evidence
+- [ ] PRIVATE-BETA-INVITE-01 remains prohibited unless a later separate governance admission is justified
+
+---
+
+**PRIVATE-BETA-E2E-LIVE-02 status:** ACTIVE — Step 1 COMPLETE — WAITING FOR EXPLICIT STEP 2 AUTHORIZATION — 2026-08-21
+**Assigned lane:** Lane 1
+**Lane 2:** EMPTY
+**Lane 3:** DISABLED
+**Mutexes / resources:** STAGING / PROVIDER-LIVE / CREDIT / ENV reserved for Lane 1; PACKAGE UNOWNED; GOVERNANCE UNOWNED after Step 1
+**Step 1:** COMPLETE — Registration + current-HEAD staging deployment / automated LIVE contract freeze — 2026-08-21
+**Step 2:** PENDING — authorized deploy + automated LIVE execution — requires explicit Keith authorization
+**Step 3:** PENDING
+**PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+**BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_AUTOMATED_E2E
+**LIVE_STAGING_VALIDATED:** NO
+**AUTOMATION_ADAPTER_BLOCKERS_RESOLVED:** YES
+**PROVIDER_CALL_AUTHORIZED:** 0
+**PROVIDER_CALL_USED:** 0
+**CREDITS_DEDUCTED:** 0
+**Exact next:** Keith explicit Step 2 authorization covering current-HEAD staging deployment + `npm run e2e:builder:live`. Do not deploy. Do not run Playwright LIVE. Do not enable GLOBAL_EXECUTION_ENABLED. Do not call xAI. Do not mutate credits.
+
 
