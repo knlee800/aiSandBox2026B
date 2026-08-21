@@ -66544,7 +66544,7 @@ Step 3 — consolidation / checkpoint / lock (COMPLETE — 2026-08-21):
 **Title:** Fresh Automated Builder LIVE E2E After AUTO-01E and AUTO-01F
 **Workstream:** RELIABILITY
 **Lifecycle:** 3-step HIGH-RISK bounded task
-**Status:** ACTIVE — Step 1 COMPLETE — 2026-08-21 — registration + exact LIVE execution contract freeze; Step 2 NOT AUTHORIZED
+**Status:** ACTIVE — Step 2 LANE-DONE — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — 2026-08-21; Step 3 PENDING
 **Assigned lane:** Lane 1
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
@@ -66608,7 +66608,7 @@ If Step 2 exposes an actual product defect: STOP. Register a separate blocker la
 
 If another automation defect appears, including a residual `page.goto()` / `selectOption` / `trace` surface becoming the proven LIVE-06 blocker: do **not** patch it inside LIVE-06. Record concise evidence and stop. Address it in a later separate lifecycle. No manual browser fallback. No patching during LIVE execution.
 
-**Mutexes / resources:** GOVERNANCE acquired for this Step 1 write, then released. STAGING / PROVIDER-LIVE / CREDIT / ENV are **planned for Step 2** and are **not owned** until explicit Step 2 authorization/execution. PACKAGE remains UNOWNED.
+**Mutexes / resources:** GOVERNANCE acquired for this Step 1 write, then released. STAGING / PROVIDER-LIVE / CREDIT / ENV were acquired for Step 2 and released after confirmed cleanup. PACKAGE remains UNOWNED.
 
 Do not reserve FRONTEND, GATEWAY, AI-SERVICE, CONTAINER-MANAGER, MIGRATION, COMPOSE, I18N, or HOTFILE leases.
 
@@ -67107,10 +67107,10 @@ If automated Step 2 passes all mandatory golden-path criteria, Step 3 consolidat
 #### Lifecycle steps
 
 1. Registration + exact LIVE execution contract freeze — COMPLETE — 2026-08-21 — this registration; contract: `docs/PRIVATE-BETA-E2E-LIVE-06-EXECUTION.md`
-2. ONE authorized automated LIVE execution — PENDING — requires explicit Keith LIVE authorization — not started
+2. ONE authorized automated LIVE execution — COMPLETE — LANE-DONE — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — 2026-08-21 — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-06-EXECUTION.md`
 3. Consolidation / checkpoint / lock — PENDING
 
-**Authorization flags (Step 1):**
+**Authorization flags (after Step 2 terminal classification):**
 - RUNTIME_EXECUTION_AUTHORIZED=NO
 - PROVIDER_CALL_AUTHORIZED=NO
 - CREDIT_MUTATION_AUTHORIZED=NO
@@ -67165,46 +67165,46 @@ Registration / control-plane (Step 1):
 - [x] LIVE_STAGING_VALIDATED remains NO
 - [x] no Playwright LIVE execution, SSH, deploy, gate enable, xAI call, credit deduction, application/source/runner/package, or Git mutation in Step 1
 
-Step 2 (PENDING — requires explicit Keith LIVE authorization):
-- [ ] local tree clean; AUTHORIZED_LOCAL_HEAD captured at execution edge
-- [ ] AUTHORIZED_LOCAL_HEAD includes AUTO-01E, AUTO-01F, AUTO-01D observer, and AUTO-01C post-gate ready-wait
-- [ ] staging HEAD compared; deploy only if different; skip redeploy if identical
-- [ ] STAGING_HEAD == AUTHORIZED_LOCAL_HEAD
-- [ ] staging tree CLEAN; retained stash unchanged
-- [ ] required services healthy; GLOBAL_EXECUTION_ENABLED=false before runner authorization phase
-- [ ] BILLING_CHARGES_ENABLED=false
-- [ ] E2E regular-user credentials supplied transiently (DPAPI; CREDENTIAL_INPUT_REQUIRED allowed)
-- [ ] `npm run e2e:builder:live` executed once under the frozen flags
-- [ ] AUTH PASS
-- [ ] SAFETY / inspectParity PASS
-- [ ] AUTO-01C gateway-ready wait PASS after gate enable
-- [ ] STARTING_BALANCE captured
-- [ ] CREATE_SESSION PASS
-- [ ] fresh project/session/container created
-- [ ] BUILD submitted exactly once
-- [ ] exactly one Builder provider execution (xAI / grok-4.5)
-- [ ] retries = 0
-- [ ] tokens_used captured
-- [ ] AUTO_APPLY PASS
-- [ ] expected generated file present
-- [ ] PREVIEW PASS immediately after apply
-- [ ] automatic checkpoint PASS
-- [ ] public confirm-build-apply: HTTP 200, triggered=true, reason="completed"
-- [ ] exactly one credit deduction; creditsDeducted == tokens_used; no duplicate
-- [ ] BALANCE_AFTER = BALANCE_BEFORE - creditsDeducted
-- [ ] no Stripe/payment path
-- [ ] CLEANUP PASS; GLOBAL_EXECUTION_ENABLED final=false; BILLING_CHARGES_ENABLED final=false
-- [ ] session stopped/terminated; container removed
-- [ ] credentials/LIVE env cleared; DPAPI temporary credential absent
-- [ ] formatted runner verdict PASS
-- [ ] zero retries
-- [ ] never rerun after the one invocation
-- [ ] failure classified as one of PASS / PRODUCT_FAILURE / AUTOMATION_ADAPTER_FAILURE / ENVIRONMENT/PARITY_FAILURE / PROVIDER_FAILURE if not PASS
-- [ ] no product-source / runner repair inside this task
-- [ ] no LIVE-05 rerun; no LIVE-01/02/03/04 retry
-- [ ] no residual hardening during LIVE
-- [ ] no return to the old manual evidence marathon
-- [ ] no manual browser fallback
+Step 2 (COMPLETE — LANE-DONE — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — 2026-08-21):
+- [x] local tree clean; AUTHORIZED_LOCAL_HEAD captured at execution edge (`da56659d39a5d86d3ef994a7458a297169eeda42`)
+- [x] AUTHORIZED_LOCAL_HEAD includes AUTO-01E, AUTO-01F, AUTO-01D observer, and AUTO-01C post-gate ready-wait
+- [x] staging HEAD compared; deploy only if different; skip redeploy if identical (deploy required; LIVE-05 SHA `3ee2766` → authorized HEAD)
+- [x] STAGING_HEAD == AUTHORIZED_LOCAL_HEAD
+- [x] staging tree CLEAN; retained stash unchanged
+- [x] required services healthy; GLOBAL_EXECUTION_ENABLED=false before runner authorization phase
+- [x] BILLING_CHARGES_ENABLED=false
+- [x] E2E regular-user credentials supplied transiently (DPAPI; CREDENTIAL_INPUT_REQUIRED allowed)
+- [x] `npm run e2e:builder:live` executed once under the frozen flags
+- [x] AUTH PASS
+- [x] SAFETY / inspectParity PASS
+- [x] AUTO-01C gateway-ready wait PASS after gate enable
+- [x] STARTING_BALANCE captured
+- [x] CREATE_SESSION PASS
+- [x] fresh project/session/container created
+- [x] BUILD submitted exactly once
+- [x] exactly one Builder provider execution (xAI / grok-4.5) — DB `usage_records` provider=xai, UI grok-4.5, execution `1a995035-6b1c-431b-acc2-8dd1e51a53da`; runner printed executionId=null
+- [x] retries = 0
+- [x] tokens_used captured — **1180** from `usage_records` (not in runner FAIL summary)
+- [ ] AUTO_APPLY PASS — FAIL — runner 180s wait for `[data-testid="workspace-file-node-e2e-auto.html"]` while Preview tab was default; product file existed on host
+- [x] expected generated file present — proven on host after failure (`e2e-auto.html`, exact frozen HTML); not observed by runner locator
+- [ ] PREVIEW PASS immediately after apply — NOT REACHED by runner; screenshot Preview unavailable
+- [ ] automatic checkpoint PASS — NOT REACHED by runner; product `git_checkpoints` commit `b85c33915aea6af4dd8052dba096d1c996260c92` files_changed=1
+- [ ] public confirm-build-apply: HTTP 200, triggered=true, reason="completed" — NOT REACHED by runner; gateway log `confirm_build_apply.deduction_triggered` with persistedFileActionCount=1
+- [x] exactly one credit deduction in DB; creditsDeducted == tokens_used; no duplicate — 1180; runner DEDUCTION phase not reached
+- [x] BALANCE_AFTER = BALANCE_BEFORE - creditsDeducted — DB 29399 − 1180 = 28219; runner BALANCE phase not reached
+- [x] no Stripe/payment path
+- [x] CLEANUP PASS; GLOBAL_EXECUTION_ENABLED final=false; BILLING_CHARGES_ENABLED final=false
+- [x] session stopped/terminated; container removed
+- [x] credentials/LIVE env cleared; DPAPI temporary credential absent
+- [ ] formatted runner verdict PASS — FAIL
+- [x] zero retries
+- [x] never rerun after the one invocation
+- [x] failure classified as one of PASS / PRODUCT_FAILURE / AUTOMATION_ADAPTER_FAILURE / ENVIRONMENT/PARITY_FAILURE / PROVIDER_FAILURE if not PASS — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY
+- [x] no product-source / runner repair inside this task
+- [x] no LIVE-05 rerun; no LIVE-01/02/03/04 retry
+- [x] no residual hardening during LIVE
+- [x] no return to the old manual evidence marathon
+- [x] no manual browser fallback
 
 Step 3 (PENDING):
 - [ ] checkpoint created
@@ -67214,14 +67214,14 @@ Step 3 (PENDING):
 
 ---
 
-**PRIVATE-BETA-E2E-LIVE-06 status:** ACTIVE — Step 1 COMPLETE — 2026-08-21 — registration + exact LIVE execution contract freeze
+**PRIVATE-BETA-E2E-LIVE-06 status:** ACTIVE — Step 2 LANE-DONE — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — 2026-08-21
 **Assigned lane:** Lane 1
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
-**Mutexes / resources:** GOVERNANCE UNOWNED (acquired and released for Step 1). STAGING / PROVIDER-LIVE / CREDIT / ENV planned for Step 2, not owned. PACKAGE UNOWNED. All HOTFILE leases UNOWNED.
-**Contract:** `docs/PRIVATE-BETA-E2E-LIVE-06-EXECUTION.md`
+**Mutexes / resources:** GOVERNANCE UNOWNED (acquired and released for Step 2 board/registry/evidence write). STAGING / PROVIDER-LIVE / CREDIT / ENV acquired for Step 2 then released after confirmed cleanup. PACKAGE UNOWNED. All HOTFILE leases UNOWNED.
+**Contract / evidence:** `docs/PRIVATE-BETA-E2E-LIVE-06-EXECUTION.md`
 **Step 1:** COMPLETE — Registration + exact LIVE execution contract freeze — 2026-08-21 — HEAD `42710013491f14fdc7fb9f80c4b7e3837ea98a3a` recorded, NOT frozen for Step 2
-**Step 2:** PENDING — requires explicit Keith LIVE authorization — not started
+**Step 2:** LANE-DONE — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — 2026-08-21 — AUTHORIZED_LOCAL_HEAD `da56659d39a5d86d3ef994a7458a297169eeda42` deployed — Playwright LIVE invoked once — CREATE_SESSION PASS — BUILD once — provider used=1 — tokens_used=1180 — credits deducted=1180 — runner FAIL on file-tree locator while Preview tab default — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-06-EXECUTION.md`
 **Step 3:** PENDING
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_AUTOMATED_E2E
@@ -67232,19 +67232,19 @@ Step 3 (PENDING):
 **LIVE-03 retry:** NO
 **LIVE-02 retry:** NO
 **LIVE-01 retry:** NO
-**AUTO-01E prerequisite:** COMPLETE AND LOCKED — PASS — 2026-08-21 — CONTRACT 64 — do not reopen
-**AUTO-01F prerequisite:** COMPLETE AND LOCKED — PASS — 2026-08-21 — CONTRACT 75 — do not reopen
+**AUTO-01E prerequisite:** COMPLETE AND LOCKED — PASS — 2026-08-21 — CONTRACT 64 — do not reopen — LIVE-06 CREATE_SESSION PASS
+**AUTO-01F prerequisite:** COMPLETE AND LOCKED — PASS — 2026-08-21 — CONTRACT 75 — do not reopen — LIVE-06 `executionGateFinal=restored-false`
 **AUTO-01D prerequisite:** COMPLETE AND LOCKED — PASS — CONTRACT — 2026-08-21 — CONTRACT 56 — do not reopen; do not convert to FAIL
-**LIVE_VALIDATION_OF_AUTO_01D_SUFFICIENCY:** FAIL — historical LIVE-05 result; unchanged
+**LIVE_VALIDATION_OF_AUTO_01D_SUFFICIENCY:** FAIL — historical LIVE-05 result; unchanged by LIVE-06 CREATE_SESSION PASS
 **PRODUCT_FAILURE:** not claimed
 **ENVIRONMENT/PARITY_FAILURE:** not claimed
 **PROVIDER_FAILURE:** not claimed
 **PROVIDER_CALL_AUTHORIZED:** 0
-**PROVIDER_CALL_USED:** 0
-**CREDITS_DEDUCTED:** 0
-**SSH_CONNECTIONS:** 0
-**STAGING_ACTIVITY:** NONE
-**GATE_MUTATION:** NONE
-**Exact next:** PRIVATE-BETA-E2E-LIVE-06 Step 2 — ONE authorized automated LIVE Builder golden-path run — requires explicit Keith LIVE authorization covering compare-then-deploy of AUTHORIZED_LOCAL_HEAD captured at the Step 2 execution edge, ONE `npm run e2e:builder:live`, one xAI/grok-4.5 provider call, zero retries, and qualifying credit mutation only if the golden path reaches it. Do not start Step 2 from this Step 1 write. Do not freeze Step 1 HEAD. Do not rerun LIVE-05. Do not patch residual `page.goto()` / `selectOption` / `trace` items. Do not register PRIVATE-BETA-INVITE-01.
+**PROVIDER_CALL_USED:** 1
+**CREDITS_DEDUCTED:** 1180
+**SSH_CONNECTIONS:** YES (preflight/deploy/evidence)
+**STAGING_ACTIVITY:** AUTHORIZED_LOCAL_HEAD deployed; disposable project/session cleaned
+**GATE_MUTATION:** enabled by runner then restored false
+**Exact next:** PRIVATE-BETA-E2E-LIVE-06 Step 3 — consolidation / checkpoint / lock — new window — do not rerun LIVE-06 — do not patch WAIT_FOR_AUTO_APPLY inside LIVE-06 — do not register PRIVATE-BETA-INVITE-01
 
 
