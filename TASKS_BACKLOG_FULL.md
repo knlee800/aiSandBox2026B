@@ -66125,8 +66125,9 @@ Step 3 (COMPLETE — 2026-08-21 — COMPLETE AND LOCKED — FAIL/BLOCKED — AUT
 **Title:** LIVE-05 CREATE_SESSION 600s Timeout Root-Cause Investigation and Bounded Adapter Fix
 **Workstream:** RELIABILITY
 **Lifecycle:** 3-step
-**Status:** ACTIVE — Step 1 COMPLETE — root cause PROVEN — no implementation performed — 2026-08-21
-**Assigned lane:** Lane 1
+**Status:** COMPLETE AND LOCKED — PASS — 2026-08-21
+**Checkpoint:** `docs/PRIVATE-BETA-E2E-AUTO-01E-CHECKPOINT.md`
+**Assigned lane:** Lane 1 — released EMPTY at lock
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
 **Registered:** 2026-08-21
@@ -66207,6 +66208,40 @@ Full analysis: `docs/PRIVATE-BETA-E2E-AUTO-01E-DIAGNOSIS.md`.
 
 ---
 
+#### Step 2 — Bounded implementation + CONTRACT validation (COMPLETE — 2026-08-21)
+
+Implementation is on HEAD `c3c65d3289d089b4970e6551552775f9e540f1e0` (`bound automated E2E project observation`). Keith owns Git.
+
+**Files changed (exactly the six declared Step 2 scope files):** `e2e/builder-golden-path/playwright.live.config.ts`; `e2e/builder-golden-path/lib/constants.ts`; `e2e/builder-golden-path/lib/network.ts`; `e2e/builder-golden-path/lib/live-adapters.ts`; `e2e/builder-golden-path/lib/local-fixture.ts`; `e2e/builder-golden-path/tests/live-adapters.spec.ts`. No production frontend/backend source. No package/lockfile change. No dependency added.
+
+**LIVE config defaults:** `actionTimeout = 30000`; `navigationTimeout = 60000`; global `timeout = 600000` unchanged; `trace = 'off'` unchanged; `retries = 0` unchanged. Both new defaults come from named constants (`LIVE_ACTION_TIMEOUT_MS`, `LIVE_NAVIGATION_TIMEOUT_MS`) and are asserted finite, non-zero and less than the outer test timeout, so Playwright's absent-means-zero-means-no-timeout default cannot silently return. Existing explicit per-call timeouts (`AUTO_APPLY_TIMEOUT_MS`, `BUILD_TIMEOUT_MS`, `PREVIEW_TIMEOUT_MS`, the 60s prompt wait) still win, so legitimate long waits are unaffected. The Step 1 recommendation to switch `trace` to `'retain-on-failure'` was deliberately NOT adopted; `trace: 'off'` is retained and asserted.
+
+**Project CREATE_SESSION observation bounds:** project `waitForResponse` explicitly bounded at 30000ms (`PROJECT_CREATE_OBSERVATION_TIMEOUT_MS`); project response body read explicitly bounded at 30000ms (`PROJECT_CREATE_BODY_TIMEOUT_MS`) by `readProjectCreateBody()`, which owns its own timer race because Playwright issues response-body reads with no timeout at all and neither the config `actionTimeout` nor a per-call option can reach them; fallback project-card click explicitly bounded at 10000ms (`PROJECT_CARD_CLICK_TIMEOUT_MS`). All three failures raise the new typed `ProjectCreateObservationError`, the error remains inside `runGoldenPath`, and the runner catch/finally therefore remains reachable.
+
+**AUTO-01D semantics preserved:** listener armed before project confirmation; early session observation retained; an observed session suppresses the card fallback; no duplicate `POST /api/sessions`; `SESSION_CREATE_TIMEOUT_MS` unchanged at 30000; `SessionObservationError` unchanged. The AUTO-01D frozen contract is bounded upstream only, not weakened.
+
+**Regression evidence:** 4 new fixture modes — `project-response-stalls`, `project-body-stalls`, `card-not-actionable`, `auto-open-removes-card` — and 8 new CONTRACT tests. Proven: a stalled project response fails bounded; a stalled response body fails bounded; both failures return verdict FAIL at phase CREATE_SESSION; CLEANUP is reached and is the last recorded phase; the execution gate is restored false; BUILD is not reached; `providerGuard.usedCount = 0` and `providerGuard.remaining = 1`; the non-actionable-card path cannot hang indefinitely and attempts zero card clicks; the auto-open/card-removal path creates exactly one session POST with no duplicate and no card click; the LIVE-config guard asserts every bound finite/non-zero/less than the outer timeout with `timeout` still 600000, `trace` still `'off'`, `retries` still 0; a source-shape guard asserts the old unbounded `await projectResponse.json()` and `await card.click();` statements are gone; all AUTO-01D regressions remain passing.
+
+**Validation:** `npx tsc --noEmit --project e2e/builder-golden-path/tsconfig.json` = **PASS**. `npm run e2e:builder:contract` = **64 passed** (56 pre-existing + 8 new). `git diff --check` = **PASS** (informational line-ending warnings only).
+
+**Step 2 activity ledger:** Playwright LIVE runs = 0. Staging/SSH = NONE. Provider calls = 0. Credits = 0. Execution gate = untouched. Dependencies/lockfile = unchanged. Product source = unchanged.
+
+---
+
+#### Step 3 — Consolidation / checkpoint / lock (COMPLETE — 2026-08-21)
+
+Checkpoint created: `docs/PRIVATE-BETA-E2E-AUTO-01E-CHECKPOINT.md`.
+
+Step 3 re-verified independently on a clean tree at HEAD `c3c65d3289d089b4970e6551552775f9e540f1e0`: `git status --short` empty; TypeScript PASS; CONTRACT 64 passed; `git diff --check` PASS.
+
+**Residual / explicitly out-of-scope timeout surfaces — identified but NOT modified, and NOT to be claimed as fixed:** unrelated `page.goto()` in `lib/live-adapters.ts` (now covered by the new `navigationTimeout` default but not individually bounded); `submitBuild()`'s provider/model `selectOption` `.catch()` fallbacks; `createSshExecutor()` in `lib/staging.ts`, which spawns `ssh` with no timeout and is used by SAFETY and by `cleanup()`'s gate restoration; `playwright.live.config.ts` `trace: 'off'`, so a future LIVE failure still produces no `trace.zip`. These are separate possible hardening work and were NOT blockers to locking AUTO-01E's bounded CREATE_SESSION fix.
+
+**Step 3 writes:** `docs/PRIVATE-BETA-E2E-AUTO-01E-CHECKPOINT.md`; `TASKS.md` CURRENT EXECUTION BOARD; this registry entry's final state/recommendation. No implementation change. No locked-body rewrite. No Git mutation.
+
+**Lock consequence:** Lane 1 released EMPTY; Lane 2 EMPTY; Lane 3 DISABLED; all AUTO-01E HOTFILE leases and GOVERNANCE released; STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER confirmed UNOWNED.
+
+---
+
 **Authorization flags:**
 - RUNTIME_EXECUTION_AUTHORIZED=NO
 - PROVIDER_CALL_AUTHORIZED=NO
@@ -66241,52 +66276,65 @@ Step 1 — registration + root-cause investigation (COMPLETE — 2026-08-21):
 - [x] PRIVATE-BETA-INVITE-01 remains prohibited
 - [x] BUILDER_PRIVATE_BETA_READINESS remains NO_GO_PENDING_FRESH_AUTOMATED_E2E
 
-Step 2 — bounded implementation + CONTRACT validation (PENDING):
-- [ ] project-create response wait bounded with an explicit timeout
-- [ ] project-create body read bounded with an explicit typed adapter error
-- [ ] fallback card click bounded
-- [ ] LIVE config sets finite `actionTimeout` / `navigationTimeout` (< `timeout`) and failure-retained trace
-- [ ] `project-response-stalls` regression fixture + test added
-- [ ] `auto-open-removes-card` regression fixture + test added
-- [ ] LIVE-config guard test added
-- [ ] whole-phase bounded-failure test added (CLEANUP + gate restore reached without the outer test timeout)
-- [ ] AUTO-01D observer semantics preserved; no duplicate `POST /api/sessions`
-- [ ] phase order, provider budget 1, retries 0, fail-closed LIVE semantics unchanged
-- [ ] `npx tsc --noEmit` (e2e project) and the CONTRACT suite pass; existing CONTRACT tests continue passing
-- [ ] no production source change; no package/lockfile change
-- [ ] no LIVE / staging / provider / credit execution
+Step 2 — bounded implementation + CONTRACT validation (COMPLETE — 2026-08-21):
+- [x] project-create response wait bounded with an explicit timeout — 30000ms
+- [x] project-create body read bounded with an explicit typed adapter error — 30000ms, `ProjectCreateObservationError`
+- [x] fallback card click bounded — 10000ms
+- [x] LIVE config sets finite `actionTimeout` (30000) / `navigationTimeout` (60000), both < `timeout` (600000) — `trace: 'off'` deliberately retained instead of failure-retained trace; recorded as residual out-of-scope
+- [x] `project-response-stalls` regression fixture + test added
+- [x] `auto-open-removes-card` regression fixture + test added
+- [x] LIVE-config guard test added
+- [x] whole-phase bounded-failure tests added (CLEANUP + gate restore reached without the outer test timeout, for both stalled response and stalled body)
+- [x] additional `project-body-stalls` and `card-not-actionable` fixtures + tests added beyond the minimum
+- [x] AUTO-01D observer semantics preserved; no duplicate `POST /api/sessions`
+- [x] phase order, provider budget 1, retries 0, fail-closed LIVE semantics unchanged
+- [x] `npx tsc --noEmit` (e2e project) PASS and the CONTRACT suite 64 passed; existing 56 CONTRACT tests continue passing
+- [x] no production source change; no package/lockfile change
+- [x] no LIVE / staging / provider / credit execution
 
-Step 3 — consolidation / checkpoint / lock (PENDING):
-- [ ] checkpoint created — `docs/PRIVATE-BETA-E2E-AUTO-01E-CHECKPOINT.md`
-- [ ] COMPLETE AND LOCKED after required lane-local evidence
-- [ ] Lane 1 released EMPTY; HOTFILE / GOVERNANCE released
-- [ ] LIVE-05 remains locked and unretried; no LIVE rerun registered from this task
+Step 3 — consolidation / checkpoint / lock (COMPLETE — 2026-08-21):
+- [x] checkpoint created — `docs/PRIVATE-BETA-E2E-AUTO-01E-CHECKPOINT.md`
+- [x] COMPLETE AND LOCKED after required lane-local evidence (clean tree, TypeScript PASS, CONTRACT 64 passed, `git diff --check` PASS, independently re-verified in Step 3)
+- [x] Lane 1 released EMPTY; HOTFILE / GOVERNANCE released
+- [x] LIVE-05 remains locked and unretried; no LIVE rerun registered from this task
+- [x] AUTO-01D historical interpretation preserved — COMPLETE AND LOCKED — PASS — CONTRACT; valid latent race fix; not reopened; not converted to FAIL
+- [x] residual out-of-scope unbounded surfaces recorded explicitly and NOT claimed as fixed
+- [x] readiness retained at NO_GO_PENDING_FRESH_AUTOMATED_E2E; `LIVE_STAGING_VALIDATED=NO`
+- [x] PRIVATE-BETA-INVITE-01 not registered; next LIVE lifecycle not registered
 
 ---
 
-**PRIVATE-BETA-E2E-AUTO-01E status:** ACTIVE — Step 1 COMPLETE — 2026-08-21
-**Classification:** AUTOMATION_TOOLING_INVESTIGATION
+**PRIVATE-BETA-E2E-AUTO-01E status:** COMPLETE AND LOCKED — PASS — 2026-08-21
+**Checkpoint:** `docs/PRIVATE-BETA-E2E-AUTO-01E-CHECKPOINT.md`
+**Classification:** AUTOMATION_TOOLING_INVESTIGATION + bounded AUTOMATION_TOOLING_FIX
 **Product defect:** NOT PROVEN — no evidence
 **Production source modification:** NO
-**Assigned lane:** Lane 1
+**Assigned lane:** Lane 1 — released EMPTY at lock
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
-**Mutexes / resources:** GOVERNANCE released after this Step 1 write; HOTFILE leases held for Step 2; STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER UNOWNED
+**Mutexes / resources:** GOVERNANCE acquired for the Step 3 write and released; all six AUTO-01E HOTFILE leases released at lock; STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER UNOWNED
 **Diagnosis:** `docs/PRIVATE-BETA-E2E-AUTO-01E-DIAGNOSIS.md`
 **Step 1:** COMPLETE — Registration + root-cause investigation — 2026-08-21 — root cause PROVEN — registered hypothesis REFUTED — no implementation
-**Step 2:** PENDING — bounded implementation + CONTRACT validation
-**Step 3:** PENDING — consolidation / checkpoint / lock
-**ROOT_CAUSE_PROVEN:** YES — un-timed project-create response observation at `e2e/builder-golden-path/lib/live-adapters.ts:101-109` under a LIVE config whose absent `actionTimeout` resolves to 0 = no timeout
-**FALLBACK_CARD_CLICK_EXECUTED:** NO — provably unreachable
-**LISTENER_30S_WAIT_ENTERED:** NO — control never reached line 135
-**LIVE-05 rerun:** NO
+**Step 2:** COMPLETE — bounded implementation + CONTRACT validation — 2026-08-21 — HEAD `c3c65d3289d089b4970e6551552775f9e540f1e0`
+**Step 3:** COMPLETE — consolidation / checkpoint / lock — 2026-08-21
+**ROOT_CAUSE_PROVEN:** YES — un-timed project-create response observation in `e2e/builder-golden-path/lib/live-adapters.ts` under a LIVE config whose absent `actionTimeout`/`navigationTimeout` resolved to 0 = no timeout; control never reached AUTO-01D's 30s wait, so the outer 600000ms Playwright timeout aborted outside `runGoldenPath` and the runner finally/cleanup was skipped
+**ROOT_CAUSE_BOUNDED:** YES — `actionTimeout=30000`, `navigationTimeout=60000`, project response wait 30000ms, project body read 30000ms, fallback card click 10000ms, all typed `ProjectCreateObservationError` raised inside `runGoldenPath`
+**FALLBACK_CARD_CLICK_EXECUTED (LIVE-05):** NO — provably unreachable; hypothesis disproven
+**LISTENER_30S_WAIT_ENTERED (LIVE-05):** NO — control never reached it
+**CONTRACT_TESTS:** 64 passed (56 pre-existing + 8 new)
+**TYPESCRIPT:** PASS
+**GIT_DIFF_CHECK:** PASS
+**RESIDUAL_OUT_OF_SCOPE_SURFACES (NOT fixed):** unrelated `page.goto()`; `submitBuild()` `selectOption` fallbacks; `createSshExecutor()` in `lib/staging.ts`; `trace: 'off'`
+**LIVE-05 rerun:** NO — remains COMPLETE AND LOCKED — FAIL/BLOCKED; not converted to PASS
 **LIVE-04 rerun:** NO
 **LIVE-03 / LIVE-02 / LIVE-01 retry:** NO
-**AUTO-01D reopened:** NO — remains COMPLETE AND LOCKED — PASS
+**AUTO-01D reopened:** NO — remains COMPLETE AND LOCKED — PASS — CONTRACT; valid latent race fix that was never the LIVE blocker; not converted to FAIL
+**LIVE_VALIDATION_OF_AUTO_01D_SUFFICIENCY:** FAIL — unchanged
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_AUTOMATED_E2E
 **LIVE_STAGING_VALIDATED:** NO
 **PROVIDER_CALL_AUTHORIZED:** 0
 **PROVIDER_CALL_USED:** 0
 **CREDITS_DEDUCTED:** 0
-**Exact next:** Step 2 — bounded implementation + CONTRACT validation in a NEW window, restricted to the declared Step 2 write scope. Do not rerun LIVE-05 or LIVE-04. Do not retry LIVE-03/02/01. Do not reopen AUTO-01D. Do not modify product source. Do not add dependencies. A fresh LIVE run may only be considered as a separate registered lifecycle after AUTO-01E Step 3 lock.
+**STAGING_ACTIVITY:** NONE
+**Exact next:** AUTO-01E is CONTRACT-only, so a fresh automated LIVE Builder E2E must validate the corrected automation against staging before any private-beta readiness claim. Next recommended lifecycle (**NOT REGISTERED AND NOT AUTHORIZED HERE**): likely identifier `PRIVATE-BETA-E2E-LIVE-06` — repo-wide search found zero occurrences at this lock, but the identifier MUST be re-verified unused at registration. That lifecycle must deploy/verify the current clean authorized HEAD, run the automated golden path exactly once, consume one xAI/grok-4.5 provider-call budget, perform zero retries, allow an intentional qualifying credit deduction only if the golden path reaches it, preserve every hard safety gate, and verify cleanup regardless of verdict. It requires its own registration and explicit Keith authorization. Do not rerun LIVE-05 or LIVE-04. Do not retry LIVE-03/02/01. Do not reopen AUTO-01D. Do not register PRIVATE-BETA-INVITE-01. Do not claim the residual out-of-scope timeout surfaces are fixed.
