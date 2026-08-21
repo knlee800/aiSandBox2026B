@@ -3,7 +3,7 @@
 **Parallel Development Architecture:** v1
 **Maximum admitted implementation lanes:** 2
 **Lane 3:** DISABLED
-**Active implementation lanes:** 1 / 2
+**Active implementation lanes:** 0 / 2
 
 Task bodies, AC, dependencies, history, and LOCKED state live in:
 `C:\Users\knlee\aiSandBox2026B\TASKS_BACKLOG_FULL.md`
@@ -12,7 +12,7 @@ This board is the only current scheduler.
 Do not determine current work from content below the LEGACY / FROZEN boundary.
 
 ## Lane 1
-PRIVATE-BETA-E2E-LIVE-06 — ACTIVE — Step 2 LANE-DONE — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — 2026-08-21 — ONE `npm run e2e:builder:live` consumed — GOVERNANCE acquired for this Step 2 board/registry/evidence write, then released — STAGING / PROVIDER-LIVE / CREDIT / ENV acquired for Step 2 then released after confirmed cleanup — do not lock in Step 2 — Step 3 PENDING
+EMPTY
 
 ## Lane 2
 EMPTY
@@ -21,12 +21,12 @@ EMPTY
 DISABLED
 
 ## Governance owner / state
-UNOWNED — PRIVATE-BETA-E2E-LIVE-06 admitted Lane 1 — Step 2 LANE-DONE — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — 2026-08-21 — GOVERNANCE acquired for this Step 2 board/registry/evidence write, then released
+UNOWNED — PRIVATE-BETA-E2E-LIVE-06 COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — 2026-08-21 — GOVERNANCE acquired for this Step 3 board/registry/checkpoint write, then released
 
-STAGING / PROVIDER-LIVE / CREDIT / ENV acquired for Step 2 then released after confirmed gate restore / session stop / container removal / credential cleanup. PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER UNOWNED. LIVE-01..LIVE-05 / AUTO-01 / AUTO-01A / AUTO-01B / AUTO-01C / AUTO-01D / AUTO-01E / AUTO-01F locks unchanged and unedited. AUTO-01E CREATE_SESSION bound held on LIVE-06 (CREATE_SESSION PASS). AUTO-01F SSH cleanup bound held on LIVE-06 (`executionGateFinal=restored-false`). LIVE-06 AUTHORIZED_LOCAL_HEAD `da56659d39a5d86d3ef994a7458a297169eeda42` deployed. Do not lock LIVE-06 in Step 2.
+STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER UNOWNED. All HOTFILE leases UNOWNED. LIVE-01..LIVE-05 / AUTO-01 / AUTO-01A / AUTO-01B / AUTO-01C / AUTO-01D / AUTO-01E / AUTO-01F locks unchanged and unedited. AUTO-01E LIVE validation HELD (CREATE_SESSION PASS). AUTO-01F LIVE validation HELD (`executionGateFinal=restored-false`). LIVE-06 AUTHORIZED_LOCAL_HEAD `da56659d39a5d86d3ef994a7458a297169eeda42` deployed. Do not rerun LIVE-06. Do not convert LIVE-06 to PASS. Do not patch WAIT_FOR_AUTO_APPLY. Do not register AUTO-01G here. Do not register PRIVATE-BETA-INVITE-01.
 
 ## Active mutex / resource ownership
-- GOVERNANCE: UNOWNED (acquired and released for the LIVE-06 Step 2 board/registry/evidence write)
+- GOVERNANCE: UNOWNED (acquired and released for the LIVE-06 Step 3 board/registry/checkpoint write)
 - HOTFILE:e2e/builder-golden-path/lib/staging.ts: UNOWNED
 - HOTFILE:e2e/builder-golden-path/lib/constants.ts: UNOWNED
 - HOTFILE:e2e/builder-golden-path/lib/safety-gates.ts: UNOWNED
@@ -38,10 +38,10 @@ STAGING / PROVIDER-LIVE / CREDIT / ENV acquired for Step 2 then released after c
 - HOTFILE:e2e/builder-golden-path/lib/local-fixture.ts: UNOWNED
 - HOTFILE:e2e/builder-golden-path/tests/network.spec.ts: UNOWNED
 - PACKAGE: UNOWNED
-- STAGING: UNOWNED (acquired for LIVE-06 Step 2, then released after confirmed cleanup)
-- PROVIDER-LIVE: UNOWNED (acquired for LIVE-06 Step 2, then released after usage evidence complete)
-- CREDIT: UNOWNED (acquired for LIVE-06 Step 2, then released after usage evidence complete)
-- ENV: UNOWNED (acquired for LIVE-06 Step 2, then released after confirmed gate restore)
+- STAGING: UNOWNED
+- PROVIDER-LIVE: UNOWNED
+- CREDIT: UNOWNED
+- ENV: UNOWNED
 - LOCAL-RUNTIME: UNOWNED
 - FRONTEND: UNOWNED
 - GATEWAY: UNOWNED
@@ -49,7 +49,7 @@ STAGING / PROVIDER-LIVE / CREDIT / ENV acquired for Step 2 then released after c
 - CONTAINER-MANAGER: UNOWNED
 - All other resources: UNOWNED
 
-LIVE-06 Step 2 GOVERNANCE / STAGING / PROVIDER-LIVE / CREDIT / ENV released after confirmed cleanup. PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER UNOWNED. All AUTO-01E / AUTO-01F HOTFILE leases remain released.
+LIVE-06 Step 3 GOVERNANCE acquired then released. STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE remain UNOWNED. All HOTFILE leases remain UNOWNED.
 
 ```
 RUNTIME_EXECUTION_AUTHORIZED=NO
@@ -57,10 +57,10 @@ PROVIDER_CALL_AUTHORIZED=NO
 CREDIT_MUTATION_AUTHORIZED=NO
 STAGING_MUTATION_AUTHORIZED=NO
 LIVE_06_REGISTERED=YES
-LIVE_06_ADMITTED_LANE=1
+LIVE_06_ADMITTED_LANE=none (Lane 1 released EMPTY at lock)
 LIVE_06_STEP_1=COMPLETE
-LIVE_06_STEP_2=LANE-DONE — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY
-LIVE_06_STEP_3=PENDING
+LIVE_06_STEP_2=COMPLETE — LANE-DONE — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY
+LIVE_06_STEP_3=COMPLETE — COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY
 LIVE_06_LIVE_RUN=YES
 LIVE_06_SSH_CONNECTIONS=YES (preflight/deploy/evidence/cleanup verification)
 LIVE_06_PROVIDER_CALL_USED=1
@@ -74,6 +74,12 @@ PROVIDER_CALL_USED=1
 LIVE_06_NPM_EXIT=1
 LIVE_06_FORMATTED_VERDICT=FAIL
 LIVE_06_FAILED_PHASE=WAIT_FOR_AUTO_APPLY
+LIVE_06_LAST_SUCCESSFUL_PHASE=BUILD
+LIVE_06_PRODUCT_AUTO_APPLY=YES
+LIVE_06_RUNNER_AUTO_APPLY_OBSERVATION=FAIL
+LIVE_06_LOCKED=YES
+AUTO_01E_LIVE_VALIDATION=HELD
+AUTO_01F_LIVE_VALIDATION=HELD
 AUTO_01E_STEP_1=COMPLETE
 AUTO_01E_STEP_2=COMPLETE
 AUTO_01E_STEP_3=COMPLETE
@@ -124,7 +130,8 @@ UNBOUNDED_SSH_EXECUTION_BOUNDED=YES
 - PRIVATE-BETA-E2E-AUTO-01F Step 2 bounded implementation (2026-08-21): `SSH_EXECUTION_TIMEOUT_MS=30000`; CONTRACT injects `timeoutMs=200`; timeout marks executor settled, calls `child.kill()` once, rejects immediately without waiting for close; later close/error cannot double-settle; typed `SshExecutionTimeoutError` with 400-char truncated stdout/stderr; no BatchMode; restore timeout maps to `restore-unconfirmed-timeout` never `restored-false`; CONTRACT 75 passed; TypeScript PASS; no product source, package/lockfile, LIVE, staging, provider, credit or gate activity
 - PRIVATE-BETA-E2E-AUTO-01F execution evidence and final checkpoint (COMPLETE AND LOCKED — PASS — 2026-08-21 — AUTOMATION_TOOLING_INVESTIGATION + bounded AUTOMATION_TOOLING_FIX; `createSshExecutor()` local SSH child now bounded at `SSH_EXECUTION_TIMEOUT_MS=30000`; CONTRACT injects `timeoutMs=200`; timeout calls `child.kill()` once and rejects immediately without waiting for close; typed `SshExecutionTimeoutError` with 400-char truncated stdout/stderr; BatchMode not added; SSH restore timeout maps to `restore-unconfirmed-timeout` never `restored-false`; CLEANUP recorded; runner returns FAIL; CONTRACT 75 passed; no product source change; CONTRACT-only — LIVE staging proof still required; LIVE-06 not registered; residual out-of-scope surfaces recorded: unrelated `page.goto()`, `submitBuild()` `selectOption` fallbacks, `trace: 'off'`)
 - PRIVATE-BETA-E2E-LIVE-06 Step 1 deployment+live contract (2026-08-21): fresh automated LIVE Builder golden-path after locked AUTO-01E/AUTO-01F — not a LIVE-05 rerun; capture AUTHORIZED_LOCAL_HEAD at the Step 2 execution edge (do NOT freeze Step 1 HEAD `42710013491f14fdc7fb9f80c4b7e3837ea98a3a`); compare-then-deploy exactly that SHA; preserve retained `stash@{0}` `0372cc1f47f82e1db060ed2dd756a938fe324803`; exactly ONE `npm run e2e:builder:live`; one xAI/grok-4.5 call; zero retries; never rerun after that invocation; AUTO-01E/AUTO-01F in force; no residual `page.goto()` / `selectOption` / `trace` patching
-- PRIVATE-BETA-E2E-LIVE-06 Step 2 execution evidence (2026-08-21): LANE-DONE — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-06-EXECUTION.md` — AUTHORIZED_LOCAL_HEAD `da56659d39a5d86d3ef994a7458a297169eeda42` deployed; Playwright LIVE invoked once; CREATE_SESSION PASS; BUILD submitted once; provider xAI/grok-4.5 used=1; tokens_used=1180; runner FAIL waiting for Code & Files file-tree node while Preview tab is default; product file/checkpoint/deduction occurred; PREVIEW not reached by runner; cleanup restored GLOBAL_EXECUTION_ENABLED=false; do not rerun LIVE-06; do not lock in Step 2
+- PRIVATE-BETA-E2E-LIVE-06 Step 2 execution evidence (2026-08-21): LANE-DONE — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-06-EXECUTION.md` — AUTHORIZED_LOCAL_HEAD `da56659d39a5d86d3ef994a7458a297169eeda42` deployed; Playwright LIVE invoked once; CREATE_SESSION PASS; BUILD submitted once; provider xAI/grok-4.5 used=1; tokens_used=1180; runner FAIL waiting for Code & Files file-tree node while Preview tab is default; product file/checkpoint/deduction occurred; PREVIEW not reached by runner; cleanup restored GLOBAL_EXECUTION_ENABLED=false; do not rerun LIVE-06
+- PRIVATE-BETA-E2E-LIVE-06 execution evidence and final checkpoint (COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-06-CHECKPOINT.md` — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-06-EXECUTION.md` — Playwright LIVE invoked once; CREATE_SESSION PASS; BUILD submitted once; WAIT_FOR_AUTO_APPLY timed out 180s on `[data-testid="workspace-file-node-e2e-auto.html"]` while Preview tab was active/default; PRODUCT_FAILURE=NO; ENVIRONMENT/PARITY_FAILURE=NO; PROVIDER_FAILURE=NO; product wrote `e2e-auto.html`, checkpoint `b85c33915aea6af4dd8052dba096d1c996260c92`, execution `1a995035-6b1c-431b-acc2-8dd1e51a53da`, provider xAI/grok-4.5, tokens_used=1180, one deduction 1180, balance 29399→28219; PREVIEW not reached by runner; CLEANUP PASS; `executionGateFinal=restored-false`; AUTO-01E LIVE validation HELD; AUTO-01F LIVE validation HELD; do not convert LIVE-06 to PASS; do not rerun LIVE-06)
 - existing authentication/ownership semantics
 - existing workspace apply semantics
 - existing automatic post-apply checkpoint semantics
@@ -132,7 +139,7 @@ UNBOUNDED_SSH_EXECUTION_BOUNDED=YES
 - current non-risky one-file Builder AUTO_APPLY semantics (E2E-05 proven)
 
 ## Current blockers / gates
-- PRIVATE-BETA-E2E-LIVE-06: Lane 1 — ACTIVE — Step 2 LANE-DONE — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — 2026-08-21 — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-06-EXECUTION.md` — NOT a product failure of Build/AUTO_APPLY/file write; NOT ENVIRONMENT/PARITY_FAILURE; NOT a provider failure — AUTHORIZED_LOCAL_HEAD `da56659d39a5d86d3ef994a7458a297169eeda42` deployed — STAGING_HEAD match PASS — AUTH PASS — SAFETY inspectParity PASS — AUTO-01C ready-wait PASS — STARTING_BALANCE PASS — ARM_LISTENERS PASS — CREATE_SESSION PASS (AUTO-01E held) — BUILD submitted once — Playwright LIVE invoked once — formatted verdict=FAIL — NPM_EXIT=1 — WAIT_FOR_AUTO_APPLY timed out 180s on `[data-testid="workspace-file-node-e2e-auto.html"]` while Preview tab was active (file tree only on Code & Files) — product wrote `e2e-auto.html`, checkpoint `b85c33915aea6af4dd8052dba096d1c996260c92`, execution `1a995035-6b1c-431b-acc2-8dd1e51a53da`, provider xAI/grok-4.5, tokens_used=1180, one deduction 1180, balance 29399→28219 — PREVIEW not reached by runner — CLEANUP PASS — `executionGateFinal=restored-false` — BILLING_CHARGES_ENABLED=false — session stopped — container removed — DPAPI/LIVE env cleared — no human browser — do not patch AUTO-01/AUTO-01A/AUTO-01B/AUTO-01C/AUTO-01D/AUTO-01E/AUTO-01F — do not rerun LIVE-06 — do not rerun LIVE-05/04 — do not retry LIVE-01/02/03 — PRIVATE-BETA-INVITE-01 remains prohibited — Step 3 PENDING — do not lock in Step 2
+- PRIVATE-BETA-E2E-LIVE-06: COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-06-CHECKPOINT.md` — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-06-EXECUTION.md` — NOT a product failure of Build/AUTO_APPLY/file write; NOT ENVIRONMENT/PARITY_FAILURE; NOT a provider failure — PRODUCT_FAILURE=NO — ENVIRONMENT/PARITY_FAILURE=NO — PROVIDER_FAILURE=NO — AUTHORIZED_LOCAL_HEAD `da56659d39a5d86d3ef994a7458a297169eeda42` deployed — STAGING_HEAD match PASS — AUTH PASS — SAFETY inspectParity PASS — AUTO-01C ready-wait PASS — STARTING_BALANCE PASS — ARM_LISTENERS PASS — CREATE_SESSION PASS (AUTO-01E LIVE validation HELD) — BUILD submitted once — Playwright LIVE invoked once — formatted verdict=FAIL — NPM_EXIT=1 — WAIT_FOR_AUTO_APPLY timed out 180s on `[data-testid="workspace-file-node-e2e-auto.html"]` while Preview tab was active (file tree only on Code & Files) — product wrote `e2e-auto.html`, checkpoint `b85c33915aea6af4dd8052dba096d1c996260c92`, execution `1a995035-6b1c-431b-acc2-8dd1e51a53da`, provider xAI/grok-4.5, tokens_used=1180, one deduction 1180, balance 29399→28219 — PREVIEW not reached by runner — CLEANUP PASS — `executionGateFinal=restored-false` (AUTO-01F LIVE validation HELD) — BILLING_CHARGES_ENABLED=false — session stopped — container removed — DPAPI/LIVE env cleared — no human browser — do not convert LIVE-06 to PASS — do not patch WAIT_FOR_AUTO_APPLY — do not patch AUTO-01/AUTO-01A/AUTO-01B/AUTO-01C/AUTO-01D/AUTO-01E/AUTO-01F — do not rerun LIVE-06 — do not rerun LIVE-05/04 — do not retry LIVE-01/02/03 — PRIVATE-BETA-INVITE-01 remains prohibited — Lane 1 released EMPTY
 - PRIVATE-BETA-E2E-AUTO-01F: COMPLETE AND LOCKED — PASS — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01F-CHECKPOINT.md` — Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01F-DIAGNOSIS.md` — AUTOMATION_TOOLING_INVESTIGATION + bounded AUTOMATION_TOOLING_FIX — product defect NO — production source modification NO — UNBOUNDED_SSH_EXECUTION_PROVEN=YES from source and now BOUNDED: production `SSH_EXECUTION_TIMEOUT_MS=30000`; CONTRACT injects `timeoutMs=200`; on timeout the executor settles, `child.kill()` is called exactly once, and the Promise rejects immediately without waiting for child close; later close/error cannot double-settle; typed `SshExecutionTimeoutError` includes timeout ms, kill invoked/accepted, and stdout/stderr truncated to 400 characters; no argv/secrets in diagnostics; BatchMode=yes was NOT added because `aisandbox-staging` auth lives in operator SSH config outside the repo; SSH gate restoration timeout maps to `executionGateFinal=restore-unconfirmed-timeout` NEVER `restored-false` because timeout proves only local runner control, not remote `GLOBAL_EXECUTION_ENABLED=false pm2 restart aisandbox-api-gateway --update-env` outcome; other SSH failures remain `restore-failed`; CONTRACT proves CLEANUP recorded last, `cleanup=session-stopped`, FAIL verdict, `providerGuard.usedCount=0` / `remaining=1`; CONTRACT 75 passed (64 pre-existing + 11 new) — TypeScript PASS — `git diff --check` PASS — independently re-verified in Step 3 — LIVE hang of this surface was NOT observed; AUTO-01F is CONTRACT-only — `LIVE_STAGING_VALIDATED=NO` — residual out-of-scope surfaces NOT fixed and not to be claimed as fixed: unrelated `page.goto()`, `submitBuild()` `selectOption` fallbacks, and `trace: 'off'` — Lane 1 released EMPTY; all AUTO-01F HOTFILE leases and GOVERNANCE released — RUNTIME_EXECUTION_AUTHORIZED=NO — PROVIDER_CALL_AUTHORIZED=NO — CREDIT_MUTATION_AUTHORIZED=NO — STAGING_MUTATION_AUTHORIZED=NO — PROVIDER USED=0 — CREDITS=0 — SSH_CONNECTIONS=0 — LIVE-06 not registered
 - PRIVATE-BETA-E2E-AUTO-01F Step 1 (historical): Lane 1 — Step 1 COMPLETE — 2026-08-21 — Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01F-DIAGNOSIS.md` — AUTOMATION_TOOLING_INVESTIGATION — product defect NO — production source modification NO — implementation performed NO — UNBOUNDED_SSH_EXECUTION_PROVEN=YES: `createSshExecutor()` in `e2e/builder-golden-path/lib/staging.ts` uses `spawn('ssh', argv, { shell: false })` and a Promise that settles only on child `error` or `close`; no process timeout, AbortSignal, watchdog, Promise.race, or `child.kill()`; argv is exactly `['aisandbox-staging', <remoteCommand>]` with no BatchMode/ConnectTimeout/ServerAlive/StrictHostKeyChecking; LIVE `cleanup()` awaits `restoreExecutionGateIfChanged()` which awaits that Promise to run `GLOBAL_EXECUTION_ENABLED=false pm2 restart aisandbox-api-gateway --update-env`; `runGoldenPath` emits a verdict only after that await; Playwright's 600000ms test timeout is not a reliable bound on `ssh.exe` and must not be treated as gate-restore confirmation; `BILLING_CHARGES_ENABLED` is inspect-only and is not restored by this executor; a timeout of the restore command would regain runner control but would leave gate restoration UNCONFIRMED — do not report `restored-false` in that case; LIVE hang of this surface NOT YET OBSERVED — RUNTIME_EXECUTION_AUTHORIZED=NO — PROVIDER_CALL_AUTHORIZED=NO — CREDIT_MUTATION_AUTHORIZED=NO — STAGING_MUTATION_AUTHORIZED=NO
 - PRIVATE-BETA-E2E-AUTO-01E: COMPLETE AND LOCKED — PASS — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01E-CHECKPOINT.md` — Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01E-DIAGNOSIS.md` — AUTOMATION_TOOLING_INVESTIGATION + bounded AUTOMATION_TOOLING_FIX — product defect NOT PROVEN / no evidence — production source modification NO — ROOT_CAUSE_PROVEN=YES and now BOUNDED: LIVE `actionTimeout=30000` and `navigationTimeout=60000` are declared explicitly so Playwright's absent-means-zero-means-no-timeout default cannot return; global `timeout=600000` and `trace: 'off'` unchanged; the project-create `waitForResponse` is bounded at 30000ms; the project-create response body read is bounded at 30000ms by a runner-owned timer race (Playwright issues body reads with no timeout, so neither the config nor a per-call option can reach them); the fallback project-card click is bounded at 10000ms; all three failures raise typed `ProjectCreateObservationError` inside `runGoldenPath`, so the runner catch/finally remains reachable — CONTRACT proves verdict FAIL at phase CREATE_SESSION, CLEANUP reached and last, execution gate restored false, BUILD not reached, `providerGuard.usedCount=0` and `remaining=1`, no duplicate `POST /api/sessions`, and a non-actionable card cannot hang indefinitely — CONTRACT 64 passed (56 pre-existing + 8 new) — TypeScript PASS — `git diff --check` PASS — AUTO-01D remains COMPLETE AND LOCKED — PASS — CONTRACT and is a valid latent race fix that was never the LIVE blocker; not reopened, not converted to FAIL — LIVE-05 remains COMPLETE AND LOCKED — FAIL/BLOCKED; not rerun, not converted to PASS — CONTRACT-only: `LIVE_STAGING_VALIDATED=NO`; a fresh automated LIVE E2E must validate the corrected automation against staging — residual out-of-scope unbounded surfaces NOT fixed and not to be claimed as fixed: unrelated `page.goto()`, `submitBuild()` `selectOption` fallbacks, `createSshExecutor()` in `lib/staging.ts`, and `trace: 'off'` — Lane 1 released EMPTY; all AUTO-01E HOTFILE leases and GOVERNANCE released — RUNTIME_EXECUTION_AUTHORIZED=NO — PROVIDER_CALL_AUTHORIZED=NO — CREDIT_MUTATION_AUTHORIZED=NO — STAGING_MUTATION_AUTHORIZED=NO — PROVIDER USED=0 — CREDITS=0
@@ -154,15 +161,16 @@ UNBOUNDED_SSH_EXECUTION_BOUNDED=YES
 - BUILDER_PRIVATE_BETA_READINESS: NO_GO_PENDING_FRESH_AUTOMATED_E2E
 - LIVE_STAGING_VALIDATED: NO
 - PRIVATE-BETA-INVITE-01: UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
-- Lane 1: PRIVATE-BETA-E2E-LIVE-06 ACTIVE — Step 2 LANE-DONE — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY. Lane 2: EMPTY. Lane 3: DISABLED.
+- Lane 1: EMPTY. Lane 2: EMPTY. Lane 3: DISABLED.
 
 ## Current next product gate
-PRIVATE-BETA-E2E-LIVE-06 is **REGISTERED AND ADMITTED to Lane 1.** Step 2 LANE-DONE — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — 2026-08-21. Evidence: `docs/PRIVATE-BETA-E2E-LIVE-06-EXECUTION.md`. Step 3 consolidation is **PENDING** in a new window. Do **not** lock LIVE-06 in Step 2. Do **not** rerun LIVE-06. Do not patch the Preview-tab vs Code & Files AUTO_APPLY locator inside LIVE-06. Do not rerun LIVE-05. Do not rerun LIVE-04. Do not retry LIVE-01/02/03. Do not return to manual browser testing. Do not register PRIVATE-BETA-INVITE-01.
-PRIVATE-BETA-E2E-AUTO-01F remains COMPLETE AND LOCKED — PASS — 2026-08-21 (CONTRACT-only). LIVE-06 CLEANUP used `executionGateFinal=restored-false`. Do not reopen AUTO-01F.
-PRIVATE-BETA-E2E-AUTO-01E remains COMPLETE AND LOCKED — PASS — 2026-08-21 (CONTRACT-only). LIVE-06 CREATE_SESSION PASS. Do not reopen AUTO-01E. Do not patch AUTO-01/AUTO-01A/AUTO-01B/AUTO-01C/AUTO-01D/AUTO-01E/AUTO-01F.
+PRIVATE-BETA-E2E-LIVE-06 is **COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — 2026-08-21.** Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-06-CHECKPOINT.md`. Evidence: `docs/PRIVATE-BETA-E2E-LIVE-06-EXECUTION.md`. Do **not** convert LIVE-06 to PASS. Do **not** rerun LIVE-06. Do not patch WAIT_FOR_AUTO_APPLY. Do not rerun LIVE-05. Do not rerun LIVE-04. Do not retry LIVE-01/02/03. Do not return to manual browser testing. Do not register PRIVATE-BETA-INVITE-01.
+PRIVATE-BETA-E2E-AUTO-01F remains COMPLETE AND LOCKED — PASS — 2026-08-21 (CONTRACT-only). LIVE-06 AUTO-01F LIVE validation HELD (`executionGateFinal=restored-false`). Do not reopen AUTO-01F.
+PRIVATE-BETA-E2E-AUTO-01E remains COMPLETE AND LOCKED — PASS — 2026-08-21 (CONTRACT-only). LIVE-06 AUTO-01E LIVE validation HELD (CREATE_SESSION PASS). Do not reopen AUTO-01E. Do not patch AUTO-01/AUTO-01A/AUTO-01B/AUTO-01C/AUTO-01D/AUTO-01E/AUTO-01F.
 PRIVATE-BETA-E2E-LIVE-05 remains COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CREATE_SESSION — 2026-08-21. Do not convert LIVE-05 to PASS. Do not rerun LIVE-05.
 LIVE-04 remains COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CREATE_SESSION. AUTO-01D remains COMPLETE AND LOCKED — PASS (CONTRACT 56) and is not reopened. LIVE_VALIDATION_OF_AUTO_01D_SUFFICIENCY remains FAIL historically; LIVE-06 CREATE_SESSION PASS does not rewrite LIVE-05.
-Builder private beta remains NO_GO_PENDING_FRESH_AUTOMATED_E2E. LIVE_STAGING_VALIDATED remains NO. Step 2 does not change readiness; Step 3 consolidation decides.
+Builder private beta remains NO_GO_PENDING_FRESH_AUTOMATED_E2E. LIVE_STAGING_VALIDATED remains NO. The automated runner still has not completed the mandatory full golden path, even though substantial product behavior was successfully proven.
+Next recommended lifecycle (**NOT REGISTERED AND NOT AUTHORIZED HERE**): likely identifier `PRIVATE-BETA-E2E-AUTO-01G` — TINY automation-tooling investigation/fix — why WAIT_FOR_AUTO_APPLY requires `[data-testid="workspace-file-node-e2e-auto.html"]` while LIVE leaves Preview as the active/default tab. Identifier unused at this lock (repo search found zero occurrences) but MUST be re-verified unused at registration. Do not assume the fix is simply “click Code & Files.” Require source + artifact evidence before implementation. Do not register it here.
 PRIVATE-BETA-INVITE-01 remains prohibited.
 
 ============================================================

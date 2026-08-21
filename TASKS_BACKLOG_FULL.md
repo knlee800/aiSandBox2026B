@@ -66544,8 +66544,8 @@ Step 3 — consolidation / checkpoint / lock (COMPLETE — 2026-08-21):
 **Title:** Fresh Automated Builder LIVE E2E After AUTO-01E and AUTO-01F
 **Workstream:** RELIABILITY
 **Lifecycle:** 3-step HIGH-RISK bounded task
-**Status:** ACTIVE — Step 2 LANE-DONE — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — 2026-08-21; Step 3 PENDING
-**Assigned lane:** Lane 1
+**Status:** COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — 2026-08-21
+**Assigned lane:** none (Lane 1 released EMPTY at lock)
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
 **Registered:** 2026-08-21
@@ -67108,7 +67108,7 @@ If automated Step 2 passes all mandatory golden-path criteria, Step 3 consolidat
 
 1. Registration + exact LIVE execution contract freeze — COMPLETE — 2026-08-21 — this registration; contract: `docs/PRIVATE-BETA-E2E-LIVE-06-EXECUTION.md`
 2. ONE authorized automated LIVE execution — COMPLETE — LANE-DONE — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — 2026-08-21 — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-06-EXECUTION.md`
-3. Consolidation / checkpoint / lock — PENDING
+3. Consolidation / checkpoint / lock — COMPLETE — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-06-CHECKPOINT.md`
 
 **Authorization flags (after Step 2 terminal classification):**
 - RUNTIME_EXECUTION_AUTHORIZED=NO
@@ -67206,45 +67206,50 @@ Step 2 (COMPLETE — LANE-DONE — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE �
 - [x] no return to the old manual evidence marathon
 - [x] no manual browser fallback
 
-Step 3 (PENDING):
-- [ ] checkpoint created
-- [ ] LIVE_STAGING_VALIDATED updated only according to proven evidence
-- [ ] Builder private-beta readiness updated only according to proven evidence
-- [ ] PRIVATE-BETA-INVITE-01 remains prohibited unless a later separate governance admission is justified
+Step 3 (COMPLETE — 2026-08-21 — COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY):
+- [x] checkpoint created — `docs/PRIVATE-BETA-E2E-LIVE-06-CHECKPOINT.md`
+- [x] LIVE_STAGING_VALIDATED updated only according to proven evidence — remains NO (automated runner still has not completed the mandatory full golden path; WAIT_FOR_AUTO_APPLY observation FAIL even though product AUTO_APPLY / file write / checkpoint / 1:1 deduction were proven)
+- [x] Builder private-beta readiness updated only according to proven evidence — remains NO_GO_PENDING_FRESH_AUTOMATED_E2E
+- [x] PRIVATE-BETA-INVITE-01 remains prohibited unless a later separate governance admission is justified
 
 ---
 
-**PRIVATE-BETA-E2E-LIVE-06 status:** ACTIVE — Step 2 LANE-DONE — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — 2026-08-21
-**Assigned lane:** Lane 1
+**PRIVATE-BETA-E2E-LIVE-06 status:** COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — 2026-08-21
+**Assigned lane:** none
+**Lane 1:** EMPTY
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
-**Mutexes / resources:** GOVERNANCE UNOWNED (acquired and released for Step 2 board/registry/evidence write). STAGING / PROVIDER-LIVE / CREDIT / ENV acquired for Step 2 then released after confirmed cleanup. PACKAGE UNOWNED. All HOTFILE leases UNOWNED.
-**Contract / evidence:** `docs/PRIVATE-BETA-E2E-LIVE-06-EXECUTION.md`
+**Mutexes / resources:** GOVERNANCE UNOWNED (acquired and released for Step 3 board/registry/checkpoint write). STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE UNOWNED. All HOTFILE leases UNOWNED.
+**Checkpoint:** `docs/PRIVATE-BETA-E2E-LIVE-06-CHECKPOINT.md`
+**Evidence:** `docs/PRIVATE-BETA-E2E-LIVE-06-EXECUTION.md`
 **Step 1:** COMPLETE — Registration + exact LIVE execution contract freeze — 2026-08-21 — HEAD `42710013491f14fdc7fb9f80c4b7e3837ea98a3a` recorded, NOT frozen for Step 2
-**Step 2:** LANE-DONE — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — 2026-08-21 — AUTHORIZED_LOCAL_HEAD `da56659d39a5d86d3ef994a7458a297169eeda42` deployed — Playwright LIVE invoked once — CREATE_SESSION PASS — BUILD once — provider used=1 — tokens_used=1180 — credits deducted=1180 — runner FAIL on file-tree locator while Preview tab default — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-06-EXECUTION.md`
-**Step 3:** PENDING
+**Step 2:** COMPLETE — LANE-DONE — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — 2026-08-21 — AUTHORIZED_LOCAL_HEAD `da56659d39a5d86d3ef994a7458a297169eeda42` deployed — Playwright LIVE invoked once — CREATE_SESSION PASS — BUILD once — provider used=1 — tokens_used=1180 — credits deducted=1180 — runner FAIL on file-tree locator while Preview tab default — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-06-EXECUTION.md`
+**Step 3:** COMPLETE — 2026-08-21 — this lock
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_AUTOMATED_E2E
 **LIVE_STAGING_VALIDATED:** NO
-**LIVE-06 rerun after invocation:** NO — one runner invocation is terminal
+**LIVE-06 rerun after invocation:** NO — one runner invocation is terminal; do not rerun LIVE-06; do not convert LIVE-06 to PASS
 **LIVE-05 rerun:** NO — LIVE-05 remains COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CREATE_SESSION
 **LIVE-04 rerun:** NO
 **LIVE-03 retry:** NO
 **LIVE-02 retry:** NO
 **LIVE-01 retry:** NO
-**AUTO-01E prerequisite:** COMPLETE AND LOCKED — PASS — 2026-08-21 — CONTRACT 64 — do not reopen — LIVE-06 CREATE_SESSION PASS
-**AUTO-01F prerequisite:** COMPLETE AND LOCKED — PASS — 2026-08-21 — CONTRACT 75 — do not reopen — LIVE-06 `executionGateFinal=restored-false`
+**AUTO-01E prerequisite:** COMPLETE AND LOCKED — PASS — 2026-08-21 — CONTRACT 64 — do not reopen — AUTO-01E LIVE validation HELD (LIVE-06 CREATE_SESSION PASS)
+**AUTO-01F prerequisite:** COMPLETE AND LOCKED — PASS — 2026-08-21 — CONTRACT 75 — do not reopen — AUTO-01F LIVE validation HELD (LIVE-06 `executionGateFinal=restored-false`)
 **AUTO-01D prerequisite:** COMPLETE AND LOCKED — PASS — CONTRACT — 2026-08-21 — CONTRACT 56 — do not reopen; do not convert to FAIL
 **LIVE_VALIDATION_OF_AUTO_01D_SUFFICIENCY:** FAIL — historical LIVE-05 result; unchanged by LIVE-06 CREATE_SESSION PASS
-**PRODUCT_FAILURE:** not claimed
-**ENVIRONMENT/PARITY_FAILURE:** not claimed
-**PROVIDER_FAILURE:** not claimed
+**AUTO-01G registered:** NO
+**PRODUCT_FAILURE:** NO
+**ENVIRONMENT/PARITY_FAILURE:** NO
+**PROVIDER_FAILURE:** NO
+**PRODUCT_AUTO_APPLY:** YES
+**RUNNER_AUTO_APPLY_OBSERVATION:** FAIL
 **PROVIDER_CALL_AUTHORIZED:** 0
 **PROVIDER_CALL_USED:** 1
 **CREDITS_DEDUCTED:** 1180
-**SSH_CONNECTIONS:** YES (preflight/deploy/evidence)
+**SSH_CONNECTIONS:** YES (preflight/deploy/evidence/cleanup verification)
 **STAGING_ACTIVITY:** AUTHORIZED_LOCAL_HEAD deployed; disposable project/session cleaned
 **GATE_MUTATION:** enabled by runner then restored false
-**Exact next:** PRIVATE-BETA-E2E-LIVE-06 Step 3 — consolidation / checkpoint / lock — new window — do not rerun LIVE-06 — do not patch WAIT_FOR_AUTO_APPLY inside LIVE-06 — do not register PRIVATE-BETA-INVITE-01
+**Exact next:** Do not rerun LIVE-06. Do not convert LIVE-06 to PASS. Do not patch WAIT_FOR_AUTO_APPLY. Do not rerun LIVE-05. Do not rerun LIVE-04. Do not retry LIVE-01/02/03. LIVE-06 remains COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — not a product failure of AUTO_APPLY/file write, not ENVIRONMENT/PARITY_FAILURE, not a provider failure. Product wrote `e2e-auto.html`, created checkpoint `b85c33915aea6af4dd8052dba096d1c996260c92`, and deducted 1180 credits 1:1; runner could not observe AUTO_APPLY because it waited for `[data-testid="workspace-file-node-e2e-auto.html"]` while Preview was the active/default tab. AUTO-01E LIVE validation HELD. AUTO-01F LIVE validation HELD. Do not reopen AUTO-01E/AUTO-01F. Do not modify AUTO-01/AUTO-01A/AUTO-01B/AUTO-01C/AUTO-01D/AUTO-01E/AUTO-01F. Do not return to manual browser testing. Do not register PRIVATE-BETA-INVITE-01. Next recommended lifecycle (NOT REGISTERED HERE): PRIVATE-BETA-E2E-AUTO-01G — TINY automation-tooling investigation/fix — why WAIT_FOR_AUTO_APPLY requires the Code & Files file-tree node while LIVE leaves Preview as the active/default tab; identifier unused at this lock (repo search found zero occurrences) but MUST be re-verified unused at registration; do not assume the fix is simply “click Code & Files”; require source + artifact evidence before implementation.
 
 
