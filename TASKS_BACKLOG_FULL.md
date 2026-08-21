@@ -67252,4 +67252,146 @@ Step 3 (COMPLETE — 2026-08-21 — COMPLETE AND LOCKED — FAIL/BLOCKED — AUT
 **GATE_MUTATION:** enabled by runner then restored false
 **Exact next:** Do not rerun LIVE-06. Do not convert LIVE-06 to PASS. Do not patch WAIT_FOR_AUTO_APPLY. Do not rerun LIVE-05. Do not rerun LIVE-04. Do not retry LIVE-01/02/03. LIVE-06 remains COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — not a product failure of AUTO_APPLY/file write, not ENVIRONMENT/PARITY_FAILURE, not a provider failure. Product wrote `e2e-auto.html`, created checkpoint `b85c33915aea6af4dd8052dba096d1c996260c92`, and deducted 1180 credits 1:1; runner could not observe AUTO_APPLY because it waited for `[data-testid="workspace-file-node-e2e-auto.html"]` while Preview was the active/default tab. AUTO-01E LIVE validation HELD. AUTO-01F LIVE validation HELD. Do not reopen AUTO-01E/AUTO-01F. Do not modify AUTO-01/AUTO-01A/AUTO-01B/AUTO-01C/AUTO-01D/AUTO-01E/AUTO-01F. Do not return to manual browser testing. Do not register PRIVATE-BETA-INVITE-01. Next recommended lifecycle (NOT REGISTERED HERE): PRIVATE-BETA-E2E-AUTO-01G — TINY automation-tooling investigation/fix — why WAIT_FOR_AUTO_APPLY requires the Code & Files file-tree node while LIVE leaves Preview as the active/default tab; identifier unused at this lock (repo search found zero occurrences) but MUST be re-verified unused at registration; do not assume the fix is simply “click Code & Files”; require source + artifact evidence before implementation.
 
+---
+
+### PRIVATE-BETA-E2E-AUTO-01G — WAIT_FOR_AUTO_APPLY Observation Architecture Investigation and Bounded Fix
+
+**Task ID:** PRIVATE-BETA-E2E-AUTO-01G
+**Title:** Correct the WAIT_FOR_AUTO_APPLY Observation Signal (Presentation-Coupled Locator → Existing Persistence Signal)
+**Workstream:** RELIABILITY
+**Classification:** AUTOMATION_TOOLING_INVESTIGATION
+**Lifecycle:** 3-step bounded task
+**Status:** ACTIVE — Step 1 COMPLETE — 2026-08-21
+**Assigned lane:** Lane 1
+**Lane 2:** EMPTY
+**Lane 3:** DISABLED
+**Registered:** 2026-08-21
+**Approved:** Keith — 2026-08-21 (Step 1 registration + admission + root-cause/observation-architecture investigation only — does NOT authorize Step 2 implementation)
+**Evidence class:** LOCAL-TESTS
+**Hot-file leases:** NONE claimed in Step 1 (Step 2 plans `e2e/builder-golden-path/lib/network.ts`, `lib/live-adapters.ts`, `lib/local-fixture.ts`, `lib/constants.ts`, `tests/live-adapters.spec.ts`)
+**Diagnosis document:** `docs/PRIVATE-BETA-E2E-AUTO-01G-DIAGNOSIS.md`
+
+**Identifier search:** PRIVATE-BETA-E2E-AUTO-01G was **unused as a registered task** before this registration. Repo-wide search found only historical prose: the `TASKS.md` next-gate recommendation line, then reading "Next recommended lifecycle — **NOT REGISTERED AND NOT AUTHORIZED HERE**" and since replaced by this registration, plus `docs/PRIVATE-BETA-E2E-LIVE-06-CHECKPOINT.md:410` (`AUTO-01G registered in Step 3: NO`), `:414`, `:477`, and `TASKS_BACKLOG_FULL.md:67241` (`AUTO-01G registered: NO`). Zero `### PRIVATE-BETA-E2E-AUTO-01G` registry entries existed. Historical prose recommending AUTO-01G does not count as prior registration. Rejected: `PRIVATE-BETA-E2E-AUTO-02` (implies another runner build), `PRIVATE-BETA-E2E-LIVE-07` (implies LIVE execution; this task is CONTRACT-only), reopening any locked AUTO-01* or LIVE-0* task.
+
+**Start condition:** READY — Lane 1 EMPTY at admission; Lane 2 EMPTY; Lane 3 DISABLED; clean tree at admission (`git status --short` empty; HEAD `d4e379a5a26eecf0c1a69ed90988af269fb60859`); STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER UNOWNED at admission; OS v1 admission requirements pass.
+
+**Depends on (required locked PASS / locked evidence):**
+- PRIVATE-BETA-E2E-AUTO-01 — COMPLETE AND LOCKED — PASS — runner contract / phase order / AUTO_APPLY semantics
+- PRIVATE-BETA-E2E-AUTO-01A / 01B / 01C / 01D / 01E / 01F — COMPLETE AND LOCKED — PASS — do not reopen, do not modify, do not convert to FAIL
+- PRIVATE-BETA-E2E-LIVE-06 — COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — 2026-08-21 — triggering evidence; do not rewrite; do not rerun; do not convert to PASS
+
+**Nature:** Automation-tooling investigation and (in Step 2) the smallest bounded runner-only fix for the WAIT_FOR_AUTO_APPLY observation. Not a product defect. Not a LIVE task. Not a LIVE-06 rerun. Not a phase-order change. Not an executionId task.
+
+**Primary write scope:**
+- Step 1: `TASKS.md` CURRENT EXECUTION BOARD above LEGACY / FROZEN only; this registry entry; `docs/PRIVATE-BETA-E2E-AUTO-01G-DIAGNOSIS.md`
+- Step 2 (after explicit Keith authorization only): `e2e/builder-golden-path/lib/network.ts`, `lib/live-adapters.ts`, `lib/local-fixture.ts`, `tests/live-adapters.spec.ts`, and `lib/constants.ts` only if a new pattern/bound constant is required
+- Step 3: checkpoint + board/registry end status only
+- No product source. No `package.json` / lockfile. No PRD.md / ARCHITECTURE.md / CLAUDE.md / AGENTS.md. No locked AUTO-01* / LIVE-0* body edits.
+
+**Mutexes / resources:** GOVERNANCE acquired for this Step 1 board/registry/diagnosis write, then released. STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER remain UNOWNED. All HOTFILE leases remain UNOWNED in Step 1.
+
+**Shared contracts (frozen; must not be modified by this task):**
+- Frozen 14-phase golden-path order and `assertPhaseOrder` invariants (`e2e/builder-golden-path/lib/phases.ts`) — PREVIEW immediately after WAIT_FOR_AUTO_APPLY; PREVIEW before CHECKPOINT / PUBLIC_CONFIRM / DEDUCTION / BALANCE
+- PRIVATE-BETA-E2E-AUTO-01 runner contract — AUTO_APPLY only, no manual Apply, preview immediately after apply, fail-closed LIVE, one provider call, zero retries, finally-style cleanup
+- PRIVATE-BETA-E2E-AUTO-01C post-gate gateway-ready wait
+- PRIVATE-BETA-E2E-AUTO-01D CREATE_SESSION capture-style observer semantics; no duplicate `POST /api/sessions`
+- PRIVATE-BETA-E2E-AUTO-01E bounded CREATE_SESSION project observation and LIVE `actionTimeout` / `navigationTimeout`
+- PRIVATE-BETA-E2E-AUTO-01F bounded SSH execution and `restore-unconfirmed-timeout` mapping
+- PRIVATE-BETA-BLOCKER-03J public authenticated Gateway confirm-build-apply route (PUBLIC_CONFIRM evidence — must not be consumed by WAIT_FOR_AUTO_APPLY)
+- PRIVATE-BETA-BLOCKER-03I checkpoint/Git runtime contract (CHECKPOINT evidence — must not be consumed by WAIT_FOR_AUTO_APPLY)
+- Existing workspace apply semantics and existing automatic post-apply checkpoint semantics
+- Existing product test ids (`SELECTORS.autoFileNode` is retained; no test-id churn)
+
+**Revert / evidence isolation:** Single lane. Runner-only, fully reversible. Reverting AUTO-01G must not invalidate locked AUTO-01A/01B/01C/01D/01E/01F CONTRACT evidence or locked LIVE-01..LIVE-06 evidence. Lane 2 remains EMPTY; Lane 3 remains DISABLED.
+
+**Purpose:** LIVE-06 proved the product auto-applied `e2e-auto.html`, created the automatic checkpoint, fired the public confirm, and deducted credits 1:1, while the runner failed WAIT_FOR_AUTO_APPLY. Determine what WAIT_FOR_AUTO_APPLY is actually supposed to prove, whether it is incorrectly coupled to presentation state, and identify the smallest correct observation signal — preferring an existing, automation-visible, non-tab-dependent product signal over another UI-locator patch.
+
+---
+
+#### Step 1 (COMPLETE — 2026-08-21 — registration + root-cause / observation-architecture investigation only)
+
+Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01G-DIAGNOSIS.md`
+
+```
+STEP_1_IMPLEMENTATION_PERFORMED=NO
+PRODUCT_SOURCE_MODIFIED=NO
+AUTOMATION_IMPLEMENTATION_MODIFIED=NO
+LIVE_RUNS=0
+SSH_CONNECTIONS=0
+STAGING_ACCESS=0
+PROVIDER_CALLS=0
+CREDITS=0
+GATE_MUTATION=0
+DEPENDENCY_CHANGES=0
+GIT_MUTATION=0
+ROOT_CAUSE_PROVEN=YES
+CORRECT_SEMANTIC_SIGNAL_PROVEN=YES
+PRODUCT_SOURCE_CHANGES_REQUIRED=NO
+PHASE_ORDER_CHANGE_REQUIRED=NO
+NEW_DEPENDENCY_REQUIRED=NO
+NEW_PRODUCT_ENDPOINT_REQUIRED=NO
+```
+
+- [x] identifier verified unused as a registered task
+- [x] admitted to Lane 1; GOVERNANCE acquired then released
+- [x] exact current implementation located — `e2e/builder-golden-path/lib/live-adapters.ts:317-325`; interface `lib/runner.ts:46`; call site `lib/runner.ts:138-140`; CONTRACT stub `lib/runner.ts:292-295`
+- [x] selector / wait / timeout — `[data-testid="workspace-file-node-e2e-auto.html"]` (`lib/constants.ts:54` from `FROZEN_ARTIFACT_PATH` at `:1`), `locator.waitFor()` default state `visible`, `AUTO_APPLY_TIMEOUT_MS = 180_000` (`lib/constants.ts:27`), negative guard `workspace-chat-file-actions-awaiting-confirmation` (`lib/constants.ts:55-56`)
+- [x] semantic responsibility determined — **contract B: the file action was applied and persisted to workspace storage automatically.** The adapter return type `{ autoApplyAt, fileApplied: true }` is a persistence claim. The implementation instead asserts contract D (file-tree UI rendering). "Visible file-tree node" is **not** the correct contract
+- [x] DOM / tab dependency proven — the node exists only under `activeTabId === 'codeFiles'` (`frontend/components/workspace/workspace-shell.tsx:2470-2490`) **and** `fileSurfaceState === 'ready'` (`:4887`) **and** the refreshed tree containing the path (`:4891`, node id at `:5013`). The second `WorkspaceEditorPanel` reference at `:1727` belongs to `projectEditorSection` (`:1724`) → `projectWorkspaceContent` (`:1768`), which is never rendered (single occurrence = its own declaration). The Preview branch (`:2443-2469`) is a disjoint subtree and can never expose the selector
+- [x] why Preview is default/active — `DEFAULT_ACTIVE_TAB_ID = 'preview'` (`frontend/components/workspace/workspace-tab-registry.ts:25`) consumed by `React.useState(DEFAULT_ACTIVE_TAB_ID)` (`workspace-shell.tsx:801`); a module constant, so the default does **not** depend on workspace/session state (contrast `:803` which reads persisted state); `preview` is registry `order: 0`, `defaultVisible: true` → **intended product UX**
+- [x] tab-state mutation proven — `setActiveTabId` has exactly two occurrences repo-wide (declaration `:801`, `onTabChange={setActiveTabId}` `:2439`), so only a `workspace-tab-*` click can change it (`workspace-tab-bar.tsx:77`). BUILD does not change it (`live-adapters.ts:274-315`). Auto-apply does not change it (`page.tsx:4981-5032`, `4850-4947`). The runner never clicked a tab → **runner did NOT cause Preview selection; Preview was the initial state**
+- [x] hidden vs unmounted — **UNMOUNTED**, not hidden. `{activeTabId === 'codeFiles' ? (…) : null}` renders `null`; no CSS hiding. No `waitFor` state (including `attached`) could resolve. The underlying `workspaceFileTree` **data** was present because the coherence effect is page-level and tab-independent (`page.tsx:5243-5258`)
+- [x] timing proven — public confirm / deduction trigger with `persistedFileActionCount=1` at **20:21:18**; file on host at 20:21; 180s timeout artifact at 20:26:25 ⇒ WAIT_FOR_AUTO_APPLY was entered ≈20:23:25, i.e. the apply completed ≈**2m07s before the phase began**. Cause: `submitBuild` waits for `POST /api/ai/executions` (`live-adapters.ts:296-301`) but the product posts `POST /api/ai/execute` (`frontend/app/[locale]/app/page.tsx:4024`, `:4350`), so the predicate never matches and burns `BUILD_TIMEOUT_SAFE = 120_000` (`:420`) before the catch at `:311-313` returns `executionId: undefined` — matching LIVE-06 `executionId=null` vs DB `1a995035-6b1c-431b-acc2-8dd1e51a53da`. **Design consequence: any network observation must be armed before BUILD**
+- [x] CONTRACT vs LIVE mismatch — the real `waitForAutoApply` is exercised by **zero** tests; the fixture app page has **no tab model** and emits an **empty** `<ul data-testid="workspace-file-tree">` with no `workspace-file-node-*` child (`lib/local-fixture.ts:40-65`); no fixture models unmounted panels, `files/write`, apply ordering, or apply-before-phase-entry; phase-order assertions are array-index facts only
+- [x] missing regression scenario identified — "product persisted `e2e-auto.html`, chat shows the successful action, workspace state has the file, Code & Files is not mounted because Preview is default ⇒ current locator can never resolve"
+- [x] non-tab-dependent signals enumerated with source, timing, arming, path-carrying, persistence proof, later-phase ownership, and product-change need
+- [x] best candidate proven — **`POST /api/sessions/:sessionId/files/write` with request-body `path === 'e2e-auto.html'` and an ok (204) response**, armed capture-style in the existing ARM_LISTENERS phase. Frontend `frontend/components/workspace/workspace-file-navigation.logic.ts:177-212`; gateway `services/api-gateway/src/sessions/session.controller.ts:257-285` returns 204 only after `await containerManagerHttpClient.writeSessionFile(...)`. Tab-independent, non-mutating, path-carrying, earliest in the apply path, 204 ⇒ **no body read**
+- [x] phase duplication checked — **NO duplication.** Product order: `files/write` → chat results → `confirm-build-apply` (PUBLIC_CONFIRM) → `files/list` → preview refresh → checkpoint create (CHECKPOINT) (`page.tsx:4991-5031`; `workspace-ai-coherence.logic.ts:89-105`). The chosen signal precedes PUBLIC_CONFIRM, CHECKPOINT, DEDUCTION and BALANCE and is consumed by none of them
+- [x] UI-tab-switch hypothesis verdict — **feasible but REJECTED as the Step 2 design.** Tab selector exists and a click is bounded, creates no session/request, and does not mutate workspace contents; but it keeps a persistence assertion coupled to presentation, adds the `fileSurfaceState === 'ready'` precondition, races the post-confirm coherence refresh, and forces PREVIEW to switch back for no semantic gain
+- [x] non-UI-signal hypothesis verdict — **ACCEPTED.** An existing signal already proves AUTO_APPLY exactly; no new product endpoint required
+- [x] phase model internally consistent — **YES.** Contract B is observable strictly before F and G, so WAIT_FOR_AUTO_APPLY need not borrow later-phase evidence. Recorded nuance (not a defect): the product fires confirm before the coherence checkpoint, which the existing ARM_LISTENERS capture-style confirm listener already accommodates
+- [x] hypotheses tested — **H1 REFUTED** (the only bug is not "failure to click Code & Files"), **H2 CONFIRMED** (file-tree node is the wrong signal), **H3 CONFIRMED** (an existing backend signal precisely proves persistence), **H4 CONFIRMED** (await apply completion; file tree optional diagnostics), **H5 REFUTED** (phase contract is internally consistent)
+- [x] root cause PROVEN — WAIT_FOR_AUTO_APPLY asserts presentation (contract D) on a conditionally-mounted tab panel while its responsibility is persistence (contract B); the default tab is the constant `preview`, nothing in BUILD/apply changes it, non-active panels are unmounted, and the true apply signal had already occurred ~127s earlier. **PRODUCT_FAILURE=NO**
+- [x] RED regression designed before implementation — new fixture with a faithful tab model (default preview; file node rendered only under `codeFiles`), a `POST /api/sessions/<id>/files/write` → 204 route, chat File Action Results, and confirm; modes `auto-apply-on-preview-tab` (LIVE reproduction), `no-write`, `awaiting-confirmation`, wrong-path; RED asserts the current adapter times out although the write already succeeded and that the node is provably absent (count 0)
+- [x] Step 2 design bounded — `armFileWriteListener(page)` + typed `AutoApplyObservationError` in `lib/network.ts`; arm inside the existing `armListeners()`; `waitForAutoApply()` awaits `waitForPath(FROZEN_ARTIFACT_PATH, AUTO_APPLY_TIMEOUT_MS)`; keep the `awaitingConfirmation` guard; dispose in `cleanup()`; file-tree node retained as optional diagnostics only; CONTRACT injects a small timeout
+- [x] no implementation performed in Step 1
+- [x] LIVE-06 not rewritten, not rerun, not converted to PASS; AUTO-01/01A/01B/01C/01D/01E/01F not modified or reopened
+
+**Residual / explicitly out-of-scope (recorded, NOT fixed, NOT registered here):**
+- **`submitBuild` executionId capture mismatch** — waits for `POST /api/ai/executions`; the product posts `POST /api/ai/execute`. Even with AUTO-01G green, `verifyDeduction` would throw `Cannot verify deduction without executionId` (`live-adapters.ts:352-355`) and BUILD would still burn 120s. This is a **DEDUCTION-phase** surface, is not required to prove AUTO_APPLY, and must be handled in a separate later lifecycle before the next LIVE attempt can be expected to complete the full golden path. **Do not broaden AUTO-01G into an executionId task.**
+- Residual AUTO-01E/01F surfaces remain unfixed and must not be claimed as fixed: unrelated `page.goto()`, `submitBuild()` `selectOption` fallbacks, `trace: 'off'`.
+- `aiPanelCollapsed` is storage-backed (`workspace-shell.tsx:803`), so chat-DOM evidence stays diagnostics-only; the chosen network signal is unaffected.
+
+#### Step 2 (PENDING — requires explicit Keith authorization)
+- [ ] RED regression added and observed failing before implementation
+- [ ] `armFileWriteListener` implemented in `lib/network.ts` with typed `AutoApplyObservationError`
+- [ ] listener armed in the existing ARM_LISTENERS adapter; disposed in `cleanup()`
+- [ ] `waitForAutoApply()` observes the persisted `e2e-auto.html` write with a finite bound; `awaitingConfirmation` guard preserved
+- [ ] file-tree node retained as optional diagnostics only, never a gate
+- [ ] fail-closed typed error raised inside `runGoldenPath` so CLEANUP runs last and the gate is restored
+- [ ] all pre-existing CONTRACT tests still pass; phase order unchanged; `retries: 0`; `ProviderCallGuard(1)`; no duplicate `POST /api/sessions`
+- [ ] TypeScript PASS; no product source; no package/lockfile; no LIVE / staging / SSH / provider / credit / gate activity
+
+#### Step 3 (PENDING)
+- [ ] checkpoint `docs/PRIVATE-BETA-E2E-AUTO-01G-CHECKPOINT.md`
+- [ ] board + registry end status mirrored
+- [ ] `LIVE_STAGING_VALIDATED` and Builder readiness updated only per proven evidence (expected to remain NO / NO_GO — AUTO-01G is CONTRACT-only)
+- [ ] Lane 1 released; GOVERNANCE and HOTFILE leases released
+
+---
+
+**PRIVATE-BETA-E2E-AUTO-01G status:** ACTIVE — Step 1 COMPLETE — 2026-08-21
+**Step 1:** COMPLETE — registration + root-cause / observation-architecture investigation — Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01G-DIAGNOSIS.md`
+**Step 2:** PENDING — bounded automation-only implementation + TDD/CONTRACT validation
+**Step 3:** PENDING — consolidation / checkpoint / lock
+**Step 1 HEAD (observation only; NOT frozen):** `d4e379a5a26eecf0c1a69ed90988af269fb60859`
+**PRODUCT_FAILURE:** NO
+**PRODUCT_SOURCE_CHANGES_REQUIRED:** NO
+**PHASE_ORDER_CHANGE_REQUIRED:** NO
+**LIVE_RUNS / SSH / STAGING / PROVIDER / CREDITS / GATE_MUTATION in Step 1:** 0 / 0 / 0 / 0 / 0 / 0
+**LIVE_STAGING_VALIDATED:** NO
+**BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_AUTOMATED_E2E
+**PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+**Exact next:** Await explicit Keith authorization for Step 2. Do not implement in Step 1. Do not rerun or rewrite LIVE-06. Do not rerun LIVE-05/LIVE-04. Do not retry LIVE-01/02/03. Do not reopen or modify AUTO-01/01A/01B/01C/01D/01E/01F. Do not register another LIVE task. Do not register the `submitBuild` executionId follow-up inside AUTO-01G. Do not return to manual browser testing. Do not register PRIVATE-BETA-INVITE-01.
+
 
