@@ -260,18 +260,28 @@ export type AutoApplyFixtureMode =
   | 'wrong-path'
   | 'wrong-session'
   | 'failed-write'
-  | 'malformed-body';
+  | 'malformed-body'
+  | 'real-execute-202'
+  | 'execute-missing'
+  | 'execute-status-500'
+  | 'execute-malformed-json'
+  | 'execute-missing-id'
+  | 'execute-empty-id'
+  | 'execute-body-stalls';
 
 export const AUTO_APPLY_PROJECT_ID = 'project-auto-apply-1';
 export const AUTO_APPLY_SESSION_ID = 'session-auto-apply-1';
 export const AUTO_APPLY_OTHER_SESSION_ID = 'session-auto-apply-other';
 export const AUTO_APPLY_WRONG_PATH = 'other.html';
 export const AUTO_APPLY_EXECUTION_ID = 'exec-auto-apply-1';
+export const REAL_EXECUTE_EXECUTION_ID = 'exec-real-flow';
 
 export interface AutoApplyFixtureServer extends LocalFixtureServer {
   fileWriteCount(): number;
   writtenPaths(): string[];
   sessionPostCount(): number;
+  executePostCount(): number;
+  executionsCollectionPostCount(): number;
 }
 
 function readRequestBody(req: http.IncomingMessage): Promise<string> {
@@ -316,6 +326,8 @@ function autoApplyAppPage(mode: AutoApplyFixtureMode): string {
     const MODE = ${JSON.stringify(mode)};
     const workspaceFiles = {};
     let activeTabId = 'preview';
+    window.__sendClicks = 0;
+    const skipExecute = MODE === 'execute-missing';
 
     function showPrompt() {
       document.querySelector('[data-testid="workspace-chat-prompt-input"]').hidden = false;
@@ -364,10 +376,13 @@ function autoApplyAppPage(mode: AutoApplyFixtureMode): string {
       showPrompt();
     });
     document.querySelector('[data-testid="workspace-chat-submit"]').addEventListener('click', async () => {
+      window.__sendClicks += 1;
       const writeSessionId = MODE === 'wrong-session' ? OTHER_SESSION_ID : SESSION_ID;
       const writePath = MODE === 'wrong-path' ? WRONG_PATH : ARTIFACT_PATH;
-      await fetch('/api/ai/execute', { method: 'POST' });
-      if (MODE !== 'no-write') {
+      if (!skipExecute) {
+        await fetch('/api/ai/execute', { method: 'POST' });
+      }
+      if (MODE !== 'no-write' && MODE !== 'execute-missing') {
         const body = MODE === 'malformed-body'
           ? '{not-json'
           : JSON.stringify({ path: writePath, content: FROZEN_HTML });
@@ -385,7 +400,6 @@ function autoApplyAppPage(mode: AutoApplyFixtureMode): string {
           }
         }
       }
-      await fetch('/api/ai/executions', { method: 'POST' });
       renderPanels();
     });
     renderPanels();
@@ -402,6 +416,8 @@ export function createAutoApplyFixtureServer(
   const writtenPaths: string[] = [];
   let fileWrites = 0;
   let sessionPosts = 0;
+  let executePosts = 0;
+  let executionsCollectionPosts = 0;
 
   const server = http.createServer((req, res) => {
     const url = new URL(req.url ?? '/', 'http://127.0.0.1');
@@ -443,11 +459,39 @@ export function createAutoApplyFixtureServer(
       return;
     }
     if (req.method === 'POST' && /\/api\/ai\/execute\/?$/.test(url.pathname)) {
-      json(res, 200, { id: AUTO_APPLY_EXECUTION_ID });
+      executePosts += 1;
+      if (mode === 'execute-body-stalls') {
+        res.writeHead(202, { 'Content-Type': 'application/json' });
+        res.write('{');
+        return;
+      }
+      if (mode === 'execute-status-500') {
+        json(res, 500, { error: 'execute failed' });
+        return;
+      }
+      if (mode === 'execute-malformed-json') {
+        res.writeHead(202, { 'Content-Type': 'application/json' });
+        res.end('{not-json');
+        return;
+      }
+      if (mode === 'execute-missing-id') {
+        json(res, 202, { status: 'queued' });
+        return;
+      }
+      if (mode === 'execute-empty-id') {
+        json(res, 202, { executionId: '', status: 'queued' });
+        return;
+      }
+      if (mode === 'real-execute-202') {
+        json(res, 202, { executionId: REAL_EXECUTE_EXECUTION_ID, status: 'queued' });
+        return;
+      }
+      json(res, 202, { executionId: AUTO_APPLY_EXECUTION_ID, status: 'queued' });
       return;
     }
     if (req.method === 'POST' && /\/api\/ai\/executions\/?$/.test(url.pathname)) {
-      json(res, 201, { id: AUTO_APPLY_EXECUTION_ID });
+      executionsCollectionPosts += 1;
+      json(res, 404, { error: 'no collection POST' });
       return;
     }
     if (
@@ -493,6 +537,8 @@ export function createAutoApplyFixtureServer(
         fileWriteCount: () => fileWrites,
         writtenPaths: () => [...writtenPaths],
         sessionPostCount: () => sessionPosts,
+        executePostCount: () => executePosts,
+        executionsCollectionPostCount: () => executionsCollectionPosts,
         close: () =>
           new Promise((closeResolve, closeReject) => {
             server.close((error) => {

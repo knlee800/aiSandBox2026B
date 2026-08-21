@@ -54,21 +54,29 @@ import {
   SELECTORS,
   SESSION_CREATE_TIMEOUT_MS,
   SSH_EXECUTION_TIMEOUT_MS,
+  BUILD_EXECUTION_BODY_TIMEOUT_MS,
+  BUILD_EXECUTION_RESPONSE_TIMEOUT_MS,
 } from '../lib/constants';
 import {
   AutoApplyObservationError,
+  BuildExecutionObservationError,
   ProjectCreateObservationError,
   SessionObservationError,
   armFileWriteListener,
+  extractExecutionIdFromExecuteBody,
   extractSessionIdFromFileWriteUrl,
   inspectFileWriteRequestBody,
+  isAiExecuteUrl,
   isSessionFileWriteUrl,
+  parseBuildExecutionId,
+  readBuildExecutionBody,
 } from '../lib/network';
 import {
   AUTO_APPLY_OTHER_SESSION_ID,
   AUTO_APPLY_PROJECT_ID,
   AUTO_APPLY_SESSION_ID,
   AUTO_APPLY_WRONG_PATH,
+  REAL_EXECUTE_EXECUTION_ID,
   createAutoApplyFixtureServer,
   createSessionRaceFixtureServer,
   SESSION_RACE_PROJECT_ID,
@@ -1858,6 +1866,341 @@ test.describe('AUTO-01G WAIT_FOR_AUTO_APPLY file-write observation', () => {
       );
       expect(fixture.writtenPaths()).toContain(FROZEN_ARTIFACT_PATH);
       expect(providerGuard.usedCount).toBe(1);
+    } finally {
+      await live.context.close().catch(() => undefined);
+      await fixture.close();
+    }
+  });
+});
+
+const BUILD_OBSERVATION_BOUND_MS = 400;
+const BUILD_OBSERVATION_ASSERTION_CEILING_MS = 5_000;
+
+async function createBuildObservationLive(
+  browser: Browser,
+  fixtureUrl: string,
+  timeouts?: {
+    responseMs?: number;
+    bodyMs?: number;
+    autoApplyMs?: number;
+  },
+) {
+  const helper = fastReadyHelper({
+    env: liveEnvWithCreds,
+    execute: async () => '',
+  });
+  return createLiveAdapters({
+    browser,
+    env: { ...liveEnvWithCreds, E2E_BASE_URL: fixtureUrl },
+    staging: helper,
+    readLocalHead: async () => DYNAMIC_HEAD_B,
+    autoApplyTimeoutMs: timeouts?.autoApplyMs ?? AUTO_APPLY_BOUND_MS,
+    buildExecutionResponseTimeoutMs: timeouts?.responseMs ?? BUILD_OBSERVATION_BOUND_MS,
+    buildExecutionBodyTimeoutMs: timeouts?.bodyMs ?? BUILD_OBSERVATION_BOUND_MS,
+  });
+}
+
+function fixtureSendClicks(page: Page): Promise<number> {
+  return page.evaluate(() => (window as { __sendClicks?: number }).__sendClicks ?? 0);
+}
+
+function submitBuildSource(): string {
+  const liveAdaptersSource = fs.readFileSync(
+    path.join(__dirname, '../lib/live-adapters.ts'),
+    'utf8',
+  );
+  const start = liveAdaptersSource.indexOf('async submitBuild');
+  const end = liveAdaptersSource.indexOf('async waitForAutoApply()');
+  return liveAdaptersSource.slice(start, end);
+}
+
+async function expectSubmitBuildClosed(
+  browser: Browser,
+  mode:
+    | 'execute-missing'
+    | 'execute-status-500'
+    | 'execute-malformed-json'
+    | 'execute-missing-id'
+    | 'execute-empty-id'
+    | 'execute-body-stalls',
+  message: RegExp,
+): Promise<void> {
+  const fixture = await createAutoApplyFixtureServer(mode);
+  const live = await createBuildObservationLive(browser, fixture.url);
+  const providerGuard = new ProviderCallGuard(1);
+  const started = Date.now();
+  try {
+    await live.adapters.createSession();
+    const rejection = await live.adapters
+      .submitBuild({
+        sessionCreatedAt: Date.now(),
+        providerGuard,
+      })
+      .then(
+        () => null,
+        (error: unknown) => error,
+      );
+    expect(rejection).toBeInstanceOf(BuildExecutionObservationError);
+    expect((rejection as Error).message).toMatch(message);
+    expect(await fixtureSendClicks(live.page)).toBe(1);
+    expect(providerGuard.usedCount).toBe(1);
+    expect(providerGuard.remaining).toBe(0);
+    expect(Date.now() - started).toBeLessThan(BUILD_OBSERVATION_ASSERTION_CEILING_MS);
+    expect(Date.now() - started).toBeLessThan(OUTER_LIVE_TIMEOUT_MS);
+  } finally {
+    await live.context.close();
+    await fixture.close();
+  }
+}
+
+test.describe('AUTO-01H BUILD executionId observation', () => {
+  test.describe.configure({ mode: 'serial' });
+
+  test('matches POST /api/ai/execute only and keeps observation bounds finite', () => {
+    expect(isAiExecuteUrl('https://staging.ainow.biz/api/ai/execute')).toBe(true);
+    expect(isAiExecuteUrl('https://staging.ainow.biz/api/ai/execute/')).toBe(true);
+    expect(isAiExecuteUrl('https://staging.ainow.biz/api/ai/executions')).toBe(false);
+    expect(isAiExecuteUrl('https://staging.ainow.biz/api/ai/executions/')).toBe(false);
+    expect(
+      isAiExecuteUrl(
+        'https://staging.ainow.biz/api/ai/executions/1a995035-6b1c-431b-acc2-8dd1e51a53da/stream',
+      ),
+    ).toBe(false);
+    expect(
+      isAiExecuteUrl(
+        'https://staging.ainow.biz/api/ai/executions/1a995035-6b1c-431b-acc2-8dd1e51a53da/confirm-build-apply',
+      ),
+    ).toBe(false);
+    expect(extractExecutionIdFromExecuteBody({ executionId: REAL_EXECUTE_EXECUTION_ID, status: 'queued' })).toBe(
+      REAL_EXECUTE_EXECUTION_ID,
+    );
+    expect(extractExecutionIdFromExecuteBody({ id: REAL_EXECUTE_EXECUTION_ID })).toBeNull();
+    expect(parseBuildExecutionId({ executionId: REAL_EXECUTE_EXECUTION_ID, status: 'queued' })).toBe(
+      REAL_EXECUTE_EXECUTION_ID,
+    );
+    expect(() => parseBuildExecutionId({ status: 'queued' })).toThrow(BuildExecutionObservationError);
+    expect(() => parseBuildExecutionId({ executionId: '' })).toThrow(/empty/);
+    expect(() => parseBuildExecutionId('{not-json')).toThrow(/malformed/);
+
+    expect(BUILD_EXECUTION_RESPONSE_TIMEOUT_MS).toBe(30_000);
+    expect(BUILD_EXECUTION_BODY_TIMEOUT_MS).toBe(30_000);
+    expect(BUILD_EXECUTION_RESPONSE_TIMEOUT_MS).toBeLessThan(120_000);
+    expect(BUILD_EXECUTION_BODY_TIMEOUT_MS).toBeLessThan(OUTER_LIVE_TIMEOUT_MS);
+
+    const submitFn = submitBuildSource();
+    const liveAdaptersSource = fs.readFileSync(
+      path.join(__dirname, '../lib/live-adapters.ts'),
+      'utf8',
+    );
+    expect(submitFn).toContain('isAiExecuteUrl');
+    expect(submitFn).toContain('readBuildExecutionBody');
+    expect(submitFn).toContain('parseBuildExecutionId');
+    expect(submitFn).toContain('buildExecutionResponseTimeoutMs');
+    expect(submitFn).toContain('buildExecutionBodyTimeoutMs');
+    expect(submitFn).not.toMatch(/\/api\\\/ai\\\/executions\\\/\?\$/);
+    expect(submitFn).not.toContain('BUILD_TIMEOUT_SAFE');
+    expect(submitFn).not.toContain('120_000');
+    expect(submitFn).not.toContain('executionId = undefined');
+    expect(submitFn).not.toMatch(/catch \{\s*executionId = undefined;/);
+    expect(submitFn).not.toContain('EventSource');
+    expect(submitFn).not.toMatch(/\/stream/);
+    expect(submitFn).not.toContain('queryDeduction');
+    expect(submitFn).not.toContain('usage_records');
+    expect(submitFn).not.toContain('await executionResponse.json()');
+    expect((submitFn.match(/authorizeCall\(\)/g) ?? []).length).toBe(1);
+    expect((submitFn.match(/chatSubmit/g) ?? []).length).toBe(1);
+    expect(liveAdaptersSource).not.toContain('const BUILD_TIMEOUT_SAFE');
+  });
+
+  test('observes POST /api/ai/execute 202 JSON executionId and returns that exact ID', async ({
+    browser,
+  }) => {
+    const fixture = await createAutoApplyFixtureServer('real-execute-202');
+    const live = await createBuildObservationLive(browser, fixture.url);
+    const providerGuard = new ProviderCallGuard(1);
+    const started = Date.now();
+    try {
+      await live.adapters.createSession();
+      const build = await live.adapters.submitBuild({
+        sessionCreatedAt: Date.now(),
+        providerGuard,
+      });
+      expect(build.executionId).toBe(REAL_EXECUTE_EXECUTION_ID);
+      expect(fixture.executePostCount()).toBe(1);
+      expect(fixture.executionsCollectionPostCount()).toBe(0);
+      expect(await fixtureSendClicks(live.page)).toBe(1);
+      expect(providerGuard.usedCount).toBe(1);
+      expect(providerGuard.remaining).toBe(0);
+      expect(Date.now() - started).toBeLessThan(BUILD_OBSERVATION_ASSERTION_CEILING_MS);
+      expect(Date.now() - started).toBeLessThan(120_000);
+    } finally {
+      await live.context.close();
+      await fixture.close();
+    }
+  });
+
+  test('missing execute response fails closed with a bounded BuildExecutionObservationError', async ({
+    browser,
+  }) => {
+    await expectSubmitBuildClosed(browser, 'execute-missing', /Did not observe POST \/api\/ai\/execute/);
+  });
+
+  test('a non-202 execute status fails closed', async ({ browser }) => {
+    await expectSubmitBuildClosed(browser, 'execute-status-500', /HTTP 500/);
+  });
+
+  test('malformed execute JSON fails closed', async ({ browser }) => {
+    await expectSubmitBuildClosed(
+      browser,
+      'execute-malformed-json',
+      /Could not read the POST \/api\/ai\/execute response body/,
+    );
+  });
+
+  test('missing executionId fails closed', async ({ browser }) => {
+    await expectSubmitBuildClosed(
+      browser,
+      'execute-missing-id',
+      /did not include executionId/,
+    );
+  });
+
+  test('empty executionId fails closed', async ({ browser }) => {
+    await expectSubmitBuildClosed(browser, 'execute-empty-id', /executionId was empty/);
+  });
+
+  test('a stalled execute body read fails with a bounded typed error rather than Playwright timeout', async () => {
+    const started = Date.now();
+    const rejection = await readBuildExecutionBody(
+      { json: () => new Promise(() => undefined) },
+      BUILD_OBSERVATION_BOUND_MS,
+    ).then(
+      () => null,
+      (error: unknown) => error,
+    );
+    const elapsed = Date.now() - started;
+    expect(rejection).toBeInstanceOf(BuildExecutionObservationError);
+    expect((rejection as Error).message).toMatch(/response body/);
+    expect(elapsed).toBeGreaterThanOrEqual(BUILD_OBSERVATION_BOUND_MS - 100);
+    expect(elapsed).toBeLessThan(BUILD_OBSERVATION_ASSERTION_CEILING_MS);
+    expect(elapsed).toBeLessThan(OUTER_LIVE_TIMEOUT_MS);
+  });
+
+  test('a stalled execute response body fails closed through submitBuild', async ({ browser }) => {
+    await expectSubmitBuildClosed(
+      browser,
+      'execute-body-stalls',
+      /Timed out after \d+ms reading the POST \/api\/ai\/execute response body/,
+    );
+  });
+
+  test('execute 202 executionId survives the runner into DEDUCTION verification', async ({
+    browser,
+  }) => {
+    const fixture = await createAutoApplyFixtureServer('real-execute-202');
+    const live = await createBuildObservationLive(browser, fixture.url);
+    const recording = createRecordingAdapters();
+    let deductedExecutionId: string | null | undefined;
+    let sendClicks = 0;
+    recording.adapters.armListeners = async () => {
+      recording.calls.push('ARM_LISTENERS');
+      await live.adapters.armListeners();
+    };
+    recording.adapters.createSession = async () => {
+      recording.calls.push('CREATE_SESSION');
+      return live.adapters.createSession();
+    };
+    recording.adapters.submitBuild = async (input) => {
+      recording.calls.push('BUILD');
+      const build = await live.adapters.submitBuild(input);
+      sendClicks = await fixtureSendClicks(live.page);
+      return build;
+    };
+    recording.adapters.waitForAutoApply = async () => {
+      recording.calls.push('WAIT_FOR_AUTO_APPLY');
+      return live.adapters.waitForAutoApply();
+    };
+    recording.adapters.verifyPublicConfirm = async () => {
+      recording.calls.push('PUBLIC_CONFIRM');
+      return {
+        url: 'https://staging.ainow.biz/api/ai/executions/exec-real-flow/confirm-build-apply',
+        status: 200,
+        body: { triggered: true, reason: 'completed' },
+        executionId: null,
+      };
+    };
+    recording.adapters.verifyDeduction = async (executionId) => {
+      recording.calls.push('DEDUCTION');
+      deductedExecutionId = executionId;
+      return { deductionCount: 1, tokensUsed: 1178, creditsDeducted: 1178 };
+    };
+    recording.adapters.cleanup = async (input) => {
+      recording.calls.push('CLEANUP');
+      return live.adapters.cleanup(input);
+    };
+    const providerGuard = new ProviderCallGuard(1);
+    const started = Date.now();
+    try {
+      const result = await runGoldenPath({
+        mode: 'contract',
+        adapters: recording.adapters,
+        gateTracker: recording.gateTracker,
+        providerGuard,
+      });
+      expect(result.summary.verdict).toBe('PASS');
+      expect(result.summary.executionId).toBe(REAL_EXECUTE_EXECUTION_ID);
+      expect(deductedExecutionId).toBe(REAL_EXECUTE_EXECUTION_ID);
+      expect(fixture.executePostCount()).toBe(1);
+      expect(fixture.executionsCollectionPostCount()).toBe(0);
+      expect(sendClicks).toBe(1);
+      expect(providerGuard.usedCount).toBe(1);
+      expect(result.phases.indexOf('DEDUCTION')).toBeGreaterThan(result.phases.indexOf('BUILD'));
+      expect(Date.now() - started).toBeLessThan(120_000);
+    } finally {
+      await live.context.close().catch(() => undefined);
+      await fixture.close();
+    }
+  });
+
+  test('observation failure stays inside runGoldenPath so CLEANUP remains reachable', async ({
+    browser,
+  }) => {
+    const fixture = await createAutoApplyFixtureServer('execute-body-stalls');
+    const live = await createBuildObservationLive(browser, fixture.url);
+    const recording = createRecordingAdapters({ enableGate: true });
+    recording.adapters.createSession = async () => {
+      recording.calls.push('CREATE_SESSION');
+      return live.adapters.createSession();
+    };
+    recording.adapters.submitBuild = async (input) => {
+      recording.calls.push('BUILD');
+      return live.adapters.submitBuild(input);
+    };
+    const providerGuard = new ProviderCallGuard(1);
+    const started = Date.now();
+    try {
+      const result = await runGoldenPath({
+        mode: 'contract',
+        adapters: recording.adapters,
+        gateTracker: recording.gateTracker,
+        providerGuard,
+      });
+      expect(result.summary.verdict).toBe('FAIL');
+      if (result.summary.verdict === 'FAIL') {
+        expect(result.summary.phase).toBe('BUILD');
+        expect(result.summary.error).toMatch(/response body/);
+        expect(result.summary.executionId).toBeNull();
+        expect(result.summary.cleanup).toBe('session-stopped');
+      }
+      expect(result.phases).toContain('CLEANUP');
+      expect(result.phases.at(-1)).toBe('CLEANUP');
+      expect(result.phases).not.toContain('WAIT_FOR_AUTO_APPLY');
+      expect(recording.calls.at(-1)).toBe('CLEANUP');
+      expect(providerGuard.usedCount).toBe(1);
+      expect(await fixtureSendClicks(live.page)).toBe(1);
+      expect(fixture.executePostCount()).toBe(1);
+      expect(Date.now() - started).toBeLessThan(BUILD_OBSERVATION_ASSERTION_CEILING_MS);
+      expect(Date.now() - started).toBeLessThan(OUTER_LIVE_TIMEOUT_MS);
     } finally {
       await live.context.close().catch(() => undefined);
       await fixture.close();

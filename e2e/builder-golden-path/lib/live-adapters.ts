@@ -2,6 +2,8 @@ import type { Browser, BrowserContext, Page, Response } from '@playwright/test';
 import {
   AUTO_APPLY_TIMEOUT_MS,
   BUILDER_PROMPT,
+  BUILD_EXECUTION_BODY_TIMEOUT_MS,
+  BUILD_EXECUTION_RESPONSE_TIMEOUT_MS,
   DEFAULT_BASE_URL,
   FROZEN_ARTIFACT_PATH,
   LOCALE,
@@ -26,9 +28,14 @@ import {
   armFileWriteListener,
   armSessionCreateListener,
   AutoApplyObservationError,
+  BuildExecutionObservationError,
   ProjectCreateObservationError,
   SessionObservationError,
+  buildExecutionObservationTimeout,
+  isAiExecuteUrl,
+  parseBuildExecutionId,
   projectCreateObservationTimeout,
+  readBuildExecutionBody,
   readProjectCreateBody,
   validateLiveConfirmResponse,
   type ConfirmListener,
@@ -66,6 +73,8 @@ export interface LiveAdapterContext {
   execute?: (argv: string[]) => Promise<string>;
   readLocalHead?: () => Promise<string>;
   autoApplyTimeoutMs?: number;
+  buildExecutionResponseTimeoutMs?: number;
+  buildExecutionBodyTimeoutMs?: number;
 }
 
 export function createLiveStagingHelper(options: {
@@ -208,6 +217,10 @@ export async function createLiveAdapters(
   const credentials = assertLiveCredentials(env);
   const baseURL = String(env.E2E_BASE_URL ?? DEFAULT_BASE_URL).replace(/\/$/, '');
   const autoApplyTimeoutMs = input.autoApplyTimeoutMs ?? AUTO_APPLY_TIMEOUT_MS;
+  const buildExecutionResponseTimeoutMs =
+    input.buildExecutionResponseTimeoutMs ?? BUILD_EXECUTION_RESPONSE_TIMEOUT_MS;
+  const buildExecutionBodyTimeoutMs =
+    input.buildExecutionBodyTimeoutMs ?? BUILD_EXECUTION_BODY_TIMEOUT_MS;
 
   const context = await createFreshBrowserContext(input.browser);
   const page = await context.newPage();
@@ -306,21 +319,27 @@ export async function createLiveAdapters(
       const executionResponsePromise = page.waitForResponse(
         (response) =>
           response.request().method() === 'POST' &&
-          /\/api\/ai\/executions\/?$/.test(new URL(response.url()).pathname),
-        { timeout: BUILD_TIMEOUT_SAFE },
+          isAiExecuteUrl(response.url()),
+        { timeout: buildExecutionResponseTimeoutMs },
       );
       await page.locator(SELECTORS.chatSubmit).click();
       const buildSubmittedAt = Date.now();
-      let executionId: string | undefined;
+      let executionResponse: Response;
       try {
-        const executionResponse = await executionResponsePromise;
-        const payload = (await executionResponse.json().catch(() => null)) as
-          | { id?: string; executionId?: string }
-          | null;
-        executionId = payload?.id ?? payload?.executionId;
-      } catch {
-        executionId = undefined;
+        executionResponse = await executionResponsePromise;
+      } catch (error) {
+        throw buildExecutionObservationTimeout(buildExecutionResponseTimeoutMs, error);
       }
+      if (executionResponse.status() !== 202) {
+        throw new BuildExecutionObservationError(
+          `POST /api/ai/execute HTTP ${executionResponse.status()}, expected 202.`,
+        );
+      }
+      const payload = await readBuildExecutionBody(
+        executionResponse,
+        buildExecutionBodyTimeoutMs,
+      );
+      const executionId = parseBuildExecutionId(payload);
       return { executionId, buildSubmittedAt };
     },
 
@@ -442,5 +461,3 @@ export async function createLiveAdapters(
 
   return { adapters, context, page, gateTracker, staging };
 }
-
-const BUILD_TIMEOUT_SAFE = 120_000;

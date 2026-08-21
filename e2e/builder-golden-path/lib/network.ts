@@ -357,6 +357,96 @@ export class AutoApplyObservationError extends Error {
   }
 }
 
+export const AI_EXECUTE_PATH_PATTERN = /\/api\/ai\/execute\/?$/;
+
+export class BuildExecutionObservationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'BuildExecutionObservationError';
+  }
+}
+
+export function isAiExecuteUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url, 'http://localhost');
+    return AI_EXECUTE_PATH_PATTERN.test(parsed.pathname);
+  } catch {
+    return AI_EXECUTE_PATH_PATTERN.test(url);
+  }
+}
+
+export function extractExecutionIdFromExecuteBody(raw: unknown): string | null {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    return null;
+  }
+  const value = (raw as { executionId?: unknown }).executionId;
+  return typeof value === 'string' && value.trim().length > 0 ? value : null;
+}
+
+export function parseBuildExecutionId(raw: unknown): string {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    throw new BuildExecutionObservationError(
+      'POST /api/ai/execute 202 JSON was malformed.',
+    );
+  }
+  const value = (raw as { executionId?: unknown }).executionId;
+  if (value === undefined) {
+    throw new BuildExecutionObservationError(
+      'POST /api/ai/execute 202 JSON did not include executionId.',
+    );
+  }
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    throw new BuildExecutionObservationError(
+      'POST /api/ai/execute 202 JSON executionId was empty.',
+    );
+  }
+  return value;
+}
+
+/**
+ * Playwright issues response-body reads with no timeout at all, so neither the
+ * config `actionTimeout` nor a per-call option can bound `Response.json()`.
+ * The bound therefore has to be owned by the runner.
+ */
+export async function readBuildExecutionBody(
+  response: Pick<Response, 'json'>,
+  timeoutMs: number,
+): Promise<unknown> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const read = response.json().then(
+    (value: unknown) => ({ outcome: 'read' as const, value }),
+    (error: unknown) => ({ outcome: 'failed' as const, error }),
+  );
+  const expiry = new Promise<{ outcome: 'timeout' }>((resolve) => {
+    timer = setTimeout(() => resolve({ outcome: 'timeout' }), timeoutMs);
+  });
+  try {
+    const result = await Promise.race([read, expiry]);
+    if (result.outcome === 'timeout') {
+      throw new BuildExecutionObservationError(
+        `Timed out after ${timeoutMs}ms reading the POST /api/ai/execute response body.`,
+      );
+    }
+    if (result.outcome === 'failed') {
+      throw new BuildExecutionObservationError(
+        `Could not read the POST /api/ai/execute response body: ${describeError(result.error)}`,
+      );
+    }
+    return result.value;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+export function buildExecutionObservationTimeout(
+  timeoutMs: number,
+  error: unknown,
+): BuildExecutionObservationError {
+  return new BuildExecutionObservationError(
+    `Did not observe POST /api/ai/execute within ${timeoutMs}ms: ${describeError(error)}`,
+  );
+}
+
 export function isSessionFileWriteUrl(url: string): boolean {
   try {
     const parsed = new URL(url, 'http://localhost');
