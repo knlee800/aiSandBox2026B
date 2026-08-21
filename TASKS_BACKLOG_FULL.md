@@ -67411,15 +67411,16 @@ NEW_PRODUCT_ENDPOINT_REQUIRED=NO
 **Workstream:** RELIABILITY
 **Classification:** AUTOMATION_TOOLING_INVESTIGATION
 **Lifecycle:** 3-step bounded task
-**Status:** ACTIVE — Step 1 COMPLETE — 2026-08-21
-**Assigned lane:** Lane 1
+**Status:** COMPLETE AND LOCKED — PASS — 2026-08-21
+**Assigned lane:** none (Lane 1 released EMPTY at lock)
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
 **Registered:** 2026-08-21
-**Approved:** Keith — 2026-08-21 (Step 1 registration + admission + root-cause investigation only — does NOT authorize Step 2 implementation)
+**Approved:** Keith — 2026-08-21 (Step 1 registration + admission + root-cause investigation; Step 2 bounded automation-only implementation; Step 3 consolidation / checkpoint / lock)
 **Evidence class:** LOCAL-TESTS
-**Hot-file leases:** NONE claimed in Step 1 (Step 2 plans `e2e/builder-golden-path/lib/live-adapters.ts`, `lib/local-fixture.ts`, `tests/live-adapters.spec.ts`; optionally `lib/network.ts` / `lib/constants.ts`)
+**Hot-file leases:** RELEASED at lock (`e2e/builder-golden-path/lib/constants.ts`, `lib/live-adapters.ts`, `lib/local-fixture.ts`, `lib/network.ts`, `tests/live-adapters.spec.ts`)
 **Diagnosis document:** `docs/PRIVATE-BETA-E2E-AUTO-01H-DIAGNOSIS.md`
+**Checkpoint:** `docs/PRIVATE-BETA-E2E-AUTO-01H-CHECKPOINT.md`
 
 **Identifier search:** PRIVATE-BETA-E2E-AUTO-01H was **unused as a registered task** before this registration. Repo-wide search found only historical prose: `TASKS.md` next-gate recommendation, `docs/PRIVATE-BETA-E2E-AUTO-01G-CHECKPOINT.md:309`, and this file's AUTO-01G locked "Exact next" line. Zero `### PRIVATE-BETA-E2E-AUTO-01H` registry entries existed. Historical prose recommending AUTO-01H does not count as prior registration. Rejected: `PRIVATE-BETA-E2E-AUTO-02`, `PRIVATE-BETA-E2E-LIVE-07`, reopening any locked AUTO-01* or LIVE-0* task.
 
@@ -67438,7 +67439,7 @@ NEW_PRODUCT_ENDPOINT_REQUIRED=NO
 - Step 3: checkpoint + board/registry end status only
 - No product source. No `package.json` / lockfile. No PRD.md / ARCHITECTURE.md / CLAUDE.md / AGENTS.md. No locked AUTO-01* / LIVE-0* body edits.
 
-**Mutexes / resources:** GOVERNANCE acquired for this Step 1 board/registry/diagnosis write, then released. STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER remain UNOWNED. All HOTFILE leases remain UNOWNED in Step 1.
+**Mutexes / resources:** GOVERNANCE acquired for this Step 3 checkpoint/board/registry write, then released. STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER remain UNOWNED. All AUTO-01H HOTFILE leases released at lock.
 
 **Shared contracts (frozen; must not be modified by this task):**
 - Frozen 14-phase golden-path order (`e2e/builder-golden-path/lib/phases.ts`)
@@ -67502,31 +67503,49 @@ CORRECT_EXECUTION_ID_ALONE_UNBLOCKS_EXISTING_DEDUCTION=YES
 - Product billing behavior
 - DEDUCTION retry/polling if status is not yet completed — frozen later phases already serialize this
 
-#### Step 2 (PENDING — NOT AUTHORIZED — bounded automation-only implementation + TDD/CONTRACT validation)
-- [ ] RED regression added and observed failing before matcher fix
-- [ ] `submitBuild` observes `POST /api/ai/execute` 202 JSON `executionId`
-- [ ] 120s dead wait for collection POST removed as part of the correct observation
-- [ ] fail-closed typed error; one Build submission; `ProviderCallGuard(1)`
-- [ ] no SSE body consumption; no product source; no phase-order change
+#### Step 2 (COMPLETE — PASS — 2026-08-21 — bounded automation-only implementation + TDD/CONTRACT validation)
+- [x] RED regression added and observed failing before matcher fix — Expected `exec-real-flow` / Received `undefined` (~929ms with injected 400ms bound) against faithful `POST /api/ai/execute` 202 fixture with collection POST count = 0
+- [x] `submitBuild` observes `POST /api/ai/execute` 202 JSON `executionId` (no `id` fallback)
+- [x] 120s dead wait for collection POST removed as part of the correct observation; `BUILD_TIMEOUT_SAFE` removed because unused
+- [x] fail-closed typed `BuildExecutionObservationError`; one Build submission; `ProviderCallGuard(1)`; Send once; execute POST once; retries 0
+- [x] finite `BUILD_EXECUTION_RESPONSE_TIMEOUT_MS=30000` and `BUILD_EXECUTION_BODY_TIMEOUT_MS=30000`; body read separately bounded
+- [x] no SSE body consumption; no product source; no phase-order change; no DEDUCTION implementation change
+- [x] faithful fixture emits ONE execute 202 `{ executionId: "exec-real-flow", status: "queued" }` and ZERO collection `POST /api/ai/executions`
+- [x] 11 new CONTRACT tests; pre-existing 88 remain passing
 
-#### Step 3 (PENDING — consolidation / checkpoint / lock)
+**Changed files:** `e2e/builder-golden-path/lib/constants.ts`, `e2e/builder-golden-path/lib/live-adapters.ts`, `e2e/builder-golden-path/lib/local-fixture.ts`, `e2e/builder-golden-path/lib/network.ts`, `e2e/builder-golden-path/tests/live-adapters.spec.ts`
+
+**Step 2 HEAD:** `25c25bd79c205c52838b3d151c73a0bc4a4de13f`
+
+#### Step 3 (COMPLETE — PASS — 2026-08-21 — consolidation / checkpoint / lock)
+- [x] checkpoint `docs/PRIVATE-BETA-E2E-AUTO-01H-CHECKPOINT.md` created
+- [x] board + registry end status mirrored
+- [x] `LIVE_STAGING_VALIDATED` and Builder readiness remain NO / NO_GO — AUTO-01H is CONTRACT-only
+- [x] Lane 1 released EMPTY; GOVERNANCE and all AUTO-01H HOTFILE leases released
+- [x] fresh TypeScript PASS, CONTRACT 99 passed / 0 failed, `git diff --check` PASS verified in Step 3 (not carried from Step 2 claims)
+- [x] LIVE-07 NOT registered here
+- [x] PRIVATE-BETA-INVITE-01 remains prohibited
 
 ---
 
-**PRIVATE-BETA-E2E-AUTO-01H status:** ACTIVE — Step 1 COMPLETE — 2026-08-21
+**PRIVATE-BETA-E2E-AUTO-01H status:** COMPLETE AND LOCKED — PASS — 2026-08-21
 **Step 1:** COMPLETE — registration + root-cause investigation — Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01H-DIAGNOSIS.md`
-**Step 2:** PENDING — NOT AUTHORIZED
-**Step 3:** PENDING
+**Step 2:** COMPLETE — PASS — bounded automation-only implementation + TDD/CONTRACT validation — HEAD `25c25bd79c205c52838b3d151c73a0bc4a4de13f` — 11 new tests; CONTRACT 99 total
+**Step 3:** COMPLETE — PASS — consolidation / checkpoint / lock — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01H-CHECKPOINT.md`
 **Step 1 HEAD (observation only):** `dc237cd4349bf7ad5c8cf9d853cccaf56799ab12`
+**Step 2 HEAD:** `25c25bd79c205c52838b3d151c73a0bc4a4de13f`
 **PRODUCT_FAILURE:** NO
 **PRODUCT_SOURCE_CHANGES_REQUIRED:** NO
 **PRODUCT_SOURCE_MODIFIED:** NO
 **PHASE_ORDER_CHANGE_REQUIRED:** NO
 **CORRECT_BUILD_SIGNAL:** `POST /api/ai/execute` → 202 JSON `{ executionId, status: 'queued' }`, armed immediately before Send click
-**LIVE_RUNS / SSH / STAGING / PROVIDER / CREDITS / GATE_MUTATION in Step 1:** 0 / 0 / 0 / 0 / 0 / 0
+**EMPTY_CATCH_REMOVED:** YES
+**BUILD_TIMEOUT_SAFE_REMOVED:** YES
+**DEDUCTION_IMPLEMENTATION_MODIFIED:** NO
+**LIVE_RUNS / SSH / STAGING / PROVIDER / CREDITS / GATE_MUTATION in Steps 1+2+3:** 0 / 0 / 0 / 0 / 0 / 0
 **LIVE_STAGING_VALIDATED:** NO
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_AUTOMATED_E2E
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
-**Exact next:** AUTO-01H Step 2 after explicit authorization. Do not implement in Step 1. Do not rerun or rewrite LIVE-06. Do not reopen AUTO-01/01A/01B/01C/01D/01E/01F/01G. Do not register PRIVATE-BETA-INVITE-01.
+**Exact next (NOT REGISTERED HERE):** fresh provider-bearing automated LIVE Builder E2E — likely `PRIVATE-BETA-E2E-LIVE-07` (verify unused at registration; prose-only AUTO-01G/AUTO-01H identifier-search rejections do not count as registration). AUTO-01G fixed AUTO_APPLY observation. AUTO-01H fixed BUILD executionId observation. Residual `page.goto()` / `selectOption` / `trace: 'off'` are not safety-critical. Do not rerun or rewrite LIVE-06. Do not reopen AUTO-01/01A/01B/01C/01D/01E/01F/01G/01H. Do not register PRIVATE-BETA-INVITE-01.
 
 
