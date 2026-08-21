@@ -12,14 +12,7 @@ This board is the only current scheduler.
 Do not determine current work from content below the LEGACY / FROZEN boundary.
 
 ## Lane 1
-PRIVATE-BETA-E2E-AUTO-01B — ACTIVE — Step 1 COMPLETE — READY FOR STEP 2 CONSOLIDATION
-Workstream: RELIABILITY
-Lifecycle: 2-step TINY
-Evidence class: LOCAL-TESTS
-Nature: AUTOMATION_TOOLING_FIX — inspectParity() clean-output parser only
-Validation: `npx tsc --noEmit --project e2e/builder-golden-path/tsconfig.json` PASS; `npm run e2e:builder:contract` **38 passed** (prior 29 retained + 9 AUTO-01B regressions)
-Primary write scope: `e2e/builder-golden-path/**`
-Does not modify AUTO-01 / AUTO-01A / LIVE-02 bodies. No production source. No LIVE / staging / provider / credit / Git mutation.
+EMPTY
 
 ## Lane 2
 EMPTY
@@ -28,14 +21,15 @@ EMPTY
 DISABLED
 
 ## Governance owner / state
-PRIVATE-BETA-E2E-AUTO-01B / ACTIVE — Step 1 COMPLETE — GOVERNANCE held pending Step 2 consolidation
+UNOWNED — PRIVATE-BETA-E2E-AUTO-01B COMPLETE AND LOCKED — PASS — 2026-08-21
 
 STAGING / PROVIDER-LIVE / CREDIT / ENV remain UNOWNED.
 
 ## Active mutex / resource ownership
-- GOVERNANCE: OWNED by PRIVATE-BETA-E2E-AUTO-01B (Lane 1)
-- HOTFILE:e2e/builder-golden-path/lib/staging.ts: OWNED by PRIVATE-BETA-E2E-AUTO-01B (Lane 1)
-- HOTFILE:e2e/builder-golden-path/tests/live-adapters.spec.ts: OWNED by PRIVATE-BETA-E2E-AUTO-01B (Lane 1)
+- GOVERNANCE: UNOWNED
+- HOTFILE:e2e/builder-golden-path/lib/staging.ts: UNOWNED
+- HOTFILE:e2e/builder-golden-path/tests/live-adapters.spec.ts: UNOWNED
+- All HOTFILE leases: UNOWNED
 - PACKAGE: UNOWNED
 - STAGING: UNOWNED
 - PROVIDER-LIVE: UNOWNED
@@ -51,7 +45,7 @@ RUNTIME_EXECUTION_AUTHORIZED=NO
 PROVIDER_CALL_AUTHORIZED=NO
 CREDIT_MUTATION_AUTHORIZED=NO
 STAGING_MUTATION_AUTHORIZED=NO
-AUTOMATION_ADAPTER_BLOCKERS_RESOLVED=YES for AUTO-01A (locked) — AUTO-01B admitted to fix remaining inspectParity clean-porcelain parse mismatch found by LIVE-02; do not edit AUTO-01/AUTO-01A
+AUTOMATION_ADAPTER_BLOCKERS_RESOLVED=YES for AUTO-01A (locked) and AUTO-01B (locked) — LIVE-02 inspectParity clean-porcelain parse mismatch closed; do not edit AUTO-01/AUTO-01A; do not retry LIVE-02
 PROVIDER_CALL_AUTHORIZED_CURRENT=0
 PROVIDER_CALL_USED=0
 ```
@@ -67,6 +61,7 @@ PROVIDER_CALL_USED=0
 - PRIVATE-BETA-E2E-05 execution evidence and final checkpoint (historical FAIL/BLOCKED — core post-03J flow proven; preview not completed)
 - PRIVATE-BETA-E2E-AUTO-01 execution evidence and final checkpoint (COMPLETE AND LOCKED — PASS — 2026-08-20 — real Playwright golden-path runner ready; AUTO_APPLY; preview immediately after apply; CONTRACT/DRY default; LIVE fail-closed; LIVE staging proof still required)
 - PRIVATE-BETA-E2E-AUTO-01A execution evidence and final checkpoint (COMPLETE AND LOCKED — PASS — 2026-08-20 — AUTOMATION_TOOLING_FIX; dynamic execution-edge parity; createSshExecutor() wired; no historical E2E-05 SHA freeze; CONTRACT 29 passed; no product source change)
+- PRIVATE-BETA-E2E-AUTO-01B execution evidence and final checkpoint (COMPLETE AND LOCKED — PASS — 2026-08-21 — AUTOMATION_TOOLING_FIX; labelled-sentinel inspectParity parser; LIVE-02 two-line clean-form compatibility; CONTRACT 38 passed; no product source change; LIVE staging proof still required)
 - PRIVATE-BETA-E2E-LIVE-01 Step 1 live-run contract (2026-08-20): current local HEAD vs current staging HEAD exact-parity at execution edge; one xAI/grok-4.5 call; zero retries; AUTO-01 phase order; no old E2E-05 SHA freeze; no auto-deploy
 - PRIVATE-BETA-E2E-LIVE-01 execution evidence and final checkpoint (COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-21 — ENVIRONMENT/PARITY_FAILURE — automated run never started — local `33daa1d1eb32e0165e6ae7d351b1edaad799f3b8` != staging `c3e39279abe3c0d6c348daa312107c8f6fc592b7` — zero provider calls / zero credits — runner NOT invoked)
 - PRIVATE-BETA-E2E-LIVE-02 Step 1 deployment+live contract (2026-08-21): after explicit Keith Step 2 authorization only — capture AUTHORIZED_LOCAL_HEAD=`git rev-parse HEAD` on a clean local tree; deploy THAT SHA to `aisandbox-staging` `/opt/aisandbox` using E2E-04 Phase E / 03F `git fetch origin main` + `git reset --hard <AUTHORIZED_LOCAL_HEAD>` + conditional rebuild/restart (do not `git pull` blindly; do not target historical E2E-05 SHA `c3e39279abe3c0d6c348daa312107c8f6fc592b7`); require STAGING_HEAD == AUTHORIZED_LOCAL_HEAD afterward; preserve retained `stash@{0}` `0372cc1f47f82e1db060ed2dd756a938fe324803`; GLOBAL_EXECUTION_ENABLED=false and BILLING_CHARGES_ENABLED=false before runner authorization phase; then `npm run e2e:builder:live`; one xAI/grok-4.5 call; zero retries; AUTO-01 phase order; transient E2E credentials; no product/runner mutation; no Git mutation by the worker
@@ -78,7 +73,7 @@ PROVIDER_CALL_USED=0
 - current non-risky one-file Builder AUTO_APPLY semantics (E2E-05 proven)
 
 ## Current blockers / gates
-- PRIVATE-BETA-E2E-AUTO-01B: ACTIVE — Lane 1 — Step 1 COMPLETE — READY FOR STEP 2 CONSOLIDATION — AUTOMATION_TOOLING_FIX for `inspectParity()` clean-output parsing — CONTRACT 38 passed — do not run LIVE — do not SSH staging — do not call provider — do not mutate credits
+- PRIVATE-BETA-E2E-AUTO-01B: COMPLETE AND LOCKED — PASS — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01B-CHECKPOINT.md` — AUTOMATION_TOOLING_FIX — labelled-sentinel inspectParity parser; LIVE-02 two-line clean-form compatibility; CONTRACT 38 passed — product defect NO — production source modification NO — Lane 1 EMPTY — HOTFILE / GOVERNANCE released — LIVE-02 SAFETY parser blocker resolved — do not claim LIVE staging golden-path validation
 - PRIVATE-BETA-E2E-LIVE-02: COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-02-CHECKPOINT.md` — NOT a product failure; NOT ENVIRONMENT/PARITY_FAILURE; NOT a provider failure — AUTHORIZED_LOCAL_HEAD `1f6f83ec80892e6d105323cae91c0d302a7d5866` deployed — STAGING_HEAD match PASS — auth PASS — Playwright LIVE invoked once — SAFETY `inspectParity` clean-porcelain two-line parse mismatch — PROVIDER USED=0 — CREDITS=0 — gate never enabled — do not retry LIVE-02 — do not modify AUTO-01/AUTO-01A — do not return to manual browser testing
 - PRIVATE-BETA-E2E-AUTO-01A: COMPLETE AND LOCKED — PASS — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01A-CHECKPOINT.md` — AUTOMATION_TOOLING_FIX — dynamic execution-edge parity; createSshExecutor() wired; CONTRACT 29 passed — Lane 2 EMPTY — HOTFILE leases released
 - PRIVATE-BETA-E2E-LIVE-01: COMPLETE AND LOCKED — FAIL/BLOCKED — ENVIRONMENT/PARITY_FAILURE — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-01-CHECKPOINT.md` — NOT a product failure; NOT an automation run failure — Playwright LIVE never invoked — local HEAD `33daa1d1eb32e0165e6ae7d351b1edaad799f3b8` != staging HEAD `c3e39279abe3c0d6c348daa312107c8f6fc592b7` — PROVIDER USED=0 — CREDITS=0 — do not retry LIVE-01
@@ -89,14 +84,15 @@ PROVIDER_CALL_USED=0
 - PRIVATE-BETA-E2E-04: COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20 — unchanged historical failure; not a LIVE-02 dependency; do not reopen
 - BUILDER_PRIVATE_BETA_READINESS: NO_GO_PENDING_FRESH_AUTOMATED_E2E
 - PRIVATE-BETA-INVITE-01: UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
-- Lane 2 EMPTY. Lane 3 DISABLED.
+- Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED.
 
 ## Current next product gate
-PRIVATE-BETA-E2E-AUTO-01B ACTIVE — Lane 1 — Step 1 COMPLETE — READY FOR STEP 2 CONSOLIDATION.
-inspectParity clean-output parser fixed. CONTRACT regression PASS (38).
-Do not retry LIVE-02. Do not register LIVE-03 in this task. Do not modify AUTO-01/AUTO-01A. Do not return to manual browser testing.
+PRIVATE-BETA-E2E-AUTO-01B COMPLETE AND LOCKED — PASS — 2026-08-21.
+Specific LIVE-02 SAFETY inspectParity parser blocker resolved. CONTRACT 38 passed.
+Do not claim LIVE staging golden-path validation. Do not retry LIVE-02. Do not modify AUTO-01/AUTO-01A. Do not return to manual browser testing.
 Builder private beta remains NO_GO_PENDING_FRESH_AUTOMATED_E2E.
 PRIVATE-BETA-INVITE-01 remains prohibited.
+Next recommended lifecycle (NOT REGISTERED HERE): fresh automated LIVE Builder E2E using the now-fixed runner — deploy current clean HEAD if required; verify exact dynamic parity; transient regular-user credentials; `npm run e2e:builder:live`; one xAI/grok-4.5 call; zero retries; no manual browser involvement.
 
 ============================================================
 LEGACY / FROZEN TASK HISTORY — NOT CURRENT EXECUTION STATE
