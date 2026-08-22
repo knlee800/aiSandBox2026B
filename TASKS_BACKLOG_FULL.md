@@ -68455,8 +68455,8 @@ Git mutations = 0
 **Title:** Fresh Automated Builder LIVE E2E After AUTO-01G / AUTO-01H / AUTO-01I With Step 1 Resource Reservation
 **Workstream:** RELIABILITY
 **Lifecycle:** 3-step HIGH-RISK bounded task
-**Status:** LANE-DONE — Step 2 COMPLETE — 2026-08-22 — FAIL/BLOCKED — PRODUCT_FAILURE — PREVIEW
-**Assigned lane:** 1
+**Status:** COMPLETE AND LOCKED — FAIL/BLOCKED — PRODUCT_FAILURE — PREVIEW — 2026-08-22
+**Assigned lane:** none (Lane 1 released EMPTY at lock)
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
 **Registered:** 2026-08-22
@@ -68719,31 +68719,43 @@ Git mutations = 0
 - [x] STAGING / PROVIDER-LIVE / CREDIT / ENV released after confirmed-safe cleanup
 - [x] do not rerun LIVE-08; do not lock in Step 2; do not register PRIVATE-BETA-INVITE-01
 
-#### Step 3 (PENDING)
-- [ ] consolidation / checkpoint / lock after Step 2 evidence
+#### Step 3 (COMPLETE — COMPLETE AND LOCKED — FAIL/BLOCKED — PRODUCT_FAILURE — PREVIEW — 2026-08-22)
+- [x] consolidation / checkpoint / lock from frozen Step 2 evidence
+- [x] checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-08-CHECKPOINT.md`
+- [x] do not convert LIVE-08 to PASS
+- [x] do not rerun LIVE-08
+- [x] do not register PRIVATE-BETA-INVITE-01
+- [x] do not register PRIVATE-BETA-BLOCKER-03L here
 
 ---
 
-**PRIVATE-BETA-E2E-LIVE-08 status:** LANE-DONE — Step 2 COMPLETE — 2026-08-22 — FAIL/BLOCKED — PRODUCT_FAILURE — PREVIEW
+**PRIVATE-BETA-E2E-LIVE-08 status:** COMPLETE AND LOCKED — FAIL/BLOCKED — PRODUCT_FAILURE — PREVIEW — 2026-08-22
 **Step 1:** COMPLETE — registration + committed resource reservation + exact execution contract freeze — contract: `docs/PRIVATE-BETA-E2E-LIVE-08-EXECUTION.md`
 **Step 2:** COMPLETE — LANE-DONE — FAIL/BLOCKED — PRODUCT_FAILURE — PREVIEW — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-08-EXECUTION.md`
-**Step 3:** PENDING — consolidation / checkpoint / lock after Step 2 evidence
-**Assigned lane:** 1 (LANE-DONE)
+**Step 3:** COMPLETE — COMPLETE AND LOCKED — FAIL/BLOCKED — PRODUCT_FAILURE — PREVIEW — Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-08-CHECKPOINT.md`
+**Assigned lane:** none (Lane 1 released EMPTY at lock)
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
 **Step 1 HEAD (informational only; NOT frozen for Step 2):** `9a52511db2d716746dcfaafdd097d3ec32575f68`
 **AUTHORIZED_LOCAL_HEAD:** `f9efc0f6d2803adbc91689ce75670434a6e89cb5`
-**STAGING / PROVIDER-LIVE / CREDIT / ENV:** released after confirmed-safe cleanup
-**GOVERNANCE:** UNOWNED (released after Step 2 post-run writes)
+**STAGING / PROVIDER-LIVE / CREDIT / ENV:** UNOWNED
+**GOVERNANCE:** UNOWNED (released after Step 3 writes)
 **RUNTIME_EXECUTION_AUTHORIZED / PROVIDER_CALL_AUTHORIZED / CREDIT_MUTATION_AUTHORIZED / STAGING_MUTATION_AUTHORIZED:** NO / NO / NO / NO
 **LIVE_RUNS / SSH / STAGING_MUTATION / PROVIDER / CREDITS / GATE_MUTATION:** 1 / YES / YES (deploy + disposable session + gate enable/restore) / 1 / 1177 / YES (temporary enable then restored-false)
 **NPM_EXIT:** 1
 **FORMATTED_VERDICT:** FAIL
 **FAILED_PHASE:** PREVIEW
 **LAST_SUCCESSFUL_PHASE:** WAIT_FOR_AUTO_APPLY
-**LOCKED:** NO
+**PRIMARY_CLASS:** PRODUCT_FAILURE
+**AUTOMATION_ADAPTER_FAILURE / ENVIRONMENT/PARITY_FAILURE / PROVIDER_FAILURE:** NO / NO / NO
+**AUTO-01I LIVE validation:** HELD
+**AUTO-01H LIVE validation:** HELD
+**AUTO-01G LIVE validation:** HELD
+**LOCKED:** YES
 **LIVE_STAGING_VALIDATED:** NO
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_AUTOMATED_E2E
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
-**Exact next:** PRIVATE-BETA-E2E-LIVE-08 Step 3 — consolidation / checkpoint / lock from frozen Step 2 evidence. Do not rerun LIVE-08. Do not convert Step 2 to PASS. Do not reopen AUTO-01G / AUTO-01H / AUTO-01I. Do not weaken runner SAFETY. Do not register PRIVATE-BETA-INVITE-01.
+**Evidence:** `docs/PRIVATE-BETA-E2E-LIVE-08-EXECUTION.md`
+**Checkpoint:** `docs/PRIVATE-BETA-E2E-LIVE-08-CHECKPOINT.md`
+**Exact next (NOT REGISTERED HERE):** one bounded PRODUCT root-cause lifecycle — likely `PRIVATE-BETA-BLOCKER-03L` (verify unused at future registration; repo search at this lock found zero occurrences) — working title: Builder Static Preview Entrypoint Contract — FIRST question: why does the Builder golden path correctly persist `e2e-auto.html` while the product static-preview start path refuses to start unless `index.html` exists? Do not assume the fix. Do not change product or runner until the product contract is proven. Do not rerun or convert LIVE-08. Do not reopen AUTO-01G / AUTO-01H / AUTO-01I. Do not weaken runner SAFETY. Do not register PRIVATE-BETA-INVITE-01. Do not register PRIVATE-BETA-BLOCKER-03L here.
 
