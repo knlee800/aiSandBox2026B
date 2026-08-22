@@ -70005,4 +70005,289 @@ Do not register PRIVATE-BETA-E2E-LIVE-11 here. Do not register PRIVATE-BETA-INVI
 
 **PRIVATE-BETA-E2E-AUTO-01K COMPLETE AND LOCKED — PASS — 2026-08-22**
 
+---
+
+### PRIVATE-BETA-E2E-LIVE-11 — Register Fresh Automated Builder LIVE E2E After AUTO-01K
+
+**Task ID:** PRIVATE-BETA-E2E-LIVE-11
+**Title:** Fresh Automated Builder LIVE E2E After AUTO-01K Deduction Database-Connection Fix With Committed Resource Reservation
+**Workstream:** RELIABILITY
+**Lifecycle:** 3-step HIGH-RISK bounded task
+**Status:** ACTIVE — Step 1 COMPLETE — Step 2 PENDING / NOT AUTHORIZED — Step 3 PENDING
+**Assigned lane:** Lane 1
+**Lane 2:** EMPTY
+**Lane 3:** DISABLED
+**Registered:** 2026-08-22
+**Approved:** Keith — 2026-08-22 (Step 1 registration + OS v1 admission + committed STAGING / PROVIDER-LIVE / CREDIT / ENV reservation + execution/deployment contract freeze only — does NOT authorize Step 2 deploy or LIVE execution)
+**Nature:** Fresh automated LIVE Builder golden-path after locked AUTO-01G (tab-independent WAIT_FOR_AUTO_APPLY persistence observation via `POST /api/sessions/:sessionId/files/write` 204 using `FROZEN_ARTIFACT_PATH='index.html'`), locked AUTO-01H (real BUILD `POST /api/ai/execute` 202 `executionId` observation), locked AUTO-01I (canonical LIVE clean-execution sequencing), locked PRIVATE-BETA-BLOCKER-03L (RUNNER_FIXTURE_FIX aligning frozen artifact to `index.html`), locked AUTO-01J (bounded same-session automatic checkpoint observation), and locked AUTO-01K (safe staging `DATABASE_URL` acquisition for DEDUCTION verification). Uses all locked runner fixes (AUTO-01A/B/C/D/E/F/G/H/J/K) and the AUTO-01I sequencing contract. Not a LIVE-10 rerun. Not a LIVE-01/02/03/04/05/06/07/08/09 retry. Not a tooling-hardening task. Not a manual E2E. No application/source/runner/package mutation in this task. Purpose is to determine whether the complete automated Builder golden path now succeeds against real staging with AUTO-01K DEDUCTION connection acquisition, not to test AUTO-01G / AUTO-01H / AUTO-01I / AUTO-01J / AUTO-01K / 03L individually, and not to retry, reopen, or convert LIVE-10.
+**Evidence class:** PROVIDER-LIVE
+**Hot-file leases:** NONE
+**Step 1 contract document:** `docs/PRIVATE-BETA-E2E-LIVE-11-EXECUTION.md` (contract/setup only; no runtime evidence)
+**Canonical sequencing:** `docs/PRIVATE-BETA-E2E-LIVE-EXECUTION-SEQUENCING.md`
+**Frozen artifact:** `index.html`
+**Frozen marker:** `PRIVATE-BETA-E2E-AUTO`
+**Identifier search:** PRIVATE-BETA-E2E-LIVE-11 was unused as a registered task before this registration. Repo-wide search found only historical recommendation / next-gate prose: AUTO-01K checkpoint (`docs/PRIVATE-BETA-E2E-AUTO-01K-CHECKPOINT.md:15`, “Do not register PRIVATE-BETA-E2E-LIVE-11 here”; `:354` “Likely identifier: PRIVATE-BETA-E2E-LIVE-11”; `:356` “Do NOT register LIVE-11 here”), AUTO-01K lock “Do not register PRIVATE-BETA-E2E-LIVE-11 here” in this file, and `TASKS.md` next-gate “Do not register PRIVATE-BETA-E2E-LIVE-11 here.” / “Do not register LIVE-11 here.” Zero `### PRIVATE-BETA-E2E-LIVE-11` registry entries existed. Historical recommendation prose does not count as prior registration. Existing E2E IDs: PRIVATE-BETA-E2E-01..05, PRIVATE-BETA-E2E-AUTO-01, PRIVATE-BETA-E2E-AUTO-01A, PRIVATE-BETA-E2E-AUTO-01B, PRIVATE-BETA-E2E-AUTO-01C, PRIVATE-BETA-E2E-AUTO-01D, PRIVATE-BETA-E2E-AUTO-01E, PRIVATE-BETA-E2E-AUTO-01F, PRIVATE-BETA-E2E-AUTO-01G, PRIVATE-BETA-E2E-AUTO-01H, PRIVATE-BETA-E2E-AUTO-01I, PRIVATE-BETA-E2E-AUTO-01J, PRIVATE-BETA-E2E-AUTO-01K, PRIVATE-BETA-E2E-LIVE-01, PRIVATE-BETA-E2E-LIVE-02, PRIVATE-BETA-E2E-LIVE-03, PRIVATE-BETA-E2E-LIVE-04, PRIVATE-BETA-E2E-LIVE-05, PRIVATE-BETA-E2E-LIVE-06, PRIVATE-BETA-E2E-LIVE-07, PRIVATE-BETA-E2E-LIVE-08, PRIVATE-BETA-E2E-LIVE-09, PRIVATE-BETA-E2E-LIVE-10, PRIVATE-BETA-BLOCKER-03L. Rejected PRIVATE-BETA-E2E-11 (implies another numbered manual E2E), PRIVATE-BETA-E2E-AUTO-02 (implies another runner-build), and a LIVE-01/02/03/04/05/06/07/08/09/10 retry or reopen (those LIVE tasks are LOCKED).
+
+**Start condition:** READY — PRIVATE-BETA-E2E-AUTO-01K COMPLETE AND LOCKED — PASS — 2026-08-22; PRIVATE-BETA-BLOCKER-03L COMPLETE AND LOCKED — PASS — 2026-08-22; PRIVATE-BETA-BLOCKER-03J COMPLETE AND LOCKED — PASS; PRIVATE-BETA-BLOCKER-03K COMPLETE AND LOCKED — PASS; PRIVATE-BETA-E2E-AUTO-01 through AUTO-01J COMPLETE AND LOCKED — PASS according to their authoritative registry/checkpoints; PRIVATE-BETA-E2E-LIVE-10 COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — DEDUCTION — 2026-08-22 only (historical; not converted; not rerun; not rewritten); Lane 1 EMPTY at admission; Lane 2 EMPTY; Lane 3 DISABLED; clean tree at admission (`git status --short` empty; HEAD `87e2958067926244421981144224b0f842479246`; branch `main`); STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER UNOWNED at admission; OS v1 admission requirements pass.
+
+**Depends on (required locked PASS):**
+- PRIVATE-BETA-E2E-AUTO-01K — COMPLETE AND LOCKED — PASS — 2026-08-22 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01K-CHECKPOINT.md` — Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01K-DIAGNOSIS.md` — CLASSIFICATION=AUTOMATION_ADAPTER_FIX — DEDUCTION verifier extracts only `DATABASE_URL` from `/opt/aisandbox/.env` inside the remote command (`grep -m1 '^DATABASE_URL='` + `cut -d= -f2-`), fails closed with `AISB_DATABASE_URL_MISSING` when empty, then existing `psql "$DATABASE_URL"` SELECT on `credit_deduction_records` where `source_event_id = executionId` with `deductionCount === 1`; generic `source .env` PROHIBITED; BALANCE unchanged billing API; CONTRACT 113 passed
+- PRIVATE-BETA-E2E-AUTO-01J — COMPLETE AND LOCKED — PASS — 2026-08-22 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01J-CHECKPOINT.md` — Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01J-DIAGNOSIS.md` — CLASSIFICATION=AUTOMATION_ADAPTER_FIX — bounded same-session CHECKPOINT observation (`CHECKPOINT_OBSERVATION_TIMEOUT_MS=30000` / `CHECKPOINT_POLL_INTERVAL_MS=250` / `CHECKPOINT_REQUEST_TIMEOUT_MS=10000`); empty-first tolerated; stale `checkpoints[0]` fallback removed; CONTRACT 109 passed; LIVE-10 CHECKPOINT PASS HELD
+- PRIVATE-BETA-BLOCKER-03L — COMPLETE AND LOCKED — PASS — 2026-08-22 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03L-CHECKPOINT.md` — Diagnosis: `docs/PRIVATE-BETA-BLOCKER-03L-DIAGNOSIS.md` — CLASSIFICATION=RUNNER_FIXTURE_FIX — `FROZEN_ARTIFACT_PATH='index.html'` — unique marker `PRIVATE-BETA-E2E-AUTO` — CONTRACT 100 passed — LIVE-10 PREVIEW PASS HELD
+- PRIVATE-BETA-BLOCKER-03J — COMPLETE AND LOCKED — PASS — 2026-08-18 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03J-CHECKPOINT.md`
+- PRIVATE-BETA-BLOCKER-03K — COMPLETE AND LOCKED — PASS — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03K-CHECKPOINT.md`
+- PRIVATE-BETA-E2E-AUTO-01 — COMPLETE AND LOCKED — PASS — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01-CHECKPOINT.md` — AUTOMATED_BUILDER_GOLDEN_PATH_RUNNER_READY=YES — IMPLEMENTED_AND_CONTRACT_VALIDATED=YES — LIVE_STAGING_VALIDATED=NO
+- PRIVATE-BETA-E2E-AUTO-01A — COMPLETE AND LOCKED — PASS — 2026-08-20 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01A-CHECKPOINT.md`
+- PRIVATE-BETA-E2E-AUTO-01B — COMPLETE AND LOCKED — PASS — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01B-CHECKPOINT.md`
+- PRIVATE-BETA-E2E-AUTO-01C — COMPLETE AND LOCKED — PASS — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01C-CHECKPOINT.md`
+- PRIVATE-BETA-E2E-AUTO-01D — COMPLETE AND LOCKED — PASS — CONTRACT — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01D-CHECKPOINT.md` — do not reopen; do not convert to FAIL
+- PRIVATE-BETA-E2E-AUTO-01E — COMPLETE AND LOCKED — PASS — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01E-CHECKPOINT.md` — LIVE-06 CREATE_SESSION PASS held this
+- PRIVATE-BETA-E2E-AUTO-01F — COMPLETE AND LOCKED — PASS — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01F-CHECKPOINT.md` — LIVE-06 `executionGateFinal=restored-false` held this
+- PRIVATE-BETA-E2E-AUTO-01G — COMPLETE AND LOCKED — PASS — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01G-CHECKPOINT.md` — Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01G-DIAGNOSIS.md` — tab-independent AUTO_APPLY persistence observation via `POST /api/sessions/:sessionId/files/write` 204 using `FROZEN_ARTIFACT_PATH` (`index.html`); CONTRACT 88 at lock; LIVE-10 validation HELD
+- PRIVATE-BETA-E2E-AUTO-01H — COMPLETE AND LOCKED — PASS — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01H-CHECKPOINT.md` — Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01H-DIAGNOSIS.md` — real BUILD `POST /api/ai/execute` 202 JSON `executionId` observation; CONTRACT 99 passed; LIVE-10 validation HELD
+- PRIVATE-BETA-E2E-AUTO-01I — COMPLETE AND LOCKED — PASS — 2026-08-22 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01I-CHECKPOINT.md` — Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01I-DIAGNOSIS.md` — Sequencing: `docs/PRIVATE-BETA-E2E-LIVE-EXECUTION-SEQUENCING.md` — LIVE CLEAN-EXECUTION EDGE frozen; required LIVE resources must already be committed on `TASKS.md` before `AUTHORIZED_LOCAL_HEAD` capture; reservation ≠ runtime authorization; LIVE-10 validation HELD
+
+Historical LIVE tasks remain immutable (not unfinished dependencies; do not reopen / retry / convert to PASS):
+- PRIVATE-BETA-E2E-LIVE-10 — COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — DEDUCTION — 2026-08-22 — Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-10-CHECKPOINT.md` — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-10-EXECUTION.md` — do not rewrite; do not rerun; do not convert to PASS
+- PRIVATE-BETA-E2E-LIVE-09 — COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CHECKPOINT — 2026-08-22 — Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-09-CHECKPOINT.md` — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-09-EXECUTION.md` — do not rewrite; do not rerun; do not convert to PASS
+- PRIVATE-BETA-E2E-LIVE-08 — COMPLETE AND LOCKED — FAIL/BLOCKED — PRODUCT_FAILURE — PREVIEW — 2026-08-22 — Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-08-CHECKPOINT.md` — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-08-EXECUTION.md` — do not rewrite; do not rerun; do not convert to PASS
+- PRIVATE-BETA-E2E-LIVE-07 — COMPLETE AND LOCKED — FAIL/BLOCKED — ENVIRONMENT/PARITY_FAILURE — SAFETY — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-07-CHECKPOINT.md` — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-07-EXECUTION.md` — do not rewrite; do not rerun; do not convert to PASS; do not weaken the runner clean-tree SAFETY gate
+- PRIVATE-BETA-E2E-LIVE-06 — COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — WAIT_FOR_AUTO_APPLY — 2026-08-21 — do not rewrite; do not rerun; do not convert to PASS
+- PRIVATE-BETA-E2E-LIVE-05 — COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CREATE_SESSION — 2026-08-21 — do not rerun
+- PRIVATE-BETA-E2E-LIVE-04 — COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CREATE_SESSION — 2026-08-21 — do not rerun
+- PRIVATE-BETA-E2E-LIVE-03 — COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — STARTING_BALANCE — 2026-08-21 — do not retry
+- PRIVATE-BETA-E2E-LIVE-02 — COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — 2026-08-21 — do not retry
+- PRIVATE-BETA-E2E-LIVE-01 — COMPLETE AND LOCKED — FAIL/BLOCKED — ENVIRONMENT/PARITY_FAILURE — 2026-08-21 — do not retry
+- PRIVATE-BETA-E2E-05 — COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20 — do not convert to PASS
+- PRIVATE-BETA-E2E-04 — COMPLETE AND LOCKED — FAIL/BLOCKED — 2026-08-20 — not a LIVE-11 dependency
+
+**Locked-body note:** The locked AUTO-01K registry body records “Do not register PRIVATE-BETA-E2E-LIVE-11 here” as its state at lock time on 2026-08-22. The locked LIVE-10 registry body records AUTO-01K as its next recommended lifecycle. Those locked bodies are intentionally **not** edited by this registration. Current registration/admission/reservation state for LIVE-11 lives in this entry and on the `TASKS.md` CURRENT EXECUTION BOARD. LIVE-10 remains COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — DEDUCTION and is not rewritten.
+
+LIVE-10 preserved facts (do not reopen; do **not** rerun LIVE-10; do **not** convert LIVE-10 to PASS):
+- AUTO-01I LIVE validation HELD (committed reservation; zero repo writes between capture and runner return; final triple gate PASS; SAFETY PASS)
+- AUTO-01H LIVE validation HELD (BUILD `POST /api/ai/execute` 202 `executionId=18feb0a2-b992-46c8-aa75-4667fc05005d`)
+- AUTO-01G LIVE validation HELD (WAIT_FOR_AUTO_APPLY `index.html` files/write 204)
+- 03L LIVE-10 PREVIEW validation HELD (actual runner PREVIEW PASS for `index.html` / marker `PRIVATE-BETA-E2E-AUTO`)
+- AUTO-01J LIVE-10 CHECKPOINT validation HELD (actual runner CHECKPOINT PASS `edc0310429173262b8c04d749f7bc7f51a11afba`)
+- PUBLIC_CONFIRM PASS (HTTP 200 `triggered=true` `reason=completed`)
+- DEDUCTION FAIL because runner `psql "$DATABASE_URL"` over SSH did not load staging `.env` and connected as role `ubuntu`; AUTO-01K later bounded the remote extract-only `DATABASE_URL` acquisition in CONTRACT
+- PRODUCT_FAILURE=NO; AUTOMATION_ADAPTER_FAILURE=YES; ENVIRONMENT/PARITY_FAILURE=NO; PROVIDER_FAILURE=NO
+- Playwright LIVE invoked once; formatted verdict FAIL; NPM_EXIT=1; failed phase DEDUCTION; last successful phase PUBLIC_CONFIRM
+- Provider xAI/grok-4.5 used=1; retries=0; tokens_used=1164; product deduction 1 / 1164 credits / 25883→24719; Stripe none
+- AUTO-01K later bounded DEDUCTION `DATABASE_URL` acquisition; LIVE-11 now uses that adapter against a fresh run
+
+**Primary write scope:**
+- Step 1: `TASKS.md` CURRENT EXECUTION BOARD above LEGACY / FROZEN only; this canonical registry entry; optional `docs/PRIVATE-BETA-E2E-LIVE-11-EXECUTION.md` contract/setup only
+- Step 2 (after Keith commit of this reservation state AND explicit Keith authorization only): no application source; no AUTO-01 / AUTO-01A / AUTO-01B / AUTO-01C / AUTO-01D / AUTO-01E / AUTO-01F / AUTO-01G / AUTO-01H / AUTO-01I / AUTO-01J / AUTO-01K runner edits; no package/lockfile edits; no residual `page.goto()` / `submitBuild()` `selectOption` / `trace: 'off'` patching; **NO governance writes** between AUTHORIZED_LOCAL_HEAD capture and runner return. Allowed staging mutation is (1) deploy AUTHORIZED_LOCAL_HEAD to `/opt/aisandbox` **only if staging HEAD differs**, (2) disposable E2E project/session, (3) execution-gate enable/restore, (4) one qualifying credit deduction via the runner if the golden path reaches it
+- Step 3: checkpoint + board/registry end-status only
+- No PRD.md. No ARCHITECTURE.md. No CLAUDE.md. No AGENTS.md.
+- Do not modify locked LIVE-10 / LIVE-09 / LIVE-08 / LIVE-07 / LIVE-06 or AUTO-01 / AUTO-01A / AUTO-01B / AUTO-01C / AUTO-01D / AUTO-01E / AUTO-01F / AUTO-01G / AUTO-01H / AUTO-01I / AUTO-01J / AUTO-01K / 03L bodies.
+
+If Step 2 exposes an actual product defect: STOP. Register a separate blocker later. Do not repair product source inside this live task.
+
+If another automation defect appears, including a residual `page.goto()` / `selectOption` / `trace` surface becoming the proven LIVE-11 blocker: do **not** patch it inside LIVE-11. Record concise evidence and stop. Address it in a later separate lifecycle. No manual browser fallback. No patching during LIVE execution.
+
+**Mutexes / resources:** GOVERNANCE acquired for this Step 1 board/registry/contract write, then released UNOWNED. STAGING / PROVIDER-LIVE / CREDIT / ENV reserved to PRIVATE-BETA-E2E-LIVE-11 and MUST remain reserved after Step 1. PACKAGE remains UNOWNED. All HOTFILE leases UNOWNED.
+
+Do not reserve FRONTEND, GATEWAY, AI-SERVICE, CONTAINER-MANAGER, MIGRATION, COMPOSE, I18N, or HOTFILE leases.
+
+Step 1 does not deploy, enable the gate, call the provider, mutate credits, or SSH staging.
+
+**Runtime authorization flags (remain NO after Step 1):**
+```
+RUNTIME_EXECUTION_AUTHORIZED=NO
+PROVIDER_CALL_AUTHORIZED=NO
+CREDIT_MUTATION_AUTHORIZED=NO
+STAGING_MUTATION_AUTHORIZED=NO
+```
+
+Reservation ≠ authorization. Step 2 still requires explicit Keith authorization.
+
+**Shared contracts (frozen; do not modify inside LIVE-11):**
+- PRIVATE-BETA-E2E-AUTO-01I LIVE CLEAN-EXECUTION EDGE — `docs/PRIVATE-BETA-E2E-LIVE-EXECUTION-SEQUENCING.md` — required LIVE resources already committed on `TASKS.md` before `AUTHORIZED_LOCAL_HEAD` capture; reservation ≠ runtime authorization; zero tracked/untracked repo writes after capture until runner return; final local clean + local HEAD + staging HEAD triple gate; never stash/restore/bypass `readAuthorizedLocalHead()`
+- PRIVATE-BETA-E2E-AUTO-01K DEDUCTION remote `DATABASE_URL` acquisition — extract only `DATABASE_URL` from `/opt/aisandbox/.env` inside the remote command using `DATABASE_URL="$(grep -m1 '^DATABASE_URL=' /opt/aisandbox/.env | cut -d= -f2-)"`; fail closed `AISB_DATABASE_URL_MISSING` when absent/empty; then existing `psql "$DATABASE_URL"` SELECT on `credit_deduction_records` where `source_event_id = executionId` with `deductionCount === 1`; generic `source .env` / `. .env` / PM2 env dump / embedding secret in SSH argv / printing `DATABASE_URL` PROHIBITED; BALANCE remains GET `/api/billing/balance`; product/operator evidence after failure does not substitute for runner DEDUCTION PASS
+- PRIVATE-BETA-E2E-AUTO-01J bounded CHECKPOINT observation — first GET immediate; poll `GET /api/sessions/:sessionId/checkpoints` until a same-session automatic row matches description includes `applied workspace file actions` AND non-empty `commitHash` AND `filesChanged >= 1`; timeout 30000ms / interval 250ms / request 10000ms; empty `[]` is pollable absence; stale `checkpoints[0]` fallback forbidden; HTTP / non-array / malformed fail closed immediately; deadline fails `No automatic checkpoint was returned.`; product row discovered afterward is not runner PASS
+- PRIVATE-BETA-BLOCKER-03L frozen golden-path artifact `index.html` with marker `PRIVATE-BETA-E2E-AUTO`
+- PRIVATE-BETA-BLOCKER-03D deferred Build-accounting semantics
+- PRIVATE-BETA-BLOCKER-03H authoritative frontend balance refresh/reconciliation semantics — deterministic API/DB plus billing-page verification; no manual 03H tab-switch ceremony
+- PRIVATE-BETA-BLOCKER-03I checkpoint/Git runtime contract
+- PRIVATE-BETA-BLOCKER-03J public authenticated Gateway confirm-build-apply route
+- PRIVATE-BETA-BLOCKER-03K corrected E2E session-timing procedure — create/open the fresh session only when the runner is ready to Build immediately
+- PRIVATE-BETA-E2E-AUTO-01 runner contract — phase order, AUTO_APPLY, preview-immediately-after-apply, fail-closed LIVE, one-call/no-retry, finally-style cleanup
+- PRIVATE-BETA-E2E-AUTO-01A dynamic execution-edge parity + SSH executor wiring
+- PRIVATE-BETA-E2E-AUTO-01B labelled-sentinel inspectParity parser + LIVE-02 two-line clean-form compatibility
+- PRIVATE-BETA-E2E-AUTO-01C post-gate gateway-ready wait — after `GLOBAL_EXECUTION_ENABLED=true` `pm2 restart`, poll `http://127.0.0.1:4000/api/health/ready` until HTTP 200; timeout 30s; interval 500ms; timeout throws `GatewayNotReadyError` during SAFETY before STARTING_BALANCE / session / BUILD / provider; cleanup still restores `GLOBAL_EXECUTION_ENABLED=false`
+- PRIVATE-BETA-E2E-AUTO-01D CREATE_SESSION capture-style observer — `armSessionCreateListener()` armed before create-project confirm; early POST /api/sessions retained; project-card click fallback only; bounded 30s `SessionObservationError` inside `runGoldenPath`; CLEANUP/gate-restore on CREATE_SESSION miss; ProviderGuard unused on miss
+- PRIVATE-BETA-E2E-AUTO-01E bounded CREATE_SESSION project observation — LIVE `actionTimeout=30000` / `navigationTimeout=60000`; project-create `waitForResponse` 30000ms; project-create body-read timer race 30000ms; fallback card click 10000ms; typed `ProjectCreateObservationError` inside `runGoldenPath`; AUTO-01D observer semantics preserved; no duplicate `POST /api/sessions`
+- PRIVATE-BETA-E2E-AUTO-01F bounded SSH cleanup execution — `SSH_EXECUTION_TIMEOUT_MS=30000`; timeout kills the direct SSH child once and rejects immediately without waiting for close; typed `SshExecutionTimeoutError`; SSH restore timeout maps to `executionGateFinal=restore-unconfirmed-timeout` NEVER `restored-false`; other SSH failures remain `restore-failed`; BatchMode not added
+- PRIVATE-BETA-E2E-AUTO-01G WAIT_FOR_AUTO_APPLY persistence observation — `armFileWriteListener(page)` armed during ARM_LISTENERS; `waitForAutoApply()` awaits matching `POST /api/sessions/:sessionId/files/write` with `path === FROZEN_ARTIFACT_PATH` (`index.html`) and HTTP 204; Code & Files file-tree node is optional diagnostics only; Preview may remain default tab; typed `AutoApplyObservationError`; `awaitingConfirmation` guard preserved
+- PRIVATE-BETA-E2E-AUTO-01H BUILD executionId observation — `submitBuild` observes `POST /api/ai/execute` HTTP 202 JSON `{ executionId, status: "queued" }`; `executionId` non-empty; no `id` fallback; `BUILD_EXECUTION_RESPONSE_TIMEOUT_MS=30000` / `BUILD_EXECUTION_BODY_TIMEOUT_MS=30000`; typed `BuildExecutionObservationError`; empty catch removed; one Send / one execute POST / one `authorizeCall` / retries 0; zero collection `POST /api/ai/executions` dependency; same `executionId` must later reach DEDUCTION
+- locked static Preview HOW (PREV-02-02 / PREVIEW-STRATEGY-01A) requiring workspace/subdirectory `index.html`
+- current non-risky one-file Builder AUTO_APPLY semantics (E2E-05 proven)
+- existing authentication/ownership semantics
+- existing automatic post-apply checkpoint semantics
+- current Container Manager idle-timeout contract
+- retained staging stash invariant `stash@{0}` = `0372cc1f47f82e1db060ed2dd756a938fe324803`
+- frozen 1:1 credit contract: `creditsDeducted == tokens_used`
+
+**Revert / evidence isolation:** Single-lane live execution. Reverting or aborting LIVE-11 must restore `GLOBAL_EXECUTION_ENABLED=false` if this run changed it, must not rewrite/drop/apply the retained staging stash, and must not invalidate locked AUTO-01 / AUTO-01A / AUTO-01B / AUTO-01C / AUTO-01D / AUTO-01E / AUTO-01F / AUTO-01G / AUTO-01H / AUTO-01I / AUTO-01J / AUTO-01K / 03J / 03K / 03L / LIVE-01 / LIVE-02 / LIVE-03 / LIVE-04 / LIVE-05 / LIVE-06 / LIVE-07 / LIVE-08 / LIVE-09 / LIVE-10 evidence. Lane 2 remains EMPTY. Lane 3 remains DISABLED. If SSH restore times out, treat gate state as unconfirmed (`restore-unconfirmed-timeout`) requiring operator verification; do not claim `GLOBAL_EXECUTION_ENABLED=false` from timeout alone.
+
+**Purpose:** After Keith commits this Step 1 reservation state and after explicit Keith Step 2 authorization, capture AUTHORIZED_LOCAL_HEAD on a clean tree that already contains LIVE-11 ownership of STAGING / PROVIDER-LIVE / CREDIT / ENV, perform zero repository writes until runner return, ensure staging matches that SHA (deploy only if required), prove exact HEAD parity via the final triple gate, then immediately run the existing AUTO-01..AUTO-01K Playwright golden-path runner exactly once with frozen artifact `index.html`. Automation-led. No manual browser testing. Do not test AUTO-01G / AUTO-01H / AUTO-01I / AUTO-01J / AUTO-01K / 03L as isolated tooling changes. Do not rerun LIVE-10.
+
+**Why this identifier:** this is the next unused LIVE automated-run ID after locked LIVE-10 and locked AUTO-01K. It is not another manual E2E, not another runner implementation, and not a LIVE-01/02/03/04/05/06/07/08/09/10 retry.
+
+---
+
+#### Step 1 observations (NOT frozen required SHAs)
+
+Local tree at registration (2026-08-22), read-only:
+
+- `git branch --show-current` = `main`
+- `git rev-parse HEAD` = `87e2958067926244421981144224b0f842479246`
+- `git status --short` = empty (CLEAN)
+- AUTO-01G implementation commit `b9cba2480ea4e9c814d17342c0e6aed2b469ef69` is an ancestor of HEAD
+- AUTO-01H implementation commit `25c25bd79c205c52838b3d151c73a0bc4a4de13f` is an ancestor of HEAD
+- AUTO-01I lock `59b92df28cf755549e88aae89ce8107321c430e6` is an ancestor of HEAD
+- 03L fixture alignment commit `6a73b2ca95883be6f82fafc15ff533bc2be58224` is an ancestor of HEAD
+- AUTO-01J implementation commit `31cf87c966393e0f23460d88965d28b3c0ceb786` is an ancestor of HEAD
+- AUTO-01K implementation commit `449ab9b5fff89b570078c968c7d36f7f5a347657` is an ancestor of HEAD
+- AUTO-01K lock commit `87e2958067926244421981144224b0f842479246` is current HEAD
+- LIVE-10 AUTHORIZED_LOCAL_HEAD `c78dbad609677b7da86e3043629e042bcbcb8e9d` is a historical ancestor only
+
+Do **not** freeze `87e2958067926244421981144224b0f842479246`, LIVE-10 SHA `c78dbad609677b7da86e3043629e042bcbcb8e9d`, LIVE-09 SHA `14130f6db70b08ff116d8a51ef5c96657c5c21f2`, LIVE-08 SHA `f9efc0f6d2803adbc91689ce75670434a6e89cb5`, LIVE-07 SHA `6723c4699d9c2cea832f73356aa85960b230b3cf`, LIVE-06 SHA `da56659d39a5d86d3ef994a7458a297169eeda42`, or any earlier LIVE SHA as the required SHA.
+
+Step 2 recaptures AUTHORIZED_LOCAL_HEAD at execution edge on a **clean** local `main` tree that **already contains** this committed LIVE-11 reservation plus AUTO-01G WAIT_FOR_AUTO_APPLY files/write 204 observation, AUTO-01H BUILD `/api/ai/execute` 202 `executionId` observation, AUTO-01I sequencing, AUTO-01J bounded CHECKPOINT observation, AUTO-01K DEDUCTION `DATABASE_URL` acquisition, and 03L `index.html` fixture alignment. If AUTHORIZED_LOCAL_HEAD lacks AUTO-01G, AUTO-01H, AUTO-01I, AUTO-01J, AUTO-01K, 03L, or the committed LIVE-11 reservation: **STOP** before deploy/provider. Do not replay LIVE-10.
+
+Step 1 HEAD is informational only. Step 1 HEAD is **not** frozen for Step 2.
+
+Step 1 did **not** SSH staging. Step 2 must re-compare.
+
+---
+
+#### Step 1 reservation (MUST remain owned)
+
+After this Step 1 write, `TASKS.md` MUST show:
+
+- STAGING owner = PRIVATE-BETA-E2E-LIVE-11
+- PROVIDER-LIVE owner = PRIVATE-BETA-E2E-LIVE-11
+- CREDIT owner = PRIVATE-BETA-E2E-LIVE-11
+- ENV owner = PRIVATE-BETA-E2E-LIVE-11
+- GOVERNANCE = UNOWNED (released after Step 1 writes)
+
+These stay reserved while all runtime authorization flags remain NO.
+
+Do not release them at the end of Step 1.
+
+Keith must commit/push this complete reservation state before the Step 2 execution edge.
+
+---
+
+#### Future Step 2 execution-edge rule (mandatory; do not execute in Step 1)
+
+1. explicit Keith LIVE authorization already obtained
+2. verify STAGING / PROVIDER-LIVE / CREDIT / ENV ownership is already committed on `TASKS.md` for LIVE-11
+3. perform NO governance writes
+4. require `git status --short` EMPTY
+5. set `AUTHORIZED_LOCAL_HEAD = git rev-parse HEAD`
+6. start NO-CONTROL-PLANE-WRITE WINDOW
+7. inspect/deploy staging to exact AUTHORIZED_LOCAL_HEAD if required
+8. import process-only credentials/LIVE flags
+9. perform final triple gate (local clean + local HEAD = AUTHORIZED_LOCAL_HEAD + staging HEAD = AUTHORIZED_LOCAL_HEAD; plus staging clean / stash invariant / applicable gates)
+10. invoke `npm run e2e:builder:live` exactly once
+11. only AFTER runner returns may repo evidence/governance writes resume
+
+NO-CONTROL-PLANE-WRITE WINDOW: ZERO tracked or untracked repository writes from AUTHORIZED_LOCAL_HEAD capture until runner return, including `TASKS.md`, `TASKS_BACKLOG_FULL.md`, `docs/*`, runner files, product files, evidence files, and all other repo paths.
+
+Never: capture HEAD → modify `TASKS.md` / backlog / docs → run.
+
+---
+
+#### Frozen live phase order
+
+```
+PREPARE_BROWSER
+→ AUTH
+→ SAFETY
+→ STARTING_BALANCE
+→ ARM_LISTENERS
+→ CREATE_SESSION
+→ BUILD
+→ WAIT_FOR_AUTO_APPLY
+→ PREVIEW
+→ CHECKPOINT
+→ PUBLIC_CONFIRM
+→ DEDUCTION
+→ BALANCE
+→ CLEANUP
+```
+
+Do not change phase order.
+
+---
+
+#### Provider / credit / 03L / AUTO-01G / AUTO-01H / AUTO-01J / AUTO-01K / AUTO-01F / PREVIEW / PUBLIC_CONFIRM / BALANCE contracts
+
+- Provider: xAI. Model: grok-4.5. Budget: 1. Retries: 0. Fallback: NONE. One Send. One `POST /api/ai/execute`. One provider authorization. If BUILD is not reached: provider usage = 0.
+- Credit: starting balance; `tokens_used`; exactly one deduction; credits deducted = `tokens_used`; starting − deduction = ending; no duplicate; no Stripe charge; no manual/synthetic credit mutation.
+- 03L fixture: BUILD prompt requests exactly one `index.html` with frozen marker `PRIVATE-BETA-E2E-AUTO`; no extra files; do not reintroduce `e2e-auto.html`.
+- AUTO-01H BUILD: observe `POST /api/ai/execute` HTTP 202 JSON `{ executionId, status: "queued" }`; `executionId` non-empty; bounded response wait and body read; same `executionId` must reach DEDUCTION; no `POST /api/ai/executions` collection dependency.
+- AUTO-01G WAIT_FOR_AUTO_APPLY: prove `POST /api/sessions/:sessionId/files/write` matching correct session, `path = index.html`, HTTP 204; listener armed during ARM_LISTENERS; no Code & Files UI node requirement; no forced tab switch.
+- PREVIEW: exercise the legitimate locked static contract (workspace root contains `index.html`); Start Preview should launch the static project; PASS requires actual runner Preview PASS; presence of `index.html` alone is not Preview success; LIVE-09 and LIVE-10 already proved this path and LIVE-11 must prove it fresh again; iframe/proxy must be reached and `PRIVATE-BETA-E2E-AUTO` asserted.
+- AUTO-01J CHECKPOINT: bounded same-session observation of `GET /api/sessions/:sessionId/checkpoints`; first GET immediate; empty `[]` is pollable absence; PASS only when a row matches description includes `applied workspace file actions` AND non-empty `commitHash` AND `filesChanged >= 1`; no `checkpoints[0]` fallback; no invented executionId correlation; malformed/non-array/HTTP non-2xx fail closed immediately; deadline fails `No automatic checkpoint was returned.`; LIVE-11 must obtain actual runner CHECKPOINT PASS; a product row discovered afterward is not enough if the runner phase fails.
+- PUBLIC_CONFIRM: only after CHECKPOINT PASS; runner-observed HTTP 200, `triggered=true`, `reason=completed`; product-side logs alone are not enough if runner phase evidence is absent.
+- AUTO-01K DEDUCTION: remote verifier must obtain `DATABASE_URL` from `/opt/aisandbox/.env` using extraction equivalent to `DATABASE_URL="$(grep -m1 '^DATABASE_URL=' /opt/aisandbox/.env | cut -d= -f2-)"`; if absent/empty fail closed `AISB_DATABASE_URL_MISSING`; forbidden: `source /opt/aisandbox/.env`, `. /opt/aisandbox/.env`, PM2 env dump, embedding secret URI in SSH argv, printing `DATABASE_URL`; then existing psql query correlated by `source_event_id = executionId`; require runner `deductionCount === 1`; LIVE-11 must obtain actual runner DEDUCTION PASS; product/operator evidence after failure does not substitute.
+- BALANCE: GET `/api/billing/balance`; require actual runner BALANCE PASS; capture starting balance, `tokens_used`, credits deducted, ending balance; exactly one deduction; credits deducted = `tokens_used`; starting − deduction = ending; no duplicate; no Stripe charge; do not assume BALANCE PASS from CONTRACT.
+- AUTO-01F cleanup: normal final `GLOBAL_EXECUTION_ENABLED=false` and `BILLING_CHARGES_ENABLED=false`; LIVE-11 session stopped; LIVE-11 container removed; LIVE env cleared; DPAPI absent. If SSH restoration times out: `executionGateFinal=restore-unconfirmed-timeout`. Do not claim restored-false. No second SSH restoration attempt. No LIVE rerun. Operator verification/remediation required. If execution gate restoration is unconfirmed: do not claim PASS.
+
+---
+
+#### Staging / one-run / PASS / failure taxonomy
+
+SSH alias `aisandbox-staging`. Repo `/opt/aisandbox`. Retained stash `stash@{0}` SHA `0372cc1f47f82e1db060ed2dd756a938fe324803` historical name `pre-03F-deployment-snapshot-2026-08-15`. Never modify/pop/apply/drop/rename/recreate it. If staging differs from AUTHORIZED_LOCAL_HEAD: `git fetch origin main`; verify target exists; `git reset --hard AUTHORIZED_LOCAL_HEAD`. Never `git pull`. Never deploy another SHA.
+
+Future Step 2: `npm run e2e:builder:live` EXACTLY ONCE. A failed invocation consumes LIVE-11 even if provider calls = 0, credits = 0, AUTH/SAFETY fails, CREATE_SESSION fails, BUILD not reached, AUTO_APPLY fails, PREVIEW fails, CHECKPOINT fails, PUBLIC_CONFIRM fails, DEDUCTION/BALANCE fails, environment/parity failure, automation failure, provider failure, outer timeout, Cursor disconnect, or formatted verdict missing. After invocation #1: evidence + cleanup only. No manual browser. No second run.
+
+PASS requires ALL: AUTH PASS; SAFETY PASS; STARTING_BALANCE captured; ARM_LISTENERS PASS; CREATE_SESSION PASS; fresh project/session/container; BUILD submitted once; `POST /api/ai/execute` once HTTP 202; real non-empty executionId; provider xAI / grok-4.5; provider calls exactly 1; retries 0; `tokens_used` captured; AUTO_APPLY PASS; files/write path=`index.html` HTTP 204; generated `index.html` confirmed; `PRIVATE-BETA-E2E-AUTO` confirmed; PREVIEW PASS (actual runner Preview PASS); CHECKPOINT PASS via AUTO-01J bounded observation; PUBLIC_CONFIRM HTTP 200 `triggered=true` `reason=completed`; DEDUCTION PASS using AUTO-01K DB acquisition; exactly one qualifying deduction; credits = `tokens_used`; BALANCE PASS (actual runner); starting − deduction = ending; no Stripe charge; CLEANUP PASS; `GLOBAL_EXECUTION_ENABLED` final=false; `BILLING_CHARGES_ENABLED` final=false; session stopped; container removed; LIVE env cleared; DPAPI absent; formatted verdict PASS. Missing mandatory evidence means no PASS.
+
+If failed, exactly one primary class: PRODUCT_FAILURE / AUTOMATION_ADAPTER_FAILURE / ENVIRONMENT/PARITY_FAILURE / PROVIDER_FAILURE. Record exact failed phase and last successful phase. Do not guess.
+
+---
+
+#### Step 1 activity ledger
+
+```
+LIVE runs = 0
+SSH connections = 0
+staging mutations = 0
+provider calls = 0
+credit mutations = 0
+gate mutations = 0
+project/session/container creation = 0
+runner modifications = 0
+production-source modifications = 0
+frontend modifications = 0
+backend/service modifications = 0
+dependency changes = 0
+Git mutations = 0
+```
+
+---
+
+#### Step 1 checklist
+
+- [x] identifier PRIVATE-BETA-E2E-LIVE-11 verified unused as a registered task (historical recommendation prose does not count)
+- [x] branch = `main`; tree = CLEAN at admission; HEAD = `87e2958067926244421981144224b0f842479246`
+- [x] AUTO-01G, AUTO-01H, AUTO-01I, AUTO-01J, AUTO-01K, and 03L commits are ancestors of HEAD
+- [x] 03J / 03K / 03L / AUTO-01 through AUTO-01K locked PASS; LIVE-10 locked FAIL/BLOCKED and not rewritten
+- [x] admitted to Lane 1; Lane 2 EMPTY; Lane 3 DISABLED
+- [x] GOVERNANCE acquired for this Step 1 board/registry/contract write, then released
+- [x] STAGING / PROVIDER-LIVE / CREDIT / ENV reserved to PRIVATE-BETA-E2E-LIVE-11 and remain reserved after Step 1
+- [x] all runtime authorization flags remain NO
+- [x] Step 1 HEAD recorded and **not** frozen for Step 2
+- [x] one-run / no-rerun / provider / credit / staging / stash / 03L index.html / AUTO-01G / AUTO-01H / AUTO-01J CHECKPOINT / AUTO-01K DEDUCTION / AUTO-01F / AUTO-01I / PREVIEW / PUBLIC_CONFIRM / BALANCE / PASS / failure taxonomy contracts frozen
+- [x] `docs/PRIVATE-BETA-E2E-LIVE-11-EXECUTION.md` created (contract/setup only; no fabricated runtime evidence)
+- [x] no LIVE / SSH / staging / provider / credit / gate / product / runner / dependency / Git activity
+
+**PRIVATE-BETA-E2E-LIVE-11 STEP 1 COMPLETE — REGISTERED WITH STAGING / PROVIDER-LIVE / CREDIT / ENV RESERVED IN COMMITTABLE BOARD STATE, ALL RUNTIME AUTHORIZATION FLAGS FALSE, AND AUTO-01K DEDUCTION DATABASE-CONNECTION CONTRACT FROZEN — KEITH MUST COMMIT BEFORE STEP 2 EXECUTION EDGE — NO LIVE ACTIVITY**
+
 
