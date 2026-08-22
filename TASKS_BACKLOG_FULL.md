@@ -68935,7 +68935,7 @@ CREDITS=0
 **Title:** Fresh Automated Builder LIVE E2E After 03L Aligned Fixture With Committed Resource Reservation
 **Workstream:** RELIABILITY
 **Lifecycle:** 3-step HIGH-RISK bounded task
-**Status:** ACTIVE — Step 1 COMPLETE — Step 2 PENDING / NOT AUTHORIZED
+**Status:** ACTIVE — Step 1 COMPLETE — Step 2 COMPLETE — LANE-DONE — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CHECKPOINT — 2026-08-22 — Step 3 PENDING
 **Assigned lane:** 1
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
@@ -69193,46 +69193,54 @@ Git mutations = 0
 - [x] `docs/PRIVATE-BETA-E2E-LIVE-09-EXECUTION.md` created (contract/setup only; no fabricated runtime evidence)
 - [x] no LIVE / SSH / staging / provider / credit / gate / product / runner / dependency / Git activity
 
-#### Step 2 (PENDING / NOT AUTHORIZED)
-- [ ] Keith commit/push of this complete Step 1 reservation state
-- [ ] `git status --short` EMPTY on the committed reservation HEAD
-- [ ] explicit Keith LIVE authorization
-- [ ] verify committed LIVE-09 ownership of STAGING / PROVIDER-LIVE / CREDIT / ENV
-- [ ] NO governance writes between AUTHORIZED_LOCAL_HEAD capture and runner return
-- [ ] capture AUTHORIZED_LOCAL_HEAD from the then-current clean committed HEAD (not Step 1 HEAD `f9df707be4d330b851584d09e745e676e8017e67`)
-- [ ] NO-CONTROL-PLANE-WRITE WINDOW until runner return
-- [ ] compare-then-deploy exactly that SHA if required
-- [ ] final triple gate
-- [ ] ONE `npm run e2e:builder:live`
-- [ ] post-run evidence only after runner return
+#### Step 2 (COMPLETE — LANE-DONE — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CHECKPOINT — 2026-08-22)
+- [x] Keith commit/push of this complete Step 1 reservation state (`14130f6db70b08ff116d8a51ef5c96657c5c21f2`)
+- [x] `git status --short` EMPTY on the committed reservation HEAD
+- [x] explicit Keith LIVE authorization
+- [x] verify committed LIVE-09 ownership of STAGING / PROVIDER-LIVE / CREDIT / ENV
+- [x] NO governance writes between AUTHORIZED_LOCAL_HEAD capture and runner return
+- [x] capture AUTHORIZED_LOCAL_HEAD from the then-current clean committed HEAD (not Step 1 HEAD `f9df707be4d330b851584d09e745e676e8017e67`) — SHA `14130f6db70b08ff116d8a51ef5c96657c5c21f2`
+- [x] NO-CONTROL-PLANE-WRITE WINDOW until runner return
+- [x] compare-then-deploy exactly that SHA if required
+- [x] final triple gate
+- [x] ONE `npm run e2e:builder:live` — NPM_EXIT=1 — formatted verdict FAIL — failed phase CHECKPOINT — last successful PREVIEW
+- [x] post-run evidence only after runner return — `docs/PRIVATE-BETA-E2E-LIVE-09-EXECUTION.md`
 
 #### Step 3 (PENDING)
 - [ ] consolidation / checkpoint / lock from frozen Step 2 evidence
 - [ ] do not convert LIVE-08 to PASS
 - [ ] do not rerun LIVE-08
+- [ ] do not rerun LIVE-09
 - [ ] do not register PRIVATE-BETA-INVITE-01
 
 ---
 
-**PRIVATE-BETA-E2E-LIVE-09 status:** ACTIVE — Step 1 COMPLETE — Step 2 PENDING / NOT AUTHORIZED
+**PRIVATE-BETA-E2E-LIVE-09 status:** ACTIVE — Step 2 COMPLETE — LANE-DONE — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CHECKPOINT — 2026-08-22
 **Step 1:** COMPLETE — registration + committed resource reservation + exact execution contract freeze — contract: `docs/PRIVATE-BETA-E2E-LIVE-09-EXECUTION.md`
-**Step 2:** PENDING / NOT AUTHORIZED
+**Step 2:** COMPLETE — LANE-DONE — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CHECKPOINT — 2026-08-22 — evidence: `docs/PRIVATE-BETA-E2E-LIVE-09-EXECUTION.md`
 **Step 3:** PENDING
-**Assigned lane:** 1
+**Assigned lane:** 1 (LANE-DONE)
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
 **Step 1 HEAD (informational only; NOT frozen for Step 2):** `f9df707be4d330b851584d09e745e676e8017e67`
-**AUTHORIZED_LOCAL_HEAD:** NOT_CAPTURED
-**STAGING / PROVIDER-LIVE / CREDIT / ENV:** owned by PRIVATE-BETA-E2E-LIVE-09
-**GOVERNANCE:** UNOWNED (released after Step 1 writes)
+**AUTHORIZED_LOCAL_HEAD:** `14130f6db70b08ff116d8a51ef5c96657c5c21f2`
+**STAGING / PROVIDER-LIVE / CREDIT / ENV:** released after confirmed-safe cleanup
+**GOVERNANCE:** UNOWNED (released after Step 2 writes)
 **RUNTIME_EXECUTION_AUTHORIZED / PROVIDER_CALL_AUTHORIZED / CREDIT_MUTATION_AUTHORIZED / STAGING_MUTATION_AUTHORIZED:** NO / NO / NO / NO
-**LIVE_RUNS / SSH / STAGING_MUTATION / PROVIDER / CREDITS / GATE_MUTATION:** 0 / 0 / 0 / 0 / 0 / 0
+**LIVE_RUNS / SSH / STAGING_MUTATION / PROVIDER / CREDITS:** 1 / YES / YES (deploy + disposable run) / 1 / 1159
+**NPM_EXIT:** 1
+**FORMATTED_VERDICT:** FAIL
+**FAILED_PHASE:** CHECKPOINT
+**LAST_SUCCESSFUL_PHASE:** PREVIEW
+**PREVIEW:** PASS (`index.html` static preview; heading `PRIVATE-BETA-E2E-AUTO`)
+**projectId / sessionId / executionId:** `f76bfec0-5b81-46cf-9d9c-4858391f0a45` / `9a6a6f67-3ec2-40f9-9d1f-b0ba609bc118` / `4f7dffc4-b29c-4e9e-afeb-bee6ba96ed40`
 **FROZEN_ARTIFACT_PATH:** index.html
 **FROZEN_MARKER:** PRIVATE-BETA-E2E-AUTO
 **LOCKED:** NO
 **LIVE_STAGING_VALIDATED:** NO
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_AUTOMATED_E2E
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+**Evidence:** `docs/PRIVATE-BETA-E2E-LIVE-09-EXECUTION.md`
 **Contract:** `docs/PRIVATE-BETA-E2E-LIVE-09-EXECUTION.md`
 
 
