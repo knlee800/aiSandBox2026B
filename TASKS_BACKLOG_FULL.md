@@ -68221,4 +68221,102 @@ Git mutations = 0
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 **Exact next (NOT REGISTERED HERE):** bounded LIVE clean-tree / control-plane sequencing investigation — likely `PRIVATE-BETA-E2E-AUTO-01I` (verify unused at future registration). First question: how can required LIVE resource/control-plane state be established without dirtying the local repository between AUTHORIZED_LOCAL_HEAD capture and the runner SAFETY clean-tree check? Do not register another provider-bearing LIVE run until that is proven and locked. Do not weaken the runner clean-tree gate. Do not reopen AUTO-01G or AUTO-01H. Do not convert LIVE-07 to PASS. Do not rerun LIVE-07.
 
+---
+
+### PRIVATE-BETA-E2E-AUTO-01I — Diagnose LIVE Clean-Tree / Control-Plane Sequencing Conflict
+
+**Task ID:** PRIVATE-BETA-E2E-AUTO-01I
+**Title:** Diagnose LIVE Clean-Tree / Control-Plane Sequencing Conflict
+**Workstream:** RELIABILITY
+**Classification:** GOVERNANCE_EXECUTION_PROCEDURE_INVESTIGATION
+**Lifecycle:** 3-step bounded task
+**Status:** ACTIVE — Step 1 COMPLETE — 2026-08-22 — Step 2 NOT STARTED
+**Assigned lane:** 1
+**Lane 2:** EMPTY
+**Lane 3:** DISABLED
+**Registered:** 2026-08-22
+**Approved:** Keith — 2026-08-22 (Step 1 registration + admission + root-cause / procedure-contract diagnosis only — does NOT authorize Step 2)
+**Evidence class:** LOCAL-TESTS
+**Hot-file leases:** NONE
+**Diagnosis document:** `docs/PRIVATE-BETA-E2E-AUTO-01I-DIAGNOSIS.md`
+
+**Identifier search:** PRIVATE-BETA-E2E-AUTO-01I was **unused as a registered task** before this registration. Repo-wide search found only historical recommendation prose: `TASKS.md` next-gate line, `docs/PRIVATE-BETA-E2E-LIVE-07-CHECKPOINT.md` (“Do not register PRIVATE-BETA-E2E-AUTO-01I here”; “AUTO-01I registered in Step 3: NO”; likely-identifier note), and this file's locked LIVE-07 “Exact next (NOT REGISTERED HERE)” line. Zero `### PRIVATE-BETA-E2E-AUTO-01I` registry entries existed. Historical recommendation prose does not count as prior registration. Rejected: reopening LIVE-07 / LIVE-06 / AUTO-01G / AUTO-01H; registering another provider-bearing LIVE task; registering PRIVATE-BETA-INVITE-01; weakening the runner clean-tree SAFETY gate.
+
+**Start condition:** READY — Lane 1 EMPTY at admission; Lane 2 EMPTY; Lane 3 DISABLED; clean tree at admission (`git status --short` empty; HEAD `903def47e7da4d1720f5e911e5dbbb71edd7424d`; branch `main`); STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER UNOWNED at admission; LIVE-07 COMPLETE AND LOCKED — FAIL/BLOCKED — ENVIRONMENT/PARITY_FAILURE — SAFETY; AUTO-01G / AUTO-01H COMPLETE AND LOCKED — PASS; OS v1 admission requirements pass.
+
+**Depends on (required locked evidence / PASS):**
+- PRIVATE-BETA-E2E-LIVE-07 — COMPLETE AND LOCKED — FAIL/BLOCKED — ENVIRONMENT/PARITY_FAILURE — SAFETY — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-07-CHECKPOINT.md` — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-07-EXECUTION.md` — do not rewrite; do not rerun; do not convert to PASS; do not weaken SAFETY
+- PRIVATE-BETA-E2E-AUTO-01H — COMPLETE AND LOCKED — PASS — 2026-08-21 — do not reopen
+- PRIVATE-BETA-E2E-AUTO-01G — COMPLETE AND LOCKED — PASS — 2026-08-21 — do not reopen
+- GOV-OS-01 — COMPLETE AND LOCKED — PASS — 2026-08-18 — Checkpoint: `docs/GOV-OS-01-CHECKPOINT.md` — Frozen contract: `docs/GOV-OS-01-STAGE-START.md`
+
+**Nature:** Procedure / governance investigation of the LIVE-07 clean-tree vs control-plane sequencing conflict. Not a LIVE task. Not a runner fix. Not a product fix. Not an OS mutation in Step 1. Not a LIVE-07 rerun. Not PRIVATE-BETA-INVITE-01.
+
+**Primary write scope:**
+- Step 1: `TASKS.md` CURRENT EXECUTION BOARD above LEGACY / FROZEN only; this registry entry; `docs/PRIVATE-BETA-E2E-AUTO-01I-DIAGNOSIS.md`
+- Step 2 (after explicit Keith authorization only): smallest proven procedure/governance correction and non-LIVE validation; no runner/product/LIVE/SSH/staging/provider/credit/gate/Git mutation
+- Step 3: checkpoint + board/registry end-status only
+- No PRD.md. No ARCHITECTURE.md. No CLAUDE.md. No AGENTS.md in Step 1. No locked LIVE-07 / AUTO-01* body edits.
+
+**Mutexes / resources:** GOVERNANCE acquired for this Step 1 board/registry/diagnosis write and held pending Step 2. STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER remain UNOWNED. All HOTFILE leases UNOWNED.
+
+**Shared contracts (frozen; must not be modified by this task):**
+- PRIVATE-BETA-E2E-LIVE-07 COMPLETE AND LOCKED — FAIL/BLOCKED — ENVIRONMENT/PARITY_FAILURE — SAFETY — clean-tree SAFETY gate WORKED AS INTENDED
+- Runner `readAuthorizedLocalHead()` / `inspectParity` exact-HEAD + clean-tree contract (`e2e/builder-golden-path/lib/staging.ts`)
+- GOV-OS-01 v1: `TASKS.md` board = only scheduler / mutex table; backlog = canonical registry; end-status mirroring; Keith owns Git
+- PRIVATE-BETA-E2E-AUTO-01..AUTO-01H runner contracts — do not reopen or modify in this task
+- retained staging stash invariant `stash@{0}` = `0372cc1f47f82e1db060ed2dd756a938fe324803`
+
+**Revert / evidence isolation:** Single lane. Diagnosis-only in Step 1, fully reversible. Reverting AUTO-01I must not invalidate locked LIVE-07 / AUTO-01G / AUTO-01H / GOV-OS-01 evidence. Lane 2 remains EMPTY; Lane 3 remains DISABLED.
+
+**Purpose:** Prove how a future provider-bearing LIVE lifecycle can establish authoritative Development OS control-plane/resource ownership while preserving runner clean-tree + exact deployed-HEAD parity at SAFETY. Do not weaken either invariant.
+
+---
+
+#### Step 1 (COMPLETE — 2026-08-22 — registration + root-cause / procedure-contract diagnosis only)
+
+Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01I-DIAGNOSIS.md`
+
+**Root cause PROVEN:** LIVE-07 captured AUTHORIZED_LOCAL_HEAD on a clean tree, then wrote in-flight resource-acquisition state into `TASKS.md` and `TASKS_BACKLOG_FULL.md` before invoking `npm run e2e:builder:live`. SAFETY (`readAuthorizedLocalHead` → `git status --short`) correctly failed closed. The gate is not defective.
+
+**Ownership model PROVEN:** mutex ownership is authoritative only on the `TASKS.md` CURRENT EXECUTION BOARD. The backlog mirrors **end status**, not in-flight ownership. Uncommitted board writes are not an OS requirement at the runner edge.
+
+**Selected sequencing model:** Step 1 committed reservation of STAGING / PROVIDER-LIVE / CREDIT / ENV (LIVE-02..LIVE-05 pattern) + no in-flight backlog write + if any additional board write is still required, STOP for Keith commit, recapture AUTHORIZED_LOCAL_HEAD, deploy that SHA, then invoke with zero further tracked writes.
+
+**SAFETY should change:** NO  
+**Runner code change required:** NO  
+**Product change required:** NO
+
+Step 2 is **not** authorized by Step 1.
+
+##### Step 1 activity ledger
+
+```
+LIVE runs = 0
+SSH connections = 0
+staging mutations = 0
+provider calls = 0
+credit mutations = 0
+gate mutations = 0
+project/session creation = 0
+runner implementation modifications = 0
+product modifications = 0
+dependency changes = 0
+Git mutations = 0
+```
+
+##### Step 1 checklist
+
+- [x] identifier PRIVATE-BETA-E2E-AUTO-01I verified unused as a registered task (historical recommendation prose does not count)
+- [x] branch = `main`; tree = CLEAN at admission; HEAD = `903def47e7da4d1720f5e911e5dbbb71edd7424d`
+- [x] admitted to Lane 1; Lane 2 EMPTY; Lane 3 DISABLED
+- [x] GOVERNANCE acquired and held; STAGING / PROVIDER-LIVE / CREDIT / ENV not acquired
+- [x] LIVE-07 not rewritten; SAFETY not weakened; no LIVE / SSH / staging / provider / credit / gate / runner / product / Git activity
+- [x] `docs/PRIVATE-BETA-E2E-AUTO-01I-DIAGNOSIS.md` created
+- [ ] Step 2 smallest proven procedure/governance correction — NOT STARTED
+- [ ] Step 3 checkpoint / consolidation / lock — NOT STARTED
+
+**Blocker before Step 2:** explicit Keith authorization for procedure/governance-only Step 2. No LIVE. No runner change.
+
+**PRIVATE-BETA-E2E-AUTO-01I STEP 1 COMPLETE — LIVE-07 CLEAN-TREE / CONTROL-PLANE SEQUENCING ROOT CAUSE AND SAFE EXECUTION ORDER PROVEN — NO RUNTIME OR RUNNER CHANGE — READY FOR BOUNDED STEP 2 PROCEDURE FIX**
 
