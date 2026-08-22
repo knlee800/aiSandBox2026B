@@ -69252,4 +69252,107 @@ Git mutations = 0
 **Checkpoint:** `docs/PRIVATE-BETA-E2E-LIVE-09-CHECKPOINT.md`
 **Exact next (NOT REGISTERED HERE):** one bounded automation-adapter root-cause lifecycle — likely `PRIVATE-BETA-E2E-AUTO-01J` (verify unused at future registration; repo search at this lock found zero occurrences) — working title: Automatic Checkpoint Observation Contract — FIRST question: why did the runner perform a single checkpoint GET and receive an empty list while the expected automatic product checkpoint appeared shortly afterward? Do not assume race condition until proven. Do not change product or runner until root cause is proven. Do not rerun or convert LIVE-09. Do not reopen AUTO-01G / AUTO-01H / AUTO-01I / 03L. Do not weaken runner SAFETY. Do not register PRIVATE-BETA-INVITE-01. Do not register PRIVATE-BETA-E2E-AUTO-01J here.
 
+---
+
+### PRIVATE-BETA-E2E-AUTO-01J — Automatic Checkpoint Observation Contract
+
+**Task ID:** PRIVATE-BETA-E2E-AUTO-01J
+**Title:** Automatic Checkpoint Observation Contract Root-Cause Investigation and Bounded Adapter Fix
+**Workstream:** RELIABILITY
+**Classification:** AUTOMATION_TOOLING_INVESTIGATION (Step 1) + bounded AUTOMATION_ADAPTER_FIX (Step 2, not yet authorized)
+**Lifecycle:** 3-step bounded task
+**Status:** ACTIVE — Step 1 COMPLETE — 2026-08-22
+**Assigned lane:** Lane 1 ACTIVE
+**Lane 2:** EMPTY
+**Lane 3:** DISABLED
+**Registered:** 2026-08-22
+**Approved:** Keith — 2026-08-22 (Step 1 registration + admission + diagnosis only — does NOT authorize Step 2 implementation, LIVE, or PRIVATE-BETA-INVITE-01)
+**Evidence class:** LOCAL-TESTS
+**Diagnosis document:** `docs/PRIVATE-BETA-E2E-AUTO-01J-DIAGNOSIS.md`
+**Owning fix (Step 1 proven):** AUTOMATION_ADAPTER_FIX
+**Hot-file leases:** `e2e/builder-golden-path/lib/live-adapters.ts`; `e2e/builder-golden-path/lib/constants.ts`; `e2e/builder-golden-path/lib/network.ts`; `e2e/builder-golden-path/lib/local-fixture.ts`; `e2e/builder-golden-path/lib/evidence.ts`; `e2e/builder-golden-path/tests/live-adapters.spec.ts`; `e2e/builder-golden-path/tests/evidence.spec.ts`
+
+**Identifier search:** PRIVATE-BETA-E2E-AUTO-01J was **unused as a registered task** before this registration. Repo-wide search found only historical recommendation prose: `docs/PRIVATE-BETA-E2E-LIVE-09-CHECKPOINT.md:545` (“Likely identifier if later registered: **PRIVATE-BETA-E2E-AUTO-01J**”), LIVE-09 lock “Exact next (NOT REGISTERED HERE)” in this file, and `TASKS.md` next-gate “Do not register PRIVATE-BETA-E2E-AUTO-01J here.” Zero `### PRIVATE-BETA-E2E-AUTO-01J` registry entries existed. Historical recommendation prose does not count as prior registration. Existing E2E IDs: PRIVATE-BETA-E2E-01..05, PRIVATE-BETA-E2E-AUTO-01, AUTO-01A..AUTO-01I, PRIVATE-BETA-E2E-LIVE-01..LIVE-09, PRIVATE-BETA-BLOCKER-03L. Rejected: reopening LIVE-09 / LIVE-08 / AUTO-01G / AUTO-01H / AUTO-01I / 03L; registering PRIVATE-BETA-INVITE-01; a product checkpoint-creation change; a phase reorder.
+
+**Start condition:** READY — PRIVATE-BETA-E2E-LIVE-09 COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CHECKPOINT — 2026-08-22; PRIVATE-BETA-E2E-AUTO-01 through AUTO-01I COMPLETE AND LOCKED — PASS according to their authoritative registry/checkpoints; PRIVATE-BETA-BLOCKER-03L COMPLETE AND LOCKED — PASS — 2026-08-22; Lane 1 EMPTY at admission; Lane 2 EMPTY; Lane 3 DISABLED; clean tree at admission (`git status --short` empty; HEAD `ea4c314aca7df88e0a5046764714f53169899db8`; branch `main`); STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER UNOWNED at admission; OS v1 admission requirements pass.
+
+**Depends on (required locked evidence):**
+- PRIVATE-BETA-E2E-LIVE-09 — COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CHECKPOINT — 2026-08-22 — Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-09-CHECKPOINT.md` — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-09-EXECUTION.md` — do not rewrite; do not rerun; do not convert to PASS
+- PRIVATE-BETA-E2E-AUTO-01I — COMPLETE AND LOCKED — PASS — 2026-08-22 — do not reopen
+- PRIVATE-BETA-E2E-AUTO-01H — COMPLETE AND LOCKED — PASS — 2026-08-21 — do not reopen
+- PRIVATE-BETA-E2E-AUTO-01G — COMPLETE AND LOCKED — PASS — 2026-08-21 — do not reopen
+- PRIVATE-BETA-BLOCKER-03L — COMPLETE AND LOCKED — PASS — 2026-08-22 — do not reopen
+- GOV-OS-01 — COMPLETE AND LOCKED — PASS — 2026-08-18
+
+**Nature:** Automation-tooling investigation of the LIVE-09 CHECKPOINT empty-list observation failure, then (Step 2 only after Keith authorization) one smallest TDD adapter correction. Not a LIVE task. Not a product checkpoint-creation change. Not an OS mutation. Not a LIVE-09 rerun. Not PRIVATE-BETA-INVITE-01.
+
+**Primary write scope:**
+- Step 1: `TASKS.md` CURRENT EXECUTION BOARD above LEGACY / FROZEN only; this canonical registry entry; `docs/PRIVATE-BETA-E2E-AUTO-01J-DIAGNOSIS.md`
+- Step 2 (after explicit Keith authorization only): runner/CONTRACT files listed in HOTFILE leases; no product/frontend/services; no LIVE
+- Step 3: checkpoint + board/registry end-status only
+- No PRD.md. No ARCHITECTURE.md. No CLAUDE.md. No AGENTS.md. No locked LIVE-09 / AUTO-01* / 03L body edits.
+
+**Mutexes / resources:** GOVERNANCE acquired for this Step 1 board/registry/diagnosis write, then released. Selected HOTFILE leases held across Step 1 → Step 2. STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER remain UNOWNED. AUTO-01J did not claim LIVE runtime resources.
+
+**Shared contracts (frozen; must not be modified by this task):**
+- PRIVATE-BETA-E2E-LIVE-09 COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CHECKPOINT — 2026-08-22 — not rewritten
+- Frozen golden-path phase order PREVIEW → CHECKPOINT → PUBLIC_CONFIRM (`e2e/builder-golden-path/lib/phases.ts`)
+- AUTO-01G files/write 204 AUTO_APPLY observation — do not reopen
+- AUTO-01H BUILD `POST /api/ai/execute` 202 `executionId` — do not reopen
+- AUTO-01I LIVE clean-execution sequencing / runner SAFETY — do not weaken
+- 03L `FROZEN_ARTIFACT_PATH='index.html'` — do not reopen
+- GOV-OS-01 v1 board/registry/mutex rules
+
+**Revert / evidence isolation:** Single lane. Diagnosis-only in Step 1, fully reversible. Reverting AUTO-01J must not invalidate locked LIVE-09 / AUTO-01G / AUTO-01H / AUTO-01I / 03L evidence. Lane 2 remains EMPTY; Lane 3 remains DISABLED.
+
+**Purpose:** Prove why the runner CHECKPOINT adapter received no checkpoint while the expected automatic product checkpoint existed later, then (Step 2) apply one bounded observation-contract fix. Do not change product checkpoint creation. Do not reorder phases unless diagnosis proves the order invalid (it does not).
+
+---
+
+#### Step 1 (COMPLETE — 2026-08-22 — registration + root-cause / observation-contract diagnosis only)
+
+Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01J-DIAGNOSIS.md`
+
+**Root cause PROVEN:** LIVE `verifyCheckpoint()` performs one immediate `GET /api/sessions/:sessionId/checkpoints` and treats `[]` as terminal failure. Product automatic checkpoint `AI: applied workspace file actions` is created later on a separate async React-coherence branch (`runAiActionCoherence` awaits file-tree + preview refresh, then `POST /api/sessions/:sessionId/checkpoints` → CM git commit → PostgreSQL `git_checkpoints`). Empty `[]` is a valid list response before that insert. CONTRACT stub/fixture never models empty-first. Preview duration is an accidental unenforced delay.
+
+**PUBLIC_CONFIRM dependency:** NO — product confirm/deduction is a sibling branch after apply; checkpoint does not wait for runner PUBLIC_CONFIRM.
+**Phase order change:** NO — keep PREVIEW → CHECKPOINT → PUBLIC_CONFIRM.
+**Bounded polling required:** YES — success = correlated automatic row on the same GET within 30s / 250ms cadence; fail closed on HTTP error, malformed body, timeout; reject stale/non-matching rows; do not coerce non-array to `[]`.
+**Product change required:** NO
+**Owning fix:** AUTOMATION_ADAPTER_FIX
+**LIVE-09 historical class (unchanged):** AUTOMATION_ADAPTER_FAILURE
+
+Step 2 is **not** authorized by Step 1.
+
+##### Step 1 activity ledger
+
+```
+LIVE runs = 0
+SSH connections = 0
+staging mutations = 0
+provider calls = 0
+credit mutations = 0
+gate mutations = 0
+project/session creation = 0
+runner implementation modifications = 0
+product modifications = 0
+dependency changes = 0
+Git mutations = 0
+```
+
+##### Step 1 checklist
+
+- [x] identifier PRIVATE-BETA-E2E-AUTO-01J verified unused as a registered task (historical recommendation prose does not count)
+- [x] branch = `main`; tree = CLEAN at admission; HEAD = `ea4c314aca7df88e0a5046764714f53169899db8`
+- [x] admitted to Lane 1; Lane 2 EMPTY; Lane 3 DISABLED
+- [x] GOVERNANCE acquired then released; STAGING / PROVIDER-LIVE / CREDIT / ENV not acquired
+- [x] LIVE-09 not rewritten; no LIVE / SSH / staging / provider / credit / gate / runner implementation / product / Git activity
+- [x] `docs/PRIVATE-BETA-E2E-AUTO-01J-DIAGNOSIS.md` created
+- [ ] Step 2 smallest proven TDD adapter correction — PENDING Keith authorization
+- [ ] Step 3 checkpoint / consolidation / lock — PENDING
+
+**Blocker before Step 2:** explicit Keith authorization for one TDD adapter fix of the CHECKPOINT observation contract. No LIVE. No product change. Keith owns Git.
+
+**PRIVATE-BETA-E2E-AUTO-01J STEP 1 COMPLETE — AUTOMATIC CHECKPOINT OBSERVATION ROOT CAUSE AND SAFE BOUNDED ADAPTER CONTRACT PROVEN — READY FOR ONE TDD ADAPTER FIX**
+
 
