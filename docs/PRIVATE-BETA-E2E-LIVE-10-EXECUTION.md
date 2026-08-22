@@ -809,3 +809,224 @@ This is the committed mutex state that AUTO-01I requires.
 If VPN must remain ON for the selected Cursor model: STOP before LIVE execution.
 
 **PRIVATE-BETA-E2E-LIVE-10 STEP 1 COMPLETE — REGISTERED WITH STAGING / PROVIDER-LIVE / CREDIT / ENV RESERVED IN COMMITTABLE BOARD STATE, RUNTIME AUTHORIZATION FLAGS FALSE, AND AUTO-01J BOUNDED CHECKPOINT OBSERVATION FROZEN — KEITH MUST COMMIT BEFORE STEP 2 EXECUTION EDGE — NO LIVE ACTIVITY**
+
+---
+
+# PRIVATE-BETA-E2E-LIVE-10 — Step 2 Execution Evidence
+
+**Task ID:** PRIVATE-BETA-E2E-LIVE-10  
+**Step:** 2 — ONE authorized automated staging golden-path run  
+**Date:** 2026-08-22  
+**Primary classification:** AUTOMATION_ADAPTER_FAILURE  
+**Failed phase:** DEDUCTION  
+**Last successful runner phase:** PUBLIC_CONFIRM  
+**Step 2 state:** LANE-DONE — FAIL/BLOCKED — Step 3 PENDING  
+**Runner invoked:** YES (`npm run e2e:builder:live` **once**)  
+**LIVE_RUNNER_INVOKE:** 1  
+**NPM_EXIT:** 1  
+**Formatted verdict:** `verdict=FAIL`  
+**Playwright duration:** 1.1m (not the 600000ms outer timeout)
+
+Do not treat this document as a scheduler. LIVE-10 is not locked. Do not store credentials here. Do not modify AUTO-01 / AUTO-01A / AUTO-01B / AUTO-01C / AUTO-01D / AUTO-01E / AUTO-01F / AUTO-01G / AUTO-01H / AUTO-01I / AUTO-01J / 03L from this step. This is not a LIVE-09 rerun. Do not rerun LIVE-10. No patching during this task. Do not register PRIVATE-BETA-INVITE-01.
+
+---
+
+## Verdict
+
+Keith authorized Step 2. Committed Step 1 reservation of STAGING / PROVIDER-LIVE / CREDIT / ENV was already present on `TASKS.md`. Local `main` was CLEAN at AUTHORIZED_LOCAL_HEAD capture `c78dbad609677b7da86e3043629e042bcbcb8e9d` (`register LIVE-10 with reserved runtime resources`). AUTO-01G `b9cba2480ea4e9c814d17342c0e6aed2b469ef69`, AUTO-01H `25c25bd79c205c52838b3d151c73a0bc4a4de13f`, AUTO-01I lock `59b92df28cf755549e88aae89ce8107321c430e6`, 03L fixture `6a73b2ca95883be6f82fafc15ff533bc2be58224`, AUTO-01J implementation `31cf87c966393e0f23460d88965d28b3c0ceb786`, and AUTO-01J lock `314f7989b3ad9fbf080b258c1e0cbc00336a6d3f` are ancestors. Named consumer VPNs were disconnected. Repo writes between HEAD capture and runner return = **ZERO**. Staging compare-then-deploy of AUTHORIZED_LOCAL_HEAD succeeded. Product `frontend/` / `services/` / `package.json` / lockfile were unchanged vs pre-deploy staging HEAD `14130f6db70b08ff116d8a51ef5c96657c5c21f2`, so rebuild/restart was skipped. Final triple gate PASS. Playwright LIVE was invoked **exactly once**.
+
+Runner phases that completed: PREPARE_BROWSER → AUTH → SAFETY → STARTING_BALANCE → ARM_LISTENERS → CREATE_SESSION → BUILD → WAIT_FOR_AUTO_APPLY → PREVIEW → CHECKPOINT → PUBLIC_CONFIRM.
+
+DEDUCTION failed:
+
+```
+ssh exited 2: psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  role "ubuntu" does not exist
+```
+
+Failure class: **AUTOMATION_ADAPTER_FAILURE** at **DEDUCTION**.
+
+THIS WAS NOT A PROVIDER FAILURE.  
+THIS WAS NOT AN ENVIRONMENT/PARITY FAILURE.  
+THIS WAS NOT A PRODUCT CREDIT-DEDUCTION FAILURE for the observed terminal runner error.  
+AUTO-01J bounded CHECKPOINT observation **HELD** (actual runner CHECKPOINT PASS).  
+03L `index.html` static Preview **HELD** (actual runner PREVIEW PASS).  
+AUTO-01G WAIT_FOR_AUTO_APPLY files/write `index.html` 204 **HELD**.  
+AUTO-01H BUILD `POST /api/ai/execute` 202 `executionId` **HELD**.  
+AUTO-01I clean-execution sequencing **HELD**.  
+PUBLIC_CONFIRM runner **PASS** (phase completed; `validateLiveConfirmResponse` requires HTTP 200 `triggered=true` `reason=completed`).
+
+Product later recorded the expected 1:1 deduction for this `executionId` (`requested_credits=1164`, `applied_credits=1164`, `overflow_credits=0`, `25883 → 24719`). That does **not** convert the runner DEDUCTION phase to PASS. `verifyDeduction()` obtained `tokens_used` from `GET /api/ai/executions/:executionId`, then `staging.queryDeduction()` ran `psql "$DATABASE_URL"` over SSH without loading `/opt/aisandbox/.env`, so `DATABASE_URL` was empty and `psql` used the local unix socket as role `ubuntu`.
+
+Do not patch the deduction SSH/psql adapter or product accounting inside LIVE-10. Zero provider retries. Do not invoke `npm run e2e:builder:live` again.
+
+---
+
+## Deployment
+
+| Field | Value |
+|---|---|
+| AUTHORIZED_LOCAL_HEAD | `c78dbad609677b7da86e3043629e042bcbcb8e9d` (`register LIVE-10 with reserved runtime resources`) |
+| Local tree at HEAD capture | CLEAN / `main` |
+| STAGING_HEAD_BEFORE | `14130f6db70b08ff116d8a51ef5c96657c5c21f2` (locked LIVE-09 staging HEAD) |
+| Deployment performed | **YES** |
+| STAGING_HEAD_AFTER | `c78dbad609677b7da86e3043629e042bcbcb8e9d` |
+| `STAGING_HEAD == AUTHORIZED_LOCAL_HEAD` | **PASS** (scalar `-eq` after normalizing SSH output to one 40-character SHA) |
+| Deploy method | `git fetch origin main` + `git reset --hard <AUTHORIZED_LOCAL_HEAD>` |
+| `git pull` | **NOT USED** |
+| Rebuild / restart | **SKIPPED** — `frontend/` / `services/` / `package.json` / lockfile unchanged vs pre-deploy HEAD (AUTO-01J runner + LIVE-09/LIVE-10 docs/governance only) |
+| Staging tree after deploy | CLEAN |
+| stash@{0} before | `0372cc1f47f82e1db060ed2dd756a938fe324803` (`pre-03F-deployment-snapshot-2026-08-15`) |
+| stash@{0} after | `0372cc1f47f82e1db060ed2dd756a938fe324803` — unchanged; not applied/dropped/renamed |
+| Repo writes between HEAD capture and runner invocation | **ZERO** |
+
+---
+
+## Final triple gate (immediately before runner)
+
+SSH HEAD was normalized to one scalar SHA and compared with `-eq`. Array-valued `-match` / `-notmatch` was not used as the gate boolean.
+
+| Gate | Result |
+|---|---|
+| Local `git status --short` | EMPTY |
+| Local HEAD | `c78dbad609677b7da86e3043629e042bcbcb8e9d` = AUTHORIZED_LOCAL_HEAD |
+| Staging HEAD | `c78dbad609677b7da86e3043629e042bcbcb8e9d` = AUTHORIZED_LOCAL_HEAD |
+| Staging tree | CLEAN |
+| Retained stash | PASS |
+| Gateway `/api/health/ready` | HTTP 200 |
+| AI `/metrics` | HTTP 200 |
+| Container-manager `/api/health` | HTTP 200 |
+| Frontend `:3002` / public | HTTP 307 |
+| `GLOBAL_EXECUTION_ENABLED` before runner | false (.env + PM2) |
+| `BILLING_CHARGES_ENABLED` before runner | false (.env + PM2) |
+| Required PM2 processes | online (`aisandbox-api-gateway`, `aisandbox-frontend`, `aisandbox-ai-service`, `aisandbox-container-manager`) |
+| DPAPI `$env:TEMP\aisandbox-e2e-live-10-cred.xml` | existed before import |
+| FINAL_TRIPLE_GATE | **PASS** |
+
+---
+
+## LIVE run
+
+- Command: `npm run e2e:builder:live` — **once** (`LIVE_RUNNER_INVOKE=1`)
+- Start: `2026-08-22T15:03:36.7087441+08:00`
+- End: `2026-08-22T15:04:45.7663901+08:00`
+- Playwright duration: **1.1m**
+- Flags: `E2E_MODE=live`, `E2E_LIVE_AUTHORIZED=true`, `E2E_ALLOW_STAGING_MUTATION=true`, `E2E_ALLOW_CREDIT_MUTATION=true`, `PROVIDER_CALL_BUDGET=1` (process-only; never written to repo)
+- Credentials: transient DPAPI `PSCredential` import from `$env:TEMP\aisandbox-e2e-live-10-cred.xml`; process env cleared after runner (`ENV_CLEARED=YES`); DPAPI file deleted after invocation; never printed/committed
+- Human browser intervention: **NO**
+- NPM_EXIT: **1**
+
+Formatted runner output:
+
+```
+verdict=FAIL
+phase=DEDUCTION
+error=ssh exited 2: psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  role "ubuntu" does not exist
+projectId=07842cdb-31f5-45a6-95b3-7ad8817b0590
+sessionId=376d0a49-3df5-439a-ad8c-356e38396ce4
+executionId=18feb0a2-b992-46c8-aa75-4667fc05005d
+cleanup=session-stopped
+executionGateFinal=restored-false
+```
+
+Runner phases **NOT REACHED:** BALANCE (product-side 1:1 deduction still occurred; recorded below as product evidence, not runner DEDUCTION/BALANCE PASS)
+
+---
+
+## IDs / provider / accounting (observed)
+
+| Fact | Runner | Post-failure staging evidence |
+|---|---|---|
+| projectId | `07842cdb-31f5-45a6-95b3-7ad8817b0590` | `E2E-AUTO-Disposable-2026-08-22T07-03-47-349Z` |
+| sessionId | `376d0a49-3df5-439a-ad8c-356e38396ce4` | status=`stopped`; `terminated_at` null; `container_id` null |
+| containerId | not in formatted verdict | created `dde3fd528f3adab6a2bbf792ddaf4ca815e8287286538ff4ff8ad5ae34097f7c` (`sandbox-session-376d0a49-…`); removed (`docker ps -a` match count 0) |
+| executionId | `18feb0a2-b992-46c8-aa75-4667fc05005d` | same ID in usage_records + deduction `source_event_id` |
+| executionId source | BUILD `POST /api/ai/execute` 202 (AUTO-01H); gateway `execution.intent_written` | same |
+| Provider / model | xAI / grok-4.5 (authorized) | usage metadata `requestedModel`/`aiExecutionResult.model`=`grok-4.5`; AI log `Executing AI request via adapter (model=grok-4.5, provider=xai, session=376d0a49-…)`; screenshot Model `grok-4.5 (xAI)` |
+| Provider-call budget | 1 | used **1** |
+| Provider calls used | **1** | **1** (`execution_completed_total` 7→8) |
+| Retries used | **0** | **0** |
+| tokens_used | captured by `verifyDeduction` before the psql failure (not in fail summary) | **1164** (`usage_records.tokens_used` and `aiExecutionResult.tokensUsed`; xAI response tokens=1164) |
+| execute POST count | **1** (BUILD reached with real executionId) | intent_written once for this executionId |
+| Send click count | **1** | one provider result |
+| AUTO_APPLY | **PASS** (WAIT_FOR_AUTO_APPLY completed) | file persisted |
+| files/write 204 | matching write observed (phase completed; `waitForMatchingWrite` requires path `index.html` + HTTP 204) | `/opt/aisandbox/workspaces/376d0a49-3df5-439a-ad8c-356e38396ce4/index.html` exists |
+| Generated file | confirmed by AUTO_APPLY + disk | 191 bytes; SHA-256 `ce230ea6f1b8bd090de79c3f4fe6e9bd0c6f10fd1a590370585120ce8227d9e7`; exact frozen HTML including `<h1>PRIVATE-BETA-E2E-AUTO</h1>` |
+| Preview | **PASS** | CM `Starting preview for session 376d0a49-… on port 3004` with `npx serve -s .`; gateway proxied `/start`, `/status`, and `/proxy`; failure screenshot shows **Preview ready** and heading `PRIVATE-BETA-E2E-AUTO` |
+| Checkpoint | runner **PASS** (AUTO-01J bounded observation; PUBLIC_CONFIRM was entered) | product row `f5673094-ec15-4e94-a409-aa538f562391` / `edc0310429173262b8c04d749f7bc7f51a11afba` (`AI: applied workspace file actions`, `files_changed=1`) at 15:04:36; CM `Git checkpoint recorded` + EventsGateway `checkpoint-created` |
+| Checkpoint GET attempt count | not countable from gateway access logs | bounded observer (30s / 250ms / 10s); first GET immediate; success before deadline because CHECKPOINT returned |
+| Public confirm | runner **PASS** (`validateLiveConfirmResponse`: HTTP 200, `triggered=true`, `reason=completed`) | product `confirm_build_apply.deduction_triggered` at 15:04:31; `tokensUsed=1164`; `persistedFileActionCount=1` |
+| Deduction count | runner **FAIL** (psql role `ubuntu`) | **1** (`credit_deduction_records` for this `source_event_id`) |
+| Credits deducted | runner **FAIL** | **1164** (`requested_credits=1164`, `applied_credits=1164`, `overflow_credits=0`, status=`applied`) |
+| Starting balance | STARTING_BALANCE phase completed; numeric value not in fail summary | product `balance_before=25883` |
+| Ending balance | runner BALANCE NOT REACHED | **24719** (DB `credit_balances` and deduction `balance_after`) |
+| Reconciliation | runner NOT REACHED | 25883 − 1164 = 24719 |
+| Stripe | no charge expected (`BILLING_CHARGES_ENABLED=false`) | no `stripe`/`charge`/`payment` tables in public schema; no Stripe charge observed |
+
+---
+
+## CHECKPOINT evidence (actual runner PASS)
+
+CHECKPOINT is the key LIVE-10 gate after AUTO-01J bounded observation. LIVE-09 failed here on one-shot empty `[]`. LIVE-10 obtained **actual runner CHECKPOINT PASS**, not a later product-row retrofit.
+
+`verifyCheckpoint()` entered after PREVIEW PASS and returned before PUBLIC_CONFIRM. The matching product row is:
+
+```
+id          = f5673094-ec15-4e94-a409-aa538f562391
+commit_hash = edc0310429173262b8c04d749f7bc7f51a11afba
+files_changed = 1
+description = AI: applied workspace file actions
+created_at  = 2026-08-22 15:04:36.846196
+```
+
+That description/hash/`filesChanged` is the AUTO-01J success predicate. Exact GET poll count is not in the formatted verdict.
+
+Do not convert LIVE-09 to PASS. LIVE-09 remains FAIL/BLOCKED at CHECKPOINT.
+
+---
+
+## DEDUCTION failure evidence
+
+Runner `verifyDeduction()`:
+
+1. `GET /api/ai/executions/:executionId` (tokens_used obtained; otherwise the error would have been `Execution status did not include actual tokens_used.`)
+2. `staging.queryDeduction(executionId)` → `psql "$DATABASE_URL" -c "SELECT … FROM credit_deduction_records WHERE source_event_id = '<executionId>';"` over SSH
+
+SSH non-login environment does not load `/opt/aisandbox/.env`, so `DATABASE_URL` is empty. `psql` then uses the local unix socket as OS user `ubuntu`, which is not a PostgreSQL role.
+
+Post-failure operator evidence queries that **do** load `DATABASE_URL` from `.env` found exactly one applied row for this `executionId`. That product row does **not** convert runner DEDUCTION to PASS.
+
+Do not patch this inside LIVE-10.
+
+---
+
+## Cleanup
+
+| Check | Result |
+|---|---|
+| `executionGateFinal` (runner) | `restored-false` |
+| `GLOBAL_EXECUTION_ENABLED` final | false (.env + PM2) |
+| `BILLING_CHARGES_ENABLED` final | false (.env + PM2) |
+| Session | `stopped` |
+| Container | removed (`docker ps -a` match 0; `container_id` null) |
+| LIVE process env | cleared |
+| DPAPI `$env:TEMP\aisandbox-e2e-live-10-cred.xml` | **absent** |
+| Unrelated sessions/containers | not touched |
+| Retained stash | unchanged |
+| Staging HEAD after cleanup | `c78dbad609677b7da86e3043629e042bcbcb8e9d` CLEAN |
+
+No second SSH restoration attempt. No LIVE rerun.
+
+---
+
+## Readiness (unchanged by this FAIL)
+
+```
+BUILDER_PRIVATE_BETA_READINESS=NO_GO_PENDING_FRESH_AUTOMATED_E2E
+LIVE_STAGING_VALIDATED=NO
+PRIVATE-BETA-INVITE-01=UNREGISTERED / UNAUTHORIZED / PROHIBITED
+```
+
+Step 2 does not independently make the final beta-readiness decision. Step 3 will consolidate this frozen evidence. Do not register PRIVATE-BETA-INVITE-01. Do not register a follow-up deduction-adapter task here.
+
+**PRIVATE-BETA-E2E-LIVE-10 STEP 2 COMPLETE — LANE-DONE — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — DEDUCTION — AUTO-01J CHECKPOINT PASS HELD — DO NOT RERUN LIVE-10**
+
