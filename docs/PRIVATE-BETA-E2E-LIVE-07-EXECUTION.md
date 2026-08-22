@@ -433,3 +433,205 @@ Explicit Keith LIVE authorization is required before any staging compare/deploy,
 If VPN must remain ON for the selected Cursor model: STOP before LIVE execution.
 
 **PRIVATE-BETA-E2E-LIVE-07 STEP 1 COMPLETE — REGISTERED FOR ONE FRESH AUTOMATED STAGING GOLDEN-PATH RUN AFTER AUTO-01G/H — NO LIVE/SSH/PROVIDER/CREDIT ACTIVITY — STEP 2 REQUIRES EXPLICIT LIVE AUTHORIZATION**
+
+---
+
+# PRIVATE-BETA-E2E-LIVE-07 — Step 2 Runtime Evidence
+
+**Task ID:** PRIVATE-BETA-E2E-LIVE-07  
+**Step:** 2 — ONE authorized automated staging golden-path run  
+**Date:** 2026-08-21  
+**Primary classification:** ENVIRONMENT/PARITY_FAILURE  
+**Failed phase:** SAFETY  
+**Last successful runner phase:** AUTH  
+**Step 2 state:** LANE-DONE — FAIL/BLOCKED — Step 3 PENDING  
+**Runner invoked:** YES (`npm run e2e:builder:live` **once**)  
+**LIVE_RUNNER_INVOKE:** 1  
+**NPM_EXIT:** 1  
+**Formatted verdict:** `verdict=FAIL`  
+**Playwright duration:** 1.5s (not the 600000ms outer timeout)
+
+Do not treat this document as a scheduler. LIVE-07 is not locked. Do not store credentials here. Do not modify AUTO-01 / AUTO-01A / AUTO-01B / AUTO-01C / AUTO-01D / AUTO-01E / AUTO-01F / AUTO-01G / AUTO-01H from this step. This is not a LIVE-06 rerun. Do not rerun LIVE-07. No patching during this task.
+
+---
+
+## Verdict
+
+Keith authorized Step 2. Local `main` was CLEAN at AUTHORIZED_LOCAL_HEAD capture. AUTO-01G `b9cba2480ea4e9c814d17342c0e6aed2b469ef69` and AUTO-01H `25c25bd79c205c52838b3d151c73a0bc4a4de13f` are ancestors. VPN was OFF. Staging compare-then-deploy of AUTHORIZED_LOCAL_HEAD succeeded. Product `frontend/` and `services/` were unchanged vs pre-deploy staging HEAD, so rebuild/restart was skipped. Post-deploy HEAD parity, stash invariant, PM2 health, and pre-runner gates (`GLOBAL_EXECUTION_ENABLED=false`, `BILLING_CHARGES_ENABLED=false`) passed.
+
+Playwright LIVE was invoked **exactly once**. AUTH completed. SAFETY fail-closed immediately:
+
+```
+Local worktree is dirty. LIVE execution-edge parity requires a clean tree. No automatic deploy.
+```
+
+The dirty local files were the Step 2 control-plane writes to `TASKS.md` and `TASKS_BACKLOG_FULL.md` (resource acquisition) after AUTHORIZED_LOCAL_HEAD was captured. `readAuthorizedLocalHead()` requires `git status --short` empty before inspectParity / gate enable. inspectParity was never reached. The execution gate was never enabled. BUILD was never reached. Provider usage remained 0. Credits deducted remained 0.
+
+Failure class: **ENVIRONMENT/PARITY_FAILURE** at **SAFETY**.
+
+THIS WAS NOT A PRODUCT FAILURE.  
+THIS WAS NOT A PROVIDER FAILURE.  
+THIS WAS NOT AN AUTOMATION SELECTOR/ADAPTER MISMATCH of AUTO-01G/AUTO-01H.  
+THIS WAS NOT a LIVE-06 rerun.
+
+Do not patch the dirty-tree gate inside LIVE-07. Zero provider retries. Do not invoke `npm run e2e:builder:live` again.
+
+---
+
+## Deployment
+
+| Field | Value |
+|---|---|
+| AUTHORIZED_LOCAL_HEAD | `6723c4699d9c2cea832f73356aa85960b230b3cf` |
+| STAGING_HEAD_BEFORE | `da56659d39a5d86d3ef994a7458a297169eeda42` (locked LIVE-06 staging HEAD) |
+| Deployment performed | **YES** |
+| STAGING_HEAD_AFTER | `6723c4699d9c2cea832f73356aa85960b230b3cf` |
+| `STAGING_HEAD == AUTHORIZED_LOCAL_HEAD` | **PASS** |
+| Deploy method | `git fetch origin main` + `git reset --hard <AUTHORIZED_LOCAL_HEAD>` |
+| `git pull` | **NOT USED** |
+| Rebuild / restart | **SKIPPED** — `frontend/` and `services/` unchanged vs pre-deploy HEAD (AUTO-01G/AUTO-01H/LIVE-07 commits are e2e/docs/governance only; package/lockfiles unchanged) |
+| AUTO-01G on authorized HEAD | **YES** (ancestor `b9cba2480ea4e9c814d17342c0e6aed2b469ef69`) |
+| AUTO-01H on authorized HEAD | **YES** (ancestor `25c25bd79c205c52838b3d151c73a0bc4a4de13f`) |
+| AUTO-01E / AUTO-01F / AUTO-01C / AUTO-01D | **YES** (ancestors) |
+| Local tree at HEAD capture | CLEAN / `main` |
+| Staging tree after deploy | CLEAN |
+| stash@{0} before | `0372cc1f47f82e1db060ed2dd756a938fe324803` (`pre-03F-deployment-snapshot-2026-08-15`) |
+| stash@{0} after | `0372cc1f47f82e1db060ed2dd756a938fe324803` — unchanged; not applied/dropped/renamed |
+
+---
+
+## Post-deploy / revalidated environment (actual)
+
+| Check | Result |
+|---|---|
+| STAGING_HEAD == AUTHORIZED_LOCAL_HEAD | PASS |
+| Staging worktree CLEAN | PASS |
+| Local worktree CLEAN at HEAD capture | PASS |
+| Local worktree CLEAN at runner invocation | **FAIL** — `TASKS.md` and `TASKS_BACKLOG_FULL.md` modified for Step 2 resource acquisition |
+| Retained stash exact SHA | PASS |
+| Gateway `http://127.0.0.1:4000/api/health/ready` | HTTP 200 (before runner; after runner) |
+| AI service `http://127.0.0.1:4001/metrics` | HTTP 200 |
+| Container manager `http://127.0.0.1:4002/api/health` | HTTP 200 |
+| Frontend `http://127.0.0.1:3002` | HTTP 307 |
+| PM2 (gateway / ai-service / container-manager / frontend / ops-watchdog) | online |
+| Gateway PM2 restarts | 248 before runner; **248 after runner** (gate never enabled) |
+| `GLOBAL_EXECUTION_ENABLED` before runner | false (.env + PM2) — not unexpectedly true |
+| `BILLING_CHARGES_ENABLED` before runner | false (.env + PM2) |
+| AUTO-01B `inspectParity` | **NOT REACHED** (local dirty-tree check threw first) |
+| AUTO-01C ready-wait | **NOT REACHED** |
+
+---
+
+## LIVE run
+
+- Command: `npm run e2e:builder:live` — **once** (`LIVE_RUNNER_INVOKE=1`)
+- Start: `2026-08-21T23:06:35.9625068+08:00`
+- End: `2026-08-21T23:06:41.4600274+08:00`
+- Playwright duration: **1.5s** (not the 600000ms outer timeout)
+- Flags: `E2E_MODE=live`, `E2E_LIVE_AUTHORIZED=true`, `E2E_ALLOW_STAGING_MUTATION=true`, `E2E_ALLOW_CREDIT_MUTATION=true`, `PROVIDER_CALL_BUDGET=1` (process-only; never written to repo)
+- Credentials: transient DPAPI `PSCredential` import from `$env:TEMP\aisandbox-e2e-live-07-cred.xml`; temp file deleted in `finally`; process env cleared after runner (`ENV_CLEARED=YES`); never printed/committed
+- Human browser intervention: **NO**
+- NPM_EXIT: **1**
+
+Formatted runner output:
+
+```
+verdict=FAIL
+phase=SAFETY
+error=Local worktree is dirty. LIVE execution-edge parity requires a clean tree. No automatic deploy.
+projectId=null
+sessionId=null
+executionId=null
+cleanup=session-stop-not-attempted
+executionGateFinal=not-attempted-no-authority
+```
+
+Runner phases reached: PREPARE_BROWSER → AUTH → SAFETY → CLEANUP  
+
+Runner phases **NOT REACHED:** STARTING_BALANCE / ARM_LISTENERS / CREATE_SESSION / BUILD / WAIT_FOR_AUTO_APPLY / PREVIEW / CHECKPOINT / PUBLIC_CONFIRM / DEDUCTION / BALANCE
+
+Last successfully completed **runner** phase: **AUTH**
+
+---
+
+## IDs / provider / accounting (observed)
+
+| Fact | Runner | Post-failure staging evidence |
+|---|---|---|
+| projectId | `null` | no LIVE-07 disposable project created |
+| sessionId | `null` | no LIVE-07 disposable session created |
+| containerId | unknown / not created | no LIVE-07 disposable container created |
+| executionId | `null` | BUILD not reached |
+| executionId source | n/a | BUILD `/api/ai/execute` not observed |
+| Provider / model authorized | xAI / grok-4.5 | unused |
+| Provider-call budget | 1 | unused |
+| Provider calls used | **0** | **0** |
+| Retries used | **0** | **0** |
+| tokens_used | not captured | n/a |
+| execute POST count | **0** | BUILD not reached |
+| Send click count | **0** | BUILD not reached |
+| AUTO_APPLY | NOT REACHED | n/a |
+| files/write 204 | NOT REACHED | n/a |
+| Generated file | NOT REACHED | n/a |
+| Preview | NOT REACHED | n/a |
+| Checkpoint | NOT REACHED | n/a |
+| Public confirm | NOT REACHED | n/a |
+| Deduction count | NOT REACHED | **0** |
+| Credits deducted | NOT REACHED | **0** |
+| Starting balance | NOT REACHED | n/a |
+| Ending balance | NOT REACHED | n/a |
+| Reconciliation | n/a | n/a |
+| Stripe / payment | n/a | `BILLING_CHARGES_ENABLED=false`; no Stripe charge observed |
+
+```
+PROVIDER_CALL_USED=0
+CREDITS_DEDUCTED=0
+RUNNER_INVOKED=YES
+RETRIES=0
+```
+
+---
+
+## Cleanup / final gates
+
+Runner `finally` ran. No second LIVE run. No second SSH restore attempt. Gate restore was not required because the runner never acquired execution-gate authority.
+
+- Gate restore: `executionGateFinal=not-attempted-no-authority`
+- Gateway PM2 restarts: **248** before and after (no enable, no restore)
+- `GLOBAL_EXECUTION_ENABLED` final: **false** (.env + PM2) — confirmed by post-failure SSH
+- `BILLING_CHARGES_ENABLED` final: **false** (.env + PM2) — confirmed by post-failure SSH
+- Session final: **not created**
+- Container final: **not created**
+- Credential / LIVE process env: cleared (`ENV_CLEARED=YES`)
+- DPAPI temp file `$env:TEMP\aisandbox-e2e-live-07-cred.xml`: **absent**
+- Staging HEAD after run: still `6723c4699d9c2cea832f73356aa85960b230b3cf`
+- Retained stash after run: still `0372cc1f47f82e1db060ed2dd756a938fe324803`
+- Staging worktree after run: CLEAN
+
+```
+GLOBAL_EXECUTION_ENABLED_FINAL=false
+BILLING_CHARGES_ENABLED_FINAL=false
+OPERATOR_REMEDIATION_REQUIRED=NO
+```
+
+---
+
+## Readiness (unchanged by Step 2)
+
+```
+BUILDER_PRIVATE_BETA_READINESS=NO_GO_PENDING_FRESH_AUTOMATED_E2E
+LIVE_STAGING_VALIDATED=NO
+PRIVATE-BETA-INVITE-01=UNREGISTERED / UNAUTHORIZED / PROHIBITED
+```
+
+Step 3 consolidation must decide readiness. Step 2 does not declare GO and does not register PRIVATE-BETA-INVITE-01.
+
+---
+
+## Step 3 note
+
+LIVE-07 remains **ACTIVE** and unlocked. Step 3 consolidation is required in a **NEW** Cursor window.
+
+Do not retry the provider. Do not rerun LIVE-07. Do not modify AUTO-01 / AUTO-01A / AUTO-01B / AUTO-01C / AUTO-01D / AUTO-01E / AUTO-01F / AUTO-01G / AUTO-01H inside this live task. Do not return to manual browser testing. Do not register PRIVATE-BETA-INVITE-01. Do not patch the local dirty-tree SAFETY gate inside LIVE-07.
+
+**PRIVATE-BETA-E2E-LIVE-07 STEP 2 COMPLETE — FAIL/BLOCKED — ENVIRONMENT/PARITY_FAILURE AT SAFETY — DO NOT RERUN LIVE-07**
