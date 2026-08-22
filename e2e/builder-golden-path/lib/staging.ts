@@ -229,8 +229,19 @@ function defaultSleep(ms: number): Promise<void> {
   });
 }
 
+export const STAGING_ROOT_ENV_PATH = `${STAGING_REPO_PATH}/.env`;
+export const AISB_DATABASE_URL_MISSING = 'AISB_DATABASE_URL_MISSING';
+
+export function buildRemoteDatabaseUrlAcquisition(): string {
+  return [
+    `DATABASE_URL="$(grep -m1 '^DATABASE_URL=' ${STAGING_ROOT_ENV_PATH} | cut -d= -f2-)"`,
+    `if [ -z "$DATABASE_URL" ]; then printf '%s\\n' '${AISB_DATABASE_URL_MISSING}' >&2; exit 1; fi`,
+  ].join('; ');
+}
+
 export function buildDeductionQuery(executionId: string): string {
-  return `psql "$DATABASE_URL" -c "SELECT source_event_id, requested_credits, applied_credits, overflow_credits, balance_before, balance_after, status FROM credit_deduction_records WHERE source_event_id = '${executionId.replace(/'/g, '')}';"`;
+  const psql = `psql "$DATABASE_URL" -c "SELECT source_event_id, requested_credits, applied_credits, overflow_credits, balance_before, balance_after, status FROM credit_deduction_records WHERE source_event_id = '${executionId.replace(/'/g, '')}';"`;
+  return `${buildRemoteDatabaseUrlAcquisition()}; ${psql}`;
 }
 
 export function buildSessionStopPath(sessionId: string): string {

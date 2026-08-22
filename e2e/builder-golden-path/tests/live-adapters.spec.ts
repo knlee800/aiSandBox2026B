@@ -27,10 +27,12 @@ import {
   PARITY_STATUS_SENTINEL,
   RETAINED_STASH_SHA,
   SshExecutionTimeoutError,
+  STAGING_SSH_ALIAS,
   SshExecutorMissingError,
   StagingHelper,
   StagingNotAuthorizedError,
   UnsafeParityError,
+  buildDeductionQuery,
   buildGateRestoreCommand,
   buildGatewayReadyProbeCommand,
   buildSshCommand,
@@ -44,7 +46,11 @@ import {
 import { GOLDEN_PATH_PHASES } from '../lib/phases';
 import { createRecordingAdapters, runGoldenPath } from '../lib/runner';
 import { ExecutionGateTracker, ProviderCallGuard } from '../lib/safety-gates';
-import { EvidenceError } from '../lib/evidence';
+import {
+  EvidenceError,
+  countDeductionRowsForExecution,
+  validateDeduction,
+} from '../lib/evidence';
 import {
   FROZEN_ARTIFACT_PATH,
   LIVE_ACTION_TIMEOUT_MS,
@@ -2406,5 +2412,175 @@ test.describe('AUTO-01J CHECKPOINT observation adapter', () => {
     expect(elapsed).toBeGreaterThanOrEqual(CHECKPOINT_OBSERVATION_BOUND_MS - 100);
     expect(elapsed).toBeLessThan(CHECKPOINT_ASSERTION_CEILING_MS);
     expect(elapsed).toBeLessThan(OUTER_LIVE_TIMEOUT_MS);
+  });
+});
+
+const AUTO_01K_STAGING_ENV_PATH = '/opt/aisandbox/.env';
+const AUTO_01K_DATABASE_URL_MISSING = 'AISB_DATABASE_URL_MISSING';
+const AUTO_01K_FAKE_DATABASE_URL =
+  'postgresql://aisandbox:fake-e2e-password-not-real@127.0.0.1:5432/aisandbox';
+const AUTO_01K_EXECUTION_ID = '18feb0a2-b992-46c8-aa75-4667fc05005d';
+const AUTO_01K_ROLE_UBUNTU_ERROR =
+  'psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  role "ubuntu" does not exist';
+const AUTO_01K_EXISTING_PSQL = `psql "$DATABASE_URL" -c "SELECT source_event_id, requested_credits, applied_credits, overflow_credits, balance_before, balance_after, status FROM credit_deduction_records WHERE source_event_id = '${AUTO_01K_EXECUTION_ID}';"`;
+
+function auto01kCommandExtractsDatabaseUrl(remoteCommand: string): boolean {
+  const referencesEnvFile = remoteCommand.includes(AUTO_01K_STAGING_ENV_PATH);
+  const extractsKey =
+    remoteCommand.includes('grep') &&
+    remoteCommand.includes('^DATABASE_URL=') &&
+    remoteCommand.includes('cut -d= -f2-');
+  const sourcesFile =
+    remoteCommand.includes(`source ${AUTO_01K_STAGING_ENV_PATH}`) ||
+    /(?:^|[\n;&|])\s*\.\s+\/opt\/aisandbox\/\.env(?:\s|$)/.test(remoteCommand);
+  return referencesEnvFile && extractsKey && !sourcesFile;
+}
+
+function auto01kExtractDatabaseUrlFromEnvFile(contents: string): string {
+  const line = contents.split(/\r?\n/).find((entry) => entry.startsWith('DATABASE_URL='));
+  if (!line) {
+    return '';
+  }
+  return line.slice('DATABASE_URL='.length);
+}
+
+function auto01kPsqlDeductionRow(executionId: string): string {
+  return [
+    'source_event_id | requested_credits | applied_credits | overflow_credits | balance_before | balance_after | status',
+    ` ${executionId} | 1164 | 1164 | 0 | 25883 | 24719 | applied`,
+    '(1 row)',
+  ].join('\n');
+}
+
+function createAuto01kDeductionExecutor(input: {
+  envFileContents: string;
+  executionId: string;
+  captured?: { argv?: string[] };
+}): (argv: string[]) => Promise<string> {
+  return async (argv) => {
+    if (input.captured) {
+      input.captured.argv = argv;
+    }
+    const remote = argv[1] ?? '';
+    if (!auto01kCommandExtractsDatabaseUrl(remote)) {
+      throw new Error(`ssh exited 2: ${AUTO_01K_ROLE_UBUNTU_ERROR}`);
+    }
+    const databaseUrl = auto01kExtractDatabaseUrlFromEnvFile(input.envFileContents);
+    if (!databaseUrl) {
+      if (remote.includes(AUTO_01K_DATABASE_URL_MISSING)) {
+        throw new Error(`ssh exited 1: ${AUTO_01K_DATABASE_URL_MISSING}`);
+      }
+      throw new Error(`ssh exited 2: ${AUTO_01K_ROLE_UBUNTU_ERROR}`);
+    }
+    return auto01kPsqlDeductionRow(input.executionId);
+  };
+}
+
+test.describe('AUTO-01K DEDUCTION database connection adapter', () => {
+  test('queryDeduction obtains DATABASE_URL from /opt/aisandbox/.env instead of an empty remote shell', async () => {
+    const captured: { argv?: string[] } = {};
+    const helper = new StagingHelper({
+      env: { ...liveEnv, DATABASE_URL: AUTO_01K_FAKE_DATABASE_URL },
+      execute: createAuto01kDeductionExecutor({
+        envFileContents: [
+          'AUTH_EMAIL_FROM=Example <ops@example.test>',
+          `DATABASE_URL=${AUTO_01K_FAKE_DATABASE_URL}`,
+          'XAI_API_KEY=fake-not-used',
+        ].join('\n'),
+        executionId: AUTO_01K_EXECUTION_ID,
+        captured,
+      }),
+    });
+
+    const output = await helper.queryDeduction(AUTO_01K_EXECUTION_ID);
+    expect(output).toContain(AUTO_01K_EXECUTION_ID);
+    expect(output).not.toMatch(/role "ubuntu"/);
+    expect(countDeductionRowsForExecution(output, AUTO_01K_EXECUTION_ID)).toBe(1);
+    expect(captured.argv?.[0]).toBe(STAGING_SSH_ALIAS);
+    expect(captured.argv?.[1]).toContain(AUTO_01K_STAGING_ENV_PATH);
+    expect(captured.argv?.join('\0')).not.toContain(AUTO_01K_FAKE_DATABASE_URL);
+  });
+
+  test('missing DATABASE_URL in /opt/aisandbox/.env fails closed with AISB_DATABASE_URL_MISSING', async () => {
+    const captured: { argv?: string[] } = {};
+    const helper = new StagingHelper({
+      env: liveEnv,
+      execute: createAuto01kDeductionExecutor({
+        envFileContents: [
+          'AUTH_EMAIL_FROM=Example <ops@example.test>',
+          'XAI_API_KEY=fake-not-used',
+          'DATABASE_URL=',
+        ].join('\n'),
+        executionId: AUTO_01K_EXECUTION_ID,
+        captured,
+      }),
+    });
+
+    const rejection = await helper.queryDeduction(AUTO_01K_EXECUTION_ID).then(
+      () => null,
+      (error: unknown) => error,
+    );
+    expect(rejection).toBeInstanceOf(Error);
+    expect((rejection as Error).message).toContain(AUTO_01K_DATABASE_URL_MISSING);
+    expect((rejection as Error).message).not.toMatch(/role "ubuntu"/);
+    expect((rejection as Error).message).not.toContain(AUTO_01K_FAKE_DATABASE_URL);
+    expect(captured.argv?.[1]).toContain(AUTO_01K_STAGING_ENV_PATH);
+    expect(captured.argv?.[1]).toContain(AUTO_01K_DATABASE_URL_MISSING);
+  });
+
+  test('generated remote command references the staging env file and does not embed or source the secret', () => {
+    const command = buildDeductionQuery(AUTO_01K_EXECUTION_ID);
+    expect(command).toContain(AUTO_01K_STAGING_ENV_PATH);
+    expect(command).toContain('DATABASE_URL');
+    expect(command).toContain(AUTO_01K_EXISTING_PSQL);
+    expect(command).not.toContain(AUTO_01K_FAKE_DATABASE_URL);
+    expect(command).not.toContain(`source ${AUTO_01K_STAGING_ENV_PATH}`);
+    expect(command).not.toMatch(/(?:^|[\n;&|])\s*\.\s+\/opt\/aisandbox\/\.env(?:\s|$)/);
+    expect(command).not.toContain(`cat ${AUTO_01K_STAGING_ENV_PATH}`);
+    expect(command).not.toContain('pm2 env');
+    expect(command).not.toContain('set -x');
+    expect(command).not.toContain('export $(');
+  });
+
+  test('preserves executionId-correlated exactly-one deduction SQL and leaves BALANCE on the billing API', () => {
+    const command = buildDeductionQuery(AUTO_01K_EXECUTION_ID);
+    expect(command).toContain('credit_deduction_records');
+    expect(command).toContain(`source_event_id = '${AUTO_01K_EXECUTION_ID}'`);
+    expect(command).toContain(AUTO_01K_EXISTING_PSQL);
+    expect(() =>
+      validateDeduction({ deductionCount: 1, tokensUsed: 1164, creditsDeducted: 1164 }),
+    ).not.toThrow();
+    expect(() =>
+      validateDeduction({ deductionCount: 0, tokensUsed: 1164, creditsDeducted: 1164 }),
+    ).toThrow(/exactly 1/);
+    expect(() =>
+      validateDeduction({ deductionCount: 2, tokensUsed: 1164, creditsDeducted: 1164 }),
+    ).toThrow(/exactly 1/);
+
+    const liveAdaptersSource = fs.readFileSync(
+      path.join(__dirname, '../lib/live-adapters.ts'),
+      'utf8',
+    );
+    const verifyBalanceStart = liveAdaptersSource.indexOf('async verifyBalance');
+    const verifyBalanceEnd = liveAdaptersSource.indexOf('async cleanup', verifyBalanceStart);
+    const verifyBalance = liveAdaptersSource.slice(verifyBalanceStart, verifyBalanceEnd);
+    expect(verifyBalance).toContain('/api/billing/balance');
+    expect(verifyBalance).toContain("method() === 'GET'");
+    expect(verifyBalance).not.toContain('queryDeduction');
+    expect(verifyBalance).not.toContain('psql');
+    expect(verifyBalance).not.toContain('DATABASE_URL');
+
+    expect(GOLDEN_PATH_PHASES.indexOf('CHECKPOINT')).toBe(
+      GOLDEN_PATH_PHASES.indexOf('PREVIEW') + 1,
+    );
+    expect(GOLDEN_PATH_PHASES.indexOf('PUBLIC_CONFIRM')).toBe(
+      GOLDEN_PATH_PHASES.indexOf('CHECKPOINT') + 1,
+    );
+    expect(GOLDEN_PATH_PHASES.indexOf('DEDUCTION')).toBe(
+      GOLDEN_PATH_PHASES.indexOf('PUBLIC_CONFIRM') + 1,
+    );
+    expect(GOLDEN_PATH_PHASES.indexOf('BALANCE')).toBe(
+      GOLDEN_PATH_PHASES.indexOf('DEDUCTION') + 1,
+    );
   });
 });
