@@ -68767,16 +68767,17 @@ Git mutations = 0
 **Title:** Builder Static Preview Entrypoint Contract Root-Cause Investigation + Bounded Fixture Alignment
 **Workstream:** RELIABILITY
 **Lifecycle:** 3-step NORMAL bounded task
-**Status:** ACTIVE — Step 2 COMPLETE — 2026-08-22
-**Assigned lane:** Lane 1
+**Status:** COMPLETE AND LOCKED — PASS — 2026-08-22
+**Assigned lane:** none (Lane 1 released EMPTY at lock)
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
 **Registered:** 2026-08-22
 **Approved:** Keith — 2026-08-22 (Step 1 registration + OS v1 admission + diagnosis; Step 2 TDD runner fixture alignment explicitly authorized in a fresh window)
 **Nature:** PRODUCT-CONTRACT / ROOT-CAUSE INVESTIGATION in Step 1; selected Step 2 is a bounded RUNNER_FIXTURE_FIX only. Not a Preview redesign. Not a Builder path-rewrite. Not a LIVE run. Not a product Preview/Builder source change.
 **Evidence class:** LOCAL-TESTS
-**Hot-file leases:** HOTFILE:e2e/builder-golden-path/lib/constants.ts and HOTFILE:e2e/builder-golden-path/tests/evidence.spec.ts held by PRIVATE-BETA-BLOCKER-03L until Step 3. Other runner HOTFILEs UNOWNED.
+**Hot-file leases:** released UNOWNED at lock. Other runner HOTFILEs UNOWNED.
 **Diagnosis:** `docs/PRIVATE-BETA-BLOCKER-03L-DIAGNOSIS.md`
+**Checkpoint:** `docs/PRIVATE-BETA-BLOCKER-03L-CHECKPOINT.md`
 **Identifier search:** PRIVATE-BETA-BLOCKER-03L was unused as a registered task before this registration. Repo-wide search found only historical LIVE-08 recommendation prose (`docs/PRIVATE-BETA-E2E-LIVE-08-CHECKPOINT.md`; TASKS.md next-gate; this LIVE-08 lock “Exact next (NOT REGISTERED HERE)”). Historical recommendation prose does not count. Existing 03A–03K remain distinct locked/historical siblings.
 
 **Start condition:** READY — PRIVATE-BETA-E2E-LIVE-08 COMPLETE AND LOCKED — FAIL/BLOCKED — PRODUCT_FAILURE — PREVIEW — 2026-08-22; AUTO-01G / AUTO-01H / AUTO-01I COMPLETE AND LOCKED — PASS with LIVE-08 validation HELD; Lane 1 EMPTY at admission; Lane 2 EMPTY; Lane 3 DISABLED; tree CLEAN on `main`; STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER UNOWNED; OS v1 admission requirements pass.
@@ -68794,7 +68795,7 @@ Git mutations = 0
 - Step 2 (after Keith commit of Step 1 AND fresh-window authorization only): runner fixture files under `e2e/builder-golden-path/` required to change `FROZEN_ARTIFACT_PATH` to `index.html` and update derived CONTRACT fixtures/tests. No production frontend/backend. No PRD.md. No ARCHITECTURE.md. No CLAUDE.md. No AGENTS.md. No LIVE-08 rewrite.
 - Step 3: checkpoint + board/registry end-status only
 
-**Mutexes / resources:** GOVERNANCE acquired for this Step 2 board/registry write, then released. HOTFILE:e2e/builder-golden-path/lib/constants.ts and HOTFILE:e2e/builder-golden-path/tests/evidence.spec.ts held until Step 3. Do **not** reserve STAGING, PROVIDER-LIVE, CREDIT, ENV, FRONTEND, GATEWAY, AI-SERVICE, CONTAINER-MANAGER, PACKAGE, or LOCAL-RUNTIME.
+**Mutexes / resources:** GOVERNANCE acquired transiently for this Step 3 checkpoint/board/registry write, then released UNOWNED. HOTFILE:e2e/builder-golden-path/lib/constants.ts and HOTFILE:e2e/builder-golden-path/tests/evidence.spec.ts released UNOWNED. STAGING, PROVIDER-LIVE, CREDIT, ENV, FRONTEND, GATEWAY, AI-SERVICE, CONTAINER-MANAGER, PACKAGE, and LOCAL-RUNTIME remain UNOWNED.
 
 Read-only source inspection does not justify a write mutex.
 
@@ -68831,7 +68832,7 @@ H1 CONFIRMED (owning static contract). H2 REFUTED. H3 true-as-fact not causal. H
 **Lifecycle steps:**
 1. Registration + product-contract / root-cause diagnosis — COMPLETE — 2026-08-22 — Diagnosis: `docs/PRIVATE-BETA-BLOCKER-03L-DIAGNOSIS.md`
 2. Smallest evidence-supported TDD implementation + tests — COMPLETE — 2026-08-22 — RUNNER_FIXTURE_FIX: `FROZEN_ARTIFACT_PATH='index.html'`; CONTRACT 100 passed; TypeScript PASS; product Preview/Builder unchanged
-3. Checkpoint / consolidation / lock — NOT STARTED
+3. Fresh verification / checkpoint / consolidation / lock — COMPLETE — 2026-08-22 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03L-CHECKPOINT.md`
 
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 
@@ -68854,7 +68855,7 @@ Registration / control-plane:
 - [x] no product/runner/LIVE/SSH/staging/provider/credit/gate/dependency/Git mutation in Step 1
 - [x] LIVE-08 not rewritten / not converted to PASS / not rerun
 - [x] Step 2 TDD runner fixture alignment implemented in a later authorized window
-- [ ] Step 3 checkpoint / lock
+- [x] Step 3 checkpoint / lock
 
 Investigation (Step 1):
 - [x] complete Preview call/data-flow traced UI → gateway → container-manager → resolver → start throw → unavailable UI
@@ -68910,20 +68911,20 @@ CREDITS=0
 
 ---
 
-**PRIVATE-BETA-BLOCKER-03L status:** ACTIVE — Step 2 COMPLETE — 2026-08-22
-**Assigned lane:** Lane 1
+**PRIVATE-BETA-BLOCKER-03L status:** COMPLETE AND LOCKED — PASS — 2026-08-22
+**Assigned lane:** none (Lane 1 released EMPTY at lock)
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
-**Mutexes / resources:** GOVERNANCE released — UNOWNED; HOTFILE:e2e/builder-golden-path/lib/constants.ts and HOTFILE:e2e/builder-golden-path/tests/evidence.spec.ts held until Step 3; STAGING / PROVIDER-LIVE / CREDIT / ENV UNOWNED
+**Mutexes / resources:** GOVERNANCE UNOWNED; all HOTFILE leases UNOWNED; STAGING / PROVIDER-LIVE / CREDIT / ENV UNOWNED
 **Step 1:** COMPLETE — 2026-08-22 — Diagnosis: `docs/PRIVATE-BETA-BLOCKER-03L-DIAGNOSIS.md`
 **Step 2:** COMPLETE — 2026-08-22 — `FROZEN_ARTIFACT_PATH='index.html'`; CONTRACT 100 passed
-**Step 3:** NOT STARTED
+**Step 3:** COMPLETE — 2026-08-22 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03L-CHECKPOINT.md`
 **CLASSIFICATION:** RUNNER_FIXTURE_FIX
 **ROOT_CAUSE_PROVEN:** YES
 **LIVE-08:** remains COMPLETE AND LOCKED — FAIL/BLOCKED — PRODUCT_FAILURE — PREVIEW — 2026-08-22
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_AUTOMATED_E2E
 **LIVE_STAGING_VALIDATED:** NO
-**Exact next:** PRIVATE-BETA-BLOCKER-03L Step 3 — checkpoint / consolidation / lock in a fresh window after Keith commit. Do not LIVE. Do not change product Preview/Builder. Do not lock in Step 2.
+**Exact next:** NOT REGISTERED HERE. Recommended future gate is a NEW fresh automated provider-bearing Builder LIVE E2E (likely PRIVATE-BETA-E2E-LIVE-09; verify unused at future registration). Do not LIVE in this lock. Do not register PRIVATE-BETA-INVITE-01. Do not convert LIVE-08 to PASS.
 
 
