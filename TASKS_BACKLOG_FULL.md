@@ -69800,18 +69800,19 @@ Do not rerun LIVE-10. Do not convert LIVE-10 to PASS. Do not patch the deduction
 **Task ID:** PRIVATE-BETA-E2E-AUTO-01K
 **Title:** Staging Deduction Verification Database Connection Contract Root-Cause Investigation and Bounded Adapter Fix
 **Workstream:** RELIABILITY
-**Classification:** AUTOMATION_TOOLING_INVESTIGATION (Step 1 COMPLETE) + bounded AUTOMATION_ADAPTER_FIX (Step 2 COMPLETE) — Step 3 PENDING
+**Classification:** AUTOMATION_TOOLING_INVESTIGATION (Step 1 COMPLETE) + bounded AUTOMATION_ADAPTER_FIX (Step 2 COMPLETE) — COMPLETE AND LOCKED — PASS — 2026-08-22
 **Lifecycle:** 3-step bounded task
-**Status:** ACTIVE — Lane 1 — Step 1 COMPLETE — Step 2 COMPLETE — 2026-08-22
-**Assigned lane:** 1 (ACTIVE)
+**Status:** COMPLETE AND LOCKED — PASS — 2026-08-22
+**Assigned lane:** none (Lane 1 released EMPTY at lock)
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
 **Registered:** 2026-08-22
-**Approved:** Keith — 2026-08-22 (Step 1 registration + admission + diagnosis; Step 2 explicit TDD adapter-fix authorization; Step 3 not authorized)
+**Approved:** Keith — 2026-08-22 (Step 1 registration + admission + diagnosis; Step 2 explicit TDD adapter-fix authorization; Step 3 explicit fresh verification / checkpoint / consolidation / final lock — does NOT authorize LIVE or PRIVATE-BETA-INVITE-01)
 **Evidence class:** LOCAL-TESTS
 **Diagnosis document:** `docs/PRIVATE-BETA-E2E-AUTO-01K-DIAGNOSIS.md`
+**Checkpoint document:** `docs/PRIVATE-BETA-E2E-AUTO-01K-CHECKPOINT.md`
 **Owning fix (Step 1 proven):** AUTOMATION_ADAPTER_FIX
-**Hot-file leases:** used in Step 2 then released UNOWNED (`e2e/builder-golden-path/lib/staging.ts`; `e2e/builder-golden-path/tests/live-adapters.spec.ts`)
+**Hot-file leases:** released UNOWNED at lock (`e2e/builder-golden-path/lib/staging.ts`; `e2e/builder-golden-path/tests/live-adapters.spec.ts`)
 
 **Identifier search:** PRIVATE-BETA-E2E-AUTO-01K was **unused as a registered task** before this registration. Repo-wide search found only historical recommendation prose: `docs/PRIVATE-BETA-E2E-LIVE-10-CHECKPOINT.md:511` / `:555` (“Likely identifier if later registered: **PRIVATE-BETA-E2E-AUTO-01K**”), LIVE-10 lock “Exact next (NOT REGISTERED HERE)” in this file, and `TASKS.md` next-gate “Do not register PRIVATE-BETA-E2E-AUTO-01K here.” Zero `### PRIVATE-BETA-E2E-AUTO-01K` registry entries existed. Historical recommendation prose does not count as prior registration. Existing E2E IDs: PRIVATE-BETA-E2E-01..05, PRIVATE-BETA-E2E-AUTO-01, AUTO-01A..AUTO-01J, PRIVATE-BETA-E2E-LIVE-01..LIVE-10, PRIVATE-BETA-BLOCKER-03L. Rejected: reopening LIVE-10 / LIVE-09 / AUTO-01G / AUTO-01H / AUTO-01I / AUTO-01J / 03L; registering PRIVATE-BETA-INVITE-01; a product credit-accounting change; generic `source .env`; embedding `DATABASE_URL` in local SSH argv; `pm2 env` secret dump.
 
@@ -69834,7 +69835,7 @@ Do not rerun LIVE-10. Do not convert LIVE-10 to PASS. Do not patch the deduction
 - Step 3: checkpoint + board/registry end-status only
 - No PRD.md. No ARCHITECTURE.md. No CLAUDE.md. No AGENTS.md. No locked LIVE-10 / AUTO-01* / 03L body edits.
 
-**Mutexes / resources:** GOVERNANCE acquired for this Step 1 board/registry/diagnosis write, then released UNOWNED. GOVERNANCE acquired again for this Step 2 board/registry write, then released UNOWNED. STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER remain UNOWNED. AUTO-01K did not claim LIVE runtime resources. HOTFILE:e2e/builder-golden-path/lib/staging.ts and HOTFILE:e2e/builder-golden-path/tests/live-adapters.spec.ts used in Step 2 then released UNOWNED.
+**Mutexes / resources:** GOVERNANCE acquired for this Step 1 board/registry/diagnosis write, then released UNOWNED. GOVERNANCE acquired again for this Step 2 board/registry write, then released UNOWNED. GOVERNANCE acquired again for this Step 3 checkpoint/board/registry lock, then released UNOWNED. STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER remain UNOWNED. AUTO-01K did not claim LIVE runtime resources. HOTFILE:e2e/builder-golden-path/lib/staging.ts and HOTFILE:e2e/builder-golden-path/tests/live-adapters.spec.ts used in Step 2 then released UNOWNED; remain UNOWNED at lock.
 
 **Shared contracts (frozen; must not be modified by this task):**
 - PRIVATE-BETA-E2E-LIVE-10 COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — DEDUCTION — 2026-08-22 — not rewritten
@@ -69895,7 +69896,7 @@ Git mutations = 0
 - [x] LIVE-10 not rewritten; no LIVE / SSH / staging / provider / credit / gate / runner implementation / product / Git activity
 - [x] `docs/PRIVATE-BETA-E2E-AUTO-01K-DIAGNOSIS.md` created
 - [x] Step 2 smallest proven TDD adapter correction — COMPLETE 2026-08-22
-- [ ] Step 3 checkpoint / consolidation / lock — PENDING
+- [x] Step 3 checkpoint / consolidation / lock — COMPLETE AND LOCKED — PASS — 2026-08-22
 
 **PRIVATE-BETA-E2E-AUTO-01K STEP 1 COMPLETE — DEDUCTION DATABASE CONNECTION ROOT CAUSE AND SAFE SECRET-PRESERVING ADAPTER CONTRACT PROVEN — READY FOR ONE TDD SHARED DB-VERIFICATION FIX**
 
@@ -69950,8 +69951,58 @@ dependencies = 0
 Git mutations = 0
 ```
 
-**Blocker before Step 3:** explicit Keith authorization for AUTO-01K Step 3 consolidation / checkpoint / lock. Do not LIVE. Do not SSH. Do not lock AUTO-01K here. Do not convert LIVE-10 to PASS. Do not register PRIVATE-BETA-INVITE-01. Keith owns Git.
+**Blocker before Step 3:** explicit Keith authorization for AUTO-01K Step 3 consolidation / checkpoint / lock. Do not LIVE. Do not SSH. Do not lock AUTO-01K here. Do not convert LIVE-10 to PASS. Do not register PRIVATE-BETA-INVITE-01. Keith owns Git. **CLEARED** — Keith authorized Step 3 2026-08-22.
 
 **PRIVATE-BETA-E2E-AUTO-01K STEP 2 COMPLETE — PASS — DEDUCTION VERIFIER NOW ACQUIRES DATABASE_URL FROM THE AUTHORITATIVE STAGING ENV FILE INSIDE THE REMOTE COMMAND WITHOUT SOURCING THE FILE OR EXPOSING THE SECRET, FAILS CLOSED WHEN DATABASE_URL IS ABSENT, AND PRESERVES EXECUTIONID-CORRELATED EXACTLY-ONE DEDUCTION SEMANTICS — FULL CONTRACT PASS — READY FOR STEP 3**
+
+---
+
+#### Step 3 (COMPLETE — 2026-08-22 — fresh verification / checkpoint / consolidation / final lock)
+
+Keith authorized Step 3. Local verification + governance only. No LIVE. No product source. No runner implementation change. No Git commit.
+
+**Preflight:** branch = `main`; HEAD = `449ab9b5fff89b570078c968c7d36f7f5a347657`; `git status --short` empty (CLEAN) before Step 3 writes.
+
+**Fresh verification:**
+- focused AUTO-01K tests: **4 passed (1.7s)** / 0 failed
+- fresh `npm run e2e:builder:contract`: **113 passed / 0 failed / 8.7s** / exit 0
+- `npx tsc --noEmit --project e2e/builder-golden-path/tsconfig.json`: exit 0
+- `git diff --check`: PASS
+- `git diff -- frontend services`: EMPTY
+- `git diff -- package.json package-lock.json`: EMPTY
+- committed Step 2 scope: `e2e/builder-golden-path/lib/staging.ts`, `e2e/builder-golden-path/tests/live-adapters.spec.ts`, Step 2 TASKS.md / TASKS_BACKLOG_FULL.md governance only; frontend / services / package EMPTY vs parent
+- AUTO-01G files/write observation unchanged
+- AUTO-01H `POST /api/ai/execute` 202 executionId observation unchanged
+- AUTO-01J bounded CHECKPOINT observation unchanged
+- 03L `FROZEN_ARTIFACT_PATH='index.html'` / marker `PRIVATE-BETA-E2E-AUTO` intact
+- phase order unchanged: PREVIEW → CHECKPOINT → PUBLIC_CONFIRM → DEDUCTION → BALANCE
+- BALANCE still GET `/api/billing/balance`; `BALANCE_CHANGED=NO`
+- deduction SQL / `source_event_id = executionId` / `deductionCount === 1` unchanged
+- generic `source .env` not used; secret not embedded in SSH argv; secret not printed
+
+**Diagnosis:** `docs/PRIVATE-BETA-E2E-AUTO-01K-DIAGNOSIS.md`
+
+**Checkpoint:** `docs/PRIVATE-BETA-E2E-AUTO-01K-CHECKPOINT.md`
+
+##### Step 3 activity ledger
+
+```
+LIVE runs = 0
+SSH = 0
+staging = 0
+provider = 0
+credits = 0
+gate mutations = 0
+project/session/container = 0
+product = 0
+frontend = 0
+backend/services = 0
+dependencies = 0
+Git mutations = 0
+```
+
+Do not register PRIVATE-BETA-E2E-LIVE-11 here. Do not register PRIVATE-BETA-INVITE-01. Keith owns Git.
+
+**PRIVATE-BETA-E2E-AUTO-01K COMPLETE AND LOCKED — PASS — 2026-08-22**
 
 
