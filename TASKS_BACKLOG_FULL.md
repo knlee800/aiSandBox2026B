@@ -68759,3 +68759,131 @@ Git mutations = 0
 **Checkpoint:** `docs/PRIVATE-BETA-E2E-LIVE-08-CHECKPOINT.md`
 **Exact next (NOT REGISTERED HERE):** one bounded PRODUCT root-cause lifecycle — likely `PRIVATE-BETA-BLOCKER-03L` (verify unused at future registration; repo search at this lock found zero occurrences) — working title: Builder Static Preview Entrypoint Contract — FIRST question: why does the Builder golden path correctly persist `e2e-auto.html` while the product static-preview start path refuses to start unless `index.html` exists? Do not assume the fix. Do not change product or runner until the product contract is proven. Do not rerun or convert LIVE-08. Do not reopen AUTO-01G / AUTO-01H / AUTO-01I. Do not weaken runner SAFETY. Do not register PRIVATE-BETA-INVITE-01. Do not register PRIVATE-BETA-BLOCKER-03L here.
 
+---
+
+### PRIVATE-BETA-BLOCKER-03L — Builder Static Preview Entrypoint Contract
+
+**Task ID:** PRIVATE-BETA-BLOCKER-03L
+**Title:** Builder Static Preview Entrypoint Contract Root-Cause Investigation + Bounded Fixture Alignment
+**Workstream:** RELIABILITY
+**Lifecycle:** 3-step NORMAL bounded task
+**Status:** ACTIVE — Step 1 COMPLETE — 2026-08-22
+**Assigned lane:** Lane 1
+**Lane 2:** EMPTY
+**Lane 3:** DISABLED
+**Registered:** 2026-08-22
+**Approved:** Keith — 2026-08-22 (this Step 1 registration + OS v1 admission + diagnosis only — does NOT authorize Step 2 implementation)
+**Nature:** PRODUCT-CONTRACT / ROOT-CAUSE INVESTIGATION in Step 1; selected Step 2 is a bounded RUNNER_FIXTURE_FIX only. Not a Preview redesign. Not a Builder path-rewrite. Not a LIVE run. Not a product Preview/Builder source change.
+**Evidence class:** LOCAL-TESTS
+**Hot-file leases:** NONE in Step 1 (read-only). Step 2 will require runner HOTFILE leases under `e2e/builder-golden-path/` only.
+**Diagnosis:** `docs/PRIVATE-BETA-BLOCKER-03L-DIAGNOSIS.md`
+**Identifier search:** PRIVATE-BETA-BLOCKER-03L was unused as a registered task before this registration. Repo-wide search found only historical LIVE-08 recommendation prose (`docs/PRIVATE-BETA-E2E-LIVE-08-CHECKPOINT.md`; TASKS.md next-gate; this LIVE-08 lock “Exact next (NOT REGISTERED HERE)”). Historical recommendation prose does not count. Existing 03A–03K remain distinct locked/historical siblings.
+
+**Start condition:** READY — PRIVATE-BETA-E2E-LIVE-08 COMPLETE AND LOCKED — FAIL/BLOCKED — PRODUCT_FAILURE — PREVIEW — 2026-08-22; AUTO-01G / AUTO-01H / AUTO-01I COMPLETE AND LOCKED — PASS with LIVE-08 validation HELD; Lane 1 EMPTY at admission; Lane 2 EMPTY; Lane 3 DISABLED; tree CLEAN on `main`; STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER UNOWNED; OS v1 admission requirements pass.
+
+**Depends on:**
+- PRIVATE-BETA-E2E-LIVE-08 — COMPLETE AND LOCKED — FAIL/BLOCKED — PRODUCT_FAILURE — PREVIEW — 2026-08-22 — Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-08-CHECKPOINT.md` — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-08-EXECUTION.md` — do not reopen; do not rewrite; do not convert to PASS; do not rerun
+- PRIVATE-BETA-E2E-AUTO-01G — COMPLETE AND LOCKED — PASS — 2026-08-21 — LIVE-08 validation HELD — do not reopen
+- PRIVATE-BETA-E2E-AUTO-01H — COMPLETE AND LOCKED — PASS — 2026-08-21 — LIVE-08 validation HELD — do not reopen
+- PRIVATE-BETA-E2E-AUTO-01I — COMPLETE AND LOCKED — PASS — 2026-08-22 — LIVE-08 validation HELD — do not reopen
+
+**Locked-body note:** The locked LIVE-08 registry body records “Do not register PRIVATE-BETA-BLOCKER-03L here.” That lock-time instruction is intentionally **not** edited. Current registration/admission for 03L lives in this entry and on the TASKS.md CURRENT EXECUTION BOARD.
+
+**Primary write scope:**
+- Step 1: `TASKS.md` CURRENT EXECUTION BOARD above LEGACY / FROZEN only; this canonical registry entry; optional `docs/PRIVATE-BETA-BLOCKER-03L-DIAGNOSIS.md`
+- Step 2 (after Keith commit of Step 1 AND fresh-window authorization only): runner fixture files under `e2e/builder-golden-path/` required to change `FROZEN_ARTIFACT_PATH` to `index.html` and update derived CONTRACT fixtures/tests. No production frontend/backend. No PRD.md. No ARCHITECTURE.md. No CLAUDE.md. No AGENTS.md. No LIVE-08 rewrite.
+- Step 3: checkpoint + board/registry end-status only
+
+**Mutexes / resources:** GOVERNANCE acquired for this Step 1 write, then released. Do **not** reserve STAGING, PROVIDER-LIVE, CREDIT, ENV, FRONTEND, GATEWAY, AI-SERVICE, CONTAINER-MANAGER, PACKAGE, LOCAL-RUNTIME, or HOTFILE in Step 1.
+
+Read-only source inspection does not justify a write mutex.
+
+**Shared contracts (frozen; 03L observes and does not change in Step 1):**
+- PRIVATE-BETA-E2E-LIVE-08 execution evidence and final checkpoint
+- PREV-02-02 static HTML `index.html` start contract
+- PREVIEW-STRATEGY-01A resolver order including missing-index
+- AUTO-01 / AUTO-01G frozen artifact observation of `FROZEN_ARTIFACT_PATH` (Step 2 may change the constant value, not AUTO-01G observation architecture)
+- current AUTO_APPLY path-preserving file-action apply
+- LIVE CLEAN-EXECUTION EDGE
+
+**Revert / evidence isolation:** Step 1 writes are governance/diagnosis only. Reverting 03L must not invalidate locked LIVE-08 / AUTO-01G / AUTO-01H / AUTO-01I evidence. Lane 2 remains EMPTY. Lane 3 remains DISABLED.
+
+**Purpose:** Prove why Builder can persist `e2e-auto.html` while static Start Preview refuses unless `index.html` exists, then apply the smallest evidence-supported correction.
+
+**Step 1 diagnosis (COMPLETE — 2026-08-22):**
+
+```
+ROOT_CAUSE_PROVEN=YES
+CLASSIFICATION=RUNNER_FIXTURE_FIX
+OWNING_STATIC_PREVIEW_CONTRACT=PREV-02-02 / PREVIEW-STRATEGY-01A (index.html project root)
+BUILDER_PATH_FIDELITY=YES (AUTO_APPLY preserves model path)
+GOLDEN_PATH_FILENAME_SOURCE=e2e/builder-golden-path/lib/constants.ts FROZEN_ARTIFACT_PATH='e2e-auto.html'
+E2E_02_PREVIEW_PASS_USED=index.html
+RENAMING_WOULD_HIDE_PRODUCT_BUG=NO
+PRODUCT_IMPLEMENTATION_NEEDED_IN_03L=NO
+BUILDER_CONTRACT_CHANGE_NEEDED_IN_03L=NO
+FRONTEND_UX_NEEDED_IN_03L=NO
+BACKEND_CHANGE_NEEDED_IN_03L=NO
+```
+
+H1 CONFIRMED (owning static contract). H2 REFUTED. H3 true-as-fact not causal. H4 REFUTED. H5 PARTIAL (prompt/fixture, not Builder-enforced index.html). H6 REFUTED. H7 secondary UX only.
+
+**Lifecycle steps:**
+1. Registration + product-contract / root-cause diagnosis — COMPLETE — 2026-08-22 — Diagnosis: `docs/PRIVATE-BETA-BLOCKER-03L-DIAGNOSIS.md`
+2. Smallest evidence-supported TDD implementation + tests — NOT STARTED — runner fixture only
+3. Checkpoint / consolidation / lock — NOT STARTED
+
+**PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+
+**BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_AUTOMATED_E2E
+
+**LIVE_STAGING_VALIDATED:** NO
+
+---
+
+#### Acceptance Criteria
+
+Registration / control-plane:
+- [x] identifier PRIVATE-BETA-BLOCKER-03L verified unused as a registered task (historical recommendation prose does not count)
+- [x] branch = `main`; tree = CLEAN at admission
+- [x] admitted to Lane 1 only
+- [x] Lane 2 remains EMPTY
+- [x] STAGING / PROVIDER-LIVE / CREDIT / ENV remain UNOWNED
+- [x] GOVERNANCE released after Step 1
+- [x] diagnosis document produced (`docs/PRIVATE-BETA-BLOCKER-03L-DIAGNOSIS.md`)
+- [x] no product/runner/LIVE/SSH/staging/provider/credit/gate/dependency/Git mutation in Step 1
+- [x] LIVE-08 not rewritten / not converted to PASS / not rerun
+- [ ] Step 2 TDD runner fixture alignment implemented in a later authorized window
+- [ ] Step 3 checkpoint / lock
+
+Investigation (Step 1):
+- [x] complete Preview call/data-flow traced UI → gateway → container-manager → resolver → start throw → unavailable UI
+- [x] exact index.html enforcement location recorded
+- [x] authoritative product-contract evidence recorded (PRD silent; PREV-02-02 locked HOW)
+- [x] Builder filename contract vs convention recorded
+- [x] golden-path filename source/purpose recorded
+- [x] working Preview comparison (E2E-02 `index.html` PASS) recorded
+- [x] hypotheses H1–H7 separately verdicted
+- [x] classification = RUNNER_FIXTURE_FIX
+- [x] renaming-hide question answered: NO for the golden-path class
+- [x] smallest Step 2 proposed without implementing it
+
+---
+
+**PRIVATE-BETA-BLOCKER-03L status:** ACTIVE — Step 1 COMPLETE — 2026-08-22
+**Assigned lane:** Lane 1
+**Lane 2:** EMPTY
+**Lane 3:** DISABLED
+**Mutexes / resources:** GOVERNANCE released — UNOWNED; STAGING / PROVIDER-LIVE / CREDIT / ENV UNOWNED
+**Step 1:** COMPLETE — 2026-08-22 — Diagnosis: `docs/PRIVATE-BETA-BLOCKER-03L-DIAGNOSIS.md`
+**Step 2:** NOT STARTED
+**Step 3:** NOT STARTED
+**CLASSIFICATION:** RUNNER_FIXTURE_FIX
+**ROOT_CAUSE_PROVEN:** YES
+**LIVE-08:** remains COMPLETE AND LOCKED — FAIL/BLOCKED — PRODUCT_FAILURE — PREVIEW — 2026-08-22
+**PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
+**BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_AUTOMATED_E2E
+**LIVE_STAGING_VALIDATED:** NO
+**Exact next:** PRIVATE-BETA-BLOCKER-03L Step 2 — bounded TDD runner fixture alignment in a fresh window after Keith commit. Do not LIVE. Do not change product Preview/Builder.
+
+
