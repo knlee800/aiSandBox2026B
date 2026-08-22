@@ -1,4 +1,4 @@
-export const FROZEN_ARTIFACT_PATH = 'e2e-auto.html';
+export const FROZEN_ARTIFACT_PATH = 'index.html';
 
 export const FROZEN_HTML = `<!doctype html>
 <html>

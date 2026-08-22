@@ -9,7 +9,7 @@ import {
   validateDeduction,
 } from '../lib/evidence';
 import { assertPreviewHtml, PreviewAssertionError } from '../lib/preview';
-import { FROZEN_HTML, PREVIEW_HEADING } from '../lib/constants';
+import { FROZEN_ARTIFACT_PATH, FROZEN_HTML, PREVIEW_HEADING } from '../lib/constants';
 
 test.describe('evidence and preview helpers', () => {
   test('balance arithmetic is BALANCE_AFTER = BALANCE_BEFORE - APPLIED_CREDITS', () => {
@@ -63,5 +63,9 @@ test.describe('evidence and preview helpers', () => {
       PreviewAssertionError,
     );
     expect(FROZEN_HTML).toContain(PREVIEW_HEADING);
+  });
+
+  test('uses index.html as the frozen artifact so static Preview has a valid entrypoint', () => {
+    expect(FROZEN_ARTIFACT_PATH).toBe('index.html');
   });
 });
