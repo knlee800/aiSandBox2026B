@@ -54,7 +54,45 @@ test.describe('evidence and preview helpers', () => {
         description: 'AI: applied workspace file actions',
       },
     ]);
-    expect(picked.commitHash).toBeTruthy();
+    expect(picked?.commitHash).toBeTruthy();
+  });
+
+  test('does not treat a stale Initial commit as the automatic checkpoint', () => {
+    expect(
+      pickAutomaticCheckpoint([
+        {
+          commitHash: '1111111111111111111111111111111111111111',
+          filesChanged: 1,
+          description: 'Initial commit',
+        },
+      ]),
+    ).toBeUndefined();
+  });
+
+  test('empty and non-matching checkpoint lists do not throw; matching row is selected among stale rows', () => {
+    expect(pickAutomaticCheckpoint([])).toBeUndefined();
+    expect(
+      pickAutomaticCheckpoint([
+        {
+          commitHash: '2222222222222222222222222222222222222222',
+          filesChanged: 0,
+          description: 'AI: applied workspace file actions',
+        },
+      ]),
+    ).toBeUndefined();
+    const picked = pickAutomaticCheckpoint([
+      {
+        commitHash: '1111111111111111111111111111111111111111',
+        filesChanged: 1,
+        description: 'Initial commit',
+      },
+      {
+        commitHash: 'cafebabedeadbeefcafebabedeadbeefcafebabe',
+        filesChanged: 1,
+        description: 'AI: applied workspace file actions',
+      },
+    ]);
+    expect(picked?.commitHash).toBe('cafebabedeadbeefcafebabedeadbeefcafebabe');
   });
 
   test('preview helper asserts frozen heading and paragraph', () => {

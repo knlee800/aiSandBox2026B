@@ -69259,14 +69259,14 @@ Git mutations = 0
 **Task ID:** PRIVATE-BETA-E2E-AUTO-01J
 **Title:** Automatic Checkpoint Observation Contract Root-Cause Investigation and Bounded Adapter Fix
 **Workstream:** RELIABILITY
-**Classification:** AUTOMATION_TOOLING_INVESTIGATION (Step 1) + bounded AUTOMATION_ADAPTER_FIX (Step 2, not yet authorized)
+**Classification:** AUTOMATION_TOOLING_INVESTIGATION (Step 1 COMPLETE) + bounded AUTOMATION_ADAPTER_FIX (Step 2 COMPLETE)
 **Lifecycle:** 3-step bounded task
-**Status:** ACTIVE — Step 1 COMPLETE — 2026-08-22
+**Status:** ACTIVE — Step 1 COMPLETE — Step 2 COMPLETE — 2026-08-22
 **Assigned lane:** Lane 1 ACTIVE
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
 **Registered:** 2026-08-22
-**Approved:** Keith — 2026-08-22 (Step 1 registration + admission + diagnosis only — does NOT authorize Step 2 implementation, LIVE, or PRIVATE-BETA-INVITE-01)
+**Approved:** Keith — 2026-08-22 (Step 1 registration + admission + diagnosis; Step 2 explicit TDD adapter-fix authorization — does NOT authorize LIVE, lock, or PRIVATE-BETA-INVITE-01)
 **Evidence class:** LOCAL-TESTS
 **Diagnosis document:** `docs/PRIVATE-BETA-E2E-AUTO-01J-DIAGNOSIS.md`
 **Owning fix (Step 1 proven):** AUTOMATION_ADAPTER_FIX
@@ -69284,15 +69284,15 @@ Git mutations = 0
 - PRIVATE-BETA-BLOCKER-03L — COMPLETE AND LOCKED — PASS — 2026-08-22 — do not reopen
 - GOV-OS-01 — COMPLETE AND LOCKED — PASS — 2026-08-18
 
-**Nature:** Automation-tooling investigation of the LIVE-09 CHECKPOINT empty-list observation failure, then (Step 2 only after Keith authorization) one smallest TDD adapter correction. Not a LIVE task. Not a product checkpoint-creation change. Not an OS mutation. Not a LIVE-09 rerun. Not PRIVATE-BETA-INVITE-01.
+**Nature:** Automation-tooling investigation of the LIVE-09 CHECKPOINT empty-list observation failure, then (Step 2 after Keith authorization) one smallest TDD adapter correction. Not a LIVE task. Not a product checkpoint-creation change. Not an OS mutation. Not a LIVE-09 rerun. Not PRIVATE-BETA-INVITE-01.
 
 **Primary write scope:**
 - Step 1: `TASKS.md` CURRENT EXECUTION BOARD above LEGACY / FROZEN only; this canonical registry entry; `docs/PRIVATE-BETA-E2E-AUTO-01J-DIAGNOSIS.md`
-- Step 2 (after explicit Keith authorization only): runner/CONTRACT files listed in HOTFILE leases; no product/frontend/services; no LIVE
+- Step 2 (after explicit Keith authorization only): runner/CONTRACT files listed in HOTFILE leases; no product/frontend/services; no LIVE — COMPLETE 2026-08-22
 - Step 3: checkpoint + board/registry end-status only
 - No PRD.md. No ARCHITECTURE.md. No CLAUDE.md. No AGENTS.md. No locked LIVE-09 / AUTO-01* / 03L body edits.
 
-**Mutexes / resources:** GOVERNANCE acquired for this Step 1 board/registry/diagnosis write, then released. Selected HOTFILE leases held across Step 1 → Step 2. STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER remain UNOWNED. AUTO-01J did not claim LIVE runtime resources.
+**Mutexes / resources:** GOVERNANCE acquired for this Step 2 board/registry write, then released. Selected HOTFILE leases held across Step 1 → Step 2 → Step 3. STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER remain UNOWNED. AUTO-01J did not claim LIVE runtime resources.
 
 **Shared contracts (frozen; must not be modified by this task):**
 - PRIVATE-BETA-E2E-LIVE-09 COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CHECKPOINT — 2026-08-22 — not rewritten
@@ -69322,7 +69322,7 @@ Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01J-DIAGNOSIS.md`
 **Owning fix:** AUTOMATION_ADAPTER_FIX
 **LIVE-09 historical class (unchanged):** AUTOMATION_ADAPTER_FAILURE
 
-Step 2 is **not** authorized by Step 1.
+Step 2 was **not** authorized by Step 1. Keith later authorized Step 2 explicitly.
 
 ##### Step 1 activity ledger
 
@@ -69348,11 +69348,57 @@ Git mutations = 0
 - [x] GOVERNANCE acquired then released; STAGING / PROVIDER-LIVE / CREDIT / ENV not acquired
 - [x] LIVE-09 not rewritten; no LIVE / SSH / staging / provider / credit / gate / runner implementation / product / Git activity
 - [x] `docs/PRIVATE-BETA-E2E-AUTO-01J-DIAGNOSIS.md` created
-- [ ] Step 2 smallest proven TDD adapter correction — PENDING Keith authorization
+- [x] Step 2 smallest proven TDD adapter correction — COMPLETE 2026-08-22
 - [ ] Step 3 checkpoint / consolidation / lock — PENDING
 
-**Blocker before Step 2:** explicit Keith authorization for one TDD adapter fix of the CHECKPOINT observation contract. No LIVE. No product change. Keith owns Git.
-
 **PRIVATE-BETA-E2E-AUTO-01J STEP 1 COMPLETE — AUTOMATIC CHECKPOINT OBSERVATION ROOT CAUSE AND SAFE BOUNDED ADAPTER CONTRACT PROVEN — READY FOR ONE TDD ADAPTER FIX**
+
+---
+
+#### Step 2 (COMPLETE — 2026-08-22 — bounded TDD CHECKPOINT observation adapter only)
+
+Keith authorized one AUTOMATION_ADAPTER_FIX. No LIVE. No product source. No phase reorder.
+
+**Preflight:** branch = `main`; HEAD = `08922f0013a5af977dddeb31973142fdb840a267`; `git status --short` empty (CLEAN) before Step 2 writes.
+
+**RED witnessed:**
+- empty GET `[]` then later automatic row — current one-shot `verifyCheckpoint()` threw `EvidenceError: No automatic checkpoint was returned.`
+- stale `Initial commit` `checkpoints[0]` fallback accepted hash `1111111111111111111111111111111111111111` instead of automatic `cafebabedeadbeefcafebabedeadbeefcafebabe`
+
+**GREEN:** LIVE `verifyCheckpoint()` now observes `GET /api/sessions/:sessionId/checkpoints` with first GET immediate; polls while a valid JSON array has no matching automatic row; timeout `CHECKPOINT_OBSERVATION_TIMEOUT_MS=30000`; interval `CHECKPOINT_POLL_INTERVAL_MS=250`; per-attempt request/body `min(remaining, CHECKPOINT_REQUEST_TIMEOUT_MS=10000)` via runner-owned `readCheckpointListBody`. `pickAutomaticCheckpoint()` returns only rows whose description contains `applied workspace file actions` AND non-empty `commitHash` AND `filesChanged >= 1`; `checkpoints[0]` fallback removed. Empty `[]` is pollable absence until the bound expires (`No automatic checkpoint was returned.`). HTTP error / non-array / malformed / body-read timeout fail closed immediately. Local fixture models empty-first, stale-then-automatic, empty-until-timeout, non-array, and HTTP 500.
+
+**Validation:**
+- focused AUTO-01J checkpoint tests: 7 passed
+- evidence helper tests: 6 passed
+- fresh `npm run e2e:builder:contract`: **109 passed / 0 failed / 8.5s** / exit 0
+- `npx tsc --noEmit --project e2e/builder-golden-path/tsconfig.json`: exit 0
+- `git diff --check`: PASS
+- `git diff -- frontend services`: EMPTY
+- `git diff -- package.json package-lock.json`: EMPTY
+- AUTO-01G files/write observation unchanged
+- AUTO-01H `POST /api/ai/execute` 202 executionId observation unchanged
+- 03L `FROZEN_ARTIFACT_PATH='index.html'` / marker `PRIVATE-BETA-E2E-AUTO` intact
+- phase order unchanged: PREVIEW → CHECKPOINT → PUBLIC_CONFIRM
+
+##### Step 2 activity ledger
+
+```
+LIVE runs = 0
+SSH connections = 0
+staging mutations = 0
+provider calls = 0
+credit mutations = 0
+gate mutations = 0
+project/session/container creation = 0
+product modifications = 0
+frontend changes = 0
+backend/service changes = 0
+dependency changes = 0
+Git mutations = 0
+```
+
+**Blocker before Step 3:** explicit Keith authorization for AUTO-01J Step 3 consolidation / checkpoint / lock. Do not LIVE. Do not lock in Step 2. Do not register PRIVATE-BETA-INVITE-01. Keith owns Git.
+
+**PRIVATE-BETA-E2E-AUTO-01J STEP 2 COMPLETE — PASS — CHECKPOINT ADAPTER NOW USES FINITE BOUNDED OBSERVATION FOR THE CORRELATED AUTOMATIC CHECKPOINT, TOLERATES VALID EMPTY-FIRST RESPONSES, REJECTS STALE CHECKPOINTS, AND FAILS CLOSED ON INVALID RESPONSES — FULL CONTRACT PASS — READY FOR STEP 3**
 
 

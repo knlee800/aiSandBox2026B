@@ -4,6 +4,9 @@ import {
   BUILDER_PROMPT,
   BUILD_EXECUTION_BODY_TIMEOUT_MS,
   BUILD_EXECUTION_RESPONSE_TIMEOUT_MS,
+  CHECKPOINT_OBSERVATION_TIMEOUT_MS,
+  CHECKPOINT_POLL_INTERVAL_MS,
+  CHECKPOINT_REQUEST_TIMEOUT_MS,
   DEFAULT_BASE_URL,
   FROZEN_ARTIFACT_PATH,
   LOCALE,
@@ -29,6 +32,7 @@ import {
   armSessionCreateListener,
   AutoApplyObservationError,
   BuildExecutionObservationError,
+  CheckpointObservationError,
   ProjectCreateObservationError,
   SessionObservationError,
   buildExecutionObservationTimeout,
@@ -36,6 +40,7 @@ import {
   parseBuildExecutionId,
   projectCreateObservationTimeout,
   readBuildExecutionBody,
+  readCheckpointListBody,
   readProjectCreateBody,
   validateLiveConfirmResponse,
   type ConfirmListener,
@@ -44,10 +49,11 @@ import {
 import { startAndAssertPreview } from './preview';
 import {
   countDeductionRowsForExecution,
+  EvidenceError,
   pickAutomaticCheckpoint,
   validateBalanceArithmetic,
+  validateCheckpoint,
   validateDeduction,
-  type CheckpointEvidence,
 } from './evidence';
 import {
   ExecutionGateTracker,
@@ -75,6 +81,9 @@ export interface LiveAdapterContext {
   autoApplyTimeoutMs?: number;
   buildExecutionResponseTimeoutMs?: number;
   buildExecutionBodyTimeoutMs?: number;
+  checkpointObservationTimeoutMs?: number;
+  checkpointPollIntervalMs?: number;
+  checkpointRequestTimeoutMs?: number;
 }
 
 export function createLiveStagingHelper(options: {
@@ -221,6 +230,12 @@ export async function createLiveAdapters(
     input.buildExecutionResponseTimeoutMs ?? BUILD_EXECUTION_RESPONSE_TIMEOUT_MS;
   const buildExecutionBodyTimeoutMs =
     input.buildExecutionBodyTimeoutMs ?? BUILD_EXECUTION_BODY_TIMEOUT_MS;
+  const checkpointObservationTimeoutMs =
+    input.checkpointObservationTimeoutMs ?? CHECKPOINT_OBSERVATION_TIMEOUT_MS;
+  const checkpointPollIntervalMs =
+    input.checkpointPollIntervalMs ?? CHECKPOINT_POLL_INTERVAL_MS;
+  const checkpointRequestTimeoutMs =
+    input.checkpointRequestTimeoutMs ?? CHECKPOINT_REQUEST_TIMEOUT_MS;
 
   const context = await createFreshBrowserContext(input.browser);
   const page = await context.newPage();
@@ -373,14 +388,60 @@ export async function createLiveAdapters(
     },
 
     async verifyCheckpoint() {
-      const response = await page.request.get(
-        `${baseURL}/api/sessions/${encodeURIComponent(sessionId)}/checkpoints`,
-      );
-      if (!response.ok()) {
-        throw new Error(`Checkpoint list HTTP ${response.status()}`);
+      const deadline = Date.now() + checkpointObservationTimeoutMs;
+      const url = `${baseURL}/api/sessions/${encodeURIComponent(sessionId)}/checkpoints`;
+      while (true) {
+        const remaining = deadline - Date.now();
+        if (remaining <= 0) {
+          throw new EvidenceError('No automatic checkpoint was returned.');
+        }
+        const attemptTimeoutMs = Math.max(
+          1,
+          Math.min(remaining, checkpointRequestTimeoutMs),
+        );
+        const remainingCappedAttempt = remaining <= checkpointRequestTimeoutMs;
+        let response;
+        try {
+          response = await page.request.get(url, { timeout: attemptTimeoutMs });
+        } catch (error) {
+          const timedOut =
+            error instanceof Error &&
+            (error.name === 'TimeoutError' ||
+              error.name === 'TimeoutError2' ||
+              /timed out/i.test(error.message));
+          if (Date.now() >= deadline || (remainingCappedAttempt && timedOut)) {
+            throw new EvidenceError('No automatic checkpoint was returned.');
+          }
+          throw new CheckpointObservationError(
+            `Checkpoint list request failed: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+        }
+        if (!response.ok()) {
+          throw new CheckpointObservationError(
+            `Checkpoint list HTTP ${response.status()}`,
+          );
+        }
+        const payload = await readCheckpointListBody(response, attemptTimeoutMs);
+        if (!Array.isArray(payload)) {
+          throw new CheckpointObservationError(
+            'Checkpoint list JSON was not an array.',
+          );
+        }
+        const match = pickAutomaticCheckpoint(payload);
+        if (match) {
+          validateCheckpoint(match);
+          return match;
+        }
+        const remainingAfter = deadline - Date.now();
+        if (remainingAfter <= 0) {
+          throw new EvidenceError('No automatic checkpoint was returned.');
+        }
+        await new Promise((resolve) => {
+          setTimeout(resolve, Math.min(checkpointPollIntervalMs, remainingAfter));
+        });
       }
-      const payload = (await response.json()) as CheckpointEvidence[];
-      return pickAutomaticCheckpoint(Array.isArray(payload) ? payload : []);
     },
 
     async verifyPublicConfirm() {

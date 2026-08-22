@@ -267,7 +267,12 @@ export type AutoApplyFixtureMode =
   | 'execute-malformed-json'
   | 'execute-missing-id'
   | 'execute-empty-id'
-  | 'execute-body-stalls';
+  | 'execute-body-stalls'
+  | 'checkpoint-empty-then-automatic'
+  | 'checkpoint-stale-then-automatic'
+  | 'checkpoint-empty-until-timeout'
+  | 'checkpoint-non-array'
+  | 'checkpoint-http-error';
 
 export const AUTO_APPLY_PROJECT_ID = 'project-auto-apply-1';
 export const AUTO_APPLY_SESSION_ID = 'session-auto-apply-1';
@@ -275,6 +280,22 @@ export const AUTO_APPLY_OTHER_SESSION_ID = 'session-auto-apply-other';
 export const AUTO_APPLY_WRONG_PATH = 'other.html';
 export const AUTO_APPLY_EXECUTION_ID = 'exec-auto-apply-1';
 export const REAL_EXECUTE_EXECUTION_ID = 'exec-real-flow';
+export const CHECKPOINT_AUTOMATIC_HASH = 'cafebabedeadbeefcafebabedeadbeefcafebabe';
+export const CHECKPOINT_STALE_HASH = '1111111111111111111111111111111111111111';
+export const CHECKPOINT_AUTOMATIC_DESCRIPTION = 'AI: applied workspace file actions';
+export const CHECKPOINT_STALE_DESCRIPTION = 'Initial commit';
+
+const AUTOMATIC_CHECKPOINT_ROW = {
+  commitHash: CHECKPOINT_AUTOMATIC_HASH,
+  filesChanged: 1,
+  description: CHECKPOINT_AUTOMATIC_DESCRIPTION,
+};
+
+const STALE_CHECKPOINT_ROW = {
+  commitHash: CHECKPOINT_STALE_HASH,
+  filesChanged: 1,
+  description: CHECKPOINT_STALE_DESCRIPTION,
+};
 
 export interface AutoApplyFixtureServer extends LocalFixtureServer {
   fileWriteCount(): number;
@@ -282,6 +303,7 @@ export interface AutoApplyFixtureServer extends LocalFixtureServer {
   sessionPostCount(): number;
   executePostCount(): number;
   executionsCollectionPostCount(): number;
+  checkpointGetCount(): number;
 }
 
 function readRequestBody(req: http.IncomingMessage): Promise<string> {
@@ -418,6 +440,7 @@ export function createAutoApplyFixtureServer(
   let sessionPosts = 0;
   let executePosts = 0;
   let executionsCollectionPosts = 0;
+  let checkpointGets = 0;
 
   const server = http.createServer((req, res) => {
     const url = new URL(req.url ?? '/', 'http://127.0.0.1');
@@ -501,6 +524,37 @@ export function createAutoApplyFixtureServer(
       json(res, 200, { triggered: true, reason: 'completed', executionId: AUTO_APPLY_EXECUTION_ID });
       return;
     }
+    if (req.method === 'GET' && /\/api\/sessions\/[^/]+\/checkpoints\/?$/.test(url.pathname)) {
+      checkpointGets += 1;
+      if (mode === 'checkpoint-http-error') {
+        json(res, 500, { error: 'checkpoint list failed' });
+        return;
+      }
+      if (mode === 'checkpoint-non-array') {
+        json(res, 200, AUTOMATIC_CHECKPOINT_ROW);
+        return;
+      }
+      if (mode === 'checkpoint-empty-until-timeout') {
+        json(res, 200, []);
+        return;
+      }
+      if (mode === 'checkpoint-empty-then-automatic') {
+        json(res, 200, checkpointGets === 1 ? [] : [AUTOMATIC_CHECKPOINT_ROW]);
+        return;
+      }
+      if (mode === 'checkpoint-stale-then-automatic') {
+        json(
+          res,
+          200,
+          checkpointGets === 1
+            ? [STALE_CHECKPOINT_ROW]
+            : [AUTOMATIC_CHECKPOINT_ROW, STALE_CHECKPOINT_ROW],
+        );
+        return;
+      }
+      json(res, 200, []);
+      return;
+    }
     if (req.method === 'POST' && /\/api\/sessions\/[^/]+\/files\/write\/?$/.test(url.pathname)) {
       void readRequestBody(req).then((raw) => {
         fileWrites += 1;
@@ -539,6 +593,7 @@ export function createAutoApplyFixtureServer(
         sessionPostCount: () => sessionPosts,
         executePostCount: () => executePosts,
         executionsCollectionPostCount: () => executionsCollectionPosts,
+        checkpointGetCount: () => checkpointGets,
         close: () =>
           new Promise((closeResolve, closeReject) => {
             server.close((error) => {

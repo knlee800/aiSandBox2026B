@@ -447,6 +447,48 @@ export function buildExecutionObservationTimeout(
   );
 }
 
+export class CheckpointObservationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CheckpointObservationError';
+  }
+}
+
+/**
+ * Playwright issues response-body reads with no timeout at all, so neither the
+ * config `actionTimeout` nor a per-call option can bound `Response.json()`.
+ * The bound therefore has to be owned by the runner.
+ */
+export async function readCheckpointListBody(
+  response: Pick<Response, 'json'>,
+  timeoutMs: number,
+): Promise<unknown> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const read = response.json().then(
+    (value: unknown) => ({ outcome: 'read' as const, value }),
+    (error: unknown) => ({ outcome: 'failed' as const, error }),
+  );
+  const expiry = new Promise<{ outcome: 'timeout' }>((resolve) => {
+    timer = setTimeout(() => resolve({ outcome: 'timeout' }), timeoutMs);
+  });
+  try {
+    const result = await Promise.race([read, expiry]);
+    if (result.outcome === 'timeout') {
+      throw new CheckpointObservationError(
+        `Timed out after ${timeoutMs}ms reading the checkpoint list response body.`,
+      );
+    }
+    if (result.outcome === 'failed') {
+      throw new CheckpointObservationError(
+        `Could not read the checkpoint list response body: ${describeError(result.error)}`,
+      );
+    }
+    return result.value;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export function isSessionFileWriteUrl(url: string): boolean {
   try {
     const parsed = new URL(url, 'http://localhost');

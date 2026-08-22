@@ -44,6 +44,7 @@ import {
 import { GOLDEN_PATH_PHASES } from '../lib/phases';
 import { createRecordingAdapters, runGoldenPath } from '../lib/runner';
 import { ExecutionGateTracker, ProviderCallGuard } from '../lib/safety-gates';
+import { EvidenceError } from '../lib/evidence';
 import {
   FROZEN_ARTIFACT_PATH,
   LIVE_ACTION_TIMEOUT_MS,
@@ -56,10 +57,14 @@ import {
   SSH_EXECUTION_TIMEOUT_MS,
   BUILD_EXECUTION_BODY_TIMEOUT_MS,
   BUILD_EXECUTION_RESPONSE_TIMEOUT_MS,
+  CHECKPOINT_OBSERVATION_TIMEOUT_MS,
+  CHECKPOINT_POLL_INTERVAL_MS,
+  CHECKPOINT_REQUEST_TIMEOUT_MS,
 } from '../lib/constants';
 import {
   AutoApplyObservationError,
   BuildExecutionObservationError,
+  CheckpointObservationError,
   ProjectCreateObservationError,
   SessionObservationError,
   armFileWriteListener,
@@ -70,12 +75,15 @@ import {
   isSessionFileWriteUrl,
   parseBuildExecutionId,
   readBuildExecutionBody,
+  readCheckpointListBody,
 } from '../lib/network';
 import {
   AUTO_APPLY_OTHER_SESSION_ID,
   AUTO_APPLY_PROJECT_ID,
   AUTO_APPLY_SESSION_ID,
   AUTO_APPLY_WRONG_PATH,
+  CHECKPOINT_AUTOMATIC_HASH,
+  CHECKPOINT_STALE_HASH,
   REAL_EXECUTE_EXECUTION_ID,
   createAutoApplyFixtureServer,
   createSessionRaceFixtureServer,
@@ -2205,5 +2213,198 @@ test.describe('AUTO-01H BUILD executionId observation', () => {
       await live.context.close().catch(() => undefined);
       await fixture.close();
     }
+  });
+});
+
+test.describe('AUTO-01J CHECKPOINT observation adapter', () => {
+  test.describe.configure({ mode: 'serial' });
+
+  const CHECKPOINT_OBSERVATION_BOUND_MS = 400;
+  const CHECKPOINT_POLL_BOUND_MS = 50;
+  const CHECKPOINT_ASSERTION_CEILING_MS = 5_000;
+
+  async function createCheckpointObservationLive(
+    browser: Browser,
+    fixtureUrl: string,
+    timeouts?: {
+      observationMs?: number;
+      pollMs?: number;
+      requestMs?: number;
+    },
+  ) {
+    const helper = fastReadyHelper({
+      env: liveEnvWithCreds,
+      execute: async () => '',
+    });
+    return createLiveAdapters({
+      browser,
+      env: { ...liveEnvWithCreds, E2E_BASE_URL: fixtureUrl },
+      staging: helper,
+      readLocalHead: async () => DYNAMIC_HEAD_B,
+      checkpointObservationTimeoutMs:
+        timeouts?.observationMs ?? CHECKPOINT_OBSERVATION_BOUND_MS,
+      checkpointPollIntervalMs: timeouts?.pollMs ?? CHECKPOINT_POLL_BOUND_MS,
+      checkpointRequestTimeoutMs: timeouts?.requestMs ?? CHECKPOINT_OBSERVATION_BOUND_MS,
+    });
+  }
+
+  test('keeps diagnosed observation bounds and does not fall back to checkpoints[0]', () => {
+    expect(CHECKPOINT_OBSERVATION_TIMEOUT_MS).toBe(30_000);
+    expect(CHECKPOINT_POLL_INTERVAL_MS).toBe(250);
+    expect(CHECKPOINT_REQUEST_TIMEOUT_MS).toBe(10_000);
+    const evidenceSource = fs.readFileSync(
+      path.join(__dirname, '../lib/evidence.ts'),
+      'utf8',
+    );
+    const adapterSource = fs.readFileSync(
+      path.join(__dirname, '../lib/live-adapters.ts'),
+      'utf8',
+    );
+    const verifyFn = adapterSource.slice(
+      adapterSource.indexOf('async verifyCheckpoint()'),
+      adapterSource.indexOf('async verifyPublicConfirm()'),
+    );
+    expect(evidenceSource).not.toContain('checkpoints[0]');
+    expect(verifyFn).not.toContain('Array.isArray(payload) ? payload : []');
+    expect(verifyFn).toContain('readCheckpointListBody');
+    expect(verifyFn).toContain('pickAutomaticCheckpoint');
+    expect(verifyFn).not.toMatch(/await new Promise[\s\S]*page\.request\.get/);
+    expect(GOLDEN_PATH_PHASES.indexOf('CHECKPOINT')).toBe(
+      GOLDEN_PATH_PHASES.indexOf('PREVIEW') + 1,
+    );
+    expect(GOLDEN_PATH_PHASES.indexOf('PUBLIC_CONFIRM')).toBe(
+      GOLDEN_PATH_PHASES.indexOf('CHECKPOINT') + 1,
+    );
+    expect(adapterSource).toContain('armFileWriteListener(page)');
+    expect(adapterSource).toContain('isAiExecuteUrl');
+  });
+
+  test('LIVE-09 empty-first then automatic checkpoint eventually matches', async ({
+    browser,
+  }) => {
+    const fixture = await createAutoApplyFixtureServer('checkpoint-empty-then-automatic');
+    const live = await createCheckpointObservationLive(browser, fixture.url);
+    try {
+      await live.adapters.createSession();
+      const checkpoint = await live.adapters.verifyCheckpoint();
+      expect(checkpoint.commitHash).toBe(CHECKPOINT_AUTOMATIC_HASH);
+      expect(checkpoint.filesChanged).toBe(1);
+      expect((checkpoint.description ?? '').toLowerCase()).toContain(
+        'applied workspace file actions',
+      );
+      expect(fixture.checkpointGetCount()).toBeGreaterThan(1);
+    } finally {
+      await live.context.close();
+      await fixture.close();
+    }
+  });
+
+  test('stale Initial commit does not satisfy CHECKPOINT; later automatic row is returned', async ({
+    browser,
+  }) => {
+    const fixture = await createAutoApplyFixtureServer('checkpoint-stale-then-automatic');
+    const live = await createCheckpointObservationLive(browser, fixture.url);
+    try {
+      await live.adapters.createSession();
+      const checkpoint = await live.adapters.verifyCheckpoint();
+      expect(checkpoint.commitHash).toBe(CHECKPOINT_AUTOMATIC_HASH);
+      expect(checkpoint.commitHash).not.toBe(CHECKPOINT_STALE_HASH);
+      expect((checkpoint.description ?? '').toLowerCase()).toContain(
+        'applied workspace file actions',
+      );
+      expect(checkpoint.description).not.toBe('Initial commit');
+      expect(fixture.checkpointGetCount()).toBeGreaterThan(1);
+    } finally {
+      await live.context.close();
+      await fixture.close();
+    }
+  });
+
+  test('empty non-matching lists until the bound expires fail with No automatic checkpoint was returned', async ({
+    browser,
+  }) => {
+    const fixture = await createAutoApplyFixtureServer('checkpoint-empty-until-timeout');
+    const live = await createCheckpointObservationLive(browser, fixture.url);
+    try {
+      await live.adapters.createSession();
+      const started = Date.now();
+      const rejection = await live.adapters.verifyCheckpoint().then(
+        () => null,
+        (error: unknown) => error,
+      );
+      const elapsed = Date.now() - started;
+      expect(rejection).toBeInstanceOf(EvidenceError);
+      expect((rejection as Error).message).toBe('No automatic checkpoint was returned.');
+      expect(fixture.checkpointGetCount()).toBeGreaterThan(1);
+      expect(elapsed).toBeGreaterThanOrEqual(CHECKPOINT_OBSERVATION_BOUND_MS - 100);
+      expect(elapsed).toBeLessThan(CHECKPOINT_ASSERTION_CEILING_MS);
+      expect(elapsed).toBeLessThan(OUTER_LIVE_TIMEOUT_MS);
+    } finally {
+      await live.context.close();
+      await fixture.close();
+    }
+  });
+
+  test('a non-array checkpoint body fails closed immediately and is not treated as pollable []', async ({
+    browser,
+  }) => {
+    const fixture = await createAutoApplyFixtureServer('checkpoint-non-array');
+    const live = await createCheckpointObservationLive(browser, fixture.url);
+    const started = Date.now();
+    try {
+      await live.adapters.createSession();
+      const rejection = await live.adapters.verifyCheckpoint().then(
+        () => null,
+        (error: unknown) => error,
+      );
+      const elapsed = Date.now() - started;
+      expect(rejection).toBeInstanceOf(CheckpointObservationError);
+      expect((rejection as Error).message).toMatch(/not an array/);
+      expect(fixture.checkpointGetCount()).toBe(1);
+      expect(elapsed).toBeLessThan(CHECKPOINT_OBSERVATION_BOUND_MS);
+      expect(elapsed).toBeLessThan(CHECKPOINT_ASSERTION_CEILING_MS);
+    } finally {
+      await live.context.close();
+      await fixture.close();
+    }
+  });
+
+  test('a checkpoint HTTP error fails closed immediately', async ({ browser }) => {
+    const fixture = await createAutoApplyFixtureServer('checkpoint-http-error');
+    const live = await createCheckpointObservationLive(browser, fixture.url);
+    const started = Date.now();
+    try {
+      await live.adapters.createSession();
+      const rejection = await live.adapters.verifyCheckpoint().then(
+        () => null,
+        (error: unknown) => error,
+      );
+      const elapsed = Date.now() - started;
+      expect(rejection).toBeInstanceOf(CheckpointObservationError);
+      expect((rejection as Error).message).toMatch(/Checkpoint list HTTP 500/);
+      expect(fixture.checkpointGetCount()).toBe(1);
+      expect(elapsed).toBeLessThan(CHECKPOINT_OBSERVATION_BOUND_MS);
+      expect(elapsed).toBeLessThan(CHECKPOINT_ASSERTION_CEILING_MS);
+    } finally {
+      await live.context.close();
+      await fixture.close();
+    }
+  });
+
+  test('a stalled checkpoint body read fails with a bounded typed error rather than Playwright timeout', async () => {
+    const started = Date.now();
+    const rejection = await readCheckpointListBody(
+      { json: () => new Promise(() => undefined) },
+      CHECKPOINT_OBSERVATION_BOUND_MS,
+    ).then(
+      () => null,
+      (error: unknown) => error,
+    );
+    const elapsed = Date.now() - started;
+    expect(rejection).toBeInstanceOf(CheckpointObservationError);
+    expect((rejection as Error).message).toMatch(/checkpoint list response body/);
+    expect(elapsed).toBeGreaterThanOrEqual(CHECKPOINT_OBSERVATION_BOUND_MS - 100);
+    expect(elapsed).toBeLessThan(CHECKPOINT_ASSERTION_CEILING_MS);
+    expect(elapsed).toBeLessThan(OUTER_LIVE_TIMEOUT_MS);
   });
 });

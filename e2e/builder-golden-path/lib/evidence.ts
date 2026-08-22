@@ -82,14 +82,14 @@ export function countDeductionRowsForExecution(
 
 export function pickAutomaticCheckpoint(
   checkpoints: CheckpointEvidence[],
-): CheckpointEvidence {
-  const automatic = checkpoints.find((checkpoint) =>
-    (checkpoint.description ?? '').toLowerCase().includes('applied workspace file actions'),
-  );
-  const chosen = automatic ?? checkpoints[0];
-  if (!chosen) {
-    throw new EvidenceError('No automatic checkpoint was returned.');
-  }
-  validateCheckpoint(chosen);
-  return chosen;
+): CheckpointEvidence | undefined {
+  return checkpoints.find((checkpoint) => {
+    const description = (checkpoint.description ?? '').toLowerCase();
+    const hash = (checkpoint.commitHash ?? '').trim();
+    return (
+      description.includes('applied workspace file actions') &&
+      hash.length > 0 &&
+      checkpoint.filesChanged >= 1
+    );
+  });
 }

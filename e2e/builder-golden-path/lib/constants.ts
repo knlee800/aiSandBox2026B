@@ -32,6 +32,9 @@ export const PROJECT_CREATE_BODY_TIMEOUT_MS = 30_000;
 export const PROJECT_CARD_CLICK_TIMEOUT_MS = 10_000;
 export const BUILD_EXECUTION_RESPONSE_TIMEOUT_MS = 30_000;
 export const BUILD_EXECUTION_BODY_TIMEOUT_MS = 30_000;
+export const CHECKPOINT_OBSERVATION_TIMEOUT_MS = 30_000;
+export const CHECKPOINT_POLL_INTERVAL_MS = 250;
+export const CHECKPOINT_REQUEST_TIMEOUT_MS = 10_000;
 
 // Playwright resolves an absent actionTimeout/navigationTimeout to 0 = no timeout,
 // so the LIVE config must state finite per-operation defaults explicitly.
