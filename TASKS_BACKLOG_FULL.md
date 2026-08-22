@@ -68455,7 +68455,7 @@ Git mutations = 0
 **Title:** Fresh Automated Builder LIVE E2E After AUTO-01G / AUTO-01H / AUTO-01I With Step 1 Resource Reservation
 **Workstream:** RELIABILITY
 **Lifecycle:** 3-step HIGH-RISK bounded task
-**Status:** ACTIVE — Step 1 COMPLETE — 2026-08-22 — registration + committed resource reservation + exact execution contract
+**Status:** LANE-DONE — Step 2 COMPLETE — 2026-08-22 — FAIL/BLOCKED — PRODUCT_FAILURE — PREVIEW
 **Assigned lane:** 1
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
@@ -68703,38 +68703,47 @@ Git mutations = 0
 - [x] `docs/PRIVATE-BETA-E2E-LIVE-08-EXECUTION.md` created (contract/setup only; no fabricated runtime evidence)
 - [x] no LIVE / SSH / staging / provider / credit / gate / product / runner / dependency / Git activity
 
-#### Step 2 (PENDING)
-- [ ] Keith commit/push of this complete Step 1 reservation state
-- [ ] `git status --short` EMPTY on the committed reservation HEAD
-- [ ] explicit Keith LIVE authorization
-- [ ] verify committed LIVE-08 ownership of STAGING / PROVIDER-LIVE / CREDIT / ENV
-- [ ] NO governance writes
-- [ ] capture AUTHORIZED_LOCAL_HEAD at execution edge
-- [ ] NO-CONTROL-PLANE-WRITE WINDOW until runner return
-- [ ] compare-then-deploy exactly that SHA if staging differs
-- [ ] final triple gate
-- [ ] ONE `npm run e2e:builder:live`
+#### Step 2 (COMPLETE — LANE-DONE — FAIL/BLOCKED — PRODUCT_FAILURE — PREVIEW — 2026-08-22)
+- [x] Keith commit/push of this complete Step 1 reservation state (`f9efc0f6d2803adbc91689ce75670434a6e89cb5`)
+- [x] `git status --short` EMPTY on the committed reservation HEAD
+- [x] explicit Keith LIVE authorization
+- [x] verify committed LIVE-08 ownership of STAGING / PROVIDER-LIVE / CREDIT / ENV
+- [x] NO governance writes between AUTHORIZED_LOCAL_HEAD capture and runner return
+- [x] capture AUTHORIZED_LOCAL_HEAD = `f9efc0f6d2803adbc91689ce75670434a6e89cb5`
+- [x] NO-CONTROL-PLANE-WRITE WINDOW until runner return
+- [x] compare-then-deploy exactly that SHA (staging before `6723c4699d9c2cea832f73356aa85960b230b3cf`; rebuild skipped)
+- [x] final triple gate PASS
+- [x] ONE `npm run e2e:builder:live` (`LIVE_RUNNER_INVOKE=1`; `NPM_EXIT=1`; formatted `verdict=FAIL`; phase=PREVIEW)
+- [x] post-run evidence appended to `docs/PRIVATE-BETA-E2E-LIVE-08-EXECUTION.md`
+- [x] confirmed-safe cleanup: session stopped; container removed; `GLOBAL_EXECUTION_ENABLED=false`; `BILLING_CHARGES_ENABLED=false`; `executionGateFinal=restored-false`; DPAPI absent
+- [x] STAGING / PROVIDER-LIVE / CREDIT / ENV released after confirmed-safe cleanup
+- [x] do not rerun LIVE-08; do not lock in Step 2; do not register PRIVATE-BETA-INVITE-01
 
 #### Step 3 (PENDING)
 - [ ] consolidation / checkpoint / lock after Step 2 evidence
 
 ---
 
-**PRIVATE-BETA-E2E-LIVE-08 status:** ACTIVE — Step 1 COMPLETE — 2026-08-22
+**PRIVATE-BETA-E2E-LIVE-08 status:** LANE-DONE — Step 2 COMPLETE — 2026-08-22 — FAIL/BLOCKED — PRODUCT_FAILURE — PREVIEW
 **Step 1:** COMPLETE — registration + committed resource reservation + exact execution contract freeze — contract: `docs/PRIVATE-BETA-E2E-LIVE-08-EXECUTION.md`
-**Step 2:** PENDING — requires Keith commit of this reservation state AND explicit Keith LIVE authorization
-**Step 3:** PENDING
-**Assigned lane:** 1
+**Step 2:** COMPLETE — LANE-DONE — FAIL/BLOCKED — PRODUCT_FAILURE — PREVIEW — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-08-EXECUTION.md`
+**Step 3:** PENDING — consolidation / checkpoint / lock after Step 2 evidence
+**Assigned lane:** 1 (LANE-DONE)
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
 **Step 1 HEAD (informational only; NOT frozen for Step 2):** `9a52511db2d716746dcfaafdd097d3ec32575f68`
-**AUTHORIZED_LOCAL_HEAD:** NOT_CAPTURED
-**STAGING / PROVIDER-LIVE / CREDIT / ENV:** reserved to PRIVATE-BETA-E2E-LIVE-08
-**GOVERNANCE:** UNOWNED (released after Step 1 writes)
+**AUTHORIZED_LOCAL_HEAD:** `f9efc0f6d2803adbc91689ce75670434a6e89cb5`
+**STAGING / PROVIDER-LIVE / CREDIT / ENV:** released after confirmed-safe cleanup
+**GOVERNANCE:** UNOWNED (released after Step 2 post-run writes)
 **RUNTIME_EXECUTION_AUTHORIZED / PROVIDER_CALL_AUTHORIZED / CREDIT_MUTATION_AUTHORIZED / STAGING_MUTATION_AUTHORIZED:** NO / NO / NO / NO
-**LIVE_RUNS / SSH / STAGING_MUTATION / PROVIDER / CREDITS / GATE_MUTATION / GIT_MUTATION:** 0 / 0 / 0 / 0 / 0 / 0 / 0
+**LIVE_RUNS / SSH / STAGING_MUTATION / PROVIDER / CREDITS / GATE_MUTATION:** 1 / YES / YES (deploy + disposable session + gate enable/restore) / 1 / 1177 / YES (temporary enable then restored-false)
+**NPM_EXIT:** 1
+**FORMATTED_VERDICT:** FAIL
+**FAILED_PHASE:** PREVIEW
+**LAST_SUCCESSFUL_PHASE:** WAIT_FOR_AUTO_APPLY
+**LOCKED:** NO
 **LIVE_STAGING_VALIDATED:** NO
 **BUILDER_PRIVATE_BETA_READINESS:** NO_GO_PENDING_FRESH_AUTOMATED_E2E
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
-**Exact next:** Keith must commit/push this complete reservation state. Then PRIVATE-BETA-E2E-LIVE-08 Step 2 — ONE explicitly authorized automated LIVE execution — in a new window after explicit Keith LIVE authorization. Do not invoke the runner from Step 1. Do not release STAGING / PROVIDER-LIVE / CREDIT / ENV. Do not rerun or convert LIVE-07. Do not reopen AUTO-01G / AUTO-01H / AUTO-01I. Do not weaken runner SAFETY. Do not register PRIVATE-BETA-INVITE-01.
+**Exact next:** PRIVATE-BETA-E2E-LIVE-08 Step 3 — consolidation / checkpoint / lock from frozen Step 2 evidence. Do not rerun LIVE-08. Do not convert Step 2 to PASS. Do not reopen AUTO-01G / AUTO-01H / AUTO-01I. Do not weaken runner SAFETY. Do not register PRIVATE-BETA-INVITE-01.
 
