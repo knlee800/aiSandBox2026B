@@ -69795,4 +69795,108 @@ Do not rerun LIVE-10. Do not convert LIVE-10 to PASS. Do not patch the deduction
 
 **PRIVATE-BETA-E2E-LIVE-10 COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — DEDUCTION — 2026-08-22**
 
+### PRIVATE-BETA-E2E-AUTO-01K — Staging Deduction Verification Database Connection Contract
+
+**Task ID:** PRIVATE-BETA-E2E-AUTO-01K
+**Title:** Staging Deduction Verification Database Connection Contract Root-Cause Investigation and Bounded Adapter Fix
+**Workstream:** RELIABILITY
+**Classification:** AUTOMATION_TOOLING_INVESTIGATION (Step 1 COMPLETE) — owning fix AUTOMATION_ADAPTER_FIX — Step 2 not started
+**Lifecycle:** 3-step bounded task
+**Status:** ACTIVE — Lane 1 — Step 1 COMPLETE — 2026-08-22
+**Assigned lane:** 1 (ACTIVE)
+**Lane 2:** EMPTY
+**Lane 3:** DISABLED
+**Registered:** 2026-08-22
+**Approved:** Keith — 2026-08-22 (Step 1 registration + admission + diagnosis only; Step 2 TDD adapter-fix is NOT authorized by Step 1; Step 3 not authorized)
+**Evidence class:** LOCAL-TESTS
+**Diagnosis document:** `docs/PRIVATE-BETA-E2E-AUTO-01K-DIAGNOSIS.md`
+**Owning fix (Step 1 proven):** AUTOMATION_ADAPTER_FIX
+**Hot-file leases:** UNOWNED at Step 1 (planned for Step 2 after Keith authorization: `e2e/builder-golden-path/lib/staging.ts`; `e2e/builder-golden-path/tests/live-adapters.spec.ts`; optionally `e2e/builder-golden-path/tests/evidence.spec.ts`)
+
+**Identifier search:** PRIVATE-BETA-E2E-AUTO-01K was **unused as a registered task** before this registration. Repo-wide search found only historical recommendation prose: `docs/PRIVATE-BETA-E2E-LIVE-10-CHECKPOINT.md:511` / `:555` (“Likely identifier if later registered: **PRIVATE-BETA-E2E-AUTO-01K**”), LIVE-10 lock “Exact next (NOT REGISTERED HERE)” in this file, and `TASKS.md` next-gate “Do not register PRIVATE-BETA-E2E-AUTO-01K here.” Zero `### PRIVATE-BETA-E2E-AUTO-01K` registry entries existed. Historical recommendation prose does not count as prior registration. Existing E2E IDs: PRIVATE-BETA-E2E-01..05, PRIVATE-BETA-E2E-AUTO-01, AUTO-01A..AUTO-01J, PRIVATE-BETA-E2E-LIVE-01..LIVE-10, PRIVATE-BETA-BLOCKER-03L. Rejected: reopening LIVE-10 / LIVE-09 / AUTO-01G / AUTO-01H / AUTO-01I / AUTO-01J / 03L; registering PRIVATE-BETA-INVITE-01; a product credit-accounting change; generic `source .env`; embedding `DATABASE_URL` in local SSH argv; `pm2 env` secret dump.
+
+**Start condition:** READY — PRIVATE-BETA-E2E-LIVE-10 COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — DEDUCTION — 2026-08-22; PRIVATE-BETA-E2E-AUTO-01 through AUTO-01J COMPLETE AND LOCKED — PASS according to their authoritative registry/checkpoints; PRIVATE-BETA-BLOCKER-03L COMPLETE AND LOCKED — PASS — 2026-08-22; Lane 1 EMPTY at admission; Lane 2 EMPTY; Lane 3 DISABLED; clean tree at admission (`git status --short` empty; HEAD `100206b85e2830491dfb7f5e40ea04ce752e67aa`; branch `main`); STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER UNOWNED at admission; OS v1 admission requirements pass.
+
+**Depends on (required locked evidence):**
+- PRIVATE-BETA-E2E-LIVE-10 — COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — DEDUCTION — 2026-08-22 — Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-10-CHECKPOINT.md` — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-10-EXECUTION.md` — do not rewrite; do not rerun; do not convert to PASS
+- PRIVATE-BETA-E2E-AUTO-01J — COMPLETE AND LOCKED — PASS — 2026-08-22 — do not reopen
+- PRIVATE-BETA-E2E-AUTO-01I — COMPLETE AND LOCKED — PASS — 2026-08-22 — do not reopen
+- PRIVATE-BETA-E2E-AUTO-01H — COMPLETE AND LOCKED — PASS — 2026-08-21 — do not reopen
+- PRIVATE-BETA-E2E-AUTO-01G — COMPLETE AND LOCKED — PASS — 2026-08-21 — do not reopen
+- PRIVATE-BETA-BLOCKER-03L — COMPLETE AND LOCKED — PASS — 2026-08-22 — do not reopen
+- GOV-OS-01 — COMPLETE AND LOCKED — PASS — 2026-08-18
+
+**Nature:** Automation-tooling investigation of the LIVE-10 DEDUCTION `psql` / `DATABASE_URL` SSH connection failure, then (Step 2 after Keith authorization) one smallest TDD adapter correction of the remote DB-connection prefix used by `queryDeduction`. Not a LIVE task. Not a product credit change. Not a staging env-config change. Not an OS mutation. Not a LIVE-10 rerun. Not PRIVATE-BETA-INVITE-01.
+
+**Primary write scope:**
+- Step 1: `TASKS.md` CURRENT EXECUTION BOARD above LEGACY / FROZEN only; this canonical registry entry; `docs/PRIVATE-BETA-E2E-AUTO-01K-DIAGNOSIS.md`
+- Step 2 (after explicit Keith authorization only): runner/CONTRACT files listed in planned HOTFILE leases; no product/frontend/services; no LIVE
+- Step 3: checkpoint + board/registry end-status only
+- No PRD.md. No ARCHITECTURE.md. No CLAUDE.md. No AGENTS.md. No locked LIVE-10 / AUTO-01* / 03L body edits.
+
+**Mutexes / resources:** GOVERNANCE acquired for this Step 1 board/registry/diagnosis write, then released UNOWNED. STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER remain UNOWNED. AUTO-01K did not claim LIVE runtime resources. HOTFILE leases remain UNOWNED until Step 2.
+
+**Shared contracts (frozen; must not be modified by this task):**
+- PRIVATE-BETA-E2E-LIVE-10 COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — DEDUCTION — 2026-08-22 — not rewritten
+- Frozen golden-path phase order including DEDUCTION then BALANCE (`e2e/builder-golden-path/lib/phases.ts`)
+- AUTO-01G files/write 204 AUTO_APPLY observation — do not reopen
+- AUTO-01H BUILD `POST /api/ai/execute` 202 `executionId` — do not reopen
+- AUTO-01I LIVE clean-execution sequencing / runner SAFETY — do not weaken
+- AUTO-01J bounded CHECKPOINT observation — do not reopen
+- 03L `FROZEN_ARTIFACT_PATH='index.html'` — do not reopen
+- Product 1:1 credit / `source_event_id = executionId` semantics — do not change
+- BALANCE billing-API verification semantics — do not change in Step 2
+- GOV-OS-01 v1 board/registry/mutex rules
+
+**Revert / evidence isolation:** Single lane. Diagnosis-only in Step 1, fully reversible. Reverting AUTO-01K must not invalidate locked LIVE-10 / AUTO-01G / AUTO-01H / AUTO-01I / AUTO-01J / 03L evidence. Lane 2 remains EMPTY; Lane 3 remains DISABLED.
+
+**Purpose:** Prove why LIVE `verifyDeduction()` executed `psql` over SSH without a valid staging `DATABASE_URL`, then (Step 2) apply one bounded secret-preserving adapter contract. Do not change product credit behavior. Do not change BALANCE semantics. Do not prescribe generic `source .env`.
+
+**Locked-body note:** The locked LIVE-10 registry body records “Do not register PRIVATE-BETA-E2E-AUTO-01K here” as its state at lock time on 2026-08-22. That locked body is intentionally **not** edited by this registration. Current registration/admission state for AUTO-01K lives in this entry and on the `TASKS.md` CURRENT EXECUTION BOARD. LIVE-10 remains COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — DEDUCTION and is not rewritten.
+
+---
+
+#### Step 1 (COMPLETE — 2026-08-22 — registration + root-cause / DB connection contract diagnosis only)
+
+Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01K-DIAGNOSIS.md`
+
+**Root cause PROVEN:** LIVE `StagingHelper.queryDeduction()` sends `psql "$DATABASE_URL" -c "SELECT … FROM credit_deduction_records WHERE source_event_id = '<executionId>'"` over command-specified SSH via `createSshExecutor()` (`spawn('ssh', argv, { shell: false })`). PowerShell and Node do not interpolate `"$DATABASE_URL"`. The remote non-interactive, non-login shell does not inherit PM2 env and does not load `/opt/aisandbox/.env`. Remote bash expands an empty `DATABASE_URL`. `psql` then uses libpq unix-socket defaults as OS user `ubuntu`. Staging PostgreSQL has no role `ubuntu`. LIVE-10 error: `ssh exited 2: psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL: role "ubuntu" does not exist`. Authoritative staging source remains `/opt/aisandbox/.env` (`ubuntu:ubuntu` / `chmod 600`). Application/PM2 already had a working URI (product 1:1 deduction 25883−1164=24719 for `executionId=18feb0a2-b992-46c8-aa75-4667fc05005d`). Generic `source .env` is **PROHIBITED** (E2E-03/E2E-04: `AUTH_EMAIL_FROM` unquoted angle brackets). Selected contract: remote extract-only `DATABASE_URL=$(grep '^DATABASE_URL=' /opt/aisandbox/.env | cut -d= -f2-)`, fail closed if empty (`AISB_DATABASE_URL_MISSING`), then existing psql. No secret in logs/argv/docs. SQL correlation `source_event_id = executionId` is correct. No automated runner DEDUCTION has ever passed. `verifyBalance()` uses GET `/api/billing/balance` and does **not** share this helper; do not change BALANCE semantics. CONTRACT stubs `verifyDeduction` and never asserts `buildDeductionQuery`.
+
+**Product change required:** NO
+**Staging config change required:** NO
+**Shared DEDUCTION/BALANCE adapter fix:** NO (BALANCE stays on billing API). Shared psql env-load prefix in `staging.ts` for `queryDeduction`: YES
+**Owning fix:** AUTOMATION_ADAPTER_FIX
+**LIVE-10 historical class (unchanged):** AUTOMATION_ADAPTER_FAILURE
+
+Step 2 is **not** authorized by Step 1. Keith must authorize Step 2 explicitly.
+
+##### Step 1 activity ledger
+
+```
+LIVE runs = 0
+SSH connections = 0
+staging mutations = 0
+provider calls = 0
+credit mutations = 0
+gate mutations = 0
+project/session/container creation = 0
+runner implementation modifications = 0
+product modifications = 0
+dependency changes = 0
+Git mutations = 0
+```
+
+##### Step 1 checklist
+
+- [x] identifier PRIVATE-BETA-E2E-AUTO-01K verified unused as a registered task (historical recommendation prose does not count)
+- [x] branch = `main`; tree = CLEAN at admission; HEAD = `100206b85e2830491dfb7f5e40ea04ce752e67aa`
+- [x] admitted to Lane 1; Lane 2 EMPTY; Lane 3 DISABLED
+- [x] GOVERNANCE acquired then released; STAGING / PROVIDER-LIVE / CREDIT / ENV not acquired
+- [x] LIVE-10 not rewritten; no LIVE / SSH / staging / provider / credit / gate / runner implementation / product / Git activity
+- [x] `docs/PRIVATE-BETA-E2E-AUTO-01K-DIAGNOSIS.md` created
+- [ ] Step 2 smallest proven TDD adapter correction — NOT STARTED
+- [ ] Step 3 checkpoint / consolidation / lock — NOT STARTED
+
+**PRIVATE-BETA-E2E-AUTO-01K STEP 1 COMPLETE — DEDUCTION DATABASE CONNECTION ROOT CAUSE AND SAFE SECRET-PRESERVING ADAPTER CONTRACT PROVEN — READY FOR ONE TDD SHARED DB-VERIFICATION FIX**
+
 
