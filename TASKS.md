@@ -3,7 +3,7 @@
 **Parallel Development Architecture:** v1
 **Maximum admitted implementation lanes:** 2
 **Lane 3:** DISABLED
-**Active implementation lanes:** 0 / 2
+**Active implementation lanes:** 1 / 2
 
 Task bodies, AC, dependencies, history, and LOCKED state live in:
 `C:\Users\knlee\aiSandBox2026B\TASKS_BACKLOG_FULL.md`
@@ -12,7 +12,7 @@ This board is the only current scheduler.
 Do not determine current work from content below the LEGACY / FROZEN boundary.
 
 ## Lane 1
-EMPTY
+PRIVATE-BETA-E2E-LIVE-08 — ACTIVE — Step 1 COMPLETE — 2026-08-22 — registration + committed resource reservation + exact execution contract — contract: `docs/PRIVATE-BETA-E2E-LIVE-08-EXECUTION.md` — sequencing: `docs/PRIVATE-BETA-E2E-LIVE-EXECUTION-SEQUENCING.md` — GOVERNANCE released after this Step 1 write — STAGING / PROVIDER-LIVE / CREDIT / ENV remain reserved to PRIVATE-BETA-E2E-LIVE-08 — reservation ≠ runtime authorization — all runtime authorization flags remain NO — Step 1 HEAD `9a52511db2d716746dcfaafdd097d3ec32575f68` informational only and NOT frozen as AUTHORIZED_LOCAL_HEAD — Keith must commit this reservation state before Step 2 — Step 2 PENDING (requires explicit Keith LIVE authorization) — Step 3 PENDING — NOT a LIVE-07 rerun
 
 ## Lane 2
 EMPTY
@@ -21,9 +21,9 @@ EMPTY
 DISABLED
 
 ## Governance owner / state
-UNOWNED — PRIVATE-BETA-E2E-AUTO-01I COMPLETE AND LOCKED — PASS — 2026-08-22 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01I-CHECKPOINT.md` — Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01I-DIAGNOSIS.md` — Sequencing: `docs/PRIVATE-BETA-E2E-LIVE-EXECUTION-SEQUENCING.md` — Lane 1 released EMPTY — GOVERNANCE released after this lock. LIVE CLEAN-EXECUTION EDGE remains standing.
+UNOWNED — PRIVATE-BETA-E2E-LIVE-08 ACTIVE — Step 1 COMPLETE — 2026-08-22 — GOVERNANCE acquired transiently for this registration/reservation/contract write then released — Lane 1 ACTIVE with PRIVATE-BETA-E2E-LIVE-08 — Lane 2 EMPTY — Lane 3 DISABLED — STAGING / PROVIDER-LIVE / CREDIT / ENV remain reserved to PRIVATE-BETA-E2E-LIVE-08 — reservation ≠ runtime authorization — all runtime authorization flags remain NO — Keith must commit this complete reservation state before Step 2 execution edge — LIVE CLEAN-EXECUTION EDGE remains standing (`docs/PRIVATE-BETA-E2E-LIVE-EXECUTION-SEQUENCING.md`).
 
-PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER UNOWNED. All HOTFILE leases UNOWNED. STAGING / PROVIDER-LIVE / CREDIT / ENV UNOWNED. LIVE-01..LIVE-07 / AUTO-01 / AUTO-01A / AUTO-01B / AUTO-01C / AUTO-01D / AUTO-01E / AUTO-01F / AUTO-01G / AUTO-01H locks unchanged and unedited. AUTO-01E LIVE validation HELD (CREATE_SESSION PASS). AUTO-01F LIVE validation HELD (`executionGateFinal=restored-false`). AUTO-01G LIVE-07 validation NOT REACHED. AUTO-01H LIVE-07 validation NOT REACHED. LIVE-06 AUTHORIZED_LOCAL_HEAD `da56659d39a5d86d3ef994a7458a297169eeda42` remains historical. LIVE-07 AUTHORIZED_LOCAL_HEAD `6723c4699d9c2cea832f73356aa85960b230b3cf` remains the deployed staging HEAD. Do not rerun LIVE-06. Do not rerun LIVE-07. Do not convert LIVE-06 or LIVE-07 to PASS. Do not reopen AUTO-01G or AUTO-01H. Do not weaken the runner clean-tree SAFETY gate. Do not register PRIVATE-BETA-INVITE-01. AUTO-01I did not register LIVE-08. LIVE CLEAN-EXECUTION EDGE frozen and recoverable from this board plus `docs/PRIVATE-BETA-E2E-LIVE-EXECUTION-SEQUENCING.md`.
+PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER UNOWNED. All HOTFILE leases UNOWNED. STAGING / PROVIDER-LIVE / CREDIT / ENV owned by PRIVATE-BETA-E2E-LIVE-08. LIVE-01..LIVE-07 / AUTO-01 / AUTO-01A / AUTO-01B / AUTO-01C / AUTO-01D / AUTO-01E / AUTO-01F / AUTO-01G / AUTO-01H / AUTO-01I locks unchanged and unedited. AUTO-01E LIVE validation HELD (CREATE_SESSION PASS). AUTO-01F LIVE validation HELD (`executionGateFinal=restored-false`). AUTO-01G LIVE-07 validation NOT REACHED. AUTO-01H LIVE-07 validation NOT REACHED. LIVE-06 AUTHORIZED_LOCAL_HEAD `da56659d39a5d86d3ef994a7458a297169eeda42` remains historical. LIVE-07 AUTHORIZED_LOCAL_HEAD `6723c4699d9c2cea832f73356aa85960b230b3cf` remains the last deployed staging HEAD until Step 2 recaptures. Do not rerun LIVE-06. Do not rerun LIVE-07. Do not convert LIVE-06 or LIVE-07 to PASS. Do not reopen AUTO-01G / AUTO-01H / AUTO-01I. Do not weaken the runner clean-tree SAFETY gate. Do not register PRIVATE-BETA-INVITE-01. LIVE CLEAN-EXECUTION EDGE frozen and recoverable from this board plus `docs/PRIVATE-BETA-E2E-LIVE-EXECUTION-SEQUENCING.md`.
 
 ## Active mutex / resource ownership
 - GOVERNANCE: UNOWNED
@@ -38,10 +38,10 @@ PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER UN
 - HOTFILE:e2e/builder-golden-path/lib/local-fixture.ts: UNOWNED
 - HOTFILE:e2e/builder-golden-path/tests/network.spec.ts: UNOWNED
 - PACKAGE: UNOWNED
-- STAGING: UNOWNED
-- PROVIDER-LIVE: UNOWNED
-- CREDIT: UNOWNED
-- ENV: UNOWNED
+- STAGING: PRIVATE-BETA-E2E-LIVE-08
+- PROVIDER-LIVE: PRIVATE-BETA-E2E-LIVE-08
+- CREDIT: PRIVATE-BETA-E2E-LIVE-08
+- ENV: PRIVATE-BETA-E2E-LIVE-08
 - LOCAL-RUNTIME: UNOWNED
 - FRONTEND: UNOWNED
 - GATEWAY: UNOWNED
@@ -50,13 +50,31 @@ PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER UN
 - All other resources: UNOWNED
 - All HOTFILE leases: UNOWNED
 
-LIVE-07 COMPLETE AND LOCKED — FAIL/BLOCKED — ENVIRONMENT/PARITY_FAILURE — SAFETY — 2026-08-21. AUTO-01I COMPLETE AND LOCKED — PASS — 2026-08-22 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01I-CHECKPOINT.md` — Sequencing: `docs/PRIVATE-BETA-E2E-LIVE-EXECUTION-SEQUENCING.md`. GOVERNANCE UNOWNED. STAGING / PROVIDER-LIVE / CREDIT / ENV remain UNOWNED. AUTO-01H COMPLETE AND LOCKED — PASS — 2026-08-21. AUTO-01G COMPLETE AND LOCKED — PASS — 2026-08-21. PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER remain UNOWNED. Do not rerun LIVE-07. Do not convert LIVE-07 to PASS. Do not register LIVE-08 here.
+LIVE-08 ACTIVE — Step 1 COMPLETE — 2026-08-22 — STAGING / PROVIDER-LIVE / CREDIT / ENV reserved to PRIVATE-BETA-E2E-LIVE-08 — GOVERNANCE UNOWNED — reservation ≠ runtime authorization — all runtime authorization flags remain NO — Keith must commit this reservation state before Step 2. LIVE-07 COMPLETE AND LOCKED — FAIL/BLOCKED — ENVIRONMENT/PARITY_FAILURE — SAFETY — 2026-08-21. AUTO-01I COMPLETE AND LOCKED — PASS — 2026-08-22 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01I-CHECKPOINT.md` — Sequencing: `docs/PRIVATE-BETA-E2E-LIVE-EXECUTION-SEQUENCING.md`. AUTO-01H COMPLETE AND LOCKED — PASS — 2026-08-21. AUTO-01G COMPLETE AND LOCKED — PASS — 2026-08-21. PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER remain UNOWNED. Do not rerun LIVE-07. Do not convert LIVE-07 to PASS. Do not reopen AUTO-01G / AUTO-01H / AUTO-01I. Do not weaken runner SAFETY.
 
 ```
 RUNTIME_EXECUTION_AUTHORIZED=NO
 PROVIDER_CALL_AUTHORIZED=NO
 CREDIT_MUTATION_AUTHORIZED=NO
 STAGING_MUTATION_AUTHORIZED=NO
+LIVE_08_REGISTERED=YES
+LIVE_08_ADMITTED_LANE=1
+LIVE_08_STEP_1=COMPLETE
+LIVE_08_STEP_2=PENDING (requires explicit Keith LIVE authorization AND Keith commit of this reservation state)
+LIVE_08_STEP_3=PENDING
+LIVE_08_LIVE_RUN=NO
+LIVE_08_SSH_CONNECTIONS=0
+LIVE_08_PROVIDER_CALLS=0
+LIVE_08_CREDITS=0
+LIVE_08_STEP_1_HEAD=9a52511db2d716746dcfaafdd097d3ec32575f68
+LIVE_08_STEP_1_HEAD_FROZEN_FOR_STEP_2=NO
+LIVE_08_AUTHORIZED_LOCAL_HEAD=NOT_CAPTURED
+LIVE_08_STAGING_RESERVED=YES
+LIVE_08_PROVIDER_LIVE_RESERVED=YES
+LIVE_08_CREDIT_RESERVED=YES
+LIVE_08_ENV_RESERVED=YES
+LIVE_08_RESERVATION_AUTHORIZES_RUNTIME=NO
+LIVE_08_CONTRACT=docs/PRIVATE-BETA-E2E-LIVE-08-EXECUTION.md
 AUTO_01I_REGISTERED=YES
 AUTO_01I_ADMITTED_LANE=none (Lane 1 released EMPTY at lock)
 AUTO_01I_STEP_1=COMPLETE
@@ -198,6 +216,7 @@ Standing contract frozen 2026-08-22 by PRIVATE-BETA-E2E-AUTO-01I (COMPLETE AND L
 - `TASKS_BACKLOG_FULL.md` must not receive in-flight ownership writes between capture and runner return. Post-run evidence/status writes happen only after the runner returns.
 
 ## Frozen contracts
+- PRIVATE-BETA-E2E-LIVE-08 Step 1 registration + committed resource reservation + exact execution contract (2026-08-22): HIGH-RISK 3-step provider-bearing LIVE Builder golden-path — NOT a LIVE-07 rerun — GOVERNANCE acquired transiently then released — STAGING / PROVIDER-LIVE / CREDIT / ENV reserved to PRIVATE-BETA-E2E-LIVE-08 and MUST remain reserved after Step 1 — reservation ≠ runtime authorization — `RUNTIME_EXECUTION_AUTHORIZED=NO` / `PROVIDER_CALL_AUTHORIZED=NO` / `CREDIT_MUTATION_AUTHORIZED=NO` / `STAGING_MUTATION_AUTHORIZED=NO` — Step 1 HEAD `9a52511db2d716746dcfaafdd097d3ec32575f68` informational only and NOT frozen as AUTHORIZED_LOCAL_HEAD — Keith must commit this complete reservation state before Step 2 — future Step 2: explicit Keith LIVE authorization → verify committed LIVE-08 ownership of STAGING / PROVIDER-LIVE / CREDIT / ENV → NO governance writes → `git status --short` EMPTY → `AUTHORIZED_LOCAL_HEAD = git rev-parse HEAD` → NO-CONTROL-PLANE-WRITE WINDOW until runner return → inspect/deploy exactly that SHA if required → process-only credentials/LIVE flags → final triple gate (local clean + local HEAD + staging HEAD) → `npm run e2e:builder:live` exactly once — provider xAI / grok-4.5 / budget 1 / retries 0 / fallback NONE — AUTO-01G files/write 204 — AUTO-01H `/api/ai/execute` 202 executionId — AUTO-01F restore-unconfirmed-timeout — AUTO-01I sequencing `docs/PRIVATE-BETA-E2E-LIVE-EXECUTION-SEQUENCING.md` — contract: `docs/PRIVATE-BETA-E2E-LIVE-08-EXECUTION.md` — no LIVE / SSH / staging / provider / credit / gate / runner / product / dependency / Git mutation in Step 1
 - PRIVATE-BETA-E2E-AUTO-01I Step 3 lock (2026-08-22): COMPLETE AND LOCKED — PASS — GOVERNANCE_EXECUTION_PROCEDURE_INVESTIGATION — procedure/governance only — no LIVE, no SSH/staging/provider/credit/gate, no runner/product/dependency/Git mutation; LIVE-07 sequencing root cause PROVEN (resource/control-plane writes after AUTHORIZED_LOCAL_HEAD capture); runner SAFETY fail-closed as intended and unchanged; required LIVE resources must already be committed on `TASKS.md` before `AUTHORIZED_LOCAL_HEAD` capture; reservation ≠ runtime authorization; no tracked/untracked repo writes after final clean-tree/head capture until runner return; final local clean + local HEAD + staging HEAD parity immediately before the single `npm run e2e:builder:live`; dirty governance state => STOP FOR KEITH COMMIT then recapture/redeploy; never stash/restore/bypass clean-tree SAFETY; backlog in-flight ownership writes forbidden between capture and runner; post-run evidence/status writes only after runner returns; `readAuthorizedLocalHead()` unchanged; Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01I-CHECKPOINT.md`; Sequencing: `docs/PRIVATE-BETA-E2E-LIVE-EXECUTION-SEQUENCING.md`; Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01I-DIAGNOSIS.md`; LIVE-08 NOT registered here
 - PRIVATE-BETA-E2E-AUTO-01I Step 2 LIVE CLEAN-EXECUTION EDGE (2026-08-22): procedure/governance freeze only — no LIVE, no SSH/staging/provider/credit/gate, no runner/product/dependency/Git mutation; required LIVE resources must already be committed on `TASKS.md` before `AUTHORIZED_LOCAL_HEAD` capture; reservation ≠ runtime authorization; no tracked repo writes after final clean-tree/head capture until runner return; final local clean + local HEAD + staging HEAD parity immediately before the single `npm run e2e:builder:live`; dirty governance state => STOP FOR KEITH COMMIT then recapture/redeploy; never stash/restore/bypass clean-tree SAFETY; backlog in-flight ownership writes forbidden between capture and runner; post-run evidence/status writes only after runner returns; `readAuthorizedLocalHead()` unchanged; Sequencing: `docs/PRIVATE-BETA-E2E-LIVE-EXECUTION-SEQUENCING.md`; Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01I-DIAGNOSIS.md`; later locked PASS in Step 3
 - PRIVATE-BETA-E2E-AUTO-01I Step 1 registration + diagnosis (2026-08-22): GOVERNANCE_EXECUTION_PROCEDURE_INVESTIGATION — diagnostic only — no implementation, no LIVE, no staging/SSH, no provider, no credit, no gate change, no runner/product change, no Git mutation; LIVE-07 clean-tree SAFETY gate WORKED AS INTENDED; defect is post-capture uncommitted `TASKS.md` + `TASKS_BACKLOG_FULL.md` resource-acquisition writes; selected model = Step 1 committed reservation + no in-flight backlog write + Keith commit then recapture if any additional board write is required; SAFETY must not change; Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01I-DIAGNOSIS.md`
@@ -248,6 +267,7 @@ Standing contract frozen 2026-08-22 by PRIVATE-BETA-E2E-AUTO-01I (COMPLETE AND L
 - current non-risky one-file Builder AUTO_APPLY semantics (E2E-05 proven)
 
 ## Current blockers / gates
+- PRIVATE-BETA-E2E-LIVE-08: ACTIVE — Step 1 COMPLETE — 2026-08-22 — registration + committed resource reservation + exact execution contract — contract: `docs/PRIVATE-BETA-E2E-LIVE-08-EXECUTION.md` — sequencing: `docs/PRIVATE-BETA-E2E-LIVE-EXECUTION-SEQUENCING.md` — Lane 1 ACTIVE — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE released — STAGING / PROVIDER-LIVE / CREDIT / ENV reserved to PRIVATE-BETA-E2E-LIVE-08 and MUST remain reserved — reservation ≠ runtime authorization — `RUNTIME_EXECUTION_AUTHORIZED=NO` / `PROVIDER_CALL_AUTHORIZED=NO` / `CREDIT_MUTATION_AUTHORIZED=NO` / `STAGING_MUTATION_AUTHORIZED=NO` — Step 1 HEAD `9a52511db2d716746dcfaafdd097d3ec32575f68` NOT frozen for Step 2 — Keith must commit this reservation state before Step 2 execution edge — Step 2 PENDING (requires explicit Keith LIVE authorization) — NOT a LIVE-07 rerun — no LIVE / SSH / staging / provider / credit / gate / runner / product / dependency / Git mutation in Step 1
 - PRIVATE-BETA-E2E-AUTO-01I: COMPLETE AND LOCKED — PASS — 2026-08-22 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01I-CHECKPOINT.md` — Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01I-DIAGNOSIS.md` — Sequencing: `docs/PRIVATE-BETA-E2E-LIVE-EXECUTION-SEQUENCING.md` — GOVERNANCE_EXECUTION_PROCEDURE_INVESTIGATION — LIVE-07 sequencing root cause PROVEN — LIVE CLEAN-EXECUTION EDGE frozen — clean-tree SAFETY gate WORKED AS INTENDED and unchanged — do not weaken SAFETY — do not modify runner/product — AUTO-01I does not itself provide LIVE validation — LIVE-08 NOT registered here
 - PRIVATE-BETA-E2E-LIVE-07: COMPLETE AND LOCKED — FAIL/BLOCKED — ENVIRONMENT/PARITY_FAILURE — SAFETY — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-07-CHECKPOINT.md` — Evidence: `docs/PRIVATE-BETA-E2E-LIVE-07-EXECUTION.md` — NOT a product failure; NOT a provider failure; NOT an AUTO-01G/H adapter mismatch for the observed terminal failure — PRODUCT_FAILURE=NO — PROVIDER_FAILURE=NO — AUTOMATION_ADAPTER_FAILURE=NO — AUTHORIZED_LOCAL_HEAD `6723c4699d9c2cea832f73356aa85960b230b3cf` deployed — STAGING_HEAD match PASS — AUTH PASS — SAFETY fail-closed because local tree was DIRTY at runner SAFETY after CLEAN capture — dirty files `TASKS.md` and `TASKS_BACKLOG_FULL.md` (Step-2 control-plane resource-acquisition writes after AUTHORIZED_LOCAL_HEAD capture) — clean-tree SAFETY gate WORKED AS INTENDED — Playwright LIVE invoked once — formatted verdict=FAIL — NPM_EXIT=1 — last successful phase AUTH — PROVIDER USED=0 — CREDITS=0 — no project/session/container — BUILD / WAIT_FOR_AUTO_APPLY / PREVIEW NOT REACHED — CLEANUP `session-stop-not-attempted` — `executionGateFinal=not-attempted-no-authority` — AUTO-01G LIVE-07 validation NOT REACHED — AUTO-01H LIVE-07 validation NOT REACHED — do not convert LIVE-07 to PASS — do not rerun LIVE-07 — do not weaken the runner clean-tree gate — do not patch the sequencing defect inside LIVE-07 — do not register another LIVE task — do not register PRIVATE-BETA-INVITE-01
 - PRIVATE-BETA-E2E-AUTO-01H: COMPLETE AND LOCKED — PASS — 2026-08-21 — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01H-CHECKPOINT.md` — Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01H-DIAGNOSIS.md` — AUTOMATION_TOOLING_INVESTIGATION + bounded AUTOMATION_TOOLING_FIX — product defect NO — production source modification NO — ROOT_CAUSE_PROVEN=YES: `submitBuild` observed nonexistent `POST /api/ai/executions` while product posts `POST /api/ai/execute` returning JSON 202 `{ executionId, status: 'queued' }` created before provider; empty catch made the 120s wait optional and returned null — now BOUNDED: observe `POST /api/ai/execute` 202 JSON `executionId` (no `id` fallback); `BUILD_EXECUTION_RESPONSE_TIMEOUT_MS=30000`; `BUILD_EXECUTION_BODY_TIMEOUT_MS=30000`; typed `BuildExecutionObservationError`; empty catch removed; `BUILD_TIMEOUT_SAFE` removed as unused; one Send / one `authorizeCall` / one execute POST / retries 0; faithful fixture ONE execute 202 `exec-real-flow` and ZERO collection POSTs; DEDUCTION implementation NOT changed; TDD RED Expected `exec-real-flow` / Received `undefined` (~929ms with 400ms bound); CONTRACT 99 passed (88 pre-existing + 11 new); TypeScript PASS; `git diff --check` PASS — LIVE_RUNS=0 — SSH=0 — STAGING=0 — PROVIDER=0 — CREDITS=0 — GATE_MUTATION=0 — GIT_MUTATION=0 — CONTRACT-only — `LIVE_STAGING_VALIDATED=NO` — residual out-of-scope surfaces NOT fixed: unrelated `page.goto()`, `submitBuild()` `selectOption` fallbacks, `trace: 'off'` — Lane 1 released EMPTY at AUTO-01H lock then re-admitted to LIVE-07 — all AUTO-01H HOTFILE leases and GOVERNANCE released — do not reopen AUTO-01H — do not register PRIVATE-BETA-INVITE-01
@@ -274,10 +294,11 @@ Standing contract frozen 2026-08-22 by PRIVATE-BETA-E2E-AUTO-01I (COMPLETE AND L
 - BUILDER_PRIVATE_BETA_READINESS: NO_GO_PENDING_FRESH_AUTOMATED_E2E
 - LIVE_STAGING_VALIDATED: NO
 - PRIVATE-BETA-INVITE-01: UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED
-- Lane 1: EMPTY. Lane 2: EMPTY. Lane 3: DISABLED.
+- Lane 1: PRIVATE-BETA-E2E-LIVE-08 ACTIVE — Step 1 COMPLETE. Lane 2: EMPTY. Lane 3: DISABLED.
 
 ## Current next product gate
-PRIVATE-BETA-E2E-AUTO-01I is **COMPLETE AND LOCKED — PASS — 2026-08-22.** Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01I-CHECKPOINT.md`. Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01I-DIAGNOSIS.md`. Canonical sequencing: `docs/PRIVATE-BETA-E2E-LIVE-EXECUTION-SEQUENCING.md`. LIVE CLEAN-EXECUTION EDGE remains standing. AUTO-01I is procedure-only and does **not** itself provide LIVE validation. Do not weaken SAFETY. Do not modify the runner.
+PRIVATE-BETA-E2E-LIVE-08 is **ACTIVE — Step 1 COMPLETE — 2026-08-22.** Contract: `docs/PRIVATE-BETA-E2E-LIVE-08-EXECUTION.md`. Sequencing: `docs/PRIVATE-BETA-E2E-LIVE-EXECUTION-SEQUENCING.md`. STAGING / PROVIDER-LIVE / CREDIT / ENV are reserved to LIVE-08 on this board. All runtime authorization flags remain NO. Step 1 HEAD `9a52511db2d716746dcfaafdd097d3ec32575f68` is informational only and is **not** frozen as AUTHORIZED_LOCAL_HEAD. **Keith must commit/push this complete reservation state before Step 2.** Step 2 still requires explicit Keith LIVE authorization. Do not invoke `npm run e2e:builder:live` from Step 1. Do not SSH staging. Do not enable GLOBAL_EXECUTION_ENABLED. Do not call a provider. Do not mutate credits. Do not capture AUTHORIZED_LOCAL_HEAD until after Keith's commit and a clean tree.
+PRIVATE-BETA-E2E-AUTO-01I remains **COMPLETE AND LOCKED — PASS — 2026-08-22.** Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01I-CHECKPOINT.md`. Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01I-DIAGNOSIS.md`. Canonical sequencing: `docs/PRIVATE-BETA-E2E-LIVE-EXECUTION-SEQUENCING.md`. LIVE CLEAN-EXECUTION EDGE remains standing. AUTO-01I is procedure-only and does **not** itself provide LIVE validation. Do not weaken SAFETY. Do not modify the runner.
 PRIVATE-BETA-E2E-LIVE-07 remains **COMPLETE AND LOCKED — FAIL/BLOCKED — ENVIRONMENT/PARITY_FAILURE — SAFETY — 2026-08-21.** Checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-07-CHECKPOINT.md`. Evidence: `docs/PRIVATE-BETA-E2E-LIVE-07-EXECUTION.md`. Do **not** convert LIVE-07 to PASS. Do **not** rerun LIVE-07. Do not weaken the runner clean-tree SAFETY gate. Do not register PRIVATE-BETA-INVITE-01.
 PRIVATE-BETA-E2E-AUTO-01H remains **COMPLETE AND LOCKED — PASS — 2026-08-21.** Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01H-CHECKPOINT.md`. LIVE-07 AUTO-01H validation **NOT REACHED**. Do not reopen AUTO-01H. Do not interpret NOT REACHED as a regression.
 PRIVATE-BETA-E2E-AUTO-01G remains **COMPLETE AND LOCKED — PASS — 2026-08-21.** Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01G-CHECKPOINT.md`. LIVE-07 AUTO-01G validation **NOT REACHED**. Do not reopen AUTO-01G. Do not patch WAIT_FOR_AUTO_APPLY.
@@ -286,8 +307,8 @@ PRIVATE-BETA-E2E-AUTO-01F remains COMPLETE AND LOCKED — PASS — 2026-08-21 (C
 PRIVATE-BETA-E2E-AUTO-01E remains COMPLETE AND LOCKED — PASS — 2026-08-21 (CONTRACT-only). LIVE-06 AUTO-01E LIVE validation HELD (CREATE_SESSION PASS). Do not reopen AUTO-01E. Do not patch AUTO-01/AUTO-01A/AUTO-01B/AUTO-01C/AUTO-01D/AUTO-01E/AUTO-01F/AUTO-01G/AUTO-01H.
 PRIVATE-BETA-E2E-LIVE-05 remains COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CREATE_SESSION — 2026-08-21. Do not convert LIVE-05 to PASS. Do not rerun LIVE-05.
 LIVE-04 remains COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CREATE_SESSION. AUTO-01D remains COMPLETE AND LOCKED — PASS (CONTRACT 56) and is not reopened. LIVE_VALIDATION_OF_AUTO_01D_SUFFICIENCY remains FAIL historically.
-Builder private beta remains NO_GO_PENDING_FRESH_AUTOMATED_E2E. LIVE_STAGING_VALIDATED remains NO. LIVE-07 provides no full golden-path validation. AUTO-01I provides procedure freeze only.
-**Next authorized work (NOT REGISTERED HERE):** fresh automated provider-bearing Builder LIVE E2E. Likely identifier PRIVATE-BETA-E2E-LIVE-08 (verify unused at future registration). Future LIVE Step 1 MUST reserve STAGING / PROVIDER-LIVE / CREDIT / ENV on this board while all runtime-mutation flags remain false; Keith must commit that reservation before AUTHORIZED_LOCAL_HEAD capture; zero repo writes through runner return; final clean/HEAD/staging triple parity. Do not register LIVE-08 here. Do not weaken the runner clean-tree gate.
+Builder private beta remains NO_GO_PENDING_FRESH_AUTOMATED_E2E. LIVE_STAGING_VALIDATED remains NO. LIVE-07 provides no full golden-path validation. AUTO-01I provides procedure freeze only. LIVE-08 Step 1 reservation does not change readiness.
+**Next authorized work:** PRIVATE-BETA-E2E-LIVE-08 Step 2 — ONE explicitly authorized automated LIVE execution — only after (1) Keith commits/pushes this Step 1 reservation state, (2) `git status --short` is EMPTY, and (3) Keith explicitly authorizes the LIVE mutation envelope. Future Step 2 performs NO governance writes before runner return. Do not weaken the runner clean-tree gate.
 ============================================================
 LEGACY / FROZEN TASK HISTORY — NOT CURRENT EXECUTION STATE
 
