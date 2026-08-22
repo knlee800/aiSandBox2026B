@@ -68230,15 +68230,16 @@ Git mutations = 0
 **Workstream:** RELIABILITY
 **Classification:** GOVERNANCE_EXECUTION_PROCEDURE_INVESTIGATION
 **Lifecycle:** 3-step bounded task
-**Status:** ACTIVE — Step 1 COMPLETE — 2026-08-22 — Step 2 NOT STARTED
+**Status:** ACTIVE — Step 1 COMPLETE — Step 2 COMPLETE — 2026-08-22 — Step 3 PENDING
 **Assigned lane:** 1
 **Lane 2:** EMPTY
 **Lane 3:** DISABLED
 **Registered:** 2026-08-22
-**Approved:** Keith — 2026-08-22 (Step 1 registration + admission + root-cause / procedure-contract diagnosis only — does NOT authorize Step 2)
+**Approved:** Keith — 2026-08-22 (Step 1 registration + admission + diagnosis; Step 2 bounded procedure/governance freeze authorized in a later explicit prompt — does NOT authorize Step 3, LIVE, or another LIVE task)
 **Evidence class:** LOCAL-TESTS
 **Hot-file leases:** NONE
 **Diagnosis document:** `docs/PRIVATE-BETA-E2E-AUTO-01I-DIAGNOSIS.md`
+**Canonical LIVE sequencing:** `docs/PRIVATE-BETA-E2E-LIVE-EXECUTION-SEQUENCING.md`
 
 **Identifier search:** PRIVATE-BETA-E2E-AUTO-01I was **unused as a registered task** before this registration. Repo-wide search found only historical recommendation prose: `TASKS.md` next-gate line, `docs/PRIVATE-BETA-E2E-LIVE-07-CHECKPOINT.md` (“Do not register PRIVATE-BETA-E2E-AUTO-01I here”; “AUTO-01I registered in Step 3: NO”; likely-identifier note), and this file's locked LIVE-07 “Exact next (NOT REGISTERED HERE)” line. Zero `### PRIVATE-BETA-E2E-AUTO-01I` registry entries existed. Historical recommendation prose does not count as prior registration. Rejected: reopening LIVE-07 / LIVE-06 / AUTO-01G / AUTO-01H; registering another provider-bearing LIVE task; registering PRIVATE-BETA-INVITE-01; weakening the runner clean-tree SAFETY gate.
 
@@ -68254,11 +68255,11 @@ Git mutations = 0
 
 **Primary write scope:**
 - Step 1: `TASKS.md` CURRENT EXECUTION BOARD above LEGACY / FROZEN only; this registry entry; `docs/PRIVATE-BETA-E2E-AUTO-01I-DIAGNOSIS.md`
-- Step 2 (after explicit Keith authorization only): smallest proven procedure/governance correction and non-LIVE validation; no runner/product/LIVE/SSH/staging/provider/credit/gate/Git mutation
+- Step 2 (Keith-authorized 2026-08-22): procedure/governance documentation only — `docs/PRIVATE-BETA-E2E-LIVE-EXECUTION-SEQUENCING.md`; `TASKS.md` CURRENT EXECUTION BOARD LIVE CLEAN-EXECUTION EDGE freeze; this AUTO-01I entry Step 2 AC/status. No runner/product/LIVE/SSH/staging/provider/credit/gate/Git mutation. No LIVE-08 registration.
 - Step 3: checkpoint + board/registry end-status only
-- No PRD.md. No ARCHITECTURE.md. No CLAUDE.md. No AGENTS.md in Step 1. No locked LIVE-07 / AUTO-01* body edits.
+- No PRD.md. No ARCHITECTURE.md. No CLAUDE.md. No AGENTS.md. No locked LIVE-07 / AUTO-01* body edits.
 
-**Mutexes / resources:** GOVERNANCE acquired for this Step 1 board/registry/diagnosis write and held pending Step 2. STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER remain UNOWNED. All HOTFILE leases UNOWNED.
+**Mutexes / resources:** GOVERNANCE acquired for this Step 1 board/registry/diagnosis write and held through Step 2 / pending Step 3. STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER remain UNOWNED. All HOTFILE leases UNOWNED. AUTO-01I does not claim LIVE runtime resources.
 
 **Shared contracts (frozen; must not be modified by this task):**
 - PRIVATE-BETA-E2E-LIVE-07 COMPLETE AND LOCKED — FAIL/BLOCKED — ENVIRONMENT/PARITY_FAILURE — SAFETY — clean-tree SAFETY gate WORKED AS INTENDED
@@ -68313,10 +68314,67 @@ Git mutations = 0
 - [x] GOVERNANCE acquired and held; STAGING / PROVIDER-LIVE / CREDIT / ENV not acquired
 - [x] LIVE-07 not rewritten; SAFETY not weakened; no LIVE / SSH / staging / provider / credit / gate / runner / product / Git activity
 - [x] `docs/PRIVATE-BETA-E2E-AUTO-01I-DIAGNOSIS.md` created
-- [ ] Step 2 smallest proven procedure/governance correction — NOT STARTED
-- [ ] Step 3 checkpoint / consolidation / lock — NOT STARTED
+- [x] Step 2 smallest proven procedure/governance correction — COMPLETE — 2026-08-22
+- [ ] Step 3 checkpoint / consolidation / lock — PENDING
 
-**Blocker before Step 2:** explicit Keith authorization for procedure/governance-only Step 2. No LIVE. No runner change.
+**Blocker before Step 2:** explicit Keith authorization for procedure/governance-only Step 2. No LIVE. No runner change. **SATISFIED 2026-08-22.**
 
 **PRIVATE-BETA-E2E-AUTO-01I STEP 1 COMPLETE — LIVE-07 CLEAN-TREE / CONTROL-PLANE SEQUENCING ROOT CAUSE AND SAFE EXECUTION ORDER PROVEN — NO RUNTIME OR RUNNER CHANGE — READY FOR BOUNDED STEP 2 PROCEDURE FIX**
+
+---
+
+#### Step 2 (COMPLETE — 2026-08-22 — freeze canonical LIVE clean-tree / control-plane sequencing)
+
+Canonical procedure: `docs/PRIVATE-BETA-E2E-LIVE-EXECUTION-SEQUENCING.md`
+Board recoverability: `TASKS.md` CURRENT EXECUTION BOARD section **LIVE CLEAN-EXECUTION EDGE**
+
+**Procedure FROZEN (not a runner change):**
+
+1. **Control-plane representation:** `TASKS.md` CURRENT EXECUTION BOARD is the authoritative scheduler/mutex table. Required LIVE resource ownership must already be represented in **committed** board state before the execution edge. Fresh windows recover ownership without chat memory.
+2. **Reservation vs runtime authorization:** Step 1 SHOULD reserve STAGING / PROVIDER-LIVE / CREDIT / ENV on the board while keeping `RUNTIME_EXECUTION_AUTHORIZED=NO`, `PROVIDER_CALL_AUTHORIZED=NO`, `CREDIT_MUTATION_AUTHORIZED=NO`, `STAGING_MUTATION_AUTHORIZED=NO` until Keith explicitly authorizes the LIVE mutation envelope. Reservation is not runtime mutation authorization.
+3. **Keith Git boundary:** workers never commit, push, stash, reset, or restore to manufacture a clean LIVE tree. Dirty intended governance => STOP FOR KEITH, then recapture HEAD and redeploy/recheck staging.
+4. **AUTHORIZED_LOCAL_HEAD:** capture only when `git status --short` is empty: `AUTHORIZED_LOCAL_HEAD = git rev-parse HEAD`. That SHA must already contain the ownership commit.
+5. **No-control-plane-write window:** starts immediately after that capture; ends when the one runner invocation returns (or the attempt is known not invoked). ZERO tracked/untracked repository writes in that window, including governance writes.
+6. **Backlog in-flight-write rule:** `TASKS_BACKLOG_FULL.md` must not receive in-flight resource-acquisition / ownership writes between capture and runner return. Durable result/status is written after the runner returns.
+7. **Fallback if Step 1 did not reserve:** board-only ownership write → STOP for Keith commit → new clean-tree HEAD capture → staging parity against that SHA → no further writes before runner. Never capture HEAD → modify `TASKS.md` → run.
+8. **Staging parity:** inspect; if needed deploy exactly `AUTHORIZED_LOCAL_HEAD` via `git fetch origin main` + verify target + `git reset --hard AUTHORIZED_LOCAL_HEAD`. Require staging HEAD match, clean tree, retained stash invariant.
+9. **Final triple gate immediately before runner:** local `git status --short` EMPTY; local HEAD = `AUTHORIZED_LOCAL_HEAD`; staging HEAD = `AUTHORIZED_LOCAL_HEAD` (plus staging clean / stash / applicable gates). Any difference => STOP BEFORE RUNNER. No stash/restore repair.
+10. **Single run:** `npm run e2e:builder:live` exactly once. Disconnect after invocation = run consumed; evidence/cleanup only.
+11. **Post-run evidence boundary:** repository writes resume only after runner return. Then write execution evidence, board result/release, backlog durable result/status. Release runtime resources only after confirmed-safe cleanup.
+12. **Runner SAFETY unchanged:** `readAuthorizedLocalHead()` still rejects non-empty `git status --short`. No exclusions. No governance-file exceptions. No dirty-tree tolerance. No runner/product/dependency change.
+
+AUTO-01I remains ACTIVE. Step 3 PENDING. Do not lock in Step 2. Do not register LIVE-08. Do not claim STAGING / PROVIDER-LIVE / CREDIT / ENV.
+
+##### Step 2 activity ledger
+
+```
+LIVE runs = 0
+SSH connections = 0
+staging access = 0
+provider calls = 0
+credits = 0
+gate mutations = 0
+project/session/container creation = 0
+runner modifications = 0
+product modifications = 0
+dependency changes = 0
+Git mutations = 0
+```
+
+##### Step 2 checklist
+
+- [x] `docs/PRIVATE-BETA-E2E-LIVE-EXECUTION-SEQUENCING.md` created with purpose, authority, reservation vs authorization, Step 1 reservation, Keith commit boundary, AUTHORIZED_LOCAL_HEAD, no-control-plane-write window, staging parity, triple gate, single-run, post-run evidence, disconnect recovery, forbidden workarounds, correct sequence, LIVE-07 invalid sequence, future prompt requirements
+- [x] `TASKS.md` CURRENT EXECUTION BOARD LIVE CLEAN-EXECUTION EDGE + frozen-contract reference
+- [x] this AUTO-01I Step 2 AC/status updated only
+- [x] runner/product diff empty; package diff empty
+- [x] `readAuthorizedLocalHead()` still rejects non-empty `git status --short` (source inspection; not edited)
+- [x] sequencing checklist invariants present in the canonical document
+- [x] `git diff --check` PASS
+- [x] no LIVE / SSH / staging / provider / credit / gate / Git activity
+- [x] readiness unchanged: `BUILDER_PRIVATE_BETA_READINESS=NO_GO_PENDING_FRESH_AUTOMATED_E2E`; `LIVE_STAGING_VALIDATED=NO`; PRIVATE-BETA-INVITE-01 prohibited
+- [ ] Step 3 checkpoint / consolidation / lock — PENDING
+
+**Blocker before Step 3:** explicit Keith authorization for AUTO-01I Step 3 checkpoint / consolidation / lock. No LIVE. No runner change. Keith owns Git.
+
+**PRIVATE-BETA-E2E-AUTO-01I STEP 2 COMPLETE — CANONICAL LIVE SEQUENCING NOW REQUIRES COMMITTED RESOURCE RESERVATION BEFORE AUTHORIZED HEAD CAPTURE AND ZERO REPO WRITES UNTIL RUNNER RETURN — RUNNER SAFETY UNCHANGED — READY FOR STEP 3**
 
