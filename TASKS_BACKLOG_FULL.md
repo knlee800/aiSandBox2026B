@@ -70385,4 +70385,84 @@ Executed 2026-08-23 after Keith commit of Step 1 reservation and explicit Keith 
 
 **PRIVATE-BETA-E2E-LIVE-11 COMPLETE AND LOCKED — PASS — 2026-08-23**
 
+---
+
+### PRIVATE-BETA-GO-NO-GO-01: Final Builder-first Private-Beta GO/NO-GO
+
+**Status:** ACTIVE — Step 1 COMPLETE — 2026-08-23
+**Task ID:** PRIVATE-BETA-GO-NO-GO-01
+**Title:** Final Builder-first Private-Beta GO/NO-GO
+**Workstream:** COMMERCIAL
+**Lifecycle:** 4-step GOVERNANCE (registration → stage-start/evidence-inventory → final decision → checkpoint/consolidation)
+**Start condition:** READY — PRIVATE-BETA-E2E-LIVE-11 COMPLETE AND LOCKED — PASS — 2026-08-23
+**Depends on:** PRIVATE-BETA-E2E-LIVE-11 PASS; LIVE_STAGING_VALIDATED=YES; all BLOCKER-03 family resolved
+**Primary write scope:** GOVERNANCE only — `TASKS.md`, `TASKS_BACKLOG_FULL.md`, `docs/PRIVATE-BETA-GO-NO-GO-01-*.md`
+**Mutexes / resources:** GOVERNANCE (transient for writes)
+**Hot-file leases:** none
+**Shared contracts:** none
+**Evidence class:** GOVERNANCE — no LOCAL-TESTS, LOCAL-RUNTIME, STAGING-RUNTIME, or PROVIDER-LIVE
+**Revert isolation:** governance-only; no implementation to revert
+**Decision authority:** Keith
+**Decision contract:** `docs/PRIVATE-BETA-GO-NO-GO-01-DECISION-CONTRACT.md`
+
+**Nature:** GOVERNANCE DECISION — not an implementation task, not a technical E2E, not a LIVE run. This task reviews frozen evidence from the complete E2E validation chain and makes the final Builder-first private-beta GO/NO-GO decision.
+
+**Authoritative sources governing the decision:**
+1. `docs/PRIVATE-BETA-E2E-01-CHECKPOINT.md` — §24, §25, §27 — E2E-01 established the E2E as the integrated product-journey gate before GO/NO-GO
+2. `docs/PRIVATE-BETA-E2E-01-STAGE-START.md` — §26 — "The immediately following task is the final GO/NO-GO decision"
+3. `docs/PRIVATE-BETA-E2E-03-CHECKPOINT.md` — §31 — "Do not proceed toward invitations until a future fresh E2E validation returns PASS and a subsequent GO/NO-GO decision is explicitly authorized by Keith"
+4. `docs/PRIVATE-BETA-E2E-03-CHECKPOINT.md` / TASKS_BACKLOG_FULL §17 — "E2E-03 PASS enables the Builder-first Private Beta Final GO/NO-GO Decision to be registered"
+5. `docs/PRIVATE-BETA-E2E-AUTO-01-CHECKPOINT.md` — §9 — AUTO-01 PASS = runner ready, NOT Builder private beta GO
+6. `docs/PRIVATE-BETA-E2E-LIVE-11-CHECKPOINT.md` — §17 — LIVE-11 closes fresh automated staging E2E evidence gap; does NOT automatically declare GO
+
+**Current frozen state:**
+- `LIVE_STAGING_VALIDATED=YES`
+- `BUILDER_PRIVATE_BETA_READINESS=NO_GO`
+- `PRIVATE-BETA-INVITE-01=UNREGISTERED / UNAUTHORIZED / PROHIBITED`
+- All runtime authorization flags = NO
+- All blockers 03A through 03L = COMPLETE AND LOCKED — PASS or COMPLETE AND LOCKED — FAIL/BLOCKED (historical)
+- LIVE-11 = COMPLETE AND LOCKED — PASS — 2026-08-23
+
+**Invitation boundary (frozen in Step 1):**
+- GO does NOT directly authorize invitations
+- PRIVATE-BETA-INVITE-01 requires: (1) E2E PASS — met by LIVE-11, (2) GO/NO-GO decision completed by Keith — pending, (3) fresh Keith authorization for invitation activity — separate
+- A separate INVITE-01 lifecycle is mandatory after GO
+- User-count restriction: 1–3 trusted users (LIMITED-PRIVATE-BETA-HANDOFF)
+- Builder-only (E2E-01 §1)
+
+**Step 1 — Registration + Authoritative Decision-Contract Discovery** — COMPLETE — 2026-08-23
+
+- Canonical task identifier resolved: PRIVATE-BETA-GO-NO-GO-01 (newly assigned — no pre-existing identifier found repo-wide)
+- Authoritative sources identified and traced
+- Decision contract created: `docs/PRIVATE-BETA-GO-NO-GO-01-DECISION-CONTRACT.md`
+- Decision criteria matrix built from source-supported criteria only
+- Invitation boundary frozen
+- LIVE-11 consequence recorded: closes fresh automated staging E2E evidence gap; LIVE_STAGING_VALIDATED=YES
+- Historical failures preserved: LIVE-08 / LIVE-09 / LIVE-10 FAIL/BLOCKED not rewritten
+- No decision made in Step 1
+- No technical changes
+- No runtime, staging, provider, credit, gate, runner, product, frontend, backend, dependency, or Git mutation
+
+Step 1 activity ledger:
+```
+LIVE runs = 0
+SSH = 0
+staging mutation = 0
+provider = 0
+credits = 0
+gates = 0
+project/session/container = 0
+runner changes = 0
+product changes = 0
+frontend changes = 0
+backend/services changes = 0
+dependency changes = 0
+Git mutations = 0
+```
+
+**Step 2 — Stage-Start / Evidence Inventory + Readiness Criteria Freeze** — PENDING
+**Step 3 — Final GO/NO-GO Evidence Review and Decision** — PENDING
+**Step 4 — Checkpoint / Consolidation / Final Lock** — PENDING
+
+**PRIVATE-BETA-GO-NO-GO-01 ACTIVE — Step 1 COMPLETE — 2026-08-23**
 
