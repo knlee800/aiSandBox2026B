@@ -70570,3 +70570,192 @@ Git mutations = 0
 
 **PRIVATE-BETA-GO-NO-GO-01 COMPLETE AND LOCKED — GO — 2026-08-23**
 
+---
+
+## GOVERNANCE — Architecture Reconciliation
+
+### GOV-ARCH-02: Architecture Reconciliation
+
+**Status:** ACTIVE — Step 1 COMPLETE — 2026-08-23
+**Task ID:** GOV-ARCH-02
+**Title:** Architecture Reconciliation
+**Family:** GOVERNANCE / ARCHITECTURE / CURRENT-VS-FUTURE RECONCILIATION
+**Workstream:** GOVERNANCE (taxonomy label only; zero admission weight)
+**Priority:** HIGH
+**Risk:** HIGH — stale HOW after GOV-ARCH-01 plus post-03D–03J implemented architecture can mislead future implementation
+**Nature:** GOVERNANCE / DOCUMENTATION ONLY — no product implementation, no refactor, no runtime mutation, no migration, no dependency changes, no staging work, no provider call, no credit mutation, no invitation work
+**Lifecycle:** 4-step GOVERNANCE (Registration + source-map freeze → architecture drift/gap inventory → reconcile/update authoritative ARCHITECTURE.md → checkpoint/consolidation/lock)
+**Start condition:** READY — PRIVATE-BETA-GO-NO-GO-01 COMPLETE AND LOCKED — GO — 2026-08-23; GOV-OS-01 successor sequence; LIVE-11 PASS completed the recorded post-03J E2E; Lane 1 was EMPTY; Lane 2 EMPTY; Lane 3 DISABLED
+**Depends on:**
+- GOV-OS-01 — COMPLETE AND LOCKED — PASS — 2026-08-18 — Checkpoint: `docs/GOV-OS-01-CHECKPOINT.md` — Planned Successor Sequence records GOV-ARCH-02 after fresh post-03J E2E
+- PRIVATE-BETA-E2E-LIVE-11 — COMPLETE AND LOCKED — PASS — 2026-08-23 — completes the recorded post-03J E2E
+- PRIVATE-BETA-GO-NO-GO-01 — COMPLETE AND LOCKED — GO — 2026-08-23 — Checkpoint: `docs/PRIVATE-BETA-GO-NO-GO-01-CHECKPOINT.md`
+- GOV-ARCH-01 — COMPLETE AND LOCKED — 2026-08-10 — last ARCHITECTURE.md reconciliation baseline
+**Primary write scope:**
+- Step 1: `TASKS.md` CURRENT EXECUTION BOARD above LEGACY / FROZEN only; this canonical registry entry; `docs/GOV-ARCH-02-SOURCE-MAP.md`
+- Step 2: architecture-gap inventory artifact only (no ARCHITECTURE.md write)
+- Step 3: `ARCHITECTURE.md` plus governance/checkpoint documents only
+- Step 4: checkpoint + board/registry lock
+**Mutexes / resources:** GOVERNANCE (owned by GOV-ARCH-02 while ACTIVE). All runtime resources remain UNOWNED.
+**Hot-file leases:** none
+**Shared contracts:** Authority split frozen — PRD.md = PRODUCT WHAT; ARCHITECTURE.md = TECHNICAL HOW; CLAUDE.md = development OS; TASKS.md board = scheduler; TASKS_BACKLOG_FULL.md = registry. Planning/master-plan/checkpoint documents = evidence, not automatic HOW authority.
+**Evidence class:** GOVERNANCE
+**Revert isolation:** Documentation-only. Reverting GOV-ARCH-02 must not invalidate LIVE-11 PASS or PRIVATE-BETA-GO-NO-GO-01 GO evidence.
+**Assigned lane:** Lane 1 (GOVERNANCE occupancy; not an implementation lane). Lane 2 EMPTY. Lane 3 DISABLED.
+**Identifier confirmation:** YES — already planned successor ID from GOV-OS-01 §26 / GOV-OS-01-CHECKPOINT §38 / GO-NO-GO-01 next-sequence. Repo-wide search found no prior registration. ID not invented.
+**Source map:** `docs/GOV-ARCH-02-SOURCE-MAP.md`
+**Predecessor GOV-ARCH-01 residual mandate:** post-03D–03J technical reconciliation remained pending and unregistered until this task.
+
+**Application behavior change:** NONE
+**Runtime/schema/migration change:** NONE
+**ARCHITECTURE.md change in Step 1:** NONE
+**PRD.md change:** NONE in this lifecycle (WHAT drift → GOV-PRD-02)
+
+---
+
+#### Reason
+
+`ARCHITECTURE.md` remains the TECHNICAL HOW authority but was last reconciled 2026-08-10 (GOV-ARCH-01). Since then the platform accumulated implemented architecture (delayed Build credit deduction, public confirm-build-apply, Git checkpoint `safe.directory`, Preview `index.html` strategy, identity propagation, in-memory orchestration coordinator, Create Agent persistence/API, staging Caddy/PM2 topology) that is not fully reflected, while approved future architecture (multi-Builder runtime, knowledge, collaboration product runtime, Harness-as-default) must not be described as operational. GOV-OS-01 explicitly left this reconciliation to GOV-ARCH-02.
+
+---
+
+#### Objective
+
+Reconcile accumulated technical architecture decisions into `ARCHITECTURE.md` with a hard CURRENT vs PLANNED/FUTURE distinction, without turning the document into a product roadmap and without updating `PRD.md`.
+
+---
+
+#### Lifecycle Steps
+
+**Step 1 — Registration + source-map freeze** (THIS STEP — COMPLETE — 2026-08-23)
+
+- Identifier confirmed GOV-ARCH-02
+- Registered on TASKS.md CURRENT EXECUTION BOARD (Lane 1 ACTIVE)
+- Canonical backlog body created
+- Authoritative source map frozen: `docs/GOV-ARCH-02-SOURCE-MAP.md`
+- CURRENT vs FUTURE inventories separated
+- Product-WHAT drift deferred to GOV-PRD-02 (not registered)
+- ARCHITECTURE.md not edited
+- PRD.md not edited
+- PRIVATE-BETA-INVITE-01 remains PARKED
+
+**Step 2 — Architecture drift/gap inventory** (PENDING)
+
+Read-only inventory against the frozen source map. Do not edit ARCHITECTURE.md. Resolve UNKNOWN/CONFLICTING items by source inspection. Produce the Step 3 edit plan.
+
+**Step 3 — Reconcile / update authoritative ARCHITECTURE.md** (PENDING)
+
+Bounded documentation-only updates to `ARCHITECTURE.md` plus governance/checkpoint documents. Clearly label CURRENT vs PLANNED/FUTURE. Do not claim unimplemented multi-agent capabilities are operational. Do not update PRD.md.
+
+**Step 4 — Checkpoint / consolidation / lock** (PENDING)
+
+Independent verification, checkpoint, board/registry lock.
+
+---
+
+#### Explicit Non-Goals
+
+- No product implementation
+- No refactor
+- No runtime mutation
+- No migration
+- No dependency changes
+- No staging work
+- No provider call
+- No credit mutation
+- No invitation work
+- No PRD.md write
+- No GOV-PRD-02 registration
+- No 2-source-lane pilot registration
+- No Lane 3 enablement
+- No Development OS mutation
+
+---
+
+#### Planned Successor Sequence (NOT REGISTERED beyond this task)
+
+```
+GOV-ARCH-02
+→ GOV-PRD-02
+→ first genuine 2-source-lane pilot
+→ pilot review
+→ explicit future Lane 3 decision
+```
+
+PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE.
+
+---
+
+#### Invariants
+
+- LIVE_STAGING_VALIDATED=YES (preserved)
+- BUILDER_PRIVATE_BETA_READINESS=GO (preserved)
+- PRIVATE-BETA-INVITE-01 remains UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED / PARKED
+- All runtime authorization flags remain NO
+- All runtime resources remain UNOWNED
+- ARCHITECTURE.md edits in Step 1 = 0
+- PRD.md edits = 0
+- No subagents
+- No worktrees or branches
+- No commit/push unless explicitly requested by Keith
+
+---
+
+#### Acceptance Criteria
+
+Step 1 (Registration + source-map freeze):
+- [x] GOV-ARCH-02 identifier confirmed as the already-planned successor
+- [x] GOV-ARCH-02 not previously registered/active
+- [x] GOV-ARCH-02 registered in TASKS.md CURRENT EXECUTION BOARD
+- [x] Lane 1 = GOV-ARCH-02 ACTIVE
+- [x] Lane 2 = EMPTY
+- [x] Lane 3 = DISABLED
+- [x] Step 1 = COMPLETE
+- [x] Step 2 = PENDING
+- [x] Step 3 = PENDING
+- [x] Step 4 = PENDING
+- [x] `docs/GOV-ARCH-02-SOURCE-MAP.md` created and frozen
+- [x] CURRENT vs FUTURE architecture separated
+- [x] Product-WHAT drift deferred to GOV-PRD-02
+- [x] GOV-PRD-02 not registered
+- [x] 2-source-lane pilot not registered
+- [x] ARCHITECTURE.md not edited
+- [x] PRD.md not edited
+- [x] PRIVATE-BETA-INVITE-01 remains parked
+- [x] All runtime authorization flags = NO
+- [x] All runtime resources UNOWNED
+- [x] Activity ledger all zeros except allowed governance writes
+
+Step 2 / Step 3 / Step 4: PENDING
+
+---
+
+**GOV-ARCH-02 status:** ACTIVE — Step 1 COMPLETE — 2026-08-23
+**Current Stage:** Step 1 — Registration + source-map freeze — COMPLETE
+**Exact next step:** GOV-ARCH-02 Step 2 — Architecture drift/gap inventory
+**Source map:** `docs/GOV-ARCH-02-SOURCE-MAP.md`
+**PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED / PARKED / NOT EXECUTABLE
+**GOV-PRD-02:** NOT REGISTERED
+**2-source-lane pilot:** NOT REGISTERED
+**LIVE_STAGING_VALIDATED:** YES
+**BUILDER_PRIVATE_BETA_READINESS:** GO
+
+Step 1 activity ledger:
+```
+LIVE = 0
+SSH = 0
+staging = 0
+provider = 0
+credits = 0
+gates = 0
+runtime = 0
+product = 0
+frontend = 0
+backend/services = 0
+dependencies = 0
+ARCHITECTURE.md edits = 0
+PRD.md edits = 0
+Git mutations = 0
+```
+
+
