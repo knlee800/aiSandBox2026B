@@ -70389,7 +70389,7 @@ Executed 2026-08-23 after Keith commit of Step 1 reservation and explicit Keith 
 
 ### PRIVATE-BETA-GO-NO-GO-01: Final Builder-first Private-Beta GO/NO-GO
 
-**Status:** ACTIVE — Step 1 COMPLETE — Step 2 COMPLETE — 2026-08-23
+**Status:** ACTIVE — Step 1 COMPLETE — Step 2 COMPLETE — Step 3 COMPLETE — GO — 2026-08-23
 **Task ID:** PRIVATE-BETA-GO-NO-GO-01
 **Title:** Final Builder-first Private-Beta GO/NO-GO
 **Workstream:** COMMERCIAL
@@ -70496,8 +70496,40 @@ dependency changes = 0
 Git mutations = 0
 ```
 
-**Step 3 — Final GO/NO-GO Evidence Review and Decision** — PENDING
+**Step 3 — Final GO/NO-GO Evidence Review and Decision** — COMPLETE — GO — 2026-08-23
+
+- Decision authority: Keith
+- Decision: GO for limited Builder-first private beta for 1–3 trusted users
+- Decision date: 2026-08-23
+- Keith accepts the documented known limitations from Step 2
+- Decision document: `docs/PRIVATE-BETA-GO-NO-GO-01-DECISION.md`
+- LIVE_STAGING_VALIDATED=YES (preserved)
+- BUILDER_PRIVATE_BETA_READINESS=GO (transitioned from NO_GO)
+- Objective GO blockers remaining: 0
+- Named unresolved P0: 0
+- Named unresolved P1: 0
+- Known limitations: accepted for bounded 1–3 trusted Builder-user beta
+- Invitation authorization: NO — PRIVATE-BETA-INVITE-01 remains UNREGISTERED / UNAUTHORIZED / PROHIBITED
+- No runtime, staging, provider, credit, gate, runner, product, frontend, backend, dependency, or Git mutation
+
+Step 3 activity ledger:
+```
+LIVE runs = 0
+SSH = 0
+staging mutation = 0
+provider = 0
+credits = 0
+gates = 0
+project/session/container = 0
+runner changes = 0
+product changes = 0
+frontend changes = 0
+backend/services changes = 0
+dependency changes = 0
+Git mutations = 0
+```
+
 **Step 4 — Checkpoint / Consolidation / Final Lock** — PENDING
 
-**PRIVATE-BETA-GO-NO-GO-01 ACTIVE — Step 1 COMPLETE — Step 2 COMPLETE — 2026-08-23**
+**PRIVATE-BETA-GO-NO-GO-01 ACTIVE — Step 1 COMPLETE — Step 2 COMPLETE — Step 3 COMPLETE — GO — 2026-08-23 — Step 4 PENDING**
 
