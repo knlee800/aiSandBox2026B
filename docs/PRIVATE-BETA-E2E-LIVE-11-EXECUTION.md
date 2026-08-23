@@ -878,3 +878,243 @@ This is the committed mutex state that AUTO-01I requires.
 If VPN must remain ON for the selected Cursor model: STOP before LIVE execution.
 
 **PRIVATE-BETA-E2E-LIVE-11 STEP 1 COMPLETE — REGISTERED WITH STAGING / PROVIDER-LIVE / CREDIT / ENV RESERVED IN COMMITTABLE BOARD STATE, ALL RUNTIME AUTHORIZATION FLAGS FALSE, AND AUTO-01K DEDUCTION DATABASE-CONNECTION CONTRACT FROZEN — KEITH MUST COMMIT BEFORE STEP 2 EXECUTION EDGE — NO LIVE ACTIVITY**
+
+---
+
+# PRIVATE-BETA-E2E-LIVE-11 — Step 2 Execution Evidence
+
+**Task ID:** PRIVATE-BETA-E2E-LIVE-11  
+**Step:** 2 — ONE authorized automated staging golden-path run  
+**Date:** 2026-08-23  
+**Primary classification:** PASS  
+**Failed phase:** none  
+**Last successful runner phase:** CLEANUP  
+**Step 2 state:** LANE-DONE — PASS — Step 3 PENDING  
+**Runner invoked:** YES (`npm run e2e:builder:live` **once**)  
+**LIVE_RUNNER_INVOKE:** 1  
+**NPM_EXIT:** 0  
+**Formatted verdict:** `verdict=PASS`  
+**Playwright duration:** 1.1m
+
+Do not treat this document as a scheduler. LIVE-11 is **not** locked. Do not store credentials here. Do not modify AUTO-01 / AUTO-01A / AUTO-01B / AUTO-01C / AUTO-01D / AUTO-01E / AUTO-01F / AUTO-01G / AUTO-01H / AUTO-01I / AUTO-01J / AUTO-01K / 03L from this step. This is not a LIVE-10 rerun. Do not rerun LIVE-11. No patching during this task. Do not register PRIVATE-BETA-INVITE-01.
+
+---
+
+## Verdict
+
+Keith authorized Step 2. Committed Step 1 reservation of STAGING / PROVIDER-LIVE / CREDIT / ENV was already present on `TASKS.md`. Local `main` was CLEAN at AUTHORIZED_LOCAL_HEAD capture `e5e41aa9c3237cafdb241ba9c5bb732c675d0632` (`register LIVE-11 with reserved runtime resources`). AUTO-01G `b9cba2480ea4e9c814d17342c0e6aed2b469ef69`, AUTO-01H `25c25bd79c205c52838b3d151c73a0bc4a4de13f`, AUTO-01I lock `59b92df28cf755549e88aae89ce8107321c430e6`, 03L fixture `6a73b2ca95883be6f82fafc15ff533bc2be58224`, AUTO-01J implementation `31cf87c966393e0f23460d88965d28b3c0ceb786`, AUTO-01K implementation `449ab9b5fff89b570078c968c7d36f7f5a347657`, and AUTO-01K lock `87e2958067926244421981144224b0f842479246` are ancestors. Named consumer VPNs were disconnected. Repo writes between HEAD capture and runner return = **ZERO**. Staging compare-then-deploy of AUTHORIZED_LOCAL_HEAD succeeded. Product `frontend/` / `services/` / `package.json` / lockfile were unchanged vs pre-deploy staging HEAD `c78dbad609677b7da86e3043629e042bcbcb8e9d`, so rebuild/restart was skipped. AUTO-01K read-only DB preflight PASS (`SELECT 1` → `1`; URI never printed). Final triple gate PASS. Playwright LIVE was invoked **exactly once**.
+
+Runner phases that completed: PREPARE_BROWSER → AUTH → SAFETY → STARTING_BALANCE → ARM_LISTENERS → CREATE_SESSION → BUILD → WAIT_FOR_AUTO_APPLY → PREVIEW → CHECKPOINT → PUBLIC_CONFIRM → DEDUCTION → BALANCE → CLEANUP.
+
+Formatted verdict **PASS**. AUTO-01K DEDUCTION runner **PASS**. AUTO-01J CHECKPOINT runner **PASS**. BALANCE runner **PASS**. 1:1 credit reconciliation **PASS** (`24719 − 1159 = 23560`).
+
+Do not invoke `npm run e2e:builder:live` again. Do not lock LIVE-11 in Step 2.
+
+---
+
+## Deployment
+
+| Field | Value |
+|---|---|
+| AUTHORIZED_LOCAL_HEAD | `e5e41aa9c3237cafdb241ba9c5bb732c675d0632` (`register LIVE-11 with reserved runtime resources`) |
+| Local tree at HEAD capture | CLEAN / `main` |
+| STAGING_HEAD_BEFORE | `c78dbad609677b7da86e3043629e042bcbcb8e9d` (locked LIVE-10 staging HEAD) |
+| Deployment performed | **YES** |
+| STAGING_HEAD_AFTER | `e5e41aa9c3237cafdb241ba9c5bb732c675d0632` |
+| `STAGING_HEAD == AUTHORIZED_LOCAL_HEAD` | **PASS** (scalar `-eq` after normalizing SSH output to one 40-character SHA) |
+| Deploy method | `git fetch origin main` + `git reset --hard AUTHORIZED_LOCAL_HEAD` |
+| `git pull` | **NOT USED** |
+| Rebuild / restart | **SKIPPED** — `frontend/` / `services/` / `package.json` / lockfile unchanged vs pre-deploy HEAD (AUTO-01K runner + LIVE-10/LIVE-11 docs/governance only) |
+| Staging tree after deploy | CLEAN |
+| stash@{0} before | `0372cc1f47f82e1db060ed2dd756a938fe324803` (`pre-03F-deployment-snapshot-2026-08-15`) |
+| stash@{0} after | `0372cc1f47f82e1db060ed2dd756a938fe324803` — unchanged; not applied/dropped/renamed |
+| Repo writes between HEAD capture and runner invocation | **ZERO** |
+| AUTO01K_DB_PREFLIGHT | **PASS** — extract-only `DATABASE_URL` from `/opt/aisandbox/.env`; `psql "$DATABASE_URL" -Atqc "SELECT 1;"` returned `1`; URI never printed |
+
+---
+
+## Final triple gate (immediately before runner)
+
+SSH HEAD was normalized to one scalar SHA and compared with `-eq`. Array-valued `-match` / `-notmatch` was not used as the gate boolean. A first HEAD probe that piped a CRLF script produced `HEAD\r` and was discarded **before** invocation (`LIVE_RUNNER_INVOKE=0` on that attempt). The subsequent scalar `git rev-parse HEAD` over SSH produced one 40-character SHA.
+
+| Gate | Result |
+|---|---|
+| Local `git status --short` | EMPTY |
+| Local HEAD | `e5e41aa9c3237cafdb241ba9c5bb732c675d0632` = AUTHORIZED_LOCAL_HEAD |
+| Staging HEAD | `e5e41aa9c3237cafdb241ba9c5bb732c675d0632` = AUTHORIZED_LOCAL_HEAD |
+| Staging tree | CLEAN |
+| Retained stash | PASS |
+| Gateway `/api/health/ready` | HTTP 200 |
+| AI `/metrics` | HTTP 200 |
+| Container-manager `/api/health` | HTTP 200 |
+| Frontend `:3002` / public | HTTP 307 |
+| `GLOBAL_EXECUTION_ENABLED` before runner | false (.env + PM2) |
+| `BILLING_CHARGES_ENABLED` before runner | false (.env + PM2) |
+| Required PM2 processes | online (`aisandbox-api-gateway`, `aisandbox-frontend`, `aisandbox-ai-service`, `aisandbox-container-manager`) |
+| AUTO01K_DB_PREFLIGHT | PASS |
+| DPAPI `$env:TEMP\aisandbox-e2e-live-11-cred.xml` | existed before import |
+| FINAL_TRIPLE_GATE | **PASS** |
+
+---
+
+## LIVE run
+
+- Command: `npm run e2e:builder:live` — **once** (`LIVE_RUNNER_INVOKE=1`)
+- Start: `2026-08-23T11:15:33.9195757+08:00`
+- End: `2026-08-23T11:16:42.8156561+08:00`
+- Playwright duration: **1.1m**
+- Flags: `E2E_MODE=live`, `E2E_LIVE_AUTHORIZED=true`, `E2E_ALLOW_STAGING_MUTATION=true`, `E2E_ALLOW_CREDIT_MUTATION=true`, `PROVIDER_CALL_BUDGET=1` (process-only; never written to repo)
+- Credentials: transient DPAPI `PSCredential` import from `$env:TEMP\aisandbox-e2e-live-11-cred.xml`; process env cleared after runner (`ENV_CLEARED=YES`); DPAPI file deleted after invocation; never printed/committed
+- Human browser intervention: **NO**
+- NPM_EXIT: **0**
+
+Formatted runner output:
+
+```
+verdict=PASS
+projectId=5d2f58f0-1275-408f-94d0-26c2c3527b02
+sessionId=04ebc946-fb3d-4f94-be94-cef65d2bb6b4
+executionId=e570cdc5-ee53-4102-8137-be54b4900ffa
+provider=xai
+model=grok-4.5
+tokensUsed=1159
+autoApply=YES
+preview=PASS
+checkpointHash=b6facadbeb798eaef30ff4eb9a354f590a2e20f7
+confirmStatus=200
+confirmTriggered=true
+deductionCount=1
+creditsDeducted=1159
+balanceBefore=24719
+balanceAfter=23560
+cleanup=session-stopped
+executionGateFinal=restored-false
+```
+
+---
+
+## IDs / provider / accounting (observed)
+
+| Fact | Runner | Post-run staging evidence |
+|---|---|---|
+| projectId | `5d2f58f0-1275-408f-94d0-26c2c3527b02` | `E2E-AUTO-Disposable-2026-08-23T03-15-44-572Z` |
+| sessionId | `04ebc946-fb3d-4f94-be94-cef65d2bb6b4` | status=`stopped`; `container_id` null |
+| containerId | not in formatted verdict | created `4f5e531da2d2d1c6546ec480ca958d3a3c24ef5c08495ccdca7c3aed8a3e9745` (`sandbox-session-04ebc946-…`); removed (`docker ps -a` match count 0) |
+| executionId | `e570cdc5-ee53-4102-8137-be54b4900ffa` | same ID in deduction `source_event_id` |
+| executionId source | BUILD `POST /api/ai/execute` 202 (AUTO-01H) | same |
+| Provider / model | xAI / grok-4.5 | formatted `provider=xai` `model=grok-4.5` |
+| Provider-call budget | 1 | used **1** |
+| Provider calls used | **1** | **1** |
+| Retries used | **0** | **0** |
+| tokens_used | **1159** | **1159** (`requested_credits=1159`, `applied_credits=1159`) |
+| execute POST count | **1** | one executionId |
+| Send click count | **1** | one provider result |
+| AUTO_APPLY | **PASS** | file persisted |
+| files/write 204 | matching write observed (`waitForMatchingWrite` requires path `index.html` + HTTP 204) | `/opt/aisandbox/workspaces/04ebc946-fb3d-4f94-be94-cef65d2bb6b4/index.html` exists |
+| Generated file | confirmed by AUTO_APPLY + disk | 191 bytes; marker `PRIVATE-BETA-E2E-AUTO` count=1 |
+| Preview | **PASS** (iframe heading/paragraph asserted) | frozen marker present on disk |
+| Checkpoint | runner **PASS** (AUTO-01J bounded observation) | product row `b3e1ae97-fbb5-4c16-9275-dc2a282d683f` / `b6facadbeb798eaef30ff4eb9a354f590a2e20f7` (`AI: applied workspace file actions`, `files_changed=1`) at 11:16:34 |
+| Public confirm | runner **PASS** (`validateLiveConfirmResponse`: HTTP 200, `triggered=true`, `reason=completed`) | `confirmStatus=200` `confirmTriggered=true` |
+| Deduction count | runner **PASS** (AUTO-01K) | **1** |
+| Credits deducted | **1159** | **1159** (`overflow_credits=0`, status=`applied`) |
+| Starting balance | **24719** | product `balance_before=24719` |
+| Ending balance | **23560** | product `balance_after=23560` |
+| Reconciliation | runner **PASS** | 24719 − 1159 = 23560 |
+| Duplicate deduction | **NO** | COUNT=1 |
+| Stripe | no charge expected (`BILLING_CHARGES_ENABLED=false`) | no `stripe`/`charge`/`payment` tables in public schema; no Stripe charge observed |
+| AUTO-01K connection acquisition held | **YES** | preflight `SELECT 1` → `1`; runner DEDUCTION PASS (not role `ubuntu`) |
+
+---
+
+## CHECKPOINT evidence (actual runner PASS)
+
+CHECKPOINT used locked AUTO-01J bounded same-session observation. Matching product row:
+
+```
+id          = b3e1ae97-fbb5-4c16-9275-dc2a282d683f
+commit_hash = b6facadbeb798eaef30ff4eb9a354f590a2e20f7
+files_changed = 1
+description = AI: applied workspace file actions
+created_at  = 2026-08-23 11:16:34.732149
+```
+
+---
+
+## DEDUCTION evidence (actual runner PASS — AUTO-01K)
+
+Runner `verifyDeduction()` obtained `tokens_used` from `GET /api/ai/executions/:executionId`, then `staging.queryDeduction()` ran the AUTO-01K remote extract-only `DATABASE_URL` prefix plus existing `psql "$DATABASE_URL"` SELECT correlated by `source_event_id = executionId`.
+
+```
+source_event_id   = e570cdc5-ee53-4102-8137-be54b4900ffa
+requested_credits = 1159
+applied_credits   = 1159
+overflow_credits  = 0
+balance_before    = 24719
+balance_after     = 23560
+status            = applied
+deductionCount    = 1
+```
+
+This is **actual runner DEDUCTION PASS**. It is not a product-side retrofit. LIVE-10's role-`ubuntu` failure did not recur.
+
+---
+
+## CLEANUP
+
+| Field | Result |
+|---|---|
+| `cleanup` | `session-stopped` |
+| `executionGateFinal` | `restored-false` |
+| `GLOBAL_EXECUTION_ENABLED` final | false (.env + PM2) |
+| `BILLING_CHARGES_ENABLED` final | false (.env + PM2) |
+| Session | stopped; `container_id` null |
+| Container | removed (`docker ps -a` match 0) |
+| Process env | cleared (`E2E_LOGIN_*` / LIVE flags absent) |
+| DPAPI `$env:TEMP\aisandbox-e2e-live-11-cred.xml` | **absent** |
+| Retained stash | unchanged |
+| Unrelated sessions/containers | not touched |
+
+Confirmed-safe cleanup: **YES**. STAGING / PROVIDER-LIVE / CREDIT / ENV released after this verification.
+
+---
+
+## Classification
+
+**PASS.** No failure class. Failed phase: none. Last successful phase: CLEANUP.
+
+LIVE-10 remains COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — DEDUCTION and is not rewritten. LIVE-11 is a new fresh run.
+
+---
+
+## Step 2 terminal state
+
+```
+Lane 1             = PRIVATE-BETA-E2E-LIVE-11 LANE-DONE — PASS
+Lane 2             = EMPTY
+Lane 3             = DISABLED
+STAGING owner      = UNOWNED (released after confirmed-safe cleanup)
+PROVIDER-LIVE owner= UNOWNED (released after confirmed-safe cleanup)
+CREDIT owner       = UNOWNED (released after confirmed-safe cleanup)
+ENV owner          = UNOWNED (released after confirmed-safe cleanup)
+GOVERNANCE         = UNOWNED (acquired transiently for post-run writes then released)
+RUNTIME_EXECUTION_AUTHORIZED=NO
+PROVIDER_CALL_AUTHORIZED=NO
+CREDIT_MUTATION_AUTHORIZED=NO
+STAGING_MUTATION_AUTHORIZED=NO
+AUTHORIZED_LOCAL_HEAD=e5e41aa9c3237cafdb241ba9c5bb732c675d0632
+LIVE_11_STEP_2=COMPLETE — LANE-DONE — PASS
+LIVE_11_STEP_3=PENDING
+LIVE_STAGING_VALIDATED=NO (Step 3 lock pending; actual runner PASS obtained)
+PRIVATE-BETA-INVITE-01=UNREGISTERED / UNAUTHORIZED / PROHIBITED
+```
+
+---
+
+## Blocker before Step 3
+
+1. Keith owns Git. Commit this Step 2 evidence / board / registry update when ready.
+2. Step 3 is consolidation / checkpoint / lock only. Do **not** rerun LIVE-11.
+3. Do **not** register PRIVATE-BETA-INVITE-01 in Step 3 unless a later separate lifecycle is explicitly authorized.
+
+**PRIVATE-BETA-E2E-LIVE-11 STEP 2 COMPLETE — PASS — ONE AUTOMATED GOLDEN-PATH RUN COMPLETED AUTH THROUGH BALANCE AND CLEANUP, INCLUDING AUTO-01J CHECKPOINT, AUTO-01K DEDUCTION DATABASE VERIFICATION, AND 1:1 CREDIT RECONCILIATION — READY FOR STEP 3**
+
