@@ -71120,3 +71120,109 @@ pilot registration = 0
 invitation registration = 0
 ```
 
+---
+
+## GOVERNANCE — First Genuine 2-Source-Lane Pilot
+
+### PILOT-2LANE-01 — First Genuine 2-Source-Lane Pilot (Shared Checkout)
+
+**Status:** ACTIVE — Step 1 COMPLETE — 2026-08-24 — Steps 2/3/4 PENDING — IMPLEMENTATION NOT AUTHORIZED
+**Task ID:** PILOT-2LANE-01
+**Workstream:** GOVERNANCE (taxonomy only; zero admission weight)
+**Lifecycle:** 4-step — Step 1 registration/candidate-selection/concurrency contract; Step 2 stage-start + exact lane admission + preflight; Step 3 parallel implementation/validation (two primary Cursor windows, no subagents); Step 4 pilot consolidation + concurrency review + lock
+**Start condition:** READY at Step 1 — GOV-OS-01, GOV-ARCH-02, GOV-PRD-02 all COMPLETE AND LOCKED; Lane 1 EMPTY, Lane 2 EMPTY, Lane 3 DISABLED, all resources UNOWNED, clean tree at HEAD `113ad6ffa27153c2f72b94c34d5675b4eaa58efe`
+**Depends on:** GOV-OS-01 (LOCKED); GOV-ARCH-02 (LOCKED); GOV-PRD-02 (LOCKED)
+**Primary write scope (governance steps):** `TASKS.md` CURRENT EXECUTION BOARD; `TASKS_BACKLOG_FULL.md` pilot bodies; `docs/PILOT-2LANE-01-*.md`; bounded Step 4 PRD.md §3.I / ARCHITECTURE.md §13.2 one-line consolidation patches (control plane only)
+**Mutexes / resources:** GOVERNANCE (control plane, per governance step). Implementation-lane mutexes are owned by the child tasks at Step 2 admission, not by this parent.
+**Hot-file leases:** none (e2e HOTFILE set untouched)
+**Shared contracts:** none frozen between lanes (pair selected so that no cross-lane contract exists)
+**Evidence class:** GOVERNANCE (Steps 1/2/4); child lanes are LOCAL-TESTS
+**Revert isolation:** child write sets are fully disjoint (`services/api-gateway/src/user-agent/**` vs `frontend/` shell/messages set); reverting either lane cannot invalidate the other lane's evidence
+
+**Identifier search:** No authoritative pilot identifier existed anywhere (TASKS board, registry, GOV-OS-01 / GOV-ARCH-02 / GOV-PRD-02 evidence, all docs) — only the descriptive phrase "first genuine 2-source-lane pilot", always NOT REGISTERED. Repo-wide grep for `PILOT-` identifiers returned zero matches. PILOT-2LANE-01 registered as the canonical identifier.
+
+**Purpose:** Prove whether two independent implementation workers can operate concurrently in the single shared checkout `C:\Users\knlee\aiSandBox2026B` under explicit lane + write-ownership + mutex governance, using two real, independently valuable pending product tasks. Authoritative design/contract: `docs/PILOT-2LANE-01-PLAN.md` (write-ownership map, mutex plan, governance-write rule, dirty-tree rule, Git rule, stop rules, one-lane-fails rule, combined validation, success/failure criteria, Step 2 preflight requirements).
+
+**Topology decision:** SHARED CHECKOUT confirmed. No Git worktrees, no duplicate checkouts, no separate Docker stacks, no alternate databases, no alternate staging.
+
+**Frozen candidate pair (Step 1):**
+- Lane 1 = AGENT-PLATFORM-CREATE-01C (below) — GATEWAY mutex at admission
+- Lane 2 = I18N-SHELL-06 (below) — FRONTEND + I18N mutexes at admission
+
+**Pair admission standard:** SATISFIED — disjoint write sets, disjoint mutexes, no HOTFILE conflict, no simultaneous governance writes (control-plane-only rule), zero runtime/staging/provider/credit/migration requirements in both lanes, independent LOCAL-TESTS validation, defined serialized combined validation, revert isolation by construction.
+
+**Runtime authorization (all pilot steps):** `RUNTIME_EXECUTION_AUTHORIZED=NO` / `PROVIDER_CALL_AUTHORIZED=NO` / `CREDIT_MUTATION_AUTHORIZED=NO` / `STAGING_MUTATION_AUTHORIZED=NO`. Docker/Postgres/Redis not used.
+
+**Lane 3:** DISABLED — this pilot cannot enable Lane 3. Successor sequence: PILOT-2LANE-01 → pilot review → explicit future Lane 3 decision.
+
+**Private beta:** LIVE_STAGING_VALIDATED=YES — BUILDER_PRIVATE_BETA_READINESS=GO — PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED — INVITATION_EXECUTION_PERMITTED=NO.
+
+**Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, gates=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, tests executed=0, dependencies=0, PRD.md edits=0, ARCHITECTURE.md edits=0, Git mutations=0, Lane 1 implementation=0, Lane 2 implementation=0, Lane 3=DISABLED, invitation registration=0.
+
+**Exact next step:** PILOT-2LANE-01 Step 2 — stage-start + exact lane admission + preflight (fresh control-plane window; preflight requirements frozen in plan §24). Implementation remains unauthorized until Step 2 completes.
+
+---
+
+#### AGENT-PLATFORM-CREATE-01C — User-Created Agent Delete API (Soft Delete)
+
+**Status:** REGISTERED — RESERVED for PILOT-2LANE-01 Lane 1 — FROZEN — NOT EXECUTING — NOT ADMITTED — implementation unauthorized until PILOT-2LANE-01 Step 2 admission
+**Task ID:** AGENT-PLATFORM-CREATE-01C
+**Parent / pilot:** PILOT-2LANE-01 (Lane 1)
+**Family:** AGENT PLATFORM / CREATE (successor to AGENT-PLATFORM-CREATE-01A / 01B, both COMPLETE AND LOCKED)
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Lifecycle:** bounded implementation slice inside PILOT-2LANE-01 Step 3 (worker implements + lane-local validation; control plane consolidates)
+**Start condition:** NOT READY until PILOT-2LANE-01 Step 2 preflight passes and the control plane flips Lane 1 RESERVED→ACTIVE with GATEWAY owned
+**Depends on:** AGENT-PLATFORM-CREATE-01A (LOCKED — entity/migration incl. `deleted_at`), AGENT-PLATFORM-CREATE-01B (LOCKED — create/list/view API); PILOT-2LANE-01 Step 2
+**Primary write scope (exclusive):**
+- `services/api-gateway/src/user-agent/user-agent.controller.ts`
+- `services/api-gateway/src/user-agent/user-agent.service.ts`
+- `services/api-gateway/src/user-agent/__tests__/user-agent.controller.spec.ts`
+- `services/api-gateway/src/user-agent/__tests__/user-agent.service.spec.ts` (new, optional)
+**Mutexes / resources:** GATEWAY (exclusive at admission)
+**Hot-file leases:** none
+**Shared contracts:** none with Lane 2; frontend does not call the new endpoint (additive, backward compatible)
+**Evidence class:** LOCAL-TESTS
+**Revert isolation:** revert = discard the four files above; cannot affect Lane 2 evidence
+
+**Objective:** Add `DELETE /api/agents/:id` — SessionCookieGuard-protected, ownership-scoped (`id + userId`), soft delete via existing `deleted_at` `@DeleteDateColumn`, 204 on success, 404 when not found / not owned. Service method + controller/service tests (ownership isolation, 404, 204). NO new migration (column and applied migration already exist). NO frontend, NO i18n copy, NO auth-core change, NO admin change.
+
+**PRD basis:** PRD.md §3.I — "Delete is not currently available (accepted private-beta limitation)"; GO-NO-GO accepted limitation T7; GOV-PRD-02 stage-start F6. Closing a documented accepted limitation; PRD one-line consolidation patch at pilot Step 4 (control plane).
+**Architecture basis:** ARCHITECTURE.md §13.2 — `user_agents` persistence/API surface; `deleted_at` present; ARCHITECTURE one-line consolidation patch at pilot Step 4 (control plane).
+
+**Validation (lane-local):** `Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm test` then `npm run build`. Mocked repositories / in-process supertest — no DB, no fixed ports, no Docker/Redis; safe concurrently with Lane 2 validation.
+
+**Worker restrictions:** no writes outside the exclusive scope; no governance/registry/PRD/ARCHITECTURE writes; no Git mutations; no dependencies; no runtime; STOP conditions per plan §19.
+
+---
+
+#### I18N-SHELL-06 — Workspace StateMessage Heading/Action Locale Migration
+
+**Status:** REGISTERED — RESERVED for PILOT-2LANE-01 Lane 2 — FROZEN — NOT EXECUTING — NOT ADMITTED — implementation unauthorized until PILOT-2LANE-01 Step 2 admission
+**Task ID:** I18N-SHELL-06
+**Parent / pilot:** PILOT-2LANE-01 (Lane 2)
+**Family:** I18N (successor to I18N-SHELL-05, COMPLETE and LOCKED)
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Lifecycle:** bounded implementation slice inside PILOT-2LANE-01 Step 3 (worker implements + lane-local validation; control plane consolidates)
+**Start condition:** NOT READY until PILOT-2LANE-01 Step 2 preflight passes and the control plane flips Lane 2 RESERVED→ACTIVE with FRONTEND + I18N owned
+**Depends on:** I18N-SHELL-05 (LOCKED — locale-provider pattern `getRecoveryCopy(locale)` established); PILOT-2LANE-01 Step 2
+**Primary write scope (exclusive):**
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+- `frontend/lib/recovery-copy.ts` (only if the locale-provider extension requires it)
+**Mutexes / resources:** FRONTEND + I18N (exclusive atomic lease over all 3 message files at admission)
+**Hot-file leases:** none beyond the I18N atomic lease
+**Shared contracts:** none with Lane 1
+**Evidence class:** LOCAL-TESTS
+**Revert isolation:** revert = discard the six files above; cannot affect Lane 1 evidence
+
+**Objective:** Migrate the remaining hardcoded English `StateMessage` `heading` (60) and `action` (57) literals in `workspace-shell.tsx` (editor save, file navigation, exec, preview, history, save point, compare mode panes) to the 3-locale message system, following the established manual locale-switch pattern (`getRecoveryCopy` / `getWorkspaceMessages`). Add keys to en / zh-TW / zh-CN; add/update source assertions (keys exist in all 3 locales; targeted literals removed). Preserve layout, classNames, behavior, and all `data-testid` values. NO redesign, NO routing, NO backend, NO new dependencies, NO new icons.
+
+**Governance/PRD basis:** CLAUDE.md Multilingual-First rule; PRD.md §3.J multilingual UX is core CURRENT; I18N-SHELL-05 explicit non-goal deliberately deferred exactly this surface ("No status panel StateMessage heading/body/action migration beyond strings already supplied by recoveryCopy") — this is its documented successor.
+
+**Validation (lane-local):** `Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsc --noEmit` then `npm test`. `npm run build` PROHIBITED during the parallel window (it rewrites `frontend/tsconfig.tsbuildinfo`, whose restore is a worker-prohibited Git mutation); build runs in the serialized Step 4 combined validation under control-plane/Keith Git authority.
+
+**Worker restrictions:** no writes outside the exclusive scope; no governance/registry/PRD/ARCHITECTURE writes; no Git mutations; no dependencies; no runtime; no browser smoke required; STOP conditions per plan §19 (including scope-expansion stop if the migration cannot stay within the declared files).
+
