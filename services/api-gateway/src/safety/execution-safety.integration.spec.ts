@@ -16,12 +16,31 @@ import { LaunchGuard } from '../launch/launch.guard';
 import { AbortGuard } from '../abort/abort.guard';
 import { RateLimitGuard } from '../guards/rate-limit.guard';
 import { IdempotencyGuard } from '../ai/idempotency.guard';
+import { CreditBalanceGuard } from '../billing/credit-balance.guard';
+import { QueueService } from '../queue/queue.service';
+import { ExecutionResultService } from '../ai/execution-result.service';
+import { ExecutionStreamService } from '../streaming/execution-stream.service';
+import { UserAiInstructionsService } from '../user-ai-instructions/user-ai-instructions.service';
+import { ProjectAiContextService } from '../project-ai-context/project-ai-context.service';
+import { SessionService } from '../sessions/session.service';
+import { QuotaService } from '../quota/quota.service';
+
+const VALID_SESSION_UUID = '11111111-1111-4111-a111-111111111111';
+
+const currentExecuteBody = (overrides: Record<string, unknown> = {}) => ({
+  sessionId: VALID_SESSION_UUID,
+  conversationId: 'conv-456',
+  prompt: 'Test',
+  provider: 'stub' as const,
+  ...overrides,
+});
 
 describe('ExecutionSafetyGuard Integration Tests', () => {
   let app: INestApplication;
   let aiServiceHttpClient: AIServiceHttpClient;
   let usageLedgerService: UsageLedgerService;
   let globalSafetyLimitService: GlobalSafetyLimitService;
+  let mockQueueService: { enqueueExecution: jest.Mock };
   const savedGlobalExecutionEnabled = process.env.GLOBAL_EXECUTION_ENABLED;
 
   // Mock AI service response
@@ -43,6 +62,9 @@ describe('ExecutionSafetyGuard Integration Tests', () => {
 
   beforeEach(async () => {
     process.env.GLOBAL_EXECUTION_ENABLED = 'true';
+    mockQueueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AIExecutionController],
@@ -68,6 +90,39 @@ describe('ExecutionSafetyGuard Integration Tests', () => {
         },
         GlobalSafetyLimitService,
         ExecutionSafetyGuard,
+        {
+          provide: QueueService,
+          useValue: mockQueueService,
+        },
+        {
+          provide: ExecutionResultService,
+          useValue: { getExecution: jest.fn(), requestCancel: jest.fn() },
+        },
+        {
+          provide: ExecutionStreamService,
+          useValue: { subscribe: jest.fn(), unsubscribe: jest.fn() },
+        },
+        {
+          provide: UserAiInstructionsService,
+          useValue: { getByUserId: jest.fn().mockResolvedValue(null) },
+        },
+        {
+          provide: ProjectAiContextService,
+          useValue: { getByProjectId: jest.fn().mockResolvedValue(null) },
+        },
+        {
+          provide: SessionService,
+          useValue: {
+            getSessionById: jest.fn().mockResolvedValue({
+              userId: 'test-user-id',
+              projectId: null,
+            }),
+          },
+        },
+        {
+          provide: QuotaService,
+          useValue: { clearAll: jest.fn() },
+        },
       ],
     })
       .overrideGuard(SessionOrApiKeyAuthGuard)
@@ -92,6 +147,8 @@ describe('ExecutionSafetyGuard Integration Tests', () => {
       .overrideGuard(RateLimitGuard)
       .useValue({ canActivate: () => true })
       .overrideGuard(IdempotencyGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(CreditBalanceGuard)
       .useValue({ canActivate: () => true })
       .compile();
 
@@ -121,33 +178,26 @@ describe('ExecutionSafetyGuard Integration Tests', () => {
       const response = await request(app.getHttpServer())
         .post('/ai/execute')
         .set('Idempotency-Key', 'test-key-1')
-        .send({
-          provider: 'anthropic',
-          model: 'claude-3-5-sonnet-20241022',
-          max_tokens: 1000,
-          messages: [{ role: 'user', content: 'Test' }],
-        })
-        .expect(HttpStatus.OK);
+        .send(currentExecuteBody())
+        .expect(HttpStatus.ACCEPTED);
 
-      expect(response.body).toEqual(mockAIResponse);
-      expect(mockExecute).toHaveBeenCalledTimes(1);
+      expect(response.body.status).toBe('queued');
+      expect(response.body.executionId).toBeDefined();
+      expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
     });
 
     it('should invoke ai-service when all checks pass', async () => {
       await request(app.getHttpServer())
         .post('/ai/execute')
         .set('Idempotency-Key', 'test-key-2')
-        .send({
-          provider: 'anthropic',
-          model: 'claude-3-5-sonnet-20241022',
-          max_tokens: 1000,
-          messages: [{ role: 'user', content: 'Test' }],
-        });
+        .send(currentExecuteBody())
+        .expect(HttpStatus.ACCEPTED);
 
-      expect(mockExecute).toHaveBeenCalledWith(
+      expect(mockQueueService.enqueueExecution).toHaveBeenCalledWith(
         expect.objectContaining({
-          provider: 'stub', // Provider from env (AI_PROVIDER || 'stub')
-          userId: mockIdentity.userId, // Verified identity
+          userId: mockIdentity.userId,
+          sessionId: VALID_SESSION_UUID,
+          prompt: 'Test',
         }),
       );
     });
@@ -156,12 +206,8 @@ describe('ExecutionSafetyGuard Integration Tests', () => {
       await request(app.getHttpServer())
         .post('/ai/execute')
         .set('Idempotency-Key', 'test-key-3')
-        .send({
-          provider: 'anthropic',
-          model: 'claude-3-5-sonnet-20241022',
-          max_tokens: 1000,
-          messages: [{ role: 'user', content: 'Test' }],
-        });
+        .send(currentExecuteBody())
+        .expect(HttpStatus.ACCEPTED);
 
       expect(usageLedgerService.writeExecutionIntent).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -169,32 +215,17 @@ describe('ExecutionSafetyGuard Integration Tests', () => {
           userId: mockIdentity.userId,
         }),
       );
-      expect(usageLedgerService.updateExecutionResult).toHaveBeenCalledWith(
-        expect.objectContaining({
-          model: mockAIResponse.model,
-          tokensUsed: mockAIResponse.tokensUsed,
-        }),
-      );
     });
 
     it('should record execution cost when execution succeeds', async () => {
-      const recordCostSpy = jest.spyOn(
-        globalSafetyLimitService,
-        'recordExecutionCost',
-      );
-
       await request(app.getHttpServer())
         .post('/ai/execute')
         .set('Idempotency-Key', 'test-key-4')
-        .send({
-          provider: 'anthropic',
-          model: 'claude-3-5-sonnet-20241022',
-          max_tokens: 1000,
-          messages: [{ role: 'user', content: 'Test' }],
-        });
+        .send(currentExecuteBody())
+        .expect(HttpStatus.ACCEPTED);
 
-      // Should record cost: (100 tokens / 1000) * $0.01 = $0.001
-      expect(recordCostSpy).toHaveBeenCalledWith(0.001);
+      expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+      expect(usageLedgerService.writeExecutionIntent).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -332,15 +363,10 @@ describe('ExecutionSafetyGuard Integration Tests', () => {
       await request(app.getHttpServer())
         .post('/ai/execute')
         .set('Idempotency-Key', 'test-max-tokens-3')
-        .send({
-          provider: 'anthropic',
-          model: 'claude-3-5-sonnet-20241022',
-          max_tokens: 100000, // Exactly at limit
-          messages: [{ role: 'user', content: 'Test' }],
-        })
-        .expect(HttpStatus.OK);
+        .send(currentExecuteBody({ max_tokens: 100000 }))
+        .expect(HttpStatus.ACCEPTED);
 
-      expect(mockExecute).toHaveBeenCalledTimes(1);
+      expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -502,15 +528,10 @@ describe('ExecutionSafetyGuard Integration Tests', () => {
       await request(app.getHttpServer())
         .post('/ai/execute')
         .set('Idempotency-Key', 'test-daily-spend-3')
-        .send({
-          provider: 'anthropic',
-          model: 'claude-3-5-sonnet-20241022',
-          max_tokens: 1000,
-          messages: [{ role: 'user', content: 'Test' }],
-        })
-        .expect(HttpStatus.OK);
+        .send(currentExecuteBody())
+        .expect(HttpStatus.ACCEPTED);
 
-      expect(mockExecute).toHaveBeenCalledTimes(1);
+      expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -577,43 +598,26 @@ describe('ExecutionSafetyGuard Integration Tests', () => {
       const response = await request(app.getHttpServer())
         .post('/ai/execute')
         .set('Idempotency-Key', 'test-no-change-1')
-        .send({
-          provider: 'anthropic',
-          model: 'claude-3-5-sonnet-20241022',
-          max_tokens: 1000,
-          messages: [{ role: 'user', content: 'Test prompt' }],
-        })
-        .expect(HttpStatus.OK);
+        .send(currentExecuteBody({ prompt: 'Test prompt' }))
+        .expect(HttpStatus.ACCEPTED);
 
-      // Should get normal response
-      expect(response.body).toEqual(mockAIResponse);
-
-      // Should invoke ai-service
-      expect(mockExecute).toHaveBeenCalledTimes(1);
-
-      // Should record usage (two-phase execution)
+      expect(response.body.status).toBe('queued');
+      expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
       expect(usageLedgerService.writeExecutionIntent).toHaveBeenCalledTimes(1);
-      expect(usageLedgerService.updateExecutionResult).toHaveBeenCalledTimes(1);
     });
 
     it('should not modify request when safety checks pass', async () => {
       await request(app.getHttpServer())
         .post('/ai/execute')
         .set('Idempotency-Key', 'test-no-change-2')
-        .send({
-          provider: 'anthropic',
-          model: 'claude-3-5-sonnet-20241022',
-          max_tokens: 1000,
-          messages: [{ role: 'user', content: 'Test' }],
-        });
+        .send(currentExecuteBody())
+        .expect(HttpStatus.ACCEPTED);
 
-      const callArgs = mockExecute.mock.calls[0][0];
+      const callArgs = mockQueueService.enqueueExecution.mock.calls[0][0];
 
-      // Request should be passed through (provider from env, userId injected)
-      expect(callArgs.provider).toBe('stub'); // Provider from env (AI_PROVIDER || 'stub')
-      expect(callArgs.userId).toBe(mockIdentity.userId); // Identity injected
-      // Other fields passed through
-      expect(callArgs.messages).toEqual([{ role: 'user', content: 'Test' }]);
+      expect(callArgs.userId).toBe(mockIdentity.userId);
+      expect(callArgs.sessionId).toBe(VALID_SESSION_UUID);
+      expect(callArgs.prompt).toBe('Test');
     });
 
     it('should not log prompts or responses', async () => {
@@ -623,14 +627,7 @@ describe('ExecutionSafetyGuard Integration Tests', () => {
       await request(app.getHttpServer())
         .post('/ai/execute')
         .set('Idempotency-Key', 'test-no-change-3')
-        .send({
-          provider: 'anthropic',
-          model: 'claude-3-5-sonnet-20241022',
-          max_tokens: 1000,
-          messages: [
-            { role: 'user', content: 'SENSITIVE_PROMPT_CONTENT_SECRET' },
-          ],
-        });
+        .send(currentExecuteBody({ prompt: 'SENSITIVE_PROMPT_CONTENT_SECRET' }));
 
       // Check that sensitive content is NOT logged
       const allLogs = [

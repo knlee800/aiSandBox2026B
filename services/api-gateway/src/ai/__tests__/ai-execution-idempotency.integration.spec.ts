@@ -18,10 +18,16 @@ import { AbortGuard } from '../../abort/abort.guard';
 import { TokenQuotaGuard } from '../../quota/token-quota.guard';
 import { RateLimitGuard } from '../../guards/rate-limit.guard';
 import { IdempotencyGuard } from '../idempotency.guard';
+import { CreditBalanceGuard } from '../../billing/credit-balance.guard';
 import { UsageRecord } from '../../entities/usage-record.entity';
 import { QueueService } from '../../queue/queue.service';
 import { ExecutionResultService } from '../execution-result.service';
 import { ExecutionStreamService } from '../../streaming/execution-stream.service';
+import { UserAiInstructionsService } from '../../user-ai-instructions/user-ai-instructions.service';
+import { ProjectAiContextService } from '../../project-ai-context/project-ai-context.service';
+import { SessionService } from '../../sessions/session.service';
+
+const VALID_SESSION_UUID = '11111111-1111-4111-a111-111111111111';
 
 /**
  * Integration tests for Phase 43A-2C: Idempotency Short-Circuit BEFORE Quota
@@ -37,11 +43,12 @@ describe('AIExecutionController (Phase 43A-2C: Idempotency Short-Circuit)', () =
   let controller: AIExecutionController;
   let usageLedgerService: jest.Mocked<UsageLedgerService>;
   let queueService: jest.Mocked<QueueService>;
+  let sessionService: jest.Mocked<SessionService>;
   let tokenQuotaGuard: jest.Mocked<TokenQuotaGuard>;
   let quotaGuard: jest.Mocked<QuotaGuard>;
 
   const validRequest: AIExecutionRequest = {
-    sessionId: 'session-123',
+    sessionId: VALID_SESSION_UUID,
     conversationId: 'conv-456',
     userId: 'untrusted-user',
     prompt: 'Test prompt',
@@ -84,6 +91,21 @@ describe('AIExecutionController (Phase 43A-2C: Idempotency Short-Circuit)', () =
       clearAll: jest.fn(),
     };
 
+    const mockUserAiInstructionsService = {
+      getByUserId: jest.fn().mockResolvedValue(null),
+    };
+
+    const mockProjectAiContextService = {
+      getByProjectId: jest.fn().mockResolvedValue(null),
+    };
+
+    const mockSessionService = {
+      getSessionById: jest.fn().mockResolvedValue({
+        userId: 'test-user',
+        projectId: null,
+      }),
+    };
+
     const mockTokenQuotaGuard = {
       canActivate: jest.fn().mockResolvedValue(true),
     };
@@ -119,6 +141,18 @@ describe('AIExecutionController (Phase 43A-2C: Idempotency Short-Circuit)', () =
           provide: ExecutionStreamService,
           useValue: mockExecutionStreamService,
         },
+        {
+          provide: UserAiInstructionsService,
+          useValue: mockUserAiInstructionsService,
+        },
+        {
+          provide: ProjectAiContextService,
+          useValue: mockProjectAiContextService,
+        },
+        {
+          provide: SessionService,
+          useValue: mockSessionService,
+        },
         IdempotencyGuard,
         Reflector,
       ],
@@ -139,11 +173,14 @@ describe('AIExecutionController (Phase 43A-2C: Idempotency Short-Circuit)', () =
       .useValue(mockQuotaGuard)
       .overrideGuard(RateLimitGuard)
       .useValue({ canActivate: () => true })
+      .overrideGuard(CreditBalanceGuard)
+      .useValue({ canActivate: () => true })
       .compile();
 
     controller = module.get<AIExecutionController>(AIExecutionController);
     usageLedgerService = module.get(UsageLedgerService);
     queueService = module.get(QueueService);
+    sessionService = module.get(SessionService);
     tokenQuotaGuard = mockTokenQuotaGuard as any;
     quotaGuard = mockQuotaGuard as any;
   });
@@ -329,6 +366,11 @@ describe('AIExecutionController (Phase 43A-2C: Idempotency Short-Circuit)', () =
           return null;
         },
       );
+      let sessionOwnerId = 'user-1';
+      sessionService.getSessionById.mockImplementation(async () => ({
+        userId: sessionOwnerId,
+        projectId: null,
+      } as never));
 
       // User 1: should get cached response (with idempotentResult attached)
       const result1 = await controller.execute(
@@ -338,6 +380,7 @@ describe('AIExecutionController (Phase 43A-2C: Idempotency Short-Circuit)', () =
       );
       expect(result1.status).toBe('queued');
 
+      sessionOwnerId = 'user-2';
       // User 2: should execute normally (no cached record, no idempotentResult)
       const result2 = await controller.execute(
         validRequest,

@@ -71126,7 +71126,7 @@ invitation registration = 0
 
 ### PILOT-2LANE-01 — First Genuine 2-Source-Lane Pilot (Shared Checkout)
 
-**Status:** PAUSED / NOT LOCKED — Step 1 COMPLETE — Step 2 COMPLETE — Step 3 COMPLETE (both child lanes LANE-DONE) — 2026-08-24 — combined Keith Git checkpoint `9e7075d` — Step 4 PAUSED / BLOCKED on pre-existing non-live gateway fixture failures — GATEWAY-TEST-FIXTURE-01 registered as serialized Class 1 Nest fixture repair; Class 2 TypeORM-forRoot suites are a separate blocker — do not resume Step 4 until the broad non-live gateway suite is green with only `smoke.integration.spec.ts` excluded
+**Status:** PAUSED / NOT LOCKED — Step 1 COMPLETE — Step 2 COMPLETE — Step 3 COMPLETE (both child lanes LANE-DONE) — 2026-08-24 — combined Keith Git checkpoint `9e7075d` — Step 4 PAUSED / BLOCKED — GATEWAY-TEST-FIXTURE-01 COMPLETE AND LOCKED — PASS — 2026-08-24 (Class 1 Nest fixtures green) — Class 2 TypeORM-forRoot suites remain UNRESOLVED / SEPARATE / NOT REGISTERED — RESUME_AUTHORIZED=NO — do not resume Step 4 until the broad non-live gateway suite is green with only `smoke.integration.spec.ts` excluded
 **Task ID:** PILOT-2LANE-01
 **Workstream:** GOVERNANCE (taxonomy only; zero admission weight)
 **Lifecycle:** 4-step — Step 1 registration/candidate-selection/concurrency contract; Step 2 stage-start + exact lane admission + preflight; Step 3 parallel implementation/validation (two primary Cursor windows, no subagents); Step 4 pilot consolidation + concurrency review + lock
@@ -71235,7 +71235,7 @@ invitation registration = 0
 
 ### GATEWAY-TEST-FIXTURE-01 — Pre-Existing Gateway Nest TestingModule Fixture Repair
 
-**Status:** REGISTERED — Step 1 COMPLETE — 2026-08-24 — Step 2 NOT STARTED — NOT a source lane — serialized blocker remediation while PILOT-2LANE-01 is PAUSED — Plan: `docs/GATEWAY-TEST-FIXTURE-01-PLAN.md`
+**Status:** COMPLETE AND LOCKED — PASS — 2026-08-24 — Class 1 REPAIRED / GREEN — Class 2 UNRESOLVED / SEPARATE TASK REQUIRED / NOT REGISTERED HERE — Checkpoint: `docs/GATEWAY-TEST-FIXTURE-01-CHECKPOINT.md` — PILOT-2LANE-01 remains PAUSED / NOT LOCKED / RESUME_AUTHORIZED=NO
 **Task ID:** GATEWAY-TEST-FIXTURE-01
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Lifecycle:** 3-step — Step 1 registration + exact failure/root-cause/scope freeze; Step 2 test-fixture implementation + verification (three sequential batches A/B/C); Step 3 consolidation/checkpoint/lock (PILOT Step 4 resume is NOT authorized by this task alone)
@@ -71289,5 +71289,32 @@ Tests:       83 failed, 6 skipped, 2032 passed, 2121 total
 **Preserved state:** PILOT-2LANE-01 PAUSED / NOT LOCKED. AGENT-PLATFORM-CREATE-01C LANE-DONE / NOT LOCKED. I18N-SHELL-06 LANE-DONE / NOT LOCKED. Lane 3 DISABLED. PRIVATE-BETA-INVITE-01 PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. LIVE_STAGING_VALIDATED=YES. BUILDER_PRIVATE_BETA_READINESS=GO. All runtime authorization flags NO.
 
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, gates=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, tests executed=YES (one non-live gateway jest --runInBand), Git mutations=0, PRD.md=0, ARCHITECTURE.md=0, Lane 3=DISABLED, invitation registration=0, PILOT Step 4 resumed=NO.
+
+**Step 2 (implementation, independently verified in Step 3):** five frozen Class 1 test files repaired in-place. PRODUCTION_SOURCE_FILES_CHANGED=0. No config/package/migration/PRD/ARCHITECTURE edits. Runtime=0.
+
+**Step 3 (2026-08-24) independent verification + lock:**
+
+Fresh targeted:
+- Batch A: 2 suites / 20 tests PASS (`auth.service.verify.spec.ts` + `auth.service.reset.spec.ts`)
+- Batch B: 1 suite / 6 tests PASS (`users.integration.spec.ts`)
+- Batch C: 2 suites / 35 tests PASS (`ai-execution-idempotency.integration.spec.ts` + `execution-safety.integration.spec.ts`)
+- Combined Class 1: 5 suites / 61 tests / 0 failures PASS
+- Gateway `npm run build`: PASS
+- `git diff --check`: PASS
+- Broad diagnostic (`npx jest --testPathIgnorePatterns=smoke.integration.spec.ts --runInBand`): 4 failed, 1 skipped, 163 passed, 167 of 168 suites; 22 failed, 6 skipped, 2093 passed, 2121 tests. Remaining failures are EXACTLY the four Class 2 suites. Failure class remains PRE_EXISTING_LIVE_TYPEORM_FORROOT_IN_NONLIVE_JEST. New failure class=NO. Class 1 failing suites=0.
+
+**Class 1:** REPAIRED / GREEN
+**Class 2:** UNRESOLVED / SEPARATE TASK REQUIRED / NOT REGISTERED HERE
+**PILOT-2LANE-01:** PAUSED / NOT LOCKED / RESUME_AUTHORIZED=NO
+**AGENT-PLATFORM-CREATE-01C:** LANE-DONE / NOT LOCKED
+**I18N-SHELL-06:** LANE-DONE / NOT LOCKED
+**Lane 3:** DISABLED
+**PRIVATE-BETA-INVITE-01:** PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED
+
+**NEXT REQUIRED LIFECYCLE:** separate Class 2 non-live TypeORM/Jest repair registration. Do not invent/freeze that identifier here.
+
+**Checkpoint:** `docs/GATEWAY-TEST-FIXTURE-01-CHECKPOINT.md`
+
+**Step 3 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, gates=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend=0, backend production edits=0, tests executed=YES (Batch A/B/C + combined five + one non-live broad diagnostic), dependencies=0, PRD.md=0, ARCHITECTURE.md=0, Git mutations=0, Lane 3=DISABLED, invitation registration=0, Class 2 repaired=0, Class 2 registered=NO, PILOT Step 4 resumed=NO.
 
 

@@ -3,25 +3,34 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { UnauthorizedException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from '../../entities/user.entity';
+import { Plan } from '../../entities/plan.entity';
 import { QuotaService } from '../../quota/quota.service';
+import { SessionCookieGuard } from '../../auth/session-cookie.guard';
+import { SnapshotPersistenceService } from '../../snapshots/snapshot-persistence.service';
 import { UsersController } from '../users.controller';
 import { UsersService } from '../users.service';
 
 describe('UsersController Integration (TASK-68B-2)', () => {
   let controller: UsersController;
   let userRepository: jest.Mocked<Repository<User>>;
+  let planRepository: jest.Mocked<Repository<Plan>>;
   let quotaService: jest.Mocked<QuotaService>;
 
   beforeEach(async () => {
     const mockUserRepository = {
       findOne: jest.fn(),
     };
-
+    const mockPlanRepository = {
+      findOne: jest.fn(),
+    };
     const mockQuotaService = {
       getActiveSessionCount: jest.fn(),
       getRolling24hSessionCount: jest.fn(),
       getRolling24hTokenUsage: jest.fn(),
       getOldestUsageIn24h: jest.fn(),
+    };
+    const mockSnapshotPersistenceService = {
+      listSnapshots: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -33,15 +42,34 @@ describe('UsersController Integration (TASK-68B-2)', () => {
           useValue: mockUserRepository,
         },
         {
+          provide: getRepositoryToken(Plan),
+          useValue: mockPlanRepository,
+        },
+        {
           provide: QuotaService,
           useValue: mockQuotaService,
         },
+        {
+          provide: SnapshotPersistenceService,
+          useValue: mockSnapshotPersistenceService,
+        },
       ],
-    }).compile();
+    })
+      .overrideGuard(SessionCookieGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get<UsersController>(UsersController);
     userRepository = module.get(getRepositoryToken(User));
+    planRepository = module.get(getRepositoryToken(Plan));
     quotaService = module.get(QuotaService);
+    planRepository.findOne.mockResolvedValue({
+      code: 'free',
+      name: 'Free',
+      maxActiveSessions: 5,
+      maxSessions24h: 20,
+      maxTokens24h: 100000,
+    } as Plan);
   });
 
   afterEach(() => {
@@ -53,6 +81,8 @@ describe('UsersController Integration (TASK-68B-2)', () => {
       id: 'user-1',
       email: 'user@example.com',
       createdAt: new Date('2026-03-10T10:00:00.000Z'),
+      planType: 'free',
+      planStatus: 'active',
     } as User);
 
     const result = await controller.getCurrentUser({
@@ -63,6 +93,9 @@ describe('UsersController Integration (TASK-68B-2)', () => {
       userId: 'user-1',
       email: 'user@example.com',
       createdAt: '2026-03-10T10:00:00.000Z',
+      planCode: 'free',
+      planName: 'Free',
+      planStatus: 'active',
     });
   });
 
@@ -71,6 +104,8 @@ describe('UsersController Integration (TASK-68B-2)', () => {
       id: 'user-1',
       email: 'user@example.com',
       createdAt: new Date('2026-03-10T10:00:00.000Z'),
+      planType: 'free',
+      planStatus: 'active',
     } as User);
     quotaService.getActiveSessionCount.mockResolvedValue(3);
     quotaService.getRolling24hSessionCount.mockResolvedValue(8);
@@ -94,6 +129,8 @@ describe('UsersController Integration (TASK-68B-2)', () => {
       id: 'user-1',
       email: 'user@example.com',
       createdAt: new Date('2026-03-10T10:00:00.000Z'),
+      planType: 'free',
+      planStatus: 'active',
     } as User);
     quotaService.getActiveSessionCount.mockResolvedValue(2);
     quotaService.getRolling24hSessionCount.mockResolvedValue(5);
@@ -127,6 +164,8 @@ describe('UsersController Integration (TASK-68B-2)', () => {
       id: 'user-1',
       email: 'user@example.com',
       createdAt: new Date('2026-03-10T10:00:00.000Z'),
+      planType: 'free',
+      planStatus: 'active',
     } as User);
     quotaService.getActiveSessionCount.mockResolvedValue(0);
     quotaService.getRolling24hSessionCount.mockResolvedValue(0);

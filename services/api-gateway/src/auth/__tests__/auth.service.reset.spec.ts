@@ -2,6 +2,7 @@ import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import { DataSource } from 'typeorm';
 import { AuthService } from '../auth.service';
 import { User } from '../../entities/user.entity';
 import { AuthSession } from '../../entities/auth-session.entity';
@@ -44,6 +45,10 @@ describe('AuthService password reset logic', () => {
     sendEmail: jest.fn().mockResolvedValue(undefined),
   };
 
+  const mockDataSource = {
+    transaction: jest.fn(),
+  };
+
   beforeAll(() => {
     originalAppBaseUrl = process.env.APP_BASE_URL;
   });
@@ -77,6 +82,10 @@ describe('AuthService password reset logic', () => {
         {
           provide: getRepositoryToken(VerificationToken),
           useValue: mockVerificationTokenRepository,
+        },
+        {
+          provide: DataSource,
+          useValue: mockDataSource,
         },
         {
           provide: EMAIL_PROVIDER,

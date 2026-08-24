@@ -2,15 +2,42 @@ import { UnauthorizedException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { createHash } from 'crypto';
+import { DataSource, EntityManager } from 'typeorm';
 import { AppleProfileInput, AuthService, GoogleProfileInput } from '../auth.service';
 import { User } from '../../entities/user.entity';
 import { AuthSession } from '../../entities/auth-session.entity';
+import { CreditBalance } from '../../entities/credit-balance.entity';
 import { OauthAccount } from '../../entities/oauth-account.entity';
 import { VerificationToken } from '../../entities/verification-token.entity';
 import { EMAIL_PROVIDER } from '../../email/email-provider.interface';
 
+type MockTransactionManager = {
+  create: jest.Mock;
+  save: jest.Mock;
+};
+
+const buildTransactionManager = (userId = 'tx-user-1'): MockTransactionManager => ({
+  create: jest.fn((_entity: unknown, value: Record<string, unknown>) => ({ ...value })),
+  save: jest.fn(async (entity: unknown, value: Record<string, unknown>) => {
+    if (entity === User) {
+      return { id: userId, ...value };
+    }
+    if (entity === CreditBalance) {
+      return { id: 'tx-balance-1', ...value };
+    }
+    if (entity === OauthAccount) {
+      return { id: 'tx-oauth-1', ...value };
+    }
+    if (entity === VerificationToken) {
+      return { id: 'tx-token-1', ...value };
+    }
+    return value;
+  }),
+});
+
 describe('AuthService email verification logic', () => {
   let service: AuthService;
+  let transactionManager: MockTransactionManager;
 
   const mockUserRepository = {
     findOne: jest.fn(),
@@ -43,6 +70,10 @@ describe('AuthService email verification logic', () => {
     sendEmail: jest.fn().mockResolvedValue(undefined),
   };
 
+  const mockDataSource = {
+    transaction: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -64,6 +95,10 @@ describe('AuthService email verification logic', () => {
           useValue: mockVerificationTokenRepository,
         },
         {
+          provide: DataSource,
+          useValue: mockDataSource,
+        },
+        {
           provide: EMAIL_PROVIDER,
           useValue: mockEmailProvider,
         },
@@ -75,6 +110,11 @@ describe('AuthService email verification logic', () => {
     mockUserRepository.create.mockImplementation((value) => value);
     mockOauthAccountRepository.create.mockImplementation((value) => value);
     mockVerificationTokenRepository.create.mockImplementation((value) => value);
+    transactionManager = buildTransactionManager();
+    mockDataSource.transaction.mockImplementation(
+      async (callback: (manager: EntityManager) => Promise<unknown>) =>
+        callback(transactionManager as unknown as EntityManager),
+    );
   });
 
   it('generateAndStoreVerificationToken stores hash (not raw) and returns base64url token', async () => {
@@ -250,10 +290,17 @@ describe('AuthService email verification logic', () => {
 
     const result = await service.register('register@example.com', 'password123', 'zh-CN');
 
-    expect(generateSpy).toHaveBeenCalledWith('user-6', 'email_verify', 24 * 60 * 60 * 1000, 'zh-CN');
+    expect(mockDataSource.transaction).toHaveBeenCalledTimes(1);
+    expect(generateSpy).toHaveBeenCalledWith(
+      'tx-user-1',
+      'email_verify',
+      24 * 60 * 60 * 1000,
+      'zh-CN',
+      transactionManager,
+    );
     expect(sendSpy).toHaveBeenCalledWith('register@example.com', 'register-token', 'zh-CN');
     expect(result).toEqual({
-      id: 'user-6',
+      id: 'tx-user-1',
       email: 'register@example.com',
       role: 'user',
       plan_type: 'free',
@@ -287,7 +334,9 @@ describe('AuthService email verification logic', () => {
 
     await service.findOrCreateGoogleUser(googleProfile());
 
-    expect(mockUserRepository.create).toHaveBeenCalledWith(
+    expect(mockDataSource.transaction).toHaveBeenCalledTimes(1);
+    expect(transactionManager.create).toHaveBeenCalledWith(
+      User,
       expect.objectContaining({
         authProvider: 'google',
         emailVerified: true,
@@ -306,7 +355,9 @@ describe('AuthService email verification logic', () => {
 
     await service.findOrCreateAppleUser(appleProfile());
 
-    expect(mockUserRepository.create).toHaveBeenCalledWith(
+    expect(mockDataSource.transaction).toHaveBeenCalledTimes(1);
+    expect(transactionManager.create).toHaveBeenCalledWith(
+      User,
       expect.objectContaining({
         authProvider: 'apple',
         emailVerified: true,
@@ -329,7 +380,9 @@ describe('AuthService email verification logic', () => {
       }),
     );
 
-    expect(mockUserRepository.create).toHaveBeenCalledWith(
+    expect(mockDataSource.transaction).toHaveBeenCalledTimes(1);
+    expect(transactionManager.create).toHaveBeenCalledWith(
+      User,
       expect.objectContaining({
         authProvider: 'apple',
         emailVerified: true,
