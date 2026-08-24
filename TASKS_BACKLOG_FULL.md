@@ -70886,7 +70886,7 @@ PRIVATE-BETA-INVITE-01 registration = 0
 
 ### GOV-PRD-02: Product Reconciliation
 
-**Status:** ACTIVE — Step 1 COMPLETE — 2026-08-24
+**Status:** ACTIVE — Step 1 COMPLETE — Step 2 COMPLETE — 2026-08-24
 **Task ID:** GOV-PRD-02
 **Title:** Product Reconciliation
 **Family:** GOVERNANCE / PRODUCT / CURRENT-VS-FUTURE RECONCILIATION
@@ -70953,9 +70953,9 @@ Reconcile accumulated product decisions and ideas into `PRD.md` with hard CURREN
 - First genuine 2-source-lane pilot NOT REGISTERED
 - PRIVATE-BETA-INVITE-01 remains PARKED
 
-**Step 2 — PRD drift/gap/idea inventory** (PENDING)
+**Step 2 — PRD drift/gap/idea inventory** (COMPLETE — 2026-08-24)
 
-Read-only inventory against the frozen source map. PRD.md not edited.
+Read-only inventory against the frozen source map. All F-items resolved from source (specialist names with "Agent" suffix per i18n; coming-soon = UI label not beta promise; Legal Advisor APPROVED_FUTURE; Apple OAuth DEFERRED same as Google; named connectors = FUTURE knowledge source types; Create Agent = persist/list/view only; Ask/Build = canonical user-facing modes; credit deduction Ask-at-completion / Build-after-qualifying-apply; support channel required before invite; ainow.biz lowercase / Builder Agent title case). CURRENT product inventory: 21 capabilities verified. Limited-private-beta scope frozen. Approved FUTURE inventory: 25 items classified. PRD drift table: 18 material issues. Supersession table: 10 items. Bounded Step 3 edit plan produced (Strategy A — minimal patches + one new beta-scope section). Stage-start: `docs/GOV-PRD-02-STAGE-START.md`. PRD.md not edited. ARCHITECTURE.md not edited. PRIVATE-BETA-INVITE-01 remains PARKED.
 
 **Step 3 — Reconcile / update authoritative PRD.md** (PENDING)
 
