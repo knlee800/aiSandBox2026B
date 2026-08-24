@@ -70576,7 +70576,7 @@ Git mutations = 0
 
 ### GOV-ARCH-02: Architecture Reconciliation
 
-**Status:** ACTIVE — Step 1 COMPLETE — 2026-08-23
+**Status:** ACTIVE — Step 1 COMPLETE — Step 2 COMPLETE — 2026-08-23
 **Task ID:** GOV-ARCH-02
 **Title:** Architecture Reconciliation
 **Family:** GOVERNANCE / ARCHITECTURE / CURRENT-VS-FUTURE RECONCILIATION
@@ -70593,7 +70593,7 @@ Git mutations = 0
 - GOV-ARCH-01 — COMPLETE AND LOCKED — 2026-08-10 — last ARCHITECTURE.md reconciliation baseline
 **Primary write scope:**
 - Step 1: `TASKS.md` CURRENT EXECUTION BOARD above LEGACY / FROZEN only; this canonical registry entry; `docs/GOV-ARCH-02-SOURCE-MAP.md`
-- Step 2: architecture-gap inventory artifact only (no ARCHITECTURE.md write)
+- Step 2: `docs/GOV-ARCH-02-STAGE-START.md` architecture-gap inventory + Step 3 edit plan only (no ARCHITECTURE.md write)
 - Step 3: `ARCHITECTURE.md` plus governance/checkpoint documents only
 - Step 4: checkpoint + board/registry lock
 **Mutexes / resources:** GOVERNANCE (owned by GOV-ARCH-02 while ACTIVE). All runtime resources remain UNOWNED.
@@ -70604,11 +70604,13 @@ Git mutations = 0
 **Assigned lane:** Lane 1 (GOVERNANCE occupancy; not an implementation lane). Lane 2 EMPTY. Lane 3 DISABLED.
 **Identifier confirmation:** YES — already planned successor ID from GOV-OS-01 §26 / GOV-OS-01-CHECKPOINT §38 / GO-NO-GO-01 next-sequence. Repo-wide search found no prior registration. ID not invented.
 **Source map:** `docs/GOV-ARCH-02-SOURCE-MAP.md`
+**Stage-start:** `docs/GOV-ARCH-02-STAGE-START.md`
 **Predecessor GOV-ARCH-01 residual mandate:** post-03D–03J technical reconciliation remained pending and unregistered until this task.
 
 **Application behavior change:** NONE
 **Runtime/schema/migration change:** NONE
 **ARCHITECTURE.md change in Step 1:** NONE
+**ARCHITECTURE.md change in Step 2:** NONE
 **PRD.md change:** NONE in this lifecycle (WHAT drift → GOV-PRD-02)
 
 ---
@@ -70627,7 +70629,7 @@ Reconcile accumulated technical architecture decisions into `ARCHITECTURE.md` wi
 
 #### Lifecycle Steps
 
-**Step 1 — Registration + source-map freeze** (THIS STEP — COMPLETE — 2026-08-23)
+**Step 1 — Registration + source-map freeze** (COMPLETE — 2026-08-23)
 
 - Identifier confirmed GOV-ARCH-02
 - Registered on TASKS.md CURRENT EXECUTION BOARD (Lane 1 ACTIVE)
@@ -70639,9 +70641,9 @@ Reconcile accumulated technical architecture decisions into `ARCHITECTURE.md` wi
 - PRD.md not edited
 - PRIVATE-BETA-INVITE-01 remains PARKED
 
-**Step 2 — Architecture drift/gap inventory** (PENDING)
+**Step 2 — Architecture drift/gap inventory** (COMPLETE — 2026-08-23)
 
-Read-only inventory against the frozen source map. Do not edit ARCHITECTURE.md. Resolve UNKNOWN/CONFLICTING items by source inspection. Produce the Step 3 edit plan.
+Read-only inventory against the frozen source map. ARCHITECTURE.md not edited. F-items resolved from source. Stage-start: `docs/GOV-ARCH-02-STAGE-START.md`. Bounded Step 3 edit plan frozen. Product-WHAT remains deferred to GOV-PRD-02 (not registered).
 
 **Step 3 — Reconcile / update authoritative ARCHITECTURE.md** (PENDING)
 
@@ -70694,6 +70696,7 @@ PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUT
 - All runtime authorization flags remain NO
 - All runtime resources remain UNOWNED
 - ARCHITECTURE.md edits in Step 1 = 0
+- ARCHITECTURE.md edits in Step 2 = 0
 - PRD.md edits = 0
 - No subagents
 - No worktrees or branches
@@ -70711,7 +70714,7 @@ Step 1 (Registration + source-map freeze):
 - [x] Lane 2 = EMPTY
 - [x] Lane 3 = DISABLED
 - [x] Step 1 = COMPLETE
-- [x] Step 2 = PENDING
+- [x] Step 2 = COMPLETE
 - [x] Step 3 = PENDING
 - [x] Step 4 = PENDING
 - [x] `docs/GOV-ARCH-02-SOURCE-MAP.md` created and frozen
@@ -70726,14 +70729,29 @@ Step 1 (Registration + source-map freeze):
 - [x] All runtime resources UNOWNED
 - [x] Activity ledger all zeros except allowed governance writes
 
-Step 2 / Step 3 / Step 4: PENDING
+Step 2 (Architecture drift/gap inventory):
+- [x] Read-only inventory against `docs/GOV-ARCH-02-SOURCE-MAP.md`
+- [x] F-items resolved from repository source (AI port, idle timeout, user_agents, confirm-build-apply, coordinator)
+- [x] CURRENT topology / Builder flow / credit / checkpoint / preview / harness / auth / billing inventoried
+- [x] Drift/gap table and supersession table frozen
+- [x] Bounded Step 3 ARCHITECTURE.md edit plan produced
+- [x] `docs/GOV-ARCH-02-STAGE-START.md` created
+- [x] ARCHITECTURE.md not edited
+- [x] PRD.md not edited
+- [x] GOV-PRD-02 not registered
+- [x] 2-source-lane pilot not registered
+- [x] PRIVATE-BETA-INVITE-01 remains parked
+- [x] Step 3 can proceed without runtime evidence = YES
+
+Step 3 / Step 4: PENDING
 
 ---
 
-**GOV-ARCH-02 status:** ACTIVE — Step 1 COMPLETE — 2026-08-23
-**Current Stage:** Step 1 — Registration + source-map freeze — COMPLETE
-**Exact next step:** GOV-ARCH-02 Step 2 — Architecture drift/gap inventory
+**GOV-ARCH-02 status:** ACTIVE — Step 1 COMPLETE — Step 2 COMPLETE — 2026-08-23
+**Current Stage:** Step 2 — Architecture drift/gap inventory — COMPLETE
+**Exact next step:** GOV-ARCH-02 Step 3 — Reconcile / update authoritative ARCHITECTURE.md
 **Source map:** `docs/GOV-ARCH-02-SOURCE-MAP.md`
+**Stage-start:** `docs/GOV-ARCH-02-STAGE-START.md`
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED / PARKED / NOT EXECUTABLE
 **GOV-PRD-02:** NOT REGISTERED
 **2-source-lane pilot:** NOT REGISTERED
@@ -70749,6 +70767,26 @@ provider = 0
 credits = 0
 gates = 0
 runtime = 0
+product = 0
+frontend = 0
+backend/services = 0
+dependencies = 0
+ARCHITECTURE.md edits = 0
+PRD.md edits = 0
+Git mutations = 0
+```
+
+Step 2 activity ledger:
+```
+LIVE = 0
+SSH = 0
+staging = 0
+provider = 0
+credits = 0
+gates = 0
+runtime mutation = 0
+database mutation = 0
+migrations executed = 0
 product = 0
 frontend = 0
 backend/services = 0
