@@ -8577,6 +8577,232 @@ describe('recovery copy locale migration wiring — I18N-SHELL-05', () => {
   });
 });
 
+describe('state message heading/action locale migration — I18N-SHELL-06', () => {
+  const requiredHeadingKeys = [
+    'editorClean',
+    'editorDirty',
+    'savingFile',
+    'fileSaved',
+    'saveFailed',
+    'editorLoading',
+    'noFileAvailable',
+    'editorUnavailable',
+    'editorReady',
+    'execIdle',
+    'commandRunning',
+    'invalidCommand400',
+    'execRequestFailed',
+    'execResultUnavailable',
+    'commandSucceeded',
+    'commandFailed',
+    'previewLoading',
+    'previewReady',
+    'previewUnavailable',
+    'historyIsLoading',
+    'historyUnavailable',
+    'noCheckpointsYet',
+    'historyReady',
+    'savePointIdle',
+    'creatingSavePoint',
+    'savePointCreated',
+    'savePointFailed',
+    'compareModeIdle',
+    'compareModeSelecting',
+    'compareModeLoading',
+    'compareModeReady',
+    'compareModeFailed',
+    'diffViewerIdle',
+    'loadingCheckpointDiff',
+    'checkpointDiffReady',
+    'noDiffChanges',
+    'checkpointDiffFailed',
+    'snapshotViewerIdle',
+    'loadingCheckpointSnapshot',
+    'checkpointSnapshotReady',
+    'noSnapshotContent',
+    'checkpointSnapshotFailed',
+    'openInLiveWorkspaceIdle',
+    'openingLiveWorkspaceFile',
+    'liveWorkspaceFileOpened',
+    'liveFileUnavailable',
+    'openInLiveWorkspaceFailed',
+    'revertIdle',
+    'revertConfirming',
+    'revertPreviewing',
+    'revertingWorkspace',
+    'workspaceReverted',
+    'revertFailed',
+    'dashboardIsLoading',
+    'dashboardUnavailable',
+    'noDashboardDataYet',
+    'dashboardReady',
+    'workspaceIsLoading',
+    'workspaceUnavailable',
+    'workspaceReady',
+  ] as const;
+
+  const requiredActionKeys = [
+    'editContentToCreatePendingChanges',
+    'chooseSaveToWriteChanges',
+    'waitForSaveToComplete',
+    'continueEditingOrSelectAnotherFile',
+    'retrySaveForThisFile',
+    'waitForFileNavigationToFinishLoading',
+    'chooseAFileFromTheListToViewContent',
+    'enterACommandAndChooseRun',
+    'waitForExecResult',
+    'updateTheCommandAndRetry',
+    'retryThisCommand',
+    'reviewStdoutAndStderrBelow',
+    'reviewStderrAndRetryIfNeeded',
+    'waitForPreviewToFinishLoading',
+    'useRefreshToReloadOnlyThisPreview',
+    'chooseStartPreviewThenUseRefreshIfNeeded',
+    'pleaseWaitAMoment',
+    'trySelectingTheSessionAgain',
+    'runAWorkspaceActionToCreateTheFirstCheckpoint',
+    'chooseACheckpointToInspectDetails',
+    'optionallyAddAShortDescriptionThenChooseSavePoint',
+    'waitForCompletion',
+    'historyListIsRefreshedForThisWorkspace',
+    'retrySavePointForTheCurrentWorkspace',
+    'compareModeRunsOnlyInsideThisHistorySurface',
+    'chooseBothCheckpointsThenRunCompare',
+    'waitForComparedDiffResult',
+    'useChangedFileSummaryAndDiffNavigationBelow',
+    'updateBaseTargetSelectionsAndRetry',
+    'diffFetchIsRequestDrivenAndScopedToSelectedSessionCheckpoint',
+    'waitForDiffContentToLoad',
+    'reviewChangedFilesAndPatchTextBelow',
+    'chooseAnotherCheckpointToInspect',
+    'retryViewDiffForThisCheckpoint',
+    'snapshotViewIsReadOnlyAndNeverEditsWorkspaceFiles',
+    'waitForReadOnlySnapshotContent',
+    'reviewSnapshotExcerptBelowWithoutRestoringWorkspace',
+    'retryViewSnapshotForThisCheckpoint',
+    'thisActionOnlySwitchesFocusToAnExistingLiveFile',
+    'waitForLiveFileContentToLoad',
+    'continueEditingInTheLiveWorkspaceEditor',
+    'noRestoreRevertOrFileWriteWasPerformed',
+    'selectAnActiveSessionAndRetryWithAFileThatExists',
+    'revertRequestsRequireConfirmationBeforeSubmission',
+    'chooseConfirmRevertToProceedOrCancel',
+    'useContinueToConfirmThenConfirmRevert',
+    'waitForCheckpointEditorAndPreviewSurfacesToRefresh',
+    'continueFromTheUpdatedCheckpointState',
+    'retryRevertFromACheckpointEntry',
+    'refreshThisPageToRetry',
+    'createOrSelectASessionThenRetry',
+    'reviewActiveSessionsAndQuotaUsage',
+    'continueWithProjectWorkAndHistoryReview',
+  ] as const;
+
+  test('locale files define required stateMessage heading and action keys in en, zh-TW, and zh-CN', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+    const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
+    const zhCn = JSON.parse(readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'));
+
+    assert.equal(requiredHeadingKeys.length, 60);
+    assert.equal(requiredActionKeys.length, 53);
+    assert.deepEqual(Object.keys(en.stateMessage?.heading ?? {}).sort(), [...requiredHeadingKeys].sort());
+    assert.deepEqual(Object.keys(zhTw.stateMessage?.heading ?? {}).sort(), [...requiredHeadingKeys].sort());
+    assert.deepEqual(Object.keys(zhCn.stateMessage?.heading ?? {}).sort(), [...requiredHeadingKeys].sort());
+    assert.deepEqual(Object.keys(en.stateMessage?.action ?? {}).sort(), [...requiredActionKeys].sort());
+    assert.deepEqual(Object.keys(zhTw.stateMessage?.action ?? {}).sort(), [...requiredActionKeys].sort());
+    assert.deepEqual(Object.keys(zhCn.stateMessage?.action ?? {}).sort(), [...requiredActionKeys].sort());
+
+    for (const key of requiredHeadingKeys) {
+      assert.ok(typeof en.stateMessage?.heading?.[key] === 'string' && en.stateMessage.heading[key].length > 0);
+      assert.ok(typeof zhTw.stateMessage?.heading?.[key] === 'string' && zhTw.stateMessage.heading[key].length > 0);
+      assert.ok(typeof zhCn.stateMessage?.heading?.[key] === 'string' && zhCn.stateMessage.heading[key].length > 0);
+      assert.notEqual(zhTw.stateMessage.heading[key], en.stateMessage.heading[key]);
+      assert.notEqual(zhCn.stateMessage.heading[key], en.stateMessage.heading[key]);
+    }
+
+    for (const key of requiredActionKeys) {
+      assert.ok(typeof en.stateMessage?.action?.[key] === 'string' && en.stateMessage.action[key].length > 0);
+      assert.ok(typeof zhTw.stateMessage?.action?.[key] === 'string' && zhTw.stateMessage.action[key].length > 0);
+      assert.ok(typeof zhCn.stateMessage?.action?.[key] === 'string' && zhCn.stateMessage.action[key].length > 0);
+      assert.notEqual(zhTw.stateMessage.action[key], en.stateMessage.action[key]);
+      assert.notEqual(zhCn.stateMessage.action[key], en.stateMessage.action[key]);
+    }
+  });
+
+  test('English stateMessage heading and action values preserve the frozen original literals', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+
+    assert.equal(en.stateMessage.heading.editorClean, 'Editor clean');
+    assert.equal(en.stateMessage.heading.compareModeIdle, 'Compare mode idle');
+    assert.equal(en.stateMessage.heading.workspaceIsLoading, 'Workspace is loading');
+    assert.equal(en.stateMessage.heading.savePointIdle, 'Save point idle');
+    assert.equal(en.stateMessage.heading.revertIdle, 'Revert idle');
+    assert.equal(en.stateMessage.action.pleaseWaitAMoment, 'Please wait a moment.');
+    assert.equal(en.stateMessage.action.editContentToCreatePendingChanges, 'Edit content to create pending changes.');
+    assert.equal(
+      en.stateMessage.action.thisActionOnlySwitchesFocusToAnExistingLiveFile,
+      'This action only switches focus to an existing live file and never restores checkpoint content.',
+    );
+  });
+
+  test('workspace shell source wires getStateMessageMessages and removes hardcoded heading/action literals', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+
+    assert.match(
+      shellSource,
+      /function getStateMessageMessages\(locale: string\): typeof enMessages\.stateMessage \{/,
+    );
+    assert.match(shellSource, /if \(locale === 'zh-TW'\) return zhTwMessages\.stateMessage;/);
+    assert.match(shellSource, /if \(locale === 'zh-CN'\) return zhCnMessages\.stateMessage;/);
+    assert.match(shellSource, /return enMessages\.stateMessage;/);
+    assert.match(shellSource, /let stateMessageCopy = getStateMessageMessages\('en'\);/);
+    assert.match(
+      shellSource,
+      /const stateMessageMessages = React\.useMemo\(\(\) => getStateMessageMessages\(locale\), \[locale\]\);/,
+    );
+    assert.match(shellSource, /stateMessageCopy = stateMessageMessages;/);
+    assert.match(shellSource, /heading=\{stateMessageCopy\.heading\.editorClean\}/);
+    assert.match(shellSource, /action=\{stateMessageCopy\.action\.pleaseWaitAMoment\}/);
+
+    assert.equal((shellSource.match(/ heading="/g) || []).length, 0);
+    assert.equal((shellSource.match(/ action="/g) || []).length, 0);
+    assert.equal((shellSource.match(/ body="/g) || []).length, 30);
+  });
+
+  test('renders localized StateMessage headings for zh-TW without changing English default copy', () => {
+    const englishHtml = renderWorkspaceShell({
+      isLoadingSessions: true,
+      userId: null,
+      checkpoints: [],
+      isLoadingHistory: true,
+      userSummary: null,
+      usageSummary: null,
+      quotaSummary: null,
+      isLoadingDashboard: true,
+    });
+    const zhTwHtml = renderWorkspaceShell({
+      locale: 'zh-TW',
+      isLoadingSessions: true,
+      userId: null,
+      checkpoints: [],
+      isLoadingHistory: true,
+      userSummary: null,
+      usageSummary: null,
+      quotaSummary: null,
+      isLoadingDashboard: true,
+    });
+
+    assert.match(englishHtml, /Workspace is loading/);
+    assert.match(englishHtml, /History is loading/);
+    assert.match(englishHtml, /Dashboard is loading/);
+    assert.match(zhTwHtml, /工作區載入中/);
+    assert.match(zhTwHtml, /歷史載入中/);
+    assert.match(zhTwHtml, /儀表板載入中/);
+    assert.doesNotMatch(zhTwHtml, /Workspace is loading/);
+    assert.doesNotMatch(zhTwHtml, /History is loading/);
+    assert.doesNotMatch(zhTwHtml, /Dashboard is loading/);
+  });
+});
+
 describe('auth module i18n wiring — I18N-PAGE-01', () => {
   test('locale files define required authModule keys', () => {
     const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));

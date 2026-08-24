@@ -136,6 +136,14 @@ function getAiMessages(locale: string): typeof enMessages.ai {
   return enMessages.ai;
 }
 
+function getStateMessageMessages(locale: string): typeof enMessages.stateMessage {
+  if (locale === 'zh-TW') return zhTwMessages.stateMessage;
+  if (locale === 'zh-CN') return zhCnMessages.stateMessage;
+  return enMessages.stateMessage;
+}
+
+let stateMessageCopy = getStateMessageMessages('en');
+
 export const PROJECT_AI_INSTRUCTIONS_MAX_LENGTH = 4000;
 export const REPO_DOC_PATH_MAX_LENGTH = 500;
 export const REPO_DOC_PICKER_MAX_CANDIDATES = 100;
@@ -819,6 +827,8 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const aiMessages = React.useMemo(() => getAiMessages(locale), [locale]);
   const recoveryMessages = React.useMemo(() => getRecoveryCopy(locale), [locale]);
   recoveryCopy = recoveryMessages;
+  const stateMessageMessages = React.useMemo(() => getStateMessageMessages(locale), [locale]);
+  stateMessageCopy = stateMessageMessages;
   const comingSoonLabel = React.useMemo(() => getTabMessages(locale).comingSoon, [locale]);
   const activeTabLabel = React.useMemo(
     () => tabBarTabs.find((tab) => tab.id === activeTabId)?.label ?? activeTabId,
@@ -4945,9 +4955,9 @@ function EditorSaveStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="Editor clean"
+        heading={stateMessageCopy.heading.editorClean}
         body="No unsaved file changes."
-        action="Edit content to create pending changes."
+        action={stateMessageCopy.action.editContentToCreatePendingChanges}
       />
     );
   }
@@ -4956,9 +4966,9 @@ function EditorSaveStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="Editor dirty"
+        heading={stateMessageCopy.heading.editorDirty}
         body="Unsaved changes are present for this file."
-        action="Choose Save to write changes."
+        action={stateMessageCopy.action.chooseSaveToWriteChanges}
       />
     );
   }
@@ -4967,9 +4977,9 @@ function EditorSaveStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="Saving file"
+        heading={stateMessageCopy.heading.savingFile}
         body="Save request is in flight for this file."
-        action="Wait for save to complete."
+        action={stateMessageCopy.action.waitForSaveToComplete}
       />
     );
   }
@@ -4978,9 +4988,9 @@ function EditorSaveStateMessage(props: {
     return (
       <StateMessage
         tone="success"
-        heading="File saved"
+        heading={stateMessageCopy.heading.fileSaved}
         body="File changes were saved successfully."
-        action="Continue editing or select another file."
+        action={stateMessageCopy.action.continueEditingOrSelectAnotherFile}
       />
     );
   }
@@ -4988,9 +4998,9 @@ function EditorSaveStateMessage(props: {
   return (
     <StateMessage
       tone="error"
-      heading="Save failed"
+      heading={stateMessageCopy.heading.saveFailed}
       body={props.errorMessage ?? 'File save request failed.'}
-      action="Retry save for this file."
+      action={stateMessageCopy.action.retrySaveForThisFile}
     />
   );
 }
@@ -5049,9 +5059,9 @@ function EditorStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="Editor loading"
+        heading={stateMessageCopy.heading.editorLoading}
         body={recoveryCopy.workspace.filesLoading}
-        action="Wait for file navigation to finish loading."
+        action={stateMessageCopy.action.waitForFileNavigationToFinishLoading}
       />
     );
   }
@@ -5060,7 +5070,7 @@ function EditorStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="No file available"
+        heading={stateMessageCopy.heading.noFileAvailable}
         body={recoveryCopy.workspace.noFilesAvailable}
         action={recoveryCopy.workspace.openOrReopenProject}
       />
@@ -5071,7 +5081,7 @@ function EditorStateMessage(props: {
     return (
       <StateMessage
         tone="error"
-        heading="Editor unavailable"
+        heading={stateMessageCopy.heading.editorUnavailable}
         body={props.errorMessage ?? 'Workspace file navigation failed to load.'}
         action={recoveryCopy.workspace.openOrReopenProject}
       />
@@ -5081,9 +5091,9 @@ function EditorStateMessage(props: {
   return (
     <StateMessage
       tone="success"
-      heading="Editor ready"
+      heading={stateMessageCopy.heading.editorReady}
       body={recoveryCopy.workspace.filesReady}
-      action="Choose a file from the list to view content."
+      action={stateMessageCopy.action.chooseAFileFromTheListToViewContent}
     />
   );
 }
@@ -5099,9 +5109,9 @@ function ExecStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="Exec idle"
+        heading={stateMessageCopy.heading.execIdle}
         body="Run commands inside the current workspace."
-        action="Enter a command and choose Run."
+        action={stateMessageCopy.action.enterACommandAndChooseRun}
       />
     );
   }
@@ -5110,9 +5120,9 @@ function ExecStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="Command running"
+        heading={stateMessageCopy.heading.commandRunning}
         body="Sending command to the current workspace."
-        action="Wait for exec result."
+        action={stateMessageCopy.action.waitForExecResult}
       />
     );
   }
@@ -5121,9 +5131,9 @@ function ExecStateMessage(props: {
     return (
       <StateMessage
         tone="error"
-        heading="Invalid command (400)"
+        heading={stateMessageCopy.heading.invalidCommand400}
         body="The command was rejected as empty or invalid."
-        action="Update the command and retry."
+        action={stateMessageCopy.action.updateTheCommandAndRetry}
       />
     );
   }
@@ -5172,9 +5182,9 @@ function ExecStateMessage(props: {
     return (
       <StateMessage
         tone="error"
-        heading="Exec request failed"
+        heading={stateMessageCopy.heading.execRequestFailed}
         body={execState.errorMessage ?? 'Network or unexpected error prevented command execution.'}
-        action="Retry this command."
+        action={stateMessageCopy.action.retryThisCommand}
       />
     );
   }
@@ -5183,9 +5193,9 @@ function ExecStateMessage(props: {
     return (
       <StateMessage
         tone="error"
-        heading="Exec result unavailable"
+        heading={stateMessageCopy.heading.execResultUnavailable}
         body="Command response could not be read."
-        action="Retry this command."
+        action={stateMessageCopy.action.retryThisCommand}
       />
     );
   }
@@ -5194,9 +5204,9 @@ function ExecStateMessage(props: {
     return (
       <StateMessage
         tone="success"
-        heading="Command succeeded"
+        heading={stateMessageCopy.heading.commandSucceeded}
         body={`exitCode: ${execState.result.exitCode}`}
-        action="Review stdout and stderr below."
+        action={stateMessageCopy.action.reviewStdoutAndStderrBelow}
       />
     );
   }
@@ -5204,9 +5214,9 @@ function ExecStateMessage(props: {
   return (
     <StateMessage
       tone="error"
-      heading="Command failed"
+      heading={stateMessageCopy.heading.commandFailed}
       body={`exitCode: ${execState.result.exitCode}`}
-      action="Review stderr and retry if needed."
+      action={stateMessageCopy.action.reviewStderrAndRetryIfNeeded}
     />
   );
 }
@@ -5260,9 +5270,9 @@ function PreviewStateMessage({
     return (
       <StateMessage
         tone="neutral"
-        heading="Preview loading"
+        heading={stateMessageCopy.heading.previewLoading}
         body={recoveryCopy.workspace.previewLoading}
-        action="Wait for preview to finish loading."
+        action={stateMessageCopy.action.waitForPreviewToFinishLoading}
       />
     );
   }
@@ -5271,9 +5281,9 @@ function PreviewStateMessage({
     return (
       <StateMessage
         tone="success"
-        heading="Preview ready"
+        heading={stateMessageCopy.heading.previewReady}
         body={recoveryCopy.workspace.previewReady}
-        action="Use Refresh to reload only this preview."
+        action={stateMessageCopy.action.useRefreshToReloadOnlyThisPreview}
       />
     );
   }
@@ -5282,9 +5292,9 @@ function PreviewStateMessage({
     return (
       <StateMessage
         tone="neutral"
-        heading="Preview unavailable"
+        heading={stateMessageCopy.heading.previewUnavailable}
         body={recoveryCopy.workspace.previewUnavailable}
-        action="Choose Start Preview, then use Refresh if needed."
+        action={stateMessageCopy.action.chooseStartPreviewThenUseRefreshIfNeeded}
       />
     );
   }
@@ -5323,9 +5333,9 @@ function HistorySliceMessage({ state }: { state: 'loading' | 'error' | 'empty' |
     return (
       <StateMessage
         tone="neutral"
-        heading="History is loading"
+        heading={stateMessageCopy.heading.historyIsLoading}
         body="Fetching checkpoint history for the selected session."
-        action="Please wait a moment."
+        action={stateMessageCopy.action.pleaseWaitAMoment}
       />
     );
   }
@@ -5334,9 +5344,9 @@ function HistorySliceMessage({ state }: { state: 'loading' | 'error' | 'empty' |
     return (
       <StateMessage
         tone="error"
-        heading="History unavailable"
+        heading={stateMessageCopy.heading.historyUnavailable}
         body="Unable to load checkpoint history."
-        action="Try selecting the session again."
+        action={stateMessageCopy.action.trySelectingTheSessionAgain}
       />
     );
   }
@@ -5345,9 +5355,9 @@ function HistorySliceMessage({ state }: { state: 'loading' | 'error' | 'empty' |
     return (
       <StateMessage
         tone="neutral"
-        heading="No checkpoints yet"
+        heading={stateMessageCopy.heading.noCheckpointsYet}
         body="No checkpoint history is available for this session."
-        action="Run a workspace action to create the first checkpoint."
+        action={stateMessageCopy.action.runAWorkspaceActionToCreateTheFirstCheckpoint}
       />
     );
   }
@@ -5355,9 +5365,9 @@ function HistorySliceMessage({ state }: { state: 'loading' | 'error' | 'empty' |
   return (
     <StateMessage
       tone="success"
-      heading="History ready"
+      heading={stateMessageCopy.heading.historyReady}
       body="Checkpoint history loaded."
-      action="Choose a checkpoint to inspect details."
+      action={stateMessageCopy.action.chooseACheckpointToInspectDetails}
     />
   );
 }
@@ -5420,13 +5430,13 @@ function HistoryCreateStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="Save point idle"
+        heading={stateMessageCopy.heading.savePointIdle}
         body={
           props.hasSelectedSession
             ? 'Create a manual save point for the current workspace.'
             : recoveryCopy.workspace.openProjectToCreateSavePoint
         }
-        action="Optionally add a short description, then choose Save Point."
+        action={stateMessageCopy.action.optionallyAddAShortDescriptionThenChooseSavePoint}
       />
     );
   }
@@ -5435,9 +5445,9 @@ function HistoryCreateStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="Creating save point"
+        heading={stateMessageCopy.heading.creatingSavePoint}
         body="Save point request is in flight for the current workspace."
-        action="Wait for completion."
+        action={stateMessageCopy.action.waitForCompletion}
       />
     );
   }
@@ -5446,9 +5456,9 @@ function HistoryCreateStateMessage(props: {
     return (
       <StateMessage
         tone="success"
-        heading="Save point created"
+        heading={stateMessageCopy.heading.savePointCreated}
         body="Manual checkpoint created successfully."
-        action="History list is refreshed for this workspace."
+        action={stateMessageCopy.action.historyListIsRefreshedForThisWorkspace}
       />
     );
   }
@@ -5456,9 +5466,9 @@ function HistoryCreateStateMessage(props: {
   return (
     <StateMessage
       tone="error"
-      heading="Save point failed"
+      heading={stateMessageCopy.heading.savePointFailed}
       body={props.errorMessage ?? 'Manual checkpoint creation failed.'}
-      action="Retry Save Point for the current workspace."
+      action={stateMessageCopy.action.retrySavePointForTheCurrentWorkspace}
     />
   );
 }
@@ -8116,13 +8126,13 @@ function HistoryCompareStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="Compare mode idle"
+        heading={stateMessageCopy.heading.compareModeIdle}
         body={
           props.hasSelectedSession
             ? 'Enter compare mode to select base and target checkpoints.'
             : recoveryCopy.workspace.openProjectToCompareHistory
         }
-        action="Compare mode runs only inside this history surface."
+        action={stateMessageCopy.action.compareModeRunsOnlyInsideThisHistorySurface}
       />
     );
   }
@@ -8131,11 +8141,11 @@ function HistoryCompareStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="Compare mode selecting"
+        heading={stateMessageCopy.heading.compareModeSelecting}
         body={`Base: ${props.hasBaseSelection ? 'selected' : 'not selected'}; Target: ${
           props.hasTargetSelection ? 'selected' : 'not selected'
         }.`}
-        action="Choose both checkpoints, then run compare."
+        action={stateMessageCopy.action.chooseBothCheckpointsThenRunCompare}
       />
     );
   }
@@ -8144,9 +8154,9 @@ function HistoryCompareStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="Compare mode loading"
+        heading={stateMessageCopy.heading.compareModeLoading}
         body="Compare request is in flight for selected checkpoint pair."
-        action="Wait for compared diff result."
+        action={stateMessageCopy.action.waitForComparedDiffResult}
       />
     );
   }
@@ -8155,9 +8165,9 @@ function HistoryCompareStateMessage(props: {
     return (
       <StateMessage
         tone="success"
-        heading="Compare mode ready"
+        heading={stateMessageCopy.heading.compareModeReady}
         body="Compared checkpoint diff is loaded."
-        action="Use changed-file summary and diff navigation below."
+        action={stateMessageCopy.action.useChangedFileSummaryAndDiffNavigationBelow}
       />
     );
   }
@@ -8165,9 +8175,9 @@ function HistoryCompareStateMessage(props: {
   return (
     <StateMessage
       tone="error"
-      heading="Compare mode failed"
+      heading={stateMessageCopy.heading.compareModeFailed}
       body={props.errorMessage ?? 'Checkpoint compare request failed.'}
-      action="Update base/target selections and retry."
+      action={stateMessageCopy.action.updateBaseTargetSelectionsAndRetry}
     />
   );
 }
@@ -8182,13 +8192,13 @@ function HistoryDiffStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="Diff viewer idle"
+        heading={stateMessageCopy.heading.diffViewerIdle}
         body={
           props.hasSelectedSession
             ? 'Select a checkpoint and choose View Diff.'
             : recoveryCopy.workspace.openProjectToInspectDiffs
         }
-        action="Diff fetch is request-driven and scoped to selected session checkpoint."
+        action={stateMessageCopy.action.diffFetchIsRequestDrivenAndScopedToSelectedSessionCheckpoint}
       />
     );
   }
@@ -8197,9 +8207,9 @@ function HistoryDiffStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="Loading checkpoint diff"
+        heading={stateMessageCopy.heading.loadingCheckpointDiff}
         body="Diff request is in flight for the selected checkpoint."
-        action="Wait for diff content to load."
+        action={stateMessageCopy.action.waitForDiffContentToLoad}
       />
     );
   }
@@ -8208,9 +8218,9 @@ function HistoryDiffStateMessage(props: {
     return (
       <StateMessage
         tone="success"
-        heading="Checkpoint diff ready"
+        heading={stateMessageCopy.heading.checkpointDiffReady}
         body="Diff content loaded for the selected checkpoint."
-        action="Review changed files and patch text below."
+        action={stateMessageCopy.action.reviewChangedFilesAndPatchTextBelow}
       />
     );
   }
@@ -8219,9 +8229,9 @@ function HistoryDiffStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="No diff changes"
+        heading={stateMessageCopy.heading.noDiffChanges}
         body="Selected checkpoint has no file diff entries."
-        action="Choose another checkpoint to inspect."
+        action={stateMessageCopy.action.chooseAnotherCheckpointToInspect}
       />
     );
   }
@@ -8229,9 +8239,9 @@ function HistoryDiffStateMessage(props: {
   return (
     <StateMessage
       tone="error"
-      heading="Checkpoint diff failed"
+      heading={stateMessageCopy.heading.checkpointDiffFailed}
       body={props.errorMessage ?? 'Checkpoint diff request failed.'}
-      action="Retry View Diff for this checkpoint."
+      action={stateMessageCopy.action.retryViewDiffForThisCheckpoint}
     />
   );
 }
@@ -8246,13 +8256,13 @@ function HistorySnapshotStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="Snapshot viewer idle"
+        heading={stateMessageCopy.heading.snapshotViewerIdle}
         body={
           props.hasSelectedSession
             ? 'Select a checkpoint and choose View Snapshot.'
             : recoveryCopy.workspace.openProjectToInspectSnapshots
         }
-        action="Snapshot view is read-only and never edits workspace files."
+        action={stateMessageCopy.action.snapshotViewIsReadOnlyAndNeverEditsWorkspaceFiles}
       />
     );
   }
@@ -8261,9 +8271,9 @@ function HistorySnapshotStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="Loading checkpoint snapshot"
+        heading={stateMessageCopy.heading.loadingCheckpointSnapshot}
         body="Snapshot request is in flight for the selected checkpoint."
-        action="Wait for read-only snapshot content."
+        action={stateMessageCopy.action.waitForReadOnlySnapshotContent}
       />
     );
   }
@@ -8272,9 +8282,9 @@ function HistorySnapshotStateMessage(props: {
     return (
       <StateMessage
         tone="success"
-        heading="Checkpoint snapshot ready"
+        heading={stateMessageCopy.heading.checkpointSnapshotReady}
         body="Read-only snapshot content loaded for changed files in selected checkpoint."
-        action="Review snapshot excerpt below without restoring workspace."
+        action={stateMessageCopy.action.reviewSnapshotExcerptBelowWithoutRestoringWorkspace}
       />
     );
   }
@@ -8283,9 +8293,9 @@ function HistorySnapshotStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="No snapshot content"
+        heading={stateMessageCopy.heading.noSnapshotContent}
         body="Selected checkpoint has no changed files available for snapshot inspection."
-        action="Choose another checkpoint to inspect."
+        action={stateMessageCopy.action.chooseAnotherCheckpointToInspect}
       />
     );
   }
@@ -8293,9 +8303,9 @@ function HistorySnapshotStateMessage(props: {
   return (
     <StateMessage
       tone="error"
-      heading="Checkpoint snapshot failed"
+      heading={stateMessageCopy.heading.checkpointSnapshotFailed}
       body={props.errorMessage ?? 'Checkpoint snapshot request failed.'}
-      action="Retry View Snapshot for this checkpoint."
+      action={stateMessageCopy.action.retryViewSnapshotForThisCheckpoint}
     />
   );
 }
@@ -8311,13 +8321,13 @@ function HistoryOpenLiveStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="Open in live workspace idle"
+        heading={stateMessageCopy.heading.openInLiveWorkspaceIdle}
         body={
           props.hasSelectedSession
             ? 'Choose a history file item and use Open in Live Workspace when available.'
             : recoveryCopy.workspace.openProjectToOpenLiveFile
         }
-        action="This action only switches focus to an existing live file and never restores checkpoint content."
+        action={stateMessageCopy.action.thisActionOnlySwitchesFocusToAnExistingLiveFile}
       />
     );
   }
@@ -8326,9 +8336,9 @@ function HistoryOpenLiveStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="Opening live workspace file"
+        heading={stateMessageCopy.heading.openingLiveWorkspaceFile}
         body={props.targetPath ? `Switching editor focus to ${props.targetPath}.` : 'Switching editor focus.'}
-        action="Wait for live file content to load in the existing editor surface."
+        action={stateMessageCopy.action.waitForLiveFileContentToLoad}
       />
     );
   }
@@ -8337,13 +8347,13 @@ function HistoryOpenLiveStateMessage(props: {
     return (
       <StateMessage
         tone="success"
-        heading="Live workspace file opened"
+        heading={stateMessageCopy.heading.liveWorkspaceFileOpened}
         body={
           props.targetPath
             ? `Editor focus switched to ${props.targetPath} using live workspace navigation.`
             : 'Editor focus switched to the selected live workspace file.'
         }
-        action="Continue editing in the live workspace editor."
+        action={stateMessageCopy.action.continueEditingInTheLiveWorkspaceEditor}
       />
     );
   }
@@ -8352,13 +8362,13 @@ function HistoryOpenLiveStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="Live file unavailable"
+        heading={stateMessageCopy.heading.liveFileUnavailable}
         body={
           props.targetPath
             ? `The file ${props.targetPath} does not exist in the active live workspace.`
             : 'Selected history file does not exist in the active live workspace.'
         }
-        action="No restore, revert, or file write was performed."
+        action={stateMessageCopy.action.noRestoreRevertOrFileWriteWasPerformed}
       />
     );
   }
@@ -8366,9 +8376,9 @@ function HistoryOpenLiveStateMessage(props: {
   return (
     <StateMessage
       tone="error"
-      heading="Open in live workspace failed"
+      heading={stateMessageCopy.heading.openInLiveWorkspaceFailed}
       body={props.errorMessage ?? 'Failed to open selected history file in the live workspace.'}
-      action="Select an active session and retry with a file that exists in the live workspace tree."
+      action={stateMessageCopy.action.selectAnActiveSessionAndRetryWithAFileThatExists}
     />
   );
 }
@@ -8748,13 +8758,13 @@ function HistoryRevertStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="Revert idle"
+        heading={stateMessageCopy.heading.revertIdle}
         body={
           props.hasSelectedSession
             ? 'Choose a checkpoint entry and use Revert.'
             : recoveryCopy.workspace.openProjectToEnableRevert
         }
-        action="Revert requests require confirmation before submission."
+        action={stateMessageCopy.action.revertRequestsRequireConfirmationBeforeSubmission}
       />
     );
   }
@@ -8763,9 +8773,9 @@ function HistoryRevertStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="Revert confirming"
+        heading={stateMessageCopy.heading.revertConfirming}
         body="Revert confirmation is required before request submission."
-        action="Choose Confirm Revert to proceed or Cancel to keep current state."
+        action={stateMessageCopy.action.chooseConfirmRevertToProceedOrCancel}
       />
     );
   }
@@ -8774,9 +8784,9 @@ function HistoryRevertStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="Revert previewing"
+        heading={stateMessageCopy.heading.revertPreviewing}
         body="Review target checkpoint metadata and optional diff/snapshot previews before confirmation."
-        action="Use Continue to Confirm, then Confirm Revert to execute."
+        action={stateMessageCopy.action.useContinueToConfirmThenConfirmRevert}
       />
     );
   }
@@ -8785,9 +8795,9 @@ function HistoryRevertStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="Reverting workspace"
+        heading={stateMessageCopy.heading.revertingWorkspace}
         body="Revert request is in flight for the selected checkpoint."
-        action="Wait for checkpoint, editor, and preview surfaces to refresh."
+        action={stateMessageCopy.action.waitForCheckpointEditorAndPreviewSurfacesToRefresh}
       />
     );
   }
@@ -8796,9 +8806,9 @@ function HistoryRevertStateMessage(props: {
     return (
       <StateMessage
         tone="success"
-        heading="Workspace reverted"
+        heading={stateMessageCopy.heading.workspaceReverted}
         body="Active session workspace was restored to the selected checkpoint."
-        action="Continue from the updated checkpoint state."
+        action={stateMessageCopy.action.continueFromTheUpdatedCheckpointState}
       />
     );
   }
@@ -8806,9 +8816,9 @@ function HistoryRevertStateMessage(props: {
   return (
     <StateMessage
       tone="error"
-      heading="Revert failed"
+      heading={stateMessageCopy.heading.revertFailed}
       body={props.errorMessage ?? 'Manual checkpoint revert failed.'}
-      action="Retry revert from a checkpoint entry."
+      action={stateMessageCopy.action.retryRevertFromACheckpointEntry}
     />
   );
 }
@@ -8818,9 +8828,9 @@ function DashboardSliceMessage({ state }: { state: 'loading' | 'error' | 'empty'
     return (
       <StateMessage
         tone="neutral"
-        heading="Dashboard is loading"
+        heading={stateMessageCopy.heading.dashboardIsLoading}
         body="Retrieving user, usage, and quota summary data."
-        action="Please wait a moment."
+        action={stateMessageCopy.action.pleaseWaitAMoment}
       />
     );
   }
@@ -8829,9 +8839,9 @@ function DashboardSliceMessage({ state }: { state: 'loading' | 'error' | 'empty'
     return (
       <StateMessage
         tone="error"
-        heading="Dashboard unavailable"
+        heading={stateMessageCopy.heading.dashboardUnavailable}
         body="Unable to load dashboard summary."
-        action="Refresh this page to retry."
+        action={stateMessageCopy.action.refreshThisPageToRetry}
       />
     );
   }
@@ -8840,9 +8850,9 @@ function DashboardSliceMessage({ state }: { state: 'loading' | 'error' | 'empty'
     return (
       <StateMessage
         tone="neutral"
-        heading="No dashboard data yet"
+        heading={stateMessageCopy.heading.noDashboardDataYet}
         body="Dashboard data is not available for this user."
-        action="Create or select a session, then retry."
+        action={stateMessageCopy.action.createOrSelectASessionThenRetry}
       />
     );
   }
@@ -8850,9 +8860,9 @@ function DashboardSliceMessage({ state }: { state: 'loading' | 'error' | 'empty'
   return (
     <StateMessage
       tone="success"
-      heading="Dashboard ready"
+      heading={stateMessageCopy.heading.dashboardReady}
       body="Dashboard summary loaded."
-      action="Review active sessions and quota usage."
+      action={stateMessageCopy.action.reviewActiveSessionsAndQuotaUsage}
     />
   );
 }
@@ -9095,9 +9105,9 @@ function ShellStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading="Workspace is loading"
+        heading={stateMessageCopy.heading.workspaceIsLoading}
         body={recoveryCopy.workspace.loading}
-        action="Please wait a moment."
+        action={stateMessageCopy.action.pleaseWaitAMoment}
       />
     );
   }
@@ -9106,7 +9116,7 @@ function ShellStateMessage(props: {
     return (
       <StateMessage
         tone="error"
-        heading="Workspace unavailable"
+        heading={stateMessageCopy.heading.workspaceUnavailable}
         body={
           sessionError
             ? `Workspace load error: ${sessionError}`
@@ -9153,9 +9163,9 @@ function ShellStateMessage(props: {
   return (
     <StateMessage
       tone="success"
-      heading="Workspace ready"
+      heading={stateMessageCopy.heading.workspaceReady}
       body={recoveryCopy.workspace.ready}
-      action="Continue with project work and history review."
+      action={stateMessageCopy.action.continueWithProjectWorkAndHistoryReview}
     />
   );
 }

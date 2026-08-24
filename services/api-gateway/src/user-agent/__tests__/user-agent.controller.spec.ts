@@ -3,6 +3,7 @@ import { UserAgentService } from '../user-agent.service';
 import { SessionCookieGuard } from '../../auth/session-cookie.guard';
 import {
   INestApplication,
+  NotFoundException,
   UnauthorizedException,
   ValidationPipe,
 } from '@nestjs/common';
@@ -52,6 +53,7 @@ describe('UserAgentController', () => {
       create: jest.fn(),
       listByUserId: jest.fn(),
       findOneByIdAndUserId: jest.fn(),
+      deleteByIdAndUserId: jest.fn(),
     } as any;
 
     controller = new UserAgentController(service);
@@ -260,6 +262,47 @@ describe('UserAgentController', () => {
   });
 
   // ---------------------------------------------------------------------------
+  // DELETE /api/agents/:id — Soft Delete
+  // ---------------------------------------------------------------------------
+
+  describe('DELETE /api/agents/:id — Soft Delete', () => {
+    it('should delete owned agent using session userId and agent id', async () => {
+      service.deleteByIdAndUserId.mockResolvedValue(undefined);
+
+      const result = await controller.delete(mockReqA, 'agent-uuid-001');
+
+      expect(service.deleteByIdAndUserId).toHaveBeenCalledWith(
+        'agent-uuid-001',
+        mockUserA.userId,
+      );
+      expect(result).toBeUndefined();
+    });
+
+    it('should return 404 when agent does not exist', async () => {
+      service.deleteByIdAndUserId.mockRejectedValue(new NotFoundException());
+
+      await expect(
+        controller.delete(mockReqA, 'nonexistent-uuid'),
+      ).rejects.toThrow('Not Found');
+    });
+
+    it('should return 404 when agent belongs to another user (NOT 403)', async () => {
+      service.deleteByIdAndUserId.mockRejectedValue(new NotFoundException());
+
+      const mockReqB = { user: mockUserB } as any;
+
+      await expect(
+        controller.delete(mockReqB, 'agent-uuid-001'),
+      ).rejects.toThrow('Not Found');
+
+      expect(service.deleteByIdAndUserId).toHaveBeenCalledWith(
+        'agent-uuid-001',
+        mockUserB.userId,
+      );
+    });
+  });
+
+  // ---------------------------------------------------------------------------
   // Cross-User Isolation (Critical Security)
   // ---------------------------------------------------------------------------
 
@@ -285,6 +328,23 @@ describe('UserAgentController', () => {
       expect(service.findOneByIdAndUserId).toHaveBeenCalledWith(
         'agent-uuid-001',
         mockUserB.userId,
+      );
+    });
+
+    it('User B cannot delete User A agent by ID', async () => {
+      const mockReqB = { user: mockUserB } as any;
+      service.deleteByIdAndUserId.mockRejectedValue(new NotFoundException());
+
+      await expect(
+        controller.delete(mockReqB, 'agent-uuid-001'),
+      ).rejects.toThrow('Not Found');
+
+      expect(service.deleteByIdAndUserId).toHaveBeenCalledWith(
+        'agent-uuid-001',
+        mockUserB.userId,
+      );
+      expect(service.deleteByIdAndUserId.mock.calls[0][1]).not.toBe(
+        mockUserA.userId,
       );
     });
 
@@ -480,6 +540,61 @@ describe('UserAgentController', () => {
       await request(app!.getHttpServer())
         .get('/api/agents/nonexistent-uuid')
         .expect(404);
+    });
+
+    it('DELETE /api/agents/:id returns 204 with empty body for owned agent', async () => {
+      await buildApp();
+      service.deleteByIdAndUserId.mockResolvedValue(undefined);
+
+      const response = await request(app!.getHttpServer())
+        .delete('/api/agents/agent-uuid-001')
+        .expect(204);
+
+      expect(service.deleteByIdAndUserId).toHaveBeenCalledWith(
+        'agent-uuid-001',
+        mockUserA.userId,
+      );
+      expect(response.text).toBe('');
+      expect(Object.keys(response.body)).toHaveLength(0);
+      expect(response.text).not.toContain('userId');
+      expect(response.text).not.toContain('deletedAt');
+    });
+
+    it('DELETE /api/agents/:id returns 404 when agent not found', async () => {
+      await buildApp();
+      service.deleteByIdAndUserId.mockRejectedValue(new NotFoundException());
+
+      const response = await request(app!.getHttpServer())
+        .delete('/api/agents/nonexistent-uuid')
+        .expect(404);
+
+      expect(response.status).not.toBe(403);
+    });
+
+    it('DELETE /api/agents/:id returns 404 when agent belongs to another user', async () => {
+      await buildApp({ user: mockUserB });
+      service.deleteByIdAndUserId.mockRejectedValue(new NotFoundException());
+
+      const response = await request(app!.getHttpServer())
+        .delete('/api/agents/agent-uuid-001')
+        .expect(404);
+
+      expect(service.deleteByIdAndUserId).toHaveBeenCalledWith(
+        'agent-uuid-001',
+        mockUserB.userId,
+      );
+      expect(response.status).toBe(404);
+      expect(response.status).not.toBe(403);
+    });
+
+    it('DELETE /api/agents/:id unauthenticated request returns 401', async () => {
+      await buildApp({ unauthenticated: true });
+
+      await request(app!.getHttpServer())
+        .delete('/api/agents/agent-uuid-001')
+        .expect(401);
+
+      expect(service.deleteByIdAndUserId).not.toHaveBeenCalled();
     });
 
     it('unauthenticated request returns 401', async () => {

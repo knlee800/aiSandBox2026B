@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -75,5 +76,14 @@ export class UserAgentController {
       throw new NotFoundException();
     }
     return toAgentResponse(agent);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async delete(
+    @Request() req,
+    @Param('id') id: string,
+  ): Promise<void> {
+    await this.userAgentService.deleteByIdAndUserId(id, req.user.userId);
   }
 }

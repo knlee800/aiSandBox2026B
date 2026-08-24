@@ -42,6 +42,13 @@ export class UserAgentService {
     });
   }
 
+  async deleteByIdAndUserId(id: string, userId: string): Promise<void> {
+    const result = await this.userAgentRepository.softDelete({ id, userId });
+    if (!result.affected) {
+      throw new NotFoundException();
+    }
+  }
+
   private computeInitials(name: string): string {
     const words = name.trim().split(/\s+/);
     if (words.length >= 2) {
