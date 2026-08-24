@@ -1,16 +1,27 @@
 ainow.biz Platform — Product Requirements Document (PRD)
 
+This document is the authoritative **PRODUCT WHAT**. It distinguishes **CURRENT** product capability, **limited private-beta** scope, and **approved FUTURE** direction. Technical implementation belongs in ARCHITECTURE.md. Task sequencing belongs in TASKS.md / TASKS_BACKLOG_FULL.md.
+
 ---
 
 ## 1. Overview
 
-**ainow.biz** is an AI-agent platform that enables users to create, manage, and work with AI agents on durable projects. The platform presents an RPG-inspired command-center shell from which users access agents and their workspaces.
+**ainow.biz** is the umbrella AI-agent product/platform. Users create, manage, and work with AI agents on durable projects. The current product shell is a command-center/dashboard experience with an RPG-inspired visual identity.
 
-**Builder Agent** is the first functional agent on ainow.biz and the evolution of the aiSandBox coding product. Builder allows users to create and iterate on software projects through natural language interaction with AI, inside isolated and governed container workspaces.
+**aiSandBox / Builder Agent** is the first functional agent/module on ainow.biz. Builder lets users Ask questions or Build software through natural language, inside isolated and governed project workspaces.
 
-Other system agents — Chief of Staff, Product Strategy, and Technology Advisor — are present in the platform registry as coming-soon placeholders. They are not yet functional AI agents.
+Other system agents — **Chief of Staff Agent**, **Product Strategy Agent**, and **Technology Advisor Agent** — are visible in the platform registry as coming-soon placeholders. Coming soon is a UI label for a visible-but-not-functional agent. Those agents are not functional in the current product and are not part of the current private beta.
 
-The broader ainow.biz multi-agent collaboration and general agent platform capabilities remain planned post-beta direction.
+The broader ainow.biz multi-agent collaboration and general agent-platform capabilities remain **approved** planned post-beta direction. They are not current product capability.
+
+Product identity at a glance:
+
+- **ainow.biz** — umbrella product/platform
+- **aiSandBox / Builder Agent** — first functional agent/module
+- **CURRENT shell** — command-center/dashboard with RPG-inspired visual identity
+- **PARTIAL / visible but not functional** — specialist coming-soon placeholders; persisted user-created agent profiles
+- **NOT current user experience** — functional specialist agents; executable user-created agents; knowledge runtime; collaboration/referrals/work objects; product-visible multi-Builder; Harness as the Builder experience
+- **Approved FUTURE** — those capabilities above, plus Legal Advisor Agent, deeper RPG/simulation, OAuth activation, Stripe/payment activation, and later external knowledge-source integrations
 
 The platform prioritizes safety, determinism, reversibility, and clear failure semantics while enabling a productive AI-assisted development workflow.
 
@@ -27,15 +38,22 @@ The platform prioritizes safety, determinism, reversibility, and clear failure s
 - Support durable project continuity: projects persist across sessions, with save/restore, import/export, and checkpoint recovery
 - Persist Builder conversation context on the backend so users can resume work across sessions
 - Deliver a multilingual user experience supporting English, Traditional Chinese, and Simplified Chinese
-- Provide a controlled usage and credit model: free-plan credit allocation, balance enforcement, and usage tracking per execution
-- Present the ainow.biz platform with Builder as the first functional agent and a clear registry of coming-soon agents
+- Provide a controlled usage and credit model: free-plan credit allocation, Ask/Build consumption, balance enforcement, and usage tracking
+- Present the ainow.biz platform with Builder as the first functional agent and a clear registry of coming-soon placeholders
 
 ### Planned Goals
 
+These are **approved FUTURE** product direction. They are not current capability and are not promised in the current private beta.
+
 - Extend the credit model to support commercial payment processing and subscription management (not activated in current beta)
-- Enable genuinely functional non-Builder system agents (Chief of Staff, Product Strategy, Technology Advisor)
-- Enable user-created agents to execute AI work beyond persisted profiles
-- Support general multi-agent collaboration and orchestration runtimes
+- Enable genuinely functional non-Builder system agents (Chief of Staff Agent, Product Strategy Agent, Technology Advisor Agent)
+- Enable a functional Legal Advisor Agent as an approved future specialist (not currently in the platform registry; no delivery or timeline promise)
+- Enable user-created agents to execute AI work beyond persisted profiles, with appropriate tools, knowledge, skills, and configuration
+- Support general multi-agent collaboration and orchestration, including referrals, work objects, approval gates, and loop/referral limits
+- Support Multi-Builder profiles, differentiated specialties, task routing, collaboration, attribution, and orchestration as a user-visible product
+- Make Agent Harness the default Builder experience (autonomous / multi-turn / tool-using)
+- Activate Google OAuth and Apple OAuth authentication (implementation exists; not activated in current beta)
+- Deliver shared and specialist knowledge as a product runtime, including later external knowledge-source integrations
 
 ---
 
@@ -99,15 +117,34 @@ When a session exceeds limits:
 
 ### C. AI Execution (Builder Agent)
 
-AI execution is the primary product feature of Builder. A user expresses what they want to build or change; Builder executes an AI request; structured file actions are produced; the platform applies those changes to the workspace; and the file tree, editor, and preview reflect the result.
+AI execution is the primary product feature of Builder. Users choose **Ask** or **Build**.
+
+- **Ask** — AI responds without changing workspace files.
+- **Build** — AI proposes and applies workspace file changes.
+
+The current private-beta Builder experience is **single-shot**: the user sends one Ask or Build request; Builder completes that request; the turn is done.
 
 #### Current Builder Core Loop
 
+**Ask**
+
+```
+User asks a question
+→ Builder returns an AI response
+→ Workspace files are unchanged
+→ Conversation persists
+```
+
+**Build**
+
 ```
 User describes what they want to build or change
-→ Builder executes an AI request (single-shot path)
+→ Builder executes a single-shot AI request
 → Structured file actions are produced (file writes, deletions)
+→ Risky or batch actions may require user approval before application
 → Platform applies file actions to the workspace
+→ Platform confirms a qualifying successful apply
+→ Build credits may be consumed
 → File tree, editor, and preview reflect the changes
 → A git checkpoint is created for recovery
 → Project state persists durably across sessions
@@ -115,23 +152,33 @@ User describes what they want to build or change
 
 This is the staging-proven current product promise.
 
+#### Build Apply Confirmation
+
+Build apply confirmation happens only after a qualifying successful workspace apply. The platform confirms and records that the qualifying Build changes were successfully applied. Build credits are consumed only after that confirmation.
+
+This is not a user-facing/manual confirmation, and it is not required as a user action on every Build. It is distinct from user approval before applying risky or batch file actions.
+
 #### Execution Safety Gate
 
-AI execution is governed by a deliberate global safety gate. When the gate is disabled, AI execution requests return a clear unavailable response (HTTP 503). This is an intentional controlled-activation mechanism, not a product failure.
+AI execution is governed by a deliberate global safety gate. When the gate is disabled, AI execution requests return a clear unavailable response. This is an intentional controlled-activation mechanism, not a product failure.
 
 #### Credit and Balance Enforcement
 
 AI execution is subject to credit balance enforcement. Users must have sufficient credit balance for an execution request to proceed. Insufficient balance returns a governed error response. AI actions are subject to the same governance and lifecycle rules as other user actions — AI cannot bypass session termination or resource limits.
 
-#### Agent Harness (Gated)
+Credits are consumed according to Ask/Build product rules:
 
-An enhanced multi-turn agent execution capability (Agent Harness) is implemented and available for controlled activation. It is not the default Builder experience in the initial beta.
+- **Ask:** credits are consumed when the AI response completes
+- **Build:** credits are consumed only after the platform confirms a qualifying successful workspace apply
+- **Failed or partial workspace apply:** no Build credits are consumed
 
-- When enabled, the Harness supports a multi-turn tool loop for more complex task execution
-- Specific tool capabilities (file mutation, validation, browser automation) are individually gated
-- The Harness multi-turn path with real providers has not been proven in production
+#### Agent Harness (Gated; not current beta)
 
-Harness activation is an operational decision, not a user-facing beta promise.
+An enhanced multi-turn / tool-using Builder capability (Agent Harness) is implemented for controlled activation. It is **not** currently user-accessible in the private beta, **not** the default Builder experience, and **not** part of the current beta promise.
+
+- The current beta promise is single-shot Builder (Ask and Build)
+- Making Harness the default Builder experience is approved FUTURE direction
+- Harness activation is an operational decision, not a user-facing beta promise
 
 ---
 
@@ -142,7 +189,7 @@ AI responses in Builder produce structured file-action instructions rather than 
 #### File Action Pipeline (Current)
 
 - AI output is parsed for structured file-action instructions (create, write, delete files)
-- Risky or batch actions surface a confirmation step before application
+- Risky or batch actions may require user approval before application; this is a safety step and is not required for every Build
 - Actions are applied sequentially to the workspace
 - After actions apply, the file tree, editor state, and preview are refreshed to reflect the changes
 - A git checkpoint is created at appropriate points to enable recovery and reversal
@@ -202,10 +249,12 @@ Builder conversation context — messages and AI responses — is persisted on t
 #### Current Credit Model
 
 - Free-plan credit allocation is provisioned on user registration
-- Credit balances are tracked per user and enforced at execution time
-- Credit is deducted per AI execution
+- Credit balances are tracked per user, visible in the product, and enforced before AI execution proceeds
+- **Ask:** credits are consumed when the AI response completes
+- **Build:** credits are consumed only after the platform confirms a qualifying successful workspace apply
+- **Failed or partial workspace apply:** no Build credits are consumed
 - Balance enforcement gates AI execution: insufficient balance returns a governed error
-- Usage records are maintained per execution
+- Usage records are maintained per Ask/Build request
 - Admin credit grants are supported for operational purposes
 - A billing page and balance display are available in the UI
 
@@ -229,19 +278,23 @@ Live commercial payment processing, Stripe checkout, and subscription management
 | Agent | Status |
 |-------|--------|
 | Builder Agent | CURRENT — functional AI coding agent |
-| Chief of Staff | COMING SOON — placeholder |
-| Product Strategy | COMING SOON — placeholder |
-| Technology Advisor | COMING SOON — placeholder |
+| Chief of Staff Agent | COMING SOON — visible placeholder; not functional in current product or current private beta |
+| Product Strategy Agent | COMING SOON — visible placeholder; not functional in current product or current private beta |
+| Technology Advisor Agent | COMING SOON — visible placeholder; not functional in current product or current private beta |
+
+Coming soon does not mean these agents ship in the current private beta. Functional specialist-agent execution is approved FUTURE direction. **Legal Advisor Agent** is an approved future specialist; it is not in the current registry and has no delivery or timeline promise.
 
 #### User-Created Agent Profiles (Current)
 
-Users can create persistent agent profiles on the platform:
+Users can create persistent agent profiles on the platform (**Create Agent**):
 
-- Create an agent record (name, role, description, status)
-- View and list created agents
-- View agent detail and profile
+- Create an agent profile (name, role, description, status)
+- Persist the profile
+- List and view created agents / profile detail
 
-User-created agents are **persistent profiles only**. They are not yet executable runtime agents. Configuring agents with tools, knowledge, or skills, and routing them to an AI execution runtime, are planned post-beta.
+User-created agents are **persistent profiles only**. They are not executable agents. Delete is not currently available (accepted private-beta limitation). Autonomous execution, tool execution, knowledge assignment, skills/runtime behavior, and agent collaboration are not current.
+
+**Approved FUTURE:** user-created agents become executable agents with appropriate tools, knowledge, skills, and configuration.
 
 ---
 
@@ -267,9 +320,12 @@ All user-facing UI text — including empty states, loading/error/success messag
 - Email verification on registration
 - Authenticated session cookies with CSRF protection
 
-#### Deferred
+#### Deferred (not currently available)
 
-- Google OAuth authentication (configuration present but not activated in current beta)
+- Google OAuth authentication (not activated in current beta)
+- Apple OAuth authentication (not activated in current beta)
+
+Code existence does not mean product activation. Neither OAuth option is currently available.
 
 ---
 
@@ -287,21 +343,17 @@ Admin operations are a current operational support capability. They are not a pu
 
 ## 4. Architecture Summary
 
-The current implementation uses a multi-service architecture with durable PostgreSQL state and asynchronous AI execution infrastructure.
-
-**ARCHITECTURE.md is the authoritative document for all technical architecture, service topology, communication patterns, database schema, execution flows, and implementation constraints.**
+**ARCHITECTURE.md is authoritative for TECHNICAL HOW** — service topology, communication, data stores, execution internals, and operational constraints.
 
 At a product level:
 
-- The platform consists of multiple cooperating services: frontend, API gateway, AI service, and container manager
-- **PostgreSQL** is the sole authoritative durable database. SQLite is not used.
-- Communication between services uses a **mixed transport model** — HTTP, queue-based messaging, and real-time channels. Services do not communicate via HTTP only.
-- AI execution is **queue-driven and asynchronous** — not a synchronous in-process call
-- Background AI execution workers are part of the implemented architecture
-- The platform supports real-time preview proxying to running containers
-- All services share a common authentication and session-governance model
+- The platform consists of multiple cooperating services that together deliver the web app, Builder workspaces, AI Ask/Build, Preview, credits, and project persistence
+- Builder work runs in isolated project workspaces
+- Ask and Build requests are fulfilled asynchronously
+- Preview shows the running workspace
+- Project files, conversation, credits, and checkpoints persist independently of a single session
 
-Do not reproduce ARCHITECTURE.md detail in this document. For service ports, communication internals, queue configuration, database schema, or specific endpoints, refer to ARCHITECTURE.md.
+Do not reproduce ARCHITECTURE.md detail in this document.
 
 ---
 
@@ -325,10 +377,10 @@ The platform enforces governance at multiple layers:
 
 #### Execution-level
 
-- Global AI execution safety gate: governs whether AI execution requests are accepted; operates at request time
-- Credit balance enforcement operates at request time before execution is enqueued
-- Session/lifetime/concurrency governance enforcement is request-driven
-- AI execution itself runs asynchronously via a queue-driven worker after passing governance checks
+- Global AI execution safety gate: governs whether AI execution requests are accepted
+- Credit balance enforcement operates before execution proceeds
+- Session/lifetime/concurrency governance is enforced as users work
+- AI execution itself runs asynchronously after passing governance checks
 
 #### Enforcement Properties
 
@@ -376,7 +428,7 @@ The 503 on execution-disabled is an intentional product state, not a failure con
 #### Performance
 
 - Low-overhead, request-driven governance enforcement for session lifecycle
-- Asynchronous queue-driven AI execution to avoid blocking request threads
+- Asynchronous AI execution so the product is not blocked waiting for a model response
 - Single-process enforcement (not yet cluster-safe — future work)
 
 #### Isolation and Ownership
@@ -398,54 +450,91 @@ The 503 on execution-disabled is an intentional product state, not a failure con
 
 #### Auditability
 
-- Usage records are maintained per execution
+- Usage records are maintained per Ask/Build request
 - Session lifecycle events are persisted
-- Credit deductions are recorded per execution
+- Credit deductions are recorded according to Ask/Build product rules
 
 ---
 
 ## 8. Explicit Non-Goals (Current Phase)
 
-The following are explicitly out of scope for the initial Builder private beta:
+The following are explicitly out of scope for the initial Builder private beta. Many of these remain **approved FUTURE** product direction; their exclusion is from the current beta, not from the long-term product vision.
 
-- **Background session cleanup / scheduled workers**: No cron-based or scheduled session cleanup workers. Session lifecycle governance remains request-driven. (The AI execution queue worker is a separate execution concern — not a cleanup worker.)
+- **Background session cleanup / scheduled workers**: No cron-based or scheduled session cleanup workers. Session lifecycle governance remains request-driven.
 - **Distributed session coordination**: Single-node deployment; no distributed locks or multi-node session HA
 - **Automatic session resurrection**: TERMINATED is a final state; no auto-restart of terminated sessions
-- **WebSocket-based control APIs**: WebSocket is used for preview proxying only; it is not a control plane transport
-- **Live commercial payment processing**: Stripe checkout, subscription management, and live payment collection are not active. Basic credit/balance enforcement is current; commercial billing activation is not.
-- **Functional non-Builder system agents**: Chief of Staff, Product Strategy, and Technology Advisor are platform placeholders; they are not functional AI agents in this phase
+- **WebSocket-based control APIs**: Preview may use realtime traffic; it is not a general control-plane transport
+- **Live commercial payment processing**: Stripe checkout, subscription management, and live payment collection are not active. Credits-first balance enforcement is current; commercial billing activation is approved FUTURE.
+- **Functional non-Builder system agents**: Chief of Staff Agent, Product Strategy Agent, and Technology Advisor Agent are platform placeholders; they are not functional AI agents in this phase. Legal Advisor Agent is approved FUTURE and is not currently in the registry.
 - **Executable / configurable user-created agents**: User-created agent profiles are persistent records; routing them to an AI execution runtime, or configuring per-agent models/tools/skills, is out of scope for initial beta
-- **Multi-agent collaboration runtime**: General agent-to-agent referral routing, shared orchestration, and multi-agent collaboration runtimes are post-beta
-- **Shared and specialist knowledge runtime**: Vector/semantic knowledge ingestion and retrieval are planned; not current
-- **Work objects (tickets, decisions, referrals)**: Planned; not current
-- **RPG walking characters and pixel-map game engine**: The command-center shell has an RPG-inspired visual style; full walking characters, explorable pixel maps, and game-engine interaction are post-beta
-- **Broad external integrations**: No general third-party API integration platform in current scope
+- **Multi-agent collaboration runtime**: Agent referrals, work handoff, tickets, decisions, comments, approval gates, and loop/referral limits are approved FUTURE; not current
+- **Shared and specialist knowledge runtime**: Shared/company knowledge, specialist/private knowledge, uploads, policies, goals, meeting information, refresh/update behavior, and traceability/permissions are approved FUTURE; not current
+- **Product-visible multi-Builder**: Multiple Builder agents/profiles, differentiated specialties, task routing, collaboration, attribution, and orchestration are approved FUTURE; not current
+- **Agent Harness as the Builder experience**: The current beta promise is single-shot Builder. Harness-as-default is approved FUTURE.
+- **RPG walking-town / moving-character simulation**: The command-center shell has an RPG-inspired visual identity. Walking-town simulation is superseded as MVP and is not the current or next committed product. Deeper RPG/simulation remains long-term approved FUTURE.
+- **Broad external integrations**: No general third-party integration platform in current scope. Future external knowledge-source integrations are conceptual FUTURE, not named committed products.
 - **Public agent ecosystem**: No open marketplace or externally published agent registry in current scope
+- **Google OAuth / Apple OAuth**: Not currently available
+- **Public launch / broader user rollout**: Out of scope for this limited private beta
 
 ---
 
 ## 9. Summary
 
-**ainow.biz** is a multi-agent work platform. **Builder Agent** is its first functional agent — an AI-assisted coding environment that enables users to create and iterate on software projects through natural language interaction in isolated, governed container workspaces.
+**ainow.biz** is an AI-agent platform with an approved vision of multi-agent collaboration. **Builder Agent** is its first functional agent — an AI-assisted coding environment that lets users Ask questions or Build software through natural language, in isolated and governed project workspaces.
 
 The current product delivers:
 
 - A **project-first durable coding workflow** where projects, files, conversations, and checkpoints persist across sessions
-- An **AI-driven workspace change pipeline**: user request → AI file-action output → workspace application → preview → git checkpoint
+- **Ask** (AI response, no file changes) and **Build** (AI-driven workspace file changes; credits after the platform confirms a qualifying successful apply)
 - **Integrated preview** of running applications within the workspace
 - **Multilingual UX** in English, Traditional Chinese, and Simplified Chinese
-- A **free-plan credit model** with balance enforcement governing AI execution
+- A **credits-first model**: Ask credits at response completion; Build credits only after the platform confirms a qualifying successful workspace apply
 - A **platform command-center shell** with Builder active and other agents clearly marked coming soon
-- **Persistent user-created agent profiles** (not yet executable runtime agents)
+- **Persistent user-created agent profiles** (not executable runtime agents)
 - **Admin operational support** for the private beta
 
-Other system agents (Chief of Staff, Product Strategy, Technology Advisor) are platform placeholders. The broader ainow.biz multi-agent collaboration, general agent platform capabilities, and commercial payment lifecycle remain planned post-beta direction.
+Other system agents (Chief of Staff Agent, Product Strategy Agent, Technology Advisor Agent) are platform placeholders. The broader ainow.biz multi-agent collaboration, general agent-platform capabilities, and commercial payment lifecycle remain **approved** planned post-beta direction.
 
-The initial private beta is Builder-first: a small trusted cohort, Builder as the functional tested agent, governed by free-plan credits, with multi-agent runtime outside beta scope.
+Limited private-beta rollout constraints are defined in §10. They are separate from the CURRENT capability inventory.
 
 ---
 
-## 10. Product Status Reference
+## 10. Limited Private-Beta Scope
+
+The current rollout is a **limited Builder-first private beta**. This section states rollout scope. It is not a substitute for the CURRENT capability inventory.
+
+**In scope**
+
+- Builder Agent as the only functional agent
+- A small trusted cohort (1–3 users)
+- Email/password authentication
+- Single-shot Builder experience (Ask and Build)
+- Isolated project/workspace, chat, file editing, Preview, checkpoint/revert, persistent projects, credit balance/use, and multilingual UI
+- Coming-soon specialist placeholders that are visible, not functional
+- User-created agent profiles that can be created, persisted, listed, and viewed (not executed)
+
+**Out of scope for this beta**
+
+- Agent Harness as a user-accessible or default experience
+- Functional specialist agents
+- Executable user-created agents
+- Multi-agent runtime, referrals, work objects, or orchestration
+- Product-visible multi-Builder experience
+- Shared or specialist knowledge runtime
+- Google OAuth and Apple OAuth
+- Stripe / live payment charging
+- Public launch or broader user rollout
+
+**Support**
+
+A defined direct support/feedback channel will be established before beta invitations are sent. This document does not choose that channel.
+
+Coming-soon labels do not mean those agents ship in this beta. Invitation operations are outside this product document.
+
+---
+
+## 11. Product Status Reference
 
 ### CURRENT (staging-proven or implementation-confirmed)
 
@@ -453,75 +542,90 @@ The initial private beta is Builder-first: a small trusted cohort, Builder as th
 |------------|
 | Email/password authentication and email verification |
 | ainow.biz platform command-center shell |
-| Builder Agent — AI-assisted coding in isolated containers |
+| Builder Agent — AI-assisted coding in isolated workspaces |
+| Ask mode — AI response without workspace file changes |
+| Build mode — AI-driven workspace file changes |
+| Platform confirmation of a qualifying successful Build apply before Build credit consumption |
 | Durable projects (create, open, persist, import/export) |
 | File tree and code editor |
 | AI single-shot execution path |
-| Structured AI file-action pipeline (parse → apply → coherence) |
-| Workspace preview (proxy through container runtime) |
+| Structured AI file-action pipeline |
+| Workspace preview |
 | Git checkpoints and recovery |
-| Chat and conversation persistence (backend) |
+| Chat and conversation persistence |
 | Multilingual UX (en, zh-TW, zh-CN) |
 | Free-plan credit balance provisioning and enforcement |
-| Credit deduction per execution |
-| Usage records per execution |
+| Ask credits consumed when the AI response completes |
+| Build credits consumed only after the platform confirms a qualifying successful workspace apply |
+| Failed or partial workspace apply consumes no Build credits |
+| Usage records per Ask/Build request |
 | Admin operations (user / session / credit management) |
-| Persistent user-created agent profiles (create / list / detail) |
+| Persistent user-created agent profiles (create / list / view) |
 | Static system-agent registry (Builder active; 3 coming-soon placeholders) |
 
-### GATED (implemented; not the default)
+### GATED (implemented; not currently offered in private beta)
 
 | Capability | Condition |
 |------------|-----------|
 | AI execution globally | Deliberate safety gate must be enabled |
-| Agent Harness multi-turn tool loop | Harness tool-loop gate must be enabled |
-| Harness file mutation tools | Harness write-tools gate must be enabled |
-| Harness validation tools | Harness validation-tools gate must be enabled |
-| Harness browser automation tool | Harness browser-smoke gate must be enabled |
+| Agent Harness multi-turn tool loop | Implemented for controlled activation; not currently user-accessible in private beta |
+| Harness file, validation, and browser tools | Same as Harness: not currently user-accessible in private beta |
 
-GATED capabilities are implemented and operational under the appropriate conditions. They are not absent or broken.
+GATED means implemented for controlled activation. It does **not** mean currently available to private-beta users. Harness is not part of the current beta promise.
 
-### PLANNED / NOT CURRENT
+### PLANNED / APPROVED FUTURE / NOT CURRENT
 
 | Capability |
 |------------|
-| Functional Chief of Staff agent |
-| Functional Product Strategy agent |
-| Functional Technology Advisor agent |
+| Functional Chief of Staff Agent |
+| Functional Product Strategy Agent |
+| Functional Technology Advisor Agent |
+| Functional Legal Advisor Agent (not currently in registry; no timeline promise) |
 | User-created agents as executable runtime agents |
 | Per-agent model / tool / skill / knowledge configuration |
-| Shared and specialist knowledge runtime |
-| Knowledge ingestion and vector/semantic retrieval |
-| Work objects (tickets, decisions, referrals) |
-| Agent-to-agent referral and collaboration runtime |
-| Runtime approval workflows (non-Builder) |
+| Shared/company and specialist/private knowledge |
+| Knowledge uploads, policies, goals, meeting information, refresh/update, and traceability/permissions |
+| Future external knowledge-source integrations (conceptual; not named committed products) |
+| Work objects (tickets, decisions, referrals, comments) |
+| Agent-to-agent referral, handoff, and collaboration |
+| Approval gates and referral loop prevention |
+| Multi-Builder profiles, specialties, routing, collaboration, attribution, and orchestration |
+| Agent Harness as the default Builder experience |
+| Google OAuth activation |
+| Apple OAuth activation |
 | Live Stripe payment / subscription management |
-| RPG walking characters and pixel-map game engine |
-| Broad external integrations |
+| Deeper RPG / simulation (not current; not the next committed product) |
 | Public agent ecosystem |
 
 ---
 
-## 11. Terminology Reference
+## 12. Terminology Reference
 
 | Term | Definition |
 |------|------------|
 | **ainow.biz** | The umbrella AI-agent platform. Hosts all agents; provides UX shell, registry, billing, and identity. |
-| **Builder Agent** | The first functional AI coding agent on ainow.biz. The aiSandBox module. |
+| **aiSandBox** | The coding-product module that became Builder Agent. |
+| **Builder Agent** | The first functional AI coding agent on ainow.biz. |
+| **Ask** | A user request that generates an AI response without changing workspace files. Credits are consumed when the AI response completes. |
+| **Build** | A user request that produces AI-driven workspace file changes. Credits are consumed only after the platform confirms a qualifying successful workspace apply. A failed or partial workspace apply does not consume Build credits. |
+| **Build apply confirmation** | Platform confirmation, after a qualifying successful workspace apply, that the qualifying Build changes were successfully applied. Build credits may be consumed only after this confirmation. It is not a user-facing/manual confirmation, and it is distinct from user approval before risky or batch file actions. |
+| **Risky-action approval** | User safety approval that may be required before applying risky or batch file actions. It is not required for every Build, and it is not Build apply confirmation. |
 | **Project** | A durable user-owned work identity. Persists across sessions. Contains files, conversation, and checkpoints. |
-| **Session** | The runtime container execution environment for an open project. Lifecycle: CREATED → ACTIVE → TERMINATED. |
-| **Workspace** | The active files, editor, and preview environment within a running session. Sandboxed to the container workspace directory. |
-| **User-created agent** | A persisted agent profile created by a user. Currently: name, role, description, and status stored in the platform. Not yet executable. |
+| **Session** | The runtime workspace lifetime for an open project. |
+| **Workspace** | The active files, editor, and preview environment within a running session. |
+| **Create Agent** | The current ability to create, persist, list, and view a user-created agent profile. Not execution. |
+| **User-created agent** | A persisted agent profile created by a user. Currently name, role, description, and status. Not executable. |
 | **System agent** | A built-in agent in the platform registry. Builder is active; other system agents are coming-soon placeholders. |
-| **AI Execution** | The single-shot (current) or Harness (gated) path: user request → queue → AI worker → provider → structured file actions applied to workspace. |
-| **File actions** | Structured instructions output by AI (write/delete files). Parsed, applied, and followed by workspace coherence update. |
-| **Agent Harness** | The gated multi-turn tool loop for enhanced AI execution. Implemented; not the default Builder experience. |
+| **Coming soon** | A UI label for a visible-but-not-functional agent. It is not a private-beta delivery promise. |
+| **File actions** | Structured AI instructions to create, write, or delete workspace files. |
+| **Agent Harness** | An implemented gated multi-turn / tool-using Builder capability. Not currently user-accessible in private beta. Not the default Builder experience. Making it the default is approved FUTURE. |
+| **Legal Advisor Agent** | An approved FUTURE specialist agent. Not currently in the registry. No delivery or timeline promise. |
 
 ---
 
-## 12. Authority and Document Hierarchy
+## 13. Authority and Document Hierarchy
 
-**PRD.md** is authoritative for current product requirements, product scope, feature intent, and product-level distinctions between current, gated, and planned capabilities.
+**PRD.md** is authoritative for product requirements, product scope, feature intent, and product-level distinctions between CURRENT capability, limited private-beta scope, gated implementation, and approved FUTURE / planned capabilities.
 
 **ARCHITECTURE.md** is authoritative for current technical architecture, service topology, communication patterns, database design, execution flows, and implementation constraints. Where this PRD and ARCHITECTURE.md appear to conflict on a technical implementation detail, ARCHITECTURE.md governs.
 

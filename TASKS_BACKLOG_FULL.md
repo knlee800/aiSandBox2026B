@@ -70886,7 +70886,7 @@ PRIVATE-BETA-INVITE-01 registration = 0
 
 ### GOV-PRD-02: Product Reconciliation
 
-**Status:** ACTIVE — Step 1 COMPLETE — Step 2 COMPLETE — 2026-08-24
+**Status:** ACTIVE — Step 1 COMPLETE — Step 2 COMPLETE — Step 3 COMPLETE — 2026-08-24
 **Task ID:** GOV-PRD-02
 **Title:** Product Reconciliation
 **Family:** GOVERNANCE / PRODUCT / CURRENT-VS-FUTURE RECONCILIATION
@@ -70920,6 +70920,7 @@ PRIVATE-BETA-INVITE-01 registration = 0
 **Runtime/schema/migration change:** NONE
 **PRD.md change in Step 1:** NONE
 **PRD.md change in Step 2:** NONE
+**PRD.md change in Step 3:** YES — reconciled CURRENT / LIMITED-PRIVATE-BETA / APPROVED-FUTURE WHAT
 **ARCHITECTURE.md change:** NONE in this lifecycle
 **Invitation change:** NONE — PRIVATE-BETA-INVITE-01 remains PARKED
 
@@ -70957,7 +70958,9 @@ Reconcile accumulated product decisions and ideas into `PRD.md` with hard CURREN
 
 Read-only inventory against the frozen source map. All F-items resolved from source (specialist names with "Agent" suffix per i18n; coming-soon = UI label not beta promise; Legal Advisor APPROVED_FUTURE; Apple OAuth DEFERRED same as Google; named connectors = FUTURE knowledge source types; Create Agent = persist/list/view only; Ask/Build = canonical user-facing modes; credit deduction Ask-at-completion / Build-after-qualifying-apply; support channel required before invite; ainow.biz lowercase / Builder Agent title case). CURRENT product inventory: 21 capabilities verified. Limited-private-beta scope frozen. Approved FUTURE inventory: 25 items classified. PRD drift table: 18 material issues. Supersession table: 10 items. Bounded Step 3 edit plan produced (Strategy A — minimal patches + one new beta-scope section). Stage-start: `docs/GOV-PRD-02-STAGE-START.md`. PRD.md not edited. ARCHITECTURE.md not edited. PRIVATE-BETA-INVITE-01 remains PARKED.
 
-**Step 3 — Reconcile / update authoritative PRD.md** (PENDING)
+**Step 3 — Reconcile / update authoritative PRD.md** (COMPLETE — 2026-08-24)
+
+Strategy A applied: in-place patches plus one new Limited Private-Beta Scope section. `PRD.md` now distinguishes CURRENT product, limited private-beta scope, and approved FUTURE direction. Product drift from the Step 2 inventory is corrected (Ask/Build glossary and credit rules, confirm-build-apply, specialist Agent names, coming-soon vs beta, Create Agent persist/list/view only, Apple OAuth deferred, Legal Advisor FUTURE, Multi-Builder FUTURE, Harness-as-default FUTURE, knowledge/collaboration FUTURE). Stale HOW (storage-engine claim, mixed-transport essay, queue/API internals) deferred to `ARCHITECTURE.md`. No scheduler language. No invitation work. `ARCHITECTURE.md` not edited. PRIVATE-BETA-INVITE-01 remains PARKED.
 
 **Step 4 — Checkpoint / consolidation / lock** (PENDING)
 
@@ -71004,6 +71007,7 @@ PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUT
 - All runtime resources remain UNOWNED
 - PRD.md edits in Step 1 = 0
 - PRD.md edits in Step 2 = 0
+- PRD.md edits in Step 3 = YES
 - ARCHITECTURE.md edits = 0
 - No subagents
 - No worktrees or branches
@@ -71037,25 +71041,25 @@ Step 1 (Registration + source-map freeze):
 - [x] Activity ledger all zeros except allowed governance writes
 
 Step 2 (PRD drift/gap/idea inventory):
-- [ ] Read-only inventory against `docs/GOV-PRD-02-SOURCE-MAP.md`
-- [ ] F-items resolved from source where possible
-- [ ] CURRENT / LIMITED-BETA / FUTURE inventories confirmed
-- [ ] Drift/gap table and supersession table frozen
-- [ ] Bounded Step 3 PRD.md edit plan produced
-- [ ] `docs/GOV-PRD-02-STAGE-START.md` created
-- [ ] PRD.md not edited
-- [ ] ARCHITECTURE.md not edited
-- [ ] 2-source-lane pilot not registered
-- [ ] PRIVATE-BETA-INVITE-01 remains parked
+- [x] Read-only inventory against `docs/GOV-PRD-02-SOURCE-MAP.md`
+- [x] F-items resolved from source where possible
+- [x] CURRENT / LIMITED-BETA / FUTURE inventories confirmed
+- [x] Drift/gap table and supersession table frozen
+- [x] Bounded Step 3 PRD.md edit plan produced
+- [x] `docs/GOV-PRD-02-STAGE-START.md` created
+- [x] PRD.md not edited
+- [x] ARCHITECTURE.md not edited
+- [x] 2-source-lane pilot not registered
+- [x] PRIVATE-BETA-INVITE-01 remains parked
 
 Step 3 (Reconcile / update authoritative PRD.md):
-- [ ] Bounded documentation-only updates to `PRD.md`
-- [ ] CURRENT vs LIMITED-BETA vs APPROVED-FUTURE clearly separated
-- [ ] Identified product drift corrected
-- [ ] Unimplemented multi-agent capabilities not claimed as current
-- [ ] ARCHITECTURE.md not edited
-- [ ] 2-source-lane pilot not registered
-- [ ] PRIVATE-BETA-INVITE-01 remains parked
+- [x] Bounded documentation-only updates to `PRD.md`
+- [x] CURRENT vs LIMITED-BETA vs APPROVED-FUTURE clearly separated
+- [x] Identified product drift corrected
+- [x] Unimplemented multi-agent capabilities not claimed as current
+- [x] ARCHITECTURE.md not edited
+- [x] 2-source-lane pilot not registered
+- [x] PRIVATE-BETA-INVITE-01 remains parked
 
 Step 4 (Checkpoint / consolidation / lock):
 - [ ] `docs/GOV-PRD-02-CHECKPOINT.md` created
@@ -71069,18 +71073,19 @@ Step 4 (Checkpoint / consolidation / lock):
 
 ---
 
-**GOV-PRD-02 status:** ACTIVE — Step 1 COMPLETE — 2026-08-24
-**Current Stage:** Step 1 — Registration + source-map freeze — COMPLETE
-**Exact next step:** GOV-PRD-02 Step 2 — PRD drift/gap/idea inventory
+**GOV-PRD-02 status:** ACTIVE — Step 1 COMPLETE — Step 2 COMPLETE — Step 3 COMPLETE — 2026-08-24
+**Current Stage:** Step 3 — Reconcile / update authoritative PRD.md — COMPLETE
+**Exact next step:** GOV-PRD-02 Step 4 — checkpoint / consolidation / lock
 **Source map:** `docs/GOV-PRD-02-SOURCE-MAP.md`
-**PRD.md:** untouched
+**Stage-start:** `docs/GOV-PRD-02-STAGE-START.md`
+**PRD.md:** reconciled — CURRENT / LIMITED-PRIVATE-BETA / APPROVED-FUTURE separated
 **ARCHITECTURE.md:** untouched (GOV-ARCH-02 lock preserved)
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED / PARKED / NOT EXECUTABLE
 **2-source-lane pilot:** NOT REGISTERED
 **LIVE_STAGING_VALIDATED:** YES
 **BUILDER_PRIVATE_BETA_READINESS:** GO
 
-Step 1 activity ledger:
+Step 3 activity ledger:
 ```
 LIVE = 0
 SSH = 0
@@ -71093,7 +71098,7 @@ product implementation = 0
 frontend = 0
 backend/services = 0
 dependencies = 0
-PRD.md edits = 0
+PRD.md edits = YES
 ARCHITECTURE.md edits = 0
 Git mutations = 0
 ```
