@@ -70886,7 +70886,7 @@ PRIVATE-BETA-INVITE-01 registration = 0
 
 ### GOV-PRD-02: Product Reconciliation
 
-**Status:** ACTIVE — Step 1 COMPLETE — Step 2 COMPLETE — Step 3 COMPLETE — 2026-08-24
+**Status:** COMPLETE AND LOCKED — PASS — 2026-08-24
 **Task ID:** GOV-PRD-02
 **Title:** Product Reconciliation
 **Family:** GOVERNANCE / PRODUCT / CURRENT-VS-FUTURE RECONCILIATION
@@ -70907,12 +70907,12 @@ PRIVATE-BETA-INVITE-01 registration = 0
 - Step 2: `docs/GOV-PRD-02-STAGE-START.md` product-gap inventory + Step 3 edit plan only (no PRD.md write)
 - Step 3: `PRD.md` plus governance/checkpoint documents only
 - Step 4: checkpoint + board/registry lock
-**Mutexes / resources:** GOVERNANCE owned by GOV-PRD-02 while ACTIVE. All runtime resources remain UNOWNED.
+**Mutexes / resources:** GOVERNANCE released UNOWNED at Step 4 lock. All runtime resources remain UNOWNED.
 **Hot-file leases:** none
 **Shared contracts:** Authority split frozen — PRD.md = PRODUCT WHAT; ARCHITECTURE.md = TECHNICAL HOW; CLAUDE.md = development OS; TASKS.md board = scheduler; TASKS_BACKLOG_FULL.md = registry. Planning/master-plan/checkpoint documents = evidence, not automatic WHAT authority.
 **Evidence class:** GOVERNANCE
 **Revert isolation:** Documentation-only. Reverting GOV-PRD-02 must not invalidate LIVE-11 PASS, PRIVATE-BETA-GO-NO-GO-01 GO, or GOV-ARCH-02 HOW lock.
-**Assigned lane:** Lane 1 ACTIVE (governance occupancy; not an implementation lane). Lane 2 EMPTY. Lane 3 DISABLED.
+**Assigned lane:** none (Lane 1 released EMPTY at lock). Lane 2 EMPTY. Lane 3 DISABLED.
 **Identifier confirmation:** YES — already planned successor ID from GOV-OS-01 §26 / GOV-OS-01-CHECKPOINT / GO-NO-GO-01 next-sequence / GOV-ARCH-02 lock. Repo-wide search found no prior registration. ID not invented.
 **Source map:** `docs/GOV-PRD-02-SOURCE-MAP.md`
 
@@ -70962,7 +70962,9 @@ Read-only inventory against the frozen source map. All F-items resolved from sou
 
 Strategy A applied: in-place patches plus one new Limited Private-Beta Scope section. `PRD.md` now distinguishes CURRENT product, limited private-beta scope, and approved FUTURE direction. Product drift from the Step 2 inventory is corrected (Ask/Build glossary and credit rules, confirm-build-apply, specialist Agent names, coming-soon vs beta, Create Agent persist/list/view only, Apple OAuth deferred, Legal Advisor FUTURE, Multi-Builder FUTURE, Harness-as-default FUTURE, knowledge/collaboration FUTURE). Stale HOW (storage-engine claim, mixed-transport essay, queue/API internals) deferred to `ARCHITECTURE.md`. No scheduler language. No invitation work. `ARCHITECTURE.md` not edited. PRIVATE-BETA-INVITE-01 remains PARKED.
 
-**Step 4 — Checkpoint / consolidation / lock** (PENDING)
+**Step 4 — Checkpoint / consolidation / lock** (COMPLETE — 2026-08-24)
+
+Independent verification against committed HEAD `6322b8f080749c300115af520091a11b80bb792f`. CURRENT product WHAT reconciled. LIMITED-PRIVATE-BETA and APPROVED-FUTURE clearly labelled. Ask/Build semantics corrected. Build apply confirmation semantics corrected (platform confirmation, distinct from risky-action user approval). Credit precision corrected (Ask at response completion; Build only after qualifying successful workspace apply; failed/partial workspace apply consumes no Build credits; later coherence/refresh/checkpoint not made a credit condition). Superseded claims removed/relabelled. Technical HOW deferred to ARCHITECTURE.md. No implementation changes. Invitation remains parked. Checkpoint: `docs/GOV-PRD-02-CHECKPOINT.md`.
 
 ---
 
@@ -71008,6 +71010,7 @@ PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUT
 - PRD.md edits in Step 1 = 0
 - PRD.md edits in Step 2 = 0
 - PRD.md edits in Step 3 = YES
+- PRD.md edits in Step 4 = 0
 - ARCHITECTURE.md edits = 0
 - No subagents
 - No worktrees or branches
@@ -71062,30 +71065,42 @@ Step 3 (Reconcile / update authoritative PRD.md):
 - [x] PRIVATE-BETA-INVITE-01 remains parked
 
 Step 4 (Checkpoint / consolidation / lock):
-- [ ] `docs/GOV-PRD-02-CHECKPOINT.md` created
-- [ ] CURRENT product WHAT reconciled; LIMITED-BETA and FUTURE clearly labelled
-- [ ] ARCHITECTURE.md not edited
-- [ ] No implementation changes
-- [ ] 2-source-lane pilot remains unregistered
-- [ ] PRIVATE-BETA-INVITE-01 remains parked
-- [ ] GOV-PRD-02 COMPLETE AND LOCKED
-- [ ] Lane 1 EMPTY; Lane 2 EMPTY; Lane 3 DISABLED; GOVERNANCE UNOWNED
+- [x] `docs/GOV-PRD-02-CHECKPOINT.md` created
+- [x] CURRENT product WHAT reconciled; LIMITED-BETA and FUTURE clearly labelled
+- [x] ARCHITECTURE.md not edited
+- [x] No implementation changes
+- [x] 2-source-lane pilot remains unregistered
+- [x] PRIVATE-BETA-INVITE-01 remains parked
+- [x] GOV-PRD-02 COMPLETE AND LOCKED
+- [x] Lane 1 EMPTY; Lane 2 EMPTY; Lane 3 DISABLED; GOVERNANCE UNOWNED
 
 ---
 
-**GOV-PRD-02 status:** ACTIVE — Step 1 COMPLETE — Step 2 COMPLETE — Step 3 COMPLETE — 2026-08-24
-**Current Stage:** Step 3 — Reconcile / update authoritative PRD.md — COMPLETE
-**Exact next step:** GOV-PRD-02 Step 4 — checkpoint / consolidation / lock
+**GOV-PRD-02 status:** COMPLETE AND LOCKED — PASS — 2026-08-24
+**Current Stage:** Step 4 — Checkpoint / consolidation / lock — COMPLETE
+**Exact next step:** none for this task — next planned non-invite lifecycle is the first genuine 2-source-lane pilot (NOT REGISTERED)
 **Source map:** `docs/GOV-PRD-02-SOURCE-MAP.md`
 **Stage-start:** `docs/GOV-PRD-02-STAGE-START.md`
-**PRD.md:** reconciled — CURRENT / LIMITED-PRIVATE-BETA / APPROVED-FUTURE separated
+**Checkpoint:** `docs/GOV-PRD-02-CHECKPOINT.md`
+**PRD.md:** reconciled authoritative PRODUCT WHAT — CURRENT / LIMITED-PRIVATE-BETA / APPROVED-FUTURE separated — Step 4 edits = 0
 **ARCHITECTURE.md:** untouched (GOV-ARCH-02 lock preserved)
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED / PARKED / NOT EXECUTABLE
 **2-source-lane pilot:** NOT REGISTERED
 **LIVE_STAGING_VALIDATED:** YES
 **BUILDER_PRIVATE_BETA_READINESS:** GO
 
-Step 3 activity ledger:
+Record:
+- product WHAT reconciled
+- CURRENT / limited-beta / FUTURE separated
+- Ask/Build semantics corrected
+- Build apply confirmation semantics corrected
+- credit precision corrected
+- superseded claims removed/relabelled
+- technical HOW deferred to ARCHITECTURE.md
+- no implementation changes
+- invitation remains parked
+
+Step 4 activity ledger:
 ```
 LIVE = 0
 SSH = 0
@@ -71098,8 +71113,10 @@ product implementation = 0
 frontend = 0
 backend/services = 0
 dependencies = 0
-PRD.md edits = YES
+PRD.md Step 4 edits = 0
 ARCHITECTURE.md edits = 0
 Git mutations = 0
+pilot registration = 0
+invitation registration = 0
 ```
 
