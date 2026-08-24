@@ -129,7 +129,7 @@ API Gateway (NestJS) — port 4000
   │       FilesService, GitService, PreviewStrategyResolver, BrowserSmokeService
   │
   └──► PostgreSQL (port 5432)
-         TypeORM — all durable application state
+         TypeORM — authoritative durable relational/business application state
          (sessions, users, projects, conversations, chat_messages,
           usage_records, credit_balances, credit_deduction_records,
           git_checkpoints, user_agents, subscriptions, webhooks, etc.)
@@ -165,9 +165,9 @@ See §14 Communication Mechanism Summary for the full matrix.
 ### Core Principles
 
 #### Determinism
-- Same input → same output is the design intent for execution logic
-- AI execution runs asynchronously in a background queue worker; the worker itself is
-  deterministic given fixed inputs (provider response, prompt assembly, tool results)
+- Deterministic state transitions and side-effect handling are the design intent
+- AI / provider model output itself is not guaranteed deterministic
+- Given a fixed provider response, tool results, and the same state, orchestration should produce the same state transitions and effects
 
 #### Governance on Requests, Queue-Driven Execution
 - Session governance (auth, lifetime, idle, concurrency) is enforced at request time
@@ -187,9 +187,9 @@ See §14 Communication Mechanism Summary for the full matrix.
 
 #### Explicit Ownership
 - Each service owns its domain
-- Durable **application** state is PostgreSQL (owned by API Gateway)
+- Authoritative durable **relational / business** application state is PostgreSQL (owned by API Gateway)
 - Redis is queue / Pub/Sub transport, not a general event bus
-- container-manager owns local/runtime state in SQLite plus Docker FS — not application Postgres
+- Filesystem workspace / snapshot artifacts and container-manager local/runtime SQLite / Docker state are separate storage domains — not application Postgres
 
 ---
 
@@ -313,11 +313,12 @@ Local/staging listen port: **3002**.
 ### Infrastructure Components
 
 #### PostgreSQL (port 5432)
-- Sole authoritative **application** durable database
+- Authoritative durable database for **relational / business application state**
 - Managed via TypeORM migrations
-- Owned by API Gateway for all application state
+- Owned by API Gateway for that relational / business state
 - AI Service Worker has direct access to `usage_records` only
 - container-manager does **not** use PostgreSQL
+- Filesystem workspace / snapshot artifacts and container-manager SQLite / Docker runtime state are separate storage domains
 
 #### Redis (port 6379)
 - BullMQ backend: `ai-execution` queue transport
@@ -379,8 +380,19 @@ LIVE-11 proved a qualifying credit deduction with Stripe charging disabled.
 | `GET /api/health/ready` | Gateway | CURRENT (startup guards) |
 | `GET /api/health/db` | Gateway | CURRENT |
 | AI Service `/metrics` | AI Service | CURRENT scrape target in **local compose** Prometheus config |
-| Worker stuck-execution watchdog | AI Service WorkerProcessor | CURRENT in-process recovery for stuck `running` executions. **Not** a session idle reaper. |
+| Worker stuck-execution watchdog | AI Service WorkerProcessor | CURRENT in-process recovery for stuck `running` executions. **Not** a session idle reaper. **Not** the independent ops watchdog. |
+| `aisandbox-ops-watchdog` | Independent Node.js process (`monitoring/watchdog/ops-watchdog.js`); PM2-managed on staging | CURRENT small-private-beta operational monitoring. **Not** the Worker stuck-execution watchdog. **Not** a production-grade dashboard. |
 | Prometheus / Grafana | `docker-compose.yml` | CURRENT **local infrastructure**. Staging scrape of PM2 processes is unverified. |
+
+`aisandbox-ops-watchdog` is a standalone Node.js operations watchdog. It does not share the API Gateway process failure domain. Locked OPS-01 evidence establishes a five-probe set:
+
+- API Gateway `GET /api/health/ready`
+- AI Service `GET /metrics`
+- Frontend public URL reachability
+- container-manager `GET /api/health`
+- Redis direct TCP AUTH + PING
+
+PostgreSQL is covered transitively by Gateway readiness. Outage and recovery notifications are sent through Resend / email. This is CURRENT small-private-beta operator monitoring, not an enterprise dashboard.
 
 ---
 
@@ -501,12 +513,13 @@ The proxy target is container-manager. Preview does not route to AI Service.
 
 ### Current Database
 
-**PostgreSQL** is the sole authoritative **application** database.
+**PostgreSQL** is the authoritative durable database for **relational / business application state**.
 
-TypeORM manages the schema through versioned migrations.
-All durable application state is PostgreSQL-backed.
+TypeORM manages that schema through versioned migrations.
 
-container-manager uses **local SQLite** for runtime session/container/git state. That is not application source of truth.
+Filesystem workspace / snapshot artifacts and container-manager local/runtime SQLite / Docker state are **separate architectural storage domains**. They are not a second application relational database, and they do not replace PostgreSQL authority for business data.
+
+container-manager uses **local SQLite** for runtime session/container/git state. That is not the application relational source of truth.
 
 ---
 
@@ -1005,7 +1018,7 @@ The system uses mixed communication mechanisms. It is neither HTTP-only nor queu
 - **HTTP** — Browser↔Caddy↔API GW / Frontend, API GW↔CM, Worker↔API GW (Harness tools + finalize-accounting), Worker→Provider
 - **BullMQ over Redis** — API GW→Worker (current Builder job submission and consumption)
 - **Redis Pub/Sub** — Worker→Redis (publish), API GW→Redis (subscribe for SSE forwarding)
-- **TypeORM / PostgreSQL** — API GW (application state), AI Worker (`usage_records`)
+- **TypeORM / PostgreSQL** — API GW (relational / business application state), AI Worker (`usage_records`)
 - **SQLite** — container-manager local/runtime state
 - **WebSocket** — preview streaming only
 - **Docker SDK** — CM↔Docker engine
@@ -1033,6 +1046,8 @@ Leftover AI Service `POST /api/execute` HTTP remains as a listen surface. It is 
 All intentional for current scope.
 
 The WorkerProcessor stuck-execution watchdog is **not** a contradiction of “no idle reaper.” It recovers stuck AI executions; it does not scan session idle.
+
+`aisandbox-ops-watchdog` is an independent PM2-managed operations probe. It is not a session-idle reaper and is not the Worker stuck-execution watchdog.
 
 ---
 
