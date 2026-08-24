@@ -71126,7 +71126,7 @@ invitation registration = 0
 
 ### PILOT-2LANE-01 — First Genuine 2-Source-Lane Pilot (Shared Checkout)
 
-**Status:** ACTIVE — Step 1 COMPLETE — Step 2 COMPLETE — 2026-08-24 — Step 3 READY_AFTER_CLEAN_STEP2_COMMIT — Step 4 PENDING — IMPLEMENTATION NOT STARTED; authorized ONLY after Keith commits the Step 2 governance state and `git status --short` is empty
+**Status:** PAUSED / NOT LOCKED — Step 1 COMPLETE — Step 2 COMPLETE — Step 3 COMPLETE (both child lanes LANE-DONE) — 2026-08-24 — combined Keith Git checkpoint `9e7075d` — Step 4 PAUSED / BLOCKED on pre-existing non-live gateway fixture failures — GATEWAY-TEST-FIXTURE-01 registered as serialized Class 1 Nest fixture repair; Class 2 TypeORM-forRoot suites are a separate blocker — do not resume Step 4 until the broad non-live gateway suite is green with only `smoke.integration.spec.ts` excluded
 **Task ID:** PILOT-2LANE-01
 **Workstream:** GOVERNANCE (taxonomy only; zero admission weight)
 **Lifecycle:** 4-step — Step 1 registration/candidate-selection/concurrency contract; Step 2 stage-start + exact lane admission + preflight; Step 3 parallel implementation/validation (two primary Cursor windows, no subagents); Step 4 pilot consolidation + concurrency review + lock
@@ -71167,7 +71167,7 @@ invitation registration = 0
 
 #### AGENT-PLATFORM-CREATE-01C — User-Created Agent Delete API (Soft Delete)
 
-**Status:** ADMITTED — ACTIVE on Lane 1 (PILOT-2LANE-01 Step 2 — 2026-08-24) — owns GATEWAY — NOT EXECUTING until launch gate (Keith commits Step 2 state; clean tree; PILOT_WORKER_LAUNCH_HEAD substituted into worker prompt) — admission evidence: `docs/PILOT-2LANE-01-STAGE-START.md` §5–§7, worker prompt §22
+**Status:** LANE-DONE / NOT LOCKED — Lane 1 (PILOT-2LANE-01) — 2026-08-24 — combined checkpoint `9e7075d` — owns GATEWAY (frozen 4-file write set; no further writes) — PILOT Step 4 PAUSED — admission evidence: `docs/PILOT-2LANE-01-STAGE-START.md` §5–§7
 **Task ID:** AGENT-PLATFORM-CREATE-01C
 **Parent / pilot:** PILOT-2LANE-01 (Lane 1)
 **Family:** AGENT PLATFORM / CREATE (successor to AGENT-PLATFORM-CREATE-01A / 01B, both COMPLETE AND LOCKED)
@@ -71199,7 +71199,7 @@ invitation registration = 0
 
 #### I18N-SHELL-06 — Workspace StateMessage Heading/Action Locale Migration
 
-**Status:** ADMITTED — ACTIVE on Lane 2 (PILOT-2LANE-01 Step 2 — 2026-08-24) — owns FRONTEND + I18N (atomic 3-file message lease) — NOT EXECUTING until launch gate (Keith commits Step 2 state; clean tree; PILOT_WORKER_LAUNCH_HEAD substituted into worker prompt) — admission evidence: `docs/PILOT-2LANE-01-STAGE-START.md` §8–§12, worker prompt §23
+**Status:** LANE-DONE / NOT LOCKED — Lane 2 (PILOT-2LANE-01) — 2026-08-24 — combined checkpoint `9e7075d` — owns FRONTEND + I18N (frozen 5-file write set; no further writes) — PILOT Step 4 PAUSED — admission evidence: `docs/PILOT-2LANE-01-STAGE-START.md` §8–§12
 **Task ID:** I18N-SHELL-06
 **Parent / pilot:** PILOT-2LANE-01 (Lane 2)
 **Family:** I18N (successor to I18N-SHELL-05, COMPLETE and LOCKED)
@@ -71228,4 +71228,66 @@ invitation registration = 0
 **Validation (lane-local, frozen at Step 2):** `Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsc --noEmit --incremental false` then `npm test`. The `--incremental false` flag is MANDATORY: plain `tsc --noEmit` rewrites the git-tracked `frontend/tsconfig.tsbuildinfo` (`incremental: true` in tsconfig.json); the frozen flag was empirically verified at Step 2 (exit 0, buildinfo SHA256 unchanged, tree clean). Mandatory guard after every typecheck: `git status --short` must show no `tsconfig.tsbuildinfo` dirt, else STOP (never git-restore it). `npm test` = `tsx --test` (Node runner; no ports/snapshots/tracked writes). `npm run build` PROHIBITED during the parallel window; build runs in the serialized Step 4 combined validation under control-plane/Keith Git authority.
 
 **Worker restrictions:** no writes outside the exclusive scope; no governance/registry/PRD/ARCHITECTURE writes; no Git mutations; no dependencies; no runtime; no browser smoke required; STOP conditions per plan §19 (including scope-expansion stop if the migration cannot stay within the declared files).
+
+---
+
+## RELIABILITY — Pre-Existing Gateway Nest TestingModule Fixture Repair
+
+### GATEWAY-TEST-FIXTURE-01 — Pre-Existing Gateway Nest TestingModule Fixture Repair
+
+**Status:** REGISTERED — Step 1 COMPLETE — 2026-08-24 — Step 2 NOT STARTED — NOT a source lane — serialized blocker remediation while PILOT-2LANE-01 is PAUSED — Plan: `docs/GATEWAY-TEST-FIXTURE-01-PLAN.md`
+**Task ID:** GATEWAY-TEST-FIXTURE-01
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Lifecycle:** 3-step — Step 1 registration + exact failure/root-cause/scope freeze; Step 2 test-fixture implementation + verification (three sequential batches A/B/C); Step 3 consolidation/checkpoint/lock (PILOT Step 4 resume is NOT authorized by this task alone)
+**Start condition:** READY at Step 1 — PILOT-2LANE-01 PAUSED / NOT LOCKED; both implementation lanes LANE-DONE / NOT LOCKED; clean tree at HEAD `9e7075d`; no existing GATEWAY-TEST-FIXTURE task
+**Depends on:** PILOT-2LANE-01 Step 3 LANE-DONE (discovery during attempted Step 4 combined validation). Does not depend on unfinished output from either pilot lane.
+**Primary write scope (Step 1, this write):** `TASKS.md` CURRENT EXECUTION BOARD; this registry body; `docs/GATEWAY-TEST-FIXTURE-01-PLAN.md`
+**Primary write scope (Step 2, frozen, exact, no wildcards):**
+- `services/api-gateway/src/auth/__tests__/auth.service.verify.spec.ts`
+- `services/api-gateway/src/auth/__tests__/auth.service.reset.spec.ts`
+- `services/api-gateway/src/users/__tests__/users.integration.spec.ts`
+- `services/api-gateway/src/ai/__tests__/ai-execution-idempotency.integration.spec.ts`
+- `services/api-gateway/src/safety/execution-safety.integration.spec.ts`
+**Mutexes / resources:** GOVERNANCE held for Step 1 only then released. Step 2 later owns GATEWAY **test** surface only (the five files above). Production gateway source READ ONLY. No LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / COMPOSE / MIGRATION.
+**Hot-file leases:** the five Step 2 files during implementation only
+**Shared contracts:** none. Fixture wiring only; no API/schema/auth/session contract change.
+**Evidence class:** LOCAL-TESTS
+**Revert isolation:** revert = discard the five test files; cannot invalidate AGENT-PLATFORM-CREATE-01C or I18N-SHELL-06 evidence (disjoint write sets)
+
+**Identifier search:** Repo-wide `GATEWAY-TEST-FIXTURE` = zero matches before this registration. GATEWAY-TEST-FIXTURE-01 is new.
+
+**Purpose:** Repair pre-existing Nest `TestingModule` DI fixture drift that blocks PILOT-2LANE-01 Step 4 combined non-live gateway validation. Production behavior must not change.
+
+**Fresh reproduction (Step 1, `--runInBand`, smoke excluded only):**
+
+```
+Test Suites: 9 failed, 1 skipped, 158 passed, 167 of 168 total
+Tests:       83 failed, 6 skipped, 2032 passed, 2121 total
+```
+
+**Class 1 IN SCOPE (PRE_EXISTING_NEST_TESTINGMODULE_FIXTURE_DRIFT) — 5 suites / 60 tests:**
+- Batch A: `auth.service.verify.spec.ts` (13) + `auth.service.reset.spec.ts` (7) — missing `DataSource` at AuthService index [4]
+- Batch B: `users.integration.spec.ts` (6) — missing `PlanRepository` at UsersService index [1]
+- Batch C: `ai-execution-idempotency.integration.spec.ts` (7) + `execution-safety.integration.spec.ts` (27) — missing `CreditBalanceRepository` because real `CreditBalanceGuard` is not `overrideGuard`'d
+
+**Class 2 OUT OF SCOPE (PRE_EXISTING_LIVE_TYPEORM_FORROOT_IN_NONLIVE_JEST) — 4 suites / 23 tests — STOP AND SEPARATE:**
+- `ai-execution-deterministic-replay.integration.spec.ts` (7)
+- `ai-execution-orphan-reconciliation.integration.spec.ts` (6)
+- `ai-execution-two-phase.integration.spec.ts` (5)
+- `ai-execution-replay-quota-bypass.integration.spec.ts` (5)
+
+`PILOT_CAUSED=NO`. `PRODUCTION_CODE_FIX_REQUIRED=NO`. `TEST_FIXTURE_ONLY=YES` (Class 1). `RUNTIME_REQUIRED=NO` (Class 1). Class 2 as written needs Postgres and is forbidden here.
+
+**Sequential batches:** A then B then C. Do not mix groups in one uncontrolled edit. Each batch must green its suites before the next.
+
+**Forbidden:** production source edits; assertion weakening to buy green; Docker/Postgres/Redis/provider/LIVE/staging/browser/dev-servers; adding Class 2 filenames to jest ignore and calling the repair complete; resuming PILOT-2LANE-01 Step 4; enabling Lane 3; registering PRIVATE-BETA-INVITE-01.
+
+**Step 2 success (this task):** 5 Class 1 suites PASS; zero production diffs; gateway `npm run build` PASS; `git diff --check` PASS. Broad non-live suite will still fail Class 2. That remaining red is **not** this task's success bar.
+
+**PILOT resume:** NOT authorized until Class 2 is resolved by a separately registered task AND `npx jest --testPathIgnorePatterns=smoke.integration.spec.ts --runInBand` is green with no extra excludes.
+
+**Preserved state:** PILOT-2LANE-01 PAUSED / NOT LOCKED. AGENT-PLATFORM-CREATE-01C LANE-DONE / NOT LOCKED. I18N-SHELL-06 LANE-DONE / NOT LOCKED. Lane 3 DISABLED. PRIVATE-BETA-INVITE-01 PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. LIVE_STAGING_VALIDATED=YES. BUILDER_PRIVATE_BETA_READINESS=GO. All runtime authorization flags NO.
+
+**Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, gates=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, tests executed=YES (one non-live gateway jest --runInBand), Git mutations=0, PRD.md=0, ARCHITECTURE.md=0, Lane 3=DISABLED, invitation registration=0, PILOT Step 4 resumed=NO.
+
 
