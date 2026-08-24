@@ -70576,7 +70576,7 @@ Git mutations = 0
 
 ### GOV-ARCH-02: Architecture Reconciliation
 
-**Status:** ACTIVE — Step 1 COMPLETE — Step 2 COMPLETE — 2026-08-23
+**Status:** ACTIVE — Step 1 COMPLETE — Step 2 COMPLETE — Step 3 COMPLETE — 2026-08-24
 **Task ID:** GOV-ARCH-02
 **Title:** Architecture Reconciliation
 **Family:** GOVERNANCE / ARCHITECTURE / CURRENT-VS-FUTURE RECONCILIATION
@@ -70611,6 +70611,7 @@ Git mutations = 0
 **Runtime/schema/migration change:** NONE
 **ARCHITECTURE.md change in Step 1:** NONE
 **ARCHITECTURE.md change in Step 2:** NONE
+**ARCHITECTURE.md change in Step 3:** YES — bounded reconciliation to CURRENT implemented HOW plus labeled PLANNED/FUTURE
 **PRD.md change:** NONE in this lifecycle (WHAT drift → GOV-PRD-02)
 
 ---
@@ -70645,9 +70646,9 @@ Reconcile accumulated technical architecture decisions into `ARCHITECTURE.md` wi
 
 Read-only inventory against the frozen source map. ARCHITECTURE.md not edited. F-items resolved from source. Stage-start: `docs/GOV-ARCH-02-STAGE-START.md`. Bounded Step 3 edit plan frozen. Product-WHAT remains deferred to GOV-PRD-02 (not registered).
 
-**Step 3 — Reconcile / update authoritative ARCHITECTURE.md** (PENDING)
+**Step 3 — Reconcile / update authoritative ARCHITECTURE.md** (COMPLETE — 2026-08-24)
 
-Bounded documentation-only updates to `ARCHITECTURE.md` plus governance/checkpoint documents. Clearly label CURRENT vs PLANNED/FUTURE. Do not claim unimplemented multi-agent capabilities are operational. Do not update PRD.md.
+`ARCHITECTURE.md` reconciled. CURRENT vs PLANNED/FUTURE separated. Identified technical drift corrected (AI port 4001, Caddy/PM2 staging, delayed Build deduction, confirm-build-apply Gateway route, idle timeout, file-action/AUTO_APPLY, Git/safe.directory, PreviewStrategyResolver, user_agents persistence-only, in-memory non-product-reachable coordinator, Harness IMPLEMENTED_BUT_GATED, auth, billing vs Stripe, monitoring). PRD.md untouched. Step 4 pending.
 
 **Step 4 — Checkpoint / consolidation / lock** (PENDING)
 
@@ -70697,6 +70698,7 @@ PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUT
 - All runtime resources remain UNOWNED
 - ARCHITECTURE.md edits in Step 1 = 0
 - ARCHITECTURE.md edits in Step 2 = 0
+- ARCHITECTURE.md edits in Step 3 = YES
 - PRD.md edits = 0
 - No subagents
 - No worktrees or branches
@@ -70743,13 +70745,28 @@ Step 2 (Architecture drift/gap inventory):
 - [x] PRIVATE-BETA-INVITE-01 remains parked
 - [x] Step 3 can proceed without runtime evidence = YES
 
-Step 3 / Step 4: PENDING
+Step 3 (Reconcile / update authoritative ARCHITECTURE.md):
+- [x] Bounded documentation-only updates to `ARCHITECTURE.md`
+- [x] CURRENT vs PLANNED/FUTURE clearly separated
+- [x] Identified technical drift corrected
+- [x] Unimplemented multi-agent capabilities not claimed as operational
+- [x] PRD.md not edited
+- [x] GOV-PRD-02 not registered
+- [x] 2-source-lane pilot not registered
+- [x] PRIVATE-BETA-INVITE-01 remains parked
+- [x] Step 3 = COMPLETE — 2026-08-24
+- [x] Step 4 = PENDING
+- [x] Application/source/config files unchanged
+- [x] All runtime authorization flags = NO
+- [x] All runtime resources UNOWNED
+
+Step 4: PENDING
 
 ---
 
-**GOV-ARCH-02 status:** ACTIVE — Step 1 COMPLETE — Step 2 COMPLETE — 2026-08-23
-**Current Stage:** Step 2 — Architecture drift/gap inventory — COMPLETE
-**Exact next step:** GOV-ARCH-02 Step 3 — Reconcile / update authoritative ARCHITECTURE.md
+**GOV-ARCH-02 status:** ACTIVE — Step 1 COMPLETE — Step 2 COMPLETE — Step 3 COMPLETE — 2026-08-24
+**Current Stage:** Step 3 — Reconcile / update authoritative ARCHITECTURE.md — COMPLETE
+**Exact next step:** GOV-ARCH-02 Step 4 — Checkpoint / consolidation / lock
 **Source map:** `docs/GOV-ARCH-02-SOURCE-MAP.md`
 **Stage-start:** `docs/GOV-ARCH-02-STAGE-START.md`
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED / PARKED / NOT EXECUTABLE
@@ -70794,6 +70811,26 @@ dependencies = 0
 ARCHITECTURE.md edits = 0
 PRD.md edits = 0
 Git mutations = 0
+```
+
+Step 3 activity ledger:
+```
+LIVE = 0
+SSH = 0
+staging = 0
+provider = 0
+credits = 0
+gates = 0
+runtime mutation = 0
+database mutation = 0
+migrations = 0
+product implementation = 0
+frontend implementation = 0
+backend/services implementation = 0
+dependencies = 0
+PRD.md edits = 0
+Git mutations = 0
+ARCHITECTURE.md documentation edit = YES
 ```
 
 
