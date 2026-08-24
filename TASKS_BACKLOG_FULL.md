@@ -70576,7 +70576,7 @@ Git mutations = 0
 
 ### GOV-ARCH-02: Architecture Reconciliation
 
-**Status:** ACTIVE — Step 1 COMPLETE — Step 2 COMPLETE — Step 3 COMPLETE — 2026-08-24
+**Status:** COMPLETE AND LOCKED — PASS — 2026-08-24
 **Task ID:** GOV-ARCH-02
 **Title:** Architecture Reconciliation
 **Family:** GOVERNANCE / ARCHITECTURE / CURRENT-VS-FUTURE RECONCILIATION
@@ -70596,12 +70596,12 @@ Git mutations = 0
 - Step 2: `docs/GOV-ARCH-02-STAGE-START.md` architecture-gap inventory + Step 3 edit plan only (no ARCHITECTURE.md write)
 - Step 3: `ARCHITECTURE.md` plus governance/checkpoint documents only
 - Step 4: checkpoint + board/registry lock
-**Mutexes / resources:** GOVERNANCE (owned by GOV-ARCH-02 while ACTIVE). All runtime resources remain UNOWNED.
+**Mutexes / resources:** GOVERNANCE released UNOWNED at GOV-ARCH-02 lock. All runtime resources remain UNOWNED.
 **Hot-file leases:** none
 **Shared contracts:** Authority split frozen — PRD.md = PRODUCT WHAT; ARCHITECTURE.md = TECHNICAL HOW; CLAUDE.md = development OS; TASKS.md board = scheduler; TASKS_BACKLOG_FULL.md = registry. Planning/master-plan/checkpoint documents = evidence, not automatic HOW authority.
 **Evidence class:** GOVERNANCE
 **Revert isolation:** Documentation-only. Reverting GOV-ARCH-02 must not invalidate LIVE-11 PASS or PRIVATE-BETA-GO-NO-GO-01 GO evidence.
-**Assigned lane:** Lane 1 (GOVERNANCE occupancy; not an implementation lane). Lane 2 EMPTY. Lane 3 DISABLED.
+**Assigned lane:** none (Lane 1 released EMPTY at lock). Lane 2 EMPTY. Lane 3 DISABLED.
 **Identifier confirmation:** YES — already planned successor ID from GOV-OS-01 §26 / GOV-OS-01-CHECKPOINT §38 / GO-NO-GO-01 next-sequence. Repo-wide search found no prior registration. ID not invented.
 **Source map:** `docs/GOV-ARCH-02-SOURCE-MAP.md`
 **Stage-start:** `docs/GOV-ARCH-02-STAGE-START.md`
@@ -70611,8 +70611,10 @@ Git mutations = 0
 **Runtime/schema/migration change:** NONE
 **ARCHITECTURE.md change in Step 1:** NONE
 **ARCHITECTURE.md change in Step 2:** NONE
-**ARCHITECTURE.md change in Step 3:** YES — bounded reconciliation to CURRENT implemented HOW plus labeled PLANNED/FUTURE
+**ARCHITECTURE.md change in Step 3:** YES — bounded reconciliation to CURRENT implemented HOW plus labeled PLANNED/FUTURE, including committed final correction pass (`60c21e0`)
+**ARCHITECTURE.md change in Step 4:** NONE
 **PRD.md change:** NONE in this lifecycle (WHAT drift → GOV-PRD-02)
+**Checkpoint:** `docs/GOV-ARCH-02-CHECKPOINT.md`
 
 ---
 
@@ -70650,9 +70652,9 @@ Read-only inventory against the frozen source map. ARCHITECTURE.md not edited. F
 
 `ARCHITECTURE.md` reconciled. CURRENT vs PLANNED/FUTURE separated. Identified technical drift corrected (AI port 4001, Caddy/PM2 staging, delayed Build deduction, confirm-build-apply Gateway route, idle timeout, file-action/AUTO_APPLY, Git/safe.directory, PreviewStrategyResolver, user_agents persistence-only, in-memory non-product-reachable coordinator, Harness IMPLEMENTED_BUT_GATED, auth, billing vs Stripe, monitoring). PRD.md untouched. Step 4 pending.
 
-**Step 4 — Checkpoint / consolidation / lock** (PENDING)
+**Step 4 — Checkpoint / consolidation / lock** (COMPLETE AND LOCKED — PASS — 2026-08-24)
 
-Independent verification, checkpoint, board/registry lock.
+Independent verification against committed HEAD `60c21e098b544d1e1edb6c3e7bad9ac5fc64d019`. Prior Step 4 attempt STOPPED on dirty tree; Keith committed the intended final `ARCHITECTURE.md` correction pass; Step 4 resumed on CLEAN `main`. CURRENT technical HOW reconciled. PLANNED/FUTURE HOW clearly labelled. Final bounded corrections verified (ops watchdog, PostgreSQL storage boundary, checkpoint/confirm ordering against source, non-absolute determinism). PRD.md untouched. No implementation changes. GOV-PRD-02 remains unregistered. Invitations remain parked. Checkpoint: `docs/GOV-ARCH-02-CHECKPOINT.md`.
 
 ---
 
@@ -70755,20 +70757,42 @@ Step 3 (Reconcile / update authoritative ARCHITECTURE.md):
 - [x] 2-source-lane pilot not registered
 - [x] PRIVATE-BETA-INVITE-01 remains parked
 - [x] Step 3 = COMPLETE — 2026-08-24
-- [x] Step 4 = PENDING
+- [x] Step 4 = PENDING at Step 3 close
 - [x] Application/source/config files unchanged
 - [x] All runtime authorization flags = NO
 - [x] All runtime resources UNOWNED
 
-Step 4: PENDING
+Step 4 (Checkpoint / consolidation / lock):
+- [x] Clean committed `main` rechecked after prior dirty-tree STOP
+- [x] HEAD `60c21e098b544d1e1edb6c3e7bad9ac5fc64d019` contains final corrections
+- [x] `aisandbox-ops-watchdog` documented CURRENT and separate from WorkerProcessor watchdog
+- [x] PostgreSQL storage boundary clarified (relational/business vs filesystem/SQLite/Docker)
+- [x] Checkpoint/confirm ordering verified against current frontend source
+- [x] Determinism wording non-absolute (provider output not claimed deterministic)
+- [x] Fresh verification of CURRENT HOW truths PASS
+- [x] Stale claims not presented as CURRENT
+- [x] `docs/GOV-ARCH-02-CHECKPOINT.md` created
+- [x] CURRENT technical HOW reconciled; PLANNED/FUTURE HOW clearly labelled
+- [x] PRD.md not edited
+- [x] No implementation changes
+- [x] GOV-PRD-02 remains unregistered
+- [x] 2-source-lane pilot remains unregistered
+- [x] PRIVATE-BETA-INVITE-01 remains parked
+- [x] Step 4 = COMPLETE — 2026-08-24
+- [x] GOV-ARCH-02 COMPLETE AND LOCKED — PASS — 2026-08-24
+- [x] Lane 1 EMPTY; Lane 2 EMPTY; Lane 3 DISABLED; GOVERNANCE UNOWNED
+- [x] All runtime authorization flags = NO
+- [x] ARCHITECTURE.md Step 4 edits = 0
 
 ---
 
-**GOV-ARCH-02 status:** ACTIVE — Step 1 COMPLETE — Step 2 COMPLETE — Step 3 COMPLETE — 2026-08-24
-**Current Stage:** Step 3 — Reconcile / update authoritative ARCHITECTURE.md — COMPLETE
-**Exact next step:** GOV-ARCH-02 Step 4 — Checkpoint / consolidation / lock
+**GOV-ARCH-02 status:** COMPLETE AND LOCKED — PASS — 2026-08-24
+**Current Stage:** Step 4 — Checkpoint / consolidation / lock — COMPLETE
+**Exact next step:** none for this task — next planned non-invite lifecycle is GOV-PRD-02 (NOT REGISTERED)
 **Source map:** `docs/GOV-ARCH-02-SOURCE-MAP.md`
 **Stage-start:** `docs/GOV-ARCH-02-STAGE-START.md`
+**Checkpoint:** `docs/GOV-ARCH-02-CHECKPOINT.md`
+**ARCHITECTURE.md:** reconciled authoritative TECHNICAL HOW
 **PRIVATE-BETA-INVITE-01:** UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED / PARKED / NOT EXECUTABLE
 **GOV-PRD-02:** NOT REGISTERED
 **2-source-lane pilot:** NOT REGISTERED
@@ -70831,6 +70855,29 @@ dependencies = 0
 PRD.md edits = 0
 Git mutations = 0
 ARCHITECTURE.md documentation edit = YES
+```
+
+Step 4 activity ledger:
+```
+LIVE = 0
+SSH = 0
+staging = 0
+provider = 0
+credits = 0
+gates = 0
+runtime mutation = 0
+database mutation = 0
+migrations = 0
+product implementation = 0
+frontend implementation = 0
+backend/services implementation = 0
+dependencies = 0
+ARCHITECTURE.md Step 4 edits = 0
+PRD.md edits = 0
+Git mutations = 0
+GOV-PRD-02 registration = 0
+2-source-lane pilot registration = 0
+PRIVATE-BETA-INVITE-01 registration = 0
 ```
 
 
