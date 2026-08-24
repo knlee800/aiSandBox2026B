@@ -71126,7 +71126,7 @@ invitation registration = 0
 
 ### PILOT-2LANE-01 — First Genuine 2-Source-Lane Pilot (Shared Checkout)
 
-**Status:** ACTIVE — Step 1 COMPLETE — 2026-08-24 — Steps 2/3/4 PENDING — IMPLEMENTATION NOT AUTHORIZED
+**Status:** ACTIVE — Step 1 COMPLETE — Step 2 COMPLETE — 2026-08-24 — Step 3 READY_AFTER_CLEAN_STEP2_COMMIT — Step 4 PENDING — IMPLEMENTATION NOT STARTED; authorized ONLY after Keith commits the Step 2 governance state and `git status --short` is empty
 **Task ID:** PILOT-2LANE-01
 **Workstream:** GOVERNANCE (taxonomy only; zero admission weight)
 **Lifecycle:** 4-step — Step 1 registration/candidate-selection/concurrency contract; Step 2 stage-start + exact lane admission + preflight; Step 3 parallel implementation/validation (two primary Cursor windows, no subagents); Step 4 pilot consolidation + concurrency review + lock
@@ -71159,25 +71159,27 @@ invitation registration = 0
 
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, gates=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, tests executed=0, dependencies=0, PRD.md edits=0, ARCHITECTURE.md edits=0, Git mutations=0, Lane 1 implementation=0, Lane 2 implementation=0, Lane 3=DISABLED, invitation registration=0.
 
-**Exact next step:** PILOT-2LANE-01 Step 2 — stage-start + exact lane admission + preflight (fresh control-plane window; preflight requirements frozen in plan §24). Implementation remains unauthorized until Step 2 completes.
+**Step 2 admission evidence (2026-08-24):** Stage-start `docs/PILOT-2LANE-01-STAGE-START.md`. PILOT_ADMISSION_BASE_HEAD `00d9d9b85a55b48c3f2176d72c4974234125624c` (branch main, clean tree verified pre-write). Pair drift re-verification: NONE (Lane 1 user-agent surface unchanged since Step 1 — no DELETE route, no service delete method, no service spec existed; Lane 2 recount exact 60 `heading="` + 57 `action="` = 117, 64 StateMessage call sites internally consistent). Lane 1 ADMITTED to Lane 1 with GATEWAY owned; exact 4-file write set (service spec resolved REQUIRED — Step 1 "optional" eliminated). Lane 2 ADMITTED to Lane 2 with FRONTEND + I18N owned; exact 5-file write set (`frontend/lib/recovery-copy.ts` resolved READ ONLY / NOT REQUIRED — the established extension pattern lives inside `workspace-shell.tsx` local getters). tsbuildinfo hazard resolved: plain `tsc --noEmit` UNSAFE (`incremental: true` + tracked `frontend/tsconfig.tsbuildinfo`); frozen safe typecheck `npx tsc --noEmit --incremental false` empirically verified non-mutating (SHA256 identical, tree clean). Lane 1 concurrent validation frozen: `npm test -- user-agent` + `npm run build` (full gateway `npm test` deferred to Step 4 — `src/__tests__/smoke.integration.spec.ts` requires live Postgres/provider). Lane 2 concurrent validation frozen: `npx tsc --noEmit --incremental false` + `npm test` (tsx --test; side-effect-free); frontend `npm run build` PROHIBITED until Step 4. Mutex overlap NONE. No optional writable paths remain. Both complete worker prompts frozen in stage-start §22/§23 with `<PILOT_WORKER_LAUNCH_HEAD>` placeholder to be substituted with the committed Step 2 HEAD before launch.
+
+**Exact next step:** Keith commits/pushes ONLY the Step 2 governance files, verifies `git status --short` empty, records the committed HEAD as PILOT_WORKER_LAUNCH_HEAD, substitutes it into both worker prompts, then launches Lane 1 and Lane 2 in two fresh Cursor windows (stage-start §24). Step 4 performs serialized integrated validation, doc patches, pilot review, and LOCK.
 
 ---
 
 #### AGENT-PLATFORM-CREATE-01C — User-Created Agent Delete API (Soft Delete)
 
-**Status:** REGISTERED — RESERVED for PILOT-2LANE-01 Lane 1 — FROZEN — NOT EXECUTING — NOT ADMITTED — implementation unauthorized until PILOT-2LANE-01 Step 2 admission
+**Status:** ADMITTED — ACTIVE on Lane 1 (PILOT-2LANE-01 Step 2 — 2026-08-24) — owns GATEWAY — NOT EXECUTING until launch gate (Keith commits Step 2 state; clean tree; PILOT_WORKER_LAUNCH_HEAD substituted into worker prompt) — admission evidence: `docs/PILOT-2LANE-01-STAGE-START.md` §5–§7, worker prompt §22
 **Task ID:** AGENT-PLATFORM-CREATE-01C
 **Parent / pilot:** PILOT-2LANE-01 (Lane 1)
 **Family:** AGENT PLATFORM / CREATE (successor to AGENT-PLATFORM-CREATE-01A / 01B, both COMPLETE AND LOCKED)
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Lifecycle:** bounded implementation slice inside PILOT-2LANE-01 Step 3 (worker implements + lane-local validation; control plane consolidates)
-**Start condition:** NOT READY until PILOT-2LANE-01 Step 2 preflight passes and the control plane flips Lane 1 RESERVED→ACTIVE with GATEWAY owned
-**Depends on:** AGENT-PLATFORM-CREATE-01A (LOCKED — entity/migration incl. `deleted_at`), AGENT-PLATFORM-CREATE-01B (LOCKED — create/list/view API); PILOT-2LANE-01 Step 2
-**Primary write scope (exclusive):**
+**Start condition:** READY_AFTER_CLEAN_STEP2_COMMIT — Step 2 preflight PASSED and Lane 1 flipped RESERVED→ACTIVE with GATEWAY owned; worker starts only after Keith commits Step 2 state and tree is clean
+**Depends on:** AGENT-PLATFORM-CREATE-01A (LOCKED — entity/migration incl. `deleted_at`), AGENT-PLATFORM-CREATE-01B (LOCKED — create/list/view API); PILOT-2LANE-01 Step 2 (COMPLETE)
+**Primary write scope (exclusive, exact, frozen at Step 2 — no optional entries):**
 - `services/api-gateway/src/user-agent/user-agent.controller.ts`
 - `services/api-gateway/src/user-agent/user-agent.service.ts`
 - `services/api-gateway/src/user-agent/__tests__/user-agent.controller.spec.ts`
-- `services/api-gateway/src/user-agent/__tests__/user-agent.service.spec.ts` (new, optional)
+- `services/api-gateway/src/user-agent/__tests__/user-agent.service.spec.ts` (new file — REQUIRED; resolved at Step 2: the controller spec fully mocks the service, so soft-delete repository semantics must be proven at service level)
 **Mutexes / resources:** GATEWAY (exclusive at admission)
 **Hot-file leases:** none
 **Shared contracts:** none with Lane 2; frontend does not call the new endpoint (additive, backward compatible)
@@ -71189,7 +71191,7 @@ invitation registration = 0
 **PRD basis:** PRD.md §3.I — "Delete is not currently available (accepted private-beta limitation)"; GO-NO-GO accepted limitation T7; GOV-PRD-02 stage-start F6. Closing a documented accepted limitation; PRD one-line consolidation patch at pilot Step 4 (control plane).
 **Architecture basis:** ARCHITECTURE.md §13.2 — `user_agents` persistence/API surface; `deleted_at` present; ARCHITECTURE one-line consolidation patch at pilot Step 4 (control plane).
 
-**Validation (lane-local):** `Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm test` then `npm run build`. Mocked repositories / in-process supertest — no DB, no fixed ports, no Docker/Redis; safe concurrently with Lane 2 validation.
+**Validation (lane-local, frozen at Step 2):** `Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm test -- user-agent` then `npm run build`. Targeted jest run (user-agent specs only; mocked repositories / in-process supertest — no DB, no fixed ports, no Docker/Redis; safe concurrently with Lane 2). Full `npm test` DEFERRED to serialized Step 4: the default `jest` run also matches `src/__tests__/smoke.integration.spec.ts`, which requires live PostgreSQL and a real provider key (prohibited runtime during the parallel window). `npm run build` writes only gitignored `dist/**`.
 
 **Worker restrictions:** no writes outside the exclusive scope; no governance/registry/PRD/ARCHITECTURE writes; no Git mutations; no dependencies; no runtime; STOP conditions per plan §19.
 
@@ -71197,21 +71199,22 @@ invitation registration = 0
 
 #### I18N-SHELL-06 — Workspace StateMessage Heading/Action Locale Migration
 
-**Status:** REGISTERED — RESERVED for PILOT-2LANE-01 Lane 2 — FROZEN — NOT EXECUTING — NOT ADMITTED — implementation unauthorized until PILOT-2LANE-01 Step 2 admission
+**Status:** ADMITTED — ACTIVE on Lane 2 (PILOT-2LANE-01 Step 2 — 2026-08-24) — owns FRONTEND + I18N (atomic 3-file message lease) — NOT EXECUTING until launch gate (Keith commits Step 2 state; clean tree; PILOT_WORKER_LAUNCH_HEAD substituted into worker prompt) — admission evidence: `docs/PILOT-2LANE-01-STAGE-START.md` §8–§12, worker prompt §23
 **Task ID:** I18N-SHELL-06
 **Parent / pilot:** PILOT-2LANE-01 (Lane 2)
 **Family:** I18N (successor to I18N-SHELL-05, COMPLETE and LOCKED)
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Lifecycle:** bounded implementation slice inside PILOT-2LANE-01 Step 3 (worker implements + lane-local validation; control plane consolidates)
-**Start condition:** NOT READY until PILOT-2LANE-01 Step 2 preflight passes and the control plane flips Lane 2 RESERVED→ACTIVE with FRONTEND + I18N owned
-**Depends on:** I18N-SHELL-05 (LOCKED — locale-provider pattern `getRecoveryCopy(locale)` established); PILOT-2LANE-01 Step 2
-**Primary write scope (exclusive):**
+**Start condition:** READY_AFTER_CLEAN_STEP2_COMMIT — Step 2 preflight PASSED and Lane 2 flipped RESERVED→ACTIVE with FRONTEND + I18N owned; worker starts only after Keith commits Step 2 state and tree is clean
+**Depends on:** I18N-SHELL-05 (LOCKED — locale-provider pattern `getRecoveryCopy(locale)` established); PILOT-2LANE-01 Step 2 (COMPLETE)
+**Primary write scope (exclusive, exact, frozen at Step 2 — no optional/conditional entries):**
 - `frontend/components/workspace/workspace-shell.tsx`
 - `frontend/components/workspace/workspace-shell.test.tsx`
 - `frontend/messages/en.json`
 - `frontend/messages/zh-TW.json`
 - `frontend/messages/zh-CN.json`
-- `frontend/lib/recovery-copy.ts` (only if the locale-provider extension requires it)
+
+`frontend/lib/recovery-copy.ts` resolved at Step 2: **READ ONLY / NOT REQUIRED / removed from the write set** — `workspace-shell.tsx` already imports all three message JSONs directly and defines local per-namespace `getXMessages(locale)` getters; the migration extends that in-file pattern.
 **Mutexes / resources:** FRONTEND + I18N (exclusive atomic lease over all 3 message files at admission)
 **Hot-file leases:** none beyond the I18N atomic lease
 **Shared contracts:** none with Lane 1
@@ -71222,7 +71225,7 @@ invitation registration = 0
 
 **Governance/PRD basis:** CLAUDE.md Multilingual-First rule; PRD.md §3.J multilingual UX is core CURRENT; I18N-SHELL-05 explicit non-goal deliberately deferred exactly this surface ("No status panel StateMessage heading/body/action migration beyond strings already supplied by recoveryCopy") — this is its documented successor.
 
-**Validation (lane-local):** `Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsc --noEmit` then `npm test`. `npm run build` PROHIBITED during the parallel window (it rewrites `frontend/tsconfig.tsbuildinfo`, whose restore is a worker-prohibited Git mutation); build runs in the serialized Step 4 combined validation under control-plane/Keith Git authority.
+**Validation (lane-local, frozen at Step 2):** `Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsc --noEmit --incremental false` then `npm test`. The `--incremental false` flag is MANDATORY: plain `tsc --noEmit` rewrites the git-tracked `frontend/tsconfig.tsbuildinfo` (`incremental: true` in tsconfig.json); the frozen flag was empirically verified at Step 2 (exit 0, buildinfo SHA256 unchanged, tree clean). Mandatory guard after every typecheck: `git status --short` must show no `tsconfig.tsbuildinfo` dirt, else STOP (never git-restore it). `npm test` = `tsx --test` (Node runner; no ports/snapshots/tracked writes). `npm run build` PROHIBITED during the parallel window; build runs in the serialized Step 4 combined validation under control-plane/Keith Git authority.
 
 **Worker restrictions:** no writes outside the exclusive scope; no governance/registry/PRD/ARCHITECTURE writes; no Git mutations; no dependencies; no runtime; no browser smoke required; STOP conditions per plan §19 (including scope-expansion stop if the migration cannot stay within the declared files).
 
