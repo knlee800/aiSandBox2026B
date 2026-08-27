@@ -71126,7 +71126,7 @@ invitation registration = 0
 
 ### PILOT-2LANE-01 — First Genuine 2-Source-Lane Pilot (Shared Checkout)
 
-**Status:** PAUSED / NOT LOCKED — Step 1 COMPLETE — Step 2 COMPLETE — Step 3 COMPLETE (both child lanes LANE-DONE) — 2026-08-24 — combined Keith Git checkpoint `9e7075d` — Step 4 PAUSED / BLOCKED — GATEWAY-TEST-FIXTURE-01 COMPLETE AND LOCKED — PASS — 2026-08-24 (Class 1 Nest fixtures green) — Class 2 TypeORM-forRoot suites remain UNRESOLVED / SEPARATE / NOT REGISTERED — RESUME_AUTHORIZED=NO — do not resume Step 4 until the broad non-live gateway suite is green with only `smoke.integration.spec.ts` excluded
+**Status:** PAUSED / NOT LOCKED — Step 1 COMPLETE — Step 2 COMPLETE — Step 3 COMPLETE (both child lanes LANE-DONE) — 2026-08-24 — combined Keith Git checkpoint `9e7075d` — Step 4 PAUSED / BLOCKED — GATEWAY-TEST-FIXTURE-01 COMPLETE AND LOCKED — PASS — 2026-08-24 (Class 1 Nest fixtures green) — GATEWAY-TEST-FIXTURE-02 REGISTERED — Step 1 COMPLETE — 2026-08-24 (Class 2 TypeORM/Jest architecture frozen; implementation NOT started) — RESUME_AUTHORIZED=NO — do not resume Step 4 until GATEWAY-TEST-FIXTURE-02 is COMPLETE AND LOCKED and the broad non-live gateway suite is green with only `smoke.integration.spec.ts` excluded
 **Task ID:** PILOT-2LANE-01
 **Workstream:** GOVERNANCE (taxonomy only; zero admission weight)
 **Lifecycle:** 4-step — Step 1 registration/candidate-selection/concurrency contract; Step 2 stage-start + exact lane admission + preflight; Step 3 parallel implementation/validation (two primary Cursor windows, no subagents); Step 4 pilot consolidation + concurrency review + lock
@@ -71316,5 +71316,54 @@ Fresh targeted:
 **Checkpoint:** `docs/GATEWAY-TEST-FIXTURE-01-CHECKPOINT.md`
 
 **Step 3 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, gates=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend=0, backend production edits=0, tests executed=YES (Batch A/B/C + combined five + one non-live broad diagnostic), dependencies=0, PRD.md=0, ARCHITECTURE.md=0, Git mutations=0, Lane 3=DISABLED, invitation registration=0, Class 2 repaired=0, Class 2 registered=NO, PILOT Step 4 resumed=NO.
+
+## RELIABILITY — Class 2 Non-Live TypeORM/Jest Repair
+
+### GATEWAY-TEST-FIXTURE-02 — Class 2 Non-Live TypeORM/Jest Repair
+
+**Status:** REGISTERED — Step 1 COMPLETE — 2026-08-24 — architecture frozen — implementation NOT STARTED — Plan: `docs/GATEWAY-TEST-FIXTURE-02-PLAN.md` — PILOT-2LANE-01 remains PAUSED / NOT LOCKED / RESUME_AUTHORIZED=NO
+**Task ID:** GATEWAY-TEST-FIXTURE-02
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Lifecycle:** 3-step — Step 1 registration + exact root-cause + hermetic-test architecture freeze; Step 2 test-only implementation + validation (common better-sqlite3 TypeORM fixture applied sequentially suite-by-suite); Step 3 consolidation/checkpoint/lock + PILOT-2LANE-01 Step 4 resume authorization
+**Start condition:** READY at Step 1 — GATEWAY-TEST-FIXTURE-01 COMPLETE AND LOCKED; PILOT-2LANE-01 PAUSED / NOT LOCKED; both implementation lanes LANE-DONE / NOT LOCKED; clean tree at HEAD `08ec2f288e7262236145c638e0844b9ee0e0f74e`; no existing Class 2 owner
+**Depends on:** GATEWAY-TEST-FIXTURE-01 COMPLETE AND LOCKED (Class 1 closed; Class 2 left unregistered). Does not depend on unfinished output from either pilot lane.
+**Primary write scope (Step 1, this write):** `TASKS.md` CURRENT EXECUTION BOARD; this registry body; `docs/GATEWAY-TEST-FIXTURE-02-PLAN.md`; minimal PILOT-2LANE-01 status-line mirror
+**Primary write scope (Step 2, frozen, exact, no wildcards):**
+- `services/api-gateway/src/ai/__tests__/ai-execution-deterministic-replay.integration.spec.ts`
+- `services/api-gateway/src/ai/__tests__/ai-execution-orphan-reconciliation.integration.spec.ts`
+- `services/api-gateway/src/ai/__tests__/ai-execution-replay-quota-bypass.integration.spec.ts`
+- `services/api-gateway/src/ai/__tests__/ai-execution-two-phase.integration.spec.ts`
+**Mutexes / resources:** GOVERNANCE held for Step 1 only then released. Step 2 later owns GATEWAY **test** surface only (the four files above). Production gateway source READ ONLY. No LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / COMPOSE / MIGRATION.
+**Hot-file leases:** the four Step 2 files during implementation only
+**Shared contracts:** none. Fixture architecture only; no API/schema/auth/session contract change.
+**Evidence class:** LOCAL-TESTS
+**Revert isolation:** revert = discard the four test files; cannot invalidate AGENT-PLATFORM-CREATE-01C or I18N-SHELL-06 evidence (disjoint write sets)
+
+**Identifier search:** Repo-wide `GATEWAY-TEST-FIXTURE-02` = zero matches before this registration. Family `GATEWAY-TEST-FIXTURE` owned only GATEWAY-TEST-FIXTURE-01 (Class 1 COMPLETE AND LOCKED; Class 2 explicitly NOT REGISTERED). No other canonical task owned the four TypeORM-forRoot non-live suites. GATEWAY-TEST-FIXTURE-02 is new.
+
+**Purpose:** Make the four Class 2 AI-execution integration suites hermetic for the non-live gateway Jest gate without PostgreSQL, without production-source changes, and without converting them into shallow ledger mocks.
+
+**Fresh reproduction (Step 1, four suites, `--runInBand`, no Postgres):**
+
+```
+Test Suites: 4 failed, 4 total
+Tests:       22 failed, 1 passed, 23 total
+```
+
+The 1 pass is vacuous (`if (!app) return` after DATABASE_URL skip in two-phase).
+
+**Classification:** PRE_EXISTING_LIVE_TYPEORM_FORROOT_IN_NONLIVE_JEST. `PILOT_CAUSED=NO`. `PRODUCTION_CODE_FIX_REQUIRED=NO`. `RUNTIME_REQUIRED_FOR_REPAIR=NO`.
+
+**Selected architecture:** `TypeOrmModule.forRoot({ type: 'better-sqlite3', database: ':memory:', entities: [UsageRecord], synchronize: true, dropSchema: true })` + real `UsageLedgerService` + real `IdempotencyGuard` + current constructor mocks (`QueueService`, `SessionService`, siblings) + `overrideGuard(CreditBalanceGuard)`. Assertions retargeted to current 202 queued / pending intent / completed-replay 200. two-phase DATABASE_URL skip removed. orphan `$1` SQL replaced with TypeORM update. `spyOn(undefined)` is a skip-path symptom, not an independent defect.
+
+**Forbidden:** production source edits; package/lockfile/Jest-config/.env/migration edits; assertion weakening to buy green; Docker/Postgres/Redis/provider/LIVE/staging/browser/dev-servers; adding Class 2 filenames to jest ignore; resuming PILOT-2LANE-01 Step 4; enabling Lane 3; registering PRIVATE-BETA-INVITE-01; reopening Class 1.
+
+**Step 2 success:** four frozen suites PASS; zero production diffs; gateway `npm run build` PASS; `git diff --check` PASS; broad `npx jest --testPathIgnorePatterns=smoke.integration.spec.ts --runInBand` PASS (0 failed suites / 0 failed tests).
+
+**PILOT resume:** NOT authorized at Step 1. Step 3 may authorize resume only when the broad non-live suite is green with only smoke excluded.
+
+**Preserved state:** PILOT-2LANE-01 PAUSED / NOT LOCKED. AGENT-PLATFORM-CREATE-01C LANE-DONE / NOT LOCKED. I18N-SHELL-06 LANE-DONE / NOT LOCKED. GATEWAY-TEST-FIXTURE-01 COMPLETE AND LOCKED — PASS. Lane 3 DISABLED. PRIVATE-BETA-INVITE-01 PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. LIVE_STAGING_VALIDATED=YES. BUILDER_PRIVATE_BETA_READINESS=GO. All runtime authorization flags NO.
+
+**Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, production implementation=0, test implementation=0, dependencies=0, migrations=0, PRD.md=0, ARCHITECTURE.md=0, Git mutations=0, Lane 3=DISABLED, invitation registration=0, PILOT Step 4 resumed=NO, tests executed=YES (four Class 2 suites together).
 
 
