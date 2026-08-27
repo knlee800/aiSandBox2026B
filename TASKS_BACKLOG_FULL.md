@@ -71401,4 +71401,50 @@ The 1 pass is vacuous (`if (!app) return` after DATABASE_URL skip in two-phase).
 
 **Step 3 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, production implementation=0, test implementation=0 (verification only; five Step 2B files unmodified), dependencies=0, migrations=0, PRD.md=0, ARCHITECTURE.md=0, Git mutations=0, Lane 3=DISABLED, invitation registration=0, PILOT Step 4 resumed=NO (resume AUTHORIZED for separate lifecycle), tests executed=YES (Class 2 four-suite targeted + Class 1 five-suite regression + broad non-live gate, all --runInBand, no Postgres).
 
+---
+
+## GOVERNANCE — Third Implementation Lane Admission Decision
+
+### GOV-PARALLEL-01 — Third Implementation Lane Admission Decision
+
+**Status:** REGISTERED — Step 1 COMPLETE (2026-08-27) — Step 2 PENDING (formal evidence-based decision) — Step 3 PENDING (consolidation/lock) — Lane 3 DISABLED — no scheduler-capacity change authorized
+**Task ID:** GOV-PARALLEL-01
+**Workstream:** GOVERNANCE (taxonomy only; zero admission weight)
+**Lifecycle:** 3-step (Step 1 registration/evidence/framework — Step 2 formal decision — Step 3 consolidation/lock)
+**Start condition:** READY — PILOT-2LANE-01 COMPLETE AND LOCKED — PASS — 2026-08-27; Lane 1 EMPTY; Lane 2 EMPTY; Lane 3 DISABLED; all resources UNOWNED; clean tree at HEAD `bb9b3efa213088055b95dd09de9937958d35315a`
+**Depends on:** PILOT-2LANE-01 (COMPLETE AND LOCKED — PASS — 2026-08-27); GOV-OS-01 (LOCKED)
+**Primary write scope:** `TASKS.md` CURRENT EXECUTION BOARD; `TASKS_BACKLOG_FULL.md`; `docs/GOV-PARALLEL-01-*.md`; potentially `CLAUDE.md` §Parallel capacity (ONLY if Step 2 decides ENABLE — not authorized by Step 1)
+**Mutexes / resources:** GOVERNANCE (control plane, per governance step)
+**Hot-file leases:** none
+**Shared contracts:** none
+**Evidence class:** GOVERNANCE
+**Revert isolation:** governance-only task; no source writes; trivially revertible
+
+**Identifier search:** Repo-wide grep for `GOV-PARALLEL` returned zero matches across all files (TASKS.md, TASKS_BACKLOG_FULL.md, all docs, CLAUDE.md, AGENTS.md, PRD.md, ARCHITECTURE.md). The existing GOV-* family is: GOV-ARCH-01, GOV-PRD-01, GOV-OS-01, GOV-ARCH-02, GOV-PRD-02. GOV-PARALLEL-01 is registered as the first task in the GOV-PARALLEL family — specifically about parallel lane capacity decisions (distinct from GOV-OS-01 which installed the entire operating system).
+
+**Purpose:** Make the explicit evidence-based decision that PILOT-2LANE-01 deliberately deferred: should the Development OS permit a third concurrent implementation lane? The decision must be based on frozen pilot evidence, its explicit limitations, and analysis of the qualitative differences between 2-lane and 3-lane operation.
+
+**Predecessor:** PILOT-2LANE-01 — COMPLETE AND LOCKED — PASS — 2026-08-27. The pilot's planned successor sequence explicitly called for this decision: `PILOT-2LANE-01 → pilot review → explicit future Lane 3 decision`.
+
+**Frozen pilot evidence (from PILOT-2LANE-01 checkpoint):** Two-lane collision safety PROVEN (write-set violations 0, mutex collisions 0, governance collisions 0, dirty-tree discrimination successful, runtime use 0, integrated validation PASS). Failure isolation: DESIGN VALID, EMPIRICAL PROOF NOT YET OBTAINED. Parallel elapsed-time benefit: UNPROVEN. Placeholder substitution defect: YES (non-blocking). Pre-existing test-debt interruption: YES (not pilot-caused; repaired via GATEWAY-TEST-FIXTURE-01/02).
+
+**Decision posture:** FAIL CLOSED. Lane 3 remains DISABLED unless positive evidence sufficient to justify increasing concurrency is demonstrated. Absence of a discovered problem is not proof of 3-lane safety.
+
+**Decision options (frozen at Step 1 for Step 2 evaluation):**
+- OPTION A: ENABLE Lane 3 now (evidence: INSUFFICIENT)
+- OPTION B: KEEP DISABLED until empirical failure-isolation evidence (CONSERVATIVE)
+- OPTION C: KEEP DISABLED pending both failure-isolation AND throughput evidence (MOST CONSERVATIVE)
+- OPTION D: KEEP DISABLED indefinitely; declare 2 lanes the standing maximum (PRAGMATIC)
+
+**Critical safety question (answered at Step 1):** Does successful 2-lane operation prove 3-lane safety? NO. New conditions at 3 lanes (ternary dirt discrimination, 3× pairwise admission comparisons, 3-way failure attribution, increased operator burden, more complex partial-failure recovery) have never been exercised.
+
+**Lane 3 state:** DISABLED throughout this lifecycle. No enablement in Step 1.
+**PRIVATE-BETA-INVITE-01:** PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. INVITATION_EXECUTION_PERMITTED=NO.
+**Runtime authorization:** RUNTIME_EXECUTION_AUTHORIZED=NO / PROVIDER_CALL_AUTHORIZED=NO / CREDIT_MUTATION_AUTHORIZED=NO / STAGING_MUTATION_AUTHORIZED=NO.
+
+**Plan:** `docs/GOV-PARALLEL-01-PLAN.md`
+**Step 1 HEAD:** `bb9b3efa213088055b95dd09de9937958d35315a`
+
+**Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, source changes=0, scheduler capacity changes=0, Lane 3 enablement=0, tests executed=0, dependencies=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, Git mutations=0, Lane 3=DISABLED, invitation registration=0.
+
 
