@@ -71126,7 +71126,7 @@ invitation registration = 0
 
 ### PILOT-2LANE-01 — First Genuine 2-Source-Lane Pilot (Shared Checkout)
 
-**Status:** PAUSED / NOT LOCKED — Step 1 COMPLETE — Step 2 COMPLETE — Step 3 COMPLETE (both child lanes LANE-DONE) — 2026-08-24 — combined Keith Git checkpoint `9e7075d` — Step 4 PAUSED / BLOCKED — GATEWAY-TEST-FIXTURE-01 COMPLETE AND LOCKED — PASS — 2026-08-24 (Class 1 Nest fixtures green) — GATEWAY-TEST-FIXTURE-02 REGISTERED — Step 1 COMPLETE — 2026-08-24 (Class 2 TypeORM/Jest architecture frozen; implementation NOT started) — RESUME_AUTHORIZED=NO — do not resume Step 4 until GATEWAY-TEST-FIXTURE-02 is COMPLETE AND LOCKED and the broad non-live gateway suite is green with only `smoke.integration.spec.ts` excluded
+**Status:** PAUSED — BLOCKER CLEARED — READY FOR SEPARATE STEP 4 RESUME LIFECYCLE — NOT LOCKED — Step 1 COMPLETE — Step 2 COMPLETE — Step 3 COMPLETE (both child lanes LANE-DONE) — 2026-08-24 — combined Keith Git checkpoint `9e7075d` — GATEWAY-TEST-FIXTURE-01 COMPLETE AND LOCKED — PASS — 2026-08-24 (Class 1 Nest fixtures green) — GATEWAY-TEST-FIXTURE-02 COMPLETE AND LOCKED — PASS — 2026-08-27 (Class 2 hermetic and green; broad non-live gateway gate PASS with only `smoke.integration.spec.ts` excluded) — RESUME_AUTHORIZED=YES — 2026-08-27 — Step 4 resume requires its own separate control-plane lifecycle after Keith commits the GATEWAY-TEST-FIXTURE-02 Step 3 state; Step 4 was NOT executed in that lock
 **Task ID:** PILOT-2LANE-01
 **Workstream:** GOVERNANCE (taxonomy only; zero admission weight)
 **Lifecycle:** 4-step — Step 1 registration/candidate-selection/concurrency contract; Step 2 stage-start + exact lane admission + preflight; Step 3 parallel implementation/validation (two primary Cursor windows, no subagents); Step 4 pilot consolidation + concurrency review + lock
@@ -71321,7 +71321,7 @@ Fresh targeted:
 
 ### GATEWAY-TEST-FIXTURE-02 — Class 2 Non-Live TypeORM/Jest Repair
 
-**Status:** ACTIVE — Step 1 COMPLETE — 2026-08-24 — Step 2A STOPPED — 2026-08-27 — direct production-entity SQLite REJECTED (DataTypeNotSupportedError: timestamp/uuid/jsonb) — Step 2R COMPLETE — 2026-08-27 — revised architecture frozen: test-only EntitySchema + real better-sqlite3 repository + UsageRecord DI-token bridge — implementation RESUME PENDING — Plan: `docs/GATEWAY-TEST-FIXTURE-02-PLAN.md` — Replan: `docs/GATEWAY-TEST-FIXTURE-02-REPLAN.md` — PILOT-2LANE-01 remains PAUSED / NOT LOCKED / RESUME_AUTHORIZED=NO
+**Status:** COMPLETE AND LOCKED — PASS — 2026-08-27 — Step 1 COMPLETE — 2026-08-24 — Step 2A STOPPED — 2026-08-27 — rejected direct production-entity SQLite architecture (DataTypeNotSupportedError: timestamp/uuid/jsonb) — Step 2R COMPLETE — 2026-08-27 — revised architecture frozen: test-only EntitySchema + real better-sqlite3 repository + UsageRecord DI-token bridge — Step 2B COMPLETE — 2026-08-27 — implementation across all four Class 2 suites + shared helper — Step 3 COMPLETE — 2026-08-27 — independent verification + checkpoint + lock — Class 2 GREEN (fresh 4 suites / 23 tests) — Class 1 GREEN (fresh 5 suites / 61 tests) — gateway build PASS — broad non-live gateway gate PASS (0 failed suites / 0 failed tests; only smoke excluded) — no production/package/config/migration/runtime changes — Plan: `docs/GATEWAY-TEST-FIXTURE-02-PLAN.md` — Replan: `docs/GATEWAY-TEST-FIXTURE-02-REPLAN.md` — Checkpoint: `docs/GATEWAY-TEST-FIXTURE-02-CHECKPOINT.md` — PILOT-2LANE-01 PAUSED — BLOCKER CLEARED — READY FOR SEPARATE STEP 4 RESUME LIFECYCLE — NOT LOCKED — RESUME_AUTHORIZED=YES
 **Task ID:** GATEWAY-TEST-FIXTURE-02
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Lifecycle:** 3-step — Step 1 registration + exact root-cause + hermetic-test architecture freeze; Step 2 test-only implementation + validation (Step 2A STOPPED — direct production-entity SQLite REJECTED; Step 2R revised architecture: test-only EntitySchema + real better-sqlite3 repository + UsageRecord DI-token bridge, applied sequentially suite-by-suite); Step 3 consolidation/checkpoint/lock + PILOT-2LANE-01 Step 4 resume authorization
@@ -71370,5 +71370,31 @@ The 1 pass is vacuous (`if (!app) return` after DATABASE_URL skip in two-phase).
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, production implementation=0, test implementation=0, dependencies=0, migrations=0, PRD.md=0, ARCHITECTURE.md=0, Git mutations=0, Lane 3=DISABLED, invitation registration=0, PILOT Step 4 resumed=NO, tests executed=YES (four Class 2 suites together).
 
 **Step 2R activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, production implementation=0, test implementation=0, dependencies=0, migrations=0, PRD.md=0, ARCHITECTURE.md=0, Git mutations=0, Lane 3=DISABLED, invitation registration=0, PILOT Step 4 resumed=NO, tests executed=NO (architecture probe only, in TEMP, deleted), probe performed=YES (TEMP, deleted, repo clean verified).
+
+**Step 2B (implementation, independently verified in Step 3):** revised architecture implemented across exactly the five frozen files (shared helper `hermetic-usage-record-fixture.ts` NEW + four Class 2 suites rewritten to the hermetic fixture and current 202-queued / completed-replay-200 contract). PRODUCTION_SOURCE_FILES_CHANGED=0. No package/config/migration/PRD/ARCHITECTURE edits. Runtime=0.
+
+**Step 3 (2026-08-27) independent verification + lock:**
+- Base HEAD `d128ce7d2bbd597d08e71675ff309b6da12fcc13` (main); initial dirt = exactly the five frozen implementation files; no governance/production/package/config dirt.
+- Diff/architecture review PASS: test-only EntitySchema (14-field portable shape; uuid→varchar, timestamp→datetime/createDate, jsonb→simple-json); production decorated UsageRecord NOT registered with any DataSource; real better-sqlite3 `:memory:` repository bridged under `getRepositoryToken(UsageRecord)`; real partial unique index `(userId, requestId) WHERE request_id IS NOT NULL`; real UsageLedgerService + IdempotencyGuard; clean DataSource destroy lifecycle; no Map/mock persistence; no production abstraction added.
+- Semantic review PASS (two-phase intent-before-enqueue / 409 pending / enqueue-failure leaves pending; replay-quota single quota invocation + no second enqueue + one row; deterministic replay exact JSON metadata + long/special text + fallback; orphan young-409 / old→timeout via current IdempotencyGuard / reuseExecutionIntent one-logical-row). No stale synchronous provider-execution contract restored; no assertion weakening.
+- Fresh Class 2 targeted: 4 suites / 23 tests / 0 failures PASS.
+- Fresh Class 1 regression: 5 suites / 61 tests / 0 failures PASS.
+- Gateway `npm run build`: PASS.
+- Fresh broad non-live gate (`npx jest --testPathIgnorePatterns=smoke.integration.spec.ts --runInBand`): 167 passed / 1 skipped / 0 failed suites (168 total); 2115 passed / 6 skipped / 0 failed tests (2121 total). Only smoke excluded. Skips = pre-existing opt-in `credit-deduction-concurrency.integration.spec.ts` (RUN_CREDIT_DB_INTEGRATION; 6 tests) only. CLASS2_SKIPS_INTRODUCED=NO.
+- `git diff --check` PASS. External runtime=0. Git worker mutations=0.
+
+**Class 2:** REPAIRED / GREEN — hermetic under the non-live gate
+**PILOT-2LANE-01:** PAUSED — BLOCKER CLEARED — READY FOR SEPARATE STEP 4 RESUME LIFECYCLE — NOT LOCKED — RESUME_AUTHORIZED=YES (Step 4 not executed here)
+**AGENT-PLATFORM-CREATE-01C:** LANE-DONE / NOT LOCKED
+**I18N-SHELL-06:** LANE-DONE / NOT LOCKED
+**GATEWAY-TEST-FIXTURE-01:** COMPLETE AND LOCKED — PASS
+**Lane 3:** DISABLED
+**PRIVATE-BETA-INVITE-01:** PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED
+
+**NEXT REQUIRED LIFECYCLE:** PILOT-2LANE-01 Step 4 resume (separate control-plane lifecycle after Keith commits this Step 3 state).
+
+**Checkpoint:** `docs/GATEWAY-TEST-FIXTURE-02-CHECKPOINT.md`
+
+**Step 3 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, production implementation=0, test implementation=0 (verification only; five Step 2B files unmodified), dependencies=0, migrations=0, PRD.md=0, ARCHITECTURE.md=0, Git mutations=0, Lane 3=DISABLED, invitation registration=0, PILOT Step 4 resumed=NO (resume AUTHORIZED for separate lifecycle), tests executed=YES (Class 2 four-suite targeted + Class 1 five-suite regression + broad non-live gate, all --runInBand, no Postgres).
 
 

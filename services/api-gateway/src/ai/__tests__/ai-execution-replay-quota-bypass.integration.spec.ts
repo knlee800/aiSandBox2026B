@@ -1,13 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, HttpStatus } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { APP_FILTER } from '@nestjs/core';
 import { Repository } from 'typeorm';
 import request from 'supertest';
 import { AIExecutionController } from '../ai-execution.controller';
 import { UsageLedgerService } from '../../usage-ledger/usage-ledger.service';
 import { UsageRecord } from '../../entities/usage-record.entity';
-import { AIServiceHttpClient } from '../../clients/ai-service-http.client';
-import { ApiKeyAuthGuard } from '../../auth/api-key-auth.guard';
 import { SessionOrApiKeyAuthGuard } from '../../auth/session-or-api-key.guard';
 import { AuthorizationGuard } from '../../auth/authorization.guard';
 import { QuotaGuard } from '../../quota/quota.guard';
@@ -18,398 +17,382 @@ import { LaunchGuard } from '../../launch/launch.guard';
 import { AbortGuard } from '../../abort/abort.guard';
 import { RateLimitGuard } from '../../guards/rate-limit.guard';
 import { IdempotencyGuard } from '../idempotency.guard';
+import { CreditBalanceGuard } from '../../billing/credit-balance.guard';
+import { QueueService } from '../../queue/queue.service';
+import { ExecutionResultService } from '../execution-result.service';
+import { ExecutionStreamService } from '../../streaming/execution-stream.service';
+import { UserAiInstructionsService } from '../../user-ai-instructions/user-ai-instructions.service';
+import { ProjectAiContextService } from '../../project-ai-context/project-ai-context.service';
+import { SessionService } from '../../sessions/session.service';
 import { IdempotentReplayExceptionFilter } from '../../filters/idempotent-replay-exception.filter';
-import { APP_FILTER } from '@nestjs/core';
+import {
+  createHermeticUsageRecordFixture,
+  HermeticUsageRecordFixture,
+} from './hermetic-usage-record-fixture';
 
 /**
  * AIExecutionController Replay Quota Bypass Integration Tests
  *
- * PHASE-43B-2-HOTFIX: Idempotent Replay Must Bypass Quota Guards
- *
- * Tests proving:
- * 1. Replay with same Idempotency-Key returns 200 with same body
- * 2. Replay does NOT invoke QuotaGuard/TokenQuotaGuard (verified by spy)
- * 3. Replay succeeds even if quota is exceeded after first execution
- * 4. DB row count remains 1 for (user_id, request_id)
- *
- * Purpose:
- * - Verify financial integrity (replay does NOT consume quota)
- * - Verify idempotency invariant (replay bypasses quota guards)
- * - Verify deterministic behavior (same input → same output)
+ * PHASE-43B-2-HOTFIX against current 202 queued / completed-replay 200 contract.
+ * First POST writes a pending intent and invokes TokenQuotaGuard. After the
+ * hermetic row is completed, replay returns HTTP 200 and does not re-invoke quota.
  */
 describe('AIExecutionController - Replay Quota Bypass (Integration)', () => {
   let app: INestApplication;
+  let fixture: HermeticUsageRecordFixture;
   let usageRecordRepository: Repository<UsageRecord>;
-  let aiServiceHttpClient: AIServiceHttpClient;
-  let tokenQuotaGuardSpy: jest.SpyInstance;
+  let usageLedgerService: UsageLedgerService;
+  let queueService: { enqueueExecution: jest.Mock };
+  let tokenQuotaGuardSpy: jest.Mock;
 
-  // Mock API key identity
+  const VALID_SESSION_UUID = '11111111-1111-4111-a111-111111111111';
+
   const mockIdentity = {
     apiKeyId: 'test-key-1',
     userId: 'user-1',
     scopes: ['ai:execute'],
   };
 
+  const passthroughGuard = { canActivate: jest.fn(() => true) };
+
   beforeAll(async () => {
+    fixture = await createHermeticUsageRecordFixture();
+    usageRecordRepository = fixture.repository as Repository<UsageRecord>;
+
+    queueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+
+    tokenQuotaGuardSpy = jest.fn().mockResolvedValue(true);
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        TypeOrmModule.forRoot({
-          type: 'postgres',
-          url: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/aisandbox_test',
-          entities: [UsageRecord],
-          synchronize: true,
-          retryAttempts: 0,
-          retryDelay: 0,
-        }),
-        TypeOrmModule.forFeature([UsageRecord]),
-      ],
       controllers: [AIExecutionController],
       providers: [
         UsageLedgerService,
-        AIServiceHttpClient,
+        IdempotencyGuard,
         GlobalSafetyLimitService,
-        // Mock guards for integration testing
         {
-          provide: SessionOrApiKeyAuthGuard,
+          provide: getRepositoryToken(UsageRecord),
+          useValue: usageRecordRepository,
+        },
+        {
+          provide: QueueService,
+          useValue: queueService,
+        },
+        {
+          provide: ExecutionResultService,
+          useValue: { getExecution: jest.fn(), requestCancel: jest.fn() },
+        },
+        {
+          provide: ExecutionStreamService,
+          useValue: { subscribe: jest.fn(), unsubscribe: jest.fn() },
+        },
+        {
+          provide: UserAiInstructionsService,
+          useValue: { getByUserId: jest.fn().mockResolvedValue(null) },
+        },
+        {
+          provide: ProjectAiContextService,
+          useValue: { getByProjectId: jest.fn().mockResolvedValue(null) },
+        },
+        {
+          provide: SessionService,
           useValue: {
-            canActivate: jest.fn((context) => {
-              const request = context.switchToHttp().getRequest();
-              request.apiKeyIdentity = mockIdentity;
-              return true;
+            getSessionById: jest.fn().mockResolvedValue({
+              userId: 'user-1',
+              projectId: null,
             }),
           },
         },
-        {
-          provide: AuthorizationGuard,
-          useValue: { canActivate: jest.fn(() => true) },
-        },
-        {
-          provide: ExecutionSafetyGuard,
-          useValue: { canActivate: jest.fn(() => true) },
-        },
-        {
-          provide: LaunchGuard,
-          useValue: { canActivate: jest.fn(() => true) },
-        },
-        {
-          provide: AbortGuard,
-          useValue: { canActivate: jest.fn(() => true) },
-        },
-        {
-          provide: IdempotencyGuard,
-          useClass: IdempotencyGuard, // Use real IdempotencyGuard
-        },
-        {
-          provide: QuotaGuard,
-          useValue: { canActivate: jest.fn(() => true) },
-        },
-        {
-          provide: TokenQuotaGuard,
-          useValue: {
-            canActivate: jest.fn(() => true), // Will be spied on
-          },
-        },
-        {
-          provide: RateLimitGuard,
-          useValue: { canActivate: jest.fn(() => true) },
-        },
-        // Register global exception filter
         {
           provide: APP_FILTER,
           useClass: IdempotentReplayExceptionFilter,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(SessionOrApiKeyAuthGuard)
+      .useValue({
+        canActivate: jest.fn((context) => {
+          const request = context.switchToHttp().getRequest();
+          request.apiKeyIdentity = mockIdentity;
+          return true;
+        }),
+      })
+      .overrideGuard(AuthorizationGuard)
+      .useValue(passthroughGuard)
+      .overrideGuard(ExecutionSafetyGuard)
+      .useValue(passthroughGuard)
+      .overrideGuard(LaunchGuard)
+      .useValue(passthroughGuard)
+      .overrideGuard(AbortGuard)
+      .useValue(passthroughGuard)
+      .overrideGuard(CreditBalanceGuard)
+      .useValue(passthroughGuard)
+      .overrideGuard(QuotaGuard)
+      .useValue(passthroughGuard)
+      .overrideGuard(TokenQuotaGuard)
+      .useValue({ canActivate: tokenQuotaGuardSpy })
+      .overrideGuard(RateLimitGuard)
+      .useValue(passthroughGuard)
+      .compile();
 
     app = moduleFixture.createNestApplication();
-
-    // Register global filter manually (required for testing)
     app.useGlobalFilters(new IdempotentReplayExceptionFilter());
-
     await app.init();
 
-    usageRecordRepository = moduleFixture.get('UsageRecordRepository');
-    aiServiceHttpClient = moduleFixture.get(AIServiceHttpClient);
-
-    // Get TokenQuotaGuard instance for spying
-    const tokenQuotaGuard = moduleFixture.get(TokenQuotaGuard);
-    tokenQuotaGuardSpy = jest.spyOn(tokenQuotaGuard, 'canActivate');
+    usageLedgerService = moduleFixture.get(UsageLedgerService);
   }, 30000);
 
   afterAll(async () => {
     if (app) {
       await app.close();
     }
+    if (fixture) {
+      await fixture.destroy();
+    }
   }, 10000);
 
   beforeEach(async () => {
-    // Clean up usage_records table before each test
-    await usageRecordRepository.delete({});
-    // Reset spy call count
-    tokenQuotaGuardSpy.mockClear();
+    await fixture.clear();
+    queueService.enqueueExecution.mockReset();
+    queueService.enqueueExecution.mockResolvedValue(undefined);
+    tokenQuotaGuardSpy.mockReset();
+    tokenQuotaGuardSpy.mockResolvedValue(true);
   });
 
-  describe('HOTFIX: Replay Bypasses Quota Guards', () => {
-    it('should return 200 with same body on replay AND NOT invoke TokenQuotaGuard', async () => {
-      // Mock ai-service to return deterministic result
-      const executeSpy = jest
-        .spyOn(aiServiceHttpClient, 'execute')
-        .mockResolvedValue({
-          output: 'Original AI response',
-          tokensUsed: 150,
-          model: 'stub',
-        });
+  async function completeExecution(
+    executionId: string,
+    result: { output: string; tokensUsed: number; model: string },
+  ): Promise<void> {
+    await usageLedgerService.updateExecutionResult({
+      executionId,
+      model: result.model,
+      tokensUsed: result.tokensUsed,
+      executionDurationMs: 25,
+      executionStatus: 'completed',
+      output: result.output,
+    });
+  }
 
-      const requestBody = {
-        sessionId: '11111111-1111-1111-1111-111111111111',
-        conversationId: '22222222-2222-2222-2222-222222222222',
-        userId: 'user-1',
-        prompt: 'Test replay quota bypass',
-        provider: 'stub',
+  describe('HOTFIX: Replay Bypasses Quota Guards', () => {
+    it('should return 200 with persisted body on replay AND NOT invoke TokenQuotaGuard', async () => {
+      const persisted = {
+        output: 'Original AI response',
+        tokensUsed: 150,
+        model: 'stub',
       };
 
-      // First request (should invoke TokenQuotaGuard)
+      const requestBody = {
+        sessionId: VALID_SESSION_UUID,
+        conversationId: '22222222-2222-4222-a222-222222222222',
+        userId: 'user-1',
+        prompt: 'Test replay quota bypass',
+        provider: 'stub' as const,
+      };
+
       const firstResponse = await request(app.getHttpServer())
         .post('/ai/execute')
         .set('Authorization', 'Bearer test-key-1')
         .set('Idempotency-Key', 'test-quota-bypass-001')
         .send(requestBody);
 
-      expect(firstResponse.status).toBe(HttpStatus.OK);
-      expect(firstResponse.body.output).toBe('Original AI response');
-      expect(firstResponse.body.tokensUsed).toBe(150);
-      expect(firstResponse.body.model).toBe('stub');
-
-      // Verify TokenQuotaGuard was invoked on first request
+      expect(firstResponse.status).toBe(HttpStatus.ACCEPTED);
+      expect(firstResponse.body.status).toBe('queued');
       expect(tokenQuotaGuardSpy).toHaveBeenCalledTimes(1);
 
-      // Verify execution record exists with status 'completed'
+      await completeExecution(firstResponse.body.executionId, persisted);
+
       const completedRecords = await usageRecordRepository.find({
         where: { userId: 'user-1', executionStatus: 'completed' },
       });
       expect(completedRecords.length).toBe(1);
 
-      // Clear spy call count for second request
       tokenQuotaGuardSpy.mockClear();
 
-      // Second request with same Idempotency-Key (should NOT invoke TokenQuotaGuard)
       const secondResponse = await request(app.getHttpServer())
         .post('/ai/execute')
         .set('Authorization', 'Bearer test-key-1')
         .set('Idempotency-Key', 'test-quota-bypass-001')
         .send(requestBody);
 
-      // CRITICAL: Verify replay returns 200 with cached result
       expect(secondResponse.status).toBe(HttpStatus.OK);
-      expect(secondResponse.body.output).toBe('[Duplicate request - original response not stored]');
-      expect(secondResponse.body.tokensUsed).toBe(150);
-      expect(secondResponse.body.model).toBe('stub');
+      expect(secondResponse.body.output).toBe(persisted.output);
+      expect(secondResponse.body.tokensUsed).toBe(persisted.tokensUsed);
+      expect(secondResponse.body.model).toBe(persisted.model);
 
-      // CRITICAL: Verify TokenQuotaGuard was NOT invoked on replay
       expect(tokenQuotaGuardSpy).not.toHaveBeenCalled();
 
-      // Verify only one execution record exists (no duplicate)
       const allRecords = await usageRecordRepository.find({
         where: { userId: 'user-1' },
       });
       expect(allRecords.length).toBe(1);
-
-      executeSpy.mockRestore();
     });
 
     it('should succeed on replay even if quota is exceeded after first execution', async () => {
-      // Mock ai-service to return deterministic result
-      const executeSpy = jest
-        .spyOn(aiServiceHttpClient, 'execute')
-        .mockResolvedValue({
-          output: 'AI response',
-          tokensUsed: 200,
-          model: 'stub',
-        });
-
-      const requestBody = {
-        sessionId: '22222222-2222-2222-2222-222222222222',
-        conversationId: '33333333-3333-3333-3333-333333333333',
-        userId: 'user-1',
-        prompt: 'Test quota exceeded replay',
-        provider: 'stub',
+      const persisted = {
+        output: 'AI response',
+        tokensUsed: 200,
+        model: 'stub',
       };
 
-      // First request (should succeed)
+      const requestBody = {
+        sessionId: VALID_SESSION_UUID,
+        conversationId: '33333333-3333-4333-a333-333333333333',
+        userId: 'user-1',
+        prompt: 'Test quota exceeded replay',
+        provider: 'stub' as const,
+      };
+
       const firstResponse = await request(app.getHttpServer())
         .post('/ai/execute')
         .set('Authorization', 'Bearer test-key-1')
         .set('Idempotency-Key', 'test-quota-exceeded-001')
         .send(requestBody);
 
-      expect(firstResponse.status).toBe(HttpStatus.OK);
-      expect(firstResponse.body.tokensUsed).toBe(200);
+      expect(firstResponse.status).toBe(HttpStatus.ACCEPTED);
+      expect(firstResponse.body.status).toBe('queued');
 
-      // Simulate quota exceeded by mocking TokenQuotaGuard to return false
-      // (In real scenario, user would have consumed quota between first and second request)
-      tokenQuotaGuardSpy.mockReturnValue(false);
+      await completeExecution(firstResponse.body.executionId, persisted);
 
-      // Second request with same Idempotency-Key (should succeed despite quota exceeded)
+      tokenQuotaGuardSpy.mockClear();
+      tokenQuotaGuardSpy.mockResolvedValue(false);
+
       const secondResponse = await request(app.getHttpServer())
         .post('/ai/execute')
         .set('Authorization', 'Bearer test-key-1')
         .set('Idempotency-Key', 'test-quota-exceeded-001')
         .send(requestBody);
 
-      // CRITICAL: Verify replay succeeds even though quota is exceeded
       expect(secondResponse.status).toBe(HttpStatus.OK);
       expect(secondResponse.body.tokensUsed).toBe(200);
-
-      // CRITICAL: Verify TokenQuotaGuard was NOT invoked on replay
-      // (If it was invoked, it would have returned false and blocked the request)
       expect(tokenQuotaGuardSpy).not.toHaveBeenCalled();
 
-      // Verify only one execution record exists
       const allRecords = await usageRecordRepository.find({
         where: { userId: 'user-1' },
       });
       expect(allRecords.length).toBe(1);
-
-      executeSpy.mockRestore();
     });
 
     it('should maintain DB row count of 1 for (user_id, request_id) on replay', async () => {
-      // Mock ai-service
-      const executeSpy = jest
-        .spyOn(aiServiceHttpClient, 'execute')
-        .mockResolvedValue({
-          output: 'Test response',
-          tokensUsed: 100,
-          model: 'stub',
-        });
-
-      const requestBody = {
-        sessionId: '33333333-3333-3333-3333-333333333333',
-        conversationId: '44444444-4444-4444-4444-444444444444',
-        userId: 'user-1',
-        prompt: 'Test DB row count',
-        provider: 'stub',
+      const persisted = {
+        output: 'Test response',
+        tokensUsed: 100,
+        model: 'stub',
       };
 
-      // First request
-      await request(app.getHttpServer())
+      const requestBody = {
+        sessionId: VALID_SESSION_UUID,
+        conversationId: '44444444-4444-4444-a444-444444444444',
+        userId: 'user-1',
+        prompt: 'Test DB row count',
+        provider: 'stub' as const,
+      };
+
+      const firstResponse = await request(app.getHttpServer())
         .post('/ai/execute')
         .set('Authorization', 'Bearer test-key-1')
         .set('Idempotency-Key', 'test-db-count-001')
         .send(requestBody);
 
-      // Verify 1 record exists
+      expect(firstResponse.status).toBe(HttpStatus.ACCEPTED);
+
       let records = await usageRecordRepository.find({
         where: { userId: 'user-1', requestId: 'test-db-count-001' },
       });
       expect(records.length).toBe(1);
 
-      // Second request (replay)
+      await completeExecution(firstResponse.body.executionId, persisted);
+
       await request(app.getHttpServer())
         .post('/ai/execute')
         .set('Authorization', 'Bearer test-key-1')
         .set('Idempotency-Key', 'test-db-count-001')
         .send(requestBody);
 
-      // Verify still only 1 record exists (no duplicate)
       records = await usageRecordRepository.find({
         where: { userId: 'user-1', requestId: 'test-db-count-001' },
       });
       expect(records.length).toBe(1);
 
-      // Third request (replay)
       await request(app.getHttpServer())
         .post('/ai/execute')
         .set('Authorization', 'Bearer test-key-1')
         .set('Idempotency-Key', 'test-db-count-001')
         .send(requestBody);
 
-      // Verify still only 1 record exists (no duplicate)
       records = await usageRecordRepository.find({
         where: { userId: 'user-1', requestId: 'test-db-count-001' },
       });
       expect(records.length).toBe(1);
-
-      executeSpy.mockRestore();
     });
 
     it('should invoke TokenQuotaGuard on first request but NOT on replay', async () => {
-      // Mock ai-service
-      const executeSpy = jest
-        .spyOn(aiServiceHttpClient, 'execute')
-        .mockResolvedValue({
-          output: 'Test',
-          tokensUsed: 50,
-          model: 'stub',
-        });
-
-      const requestBody = {
-        sessionId: '44444444-4444-4444-4444-444444444444',
-        conversationId: '55555555-5555-5555-5555-555555555555',
-        userId: 'user-1',
-        prompt: 'Test guard invocation',
-        provider: 'stub',
+      const persisted = {
+        output: 'Test',
+        tokensUsed: 50,
+        model: 'stub',
       };
 
-      // Clear spy before test
+      const requestBody = {
+        sessionId: VALID_SESSION_UUID,
+        conversationId: '55555555-5555-4555-a555-555555555555',
+        userId: 'user-1',
+        prompt: 'Test guard invocation',
+        provider: 'stub' as const,
+      };
+
       tokenQuotaGuardSpy.mockClear();
 
-      // First request
-      await request(app.getHttpServer())
+      const firstResponse = await request(app.getHttpServer())
         .post('/ai/execute')
         .set('Authorization', 'Bearer test-key-1')
         .set('Idempotency-Key', 'test-guard-invoke-001')
         .send(requestBody);
 
-      // Verify TokenQuotaGuard was invoked exactly once
+      expect(firstResponse.status).toBe(HttpStatus.ACCEPTED);
       expect(tokenQuotaGuardSpy).toHaveBeenCalledTimes(1);
 
-      // Clear spy for second request
+      await completeExecution(firstResponse.body.executionId, persisted);
+
       tokenQuotaGuardSpy.mockClear();
 
-      // Second request (replay)
-      await request(app.getHttpServer())
+      const replayResponse = await request(app.getHttpServer())
         .post('/ai/execute')
         .set('Authorization', 'Bearer test-key-1')
         .set('Idempotency-Key', 'test-guard-invoke-001')
         .send(requestBody);
 
-      // CRITICAL: Verify TokenQuotaGuard was NOT invoked on replay
+      expect(replayResponse.status).toBe(HttpStatus.OK);
       expect(tokenQuotaGuardSpy).not.toHaveBeenCalled();
-
-      executeSpy.mockRestore();
     });
   });
 
   describe('Invariant Verification', () => {
     it('should preserve all idempotency invariants after hotfix', async () => {
-      // Mock ai-service
-      const executeSpy = jest
-        .spyOn(aiServiceHttpClient, 'execute')
-        .mockResolvedValue({
-          output: 'Test invariants',
-          tokensUsed: 100,
-          model: 'stub',
-        });
-
-      const requestBody = {
-        sessionId: '55555555-5555-5555-5555-555555555555',
-        conversationId: '66666666-6666-6666-6666-666666666666',
-        userId: 'user-1',
-        prompt: 'Test invariants',
-        provider: 'stub',
+      const persisted = {
+        output: 'Test invariants',
+        tokensUsed: 100,
+        model: 'stub',
       };
 
-      // First request
+      const requestBody = {
+        sessionId: VALID_SESSION_UUID,
+        conversationId: '66666666-6666-4666-a666-666666666666',
+        userId: 'user-1',
+        prompt: 'Test invariants',
+        provider: 'stub' as const,
+      };
+
       const firstResponse = await request(app.getHttpServer())
         .post('/ai/execute')
         .set('Authorization', 'Bearer test-key-1')
         .set('Idempotency-Key', 'test-invariants-001')
         .send(requestBody);
 
-      expect(firstResponse.status).toBe(HttpStatus.OK);
+      expect(firstResponse.status).toBe(HttpStatus.ACCEPTED);
 
-      // Verify invariants after first request
+      await completeExecution(firstResponse.body.executionId, persisted);
+
       const records = await usageRecordRepository.find({
         where: { userId: 'user-1', requestId: 'test-invariants-001' },
       });
@@ -417,34 +400,22 @@ describe('AIExecutionController - Replay Quota Bypass (Integration)', () => {
       expect(records[0].executionStatus).toBe('completed');
       expect(records[0].tokensUsed).toBe(100);
 
-      // Second request (replay)
       const secondResponse = await request(app.getHttpServer())
         .post('/ai/execute')
         .set('Authorization', 'Bearer test-key-1')
         .set('Idempotency-Key', 'test-invariants-001')
         .send(requestBody);
 
-      // Verify invariants preserved:
-      // 1. Replay returns 200 (not 429)
       expect(secondResponse.status).toBe(HttpStatus.OK);
-
-      // 2. Replay returns cached result (deterministic)
       expect(secondResponse.body.tokensUsed).toBe(100);
       expect(secondResponse.body.model).toBe('stub');
 
-      // 3. No duplicate ledger write (DB row count = 1)
       const allRecords = await usageRecordRepository.find({
         where: { userId: 'user-1', requestId: 'test-invariants-001' },
       });
       expect(allRecords.length).toBe(1);
 
-      // 4. No quota consumed on replay (TokenQuotaGuard NOT invoked)
-      // (Already verified by spy in previous tests)
-
-      // 5. No AI provider call on replay (executeSpy call count = 1)
-      expect(executeSpy).toHaveBeenCalledTimes(1);
-
-      executeSpy.mockRestore();
+      expect(queueService.enqueueExecution).toHaveBeenCalledTimes(1);
     });
   });
 });
