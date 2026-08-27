@@ -71321,14 +71321,15 @@ Fresh targeted:
 
 ### GATEWAY-TEST-FIXTURE-02 — Class 2 Non-Live TypeORM/Jest Repair
 
-**Status:** REGISTERED — Step 1 COMPLETE — 2026-08-24 — architecture frozen — implementation NOT STARTED — Plan: `docs/GATEWAY-TEST-FIXTURE-02-PLAN.md` — PILOT-2LANE-01 remains PAUSED / NOT LOCKED / RESUME_AUTHORIZED=NO
+**Status:** ACTIVE — Step 1 COMPLETE — 2026-08-24 — Step 2A STOPPED — 2026-08-27 — direct production-entity SQLite REJECTED (DataTypeNotSupportedError: timestamp/uuid/jsonb) — Step 2R COMPLETE — 2026-08-27 — revised architecture frozen: test-only EntitySchema + real better-sqlite3 repository + UsageRecord DI-token bridge — implementation RESUME PENDING — Plan: `docs/GATEWAY-TEST-FIXTURE-02-PLAN.md` — Replan: `docs/GATEWAY-TEST-FIXTURE-02-REPLAN.md` — PILOT-2LANE-01 remains PAUSED / NOT LOCKED / RESUME_AUTHORIZED=NO
 **Task ID:** GATEWAY-TEST-FIXTURE-02
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
-**Lifecycle:** 3-step — Step 1 registration + exact root-cause + hermetic-test architecture freeze; Step 2 test-only implementation + validation (common better-sqlite3 TypeORM fixture applied sequentially suite-by-suite); Step 3 consolidation/checkpoint/lock + PILOT-2LANE-01 Step 4 resume authorization
+**Lifecycle:** 3-step — Step 1 registration + exact root-cause + hermetic-test architecture freeze; Step 2 test-only implementation + validation (Step 2A STOPPED — direct production-entity SQLite REJECTED; Step 2R revised architecture: test-only EntitySchema + real better-sqlite3 repository + UsageRecord DI-token bridge, applied sequentially suite-by-suite); Step 3 consolidation/checkpoint/lock + PILOT-2LANE-01 Step 4 resume authorization
 **Start condition:** READY at Step 1 — GATEWAY-TEST-FIXTURE-01 COMPLETE AND LOCKED; PILOT-2LANE-01 PAUSED / NOT LOCKED; both implementation lanes LANE-DONE / NOT LOCKED; clean tree at HEAD `08ec2f288e7262236145c638e0844b9ee0e0f74e`; no existing Class 2 owner
 **Depends on:** GATEWAY-TEST-FIXTURE-01 COMPLETE AND LOCKED (Class 1 closed; Class 2 left unregistered). Does not depend on unfinished output from either pilot lane.
 **Primary write scope (Step 1, this write):** `TASKS.md` CURRENT EXECUTION BOARD; this registry body; `docs/GATEWAY-TEST-FIXTURE-02-PLAN.md`; minimal PILOT-2LANE-01 status-line mirror
-**Primary write scope (Step 2, frozen, exact, no wildcards):**
+**Primary write scope (Step 2, revised at Step 2R, exact, no wildcards):**
+- `services/api-gateway/src/ai/__tests__/hermetic-usage-record-fixture.ts` (NEW — shared test helper)
 - `services/api-gateway/src/ai/__tests__/ai-execution-deterministic-replay.integration.spec.ts`
 - `services/api-gateway/src/ai/__tests__/ai-execution-orphan-reconciliation.integration.spec.ts`
 - `services/api-gateway/src/ai/__tests__/ai-execution-replay-quota-bypass.integration.spec.ts`
@@ -71354,7 +71355,9 @@ The 1 pass is vacuous (`if (!app) return` after DATABASE_URL skip in two-phase).
 
 **Classification:** PRE_EXISTING_LIVE_TYPEORM_FORROOT_IN_NONLIVE_JEST. `PILOT_CAUSED=NO`. `PRODUCTION_CODE_FIX_REQUIRED=NO`. `RUNTIME_REQUIRED_FOR_REPAIR=NO`.
 
-**Selected architecture:** `TypeOrmModule.forRoot({ type: 'better-sqlite3', database: ':memory:', entities: [UsageRecord], synchronize: true, dropSchema: true })` + real `UsageLedgerService` + real `IdempotencyGuard` + current constructor mocks (`QueueService`, `SessionService`, siblings) + `overrideGuard(CreditBalanceGuard)`. Assertions retargeted to current 202 queued / pending intent / completed-replay 200. two-phase DATABASE_URL skip removed. orphan `$1` SQL replaced with TypeORM update. `spyOn(undefined)` is a skip-path symptom, not an independent defect.
+**Original architecture (Step 1, REJECTED at Step 2A):** `TypeOrmModule.forRoot({ type: 'better-sqlite3', database: ':memory:', entities: [UsageRecord], synchronize: true, dropSchema: true })` — REJECTED because production `UsageRecord` decorator metadata contains PostgreSQL-specific types (`timestamp`, `uuid`, `jsonb`) that `better-sqlite3` cannot validate: `DataTypeNotSupportedError`.
+
+**Revised architecture (Step 2R):** Test-only `EntitySchema({ name: 'UsageRecord' })` with SQLite-portable column types (`varchar`, `datetime`, `simple-json`) + real `better-sqlite3` `:memory:` DataSource (initialized outside Nest DI) + manual repository-token bridge via `{ provide: getRepositoryToken(UsageRecord), useValue: testRepo }` + real `UsageLedgerService` + real `IdempotencyGuard` + current constructor mocks (`QueueService`, `SessionService`, `ExecutionResultService`, `ExecutionStreamService`, `UserAiInstructionsService`, `ProjectAiContextService`) + `overrideGuard(CreditBalanceGuard)`. Assertions retargeted to current 202 queued / pending intent / completed-replay 200. two-phase DATABASE_URL skip removed. orphan `$1` SQL replaced with TypeORM repository update. Architecture probe ALL PASS (10/10 checks). Replan: `docs/GATEWAY-TEST-FIXTURE-02-REPLAN.md`.
 
 **Forbidden:** production source edits; package/lockfile/Jest-config/.env/migration edits; assertion weakening to buy green; Docker/Postgres/Redis/provider/LIVE/staging/browser/dev-servers; adding Class 2 filenames to jest ignore; resuming PILOT-2LANE-01 Step 4; enabling Lane 3; registering PRIVATE-BETA-INVITE-01; reopening Class 1.
 
@@ -71365,5 +71368,7 @@ The 1 pass is vacuous (`if (!app) return` after DATABASE_URL skip in two-phase).
 **Preserved state:** PILOT-2LANE-01 PAUSED / NOT LOCKED. AGENT-PLATFORM-CREATE-01C LANE-DONE / NOT LOCKED. I18N-SHELL-06 LANE-DONE / NOT LOCKED. GATEWAY-TEST-FIXTURE-01 COMPLETE AND LOCKED — PASS. Lane 3 DISABLED. PRIVATE-BETA-INVITE-01 PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. LIVE_STAGING_VALIDATED=YES. BUILDER_PRIVATE_BETA_READINESS=GO. All runtime authorization flags NO.
 
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, production implementation=0, test implementation=0, dependencies=0, migrations=0, PRD.md=0, ARCHITECTURE.md=0, Git mutations=0, Lane 3=DISABLED, invitation registration=0, PILOT Step 4 resumed=NO, tests executed=YES (four Class 2 suites together).
+
+**Step 2R activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, production implementation=0, test implementation=0, dependencies=0, migrations=0, PRD.md=0, ARCHITECTURE.md=0, Git mutations=0, Lane 3=DISABLED, invitation registration=0, PILOT Step 4 resumed=NO, tests executed=NO (architecture probe only, in TEMP, deleted), probe performed=YES (TEMP, deleted, repo clean verified).
 
 
