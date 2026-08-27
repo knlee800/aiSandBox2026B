@@ -292,7 +292,7 @@ Users can create persistent agent profiles on the platform (**Create Agent**):
 - Persist the profile
 - List and view created agents / profile detail
 
-User-created agents are **persistent profiles only**. They are not executable agents. Delete is not currently available (accepted private-beta limitation). Autonomous execution, tool execution, knowledge assignment, skills/runtime behavior, and agent collaboration are not current.
+User-created agents are **persistent profiles only**. They are not executable agents. An authenticated, ownership-scoped backend soft-delete capability exists, but a user-facing Delete control is not currently available (accepted private-beta limitation). Autonomous execution, tool execution, knowledge assignment, skills/runtime behavior, and agent collaboration are not current.
 
 **Approved FUTURE:** user-created agents become executable agents with appropriate tools, knowledge, skills, and configuration.
 

@@ -961,7 +961,8 @@ User-created agents:
 
 - Entity `UserAgent` / table `user_agents`
 - Migration exists in repo; locked staging evidence says it was applied
-- APIs: `POST /api/agents`, `GET /api/agents`, `GET /api/agents/:id` (`SessionCookieGuard`)
+- APIs: `POST /api/agents`, `GET /api/agents`, `GET /api/agents/:id`, `DELETE /api/agents/:id` (`SessionCookieGuard`)
+- `DELETE /api/agents/:id` — authenticated; ownership-scoped (`id + userId`); soft delete via the existing `deleted_at` `@DeleteDateColumn`; no new migration was required; default TypeORM deleted-row filtering on `find`/`findOne` remains current; persistence/API capability only — no frontend Delete UI
 - MVP UI exists
 - **Not** routed to any execution runtime
 
