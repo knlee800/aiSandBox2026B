@@ -71451,4 +71451,191 @@ The 1 pass is vacuous (`if (!app) return` after DATABASE_URL skip in two-phase).
 
 **Step 3 lock (2026-08-27):** COMPLETE AND LOCKED — PASS — 2026-08-27 — independent verification PASS — Step 3 base HEAD `107de322280692573799aebaf010bcc2a061d1ac` (branch main, clean tree verified) — all lock criteria satisfied — LANE3_DECISION=KEEP_DISABLED_UNTIL_FUTURE_MATERIAL_NEED confirmed — 2-lane safety evidence independently verified (write-set violations 0, mutex collisions 0, governance collisions 0, dirty-tree discrimination PROVEN, runtime 0, integrated validation PASS) — failure isolation limitation preserved (ONE_LANE_FAILURE_PATH_EXERCISED=NO, FAILURE_ISOLATION_EMPIRICAL_PROOF=NOT_YET_OBTAINED) — throughput limitation preserved (PARALLEL_ELAPSED_TIME_BENEFIT=UNPROVEN) — candidate-supply finding preserved — operator-burden finding preserved — 2-lane success does NOT prove 3-lane safety: confirmed — SCHEDULER_CAPACITY_CHANGED=NO — CLAUDE_MD_CHANGED=NO — AGENTS_MD_CHANGED=NO — PRD_CHANGED=NO — ARCHITECTURE_CHANGED=NO — SOURCE_CHANGED=NO — RUNTIME_USED=NO — UNEXPECTED_DIRT=0 — GIT_DIFF_CHECK=PASS — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — ACTIVE_IMPLEMENTATION_LANES=0/2 — PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED — INVITATION_EXECUTION_PERMITTED=NO — RUNTIME_EXECUTION_AUTHORIZED=NO / PROVIDER_CALL_AUTHORIZED=NO / CREDIT_MUTATION_AUTHORIZED=NO / STAGING_MUTATION_AUTHORIZED=NO — LIVE_STAGING_VALIDATED=YES — BUILDER_PRIVATE_BETA_READINESS=GO — Checkpoint: `docs/GOV-PARALLEL-01-CHECKPOINT.md` — Step 3 activity ledger: LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, source changes=0, tests executed=0, dependencies=0, PRD.md=0, ARCHITECTURE.md=0, CLAUDE.md=0, AGENTS.md=0, scheduler capacity changes=0, Lane 3 enablement=0, Git mutations=0, new work registration=0, invitation registration=0.
 
+### GOV-OS-02 — Permanent Next-Work Selection Protocol
+
+**Status:** ACTIVE — Step 1 COMPLETE — 2026-08-28 — Step 2 PENDING — Step 3 PENDING — NOT LOCKED
+**Task ID:** GOV-OS-02
+**Title:** Permanent Next-Work Selection Protocol
+**Family:** GOVERNANCE / DEVELOPMENT OS / ANTI-DRIFT
+**Workstream:** GOVERNANCE (taxonomy only; zero admission weight)
+**Lifecycle:** 3-step (Step 1 registration — Step 2 install bounded OS/bootstrap/board changes — Step 3 independent verification + checkpoint + final lock)
+**Start condition:** READY — Lane 1 EMPTY; Lane 2 EMPTY; Lane 3 DISABLED; GOVERNANCE UNOWNED at Step 1 start; GOV-OS-01 COMPLETE AND LOCKED; GOV-PARALLEL-01 COMPLETE AND LOCKED; no admitted next product gate / selection pending; clean tree at HEAD `9dc5ad2fab2eef10d9597b1ef44a3a6f8eedc340`
+**Depends on:** GOV-OS-01 (COMPLETE AND LOCKED — PASS — 2026-08-18); GOV-PARALLEL-01 (COMPLETE AND LOCKED — PASS — 2026-08-27). Living authorities already present: PRD.md (GOV-PRD-02 LOCKED), ARCHITECTURE.md (GOV-ARCH-02 LOCKED).
+**Primary write scope:**
+- Step 1 (this step): `TASKS.md` CURRENT EXECUTION BOARD; `TASKS_BACKLOG_FULL.md`
+- Step 2 (NOT this step): `CLAUDE.md` (concise Next-Work Selection Protocol + boot-sequence branch); `AGENTS.md` (thin boot-sequence pointer only; do not duplicate the protocol); `TASKS.md` (persistent CURRENT BOARD flag only; protocol remains defined by CLAUDE.md)
+- Step 3: checkpoint under `docs/`; board/registry lock fields
+**Mutexes / resources:** GOVERNANCE (control plane; held by GOV-OS-02 while ACTIVE)
+**Hot-file leases:** none
+**Shared contracts:** none (no API/schema/auth/session/tool/config contract change)
+**Evidence class:** GOVERNANCE
+**Revert isolation:** governance-only task; no source writes; trivially revertible
+
+**Identifier search:** Repo-wide grep for `GOV-OS-02` and `Next-Work Selection Protocol` returned zero matches across TASKS.md, TASKS_BACKLOG_FULL.md, CLAUDE.md, AGENTS.md, PRD.md, ARCHITECTURE.md, and docs. Existing GOV-OS family member is GOV-OS-01 only (COMPLETE AND LOCKED — Development OS / Parallel Control Plane v1). GOV-OS-02 is registered as the GOV-OS family successor for a standing anti-drift OS correction. Distinct from GOV-PARALLEL-01 (Lane 3 capacity decision). No invented duplicate ID.
+
+**Purpose:** Add a standing Development OS rule covering the previously missing boot/control-plane branch: when the control plane is choosing genuinely new product or architecture work and TASKS.md does not already admit that work, consult living repository authority before recommending, selecting, registering, or admitting it. Targeted reads only — not full document re-audits. Repository-level enforcement, not better human/model memory.
+
+**Failure mode being closed:** no admitted next product gate → PRD / ARCHITECTURE never opened → model fills the vacuum from conversational/model/window memory → priority drift / unnecessary re-audit.
+
+**Predecessor / context:** GOV-OS-01 installed the OS but did not include a SELECTING-new-work branch. GOV-PRD-02 and GOV-ARCH-02 already made PRD.md and ARCHITECTURE.md the living authorities. GOV-PARALLEL-01 locked Lane 3 DISABLED. The current board correctly records no admitted next product gate / selection pending. This task does not select that frontier.
+
+**Stage-start:** NOT REQUIRED. The Step 2 implementation contract (trigger, non-triggers, mandatory sources, conditional evidence, write set, anti-drift invariants) is frozen in this registration. No remaining architectural ambiguity. No new reconciliation is required. A separate stage-start document would duplicate this freeze and is outside the Step 1 allowed write set.
+
+**Nature:** GOVERNANCE / DOCUMENTATION ONLY — no application behavior change — no runtime/schema/migration change — no product-frontier selection
+
+---
+
+#### Frozen living authority set (mandatory targeted reads when the trigger fires)
+
+1. `TASKS.md` CURRENT EXECUTION BOARD only (stop at LEGACY / FROZEN)
+2. `PRD.md` — relevant CURRENT / LIMITED-BETA / APPROVED-FUTURE sections (living PRODUCT WHAT)
+3. `ARCHITECTURE.md` — authority / CURRENT-vs-PLANNED plus the relevant subsystem (living TECHNICAL HOW)
+4. `TASKS_BACKLOG_FULL.md` — search for existing registered candidates
+
+#### Frozen conditional evidence (only when required)
+
+- most relevant GOV-PRD / GOV-ARCH source-map or checkpoint when classification is genuinely disputed
+- PRIVATE-BETA-GO-NO-GO evidence if invitation/beta rollout is proposed
+- GOV-PARALLEL decision if lane capacity / Lane 3 is proposed
+- named checkpoint/stage-start for a specific candidate
+- historical AINOW roadmap / Platform-00 only as secondary context (zero current scheduling authority)
+
+#### Frozen source-map classification
+
+- `docs/GOV-PRD-02-SOURCE-MAP.md` = frozen reconciliation evidence; NOT living PRODUCT WHAT; NOT scheduler
+- `docs/GOV-ARCH-02-SOURCE-MAP.md` = frozen reconciliation evidence; NOT living TECHNICAL HOW; NOT scheduler
+- Locked checkpoints / stage-start documents = named evidence; NOT schedulers
+- `docs/AINOW-EXECUTION-ROADMAP.md` = historical / strategic reference; AINOW_EXECUTION_ROADMAP_CURRENT_NEXT_TASK_AUTHORITY=NO
+- `docs/AGENT-PLATFORM-00-AINOW-MULTI-AGENT-PLAN.md` = historical / strategic vision; AGENT_PLATFORM_00_SCHEDULER_AUTHORITY=NO
+- TASKS.md content below LEGACY / FROZEN = TASKS_LEGACY_FROZEN_SELECTION_AUTHORITY=NO
+
+#### Exact trigger frozen for Step 2
+
+Apply the Next-Work Selection Protocol when ALL are true:
+
+1. someone is proposing, recommending, choosing, or registering genuinely new PRODUCT or ARCHITECTURE work;
+2. TASKS.md CURRENT EXECUTION BOARD does not already admit that work as the current gate;
+3. the work is not already ACTIVE or LANE-DONE.
+
+The protocol applies at the first recommendation / selection / admission of that new work even if a model claims the task had been "already selected" outside the current board.
+
+If Keith explicitly names a new product/architecture task for registration, perform only the light CURRENT/FUTURE authority check necessary for that named task; do not launch a broad frontier-selection audit.
+
+#### Non-trigger cases (do NOT apply)
+
+- implementation / validation / consolidation of already-admitted work
+- routine named-task continuation
+- status questions
+- mutex / board mechanics
+- Lane 2 execution of an already-admitted pair
+- routine control-plane lock / consolidation
+
+#### Anti-memory prohibitions (standing; install in Step 2)
+
+```
+NEXT_WORK_FROM_CHAT_MEMORY=PROHIBITED
+NEXT_WORK_FROM_MODEL_MEMORY=PROHIBITED
+NEXT_WORK_FROM_WINDOW_MEMORY=PROHIBITED
+AINOW_EXECUTION_ROADMAP_CURRENT_NEXT_TASK_AUTHORITY=NO
+AGENT_PLATFORM_00_SCHEDULER_AUTHORITY=NO
+TASKS_LEGACY_FROZEN_SELECTION_AUTHORITY=NO
+FROZEN_SOURCE_MAPS_ARE_LIVING_AUTHORITY=NO
+FROZEN_CHECKPOINTS_ARE_SCHEDULERS=NO
+UNKNOWN_NEXT_WORK_DOES_NOT_REQUIRE_NEW_RECONCILIATION=YES
+```
+
+#### Anti-reaudit prohibition
+
+Do not create GOV-PRD-03, GOV-ARCH-03, a new roadmap, source map, or master plan merely because a model does not remember what comes next. A new reconciliation requires actual material drift/evidence plus normal governance authorization — forgetting is not evidence.
+
+#### Empty-board-valid invariant
+
+An empty board is valid. Do not invent a successor merely to fill implementation capacity. If living authorities and backlog still leave multiple genuinely valid choices, present that bounded decision to Keith. Do not silently choose from model preference.
+
+#### Invitation invariant
+
+PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. INVITATION_EXECUTION_PERMITTED=NO. Unchanged by this task.
+
+#### Lane 3 invariant
+
+Lane 3 remains DISABLED. GOV-PARALLEL-01 LANE3_DECISION=KEEP_DISABLED_UNTIL_FUTURE_MATERIAL_NEED. Unchanged by this task.
+
+#### Step 2 intended exact write set (NOT this step)
+
+```
+C:\Users\knlee\aiSandBox2026B\CLAUDE.md
+C:\Users\knlee\aiSandBox2026B\AGENTS.md
+C:\Users\knlee\aiSandBox2026B\TASKS.md
+```
+
+No new roadmap / source-map / master-plan. No PRD.md. No ARCHITECTURE.md. No application source.
+
+#### 3-step lifecycle
+
+1. Step 1 — registration (THIS STEP)
+2. Step 2 — install bounded OS / bootstrap / board changes
+3. Step 3 — independent verification + checkpoint + final lock
+
+#### Explicit Non-Goals
+
+GOV-OS-02 does NOT: select a product frontier; register PRIVATE-BETA-INVITE-01; enable Lane 3; create GOV-PRD-03 or GOV-ARCH-03; create a new roadmap, source map, or master plan; edit PRD.md or ARCHITECTURE.md; edit frozen GOV-PRD/GOV-ARCH evidence; modify application source; run runtime; alter database/schema; create worktrees; use subagents.
+
+#### Invariants
+
+- GLOBAL_EXECUTION_ENABLED remains unchanged / false
+- BILLING_CHARGES_ENABLED remains unchanged / false
+- PRIVATE-BETA-INVITE-01 remains UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED / PARKED / NOT EXECUTABLE
+- Lane 3 remains DISABLED
+- MAX_IMPLEMENTATION_LANES remains 2
+- All COMPLETE AND LOCKED predecessors remain unchanged
+- No application source/test/config/schema/migration/env/Docker changes in any step
+- No PRD.md or ARCHITECTURE.md changes in any step
+- No runtime/infrastructure commands in any step
+- No subagents
+- No worktrees or branches created by this task
+- No commit/push unless explicitly requested by Keith
+
+#### Acceptance Criteria
+
+Step 1 (Registration):
+- [x] GOV-OS-02 confirmed unused before registration (no collision)
+- [x] GOV-OS-02 registered in TASKS.md CURRENT EXECUTION BOARD
+- [x] GOV-OS-02 registered in TASKS_BACKLOG_FULL.md
+- [x] OS-mutation quiescence verified (Lane 1 EMPTY, Lane 2 EMPTY, Lane 3 DISABLED, no ACTIVE/LANE-DONE implementation lanes)
+- [x] GOVERNANCE acquired by GOV-OS-02
+- [x] Exact trigger frozen
+- [x] Non-trigger cases frozen
+- [x] Living mandatory authority set frozen
+- [x] Conditional evidence set frozen
+- [x] Source-map authority classification frozen
+- [x] Anti-memory prohibitions frozen
+- [x] Anti-reaudit prohibition frozen
+- [x] Empty-board-valid invariant frozen
+- [x] Invitation invariant unchanged
+- [x] Lane 3 invariant unchanged
+- [x] Lifecycle = 3-step; stage-start NOT REQUIRED
+- [x] Step 2 exact write set frozen
+- [x] No product frontier selected
+- [x] No CLAUDE.md / AGENTS.md / PRD.md / ARCHITECTURE.md / source-map / source change in Step 1
+- [x] No runtime / Docker / PostgreSQL / Redis / staging / provider activity
+- [x] No worktrees
+- [x] No Git commit/push by the worker
+
+Step 2 (Implementation — NOT THIS STEP):
+- [ ] Concise Next-Work Selection Protocol installed in CLAUDE.md
+- [ ] Corresponding branch added to new-window / control-plane boot behavior
+- [ ] AGENTS.md thin boot-sequence pointer added; full protocol not duplicated
+- [ ] TASKS.md persistent CURRENT BOARD flag only
+- [ ] Protocol remains defined by CLAUDE.md
+- [ ] No new roadmap / source map / master plan
+- [ ] No product-frontier selection
+
+Step 3 (Verification / checkpoint / lock — NOT THIS STEP):
+- [ ] Independent verification that the protocol is installed and that living PRD/ARCHITECTURE authority drives new-work selection
+- [ ] Checkpoint created
+- [ ] GOV-OS-02 COMPLETE AND LOCKED
+
+**Step 1 HEAD:** `9dc5ad2fab2eef10d9597b1ef44a3a6f8eedc340` (branch main)
+**Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, source changes=0, scheduler capacity changes=0, Lane 3 enablement=0, tests executed=0, dependencies=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, source-map edits=0, Git mutations=0, product-frontier selection=0, invitation registration=0.
+
 
