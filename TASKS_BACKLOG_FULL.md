@@ -71648,25 +71648,27 @@ Step 3 (Verification / checkpoint / lock):
 
 ### AGENT-PLATFORM-CREATE-01D — Bind Persisted User-Agent Identity into Existing Single-Shot Ask
 
-**Status:** ACTIVE — Lane 1 — Step 1 COMPLETE — 2026-08-28 — Step 2 PENDING (stage-start / source-path + execute-identity contract freeze) — Step 3 PENDING — Step 4 PENDING — IMPLEMENTATION_AUTHORIZED=NO — GATEWAY owned — GOVERNANCE released UNOWNED after this Step 1 write
+**Status:** ACTIVE — Lane 1 — Step 1 COMPLETE — 2026-08-28 — Step 2 COMPLETE — 2026-08-28 — Stage-start: `docs/AGENT-PLATFORM-CREATE-01D-STAGE-START.md` — execute-identity contract FROZEN — Step 3 PENDING (READY_AFTER_CLEAN_STEP2_COMMIT) — Step 4 PENDING — IMPLEMENTATION_AUTHORIZED=NO — GATEWAY owned — GOVERNANCE released UNOWNED after this Step 2 write
 **Task ID:** AGENT-PLATFORM-CREATE-01D
 **Title:** Bind Persisted User-Agent Identity into Existing Single-Shot Ask
 **Family:** AGENT PLATFORM / CREATE (successor to AGENT-PLATFORM-CREATE-01A / 01B / 01C, all COMPLETE AND LOCKED)
 **Workstream:** AGENT (taxonomy only; zero admission weight)
-**Lifecycle:** 4-step — Step 1 registration (THIS STEP); Step 2 stage-start / source-path + contract freeze; Step 3 bounded implementation + validation; Step 4 independent verification / checkpoint / lock. Large or risky implementation may be split into bounded child slices during Step 2 if source inspection proves necessary. Do not split merely for ceremony.
-**Start condition:** READY at Step 1 — Lane 1 EMPTY; Lane 2 EMPTY; Lane 3 DISABLED; GOVERNANCE UNOWNED; GOV-OS-02 COMPLETE AND LOCKED — PASS — 2026-08-28; no equivalent unfinished registered implementation task; clean tree at HEAD `f2a77410c2295a5b7364644f802b8c56b7489f41` (branch main). Step 2 start condition: READY_AFTER_CLEAN_STEP1_COMMIT.
+**Lifecycle:** 4-step — Step 1 registration COMPLETE; Step 2 stage-start / source-path + contract freeze (THIS STEP COMPLETE); Step 3 bounded implementation + validation PENDING (READY_AFTER_CLEAN_STEP2_COMMIT); Step 4 independent verification / checkpoint / lock PENDING. Child slices NOT required.
+**Start condition:** READY at Step 1 — Lane 1 EMPTY; Lane 2 EMPTY; Lane 3 DISABLED; GOVERNANCE UNOWNED; GOV-OS-02 COMPLETE AND LOCKED — PASS — 2026-08-28; no equivalent unfinished registered implementation task; clean tree at HEAD `f2a77410c2295a5b7364644f802b8c56b7489f41` (branch main). Step 2 start condition: READY_AFTER_CLEAN_STEP1_COMMIT — satisfied at HEAD `f77cc9b6502898ef8843089c6e303a3a95b1b2ec` (branch main, clean tree). Step 3 start condition: READY_AFTER_CLEAN_STEP2_COMMIT.
 **Depends on:** AGENT-PLATFORM-CREATE-01A (COMPLETE AND LOCKED — persistence / `user_agents` / ownership-scoped load); AGENT-PLATFORM-CREATE-01B (COMPLETE AND LOCKED — create / list / view); AGENT-PLATFORM-CREATE-01C (COMPLETE AND LOCKED — ownership-scoped soft-delete API); GOV-PRD-02 COMPLETE AND LOCKED (living PRODUCT WHAT); GOV-ARCH-02 COMPLETE AND LOCKED (living TECHNICAL HOW); GOV-OS-02 COMPLETE AND LOCKED (Next-Work Selection Protocol; this registration used the light named-task CURRENT/FUTURE check only).
-**Primary write scope (Step 1, this write):** `TASKS.md` CURRENT EXECUTION BOARD; this registry body.
-**Primary write scope (Step 2+, PRELIMINARY — not frozen):** GATEWAY domain. Likely candidates for later inspection/possible edit, to be confirmed or reduced at Step 2:
-- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\ai\` (especially `ai-execution.controller.ts` and its specs; existing execute path)
-- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\user-agent\` (existing ownership-scoped `findOneByIdAndUserId`; soft-delete filtering already present)
-- existing Gateway execute / queue / usage-record identity plumbing already used by Ask (`AIExecutionRequest` in `services/api-gateway/src/clients/ai-service-http.client.ts`; usage-ledger identity metadata)
-Exact write set is frozen at Step 2. Do not treat this list as authorization to edit every listed file.
-**Mutexes / resources:** GATEWAY (owned at Lane 1 admission; expected primary mutex). GOVERNANCE held only for this Step 1 write then released UNOWNED. FRONTEND not declared. I18N not declared. AI-SERVICE not declared unless Step 2 proves a required job-payload contract change there. MIGRATION not pre-authorized. LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / COMPOSE unowned and unauthorized.
-**Hot-file leases:** none at Step 1. Step 2 may add explicit HOTFILE leases if a structurally shared file is not already covered by GATEWAY.
-**Shared contracts:** execute identity contract UNFROZEN at Step 1. Optional CURRENT plumbing exists for `agentRole` / `builderProfileId` (frontend does not send them). Step 2 must freeze the smallest correct representation. Do not silently change a frozen contract. Do not overload `builderProfileId` with user-agent identity unless the existing architecture actually supports that meaning.
-**Evidence class:** LOCAL-TESTS. No provider-live call is assumed necessary for this first contract slice unless Step 2 proves otherwise. No browser smoke unless a later UI slice exists.
-**Revert isolation:** implementation revert = discard the Step 3 GATEWAY writes frozen at Step 2; cannot invalidate locked CREATE-01A/01B/01C evidence. Lane 2 not admitted; SAFE_TWO_LANE_PAIR unresolved until Step 2 exact write set frozen.
+**Primary write scope (Step 1):** `TASKS.md` CURRENT EXECUTION BOARD; this registry body.
+**Primary write scope (Step 2, this write):** `docs/AGENT-PLATFORM-CREATE-01D-STAGE-START.md`; `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body. No application source.
+**Primary write scope (Step 3, FROZEN):** GATEWAY only. Exact MUST-WRITE:
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\clients\ai-service-http.client.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\ai\ai-execution.controller.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\ai\ai.module.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\ai\ai-execution.controller.spec.ts`
+User-agent service/entity/module are READ ONLY (reuse `findOneByIdAndUserId`). AI-SERVICE is READ ONLY. usage-ledger / queue / public-api are READ ONLY. Anything outside this set is forbidden unless listed MAY WRITE IF REQUIRED in the stage-start.
+**Mutexes / resources:** GATEWAY (owned at Lane 1 admission; exact write set FROZEN at Step 2). GOVERNANCE held only for this Step 2 write then released UNOWNED. FRONTEND not declared. I18N not declared. AI-SERVICE not declared. MIGRATION not required and not authorized. LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / COMPOSE unowned and unauthorized. MUTEX_SCOPE_CHANGE_REQUIRED=NO.
+**Hot-file leases:** none. All Step 3 writes sit under GATEWAY.
+**Shared contracts:** execute identity contract FROZEN at Step 2. Additive optional `agentId?: string` on Gateway `AIExecutionRequest`. Do NOT overload `agentRole` or `builderProfileId`. Do not silently change this frozen contract. `agentId` absent → current Builder Ask/Build unchanged. `agentId` present is Ask-only (`executionIntent==='conversation'`) and harnessVersion must be absent.
+**Evidence class:** LOCAL-TESTS. No provider-live. No browser smoke. No Docker/Postgres/Redis.
+**Revert isolation:** implementation revert = discard the Step 3 GATEWAY writes frozen at Step 2; cannot invalidate locked CREATE-01A/01B/01C evidence. Lane 2 not admitted. SAFE_TWO_LANE_PAIR=YES (possible later frontend-only Delete UI; not admitted here).
 
 **Identifier search:** Repo-wide search for `AGENT-PLATFORM-CREATE-01D` returned zero matches. CREATE family members: 01A COMPLETE AND LOCKED (2026-07-20), 01B COMPLETE AND LOCKED (2026-07-20), 01C COMPLETE AND LOCKED — PASS — 2026-08-27. No unfinished registered implementation task matches this slice (no executable user-created agent / user-agent identity binding / persisted agent execution task exists). AGENT-PLATFORM-CREATE-01D is the smallest correct next canonical CREATE ID.
 
@@ -71682,8 +71684,8 @@ Exact write set is frozen at Step 2. Do not treat this list as authorization to 
 7. Preserve current single-shot execution.
 8. Do not activate Harness.
 
-**Unresolved Step 2 architecture question (DO NOT decide in Step 1):**
-Whether the execution contract should use a new `agentId` field, existing `agentRole` / `builderProfileId`, or another minimal compatible representation. Stage-start must inspect the actual execute DTO / request type, queue/job metadata, usage-record metadata, authentication boundary, and user-agent service before choosing the smallest correct contract.
+**Step 2 architecture question — FROZEN (2026-08-28):**
+Use a new additive optional `agentId?: string`. Do NOT reuse `agentRole` (system/runtime/harness role) or `builderProfileId` (Builder harness catalog id). Persisted `user_agents.id` is a distinct UUID identity that must be owner-scoped before enqueue. Full freeze: `docs/AGENT-PLATFORM-CREATE-01D-STAGE-START.md`.
 
 **PRD CURRENT/FUTURE check (light named-task; 2026-08-28):**
 - CURRENT: Create Agent supports persistent user-created agent profiles (create / persist / list / view). User-created agents are persistent profiles only; they are not executable agents. Ownership-scoped backend soft-delete exists; user-facing Delete control is not current.
@@ -71714,14 +71716,14 @@ No browser smoke unless a later UI slice exists. No provider-live call assumed n
 
 **Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. INVITATION_EXECUTION_PERMITTED=NO. Unchanged.
 
-**Lane 3 invariant:** Lane 3 remains DISABLED. GOV-PARALLEL-01 LANE3_DECISION=KEEP_DISABLED_UNTIL_FUTURE_MATERIAL_NEED. Unchanged. Lane 2 is not admitted in this Step 1.
+**Lane 3 invariant:** Lane 3 remains DISABLED. GOV-PARALLEL-01 LANE3_DECISION=KEEP_DISABLED_UNTIL_FUTURE_MATERIAL_NEED. Unchanged. Lane 2 is not admitted in this Step 2.
 
 #### 4-step lifecycle
 
-1. Step 1 — registration (THIS STEP)
-2. Step 2 — stage-start / source-path + execute-identity contract freeze
-3. Step 3 — bounded implementation + validation
-4. Step 4 — independent verification / checkpoint / lock
+1. Step 1 — registration COMPLETE
+2. Step 2 — stage-start / source-path + execute-identity contract freeze (THIS STEP COMPLETE)
+3. Step 3 — bounded implementation + validation PENDING (READY_AFTER_CLEAN_STEP2_COMMIT)
+4. Step 4 — independent verification / checkpoint / lock PENDING
 
 #### Explicit Non-Goals
 
@@ -71734,8 +71736,8 @@ AGENT-PLATFORM-CREATE-01D does NOT: ship a complete executable-agent product; ad
 - PRIVATE-BETA-INVITE-01 remains UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED / PARKED / NOT EXECUTABLE
 - Lane 3 remains DISABLED
 - MAX_IMPLEMENTATION_LANES remains 2
-- Lane 2 remains EMPTY / not admitted in this Step 1
-- SAFE_TWO_LANE_PAIR remains unresolved until Step 2 exact write set frozen
+- Lane 2 remains EMPTY / not admitted in this Step 2
+- SAFE_TWO_LANE_PAIR=YES (possible later frontend-only Delete UI; not admitted here)
 - Current single-shot Ask/Build path remains the default when no user-agent identity is supplied
 - Harness remains not activated
 - All COMPLETE AND LOCKED predecessors remain unchanged
@@ -71769,12 +71771,16 @@ Step 1 (Registration):
 - [x] No Git commit/push by the worker
 
 Step 2 (Stage-start / contract freeze):
-- [ ] Inspect execute DTO / request type, queue/job metadata, usage-record metadata, authentication boundary, and user-agent service
-- [ ] Freeze the smallest correct identity contract
-- [ ] Freeze exact write set
-- [ ] Resolve whether a migration is genuinely required (default: no)
-- [ ] Resolve SAFE_TWO_LANE_PAIR against the frozen write set (do not admit Lane 2 in Step 1)
-- [ ] Split into child slices only if source inspection proves necessary
+- [x] Inspect execute DTO / request type, queue/job metadata, usage-record metadata, authentication boundary, and user-agent service
+- [x] Freeze the smallest correct identity contract — additive optional `agentId?: string`
+- [x] Freeze exact write set — 4 MUST-WRITE Gateway files; see stage-start
+- [x] Resolve whether a migration is genuinely required — NO
+- [x] Resolve SAFE_TWO_LANE_PAIR against the frozen write set — YES (not admitted)
+- [x] Split into child slices only if source inspection proves necessary — NO split
+- [x] Stage-start document created: `docs/AGENT-PLATFORM-CREATE-01D-STAGE-START.md`
+- [x] MUTEX_SCOPE_CHANGE_REQUIRED=NO (GATEWAY only; AI-SERVICE not required)
+- [x] No application source / tests changed in Step 2
+- [x] No Git commit/push by the worker
 
 Step 3 (Implementation + validation):
 - [ ] Bounded GATEWAY implementation of the frozen contract
@@ -71788,4 +71794,7 @@ Step 4 (Verification / checkpoint / lock):
 
 **Step 1 HEAD:** `f2a77410c2295a5b7364644f802b8c56b7489f41` (branch main, clean tree verified)
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, source changes=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, Git mutations=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0.
+**Step 2 HEAD:** `f77cc9b6502898ef8843089c6e303a3a95b1b2ec` (branch main, clean tree verified before this write)
+**Step 2 stage-start:** `docs/AGENT-PLATFORM-CREATE-01D-STAGE-START.md`
+**Step 2 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, source changes=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, Git mutations=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0. Governance writes only.
 
