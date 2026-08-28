@@ -28,12 +28,14 @@ There is no global file-rank that overrides these domains.
 1. Read this file.
 2. Apply CLAUDE.md.
 3. Read the TASKS.md CURRENT EXECUTION BOARD ONLY. Stop at the LEGACY / FROZEN boundary.
-4. If your task is not admitted on the board: DO NOT START.
-5. Read the exact admitted TASK ID in TASKS_BACKLOG_FULL.md.
-6. Read the named stage-start / checkpoint only when that task requires it.
-7. Read PRD.md or ARCHITECTURE.md only if the admitted task scope requires product or technical authority.
+4. If the board does not admit the requested product/architecture work and the user is selecting genuinely new next work: do not start implementation; follow CLAUDE.md "Next-Work Selection Protocol"; do not select from chat, model, or window memory.
+5. If your task is not admitted on the board: DO NOT START.
+6. Read the exact admitted TASK ID in TASKS_BACKLOG_FULL.md.
+7. Read the named stage-start / checkpoint only when that task requires it.
+8. Read PRD.md or ARCHITECTURE.md only if the admitted task scope requires product or technical authority.
 
 Do not recover current work by grepping historical ACTIVE, reading roadmap Current Next Task, reading Platform-00, or using chat memory.
+Do not select next product/architecture work from chat, model, or window memory.
 
 ## Writers
 

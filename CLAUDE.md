@@ -317,7 +317,93 @@ Deterministic process:
 
 If the TASKS board does not admit the task: **DO NOT START.**
 
-`PRD.md` / `ARCHITECTURE.md`: read only where task scope requires product or technical authority.
+`PRD.md` / `ARCHITECTURE.md`: read only where an already-admitted task’s scope requires product or technical authority.
+
+If no admitted next product/architecture gate exists AND next work is being selected:
+
+- apply the Next-Work Selection Protocol below
+- do not start implementation
+- do not select from chat, model, or window memory
+
+This branch does not weaken admission, mutex, lane, or governance rules.
+
+### Next-Work Selection Protocol
+
+Standing anti-drift rule. Repository authority, not memory, drives next-work selection. This section does not admit work. `TASKS.md` remains the scheduler.
+
+Apply at the **first** recommendation, selection, registration, or admission of genuinely new product/architecture work. A claim that the task was “already selected” outside the current board does not bypass this protocol.
+
+**Trigger — apply when ALL are true:**
+
+1. someone is proposing, recommending, choosing, or registering genuinely new PRODUCT or ARCHITECTURE work;
+2. `TASKS.md` CURRENT EXECUTION BOARD does not already admit that work as the current gate;
+3. the work is not already ACTIVE or LANE-DONE.
+
+**Non-triggers — do not run the full protocol for:**
+
+- implementation of already-admitted work
+- validation of already-admitted work
+- consolidation / checkpoint / lock of already-admitted work
+- routine named-task continuation
+- status questions
+- mutex / lane / scheduler mechanics
+- Lane 2 execution of an already-admitted pair
+- routine control-plane lock or consolidation
+
+If Keith explicitly names a new product/architecture task for registration: perform only the light CURRENT/FUTURE authority check needed for that named task; do not launch a broad frontier-selection audit.
+
+**Mandatory targeted reads before recommending or registering genuinely new product/architecture work:**
+
+1. `TASKS.md` CURRENT EXECUTION BOARD only — stop at LEGACY / FROZEN; inspect current gate, lanes, blockers, parked/prohibited state
+2. `PRD.md` — targeted CURRENT / LIMITED PRIVATE-BETA / APPROVED FUTURE sections; living PRODUCT WHAT
+3. `ARCHITECTURE.md` — Authority Notice; CURRENT vs PLANNED/FUTURE boundary; relevant subsystem only; living TECHNICAL HOW
+4. `TASKS_BACKLOG_FULL.md` — SEARCH for an existing registered candidate; do not read the entire backlog unless genuinely necessary; reuse an existing canonical task rather than inventing a duplicate
+
+Use targeted reads. Do not recreate GOV-PRD-02 / GOV-ARCH-02 every time.
+
+**Conditional evidence — consult only when relevant:**
+
+- latest relevant GOV-PRD / GOV-ARCH source map or checkpoint when the CURRENT-vs-FUTURE classification of a named candidate is genuinely disputed
+- PRIVATE-BETA-GO-NO-GO evidence if invitation / beta rollout is proposed
+- GOV-PARALLEL decision if Lane 3 / scheduler capacity is proposed
+- named checkpoint / stage-start for a specific candidate
+- `docs/AINOW-EXECUTION-ROADMAP.md` / `docs/AGENT-PLATFORM-00-AINOW-MULTI-AGENT-PLAN.md` only as secondary historical context
+
+Frozen source maps are NOT living authority. Locked checkpoints are NOT schedulers.
+
+**Anti-drift prohibitions:**
+
+Do not select next work from chat memory.
+Do not select next work from model memory.
+Do not select next work from window/session memory.
+
+Do not select next work from:
+
+- `docs/AINOW-EXECUTION-ROADMAP.md` Current Next Task
+- `docs/AGENT-PLATFORM-00-AINOW-MULTI-AGENT-PLAN.md`
+- `TASKS.md` below LEGACY / FROZEN
+- frozen source maps
+- locked checkpoint “next recommended” prose
+
+Do not promote APPROVED FUTURE or GATED functionality into CURRENT product merely because code/plans exist.
+
+Do not invent GOV-PRD-03, GOV-ARCH-03, a new roadmap, a new source map, or a new master plan merely because next work is not remembered.
+
+Forgetting is not evidence of product or architecture drift.
+
+A new reconciliation requires actual material drift/new evidence plus normal governance authorization.
+
+An empty board is valid.
+
+Do not invent a successor merely to fill available lane capacity.
+
+If current authorities and backlog still leave multiple genuinely valid frontiers: present the bounded decision to Keith. Do not silently choose based on model preference.
+
+**Output:**
+
+Normally: a concise evidence-grounded recommendation, OR a bounded choice for Keith when genuine ambiguity remains.
+
+Not normally: another broad strategic audit, another reconciliation task, or another roadmap/source-map document.
 
 ---
 
