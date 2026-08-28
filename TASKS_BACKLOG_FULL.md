@@ -71918,7 +71918,7 @@ Step 2 (Independent verification / checkpoint / lock):
 
 ### AGENT-PLATFORM-CREATE-01E — First Product-Facing Single-Shot Ask UI for Persisted User-Created Agents
 
-**Status:** ACTIVE — Lane 1 — Step 1 COMPLETE — 2026-08-28 — Step 2 COMPLETE — 2026-08-28 — Step 3 IMPLEMENTATION + AUTOMATED VALIDATION COMPLETE — 2026-08-28 — MANUAL_BROWSER_SMOKE_REQUIRED=YES / PENDING — Step 3 NOT finally complete while required smoke is pending — Step 4 NOT authorized — FRONTEND + I18N remain owned — GATEWAY UNOWNED / READ ONLY (`GATEWAY_CONTRACT_HOLE=NO`) — GOVERNANCE released UNOWNED after this Step 3 lifecycle write — IMPLEMENTATION_AUTHORIZED=YES (consumed by Step 3 automated work)
+**Status:** COMPLETE AND LOCKED — PASS — 2026-08-28 — Lane 1 released EMPTY — Step 1 COMPLETE — 2026-08-28 — Step 2 COMPLETE — 2026-08-28 — Step 3 COMPLETE — 2026-08-28 — MANUAL_STAGING_BROWSER_SMOKE=PASS (Keith attestation 2026-08-28) — Step 4 COMPLETE — 2026-08-28 — FRONTEND released UNOWNED — I18N released UNOWNED — GATEWAY UNOWNED / READ ONLY — GOVERNANCE released UNOWNED after Step 4 lock write — implementation HEAD `b6b94516aff9981101ae8815aec2e2d36b8b231b` — Checkpoint: `docs/AGENT-PLATFORM-CREATE-01E-CHECKPOINT.md`
 **Task ID:** AGENT-PLATFORM-CREATE-01E
 **Title:** First Product-Facing Single-Shot Ask UI for Persisted User-Created Agents
 **Family:** AGENT PLATFORM / CREATE (successor to AGENT-PLATFORM-CREATE-01A / 01B / 01C / 01D, all COMPLETE AND LOCKED)
@@ -72014,10 +72014,10 @@ No provider-live expected. Browser smoke TBD at Step 2.
 
 #### 4-step lifecycle
 
-1. Step 1 — registration COMPLETE
+1. Step 1 — registration COMPLETE — 2026-08-28
 2. Step 2 — UX/session/source-path stage-start and exact contract freeze COMPLETE — 2026-08-28 — `docs/AGENT-PLATFORM-CREATE-01E-STAGE-START.md`
-3. Step 3 — bounded implementation + automated validation COMPLETE — 2026-08-28 — MANUAL_BROWSER_SMOKE_REQUIRED=YES / PENDING — Step 3 NOT finally complete while required smoke is pending
-4. Step 4 — independent verification + checkpoint + final lock PENDING / NOT authorized
+3. Step 3 — bounded implementation + automated validation COMPLETE — 2026-08-28 — MANUAL_STAGING_BROWSER_SMOKE=PASS (Keith attestation 2026-08-28)
+4. Step 4 — independent verification + checkpoint + final lock COMPLETE — 2026-08-28 — COMPLETE AND LOCKED — PASS
 
 #### Explicit Non-Goals
 
@@ -72082,18 +72082,21 @@ Step 3 (Implementation + automated validation):
 - [x] Bounded FRONTEND + I18N implementation of the frozen first-slice Ask UI
 - [x] Targeted frontend tests + relevant broader frontend tests + frontend build/typecheck
 - [x] `agentId` + `executionIntent='conversation'` + no `harnessVersion` + no Build exposure + existing Builder Ask/Build unchanged + multilingual + Heroicons compliance as applicable
-- [ ] MANUAL_BROWSER_SMOKE_REQUIRED=YES — PENDING (Keith guided; not run in this Step 3 window; Step 3 remains open until smoke completes)
-- [ ] Step 3 finally complete (blocked on required browser smoke)
-- [ ] Step 4 authorized
+- [x] MANUAL_STAGING_BROWSER_SMOKE=PASS — Keith attestation 2026-08-28
+- [x] Step 3 finally complete
+- [x] Step 4 authorized and COMPLETE — 2026-08-28
 
 Step 4 (Verification / checkpoint / lock):
-- [ ] Independent verification
-- [ ] Checkpoint created
-- [ ] AGENT-PLATFORM-CREATE-01E COMPLETE AND LOCKED
+- [x] Independent verification — PASS — 2026-08-28
+- [x] Checkpoint created — `docs/AGENT-PLATFORM-CREATE-01E-CHECKPOINT.md`
+- [x] AGENT-PLATFORM-CREATE-01E COMPLETE AND LOCKED — PASS — 2026-08-28
 
 **Step 1 HEAD:** `5156db4daa20902fb1a2a6a48f9c0392b43b05c1` (branch main, clean tree verified)
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, source changes=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, Git mutations=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0, stage-start document=0. Governance writes: TASKS.md, this registry body.
 **Step 2 HEAD:** `7a4a0970f976417ca680f384139ccd72e240469f` (branch main, clean tree verified at Step 2 start)
 **Step 2 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source changes=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, Git mutations=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0. Governance writes: `docs/AGENT-PLATFORM-CREATE-01E-STAGE-START.md`, TASKS.md, this registry body. Frozen: Approach A; `NEW_ROUTE_REQUIRED=NO`; `GATEWAY_CONTRACT_HOLE=NO`; `CHILD_SLICES_REQUIRED=NO`; `MANUAL_BROWSER_SMOKE_REQUIRED=YES`; `IMPLEMENTATION_AUTHORIZED=NO`.
 **Step 3 HEAD:** `a2942d18b837014c33e344171e0b180cfa06ad7f` (branch main; Step 2 freeze committed; implementation uncommitted)
-**Step 3 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, backend=0, GATEWAY=0, AI-SERVICE=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, Git commit/push=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, browser smoke=0, MAY-WRITE=0. FRONTEND+I18N MUST-WRITE implemented. Targeted: platform 33/33 PASS; execution-intent 23/23 PASS; workspace-shell 452/452 PASS. Broad: frontend `npm test` 745/745 PASS; `npx tsc --noEmit --incremental false` PASS; `npm run build` PASS. `MANUAL_BROWSER_SMOKE_REQUIRED=YES` / PENDING. Step 4 NOT authorized.
+**Step 3 implementation HEAD:** `b6b94516aff9981101ae8815aec2e2d36b8b231b`
+**Step 3 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, backend=0, GATEWAY=0, AI-SERVICE=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, Git commit/push=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, MAY-WRITE=0. FRONTEND+I18N MUST-WRITE implemented. Targeted: platform 33/33 PASS; execution-intent 23/23 PASS; workspace-shell 452/452 PASS. Broad: frontend `npm test` 745/745 PASS; `npx tsc --noEmit --incremental false` PASS; `npm run build` PASS. DEPLOYED_SHA=b6b94516aff9981101ae8815aec2e2d36b8b231b. MANUAL_STAGING_BROWSER_SMOKE=PASS (Keith attestation 2026-08-28).
+**Step 4 activity ledger:** LIVE=0, SSH=0, staging mutation=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, production source changes=0, backend=0, AI-SERVICE=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, Git mutations=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, next product task registered=0. Step 4 read-only staging checks: frontend HTTP 200 PASS; `/api/health/ready` HTTP 200 PASS. Step 4 writes: `docs/AGENT-PLATFORM-CREATE-01E-CHECKPOINT.md`, TASKS.md, this registry body.
+**Step 4 checkpoint:** `docs/AGENT-PLATFORM-CREATE-01E-CHECKPOINT.md`
