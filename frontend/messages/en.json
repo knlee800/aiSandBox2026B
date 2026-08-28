@@ -406,7 +406,12 @@
     "contextIndicatorInactive": "Off",
     "contextIndicatorUnavailable": "Unavailable",
     "contextIndicatorRepoDocsUnavailableMessage": "Repo Docs unavailable — open this project in the current session first.",
-    "contextIndicatorHelp": "Active context is included in agent prompts."
+    "contextIndicatorHelp": "Active context is included in agent prompts.",
+    "userAgentAskBound": "Asking as selected agent",
+    "userAgentAskDismiss": "Stop asking as this agent",
+    "userAgentAskNotFound": "This agent is no longer available.",
+    "userAgentAskSessionNotFound": "This workspace session is no longer available. Create or select a session, then try again.",
+    "userAgentAskBuildLockedTooltip": "Build is unavailable while asking as a user-created agent."
   },
   "authModule": {
     "installing": "Installing auth module — preparing your workspace...",
@@ -529,7 +534,8 @@
       "emptyBody": "Create your first agent to get started.",
       "agentStatusActive": "Active",
       "agentStatusDraft": "Draft",
-      "agentStatusDisabled": "Disabled"
+      "agentStatusDisabled": "Disabled",
+      "askButton": "Ask"
     }
   },
   "billing": {

@@ -110,6 +110,7 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
   const detailEmptyTitle = resolveNestedMessage(messages, 'platform.detail.emptyTitle');
   const detailEmptyBody = resolveNestedMessage(messages, 'platform.detail.emptyBody');
   const detailStartBuilding = resolveNestedMessage(messages, 'platform.detail.startBuilding');
+  const detailAskButton = resolveNestedMessage(messages, 'platform.agentCreate.askButton');
   const detailComingSoonTitle = resolveNestedMessage(messages, 'platform.detail.comingSoonTitle');
   const detailComingSoonBody = resolveNestedMessage(messages, 'platform.detail.comingSoonBody');
   const builderIntent = resolveNestedMessage(messages, 'platform.detail.builderIntent');
@@ -489,6 +490,7 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
                   emptyTitle={detailEmptyTitle}
                   emptyBody={detailEmptyBody}
                   startBuildingLabel={detailStartBuilding}
+                  askButtonLabel={detailAskButton}
                   comingSoonLabel={detailComingSoonTitle}
                   comingSoonBody={detailComingSoonBody}
                   onClose={handleCloseDetail}

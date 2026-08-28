@@ -406,7 +406,12 @@
     "contextIndicatorInactive": "停用",
     "contextIndicatorUnavailable": "不可用",
     "contextIndicatorRepoDocsUnavailableMessage": "Repo Docs 暂时不可用 — 请先在当前会话中打开此项目。",
-    "contextIndicatorHelp": "启用的上下文会包含在代理提示中。"
+    "contextIndicatorHelp": "启用的上下文会包含在代理提示中。",
+    "userAgentAskBound": "正在以所选代理提问",
+    "userAgentAskDismiss": "停止以此代理提问",
+    "userAgentAskNotFound": "此代理已不可用。",
+    "userAgentAskSessionNotFound": "此工作区会话已不可用。请创建或选择会话后再试。",
+    "userAgentAskBuildLockedTooltip": "以用户创建的代理提问时无法使用构建。"
   },
   "authModule": {
     "installing": "正在安装认证模块 — 正在准备你的工作区...",
@@ -529,7 +534,8 @@
       "emptyBody": "创建您的第一个代理以开始使用。",
       "agentStatusActive": "运行中",
       "agentStatusDraft": "草稿",
-      "agentStatusDisabled": "已停用"
+      "agentStatusDisabled": "已停用",
+      "askButton": "提问"
     }
   },
   "billing": {

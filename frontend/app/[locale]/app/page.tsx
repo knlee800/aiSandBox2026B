@@ -66,9 +66,12 @@ import {
 } from '@/components/workspace/workspace-ai-file-actions.logic';
 import {
   buildExecutionIntentRequestPayload,
+  buildPersistedUserAgentAskRequestFields,
   DEFAULT_WORKSPACE_EXECUTION_INTENT,
+  parseUserAgentIdQueryParam,
   resolveExecutionIntentForRequest,
   resolveExecutionIntentSelection,
+  resolvePersistedUserAgentAskExecuteError,
   shouldApplyFileActionsForExecutionIntent,
   type WorkspaceExecutionIntent,
 } from '@/components/workspace/workspace-execution-intent.logic';
@@ -986,6 +989,7 @@ export default function AppPage() {
   const [chatExecutionIntent, setChatExecutionIntent] = useState<WorkspaceExecutionIntent>(
     DEFAULT_WORKSPACE_EXECUTION_INTENT,
   );
+  const [boundUserAgentId, setBoundUserAgentId] = useState<string | null>(null);
   const [chatThreadMessages, setChatThreadMessages] = useState<WorkspaceChatThreadUiMessage[]>([]);
   const [chatExecutionFileActionStates, setChatExecutionFileActionStates] = useState<
     Record<string, WorkspaceExecutionFileActionState>
@@ -1056,6 +1060,15 @@ export default function AppPage() {
     selectedChatModelId,
     selectedResolvedChatModelId,
   ]);
+
+  useEffect(() => {
+    const parsed = parseUserAgentIdQueryParam(window.location.search);
+    if (!parsed) {
+      return;
+    }
+    setBoundUserAgentId(parsed);
+    setChatExecutionIntent('conversation');
+  }, []);
 
   function handleSelectedChatProviderOptionChange(nextProviderId: string): void {
     const resolvedSelection = resolveFrontendProviderModelSelection({
@@ -4033,13 +4046,25 @@ export default function AppPage() {
           sessionId: executionSessionId ?? crypto.randomUUID(),
           conversationId: executionSessionId ?? crypto.randomUUID(),
           ...buildExecutionIntentRequestPayload(input.executionIntent),
+          ...buildPersistedUserAgentAskRequestFields({
+            agentId: boundUserAgentId,
+            executionIntent: input.executionIntent,
+          }),
           ...(workspaceContext ? { workspaceContext } : {}),
         }),
       });
 
       if (!executeResponse.ok) {
-        const failureMessage = toChatAssistantFailureMessage({
-          rawMessage: await readResponseErrorMessage(executeResponse),
+        const rawMessage = await readResponseErrorMessage(executeResponse);
+        const mappedMessage = resolvePersistedUserAgentAskExecuteError({
+          boundUserAgentId,
+          statusCode: executeResponse.status,
+          rawMessage,
+          notFoundMessage: aiMessages.userAgentAskNotFound,
+          sessionNotFoundMessage: aiMessages.userAgentAskSessionNotFound,
+        });
+        const failureMessage = mappedMessage ?? toChatAssistantFailureMessage({
+          rawMessage,
           fallbackMessage: `Orchestration step ${index + 1} failed (${executeResponse.status}).`,
           statusCode: executeResponse.status,
           retryAfterHeader: executeResponse.headers.get('Retry-After'),
@@ -4359,13 +4384,25 @@ export default function AppPage() {
           sessionId: selectedSessionId ?? crypto.randomUUID(),
           conversationId: selectedSessionId ?? crypto.randomUUID(),
           ...buildExecutionIntentRequestPayload(requestExecutionIntent),
+          ...buildPersistedUserAgentAskRequestFields({
+            agentId: boundUserAgentId,
+            executionIntent: requestExecutionIntent,
+          }),
           ...(workspaceContext ? { workspaceContext } : {}),
         }),
       });
 
       if (!response.ok) {
-        const failureMessage = toChatAssistantFailureMessage({
-          rawMessage: await readResponseErrorMessage(response),
+        const rawMessage = await readResponseErrorMessage(response);
+        const mappedMessage = resolvePersistedUserAgentAskExecuteError({
+          boundUserAgentId,
+          statusCode: response.status,
+          rawMessage,
+          notFoundMessage: aiMessages.userAgentAskNotFound,
+          sessionNotFoundMessage: aiMessages.userAgentAskSessionNotFound,
+        });
+        const failureMessage = mappedMessage ?? toChatAssistantFailureMessage({
+          rawMessage,
           fallbackMessage: `Chat execution failed (${response.status}).`,
           statusCode: response.status,
           retryAfterHeader: response.headers.get('Retry-After'),
@@ -5869,6 +5906,10 @@ export default function AppPage() {
       chatPromptInput={chatPromptInput}
       onChatPromptInputChange={setChatPromptInput}
       executionIntent={chatExecutionIntent}
+      boundUserAgentId={boundUserAgentId}
+      onDismissBoundUserAgentAsk={() => {
+        setBoundUserAgentId(null);
+      }}
       onExecutionIntentChange={(nextIntent) => {
         setChatExecutionIntent((currentIntent) =>
           resolveExecutionIntentSelection({

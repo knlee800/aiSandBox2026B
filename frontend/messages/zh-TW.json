@@ -406,7 +406,12 @@
     "contextIndicatorInactive": "停用",
     "contextIndicatorUnavailable": "不可用",
     "contextIndicatorRepoDocsUnavailableMessage": "Repo Docs 暫時不可用 — 請先在目前工作階段開啟此專案。",
-    "contextIndicatorHelp": "啟用的上下文會包含在代理提示中。"
+    "contextIndicatorHelp": "啟用的上下文會包含在代理提示中。",
+    "userAgentAskBound": "正以所選代理詢問",
+    "userAgentAskDismiss": "停止以此代理詢問",
+    "userAgentAskNotFound": "此代理已無法使用。",
+    "userAgentAskSessionNotFound": "此工作區工作階段已無法使用。請建立或選擇工作階段後再試。",
+    "userAgentAskBuildLockedTooltip": "以使用者建立的代理詢問時無法使用建置。"
   },
   "authModule": {
     "installing": "正在安裝驗證模組 — 正在準備你的工作區...",
@@ -529,7 +534,8 @@
       "emptyBody": "建立您的第一個代理以開始使用。",
       "agentStatusActive": "啟用中",
       "agentStatusDraft": "草稿",
-      "agentStatusDisabled": "已停用"
+      "agentStatusDisabled": "已停用",
+      "askButton": "詢問"
     }
   },
   "billing": {

@@ -71918,12 +71918,12 @@ Step 2 (Independent verification / checkpoint / lock):
 
 ### AGENT-PLATFORM-CREATE-01E — First Product-Facing Single-Shot Ask UI for Persisted User-Created Agents
 
-**Status:** ACTIVE — Lane 1 — Step 1 COMPLETE — 2026-08-28 — Step 2 COMPLETE — 2026-08-28 — Stage-start: `docs/AGENT-PLATFORM-CREATE-01E-STAGE-START.md` — Step 3 PENDING — Step 4 PENDING — FRONTEND + I18N owned with exact write set FROZEN — GATEWAY UNOWNED / READ ONLY (`GATEWAY_CONTRACT_HOLE=NO`) — GOVERNANCE released UNOWNED after this Step 2 write — IMPLEMENTATION_AUTHORIZED=NO until Keith commits the Step 2 freeze
+**Status:** ACTIVE — Lane 1 — Step 1 COMPLETE — 2026-08-28 — Step 2 COMPLETE — 2026-08-28 — Step 3 IMPLEMENTATION + AUTOMATED VALIDATION COMPLETE — 2026-08-28 — MANUAL_BROWSER_SMOKE_REQUIRED=YES / PENDING — Step 3 NOT finally complete while required smoke is pending — Step 4 NOT authorized — FRONTEND + I18N remain owned — GATEWAY UNOWNED / READ ONLY (`GATEWAY_CONTRACT_HOLE=NO`) — GOVERNANCE released UNOWNED after this Step 3 lifecycle write — IMPLEMENTATION_AUTHORIZED=YES (consumed by Step 3 automated work)
 **Task ID:** AGENT-PLATFORM-CREATE-01E
 **Title:** First Product-Facing Single-Shot Ask UI for Persisted User-Created Agents
 **Family:** AGENT PLATFORM / CREATE (successor to AGENT-PLATFORM-CREATE-01A / 01B / 01C / 01D, all COMPLETE AND LOCKED)
 **Workstream:** AGENT (taxonomy only; zero admission weight)
-**Lifecycle:** 4-step — Step 1 registration COMPLETE; Step 2 UX/session/source-path stage-start + exact contract freeze COMPLETE — 2026-08-28; Step 3 bounded implementation + automated validation PENDING; Step 4 independent verification / checkpoint / lock PENDING. Child slices NOT required (`CHILD_SLICES_REQUIRED=NO`).
+**Lifecycle:** 4-step — Step 1 registration COMPLETE; Step 2 UX/session/source-path stage-start + exact contract freeze COMPLETE — 2026-08-28; Step 3 bounded implementation + automated validation COMPLETE — 2026-08-28 with MANUAL_BROWSER_SMOKE_REQUIRED=YES / PENDING (Step 3 NOT finally complete); Step 4 independent verification / checkpoint / lock PENDING / NOT authorized. Child slices NOT required (`CHILD_SLICES_REQUIRED=NO`).
 **Start condition:** READY at Step 1 — Lane 1 EMPTY; Lane 2 EMPTY; Lane 3 DISABLED; GOVERNANCE UNOWNED; FRONTEND UNOWNED; I18N UNOWNED; GATEWAY UNOWNED; AGENT-PLATFORM-CREATE-01D COMPLETE AND LOCKED — PASS — 2026-08-28; GOV-AUTH-01 COMPLETE AND LOCKED — PASS — 2026-08-28; no equivalent unfinished registered implementation task; Keith explicitly chose this APPROVED FUTURE expansion; clean tree at HEAD `5156db4daa20902fb1a2a6a48f9c0392b43b05c1` (branch main).
 **Depends on:** AGENT-PLATFORM-CREATE-01A (COMPLETE AND LOCKED — persistence / `user_agents` / ownership-scoped load); AGENT-PLATFORM-CREATE-01B (COMPLETE AND LOCKED — create / list / view UX); AGENT-PLATFORM-CREATE-01C (COMPLETE AND LOCKED — ownership-scoped soft-delete API; Delete UI remains out of scope); AGENT-PLATFORM-CREATE-01D (COMPLETE AND LOCKED — PASS — 2026-08-28 — frozen GATEWAY Ask identity contract; Checkpoint: `docs/AGENT-PLATFORM-CREATE-01D-CHECKPOINT.md`); GOV-AUTH-01 COMPLETE AND LOCKED (living PRD/ARCHITECTURE record the bounded backend capability; product-facing Ask UI remains FUTURE until this slice lands); GOV-PRD-02 COMPLETE AND LOCKED (living PRODUCT WHAT); GOV-ARCH-02 COMPLETE AND LOCKED (living TECHNICAL HOW); GOV-OS-02 COMPLETE AND LOCKED (Next-Work Selection Protocol; this registration used the light named-task CURRENT/FUTURE check because Keith explicitly named the work).
 **Primary write scope (Step 1):** `TASKS.md` CURRENT EXECUTION BOARD; this registry body. No application source. No stage-start document in Step 1.
@@ -72016,8 +72016,8 @@ No provider-live expected. Browser smoke TBD at Step 2.
 
 1. Step 1 — registration COMPLETE
 2. Step 2 — UX/session/source-path stage-start and exact contract freeze COMPLETE — 2026-08-28 — `docs/AGENT-PLATFORM-CREATE-01E-STAGE-START.md`
-3. Step 3 — bounded implementation + automated validation PENDING
-4. Step 4 — independent verification + checkpoint + final lock PENDING
+3. Step 3 — bounded implementation + automated validation COMPLETE — 2026-08-28 — MANUAL_BROWSER_SMOKE_REQUIRED=YES / PENDING — Step 3 NOT finally complete while required smoke is pending
+4. Step 4 — independent verification + checkpoint + final lock PENDING / NOT authorized
 
 #### Explicit Non-Goals
 
@@ -72079,9 +72079,12 @@ Step 2 (UX/session/source-path stage-start and exact contract freeze):
 - [x] No Git commit/push by the worker
 
 Step 3 (Implementation + automated validation):
-- [ ] Bounded FRONTEND + I18N implementation of the frozen first-slice Ask UI
-- [ ] Targeted frontend tests + relevant broader frontend tests + frontend build/typecheck
-- [ ] `agentId` + `executionIntent='conversation'` + no `harnessVersion` + no Build exposure + existing Builder Ask/Build unchanged + multilingual + Heroicons compliance as applicable
+- [x] Bounded FRONTEND + I18N implementation of the frozen first-slice Ask UI
+- [x] Targeted frontend tests + relevant broader frontend tests + frontend build/typecheck
+- [x] `agentId` + `executionIntent='conversation'` + no `harnessVersion` + no Build exposure + existing Builder Ask/Build unchanged + multilingual + Heroicons compliance as applicable
+- [ ] MANUAL_BROWSER_SMOKE_REQUIRED=YES — PENDING (Keith guided; not run in this Step 3 window; Step 3 remains open until smoke completes)
+- [ ] Step 3 finally complete (blocked on required browser smoke)
+- [ ] Step 4 authorized
 
 Step 4 (Verification / checkpoint / lock):
 - [ ] Independent verification
@@ -72092,3 +72095,5 @@ Step 4 (Verification / checkpoint / lock):
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, source changes=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, Git mutations=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0, stage-start document=0. Governance writes: TASKS.md, this registry body.
 **Step 2 HEAD:** `7a4a0970f976417ca680f384139ccd72e240469f` (branch main, clean tree verified at Step 2 start)
 **Step 2 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source changes=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, Git mutations=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0. Governance writes: `docs/AGENT-PLATFORM-CREATE-01E-STAGE-START.md`, TASKS.md, this registry body. Frozen: Approach A; `NEW_ROUTE_REQUIRED=NO`; `GATEWAY_CONTRACT_HOLE=NO`; `CHILD_SLICES_REQUIRED=NO`; `MANUAL_BROWSER_SMOKE_REQUIRED=YES`; `IMPLEMENTATION_AUTHORIZED=NO`.
+**Step 3 HEAD:** `a2942d18b837014c33e344171e0b180cfa06ad7f` (branch main; Step 2 freeze committed; implementation uncommitted)
+**Step 3 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, backend=0, GATEWAY=0, AI-SERVICE=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, Git commit/push=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, browser smoke=0, MAY-WRITE=0. FRONTEND+I18N MUST-WRITE implemented. Targeted: platform 33/33 PASS; execution-intent 23/23 PASS; workspace-shell 452/452 PASS. Broad: frontend `npm test` 745/745 PASS; `npx tsc --noEmit --incremental false` PASS; `npm run build` PASS. `MANUAL_BROWSER_SMOKE_REQUIRED=YES` / PENDING. Step 4 NOT authorized.

@@ -44,6 +44,7 @@ import type { Workspace } from './workspace-workspaces.logic';
 import WorkspaceTabBar from './workspace-tab-bar';
 import type { WorkspaceTabBarProps } from './workspace-tab-bar';
 import { TAB_REGISTRY } from './workspace-tab-registry';
+import enMessages from '@/messages/en.json';
 
 const session: WorkspaceShellSession = {
   id: '12345678-test-session',
@@ -9650,5 +9651,132 @@ describe('workspace sidebar workspace-label wiring — UX-IA-22', () => {
   test('workspace sidebar projects nav tab remains wired to messages.projects', () => {
     const sidebarSource = readFileSync(new URL('./workspace-sidebar.tsx', import.meta.url), 'utf8');
     assert.match(sidebarSource, /\{ view: 'projects' as const, label: messages\.projects, icon: FolderIcon \}/);
+  });
+});
+
+describe('persisted user-agent Ask UX — AGENT-PLATFORM-CREATE-01E', () => {
+  const boundAgentId = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
+  const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+  const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+
+  test('locale files define bound Ask keys in en, zh-TW, and zh-CN', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+    const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
+    const zhCn = JSON.parse(readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'));
+    const requiredAiKeys = [
+      'userAgentAskBound',
+      'userAgentAskDismiss',
+      'userAgentAskNotFound',
+      'userAgentAskSessionNotFound',
+      'userAgentAskBuildLockedTooltip',
+    ] as const;
+    for (const localePack of [en, zhTw, zhCn]) {
+      for (const key of requiredAiKeys) {
+        assert.equal(typeof localePack.ai[key], 'string');
+        assert.equal(localePack.ai[key].trim().length > 0, true);
+      }
+    }
+  });
+
+  test('page binds visit-scoped userAgentId and reuses selectedSessionId', () => {
+    assert.match(pageSource, /const \[boundUserAgentId, setBoundUserAgentId\] = useState<string \| null>\(null\);/);
+    assert.match(pageSource, /parseUserAgentIdQueryParam\(window\.location\.search\)/);
+    assert.match(pageSource, /setBoundUserAgentId\(parsed\)/);
+    assert.match(pageSource, /setChatExecutionIntent\('conversation'\)/);
+    assert.match(
+      pageSource,
+      /sessionId: executionSessionId \?\? crypto\.randomUUID\(\),[\s\S]*?conversationId: executionSessionId \?\? crypto\.randomUUID\(\),[\s\S]*?buildPersistedUserAgentAskRequestFields/,
+    );
+    assert.match(
+      pageSource,
+      /sessionId: selectedSessionId \?\? crypto\.randomUUID\(\),[\s\S]*?conversationId: selectedSessionId \?\? crypto\.randomUUID\(\),[\s\S]*?buildPersistedUserAgentAskRequestFields/,
+    );
+    assert.doesNotMatch(pageSource, /POST \/api\/sessions[\s\S]*userAgent/);
+  });
+
+  test('both execute sites spread the frozen helper and omit harnessVersion', () => {
+    const helperSpreads = pageSource.match(/ \.\.\.buildPersistedUserAgentAskRequestFields\(/g) ?? [];
+    assert.equal(helperSpreads.length, 2);
+    assert.match(
+      pageSource,
+      /buildPersistedUserAgentAskRequestFields\(\{\s*agentId: boundUserAgentId,\s*executionIntent: input\.executionIntent,\s*\}\)/,
+    );
+    assert.match(
+      pageSource,
+      /buildPersistedUserAgentAskRequestFields\(\{\s*agentId: boundUserAgentId,\s*executionIntent: requestExecutionIntent,\s*\}\)/,
+    );
+    assert.doesNotMatch(pageSource, /harnessVersion/);
+    assert.doesNotMatch(shellSource, /harnessVersion/);
+  });
+
+  test('page maps agent and session 404s through the frozen helper', () => {
+    assert.match(pageSource, /resolvePersistedUserAgentAskExecuteError\(/);
+    assert.match(pageSource, /notFoundMessage: aiMessages\.userAgentAskNotFound/);
+    assert.match(pageSource, /sessionNotFoundMessage: aiMessages\.userAgentAskSessionNotFound/);
+    const mappedSites = pageSource.match(/resolvePersistedUserAgentAskExecuteError\(/g) ?? [];
+    assert.equal(mappedSites.length, 2);
+  });
+
+  test('success stays on /app and composer canSubmit/isSending remain unchanged', () => {
+    const submitStart = pageSource.indexOf('async function handleSubmitChatPrompt');
+    const submitSlice = pageSource.slice(submitStart, submitStart + 8000);
+    assert.doesNotMatch(submitSlice, /router\.push\(/);
+    assert.match(
+      shellSource,
+      /const canSubmit =\s+Boolean\(props\.selectedSessionId\) &&\s+Boolean\(props\.onSubmitPrompt\) &&\s+Boolean\(props\.onPromptInputChange\) &&\s+props\.promptInput\.trim\(\)\.length > 0 &&\s+!isSending;/,
+    );
+    assert.match(
+      shellSource,
+      /const isSending =\s+props\.requestState === 'submitting' \|\|\s+props\.requestState === 'queued' \|\|\s+props\.requestState === 'running';/,
+    );
+  });
+
+  test('bound chip renders localized copy and dismiss action', () => {
+    const html = renderWorkspaceShell({
+      boundUserAgentId: boundAgentId,
+      onDismissBoundUserAgentAsk: () => {},
+    });
+    assert.match(html, /data-testid="workspace-user-agent-ask-bound"/);
+    assert.match(html, /data-testid="workspace-user-agent-ask-dismiss"/);
+    assert.match(html, /workspace-chat-context-indicator/);
+    assert.doesNotMatch(shellSource, /Asking as selected agent/);
+    assert.match(shellSource, /props\.aiMessages\.userAgentAskBound/);
+    assert.match(shellSource, /props\.aiMessages\.userAgentAskDismiss/);
+  });
+
+  test('unbound workspace does not render the bound-agent chip', () => {
+    const html = renderWorkspaceShell({ boundUserAgentId: null });
+    assert.doesNotMatch(html, /workspace-user-agent-ask-bound/);
+    assert.doesNotMatch(html, /workspace-user-agent-ask-dismiss/);
+  });
+
+  test('Build is disabled with locked tooltip while a user agent is bound', () => {
+    const buildButton = renderWorkspaceShellElementByTestId('workspace-chat-intent-build', {
+      boundUserAgentId: boundAgentId,
+      onExecutionIntentChange: () => {},
+    });
+    assert.ok(buildButton);
+    assert.equal(buildButton.props.disabled, true);
+    assert.equal(buildButton.props.title, enMessages.ai.userAgentAskBuildLockedTooltip);
+    assert.match(shellSource, /props\.aiMessages\.userAgentAskBuildLockedTooltip/);
+  });
+
+  test('ordinary Builder Build remains enabled when no user agent is bound', () => {
+    const buildButton = renderWorkspaceShellElementByTestId('workspace-chat-intent-build', {
+      boundUserAgentId: null,
+      onExecutionIntentChange: () => {},
+    });
+    assert.ok(buildButton);
+    assert.equal(buildButton.props.disabled, false);
+    assert.equal(buildButton.props.title, enMessages.ai.intentBuildTooltip);
+  });
+
+  test('shell does not hardcode new English Ask copy and keeps Heroicons outline-only', () => {
+    assert.doesNotMatch(shellSource, /Stop asking as this agent/);
+    assert.doesNotMatch(shellSource, /This agent is no longer available/);
+    assert.doesNotMatch(shellSource, /Build is unavailable while asking/);
+    assert.match(shellSource, /from '@heroicons\/react\/24\/outline'/);
+    assert.doesNotMatch(shellSource, /from '@heroicons\/react\/24\/solid'/);
+    assert.doesNotMatch(shellSource, /lucide|font-awesome|@mui\/icons/i);
   });
 });

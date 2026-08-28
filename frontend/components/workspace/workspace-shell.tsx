@@ -598,6 +598,8 @@ interface WorkspaceShellProps {
   onChatPromptInputChange?: (value: string) => void;
   executionIntent?: WorkspaceExecutionIntent;
   onExecutionIntentChange?: (value: WorkspaceExecutionIntent) => void;
+  boundUserAgentId?: string | null;
+  onDismissBoundUserAgentAsk?: () => void;
   onCreateProjectFromPrompt?: (prompt: string) => Promise<void>;
   selectedModelProvider?: string;
   onSelectedModelProviderChange?: (value: string) => void;
@@ -1662,6 +1664,8 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
             onPromptInputChange={props.onChatPromptInputChange}
             executionIntent={props.executionIntent ?? 'workspace_mutation'}
             onExecutionIntentChange={props.onExecutionIntentChange}
+            boundUserAgentId={props.boundUserAgentId ?? null}
+            onDismissBoundUserAgentAsk={props.onDismissBoundUserAgentAsk}
             selectedModelProvider={props.selectedModelProvider ?? ''}
             onSelectedModelProviderChange={props.onSelectedModelProviderChange}
             availableModelProviders={props.availableModelProviders ?? []}
@@ -3858,6 +3862,8 @@ function WorkspaceChatPanel(props: {
   onPromptInputChange?: (value: string) => void;
   executionIntent: WorkspaceExecutionIntent;
   onExecutionIntentChange?: (value: WorkspaceExecutionIntent) => void;
+  boundUserAgentId?: string | null;
+  onDismissBoundUserAgentAsk?: () => void;
   selectedModelProvider: string;
   onSelectedModelProviderChange?: (value: string) => void;
   availableModelProviders: Array<{
@@ -3917,6 +3923,7 @@ function WorkspaceChatPanel(props: {
     props.requestState === 'submitting' ||
     props.requestState === 'queued' ||
     props.requestState === 'running';
+  const isUserAgentAskBound = Boolean(props.boundUserAgentId);
   const promptInputRef = React.useRef<HTMLTextAreaElement | null>(null);
   const prevIsSendingRef = React.useRef(false);
 
@@ -4152,6 +4159,28 @@ function WorkspaceChatPanel(props: {
                 {props.aiMessages.contextIndicatorRepoDocsUnavailableMessage}
               </span>
             ) : null}
+            {isUserAgentAskBound ? (
+              <>
+                <span aria-hidden="true">·</span>
+                <span
+                  className="inline-flex items-center gap-1 font-medium text-indigo-700"
+                  data-testid="workspace-user-agent-ask-bound"
+                >
+                  <span>{props.aiMessages.userAgentAskBound}</span>
+                  {props.onDismissBoundUserAgentAsk ? (
+                    <button
+                      type="button"
+                      className="rounded px-1 text-[11px] font-medium text-indigo-700 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                      data-testid="workspace-user-agent-ask-dismiss"
+                      aria-label={props.aiMessages.userAgentAskDismiss}
+                      onClick={props.onDismissBoundUserAgentAsk}
+                    >
+                      {props.aiMessages.userAgentAskDismiss}
+                    </button>
+                  ) : null}
+                </span>
+              </>
+            ) : null}
           </div>
           <div className="mb-2 flex items-center" data-testid="workspace-chat-intent-segmented-control">
             <div
@@ -4177,9 +4206,13 @@ function WorkspaceChatPanel(props: {
               <button
                 type="button"
                 data-testid="workspace-chat-intent-build"
-                title={props.aiMessages.intentBuildTooltip}
+                title={
+                  isUserAgentAskBound
+                    ? props.aiMessages.userAgentAskBuildLockedTooltip
+                    : props.aiMessages.intentBuildTooltip
+                }
                 aria-pressed={props.executionIntent === 'workspace_mutation'}
-                disabled={!props.onExecutionIntentChange || isSending}
+                disabled={!props.onExecutionIntentChange || isSending || isUserAgentAskBound}
                 onClick={() => props.onExecutionIntentChange?.('workspace_mutation')}
                 className={`rounded-md px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 ${
                   props.executionIntent === 'workspace_mutation'

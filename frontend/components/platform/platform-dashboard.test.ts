@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
+import { readFileSync } from 'node:fs';
 
 import { listAgents } from '@/lib/agent-platform/agent-registry';
 import type { AgentManifest } from '@/lib/agent-platform/agent-registry';
@@ -212,6 +213,7 @@ describe('platform Create Agent translation keys', () => {
     'platform.agentCreate.agentStatusActive',
     'platform.agentCreate.agentStatusDraft',
     'platform.agentCreate.agentStatusDisabled',
+    'platform.agentCreate.askButton',
   ];
 
   test('all platform.agentCreate.* keys resolve in all 3 locales', () => {
@@ -385,5 +387,67 @@ describe('platform Create Agent validation rules', () => {
   test('description > 2000 chars triggers validation error', () => {
     const description = 'A'.repeat(2001);
     assert.ok(description.length > 2000, 'description > 2000 chars should trigger max-length error');
+  });
+});
+
+describe('platform persisted user-agent Ask CTA — AGENT-PLATFORM-CREATE-01E', () => {
+  const panelSource = readFileSync(new URL('./agent-detail-panel.tsx', import.meta.url), 'utf8');
+  const dashboardSource = readFileSync(new URL('./platform-dashboard.tsx', import.meta.url), 'utf8');
+
+  test('user-created agent detail produces locale-safe Ask href with encoded UUID', () => {
+    const userCreatedBranch = panelSource.slice(panelSource.indexOf('agent.isUserCreated'));
+    assert.match(panelSource, /data-testid="agent-detail-user-created"/);
+    assert.match(panelSource, /data-testid="agent-detail-ask"/);
+    assert.match(
+      panelSource,
+      /href=\{`\$\{localePrefix\}\/app\?userAgentId=\$\{encodeURIComponent\(agent\.id\)\}`\}/,
+    );
+    assert.match(userCreatedBranch, /askButtonLabel/);
+    assert.match(dashboardSource, /askButtonLabel=\{/);
+    assert.match(dashboardSource, /platform\.agentCreate\.askButton/);
+  });
+
+  test('Ask CTA reuses Start Building visual pattern and Heroicons outline ArrowRightIcon', () => {
+    assert.match(
+      panelSource,
+      /data-testid="agent-detail-ask"[\s\S]*ArrowRightIcon className="h-4 w-4"/,
+    );
+    assert.match(
+      panelSource,
+      /inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600/,
+    );
+    assert.match(panelSource, /from '@heroicons\/react\/24\/outline'/);
+    assert.doesNotMatch(panelSource, /from '@heroicons\/react\/24\/solid'/);
+    assert.doesNotMatch(panelSource, /lucide|font-awesome|@mui\/icons/i);
+  });
+
+  test('Builder Start Building remains on /app without userAgentId', () => {
+    const builderBranchStart = panelSource.indexOf('{agent.isBuilder ?');
+    const userCreatedBranchStart = panelSource.indexOf(') : agent.isUserCreated ?');
+    const builderBranch = panelSource.slice(builderBranchStart, userCreatedBranchStart);
+    assert.match(builderBranch, /data-testid="agent-detail-start-building"/);
+    assert.match(builderBranch, /href=\{`\$\{localePrefix\}\/app`\}/);
+    assert.doesNotMatch(builderBranch, /userAgentId/);
+    assert.doesNotMatch(builderBranch, /agent-detail-ask/);
+  });
+
+  test('coming-soon placeholder agents do not expose Ask', () => {
+    const comingSoonBranch = panelSource.slice(panelSource.lastIndexOf('comingSoonLabel'));
+    assert.doesNotMatch(comingSoonBranch, /agent-detail-ask/);
+    assert.doesNotMatch(comingSoonBranch, /userAgentId/);
+  });
+
+  test('empty user-agent list has no Ask CTA', () => {
+    assert.match(dashboardSource, /data-testid="user-agents-empty"/);
+    const emptyBlockStart = dashboardSource.indexOf('data-testid="user-agents-empty"');
+    const emptyBlock = dashboardSource.slice(emptyBlockStart, emptyBlockStart + 400);
+    assert.doesNotMatch(emptyBlock, /agent-detail-ask/);
+    assert.doesNotMatch(emptyBlock, /userAgentId/);
+  });
+
+  test('user-created Ask CTA is not a Build-with-agent control', () => {
+    assert.doesNotMatch(panelSource, /workspace_mutation/);
+    assert.doesNotMatch(panelSource, /executionIntent/);
+    assert.doesNotMatch(panelSource, /harnessVersion/);
   });
 });
