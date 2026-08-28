@@ -71648,7 +71648,7 @@ Step 3 (Verification / checkpoint / lock):
 
 ### AGENT-PLATFORM-CREATE-01D — Bind Persisted User-Agent Identity into Existing Single-Shot Ask
 
-**Status:** ACTIVE — Lane 1 — Step 1 COMPLETE — 2026-08-28 — Step 2 COMPLETE — 2026-08-28 — Stage-start: `docs/AGENT-PLATFORM-CREATE-01D-STAGE-START.md` — execute-identity contract FROZEN — Step 3 COMPLETE — 2026-08-28 — Step 4 PENDING — IMPLEMENTATION_AUTHORIZED=YES (consumed by Step 3) — GATEWAY remains owned through Step 4 — GOVERNANCE released UNOWNED after this Step 3 write
+**Status:** COMPLETE AND LOCKED — PASS — 2026-08-28 — Lane 1 EMPTY — Step 1 COMPLETE — 2026-08-28 — Step 2 COMPLETE — 2026-08-28 — Step 3 COMPLETE — 2026-08-28 — Step 4 COMPLETE — 2026-08-28 — Checkpoint: `docs/AGENT-PLATFORM-CREATE-01D-CHECKPOINT.md` — implementation HEAD `9ad98006593117caf05d7885e77ee095c0a9cd60` — GATEWAY released UNOWNED — CROSS_USER_AGENT_EXECUTION_BLOCKED=YES — USER_AGENT_BUILD_ESCAPE_BLOCKED=YES — USER_AGENT_HARNESS_ESCAPE_BLOCKED=YES
 **Task ID:** AGENT-PLATFORM-CREATE-01D
 **Title:** Bind Persisted User-Agent Identity into Existing Single-Shot Ask
 **Family:** AGENT PLATFORM / CREATE (successor to AGENT-PLATFORM-CREATE-01A / 01B / 01C, all COMPLETE AND LOCKED)
@@ -71788,9 +71788,9 @@ Step 3 (Implementation + validation):
 - [x] Owner / cross-user / missing / soft-deleted / Builder-default / Ask-accounting / no-Harness assertions as applicable
 
 Step 4 (Verification / checkpoint / lock):
-- [ ] Independent verification
-- [ ] Checkpoint created
-- [ ] AGENT-PLATFORM-CREATE-01D COMPLETE AND LOCKED
+- [x] Independent verification — PASS — 2026-08-28
+- [x] Checkpoint created: `docs/AGENT-PLATFORM-CREATE-01D-CHECKPOINT.md`
+- [x] AGENT-PLATFORM-CREATE-01D COMPLETE AND LOCKED — PASS — 2026-08-28
 
 **Step 1 HEAD:** `f2a77410c2295a5b7364644f802b8c56b7489f41` (branch main, clean tree verified)
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, source changes=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, Git mutations=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0.
@@ -71800,4 +71800,8 @@ Step 4 (Verification / checkpoint / lock):
 **Step 3 HEAD:** `38c7f1d0a5f50d3b4df9fa5dd911a759a1a0853d` (branch main, clean tree verified before this write)
 **Step 3 validation:** targeted `npx jest --runInBand src/ai/ai-execution.controller.spec.ts` → 1 suite / 61 passed; user-agent `npx jest --runInBand --testPathPatterns=user-agent` (Jest 30 equivalent of specified `--testPathPattern`) → 2 suites / 46 passed; broad non-live `npx jest --testPathIgnorePatterns=smoke.integration.spec.ts --runInBand` → 167 passed / 1 skipped suites, 2128 passed / 6 skipped tests; `npm run build` PASS.
 **Step 3 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, frontend implementation=0, AI-SERVICE=0, MAY-WRITE files=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, Git mutations=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0. GATEWAY MUST-WRITE=4. Governance writes: TASKS.md, this registry body.
+**Step 4 HEAD:** `9ad98006593117caf05d7885e77ee095c0a9cd60` (branch main, clean tree verified at Step 4 start)
+**Step 4 checkpoint:** `docs/AGENT-PLATFORM-CREATE-01D-CHECKPOINT.md`
+**Step 4 verification:** targeted 61/61 PASS — user-agent 2 suites / 46 tests PASS — broad non-live 167 passed / 1 skipped suites / 2128 passed / 6 skipped tests — build PASS — CROSS_USER_AGENT_EXECUTION_BLOCKED=YES — USER_AGENT_BUILD_ESCAPE_BLOCKED=YES — USER_AGENT_HARNESS_ESCAPE_BLOCKED=YES
+**Step 4 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, production source changes=0, AI-SERVICE=0, frontend/i18n=0, migrations=0, dependencies=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, Git mutations=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0. Governance writes: this checkpoint document, TASKS.md, this registry body.
 
