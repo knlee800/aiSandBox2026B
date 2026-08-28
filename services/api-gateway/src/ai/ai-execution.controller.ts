@@ -15,6 +15,7 @@ import {
   NotFoundException,
   ConflictException,
   ForbiddenException,
+  InternalServerErrorException,
   Sse,
   MessageEvent,
 } from '@nestjs/common';
@@ -49,6 +50,8 @@ import { ProjectAiContextService } from '../project-ai-context/project-ai-contex
 import { SessionService } from '../sessions/session.service';
 import { ProjectRepoDocsService } from '../project-repo-docs/project-repo-docs.service';
 import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
+import { UserAgentService } from '../user-agent/user-agent.service';
+import { UserAgent } from '../entities/user-agent.entity';
 import {
   GatewayAIProvider,
   GatewayProviderModelValidationError,
@@ -112,6 +115,8 @@ export class AIExecutionController {
     private readonly projectRepoDocsService?: ProjectRepoDocsService,
     @Optional()
     private readonly containerManagerHttpClient?: ContainerManagerHttpClient,
+    @Optional()
+    private readonly userAgentService?: UserAgentService,
   ) {}
 
   private normalizeGlobalInstructions(
@@ -371,6 +376,68 @@ export class AIExecutionController {
   }
 
   /**
+   * AGENT-PLATFORM-CREATE-01D: Authorize optional persisted user-agent Ask identity.
+   * Absent agentId → skip. Present → Ask-only, no harness, owner-scoped load.
+   */
+  private async resolvePersistedUserAgentForAsk(
+    request: AIExecutionRequest,
+    authenticatedUserId: string,
+    executionIntent: ExecutionIntent,
+  ): Promise<UserAgent | undefined> {
+    const rawAgentId: unknown = request.agentId;
+    if (rawAgentId === undefined) {
+      return undefined;
+    }
+    if (typeof rawAgentId !== 'string' || rawAgentId.trim().length === 0) {
+      throw new BadRequestException(
+        'agentId must be a non-empty string when provided',
+      );
+    }
+    const agentId = rawAgentId.trim();
+
+    if (executionIntent !== 'conversation') {
+      throw new BadRequestException(
+        "agentId is only supported when executionIntent is 'conversation'",
+      );
+    }
+    if (request.harnessVersion !== undefined) {
+      throw new BadRequestException(
+        'agentId is not supported when harnessVersion is provided',
+      );
+    }
+    if (!this.userAgentService) {
+      throw new InternalServerErrorException(
+        'User-agent identity resolution is unavailable',
+      );
+    }
+
+    const agent = await this.userAgentService.findOneByIdAndUserId(
+      agentId,
+      authenticatedUserId,
+    );
+    if (!agent) {
+      throw new NotFoundException();
+    }
+    return agent;
+  }
+
+  private composePersistedUserAgentIdentityBlock(
+    agent: UserAgent,
+    existingGlobalInstructions: string | undefined,
+  ): string {
+    const identityBlock = [
+      'Active agent identity:',
+      `Name: ${agent.name}`,
+      `Role: ${agent.role}`,
+      `Description: ${agent.description}`,
+    ].join('\n');
+    if (existingGlobalInstructions) {
+      return `${identityBlock}\n\n${existingGlobalInstructions}`;
+    }
+    return identityBlock;
+  }
+
+  /**
    * Execute AI request (async — Phase 44.4D)
    *
    * POST /api/ai/execute
@@ -446,6 +513,13 @@ export class AIExecutionController {
       );
     }
 
+    // AGENT-PLATFORM-CREATE-01D: owner-scoped persisted Ask identity (before ledger/enqueue)
+    const persistedUserAgent = await this.resolvePersistedUserAgentForAsk(
+      request,
+      identity.userId,
+      executionIntent,
+    );
+
     // Phase 43A-2B: Validate and normalize idempotency key
     let requestId: string | undefined;
     if (idempotencyKey !== undefined) {
@@ -468,6 +542,12 @@ export class AIExecutionController {
     const globalInstructions = this.normalizeGlobalInstructions(
       await this.userAiInstructionsService.getByUserId(identity.userId),
     );
+    const queuedGlobalInstructions = persistedUserAgent
+      ? this.composePersistedUserAgentIdentityBlock(
+          persistedUserAgent,
+          globalInstructions,
+        )
+      : globalInstructions;
     const projectInstructions = await this.resolveProjectInstructions(
       request.sessionId,
       identity.userId,
@@ -487,7 +567,7 @@ export class AIExecutionController {
           }
         : request.workspaceContext;
     this.logger.debug(
-      `Global AI instructions ${globalInstructions ? 'present' : 'absent'} for user ${identity.userId}`,
+      `Global AI instructions ${queuedGlobalInstructions ? 'present' : 'absent'} for user ${identity.userId}`,
     );
     this.logger.debug(
       `Project AI instructions ${projectInstructions ? 'present' : 'absent'} for session ${request.sessionId}`,
@@ -529,6 +609,7 @@ export class AIExecutionController {
             ...(request.builderProfileId !== undefined && { builderProfileId: request.builderProfileId }),
             ...(request.collaborationRunId !== undefined && { collaborationRunId: request.collaborationRunId }),
             ...(request.referralTraceId !== undefined && { referralTraceId: request.referralTraceId }),
+            ...(persistedUserAgent !== undefined && { agentId: persistedUserAgent.id }),
           },
         });
         flow = 'reuse';
@@ -549,6 +630,7 @@ export class AIExecutionController {
             apiKeyId: identity.apiKeyId, // INJECTED for audit
             requestedProvider: provider,
             requestedModel: requestedModel ?? null,
+            ...(persistedUserAgent !== undefined && { agentId: persistedUserAgent.id }),
           },
           agentRole: request.agentRole,
           builderProfileId: request.builderProfileId,
@@ -574,6 +656,7 @@ export class AIExecutionController {
           apiKeyId: identity.apiKeyId, // INJECTED for audit
           requestedProvider: provider,
           requestedModel: requestedModel ?? null,
+          ...(persistedUserAgent !== undefined && { agentId: persistedUserAgent.id }),
         },
         agentRole: request.agentRole,
         builderProfileId: request.builderProfileId,
@@ -611,7 +694,7 @@ export class AIExecutionController {
       prompt: request.prompt,
       workspaceContext: enrichedWorkspaceContext,
       model: resolvedModel,
-      globalInstructions,
+      globalInstructions: queuedGlobalInstructions,
       projectInstructions,
       requestId,
       submittedAt,

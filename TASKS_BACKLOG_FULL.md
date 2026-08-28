@@ -71648,23 +71648,23 @@ Step 3 (Verification / checkpoint / lock):
 
 ### AGENT-PLATFORM-CREATE-01D — Bind Persisted User-Agent Identity into Existing Single-Shot Ask
 
-**Status:** ACTIVE — Lane 1 — Step 1 COMPLETE — 2026-08-28 — Step 2 COMPLETE — 2026-08-28 — Stage-start: `docs/AGENT-PLATFORM-CREATE-01D-STAGE-START.md` — execute-identity contract FROZEN — Step 3 PENDING (READY_AFTER_CLEAN_STEP2_COMMIT) — Step 4 PENDING — IMPLEMENTATION_AUTHORIZED=NO — GATEWAY owned — GOVERNANCE released UNOWNED after this Step 2 write
+**Status:** ACTIVE — Lane 1 — Step 1 COMPLETE — 2026-08-28 — Step 2 COMPLETE — 2026-08-28 — Stage-start: `docs/AGENT-PLATFORM-CREATE-01D-STAGE-START.md` — execute-identity contract FROZEN — Step 3 COMPLETE — 2026-08-28 — Step 4 PENDING — IMPLEMENTATION_AUTHORIZED=YES (consumed by Step 3) — GATEWAY remains owned through Step 4 — GOVERNANCE released UNOWNED after this Step 3 write
 **Task ID:** AGENT-PLATFORM-CREATE-01D
 **Title:** Bind Persisted User-Agent Identity into Existing Single-Shot Ask
 **Family:** AGENT PLATFORM / CREATE (successor to AGENT-PLATFORM-CREATE-01A / 01B / 01C, all COMPLETE AND LOCKED)
 **Workstream:** AGENT (taxonomy only; zero admission weight)
-**Lifecycle:** 4-step — Step 1 registration COMPLETE; Step 2 stage-start / source-path + contract freeze (THIS STEP COMPLETE); Step 3 bounded implementation + validation PENDING (READY_AFTER_CLEAN_STEP2_COMMIT); Step 4 independent verification / checkpoint / lock PENDING. Child slices NOT required.
-**Start condition:** READY at Step 1 — Lane 1 EMPTY; Lane 2 EMPTY; Lane 3 DISABLED; GOVERNANCE UNOWNED; GOV-OS-02 COMPLETE AND LOCKED — PASS — 2026-08-28; no equivalent unfinished registered implementation task; clean tree at HEAD `f2a77410c2295a5b7364644f802b8c56b7489f41` (branch main). Step 2 start condition: READY_AFTER_CLEAN_STEP1_COMMIT — satisfied at HEAD `f77cc9b6502898ef8843089c6e303a3a95b1b2ec` (branch main, clean tree). Step 3 start condition: READY_AFTER_CLEAN_STEP2_COMMIT.
+**Lifecycle:** 4-step — Step 1 registration COMPLETE; Step 2 stage-start / source-path + contract freeze COMPLETE; Step 3 bounded implementation + validation COMPLETE; Step 4 independent verification / checkpoint / lock PENDING. Child slices NOT required.
+**Start condition:** READY at Step 1 — Lane 1 EMPTY; Lane 2 EMPTY; Lane 3 DISABLED; GOVERNANCE UNOWNED; GOV-OS-02 COMPLETE AND LOCKED — PASS — 2026-08-28; no equivalent unfinished registered implementation task; clean tree at HEAD `f2a77410c2295a5b7364644f802b8c56b7489f41` (branch main). Step 2 start condition: READY_AFTER_CLEAN_STEP1_COMMIT — satisfied at HEAD `f77cc9b6502898ef8843089c6e303a3a95b1b2ec` (branch main, clean tree). Step 3 start condition: READY_AFTER_CLEAN_STEP2_COMMIT — satisfied at HEAD `38c7f1d0a5f50d3b4df9fa5dd911a759a1a0853d` (branch main, clean tree).
 **Depends on:** AGENT-PLATFORM-CREATE-01A (COMPLETE AND LOCKED — persistence / `user_agents` / ownership-scoped load); AGENT-PLATFORM-CREATE-01B (COMPLETE AND LOCKED — create / list / view); AGENT-PLATFORM-CREATE-01C (COMPLETE AND LOCKED — ownership-scoped soft-delete API); GOV-PRD-02 COMPLETE AND LOCKED (living PRODUCT WHAT); GOV-ARCH-02 COMPLETE AND LOCKED (living TECHNICAL HOW); GOV-OS-02 COMPLETE AND LOCKED (Next-Work Selection Protocol; this registration used the light named-task CURRENT/FUTURE check only).
 **Primary write scope (Step 1):** `TASKS.md` CURRENT EXECUTION BOARD; this registry body.
 **Primary write scope (Step 2, this write):** `docs/AGENT-PLATFORM-CREATE-01D-STAGE-START.md`; `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body. No application source.
-**Primary write scope (Step 3, FROZEN):** GATEWAY only. Exact MUST-WRITE:
+**Primary write scope (Step 3, FROZEN — THIS STEP COMPLETE):** GATEWAY only. Exact MUST-WRITE (all written):
 - `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\clients\ai-service-http.client.ts`
 - `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\ai\ai-execution.controller.ts`
 - `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\ai\ai.module.ts`
 - `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\ai\ai-execution.controller.spec.ts`
 User-agent service/entity/module are READ ONLY (reuse `findOneByIdAndUserId`). AI-SERVICE is READ ONLY. usage-ledger / queue / public-api are READ ONLY. Anything outside this set is forbidden unless listed MAY WRITE IF REQUIRED in the stage-start.
-**Mutexes / resources:** GATEWAY (owned at Lane 1 admission; exact write set FROZEN at Step 2). GOVERNANCE held only for this Step 2 write then released UNOWNED. FRONTEND not declared. I18N not declared. AI-SERVICE not declared. MIGRATION not required and not authorized. LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / COMPOSE unowned and unauthorized. MUTEX_SCOPE_CHANGE_REQUIRED=NO.
+**Mutexes / resources:** GATEWAY (owned at Lane 1 admission; exact write set FROZEN at Step 2; remains owned through Step 4). GOVERNANCE held only for this Step 3 lifecycle write then released UNOWNED. FRONTEND not declared. I18N not declared. AI-SERVICE not declared. MIGRATION not required and not authorized. LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / COMPOSE unowned and unauthorized. MUTEX_SCOPE_CHANGE_REQUIRED=NO.
 **Hot-file leases:** none. All Step 3 writes sit under GATEWAY.
 **Shared contracts:** execute identity contract FROZEN at Step 2. Additive optional `agentId?: string` on Gateway `AIExecutionRequest`. Do NOT overload `agentRole` or `builderProfileId`. Do not silently change this frozen contract. `agentId` absent → current Builder Ask/Build unchanged. `agentId` present is Ask-only (`executionIntent==='conversation'`) and harnessVersion must be absent.
 **Evidence class:** LOCAL-TESTS. No provider-live. No browser smoke. No Docker/Postgres/Redis.
@@ -71721,8 +71721,8 @@ No browser smoke unless a later UI slice exists. No provider-live call assumed n
 #### 4-step lifecycle
 
 1. Step 1 — registration COMPLETE
-2. Step 2 — stage-start / source-path + execute-identity contract freeze (THIS STEP COMPLETE)
-3. Step 3 — bounded implementation + validation PENDING (READY_AFTER_CLEAN_STEP2_COMMIT)
+2. Step 2 — stage-start / source-path + execute-identity contract freeze COMPLETE
+3. Step 3 — bounded implementation + validation (THIS STEP COMPLETE)
 4. Step 4 — independent verification / checkpoint / lock PENDING
 
 #### Explicit Non-Goals
@@ -71783,9 +71783,9 @@ Step 2 (Stage-start / contract freeze):
 - [x] No Git commit/push by the worker
 
 Step 3 (Implementation + validation):
-- [ ] Bounded GATEWAY implementation of the frozen contract
-- [ ] Targeted Gateway tests + relevant broader non-live Gateway tests + Gateway build/typecheck
-- [ ] Owner / cross-user / missing / soft-deleted / Builder-default / Ask-accounting / no-Harness assertions as applicable
+- [x] Bounded GATEWAY implementation of the frozen contract
+- [x] Targeted Gateway tests + relevant broader non-live Gateway tests + Gateway build/typecheck
+- [x] Owner / cross-user / missing / soft-deleted / Builder-default / Ask-accounting / no-Harness assertions as applicable
 
 Step 4 (Verification / checkpoint / lock):
 - [ ] Independent verification
@@ -71797,4 +71797,7 @@ Step 4 (Verification / checkpoint / lock):
 **Step 2 HEAD:** `f77cc9b6502898ef8843089c6e303a3a95b1b2ec` (branch main, clean tree verified before this write)
 **Step 2 stage-start:** `docs/AGENT-PLATFORM-CREATE-01D-STAGE-START.md`
 **Step 2 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, source changes=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, Git mutations=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0. Governance writes only.
+**Step 3 HEAD:** `38c7f1d0a5f50d3b4df9fa5dd911a759a1a0853d` (branch main, clean tree verified before this write)
+**Step 3 validation:** targeted `npx jest --runInBand src/ai/ai-execution.controller.spec.ts` → 1 suite / 61 passed; user-agent `npx jest --runInBand --testPathPatterns=user-agent` (Jest 30 equivalent of specified `--testPathPattern`) → 2 suites / 46 passed; broad non-live `npx jest --testPathIgnorePatterns=smoke.integration.spec.ts --runInBand` → 167 passed / 1 skipped suites, 2128 passed / 6 skipped tests; `npm run build` PASS.
+**Step 3 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, frontend implementation=0, AI-SERVICE=0, MAY-WRITE files=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, Git mutations=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0. GATEWAY MUST-WRITE=4. Governance writes: TASKS.md, this registry body.
 

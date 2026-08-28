@@ -21,6 +21,7 @@ import { ContainerManagerHttpClient } from '../clients/container-manager-http.cl
 import { CreditBalanceGuardModule } from '../billing/credit-balance-guard.module';
 import { CreditPersistenceModule } from '../billing/credit-deduction/credit-persistence.module';
 import { User } from '../entities/user.entity';
+import { UserAgentModule } from '../user-agent/user-agent.module';
 
 /**
  * AIModule
@@ -55,6 +56,7 @@ import { User } from '../entities/user.entity';
     TypeOrmModule.forFeature([User]), // Expose UserRepository in AIModule context
     CreditPersistenceModule, // Expose CreditBalanceRepository in AIModule context
     CreditBalanceGuardModule, // BILLING-READY-04A: Credit balance gate
+    UserAgentModule, // AGENT-PLATFORM-CREATE-01D: owner-scoped persisted Ask identity
   ],
   controllers: [AIExecutionController, InternalAccountingController],
   providers: [

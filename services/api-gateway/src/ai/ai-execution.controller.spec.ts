@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import {
   BadRequestException,
   ForbiddenException,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { AIExecutionController } from './ai-execution.controller';
@@ -21,6 +22,7 @@ import { ExecutionStreamService } from '../streaming/execution-stream.service';
 import { UserAiInstructionsService } from '../user-ai-instructions/user-ai-instructions.service';
 import { ProjectAiContextService } from '../project-ai-context/project-ai-context.service';
 import { SessionService } from '../sessions/session.service';
+import { UserAgentService } from '../user-agent/user-agent.service';
 
 describe('AIExecutionController (Phase 18A + Phase 20A + Phase 20B + Phase 21B + Phase 22B)', () => {
   let controller: AIExecutionController;
@@ -1432,5 +1434,498 @@ describe('AIExecutionController executionIntent propagation (BUILDER-INTENT-01)'
 
     expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
     expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * AGENT-PLATFORM-CREATE-01D: persisted user-agent Ask identity binding
+ *
+ * Additive optional agentId on POST /api/ai/execute. Owner-scoped lookup
+ * before ledger/enqueue. Ask-only. Identity block composed onto existing
+ * globalInstructions. Trace agentId lives in usage_records.metadata JSONB.
+ */
+describe('AIExecutionController — persisted user-agent Ask identity (AGENT-PLATFORM-CREATE-01D)', () => {
+  let controller: AIExecutionController;
+  let mockUsageLedgerService: Record<string, jest.Mock>;
+  let mockQueueService: Record<string, jest.Mock>;
+  let mockUserAgentService: Record<string, jest.Mock>;
+  let mockUserAiInstructionsService: Record<string, jest.Mock>;
+
+  const VALID_SESSION_UUID = '35d53116-6723-4571-af12-ac256977c007';
+  const OWNER_USER_ID = '6a3fe737-0945-44f4-a95f-f1ac3a3e4f6c';
+  const OWNED_AGENT_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+  const FROZEN_IDENTITY_BLOCK = [
+    'Active agent identity:',
+    'Name: Research Analyst',
+    'Role: Analyst',
+    'Description: Helps review research notes.',
+  ].join('\n');
+
+  const ownerIdentity: ApiKeyIdentity = {
+    userId: OWNER_USER_ID,
+    apiKeyId: 'key-create-01d',
+    scopes: ['ai:execute'],
+    harnessEntitled: true,
+  };
+
+  const ownedAgent = {
+    id: OWNED_AGENT_ID,
+    userId: OWNER_USER_ID,
+    name: 'Research Analyst',
+    role: 'Analyst',
+    description: 'Helps review research notes.',
+  };
+
+  function makeRequest(overrides?: Partial<AIExecutionRequest>): AIExecutionRequest {
+    return {
+      sessionId: VALID_SESSION_UUID,
+      conversationId: 'conv-create-01d',
+      userId: 'untrusted-client-user',
+      prompt: 'Ask as my persisted agent.',
+      provider: 'stub',
+      ...overrides,
+    };
+  }
+
+  function expectNoLedgerOrEnqueue(): void {
+    expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(mockUsageLedgerService.reuseExecutionIntent).not.toHaveBeenCalled();
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  }
+
+  async function compileController(options?: {
+    omitUserAgentService?: boolean;
+  }): Promise<void> {
+    mockUsageLedgerService = {
+      findByRequestId: jest.fn().mockResolvedValue(null),
+      reuseExecutionIntent: jest.fn().mockResolvedValue('exec-reuse-01d'),
+      writeExecutionIntent: jest.fn().mockResolvedValue(undefined),
+      updateExecutionResult: jest.fn().mockResolvedValue(undefined),
+    };
+    mockQueueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+    mockUserAgentService = {
+      findOneByIdAndUserId: jest.fn().mockResolvedValue(ownedAgent),
+    };
+    mockUserAiInstructionsService = {
+      getByUserId: jest.fn().mockResolvedValue(null),
+    };
+
+    const mockGuard = { canActivate: jest.fn(() => true) };
+    const providers: any[] = [
+      { provide: UsageLedgerService, useValue: mockUsageLedgerService },
+      {
+        provide: GlobalSafetyLimitService,
+        useValue: { checkAndRecord: jest.fn(), recordExecutionCost: jest.fn() },
+      },
+      { provide: QueueService, useValue: mockQueueService },
+      {
+        provide: ExecutionResultService,
+        useValue: { getExecution: jest.fn(), requestCancel: jest.fn() },
+      },
+      {
+        provide: ExecutionStreamService,
+        useValue: { subscribe: jest.fn(), unsubscribe: jest.fn() },
+      },
+      { provide: UserAiInstructionsService, useValue: mockUserAiInstructionsService },
+      {
+        provide: ProjectAiContextService,
+        useValue: { getByProjectId: jest.fn().mockResolvedValue(null) },
+      },
+      {
+        provide: SessionService,
+        useValue: {
+          getSessionById: jest
+            .fn()
+            .mockResolvedValue({ userId: OWNER_USER_ID, projectId: null }),
+        },
+      },
+    ];
+    if (!options?.omitUserAgentService) {
+      providers.push({
+        provide: UserAgentService,
+        useValue: mockUserAgentService,
+      });
+    }
+
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [AIExecutionController],
+      providers,
+    })
+      .overrideGuard(SessionOrApiKeyAuthGuard)
+      .useValue(mockGuard)
+      .overrideGuard(AuthorizationGuard)
+      .useValue(mockGuard)
+      .overrideGuard(QuotaGuard)
+      .useValue(mockGuard)
+      .overrideGuard(TokenQuotaGuard)
+      .useValue(mockGuard)
+      .overrideGuard(CreditBalanceGuard)
+      .useValue(mockGuard)
+      .compile();
+
+    controller = module.get<AIExecutionController>(AIExecutionController);
+  }
+
+  beforeEach(async () => {
+    await compileController();
+  });
+
+  it('1. valid owner Ask binds identity into globalInstructions and metadata then enqueues', async () => {
+    mockUserAiInstructionsService.getByUserId.mockResolvedValue(
+      'Always be concise.',
+    );
+
+    const result = await controller.execute(
+      makeRequest({
+        agentId: OWNED_AGENT_ID,
+        executionIntent: 'conversation',
+      }),
+      ownerIdentity,
+    );
+
+    expect(result.status).toBe('queued');
+    expect(result).toHaveProperty('executionId');
+    expect(mockUserAgentService.findOneByIdAndUserId).toHaveBeenCalledTimes(1);
+    expect(mockUserAgentService.findOneByIdAndUserId).toHaveBeenCalledWith(
+      OWNED_AGENT_ID,
+      OWNER_USER_ID,
+    );
+    expect(mockUsageLedgerService.writeExecutionIntent).toHaveBeenCalledTimes(1);
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload.executionIntent).toBe('conversation');
+    expect(payload.globalInstructions).toBe(
+      `${FROZEN_IDENTITY_BLOCK}\n\nAlways be concise.`,
+    );
+    expect(payload).not.toHaveProperty('harnessVersion');
+    expect(payload).not.toHaveProperty('agentRole');
+    expect(payload).not.toHaveProperty('builderProfileId');
+
+    const intentDto = mockUsageLedgerService.writeExecutionIntent.mock.calls[0][0];
+    expect(intentDto.metadata?.agentId).toBe(OWNED_AGENT_ID);
+    expect(intentDto.agentRole).toBeUndefined();
+    expect(intentDto.builderProfileId).toBeUndefined();
+  });
+
+  it('2. nonexistent agent returns 404 Not Found with no ledger write or enqueue', async () => {
+    mockUserAgentService.findOneByIdAndUserId.mockResolvedValue(null);
+
+    await expect(
+      controller.execute(
+        makeRequest({
+          agentId: OWNED_AGENT_ID,
+          executionIntent: 'conversation',
+        }),
+        ownerIdentity,
+      ),
+    ).rejects.toThrow('Not Found');
+
+    const error = await controller
+      .execute(
+        makeRequest({
+          agentId: OWNED_AGENT_ID,
+          executionIntent: 'conversation',
+        }),
+        ownerIdentity,
+      )
+      .catch((e) => e);
+    expect(error).toBeInstanceOf(NotFoundException);
+    expect(error.getStatus()).toBe(404);
+    expect(error).not.toBeInstanceOf(ForbiddenException);
+    expectNoLedgerOrEnqueue();
+  });
+
+  it('3. cross-user agent lookup uses authenticated userId and returns 404', async () => {
+    mockUserAgentService.findOneByIdAndUserId.mockResolvedValue(null);
+
+    await expect(
+      controller.execute(
+        makeRequest({
+          agentId: OWNED_AGENT_ID,
+          executionIntent: 'conversation',
+          userId: 'attacker-user-id',
+        }),
+        ownerIdentity,
+      ),
+    ).rejects.toThrow(NotFoundException);
+
+    expect(mockUserAgentService.findOneByIdAndUserId).toHaveBeenCalledWith(
+      OWNED_AGENT_ID,
+      OWNER_USER_ID,
+    );
+    expect(mockUserAgentService.findOneByIdAndUserId).not.toHaveBeenCalledWith(
+      OWNED_AGENT_ID,
+      'attacker-user-id',
+    );
+    expectNoLedgerOrEnqueue();
+  });
+
+  it('4. soft-deleted agent (owner-scoped lookup null) returns 404 with no enqueue', async () => {
+    mockUserAgentService.findOneByIdAndUserId.mockResolvedValue(null);
+
+    const error = await controller
+      .execute(
+        makeRequest({
+          agentId: OWNED_AGENT_ID,
+          executionIntent: 'conversation',
+        }),
+        ownerIdentity,
+      )
+      .catch((e) => e);
+
+    expect(error).toBeInstanceOf(NotFoundException);
+    expect(error.message).toBe('Not Found');
+    expect(error.getStatus()).toBe(404);
+    expectNoLedgerOrEnqueue();
+  });
+
+  it('5. Ask without agentId leaves Builder Ask unchanged and skips owner lookup', async () => {
+    const result = await controller.execute(
+      makeRequest({ executionIntent: 'conversation' }),
+      ownerIdentity,
+    );
+
+    expect(result.status).toBe('queued');
+    expect(mockUserAgentService.findOneByIdAndUserId).not.toHaveBeenCalled();
+    expect(mockUsageLedgerService.writeExecutionIntent).toHaveBeenCalledTimes(1);
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload.executionIntent).toBe('conversation');
+    expect(payload.globalInstructions).toBeUndefined();
+    expect(payload).not.toHaveProperty('harnessVersion');
+
+    const intentDto = mockUsageLedgerService.writeExecutionIntent.mock.calls[0][0];
+    expect(intentDto.metadata).not.toHaveProperty('agentId');
+  });
+
+  it('6. Build without agentId leaves Builder Build unchanged and skips owner lookup', async () => {
+    const omitted = await controller.execute(makeRequest(), ownerIdentity);
+    expect(omitted.status).toBe('queued');
+    expect(mockQueueService.enqueueExecution.mock.calls[0][0].executionIntent).toBe(
+      'workspace_mutation',
+    );
+
+    mockQueueService.enqueueExecution.mockClear();
+    mockUsageLedgerService.writeExecutionIntent.mockClear();
+    mockUserAgentService.findOneByIdAndUserId.mockClear();
+
+    const explicit = await controller.execute(
+      makeRequest({ executionIntent: 'workspace_mutation' }),
+      ownerIdentity,
+    );
+    expect(explicit.status).toBe('queued');
+    expect(mockUserAgentService.findOneByIdAndUserId).not.toHaveBeenCalled();
+    expect(mockQueueService.enqueueExecution.mock.calls[0][0].executionIntent).toBe(
+      'workspace_mutation',
+    );
+
+    const intentDto = mockUsageLedgerService.writeExecutionIntent.mock.calls[0][0];
+    expect(intentDto.metadata).not.toHaveProperty('agentId');
+  });
+
+  it('7. agentId + Build is HTTP 400 Ask-only reject with no lookup or enqueue', async () => {
+    await expect(
+      controller.execute(
+        makeRequest({
+          agentId: OWNED_AGENT_ID,
+          executionIntent: 'workspace_mutation',
+        }),
+        ownerIdentity,
+      ),
+    ).rejects.toThrow(BadRequestException);
+
+    await expect(
+      controller.execute(
+        makeRequest({
+          agentId: OWNED_AGENT_ID,
+          executionIntent: 'workspace_mutation',
+        }),
+        ownerIdentity,
+      ),
+    ).rejects.toThrow("agentId is only supported when executionIntent is 'conversation'");
+
+    expect(mockUserAgentService.findOneByIdAndUserId).not.toHaveBeenCalled();
+    expectNoLedgerOrEnqueue();
+
+    mockUserAgentService.findOneByIdAndUserId.mockClear();
+
+    await expect(
+      controller.execute(
+        makeRequest({ agentId: OWNED_AGENT_ID }),
+        ownerIdentity,
+      ),
+    ).rejects.toThrow("agentId is only supported when executionIntent is 'conversation'");
+    expect(mockUserAgentService.findOneByIdAndUserId).not.toHaveBeenCalled();
+    expectNoLedgerOrEnqueue();
+  });
+
+  it('8. agentId + harnessVersion is HTTP 400 and does not activate Harness', async () => {
+    await expect(
+      controller.execute(
+        makeRequest({
+          agentId: OWNED_AGENT_ID,
+          executionIntent: 'conversation',
+          harnessVersion: 'v1',
+        }),
+        ownerIdentity,
+      ),
+    ).rejects.toThrow(BadRequestException);
+
+    await expect(
+      controller.execute(
+        makeRequest({
+          agentId: OWNED_AGENT_ID,
+          executionIntent: 'conversation',
+          harnessVersion: 'v1',
+        }),
+        ownerIdentity,
+      ),
+    ).rejects.toThrow('agentId is not supported when harnessVersion is provided');
+
+    expect(mockUserAgentService.findOneByIdAndUserId).not.toHaveBeenCalled();
+    expectNoLedgerOrEnqueue();
+  });
+
+  it('9. empty, whitespace, and non-string agentId are HTTP 400 with no owner lookup', async () => {
+    await expect(
+      controller.execute(
+        makeRequest({
+          agentId: '',
+          executionIntent: 'conversation',
+        }),
+        ownerIdentity,
+      ),
+    ).rejects.toThrow(BadRequestException);
+
+    await expect(
+      controller.execute(
+        makeRequest({
+          agentId: '   ',
+          executionIntent: 'conversation',
+        }),
+        ownerIdentity,
+      ),
+    ).rejects.toThrow(BadRequestException);
+
+    await expect(
+      controller.execute(
+        {
+          ...makeRequest({ executionIntent: 'conversation' }),
+          agentId: 12345,
+        } as any,
+        ownerIdentity,
+      ),
+    ).rejects.toThrow(BadRequestException);
+
+    expect(mockUserAgentService.findOneByIdAndUserId).not.toHaveBeenCalled();
+    expectNoLedgerOrEnqueue();
+  });
+
+  it('10. existing Ask accounting and AGENT-PLATFORM-06 identity fields remain unchanged', async () => {
+    const result = await controller.execute(
+      makeRequest({
+        agentId: OWNED_AGENT_ID,
+        executionIntent: 'conversation',
+        agentRole: 'builder',
+        builderProfileId: 'builder-default',
+        collaborationRunId: 'collab-run-01d',
+        referralTraceId: 'ref-trace-01d',
+      }),
+      ownerIdentity,
+    );
+
+    expect(result.status).toBe('queued');
+    expect(mockUsageLedgerService.writeExecutionIntent).toHaveBeenCalledTimes(1);
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload.agentRole).toBe('builder');
+    expect(payload.builderProfileId).toBe('builder-default');
+    expect(payload.collaborationRunId).toBe('collab-run-01d');
+    expect(payload.referralTraceId).toBe('ref-trace-01d');
+    expect(payload.agentRole).not.toBe(ownedAgent.role);
+    expect(payload.builderProfileId).not.toBe(OWNED_AGENT_ID);
+    expect(payload).not.toHaveProperty('agentId');
+
+    const intentDto = mockUsageLedgerService.writeExecutionIntent.mock.calls[0][0];
+    expect(intentDto.agentRole).toBe('builder');
+    expect(intentDto.builderProfileId).toBe('builder-default');
+    expect(intentDto.collaborationRunId).toBe('collab-run-01d');
+    expect(intentDto.referralTraceId).toBe('ref-trace-01d');
+    expect(intentDto.metadata?.agentId).toBe(OWNED_AGENT_ID);
+  });
+
+  it('authorized Ask reuse path also stores agentId in metadata', async () => {
+    mockUsageLedgerService.findByRequestId.mockResolvedValue({
+      executionStatus: 'timeout',
+    });
+
+    const result = await controller.execute(
+      makeRequest({
+        agentId: OWNED_AGENT_ID,
+        executionIntent: 'conversation',
+      }),
+      ownerIdentity,
+      'retry-key-01d',
+    );
+
+    expect(result.status).toBe('queued');
+    expect(mockUsageLedgerService.reuseExecutionIntent).toHaveBeenCalledTimes(1);
+    expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+
+    const reuseDto = mockUsageLedgerService.reuseExecutionIntent.mock.calls[0][0];
+    expect(reuseDto.metadata?.agentId).toBe(OWNED_AGENT_ID);
+  });
+
+  describe('optional UserAgentService fail-closed', () => {
+    beforeEach(async () => {
+      await compileController({ omitUserAgentService: true });
+    });
+
+    it('11a. agentId present without UserAgentService is a server failure with no enqueue', async () => {
+      await expect(
+        controller.execute(
+          makeRequest({
+            agentId: OWNED_AGENT_ID,
+            executionIntent: 'conversation',
+          }),
+          ownerIdentity,
+        ),
+      ).rejects.toThrow(InternalServerErrorException);
+
+      await expect(
+        controller.execute(
+          makeRequest({
+            agentId: OWNED_AGENT_ID,
+            executionIntent: 'conversation',
+          }),
+          ownerIdentity,
+        ),
+      ).rejects.toThrow('User-agent identity resolution is unavailable');
+
+      expectNoLedgerOrEnqueue();
+    });
+
+    it('11b. agentId absent without UserAgentService still runs existing Builder Ask', async () => {
+      const result = await controller.execute(
+        makeRequest({ executionIntent: 'conversation' }),
+        ownerIdentity,
+      );
+
+      expect(result.status).toBe('queued');
+      expect(mockUsageLedgerService.writeExecutionIntent).toHaveBeenCalledTimes(1);
+      expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+      expect(
+        mockQueueService.enqueueExecution.mock.calls[0][0].executionIntent,
+      ).toBe('conversation');
+      expect(
+        mockQueueService.enqueueExecution.mock.calls[0][0].globalInstructions,
+      ).toBeUndefined();
+    });
   });
 });

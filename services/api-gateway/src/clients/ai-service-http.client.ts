@@ -57,6 +57,12 @@ export interface AIExecutionRequest {
   builderProfileId?: string;
   collaborationRunId?: string;
   referralTraceId?: string;
+
+  /**
+   * AGENT-PLATFORM-CREATE-01D: Optional persisted user_agents.id for Ask identity.
+   * Distinct from agentRole (harness/system role) and builderProfileId (Builder catalog id).
+   */
+  agentId?: string;
 }
 
 /**
