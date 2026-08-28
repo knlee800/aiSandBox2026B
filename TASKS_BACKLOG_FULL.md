@@ -72220,3 +72220,351 @@ Step 4 (Verification / checkpoint / lock):
 **Step 3 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, backend=0, GATEWAY=0, AI-SERVICE=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, Git commit/push=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, MAY-WRITE=0. FRONTEND+I18N MUST-WRITE implemented. Targeted: platform 33/33 PASS; execution-intent 23/23 PASS; workspace-shell 452/452 PASS. Broad: frontend `npm test` 745/745 PASS; `npx tsc --noEmit --incremental false` PASS; `npm run build` PASS. DEPLOYED_SHA=b6b94516aff9981101ae8815aec2e2d36b8b231b. MANUAL_STAGING_BROWSER_SMOKE=PASS (Keith attestation 2026-08-28).
 **Step 4 activity ledger:** LIVE=0, SSH=0, staging mutation=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, production source changes=0, backend=0, AI-SERVICE=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, Git mutations=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, next product task registered=0. Step 4 read-only staging checks: frontend HTTP 200 PASS; `/api/health/ready` HTTP 200 PASS. Step 4 writes: `docs/AGENT-PLATFORM-CREATE-01E-CHECKPOINT.md`, TASKS.md, this registry body.
 **Step 4 checkpoint:** `docs/AGENT-PLATFORM-CREATE-01E-CHECKPOINT.md`
+
+---
+
+## GOVERNANCE — Fail-Closed Lane Saturation Enforcement
+
+### GOV-OS-03 — Fail-Closed Lane Saturation Enforcement
+
+**Status:** ACTIVE (GOVERNANCE / DEVELOPMENT-OS; no implementation lane) — Step 1 COMPLETE — 2026-08-28 — Step 2 PENDING — Step 3 NOT AUTHORIZED — Step 4 NOT AUTHORIZED — OS_MUTATION_QUIESCENCE=ACTIVE — SATURATION_ENFORCEMENT_IMPLEMENTED=NO — SATURATION_SUSPENDED_FOR_OS_MUTATION=YES (conceptual; machine representation does not exist until Step 3) — INITIAL_FORCING_CANDIDATES=NONE — no candidate index created — no implementation task admitted — no next product task selected — TASKS.md remains the sole scheduler
+**Task ID:** GOV-OS-03
+**Title:** Fail-Closed Lane Saturation Enforcement
+**Family:** GOVERNANCE / DEVELOPMENT OS / SCHEDULER ENFORCEMENT (GOV-OS family successor after GOV-OS-01 / GOV-OS-02 LOCKED; distinct from GOV-PARALLEL-01 Lane 3 capacity decision and GOV-OS-02 next-work selection)
+**Workstream:** GOVERNANCE (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE / DEVELOPMENT-OS — does NOT consume Lane 1 or Lane 2
+**Lifecycle:** HIGH-RISK 4-step (Step 1 registration + approved architecture recording — Step 2 exact scheduler-machine contract / source-path / schema / validator / fixture freeze — Step 3 bounded Development OS implementation + deterministic automated validation — Step 4 independent verification / checkpoint / final lock)
+**Start condition:** READY — Lane 1 EMPTY; Lane 2 EMPTY; Lane 3 DISABLED; GOVERNANCE UNOWNED at Step 1 start; GOV-AUTH-02 COMPLETE AND LOCKED — PASS — 2026-08-28; GOV-OS-01 COMPLETE AND LOCKED; GOV-OS-02 COMPLETE AND LOCKED; GOV-PARALLEL-01 COMPLETE AND LOCKED; zero ACTIVE / LANE-DONE implementation lanes; no current OS mutation already active; clean tree at HEAD `8bbc771fc8f1fb2c22292252ec190b9abd1c58b1` (branch main; HEAD == origin/main)
+**Depends on:** GOV-PARALLEL-01 COMPLETE AND LOCKED; GOV-OS-01 COMPLETE AND LOCKED; GOV-OS-02 COMPLETE AND LOCKED; GOV-AUTH-02 COMPLETE AND LOCKED; zero ACTIVE / LANE-DONE implementation lanes for OS mutation
+**Primary write scope:**
+- Step 1 (this step): `TASKS.md` CURRENT EXECUTION BOARD; `TASKS_BACKLOG_FULL.md`
+- Step 2 (NOT this step): freeze exact machine-contract / paths / schema / validator / fixtures; may write a freeze document under `docs/` plus board/registry freeze fields. Exact write set is a Step 2 decision. CLAUDE.md / AGENTS.md may be in later authorized write sets only if Step 2 freezes them. No application source.
+- Step 3: bounded Development OS implementation of the frozen machine contract + deterministic automated validation. Exact write set frozen at Step 2.
+- Step 4: checkpoint under `docs/`; board/registry lock fields
+**Mutexes / resources:** GOVERNANCE (control plane; held by GOV-OS-03 while ACTIVE). Do NOT acquire FRONTEND, I18N, GATEWAY, AI-SERVICE, CONTAINER-MANAGER, MIGRATION, PACKAGE, COMPOSE, LOCAL-RUNTIME, STAGING, PROVIDER-LIVE, CREDIT. Step 2 may freeze machine/governance file writes. No application service mutex should be needed.
+**Hot-file leases:** none in Step 1. Step 2 may freeze HOTFILE leases for machine-state files if required.
+**Shared contracts:** none in Step 1. Step 2 must freeze machine representation for relevant shared frozen contracts.
+**Evidence class:** STATIC / DETERMINISTIC GOVERNANCE VALIDATION — no runtime evidence; no staging evidence; no provider-live evidence; no browser evidence
+**Revert isolation:** GOV-OS-03 must be atomically revertible to the prior scheduler semantics if rejected before lock. Do not partially install saturation behavior before Step 2 freezes the entire machine contract.
+
+**Identifier search:** Repo-wide search of `TASKS.md`, `TASKS_BACKLOG_FULL.md`, `CLAUDE.md`, `AGENTS.md`, and `docs/` for `GOV-OS-03`, fail-closed lane saturation, lane utilization enforcement, automatic capacity validation, capacity sweep enforcement, idle-lane proof, machine lane admission validation, `validate-lane-capacity`, `saturationClass`, `saturationSuspended`, and FORCING/OPTIONAL machine-candidate classification returned zero unfinished equivalent tasks. Existing GOV-OS family members are GOV-OS-01 (COMPLETE AND LOCKED — Development OS / Parallel Control Plane v1) and GOV-OS-02 (COMPLETE AND LOCKED — Permanent Next-Work Selection Protocol). GOV-PARALLEL-01 is COMPLETE AND LOCKED (Lane 3 remains DISABLED). No invented duplicate ID.
+
+**User-approved decision:** Keith explicitly approved proceeding with GOV-OS-03 after independent read-only reviews by Claude Sonnet 4.6 and Grok 4.6 XHigh. Both reviews returned APPROVE WITH CHANGES. The final approved direction is the lean enforceable v1 recorded below.
+
+**Purpose:** Close the failure mode in which available implementation-lane capacity is left unused because utilization depends on ChatGPT / Cursor / Claude / Grok memory, window/session context, or an operator remembering to ask about Lane 2. After real implementation work has been registered into the machine candidate system, the repository itself must fail closed when a registered FORCING candidate can safely occupy unused implementation capacity.
+
+**Failure mode being closed:** FREE IMPLEMENTATION LANE + REGISTERED FORCING CANDIDATE + STATUS READY + START CONDITION READY + PAIRWISE SAFE AGAINST THE PROPOSED END OCCUPANCY currently can still finish with that lane empty because nothing in the repository proves occupancy. Agent-written prose such as `IDLE_REASON=...`, `SAFE_TWO_LANE_PAIR=...`, `NOT_NEEDED`, or `UNRESOLVED` is not proof.
+
+**This task does NOT invent work.** It does not automatically select new product work, promote FUTURE work, register successor tasks, create tasks merely to achieve 2/2 utilization, admit tasks, rank tasks, or launch workers. GOV-OS-02 Next-Work Selection Protocol remains responsible for selecting genuinely new product/architecture work. GOV-OS-03 begins enforcing utilization only after real implementation work has been registered into the machine candidate system.
+
+**Stage-start:** REQUIRED AT STEP 2. Step 2 is the exact scheduler-machine contract / source-path / schema / validator / fixture freeze. Do not create a freeze document, JSON sidecar, validator, fixtures, proof file, or mutex catalog in Step 1.
+
+---
+
+#### Approved saturation invariant (mandatory postcondition)
+
+```
+FREE IMPLEMENTATION LANE
++ REGISTERED FORCING CANDIDATE
++ STATUS READY
++ START CONDITION READY
++ PAIRWISE SAFE AGAINST THE PROPOSED END OCCUPANCY
+= THE CONTROL-PLANE TRANSITION MAY NOT VALIDLY FINISH WITH THAT LANE EMPTY
+```
+
+If no such candidate exists: IDLE CAPACITY IS VALID. The validator must derive why idle is valid. Agent-written prose is not accepted as proof.
+
+Safety always outranks utilization. Existing admission criteria remain authoritative. Workers may not self-register, self-admit, choose lanes, change lane ownership, modify scheduler state, or bypass mutex rules. GOVERNANCE remains the serialized control-plane writer. Maximum admitted implementation lanes remains 2. Lane 3 remains DISABLED. TASKS.md CURRENT EXECUTION BOARD remains the ONLY scheduler. TASKS_BACKLOG_FULL.md remains the canonical task registry.
+
+#### Approved candidate policy
+
+After GOV-OS-03 is installed:
+
+- EVERY newly registered implementation task must have a machine candidate record.
+- Every such task must be classified explicitly: FORCING or OPTIONAL.
+- There is NO implicit/default classification.
+- Missing classification must eventually be a validator failure.
+- Historical tasks are NOT mass-migrated.
+- At GOV-OS-03 installation: INITIAL_FORCING_CANDIDATES = NONE.
+- Do not discover or seed tasks from chat, roadmap, model memory, historical recommendations, SAFE_TWO_LANE_PAIR claims, unregistered Delete UI ideas, or PRIVATE-BETA-INVITE-01.
+
+**FORCING:** Real registered near-frontier implementation work that Keith/control-plane intends to execute when admission criteria permit. A safely admissible FORCING task can make an empty implementation lane invalid.
+
+**OPTIONAL:** Registered work that may be useful but must not force lane occupancy merely for utilization. OPTIONAL work may still be manually admitted through normal scheduler governance.
+
+#### Approved machine-state architecture
+
+Parsing current prose-heavy TASKS.md / TASKS_BACKLOG_FULL.md directly is not reliable enough. Approved v1 direction:
+
+1. TASKS.md remains the sole scheduler.
+2. Restore/add a SHORT structured CURRENT occupancy block at the top of TASKS.md. It must represent CURRENT occupancy only. No Previous: history in this block.
+3. Current machine occupancy must NOT be derived from historical Previous: prose, historical ACTIVE text, historical flags fences, or full-backlog grep.
+4. A small JSON sidecar will support machine validation. The sidecar is NOT a scheduler.
+5. The sidecar may describe: current implementation-lane occupancy; machine candidate records; mutex/resource facts required for deterministic checking; frozen contract references; capacity/suspension state.
+6. TASKS.md current occupancy and machine state must be tied together deterministically, likely with a canonical hash.
+7. Mismatch must fail closed.
+
+Exact schema, paths, canonicalization/hash rules, and board-block format are NOT implemented in Step 1. They MUST be frozen in Step 2.
+
+Note for Step 2: the existing TASKS.md flags fence mixes historical snapshots with later current writes and must not be treated as current occupancy. If a specific stale CURRENT field directly blocks Step 2 machine consistency, correct only that smallest field then. Do not perform a broad historical documentation cleanup in this task.
+
+#### Approved validator architecture
+
+A Windows PowerShell 5.x validator will be implemented later. Expected path, subject to exact Step 2 freeze:
+
+```
+C:\Users\knlee\aiSandBox2026B\scripts\validate-lane-capacity.ps1
+```
+
+The validator is a PROOF CHECKER, not a scheduler. It must:
+
+- read structured machine state
+- inspect proposed END occupancy
+- derive admissibility
+- pairwise-check occupied tasks
+- derive the set S of safely admissible FORCING candidates
+- fail if S is non-empty while implementation capacity remains unused
+- fail on malformed/unknown state
+- fail on board↔machine-state mismatch
+- fail if Lane 3 appears enabled
+- fail if max implementation lanes differs from 2
+- derive valid idle result/rejection codes itself
+
+The validator must NOT trust: IDLE_REASON; SAFE_TWO_LANE_PAIR; model prose; chat memory; historical ACTIVE text; historical Previous: fields; full-backlog grep as current scheduler state.
+
+PowerShell compatibility: Windows PowerShell 5.x only. No PowerShell 7-only syntax. No external YAML dependency. No warning-and-continue path. No `--ignore-saturation` / `--force` escape in v1.
+
+#### Approved Git-enforcement scope for v1
+
+Do NOT install a Git pre-commit hook in GOV-OS-03 v1. The validator + machine proof + mandatory control-plane/lock validation is the initial enforcement mechanism. A pre-commit hook may be considered later as defense in depth. Do not expand GOV-OS-03 into Git-hook management.
+
+#### Approved pairwise end-state rule
+
+Do NOT treat individually-safe-against-empty as jointly safe. The validator must assess the proposed END occupancy.
+
+Example: A safe alone. B safe alone. A and B conflict with each other. Proposed end occupancy Lane 1 = A, Lane 2 = EMPTY. If B is not admissible against A, Lane 2 may legitimately remain EMPTY. If A and B remain pairwise safe, leaving Lane 2 EMPTY must fail.
+
+If pairwise safety is uncertain: DO NOT treat the candidate as safely admissible.
+
+#### Approved OS-mutation suspension rule
+
+GOV-OS-03 itself is an OS mutation. Existing quiescence rules remain authoritative. During an active Development OS mutation:
+
+- implementation lanes must remain empty
+- saturation enforcement is suspended
+- idle implementation capacity is REQUIRED, not a violation
+
+The future machine state must explicitly represent this suspension. Exact field/schema freezes in Step 2. At the end of an OS mutation: suspension is removed and the normal saturation postcondition applies again.
+
+#### Approved GOV-OS-02 boundary
+
+```
+NO REGISTERED FORCING CANDIDATE
+=> GOV-OS-03 allows idle
+=> GOV-OS-02 controls genuinely new product/architecture selection
+```
+
+GOV-OS-03 must never invent successors.
+
+#### PRIVATE-BETA invariant
+
+PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. INVITATION_EXECUTION_PERMITTED=NO. It must never accidentally enter the candidate pool.
+
+#### Lane 3 / capacity invariant
+
+Lane 3 remains DISABLED. MAX_IMPLEMENTATION_LANES remains 2. GOV-PARALLEL-01 LANE3_DECISION=KEEP_DISABLED_UNTIL_FUTURE_MATERIAL_NEED. Unchanged by this task.
+
+---
+
+#### Step 2 mandatory decisions (MUST ALL be frozen before any Development OS implementation)
+
+These are recorded as mandatory freeze items. They are NOT implemented and NOT decided in exact form in Step 1.
+
+1. **Machine-state file paths.** Freeze exact paths for: lane/candidate state JSON; mutex/resource catalog if separate; generated proof artifact if persisted; validator; validator fixture/test runner; fixtures. Do not create them in Step 1. Expected validator path subject to freeze: `C:\Users\knlee\aiSandBox2026B\scripts\validate-lane-capacity.ps1`.
+
+2. **JSON schema.** Freeze: schemaVersion; maxImplementationLanes; lane3; saturationSuspended; occupancy representation; governance owner representation if needed; runtime authorization representation; candidate schema; frozen contract representation; closed enums; unknown-field policy. Unknown/missing required values must fail closed.
+
+3. **Candidate schema.** Every newly registered implementation task after GOV-OS-03 must have an explicit machine candidate record. Freeze mandatory fields. Must include explicit FORCING or OPTIONAL. No implicit default. Historical tasks are not mass migrated. INITIAL_FORCING_CANDIDATES=NONE at installation.
+
+4. **TASKS.md current occupancy block.** Freeze a concise machine-current block near the top of TASKS.md. CURRENT occupancy only. No Previous: history in this block. TASKS.md remains the scheduler.
+
+5. **Hash/canonicalization contract.** Freeze deterministic board↔sidecar consistency mechanism. Must specify: canonical JSON form; SHA algorithm; what is hashed; where the hash is stored; stale/mismatch behavior. Mismatch = FAIL CLOSED.
+
+6. **Mutex/resource catalog.** Determine minimal structured representation for GOVERNANCE, GATEWAY, AI-SERVICE, CONTAINER-MANAGER, FRONTEND, I18N, HOTFILE, MIGRATION, PACKAGE, COMPOSE, ENV, LOCAL-RUNTIME, STAGING, PROVIDER-LIVE, CREDIT. Freeze alias/path-overlap behavior. String equality alone is insufficient.
+
+7. **I18N atomic rule.** Freeze the deterministic rule covering all three of `C:\Users\knlee\aiSandBox2026B\frontend\messages\en.json`, `C:\Users\knlee\aiSandBox2026B\frontend\messages\zh-TW.json`, and `C:\Users\knlee\aiSandBox2026B\frontend\messages\zh-CN.json`. Any candidate touching them must satisfy I18N ownership rules.
+
+8. **Pairwise admissibility algorithm.** Freeze exact `Admissible(candidate, endOccupancy)` algorithm. Must derive safety rather than trust prose. Must assess proposed END occupancy, not independent empty-board safety.
+
+9. **Evidence compatibility.** Freeze deterministic compatibility for LOCAL-TESTS, LOCAL-RUNTIME, STAGING-RUNTIME, PROVIDER-LIVE. Include exclusive-capacity semantics.
+
+10. **Runtime-sensitive resources.** Freeze behavior for LOCAL-RUNTIME, STAGING, PROVIDER-LIVE, CREDIT. Resource safety outranks evidence labels.
+
+11. **Dependency proof.** Freeze how dependency LOCK status is represented machine-readably. Do NOT rely on grepping arbitrary historical backlog status prose.
+
+12. **Shared-contract freeze.** Freeze machine representation for relevant shared frozen contracts.
+
+13. **Admission uncertainty.** Freeze an explicit fail-closed representation. If uncertainty exists, the candidate does not enter the safely-admissible set S.
+
+14. **Validator interface.** Expected `C:\Users\knlee\aiSandBox2026B\scripts\validate-lane-capacity.ps1`. Freeze: inputs; outputs; derived facts; exit codes; error behavior; proof artifact; dirty-tree handling; PowerShell 5.x compatibility.
+
+15. **Derived idle result.** No agent-controlled IDLE_REASON is authoritative. Validator must derive idle/rejection codes. Freeze closed result code sets.
+
+16. **Sweep/validation triggers.** Freeze exact control-plane transitions that require validation. At minimum investigate: implementation registration; candidate classification change; implementation admission; stage-start / exact write-set freeze; mutex acquire/release; dependency satisfaction / READY transition; LANE-DONE when occupancy/resources change; LOCK; REJECTED; RETURN-TO-READY; lane release; shared-contract freeze/unfreeze; start/end of OS mutation. Do not add redundant validation merely for ceremony where no relevant state changes.
+
+17. **GOV-OS-02 boundary.** Freeze: NO REGISTERED FORCING CANDIDATE => GOV-OS-03 allows idle => GOV-OS-02 controls genuinely new product/architecture selection. GOV-OS-03 must never invent successors.
+
+18. **Test fixture matrix.** Freeze a comprehensive fixture matrix before implementation. Must include at least:
+
+CAPACITY:
+- 0/2 no candidates → valid idle
+- 0/2 one safe FORCING → fail
+- 1/2 no safe FORCING → pass
+- 1/2 safe FORCING → fail
+- 2/2 → pass/capacity full
+- Lane 3 present → fail
+- max lanes != 2 → fail
+
+PAIRWISE:
+- A/B safe independently but conflict together
+- A/B safe together
+- occupied A makes B unsafe
+- two disjoint LOCAL-TESTS tasks pass
+
+CONFLICTS:
+- same broad mutex
+- FRONTEND/path overlap
+- I18N atomic collision
+- HOTFILE collision
+- dependency unsatisfied
+- shared contract unfrozen
+- evidence incompatible
+- LOCAL-RUNTIME conflict
+- STAGING conflict
+- PROVIDER-LIVE conflict
+- CREDIT conflict
+- exclusive-capacity
+
+ELIGIBILITY:
+- OPTIONAL candidate does not force
+- PARKED ignored/rejected
+- PROHIBITED ignored/rejected
+- unregistered rejected
+- duplicate ID rejected
+- FUTURE without explicit authorization rejected
+- governance nature rejected
+- admissionUncertain excluded
+
+MALFORMED / BYPASS:
+- missing field
+- unknown enum
+- unknown JSON property if schema is closed
+- board↔sidecar hash mismatch
+- stale occupancy
+- fabricated IDLE_REASON cannot override validator
+- SAFE_TWO_LANE_PAIR cannot override validator
+
+OS MUTATION:
+- saturation suspended + 0 implementation lanes → pass
+- saturation suspended + occupied implementation lane → fail
+- end suspension + safe FORCING candidate + free lane → fail
+
+PRIVATE BETA:
+- PRIVATE-BETA-INVITE-01-shaped PROHIBITED entry never becomes admissible
+
+Admissibility direction that Step 2 must ultimately account for: nature = IMPLEMENTATION; status READY; startCondition READY; saturationClass FORCING; product eligibility; task identity / registration validity; dependencies; mutex conflicts; write-scope conflicts; HOTFILE conflicts; I18N atomic lease; shared-contract state; evidence isolation; runtime compatibility; STAGING; PROVIDER-LIVE; CREDIT; LOCAL-RUNTIME; exclusive-capacity requirements; admission uncertainty; Lane 3 prohibition; maximum lanes 2. Safety beats saturation.
+
+---
+
+#### 4-step lifecycle
+
+1. Step 1 — Registration + approved architecture recording (THIS STEP)
+2. Step 2 — Exact scheduler-machine contract / source-path / schema / validator / fixture freeze
+3. Step 3 — Bounded Development OS implementation + deterministic automated validation
+4. Step 4 — Independent verification + checkpoint / final lock
+
+Step 3 and Step 4 are NOT AUTHORIZED until Step 2 freezes the entire machine contract.
+
+#### Explicit Non-Goals
+
+GOV-OS-03 does NOT: invent work; automatically select new product work; promote FUTURE work; register successor tasks; create tasks merely to achieve 2/2 utilization; admit tasks; rank tasks; launch workers; mass-migrate historical tasks; seed INITIAL_FORCING_CANDIDATES; register PRIVATE-BETA-INVITE-01; enable Lane 3; change MAX_IMPLEMENTATION_LANES; create GOV-PRD-03 or GOV-ARCH-03; create a new roadmap, source map, or master plan; edit PRD.md, ARCHITECTURE.md, CLAUDE.md, or AGENTS.md in Step 1; create JSON sidecar / validator / fixtures / proof file / mutex catalog / stage-start / checkpoint in Step 1; install a Git pre-commit hook in v1; modify application source; run runtime; alter database/schema; create worktrees; use subagents.
+
+#### Invariants
+
+- GLOBAL_EXECUTION_ENABLED remains unchanged / false
+- BILLING_CHARGES_ENABLED remains unchanged / false
+- PRIVATE-BETA-INVITE-01 remains UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED / PARKED / NOT EXECUTABLE
+- INVITATION_EXECUTION_PERMITTED=NO
+- Lane 3 remains DISABLED
+- MAX_IMPLEMENTATION_LANES remains 2
+- Lane 1 EMPTY / Lane 2 EMPTY while this OS mutation is ACTIVE
+- TASKS.md remains the sole scheduler
+- TASKS_BACKLOG_FULL.md remains the canonical task registry
+- GOV-OS-02 Next-Work Selection Protocol remains responsible for genuinely new product/architecture selection
+- INITIAL_FORCING_CANDIDATES=NONE
+- SATURATION_ENFORCEMENT_IMPLEMENTED=NO until Step 3
+- All COMPLETE AND LOCKED predecessors remain unchanged
+- No application source/test/config/schema/migration/env/Docker changes in any step unless a later freeze explicitly requires a non-application governance file
+- No PRD.md or ARCHITECTURE.md changes in any step
+- No CLAUDE.md or AGENTS.md changes in Step 1
+- No runtime/infrastructure commands in any step
+- No subagents
+- No worktrees or branches created by this task
+- No commit/push unless explicitly requested by Keith
+- No Git pre-commit hook in v1
+
+#### Acceptance Criteria
+
+Step 1 (Registration + approved architecture recording):
+- [x] GOV-OS-03 confirmed unused before registration (no collision)
+- [x] No equivalent unfinished saturation / utilization-enforcement task found
+- [x] OS-mutation quiescence verified (Lane 1 EMPTY, Lane 2 EMPTY, Lane 3 DISABLED, no ACTIVE/LANE-DONE implementation lanes, GOVERNANCE was UNOWNED, no implementation source mutex owned, no current OS mutation already active)
+- [x] GOV-OS-03 registered in TASKS.md CURRENT EXECUTION BOARD
+- [x] GOV-OS-03 registered in TASKS_BACKLOG_FULL.md
+- [x] GOVERNANCE acquired by GOV-OS-03
+- [x] Approved saturation invariant recorded
+- [x] Candidate policy recorded (explicit FORCING or OPTIONAL; no implicit default)
+- [x] FORCING and OPTIONAL definitions recorded
+- [x] INITIAL_FORCING_CANDIDATES=NONE recorded; no seeding from chat/roadmap/memory/SAFE_TWO_LANE_PAIR/Delete UI/PRIVATE-BETA-INVITE-01
+- [x] TASKS.md sole-scheduler authority preserved
+- [x] GOV-OS-02 boundary preserved
+- [x] Machine-sidecar architecture decision recorded (sidecar is not a scheduler)
+- [x] Validator-as-proof-checker decision recorded
+- [x] Pairwise end-state rule recorded
+- [x] OS-mutation suspension rule recorded
+- [x] All 18 Step 2 mandatory decisions recorded as freeze items, not implemented
+- [x] Git pre-commit hook excluded from v1
+- [x] Invitation invariant unchanged
+- [x] Lane 3 invariant unchanged
+- [x] MAX_IMPLEMENTATION_LANES remains 2
+- [x] No implementation task admitted
+- [x] No next product task selected
+- [x] No CLAUDE.md / AGENTS.md / PRD.md / ARCHITECTURE.md / source-map / source change in Step 1
+- [x] No JSON sidecar / validator / fixtures / proof file / mutex catalog / stage-start / checkpoint created in Step 1
+- [x] No runtime / Docker / PostgreSQL / Redis / staging / provider / browser activity
+- [x] No worktrees
+- [x] No Git commit/push by the worker
+
+Step 2 (Exact scheduler-machine contract freeze):
+- [ ] Freeze all 18 mandatory decisions listed above
+- [ ] Freeze exact write set for Step 3
+- [ ] Do not implement the validator/sidecar/occupancy-block except as required to freeze their contracts
+- [ ] Step 3 remains unauthorized until this freeze is complete
+- [ ] No application source
+- [ ] No Git commit/push by the worker
+
+Step 3 (Bounded Development OS implementation + deterministic automated validation):
+- [ ] NOT AUTHORIZED until Step 2 freeze is complete
+- [ ] Implement only the frozen machine contract
+- [ ] Deterministic automated validation of the frozen fixture matrix
+- [ ] No application source
+- [ ] No Git commit/push by the worker
+
+Step 4 (Independent verification / checkpoint / lock):
+- [ ] NOT AUTHORIZED until Step 3 is complete
+- [ ] Independent verification
+- [ ] Checkpoint created
+- [ ] GOV-OS-03 COMPLETE AND LOCKED only after required evidence
+
+**Step 1 HEAD:** `8bbc771fc8f1fb2c22292252ec190b9abd1c58b1` (branch main; HEAD == origin/main; clean tree verified)
+**Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, source changes=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, source-map edits=0, Git mutations=0, product-frontier selection=0, invitation registration=0, Lane 2 admission=0, Lane 3 enablement=0, FORCING candidate seeding=0, candidate index created=0, validator created=0, machine sidecar created=0, Git hook created=0. Governance writes: TASKS.md, this registry body.
