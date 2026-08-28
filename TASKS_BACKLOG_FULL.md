@@ -71453,7 +71453,7 @@ The 1 pass is vacuous (`if (!app) return` after DATABASE_URL skip in two-phase).
 
 ### GOV-OS-02 — Permanent Next-Work Selection Protocol
 
-**Status:** ACTIVE — Step 1 COMPLETE — 2026-08-28 — Step 2 PENDING — Step 3 PENDING — NOT LOCKED
+**Status:** COMPLETE AND LOCKED — PASS — 2026-08-28 — Step 1 COMPLETE (2026-08-28) — Step 2 COMPLETE (2026-08-28) — Step 3 COMPLETE AND LOCKED (2026-08-28) — Permanent Next-Work Selection Protocol installed and independently verified — RECURRENCE_PATH_BLOCKED=YES — FORGETTING_IS_NOT_DRIFT_EVIDENCE=YES — EMPTY_BOARD_IS_VALID=YES — current next product gate remains: no admitted next product gate / selection pending — no product frontier selected — Checkpoint: `docs/GOV-OS-02-CHECKPOINT.md`
 **Task ID:** GOV-OS-02
 **Title:** Permanent Next-Work Selection Protocol
 **Family:** GOVERNANCE / DEVELOPMENT OS / ANTI-DRIFT
@@ -71465,7 +71465,7 @@ The 1 pass is vacuous (`if (!app) return` after DATABASE_URL skip in two-phase).
 - Step 1 (this step): `TASKS.md` CURRENT EXECUTION BOARD; `TASKS_BACKLOG_FULL.md`
 - Step 2 (NOT this step): `CLAUDE.md` (concise Next-Work Selection Protocol + boot-sequence branch); `AGENTS.md` (thin boot-sequence pointer only; do not duplicate the protocol); `TASKS.md` (persistent CURRENT BOARD flag only; protocol remains defined by CLAUDE.md)
 - Step 3: checkpoint under `docs/`; board/registry lock fields
-**Mutexes / resources:** GOVERNANCE (control plane; held by GOV-OS-02 while ACTIVE)
+**Mutexes / resources:** GOVERNANCE (control plane; held by GOV-OS-02 while ACTIVE; released UNOWNED at Step 3 lock)
 **Hot-file leases:** none
 **Shared contracts:** none (no API/schema/auth/session/tool/config contract change)
 **Evidence class:** GOVERNANCE
@@ -71621,21 +71621,25 @@ Step 1 (Registration):
 - [x] No worktrees
 - [x] No Git commit/push by the worker
 
-Step 2 (Implementation — NOT THIS STEP):
-- [ ] Concise Next-Work Selection Protocol installed in CLAUDE.md
-- [ ] Corresponding branch added to new-window / control-plane boot behavior
-- [ ] AGENTS.md thin boot-sequence pointer added; full protocol not duplicated
-- [ ] TASKS.md persistent CURRENT BOARD flag only
-- [ ] Protocol remains defined by CLAUDE.md
-- [ ] No new roadmap / source map / master plan
-- [ ] No product-frontier selection
+Step 2 (Implementation):
+- [x] Concise Next-Work Selection Protocol installed in CLAUDE.md
+- [x] Corresponding branch added to new-window / control-plane boot behavior
+- [x] AGENTS.md thin boot-sequence pointer added; full protocol not duplicated
+- [x] TASKS.md persistent CURRENT BOARD flag only
+- [x] Protocol remains defined by CLAUDE.md
+- [x] No new roadmap / source map / master plan
+- [x] No product-frontier selection
 
-Step 3 (Verification / checkpoint / lock — NOT THIS STEP):
-- [ ] Independent verification that the protocol is installed and that living PRD/ARCHITECTURE authority drives new-work selection
-- [ ] Checkpoint created
-- [ ] GOV-OS-02 COMPLETE AND LOCKED
+Step 3 (Verification / checkpoint / lock):
+- [x] Independent verification that the protocol is installed and that living PRD/ARCHITECTURE authority drives new-work selection
+- [x] Checkpoint created
+- [x] GOV-OS-02 COMPLETE AND LOCKED
 
 **Step 1 HEAD:** `9dc5ad2fab2eef10d9597b1ef44a3a6f8eedc340` (branch main)
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, source changes=0, scheduler capacity changes=0, Lane 3 enablement=0, tests executed=0, dependencies=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, source-map edits=0, Git mutations=0, product-frontier selection=0, invitation registration=0.
+
+**Step 2 implementation (2026-08-28):** COMPLETE — committed HEAD `cad5bd1f97879cbc0e7e3c57944bbda8d86d3015` (`install permanent next-work selection protocol`) — exact write set: `AGENTS.md`, `CLAUDE.md`, `TASKS.md` — standing Next-Work Selection Protocol installed in CLAUDE.md Development OS / control-plane area — new-window boot branch added (no admitted next product/architecture gate AND next work being selected → apply protocol; do not start implementation; do not select from memory) — AGENTS.md thin boot pointer only — TASKS.md persistent CURRENT BOARD flag `NEXT-WORK SELECTION PROTOCOL = MANDATORY` pointing to CLAUDE.md — no PRD.md / ARCHITECTURE.md / source-map / source / package / env / compose change — no new roadmap / source map / master plan — no product-frontier selection.
+
+**Step 3 lock (2026-08-28):** COMPLETE AND LOCKED — PASS — 2026-08-28 — independent verification PASS — Step 3 base HEAD `cad5bd1f97879cbc0e7e3c57944bbda8d86d3015` (branch main, clean tree verified) — this window did not implement Step 2 — protocol trigger / non-triggers / living authority / conditional evidence / anti-memory / anti-reaudit / empty-board / boot branch / AGENTS thin-bootstrap / TASKS persistent flag all verified — RECURRENCE_PATH_BLOCKED=YES — FORGETTING_IS_NOT_DRIFT_EVIDENCE=YES — EMPTY_BOARD_IS_VALID=YES — FROZEN_SOURCE_MAPS_ARE_LIVING_AUTHORITY=NO — LOCKED_CHECKPOINTS_ARE_SCHEDULERS=NO — HISTORICAL_ROADMAP_SCHEDULER_AUTHORITY=NO — Step 2 write set exact (AGENTS.md, CLAUDE.md, TASKS.md) — AGENTS.md / CLAUDE.md / PRD.md / ARCHITECTURE.md untouched in Step 3 — current next product gate remains: no admitted next product gate / selection pending — no product frontier selected — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — ACTIVE_IMPLEMENTATION_LANES=0/2 — PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED — INVITATION_EXECUTION_PERMITTED=NO — LANE3_DECISION=KEEP_DISABLED_UNTIL_FUTURE_MATERIAL_NEED — MAX_IMPLEMENTATION_LANES=2 — GOVERNANCE released UNOWNED — RUNTIME_EXECUTION_AUTHORIZED=NO / PROVIDER_CALL_AUTHORIZED=NO / CREDIT_MUTATION_AUTHORIZED=NO / STAGING_MUTATION_AUTHORIZED=NO — LIVE_STAGING_VALIDATED=YES — BUILDER_PRIVATE_BETA_READINESS=GO — Checkpoint: `docs/GOV-OS-02-CHECKPOINT.md` — Step 3 activity ledger: LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, source changes=0, tests executed=0, dependencies=0, PRD.md=0, ARCHITECTURE.md=0, CLAUDE.md=0, AGENTS.md=0, scheduler capacity changes=0, Lane 3 enablement=0, Git mutations=0, new work registration=0, invitation registration=0, product-frontier selection=0.
 
 
