@@ -71918,21 +71918,21 @@ Step 2 (Independent verification / checkpoint / lock):
 
 ### AGENT-PLATFORM-CREATE-01E — First Product-Facing Single-Shot Ask UI for Persisted User-Created Agents
 
-**Status:** ACTIVE — Lane 1 — Step 1 COMPLETE — 2026-08-28 — Step 2 PENDING (UX/session/source-path stage-start and exact contract freeze) — Step 3 PENDING — Step 4 PENDING — FRONTEND + I18N owned — GATEWAY UNOWNED / READ ONLY expected — GOVERNANCE released UNOWNED after this write
+**Status:** ACTIVE — Lane 1 — Step 1 COMPLETE — 2026-08-28 — Step 2 COMPLETE — 2026-08-28 — Stage-start: `docs/AGENT-PLATFORM-CREATE-01E-STAGE-START.md` — Step 3 PENDING — Step 4 PENDING — FRONTEND + I18N owned with exact write set FROZEN — GATEWAY UNOWNED / READ ONLY (`GATEWAY_CONTRACT_HOLE=NO`) — GOVERNANCE released UNOWNED after this Step 2 write — IMPLEMENTATION_AUTHORIZED=NO until Keith commits the Step 2 freeze
 **Task ID:** AGENT-PLATFORM-CREATE-01E
 **Title:** First Product-Facing Single-Shot Ask UI for Persisted User-Created Agents
 **Family:** AGENT PLATFORM / CREATE (successor to AGENT-PLATFORM-CREATE-01A / 01B / 01C / 01D, all COMPLETE AND LOCKED)
 **Workstream:** AGENT (taxonomy only; zero admission weight)
-**Lifecycle:** 4-step — Step 1 registration COMPLETE; Step 2 UX/session/source-path stage-start + exact contract freeze PENDING; Step 3 bounded implementation + automated validation PENDING; Step 4 independent verification / checkpoint / lock PENDING. Child slices NOT required at registration; Step 2 may split only if UI scope is substantially larger than expected.
+**Lifecycle:** 4-step — Step 1 registration COMPLETE; Step 2 UX/session/source-path stage-start + exact contract freeze COMPLETE — 2026-08-28; Step 3 bounded implementation + automated validation PENDING; Step 4 independent verification / checkpoint / lock PENDING. Child slices NOT required (`CHILD_SLICES_REQUIRED=NO`).
 **Start condition:** READY at Step 1 — Lane 1 EMPTY; Lane 2 EMPTY; Lane 3 DISABLED; GOVERNANCE UNOWNED; FRONTEND UNOWNED; I18N UNOWNED; GATEWAY UNOWNED; AGENT-PLATFORM-CREATE-01D COMPLETE AND LOCKED — PASS — 2026-08-28; GOV-AUTH-01 COMPLETE AND LOCKED — PASS — 2026-08-28; no equivalent unfinished registered implementation task; Keith explicitly chose this APPROVED FUTURE expansion; clean tree at HEAD `5156db4daa20902fb1a2a6a48f9c0392b43b05c1` (branch main).
 **Depends on:** AGENT-PLATFORM-CREATE-01A (COMPLETE AND LOCKED — persistence / `user_agents` / ownership-scoped load); AGENT-PLATFORM-CREATE-01B (COMPLETE AND LOCKED — create / list / view UX); AGENT-PLATFORM-CREATE-01C (COMPLETE AND LOCKED — ownership-scoped soft-delete API; Delete UI remains out of scope); AGENT-PLATFORM-CREATE-01D (COMPLETE AND LOCKED — PASS — 2026-08-28 — frozen GATEWAY Ask identity contract; Checkpoint: `docs/AGENT-PLATFORM-CREATE-01D-CHECKPOINT.md`); GOV-AUTH-01 COMPLETE AND LOCKED (living PRD/ARCHITECTURE record the bounded backend capability; product-facing Ask UI remains FUTURE until this slice lands); GOV-PRD-02 COMPLETE AND LOCKED (living PRODUCT WHAT); GOV-ARCH-02 COMPLETE AND LOCKED (living TECHNICAL HOW); GOV-OS-02 COMPLETE AND LOCKED (Next-Work Selection Protocol; this registration used the light named-task CURRENT/FUTURE check because Keith explicitly named the work).
 **Primary write scope (Step 1):** `TASKS.md` CURRENT EXECUTION BOARD; this registry body. No application source. No stage-start document in Step 1.
-**Primary write scope (Step 2):** stage-start document under `docs/` plus board/registry freeze fields. No application source. Exact frontend/i18n write set NOT frozen until Step 2 source inspection.
-**Primary write scope (Step 3, expected, NOT FROZEN):** FRONTEND + I18N. GATEWAY expected READ ONLY. Exact files deferred to Step 2.
-**Mutexes / resources:** FRONTEND (owned at Lane 1 admission; exact write set NOT frozen until Step 2). I18N (owned at Lane 1 admission; atomic 3-file lease; exact keys NOT frozen until Step 2). GATEWAY not acquired; READ ONLY expected unless Step 2 finds a genuine locked-contract hole requiring a separate governance scope decision. GOVERNANCE held only for this Step 1 registration write then released UNOWNED. AI-SERVICE not declared. MIGRATION not required and not authorized. LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / COMPOSE unowned and unauthorized.
-**Hot-file leases:** none at Step 1. Step 2 may add HOTFILE leases only if source inspection proves structurally shared files are not already covered by FRONTEND / I18N.
-**Shared contracts:** CREATE-01D execute identity contract remains FROZEN and must not be reopened. Frontend must ultimately send `POST /api/ai/execute` with `executionIntent = 'conversation'`, `agentId = persisted user-agent UUID`, and `harnessVersion` absent. Do not overload `agentRole` or `builderProfileId`. Existing Builder Ask/Build without `agentId` must remain unchanged. Exact frontend client contract (whether `agentId` can be added additively) is a Step 2 freeze question.
-**Evidence class:** LOCAL-TESTS. No provider-live. No Docker/Postgres/Redis. Browser/live smoke NOT required at registration; Step 2 determines whether implementation validation ultimately requires manual browser smoke with Keith.
+**Primary write scope (Step 2):** `docs/AGENT-PLATFORM-CREATE-01E-STAGE-START.md`; board/registry freeze fields. No application source.
+**Primary write scope (Step 3, FROZEN):** FRONTEND + I18N only. Exact MUST-WRITE: `frontend/components/platform/agent-detail-panel.tsx`; `frontend/components/platform/platform-dashboard.tsx`; `frontend/components/workspace/workspace-execution-intent.logic.ts`; `frontend/app/[locale]/app/page.tsx`; `frontend/components/workspace/workspace-shell.tsx`; `frontend/messages/en.json`; `frontend/messages/zh-TW.json`; `frontend/messages/zh-CN.json`; `frontend/components/platform/platform-dashboard.test.ts`; `frontend/components/workspace/workspace-execution-intent.logic.test.ts`; `frontend/components/workspace/workspace-shell.test.tsx`. GATEWAY READ ONLY.
+**Mutexes / resources:** FRONTEND (owned; exact write set FROZEN at Step 2). I18N (owned; atomic 3-file lease; exact keys FROZEN: `platform.agentCreate.askButton`, `ai.userAgentAskBound`, `ai.userAgentAskDismiss`, `ai.userAgentAskNotFound`, `ai.userAgentAskSessionNotFound`, `ai.userAgentAskBuildLockedTooltip`). GATEWAY not acquired; READ ONLY confirmed (`GATEWAY_CONTRACT_HOLE=NO`). GOVERNANCE held only for this Step 2 freeze write then released UNOWNED. AI-SERVICE not declared. MIGRATION not required and not authorized. LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE / COMPOSE unowned and unauthorized.
+**Hot-file leases:** none. `frontend/app/[locale]/app/page.tsx` is not a registered HOTFILE; FRONTEND mutex is sufficient. Do not add a redundant HOTFILE.
+**Shared contracts:** CREATE-01D execute identity contract remains FROZEN and must not be reopened. Frontend Step 3 must send `POST /api/ai/execute` with `executionIntent = 'conversation'`, `agentId = persisted user-agent UUID`, and `harnessVersion` absent, via additive helper `buildPersistedUserAgentAskRequestFields` spread onto both existing AppPage execute bodies. Do not overload `agentRole` or `builderProfileId`. Existing Builder Ask/Build without `agentId` must remain unchanged. `GATEWAY_CONTRACT_HOLE=NO`.
+**Evidence class:** LOCAL-TESTS. `MANUAL_BROWSER_SMOKE_REQUIRED=YES` after Step 3 automated validation; not run in Step 2; Keith must be asked explicitly and guided. No provider-live. No Docker/Postgres/Redis.
 **Revert isolation:** implementation revert = discard the Step 3 FRONTEND + I18N writes frozen at Step 2; cannot invalidate locked CREATE-01A/01B/01C/01D or GOV-AUTH-01 evidence. Lane 2 not admitted. SAFE_TWO_LANE_PAIR=UNRESOLVED / NOT NEEDED (all leading remaining frontend work overlaps FRONTEND + I18N).
 
 **Identifier search:** Repo-wide search for `AGENT-PLATFORM-CREATE-01E` returned zero matches (GOV-AUTH-01 explicitly recorded that CREATE-01E was NOT created). Searches for `AGENT-PLATFORM-ASK-*`, `AGENT-PLATFORM-RUN-*` (as an Ask/execution-UI family), product-facing Ask UI, Run Agent UI, user-created agent execution UI, user-created agent Ask, and agentId frontend implementation tasks returned no unfinished canonical equivalent. CREATE family members: 01A COMPLETE AND LOCKED (2026-07-20), 01B COMPLETE AND LOCKED (2026-07-20), 01C COMPLETE AND LOCKED — PASS — 2026-08-27, 01D COMPLETE AND LOCKED — PASS — 2026-08-28. A new `AGENT-PLATFORM-ASK-01` family was considered and rejected: this is the frontend counterpart to CREATE-01D inside the existing user-created-agent CREATE family (same 01A backend → 01B frontend pairing), not a distinct Ask-runtime domain. AGENT-PLATFORM-CREATE-01E is the smallest correct next canonical CREATE ID.
@@ -72015,7 +72015,7 @@ No provider-live expected. Browser smoke TBD at Step 2.
 #### 4-step lifecycle
 
 1. Step 1 — registration COMPLETE
-2. Step 2 — UX/session/source-path stage-start and exact contract freeze PENDING
+2. Step 2 — UX/session/source-path stage-start and exact contract freeze COMPLETE — 2026-08-28 — `docs/AGENT-PLATFORM-CREATE-01E-STAGE-START.md`
 3. Step 3 — bounded implementation + automated validation PENDING
 4. Step 4 — independent verification + checkpoint + final lock PENDING
 
@@ -72067,16 +72067,16 @@ Step 1 (Registration):
 - [x] No Git commit/push by the worker
 
 Step 2 (UX/session/source-path stage-start and exact contract freeze):
-- [ ] Inspect existing Create Agent list/detail, command-center agent surface, existing Builder workspace/chat/Ask surface, execute API client, and loading/error patterns
-- [ ] Freeze where Ask is invoked; how owned session is obtained/used; Ask-action vs agent-selection vs reuse; post-click response surface; whether a new route is needed (strong preference NO); whether `agentId` can be added additively to the existing execute client
-- [ ] Freeze bounded loading / success / missing-deleted-agent / generic execution failure / session failure / unauthorized-not-found UX using existing patterns
-- [ ] Freeze exact FRONTEND + I18N write set
-- [ ] Confirm GATEWAY remains READ ONLY, or stop and return a genuine locked-contract hole to control plane
-- [ ] Determine whether implementation validation requires manual browser smoke
-- [ ] Split into child slices only if source inspection proves the UI scope is substantially larger than expected
-- [ ] Stage-start document created under `docs/`
-- [ ] No application source / tests changed in Step 2
-- [ ] No Git commit/push by the worker
+- [x] Inspect existing Create Agent list/detail, command-center agent surface, existing Builder workspace/chat/Ask surface, execute API client, and loading/error patterns
+- [x] Freeze where Ask is invoked; how owned session is obtained/used; Ask-action vs agent-selection vs reuse; post-click response surface; whether a new route is needed (strong preference NO); whether `agentId` can be added additively to the existing execute client
+- [x] Freeze bounded loading / success / missing-deleted-agent / generic execution failure / session failure / unauthorized-not-found UX using existing patterns
+- [x] Freeze exact FRONTEND + I18N write set
+- [x] Confirm GATEWAY remains READ ONLY, or stop and return a genuine locked-contract hole to control plane (`GATEWAY_CONTRACT_HOLE=NO`)
+- [x] Determine whether implementation validation requires manual browser smoke (`MANUAL_BROWSER_SMOKE_REQUIRED=YES`; not run)
+- [x] Split into child slices only if source inspection proves the UI scope is substantially larger than expected (`CHILD_SLICES_REQUIRED=NO`)
+- [x] Stage-start document created under `docs/AGENT-PLATFORM-CREATE-01E-STAGE-START.md`
+- [x] No application source / tests changed in Step 2
+- [x] No Git commit/push by the worker
 
 Step 3 (Implementation + automated validation):
 - [ ] Bounded FRONTEND + I18N implementation of the frozen first-slice Ask UI
@@ -72090,3 +72090,5 @@ Step 4 (Verification / checkpoint / lock):
 
 **Step 1 HEAD:** `5156db4daa20902fb1a2a6a48f9c0392b43b05c1` (branch main, clean tree verified)
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, source changes=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, Git mutations=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0, stage-start document=0. Governance writes: TASKS.md, this registry body.
+**Step 2 HEAD:** `7a4a0970f976417ca680f384139ccd72e240469f` (branch main, clean tree verified at Step 2 start)
+**Step 2 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source changes=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, Git mutations=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0. Governance writes: `docs/AGENT-PLATFORM-CREATE-01E-STAGE-START.md`, TASKS.md, this registry body. Frozen: Approach A; `NEW_ROUTE_REQUIRED=NO`; `GATEWAY_CONTRACT_HOLE=NO`; `CHILD_SLICES_REQUIRED=NO`; `MANUAL_BROWSER_SMOKE_REQUIRED=YES`; `IMPLEMENTATION_AUTHORIZED=NO`.
