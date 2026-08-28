@@ -71805,3 +71805,106 @@ Step 4 (Verification / checkpoint / lock):
 **Step 4 verification:** targeted 61/61 PASS — user-agent 2 suites / 46 tests PASS — broad non-live 167 passed / 1 skipped suites / 2128 passed / 6 skipped tests — build PASS — CROSS_USER_AGENT_EXECUTION_BLOCKED=YES — USER_AGENT_BUILD_ESCAPE_BLOCKED=YES — USER_AGENT_HARNESS_ESCAPE_BLOCKED=YES
 **Step 4 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, production source changes=0, AI-SERVICE=0, frontend/i18n=0, migrations=0, dependencies=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, Git mutations=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0. Governance writes: this checkpoint document, TASKS.md, this registry body.
 
+---
+
+## GOVERNANCE / LIVING AUTHORITY
+
+### GOV-AUTH-01 — Bounded Living-Authority Sync After AGENT-PLATFORM-CREATE-01D
+
+**Status:** ACTIVE — Step 1 COMPLETE — 2026-08-28 — Step 2 PENDING — GOVERNANCE owned by GOV-AUTH-01 — no implementation lane — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — ACTIVE_IMPLEMENTATION_LANES=0/2 — current next product gate remains: no admitted next product gate / selection pending — no product frontier selected
+**Task ID:** GOV-AUTH-01
+**Title:** Bounded Living-Authority Sync After AGENT-PLATFORM-CREATE-01D
+**Family:** GOVERNANCE / LIVING AUTHORITY (first in GOV-AUTH family; distinct from GOV-PRD-03 / GOV-ARCH-03 which are NOT created)
+**Workstream:** GOVERNANCE (taxonomy only; zero admission weight)
+**Lifecycle:** 2-step (Step 1 registration + bounded living-authority sync — Step 2 independent verification / checkpoint / final lock)
+**Start condition:** READY — Lane 1 EMPTY; Lane 2 EMPTY; Lane 3 DISABLED; GOVERNANCE UNOWNED at Step 1 start; AGENT-PLATFORM-CREATE-01D COMPLETE AND LOCKED — PASS — 2026-08-28; no admitted next product gate / selection pending; clean tree at HEAD `1a471ca9382ba3ad7e85f6864196869d983c7189`
+**Depends on:** AGENT-PLATFORM-CREATE-01D (COMPLETE AND LOCKED — PASS — 2026-08-28; Checkpoint: `docs/AGENT-PLATFORM-CREATE-01D-CHECKPOINT.md`); GOV-PRD-02 COMPLETE AND LOCKED (living PRODUCT WHAT); GOV-ARCH-02 COMPLETE AND LOCKED (living TECHNICAL HOW); GOV-OS-02 COMPLETE AND LOCKED (Next-Work Selection Protocol). Keith explicitly chose OPTION 1 — authority honesty first.
+**Primary write scope:** `PRD.md` (bounded CREATE-01D facts only); `ARCHITECTURE.md` (bounded CREATE-01D facts only); `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body. Step 2: checkpoint under `docs/`; board/registry lock fields.
+**Mutexes / resources:** GOVERNANCE (control plane; held by GOV-AUTH-01 while ACTIVE; released UNOWNED at Step 2 lock)
+**Hot-file leases:** none
+**Shared contracts:** none (no API/schema/auth/session/tool/config contract change; CREATE-01D execute identity contract remains frozen)
+**Evidence class:** GOVERNANCE
+**Revert isolation:** documentation/governance-only; no application source writes; trivially revertible
+
+**Identifier search:** Repo-wide search for GOV-AUTH, CREATE-01D authority sync, PRD architecture sync, living authority correction, executable user-agent Ask identity documentation, and post-CREATE-01D consolidation returned zero unfinished equivalent governance tasks. GOV-PRD-03 and GOV-ARCH-03 are explicitly not created. GOV-AUTH-01 is the smallest correct new canonical ID under existing GOV-{DOMAIN}-{NN} naming.
+
+**Purpose:** Synchronize living PRODUCT WHAT (`PRD.md`) and TECHNICAL HOW (`ARCHITECTURE.md`) with the bounded backend capability already implemented, independently verified, and locked by AGENT-PLATFORM-CREATE-01D. This is not a new product frontier, not a broad PRD/ARCHITECTURE reconciliation, not GOV-PRD-03, not GOV-ARCH-03, and not an executable-agent product launch.
+
+**Stage-start:** NOT REQUIRED. The implementation contract is already frozen by the locked CREATE-01D checkpoint and the post-lock Next-Work Selection decision.
+
+**Nature:** GOVERNANCE / DOCUMENTATION ONLY — no application behavior change — no runtime/schema/migration change — no product-frontier selection
+
+#### CREATE-01D facts synchronized into living authority (Step 1)
+
+1. Backend supports optional persisted user-agent identity on existing `POST /api/ai/execute` single-shot Ask path.
+2. Identity is supplied through optional `agentId`.
+3. Gateway resolves it ownership-scoped against the authenticated user.
+4. Missing, cross-user, and soft-deleted agents cannot execute through this path.
+5. Bounded identity context includes name, role, description and is composed into the existing instruction path.
+6. Persisted agent id is retained as execution trace metadata.
+7. Capability is ASK-ONLY and does not provide persisted user-created-agent Build capability.
+8. Harness remains excluded.
+
+#### Frozen product classification
+
+CURRENT PRODUCT EXPERIENCE:
+- user-created agent profiles are create/list/view persistence surfaces
+- there is still NO product-facing Run/Ask execution UI for those profiles
+- there is still NO complete executable-user-agent experience
+
+CURRENT BACKEND CAPABILITY:
+- a bounded ownership-scoped persisted user-agent identity can drive the existing single-shot Ask backend path when `agentId` is supplied
+
+APPROVED FUTURE (unchanged as product):
+- product-facing executable user-created agents
+- execution UI
+- per-agent tools / knowledge / skills / model configuration
+- Build/workspace mutation through user-created agents
+- specialist runtime behavior
+- broader orchestration
+
+#### Explicit Non-Goals
+
+GOV-AUTH-01 does NOT: select a product frontier; register PRIVATE-BETA-INVITE-01; enable Lane 3; admit an implementation lane; create GOV-PRD-03 or GOV-ARCH-03; create a new roadmap, source map, or master plan; edit CLAUDE.md or AGENTS.md; edit frozen GOV-PRD-02 / GOV-ARCH-02 source maps or checkpoints; edit the CREATE-01D checkpoint; modify application source / tests / frontend / i18n / Gateway / AI-SERVICE / migrations / packages / env / compose; run runtime; claim user-created agents are executable without qualification.
+
+#### Invariants
+
+- PRIVATE-BETA-INVITE-01 remains UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED / PARKED / NOT EXECUTABLE
+- INVITATION_EXECUTION_PERMITTED=NO
+- Lane 1 EMPTY / Lane 2 EMPTY / Lane 3 DISABLED
+- MAX_IMPLEMENTATION_LANES remains 2
+- Ask-only / owner-scoped / existing single-shot path / no dedicated runtime / no Build / no Harness / no product execution UI
+- No application source/test/config/schema/migration/env/Docker changes in any step
+- No runtime/infrastructure commands in any step
+- No subagents
+- No worktrees or branches created by this task
+- No commit/push unless explicitly requested by Keith
+
+#### Acceptance Criteria
+
+Step 1 (Registration + bounded living-authority sync):
+- [x] GOV-AUTH-01 confirmed unused before registration (no collision; equivalent unfinished task NONE)
+- [x] GOV-AUTH-01 registered in TASKS.md CURRENT EXECUTION BOARD
+- [x] GOV-AUTH-01 registered in TASKS_BACKLOG_FULL.md
+- [x] GOVERNANCE acquired by GOV-AUTH-01
+- [x] No implementation lane admitted
+- [x] PRD.md records landed bounded backend Ask identity-binding capability
+- [x] PRD.md still clearly says the full user-facing executable-agent product is FUTURE
+- [x] ARCHITECTURE.md no longer incorrectly claims persisted agents have zero connection to execution
+- [x] ARCHITECTURE.md preserves Ask-only, owner-scoped, existing single-shot path, no dedicated runtime, no Build, no Harness, no product execution UI
+- [x] No next product task nominated
+- [x] No broad reconciliation created
+- [x] Invitation invariant unchanged
+- [x] Lane 3 invariant unchanged
+- [x] No CLAUDE.md / AGENTS.md / source / frozen-checkpoint change
+- [x] No runtime / Docker / PostgreSQL / Redis / staging / provider activity
+- [x] No worktrees
+- [x] No Git commit/push by the worker
+
+Step 2 (Independent verification / checkpoint / lock):
+- [ ] Independent verification that living PRD/ARCHITECTURE now record the bounded CREATE-01D facts without promoting the full product
+- [ ] Checkpoint created
+- [ ] GOV-AUTH-01 COMPLETE AND LOCKED
+
+**Step 1 HEAD:** `1a471ca9382ba3ad7e85f6864196869d983c7189` (branch main)
+**Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, source changes=0, tests executed=0, dependencies=0, CLAUDE.md edits=0, AGENTS.md edits=0, source-map edits=0, Git mutations=0, product-frontier selection=0, invitation registration=0, Lane 3 enablement=0. Governance/docs writes: PRD.md, ARCHITECTURE.md, TASKS.md, this registry body.

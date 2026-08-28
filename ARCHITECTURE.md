@@ -13,7 +13,7 @@ All implementation must conform to this file and `CLAUDE.md`.
 
 If conflicts arise, these documents take precedence in their domains.
 
-Last reconciled: 2026-08-24 (GOV-ARCH-02 Step 3 — bounded current-state reconciliation). Prior freeze: 2026-08-10 (GOV-ARCH-01).
+Last reconciled: 2026-08-24 (GOV-ARCH-02 Step 3 — bounded current-state reconciliation). Bounded living-authority sync: 2026-08-28 (GOV-AUTH-01 — CREATE-01D Ask identity facts only; not GOV-ARCH-03). Prior freeze: 2026-08-10 (GOV-ARCH-01).
 
 ---
 
@@ -26,7 +26,7 @@ Unlabeled statements in this document are **CURRENT** implemented architecture.
 Hard CURRENT constraints:
 
 - Private-beta AI execution is **Builder-first single-shot**. Harness is implemented but gated off (`AGENT_HARNESS_ENABLE_TOOL_LOOP=false`). Harness is not the beta default.
-- Multi-agent product runtime is **not** operational. Specialist agents are placeholders. User-created agents are persisted, not executable.
+- Multi-agent product runtime is **not** operational. Specialist agents are placeholders. User-created agents are persisted profiles. Gateway may resolve optional ownership-scoped `agentId` onto the existing single-shot Ask path. There is no dedicated user-agent runtime, no user-created-agent Build, no Harness on that path, and no product execution UI.
 - The in-memory orchestration coordinator is instantiated in API Gateway and is **not product-reachable** (no HTTP surface).
 - Stripe charging is **not** CURRENT. Internal credit-ledger deduction is CURRENT and is independent of `BILLING_CHARGES_ENABLED`.
 - Google OAuth routes exist but are **not activated** (fail-closed when the Passport strategy is unregistered).
@@ -209,7 +209,7 @@ Owns:
 - Usage records and credit-ledger deduction
 - Public confirm-build-apply (Build credit trigger)
 - Git checkpoint ledger (`git_checkpoints`)
-- User-agent records (`user_agents`) — persistence/API only
+- User-agent records (`user_agents`) — persistence/API plus ownership-scoped Ask identity resolution on the existing single-shot `POST /api/ai/execute` path; not a dedicated execution runtime
 - Preview proxy routing → container-manager
 - Internal service endpoint hosting
 - Health / readiness / db endpoints
@@ -536,7 +536,7 @@ container-manager uses **local SQLite** for runtime session/container/git state.
 | Credit balances | API Gateway | PostgreSQL (`credit_balances`) |
 | Credit deduction records | API Gateway | PostgreSQL (`credit_deduction_records`) |
 | Workspace snapshots | API Gateway | Host filesystem (`snapshot-store/`) |
-| User agents | API Gateway | PostgreSQL (`user_agents`) — persistence only; not an execution runtime |
+| User agents | API Gateway | PostgreSQL (`user_agents`) — persistence/API plus ownership-scoped Ask identity binding; not a dedicated execution runtime |
 | Stripe subscription rows | API Gateway | PostgreSQL (subscription tables) — schema CURRENT; live Stripe charging NOT CURRENT |
 | Docker workspace files | container-manager | Host workspace directory bind-mounted as `/workspace` |
 | Container / session runtime state | container-manager | **Local SQLite** + Docker daemon + in-memory `lastActivity` |
@@ -699,9 +699,14 @@ Harness is **not** this path. See §12.
 1. Frontend: POST /api/ai/execute
      { sessionId, conversationId, prompt, executionIntent?, provider?, model?,
        workspaceContext?, agentRole?, builderProfileId?, collaborationRunId?,
-       referralTraceId? }
+       referralTraceId?, agentId? }
      Optional identity fields are accepted plumbing. The frontend does not currently send
-     agentRole, builderProfileId, collaborationRunId, or referralTraceId.
+     agentRole, builderProfileId, collaborationRunId, referralTraceId, or agentId.
+     Optional agentId is Ask-only persisted user-agent identity: Gateway owner-scopes it
+     against the authenticated user before ledger/enqueue; missing/cross-user/soft-deleted
+     agents cannot execute; name/role/description are composed onto existing
+     globalInstructions; agentId is retained in usage_records.metadata. It is not a
+     dedicated user-agent runtime, not Build, and not Harness.
 
 2. Staging: Caddy /api/* → Gateway
    Local-dev: Next rewrite/fallback (except named App Router routes)
@@ -935,13 +940,15 @@ The original walking-character / town **simulation** is **not implemented**. CUR
 | ainow.biz platform identity and dashboard (`/[locale]/platform`) | CURRENT (shell) |
 | aiSandBox = Builder Agent module (`/[locale]/app`) | CURRENT |
 | Static TypeScript system-agent registry (`frontend/lib/agent-platform/agent-registry.ts`) | CURRENT (read-only) |
-| DB-backed user-created agent records (`user_agents`, `POST/GET /api/agents`) | CURRENT (**persistence/API only**; not executable) |
+| DB-backed user-created agent records (`user_agents`, `POST/GET /api/agents`) | CURRENT (**persistence/API**; not a dedicated runtime) |
+| Optional persisted user-agent Ask identity (`agentId` on `POST /api/ai/execute`) | CURRENT (Ask-only; owner-scoped; existing single-shot path; no product execution UI) |
 | Platform RPG command-center shell | CURRENT (layout/shell; no game engine) |
 | OrchestrationService | CURRENT precursor: **in-memory, instantiated, no HTTP, not product-reachable**. Can enqueue if called in-process. **Not** the future durable multi-Builder runtime. |
 | Builder Agent AI execution (single-shot) | CURRENT |
 | Optional execute identity fields (`agentRole`, `builderProfileId`, `collaborationRunId`, `referralTraceId`) | CURRENT plumbing; frontend does not send them |
+| Optional persisted user-agent Ask identity (`agentId`) | CURRENT on Gateway `POST /api/ai/execute`; distinct from `agentRole` / `builderProfileId`; frontend does not send it |
 | Non-Builder system agents (Chief of Staff, Product Strategy, Technology Advisor) | PLACEHOLDER — `status: 'coming_soon'`; **not executable** |
-| User-created agents as executable runtime agents | **FUTURE** — NOT IMPLEMENTED |
+| User-created agents as executable runtime agents | **FUTURE** — NOT IMPLEMENTED (product-facing execution UI, dedicated runtime, tools/knowledge/skills, Build) |
 | Referral / agent collaboration **product** runtime | **FUTURE** — not the 07C in-memory precursor |
 | Durable orchestration / persisted referrals / shared-project writes | **FUTURE** |
 | Knowledge base runtime | **FUTURE / PLANNED** |
@@ -964,9 +971,16 @@ User-created agents:
 - APIs: `POST /api/agents`, `GET /api/agents`, `GET /api/agents/:id`, `DELETE /api/agents/:id` (`SessionCookieGuard`)
 - `DELETE /api/agents/:id` — authenticated; ownership-scoped (`id + userId`); soft delete via the existing `deleted_at` `@DeleteDateColumn`; no new migration was required; default TypeORM deleted-row filtering on `find`/`findOne` remains current; persistence/API capability only — no frontend Delete UI
 - MVP UI exists
-- **Not** routed to any execution runtime
+- Persisted user-agent identity may be resolved by the Gateway for the existing single-shot conversation/Ask path through optional `agentId` on `POST /api/ai/execute`
+- Owner scoping is enforced before ledger/enqueue; missing, cross-user, and soft-deleted agents cannot execute
+- Identity (name, role, description) is carried through existing instruction/metadata mechanisms
+- There is no dedicated user-agent runtime
+- No Build/workspace mutation capability through persisted user-agent identity
+- No Harness
+- No tools/knowledge/skills
+- No product execution UI
 
-Do not claim a live `user_agents` row count. Persistence capability ≠ execution capability.
+Do not claim a live `user_agents` row count. Persistence/profile UX ≠ a complete executable-agent product. Bounded Ask identity-binding ≠ a dedicated user-agent runtime.
 
 ### 13.3 What Is Not Current Platform Architecture
 
@@ -975,7 +989,7 @@ Do not describe the following as current:
 - Knowledge ingestion runtime
 - Vector database / semantic retrieval
 - Real non-Builder agent execution
-- Executable user-created agents
+- Product-facing executable user-created agents (dedicated runtime, execution UI, tools/knowledge/skills, Build through user-created agents)
 - Work-object runtime
 - Chief-of-Staff, Product Strategy, or Technology Advisor agent execution
 - Product-reachable multi-Builder / collaboration runtime
