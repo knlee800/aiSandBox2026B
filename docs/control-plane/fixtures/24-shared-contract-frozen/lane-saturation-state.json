@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "maxImplementationLanes": 2,
+  "lane3": "DISABLED",
+  "saturationSuspended": false,
+  "suspensionReason": "NONE",
+  "governance": {
+    "owner": "NONE",
+    "state": "UNOWNED"
+  },
+  "occupancy": {
+    "lane1":       {
+        "state": "ACTIVE",
+        "taskId": "TASK-A",
+        "mutexes": ["GATEWAY"],
+        "writePaths": ["services/api-gateway/src/foo.ts"],
+        "hotfiles": [],
+        "i18n": false,
+        "evidenceClass": "LOCAL-TESTS",
+        "exclusiveCapacity": false,
+        "sharedContractIds": ["CONTRACT-X"],
+        "mutatesSharedContractIds": [],
+        "runtimeNeeds": []
+      },
+    "lane2":       {
+        "state": "ACTIVE",
+        "taskId": "TASK-B",
+        "mutexes": ["AI-SERVICE"],
+        "writePaths": ["services/ai-service/src/bar.ts"],
+        "hotfiles": [],
+        "i18n": false,
+        "evidenceClass": "LOCAL-TESTS",
+        "exclusiveCapacity": false,
+        "sharedContractIds": ["CONTRACT-X"],
+        "mutatesSharedContractIds": [],
+        "runtimeNeeds": []
+      }
+  },
+  "candidates": [      {
+        "taskId": "TASK-A",
+        "nature": "IMPLEMENTATION",
+        "lifecycle": "3-STEP",
+        "status": "ADMITTED",
+        "startCondition": "READY",
+        "saturationClass": "FORCING",
+        "productClass": "CURRENT",
+        "futureAuthorization": "NONE",
+        "dependsOn": [],
+        "mutexes": ["GATEWAY"],
+        "writePaths": ["services/api-gateway/src/foo.ts"],
+        "hotfiles": [],
+        "i18n": false,
+        "sharedContractIds": ["CONTRACT-X"],
+        "mutatesSharedContractIds": [],
+        "evidenceClass": "LOCAL-TESTS",
+        "exclusiveCapacity": false,
+        "runtimeNeeds": [],
+        "admissionUncertain": false,
+        "writeSetPrecision": "EXACT"
+      },      {
+        "taskId": "TASK-B",
+        "nature": "IMPLEMENTATION",
+        "lifecycle": "3-STEP",
+        "status": "ADMITTED",
+        "startCondition": "READY",
+        "saturationClass": "FORCING",
+        "productClass": "CURRENT",
+        "futureAuthorization": "NONE",
+        "dependsOn": [],
+        "mutexes": ["AI-SERVICE"],
+        "writePaths": ["services/ai-service/src/bar.ts"],
+        "hotfiles": [],
+        "i18n": false,
+        "sharedContractIds": ["CONTRACT-X"],
+        "mutatesSharedContractIds": [],
+        "evidenceClass": "LOCAL-TESTS",
+        "exclusiveCapacity": false,
+        "runtimeNeeds": [],
+        "admissionUncertain": false,
+        "writeSetPrecision": "EXACT"
+      }],
+  "lockedTaskIds": [],
+  "sharedContracts": [{ "id": "CONTRACT-X", "state": "FROZEN", "paths": [] }],
+  "runtimeAuthorization": {
+    "localRuntimeAuthorized": false,
+    "stagingAuthorized": false,
+    "providerLiveAuthorized": false,
+    "creditAuthorized": false
+  }
+}

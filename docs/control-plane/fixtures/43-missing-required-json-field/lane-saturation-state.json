@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "maxImplementationLanes": 2,
+  "lane3": "DISABLED",
+  "saturationSuspended": false,
+  "suspensionReason": "NONE",
+  "governance": {
+    "owner": "NONE",
+    "state": "UNOWNED"
+  },
+  "occupancy": {
+    "lane1":       {
+        "state": "EMPTY",
+        "taskId": "NONE",
+        "mutexes": [],
+        "writePaths": [],
+        "hotfiles": [],
+        "i18n": false,
+        "evidenceClass": "NONE",
+        "exclusiveCapacity": false,
+        "sharedContractIds": [],
+        "mutatesSharedContractIds": [],
+        "runtimeNeeds": []
+      },
+    "lane2":       {
+        "state": "EMPTY",
+        "taskId": "NONE",
+        "mutexes": [],
+        "writePaths": [],
+        "hotfiles": [],
+        "i18n": false,
+        "evidenceClass": "NONE",
+        "exclusiveCapacity": false,
+        "sharedContractIds": [],
+        "mutatesSharedContractIds": [],
+        "runtimeNeeds": []
+      }
+  },
+  
+  "lockedTaskIds": [],
+  "sharedContracts": [],
+  "runtimeAuthorization": {
+    "localRuntimeAuthorized": false,
+    "stagingAuthorized": false,
+    "providerLiveAuthorized": false,
+    "creditAuthorized": false
+  }
+}

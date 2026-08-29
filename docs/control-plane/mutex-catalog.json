@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "mutexes": [
+    {
+      "id": "GOVERNANCE",
+      "aliases": [],
+      "kind": "BROAD",
+      "exclusive": true,
+      "pathPrefixes": ["docs/control-plane/"],
+      "files": ["CLAUDE.md", "AGENTS.md", "TASKS.md", "TASKS_BACKLOG_FULL.md", "PRD.md", "ARCHITECTURE.md"],
+      "matchKind": "NONE",
+      "matchNames": []
+    },
+    {
+      "id": "GATEWAY",
+      "aliases": ["API-GATEWAY"],
+      "kind": "BROAD",
+      "exclusive": true,
+      "pathPrefixes": ["services/api-gateway/"],
+      "files": [],
+      "matchKind": "NONE",
+      "matchNames": []
+    },
+    {
+      "id": "AI-SERVICE",
+      "aliases": ["AI_SERVICE"],
+      "kind": "BROAD",
+      "exclusive": true,
+      "pathPrefixes": ["services/ai-service/"],
+      "files": [],
+      "matchKind": "NONE",
+      "matchNames": []
+    },
+    {
+      "id": "CONTAINER-MANAGER",
+      "aliases": ["CONTAINER_MANAGER"],
+      "kind": "BROAD",
+      "exclusive": true,
+      "pathPrefixes": ["services/container-manager/"],
+      "files": [],
+      "matchKind": "NONE",
+      "matchNames": []
+    },
+    {
+      "id": "FRONTEND",
+      "aliases": [],
+      "kind": "BROAD",
+      "exclusive": true,
+      "pathPrefixes": ["frontend/"],
+      "files": [],
+      "matchKind": "NONE",
+      "matchNames": []
+    },
+    {
+      "id": "I18N",
+      "aliases": [],
+      "kind": "ATOMIC",
+      "exclusive": true,
+      "pathPrefixes": [],
+      "files": [
+        "frontend/messages/en.json",
+        "frontend/messages/zh-TW.json",
+        "frontend/messages/zh-CN.json"
+      ],
+      "matchKind": "NONE",
+      "matchNames": []
+    },
+    {
+      "id": "MIGRATION",
+      "aliases": [],
+      "kind": "BROAD",
+      "exclusive": true,
+      "pathPrefixes": [
+        "services/api-gateway/src/migrations/",
+        "services/api-gateway/migrations/"
+      ],
+      "files": [],
+      "matchKind": "NONE",
+      "matchNames": []
+    },
+    {
+      "id": "PACKAGE",
+      "aliases": [],
+      "kind": "MATCHER",
+      "exclusive": true,
+      "pathPrefixes": [],
+      "files": [],
+      "matchKind": "FILENAME",
+      "matchNames": ["package.json", "package-lock.json", "pnpm-lock.yaml", "yarn.lock"]
+    },
+    {
+      "id": "COMPOSE",
+      "aliases": [],
+      "kind": "MATCHER",
+      "exclusive": true,
+      "pathPrefixes": [],
+      "files": [],
+      "matchKind": "BASENAME_PREFIX",
+      "matchNames": ["docker-compose"]
+    },
+    {
+      "id": "ENV",
+      "aliases": [],
+      "kind": "MATCHER",
+      "exclusive": true,
+      "pathPrefixes": [],
+      "files": [],
+      "matchKind": "BASENAME_PREFIX",
+      "matchNames": [".env"]
+    },
+    {
+      "id": "LOCAL-RUNTIME",
+      "aliases": ["LOCAL_RUNTIME"],
+      "kind": "RESOURCE",
+      "exclusive": true,
+      "pathPrefixes": [],
+      "files": [],
+      "matchKind": "NONE",
+      "matchNames": []
+    },
+    {
+      "id": "STAGING",
+      "aliases": [],
+      "kind": "RESOURCE",
+      "exclusive": true,
+      "pathPrefixes": [],
+      "files": [],
+      "matchKind": "NONE",
+      "matchNames": []
+    },
+    {
+      "id": "PROVIDER-LIVE",
+      "aliases": ["PROVIDER_LIVE"],
+      "kind": "RESOURCE",
+      "exclusive": true,
+      "pathPrefixes": [],
+      "files": [],
+      "matchKind": "NONE",
+      "matchNames": []
+    },
+    {
+      "id": "CREDIT",
+      "aliases": [],
+      "kind": "RESOURCE",
+      "exclusive": true,
+      "pathPrefixes": [],
+      "files": [],
+      "matchKind": "NONE",
+      "matchNames": []
+    },
+    {
+      "id": "HOTFILE",
+      "aliases": [],
+      "kind": "HOTFILE_RULE",
+      "exclusive": true,
+      "pathPrefixes": [],
+      "files": [],
+      "matchKind": "NONE",
+      "matchNames": []
+    }
+  ]
+}

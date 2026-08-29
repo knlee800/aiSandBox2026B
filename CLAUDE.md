@@ -257,6 +257,28 @@ Workstream label has zero admission weight.
 
 If uncertain whether two tasks are independent: **DO NOT ADMIT THEM CONCURRENTLY.**
 
+### Fail-closed lane saturation (GOV-OS-03)
+
+`TASKS.md` remains the only scheduler. The machine sidecar `docs/control-plane/lane-saturation-state.json` is not a scheduler and cannot admit, rank, select, or invent tasks.
+
+After GOV-OS-03 LOCK, every newly registered implementation task must have a machine candidate record with an explicit `saturationClass` of `FORCING` or `OPTIONAL`. There is no default. Missing classification fails closed. Historical tasks are not mass-migrated. Governance tasks are not implementation candidates.
+
+The validator `scripts/validate-lane-capacity.ps1` is a proof checker over proposed END occupancy. It derives admissibility and idle result. It does not select tasks. Agent-written `IDLE_REASON`, `SAFE_TWO_LANE_PAIR`, `NOT_NEEDED`, and `UNRESOLVED` prose is not authoritative. Historical `Previous:` / `ACTIVE` text is not occupancy.
+
+Mandatory postcondition (when saturation is not suspended):
+
+FREE IMPLEMENTATION LANE AND nonempty set S of safely admissible FORCING candidates = proposed control-plane end state is invalid.
+
+If S is empty, idle implementation capacity is valid. Safety outranks saturation. Maximum implementation lanes remains 2. Lane 3 remains DISABLED.
+
+Always evaluate pairwise safety against proposed END occupancy, not only against an empty board.
+
+The validator is mandatory at machine-relevant control-plane transitions (implementation registration, candidate classification/status/write-set changes, admission, stage-start, mutex acquire/release, dependency LOCK proof changes, shared-contract freeze/unfreeze, LANE-DONE, lane release, LOCK, REJECTED, RETURN-TO-READY, begin/end OS mutation). It is a postcondition over proposed end state. Workers cannot update machine state, occupancy block, sidecar, catalog, or proof.
+
+During an active Development OS mutation, saturation is suspended, implementation lanes must be zero, and idle is required (`OS_MUTATION_QUIESCENCE`). When suspension ends, the normal saturation postcondition applies immediately.
+
+If no registered FORCING candidate is safely admissible, GOV-OS-03 permits idle and does not search roadmap, chat, or FUTURE. Genuinely new product/architecture selection remains GOV-OS-02 Next-Work Selection Protocol. GOV-OS-03 never invents work.
+
 ### Shared-contract freeze / change protocol
 
 If two lanes depend on a shared API / schema / auth / session / tool / config contract, that contract must be frozen before parallel execution.
@@ -296,6 +318,8 @@ Required near-frontier task metadata after GOV-OS-01:
 - Shared contracts
 - Evidence class
 - Revert isolation
+- saturationClass (`FORCING` or `OPTIONAL`; mandatory for newly registered implementation tasks after GOV-OS-03 LOCK; no default)
+- machine candidate record in `docs/control-plane/lane-saturation-state.json` (implementation tasks only; not a scheduler)
 
 Evidence class values: LOCAL-TESTS, LOCAL-RUNTIME, STAGING-RUNTIME, PROVIDER-LIVE.
 

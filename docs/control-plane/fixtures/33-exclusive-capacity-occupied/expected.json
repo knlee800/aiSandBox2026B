@@ -1,0 +1,1 @@
+{ "exitCode": 0, "result": "PASS", "idleCode": "EXCLUSIVE_CAPACITY_HELD", "rejectedByTaskId": { "TASK-B": "EXCLUSIVE_CAPACITY" } }
