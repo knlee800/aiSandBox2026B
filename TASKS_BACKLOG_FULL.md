@@ -72227,7 +72227,7 @@ Step 4 (Verification / checkpoint / lock):
 
 ### GOV-OS-03 — Fail-Closed Lane Saturation Enforcement
 
-**Status:** ACTIVE (GOVERNANCE / DEVELOPMENT-OS; no implementation lane) — Step 1 COMPLETE — 2026-08-28 — Step 2 COMPLETE — 2026-08-28 — Step 3 IMPLEMENTATION + DETERMINISTIC VALIDATION COMPLETE — 2026-08-29 — Stage-start: `docs/GOV-OS-03-STAGE-START.md` — occupancy block installed — sidecar/validator/fixtures/proof created — CLAUDE.md Freeze Decision 29 installed — AGENTS.md / PRD.md / ARCHITECTURE.md unchanged — FIXTURES 62/62 PASS — REAL_TREE exit 0 idleCode=OS_MUTATION_QUIESCENCE — SATURATION_ENFORCEMENT_IMPLEMENTED=YES — SATURATION_SUSPENDED_FOR_OS_MUTATION=YES — INITIAL_FORCING_CANDIDATES=NONE — no implementation task admitted — no next product task selected — TASKS.md remains the sole scheduler — sidecar is NOT a scheduler — Step 4 NOT AUTHORIZED until Keith commits this Step 3 state — GOV-OS-03 remains ACTIVE / not LOCKED
+**Status:** ACTIVE (GOVERNANCE / DEVELOPMENT-OS; no implementation lane) — Step 1 COMPLETE — 2026-08-28 — Step 2 COMPLETE — 2026-08-28 — Step 3 IMPLEMENTATION + DETERMINISTIC VALIDATION COMPLETE — 2026-08-29 — committed HEAD `139a23e8ef93afe1430071f7fdc1beac10295617` — GOV-OS-03R1 Candidate-Index Completeness Repair Step 1 COMPLETE — 2026-08-29 — contract: `docs/GOV-OS-03R1-CANDIDATE-COMPLETENESS.md` — MISSING_ENTIRE_CANDIDATE_REPRODUCED=YES — CANDIDATE_INDEX_COMPLETENESS_ENFORCED=NO — repair Step 2 PENDING — repair Step 3 NOT AUTHORIZED — Stage-start: `docs/GOV-OS-03-STAGE-START.md` — occupancy block installed — sidecar/validator/fixtures/proof created — CLAUDE.md Freeze Decision 29 installed — AGENTS.md / PRD.md / ARCHITECTURE.md unchanged — FIXTURES 62/62 PASS — REAL_TREE exit 0 idleCode=OS_MUTATION_QUIESCENCE — SATURATION_ENFORCEMENT_IMPLEMENTED=YES — SATURATION_SUSPENDED_FOR_OS_MUTATION=YES — INITIAL_FORCING_CANDIDATES=NONE — no implementation task admitted — no next product task selected — TASKS.md remains the sole scheduler — sidecar is NOT a scheduler — Step 4 NOT AUTHORIZED (MUST NOT LOCK until GOV-OS-03R1 completes, then resume Step 4) — GOV-OS-03 remains ACTIVE / not LOCKED
 **Task ID:** GOV-OS-03
 **Title:** Fail-Closed Lane Saturation Enforcement
 **Family:** GOVERNANCE / DEVELOPMENT OS / SCHEDULER ENFORCEMENT (GOV-OS family successor after GOV-OS-01 / GOV-OS-02 LOCKED; distinct from GOV-PARALLEL-01 Lane 3 capacity decision and GOV-OS-02 next-work selection)
@@ -72483,7 +72483,7 @@ Admissibility direction that Step 2 must ultimately account for: nature = IMPLEM
 1. Step 1 — Registration + approved architecture recording — COMPLETE — 2026-08-28
 2. Step 2 — Exact scheduler-machine contract / source-path / schema / validator / fixture freeze — COMPLETE — 2026-08-28 — `docs/GOV-OS-03-STAGE-START.md`
 3. Step 3 — Bounded Development OS implementation + deterministic automated validation — COMPLETE — 2026-08-29 — FIXTURES 62/62 PASS — REAL_TREE OS_MUTATION_QUIESCENCE
-4. Step 4 — Independent verification + checkpoint / final lock — NOT AUTHORIZED until Keith commits this Step 3 state
+4. Step 4 — Independent verification + checkpoint / final lock — NOT AUTHORIZED (Step 3 committed `139a23e8ef93afe1430071f7fdc1beac10295617`; independent review found CANDIDATE_INDEX_COMPLETENESS_ENFORCED=NO; GOV-OS-03R1 must complete first)
 
 #### Explicit Non-Goals
 
@@ -72568,15 +72568,84 @@ Step 3 (Bounded Development OS implementation + deterministic automated validati
 - [x] No Git commit/push by the worker
 
 Step 4 (Independent verification / checkpoint / lock):
-- [ ] NOT AUTHORIZED until Keith commits this Step 3 state
+- [ ] NOT AUTHORIZED until GOV-OS-03R1 completes (candidate-index completeness repair)
 - [ ] Independent verification
 - [ ] Checkpoint created
-- [ ] GOV-OS-03 COMPLETE AND LOCKED only after required evidence
+- [ ] GOV-OS-03 COMPLETE AND LOCKED only after required evidence including CANDIDATE_INDEX_COMPLETENESS_ENFORCED=YES
 
 **Step 1 HEAD:** `8bbc771fc8f1fb2c22292252ec190b9abd1c58b1` (branch main; HEAD == origin/main; clean tree verified)
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, source changes=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, source-map edits=0, Git mutations=0, product-frontier selection=0, invitation registration=0, Lane 2 admission=0, Lane 3 enablement=0, FORCING candidate seeding=0, candidate index created=0, validator created=0, machine sidecar created=0, Git hook created=0. Governance writes: TASKS.md, this registry body.
 **Step 2 HEAD:** `8cb83d91029ede96de25c40a1936418f7b398d41` (branch main; HEAD == origin/main; clean tree verified at Step 2 open)
 **Step 2 freeze:** `docs/GOV-OS-03-STAGE-START.md`
 **Step 2 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, source changes=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, source-map edits=0, Git mutations=0, product-frontier selection=0, invitation registration=0, Lane 2 admission=0, Lane 3 enablement=0, FORCING candidate seeding=0, candidate index created=0, validator created=0, machine sidecar created=0, occupancy block installed=0, fixtures created=0, Git hook created=0. Governance writes: `docs/GOV-OS-03-STAGE-START.md`, TASKS.md, this registry body.
-**Step 3 HEAD:** `d6f915ba9f6639221ad65949d8f98ec10fa47f2e` (branch main; Step 2 freeze committed; implementation uncommitted)
+**Step 3 HEAD:** `d6f915ba9f6639221ad65949d8f98ec10fa47f2e` (branch main; Step 2 freeze committed; implementation uncommitted at Step 3 start)
+**Step 3 COMMIT:** `139a23e8ef93afe1430071f7fdc1beac10295617`
 **Step 3 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, AGENTS.md edits=0, Git mutations=0, product-frontier selection=0, invitation registration=0, Lane 2 admission=0, Lane 3 enablement=0, FORCING candidate seeding=0, Git hook created=0. Deterministic validation: 62/62 fixtures PASS; real-tree validator exit 0 idleCode=OS_MUTATION_QUIESCENCE. Governance writes: occupancy block, sidecar, mutex catalog, validator, test runner, fixtures, SATURATION_PROOF.json, CLAUDE.md Freeze Decision 29, TASKS.md, this registry body.
+**Child repair:** GOV-OS-03R1 — Candidate-Index Completeness Repair — Step 1 COMPLETE — 2026-08-29 — contract: `docs/GOV-OS-03R1-CANDIDATE-COMPLETENESS.md` — Step 2 PENDING — Step 3 NOT AUTHORIZED — GOV-OS-03 MUST NOT LOCK
+
+### GOV-OS-03R1 — Candidate-Index Completeness Repair
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-OS-03R1
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ACTIVE child repair of GOV-OS-03 (GOVERNANCE / DEVELOPMENT-OS; no implementation lane) — Step 1 COMPLETE — 2026-08-29 — contract: `docs/GOV-OS-03R1-CANDIDATE-COMPLETENESS.md` — MISSING_ENTIRE_CANDIDATE_REPRODUCED=YES — UNRESOLVED_DESIGN_DECISIONS=0 — Step 2 PENDING — Step 3 NOT AUTHORIZED — GOV-OS-03 remains ACTIVE / not LOCKED — GOVERNANCE remains owned by GOV-OS-03
+**Task ID:** GOV-OS-03R1
+**Title:** Candidate-Index Completeness Repair
+**Family:** GOVERNANCE / DEVELOPMENT OS / SCHEDULER ENFORCEMENT (bounded child repair of GOV-OS-03; not a new product frontier)
+**Workstream:** GOVERNANCE (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE / DEVELOPMENT-OS — does NOT consume Lane 1 or Lane 2
+**Lifecycle:** bounded 3-step GOVERNANCE repair (Step 1 root-cause reproduction + exact repair contract freeze — Step 2 TDD implementation + new adversarial fixtures + full regression — Step 3 independent verification, then resume GOV-OS-03 final Step 4)
+**Start condition:** READY — GOV-OS-03 ACTIVE; GOVERNANCE owned by GOV-OS-03; Lane 1 EMPTY; Lane 2 EMPTY; Lane 3 DISABLED; saturationSuspended=true; Step 3 of GOV-OS-03 committed at `139a23e8ef93afe1430071f7fdc1beac10295617`; GOV-OS-03 Step 4 not locked
+**Depends on:** GOV-OS-03 Step 3 committed; GOV-OS-03 still ACTIVE
+**Primary write scope:**
+- Step 1 (this step): `TASKS.md`; `TASKS_BACKLOG_FULL.md`; `docs/GOV-OS-03R1-CANDIDATE-COMPLETENESS.md`
+- Step 2: validator, test runner, fixtures 63–70, grandfather backlog, epoch marker insertion, CLAUDE.md fail-closed saturation subsection only, board/registry lifecycle; exact set frozen in the contract §13
+- Step 3: independent verification evidence / checkpoint pointer; board/registry; then resume GOV-OS-03 Step 4 (not a GOV-OS-03 lock in this child)
+**Mutexes / resources:** GOVERNANCE already held by GOV-OS-03. Do not acquire additional mutexes.
+**Hot-file leases:** none
+**Shared contracts:** none
+**Evidence class:** STATIC / DETERMINISTIC GOVERNANCE VALIDATION
+**Revert isolation:** GOV-OS-03R1 Step 1 is documentation/contract only and is revertible with the three authorized files. Step 2 must remain atomically revertible with GOV-OS-03 still ACTIVE.
+**saturationClass:** not applicable (GOVERNANCE; no sidecar candidate required)
+**Repair contract:** `docs/GOV-OS-03R1-CANDIDATE-COMPLETENESS.md`
+
+**Purpose:** Close the GOV-OS-03 enforcement gap in which a newly registered implementation task can be omitted entirely from `lane-saturation-state.json` while the validator still returns valid idle. Missing entire machine candidate record for a newly registered implementation task must fail closed.
+
+**Step 1 result:** Isolated reproduction against the committed Step 3 validator returned `exitCode=0` `result=PASS` `idleCode=NO_FORCING_CANDIDATES` while canonical `NEW-IMPLEMENTATION-01` existed and sidecar `candidates` was `[]`. Root cause confirmed: completeness is derived only from candidate objects that already exist; the validator has no independent required-ID source and no `-BacklogPath`. Option A frozen: post-epoch canonical machine-registration stanza in `TASKS_BACKLOG_FULL.md`. Epoch marker is NOT installed until Step 2.
+
+**Explicit Non-Goals:** Do not implement the validator in Step 1. Do not create fixtures in Step 1. Do not modify sidecar, CLAUDE.md, AGENTS.md, PRD.md, ARCHITECTURE.md, or `docs/GOV-OS-03-STAGE-START.md` in Step 1. Do not admit implementation tasks. Do not seed FORCING candidates. Do not enable Lane 3. Do not register PRIVATE-BETA-INVITE-01. Do not invent product work. Do not lock GOV-OS-03.
+
+#### Acceptance Criteria
+
+Step 1 (root-cause reproduction + contract freeze):
+- [x] Precondition verified (main, clean tree, HEAD == origin/main == `139a23e8ef93afe1430071f7fdc1beac10295617`, GOV-OS-03 ACTIVE, GOVERNANCE owned by GOV-OS-03, lanes EMPTY, Lane 3 DISABLED, saturationSuspended=true, Step 4 not locked)
+- [x] MISSING_ENTIRE_CANDIDATE_REPRODUCED=YES
+- [x] Root cause recorded
+- [x] Option A frozen; Option B/C rejected
+- [x] Enforcement epoch representation frozen
+- [x] Machine registration syntax frozen
+- [x] Validator `-BacklogPath` default frozen
+- [x] Fail codes frozen
+- [x] Fixtures 63–70 frozen (not created in Step 1)
+- [x] UNRESOLVED_DESIGN_DECISIONS=0
+- [x] Contract written: `docs/GOV-OS-03R1-CANDIDATE-COMPLETENESS.md`
+- [x] Only authorized files changed
+- [x] No validator/sidecar/fixture/CLAUDE.md/application-source change
+- [x] No Git commit/push by the worker
+
+Step 2 (TDD implementation):
+- [ ] NOT STARTED — unauthorized until Keith commits this Step 1 freeze
+- [ ] Implement only the frozen completeness contract
+- [ ] Fixtures 63–70 created; 01–70 regression PASS
+- [ ] Real-tree still OS_MUTATION_QUIESCENCE with empty required IMPLEMENTATION set
+- [ ] No application source
+
+Step 3 (independent verification + resume GOV-OS-03 Step 4):
+- [ ] NOT AUTHORIZED until Step 2 is committed
+- [ ] Independent verification of completeness enforcement
+- [ ] CANDIDATE_INDEX_COMPLETENESS_ENFORCED=YES
+- [ ] Resume GOV-OS-03 Step 4 (do not lock GOV-OS-03 inside this child without that resumed verification)
+
+**Step 1 HEAD:** `139a23e8ef93afe1430071f7fdc1beac10295617` (branch main; HEAD == origin/main; clean tree verified at Step 1 open)
+**Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, validator edits=0, sidecar edits=0, fixtures created=0, CLAUDE.md edits=0, AGENTS.md edits=0, PRD.md edits=0, ARCHITECTURE.md edits=0, Git mutations=0, product-frontier selection=0, invitation registration=0, Lane 2 admission=0, Lane 3 enablement=0, FORCING candidate seeding=0. Isolated reproduction: current validator PASS idle `NO_FORCING_CANDIDATES` with omitted candidate. Governance writes: `docs/GOV-OS-03R1-CANDIDATE-COMPLETENESS.md`, TASKS.md, this registry body.
