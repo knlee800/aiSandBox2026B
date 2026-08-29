@@ -261,7 +261,11 @@ If uncertain whether two tasks are independent: **DO NOT ADMIT THEM CONCURRENTLY
 
 `TASKS.md` remains the only scheduler. The machine sidecar `docs/control-plane/lane-saturation-state.json` is not a scheduler and cannot admit, rank, select, or invent tasks.
 
-After GOV-OS-03 LOCK, every newly registered implementation task must have a machine candidate record with an explicit `saturationClass` of `FORCING` or `OPTIONAL`. There is no default. Missing classification fails closed. Historical tasks are not mass-migrated. Governance tasks are not implementation candidates.
+After the GOV-OS-03 enforcement epoch (`<!-- AISB_GOV_OS_03_ENFORCEMENT_EPOCH_V1 -->` in `TASKS_BACKLOG_FULL.md`), every newly registered canonical task must carry exactly one `AISB_MACHINE_REG_V1` machine-registration stanza (`taskId`, `nature`). Completeness is derived from that canonical registry, not from model memory, chat, or `IDLE_REASON` / `SAFE_TWO_LANE_PAIR` prose. Pre-epoch historical tasks are grandfathered: they are not mass-migrated and are not scanned from `Status` / `Nature` / `Previous:` / `ACTIVE` / `READY` lifecycle prose.
+
+If `nature=IMPLEMENTATION`, the sidecar must contain a corresponding candidate object with `nature=IMPLEMENTATION` and an explicit `saturationClass` of `FORCING` or `OPTIONAL`. There is no default. Missing classification on an existing candidate fails closed. Missing the entire candidate object fails closed (`MISSING_CANDIDATE_RECORD`). Missing the machine stanza fails closed (`MISSING_MACHINE_REGISTRATION`). `nature=GOVERNANCE` requires the stanza but does not require an implementation candidate and does not occupy implementation-lane capacity. Governance tasks are not implementation candidates.
+
+This completeness check runs before OS-mutation suspension short-circuit and before idle derivation. `saturationSuspended=true` must not hide a missing candidate record.
 
 The validator `scripts/validate-lane-capacity.ps1` is a proof checker over proposed END occupancy. It derives admissibility and idle result. It does not select tasks. Agent-written `IDLE_REASON`, `SAFE_TWO_LANE_PAIR`, `NOT_NEEDED`, and `UNRESOLVED` prose is not authoritative. Historical `Previous:` / `ACTIVE` text is not occupancy.
 
@@ -273,7 +277,7 @@ If S is empty, idle implementation capacity is valid. Safety outranks saturation
 
 Always evaluate pairwise safety against proposed END occupancy, not only against an empty board.
 
-The validator is mandatory at machine-relevant control-plane transitions (implementation registration, candidate classification/status/write-set changes, admission, stage-start, mutex acquire/release, dependency LOCK proof changes, shared-contract freeze/unfreeze, LANE-DONE, lane release, LOCK, REJECTED, RETURN-TO-READY, begin/end OS mutation). It is a postcondition over proposed end state. Workers cannot update machine state, occupancy block, sidecar, catalog, or proof.
+The validator is mandatory at machine-relevant control-plane transitions (implementation registration, canonical post-epoch machine-registration metadata change, enforcement-epoch marker change, candidate classification/status/write-set changes, admission, stage-start, mutex acquire/release, dependency LOCK proof changes, shared-contract freeze/unfreeze, LANE-DONE, lane release, LOCK, REJECTED, RETURN-TO-READY, begin/end OS mutation). It is a postcondition over proposed end state. Workers cannot update machine state, occupancy block, sidecar, catalog, or proof.
 
 During an active Development OS mutation, saturation is suspended, implementation lanes must be zero, and idle is required (`OS_MUTATION_QUIESCENCE`). When suspension ends, the normal saturation postcondition applies immediately.
 

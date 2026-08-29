@@ -18,6 +18,12 @@ if (-not (Test-Path -LiteralPath $fixturesRoot)) {
     exit 1
 }
 
+$grandfatherBacklog = Join-Path $fixturesRoot '_grandfather-only-backlog.md'
+if (-not (Test-Path -LiteralPath $grandfatherBacklog)) {
+    Write-Output 'FAIL grandfather-backlog-missing'
+    exit 1
+}
+
 $dirs = @(Get-ChildItem -LiteralPath $fixturesRoot -Directory | Where-Object { $_.Name -match '^[0-9]{2}-' } | Sort-Object -Property Name)
 if ($dirs.Count -eq 0) {
     Write-Output 'FAIL no-fixtures'
@@ -105,10 +111,15 @@ foreach ($dir in $dirs) {
             Copy-Item -LiteralPath $fixtureProof -Destination $tempProof -Force
         }
 
+        $backlogPath = Join-Path $dir.FullName 'TASKS_BACKLOG_FULL.md'
+        if (-not (Test-Path -LiteralPath $backlogPath)) {
+            $backlogPath = Join-Path $fixturesRoot '_grandfather-only-backlog.md'
+        }
+
         $expected = Get-ExpectedObject $expectedPath
         $prevEap = $ErrorActionPreference
         $ErrorActionPreference = 'Continue'
-        $output = & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $validator -RepoRoot $RepoRoot -TasksPath $tasksPath -StatePath $statePath -CatalogPath $catalogPath -ProofPath $tempProof 2>&1 | Out-String
+        $output = & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $validator -RepoRoot $RepoRoot -TasksPath $tasksPath -StatePath $statePath -CatalogPath $catalogPath -ProofPath $tempProof -BacklogPath $backlogPath 2>&1 | Out-String
         $code = $LASTEXITCODE
         $ErrorActionPreference = $prevEap
         if ($null -eq $code) { $code = 0 }

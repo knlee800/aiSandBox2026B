@@ -3,7 +3,8 @@ param(
     [string]$TasksPath = (Join-Path $RepoRoot 'TASKS.md'),
     [string]$StatePath = (Join-Path $RepoRoot 'docs\control-plane\lane-saturation-state.json'),
     [string]$CatalogPath = (Join-Path $RepoRoot 'docs\control-plane\mutex-catalog.json'),
-    [string]$ProofPath = (Join-Path $RepoRoot 'docs\control-plane\SATURATION_PROOF.json')
+    [string]$ProofPath = (Join-Path $RepoRoot 'docs\control-plane\SATURATION_PROOF.json'),
+    [string]$BacklogPath = (Join-Path $RepoRoot 'TASKS_BACKLOG_FULL.md')
 )
 
 $ErrorActionPreference = 'Stop'
@@ -1324,12 +1325,221 @@ function Derive-Idle {
     return 'NO_PAIRWISE_ADMISSIBLE_CANDIDATE'
 }
 
+# ----- GOV-OS-03R1 post-epoch candidate-index completeness -----
+# Parses only the enforcement epoch marker, post-epoch ### <TaskId> headings,
+# and AISB_MACHINE_REG_V1 blocks. Does not parse Status/Nature/lifecycle prose.
+# Must run after sidecar schema parse and before capacity/hash/OS-mutation/S.
+
+$script:EpochMarker = '<!-- AISB_GOV_OS_03_ENFORCEMENT_EPOCH_V1 -->'
+$script:MachineBegin = '<!-- AISB_MACHINE_REG_V1_BEGIN -->'
+$script:MachineEnd = '<!-- AISB_MACHINE_REG_V1_END -->'
+$script:CompletenessFailCodes = @(
+    'MISSING_CANDIDATE_RECORD',
+    'MISSING_MACHINE_REGISTRATION',
+    'MISSING_ENFORCEMENT_EPOCH',
+    'DUPLICATE_ENFORCEMENT_EPOCH',
+    'DUPLICATE_CANONICAL_ID',
+    'CANDIDATE_NATURE_MISMATCH'
+)
+
+function Get-TextLines {
+    param([string]$Text)
+    $list = New-Object System.Collections.ArrayList
+    if ($null -eq $Text) { return $list }
+    $len = $Text.Length
+    $pos = 0
+    while ($pos -lt $len) {
+        $nl = $len
+        $term = 0
+        $i = $pos
+        while ($i -lt $len) {
+            $ch = $Text[$i]
+            if ($ch -eq "`n") {
+                $nl = $i
+                $term = 1
+                break
+            }
+            if ($ch -eq "`r") {
+                $nl = $i
+                $term = 1
+                if ((($i + 1) -lt $len) -and ($Text[$i + 1] -eq "`n")) { $term = 2 }
+                break
+            }
+            $i++
+        }
+        $obj = New-OrdinalMap
+        $obj['start'] = $pos
+        $obj['text'] = $Text.Substring($pos, $nl - $pos)
+        [void]$list.Add($obj)
+        if ($nl -eq $len) { $pos = $len } else { $pos = $nl + $term }
+    }
+    return $list
+}
+
+function Find-EnforcementEpoch {
+    param([string]$Text)
+    $mark = $script:EpochMarker
+    $count = 0
+    $first = -1
+    $searchFrom = 0
+    while ($true) {
+        $i = $Text.IndexOf($mark, $searchFrom, [System.StringComparison]::Ordinal)
+        if ($i -lt 0) { break }
+        $count++
+        if ($count -eq 1) { $first = $i }
+        $searchFrom = $i + $mark.Length
+    }
+    if ($count -eq 0) { throw 'MISSING_ENFORCEMENT_EPOCH' }
+    if ($count -gt 1) { throw 'DUPLICATE_ENFORCEMENT_EPOCH' }
+    $lineStart = $first
+    while ($lineStart -gt 0) {
+        $prev = $Text[$lineStart - 1]
+        if ($prev -eq "`n" -or $prev -eq "`r") { break }
+        $lineStart--
+    }
+    $lineEnd = $first + $mark.Length
+    while ($lineEnd -lt $Text.Length) {
+        $ch = $Text[$lineEnd]
+        if ($ch -eq "`n" -or $ch -eq "`r") { break }
+        $lineEnd++
+    }
+    $line = $Text.Substring($lineStart, $lineEnd - $lineStart)
+    if ($line -cne $mark) { throw 'MALFORMED' }
+    return $first
+}
+
+function Get-CanonicalHeadingId {
+    param([string]$Line)
+    if ($Line.StartsWith('####')) { return $null }
+    if ($Line -cnotmatch '^### (?<id>[A-Z][A-Z0-9-]{1,126}[A-Z0-9])(?:[ \t].*)?$') {
+        return $null
+    }
+    $id = [string]$Matches['id']
+    if (-not (Test-TaskId $id)) { return $null }
+    return $id
+}
+
+function Parse-MachineStanza {
+    param([string]$Text, [int]$SpanStart, [int]$SpanEnd, [string]$HeadingId)
+    $span = $Text.Substring($SpanStart, $SpanEnd - $SpanStart)
+    $spanLines = Get-TextLines $span
+    $begins = New-Object System.Collections.ArrayList
+    $ends = New-Object System.Collections.ArrayList
+    $idx = 0
+    foreach ($ln in $spanLines) {
+        $t = ([string]$ln['text']).Trim()
+        if ($t -ceq $script:MachineBegin) { [void]$begins.Add($idx) }
+        if ($t -ceq $script:MachineEnd) { [void]$ends.Add($idx) }
+        $idx++
+    }
+    if ($begins.Count -eq 0 -or $ends.Count -eq 0) { throw 'MISSING_MACHINE_REGISTRATION' }
+    if ($begins.Count -ne $ends.Count) { throw 'MALFORMED' }
+    if ($begins.Count -ne 1) { throw 'MALFORMED' }
+    $b = [int]$begins[0]
+    $e = [int]$ends[0]
+    if ($e -le $b) { throw 'MALFORMED' }
+    $map = New-OrdinalMap
+    for ($i = $b + 1; $i -lt $e; $i++) {
+        $line = [string]$spanLines[$i]['text']
+        if ($line.Length -eq 0) { throw 'MALFORMED' }
+        if ($line.Contains("`t")) { throw 'MALFORMED' }
+        if ($line -cne $line.Trim()) { throw 'MALFORMED' }
+        $eq = $line.IndexOf('=')
+        if ($eq -le 0) { throw 'MALFORMED' }
+        $key = $line.Substring(0, $eq)
+        $val = $line.Substring($eq + 1)
+        if ($line -match ' =|= ') { throw 'MALFORMED' }
+        if (($key + '=' + $val) -cne $line) { throw 'MALFORMED' }
+        if ($key.Contains(' ')) { throw 'MALFORMED' }
+        if ($map.ContainsKey($key)) { throw 'MALFORMED' }
+        if ($key -cne 'taskId' -and $key -cne 'nature') { throw 'MALFORMED' }
+        $map[$key] = $val
+    }
+    if (-not $map.ContainsKey('taskId') -or -not $map.ContainsKey('nature')) {
+        throw 'MISSING_MACHINE_REGISTRATION'
+    }
+    if ([string]$map['taskId'] -cne $HeadingId) { throw 'MALFORMED' }
+    $nat = [string]$map['nature']
+    if ($nat -cne 'IMPLEMENTATION' -and $nat -cne 'GOVERNANCE') { throw 'MALFORMED' }
+    return $nat
+}
+
+function Parse-PostEpochRegistrations {
+    param([string]$Text, [int]$EpochStart)
+    $lines = Get-TextLines $Text
+    $headings = New-Object System.Collections.ArrayList
+    foreach ($ln in $lines) {
+        if ([int]$ln['start'] -le $EpochStart) { continue }
+        $id = Get-CanonicalHeadingId ([string]$ln['text'])
+        if ($null -ne $id) {
+            $h = New-OrdinalMap
+            $h['taskId'] = $id
+            $h['start'] = [int]$ln['start']
+            [void]$headings.Add($h)
+        }
+    }
+    $seen = New-OrdinalMap
+    foreach ($h in $headings) {
+        $id = [string]$h['taskId']
+        if ($seen.ContainsKey($id)) { throw 'DUPLICATE_CANONICAL_ID' }
+        $seen[$id] = $true
+    }
+    $orphanEnd = $Text.Length
+    if ($headings.Count -gt 0) {
+        $orphanEnd = [int]$headings[0]['start']
+    }
+    foreach ($ln in $lines) {
+        $st = [int]$ln['start']
+        if ($st -le $EpochStart) { continue }
+        if ($st -ge $orphanEnd) { break }
+        $t = ([string]$ln['text']).Trim()
+        if ($t -ceq $script:MachineBegin -or $t -ceq $script:MachineEnd) { throw 'MALFORMED' }
+    }
+    $regs = New-Object System.Collections.ArrayList
+    for ($hi = 0; $hi -lt $headings.Count; $hi++) {
+        $h = $headings[$hi]
+        $spanStart = [int]$h['start']
+        $spanEnd = $Text.Length
+        if (($hi + 1) -lt $headings.Count) {
+            $spanEnd = [int]$headings[$hi + 1]['start']
+        }
+        $nature = Parse-MachineStanza $Text $spanStart $spanEnd ([string]$h['taskId'])
+        $r = New-OrdinalMap
+        $r['taskId'] = [string]$h['taskId']
+        $r['nature'] = $nature
+        [void]$regs.Add($r)
+    }
+    return $regs
+}
+
+function Assert-CandidateIndexCompleteness {
+    param([string]$BacklogText, $CandById)
+    $epoch = Find-EnforcementEpoch $BacklogText
+    $regs = Parse-PostEpochRegistrations $BacklogText $epoch
+    foreach ($r in $regs) {
+        $id = [string]$r['taskId']
+        $nat = [string]$r['nature']
+        $has = $CandById.ContainsKey($id)
+        if ($nat -ceq 'IMPLEMENTATION') {
+            if (-not $has) { throw 'MISSING_CANDIDATE_RECORD' }
+            if ([string]$CandById[$id]['nature'] -cne 'IMPLEMENTATION') {
+                throw 'CANDIDATE_NATURE_MISMATCH'
+            }
+        } else {
+            if ($has -and ([string]$CandById[$id]['nature'] -cne 'GOVERNANCE')) {
+                throw 'CANDIDATE_NATURE_MISMATCH'
+            }
+        }
+    }
+}
+
 # ===================== MAIN =====================
 
 try {
     $tasksText = Read-Utf8File $TasksPath
     $stateText = Read-Utf8File $StatePath
     $catalogText = Read-Utf8File $CatalogPath
+    $backlogText = Read-Utf8File $BacklogPath
 } catch {
     Fail-Exit1 'IO'
 }
@@ -1357,6 +1567,7 @@ try {
 $unreg = $false
 $dup = $false
 $occLane3 = $false
+$candById = New-OrdinalMap
 
 try {
     if (-not (Test-IsMap $state)) { throw 'MALFORMED' }
@@ -1470,8 +1681,24 @@ try {
     Fail-Exit1 'MALFORMED'
 }
 
+# Candidate-index completeness (GOV-OS-03R1): after schema, before capacity/hash/OS-mutation/S.
+try {
+    Assert-CandidateIndexCompleteness $backlogText $candById
+} catch {
+    $cm = [string]$_.Exception.Message
+    $mapped = $false
+    foreach ($cc in $script:CompletenessFailCodes) {
+        if ($cm -eq $cc) {
+            Fail-Exit1 $cc
+            $mapped = $true
+            break
+        }
+    }
+    if (-not $mapped) { Fail-Exit1 'MALFORMED' }
+}
+
 if ($script:CapacityFail) {
-    # capacity after schema
+    # capacity after schema and completeness
 }
 
 # hashes
