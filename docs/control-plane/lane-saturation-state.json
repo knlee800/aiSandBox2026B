@@ -36,7 +36,36 @@
       "runtimeNeeds": []
     }
   },
-  "candidates": [],
+  "candidates": [
+    {
+      "taskId": "AGENT-PLATFORM-CREATE-01F",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "3-STEP",
+      "status": "READY",
+      "startCondition": "READY",
+      "saturationClass": "FORCING",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": [],
+      "mutexes": ["FRONTEND", "I18N"],
+      "writePaths": [
+        "frontend/hooks/",
+        "frontend/components/platform/",
+        "frontend/messages/en.json",
+        "frontend/messages/zh-TW.json",
+        "frontend/messages/zh-CN.json"
+      ],
+      "hotfiles": [],
+      "i18n": true,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "LOCAL-TESTS",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": [],
+      "admissionUncertain": true,
+      "writeSetPrecision": "PROVISIONAL"
+    }
+  ],
   "lockedTaskIds": ["GOV-OS-03", "GOV-OS-03R1"],
   "sharedContracts": [],
   "runtimeAuthorization": {

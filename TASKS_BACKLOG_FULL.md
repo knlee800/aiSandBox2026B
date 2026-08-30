@@ -72655,3 +72655,121 @@ Step 3 (independent verification + resume GOV-OS-03 Step 4):
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, validator edits=0, sidecar edits=0, fixtures created=0, CLAUDE.md edits=0, AGENTS.md edits=0, PRD.md edits=0, ARCHITECTURE.md edits=0, Git mutations=0, product-frontier selection=0, invitation registration=0, Lane 2 admission=0, Lane 3 enablement=0, FORCING candidate seeding=0. Isolated reproduction: current validator PASS idle `NO_FORCING_CANDIDATES` with omitted candidate. Governance writes: `docs/GOV-OS-03R1-CANDIDATE-COMPLETENESS.md`, TASKS.md, this registry body.
 **Step 2 HEAD:** `1d37231dcbdfa5447a76657cab8773b67c60767d` (branch main; Step 1 freeze committed; implementation uncommitted at Step 2 start)
 **Step 2 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, sidecar edits=0, occupancy-hash edits=0, AGENTS.md edits=0, PRD.md edits=0, ARCHITECTURE.md edits=0, Git mutations=0, product-frontier selection=0, invitation registration=0, Lane 2 admission=0, Lane 3 enablement=0, FORCING candidate seeding=0, Git hook created=0. TDD: fixture 63 RED exit 0 idleCode=NO_FORCING_CANDIDATES against original validator; then GREEN exit 1 MISSING_CANDIDATE_RECORD. Deterministic validation: 70/70 fixtures PASS (legacy 01–62 PASS); real-tree validator exit 0 idleCode=OS_MUTATION_QUIESCENCE with temporary ProofPath. Governance writes: validator `-BacklogPath` + completeness parser, test runner BacklogPath wiring, grandfather backlog, fixtures 63–70, epoch marker, CLAUDE.md fail-closed saturation subsection, TASKS.md, this registry body.
+
+---
+
+## AGENT PLATFORM / CREATE — User-Facing Delete Control
+
+### AGENT-PLATFORM-CREATE-01F — User-Facing Delete Control for Persisted User-Created Agents
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=AGENT-PLATFORM-CREATE-01F
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED — Step 1 COMPLETE — 2026-08-30 — NOT ADMITTED — IMPLEMENTATION_STARTED=NO — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE released UNOWNED after this registration write — saturationClass=FORCING — writeSetPrecision=PROVISIONAL — admissionUncertain=true — candidate not in S
+**Task ID:** AGENT-PLATFORM-CREATE-01F
+**Title:** User-Facing Delete Control for Persisted User-Created Agents
+**Family:** AGENT PLATFORM / CREATE (successor to AGENT-PLATFORM-CREATE-01A / 01B / 01C / 01D / 01E, all COMPLETE AND LOCKED)
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-step NORMAL bounded UX/UI — Step 1 registration (THIS STEP) COMPLETE; Step 2 bounded implementation + automated validation + any explicitly required staging smoke PENDING / NOT AUTHORIZED until Keith commits this Step 1 state and a later control-plane admission transition freezes `writeSetPrecision=EXACT` and `admissionUncertain=false`; Step 3 consolidation/checkpoint + lock NOT AUTHORIZED. Separate stage-start document NOT created in Step 1. Exact machine admission still requires a discrete pre-implementation control-plane freeze/admit write (not a 4th registered lifecycle step).
+**Start condition:** READY at Step 1 registration. Machine `startCondition=READY`. Candidate is not yet safely admissible into S because `writeSetPrecision=PROVISIONAL` requires `admissionUncertain=true` (validator code `ADMISSION_UNCERTAIN`). Step 2 implementation must not start until Keith commits this Step 1 state, the control plane freezes the exact FRONTEND+I18N write set, and one implementation lane is admitted.
+**Depends on (canonical / human):** AGENT-PLATFORM-CREATE-01A (COMPLETE AND LOCKED — persistence / `user_agents` / ownership); AGENT-PLATFORM-CREATE-01B (COMPLETE AND LOCKED — create / list / view UX); AGENT-PLATFORM-CREATE-01C (COMPLETE AND LOCKED — ownership-scoped soft-delete API `DELETE /api/agents/:id`; Checkpoint: `docs/PILOT-2LANE-01-CHECKPOINT.md`); AGENT-PLATFORM-CREATE-01E (COMPLETE AND LOCKED — current Create Agent profile / Ask UX surfaces this Delete control must attach to; Checkpoint: `docs/AGENT-PLATFORM-CREATE-01E-CHECKPOINT.md`); GOV-PRD-02 COMPLETE AND LOCKED (living PRODUCT WHAT); GOV-ARCH-02 COMPLETE AND LOCKED (living TECHNICAL HOW); GOV-OS-02 COMPLETE AND LOCKED (Next-Work Selection Protocol; this registration used the light named-task CURRENT/FUTURE check because Keith explicitly named option A); GOV-OS-03 COMPLETE AND LOCKED; GOV-OS-03R1 COMPLETE AND LOCKED.
+**Depends on (machine sidecar `dependsOn`):** `[]` — sidecar `lockedTaskIds` currently contains only `GOV-OS-03` and `GOV-OS-03R1`. Pre-epoch CREATE locks (01A/01B/01C/01E) are canonically COMPLETE AND LOCKED but are not present in `lockedTaskIds`. Those IDs MUST NOT be placed in machine `dependsOn` (would falsely return `DEPS_UNSATISFIED`). Logical CREATE-chain dependencies remain in this canonical body only. Do not fake machine LOCK proof.
+**Primary write scope (Step 1, this write):** `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body; `docs/control-plane/lane-saturation-state.json` candidate record. No application source. No stage-start document.
+**Primary write scope (Step 2, PROVISIONAL — not frozen):** FRONTEND + I18N. Probable family: existing Create Agent profile/list/detail surfaces under `frontend/components/platform/`; existing `frontend/hooks/useUserAgents.ts` (and tests) to consume already-locked `DELETE /api/agents/:id`; the three locale files. Exact files freeze only at the later admission transition. GATEWAY READ ONLY / existing API consumption only. Do not acquire GATEWAY as a write mutex unless later evidence proves a genuine contract hole.
+**Mutexes / resources (provisional, not acquired):** FRONTEND; I18N (atomic 3-file lease). GATEWAY not acquired (READ ONLY expected). GOVERNANCE held only for this Step 1 registration write then released UNOWNED. AI-SERVICE / CONTAINER-MANAGER / MIGRATION / PACKAGE / COMPOSE / ENV / LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT unowned and unauthorized.
+**Hot-file leases:** none. FRONTEND + I18N are sufficient. Do not add a redundant HOTFILE.
+**Shared contracts:** none frozen/mutated. Reuse the already-locked CREATE-01C `DELETE /api/agents/:id` contract (authenticated, ownership-scoped, soft delete, 204/404/401). Do not reopen Gateway DELETE semantics.
+**Evidence class:** LOCAL-TESTS. Bounded staging browser smoke only later if the implementation lifecycle determines it is required. No provider-live. No Docker/Postgres/Redis at registration. No STAGING / PROVIDER-LIVE / CREDIT runtime needs.
+**Revert isolation:** registration revert = discard the three control-plane files in this Step 1 write; cannot invalidate locked CREATE-01A/01B/01C/01D/01E evidence. Lane 1 and Lane 2 remain EMPTY. No second implementation task registered.
+**saturationClass:** FORCING (explicit; Keith selected this as the intended near-frontier task)
+**productClass:** CURRENT
+**futureAuthorization:** NONE
+**writeSetPrecision:** PROVISIONAL
+**admissionUncertain:** true
+**exclusiveCapacity:** false
+**runtimeNeeds:** none
+
+**Identifier search:** Repo-wide search for `AGENT-PLATFORM-CREATE-01F` returned zero matches. Searches for unfinished user-facing Delete control / persisted user-created agent Delete UI / Create Agent profile deletion UX / equivalent canonical implementation tasks returned none. CREATE-01C is COMPLETE AND LOCKED and is the backend DELETE API only (explicitly no frontend Delete UI). WS-06 is Workspace Create/Rename/Delete UI (different product; COMPLETE AND LOCKED). CREATE-01E explicitly left Delete UI out of scope and unregistered. AGENT-PLATFORM-CREATE-01F is the smallest correct next canonical CREATE ID.
+
+**Keith selection:** Keith explicitly selected bounded next-work option A — close the remaining Create Agent profile UX hole by adding a user-facing Delete control. This is CURRENT product work (closing an accepted CURRENT limitation), not a promotion of APPROVED FUTURE executable-agent/runtime/Harness/tools/knowledge/skills functionality.
+
+**Registered product purpose:** Expose a bounded user-facing Delete control for persisted user-created agent profile(s) by reusing the existing ownership-scoped `DELETE /api/agents/:id` capability. Successful deletion must remove/invalidate the deleted profile from relevant current UI state after bounded confirmation.
+
+**Frozen backend contract — DO NOT REOPEN:**
+- `DELETE /api/agents/:id`
+- authenticated (`SessionCookieGuard`)
+- ownership-scoped (`id + userId`)
+- soft delete via existing `deleted_at`
+- 204 on success; missing / non-owned / already-deleted → 404 never 403; unauthenticated → 401
+CREATE-01C already guarantees this. Do NOT change backend DELETE, hard delete, cascade, database, or migrations.
+
+**PRD CURRENT/FUTURE check (light named-task; 2026-08-30):**
+- CURRENT user-facing: Create Agent create/list/view plus bounded product-facing single-shot Ask; user-facing Delete control is an accepted CURRENT limitation, not FUTURE-only vision.
+- CURRENT backend: ownership-scoped soft-delete `DELETE /api/agents/:id` exists.
+- APPROVED FUTURE remains: dedicated user-agent runtime, user-agent Build, Harness/tool loop, tools/knowledge/skills, per-agent model/runtime configuration, collaboration/referrals. This slice does NOT promote those.
+- Do not edit PRD.md in Step 1.
+
+**ARCHITECTURE CURRENT/FUTURE check (light named-task; 2026-08-30):**
+- CURRENT: `DELETE /api/agents/:id` authenticated ownership-scoped soft delete; persistence/API capability; no frontend Delete UI until this slice.
+- Do not edit ARCHITECTURE.md in Step 1. A bounded consolidation patch, if needed, belongs to later control-plane lock after the UI lands.
+
+**In scope:**
+- Delete control for persisted user-created agent profile(s)
+- consume existing `DELETE /api/agents/:id`
+- bounded confirmation UX before destructive user action
+- successful deletion removes/invalidates the deleted profile from relevant current UI state
+- existing loading/error/state handling
+- multilingual-first user-facing copy in all three locale files
+- Heroicons v2 Outline only (`@heroicons/react/24/outline`)
+- frontend automated tests
+- bounded staging browser smoke later only if the implementation lifecycle determines it is required
+
+**Explicitly out of scope:**
+backend DELETE changes; hard delete; database changes; migrations; agent profile edit/update; PATCH/PUT API; user-agent Build; Harness activation; tools; knowledge; skills; dedicated user-agent runtime; per-agent model configuration; specialist agents; invitations; OAuth; Stripe; routing redesign; broad Create Agent redesign; dependency additions. Do not promote APPROVED FUTURE functionality into CURRENT.
+
+**UX/UI requirements:**
+Multilingual-first is mandatory. Any new user-facing text must use the existing translation hook/pattern and update all three of `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json` together. No new hardcoded English UI copy. Icons: Heroicons v2 Outline only. Do not introduce Lucide / Font Awesome / Material / emoji icons. Advisory skills only: Impeccable for bounded page-level hierarchy/spacing review; Emil Kowalski for the Delete control/confirmation interaction. Skills must NOT cause broad redesign, routing changes, backend changes, dependencies, or architecture refactors.
+
+**Machine registration (post-epoch):** Present exactly once immediately under this canonical heading (`taskId=AGENT-PLATFORM-CREATE-01F`, `nature=IMPLEMENTATION`). Enforcement epoch unchanged. No second epoch. Do not duplicate the machine-registration markers elsewhere in this body.
+
+**Lane / admission:**
+NOT ADMITTED. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. Do not fill Lane 2 with a second task. SAFE_TWO_LANE_PAIR is non-authoritative and is not written as occupancy proof.
+
+**3-step lifecycle:**
+1. Step 1 — registration — COMPLETE — 2026-08-30
+2. Step 2 — bounded implementation + automated validation + any explicitly required staging smoke — PENDING (requires Keith commit of this Step 1 state, then a control-plane admission transition that sets `writeSetPrecision=EXACT` and `admissionUncertain=false` before implementation source edits)
+3. Step 3 — consolidation/checkpoint + lock — NOT AUTHORIZED
+
+AGENT-PLATFORM-CREATE-01F does NOT: change backend DELETE; hard-delete; migrate; edit/update profiles; add Build/Harness/tools/knowledge/skills; add dedicated user-agent runtime; register PRIVATE-BETA-INVITE-01; enable Lane 3; admit Lane 1 or Lane 2 in Step 1; start implementation in Step 1; edit PRD.md / ARCHITECTURE.md / CLAUDE.md / AGENTS.md / validator / mutex catalog in Step 1.
+
+#### Acceptance Criteria
+
+Step 1 (Registration):
+- [x] AGENT-PLATFORM-CREATE-01F confirmed unused before registration (no collision; equivalent unfinished task NONE)
+- [x] Keith explicitly selected option A (user-facing Delete control) as near-frontier CURRENT work
+- [x] Light CURRENT/FUTURE authority check PASS (PRD/ARCHITECTURE: backend DELETE CURRENT; user-facing Delete is accepted CURRENT limitation; this slice does not promote full executable-agent FUTURE)
+- [x] Post-epoch `AISB_MACHINE_REG_V1` stanza present exactly once (`nature=IMPLEMENTATION`)
+- [x] Machine candidate record created exactly once; `saturationClass=FORCING` explicit; `writeSetPrecision=PROVISIONAL`; `admissionUncertain=true`
+- [x] Machine `dependsOn=[]` because CREATE-01C/01E are not in sidecar `lockedTaskIds`; logical deps recorded in this body
+- [x] AGENT-PLATFORM-CREATE-01F registered in TASKS.md CURRENT EXECUTION BOARD as next gate / not admitted
+- [x] AGENT-PLATFORM-CREATE-01F registered in TASKS_BACKLOG_FULL.md
+- [x] Lane 1 remains EMPTY; Lane 2 remains EMPTY; Lane 3 DISABLED
+- [x] IMPLEMENTATION_STARTED=NO
+- [x] GOVERNANCE released UNOWNED
+- [x] No application source
+- [x] No runtime / Docker / PostgreSQL / Redis / staging / provider / browser activity
+- [x] Invitation invariant unchanged
+- [x] No second implementation task registered
+- [x] Validator exit 0 PASS with candidate not in S
+- [x] No Git commit/push by the worker
+
+Step 2 (bounded implementation + automated validation):
+- [ ] NOT AUTHORIZED until Keith commits this Step 1 state and the control plane completes the admission/exact-write-set freeze transition
+
+Step 3 (consolidation/checkpoint/lock):
+- [ ] NOT AUTHORIZED
+
+**Step 1 HEAD:** `03bd880202b58f4037df4b1950c4919b95388389` (branch main; HEAD == origin/main; clean tree verified)
+**Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0. Governance writes: TASKS.md, this registry body, `docs/control-plane/lane-saturation-state.json`.
