@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "maxImplementationLanes": 2,
   "lane3": "DISABLED",
-  "saturationSuspended": true,
-  "suspensionReason": "OS_MUTATION",
+  "saturationSuspended": false,
+  "suspensionReason": "NONE",
   "governance": {
-    "owner": "GOV-OS-03",
-    "state": "ACTIVE"
+    "owner": "NONE",
+    "state": "UNOWNED"
   },
   "occupancy": {
     "lane1": {
@@ -37,7 +37,7 @@
     }
   },
   "candidates": [],
-  "lockedTaskIds": [],
+  "lockedTaskIds": ["GOV-OS-03", "GOV-OS-03R1"],
   "sharedContracts": [],
   "runtimeAuthorization": {
     "localRuntimeAuthorized": false,
