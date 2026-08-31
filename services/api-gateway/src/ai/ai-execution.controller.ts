@@ -376,8 +376,10 @@ export class AIExecutionController {
   }
 
   /**
-   * AGENT-PLATFORM-CREATE-01D: Authorize optional persisted user-agent Ask identity.
-   * Absent agentId → skip. Present → Ask-only, no harness, owner-scoped load.
+   * Authorize optional persisted user-agent identity on supported execution
+   * intents (conversation and workspace_mutation). Absent agentId → skip.
+   * Present → no harness, owner-scoped load. AGENT-PLATFORM-CREATE-01D /
+   * AGENT-PLATFORM-EXEC-01A.
    */
   private async resolvePersistedUserAgentForAsk(
     request: AIExecutionRequest,
@@ -395,11 +397,6 @@ export class AIExecutionController {
     }
     const agentId = rawAgentId.trim();
 
-    if (executionIntent !== 'conversation') {
-      throw new BadRequestException(
-        "agentId is only supported when executionIntent is 'conversation'",
-      );
-    }
     if (request.harnessVersion !== undefined) {
       throw new BadRequestException(
         'agentId is not supported when harnessVersion is provided',
@@ -513,7 +510,7 @@ export class AIExecutionController {
       );
     }
 
-    // AGENT-PLATFORM-CREATE-01D: owner-scoped persisted Ask identity (before ledger/enqueue)
+    // Owner-scoped persisted user-agent identity (before ledger/enqueue)
     const persistedUserAgent = await this.resolvePersistedUserAgentForAsk(
       request,
       identity.userId,

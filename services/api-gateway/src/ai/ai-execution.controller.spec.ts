@@ -1438,13 +1438,15 @@ describe('AIExecutionController executionIntent propagation (BUILDER-INTENT-01)'
 });
 
 /**
- * AGENT-PLATFORM-CREATE-01D: persisted user-agent Ask identity binding
+ * AGENT-PLATFORM-CREATE-01D: persisted user-agent identity binding
+ * AGENT-PLATFORM-EXEC-01A: same identity may participate in workspace_mutation
  *
  * Additive optional agentId on POST /api/ai/execute. Owner-scoped lookup
- * before ledger/enqueue. Ask-only. Identity block composed onto existing
- * globalInstructions. Trace agentId lives in usage_records.metadata JSONB.
+ * before ledger/enqueue. Supported intents: conversation and workspace_mutation.
+ * Identity block composed onto existing globalInstructions. Trace agentId
+ * lives in usage_records.metadata JSONB. Harness remains rejected.
  */
-describe('AIExecutionController — persisted user-agent Ask identity (AGENT-PLATFORM-CREATE-01D)', () => {
+describe('AIExecutionController — persisted user-agent identity (AGENT-PLATFORM-CREATE-01D / EXEC-01A)', () => {
   let controller: AIExecutionController;
   let mockUsageLedgerService: Record<string, jest.Mock>;
   let mockQueueService: Record<string, jest.Mock>;
@@ -1727,40 +1729,59 @@ describe('AIExecutionController — persisted user-agent Ask identity (AGENT-PLA
     expect(intentDto.metadata).not.toHaveProperty('agentId');
   });
 
-  it('7. agentId + Build is HTTP 400 Ask-only reject with no lookup or enqueue', async () => {
-    await expect(
-      controller.execute(
-        makeRequest({
-          agentId: OWNED_AGENT_ID,
-          executionIntent: 'workspace_mutation',
-        }),
-        ownerIdentity,
-      ),
-    ).rejects.toThrow(BadRequestException);
+  it('7. AGENT-PLATFORM-EXEC-01A: agentId + workspace_mutation is accepted on the existing Build path with identity preserved', async () => {
+    mockUserAiInstructionsService.getByUserId.mockResolvedValue(
+      'Always be concise.',
+    );
 
-    await expect(
-      controller.execute(
-        makeRequest({
-          agentId: OWNED_AGENT_ID,
-          executionIntent: 'workspace_mutation',
-        }),
-        ownerIdentity,
-      ),
-    ).rejects.toThrow("agentId is only supported when executionIntent is 'conversation'");
+    const result = await controller.execute(
+      makeRequest({
+        agentId: OWNED_AGENT_ID,
+        executionIntent: 'workspace_mutation',
+      }),
+      ownerIdentity,
+    );
 
-    expect(mockUserAgentService.findOneByIdAndUserId).not.toHaveBeenCalled();
-    expectNoLedgerOrEnqueue();
+    expect(result.status).toBe('queued');
+    expect(result).toHaveProperty('executionId');
+    expect(mockUserAgentService.findOneByIdAndUserId).toHaveBeenCalledTimes(1);
+    expect(mockUserAgentService.findOneByIdAndUserId).toHaveBeenCalledWith(
+      OWNED_AGENT_ID,
+      OWNER_USER_ID,
+    );
+    expect(mockUsageLedgerService.writeExecutionIntent).toHaveBeenCalledTimes(1);
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
 
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload.executionIntent).toBe('workspace_mutation');
+    expect(payload.globalInstructions).toBe(
+      `${FROZEN_IDENTITY_BLOCK}\n\nAlways be concise.`,
+    );
+    expect(payload).not.toHaveProperty('harnessVersion');
+    expect(payload).not.toHaveProperty('agentId');
+
+    const intentDto = mockUsageLedgerService.writeExecutionIntent.mock.calls[0][0];
+    expect(intentDto.metadata?.agentId).toBe(OWNED_AGENT_ID);
+
+    mockQueueService.enqueueExecution.mockClear();
+    mockUsageLedgerService.writeExecutionIntent.mockClear();
     mockUserAgentService.findOneByIdAndUserId.mockClear();
 
-    await expect(
-      controller.execute(
-        makeRequest({ agentId: OWNED_AGENT_ID }),
-        ownerIdentity,
-      ),
-    ).rejects.toThrow("agentId is only supported when executionIntent is 'conversation'");
-    expect(mockUserAgentService.findOneByIdAndUserId).not.toHaveBeenCalled();
-    expectNoLedgerOrEnqueue();
+    const omitted = await controller.execute(
+      makeRequest({ agentId: OWNED_AGENT_ID }),
+      ownerIdentity,
+    );
+    expect(omitted.status).toBe('queued');
+    expect(mockUserAgentService.findOneByIdAndUserId).toHaveBeenCalledWith(
+      OWNED_AGENT_ID,
+      OWNER_USER_ID,
+    );
+    expect(mockQueueService.enqueueExecution.mock.calls[0][0].executionIntent).toBe(
+      'workspace_mutation',
+    );
+    expect(
+      mockUsageLedgerService.writeExecutionIntent.mock.calls[0][0].metadata?.agentId,
+    ).toBe(OWNED_AGENT_ID);
   });
 
   it('8. agentId + harnessVersion is HTTP 400 and does not activate Harness', async () => {
@@ -1786,6 +1807,21 @@ describe('AIExecutionController — persisted user-agent Ask identity (AGENT-PLA
       ),
     ).rejects.toThrow('agentId is not supported when harnessVersion is provided');
 
+    expect(mockUserAgentService.findOneByIdAndUserId).not.toHaveBeenCalled();
+    expectNoLedgerOrEnqueue();
+
+    mockUserAgentService.findOneByIdAndUserId.mockClear();
+
+    await expect(
+      controller.execute(
+        makeRequest({
+          agentId: OWNED_AGENT_ID,
+          executionIntent: 'workspace_mutation',
+          harnessVersion: 'v1',
+        }),
+        ownerIdentity,
+      ),
+    ).rejects.toThrow('agentId is not supported when harnessVersion is provided');
     expect(mockUserAgentService.findOneByIdAndUserId).not.toHaveBeenCalled();
     expectNoLedgerOrEnqueue();
   });
