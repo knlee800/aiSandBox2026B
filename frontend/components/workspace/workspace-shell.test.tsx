@@ -8698,19 +8698,93 @@ describe('state message heading/action locale migration — I18N-SHELL-06', () =
     'continueWithProjectWorkAndHistoryReview',
   ] as const;
 
-  test('locale files define required stateMessage heading and action keys in en, zh-TW, and zh-CN', () => {
+  const requiredBodyKeys = [
+    'noUnsavedFileChanges',
+    'unsavedChangesArePresentForThisFile',
+    'saveRequestIsInFlightForThisFile',
+    'fileChangesWereSavedSuccessfully',
+    'runCommandsInsideTheCurrentWorkspace',
+    'sendingCommandToTheCurrentWorkspace',
+    'theCommandWasRejectedAsEmptyOrInvalid',
+    'commandResponseCouldNotBeRead',
+    'fetchingCheckpointHistoryForTheSelectedSession',
+    'unableToLoadCheckpointHistory',
+    'noCheckpointHistoryIsAvailableForThisSession',
+    'checkpointHistoryLoaded',
+    'savePointRequestIsInFlightForTheCurrentWorkspace',
+    'manualCheckpointCreatedSuccessfully',
+    'compareRequestIsInFlightForSelectedCheckpointPair',
+    'comparedCheckpointDiffIsLoaded',
+    'diffRequestIsInFlightForTheSelectedCheckpoint',
+    'diffContentLoadedForTheSelectedCheckpoint',
+    'selectedCheckpointHasNoFileDiffEntries',
+    'snapshotRequestIsInFlightForTheSelectedCheckpoint',
+    'readOnlySnapshotContentLoadedForChangedFilesInSelectedCheckpoint',
+    'selectedCheckpointHasNoChangedFilesAvailableForSnapshotInspection',
+    'revertConfirmationIsRequiredBeforeRequestSubmission',
+    'reviewTargetCheckpointMetadataAndOptionalDiffSnapshotPreviewsBeforeConfirmation',
+    'revertRequestIsInFlightForTheSelectedCheckpoint',
+    'activeSessionWorkspaceWasRestoredToTheSelectedCheckpoint',
+    'retrievingUserUsageAndQuotaSummaryData',
+    'unableToLoadDashboardSummary',
+    'dashboardDataIsNotAvailableForThisUser',
+    'dashboardSummaryLoaded',
+  ] as const;
+
+  const frozenEnglishBodyCopy: Record<(typeof requiredBodyKeys)[number], string> = {
+    noUnsavedFileChanges: 'No unsaved file changes.',
+    unsavedChangesArePresentForThisFile: 'Unsaved changes are present for this file.',
+    saveRequestIsInFlightForThisFile: 'Save request is in flight for this file.',
+    fileChangesWereSavedSuccessfully: 'File changes were saved successfully.',
+    runCommandsInsideTheCurrentWorkspace: 'Run commands inside the current workspace.',
+    sendingCommandToTheCurrentWorkspace: 'Sending command to the current workspace.',
+    theCommandWasRejectedAsEmptyOrInvalid: 'The command was rejected as empty or invalid.',
+    commandResponseCouldNotBeRead: 'Command response could not be read.',
+    fetchingCheckpointHistoryForTheSelectedSession: 'Fetching checkpoint history for the selected session.',
+    unableToLoadCheckpointHistory: 'Unable to load checkpoint history.',
+    noCheckpointHistoryIsAvailableForThisSession: 'No checkpoint history is available for this session.',
+    checkpointHistoryLoaded: 'Checkpoint history loaded.',
+    savePointRequestIsInFlightForTheCurrentWorkspace: 'Save point request is in flight for the current workspace.',
+    manualCheckpointCreatedSuccessfully: 'Manual checkpoint created successfully.',
+    compareRequestIsInFlightForSelectedCheckpointPair: 'Compare request is in flight for selected checkpoint pair.',
+    comparedCheckpointDiffIsLoaded: 'Compared checkpoint diff is loaded.',
+    diffRequestIsInFlightForTheSelectedCheckpoint: 'Diff request is in flight for the selected checkpoint.',
+    diffContentLoadedForTheSelectedCheckpoint: 'Diff content loaded for the selected checkpoint.',
+    selectedCheckpointHasNoFileDiffEntries: 'Selected checkpoint has no file diff entries.',
+    snapshotRequestIsInFlightForTheSelectedCheckpoint: 'Snapshot request is in flight for the selected checkpoint.',
+    readOnlySnapshotContentLoadedForChangedFilesInSelectedCheckpoint:
+      'Read-only snapshot content loaded for changed files in selected checkpoint.',
+    selectedCheckpointHasNoChangedFilesAvailableForSnapshotInspection:
+      'Selected checkpoint has no changed files available for snapshot inspection.',
+    revertConfirmationIsRequiredBeforeRequestSubmission: 'Revert confirmation is required before request submission.',
+    reviewTargetCheckpointMetadataAndOptionalDiffSnapshotPreviewsBeforeConfirmation:
+      'Review target checkpoint metadata and optional diff/snapshot previews before confirmation.',
+    revertRequestIsInFlightForTheSelectedCheckpoint: 'Revert request is in flight for the selected checkpoint.',
+    activeSessionWorkspaceWasRestoredToTheSelectedCheckpoint:
+      'Active session workspace was restored to the selected checkpoint.',
+    retrievingUserUsageAndQuotaSummaryData: 'Retrieving user, usage, and quota summary data.',
+    unableToLoadDashboardSummary: 'Unable to load dashboard summary.',
+    dashboardDataIsNotAvailableForThisUser: 'Dashboard data is not available for this user.',
+    dashboardSummaryLoaded: 'Dashboard summary loaded.',
+  };
+
+  test('locale files define required stateMessage heading, action, and body keys in en, zh-TW, and zh-CN', () => {
     const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
     const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
     const zhCn = JSON.parse(readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'));
 
     assert.equal(requiredHeadingKeys.length, 60);
     assert.equal(requiredActionKeys.length, 53);
+    assert.equal(requiredBodyKeys.length, 30);
     assert.deepEqual(Object.keys(en.stateMessage?.heading ?? {}).sort(), [...requiredHeadingKeys].sort());
     assert.deepEqual(Object.keys(zhTw.stateMessage?.heading ?? {}).sort(), [...requiredHeadingKeys].sort());
     assert.deepEqual(Object.keys(zhCn.stateMessage?.heading ?? {}).sort(), [...requiredHeadingKeys].sort());
     assert.deepEqual(Object.keys(en.stateMessage?.action ?? {}).sort(), [...requiredActionKeys].sort());
     assert.deepEqual(Object.keys(zhTw.stateMessage?.action ?? {}).sort(), [...requiredActionKeys].sort());
     assert.deepEqual(Object.keys(zhCn.stateMessage?.action ?? {}).sort(), [...requiredActionKeys].sort());
+    assert.deepEqual(Object.keys(en.stateMessage?.body ?? {}).sort(), [...requiredBodyKeys].sort());
+    assert.deepEqual(Object.keys(zhTw.stateMessage?.body ?? {}).sort(), [...requiredBodyKeys].sort());
+    assert.deepEqual(Object.keys(zhCn.stateMessage?.body ?? {}).sort(), [...requiredBodyKeys].sort());
 
     for (const key of requiredHeadingKeys) {
       assert.ok(typeof en.stateMessage?.heading?.[key] === 'string' && en.stateMessage.heading[key].length > 0);
@@ -8726,6 +8800,14 @@ describe('state message heading/action locale migration — I18N-SHELL-06', () =
       assert.ok(typeof zhCn.stateMessage?.action?.[key] === 'string' && zhCn.stateMessage.action[key].length > 0);
       assert.notEqual(zhTw.stateMessage.action[key], en.stateMessage.action[key]);
       assert.notEqual(zhCn.stateMessage.action[key], en.stateMessage.action[key]);
+    }
+
+    for (const key of requiredBodyKeys) {
+      assert.ok(typeof en.stateMessage?.body?.[key] === 'string' && en.stateMessage.body[key].length > 0);
+      assert.ok(typeof zhTw.stateMessage?.body?.[key] === 'string' && zhTw.stateMessage.body[key].length > 0);
+      assert.ok(typeof zhCn.stateMessage?.body?.[key] === 'string' && zhCn.stateMessage.body[key].length > 0);
+      assert.notEqual(zhTw.stateMessage.body[key], en.stateMessage.body[key]);
+      assert.notEqual(zhCn.stateMessage.body[key], en.stateMessage.body[key]);
     }
   });
 
@@ -8745,7 +8827,16 @@ describe('state message heading/action locale migration — I18N-SHELL-06', () =
     );
   });
 
-  test('workspace shell source wires getStateMessageMessages and removes hardcoded heading/action literals', () => {
+  test('English stateMessage body values preserve the frozen original I18N-SHELL-06 residual literals', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+
+    assert.equal(Object.keys(frozenEnglishBodyCopy).length, 30);
+    for (const key of requiredBodyKeys) {
+      assert.equal(en.stateMessage.body[key], frozenEnglishBodyCopy[key]);
+    }
+  });
+
+  test('workspace shell source wires getStateMessageMessages and removes hardcoded heading/action/body literals', () => {
     const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
 
     assert.match(
@@ -8763,10 +8854,15 @@ describe('state message heading/action locale migration — I18N-SHELL-06', () =
     assert.match(shellSource, /stateMessageCopy = stateMessageMessages;/);
     assert.match(shellSource, /heading=\{stateMessageCopy\.heading\.editorClean\}/);
     assert.match(shellSource, /action=\{stateMessageCopy\.action\.pleaseWaitAMoment\}/);
+    assert.match(shellSource, /body=\{stateMessageCopy\.body\.noUnsavedFileChanges\}/);
+    assert.match(shellSource, /body=\{stateMessageCopy\.body\.dashboardSummaryLoaded\}/);
 
     assert.equal((shellSource.match(/ heading="/g) || []).length, 0);
     assert.equal((shellSource.match(/ action="/g) || []).length, 0);
-    assert.equal((shellSource.match(/ body="/g) || []).length, 30);
+    assert.equal((shellSource.match(/ body="/g) || []).length, 0);
+    assert.match(shellSource, /heading=\{stateMessageCopy\.heading\./);
+    assert.match(shellSource, /action=\{stateMessageCopy\.action\./);
+    assert.equal((shellSource.match(/body=\{stateMessageCopy\.body\./g) || []).length, 30);
   });
 
   test('renders localized StateMessage headings for zh-TW without changing English default copy', () => {
@@ -8795,12 +8891,18 @@ describe('state message heading/action locale migration — I18N-SHELL-06', () =
     assert.match(englishHtml, /Workspace is loading/);
     assert.match(englishHtml, /History is loading/);
     assert.match(englishHtml, /Dashboard is loading/);
+    assert.match(englishHtml, /Fetching checkpoint history for the selected session\./);
+    assert.match(englishHtml, /Retrieving user, usage, and quota summary data\./);
     assert.match(zhTwHtml, /工作區載入中/);
     assert.match(zhTwHtml, /歷史載入中/);
     assert.match(zhTwHtml, /儀表板載入中/);
+    assert.match(zhTwHtml, /正在擷取所選工作階段的檢查點歷史。/);
+    assert.match(zhTwHtml, /正在擷取使用者、用量與配額摘要資料。/);
     assert.doesNotMatch(zhTwHtml, /Workspace is loading/);
     assert.doesNotMatch(zhTwHtml, /History is loading/);
     assert.doesNotMatch(zhTwHtml, /Dashboard is loading/);
+    assert.doesNotMatch(zhTwHtml, /Fetching checkpoint history for the selected session\./);
+    assert.doesNotMatch(zhTwHtml, /Retrieving user, usage, and quota summary data\./);
   });
 });
 

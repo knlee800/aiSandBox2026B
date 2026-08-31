@@ -10,13 +10,19 @@
   },
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "LANE-DONE",
+      "taskId": "I18N-SHELL-07",
+      "mutexes": ["FRONTEND", "I18N"],
+      "writePaths": [
+        "frontend/components/workspace/workspace-shell.tsx",
+        "frontend/components/workspace/workspace-shell.test.tsx",
+        "frontend/messages/en.json",
+        "frontend/messages/zh-TW.json",
+        "frontend/messages/zh-CN.json"
+      ],
       "hotfiles": [],
-      "i18n": false,
-      "evidenceClass": "NONE",
+      "i18n": true,
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -72,7 +78,7 @@
       "taskId": "I18N-SHELL-07",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
-      "status": "READY",
+      "status": "LANE-DONE",
       "startCondition": "READY",
       "saturationClass": "FORCING",
       "productClass": "CURRENT",
@@ -93,8 +99,8 @@
       "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "runtimeNeeds": [],
-      "admissionUncertain": true,
-      "writeSetPrecision": "PROVISIONAL"
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
     }
   ],
   "lockedTaskIds": ["GOV-OS-03", "GOV-OS-03R1", "AGENT-PLATFORM-CREATE-01F"],
