@@ -72821,19 +72821,20 @@ taskId=I18N-SHELL-07
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** LANE-DONE (Lane 1) — Step 1 COMPLETE — 2026-08-31 — Step 2 IMPLEMENTATION + AUTOMATED VALIDATION COMPLETE — 2026-08-31 — STAGING_BROWSER_SMOKE_REQUIRED=NO / PERFORMED=NO — Step 3 NOT AUTHORIZED — Lane 1 LANE-DONE — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE released UNOWNED — FRONTEND OWNED by I18N-SHELL-07 — I18N OWNED by I18N-SHELL-07 — candidate `status=LANE-DONE` / `saturationClass=FORCING` / `writeSetPrecision=EXACT` / `admissionUncertain=false` / occupied (`Test-Admissible` = SKIP)
+**Status:** COMPLETE AND LOCKED — PASS — 2026-08-31 — Checkpoint: `docs/I18N-SHELL-07-CHECKPOINT.md` — Step 1 COMPLETE — 2026-08-31 — Step 2 COMPLETE — 2026-08-31 — Step 3 COMPLETE — 2026-08-31 — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE released UNOWNED — FRONTEND released UNOWNED — I18N released UNOWNED — GATEWAY UNOWNED / READ ONLY — candidate retained `status=LOCKED` / `saturationClass=FORCING` / not admissible — STAGING_BROWSER_SMOKE_REQUIRED=NO / PERFORMED=NO
 **Task ID:** I18N-SHELL-07
 **Title:** StateMessage Body Localization Residual
 **Family:** I18N (successor to I18N-SHELL-01 / 02 / 03 / 04 / 05 / 06, all COMPLETE AND LOCKED)
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
-**Lifecycle:** 3-step NORMAL bounded localization migration — Step 1 registration COMPLETE; Step 2 exact machine admission + bounded implementation + automated validation COMPLETE; Step 3 consolidation/checkpoint + lock NOT AUTHORIZED. Separate stage-start document NOT created. Exact FRONTEND+I18N write set FROZEN at the Step 2 admission transition before source edits.
-**Start condition:** READY historically for admission. Machine `status=LANE-DONE` so `Test-Admissible` = SKIP (occupied). `writeSetPrecision=EXACT`; `admissionUncertain=false`. KEEP FRONTEND + I18N owned until Step 3 lock.
+**Lifecycle:** 3-step NORMAL bounded localization migration — Step 1 registration COMPLETE; Step 2 exact machine admission + bounded implementation + automated validation COMPLETE; Step 3 consolidation/checkpoint + lock COMPLETE. Separate stage-start document NOT created. Exact FRONTEND+I18N write set FROZEN at the Step 2 admission transition before source edits.
+**Start condition:** READY historically for admission. Machine terminal `status=LOCKED` so `Test-Admissible` = NOT_READY. `writeSetPrecision=EXACT`; `admissionUncertain=false`. Lane 1 released EMPTY. Candidate retained for GOV-OS-03R1 completeness.
 **Depends on (canonical / human):** I18N-SHELL-06 COMPLETE AND LOCKED — PASS — 2026-08-27 — Workspace StateMessage Heading/Action Locale Migration — Checkpoint: `docs/PILOT-2LANE-01-CHECKPOINT.md` — heading literals 0 / action literals 0 / body residual 30 left explicitly out of scope. I18N-SHELL-05 COMPLETE AND LOCKED (locale-provider / `getRecoveryCopy(locale)` / in-file getter pattern). GOV-PRD-02 COMPLETE AND LOCKED (living PRODUCT WHAT; multilingual UX is core CURRENT). GOV-OS-02 COMPLETE AND LOCKED (this registration used the light named-task CURRENT/FUTURE check because Keith explicitly named the remaining documented CURRENT multilingual residual). GOV-OS-03 COMPLETE AND LOCKED. GOV-OS-03R1 COMPLETE AND LOCKED. AGENT-PLATFORM-CREATE-01F COMPLETE AND LOCKED (prior lane empty; mutexes released).
-**Depends on (machine sidecar `dependsOn`):** `[]` — sidecar `lockedTaskIds` contains `GOV-OS-03`, `GOV-OS-03R1`, and `AGENT-PLATFORM-CREATE-01F`. I18N-SHELL-06 is pre-epoch and absent from `lockedTaskIds`. That ID MUST NOT be placed in machine `dependsOn` (would be unsatisfiable LOCK proof). Logical I18N-SHELL-06 residual dependency remains in this canonical body only. Do not fake machine LOCK proof for historical IDs.
+**Depends on (machine sidecar `dependsOn`):** `[]` — sidecar `lockedTaskIds` now contains `GOV-OS-03`, `GOV-OS-03R1`, `AGENT-PLATFORM-CREATE-01F`, and `I18N-SHELL-07`. I18N-SHELL-06 is pre-epoch and absent from `lockedTaskIds`. That ID MUST NOT be placed in machine `dependsOn` (would be unsatisfiable LOCK proof). Logical I18N-SHELL-06 residual dependency remains in this canonical body only. Do not fake machine LOCK proof for historical IDs.
 **Primary write scope (Step 1, this write):** `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body; `docs/control-plane/lane-saturation-state.json` candidate record.
 **Primary write scope (Step 2, EXACT — FROZEN at admission):** FRONTEND + I18N. Exact files: `frontend/components/workspace/workspace-shell.tsx`; `frontend/components/workspace/workspace-shell.test.tsx`; `frontend/messages/en.json`; `frontend/messages/zh-TW.json`; `frontend/messages/zh-CN.json`. GATEWAY not acquired. No other application file required after independent residual enumeration (exactly 30 ` body="` StateMessage literals; matches locked I18N-SHELL-06 residual).
-**Mutexes / resources (acquired at admission):** FRONTEND OWNED by I18N-SHELL-07; I18N OWNED by I18N-SHELL-07 (atomic 3-file lease). GATEWAY not acquired. GOVERNANCE held only for this admission write then released UNOWNED. AI-SERVICE / CONTAINER-MANAGER / MIGRATION / PACKAGE / COMPOSE / ENV / LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT unowned and unauthorized.
+**Primary write scope (Step 3):** control-plane/consolidation only — `TASKS.md`; this registry body; `docs/control-plane/lane-saturation-state.json`; `docs/I18N-SHELL-07-CHECKPOINT.md`. No application-source changes. No PRD.md / ARCHITECTURE.md edits.
+**Mutexes / resources (released at lock):** FRONTEND released UNOWNED; I18N released UNOWNED. GATEWAY not acquired. GOVERNANCE held only for this lock write then released UNOWNED. AI-SERVICE / CONTAINER-MANAGER / MIGRATION / PACKAGE / COMPOSE / ENV / LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT unowned and unauthorized.
 **Hot-file leases:** none. FRONTEND + I18N are sufficient. Do not add a redundant HOTFILE.
 **Shared contracts:** none frozen/mutated. Reuse the I18N-SHELL-06 `getStateMessageMessages(locale)` / `stateMessageCopy` getter pattern. Do not reopen heading/action keys already migrated.
 **Evidence class:** LOCAL-TESTS. No provider-live. No Docker/Postgres/Redis. No STAGING / PROVIDER-LIVE / CREDIT runtime needs. No staging/browser required by this registration.
@@ -72882,12 +72883,12 @@ Multilingual-first is mandatory. All affected strings must remain atomic across 
 **Machine registration (post-epoch):** Present exactly once immediately under this canonical heading (`taskId=I18N-SHELL-07`, `nature=IMPLEMENTATION`). Enforcement epoch unchanged. No second epoch. Do not duplicate the machine-registration markers elsewhere in this body.
 
 **Lane / admission:**
-Lane 1 LANE-DONE I18N-SHELL-07. Lane 2 EMPTY. Lane 3 DISABLED. Do not fill Lane 2 with a second task. SAFE_TWO_LANE_PAIR is non-authoritative and is not occupancy proof. Occupancy hash before=`sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d` after admission=`sha256:1d225be31f55e62304c30071ffbf52233080b15d0708033b197888603ae195af` after LANE-DONE=`sha256:bbc0550d0d5de6b93dd5298cc2784b176df24085279d52aadbe95271f430dc99`. Candidate occupied / SKIP from S because `status=LANE-DONE`. KEEP FRONTEND + I18N owned until Step 3 lock.
+Lane 1 released EMPTY at Step 3 lock. Lane 2 EMPTY. Lane 3 DISABLED. Do not fill Lane 2 with a second task. SAFE_TWO_LANE_PAIR is non-authoritative and is not occupancy proof. Occupancy hash before=`sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d` after admission=`sha256:1d225be31f55e62304c30071ffbf52233080b15d0708033b197888603ae195af` after LANE-DONE=`sha256:bbc0550d0d5de6b93dd5298cc2784b176df24085279d52aadbe95271f430dc99` after lock=`sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d`. Candidate terminal `status=LOCKED` so `Test-Admissible` = NOT_READY. FRONTEND + I18N released UNOWNED.
 
 **3-step lifecycle:**
 1. Step 1 — registration — COMPLETE — 2026-08-31
 2. Step 2 — exact machine admission + bounded implementation + automated validation — COMPLETE — 2026-08-31 — STAGING_BROWSER_SMOKE_REQUIRED=NO / PERFORMED=NO
-3. Step 3 — consolidation/checkpoint + lock — NOT AUTHORIZED
+3. Step 3 — consolidation/checkpoint + lock — COMPLETE — 2026-08-31 — Checkpoint: `docs/I18N-SHELL-07-CHECKPOINT.md`
 
 I18N-SHELL-07 does NOT: change StateMessage behavior; redesign StateMessage; rewrite I18N-SHELL-06 heading/action keys; add routing/backend/API/runtime/dependencies; register PRIVATE-BETA-INVITE-01; enable Lane 3; admit Lane 1 or Lane 2 in Step 1; start implementation in Step 1; edit PRD.md / ARCHITECTURE.md / CLAUDE.md / AGENTS.md / validator / mutex catalog / locale files / application source in Step 1.
 
@@ -72932,15 +72933,17 @@ Step 2 (bounded implementation + automated validation):
 - [x] No new dependencies / routing / backend / runtime
 
 Step 3 (consolidation/checkpoint/lock):
-- [ ] Independent Step 2 review PASS
-- [ ] Required integrated validation PASS
-- [ ] Checkpoint created
-- [ ] Candidate retained terminal / not admissible
-- [ ] Lane(s) released EMPTY; FRONTEND/I18N released; GOVERNANCE UNOWNED
-- [ ] Validator exit 0 PASS
-- [ ] No Git commit/push by the worker
+- [x] Independent Step 2 review PASS
+- [x] Required integrated validation PASS
+- [x] Checkpoint created
+- [x] Candidate retained terminal / not admissible
+- [x] Lane(s) released EMPTY; FRONTEND/I18N released; GOVERNANCE UNOWNED
+- [x] Validator exit 0 PASS
+- [x] No Git commit/push by the worker
 
 **Step 1 HEAD:** `d8ed1f501e0fdcd0a857dcce8eb07a4f4e88e64b` (branch main; HEAD == origin/main; clean tree verified)
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, locale edits=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0. Governance writes: TASKS.md, this registry body, `docs/control-plane/lane-saturation-state.json`.
-**Step 2 HEAD:** uncommitted working tree on main atop `0cc775f079da7f1acf3cff7fa8d620e37cc49e8e`
+**Step 2 HEAD:** `2d9432d57aae19a20d2a3976c103441adc05317f` (`localize remaining StateMessage body copy in workspace-shell`)
 **Step 2 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, backend implementation=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, browser=0. Frontend implementation=YES (frozen 5 files). Tests executed=YES (TDD RED 4 fail then GREEN focused 7/7; frontend npm test 746/746; tsc PASS; build PASS). Lane 1 admitted then LANE-DONE. STAGING_BROWSER_SMOKE_REQUIRED=NO / PERFORMED=NO. Residual `body="` 30→0. Translation keys=30 (no reuse; all 30 English literals unique).
+**Step 3 HEAD (uncommitted working tree on main):** lock on top of `2d9432d57aae19a20d2a3976c103441adc05317f`
+**Step 3 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, frontend implementation=0, backend implementation=0, application source=0, locale edits=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git commit/push=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, browser=0. Tests executed=YES (focused workspace-shell 453/453, frontend npm test 746/746, tsc PASS, build PASS). Candidate terminal `status=LOCKED`. Lane 1 released EMPTY. FRONTEND/I18N released. Validator exit 0 PASS.
