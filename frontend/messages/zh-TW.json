@@ -410,8 +410,7 @@
     "userAgentAskBound": "正以所選代理詢問",
     "userAgentAskDismiss": "停止以此代理詢問",
     "userAgentAskNotFound": "此代理已無法使用。",
-    "userAgentAskSessionNotFound": "此工作區工作階段已無法使用。請建立或選擇工作階段後再試。",
-    "userAgentAskBuildLockedTooltip": "以使用者建立的代理詢問時無法使用建置。"
+    "userAgentAskSessionNotFound": "此工作區工作階段已無法使用。請建立或選擇工作階段後再試。"
   },
   "authModule": {
     "installing": "正在安裝驗證模組 — 正在準備你的工作區...",

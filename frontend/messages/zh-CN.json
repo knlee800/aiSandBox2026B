@@ -410,8 +410,7 @@
     "userAgentAskBound": "正在以所选代理提问",
     "userAgentAskDismiss": "停止以此代理提问",
     "userAgentAskNotFound": "此代理已不可用。",
-    "userAgentAskSessionNotFound": "此工作区会话已不可用。请创建或选择会话后再试。",
-    "userAgentAskBuildLockedTooltip": "以用户创建的代理提问时无法使用构建。"
+    "userAgentAskSessionNotFound": "此工作区会话已不可用。请创建或选择会话后再试。"
   },
   "authModule": {
     "installing": "正在安装认证模块 — 正在准备你的工作区...",

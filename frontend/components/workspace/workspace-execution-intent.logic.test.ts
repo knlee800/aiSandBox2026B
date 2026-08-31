@@ -109,7 +109,7 @@ describe('workspace execution intent logic', () => {
   });
 });
 
-describe('persisted user-agent Ask request fields — AGENT-PLATFORM-CREATE-01E', () => {
+describe('persisted user-agent request fields — AGENT-PLATFORM-EXEC-01B', () => {
   const boundAgentId = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
 
   test('conversation + valid bound id returns agentId only', () => {
@@ -122,13 +122,13 @@ describe('persisted user-agent Ask request fields — AGENT-PLATFORM-CREATE-01E'
     );
   });
 
-  test('Build / workspace_mutation never emits agentId', () => {
+  test('Build / workspace_mutation emits bound agentId', () => {
     assert.deepEqual(
       buildPersistedUserAgentAskRequestFields({
         agentId: boundAgentId,
         executionIntent: 'workspace_mutation',
       }),
-      {},
+      { agentId: boundAgentId },
     );
     assert.equal(
       Object.prototype.hasOwnProperty.call(
@@ -138,7 +138,7 @@ describe('persisted user-agent Ask request fields — AGENT-PLATFORM-CREATE-01E'
         }),
         'agentId',
       ),
-      false,
+      true,
     );
   });
 

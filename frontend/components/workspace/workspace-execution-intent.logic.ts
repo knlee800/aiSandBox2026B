@@ -84,9 +84,6 @@ export function buildPersistedUserAgentAskRequestFields(input: {
   agentId?: string | null;
   executionIntent: unknown;
 }): { agentId: string } | Record<string, never> {
-  if (normalizeWorkspaceExecutionIntent(input.executionIntent) !== 'conversation') {
-    return {};
-  }
   const agentId = typeof input.agentId === 'string' ? input.agentId.trim() : '';
   if (!agentId) {
     return {};

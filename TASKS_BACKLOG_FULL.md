@@ -73157,20 +73157,20 @@ taskId=AGENT-PLATFORM-EXEC-01B
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED — Step 1 COMPLETE — 2026-08-31 — Step 2 PENDING — Step 3 NOT AUTHORIZED — IMPLEMENTATION_STARTED=NO — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE released UNOWNED — FRONTEND UNOWNED — I18N UNOWNED — GATEWAY UNOWNED / READ ONLY — candidate `status=READY` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true` / not admissible (`ADMISSION_UNCERTAIN`) — LOCAL_BROWSER_SMOKE_REQUIRED=NO
+**Status:** LANE-DONE — Step 1 COMPLETE — 2026-08-31 — Step 2 IMPLEMENTATION + AUTOMATED VALIDATION COMPLETE — 2026-08-31 — NOT LOCKED — Step 3 NOT AUTHORIZED — IMPLEMENTATION_STARTED=YES — Lane 1 LANE-DONE AGENT-PLATFORM-EXEC-01B — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE released UNOWNED — FRONTEND OWNED (kept until Step 3 lock) — I18N OWNED (kept until Step 3 lock) — GATEWAY UNOWNED / READ ONLY — candidate `status=LANE-DONE` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=EXACT` / `admissionUncertain=false` / occupied / SKIP — LOCAL_BROWSER_SMOKE_REQUIRED=NO / PERFORMED=NO — STAGING_BROWSER_SMOKE_REQUIRED=NO / PERFORMED=NO
 **Task ID:** AGENT-PLATFORM-EXEC-01B
 **Title:** Enable Persisted User-Agent Build in Workspace UI
 **Family:** AGENT PLATFORM / EXEC (Slice 2 frontend product enablement after AGENT-PLATFORM-EXEC-01A COMPLETE AND LOCKED backend contract)
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
-**Lifecycle:** 3-step NORMAL bounded frontend enablement — Step 1 registration COMPLETE; Step 2 exact machine admission + bounded frontend implementation + automated validation PENDING; Step 3 independent review / checkpoint / final lock NOT AUTHORIZED. Separate stage-start document NOT created. Exact FRONTEND+I18N write set remains PROVISIONAL until the Step 2 admission transition.
-**Start condition:** READY. Machine `status=READY`. Lane 1 EMPTY. Candidate `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true` so `Test-Admissible` = ADMISSION_UNCERTAIN. FRONTEND UNOWNED. I18N UNOWNED. GATEWAY UNOWNED / READ ONLY.
+**Lifecycle:** 3-step NORMAL bounded frontend enablement — Step 1 registration COMPLETE; Step 2 exact machine admission + bounded frontend implementation + automated validation COMPLETE — 2026-08-31 — NOT LOCKED; Step 3 independent review / checkpoint / final lock NOT AUTHORIZED. Separate stage-start document NOT created. Exact FRONTEND+I18N write set FROZEN at Step 2 admission.
+**Start condition:** READY. Machine `status=LANE-DONE`. Lane 1 LANE-DONE. Candidate `writeSetPrecision=EXACT` / `admissionUncertain=false`. FRONTEND OWNED (kept until Step 3 lock). I18N OWNED (kept until Step 3 lock). GATEWAY UNOWNED / READ ONLY.
 **Depends on (canonical / human):** AGENT-PLATFORM-EXEC-01A COMPLETE AND LOCKED — PASS — 2026-08-31 — ownership-scoped persisted `agentId` + `executionIntent=workspace_mutation` accepted on the existing Builder execution pipeline; Checkpoint: `docs/AGENT-PLATFORM-EXEC-01A-CHECKPOINT.md`; lock commit `41763d32a8a1082d11a1584f6d52a635727031e8`. AGENT-PLATFORM-CREATE-01E COMPLETE AND LOCKED — PASS — 2026-08-28 — current bound persisted-agent Ask frontend path (visit-scoped `userAgentId` bind, Ask-only `buildPersistedUserAgentAskRequestFields`, Build disabled while bound); Checkpoint: `docs/AGENT-PLATFORM-CREATE-01E-CHECKPOINT.md`. I18N-SHELL-07 COMPLETE AND LOCKED — PASS — 2026-08-31 — current multilingual StateMessage / workspace-shell locale baseline; Checkpoint: `docs/I18N-SHELL-07-CHECKPOINT.md`. AGENT-PLATFORM-CREATE-01F COMPLETE AND LOCKED (Delete behavior must remain unchanged). GOV-PRD-02 COMPLETE AND LOCKED. GOV-ARCH-02 COMPLETE AND LOCKED. GOV-OS-02 COMPLETE AND LOCKED (Keith explicitly named Slice 2; light named-task CURRENT/FUTURE check used). GOV-OS-03 COMPLETE AND LOCKED. GOV-OS-03R1 COMPLETE AND LOCKED.
 **Depends on (machine sidecar `dependsOn`):** `["AGENT-PLATFORM-EXEC-01A"]` — sidecar `lockedTaskIds` contains `AGENT-PLATFORM-EXEC-01A` (post-epoch LOCK proof). CREATE-01E and I18N-SHELL-07 remain logical/human dependencies. CREATE-01E is pre-epoch and absent from `lockedTaskIds`; that ID MUST NOT be placed in machine `dependsOn`. I18N-SHELL-07 is post-epoch and present in `lockedTaskIds`, but this slice's mechanically required predecessor is the EXEC-01A backend contract. Do not fake machine LOCK proof for historical IDs.
 **Primary write scope (Step 1, this write):** `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body; `docs/control-plane/lane-saturation-state.json` candidate record.
-**Primary write scope (Step 2, PROVISIONAL — not frozen):** FRONTEND + I18N. Provisional files: `frontend/components/workspace/workspace-execution-intent.logic.ts`; `frontend/components/workspace/workspace-execution-intent.logic.test.ts`; `frontend/components/workspace/workspace-shell.tsx`; `frontend/components/workspace/workspace-shell.test.tsx`; `frontend/messages/en.json`; `frontend/messages/zh-TW.json`; `frontend/messages/zh-CN.json`. GATEWAY READ ONLY if Step 2 needs contract reference. No backend source changes. Step 2 must independently determine whether all seven files are necessary. If locale copy is untouched, Step 2 may shrink the exact write set and drop I18N before admission. If another application file is required (including `frontend/app/[locale]/app/page.tsx`), Step 2 must stop before expanding beyond this provisional boundary unless machine/task rules permit exact bounded adjustment.
+**Primary write scope (Step 2, EXACT — frozen at admission):** FRONTEND + I18N. Exact files: `frontend/components/workspace/workspace-execution-intent.logic.ts`; `frontend/components/workspace/workspace-execution-intent.logic.test.ts`; `frontend/components/workspace/workspace-shell.tsx`; `frontend/components/workspace/workspace-shell.test.tsx`; `frontend/messages/en.json`; `frontend/messages/zh-TW.json`; `frontend/messages/zh-CN.json`. Independent Step 2 inspection: `page.tsx` is NOT required (visit bind initially selects conversation; `onExecutionIntentChange` already allows later Build; both execute sites already spread the helper). Locale files ARE required: `ai.userAgentAskBuildLockedTooltip` is exclusively tied to the removed Build-disabled state and must be deleted atomically from en / zh-TW / zh-CN. GATEWAY remains READ ONLY. No backend source changes.
 **Primary write scope (Step 3):** control-plane/consolidation only after Step 2 is complete. Not authorized now.
-**Mutexes / resources (Step 1):** none acquired. Probable Step 2 mutexes: FRONTEND + I18N (provisional because locale changes are likely but must be confirmed during Step 2 exact freeze). GOVERNANCE held only for this Step 1 registration write then released UNOWNED. GATEWAY / AI-SERVICE / CONTAINER-MANAGER / CREDIT / MIGRATION / PACKAGE / COMPOSE / LOCAL-RUNTIME / STAGING / PROVIDER-LIVE unowned and unauthorized.
+**Mutexes / resources (Step 2 admission):** FRONTEND + I18N OWNED by AGENT-PLATFORM-EXEC-01B (Lane 1 ACTIVE; kept until Step 3 lock). GOVERNANCE held only for this Step 2 admission write then released UNOWNED. GATEWAY remains UNOWNED / READ ONLY. AI-SERVICE / CONTAINER-MANAGER / CREDIT / MIGRATION / PACKAGE / COMPOSE / LOCAL-RUNTIME / STAGING / PROVIDER-LIVE unowned and unauthorized.
 **Hot-file leases:** none. FRONTEND + I18N are sufficient. Do not add a redundant HOTFILE.
 **Shared contracts:** none named in the machine catalog. This consumes the already-locked EXEC-01A `POST /api/ai/execute` semantics for ownership-scoped `agentId` + `workspace_mutation`. No `sharedContractId` is invented. `sharedContractIds=[]`; `mutatesSharedContractIds=[]`.
 **Evidence class:** LOCAL-TESTS. No provider-live. No Docker/Postgres/Redis. No STAGING / PROVIDER-LIVE / CREDIT runtime needs. LOCAL_BROWSER_SMOKE_REQUIRED=NO. Product-visible staging validation belongs to a later integrated validation / living-authority slice unless Step 3 evidence review proves it is specifically required earlier. Do not invent a staging gate during registration.
@@ -73178,11 +73178,11 @@ nature=IMPLEMENTATION
 **saturationClass:** FORCING (explicit; Keith explicitly authorized Slice 2 as the next implementation slice required to make the approved CURRENT capability product-visible)
 **productClass:** CURRENT
 **futureAuthorization:** NONE — schema requires `futureAuthorization=NONE` when `productClass=CURRENT`. Keith's completed FUTURE→CURRENT authorization (Approach A) plus separate Slice 2 authorization are recorded in this canonical body, not as `AUTHORIZED` (that enum is only valid with `productClass=APPROVED_FUTURE` and would be MALFORMED here).
-**writeSetPrecision:** PROVISIONAL
-**admissionUncertain:** true
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
 **exclusiveCapacity:** false
 **runtimeNeeds:** none
-**i18n:** true (provisional; locale files may drop at Step 2 exact freeze if copy is untouched)
+**i18n:** true (exact; obsolete `ai.userAgentAskBuildLockedTooltip` removed atomically from en / zh-TW / zh-CN)
 
 **Identifier search:** Repo-wide search for `AGENT-PLATFORM-EXEC-01B` returned zero matches. Searches for unfinished enabling Build while a persisted user agent is bound, sending `agentId` for `workspace_mutation` from frontend, removing the current user-agent Build-disabled state, persisted user-agent Ask/Build intent toggle, `AGENT-PLATFORM-BUILD-*`, and `AGENT-PLATFORM-RUN-*` as a frontend-Build family returned none. AGENT-PLATFORM-EXEC-01A is COMPLETE AND LOCKED and is the backend contract, not an unfinished frontend equivalent. AGENT-PLATFORM-CREATE-01E is COMPLETE AND LOCKED and is the current Ask-only / Build-disabled frontend path this slice must change. AGENT-PLATFORM-CREATE-01F is COMPLETE AND LOCKED Delete UI. I18N-SHELL-07 is COMPLETE AND LOCKED localization residual. CREATE-01G was considered and not selected: CREATE family is profile persistence / Ask identity / Ask UI / Delete UI, not frontend Build enablement on the locked EXEC contract. AGENT-PLATFORM-EXEC-01B is the smallest correct next EXEC-family canonical ID.
 
@@ -73284,11 +73284,11 @@ Harness/tool-loop; dedicated agent runtime; autonomous multi-turn execution; kno
 **Machine registration (post-epoch):** Present exactly once immediately under this canonical heading (`taskId=AGENT-PLATFORM-EXEC-01B`, `nature=IMPLEMENTATION`). Enforcement epoch unchanged. No second epoch. Do not duplicate the machine-registration markers elsewhere in this body.
 
 **Lane / admission:**
-REGISTERED / NOT ADMITTED. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. Occupancy hash remains `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d` (empty-board occupancy unchanged by candidate registration). Candidate `admissionUncertain=true` / `writeSetPrecision=PROVISIONAL` / `status=READY` so `Test-Admissible` = ADMISSION_UNCERTAIN. FRONTEND UNOWNED. I18N UNOWNED. GATEWAY UNOWNED / READ ONLY.
+LANE-DONE. Lane 1 LANE-DONE AGENT-PLATFORM-EXEC-01B. Lane 2 EMPTY. Lane 3 DISABLED. Occupancy hash before `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d`. Occupancy hash after admission `sha256:6dd3b8a8d9319538889d429ae96e5825ff234e9ef7cfad57b3586de63a27ac64`. Occupancy hash after LANE-DONE `sha256:0e8d9d090ad070dde7da13b25eb049510201ec70570dd677c1b78e5519c69210`. Candidate `admissionUncertain=false` / `writeSetPrecision=EXACT` / `status=LANE-DONE` so occupied / SKIP. FRONTEND OWNED until Step 3 lock. I18N OWNED until Step 3 lock. GATEWAY UNOWNED / READ ONLY.
 
 **3-step lifecycle:**
 1. Step 1 — registration — COMPLETE — 2026-08-31
-2. Step 2 — exact machine admission + bounded frontend implementation + automated validation — PENDING
+2. Step 2 — exact machine admission + bounded frontend implementation + automated validation — COMPLETE — 2026-08-31 — NOT LOCKED
 3. Step 3 — independent review / checkpoint / final lock — NOT AUTHORIZED
 
 AGENT-PLATFORM-EXEC-01B does NOT: start implementation in Step 1; admit a lane in Step 1; acquire FRONTEND or I18N in Step 1; change Gateway / AI Service / Container Manager; activate Harness; add a dedicated runtime; migrate; add permissions; register Slice 3; register PRIVATE-BETA-INVITE-01; enable Lane 3; edit PRD.md / ARCHITECTURE.md / CLAUDE.md / AGENTS.md / validator / mutex catalog / application source / locale files in Step 1.
@@ -73326,27 +73326,27 @@ Step 1 (Registration):
 - [x] No Git commit/push by the worker
 
 Step 2 (exact admission + bounded frontend implementation + automated validation):
-- [ ] exact frontend/i18n write set independently frozen
-- [ ] exact mutex set frozen
-- [ ] Lane 1 admitted before source edits
-- [ ] TDD RED demonstrated
-- [ ] bound persisted agent may select Build
-- [ ] Build workspace_mutation sends bound agentId
-- [ ] Ask continues to send bound agentId
-- [ ] no-agent ordinary Builder unchanged
-- [ ] dismiss/unbind clears agent binding from later execution
-- [ ] current provider/model behavior unchanged
-- [ ] current Build apply/checkpoint/credit flow unchanged
-- [ ] no Gateway change
-- [ ] no AI Service/Container Manager change
-- [ ] no migration/dependency change
-- [ ] multilingual text updated atomically if affected
-- [ ] no hardcoded English
-- [ ] focused tests PASS
-- [ ] full frontend tests PASS
-- [ ] TypeScript PASS
-- [ ] frontend build PASS
-- [ ] no local runtime/browser
+- [x] exact frontend/i18n write set independently frozen
+- [x] exact mutex set frozen
+- [x] Lane 1 admitted before source edits
+- [x] TDD RED demonstrated
+- [x] bound persisted agent may select Build
+- [x] Build workspace_mutation sends bound agentId
+- [x] Ask continues to send bound agentId
+- [x] no-agent ordinary Builder unchanged
+- [x] dismiss/unbind clears agent binding from later execution
+- [x] current provider/model behavior unchanged
+- [x] current Build apply/checkpoint/credit flow unchanged
+- [x] no Gateway change
+- [x] no AI Service/Container Manager change
+- [x] no migration/dependency change
+- [x] multilingual text updated atomically if affected
+- [x] no hardcoded English
+- [x] focused tests PASS
+- [x] full frontend tests PASS
+- [x] TypeScript PASS
+- [x] frontend build PASS
+- [x] no local runtime/browser
 
 Step 3 (consolidation/checkpoint/lock):
 - [ ] NOT AUTHORIZED
@@ -73357,3 +73357,6 @@ Step 3 (consolidation/checkpoint/lock):
 
 **Step 1 HEAD:** `41763d32a8a1082d11a1584f6d52a635727031e8` (branch main; HEAD == origin/main; clean tree verified; EXEC-01A lock commit)
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0. Governance writes: TASKS.md, this registry body, `docs/control-plane/lane-saturation-state.json`.
+
+**Step 2 HEAD:** `ad92aa106ecbb3a0bb0599f8845e43bed08e7552` (branch main; working tree dirty with exact admitted source files plus 3 control-plane files; NOT committed)
+**Step 2 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, local application server=0, browser=0. Frontend implementation=yes (exact 7-file write set). Backend implementation=0. Gateway=0. AI Service=0. Container Manager=0. dependencies=0. migrations=0. PRD.md edits=0. ARCHITECTURE.md edits=0. CLAUDE.md edits=0. AGENTS.md edits=0. validator edits=0. mutex-catalog edits=0. Git commits by worker=0. Lane 2 admission=0. Lane 3 enablement=0. invitation registration=0. Harness activation=0. Tests: focused request-field 23/23 PASS; focused workspace-shell user-agent suite 12/12 PASS; full frontend 748/748 PASS; `npx tsc --noEmit --incremental false` PASS; `npm run build` PASS. Governance writes: TASKS.md, this registry body, `docs/control-plane/lane-saturation-state.json`. SATURATION_PROOF written only under `$env:TEMP`.

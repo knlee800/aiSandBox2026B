@@ -9770,13 +9770,13 @@ describe('persisted user-agent Ask UX — AGENT-PLATFORM-CREATE-01E', () => {
       'userAgentAskDismiss',
       'userAgentAskNotFound',
       'userAgentAskSessionNotFound',
-      'userAgentAskBuildLockedTooltip',
     ] as const;
     for (const localePack of [en, zhTw, zhCn]) {
       for (const key of requiredAiKeys) {
         assert.equal(typeof localePack.ai[key], 'string');
         assert.equal(localePack.ai[key].trim().length > 0, true);
       }
+      assert.equal('userAgentAskBuildLockedTooltip' in localePack.ai, false);
     }
   });
 
@@ -9852,15 +9852,43 @@ describe('persisted user-agent Ask UX — AGENT-PLATFORM-CREATE-01E', () => {
     assert.doesNotMatch(html, /workspace-user-agent-ask-dismiss/);
   });
 
-  test('Build is disabled with locked tooltip while a user agent is bound', () => {
+  test('Build remains available while a persisted user agent is bound', () => {
     const buildButton = renderWorkspaceShellElementByTestId('workspace-chat-intent-build', {
       boundUserAgentId: boundAgentId,
       onExecutionIntentChange: () => {},
     });
     assert.ok(buildButton);
+    assert.equal(buildButton.props.disabled, false);
+    assert.equal(buildButton.props.title, enMessages.ai.intentBuildTooltip);
+    assert.match(
+      shellSource,
+      /data-testid="workspace-chat-intent-build"[\s\S]*?title=\{\s*props\.aiMessages\.intentBuildTooltip\s*\}[\s\S]*?disabled=\{!props\.onExecutionIntentChange \|\| isSending\}/,
+    );
+    assert.doesNotMatch(shellSource, /props\.aiMessages\.userAgentAskBuildLockedTooltip/);
+    assert.doesNotMatch(
+      shellSource,
+      /disabled=\{!props\.onExecutionIntentChange \|\| isSending \|\| isUserAgentAskBound\}/,
+    );
+  });
+
+  test('Ask remains available while a persisted user agent is bound', () => {
+    const askButton = renderWorkspaceShellElementByTestId('workspace-chat-intent-ask', {
+      boundUserAgentId: boundAgentId,
+      onExecutionIntentChange: () => {},
+    });
+    assert.ok(askButton);
+    assert.equal(askButton.props.disabled, false);
+    assert.equal(askButton.props.title, enMessages.ai.intentAskTooltip);
+  });
+
+  test('Build remains disabled while sending even if a user agent is bound', () => {
+    const buildButton = renderWorkspaceShellElementByTestId('workspace-chat-intent-build', {
+      boundUserAgentId: boundAgentId,
+      chatRequestState: 'running',
+      onExecutionIntentChange: () => {},
+    });
+    assert.ok(buildButton);
     assert.equal(buildButton.props.disabled, true);
-    assert.equal(buildButton.props.title, enMessages.ai.userAgentAskBuildLockedTooltip);
-    assert.match(shellSource, /props\.aiMessages\.userAgentAskBuildLockedTooltip/);
   });
 
   test('ordinary Builder Build remains enabled when no user agent is bound', () => {

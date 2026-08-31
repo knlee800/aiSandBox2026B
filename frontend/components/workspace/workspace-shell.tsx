@@ -4206,13 +4206,9 @@ function WorkspaceChatPanel(props: {
               <button
                 type="button"
                 data-testid="workspace-chat-intent-build"
-                title={
-                  isUserAgentAskBound
-                    ? props.aiMessages.userAgentAskBuildLockedTooltip
-                    : props.aiMessages.intentBuildTooltip
-                }
+                title={props.aiMessages.intentBuildTooltip}
                 aria-pressed={props.executionIntent === 'workspace_mutation'}
-                disabled={!props.onExecutionIntentChange || isSending || isUserAgentAskBound}
+                disabled={!props.onExecutionIntentChange || isSending}
                 onClick={() => props.onExecutionIntentChange?.('workspace_mutation')}
                 className={`rounded-md px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 ${
                   props.executionIntent === 'workspace_mutation'

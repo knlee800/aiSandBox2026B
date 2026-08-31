@@ -410,8 +410,7 @@
     "userAgentAskBound": "Asking as selected agent",
     "userAgentAskDismiss": "Stop asking as this agent",
     "userAgentAskNotFound": "This agent is no longer available.",
-    "userAgentAskSessionNotFound": "This workspace session is no longer available. Create or select a session, then try again.",
-    "userAgentAskBuildLockedTooltip": "Build is unavailable while asking as a user-created agent."
+    "userAgentAskSessionNotFound": "This workspace session is no longer available. Create or select a session, then try again."
   },
   "authModule": {
     "installing": "Installing auth module — preparing your workspace...",
