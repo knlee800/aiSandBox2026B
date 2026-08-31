@@ -95,6 +95,31 @@
       "runtimeNeeds": [],
       "admissionUncertain": false,
       "writeSetPrecision": "EXACT"
+    },
+    {
+      "taskId": "AGENT-PLATFORM-EXEC-01A",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "3-STEP",
+      "status": "READY",
+      "startCondition": "READY",
+      "saturationClass": "FORCING",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": [],
+      "mutexes": ["GATEWAY"],
+      "writePaths": [
+        "services/api-gateway/src/ai/ai-execution.controller.ts",
+        "services/api-gateway/src/ai/ai-execution.controller.spec.ts"
+      ],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "LOCAL-TESTS",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": [],
+      "admissionUncertain": true,
+      "writeSetPrecision": "PROVISIONAL"
     }
   ],
   "lockedTaskIds": ["GOV-OS-03", "GOV-OS-03R1", "AGENT-PLATFORM-CREATE-01F", "I18N-SHELL-07"],
