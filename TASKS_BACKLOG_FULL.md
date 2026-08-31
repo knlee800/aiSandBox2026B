@@ -72810,3 +72810,135 @@ Step 3 (consolidation/checkpoint/lock):
 **Step 2 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, backend implementation=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, browser=0. Frontend implementation=YES (frozen 8 files). Tests executed=YES (TDD RED 55 tests / 11 fail then GREEN 55/55; frontend npm test 745/745; tsc PASS; build PASS). Lane 1 admitted then LANE-DONE. STAGING_BROWSER_SMOKE_REQUIRED=NO / RECOMMENDED=YES / not run.
 **Step 3 HEAD (uncommitted working tree on main):** lock on top of `30b451db3caa12e68df62e74b4b485692f56e5c3`
 **Step 3 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, frontend implementation=0, backend implementation=0, application source=0, dependencies=0, migrations=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git commit/push=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, browser=0. Tests executed=YES (focused 55/55, frontend npm test 745/745, tsc PASS, build PASS). PRD.md factual sync=YES. ARCHITECTURE.md factual sync=YES. Candidate terminal `status=LOCKED`. Lane 1 released EMPTY. FRONTEND/I18N released. Validator exit 0 PASS.
+
+---
+
+## I18N / WORKSPACE SHELL — StateMessage Body Localization Residual
+
+### I18N-SHELL-07 — StateMessage Body Localization Residual
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=I18N-SHELL-07
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / NOT ADMITTED — Step 1 COMPLETE — 2026-08-31 — Step 2 PENDING — Step 3 NOT AUTHORIZED — IMPLEMENTATION_STARTED=NO — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE released UNOWNED — FRONTEND UNOWNED — I18N UNOWNED — candidate `status=READY` / `saturationClass=FORCING` / `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true` / not admissible (`Test-Admissible` = ADMISSION_UNCERTAIN)
+**Task ID:** I18N-SHELL-07
+**Title:** StateMessage Body Localization Residual
+**Family:** I18N (successor to I18N-SHELL-01 / 02 / 03 / 04 / 05 / 06, all COMPLETE AND LOCKED)
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-step NORMAL bounded localization migration — Step 1 registration COMPLETE; Step 2 exact machine admission + bounded implementation + automated validation PENDING; Step 3 consolidation/checkpoint + lock NOT AUTHORIZED. Separate stage-start document NOT created. Exact FRONTEND+I18N write set to be frozen at the Step 2 admission transition before source edits.
+**Start condition:** READY for later admission after Keith commits this Step 1 state and Step 2 freezes `writeSetPrecision=EXACT` / `admissionUncertain=false`. Machine `status=READY` but `admissionUncertain=true` so `Test-Admissible` = ADMISSION_UNCERTAIN. Do not admit in Step 1.
+**Depends on (canonical / human):** I18N-SHELL-06 COMPLETE AND LOCKED — PASS — 2026-08-27 — Workspace StateMessage Heading/Action Locale Migration — Checkpoint: `docs/PILOT-2LANE-01-CHECKPOINT.md` — heading literals 0 / action literals 0 / body residual 30 left explicitly out of scope. I18N-SHELL-05 COMPLETE AND LOCKED (locale-provider / `getRecoveryCopy(locale)` / in-file getter pattern). GOV-PRD-02 COMPLETE AND LOCKED (living PRODUCT WHAT; multilingual UX is core CURRENT). GOV-OS-02 COMPLETE AND LOCKED (this registration used the light named-task CURRENT/FUTURE check because Keith explicitly named the remaining documented CURRENT multilingual residual). GOV-OS-03 COMPLETE AND LOCKED. GOV-OS-03R1 COMPLETE AND LOCKED. AGENT-PLATFORM-CREATE-01F COMPLETE AND LOCKED (prior lane empty; mutexes released).
+**Depends on (machine sidecar `dependsOn`):** `[]` — sidecar `lockedTaskIds` contains `GOV-OS-03`, `GOV-OS-03R1`, and `AGENT-PLATFORM-CREATE-01F`. I18N-SHELL-06 is pre-epoch and absent from `lockedTaskIds`. That ID MUST NOT be placed in machine `dependsOn` (would be unsatisfiable LOCK proof). Logical I18N-SHELL-06 residual dependency remains in this canonical body only. Do not fake machine LOCK proof for historical IDs.
+**Primary write scope (Step 1, this write):** `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body; `docs/control-plane/lane-saturation-state.json` candidate record.
+**Primary write scope (Step 2, PROVISIONAL — NOT FROZEN until admission inspection):** FRONTEND + I18N. Probable files: `frontend/components/workspace/workspace-shell.tsx`; `frontend/components/workspace/workspace-shell.test.tsx`; `frontend/messages/en.json`; `frontend/messages/zh-TW.json`; `frontend/messages/zh-CN.json`. Step 2 may add or drop a relevant workspace-shell test file after inspection. Do not treat this list as EXACT. Do not acquire FRONTEND/I18N until Step 2 admission.
+**Mutexes / resources (not acquired):** FRONTEND (probable); I18N (probable atomic 3-file lease). GATEWAY not acquired. GOVERNANCE held only for this registration write then released UNOWNED. AI-SERVICE / CONTAINER-MANAGER / MIGRATION / PACKAGE / COMPOSE / ENV / LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT unowned and unauthorized.
+**Hot-file leases:** none. FRONTEND + I18N are sufficient. Do not add a redundant HOTFILE.
+**Shared contracts:** none frozen/mutated. Reuse the I18N-SHELL-06 `getStateMessageMessages(locale)` / `stateMessageCopy` getter pattern. Do not reopen heading/action keys already migrated.
+**Evidence class:** LOCAL-TESTS. No provider-live. No Docker/Postgres/Redis. No STAGING / PROVIDER-LIVE / CREDIT runtime needs. No staging/browser required by this registration.
+**Revert isolation:** registration revert = discard the three control-plane files in this Step 1 write; cannot invalidate locked I18N-SHELL-06 / CREATE-01F evidence. Lane 1 and Lane 2 remain EMPTY. No second implementation task registered.
+**saturationClass:** FORCING (explicit; Keith selected the remaining documented CURRENT multilingual residual as the intended near-frontier task)
+**productClass:** CURRENT
+**futureAuthorization:** NONE
+**writeSetPrecision:** PROVISIONAL
+**admissionUncertain:** true
+**exclusiveCapacity:** false
+**runtimeNeeds:** none
+**i18n:** true
+
+**Identifier search:** Repo-wide search for `I18N-SHELL-07` returned zero matches. Searches for unfinished StateMessage `body` localization / remaining `body="` residual / equivalent canonical implementation tasks returned none. I18N-SHELL-01 through I18N-SHELL-06 are COMPLETE AND LOCKED. I18N-SHELL-05 explicitly deferred status-panel StateMessage heading/body/action beyond recoveryCopy. I18N-SHELL-06 migrated heading (60) and action (57) only and left the 30 `body="` literals as a documented out-of-scope residual (`docs/PILOT-2LANE-01-CHECKPOINT.md` §7 / §10; current-tree `workspace-shell.tsx` ` body="` count = 30; `workspace-shell.test.tsx` asserts that residual count). I18N-SHELL-07 is the smallest correct next canonical I18N-SHELL ID.
+
+**Keith selection:** Keith explicitly selected the remaining documented CURRENT multilingual residual — migrate the approximately 30 StateMessage `body` literals left out of scope by I18N-SHELL-06. This is CURRENT product work (standing Multilingual-First rule; PRD §3.J multilingual UX is core CURRENT), not a promotion of APPROVED FUTURE functionality.
+
+**Registered product purpose:** Migrate the remaining hardcoded English StateMessage `body` user-facing literals in `workspace-shell.tsx` to the existing 3-locale message system using the getter pattern already established by I18N-SHELL-06. Preserve existing English behavior/copy unless a literal is demonstrably obsolete. This is a localization migration, not a copy-redesign, StateMessage redesign, or workspace-shell refactor.
+
+**Documented residual (I18N-SHELL-06 / current tree; exact inventory belongs to Step 2):** approximately 30 ` body="` literals covering editor save, exec, history, save point, compare/diff/snapshot, revert, and dashboard StateMessage bodies. Headings and actions are already localized and must not be rewritten.
+
+**PRD CURRENT/FUTURE check (light named-task; 2026-08-31):**
+- CURRENT user-facing: multilingual UX is core CURRENT; I18N-SHELL-06 locked the heading/action StateMessage migration and documented this body residual as remaining CURRENT work.
+- APPROVED FUTURE remains: dedicated user-agent runtime, user-agent Build, Harness/tool loop, tools/knowledge/skills, invitations. This slice does NOT promote those.
+- Do not edit PRD.md in Step 1.
+
+**ARCHITECTURE CURRENT/FUTURE check (light named-task; 2026-08-31):**
+- CURRENT: workspace-shell StateMessage heading/action already locale-backed via `getStateMessageMessages`; body literals remain hardcoded English.
+- Do not edit ARCHITECTURE.md in Step 1.
+
+**In scope:**
+- identify the exact remaining StateMessage `body` user-facing literals documented by / left after I18N-SHELL-06
+- migrate those literals to the existing localization mechanism
+- preserve existing English behavior/copy unless a literal is demonstrably obsolete
+- add matching translations in `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`
+- use the existing `getStateMessageMessages` / `stateMessageCopy` getter pattern from I18N-SHELL-06
+- focused automated tests
+- broader relevant frontend regression tests
+
+**Explicitly out of scope:**
+changing StateMessage behavior; redesigning StateMessage; rewriting headings/actions already completed by I18N-SHELL-06; broad workspace-shell refactor; routing changes; backend changes; API changes; runtime changes; new dependencies; unrelated i18n cleanup; hardcoded copy outside the frozen residual; FUTURE product capabilities; invitation work.
+
+**UX/UI requirements:**
+Multilingual-first is mandatory. All affected strings must remain atomic across all three locale files. No new hardcoded English UI copy. Preserve existing translation hook/getter conventions. This task does not need a redesign. Impeccable / Emil Kowalski are advisory only if a localized string exposes a small rendering issue; they must NOT broaden scope. Heroicons are not expected to change; if any icon is touched unexpectedly, Heroicons v2 Outline only.
+
+**Machine registration (post-epoch):** Present exactly once immediately under this canonical heading (`taskId=I18N-SHELL-07`, `nature=IMPLEMENTATION`). Enforcement epoch unchanged. No second epoch. Do not duplicate the machine-registration markers elsewhere in this body.
+
+**Lane / admission:**
+Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. Do not fill Lane 2 with a second task. SAFE_TWO_LANE_PAIR is non-authoritative and is not written as occupancy proof. Occupancy hash unchanged=`sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d` (lanes remain EMPTY). Candidate not currently admissible because `admissionUncertain=true` / `writeSetPrecision=PROVISIONAL`.
+
+**3-step lifecycle:**
+1. Step 1 — registration — COMPLETE — 2026-08-31
+2. Step 2 — exact machine admission + bounded implementation + automated validation — PENDING
+3. Step 3 — consolidation/checkpoint + lock — NOT AUTHORIZED
+
+I18N-SHELL-07 does NOT: change StateMessage behavior; redesign StateMessage; rewrite I18N-SHELL-06 heading/action keys; add routing/backend/API/runtime/dependencies; register PRIVATE-BETA-INVITE-01; enable Lane 3; admit Lane 1 or Lane 2 in Step 1; start implementation in Step 1; edit PRD.md / ARCHITECTURE.md / CLAUDE.md / AGENTS.md / validator / mutex catalog / locale files / application source in Step 1.
+
+#### Acceptance Criteria
+
+Step 1 (Registration):
+- [x] I18N-SHELL-07 confirmed unused before registration (no collision; equivalent unfinished task NONE)
+- [x] I18N-SHELL-06 COMPLETE AND LOCKED with documented StateMessage `body` residual left out of scope
+- [x] Keith explicitly selected this remaining documented CURRENT multilingual residual as near-frontier CURRENT work
+- [x] Light CURRENT/FUTURE authority check PASS (PRD/ARCHITECTURE: multilingual UX CURRENT; this slice does not promote FUTURE capabilities)
+- [x] Post-epoch `AISB_MACHINE_REG_V1` stanza present exactly once (`nature=IMPLEMENTATION`)
+- [x] Machine candidate record created exactly once; `saturationClass=FORCING` explicit; `productClass=CURRENT`; `futureAuthorization=NONE`; `writeSetPrecision=PROVISIONAL`; `admissionUncertain=true`
+- [x] Machine `dependsOn=[]` because I18N-SHELL-06 is not in sidecar `lockedTaskIds`; logical dep recorded in this body
+- [x] I18N-SHELL-07 registered in TASKS.md CURRENT EXECUTION BOARD as next gate / not admitted
+- [x] I18N-SHELL-07 registered in TASKS_BACKLOG_FULL.md
+- [x] Lane 1 remains EMPTY; Lane 2 remains EMPTY; Lane 3 DISABLED
+- [x] IMPLEMENTATION_STARTED=NO
+- [x] GOVERNANCE released UNOWNED
+- [x] FRONTEND/I18N not acquired
+- [x] No application source
+- [x] No locale-file edits
+- [x] No runtime / Docker / PostgreSQL / Redis / staging / provider / browser activity
+- [x] Invitation invariant unchanged
+- [x] No second implementation task registered
+- [x] Validator exit 0 PASS with candidate not in S (`ADMISSION_UNCERTAIN`)
+- [x] No Git commit/push by the worker
+
+Step 2 (bounded implementation + automated validation):
+- [ ] Exact FRONTEND+I18N write set frozen from repository evidence
+- [ ] `writeSetPrecision=EXACT`; `admissionUncertain=false`
+- [ ] One implementation lane admitted; the other EMPTY; Lane 3 DISABLED
+- [ ] FRONTEND + I18N acquired; GATEWAY not acquired
+- [ ] Validator PASS on the admission end state before application source edits
+- [ ] Remaining StateMessage `body` literals migrated to the existing localization mechanism
+- [ ] Existing English copy/behavior preserved unless a literal is demonstrably obsolete
+- [ ] All three locale files updated together
+- [ ] I18N-SHELL-06 heading/action keys not rewritten
+- [ ] StateMessage behavior/layout/`data-testid` preserved
+- [ ] Focused frontend tests PASS
+- [ ] Broader relevant frontend regression tests PASS
+- [ ] TypeScript PASS (`npx tsc --noEmit --incremental false`)
+- [ ] No new dependencies / routing / backend / runtime
+
+Step 3 (consolidation/checkpoint/lock):
+- [ ] Independent Step 2 review PASS
+- [ ] Required integrated validation PASS
+- [ ] Checkpoint created
+- [ ] Candidate retained terminal / not admissible
+- [ ] Lane(s) released EMPTY; FRONTEND/I18N released; GOVERNANCE UNOWNED
+- [ ] Validator exit 0 PASS
+- [ ] No Git commit/push by the worker
+
+**Step 1 HEAD:** `d8ed1f501e0fdcd0a857dcce8eb07a4f4e88e64b` (branch main; HEAD == origin/main; clean tree verified)
+**Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, locale edits=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0. Governance writes: TASKS.md, this registry body, `docs/control-plane/lane-saturation-state.json`.
