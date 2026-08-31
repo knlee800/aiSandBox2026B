@@ -10,16 +10,13 @@
   },
   "occupancy": {
     "lane1": {
-      "state": "LANE-DONE",
-      "taskId": "AGENT-PLATFORM-EXEC-01A",
-      "mutexes": ["GATEWAY"],
-      "writePaths": [
-        "services/api-gateway/src/ai/ai-execution.controller.ts",
-        "services/api-gateway/src/ai/ai-execution.controller.spec.ts"
-      ],
+      "state": "EMPTY",
+      "taskId": "NONE",
+      "mutexes": [],
+      "writePaths": [],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "LOCAL-TESTS",
+      "evidenceClass": "NONE",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -103,7 +100,7 @@
       "taskId": "AGENT-PLATFORM-EXEC-01A",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
-      "status": "LANE-DONE",
+      "status": "LOCKED",
       "startCondition": "READY",
       "saturationClass": "FORCING",
       "productClass": "CURRENT",
@@ -125,7 +122,7 @@
       "writeSetPrecision": "EXACT"
     }
   ],
-  "lockedTaskIds": ["GOV-OS-03", "GOV-OS-03R1", "AGENT-PLATFORM-CREATE-01F", "I18N-SHELL-07"],
+  "lockedTaskIds": ["GOV-OS-03", "GOV-OS-03R1", "AGENT-PLATFORM-CREATE-01F", "I18N-SHELL-07", "AGENT-PLATFORM-EXEC-01A"],
   "sharedContracts": [],
   "runtimeAuthorization": {
     "localRuntimeAuthorized": false,

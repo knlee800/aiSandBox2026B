@@ -72958,20 +72958,20 @@ taskId=AGENT-PLATFORM-EXEC-01A
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** LANE-DONE (Lane 1) — Step 1 COMPLETE — 2026-08-31 — Step 2 IMPLEMENTATION + AUTOMATED VALIDATION COMPLETE — 2026-08-31 — NOT COMPLETE AND LOCKED — LOCAL_BROWSER_SMOKE_REQUIRED=NO / STAGING_BROWSER_SMOKE_REQUIRED=NO / PROVIDER_LIVE_REQUIRED=NO — Step 3 NOT AUTHORIZED — Lane 1 LANE-DONE — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE released UNOWNED — GATEWAY remains OWNED by AGENT-PLATFORM-EXEC-01A until Step 3 lock — FRONTEND UNOWNED — I18N UNOWNED — candidate `status=LANE-DONE` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=EXACT` / `admissionUncertain=false` / occupied / SKIP from S
+**Status:** COMPLETE AND LOCKED — PASS — 2026-08-31 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01A-CHECKPOINT.md` — Step 1 COMPLETE — 2026-08-31 — Step 2 IMPLEMENTATION + AUTOMATED VALIDATION COMPLETE — 2026-08-31 — Step 3 INDEPENDENT REVIEW + CHECKPOINT + FINAL LOCK COMPLETE — 2026-08-31 — LOCAL_BROWSER_SMOKE_REQUIRED=NO / STAGING_BROWSER_SMOKE_REQUIRED=NO / PROVIDER_LIVE_REQUIRED=NO — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE released UNOWNED — GATEWAY released UNOWNED — FRONTEND UNOWNED — I18N UNOWNED — candidate `status=LOCKED` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=EXACT` / `admissionUncertain=false` / NOT_READY
 **Task ID:** AGENT-PLATFORM-EXEC-01A
 **Title:** Allow Persisted User-Agent Identity on Build Execution
 **Family:** AGENT PLATFORM / EXEC (new family; first executable user-created-agent Build backend slice after CREATE-01A..01F COMPLETE AND LOCKED)
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
-**Lifecycle:** 3-step NORMAL bounded Gateway contract — Step 1 registration COMPLETE; Step 2 exact machine admission + bounded Gateway implementation + automated validation COMPLETE (LANE-DONE, not LOCKED); Step 3 consolidation/checkpoint + lock NOT AUTHORIZED. Separate stage-start document NOT created. Exact GATEWAY write set is EXACT.
-**Start condition:** READY. Machine now `status=LANE-DONE` (occupied / SKIP). Lane 1 LANE-DONE. Candidate `writeSetPrecision=EXACT` / `admissionUncertain=false`. GATEWAY remains owned until Step 3 lock.
+**Lifecycle:** 3-step NORMAL bounded Gateway contract — Step 1 registration COMPLETE; Step 2 exact machine admission + bounded Gateway implementation + automated validation COMPLETE; Step 3 independent review / checkpoint / final lock COMPLETE. COMPLETE AND LOCKED. Separate stage-start document NOT created. Exact GATEWAY write set is EXACT.
+**Start condition:** READY (satisfied). LOCKED. Machine `status=LOCKED`. Lane 1 EMPTY. Candidate `writeSetPrecision=EXACT` / `admissionUncertain=false`. GATEWAY released UNOWNED.
 **Depends on (canonical / human):** AGENT-PLATFORM-CREATE-01D COMPLETE AND LOCKED — PASS — 2026-08-28 — ownership-scoped persisted `agentId` identity composition on existing single-shot Ask (`findOneByIdAndUserId`, name/role/description onto `globalInstructions`, usage metadata `agentId`); Checkpoint: `docs/AGENT-PLATFORM-CREATE-01D-CHECKPOINT.md`. AGENT-PLATFORM-CREATE-01E COMPLETE AND LOCKED (product-facing Ask UI; Build remains disabled while bound; frontend enablement is NOT this slice). AGENT-PLATFORM-CREATE-01F COMPLETE AND LOCKED. I18N-SHELL-07 COMPLETE AND LOCKED. Current Builder Build / `workspace_mutation` execution, credit, checkpoint, and session-ownership contracts. GOV-PRD-02 COMPLETE AND LOCKED. GOV-ARCH-02 COMPLETE AND LOCKED. GOV-OS-02 COMPLETE AND LOCKED (Keith explicitly named this work and authorized the FUTURE→CURRENT promotion; light named-task CURRENT/FUTURE check used). GOV-OS-03 COMPLETE AND LOCKED. GOV-OS-03R1 COMPLETE AND LOCKED.
 **Depends on (machine sidecar `dependsOn`):** `[]` — sidecar `lockedTaskIds` contains `GOV-OS-03`, `GOV-OS-03R1`, `AGENT-PLATFORM-CREATE-01F`, and `I18N-SHELL-07`. CREATE-01D is pre-epoch and absent from `lockedTaskIds`. That ID MUST NOT be placed in machine `dependsOn` (would be unsatisfiable LOCK proof / `DEPS_UNSATISFIED`). Logical CREATE-01D identity-composition dependency remains in this canonical body only. Do not fake machine LOCK proof for historical IDs.
 **Primary write scope (Step 1, this write):** `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body; `docs/control-plane/lane-saturation-state.json` candidate record.
 **Primary write scope (Step 2, EXACT — frozen at this admission):** GATEWAY. Exact files: `services/api-gateway/src/ai/ai-execution.controller.ts`; `services/api-gateway/src/ai/ai-execution.controller.spec.ts`. Independent Step 2 inspection confirmed the Ask-only barrier lives only in `resolvePersistedUserAgentForAsk` (`executionIntent !== 'conversation'` → HTTP 400). No additional application file required.
 **Primary write scope (Step 3):** control-plane/consolidation only after Step 2 is complete. Not authorized now.
-**Mutexes / resources (Step 2 LANE-DONE):** GATEWAY remains OWNED by AGENT-PLATFORM-EXEC-01A until Step 3 lock. GOVERNANCE held only for this LANE-DONE lifecycle write then released UNOWNED. FRONTEND / I18N / AI-SERVICE / CONTAINER-MANAGER / MIGRATION / PACKAGE / COMPOSE / ENV / LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT unowned and unauthorized.
+**Mutexes / resources (LOCKED):** GATEWAY released UNOWNED at Step 3 lock. GOVERNANCE held only for Step 3 lifecycle write then released UNOWNED. All other mutexes UNOWNED and unauthorized throughout.
 **Hot-file leases:** none. GATEWAY is sufficient. Do not add a redundant HOTFILE.
 **Shared contracts:** none named in the machine catalog. This expands accepted `POST /api/ai/execute` semantics for ownership-scoped `agentId` + `workspace_mutation`, but no `sharedContractId` is invented. `sharedContractIds=[]`; `mutatesSharedContractIds=[]`.
 **Evidence class:** LOCAL-TESTS. No provider-live. No Docker/Postgres/Redis. No STAGING / PROVIDER-LIVE / CREDIT runtime needs. No staging/browser required by this registration.
@@ -73072,12 +73072,12 @@ frontend enablement; Harness/tool-loop; dedicated user-agent runtime; autonomous
 **Machine registration (post-epoch):** Present exactly once immediately under this canonical heading (`taskId=AGENT-PLATFORM-EXEC-01A`, `nature=IMPLEMENTATION`). Enforcement epoch unchanged. No second epoch. Do not duplicate the machine-registration markers elsewhere in this body.
 
 **Lane / admission:**
-Lane 1 LANE-DONE AGENT-PLATFORM-EXEC-01A. Lane 2 EMPTY. Lane 3 DISABLED. Do not fill Lane 2 with a second task. Exact write set frozen at Step 2 admission. Occupancy hash `sha256:86811d8c0cda3fe74d8518ce736c2d9f45baa1c67817f2596d1b5091d00f74d2` (Lane 1 LANE-DONE). Candidate `admissionUncertain=false` / `writeSetPrecision=EXACT` / `status=LANE-DONE` so `Test-Admissible` = SKIP. GATEWAY remains OWNED until Step 3 lock.
+LOCKED. Lane 1 EMPTY (released at Step 3 lock). Lane 2 EMPTY. Lane 3 DISABLED. Exact write set was frozen at Step 2 admission: `services/api-gateway/src/ai/ai-execution.controller.ts`; `services/api-gateway/src/ai/ai-execution.controller.spec.ts`. Final occupancy hash (post-lock empty board): `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d`. Candidate `admissionUncertain=false` / `writeSetPrecision=EXACT` / `status=LOCKED` so `Test-Admissible` = NOT_READY. GATEWAY released UNOWNED.
 
 **3-step lifecycle:**
 1. Step 1 — registration — COMPLETE — 2026-08-31
-2. Step 2 — exact machine admission + bounded Gateway implementation + automated validation — IMPLEMENTATION + AUTOMATED VALIDATION COMPLETE — 2026-08-31 — LANE-DONE / NOT LOCKED
-3. Step 3 — consolidation/checkpoint + lock — NOT AUTHORIZED
+2. Step 2 — exact machine admission + bounded Gateway implementation + automated validation — COMPLETE — 2026-08-31
+3. Step 3 — independent review / checkpoint / final lock — COMPLETE AND LOCKED — PASS — 2026-08-31 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01A-CHECKPOINT.md`
 
 AGENT-PLATFORM-EXEC-01A does NOT: start implementation in Step 1; admit a lane in Step 1; acquire GATEWAY in Step 1; enable frontend Build for user-agents; activate Harness; add a dedicated runtime; migrate; add permissions; register Slice 2; register PRIVATE-BETA-INVITE-01; enable Lane 3; edit PRD.md / ARCHITECTURE.md / CLAUDE.md / AGENTS.md / validator / mutex catalog / application source in Step 1.
 
@@ -73126,7 +73126,20 @@ Step 2 (exact admission + bounded Gateway implementation + automated validation)
 - [x] no runtime required
 
 Step 3 (consolidation/checkpoint/lock):
-- [ ] NOT AUTHORIZED
+- [x] independent Step 2 diff review PASS — exact write set confirmed (2 files only)
+- [x] all 16 production-behavior change points verified
+- [x] focused Gateway tests PASS — 61/61 (controller) + 46/46 (user-agent) = 107 total
+- [x] broad non-live Gateway tests PASS — 167 suites / 2128 tests / 0 failures
+- [x] `npx tsc --noEmit` 1 error (pre-existing queue.service.ts TS2322; EXEC-01A write set: 0 errors)
+- [x] `npm run build` exit 2 (same pre-existing blocker; EXEC-01A write set: 0 errors)
+- [x] PREEXISTING_OUT_OF_SCOPE_COMPILER_BLOCKER=YES — queue.service.ts TS2322 ioredis/bullmq type mismatch; unmodified by EXEC-01A
+- [x] queue.service.ts confirmed unmodified at HEAD and in EXEC-01A commit range
+- [x] no runtime/staging/browser/provider activity
+- [x] lane-saturation-state.json updated — Lane 1 EMPTY / EXEC-01A LOCKED / lockedTaskIds extended
+- [x] occupancy hash updated to `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d`
+- [x] final validator PASS — exit 0 / idleCode=NO_PAIRWISE_ADMISSIBLE_CANDIDATE
+- [x] checkpoint doc `docs/AGENT-PLATFORM-EXEC-01A-CHECKPOINT.md` created
+- [x] TASKS.md and TASKS_BACKLOG_FULL.md updated to COMPLETE AND LOCKED
 
 **Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. INVITATION_EXECUTION_PERMITTED=NO. Executable user-agent work does not authorize invitations. Unchanged.
 
@@ -73134,3 +73147,6 @@ Step 3 (consolidation/checkpoint/lock):
 
 **Step 1 HEAD:** `718ff678c1ae09e1a3bc104250e5241bff633c73` (branch main; HEAD == origin/main; clean tree verified)
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0. Governance writes: TASKS.md, this registry body, `docs/control-plane/lane-saturation-state.json`.
+
+**Step 3 HEAD:** `4b37096e1e620dd7242f5aaae9289ed81bd9ab7e` (branch main; HEAD == Step 2 implementation commit)
+**Step 3 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, application source=0, frontend implementation=0, backend implementation=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, mutex-catalog edits=0, Git commits by worker=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0. Tests run: focused 107/107 PASS; broad non-live 2128/2128 PASS. Governance writes: TASKS.md, this registry body, `docs/control-plane/lane-saturation-state.json`, `docs/control-plane/SATURATION_PROOF.json`, `docs/AGENT-PLATFORM-EXEC-01A-CHECKPOINT.md`.
