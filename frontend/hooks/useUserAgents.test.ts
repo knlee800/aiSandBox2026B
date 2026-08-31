@@ -256,3 +256,67 @@ describe('useUserAgents hook API contract tests', () => {
     assert.equal('deletedAt' in sentBody, false, 'deletedAt must never be sent');
   });
 });
+
+describe('useUserAgents deleteUserAgentRequest — AGENT-PLATFORM-CREATE-01F', () => {
+  beforeEach(() => {
+    fetchCalls.length = 0;
+  });
+
+  afterEach(() => {
+    restoreFetch();
+  });
+
+  test('DELETE /api/agents/:id uses credentials include and the given agent ID', async () => {
+    const { deleteUserAgentRequest } = await import('./useUserAgents');
+    installMockFetch(async () => mockResponse(204, null));
+
+    const result = await deleteUserAgentRequest('agent-42');
+
+    assert.equal(result.error, undefined);
+    assert.equal(fetchCalls.length, 1);
+    assert.equal(fetchCalls[0].url, '/api/agents/agent-42');
+    assert.equal(fetchCalls[0].init?.method, 'DELETE');
+    assert.equal(fetchCalls[0].init?.credentials, 'include');
+    assert.equal(fetchCalls[0].init?.body, undefined);
+  });
+
+  test('successful DELETE does not parse a response body', async () => {
+    const { deleteUserAgentRequest } = await import('./useUserAgents');
+    installMockFetch(async () => mockResponse(204, { secret: 'do-not-show' }));
+
+    const result = await deleteUserAgentRequest('agent-42');
+    assert.equal(result.error, undefined);
+  });
+
+  test('401 maps to AUTH_EXPIRED without leaking server copy', async () => {
+    const { deleteUserAgentRequest } = await import('./useUserAgents');
+    installMockFetch(async () => mockResponse(401, { message: 'Authentication required' }));
+
+    const result = await deleteUserAgentRequest('agent-42');
+    assert.equal(result.error, 'AUTH_EXPIRED');
+  });
+
+  test('404 and 500 map to DELETE_FAILED without leaking server copy', async () => {
+    const { deleteUserAgentRequest } = await import('./useUserAgents');
+    installMockFetch(async () => mockResponse(404, { message: 'Not Found', error: 'NotFoundException' }));
+    const missing = await deleteUserAgentRequest('missing-id');
+    assert.equal(missing.error, 'DELETE_FAILED');
+
+    installMockFetch(async () => mockResponse(500, { message: 'Internal Server Error' }));
+    const failed = await deleteUserAgentRequest('agent-42');
+    assert.equal(failed.error, 'DELETE_FAILED');
+  });
+
+  test('removeUserAgentFromList drops only the deleted id', async () => {
+    const { removeUserAgentFromList } = await import('./useUserAgents');
+    const remaining = removeUserAgentFromList(
+      [
+        { id: 'a' },
+        { id: 'b' },
+        { id: 'c' },
+      ],
+      'b',
+    );
+    assert.deepEqual(remaining.map((agent) => agent.id), ['a', 'c']);
+  });
+});

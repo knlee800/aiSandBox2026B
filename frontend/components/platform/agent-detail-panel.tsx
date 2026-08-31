@@ -1,14 +1,22 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import {
   ArrowRightIcon,
   ClockIcon,
   RocketLaunchIcon,
   SparklesIcon,
+  TrashIcon,
   WrenchScrewdriverIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
+import {
+  canSubmitUserAgentDelete,
+  nextUserAgentDeletePhase,
+  shouldShowUserAgentDeleteControl,
+  type UserAgentDeletePhase,
+} from '@/hooks/useUserAgents';
 
 export interface AgentDetailViewModel {
   id: string;
@@ -37,6 +45,15 @@ export interface AgentDetailPanelProps {
   askButtonLabel: string;
   comingSoonLabel: string;
   comingSoonBody: string;
+  deleteButtonLabel: string;
+  deleteConfirmTitle: string;
+  deleteConfirmBody: string;
+  deleteConfirmActionLabel: string;
+  deleteCancelLabel: string;
+  deletingLabel: string;
+  deleteErrorMessage: string | null;
+  deletePending: boolean;
+  onDelete: (agentId: string) => void;
   onClose: () => void;
 }
 
@@ -55,8 +72,30 @@ export default function AgentDetailPanel(props: AgentDetailPanelProps) {
     askButtonLabel,
     comingSoonLabel,
     comingSoonBody,
+    deleteButtonLabel,
+    deleteConfirmTitle,
+    deleteConfirmBody,
+    deleteConfirmActionLabel,
+    deleteCancelLabel,
+    deletingLabel,
+    deleteErrorMessage,
+    deletePending,
+    onDelete,
     onClose,
   } = props;
+  const [deletePhase, setDeletePhase] = useState<UserAgentDeletePhase>('idle');
+
+  useEffect(() => {
+    setDeletePhase('idle');
+  }, [agent?.id]);
+
+  useEffect(() => {
+    if (deletePending) {
+      setDeletePhase((current) => nextUserAgentDeletePhase(current, 'confirm'));
+      return;
+    }
+    setDeletePhase((current) => (current === 'pending' ? nextUserAgentDeletePhase(current, 'settled') : current));
+  }, [deletePending]);
 
   if (!agent) {
     return (
@@ -151,6 +190,60 @@ export default function AgentDetailPanel(props: AgentDetailPanelProps) {
             <span>{askButtonLabel}</span>
             <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
           </Link>
+          {shouldShowUserAgentDeleteControl(agent.isUserCreated) ? (
+            <div className="mt-3">
+              {deletePhase === 'idle' ? (
+                <button
+                  type="button"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700 transition-[transform,background-color,color] duration-150 ease-out hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 active:scale-[0.97]"
+                  onClick={() => setDeletePhase((current) => nextUserAgentDeletePhase(current, 'open'))}
+                  data-testid="agent-detail-delete"
+                >
+                  <TrashIcon className="h-4 w-4" aria-hidden="true" />
+                  <span>{deleteButtonLabel}</span>
+                </button>
+              ) : (
+                <div
+                  className="rounded-lg border border-red-200 bg-red-50/80 p-4"
+                  data-testid="agent-detail-delete-confirm-panel"
+                >
+                  <p className="text-sm font-semibold text-red-800">{deleteConfirmTitle}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-red-700">{deleteConfirmBody}</p>
+                  <div className="mt-3 flex flex-col gap-2 sm:flex-row-reverse">
+                    <button
+                      type="button"
+                      className="inline-flex flex-1 items-center justify-center rounded-lg bg-red-700 px-3 py-2 text-sm font-semibold text-white transition-[transform,background-color] duration-150 ease-out hover:bg-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 active:scale-[0.97] disabled:cursor-not-allowed disabled:bg-red-300"
+                      onClick={() => {
+                        if (!canSubmitUserAgentDelete(deletePhase) || deletePending) {
+                          return;
+                        }
+                        setDeletePhase((current) => nextUserAgentDeletePhase(current, 'confirm'));
+                        onDelete(agent.id);
+                      }}
+                      disabled={!canSubmitUserAgentDelete(deletePhase) || deletePending}
+                      data-testid="agent-detail-delete-confirm"
+                    >
+                      {deletePending ? deletingLabel : deleteConfirmActionLabel}
+                    </button>
+                    <button
+                      type="button"
+                      className="inline-flex flex-1 items-center justify-center rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 transition-[transform,background-color] duration-150 ease-out hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 active:scale-[0.97] disabled:cursor-not-allowed disabled:text-gray-400"
+                      onClick={() => setDeletePhase((current) => nextUserAgentDeletePhase(current, 'cancel'))}
+                      disabled={deletePending}
+                      data-testid="agent-detail-delete-cancel"
+                    >
+                      {deleteCancelLabel}
+                    </button>
+                  </div>
+                </div>
+              )}
+              {deleteErrorMessage ? (
+                <p className="mt-2 text-sm text-red-700" data-testid="agent-detail-delete-error" role="alert">
+                  {deleteErrorMessage}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       ) : (
         <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">

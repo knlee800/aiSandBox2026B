@@ -24,7 +24,70 @@ export interface UseUserAgentsResult {
   loading: boolean;
   error: string | null;
   createAgent: (dto: CreateAgentDto) => Promise<{ agent?: UserAgent; error?: string }>;
+  deleteAgent: (agentId: string) => Promise<{ error?: string }>;
   refetch: () => Promise<void>;
+}
+
+export type UserAgentDeletePhase = 'idle' | 'confirming' | 'pending';
+export type UserAgentDeleteEvent = 'open' | 'cancel' | 'confirm' | 'settled';
+
+export function shouldShowUserAgentDeleteControl(isUserCreated: boolean | undefined): boolean {
+  return isUserCreated === true;
+}
+
+export function nextUserAgentDeletePhase(
+  phase: UserAgentDeletePhase,
+  event: UserAgentDeleteEvent,
+): UserAgentDeletePhase {
+  if (event === 'open') {
+    return phase === 'idle' ? 'confirming' : phase;
+  }
+  if (event === 'cancel') {
+    return phase === 'confirming' ? 'idle' : phase;
+  }
+  if (event === 'confirm') {
+    return phase === 'confirming' ? 'pending' : phase;
+  }
+  if (event === 'settled') {
+    return 'idle';
+  }
+  return phase;
+}
+
+export function canSubmitUserAgentDelete(phase: UserAgentDeletePhase): boolean {
+  return phase === 'confirming';
+}
+
+export function nextSelectedUserAgentIdAfterDelete(
+  selectedId: string | null,
+  deletedId: string,
+): string | null {
+  return selectedId === deletedId ? null : selectedId;
+}
+
+export function removeUserAgentFromList<T extends { id: string }>(agents: T[], deletedId: string): T[] {
+  return agents.filter((agent) => agent.id !== deletedId);
+}
+
+export async function deleteUserAgentRequest(agentId: string): Promise<{ error?: string }> {
+  try {
+    const response = await fetch(`/api/agents/${encodeURIComponent(agentId)}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+
+    if (response.status === 401) {
+      return { error: 'AUTH_EXPIRED' };
+    }
+
+    if (!response.ok) {
+      return { error: 'DELETE_FAILED' };
+    }
+
+    return {};
+  } catch {
+    return { error: 'DELETE_FAILED' };
+  }
 }
 
 export function useUserAgents(): UseUserAgentsResult {
@@ -95,5 +158,13 @@ export function useUserAgents(): UseUserAgentsResult {
     [fetchAgents],
   );
 
-  return { agents, loading, error, createAgent, refetch: fetchAgents };
+  const deleteAgent = useCallback(async (agentId: string): Promise<{ error?: string }> => {
+    const result = await deleteUserAgentRequest(agentId);
+    if (!result.error) {
+      setAgents((current) => removeUserAgentFromList(current, agentId));
+    }
+    return result;
+  }, []);
+
+  return { agents, loading, error, createAgent, deleteAgent, refetch: fetchAgents };
 }

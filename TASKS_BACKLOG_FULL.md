@@ -72666,19 +72666,19 @@ taskId=AGENT-PLATFORM-CREATE-01F
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED — Step 1 COMPLETE — 2026-08-30 — NOT ADMITTED — IMPLEMENTATION_STARTED=NO — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE released UNOWNED after this registration write — saturationClass=FORCING — writeSetPrecision=PROVISIONAL — admissionUncertain=true — candidate not in S
+**Status:** LANE-DONE (Lane 1) — Step 1 COMPLETE — 2026-08-30 — Step 2 IMPLEMENTATION + AUTOMATED VALIDATION COMPLETE — 2026-08-30 — STAGING_BROWSER_SMOKE_RECOMMENDED=YES (not required by LOCAL-TESTS AC; not run) — Step 3 NOT AUTHORIZED — Lane 1 LANE-DONE — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE released UNOWNED — saturationClass=FORCING — writeSetPrecision=EXACT — admissionUncertain=false — occupied / SKIP from S — FRONTEND OWNED — I18N OWNED — GATEWAY UNOWNED / READ ONLY
 **Task ID:** AGENT-PLATFORM-CREATE-01F
 **Title:** User-Facing Delete Control for Persisted User-Created Agents
 **Family:** AGENT PLATFORM / CREATE (successor to AGENT-PLATFORM-CREATE-01A / 01B / 01C / 01D / 01E, all COMPLETE AND LOCKED)
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
-**Lifecycle:** 3-step NORMAL bounded UX/UI — Step 1 registration (THIS STEP) COMPLETE; Step 2 bounded implementation + automated validation + any explicitly required staging smoke PENDING / NOT AUTHORIZED until Keith commits this Step 1 state and a later control-plane admission transition freezes `writeSetPrecision=EXACT` and `admissionUncertain=false`; Step 3 consolidation/checkpoint + lock NOT AUTHORIZED. Separate stage-start document NOT created in Step 1. Exact machine admission still requires a discrete pre-implementation control-plane freeze/admit write (not a 4th registered lifecycle step).
-**Start condition:** READY at Step 1 registration. Machine `startCondition=READY`. Candidate is not yet safely admissible into S because `writeSetPrecision=PROVISIONAL` requires `admissionUncertain=true` (validator code `ADMISSION_UNCERTAIN`). Step 2 implementation must not start until Keith commits this Step 1 state, the control plane freezes the exact FRONTEND+I18N write set, and one implementation lane is admitted.
+**Lifecycle:** 3-step NORMAL bounded UX/UI — Step 1 registration COMPLETE; Step 2 exact machine admission + bounded implementation + automated validation COMPLETE; Step 3 consolidation/checkpoint + lock NOT AUTHORIZED. Separate stage-start document NOT created. Exact FRONTEND+I18N write set frozen at the Step 2 admission transition before source edits.
+**Start condition:** READY. Machine `startCondition=READY`. Candidate is occupied in Lane 1 (`status=LANE-DONE`) so SKIP from S. `writeSetPrecision=EXACT`; `admissionUncertain=false`.
 **Depends on (canonical / human):** AGENT-PLATFORM-CREATE-01A (COMPLETE AND LOCKED — persistence / `user_agents` / ownership); AGENT-PLATFORM-CREATE-01B (COMPLETE AND LOCKED — create / list / view UX); AGENT-PLATFORM-CREATE-01C (COMPLETE AND LOCKED — ownership-scoped soft-delete API `DELETE /api/agents/:id`; Checkpoint: `docs/PILOT-2LANE-01-CHECKPOINT.md`); AGENT-PLATFORM-CREATE-01E (COMPLETE AND LOCKED — current Create Agent profile / Ask UX surfaces this Delete control must attach to; Checkpoint: `docs/AGENT-PLATFORM-CREATE-01E-CHECKPOINT.md`); GOV-PRD-02 COMPLETE AND LOCKED (living PRODUCT WHAT); GOV-ARCH-02 COMPLETE AND LOCKED (living TECHNICAL HOW); GOV-OS-02 COMPLETE AND LOCKED (Next-Work Selection Protocol; this registration used the light named-task CURRENT/FUTURE check because Keith explicitly named option A); GOV-OS-03 COMPLETE AND LOCKED; GOV-OS-03R1 COMPLETE AND LOCKED.
 **Depends on (machine sidecar `dependsOn`):** `[]` — sidecar `lockedTaskIds` currently contains only `GOV-OS-03` and `GOV-OS-03R1`. Pre-epoch CREATE locks (01A/01B/01C/01E) are canonically COMPLETE AND LOCKED but are not present in `lockedTaskIds`. Those IDs MUST NOT be placed in machine `dependsOn` (would falsely return `DEPS_UNSATISFIED`). Logical CREATE-chain dependencies remain in this canonical body only. Do not fake machine LOCK proof.
-**Primary write scope (Step 1, this write):** `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body; `docs/control-plane/lane-saturation-state.json` candidate record. No application source. No stage-start document.
-**Primary write scope (Step 2, PROVISIONAL — not frozen):** FRONTEND + I18N. Probable family: existing Create Agent profile/list/detail surfaces under `frontend/components/platform/`; existing `frontend/hooks/useUserAgents.ts` (and tests) to consume already-locked `DELETE /api/agents/:id`; the three locale files. Exact files freeze only at the later admission transition. GATEWAY READ ONLY / existing API consumption only. Do not acquire GATEWAY as a write mutex unless later evidence proves a genuine contract hole.
-**Mutexes / resources (provisional, not acquired):** FRONTEND; I18N (atomic 3-file lease). GATEWAY not acquired (READ ONLY expected). GOVERNANCE held only for this Step 1 registration write then released UNOWNED. AI-SERVICE / CONTAINER-MANAGER / MIGRATION / PACKAGE / COMPOSE / ENV / LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT unowned and unauthorized.
+**Primary write scope (Step 1, committed):** `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body; `docs/control-plane/lane-saturation-state.json` candidate record.
+**Primary write scope (Step 2, EXACT — FROZEN at admission):** FRONTEND + I18N. Exact files: `frontend/components/platform/agent-detail-panel.tsx`; `frontend/components/platform/platform-dashboard.tsx`; `frontend/components/platform/platform-dashboard.test.ts`; `frontend/hooks/useUserAgents.ts`; `frontend/hooks/useUserAgents.test.ts`; `frontend/messages/en.json`; `frontend/messages/zh-TW.json`; `frontend/messages/zh-CN.json`. GATEWAY READ ONLY / existing `DELETE /api/agents/:id` consumption only. Do not acquire GATEWAY.
+**Mutexes / resources (exact, acquired for implementation):** FRONTEND; I18N (atomic 3-file lease). GATEWAY not acquired (READ ONLY). GOVERNANCE held only for this admission write then released UNOWNED. AI-SERVICE / CONTAINER-MANAGER / MIGRATION / PACKAGE / COMPOSE / ENV / LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT unowned and unauthorized.
 **Hot-file leases:** none. FRONTEND + I18N are sufficient. Do not add a redundant HOTFILE.
 **Shared contracts:** none frozen/mutated. Reuse the already-locked CREATE-01C `DELETE /api/agents/:id` contract (authenticated, ownership-scoped, soft delete, 204/404/401). Do not reopen Gateway DELETE semantics.
 **Evidence class:** LOCAL-TESTS. Bounded staging browser smoke only later if the implementation lifecycle determines it is required. No provider-live. No Docker/Postgres/Redis at registration. No STAGING / PROVIDER-LIVE / CREDIT runtime needs.
@@ -72686,8 +72686,8 @@ nature=IMPLEMENTATION
 **saturationClass:** FORCING (explicit; Keith selected this as the intended near-frontier task)
 **productClass:** CURRENT
 **futureAuthorization:** NONE
-**writeSetPrecision:** PROVISIONAL
-**admissionUncertain:** true
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
 **exclusiveCapacity:** false
 **runtimeNeeds:** none
 
@@ -72735,11 +72735,11 @@ Multilingual-first is mandatory. Any new user-facing text must use the existing 
 **Machine registration (post-epoch):** Present exactly once immediately under this canonical heading (`taskId=AGENT-PLATFORM-CREATE-01F`, `nature=IMPLEMENTATION`). Enforcement epoch unchanged. No second epoch. Do not duplicate the machine-registration markers elsewhere in this body.
 
 **Lane / admission:**
-NOT ADMITTED. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. Do not fill Lane 2 with a second task. SAFE_TWO_LANE_PAIR is non-authoritative and is not written as occupancy proof.
+ADMITTED to Lane 1. Lane 2 EMPTY. Lane 3 DISABLED. Do not fill Lane 2 with a second task. SAFE_TWO_LANE_PAIR is non-authoritative and is not written as occupancy proof. Occupancy hash before=`sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d` after=`sha256:61e718cc01a3087fe561901dc01499bf1a5302f8c4be46094a2669b4588f578e`.
 
 **3-step lifecycle:**
 1. Step 1 — registration — COMPLETE — 2026-08-30
-2. Step 2 — bounded implementation + automated validation + any explicitly required staging smoke — PENDING (requires Keith commit of this Step 1 state, then a control-plane admission transition that sets `writeSetPrecision=EXACT` and `admissionUncertain=false` before implementation source edits)
+2. Step 2 — exact machine admission + bounded implementation + automated validation — COMPLETE — 2026-08-30 — STAGING_BROWSER_SMOKE_RECOMMENDED=YES (not required; not run)
 3. Step 3 — consolidation/checkpoint + lock — NOT AUTHORIZED
 
 AGENT-PLATFORM-CREATE-01F does NOT: change backend DELETE; hard-delete; migrate; edit/update profiles; add Build/Harness/tools/knowledge/skills; add dedicated user-agent runtime; register PRIVATE-BETA-INVITE-01; enable Lane 3; admit Lane 1 or Lane 2 in Step 1; start implementation in Step 1; edit PRD.md / ARCHITECTURE.md / CLAUDE.md / AGENTS.md / validator / mutex catalog in Step 1.
@@ -72766,10 +72766,29 @@ Step 1 (Registration):
 - [x] No Git commit/push by the worker
 
 Step 2 (bounded implementation + automated validation):
-- [ ] NOT AUTHORIZED until Keith commits this Step 1 state and the control plane completes the admission/exact-write-set freeze transition
+- [x] Exact FRONTEND+I18N write set frozen from repository evidence
+- [x] `writeSetPrecision=EXACT`; `admissionUncertain=false`
+- [x] Lane 1 admitted AGENT-PLATFORM-CREATE-01F; Lane 2 EMPTY; Lane 3 DISABLED
+- [x] FRONTEND + I18N acquired; GATEWAY not acquired
+- [x] Validator PASS on the admission end state before application source edits
+- [x] Delete action visible for persisted user-created agents
+- [x] Confirmation required before DELETE
+- [x] Cancel leaves state unchanged / does not call DELETE
+- [x] Confirm invokes existing DELETE /api/agents/:id
+- [x] Successful delete removes/invalidates the deleted agent from current UI state
+- [x] Request-in-progress prevents duplicate destructive requests
+- [x] Backend error surfaced through existing localized error/state pattern (no raw internals)
+- [x] Ask / CREATE-01E Build-bound behavior remains intact
+- [x] All three locale files updated together
+- [x] Heroicons v2 Outline only
+- [x] Focused frontend tests PASS
+- [x] TypeScript PASS
+- [x] Frontend production build PASS (no runtime services)
 
 Step 3 (consolidation/checkpoint/lock):
 - [ ] NOT AUTHORIZED
 
-**Step 1 HEAD:** `03bd880202b58f4037df4b1950c4919b95388389` (branch main; HEAD == origin/main; clean tree verified)
+**Step 1 HEAD:** `03bd880202b58f4037df4b1950c4919b95388389` (pre-registration base; Step 1 commit `47b4533072e099d4eb157e4c5fed45bdce5bb831`)
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0. Governance writes: TASKS.md, this registry body, `docs/control-plane/lane-saturation-state.json`.
+**Step 2 HEAD (uncommitted working tree on main):** admission+implementation on top of `47b4533072e099d4eb157e4c5fed45bdce5bb831`
+**Step 2 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, backend implementation=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git commit/push=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, browser=0. Frontend implementation=YES (frozen 8 files). Tests executed=YES (focused 55/55, execution-intent 23/23, frontend npm test 745/745, tsc PASS, build PASS). Lane 1 admitted then LANE-DONE. STAGING_BROWSER_SMOKE_RECOMMENDED=YES / not run.

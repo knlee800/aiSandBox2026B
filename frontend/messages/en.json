@@ -535,7 +535,12 @@
       "agentStatusActive": "Active",
       "agentStatusDraft": "Draft",
       "agentStatusDisabled": "Disabled",
-      "askButton": "Ask"
+      "askButton": "Ask",
+      "deleteButton": "Delete agent",
+      "deleteConfirmTitle": "Delete this agent?",
+      "deleteConfirmBody": "This agent will be removed from your list. You can create it again later.",
+      "deleteConfirmAction": "Delete agent",
+      "deleteError": "Failed to delete this agent. Please try again."
     }
   },
   "billing": {

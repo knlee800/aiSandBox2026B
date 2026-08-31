@@ -17,6 +17,7 @@ import { listAgents } from '@/lib/agent-platform/agent-registry';
 import type { AgentStatus } from '@/lib/agent-platform/agent-registry';
 import { useUserAgents } from '@/hooks/useUserAgents';
 import type { UserAgent } from '@/hooks/useUserAgents';
+import { nextSelectedUserAgentIdAfterDelete } from '@/hooks/useUserAgents';
 import AgentStationCard from './agent-station-card';
 import AgentDetailPanel from './agent-detail-panel';
 import type { AgentDetailViewModel } from './agent-detail-panel';
@@ -83,6 +84,9 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
   const [selectedUserAgentId, setSelectedUserAgentId] = React.useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = React.useState(false);
   const [authReady, setAuthReady] = React.useState(false);
+  const [deletePending, setDeletePending] = React.useState(false);
+  const [deleteError, setDeleteError] = React.useState<string | null>(null);
+  const deleteInFlightRef = React.useRef(false);
   const resolvedLocale = locale ?? 'en';
 
   const {
@@ -90,6 +94,7 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
     loading: userAgentsLoading,
     error: userAgentsError,
     createAgent,
+    deleteAgent,
     refetch: refetchUserAgents,
   } = useUserAgents();
 
@@ -111,6 +116,13 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
   const detailEmptyBody = resolveNestedMessage(messages, 'platform.detail.emptyBody');
   const detailStartBuilding = resolveNestedMessage(messages, 'platform.detail.startBuilding');
   const detailAskButton = resolveNestedMessage(messages, 'platform.agentCreate.askButton');
+  const detailDeleteButton = resolveNestedMessage(messages, 'platform.agentCreate.deleteButton');
+  const detailDeleteConfirmTitle = resolveNestedMessage(messages, 'platform.agentCreate.deleteConfirmTitle');
+  const detailDeleteConfirmBody = resolveNestedMessage(messages, 'platform.agentCreate.deleteConfirmBody');
+  const detailDeleteConfirmAction = resolveNestedMessage(messages, 'platform.agentCreate.deleteConfirmAction');
+  const detailDeleteError = resolveNestedMessage(messages, 'platform.agentCreate.deleteError');
+  const detailDeleteCancel = resolveNestedMessage(messages, 'platform.agentCreate.cancelButton');
+  const detailDeleting = resolveNestedMessage(messages, 'common.deleting');
   const detailComingSoonTitle = resolveNestedMessage(messages, 'platform.detail.comingSoonTitle');
   const detailComingSoonBody = resolveNestedMessage(messages, 'platform.detail.comingSoonBody');
   const builderIntent = resolveNestedMessage(messages, 'platform.detail.builderIntent');
@@ -204,24 +216,28 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
     setSelectedAgentId(id);
     setSelectedUserAgentId(null);
     setShowCreateForm(false);
+    setDeleteError(null);
   }
 
   function handleSelectUserAgent(id: string) {
     setSelectedUserAgentId(id);
     setSelectedAgentId(null);
     setShowCreateForm(false);
+    setDeleteError(null);
   }
 
   function handleOpenCreateForm() {
     setShowCreateForm(true);
     setSelectedAgentId(null);
     setSelectedUserAgentId(null);
+    setDeleteError(null);
   }
 
   function handleCloseDetail() {
     setSelectedAgentId(null);
     setSelectedUserAgentId(null);
     setShowCreateForm(false);
+    setDeleteError(null);
   }
 
   async function handleCreateAgent(data: { name: string; role: string; description: string }) {
@@ -233,6 +249,27 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
       return { error: result.error };
     }
     return {};
+  }
+
+  async function handleDeleteAgent(agentId: string) {
+    if (deletePending || deleteInFlightRef.current) {
+      return;
+    }
+    deleteInFlightRef.current = true;
+    setDeletePending(true);
+    setDeleteError(null);
+    const result = await deleteAgent(agentId);
+    deleteInFlightRef.current = false;
+    setDeletePending(false);
+    if (result.error === 'AUTH_EXPIRED') {
+      router.replace(`/${resolvedLocale}/login`);
+      return;
+    }
+    if (result.error) {
+      setDeleteError(detailDeleteError);
+      return;
+    }
+    setSelectedUserAgentId((current) => nextSelectedUserAgentIdAfterDelete(current, agentId));
   }
 
   let detailPanelContent: AgentDetailViewModel | null = null;
@@ -493,6 +530,15 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
                   askButtonLabel={detailAskButton}
                   comingSoonLabel={detailComingSoonTitle}
                   comingSoonBody={detailComingSoonBody}
+                  deleteButtonLabel={detailDeleteButton}
+                  deleteConfirmTitle={detailDeleteConfirmTitle}
+                  deleteConfirmBody={detailDeleteConfirmBody}
+                  deleteConfirmActionLabel={detailDeleteConfirmAction}
+                  deleteCancelLabel={detailDeleteCancel}
+                  deletingLabel={detailDeleting}
+                  deleteErrorMessage={deleteError}
+                  deletePending={deletePending}
+                  onDelete={handleDeleteAgent}
                   onClose={handleCloseDetail}
                 />
               )}

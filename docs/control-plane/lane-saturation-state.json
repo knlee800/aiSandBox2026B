@@ -10,13 +10,22 @@
   },
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "LANE-DONE",
+      "taskId": "AGENT-PLATFORM-CREATE-01F",
+      "mutexes": ["FRONTEND", "I18N"],
+      "writePaths": [
+        "frontend/components/platform/agent-detail-panel.tsx",
+        "frontend/components/platform/platform-dashboard.tsx",
+        "frontend/components/platform/platform-dashboard.test.ts",
+        "frontend/hooks/useUserAgents.ts",
+        "frontend/hooks/useUserAgents.test.ts",
+        "frontend/messages/en.json",
+        "frontend/messages/zh-TW.json",
+        "frontend/messages/zh-CN.json"
+      ],
       "hotfiles": [],
-      "i18n": false,
-      "evidenceClass": "NONE",
+      "i18n": true,
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -41,7 +50,7 @@
       "taskId": "AGENT-PLATFORM-CREATE-01F",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
-      "status": "READY",
+      "status": "LANE-DONE",
       "startCondition": "READY",
       "saturationClass": "FORCING",
       "productClass": "CURRENT",
@@ -49,8 +58,11 @@
       "dependsOn": [],
       "mutexes": ["FRONTEND", "I18N"],
       "writePaths": [
-        "frontend/hooks/",
-        "frontend/components/platform/",
+        "frontend/components/platform/agent-detail-panel.tsx",
+        "frontend/components/platform/platform-dashboard.tsx",
+        "frontend/components/platform/platform-dashboard.test.ts",
+        "frontend/hooks/useUserAgents.ts",
+        "frontend/hooks/useUserAgents.test.ts",
         "frontend/messages/en.json",
         "frontend/messages/zh-TW.json",
         "frontend/messages/zh-CN.json"
@@ -62,8 +74,8 @@
       "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "runtimeNeeds": [],
-      "admissionUncertain": true,
-      "writeSetPrecision": "PROVISIONAL"
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
     }
   ],
   "lockedTaskIds": ["GOV-OS-03", "GOV-OS-03R1"],

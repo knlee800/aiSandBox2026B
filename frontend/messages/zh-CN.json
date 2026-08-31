@@ -535,7 +535,12 @@
       "agentStatusActive": "运行中",
       "agentStatusDraft": "草稿",
       "agentStatusDisabled": "已停用",
-      "askButton": "提问"
+      "askButton": "提问",
+      "deleteButton": "删除代理",
+      "deleteConfirmTitle": "确定要删除此代理？",
+      "deleteConfirmBody": "此代理将从您的列表中移除。之后仍可再次创建。",
+      "deleteConfirmAction": "删除代理",
+      "deleteError": "无法删除此代理，请再试一次。"
     }
   },
   "billing": {

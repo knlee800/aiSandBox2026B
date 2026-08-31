@@ -214,6 +214,11 @@ describe('platform Create Agent translation keys', () => {
     'platform.agentCreate.agentStatusDraft',
     'platform.agentCreate.agentStatusDisabled',
     'platform.agentCreate.askButton',
+    'platform.agentCreate.deleteButton',
+    'platform.agentCreate.deleteConfirmTitle',
+    'platform.agentCreate.deleteConfirmBody',
+    'platform.agentCreate.deleteConfirmAction',
+    'platform.agentCreate.deleteError',
   ];
 
   test('all platform.agentCreate.* keys resolve in all 3 locales', () => {
@@ -449,5 +454,97 @@ describe('platform persisted user-agent Ask CTA — AGENT-PLATFORM-CREATE-01E', 
     assert.doesNotMatch(panelSource, /workspace_mutation/);
     assert.doesNotMatch(panelSource, /executionIntent/);
     assert.doesNotMatch(panelSource, /harnessVersion/);
+  });
+});
+
+describe('platform persisted user-agent Delete control — AGENT-PLATFORM-CREATE-01F', () => {
+  const panelSource = readFileSync(new URL('./agent-detail-panel.tsx', import.meta.url), 'utf8');
+  const dashboardSource = readFileSync(new URL('./platform-dashboard.tsx', import.meta.url), 'utf8');
+  const hookSource = readFileSync(new URL('../../hooks/useUserAgents.ts', import.meta.url), 'utf8');
+
+  test('Delete action is visible only in the user-created agent detail branch', async () => {
+    const { shouldShowUserAgentDeleteControl } = await import('../../hooks/useUserAgents');
+    assert.equal(shouldShowUserAgentDeleteControl(true), true);
+    assert.equal(shouldShowUserAgentDeleteControl(false), false);
+    assert.equal(shouldShowUserAgentDeleteControl(undefined), false);
+    const userCreatedBranch = panelSource.slice(panelSource.indexOf('agent.isUserCreated'));
+    assert.match(userCreatedBranch, /data-testid="agent-detail-delete"/);
+    assert.match(userCreatedBranch, /TrashIcon/);
+    assert.match(panelSource, /from '@heroicons\/react\/24\/outline'/);
+    assert.doesNotMatch(panelSource, /from '@heroicons\/react\/24\/solid'/);
+    assert.doesNotMatch(panelSource, /lucide|font-awesome|@mui\/icons/i);
+  });
+
+  test('Builder and coming-soon details do not expose Delete', () => {
+    const builderBranchStart = panelSource.indexOf('{agent.isBuilder ?');
+    const userCreatedBranchStart = panelSource.indexOf(') : agent.isUserCreated ?');
+    const builderBranch = panelSource.slice(builderBranchStart, userCreatedBranchStart);
+    assert.match(builderBranch, /data-testid="agent-detail-start-building"/);
+    assert.doesNotMatch(builderBranch, /agent-detail-delete/);
+    const comingSoonBranch = panelSource.slice(panelSource.lastIndexOf('comingSoonLabel'));
+    assert.doesNotMatch(comingSoonBranch, /agent-detail-delete/);
+  });
+
+  test('Ask CTA remains on the user-created detail after Delete control is added', () => {
+    assert.match(panelSource, /data-testid="agent-detail-ask"/);
+    assert.match(
+      panelSource,
+      /href=\{`\$\{localePrefix\}\/app\?userAgentId=\$\{encodeURIComponent\(agent\.id\)\}`\}/,
+    );
+    assert.doesNotMatch(panelSource, /workspace_mutation/);
+    assert.doesNotMatch(panelSource, /harnessVersion/);
+  });
+
+  test('invoking Delete requires confirmation and cancel does not call DELETE', async () => {
+    const { nextUserAgentDeletePhase, canSubmitUserAgentDelete } = await import('../../hooks/useUserAgents');
+    assert.equal(nextUserAgentDeletePhase('idle', 'open'), 'confirming');
+    assert.equal(canSubmitUserAgentDelete('idle'), false);
+    assert.equal(canSubmitUserAgentDelete('confirming'), true);
+    assert.equal(nextUserAgentDeletePhase('confirming', 'cancel'), 'idle');
+    assert.equal(canSubmitUserAgentDelete('idle'), false);
+    assert.match(panelSource, /data-testid="agent-detail-delete-confirm"/);
+    assert.match(panelSource, /data-testid="agent-detail-delete-cancel"/);
+    assert.match(dashboardSource, /platform\.agentCreate\.deleteConfirmTitle/);
+  });
+
+  test('confirm calls existing DELETE /api/agents/:id and pending blocks duplicate submit', async () => {
+    const { nextUserAgentDeletePhase, canSubmitUserAgentDelete } = await import('../../hooks/useUserAgents');
+    assert.equal(nextUserAgentDeletePhase('confirming', 'confirm'), 'pending');
+    assert.equal(canSubmitUserAgentDelete('pending'), false);
+    assert.equal(nextUserAgentDeletePhase('pending', 'confirm'), 'pending');
+    assert.match(hookSource, /method:\s*['"]DELETE['"]/);
+    assert.match(hookSource, /\/api\/agents\/\$\{/);
+    assert.match(dashboardSource, /deleteAgent\(/);
+  });
+
+  test('successful delete clears the selected detail and removes the agent from list state', async () => {
+    const { nextSelectedUserAgentIdAfterDelete, removeUserAgentFromList } = await import(
+      '../../hooks/useUserAgents'
+    );
+    assert.equal(
+      nextSelectedUserAgentIdAfterDelete('agent-1', 'agent-1'),
+      null,
+    );
+    assert.equal(
+      nextSelectedUserAgentIdAfterDelete('agent-2', 'agent-1'),
+      'agent-2',
+    );
+    const remaining = removeUserAgentFromList(
+      [
+        { id: 'agent-1', name: 'Keep-or-drop' },
+        { id: 'agent-2', name: 'Keep' },
+      ],
+      'agent-1',
+    );
+    assert.deepEqual(
+      remaining.map((agent) => agent.id),
+      ['agent-2'],
+    );
+  });
+
+  test('failed DELETE uses a localized error key and does not expose raw server copy', () => {
+    assert.match(dashboardSource, /platform\.agentCreate\.deleteError/);
+    assert.doesNotMatch(dashboardSource, /body\.message/);
+    assert.doesNotMatch(panelSource, /deleted_at|soft delete|NotFoundException/i);
   });
 });
