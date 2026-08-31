@@ -20,7 +20,7 @@ Product identity at a glance:
 - **aiSandBox / Builder Agent** — first functional agent/module
 - **CURRENT shell** — command-center/dashboard with RPG-inspired visual identity
 - **PARTIAL / visible but not functional** — specialist coming-soon placeholders
-- **CURRENT bounded user-agent Ask** — persisted user-created agent profiles can be asked through the existing workspace Chat; Build is unavailable while bound; not a complete executable-agent product
+- **CURRENT bounded user-agent Ask and Build** — persisted user-created agents can be bound in the existing workspace and use Ask (`conversation`) and Build (`workspace_mutation`) against the authenticated user's currently selected existing project/session on the existing Builder runtime; stored agent identity shapes that execution; not a complete executable-agent product
 - **NOT current user experience** — functional specialist agents; fully executable user-created agents; knowledge runtime; collaboration/referrals/work objects; product-visible multi-Builder; Harness as the Builder experience
 - **Approved FUTURE** — the NOT-current capabilities above, plus Legal Advisor Agent, deeper RPG/simulation, OAuth activation, Stripe/payment activation, and later external knowledge-source integrations
 
@@ -49,7 +49,7 @@ These are **approved FUTURE** product direction. They are not current capability
 - Extend the credit model to support commercial payment processing and subscription management (not activated in current beta)
 - Enable genuinely functional non-Builder system agents (Chief of Staff Agent, Product Strategy Agent, Technology Advisor Agent)
 - Enable a functional Legal Advisor Agent as an approved future specialist (not currently in the platform registry; no delivery or timeline promise)
-- Enable user-created agents to execute AI work beyond the bounded single-shot Ask, with appropriate tools, knowledge, skills, and configuration
+- Enable the advanced/full executable-agent platform beyond the already-landed bounded Ask and Build path, including dedicated runtime, Harness/tool loop, tools, knowledge, skills, and per-agent configuration
 - Support general multi-agent collaboration and orchestration, including referrals, work objects, approval gates, and loop/referral limits
 - Support Multi-Builder profiles, differentiated specialties, task routing, collaboration, attribution, and orchestration as a user-visible product
 - Make Agent Harness the default Builder experience (autonomous / multi-turn / tool-using)
@@ -294,13 +294,13 @@ Users can create persistent agent profiles on the platform (**Create Agent**):
 - List and view created agents / profile detail
 - Delete a persisted user-created agent profile from the Create Agent detail surface after confirmation
 
-**CURRENT product experience:** users can create, list, view, and delete persisted user-created agent profiles. A product-facing Ask CTA exists on the Create Agent detail surface. Ask reuses the existing workspace/chat/session surface (`/[locale]/app?userAgentId=<uuid>`). The selected agent is bound into conversation execution through ownership-scoped `agentId`. Build is unavailable while the user-created agent is bound. This is a bounded single-shot Ask capability. There is still no complete executable-user-agent experience. A bounded user-facing Delete control exists on the same Create Agent detail surface for persisted user-created agents only. Confirmation is required before deletion. Successful deletion removes the profile from current UI state. Builder and coming-soon system-agent surfaces do not expose Delete.
+**CURRENT product experience:** users can create, list, view, and delete persisted user-created agent profiles. A product-facing Ask CTA exists on the Create Agent detail surface. Binding reuses the existing workspace/chat/session surface (`/[locale]/app?userAgentId=<uuid>`). The selected agent is bound into the existing workspace and can use Ask and Build against the authenticated user's currently selected existing project/session. Initial bind may still default execution intent to conversation; the user can then select Ask or Build. Bound persisted `agentId` is propagated for both intents. Dismiss/unbind returns subsequent execution to ordinary unbound Builder behavior. Ordinary no-agent Builder remains unchanged. This is bounded/single-shot existing-Builder execution. There is still no complete executable-user-agent experience. A bounded user-facing Delete control exists on the same Create Agent detail surface for persisted user-created agents only. Confirmation is required before deletion. Successful deletion removes the profile from current UI state. Builder and coming-soon system-agent surfaces do not expose Delete.
 
-**CURRENT backend capability:** a bounded ownership-scoped persisted user-agent identity can drive the existing single-shot Ask backend path when optional `agentId` is supplied to `POST /api/ai/execute`. The product-facing Ask UI now supplies that `agentId` on conversation requests. Gateway resolves that identity against the authenticated user before ledger/enqueue. Missing, cross-user, and soft-deleted agents cannot execute through this path. The bounded identity context is name, role, and description, composed into the existing instruction path. The persisted agent id is retained as execution trace metadata. This capability is Ask-only. It does not provide persisted user-created-agent Build capability. Harness remains excluded.
+**CURRENT backend capability:** a bounded ownership-scoped persisted user-agent identity can drive the existing Builder path when optional `agentId` is supplied to `POST /api/ai/execute` for `conversation` (Ask) and `workspace_mutation` (Build). The bound workspace UI supplies that `agentId` for both intents. Gateway resolves that identity against the authenticated user before ledger/enqueue. Missing, cross-user, and soft-deleted agents cannot execute through this path. The bounded identity context is name, role, and description, composed into the existing instruction path. The persisted agent id is retained as execution trace metadata. Build still uses the selected existing user project/session, the existing Builder `workspace_mutation` pipeline, existing file-action application, and existing checkpoint/safety/credit semantics. `agentId` + `harnessVersion` remains unsupported. There is no dedicated user-agent runtime. Harness remains excluded.
 
-User-created agents are **not** a complete executable-agent product. An authenticated, ownership-scoped backend soft-delete capability exists, and a bounded user-facing Delete control now consumes that existing `DELETE /api/agents/:id` path for persisted user-created agents. Dedicated user-agent runtime, user-agent Build/workspace mutation, Harness/tool loop, tools/knowledge/skills configuration, per-agent model/runtime configuration, autonomous/multi-turn operation beyond the existing single-shot Ask lifecycle, and collaboration/referrals are not current.
+User-created agents are **not** a complete executable-agent product. An authenticated, ownership-scoped backend soft-delete capability exists, and a bounded user-facing Delete control now consumes that existing `DELETE /api/agents/:id` path for persisted user-created agents. Dedicated user-agent runtime, Harness/tool loop, tools/knowledge/skills configuration, per-agent model/runtime configuration, autonomous/multi-turn operation beyond the existing single-shot Builder lifecycle, and collaboration/referrals are not current.
 
-**Approved FUTURE:** fully executable user-created-agent product, including dedicated user-agent runtime, user-agent Build/workspace mutation, Harness/tool loop, per-agent tools, knowledge, skills, model/runtime configuration, autonomous/multi-turn operation beyond the existing single-shot Ask lifecycle, collaboration/referral system, specialist runtime behavior, and broader orchestration.
+**Approved FUTURE:** the advanced/full executable-agent platform beyond the already-landed bounded Ask and Build path, including dedicated user-agent runtime, Harness/tool loop, per-agent tools, knowledge, skills, model/runtime configuration, autonomous/multi-turn operation beyond the existing single-shot Builder lifecycle, collaboration/referral system, specialist runtime behavior, and broader orchestration.
 
 ---
 
@@ -472,7 +472,7 @@ The following are explicitly out of scope for the initial Builder private beta. 
 - **WebSocket-based control APIs**: Preview may use realtime traffic; it is not a general control-plane transport
 - **Live commercial payment processing**: Stripe checkout, subscription management, and live payment collection are not active. Credits-first balance enforcement is current; commercial billing activation is approved FUTURE.
 - **Functional non-Builder system agents**: Chief of Staff Agent, Product Strategy Agent, and Technology Advisor Agent are platform placeholders; they are not functional AI agents in this phase. Legal Advisor Agent is approved FUTURE and is not currently in the registry.
-- **Fully executable / configurable user-created agents**: A bounded product-facing single-shot Ask capability now exists (Ask CTA → existing workspace Chat → ownership-scoped `agentId`; Build unavailable while bound). Fully executable user-created agents — dedicated runtime, user-agent Build/workspace mutation, Harness/tool loop, per-agent tools/knowledge/skills/model configuration, autonomous/multi-turn operation beyond the existing single-shot Ask lifecycle, and collaboration/referrals — remain out of scope for initial beta
+- **Advanced / full executable-agent platform**: Persisted user-created agents already support bounded Ask and Build on the existing Builder runtime (bind in the existing workspace; Ask and Build against the selected existing project/session; ownership-scoped `agentId` on `conversation` and `workspace_mutation`). The advanced/full executable-agent platform — dedicated runtime, Harness/tool loop, per-agent tools/knowledge/skills/model configuration, autonomous/multi-turn operation beyond the existing single-shot Builder lifecycle, and collaboration/referrals — remains out of scope for initial beta
 - **Multi-agent collaboration runtime**: Agent referrals, work handoff, tickets, decisions, comments, approval gates, and loop/referral limits are approved FUTURE; not current
 - **Shared and specialist knowledge runtime**: Shared/company knowledge, specialist/private knowledge, uploads, policies, goals, meeting information, refresh/update behavior, and traceability/permissions are approved FUTURE; not current
 - **Product-visible multi-Builder**: Multiple Builder agents/profiles, differentiated specialties, task routing, collaboration, attribution, and orchestration are approved FUTURE; not current
@@ -497,7 +497,7 @@ The current product delivers:
 - **Multilingual UX** in English, Traditional Chinese, and Simplified Chinese
 - A **credits-first model**: Ask credits at response completion; Build credits only after the platform confirms a qualifying successful workspace apply
 - A **platform command-center shell** with Builder active and other agents clearly marked coming soon
-- **Persistent user-created agent profiles** (create / list / view) with a bounded product-facing single-shot Ask (existing workspace Chat; Build unavailable while bound). The full executable user-created-agent experience remains approved FUTURE
+- **Persistent user-created agent profiles** (create / list / view / delete) with bounded product-facing Ask and Build on the existing Builder runtime (existing workspace Chat; Ask and Build available while bound). The advanced/full executable-agent platform remains approved FUTURE
 - **Admin operational support** for the private beta
 
 Other system agents (Chief of Staff Agent, Product Strategy Agent, Technology Advisor Agent) are platform placeholders. The broader ainow.biz multi-agent collaboration, general agent-platform capabilities, and commercial payment lifecycle remain **approved** planned post-beta direction.
@@ -518,13 +518,13 @@ The current rollout is a **limited Builder-first private beta**. This section st
 - Single-shot Builder experience (Ask and Build)
 - Isolated project/workspace, chat, file editing, Preview, checkpoint/revert, persistent projects, credit balance/use, and multilingual UI
 - Coming-soon specialist placeholders that are visible, not functional
-- User-created agent profiles that can be created, persisted, listed, and viewed, plus a bounded product-facing single-shot Ask that reuses the existing workspace/chat/session surface (Build unavailable while a user-created agent is bound)
+- User-created agent profiles that can be created, persisted, listed, viewed, and deleted, plus bounded product-facing Ask and Build that reuse the existing workspace/chat/session surface and existing Builder runtime while a user-created agent is bound
 
 **Out of scope for this beta**
 
 - Agent Harness as a user-accessible or default experience
 - Functional specialist agents
-- Fully executable user-created agents (dedicated runtime, user-agent Build, Harness, tools, knowledge, skills, per-agent model configuration)
+- Advanced/full executable-agent platform (dedicated runtime, Harness, tools, knowledge, skills, per-agent model configuration, autonomous multi-turn execution)
 - Multi-agent runtime, referrals, work objects, or orchestration
 - Product-visible multi-Builder experience
 - Shared or specialist knowledge runtime
@@ -567,8 +567,8 @@ Coming-soon labels do not mean those agents ship in this beta. Invitation operat
 | Usage records per Ask/Build request |
 | Admin operations (user / session / credit management) |
 | Persistent user-created agent profiles (create / list / view) |
-| Bounded product-facing single-shot Ask for persisted user-created agents (Ask CTA → existing `/[locale]/app?userAgentId=<uuid>` → existing Workspace Chat → ownership-scoped `agentId`; Build unavailable while bound) |
-| Bounded ownership-scoped persisted user-agent Ask identity on the existing single-shot Ask path (`agentId` on POST `/api/ai/execute`; Ask-only; product-facing Ask UI now supplies `agentId`) |
+| Bounded product-facing Ask and Build for persisted user-created agents (Ask CTA → existing `/[locale]/app?userAgentId=<uuid>` → existing Workspace Chat → ownership-scoped `agentId` for Ask and Build on the existing Builder runtime) |
+| Bounded ownership-scoped persisted user-agent identity on the existing Builder path (`agentId` on POST `/api/ai/execute` for `conversation` and `workspace_mutation`; bound workspace UI supplies `agentId` for both intents) |
 | Static system-agent registry (Builder active; 3 coming-soon placeholders) |
 
 ### GATED (implemented; not currently offered in private beta)
@@ -589,7 +589,7 @@ GATED means implemented for controlled activation. It does **not** mean currentl
 | Functional Product Strategy Agent |
 | Functional Technology Advisor Agent |
 | Functional Legal Advisor Agent (not currently in registry; no timeline promise) |
-| Fully executable user-created agents (dedicated runtime, user-agent Build, Harness, tools, knowledge, skills, per-agent model configuration) |
+| Advanced/full executable-agent platform (dedicated runtime, Harness, tools, knowledge, skills, per-agent model configuration, autonomous multi-turn execution) |
 | Per-agent model / tool / skill / knowledge configuration |
 | Shared/company and specialist/private knowledge |
 | Knowledge uploads, policies, goals, meeting information, refresh/update, and traceability/permissions |
@@ -621,8 +621,8 @@ GATED means implemented for controlled activation. It does **not** mean currentl
 | **Project** | A durable user-owned work identity. Persists across sessions. Contains files, conversation, and checkpoints. |
 | **Session** | The runtime workspace lifetime for an open project. |
 | **Workspace** | The active files, editor, and preview environment within a running session. |
-| **Create Agent** | The current ability to create, persist, list, and view a user-created agent profile, and to Ask through that profile via the existing workspace Chat. Not a complete executable-agent product. Build is unavailable while a user-created agent is bound. |
-| **User-created agent** | A persisted agent profile created by a user. Currently name, role, description, and status. Current product experience includes create/list/view plus a bounded product-facing single-shot Ask through the existing workspace/chat/session surface. A bounded ownership-scoped backend Ask identity-binding capability exists. The full executable-agent experience is approved FUTURE. |
+| **Create Agent** | The current ability to create, persist, list, and view a user-created agent profile, and to Ask or Build through that profile via the existing workspace Chat on the existing Builder runtime. Not a complete executable-agent product. |
+| **User-created agent** | A persisted agent profile created by a user. Currently name, role, description, and status. Current product experience includes create/list/view/delete plus bounded product-facing Ask and Build through the existing workspace/chat/session surface on the existing Builder runtime. A bounded ownership-scoped backend identity-binding capability exists for `conversation` and `workspace_mutation`. The advanced/full executable-agent platform is approved FUTURE. |
 | **System agent** | A built-in agent in the platform registry. Builder is active; other system agents are coming-soon placeholders. |
 | **Coming soon** | A UI label for a visible-but-not-functional agent. It is not a private-beta delivery promise. |
 | **File actions** | Structured AI instructions to create, write, or delete workspace files. |

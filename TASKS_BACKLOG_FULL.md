@@ -1,4 +1,4 @@
-## Authority Notice
+# Authority Notice
 
 `TASKS_BACKLOG_FULL.md` is the canonical TASK REGISTRY.
 
@@ -73369,3 +73369,143 @@ Step 3 (consolidation/checkpoint/lock):
 **Step 2 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, local application server=0, browser=0. Frontend implementation=yes (exact 7-file write set). Backend implementation=0. Gateway=0. AI Service=0. Container Manager=0. dependencies=0. migrations=0. PRD.md edits=0. ARCHITECTURE.md edits=0. CLAUDE.md edits=0. AGENTS.md edits=0. validator edits=0. mutex-catalog edits=0. Git commits by worker=0. Lane 2 admission=0. Lane 3 enablement=0. invitation registration=0. Harness activation=0. Tests: focused request-field 23/23 PASS; focused workspace-shell user-agent suite 12/12 PASS; full frontend 748/748 PASS; `npx tsc --noEmit --incremental false` PASS; `npm run build` PASS. Governance writes: TASKS.md, this registry body, `docs/control-plane/lane-saturation-state.json`. SATURATION_PROOF written only under `$env:TEMP`.
 **Step 3 HEAD (uncommitted working tree on main):** lock on top of `b1c8dc0dccf7dc434e49a2bb8f6ecef79f5d3dec`
 **Step 3 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, frontend implementation=0, backend implementation=0, application source=0, locale edits=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git commit/push=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, browser=0. Tests executed=YES (focused intent 23/23, focused workspace-shell 455/455, frontend npm test 748/748, tsc PASS, build PASS). Candidate terminal `status=LOCKED`. Lane 1 released EMPTY. FRONTEND/I18N released. Validator exit 0 PASS. SATURATION_PROOF written only under `$env:TEMP`.
+
+---
+
+## GOVERNANCE / LIVING AUTHORITY — Bounded Sync After AGENT-PLATFORM-EXEC-01A/01B
+
+### GOV-AUTH-03 — Bounded Living-Authority Sync After AGENT-PLATFORM-EXEC-01A/01B
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-AUTH-03
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ACTIVE — Step 1 REGISTRATION + BOUNDED LIVING-AUTHORITY SYNC COMPLETE — 2026-08-31 — Step 2 PENDING — not LOCKED — GOVERNANCE OWNED by GOV-AUTH-03 — no implementation lane — no implementation candidate — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — ACTIVE_IMPLEMENTATION_LANES=0/2 — PRD_SYNC_COMPLETED=YES — ARCH_SYNC_COMPLETED=YES — current next product gate remains: no admitted next product gate / selection pending — no product frontier selected — PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED
+**Task ID:** GOV-AUTH-03
+**Title:** Bounded Living-Authority Sync After AGENT-PLATFORM-EXEC-01A/01B
+**Family:** GOVERNANCE / LIVING AUTHORITY (successor after GOV-AUTH-02 LOCKED; distinct from GOV-PRD-03 / GOV-ARCH-03 / AGENT-PLATFORM-EXEC-01C which are NOT created)
+**Workstream:** GOVERNANCE (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE / DOCUMENTATION ONLY — no application behavior change — no runtime/schema/migration change — no product-frontier selection
+**Classification:** CURRENT REQUIRED — PRD.md and ARCHITECTURE.md materially understated a capability Keith already authorized as CURRENT and that EXEC-01A/01B have now implemented and locked. This is authority correction, not product expansion.
+**Lifecycle:** 2-step (Step 1 registration + bounded living-authority sync — Step 2 independent verification / checkpoint / final lock)
+**Start condition:** READY — Lane 1 EMPTY; Lane 2 EMPTY; Lane 3 DISABLED; GOVERNANCE UNOWNED at Step 1 start; FRONTEND UNOWNED; I18N UNOWNED; GATEWAY UNOWNED; AGENT-PLATFORM-EXEC-01A COMPLETE AND LOCKED — PASS — 2026-08-31; AGENT-PLATFORM-EXEC-01B COMPLETE AND LOCKED — PASS — 2026-08-31; GOV-AUTH-02 COMPLETE AND LOCKED — PASS — 2026-08-28; saturationSuspended=false; clean tree at HEAD `5c4e2362903abe1a64fa5f61a00c73a334dc86ca`
+**Depends on:** AGENT-PLATFORM-EXEC-01A COMPLETE AND LOCKED — PASS — 2026-08-31 (Checkpoint: `docs/AGENT-PLATFORM-EXEC-01A-CHECKPOINT.md`); AGENT-PLATFORM-EXEC-01B COMPLETE AND LOCKED — PASS — 2026-08-31 (Checkpoint: `docs/AGENT-PLATFORM-EXEC-01B-CHECKPOINT.md`); GOV-AUTH-02 COMPLETE AND LOCKED — PASS — 2026-08-28 (Checkpoint: `docs/GOV-AUTH-02-CHECKPOINT.md`); GOV-PRD-02 COMPLETE AND LOCKED (living PRODUCT WHAT); GOV-ARCH-02 COMPLETE AND LOCKED (living TECHNICAL HOW). No machine sidecar `dependsOn` for this GOVERNANCE task (no implementation candidate).
+**Primary write scope:** `PRD.md` (bounded EXEC-01A/01B Approach A facts only); `ARCHITECTURE.md` (bounded EXEC-01A/01B Approach A facts only); `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body; `docs/control-plane/lane-saturation-state.json` occupancy/governance owner only. Step 2: checkpoint under `docs/`; board/registry lock fields.
+**Mutexes / resources:** GOVERNANCE (control plane; held by GOV-AUTH-03 while ACTIVE; released UNOWNED at Step 2 lock)
+**Hot-file leases:** none
+**Shared contracts:** none (no API/schema/auth/session/tool/config contract change; EXEC-01A Gateway identity contract and EXEC-01B frontend Ask/Build UX remain frozen)
+**Evidence class:** GOVERNANCE
+**Revert isolation:** documentation/governance-only; no application source writes; trivially revertible
+**saturationClass:** not applicable (GOVERNANCE; no sidecar candidate required)
+**productClass:** CURRENT
+**futureAuthorization:** NONE
+
+**Identifier search:** Repo-wide search for GOV-AUTH-03, post-EXEC-01A/01B PRD sync, post-EXEC-01A/01B ARCHITECTURE sync, executable user-agent Build living-authority correction, GOV-PRD-03, GOV-ARCH-03, and AGENT-PLATFORM-EXEC-01C returned zero unfinished equivalent governance or implementation tasks. GOV-AUTH-02 is COMPLETE AND LOCKED after CREATE-01E and is not reused. GOV-PRD-03, GOV-ARCH-03, and AGENT-PLATFORM-EXEC-01C are explicitly not created. GOV-AUTH-03 is the smallest correct next canonical ID under the existing GOV-AUTH family.
+
+**Purpose:** Synchronize living PRODUCT WHAT (`PRD.md`) and TECHNICAL HOW (`ARCHITECTURE.md`) with the already-authorized and locked Approach A capability: persisted user-created agents support bounded Ask and Build execution on the existing Builder runtime, with `agentId` propagated for `conversation` and `workspace_mutation`. This is not a new product frontier, not a broad PRD/ARCHITECTURE reconciliation, not GOV-PRD-03, not GOV-ARCH-03, not AGENT-PLATFORM-EXEC-01C, and not a full executable-agent product launch.
+
+**Stage-start:** NOT REQUIRED. The implementation contract is already frozen by the locked EXEC-01A and EXEC-01B checkpoints.
+
+#### EXEC-01A/01B facts synchronized into living authority (Step 1)
+
+1. A persisted user-created agent can be bound in the existing workspace.
+2. Bound agents can use Ask (`conversation`) and Build (`workspace_mutation`).
+3. Execution operates against the authenticated user's currently selected existing project/session.
+4. The existing Builder execution/apply/checkpoint/credit machinery is reused.
+5. Persisted `agentId` is propagated for both intents.
+6. `POST /api/ai/execute` supports optional persisted `agentId` for `conversation` and `workspace_mutation`.
+7. Malformed (empty/whitespace/non-string) `agentId` remains fail-closed HTTP 400; ownership-scoped lookup remains required; missing/cross-user/soft-deleted agents remain 404; resolution remains before ledger/enqueue.
+8. Existing name/role/description identity composition is reused onto the existing instruction path; usage metadata retains `agentId`.
+9. `agentId` + `harnessVersion` remains unsupported/rejected.
+10. `agentId` does not create a new auth principal or permission boundary.
+11. There is no dedicated agent runtime.
+12. Frontend initial bind may still default execution intent to conversation; the user can select Ask or Build; bound `agentId` is propagated for both; dismiss/unbind returns subsequent execution to ordinary unbound Builder behavior.
+13. Ordinary no-agent Builder remains unchanged.
+14. The capability is implementation-confirmed / locked automated evidence. It is not staging-proven. No combined staging proof for EXEC-01A/01B is claimed.
+
+#### Frozen product classification
+
+CURRENT:
+- persisted user-created agents support bounded Ask and Build execution on the existing Builder runtime
+- bind in the existing workspace against the user's selected existing project/session
+- stored agent identity shapes that execution
+- `POST /api/ai/execute` optional ownership-scoped `agentId` for `conversation` and `workspace_mutation`
+- frontend bound-agent Ask and Build both send `agentId`
+- dismiss/unbind restores ordinary unbound Builder behavior
+- ordinary no-agent Builder remains unchanged
+- `agentId` + `harnessVersion` remains rejected
+- no dedicated user-agent runtime exists
+
+APPROVED FUTURE / NOT CURRENT:
+- dedicated user-agent runtime
+- autonomous multi-turn agent execution
+- Harness/tool loop for persisted user-created agents
+- tools / knowledge / skills runtime
+- per-agent model/provider configuration
+- background jobs/scheduling
+- functional specialists
+- collaboration/referrals
+- Multi-Builder
+- public agent ecosystem
+- advanced/full executable-agent platform beyond the already-landed bounded Ask and Build path
+
+#### Explicit Non-Goals
+
+GOV-AUTH-03 does NOT: select a product frontier; register PRIVATE-BETA-INVITE-01; enable Lane 3; admit an implementation lane; create an implementation candidate; create GOV-PRD-03, GOV-ARCH-03, or AGENT-PLATFORM-EXEC-01C; create a new roadmap, source map, or master plan; edit CLAUDE.md or AGENTS.md; edit frozen GOV-PRD-02 / GOV-ARCH-02 source maps or checkpoints; edit the EXEC-01A or EXEC-01B checkpoints; modify application source / tests / frontend / i18n / Gateway / AI-SERVICE / migrations / packages / env / compose; run runtime; claim user-created agents are fully executable; claim staging validation; mention or repair `queue.service.ts` debt.
+
+#### Invariants
+
+- PRIVATE-BETA-INVITE-01 remains UNREGISTERED / UNAUTHORIZED / UNTOUCHED / PROHIBITED / PARKED / NOT EXECUTABLE
+- INVITATION_EXECUTION_PERMITTED=NO
+- Lane 1 EMPTY / Lane 2 EMPTY / Lane 3 DISABLED
+- MAX_IMPLEMENTATION_LANES remains 2
+- BOUNDED_USER_AGENT_ASK_CURRENT=YES
+- BOUNDED_USER_AGENT_BUILD_CURRENT=YES
+- EXISTING_BUILDER_RUNTIME_REUSED=YES
+- DEDICATED_AGENT_RUNTIME_CURRENT=NO
+- AUTONOMOUS_MULTI_TURN_CURRENT=NO
+- USER_AGENT_HARNESS_CURRENT=NO
+- KNOWLEDGE_SKILLS_TOOLS_CURRENT=NO
+- PER_AGENT_MODEL_CONFIG_CURRENT=NO
+- No application source/test/config/schema/migration/env/Docker changes in any step
+- No runtime/infrastructure commands in any step
+- No subagents
+- No worktrees or branches created by this task
+- No commit/push unless explicitly requested by Keith
+
+#### Acceptance Criteria
+
+Step 1 (Registration + bounded living-authority sync):
+- [x] GOV-AUTH-03 confirmed unused before registration (no collision; equivalent unfinished task NONE)
+- [x] GOV-AUTH-03 registered in TASKS.md CURRENT EXECUTION BOARD
+- [x] GOV-AUTH-03 registered in TASKS_BACKLOG_FULL.md
+- [x] post-epoch GOVERNANCE machine stanza present exactly once
+- [x] no implementation candidate created
+- [x] classification CURRENT REQUIRED recorded
+- [x] GOVERNANCE acquired by GOV-AUTH-03
+- [x] No implementation lane admitted
+- [x] PRD.md stale Ask-only / Build-disabled CURRENT claims corrected
+- [x] PRD.md records bounded Ask and Build CURRENT truth on the existing Builder runtime
+- [x] PRD.md still clearly says the advanced/full executable-agent platform is FUTURE
+- [x] ARCHITECTURE.md stale conversation-only / Build-rejected facts corrected
+- [x] ARCHITECTURE.md records `agentId` for `conversation` and `workspace_mutation`
+- [x] ARCHITECTURE.md preserves ownership/404/soft-delete, harnessVersion exclusion, no dedicated runtime, existing Builder reuse
+- [x] frontend bound Ask+Build and dismiss/unbind behavior recorded
+- [x] ordinary Builder unchanged recorded
+- [x] staging not claimed
+- [x] No next product task nominated
+- [x] No broad reconciliation created
+- [x] Invitation invariant unchanged
+- [x] Lane 3 invariant unchanged
+- [x] No CLAUDE.md / AGENTS.md / source / frozen-checkpoint change
+- [x] No runtime / Docker / PostgreSQL / Redis / staging / provider activity
+- [x] No worktrees
+- [x] No Git commit/push by the worker
+
+Step 2 (Independent verification / checkpoint / lock):
+- [ ] Independent verification that living PRD/ARCHITECTURE now record the bounded EXEC-01A/01B Approach A facts without promoting the full executable-agent platform
+- [ ] Checkpoint created: `docs/GOV-AUTH-03-CHECKPOINT.md`
+- [ ] GOV-AUTH-03 COMPLETE AND LOCKED
+
+**Step 1 HEAD:** `5c4e2362903abe1a64fa5f61a00c73a334dc86ca` (branch main, HEAD == origin/main, clean tree verified)
+**Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, source changes=0, tests executed=0, dependencies=0, CLAUDE.md edits=0, AGENTS.md edits=0, source-map edits=0, Git mutations=0, product-frontier selection=0, invitation registration=0, Lane 3 enablement=0, implementation candidate=0. Governance/docs writes: PRD.md, ARCHITECTURE.md, TASKS.md, this registry body, `docs/control-plane/lane-saturation-state.json` (governance owner/state only).

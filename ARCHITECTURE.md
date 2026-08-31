@@ -13,7 +13,7 @@ All implementation must conform to this file and `CLAUDE.md`.
 
 If conflicts arise, these documents take precedence in their domains.
 
-Last reconciled: 2026-08-24 (GOV-ARCH-02 Step 3 — bounded current-state reconciliation). Bounded living-authority sync: 2026-08-28 (GOV-AUTH-01 — CREATE-01D Ask identity facts only; GOV-AUTH-02 — CREATE-01E product-facing single-shot Ask facts only; not GOV-ARCH-03). Bounded living-authority sync: 2026-08-31 (AGENT-PLATFORM-CREATE-01F — frontend Create Agent detail consumes existing `DELETE /api/agents/:id` for persisted user-created agents only; not GOV-ARCH-03). Prior freeze: 2026-08-10 (GOV-ARCH-01).
+Last reconciled: 2026-08-24 (GOV-ARCH-02 Step 3 — bounded current-state reconciliation). Bounded living-authority sync: 2026-08-28 (GOV-AUTH-01 — CREATE-01D Ask identity facts only; GOV-AUTH-02 — CREATE-01E product-facing single-shot Ask facts only; not GOV-ARCH-03). Bounded living-authority sync: 2026-08-31 (AGENT-PLATFORM-CREATE-01F — frontend Create Agent detail consumes existing `DELETE /api/agents/:id` for persisted user-created agents only; not GOV-ARCH-03). Bounded living-authority sync: 2026-08-31 (GOV-AUTH-03 — EXEC-01A/01B persisted user-agent Ask and Build on the existing Builder runtime only; not GOV-ARCH-03). Prior freeze: 2026-08-10 (GOV-ARCH-01).
 
 ---
 
@@ -26,7 +26,7 @@ Unlabeled statements in this document are **CURRENT** implemented architecture.
 Hard CURRENT constraints:
 
 - Private-beta AI execution is **Builder-first single-shot**. Harness is implemented but gated off (`AGENT_HARNESS_ENABLE_TOOL_LOOP=false`). Harness is not the beta default.
-- Multi-agent product runtime is **not** operational. Specialist agents are placeholders. User-created agents are persisted profiles. Frontend `/platform` Ask CTA navigates to existing `/[locale]/app?userAgentId=<uuid>` and binds persisted agent identity into the existing Workspace Chat / selected session. Gateway may resolve optional ownership-scoped `agentId` onto the existing single-shot Ask path (`findOneByIdAndUserId(agentId, identity.userId)`). `agentId` is rejected for Build/workspace_mutation and when `harnessVersion` is present. There is no dedicated user-agent runtime, no user-created-agent Build, and no Harness on that path.
+- Multi-agent product runtime is **not** operational. Specialist agents are placeholders. User-created agents are persisted profiles. Frontend `/platform` Ask CTA navigates to existing `/[locale]/app?userAgentId=<uuid>` and binds persisted agent identity into the existing Workspace Chat / selected session. Gateway may resolve optional ownership-scoped `agentId` onto the existing Builder path for `conversation` and `workspace_mutation` (`findOneByIdAndUserId(agentId, identity.userId)`). `agentId` + `harnessVersion` remains rejected. There is no dedicated user-agent runtime and no Harness on that path. Bounded Ask and Build reuse the existing Builder runtime.
 - The in-memory orchestration coordinator is instantiated in API Gateway and is **not product-reachable** (no HTTP surface).
 - Stripe charging is **not** CURRENT. Internal credit-ledger deduction is CURRENT and is independent of `BILLING_CHARGES_ENABLED`.
 - Google OAuth routes exist but are **not activated** (fail-closed when the Passport strategy is unregistered).
@@ -209,7 +209,7 @@ Owns:
 - Usage records and credit-ledger deduction
 - Public confirm-build-apply (Build credit trigger)
 - Git checkpoint ledger (`git_checkpoints`)
-- User-agent records (`user_agents`) — persistence/API plus ownership-scoped Ask identity resolution on the existing single-shot `POST /api/ai/execute` path; not a dedicated execution runtime
+- User-agent records (`user_agents`) — persistence/API plus ownership-scoped identity resolution on the existing Builder `POST /api/ai/execute` path for `conversation` and `workspace_mutation`; not a dedicated execution runtime
 - Preview proxy routing → container-manager
 - Internal service endpoint hosting
 - Health / readiness / db endpoints
@@ -536,7 +536,7 @@ container-manager uses **local SQLite** for runtime session/container/git state.
 | Credit balances | API Gateway | PostgreSQL (`credit_balances`) |
 | Credit deduction records | API Gateway | PostgreSQL (`credit_deduction_records`) |
 | Workspace snapshots | API Gateway | Host filesystem (`snapshot-store/`) |
-| User agents | API Gateway | PostgreSQL (`user_agents`) — persistence/API plus ownership-scoped Ask identity binding; not a dedicated execution runtime |
+| User agents | API Gateway | PostgreSQL (`user_agents`) — persistence/API plus ownership-scoped identity binding for Ask and Build on the existing Builder path; not a dedicated execution runtime |
 | Stripe subscription rows | API Gateway | PostgreSQL (subscription tables) — schema CURRENT; live Stripe charging NOT CURRENT |
 | Docker workspace files | container-manager | Host workspace directory bind-mounted as `/workspace` |
 | Container / session runtime state | container-manager | **Local SQLite** + Docker daemon + in-memory `lastActivity` |
@@ -703,17 +703,26 @@ Harness is **not** this path. See §12.
      Optional identity fields are accepted plumbing. The frontend does not currently send
      agentRole, builderProfileId, collaborationRunId, or referralTraceId.
      When a persisted user-created agent is bound via `/[locale]/app?userAgentId=<uuid>`,
-     the existing Workspace Chat conversation payload sends ownership-scoped `agentId`
-     through `buildPersistedUserAgentAskRequestFields`. Existing selectedSessionId remains
-     the session source. Existing WorkspaceChatPanel execution lifecycle is reused.
-     Build remains disabled while that agent is bound.
-     Optional agentId is Ask-only persisted user-agent identity: Gateway owner-scopes it
-     against the authenticated user before ledger/enqueue (`findOneByIdAndUserId(agentId,
-     identity.userId)`); missing/cross-user/soft-deleted agents cannot execute;
+     the existing Workspace Chat payload sends ownership-scoped `agentId`
+     through `buildPersistedUserAgentAskRequestFields` for both `conversation` and
+     `workspace_mutation`. Existing selectedSessionId remains the session source.
+     Existing WorkspaceChatPanel execution lifecycle is reused.
+     Initial bind may still default execution intent to conversation; the user can
+     then select Ask or Build. Bound `agentId` is propagated for both intents.
+     Dismiss/unbind returns subsequent execution to ordinary unbound Builder behavior.
+     Ordinary no-agent Builder remains unchanged.
+     Optional agentId is persisted user-agent identity on the existing Builder path:
+     malformed (empty/whitespace/non-string) agentId remains fail-closed HTTP 400;
+     Gateway owner-scopes a present id against the authenticated user before
+     ledger/enqueue (`findOneByIdAndUserId(agentId, identity.userId)`);
+     missing/cross-user/soft-deleted agents cannot execute (404);
      name/role/description are composed onto existing globalInstructions; agentId is
-     retained in usage_records.metadata. agentId is rejected for Build/workspace_mutation
-     and when harnessVersion is present. It is not a dedicated user-agent runtime, not
-     Build, and not Harness.
+     retained in usage_records.metadata. agentId is supported for conversation and
+     workspace_mutation. agentId + harnessVersion remains rejected. It is not a new
+     auth principal or permission boundary, not a dedicated user-agent runtime, and
+     not Harness. Build still executes on the selected existing user project/session,
+     the existing Builder workspace_mutation pipeline, existing file-action
+     application, and existing checkpoint/safety/credit semantics.
 
 2. Staging: Caddy /api/* → Gateway
    Local-dev: Next rewrite/fallback (except named App Router routes)
@@ -948,14 +957,14 @@ The original walking-character / town **simulation** is **not implemented**. CUR
 | aiSandBox = Builder Agent module (`/[locale]/app`) | CURRENT |
 | Static TypeScript system-agent registry (`frontend/lib/agent-platform/agent-registry.ts`) | CURRENT (read-only) |
 | DB-backed user-created agent records (`user_agents`, `POST/GET /api/agents`) | CURRENT (**persistence/API**; not a dedicated runtime) |
-| Optional persisted user-agent Ask identity (`agentId` on `POST /api/ai/execute`) | CURRENT (Ask-only; owner-scoped; existing single-shot path; product-facing Ask UI binds `userAgentId` and sends `agentId` on conversation) |
+| Optional persisted user-agent identity (`agentId` on `POST /api/ai/execute`) | CURRENT (`conversation` and `workspace_mutation`; owner-scoped; existing Builder path; product-facing bind via `userAgentId` sends `agentId` for both intents) |
 | Platform RPG command-center shell | CURRENT (layout/shell; no game engine) |
 | OrchestrationService | CURRENT precursor: **in-memory, instantiated, no HTTP, not product-reachable**. Can enqueue if called in-process. **Not** the future durable multi-Builder runtime. |
 | Builder Agent AI execution (single-shot) | CURRENT |
 | Optional execute identity fields (`agentRole`, `builderProfileId`, `collaborationRunId`, `referralTraceId`) | CURRENT plumbing; frontend does not send them |
-| Optional persisted user-agent Ask identity (`agentId`) | CURRENT on Gateway `POST /api/ai/execute`; distinct from `agentRole` / `builderProfileId`; frontend sends `agentId` only when a persisted user-created agent is bound via `/app?userAgentId=` |
+| Optional persisted user-agent identity (`agentId`) | CURRENT on Gateway `POST /api/ai/execute` for `conversation` and `workspace_mutation`; distinct from `agentRole` / `builderProfileId`; frontend sends `agentId` when a persisted user-created agent is bound via `/app?userAgentId=` for both intents |
 | Non-Builder system agents (Chief of Staff, Product Strategy, Technology Advisor) | PLACEHOLDER — `status: 'coming_soon'`; **not executable** |
-| User-created agents as fully executable runtime agents | **FUTURE** — NOT IMPLEMENTED (dedicated runtime, user-agent Build, Harness/tool loop, tools/knowledge/skills, per-agent models) |
+| User-created agents as a fully executable runtime platform | **FUTURE** — NOT IMPLEMENTED (dedicated runtime, Harness/tool loop, tools/knowledge/skills, per-agent models, autonomous multi-turn execution). Bounded Ask and Build on the existing Builder runtime are CURRENT. |
 | Referral / agent collaboration **product** runtime | **FUTURE** — not the 07C in-memory precursor |
 | Durable orchestration / persisted referrals / shared-project writes | **FUTURE** |
 | Knowledge base runtime | **FUTURE / PLANNED** |
@@ -979,22 +988,27 @@ User-created agents:
 - `DELETE /api/agents/:id` — authenticated; ownership-scoped (`id + userId`); soft delete via the existing `deleted_at` `@DeleteDateColumn`; no new migration was required; default TypeORM deleted-row filtering on `find`/`findOne` remains current; backend contract unchanged
 - Frontend `/platform` Create Agent detail exposes a bounded Delete control for persisted user-created agents only; confirmation precedes `DELETE /api/agents/:id`; cancel does not call DELETE; pending blocks duplicate DELETE; success removes the agent from current list/detail state; Builder and coming-soon surfaces do not expose Delete
 - MVP UI exists
-- Persisted user-agent identity may be resolved by the Gateway for the existing single-shot conversation/Ask path through optional `agentId` on `POST /api/ai/execute`
+- Persisted user-agent identity may be resolved by the Gateway for the existing Builder path through optional `agentId` on `POST /api/ai/execute` for `conversation` and `workspace_mutation`
 - Frontend `/platform` Ask CTA navigates to existing `/[locale]/app?userAgentId=<uuid>` and binds persisted agent identity into the existing AppPage visit
 - Existing selectedSessionId remains the session source
 - Existing WorkspaceChatPanel execution lifecycle is reused
-- Frontend conversation requests send `agentId` when a persisted user-created agent is bound
-- Owner scoping is enforced before ledger/enqueue via `findOneByIdAndUserId(agentId, identity.userId)`; missing, cross-user, and soft-deleted agents cannot execute
-- Identity (name, role, description) is carried through existing instruction/metadata mechanisms
-- `agentId` is rejected for Build/workspace_mutation
+- Frontend bound-agent requests send `agentId` for both Ask (`conversation`) and Build (`workspace_mutation`)
+- Initial bind may still default execution intent to conversation; the user can then select Ask or Build
+- Dismiss/unbind returns subsequent execution to ordinary unbound Builder behavior
+- Ordinary no-agent Builder remains unchanged
+- Owner scoping is enforced before ledger/enqueue via `findOneByIdAndUserId(agentId, identity.userId)`; missing, cross-user, and soft-deleted agents cannot execute (404)
+- Malformed (empty/whitespace/non-string) `agentId` remains fail-closed HTTP 400 under existing validation
+- Identity (name, role, description) is carried through existing instruction/metadata mechanisms onto the existing instruction path
+- Usage metadata retains `agentId`
 - `agentId` + `harnessVersion` remains rejected
+- `agentId` does not create a new auth principal or permission boundary
 - There is no dedicated user-agent runtime
-- No Build/workspace mutation capability through persisted user-agent identity
+- Build still executes on the selected existing user project/session, the existing Builder `workspace_mutation` pipeline, existing file-action application, and existing checkpoint/safety/credit semantics
 - No Harness
 - No tools/knowledge/skills
 - No second session system and no new execution route
 
-Do not claim a live `user_agents` row count. Persistence/profile UX plus bounded single-shot Ask ≠ a complete executable-agent product. Bounded Ask identity-binding ≠ a dedicated user-agent runtime.
+Do not claim a live `user_agents` row count. Persistence/profile UX plus bounded Ask and Build on the existing Builder runtime ≠ a complete executable-agent product. Bounded identity-binding ≠ a dedicated user-agent runtime.
 
 ### 13.3 What Is Not Current Platform Architecture
 
@@ -1003,7 +1017,7 @@ Do not describe the following as current:
 - Knowledge ingestion runtime
 - Vector database / semantic retrieval
 - Real non-Builder agent execution
-- Fully executable user-created agents (dedicated runtime, user-agent Build, Harness/tool loop, tools/knowledge/skills, per-agent models)
+- Fully executable user-created-agent platform (dedicated runtime, Harness/tool loop, tools/knowledge/skills, per-agent models, autonomous multi-turn execution). Bounded Ask and Build on the existing Builder runtime are CURRENT.
 - Work-object runtime
 - Chief-of-Staff, Product Strategy, or Technology Advisor agent execution
 - Product-reachable multi-Builder / collaboration runtime
@@ -1084,7 +1098,7 @@ The WorkerProcessor stuck-execution watchdog is **not** a contradiction of “no
 
 CURRENT architecture is a **Builder-first**, mixed-transport platform: Caddy + PM2 (staging) or local host processes plus compose infrastructure (Postgres, Redis, local Prometheus/Grafana); Gateway enqueue; BullMQ Worker on **:4001**; container-manager Docker + bind-mounted `/workspace` + SQLite; delayed Build credit deduction after qualifying confirm-build-apply; session checkpoints under `/api/sessions/:id/...`; gated Harness off by default.
 
-Not operational as product runtime: specialist agents, fully executable user-created agents (dedicated runtime, Build, Harness), multi-Builder collaboration, durable orchestration, knowledge retrieval, Harness-as-default, Stripe charging, Google OAuth activation, gVisor, automatic rollback, `search_workspace`.
+Not operational as product runtime: specialist agents, the advanced/full executable-agent platform (dedicated runtime, Harness/tool loop, tools/knowledge/skills, per-agent models, autonomous multi-turn execution), multi-Builder collaboration, durable orchestration, knowledge retrieval, Harness-as-default, Stripe charging, Google OAuth activation, gVisor, automatic rollback, `search_workspace`. Bounded persisted user-agent Ask and Build on the existing Builder runtime are CURRENT.
 
 Trade-offs:
 

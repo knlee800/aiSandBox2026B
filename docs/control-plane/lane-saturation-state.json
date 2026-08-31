@@ -5,8 +5,8 @@
   "saturationSuspended": false,
   "suspensionReason": "NONE",
   "governance": {
-    "owner": "NONE",
-    "state": "UNOWNED"
+    "owner": "GOV-AUTH-03",
+    "state": "ACTIVE"
   },
   "occupancy": {
     "lane1": {
