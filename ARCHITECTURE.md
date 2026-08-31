@@ -13,7 +13,7 @@ All implementation must conform to this file and `CLAUDE.md`.
 
 If conflicts arise, these documents take precedence in their domains.
 
-Last reconciled: 2026-08-24 (GOV-ARCH-02 Step 3 — bounded current-state reconciliation). Bounded living-authority sync: 2026-08-28 (GOV-AUTH-01 — CREATE-01D Ask identity facts only; GOV-AUTH-02 — CREATE-01E product-facing single-shot Ask facts only; not GOV-ARCH-03). Prior freeze: 2026-08-10 (GOV-ARCH-01).
+Last reconciled: 2026-08-24 (GOV-ARCH-02 Step 3 — bounded current-state reconciliation). Bounded living-authority sync: 2026-08-28 (GOV-AUTH-01 — CREATE-01D Ask identity facts only; GOV-AUTH-02 — CREATE-01E product-facing single-shot Ask facts only; not GOV-ARCH-03). Bounded living-authority sync: 2026-08-31 (AGENT-PLATFORM-CREATE-01F — frontend Create Agent detail consumes existing `DELETE /api/agents/:id` for persisted user-created agents only; not GOV-ARCH-03). Prior freeze: 2026-08-10 (GOV-ARCH-01).
 
 ---
 
@@ -976,7 +976,8 @@ User-created agents:
 - Entity `UserAgent` / table `user_agents`
 - Migration exists in repo; locked staging evidence says it was applied
 - APIs: `POST /api/agents`, `GET /api/agents`, `GET /api/agents/:id`, `DELETE /api/agents/:id` (`SessionCookieGuard`)
-- `DELETE /api/agents/:id` — authenticated; ownership-scoped (`id + userId`); soft delete via the existing `deleted_at` `@DeleteDateColumn`; no new migration was required; default TypeORM deleted-row filtering on `find`/`findOne` remains current; persistence/API capability only — no frontend Delete UI
+- `DELETE /api/agents/:id` — authenticated; ownership-scoped (`id + userId`); soft delete via the existing `deleted_at` `@DeleteDateColumn`; no new migration was required; default TypeORM deleted-row filtering on `find`/`findOne` remains current; backend contract unchanged
+- Frontend `/platform` Create Agent detail exposes a bounded Delete control for persisted user-created agents only; confirmation precedes `DELETE /api/agents/:id`; cancel does not call DELETE; pending blocks duplicate DELETE; success removes the agent from current list/detail state; Builder and coming-soon surfaces do not expose Delete
 - MVP UI exists
 - Persisted user-agent identity may be resolved by the Gateway for the existing single-shot conversation/Ask path through optional `agentId` on `POST /api/ai/execute`
 - Frontend `/platform` Ask CTA navigates to existing `/[locale]/app?userAgentId=<uuid>` and binds persisted agent identity into the existing AppPage visit
