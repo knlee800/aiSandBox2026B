@@ -5,8 +5,8 @@
   "saturationSuspended": false,
   "suspensionReason": "NONE",
   "governance": {
-    "owner": "GOV-AUTH-03",
-    "state": "ACTIVE"
+    "owner": "NONE",
+    "state": "UNOWNED"
   },
   "occupancy": {
     "lane1": {
@@ -152,7 +152,7 @@
       "writeSetPrecision": "EXACT"
     }
   ],
-  "lockedTaskIds": ["GOV-OS-03", "GOV-OS-03R1", "AGENT-PLATFORM-CREATE-01F", "I18N-SHELL-07", "AGENT-PLATFORM-EXEC-01A", "AGENT-PLATFORM-EXEC-01B"],
+  "lockedTaskIds": ["GOV-OS-03", "GOV-OS-03R1", "AGENT-PLATFORM-CREATE-01F", "I18N-SHELL-07", "AGENT-PLATFORM-EXEC-01A", "AGENT-PLATFORM-EXEC-01B", "GOV-AUTH-03"],
   "sharedContracts": [],
   "runtimeAuthorization": {
     "localRuntimeAuthorized": false,
