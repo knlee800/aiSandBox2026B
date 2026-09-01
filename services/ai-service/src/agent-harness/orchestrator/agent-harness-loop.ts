@@ -49,6 +49,30 @@ const NO_DISPATCHER_FALLBACK =
   '[Agent Harness] The model requested tool calls, but no tool dispatcher is available. ' +
   'Tool execution is disabled until a future slice provides a dispatcher.';
 
+export const HARNESS_INVALID_EXECUTION_ID_ERROR_NAME =
+  'HarnessInvalidExecutionIdError';
+
+export const HARNESS_INVALID_EXECUTION_ID_ERROR_MESSAGE =
+  '[Agent Harness] Canonical executionId is required and must be a non-empty string.';
+
+export class HarnessInvalidExecutionIdError extends Error {
+  constructor() {
+    super(HARNESS_INVALID_EXECUTION_ID_ERROR_MESSAGE);
+    this.name = HARNESS_INVALID_EXECUTION_ID_ERROR_NAME;
+  }
+}
+
+function requireCanonicalExecutionId(executionId: unknown): string {
+  if (
+    typeof executionId !== 'string' ||
+    executionId === '' ||
+    executionId.trim() === ''
+  ) {
+    throw new HarnessInvalidExecutionIdError();
+  }
+  return executionId;
+}
+
 /**
  * Bounded multi-turn tool loop foundation for Agent Harness v1.
  *
@@ -81,6 +105,7 @@ export async function executeAgentHarnessLoop(
     mutatingToolNames,
     recorder,
   } = options;
+  const executionId = requireCanonicalExecutionId(request.executionId);
   const maxIterations = Math.max(1, config.maxToolIterations);
   const maxToolResultBytes =
     typeof config.maxToolResultBytes === 'number' &&
@@ -98,7 +123,7 @@ export async function executeAgentHarnessLoop(
 
   const baseEvent = () => ({
     timestamp: Date.now(),
-    executionId: request.sessionId,
+    executionId,
     sessionId: request.sessionId,
     harnessVersion: 'v1',
   });

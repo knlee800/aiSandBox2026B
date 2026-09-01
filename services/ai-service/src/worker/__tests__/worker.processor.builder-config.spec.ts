@@ -493,9 +493,36 @@ describe('AGENT-HARNESS-07B: WorkerProcessor resolvedConfig wiring', () => {
 describe('AGENT-HARNESS-07B: global enableToolLoop gate preserved', () => {
   it('useHarness still checks DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop as master gate', () => {
     const workerSource = getWorkerSource();
-    expect(workerSource).toContain('DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop');
-    expect(workerSource).toContain("job.data.harnessVersion === 'v1' &&");
-    expect(workerSource).toContain('if (useHarness) {');
+    const routingCallMatch = workerSource.match(
+      /const routing = resolveHarnessRouting\(\{[\s\S]*?\}\);/,
+    );
+    expect(routingCallMatch).not.toBeNull();
+    const routingCallBlock = routingCallMatch![0];
+
+    expect(routingCallBlock).toContain('resolveHarnessRouting');
+    expect(routingCallBlock).toContain('harnessVersion: job.data.harnessVersion');
+    expect(routingCallBlock).toContain(
+      'enableToolLoop: DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop',
+    );
+
+    const routingCallIndex = workerSource.indexOf(routingCallBlock);
+    const afterRoutingCall = workerSource.substring(
+      routingCallIndex + routingCallBlock.length,
+    );
+    const useHarnessMatch = afterRoutingCall.match(
+      /const useHarness = routing\.selectedPath === 'harness';/,
+    );
+    expect(useHarnessMatch).not.toBeNull();
+
+    const useHarnessIndex =
+      routingCallIndex +
+      routingCallBlock.length +
+      afterRoutingCall.indexOf(useHarnessMatch![0]);
+    const harnessBranchIndex = workerSource.indexOf(
+      'if (useHarness) {',
+      useHarnessIndex,
+    );
+    expect(harnessBranchIndex).toBeGreaterThan(useHarnessIndex);
   });
 
   it('route_evaluated log still uses DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop', () => {
@@ -509,10 +536,30 @@ describe('AGENT-HARNESS-07B: global enableToolLoop gate preserved', () => {
 
   it('resolvedConfig does not bypass the global enableToolLoop gate', () => {
     const workerSource = getWorkerSource();
-    const useHarnessIndex = workerSource.indexOf('const useHarness =');
-    const useHarnessLine = workerSource.substring(useHarnessIndex, workerSource.indexOf(';', useHarnessIndex) + 1);
-    expect(useHarnessLine).toContain('DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop');
-    expect(useHarnessLine).not.toContain('resolvedConfig');
+    const routingCallMatch = workerSource.match(
+      /const routing = resolveHarnessRouting\(\{[\s\S]*?\}\);/,
+    );
+    expect(routingCallMatch).not.toBeNull();
+    const routingCallBlock = routingCallMatch![0];
+
+    expect(routingCallBlock).toContain(
+      'enableToolLoop: DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop',
+    );
+    expect(routingCallBlock).not.toContain('resolvedConfig.enableToolLoop');
+    expect(routingCallBlock).not.toContain('resolvedConfig');
+
+    const routingCallIndex = workerSource.indexOf(routingCallBlock);
+    const harnessBranchIndex = workerSource.indexOf(
+      'if (useHarness) {',
+      routingCallIndex,
+    );
+    const resolvedConfigIndex = workerSource.indexOf(
+      'resolveBuilderHarnessConfig(',
+      routingCallIndex,
+    );
+
+    expect(harnessBranchIndex).toBeGreaterThan(routingCallIndex);
+    expect(resolvedConfigIndex).toBeGreaterThan(harnessBranchIndex);
   });
 });
 

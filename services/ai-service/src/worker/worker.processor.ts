@@ -140,6 +140,65 @@ export function resolveEffectiveFileActionsForExecutionIntent<T>(input: {
   };
 }
 
+export type HarnessRoutingFailReason =
+  | 'tool_loop_disabled'
+  | 'adapter_lacks_tool_use'
+  | 'adapter_lacks_execute_with_tools';
+
+export type HarnessRoutingDecision =
+  | { readonly selectedPath: 'plain' }
+  | { readonly selectedPath: 'harness' }
+  | {
+      readonly selectedPath: 'fail_closed';
+      readonly failReason: HarnessRoutingFailReason;
+    };
+
+export class HarnessRoutingError extends Error {
+  readonly code: 'harness_tool_loop_disabled' | 'harness_unsupported_adapter';
+  readonly reason: HarnessRoutingFailReason;
+
+  constructor(reason: HarnessRoutingFailReason) {
+    const code =
+      reason === 'tool_loop_disabled'
+        ? 'harness_tool_loop_disabled'
+        : 'harness_unsupported_adapter';
+    super(`Requested Harness execution cannot proceed (${reason})`);
+    this.name = 'HarnessRoutingError';
+    this.code = code;
+    this.reason = reason;
+  }
+}
+
+export function resolveHarnessRouting(input: {
+  harnessVersion?: string | null;
+  enableToolLoop: boolean;
+  adapterSupportsToolUse?: boolean;
+  adapterHasExecuteWithTools?: boolean;
+}): HarnessRoutingDecision {
+  if (input.harnessVersion !== 'v1') {
+    return { selectedPath: 'plain' };
+  }
+  if (!input.enableToolLoop) {
+    return {
+      selectedPath: 'fail_closed',
+      failReason: 'tool_loop_disabled',
+    };
+  }
+  if (input.adapterSupportsToolUse !== true) {
+    return {
+      selectedPath: 'fail_closed',
+      failReason: 'adapter_lacks_tool_use',
+    };
+  }
+  if (input.adapterHasExecuteWithTools !== true) {
+    return {
+      selectedPath: 'fail_closed',
+      failReason: 'adapter_lacks_execute_with_tools',
+    };
+  }
+  return { selectedPath: 'harness' };
+}
+
 interface FileActionContractValidationResult {
   isContractFailure: boolean;
   finalContractResult: 'passed' | 'failed';
@@ -403,6 +462,8 @@ export function buildExecutionPromptParts(
 export function buildAIExecutionRequest(
   jobData: {
     provider: AIExecutionRequest['provider'];
+    executionId: string;
+    agentId?: string;
     sessionId: string;
     conversationId: string;
     userId: string;
@@ -415,6 +476,8 @@ export function buildAIExecutionRequest(
     provider: jobData.provider,
     prompt: promptParts.user,
     systemPrompt: promptParts.system,
+    executionId: jobData.executionId,
+    agentId: jobData.agentId,
     sessionId: jobData.sessionId,
     conversationId: jobData.conversationId,
     userId: jobData.userId,
@@ -823,20 +886,37 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
 
         pollCancel();
 
-        const useHarness =
-          job.data.harnessVersion === 'v1' &&
-          DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop;
-        this.logger.log(
-          JSON.stringify({
-            event: 'agent_harness.route_evaluated',
-            executionId: job.data.executionId,
-            harnessVersion: job.data.harnessVersion ?? null,
-            enableToolLoop: DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop,
-            selectedPath: useHarness ? 'harness' : 'plain',
-          }),
-        );
-
         try {
+          const harnessRequested = job.data.harnessVersion === 'v1';
+          let routedAdapter: ReturnType<AIExecutionService['getAdapter']> | undefined;
+          if (harnessRequested && DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop) {
+            routedAdapter = this.aiExecutionService.getAdapter(
+              job.data.provider,
+              job.data.model,
+            );
+          }
+          const routing = resolveHarnessRouting({
+            harnessVersion: job.data.harnessVersion,
+            enableToolLoop: DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop,
+            adapterSupportsToolUse: routedAdapter?.supportsToolUse === true,
+            adapterHasExecuteWithTools:
+              typeof routedAdapter?.executeWithTools === 'function',
+          });
+          this.logger.log(
+            JSON.stringify({
+              event: 'agent_harness.route_evaluated',
+              executionId: job.data.executionId,
+              harnessVersion: job.data.harnessVersion ?? null,
+              enableToolLoop: DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop,
+              selectedPath: routing.selectedPath,
+            }),
+          );
+          const useHarness = routing.selectedPath === 'harness';
+
+          if (routing.selectedPath === 'fail_closed') {
+            throw new HarnessRoutingError(routing.failReason);
+          }
+
           let aiResult: Awaited<ReturnType<AIExecutionService['execute']>>;
           let harnessPreApplyCheckpointHash: string | undefined;
           for (let attempt = 0; attempt < EXECUTION_PROVIDER_RETRY_ATTEMPTS; attempt++) {
@@ -873,12 +953,20 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                   warnings: configResolutionMetadata.warnings,
                 }));
 
-                const adapter = this.aiExecutionService.getAdapter(
-                  executionRequest.provider,
-                  executionRequest.model,
-                );
-                if (adapter.supportsToolUse && adapter.executeWithTools) {
-                  const dispatcher = new ToolDispatcher({
+                const adapter =
+                  routedAdapter ??
+                  this.aiExecutionService.getAdapter(
+                    executionRequest.provider,
+                    executionRequest.model,
+                  );
+                if (!adapter.supportsToolUse || !adapter.executeWithTools) {
+                  throw new HarnessRoutingError(
+                    adapter.supportsToolUse !== true
+                      ? 'adapter_lacks_tool_use'
+                      : 'adapter_lacks_execute_with_tools',
+                  );
+                }
+                const dispatcher = new ToolDispatcher({
                     toolTimeoutMs: resolvedConfig.toolTimeoutMs,
                     maxToolResultBytes: resolvedConfig.maxToolResultBytes,
                   });
@@ -977,9 +1065,6 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                       this.logger.log(JSON.stringify(event));
                     }
                   }
-                } else {
-                  aiResult = await this.aiExecutionService.execute(executionRequest);
-                }
               } else {
                 aiResult = await this.aiExecutionService.execute(executionRequest);
               }

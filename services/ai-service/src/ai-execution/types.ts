@@ -21,6 +21,10 @@ export interface AIExecutionRequest {
   systemPrompt?: string;
   provider: 'stub' | 'anthropic' | 'openai' | 'groq' | 'xai' | 'deepseek' | 'test-harness-stub';
   model?: string;
+  /** Canonical Gateway execution id. Worker path always forwards this; not required of out-of-scope callers. */
+  executionId?: string;
+  /** Persisted user-agent id. Optional for ordinary unbound executions. */
+  agentId?: string;
   metadata?: Record<string, unknown>;
   /** Phase 47.4: Optional AbortSignal for cancellation */
   signal?: AbortSignal;

@@ -53,6 +53,9 @@ export interface AiExecutionJob {
   /** Agent Harness version gate. When set to 'v1', enables the harness execution path. */
   harnessVersion?: string;
 
+  /** Persisted user-agent id. Optional for ordinary unbound executions. */
+  agentId?: string;
+
   /** Per-builder identity fields for harness config resolution (AGENT-HARNESS-07B). */
   agentRole?: string;
   builderProfileId?: string;

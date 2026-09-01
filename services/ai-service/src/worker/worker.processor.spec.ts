@@ -2,8 +2,10 @@ import {
   buildAIExecutionRequest,
   buildExecutionPromptParts,
   DEFAULT_EXECUTION_TIMEOUT_MS,
+  HarnessRoutingError,
   parseExecutionTimeoutBaselineMs,
   resolveBullMqLockDurationMs,
+  resolveHarnessRouting,
   resolveStuckWatchdogThresholdSeconds,
   WorkerProcessor,
 } from './worker.processor';
@@ -61,6 +63,7 @@ describe('buildAIExecutionRequest', () => {
     const request = buildAIExecutionRequest(
       {
         provider: 'openai',
+        executionId: 'exec-1',
         sessionId: 'session-1',
         conversationId: 'conv-1',
         userId: 'user-1',
@@ -76,12 +79,16 @@ describe('buildAIExecutionRequest', () => {
     expect(request.provider).toBe('openai');
     expect(request.systemPrompt).toBe('Execution output contract');
     expect(request.prompt).toBe('User request:\nhello');
+    expect(request.sessionId).toBe('session-1');
+    expect(request.conversationId).toBe('conv-1');
+    expect(request.userId).toBe('user-1');
   });
 
   it('keeps model undefined when no model is provided in job payload', () => {
     const request = buildAIExecutionRequest(
       {
         provider: 'anthropic',
+        executionId: 'exec-1',
         sessionId: 'session-1',
         conversationId: 'conv-1',
         userId: 'user-1',
@@ -93,6 +100,163 @@ describe('buildAIExecutionRequest', () => {
     );
 
     expect(request.model).toBeUndefined();
+  });
+
+  it('forwards the canonical Gateway executionId without transformation', () => {
+    const request = buildAIExecutionRequest(
+      {
+        provider: 'openai',
+        executionId: 'canonical-exec-id',
+        sessionId: 'session-1',
+        conversationId: 'conv-1',
+        userId: 'user-1',
+        model: 'gpt-4.1',
+      },
+      {
+        system: 'Execution output contract',
+        user: 'User request:\nhello',
+      },
+    );
+
+    expect(request.executionId).toBe('canonical-exec-id');
+    expect(request.executionId).not.toBe(request.sessionId);
+  });
+
+  it('forwards persisted agentId when the job carries one', () => {
+    const request = buildAIExecutionRequest(
+      {
+        provider: 'openai',
+        executionId: 'canonical-exec-id',
+        agentId: 'persisted-agent-id',
+        sessionId: 'session-1',
+        conversationId: 'conv-1',
+        userId: 'user-1',
+      },
+      {
+        system: 'Execution output contract',
+        user: 'User request:\nhello',
+      },
+    );
+
+    expect(request.agentId).toBe('persisted-agent-id');
+    expect(request.executionId).toBe('canonical-exec-id');
+  });
+
+  it('leaves agentId undefined for ordinary unbound jobs', () => {
+    const request = buildAIExecutionRequest(
+      {
+        provider: 'openai',
+        executionId: 'canonical-exec-id',
+        sessionId: 'session-1',
+        conversationId: 'conv-1',
+        userId: 'user-1',
+      },
+      {
+        system: 'Execution output contract',
+        user: 'User request:\nhello',
+      },
+    );
+
+    expect(request.agentId).toBeUndefined();
+    expect(request.executionId).toBe('canonical-exec-id');
+    expect(request.sessionId).toBe('session-1');
+    expect(request.conversationId).toBe('conv-1');
+    expect(request.userId).toBe('user-1');
+    expect(request.provider).toBe('openai');
+  });
+});
+
+describe('resolveHarnessRouting', () => {
+  it('selects the existing plain path when Harness was not requested', () => {
+    expect(
+      resolveHarnessRouting({
+        enableToolLoop: false,
+      }),
+    ).toEqual({ selectedPath: 'plain' });
+    expect(
+      resolveHarnessRouting({
+        harnessVersion: undefined,
+        enableToolLoop: true,
+        adapterSupportsToolUse: true,
+        adapterHasExecuteWithTools: true,
+      }),
+    ).toEqual({ selectedPath: 'plain' });
+  });
+
+  it('fails closed when Harness v1 is requested and the loop gate is false', () => {
+    const decision = resolveHarnessRouting({
+      harnessVersion: 'v1',
+      enableToolLoop: false,
+      adapterSupportsToolUse: true,
+      adapterHasExecuteWithTools: true,
+    });
+
+    expect(decision).toEqual({
+      selectedPath: 'fail_closed',
+      failReason: 'tool_loop_disabled',
+    });
+  });
+
+  it('fails closed when Harness v1 is requested and the adapter lacks native tool support', () => {
+    const decision = resolveHarnessRouting({
+      harnessVersion: 'v1',
+      enableToolLoop: true,
+      adapterSupportsToolUse: false,
+      adapterHasExecuteWithTools: true,
+    });
+
+    expect(decision).toEqual({
+      selectedPath: 'fail_closed',
+      failReason: 'adapter_lacks_tool_use',
+    });
+  });
+
+  it('fails closed when Harness v1 is requested and the adapter lacks executeWithTools', () => {
+    const decision = resolveHarnessRouting({
+      harnessVersion: 'v1',
+      enableToolLoop: true,
+      adapterSupportsToolUse: true,
+      adapterHasExecuteWithTools: false,
+    });
+
+    expect(decision).toEqual({
+      selectedPath: 'fail_closed',
+      failReason: 'adapter_lacks_execute_with_tools',
+    });
+  });
+
+  it('selects the bounded Harness path when v1 is requested, the gate is true, and the adapter supports native tool use', () => {
+    const decision = resolveHarnessRouting({
+      harnessVersion: 'v1',
+      enableToolLoop: true,
+      adapterSupportsToolUse: true,
+      adapterHasExecuteWithTools: true,
+    });
+
+    expect(decision).toEqual({ selectedPath: 'harness' });
+  });
+
+  it('never selects the plain path for an unsupported Harness request', () => {
+    const disabledGate = resolveHarnessRouting({
+      harnessVersion: 'v1',
+      enableToolLoop: false,
+    });
+    const missingToolUse = resolveHarnessRouting({
+      harnessVersion: 'v1',
+      enableToolLoop: true,
+      adapterSupportsToolUse: false,
+      adapterHasExecuteWithTools: true,
+    });
+    const missingExecuteWithTools = resolveHarnessRouting({
+      harnessVersion: 'v1',
+      enableToolLoop: true,
+      adapterSupportsToolUse: true,
+      adapterHasExecuteWithTools: false,
+    });
+
+    expect(disabledGate.selectedPath).toBe('fail_closed');
+    expect(missingToolUse.selectedPath).toBe('fail_closed');
+    expect(missingExecuteWithTools.selectedPath).toBe('fail_closed');
   });
 });
 
@@ -530,40 +694,42 @@ describe('Agent Harness 05C3A: route observability event', () => {
     );
   }
 
-  it('emits agent_harness.route_evaluated with harnessVersion v1, enableToolLoop false, selectedPath plain', () => {
+  it('emits agent_harness.route_evaluated with harnessVersion v1, enableToolLoop false, selectedPath fail_closed', () => {
     const workerSource = getWorkerSource();
     expect(workerSource).toContain("event: 'agent_harness.route_evaluated'");
     expect(workerSource).toContain('enableToolLoop: DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop');
-    expect(workerSource).toContain("selectedPath: useHarness ? 'harness' : 'plain'");
+    expect(workerSource).toContain('selectedPath: routing.selectedPath');
 
+    const decision = resolveHarnessRouting({
+      harnessVersion: 'v1',
+      enableToolLoop: DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop,
+    });
     const samplePayload = {
       event: 'agent_harness.route_evaluated',
       executionId: 'exec-test-1',
       harnessVersion: 'v1',
       enableToolLoop: DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop,
-      selectedPath:
-        'v1' === 'v1' && DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop
-          ? 'harness'
-          : 'plain',
+      selectedPath: decision.selectedPath,
     };
 
     expect(samplePayload.executionId).toBe('exec-test-1');
     expect(samplePayload.harnessVersion).toBe('v1');
     expect(samplePayload.enableToolLoop).toBe(false);
-    expect(samplePayload.selectedPath).toBe('plain');
+    expect(samplePayload.selectedPath).toBe('fail_closed');
   });
 
   it('emits agent_harness.route_evaluated with null harnessVersion when absent', () => {
     const absentVersion: string | undefined = undefined;
+    const decision = resolveHarnessRouting({
+      harnessVersion: absentVersion,
+      enableToolLoop: DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop,
+    });
     const samplePayload = {
       event: 'agent_harness.route_evaluated',
       executionId: 'exec-test-2',
       harnessVersion: absentVersion ?? null,
       enableToolLoop: DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop,
-      selectedPath:
-        absentVersion === 'v1' && DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop
-          ? 'harness'
-          : 'plain',
+      selectedPath: decision.selectedPath,
     };
 
     expect(samplePayload.harnessVersion).toBeNull();
@@ -593,14 +759,14 @@ describe('Agent Harness 05C3A: route observability event', () => {
     }
   });
 
-  it('useHarness replaces the inline condition without changing routing semantics', () => {
+  it('useHarness is derived from fail-closed routing instead of silent fallback', () => {
     const workerSource = getWorkerSource();
 
+    expect(workerSource).toContain('resolveHarnessRouting');
     expect(workerSource).toContain('const useHarness =');
-    expect(workerSource).toContain("job.data.harnessVersion === 'v1' &&");
-    expect(workerSource).toContain('DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop;');
-
+    expect(workerSource).toContain("routing.selectedPath === 'harness'");
     expect(workerSource).toContain('if (useHarness) {');
+    expect(workerSource).toContain('HarnessRoutingError');
 
     const inlineDoubleGateMatches = workerSource.match(
       /if\s*\(\s*job\.data\.harnessVersion === 'v1'\s*&&\s*DEFAULT_AGENT_HARNESS_CONFIG_V1\.enableToolLoop\s*\)/g,
@@ -723,9 +889,13 @@ describe('Agent Harness 03A: read_file/list_files handler registration', () => {
     const plainExecuteIndex = workerSource.lastIndexOf(
       'this.aiExecutionService.execute(executionRequest)',
     );
+    const executeOccurrences = (
+      workerSource.match(/this\.aiExecutionService\.execute\(executionRequest\)/g) || []
+    ).length;
     expect(harnessBranchIndex).toBeGreaterThan(-1);
     expect(executeLoopIndex).toBeGreaterThan(harnessBranchIndex);
     expect(plainExecuteIndex).toBeGreaterThan(executeLoopIndex);
+    expect(executeOccurrences).toBe(1);
   });
 
   it('WorkerProcessor does not add run_validation to mutatingToolNames', () => {
@@ -940,11 +1110,12 @@ describe('Agent Harness 05C9: structured audit events wiring', () => {
     );
   }
 
-  it('existing route_evaluated behavior remains unchanged', () => {
+  it('existing route_evaluated behavior remains fail-closed for requested Harness', () => {
     const workerSource = getWorkerSource();
     expect(workerSource).toContain("event: 'agent_harness.route_evaluated'");
     expect(workerSource).toContain('enableToolLoop: DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop');
-    expect(workerSource).toContain("selectedPath: useHarness ? 'harness' : 'plain'");
+    expect(workerSource).toContain('selectedPath: routing.selectedPath');
+    expect(workerSource).not.toContain("selectedPath: useHarness ? 'harness' : 'plain'");
   });
 
   it('plain execution path unchanged — no audit recorder on plain path', () => {
@@ -1358,11 +1529,58 @@ describe('PRIVATE-BETA-BLOCKER-03C: worker abort timeout behavior', () => {
 
     expect(execute).toHaveBeenCalledTimes(1);
     expect(execute.mock.calls[0][0].model).toBe('grok-4.5');
+    expect(execute.mock.calls[0][0].executionId).toBe('exec-grok-45-ok');
+    expect(execute.mock.calls[0][0].agentId).toBeUndefined();
+    expect(execute.mock.calls[0][0].sessionId).toBe('session-1');
     expect(execute.mock.calls[0][0].signal).toBeDefined();
     expect(ledger.status.value).toBe('completed');
     expect(ledger.timeoutUpdates).toHaveLength(0);
     expect(publisher.publishFileActions).toHaveBeenCalledTimes(1);
     expect(apiGateway.notifyExecutionComplete).toHaveBeenCalledTimes(1);
+
+    await worker.onModuleDestroy();
+  });
+
+  it('fails closed before ordinary execute() when Harness v1 is requested with the loop gate disabled', async () => {
+    const ledger = createLedgerMock();
+    const execute = jest.fn().mockResolvedValue(createSuccessResult('grok-4.5'));
+    const publisher = {
+      publishCompletion: jest.fn(),
+      publishToken: jest.fn(),
+      publishFileActions: jest.fn(),
+    };
+    const apiGateway = {
+      notifyExecutionComplete: jest.fn().mockResolvedValue(undefined),
+    };
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute,
+      publisher,
+      apiGateway,
+    });
+
+    const job = {
+      id: 'job-exec-harness-disabled',
+      data: {
+        executionId: 'exec-harness-disabled',
+        provider: 'xai',
+        adapter: 'xai',
+        sessionId: 'session-1',
+        conversationId: 'conv-1',
+        userId: 'user-1',
+        prompt: 'Create index.html',
+        model: 'grok-4.5',
+        executionIntent: 'workspace_mutation',
+        harnessVersion: 'v1',
+      },
+    };
+
+    await expect(processJob(job)).rejects.toBeInstanceOf(HarnessRoutingError);
+    expect(execute).not.toHaveBeenCalled();
+    expect(ledger.status.value).toBe('failed');
+    expect(publisher.publishFileActions).not.toHaveBeenCalled();
+    expect(apiGateway.notifyExecutionComplete).not.toHaveBeenCalled();
+    expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop).toBe(false);
 
     await worker.onModuleDestroy();
   });

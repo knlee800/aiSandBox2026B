@@ -1,5 +1,8 @@
 import {
   executeAgentHarnessLoop,
+  HarnessInvalidExecutionIdError,
+  HARNESS_INVALID_EXECUTION_ID_ERROR_NAME,
+  HARNESS_INVALID_EXECUTION_ID_ERROR_MESSAGE,
   type AgentHarnessLoopOptions,
   type AgentHarnessExecuteWithToolsFn,
 } from './agent-harness-loop';
@@ -16,6 +19,7 @@ function makeRequest(overrides?: Partial<AIExecutionRequest>): AIExecutionReques
   return {
     provider: 'stub',
     prompt: 'test prompt',
+    executionId: 'exec-1',
     sessionId: 'sess-1',
     conversationId: 'conv-1',
     userId: 'user-1',
@@ -1203,5 +1207,173 @@ describe('executeAgentHarnessLoop audit events', () => {
         expect((event as { durationMs: number }).durationMs).toBeGreaterThanOrEqual(0);
       }
     }
+  });
+
+  it('uses the canonical request executionId on loop_started, distinct from sessionId', async () => {
+    const recorder = new InMemoryHarnessAuditRecorder();
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>().mockResolvedValue(
+      makeCompletedResult(),
+    );
+    const request = makeRequest({
+      executionId: 'canonical-exec-id',
+      sessionId: 'workspace-session-id',
+    });
+
+    await executeAgentHarnessLoop(makeOptions(executeFn, { recorder, request }));
+
+    const startEvent = recorder.getEvents().find(
+      (e) => e.eventType === 'harness.loop_started',
+    ) as Extract<HarnessAuditEvent, { eventType: 'harness.loop_started' }>;
+    expect(startEvent.executionId).toBe('canonical-exec-id');
+    expect(startEvent.sessionId).toBe('workspace-session-id');
+    expect(startEvent.executionId).not.toBe(startEvent.sessionId);
+  });
+
+  it('keeps the same canonical executionId on completion and termination events', async () => {
+    const recorder = new InMemoryHarnessAuditRecorder();
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>().mockResolvedValue(
+      makeCompletedResult(),
+    );
+    const request = makeRequest({
+      executionId: 'canonical-exec-id',
+      sessionId: 'workspace-session-id',
+    });
+
+    await executeAgentHarnessLoop(makeOptions(executeFn, { recorder, request }));
+
+    const completedEvent = recorder.getEvents().find(
+      (e) => e.eventType === 'harness.loop_completed',
+    ) as Extract<HarnessAuditEvent, { eventType: 'harness.loop_completed' }>;
+    expect(completedEvent.executionId).toBe('canonical-exec-id');
+    expect(completedEvent.sessionId).toBe('workspace-session-id');
+  });
+
+  it('keeps the same canonical executionId on tool dispatch events', async () => {
+    const recorder = new InMemoryHarnessAuditRecorder();
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async () => ({ content: 'ok' }));
+    const request = makeRequest({
+      executionId: 'canonical-exec-id',
+      sessionId: 'workspace-session-id',
+    });
+
+    let callCount = 0;
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>(() => {
+      callCount++;
+      if (callCount === 1) return Promise.resolve(makeToolCallResult());
+      return Promise.resolve(makeCompletedResult());
+    });
+
+    await executeAgentHarnessLoop(
+      makeOptions(executeFn, { dispatcher, recorder, request }),
+    );
+
+    const dispatchEvents = recorder.getEvents().filter(
+      (e) =>
+        e.eventType === 'harness.tool_dispatch_started' ||
+        e.eventType === 'harness.tool_dispatch_completed',
+    );
+    expect(dispatchEvents.length).toBeGreaterThan(0);
+    for (const event of dispatchEvents) {
+      expect(event.executionId).toBe('canonical-exec-id');
+      expect(event.sessionId).toBe('workspace-session-id');
+    }
+  });
+
+  it('never uses sessionId as the audit executionId across the whole loop', async () => {
+    const recorder = new InMemoryHarnessAuditRecorder();
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async () => ({ content: 'ok' }));
+    const request = makeRequest({
+      executionId: 'canonical-exec-id',
+      sessionId: 'workspace-session-id',
+    });
+
+    let callCount = 0;
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>(() => {
+      callCount++;
+      if (callCount === 1) return Promise.resolve(makeToolCallResult());
+      return Promise.resolve(makeCompletedResult());
+    });
+
+    await executeAgentHarnessLoop(
+      makeOptions(executeFn, { dispatcher, recorder, request }),
+    );
+
+    const allEvents = recorder.getEvents();
+    expect(allEvents.length).toBeGreaterThan(0);
+    for (const event of allEvents) {
+      expect(event.executionId).toBe('canonical-exec-id');
+      expect(event.sessionId).toBe('workspace-session-id');
+      expect(event.executionId).not.toBe(event.sessionId);
+    }
+  });
+});
+
+describe('executeAgentHarnessLoop canonical executionId entry guard', () => {
+  async function expectInvalidExecutionIdRejected(
+    executionId: string | undefined,
+  ): Promise<void> {
+    const executeFn = jest
+      .fn<Promise<AIAdapterToolUseResult>, any>()
+      .mockResolvedValue({
+        output: 'I want to write a file.',
+        tokensUsed: 50,
+        model: 'stub',
+        finishReason: 'tool_calls',
+        toolCalls: [
+          {
+            callId: 'call-w1',
+            toolName: 'write_file',
+            arguments: { path: 'src/app.ts', content: 'const x = 1;' },
+            providerKind: 'stub',
+          },
+        ],
+      });
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('write_file', async () => ({ ok: true }));
+    const dispatchSpy = jest.spyOn(dispatcher, 'dispatch');
+    const createCheckpointFn = jest.fn(async () => ({
+      commitHash: 'should-not-create',
+      filesChanged: 0,
+    }));
+    const recorder = new InMemoryHarnessAuditRecorder();
+
+    let caught: unknown;
+    try {
+      await executeAgentHarnessLoop(
+        makeOptions(executeFn, {
+          request: makeRequest({ executionId }),
+          recorder,
+          dispatcher,
+          createCheckpointFn,
+          mutatingToolNames: new Set(['write_file', 'delete_file']),
+        }),
+      );
+    } catch (err) {
+      caught = err;
+    }
+
+    expect(caught).toBeInstanceOf(HarnessInvalidExecutionIdError);
+    expect(caught).toMatchObject({
+      name: HARNESS_INVALID_EXECUTION_ID_ERROR_NAME,
+      message: HARNESS_INVALID_EXECUTION_ID_ERROR_MESSAGE,
+    });
+    expect(executeFn).not.toHaveBeenCalled();
+    expect(recorder.getEvents()).toEqual([]);
+    expect(dispatchSpy).not.toHaveBeenCalled();
+    expect(createCheckpointFn).not.toHaveBeenCalled();
+  }
+
+  it('rejects undefined executionId before any Harness side effect', async () => {
+    await expectInvalidExecutionIdRejected(undefined);
+  });
+
+  it('rejects empty executionId before any Harness side effect', async () => {
+    await expectInvalidExecutionIdRejected('');
+  });
+
+  it('rejects whitespace-only executionId before any Harness side effect', async () => {
+    await expectInvalidExecutionIdRejected(' \t\n');
   });
 });
