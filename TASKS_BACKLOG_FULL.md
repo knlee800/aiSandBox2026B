@@ -73523,7 +73523,7 @@ taskId=AGENT-PLATFORM-EXEC-01C
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY / NOT ADMITTED (umbrella) — 2026-09-01 — Step 1 COMPLETE — 2026-09-01 (registration / control-plane only) — Step 2 COMPLETE — 2026-09-01 — Stage-start: `docs/AGENT-PLATFORM-EXEC-01C-STAGE-START.md` — CONTRACT_FREEZE=COMPLETE — CHILD_SLICE_DECOMPOSITION=COMPLETE — CHILD_TASKS_REGISTERED=2 (`AGENT-PLATFORM-EXEC-01C1` COMPLETE AND LOCKED — PASS — 2026-09-01 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C1-CHECKPOINT.md`; `AGENT-PLATFORM-EXEC-01C2` COMPLETE AND LOCKED — PASS — 2026-09-03 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C2-CHECKPOINT.md`) — later children 01C3..01C9 NOT REGISTERED — Step 3 of this umbrella remains separately bounded child slices; this umbrella is NOT ADMITTED — Step 4 NOT AUTHORIZED — IMPLEMENTATION_STARTED=NO on this umbrella — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE released UNOWNED — AI-SERVICE released UNOWNED — umbrella candidate unchanged `status=READY` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true` / `Test-Admissible` = ADMISSION_UNCERTAIN — product-visible Harness remains FUTURE / gated / disabled / unavailable — PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. Previous: **Status:** REGISTERED / READY / NOT ADMITTED (umbrella) — 2026-09-01 — CHILD_TASKS_REGISTERED=2 (`AGENT-PLATFORM-EXEC-01C1` COMPLETE AND LOCKED; `AGENT-PLATFORM-EXEC-01C2` REGISTERED / ADMITTED Lane 1 — 2026-09-01) — Lane 1 ACTIVE (`AGENT-PLATFORM-EXEC-01C2`)
+**Status:** REGISTERED / READY / NOT ADMITTED (umbrella) — 2026-09-01 — Step 1 COMPLETE — 2026-09-01 (registration / control-plane only) — Step 2 COMPLETE — 2026-09-01 — Stage-start: `docs/AGENT-PLATFORM-EXEC-01C-STAGE-START.md` — CONTRACT_FREEZE=COMPLETE — CHILD_SLICE_DECOMPOSITION=COMPLETE — CHILD_TASKS_REGISTERED=3 (`AGENT-PLATFORM-EXEC-01C1` COMPLETE AND LOCKED — PASS — 2026-09-01 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C1-CHECKPOINT.md`; `AGENT-PLATFORM-EXEC-01C2` COMPLETE AND LOCKED — PASS — 2026-09-03 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C2-CHECKPOINT.md`; `AGENT-PLATFORM-EXEC-01C3` REGISTERED / ADMITTED Lane 1 — 2026-09-03) — later children 01C4..01C9 NOT REGISTERED — Step 3 of this umbrella remains separately bounded child slices; this umbrella is NOT ADMITTED — Step 4 NOT AUTHORIZED — IMPLEMENTATION_STARTED=NO on this umbrella — Lane 1 ACTIVE (AGENT-PLATFORM-EXEC-01C3) — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE released UNOWNED — AI-SERVICE OWNED by EXEC-01C3 — umbrella candidate unchanged `status=READY` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true` / `Test-Admissible` = ADMISSION_UNCERTAIN — product-visible Harness remains FUTURE / gated / disabled / unavailable — PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. Previous: **Status:** REGISTERED / READY / NOT ADMITTED (umbrella) — 2026-09-01 — Step 1 COMPLETE — 2026-09-01 (registration / control-plane only) — Step 2 COMPLETE — 2026-09-01 — Stage-start: `docs/AGENT-PLATFORM-EXEC-01C-STAGE-START.md` — CONTRACT_FREEZE=COMPLETE — CHILD_SLICE_DECOMPOSITION=COMPLETE — CHILD_TASKS_REGISTERED=2 (`AGENT-PLATFORM-EXEC-01C1` COMPLETE AND LOCKED — PASS — 2026-09-01 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C1-CHECKPOINT.md`; `AGENT-PLATFORM-EXEC-01C2` COMPLETE AND LOCKED — PASS — 2026-09-03 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C2-CHECKPOINT.md`) — later children 01C3..01C9 NOT REGISTERED — Step 3 of this umbrella remains separately bounded child slices; this umbrella is NOT ADMITTED — Step 4 NOT AUTHORIZED — IMPLEMENTATION_STARTED=NO on this umbrella — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE released UNOWNED — AI-SERVICE released UNOWNED — umbrella candidate unchanged `status=READY` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true` / `Test-Admissible` = ADMISSION_UNCERTAIN — product-visible Harness remains FUTURE / gated / disabled / unavailable — PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. Previous: **Status:** REGISTERED / READY / NOT ADMITTED (umbrella) — 2026-09-01 — CHILD_TASKS_REGISTERED=2 (`AGENT-PLATFORM-EXEC-01C1` COMPLETE AND LOCKED; `AGENT-PLATFORM-EXEC-01C2` REGISTERED / ADMITTED Lane 1 — 2026-09-01) — Lane 1 ACTIVE (`AGENT-PLATFORM-EXEC-01C2`)
 **Task ID:** AGENT-PLATFORM-EXEC-01C
 **Title:** Persisted User-Agent Harness/Tool-Loop Contract and Safety Umbrella
 **Family:** AGENT PLATFORM / EXEC (Harness/tool-loop contract-and-safety umbrella after AGENT-PLATFORM-EXEC-01A/01B and GOV-AUTH-03 COMPLETE AND LOCKED)
@@ -73532,13 +73532,13 @@ nature=IMPLEMENTATION
 **Development program:** CURRENT — Keith authorized persisted user-agent Harness/tool-loop as the next CURRENT development program on 2026-09-01. This is not a product-visible activation and does not rerank the product frontier.
 **Product-visible Harness capability:** FUTURE / gated / disabled / unavailable to users. This registration does not authorize implementation or activation.
 **Classification:** CURRENT development program; product-visible Harness remains FUTURE/gated. Machine `productClass=CURRENT` with `futureAuthorization=NONE` records the authorized development program. It does not make Harness user-accessible.
-**Lifecycle:** 4-step HIGH-RISK umbrella — Step 1 registration COMPLETE; Step 2 stage-start / cross-service contract freeze / bounded child-slice decomposition COMPLETE — 2026-09-01 — Stage-start: `docs/AGENT-PLATFORM-EXEC-01C-STAGE-START.md`; Step 3 separately bounded implementation slices — first child `AGENT-PLATFORM-EXEC-01C1` COMPLETE AND LOCKED — PASS — 2026-09-01; second child `AGENT-PLATFORM-EXEC-01C2` COMPLETE AND LOCKED — PASS — 2026-09-03; later children 01C3..01C9 NOT REGISTERED; this umbrella remains NOT ADMITTED; Step 4 independent verification / checkpoint / final lock NOT AUTHORIZED.
-**Start condition:** READY (satisfied for registration). NOT ADMITTED. Machine `status=READY`. Lane 1 EMPTY. Candidate `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true`. No implementation mutex owned.
+**Lifecycle:** 4-step HIGH-RISK umbrella — Step 1 registration COMPLETE; Step 2 stage-start / cross-service contract freeze / bounded child-slice decomposition COMPLETE — 2026-09-01 — Stage-start: `docs/AGENT-PLATFORM-EXEC-01C-STAGE-START.md`; Step 3 separately bounded implementation slices — first child `AGENT-PLATFORM-EXEC-01C1` COMPLETE AND LOCKED — PASS — 2026-09-01; second child `AGENT-PLATFORM-EXEC-01C2` COMPLETE AND LOCKED — PASS — 2026-09-03; third child `AGENT-PLATFORM-EXEC-01C3` REGISTERED / ADMITTED Lane 1 — 2026-09-03; later children 01C4..01C9 NOT REGISTERED; this umbrella remains NOT ADMITTED; Step 4 independent verification / checkpoint / final lock NOT AUTHORIZED.
+**Start condition:** READY (satisfied for registration). NOT ADMITTED. Machine `status=READY`. Lane 1 ACTIVE (AGENT-PLATFORM-EXEC-01C3). Candidate `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true`. AI-SERVICE owned by EXEC-01C3; this umbrella owns no implementation mutex.
 **Depends on (canonical / human):** AGENT-PLATFORM-EXEC-01A COMPLETE AND LOCKED — PASS — 2026-08-31 — ownership-scoped persisted `agentId` + `workspace_mutation` accepted on the existing Builder pipeline; existing `agentId` + `harnessVersion` Gateway rejection preserved; Checkpoint: `docs/AGENT-PLATFORM-EXEC-01A-CHECKPOINT.md`. AGENT-PLATFORM-EXEC-01B COMPLETE AND LOCKED — PASS — 2026-08-31 — bound persisted user-agent Ask+Build enabled on the existing workspace UI; frontend does not send `harnessVersion`; Checkpoint: `docs/AGENT-PLATFORM-EXEC-01B-CHECKPOINT.md`. GOV-AUTH-03 COMPLETE AND LOCKED — PASS — 2026-08-31 — living PRD/ARCHITECTURE record bounded Ask+Build CURRENT and keep product-visible Harness FUTURE/gated; Checkpoint: `docs/GOV-AUTH-03-CHECKPOINT.md`. GOV-PRD-02 COMPLETE AND LOCKED. GOV-ARCH-02 COMPLETE AND LOCKED. GOV-OS-02 COMPLETE AND LOCKED (Keith explicitly named this CURRENT development program; light named-task CURRENT/FUTURE check used; do not rerank the product frontier). GOV-OS-03 COMPLETE AND LOCKED. GOV-OS-03R1 COMPLETE AND LOCKED.
 **Depends on (machine sidecar `dependsOn`):** `["AGENT-PLATFORM-EXEC-01A", "AGENT-PLATFORM-EXEC-01B", "GOV-AUTH-03"]` — sidecar `lockedTaskIds` contains all three post-epoch LOCK proofs.
 **Primary write scope (Step 1, this write):** `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body; `docs/control-plane/lane-saturation-state.json` candidate record.
 **Primary write scope (Step 2):** COMPLETE — 2026-09-01 — `docs/AGENT-PLATFORM-EXEC-01C-STAGE-START.md`; this registry body lifecycle/status; `TASKS.md` CURRENT EXECUTION BOARD fields. Sidecar candidate unchanged (`PROVISIONAL` / `admissionUncertain=true`). No application source. No child registration. No implementation write set predetermined for the umbrella.
-**Primary write scope (Step 3):** separately authorized bounded child slices only. First child `AGENT-PLATFORM-EXEC-01C1` COMPLETE AND LOCKED. Second child `AGENT-PLATFORM-EXEC-01C2` COMPLETE AND LOCKED. Do not collapse later child slices into one cross-service implementation. Umbrella implementation write set remains unfrozen / PROVISIONAL.
+**Primary write scope (Step 3):** separately authorized bounded child slices only. First child `AGENT-PLATFORM-EXEC-01C1` COMPLETE AND LOCKED. Second child `AGENT-PLATFORM-EXEC-01C2` COMPLETE AND LOCKED. Third child `AGENT-PLATFORM-EXEC-01C3` REGISTERED / ADMITTED Lane 1. Do not collapse later child slices into one cross-service implementation. Umbrella implementation write set remains unfrozen / PROVISIONAL.
 **Primary write scope (Step 4):** independent verification / checkpoint / final lock only after authorized child slices exist and required evidence exists. Not authorized now.
 **Mutexes / resources (Step 1):** GOVERNANCE held only for this control-plane registration then released UNOWNED. No IMPLEMENTATION candidate mutexes. Machine `mutexes=[]` by design: Step 1 must not predetermine implementation write sets and must not reserve all cross-service resources. GOVERNANCE must not appear in the IMPLEMENTATION candidate mutex list. GATEWAY / AI-SERVICE / CONTAINER-MANAGER / FRONTEND / I18N / MIGRATION / PACKAGE / COMPOSE / ENV / LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT remain UNOWNED and unauthorized.
 **Mutexes / resources (Step 2):** GOVERNANCE held only for this documentation/control-plane write then released UNOWNED. No GATEWAY / AI-SERVICE / FRONTEND / I18N / CREDIT / LOCAL-RUNTIME / PROVIDER-LIVE / STAGING acquired. Implementation mutexes remain UNOWNED. Machine candidate `mutexes=[]` unchanged.
@@ -73582,8 +73582,8 @@ SPECIALISTS_IN_SCOPE=NO
 UNBOUND_BUILDER_IN_SCOPE=NO
 DEDICATED_AGENT_RUNTIME_IN_SCOPE=NO
 FRONTEND_HARNESS_ACTIVATION_IN_THIS_STEP=NO
-CHILD_TASKS_REGISTERED=2
-IMPLEMENTATION_ADMITTED=NO (umbrella; both children AGENT-PLATFORM-EXEC-01C1 and AGENT-PLATFORM-EXEC-01C2 COMPLETE AND LOCKED; later children 01C3..01C9 NOT REGISTERED)
+CHILD_TASKS_REGISTERED=3
+IMPLEMENTATION_ADMITTED=NO (umbrella; both children AGENT-PLATFORM-EXEC-01C1 and AGENT-PLATFORM-EXEC-01C2 COMPLETE AND LOCKED; AGENT-PLATFORM-EXEC-01C3 REGISTERED / ADMITTED Lane 1 — 2026-09-03; later children 01C4..01C9 NOT REGISTERED)
 IMPLEMENTATION_STARTED=NO
 
 **Registered program purpose (Step 1 — umbrella registration only):**
@@ -73591,7 +73591,7 @@ Register the CURRENT development program that will, in later separately authoriz
 
 **4-step lifecycle:**
 1. Step 1 — registration — COMPLETE — 2026-09-01 — control-plane only; no implementation; no admission; no activation
-2. Step 2 — stage-start, cross-service contract freeze, and bounded child-slice decomposition — COMPLETE — 2026-09-01 — Stage-start: `docs/AGENT-PLATFORM-EXEC-01C-STAGE-START.md` — proposed children AGENT-PLATFORM-EXEC-01C1..01C9 recorded in that document; 01C1 COMPLETE AND LOCKED; 01C2 now canonically registered / admitted; 01C3..01C9 remain unregistered. Investigation areas:
+2. Step 2 — stage-start, cross-service contract freeze, and bounded child-slice decomposition — COMPLETE — 2026-09-01 — Stage-start: `docs/AGENT-PLATFORM-EXEC-01C-STAGE-START.md` — proposed children AGENT-PLATFORM-EXEC-01C1..01C9 recorded in that document; 01C1 COMPLETE AND LOCKED; 01C2 COMPLETE AND LOCKED; 01C3 now canonically registered / admitted; 01C4..01C9 remain unregistered. Investigation areas:
    1. read-only conversation Harness first;
    2. advertisement of enabled, implemented, and registered tools only;
    3. real provider-native tool-call and tool-result transcript handling;
@@ -73631,7 +73631,7 @@ implementation source; frontend; i18n; environment; provider; worker; Gateway; C
 **Machine registration (post-epoch):** Present exactly once immediately under this canonical heading (`taskId=AGENT-PLATFORM-EXEC-01C`, `nature=IMPLEMENTATION`). Enforcement epoch unchanged. No second epoch. Do not duplicate the machine-registration markers elsewhere in this body.
 
 **Lane / admission:**
-REGISTERED / READY / NOT ADMITTED (this umbrella). Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. Occupancy hash `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d`. Both children EXEC-01C1 and EXEC-01C2 COMPLETE AND LOCKED. AI-SERVICE UNOWNED. Umbrella candidate unchanged `admissionUncertain=true` / `writeSetPrecision=PROVISIONAL` / `status=READY` so `Test-Admissible` = ADMISSION_UNCERTAIN. Do not admit this umbrella. Do not manufacture a second candidate to occupy Lane 2. Previous: Lane 1 ACTIVE with child `AGENT-PLATFORM-EXEC-01C2` only. Occupancy hash `sha256:6e6b3f8ea2b328c217e5333faef6614b1fea12c368b285bb033355d50363f3c1`.
+REGISTERED / READY / NOT ADMITTED (this umbrella). Lane 1 ACTIVE (AGENT-PLATFORM-EXEC-01C3). Lane 2 EMPTY. Lane 3 DISABLED. Occupancy hash `sha256:e59431f0c94f84fb83bc7c17732332cb10878ddfc62f179d74e7a828e531f6cc`. All three children EXEC-01C1, EXEC-01C2 COMPLETE AND LOCKED; EXEC-01C3 REGISTERED / ADMITTED Lane 1 — 2026-09-03. AI-SERVICE OWNED by EXEC-01C3. Umbrella candidate unchanged `admissionUncertain=true` / `writeSetPrecision=PROVISIONAL` / `status=READY` so `Test-Admissible` = ADMISSION_UNCERTAIN. Do not admit this umbrella. Do not manufacture a second candidate to occupy Lane 2. Previous: REGISTERED / READY / NOT ADMITTED (this umbrella). Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. Occupancy hash `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d`. Both children EXEC-01C1 and EXEC-01C2 COMPLETE AND LOCKED. AI-SERVICE UNOWNED. Umbrella candidate unchanged `admissionUncertain=true` / `writeSetPrecision=PROVISIONAL` / `status=READY` so `Test-Admissible` = ADMISSION_UNCERTAIN. Do not admit this umbrella. Do not manufacture a second candidate to occupy Lane 2. Previous: Lane 1 ACTIVE with child `AGENT-PLATFORM-EXEC-01C2` only. Occupancy hash `sha256:6e6b3f8ea2b328c217e5333faef6614b1fea12c368b285bb033355d50363f3c1`.
 
 AGENT-PLATFORM-EXEC-01C does NOT: start implementation in Step 1; admit a lane in Step 1; acquire GATEWAY / AI-SERVICE / CONTAINER-MANAGER / FRONTEND / I18N in Step 1; permit `agentId` + `harnessVersion`; enable Harness flags; activate product-visible Harness; add a dedicated runtime; migrate; register child slices; register PRIVATE-BETA-INVITE-01; enable Lane 3; edit PRD.md / ARCHITECTURE.md / CLAUDE.md / AGENTS.md / validator / mutex catalog / application source in Step 1.
 
@@ -73698,7 +73698,8 @@ Step 2 (stage-start / contract freeze / child decomposition):
 Step 3 (separately bounded implementation slices):
 - [x] first bounded child AGENT-PLATFORM-EXEC-01C1 COMPLETE AND LOCKED — PASS — 2026-09-01
 - [x] second bounded child AGENT-PLATFORM-EXEC-01C2 COMPLETE AND LOCKED — PASS — 2026-09-03 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C2-CHECKPOINT.md`
-- [ ] remaining children 01C3..01C9 not registered
+- [x] third bounded child AGENT-PLATFORM-EXEC-01C3 REGISTERED / ADMITTED Lane 1 — 2026-09-03
+- [ ] remaining children 01C4..01C9 not registered
 - [ ] this umbrella remains NOT ADMITTED
 - [ ] no application source in the 01C1 registration window
 
@@ -73985,4 +73986,169 @@ Step 3 (independent consolidation / checkpoint / final lock):
 **Lane 3 invariant:** Lane 3 remains DISABLED. Unchanged.
 
 **Step 1 HEAD:** `923d167803ec150b4d125eb2846b9f1403779696` (branch main; HEAD == origin/main; working tree clean at window open)
+**Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=YES (control-plane only), Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0, later child tasks=0. Governance writes: TASKS.md, this registry body, `docs/control-plane/lane-saturation-state.json`.
+---
+
+### AGENT-PLATFORM-EXEC-01C3 — OpenAI and Anthropic native tool-call/tool-result transcripts
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=AGENT-PLATFORM-EXEC-01C3
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / ADMITTED (Lane 1) — 2026-09-03 — Step 1 COMPLETE — 2026-09-03 (registration / control-plane admission only) — Step 2 NOT STARTED — Step 3 NOT AUTHORIZED — Lane 1 ACTIVE — AI-SERVICE OWNED — candidate `status=ADMITTED` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=EXACT` / `admissionUncertain=false` / occupied SKIP from S — parent umbrella AGENT-PLATFORM-EXEC-01C remains REGISTERED / READY / NOT ADMITTED / PROVISIONAL / `admissionUncertain=true` — EXEC-01C1 COMPLETE AND LOCKED — EXEC-01C2 COMPLETE AND LOCKED — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE released UNOWNED — product-visible Harness remains FUTURE / gated / disabled / unavailable — existing Gateway `agentId` + `harnessVersion` rejection UNCHANGED — later children 01C4..01C9 NOT REGISTERED — PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED
+**Task ID:** AGENT-PLATFORM-EXEC-01C3
+**Title:** OpenAI and Anthropic native tool-call/tool-result transcripts
+**Family:** AGENT PLATFORM / EXEC (third bounded child of AGENT-PLATFORM-EXEC-01C after EXEC-01C2 COMPLETE AND LOCKED)
+**Parent umbrella:** AGENT-PLATFORM-EXEC-01C — Persisted User-Agent Harness/Tool-Loop Contract and Safety Umbrella — REGISTERED / READY / NOT ADMITTED. Frozen contract: `docs/AGENT-PLATFORM-EXEC-01C-STAGE-START.md` §6C / §6D / §8.3.
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Development program:** CURRENT — third bounded child for OpenAI-compatible and Anthropic native tool-call/tool-result transcripts on the later read-only persisted-agent Harness path. This is not a product-visible activation.
+**Product-visible Harness capability:** FUTURE / gated / disabled / unavailable to users. This registration does not enable flags, frontend `harnessVersion`, or the Gateway combination allow.
+**Classification:** CURRENT development slice; product-visible Harness remains FUTURE/gated. Machine `productClass=CURRENT` with `futureAuthorization=NONE`.
+**Lifecycle:** 3-step NORMAL bounded AI-SERVICE child — Step 1 registration + machine-required Lane 1 admission COMPLETE; parent EXEC-01C Step 2 already froze the cross-service contract and this child's purpose, so a separate child stage-start is NOT created; Step 2 bounded implementation NOT STARTED; Step 3 independent verification / checkpoint / final lock NOT AUTHORIZED.
+**Start condition:** READY (satisfied; consumed by this admission). Machine `status=ADMITTED`. Candidate `writeSetPrecision=EXACT` / `admissionUncertain=false`. AI-SERVICE OWNED. Lane 1 ACTIVE.
+**Depends on (canonical / human):** AGENT-PLATFORM-EXEC-01C2 COMPLETE AND LOCKED — PASS — 2026-09-03 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C2-CHECKPOINT.md`. AGENT-PLATFORM-EXEC-01C Step 2 freeze COMPLETE — 2026-09-01 — Stage-start: `docs/AGENT-PLATFORM-EXEC-01C-STAGE-START.md` (parent umbrella is NOT LOCKED and MUST NOT appear in machine `dependsOn`). AGENT-PLATFORM-EXEC-01C1 COMPLETE AND LOCKED. AGENT-PLATFORM-EXEC-01A COMPLETE AND LOCKED. AGENT-PLATFORM-EXEC-01B COMPLETE AND LOCKED. GOV-AUTH-03 COMPLETE AND LOCKED. GOV-OS-03 COMPLETE AND LOCKED. GOV-OS-03R1 COMPLETE AND LOCKED.
+**Depends on (machine sidecar `dependsOn`):** `["AGENT-PLATFORM-EXEC-01C2"]` — sidecar `lockedTaskIds` contains EXEC-01C2. Parent AGENT-PLATFORM-EXEC-01C is READY / not LOCKED and is recorded only as a human/canonical parent dependency. Locked EXEC-01C1 / EXEC-01A / EXEC-01B / GOV-AUTH-03 remain ancestor human dependencies via EXEC-01C2 and are not duplicated in this child's machine `dependsOn`.
+**Primary write scope (Step 1, this write):** `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body; `docs/control-plane/lane-saturation-state.json` candidate + Lane 1 occupancy. No application source.
+**Primary write scope (Step 2, EXACT — frozen at this admission from EXEC-01C stage-start §6C / §8.3 plus source inspection of the current adapter/loop/worker flow):** AI-SERVICE. Exact files: `services/ai-service/src/ai-execution/adapters/adapter-tool-use.contracts.ts`; `services/ai-service/src/ai-execution/adapters/adapter-tool-use.mapper.ts`; `services/ai-service/src/ai-execution/adapters/openai-ai.adapter.ts`; `services/ai-service/src/ai-execution/adapters/anthropic-ai.adapter.ts`; `services/ai-service/src/agent-harness/orchestrator/agent-harness-loop.ts`; `services/ai-service/src/ai-execution/adapters/__tests__/openai-ai.adapter.spec.ts`; `services/ai-service/src/ai-execution/adapters/__tests__/anthropic-ai.adapter.spec.ts`; `services/ai-service/src/ai-execution/adapters/__tests__/adapter-tool-use.mapper.spec.ts`; `services/ai-service/src/agent-harness/orchestrator/agent-harness-loop.spec.ts`.
+**Primary write scope (Step 3):** control-plane/consolidation only after Step 2 is complete. Not authorized now.
+**Mutexes / resources (Step 1 admission):** GOVERNANCE held only for this control-plane registration/admission then released UNOWNED. IMPLEMENTATION mutex: **AI-SERVICE** acquired for Lane 1 occupancy (scheduling lease). GOVERNANCE must not appear in the IMPLEMENTATION candidate mutex list. GATEWAY / FRONTEND / I18N / CONTAINER-MANAGER / MIGRATION / PACKAGE / COMPOSE / ENV / LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT remain UNOWNED and unauthorized.
+**Hot-file leases:** none. AI-SERVICE is sufficient. Do not add a redundant HOTFILE.
+**Shared contracts (human / freeze):** `AIAdapterToolUseRequestOptions` execution-scoped accumulated transcript / `toolResults`; provider-native OpenAI and Anthropic message transcripts — recorded in `docs/AGENT-PLATFORM-EXEC-01C-STAGE-START.md` §6C. No `sharedContractId` is minted. Machine `sharedContractIds=[]`; `mutatesSharedContractIds=[]`.
+**Evidence class:** LOCAL-TESTS. Fixture/mock HTTP only. No provider-live. No Docker/Postgres/Redis. No STAGING / PROVIDER-LIVE / CREDIT runtime needs. No staging/browser/runtime in this Step 1.
+**Revert isolation:** registration revert = discard the three control-plane files' 01C3 additions and restore Lane 1 EMPTY / AI-SERVICE UNOWNED; cannot invalidate locked EXEC-01A / EXEC-01B / GOV-AUTH-03 / EXEC-01C1 / EXEC-01C2 evidence or the EXEC-01C stage-start freeze. Lane 2 remains EMPTY. Later children remain unregistered. Implementation rollback after Step 2 = revert the nine AI-SERVICE files; restore ignore-`toolResults` adapter behavior and canned max-iteration loop return only by reverting this child.
+**saturationClass:** FORCING (explicit; third frozen bounded child of the authorized CURRENT EXEC-01C program; required native-transcript prerequisite after fail-closed advertisement)
+**productClass:** CURRENT
+**futureAuthorization:** NONE — schema requires `futureAuthorization=NONE` when `productClass=CURRENT`. Product-visible Harness remains FUTURE/gated and is not encoded as `AUTHORIZED` FUTURE product.
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** none
+**i18n:** false
+
+**Identifier search:** Repo-wide search for a canonical `AGENT-PLATFORM-EXEC-01C3` heading, an `AISB_MACHINE_REG_V1` stanza, a current-board registration, a sidecar candidate or occupied lane, a locked task ID, and an equivalent already-registered task returned none in HEAD `09e34621cbecf539a1fa2cd0632ff5632272f8f6`. Working-tree occupancy/candidate fragments from an incomplete prior control-plane attempt had no canonical heading or stanza and are completed by this registration. Stage-start narrative / proposed-ID references inside `docs/AGENT-PLATFORM-EXEC-01C-STAGE-START.md` §8.3 are not registrations. AGENT-PLATFORM-EXEC-01C is the parent umbrella. AGENT-PLATFORM-EXEC-01C1 and AGENT-PLATFORM-EXEC-01C2 are locked predecessors, not this child. AGENT-PLATFORM-EXEC-01C3 is the smallest correct third child ID frozen by the stage-start.
+
+**Transcript-state ownership (frozen by this registration; source-inspected):** LOOP-OWNED EXECUTION-SCOPED CANONICAL TURNS. `executeAgentHarnessLoop` already holds per-call local `priorToolResults` and must accumulate ordered turns for the current execution only, then pass that history explicitly on every `executeFn` / `executeWithTools` invocation through `AIAdapterToolUseRequestOptions`. OpenAI and Anthropic adapters remain stateless: they must not store transcript on the adapter instance, because adapters are shared across concurrent executions. Current `toolResults` alone is insufficient: the loop overwrites last-turn results, and last-turn results do not carry prior assistant `tool_calls` / `tool_use` messages. Contracts must therefore carry an execution-scoped accumulated turn history (assistant tool-call metadata + correlated tool results + assistant text needed to rebuild native messages). Mapper helpers may map that canonical history onto OpenAI and Anthropic native message arrays. No new transcript helper file is created; mapping belongs in the existing mapper. Worker `mergeAdvertisedToolsIntoExecuteOptions` already spreads options and overwrites only `tools`, so a new options field is preserved without a worker source change.
+
+**Frozen child purpose (EXEC-01C stage-start §6C / §8.3; do not broaden):**
+Implement freeze C for existing OpenAI-compatible and Anthropic adapters; keep xAI/Grok and every unsupported adapter fail closed.
+
+**OpenAI-compatible transcript contract (frozen):**
+- Initial request sends canonical system/user messages plus advertised tools.
+- Assistant responses containing `tool_calls` are preserved as assistant transcript messages.
+- Each dispatched result becomes a `role: "tool"` message with the exact matching `tool_call_id`.
+- The next provider request contains the complete accumulated transcript in correct order.
+- Multiple tool calls from one assistant turn are followed by all corresponding tool results.
+- Advertised tools remain present on every invocation.
+
+**Anthropic transcript contract (frozen):**
+- System instructions remain in the provider’s canonical system field.
+- Assistant `tool_use` content blocks are preserved.
+- Dispatched results become `tool_result` blocks referencing the exact `tool_use_id`.
+- The next request contains the full accumulated Anthropic message history in valid order.
+- Multiple tool calls and results remain correlated.
+- Advertised tools remain present on every invocation.
+
+**Malformed and unknown-tool contract (frozen):**
+- Unparseable arguments must not silently become guessed `{}` arguments. Current `tryParseToolArgumentsToObject` returning `{}` is the gap this child must close.
+- Missing call IDs must not execute a tool. Current OpenAI/Anthropic extractors that invent `openai-tool-call-N` / `anthropic-tool-use-N` IDs must stop inventing IDs.
+- A typed tool error must remain correlated to the call whenever a usable call ID exists.
+- Unknown tool names produce the existing `TOOL_NOT_FOUND` dispatcher result and are returned to the provider using the original call ID.
+- No handler may be invented.
+
+**Max-iteration failure-path contract (frozen; loop required, worker source not required):**
+Contract §6C item 8 / §6A termination: max iterations fail closed as a **failed** Harness execution, not a successful canned Ask. Current `executeAgentHarnessLoop` returns `terminationReason: 'max_iterations'` with canned output `'[Agent Harness] Maximum tool iterations reached without completion.'`, and `worker.processor.ts` assigns `aiResult = loopResult.result` then finalizes `execution_status = 'completed'` whenever the loop does not throw. Satisfying the invariant requires changing `agent-harness-loop.ts` and `agent-harness-loop.spec.ts` so max-iteration becomes a non-retryable typed failure rather than canned success. `worker.processor.ts` is **excluded**: `isRetryableError` only retries timeout/ECONNRESET/ENOTFOUND/429/503/overloaded message classes, so a typed max-iteration error fails the existing worker catch / `execution_status='failed'` path; `mergeAdvertisedToolsIntoExecuteOptions` already preserves execution-scoped option fields. Do not add `executeWithTools` to xAI. Do not use `test-harness-stub` as provider-native proof.
+
+**Exact write-set path-by-path justification:**
+1. `adapter-tool-use.contracts.ts` — current options cannot carry accumulated assistant tool-call turns; malformed-argument representation cannot stay a guessed object.
+2. `adapter-tool-use.mapper.ts` — existing OpenAI/Anthropic tool-declaration mapper is the smallest owner of native transcript builders and fail-closed argument parse; no new helper path.
+3. `openai-ai.adapter.ts` — `executeWithTools` currently rebuilds system/user only and ignores `toolResults`; must emit/consume native OpenAI transcript without instance state.
+4. `anthropic-ai.adapter.ts` — same gap for Anthropic `tool_use` / `tool_result` / system field.
+5. `agent-harness-loop.ts` — must accumulate execution-scoped turns, pass them explicitly, skip missing IDs, emit typed errors for malformed args with usable IDs, and fail max-iteration.
+6–9. matching existing specs for every admitted production path above.
+
+**Excluded with repository-authority reason:** `worker.processor.ts` / `worker.processor.spec.ts` / `worker.processor.builder-config.spec.ts` — advertisement merge already preserves options; max-iteration fail-closed is a loop throw into the existing non-retryable fail path. `ai-adapter.interface.ts` — `executeWithTools(request, options?)` already accepts the options type being extended. `xai-ai.adapter.ts` and every other unsupported adapter — must remain without `executeWithTools`. `anthropic-adapter-phase16.spec.ts` — does not cover `executeWithTools`. No new transcript helper file.
+
+**In scope (Step 2 implementation, after this admission; NOT this window):**
+- OpenAI-compatible native transcript round-trip under fixture/mock HTTP
+- Anthropic native transcript round-trip under fixture/mock HTTP
+- execution-scoped accumulated transcript passed between loop iterations
+- malformed/unknown-tool correlation
+- max-iteration failed Harness execution
+- xAI/Grok remain unsupported / fail closed
+- advertised tools remain present on every invocation
+
+**Explicitly out of scope:**
+Implementing xAI/Grok tool protocol; adding `executeWithTools` to xAI; enabling Groq, DeepSeek, stub, or any other unsupported provider; using `test-harness-stub` as provider-native proof; Gateway `agentId`+`harnessVersion` allow; frontend; enabling write flags; implementing `search_workspace`; specialist Harness; unbound Builder Harness; entitlements; credits; approvals; rollback; canaries; product activation; env flag true; later children 01C4..01C9; admitting the EXEC-01C umbrella; `PRIVATE-BETA-INVITE-01`; adapter-instance global mutable transcript state.
+
+**Activation effect:** NONE (flags remain false; Gateway still rejects `agentId` + `harnessVersion`; frontend still omits `harnessVersion`; native transcripts remain unreachable on the product path).
+**Rollback boundary:** revert the nine AI-SERVICE files; restore ignore-`toolResults` adapter behavior and canned max-iteration loop return only by reverting this child. Control-plane rollback = discard this child's board/registry/sidecar occupancy.
+
+**Machine registration (post-epoch):** Present exactly once immediately under this canonical heading (`taskId=AGENT-PLATFORM-EXEC-01C3`, `nature=IMPLEMENTATION`). Enforcement epoch unchanged. No second epoch. Do not duplicate the machine-registration markers elsewhere in this body. Do not register 01C4 or later children in this window.
+
+**Lane / admission:**
+REGISTERED / ADMITTED. Lane 1 ACTIVE. Lane 2 EMPTY. Lane 3 DISABLED. Occupancy hash `sha256:e59431f0c94f84fb83bc7c17732332cb10878ddfc62f179d74e7a828e531f6cc`. Candidate `admissionUncertain=false` / `writeSetPrecision=EXACT` / `status=ADMITTED` / occupied SKIP from S. AI-SERVICE OWNED. Machine-required Lane 1 admission: exact FORCING candidate plus empty S after occupancy would otherwise leave a free implementation lane with a safely admissible FORCING candidate.
+
+#### Acceptance Criteria
+
+Step 1 (Registration / machine-required admission):
+- [x] canonical ID AGENT-PLATFORM-EXEC-01C3 verified unused in HEAD (no heading, stanza, board registration, sidecar candidate, occupied lane, locked ID, or equivalent successor)
+- [x] stage-start narrative / proposed-ID references not treated as a registration
+- [x] equivalent unfinished task NONE
+- [x] frozen title and §8.3 / §6C purpose used without broadening
+- [x] parent umbrella AGENT-PLATFORM-EXEC-01C recorded and left NOT ADMITTED
+- [x] EXEC-01C1 and EXEC-01C2 remain COMPLETE AND LOCKED
+- [x] 3-step lifecycle recorded (parent freeze substitutes for a child stage-start)
+- [x] exact dependencies recorded (human includes EXEC-01C Step 2 and locked EXEC-01C2; machine dependsOn only locked EXEC-01C2)
+- [x] exact in-scope and out-of-scope boundaries recorded
+- [x] transcript-state ownership frozen as loop-owned execution-scoped canonical turns
+- [x] OpenAI transcript contract frozen
+- [x] Anthropic transcript contract frozen
+- [x] malformed/unknown-tool contract frozen
+- [x] max-iteration failure-path recorded with loop included and worker source excluded by inspected reason
+- [x] exact prospective implementation mutex AI-SERVICE
+- [x] exact implementation write paths frozen
+- [x] worker.processor.ts exclusion recorded from source inspection
+- [x] no new transcript helper path minted
+- [x] shared-contract treatment recorded without minting catalog IDs
+- [x] runtime/provider/staging/browser/credit = NO
+- [x] test and acceptance requirements recorded (LOCAL-TESTS; fixture/mock HTTP; no provider-live)
+- [x] activation effect NONE
+- [x] rollback boundary recorded
+- [x] post-epoch machine stanza exactly once
+- [x] candidate record exactly once
+- [x] nature=IMPLEMENTATION
+- [x] saturationClass=FORCING
+- [x] productClass=CURRENT
+- [x] futureAuthorization=NONE
+- [x] status=ADMITTED
+- [x] startCondition=READY
+- [x] writeSetPrecision=EXACT
+- [x] admissionUncertain=false
+- [x] GOVERNANCE not listed on the IMPLEMENTATION candidate
+- [x] Lane 1 ACTIVE with matching occupancy
+- [x] Lane 2 EMPTY
+- [x] Lane 3 DISABLED
+- [x] implementation not started
+- [x] later children not registered
+- [x] existing Gateway rejection unchanged
+- [x] Harness flags unchanged / false
+- [x] frontend still must not send `harnessVersion`
+- [x] no application source changes
+- [x] no runtime/staging/browser/provider
+- [x] PRIVATE-BETA invariant unchanged
+- [x] validator PASS
+- [x] No Git commit/push by the worker
+
+Step 2 (bounded implementation + automated validation):
+- [ ] not started in this window
+
+Step 3 (independent verification / checkpoint / final lock):
+- [ ] not authorized in this window
+
+**Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. INVITATION_EXECUTION_PERMITTED=NO. Unchanged.
+
+**Lane 3 invariant:** Lane 3 remains DISABLED. Unchanged.
+
+**Step 1 HEAD:** `09e34621cbecf539a1fa2cd0632ff5632272f8f6` (branch main; HEAD == origin/main; working tree had incomplete occupancy/candidate fragments and no canonical heading; this window completes registration)
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=YES (control-plane only), Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0, later child tasks=0. Governance writes: TASKS.md, this registry body, `docs/control-plane/lane-saturation-state.json`.
