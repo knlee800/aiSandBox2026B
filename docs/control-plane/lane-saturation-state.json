@@ -10,23 +10,13 @@
   },
   "occupancy": {
     "lane1": {
-      "state": "ACTIVE",
-      "taskId": "AGENT-PLATFORM-EXEC-01C3",
-      "mutexes": ["AI-SERVICE"],
-      "writePaths": [
-        "services/ai-service/src/ai-execution/adapters/adapter-tool-use.contracts.ts",
-        "services/ai-service/src/ai-execution/adapters/adapter-tool-use.mapper.ts",
-        "services/ai-service/src/ai-execution/adapters/openai-ai.adapter.ts",
-        "services/ai-service/src/ai-execution/adapters/anthropic-ai.adapter.ts",
-        "services/ai-service/src/agent-harness/orchestrator/agent-harness-loop.ts",
-        "services/ai-service/src/ai-execution/adapters/__tests__/openai-ai.adapter.spec.ts",
-        "services/ai-service/src/ai-execution/adapters/__tests__/anthropic-ai.adapter.spec.ts",
-        "services/ai-service/src/ai-execution/adapters/__tests__/adapter-tool-use.mapper.spec.ts",
-        "services/ai-service/src/agent-harness/orchestrator/agent-harness-loop.spec.ts"
-      ],
+      "state": "EMPTY",
+      "taskId": "NONE",
+      "mutexes": [],
+      "writePaths": [],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "LOCAL-TESTS",
+      "evidenceClass": "NONE",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -253,7 +243,7 @@
       "taskId": "AGENT-PLATFORM-EXEC-01C3",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
-      "status": "ADMITTED",
+      "status": "LOCKED",
       "startCondition": "READY",
       "saturationClass": "FORCING",
       "productClass": "CURRENT",
@@ -282,7 +272,7 @@
       "writeSetPrecision": "EXACT"
     }
   ],
-  "lockedTaskIds": ["GOV-OS-03", "GOV-OS-03R1", "AGENT-PLATFORM-CREATE-01F", "I18N-SHELL-07", "AGENT-PLATFORM-EXEC-01A", "AGENT-PLATFORM-EXEC-01B", "GOV-AUTH-03", "AGENT-PLATFORM-EXEC-01C1", "AGENT-PLATFORM-EXEC-01C2"],
+  "lockedTaskIds": ["GOV-OS-03", "GOV-OS-03R1", "AGENT-PLATFORM-CREATE-01F", "I18N-SHELL-07", "AGENT-PLATFORM-EXEC-01A", "AGENT-PLATFORM-EXEC-01B", "GOV-AUTH-03", "AGENT-PLATFORM-EXEC-01C1", "AGENT-PLATFORM-EXEC-01C2", "AGENT-PLATFORM-EXEC-01C3"],
   "sharedContracts": [],
   "runtimeAuthorization": {
     "localRuntimeAuthorized": false,
