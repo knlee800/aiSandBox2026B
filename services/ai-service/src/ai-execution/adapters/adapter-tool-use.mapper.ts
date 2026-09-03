@@ -1,6 +1,12 @@
 import { AGENT_HARNESS_TOOL_DEFINITIONS_V1 } from '../../agent-harness/tools/tool-registry';
 import type { AgentHarnessToolRegistryDefinitionV1 } from '../../agent-harness/tools/tool-registry.contracts';
-import type { AIAdapterToolDeclaration } from './adapter-tool-use.contracts';
+import type {
+  AIAdapterCanonicalToolCall,
+  AIAdapterCanonicalTranscriptTurn,
+  AIAdapterToolDeclaration,
+  AIAdapterToolResultPayload,
+} from './adapter-tool-use.contracts';
+import { MALFORMED_TOOL_ARGUMENTS_ERROR_CODE } from './adapter-tool-use.contracts';
 
 export const FIRST_READ_ONLY_HARNESS_ADVERTISED_TOOL_IDS = Object.freeze([
   'list_files',
@@ -182,23 +188,216 @@ export function mapAgentHarnessToolDefinitionsToOpenAITools(
   );
 }
 
-export function tryParseToolArgumentsToObject(
+export type ToolArgumentParseResult =
+  | { readonly ok: true; readonly value: Readonly<Record<string, unknown>> }
+  | { readonly ok: false; readonly errorMessage: string };
+
+export function parseToolArgumentsToObject(
   rawArguments: unknown,
-): Readonly<Record<string, unknown>> {
+): ToolArgumentParseResult {
   if (isRecord(rawArguments)) {
-    return rawArguments;
+    return { ok: true, value: rawArguments };
   }
 
   if (typeof rawArguments !== 'string' || rawArguments.trim().length === 0) {
-    return {};
+    return {
+      ok: false,
+      errorMessage: `${MALFORMED_TOOL_ARGUMENTS_ERROR_CODE}: arguments are not a JSON object`,
+    };
   }
 
   try {
     const parsed = JSON.parse(rawArguments);
-    return isRecord(parsed) ? parsed : {};
+    if (isRecord(parsed)) {
+      return { ok: true, value: parsed };
+    }
+    return {
+      ok: false,
+      errorMessage: `${MALFORMED_TOOL_ARGUMENTS_ERROR_CODE}: arguments are not a JSON object`,
+    };
   } catch {
-    return {};
+    return {
+      ok: false,
+      errorMessage: `${MALFORMED_TOOL_ARGUMENTS_ERROR_CODE}: arguments are not valid JSON object`,
+    };
   }
+}
+
+export function tryParseToolArgumentsToObject(
+  rawArguments: unknown,
+): Readonly<Record<string, unknown>> | undefined {
+  const parsed = parseToolArgumentsToObject(rawArguments);
+  return parsed.ok ? parsed.value : undefined;
+}
+
+export interface OpenAINativeTranscriptToolCall {
+  readonly id: string;
+  readonly type: 'function';
+  readonly function: {
+    readonly name: string;
+    readonly arguments: string;
+  };
+}
+
+export interface OpenAINativeAssistantTranscriptMessage {
+  readonly role: 'assistant';
+  readonly content: string | null;
+  readonly tool_calls?: readonly OpenAINativeTranscriptToolCall[];
+}
+
+export interface OpenAINativeToolTranscriptMessage {
+  readonly role: 'tool';
+  readonly tool_call_id: string;
+  readonly content: string;
+}
+
+export type OpenAINativeTranscriptMessage =
+  | OpenAINativeAssistantTranscriptMessage
+  | OpenAINativeToolTranscriptMessage;
+
+export interface AnthropicNativeTextBlock {
+  readonly type: 'text';
+  readonly text: string;
+}
+
+export interface AnthropicNativeToolUseBlock {
+  readonly type: 'tool_use';
+  readonly id: string;
+  readonly name: string;
+  readonly input: unknown;
+}
+
+export interface AnthropicNativeToolResultBlock {
+  readonly type: 'tool_result';
+  readonly tool_use_id: string;
+  readonly content: string;
+  readonly is_error?: true;
+}
+
+export interface AnthropicNativeAssistantTranscriptMessage {
+  readonly role: 'assistant';
+  readonly content: readonly (AnthropicNativeTextBlock | AnthropicNativeToolUseBlock)[];
+}
+
+export interface AnthropicNativeUserToolResultMessage {
+  readonly role: 'user';
+  readonly content: readonly AnthropicNativeToolResultBlock[];
+}
+
+export type AnthropicNativeTranscriptMessage =
+  | AnthropicNativeAssistantTranscriptMessage
+  | AnthropicNativeUserToolResultMessage;
+
+function serializeToolResultContent(result: AIAdapterToolResultPayload): string {
+  if (!result.success) {
+    return result.errorMessage ?? `${MALFORMED_TOOL_ARGUMENTS_ERROR_CODE}: tool failed`;
+  }
+  return JSON.stringify(result.content ?? {});
+}
+
+function nativeOpenAIArgumentString(call: AIAdapterCanonicalToolCall): string {
+  if (typeof call.rawArguments === 'string') {
+    return call.rawArguments;
+  }
+  if (call.status === 'valid') {
+    return JSON.stringify(call.arguments);
+  }
+  return JSON.stringify(call.rawArguments ?? {});
+}
+
+function nativeAnthropicToolUseInput(call: AIAdapterCanonicalToolCall): unknown {
+  if (call.status === 'valid') {
+    return call.arguments;
+  }
+  return call.rawArguments;
+}
+
+function correlatableToolCalls(
+  toolCalls: readonly AIAdapterCanonicalToolCall[],
+): Exclude<AIAdapterCanonicalToolCall, { status: 'missing_id' }>[] {
+  return toolCalls.filter(
+    (call): call is Exclude<AIAdapterCanonicalToolCall, { status: 'missing_id' }> =>
+      call.status !== 'missing_id',
+  );
+}
+
+export function mapCanonicalTranscriptToOpenAIMessages(
+  transcript: readonly AIAdapterCanonicalTranscriptTurn[] = [],
+): readonly OpenAINativeTranscriptMessage[] {
+  const messages: OpenAINativeTranscriptMessage[] = [];
+
+  for (const turn of transcript) {
+    if (turn.kind === 'assistant_tool_turn') {
+      const toolCalls = correlatableToolCalls(turn.toolCalls).map((call) => ({
+        id: call.callId,
+        type: 'function' as const,
+        function: {
+          name: call.toolName,
+          arguments: nativeOpenAIArgumentString(call),
+        },
+      }));
+      const content =
+        turn.content.trim().length > 0 ? turn.content : toolCalls.length > 0 ? null : '';
+      messages.push(
+        toolCalls.length > 0
+          ? { role: 'assistant', content, tool_calls: toolCalls }
+          : { role: 'assistant', content: turn.content },
+      );
+      continue;
+    }
+
+    for (const result of turn.results) {
+      messages.push({
+        role: 'tool',
+        tool_call_id: result.callId,
+        content: serializeToolResultContent(result),
+      });
+    }
+  }
+
+  return messages;
+}
+
+export function mapCanonicalTranscriptToAnthropicMessages(
+  transcript: readonly AIAdapterCanonicalTranscriptTurn[] = [],
+): readonly AnthropicNativeTranscriptMessage[] {
+  const messages: AnthropicNativeTranscriptMessage[] = [];
+
+  for (const turn of transcript) {
+    if (turn.kind === 'assistant_tool_turn') {
+      const content: Array<AnthropicNativeTextBlock | AnthropicNativeToolUseBlock> = [];
+      if (turn.content.trim().length > 0) {
+        content.push({ type: 'text', text: turn.content });
+      }
+      for (const call of correlatableToolCalls(turn.toolCalls)) {
+        content.push({
+          type: 'tool_use',
+          id: call.callId,
+          name: call.toolName,
+          input: nativeAnthropicToolUseInput(call),
+        });
+      }
+      messages.push({
+        role: 'assistant',
+        content,
+      });
+      continue;
+    }
+
+    messages.push({
+      role: 'user',
+      content: turn.results.map((result) => {
+        const block: AnthropicNativeToolResultBlock = {
+          type: 'tool_result',
+          tool_use_id: result.callId,
+          content: serializeToolResultContent(result),
+        };
+        return result.success ? block : { ...block, is_error: true as const };
+      }),
+    });
+  }
+
+  return messages;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

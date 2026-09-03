@@ -8,9 +8,13 @@ import {
   mapAgentHarnessToolDefinitionsToAdapterToolDeclarations,
   mapAgentHarnessToolDefinitionsToAnthropicTools,
   mapAgentHarnessToolDefinitionsToOpenAITools,
+  mapCanonicalTranscriptToAnthropicMessages,
+  mapCanonicalTranscriptToOpenAIMessages,
+  parseToolArgumentsToObject,
   selectAdvertisedAgentHarnessTools,
   tryParseToolArgumentsToObject,
 } from '../adapter-tool-use.mapper';
+import type { AIAdapterCanonicalTranscriptTurn } from '../adapter-tool-use.contracts';
 
 describe('adapter-tool-use.mapper', () => {
   it('should convert Agent Harness tool definitions to adapter tool declarations', () => {
@@ -96,9 +100,9 @@ describe('adapter-tool-use.mapper', () => {
       path: 'README.md',
       offset: 1,
     });
-    expect(tryParseToolArgumentsToObject('not-json')).toEqual({});
-    expect(tryParseToolArgumentsToObject('')).toEqual({});
-    expect(tryParseToolArgumentsToObject(42)).toEqual({});
+    expect(tryParseToolArgumentsToObject('not-json')).toBeUndefined();
+    expect(tryParseToolArgumentsToObject('')).toBeUndefined();
+    expect(tryParseToolArgumentsToObject(42)).toBeUndefined();
   });
 });
 
@@ -238,6 +242,275 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
         enableWriteTools: true,
       }),
     ).toEqual([]);
+  });
+});
+
+describe('AGENT-PLATFORM-EXEC-01C3 canonical transcript contracts and mapper', () => {
+  const multiCallTranscript: readonly AIAdapterCanonicalTranscriptTurn[] = [
+    {
+      kind: 'assistant_tool_turn',
+      content: 'I will look those up.',
+      toolCalls: [
+        {
+          status: 'valid',
+          callId: 'call_aaa',
+          toolName: 'list_files',
+          arguments: { path: '.' },
+          rawArguments: '{"path":"."}',
+          providerKind: 'openai-tool_calls',
+        },
+        {
+          status: 'valid',
+          callId: 'call_bbb',
+          toolName: 'read_file',
+          arguments: { path: 'README.md' },
+          rawArguments: '{"path":"README.md"}',
+          providerKind: 'openai-tool_calls',
+        },
+        {
+          status: 'malformed_arguments',
+          callId: 'call_ccc',
+          toolName: 'read_file',
+          rawArguments: '{not-json',
+          providerKind: 'openai-tool_calls',
+          errorMessage: 'MALFORMED_TOOL_ARGUMENTS: arguments are not valid JSON object',
+        },
+        {
+          status: 'missing_id',
+          toolName: 'list_files',
+          rawArguments: '{"path":"."}',
+          providerKind: 'openai-tool_calls',
+        },
+      ],
+    },
+    {
+      kind: 'tool_result_turn',
+      results: [
+        {
+          callId: 'call_aaa',
+          toolName: 'list_files',
+          success: true,
+          content: { entries: ['README.md'] },
+        },
+        {
+          callId: 'call_bbb',
+          toolName: 'read_file',
+          success: true,
+          content: { content: '# Title' },
+        },
+        {
+          callId: 'call_ccc',
+          toolName: 'read_file',
+          success: false,
+          errorMessage: 'MALFORMED_TOOL_ARGUMENTS: arguments are not valid JSON object',
+        },
+      ],
+    },
+  ];
+
+  it('does not coerce unparseable tool arguments into an empty object', () => {
+    const invalidJson = parseToolArgumentsToObject('not-json');
+    const emptyString = parseToolArgumentsToObject('');
+    const numeric = parseToolArgumentsToObject(42);
+    const arrayValue = parseToolArgumentsToObject('[]');
+
+    expect(invalidJson.ok).toBe(false);
+    expect(emptyString.ok).toBe(false);
+    expect(numeric.ok).toBe(false);
+    expect(arrayValue.ok).toBe(false);
+    expect(invalidJson).not.toEqual(expect.objectContaining({ value: {} }));
+    expect(emptyString).not.toEqual(expect.objectContaining({ value: {} }));
+  });
+
+  it('parses object and JSON-object tool arguments without inventing values', () => {
+    expect(parseToolArgumentsToObject({ path: 'README.md' })).toEqual({
+      ok: true,
+      value: { path: 'README.md' },
+    });
+    expect(
+      parseToolArgumentsToObject('{"path":"README.md","offset":1}'),
+    ).toEqual({
+      ok: true,
+      value: { path: 'README.md', offset: 1 },
+    });
+    expect(parseToolArgumentsToObject('{}')).toEqual({
+      ok: true,
+      value: {},
+    });
+  });
+
+  it('maps canonical transcript to OpenAI native messages with exact IDs and order', () => {
+    const messages = mapCanonicalTranscriptToOpenAIMessages(multiCallTranscript);
+
+    expect(messages.map((message) => message.role)).toEqual([
+      'assistant',
+      'tool',
+      'tool',
+      'tool',
+    ]);
+    expect(messages[0]).toEqual({
+      role: 'assistant',
+      content: 'I will look those up.',
+      tool_calls: [
+        {
+          id: 'call_aaa',
+          type: 'function',
+          function: { name: 'list_files', arguments: '{"path":"."}' },
+        },
+        {
+          id: 'call_bbb',
+          type: 'function',
+          function: { name: 'read_file', arguments: '{"path":"README.md"}' },
+        },
+        {
+          id: 'call_ccc',
+          type: 'function',
+          function: { name: 'read_file', arguments: '{not-json' },
+        },
+      ],
+    });
+    expect(messages[1]).toEqual({
+      role: 'tool',
+      tool_call_id: 'call_aaa',
+      content: JSON.stringify({ entries: ['README.md'] }),
+    });
+    expect(messages[2]).toEqual({
+      role: 'tool',
+      tool_call_id: 'call_bbb',
+      content: JSON.stringify({ content: '# Title' }),
+    });
+    expect(messages[3]).toEqual({
+      role: 'tool',
+      tool_call_id: 'call_ccc',
+      content: 'MALFORMED_TOOL_ARGUMENTS: arguments are not valid JSON object',
+    });
+    expect(JSON.stringify(messages)).not.toContain('openai-tool-call-');
+    expect(JSON.stringify(messages)).not.toContain('missing_id');
+  });
+
+  it('maps canonical transcript to Anthropic native messages with exact tool_use_id correlation', () => {
+    const anthropicTranscript: readonly AIAdapterCanonicalTranscriptTurn[] = [
+      {
+        kind: 'assistant_tool_turn',
+        content: 'Checking files.',
+        toolCalls: [
+          {
+            status: 'valid',
+            callId: 'toolu_1',
+            toolName: 'list_files',
+            arguments: { path: '.' },
+            rawArguments: { path: '.' },
+            providerKind: 'anthropic-tool_use',
+          },
+          {
+            status: 'valid',
+            callId: 'toolu_2',
+            toolName: 'read_file',
+            arguments: { path: 'README.md' },
+            rawArguments: { path: 'README.md' },
+            providerKind: 'anthropic-tool_use',
+          },
+          {
+            status: 'malformed_arguments',
+            callId: 'toolu_3',
+            toolName: 'read_file',
+            rawArguments: 'not-an-object',
+            providerKind: 'anthropic-tool_use',
+            errorMessage: 'MALFORMED_TOOL_ARGUMENTS: arguments are not a JSON object',
+          },
+          {
+            status: 'missing_id',
+            toolName: 'list_files',
+            rawArguments: { path: '.' },
+            providerKind: 'anthropic-tool_use',
+          },
+        ],
+      },
+      {
+        kind: 'tool_result_turn',
+        results: [
+          {
+            callId: 'toolu_1',
+            toolName: 'list_files',
+            success: true,
+            content: { entries: ['README.md'] },
+          },
+          {
+            callId: 'toolu_2',
+            toolName: 'read_file',
+            success: true,
+            content: { content: '# Title' },
+          },
+          {
+            callId: 'toolu_3',
+            toolName: 'read_file',
+            success: false,
+            errorMessage: 'MALFORMED_TOOL_ARGUMENTS: arguments are not a JSON object',
+          },
+        ],
+      },
+    ];
+
+    const messages = mapCanonicalTranscriptToAnthropicMessages(anthropicTranscript);
+
+    expect(messages).toHaveLength(2);
+    expect(messages[0]).toEqual({
+      role: 'assistant',
+      content: [
+        { type: 'text', text: 'Checking files.' },
+        {
+          type: 'tool_use',
+          id: 'toolu_1',
+          name: 'list_files',
+          input: { path: '.' },
+        },
+        {
+          type: 'tool_use',
+          id: 'toolu_2',
+          name: 'read_file',
+          input: { path: 'README.md' },
+        },
+        {
+          type: 'tool_use',
+          id: 'toolu_3',
+          name: 'read_file',
+          input: 'not-an-object',
+        },
+      ],
+    });
+    expect(messages[1]).toEqual({
+      role: 'user',
+      content: [
+        {
+          type: 'tool_result',
+          tool_use_id: 'toolu_1',
+          content: JSON.stringify({ entries: ['README.md'] }),
+        },
+        {
+          type: 'tool_result',
+          tool_use_id: 'toolu_2',
+          content: JSON.stringify({ content: '# Title' }),
+        },
+        {
+          type: 'tool_result',
+          tool_use_id: 'toolu_3',
+          content: 'MALFORMED_TOOL_ARGUMENTS: arguments are not a JSON object',
+          is_error: true,
+        },
+      ],
+    });
+    expect(JSON.stringify(messages)).not.toContain('anthropic-tool-use-');
+  });
+
+  it('does not mutate caller-owned transcript arrays while mapping', () => {
+    const original = multiCallTranscript.map((turn) => ({ ...turn }));
+    const snapshot = JSON.stringify(original);
+
+    mapCanonicalTranscriptToOpenAIMessages(original);
+    mapCanonicalTranscriptToAnthropicMessages(original);
+
+    expect(JSON.stringify(original)).toBe(snapshot);
+    expect(original).toHaveLength(2);
   });
 });
 

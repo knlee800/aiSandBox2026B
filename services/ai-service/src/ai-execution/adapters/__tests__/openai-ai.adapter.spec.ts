@@ -7,6 +7,7 @@ import {
 import { OpenAIAdapter } from '../openai-ai.adapter';
 import { AIExecutionRequest } from '../../types';
 import { AGENT_HARNESS_TOOL_DEFINITIONS_V1 } from '../../../agent-harness/tools/tool-registry';
+import type { AIAdapterCanonicalTranscriptTurn } from '../adapter-tool-use.contracts';
 
 describe('OpenAIAdapter', () => {
   describe('constructor', () => {
@@ -652,14 +653,18 @@ describe('OpenAIAdapter', () => {
         });
 
         expect(result.finishReason).toBe('tool_calls');
-        expect(result.toolCalls).toEqual([
+        expect(result.toolCalls).toEqual([]);
+        expect(result.canonicalToolCalls).toEqual([
           {
-            callId: 'openai-function-call-1',
+            status: 'missing_id',
             toolName: 'search_workspace',
-            arguments: { query: 'adapter' },
+            rawArguments: '{"query":"adapter"}',
             providerKind: 'openai-function_call',
           },
         ]);
+        expect(JSON.stringify(result.canonicalToolCalls)).not.toContain(
+          'openai-function-call-1',
+        );
       });
 
       it('should safely handle missing tool definitions', async () => {
@@ -687,6 +692,331 @@ describe('OpenAIAdapter', () => {
         expect(mockClient.chat.completions.create).toHaveBeenCalledWith(
           expect.not.objectContaining({ tools: expect.anything() }),
           {},
+        );
+      });
+
+      it('sends system, user, and advertised tools on the first recorded request body', async () => {
+        mockClient.chat.completions.create.mockResolvedValue({
+          choices: [
+            {
+              message: { content: 'First turn' },
+              finish_reason: 'stop',
+            },
+          ],
+          usage: { total_tokens: 11 },
+          model: 'gpt-4o',
+        });
+        const listFiles = AGENT_HARNESS_TOOL_DEFINITIONS_V1[0];
+        const readFile = AGENT_HARNESS_TOOL_DEFINITIONS_V1[1];
+        const tools = [listFiles, readFile];
+
+        await adapter.executeWithTools(
+          {
+            sessionId: 'session-1',
+            conversationId: 'conv-1',
+            userId: 'user-1',
+            prompt: 'List then read README.md',
+            systemPrompt: 'You are a read-only assistant.',
+            provider: 'openai',
+          },
+          { tools },
+        );
+
+        expect(mockClient.chat.completions.create).toHaveBeenCalledTimes(1);
+        const recordedBody = mockClient.chat.completions.create.mock.calls[0][0];
+        expect(recordedBody.messages).toEqual([
+          { role: 'system', content: 'You are a read-only assistant.' },
+          { role: 'user', content: 'List then read README.md' },
+        ]);
+        expect(recordedBody.tools).toEqual([
+          {
+            type: 'function',
+            function: {
+              name: listFiles.name,
+              description: listFiles.description,
+              parameters: listFiles.inputSchema.schema,
+            },
+          },
+          {
+            type: 'function',
+            function: {
+              name: readFile.name,
+              description: readFile.description,
+              parameters: readFile.inputSchema.schema,
+            },
+          },
+        ]);
+        expect(tools).toHaveLength(2);
+      });
+
+      it('records assistant tool_calls then matching role=tool messages on the second request body', async () => {
+        mockClient.chat.completions.create.mockResolvedValue({
+          choices: [
+            {
+              message: { content: 'Done with tools.' },
+              finish_reason: 'stop',
+            },
+          ],
+          usage: { total_tokens: 22 },
+          model: 'gpt-4o',
+        });
+        const tools = [
+          AGENT_HARNESS_TOOL_DEFINITIONS_V1[0],
+          AGENT_HARNESS_TOOL_DEFINITIONS_V1[1],
+        ];
+        const priorToolResults = [
+          {
+            callId: 'call_aaa',
+            toolName: 'list_files',
+            success: true,
+            content: { entries: ['README.md'] },
+          },
+          {
+            callId: 'call_bbb',
+            toolName: 'read_file',
+            success: true,
+            content: { content: '# Title' },
+          },
+        ];
+        const transcript: AIAdapterCanonicalTranscriptTurn[] = [
+          {
+            kind: 'assistant_tool_turn',
+            content: 'I will look those up.',
+            toolCalls: [
+              {
+                status: 'valid',
+                callId: 'call_aaa',
+                toolName: 'list_files',
+                arguments: { path: '.' },
+                rawArguments: '{"path":"."}',
+                providerKind: 'openai-tool_calls',
+              },
+              {
+                status: 'valid',
+                callId: 'call_bbb',
+                toolName: 'read_file',
+                arguments: { path: 'README.md' },
+                rawArguments: '{"path":"README.md"}',
+                providerKind: 'openai-tool_calls',
+              },
+            ],
+          },
+          {
+            kind: 'tool_result_turn',
+            results: priorToolResults,
+          },
+        ];
+
+        await adapter.executeWithTools(
+          {
+            sessionId: 'session-1',
+            conversationId: 'conv-1',
+            userId: 'user-1',
+            prompt: 'List then read README.md',
+            systemPrompt: 'You are a read-only assistant.',
+            provider: 'openai',
+          },
+          { tools, toolResults: priorToolResults, transcript },
+        );
+
+        expect(mockClient.chat.completions.create).toHaveBeenCalledTimes(1);
+        const recordedBody = mockClient.chat.completions.create.mock.calls[0][0];
+        expect(recordedBody.messages).toEqual([
+          { role: 'system', content: 'You are a read-only assistant.' },
+          { role: 'user', content: 'List then read README.md' },
+          {
+            role: 'assistant',
+            content: 'I will look those up.',
+            tool_calls: [
+              {
+                id: 'call_aaa',
+                type: 'function',
+                function: { name: 'list_files', arguments: '{"path":"."}' },
+              },
+              {
+                id: 'call_bbb',
+                type: 'function',
+                function: { name: 'read_file', arguments: '{"path":"README.md"}' },
+              },
+            ],
+          },
+          {
+            role: 'tool',
+            tool_call_id: 'call_aaa',
+            content: JSON.stringify({ entries: ['README.md'] }),
+          },
+          {
+            role: 'tool',
+            tool_call_id: 'call_bbb',
+            content: JSON.stringify({ content: '# Title' }),
+          },
+        ]);
+        expect(
+          recordedBody.messages.filter((message: { role: string }) => message.role === 'user'),
+        ).toHaveLength(1);
+        expect(recordedBody.tools).toHaveLength(2);
+        expect(recordedBody.tools[0].function.name).toBe('list_files');
+        expect(JSON.stringify(recordedBody.messages)).not.toContain(
+          JSON.stringify({ entries: ['README.md'] }) +
+            JSON.stringify({ entries: ['README.md'] }),
+        );
+      });
+
+      it('does not leak transcript state across sequential executeWithTools calls', async () => {
+        mockClient.chat.completions.create.mockResolvedValue({
+          choices: [
+            {
+              message: { content: 'ok' },
+              finish_reason: 'stop',
+            },
+          ],
+          usage: { total_tokens: 4 },
+          model: 'gpt-4o',
+        });
+        const tools = [AGENT_HARNESS_TOOL_DEFINITIONS_V1[1]];
+        const firstTranscript: AIAdapterCanonicalTranscriptTurn[] = [
+          {
+            kind: 'assistant_tool_turn',
+            content: '',
+            toolCalls: [
+              {
+                status: 'valid',
+                callId: 'secret_call_1',
+                toolName: 'read_file',
+                arguments: { path: 'secret.md' },
+                rawArguments: '{"path":"secret.md"}',
+                providerKind: 'openai-tool_calls',
+              },
+            ],
+          },
+          {
+            kind: 'tool_result_turn',
+            results: [
+              {
+                callId: 'secret_call_1',
+                toolName: 'read_file',
+                success: true,
+                content: { content: 'classified' },
+              },
+            ],
+          },
+        ];
+
+        await adapter.executeWithTools(
+          {
+            sessionId: 'session-a',
+            conversationId: 'conv-a',
+            userId: 'user-1',
+            prompt: 'first execution',
+            provider: 'openai',
+          },
+          { tools, transcript: firstTranscript },
+        );
+        await adapter.executeWithTools(
+          {
+            sessionId: 'session-b',
+            conversationId: 'conv-b',
+            userId: 'user-1',
+            prompt: 'second execution',
+            provider: 'openai',
+          },
+          { tools },
+        );
+
+        const secondBody = mockClient.chat.completions.create.mock.calls[1][0];
+        expect(secondBody.messages).toEqual([
+          { role: 'user', content: 'second execution' },
+        ]);
+        expect(JSON.stringify(secondBody.messages)).not.toContain('secret_call_1');
+        expect(JSON.stringify(secondBody.messages)).not.toContain('classified');
+      });
+
+      it('extracts malformed arguments and missing IDs without inventing fallback IDs or {}', async () => {
+        mockClient.chat.completions.create.mockResolvedValue({
+          choices: [
+            {
+              message: {
+                content: null,
+                tool_calls: [
+                  {
+                    id: 'call_good',
+                    type: 'function',
+                    function: {
+                      name: 'read_file',
+                      arguments: '{"path":"README.md"}',
+                    },
+                  },
+                  {
+                    id: 'call_bad_json',
+                    type: 'function',
+                    function: {
+                      name: 'read_file',
+                      arguments: '{not-json',
+                    },
+                  },
+                  {
+                    id: '',
+                    type: 'function',
+                    function: {
+                      name: 'list_files',
+                      arguments: '{"path":"."}',
+                    },
+                  },
+                ],
+              },
+              finish_reason: 'tool_calls',
+            },
+          ],
+          usage: { total_tokens: 30 },
+          model: 'gpt-4o',
+        });
+
+        const result = await adapter.executeWithTools(
+          {
+            sessionId: 'session-1',
+            conversationId: 'conv-1',
+            userId: 'user-1',
+            prompt: 'Read files',
+            provider: 'openai',
+          },
+          { tools: [AGENT_HARNESS_TOOL_DEFINITIONS_V1[1]] },
+        );
+
+        expect(result.toolCalls).toEqual([
+          {
+            callId: 'call_good',
+            toolName: 'read_file',
+            arguments: { path: 'README.md' },
+            providerKind: 'openai-tool_calls',
+          },
+        ]);
+        expect(result.canonicalToolCalls).toEqual([
+          {
+            status: 'valid',
+            callId: 'call_good',
+            toolName: 'read_file',
+            arguments: { path: 'README.md' },
+            rawArguments: '{"path":"README.md"}',
+            providerKind: 'openai-tool_calls',
+          },
+          {
+            status: 'malformed_arguments',
+            callId: 'call_bad_json',
+            toolName: 'read_file',
+            rawArguments: '{not-json',
+            providerKind: 'openai-tool_calls',
+            errorMessage: expect.stringContaining('MALFORMED_TOOL_ARGUMENTS'),
+          },
+          {
+            status: 'missing_id',
+            toolName: 'list_files',
+            rawArguments: '{"path":"."}',
+            providerKind: 'openai-tool_calls',
+          },
+        ]);
+        expect(JSON.stringify(result)).not.toContain('openai-tool-call-');
+        expect(result.canonicalToolCalls?.[1]).not.toEqual(
+          expect.objectContaining({ arguments: {} }),
         );
       });
     });

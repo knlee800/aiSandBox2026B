@@ -9,6 +9,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { AGENT_HARNESS_TOOL_DEFINITIONS_V1 } from '../../../agent-harness/tools/tool-registry';
+import type { AIAdapterCanonicalTranscriptTurn } from '../adapter-tool-use.contracts';
 
 // Mock the entire Anthropic SDK
 jest.mock('@anthropic-ai/sdk');
@@ -779,6 +780,290 @@ describe('AnthropicAdapter', () => {
       expect(mockMessagesCreate).toHaveBeenCalledWith(
         expect.not.objectContaining({ tools: expect.anything() }),
         {},
+      );
+    });
+
+    it('sends system, user, and advertised tools on the first recorded request body', async () => {
+      const listFiles = AGENT_HARNESS_TOOL_DEFINITIONS_V1[0];
+      const readFile = AGENT_HARNESS_TOOL_DEFINITIONS_V1[1];
+      mockMessagesCreate.mockResolvedValue({
+        id: 'msg_first',
+        type: 'message',
+        role: 'assistant',
+        content: [{ type: 'text', text: 'First turn' }],
+        model: configuredModel,
+        usage: { input_tokens: 8, output_tokens: 4 },
+        stop_reason: 'end_turn',
+      });
+
+      await adapter.executeWithTools(
+        {
+          ...mockRequest,
+          prompt: 'List then read README.md',
+          systemPrompt: 'You are a read-only assistant.',
+        },
+        { tools: [listFiles, readFile] },
+      );
+
+      expect(mockMessagesCreate).toHaveBeenCalledTimes(1);
+      const recordedBody = mockMessagesCreate.mock.calls[0][0];
+      expect(recordedBody.system).toBe('You are a read-only assistant.');
+      expect(recordedBody.messages).toEqual([
+        { role: 'user', content: 'List then read README.md' },
+      ]);
+      expect(recordedBody.tools).toEqual([
+        {
+          name: listFiles.name,
+          description: listFiles.description,
+          input_schema: listFiles.inputSchema.schema,
+        },
+        {
+          name: readFile.name,
+          description: readFile.description,
+          input_schema: readFile.inputSchema.schema,
+        },
+      ]);
+    });
+
+    it('records assistant tool_use then matching tool_result blocks on the second request body', async () => {
+      mockMessagesCreate.mockResolvedValue({
+        id: 'msg_second',
+        type: 'message',
+        role: 'assistant',
+        content: [{ type: 'text', text: 'Done with tools.' }],
+        model: configuredModel,
+        usage: { input_tokens: 20, output_tokens: 6 },
+        stop_reason: 'end_turn',
+      });
+      const tools = [
+        AGENT_HARNESS_TOOL_DEFINITIONS_V1[0],
+        AGENT_HARNESS_TOOL_DEFINITIONS_V1[1],
+      ];
+      const priorToolResults = [
+        {
+          callId: 'toolu_1',
+          toolName: 'list_files',
+          success: true,
+          content: { entries: ['README.md'] },
+        },
+        {
+          callId: 'toolu_2',
+          toolName: 'read_file',
+          success: true,
+          content: { content: '# Title' },
+        },
+      ];
+      const transcript: AIAdapterCanonicalTranscriptTurn[] = [
+        {
+          kind: 'assistant_tool_turn',
+          content: 'Checking files.',
+          toolCalls: [
+            {
+              status: 'valid',
+              callId: 'toolu_1',
+              toolName: 'list_files',
+              arguments: { path: '.' },
+              rawArguments: { path: '.' },
+              providerKind: 'anthropic-tool_use',
+            },
+            {
+              status: 'valid',
+              callId: 'toolu_2',
+              toolName: 'read_file',
+              arguments: { path: 'README.md' },
+              rawArguments: { path: 'README.md' },
+              providerKind: 'anthropic-tool_use',
+            },
+          ],
+        },
+        {
+          kind: 'tool_result_turn',
+          results: priorToolResults,
+        },
+      ];
+
+      await adapter.executeWithTools(
+        {
+          ...mockRequest,
+          prompt: 'List then read README.md',
+          systemPrompt: 'You are a read-only assistant.',
+        },
+        { tools, toolResults: priorToolResults, transcript },
+      );
+
+      expect(mockMessagesCreate).toHaveBeenCalledTimes(1);
+      const recordedBody = mockMessagesCreate.mock.calls[0][0];
+      expect(recordedBody.system).toBe('You are a read-only assistant.');
+      expect(recordedBody.messages).toEqual([
+        { role: 'user', content: 'List then read README.md' },
+        {
+          role: 'assistant',
+          content: [
+            { type: 'text', text: 'Checking files.' },
+            {
+              type: 'tool_use',
+              id: 'toolu_1',
+              name: 'list_files',
+              input: { path: '.' },
+            },
+            {
+              type: 'tool_use',
+              id: 'toolu_2',
+              name: 'read_file',
+              input: { path: 'README.md' },
+            },
+          ],
+        },
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'tool_result',
+              tool_use_id: 'toolu_1',
+              content: JSON.stringify({ entries: ['README.md'] }),
+            },
+            {
+              type: 'tool_result',
+              tool_use_id: 'toolu_2',
+              content: JSON.stringify({ content: '# Title' }),
+            },
+          ],
+        },
+      ]);
+      expect(
+        recordedBody.messages.filter(
+          (message: { role: string; content: unknown }) =>
+            message.role === 'user' && typeof message.content === 'string',
+        ),
+      ).toHaveLength(1);
+      expect(recordedBody.tools).toHaveLength(2);
+    });
+
+    it('does not leak transcript state across sequential executeWithTools calls', async () => {
+      mockMessagesCreate.mockResolvedValue({
+        id: 'msg_iso',
+        type: 'message',
+        role: 'assistant',
+        content: [{ type: 'text', text: 'ok' }],
+        model: configuredModel,
+        usage: { input_tokens: 3, output_tokens: 2 },
+        stop_reason: 'end_turn',
+      });
+      const tools = [AGENT_HARNESS_TOOL_DEFINITIONS_V1[1]];
+      const firstTranscript: AIAdapterCanonicalTranscriptTurn[] = [
+        {
+          kind: 'assistant_tool_turn',
+          content: '',
+          toolCalls: [
+            {
+              status: 'valid',
+              callId: 'secret_toolu',
+              toolName: 'read_file',
+              arguments: { path: 'secret.md' },
+              rawArguments: { path: 'secret.md' },
+              providerKind: 'anthropic-tool_use',
+            },
+          ],
+        },
+        {
+          kind: 'tool_result_turn',
+          results: [
+            {
+              callId: 'secret_toolu',
+              toolName: 'read_file',
+              success: true,
+              content: { content: 'classified' },
+            },
+          ],
+        },
+      ];
+
+      await adapter.executeWithTools(
+        { ...mockRequest, prompt: 'first execution' },
+        { tools, transcript: firstTranscript },
+      );
+      await adapter.executeWithTools(
+        { ...mockRequest, prompt: 'second execution' },
+        { tools },
+      );
+
+      const secondBody = mockMessagesCreate.mock.calls[1][0];
+      expect(secondBody.messages).toEqual([
+        { role: 'user', content: 'second execution' },
+      ]);
+      expect(JSON.stringify(secondBody.messages)).not.toContain('secret_toolu');
+      expect(JSON.stringify(secondBody.messages)).not.toContain('classified');
+    });
+
+    it('extracts malformed arguments and missing IDs without inventing fallback IDs or {}', async () => {
+      mockMessagesCreate.mockResolvedValue({
+        id: 'msg_malformed',
+        type: 'message',
+        role: 'assistant',
+        content: [
+          {
+            type: 'tool_use',
+            id: 'toolu_good',
+            name: 'read_file',
+            input: { path: '/workspace/README.md' },
+          },
+          {
+            type: 'tool_use',
+            id: 'toolu_bad',
+            name: 'read_file',
+            input: 'not-an-object',
+          },
+          {
+            type: 'tool_use',
+            id: '',
+            name: 'list_files',
+            input: { path: '.' },
+          },
+        ],
+        model: configuredModel,
+        usage: { input_tokens: 12, output_tokens: 9 },
+        stop_reason: 'tool_use',
+      });
+
+      const result = await adapter.executeWithTools(mockRequest, {
+        tools: [AGENT_HARNESS_TOOL_DEFINITIONS_V1[1]],
+      });
+
+      expect(result.toolCalls).toEqual([
+        {
+          callId: 'toolu_good',
+          toolName: 'read_file',
+          arguments: { path: '/workspace/README.md' },
+          providerKind: 'anthropic-tool_use',
+        },
+      ]);
+      expect(result.canonicalToolCalls).toEqual([
+        {
+          status: 'valid',
+          callId: 'toolu_good',
+          toolName: 'read_file',
+          arguments: { path: '/workspace/README.md' },
+          rawArguments: { path: '/workspace/README.md' },
+          providerKind: 'anthropic-tool_use',
+        },
+        {
+          status: 'malformed_arguments',
+          callId: 'toolu_bad',
+          toolName: 'read_file',
+          rawArguments: 'not-an-object',
+          providerKind: 'anthropic-tool_use',
+          errorMessage: expect.stringContaining('MALFORMED_TOOL_ARGUMENTS'),
+        },
+        {
+          status: 'missing_id',
+          toolName: 'list_files',
+          rawArguments: { path: '.' },
+          providerKind: 'anthropic-tool_use',
+        },
+      ]);
+      expect(JSON.stringify(result)).not.toContain('anthropic-tool-use-');
+      expect(result.canonicalToolCalls?.[1]).not.toEqual(
+        expect.objectContaining({ arguments: {} }),
       );
     });
   });

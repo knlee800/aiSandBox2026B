@@ -1,8 +1,11 @@
 import {
   executeAgentHarnessLoop,
   HarnessInvalidExecutionIdError,
+  HarnessMaxIterationsError,
   HARNESS_INVALID_EXECUTION_ID_ERROR_NAME,
   HARNESS_INVALID_EXECUTION_ID_ERROR_MESSAGE,
+  HARNESS_MAX_ITERATIONS_ERROR_NAME,
+  HARNESS_MAX_ITERATIONS_ERROR_MESSAGE,
   type AgentHarnessLoopOptions,
   type AgentHarnessExecuteWithToolsFn,
 } from './agent-harness-loop';
@@ -297,7 +300,7 @@ describe('executeAgentHarnessLoop token accounting and aggregate result budget',
     expect(loopResult.result.tokensUsed).toBe(5);
   });
 
-  it('returns cumulative tokensUsed on max_iterations', async () => {
+  it('preserves cumulative tokensUsed on max_iterations typed failure', async () => {
     const dispatcher = new ToolDispatcher();
     dispatcher.registerHandler('read_file', async () => ({ content: 'ok' }));
 
@@ -305,15 +308,20 @@ describe('executeAgentHarnessLoop token accounting and aggregate result budget',
       makeToolCallResult({ tokensUsed: 7 }),
     );
 
-    const loopResult = await executeAgentHarnessLoop(
-      makeOptions(executeFn, {
-        dispatcher,
-        config: { maxToolIterations: 2, maxToolResultBytes: 262_144 },
-      }),
-    );
-
-    expect(loopResult.terminationReason).toBe('max_iterations');
-    expect(loopResult.result.tokensUsed).toBe(14);
+    await expect(
+      executeAgentHarnessLoop(
+        makeOptions(executeFn, {
+          dispatcher,
+          config: { maxToolIterations: 2, maxToolResultBytes: 262_144 },
+        }),
+      ),
+    ).rejects.toMatchObject({
+      name: HARNESS_MAX_ITERATIONS_ERROR_NAME,
+      terminationReason: 'max_iterations',
+      tokensUsed: 14,
+      iterationsUsed: 2,
+      toolCallsReceived: 2,
+    });
   });
 
   it('enforces aggregate maxToolResultBytes and replaces over-budget results without ending the loop', async () => {
@@ -487,12 +495,15 @@ describe('executeAgentHarnessLoop with dispatcher', () => {
       makeToolCallResult(),
     );
 
-    const loopResult = await executeAgentHarnessLoop(
-      makeOptions(executeFn, { dispatcher, config: { maxToolIterations: 2, maxToolResultBytes: 262_144 } }),
-    );
-
-    expect(loopResult.terminationReason).toBe('max_iterations');
-    expect(loopResult.iterationsUsed).toBe(2);
+    await expect(
+      executeAgentHarnessLoop(
+        makeOptions(executeFn, { dispatcher, config: { maxToolIterations: 2, maxToolResultBytes: 262_144 } }),
+      ),
+    ).rejects.toMatchObject({
+      name: HARNESS_MAX_ITERATIONS_ERROR_NAME,
+      terminationReason: 'max_iterations',
+      iterationsUsed: 2,
+    });
     expect(executeFn).toHaveBeenCalledTimes(2);
   });
 
@@ -812,17 +823,20 @@ describe('executeAgentHarnessLoop with pre-apply checkpoint', () => {
       makeWriteToolCallResult(),
     );
 
-    const loopResult = await executeAgentHarnessLoop(
-      makeOptions(executeFn, {
-        dispatcher,
-        createCheckpointFn,
-        mutatingToolNames: MUTATING_TOOLS,
-        config: { maxToolIterations: 2, maxToolResultBytes: 262_144 },
-      }),
-    );
-
-    expect(loopResult.terminationReason).toBe('max_iterations');
-    expect(loopResult.iterationsUsed).toBe(2);
+    await expect(
+      executeAgentHarnessLoop(
+        makeOptions(executeFn, {
+          dispatcher,
+          createCheckpointFn,
+          mutatingToolNames: MUTATING_TOOLS,
+          config: { maxToolIterations: 2, maxToolResultBytes: 262_144 },
+        }),
+      ),
+    ).rejects.toMatchObject({
+      name: HARNESS_MAX_ITERATIONS_ERROR_NAME,
+      terminationReason: 'max_iterations',
+      iterationsUsed: 2,
+    });
     expect(executeFn).toHaveBeenCalledTimes(2);
   });
 
@@ -1108,13 +1122,15 @@ describe('executeAgentHarnessLoop audit events', () => {
       makeToolCallResult(),
     );
 
-    await executeAgentHarnessLoop(
-      makeOptions(executeFn, {
-        dispatcher,
-        recorder,
-        config: { maxToolIterations: 2, maxToolResultBytes: 262_144 },
-      }),
-    );
+    await expect(
+      executeAgentHarnessLoop(
+        makeOptions(executeFn, {
+          dispatcher,
+          recorder,
+          config: { maxToolIterations: 2, maxToolResultBytes: 262_144 },
+        }),
+      ),
+    ).rejects.toBeInstanceOf(HarnessMaxIterationsError);
 
     const maxTurnsEvent = recorder.getEvents().find(
       (e) => e.eventType === 'harness.loop_max_turns',
@@ -1375,5 +1391,507 @@ describe('executeAgentHarnessLoop canonical executionId entry guard', () => {
 
   it('rejects whitespace-only executionId before any Harness side effect', async () => {
     await expectInvalidExecutionIdRejected(' \t\n');
+  });
+});
+
+describe('AGENT-PLATFORM-EXEC-01C3 loop-owned canonical transcript', () => {
+  it('passes accumulated assistant and tool-result turns on the next executeFn call', async () => {
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('list_files', async () => ({ entries: ['README.md'] }));
+    dispatcher.registerHandler('read_file', async (args) => ({
+      content: `contents of ${String(args.path)}`,
+    }));
+
+    let callCount = 0;
+    const executeFn = jest.fn<
+      Promise<AIAdapterToolUseResult>,
+      [AIExecutionRequest, AIAdapterToolUseRequestOptions?]
+    >(() => {
+      callCount++;
+      if (callCount === 1) {
+        return Promise.resolve(
+          makeToolCallResult({
+            output: 'I will look those up.',
+            toolCalls: [
+              {
+                callId: 'call_aaa',
+                toolName: 'list_files',
+                arguments: { path: '.' },
+                providerKind: 'openai-tool_calls',
+              },
+              {
+                callId: 'call_bbb',
+                toolName: 'read_file',
+                arguments: { path: 'README.md' },
+                providerKind: 'openai-tool_calls',
+              },
+            ],
+          }),
+        );
+      }
+      return Promise.resolve(makeCompletedResult({ output: 'Done after both tools.' }));
+    });
+
+    const loopResult = await executeAgentHarnessLoop(
+      makeOptions(executeFn, { dispatcher }),
+    );
+
+    expect(loopResult.terminationReason).toBe('completed');
+    expect(executeFn).toHaveBeenCalledTimes(2);
+    expect(executeFn.mock.calls[0][1]).toBeUndefined();
+
+    const secondOpts = executeFn.mock.calls[1][1];
+    expect(secondOpts?.toolResults).toHaveLength(2);
+    expect(secondOpts?.toolResults?.map((result) => result.callId)).toEqual([
+      'call_aaa',
+      'call_bbb',
+    ]);
+    expect(secondOpts?.transcript).toEqual([
+      {
+        kind: 'assistant_tool_turn',
+        content: 'I will look those up.',
+        toolCalls: [
+          {
+            status: 'valid',
+            callId: 'call_aaa',
+            toolName: 'list_files',
+            arguments: { path: '.' },
+            rawArguments: { path: '.' },
+            providerKind: 'openai-tool_calls',
+          },
+          {
+            status: 'valid',
+            callId: 'call_bbb',
+            toolName: 'read_file',
+            arguments: { path: 'README.md' },
+            rawArguments: { path: 'README.md' },
+            providerKind: 'openai-tool_calls',
+          },
+        ],
+      },
+      {
+        kind: 'tool_result_turn',
+        results: secondOpts?.toolResults,
+      },
+    ]);
+    expect(dispatcher.registeredToolCount).toBe(2);
+  });
+
+  it('keeps last-turn toolResults while accumulating transcript across two tool turns', async () => {
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async (args) => ({
+      content: String(args.path),
+    }));
+
+    let callCount = 0;
+    const executeFn = jest.fn<
+      Promise<AIAdapterToolUseResult>,
+      [AIExecutionRequest, AIAdapterToolUseRequestOptions?]
+    >(() => {
+      callCount++;
+      if (callCount === 1) {
+        return Promise.resolve(
+          makeToolCallResult({
+            toolCalls: [
+              {
+                callId: 'call-1',
+                toolName: 'read_file',
+                arguments: { path: 'ONE.md' },
+                providerKind: 'stub',
+              },
+            ],
+          }),
+        );
+      }
+      if (callCount === 2) {
+        return Promise.resolve(
+          makeToolCallResult({
+            toolCalls: [
+              {
+                callId: 'call-2',
+                toolName: 'read_file',
+                arguments: { path: 'TWO.md' },
+                providerKind: 'stub',
+              },
+            ],
+          }),
+        );
+      }
+      return Promise.resolve(makeCompletedResult({ output: 'done' }));
+    });
+
+    await executeAgentHarnessLoop(
+      makeOptions(executeFn, {
+        dispatcher,
+        config: { maxToolIterations: 4, maxToolResultBytes: 262_144 },
+      }),
+    );
+
+    const thirdOpts = executeFn.mock.calls[2][1];
+    expect(thirdOpts?.toolResults).toHaveLength(1);
+    expect(thirdOpts?.toolResults?.[0].callId).toBe('call-2');
+    expect(thirdOpts?.transcript).toHaveLength(4);
+    expect(thirdOpts?.transcript?.[0]).toEqual(
+      expect.objectContaining({ kind: 'assistant_tool_turn' }),
+    );
+    expect(thirdOpts?.transcript?.[1]).toEqual(
+      expect.objectContaining({ kind: 'tool_result_turn' }),
+    );
+    expect(thirdOpts?.transcript?.[2]).toEqual(
+      expect.objectContaining({ kind: 'assistant_tool_turn' }),
+    );
+    expect(thirdOpts?.transcript?.[3]).toEqual(
+      expect.objectContaining({ kind: 'tool_result_turn' }),
+    );
+    const firstResultTurn = thirdOpts?.transcript?.[1];
+    const secondResultTurn = thirdOpts?.transcript?.[3];
+    expect(firstResultTurn?.kind).toBe('tool_result_turn');
+    expect(secondResultTurn?.kind).toBe('tool_result_turn');
+    if (firstResultTurn?.kind === 'tool_result_turn') {
+      expect(firstResultTurn.results[0].callId).toBe('call-1');
+    }
+    if (secondResultTurn?.kind === 'tool_result_turn') {
+      expect(secondResultTurn.results[0].callId).toBe('call-2');
+    }
+  });
+
+  it('does not leak transcript between sequential or concurrent loop executions', async () => {
+    const dispatcherA = new ToolDispatcher();
+    dispatcherA.registerHandler('read_file', async () => ({ content: 'A' }));
+    const dispatcherB = new ToolDispatcher();
+    dispatcherB.registerHandler('read_file', async () => ({ content: 'B' }));
+
+    const executeA = jest.fn<
+      Promise<AIAdapterToolUseResult>,
+      [AIExecutionRequest, AIAdapterToolUseRequestOptions?]
+    >((_req, opts) => {
+      if (!opts?.transcript || opts.transcript.length === 0) {
+        return Promise.resolve(
+          makeToolCallResult({
+            toolCalls: [
+              {
+                callId: 'call-A',
+                toolName: 'read_file',
+                arguments: { path: 'A.md' },
+                providerKind: 'stub',
+              },
+            ],
+          }),
+        );
+      }
+      return Promise.resolve(makeCompletedResult({ output: 'done-A' }));
+    });
+    const executeB = jest.fn<
+      Promise<AIAdapterToolUseResult>,
+      [AIExecutionRequest, AIAdapterToolUseRequestOptions?]
+    >((_req, opts) => {
+      if (!opts?.transcript || opts.transcript.length === 0) {
+        return Promise.resolve(
+          makeToolCallResult({
+            toolCalls: [
+              {
+                callId: 'call-B',
+                toolName: 'read_file',
+                arguments: { path: 'B.md' },
+                providerKind: 'stub',
+              },
+            ],
+          }),
+        );
+      }
+      return Promise.resolve(makeCompletedResult({ output: 'done-B' }));
+    });
+
+    await Promise.all([
+      executeAgentHarnessLoop(makeOptions(executeA, { dispatcher: dispatcherA })),
+      executeAgentHarnessLoop(makeOptions(executeB, { dispatcher: dispatcherB })),
+    ]);
+
+    const secondA = executeA.mock.calls[1][1];
+    const secondB = executeB.mock.calls[1][1];
+    expect(JSON.stringify(secondA?.transcript)).toContain('call-A');
+    expect(JSON.stringify(secondA?.transcript)).not.toContain('call-B');
+    expect(JSON.stringify(secondB?.transcript)).toContain('call-B');
+    expect(JSON.stringify(secondB?.transcript)).not.toContain('call-A');
+
+    const executeC = jest.fn<
+      Promise<AIAdapterToolUseResult>,
+      [AIExecutionRequest, AIAdapterToolUseRequestOptions?]
+    >(() => Promise.resolve(makeCompletedResult({ output: 'done-C' })));
+    await executeAgentHarnessLoop(makeOptions(executeC));
+    expect(executeC.mock.calls[0][1]).toBeUndefined();
+  });
+
+  it('passes a copied transcript so executeFn cannot mutate loop-owned state', async () => {
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async () => ({ content: 'ok' }));
+    let callCount = 0;
+    const executeFn = jest.fn<
+      Promise<AIAdapterToolUseResult>,
+      [AIExecutionRequest, AIAdapterToolUseRequestOptions?]
+    >((_req, opts) => {
+      callCount++;
+      if (callCount === 1) {
+        return Promise.resolve(makeToolCallResult());
+      }
+      if (callCount === 2) {
+        const mutable = [...(opts?.transcript ?? [])] as unknown as unknown[];
+        (opts?.transcript as unknown as unknown[] | undefined)?.push({
+          kind: 'injected',
+        });
+        mutable.push({ kind: 'should-not-matter' });
+        return Promise.resolve(
+          makeToolCallResult({
+            toolCalls: [
+              {
+                callId: 'call-2',
+                toolName: 'read_file',
+                arguments: { path: 'TWO.md' },
+                providerKind: 'stub',
+              },
+            ],
+          }),
+        );
+      }
+      return Promise.resolve(makeCompletedResult({ output: 'done' }));
+    });
+
+    await executeAgentHarnessLoop(
+      makeOptions(executeFn, {
+        dispatcher,
+        config: { maxToolIterations: 3, maxToolResultBytes: 262_144 },
+      }),
+    );
+
+    const thirdOpts = executeFn.mock.calls[2]?.[1];
+    expect(JSON.stringify(thirdOpts?.transcript ?? [])).not.toContain('injected');
+    expect(executeFn).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe('AGENT-PLATFORM-EXEC-01C3 malformed and missing-ID fail-closed dispatch', () => {
+  it('does not dispatch invalid JSON as {} and returns a typed error on the original call ID', async () => {
+    const dispatcher = new ToolDispatcher();
+    const handler = jest.fn(async () => ({ content: 'should-not-run' }));
+    dispatcher.registerHandler('read_file', handler);
+    const dispatchSpy = jest.spyOn(dispatcher, 'dispatch');
+
+    let callCount = 0;
+    const executeFn = jest.fn<
+      Promise<AIAdapterToolUseResult>,
+      [AIExecutionRequest, AIAdapterToolUseRequestOptions?]
+    >(() => {
+      callCount++;
+      if (callCount === 1) {
+        return Promise.resolve(
+          makeToolCallResult({
+            toolCalls: [],
+            canonicalToolCalls: [
+              {
+                status: 'malformed_arguments',
+                callId: 'call_bad_json',
+                toolName: 'read_file',
+                rawArguments: '{not-json',
+                providerKind: 'openai-tool_calls',
+                errorMessage:
+                  'MALFORMED_TOOL_ARGUMENTS: arguments are not valid JSON object',
+              },
+            ],
+          }),
+        );
+      }
+      return Promise.resolve(makeCompletedResult({ output: 'acknowledged error' }));
+    });
+
+    const loopResult = await executeAgentHarnessLoop(
+      makeOptions(executeFn, { dispatcher }),
+    );
+
+    expect(loopResult.terminationReason).toBe('completed');
+    expect(handler).not.toHaveBeenCalled();
+    expect(dispatchSpy).not.toHaveBeenCalled();
+    const secondOpts = executeFn.mock.calls[1][1];
+    expect(secondOpts?.toolResults).toEqual([
+      {
+        callId: 'call_bad_json',
+        toolName: 'read_file',
+        success: false,
+        errorMessage:
+          'MALFORMED_TOOL_ARGUMENTS: arguments are not valid JSON object',
+      },
+    ]);
+    expect(secondOpts?.toolResults?.[0]).not.toEqual(
+      expect.objectContaining({ content: {} }),
+    );
+  });
+
+  it('never dispatches missing-ID calls and does not invent a fallback call ID', async () => {
+    const dispatcher = new ToolDispatcher();
+    const handler = jest.fn(async () => ({ entries: [] }));
+    dispatcher.registerHandler('list_files', handler);
+    const dispatchSpy = jest.spyOn(dispatcher, 'dispatch');
+
+    let callCount = 0;
+    const executeFn = jest.fn<
+      Promise<AIAdapterToolUseResult>,
+      [AIExecutionRequest, AIAdapterToolUseRequestOptions?]
+    >(() => {
+      callCount++;
+      if (callCount === 1) {
+        return Promise.resolve(
+          makeToolCallResult({
+            toolCalls: [
+              {
+                callId: 'call_good',
+                toolName: 'list_files',
+                arguments: { path: '.' },
+                providerKind: 'openai-tool_calls',
+              },
+            ],
+            canonicalToolCalls: [
+              {
+                status: 'valid',
+                callId: 'call_good',
+                toolName: 'list_files',
+                arguments: { path: '.' },
+                rawArguments: '{"path":"."}',
+                providerKind: 'openai-tool_calls',
+              },
+              {
+                status: 'missing_id',
+                toolName: 'list_files',
+                rawArguments: '{"path":"."}',
+                providerKind: 'openai-tool_calls',
+              },
+            ],
+          }),
+        );
+      }
+      return Promise.resolve(makeCompletedResult({ output: 'done' }));
+    });
+
+    await executeAgentHarnessLoop(makeOptions(executeFn, { dispatcher }));
+
+    expect(dispatchSpy).toHaveBeenCalledTimes(1);
+    expect(dispatchSpy.mock.calls[0][0].callId).toBe('call_good');
+    expect(handler).toHaveBeenCalledTimes(1);
+    const secondOpts = executeFn.mock.calls[1][1];
+    expect(secondOpts?.toolResults?.map((result) => result.callId)).toEqual([
+      'call_good',
+    ]);
+    expect(JSON.stringify(secondOpts)).not.toContain('openai-tool-call-');
+    expect(JSON.stringify(secondOpts)).not.toContain('anthropic-tool-use-');
+  });
+
+  it('returns TOOL_NOT_FOUND on the original call ID without inventing a handler', async () => {
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async () => ({ content: 'ok' }));
+    const dispatchSpy = jest.spyOn(dispatcher, 'dispatch');
+
+    let callCount = 0;
+    const executeFn = jest.fn<
+      Promise<AIAdapterToolUseResult>,
+      [AIExecutionRequest, AIAdapterToolUseRequestOptions?]
+    >(() => {
+      callCount++;
+      if (callCount === 1) {
+        return Promise.resolve(
+          makeToolCallResult({
+            toolCalls: [
+              {
+                callId: 'call_unknown',
+                toolName: 'search_workspace',
+                arguments: { query: 'secret' },
+                providerKind: 'openai-tool_calls',
+              },
+            ],
+          }),
+        );
+      }
+      return Promise.resolve(makeCompletedResult({ output: 'unknown tool noted' }));
+    });
+
+    await executeAgentHarnessLoop(makeOptions(executeFn, { dispatcher }));
+
+    expect(dispatchSpy).toHaveBeenCalledTimes(1);
+    expect(dispatchSpy.mock.calls[0][0].callId).toBe('call_unknown');
+    expect(dispatchSpy.mock.calls[0][0].toolName).toBe('search_workspace');
+    const secondOpts = executeFn.mock.calls[1][1];
+    expect(secondOpts?.toolResults).toHaveLength(1);
+    expect(secondOpts?.toolResults?.[0].callId).toBe('call_unknown');
+    expect(secondOpts?.toolResults?.[0].success).toBe(false);
+    expect(secondOpts?.toolResults?.[0].errorMessage).toContain('search_workspace');
+    expect(dispatcher.hasHandler('search_workspace')).toBe(false);
+  });
+});
+
+describe('AGENT-PLATFORM-EXEC-01C3 max-iteration typed failure', () => {
+  const RETRYABLE_ERROR_PATTERN =
+    /timeout|timed out|ECONNRESET|ENOTFOUND|429|503|overloaded/i;
+
+  it('throws a typed non-retryable failure after the final permitted tool-call turn', async () => {
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async () => ({ content: 'data' }));
+    const recorder = new InMemoryHarnessAuditRecorder();
+    const executeFn = jest
+      .fn<Promise<AIAdapterToolUseResult>, any>()
+      .mockResolvedValue(makeToolCallResult({ tokensUsed: 7 }));
+
+    let caught: unknown;
+    try {
+      await executeAgentHarnessLoop(
+        makeOptions(executeFn, {
+          dispatcher,
+          recorder,
+          config: { maxToolIterations: 2, maxToolResultBytes: 262_144 },
+        }),
+      );
+    } catch (err) {
+      caught = err;
+    }
+
+    expect(caught).toBeInstanceOf(HarnessMaxIterationsError);
+    expect(caught).toMatchObject({
+      name: HARNESS_MAX_ITERATIONS_ERROR_NAME,
+      message: HARNESS_MAX_ITERATIONS_ERROR_MESSAGE,
+      terminationReason: 'max_iterations',
+      iterationsUsed: 2,
+      toolCallsReceived: 2,
+      tokensUsed: 14,
+    });
+    expect(executeFn).toHaveBeenCalledTimes(2);
+    expect(RETRYABLE_ERROR_PATTERN.test((caught as Error).message)).toBe(false);
+    expect(RETRYABLE_ERROR_PATTERN.test((caught as Error).name)).toBe(false);
+    const maxTurnsEvent = recorder.getEvents().find(
+      (event) => event.eventType === 'harness.loop_max_turns',
+    ) as Extract<HarnessAuditEvent, { eventType: 'harness.loop_max_turns' }>;
+    expect(maxTurnsEvent).toBeDefined();
+    expect(maxTurnsEvent.terminationReason).toBe('max_iterations');
+    expect(maxTurnsEvent.cumulativeTokensUsed).toBe(14);
+    expect(maxTurnsEvent.totalToolCalls).toBe(2);
+  });
+
+  it('still completes successfully when the model finishes before the iteration ceiling', async () => {
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async () => ({ content: 'ok' }));
+    let callCount = 0;
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>(() => {
+      callCount++;
+      if (callCount === 1) {
+        return Promise.resolve(makeToolCallResult());
+      }
+      return Promise.resolve(makeCompletedResult({ output: 'finished early' }));
+    });
+
+    const loopResult = await executeAgentHarnessLoop(
+      makeOptions(executeFn, {
+        dispatcher,
+        config: { maxToolIterations: 3, maxToolResultBytes: 262_144 },
+      }),
+    );
+
+    expect(loopResult.terminationReason).toBe('completed');
+    expect(loopResult.result.output).toBe('finished early');
+    expect(executeFn).toHaveBeenCalledTimes(2);
   });
 });

@@ -3,6 +3,9 @@ import type {
   AIAdapterToolUseRequestOptions,
   AIAdapterToolUseResult,
   AIAdapterToolResultPayload,
+  AIAdapterCanonicalTranscriptTurn,
+  AIAdapterCanonicalToolCall,
+  AIAdapterToolCallMetadata,
 } from '../../ai-execution/adapters/adapter-tool-use.contracts';
 import type { AgentHarnessConfigV1 } from '../contracts/agent-harness.contracts';
 import type { ToolDispatcher } from '../tools/tool-dispatcher';
@@ -62,6 +65,33 @@ export class HarnessInvalidExecutionIdError extends Error {
   }
 }
 
+export const HARNESS_MAX_ITERATIONS_ERROR_NAME = 'HarnessMaxIterationsError';
+
+export const HARNESS_MAX_ITERATIONS_ERROR_MESSAGE =
+  '[Agent Harness] Maximum tool iterations reached without completion.';
+
+export class HarnessMaxIterationsError extends Error {
+  readonly terminationReason = 'max_iterations' as const;
+  readonly iterationsUsed: number;
+  readonly toolCallsReceived: number;
+  readonly tokensUsed: number;
+  readonly preApplyCheckpointHash?: string;
+
+  constructor(details: {
+    readonly iterationsUsed: number;
+    readonly toolCallsReceived: number;
+    readonly tokensUsed: number;
+    readonly preApplyCheckpointHash?: string;
+  }) {
+    super(HARNESS_MAX_ITERATIONS_ERROR_MESSAGE);
+    this.name = HARNESS_MAX_ITERATIONS_ERROR_NAME;
+    this.iterationsUsed = details.iterationsUsed;
+    this.toolCallsReceived = details.toolCallsReceived;
+    this.tokensUsed = details.tokensUsed;
+    this.preApplyCheckpointHash = details.preApplyCheckpointHash;
+  }
+}
+
 function requireCanonicalExecutionId(executionId: unknown): string {
   if (
     typeof executionId !== 'string' ||
@@ -73,6 +103,76 @@ function requireCanonicalExecutionId(executionId: unknown): string {
   return executionId;
 }
 
+function toCanonicalToolCalls(
+  adapterResult: AIAdapterToolUseResult,
+): readonly AIAdapterCanonicalToolCall[] {
+  if (
+    adapterResult.canonicalToolCalls &&
+    adapterResult.canonicalToolCalls.length > 0
+  ) {
+    return adapterResult.canonicalToolCalls;
+  }
+
+  return (adapterResult.toolCalls ?? []).map((toolCall) => ({
+    status: 'valid' as const,
+    callId: toolCall.callId,
+    toolName: toolCall.toolName,
+    arguments: toolCall.arguments,
+    rawArguments: toolCall.arguments,
+    providerKind: toolCall.providerKind,
+  }));
+}
+
+function isDispatchableToolCall(
+  call: AIAdapterCanonicalToolCall,
+): call is Extract<AIAdapterCanonicalToolCall, { status: 'valid' }> {
+  return call.status === 'valid';
+}
+
+function toDispatchMetadata(
+  call: Extract<AIAdapterCanonicalToolCall, { status: 'valid' }>,
+): AIAdapterToolCallMetadata {
+  return {
+    callId: call.callId,
+    toolName: call.toolName,
+    arguments: call.arguments,
+    providerKind: call.providerKind,
+  };
+}
+
+function copyTranscript(
+  transcript: readonly AIAdapterCanonicalTranscriptTurn[],
+): readonly AIAdapterCanonicalTranscriptTurn[] {
+  return transcript.map((turn) =>
+    turn.kind === 'assistant_tool_turn'
+      ? {
+          ...turn,
+          toolCalls: turn.toolCalls.slice(),
+        }
+      : {
+          ...turn,
+          results: turn.results.slice(),
+        },
+  );
+}
+
+function buildExecuteOptions(
+  transcript: readonly AIAdapterCanonicalTranscriptTurn[],
+  priorToolResults: readonly AIAdapterToolResultPayload[] | undefined,
+): AIAdapterToolUseRequestOptions | undefined {
+  const hasTranscript = transcript.length > 0;
+  const hasResults =
+    priorToolResults !== undefined && priorToolResults.length > 0;
+  if (!hasTranscript && !hasResults) {
+    return undefined;
+  }
+
+  return {
+    ...(hasResults ? { toolResults: priorToolResults.slice() } : {}),
+    ...(hasTranscript ? { transcript: copyTranscript(transcript) } : {}),
+  };
+}
+
 /**
  * Bounded multi-turn tool loop foundation for Agent Harness v1.
  *
@@ -82,14 +182,17 @@ function requireCanonicalExecutionId(executionId: unknown): string {
  * - If the adapter returns tool calls and no dispatcher is provided →
  *   returns a safe fallback (no_dispatcher).
  * - If the adapter returns tool calls and a dispatcher is provided →
- *   dispatches each tool call, collects results, feeds them back into
- *   the next executeFn call via priorToolResults, and repeats until
- *   the model finishes or maxToolIterations is reached.
+ *   dispatches each valid tool call, records typed errors for malformed
+ *   calls with usable IDs, skips missing-ID calls, accumulates execution-
+ *   scoped canonical transcript turns, and repeats until the model
+ *   finishes or maxToolIterations is reached.
+ * - Reaching maxToolIterations throws HarnessMaxIterationsError.
  *
  * Safety invariants:
  * - maxToolIterations is a hard ceiling.
  * - AbortSignal is checked before each iteration.
  * - Dispatcher errors are wrapped into typed results, not exceptions.
+ * - Transcript state is local to one executeAgentHarnessLoop invocation.
  */
 export async function executeAgentHarnessLoop(
   options: AgentHarnessLoopOptions,
@@ -119,6 +222,7 @@ export async function executeAgentHarnessLoop(
   let priorToolResults: AIAdapterToolResultPayload[] | undefined;
   let preApplyCheckpointHash: string | undefined;
   let checkpointCreated = false;
+  const transcript: AIAdapterCanonicalTranscriptTurn[] = [];
   const loopStartTime = Date.now();
 
   const baseEvent = () => ({
@@ -194,10 +298,7 @@ export async function executeAgentHarnessLoop(
       };
     }
 
-    const executeOptions: AIAdapterToolUseRequestOptions | undefined =
-      priorToolResults && priorToolResults.length > 0
-        ? { toolResults: priorToolResults }
-        : undefined;
+    const executeOptions = buildExecuteOptions(transcript, priorToolResults);
 
     recorder?.record({
       ...baseEvent(),
@@ -224,8 +325,9 @@ export async function executeAgentHarnessLoop(
     }
 
     cumulativeTokensUsed += adapterResult.tokensUsed ?? 0;
-    const toolCalls = adapterResult.toolCalls ?? [];
-    totalToolCallsReceived += toolCalls.length;
+    const extractedCalls = toCanonicalToolCalls(adapterResult);
+    const dispatchableCalls = extractedCalls.filter(isDispatchableToolCall);
+    totalToolCallsReceived += extractedCalls.length;
 
     recorder?.record({
       ...baseEvent(),
@@ -234,13 +336,13 @@ export async function executeAgentHarnessLoop(
       provider: adapterResult.provider,
       model: adapterResult.model,
       finishReason: adapterResult.finishReason,
-      toolCallCount: toolCalls.length,
+      toolCallCount: extractedCalls.length,
       tokensUsed: adapterResult.tokensUsed ?? 0,
       cumulativeTokensUsed,
       durationMs: Math.max(0, Date.now() - modelStartTime),
     });
 
-    if (adapterResult.finishReason !== 'tool_calls' || toolCalls.length === 0) {
+    if (adapterResult.finishReason !== 'tool_calls' || extractedCalls.length === 0) {
       recorder?.record({
         ...baseEvent(),
         eventType: 'harness.loop_completed' as const,
@@ -292,11 +394,18 @@ export async function executeAgentHarnessLoop(
       };
     }
 
+    const assistantTurn: AIAdapterCanonicalTranscriptTurn = {
+      kind: 'assistant_tool_turn',
+      content: adapterResult.output ?? '',
+      toolCalls: extractedCalls,
+    };
+    transcript.push(assistantTurn);
+
     const hasMutatingCall =
       createCheckpointFn &&
       !checkpointCreated &&
       mutatingToolNames &&
-      toolCalls.some((tc) => mutatingToolNames.has(tc.toolName));
+      dispatchableCalls.some((tc) => mutatingToolNames.has(tc.toolName));
 
     if (hasMutatingCall) {
       try {
@@ -306,22 +415,51 @@ export async function executeAgentHarnessLoop(
       } catch (cpError) {
         const errorMsg =
           cpError instanceof Error ? cpError.message : String(cpError);
-        const results: AIAdapterToolResultPayload[] = toolCalls.map((tc) => ({
-          callId: tc.callId,
-          toolName: tc.toolName,
-          success: false as const,
-          content: undefined,
-          errorMessage: mutatingToolNames.has(tc.toolName)
-            ? `CHECKPOINT_FAILED: Pre-apply checkpoint creation failed: ${errorMsg}. Mutating operation was not executed.`
-            : `CHECKPOINT_FAILED: Pre-apply checkpoint creation failed: ${errorMsg}. Batch aborted.`,
-        }));
-        priorToolResults = results.map((r) => enforceAggregateToolResultBudget(r, iteration));
+        const results: AIAdapterToolResultPayload[] = extractedCalls.flatMap(
+          (tc) => {
+            if (tc.status === 'missing_id') {
+              return [];
+            }
+            return [
+              {
+                callId: tc.callId,
+                toolName: tc.toolName,
+                success: false as const,
+                content: undefined,
+                errorMessage: mutatingToolNames.has(tc.toolName)
+                  ? `CHECKPOINT_FAILED: Pre-apply checkpoint creation failed: ${errorMsg}. Mutating operation was not executed.`
+                  : `CHECKPOINT_FAILED: Pre-apply checkpoint creation failed: ${errorMsg}. Batch aborted.`,
+              },
+            ];
+          },
+        );
+        priorToolResults = results.map((r) =>
+          enforceAggregateToolResultBudget(r, iteration),
+        );
+        transcript.push({
+          kind: 'tool_result_turn',
+          results: priorToolResults,
+        });
         continue;
       }
     }
 
     const results: AIAdapterToolResultPayload[] = [];
-    for (const toolCall of toolCalls) {
+    for (const extractedCall of extractedCalls) {
+      if (extractedCall.status === 'missing_id') {
+        continue;
+      }
+      if (extractedCall.status === 'malformed_arguments') {
+        results.push({
+          callId: extractedCall.callId,
+          toolName: extractedCall.toolName,
+          success: false,
+          errorMessage: extractedCall.errorMessage,
+        });
+        continue;
+      }
+
+      const toolCall = toDispatchMetadata(extractedCall);
       recorder?.record({
         ...baseEvent(),
         eventType: 'harness.tool_dispatch_started' as const,
@@ -366,7 +504,13 @@ export async function executeAgentHarnessLoop(
         errorMessage: dispatchResult.errorMessage,
       });
     }
-    priorToolResults = results.map((r) => enforceAggregateToolResultBudget(r, iteration));
+    priorToolResults = results.map((r) =>
+      enforceAggregateToolResultBudget(r, iteration),
+    );
+    transcript.push({
+      kind: 'tool_result_turn',
+      results: priorToolResults,
+    });
   }
 
   recorder?.record({
@@ -380,15 +524,10 @@ export async function executeAgentHarnessLoop(
     durationMs: Math.max(0, Date.now() - loopStartTime),
   });
 
-  return {
-    result: {
-      output: '[Agent Harness] Maximum tool iterations reached without completion.',
-      tokensUsed: cumulativeTokensUsed,
-      model: '',
-    },
+  throw new HarnessMaxIterationsError({
     iterationsUsed: maxIterations,
-    terminationReason: 'max_iterations',
     toolCallsReceived: totalToolCallsReceived,
+    tokensUsed: cumulativeTokensUsed,
     preApplyCheckpointHash,
-  };
+  });
 }

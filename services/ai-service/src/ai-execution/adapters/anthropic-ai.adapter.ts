@@ -10,6 +10,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { AIAdapter } from './ai-adapter.interface';
 import { AIExecutionRequest, AIExecutionResult } from '../types';
 import type {
+  AIAdapterCanonicalToolCall,
   AIAdapterToolCallMetadata,
   AIAdapterToolUseFinishReason,
   AIAdapterToolUseRequestOptions,
@@ -18,6 +19,8 @@ import type {
 import {
   mapAgentHarnessToolDefinitionsToAdapterToolDeclarations,
   mapAdapterToolDeclarationsToAnthropicTools,
+  mapCanonicalTranscriptToAnthropicMessages,
+  parseToolArgumentsToObject,
 } from './adapter-tool-use.mapper';
 
 /**
@@ -172,6 +175,9 @@ export class AnthropicAdapter implements AIAdapter {
       const anthropicTools = mapAdapterToolDeclarationsToAnthropicTools(
         adapterTools,
       );
+      const transcriptMessages = mapCanonicalTranscriptToAnthropicMessages(
+        options?.transcript,
+      );
 
       const anthropicRequest: Anthropic.MessageCreateParams = {
         model: executionModel,
@@ -182,14 +188,18 @@ export class AnthropicAdapter implements AIAdapter {
             role: 'user',
             content: request.prompt,
           },
+          ...(transcriptMessages as Anthropic.MessageCreateParams['messages']),
         ],
       };
       if (normalizedSystemPrompt.length > 0) {
         anthropicRequest.system = normalizedSystemPrompt;
       }
       if (anthropicTools.length > 0) {
-        anthropicRequest.tools =
-          anthropicTools as Anthropic.MessageCreateParams['tools'];
+        anthropicRequest.tools = anthropicTools.map((tool) => ({
+          name: tool.name,
+          description: tool.description,
+          input_schema: { ...tool.input_schema },
+        })) as Anthropic.MessageCreateParams['tools'];
       }
 
       const createOptions = request.signal ? { signal: request.signal } : {};
@@ -306,9 +316,11 @@ export class AnthropicAdapter implements AIAdapter {
       .filter((block) => block.type === 'text')
       .map((block) => (block as Anthropic.TextBlock).text);
     const output = textBlocks.join('\n\n');
-    const toolCalls = this.extractToolCalls(response.content);
+    const { toolCalls, canonicalToolCalls } = this.extractToolCalls(
+      response.content,
+    );
 
-    if (textBlocks.length === 0 && toolCalls.length === 0) {
+    if (textBlocks.length === 0 && canonicalToolCalls.length === 0) {
       this.logger.error('Anthropic tool-use response contains no usable blocks');
       throw new InternalServerErrorException(
         'Malformed Anthropic response: no text or tool_use content',
@@ -333,7 +345,7 @@ export class AnthropicAdapter implements AIAdapter {
     const tokensUsed =
       response.usage.input_tokens + response.usage.output_tokens;
     const model = response.model || fallbackModel;
-    const finishReason = this.mapFinishReason(response.stop_reason, toolCalls);
+    const finishReason = this.mapFinishReason(response.stop_reason, canonicalToolCalls);
 
     return {
       output,
@@ -341,30 +353,73 @@ export class AnthropicAdapter implements AIAdapter {
       model,
       finishReason,
       toolCalls,
+      canonicalToolCalls,
     };
   }
 
   private extractToolCalls(
     blocks: readonly Anthropic.ContentBlock[],
-  ): readonly AIAdapterToolCallMetadata[] {
+  ): {
+    readonly toolCalls: readonly AIAdapterToolCallMetadata[];
+    readonly canonicalToolCalls: readonly AIAdapterCanonicalToolCall[];
+  } {
+    const canonicalToolCalls: AIAdapterCanonicalToolCall[] = [];
+    const toolCalls: AIAdapterToolCallMetadata[] = [];
     const toolUseBlocks = blocks.filter((block) => block.type === 'tool_use');
-    return toolUseBlocks.map((block, index) => {
+
+    for (const block of toolUseBlocks) {
       const toolUseBlock = block as Anthropic.ToolUseBlock;
-      return {
-        callId: toolUseBlock.id || `anthropic-tool-use-${index + 1}`,
+      const rawArguments = toolUseBlock.input;
+      const parsed = parseToolArgumentsToObject(rawArguments);
+      const usableCallId =
+        typeof toolUseBlock.id === 'string' && toolUseBlock.id.trim().length > 0
+          ? toolUseBlock.id
+          : undefined;
+
+      if (!usableCallId) {
+        canonicalToolCalls.push({
+          status: 'missing_id',
+          toolName: toolUseBlock.name,
+          rawArguments,
+          providerKind: 'anthropic-tool_use',
+        });
+        continue;
+      }
+
+      if (parsed.ok === false) {
+        canonicalToolCalls.push({
+          status: 'malformed_arguments',
+          callId: usableCallId,
+          toolName: toolUseBlock.name,
+          rawArguments,
+          providerKind: 'anthropic-tool_use',
+          errorMessage: parsed.errorMessage,
+        });
+        continue;
+      }
+
+      canonicalToolCalls.push({
+        status: 'valid',
+        callId: usableCallId,
         toolName: toolUseBlock.name,
-        arguments:
-          typeof toolUseBlock.input === 'object' && toolUseBlock.input !== null
-            ? (toolUseBlock.input as Record<string, unknown>)
-            : {},
+        arguments: parsed.value,
+        rawArguments,
         providerKind: 'anthropic-tool_use',
-      };
-    });
+      });
+      toolCalls.push({
+        callId: usableCallId,
+        toolName: toolUseBlock.name,
+        arguments: parsed.value,
+        providerKind: 'anthropic-tool_use',
+      });
+    }
+
+    return { toolCalls, canonicalToolCalls };
   }
 
   private mapFinishReason(
     stopReason: string | null | undefined,
-    toolCalls: readonly AIAdapterToolCallMetadata[],
+    toolCalls: readonly { readonly status?: string }[] | readonly AIAdapterToolCallMetadata[],
   ): AIAdapterToolUseFinishReason {
     if (toolCalls.length > 0 || stopReason === 'tool_use') {
       return 'tool_calls';
