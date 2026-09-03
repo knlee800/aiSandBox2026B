@@ -37,6 +37,9 @@ import {
 import { createRunValidationHandler } from '../agent-harness/tools/handlers/validation-tool-handlers';
 import { createBrowserSmokeHandler } from '../agent-harness/tools/handlers/browser-smoke-tool-handlers';
 import { ApiGatewayHttpClient } from '../clients/api-gateway-http.client';
+import type { AIAdapterToolUseRequestOptions } from '../ai-execution/adapters/adapter-tool-use.contracts';
+import { selectAdvertisedAgentHarnessTools } from '../ai-execution/adapters/adapter-tool-use.mapper';
+import type { AgentHarnessToolRegistryDefinitionV1 } from '../agent-harness/tools/tool-registry.contracts';
 
 /**
  * Phase-51.3: Conservative classifier for transient (retryable) errors.
@@ -167,6 +170,34 @@ export class HarnessRoutingError extends Error {
     this.code = code;
     this.reason = reason;
   }
+}
+
+export class HarnessEmptyAdvertisedToolSetError extends Error {
+  readonly code = 'harness_empty_advertised_tool_set' as const;
+
+  constructor() {
+    super('Requested Harness execution cannot proceed (empty_advertised_tool_set)');
+    this.name = 'HarnessEmptyAdvertisedToolSetError';
+  }
+}
+
+export function requireNonEmptyAdvertisedHarnessTools(
+  tools: readonly AgentHarnessToolRegistryDefinitionV1[],
+): readonly AgentHarnessToolRegistryDefinitionV1[] {
+  if (tools.length === 0) {
+    throw new HarnessEmptyAdvertisedToolSetError();
+  }
+  return tools;
+}
+
+export function mergeAdvertisedToolsIntoExecuteOptions(
+  options: AIAdapterToolUseRequestOptions | undefined,
+  advertisedTools: readonly AgentHarnessToolRegistryDefinitionV1[],
+): AIAdapterToolUseRequestOptions {
+  return {
+    ...options,
+    tools: advertisedTools,
+  };
 }
 
 export function resolveHarnessRouting(input: {
@@ -970,6 +1001,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                     toolTimeoutMs: resolvedConfig.toolTimeoutMs,
                     maxToolResultBytes: resolvedConfig.maxToolResultBytes,
                   });
+                  const registeredHandlerNames: string[] = [];
                   dispatcher.registerHandler(
                     'read_file',
                     createReadFileHandler({
@@ -978,6 +1010,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                       maxFileReadBytes: resolvedConfig.maxFileReadBytes,
                     }),
                   );
+                  registeredHandlerNames.push('read_file');
                   dispatcher.registerHandler(
                     'list_files',
                     createListFilesHandler({
@@ -985,6 +1018,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                       sessionId: job.data.sessionId,
                     }),
                   );
+                  registeredHandlerNames.push('list_files');
                   if (resolvedConfig.enableWriteTools) {
                     dispatcher.registerHandler(
                       'write_file',
@@ -994,6 +1028,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                         maxFileWriteBytes: resolvedConfig.maxFileWriteBytes,
                       }),
                     );
+                    registeredHandlerNames.push('write_file');
                     dispatcher.registerHandler(
                       'delete_file',
                       createDeleteFileHandler({
@@ -1001,6 +1036,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                         sessionId: job.data.sessionId,
                       }),
                     );
+                    registeredHandlerNames.push('delete_file');
                   }
                   if (resolvedConfig.enableValidationTools) {
                     dispatcher.registerHandler(
@@ -1013,6 +1049,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                         maxValidationOutputBytes: resolvedConfig.maxValidationOutputBytes,
                       }),
                     );
+                    registeredHandlerNames.push('run_validation');
                   }
                   if (resolvedConfig.enableBrowserSmoke) {
                     dispatcher.registerHandler(
@@ -1023,13 +1060,22 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                         browserSmokeTimeoutMs: resolvedConfig.browserSmokeTimeoutMs,
                       }),
                     );
+                    registeredHandlerNames.push('browser_smoke');
                   }
+                  const advertisedTools = requireNonEmptyAdvertisedHarnessTools(
+                    selectAdvertisedAgentHarnessTools({
+                      registeredHandlerNames,
+                      enableWriteTools: resolvedConfig.enableWriteTools,
+                      enableValidationTools: resolvedConfig.enableValidationTools,
+                      enableBrowserSmoke: resolvedConfig.enableBrowserSmoke,
+                    }),
+                  );
                   const auditRecorder = resolvedConfig.auditEventsEnabled
                     ? new InMemoryHarnessAuditRecorder()
                     : undefined;
 
                   let loopOptions: Parameters<typeof executeAgentHarnessLoop>[0] = {
-                    executeFn: (req, opts) => adapter.executeWithTools!(req, opts),
+                    executeFn: (req, opts) => adapter.executeWithTools!(req, mergeAdvertisedToolsIntoExecuteOptions(opts, advertisedTools)),
                     request: executionRequest,
                     config: {
                       maxToolIterations: resolvedConfig.maxToolIterations,

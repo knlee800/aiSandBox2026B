@@ -2,13 +2,21 @@ import {
   buildAIExecutionRequest,
   buildExecutionPromptParts,
   DEFAULT_EXECUTION_TIMEOUT_MS,
+  HarnessEmptyAdvertisedToolSetError,
   HarnessRoutingError,
+  mergeAdvertisedToolsIntoExecuteOptions,
   parseExecutionTimeoutBaselineMs,
+  requireNonEmptyAdvertisedHarnessTools,
   resolveBullMqLockDurationMs,
   resolveHarnessRouting,
   resolveStuckWatchdogThresholdSeconds,
   WorkerProcessor,
 } from './worker.processor';
+import { selectAdvertisedAgentHarnessTools } from '../ai-execution/adapters/adapter-tool-use.mapper';
+import {
+  AGENT_HARNESS_TOOL_DEFINITIONS_V1,
+  getAgentHarnessToolDefinition,
+} from '../agent-harness/tools/tool-registry';
 import {
   createAgentHarnessConfigV1,
   DEFAULT_AGENT_HARNESS_CONFIG_V1,
@@ -1595,5 +1603,188 @@ describe('PRIVATE-BETA-BLOCKER-03C: worker abort timeout behavior', () => {
     expect(resolveStuckWatchdogThresholdSeconds() * 1000).toBe(
       DEFAULT_EXECUTION_TIMEOUT_MS * 2,
     );
+  });
+});
+
+describe('AGENT-PLATFORM-EXEC-01C2 fail-closed advertised tool orchestration', () => {
+  function getWorkerSource(): string {
+    return require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+  }
+
+  it('passes the filtered first-slice definitions on every native tool-use call', async () => {
+    const listFiles = getAgentHarnessToolDefinition('list_files')!;
+    const readFile = getAgentHarnessToolDefinition('read_file')!;
+    const advertised = selectAdvertisedAgentHarnessTools({
+      registeredHandlerNames: AGENT_HARNESS_TOOL_DEFINITIONS_V1.map(
+        (tool) => tool.name,
+      ),
+      enableWriteTools: true,
+      enableValidationTools: true,
+      enableBrowserSmoke: true,
+    });
+    expect(advertised.map((tool) => tool.name)).toEqual([
+      'list_files',
+      'read_file',
+    ]);
+    expect(advertised).toEqual([listFiles, readFile]);
+
+    const executeWithTools = jest.fn().mockResolvedValue({
+      output: 'ok',
+      tokensUsed: 1,
+      model: 'stub',
+      finishReason: 'completed',
+      toolCalls: [],
+    });
+    const request = {
+      provider: 'openai',
+      model: 'gpt-4.1',
+      prompt: 'list files',
+    };
+    const turn0 = mergeAdvertisedToolsIntoExecuteOptions(undefined, advertised);
+    const turn1 = mergeAdvertisedToolsIntoExecuteOptions(
+      {
+        toolResults: [
+          {
+            callId: 'c1',
+            toolName: 'list_files',
+            success: true,
+            content: { files: [] },
+          },
+        ],
+      },
+      advertised,
+    );
+
+    await executeWithTools(request, turn0);
+    await executeWithTools(request, turn1);
+
+    expect(executeWithTools).toHaveBeenCalledTimes(2);
+    expect(executeWithTools.mock.calls[0][1].tools).toEqual(advertised);
+    expect(executeWithTools.mock.calls[1][1].tools).toEqual(advertised);
+    expect(executeWithTools.mock.calls[1][1].toolResults).toHaveLength(1);
+  });
+
+  it('fails closed before provider execution when the advertised set is empty', () => {
+    const executeWithTools = jest.fn();
+
+    expect(() => requireNonEmptyAdvertisedHarnessTools([])).toThrow(
+      HarnessEmptyAdvertisedToolSetError,
+    );
+    expect(executeWithTools).not.toHaveBeenCalled();
+    expect(
+      selectAdvertisedAgentHarnessTools({
+        registeredHandlerNames: [],
+      }),
+    ).toEqual([]);
+  });
+
+  it('wires filtered tools into executeWithTools and fails closed on an empty set before the loop', () => {
+    const workerSource = getWorkerSource();
+    const harnessBranchIndex = workerSource.indexOf('if (useHarness) {');
+    const loopIndex = workerSource.indexOf('executeAgentHarnessLoop(loopOptions)');
+    const executeWithToolsIndex = workerSource.indexOf(
+      'adapter.executeWithTools!(req',
+    );
+    const selectIndex = workerSource.indexOf(
+      'selectAdvertisedAgentHarnessTools(',
+      harnessBranchIndex,
+    );
+    const requireIndex = workerSource.indexOf(
+      'requireNonEmptyAdvertisedHarnessTools(',
+      harnessBranchIndex,
+    );
+    const mergeIndex = workerSource.indexOf(
+      'mergeAdvertisedToolsIntoExecuteOptions(',
+      harnessBranchIndex,
+    );
+
+    expect(harnessBranchIndex).toBeGreaterThan(-1);
+    expect(requireIndex).toBeGreaterThan(harnessBranchIndex);
+    expect(selectIndex).toBeGreaterThan(requireIndex);
+    expect(requireIndex).toBeGreaterThan(-1);
+    expect(requireIndex).toBeLessThan(loopIndex);
+    expect(mergeIndex).toBeGreaterThan(selectIndex);
+    expect(executeWithToolsIndex).toBeGreaterThan(harnessBranchIndex);
+    expect(workerSource).toContain(
+      'executeFn: (req, opts) => adapter.executeWithTools!(req, mergeAdvertisedToolsIntoExecuteOptions(opts, advertisedTools))',
+    );
+    expect(workerSource).not.toContain(
+      'executeFn: (req, opts) => adapter.executeWithTools!(req, opts)',
+    );
+  });
+
+  it('keeps unsupported adapters fail-closed and does not silently fall back to single-shot', () => {
+    const unsupported = resolveHarnessRouting({
+      harnessVersion: 'v1',
+      enableToolLoop: true,
+      adapterSupportsToolUse: false,
+      adapterHasExecuteWithTools: false,
+    });
+    expect(unsupported).toEqual({
+      selectedPath: 'fail_closed',
+      failReason: 'adapter_lacks_tool_use',
+    });
+
+    const workerSource = getWorkerSource();
+    expect(workerSource).toContain('HarnessRoutingError');
+    expect(workerSource).not.toContain("selectedPath: useHarness ? 'harness' : 'plain'");
+    expect(workerSource).toContain("routing.selectedPath === 'fail_closed'");
+    expect(workerSource).toContain('throw new HarnessRoutingError');
+  });
+
+  it('keeps ordinary non-Harness jobs on the current single-shot path', async () => {
+    expect(
+      resolveHarnessRouting({
+        enableToolLoop: false,
+      }),
+    ).toEqual({ selectedPath: 'plain' });
+
+    const workerSource = getWorkerSource();
+    const mergeIndex = workerSource.indexOf(
+      'mergeAdvertisedToolsIntoExecuteOptions(',
+    );
+    const plainExecuteIndex = workerSource.lastIndexOf(
+      'this.aiExecutionService.execute(executionRequest)',
+    );
+    expect(mergeIndex).toBeGreaterThan(-1);
+    expect(plainExecuteIndex).toBeGreaterThan(mergeIndex);
+    expect(workerSource.substring(plainExecuteIndex)).not.toContain(
+      'mergeAdvertisedToolsIntoExecuteOptions',
+    );
+    expect(workerSource).toContain('} else {');
+    expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop).toBe(false);
+  });
+
+  it('does not let resolved builder configuration advertise mutation tools or bypass the global gate', () => {
+    const workerSource = getWorkerSource();
+    const routingCallMatch = workerSource.match(
+      /const routing = resolveHarnessRouting\(\{[\s\S]*?\}\);/,
+    );
+    expect(routingCallMatch).not.toBeNull();
+    expect(routingCallMatch![0]).toContain(
+      'enableToolLoop: DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop',
+    );
+    expect(routingCallMatch![0]).not.toContain('resolvedConfig.enableToolLoop');
+
+    const advertised = selectAdvertisedAgentHarnessTools({
+      registeredHandlerNames: [
+        'list_files',
+        'read_file',
+        'write_file',
+        'delete_file',
+        'run_validation',
+        'browser_smoke',
+      ],
+      enableWriteTools: true,
+      enableValidationTools: true,
+      enableBrowserSmoke: true,
+    });
+    expect(advertised.map((tool) => tool.name)).toEqual([
+      'list_files',
+      'read_file',
+    ]);
   });
 });

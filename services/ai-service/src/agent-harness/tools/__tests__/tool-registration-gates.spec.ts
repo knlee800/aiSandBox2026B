@@ -16,6 +16,13 @@ import {
   createWriteFileHandler,
   createDeleteFileHandler,
 } from '../handlers/file-tool-handlers';
+import { createRunValidationHandler } from '../handlers/validation-tool-handlers';
+import { createBrowserSmokeHandler } from '../handlers/browser-smoke-tool-handlers';
+import {
+  AGENT_HARNESS_TOOL_DEFINITIONS_V1,
+  listEnabledAgentHarnessToolDefinitions,
+} from '../tool-registry';
+import { selectAdvertisedAgentHarnessTools } from '../../../ai-execution/adapters/adapter-tool-use.mapper';
 
 function createMockClient() {
   return {
@@ -290,5 +297,78 @@ describe('no real filesystem write occurs during tool handler tests', () => {
       'old.txt',
       undefined,
     );
+  });
+});
+
+describe('AGENT-PLATFORM-EXEC-01C2 advertisement uses registered handlers fail-closed', () => {
+  function registeredNames(dispatcher: ToolDispatcher): string[] {
+    return AGENT_HARNESS_TOOL_DEFINITIONS_V1.map((tool) => tool.name).filter(
+      (name) => dispatcher.hasHandler(name),
+    );
+  }
+
+  it('advertises only list_files and read_file when write tools are gated off', () => {
+    const dispatcher = new ToolDispatcher();
+    registerToolsWithConfig(dispatcher, { enableWriteTools: false });
+
+    const advertised = selectAdvertisedAgentHarnessTools({
+      registeredHandlerNames: registeredNames(dispatcher),
+      enableWriteTools: false,
+    });
+
+    expect(advertised.map((tool) => tool.name)).toEqual([
+      'list_files',
+      'read_file',
+    ]);
+    expect(dispatcher.hasHandler('write_file')).toBe(false);
+    expect(dispatcher.hasHandler('search_workspace')).toBe(false);
+  });
+
+  it('still excludes mutation, validation, browser, search, and handlerless tools when those handlers exist', () => {
+    const dispatcher = new ToolDispatcher();
+    const client = createMockClient();
+    registerToolsWithConfig(dispatcher, { enableWriteTools: true });
+    dispatcher.registerHandler(
+      'run_validation',
+      createRunValidationHandler({
+        client,
+        sessionId: 'test-session',
+        allowedValidationCommands: ['npm test'],
+        validationTimeoutMs: 5_000,
+        maxValidationOutputBytes: 16_384,
+      }),
+    );
+    dispatcher.registerHandler(
+      'browser_smoke',
+      createBrowserSmokeHandler({
+        client,
+        sessionId: 'test-session',
+        browserSmokeTimeoutMs: 5_000,
+      }),
+    );
+    dispatcher.registerHandler('search_workspace', async () => ({ hits: [] }));
+
+    const advertised = selectAdvertisedAgentHarnessTools({
+      registeredHandlerNames: registeredNames(dispatcher),
+      enableWriteTools: true,
+      enableValidationTools: true,
+      enableBrowserSmoke: true,
+    });
+    const names = advertised.map((tool) => tool.name);
+
+    expect(names).toEqual(['list_files', 'read_file']);
+    expect(names).not.toContain('write_file');
+    expect(names).not.toContain('delete_file');
+    expect(names).not.toContain('run_validation');
+    expect(names).not.toContain('browser_smoke');
+    expect(names).not.toContain('search_workspace');
+    expect(names).not.toContain('start_preview');
+    expect(dispatcher.hasHandler('start_preview')).toBe(false);
+
+    const enabledIds = listEnabledAgentHarnessToolDefinitions().map(
+      (tool) => tool.id,
+    );
+    expect(enabledIds).toContain('write_file');
+    expect(names).not.toEqual(expect.arrayContaining(enabledIds));
   });
 });
