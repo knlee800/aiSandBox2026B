@@ -378,8 +378,9 @@ export class AIExecutionController {
   /**
    * Authorize optional persisted user-agent identity on supported execution
    * intents (conversation and workspace_mutation). Absent agentId → skip.
-   * Present → no harness, owner-scoped load. AGENT-PLATFORM-CREATE-01D /
-   * AGENT-PLATFORM-EXEC-01A.
+   * Bound Harness is permitted only for conversation after owner-scoped load.
+   * Mutation + harnessVersion remains rejected. AGENT-PLATFORM-CREATE-01D /
+   * AGENT-PLATFORM-EXEC-01A / AGENT-PLATFORM-EXEC-01C4.
    */
   private async resolvePersistedUserAgentForAsk(
     request: AIExecutionRequest,
@@ -397,7 +398,10 @@ export class AIExecutionController {
     }
     const agentId = rawAgentId.trim();
 
-    if (request.harnessVersion !== undefined) {
+    if (
+      request.harnessVersion !== undefined &&
+      executionIntent !== 'conversation'
+    ) {
       throw new BadRequestException(
         'agentId is not supported when harnessVersion is provided',
       );
@@ -701,6 +705,7 @@ export class AIExecutionController {
       ...(request.builderProfileId !== undefined && { builderProfileId: request.builderProfileId }),
       ...(request.collaborationRunId !== undefined && { collaborationRunId: request.collaborationRunId }),
       ...(request.referralTraceId !== undefined && { referralTraceId: request.referralTraceId }),
+      ...(persistedUserAgent !== undefined && { agentId: persistedUserAgent.id }),
     });
 
     // Phase 44.4D: Return immediately — do NOT wait for AI execution.
