@@ -5,9 +5,39 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
+import { validate as uuidValidate } from 'uuid';
 import { ApiKeyIdentity } from './api-key.config';
 import { ApiKeyAuthGuard } from './api-key-auth.guard';
 import { AuthService } from './auth.service';
+
+const BROWSER_SESSION_HARNESS_ALLOW_LIST_KEY =
+  'AGENT_HARNESS_BROWSER_SESSION_USER_IDS';
+
+function isBrowserSessionHarnessEntitled(authenticatedUserId: string): boolean {
+  const raw = process.env[BROWSER_SESSION_HARNESS_ALLOW_LIST_KEY];
+  if (raw === undefined) {
+    return false;
+  }
+
+  const trimmed = raw.trim();
+  if (trimmed.length === 0) {
+    return false;
+  }
+
+  const members = new Set<string>();
+  for (const token of trimmed.split(',')) {
+    const normalized = token.trim();
+    if (normalized.length === 0) {
+      continue;
+    }
+    if (!uuidValidate(normalized)) {
+      return false;
+    }
+    members.add(normalized.toLowerCase());
+  }
+
+  return members.has(authenticatedUserId.toLowerCase());
+}
 
 /**
  * SessionOrApiKeyAuthGuard
@@ -53,6 +83,10 @@ export class SessionOrApiKeyAuthGuard implements CanActivate {
       scopes: ['ai:execute'],
       isInternal: true,
     };
+
+    if (isBrowserSessionHarnessEntitled(user.id)) {
+      identity.harnessEntitled = true;
+    }
 
     (request as any).apiKeyIdentity = identity;
 

@@ -2271,3 +2271,300 @@ describe('AIExecutionController — persisted user-agent identity (AGENT-PLATFOR
     });
   });
 });
+
+describe('AIExecutionController — AGENT-PLATFORM-EXEC-01C5 browser-session entitlement contract', () => {
+  let controller: AIExecutionController;
+  let mockSessionService: Record<string, jest.Mock>;
+  let mockUsageLedgerService: Record<string, jest.Mock>;
+  let mockQueueService: Record<string, jest.Mock>;
+  let mockUserAgentService: Record<string, jest.Mock>;
+
+  const VALID_SESSION_UUID = '35d53116-6723-4571-af12-ac256977c007';
+  const OWNER_USER_ID = '6a3fe737-0945-44f4-a95f-f1ac3a3e4f6c';
+  const OTHER_USER_ID = '0ff778c3-f5a1-4b06-b367-38c9a6fd8e2c';
+  const OWNED_AGENT_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+
+  const entitledBrowserIdentity: ApiKeyIdentity = {
+    userId: OWNER_USER_ID,
+    apiKeyId: 'browser-session',
+    scopes: ['ai:execute'],
+    isInternal: true,
+    harnessEntitled: true,
+  };
+
+  const unentitledBrowserIdentity: ApiKeyIdentity = {
+    userId: OWNER_USER_ID,
+    apiKeyId: 'browser-session',
+    scopes: ['ai:execute'],
+    isInternal: true,
+  };
+
+  const ownedAgent = {
+    id: OWNED_AGENT_ID,
+    userId: OWNER_USER_ID,
+    name: 'Research Analyst',
+    role: 'Analyst',
+    description: 'Helps review research notes.',
+  };
+
+  function makeRequest(overrides?: Partial<AIExecutionRequest>): AIExecutionRequest {
+    return {
+      sessionId: VALID_SESSION_UUID,
+      conversationId: 'conv-exec-01c5',
+      userId: 'untrusted-client-user',
+      prompt: 'Ask via entitled browser session.',
+      provider: 'stub',
+      ...overrides,
+    };
+  }
+
+  function expectNoLookupLedgerOrEnqueue(): void {
+    expect(mockSessionService.getSessionById).not.toHaveBeenCalled();
+    expect(mockUserAgentService.findOneByIdAndUserId).not.toHaveBeenCalled();
+    expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(mockUsageLedgerService.reuseExecutionIntent).not.toHaveBeenCalled();
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  }
+
+  function expectNoLedgerOrEnqueue(): void {
+    expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(mockUsageLedgerService.reuseExecutionIntent).not.toHaveBeenCalled();
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  }
+
+  beforeEach(async () => {
+    mockSessionService = {
+      getSessionById: jest.fn().mockResolvedValue({
+        userId: OWNER_USER_ID,
+        projectId: null,
+      }),
+    };
+    mockUsageLedgerService = {
+      findByRequestId: jest.fn().mockResolvedValue(null),
+      reuseExecutionIntent: jest.fn().mockResolvedValue('exec-01c5'),
+      writeExecutionIntent: jest.fn().mockResolvedValue(undefined),
+      updateExecutionResult: jest.fn().mockResolvedValue(undefined),
+    };
+    mockQueueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+    mockUserAgentService = {
+      findOneByIdAndUserId: jest.fn().mockResolvedValue(ownedAgent),
+    };
+
+    const mockGuard = { canActivate: jest.fn(() => true) };
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [AIExecutionController],
+      providers: [
+        { provide: UsageLedgerService, useValue: mockUsageLedgerService },
+        {
+          provide: GlobalSafetyLimitService,
+          useValue: { checkAndRecord: jest.fn(), recordExecutionCost: jest.fn() },
+        },
+        { provide: QueueService, useValue: mockQueueService },
+        {
+          provide: ExecutionResultService,
+          useValue: { getExecution: jest.fn(), requestCancel: jest.fn() },
+        },
+        {
+          provide: ExecutionStreamService,
+          useValue: { subscribe: jest.fn(), unsubscribe: jest.fn() },
+        },
+        {
+          provide: UserAiInstructionsService,
+          useValue: { getByUserId: jest.fn().mockResolvedValue(null) },
+        },
+        {
+          provide: ProjectAiContextService,
+          useValue: { getByProjectId: jest.fn().mockResolvedValue(null) },
+        },
+        { provide: SessionService, useValue: mockSessionService },
+        { provide: UserAgentService, useValue: mockUserAgentService },
+      ],
+    })
+      .overrideGuard(SessionOrApiKeyAuthGuard)
+      .useValue(mockGuard)
+      .overrideGuard(AuthorizationGuard)
+      .useValue(mockGuard)
+      .overrideGuard(QuotaGuard)
+      .useValue(mockGuard)
+      .overrideGuard(TokenQuotaGuard)
+      .useValue(mockGuard)
+      .overrideGuard(CreditBalanceGuard)
+      .useValue(mockGuard)
+      .compile();
+
+    controller = module.get<AIExecutionController>(AIExecutionController);
+  });
+
+  it('entitled browser-session identity can use conversation + agentId + harnessVersion v1', async () => {
+    const result = await controller.execute(
+      makeRequest({
+        agentId: OWNED_AGENT_ID,
+        executionIntent: 'conversation',
+        harnessVersion: 'v1',
+      }),
+      entitledBrowserIdentity,
+    );
+
+    expect(result.status).toBe('queued');
+    expect(result).toHaveProperty('executionId');
+    expect(mockUserAgentService.findOneByIdAndUserId).toHaveBeenCalledWith(
+      OWNED_AGENT_ID,
+      OWNER_USER_ID,
+    );
+    expect(mockUsageLedgerService.writeExecutionIntent).toHaveBeenCalledTimes(1);
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload.harnessVersion).toBe('v1');
+    expect(payload.agentId).toBe(OWNED_AGENT_ID);
+    expect(payload.executionIntent).toBe('conversation');
+    expect(payload.userId).toBe(OWNER_USER_ID);
+    expect(entitledBrowserIdentity.apiKeyId).toBe('browser-session');
+  });
+
+  it('unentitled browser-session identity is 403 before session lookup, agent lookup, ledger, or enqueue', async () => {
+    await expect(
+      controller.execute(
+        makeRequest({
+          agentId: OWNED_AGENT_ID,
+          executionIntent: 'conversation',
+          harnessVersion: 'v1',
+        }),
+        unentitledBrowserIdentity,
+      ),
+    ).rejects.toThrow(ForbiddenException);
+
+    expectNoLookupLedgerOrEnqueue();
+  });
+
+  it('isInternal true without harnessEntitled remains 403 before side effects', async () => {
+    const internalOnly: ApiKeyIdentity = {
+      userId: OWNER_USER_ID,
+      apiKeyId: 'browser-session',
+      scopes: ['ai:execute'],
+      isInternal: true,
+    };
+
+    await expect(
+      controller.execute(
+        makeRequest({
+          agentId: OWNED_AGENT_ID,
+          executionIntent: 'conversation',
+          harnessVersion: 'v1',
+        }),
+        internalOnly,
+      ),
+    ).rejects.toThrow(ForbiddenException);
+
+    expect(internalOnly).not.toHaveProperty('harnessEntitled');
+    expectNoLookupLedgerOrEnqueue();
+  });
+
+  it('workspace_mutation + agentId + harnessVersion remains rejected for an entitled browser session', async () => {
+    await expect(
+      controller.execute(
+        makeRequest({
+          agentId: OWNED_AGENT_ID,
+          executionIntent: 'workspace_mutation',
+          harnessVersion: 'v1',
+        }),
+        entitledBrowserIdentity,
+      ),
+    ).rejects.toThrow(BadRequestException);
+
+    await expect(
+      controller.execute(
+        makeRequest({
+          agentId: OWNED_AGENT_ID,
+          executionIntent: 'workspace_mutation',
+          harnessVersion: 'v1',
+        }),
+        entitledBrowserIdentity,
+      ),
+    ).rejects.toThrow('agentId is not supported when harnessVersion is provided');
+
+    expect(mockUserAgentService.findOneByIdAndUserId).not.toHaveBeenCalled();
+    expectNoLedgerOrEnqueue();
+  });
+
+  it('omitted intent + agentId + harnessVersion still defaults to mutation and is rejected', async () => {
+    await expect(
+      controller.execute(
+        makeRequest({
+          agentId: OWNED_AGENT_ID,
+          harnessVersion: 'v1',
+        }),
+        entitledBrowserIdentity,
+      ),
+    ).rejects.toThrow(BadRequestException);
+
+    expect(mockUserAgentService.findOneByIdAndUserId).not.toHaveBeenCalled();
+    expectNoLedgerOrEnqueue();
+  });
+
+  it('successful browser entitlement does not bypass session ownership', async () => {
+    mockSessionService.getSessionById.mockResolvedValue({
+      userId: OTHER_USER_ID,
+      projectId: null,
+    });
+
+    await expect(
+      controller.execute(
+        makeRequest({
+          agentId: OWNED_AGENT_ID,
+          executionIntent: 'conversation',
+          harnessVersion: 'v1',
+        }),
+        entitledBrowserIdentity,
+      ),
+    ).rejects.toThrow(NotFoundException);
+
+    expect(mockSessionService.getSessionById).toHaveBeenCalledTimes(1);
+    expect(mockUserAgentService.findOneByIdAndUserId).not.toHaveBeenCalled();
+    expectNoLedgerOrEnqueue();
+  });
+
+  it('successful browser entitlement does not bypass persisted-agent ownership', async () => {
+    mockUserAgentService.findOneByIdAndUserId.mockResolvedValue(null);
+
+    await expect(
+      controller.execute(
+        makeRequest({
+          agentId: OWNED_AGENT_ID,
+          executionIntent: 'conversation',
+          harnessVersion: 'v1',
+          userId: 'attacker-user-id',
+        }),
+        entitledBrowserIdentity,
+      ),
+    ).rejects.toThrow(NotFoundException);
+
+    expect(mockUserAgentService.findOneByIdAndUserId).toHaveBeenCalledWith(
+      OWNED_AGENT_ID,
+      OWNER_USER_ID,
+    );
+    expect(mockUserAgentService.findOneByIdAndUserId).not.toHaveBeenCalledWith(
+      OWNED_AGENT_ID,
+      'attacker-user-id',
+    );
+    expectNoLedgerOrEnqueue();
+  });
+
+  it('no-harnessVersion execution remains unaffected for an unentitled browser session', async () => {
+    const result = await controller.execute(
+      makeRequest({
+        agentId: OWNED_AGENT_ID,
+        executionIntent: 'conversation',
+      }),
+      unentitledBrowserIdentity,
+    );
+
+    expect(result.status).toBe('queued');
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload).not.toHaveProperty('harnessVersion');
+    expect(payload.agentId).toBe(OWNED_AGENT_ID);
+    expect(unentitledBrowserIdentity).not.toHaveProperty('harnessEntitled');
+  });
+});

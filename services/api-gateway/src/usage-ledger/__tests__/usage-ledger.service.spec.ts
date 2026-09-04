@@ -1756,4 +1756,291 @@ describe('UsageLedgerService', () => {
       expect(source).not.toMatch(/silence-based/i);
     });
   });
+
+  describe('AGENT-PLATFORM-EXEC-01C5 conversation Harness accounting', () => {
+    let serviceWithGateway: UsageLedgerService;
+    let gatewayRepo: jest.Mocked<Repository<UsageRecord>>;
+    let mockGateway: { applyDeduction: jest.Mock };
+
+    const HARNESS_EXECUTION_ID = 'exec-01c5-harness';
+    const CUMULATIVE_TOKENS_USED = 1250;
+    const qualifyingConfirmation = {
+      applyStatus: 'applied',
+      totalActions: 2,
+      successCount: 2,
+    };
+    const buildFileActions = [
+      { action: 'write', path: 'src/a.ts', content: 'a' },
+      { action: 'write', path: 'src/b.ts', content: 'b' },
+    ];
+
+    function conversationHarnessRecord(overrides: Record<string, unknown> = {}): UsageRecord {
+      return {
+        executionId: HARNESS_EXECUTION_ID,
+        userId: 'user-01c5',
+        apiKeyId: 'browser-session',
+        sessionId: 'sess-01c5',
+        model: 'claude-3',
+        tokensUsed: CUMULATIVE_TOKENS_USED,
+        executionDurationMs: 4000,
+        executionStatus: 'completed',
+        metadata: {
+          aiExecutionResult: {
+            output: 'harness answer',
+            tokensUsed: CUMULATIVE_TOKENS_USED,
+            model: 'claude-3',
+            fileActions: [],
+            executionIntent: 'conversation',
+            harnessVersion: 'v1',
+            toolCalls: [{ name: 'read_file' }, { name: 'search_workspace' }],
+          },
+        },
+        ...overrides,
+      } as UsageRecord;
+    }
+
+    function buildRecord(overrides: Record<string, unknown> = {}): UsageRecord {
+      return {
+        executionId: 'exec-01c5-build',
+        userId: 'user-01c5-build',
+        apiKeyId: 'key-01c5-build',
+        sessionId: 'sess-01c5-build',
+        model: 'grok-4-5',
+        tokensUsed: 500,
+        executionDurationMs: 2000,
+        executionStatus: 'completed',
+        metadata: {
+          aiExecutionResult: {
+            output: 'ok',
+            tokensUsed: 500,
+            model: 'grok-4-5',
+            fileActions: buildFileActions,
+            executionIntent: 'workspace_mutation',
+          },
+        },
+        ...overrides,
+      } as UsageRecord;
+    }
+
+    beforeEach(async () => {
+      mockGateway = {
+        applyDeduction: jest.fn().mockResolvedValue({
+          source: 'usage_ledger',
+          sourceEventId: HARNESS_EXECUTION_ID,
+          ownerId: 'user-01c5',
+          occurredAt: new Date(),
+          totalCreditsRequested: 0,
+          totalCreditsApplied: 0,
+          totalCreditsOverflow: 0,
+          lineItems: [],
+        }),
+      };
+
+      const gatewayMockRepo = {
+        create: jest.fn(),
+        save: jest.fn(),
+        findOne: jest.fn(),
+        find: jest.fn(),
+        update: jest.fn(),
+        createQueryBuilder: jest.fn(),
+      };
+
+      const module: TestingModule = await Test.createTestingModule({
+        providers: [
+          UsageLedgerService,
+          {
+            provide: getRepositoryToken(UsageRecord),
+            useValue: gatewayMockRepo,
+          },
+          {
+            provide: CreditDeductionGateway,
+            useValue: mockGateway,
+          },
+        ],
+      }).compile();
+
+      serviceWithGateway = module.get<UsageLedgerService>(UsageLedgerService);
+      gatewayRepo = module.get(getRepositoryToken(UsageRecord));
+    });
+
+    it('charges a completed conversation Harness execution once with sourceEventId=executionId and cumulative tokensUsed', async () => {
+      gatewayRepo.findOne.mockResolvedValue(conversationHarnessRecord());
+
+      const result = await serviceWithGateway.triggerDeductionForExecution(
+        HARNESS_EXECUTION_ID,
+      );
+
+      expect(result).toEqual({ triggered: true, reason: 'completed' });
+      expect(mockGateway.applyDeduction).toHaveBeenCalledTimes(1);
+      const event = mockGateway.applyDeduction.mock.calls[0][0];
+      expect(event.sourceEventId).toBe(HARNESS_EXECUTION_ID);
+      expect(event.lineItems).toHaveLength(1);
+      expect(event.lineItems[0].unitCount).toBe(CUMULATIVE_TOKENS_USED);
+      expect(event.lineItems[0].category).toBe('model_tokens');
+    });
+
+    it('does not create an extra charge per Harness tool call', async () => {
+      gatewayRepo.findOne.mockResolvedValue(conversationHarnessRecord());
+
+      await serviceWithGateway.triggerDeductionForExecution(HARNESS_EXECUTION_ID);
+
+      expect(mockGateway.applyDeduction).toHaveBeenCalledTimes(1);
+      expect(mockGateway.applyDeduction.mock.calls[0][0].lineItems).toHaveLength(1);
+    });
+
+    it('does not deduct for a failed conversation Harness execution', async () => {
+      gatewayRepo.findOne.mockResolvedValue(
+        conversationHarnessRecord({ executionStatus: 'failed' }),
+      );
+
+      const result = await serviceWithGateway.triggerDeductionForExecution(
+        HARNESS_EXECUTION_ID,
+      );
+
+      expect(result).toEqual({ triggered: false, reason: 'status_failed' });
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('does not deduct for an unsupported-provider Harness failure', async () => {
+      gatewayRepo.findOne.mockResolvedValue(
+        conversationHarnessRecord({
+          executionStatus: 'failed',
+          metadata: {
+            aiExecutionResult: {
+              output: 'unsupported provider',
+              tokensUsed: CUMULATIVE_TOKENS_USED,
+              model: 'grok-4',
+              fileActions: [],
+              executionIntent: 'conversation',
+              harnessVersion: 'v1',
+              errorCode: 'unsupported_provider',
+            },
+          },
+        }),
+      );
+
+      const result = await serviceWithGateway.triggerDeductionForExecution(
+        HARNESS_EXECUTION_ID,
+      );
+
+      expect(result).toEqual({ triggered: false, reason: 'status_failed' });
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('does not deduct for a disabled-gate Harness failure', async () => {
+      gatewayRepo.findOne.mockResolvedValue(
+        conversationHarnessRecord({
+          executionStatus: 'failed',
+          metadata: {
+            aiExecutionResult: {
+              output: 'tool loop disabled',
+              tokensUsed: 0,
+              model: 'claude-3',
+              fileActions: [],
+              executionIntent: 'conversation',
+              harnessVersion: 'v1',
+              errorCode: 'disabled_gate',
+            },
+          },
+        }),
+      );
+
+      const result = await serviceWithGateway.triggerDeductionForExecution(
+        HARNESS_EXECUTION_ID,
+      );
+
+      expect(result).toEqual({ triggered: false, reason: 'status_failed' });
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('does not deduct for a max-iteration Harness failure', async () => {
+      gatewayRepo.findOne.mockResolvedValue(
+        conversationHarnessRecord({
+          executionStatus: 'failed',
+          metadata: {
+            aiExecutionResult: {
+              output: 'max iterations',
+              tokensUsed: CUMULATIVE_TOKENS_USED,
+              model: 'claude-3',
+              fileActions: [],
+              executionIntent: 'conversation',
+              harnessVersion: 'v1',
+              errorCode: 'max_iterations',
+            },
+          },
+        }),
+      );
+
+      const result = await serviceWithGateway.triggerDeductionForExecution(
+        HARNESS_EXECUTION_ID,
+      );
+
+      expect(result).toEqual({ triggered: false, reason: 'status_failed' });
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('does not deduct for a cancelled conversation Harness execution', async () => {
+      gatewayRepo.findOne.mockResolvedValue(
+        conversationHarnessRecord({ executionStatus: 'cancelled' }),
+      );
+
+      const result = await serviceWithGateway.triggerDeductionForExecution(
+        HARNESS_EXECUTION_ID,
+      );
+
+      expect(result).toEqual({ triggered: false, reason: 'status_cancelled' });
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('does not deduct for a timed-out conversation Harness execution', async () => {
+      gatewayRepo.findOne.mockResolvedValue(
+        conversationHarnessRecord({ executionStatus: 'timeout' }),
+      );
+
+      const result = await serviceWithGateway.triggerDeductionForExecution(
+        HARNESS_EXECUTION_ID,
+      );
+
+      expect(result).toEqual({ triggered: false, reason: 'status_timeout' });
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('keeps retry/idempotent reuse under the same execution identity from double-charging at the deduction boundary', async () => {
+      gatewayRepo.findOne.mockResolvedValue(conversationHarnessRecord());
+
+      await serviceWithGateway.triggerDeductionForExecution(HARNESS_EXECUTION_ID);
+      await serviceWithGateway.triggerDeductionForExecution(HARNESS_EXECUTION_ID);
+
+      expect(mockGateway.applyDeduction).toHaveBeenCalledTimes(2);
+      expect(mockGateway.applyDeduction.mock.calls[0][0].sourceEventId).toBe(
+        HARNESS_EXECUTION_ID,
+      );
+      expect(mockGateway.applyDeduction.mock.calls[1][0].sourceEventId).toBe(
+        HARNESS_EXECUTION_ID,
+      );
+    });
+
+    it('leaves Build/workspace-mutation apply accounting unchanged', async () => {
+      gatewayRepo.findOne.mockResolvedValue(buildRecord());
+
+      const completion = await serviceWithGateway.triggerDeductionForExecution(
+        'exec-01c5-build',
+      );
+      expect(completion).toEqual({
+        triggered: false,
+        reason: 'build_awaiting_apply',
+      });
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+
+      const apply = await serviceWithGateway.triggerBuildApplyDeduction(
+        'exec-01c5-build',
+        qualifyingConfirmation,
+      );
+      expect(apply).toEqual({ triggered: true, reason: 'completed' });
+      expect(mockGateway.applyDeduction).toHaveBeenCalledTimes(1);
+      expect(mockGateway.applyDeduction.mock.calls[0][0].sourceEventId).toBe(
+        'exec-01c5-build',
+      );
+    });
+  });
 });
