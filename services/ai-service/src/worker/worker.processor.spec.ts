@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import {
   buildAIExecutionRequest,
   buildExecutionPromptParts,
@@ -1786,5 +1787,362 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed advertised tool orchestration', (
       'list_files',
       'read_file',
     ]);
+  });
+});
+
+describe('AGENT-PLATFORM-EXEC-01C4B: persisted agent identity in worker logs and final metadata', () => {
+  const CANONICAL_EXECUTION_ID = 'exec-canonical-01C4B';
+  const DISTINCT_SESSION_ID = 'sess-workspace-01C4B';
+  const CANONICAL_AGENT_ID = '  persisted-agent-01C4B  ';
+  const STALE_AGENT_ID = 'stale-metadata-agent-01C4B';
+  const originalRedisUrl = process.env.REDIS_URL;
+  const originalStuckScan = process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+
+  function parseLoggedJsonEvents(
+    logSpy: jest.SpyInstance,
+    eventName: string,
+  ): Array<Record<string, unknown>> {
+    return logSpy.mock.calls
+      .map((args) => args[0])
+      .filter((message): message is string => typeof message === 'string')
+      .map((message) => {
+        try {
+          return JSON.parse(message) as Record<string, unknown>;
+        } catch {
+          return null;
+        }
+      })
+      .filter((payload): payload is Record<string, unknown> => {
+        return payload !== null && payload.event === eventName;
+      });
+  }
+
+  function createLedgerMock(existingMetadata: Record<string, unknown> = {}) {
+    const status = { value: 'pending' };
+    const completedUpdates: unknown[][] = [];
+    const failedUpdates: unknown[][] = [];
+    const query = jest.fn(async (sql: string, params: unknown[] = []) => {
+      if (
+        sql.includes("SET execution_status = 'running'") &&
+        sql.includes('RETURNING')
+      ) {
+        if (status.value === 'pending') {
+          status.value = 'running';
+          return [{ execution_id: params[0] }];
+        }
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'completed'")) {
+        completedUpdates.push(params);
+        status.value = 'completed';
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'failed'")) {
+        failedUpdates.push(params);
+        if (sql.includes('RETURNING') && status.value === 'running') {
+          status.value = 'failed';
+          return [{ execution_id: params[0] }];
+        }
+        status.value = 'failed';
+        return [];
+      }
+      if (sql.includes('SELECT execution_status, created_at')) {
+        return [
+          {
+            execution_status: status.value,
+            created_at: new Date().toISOString(),
+          },
+        ];
+      }
+      if (sql.includes('SELECT execution_id, timestamp')) {
+        return [];
+      }
+      if (sql.includes('SELECT metadata')) {
+        return [{ metadata: existingMetadata }];
+      }
+      if (sql.includes('SELECT execution_status')) {
+        return [{ execution_status: status.value }];
+      }
+      return [];
+    });
+    return { query, status, completedUpdates, failedUpdates };
+  }
+
+  async function startWorker(deps: {
+    query: jest.Mock;
+    execute: jest.Mock;
+    publisher: {
+      publishCompletion: jest.Mock;
+      publishToken: jest.Mock;
+      publishFileActions: jest.Mock;
+    };
+    apiGateway: { notifyExecutionComplete: jest.Mock };
+  }) {
+    const worker = new WorkerProcessor(
+      { query: deps.query } as never,
+      { execute: deps.execute, getAdapter: jest.fn() } as never,
+      deps.publisher as never,
+      deps.apiGateway as never,
+    );
+    await worker.onModuleInit();
+    if (!capturedWorker.processor) {
+      throw new Error('BullMQ worker processor was not captured');
+    }
+    return {
+      worker,
+      processJob: capturedWorker.processor,
+    };
+  }
+
+  function createPlainJob(overrides?: Record<string, unknown>) {
+    return {
+      id: `job-${CANONICAL_EXECUTION_ID}`,
+      data: {
+        executionId: CANONICAL_EXECUTION_ID,
+        provider: 'xai',
+        adapter: 'xai',
+        sessionId: DISTINCT_SESSION_ID,
+        conversationId: 'conv-1',
+        userId: 'user-1',
+        prompt: 'Create index.html',
+        model: 'grok-4.5',
+        executionIntent: 'conversation',
+        ...overrides,
+      },
+    };
+  }
+
+  function parseMetadataParam(params: unknown[] | undefined): Record<string, unknown> {
+    expect(params).toBeDefined();
+    expect(params!.length).toBeGreaterThanOrEqual(3);
+    return JSON.parse(String(params![2])) as Record<string, unknown>;
+  }
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    process.env.REDIS_URL = 'redis://127.0.0.1:6379';
+    process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = '600000';
+    capturedWorker.processor = null;
+    capturedWorker.opts = null;
+  });
+
+  afterEach(async () => {
+    jest.useRealTimers();
+    if (originalRedisUrl === undefined) {
+      delete process.env.REDIS_URL;
+    } else {
+      process.env.REDIS_URL = originalRedisUrl;
+    }
+    if (originalStuckScan === undefined) {
+      delete process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+    } else {
+      process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = originalStuckScan;
+    }
+  });
+
+  it('emits the exact queue agentId on agent_harness.route_evaluated for a bound job', async () => {
+    const logSpy = jest.spyOn(Logger.prototype, 'log');
+    const ledger = createLedgerMock();
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn().mockResolvedValue({
+        output: 'ok',
+        tokensUsed: 3,
+        model: 'grok-4.5',
+      }),
+      publisher: {
+        publishCompletion: jest.fn(),
+        publishToken: jest.fn(),
+        publishFileActions: jest.fn(),
+      },
+      apiGateway: { notifyExecutionComplete: jest.fn().mockResolvedValue(undefined) },
+    });
+
+    await processJob(createPlainJob({ agentId: CANONICAL_AGENT_ID }));
+    const routeEvents = parseLoggedJsonEvents(logSpy, 'agent_harness.route_evaluated');
+    expect(routeEvents).toHaveLength(1);
+    expect(routeEvents[0].agentId).toBe(CANONICAL_AGENT_ID);
+    expect(routeEvents[0].executionId).toBe(CANONICAL_EXECUTION_ID);
+    expect(routeEvents[0].agentId).not.toBe(DISTINCT_SESSION_ID);
+    expect(routeEvents[0]).not.toHaveProperty('prompt');
+    expect(routeEvents[0]).not.toHaveProperty('agentRole');
+    logSpy.mockRestore();
+    await worker.onModuleDestroy();
+  });
+
+  it('emits null agentId on agent_harness.route_evaluated for an unbound job', async () => {
+    const logSpy = jest.spyOn(Logger.prototype, 'log');
+    const ledger = createLedgerMock();
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn().mockResolvedValue({
+        output: 'ok',
+        tokensUsed: 3,
+        model: 'grok-4.5',
+      }),
+      publisher: {
+        publishCompletion: jest.fn(),
+        publishToken: jest.fn(),
+        publishFileActions: jest.fn(),
+      },
+      apiGateway: { notifyExecutionComplete: jest.fn().mockResolvedValue(undefined) },
+    });
+
+    await processJob(createPlainJob());
+    const routeEvents = parseLoggedJsonEvents(logSpy, 'agent_harness.route_evaluated');
+    expect(routeEvents).toHaveLength(1);
+    expect(routeEvents[0]).toHaveProperty('agentId', null);
+    expect(routeEvents[0].agentId).not.toBe(CANONICAL_EXECUTION_ID);
+    expect(routeEvents[0].agentId).not.toBe(DISTINCT_SESSION_ID);
+    logSpy.mockRestore();
+    await worker.onModuleDestroy();
+  });
+
+  it('records queue identity or null on agent_harness.config_resolved using the same expression as route_evaluated', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    const routeStart = workerSource.indexOf("event: 'agent_harness.route_evaluated'");
+    const routeBlock = workerSource.substring(routeStart, routeStart + 500);
+    const configStart = workerSource.indexOf("event: 'agent_harness.config_resolved'");
+    const configBlock = workerSource.substring(configStart, configStart + 500);
+    expect(routeBlock).toContain('agentId: job.data.agentId ?? null');
+    expect(configBlock).toContain('agentId: job.data.agentId ?? null');
+    expect(configBlock).not.toMatch(/\bprompt\s*:/);
+    expect(configBlock).not.toMatch(/\bagentRole\s*:/);
+    expect(configBlock).not.toMatch(/\bglobalInstructions\s*:/);
+
+    const boundJob = { data: { agentId: CANONICAL_AGENT_ID } };
+    const unboundJob = { data: { agentId: undefined as string | undefined } };
+    const boundPayload = {
+      event: 'agent_harness.config_resolved',
+      agentId: boundJob.data.agentId ?? null,
+    };
+    const unboundPayload = {
+      event: 'agent_harness.config_resolved',
+      agentId: unboundJob.data.agentId ?? null,
+    };
+    expect(boundPayload.agentId).toBe(CANONICAL_AGENT_ID);
+    expect(unboundPayload.agentId).toBeNull();
+  });
+
+  it('writes the exact queue agentId into completed final metadata', async () => {
+    const ledger = createLedgerMock({ keepMe: 'unrelated-value' });
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn().mockResolvedValue({
+        output: 'ok',
+        tokensUsed: 3,
+        model: 'grok-4.5',
+      }),
+      publisher: {
+        publishCompletion: jest.fn(),
+        publishToken: jest.fn(),
+        publishFileActions: jest.fn(),
+      },
+      apiGateway: { notifyExecutionComplete: jest.fn().mockResolvedValue(undefined) },
+    });
+
+    await processJob(createPlainJob({ agentId: CANONICAL_AGENT_ID }));
+    expect(ledger.status.value).toBe('completed');
+    const metadata = parseMetadataParam(ledger.completedUpdates[0]);
+    expect(metadata.agentId).toBe(CANONICAL_AGENT_ID);
+    expect(metadata.keepMe).toBe('unrelated-value');
+    expect(metadata.agentId).not.toBe(DISTINCT_SESSION_ID);
+    expect(metadata.agentId).not.toBe(CANONICAL_EXECUTION_ID);
+    await worker.onModuleDestroy();
+  });
+
+  it('lets queue identity override stale existing metadata agentId', async () => {
+    const ledger = createLedgerMock({
+      agentId: STALE_AGENT_ID,
+      keepMe: 'unrelated-value',
+    });
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn().mockResolvedValue({
+        output: 'ok',
+        tokensUsed: 3,
+        model: 'grok-4.5',
+      }),
+      publisher: {
+        publishCompletion: jest.fn(),
+        publishToken: jest.fn(),
+        publishFileActions: jest.fn(),
+      },
+      apiGateway: { notifyExecutionComplete: jest.fn().mockResolvedValue(undefined) },
+    });
+
+    await processJob(createPlainJob({ agentId: CANONICAL_AGENT_ID }));
+    const metadata = parseMetadataParam(ledger.completedUpdates[0]);
+    expect(metadata.agentId).toBe(CANONICAL_AGENT_ID);
+    expect(metadata.agentId).not.toBe(STALE_AGENT_ID);
+    expect(metadata.keepMe).toBe('unrelated-value');
+    await worker.onModuleDestroy();
+  });
+
+  it('preserves the exact queue agentId on contract-failure finalization', async () => {
+    const ledger = createLedgerMock({ keepMe: 'unrelated-value' });
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn().mockResolvedValue({
+        output: 'ok',
+        tokensUsed: 3,
+        model: 'grok-4.5',
+        fileActions: [],
+      }),
+      publisher: {
+        publishCompletion: jest.fn(),
+        publishToken: jest.fn(),
+        publishFileActions: jest.fn(),
+      },
+      apiGateway: { notifyExecutionComplete: jest.fn().mockResolvedValue(undefined) },
+    });
+
+    await processJob(
+      createPlainJob({
+        agentId: CANONICAL_AGENT_ID,
+        executionIntent: 'workspace_mutation',
+      }),
+    );
+    expect(ledger.status.value).toBe('failed');
+    const metadataUpdate = ledger.failedUpdates.find(
+      (params) => params.length >= 3 && typeof params[2] === 'string',
+    );
+    const metadata = parseMetadataParam(metadataUpdate);
+    expect(metadata.agentId).toBe(CANONICAL_AGENT_ID);
+    expect(metadata.keepMe).toBe('unrelated-value');
+    expect(metadata.executionError).toEqual(
+      expect.objectContaining({
+        code: expect.any(String),
+      }),
+    );
+    await worker.onModuleDestroy();
+  });
+
+  it('does not invent an agentId for ordinary unbound completed metadata', async () => {
+    const ledger = createLedgerMock({ keepMe: 'unrelated-value' });
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn().mockResolvedValue({
+        output: 'ok',
+        tokensUsed: 3,
+        model: 'grok-4.5',
+      }),
+      publisher: {
+        publishCompletion: jest.fn(),
+        publishToken: jest.fn(),
+        publishFileActions: jest.fn(),
+      },
+      apiGateway: { notifyExecutionComplete: jest.fn().mockResolvedValue(undefined) },
+    });
+
+    await processJob(createPlainJob());
+    expect(ledger.status.value).toBe('completed');
+    const metadata = parseMetadataParam(ledger.completedUpdates[0]);
+    expect(metadata).not.toHaveProperty('agentId');
+    expect(metadata.keepMe).toBe('unrelated-value');
+    await worker.onModuleDestroy();
   });
 });

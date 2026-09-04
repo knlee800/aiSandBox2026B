@@ -230,6 +230,7 @@ export async function executeAgentHarnessLoop(
     executionId,
     sessionId: request.sessionId,
     harnessVersion: 'v1',
+    ...(request.agentId !== undefined ? { agentId: request.agentId } : {}),
   });
 
   recorder?.record({

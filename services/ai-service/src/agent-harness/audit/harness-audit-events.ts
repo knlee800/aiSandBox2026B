@@ -11,6 +11,7 @@ export interface HarnessAuditEventBase {
   readonly executionId: string;
   readonly sessionId: string;
   readonly harnessVersion: string;
+  readonly agentId?: string;
 }
 
 export interface HarnessRouteEvaluatedEvent extends HarnessAuditEventBase {

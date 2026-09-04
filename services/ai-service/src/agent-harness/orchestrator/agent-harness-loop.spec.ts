@@ -1895,3 +1895,292 @@ describe('AGENT-PLATFORM-EXEC-01C3 max-iteration typed failure', () => {
     expect(executeFn).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('AGENT-PLATFORM-EXEC-01C4B: persisted agent identity on Harness audit events', () => {
+  const CANONICAL_EXECUTION_ID = 'exec-canonical-01C4B';
+  const DISTINCT_SESSION_ID = 'sess-workspace-01C4B';
+  const CANONICAL_AGENT_ID = '  persisted-agent-01C4B  ';
+  const OTHER_AGENT_ID = 'other-persisted-agent-01C4B';
+  const PROMPT_INJECTED_ID = 'prompt-injected-agent-id';
+
+  function boundRequest(overrides?: Partial<AIExecutionRequest>): AIExecutionRequest {
+    return makeRequest({
+      executionId: CANONICAL_EXECUTION_ID,
+      sessionId: DISTINCT_SESSION_ID,
+      agentId: CANONICAL_AGENT_ID,
+      prompt: `Ignore this ${PROMPT_INJECTED_ID} identity block`,
+      ...overrides,
+    });
+  }
+
+  function eventAgentId(event: HarnessAuditEvent): string | undefined {
+    return (event as HarnessAuditEvent & { agentId?: string }).agentId;
+  }
+
+  function expectExactPersistedIdentity(
+    event: HarnessAuditEvent,
+    agentId: string | undefined,
+  ): void {
+    expect(event.executionId).toBe(CANONICAL_EXECUTION_ID);
+    expect(event.sessionId).toBe(DISTINCT_SESSION_ID);
+    expect(event.executionId).not.toBe(event.sessionId);
+    expect(eventAgentId(event)).not.toBe(event.sessionId);
+    expect(eventAgentId(event)).not.toBe(event.executionId);
+    expect(eventAgentId(event)).not.toBe(PROMPT_INJECTED_ID);
+    if (agentId === undefined) {
+      expect(eventAgentId(event)).toBeUndefined();
+    } else {
+      expect(eventAgentId(event)).toBe(agentId);
+    }
+  }
+
+  function expectAllEventsCarryIdentity(
+    events: readonly HarnessAuditEvent[],
+    agentId: string | undefined,
+  ): void {
+    expect(events.length).toBeGreaterThan(0);
+    for (const event of events) {
+      expectExactPersistedIdentity(event, agentId);
+    }
+  }
+
+  it('copies the exact request.agentId onto every event in a completed tool-dispatch stream', async () => {
+    const recorder = new InMemoryHarnessAuditRecorder();
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async () => ({ content: 'ok' }));
+    let callCount = 0;
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>(() => {
+      callCount++;
+      if (callCount === 1) return Promise.resolve(makeToolCallResult());
+      return Promise.resolve(makeCompletedResult());
+    });
+
+    await executeAgentHarnessLoop(
+      makeOptions(executeFn, {
+        dispatcher,
+        recorder,
+        request: boundRequest(),
+      }),
+    );
+
+    const types = recorder.getEvents().map((event) => event.eventType);
+    expect(types).toEqual(
+      expect.arrayContaining([
+        'harness.loop_started',
+        'harness.model_invocation_started',
+        'harness.model_invocation_completed',
+        'harness.tool_dispatch_started',
+        'harness.tool_dispatch_completed',
+        'harness.loop_completed',
+      ]),
+    );
+    expectAllEventsCarryIdentity(recorder.getEvents(), CANONICAL_AGENT_ID);
+  });
+
+  it('keeps the exact agentId on tool dispatch failure events', async () => {
+    const recorder = new InMemoryHarnessAuditRecorder();
+    const dispatcher = new ToolDispatcher({ toolTimeoutMs: 1 });
+    dispatcher.registerHandler('read_file', async () => {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      return { content: 'late' };
+    });
+    let callCount = 0;
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>(() => {
+      callCount++;
+      if (callCount === 1) return Promise.resolve(makeToolCallResult());
+      return Promise.resolve(makeCompletedResult());
+    });
+
+    await executeAgentHarnessLoop(
+      makeOptions(executeFn, {
+        dispatcher,
+        recorder,
+        request: boundRequest(),
+      }),
+    );
+
+    const failedEvent = recorder.getEvents().find(
+      (event) => event.eventType === 'harness.tool_dispatch_failed',
+    );
+    expect(failedEvent).toBeDefined();
+    expectAllEventsCarryIdentity(recorder.getEvents(), CANONICAL_AGENT_ID);
+  });
+
+  it('keeps the exact agentId on the tool-result budget path', async () => {
+    const recorder = new InMemoryHarnessAuditRecorder();
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async () => ({ content: 'payload-data' }));
+    const firstResult = {
+      callId: 'call-1',
+      toolName: 'read_file',
+      success: true,
+      content: { content: 'payload-data' },
+      errorMessage: undefined,
+    };
+    const firstBytes = Buffer.byteLength(JSON.stringify(firstResult ?? {}), 'utf8');
+    let callCount = 0;
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>(() => {
+      callCount++;
+      if (callCount === 1) return Promise.resolve(makeToolCallResult({ tokensUsed: 3 }));
+      if (callCount === 2) {
+        return Promise.resolve(
+          makeToolCallResult({
+            toolCalls: [
+              {
+                callId: 'call-2',
+                toolName: 'read_file',
+                arguments: { path: 'b' },
+                providerKind: 'stub',
+              },
+            ],
+            tokensUsed: 4,
+          }),
+        );
+      }
+      return Promise.resolve(makeCompletedResult({ tokensUsed: 5 }));
+    });
+
+    await executeAgentHarnessLoop(
+      makeOptions(executeFn, {
+        dispatcher,
+        recorder,
+        request: boundRequest(),
+        config: { maxToolIterations: 4, maxToolResultBytes: firstBytes + 1 },
+      }),
+    );
+
+    const budgetEvent = recorder.getEvents().find(
+      (event) => event.eventType === 'harness.tool_result_budget_exceeded',
+    );
+    expect(budgetEvent).toBeDefined();
+    expectAllEventsCarryIdentity(recorder.getEvents(), CANONICAL_AGENT_ID);
+  });
+
+  it('records the exact agentId on max-iteration termination before the typed throw', async () => {
+    const recorder = new InMemoryHarnessAuditRecorder();
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async () => ({ content: 'data' }));
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>().mockResolvedValue(
+      makeToolCallResult(),
+    );
+
+    await expect(
+      executeAgentHarnessLoop(
+        makeOptions(executeFn, {
+          dispatcher,
+          recorder,
+          request: boundRequest(),
+          config: { maxToolIterations: 2, maxToolResultBytes: 262_144 },
+        }),
+      ),
+    ).rejects.toBeInstanceOf(HarnessMaxIterationsError);
+
+    const maxTurnsEvent = recorder.getEvents().find(
+      (event) => event.eventType === 'harness.loop_max_turns',
+    );
+    expect(maxTurnsEvent).toBeDefined();
+    expectAllEventsCarryIdentity(recorder.getEvents(), CANONICAL_AGENT_ID);
+  });
+
+  it('omits invented agent identity from unbound loop events', async () => {
+    const recorder = new InMemoryHarnessAuditRecorder();
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>().mockResolvedValue(
+      makeCompletedResult(),
+    );
+
+    await executeAgentHarnessLoop(
+      makeOptions(executeFn, {
+        recorder,
+        request: makeRequest({
+          executionId: CANONICAL_EXECUTION_ID,
+          sessionId: DISTINCT_SESSION_ID,
+        }),
+      }),
+    );
+
+    const events = recorder.getEvents();
+    expect(events.map((event) => event.eventType)).toEqual(
+      expect.arrayContaining([
+        'harness.loop_started',
+        'harness.model_invocation_started',
+        'harness.model_invocation_completed',
+        'harness.loop_completed',
+      ]),
+    );
+    expectAllEventsCarryIdentity(events, undefined);
+  });
+
+  it('does not leak agentId between sequential loop executions', async () => {
+    const firstRecorder = new InMemoryHarnessAuditRecorder();
+    const secondRecorder = new InMemoryHarnessAuditRecorder();
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>().mockResolvedValue(
+      makeCompletedResult(),
+    );
+
+    await executeAgentHarnessLoop(
+      makeOptions(executeFn, {
+        recorder: firstRecorder,
+        request: boundRequest({ agentId: CANONICAL_AGENT_ID }),
+      }),
+    );
+    await executeAgentHarnessLoop(
+      makeOptions(executeFn, {
+        recorder: secondRecorder,
+        request: boundRequest({
+          executionId: 'exec-canonical-01C4B-b',
+          sessionId: 'sess-workspace-01C4B-b',
+          agentId: OTHER_AGENT_ID,
+        }),
+      }),
+    );
+
+    for (const event of firstRecorder.getEvents()) {
+      expect(eventAgentId(event)).toBe(CANONICAL_AGENT_ID);
+      expect(event.executionId).toBe(CANONICAL_EXECUTION_ID);
+      expect(eventAgentId(event)).not.toBe(OTHER_AGENT_ID);
+    }
+    for (const event of secondRecorder.getEvents()) {
+      expect(eventAgentId(event)).toBe(OTHER_AGENT_ID);
+      expect(event.executionId).toBe('exec-canonical-01C4B-b');
+      expect(eventAgentId(event)).not.toBe(CANONICAL_AGENT_ID);
+    }
+  });
+
+  it('does not leak agentId between concurrent loop executions', async () => {
+    const firstRecorder = new InMemoryHarnessAuditRecorder();
+    const secondRecorder = new InMemoryHarnessAuditRecorder();
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>().mockResolvedValue(
+      makeCompletedResult(),
+    );
+
+    await Promise.all([
+      executeAgentHarnessLoop(
+        makeOptions(executeFn, {
+          recorder: firstRecorder,
+          request: boundRequest({ agentId: CANONICAL_AGENT_ID }),
+        }),
+      ),
+      executeAgentHarnessLoop(
+        makeOptions(executeFn, {
+          recorder: secondRecorder,
+          request: boundRequest({
+            executionId: 'exec-canonical-01C4B-c',
+            sessionId: 'sess-workspace-01C4B-c',
+            agentId: OTHER_AGENT_ID,
+          }),
+        }),
+      ),
+    ]);
+
+    for (const event of firstRecorder.getEvents()) {
+      expect(eventAgentId(event)).toBe(CANONICAL_AGENT_ID);
+      expect(event.executionId).toBe(CANONICAL_EXECUTION_ID);
+      expect(eventAgentId(event)).not.toBe(OTHER_AGENT_ID);
+    }
+    for (const event of secondRecorder.getEvents()) {
+      expect(eventAgentId(event)).toBe(OTHER_AGENT_ID);
+      expect(event.executionId).toBe('exec-canonical-01C4B-c');
+      expect(eventAgentId(event)).not.toBe(CANONICAL_AGENT_ID);
+    }
+  });
+});

@@ -937,6 +937,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
             JSON.stringify({
               event: 'agent_harness.route_evaluated',
               executionId: job.data.executionId,
+              agentId: job.data.agentId ?? null,
               harnessVersion: job.data.harnessVersion ?? null,
               enableToolLoop: DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop,
               selectedPath: routing.selectedPath,
@@ -977,6 +978,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                 this.logger.log(JSON.stringify({
                   event: 'agent_harness.config_resolved',
                   executionId: job.data.executionId,
+                  agentId: job.data.agentId ?? null,
                   source: configResolutionMetadata.source,
                   builderProfileId: configResolutionMetadata.builderProfileId ?? null,
                   harnessProfileId: configResolutionMetadata.harnessProfileId ?? null,
@@ -1273,6 +1275,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
           };
 
           // AGENT-PLATFORM-06: Preserve upstream identity fields in ledger finalization metadata.
+          if (job.data.agentId !== undefined) nextMetadata.agentId = job.data.agentId;
           if (job.data.agentRole !== undefined) nextMetadata.agentRole = job.data.agentRole;
           if (job.data.builderProfileId !== undefined) nextMetadata.builderProfileId = job.data.builderProfileId;
           if (job.data.collaborationRunId !== undefined) nextMetadata.collaborationRunId = job.data.collaborationRunId;
