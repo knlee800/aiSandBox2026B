@@ -74710,3 +74710,156 @@ Step 3 (independent verification / checkpoint / final lock):
 
 **Step 1 HEAD:** `daabd8eaf4902c556d8ca0cfd23018ce4405ea99` (branch main; HEAD == origin/main; working tree clean at window open)
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=YES (control-plane only), Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0, later child tasks=0 (01C5B and 01C6 not registered). Governance writes: TASKS.md, this registry body, `docs/control-plane/lane-saturation-state.json`.
+
+### AGENT-PLATFORM-EXEC-01C5R1 — Restore default ts-jest diagnostics compilation for EXEC-01C5 tests
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=AGENT-PLATFORM-EXEC-01C5R1
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / ADMITTED (Lane 1) — 2026-09-05 — Step 1 COMPLETE — 2026-09-05 (registration / control-plane admission / root-cause confirmation only) — Step 2 NOT STARTED — Step 3 NOT AUTHORIZED — Lane 1 ACTIVE — GATEWAY OWNED — candidate `status=ADMITTED` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=EXACT` / `admissionUncertain=false` — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE released UNOWNED — AI-SERVICE UNOWNED — ENV UNOWNED — parent umbrella AGENT-PLATFORM-EXEC-01C remains READY / NOT ADMITTED / PROVISIONAL / `admissionUncertain=true` — EXEC-01C5B NOT REGISTERED — EXEC-01C6 NOT REGISTERED — product-visible Harness remains FUTURE/gated — IMPLEMENTATION_STARTED=NO.
+**Task ID:** AGENT-PLATFORM-EXEC-01C5R1
+**Title:** Restore default ts-jest diagnostics compilation for EXEC-01C5 tests
+**Family:** AGENT PLATFORM / EXEC (bounded repair-debt child of the locked AGENT-PLATFORM-EXEC-01C5 slice; identified during AGENT-PLATFORM-EXEC-01C5 Step 3 independent consolidation, finding M-1)
+**Parent umbrella:** AGENT-PLATFORM-EXEC-01C — Persisted User-Agent Harness/Tool-Loop Contract and Safety Umbrella — REGISTERED / READY / NOT ADMITTED. This repair does not admit or otherwise change the umbrella.
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Development program:** CURRENT — bounded repair debt from the already-authorized, locked AGENT-PLATFORM-EXEC-01C5 CURRENT development slice. This is not a new product-priority decision and does not require the Next-Work Selection Protocol (routine repair debt from already-admitted/locked work is a non-trigger).
+**Product-visible Harness capability:** FUTURE / gated / disabled / unavailable to users. This repair does not enable flags, frontend `harnessVersion`, mutation tools, specialist/unbound Builder Harness, or product activation. It is a test-compilation-only fix.
+**Classification:** CURRENT development slice; product-visible Harness remains FUTURE/gated. Machine `productClass=CURRENT` with `futureAuthorization=NONE`. Activation effect of this child: NONE.
+**Lifecycle:** 3-step NORMAL bounded GATEWAY repair — Step 1 registration + machine-required Lane 1 admission + root-cause confirmation COMPLETE; Step 2 bounded test-only implementation NOT STARTED; Step 3 independent verification / checkpoint / final lock NOT AUTHORIZED.
+**Start condition:** READY (satisfied; consumed by this admission). Machine `status=ADMITTED`. Candidate `writeSetPrecision=EXACT` / `admissionUncertain=false`. GATEWAY OWNED. Lane 1 ACTIVE.
+**Depends on (canonical / human):** AGENT-PLATFORM-EXEC-01C5 COMPLETE AND LOCKED — PASS — 2026-09-04 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C5-CHECKPOINT.md` §2 finding M-1 — TS2352 type-assertion errors in committed test files prevent compilation with default ts-jest diagnostics; repair recommended for this child or the next Gateway child, test files only, no production code change.
+**Depends on (machine sidecar `dependsOn`):** `["AGENT-PLATFORM-EXEC-01C5"]` — sidecar `lockedTaskIds` contains it.
+**Primary write scope (Step 1, this write):** `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body; `docs/control-plane/lane-saturation-state.json` candidate + Lane 1 occupancy. No application source. No test file edited in this window.
+**Primary write scope (Step 2, EXACT — frozen at this admission from reproduced default-diagnostics `npx jest` output):** GATEWAY. Exact files: `services/api-gateway/src/auth/__tests__/session-or-api-key.guard.spec.ts`; `services/api-gateway/src/usage-ledger/__tests__/usage-ledger.service.spec.ts`.
+**Primary write scope (Step 3):** control-plane/consolidation only after Step 2 is complete. Not authorized now.
+**Mutexes / resources (Step 1 admission):** GOVERNANCE held only for this control-plane registration/admission then released UNOWNED. IMPLEMENTATION mutex: **GATEWAY** acquired for Lane 1 occupancy (scheduling lease). GOVERNANCE must not appear in the IMPLEMENTATION candidate mutex list. AI-SERVICE / FRONTEND / I18N / CONTAINER-MANAGER / MIGRATION / PACKAGE / COMPOSE / ENV / LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT remain UNOWNED and unauthorized.
+**Hot-file leases:** none. GATEWAY is sufficient.
+**Shared contracts (human / freeze):** none. This repair touches only test-file type assertions; it does not change `ApiKeyIdentity.harnessEntitled` or `sourceEventId=executionId` semantics. Machine `sharedContractIds=[]`; `mutatesSharedContractIds=[]`.
+**Evidence class:** LOCAL-TESTS. No provider-live. No Docker/Postgres/Redis. No STAGING / PROVIDER-LIVE / CREDIT runtime needs.
+**Revert isolation:** registration revert = discard the three control-plane files' 01C5R1 additions and restore Lane 1 EMPTY / GATEWAY UNOWNED; cannot invalidate locked EXEC-01C5 (or any earlier EXEC-01C child) evidence, because those tests already pass under `diagnostics: false`-equivalent execution and this repair only replaces `as <Type>` with `as unknown as <Type>` on already-committed fixture literals — no fixture value or assertion changes. Lane 2 remains EMPTY. Later children remain unregistered.
+**saturationClass:** FORCING (explicit; a READY FORCING EXACT candidate with an empty lane would invalidate idle per GOV-OS-03; this is bounded repair debt from locked EXEC-01C5, not a new product-priority decision)
+**productClass:** CURRENT
+**futureAuthorization:** NONE — schema requires `futureAuthorization=NONE` when `productClass=CURRENT`. Product-visible Harness remains FUTURE/gated and is not encoded as `AUTHORIZED` FUTURE product.
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** none
+**i18n:** false
+
+**Identifier search:** Repo-wide search for a canonical `AGENT-PLATFORM-EXEC-01C5R1` heading, an `AISB_MACHINE_REG_V1` stanza, a current-board registration, a sidecar candidate or occupied lane, a locked task ID, and an equivalent already-registered successor returned none at HEAD `80e95606a6e5b2427662e59a70b0121494966c21`. No other registered task owns this exact TS2352 test-compilation repair. AGENT-PLATFORM-EXEC-01C5B (unregistered; worker defense-in-depth) and AGENT-PLATFORM-EXEC-01C6 (unregistered) are distinct, separate concerns and are not equivalents. AGENT-PLATFORM-EXEC-01C5R1 is the smallest correct next bounded repair-debt ID for the locked EXEC-01C5 slice.
+
+**Root-cause confirmation (reproduced with default ts-jest diagnostics; `diagnostics: false` NOT used; no diagnostics-suppressing configuration change made):**
+Command (repository default; `services/api-gateway/jest.config.js` sets no `diagnostics` override, so ts-jest's default enabled diagnostics apply):
+```
+cd C:\Users\knlee\aiSandBox2026B\services\api-gateway
+npx jest --testPathPattern="session-or-api-key.guard.spec.ts|usage-ledger.service.spec.ts|ai-execution.controller.spec.ts"
+```
+Result: 3 suites failed to run (compile-time), 0 tests executed.
+
+1. `services/api-gateway/src/auth/__tests__/session-or-api-key.guard.spec.ts:270:62` — `TS2352`: `mockAuthService.validateSessionToken.mockResolvedValue({ id: OTHER_USER_ID, email: ALLOWED_USER_ID, role: ALLOWED_USER_ID, planType: ALLOWED_USER_ID } as User)` — object literal missing `passwordHash, authProvider, oauthId, planStatus`, and 10 more `User` fields.
+2. `services/api-gateway/src/usage-ledger/__tests__/usage-ledger.service.spec.ts:1778:14` — `TS2352`: `conversationHarnessRecord()` return `{ ... } as UsageRecord` — object literal missing `conversationId, provider, adapter, timestamp`.
+3. `services/api-gateway/src/usage-ledger/__tests__/usage-ledger.service.spec.ts:1803:14` — `TS2352`: `buildRecord()` return `{ ... } as UsageRecord` — same four missing `UsageRecord` fields.
+4. `services/api-gateway/src/ai/ai-execution.controller.spec.ts` — suite failed to run, but the diagnostic is **not TS2352** on the spec file itself: it is a pre-existing `TS2322` at `services/api-gateway/src/queue/queue.service.ts:24:7` (`Redis` not assignable to BullMQ's `ConnectionOptions`, an `ioredis` duplicate-package version mismatch), transitively imported by the controller under test. Confirmed pre-existing: `queue.service.ts` is absent from commit `2aa3f97ce0e847d182e4146879bb78a84d29d734`'s changed-file list (`git show 2aa3f97... --stat`), and the same construct is present unchanged at the parent commit (`2aa3f97...^:services/api-gateway/src/queue/queue.service.ts`). `ai-execution.controller.spec.ts` has ZERO TS2352 errors under default diagnostics.
+
+**TS2352_ASSERTION_COUNT=3. TS2352_FILE_COUNT=2** (`session-or-api-key.guard.spec.ts` ×1; `usage-ledger.service.spec.ts` ×2).
+
+**Resolution of the "three files versus two files" discrepancy:** The EXEC-01C5 checkpoint (§2, finding M-1) narratively listed "three committed test files" (guard spec, controller spec, usage-ledger spec) as affected, while enumerating only three TS2352-shaped assertions across two files (guard spec ×1, usage-ledger spec ×2). Reproduction under default diagnostics resolves the discrepancy: **exactly two files contain TS2352 errors** (three assertions total). The third file the checkpoint named, `ai-execution.controller.spec.ts`, fails to compile under default diagnostics only because it transitively imports `queue.service.ts`, which has one **pre-existing, unrelated `TS2322`** error not introduced by commit `2aa3f97` and not a type-assertion-on-partial-mock pattern. The checkpoint's file count was imprecise; the assertion count and repair pattern it described were correct. `ai-execution.controller.spec.ts` is excluded from this repair's write set.
+
+**Commit-introduction confirmation:** `git show 2aa3f97ce0e847d182e4146879bb78a84d29d734 --stat` shows the commit as four files, all pure additions (no deletions): `ai-execution.controller.spec.ts` (+297), `session-or-api-key.guard.spec.ts` (+241), `session-or-api-key.guard.ts` (+34), `usage-ledger.service.spec.ts` (+287). `git log -p` on the guard spec confirms every line touching `OTHER_USER_ID` / the failing assertion is a pure addition by this commit. `queue.service.ts` is not in this commit's changed-file list, confirming its `TS2322` predates this commit and is out of scope.
+
+**Entity inspection:** `User` entity (`services/api-gateway/src/users/user.entity.ts`) declares `id, email, passwordHash, authProvider, oauthId, planStatus, ...` (14 total fields) — `role` is not a `User` column at all in the failing mock (test object used `role` as an arbitrary probe value, unrelated to any real `User.role` field). `UsageRecord` entity (`services/api-gateway/src/usage-ledger/usage-record.entity.ts`) requires `conversationId, provider, adapter, timestamp` in addition to the fields the two mock factories already provide.
+
+**Repository-consistent repair pattern (confirmed by precedent, not assumed):** `services/api-gateway/src/auth/auth.service.spec.ts` already uses `} as unknown as User;` three times (lines 350, 547, 590) for intentionally partial `User` mocks. The broader repository convention of `as unknown as <Type>` for partial-mock test fixtures is pervasive (`admin-operational.controller.spec.ts`, `reporting-contract-determinism.spec.ts`, `cross-surface-visibility-coherence.spec.ts`, `credit-balance.guard.spec.ts`, `auth.controller.spec.ts`, `credit-deduction-record.repository.spec.ts`, `credit-grant.repository.spec.ts`, `google.strategy.spec.ts`, and others). No repository precedent for `as unknown as UsageRecord` exists yet, but the identical `as unknown as <Type>` idiom applies directly and is the smallest type-correct change. The expected repair syntax (`as unknown as User`, `as unknown as UsageRecord`) is confirmed correct by this precedent search, not merely assumed from the checkpoint's recommendation.
+
+**Frozen repair scope (do not expand):**
+1. `services/api-gateway/src/auth/__tests__/session-or-api-key.guard.spec.ts` line 275 — change `} as User);` to `} as unknown as User);` on the single mock at line 270-275. No other line in this file changes.
+2. `services/api-gateway/src/usage-ledger/__tests__/usage-ledger.service.spec.ts` line 1799 — change `} as UsageRecord;` to `} as unknown as UsageRecord;` in `conversationHarnessRecord()`. Line 1822 — change `} as UsageRecord;` to `} as unknown as UsageRecord;` in `buildRecord()`. No other line in this file changes.
+
+Every existing fixture field value, every existing behavioral assertion, and every existing test description string is preserved verbatim. No fixture field is added, removed, or filled to satisfy the type checker — only the assertion operator changes from a direct cast to a double (`unknown`-mediated) cast. No production file changes. No `diagnostics` option is added anywhere. No Jest configuration file changes. `ai-execution.controller.spec.ts` is explicitly excluded: default diagnostics prove it has no TS2352 of its own, and its unrelated pre-existing `queue.service.ts` `TS2322` is out of this repair's scope (a separate, unregistered `queue.service.ts` TS2322 repair is NOT authorized, registered, or implied by this child).
+
+**Exact write-set derivation (source-inspected against reproduced compiler output; EXACT):**
+1. `services/api-gateway/src/auth/__tests__/session-or-api-key.guard.spec.ts` — sole file containing the guard-spec TS2352; confirmed by direct line/column match against the reproduced diagnostic (270:62).
+2. `services/api-gateway/src/usage-ledger/__tests__/usage-ledger.service.spec.ts` — sole file containing both usage-ledger TS2352s; confirmed by direct line/column match against the reproduced diagnostics (1778:14, 1803:14).
+
+Excluded with repository-authority reason: `services/api-gateway/src/ai/ai-execution.controller.spec.ts` — zero TS2352 under default diagnostics; its compile failure is caused solely by the pre-existing, unrelated `queue.service.ts` `TS2322`, which is out of this repair's frozen scope. `services/api-gateway/src/queue/queue.service.ts` — pre-existing production `TS2322`, not introduced by `2aa3f97`, not a type-assertion-on-partial-mock pattern, and explicitly not part of this repair (a separate task would be required, and none is registered or authorized here). `services/api-gateway/src/auth/session-or-api-key.guard.ts` and `services/api-gateway/src/usage-ledger/usage-ledger.service.ts` — production files; this is a test-only repair; no production behavior changes. `services/api-gateway/jest.config.js` — no diagnostics suppression; the default configuration is preserved exactly. `services/api-gateway/src/users/user.entity.ts` and `services/api-gateway/src/usage-ledger/usage-record.entity.ts` — entity definitions are read-only reference for this repair; not modified.
+
+**Boundedness decision (frozen; do not expand):** This child is a test-file-only type-assertion repair. Do not touch production source. Do not touch `queue.service.ts`. Do not touch `ai-execution.controller.spec.ts`. Do not add or remove fixture fields. Do not change any assertion's expected value. Do not change Jest/ts-jest configuration. Do not register or admit AGENT-PLATFORM-EXEC-01C5B (worker defense-in-depth) or AGENT-PLATFORM-EXEC-01C6 in this window; they remain separate, unregistered concerns.
+
+**Activation effect:** NONE (flags remain false; frontend still omits `harnessVersion`; no product-visible Harness; this is a compiler-diagnostics-only repair with zero behavioral change).
+**Rollback boundary:** revert the two GATEWAY test files; restores the pre-repair `as <Type>` casts and the pre-repair TS2352 compile failure under default diagnostics. Control-plane rollback = discard this child's board/registry/sidecar occupancy.
+
+**Machine registration (post-epoch):** Present exactly once immediately under this canonical heading (`taskId=AGENT-PLATFORM-EXEC-01C5R1`, `nature=IMPLEMENTATION`). Enforcement epoch unchanged. No second epoch. Do not duplicate the machine-registration markers elsewhere in this body. Do not register EXEC-01C5B, EXEC-01C6, or later children in this window.
+
+**Lane / admission:**
+REGISTERED / ADMITTED. Lane 1 ACTIVE. Lane 2 EMPTY. Lane 3 DISABLED. Occupancy hash `sha256:bfbb601cc7f954422caf74937a308de18e001d740400c64b756d1cba68ce117c`. Candidate `admissionUncertain=false` / `writeSetPrecision=EXACT` / `status=ADMITTED` so occupied task is SKIP from S; remaining FORCING READY umbrella EXEC-01C remains `ADMISSION_UNCERTAIN`. Machine-required admission: a READY FORCING EXACT candidate with empty lanes would make S nonempty and invalidate idle. Admission is control-plane scheduling only. Implementation is not started and is not authorized in this window. Do not manufacture a second candidate to occupy Lane 2.
+
+AGENT-PLATFORM-EXEC-01C5R1 does NOT: start implementation in Step 1; enable Harness flags; activate product-visible Harness; change frontend requests; mutate credits; migrate; touch production source; touch `queue.service.ts`; touch `ai-execution.controller.spec.ts`; register EXEC-01C5B or EXEC-01C6; register PRIVATE-BETA-INVITE-01; enable Lane 3; admit the EXEC-01C umbrella; edit PRD.md / ARCHITECTURE.md / CLAUDE.md / AGENTS.md / validator / mutex catalog / application source in this window.
+
+#### Acceptance Criteria
+
+Step 1 (Registration / machine-required admission / root-cause confirmation):
+- [x] canonical ID AGENT-PLATFORM-EXEC-01C5R1 verified unused (no heading, stanza, board registration, sidecar candidate, occupied lane, locked ID, or equivalent successor)
+- [x] repair debt from an authorized, locked CURRENT task (EXEC-01C5), not a new product-priority decision
+- [x] TS2352 failures reproduced with default ts-jest diagnostics (`diagnostics: false` NOT used; no diagnostics-suppressing config)
+- [x] exact diagnostic code/file/line/assertion captured for every failure (3 assertions, 2 files)
+- [x] failures confirmed introduced by commit `2aa3f97ce0e847d182e4146879bb78a84d29d734`
+- [x] `ai-execution.controller.spec.ts` confirmed to have ZERO TS2352; its failure is a pre-existing, unrelated `queue.service.ts` TS2322, excluded from scope
+- [x] "three files versus two files" discrepancy resolved from actual compiler output (two files; checkpoint's file count was imprecise, its assertion/pattern description was correct)
+- [x] `User` and `UsageRecord` entity definitions inspected
+- [x] repository precedent for `as unknown as <Type>` on partial mocks found and cited (`auth.service.spec.ts` ×3 for `User`; broader repo convention)
+- [x] smallest type-correct, test-only repair determined (`as unknown as User`, `as unknown as UsageRecord`) — not frozen until diagnostics/precedent confirmed, now confirmed
+- [x] no production type change; no assertion weakening; no fixture-field filling; no diagnostics suppression; no runtime behavior change
+- [x] parent umbrella AGENT-PLATFORM-EXEC-01C recorded and left NOT ADMITTED
+- [x] EXEC-01C1 through EXEC-01C5 remain COMPLETE AND LOCKED
+- [x] 3-step lifecycle recorded
+- [x] exact dependency recorded (machine `dependsOn=["AGENT-PLATFORM-EXEC-01C5"]`)
+- [x] exact in-scope and out-of-scope boundaries recorded
+- [x] EXEC-01C5B not registered
+- [x] EXEC-01C6 not registered
+- [x] exact prospective implementation mutex GATEWAY
+- [x] ENV / AI-SERVICE / GOVERNANCE mutex not listed on the IMPLEMENTATION candidate
+- [x] exact implementation write paths frozen (two Gateway test files)
+- [x] two-file write-set sufficiency recorded from reproduced compiler output
+- [x] shared-contract treatment recorded (none) without minting catalog IDs
+- [x] runtime/provider/staging/browser/credit = NO
+- [x] test and acceptance requirements recorded (LOCAL-TESTS)
+- [x] activation effect NONE
+- [x] rollback boundary recorded
+- [x] post-epoch machine stanza exactly once
+- [x] candidate record exactly once
+- [x] nature=IMPLEMENTATION
+- [x] saturationClass=FORCING
+- [x] productClass=CURRENT
+- [x] futureAuthorization=NONE
+- [x] status=ADMITTED
+- [x] startCondition=READY
+- [x] writeSetPrecision=EXACT
+- [x] admissionUncertain=false
+- [x] GOVERNANCE not listed on the IMPLEMENTATION candidate
+- [x] Lane 1 ACTIVE with matching occupancy
+- [x] Lane 2 EMPTY
+- [x] Lane 3 DISABLED
+- [x] implementation not started
+- [x] later children not registered
+- [x] Harness flags unchanged / false
+- [x] frontend still must not send `harnessVersion`
+- [x] no application source changes
+- [x] no runtime/staging/browser/provider
+- [x] PRIVATE-BETA invariant unchanged
+- [x] validator PASS
+- [x] No Git commit/push by the worker
+
+Step 2 (bounded implementation + automated validation):
+- [ ] not started in this window
+
+Step 3 (independent verification / checkpoint / final lock):
+- [ ] not authorized in this window
+
+**Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. INVITATION_EXECUTION_PERMITTED=NO. Unchanged.
+
+**Lane 3 invariant:** Lane 3 remains DISABLED. Unchanged.
+
+**Step 1 HEAD:** `80e95606a6e5b2427662e59a70b0121494966c21` (branch main; HEAD == origin/main; working tree clean at window open)
+**Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, tests executed=3 suites (compile-time reproduction only; 0 tests ran), dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=YES (control-plane only), Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0, later child tasks=0 (EXEC-01C5B and EXEC-01C6 not registered). Governance writes: TASKS.md, this registry body, `docs/control-plane/lane-saturation-state.json`.
