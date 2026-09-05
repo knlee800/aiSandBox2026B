@@ -74891,7 +74891,7 @@ taskId=AGENT-PLATFORM-EXEC-01C5B
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY / NOT ADMITTED - 2026-09-05 - Step 1 COMPLETE - 2026-09-05 (registration / control-plane only) - Step 2 NOT STARTED - Step 3 NOT AUTHORIZED - Step 4 NOT AUTHORIZED - GOVERNANCE acquired transiently for this registration then released UNOWNED - Lane 1 EMPTY - Lane 2 EMPTY - Lane 3 DISABLED - GATEWAY UNOWNED - AI-SERVICE UNOWNED - ENV UNOWNED - candidate `status=READY` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true` (not admissible; `Test-Admissible` = ADMISSION_UNCERTAIN) - parent AGENT-PLATFORM-EXEC-01C5 and repair-debt sibling AGENT-PLATFORM-EXEC-01C5R1 remain COMPLETE AND LOCKED - parent umbrella AGENT-PLATFORM-EXEC-01C remains READY / NOT ADMITTED / PROVISIONAL / `admissionUncertain=true` - EXEC-01C6 remains NOT REGISTERED - product-visible Harness remains FUTURE/gated - IMPLEMENTATION_STARTED=NO.
+**Status:** REGISTERED / READY / NOT ADMITTED - 2026-09-05 - Step 1 COMPLETE - 2026-09-05 (registration / control-plane only) - Step 2 COMPLETE - 2026-09-05 (stage-start / cross-service entitlement contract freeze / implementation decomposition) - Stage-start: `docs/AGENT-PLATFORM-EXEC-01C5B-STAGE-START.md` - CONTRACT_FREEZE=COMPLETE - CHILD_SLICE_DECOMPOSITION=COMPLETE - CHILD_TASKS_REGISTERED=0 - ENTITLEMENT_PROOF_ARCHITECTURE=HMAC_SHA256_ATTESTATION - proposed children EXEC-01C5B1 (Gateway proof production + ENV) and EXEC-01C5B2 (AI-Service worker verification) NOT REGISTERED - Step 3 NOT AUTHORIZED - Step 4 NOT AUTHORIZED - GOVERNANCE acquired transiently for this stage-start then released UNOWNED - Lane 1 EMPTY - Lane 2 EMPTY - Lane 3 DISABLED - GATEWAY UNOWNED - AI-SERVICE UNOWNED - ENV UNOWNED - candidate `status=READY` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true` (not admissible; `Test-Admissible` = ADMISSION_UNCERTAIN) - parent AGENT-PLATFORM-EXEC-01C5 and repair-debt sibling AGENT-PLATFORM-EXEC-01C5R1 remain COMPLETE AND LOCKED - parent umbrella AGENT-PLATFORM-EXEC-01C remains READY / NOT ADMITTED / PROVISIONAL / `admissionUncertain=true` - EXEC-01C6 remains NOT REGISTERED - product-visible Harness remains FUTURE/gated - IMPLEMENTATION_STARTED=NO.
 **Task ID:** AGENT-PLATFORM-EXEC-01C5B
 **Title:** Gateway-to-worker Harness entitlement defense in depth
 **Family:** AGENT PLATFORM / EXEC (bounded security debt inside the already-authorized CURRENT persisted user-agent Harness/tool-loop development program; first named as an unregistered prospective follow-up inside the locked AGENT-PLATFORM-EXEC-01C5 canonical body)
@@ -74903,7 +74903,7 @@ nature=IMPLEMENTATION
 **Classification:** CURRENT development-program security work; product-visible Harness remains FUTURE/gated. Machine `productClass=CURRENT` with `futureAuthorization=NONE`. Activation effect of this registration: NONE.
 **Lifecycle:** 4-STEP HIGH-RISK (security-sensitive; crosses the Gateway-to-worker trust boundary; must not collapse Gateway propagation and worker enforcement into one unreviewed implementation step):
 1. Step 1 - registration - COMPLETE - 2026-09-05 - control-plane only; no implementation; no admission; no activation.
-2. Step 2 - stage-start: cross-service entitlement contract freeze and bounded service decomposition - NOT STARTED. Must resolve the eighteen mandatory Step 2 questions below, including whether Gateway enqueue and worker enforcement must be split into separate GATEWAY and AI-SERVICE child slices.
+2. Step 2 - stage-start: cross-service entitlement contract freeze and bounded service decomposition - COMPLETE - 2026-09-05 - Stage-start: `docs/AGENT-PLATFORM-EXEC-01C5B-STAGE-START.md` - all 18 questions resolved; HMAC-SHA256 attestation chosen; 2 children proposed (EXEC-01C5B1 GATEWAY+ENV, EXEC-01C5B2 AI-SERVICE); children NOT REGISTERED.
 3. Step 3 - bounded implementation slice(s) frozen at Step 2 - NOT AUTHORIZED.
 4. Step 4 - independent verification / checkpoint / final lock - NOT AUTHORIZED.
 **Start condition:** READY (satisfied for registration). NOT ADMITTED. Machine `status=READY`. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. Candidate `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true`. No implementation mutex owned.
@@ -75023,7 +75023,41 @@ Step 1 (Registration):
 - [x] No Git commit/push by the worker
 
 Step 2 (stage-start / cross-service entitlement contract freeze):
-- [ ] not started in this window
+- [x] stage-start document created: `docs/AGENT-PLATFORM-EXEC-01C5B-STAGE-START.md`
+- [x] all 18 mandatory questions resolved
+- [x] three approaches compared (plain boolean, HMAC attestation, online revalidation) against registered threat model
+- [x] chosen architecture: HMAC-SHA256 signed entitlement attestation — satisfies all six registered threats including queue injection and replay
+- [x] exact `HarnessEntitlementProof` TypeScript shape frozen (version 1, executionId, userId, apiKeyId, harnessVersion, issuedAt, signature)
+- [x] canonical claim string format and field order frozen (pipe-delimited, fixed order)
+- [x] HMAC-SHA256 algorithm frozen; `crypto.timingSafeEqual` verification frozen
+- [x] no expiry — proof bound to executionId not time window; ledger claim provides freshness boundary
+- [x] Gateway proof derivation rules frozen: only from authenticated identity after entitlement check and executionId generation
+- [x] two producers identified and rules frozen: controller produces proof; referral producer strips harnessVersion
+- [x] worker guard placement frozen: after ledger claim, before routing/provider/loop/tools/checkpoint
+- [x] `HarnessEntitlementError` class and six error codes frozen; all non-retryable
+- [x] logging prohibition frozen: no signature, secret, full proof token, prompts, or persona in logs
+- [x] ordinary job backward compatibility confirmed: proof field optional; verification gated by harnessVersion
+- [x] API-key and browser-session compatibility confirmed
+- [x] shared-contract catalog ID `HARNESS_ENTITLEMENT_PROOF_V1` identified (not minted in catalog)
+- [x] `HARNESS_ENTITLEMENT_HMAC_SECRET` environment variable frozen for both services
+- [x] missing-secret fail-closed behavior frozen for both services
+- [x] key rotation excluded from first slice (version field provides future hook)
+- [x] child decomposition: 2 children — EXEC-01C5B1 (GATEWAY+ENV) then EXEC-01C5B2 (AI-SERVICE)
+- [x] exact write sets and mutexes frozen per child
+- [x] proposed child IDs verified unused
+- [x] children NOT REGISTERED in this window
+- [x] no sidecar candidate added for children
+- [x] no machine stanza added for children
+- [x] no lane occupied
+- [x] no implementation mutex acquired
+- [x] parent candidate remains `status=READY` / `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true`
+- [x] validator PASS / candidate not admissible (`ADMISSION_UNCERTAIN`)
+- [x] no application source, test, environment, package, migration, PRD, ARCHITECTURE, CLAUDE, AGENTS changes
+- [x] no runtime/staging/browser/provider/credit/Docker/Postgres/Redis activity
+- [x] EXEC-01C6 remains NOT REGISTERED
+- [x] product-visible Harness remains FUTURE/gated
+- [x] Harness flags unchanged
+- [x] no Git commit/push
 
 Step 3 (bounded implementation slices):
 - [ ] not authorized in this window
