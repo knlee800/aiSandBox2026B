@@ -74717,7 +74717,7 @@ taskId=AGENT-PLATFORM-EXEC-01C5R1
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / ADMITTED (Lane 1) — 2026-09-05 — Step 1 COMPLETE — 2026-09-05 (registration / control-plane admission / root-cause confirmation only) — Step 2 NOT STARTED — Step 3 NOT AUTHORIZED — Lane 1 ACTIVE — GATEWAY OWNED — candidate `status=ADMITTED` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=EXACT` / `admissionUncertain=false` — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE released UNOWNED — AI-SERVICE UNOWNED — ENV UNOWNED — parent umbrella AGENT-PLATFORM-EXEC-01C remains READY / NOT ADMITTED / PROVISIONAL / `admissionUncertain=true` — EXEC-01C5B NOT REGISTERED — EXEC-01C6 NOT REGISTERED — product-visible Harness remains FUTURE/gated — IMPLEMENTATION_STARTED=NO.
+**Status:** COMPLETE AND LOCKED — PASS — 2026-09-05 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C5R1-CHECKPOINT.md` — Step 1 COMPLETE — 2026-09-05 — Step 2 COMPLETE — 2026-09-05 (commit `eb286c40f26c40647aa6fa0fb5d57cdddc08fcec` — `test: repair EXEC-01C5 fixture type assertions` — exactly three `as unknown as <Type>` assertion repairs across the two frozen Gateway test files; zero TS2352 under default diagnostics; 113/113 targeted tests pass) — Step 3 COMPLETE — 2026-09-05 (independent consolidation — PASS — zero CRITICAL/HIGH/contract-relevant MEDIUM findings) — Lane 1 released EMPTY — GATEWAY released UNOWNED — candidate `status=LOCKED` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=EXACT` / `admissionUncertain=false` — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE released UNOWNED — AI-SERVICE UNOWNED — ENV UNOWNED — parent AGENT-PLATFORM-EXEC-01C5 remains COMPLETE AND LOCKED — parent umbrella AGENT-PLATFORM-EXEC-01C remains READY / NOT ADMITTED / PROVISIONAL / `admissionUncertain=true` — EXEC-01C5B NOT REGISTERED — EXEC-01C6 NOT REGISTERED — product-visible Harness remains FUTURE/gated — Harness flags unchanged — IMPLEMENTATION_STARTED=YES (consumed; locked). Previous: REGISTERED / ADMITTED (Lane 1) — 2026-09-05 — Step 1 COMPLETE — 2026-09-05 (registration / control-plane admission / root-cause confirmation only) — Step 2 NOT STARTED — Step 3 NOT AUTHORIZED — Lane 1 ACTIVE — GATEWAY OWNED — candidate `status=ADMITTED` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=EXACT` / `admissionUncertain=false` — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE released UNOWNED — AI-SERVICE UNOWNED — ENV UNOWNED — parent umbrella AGENT-PLATFORM-EXEC-01C remains READY / NOT ADMITTED / PROVISIONAL / `admissionUncertain=true` — EXEC-01C5B NOT REGISTERED — EXEC-01C6 NOT REGISTERED — product-visible Harness remains FUTURE/gated — IMPLEMENTATION_STARTED=NO.
 **Task ID:** AGENT-PLATFORM-EXEC-01C5R1
 **Title:** Restore default ts-jest diagnostics compilation for EXEC-01C5 tests
 **Family:** AGENT PLATFORM / EXEC (bounded repair-debt child of the locked AGENT-PLATFORM-EXEC-01C5 slice; identified during AGENT-PLATFORM-EXEC-01C5 Step 3 independent consolidation, finding M-1)
@@ -74852,10 +74852,26 @@ Step 1 (Registration / machine-required admission / root-cause confirmation):
 - [x] No Git commit/push by the worker
 
 Step 2 (bounded implementation + automated validation):
-- [ ] not started in this window
+- [x] exactly three `as unknown as <Type>` assertion repairs committed (`session-or-api-key.guard.spec.ts` line 275; `usage-ledger.service.spec.ts` lines 1799 and 1822)
+- [x] no fixture field/value, test name, expectation, mock behavior, import, or setup changed
+- [x] no production code changed
+- [x] no Jest/ts-jest/TypeScript/lint/environment/package configuration changed
+- [x] no diagnostics suppression committed
+- [x] commit `eb286c40f26c40647aa6fa0fb5d57cdddc08fcec` — `test: repair EXEC-01C5 fixture type assertions` — exactly one commit, exactly two files, `+3/-3`
 
 Step 3 (independent verification / checkpoint / final lock):
-- [ ] not authorized in this window
+- [x] independent diff review — exactly 1 commit, exactly 2 files, exactly 3 assertion-only changes confirmed
+- [x] default-diagnostics reproduction: zero TS2352 in either admitted file; 113/113 targeted tests pass (21 guard + 92 usage-ledger)
+- [x] coupled suites pass under default diagnostics (290/290 tests; 2 unrelated pre-existing `queue.service.ts` TS2322 compile failures isolated and excluded)
+- [x] `ai-execution.controller.spec.ts` (80/80) and full Gateway suite (167/168 suites, 2172/2178 tests, 0 failed) verified via established TEMP-only diagnostics-disabled procedure; smoke integration excluded (requires runtime)
+- [x] Gateway `tsc --noEmit`: sole error is pre-existing `queue.service.ts(24,7)` TS2322; unchanged in range; neither admitted file errors
+- [x] lint on admitted files: pre-existing violations only; none on the three changed lines
+- [x] validator PASS with proof under `$env:TEMP` only; repo-root `SATURATION_PROOF.json` untouched
+- [x] `git diff --check` clean
+- [x] zero CRITICAL/HIGH/contract-relevant MEDIUM findings
+- [x] Checkpoint created: `docs/AGENT-PLATFORM-EXEC-01C5R1-CHECKPOINT.md`
+- [x] Lane 1 released EMPTY; GATEWAY released UNOWNED; candidate `status=LOCKED`
+- [x] stale board human-readable active-lane prose corrected to match authoritative occupancy block
 
 **Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. INVITATION_EXECUTION_PERMITTED=NO. Unchanged.
 
@@ -74863,3 +74879,6 @@ Step 3 (independent verification / checkpoint / final lock):
 
 **Step 1 HEAD:** `80e95606a6e5b2427662e59a70b0121494966c21` (branch main; HEAD == origin/main; working tree clean at window open)
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, tests executed=3 suites (compile-time reproduction only; 0 tests ran), dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=YES (control-plane only), Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0, later child tasks=0 (EXEC-01C5B and EXEC-01C6 not registered). Governance writes: TASKS.md, this registry body, `docs/control-plane/lane-saturation-state.json`.
+
+**Step 3 HEAD:** `eb286c40f26c40647aa6fa0fb5d57cdddc08fcec` (branch main; HEAD == origin/main; working tree clean at window open; matches implementation SHA)
+**Step 3 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, test files edited=0 (review-only), tests executed=113 targeted + 290 coupled + 80 controller + 2172 full-suite (all read-only verification runs; 0 failures), dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0 (proof under `$env:TEMP` only), mutex-catalog edits=0, Git mutations=0 (no commit/push/branch by this window), Lane 1 release=YES (control-plane only), Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0, later child tasks=0 (EXEC-01C5B and EXEC-01C6 not registered). Governance writes: `TASKS.md`, this registry body, `docs/control-plane/lane-saturation-state.json`, `docs/AGENT-PLATFORM-EXEC-01C5R1-CHECKPOINT.md` (created).
