@@ -272,7 +272,7 @@ describe('SessionOrApiKeyAuthGuard', () => {
         email: ALLOWED_USER_ID,
         role: ALLOWED_USER_ID,
         planType: ALLOWED_USER_ID,
-      } as User);
+      } as unknown as User);
 
       const result = await guard.canActivate(context);
 

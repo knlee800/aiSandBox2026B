@@ -1796,7 +1796,7 @@ describe('UsageLedgerService', () => {
           },
         },
         ...overrides,
-      } as UsageRecord;
+      } as unknown as UsageRecord;
     }
 
     function buildRecord(overrides: Record<string, unknown> = {}): UsageRecord {
@@ -1819,7 +1819,7 @@ describe('UsageLedgerService', () => {
           },
         },
         ...overrides,
-      } as UsageRecord;
+      } as unknown as UsageRecord;
     }
 
     beforeEach(async () => {
