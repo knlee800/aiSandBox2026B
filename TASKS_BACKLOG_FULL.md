@@ -74882,3 +74882,158 @@ Step 3 (independent verification / checkpoint / final lock):
 
 **Step 3 HEAD:** `eb286c40f26c40647aa6fa0fb5d57cdddc08fcec` (branch main; HEAD == origin/main; working tree clean at window open; matches implementation SHA)
 **Step 3 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, test files edited=0 (review-only), tests executed=113 targeted + 290 coupled + 80 controller + 2172 full-suite (all read-only verification runs; 0 failures), dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0 (proof under `$env:TEMP` only), mutex-catalog edits=0, Git mutations=0 (no commit/push/branch by this window), Lane 1 release=YES (control-plane only), Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0, later child tasks=0 (EXEC-01C5B and EXEC-01C6 not registered). Governance writes: `TASKS.md`, this registry body, `docs/control-plane/lane-saturation-state.json`, `docs/AGENT-PLATFORM-EXEC-01C5R1-CHECKPOINT.md` (created).
+
+---
+
+### AGENT-PLATFORM-EXEC-01C5B - Gateway-to-worker Harness entitlement defense in depth
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=AGENT-PLATFORM-EXEC-01C5B
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / READY / NOT ADMITTED - 2026-09-05 - Step 1 COMPLETE - 2026-09-05 (registration / control-plane only) - Step 2 NOT STARTED - Step 3 NOT AUTHORIZED - Step 4 NOT AUTHORIZED - GOVERNANCE acquired transiently for this registration then released UNOWNED - Lane 1 EMPTY - Lane 2 EMPTY - Lane 3 DISABLED - GATEWAY UNOWNED - AI-SERVICE UNOWNED - ENV UNOWNED - candidate `status=READY` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true` (not admissible; `Test-Admissible` = ADMISSION_UNCERTAIN) - parent AGENT-PLATFORM-EXEC-01C5 and repair-debt sibling AGENT-PLATFORM-EXEC-01C5R1 remain COMPLETE AND LOCKED - parent umbrella AGENT-PLATFORM-EXEC-01C remains READY / NOT ADMITTED / PROVISIONAL / `admissionUncertain=true` - EXEC-01C6 remains NOT REGISTERED - product-visible Harness remains FUTURE/gated - IMPLEMENTATION_STARTED=NO.
+**Task ID:** AGENT-PLATFORM-EXEC-01C5B
+**Title:** Gateway-to-worker Harness entitlement defense in depth
+**Family:** AGENT PLATFORM / EXEC (bounded security debt inside the already-authorized CURRENT persisted user-agent Harness/tool-loop development program; first named as an unregistered prospective follow-up inside the locked AGENT-PLATFORM-EXEC-01C5 canonical body)
+**Parent umbrella:** AGENT-PLATFORM-EXEC-01C - Persisted User-Agent Harness/Tool-Loop Contract and Safety Umbrella - REGISTERED / READY / NOT ADMITTED. This registration does not admit the umbrella and does not increment its `CHILD_TASKS_REGISTERED` counter (same treatment as the AGENT-PLATFORM-EXEC-01C5R1 repair-debt sibling, which also did not increment that counter).
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Development program:** CURRENT - required security debt inside the already-authorized persisted user-agent Harness/tool-loop development program (Keith's 2026-09-01 CURRENT development-program authorization, reaffirmed through EXEC-01C1..EXEC-01C5R1). This is not a new product-priority decision, does not reopen Keith's G7 user-ID allow-list decision, and is a non-trigger for the Next-Work Selection Protocol (routine security debt from already-admitted/locked work).
+**Product-visible Harness capability:** FUTURE / gated / disabled / unavailable to users. This registration does not enable flags, frontend `harnessVersion`, mutation tools, specialist/unbound Builder Harness, or product activation.
+**Classification:** CURRENT development-program security work; product-visible Harness remains FUTURE/gated. Machine `productClass=CURRENT` with `futureAuthorization=NONE`. Activation effect of this registration: NONE.
+**Lifecycle:** 4-STEP HIGH-RISK (security-sensitive; crosses the Gateway-to-worker trust boundary; must not collapse Gateway propagation and worker enforcement into one unreviewed implementation step):
+1. Step 1 - registration - COMPLETE - 2026-09-05 - control-plane only; no implementation; no admission; no activation.
+2. Step 2 - stage-start: cross-service entitlement contract freeze and bounded service decomposition - NOT STARTED. Must resolve the eighteen mandatory Step 2 questions below, including whether Gateway enqueue and worker enforcement must be split into separate GATEWAY and AI-SERVICE child slices.
+3. Step 3 - bounded implementation slice(s) frozen at Step 2 - NOT AUTHORIZED.
+4. Step 4 - independent verification / checkpoint / final lock - NOT AUTHORIZED.
+**Start condition:** READY (satisfied for registration). NOT ADMITTED. Machine `status=READY`. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. Candidate `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true`. No implementation mutex owned.
+**Depends on (canonical / human):** AGENT-PLATFORM-EXEC-01C5 COMPLETE AND LOCKED - PASS - 2026-09-04 - Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C5-CHECKPOINT.md` - names this exact worker defense-in-depth gap as an unregistered follow-up and freezes the trusted-entitlement-authority principle this task inherits. AGENT-PLATFORM-EXEC-01C5R1 COMPLETE AND LOCKED - PASS - 2026-09-05 - Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C5R1-CHECKPOINT.md` - unrelated test-compilation repair; recorded only as the most recent locked sibling. AGENT-PLATFORM-EXEC-01C4 COMPLETE AND LOCKED (persisted `agentId` on Harness jobs). AGENT-PLATFORM-EXEC-01C1 COMPLETE AND LOCKED (foundational job types and fail-closed Harness routing surface this task must extend). AGENT-PLATFORM-EXEC-01C Step 2 freeze COMPLETE - 2026-09-01 - Stage-start: `docs/AGENT-PLATFORM-EXEC-01C-STAGE-START.md` (parent umbrella is NOT LOCKED and MUST NOT appear in machine `dependsOn`).
+**Depends on (machine sidecar `dependsOn`):** `["AGENT-PLATFORM-EXEC-01C5"]` - sidecar `lockedTaskIds` contains it. Parent umbrella AGENT-PLATFORM-EXEC-01C is READY / not LOCKED and is recorded only as a human/canonical parent dependency; it is not included in machine `dependsOn`.
+**Primary write scope (Step 1, this write):** `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body; `docs/control-plane/lane-saturation-state.json` candidate record. No application source. No test file. No stage-start document.
+**Primary write scope (Step 2):** NOT FROZEN. Stage-start must determine the exact canonical queue entitlement field/proof, the exact producers that must carry it, and whether Gateway propagation and worker enforcement require separate GATEWAY and AI-SERVICE child slices rather than one combined write set.
+**Primary write scope (Step 3):** separately authorized bounded slice(s) only, frozen at Step 2. Not authorized now.
+**Primary write scope (Step 4):** independent verification / checkpoint / final lock only after Step 3 evidence exists. Not authorized now.
+**Mutexes / resources (Step 1, this write):** GOVERNANCE held only for this control-plane registration then released UNOWNED. No IMPLEMENTATION candidate mutexes. Machine `mutexes=[]` by design: Step 1 must not predetermine implementation write sets or reserve both GATEWAY and AI-SERVICE before the cross-service decomposition question is answered. GOVERNANCE must not appear in the IMPLEMENTATION candidate mutex list. GATEWAY / AI-SERVICE / CONTAINER-MANAGER / FRONTEND / I18N / MIGRATION / PACKAGE / COMPOSE / ENV / LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT remain UNOWNED and unauthorized.
+**Hot-file leases:** none in Step 1.
+**Shared contracts:** none named in the machine catalog (`sharedContractIds=[]`; `mutatesSharedContractIds=[]`). The queue-crossing entitlement proof between `AiExecutionJob` (Gateway-authored) and the worker's `resolveHarnessRouting` gate is a candidate future shared-contract boundary; Step 2 stage-start must decide whether a catalog ID is required (mandatory question 15). Catalog IDs are not minted in this window.
+**Evidence class:** LOCAL-TESTS. No provider-live. No Docker/Postgres/Redis. No STAGING / PROVIDER-LIVE / CREDIT runtime needs. No staging/browser/runtime in this Step 1.
+**Revert isolation:** Step 1 revert = discard the three control-plane files' EXEC-01C5B additions and restore Lane 1 / Lane 2 EMPTY and GOVERNANCE UNOWNED (both already unchanged by this write). Cannot invalidate locked AGENT-PLATFORM-EXEC-01A / 01B / 01C1 / 01C2 / 01C3 / 01C4 / 01C4B / 01C5 / 01C5R1 / GOV-AUTH-03 evidence, or the AGENT-PLATFORM-EXEC-01C stage-start freeze. No child task registered.
+**saturationClass:** FORCING (explicit; required security debt inside the already-authorized CURRENT development program; a READY FORCING PROVISIONAL candidate with empty lanes does not by itself invalidate idle because `admissionUncertain=true` yields ADMISSION_UNCERTAIN, matching every other umbrella/child registration-only step in this family).
+**productClass:** CURRENT
+**futureAuthorization:** NONE - schema requires `futureAuthorization=NONE` when `productClass=CURRENT`. Product-visible Harness remains FUTURE/gated and is not encoded as `AUTHORIZED` FUTURE product.
+**writeSetPrecision:** PROVISIONAL
+**admissionUncertain:** true
+**exclusiveCapacity:** false
+**runtimeNeeds:** none
+**i18n:** false
+
+**Identifier search:** Repo-wide search for a canonical `AGENT-PLATFORM-EXEC-01C5B` heading, an `AISB_MACHINE_REG_V1` stanza, a current-board registration, a sidecar candidate or occupied lane, a locked task ID, and an equivalent already-registered successor returned none at HEAD `f096e6c41360159d51d56cf4230451b058e53361`. The only prior appearances of the string "EXEC-01C5B" are narrative mentions inside the locked AGENT-PLATFORM-EXEC-01C5 canonical body ("Unregistered follow-up AGENT-PLATFORM-EXEC-01C5B") and inside `docs/AGENT-PLATFORM-EXEC-01C5R1-CHECKPOINT.md` ("EXEC-01C5B / EXEC-01C6 | unregistered"); both are explicit non-registrations. AGENT-PLATFORM-EXEC-01C6 is a distinct, separate, still-unregistered concern. No other registered task owns worker-side Harness entitlement defense in depth. AGENT-PLATFORM-EXEC-01C5B is the smallest correct next bounded security-task ID.
+
+**Why this remains required after AGENT-PLATFORM-EXEC-01C5 (source-inspected at this HEAD; read-only):**
+- `services/ai-service/src/queue/job.types.ts` `AiExecutionJob` has `harnessVersion?: string` and `agentId?: string` but no entitlement field of any kind.
+- `services/api-gateway/src/ai/ai-execution.controller.ts` (lines ~489-497, ~703) validates `harnessVersion==='v1'` only when `harnessVersion` is provided, requires `identity.harnessEntitled===true` before any side effect, and conditionally spreads `harnessVersion` onto the `enqueueExecution` payload; it does not currently send any entitlement token.
+- `services/api-gateway/src/auth/session-or-api-key.guard.ts` (browser-session identity) and `services/api-gateway/src/auth/api-key.config.ts` (API-key `ai:harness` scope) are the only two places `harnessEntitled` is assigned; both are Gateway-authenticated-identity constructs, not queue payload fields.
+- `services/api-gateway/src/queue/queue.service.ts` `enqueueExecution(jobData: any)` is untyped (`any`), so nothing at the Gateway/queue boundary currently prevents a stale, replayed, manually constructed, or bypass-produced job from carrying `harnessVersion:'v1'` without ever having passed the controller's entitlement check.
+- `services/ai-service/src/worker/worker.processor.ts` (`resolveHarnessRouting`, ~line 203-215) selects the harness path solely from `job.data.harnessVersion==='v1'` plus the global `DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop` flag and adapter capability. It performs no independent check that the queued job was ever entitled.
+- A second production producer exists: `services/api-gateway/src/orchestration/orchestration.service.ts` `startReferralExecution` (~line 625-672) also calls `queueService.enqueueExecution(jobPayload)` with `harnessVersion: input.harnessVersion` taken directly from caller input, with no visible `identity.harnessEntitled` check inside that method. At this HEAD no controller wires a route to `startReferralExecution` (repo-wide `*.controller.ts` search found none); it is exercised only by `orchestration.service.spec.ts` and `orchestration.canary.spec.ts` unit/canary tests, so it is dormant, unreachable production code today, not a currently live bypass - but Step 2 stage-start must decide whether it is in scope as a second Gateway-side producer that would also need to carry (or be prevented from setting) the trusted entitlement proof before any future controller wires it up.
+- Net conclusion: today, both known reachable production paths into `AiExecutionJob` construction are Gateway-authenticated at enqueue time, but the queue boundary carries no trustworthy, worker-checkable record of that fact, and the worker performs no independent verification. If `AGENT_HARNESS_ENABLE_TOOL_LOOP` (or an equivalent loop flag) is ever enabled without this defense landing first, a stale/injected/replayed `harnessVersion='v1'` job could reach `resolveHarnessRouting` and the Harness loop with no worker-side entitlement check. This is exactly the gap the EXEC-01C5 checkpoint named and left unregistered; it remains required, unrelated to and not resolved by the EXEC-01C5R1 test-compilation repair.
+
+**Step 1 contract boundary (architectural safety objective only; do not freeze field names, serialization, error types, or topology in this Step 1 - stage-start freezes those from current repository evidence):**
+- Authenticated Gateway identity is the only entitlement authority.
+- Client request fields must never be trusted as Harness entitlement.
+- A trustworthy entitlement decision must cross the Gateway-to-worker queue boundary.
+- Any job requesting `harnessVersion='v1'` must fail closed in the worker unless the trusted queued entitlement proof is explicitly valid.
+- Missing, false, malformed, stale, manually injected, replayed, or bypass-produced entitlement must not reach provider execution, Harness loop entry, tool advertisement, tool dispatch, browser operations, mutation operations, validation, or checkpoint creation.
+- Ordinary jobs without `harnessVersion='v1'` must remain backward compatible.
+- Entitled API-key and allow-listed browser-session flows must remain supported at the Gateway boundary.
+- `isInternal`, `agentId`, user role, plan, prompt identity, API-key ID, or execution intent must not substitute for entitlement.
+- The worker failure must be deterministic and non-retryable unless stage-start proves a different repository requirement.
+- Harness flags remain false. Product-visible Harness remains FUTURE/gated. No frontend activation, provider-live call, staging, migration, or new runtime architecture.
+
+**Mandatory Step 2 questions (stage-start must resolve every one before source implementation):**
+1. Exact canonical queue field or structured entitlement proof.
+2. How Gateway derives it exclusively from authenticated `ApiKeyIdentity`.
+3. Whether the field is present only on Harness jobs or explicitly false/absent elsewhere.
+4. Queue serialization/deserialization and retry/replay preservation.
+5. Every queue-job producer and whether any legitimate producer bypasses the controller (see the dormant `orchestration.service.ts` `startReferralExecution` finding above).
+6. Worker guard placement relative to routing, provider calls, audit creation, dispatcher construction, tool advertisement, checkpoint creation, and retry handling.
+7. Fail-closed behavior for missing, false, malformed, or incompatible values.
+8. Non-retryable worker error semantics and safe structured logging.
+9. Whether failure metadata/audit requires a bounded contract update.
+10. Backward compatibility for ordinary non-Harness jobs.
+11. API-key Harness compatibility.
+12. Browser allow-list compatibility.
+13. Prevention of client/body injection.
+14. Test requirements at Gateway, queue-contract, worker, and coupled boundaries.
+15. Whether a shared-contract catalog ID is required.
+16. Whether the work must decompose into separate Gateway and AI-Service child slices to avoid an unsafe dual-service implementation.
+17. Exact write sets and mutexes for each bounded implementation slice.
+18. Confirmation that activation remains separately gated after completion.
+
+**Boundedness decision (frozen for Step 1; do not expand):** This registration records the architectural safety objective and the mandatory Step 2 question set only. It does not freeze the queue field name, does not freeze whether GATEWAY and AI-SERVICE are one slice or two, does not touch any application source, test file, environment file, stage-start document, checkpoint, PRD, ARCHITECTURE, or migration file, and does not admit an implementation lane.
+
+**Explicitly out of scope (Step 1):** implementation source in `services/ai-service/**` or `services/api-gateway/**`; frontend; i18n; environment files; provider-live calls; staging, browser, Docker, PostgreSQL, Redis, or application runtime; live credit mutation; migrations; enabling `AGENT_HARNESS_ENABLE_TOOL_LOOP` or an equivalent flag; frontend `harnessVersion` requests; wiring a controller to `orchestration.service.ts` `startReferralExecution`; registering AGENT-PLATFORM-EXEC-01C6 or admitting the AGENT-PLATFORM-EXEC-01C umbrella; reopening Keith's G7 user-ID allow-list decision; `PRIVATE-BETA-INVITE-01`; PRD.md / ARCHITECTURE.md / CLAUDE.md / AGENTS.md / validator / mutex catalog edits.
+
+**Activation effect:** NONE (flags remain false; frontend still omits `harnessVersion`; no product-visible Harness; no application source changed).
+**Rollback boundary:** registration-only; control-plane rollback = discard this task's board/registry/sidecar entries. No implementation to roll back.
+
+**Machine registration (post-epoch):** Present exactly once immediately under this canonical heading (`taskId=AGENT-PLATFORM-EXEC-01C5B`, `nature=IMPLEMENTATION`). Enforcement epoch unchanged. No second epoch. Do not duplicate the machine-registration markers elsewhere in this body. Do not register AGENT-PLATFORM-EXEC-01C6 or child slices of this task in this window.
+
+**Lane / admission:**
+REGISTERED / READY / NOT ADMITTED. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. Occupancy hash unchanged: `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d` (no lane, governance, or suspension field changes in this write). Candidate `admissionUncertain=true` / `writeSetPrecision=PROVISIONAL` / `status=READY` so `Test-Admissible` = ADMISSION_UNCERTAIN; this candidate is not in S. It does not occupy Lane 1 or Lane 2. Do not admit this task. Do not manufacture a matching candidate to occupy the other lane.
+
+AGENT-PLATFORM-EXEC-01C5B does NOT: start implementation in Step 1; perform stage-start; freeze the final cross-service contract; register implementation children; admit a lane; acquire GATEWAY / AI-SERVICE / CONTAINER-MANAGER / FRONTEND / I18N; enable Harness flags; activate product-visible Harness; reopen Keith's G7 decision; register AGENT-PLATFORM-EXEC-01C6; register PRIVATE-BETA-INVITE-01; enable Lane 3; edit PRD.md / ARCHITECTURE.md / CLAUDE.md / AGENTS.md / validator / mutex catalog / application source in this window.
+
+#### Acceptance Criteria
+
+Step 1 (Registration):
+- [x] canonical ID AGENT-PLATFORM-EXEC-01C5B verified unused (no heading, stanza, board registration, sidecar candidate, occupied lane, locked ID, or equivalent successor)
+- [x] narrative mentions inside locked EXEC-01C5 body and EXEC-01C5R1 checkpoint not treated as a registration
+- [x] equivalent unfinished task NONE
+- [x] required-security-debt classification recorded; Keith's G7 allow-list decision not reopened
+- [x] current Gateway entitlement flow, queue contract, and every queue-job producer documented from source inspection
+- [x] worker routing and missing defense-in-depth documented from source inspection
+- [x] dormant second producer (`orchestration.service.ts` `startReferralExecution`) identified and recorded as unreachable-but-relevant for Step 2
+- [x] 4-step HIGH-RISK lifecycle recorded (registration / stage-start contract freeze and decomposition / bounded implementation slices / independent verification)
+- [x] architectural safety objective recorded without freezing field name, serialization, error type, or topology
+- [x] eighteen mandatory Step 2 questions recorded
+- [x] post-epoch machine stanza exactly once
+- [x] candidate record exactly once
+- [x] nature=IMPLEMENTATION
+- [x] saturationClass=FORCING
+- [x] productClass=CURRENT
+- [x] futureAuthorization=NONE
+- [x] status=READY
+- [x] startCondition=READY
+- [x] writeSetPrecision=PROVISIONAL
+- [x] admissionUncertain=true
+- [x] mutexes=[] / writePaths=[] / hotfiles=[]
+- [x] GOVERNANCE not listed on the IMPLEMENTATION candidate
+- [x] no mutex acquired
+- [x] Lane 1 EMPTY
+- [x] Lane 2 EMPTY
+- [x] Lane 3 DISABLED
+- [x] implementation not started
+- [x] no child task registered
+- [x] existing Gateway rejection and Harness flags unchanged
+- [x] validator PASS / candidate not admissible (`ADMISSION_UNCERTAIN`)
+- [x] no application source, test, environment, stage-start, checkpoint, PRD, ARCHITECTURE, or migration file changes
+- [x] no runtime/staging/browser/provider
+- [x] PRIVATE-BETA invariant unchanged
+- [x] No Git commit/push by the worker
+
+Step 2 (stage-start / cross-service entitlement contract freeze):
+- [ ] not started in this window
+
+Step 3 (bounded implementation slices):
+- [ ] not authorized in this window
+
+Step 4 (independent verification / checkpoint / final lock):
+- [ ] not authorized in this window
+
+**Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. INVITATION_EXECUTION_PERMITTED=NO. Unchanged.
+
+**Lane 3 invariant:** Lane 3 remains DISABLED. Unchanged.
+
+**Step 1 HEAD:** `f096e6c41360159d51d56cf4230451b058e53361` (branch main; HEAD == origin/main; working tree clean at window open)
+**Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0, child tasks registered=0 (EXEC-01C6 not registered). Governance writes: TASKS.md, this registry body, `docs/control-plane/lane-saturation-state.json`.

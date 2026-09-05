@@ -381,6 +381,28 @@
       "runtimeNeeds": [],
       "admissionUncertain": false,
       "writeSetPrecision": "EXACT"
+    },
+    {
+      "taskId": "AGENT-PLATFORM-EXEC-01C5B",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "4-STEP",
+      "status": "READY",
+      "startCondition": "READY",
+      "saturationClass": "FORCING",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": ["AGENT-PLATFORM-EXEC-01C5"],
+      "mutexes": [],
+      "writePaths": [],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "LOCAL-TESTS",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": [],
+      "admissionUncertain": true,
+      "writeSetPrecision": "PROVISIONAL"
     }
   ],
   "lockedTaskIds": ["GOV-OS-03", "GOV-OS-03R1", "AGENT-PLATFORM-CREATE-01F", "I18N-SHELL-07", "AGENT-PLATFORM-EXEC-01A", "AGENT-PLATFORM-EXEC-01B", "GOV-AUTH-03", "AGENT-PLATFORM-EXEC-01C1", "AGENT-PLATFORM-EXEC-01C2", "AGENT-PLATFORM-EXEC-01C3", "AGENT-PLATFORM-EXEC-01C4", "AGENT-PLATFORM-EXEC-01C4B", "AGENT-PLATFORM-EXEC-01C5", "AGENT-PLATFORM-EXEC-01C5R1"],
