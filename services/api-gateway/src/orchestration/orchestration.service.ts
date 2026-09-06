@@ -647,7 +647,6 @@ export class OrchestrationService {
       globalInstructions: input.globalInstructions,
       projectInstructions: input.projectInstructions,
       model: input.model,
-      harnessVersion: input.harnessVersion,
       submittedAt: input.submittedAt,
       agentRole: referral.targetBuilder.agentRole,
       builderProfileId: referral.targetBuilder.builderProfileId,

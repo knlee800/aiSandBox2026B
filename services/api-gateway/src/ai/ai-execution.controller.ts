@@ -58,6 +58,105 @@ import {
   normalizeModelInput,
   resolveGatewayProviderModelSelection,
 } from './provider-model.catalogue';
+import { createHash, createHmac } from 'crypto';
+
+export interface HarnessEntitlementProof {
+  readonly version: 1;
+  readonly executionId: string;
+  readonly userId: string;
+  readonly apiKeyId: string;
+  readonly harnessVersion: 'v1';
+  readonly issuedAt: string;
+  readonly payloadDigest: string;
+  readonly signature: string;
+}
+
+export function sortKeysRecursive(value: unknown): unknown {
+  if (value === null || typeof value !== 'object') {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value.map(sortKeysRecursive);
+  }
+  const obj = value as Record<string, unknown>;
+  const sorted: Record<string, unknown> = {};
+  for (const key of Object.keys(obj).sort()) {
+    sorted[key] = sortKeysRecursive(obj[key]);
+  }
+  return sorted;
+}
+
+export function computePayloadDigest(
+  payloadWithoutProof: Record<string, unknown>,
+): { canonicalJson: string; payloadDigest: string } {
+  let jsonStr: string | undefined;
+  try {
+    jsonStr = JSON.stringify(payloadWithoutProof);
+  } catch {
+    throw new Error('Payload serialization failed');
+  }
+  if (jsonStr === undefined) {
+    throw new Error('Payload serialization failed: JSON.stringify returned undefined');
+  }
+  const parsed = JSON.parse(jsonStr);
+  const canonicalJson = JSON.stringify(sortKeysRecursive(parsed));
+  const payloadDigest = createHash('sha256').update(canonicalJson, 'utf8').digest('hex');
+  return { canonicalJson, payloadDigest };
+}
+
+export function buildHarnessEntitlementClaimString(input: {
+  readonly executionId: string;
+  readonly userId: string;
+  readonly apiKeyId: string;
+  readonly issuedAt: string;
+  readonly payloadDigest: string;
+}): string {
+  return `v=1|executionId=${input.executionId}|userId=${input.userId}|apiKeyId=${input.apiKeyId}|harnessVersion=v1|issuedAt=${input.issuedAt}|payloadDigest=${input.payloadDigest}`;
+}
+
+export function signHarnessEntitlementClaim(claim: string, secret: string): string {
+  return createHmac('sha256', secret).update(claim, 'utf8').digest('hex');
+}
+
+export function readValidatedHarnessEntitlementHmacSecret(): string | undefined {
+  const raw = process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+  if (raw === undefined) {
+    return undefined;
+  }
+  const trimmed = raw.trim();
+  if (trimmed.length === 0) {
+    return undefined;
+  }
+  return trimmed;
+}
+
+export function createHarnessEntitlementProof(input: {
+  readonly executionId: string;
+  readonly userId: string;
+  readonly apiKeyId: string;
+  readonly issuedAt: string;
+  readonly payloadWithoutProof: Record<string, unknown>;
+  readonly secret: string;
+}): HarnessEntitlementProof {
+  const { payloadDigest } = computePayloadDigest(input.payloadWithoutProof);
+  const claim = buildHarnessEntitlementClaimString({
+    executionId: input.executionId,
+    userId: input.userId,
+    apiKeyId: input.apiKeyId,
+    issuedAt: input.issuedAt,
+    payloadDigest,
+  });
+  return {
+    version: 1,
+    executionId: input.executionId,
+    userId: input.userId,
+    apiKeyId: input.apiKeyId,
+    harnessVersion: 'v1',
+    issuedAt: input.issuedAt,
+    payloadDigest,
+    signature: signHarnessEntitlementClaim(claim, input.secret),
+  };
+}
 
 const MAX_REPO_DOC_COUNT = 10;
 const MAX_REPO_DOC_CHARS = 8000;
@@ -684,7 +783,7 @@ export class AIExecutionController {
     // Intent is already written to ledger (status='pending').
     // Worker will claim, execute, and finalize the ledger record.
     const submittedAt = new Date().toISOString();
-    await this.queueService.enqueueExecution({
+    const payload = {
       executionId,
       userId: identity.userId,
       apiKeyId: identity.apiKeyId,
@@ -706,6 +805,35 @@ export class AIExecutionController {
       ...(request.collaborationRunId !== undefined && { collaborationRunId: request.collaborationRunId }),
       ...(request.referralTraceId !== undefined && { referralTraceId: request.referralTraceId }),
       ...(persistedUserAgent !== undefined && { agentId: persistedUserAgent.id }),
+    };
+
+    let harnessEntitlementProof: HarnessEntitlementProof | undefined;
+    if (request.harnessVersion === 'v1') {
+      const secret = readValidatedHarnessEntitlementHmacSecret();
+      if (secret === undefined) {
+        throw new InternalServerErrorException(
+          'Harness entitlement proof could not be produced',
+        );
+      }
+      try {
+        harnessEntitlementProof = createHarnessEntitlementProof({
+          executionId,
+          userId: identity.userId,
+          apiKeyId: identity.apiKeyId,
+          issuedAt: submittedAt,
+          payloadWithoutProof: payload,
+          secret,
+        });
+      } catch {
+        throw new InternalServerErrorException(
+          'Harness entitlement proof could not be produced',
+        );
+      }
+    }
+
+    await this.queueService.enqueueExecution({
+      ...payload,
+      ...(harnessEntitlementProof !== undefined && { harnessEntitlementProof }),
     });
 
     // Phase 44.4D: Return immediately — do NOT wait for AI execution.

@@ -582,6 +582,47 @@ describe('AGENT-PLATFORM-07C2: startReferralExecution', () => {
 
     expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
   });
+
+  it('AGENT-PLATFORM-EXEC-01C5B1: strips caller-provided harnessVersion from the enqueued referral job', async () => {
+    const referral = setupReferral({ referralId: 'ref-01c5b1-strip', collabId: 'collab-01c5b1-strip' });
+    await service.startReferralExecution(baseExecutionInput(referral.referralId));
+
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload).not.toHaveProperty('harnessVersion');
+    expect(payload.executionId).toBe('exec-001');
+    expect(payload.referralId).toBe(referral.referralId);
+    expect(payload.isReferralExecution).toBe(true);
+  });
+
+  it('AGENT-PLATFORM-EXEC-01C5B1: referral input without harnessVersion retains existing enqueue behavior', async () => {
+    const referral = setupReferral({ referralId: 'ref-01c5b1-plain', collabId: 'collab-01c5b1-plain' });
+    const { harnessVersion: _omitted, ...inputWithoutHarness } = baseExecutionInput(
+      referral.referralId,
+    );
+    expect(_omitted).toBe('v1');
+
+    await service.startReferralExecution(inputWithoutHarness);
+
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload).not.toHaveProperty('harnessVersion');
+    expect(payload.executionId).toBe('exec-001');
+    expect(payload.userId).toBe('user-01');
+    expect(payload.apiKeyId).toBe('apikey-01');
+    expect(payload.collaborationRunId).toBe('collab-01c5b1-plain');
+    expect(payload.referralId).toBe(referral.referralId);
+    expect(payload.isReferralExecution).toBe(true);
+    expect(payload.orchestrationPriority).toBe(10);
+  });
+
+  it('AGENT-PLATFORM-EXEC-01C5B1: does not manufacture a harnessEntitlementProof', async () => {
+    const referral = setupReferral({ referralId: 'ref-01c5b1-proof', collabId: 'collab-01c5b1-proof' });
+    await service.startReferralExecution(baseExecutionInput(referral.referralId));
+
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload).not.toHaveProperty('harnessEntitlementProof');
+  });
 });
 
 describe('AGENT-PLATFORM-07C2: cancelReferral', () => {

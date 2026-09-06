@@ -3,9 +3,17 @@ import {
   BadRequestException,
   ForbiddenException,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { AIExecutionController } from './ai-execution.controller';
+import { createHash } from 'crypto';
+import {
+  AIExecutionController,
+  sortKeysRecursive,
+  computePayloadDigest,
+  buildHarnessEntitlementClaimString,
+  signHarnessEntitlementClaim,
+} from './ai-execution.controller';
 import { AIExecutionRequest } from '../clients/ai-service-http.client';
 import { ApiKeyIdentity } from '../auth/api-key.config';
 import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
@@ -23,6 +31,22 @@ import { UserAiInstructionsService } from '../user-ai-instructions/user-ai-instr
 import { ProjectAiContextService } from '../project-ai-context/project-ai-context.service';
 import { SessionService } from '../sessions/session.service';
 import { UserAgentService } from '../user-agent/user-agent.service';
+
+const EXEC_01C5B1_TEST_HMAC_SECRET = 'test-hmac-secret-do-not-use-in-production-01c5b';
+let previousHarnessEntitlementHmacSecret: string | undefined;
+
+beforeEach(() => {
+  previousHarnessEntitlementHmacSecret = process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+  process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = EXEC_01C5B1_TEST_HMAC_SECRET;
+});
+
+afterEach(() => {
+  if (previousHarnessEntitlementHmacSecret === undefined) {
+    delete process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+  } else {
+    process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = previousHarnessEntitlementHmacSecret;
+  }
+});
 
 describe('AIExecutionController (Phase 18A + Phase 20A + Phase 20B + Phase 21B + Phase 22B)', () => {
   let controller: AIExecutionController;
@@ -2566,5 +2590,525 @@ describe('AIExecutionController — AGENT-PLATFORM-EXEC-01C5 browser-session ent
     expect(payload).not.toHaveProperty('harnessVersion');
     expect(payload.agentId).toBe(OWNED_AGENT_ID);
     expect(unentitledBrowserIdentity).not.toHaveProperty('harnessEntitled');
+  });
+});
+
+/**
+ * AGENT-PLATFORM-EXEC-01C5B1 Cycle A — canonicalization pipeline and golden vector.
+ * Expected digest/signature are hardcoded frozen constants, not derived from production.
+ */
+describe('AIExecutionController — AGENT-PLATFORM-EXEC-01C5B1 canonicalization and golden vector', () => {
+  const GOLDEN_SECRET = 'test-hmac-secret-do-not-use-in-production-01c5b';
+  const GOLDEN_ISSUED_AT = '2026-09-05T12:00:00.000Z';
+  const GOLDEN_INSERTION_ORDER_JSON =
+    '{"executionId":"exec-golden-01","userId":"user-golden-01","apiKeyId":"apikey-golden-01","sessionId":"session-golden-01","conversationId":"conv-golden-01","provider":"anthropic","adapter":"anthropic","prompt":"Hello, world.","submittedAt":"2026-09-05T12:00:00.000Z","harnessVersion":"v1"}';
+  const GOLDEN_CANONICAL_JSON =
+    '{"adapter":"anthropic","apiKeyId":"apikey-golden-01","conversationId":"conv-golden-01","executionId":"exec-golden-01","harnessVersion":"v1","prompt":"Hello, world.","provider":"anthropic","sessionId":"session-golden-01","submittedAt":"2026-09-05T12:00:00.000Z","userId":"user-golden-01"}';
+  const GOLDEN_PAYLOAD_DIGEST =
+    '8b58d2d281263357f70c8a489e3bbf4e32e0facfb5db0e83cd522b62e007188a';
+  const GOLDEN_CLAIM_STRING =
+    'v=1|executionId=exec-golden-01|userId=user-golden-01|apiKeyId=apikey-golden-01|harnessVersion=v1|issuedAt=2026-09-05T12:00:00.000Z|payloadDigest=8b58d2d281263357f70c8a489e3bbf4e32e0facfb5db0e83cd522b62e007188a';
+  const GOLDEN_SIGNATURE =
+    'd247e17634be269b0bbef1eb843a65bf299935ea840853900fe5dda3d8ef11b5';
+
+  function makeGoldenPayload(): Record<string, unknown> {
+    return {
+      executionId: 'exec-golden-01',
+      userId: 'user-golden-01',
+      apiKeyId: 'apikey-golden-01',
+      sessionId: 'session-golden-01',
+      conversationId: 'conv-golden-01',
+      provider: 'anthropic',
+      adapter: 'anthropic',
+      prompt: 'Hello, world.',
+      submittedAt: GOLDEN_ISSUED_AT,
+      harnessVersion: 'v1',
+    };
+  }
+
+  it('recursively sorts object keys using Object.keys().sort()', () => {
+    const sorted = sortKeysRecursive({
+      z: { b: 1, a: 2 },
+      m: 3,
+    });
+    expect(JSON.stringify(sorted)).toBe('{"m":3,"z":{"a":2,"b":1}}');
+  });
+
+  it('preserves array element order while sorting nested object keys', () => {
+    const sorted = sortKeysRecursive({
+      items: [
+        { b: 1, a: 2 },
+        { d: 4, c: 3 },
+      ],
+    });
+    expect(JSON.stringify(sorted)).toBe('{"items":[{"a":2,"b":1},{"c":3,"d":4}]}');
+  });
+
+  it('applies BullMQ-equivalent JSON.stringify/JSON.parse normalization before sorting', () => {
+    const payload = {
+      b: 2,
+      a: 1,
+      skip: undefined,
+    };
+    const roundTripped = JSON.parse(JSON.stringify(payload));
+    expect(Object.prototype.hasOwnProperty.call(roundTripped, 'skip')).toBe(false);
+    const canonicalJson = JSON.stringify(sortKeysRecursive(roundTripped));
+    expect(canonicalJson).toBe('{"a":1,"b":2}');
+  });
+
+  it('omits undefined object properties from canonical JSON', () => {
+    const result = computePayloadDigest({
+      a: 1,
+      b: undefined,
+      c: 2,
+    } as Record<string, unknown>);
+    expect(result.canonicalJson).toBe('{"a":1,"c":2}');
+  });
+
+  it('normalizes undefined array elements to null', () => {
+    const result = computePayloadDigest({
+      items: [1, undefined, 3],
+    } as Record<string, unknown>);
+    expect(result.canonicalJson).toBe('{"items":[1,null,3]}');
+  });
+
+  it('fails closed on cyclic input', () => {
+    const cyclic: Record<string, unknown> = { a: 1 };
+    cyclic.self = cyclic;
+    expect(() => computePayloadDigest(cyclic)).toThrow();
+  });
+
+  it('fails closed on BigInt input', () => {
+    expect(() =>
+      computePayloadDigest({ n: BigInt(1) } as unknown as Record<string, unknown>),
+    ).toThrow();
+  });
+
+  it('matches frozen golden insertion-order JSON, canonical JSON, and SHA-256 digest byte-for-byte', () => {
+    const payload = makeGoldenPayload();
+    expect(JSON.stringify(payload)).toBe(GOLDEN_INSERTION_ORDER_JSON);
+    const result = computePayloadDigest(payload);
+    expect(result.canonicalJson).toBe(GOLDEN_CANONICAL_JSON);
+    expect(Buffer.from(result.canonicalJson, 'utf8').equals(Buffer.from(GOLDEN_CANONICAL_JSON, 'utf8'))).toBe(
+      true,
+    );
+    expect(result.payloadDigest).toBe(GOLDEN_PAYLOAD_DIGEST);
+  });
+
+  it('builds the exact frozen canonical claim string', () => {
+    const claim = buildHarnessEntitlementClaimString({
+      executionId: 'exec-golden-01',
+      userId: 'user-golden-01',
+      apiKeyId: 'apikey-golden-01',
+      issuedAt: GOLDEN_ISSUED_AT,
+      payloadDigest: GOLDEN_PAYLOAD_DIGEST,
+    });
+    expect(claim).toBe(GOLDEN_CLAIM_STRING);
+    expect(claim.endsWith('|')).toBe(false);
+  });
+
+  it('produces the exact frozen HMAC-SHA256 signature', () => {
+    const signature = signHarnessEntitlementClaim(GOLDEN_CLAIM_STRING, GOLDEN_SECRET);
+    expect(signature).toBe(GOLDEN_SIGNATURE);
+    expect(signature).toBe(signature.toLowerCase());
+  });
+});
+
+describe('AIExecutionController — AGENT-PLATFORM-EXEC-01C5B1 proof production', () => {
+  let controller: AIExecutionController;
+  let mockUsageLedgerService: Record<string, jest.Mock>;
+  let mockQueueService: Record<string, jest.Mock>;
+  let mockSessionService: Record<string, jest.Mock>;
+
+  const VALID_SESSION_UUID = '35d53116-6723-4571-af12-ac256977c007';
+  const VERIFIED_USER_ID = 'verified-user-01c5b1';
+  const API_KEY_ID = 'apikey-01c5b1';
+
+  const entitledApiKeyIdentity: ApiKeyIdentity = {
+    userId: VERIFIED_USER_ID,
+    apiKeyId: API_KEY_ID,
+    scopes: ['ai:execute', 'ai:harness'],
+    harnessEntitled: true,
+  };
+
+  const entitledBrowserIdentity: ApiKeyIdentity = {
+    userId: VERIFIED_USER_ID,
+    apiKeyId: 'browser-session',
+    scopes: ['ai:execute'],
+    isInternal: true,
+    harnessEntitled: true,
+  };
+
+  const unentitledIdentity: ApiKeyIdentity = {
+    userId: VERIFIED_USER_ID,
+    apiKeyId: API_KEY_ID,
+    scopes: ['ai:execute'],
+  };
+
+  function makeRequest(overrides?: Partial<AIExecutionRequest>): AIExecutionRequest {
+    return {
+      sessionId: VALID_SESSION_UUID,
+      conversationId: 'conv-01c5b1',
+      userId: 'untrusted-client-user',
+      prompt: 'Hello from EXEC-01C5B1',
+      provider: 'stub',
+      ...overrides,
+    };
+  }
+
+  function independentCompletePayloadDigest(enqueued: Record<string, unknown>): string {
+    const withoutProof = { ...enqueued };
+    delete withoutProof.harnessEntitlementProof;
+    const jsonStr = JSON.stringify(withoutProof);
+    const parsed = JSON.parse(jsonStr);
+    const sortKeys = (value: unknown): unknown => {
+      if (value === null || typeof value !== 'object') {
+        return value;
+      }
+      if (Array.isArray(value)) {
+        return value.map(sortKeys);
+      }
+      const obj = value as Record<string, unknown>;
+      const sorted: Record<string, unknown> = {};
+      for (const key of Object.keys(obj).sort()) {
+        sorted[key] = sortKeys(obj[key]);
+      }
+      return sorted;
+    };
+    const canonicalJson = JSON.stringify(sortKeys(parsed));
+    return createHash('sha256').update(canonicalJson, 'utf8').digest('hex');
+  }
+
+  function expectProofShape(proof: Record<string, unknown>): void {
+    expect(Object.keys(proof).sort()).toEqual(
+      [
+        'apiKeyId',
+        'executionId',
+        'harnessVersion',
+        'issuedAt',
+        'payloadDigest',
+        'signature',
+        'userId',
+        'version',
+      ].sort(),
+    );
+    expect(proof.version).toBe(1);
+    expect(typeof proof.version).toBe('number');
+    expect(proof.harnessVersion).toBe('v1');
+    expect(proof.issuedAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+    expect(proof.payloadDigest).toMatch(/^[0-9a-f]{64}$/);
+    expect(proof.signature).toMatch(/^[0-9a-f]{64}$/);
+  }
+
+  beforeEach(async () => {
+    mockUsageLedgerService = {
+      findByRequestId: jest.fn().mockResolvedValue(null),
+      reuseExecutionIntent: jest.fn().mockResolvedValue('reused-exec-01c5b1'),
+      writeExecutionIntent: jest.fn().mockResolvedValue(undefined),
+      updateExecutionResult: jest.fn().mockResolvedValue(undefined),
+    };
+
+    mockQueueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+
+    mockSessionService = {
+      getSessionById: jest.fn().mockResolvedValue({
+        userId: VERIFIED_USER_ID,
+        projectId: null,
+      }),
+    };
+
+    const mockGuard = { canActivate: jest.fn(() => true) };
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [AIExecutionController],
+      providers: [
+        { provide: UsageLedgerService, useValue: mockUsageLedgerService },
+        {
+          provide: GlobalSafetyLimitService,
+          useValue: { checkAndRecord: jest.fn(), recordExecutionCost: jest.fn() },
+        },
+        { provide: QueueService, useValue: mockQueueService },
+        {
+          provide: ExecutionResultService,
+          useValue: { getExecution: jest.fn(), requestCancel: jest.fn() },
+        },
+        {
+          provide: ExecutionStreamService,
+          useValue: { subscribe: jest.fn(), unsubscribe: jest.fn() },
+        },
+        {
+          provide: UserAiInstructionsService,
+          useValue: { getByUserId: jest.fn().mockResolvedValue(null) },
+        },
+        {
+          provide: ProjectAiContextService,
+          useValue: { getByProjectId: jest.fn().mockResolvedValue(null) },
+        },
+        { provide: SessionService, useValue: mockSessionService },
+      ],
+    })
+      .overrideGuard(SessionOrApiKeyAuthGuard)
+      .useValue(mockGuard)
+      .overrideGuard(AuthorizationGuard)
+      .useValue(mockGuard)
+      .overrideGuard(QuotaGuard)
+      .useValue(mockGuard)
+      .overrideGuard(TokenQuotaGuard)
+      .useValue(mockGuard)
+      .overrideGuard(CreditBalanceGuard)
+      .useValue(mockGuard)
+      .compile();
+
+    controller = module.get<AIExecutionController>(AIExecutionController);
+  });
+
+  it('enqueues a proof for an entitled API-key Harness request', async () => {
+    const result = await controller.execute(
+      makeRequest({ harnessVersion: 'v1' }),
+      entitledApiKeyIdentity,
+    );
+
+    expect(result.status).toBe('queued');
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload.harnessVersion).toBe('v1');
+    expectProofShape(payload.harnessEntitlementProof);
+    expect(payload.harnessEntitlementProof.apiKeyId).toBe(API_KEY_ID);
+  });
+
+  it('enqueues a proof for an entitled browser-session Harness request', async () => {
+    const result = await controller.execute(
+      makeRequest({ harnessVersion: 'v1' }),
+      entitledBrowserIdentity,
+    );
+
+    expect(result.status).toBe('queued');
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expectProofShape(payload.harnessEntitlementProof);
+    expect(payload.harnessEntitlementProof.apiKeyId).toBe('browser-session');
+    expect(payload.harnessEntitlementProof.userId).toBe(VERIFIED_USER_ID);
+  });
+
+  it('binds proof executionId to the actual enqueued executionId', async () => {
+    const result = await controller.execute(
+      makeRequest({ harnessVersion: 'v1' }),
+      entitledApiKeyIdentity,
+    );
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload.harnessEntitlementProof.executionId).toBe(payload.executionId);
+    expect(payload.harnessEntitlementProof.executionId).toBe(result.executionId);
+  });
+
+  it('binds proof userId from authenticated identity, not request body', async () => {
+    await controller.execute(
+      makeRequest({ harnessVersion: 'v1', userId: 'attacker-forged-user' }),
+      entitledApiKeyIdentity,
+    );
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload.userId).toBe(VERIFIED_USER_ID);
+    expect(payload.harnessEntitlementProof.userId).toBe(VERIFIED_USER_ID);
+    expect(payload.harnessEntitlementProof.userId).not.toBe('attacker-forged-user');
+  });
+
+  it('binds proof apiKeyId from authenticated identity', async () => {
+    await controller.execute(
+      makeRequest({
+        harnessVersion: 'v1',
+        metadata: { apiKeyId: 'forged-key-from-body' },
+      }),
+      entitledApiKeyIdentity,
+    );
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload.apiKeyId).toBe(API_KEY_ID);
+    expect(payload.harnessEntitlementProof.apiKeyId).toBe(API_KEY_ID);
+    expect(payload.harnessEntitlementProof.apiKeyId).not.toBe('forged-key-from-body');
+  });
+
+  it('sets version to numeric literal 1 and harnessVersion to literal v1', async () => {
+    await controller.execute(
+      makeRequest({ harnessVersion: 'v1' }),
+      entitledApiKeyIdentity,
+    );
+    const proof = mockQueueService.enqueueExecution.mock.calls[0][0].harnessEntitlementProof;
+    expect(proof.version).toBe(1);
+    expect(proof.harnessVersion).toBe('v1');
+  });
+
+  it('sets issuedAt to the enqueue submittedAt timestamp', async () => {
+    await controller.execute(
+      makeRequest({ harnessVersion: 'v1' }),
+      entitledApiKeyIdentity,
+    );
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload.harnessEntitlementProof.issuedAt).toBe(payload.submittedAt);
+    expect(payload.harnessEntitlementProof.issuedAt).toMatch(
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
+    );
+  });
+
+  it('covers the complete payload excluding only the proof in payloadDigest', async () => {
+    await controller.execute(
+      makeRequest({
+        harnessVersion: 'v1',
+        agentRole: 'builder',
+        builderProfileId: 'bp-01c5b1',
+      }),
+      entitledApiKeyIdentity,
+    );
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0] as Record<string, unknown>;
+    const proof = payload.harnessEntitlementProof as Record<string, unknown>;
+    expect(payload.agentRole).toBe('builder');
+    expect(payload.builderProfileId).toBe('bp-01c5b1');
+    expect(independentCompletePayloadDigest(payload)).toBe(proof.payloadDigest);
+  });
+
+  it('ignores and replaces a client-supplied harnessEntitlementProof', async () => {
+    const clientProof = {
+      version: 1,
+      executionId: 'forged-exec',
+      userId: 'forged-user',
+      apiKeyId: 'forged-key',
+      harnessVersion: 'v1',
+      issuedAt: '2000-01-01T00:00:00.000Z',
+      payloadDigest: '0'.repeat(64),
+      signature: 'a'.repeat(64),
+    };
+    const request = {
+      ...makeRequest({ harnessVersion: 'v1' }),
+      harnessEntitlementProof: clientProof,
+    } as AIExecutionRequest;
+
+    await controller.execute(request, entitledApiKeyIdentity);
+
+    expect(
+      (request as unknown as { harnessEntitlementProof: unknown }).harnessEntitlementProof,
+    ).toEqual(clientProof);
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload.harnessEntitlementProof).not.toEqual(clientProof);
+    expect(payload.harnessEntitlementProof.executionId).toBe(payload.executionId);
+    expect(payload.harnessEntitlementProof.userId).toBe(VERIFIED_USER_ID);
+    expect(payload.harnessEntitlementProof.signature).not.toBe(clientProof.signature);
+  });
+
+  it('omits proof from ordinary non-Harness jobs', async () => {
+    const result = await controller.execute(makeRequest(), entitledApiKeyIdentity);
+    expect(result.status).toBe('queued');
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload).not.toHaveProperty('harnessVersion');
+    expect(payload).not.toHaveProperty('harnessEntitlementProof');
+  });
+
+  it('allows ordinary non-Harness jobs without the signing secret', async () => {
+    delete process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+    const result = await controller.execute(makeRequest(), entitledApiKeyIdentity);
+    expect(result.status).toBe('queued');
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload).not.toHaveProperty('harnessEntitlementProof');
+  });
+
+  it('keeps unentitled Harness requests at 403 with no enqueue', async () => {
+    await expect(
+      controller.execute(makeRequest({ harnessVersion: 'v1' }), unentitledIdentity),
+    ).rejects.toThrow(ForbiddenException);
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+    expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+  });
+
+  it('fails closed with 500 and no enqueue when the signing secret is missing', async () => {
+    delete process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+    const error = await controller
+      .execute(makeRequest({ harnessVersion: 'v1' }), entitledApiKeyIdentity)
+      .catch((err) => err);
+    expect(error).toBeInstanceOf(InternalServerErrorException);
+    expect(String(error.message)).not.toMatch(/HARNESS_ENTITLEMENT_HMAC_SECRET|test-hmac-secret/i);
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  });
+
+  it('fails closed with 500 and no enqueue when the signing secret is empty', async () => {
+    process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = '';
+    await expect(
+      controller.execute(makeRequest({ harnessVersion: 'v1' }), entitledApiKeyIdentity),
+    ).rejects.toThrow(InternalServerErrorException);
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  });
+
+  it('fails closed with 500 and no enqueue when the signing secret is whitespace-only', async () => {
+    process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = '   \t  ';
+    await expect(
+      controller.execute(makeRequest({ harnessVersion: 'v1' }), entitledApiKeyIdentity),
+    ).rejects.toThrow(InternalServerErrorException);
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  });
+
+  it('signs the reused canonical executionId on timeout/failed idempotent reuse', async () => {
+    mockUsageLedgerService.findByRequestId.mockResolvedValue({
+      executionStatus: 'timeout',
+    });
+
+    const timeoutResult = await controller.execute(
+      makeRequest({ harnessVersion: 'v1' }),
+      entitledApiKeyIdentity,
+      'retry-timeout-01c5b1',
+    );
+    expect(timeoutResult.executionId).toBe('reused-exec-01c5b1');
+    expect(mockUsageLedgerService.reuseExecutionIntent).toHaveBeenCalledTimes(1);
+    const timeoutPayload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(timeoutPayload.executionId).toBe('reused-exec-01c5b1');
+    expect(timeoutPayload.harnessEntitlementProof.executionId).toBe('reused-exec-01c5b1');
+
+    mockQueueService.enqueueExecution.mockClear();
+    mockUsageLedgerService.reuseExecutionIntent.mockClear();
+    mockUsageLedgerService.writeExecutionIntent.mockClear();
+    mockUsageLedgerService.findByRequestId.mockResolvedValue({
+      executionStatus: 'failed',
+    });
+    mockUsageLedgerService.reuseExecutionIntent.mockResolvedValue('reused-failed-01c5b1');
+
+    const failedResult = await controller.execute(
+      makeRequest({ harnessVersion: 'v1' }),
+      entitledApiKeyIdentity,
+      'retry-failed-01c5b1',
+    );
+    expect(failedResult.executionId).toBe('reused-failed-01c5b1');
+    const failedPayload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(failedPayload.harnessEntitlementProof.executionId).toBe('reused-failed-01c5b1');
+    expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+  });
+
+  it('does not log the secret, signature, or full proof during proof generation', async () => {
+    const logSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
+    const debugSpy = jest.spyOn(Logger.prototype, 'debug').mockImplementation();
+    const warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    const errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation();
+
+    try {
+      await controller.execute(
+        makeRequest({ harnessVersion: 'v1' }),
+        entitledApiKeyIdentity,
+      );
+      const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+      const proof = payload.harnessEntitlementProof;
+      const logged = [
+        ...logSpy.mock.calls,
+        ...debugSpy.mock.calls,
+        ...warnSpy.mock.calls,
+        ...errorSpy.mock.calls,
+      ]
+        .flat()
+        .map((entry) => String(entry))
+        .join('\n');
+
+      expect(logged).not.toContain(EXEC_01C5B1_TEST_HMAC_SECRET);
+      expect(logged).not.toContain(proof.signature);
+      expect(logged).not.toContain(JSON.stringify(proof));
+      expect(logged).not.toMatch(/HARNESS_ENTITLEMENT_HMAC_SECRET=/);
+    } finally {
+      logSpy.mockRestore();
+      debugSpy.mockRestore();
+      warnSpy.mockRestore();
+      errorSpy.mockRestore();
+    }
   });
 });
