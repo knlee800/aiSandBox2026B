@@ -10,20 +10,15 @@
   },
   "occupancy": {
     "lane1": {
-      "state": "ACTIVE",
-      "taskId": "AGENT-PLATFORM-EXEC-01C5B2",
-      "mutexes": ["AI-SERVICE"],
-      "writePaths": [
-        "services/ai-service/src/queue/job.types.ts",
-        "services/ai-service/src/worker/worker.processor.ts",
-        "services/ai-service/src/worker/worker.processor.spec.ts",
-        "services/ai-service/src/worker/__tests__/worker.processor.builder-config.spec.ts"
-      ],
+      "state": "EMPTY",
+      "taskId": "NONE",
+      "mutexes": [],
+      "writePaths": [],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "LOCAL-TESTS",
+      "evidenceClass": "NONE",
       "exclusiveCapacity": false,
-      "sharedContractIds": ["HARNESS_ENTITLEMENT_PROOF_V1"],
+      "sharedContractIds": [],
       "mutatesSharedContractIds": [],
       "runtimeNeeds": []
     },
@@ -445,7 +440,7 @@
       "taskId": "AGENT-PLATFORM-EXEC-01C5B2",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
-      "status": "ADMITTED",
+      "status": "LOCKED",
       "startCondition": "READY",
       "saturationClass": "FORCING",
       "productClass": "CURRENT",
@@ -471,7 +466,7 @@
       "writeSetPrecision": "EXACT"
     }
   ],
-  "lockedTaskIds": ["GOV-OS-03", "GOV-OS-03R1", "AGENT-PLATFORM-CREATE-01F", "I18N-SHELL-07", "AGENT-PLATFORM-EXEC-01A", "AGENT-PLATFORM-EXEC-01B", "GOV-AUTH-03", "AGENT-PLATFORM-EXEC-01C1", "AGENT-PLATFORM-EXEC-01C2", "AGENT-PLATFORM-EXEC-01C3", "AGENT-PLATFORM-EXEC-01C4", "AGENT-PLATFORM-EXEC-01C4B", "AGENT-PLATFORM-EXEC-01C5", "AGENT-PLATFORM-EXEC-01C5R1", "AGENT-PLATFORM-EXEC-01C5B1"],
+  "lockedTaskIds": ["GOV-OS-03", "GOV-OS-03R1", "AGENT-PLATFORM-CREATE-01F", "I18N-SHELL-07", "AGENT-PLATFORM-EXEC-01A", "AGENT-PLATFORM-EXEC-01B", "GOV-AUTH-03", "AGENT-PLATFORM-EXEC-01C1", "AGENT-PLATFORM-EXEC-01C2", "AGENT-PLATFORM-EXEC-01C3", "AGENT-PLATFORM-EXEC-01C4", "AGENT-PLATFORM-EXEC-01C4B", "AGENT-PLATFORM-EXEC-01C5", "AGENT-PLATFORM-EXEC-01C5R1", "AGENT-PLATFORM-EXEC-01C5B1", "AGENT-PLATFORM-EXEC-01C5B2"],
   "sharedContracts": [
     {
       "id": "HARNESS_ENTITLEMENT_PROOF_V1",
