@@ -10,16 +10,23 @@
   },
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "AGENT-PLATFORM-EXEC-01C5B1",
+      "mutexes": ["GATEWAY", "ENV"],
+      "writePaths": [
+        "services/api-gateway/src/ai/ai-execution.controller.ts",
+        "services/api-gateway/src/ai/ai-execution.controller.spec.ts",
+        "services/api-gateway/src/orchestration/orchestration.service.ts",
+        "services/api-gateway/src/orchestration/__tests__/orchestration.service.spec.ts",
+        "services/api-gateway/.env.example",
+        "services/ai-service/.env.example"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
-      "mutatesSharedContractIds": [],
+      "mutatesSharedContractIds": ["HARNESS_ENTITLEMENT_PROOF_V1"],
       "runtimeNeeds": []
     },
     "lane2": {
@@ -403,10 +410,52 @@
       "runtimeNeeds": [],
       "admissionUncertain": true,
       "writeSetPrecision": "PROVISIONAL"
+    },
+    {
+      "taskId": "AGENT-PLATFORM-EXEC-01C5B1",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "3-STEP",
+      "status": "ADMITTED",
+      "startCondition": "READY",
+      "saturationClass": "FORCING",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": [
+        "AGENT-PLATFORM-EXEC-01C5",
+        "AGENT-PLATFORM-EXEC-01C5R1"
+      ],
+      "mutexes": ["GATEWAY", "ENV"],
+      "writePaths": [
+        "services/api-gateway/src/ai/ai-execution.controller.ts",
+        "services/api-gateway/src/ai/ai-execution.controller.spec.ts",
+        "services/api-gateway/src/orchestration/orchestration.service.ts",
+        "services/api-gateway/src/orchestration/__tests__/orchestration.service.spec.ts",
+        "services/api-gateway/.env.example",
+        "services/ai-service/.env.example"
+      ],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": ["HARNESS_ENTITLEMENT_PROOF_V1"],
+      "evidenceClass": "LOCAL-TESTS",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": [],
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
     }
   ],
   "lockedTaskIds": ["GOV-OS-03", "GOV-OS-03R1", "AGENT-PLATFORM-CREATE-01F", "I18N-SHELL-07", "AGENT-PLATFORM-EXEC-01A", "AGENT-PLATFORM-EXEC-01B", "GOV-AUTH-03", "AGENT-PLATFORM-EXEC-01C1", "AGENT-PLATFORM-EXEC-01C2", "AGENT-PLATFORM-EXEC-01C3", "AGENT-PLATFORM-EXEC-01C4", "AGENT-PLATFORM-EXEC-01C4B", "AGENT-PLATFORM-EXEC-01C5", "AGENT-PLATFORM-EXEC-01C5R1"],
-  "sharedContracts": [],
+  "sharedContracts": [
+    {
+      "id": "HARNESS_ENTITLEMENT_PROOF_V1",
+      "state": "FROZEN",
+      "paths": [
+        "services/api-gateway/src/ai/ai-execution.controller.ts",
+        "services/ai-service/src/queue/job.types.ts",
+        "services/ai-service/src/worker/worker.processor.ts"
+      ]
+    }
+  ],
   "runtimeAuthorization": {
     "localRuntimeAuthorized": false,
     "stagingAuthorized": false,
