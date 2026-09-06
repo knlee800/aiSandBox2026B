@@ -40,6 +40,8 @@ import { ApiGatewayHttpClient } from '../clients/api-gateway-http.client';
 import type { AIAdapterToolUseRequestOptions } from '../ai-execution/adapters/adapter-tool-use.contracts';
 import { selectAdvertisedAgentHarnessTools } from '../ai-execution/adapters/adapter-tool-use.mapper';
 import type { AgentHarnessToolRegistryDefinitionV1 } from '../agent-harness/tools/tool-registry.contracts';
+import { createHash } from 'crypto';
+import * as nodeCrypto from 'crypto';
 
 /**
  * Phase-51.3: Conservative classifier for transient (retryable) errors.
@@ -172,12 +174,245 @@ export class HarnessRoutingError extends Error {
   }
 }
 
+export function sortKeysRecursive(value: unknown): unknown {
+  if (value === null || typeof value !== 'object') {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value.map(sortKeysRecursive);
+  }
+  const obj = value as Record<string, unknown>;
+  const sorted = Object.create(null) as Record<string, unknown>;
+  for (const key of Object.keys(obj).sort()) {
+    sorted[key] = sortKeysRecursive(obj[key]);
+  }
+  return sorted;
+}
+
+export function copyJobPayloadWithoutProof(
+  job: Record<string, unknown>,
+): Record<string, unknown> {
+  const copy = Object.create(null) as Record<string, unknown>;
+  for (const key of Object.keys(job)) {
+    if (key !== 'harnessEntitlementProof') {
+      copy[key] = job[key];
+    }
+  }
+  return copy;
+}
+
+export function computePayloadDigest(
+  payloadWithoutProof: Record<string, unknown>,
+): { canonicalJson: string; payloadDigest: string } {
+  let jsonStr: string | undefined;
+  try {
+    jsonStr = JSON.stringify(payloadWithoutProof);
+  } catch {
+    throw new Error('Payload serialization failed');
+  }
+  if (jsonStr === undefined) {
+    throw new Error(
+      'Payload serialization failed: JSON.stringify returned undefined',
+    );
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(jsonStr);
+  } catch {
+    throw new Error('Payload serialization failed');
+  }
+  const canonicalJson = JSON.stringify(sortKeysRecursive(parsed));
+  const payloadDigest = createHash('sha256')
+    .update(canonicalJson, 'utf8')
+    .digest('hex');
+  return { canonicalJson, payloadDigest };
+}
+
+export function computeJobPayloadDigest(
+  job: Record<string, unknown>,
+): { canonicalJson: string; payloadDigest: string } {
+  return computePayloadDigest(copyJobPayloadWithoutProof(job));
+}
+
 export class HarnessEmptyAdvertisedToolSetError extends Error {
   readonly code = 'harness_empty_advertised_tool_set' as const;
 
   constructor() {
     super('Requested Harness execution cannot proceed (empty_advertised_tool_set)');
     this.name = 'HarnessEmptyAdvertisedToolSetError';
+  }
+}
+
+export const HARNESS_ENTITLEMENT_PROOF_MISSING =
+  'HARNESS_ENTITLEMENT_PROOF_MISSING';
+export const HARNESS_ENTITLEMENT_PROOF_MALFORMED =
+  'HARNESS_ENTITLEMENT_PROOF_MALFORMED';
+export const HARNESS_ENTITLEMENT_PROOF_UNSUPPORTED_VERSION =
+  'HARNESS_ENTITLEMENT_PROOF_UNSUPPORTED_VERSION';
+export const HARNESS_ENTITLEMENT_PROOF_BINDING_MISMATCH =
+  'HARNESS_ENTITLEMENT_PROOF_BINDING_MISMATCH';
+export const HARNESS_ENTITLEMENT_PROOF_PAYLOAD_INTEGRITY_MISMATCH =
+  'HARNESS_ENTITLEMENT_PROOF_PAYLOAD_INTEGRITY_MISMATCH';
+export const HARNESS_ENTITLEMENT_PROOF_INVALID_SIGNATURE =
+  'HARNESS_ENTITLEMENT_PROOF_INVALID_SIGNATURE';
+export const HARNESS_ENTITLEMENT_PROOF_SECRET_NOT_CONFIGURED =
+  'HARNESS_ENTITLEMENT_PROOF_SECRET_NOT_CONFIGURED';
+
+export class HarnessEntitlementError extends Error {
+  readonly code: string;
+  readonly isRetryable = false;
+
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = 'HarnessEntitlementError';
+    this.code = code;
+  }
+}
+
+function harnessEntitlementFailure(code: string): HarnessEntitlementError {
+  return new HarnessEntitlementError(
+    code,
+    `Harness entitlement proof verification failed (${code})`,
+  );
+}
+
+const LOWERCASE_HEX_64 = /^[0-9a-f]{64}$/;
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0;
+}
+
+export function readValidatedHarnessEntitlementHmacSecret(): string | undefined {
+  const raw = process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+  if (raw === undefined) {
+    return undefined;
+  }
+  const trimmed = raw.trim();
+  if (trimmed.length === 0) {
+    return undefined;
+  }
+  return trimmed;
+}
+
+export function verifyHarnessEntitlementProof(
+  job: Record<string, unknown>,
+): void {
+  if (job.harnessVersion !== 'v1') {
+    return;
+  }
+
+  const proof = job.harnessEntitlementProof;
+  if (proof === undefined || proof === null) {
+    throw harnessEntitlementFailure(HARNESS_ENTITLEMENT_PROOF_MISSING);
+  }
+
+  if (typeof proof !== 'object' || Array.isArray(proof)) {
+    throw harnessEntitlementFailure(HARNESS_ENTITLEMENT_PROOF_MALFORMED);
+  }
+
+  const proofObject = proof as Record<string, unknown>;
+
+  if (typeof proofObject.version === 'number' && proofObject.version !== 1) {
+    throw harnessEntitlementFailure(
+      HARNESS_ENTITLEMENT_PROOF_UNSUPPORTED_VERSION,
+    );
+  }
+  if (proofObject.version !== 1) {
+    throw harnessEntitlementFailure(HARNESS_ENTITLEMENT_PROOF_MALFORMED);
+  }
+
+  if (
+    !isNonEmptyString(proofObject.executionId) ||
+    !isNonEmptyString(proofObject.userId) ||
+    !isNonEmptyString(proofObject.apiKeyId) ||
+    !isNonEmptyString(proofObject.issuedAt) ||
+    proofObject.harnessVersion !== 'v1' ||
+    !isNonEmptyString(proofObject.payloadDigest) ||
+    !isNonEmptyString(proofObject.signature) ||
+    !LOWERCASE_HEX_64.test(proofObject.payloadDigest) ||
+    !LOWERCASE_HEX_64.test(proofObject.signature)
+  ) {
+    throw harnessEntitlementFailure(HARNESS_ENTITLEMENT_PROOF_MALFORMED);
+  }
+
+  if (
+    proofObject.executionId !== job.executionId ||
+    proofObject.userId !== job.userId ||
+    proofObject.apiKeyId !== job.apiKeyId ||
+    proofObject.harnessVersion !== job.harnessVersion
+  ) {
+    throw harnessEntitlementFailure(HARNESS_ENTITLEMENT_PROOF_BINDING_MISMATCH);
+  }
+
+  const secret = readValidatedHarnessEntitlementHmacSecret();
+  if (secret === undefined) {
+    throw harnessEntitlementFailure(
+      HARNESS_ENTITLEMENT_PROOF_SECRET_NOT_CONFIGURED,
+    );
+  }
+
+  let recomputedDigest: string;
+  try {
+    recomputedDigest = computeJobPayloadDigest(job).payloadDigest;
+  } catch (error) {
+    if (error instanceof HarnessEntitlementError) {
+      throw error;
+    }
+    throw harnessEntitlementFailure(
+      HARNESS_ENTITLEMENT_PROOF_PAYLOAD_INTEGRITY_MISMATCH,
+    );
+  }
+
+  if (recomputedDigest !== proofObject.payloadDigest) {
+    throw harnessEntitlementFailure(
+      HARNESS_ENTITLEMENT_PROOF_PAYLOAD_INTEGRITY_MISMATCH,
+    );
+  }
+
+  const claim = `v=1|executionId=${proofObject.executionId}|userId=${proofObject.userId}|apiKeyId=${proofObject.apiKeyId}|harnessVersion=v1|issuedAt=${proofObject.issuedAt}|payloadDigest=${proofObject.payloadDigest}`;
+
+  let expectedHex: string;
+  try {
+    expectedHex = nodeCrypto
+      .createHmac('sha256', secret)
+      .update(claim, 'utf8')
+      .digest('hex');
+  } catch {
+    throw harnessEntitlementFailure(HARNESS_ENTITLEMENT_PROOF_INVALID_SIGNATURE);
+  }
+
+  if (!LOWERCASE_HEX_64.test(expectedHex)) {
+    throw harnessEntitlementFailure(HARNESS_ENTITLEMENT_PROOF_INVALID_SIGNATURE);
+  }
+
+  let expectedBuffer: Buffer;
+  let actualBuffer: Buffer;
+  try {
+    expectedBuffer = Buffer.from(expectedHex, 'hex');
+    actualBuffer = Buffer.from(proofObject.signature, 'hex');
+  } catch {
+    throw harnessEntitlementFailure(HARNESS_ENTITLEMENT_PROOF_INVALID_SIGNATURE);
+  }
+
+  if (
+    expectedBuffer.length !== 32 ||
+    actualBuffer.length !== 32 ||
+    expectedBuffer.length !== actualBuffer.length
+  ) {
+    throw harnessEntitlementFailure(HARNESS_ENTITLEMENT_PROOF_INVALID_SIGNATURE);
+  }
+
+  try {
+    if (!nodeCrypto.timingSafeEqual(expectedBuffer, actualBuffer)) {
+      throw harnessEntitlementFailure(
+        HARNESS_ENTITLEMENT_PROOF_INVALID_SIGNATURE,
+      );
+    }
+  } catch (error) {
+    if (error instanceof HarnessEntitlementError) {
+      throw error;
+    }
+    throw harnessEntitlementFailure(HARNESS_ENTITLEMENT_PROOF_INVALID_SIGNATURE);
   }
 }
 
@@ -918,6 +1153,38 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
         pollCancel();
 
         try {
+          if (job.data.harnessVersion === 'v1') {
+            try {
+              verifyHarnessEntitlementProof(job.data);
+            } catch (entitlementError) {
+              if (entitlementError instanceof HarnessEntitlementError) {
+                const rawProof = job.data.harnessEntitlementProof;
+                this.logger.log(
+                  JSON.stringify({
+                    event: 'agent_harness.entitlement_verification_failed',
+                    executionId: job.data.executionId,
+                    userId: job.data.userId,
+                    apiKeyId: job.data.apiKeyId,
+                    harnessVersion: 'v1',
+                    errorCode: entitlementError.code,
+                    proofVersion:
+                      rawProof !== null &&
+                      typeof rawProof === 'object' &&
+                      !Array.isArray(rawProof) &&
+                      typeof (rawProof as { version?: unknown }).version ===
+                        'number'
+                        ? (rawProof as { version: number }).version
+                        : null,
+                    proofPresent: rawProof != null,
+                  }),
+                );
+                throw entitlementError;
+              }
+              throw harnessEntitlementFailure(
+                HARNESS_ENTITLEMENT_PROOF_MALFORMED,
+              );
+            }
+          }
           const harnessRequested = job.data.harnessVersion === 'v1';
           let routedAdapter: ReturnType<AIExecutionService['getAdapter']> | undefined;
           if (harnessRequested && DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop) {

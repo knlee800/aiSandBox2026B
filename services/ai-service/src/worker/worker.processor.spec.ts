@@ -1,9 +1,13 @@
 import { Logger } from '@nestjs/common';
+import { createHash, createHmac, timingSafeEqual } from 'crypto';
 import {
   buildAIExecutionRequest,
   buildExecutionPromptParts,
+  computeJobPayloadDigest,
+  computePayloadDigest,
   DEFAULT_EXECUTION_TIMEOUT_MS,
   HarnessEmptyAdvertisedToolSetError,
+  HarnessEntitlementError,
   HarnessRoutingError,
   mergeAdvertisedToolsIntoExecuteOptions,
   parseExecutionTimeoutBaselineMs,
@@ -11,9 +15,12 @@ import {
   resolveBullMqLockDurationMs,
   resolveHarnessRouting,
   resolveStuckWatchdogThresholdSeconds,
+  sortKeysRecursive,
+  verifyHarnessEntitlementProof,
   WorkerProcessor,
 } from './worker.processor';
 import { selectAdvertisedAgentHarnessTools } from '../ai-execution/adapters/adapter-tool-use.mapper';
+import * as agentHarnessLoop from '../agent-harness/orchestrator/agent-harness-loop';
 import {
   AGENT_HARNESS_TOOL_DEFINITIONS_V1,
   getAgentHarnessToolDefinition,
@@ -1551,6 +1558,9 @@ describe('PRIVATE-BETA-BLOCKER-03C: worker abort timeout behavior', () => {
   });
 
   it('fails closed before ordinary execute() when Harness v1 is requested with the loop gate disabled', async () => {
+    const previousSecret = process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+    const testSecret = 'test-hmac-secret-do-not-use-in-production-01c5b';
+    process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = testSecret;
     const ledger = createLedgerMock();
     const execute = jest.fn().mockResolvedValue(createSuccessResult('grok-4.5'));
     const publisher = {
@@ -1568,28 +1578,51 @@ describe('PRIVATE-BETA-BLOCKER-03C: worker abort timeout behavior', () => {
       apiGateway,
     });
 
+    const jobData: Record<string, unknown> = {
+      executionId: 'exec-harness-disabled',
+      provider: 'xai',
+      adapter: 'xai',
+      sessionId: 'session-1',
+      conversationId: 'conv-1',
+      userId: 'user-1',
+      apiKeyId: 'apikey-1',
+      prompt: 'Create index.html',
+      model: 'grok-4.5',
+      executionIntent: 'workspace_mutation',
+      harnessVersion: 'v1',
+    };
+    const issuedAt = '2026-09-05T12:00:00.000Z';
+    const { payloadDigest } = computeJobPayloadDigest(jobData);
+    const claim = `v=1|executionId=${jobData.executionId}|userId=${jobData.userId}|apiKeyId=${jobData.apiKeyId}|harnessVersion=v1|issuedAt=${issuedAt}|payloadDigest=${payloadDigest}`;
+    jobData.harnessEntitlementProof = {
+      version: 1,
+      executionId: jobData.executionId,
+      userId: jobData.userId,
+      apiKeyId: jobData.apiKeyId,
+      harnessVersion: 'v1',
+      issuedAt,
+      payloadDigest,
+      signature: createHmac('sha256', testSecret).update(claim, 'utf8').digest('hex'),
+    };
     const job = {
       id: 'job-exec-harness-disabled',
-      data: {
-        executionId: 'exec-harness-disabled',
-        provider: 'xai',
-        adapter: 'xai',
-        sessionId: 'session-1',
-        conversationId: 'conv-1',
-        userId: 'user-1',
-        prompt: 'Create index.html',
-        model: 'grok-4.5',
-        executionIntent: 'workspace_mutation',
-        harnessVersion: 'v1',
-      },
+      data: jobData,
     };
 
-    await expect(processJob(job)).rejects.toBeInstanceOf(HarnessRoutingError);
-    expect(execute).not.toHaveBeenCalled();
-    expect(ledger.status.value).toBe('failed');
-    expect(publisher.publishFileActions).not.toHaveBeenCalled();
-    expect(apiGateway.notifyExecutionComplete).not.toHaveBeenCalled();
-    expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop).toBe(false);
+    try {
+      await expect(processJob(job)).rejects.toBeInstanceOf(HarnessRoutingError);
+      expect(execute).not.toHaveBeenCalled();
+      expect(ledger.status.value).toBe('failed');
+      expect(publisher.publishFileActions).not.toHaveBeenCalled();
+      expect(apiGateway.notifyExecutionComplete).not.toHaveBeenCalled();
+      expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop).toBe(false);
+    } finally {
+      if (previousSecret === undefined) {
+        delete process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+      } else {
+        process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = previousSecret;
+      }
+    }
 
     await worker.onModuleDestroy();
   });
@@ -2144,5 +2177,1229 @@ describe('AGENT-PLATFORM-EXEC-01C4B: persisted agent identity in worker logs and
     expect(metadata).not.toHaveProperty('agentId');
     expect(metadata.keepMe).toBe('unrelated-value');
     await worker.onModuleDestroy();
+  });
+});
+
+/**
+ * AGENT-PLATFORM-EXEC-01C5B2 Cycle A — queue-contract canonicalization.
+ * Expected digest/signature are hardcoded frozen constants, not derived from production
+ * or imported from Gateway.
+ */
+describe('AGENT-PLATFORM-EXEC-01C5B2 Cycle A — canonicalization pipeline', () => {
+  const GOLDEN_SECRET = 'test-hmac-secret-do-not-use-in-production-01c5b';
+  const GOLDEN_ISSUED_AT = '2026-09-05T12:00:00.000Z';
+  const GOLDEN_INSERTION_ORDER_JSON =
+    '{"executionId":"exec-golden-01","userId":"user-golden-01","apiKeyId":"apikey-golden-01","sessionId":"session-golden-01","conversationId":"conv-golden-01","provider":"anthropic","adapter":"anthropic","prompt":"Hello, world.","submittedAt":"2026-09-05T12:00:00.000Z","harnessVersion":"v1"}';
+  const GOLDEN_CANONICAL_JSON =
+    '{"adapter":"anthropic","apiKeyId":"apikey-golden-01","conversationId":"conv-golden-01","executionId":"exec-golden-01","harnessVersion":"v1","prompt":"Hello, world.","provider":"anthropic","sessionId":"session-golden-01","submittedAt":"2026-09-05T12:00:00.000Z","userId":"user-golden-01"}';
+  const GOLDEN_PAYLOAD_DIGEST =
+    '8b58d2d281263357f70c8a489e3bbf4e32e0facfb5db0e83cd522b62e007188a';
+  const GOLDEN_CLAIM_STRING =
+    'v=1|executionId=exec-golden-01|userId=user-golden-01|apiKeyId=apikey-golden-01|harnessVersion=v1|issuedAt=2026-09-05T12:00:00.000Z|payloadDigest=8b58d2d281263357f70c8a489e3bbf4e32e0facfb5db0e83cd522b62e007188a';
+  const GOLDEN_SIGNATURE =
+    'd247e17634be269b0bbef1eb843a65bf299935ea840853900fe5dda3d8ef11b5';
+
+  function makeGoldenPayload(): Record<string, unknown> {
+    return {
+      executionId: 'exec-golden-01',
+      userId: 'user-golden-01',
+      apiKeyId: 'apikey-golden-01',
+      sessionId: 'session-golden-01',
+      conversationId: 'conv-golden-01',
+      provider: 'anthropic',
+      adapter: 'anthropic',
+      prompt: 'Hello, world.',
+      submittedAt: GOLDEN_ISSUED_AT,
+      harnessVersion: 'v1',
+    };
+  }
+
+  function makeGoldenProof(): Record<string, unknown> {
+    return {
+      version: 1,
+      executionId: 'exec-golden-01',
+      userId: 'user-golden-01',
+      apiKeyId: 'apikey-golden-01',
+      harnessVersion: 'v1',
+      issuedAt: GOLDEN_ISSUED_AT,
+      payloadDigest: GOLDEN_PAYLOAD_DIGEST,
+      signature: GOLDEN_SIGNATURE,
+    };
+  }
+
+  function parseOwnKeyObject(json: string): Record<string, unknown> {
+    return JSON.parse(json) as Record<string, unknown>;
+  }
+
+  function hasOwn(obj: object, key: string): boolean {
+    return Object.prototype.hasOwnProperty.call(obj, key);
+  }
+
+  it('independently recomputes frozen golden digest, claim HMAC, and SHA-256 lowercase hex with Node crypto', () => {
+    const independentDigest = createHash('sha256')
+      .update(GOLDEN_CANONICAL_JSON, 'utf8')
+      .digest('hex');
+    expect(independentDigest).toBe(GOLDEN_PAYLOAD_DIGEST);
+    expect(independentDigest).toBe(independentDigest.toLowerCase());
+    expect(independentDigest).toMatch(/^[0-9a-f]{64}$/);
+
+    const independentHmac = createHmac('sha256', GOLDEN_SECRET)
+      .update(GOLDEN_CLAIM_STRING, 'utf8')
+      .digest('hex');
+    expect(independentHmac).toBe(GOLDEN_SIGNATURE);
+    expect(independentHmac).toBe(independentHmac.toLowerCase());
+  });
+
+  it('recursively sorts object keys using Object.keys().sort()', () => {
+    const sorted = sortKeysRecursive({
+      z: { b: 1, a: 2 },
+      m: 3,
+    });
+    expect(JSON.stringify(sorted)).toBe('{"m":3,"z":{"a":2,"b":1}}');
+  });
+
+  it('preserves array element order while sorting nested object keys', () => {
+    const sorted = sortKeysRecursive({
+      items: [
+        { b: 1, a: 2 },
+        { d: 4, c: 3 },
+      ],
+    });
+    expect(JSON.stringify(sorted)).toBe(
+      '{"items":[{"a":2,"b":1},{"c":3,"d":4}]}',
+    );
+  });
+
+  it('creates every sorted object with a null prototype accumulator', () => {
+    const sorted = sortKeysRecursive({
+      z: { b: 1, a: 2 },
+      m: [{ d: 4, c: 3 }],
+    }) as Record<string, unknown>;
+    expect(Object.getPrototypeOf(sorted)).toBeNull();
+    expect(Object.getPrototypeOf(sorted.z as object)).toBeNull();
+    const items = sorted.m as unknown[];
+    expect(Object.getPrototypeOf(items[0] as object)).toBeNull();
+  });
+
+  it('applies native JSON.stringify then fail-closed then JSON.parse before sorting', () => {
+    const payload = {
+      b: 2,
+      a: 1,
+      skip: undefined,
+    };
+    const jsonStr = JSON.stringify(payload);
+    expect(jsonStr).not.toBeUndefined();
+    const roundTripped = JSON.parse(jsonStr);
+    expect(Object.prototype.hasOwnProperty.call(roundTripped, 'skip')).toBe(
+      false,
+    );
+    const canonicalJson = JSON.stringify(sortKeysRecursive(roundTripped));
+    expect(canonicalJson).toBe('{"a":1,"b":2}');
+  });
+
+  it('fails closed when JSON.stringify throws on a cyclic payload', () => {
+    const cyclic: Record<string, unknown> = { a: 1 };
+    cyclic.self = cyclic;
+    expect(() => computePayloadDigest(cyclic)).toThrow();
+  });
+
+  it('fails closed when JSON.stringify returns undefined', () => {
+    expect(() =>
+      computePayloadDigest(undefined as unknown as Record<string, unknown>),
+    ).toThrow(/undefined/);
+  });
+
+  it('omits undefined object properties from canonical JSON', () => {
+    const result = computePayloadDigest({
+      a: 1,
+      b: undefined,
+      c: 2,
+    } as Record<string, unknown>);
+    expect(result.canonicalJson).toBe('{"a":1,"c":2}');
+  });
+
+  it('preserves an own __proto__ object value in canonical JSON', () => {
+    const input = parseOwnKeyObject(
+      '{"z":1,"__proto__":{"polluted":true},"a":2}',
+    );
+    expect(hasOwn(input, '__proto__')).toBe(true);
+
+    const sorted = sortKeysRecursive(input) as object;
+    expect(hasOwn(sorted, '__proto__')).toBe(true);
+    expect(JSON.stringify(sorted)).toBe(
+      '{"__proto__":{"polluted":true},"a":2,"z":1}',
+    );
+    expect(Object.getPrototypeOf(sorted)).toBeNull();
+
+    const result = computePayloadDigest(input);
+    expect(result.canonicalJson).toBe(
+      '{"__proto__":{"polluted":true},"a":2,"z":1}',
+    );
+    const parsedCanonical = JSON.parse(result.canonicalJson) as object;
+    expect(hasOwn(parsedCanonical, '__proto__')).toBe(true);
+  });
+
+  it('preserves own constructor and prototype keys', () => {
+    const input = parseOwnKeyObject(
+      '{"z":1,"constructor":{"keep":true},"prototype":{"also":true},"a":2}',
+    );
+    const sorted = sortKeysRecursive(input) as object;
+    expect(hasOwn(sorted, 'constructor')).toBe(true);
+    expect(hasOwn(sorted, 'prototype')).toBe(true);
+    expect(JSON.stringify(sorted)).toBe(
+      '{"a":2,"constructor":{"keep":true},"prototype":{"also":true},"z":1}',
+    );
+    expect(Object.getPrototypeOf(sorted)).toBeNull();
+  });
+
+  it('preserves nested own __proto__ properties recursively', () => {
+    const input = parseOwnKeyObject(
+      '{"z":1,"inner":{"__proto__":{"nested":true},"b":2},"a":3}',
+    );
+    const sorted = sortKeysRecursive(input) as Record<string, unknown>;
+    const inner = sorted.inner as object;
+    expect(hasOwn(inner, '__proto__')).toBe(true);
+    expect(Object.getPrototypeOf(inner)).toBeNull();
+    expect(JSON.stringify(sorted)).toBe(
+      '{"a":3,"inner":{"__proto__":{"nested":true},"b":2},"z":1}',
+    );
+  });
+
+  it('does not mutate the input object during canonicalization', () => {
+    const input = makeGoldenPayload();
+    const snapshot = JSON.stringify(input);
+    computePayloadDigest(input);
+    expect(JSON.stringify(input)).toBe(snapshot);
+    expect(Object.keys(input)).toEqual([
+      'executionId',
+      'userId',
+      'apiKeyId',
+      'sessionId',
+      'conversationId',
+      'provider',
+      'adapter',
+      'prompt',
+      'submittedAt',
+      'harnessVersion',
+    ]);
+  });
+
+  it('changes payloadDigest when any unsigned payload field changes', () => {
+    const baseline = computePayloadDigest(makeGoldenPayload());
+    expect(baseline.payloadDigest).toBe(GOLDEN_PAYLOAD_DIGEST);
+
+    const promptChanged = computePayloadDigest({
+      ...makeGoldenPayload(),
+      prompt: 'Malicious prompt',
+    });
+    expect(promptChanged.payloadDigest).not.toBe(GOLDEN_PAYLOAD_DIGEST);
+
+    const sessionChanged = computePayloadDigest({
+      ...makeGoldenPayload(),
+      sessionId: 'session-tampered-01',
+    });
+    expect(sessionChanged.payloadDigest).not.toBe(GOLDEN_PAYLOAD_DIGEST);
+
+    const modelAdded = computePayloadDigest({
+      ...makeGoldenPayload(),
+      model: 'gpt-4o',
+    });
+    expect(modelAdded.payloadDigest).not.toBe(GOLDEN_PAYLOAD_DIGEST);
+  });
+
+  it('canonicalizes the complete job payload excluding only harnessEntitlementProof', () => {
+    const jobWithProof = {
+      ...makeGoldenPayload(),
+      harnessEntitlementProof: makeGoldenProof(),
+    };
+    const withProof = computeJobPayloadDigest(jobWithProof);
+    const withoutProof = computeJobPayloadDigest(makeGoldenPayload());
+    expect(withProof.canonicalJson).toBe(GOLDEN_CANONICAL_JSON);
+    expect(withoutProof.canonicalJson).toBe(GOLDEN_CANONICAL_JSON);
+    expect(withProof.payloadDigest).toBe(GOLDEN_PAYLOAD_DIGEST);
+    expect(withoutProof.payloadDigest).toBe(GOLDEN_PAYLOAD_DIGEST);
+    expect(withProof.canonicalJson).not.toContain('harnessEntitlementProof');
+    expect(JSON.stringify(jobWithProof)).toContain('harnessEntitlementProof');
+  });
+
+  it('matches frozen golden insertion-order JSON, canonical JSON, and SHA-256 digest byte-for-byte', () => {
+    const payload = makeGoldenPayload();
+    expect(JSON.stringify(payload)).toBe(GOLDEN_INSERTION_ORDER_JSON);
+    const result = computePayloadDigest(payload);
+    expect(result.canonicalJson).toBe(GOLDEN_CANONICAL_JSON);
+    expect(result.payloadDigest).toBe(GOLDEN_PAYLOAD_DIGEST);
+  });
+});
+
+/**
+ * AGENT-PLATFORM-EXEC-01C5B2 Cycle B — pure proof verification.
+ * Hardcoded frozen constants only. Do not import Gateway helpers.
+ */
+describe('AGENT-PLATFORM-EXEC-01C5B2 Cycle B — proof verification', () => {
+  const GOLDEN_SECRET = 'test-hmac-secret-do-not-use-in-production-01c5b';
+  const GOLDEN_ISSUED_AT = '2026-09-05T12:00:00.000Z';
+  const GOLDEN_PAYLOAD_DIGEST =
+    '8b58d2d281263357f70c8a489e3bbf4e32e0facfb5db0e83cd522b62e007188a';
+  const GOLDEN_CLAIM_STRING =
+    'v=1|executionId=exec-golden-01|userId=user-golden-01|apiKeyId=apikey-golden-01|harnessVersion=v1|issuedAt=2026-09-05T12:00:00.000Z|payloadDigest=8b58d2d281263357f70c8a489e3bbf4e32e0facfb5db0e83cd522b62e007188a';
+  const GOLDEN_SIGNATURE =
+    'd247e17634be269b0bbef1eb843a65bf299935ea840853900fe5dda3d8ef11b5';
+  const WRONG_SECRET_SIGNATURE =
+    '5d0c4ee5d963d1c38f1351053f601a8ca8e730a82ac9a9352052af5b1bd8baaf';
+
+  const CODES = {
+    MISSING: 'HARNESS_ENTITLEMENT_PROOF_MISSING',
+    MALFORMED: 'HARNESS_ENTITLEMENT_PROOF_MALFORMED',
+    UNSUPPORTED_VERSION: 'HARNESS_ENTITLEMENT_PROOF_UNSUPPORTED_VERSION',
+    BINDING_MISMATCH: 'HARNESS_ENTITLEMENT_PROOF_BINDING_MISMATCH',
+    PAYLOAD_INTEGRITY_MISMATCH:
+      'HARNESS_ENTITLEMENT_PROOF_PAYLOAD_INTEGRITY_MISMATCH',
+    INVALID_SIGNATURE: 'HARNESS_ENTITLEMENT_PROOF_INVALID_SIGNATURE',
+    SECRET_NOT_CONFIGURED: 'HARNESS_ENTITLEMENT_PROOF_SECRET_NOT_CONFIGURED',
+  } as const;
+
+  function makeGoldenPayload(): Record<string, unknown> {
+    return {
+      executionId: 'exec-golden-01',
+      userId: 'user-golden-01',
+      apiKeyId: 'apikey-golden-01',
+      sessionId: 'session-golden-01',
+      conversationId: 'conv-golden-01',
+      provider: 'anthropic',
+      adapter: 'anthropic',
+      prompt: 'Hello, world.',
+      submittedAt: GOLDEN_ISSUED_AT,
+      harnessVersion: 'v1',
+    };
+  }
+
+  function makeGoldenProof(
+    overrides: Record<string, unknown> = {},
+  ): Record<string, unknown> {
+    return {
+      version: 1,
+      executionId: 'exec-golden-01',
+      userId: 'user-golden-01',
+      apiKeyId: 'apikey-golden-01',
+      harnessVersion: 'v1',
+      issuedAt: GOLDEN_ISSUED_AT,
+      payloadDigest: GOLDEN_PAYLOAD_DIGEST,
+      signature: GOLDEN_SIGNATURE,
+      ...overrides,
+    };
+  }
+
+  function makeGoldenJob(
+    jobOverrides: Record<string, unknown> = {},
+    proofOverrides?: Record<string, unknown> | null,
+  ): Record<string, unknown> {
+    const job: Record<string, unknown> = {
+      ...makeGoldenPayload(),
+      ...jobOverrides,
+    };
+    if (proofOverrides === null) {
+      return job;
+    }
+    if (
+      Object.prototype.hasOwnProperty.call(
+        jobOverrides,
+        'harnessEntitlementProof',
+      )
+    ) {
+      return job;
+    }
+    job.harnessEntitlementProof = makeGoldenProof(proofOverrides);
+    return job;
+  }
+
+  function parseOwnKeyObject(json: string): Record<string, unknown> {
+    return JSON.parse(json) as Record<string, unknown>;
+  }
+
+  function expectEntitlementError(
+    job: Record<string, unknown>,
+    code: string,
+  ): HarnessEntitlementError {
+    let caught: unknown;
+    try {
+      verifyHarnessEntitlementProof(job);
+    } catch (error) {
+      caught = error;
+    }
+    expect(caught).toBeInstanceOf(HarnessEntitlementError);
+    const typed = caught as HarnessEntitlementError;
+    expect(typed.name).toBe('HarnessEntitlementError');
+    expect(typed.code).toBe(code);
+    expect(typed.isRetryable).toBe(false);
+    expect(typed.message).toContain(code);
+    expect(typed.message).not.toContain(GOLDEN_SECRET);
+    expect(typed.message).not.toContain(GOLDEN_SIGNATURE);
+    expect(typed.message).not.toMatch(/Hello, world/);
+    expect(typed.message).not.toContain('persona');
+    return typed;
+  }
+
+  const previousSecret = process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+
+  beforeEach(() => {
+    process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = GOLDEN_SECRET;
+  });
+
+  afterEach(() => {
+    if (previousSecret === undefined) {
+      delete process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+    } else {
+      process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = previousSecret;
+    }
+  });
+
+  it('accepts the hardcoded frozen golden cross-service vector', () => {
+    expect(() => verifyHarnessEntitlementProof(makeGoldenJob())).not.toThrow();
+  });
+
+  it('reconstructs the frozen claim string and compares HMAC with timingSafeEqual', () => {
+    const timingSafeSpy = jest.spyOn(
+      require('crypto') as typeof import('crypto'),
+      'timingSafeEqual',
+    );
+    try {
+      verifyHarnessEntitlementProof(makeGoldenJob());
+      expect(timingSafeSpy).toHaveBeenCalled();
+      const [left, right] = timingSafeSpy.mock.calls[0];
+      expect(Buffer.isBuffer(left)).toBe(true);
+      expect(Buffer.isBuffer(right)).toBe(true);
+      expect((left as Buffer).length).toBe((right as Buffer).length);
+      expect(timingSafeEqual(left as Buffer, right as Buffer)).toBe(true);
+      const independent = createHmac('sha256', GOLDEN_SECRET)
+        .update(GOLDEN_CLAIM_STRING, 'utf8')
+        .digest('hex');
+      expect(independent).toBe(GOLDEN_SIGNATURE);
+    } finally {
+      timingSafeSpy.mockRestore();
+    }
+  });
+
+  it('does not require proof for ordinary jobs without harnessVersion', () => {
+    delete process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+    const ordinary = makeGoldenPayload();
+    delete ordinary.harnessVersion;
+    expect(() => verifyHarnessEntitlementProof(ordinary)).not.toThrow();
+  });
+
+  it('rejects missing proof on a v1 job', () => {
+    expectEntitlementError(makeGoldenJob({}, null), CODES.MISSING);
+  });
+
+  it('rejects a boolean proof as malformed', () => {
+    expectEntitlementError(
+      makeGoldenJob({ harnessEntitlementProof: true }),
+      CODES.MALFORMED,
+    );
+  });
+
+  it('rejects an array proof as malformed', () => {
+    expectEntitlementError(
+      makeGoldenJob({ harnessEntitlementProof: [] }),
+      CODES.MALFORMED,
+    );
+  });
+
+  it('rejects an empty proof object as malformed', () => {
+    expectEntitlementError(
+      makeGoldenJob({ harnessEntitlementProof: {} }),
+      CODES.MALFORMED,
+    );
+  });
+
+  it('rejects a non-numeric version as malformed when all other fields are valid', () => {
+    expectEntitlementError(
+      makeGoldenJob({}, { version: '1' }),
+      CODES.MALFORMED,
+    );
+  });
+
+  it('rejects proof version 2 as unsupported when all other fields are valid', () => {
+    expectEntitlementError(
+      makeGoldenJob({}, { version: 2 }),
+      CODES.UNSUPPORTED_VERSION,
+    );
+  });
+
+  it('rejects empty required string fields as malformed', () => {
+    expectEntitlementError(
+      makeGoldenJob({}, { issuedAt: '' }),
+      CODES.MALFORMED,
+    );
+  });
+
+  it('rejects a proof harnessVersion other than v1 as malformed', () => {
+    expectEntitlementError(
+      makeGoldenJob({}, { harnessVersion: 'v2' }),
+      CODES.MALFORMED,
+    );
+  });
+
+  it('rejects a non-hex payloadDigest as malformed', () => {
+    expectEntitlementError(
+      makeGoldenJob({}, { payloadDigest: 'not-a-digest' }),
+      CODES.MALFORMED,
+    );
+  });
+
+  it('rejects uppercase signature as malformed before timingSafeEqual', () => {
+    const timingSafeSpy = jest.spyOn(
+      require('crypto') as typeof import('crypto'),
+      'timingSafeEqual',
+    );
+    try {
+      expectEntitlementError(
+        makeGoldenJob({}, { signature: GOLDEN_SIGNATURE.toUpperCase() }),
+        CODES.MALFORMED,
+      );
+      expect(timingSafeSpy).not.toHaveBeenCalled();
+    } finally {
+      timingSafeSpy.mockRestore();
+    }
+  });
+
+  it('rejects a wrong-length signature as malformed before timingSafeEqual', () => {
+    const timingSafeSpy = jest.spyOn(
+      require('crypto') as typeof import('crypto'),
+      'timingSafeEqual',
+    );
+    try {
+      expectEntitlementError(
+        makeGoldenJob({}, { signature: 'abcd' }),
+        CODES.MALFORMED,
+      );
+      expect(timingSafeSpy).not.toHaveBeenCalled();
+    } finally {
+      timingSafeSpy.mockRestore();
+    }
+  });
+
+  it('rejects execution-id substitution with binding mismatch', () => {
+    expectEntitlementError(
+      makeGoldenJob({ executionId: 'exec-tampered-01' }),
+      CODES.BINDING_MISMATCH,
+    );
+  });
+
+  it('rejects user-id substitution with binding mismatch', () => {
+    expectEntitlementError(
+      makeGoldenJob({ userId: 'user-tampered-01' }),
+      CODES.BINDING_MISMATCH,
+    );
+  });
+
+  it('rejects api-key-id substitution with binding mismatch', () => {
+    expectEntitlementError(
+      makeGoldenJob({ apiKeyId: 'apikey-tampered-01' }),
+      CODES.BINDING_MISMATCH,
+    );
+  });
+
+  it('rejects prompt modification with payload integrity mismatch', () => {
+    expectEntitlementError(
+      makeGoldenJob({ prompt: 'Malicious prompt' }),
+      CODES.PAYLOAD_INTEGRITY_MISMATCH,
+    );
+  });
+
+  it('rejects an added model field with payload integrity mismatch', () => {
+    expectEntitlementError(
+      makeGoldenJob({ model: 'gpt-4o' }),
+      CODES.PAYLOAD_INTEGRITY_MISMATCH,
+    );
+  });
+
+  it('rejects session-id modification with payload integrity mismatch', () => {
+    expectEntitlementError(
+      makeGoldenJob({ sessionId: 'session-tampered-01' }),
+      CODES.PAYLOAD_INTEGRITY_MISMATCH,
+    );
+  });
+
+  it('rejects provider modification with payload integrity mismatch', () => {
+    expectEntitlementError(
+      makeGoldenJob({ provider: 'openai' }),
+      CODES.PAYLOAD_INTEGRITY_MISMATCH,
+    );
+  });
+
+  it('rejects own __proto__ modification with payload integrity mismatch', () => {
+    const job = makeGoldenJob();
+    const withProto = parseOwnKeyObject(
+      '{"executionId":"exec-golden-01","userId":"user-golden-01","apiKeyId":"apikey-golden-01","sessionId":"session-golden-01","conversationId":"conv-golden-01","provider":"anthropic","adapter":"anthropic","prompt":"Hello, world.","submittedAt":"2026-09-05T12:00:00.000Z","harnessVersion":"v1","__proto__":{"polluted":true}}',
+    );
+    withProto.harnessEntitlementProof = job.harnessEntitlementProof;
+    expectEntitlementError(withProto, CODES.PAYLOAD_INTEGRITY_MISMATCH);
+  });
+
+  it('rejects nested __proto__ modification with payload integrity mismatch', () => {
+    const job = makeGoldenJob();
+    const nested = parseOwnKeyObject(
+      '{"executionId":"exec-golden-01","userId":"user-golden-01","apiKeyId":"apikey-golden-01","sessionId":"session-golden-01","conversationId":"conv-golden-01","provider":"anthropic","adapter":"anthropic","prompt":"Hello, world.","submittedAt":"2026-09-05T12:00:00.000Z","harnessVersion":"v1","inner":{"__proto__":{"nested":true}}}',
+    );
+    nested.harnessEntitlementProof = job.harnessEntitlementProof;
+    expectEntitlementError(nested, CODES.PAYLOAD_INTEGRITY_MISMATCH);
+  });
+
+  it('rejects a well-formed wrong signature as invalid signature', () => {
+    expectEntitlementError(
+      makeGoldenJob(
+        {},
+        {
+          signature:
+            '0000000000000000000000000000000000000000000000000000000000000000',
+        },
+      ),
+      CODES.INVALID_SIGNATURE,
+    );
+  });
+
+  it('rejects a signature produced with the wrong secret', () => {
+    expectEntitlementError(
+      makeGoldenJob({}, { signature: WRONG_SECRET_SIGNATURE }),
+      CODES.INVALID_SIGNATURE,
+    );
+  });
+
+  it('fails closed when the worker HMAC secret is missing', () => {
+    delete process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+    expectEntitlementError(makeGoldenJob(), CODES.SECRET_NOT_CONFIGURED);
+  });
+
+  it('fails closed when the worker HMAC secret is empty', () => {
+    process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = '';
+    expectEntitlementError(makeGoldenJob(), CODES.SECRET_NOT_CONFIGURED);
+  });
+
+  it('fails closed when the worker HMAC secret is whitespace-only', () => {
+    process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = '   \t  ';
+    expectEntitlementError(makeGoldenJob(), CODES.SECRET_NOT_CONFIGURED);
+  });
+
+  it('never includes the secret, signature, proof, canonical payload, or prompt in error text', () => {
+    const error = expectEntitlementError(
+      makeGoldenJob({ prompt: 'Malicious prompt' }),
+      CODES.PAYLOAD_INTEGRITY_MISMATCH,
+    );
+    expect(JSON.stringify(error)).not.toContain(GOLDEN_SECRET);
+    expect(JSON.stringify(error)).not.toContain(GOLDEN_SIGNATURE);
+    expect(JSON.stringify(error)).not.toContain('Malicious prompt');
+    expect(JSON.stringify(error)).not.toContain(GOLDEN_PAYLOAD_DIGEST);
+  });
+
+  it('does not inspect expiry or revalidate entitlement after enqueue', () => {
+    const source = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf8',
+    );
+    const verifyStart = source.indexOf(
+      'export function verifyHarnessEntitlementProof',
+    );
+    const verifyEnd = source.indexOf('export class WorkerProcessor');
+    const verifyBody = source.slice(verifyStart, verifyEnd);
+    expect(verifyStart).toBeGreaterThan(-1);
+    expect(verifyBody).not.toMatch(/expir/i);
+    expect(verifyBody).not.toMatch(/harnessEntitled/);
+    expect(verifyBody).not.toMatch(/revok/i);
+  });
+
+  it('wraps cyclic payload serialization as a typed non-retryable entitlement error', () => {
+    const job = makeGoldenJob();
+    job.loop = job;
+    const error = expectEntitlementError(
+      job,
+      CODES.PAYLOAD_INTEGRITY_MISMATCH,
+    );
+    expect(error).not.toBeInstanceOf(TypeError);
+  });
+
+  it('wraps HMAC crypto failures as invalid signature instead of leaking raw errors', () => {
+    const hmacSpy = jest
+      .spyOn(require('crypto') as typeof import('crypto'), 'createHmac')
+      .mockImplementation(() => {
+        throw new RangeError('hmac boom');
+      });
+    try {
+      const error = expectEntitlementError(
+        makeGoldenJob(),
+        CODES.INVALID_SIGNATURE,
+      );
+      expect(error).not.toBeInstanceOf(RangeError);
+      expect(error.message).not.toContain('hmac boom');
+    } finally {
+      hmacSpy.mockRestore();
+    }
+  });
+});
+
+/**
+ * AGENT-PLATFORM-EXEC-01C5B2 Cycle C — worker guard placement and side-effect ordering.
+ */
+describe('AGENT-PLATFORM-EXEC-01C5B2 Cycle C — worker integration', () => {
+  const GOLDEN_SECRET = 'test-hmac-secret-do-not-use-in-production-01c5b';
+  const GOLDEN_ISSUED_AT = '2026-09-05T12:00:00.000Z';
+  const GOLDEN_PAYLOAD_DIGEST =
+    '8b58d2d281263357f70c8a489e3bbf4e32e0facfb5db0e83cd522b62e007188a';
+  const GOLDEN_SIGNATURE =
+    'd247e17634be269b0bbef1eb843a65bf299935ea840853900fe5dda3d8ef11b5';
+
+  const originalRedisUrl = process.env.REDIS_URL;
+  const originalStuckScan = process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+  const originalSecret = process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+
+  function makeGoldenJobData(
+    overrides: Record<string, unknown> = {},
+    proofOverrides?: Record<string, unknown> | null,
+  ): Record<string, unknown> {
+    const data: Record<string, unknown> = {
+      executionId: 'exec-golden-01',
+      userId: 'user-golden-01',
+      apiKeyId: 'apikey-golden-01',
+      sessionId: 'session-golden-01',
+      conversationId: 'conv-golden-01',
+      provider: 'anthropic',
+      adapter: 'anthropic',
+      prompt: 'Hello, world.',
+      submittedAt: GOLDEN_ISSUED_AT,
+      harnessVersion: 'v1',
+      ...overrides,
+    };
+    if (proofOverrides === null) {
+      return data;
+    }
+    if (
+      Object.prototype.hasOwnProperty.call(overrides, 'harnessEntitlementProof')
+    ) {
+      return data;
+    }
+    data.harnessEntitlementProof = {
+      version: 1,
+      executionId: 'exec-golden-01',
+      userId: 'user-golden-01',
+      apiKeyId: 'apikey-golden-01',
+      harnessVersion: 'v1',
+      issuedAt: GOLDEN_ISSUED_AT,
+      payloadDigest: GOLDEN_PAYLOAD_DIGEST,
+      signature: GOLDEN_SIGNATURE,
+      ...proofOverrides,
+    };
+    return data;
+  }
+
+  function createLedgerMock(options?: { cancelAfterClaim?: boolean }) {
+    const status = { value: 'pending' };
+    const failedUpdates: unknown[][] = [];
+    const cancelledUpdates: unknown[][] = [];
+    const query = jest.fn(async (sql: string, params: unknown[] = []) => {
+      if (
+        sql.includes("SET execution_status = 'running'") &&
+        sql.includes('RETURNING')
+      ) {
+        if (status.value === 'pending') {
+          status.value = 'running';
+          return [{ execution_id: params[0] }];
+        }
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'failed'")) {
+        failedUpdates.push(params);
+        status.value = 'failed';
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'cancelled'")) {
+        cancelledUpdates.push(params);
+        status.value = 'cancelled';
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'completed'")) {
+        status.value = 'completed';
+        return [];
+      }
+      if (sql.includes('SELECT execution_status, created_at')) {
+        return [
+          {
+            execution_status: options?.cancelAfterClaim
+              ? 'cancel_requested'
+              : status.value,
+            created_at: new Date().toISOString(),
+          },
+        ];
+      }
+      if (sql.includes('SELECT execution_id, timestamp')) {
+        return [];
+      }
+      if (sql.includes('SELECT metadata')) {
+        return [{ metadata: {} }];
+      }
+      if (sql.includes('SELECT execution_status')) {
+        return [{ execution_status: status.value }];
+      }
+      return [];
+    });
+    return { query, status, failedUpdates, cancelledUpdates };
+  }
+
+  async function startWorker(deps: {
+    query: jest.Mock;
+    execute: jest.Mock;
+    getAdapter: jest.Mock;
+    publisher: {
+      publishCompletion: jest.Mock;
+      publishToken: jest.Mock;
+      publishFileActions: jest.Mock;
+    };
+    apiGateway: {
+      notifyExecutionComplete: jest.Mock;
+      createWorkspaceCheckpoint: jest.Mock;
+    };
+  }) {
+    const worker = new WorkerProcessor(
+      { query: deps.query } as never,
+      { execute: deps.execute, getAdapter: deps.getAdapter } as never,
+      deps.publisher as never,
+      deps.apiGateway as never,
+    );
+    await worker.onModuleInit();
+    if (!capturedWorker.processor) {
+      throw new Error('BullMQ worker processor was not captured');
+    }
+    return {
+      worker,
+      processJob: capturedWorker.processor,
+    };
+  }
+
+  function parseLoggedJsonEvents(
+    spies: jest.SpyInstance[],
+    eventName: string,
+  ): Array<Record<string, unknown>> {
+    return spies
+      .flatMap((spy) => spy.mock.calls.map((args) => args[0]))
+      .filter((message): message is string => typeof message === 'string')
+      .map((message) => {
+        try {
+          return JSON.parse(message) as Record<string, unknown>;
+        } catch {
+          return null;
+        }
+      })
+      .filter((payload): payload is Record<string, unknown> => {
+        return payload !== null && payload.event === eventName;
+      });
+  }
+
+  function allLogText(spies: jest.SpyInstance[]): string {
+    return spies
+      .flatMap((spy) => spy.mock.calls.map((args) => String(args[0])))
+      .join('\n');
+  }
+
+  let executeLoopSpy: jest.SpyInstance;
+  let logSpy: jest.SpyInstance;
+  let errorSpy: jest.SpyInstance;
+  let warnSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    process.env.REDIS_URL = 'redis://127.0.0.1:6379';
+    process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = '600000';
+    process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = GOLDEN_SECRET;
+    capturedWorker.processor = null;
+    capturedWorker.opts = null;
+    executeLoopSpy = jest
+      .spyOn(agentHarnessLoop, 'executeAgentHarnessLoop')
+      .mockResolvedValue({
+        result: { output: 'loop', tokensUsed: 1, model: 'x' },
+      } as never);
+    logSpy = jest.spyOn(Logger.prototype, 'log');
+    errorSpy = jest.spyOn(Logger.prototype, 'error');
+    warnSpy = jest.spyOn(Logger.prototype, 'warn');
+  });
+
+  afterEach(async () => {
+    executeLoopSpy.mockRestore();
+    logSpy.mockRestore();
+    errorSpy.mockRestore();
+    warnSpy.mockRestore();
+    jest.useRealTimers();
+    if (originalRedisUrl === undefined) {
+      delete process.env.REDIS_URL;
+    } else {
+      process.env.REDIS_URL = originalRedisUrl;
+    }
+    if (originalStuckScan === undefined) {
+      delete process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+    } else {
+      process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = originalStuckScan;
+    }
+    if (originalSecret === undefined) {
+      delete process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+    } else {
+      process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = originalSecret;
+    }
+  });
+
+  it('places verification after cancel pre-check and before resolveHarnessRouting', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    const cancelIndex = workerSource.indexOf(
+      'Execution cancelled before start',
+    );
+    const verifyCallIndex = workerSource.indexOf(
+      'verifyHarnessEntitlementProof(job.data)',
+    );
+    const routingIndex = workerSource.indexOf(
+      'const routing = resolveHarnessRouting({',
+    );
+    expect(cancelIndex).toBeGreaterThan(-1);
+    expect(verifyCallIndex).toBeGreaterThan(cancelIndex);
+    expect(routingIndex).toBeGreaterThan(verifyCallIndex);
+  });
+
+  it('lets a valid proof continue to existing disabled-gate routing', async () => {
+    expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop).toBe(false);
+    const ledger = createLedgerMock();
+    const execute = jest.fn();
+    const getAdapter = jest.fn();
+    const createWorkspaceCheckpoint = jest.fn();
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute,
+      getAdapter,
+      publisher: {
+        publishCompletion: jest.fn(),
+        publishToken: jest.fn(),
+        publishFileActions: jest.fn(),
+      },
+      apiGateway: {
+        notifyExecutionComplete: jest.fn(),
+        createWorkspaceCheckpoint,
+      },
+    });
+
+    await expect(
+      processJob({ id: 'job-valid-proof', data: makeGoldenJobData() }),
+    ).rejects.toBeInstanceOf(HarnessRoutingError);
+
+    const routeEvents = parseLoggedJsonEvents(
+      [logSpy],
+      'agent_harness.route_evaluated',
+    );
+    expect(routeEvents).toHaveLength(1);
+    expect(routeEvents[0].selectedPath).toBe('fail_closed');
+    expect(routeEvents[0].enableToolLoop).toBe(false);
+    expect(
+      parseLoggedJsonEvents(
+        [logSpy],
+        'agent_harness.entitlement_verification_failed',
+      ),
+    ).toHaveLength(0);
+    expect(execute).not.toHaveBeenCalled();
+    expect(getAdapter).not.toHaveBeenCalled();
+    expect(executeLoopSpy).not.toHaveBeenCalled();
+    expect(createWorkspaceCheckpoint).not.toHaveBeenCalled();
+    await worker.onModuleDestroy();
+  });
+
+  it('verifies even while the global Harness tool-loop flag is false and rejects a missing proof before routing', async () => {
+    expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop).toBe(false);
+    const ledger = createLedgerMock();
+    const execute = jest.fn();
+    const getAdapter = jest.fn();
+    const createWorkspaceCheckpoint = jest.fn();
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute,
+      getAdapter,
+      publisher: {
+        publishCompletion: jest.fn(),
+        publishToken: jest.fn(),
+        publishFileActions: jest.fn(),
+      },
+      apiGateway: {
+        notifyExecutionComplete: jest.fn(),
+        createWorkspaceCheckpoint,
+      },
+    });
+
+    await expect(
+      processJob({
+        id: 'job-missing-proof',
+        data: makeGoldenJobData({}, null),
+      }),
+    ).rejects.toBeInstanceOf(HarnessEntitlementError);
+
+    expect(ledger.status.value).toBe('failed');
+    expect(
+      parseLoggedJsonEvents([logSpy], 'agent_harness.route_evaluated'),
+    ).toHaveLength(0);
+    const failureEvents = parseLoggedJsonEvents(
+      [logSpy],
+      'agent_harness.entitlement_verification_failed',
+    );
+    expect(failureEvents).toHaveLength(1);
+    expect(failureEvents[0].errorCode).toBe(
+      'HARNESS_ENTITLEMENT_PROOF_MISSING',
+    );
+    expect(execute).not.toHaveBeenCalled();
+    expect(getAdapter).not.toHaveBeenCalled();
+    expect(executeLoopSpy).not.toHaveBeenCalled();
+    expect(createWorkspaceCheckpoint).not.toHaveBeenCalled();
+    const logs = allLogText([logSpy, errorSpy, warnSpy]);
+    expect(logs).toContain('HARNESS_ENTITLEMENT_PROOF_MISSING');
+    expect(logs).not.toContain(GOLDEN_SECRET);
+    expect(logs).not.toContain(GOLDEN_SIGNATURE);
+    expect(logs).not.toContain(GOLDEN_PAYLOAD_DIGEST);
+    expect(logs).not.toContain('Hello, world.');
+    expect(logs).not.toContain('persona');
+    await worker.onModuleDestroy();
+  });
+
+  it('finalizes invalid proof through the existing failed ledger path without retry or provider work', async () => {
+    const ledger = createLedgerMock();
+    const execute = jest.fn().mockRejectedValue(new Error('timeout 429'));
+    const getAdapter = jest.fn();
+    const createWorkspaceCheckpoint = jest.fn();
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute,
+      getAdapter,
+      publisher: {
+        publishCompletion: jest.fn(),
+        publishToken: jest.fn(),
+        publishFileActions: jest.fn(),
+      },
+      apiGateway: {
+        notifyExecutionComplete: jest.fn(),
+        createWorkspaceCheckpoint,
+      },
+    });
+
+    let caught: unknown;
+    try {
+      await processJob({
+        id: 'job-bad-sig',
+        data: makeGoldenJobData(
+          {},
+          {
+            signature:
+              '0000000000000000000000000000000000000000000000000000000000000000',
+          },
+        ),
+      });
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(caught).toBeInstanceOf(HarnessEntitlementError);
+    expect((caught as HarnessEntitlementError).isRetryable).toBe(false);
+    expect((caught as HarnessEntitlementError).code).toBe(
+      'HARNESS_ENTITLEMENT_PROOF_INVALID_SIGNATURE',
+    );
+    expect(ledger.status.value).toBe('failed');
+    expect(ledger.failedUpdates.length).toBeGreaterThan(0);
+    expect(execute).not.toHaveBeenCalled();
+    expect(executeLoopSpy).not.toHaveBeenCalled();
+    expect(getAdapter).not.toHaveBeenCalled();
+    expect(createWorkspaceCheckpoint).not.toHaveBeenCalled();
+    expect(
+      parseLoggedJsonEvents([logSpy], 'agent_harness.route_evaluated'),
+    ).toHaveLength(0);
+    const completion = parseLoggedJsonEvents([logSpy], 'execution_completed');
+    expect(completion.some((event) => event.execution_status === 'failed')).toBe(
+      true,
+    );
+    await worker.onModuleDestroy();
+  });
+
+  it('exits cancelled jobs through the existing cancellation path without proof verification', async () => {
+    const ledger = createLedgerMock({ cancelAfterClaim: true });
+    const execute = jest.fn();
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute,
+      getAdapter: jest.fn(),
+      publisher: {
+        publishCompletion: jest.fn(),
+        publishToken: jest.fn(),
+        publishFileActions: jest.fn(),
+      },
+      apiGateway: {
+        notifyExecutionComplete: jest.fn(),
+        createWorkspaceCheckpoint: jest.fn(),
+      },
+    });
+
+    await processJob({
+      id: 'job-cancelled',
+      data: makeGoldenJobData({}, null),
+    });
+
+    expect(ledger.status.value).toBe('cancelled');
+    expect(execute).not.toHaveBeenCalled();
+    expect(executeLoopSpy).not.toHaveBeenCalled();
+    expect(
+      parseLoggedJsonEvents(
+        [logSpy],
+        'agent_harness.entitlement_verification_failed',
+      ),
+    ).toHaveLength(0);
+    expect(
+      parseLoggedJsonEvents([logSpy], 'agent_harness.route_evaluated'),
+    ).toHaveLength(0);
+    await worker.onModuleDestroy();
+  });
+});
+
+/**
+ * AGENT-PLATFORM-EXEC-01C5B2 Cycle D — ordinary-job and disabled-gate compatibility.
+ */
+describe('AGENT-PLATFORM-EXEC-01C5B2 Cycle D — compatibility', () => {
+  const originalRedisUrl = process.env.REDIS_URL;
+  const originalStuckScan = process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+  const originalSecret = process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+
+  function createLedgerMock() {
+    const status = { value: 'pending' };
+    const query = jest.fn(async (sql: string, params: unknown[] = []) => {
+      if (
+        sql.includes("SET execution_status = 'running'") &&
+        sql.includes('RETURNING')
+      ) {
+        if (status.value === 'pending') {
+          status.value = 'running';
+          return [{ execution_id: params[0] }];
+        }
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'completed'")) {
+        status.value = 'completed';
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'failed'")) {
+        status.value = 'failed';
+        return [];
+      }
+      if (sql.includes('SELECT execution_status, created_at')) {
+        return [
+          {
+            execution_status: status.value,
+            created_at: new Date().toISOString(),
+          },
+        ];
+      }
+      if (sql.includes('SELECT execution_id, timestamp')) {
+        return [];
+      }
+      if (sql.includes('SELECT metadata')) {
+        return [{ metadata: {} }];
+      }
+      if (sql.includes('SELECT execution_status')) {
+        return [{ execution_status: status.value }];
+      }
+      return [];
+    });
+    return { query, status };
+  }
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    process.env.REDIS_URL = 'redis://127.0.0.1:6379';
+    process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = '600000';
+    delete process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+    capturedWorker.processor = null;
+    capturedWorker.opts = null;
+  });
+
+  afterEach(async () => {
+    jest.useRealTimers();
+    if (originalRedisUrl === undefined) {
+      delete process.env.REDIS_URL;
+    } else {
+      process.env.REDIS_URL = originalRedisUrl;
+    }
+    if (originalStuckScan === undefined) {
+      delete process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+    } else {
+      process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = originalStuckScan;
+    }
+    if (originalSecret === undefined) {
+      delete process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+    } else {
+      process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = originalSecret;
+    }
+  });
+
+  it('runs ordinary jobs without harnessVersion or HMAC secret on the existing single-shot path', async () => {
+    expect(process.env.HARNESS_ENTITLEMENT_HMAC_SECRET).toBeUndefined();
+    const ledger = createLedgerMock();
+    const execute = jest.fn().mockResolvedValue({
+      output: 'ok',
+      tokensUsed: 3,
+      model: 'grok-4.5',
+    });
+    const worker = new WorkerProcessor(
+      { query: ledger.query } as never,
+      { execute, getAdapter: jest.fn() } as never,
+      {
+        publishCompletion: jest.fn(),
+        publishToken: jest.fn(),
+        publishFileActions: jest.fn(),
+      } as never,
+      { notifyExecutionComplete: jest.fn().mockResolvedValue(undefined) } as never,
+    );
+    await worker.onModuleInit();
+    if (!capturedWorker.processor) {
+      throw new Error('BullMQ worker processor was not captured');
+    }
+
+    await capturedWorker.processor({
+      id: 'job-ordinary',
+      data: {
+        executionId: 'exec-ordinary-01',
+        provider: 'xai',
+        adapter: 'xai',
+        sessionId: 'session-1',
+        conversationId: 'conv-1',
+        userId: 'user-1',
+        apiKeyId: 'apikey-1',
+        prompt: 'Hello ordinary job',
+        model: 'grok-4.5',
+        executionIntent: 'conversation',
+      },
+    });
+
+    expect(execute).toHaveBeenCalledTimes(1);
+    expect(ledger.status.value).toBe('completed');
+    await worker.onModuleDestroy();
+  });
+
+  it('does not import Gateway code and leaves non-v1 routing unchanged', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    expect(workerSource).not.toContain('services/api-gateway');
+    expect(workerSource).not.toContain('createHarnessEntitlementProof');
+    expect(
+      resolveHarnessRouting({
+        enableToolLoop: false,
+      }),
+    ).toEqual({ selectedPath: 'plain' });
+    expect(
+      resolveHarnessRouting({
+        harnessVersion: 'v1',
+        enableToolLoop: false,
+      }),
+    ).toEqual({
+      selectedPath: 'fail_closed',
+      failReason: 'tool_loop_disabled',
+    });
   });
 });

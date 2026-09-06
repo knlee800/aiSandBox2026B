@@ -31,6 +31,17 @@ export interface WorkspaceContext {
   workspaceName?: string;
 }
 
+export interface HarnessEntitlementProof {
+  readonly version: 1;
+  readonly executionId: string;
+  readonly userId: string;
+  readonly apiKeyId: string;
+  readonly harnessVersion: 'v1';
+  readonly issuedAt: string;
+  readonly payloadDigest: string;
+  readonly signature: string;
+}
+
 export interface AiExecutionJob {
   executionId: string;
 
@@ -52,6 +63,9 @@ export interface AiExecutionJob {
 
   /** Agent Harness version gate. When set to 'v1', enables the harness execution path. */
   harnessVersion?: string;
+
+  /** HMAC entitlement proof required when harnessVersion === 'v1'. Absent on ordinary jobs. */
+  harnessEntitlementProof?: HarnessEntitlementProof;
 
   /** Persisted user-agent id. Optional for ordinary unbound executions. */
   agentId?: string;

@@ -9,7 +9,7 @@
 import { DEFAULT_AGENT_HARNESS_CONFIG_V1 } from '../../agent-harness/config/agent-harness.config';
 import { resolveBuilderHarnessConfig } from '../../agent-harness/builder-profiles';
 import type { AgentHarnessRunRequestV1 } from '../../agent-harness/contracts/agent-harness.contracts';
-import type { AiExecutionJob } from '../../queue/job.types';
+import type { AiExecutionJob, HarnessEntitlementProof } from '../../queue/job.types';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -90,6 +90,36 @@ describe('AGENT-HARNESS-07B: AiExecutionJob identity fields', () => {
     expect(job.harnessProfileId).toBeUndefined();
     expect(job.modelProfileId).toBeUndefined();
     expect(job.toolPermissionProfileId).toBeUndefined();
+    expect(job.harnessEntitlementProof).toBeUndefined();
+  });
+
+  it('AiExecutionJob accepts optional frozen HarnessEntitlementProof v1', () => {
+    const proof: HarnessEntitlementProof = {
+      version: 1,
+      executionId: 'e1',
+      userId: 'u1',
+      apiKeyId: 'k1',
+      harnessVersion: 'v1',
+      issuedAt: '2026-09-05T12:00:00.000Z',
+      payloadDigest: '8b58d2d281263357f70c8a489e3bbf4e32e0facfb5db0e83cd522b62e007188a',
+      signature: 'd247e17634be269b0bbef1eb843a65bf299935ea840853900fe5dda3d8ef11b5',
+    };
+    const job: AiExecutionJob = {
+      executionId: 'e1',
+      userId: 'u1',
+      apiKeyId: 'k1',
+      sessionId: 's1',
+      conversationId: 'c1',
+      provider: 'stub',
+      adapter: 'stub',
+      prompt: 'test',
+      submittedAt: new Date().toISOString(),
+      harnessVersion: 'v1',
+      harnessEntitlementProof: proof,
+    };
+    expect(job.harnessEntitlementProof).toEqual(proof);
+    expect(job.harnessEntitlementProof?.version).toBe(1);
+    expect(job.harnessEntitlementProof?.harnessVersion).toBe('v1');
   });
 });
 
