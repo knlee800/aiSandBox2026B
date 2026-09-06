@@ -74891,7 +74891,7 @@ taskId=AGENT-PLATFORM-EXEC-01C5B
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY / NOT ADMITTED - 2026-09-05 - Step 1 COMPLETE - 2026-09-05 (registration / control-plane only) - Step 2 COMPLETE - 2026-09-05 (stage-start / cross-service entitlement contract freeze / implementation decomposition) - Step 2A SECURITY REPAIR - 2026-09-05 (repaired authorization-time / revocation / expiry / payload-integrity inconsistencies; added payloadDigest, canonical JSON serializer, golden vectors; enqueue-time authorization frozen; non-retroactive revocation frozen) - Stage-start: `docs/AGENT-PLATFORM-EXEC-01C5B-STAGE-START.md` - CONTRACT_FREEZE=COMPLETE - CHILD_SLICE_DECOMPOSITION=COMPLETE - CHILD_TASKS_REGISTERED=1 - ENTITLEMENT_PROOF_ARCHITECTURE=HMAC_SHA256_ATTESTATION_WITH_PAYLOAD_DIGEST - child EXEC-01C5B1 REGISTERED / ADMITTED (Lane 1 ACTIVE - 2026-09-06; IMPLEMENTATION_STARTED=NO) - proposed child EXEC-01C5B2 remains NOT REGISTERED - Step 3 NOT AUTHORIZED on this parent - Step 4 NOT AUTHORIZED on this parent - GOVERNANCE acquired transiently for EXEC-01C5B1 child registration then released UNOWNED - Lane 1 ACTIVE (EXEC-01C5B1) - Lane 2 EMPTY - Lane 3 DISABLED - GATEWAY OWNED by EXEC-01C5B1 - AI-SERVICE UNOWNED - ENV OWNED by EXEC-01C5B1 - candidate `status=READY` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true` (not admissible; `Test-Admissible` = ADMISSION_UNCERTAIN) - parent AGENT-PLATFORM-EXEC-01C5 and repair-debt sibling AGENT-PLATFORM-EXEC-01C5R1 remain COMPLETE AND LOCKED - parent umbrella AGENT-PLATFORM-EXEC-01C remains READY / NOT ADMITTED / PROVISIONAL / `admissionUncertain=true` - EXEC-01C6 remains NOT REGISTERED - product-visible Harness remains FUTURE/gated - IMPLEMENTATION_STARTED=NO.
+**Status:** REGISTERED / READY / NOT ADMITTED - 2026-09-05 - Step 1 COMPLETE - 2026-09-05 (registration / control-plane only) - Step 2 COMPLETE - 2026-09-05 (stage-start / cross-service entitlement contract freeze / implementation decomposition) - Step 2A SECURITY REPAIR - 2026-09-05 (repaired authorization-time / revocation / expiry / payload-integrity inconsistencies; added payloadDigest, canonical JSON serializer, golden vectors; enqueue-time authorization frozen; non-retroactive revocation frozen) - Stage-start: `docs/AGENT-PLATFORM-EXEC-01C5B-STAGE-START.md` - CONTRACT_FREEZE=COMPLETE - CHILD_SLICE_DECOMPOSITION=COMPLETE - CHILD_TASKS_REGISTERED=2 - ENTITLEMENT_PROOF_ARCHITECTURE=HMAC_SHA256_ATTESTATION_WITH_PAYLOAD_DIGEST - child EXEC-01C5B1 COMPLETE AND LOCKED — PASS — 2026-09-06 — child EXEC-01C5B2 REGISTERED / ADMITTED (Lane 1 ACTIVE - 2026-09-06; IMPLEMENTATION_STARTED=NO) - EXEC-01C6 remains NOT REGISTERED - Step 3 NOT AUTHORIZED on this parent - Step 4 NOT AUTHORIZED on this parent - GOVERNANCE acquired transiently for EXEC-01C5B2 child registration then released UNOWNED - Lane 1 ACTIVE (EXEC-01C5B2) - Lane 2 EMPTY - Lane 3 DISABLED - GATEWAY UNOWNED - AI-SERVICE OWNED by EXEC-01C5B2 - ENV UNOWNED - candidate `status=READY` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true` (not admissible; `Test-Admissible` = ADMISSION_UNCERTAIN) - parent AGENT-PLATFORM-EXEC-01C5 and repair-debt sibling AGENT-PLATFORM-EXEC-01C5R1 remain COMPLETE AND LOCKED - parent umbrella AGENT-PLATFORM-EXEC-01C remains READY / NOT ADMITTED / PROVISIONAL / `admissionUncertain=true` - EXEC-01C6 remains NOT REGISTERED - product-visible Harness remains FUTURE/gated - IMPLEMENTATION_STARTED=NO.
 **Task ID:** AGENT-PLATFORM-EXEC-01C5B
 **Title:** Gateway-to-worker Harness entitlement defense in depth
 **Family:** AGENT PLATFORM / EXEC (bounded security debt inside the already-authorized CURRENT persisted user-agent Harness/tool-loop development program; first named as an unregistered prospective follow-up inside the locked AGENT-PLATFORM-EXEC-01C5 canonical body)
@@ -74906,7 +74906,7 @@ nature=IMPLEMENTATION
 2. Step 2 - stage-start: cross-service entitlement contract freeze and bounded service decomposition - COMPLETE - 2026-09-05 - Step 2A SECURITY REPAIR - 2026-09-05 - Stage-start: `docs/AGENT-PLATFORM-EXEC-01C5B-STAGE-START.md` - all 18 questions resolved; HMAC-SHA256 attestation with payloadDigest chosen; enqueue-time authorization / non-retroactive revocation frozen; canonical JSON serializer frozen; golden cross-service test vectors frozen; payload integrity covers complete job payload; 2 children proposed (EXEC-01C5B1 GATEWAY+ENV, EXEC-01C5B2 AI-SERVICE); children NOT REGISTERED.
 3. Step 3 - bounded implementation slice(s) frozen at Step 2 - NOT AUTHORIZED.
 4. Step 4 - independent verification / checkpoint / final lock - NOT AUTHORIZED.
-**Start condition:** READY (satisfied for registration). NOT ADMITTED. Machine `status=READY`. Parent does not occupy a lane. Lane 1 ACTIVE with child AGENT-PLATFORM-EXEC-01C5B1. Lane 2 EMPTY. Lane 3 DISABLED. Candidate `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true`. Parent implementation mutexes remain none; GATEWAY and ENV are owned by EXEC-01C5B1.
+**Start condition:** READY (satisfied for registration). NOT ADMITTED. Machine `status=READY`. Parent does not occupy a lane. Lane 1 ACTIVE with child AGENT-PLATFORM-EXEC-01C5B2. Lane 2 EMPTY. Lane 3 DISABLED. Candidate `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true`. Parent implementation mutexes remain none; AI-SERVICE is owned by EXEC-01C5B2. GATEWAY and ENV remain UNOWNED.
 **Depends on (canonical / human):** AGENT-PLATFORM-EXEC-01C5 COMPLETE AND LOCKED - PASS - 2026-09-04 - Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C5-CHECKPOINT.md` - names this exact worker defense-in-depth gap as an unregistered follow-up and freezes the trusted-entitlement-authority principle this task inherits. AGENT-PLATFORM-EXEC-01C5R1 COMPLETE AND LOCKED - PASS - 2026-09-05 - Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C5R1-CHECKPOINT.md` - unrelated test-compilation repair; recorded only as the most recent locked sibling. AGENT-PLATFORM-EXEC-01C4 COMPLETE AND LOCKED (persisted `agentId` on Harness jobs). AGENT-PLATFORM-EXEC-01C1 COMPLETE AND LOCKED (foundational job types and fail-closed Harness routing surface this task must extend). AGENT-PLATFORM-EXEC-01C Step 2 freeze COMPLETE - 2026-09-01 - Stage-start: `docs/AGENT-PLATFORM-EXEC-01C-STAGE-START.md` (parent umbrella is NOT LOCKED and MUST NOT appear in machine `dependsOn`).
 **Depends on (machine sidecar `dependsOn`):** `["AGENT-PLATFORM-EXEC-01C5"]` - sidecar `lockedTaskIds` contains it. Parent umbrella AGENT-PLATFORM-EXEC-01C is READY / not LOCKED and is recorded only as a human/canonical parent dependency; it is not included in machine `dependsOn`.
 **Primary write scope (Step 1, this write):** `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body; `docs/control-plane/lane-saturation-state.json` candidate record. No application source. No test file. No stage-start document.
@@ -74980,7 +74980,7 @@ nature=IMPLEMENTATION
 **Machine registration (post-epoch):** Present exactly once immediately under this canonical heading (`taskId=AGENT-PLATFORM-EXEC-01C5B`, `nature=IMPLEMENTATION`). Enforcement epoch unchanged. No second epoch. Do not duplicate the machine-registration markers elsewhere in this body. Do not register AGENT-PLATFORM-EXEC-01C6 or child slices of this task in this window.
 
 **Lane / admission:**
-REGISTERED / READY / NOT ADMITTED / PROVISIONAL. This parent still does not occupy a lane. Lane 1 ACTIVE with child AGENT-PLATFORM-EXEC-01C5B1. Lane 2 EMPTY. Lane 3 DISABLED. Occupancy hash `sha256:d6a6444ee66b20b902a817c7ff098cfcb71b8b55f2ac1d8624ffc9da715e228a`. Candidate `admissionUncertain=true` / `writeSetPrecision=PROVISIONAL` / `status=READY` so `Test-Admissible` = ADMISSION_UNCERTAIN; this parent candidate is not in S. Do not admit this parent. Child EXEC-01C5B1 is separately registered/admitted. EXEC-01C5B2 remains unregistered.
+REGISTERED / READY / NOT ADMITTED / PROVISIONAL. This parent still does not occupy a lane. Lane 1 ACTIVE with child AGENT-PLATFORM-EXEC-01C5B2. Lane 2 EMPTY. Lane 3 DISABLED. Occupancy hash `sha256:6808a08e1e7d1dc9abfe07a28abd65b5ef765feeef008fc7304c1ba2dab752ab`. Candidate `admissionUncertain=true` / `writeSetPrecision=PROVISIONAL` / `status=READY` so `Test-Admissible` = ADMISSION_UNCERTAIN; this parent candidate is not in S. Do not admit this parent. Child EXEC-01C5B1 remains COMPLETE AND LOCKED. Child EXEC-01C5B2 is separately registered/admitted to Lane 1. EXEC-01C6 remains unregistered.
 
 AGENT-PLATFORM-EXEC-01C5B does NOT: start implementation in Step 1; perform stage-start; freeze the final cross-service contract; register implementation children; admit a lane; acquire GATEWAY / AI-SERVICE / CONTAINER-MANAGER / FRONTEND / I18N; enable Harness flags; activate product-visible Harness; reopen Keith's G7 decision; register AGENT-PLATFORM-EXEC-01C6; register PRIVATE-BETA-INVITE-01; enable Lane 3; edit PRD.md / ARCHITECTURE.md / CLAUDE.md / AGENTS.md / validator / mutex catalog / application source in this window.
 
@@ -75076,7 +75076,9 @@ Step 4 (independent verification / checkpoint / final lock):
 **Step 1 HEAD:** `f096e6c41360159d51d56cf4230451b058e53361` (branch main; HEAD == origin/main; working tree clean at window open)
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0, child tasks registered=0 (EXEC-01C6 not registered). Governance writes: TASKS.md, this registry body, `docs/control-plane/lane-saturation-state.json`.
 
-**Child registration (2026-09-06):** AGENT-PLATFORM-EXEC-01C5B1 registered and admitted to Lane 1. Implementation has not started. EXEC-01C5B2 remains proposed/unregistered. This parent remains READY / NOT ADMITTED / PROVISIONAL. Shared-contract catalog ID `HARNESS_ENTITLEMENT_PROOF_V1` minted FROZEN. Product-visible Harness remains FUTURE/gated. Runtime authorization and Harness flags remain false.
+**Child registration (2026-09-06):** AGENT-PLATFORM-EXEC-01C5B1 registered, admitted, implemented, and COMPLETE AND LOCKED — PASS — 2026-09-06. Shared-contract catalog ID `HARNESS_ENTITLEMENT_PROOF_V1` minted FROZEN by B1.
+
+**Child registration (2026-09-06 B2):** AGENT-PLATFORM-EXEC-01C5B2 registered and admitted to Lane 1. Implementation has not started. Shared-contract catalog ID `HARNESS_ENTITLEMENT_PROOF_V1` remains FROZEN (B2 is consumer/verifier; `sharedContractIds=["HARNESS_ENTITLEMENT_PROOF_V1"]`; `mutatesSharedContractIds=[]`). Product-visible Harness remains FUTURE/gated. Runtime authorization and Harness flags remain false. EXEC-01C6 remains NOT REGISTERED. This parent remains READY / NOT ADMITTED / PROVISIONAL.
 
 ---
 
@@ -75205,3 +75207,188 @@ Step 3 (independent verification / checkpoint / final lock):
 
 **Step 1 HEAD:** `dd55b677112271dcc89535c82b90fe3fdea8aed5` (branch main; HEAD == origin/main; working tree clean at window open)
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=YES (control-plane only), Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0, later child tasks=0 (EXEC-01C5B2 and EXEC-01C6 not registered). Governance writes: TASKS.md, this registry body, `docs/control-plane/lane-saturation-state.json`.
+
+---
+
+### AGENT-PLATFORM-EXEC-01C5B2 — AI-Service Harness entitlement proof verification and worker enforcement
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=AGENT-PLATFORM-EXEC-01C5B2
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / ADMITTED (Lane 1) — 2026-09-06 — Step 1 COMPLETE — 2026-09-06 (registration / control-plane admission only) — Step 2 NOT STARTED — Step 3 NOT AUTHORIZED — Lane 1 ACTIVE — AI-SERVICE OWNED — GATEWAY UNOWNED — ENV UNOWNED — GOVERNANCE released UNOWNED — candidate `status=ADMITTED` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=EXACT` / `admissionUncertain=false` — parent AGENT-PLATFORM-EXEC-01C5B remains REGISTERED / READY / NOT ADMITTED / PROVISIONAL / `admissionUncertain=true` — sibling AGENT-PLATFORM-EXEC-01C5B1 COMPLETE AND LOCKED — PASS — 2026-09-06 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C5B1-CHECKPOINT.md` — shared contract `HARNESS_ENTITLEMENT_PROOF_V1` remains FROZEN (this child is consumer/verifier) — parent umbrella AGENT-PLATFORM-EXEC-01C remains READY / NOT ADMITTED / PROVISIONAL / `admissionUncertain=true` — EXEC-01C6 remains NOT REGISTERED — product-visible Harness remains FUTURE/gated — Harness flags unchanged / false — IMPLEMENTATION_STARTED=NO.
+**Task ID:** AGENT-PLATFORM-EXEC-01C5B2
+**Title:** AI-Service Harness entitlement proof verification and worker enforcement
+**Family:** AGENT PLATFORM / EXEC (second bounded implementation child of AGENT-PLATFORM-EXEC-01C5B after Step 2 / Step 2A contract freeze and locked EXEC-01C5B1 producer; AI-Service consumer-side HMAC entitlement proof verification and worker fail-closed enforcement)
+**Parent task:** AGENT-PLATFORM-EXEC-01C5B — Gateway-to-worker Harness entitlement defense in depth — REGISTERED / READY / NOT ADMITTED / PROVISIONAL / `admissionUncertain=true`. Frozen contract: `docs/AGENT-PLATFORM-EXEC-01C5B-STAGE-START.md`. Parent is human/program authority only and MUST NOT appear in machine `dependsOn`.
+**Parent umbrella:** AGENT-PLATFORM-EXEC-01C — Persisted User-Agent Harness/Tool-Loop Contract and Safety Umbrella — REGISTERED / READY / NOT ADMITTED. This child does not admit the umbrella.
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Development program:** CURRENT — bounded AI-Service verifier child required to consume the already-frozen EXEC-01C5B entitlement-proof contract after locked EXEC-01C5B1 producer evidence. This is not a new product-priority decision, does not reopen architecture / authorization-time / canonicalization / proof fields / payload coverage / golden vectors / worker-guard position, and is a non-trigger for the Next-Work Selection Protocol (routine named-task continuation of already-registered security debt).
+**Product-visible Harness capability:** FUTURE / gated / disabled / unavailable to users. This registration does not enable flags, frontend `harnessVersion`, mutation tools, specialist/unbound Builder Harness, or product activation.
+**Classification:** CURRENT development-program security work; product-visible Harness remains FUTURE/gated. Machine `productClass=CURRENT` with `futureAuthorization=NONE`. Activation effect of this child: NONE.
+**Lifecycle:** 3-step NORMAL bounded AI-SERVICE child:
+1. Step 1 — registration and admission — COMPLETE — 2026-09-06 — control-plane only; machine-required Lane 1 admission; implementation not started.
+2. Step 2 — bounded TDD implementation — NOT STARTED. Exact write set frozen below. Do not reopen the frozen EXEC-01C5B contract.
+3. Step 3 — independent security consolidation, checkpoint, and lock — NOT AUTHORIZED.
+**Start condition:** READY (satisfied; consumed by this admission). Machine `status=ADMITTED`. Candidate `writeSetPrecision=EXACT` / `admissionUncertain=false`. AI-SERVICE OWNED. Lane 1 ACTIVE.
+**Depends on (canonical / human):** AGENT-PLATFORM-EXEC-01C5B1 COMPLETE AND LOCKED — PASS — 2026-09-06 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C5B1-CHECKPOINT.md`. AGENT-PLATFORM-EXEC-01C5B Step 2 / Step 2A COMPLETE — 2026-09-05 — Stage-start: `docs/AGENT-PLATFORM-EXEC-01C5B-STAGE-START.md` (parent EXEC-01C5B is READY / not LOCKED and MUST NOT appear in machine `dependsOn`). AGENT-PLATFORM-EXEC-01C5 COMPLETE AND LOCKED — PASS — 2026-09-04.
+**Depends on (machine sidecar `dependsOn`):** `["AGENT-PLATFORM-EXEC-01C5B1"]` — sidecar `lockedTaskIds` contains it. Unlocked parent AGENT-PLATFORM-EXEC-01C5B is recorded only as human/canonical parent authority.
+**Primary write scope (Step 1, this write):** `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body; `docs/control-plane/lane-saturation-state.json` candidate + Lane 1 occupancy. No application source. No test file. No catalog mutation. No stage-start rewrite. No checkpoint.
+**Primary write scope (Step 2, EXACT — frozen at this admission from `docs/AGENT-PLATFORM-EXEC-01C5B-STAGE-START.md` §16.3 and source inspection of the four files at HEAD `01652b87838157664ecffa161060a6608632dbed`):** AI-SERVICE. Exact ordered files:
+1. `services/ai-service/src/queue/job.types.ts`
+2. `services/ai-service/src/worker/worker.processor.ts`
+3. `services/ai-service/src/worker/worker.processor.spec.ts`
+4. `services/ai-service/src/worker/__tests__/worker.processor.builder-config.spec.ts`
+**Primary write scope (Step 3):** independent security consolidation / checkpoint / lock only after Step 2 is complete. Not authorized now.
+**Mutexes / resources (Step 1 admission):** GOVERNANCE held only for this control-plane registration/admission then released UNOWNED. IMPLEMENTATION mutex: **AI-SERVICE** acquired for Lane 1 occupancy (scheduling lease). GOVERNANCE must not appear in the IMPLEMENTATION candidate mutex list. GATEWAY remains UNOWNED. ENV remains UNOWNED. FRONTEND / I18N / CONTAINER-MANAGER / MIGRATION / PACKAGE / COMPOSE / LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT remain UNOWNED and unauthorized.
+**Hot-file leases:** none.
+**Shared contracts (machine):** catalog ID `HARNESS_ENTITLEMENT_PROOF_V1` already exists exactly once and remains FROZEN. Consumer/verifier classification: `sharedContractIds=["HARNESS_ENTITLEMENT_PROOF_V1"]`; `mutatesSharedContractIds=[]`. The same ID must not appear in both arrays. Do not mint a second catalog entry. Do not change FROZEN state. Contract-bearing production paths (catalog only; this child's write set includes the AI-Service queue contract and worker): `services/api-gateway/src/ai/ai-execution.controller.ts`; `services/ai-service/src/queue/job.types.ts`; `services/ai-service/src/worker/worker.processor.ts`. Tests are not contract-bearing production paths. Do not reopen frozen architecture, authorization-time semantics, canonicalization, proof fields, payload coverage, golden vectors, or worker-guard position.
+**Evidence class:** LOCAL-TESTS. No provider-live. No Docker/Postgres/Redis. No STAGING / PROVIDER-LIVE / CREDIT runtime needs. No staging/browser/runtime in this Step 1.
+**Revert isolation:** registration revert = discard the three control-plane files' EXEC-01C5B2 additions and restore Lane 1 EMPTY / AI-SERVICE UNOWNED; cannot invalidate locked AGENT-PLATFORM-EXEC-01C5B1 / EXEC-01C5 / EXEC-01C5R1 evidence or the EXEC-01C5B stage-start freeze. Lane 2 remains EMPTY. EXEC-01C6 remains unregistered. Shared-contract catalog entry remains FROZEN.
+**saturationClass:** FORCING (explicit; bounded verifier child required after locked EXEC-01C5B1; a READY FORCING EXACT candidate with empty lanes would make S nonempty and invalidate idle)
+**productClass:** CURRENT
+**futureAuthorization:** NONE — schema requires `futureAuthorization=NONE` when `productClass=CURRENT`. Product-visible Harness remains FUTURE/gated and is not encoded as `AUTHORIZED` FUTURE product.
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** none
+**i18n:** false
+
+**Identifier search:** Repo-wide search for a canonical `AGENT-PLATFORM-EXEC-01C5B2` heading, an `AISB_MACHINE_REG_V1` stanza (`taskId=AGENT-PLATFORM-EXEC-01C5B2`), a sidecar candidate or occupied lane, a `lockedTaskIds` entry, and an equivalent already-registered implementation successor returned none at HEAD `01652b87838157664ecffa161060a6608632dbed`. Narrative mentions in `docs/AGENT-PLATFORM-EXEC-01C5B-STAGE-START.md` §16.3 / §16.4 / §16.5 are proposed-child decomposition only and are not a registration. AGENT-PLATFORM-EXEC-01C5B is the unlocked parent. AGENT-PLATFORM-EXEC-01C5B1 is the locked producer sibling. AGENT-PLATFORM-EXEC-01C6 remains unregistered. No other registered task owns AI-Service Harness entitlement proof verification and worker enforcement. AGENT-PLATFORM-EXEC-01C5B2 is the smallest correct next bounded child ID.
+
+**Exact write-set derivation (frozen from stage-start §16.3; confirmed sufficient by source inspection at this HEAD; EXACT):**
+1. `services/ai-service/src/queue/job.types.ts` — add frozen optional `HarnessEntitlementProof` v1 type and optional `harnessEntitlementProof` field on `AiExecutionJob`. Current `AiExecutionJob` has `harnessVersion?: string` and no entitlement field.
+2. `services/ai-service/src/worker/worker.processor.ts` — add frozen canonical JSON serializer, payload-digest computation, HMAC verification, `HarnessEntitlementError` class, and entitlement guard after pending-to-running ledger claim and cancellation pre-check, before Harness routing / adapter resolution / harness configuration / dispatcher / tool-handler registration / tool advertisement / provider execution / `executeAgentHarnessLoop` / Harness audit events / checkpoint creation. Current worker selects harness path from `job.data.harnessVersion==='v1'` with no independent proof check. Insertion point exists in this file after cancel pre-check (~line 817+) and before `resolveHarnessRouting` (~line 921).
+3. `services/ai-service/src/worker/worker.processor.spec.ts` — hardcoded frozen golden constants (do not import Gateway code); positive golden cross-service vector; execution-ID / user-ID / API-key-ID / prompt / added-model-field / session-ID / provider tamper; wrong secret; malformed signature; missing proof; wrong version; empty/boolean proof; prototype-sensitive keys including own and nested `__proto__`; ordinary-job bypass; non-retryable classification; no-log-secret/signature tests.
+4. `services/ai-service/src/worker/__tests__/worker.processor.builder-config.spec.ts` — existing builder-config / `AiExecutionJob` identity tests must remain backward compatible (optional proof field).
+
+Excluded with repository-authority reason: all Gateway source (locked EXEC-01C5B1); environment files (ENV convention already established); new helper files; shared packages; package/dependency files; provider adapters; Harness-loop files; audit-event files; frontend or translations; migrations; Docker or deployment files; Harness flags; product-visible activation; EXEC-01C6.
+
+**Frozen implementation contract (record only; do not implement in this window):**
+
+Queue contract:
+- Add frozen optional `HarnessEntitlementProof` v1 type and optional job field to the AI-Service-owned queue contract.
+- Frozen proof fields: `version: 1`; `executionId: string`; `userId: string`; `apiKeyId: string`; `harnessVersion: 'v1'`; `issuedAt: string`; `payloadDigest: string`; `signature: string`.
+
+Verification trigger:
+- Ordinary jobs without `harnessVersion` remain unchanged.
+- Every job with `harnessVersion === 'v1'` must carry a valid proof.
+- Missing, false, malformed, wrong-version, incorrectly bound, digest-mismatched, incorrectly signed, or secret-unavailable proof fails closed.
+- No expiry in v1.
+- Authorization time remains enqueue time.
+- Revocation after legitimate enqueue remains non-retroactive.
+
+Worker position:
+- Verify after: pending-to-running ledger claim; cancellation pre-check.
+- Verify before: Harness routing; adapter resolution; Harness configuration resolution; dispatcher construction; tool-handler registration; tool advertisement; provider/model execution; `executeAgentHarnessLoop`; Harness audit events; checkpoint creation.
+
+Canonicalization and integrity:
+The verifier must independently reproduce the frozen normalization pipeline from the stage-start:
+1. Remove `harnessEntitlementProof`
+2. Native `JSON.stringify`
+3. Fail closed on throw or `undefined`
+4. `JSON.parse` to normalize to BullMQ’s transported representation
+5. Recursively sort object keys using `Object.keys(obj).sort()`
+6. Use a null-prototype accumulator so own `__proto__` keys are preserved
+7. Preserve array order
+8. Compact `JSON.stringify`
+9. SHA-256 UTF-8 bytes to lowercase hexadecimal
+The verifier must calculate the digest over the complete received job payload excluding only `harnessEntitlementProof`.
+
+Signature verification:
+- Read `HARNESS_ENTITLEMENT_HMAC_SECRET`
+- Missing, empty, or whitespace-only secret fails closed
+- Reconstruct the exact frozen claim string
+- Compute HMAC-SHA256
+- Validate lowercase hexadecimal signature shape
+- Compare signatures with `crypto.timingSafeEqual`
+- Never log the secret, signature, full proof, canonical payload, prompt, or persona data
+
+Binding:
+Proof must bind exactly to received `executionId`, `userId`, `apiKeyId`, `harnessVersion`, and complete payload digest.
+Do not derive trust from `agentId`, `sessionId`, prompt content, API-key naming conventions, `isInternal`, or Harness flags.
+
+Failure contract:
+Use typed `HarnessEntitlementError` with `isRetryable=false`.
+Frozen codes:
+1. `HARNESS_ENTITLEMENT_PROOF_MISSING`
+2. `HARNESS_ENTITLEMENT_PROOF_MALFORMED`
+3. `HARNESS_ENTITLEMENT_PROOF_UNSUPPORTED_VERSION`
+4. `HARNESS_ENTITLEMENT_PROOF_BINDING_MISMATCH`
+5. `HARNESS_ENTITLEMENT_PROOF_PAYLOAD_INTEGRITY_MISMATCH`
+6. `HARNESS_ENTITLEMENT_PROOF_INVALID_SIGNATURE`
+7. `HARNESS_ENTITLEMENT_PROOF_SECRET_NOT_CONFIGURED`
+Failure must flow through the existing worker error/final-metadata path and never enter Harness routing or provider execution.
+
+Golden-vector contract:
+AI-Service tests must use hardcoded frozen golden constants rather than importing Gateway code.
+Include: one positive golden cross-service vector; execution-ID tamper; user-ID tamper; API-key-ID tamper; prompt tamper; added-model-field tamper; session-ID tamper; provider tamper; wrong secret; malformed signature; missing proof; wrong version; empty/boolean proof; prototype-sensitive keys, including own and nested `__proto__`.
+
+**Boundedness decision (frozen; do not expand):** Implement only the frozen AI-Service verifier side in the four-file write set. Do not reopen architecture, authorization-time, revocation, canonicalization, proof fields, payload coverage, golden vectors, or worker-guard position. Do not edit Gateway source. Do not edit environment files. Do not add helper files. Do not register or admit EXEC-01C6. Do not enable Harness flags.
+
+**Activation effect:** NONE (flags remain false; frontend still omits `harnessVersion`; no product-visible Harness; no application source changed in this window).
+**Rollback boundary:** registration-only; control-plane rollback = discard this child's board/registry/sidecar occupancy. No implementation to roll back.
+
+**Machine registration (post-epoch):** Present exactly once immediately under this canonical heading (`taskId=AGENT-PLATFORM-EXEC-01C5B2`, `nature=IMPLEMENTATION`). Enforcement epoch unchanged. No second epoch. Do not duplicate the machine-registration markers elsewhere in this body. Do not register EXEC-01C6 in this window.
+
+**Lane / admission:**
+REGISTERED / ADMITTED. Lane 1 ACTIVE. Lane 2 EMPTY. Lane 3 DISABLED. Occupancy hash `sha256:6808a08e1e7d1dc9abfe07a28abd65b5ef765feeef008fc7304c1ba2dab752ab`. Candidate `admissionUncertain=false` / `writeSetPrecision=EXACT` / `status=ADMITTED` so occupied task is SKIP from S; remaining FORCING READY umbrellas EXEC-01C and EXEC-01C5B remain `ADMISSION_UNCERTAIN`. Machine-required admission: a READY FORCING EXACT candidate with empty lanes would make S nonempty and invalidate idle. Admission is control-plane scheduling only. Implementation is not started and is not authorized in this window. Do not manufacture a second candidate to occupy Lane 2. Do not register EXEC-01C6.
+
+AGENT-PLATFORM-EXEC-01C5B2 does NOT: start implementation in Step 1; enable Harness flags; activate product-visible Harness; change frontend requests; mutate credits; migrate; edit any of the four admitted implementation paths; edit application source or tests; edit `.env.example`; register EXEC-01C6; admit the EXEC-01C or EXEC-01C5B parents; edit PRD.md / ARCHITECTURE.md / CLAUDE.md / AGENTS.md / validator / mutex catalog / application source in this window.
+
+#### Acceptance Criteria
+
+Step 1 (Registration / machine-required admission):
+- [x] canonical ID AGENT-PLATFORM-EXEC-01C5B2 verified unused (no heading, stanza, board registration, sidecar candidate, occupied lane, locked ID, or equivalent successor)
+- [x] stage-start narrative mentions not treated as a registration
+- [x] equivalent unfinished task NONE
+- [x] 3-step lifecycle recorded
+- [x] exact machine `dependsOn=["AGENT-PLATFORM-EXEC-01C5B1"]`
+- [x] unlocked parent EXEC-01C5B omitted from machine `dependsOn`
+- [x] exact implementation mutex AI-SERVICE
+- [x] exact four-file write set frozen from stage-start §16.3 and confirmed sufficient by source inspection
+- [x] shared-contract catalog ID `HARNESS_ENTITLEMENT_PROOF_V1` remains FROZEN (not reminted)
+- [x] consumer/verifier classification recorded (`sharedContractIds=["HARNESS_ENTITLEMENT_PROOF_V1"]`; `mutatesSharedContractIds=[]`)
+- [x] frozen queue, verification, worker-position, canonicalization, signature, binding, failure, and golden-vector contracts recorded without implementation
+- [x] post-epoch machine stanza exactly once
+- [x] candidate record exactly once
+- [x] nature=IMPLEMENTATION
+- [x] saturationClass=FORCING
+- [x] productClass=CURRENT
+- [x] futureAuthorization=NONE
+- [x] status=ADMITTED
+- [x] startCondition=READY
+- [x] writeSetPrecision=EXACT
+- [x] admissionUncertain=false
+- [x] GOVERNANCE not listed on the IMPLEMENTATION candidate
+- [x] Lane 1 ACTIVE with matching occupancy
+- [x] Lane 2 EMPTY
+- [x] Lane 3 DISABLED
+- [x] AI-SERVICE OWNED by this child
+- [x] GATEWAY UNOWNED
+- [x] ENV UNOWNED
+- [x] GOVERNANCE released UNOWNED
+- [x] implementation not started
+- [x] EXEC-01C6 not registered
+- [x] parent EXEC-01C5B remains READY / NOT ADMITTED / PROVISIONAL
+- [x] sibling EXEC-01C5B1 remains COMPLETE AND LOCKED
+- [x] Harness flags unchanged / false
+- [x] product-visible Harness remains FUTURE/gated
+- [x] no application source, test, or `.env.example` changes
+- [x] no runtime/staging/browser/provider
+- [x] validator PASS
+- [x] No Git commit/push by the worker
+
+Step 2 (bounded TDD implementation + automated validation):
+- [ ] not started in this window
+
+Step 3 (independent security consolidation / checkpoint / lock):
+- [ ] not authorized in this window
+
+**Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. INVITATION_EXECUTION_PERMITTED=NO. Unchanged.
+
+**Lane 3 invariant:** Lane 3 remains DISABLED. Unchanged.
+
+**Step 1 HEAD:** `01652b87838157664ecffa161060a6608632dbed` (branch main; HEAD == origin/main; working tree clean at window open)
+**Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=YES (control-plane only), Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0, later child tasks=0 (EXEC-01C6 not registered). Governance writes: TASKS.md, this registry body, `docs/control-plane/lane-saturation-state.json`.
