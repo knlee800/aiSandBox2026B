@@ -2852,6 +2852,9 @@ describe('AIExecutionController — AGENT-PLATFORM-EXEC-01C5B1 proof production'
   let mockUsageLedgerService: Record<string, jest.Mock>;
   let mockQueueService: Record<string, jest.Mock>;
   let mockSessionService: Record<string, jest.Mock>;
+  let mockUserAiInstructionsService: Record<string, jest.Mock>;
+  let mockProjectAiContextService: Record<string, jest.Mock>;
+  let mockUserAgentService: Record<string, jest.Mock>;
 
   const VALID_SESSION_UUID = '35d53116-6723-4571-af12-ac256977c007';
   const VERIFIED_USER_ID = 'verified-user-01c5b1';
@@ -2912,6 +2915,43 @@ describe('AIExecutionController — AGENT-PLATFORM-EXEC-01C5B1 proof production'
     return createHash('sha256').update(canonicalJson, 'utf8').digest('hex');
   }
 
+  function expectSafeMissingSecretFailure(error: unknown): void {
+    expect(error).toBeInstanceOf(InternalServerErrorException);
+    expect((error as InternalServerErrorException).getStatus()).toBe(500);
+    expect((error as InternalServerErrorException).message).toBe(
+      'Harness entitlement proof could not be produced',
+    );
+    const serialized = JSON.stringify({
+      message: (error as Error).message,
+      response: (error as InternalServerErrorException).getResponse(),
+      stack: (error as Error).stack,
+    });
+    expect(serialized).not.toMatch(/HARNESS_ENTITLEMENT_HMAC_SECRET/i);
+    expect(serialized).not.toContain(EXEC_01C5B1_TEST_HMAC_SECRET);
+    expect(serialized).not.toMatch(/test-hmac-secret/i);
+  }
+
+  function expectNoHarnessExecutionSideEffects(): void {
+    expect(mockUsageLedgerService.findByRequestId).not.toHaveBeenCalled();
+    expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(mockUsageLedgerService.reuseExecutionIntent).not.toHaveBeenCalled();
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+    expect(mockSessionService.getSessionById).not.toHaveBeenCalled();
+    expect(mockUserAiInstructionsService.getByUserId).not.toHaveBeenCalled();
+    expect(mockProjectAiContextService.getByProjectId).not.toHaveBeenCalled();
+    expect(mockUserAgentService.findOneByIdAndUserId).not.toHaveBeenCalled();
+  }
+
+  function expectNoIntentWrittenLog(logSpy: jest.SpyInstance): void {
+    const logged = logSpy.mock.calls
+      .flat()
+      .map((entry) => String(entry))
+      .join('\n');
+    expect(logged).not.toMatch(/execution\.intent_written/);
+    expect(logged).not.toContain(EXEC_01C5B1_TEST_HMAC_SECRET);
+    expect(logged).not.toMatch(/HARNESS_ENTITLEMENT_HMAC_SECRET/i);
+  }
+
   function expectProofShape(proof: Record<string, unknown>): void {
     expect(Object.keys(proof).sort()).toEqual(
       [
@@ -2952,6 +2992,18 @@ describe('AIExecutionController — AGENT-PLATFORM-EXEC-01C5B1 proof production'
       }),
     };
 
+    mockUserAiInstructionsService = {
+      getByUserId: jest.fn().mockResolvedValue(null),
+    };
+
+    mockProjectAiContextService = {
+      getByProjectId: jest.fn().mockResolvedValue(null),
+    };
+
+    mockUserAgentService = {
+      findOneByIdAndUserId: jest.fn().mockResolvedValue(undefined),
+    };
+
     const mockGuard = { canActivate: jest.fn(() => true) };
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AIExecutionController],
@@ -2972,13 +3024,14 @@ describe('AIExecutionController — AGENT-PLATFORM-EXEC-01C5B1 proof production'
         },
         {
           provide: UserAiInstructionsService,
-          useValue: { getByUserId: jest.fn().mockResolvedValue(null) },
+          useValue: mockUserAiInstructionsService,
         },
         {
           provide: ProjectAiContextService,
-          useValue: { getByProjectId: jest.fn().mockResolvedValue(null) },
+          useValue: mockProjectAiContextService,
         },
         { provide: SessionService, useValue: mockSessionService },
+        { provide: UserAgentService, useValue: mockUserAgentService },
       ],
     })
       .overrideGuard(SessionOrApiKeyAuthGuard)
@@ -3137,42 +3190,124 @@ describe('AIExecutionController — AGENT-PLATFORM-EXEC-01C5B1 proof production'
     const result = await controller.execute(makeRequest(), entitledApiKeyIdentity);
     expect(result.status).toBe('queued');
     expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+    expect(mockUsageLedgerService.writeExecutionIntent).toHaveBeenCalledTimes(1);
     const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload).not.toHaveProperty('harnessVersion');
     expect(payload).not.toHaveProperty('harnessEntitlementProof');
   });
 
   it('keeps unentitled Harness requests at 403 with no enqueue', async () => {
-    await expect(
-      controller.execute(makeRequest({ harnessVersion: 'v1' }), unentitledIdentity),
-    ).rejects.toThrow(ForbiddenException);
-    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
-    expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    const error = await controller
+      .execute(makeRequest({ harnessVersion: 'v1' }), unentitledIdentity)
+      .catch((err) => err);
+    expect(error).toBeInstanceOf(ForbiddenException);
+    expect(error.message).toBe('Forbidden');
+    expect(String(error.message)).not.toMatch(
+      /HARNESS_ENTITLEMENT_HMAC_SECRET|secret|hmac|test-hmac-secret/i,
+    );
+    expectNoHarnessExecutionSideEffects();
   });
 
-  it('fails closed with 500 and no enqueue when the signing secret is missing', async () => {
+  it('keeps unentitled Harness requests at 403 when the signing secret is missing', async () => {
     delete process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
     const error = await controller
-      .execute(makeRequest({ harnessVersion: 'v1' }), entitledApiKeyIdentity)
+      .execute(makeRequest({ harnessVersion: 'v1' }), unentitledIdentity)
       .catch((err) => err);
-    expect(error).toBeInstanceOf(InternalServerErrorException);
-    expect(String(error.message)).not.toMatch(/HARNESS_ENTITLEMENT_HMAC_SECRET|test-hmac-secret/i);
-    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+    expect(error).toBeInstanceOf(ForbiddenException);
+    expect(error.getStatus()).toBe(403);
+    expect(error.message).toBe('Forbidden');
+    expect(String(error.message)).not.toMatch(
+      /HARNESS_ENTITLEMENT_HMAC_SECRET|secret|hmac|test-hmac-secret/i,
+    );
+    expectNoHarnessExecutionSideEffects();
   });
 
-  it('fails closed with 500 and no enqueue when the signing secret is empty', async () => {
+  it('rejects invalid harnessVersion with 400 before inspecting the signing secret', async () => {
+    delete process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+    const error = await controller
+      .execute(
+        makeRequest({
+          harnessVersion: 'v2' as AIExecutionRequest['harnessVersion'],
+        }),
+        entitledApiKeyIdentity,
+      )
+      .catch((err) => err);
+    expect(error).toBeInstanceOf(BadRequestException);
+    expect(error.getStatus()).toBe(400);
+    expect(error.message).toBe("harnessVersion must be 'v1' when provided");
+    expect(String(error.message)).not.toMatch(
+      /HARNESS_ENTITLEMENT_HMAC_SECRET|secret|hmac|test-hmac-secret/i,
+    );
+    expectNoHarnessExecutionSideEffects();
+  });
+
+  it('fails closed with 500 and no execution side effects when the signing secret is missing', async () => {
+    delete process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+    const logSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
+    try {
+      const error = await controller
+        .execute(makeRequest({ harnessVersion: 'v1' }), entitledApiKeyIdentity)
+        .catch((err) => err);
+      expectSafeMissingSecretFailure(error);
+      expectNoHarnessExecutionSideEffects();
+      expectNoIntentWrittenLog(logSpy);
+    } finally {
+      logSpy.mockRestore();
+    }
+  });
+
+  it('fails closed with 500 and no execution side effects when the signing secret is empty', async () => {
     process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = '';
-    await expect(
-      controller.execute(makeRequest({ harnessVersion: 'v1' }), entitledApiKeyIdentity),
-    ).rejects.toThrow(InternalServerErrorException);
-    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+    const logSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
+    try {
+      const error = await controller
+        .execute(makeRequest({ harnessVersion: 'v1' }), entitledApiKeyIdentity)
+        .catch((err) => err);
+      expectSafeMissingSecretFailure(error);
+      expectNoHarnessExecutionSideEffects();
+      expectNoIntentWrittenLog(logSpy);
+    } finally {
+      logSpy.mockRestore();
+    }
   });
 
-  it('fails closed with 500 and no enqueue when the signing secret is whitespace-only', async () => {
+  it('fails closed with 500 and no execution side effects when the signing secret is whitespace-only', async () => {
     process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = '   \t  ';
-    await expect(
-      controller.execute(makeRequest({ harnessVersion: 'v1' }), entitledApiKeyIdentity),
-    ).rejects.toThrow(InternalServerErrorException);
-    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+    const logSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
+    try {
+      const error = await controller
+        .execute(makeRequest({ harnessVersion: 'v1' }), entitledApiKeyIdentity)
+        .catch((err) => err);
+      expectSafeMissingSecretFailure(error);
+      expectNoHarnessExecutionSideEffects();
+      expectNoIntentWrittenLog(logSpy);
+    } finally {
+      logSpy.mockRestore();
+    }
+  });
+
+  it('does not look up or reuse an existing execution when the signing secret is missing on an idempotent request', async () => {
+    delete process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+    mockUsageLedgerService.findByRequestId.mockResolvedValue({
+      executionStatus: 'timeout',
+    });
+    const logSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
+    try {
+      const error = await controller
+        .execute(
+          makeRequest({ harnessVersion: 'v1' }),
+          entitledApiKeyIdentity,
+          'retry-missing-secret-01c5b1',
+        )
+        .catch((err) => err);
+      expectSafeMissingSecretFailure(error);
+      expectNoHarnessExecutionSideEffects();
+      expect(mockUsageLedgerService.findByRequestId).not.toHaveBeenCalled();
+      expect(mockUsageLedgerService.reuseExecutionIntent).not.toHaveBeenCalled();
+      expectNoIntentWrittenLog(logSpy);
+    } finally {
+      logSpy.mockRestore();
+    }
   });
 
   it('signs the reused canonical executionId on timeout/failed idempotent reuse', async () => {

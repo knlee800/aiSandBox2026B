@@ -597,6 +597,18 @@ export class AIExecutionController {
       throw new ForbiddenException('Forbidden');
     }
 
+    // AGENT-PLATFORM-EXEC-01C5B1 MEDIUM-001: capture the signing secret once
+    // after version + entitlement checks and before any execution side effect.
+    let harnessEntitlementHmacSecret: string | undefined;
+    if (request.harnessVersion === 'v1') {
+      harnessEntitlementHmacSecret = readValidatedHarnessEntitlementHmacSecret();
+      if (harnessEntitlementHmacSecret === undefined) {
+        throw new InternalServerErrorException(
+          'Harness entitlement proof could not be produced',
+        );
+      }
+    }
+
     const executionIntent = this.normalizeExecutionIntent(request.executionIntent);
 
     const {
@@ -809,8 +821,7 @@ export class AIExecutionController {
 
     let harnessEntitlementProof: HarnessEntitlementProof | undefined;
     if (request.harnessVersion === 'v1') {
-      const secret = readValidatedHarnessEntitlementHmacSecret();
-      if (secret === undefined) {
+      if (harnessEntitlementHmacSecret === undefined) {
         throw new InternalServerErrorException(
           'Harness entitlement proof could not be produced',
         );
@@ -822,7 +833,7 @@ export class AIExecutionController {
           apiKeyId: identity.apiKeyId,
           issuedAt: submittedAt,
           payloadWithoutProof: payload,
-          secret,
+          secret: harnessEntitlementHmacSecret,
         });
       } catch {
         throw new InternalServerErrorException(
