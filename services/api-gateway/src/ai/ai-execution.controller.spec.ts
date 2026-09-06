@@ -2712,6 +2712,139 @@ describe('AIExecutionController — AGENT-PLATFORM-EXEC-01C5B1 canonicalization 
     expect(signature).toBe(GOLDEN_SIGNATURE);
     expect(signature).toBe(signature.toLowerCase());
   });
+
+  describe('own special keys remain digest-covered', () => {
+    function parseOwnKeyObject(json: string): Record<string, unknown> {
+      return JSON.parse(json) as Record<string, unknown>;
+    }
+
+    function hasOwn(obj: object, key: string): boolean {
+      return Object.prototype.hasOwnProperty.call(obj, key);
+    }
+
+    function prototypeIsUnmutated(obj: object): boolean {
+      const proto = Object.getPrototypeOf(obj);
+      return proto === Object.prototype || proto === null;
+    }
+
+    it('preserves an own __proto__ object value in canonical JSON', () => {
+      const input = parseOwnKeyObject('{"z":1,"__proto__":{"polluted":true},"a":2}');
+      expect(hasOwn(input, '__proto__')).toBe(true);
+
+      const sorted = sortKeysRecursive(input) as object;
+      expect(hasOwn(sorted, '__proto__')).toBe(true);
+      expect(JSON.stringify(sorted)).toBe('{"__proto__":{"polluted":true},"a":2,"z":1}');
+
+      const result = computePayloadDigest(input);
+      expect(result.canonicalJson).toBe('{"__proto__":{"polluted":true},"a":2,"z":1}');
+      const parsedCanonical = JSON.parse(result.canonicalJson) as object;
+      expect(hasOwn(parsedCanonical, '__proto__')).toBe(true);
+    });
+
+    it('preserves an own __proto__ string value in canonical JSON', () => {
+      const input = parseOwnKeyObject('{"a":1,"__proto__":"evil-string"}');
+      expect(hasOwn(input, '__proto__')).toBe(true);
+
+      const sorted = sortKeysRecursive(input) as object;
+      expect(hasOwn(sorted, '__proto__')).toBe(true);
+      expect(JSON.stringify(sorted)).toBe('{"__proto__":"evil-string","a":1}');
+
+      const result = computePayloadDigest(input);
+      expect(result.canonicalJson).toBe('{"__proto__":"evil-string","a":1}');
+      const parsedCanonical = JSON.parse(result.canonicalJson) as object;
+      expect(hasOwn(parsedCanonical, '__proto__')).toBe(true);
+    });
+
+    it('changes payloadDigest when only the own __proto__ value changes', () => {
+      const left = parseOwnKeyObject('{"a":1,"__proto__":{"x":"one"}}');
+      const right = parseOwnKeyObject('{"a":1,"__proto__":{"x":"two"}}');
+      const leftDigest = computePayloadDigest(left);
+      const rightDigest = computePayloadDigest(right);
+      expect(leftDigest.canonicalJson).not.toBe(rightDigest.canonicalJson);
+      expect(leftDigest.payloadDigest).not.toBe(rightDigest.payloadDigest);
+      expect(leftDigest.canonicalJson).toContain('"__proto__"');
+      expect(rightDigest.canonicalJson).toContain('"__proto__"');
+    });
+
+    it('does not mutate the canonicalized object prototype via inherited __proto__ setter', () => {
+      const input = parseOwnKeyObject('{"__proto__":{"polluted":true},"a":1}');
+      const sorted = sortKeysRecursive(input) as object;
+      expect(prototypeIsUnmutated(sorted)).toBe(true);
+      expect(hasOwn(sorted, '__proto__')).toBe(true);
+      const proto = Object.getPrototypeOf(sorted);
+      if (proto !== null) {
+        expect(hasOwn(proto, 'polluted')).toBe(false);
+      }
+    });
+
+    it('preserves an own constructor property and covers it in payloadDigest', () => {
+      const left = parseOwnKeyObject('{"k":1,"constructor":{"x":"one"}}');
+      const right = parseOwnKeyObject('{"k":1,"constructor":{"x":"two"}}');
+      const sorted = sortKeysRecursive(left) as object;
+      expect(hasOwn(sorted, 'constructor')).toBe(true);
+      expect(JSON.stringify(sorted)).toBe('{"constructor":{"x":"one"},"k":1}');
+
+      const leftDigest = computePayloadDigest(left);
+      const rightDigest = computePayloadDigest(right);
+      expect(leftDigest.canonicalJson).toBe('{"constructor":{"x":"one"},"k":1}');
+      expect(hasOwn(JSON.parse(leftDigest.canonicalJson) as object, 'constructor')).toBe(true);
+      expect(leftDigest.payloadDigest).not.toBe(rightDigest.payloadDigest);
+    });
+
+    it('preserves an own prototype property and covers it in payloadDigest', () => {
+      const left = parseOwnKeyObject('{"k":1,"prototype":{"x":"one"}}');
+      const right = parseOwnKeyObject('{"k":1,"prototype":{"x":"two"}}');
+      const sorted = sortKeysRecursive(left) as object;
+      expect(hasOwn(sorted, 'prototype')).toBe(true);
+      expect(JSON.stringify(sorted)).toBe('{"k":1,"prototype":{"x":"one"}}');
+
+      const leftDigest = computePayloadDigest(left);
+      const rightDigest = computePayloadDigest(right);
+      expect(leftDigest.canonicalJson).toBe('{"k":1,"prototype":{"x":"one"}}');
+      expect(hasOwn(JSON.parse(leftDigest.canonicalJson) as object, 'prototype')).toBe(true);
+      expect(leftDigest.payloadDigest).not.toBe(rightDigest.payloadDigest);
+    });
+
+    it('preserves nested own __proto__ properties recursively', () => {
+      const input = parseOwnKeyObject(
+        '{"z":1,"inner":{"__proto__":{"nested":true},"b":2},"a":3}',
+      );
+      const sorted = sortKeysRecursive(input) as Record<string, unknown>;
+      const inner = sorted.inner as object;
+      expect(hasOwn(inner, '__proto__')).toBe(true);
+      expect(prototypeIsUnmutated(inner)).toBe(true);
+      expect(JSON.stringify(sorted)).toBe(
+        '{"a":3,"inner":{"__proto__":{"nested":true},"b":2},"z":1}',
+      );
+
+      const result = computePayloadDigest(input);
+      expect(result.canonicalJson).toBe(
+        '{"a":3,"inner":{"__proto__":{"nested":true},"b":2},"z":1}',
+      );
+      const parsedInner = (JSON.parse(result.canonicalJson) as { inner: object }).inner;
+      expect(hasOwn(parsedInner, '__proto__')).toBe(true);
+    });
+
+    it('keeps frozen golden canonical JSON, digest, claim, and HMAC unchanged', () => {
+      const payload = makeGoldenPayload();
+      expect(JSON.stringify(payload)).toBe(GOLDEN_INSERTION_ORDER_JSON);
+      const result = computePayloadDigest(payload);
+      expect(result.canonicalJson).toBe(GOLDEN_CANONICAL_JSON);
+      expect(
+        Buffer.from(result.canonicalJson, 'utf8').equals(Buffer.from(GOLDEN_CANONICAL_JSON, 'utf8')),
+      ).toBe(true);
+      expect(result.payloadDigest).toBe(GOLDEN_PAYLOAD_DIGEST);
+      const claim = buildHarnessEntitlementClaimString({
+        executionId: 'exec-golden-01',
+        userId: 'user-golden-01',
+        apiKeyId: 'apikey-golden-01',
+        issuedAt: GOLDEN_ISSUED_AT,
+        payloadDigest: GOLDEN_PAYLOAD_DIGEST,
+      });
+      expect(claim).toBe(GOLDEN_CLAIM_STRING);
+      expect(signHarnessEntitlementClaim(claim, GOLDEN_SECRET)).toBe(GOLDEN_SIGNATURE);
+    });
+  });
 });
 
 describe('AIExecutionController — AGENT-PLATFORM-EXEC-01C5B1 proof production', () => {

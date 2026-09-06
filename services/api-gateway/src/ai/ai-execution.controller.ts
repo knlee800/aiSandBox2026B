@@ -79,7 +79,7 @@ export function sortKeysRecursive(value: unknown): unknown {
     return value.map(sortKeysRecursive);
   }
   const obj = value as Record<string, unknown>;
-  const sorted: Record<string, unknown> = {};
+  const sorted = Object.create(null) as Record<string, unknown>;
   for (const key of Object.keys(obj).sort()) {
     sorted[key] = sortKeysRecursive(obj[key]);
   }
