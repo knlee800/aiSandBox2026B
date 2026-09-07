@@ -493,6 +493,39 @@
       "runtimeNeeds": [],
       "admissionUncertain": true,
       "writeSetPrecision": "PROVISIONAL"
+    },
+    {
+      "taskId": "AGENT-PLATFORM-EXEC-01C6A",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "3-STEP",
+      "status": "READY",
+      "startCondition": "READY",
+      "saturationClass": "FORCING",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": [
+        "AGENT-PLATFORM-EXEC-01C3",
+        "AGENT-PLATFORM-EXEC-01C4",
+        "AGENT-PLATFORM-EXEC-01C5",
+        "AGENT-PLATFORM-EXEC-01C5B"
+      ],
+      "mutexes": ["AI-SERVICE", "STAGING", "CREDIT"],
+      "writePaths": [
+        "services/ai-service/scripts/canary-01c6a-stub-submit.ts",
+        "services/ai-service/scripts/canary-01c6a-xai-negative.ts",
+        "docs/AGENT-PLATFORM-EXEC-01C6A-CANARY-EVIDENCE.md"
+      ],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [
+        "HARNESS_ENTITLEMENT_PROOF_V1"
+      ],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "STAGING-RUNTIME",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": ["STAGING", "CREDIT"],
+      "admissionUncertain": true,
+      "writeSetPrecision": "EXACT"
     }
   ],
   "lockedTaskIds": ["GOV-OS-03", "GOV-OS-03R1", "AGENT-PLATFORM-CREATE-01F", "I18N-SHELL-07", "AGENT-PLATFORM-EXEC-01A", "AGENT-PLATFORM-EXEC-01B", "GOV-AUTH-03", "AGENT-PLATFORM-EXEC-01C1", "AGENT-PLATFORM-EXEC-01C2", "AGENT-PLATFORM-EXEC-01C3", "AGENT-PLATFORM-EXEC-01C4", "AGENT-PLATFORM-EXEC-01C4B", "AGENT-PLATFORM-EXEC-01C5", "AGENT-PLATFORM-EXEC-01C5R1", "AGENT-PLATFORM-EXEC-01C5B1", "AGENT-PLATFORM-EXEC-01C5B2", "AGENT-PLATFORM-EXEC-01C5B"],
