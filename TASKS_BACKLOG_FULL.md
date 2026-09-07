@@ -75568,7 +75568,7 @@ taskId=AGENT-PLATFORM-EXEC-01C6A
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-07 — Step 1 COMPLETE — 2026-09-07 (registration / control-plane only) — Step 2 NOT AUTHORIZED — Step 3 NOT AUTHORIZED — candidate `status=READY` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=EXACT` / `admissionUncertain=true` (not admissible; `Test-Admissible` = ADMISSION_UNCERTAIN) — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE acquired transiently for this registration then released UNOWNED — AI-SERVICE UNOWNED — STAGING UNOWNED — CREDIT UNOWNED — ENV UNOWNED (assessed; not declared) — LOCAL-RUNTIME UNOWNED — PROVIDER-LIVE UNOWNED — GATEWAY UNOWNED — parent AGENT-PLATFORM-EXEC-01C6 remains READY / NOT ADMITTED / PROVISIONAL / `admissionUncertain=true` (sidecar unchanged) — parent umbrella AGENT-PLATFORM-EXEC-01C remains READY / NOT ADMITTED / PROVISIONAL / `admissionUncertain=true` — AGENT-PLATFORM-EXEC-01C6B NOT REGISTERED — EXEC-01C7 NOT REGISTERED — product-visible Harness remains FUTURE/gated — Harness flags unchanged / false — runtime authorization unchanged false — IMPLEMENTATION_STARTED=NO.
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-07 — Step 1 COMPLETE — 2026-09-07 (registration / control-plane only) — Step 2 NOT AUTHORIZED — Step 3 NOT AUTHORIZED — **DEPENDS ON AGENT-PLATFORM-EXEC-01C-IDENTITY-01 (DB API-key internal-access; REGISTERED / READY / NOT ADMITTED / NOT LOCKED; added 2026-09-07)** — candidate `status=READY` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=EXACT` / `admissionUncertain=true` (not admissible; `Test-Admissible` = ADMISSION_UNCERTAIN) — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE acquired transiently for this registration then released UNOWNED — AI-SERVICE UNOWNED — STAGING UNOWNED — CREDIT UNOWNED — ENV UNOWNED (assessed; not declared) — LOCAL-RUNTIME UNOWNED — PROVIDER-LIVE UNOWNED — GATEWAY UNOWNED — parent AGENT-PLATFORM-EXEC-01C6 remains READY / NOT ADMITTED / PROVISIONAL / `admissionUncertain=true` (sidecar unchanged) — parent umbrella AGENT-PLATFORM-EXEC-01C remains READY / NOT ADMITTED / PROVISIONAL / `admissionUncertain=true` — AGENT-PLATFORM-EXEC-01C6B NOT REGISTERED — EXEC-01C7 NOT REGISTERED — product-visible Harness remains FUTURE/gated — Harness flags unchanged / false — runtime authorization unchanged false — IMPLEMENTATION_STARTED=NO.
 **Task ID:** AGENT-PLATFORM-EXEC-01C6A
 **Title:** Staging (AWS Lightsail) read-only Harness stub canary and xAI fail-closed canary
 **Family:** AGENT PLATFORM / EXEC (first frozen child of AGENT-PLATFORM-EXEC-01C6 after Step 2 / 2026-09-07 environment correction; freeze K stub wiring + xAI negative)
@@ -75584,8 +75584,8 @@ nature=IMPLEMENTATION
 2. Step 2 — bounded canary script/evidence implementation and later-authorized AWS Lightsail STAGING-RUNTIME execution — NOT AUTHORIZED. Explicit Keith authorization is required before this step performs any STAGING mutation, shared-worker flag/gate change, CREDIT-path exercise, or Gateway/worker canary. Existing program authorization does **not** automatically authorize staging execution, provider-live calls, or credit-balance mutation. No local application tests. No LOCAL-RUNTIME execution.
 3. Step 3 — independent consolidation / checkpoint / lock — NOT AUTHORIZED.
 **Start condition:** READY (satisfied for registration). NOT ADMITTED. Machine `status=READY`. Candidate `writeSetPrecision=EXACT` / `admissionUncertain=true`. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. No implementation mutex acquired.
-**Depends on (canonical / human):** AGENT-PLATFORM-EXEC-01C6 Step 2 COMPLETE — 2026-09-06 — environment correction COMPLETE — 2026-09-07 — Stage-start: `docs/AGENT-PLATFORM-EXEC-01C6-STAGE-START.md` (parent EXEC-01C6 is READY / not LOCKED and MUST NOT appear in machine `dependsOn`). AGENT-PLATFORM-EXEC-01C3 COMPLETE AND LOCKED — PASS — 2026-09-03 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C3-CHECKPOINT.md`. AGENT-PLATFORM-EXEC-01C4 COMPLETE AND LOCKED — PASS — 2026-09-04 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C4-CHECKPOINT.md`. AGENT-PLATFORM-EXEC-01C5 COMPLETE AND LOCKED — PASS — 2026-09-04 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C5-CHECKPOINT.md`. AGENT-PLATFORM-EXEC-01C5B COMPLETE AND LOCKED — PASS — 2026-09-06 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C5B-CHECKPOINT.md`. AGENT-PLATFORM-EXEC-01C Step 2 freeze COMPLETE — 2026-09-01 — Stage-start: `docs/AGENT-PLATFORM-EXEC-01C-STAGE-START.md` (umbrella NOT LOCKED; omitted from machine `dependsOn`).
-**Depends on (machine sidecar `dependsOn`):** `["AGENT-PLATFORM-EXEC-01C3", "AGENT-PLATFORM-EXEC-01C4", "AGENT-PLATFORM-EXEC-01C5", "AGENT-PLATFORM-EXEC-01C5B"]` — sidecar `lockedTaskIds` contains all four. Unlocked parent AGENT-PLATFORM-EXEC-01C6 and unlocked umbrella AGENT-PLATFORM-EXEC-01C are recorded only as human/canonical parent authority.
+**Depends on (canonical / human):** AGENT-PLATFORM-EXEC-01C-IDENTITY-01 (DB API-key internal-access; REGISTERED / READY / NOT ADMITTED / NOT LOCKED; added 2026-09-07; must be COMPLETE AND LOCKED before EXEC-01C6A admission). AGENT-PLATFORM-EXEC-01C6 Step 2 COMPLETE — 2026-09-06 — environment correction COMPLETE — 2026-09-07 — Stage-start: `docs/AGENT-PLATFORM-EXEC-01C6-STAGE-START.md` (parent EXEC-01C6 is READY / not LOCKED and MUST NOT appear in machine `dependsOn`). AGENT-PLATFORM-EXEC-01C3 COMPLETE AND LOCKED — PASS — 2026-09-03 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C3-CHECKPOINT.md`. AGENT-PLATFORM-EXEC-01C4 COMPLETE AND LOCKED — PASS — 2026-09-04 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C4-CHECKPOINT.md`. AGENT-PLATFORM-EXEC-01C5 COMPLETE AND LOCKED — PASS — 2026-09-04 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C5-CHECKPOINT.md`. AGENT-PLATFORM-EXEC-01C5B COMPLETE AND LOCKED — PASS — 2026-09-06 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C5B-CHECKPOINT.md`. AGENT-PLATFORM-EXEC-01C Step 2 freeze COMPLETE — 2026-09-01 — Stage-start: `docs/AGENT-PLATFORM-EXEC-01C-STAGE-START.md` (umbrella NOT LOCKED; omitted from machine `dependsOn`).
+**Depends on (machine sidecar `dependsOn`):** `["AGENT-PLATFORM-EXEC-01C3", "AGENT-PLATFORM-EXEC-01C4", "AGENT-PLATFORM-EXEC-01C5", "AGENT-PLATFORM-EXEC-01C5B", "AGENT-PLATFORM-EXEC-01C-IDENTITY-01"]` — sidecar `lockedTaskIds` contains 01C3/01C4/01C5/01C5B. IDENTITY-01 is REGISTERED / READY / NOT LOCKED — EXEC-01C6A cannot be admitted until IDENTITY-01 is COMPLETE AND LOCKED (added 2026-09-07). Unlocked parent AGENT-PLATFORM-EXEC-01C6 and unlocked umbrella AGENT-PLATFORM-EXEC-01C are recorded only as human/canonical parent authority.
 **Primary write scope (Step 1, this write):** `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body; `docs/control-plane/lane-saturation-state.json` candidate record. No application source. No test file. No canary script created. No evidence document created. No stage-start rewrite. No checkpoint.
 **Primary write scope (Step 2, EXACT — frozen from `docs/AGENT-PLATFORM-EXEC-01C6-STAGE-START.md` §14.1; files not created in this window):** AI-SERVICE scripts + evidence doc only. Exact ordered files:
 1. `services/ai-service/scripts/canary-01c6a-stub-submit.ts`
@@ -75718,3 +75718,109 @@ Step 3 (independent consolidation / checkpoint / lock):
 
 **Step 1 HEAD:** `028e4fec9171519de64b801b4462ee1166ad44d6` (branch main; HEAD == origin/main; working tree clean at window open)
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, canary scripts created=0, evidence doc created=0, local application tests=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0, later child tasks registered=0 (EXEC-01C6B and EXEC-01C7 not registered). Governance writes: TASKS.md, this registry body, `docs/control-plane/lane-saturation-state.json`.
+
+**Dependency added 2026-09-07:** AGENT-PLATFORM-EXEC-01C-IDENTITY-01 (DB API-key internal-access capability). EXEC-01C6A cannot be admitted until IDENTITY-01 is COMPLETE AND LOCKED. Added to machine `dependsOn` in sidecar. EXEC-01C6A implementation write set unchanged.
+
+---
+
+### AGENT-PLATFORM-EXEC-01C-IDENTITY-01 — DB API-key internal-access capability for Gateway-ingress Harness canaries
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=AGENT-PLATFORM-EXEC-01C-IDENTITY-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-07 — Step 1 (design/registration) COMPLETE — 2026-09-07 — Steps 2-4 NOT AUTHORIZED — candidate `status=READY` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=EXACT` / `admissionUncertain=true` (not admissible; `Test-Admissible` = ADMISSION_UNCERTAIN) — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE acquired transiently for this design/registration then released UNOWNED — GATEWAY UNOWNED — MIGRATION UNOWNED — parent scope AGENT-PLATFORM-EXEC-01C remains READY / NOT ADMITTED / PROVISIONAL — blocks AGENT-PLATFORM-EXEC-01C6A — product-visible Harness remains FUTURE/gated — PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED
+**Task ID:** AGENT-PLATFORM-EXEC-01C-IDENTITY-01
+**Title:** DB API-key internal-access capability for Gateway-ingress Harness canaries
+**Workstream:** AGENT
+**Nature:** IMPLEMENTATION (high-risk; authentication / migration / security)
+**Lifecycle:** 4-STEP (design/registration — stage-start — implementation — consolidation/checkpoint/lock)
+**Start condition:** READY (dependencies satisfied; GOV-AUTH-03 LOCKED)
+**Depends on:** AGENT-PLATFORM-EXEC-01C3, AGENT-PLATFORM-EXEC-01C4, AGENT-PLATFORM-EXEC-01C5, AGENT-PLATFORM-EXEC-01C5B, GOV-AUTH-03 (all LOCKED)
+**Blocks:** AGENT-PLATFORM-EXEC-01C6A (Gateway-ingress canaries require DB-key internal-access to be COMPLETE AND LOCKED)
+**Primary write scope:** `services/api-gateway/` (entity, service, guard, migration, tests)
+**Mutexes / resources:** GATEWAY, MIGRATION (declared; NOT acquired)
+**Hot-file leases:** None
+**Shared contracts:** None (internal identity propagation only; no cross-service API contract change)
+**I18N:** None
+**Evidence class:** LOCAL-TESTS (unit/integration tests within `services/api-gateway/`)
+**Revert isolation:** Reverting IDENTITY-01 does not invalidate locked EXEC-01C1..01C5B2 or GOV-AUTH-03 evidence. IDENTITY-01 adds a new column and propagation; revert removes them cleanly. EXEC-01C6A is not yet admitted or implemented, so no co-dependence exists.
+**saturationClass:** FORCING (explicit; Gateway-identity prerequisite for FORCING EXEC-01C6A canaries)
+**Admission uncertain:** YES — runtime authorization (AWS Lightsail staging for migration execution) requires separate Keith authorization; standard validation is LOCAL-TESTS which can run locally, but migration execution targets Lightsail DB
+**Product class:** CURRENT (development infrastructure for admitted canary program)
+**Product-visible Harness:** FUTURE / GATED / DISABLED / UNAVAILABLE
+**Future authorization:** NONE
+
+**Design document:** `docs/AGENT-PLATFORM-EXEC-01C-IDENTITY-01-DESIGN.md`
+
+**Problem:** DB API keys validated through `ApiKeyAuthGuard` always resolve `isInternal=false` because the `ApiKey` entity lacks an `isInternal` column and `ApiKeyService.validateApiKey` does not return internal-access status. `LaunchGuard` requires `identity.isInternal === true` for `INTERNAL` launch states. Static test-key fallback returns `isInternal: true` but DB-validated keys cannot. This blocks Gateway-ingress Harness canaries (`EXEC-01C6A`) that need DB-key internal access to pass `LaunchGuard` in `INTERNAL` state.
+
+**Solution summary:**
+1. Add `is_internal BOOLEAN NOT NULL DEFAULT FALSE` column to `api_keys` table via TypeORM migration
+2. Add `isInternal` property to `ApiKey` entity
+3. Modify `ApiKeyService.validateApiKey` to include `isInternal` in return
+4. Modify `ApiKeyAuthGuard` to propagate `isInternal` from DB result into `ApiKeyIdentity`
+5. No changes to `LaunchGuard` (already checks `identity.isInternal`)
+6. No changes to DTOs (self-promotion protection by omission + validation)
+
+**Self-promotion protection:** `CreateApiKeyDto` exposes only `scopes`. Global `ValidationPipe` with `whitelist: true` silently strips unknown properties (note: `forbidNonWhitelisted` is not configured in production `main.ts`). Controller extracts only `createDto.scopes`. Service passes explicit named parameters to `repository.create()`. `isInternal` has entity default `false`. No public API to set `isInternal`. Even if validation pipe were bypassed, the controller/service chain never reads `isInternal` from user input.
+
+**Privilege administration:** Operator-only PostgreSQL `UPDATE` in a transaction, targeting by `api_keys.id` UUID and verified `user_id`, with affected-row check and prior/new value capture. Keith authorization required. Audit: key UUID, key_prefix, user_id, prior/new value, timestamp, operator, authorization, reason — no key material. Immediate effect (no identity cache). Revocation by same procedure setting `is_internal = false`. Already-internal grant and already-non-internal revoke are no-ops recorded in audit. Invalid/revoked/deleted keys fail authentication before internal-access check.
+
+**Migration:** `1773000000000-AddInternalAccessToApiKeys.ts` — `ALTER TABLE "api_keys" ADD COLUMN IF NOT EXISTS "is_internal" BOOLEAN NOT NULL DEFAULT FALSE`. Rollback: `DROP COLUMN IF EXISTS "is_internal"` (loses internal-access metadata). All existing keys remain `false`. **Mandatory migration-first deployment** — TypeORM generates SQL referencing every mapped entity column; deploying the updated entity before the migration causes PostgreSQL errors. Rollback order: revert application code first, then drop column.
+
+**Prospective implementation files:**
+- `services/api-gateway/src/entities/api-key.entity.ts` — add `isInternal` column
+- `services/api-gateway/src/auth/api-key.service.ts` — include `isInternal` in `validateApiKey` return
+- `services/api-gateway/src/auth/api-key-auth.guard.ts` — propagate `isInternal` from DB result
+- `services/api-gateway/src/migrations/1773000000000-AddInternalAccessToApiKeys.ts` — new migration
+- `services/api-gateway/src/auth/__tests__/api-key-auth.guard.spec.ts` — test internal propagation
+- `services/api-gateway/src/auth/__tests__/api-key.service.spec.ts` — test validateApiKey returns isInternal
+
+**Prospective test coverage** (mapped to exact files; ✓=existing, ⊕=prospective; full mapping in design doc §7):
+- ⊕ `api-key.service.spec.ts`: D1 create default false, D2 validate returns isInternal, S4 revoke doesn't change isInternal
+- ⊕ `api-key-auth.guard.spec.ts`: L4 internal=true propagation, L5 internal=false propagation, H1 internal≠entitled, H2 entitled≠internal
+- ⊕ `api-key.controller.spec.ts`: S1 DTO whitelist strips isInternal
+- ✓ `launch.guard.spec.ts`: L1 INTERNAL rejects false, L2 rejects undefined, L3 allows true
+- ✓ `session-or-api-key.guard.spec.ts`: H3 browser isInternal≠harnessEntitled
+- ✓ `ai-execution.controller.spec.ts`: F1/F2 session/execution ownership (unchanged by IDENTITY-01)
+- ✓ `api-key.service.spec.ts`: R1 revoked key exclusion, S3 create literal
+- Staging (Lightsail): D3 migration defaults, M1/M2/M3 rollout compatibility, R4 operator revoke
+
+**Acceptance criteria (Step 1 — design/registration):**
+- [x] Design document created with full technical specification
+- [x] Task registered in `TASKS_BACKLOG_FULL.md` with machine stanza
+- [x] Task registered on `TASKS.md` board with candidate metadata
+- [x] Sidecar candidate added to `lane-saturation-state.json`
+- [x] EXEC-01C6A dependency updated in sidecar and board
+- [x] No production code, tests, migration files, or environment changes
+- [x] No implementation mutexes acquired
+- [x] Validator PASS
+- [x] GOVERNANCE released
+
+**Acceptance criteria (Step 2 — stage-start; NOT AUTHORIZED):**
+- [ ] Stage-start document created with frozen implementation plan
+- [ ] GATEWAY and MIGRATION mutexes acquired
+- [ ] Implementation scope confirmed
+
+**Acceptance criteria (Step 3 — implementation; NOT AUTHORIZED):**
+- [ ] Entity column added
+- [ ] Service propagation implemented
+- [ ] Guard propagation implemented
+- [ ] Migration file created and tested
+- [ ] All prospective tests written and passing
+- [ ] No self-promotion vectors
+- [ ] `npm test` and `npm run build` pass in `services/api-gateway/`
+
+**Acceptance criteria (Step 4 — consolidation/checkpoint/lock; NOT AUTHORIZED):**
+- [ ] Checkpoint document created with evidence
+- [ ] Migration executed on target environment (AWS Lightsail)
+- [ ] Integrated validation passed
+- [ ] IDENTITY-01 marked COMPLETE AND LOCKED
+
+**Step 1 HEAD:** `196e7fa7476f5109b28990384c3aae91e83d5fb7` (branch main; dirty state assessed at registration window open)
+
+**Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, local application tests=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0. Governance writes: design document, TASKS.md, this registry body, `docs/control-plane/lane-saturation-state.json`.
+
+**Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. INVITATION_EXECUTION_PERMITTED=NO. Unchanged.
+
+**Lane 3 invariant:** Lane 3 remains DISABLED. Unchanged.
