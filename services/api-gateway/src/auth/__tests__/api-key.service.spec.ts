@@ -70,7 +70,36 @@ describe('ApiKeyService', () => {
         scopes,
         revokedAt: null,
       });
+      const createLiteral = mockRepository.create.mock.calls[0][0];
+      expect(createLiteral).not.toHaveProperty('isInternal');
+      expect(Object.keys(createLiteral).sort()).toEqual(
+        ['hashedKey', 'keyPrefix', 'revokedAt', 'scopes', 'userId'].sort(),
+      );
       expect(mockRepository.save).toHaveBeenCalled();
+    });
+
+    it('should not set isInternal on create so the entity default false applies (D1)', async () => {
+      const userId = 'user-123';
+      const scopes = ['ai:execute'];
+
+      mockRepository.create.mockImplementation((entity) => ({
+        ...entity,
+        id: 'key-id-123',
+        createdAt: new Date(),
+      }));
+      mockRepository.save.mockImplementation((entity) => Promise.resolve(entity));
+
+      await service.createApiKey(userId, scopes);
+
+      const createLiteral = mockRepository.create.mock.calls[0][0];
+      expect(createLiteral).not.toHaveProperty('isInternal');
+      expect(createLiteral).toEqual({
+        hashedKey: expect.any(String),
+        keyPrefix: expect.any(String),
+        userId,
+        scopes,
+        revokedAt: null,
+      });
     });
 
     it('should hash the API key before storage', async () => {
@@ -239,6 +268,35 @@ describe('ApiKeyService', () => {
       });
     });
 
+    it('should not change isInternal when revoking a key (S4)', async () => {
+      const keyId = 'key-123';
+      const userId = 'user-123';
+
+      const mockApiKey = {
+        id: keyId,
+        userId,
+        revokedAt: null,
+        isInternal: true,
+      };
+
+      mockRepository.findOne.mockResolvedValue(mockApiKey);
+      mockRepository.save.mockResolvedValue({ ...mockApiKey, revokedAt: new Date() });
+
+      await service.revokeApiKey(keyId, userId);
+
+      expect(mockRepository.save).toHaveBeenCalledWith({
+        id: keyId,
+        userId,
+        revokedAt: expect.any(Date),
+        isInternal: true,
+      });
+      const saved = mockRepository.save.mock.calls[0][0];
+      expect(saved.isInternal).toBe(true);
+      expect(Object.keys(saved).sort()).toEqual(
+        ['id', 'isInternal', 'revokedAt', 'userId'].sort(),
+      );
+    });
+
     it('should throw NotFoundException when key does not exist', async () => {
       const keyId = 'nonexistent-key';
       const userId = 'user-123';
@@ -299,6 +357,7 @@ describe('ApiKeyService', () => {
         userId: 'user-123',
         scopes: ['ai:execute'],
         revokedAt: null,
+        isInternal: false,
       };
 
       mockRepository.find.mockResolvedValue([mockApiKey]);
@@ -309,6 +368,57 @@ describe('ApiKeyService', () => {
         userId: 'user-123',
         apiKeyId: 'key-123',
         scopes: ['ai:execute'],
+        isInternal: false,
+      });
+    });
+
+    it('should return isInternal false for a non-internal DB key (D2)', async () => {
+      const plaintextKey = 'sk_ordinary_key';
+      const hashedKey = await bcrypt.hash(plaintextKey, 10);
+
+      mockRepository.find.mockResolvedValue([
+        {
+          id: 'key-ordinary',
+          hashedKey,
+          userId: 'user-123',
+          scopes: ['ai:execute'],
+          revokedAt: null,
+          isInternal: false,
+        },
+      ]);
+
+      const result = await service.validateApiKey(plaintextKey);
+
+      expect(result).toEqual({
+        userId: 'user-123',
+        apiKeyId: 'key-ordinary',
+        scopes: ['ai:execute'],
+        isInternal: false,
+      });
+    });
+
+    it('should return trusted isInternal true from the persisted DB value', async () => {
+      const plaintextKey = 'sk_internal_key';
+      const hashedKey = await bcrypt.hash(plaintextKey, 10);
+
+      mockRepository.find.mockResolvedValue([
+        {
+          id: 'key-internal',
+          hashedKey,
+          userId: 'user-123',
+          scopes: ['ai:execute'],
+          revokedAt: null,
+          isInternal: true,
+        },
+      ]);
+
+      const result = await service.validateApiKey(plaintextKey);
+
+      expect(result).toEqual({
+        userId: 'user-123',
+        apiKeyId: 'key-internal',
+        scopes: ['ai:execute'],
+        isInternal: true,
       });
     });
 
@@ -363,6 +473,7 @@ describe('ApiKeyService', () => {
           userId: 'user-1',
           scopes: ['ai:execute'],
           revokedAt: null,
+          isInternal: false,
         },
         {
           id: 'key-2',
@@ -370,6 +481,7 @@ describe('ApiKeyService', () => {
           userId: 'user-2',
           scopes: ['ai:execute', 'sessions:read'],
           revokedAt: null,
+          isInternal: false,
         },
       ];
 
@@ -381,6 +493,7 @@ describe('ApiKeyService', () => {
         userId: 'user-2',
         apiKeyId: 'key-2',
         scopes: ['ai:execute', 'sessions:read'],
+        isInternal: false,
       });
     });
 

@@ -154,6 +154,7 @@ export class ApiKeyService {
     userId: string;
     apiKeyId: string;
     scopes: string[];
+    isInternal: boolean;
   } | null> {
     // Find all non-revoked keys
     // We need to check all keys because we can't query by plaintext
@@ -170,6 +171,7 @@ export class ApiKeyService {
           userId: key.userId,
           apiKeyId: key.id,
           scopes: key.scopes,
+          isInternal: key.isInternal,
         };
       }
     }

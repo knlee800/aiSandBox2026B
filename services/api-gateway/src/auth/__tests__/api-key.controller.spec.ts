@@ -1,8 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  ArgumentMetadata,
+  ForbiddenException,
+  NotFoundException,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ApiKeyController } from '../api-key.controller';
 import { ApiKeyService } from '../api-key.service';
 import { SessionCookieGuard } from '../session-cookie.guard';
+import { CreateApiKeyDto } from '../dto/api-key.dto';
 
 describe('ApiKeyController', () => {
   let controller: ApiKeyController;
@@ -117,6 +123,37 @@ describe('ApiKeyController', () => {
       const result = await controller.createApiKey(mockRequest, createDto);
 
       expect(mockApiKeyService.createApiKey).toHaveBeenCalledWith(userId, createDto.scopes);
+    });
+
+    it('should strip isInternal from create body with production whitelist ValidationPipe (S1)', async () => {
+      const pipe = new ValidationPipe({ whitelist: true, transform: true });
+      const metadata: ArgumentMetadata = {
+        type: 'body',
+        metatype: CreateApiKeyDto,
+      };
+
+      const sanitized = (await pipe.transform(
+        { scopes: ['ai:execute'], isInternal: true },
+        metadata,
+      )) as CreateApiKeyDto;
+
+      expect(sanitized).not.toHaveProperty('isInternal');
+      expect(sanitized.scopes).toEqual(['ai:execute']);
+
+      const userId = 'user-123';
+      const mockRequest = { user: { userId } };
+      const mockResponse = {
+        apiKey: 'sk_test_key',
+        id: 'key-id-123',
+        keyPrefix: 'sk_test_key',
+        createdAt: new Date(),
+      };
+      mockApiKeyService.createApiKey.mockResolvedValue(mockResponse);
+
+      await controller.createApiKey(mockRequest, sanitized);
+
+      expect(mockApiKeyService.createApiKey).toHaveBeenCalledWith(userId, ['ai:execute']);
+      expect(mockApiKeyService.createApiKey.mock.calls[0]).toHaveLength(2);
     });
   });
 

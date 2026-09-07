@@ -77,6 +77,7 @@ describe('ApiKeyAuthGuard', () => {
         userId: 'db-user',
         apiKeyId: 'db-key-id',
         scopes: ['ai:execute', 'sessions:read'],
+        isInternal: false,
       });
 
       const result = await guard.canActivate(context);
@@ -86,6 +87,7 @@ describe('ApiKeyAuthGuard', () => {
       expect(mockRequest.apiKeyIdentity.userId).toBe('db-user');
       expect(mockRequest.apiKeyIdentity.apiKeyId).toBe('db-key-id');
       expect(mockRequest.apiKeyIdentity.scopes).toEqual(['ai:execute', 'sessions:read']);
+      expect(mockRequest.apiKeyIdentity.isInternal).toBe(false);
     });
 
     it('should fallback to static config when database validation fails', async () => {
@@ -163,6 +165,96 @@ describe('ApiKeyAuthGuard', () => {
       expect(result).toBe(true);
       expect(mockRequest.apiKeyIdentity).toBeDefined();
       expect(mockRequest.apiKeyIdentity.userId).toBe('test-user');
+    });
+
+    it('should propagate isInternal true from a DB key onto the identity (L4)', async () => {
+      const mockRequest: any = { headers: { authorization: 'Bearer db-internal-key' } };
+      const context = {
+        switchToHttp: () => ({
+          getRequest: () => mockRequest,
+        }),
+      } as ExecutionContext;
+
+      mockApiKeyService.validateApiKey.mockResolvedValue({
+        userId: 'db-user',
+        apiKeyId: 'db-key-id',
+        scopes: ['ai:execute'],
+        isInternal: true,
+      });
+
+      const result = await guard.canActivate(context);
+
+      expect(result).toBe(true);
+      expect(mockRequest.apiKeyIdentity.isInternal).toBe(true);
+      expect(mockRequest.apiKeyIdentity.userId).toBe('db-user');
+      expect(mockRequest.apiKeyIdentity.apiKeyId).toBe('db-key-id');
+      expect(mockRequest.apiKeyIdentity.scopes).toEqual(['ai:execute']);
+    });
+
+    it('should propagate isInternal false from a DB key onto the identity (L5)', async () => {
+      const mockRequest: any = { headers: { authorization: 'Bearer db-ordinary-key' } };
+      const context = {
+        switchToHttp: () => ({
+          getRequest: () => mockRequest,
+        }),
+      } as ExecutionContext;
+
+      mockApiKeyService.validateApiKey.mockResolvedValue({
+        userId: 'db-user',
+        apiKeyId: 'db-key-id',
+        scopes: ['ai:execute'],
+        isInternal: false,
+      });
+
+      const result = await guard.canActivate(context);
+
+      expect(result).toBe(true);
+      expect(mockRequest.apiKeyIdentity.isInternal).toBe(false);
+      expect(mockRequest.apiKeyIdentity.userId).toBe('db-user');
+    });
+
+    it('should not grant harnessEntitled from isInternal true without ai:harness (H1)', async () => {
+      const mockRequest: any = { headers: { authorization: 'Bearer db-internal-no-harness' } };
+      const context = {
+        switchToHttp: () => ({
+          getRequest: () => mockRequest,
+        }),
+      } as ExecutionContext;
+
+      mockApiKeyService.validateApiKey.mockResolvedValue({
+        userId: 'db-user',
+        apiKeyId: 'db-key-id',
+        scopes: ['ai:execute'],
+        isInternal: true,
+      });
+
+      const result = await guard.canActivate(context);
+
+      expect(result).toBe(true);
+      expect(mockRequest.apiKeyIdentity.isInternal).toBe(true);
+      expect(mockRequest.apiKeyIdentity.harnessEntitled).toBe(false);
+    });
+
+    it('should keep harnessEntitled independent of isInternal false (H2)', async () => {
+      const mockRequest: any = { headers: { authorization: 'Bearer db-harness-not-internal' } };
+      const context = {
+        switchToHttp: () => ({
+          getRequest: () => mockRequest,
+        }),
+      } as ExecutionContext;
+
+      mockApiKeyService.validateApiKey.mockResolvedValue({
+        userId: 'db-user',
+        apiKeyId: 'db-key-id',
+        scopes: ['ai:harness'],
+        isInternal: false,
+      });
+
+      const result = await guard.canActivate(context);
+
+      expect(result).toBe(true);
+      expect(mockRequest.apiKeyIdentity.harnessEntitled).toBe(true);
+      expect(mockRequest.apiKeyIdentity.isInternal).toBe(false);
     });
   });
 });

@@ -25,6 +25,7 @@ import { User } from './user.entity';
  * - scopes: JSON array of permission scopes
  * - createdAt: timestamp of creation
  * - revokedAt: nullable timestamp of revocation
+ * - isInternal: boolean internal-access flag (default false; operator-only)
  */
 @Entity('api_keys')
 export class ApiKey {
@@ -82,6 +83,16 @@ export class ApiKey {
    */
   @Column({ type: 'timestamp', nullable: true, name: 'revoked_at' })
   revokedAt: Date | null;
+
+  /**
+   * Internal access flag
+   * When true, this key is treated as an internal/operator key
+   * for LaunchGuard INTERNAL state access.
+   * Default false. Cannot be set via user-facing API.
+   * Operator-only grant/revoke via direct database procedure.
+   */
+  @Column({ type: 'boolean', default: false, name: 'is_internal' })
+  isInternal: boolean;
 
   /**
    * Check if API key is revoked
