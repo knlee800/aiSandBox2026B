@@ -75728,7 +75728,7 @@ Step 3 (independent consolidation / checkpoint / lock):
 taskId=AGENT-PLATFORM-EXEC-01C-IDENTITY-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
-**Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-07 — Step 1 (design/registration) COMPLETE — 2026-09-07 — Steps 2-4 NOT AUTHORIZED — candidate `status=READY` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=EXACT` / `admissionUncertain=true` (not admissible; `Test-Admissible` = ADMISSION_UNCERTAIN) — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE acquired transiently for this design/registration then released UNOWNED — GATEWAY UNOWNED — MIGRATION UNOWNED — parent scope AGENT-PLATFORM-EXEC-01C remains READY / NOT ADMITTED / PROVISIONAL — blocks AGENT-PLATFORM-EXEC-01C6A — product-visible Harness remains FUTURE/gated — PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-07 — Step 1 (design/registration) COMPLETE — 2026-09-07 — Step 2 (stage-start) COMPLETE — 2026-09-07 — Steps 3-4 NOT AUTHORIZED — candidate `status=READY` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=EXACT` / `admissionUncertain=true` (not admissible; `Test-Admissible` = ADMISSION_UNCERTAIN) — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE acquired transiently for Step 2 stage-start then released UNOWNED — GATEWAY UNOWNED — MIGRATION UNOWNED — parent scope AGENT-PLATFORM-EXEC-01C remains READY / NOT ADMITTED / PROVISIONAL — blocks AGENT-PLATFORM-EXEC-01C6A — design supersession: migration runner commands corrected (stage-start §3) — corrected 7-file write set (stage-start §4) — stage-start: `docs/AGENT-PLATFORM-EXEC-01C-IDENTITY-01-STAGE-START.md` — product-visible Harness remains FUTURE/gated — PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED
 **Task ID:** AGENT-PLATFORM-EXEC-01C-IDENTITY-01
 **Title:** DB API-key internal-access capability for Gateway-ingress Harness canaries
 **Workstream:** AGENT
@@ -75745,7 +75745,7 @@ nature=IMPLEMENTATION
 **Evidence class:** LOCAL-TESTS (unit/integration tests within `services/api-gateway/`)
 **Revert isolation:** Reverting IDENTITY-01 does not invalidate locked EXEC-01C1..01C5B2 or GOV-AUTH-03 evidence. IDENTITY-01 adds a new column and propagation; revert removes them cleanly. EXEC-01C6A is not yet admitted or implemented, so no co-dependence exists.
 **saturationClass:** FORCING (explicit; Gateway-identity prerequisite for FORCING EXEC-01C6A canaries)
-**Admission uncertain:** YES — runtime authorization (AWS Lightsail staging for migration execution) requires separate Keith authorization; standard validation is LOCAL-TESTS which can run locally, but migration execution targets Lightsail DB
+**Admission uncertain:** YES — runtime authorization (AWS Lightsail staging for migration execution) requires separate Keith authorization; `evidenceClass=LOCAL-TESTS` is schema grade (unit/integration tests), not venue authorization — test/build execution venue is AWS Lightsail per standing instruction; source implementation is separable from staging/migration authorization; migration execution targets Lightsail DB (separate Step 4 gate)
 **Product class:** CURRENT (development infrastructure for admitted canary program)
 **Product-visible Harness:** FUTURE / GATED / DISABLED / UNAVAILABLE
 **Future authorization:** NONE
@@ -75797,10 +75797,13 @@ nature=IMPLEMENTATION
 - [x] Validator PASS
 - [x] GOVERNANCE released
 
-**Acceptance criteria (Step 2 — stage-start; NOT AUTHORIZED):**
-- [ ] Stage-start document created with frozen implementation plan
-- [ ] GATEWAY and MIGRATION mutexes acquired
-- [ ] Implementation scope confirmed
+**Acceptance criteria (Step 2 — stage-start; COMPLETE — 2026-09-07):**
+- [x] Stage-start document created with frozen implementation plan — `docs/AGENT-PLATFORM-EXEC-01C-IDENTITY-01-STAGE-START.md`
+- [ ] GATEWAY and MIGRATION mutexes acquired — DEFERRED to Step 3 (implementation admission); this governance step does not acquire implementation mutexes
+- [x] Implementation scope confirmed — corrected 7-file write set; design supersession recorded (migration runner commands)
+- [x] Security acceptance criteria frozen — self-promotion, independence, ownership, revocation mapped to existing/prospective evidence
+- [x] Migration rollout/rollback sequence frozen — corrected staging commands; `migration:revert:prod` gap documented
+- [x] Operator grant/revoke procedure verified — transactional targeting, zero-row disambiguation, audit requirements
 
 **Acceptance criteria (Step 3 — implementation; NOT AUTHORIZED):**
 - [ ] Entity column added
@@ -75809,7 +75812,7 @@ nature=IMPLEMENTATION
 - [ ] Migration file created and tested
 - [ ] All prospective tests written and passing
 - [ ] No self-promotion vectors
-- [ ] `npm test` and `npm run build` pass in `services/api-gateway/`
+- [ ] Focused jest (`npx jest --testPathPattern "(api-key|launch\.guard|session-or-api-key\.guard|ai-execution\.controller)\.spec"`) and `npx tsc --noEmit --incremental false` pass on Lightsail — blanket `npm test` is unsafe (smoke integration test connects to staging DB); `--incremental false` suppresses `.tsbuildinfo` write to live `dist/`; remote validation requires STAGING authorization and revision delivery procedure (PENDING)
 
 **Acceptance criteria (Step 4 — consolidation/checkpoint/lock; NOT AUTHORIZED):**
 - [ ] Checkpoint document created with evidence
@@ -75818,6 +75821,13 @@ nature=IMPLEMENTATION
 - [ ] IDENTITY-01 marked COMPLETE AND LOCKED
 
 **Step 1 HEAD:** `196e7fa7476f5109b28990384c3aae91e83d5fb7` (branch main; dirty state assessed at registration window open)
+
+**Step 2 HEAD:** `2294a5534c8db54366375728bd932bff6ef99372` (branch main; HEAD == origin/main; working tree clean)
+**Stage-start document:** `docs/AGENT-PLATFORM-EXEC-01C-IDENTITY-01-STAGE-START.md`
+**Design supersession:** Migration runner commands corrected — project uses `npm run migration:run:prod` (`typeorm migration:run -d dist/data-source.js`) for staging, not `npx typeorm migration:run -d data-source.ts` — per `package.json` and prior staging evidence
+**Corrected write set:** 7 files (added `services/api-gateway/src/auth/__tests__/api-key.controller.spec.ts` for DTO whitelist stripping test S1)
+
+**Step 2 activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, local application tests=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, sidecar edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0. Governance writes: stage-start document, TASKS.md (board fields), this registry body.
 
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, local application tests=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0. Governance writes: design document, TASKS.md, this registry body, `docs/control-plane/lane-saturation-state.json`.
 

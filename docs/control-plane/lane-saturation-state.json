@@ -547,7 +547,8 @@
         "services/api-gateway/src/auth/api-key-auth.guard.ts",
         "services/api-gateway/src/migrations/1773000000000-AddInternalAccessToApiKeys.ts",
         "services/api-gateway/src/auth/__tests__/api-key-auth.guard.spec.ts",
-        "services/api-gateway/src/auth/__tests__/api-key.service.spec.ts"
+        "services/api-gateway/src/auth/__tests__/api-key.service.spec.ts",
+        "services/api-gateway/src/auth/__tests__/api-key.controller.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
