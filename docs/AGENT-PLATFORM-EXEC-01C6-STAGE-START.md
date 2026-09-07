@@ -3,18 +3,21 @@
 **Task ID:** AGENT-PLATFORM-EXEC-01C6
 **Title:** Read-only Harness canary — stub then real-provider transcript
 **Step:** 2 — Stage-start / contract / write-set / evidence freeze
-**Status:** COMPLETE (design / freeze only — no implementation)
-**Date:** 2026-09-06
+**Status:** COMPLETE (design / freeze only — no implementation) — environment correction 2026-09-07
+**Date:** 2026-09-06 (original freeze); 2026-09-07 (AWS Lightsail staging environment correction)
 **Nature:** HIGH-RISK 4-step IMPLEMENTATION child — Step 2 is governance documentation only
 **Development program:** CURRENT
 **Product-visible Harness capability:** FUTURE / gated / disabled / unavailable to users
 **Stage-start document:** `docs/AGENT-PLATFORM-EXEC-01C6-STAGE-START.md`
-**Step 2 base HEAD:** `e621be7b31836a49deebb1cb059dc0d5b80e199e` (branch `main`; HEAD == origin/main; working tree clean)
+**Step 2 base HEAD:** `e621be7b31836a49deebb1cb059dc0d5b80e199e` (original freeze)
+**Environment-correction base HEAD:** `5f4577d7502db664ce0862fba87d1154b357acf2` (branch `main`; HEAD == origin/main)
 **Parent umbrella:** AGENT-PLATFORM-EXEC-01C — remains READY / NOT ADMITTED / PROVISIONAL
 **Frozen predecessor contract:** `docs/AGENT-PLATFORM-EXEC-01C-STAGE-START.md` §6K / §8.6
 **Locked entitlement-proof checkpoint:** `docs/AGENT-PLATFORM-EXEC-01C5B-CHECKPOINT.md`
 
-This is analysis, architecture, decomposition, and governance documentation only. No application source, tests, scripts, environment, package, compose, runtime, Docker, PostgreSQL, Redis, staging, provider-live, credit mutation, browser, child registration, Git commit, or Git push.
+This is analysis, architecture, decomposition, and governance documentation only. No application source, tests, scripts, environment, package, compose, runtime, Docker, PostgreSQL, Redis, staging connection, provider-live, credit mutation, browser, child registration, Git commit, or Git push.
+
+**Environment correction (2026-09-07):** Future canary **execution** for both proposed children is AWS Lightsail staging (`aisandbox-staging` / `https://staging.ainow.biz` / `/opt/aisandbox`). Local application tests and local runtime infrastructure are **not** part of this canary plan. Local read-only inspection and existing governance validation remain allowed. Local testing is exceptional and must be absolutely necessary; this correction does not introduce any local application-test or local-runtime requirement. Ingress, provider/model, accounting, and two-child decomposition remain as frozen below.
 
 Proposed implementation children are recorded in this document only. They are **not** registered and **not** admitted.
 
@@ -22,13 +25,17 @@ Proposed implementation children are recorded in this document only. They are **
 
 ## 1. Verdict
 
-**PASS — evidence plan FROZEN; ingress FROZEN; real-provider recommendation FROZEN; stub / real-positive / xAI-negative / accounting contracts FROZEN; two-child decomposition FROZEN; implementation NOT STARTED.**
+**PASS — evidence plan FROZEN; ingress FROZEN; real-provider recommendation FROZEN; stub / real-positive / xAI-negative / accounting contracts FROZEN; two-child decomposition FROZEN; future execution environment FROZEN as AWS Lightsail staging; implementation NOT STARTED.**
 
 ```
 STEP1_COMPLETE=YES
 STEP2_COMPLETE=YES
+STEP2_ENVIRONMENT_CORRECTION=COMPLETE
 EVIDENCE_CONTRACT_FREEZE=COMPLETE
 CHILD_SLICE_DECOMPOSITION=COMPLETE
+FUTURE_EXECUTION_ENVIRONMENT=AWS_LIGHTSAIL_STAGING
+LOCAL_APPLICATION_TESTS_IN_CANARY_PLAN=NO
+LOCAL_RUNTIME_INFRASTRUCTURE_IN_CANARY_PLAN=NO
 CHILD_TASKS_REGISTERED=0
 IMPLEMENTATION_STARTED=NO
 IMPLEMENTATION_ADMITTED=NO
@@ -42,15 +49,17 @@ SELECTED_REAL_MODEL=gpt-4o
 KEITH_DECISION_REQUIRED_BEFORE_PROVIDER_LIVE=YES
 PROVIDER_LIVE_AUTHORIZED=NO
 CREDIT_MUTATION_AUTHORIZED=NO
+STAGING_AUTHORIZED=NO
+LOCAL_RUNTIME_AUTHORIZED=NO
 LANE_1=EMPTY
 LANE_2=EMPTY
 LANE_3=DISABLED
 GOVERNANCE_FINAL=UNOWNED
 IMPLEMENTATION_MUTEXES_ACQUIRED=NONE
-PROCEED_TO_CHILD_REGISTRATION=NO_UNTIL_KEITH_COMMITS_STEP2
+PROCEED_TO_CHILD_REGISTRATION=NO_UNTIL_KEITH_COMMITS_ENVIRONMENT_CORRECTION
 ```
 
-Keith's 2026-09-01 CURRENT development-program authorization does **not** authorize paid/live provider execution or credit mutation. This stage-start does not grant LOCAL-RUNTIME, PROVIDER-LIVE, or CREDIT.
+Keith's 2026-09-01 CURRENT development-program authorization does **not** authorize paid/live provider execution, credit mutation, or staging mutation. This stage-start does not grant LOCAL-RUNTIME, STAGING, PROVIDER-LIVE, or CREDIT. Parent sidecar `mutexes=["LOCAL-RUNTIME"]` remains validator-required provisional metadata for `evidenceClass=LOCAL-RUNTIME`; it is **not** an acquired local-runtime lease and does **not** authorize local tests.
 
 ---
 
@@ -59,15 +68,15 @@ Keith's 2026-09-01 CURRENT development-program authorization does **not** author
 | Check | Result |
 |---|---|
 | Branch | `main` |
-| HEAD | `e621be7b31836a49deebb1cb059dc0d5b80e199e` |
-| `origin/main` | `e621be7b31836a49deebb1cb059dc0d5b80e199e` |
-| Working tree at open | clean |
-| `git diff --check` | clean |
+| Original Step 2 freeze HEAD | `e621be7b31836a49deebb1cb059dc0d5b80e199e` |
+| Environment-correction HEAD | `5f4577d7502db664ce0862fba87d1154b357acf2` (matches expected `5f4577d`; HEAD == origin/main at correction open) |
+| Working tree at correction open | clean |
+| `git diff --check` | clean (correction window) |
 | EXEC-01C6 | REGISTERED / READY / NOT ADMITTED / PROVISIONAL |
 | Candidate `status` | `READY` |
 | `writeSetPrecision` | `PROVISIONAL` |
 | `admissionUncertain` | `true` |
-| Candidate mutexes | `[LOCAL-RUNTIME]` schema-required for `evidenceClass=LOCAL-RUNTIME`; **not acquired**; LOCAL-RUNTIME UNOWNED |
+| Candidate mutexes | `[LOCAL-RUNTIME]` schema-required for parent `evidenceClass=LOCAL-RUNTIME`; **not acquired**; **not** a local-test lease; LOCAL-RUNTIME UNOWNED; STAGING UNOWNED |
 | Lane 1 / 2 / 3 | EMPTY / EMPTY / DISABLED |
 | All mutexes | UNOWNED |
 | `HARNESS_ENTITLEMENT_PROOF_V1` | FROZEN |
@@ -76,7 +85,7 @@ Keith's 2026-09-01 CURRENT development-program authorization does **not** author
 | Runtime authorization | all `false` |
 | Harness flags | `false` / unchanged |
 | Product-visible Harness | FUTURE / gated |
-| Preflight validator | PASS / `idleCode=NO_PAIRWISE_ADMISSIBLE_CANDIDATE` / EXEC-01C6 `ADMISSION_UNCERTAIN` |
+| Sidecar / validator | unchanged in this correction |
 | `git fetch` / `pull` / `checkout` / `reset` / `clean` / `commit` / `push` | NOT RUN |
 
 ---
@@ -177,7 +186,7 @@ The literal key string must never appear in evidence, checkpoints, logs collecte
 
 Gateway HTTP also requires, using that same authenticated `userId` (no new auth principal):
 
-- `LAUNCH_STATE` that admits `isInternal` keys (typically `INTERNAL` locally).
+- `LAUNCH_STATE` that admits `isInternal` keys (staging live value unverified in this window; do not assume local `INTERNAL`).
 - A real session whose `userId` matches the identity (CreditBalanceGuard / session ownership).
 - A persisted `user_agents` row owned by that user (`agentId` + `executionIntent: 'conversation'` + `harnessVersion: 'v1'`).
 - Process-scoped `HARNESS_ENTITLEMENT_HMAC_SECRET` on **both** Gateway and worker (never committed; never printed).
@@ -187,7 +196,7 @@ Gateway HTTP also requires, using that same authenticated `userId` (no new auth 
 
 | Canary | Ingress | Proves |
 |---|---|---|
-| Stub wiring | `STUB_DIRECT_QUEUE_WITH_CONTRACT_PROOF` — insert `usage_records` + BullMQ `ai-execution` job with `harnessVersion: 'v1'` and a proof built with the frozen `HARNESS_ENTITLEMENT_PROOF_V1` algorithm (same claim/canonical JSON/HMAC as Gateway `createHarnessEntitlementProof`). Provider `test-harness-stub`. | Worker verification, Harness routing, stub tool loop, audit/`executionId`/`agentId`, optional 0-token finalize-accounting. **Does not** prove Gateway HTTP signing or catalogue routing. |
+| Stub wiring | `STUB_DIRECT_QUEUE_WITH_CONTRACT_PROOF` — on AWS Lightsail staging, insert `usage_records` + BullMQ `ai-execution` job with `harnessVersion: 'v1'` and a proof built with the frozen `HARNESS_ENTITLEMENT_PROOF_V1` algorithm (same claim/canonical JSON/HMAC as Gateway `createHarnessEntitlementProof`). Provider `test-harness-stub`. Direct BullMQ ingress is distinct from execution location. | Worker verification, Harness routing, stub tool loop, audit/`executionId`/`agentId`, optional 0-token finalize-accounting. **Does not** prove Gateway HTTP signing or catalogue routing. **Does not** prove isolated-worker semantics. |
 | Real native-transcript positive | `GATEWAY_HTTP_POST_/api/ai/execute` — authenticated entitled identity, `executionIntent: 'conversation'`, persisted `agentId`, `harnessVersion: 'v1'`, provider `openai`, model `gpt-4o`. | Entitlement, Gateway HMAC production, BullMQ serialization, worker verify, Harness routing, real native transcript, audit/final metadata, accounting. |
 | xAI negative | Same Gateway HTTP execute ingress with provider `xai`, model `grok-4.5` (Gateway catalogue default). | Entitlement + valid proof + worker `fail_closed` before xAI execute. Zero provider-live HTTP. |
 
@@ -195,7 +204,7 @@ Manually constructing an **unsigned** queue job is forbidden as positive proof. 
 
 ### 5.3 Process-scoped flags (all canaries)
 
-Set only on the AI-Service worker process; restore on every exit path; never write repository `.env` files:
+Set only on the **staging** AI-Service worker process (and Gateway where HMAC signing is required); restore on every exit path; never write repository `.env` files; never persist flags into `/opt/aisandbox/.env` unless a later authorized child explicitly freezes that ENV write.
 
 | Variable | Canary value | Restore |
 |---|---|---|
@@ -209,20 +218,47 @@ Set only on the AI-Service worker process; restore on every exit path; never wri
 
 Default `DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop` remains `false`. Frontend is not started for these canaries.
 
-### 5.4 Local runtime topology (later execution only; not this window)
+**Flag-scoping rule (inspected code, not live-verified):** `DEFAULT_AGENT_HARNESS_CONFIG_V1` is created at **module load** from `process.env` (`services/ai-service/src/agent-harness/config/agent-harness.config.ts`). The worker reads `DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop` per job; it does **not** re-parse env per job. HMAC secret is read from `process.env` at verification time (`readValidatedHarnessEntitlementHmacSecret`). Setting flags in a submit-script process does **not** affect the already-running PM2 `aisandbox-ai-service` worker. Process-scoped flags on staging therefore require a later-authorized change of the **worker process env** (typically PM2 restart / `--update-env`) and matching Gateway HMAC env for Gateway-ingress canaries. Do not assume a local Node process or a one-shot script env automatically affects existing staging workers.
 
-PostgreSQL and Redis **are** required for later canary execution (ledger claim + BullMQ). Docker Desktop is required if container-manager must start a session for `list_files` / `read_file`.
+### 5.4 AWS Lightsail staging topology (later execution only; not this window)
 
-| Service | Stub | xAI negative | Real positive |
-|---|---|---|---|
-| PostgreSQL | YES | YES | YES |
-| Redis / BullMQ | YES | YES | YES |
-| AI-Service worker | YES | YES | YES |
-| API Gateway | YES if tools or notify/accounting; HMAC signer not used for stub enqueue | YES (ingress) | YES (ingress) |
-| container-manager + Docker session | YES for successful `list_files`/`read_file` (06E lesson: Gateway down → `HANDLER_ERROR`) | NO (loop must not start) | YES |
-| Staging / browser / frontend | NO | NO | NO |
+Future execution environment for **both** proposed children: AWS Lightsail instance `aisandbox-staging` (Singapore / ap-southeast-1), app root `/opt/aisandbox`, public URL `https://staging.ainow.biz`. Operator venue for server commands is Lightsail browser SSH, matching existing staging runbooks. This Step 2 correction does **not** connect to AWS, SSH, deploy, or mutate staging.
 
-Do **not** start any of these in this Step 2 window.
+Local application tests, local Docker Desktop, local PostgreSQL/Redis, and local Gateway/worker/CM processes are **not** in this canary plan. Local read-only repository inspection and existing governance validation (`git diff --check`, lane-capacity validator to `$env:TEMP`) remain allowed.
+
+Inspected staging arrangement (runbooks/checkpoints; live state unverified in this window):
+
+| Shared staging service | Evidence in repo | Stub | xAI negative | Real positive |
+|---|---|---|---|---|
+| PostgreSQL (systemd on VPS) | EXECUTION-03 / LIVE deduction path | YES (existing) | YES (existing) | YES (existing) |
+| Redis / BullMQ queue `ai-execution` | EXECUTION-03; worker binds `ai-execution` | YES (existing) | YES (existing) | YES (existing) |
+| PM2 `aisandbox-ai-service` (single worker) | 04D/04F; consumes shared `ai-execution` | YES (existing) | YES (existing) | YES (existing) |
+| PM2 `aisandbox-api-gateway` | 04D/04F; LIVE-11 `POST /api/ai/execute` | YES if tools or notify/accounting; HMAC signer not used for stub enqueue | YES (ingress) | YES (ingress) |
+| PM2 `aisandbox-container-manager` + Docker Engine | 04A Docker 29.6.2; 04F CM online | YES for successful `list_files`/`read_file` (06E lesson: Gateway down → `HANDLER_ERROR`) | NO (loop must not start) | YES |
+| Frontend / browser | not required for these canaries | NO | NO | NO |
+| Local Docker / local app runtime | excluded from this plan | NO | NO | NO |
+
+Do **not** start, stop, delete, or replace these shared PM2/systemd services as canary-owned processes. Historical 06D/06E local-docker topology and `canary-06d-submit-job.ts` localhost URL rewrites are inventory only and must not be reused as EXEC-01C6 evidence.
+
+### 5.5 Staging feasibility (repository evidence vs unverified)
+
+| Question | Supported by inspected evidence | Still unverified (later live) |
+|---|---|---|
+| Staging host, PM2 four-app set, PostgreSQL, Redis, Docker Engine exist | YES — EXECUTION-03/04/04D/04F/04A checkpoints | Current process health, HEAD parity, and env values |
+| Gateway HTTP execute works on staging for Builder golden-path | YES — LIVE-11 `POST /api/ai/execute` 202 on staging | Harness `harnessVersion: 'v1'` + HMAC proof + entitled identity on staging |
+| Direct BullMQ stub can target staging Redis/Postgres from the VPS | YES in principle — worker already consumes `ai-execution`; 06D pattern inserts `usage_records` + queue job. Ingress remains direct-queue, **not** Gateway proof. Historical 06D localhost rewrite is **unsafe** on Lightsail and must not be copied. | Safe VPS connection strings without secret disclosure; HMAC-signed payload accepted by the **running** worker; no collision with in-flight staging jobs |
+| Worker isolation / queue consumption | Inspected: **one** PM2 `aisandbox-ai-service` consumes the **shared** `ai-execution` queue. No dedicated canary queue or canary worker exists. Direct-queue jobs are visible to the same worker as Gateway jobs. | Whether a later child can apply harness flags without affecting unrelated staging jobs; whether a separate worker can be started without a production capability change |
+| Process-scoped flags vs existing workers | Inspected: module-load freeze of `DEFAULT_AGENT_HARNESS_CONFIG_V1`; submit-script env does not affect PM2 worker | Current staging `AGENT_HARNESS_ENABLE_TOOL_LOOP` / HMAC secret presence (04D expected harness flags `false`; HMAC presence not evidenced here). Do not open `.env` or print secrets. |
+| Temporary data and cleanup | LIVE-11 pattern: restore `GLOBAL_EXECUTION_ENABLED=false`, stop **canary-created** session/container, do not `pm2 delete` / `pm2 kill` standing apps. 06D cleaned its own `usage_records` row. | Exact canary-owned row/job/session IDs; HMAC/flag restore without leaving shared worker in a mutated state |
+| File-backed workspace for `list_files`/`read_file` | Staging CM + Docker exist. Stub default reads `README.md`. | A disposable staging session that already contains `README.md` without mutating unrelated projects. FR-03 recorded **no** safe known file-backed disposable staging project. If live execution finds none, that is a **missing capability** — do not expand production templates in these children. |
+| xAI negative with zero outbound provider HTTP | Worker fail-closed when adapter lacks `supportsToolUse` is unit-proven (EXEC-01C1/01C3). Gateway catalogue has `xai`/`grok-4.5`. Constructor requires non-empty `XAI_API_KEY` before routing inspects `supportsToolUse`. | Staging `PROVIDER_XAI_ENABLED` / dummy vs real key / whether enqueue is possible without emitting HTTP to `api.x.ai` |
+| Authorized real OpenAI canary | Catalogues freeze `openai`/`gpt-4o`. LIVE-11 used **xAI**, not OpenAI, for Builder. | Staging OpenAI key/kill-switch; shared-worker flag window; credit-path behavior on staging |
+
+If later live verification shows that isolated worker/queue semantics are required and do not exist, **stop and return to the control plane**. Do not add a production canary worker, canary queue, or Gateway `test-harness-stub` catalogue entry in these children.
+
+Cleanup must restore **only canary-owned changes**. Forbidden: stopping pre-existing PM2/systemd services; `docker compose down -v`; dropping unrelated PostgreSQL/Redis data; claiming cleanup of Keith's standing staging environment as canary success.
+
+Do **not** start any staging mutation in this Step 2 window.
 
 ---
 
@@ -312,7 +348,7 @@ Do **not** call the provider in this window.
 9. Final metadata preserves `executionId`, `agentId`, `userId`, `apiKeyId`, `harnessVersion`.
 10. Flags restored; secrets absent from evidence; frontend untouched.
 
-**FAIL:** stub provider counted as real; unsigned/direct-queue job counted as Gateway proof; mutation tool; xAI used as positive; retries; 4th provider call; deduction on failure; second deduction; prompt/persona/secret/signature in evidence; leftover runtime processes started by the canary.
+**FAIL:** stub provider counted as real; unsigned/direct-queue job counted as Gateway proof; mutation tool; xAI used as positive; retries; 4th provider call; deduction on failure; second deduction; prompt/persona/secret/signature in evidence; leftover **canary-owned** runtime processes or unrestored staging flags/gates. Do not fail the canary for leaving pre-existing Lightsail services running.
 
 ---
 
@@ -335,7 +371,7 @@ Do **not** call the provider in this window.
 7. Provider-live call count = 0.
 8. Evidence contains no secret, signature, proof, prompt, or persona.
 
-This canary stays local/stubbed except for Gateway/worker/Redis/Postgres. It is **not** PROVIDER-LIVE.
+This canary runs on AWS Lightsail staging Gateway/worker/Redis/Postgres. It is **not** PROVIDER-LIVE. Zero outbound xAI HTTP remains required. Dummy `XAI_API_KEY` must not be a real credential and must not be committed.
 
 ---
 
@@ -369,6 +405,10 @@ Idempotency: `sourceEventId=executionId`. Duplicate finalize may **call** `apply
 | Real non-production credit mutation | 01C6B only | One deduction for completed openai canary; zero for xAI negative |
 
 Any real credit mutation requires later explicit Keith CREDIT authorization. This stage-start does not grant it.
+
+**Usage/ledger vs credit-balance (preserved, not redefined):** ledger `execution_status` / `tokensUsed` / `sourceEventId` writes are usage-ledger evidence. Credit-balance mutation is a non-zero change to the entitled identity's credit balance via `applyDeduction`. The optional 01C6A 0-token finalize path may still invoke `PersistentCreditDeductionGateway` (CREDIT mutex / evidence-sensitive credit validation) without a non-zero balance change. Non-zero balance change on 01C6A remains FAIL unless Keith separately authorizes it. This environment correction does not add, remove, or redefine that optional accounting evidence.
+
+**Recorded conflict (not resolved here):** 01C6A still lists CREDIT because optional stub finalize can hit `applyDeduction`, while `CREDIT_MUTATION_AUTHORIZED=NO` and 01C6A AC forbids non-zero balance change. Those statements can coexist only if 0-token `applyDeduction` is treated as credit-path validation rather than balance mutation. Whether staging `applyDeduction` with `tokensUsed=0` writes credit rows or changes balance is **unverified**. Do not silently drop CREDIT from 01C6A or convert the optional stub finalize into required balance mutation.
 
 ---
 
@@ -410,12 +450,12 @@ Audit events already omit prompt/output/arguments/full tool results (`harness-au
 
 | | 01C6A | 01C6B |
 |---|---|---|
-| Authorization | LOCAL-RUNTIME (+ CREDIT if stub finalize is in AC). No PROVIDER-LIVE. | LOCAL-RUNTIME + PROVIDER-LIVE + CREDIT. Explicit Keith live envelope. |
-| Mutexes | AI-SERVICE, LOCAL-RUNTIME, CREDIT | AI-SERVICE, LOCAL-RUNTIME, PROVIDER-LIVE, CREDIT |
-| Runtime | Postgres, Redis, worker, Gateway, CM/Docker for stub tools | Same plus real OpenAI |
-| Rollback | Restore flags; discard stub/xAI artifacts | Restore flags; cannot un-spend provider tokens; credit row is the authorized one-deduction |
+| Authorization | STAGING (+ CREDIT if stub finalize is in AC). No PROVIDER-LIVE. No LOCAL-RUNTIME. | STAGING + PROVIDER-LIVE + CREDIT. Explicit Keith live envelope. No LOCAL-RUNTIME. |
+| Mutexes | AI-SERVICE, STAGING, CREDIT. ENV only if the later live procedure mutates staging process env / execution gates (LIVE-11 analog); freeze at registration, not acquired now. | AI-SERVICE, STAGING, PROVIDER-LIVE, CREDIT. ENV same rule as 01C6A. |
+| Runtime | Existing Lightsail PostgreSQL, Redis, PM2 worker, Gateway, CM/Docker for stub tools | Same plus real OpenAI |
+| Rollback | Restore canary-owned flags/gates/rows/jobs/sessions; do not stop standing staging services | Same; cannot un-spend provider tokens; credit row is the authorized one-deduction |
 
-Children have different authorization, mutex, runtime, and rollback boundaries. Splitting is required.
+Children have different authorization, mutex, runtime, and rollback boundaries. Splitting is required. Both execute on AWS Lightsail staging. Direct-queue stub ingress remains distinct from Gateway ingress and from execution location.
 
 Do **not** register children in this window.
 
@@ -425,24 +465,24 @@ Do **not** register children in this window.
 
 Repo search: no canonical heading, machine stanza, sidecar candidate, or board occupancy for `AGENT-PLATFORM-EXEC-01C6A` or `AGENT-PLATFORM-EXEC-01C6B`.
 
-### 14.1 AGENT-PLATFORM-EXEC-01C6A — Local stub wiring and xAI-negative canary
+### 14.1 AGENT-PLATFORM-EXEC-01C6A — Staging stub wiring and xAI-negative canary
 
 | Field | Value |
 |---|---|
-| Title | Local read-only Harness stub canary and xAI fail-closed canary |
+| Title | Staging (AWS Lightsail) read-only Harness stub canary and xAI fail-closed canary |
 | Lifecycle | 3-STEP IMPLEMENTATION |
-| Depends on (human) | EXEC-01C6 Step 2 (this document); locked EXEC-01C3/01C4/01C5/01C5B |
+| Depends on (human) | EXEC-01C6 Step 2 (this document, including 2026-09-07 environment correction); locked EXEC-01C3/01C4/01C5/01C5B |
 | Depends on (machine, at later registration) | `["AGENT-PLATFORM-EXEC-01C3","AGENT-PLATFORM-EXEC-01C4","AGENT-PLATFORM-EXEC-01C5","AGENT-PLATFORM-EXEC-01C5B"]` |
-| Mutexes | AI-SERVICE, LOCAL-RUNTIME, CREDIT |
+| Mutexes | AI-SERVICE, STAGING, CREDIT. ENV only if later live procedure mutates staging process env / execution gates. **Not** LOCAL-RUNTIME. |
 | Hot-files | none |
 | Shared contracts | consumer `HARNESS_ENTITLEMENT_PROOF_V1` (do not mutate) |
-| Evidence class | LOCAL-RUNTIME |
-| runtimeNeeds | LOCAL-RUNTIME, CREDIT |
+| Evidence class | STAGING-RUNTIME (proposed; children unregistered — sidecar not edited in this window) |
+| runtimeNeeds | STAGING, CREDIT (schema: `STAGING-RUNTIME` requires `STAGING` in `runtimeNeeds`; each `runtimeNeeds` id must also appear in `mutexes`) |
 | Ordered write set | 1. `services/ai-service/scripts/canary-01c6a-stub-submit.ts` 2. `services/ai-service/scripts/canary-01c6a-xai-negative.ts` 3. `docs/AGENT-PLATFORM-EXEC-01C6A-CANARY-EVIDENCE.md` |
-| Out of scope | production worker/adapter/Gateway/frontend; `.env` / `.env.example`; PACKAGE; existing `canary-06*` scripts; provider-live; EXEC-01C7 |
+| Out of scope | production worker/adapter/Gateway/frontend; `.env` / `.env.example`; PACKAGE; existing `canary-06*` scripts; local application tests; local Docker/Postgres/Redis/dev servers; provider-live; EXEC-01C7 |
 | First to register | YES — before 01C6B |
 
-CREDIT on 01C6A exists because completed stub notify hits `PersistentCreditDeductionGateway`. Expected exposure is a 0-token deduction attempt. Keith must still authorize CREDIT before 01C6A runs if that path remains in AC; alternatively registration may drop stub accounting from 01C6A and leave all accounting to 01C6B (then omit CREDIT from 01C6A).
+CREDIT on 01C6A exists because completed stub notify hits `PersistentCreditDeductionGateway`. Expected exposure is a 0-token deduction attempt. Keith must still authorize CREDIT before 01C6A runs if that path remains in AC; alternatively registration may drop stub accounting from 01C6A and leave all accounting to 01C6B (then omit CREDIT from 01C6A). This environment correction does **not** add, remove, or redefine that optional accounting evidence.
 
 ### 14.2 AGENT-PLATFORM-EXEC-01C6B — Authorized real-provider transcript and accounting canary
 
@@ -450,17 +490,17 @@ CREDIT on 01C6A exists because completed stub notify hits `PersistentCreditDeduc
 |---|---|
 | Title | Authorized OpenAI native-transcript Harness canary and Ask-like accounting |
 | Lifecycle | 3-STEP IMPLEMENTATION |
-| Depends on (human) | EXEC-01C6A COMPLETE AND LOCKED; this Step 2; Keith PROVIDER-LIVE + CREDIT authorization |
+| Depends on (human) | EXEC-01C6A COMPLETE AND LOCKED; this Step 2 including environment correction; Keith PROVIDER-LIVE + CREDIT + STAGING authorization |
 | Depends on (machine, at later registration) | `["AGENT-PLATFORM-EXEC-01C6A"]` plus locked ancestors as required by then-current sidecar rules |
-| Mutexes | AI-SERVICE, LOCAL-RUNTIME, PROVIDER-LIVE, CREDIT |
+| Mutexes | AI-SERVICE, STAGING, PROVIDER-LIVE, CREDIT. ENV same rule as 01C6A. **Not** LOCAL-RUNTIME. |
 | Evidence class | PROVIDER-LIVE |
-| runtimeNeeds | PROVIDER-LIVE, LOCAL-RUNTIME, CREDIT |
+| runtimeNeeds | PROVIDER-LIVE, STAGING, CREDIT (schema: `PROVIDER-LIVE` evidence requires `PROVIDER-LIVE` in `runtimeNeeds`; staging execution additionally requires `STAGING` in `runtimeNeeds` and therefore in `mutexes`) |
 | Ordered write set | 1. `services/ai-service/scripts/canary-01c6b-openai-positive.ts` 2. `docs/AGENT-PLATFORM-EXEC-01C6B-CANARY-EVIDENCE.md` |
-| Out of scope | production adapters/worker/Gateway; catalogue expansion; Anthropic unless Keith replaces §7.2; frontend; mutation; EXEC-01C7 |
+| Out of scope | production adapters/worker/Gateway; catalogue expansion; Anthropic unless Keith replaces §7.2; frontend; mutation; local application tests; local runtime infrastructure; EXEC-01C7 |
 
-Parent EXEC-01C6 remains `writePaths=[]` / `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true` / mutexes `[LOCAL-RUNTIME]` schema-only. It is **not** admitted. Implementation writes belong to the children.
+Parent EXEC-01C6 remains `writePaths=[]` / `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true` / sidecar `mutexes=["LOCAL-RUNTIME"]` / `evidenceClass=LOCAL-RUNTIME` / `runtimeNeeds=[]`. That parent `LOCAL-RUNTIME` mutex is **validator-required provisional metadata** (`evidenceClass=LOCAL-RUNTIME` requires `LOCAL-RUNTIME` in `mutexes`; it does **not** require `LOCAL-RUNTIME` in `runtimeNeeds`). It is **not** acquired and does **not** authorize local tests. Reclassifying the parent candidate to `STAGING-RUNTIME` would require a sidecar edit (`STAGING` in `runtimeNeeds` and `mutexes`) which this correction does **not** perform. Implementation writes belong to the children.
 
-No focused production test files are required in these write sets. Existing unit tests already cover routing, HMAC, and mock accounting. New tests may be added later only if a child discovers a missing assertion that cannot be proven by the canary scripts; that would be an explicit write-set expansion at registration, not a silent production change.
+No focused production test files are required in these write sets. Existing unit tests already cover routing, HMAC, and mock accounting. New tests may be added later only if a child discovers a missing assertion that cannot be proven by the canary scripts; that would be an explicit write-set expansion at registration, not a silent production change. Do not introduce local application tests as a substitute for Lightsail execution.
 
 ---
 
@@ -489,22 +529,23 @@ HARNESS_FLAG_DEFAULTS=UNCHANGED
 
 Optional Keith replacement: Anthropic + an explicitly named current cheap model, same bounds otherwise.
 
-Before 01C6A LOCAL-RUNTIME execution: authorize local Docker/Postgres/Redis/Gateway/worker/CM as needed, dummy xAI key rule, and CREDIT-or-not for 0-token stub finalize.
+Before 01C6A STAGING execution: authorize AWS Lightsail staging (`aisandbox-staging`) use of existing PostgreSQL/Redis/Gateway/worker/CM as needed, dummy xAI key rule, shared-worker flag window, canary-owned cleanup only, and CREDIT-or-not for 0-token stub finalize. Do **not** authorize local Docker/Postgres/Redis/dev servers as the canary venue.
 
-Before 01C6A Gateway HTTP xAI negative: authorize LOCAL-RUNTIME (not PROVIDER-LIVE).
+Before 01C6A Gateway HTTP xAI negative: authorize STAGING (not PROVIDER-LIVE; not LOCAL-RUNTIME).
 
 ---
 
 ## 16. Rollback and cleanup (every exit path)
 
-1. Restore process-scoped Harness flags, HMAC secret, `EXECUTION_TIMEOUT_MS`, `EXECUTION_PROVIDER_RETRY_ATTEMPTS`, dummy `XAI_API_KEY`, `OPENAI_API_KEY` process overrides.
-2. Restore execution/runtime gates to pre-canary values.
-3. Remove temporary workspaces/files created for the canary. Preserve only redacted evidence intended for the child evidence doc / later checkpoint.
-4. Do not retain provider responses containing sensitive content.
-5. Do not modify repository `.env` files.
-6. Do not leave PostgreSQL/Redis/Docker/Gateway/worker/CM processes **started by the canary**. If they were already running before the child, do not claim cleanup of Keith's standing environment as a canary success; do not start additional copies and leave them.
-7. Do not alter credit balances outside the explicitly authorized bounded canary.
-8. Confirm working-tree expectation: only the child's frozen write set dirty; `git diff --check` clean; no SATURATION_PROOF retention.
+1. Restore process-scoped Harness flags, HMAC secret, `EXECUTION_TIMEOUT_MS`, `EXECUTION_PROVIDER_RETRY_ATTEMPTS`, dummy `XAI_API_KEY`, `OPENAI_API_KEY` process overrides **on the staging processes that were changed**.
+2. Restore execution/runtime gates to pre-canary values (LIVE-11 analog: `GLOBAL_EXECUTION_ENABLED=false` after confirmed-safe restore). Do not leave harness flags enabled on the shared worker.
+3. Remove temporary workspaces/files/sessions/containers **created for the canary**. Preserve only redacted evidence intended for the child evidence doc / later checkpoint.
+4. Delete only canary-owned `usage_records` / BullMQ jobs / ledger rows identified by the canary `executionId`. Do not truncate tables. Do not erase unrelated staging records.
+5. Do not retain provider responses containing sensitive content.
+6. Do not modify repository `.env` files. Do not persist canary flags into `/opt/aisandbox/.env` unless a later child explicitly authorizes that ENV write and restores it.
+7. Do **not** stop, delete, or kill pre-existing PM2/systemd services (`aisandbox-api-gateway`, `aisandbox-ai-service`, `aisandbox-container-manager`, `aisandbox-frontend`, PostgreSQL, Redis, Caddy, `pm2-ubuntu`). Do not `docker compose down -v`. If those services were already running before the child, leaving them running is required, not a cleanup failure.
+8. Do not alter credit balances outside the explicitly authorized bounded canary.
+9. Confirm working-tree expectation: only the child's frozen write set dirty; `git diff --check` clean; no SATURATION_PROOF retention.
 
 Historical 06D/06E scripts remain untouched.
 
@@ -515,6 +556,7 @@ Historical 06D/06E scripts remain untouched.
 ```
 KEITH_DECISION_REQUIRED_BEFORE_PROVIDER_LIVE=YES
 LOCAL-RUNTIME=UNAUTHORIZED
+STAGING=UNAUTHORIZED
 PROVIDER-LIVE=UNAUTHORIZED
 CREDIT=UNAUTHORIZED
 STAGE_START_DOES_NOT_GRANT_PERMISSION=YES
@@ -531,9 +573,10 @@ Parent candidate remains:
 - `status=READY`
 - `writeSetPrecision=PROVISIONAL`
 - `admissionUncertain=true`
-- `mutexes=["LOCAL-RUNTIME"]` (declaration only)
+- `mutexes=["LOCAL-RUNTIME"]` (parent schema-required declaration for `evidenceClass=LOCAL-RUNTIME` only; not acquired; not a local-test lease)
 - `writePaths=[]`
 - not admitted
+- proposed children remain unregistered; their future mutexes include STAGING, not LOCAL-RUNTIME
 
 ---
 
@@ -542,7 +585,7 @@ Parent candidate remains:
 | Item | End state |
 |---|---|
 | EXEC-01C6 Step 1 | COMPLETE |
-| EXEC-01C6 Step 2 | COMPLETE — this document |
+| EXEC-01C6 Step 2 | COMPLETE — this document (environment corrected 2026-09-07; future execution = AWS Lightsail staging) |
 | EXEC-01C6 Step 3 / 4 | NOT AUTHORIZED |
 | Implementation | NOT STARTED |
 | Lanes | EMPTY / EMPTY / DISABLED |
@@ -562,7 +605,8 @@ Parent candidate remains:
 - No frontend `harnessVersion`
 - No specialist / unbound Builder Harness
 - No mutation tools enabled
-- Runtime/Docker/database/staging/browser/provider-live/credit = 0
+- Runtime/Docker/database/staging-connection/browser/provider-live/credit = 0
+- Local application tests / local runtime infrastructure introduced = 0
 - Git commit/push = NO
 - No child task registered
 - No lane occupied
