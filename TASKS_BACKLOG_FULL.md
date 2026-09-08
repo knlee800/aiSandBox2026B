@@ -75728,7 +75728,7 @@ Step 3 (independent consolidation / checkpoint / lock):
 taskId=AGENT-PLATFORM-EXEC-01C-SCHEMA-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
-**Status:** REGISTERED / ADMITTED (Lane 1 ACTIVE) — 2026-09-08 — Step 1 (design/registration) COMPLETE — 2026-09-08 — Step 2 (schema/write-set freeze) COMPLETE in design document — 2026-09-08 — Step 3 SOURCE AUTHORED — 2026-09-08 — migration `1772950000000-CreateApiKeysTable.ts` plus focused mocked tests authored — NOT APPLIED — MIGRATION_EXECUTION_AUTHORIZED=NO — STAGING unauthorized — GOVERNANCE released UNOWNED — GATEWAY OWNED — MIGRATION OWNED — NOT LANE-DONE — NOT LOCKED — Step 4 LOCK NOT AUTHORIZED — candidate `status=ADMITTED` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=EXACT` / `admissionUncertain=false` (occupied Lane 1 SKIP from S) — Lane 1 ACTIVE AGENT-PLATFORM-EXEC-01C-SCHEMA-01 — Lane 2 EMPTY — Lane 3 DISABLED — IDENTITY-01 PAUSED / READY / NOT ADMITTED / BLOCKED pending this task LOCK — EXEC-01C6A remains READY / NOT ADMITTED / NOT LOCKED — design: `docs/AGENT-PLATFORM-EXEC-01C-SCHEMA-01-DESIGN.md` — product-visible Harness remains FUTURE/gated — PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED
+**Status:** REGISTERED / ADMITTED (Lane 1 ACTIVE) — 2026-09-08 — rollback atomicity + public schema qualification + apply-procedure correction — Step 1 (design/registration) COMPLETE — 2026-09-08 — Step 2 freeze COMPLETE (corrected 2026-09-08) — Step 3 SOURCE AUTHORED / SAFETY-CORRECTED — 2026-09-08 — migration `1772950000000-CreateApiKeysTable.ts` plus focused mocked tests corrected — NOT APPLIED — local tests NOT RUN — live lock/concurrency UNPROVEN — MIGRATION_EXECUTION_AUTHORIZED=NO — STAGING unauthorized — GOVERNANCE released UNOWNED — GATEWAY OWNED — MIGRATION OWNED — NOT LANE-DONE — NOT LOCKED — Step 4 LOCK NOT AUTHORIZED — candidate `status=ADMITTED` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=EXACT` / `admissionUncertain=false` (occupied Lane 1 SKIP from S) — Lane 1 ACTIVE AGENT-PLATFORM-EXEC-01C-SCHEMA-01 — Lane 2 EMPTY — Lane 3 DISABLED — IDENTITY-01 PAUSED / READY / NOT ADMITTED / BLOCKED pending this task LOCK — EXEC-01C6A remains READY / NOT ADMITTED / NOT LOCKED — design: `docs/AGENT-PLATFORM-EXEC-01C-SCHEMA-01-DESIGN.md` — product-visible Harness remains FUTURE/gated — PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED
 **Task ID:** AGENT-PLATFORM-EXEC-01C-SCHEMA-01
 **Title:** Additive create-table migration for missing public.api_keys
 **Workstream:** AGENT
@@ -75756,9 +75756,9 @@ nature=IMPLEMENTATION
 
 **Solution summary:**
 1. New active-directory migration `1772950000000-CreateApiKeysTable.ts` after `1772900000000` and before `1773000000000`
-2. Create base `api_keys` with UUID FK to `users(id)` ON DELETE CASCADE
-3. Fail closed if `api_keys` already exists (no `IF NOT EXISTS`)
-4. `down()` refuses to drop a populated table; no `DROP TABLE IF EXISTS`
+2. Create base `"public"."api_keys"` with UUID FK to `"public"."users"("id")` ON DELETE CASCADE
+3. Fail closed if `public.api_keys` already exists (no `CREATE TABLE IF NOT EXISTS`; provenance is migration history plus refuse-to-adopt, not omission of `IF EXISTS`)
+4. `down()` requires the runner's open transaction, `LOCK TABLE "public"."api_keys" ACCESS EXCLUSIVE NOWAIT`, then refuses DROP unless COUNT is an explicit empty (`0` / `"0"`); no `Number()` coercion; no `DROP TABLE IF EXISTS`; does not commit/roll back the runner transaction
 5. No `is_internal` (IDENTITY-01 remains responsible). No user/key/privilege/credit inserts. No auth behavior changes.
 
 **Exact implementation files:**
@@ -75772,22 +75772,23 @@ nature=IMPLEMENTATION
 - [x] IDENTITY-01 recorded READY / NOT ADMITTED / BLOCKED pending SCHEMA-01 LOCK; evidence preserved; not LANE-DONE; not LOCKED
 - [x] Migration authored in active discovery directory with unique timestamp 1772950000000
 - [x] Focused mocked tests authored (not executed locally)
+- [x] Rollback emptiness check is transactional + ACCESS EXCLUSIVE NOWAIT; `public` qualification consistent; apply procedure corrected (standard `migration:run` is all-pending / two-migration when both pending; single-migration loader UNRESOLVED; neither apply authorized)
 - [x] IDENTITY-01 seven implementation files unmodified
 - [x] Validator PASS
 - [x] GOVERNANCE released
 
 **Acceptance criteria (Step 4 — consolidation/checkpoint/lock; LOCK NOT AUTHORIZED; migration NOT APPLIED):**
 - [ ] Isolated revision delivery and focused tests on Lightsail
-- [ ] Apply preflight: snapshot; staging `users` PK/`users(id)` FK; `api_keys` still absent; pending set is only SCHEMA-01 then IDENTITY-01
-- [ ] SCHEMA-01 applied only under separate STAGING + migration-execution authorization (previous IDENTITY-01-only apply approval does not authorize this migration or a two-migration batch)
-- [ ] PostgreSQL verification of table/constraints/indexes/defaults/order
+- [ ] Apply preflight: verified Available Lightsail console snapshot (CLI not required); staging `users` PK/`"public"."users"("id")` FK; `api_keys` still absent; pending set is only SCHEMA-01 then IDENTITY-01
+- [ ] Apply only under separate STAGING + migration-execution authorization. Standard `migration:run:prod` with both pending is a two-migration operation, not SCHEMA-01-only. Single-migration apply remains UNRESOLVED (restricted loader + normal history). Previous IDENTITY-01-only apply approval does not authorize either.
+- [ ] PostgreSQL verification of table/constraints/indexes/defaults/order, including live lock/concurrency of rollback (mocked tests do not prove this)
 - [ ] Existing-table conflict behavior verified
 - [ ] Old application compatibility after base-table creation
 - [ ] Checkpoint and LOCK
 
-**Step 1–3 HEAD:** `b7a689c0157d5fa420d63142025dab8c2d09f7f0` (branch main; preserved dirty `TASKS.md` + `TASKS_BACKLOG_FULL.md` IDENTITY-01 STOPPED preflight)
+**Step 1–3 HEAD:** `b7a689c0157d5fa420d63142025dab8c2d09f7f0` (original source window). **Correction baseline:** `4081b01b73f4f6a9c59f8e4495cf6c83423a26c4` (rollback atomicity / public qualification / apply-procedure; branch main).
 
-**Activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, local application tests=0, tests executed=0 (authored not run), package install=0, migrations applied=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git commit/push=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0. Source authored in frozen 2-file write set. Governance writes: this registry body, TASKS.md, `docs/control-plane/lane-saturation-state.json`, design document. IDENTITY-01 seven files unmodified. Lane 1 ACTIVE SCHEMA-01. GATEWAY/MIGRATION OWNED by SCHEMA-01. STAGING UNOWNED. GOVERNANCE released UNOWNED. IDENTITY-01 NOT LOCKED. EXEC-01C6A not unblocked.
+**Activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, local application tests=0, tests executed=0 (authored/corrected not run), package install=0, migrations applied=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, sidecar occupancy unchanged, Git commit/push=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0. Source safety-corrected in frozen 2-file write set (transactional ACCESS EXCLUSIVE NOWAIT rollback, `public` qualification, explicit empty COUNT). Design apply-procedure corrected (standard `migration:run` is all-pending). Governance writes: this registry body, TASKS.md compact/status/evidence wording, design document. IDENTITY-01 seven files unmodified. Lane 1 remains ACTIVE SCHEMA-01. GATEWAY/MIGRATION remain OWNED by SCHEMA-01. STAGING UNOWNED. GOVERNANCE UNOWNED. NOT LANE-DONE. NOT LOCKED. IDENTITY-01 NOT LOCKED. EXEC-01C6A not unblocked.
 
 **Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. Unchanged.
 

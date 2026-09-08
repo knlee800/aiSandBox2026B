@@ -12,10 +12,13 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  *
  * Existing-table policy: fail closed with an actionable diagnostic.
  * Do not use CREATE TABLE IF NOT EXISTS. Do not silently adopt an unknown table.
+ * Omitting IF EXISTS does not prove this migration created the relation; provenance
+ * is TypeORM migration history plus the refusal to adopt a pre-existing table.
  *
  * Rollback: dropping a populated api_keys table is data-loss, not harmless.
- * down() refuses to DROP when any rows exist. down() does not use DROP TABLE IF EXISTS,
- * so it cannot drop a pre-existing table that up() never created.
+ * down() requires the runner's open transaction, takes ACCESS EXCLUSIVE NOWAIT,
+ * then refuses DROP when any rows exist. This class does not commit or roll back
+ * the QueryRunner transaction.
  */
 export class CreateApiKeysTable1772950000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -32,7 +35,8 @@ export class CreateApiKeysTable1772950000000 implements MigrationInterface {
       throw new Error(
         [
           'AGENT-PLATFORM-EXEC-01C-SCHEMA-01: public.api_keys already exists.',
-          'Refusing to adopt an unknown table (no IF NOT EXISTS).',
+          'Refusing to adopt an unknown table.',
+          'CREATE TABLE IF NOT EXISTS is forbidden here so a pre-existing relation cannot be recorded as this migration\'s create.',
           'Inspect before retrying:',
           `  SELECT column_name, data_type, column_default, is_nullable`,
           `    FROM information_schema.columns`,
@@ -49,7 +53,7 @@ export class CreateApiKeysTable1772950000000 implements MigrationInterface {
     }
 
     await queryRunner.query(`
-      CREATE TABLE "api_keys" (
+      CREATE TABLE "public"."api_keys" (
         "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         "hashed_key" character varying(255) NOT NULL,
         "key_prefix" character varying(20) NOT NULL,
@@ -58,39 +62,58 @@ export class CreateApiKeysTable1772950000000 implements MigrationInterface {
         "created_at" TIMESTAMP NOT NULL DEFAULT now(),
         "revoked_at" TIMESTAMP NULL,
         CONSTRAINT "fk_api_keys_user"
-          FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE
+          FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE CASCADE
       )
     `);
 
     await queryRunner.query(
-      `CREATE INDEX "idx_api_key_hashed" ON "api_keys" ("hashed_key")`,
+      `CREATE INDEX "idx_api_key_hashed" ON "public"."api_keys" ("hashed_key")`,
     );
 
     await queryRunner.query(
-      `CREATE INDEX "idx_api_key_user_id" ON "api_keys" ("user_id")`,
+      `CREATE INDEX "idx_api_key_user_id" ON "public"."api_keys" ("user_id")`,
     );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    CreateApiKeysTable1772950000000.assertActiveTransaction(queryRunner);
+
+    await queryRunner.query(
+      `LOCK TABLE "public"."api_keys" IN ACCESS EXCLUSIVE MODE NOWAIT`,
+    );
+
     const counts = await queryRunner.query(`
-      SELECT COUNT(*)::int AS "row_count" FROM "api_keys"
+      SELECT COUNT(*)::int AS "row_count" FROM "public"."api_keys"
     `);
-    const rowCount = CreateApiKeysTable1772950000000.rowCount(counts);
+    const rowCount = CreateApiKeysTable1772950000000.parseRowCount(counts);
 
     if (rowCount > 0) {
       throw new Error(
         [
           `AGENT-PLATFORM-EXEC-01C-SCHEMA-01 down(): refusing to DROP populated public.api_keys (${rowCount} rows).`,
           'Dropping a populated API-key table is data-loss, not a harmless rollback.',
-          'Restore from a pre-apply snapshot, or obtain explicit authorization to destroy API-key rows.',
-          'This down() does not use IF EXISTS and will not drop a table that up() did not create.',
+          'Restore from a verified pre-apply Lightsail snapshot, or obtain explicit authorization to destroy API-key rows.',
+          'Provenance is TypeORM migration history, not the absence of IF EXISTS.',
+          'This class does not commit or roll back the QueryRunner transaction.',
         ].join(' '),
       );
     }
 
-    await queryRunner.query(`DROP INDEX "idx_api_key_user_id"`);
-    await queryRunner.query(`DROP INDEX "idx_api_key_hashed"`);
-    await queryRunner.query(`DROP TABLE "api_keys"`);
+    await queryRunner.query(`DROP INDEX "public"."idx_api_key_user_id"`);
+    await queryRunner.query(`DROP INDEX "public"."idx_api_key_hashed"`);
+    await queryRunner.query(`DROP TABLE "public"."api_keys"`);
+  }
+
+  private static assertActiveTransaction(queryRunner: QueryRunner): void {
+    if (queryRunner.isTransactionActive !== true) {
+      throw new Error(
+        [
+          'AGENT-PLATFORM-EXEC-01C-SCHEMA-01 down(): no active QueryRunner transaction.',
+          'Refusing rollback SQL so ACCESS EXCLUSIVE cannot be taken or released outside the runner-owned transaction.',
+          'This class does not start, commit, or roll back that transaction.',
+        ].join(' '),
+      );
+    }
   }
 
   private static tableExists(rows: unknown): boolean {
@@ -107,19 +130,35 @@ export class CreateApiKeysTable1772950000000 implements MigrationInterface {
     );
   }
 
-  private static rowCount(rows: unknown): number {
+  /**
+   * Empty-table is only number 0 or a canonical digit string "0".
+   * Number(null), Number(''), and Number(false) are 0 and must not pass.
+   */
+  private static parseRowCount(rows: unknown): number {
     if (!Array.isArray(rows) || rows.length === 0) {
       throw new Error(
         'AGENT-PLATFORM-EXEC-01C-SCHEMA-01 down(): could not read api_keys row count; aborting DROP.',
       );
     }
-    const value = (rows[0] as { row_count?: unknown }).row_count;
-    const n = Number(value);
-    if (!Number.isFinite(n) || n < 0) {
+    if (!Object.prototype.hasOwnProperty.call(rows[0], 'row_count')) {
       throw new Error(
-        'AGENT-PLATFORM-EXEC-01C-SCHEMA-01 down(): invalid api_keys row count; aborting DROP.',
+        'AGENT-PLATFORM-EXEC-01C-SCHEMA-01 down(): row_count missing from count result; aborting DROP.',
       );
     }
-    return n;
+    const value = (rows[0] as { row_count: unknown }).row_count;
+    if (typeof value === 'number') {
+      if (!Number.isInteger(value) || value < 0 || Object.is(value, -0)) {
+        throw new Error(
+          'AGENT-PLATFORM-EXEC-01C-SCHEMA-01 down(): invalid api_keys row count; aborting DROP.',
+        );
+      }
+      return value;
+    }
+    if (typeof value === 'string' && /^(0|[1-9]\d*)$/.test(value)) {
+      return Number.parseInt(value, 10);
+    }
+    throw new Error(
+      'AGENT-PLATFORM-EXEC-01C-SCHEMA-01 down(): invalid api_keys row count; aborting DROP.',
+    );
   }
 }

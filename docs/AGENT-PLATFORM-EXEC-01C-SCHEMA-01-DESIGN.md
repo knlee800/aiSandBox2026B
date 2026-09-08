@@ -7,10 +7,11 @@
 **Nature:** HIGH-RISK 4-step IMPLEMENTATION — schema/migration
 **Development program:** CURRENT
 **Product-visible Harness capability:** FUTURE / gated / disabled / unavailable
-**Base HEAD:** `b7a689c0157d5fa420d63142025dab8c2d09f7f0`
-**Preserved dirty tree at window open:** `TASKS.md`, `TASKS_BACKLOG_FULL.md` (IDENTITY-01 bounded staging migration STOPPED preflight). Those edits are preserved.
+**Base HEAD (registration/source window):** `b7a689c0157d5fa420d63142025dab8c2d09f7f0`
+**Correction baseline (rollback atomicity / schema targeting / apply-procedure):** `4081b01b73f4f6a9c59f8e4495cf6c83423a26c4`
+**Preserved dirty tree at original window open:** `TASKS.md`, `TASKS_BACKLOG_FULL.md` (IDENTITY-01 bounded staging migration STOPPED preflight). Those edits are preserved.
 
-IDENTITY-01 seven-file implementation is not modified by this task.
+IDENTITY-01 seven-file implementation is not modified by this task. This correction window does not implement a deployment runner and does not change IDENTITY-01.
 
 ---
 
@@ -105,9 +106,11 @@ Table `public.api_keys`:
 Constraints / indexes:
 
 - PK on `id`
-- `CONSTRAINT "fk_api_keys_user" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE`
-- `idx_api_key_hashed` on `hashed_key`
-- `idx_api_key_user_id` on `user_id`
+- `CONSTRAINT "fk_api_keys_user" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE CASCADE`
+- `CREATE INDEX "idx_api_key_hashed" ON "public"."api_keys" ("hashed_key")` (index lives in the table's schema; PostgreSQL does not accept a schema-qualified index name on `CREATE INDEX`)
+- `CREATE INDEX "idx_api_key_user_id" ON "public"."api_keys" ("user_id")`
+
+DDL targeting: `CREATE TABLE`, `REFERENCES`, `COUNT`, `LOCK TABLE`, and `DROP TABLE` use `"public"."api_keys"` / `"public"."users"`. Index drops use `"public"."idx_api_key_hashed"` and `"public"."idx_api_key_user_id"`.
 
 Explicitly **absent:** `is_internal` (IDENTITY-01), user/API-key/privilege/credit inserts, grants, backfill, automatic promotion.
 
@@ -121,7 +124,9 @@ Explicitly **absent:** `is_internal` (IDENTITY-01), user/API-key/privilege/credi
 
 `AGENT-PLATFORM-EXEC-01C-SCHEMA-01: public.api_keys already exists.`
 
-with inspection SQL. It does **not** run `CREATE TABLE`. It does **not** use `IF NOT EXISTS`. Silent adoption of an unknown table is forbidden.
+with inspection SQL. It does **not** run `CREATE TABLE`. It does **not** use `CREATE TABLE IF NOT EXISTS`. Silent adoption of an unknown table is forbidden.
+
+Omitting `IF EXISTS` / `IF NOT EXISTS` does **not** prove this migration created or owns the relation. Provenance is TypeORM migration history (`migrations` table) plus this `up()` refusal to adopt a pre-existing table. A missing table on `DROP` fails loudly; that is fail-closed behavior, not ownership proof.
 
 ### 5.2 Rollback ordering
 
@@ -138,15 +143,19 @@ Application-code rollback remains IDENTITY-01's contract: revert IDENTITY-01 ent
 
 Dropping a populated `api_keys` table destroys all API keys. That is **not** harmless.
 
-`down()`:
+`down()` (all SQL in the **existing** QueryRunner transaction; this class does not start, commit, or roll back that transaction):
 
-1. `SELECT COUNT(*)` from `api_keys`
-2. If `row_count > 0`, throw and do not DROP
-3. If empty, `DROP INDEX` then `DROP TABLE "api_keys"` **without** `IF EXISTS`
+1. Require `queryRunner.isTransactionActive === true`. If not, throw and execute **no** rollback SQL.
+2. `LOCK TABLE "public"."api_keys" IN ACCESS EXCLUSIVE MODE NOWAIT` (must precede emptiness check; lock is retained through DROP for the rest of this transaction). Lock failure must not proceed to COUNT or DROP. Rollback must not wait indefinitely for the lock.
+3. `SELECT COUNT(*)::int AS "row_count" FROM "public"."api_keys"`. Empty-table is only an explicit integer `0` or canonical digit string `"0"`. `null`, `''`, booleans, missing `row_count`, empty result sets, and malformed values are **not** zero. Do not coerce them with `Number()`.
+4. If `row_count > 0`, throw and do not DROP.
+5. If empty, `DROP INDEX "public"."idx_api_key_user_id"`, `DROP INDEX "public"."idx_api_key_hashed"`, then `DROP TABLE "public"."api_keys"` **without** `IF EXISTS`.
 
-Because `up()` never adopts an existing table, `down()` cannot drop a pre-existing table that `up()` silently accepted. `DROP TABLE IF EXISTS` is forbidden here.
+`DROP TABLE IF EXISTS` remains forbidden. Missing-table DROP fails loudly. That is not proof of table ownership.
 
-Restore path for a populated table: pre-apply snapshot, not this `down()`.
+Restore path for a populated table: verified pre-apply Lightsail snapshot, not this `down()`.
+
+Mocked tests cover SQL order and fail-closed parsing. They do **not** prove live PostgreSQL locking or concurrent-insert behavior. That remains a later Lightsail PostgreSQL validation requirement.
 
 ---
 
@@ -188,12 +197,12 @@ npx jest --runTestsByPath src/migrations/__tests__/1772950000000-CreateApiKeysTa
 npx tsc --noEmit --incremental false
 ```
 
-Do **not** repeat the 197 IDENTITY-01 tests unless IDENTITY-01 source changes. Mocked tests do **not** prove PostgreSQL behavior.
+Do **not** repeat the 197 IDENTITY-01 tests unless IDENTITY-01 source changes. Mocked tests do **not** prove PostgreSQL behavior, locking, or concurrent-insert safety.
 
-### 7.2 Apply preflight (mandatory before any SCHEMA-01 apply)
+### 7.2 Apply preflight (mandatory before any later apply; neither single nor batch apply is authorized in this window)
 
-1. Pre-apply Lightsail snapshot (mandatory). Snapshot CLI must be available.
-2. Confirm staging `users` PK and that `"users"("id")` is the referenced constraint.
+1. Pre-apply Lightsail snapshot (mandatory). Use the established Lightsail **console** snapshot procedure (instance → Snapshots → Create snapshot). Do **not** require a snapshot CLI. Wait until the snapshot status is **Available** before any later apply. If the snapshot cannot be created or does not become Available, STOP.
+2. Confirm staging `users` PK and that `"public"."users"("id")` is the referenced constraint.
 3. Confirm `public.api_keys` is still absent. If present, STOP — do not apply; inspect.
 4. `npx typeorm migration:show -d dist/data-source.js` (or equivalent compiled show).
 5. Expected pending set after this revision is delivered, and **before** any apply:
@@ -202,21 +211,27 @@ Do **not** repeat the 197 IDENTITY-01 tests unless IDENTITY-01 source changes. M
    - `[ ] AddInternalAccessToApiKeys1773000000000`
 
    If any other pending migration appears, STOP and assess separately.
-6. Apply **only** SCHEMA-01 if that is the authorized set. Do not silently run IDENTITY-01 in the same batch unless Keith authorizes a two-migration batch separately.
 
-Staging runner (frozen from IDENTITY-01 stage-start; still correct):
+**Standard TypeORM `migration:run` executes all pending migrations.** With both SCHEMA-01 and IDENTITY-01 pending, `DATABASE_URL=<url> npm run migration:run:prod` (`typeorm migration:run -d dist/data-source.js`) is a **two-migration** operation. It is **not** a SCHEMA-01-only procedure. Do not present or use that command as if it applied only `CreateApiKeysTable1772950000000`.
 
-| Operation | Command |
-|---|---|
-| Show | `DATABASE_URL=<url> npx typeorm migration:show -d dist/data-source.js` |
-| Apply | `DATABASE_URL=<url> npm run migration:run:prod` |
-| Revert | `DATABASE_URL=<url> npx typeorm migration:revert -d dist/data-source.js` |
+A **single-migration** apply requires a separately verified restricted migration-loading procedure that still writes normal TypeORM history bookkeeping. That procedure is **UNRESOLVED** here. Do not invent a CLI name filter, fake history rows, or change production migration discovery (`data-source.ts` glob) in this task.
 
-Requires current `dist/` including this new compiled migration. `migration:revert:prod` still does not exist as an npm script.
+Neither single-migration apply nor the two-migration batch is authorized in this window. The previous approval to apply only IDENTITY-01 does not authorize this migration or a two-migration batch. Separate STAGING + migration-execution authorization is required for whichever apply set Keith later approves.
+
+Staging inspection / revert commands (apply remains unauthorized here):
+
+| Operation | Command | Notes |
+|---|---|---|
+| Show | `DATABASE_URL=<url> npx typeorm migration:show -d dist/data-source.js` | Non-destructive |
+| Standard apply | `DATABASE_URL=<url> npm run migration:run:prod` | Runs **all pending** migrations. With the expected pending set this is SCHEMA-01 **and** IDENTITY-01. Not SCHEMA-01-only. **Not authorized this window.** |
+| Single-migration apply | UNRESOLVED | Needs a separately verified restricted loader that preserves history. Not invented here. **Not authorized this window.** |
+| Revert | `DATABASE_URL=<url> npx typeorm migration:revert -d dist/data-source.js` | Reverts only the last applied migration. **Not authorized this window.** |
+
+Requires current `dist/` including this new compiled migration before any later apply. `migration:revert:prod` still does not exist as an npm script.
 
 ### 7.3 PostgreSQL verification after SCHEMA-01 apply (before IDENTITY-01 apply)
 
-Verify table, columns, nullability, defaults, PK, FK `"users"("id") ON DELETE CASCADE`, indexes `idx_api_key_hashed` / `idx_api_key_user_id`, and **no** `is_internal` yet.
+Verify table, columns, nullability, defaults, PK, FK `"public"."users"("id") ON DELETE CASCADE`, indexes `idx_api_key_hashed` / `idx_api_key_user_id` on `public.api_keys`, and **no** `is_internal` yet.
 
 Existing-table conflict: on a clone/snapshot copy only, create a decoy `api_keys` and confirm `up()` fails with the SCHEMA-01 diagnostic and does not adopt the decoy.
 
@@ -227,9 +242,13 @@ Existing-table conflict: on a clone/snapshot copy only, create a decoy `api_keys
 
 ### 7.5 Rollback requirements
 
-- Snapshot before apply.
-- Populated-table `down()` must fail closed.
-- Empty-table `down()` drops only this table.
+- Verified **Available** Lightsail console snapshot before apply.
+- `down()` refuses rollback SQL unless the QueryRunner transaction is already active; it does not commit or roll back that transaction.
+- ACCESS EXCLUSIVE NOWAIT on `"public"."api_keys"` precedes COUNT and all DROPs; lock failure must not COUNT or DROP.
+- Populated-table `down()` must fail closed (positive explicit row count).
+- Invalid/missing count must fail closed (no `Number()` coercion to zero).
+- Empty-table `down()` (explicit integer/`"0"`) drops schema-qualified indexes then `"public"."api_keys"` only.
+- Live concurrent-insert vs rollback locking remains a later PostgreSQL validation item; mocked tests do not prove it.
 - If IDENTITY-01 column was also applied, revert IDENTITY-01 first.
 
 ---
