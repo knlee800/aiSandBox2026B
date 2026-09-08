@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { ApiKey } from '../entities/api-key.entity';
 import * as crypto from 'crypto';
 import * as bcrypt from 'bcrypt';
@@ -159,7 +159,7 @@ export class ApiKeyService {
     // Find all non-revoked keys
     // We need to check all keys because we can't query by plaintext
     const allKeys = await this.apiKeyRepository.find({
-      where: { revokedAt: null },
+      where: { revokedAt: IsNull() },
     });
 
     // Check each key's hash

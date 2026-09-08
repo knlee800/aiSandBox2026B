@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import { ApiKeyService } from '../api-key.service';
 import { ApiKey } from '../../entities/api-key.entity';
@@ -364,6 +364,9 @@ describe('ApiKeyService', () => {
 
       const result = await service.validateApiKey(plaintextKey);
 
+      expect(mockRepository.find).toHaveBeenCalledWith({
+        where: { revokedAt: IsNull() },
+      });
       expect(result).toEqual({
         userId: 'user-123',
         apiKeyId: 'key-123',
@@ -438,6 +441,9 @@ describe('ApiKeyService', () => {
 
       const result = await service.validateApiKey(plaintextKey);
 
+      expect(mockRepository.find).toHaveBeenCalledWith({
+        where: { revokedAt: IsNull() },
+      });
       expect(result).toBeNull();
     });
 
@@ -453,11 +459,15 @@ describe('ApiKeyService', () => {
         revokedAt: new Date(), // Revoked
       };
 
-      // find() filters out revoked keys
+      // Repository must receive IsNull(); a mock that returns only active rows
+      // does not prove SQL filtering.
       mockRepository.find.mockResolvedValue([]);
 
       const result = await service.validateApiKey(plaintextKey);
 
+      expect(mockRepository.find).toHaveBeenCalledWith({
+        where: { revokedAt: IsNull() },
+      });
       expect(result).toBeNull();
     });
 
