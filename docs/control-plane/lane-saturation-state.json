@@ -11,16 +11,11 @@
   "occupancy": {
     "lane1": {
       "state": "ACTIVE",
-      "taskId": "AGENT-PLATFORM-EXEC-01C-IDENTITY-01",
+      "taskId": "AGENT-PLATFORM-EXEC-01C-SCHEMA-01",
       "mutexes": ["GATEWAY", "MIGRATION"],
       "writePaths": [
-        "services/api-gateway/src/entities/api-key.entity.ts",
-        "services/api-gateway/src/auth/api-key.service.ts",
-        "services/api-gateway/src/auth/api-key-auth.guard.ts",
-        "services/api-gateway/src/migrations/1773000000000-AddInternalAccessToApiKeys.ts",
-        "services/api-gateway/src/auth/__tests__/api-key-auth.guard.spec.ts",
-        "services/api-gateway/src/auth/__tests__/api-key.service.spec.ts",
-        "services/api-gateway/src/auth/__tests__/api-key.controller.spec.ts"
+        "services/api-gateway/src/migrations/1772950000000-CreateApiKeysTable.ts",
+        "services/api-gateway/src/migrations/__tests__/1772950000000-CreateApiKeysTable.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
@@ -540,13 +535,14 @@
       "taskId": "AGENT-PLATFORM-EXEC-01C-IDENTITY-01",
       "nature": "IMPLEMENTATION",
       "lifecycle": "4-STEP",
-      "status": "ADMITTED",
+      "status": "READY",
       "startCondition": "READY",
       "saturationClass": "FORCING",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
       "dependsOn": [
-        "GOV-AUTH-03"
+        "GOV-AUTH-03",
+        "AGENT-PLATFORM-EXEC-01C-SCHEMA-01"
       ],
       "mutexes": ["GATEWAY", "MIGRATION"],
       "writePaths": [
@@ -557,6 +553,33 @@
         "services/api-gateway/src/auth/__tests__/api-key-auth.guard.spec.ts",
         "services/api-gateway/src/auth/__tests__/api-key.service.spec.ts",
         "services/api-gateway/src/auth/__tests__/api-key.controller.spec.ts"
+      ],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "LOCAL-TESTS",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": [],
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
+    },
+    {
+      "taskId": "AGENT-PLATFORM-EXEC-01C-SCHEMA-01",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "4-STEP",
+      "status": "ADMITTED",
+      "startCondition": "READY",
+      "saturationClass": "FORCING",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": [
+        "GOV-AUTH-03"
+      ],
+      "mutexes": ["GATEWAY", "MIGRATION"],
+      "writePaths": [
+        "services/api-gateway/src/migrations/1772950000000-CreateApiKeysTable.ts",
+        "services/api-gateway/src/migrations/__tests__/1772950000000-CreateApiKeysTable.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,

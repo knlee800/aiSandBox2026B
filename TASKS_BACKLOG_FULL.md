@@ -75568,7 +75568,7 @@ taskId=AGENT-PLATFORM-EXEC-01C6A
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-07 — Step 1 COMPLETE — 2026-09-07 (registration / control-plane only) — Step 2 NOT AUTHORIZED — Step 3 NOT AUTHORIZED — **DEPENDS ON AGENT-PLATFORM-EXEC-01C-IDENTITY-01 (DB API-key internal-access; REGISTERED / ADMITTED Lane 1 ACTIVE; source authored; NOT LANE-DONE; NOT LOCKED; added 2026-09-07)** — candidate `status=READY` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=EXACT` / `admissionUncertain=true` (not admissible; `Test-Admissible` = ADMISSION_UNCERTAIN) — Lane 1 ACTIVE AGENT-PLATFORM-EXEC-01C-IDENTITY-01 — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE UNOWNED — AI-SERVICE UNOWNED — STAGING UNOWNED — CREDIT UNOWNED — ENV UNOWNED (assessed; not declared) — LOCAL-RUNTIME UNOWNED — PROVIDER-LIVE UNOWNED — GATEWAY OWNED by AGENT-PLATFORM-EXEC-01C-IDENTITY-01 — MIGRATION OWNED by AGENT-PLATFORM-EXEC-01C-IDENTITY-01 — EXEC-01C6A remains READY / NOT ADMITTED / not unblocked — parent AGENT-PLATFORM-EXEC-01C6 remains READY / NOT ADMITTED / PROVISIONAL / `admissionUncertain=true` (sidecar unchanged) — parent umbrella AGENT-PLATFORM-EXEC-01C remains READY / NOT ADMITTED / PROVISIONAL / `admissionUncertain=true` — AGENT-PLATFORM-EXEC-01C6B NOT REGISTERED — EXEC-01C7 NOT REGISTERED — product-visible Harness remains FUTURE/gated — Harness flags unchanged / false — runtime authorization unchanged false — IMPLEMENTATION_STARTED=NO.
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-07 — Step 1 COMPLETE — 2026-09-07 (registration / control-plane only) — Step 2 NOT AUTHORIZED — Step 3 NOT AUTHORIZED — **DEPENDS ON AGENT-PLATFORM-EXEC-01C-IDENTITY-01 (DB API-key internal-access; REGISTERED / READY / NOT ADMITTED / BLOCKED pending AGENT-PLATFORM-EXEC-01C-SCHEMA-01 LOCK; source authored; isolated 197-pass evidence preserved; NOT LANE-DONE; NOT LOCKED; IDENTITY-01 also depends on SCHEMA-01; EXEC-01C6A remains blocked)** — candidate `status=READY` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=EXACT` / `admissionUncertain=true` (not admissible; `Test-Admissible` = ADMISSION_UNCERTAIN) — Lane 1 ACTIVE AGENT-PLATFORM-EXEC-01C-SCHEMA-01 — Lane 2 EMPTY — Lane 3 DISABLED — GOVERNANCE UNOWNED — AI-SERVICE UNOWNED — STAGING UNOWNED — CREDIT UNOWNED — ENV UNOWNED (assessed; not declared) — LOCAL-RUNTIME UNOWNED — PROVIDER-LIVE UNOWNED — GATEWAY OWNED by AGENT-PLATFORM-EXEC-01C-SCHEMA-01 — MIGRATION OWNED by AGENT-PLATFORM-EXEC-01C-SCHEMA-01 — IDENTITY-01 READY / NOT ADMITTED / BLOCKED pending SCHEMA-01 LOCK — EXEC-01C6A remains READY / NOT ADMITTED / not unblocked — parent AGENT-PLATFORM-EXEC-01C6 remains READY / NOT ADMITTED / PROVISIONAL / `admissionUncertain=true` (sidecar unchanged) — parent umbrella AGENT-PLATFORM-EXEC-01C remains READY / NOT ADMITTED / PROVISIONAL / `admissionUncertain=true` — AGENT-PLATFORM-EXEC-01C6B NOT REGISTERED — EXEC-01C7 NOT REGISTERED — product-visible Harness remains FUTURE/gated — Harness flags unchanged / false — runtime authorization unchanged false — IMPLEMENTATION_STARTED=NO.
 **Task ID:** AGENT-PLATFORM-EXEC-01C6A
 **Title:** Staging (AWS Lightsail) read-only Harness stub canary and xAI fail-closed canary
 **Family:** AGENT PLATFORM / EXEC (first frozen child of AGENT-PLATFORM-EXEC-01C6 after Step 2 / 2026-09-07 environment correction; freeze K stub wiring + xAI negative)
@@ -75583,9 +75583,9 @@ nature=IMPLEMENTATION
 1. Step 1 — registration — COMPLETE — 2026-09-07 — control-plane only; no implementation; no admission; no activation; no runtime.
 2. Step 2 — bounded canary script/evidence implementation and later-authorized AWS Lightsail STAGING-RUNTIME execution — NOT AUTHORIZED. Explicit Keith authorization is required before this step performs any STAGING mutation, shared-worker flag/gate change, CREDIT-path exercise, or Gateway/worker canary. Existing program authorization does **not** automatically authorize staging execution, provider-live calls, or credit-balance mutation. No local application tests. No LOCAL-RUNTIME execution.
 3. Step 3 — independent consolidation / checkpoint / lock — NOT AUTHORIZED.
-**Start condition:** READY (satisfied for registration). NOT ADMITTED. Machine `status=READY`. Candidate `writeSetPrecision=EXACT` / `admissionUncertain=true`. EXEC-01C6A occupies no implementation lane. Lane 1 ACTIVE AGENT-PLATFORM-EXEC-01C-IDENTITY-01. Lane 2 EMPTY. Lane 3 DISABLED. EXEC-01C6A implementation mutexes not acquired.
-**Depends on (canonical / human):** AGENT-PLATFORM-EXEC-01C-IDENTITY-01 (DB API-key internal-access; REGISTERED / ADMITTED Lane 1 ACTIVE; source authored; NOT LANE-DONE; NOT LOCKED; added 2026-09-07; must be COMPLETE AND LOCKED before EXEC-01C6A admission). AGENT-PLATFORM-EXEC-01C6 Step 2 COMPLETE — 2026-09-06 — environment correction COMPLETE — 2026-09-07 — Stage-start: `docs/AGENT-PLATFORM-EXEC-01C6-STAGE-START.md` (parent EXEC-01C6 is READY / not LOCKED and MUST NOT appear in machine `dependsOn`). AGENT-PLATFORM-EXEC-01C3 COMPLETE AND LOCKED — PASS — 2026-09-03 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C3-CHECKPOINT.md`. AGENT-PLATFORM-EXEC-01C4 COMPLETE AND LOCKED — PASS — 2026-09-04 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C4-CHECKPOINT.md`. AGENT-PLATFORM-EXEC-01C5 COMPLETE AND LOCKED — PASS — 2026-09-04 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C5-CHECKPOINT.md`. AGENT-PLATFORM-EXEC-01C5B COMPLETE AND LOCKED — PASS — 2026-09-06 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C5B-CHECKPOINT.md`. AGENT-PLATFORM-EXEC-01C Step 2 freeze COMPLETE — 2026-09-01 — Stage-start: `docs/AGENT-PLATFORM-EXEC-01C-STAGE-START.md` (umbrella NOT LOCKED; omitted from machine `dependsOn`).
-**Depends on (machine sidecar `dependsOn`):** `["AGENT-PLATFORM-EXEC-01C3", "AGENT-PLATFORM-EXEC-01C4", "AGENT-PLATFORM-EXEC-01C5", "AGENT-PLATFORM-EXEC-01C5B", "AGENT-PLATFORM-EXEC-01C-IDENTITY-01"]` — sidecar `lockedTaskIds` contains 01C3/01C4/01C5/01C5B. IDENTITY-01 is REGISTERED / ADMITTED Lane 1 ACTIVE / NOT LANE-DONE / NOT LOCKED — EXEC-01C6A cannot be admitted until IDENTITY-01 is COMPLETE AND LOCKED (added 2026-09-07). Unlocked parent AGENT-PLATFORM-EXEC-01C6 and unlocked umbrella AGENT-PLATFORM-EXEC-01C are recorded only as human/canonical parent authority.
+**Start condition:** READY (satisfied for registration). NOT ADMITTED. Machine `status=READY`. Candidate `writeSetPrecision=EXACT` / `admissionUncertain=true`. EXEC-01C6A occupies no implementation lane. Lane 1 ACTIVE AGENT-PLATFORM-EXEC-01C-SCHEMA-01. Lane 2 EMPTY. Lane 3 DISABLED. IDENTITY-01 READY / NOT ADMITTED / BLOCKED pending SCHEMA-01 LOCK. EXEC-01C6A implementation mutexes not acquired.
+**Depends on (canonical / human):** AGENT-PLATFORM-EXEC-01C-IDENTITY-01 (DB API-key internal-access; REGISTERED / READY / NOT ADMITTED / BLOCKED pending AGENT-PLATFORM-EXEC-01C-SCHEMA-01 LOCK; source authored; isolated 197-pass evidence preserved; NOT LANE-DONE; NOT LOCKED; added 2026-09-07; must be COMPLETE AND LOCKED before EXEC-01C6A admission). AGENT-PLATFORM-EXEC-01C6 Step 2 COMPLETE — 2026-09-06 — environment correction COMPLETE — 2026-09-07 — Stage-start: `docs/AGENT-PLATFORM-EXEC-01C6-STAGE-START.md` (parent EXEC-01C6 is READY / not LOCKED and MUST NOT appear in machine `dependsOn`). AGENT-PLATFORM-EXEC-01C3 COMPLETE AND LOCKED — PASS — 2026-09-03 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C3-CHECKPOINT.md`. AGENT-PLATFORM-EXEC-01C4 COMPLETE AND LOCKED — PASS — 2026-09-04 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C4-CHECKPOINT.md`. AGENT-PLATFORM-EXEC-01C5 COMPLETE AND LOCKED — PASS — 2026-09-04 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C5-CHECKPOINT.md`. AGENT-PLATFORM-EXEC-01C5B COMPLETE AND LOCKED — PASS — 2026-09-06 — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C5B-CHECKPOINT.md`. AGENT-PLATFORM-EXEC-01C Step 2 freeze COMPLETE — 2026-09-01 — Stage-start: `docs/AGENT-PLATFORM-EXEC-01C-STAGE-START.md` (umbrella NOT LOCKED; omitted from machine `dependsOn`).
+**Depends on (machine sidecar `dependsOn`):** `["AGENT-PLATFORM-EXEC-01C3", "AGENT-PLATFORM-EXEC-01C4", "AGENT-PLATFORM-EXEC-01C5", "AGENT-PLATFORM-EXEC-01C5B", "AGENT-PLATFORM-EXEC-01C-IDENTITY-01"]` — sidecar `lockedTaskIds` contains 01C3/01C4/01C5/01C5B. IDENTITY-01 is REGISTERED / READY / NOT ADMITTED / BLOCKED pending AGENT-PLATFORM-EXEC-01C-SCHEMA-01 LOCK / NOT LANE-DONE / NOT LOCKED — EXEC-01C6A cannot be admitted until IDENTITY-01 is COMPLETE AND LOCKED (added 2026-09-07; IDENTITY-01 additionally depends on SCHEMA-01). Unlocked parent AGENT-PLATFORM-EXEC-01C6 and unlocked umbrella AGENT-PLATFORM-EXEC-01C are recorded only as human/canonical parent authority.
 **Primary write scope (Step 1, this write):** `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body; `docs/control-plane/lane-saturation-state.json` candidate record. No application source. No test file. No canary script created. No evidence document created. No stage-start rewrite. No checkpoint.
 **Primary write scope (Step 2, EXACT — frozen from `docs/AGENT-PLATFORM-EXEC-01C6-STAGE-START.md` §14.1; files not created in this window):** AI-SERVICE scripts + evidence doc only. Exact ordered files:
 1. `services/ai-service/scripts/canary-01c6a-stub-submit.ts`
@@ -75723,22 +75723,92 @@ Step 3 (independent consolidation / checkpoint / lock):
 
 ---
 
+### AGENT-PLATFORM-EXEC-01C-SCHEMA-01 — Additive create-table migration for missing public.api_keys
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=AGENT-PLATFORM-EXEC-01C-SCHEMA-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+**Status:** REGISTERED / ADMITTED (Lane 1 ACTIVE) — 2026-09-08 — Step 1 (design/registration) COMPLETE — 2026-09-08 — Step 2 (schema/write-set freeze) COMPLETE in design document — 2026-09-08 — Step 3 SOURCE AUTHORED — 2026-09-08 — migration `1772950000000-CreateApiKeysTable.ts` plus focused mocked tests authored — NOT APPLIED — MIGRATION_EXECUTION_AUTHORIZED=NO — STAGING unauthorized — GOVERNANCE released UNOWNED — GATEWAY OWNED — MIGRATION OWNED — NOT LANE-DONE — NOT LOCKED — Step 4 LOCK NOT AUTHORIZED — candidate `status=ADMITTED` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=EXACT` / `admissionUncertain=false` (occupied Lane 1 SKIP from S) — Lane 1 ACTIVE AGENT-PLATFORM-EXEC-01C-SCHEMA-01 — Lane 2 EMPTY — Lane 3 DISABLED — IDENTITY-01 PAUSED / READY / NOT ADMITTED / BLOCKED pending this task LOCK — EXEC-01C6A remains READY / NOT ADMITTED / NOT LOCKED — design: `docs/AGENT-PLATFORM-EXEC-01C-SCHEMA-01-DESIGN.md` — product-visible Harness remains FUTURE/gated — PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED
+**Task ID:** AGENT-PLATFORM-EXEC-01C-SCHEMA-01
+**Title:** Additive create-table migration for missing public.api_keys
+**Workstream:** AGENT
+**Nature:** IMPLEMENTATION (high-risk; schema / migration)
+**Lifecycle:** 4-STEP (design/registration — freeze — implementation — consolidation/checkpoint/lock)
+**Start condition:** READY (GOV-AUTH-03 LOCKED)
+**Depends on:** GOV-AUTH-03 (LOCKED). Does **not** depend on AGENT-PLATFORM-EXEC-01C-IDENTITY-01.
+**Blocks:** AGENT-PLATFORM-EXEC-01C-IDENTITY-01 (must be COMPLETE AND LOCKED before IDENTITY-01 may be re-admitted). EXEC-01C6A remains blocked until IDENTITY-01 is COMPLETE AND LOCKED.
+**Primary write scope:** `services/api-gateway/src/migrations/` (one new create-table migration + focused tests)
+**Mutexes / resources:** GATEWAY, MIGRATION (OWNED by AGENT-PLATFORM-EXEC-01C-SCHEMA-01; Lane 1 ACTIVE; STAGING UNOWNED; MIGRATION_EXECUTION_AUTHORIZED=NO; PRIVILEGE_GRANT_AUTHORIZED=NO)
+**Hot-file leases:** None
+**Shared contracts:** None
+**I18N:** None
+**Evidence class:** LOCAL-TESTS (mocked SQL-shape tests; do not prove PostgreSQL)
+**Revert isolation:** Reverting SCHEMA-01 removes the new migration/tests/docs. Does not discard IDENTITY-01's authored seven-file source or isolated Lightsail 197-pass evidence. Does not invalidate locked EXEC-01C1..01C5B2 or GOV-AUTH-03.
+**saturationClass:** FORCING (explicit; schema prerequisite blocking FORCING IDENTITY-01)
+**Admission uncertain:** NO — write set frozen EXACT
+**Product class:** CURRENT (development infrastructure for admitted canary program)
+**Product-visible Harness:** FUTURE / GATED / DISABLED / UNAVAILABLE
+**Future authorization:** NONE
+
+**Design document:** `docs/AGENT-PLATFORM-EXEC-01C-SCHEMA-01-DESIGN.md`
+
+**Problem:** Staging `aisandbox` has no `public.api_keys`. IDENTITY-01's `AddInternalAccessToApiKeys1773000000000` alters an existing table and cannot create it. Historical `AddApiKeysTable` is outside active discovery and references stale `users(user_id)`.
+
+**Solution summary:**
+1. New active-directory migration `1772950000000-CreateApiKeysTable.ts` after `1772900000000` and before `1773000000000`
+2. Create base `api_keys` with UUID FK to `users(id)` ON DELETE CASCADE
+3. Fail closed if `api_keys` already exists (no `IF NOT EXISTS`)
+4. `down()` refuses to drop a populated table; no `DROP TABLE IF EXISTS`
+5. No `is_internal` (IDENTITY-01 remains responsible). No user/key/privilege/credit inserts. No auth behavior changes.
+
+**Exact implementation files:**
+- `services/api-gateway/src/migrations/1772950000000-CreateApiKeysTable.ts`
+- `services/api-gateway/src/migrations/__tests__/1772950000000-CreateApiKeysTable.spec.ts`
+
+**Acceptance criteria (Steps 1–3 — COMPLETE in this window as source only):**
+- [x] Design freeze recorded (schema, existing-table, rollback, later Lightsail validation)
+- [x] Task registered with machine stanza and sidecar candidate
+- [x] IDENTITY-01 paused/handoff: Lane 1 released, GATEWAY/MIGRATION released, then acquired by SCHEMA-01 (never simultaneous)
+- [x] IDENTITY-01 recorded READY / NOT ADMITTED / BLOCKED pending SCHEMA-01 LOCK; evidence preserved; not LANE-DONE; not LOCKED
+- [x] Migration authored in active discovery directory with unique timestamp 1772950000000
+- [x] Focused mocked tests authored (not executed locally)
+- [x] IDENTITY-01 seven implementation files unmodified
+- [x] Validator PASS
+- [x] GOVERNANCE released
+
+**Acceptance criteria (Step 4 — consolidation/checkpoint/lock; LOCK NOT AUTHORIZED; migration NOT APPLIED):**
+- [ ] Isolated revision delivery and focused tests on Lightsail
+- [ ] Apply preflight: snapshot; staging `users` PK/`users(id)` FK; `api_keys` still absent; pending set is only SCHEMA-01 then IDENTITY-01
+- [ ] SCHEMA-01 applied only under separate STAGING + migration-execution authorization (previous IDENTITY-01-only apply approval does not authorize this migration or a two-migration batch)
+- [ ] PostgreSQL verification of table/constraints/indexes/defaults/order
+- [ ] Existing-table conflict behavior verified
+- [ ] Old application compatibility after base-table creation
+- [ ] Checkpoint and LOCK
+
+**Step 1–3 HEAD:** `b7a689c0157d5fa420d63142025dab8c2d09f7f0` (branch main; preserved dirty `TASKS.md` + `TASKS_BACKLOG_FULL.md` IDENTITY-01 STOPPED preflight)
+
+**Activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, local application tests=0, tests executed=0 (authored not run), package install=0, migrations applied=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git commit/push=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0. Source authored in frozen 2-file write set. Governance writes: this registry body, TASKS.md, `docs/control-plane/lane-saturation-state.json`, design document. IDENTITY-01 seven files unmodified. Lane 1 ACTIVE SCHEMA-01. GATEWAY/MIGRATION OWNED by SCHEMA-01. STAGING UNOWNED. GOVERNANCE released UNOWNED. IDENTITY-01 NOT LOCKED. EXEC-01C6A not unblocked.
+
+**Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. Unchanged.
+
+**Lane 3 invariant:** Lane 3 remains DISABLED. Unchanged.
+
 ### AGENT-PLATFORM-EXEC-01C-IDENTITY-01 — DB API-key internal-access capability for Gateway-ingress Harness canaries
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=AGENT-PLATFORM-EXEC-01C-IDENTITY-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
-**Status:** REGISTERED / ADMITTED (Lane 1 ACTIVE) — 2026-09-07 — Step 1 (design/registration) COMPLETE — 2026-09-07 — Step 2 (stage-start) COMPLETE — 2026-09-07 — Step 3 SOURCE AUTHORED — 2026-09-07 — isolated Lightsail validation COMPLETE PASS — 2026-09-07 — source SHA `ad6bf88b452080bda6185a852af29d950e0f5918` — six Jest suites 197 passed / `tsc --noEmit --incremental false` PASS — GOVERNANCE released UNOWNED — STAGING released UNOWNED — GATEWAY OWNED — MIGRATION OWNED — MIGRATION_EXECUTION_AUTHORIZED=NO — PRIVILEGE_GRANT_AUTHORIZED=NO — seven-file source + eight prospective tests authored and executed PASS on isolated Lightsail copy — NOT LANE-DONE — NOT LOCKED — Step 4 NOT AUTHORIZED — candidate `status=ADMITTED` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=EXACT` / `admissionUncertain=false` (occupied Lane 1 SKIP from S) — Lane 1 ACTIVE AGENT-PLATFORM-EXEC-01C-IDENTITY-01 — Lane 2 EMPTY — Lane 3 DISABLED — parent scope AGENT-PLATFORM-EXEC-01C remains READY / NOT ADMITTED / PROVISIONAL — blocks AGENT-PLATFORM-EXEC-01C6A (still NOT LOCKED; EXEC-01C6A not unblocked) — design supersession: migration runner commands corrected (stage-start §3) — corrected 7-file write set (stage-start §4) — stage-start: `docs/AGENT-PLATFORM-EXEC-01C-IDENTITY-01-STAGE-START.md` — product-visible Harness remains FUTURE/gated — PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED
+**Status:** REGISTERED / READY / NOT ADMITTED / BLOCKED pending AGENT-PLATFORM-EXEC-01C-SCHEMA-01 LOCK — 2026-09-08 — Lane 1 released EMPTY (pause/handoff) — GATEWAY/MIGRATION released then acquired by SCHEMA-01 — isolated Lightsail 197-pass evidence PRESERVED — NOT LANE-DONE — NOT LOCKED — candidate `status=READY` / DEPS_UNSATISFIED (SCHEMA-01) — Previous: **Status:** REGISTERED / ADMITTED (Lane 1 ACTIVE) — 2026-09-07 — Step 1 (design/registration) COMPLETE — 2026-09-07 — Step 2 (stage-start) COMPLETE — 2026-09-07 — Step 3 SOURCE AUTHORED — 2026-09-07 — isolated Lightsail validation COMPLETE PASS — 2026-09-07 — source SHA `ad6bf88b452080bda6185a852af29d950e0f5918` — six Jest suites 197 passed / `tsc --noEmit --incremental false` PASS — bounded staging migration STOPPED — 2026-09-07 — pending set solely AddInternalAccessToApiKeys1773000000000 — NOT APPLIED — stop: public.api_keys table absent on staging aisandbox; snapshot CLI unavailable — live HEAD `b6b94516aff9981101ae8815aec2e2d36b8b231b` unchanged/clean — GOVERNANCE released UNOWNED — STAGING released UNOWNED — GATEWAY OWNED — MIGRATION OWNED — MIGRATION_EXECUTION_AUTHORIZED recorded but NOT EXECUTED — PRIVILEGE_GRANT_AUTHORIZED=NO — NOT LANE-DONE — NOT LOCKED — Step 4 LOCK NOT AUTHORIZED — candidate `status=ADMITTED` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=EXACT` / `admissionUncertain=false` (occupied Lane 1 SKIP from S) — Lane 1 ACTIVE AGENT-PLATFORM-EXEC-01C-IDENTITY-01 — Lane 2 EMPTY — Lane 3 DISABLED — parent scope AGENT-PLATFORM-EXEC-01C remains READY / NOT ADMITTED / PROVISIONAL — blocks AGENT-PLATFORM-EXEC-01C6A (still NOT LOCKED; EXEC-01C6A not unblocked) — stage-start: `docs/AGENT-PLATFORM-EXEC-01C-IDENTITY-01-STAGE-START.md` — product-visible Harness remains FUTURE/gated — PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED
 **Task ID:** AGENT-PLATFORM-EXEC-01C-IDENTITY-01
 **Title:** DB API-key internal-access capability for Gateway-ingress Harness canaries
 **Workstream:** AGENT
 **Nature:** IMPLEMENTATION (high-risk; authentication / migration / security)
 **Lifecycle:** 4-STEP (design/registration — stage-start — implementation — consolidation/checkpoint/lock)
-**Start condition:** READY (dependencies satisfied; GOV-AUTH-03 LOCKED)
-**Depends on:** AGENT-PLATFORM-EXEC-01C3, AGENT-PLATFORM-EXEC-01C4, AGENT-PLATFORM-EXEC-01C5, AGENT-PLATFORM-EXEC-01C5B, GOV-AUTH-03 (all LOCKED)
+**Start condition:** READY (GOV-AUTH-03 LOCKED). Re-admission blocked until AGENT-PLATFORM-EXEC-01C-SCHEMA-01 is COMPLETE AND LOCKED. Isolated Lightsail validation evidence preserved. Previous: **Start condition:** READY (dependencies satisfied; GOV-AUTH-03 LOCKED)
+**Depends on:** AGENT-PLATFORM-EXEC-01C-SCHEMA-01 (REGISTERED / ADMITTED Lane 1 ACTIVE; NOT LOCKED — IDENTITY-01 cannot be re-admitted until SCHEMA-01 is COMPLETE AND LOCKED). AGENT-PLATFORM-EXEC-01C3, AGENT-PLATFORM-EXEC-01C4, AGENT-PLATFORM-EXEC-01C5, AGENT-PLATFORM-EXEC-01C5B, GOV-AUTH-03 (all LOCKED). Machine sidecar `dependsOn` = `["GOV-AUTH-03", "AGENT-PLATFORM-EXEC-01C-SCHEMA-01"]`. No cycle: SCHEMA-01 does not depend on IDENTITY-01.
 **Blocks:** AGENT-PLATFORM-EXEC-01C6A (Gateway-ingress canaries require DB-key internal-access to be COMPLETE AND LOCKED)
 **Primary write scope:** `services/api-gateway/` (entity, service, guard, migration, tests)
-**Mutexes / resources:** GATEWAY, MIGRATION (OWNED by AGENT-PLATFORM-EXEC-01C-IDENTITY-01; Lane 1 ACTIVE; STAGING released UNOWNED after isolated Lightsail validation PASS; GATEWAY/MIGRATION not released; MIGRATION ownership does not authorize migration execution)
+**Mutexes / resources:** GATEWAY, MIGRATION (declared; NOT OWNED — 2026-09-08 pause/handoff; released before SCHEMA-01 acquire; STAGING UNOWNED; MIGRATION_EXECUTION_AUTHORIZED=NO; PRIVILEGE_GRANT_AUTHORIZED=NO). Previous: **Mutexes / resources:** GATEWAY, MIGRATION (OWNED by AGENT-PLATFORM-EXEC-01C-IDENTITY-01; Lane 1 ACTIVE; STAGING released UNOWNED after bounded staging migration STOPPED — 2026-09-07; GATEWAY/MIGRATION not released; MIGRATION_EXECUTION_AUTHORIZED was YES this window but NOT EXECUTED; PRIVILEGE_GRANT_AUTHORIZED=NO)
 **Hot-file leases:** None
 **Shared contracts:** None (internal identity propagation only; no cross-service API contract change)
 **I18N:** None
@@ -75814,7 +75884,7 @@ nature=IMPLEMENTATION
 - [x] No self-promotion vectors in source (no privilege-setting endpoints; DTO/controller/service create path unchanged; S1 authored with production `whitelist: true` strip, not `forbidNonWhitelisted`)
 - [x] Focused jest and `tsc --noEmit --incremental false` pass on Lightsail — COMPLETE PASS — 2026-09-07 — isolated copy `/tmp/aisb-identity-01-qLvb7h/src`; six suites via `--runTestsByPath` 197 passed; copied Jest/tsc binaries; no `npm install`; live checkout `/opt/aisandbox` not modified; temp artifacts removed
 
-**Acceptance criteria (Step 4 — consolidation/checkpoint/lock; NOT AUTHORIZED):**
+**Acceptance criteria (Step 4 — consolidation/checkpoint/lock; LOCK NOT AUTHORIZED; bounded staging migration STOPPED — 2026-09-07; not applied):**
 - [ ] Checkpoint document created with evidence
 - [ ] Migration executed on target environment (AWS Lightsail)
 - [ ] Integrated validation passed
@@ -75827,6 +75897,8 @@ nature=IMPLEMENTATION
 **Stage-start document:** `docs/AGENT-PLATFORM-EXEC-01C-IDENTITY-01-STAGE-START.md`
 **Design supersession:** Migration runner commands corrected — project uses `npm run migration:run:prod` (`typeorm migration:run -d dist/data-source.js`) for staging, not `npx typeorm migration:run -d data-source.ts` — per `package.json` and prior staging evidence
 **Corrected write set:** 7 files (added `services/api-gateway/src/auth/__tests__/api-key.controller.spec.ts` for DTO whitelist stripping test S1)
+
+**Bounded staging migration activity ledger (STOPPED — 2026-09-07):** LIVE=read-only preflight PASS; SSH=authorized; isolated TypeORM `migration:show` PASS (sole pending AddInternalAccessToApiKeys1773000000000); apply NOT EXECUTED (public.api_keys absent); snapshot NOT CREATED (aws CLI unavailable locally and remotely); STAGING released UNOWNED; GOVERNANCE released UNOWNED; GATEWAY OWNED; MIGRATION OWNED; live checkout `/opt/aisandbox` remained `b6b94516aff9981101ae8815aec2e2d36b8b231b` dirty=0; temp `/tmp/aisb-identity-01-mig-84c66r` removed; provider=0; credits=0; package install=0; privilege grant=0; application deployment=0; Git commit/push=0; IDENTITY-01 NOT LOCKED; EXEC-01C6A not unblocked.
 
 **Step 3 activity ledger:** LIVE=0, SSH=authorized isolated Lightsail validation only (no live-checkout mutation), staging lease acquired then released, AWS=Lightsail SSH to existing host only, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, local application tests=0, tests executed=6 Jest suites 197 passed + tsc PASS on isolated copy, dependencies=private copy of existing tree (no npm install), migrations applied=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git commit/push=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0. Source authored in frozen 7-file set. Migration file authored not applied. Prospective tests D1/D2/S1/S4/L4/L5/H1/H2 authored and executed PASS on isolated Lightsail copy. Isolated validation does not prove migration behavior or the full live guard chain. Governance writes: TASKS.md, this registry body, `docs/control-plane/lane-saturation-state.json`. Lane 1 remains ACTIVE. GATEWAY/MIGRATION OWNED. STAGING released UNOWNED. GOVERNANCE released UNOWNED. IDENTITY-01 NOT LOCKED. EXEC-01C6A not unblocked.
 
