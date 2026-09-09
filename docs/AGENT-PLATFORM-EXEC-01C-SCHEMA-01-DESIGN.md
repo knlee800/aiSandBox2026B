@@ -2,8 +2,8 @@
 
 **Task ID:** AGENT-PLATFORM-EXEC-01C-SCHEMA-01
 **Title:** Additive create-table migration for missing `public.api_keys`
-**Step:** Design freeze + source implementation (this document) — LOCK not authorized
-**Date:** 2026-09-08
+**Step:** Design freeze + source implementation (this document) — Step 4 COMPLETE AND LOCKED — PASS — 2026-09-09 — schema scope only — Checkpoint: `docs/AGENT-PLATFORM-EXEC-01C-SCHEMA-01-CHECKPOINT.md`
+**Date:** 2026-09-08 (design freeze); acceptance clarification and LOCK 2026-09-09
 **Nature:** HIGH-RISK 4-step IMPLEMENTATION — schema/migration
 **Development program:** CURRENT
 **Product-visible Harness capability:** FUTURE / gated / disabled / unavailable
@@ -240,6 +240,14 @@ Existing-table conflict: on a clone/snapshot copy only, create a decoy `api_keys
 1. After SCHEMA-01 only: old application **without** `isInternal` entity mapping continues DB-key create/list/validate (TypeORM selects mapped columns only). IDENTITY-01 application code must **not** be deployed yet (`is_internal` still missing).
 2. After a later authorized IDENTITY-01 migration: old application still ignores unmapped `is_internal`. Then IDENTITY-01 application code may be deployed.
 
+#### 7.4.1 Keith acceptance clarification — 2026-09-09
+
+Keith explicitly authorized replacing the ambiguous SCHEMA-01 compatibility criterion with two distinct outcomes. Historical CHECK9 FAIL reports are preserved. This clarification does not broaden other acceptance criteria.
+
+**Schema compatibility — eligible for acceptance.** Existing evidence must establish that the base table supports the old application’s create, list, active-key validation, ownership enforcement, and persisted revocation operations without schema/query errors. Checks 1–8 PASS against unchanged old revision `b6b94516aff9981101ae8815aec2e2d36b8b231b` satisfy this outcome.
+
+**Revoked-key rejection — historical failure with separate remediation.** Unchanged old revision `b6b94516aff9981101ae8815aec2e2d36b8b231b` failed CHECK9 because its TypeORM null predicate ignored revocation. This is an application filtering defect, not a table-schema defect. KEY-REVOKE-01 provides an independently reviewed, tested, source-LOCKED correction. Old revision plus the correction passed; unchanged old revision did not. Deployment is still outstanding. Running staging must not be described as repaired, security-accepted, or release-ready on this basis.
+
 ### 7.5 Rollback requirements
 
 - Verified **Available** Lightsail console snapshot before apply.
@@ -256,16 +264,18 @@ Existing-table conflict: on a clone/snapshot copy only, create a decoy `api_keys
 ## 8. Authorization boundary
 
 ```
-IMPLEMENTATION_AUTHORIZED=YES (source + registration + handoff in this window)
-STAGING_AUTHORIZED=NO
-MIGRATION_EXECUTION_AUTHORIZED=NO
+IMPLEMENTATION_AUTHORIZED=YES (source + registration + handoff in the source window)
+STAGING_AUTHORIZED=NO (this consolidation window)
+MIGRATION_EXECUTION_AUTHORIZED=NO (this consolidation window)
 PRIVILEGE_GRANT_AUTHORIZED=NO
 LOCAL_RUNTIME_AUTHORIZED=NO
 PROVIDER_LIVE_AUTHORIZED=NO
 CREDIT_AUTHORIZED=NO
-APPLICATION_TESTS_EXECUTED=NO
+APPLICATION_TESTS_EXECUTED=NO (this consolidation window; existing evidence reused)
+SCHEMA_01_LOCKED=YES (schema scope — 2026-09-09)
 IDENTITY_01_LOCKED=NO
 EXEC_01C6A_UNBLOCKED=NO
+KEY_REVOKE_01_DEPLOYED=NO
 ```
 
-Source completion is not runtime validation, LANE-DONE, or LOCKED.
+Schema LOCK is not running-application repair, KEY-REVOKE-01 deployment, IDENTITY-01 apply, security acceptance, or release readiness.
