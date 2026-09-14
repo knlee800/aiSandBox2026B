@@ -1,5 +1,8 @@
-import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import axios from 'axios';
 import { PreviewService } from './preview.service';
+
+jest.mock('axios');
 
 describe('PreviewService readStaticPreviewContent', () => {
   let service: PreviewService;
@@ -279,5 +282,311 @@ describe('PreviewService root appRoot routing', () => {
       'session-root',
       'assets/photo.jpg',
     );
+  });
+});
+
+describe('PreviewService Vite-only node preview', () => {
+  let service: PreviewService;
+  let execMock: jest.Mock<
+    (...args: any[]) => Promise<{ exitCode: number; stdout: string; stderr: string }>
+  >;
+  const axiosGet = axios.get as unknown as {
+    mockReset: () => void;
+    mockResolvedValue: (value: unknown) => unknown;
+    mockImplementation: (fn: (...args: any[]) => Promise<unknown>) => unknown;
+  };
+
+  const sessionsService = {
+    assertSessionUsable: jest.fn(),
+  };
+
+  const dockerRuntimeService = {
+    execInContainerBySessionId: jest.fn<
+      (...args: any[]) => Promise<{ exitCode: number; stdout: string; stderr: string }>
+    >(),
+    findContainerBySessionId: jest.fn<(sessionId: string) => Promise<any>>(),
+    readFileFromContainer: jest.fn<(sessionId: string, filePath: string) => Promise<string>>(),
+  };
+
+  const previewStrategyResolver = {
+    resolve: jest.fn<(...args: any[]) => Promise<any>>(),
+  };
+
+  function execScripts(): string[] {
+    return execMock.mock.calls.map((call: any) => String(call[1]?.[2] ?? ''));
+  }
+
+  function mockRunningContainer() {
+    dockerRuntimeService.findContainerBySessionId.mockResolvedValue({
+      inspect: async () => ({
+        State: { Running: true },
+        NetworkSettings: {
+          Networks: {
+            bridge: { IPAddress: '172.18.0.10' },
+          },
+        },
+      }),
+    });
+  }
+
+  function mockViteExec(options: {
+    nodeModulesExists: boolean;
+    installExitCode?: number;
+    installError?: Error;
+    launchStdout?: string;
+    launchExitCode?: number;
+  }) {
+    execMock.mockImplementation(async (_sid: any, cmd: string[]) => {
+      const script = cmd[2];
+      if (script === '[ -d /workspace/node_modules ]') {
+        return {
+          exitCode: options.nodeModulesExists ? 0 : 1,
+          stdout: '',
+          stderr: '',
+        };
+      }
+      if (script === 'npm install --no-audit --no-fund') {
+        if (options.installError) {
+          throw options.installError;
+        }
+        return {
+          exitCode: options.installExitCode ?? 0,
+          stdout: '',
+          stderr: '',
+        };
+      }
+      if (typeof script === 'string' && script.includes('& echo $!')) {
+        return {
+          exitCode: options.launchExitCode ?? 0,
+          stdout: options.launchStdout ?? '4242\n',
+          stderr: '',
+        };
+      }
+      if (typeof script === 'string' && script.includes('kill -TERM')) {
+        return { exitCode: 0, stdout: '', stderr: '' };
+      }
+      return { exitCode: 0, stdout: '', stderr: '' };
+    });
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    axiosGet.mockReset();
+    axiosGet.mockResolvedValue({ status: 200 });
+    execMock = dockerRuntimeService.execInContainerBySessionId;
+    mockRunningContainer();
+    service = new PreviewService(
+      sessionsService as any,
+      dockerRuntimeService as any,
+      previewStrategyResolver as any,
+    );
+    previewStrategyResolver.resolve.mockResolvedValue({
+      type: 'node-dev-server',
+      framework: 'Vite',
+      command: 'npm run dev',
+      servingMode: 'process-proxy',
+    });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('skips npm install when node_modules exists and launches Vite with host and allocated port', async () => {
+    mockViteExec({ nodeModulesExists: true });
+
+    const result = await service.startPreview('session-vite');
+
+    expect(result.status).toBe('running');
+    expect(result.port).toBe(3001);
+    expect(result.framework).toBe('Vite');
+
+    const scripts = execScripts();
+    expect(scripts).toContain('[ -d /workspace/node_modules ]');
+    expect(scripts).not.toContain('npm install --no-audit --no-fund');
+    expect(scripts.some((script) => script.includes('npm ci'))).toBe(false);
+
+    const launchCall = execMock.mock.calls.find((call: any) =>
+      String(call[1]?.[2] ?? '').includes('& echo $!'),
+    ) as any;
+    expect(launchCall).toBeDefined();
+    expect(launchCall[1][2]).toBe(
+      '(npm run dev -- --host 0.0.0.0 --port 3001) >/tmp/preview-3001.log 2>&1 & echo $!',
+    );
+    expect(launchCall[2]).toBe('/workspace');
+    expect(launchCall[3]).toEqual({ PORT: '3001', NODE_ENV: 'development' });
+    expect(result.port).toBeGreaterThanOrEqual(3001);
+    expect(result.port).toBeLessThanOrEqual(3100);
+  });
+
+  it('runs frozen npm install when node_modules is missing then launches Vite with host and allocated port', async () => {
+    mockViteExec({ nodeModulesExists: false });
+
+    const result = await service.startPreview('session-vite');
+
+    expect(result.status).toBe('running');
+    expect(result.port).toBe(3001);
+
+    expect(execMock).toHaveBeenCalledWith(
+      'session-vite',
+      ['sh', '-c', 'npm install --no-audit --no-fund'],
+      '/workspace',
+      undefined,
+      120000,
+    );
+
+    const launchCall = execMock.mock.calls.find((call: any) =>
+      String(call[1]?.[2] ?? '').includes('& echo $!'),
+    ) as any;
+    expect(launchCall[1][2]).toContain('--host 0.0.0.0');
+    expect(launchCall[1][2]).toContain('--port 3001');
+    expect(launchCall[3].PORT).toBe('3001');
+  });
+
+  it('fails closed on npm install timeout without launching a preview process', async () => {
+    mockViteExec({
+      nodeModulesExists: false,
+      installError: new Error('Execution timeout after 120000ms'),
+    });
+
+    await expect(service.startPreview('session-vite')).rejects.toThrow(
+      'Preview npm install timed out.',
+    );
+
+    const scripts = execScripts();
+    expect(scripts.some((script) => script.includes('& echo $!'))).toBe(false);
+    expect(service.getPreviewStatus('session-vite')).toBeNull();
+    expect((service as any).portPool.has(3001)).toBe(true);
+    expect((service as any).portPool.size).toBe(100);
+  });
+
+  it('fails closed on npm install failure without launching a preview process', async () => {
+    mockViteExec({ nodeModulesExists: false, installExitCode: 1 });
+
+    await expect(service.startPreview('session-vite')).rejects.toThrow(
+      'Preview could not install npm dependencies.',
+    );
+
+    const scripts = execScripts();
+    expect(scripts.some((script) => script.includes('& echo $!'))).toBe(false);
+    expect(service.getPreviewStatus('session-vite')).toBeNull();
+    expect((service as any).portPool.has(3001)).toBe(true);
+    expect((service as any).portPool.size).toBe(100);
+  });
+
+  it('marks Vite preview running when the health probe returns any HTTP status >= 100', async () => {
+    mockViteExec({ nodeModulesExists: true });
+    axiosGet.mockResolvedValue({ status: 404 });
+
+    const result = await service.startPreview('session-vite');
+
+    expect(result.status).toBe('running');
+    expect(service.getPreviewStatus('session-vite')?.status).toBe('running');
+    expect(axiosGet).toHaveBeenCalled();
+  });
+
+  it('kills the Vite process and releases the port when wait times out', async () => {
+    mockViteExec({ nodeModulesExists: true, launchStdout: '4242\n' });
+    let now = 1_000_000;
+    jest.spyOn(Date, 'now').mockImplementation(() => now);
+    axiosGet.mockImplementation(async () => {
+      now = 1_000_000 + 20_000;
+      throw new Error('ECONNREFUSED');
+    });
+
+    await expect(service.startPreview('session-vite')).rejects.toThrow(
+      'Preview server did not become reachable in time.',
+    );
+
+    const scripts = execScripts();
+    expect(scripts.some((script) => script.includes('kill -TERM 4242'))).toBe(true);
+    expect(scripts.some((script) => script.includes('kill -KILL 4242'))).toBe(true);
+    expect(service.getPreviewStatus('session-vite')).toBeNull();
+    expect((service as any).portPool.has(3001)).toBe(true);
+    expect((service as any).portPool.size).toBe(100);
+  });
+
+  it('fails closed for Next.js without install or process launch', async () => {
+    previewStrategyResolver.resolve.mockResolvedValue({
+      type: 'node-dev-server',
+      framework: 'Next.js',
+      command: 'npm run dev',
+      servingMode: 'process-proxy',
+    });
+
+    await expect(service.startPreview('session-next')).rejects.toThrow(
+      'Framework preview currently supports Vite. This workspace looks like Next.js.',
+    );
+
+    expect(execMock).not.toHaveBeenCalled();
+    expect(service.getPreviewStatus('session-next')).toBeNull();
+  });
+
+  it('fails closed for Create React App without install or process launch', async () => {
+    previewStrategyResolver.resolve.mockResolvedValue({
+      type: 'node-dev-server',
+      framework: 'Create React App',
+      command: 'npm start',
+      servingMode: 'process-proxy',
+    });
+
+    await expect(service.startPreview('session-cra')).rejects.toThrow(
+      'Framework preview currently supports Vite. This workspace looks like Create React App.',
+    );
+
+    expect(execMock).not.toHaveBeenCalled();
+  });
+
+  it('fails closed for providedCommand without launching a process', async () => {
+    previewStrategyResolver.resolve.mockResolvedValue({
+      type: 'node-dev-server',
+      command: 'npm start -- --host 0.0.0.0',
+      servingMode: 'process-proxy',
+    });
+
+    await expect(
+      service.startPreview('session-provided', 'npm start -- --host 0.0.0.0'),
+    ).rejects.toThrow(
+      'Framework preview currently supports Vite. This workspace looks like a Node app.',
+    );
+
+    expect(previewStrategyResolver.resolve).toHaveBeenCalledWith(
+      'session-provided',
+      'npm start -- --host 0.0.0.0',
+    );
+    expect(execMock).not.toHaveBeenCalled();
+    expect(service.getPreviewStatus('session-provided')).toBeNull();
+  });
+
+  it('fails closed for Vite without an npm dev script', async () => {
+    previewStrategyResolver.resolve.mockResolvedValue({
+      type: 'node-dev-server',
+      framework: 'Vite',
+      command: 'npm start',
+      servingMode: 'process-proxy',
+    });
+
+    await expect(service.startPreview('session-vite')).rejects.toThrow(
+      'Vite preview requires an npm dev script.',
+    );
+
+    expect(execMock).not.toHaveBeenCalled();
+  });
+
+  it('does not run npm install when starting static HTML preview', async () => {
+    previewStrategyResolver.resolve.mockResolvedValue({
+      type: 'static-html',
+      framework: 'Static HTML',
+      command: 'npx serve -s . -l tcp://0.0.0.0:$PORT',
+      appRoot: '/workspace',
+      servingMode: 'direct-read',
+    });
+
+    const result = await service.startPreview('session-static');
+
+    expect(result.status).toBe('running');
+    expect(execMock).not.toHaveBeenCalled();
+    const scripts = execScripts();
+    expect(scripts.some((script) => script.includes('npm install'))).toBe(false);
   });
 });

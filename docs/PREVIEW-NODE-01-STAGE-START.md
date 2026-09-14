@@ -5,9 +5,9 @@
 **Date:** 2026-09-14
 **Nature:** IMPLEMENTATION — high-risk; container process launch, ports, process-proxy, sandbox npm/dev-server behavior
 **Lifecycle:** 4-step IMPLEMENTATION
-**Step:** 2 COMPLETE — stage-start / exact first-slice freeze
-**Step status:** Step 1 COMPLETE — 2026-09-14 (registration / control-plane only; committed `63b59df` `docs: register node preview productization`); Step 2 COMPLETE — 2026-09-14; Step 3 NOT AUTHORIZED; Step 4 NOT AUTHORIZED
-**This document:** Authoritative Step 2 freeze for the first Vite-only node/framework preview productization slice. It does **not** authorize implementation source, admission, runtime, staging/browser proof, Harness, orchestration, Stripe, apex cutover, invitations, or EXEC-01C6A reopen.
+**Step:** 3 COMPLETE — bounded implementation of the frozen write set
+**Step status:** Step 1 COMPLETE — 2026-09-14 (registration / control-plane only; committed `63b59df` `docs: register node preview productization`); Step 2 COMPLETE — 2026-09-14; Step 3 COMPLETE — 2026-09-14 (Keith-authorized frozen 2-file Vite-only implementation; no implementation lane occupied; LOCAL-TESTS 38/38 + tsc PASS; `git diff --check` PASS; uncommitted); Step 4 NOT AUTHORIZED
+**This document:** Authoritative Step 2 freeze and Step 3 completion record for the first Vite-only node/framework preview productization slice. It does **not** authorize Step 4 / LOCK, admission, runtime, staging/browser proof, Harness, orchestration, Stripe, apex cutover, invitations, or EXEC-01C6A reopen.
 
 **Step 1 committed HEAD (user-supplied; not re-queried this window):** `63b59df` (message `docs: register node preview productization`)
 **Occupancy hash (end-state):** `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d` (Lane 1 EMPTY, Lane 2 EMPTY, GOVERNANCE UNOWNED)
@@ -15,9 +15,10 @@
 ```
 STEP1_COMPLETE=YES
 STEP2_COMPLETE=YES
-STEP3_AUTHORIZED=NO
+STEP3_AUTHORIZED=YES
+STEP3_COMPLETE=YES
 STEP4_AUTHORIZED=NO
-IMPLEMENTATION_STARTED=NO
+IMPLEMENTATION_STARTED=YES
 ADMITTED=NO
 WRITE_SET_PRECISION=EXACT
 CANDIDATE_STATUS=READY
@@ -49,9 +50,13 @@ LANE_3=DISABLED
 GOVERNANCE=UNOWNED (end-state)
 PRIVATE_BETA_INVITE_01=PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED
 FOLLOW_ON_REGISTERED=NO
+WRITE_SET_HONORED=YES
+LOCAL_TESTS=38/38
+TSC=PASS
+GIT_DIFF_CHECK=PASS
 ```
 
-Keith authorized Step 2 only. Occupancy remains EMPTY. Sidecar candidate stays `status=READY` / `admissionUncertain=true` / `writeSetPrecision=EXACT` so the candidate is **not** in S. Do **not** admit Lane 1 or Lane 2. Do **not** register follow-on tasks. Do **not** reopen AGENT-PLATFORM-EXEC-01C6A.
+Keith authorized Step 2, then Step 3 source against this freeze. Step 3 stayed inside the frozen 2-file write set. Occupancy remains EMPTY. Sidecar candidate stays `status=READY` / `admissionUncertain=true` / `writeSetPrecision=EXACT` so the candidate is **not** in S. Do **not** admit Lane 1 or Lane 2. Do **not** authorize Step 4 / LOCK in this window. Do **not** register follow-on tasks. Do **not** reopen AGENT-PLATFORM-EXEC-01C6A.
 
 ---
 
@@ -387,7 +392,7 @@ Staging/browser proof of a real Vite app is a **later Keith-authorized child**, 
 
 Step 2 does **not** admit Lane 1 or Lane 2. Occupancy remains EMPTY. GOVERNANCE is acquired only for this documentation write, then released UNOWNED.
 
-Admission of Step 3 still requires a later Keith authorization. Setting `admissionUncertain=false` without that authorization is **not** this Step 2. Admitting a FORCING EXACT candidate while leaving `admissionUncertain=true` is the GOV-OS-03-safe idle form used by AGENT-PLATFORM-ORCH-PERSIST-01 Step 2.
+Step 3 was later Keith-authorized and completed without occupying a lane. `admissionUncertain` remains **true**. Setting `admissionUncertain=false` remains **not** this window (Step 4 / LOCK not authorized). Admitting a FORCING EXACT candidate while leaving `admissionUncertain=true` is the GOV-OS-03-safe idle form used by AGENT-PLATFORM-ORCH-PERSIST-01 Step 3.
 
 ---
 
@@ -402,12 +407,12 @@ Admission of Step 3 still requires a later Keith authorization. Setting `admissi
 | Process leak | Kill + port release on timeout/failure; non-Vite never launches |
 | Host bind miss | Frozen `--host 0.0.0.0 --port $PORT`; tests assert both |
 | Frontend shows only `unavailable` on Vite failure | Accepted for slice 1; later i18n child |
-| Validator fail-closed if `admissionUncertain=false` with empty lanes | Keep `admissionUncertain=true` until Keith authorizes admission/Step 3 |
+| Validator fail-closed if `admissionUncertain=false` with empty lanes | Keep `admissionUncertain=true` until Keith authorizes admission or Step 4 lock |
 
 | Layer | Revert |
 |---|---|
 | Step 2 governance | Discard this document plus this window’s board/registry/sidecar write-set field updates |
-| Step 3 source (later) | Restore the two frozen files |
+| Step 3 source | Restore the two frozen files (uncommitted) plus this window’s board/registry/stage-start Step 3 field updates |
 | Occupancy | Already EMPTY; revert must not admit a lane |
 | Ordinary Builder Ask/Build / static Preview | Untouched if write set is honored |
 
@@ -415,12 +420,13 @@ Cannot invalidate locked BUILDER-LIVE-GATE-01 / PREVIEW-STRATEGY-01A / PREVIEW-S
 
 ---
 
-## 15. Keith-decision boundary (after this Step 2)
+## 15. Keith-decision boundary (after this Step 3)
 
 ```
-KEITH_DECISION_REQUIRED_BEFORE_STAGE_START=NO (this window)
+KEITH_DECISION_REQUIRED_BEFORE_STAGE_START=NO (Step 2 complete)
 KEITH_DECISION_REQUIRED_BEFORE_ADMISSION=YES
-KEITH_DECISION_REQUIRED_BEFORE_IMPLEMENTATION=YES
+KEITH_DECISION_REQUIRED_BEFORE_IMPLEMENTATION=NO (Step 3 authorized by Keith and COMPLETE 2026-09-14)
+KEITH_DECISION_REQUIRED_BEFORE_CHECKPOINT_LOCK=YES
 KEITH_DECISION_REQUIRED_BEFORE_STAGING_OR_BROWSER_PROOF=YES
 KEITH_DECISION_REQUIRED_BEFORE_REOPENING_EXEC_01C6A=YES
 KEITH_DECISION_REQUIRED_BEFORE_HARNESS_ENABLEMENT=YES
@@ -454,3 +460,90 @@ KEITH_DECISION_REQUIRED_BEFORE_REGISTERING_NAMED_CHILDREN=YES
 
 **Step 2 HEAD:** not queried this window (Keith instruction: No Git except `git diff --check`)
 **Step 2 activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=0, application source=0, frontend=0, i18n=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0, named children registered=0. Governance writes: `docs/PREVIEW-NODE-01-STAGE-START.md`; `TASKS.md` CURRENT EXECUTION BOARD fields; `TASKS_BACKLOG_FULL.md` PREVIEW-NODE-01 body; sidecar candidate write-set/precision fields (occupancy facts unchanged EMPTY / GOVERNANCE UNOWNED); `SATURATION_PROOF.json` only as validator output.
+
+---
+
+## 18. Step 3 completion (this window)
+
+Keith authorized Step 3 implementation against this freeze. Source stayed inside the frozen 2-file write set. Occupancy remained EMPTY. CONTAINER-MANAGER was not acquired. Step 4 / LOCK is **not** authorized.
+
+### 18.1 Implementation result
+
+- Static HTML preview unchanged (`direct-read`; no process; no `npm install`).
+- Vite-only productized path at `/workspace/package.json` with `scripts.dev`.
+- Next.js / CRA / Vue CLI / Vue / Express / generic scripts / `providedCommand` fail closed (no install; no process launch).
+- npm install: Vite path only; foreground; cwd `/workspace`; skip if `node_modules` exists; `npm install --no-audit --no-fund`; no `npm ci`; lockfile not required; 120s; timeout/failure fail closed and do not start.
+- Start: `npm run dev -- --host 0.0.0.0 --port $PORT` after existing `$PORT` replace; existing background-shell pattern; pool `3001`–`3100`; env `PORT` preserved.
+- Wait/health: 20s total, 500ms poll, any HTTP status `>= 100` → `running`; timeout kills PID, releases port, clears map; Vite does not remain `starting`.
+
+### 18.2 Tests
+
+Working directory: `C:\Users\knlee\aiSandBox2026B\services\container-manager`
+
+Requested command:
+
+```powershell
+npx jest --testPathPattern "preview\\.(service|strategy\\.resolver)\\.spec"
+```
+
+Result: **0 tests matched** (Windows PowerShell / Jest path regex). Equivalent command used:
+
+```powershell
+npx jest --testPathPattern "preview.service.spec|preview-strategy.resolver.spec"
+```
+
+Result: **PASS** — 2 suites, **38/38** tests (including existing static HTML tests and resolver frozen-read tests).
+
+```powershell
+npx tsc --noEmit --incremental false
+```
+
+Result: **PASS** (exit 0).
+
+```powershell
+git -C "C:\Users\knlee\aiSandBox2026B" diff --check
+```
+
+Result: **PASS** (exit 0; CRLF warning only, no whitespace errors).
+
+No Docker / Postgres / Redis / staging / browser / live `npm install`.
+
+### 18.3 Step 3 acceptance
+
+- [x] Implementation stayed inside frozen 2-file write set
+- [x] Vite-only; neighbors fail closed; static HTML unchanged
+- [x] LOCAL-TESTS 38/38 + tsc PASS; PowerShell regex note recorded
+- [x] occupancy EMPTY; not admitted; not LANE-DONE; not LOCKED
+- [x] `admissionUncertain=true`; candidate not in S
+- [x] CONTAINER-MANAGER declared not acquired
+- [x] EXEC-01C6A `startCondition=NOT_READY` UNCHANGED
+- [x] Step 4 NOT AUTHORIZED
+- [x] No Git commit/push
+
+### 18.4 Authorization state (end of Step 3 reconciliation)
+
+```
+IMPLEMENTATION_AUTHORIZED=YES (Step 3 source COMPLETE; frozen 2-file write set only; uncommitted)
+ADMISSION_AUTHORIZED=NO
+STAGING_AUTHORIZED=NO
+LOCAL_RUNTIME_AUTHORIZED=NO
+PROVIDER_LIVE_AUTHORIZED=NO
+CREDIT_AUTHORIZED=NO
+TESTS_EXECUTED=YES (38/38 + tsc PASS)
+APPLICATION_SOURCE_CHANGED=YES (frozen 2-file write set only; this reconciliation does not behavior-change those files)
+LANE_1=EMPTY
+LANE_2=EMPTY
+CONTAINER_MANAGER_ACQUIRED=NO
+STEP4_AUTHORIZED=NO
+LOCKED=NO
+FOLLOW_ON_REGISTERED=NO
+EXEC_01C6A_REOPENED=NO
+```
+
+---
+
+## 19. Activity ledger (Step 3)
+
+**Step 3 HEAD:** not queried this window (Keith instruction: No Git except `git diff --check`; implementation uncommitted)
+**Step 3 implementation ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, frontend=0, i18n=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0. Application source: frozen 2-file write set only. Tests: requested PowerShell regex matched 0 tests; equivalent `npx jest --testPathPattern "preview.service.spec|preview-strategy.resolver.spec"` PASS 2 suites / 38/38; `npx tsc --noEmit --incremental false` PASS; `git diff --check` PASS.
+**Step 3 reconciliation ledger (this window):** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=0, application source=0, frontend=0, i18n=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0. Governance writes: this stage-start Step 3 record; `TASKS.md` CURRENT EXECUTION BOARD fields; `TASKS_BACKLOG_FULL.md` PREVIEW-NODE-01 body; sidecar occupancy/candidate machine fields unchanged; `SATURATION_PROOF.json` only as validator output. Occupancy facts unchanged (EMPTY / GOVERNANCE UNOWNED).

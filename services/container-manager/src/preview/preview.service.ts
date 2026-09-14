@@ -20,6 +20,10 @@ export class PreviewService {
   private portPool: Set<number> = new Set();
   private readonly PORT_RANGE_START = 3001;
   private readonly PORT_RANGE_END = 3100;
+  private readonly NPM_INSTALL_TIMEOUT_MS = 120000;
+  private readonly VITE_WAIT_TIMEOUT_MS = 20000;
+  private readonly VITE_WAIT_POLL_MS = 500;
+  private readonly VITE_LAUNCH_COMMAND = 'npm run dev -- --host 0.0.0.0 --port $PORT';
 
   constructor(
     private sessionsService: SessionsService,
@@ -94,9 +98,54 @@ export class PreviewService {
       };
     }
 
+    const isViteDev =
+      strategy.type === 'node-dev-server' &&
+      framework === 'Vite' &&
+      detectedCommand === 'npm run dev';
+
+    if (!isViteDev) {
+      this.releasePort(port);
+      if (framework === 'Vite') {
+        throw new BadRequestException('Vite preview requires an npm dev script.');
+      }
+      throw new BadRequestException(
+        `Framework preview currently supports Vite. This workspace looks like ${framework || 'a Node app'}.`,
+      );
+    }
+
+    const viteFinalCommand = this.VITE_LAUNCH_COMMAND.replace(/\$PORT/g, port.toString());
+    console.log(`Vite launch command: ${viteFinalCommand}`);
+
+    try {
+      const nodeModules = await this.runShellInSession(
+        sessionId,
+        '[ -d /workspace/node_modules ]',
+      );
+      if (nodeModules.exitCode !== 0) {
+        const installResult = await this.runShellInSession(
+          sessionId,
+          'npm install --no-audit --no-fund',
+          undefined,
+          this.NPM_INSTALL_TIMEOUT_MS,
+        );
+        if (installResult.exitCode !== 0) {
+          throw new BadRequestException('Preview could not install npm dependencies.');
+        }
+      }
+    } catch (error) {
+      this.releasePort(port);
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      if (this.isExecTimeout(error)) {
+        throw new BadRequestException('Preview npm install timed out.');
+      }
+      throw new BadRequestException('Preview could not install npm dependencies.');
+    }
+
     const launchResult = await this.runShellInSession(
       sessionId,
-      `(${finalCommand}) >/tmp/preview-${port}.log 2>&1 & echo $!`,
+      `(${viteFinalCommand}) >/tmp/preview-${port}.log 2>&1 & echo $!`,
       {
         PORT: port.toString(),
         NODE_ENV: 'development',
@@ -112,26 +161,40 @@ export class PreviewService {
 
     const pid = this.parsePidFromOutput(launchResult.stdout);
 
-    // Store preview info
     this.activePreviews.set(sessionId, {
       pid,
       port,
       status: 'starting',
-      command: detectedCommand,
+      command: viteFinalCommand,
       framework,
       startedAt: new Date(),
     });
 
-    const didStart = await this.waitForPreviewServer(sessionId, port, 5000);
-    const previewAfterStart = this.activePreviews.get(sessionId);
-    if (previewAfterStart) {
-      previewAfterStart.status = didStart ? 'running' : 'starting';
+    const didStart = await this.waitForPreviewServer(
+      sessionId,
+      port,
+      this.VITE_WAIT_TIMEOUT_MS,
+    );
+    if (!didStart) {
+      try {
+        if (pid && Number.isInteger(pid)) {
+          await this.killPreviewPid(sessionId, pid);
+        }
+      } finally {
+        this.releasePort(port);
+        this.activePreviews.delete(sessionId);
+      }
+      throw new BadRequestException('Preview server did not become reachable in time.');
     }
 
     const preview = this.activePreviews.get(sessionId);
+    if (preview) {
+      preview.status = 'running';
+    }
+
     return {
       port,
-      status: preview?.status || 'starting',
+      status: preview?.status || 'running',
       framework: preview?.framework,
     };
   }
@@ -149,12 +212,7 @@ export class PreviewService {
 
     try {
       if (preview.pid && Number.isInteger(preview.pid)) {
-        await this.runShellInSession(
-          sessionId,
-          `kill -TERM ${preview.pid} >/dev/null 2>&1 || true; sleep 1; kill -0 ${preview.pid} >/dev/null 2>&1 && kill -KILL ${preview.pid} >/dev/null 2>&1 || true`,
-          undefined,
-          10000,
-        );
+        await this.killPreviewPid(sessionId, preview.pid);
       }
 
       this.releasePort(preview.port);
@@ -309,13 +367,27 @@ export class PreviewService {
     return Number.isInteger(pid) && pid > 0 ? pid : undefined;
   }
 
+  private isExecTimeout(error: unknown): boolean {
+    const message = error instanceof Error ? error.message : String(error);
+    return /timeout/i.test(message);
+  }
+
+  private async killPreviewPid(sessionId: string, pid: number): Promise<void> {
+    await this.runShellInSession(
+      sessionId,
+      `kill -TERM ${pid} >/dev/null 2>&1 || true; sleep 1; kill -0 ${pid} >/dev/null 2>&1 && kill -KILL ${pid} >/dev/null 2>&1 || true`,
+      undefined,
+      10000,
+    );
+  }
+
   private async waitForPreviewServer(
     sessionId: string,
     port: number,
     timeoutMs: number,
   ): Promise<boolean> {
-    const startedAt = Date.now();
-    while (Date.now() - startedAt < timeoutMs) {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
       try {
         const target = await this.getProxyTargetUrl(sessionId);
         const response = await axios.get(target, {
@@ -329,7 +401,14 @@ export class PreviewService {
         // keep polling until timeout
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 400));
+      const remainingMs = deadline - Date.now();
+      if (remainingMs <= 0) {
+        break;
+      }
+
+      await new Promise((resolve) =>
+        setTimeout(resolve, Math.min(this.VITE_WAIT_POLL_MS, remainingMs)),
+      );
     }
 
     console.warn(
