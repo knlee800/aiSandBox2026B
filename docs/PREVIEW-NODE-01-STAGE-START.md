@@ -1,15 +1,17 @@
-# PREVIEW-NODE-01 — Stage-start / implementation freeze
+# PREVIEW-NODE-01 — Stage-start / implementation freeze + Step 4 checkpoint
 
 **Task ID:** PREVIEW-NODE-01
 **Title:** Node/framework preview productization (first bounded slice)
 **Date:** 2026-09-14
 **Nature:** IMPLEMENTATION — high-risk; container process launch, ports, process-proxy, sandbox npm/dev-server behavior
 **Lifecycle:** 4-step IMPLEMENTATION
-**Step:** 3 COMPLETE — bounded implementation of the frozen write set
-**Step status:** Step 1 COMPLETE — 2026-09-14 (registration / control-plane only; committed `63b59df` `docs: register node preview productization`); Step 2 COMPLETE — 2026-09-14; Step 3 COMPLETE — 2026-09-14 (Keith-authorized frozen 2-file Vite-only implementation; no implementation lane occupied; LOCAL-TESTS 38/38 + tsc PASS; `git diff --check` PASS; uncommitted); Step 4 NOT AUTHORIZED
-**This document:** Authoritative Step 2 freeze and Step 3 completion record for the first Vite-only node/framework preview productization slice. It does **not** authorize Step 4 / LOCK, admission, runtime, staging/browser proof, Harness, orchestration, Stripe, apex cutover, invitations, or EXEC-01C6A reopen.
+**Step:** 4 COMPLETE AND LOCKED — independent verification / checkpoint / lock
+**Step status:** Step 1 COMPLETE — 2026-09-14 (registration / control-plane only; committed `63b59df` `docs: register node preview productization`); Step 2 COMPLETE — 2026-09-14; Step 3 COMPLETE — 2026-09-14 (Keith-authorized frozen 2-file Vite-only implementation; HEAD `443d7eeecba7d8ef403fc77a3eee37d6d62f418a` `feat: support vite preview`; LOCAL-TESTS 38/38 + tsc PASS); Step 4 COMPLETE AND LOCKED — 2026-09-14
+**This document:** Authoritative Step 2 freeze, Step 3 completion record, and Step 4 checkpoint for the first Vite-only node/framework preview productization slice. It does **not** authorize admission, runtime, staging/browser proof, Harness, orchestration, Stripe, apex cutover, invitations, EXEC-01C6A reopen, or follow-on registration.
 
 **Step 1 committed HEAD (user-supplied; not re-queried this window):** `63b59df` (message `docs: register node preview productization`)
+**Step 3 committed HEAD:** `443d7eeecba7d8ef403fc77a3eee37d6d62f418a` (`feat: support vite preview`)
+**Saturation proof refresh HEAD:** `d9ce6b93158d8addf2c0bdc03b44823bddd67529` (`docs: refresh saturation proof after vite preview`)
 **Occupancy hash (end-state):** `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d` (Lane 1 EMPTY, Lane 2 EMPTY, GOVERNANCE UNOWNED)
 
 ```
@@ -17,13 +19,15 @@ STEP1_COMPLETE=YES
 STEP2_COMPLETE=YES
 STEP3_AUTHORIZED=YES
 STEP3_COMPLETE=YES
-STEP4_AUTHORIZED=NO
+STEP4_AUTHORIZED=YES
+STEP4_COMPLETE=YES
+LOCKED=YES
 IMPLEMENTATION_STARTED=YES
 ADMITTED=NO
 WRITE_SET_PRECISION=EXACT
-CANDIDATE_STATUS=READY
-ADMISSION_UNCERTAIN=true
-TEST_ADMISSIBLE=ADMISSION_UNCERTAIN
+CANDIDATE_STATUS=LOCKED
+ADMISSION_UNCERTAIN=false
+TEST_ADMISSIBLE=NOT_READY
 MUTEXES_DECLARED=CONTAINER-MANAGER
 MUTEXES_ACQUIRED=NO
 FRONTEND_I18N=NO
@@ -56,7 +60,7 @@ TSC=PASS
 GIT_DIFF_CHECK=PASS
 ```
 
-Keith authorized Step 2, then Step 3 source against this freeze. Step 3 stayed inside the frozen 2-file write set. Occupancy remains EMPTY. Sidecar candidate stays `status=READY` / `admissionUncertain=true` / `writeSetPrecision=EXACT` so the candidate is **not** in S. Do **not** admit Lane 1 or Lane 2. Do **not** authorize Step 4 / LOCK in this window. Do **not** register follow-on tasks. Do **not** reopen AGENT-PLATFORM-EXEC-01C6A.
+Keith authorized Step 2, then Step 3 source against this freeze, then Step 4 checkpoint/lock. Step 3 stayed inside the frozen 2-file write set and is committed at `443d7ee`. Occupancy remains EMPTY. Sidecar candidate is `status=LOCKED` / `admissionUncertain=false` / `writeSetPrecision=EXACT` so the candidate is **not** in S (`Test-Admissible` = NOT_READY). Do **not** admit Lane 1 or Lane 2. Do **not** register follow-on tasks. Do **not** reopen AGENT-PLATFORM-EXEC-01C6A. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON.
 
 ---
 
@@ -407,7 +411,7 @@ Step 3 was later Keith-authorized and completed without occupying a lane. `admis
 | Process leak | Kill + port release on timeout/failure; non-Vite never launches |
 | Host bind miss | Frozen `--host 0.0.0.0 --port $PORT`; tests assert both |
 | Frontend shows only `unavailable` on Vite failure | Accepted for slice 1; later i18n child |
-| Validator fail-closed if `admissionUncertain=false` with empty lanes | Keep `admissionUncertain=true` until Keith authorizes admission or Step 4 lock |
+| Validator fail-closed if `admissionUncertain=false` with empty lanes | Keep `admissionUncertain=true` until Keith authorizes admission or Step 4 lock; Step 4 lock sets `status=LOCKED` / `admissionUncertain=false` so Test-Admissible=NOT_READY |
 
 | Layer | Revert |
 |---|---|
@@ -426,7 +430,7 @@ Cannot invalidate locked BUILDER-LIVE-GATE-01 / PREVIEW-STRATEGY-01A / PREVIEW-S
 KEITH_DECISION_REQUIRED_BEFORE_STAGE_START=NO (Step 2 complete)
 KEITH_DECISION_REQUIRED_BEFORE_ADMISSION=YES
 KEITH_DECISION_REQUIRED_BEFORE_IMPLEMENTATION=NO (Step 3 authorized by Keith and COMPLETE 2026-09-14)
-KEITH_DECISION_REQUIRED_BEFORE_CHECKPOINT_LOCK=YES
+KEITH_DECISION_REQUIRED_BEFORE_CHECKPOINT_LOCK=NO (Step 4 authorized by Keith and COMPLETE AND LOCKED 2026-09-14)
 KEITH_DECISION_REQUIRED_BEFORE_STAGING_OR_BROWSER_PROOF=YES
 KEITH_DECISION_REQUIRED_BEFORE_REOPENING_EXEC_01C6A=YES
 KEITH_DECISION_REQUIRED_BEFORE_HARNESS_ENABLEMENT=YES
@@ -465,7 +469,7 @@ KEITH_DECISION_REQUIRED_BEFORE_REGISTERING_NAMED_CHILDREN=YES
 
 ## 18. Step 3 completion (this window)
 
-Keith authorized Step 3 implementation against this freeze. Source stayed inside the frozen 2-file write set. Occupancy remained EMPTY. CONTAINER-MANAGER was not acquired. Step 4 / LOCK is **not** authorized.
+Keith authorized Step 3 implementation against this freeze. Source stayed inside the frozen 2-file write set and was committed at `443d7eeecba7d8ef403fc77a3eee37d6d62f418a`. Occupancy remained EMPTY. CONTAINER-MANAGER was not acquired. Step 4 / LOCK was later authorized separately and is COMPLETE AND LOCKED. Sidecar `admissionUncertain=false` is the lock-state field (candidate `status=LOCKED`; not in S), not an admission.
 
 ### 18.1 Implementation result
 
@@ -513,17 +517,17 @@ No Docker / Postgres / Redis / staging / browser / live `npm install`.
 - [x] Implementation stayed inside frozen 2-file write set
 - [x] Vite-only; neighbors fail closed; static HTML unchanged
 - [x] LOCAL-TESTS 38/38 + tsc PASS; PowerShell regex note recorded
-- [x] occupancy EMPTY; not admitted; not LANE-DONE; not LOCKED
-- [x] `admissionUncertain=true`; candidate not in S
+- [x] occupancy EMPTY; not admitted; not LANE-DONE; Step 4 later LOCKED
+- [x] `admissionUncertain=true` at Step 3 end; candidate not in S
 - [x] CONTAINER-MANAGER declared not acquired
 - [x] EXEC-01C6A `startCondition=NOT_READY` UNCHANGED
-- [x] Step 4 NOT AUTHORIZED
-- [x] No Git commit/push
+- [x] Step 4 later COMPLETE AND LOCKED (separate authorization)
+- [x] No Git commit/push by the Step 3 worker; Keith later committed `443d7ee`
 
 ### 18.4 Authorization state (end of Step 3 reconciliation)
 
 ```
-IMPLEMENTATION_AUTHORIZED=YES (Step 3 source COMPLETE; frozen 2-file write set only; uncommitted)
+IMPLEMENTATION_AUTHORIZED=YES (Step 3 source COMPLETE; frozen 2-file write set only; committed at 443d7ee)
 ADMISSION_AUTHORIZED=NO
 STAGING_AUTHORIZED=NO
 LOCAL_RUNTIME_AUTHORIZED=NO
@@ -544,6 +548,78 @@ EXEC_01C6A_REOPENED=NO
 
 ## 19. Activity ledger (Step 3)
 
-**Step 3 HEAD:** not queried this window (Keith instruction: No Git except `git diff --check`; implementation uncommitted)
+**Step 3 HEAD:** `443d7eeecba7d8ef403fc77a3eee37d6d62f418a` (`feat: support vite preview`); saturation proof refresh `d9ce6b93158d8addf2c0bdc03b44823bddd67529`. Previous: **Step 3 HEAD:** not queried this window (Keith instruction: No Git except `git diff --check`; implementation uncommitted)
 **Step 3 implementation ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, frontend=0, i18n=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0. Application source: frozen 2-file write set only. Tests: requested PowerShell regex matched 0 tests; equivalent `npx jest --testPathPattern "preview.service.spec|preview-strategy.resolver.spec"` PASS 2 suites / 38/38; `npx tsc --noEmit --incremental false` PASS; `git diff --check` PASS.
 **Step 3 reconciliation ledger (this window):** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=0, application source=0, frontend=0, i18n=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0. Governance writes: this stage-start Step 3 record; `TASKS.md` CURRENT EXECUTION BOARD fields; `TASKS_BACKLOG_FULL.md` PREVIEW-NODE-01 body; sidecar occupancy/candidate machine fields unchanged; `SATURATION_PROOF.json` only as validator output. Occupancy facts unchanged (EMPTY / GOVERNANCE UNOWNED).
+
+---
+
+## 20. Step 4 acceptance (COMPLETE AND LOCKED — 2026-09-14)
+
+- [x] Independent verification against freeze + committed HEAD `443d7eeecba7d8ef403fc77a3eee37d6d62f418a` (`feat: support vite preview`)
+- [x] Frozen 2-file write set confirmed; Vite-only; static HTML regression preserved
+- [x] LOCAL-TESTS: `npx jest --testPathPattern "preview.service.spec|preview-strategy.resolver.spec"` PASS 2 suites / 38/38; `npx tsc --noEmit --incremental false` PASS
+- [x] no staging/browser proof; no frontend/i18n; no resolver/controller/gateway/Ask/Build changes
+- [x] EXEC-01C6A `startCondition=NOT_READY` UNCHANGED
+- [x] BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON
+- [x] sidecar `status=LOCKED` / `admissionUncertain=false`; `lockedTaskIds` includes PREVIEW-NODE-01
+- [x] Occupancy EMPTY; no lane admitted; no runtime mutex acquired; no follow-on registered
+- [x] Validator PASS this lock window
+- [x] No Git commit/push by the worker
+
+---
+
+## 21. Authorization state (end of Step 4 lock)
+
+```
+IMPLEMENTATION_AUTHORIZED=YES (Step 3 source COMPLETE AND LOCKED; frozen 2-file write set only)
+ADMISSION_AUTHORIZED=NO
+STAGING_AUTHORIZED=NO
+LOCAL_RUNTIME_AUTHORIZED=NO
+PROVIDER_LIVE_AUTHORIZED=NO
+CREDIT_AUTHORIZED=NO
+TESTS_EXECUTED=YES (38/38 + tsc PASS; recorded from Step 3; not re-run this lock window)
+APPLICATION_SOURCE_CHANGED=YES (frozen 2-file write set only; committed at 443d7ee; this lock does not behavior-change those files)
+LANE_1=EMPTY
+LANE_2=EMPTY
+CONTAINER_MANAGER_ACQUIRED=NO
+STEP4_AUTHORIZED=YES
+STEP4_COMPLETE=YES
+LOCKED=YES
+FOLLOW_ON_REGISTERED=NO
+EXEC_01C6A_REOPENED=NO
+```
+
+Previous (end of Step 3 reconciliation): IMPLEMENTATION_AUTHORIZED=YES; ADMISSION_AUTHORIZED=NO; STEP4_AUTHORIZED=NO; LOCKED=NO.
+
+---
+
+## 22. Activity ledger (Step 4) and lock evidence
+
+**Step 4 lock ledger (this window):** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=0, application source=0, frontend=0, i18n=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0, follow-on registration=0. Governance writes: this stage-start Step 4 checkpoint; `TASKS.md` CURRENT EXECUTION BOARD fields; `TASKS_BACKLOG_FULL.md` PREVIEW-NODE-01 body; sidecar candidate `status=LOCKED` / `admissionUncertain=false` + `lockedTaskIds`; `SATURATION_PROOF.json` only as validator output. Occupancy facts unchanged (EMPTY / GOVERNANCE UNOWNED).
+
+**Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED.
+
+**Lane 3 invariant:** Lane 3 remains DISABLED.
+
+**Activation effect:** NONE
+**Rollback boundary:** Step 2 = discard this document’s freeze plus that window’s board/registry/sidecar write-set field updates. Step 3 source = committed at `443d7ee` (do not revert in this lock window). This lock = discard this window’s board/registry/stage-start/sidecar lock field updates. Ordinary Builder Ask/Build/static Preview path and the live gate are untouched.
+
+### Verdict
+
+**PREVIEW-NODE-01 is COMPLETE AND LOCKED.**
+
+**Committed implementation HEAD:** `443d7eeecba7d8ef403fc77a3eee37d6d62f418a` (`feat: support vite preview`)
+
+**Saturation proof refresh:** `d9ce6b93158d8addf2c0bdc03b44823bddd67529` (`docs: refresh saturation proof after vite preview`)
+
+**Frozen 2-file write set (implemented):**
+
+1. `services/container-manager/src/preview/preview.service.ts`
+2. `services/container-manager/src/preview/preview.service.spec.ts`
+
+**Scope:** Vite-only preview. Static HTML `direct-read` unchanged. Next.js / CRA / Vue / Express / generic / `providedCommand` fail closed. No frontend/i18n. No resolver/controller/gateway/Ask/Build changes.
+
+**Tests:** `npx jest --testPathPattern "preview.service.spec|preview-strategy.resolver.spec"` PASS 2 suites / 38/38. `npx tsc --noEmit --incremental false` PASS. Requested PowerShell regex `--testPathPattern "preview\\.(service|strategy\\.resolver)\\.spec"` matched 0 tests (recorded). No staging/browser proof.
+
+**Invariants:** EXEC-01C6A `startCondition=NOT_READY` UNCHANGED / not reopened. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. Lane 3 remains DISABLED. No follow-on task registered. No admitted next product gate / selection pending.
