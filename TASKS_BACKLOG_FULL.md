@@ -75961,7 +75961,7 @@ taskId=PREVIEW-NODE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-14 — Step 1 COMPLETE (registration / control-plane only) — Step 2 NOT AUTHORIZED — Step 3 NOT AUTHORIZED — Step 4 NOT AUTHORIZED — GOVERNANCE acquired transiently then released UNOWNED — no implementation lane — candidate `status=READY` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true` (`Test-Admissible` = ADMISSION_UNCERTAIN; not in S) — mutex CONTAINER-MANAGER declared not acquired — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — EXEC-01C6A remains MACHINE BLOCKER ENFORCED / sidecar startCondition=NOT_READY UNCHANGED / not reopened / not admitted / not LANE-DONE / not LOCKED — BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON (`GLOBAL_EXECUTION_ENABLED=true`) — product-visible orchestration remains FUTURE/gated — working single-shot Builder Ask/Build path remains the product to complete, not to replace — IMPLEMENTATION_STARTED=NO
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-14 — Step 1 COMPLETE (registration / control-plane only) — Step 2 COMPLETE (Stage-start: `docs/PREVIEW-NODE-01-STAGE-START.md`; Vite-only first slice frozen) — Step 3 NOT AUTHORIZED — Step 4 NOT AUTHORIZED — GOVERNANCE acquired transiently then released UNOWNED — no implementation lane — candidate `status=READY` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=EXACT` / `admissionUncertain=true` (`Test-Admissible` = ADMISSION_UNCERTAIN; not in S) — mutex CONTAINER-MANAGER declared not acquired — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — EXEC-01C6A remains MACHINE BLOCKER ENFORCED / sidecar startCondition=NOT_READY UNCHANGED / not reopened / not admitted / not LANE-DONE / not LOCKED — BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON (`GLOBAL_EXECUTION_ENABLED=true`) — product-visible orchestration remains FUTURE/gated — working single-shot Builder Ask/Build path remains the product to complete, not to replace — IMPLEMENTATION_STARTED=NO
 **Task ID:** PREVIEW-NODE-01
 **Title:** Node/framework preview productization (first bounded slice)
 **Family:** BUILDER / PREVIEW (productization of the already-CURRENT `node-dev-server` preview path so Builder can preview real apps, not only the private-beta-proven static `index.html` path; not Harness; not orchestration; not EXEC-01C6A)
@@ -75973,25 +75973,26 @@ nature=IMPLEMENTATION
 **Classification:** CURRENT required Builder-completion slice (Keith-named). Machine `productClass=CURRENT` with `futureAuthorization=NONE`. Activation effect of this registration: NONE.
 **Lifecycle:** 4-STEP HIGH-RISK (container process / preview proxy / framework start; must not collapse diagnosis, exact write-set freeze, source authorship, and lock into one unreviewed step):
 1. Step 1 — registration — COMPLETE — 2026-09-14 — control-plane only; no implementation; no admission; no stage-start; no ARCHITECTURE.md / PRD.md rewrite; no runtime procedure.
-2. Step 2 — stage-start / exact first-slice freeze — NOT AUTHORIZED this window.
+2. Step 2 — stage-start / exact first-slice freeze — COMPLETE — 2026-09-14 — Stage-start: `docs/PREVIEW-NODE-01-STAGE-START.md`. Vite-only; Next/CRA/Vue/Express/generic/`providedCommand` fail closed; static `index.html` unchanged; frontend excluded.
 3. Step 3 — bounded implementation of the frozen write set — NOT AUTHORIZED this window.
 4. Step 4 — independent verification / checkpoint / lock — NOT AUTHORIZED this window.
-**Start condition:** READY (satisfied for this registration). NOT ADMITTED to an implementation lane. Occupies no implementation lane. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. EXEC-01C6A sidecar `startCondition=NOT_READY` remains UNCHANGED. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. Candidate `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true`.
+**Start condition:** READY (satisfied for this registration). NOT ADMITTED to an implementation lane. Occupies no implementation lane. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. EXEC-01C6A sidecar `startCondition=NOT_READY` remains UNCHANGED. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. Candidate `writeSetPrecision=EXACT` / `admissionUncertain=true`.
 **Depends on (canonical / human):** Keith 2026-09-14 authorization to select and register the next Builder-completion workstream. BUILDER-LIVE-GATE-01 COMPLETE AND LOCKED (gate LEFT ON). Staging-proven static Preview remains the baseline that must not regress. Does not depend on unfinished implementation output from another admitted lane. Unlocked EXEC-01C6A / EXEC-01C6 / EXEC-01C are not dependencies. Orchestration is not required for this Builder slice.
 **Depends on (machine sidecar `dependsOn`):** `[]`. Unlocked EXEC-01C6A / EXEC-01C6 / EXEC-01C MUST NOT appear in machine `dependsOn`.
 **Primary write scope (Step 1, this write):** `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body; `docs/control-plane/lane-saturation-state.json` candidate record; `docs/control-plane/SATURATION_PROOF.json` only as validator output. Occupancy remains EMPTY / GOVERNANCE UNOWNED at end of this write. No application source. No test file. No stage-start. No checkpoint. No ARCHITECTURE.md / PRD.md / CLAUDE.md / AGENTS.md rewrite. No Git.
-**Primary write scope (Step 2):** NOT FROZEN. Stage-start must freeze the exact first slice and filenames. Not authorized now.
+**Primary write scope (Step 2):** COMPLETE — 2026-09-14 — `docs/PREVIEW-NODE-01-STAGE-START.md`; this registry body lifecycle/status; `TASKS.md` CURRENT EXECUTION BOARD fields; sidecar candidate `writePaths` + `writeSetPrecision=EXACT` (occupancy EMPTY; `admissionUncertain=true`). Frozen Step 3 filenames: `services/container-manager/src/preview/preview.service.ts`; `services/container-manager/src/preview/preview.service.spec.ts`. No application source this window. No Git.
 **Primary write scope (Steps 3–4):** separately authorized after Step 2. Not authorized now.
 **Mutexes / resources (Step 1, this write):** GOVERNANCE held only for this control-plane registration then released UNOWNED. IMPLEMENTATION candidate mutexes declared not acquired: CONTAINER-MANAGER. GOVERNANCE must not appear in the IMPLEMENTATION candidate mutex list. GATEWAY / MIGRATION / AI-SERVICE / FRONTEND / I18N / PACKAGE / COMPOSE / ENV / LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT remain UNOWNED and unauthorized. CONTAINER-MANAGER remains UNOWNED. MIGRATION_EXECUTION_AUTHORIZED=NO.
-**Hot-file leases:** none until Step 2 freeze. CONTAINER-MANAGER covers `services/container-manager/` if the first slice stays inside that service. If Step 2 includes frontend copy, FRONTEND + I18N must be declared then; they are not declared now.
+**Mutexes / resources (Step 2, this write):** GOVERNANCE held only for this control-plane freeze then released UNOWNED. CONTAINER-MANAGER remains declared not acquired. FRONTEND / I18N not declared (frontend UX excluded from slice 1). GATEWAY / MIGRATION / AI-SERVICE / PACKAGE / COMPOSE / ENV / LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT remain UNOWNED and unauthorized. MIGRATION_EXECUTION_AUTHORIZED=NO.
+**Hot-file leases:** none. CONTAINER-MANAGER covers `services/container-manager/`. Frontend copy is out of slice 1; FRONTEND + I18N remain undeclared.
 **Shared contracts:** none consumed or mutated (`sharedContractIds=[]`; `mutatesSharedContractIds=[]`). Frozen catalog ID `HARNESS_ENTITLEMENT_PROOF_V1` remains FROZEN and is not consumed or mutated by this child.
 **Evidence class:** LOCAL-TESTS. No provider-live. No Docker/Postgres/Redis. No STAGING / PROVIDER-LIVE / CREDIT / LOCAL-RUNTIME runtime needs in this Step 1. Staging/browser proof of a Node/framework preview is a later authorized question, not this registration.
-**Revert isolation:** Step 1 revert = discard this child's board/registry/stanza/sidecar-candidate additions and restore Lane 1 / Lane 2 EMPTY and GOVERNANCE UNOWNED (both already unchanged by this write occupancy). Must not mutate EXEC-01C6A prepared artifacts. Cannot invalidate locked BUILDER-LIVE-GATE-01 / ORCH-ARCH-01 / ORCH-PERSIST-01 / PREVIEW-STRATEGY-01A / PREVIEW-STATIC-01B / PREVIEW-AUTOSTART-01A / EXEC-01A / 01B / 01C1..01C5B2 / IDENTITY-01 / SCHEMA-01 / KEY-REVOKE-01 / GOV-AUTH-03 evidence. Parent EXEC-01C6A sidecar `startCondition=NOT_READY` must remain. Lane 1 and Lane 2 remain EMPTY.
+**Revert isolation:** Step 1 revert = discard this child's board/registry/stanza/sidecar-candidate additions and restore Lane 1 / Lane 2 EMPTY and GOVERNANCE UNOWNED (both already unchanged by this write occupancy). Step 2 revert = discard `docs/PREVIEW-NODE-01-STAGE-START.md` plus this window’s board/registry/sidecar write-set field updates. Must not mutate EXEC-01C6A prepared artifacts. Cannot invalidate locked BUILDER-LIVE-GATE-01 / ORCH-ARCH-01 / ORCH-PERSIST-01 / PREVIEW-STRATEGY-01A / PREVIEW-STATIC-01B / PREVIEW-AUTOSTART-01A / EXEC-01A / 01B / 01C1..01C5B2 / IDENTITY-01 / SCHEMA-01 / KEY-REVOKE-01 / GOV-AUTH-03 evidence. Parent EXEC-01C6A sidecar `startCondition=NOT_READY` must remain. Lane 1 and Lane 2 remain EMPTY.
 **saturationClass:** FORCING (explicit; first named Builder-completion implementation task; required before later credit-UX / preview-reliability / mobile / onboarding / apex slices). Candidate is not in S because `admissionUncertain=true`. Occupancy remains EMPTY.
 **productClass:** CURRENT
 **futureAuthorization:** NONE — schema requires `futureAuthorization=NONE` when `productClass=CURRENT`. Stripe, Harness-as-default, product-visible orchestration, and apex production cutover remain FUTURE/gated and are not encoded as `AUTHORIZED` FUTURE product.
-**writeSetPrecision:** PROVISIONAL
-**admissionUncertain:** true (not admitted; exact write set not frozen; not in S)
+**writeSetPrecision:** EXACT
+**admissionUncertain:** true (not admitted; Step 3 not authorized; keeps candidate out of S)
 **exclusiveCapacity:** false
 **runtimeNeeds:** none
 **i18n:** false
@@ -76029,7 +76030,7 @@ Stripe / live payment remains APPROVED FUTURE / not needed for Builder completio
 
 **Keith-decision boundary:**
 KEITH_DECISION_REQUIRED_BEFORE_REGISTRATION=NO (this window is the authorized registration)
-KEITH_DECISION_REQUIRED_BEFORE_STAGE_START=YES
+KEITH_DECISION_REQUIRED_BEFORE_STAGE_START=NO (Step 2 authorized and completed this window)
 KEITH_DECISION_REQUIRED_BEFORE_ADMISSION=YES
 KEITH_DECISION_REQUIRED_BEFORE_IMPLEMENTATION=YES
 KEITH_DECISION_REQUIRED_BEFORE_STAGING_OR_BROWSER_PROOF=YES
@@ -76048,12 +76049,12 @@ This registration does **not** reopen EXEC-01C6A. It does **not** change BUILDER
 - Leave credit UX, apex routing, Stripe, orchestration, and invitations unregistered
 
 **Activation effect:** NONE
-**Rollback boundary:** Step 1 = discard this child's board/registry/stanza/sidecar-candidate additions. No implementation to roll back. Ordinary Builder Ask/Build/static Preview path and the live gate are untouched.
+**Rollback boundary:** Step 1 = discard this child's board/registry/stanza/sidecar-candidate additions. Step 2 = discard the stage-start plus this window’s board/registry/sidecar write-set field updates. No implementation to roll back. Ordinary Builder Ask/Build/static Preview path and the live gate are untouched.
 
 **Machine registration (post-epoch):** Present exactly once immediately under this canonical heading (`taskId=PREVIEW-NODE-01`, `nature=IMPLEMENTATION`). Enforcement epoch unchanged. Do not duplicate the machine-registration markers elsewhere in this body. Sidecar candidate required (`saturationClass=FORCING`). Occupancy remains EMPTY. Do not admit a lane in this window. Do not register follow-on tasks. Do not reopen AGENT-PLATFORM-EXEC-01C6A.
 
 **Lane / admission:**
-REGISTERED / READY / NOT ADMITTED — IMPLEMENTATION — Step 1 COMPLETE — Steps 2-4 NOT AUTHORIZED — 2026-09-14. This child does not occupy a lane. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. Occupancy hash `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d`. Candidate is not in S (`ADMISSION_UNCERTAIN`). EXEC-01C6A remains `startCondition=NOT_READY` / not in S / not reopened. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON.
+REGISTERED / READY / NOT ADMITTED — IMPLEMENTATION — Step 1 COMPLETE — Step 2 COMPLETE — Steps 3-4 NOT AUTHORIZED — 2026-09-14. This child does not occupy a lane. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. Occupancy hash `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d`. Candidate is not in S (`ADMISSION_UNCERTAIN`; `writeSetPrecision=EXACT`). EXEC-01C6A remains `startCondition=NOT_READY` / not in S / not reopened. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON.
 
 #### Acceptance Criteria
 
@@ -76077,7 +76078,15 @@ Step 1 (Registration):
 - [x] No Git commit/push by the worker
 
 Step 2 (stage-start / exact first-slice freeze):
-- [ ] NOT AUTHORIZED this window
+- [x] stage-start created: `docs/PREVIEW-NODE-01-STAGE-START.md`
+- [x] first slice frozen: Vite only
+- [x] npm install policy frozen (bounded; skip if `node_modules`; no `npm ci`; lockfile not required; 120s)
+- [x] start command / host-port / wait-health / fail-closed neighbors frozen
+- [x] frontend UX excluded; static `index.html` regression required
+- [x] exact write set frozen (2 files)
+- [x] tests/verification, risk/rollback, admission/mutex frozen
+- [x] not admitted; `admissionUncertain=true`; CONTAINER-MANAGER not acquired
+- [x] EXEC-01C6A `startCondition=NOT_READY` UNCHANGED
 
 Step 3 (implementation):
 - [ ] NOT AUTHORIZED this window
@@ -76091,6 +76100,8 @@ Step 4 (checkpoint / lock):
 
 **Step 1 HEAD:** not queried this window (Keith instruction: Do not Git)
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=0, application source=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0, named children registered=0. Governance writes: TASKS.md CURRENT EXECUTION BOARD fields; this registry body; sidecar candidate; occupancy facts unchanged at end-state (EMPTY / GOVERNANCE UNOWNED); SATURATION_PROOF.json only as validator output.
+**Step 2 HEAD:** not queried this window (Keith instruction: No Git except `git diff --check`)
+**Step 2 activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=0, application source=0, frontend=0, i18n=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0, named children registered=0. Governance writes: `docs/PREVIEW-NODE-01-STAGE-START.md`; TASKS.md CURRENT EXECUTION BOARD fields; this registry body; sidecar candidate write-set/precision fields; occupancy facts unchanged at end-state (EMPTY / GOVERNANCE UNOWNED); SATURATION_PROOF.json only as validator output.
 
 ---
 
