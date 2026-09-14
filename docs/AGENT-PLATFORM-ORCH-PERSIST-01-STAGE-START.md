@@ -5,12 +5,12 @@
 **Date:** 2026-09-14
 **Nature:** IMPLEMENTATION — high-risk persistence / schema / coordinator state
 **Lifecycle:** 4-step IMPLEMENTATION
-**Step:** 3 COMPLETE — bounded implementation of the frozen 9-file write set (this write is Step 3 governance reconciliation only)
-**Step status:** Step 1 COMPLETE — 2026-09-14; Step 2 COMPLETE — 2026-09-14; Step 3 COMPLETE — 2026-09-14 (Keith-authorized frozen 9-file implementation; no implementation lane occupied; migration authored not applied); Step 4 NOT AUTHORIZED
-**This document:** Authoritative Step 2 freeze for durable PostgreSQL-backed collaboration/referral state owned by API Gateway `OrchestrationService`, plus the Step 3 completion record. It does **not** authorize Step 4 / checkpoint / lock, admission to an implementation lane, migration apply, HTTP, frontend, Harness, EXEC-01C6A reopen, or runtime.
+**Step:** 4 COMPLETE AND LOCKED — independent verification / checkpoint / lock
+**Step status:** Step 1 COMPLETE — 2026-09-14; Step 2 COMPLETE — 2026-09-14; Step 3 COMPLETE — 2026-09-14 (Keith-authorized frozen 9-file implementation; HEAD `11daf38da5839b7b3d364db6eedcccc6e377f4de` `feat: persist orchestration coordinator`; migration authored not applied); Step 4 COMPLETE AND LOCKED — 2026-09-14
+**This document:** Authoritative Step 2 freeze, Step 3 completion record, and Step 4 checkpoint / lock for durable PostgreSQL-backed collaboration/referral state owned by API Gateway `OrchestrationService`. It does **not** authorize migration apply, HTTP, frontend, Harness, EXEC-01C6A reopen, runtime, follow-on registration, or product-visible orchestration.
 
 **Step 1 committed HEAD:** `b8108257a877cec0af50722e842f7ce2badabdcd` (branch `main`; message `docs: register orchestration persistence`)
-**Step 2 base HEAD:** `b8108257a877cec0af50722e842f7ce2badabdcd` (branch `main`; working tree clean at window open)
+**Step 3 committed HEAD:** `11daf38da5839b7b3d364db6eedcccc6e377f4de` (branch `main`; message `feat: persist orchestration coordinator`)
 **Parent lock:** AGENT-PLATFORM-ORCH-ARCH-01 COMPLETE AND LOCKED — Checkpoint: `docs/AGENT-PLATFORM-ORCH-ARCH-01-STAGE-START.md`
 **Occupancy hash (end-state):** `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d` (Lane 1 EMPTY, Lane 2 EMPTY, GOVERNANCE UNOWNED)
 
@@ -19,12 +19,15 @@ STEP1_COMPLETE=YES
 STEP2_COMPLETE=YES
 STEP3_AUTHORIZED=YES
 STEP3_COMPLETE=YES
-STEP4_AUTHORIZED=NO
+STEP4_AUTHORIZED=YES
+STEP4_COMPLETE=YES
+LOCKED=YES
 IMPLEMENTATION_STARTED=YES
-ADMITTED=NO (Keith-authorized Step 3 source; no Lane 1/Lane 2 occupancy; not LANE-DONE; not LOCKED)
+ADMITTED=NO (Keith-authorized Step 3 source then Step 4 lock; no Lane 1/Lane 2 occupancy; not LANE-DONE)
 WRITE_SET_PRECISION=EXACT
-ADMISSION_UNCERTAIN=true
-TEST_ADMISSIBLE=ADMISSION_UNCERTAIN
+CANDIDATE_STATUS=LOCKED
+ADMISSION_UNCERTAIN=false
+TEST_ADMISSIBLE=NOT_READY
 MUTEXES_DECLARED=GATEWAY,MIGRATION
 MUTEXES_ACQUIRED=NO
 MIGRATION_EXECUTION_AUTHORIZED=NO
@@ -45,9 +48,10 @@ GOVERNANCE=UNOWNED (end-state)
 PRIVATE_BETA_INVITE_01=PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED
 ISOLATEDMODULES_ORCHESTRATION_SUITE=4/4 91 PASSED
 DEFAULT_JEST_TSC_BLOCKED_BY=pre-existing src/queue/queue.service.ts TS2322
+FOLLOW_ON_REGISTERED=NO
 ```
 
-Keith authorized Step 2, then separately authorized Step 3 source implementation against this freeze. Step 3 stayed inside the frozen 9-file write set. Occupancy remained EMPTY. Candidate remains `status=READY` / `admissionUncertain=true` so it stays out of S. Do **not** set `admissionUncertain=false` without Keith admission authorization. Step 4 is **not** authorized.
+Keith authorized Step 2, then Step 3 source against this freeze, then Step 4 checkpoint / lock. Step 3 stayed inside the frozen 9-file write set and is committed at `11daf38`. Occupancy remained EMPTY. Sidecar candidate is now `status=LOCKED` / `admissionUncertain=false` and is in `lockedTaskIds`. Do **not** register follow-on tasks in this window. Migration apply remains unauthorized.
 
 ---
 
@@ -496,7 +500,7 @@ Step 2 does **not** admit Lane 1 or Lane 2. Occupancy remains EMPTY. GOVERNANCE 
 
 Admission of Step 3 still requires a later Keith authorization. Setting `admissionUncertain=false` in the same window as source edits is **not** this Step 2.
 
-Later (2026-09-14): Keith authorized Step 3 source against this freeze without filling Lane 1 or Lane 2 and without setting `admissionUncertain=false`. Step 4 / checkpoint / lock remains unauthorized.
+Later (2026-09-14): Keith authorized Step 3 source against this freeze without filling Lane 1 or Lane 2. Step 4 / checkpoint / lock was later authorized separately and is COMPLETE AND LOCKED. Sidecar `admissionUncertain=false` is the lock-state field (candidate `status=LOCKED`; not in S), not an admission.
 
 ---
 
@@ -546,9 +550,19 @@ Cannot invalidate locked ORCH-ARCH-01 / BUILDER-LIVE-GATE-01 / PM2-FENCE-01 / EX
 - [x] No runtime/staging/PM2/Docker/Postgres/Redis/provider/credit
 - [x] No Git commit/push by the worker
 
-### Step 4 (NOT AUTHORIZED)
+### Step 4 (COMPLETE AND LOCKED — 2026-09-14)
 
-- [ ] Independent verification / checkpoint / lock
+- [x] Independent verification against freeze + committed HEAD `11daf38da5839b7b3d364db6eedcccc6e377f4de` (`feat: persist orchestration coordinator`)
+- [x] Frozen 9-file write set confirmed; no HTTP/frontend/Harness/execute-handler
+- [x] isolatedModules orchestration suite 4/4 91 passed; default Jest/tsc blocked only by pre-existing `src/queue/queue.service.ts` TS2322
+- [x] Migration authored only, not applied
+- [x] Product-visible orchestration remains FUTURE/gated; Builder Ask/Build path untouched; no Harness/tool-loop
+- [x] EXEC-01C6A `startCondition=NOT_READY` UNCHANGED
+- [x] BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON
+- [x] sidecar `status=LOCKED` / `admissionUncertain=false`; `lockedTaskIds` includes AGENT-PLATFORM-ORCH-PERSIST-01
+- [x] Occupancy EMPTY; no lane admitted; no runtime mutex acquired; no follow-on registered
+- [x] Validator PASS this lock window
+- [x] No Git commit/push by the worker
 
 ---
 
@@ -593,10 +607,10 @@ Cannot invalidate locked ORCH-ARCH-01 / BUILDER-LIVE-GATE-01 / PM2-FENCE-01 / EX
 
 ---
 
-## 13. Authorization state (end of Step 3 reconciliation)
+## 13. Authorization state (end of Step 4 lock)
 
 ```
-IMPLEMENTATION_AUTHORIZED=YES (Step 3 source COMPLETE; frozen 9-file write set only)
+IMPLEMENTATION_AUTHORIZED=YES (Step 3 source COMPLETE AND LOCKED; frozen 9-file write set only)
 ADMISSION_AUTHORIZED=NO
 STAGING_AUTHORIZED=NO
 MIGRATION_EXECUTION_AUTHORIZED=NO
@@ -604,16 +618,19 @@ LOCAL_RUNTIME_AUTHORIZED=NO
 PROVIDER_LIVE_AUTHORIZED=NO
 CREDIT_AUTHORIZED=NO
 TESTS_EXECUTED=YES (isolatedModules orchestration suite 4/4 91 passed; default Jest/tsc blocked only by pre-existing queue.service.ts TS2322)
-APPLICATION_SOURCE_CHANGED=YES (frozen 9-file write set only; this reconciliation does not behavior-change those files)
+APPLICATION_SOURCE_CHANGED=YES (frozen 9-file write set only; committed at 11daf38; this lock does not behavior-change those files)
 LANE_1=EMPTY
 LANE_2=EMPTY
 GATEWAY_ACQUIRED=NO
 MIGRATION_ACQUIRED=NO
-STEP4_AUTHORIZED=NO
+STEP4_AUTHORIZED=YES
+STEP4_COMPLETE=YES
+LOCKED=YES
+FOLLOW_ON_REGISTERED=NO
 EXEC_01C6A_REOPENED=NO
 ```
 
-Previous (end of Step 2): IMPLEMENTATION_AUTHORIZED=NO; ADMISSION_AUTHORIZED=NO; TESTS_EXECUTED=NO; APPLICATION_SOURCE_CHANGED=NO.
+Previous (end of Step 3 reconciliation): IMPLEMENTATION_AUTHORIZED=YES; ADMISSION_AUTHORIZED=NO; STEP4_AUTHORIZED=NO; LOCKED not set.
 
 ---
 
@@ -627,6 +644,8 @@ Governance writes (Step 2): this stage-start freeze; `TASKS.md` CURRENT EXECUTIO
 
 **Step 3 reconciliation ledger (this window):** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=0, application source=0, package install=0, migrations authored=0, migrations applied=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0. Governance writes: this stage-start Step 3 record; `TASKS.md` CURRENT EXECUTION BOARD fields; `TASKS_BACKLOG_FULL.md` PERSIST-01 body; sidecar occupancy/candidate machine fields unchanged; `SATURATION_PROOF.json` only as validator output. Occupancy facts unchanged (EMPTY / GOVERNANCE UNOWNED).
 
+**Step 4 lock ledger (this window):** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=0, application source=0, package install=0, migrations authored=0, migrations applied=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0, follow-on registration=0. Governance writes: this stage-start Step 4 checkpoint; `TASKS.md` CURRENT EXECUTION BOARD fields; `TASKS_BACKLOG_FULL.md` PERSIST-01 body; sidecar candidate `status=LOCKED` / `admissionUncertain=false` + `lockedTaskIds`; `SATURATION_PROOF.json` only as validator output. Occupancy facts unchanged (EMPTY / GOVERNANCE UNOWNED).
+
 **Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED.
 
 **Lane 3 invariant:** Lane 3 remains DISABLED.
@@ -634,4 +653,37 @@ Governance writes (Step 2): this stage-start freeze; `TASKS.md` CURRENT EXECUTIO
 **Product-visible orchestration / Harness:** FUTURE / gated / disabled / unavailable.
 
 **Activation effect:** NONE
-**Rollback boundary:** Step 2 = discard this document’s freeze plus that window’s board/registry/sidecar write-set field updates. Step 3 source = delete the five created files and restore the four modified files. This reconciliation = discard this window’s board/registry/stage-start Step 3 field updates. Ordinary Builder path and the live gate are untouched.
+**Rollback boundary:** Step 2 = discard this document’s freeze plus that window’s board/registry/sidecar write-set field updates. Step 3 source = committed at `11daf38` (do not revert in this lock window). This lock = discard this window’s board/registry/stage-start/sidecar lock field updates. Ordinary Builder path and the live gate are untouched.
+
+---
+
+## 15. Step 4 lock evidence
+
+**Verdict:** AGENT-PLATFORM-ORCH-PERSIST-01 is **COMPLETE AND LOCKED**.
+
+**Committed implementation HEAD:** `11daf38da5839b7b3d364db6eedcccc6e377f4de` (`feat: persist orchestration coordinator`)
+
+**Frozen 9-file write set (implemented):**
+
+Modify:
+
+1. `services/api-gateway/src/orchestration/orchestration.service.ts`
+2. `services/api-gateway/src/orchestration/orchestration.module.ts`
+3. `services/api-gateway/src/orchestration/__tests__/orchestration.service.spec.ts`
+4. `services/api-gateway/src/orchestration/__tests__/orchestration.canary.spec.ts`
+
+Create:
+
+5. `services/api-gateway/src/orchestration/collaboration-run.entity.ts`
+6. `services/api-gateway/src/orchestration/collaboration-referral.entity.ts`
+7. `services/api-gateway/src/orchestration/__tests__/orchestration.persistence.spec.ts`
+8. `services/api-gateway/src/migrations/1773100000000-CreateCollaborationOrchestrationTables.ts`
+9. `services/api-gateway/src/migrations/__tests__/1773100000000-CreateCollaborationOrchestrationTables.spec.ts`
+
+**Tests:** isolatedModules orchestration suite **4 suites / 91 tests passed**. Default Jest and `tsc --noEmit` remain blocked only by pre-existing `services/api-gateway/src/queue/queue.service.ts` TS2322 (`ioredis` vs nested `bullmq`/`ioredis` types). That blocker is outside this write set.
+
+**Migration:** authored only; **not applied**. MIGRATION_EXECUTION_AUTHORIZED=NO.
+
+**Surfaces unchanged:** no HTTP controller/route; no frontend; no product-visible orchestration UI; working single-shot Builder Ask/Build path untouched; no Harness/tool-loop; leaf jobs omit `harnessVersion`; `HARNESS_ENTITLEMENT_PROOF_V1` remains FROZEN and not consumed/mutated.
+
+**Invariants:** EXEC-01C6A `startCondition=NOT_READY` UNCHANGED / not reopened. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. Lane 3 remains DISABLED. No follow-on task registered.
