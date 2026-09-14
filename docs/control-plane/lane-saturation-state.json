@@ -632,11 +632,13 @@
       "writePaths": [
         "services/api-gateway/src/orchestration/orchestration.service.ts",
         "services/api-gateway/src/orchestration/orchestration.module.ts",
-        "services/api-gateway/src/orchestration/orchestration.contracts.ts",
-        "services/api-gateway/src/orchestration/orchestration-audit.recorder.ts",
+        "services/api-gateway/src/orchestration/collaboration-run.entity.ts",
+        "services/api-gateway/src/orchestration/collaboration-referral.entity.ts",
         "services/api-gateway/src/orchestration/__tests__/orchestration.service.spec.ts",
         "services/api-gateway/src/orchestration/__tests__/orchestration.canary.spec.ts",
-        "services/api-gateway/src/entities/index.ts"
+        "services/api-gateway/src/orchestration/__tests__/orchestration.persistence.spec.ts",
+        "services/api-gateway/src/migrations/1773100000000-CreateCollaborationOrchestrationTables.ts",
+        "services/api-gateway/src/migrations/__tests__/1773100000000-CreateCollaborationOrchestrationTables.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
@@ -646,7 +648,7 @@
       "exclusiveCapacity": false,
       "runtimeNeeds": [],
       "admissionUncertain": true,
-      "writeSetPrecision": "PROVISIONAL"
+      "writeSetPrecision": "EXACT"
     }
   ],
   "lockedTaskIds": ["GOV-OS-03", "GOV-OS-03R1", "AGENT-PLATFORM-CREATE-01F", "I18N-SHELL-07", "AGENT-PLATFORM-EXEC-01A", "AGENT-PLATFORM-EXEC-01B", "GOV-AUTH-03", "AGENT-PLATFORM-EXEC-01C1", "AGENT-PLATFORM-EXEC-01C2", "AGENT-PLATFORM-EXEC-01C3", "AGENT-PLATFORM-EXEC-01C4", "AGENT-PLATFORM-EXEC-01C4B", "AGENT-PLATFORM-EXEC-01C5", "AGENT-PLATFORM-EXEC-01C5R1", "AGENT-PLATFORM-EXEC-01C5B1", "AGENT-PLATFORM-EXEC-01C5B2", "AGENT-PLATFORM-EXEC-01C5B", "AGENT-PLATFORM-EXEC-01C-KEY-REVOKE-01", "AGENT-PLATFORM-EXEC-01C-SCHEMA-01", "AGENT-PLATFORM-EXEC-01C-IDENTITY-01", "AGENT-PLATFORM-ORCH-ARCH-01"],
