@@ -75955,6 +75955,145 @@ Step 4 (independent verification / checkpoint / lock):
 
 ---
 
+### PREVIEW-NODE-01 — Node/framework preview productization (first bounded slice)
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=PREVIEW-NODE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-14 — Step 1 COMPLETE (registration / control-plane only) — Step 2 NOT AUTHORIZED — Step 3 NOT AUTHORIZED — Step 4 NOT AUTHORIZED — GOVERNANCE acquired transiently then released UNOWNED — no implementation lane — candidate `status=READY` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true` (`Test-Admissible` = ADMISSION_UNCERTAIN; not in S) — mutex CONTAINER-MANAGER declared not acquired — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — EXEC-01C6A remains MACHINE BLOCKER ENFORCED / sidecar startCondition=NOT_READY UNCHANGED / not reopened / not admitted / not LANE-DONE / not LOCKED — BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON (`GLOBAL_EXECUTION_ENABLED=true`) — product-visible orchestration remains FUTURE/gated — working single-shot Builder Ask/Build path remains the product to complete, not to replace — IMPLEMENTATION_STARTED=NO
+**Task ID:** PREVIEW-NODE-01
+**Title:** Node/framework preview productization (first bounded slice)
+**Family:** BUILDER / PREVIEW (productization of the already-CURRENT `node-dev-server` preview path so Builder can preview real apps, not only the private-beta-proven static `index.html` path; not Harness; not orchestration; not EXEC-01C6A)
+**Parent task:** none. Not a child of AGENT-PLATFORM-EXEC-01C6A. Does **not** reopen EXEC-01C6A. Unlocked EXEC-01C6A / EXEC-01C6 / EXEC-01C MUST NOT appear in machine `dependsOn`. Historical locked PREVIEW-STRATEGY-01A / PREVIEW-STATIC-01B / PREVIEW-AUTOSTART-01A are static-html predecessors, not this registration, and are not machine `dependsOn` (not in `lockedTaskIds`).
+**Workstream:** CORE (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (high-risk; container process launch, ports, process-proxy, sandbox npm/dev-server behavior)
+**Development program:** CURRENT Builder-completion product frontier. Keith 2026-09-14 named complete Builder first as the core ainow.biz product and forbade switching to orchestration unless required for Builder completion. Light CURRENT/FUTURE check: `PRD.md` CURRENT includes integrated workspace preview, HTTP/WebSocket (HMR/dev servers), and preview refresh after file actions. `ARCHITECTURE.md` records `PreviewStrategyResolver` `node-dev-server` via `package.json` as CURRENT HOW, and records that the private-beta proven path is **static `index.html`**. This child productizes that already-CURRENT HOW. It does **not** promote Harness, orchestration, Stripe, apex cutover, or invitations into CURRENT product.
+**Product-visible Harness / orchestration capability:** FUTURE / gated / disabled / unavailable. Unchanged.
+**Classification:** CURRENT required Builder-completion slice (Keith-named). Machine `productClass=CURRENT` with `futureAuthorization=NONE`. Activation effect of this registration: NONE.
+**Lifecycle:** 4-STEP HIGH-RISK (container process / preview proxy / framework start; must not collapse diagnosis, exact write-set freeze, source authorship, and lock into one unreviewed step):
+1. Step 1 — registration — COMPLETE — 2026-09-14 — control-plane only; no implementation; no admission; no stage-start; no ARCHITECTURE.md / PRD.md rewrite; no runtime procedure.
+2. Step 2 — stage-start / exact first-slice freeze — NOT AUTHORIZED this window.
+3. Step 3 — bounded implementation of the frozen write set — NOT AUTHORIZED this window.
+4. Step 4 — independent verification / checkpoint / lock — NOT AUTHORIZED this window.
+**Start condition:** READY (satisfied for this registration). NOT ADMITTED to an implementation lane. Occupies no implementation lane. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. EXEC-01C6A sidecar `startCondition=NOT_READY` remains UNCHANGED. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. Candidate `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true`.
+**Depends on (canonical / human):** Keith 2026-09-14 authorization to select and register the next Builder-completion workstream. BUILDER-LIVE-GATE-01 COMPLETE AND LOCKED (gate LEFT ON). Staging-proven static Preview remains the baseline that must not regress. Does not depend on unfinished implementation output from another admitted lane. Unlocked EXEC-01C6A / EXEC-01C6 / EXEC-01C are not dependencies. Orchestration is not required for this Builder slice.
+**Depends on (machine sidecar `dependsOn`):** `[]`. Unlocked EXEC-01C6A / EXEC-01C6 / EXEC-01C MUST NOT appear in machine `dependsOn`.
+**Primary write scope (Step 1, this write):** `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body; `docs/control-plane/lane-saturation-state.json` candidate record; `docs/control-plane/SATURATION_PROOF.json` only as validator output. Occupancy remains EMPTY / GOVERNANCE UNOWNED at end of this write. No application source. No test file. No stage-start. No checkpoint. No ARCHITECTURE.md / PRD.md / CLAUDE.md / AGENTS.md rewrite. No Git.
+**Primary write scope (Step 2):** NOT FROZEN. Stage-start must freeze the exact first slice and filenames. Not authorized now.
+**Primary write scope (Steps 3–4):** separately authorized after Step 2. Not authorized now.
+**Mutexes / resources (Step 1, this write):** GOVERNANCE held only for this control-plane registration then released UNOWNED. IMPLEMENTATION candidate mutexes declared not acquired: CONTAINER-MANAGER. GOVERNANCE must not appear in the IMPLEMENTATION candidate mutex list. GATEWAY / MIGRATION / AI-SERVICE / FRONTEND / I18N / PACKAGE / COMPOSE / ENV / LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT remain UNOWNED and unauthorized. CONTAINER-MANAGER remains UNOWNED. MIGRATION_EXECUTION_AUTHORIZED=NO.
+**Hot-file leases:** none until Step 2 freeze. CONTAINER-MANAGER covers `services/container-manager/` if the first slice stays inside that service. If Step 2 includes frontend copy, FRONTEND + I18N must be declared then; they are not declared now.
+**Shared contracts:** none consumed or mutated (`sharedContractIds=[]`; `mutatesSharedContractIds=[]`). Frozen catalog ID `HARNESS_ENTITLEMENT_PROOF_V1` remains FROZEN and is not consumed or mutated by this child.
+**Evidence class:** LOCAL-TESTS. No provider-live. No Docker/Postgres/Redis. No STAGING / PROVIDER-LIVE / CREDIT / LOCAL-RUNTIME runtime needs in this Step 1. Staging/browser proof of a Node/framework preview is a later authorized question, not this registration.
+**Revert isolation:** Step 1 revert = discard this child's board/registry/stanza/sidecar-candidate additions and restore Lane 1 / Lane 2 EMPTY and GOVERNANCE UNOWNED (both already unchanged by this write occupancy). Must not mutate EXEC-01C6A prepared artifacts. Cannot invalidate locked BUILDER-LIVE-GATE-01 / ORCH-ARCH-01 / ORCH-PERSIST-01 / PREVIEW-STRATEGY-01A / PREVIEW-STATIC-01B / PREVIEW-AUTOSTART-01A / EXEC-01A / 01B / 01C1..01C5B2 / IDENTITY-01 / SCHEMA-01 / KEY-REVOKE-01 / GOV-AUTH-03 evidence. Parent EXEC-01C6A sidecar `startCondition=NOT_READY` must remain. Lane 1 and Lane 2 remain EMPTY.
+**saturationClass:** FORCING (explicit; first named Builder-completion implementation task; required before later credit-UX / preview-reliability / mobile / onboarding / apex slices). Candidate is not in S because `admissionUncertain=true`. Occupancy remains EMPTY.
+**productClass:** CURRENT
+**futureAuthorization:** NONE — schema requires `futureAuthorization=NONE` when `productClass=CURRENT`. Stripe, Harness-as-default, product-visible orchestration, and apex production cutover remain FUTURE/gated and are not encoded as `AUTHORIZED` FUTURE product.
+**writeSetPrecision:** PROVISIONAL
+**admissionUncertain:** true (not admitted; exact write set not frozen; not in S)
+**exclusiveCapacity:** false
+**runtimeNeeds:** none
+**i18n:** false
+
+**Identifier search:** Repo-wide search for a canonical `PREVIEW-NODE-01` heading, an `AISB_MACHINE_REG_V1` stanza, a current-board occupancy, a sidecar candidate, a `lockedTaskIds` entry, and an equivalent unfinished node/framework preview productization task returned none. `BUILDER-CREDIT-UX-01` appears only as a named later-product exclusion inside locked BUILDER-LIVE-GATE-01 and is **not** registered. Locked PREVIEW-STRATEGY-01A / PREVIEW-STATIC-01B / PREVIEW-AUTOSTART-01A closed the static-html family; they are not this productization. PREVIEW-NODE-01 is the smallest correct first Builder-completion implementation ID.
+
+**Source-grounded gap this child exists to close:**
+- Resolver already detects Next.js / CRA / Vite / Vue / Express / generic `package.json` scripts and returns `node-dev-server` (`services/container-manager/src/preview/preview-strategy.resolver.ts`).
+- `PreviewService.startPreview` already launches a non-static command in the session container and waits briefly for a port.
+- Living authority still records the private-beta proven path as static `index.html` only (`ARCHITECTURE.md` §6; `docs/GOV-ARCH-02-STAGE-START.md`).
+- First-slice diagnosis must freeze what is missing for a trustworthy framework preview (typical gaps: `npm install` / `node_modules`, host bind `0.0.0.0`, wait/health, user-visible starting/error, one named framework vs all frameworks) without regressing static HTML.
+
+**This registration does not authorize:**
+Implementation source changes; frontend work; i18n; tests except the lane-capacity validator; staging/SSH/AWS/PM2/env/provider/credit; Docker/Postgres/Redis; Harness enablement; EXEC-01C6A reopen; PRIVATE-BETA-INVITE-01; Git commit/push; Stripe / live payment / credit top-up; apex/domain production routing; registering BUILDER-CREDIT-UX-01 or later named children; rewriting `ARCHITECTURE.md` / `PRD.md` / `CLAUDE.md` / `AGENTS.md`. Runtime authorization must remain entirely false.
+
+**Mandatory Step 2 questions (stage-start must resolve every one before source implementation):**
+1. Exact first slice: which one framework or generic `package.json` path is in scope, and which are deferred.
+2. Whether `npm install` / `node_modules` creation inside the sandbox is in slice 1, and the exact install command/timeout/failure UX.
+3. How Vite/Next/dev-server host bind is made reachable through the existing process-proxy (typically `0.0.0.0` / `$PORT`) without changing static-html `direct-read`.
+4. Whether the existing shell-launch in `preview.service.ts` is kept, narrowed, or replaced, and the exact wait/health contract (today ~5s `starting` vs `running`).
+5. Exact container-manager filenames in the frozen write set.
+6. Whether frontend starting/error/refresh UX is in slice 1 (if yes: FRONTEND + I18N must be declared; multilingual-first copy required).
+7. How the proven static `index.html` path remains untouched and still auto-starts.
+8. Test requirements proving: chosen framework path starts or fails closed with a user-safe diagnostic; static HTML still works; Ask/Build execute path unchanged.
+9. Confirmation that no Harness, orchestration, Stripe, apex DNS, or invitation work is included.
+10. Whether any STAGING/browser proof is a later child, not this first slice.
+
+**Named later Builder-completion children (NOT registered this window):**
+- BUILDER-CREDIT-UX-01 — workspace 402 / insufficient-balance UX on the already-CURRENT credit model (no Stripe)
+- later preview reliability / refresh behavior (beyond this first node-preview slice)
+- later mobile / layout polish
+- later friendly error handling and onboarding/help copy
+- later apex / domain production routing (`ainow.biz` vs `staging.ainow.biz`)
+Stripe / live payment remains APPROVED FUTURE / not needed for Builder completion while admin credit grants exist.
+
+**Keith-decision boundary:**
+KEITH_DECISION_REQUIRED_BEFORE_REGISTRATION=NO (this window is the authorized registration)
+KEITH_DECISION_REQUIRED_BEFORE_STAGE_START=YES
+KEITH_DECISION_REQUIRED_BEFORE_ADMISSION=YES
+KEITH_DECISION_REQUIRED_BEFORE_IMPLEMENTATION=YES
+KEITH_DECISION_REQUIRED_BEFORE_STAGING_OR_BROWSER_PROOF=YES
+KEITH_DECISION_REQUIRED_BEFORE_REOPENING_EXEC_01C6A=YES
+KEITH_DECISION_REQUIRED_BEFORE_HARNESS_ENABLEMENT=YES
+KEITH_DECISION_REQUIRED_BEFORE_STRIPE_OR_TOP_UP=YES
+KEITH_DECISION_REQUIRED_BEFORE_APEX_PRODUCTION_ROUTING=YES
+KEITH_DECISION_REQUIRED_BEFORE_REGISTERING_NAMED_CHILDREN=YES
+This registration does **not** reopen EXEC-01C6A. It does **not** change BUILDER-LIVE-GATE-01. Gate remains ON.
+
+**Registered purpose (Step 1 — identity and bounded productization scope only):**
+- Make node/framework preview a trustworthy Builder product path, not only a resolver detection
+- Freeze later (Step 2) the smallest first slice of that productization
+- Keep the proven static `index.html` Preview path working
+- Occupy no implementation lane until a later authorized admission
+- Leave credit UX, apex routing, Stripe, orchestration, and invitations unregistered
+
+**Activation effect:** NONE
+**Rollback boundary:** Step 1 = discard this child's board/registry/stanza/sidecar-candidate additions. No implementation to roll back. Ordinary Builder Ask/Build/static Preview path and the live gate are untouched.
+
+**Machine registration (post-epoch):** Present exactly once immediately under this canonical heading (`taskId=PREVIEW-NODE-01`, `nature=IMPLEMENTATION`). Enforcement epoch unchanged. Do not duplicate the machine-registration markers elsewhere in this body. Sidecar candidate required (`saturationClass=FORCING`). Occupancy remains EMPTY. Do not admit a lane in this window. Do not register follow-on tasks. Do not reopen AGENT-PLATFORM-EXEC-01C6A.
+
+**Lane / admission:**
+REGISTERED / READY / NOT ADMITTED — IMPLEMENTATION — Step 1 COMPLETE — Steps 2-4 NOT AUTHORIZED — 2026-09-14. This child does not occupy a lane. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. Occupancy hash `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d`. Candidate is not in S (`ADMISSION_UNCERTAIN`). EXEC-01C6A remains `startCondition=NOT_READY` / not in S / not reopened. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON.
+
+#### Acceptance Criteria
+
+Step 1 (Registration):
+- [x] canonical ID PREVIEW-NODE-01 verified unused
+- [x] equivalent unfinished task NONE
+- [x] 4-step IMPLEMENTATION lifecycle recorded
+- [x] CURRENT vs FUTURE check recorded (node-dev-server is CURRENT HOW; proven path remains static HTML; Stripe/orchestration/Harness/apex/invites stay out)
+- [x] CONTAINER-MANAGER mutex declared conservatively and not acquired
+- [x] provisional write set recorded; exact freeze deferred to Step 2
+- [x] named later children recorded and not registered
+- [x] does not reopen EXEC-01C6A
+- [x] must not change EXEC-01C6A `startCondition=NOT_READY`
+- [x] BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON
+- [x] post-epoch machine stanza exactly once (`nature=IMPLEMENTATION`)
+- [x] sidecar candidate present (`saturationClass=FORCING`)
+- [x] Lane 1 EMPTY
+- [x] Lane 2 EMPTY
+- [x] Lane 3 DISABLED
+- [x] PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED
+- [x] No Git commit/push by the worker
+
+Step 2 (stage-start / exact first-slice freeze):
+- [ ] NOT AUTHORIZED this window
+
+Step 3 (implementation):
+- [ ] NOT AUTHORIZED this window
+
+Step 4 (checkpoint / lock):
+- [ ] NOT AUTHORIZED this window
+
+**Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. INVITATION_EXECUTION_PERMITTED=NO. Unchanged.
+
+**Lane 3 invariant:** Lane 3 remains DISABLED. Unchanged.
+
+**Step 1 HEAD:** not queried this window (Keith instruction: Do not Git)
+**Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=0, application source=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0, named children registered=0. Governance writes: TASKS.md CURRENT EXECUTION BOARD fields; this registry body; sidecar candidate; occupancy facts unchanged at end-state (EMPTY / GOVERNANCE UNOWNED); SATURATION_PROOF.json only as validator output.
+
+---
+
 ### BUILDER-LIVE-GATE-01 — Durable GLOBAL_EXECUTION_ENABLED=true for normal Builder Ask/Build on ainow.biz
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=BUILDER-LIVE-GATE-01
