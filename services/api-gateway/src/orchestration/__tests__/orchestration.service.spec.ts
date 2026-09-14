@@ -1,5 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { OrchestrationService } from '../orchestration.service';
+import { CollaborationRunEntity } from '../collaboration-run.entity';
+import { CollaborationReferralEntity } from '../collaboration-referral.entity';
 import {
   DEFAULT_MAX_AGENTS_PER_COLLABORATION,
   DEFAULT_MAX_REFERRAL_DEPTH,
@@ -12,6 +15,98 @@ import {
 import { QueueService } from '../../queue/queue.service';
 import { ExecutionResultService } from '../../ai/execution-result.service';
 import { InMemoryOrchestrationAuditRecorder } from '../orchestration-audit.recorder';
+
+function cloneRow<T>(row: T): T {
+  const copy = { ...(row as Record<string, unknown>) };
+  for (const key of Object.keys(copy)) {
+    const value = copy[key];
+    if (value instanceof Date) {
+      copy[key] = new Date(value.getTime());
+    } else if (Array.isArray(value)) {
+      copy[key] = [...value];
+    }
+  }
+  return copy as T;
+}
+
+function matchesWhere(row: unknown, where?: Record<string, unknown>): boolean {
+  if (!where) {
+    return true;
+  }
+  const record = row as Record<string, unknown>;
+  return Object.entries(where).every(([key, expected]) => record[key] === expected);
+}
+
+function createOrchestrationRepoFakes() {
+  const runs = new Map<string, CollaborationRunEntity>();
+  const referrals = new Map<string, CollaborationReferralEntity>();
+
+  const createRepo = <T>(store: Map<string, T>, pk: string) => {
+    const repo: {
+      findOne: (opts: { where: Record<string, unknown> }) => Promise<T | null>;
+      find: (opts?: { where?: Record<string, unknown> }) => Promise<T[]>;
+      save: (entity: T) => Promise<T>;
+      manager: {
+        transaction: <R>(cb: (em: unknown) => Promise<R>) => Promise<R>;
+        getRepository: (entity: unknown) => unknown;
+      };
+    } = {
+      findOne: async ({ where }) => {
+        for (const row of store.values()) {
+          if (matchesWhere(row, where)) {
+            return cloneRow(row);
+          }
+        }
+        return null;
+      },
+      find: async (opts = {}) =>
+        [...store.values()]
+          .filter((row) => matchesWhere(row, opts.where))
+          .map((row) => cloneRow(row)),
+      save: async (entity) => {
+        const copy = cloneRow(entity);
+        store.set(String((copy as Record<string, unknown>)[pk]), copy);
+        return cloneRow(copy);
+      },
+      manager: {
+        transaction: async <R>(cb: (em: unknown) => Promise<R>) => cb(undefined),
+        getRepository: () => undefined,
+      },
+    };
+    return repo;
+  };
+
+  const runRepo = createRepo(runs, 'collaborationRunId');
+  const referralRepo = createRepo(referrals, 'referralId');
+  const manager = {
+    transaction: async <R>(cb: (em: typeof manager) => Promise<R>) => cb(manager),
+    getRepository: (entity: unknown) => {
+      if (entity === CollaborationRunEntity) {
+        return runRepo;
+      }
+      if (entity === CollaborationReferralEntity) {
+        return referralRepo;
+      }
+      throw new Error('Unknown orchestration entity');
+    },
+  };
+  runRepo.manager = manager;
+  referralRepo.manager = manager;
+  return { runRepo, referralRepo };
+}
+
+function orchestrationRepositoryProviders(fakes = createOrchestrationRepoFakes()) {
+  return [
+    {
+      provide: getRepositoryToken(CollaborationRunEntity),
+      useValue: fakes.runRepo,
+    },
+    {
+      provide: getRepositoryToken(CollaborationReferralEntity),
+      useValue: fakes.referralRepo,
+    },
+  ];
+}
 
 describe('OrchestrationService', () => {
   let service: OrchestrationService;
@@ -29,6 +124,7 @@ describe('OrchestrationService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OrchestrationService,
+        ...orchestrationRepositoryProviders(),
         { provide: QueueService, useValue: mockQueueService },
         { provide: ExecutionResultService, useValue: mockExecutionResultService },
       ],
@@ -37,11 +133,11 @@ describe('OrchestrationService', () => {
     service = module.get<OrchestrationService>(OrchestrationService);
   });
 
-  it('is defined via Nest testing module', () => {
+  it('is defined via Nest testing module', async () => {
     expect(service).toBeDefined();
   });
 
-  it('returns default read-only referral constraints', () => {
+  it('returns default read-only referral constraints', async () => {
     const constraints = service.getDefaultReferralConstraints();
 
     expect(constraints.maxDepth).toBe(DEFAULT_MAX_REFERRAL_DEPTH);
@@ -53,7 +149,7 @@ describe('OrchestrationService', () => {
     expect(constraints.allowedTools).toEqual(['list_files', 'read_file']);
   });
 
-  it('returns a read-only policy that blocks write tools', () => {
+  it('returns a read-only policy that blocks write tools', async () => {
     const policy = service.getReadOnlyPolicy();
 
     expect(policy.mode).toBe(READ_ONLY_MODE_INDICATOR);
@@ -63,8 +159,8 @@ describe('OrchestrationService', () => {
     expect(policy.blockedToolIds).toEqual([...READ_ONLY_BLOCKED_TOOL_IDS]);
   });
 
-  it('creates and retrieves a collaboration run', () => {
-    const created = service.createCollaborationRun({
+  it('creates and retrieves a collaboration run', async () => {
+    const created = await service.createCollaborationRun({
       collaborationRunId: 'collab-01',
       userId: 'user-01',
       projectId: 'project-01',
@@ -74,7 +170,7 @@ describe('OrchestrationService', () => {
       },
     });
 
-    const fetched = service.getCollaborationRun('collab-01');
+    const fetched = await service.getCollaborationRun('collab-01');
 
     expect(created.collaborationRunId).toBe('collab-01');
     expect(created.status).toBe('active');
@@ -83,8 +179,8 @@ describe('OrchestrationService', () => {
     expect(fetched).toEqual(created);
   });
 
-  it('creates and retrieves a referral', () => {
-    service.createCollaborationRun({
+  it('creates and retrieves a referral', async () => {
+    await service.createCollaborationRun({
       collaborationRunId: 'collab-02',
       userId: 'user-01',
       projectId: 'project-01',
@@ -94,7 +190,7 @@ describe('OrchestrationService', () => {
       },
     });
 
-    const created = service.createReferral({
+    const created = await service.createReferral({
       referralId: 'ref-02',
       referralTraceId: 'trace-02',
       collaborationRunId: 'collab-02',
@@ -116,7 +212,7 @@ describe('OrchestrationService', () => {
       },
     });
 
-    const fetched = service.getReferral('ref-02');
+    const fetched = await service.getReferral('ref-02');
 
     expect(created.referralId).toBe('ref-02');
     expect(created.referralTraceId).toBe('trace-02');
@@ -125,8 +221,8 @@ describe('OrchestrationService', () => {
     expect(fetched).toEqual(created);
   });
 
-  it('completeReferral updates referral status and result', () => {
-    service.createCollaborationRun({
+  it('completeReferral updates referral status and result', async () => {
+    await service.createCollaborationRun({
       collaborationRunId: 'collab-03',
       userId: 'user-01',
       projectId: 'project-01',
@@ -136,7 +232,7 @@ describe('OrchestrationService', () => {
       },
     });
 
-    service.createReferral({
+    await service.createReferral({
       referralId: 'ref-03',
       referralTraceId: 'trace-03',
       collaborationRunId: 'collab-03',
@@ -154,7 +250,7 @@ describe('OrchestrationService', () => {
       depth: 1,
     });
 
-    const completed = service.completeReferral({
+    const completed = await service.completeReferral({
       referralId: 'ref-03',
       summary: 'Completed successfully',
       outputFiles: ['/tmp/summary.md'],
@@ -176,8 +272,8 @@ describe('OrchestrationService', () => {
     });
   });
 
-  it('failReferral updates referral status and result', () => {
-    service.createCollaborationRun({
+  it('failReferral updates referral status and result', async () => {
+    await service.createCollaborationRun({
       collaborationRunId: 'collab-04',
       userId: 'user-01',
       projectId: 'project-01',
@@ -187,7 +283,7 @@ describe('OrchestrationService', () => {
       },
     });
 
-    service.createReferral({
+    await service.createReferral({
       referralId: 'ref-04',
       referralTraceId: 'trace-04',
       collaborationRunId: 'collab-04',
@@ -205,7 +301,7 @@ describe('OrchestrationService', () => {
       depth: 1,
     });
 
-    const failed = service.failReferral({
+    const failed = await service.failReferral({
       referralId: 'ref-04',
       summary: 'Execution failed',
       outputFiles: [],
@@ -227,8 +323,8 @@ describe('OrchestrationService', () => {
     });
   });
 
-  it('enforces default max depth of 3', () => {
-    service.createCollaborationRun({
+  it('enforces default max depth of 3', async () => {
+    await service.createCollaborationRun({
       collaborationRunId: 'collab-05',
       userId: 'user-01',
       projectId: 'project-01',
@@ -238,7 +334,7 @@ describe('OrchestrationService', () => {
       },
     });
 
-    expect(() =>
+    await expect(
       service.validateReferral({
         collaborationRunId: 'collab-05',
         sourceBuilderProfileId: 'builder-a',
@@ -246,11 +342,11 @@ describe('OrchestrationService', () => {
         idempotencyKey: 'key-05',
         depth: DEFAULT_MAX_REFERRAL_DEPTH,
       }),
-    ).toThrow(/exceeds max depth/i);
+    ).rejects.toThrow(/exceeds max depth/i);
   });
 
-  it('enforces default max agents of 4', () => {
-    service.createCollaborationRun({
+  it('enforces default max agents of 4', async () => {
+    await service.createCollaborationRun({
       collaborationRunId: 'collab-06',
       userId: 'user-01',
       projectId: 'project-01',
@@ -260,7 +356,7 @@ describe('OrchestrationService', () => {
       },
     });
 
-    service.createReferral({
+    await service.createReferral({
       referralId: 'ref-06-1',
       collaborationRunId: 'collab-06',
       sourceBuilder: {
@@ -274,7 +370,7 @@ describe('OrchestrationService', () => {
       idempotencyKey: 'key-06-1',
     });
 
-    service.createReferral({
+    await service.createReferral({
       referralId: 'ref-06-2',
       collaborationRunId: 'collab-06',
       sourceBuilder: {
@@ -288,7 +384,7 @@ describe('OrchestrationService', () => {
       idempotencyKey: 'key-06-2',
     });
 
-    service.createReferral({
+    await service.createReferral({
       referralId: 'ref-06-3',
       collaborationRunId: 'collab-06',
       sourceBuilder: {
@@ -302,18 +398,18 @@ describe('OrchestrationService', () => {
       idempotencyKey: 'key-06-3',
     });
 
-    expect(() =>
+    await expect(
       service.validateReferral({
         collaborationRunId: 'collab-06',
         sourceBuilderProfileId: 'builder-d',
         targetBuilderProfileId: 'builder-e',
         idempotencyKey: 'key-06-4',
       }),
-    ).toThrow(/max agents/i);
+    ).rejects.toThrow(/max agents/i);
   });
 
-  it('uses idempotency key to return existing referral deterministically', () => {
-    service.createCollaborationRun({
+  it('uses idempotency key to return existing referral deterministically', async () => {
+    await service.createCollaborationRun({
       collaborationRunId: 'collab-07',
       userId: 'user-01',
       projectId: 'project-01',
@@ -323,7 +419,7 @@ describe('OrchestrationService', () => {
       },
     });
 
-    const first = service.createReferral({
+    const first = await service.createReferral({
       referralId: 'ref-07',
       referralTraceId: 'trace-07',
       collaborationRunId: 'collab-07',
@@ -338,7 +434,7 @@ describe('OrchestrationService', () => {
       idempotencyKey: 'idempotency-07',
     });
 
-    const second = service.createReferral({
+    const second = await service.createReferral({
       referralId: 'ref-07-duplicate',
       referralTraceId: 'trace-07-duplicate',
       collaborationRunId: 'collab-07',
@@ -357,8 +453,8 @@ describe('OrchestrationService', () => {
     expect(second.referralTraceId).toBe(first.referralTraceId);
   });
 
-  it('rejects looped referrals when target builder is already visited', () => {
-    service.createCollaborationRun({
+  it('rejects looped referrals when target builder is already visited', async () => {
+    await service.createCollaborationRun({
       collaborationRunId: 'collab-08',
       userId: 'user-01',
       projectId: 'project-01',
@@ -368,7 +464,7 @@ describe('OrchestrationService', () => {
       },
     });
 
-    expect(() =>
+    await expect(
       service.validateReferral({
         collaborationRunId: 'collab-08',
         sourceBuilderProfileId: 'builder-b',
@@ -376,11 +472,11 @@ describe('OrchestrationService', () => {
         idempotencyKey: 'key-08',
         visitedBuilderProfileIds: ['builder-a', 'builder-b'],
       }),
-    ).toThrow(/loop detected/i);
+    ).rejects.toThrow(/loop detected/i);
   });
 
-  it('enforces read-only policy by blocking write-enabled constraints', () => {
-    service.createCollaborationRun({
+  it('enforces read-only policy by blocking write-enabled constraints', async () => {
+    await service.createCollaborationRun({
       collaborationRunId: 'collab-09',
       userId: 'user-01',
       projectId: 'project-01',
@@ -390,7 +486,7 @@ describe('OrchestrationService', () => {
       },
     });
 
-    expect(() =>
+    await expect(
       service.createReferral({
         collaborationRunId: 'collab-09',
         sourceBuilder: {
@@ -408,11 +504,11 @@ describe('OrchestrationService', () => {
           allowedTools: ['write_file'],
         },
       }),
-    ).toThrow(/read-only/i);
+    ).rejects.toThrow(/read-only/i);
   });
 
-  it('runs without queue or runtime provider dependencies', () => {
-    const run = service.createCollaborationRun({
+  it('runs without queue or runtime provider dependencies', async () => {
+    const run = await service.createCollaborationRun({
       collaborationRunId: 'collab-10',
       userId: 'user-01',
       projectId: 'project-01',
@@ -422,7 +518,7 @@ describe('OrchestrationService', () => {
       },
     });
 
-    const referral = service.createReferral({
+    const referral = await service.createReferral({
       referralId: 'ref-10',
       collaborationRunId: run.collaborationRunId,
       sourceBuilder: {
@@ -458,6 +554,7 @@ describe('AGENT-PLATFORM-07C2: startReferralExecution', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OrchestrationService,
+        ...orchestrationRepositoryProviders(),
         { provide: QueueService, useValue: mockQueueService },
         { provide: ExecutionResultService, useValue: mockExecutionResultService },
       ],
@@ -466,18 +563,18 @@ describe('AGENT-PLATFORM-07C2: startReferralExecution', () => {
     service = module.get<OrchestrationService>(OrchestrationService);
   });
 
-  function setupReferral(overrides?: { referralId?: string; collabId?: string }) {
+  async function setupReferral(overrides?: { referralId?: string; collabId?: string }) {
     const collabId = overrides?.collabId ?? 'collab-exec-01';
     const refId = overrides?.referralId ?? 'ref-exec-01';
 
-    service.createCollaborationRun({
+    await service.createCollaborationRun({
       collaborationRunId: collabId,
       userId: 'user-01',
       projectId: 'project-01',
       initiatorAgent: { agentRole: 'builder', builderProfileId: 'builder-a' },
     });
 
-    return service.createReferral({
+    return await service.createReferral({
       referralId: refId,
       referralTraceId: `trace-${refId}`,
       collaborationRunId: collabId,
@@ -510,7 +607,7 @@ describe('AGENT-PLATFORM-07C2: startReferralExecution', () => {
   }
 
   it('builds enriched job payload with all orchestration metadata fields', async () => {
-    const referral = setupReferral();
+    const referral = await setupReferral();
     await service.startReferralExecution(baseExecutionInput(referral.referralId));
 
     expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
@@ -529,16 +626,16 @@ describe('AGENT-PLATFORM-07C2: startReferralExecution', () => {
   });
 
   it('transitions referral to in_progress', async () => {
-    const referral = setupReferral();
+    const referral = await setupReferral();
     await service.startReferralExecution(baseExecutionInput(referral.referralId));
 
-    const updated = service.getReferral(referral.referralId);
+    const updated = await service.getReferral(referral.referralId);
     expect(updated!.status).toBe('in_progress');
   });
 
   it('rejects if referral is not in a valid starting state', async () => {
-    const referral = setupReferral();
-    service.completeReferral({
+    const referral = await setupReferral();
+    await service.completeReferral({
       referralId: referral.referralId,
       summary: 'done',
     });
@@ -548,8 +645,8 @@ describe('AGENT-PLATFORM-07C2: startReferralExecution', () => {
     ).rejects.toThrow(/cannot start execution/i);
   });
 
-  it('records executionId in private map for cancel lookup', async () => {
-    const referral = setupReferral();
+  it('records executionId on the referral row for cancel lookup', async () => {
+    const referral = await setupReferral();
     await service.startReferralExecution(baseExecutionInput(referral.referralId));
 
     await service.cancelReferral({
@@ -562,14 +659,14 @@ describe('AGENT-PLATFORM-07C2: startReferralExecution', () => {
   });
 
   it('enforces read-only constraints before enqueue', async () => {
-    service.createCollaborationRun({
+    await service.createCollaborationRun({
       collaborationRunId: 'collab-ro-check',
       userId: 'user-01',
       projectId: 'project-01',
       initiatorAgent: { agentRole: 'builder', builderProfileId: 'builder-a' },
     });
 
-    expect(() =>
+    await expect(
       service.createReferral({
         referralId: 'ref-ro-check',
         collaborationRunId: 'collab-ro-check',
@@ -578,13 +675,13 @@ describe('AGENT-PLATFORM-07C2: startReferralExecution', () => {
         idempotencyKey: 'key-ro-check',
         constraints: { readOnly: false, allowWriteTools: true },
       }),
-    ).toThrow(/read-only/i);
+    ).rejects.toThrow(/read-only/i);
 
     expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
   });
 
   it('AGENT-PLATFORM-EXEC-01C5B1: strips caller-provided harnessVersion from the enqueued referral job', async () => {
-    const referral = setupReferral({ referralId: 'ref-01c5b1-strip', collabId: 'collab-01c5b1-strip' });
+    const referral = await setupReferral({ referralId: 'ref-01c5b1-strip', collabId: 'collab-01c5b1-strip' });
     await service.startReferralExecution(baseExecutionInput(referral.referralId));
 
     expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
@@ -596,7 +693,7 @@ describe('AGENT-PLATFORM-07C2: startReferralExecution', () => {
   });
 
   it('AGENT-PLATFORM-EXEC-01C5B1: referral input without harnessVersion retains existing enqueue behavior', async () => {
-    const referral = setupReferral({ referralId: 'ref-01c5b1-plain', collabId: 'collab-01c5b1-plain' });
+    const referral = await setupReferral({ referralId: 'ref-01c5b1-plain', collabId: 'collab-01c5b1-plain' });
     const { harnessVersion: _omitted, ...inputWithoutHarness } = baseExecutionInput(
       referral.referralId,
     );
@@ -617,7 +714,7 @@ describe('AGENT-PLATFORM-07C2: startReferralExecution', () => {
   });
 
   it('AGENT-PLATFORM-EXEC-01C5B1: does not manufacture a harnessEntitlementProof', async () => {
-    const referral = setupReferral({ referralId: 'ref-01c5b1-proof', collabId: 'collab-01c5b1-proof' });
+    const referral = await setupReferral({ referralId: 'ref-01c5b1-proof', collabId: 'collab-01c5b1-proof' });
     await service.startReferralExecution(baseExecutionInput(referral.referralId));
 
     const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
@@ -641,6 +738,7 @@ describe('AGENT-PLATFORM-07C2: cancelReferral', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OrchestrationService,
+        ...orchestrationRepositoryProviders(),
         { provide: QueueService, useValue: mockQueueService },
         { provide: ExecutionResultService, useValue: mockExecutionResultService },
       ],
@@ -649,15 +747,15 @@ describe('AGENT-PLATFORM-07C2: cancelReferral', () => {
     service = module.get<OrchestrationService>(OrchestrationService);
   });
 
-  function setupStartedReferral() {
-    service.createCollaborationRun({
+  async function setupStartedReferral() {
+    await service.createCollaborationRun({
       collaborationRunId: 'collab-cancel-01',
       userId: 'user-01',
       projectId: 'project-01',
       initiatorAgent: { agentRole: 'builder', builderProfileId: 'builder-a' },
     });
 
-    service.createReferral({
+    await service.createReferral({
       referralId: 'ref-cancel-01',
       referralTraceId: 'trace-cancel-01',
       collaborationRunId: 'collab-cancel-01',
@@ -755,6 +853,7 @@ describe('AGENT-PLATFORM-07C2: cancelCollaboration', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OrchestrationService,
+        ...orchestrationRepositoryProviders(),
         { provide: QueueService, useValue: mockQueueService },
         { provide: ExecutionResultService, useValue: mockExecutionResultService },
       ],
@@ -764,14 +863,14 @@ describe('AGENT-PLATFORM-07C2: cancelCollaboration', () => {
   });
 
   it('cascade-cancels all active referral executions', async () => {
-    service.createCollaborationRun({
+    await service.createCollaborationRun({
       collaborationRunId: 'collab-cascade-01',
       userId: 'user-01',
       projectId: 'project-01',
       initiatorAgent: { agentRole: 'builder', builderProfileId: 'builder-a' },
     });
 
-    service.createReferral({
+    await service.createReferral({
       referralId: 'ref-cascade-01',
       collaborationRunId: 'collab-cascade-01',
       sourceBuilder: { agentRole: 'builder', builderProfileId: 'builder-a' },
@@ -779,7 +878,7 @@ describe('AGENT-PLATFORM-07C2: cancelCollaboration', () => {
       idempotencyKey: 'key-cascade-01',
     });
 
-    service.createReferral({
+    await service.createReferral({
       referralId: 'ref-cascade-02',
       collaborationRunId: 'collab-cascade-01',
       sourceBuilder: { agentRole: 'builder', builderProfileId: 'builder-b' },
@@ -822,14 +921,14 @@ describe('AGENT-PLATFORM-07C2: cancelCollaboration', () => {
     expect(mockExecutionResultService.requestCancel).toHaveBeenCalledWith('exec-cascade-01');
     expect(mockExecutionResultService.requestCancel).toHaveBeenCalledWith('exec-cascade-02');
 
-    const ref1 = service.getReferral('ref-cascade-01');
-    const ref2 = service.getReferral('ref-cascade-02');
+    const ref1 = await service.getReferral('ref-cascade-01');
+    const ref2 = await service.getReferral('ref-cascade-02');
     expect(ref1!.status).toBe('cancelled');
     expect(ref2!.status).toBe('cancelled');
   });
 
   it('updates collaboration run status to cancelled', async () => {
-    service.createCollaborationRun({
+    await service.createCollaborationRun({
       collaborationRunId: 'collab-cascade-02',
       userId: 'user-01',
       projectId: 'project-01',
@@ -849,7 +948,7 @@ describe('AGENT-PLATFORM-07C2: cancelCollaboration', () => {
   });
 
   it('enforces userId ownership', async () => {
-    service.createCollaborationRun({
+    await service.createCollaborationRun({
       collaborationRunId: 'collab-cascade-03',
       userId: 'user-01',
       projectId: 'project-01',
@@ -867,7 +966,7 @@ describe('AGENT-PLATFORM-07C2: cancelCollaboration', () => {
 });
 
 describe('AGENT-PLATFORM-07D: InMemoryOrchestrationAuditRecorder', () => {
-  it('records and returns typed orchestration audit events', () => {
+  it('records and returns typed orchestration audit events', async () => {
     const recorder = new InMemoryOrchestrationAuditRecorder();
     const event: OrchestrationAuditEvent = {
       eventType: 'orchestration.collaboration_created',
@@ -889,7 +988,7 @@ describe('AGENT-PLATFORM-07D: InMemoryOrchestrationAuditRecorder', () => {
     expect(recorder.getEvents()).toEqual([event]);
   });
 
-  it('clear removes all in-memory recorded events', () => {
+  it('clear removes all in-memory recorded events', async () => {
     const recorder = new InMemoryOrchestrationAuditRecorder();
     recorder.record({
       eventType: 'orchestration.collaboration_created',
@@ -929,6 +1028,7 @@ describe('AGENT-PLATFORM-07D: OrchestrationService audit emission', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OrchestrationService,
+        ...orchestrationRepositoryProviders(),
         InMemoryOrchestrationAuditRecorder,
         { provide: QueueService, useValue: mockQueueService },
         { provide: ExecutionResultService, useValue: mockExecutionResultService },
@@ -942,8 +1042,8 @@ describe('AGENT-PLATFORM-07D: OrchestrationService audit emission', () => {
     auditRecorder.clear();
   });
 
-  function createRun(collaborationRunId = 'collab-audit-01') {
-    return service.createCollaborationRun({
+  async function createRun(collaborationRunId = 'collab-audit-01') {
+    return await service.createCollaborationRun({
       collaborationRunId,
       userId: 'user-01',
       projectId: 'project-01',
@@ -954,13 +1054,13 @@ describe('AGENT-PLATFORM-07D: OrchestrationService audit emission', () => {
     });
   }
 
-  function createReferral(overrides?: {
+  async function createReferral(overrides?: {
     collaborationRunId?: string;
     referralId?: string;
     referralTraceId?: string;
     idempotencyKey?: string;
   }) {
-    return service.createReferral({
+    return await service.createReferral({
       referralId: overrides?.referralId ?? 'ref-audit-01',
       referralTraceId: overrides?.referralTraceId ?? 'trace-audit-01',
       collaborationRunId: overrides?.collaborationRunId ?? 'collab-audit-01',
@@ -976,8 +1076,8 @@ describe('AGENT-PLATFORM-07D: OrchestrationService audit emission', () => {
     });
   }
 
-  it('createCollaborationRun emits collaboration_started mapped event', () => {
-    createRun('collab-audit-create-run');
+  it('createCollaborationRun emits collaboration_started mapped event', async () => {
+    await createRun('collab-audit-create-run');
 
     const events = auditRecorder.getEvents();
     expect(events).toHaveLength(1);
@@ -985,11 +1085,11 @@ describe('AGENT-PLATFORM-07D: OrchestrationService audit emission', () => {
     expect(events[0]?.payload.lifecycleEvent).toBe('collaboration_started');
   });
 
-  it('createReferral emits referral_created', () => {
-    createRun();
+  it('createReferral emits referral_created', async () => {
+    await createRun();
     service.clearAuditEvents();
 
-    const referral = createReferral();
+    const referral = await createReferral();
     const events = service.getAuditEvents();
 
     expect(events).toHaveLength(1);
@@ -998,9 +1098,9 @@ describe('AGENT-PLATFORM-07D: OrchestrationService audit emission', () => {
     expect(events[0]?.payload.referralId).toBe(referral.referralId);
   });
 
-  it('duplicate idempotency hit emits referral_duplicate_detected marker', () => {
-    createRun('collab-audit-duplicate');
-    const first = createReferral({
+  it('duplicate idempotency hit emits referral_duplicate_detected marker', async () => {
+    await createRun('collab-audit-duplicate');
+    const first = await createReferral({
       collaborationRunId: 'collab-audit-duplicate',
       referralId: 'ref-audit-dup-first',
       referralTraceId: 'trace-audit-dup-first',
@@ -1008,7 +1108,7 @@ describe('AGENT-PLATFORM-07D: OrchestrationService audit emission', () => {
     });
     service.clearAuditEvents();
 
-    const second = createReferral({
+    const second = await createReferral({
       collaborationRunId: 'collab-audit-duplicate',
       referralId: 'ref-audit-dup-second',
       referralTraceId: 'trace-audit-dup-second',
@@ -1024,8 +1124,8 @@ describe('AGENT-PLATFORM-07D: OrchestrationService audit emission', () => {
   });
 
   it('startReferralExecution emits referral_enqueued/referral_started mapped event', async () => {
-    createRun('collab-audit-start');
-    const referral = createReferral({
+    await createRun('collab-audit-start');
+    const referral = await createReferral({
       collaborationRunId: 'collab-audit-start',
       referralId: 'ref-audit-start',
       referralTraceId: 'trace-audit-start',
@@ -1054,9 +1154,9 @@ describe('AGENT-PLATFORM-07D: OrchestrationService audit emission', () => {
     expect(events[0]?.payload.transitionDetail).toBe('referral_enqueued');
   });
 
-  it('completeReferral emits referral_completed', () => {
-    createRun('collab-audit-complete');
-    const referral = createReferral({
+  it('completeReferral emits referral_completed', async () => {
+    await createRun('collab-audit-complete');
+    const referral = await createReferral({
       collaborationRunId: 'collab-audit-complete',
       referralId: 'ref-audit-complete',
       referralTraceId: 'trace-audit-complete',
@@ -1064,7 +1164,7 @@ describe('AGENT-PLATFORM-07D: OrchestrationService audit emission', () => {
     });
     service.clearAuditEvents();
 
-    service.completeReferral({
+    await service.completeReferral({
       referralId: referral.referralId,
       summary: 'completed',
       durationMs: 15,
@@ -1076,9 +1176,9 @@ describe('AGENT-PLATFORM-07D: OrchestrationService audit emission', () => {
     expect(events[0]?.payload.lifecycleEvent).toBe('referral_completed');
   });
 
-  it('failReferral emits referral_failed', () => {
-    createRun('collab-audit-fail');
-    const referral = createReferral({
+  it('failReferral emits referral_failed', async () => {
+    await createRun('collab-audit-fail');
+    const referral = await createReferral({
       collaborationRunId: 'collab-audit-fail',
       referralId: 'ref-audit-fail',
       referralTraceId: 'trace-audit-fail',
@@ -1086,7 +1186,7 @@ describe('AGENT-PLATFORM-07D: OrchestrationService audit emission', () => {
     });
     service.clearAuditEvents();
 
-    service.failReferral({
+    await service.failReferral({
       referralId: referral.referralId,
       summary: 'failed',
       durationMs: 20,
@@ -1099,8 +1199,8 @@ describe('AGENT-PLATFORM-07D: OrchestrationService audit emission', () => {
   });
 
   it('cancelReferral emits referral_cancelled', async () => {
-    createRun('collab-audit-cancel-ref');
-    const referral = createReferral({
+    await createRun('collab-audit-cancel-ref');
+    const referral = await createReferral({
       collaborationRunId: 'collab-audit-cancel-ref',
       referralId: 'ref-audit-cancel-ref',
       referralTraceId: 'trace-audit-cancel-ref',
@@ -1133,7 +1233,7 @@ describe('AGENT-PLATFORM-07D: OrchestrationService audit emission', () => {
   });
 
   it('cancelCollaboration emits collaboration_cancelled', async () => {
-    createRun('collab-audit-cancel-collab');
+    await createRun('collab-audit-cancel-collab');
     service.clearAuditEvents();
 
     await service.cancelCollaboration({
@@ -1148,11 +1248,11 @@ describe('AGENT-PLATFORM-07D: OrchestrationService audit emission', () => {
     expect(events[0]?.payload.lifecycleEvent).toBe('collaboration_cancelled');
   });
 
-  it('depth block emits safety_limit_breached with limitType depth', () => {
-    createRun('collab-audit-depth');
+  it('depth block emits safety_limit_breached with limitType depth', async () => {
+    await createRun('collab-audit-depth');
     service.clearAuditEvents();
 
-    expect(() =>
+    await expect(
       service.validateReferral({
         collaborationRunId: 'collab-audit-depth',
         sourceBuilderProfileId: 'builder-a',
@@ -1160,7 +1260,7 @@ describe('AGENT-PLATFORM-07D: OrchestrationService audit emission', () => {
         idempotencyKey: 'key-audit-depth',
         depth: DEFAULT_MAX_REFERRAL_DEPTH,
       }),
-    ).toThrow(/exceeds max depth/i);
+    ).rejects.toThrow(/exceeds max depth/i);
 
     const events = service.getAuditEvents();
     expect(events).toHaveLength(1);
@@ -1168,24 +1268,24 @@ describe('AGENT-PLATFORM-07D: OrchestrationService audit emission', () => {
     expect(events[0]?.payload.limitType).toBe('depth');
   });
 
-  it('agent-limit block emits safety_limit_breached with limitType agent_limit', () => {
-    createRun('collab-audit-agent-limit');
+  it('agent-limit block emits safety_limit_breached with limitType agent_limit', async () => {
+    await createRun('collab-audit-agent-limit');
 
-    service.createReferral({
+    await service.createReferral({
       referralId: 'ref-audit-agent-limit-1',
       collaborationRunId: 'collab-audit-agent-limit',
       sourceBuilder: { agentRole: 'builder', builderProfileId: 'builder-a' },
       targetBuilder: { agentRole: 'chief-of-staff', builderProfileId: 'builder-b' },
       idempotencyKey: 'key-audit-agent-limit-1',
     });
-    service.createReferral({
+    await service.createReferral({
       referralId: 'ref-audit-agent-limit-2',
       collaborationRunId: 'collab-audit-agent-limit',
       sourceBuilder: { agentRole: 'builder', builderProfileId: 'builder-b' },
       targetBuilder: { agentRole: 'product-strategy', builderProfileId: 'builder-c' },
       idempotencyKey: 'key-audit-agent-limit-2',
     });
-    service.createReferral({
+    await service.createReferral({
       referralId: 'ref-audit-agent-limit-3',
       collaborationRunId: 'collab-audit-agent-limit',
       sourceBuilder: { agentRole: 'builder', builderProfileId: 'builder-c' },
@@ -1194,14 +1294,14 @@ describe('AGENT-PLATFORM-07D: OrchestrationService audit emission', () => {
     });
     service.clearAuditEvents();
 
-    expect(() =>
+    await expect(
       service.validateReferral({
         collaborationRunId: 'collab-audit-agent-limit',
         sourceBuilderProfileId: 'builder-d',
         targetBuilderProfileId: 'builder-e',
         idempotencyKey: 'key-audit-agent-limit-4',
       }),
-    ).toThrow(/max agents/i);
+    ).rejects.toThrow(/max agents/i);
 
     const events = service.getAuditEvents();
     expect(events).toHaveLength(1);
@@ -1209,11 +1309,11 @@ describe('AGENT-PLATFORM-07D: OrchestrationService audit emission', () => {
     expect(events[0]?.payload.limitType).toBe('agent_limit');
   });
 
-  it('loop block emits safety_limit_breached with limitType loop', () => {
-    createRun('collab-audit-loop');
+  it('loop block emits safety_limit_breached with limitType loop', async () => {
+    await createRun('collab-audit-loop');
     service.clearAuditEvents();
 
-    expect(() =>
+    await expect(
       service.validateReferral({
         collaborationRunId: 'collab-audit-loop',
         sourceBuilderProfileId: 'builder-b',
@@ -1221,7 +1321,7 @@ describe('AGENT-PLATFORM-07D: OrchestrationService audit emission', () => {
         idempotencyKey: 'key-audit-loop',
         visitedBuilderProfileIds: ['builder-a', 'builder-b'],
       }),
-    ).toThrow(/loop detected/i);
+    ).rejects.toThrow(/loop detected/i);
 
     const events = service.getAuditEvents();
     expect(events).toHaveLength(1);
@@ -1229,11 +1329,11 @@ describe('AGENT-PLATFORM-07D: OrchestrationService audit emission', () => {
     expect(events[0]?.payload.limitType).toBe('loop');
   });
 
-  it('payload includes collaboration/referral IDs and source-target builder metadata', () => {
-    createRun('collab-audit-metadata');
+  it('payload includes collaboration/referral IDs and source-target builder metadata', async () => {
+    await createRun('collab-audit-metadata');
     service.clearAuditEvents();
 
-    const referral = createReferral({
+    const referral = await createReferral({
       collaborationRunId: 'collab-audit-metadata',
       referralId: 'ref-audit-metadata',
       referralTraceId: 'trace-audit-metadata',
@@ -1248,9 +1348,13 @@ describe('AGENT-PLATFORM-07D: OrchestrationService audit emission', () => {
     expect(event?.payload.targetBuilderProfileId).toBe('builder-b');
   });
 
-  it('service remains usable without external runtime/provider dependencies', () => {
-    const localService = new OrchestrationService(undefined, undefined);
-    const run = localService.createCollaborationRun({
+  it('service remains usable without external runtime/provider dependencies', async () => {
+    const fakes = createOrchestrationRepoFakes();
+    const localService = new OrchestrationService(
+      fakes.runRepo as never,
+      fakes.referralRepo as never,
+    );
+    const run = await localService.createCollaborationRun({
       collaborationRunId: 'collab-audit-local',
       userId: 'user-local',
       projectId: 'project-local',
@@ -1259,7 +1363,7 @@ describe('AGENT-PLATFORM-07D: OrchestrationService audit emission', () => {
         builderProfileId: 'builder-local',
       },
     });
-    const referral = localService.createReferral({
+    const referral = await localService.createReferral({
       referralId: 'ref-audit-local',
       collaborationRunId: run.collaborationRunId,
       sourceBuilder: {

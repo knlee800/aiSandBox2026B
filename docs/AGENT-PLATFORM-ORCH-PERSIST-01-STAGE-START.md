@@ -5,9 +5,9 @@
 **Date:** 2026-09-14
 **Nature:** IMPLEMENTATION — high-risk persistence / schema / coordinator state
 **Lifecycle:** 4-step IMPLEMENTATION
-**Step:** 2 — stage-start / exact write-set freeze / persistence design freeze
-**Step status:** Step 1 COMPLETE — 2026-09-14; Step 2 COMPLETE — 2026-09-14; Step 3 NOT AUTHORIZED; Step 4 NOT AUTHORIZED
-**This document:** Authoritative Step 2 freeze for durable PostgreSQL-backed collaboration/referral state owned by API Gateway `OrchestrationService`. It does **not** authorize implementation, admission, migration apply, HTTP, frontend, Harness, EXEC-01C6A reopen, or runtime.
+**Step:** 3 COMPLETE — bounded implementation of the frozen 9-file write set (this write is Step 3 governance reconciliation only)
+**Step status:** Step 1 COMPLETE — 2026-09-14; Step 2 COMPLETE — 2026-09-14; Step 3 COMPLETE — 2026-09-14 (Keith-authorized frozen 9-file implementation; no implementation lane occupied; migration authored not applied); Step 4 NOT AUTHORIZED
+**This document:** Authoritative Step 2 freeze for durable PostgreSQL-backed collaboration/referral state owned by API Gateway `OrchestrationService`, plus the Step 3 completion record. It does **not** authorize Step 4 / checkpoint / lock, admission to an implementation lane, migration apply, HTTP, frontend, Harness, EXEC-01C6A reopen, or runtime.
 
 **Step 1 committed HEAD:** `b8108257a877cec0af50722e842f7ce2badabdcd` (branch `main`; message `docs: register orchestration persistence`)
 **Step 2 base HEAD:** `b8108257a877cec0af50722e842f7ce2badabdcd` (branch `main`; working tree clean at window open)
@@ -17,10 +17,11 @@
 ```
 STEP1_COMPLETE=YES
 STEP2_COMPLETE=YES
-STEP3_AUTHORIZED=NO
+STEP3_AUTHORIZED=YES
+STEP3_COMPLETE=YES
 STEP4_AUTHORIZED=NO
-IMPLEMENTATION_STARTED=NO
-ADMITTED=NO
+IMPLEMENTATION_STARTED=YES
+ADMITTED=NO (Keith-authorized Step 3 source; no Lane 1/Lane 2 occupancy; not LANE-DONE; not LOCKED)
 WRITE_SET_PRECISION=EXACT
 ADMISSION_UNCERTAIN=true
 TEST_ADMISSIBLE=ADMISSION_UNCERTAIN
@@ -42,9 +43,11 @@ LANE_2=EMPTY
 LANE_3=DISABLED
 GOVERNANCE=UNOWNED (end-state)
 PRIVATE_BETA_INVITE_01=PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED
+ISOLATEDMODULES_ORCHESTRATION_SUITE=4/4 91 PASSED
+DEFAULT_JEST_TSC_BLOCKED_BY=pre-existing src/queue/queue.service.ts TS2322
 ```
 
-Keith authorized Step 2 only. This freeze does **not** admit an implementation lane. Candidate remains `status=READY` / `admissionUncertain=true` so it stays out of S.
+Keith authorized Step 2, then separately authorized Step 3 source implementation against this freeze. Step 3 stayed inside the frozen 9-file write set. Occupancy remained EMPTY. Candidate remains `status=READY` / `admissionUncertain=true` so it stays out of S. Do **not** set `admissionUncertain=false` without Keith admission authorization. Step 4 is **not** authorized.
 
 ---
 
@@ -493,6 +496,8 @@ Step 2 does **not** admit Lane 1 or Lane 2. Occupancy remains EMPTY. GOVERNANCE 
 
 Admission of Step 3 still requires a later Keith authorization. Setting `admissionUncertain=false` in the same window as source edits is **not** this Step 2.
 
+Later (2026-09-14): Keith authorized Step 3 source against this freeze without filling Lane 1 or Lane 2 and without setting `admissionUncertain=false`. Step 4 / checkpoint / lock remains unauthorized.
+
 ---
 
 ## 9. Revert strategy
@@ -528,16 +533,18 @@ Cannot invalidate locked ORCH-ARCH-01 / BUILDER-LIVE-GATE-01 / PM2-FENCE-01 / EX
 - [x] No implementation / no migration file created this window
 - [x] No Git commit/push
 
-### Step 3 (NOT AUTHORIZED)
+### Step 3 (COMPLETE — 2026-09-14)
 
-- [ ] Source authored in the frozen 9-file set only
-- [ ] Maps removed; repositories used
-- [ ] Existing service + canary tests updated and passing locally
-- [ ] New persistence + migration mocked tests passing locally
-- [ ] Enqueued leaf jobs omit `harnessVersion`
-- [ ] No controller, no frontend, no execute-handler edits
-- [ ] Validator PASS; occupancy EMPTY unless a later admission step is separately authorized
-- [ ] Migration **not** applied
+- [x] Source authored in the frozen 9-file set only
+- [x] Maps removed; repositories used
+- [x] Existing service + canary tests updated; isolatedModules orchestration suite 4/4 91 passed (default Jest/tsc blocked only by pre-existing `src/queue/queue.service.ts` TS2322 ioredis/bullmq mismatch)
+- [x] New persistence + migration mocked tests passing under isolatedModules
+- [x] Enqueued leaf jobs omit `harnessVersion`
+- [x] No controller, no frontend, no execute-handler edits
+- [x] Validator PASS this reconciliation window; occupancy EMPTY; no later admission step authorized
+- [x] Migration **not** applied
+- [x] No runtime/staging/PM2/Docker/Postgres/Redis/provider/credit
+- [x] No Git commit/push by the worker
 
 ### Step 4 (NOT AUTHORIZED)
 
@@ -586,32 +593,39 @@ Cannot invalidate locked ORCH-ARCH-01 / BUILDER-LIVE-GATE-01 / PM2-FENCE-01 / EX
 
 ---
 
-## 13. Authorization state (end of Step 2)
+## 13. Authorization state (end of Step 3 reconciliation)
 
 ```
-IMPLEMENTATION_AUTHORIZED=NO
+IMPLEMENTATION_AUTHORIZED=YES (Step 3 source COMPLETE; frozen 9-file write set only)
 ADMISSION_AUTHORIZED=NO
 STAGING_AUTHORIZED=NO
 MIGRATION_EXECUTION_AUTHORIZED=NO
 LOCAL_RUNTIME_AUTHORIZED=NO
 PROVIDER_LIVE_AUTHORIZED=NO
 CREDIT_AUTHORIZED=NO
-TESTS_EXECUTED=NO
-APPLICATION_SOURCE_CHANGED=NO
+TESTS_EXECUTED=YES (isolatedModules orchestration suite 4/4 91 passed; default Jest/tsc blocked only by pre-existing queue.service.ts TS2322)
+APPLICATION_SOURCE_CHANGED=YES (frozen 9-file write set only; this reconciliation does not behavior-change those files)
 LANE_1=EMPTY
 LANE_2=EMPTY
 GATEWAY_ACQUIRED=NO
 MIGRATION_ACQUIRED=NO
+STEP4_AUTHORIZED=NO
 EXEC_01C6A_REOPENED=NO
 ```
+
+Previous (end of Step 2): IMPLEMENTATION_AUTHORIZED=NO; ADMISSION_AUTHORIZED=NO; TESTS_EXECUTED=NO; APPLICATION_SOURCE_CHANGED=NO.
 
 ---
 
 ## 14. Activity ledger
 
-LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=0, application source=0, tests executed=0, package install=0, migrations authored=0, migrations applied=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0.
+**Step 2 ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=0, application source=0, tests executed=0, package install=0, migrations authored=0, migrations applied=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0.
 
-Governance writes: this stage-start; `TASKS.md` CURRENT EXECUTION BOARD fields; `TASKS_BACKLOG_FULL.md` PERSIST-01 body; sidecar candidate write-set / precision update; `SATURATION_PROOF.json` only as validator output. Occupancy facts unchanged (EMPTY / GOVERNANCE UNOWNED).
+Governance writes (Step 2): this stage-start freeze; `TASKS.md` CURRENT EXECUTION BOARD fields; `TASKS_BACKLOG_FULL.md` PERSIST-01 body; sidecar candidate write-set / precision update; `SATURATION_PROOF.json` only as validator output. Occupancy facts unchanged (EMPTY / GOVERNANCE UNOWNED).
+
+**Step 3 implementation ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, HTTP/frontend/Harness/execute-handler=0, migrations applied=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0. Application source: frozen 9-file write set only. Migrations authored=1 (not applied). Tests: isolatedModules orchestration suite 4/4 91 passed; default Jest/tsc blocked only by pre-existing `src/queue/queue.service.ts` TS2322. Occupancy remained EMPTY / GOVERNANCE UNOWNED. Sidecar occupancy/candidate machine fields unchanged (`status=READY`, `admissionUncertain=true`).
+
+**Step 3 reconciliation ledger (this window):** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=0, application source=0, package install=0, migrations authored=0, migrations applied=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0. Governance writes: this stage-start Step 3 record; `TASKS.md` CURRENT EXECUTION BOARD fields; `TASKS_BACKLOG_FULL.md` PERSIST-01 body; sidecar occupancy/candidate machine fields unchanged; `SATURATION_PROOF.json` only as validator output. Occupancy facts unchanged (EMPTY / GOVERNANCE UNOWNED).
 
 **Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED.
 
@@ -620,4 +634,4 @@ Governance writes: this stage-start; `TASKS.md` CURRENT EXECUTION BOARD fields; 
 **Product-visible orchestration / Harness:** FUTURE / gated / disabled / unavailable.
 
 **Activation effect:** NONE
-**Rollback boundary:** discard this document and this window’s board/registry/sidecar Step 2 field updates. No implementation to roll back.
+**Rollback boundary:** Step 2 = discard this document’s freeze plus that window’s board/registry/sidecar write-set field updates. Step 3 source = delete the five created files and restore the four modified files. This reconciliation = discard this window’s board/registry/stage-start Step 3 field updates. Ordinary Builder path and the live gate are untouched.

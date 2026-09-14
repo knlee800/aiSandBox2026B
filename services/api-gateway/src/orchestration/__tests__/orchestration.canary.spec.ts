@@ -1,5 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { OrchestrationService } from '../orchestration.service';
+import { CollaborationRunEntity } from '../collaboration-run.entity';
+import { CollaborationReferralEntity } from '../collaboration-referral.entity';
 import {
   DEFAULT_MAX_REFERRAL_DEPTH,
   NO_WRITE_TOOLS_INDICATOR,
@@ -9,6 +12,85 @@ import {
 } from '../orchestration.contracts';
 import { QueueService } from '../../queue/queue.service';
 import { ExecutionResultService } from '../../ai/execution-result.service';
+
+function cloneRow<T>(row: T): T {
+  const copy = { ...(row as Record<string, unknown>) };
+  for (const key of Object.keys(copy)) {
+    const value = copy[key];
+    if (value instanceof Date) {
+      copy[key] = new Date(value.getTime());
+    } else if (Array.isArray(value)) {
+      copy[key] = [...value];
+    }
+  }
+  return copy as T;
+}
+
+function matchesWhere(row: unknown, where?: Record<string, unknown>): boolean {
+  if (!where) {
+    return true;
+  }
+  const record = row as Record<string, unknown>;
+  return Object.entries(where).every(([key, expected]) => record[key] === expected);
+}
+
+function createOrchestrationRepoFakes() {
+  const runs = new Map<string, CollaborationRunEntity>();
+  const referrals = new Map<string, CollaborationReferralEntity>();
+
+  const createRepo = <T>(store: Map<string, T>, pk: string) => {
+    const repo: {
+      findOne: (opts: { where: Record<string, unknown> }) => Promise<T | null>;
+      find: (opts?: { where?: Record<string, unknown> }) => Promise<T[]>;
+      save: (entity: T) => Promise<T>;
+      manager: {
+        transaction: <R>(cb: (em: unknown) => Promise<R>) => Promise<R>;
+        getRepository: (entity: unknown) => unknown;
+      };
+    } = {
+      findOne: async ({ where }) => {
+        for (const row of store.values()) {
+          if (matchesWhere(row, where)) {
+            return cloneRow(row);
+          }
+        }
+        return null;
+      },
+      find: async (opts = {}) =>
+        [...store.values()]
+          .filter((row) => matchesWhere(row, opts.where))
+          .map((row) => cloneRow(row)),
+      save: async (entity) => {
+        const copy = cloneRow(entity);
+        store.set(String((copy as Record<string, unknown>)[pk]), copy);
+        return cloneRow(copy);
+      },
+      manager: {
+        transaction: async <R>(cb: (em: unknown) => Promise<R>) => cb(undefined),
+        getRepository: () => undefined,
+      },
+    };
+    return repo;
+  };
+
+  const runRepo = createRepo(runs, 'collaborationRunId');
+  const referralRepo = createRepo(referrals, 'referralId');
+  const manager = {
+    transaction: async <R>(cb: (em: typeof manager) => Promise<R>) => cb(manager),
+    getRepository: (entity: unknown) => {
+      if (entity === CollaborationRunEntity) {
+        return runRepo;
+      }
+      if (entity === CollaborationReferralEntity) {
+        return referralRepo;
+      }
+      throw new Error('Unknown orchestration entity');
+    },
+  };
+  runRepo.manager = manager;
+  referralRepo.manager = manager;
+  return { runRepo, referralRepo };
+}
 
 describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', () => {
   let service: OrchestrationService;
@@ -23,9 +105,18 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
       requestCancel: jest.fn().mockResolvedValue(true),
     };
 
+    const fakes = createOrchestrationRepoFakes();
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OrchestrationService,
+        {
+          provide: getRepositoryToken(CollaborationRunEntity),
+          useValue: fakes.runRepo,
+        },
+        {
+          provide: getRepositoryToken(CollaborationReferralEntity),
+          useValue: fakes.referralRepo,
+        },
         { provide: QueueService, useValue: mockQueueService },
         { provide: ExecutionResultService, useValue: mockExecutionResultService },
       ],
@@ -34,8 +125,8 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
     service = module.get<OrchestrationService>(OrchestrationService);
   });
 
-  function createRun(collaborationRunId = 'collab-canary-01') {
-    return service.createCollaborationRun({
+  async function createRun(collaborationRunId = 'collab-canary-01') {
+    return await service.createCollaborationRun({
       collaborationRunId,
       userId: 'user-canary-01',
       projectId: 'project-canary-01',
@@ -46,7 +137,7 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
     });
   }
 
-  function createReferral(overrides?: {
+  async function createReferral(overrides?: {
     referralId?: string;
     referralTraceId?: string;
     collaborationRunId?: string;
@@ -55,7 +146,7 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
     targetBuilderProfileId?: string;
     targetAgentRole?: 'builder' | 'chief-of-staff' | 'product-strategy' | 'technology-advisor';
   }) {
-    return service.createReferral({
+    return await service.createReferral({
       referralId: overrides?.referralId ?? 'ref-canary-01',
       referralTraceId: overrides?.referralTraceId ?? 'trace-canary-01',
       collaborationRunId: overrides?.collaborationRunId ?? 'collab-canary-01',
@@ -93,8 +184,8 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
     } as const;
   }
 
-  it('1) creates collaboration run with collaboration_started audit metadata', () => {
-    const run = createRun();
+  it('1) creates collaboration run with collaboration_started audit metadata', async () => {
+    const run = await createRun();
     const events = service.getAuditEvents();
 
     expect(run.collaborationRunId).toBe('collab-canary-01');
@@ -110,10 +201,10 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
     expect(events[0]?.payload.sourceAgentRole).toBe('builder');
   });
 
-  it('2) validates referral and read-only policy', () => {
-    createRun();
+  it('2) validates referral and read-only policy', async () => {
+    await createRun();
 
-    const validation = service.validateReferral({
+    const validation = await service.validateReferral({
       collaborationRunId: 'collab-canary-01',
       sourceBuilderProfileId: 'builder-source-01',
       targetBuilderProfileId: 'builder-target-01',
@@ -132,11 +223,11 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
     expect(policy.blockedToolIds).toEqual([...READ_ONLY_BLOCKED_TOOL_IDS]);
   });
 
-  it('3) creates referral with referral_created audit metadata', () => {
-    createRun();
+  it('3) creates referral with referral_created audit metadata', async () => {
+    await createRun();
     service.clearAuditEvents();
 
-    const referral = createReferral();
+    const referral = await createReferral();
     const events = service.getAuditEvents();
 
     expect(referral.status).toBe('pending_approval');
@@ -157,8 +248,8 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
   });
 
   it('4) starts referral execution through mocked enqueue', async () => {
-    createRun();
-    const referral = createReferral();
+    await createRun();
+    const referral = await createReferral();
     service.clearAuditEvents();
 
     const started = await service.startReferralExecution(baseExecutionInput(referral.referralId));
@@ -186,8 +277,8 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
   });
 
   it('5) verifies orchestration metadata fields across enqueue and audit payloads', async () => {
-    createRun();
-    const referral = createReferral();
+    await createRun();
+    const referral = await createReferral();
     service.clearAuditEvents();
 
     await service.startReferralExecution(baseExecutionInput(referral.referralId, 'exec-canary-meta-01'));
@@ -212,12 +303,12 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
   });
 
   it('6) verifies key audit events sequence for create/start/complete lifecycle', async () => {
-    createRun();
-    const referral = createReferral();
+    await createRun();
+    const referral = await createReferral();
     service.clearAuditEvents();
 
     await service.startReferralExecution(baseExecutionInput(referral.referralId, 'exec-canary-audit-01'));
-    service.completeReferral({
+    await service.completeReferral({
       referralId: referral.referralId,
       summary: 'referral complete',
       durationMs: 88,
@@ -231,12 +322,12 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
   });
 
   it('7) completes referral and emits referral_completed audit marker', async () => {
-    createRun();
-    const referral = createReferral();
+    await createRun();
+    const referral = await createReferral();
     await service.startReferralExecution(baseExecutionInput(referral.referralId, 'exec-canary-complete-01'));
     service.clearAuditEvents();
 
-    const completed = service.completeReferral({
+    const completed = await service.completeReferral({
       referralId: referral.referralId,
       summary: 'canary completion',
       outputFiles: ['report.md'],
@@ -252,16 +343,16 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
     expect(events[0]?.payload.executionId).toBe('exec-canary-complete-01');
   });
 
-  it('8) detects duplicate referral via idempotency key and emits duplicate lifecycle marker', () => {
-    createRun();
-    const first = createReferral({
+  it('8) detects duplicate referral via idempotency key and emits duplicate lifecycle marker', async () => {
+    await createRun();
+    const first = await createReferral({
       referralId: 'ref-dup-01',
       referralTraceId: 'trace-dup-01',
       idempotencyKey: 'idem-dup-01',
     });
     service.clearAuditEvents();
 
-    const duplicate = createReferral({
+    const duplicate = await createReferral({
       referralId: 'ref-dup-02',
       referralTraceId: 'trace-dup-02',
       idempotencyKey: 'idem-dup-01',
@@ -276,8 +367,8 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
   });
 
   it('9) cancels referral through mocked requestCancel with correct executionId', async () => {
-    createRun();
-    const referral = createReferral();
+    await createRun();
+    const referral = await createReferral();
     await service.startReferralExecution(baseExecutionInput(referral.referralId, 'exec-cancel-01'));
     service.clearAuditEvents();
 
@@ -298,13 +389,13 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
   });
 
   it('10) cancels collaboration and emits collaboration_cancelled with affected referrals', async () => {
-    createRun();
-    const referralOne = createReferral({
+    await createRun();
+    const referralOne = await createReferral({
       referralId: 'ref-cancel-collab-01',
       referralTraceId: 'trace-cancel-collab-01',
       idempotencyKey: 'idem-cancel-collab-01',
     });
-    const referralTwo = createReferral({
+    const referralTwo = await createReferral({
       referralId: 'ref-cancel-collab-02',
       referralTraceId: 'trace-cancel-collab-02',
       idempotencyKey: 'idem-cancel-collab-02',
@@ -327,8 +418,8 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
     );
 
     expect(cancelledRun.status).toBe('cancelled');
-    expect(service.getReferral(referralOne.referralId)?.status).toBe('cancelled');
-    expect(service.getReferral(referralTwo.referralId)?.status).toBe('cancelled');
+    expect((await service.getReferral(referralOne.referralId))?.status).toBe('cancelled');
+    expect((await service.getReferral(referralTwo.referralId))?.status).toBe('cancelled');
     expect(collaborationEvent).toBeDefined();
     expect(collaborationEvent?.payload.lifecycleEvent).toBe('collaboration_cancelled');
     expect(collaborationEvent?.payload.affectedReferralIds).toEqual(
@@ -336,11 +427,11 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
     );
   });
 
-  it('11) enforces depth safety limit and emits limitType depth', () => {
-    createRun();
+  it('11) enforces depth safety limit and emits limitType depth', async () => {
+    await createRun();
     service.clearAuditEvents();
 
-    expect(() =>
+    await expect(
       service.validateReferral({
         collaborationRunId: 'collab-canary-01',
         sourceBuilderProfileId: 'builder-source-01',
@@ -348,7 +439,7 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
         idempotencyKey: 'idem-depth-01',
         depth: DEFAULT_MAX_REFERRAL_DEPTH,
       }),
-    ).toThrow(/exceeds max depth/i);
+    ).rejects.toThrow(/exceeds max depth/i);
 
     const events = service.getAuditEvents();
     expect(events).toHaveLength(1);
@@ -356,11 +447,11 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
     expect(events[0]?.payload.limitType).toBe('depth');
   });
 
-  it('12) enforces loop safety limit and emits limitType loop', () => {
-    createRun();
+  it('12) enforces loop safety limit and emits limitType loop', async () => {
+    await createRun();
     service.clearAuditEvents();
 
-    expect(() =>
+    await expect(
       service.validateReferral({
         collaborationRunId: 'collab-canary-01',
         sourceBuilderProfileId: 'builder-source-01',
@@ -368,7 +459,7 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
         idempotencyKey: 'idem-loop-01',
         visitedBuilderProfileIds: ['builder-source-01'],
       }),
-    ).toThrow(/loop detected/i);
+    ).rejects.toThrow(/loop detected/i);
 
     const events = service.getAuditEvents();
     expect(events).toHaveLength(1);
@@ -376,21 +467,21 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
     expect(events[0]?.payload.limitType).toBe('loop');
   });
 
-  it('13) enforces agent-limit safety and emits limitType agent_limit', () => {
-    createRun();
-    createReferral({
+  it('13) enforces agent-limit safety and emits limitType agent_limit', async () => {
+    await createRun();
+    await createReferral({
       referralId: 'ref-agent-limit-01',
       idempotencyKey: 'idem-agent-limit-01',
       targetBuilderProfileId: 'builder-target-01',
       targetAgentRole: 'chief-of-staff',
     });
-    createReferral({
+    await createReferral({
       referralId: 'ref-agent-limit-02',
       idempotencyKey: 'idem-agent-limit-02',
       targetBuilderProfileId: 'builder-target-02',
       targetAgentRole: 'product-strategy',
     });
-    createReferral({
+    await createReferral({
       referralId: 'ref-agent-limit-03',
       idempotencyKey: 'idem-agent-limit-03',
       targetBuilderProfileId: 'builder-target-03',
@@ -398,14 +489,14 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
     });
     service.clearAuditEvents();
 
-    expect(() =>
+    await expect(
       service.validateReferral({
         collaborationRunId: 'collab-canary-01',
         sourceBuilderProfileId: 'builder-target-03',
         targetBuilderProfileId: 'builder-target-04',
         idempotencyKey: 'idem-agent-limit-04',
       }),
-    ).toThrow(/max agents/i);
+    ).rejects.toThrow(/max agents/i);
 
     const events = service.getAuditEvents();
     expect(events).toHaveLength(1);
@@ -413,9 +504,9 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
     expect(events[0]?.payload.limitType).toBe('agent_limit');
   });
 
-  it('14) enforces blocked write tools / no-write policy', () => {
-    createRun();
-    const referral = createReferral();
+  it('14) enforces blocked write tools / no-write policy', async () => {
+    await createRun();
+    const referral = await createReferral();
 
     expect(referral.constraints.readOnly).toBe(true);
     expect(referral.constraints.allowWriteTools).toBe(false);
@@ -424,7 +515,7 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
       expect.arrayContaining([...READ_ONLY_BLOCKED_TOOL_IDS]),
     );
 
-    expect(() =>
+    await expect(
       service.createReferral({
         referralId: 'ref-blocked-write-01',
         collaborationRunId: 'collab-canary-01',
@@ -443,12 +534,12 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
           allowedTools: ['list_files', 'write_file'],
         },
       }),
-    ).toThrow(/blocked write-capable tools/i);
+    ).rejects.toThrow(/blocked write-capable tools/i);
   });
 
   it('15) confirms AGENT-HARNESS write canary is not involved in this in-process canary', async () => {
-    createRun();
-    const referral = createReferral({
+    await createRun();
+    const referral = await createReferral({
       referralId: 'ref-no-harness-write-01',
       referralTraceId: 'trace-no-harness-write-01',
       idempotencyKey: 'idem-no-harness-write-01',
@@ -468,8 +559,8 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
   });
 
   it('safely includes referral_failed audit marker verification', async () => {
-    createRun();
-    const referral = createReferral({
+    await createRun();
+    const referral = await createReferral({
       referralId: 'ref-fail-01',
       referralTraceId: 'trace-fail-01',
       idempotencyKey: 'idem-fail-01',
@@ -477,7 +568,7 @@ describe('AGENT-PLATFORM-07E Step 3: Read-Only Coordinator In-Process Canary', (
     await service.startReferralExecution(baseExecutionInput(referral.referralId, 'exec-fail-01'));
     service.clearAuditEvents();
 
-    service.failReferral({
+    await service.failReferral({
       referralId: referral.referralId,
       summary: 'canary failure path',
       durationMs: 32,
