@@ -499,7 +499,7 @@
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
       "status": "READY",
-      "startCondition": "READY",
+      "startCondition": "NOT_READY",
       "saturationClass": "FORCING",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
