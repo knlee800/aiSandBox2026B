@@ -76069,6 +76069,143 @@ Step 4 (checkpoint / lock):
 
 ---
 
+### AGENT-PLATFORM-ORCH-PERSIST-01 — Durable orchestration coordinator persistence
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=AGENT-PLATFORM-ORCH-PERSIST-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-14 — Step 1 COMPLETE (registration / control-plane only) — Step 2 NOT AUTHORIZED — Step 3 NOT AUTHORIZED — Step 4 NOT AUTHORIZED — GOVERNANCE acquired transiently then released UNOWNED — no implementation lane — candidate `status=READY` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true` (`Test-Admissible` = ADMISSION_UNCERTAIN; not in S) — mutexes GATEWAY + MIGRATION declared not acquired — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — EXEC-01C6A remains MACHINE BLOCKER ENFORCED / sidecar startCondition=NOT_READY UNCHANGED / not reopened / not admitted / not LANE-DONE / not LOCKED — BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON (`GLOBAL_EXECUTION_ENABLED=true`) — PM2-FENCE-01 remains COMPLETE AND LOCKED (OUTCOME_BLOCKED under M3) — product-visible orchestration remains FUTURE/gated — working single-shot Builder Ask/Build path remains untouched — IMPLEMENTATION_STARTED=NO
+**Task ID:** AGENT-PLATFORM-ORCH-PERSIST-01
+**Title:** Durable orchestration coordinator persistence
+**Family:** AGENT PLATFORM / ORCHESTRATION (first implementation child of locked AGENT-PLATFORM-ORCH-ARCH-01; Gateway durable coordinator persistence; not a product frontier; not EXEC-01C6A; not Harness enablement)
+**Parent task:** AGENT-PLATFORM-ORCH-ARCH-01 — Independent in-app orchestration architecture freeze — COMPLETE AND LOCKED — 2026-09-14 — Checkpoint: `docs/AGENT-PLATFORM-ORCH-ARCH-01-STAGE-START.md` — latest committed lock `6127c54e76ddf4ea7430f88be36c6b6ae9066a6c` (`docs: lock orchestration architecture`). Does **not** reopen EXEC-01C6A. Unlocked EXEC-01C6A / EXEC-01C6 / EXEC-01C MUST NOT appear in machine `dependsOn`.
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (high-risk; durable PostgreSQL persistence for the existing Gateway `OrchestrationService`)
+**Development program:** CURRENT architecture-follow-through of the locked ORCH-ARCH-01 HOW. Keith 2026-09-14 named this child for registration only. Light CURRENT/FUTURE check: `PRD.md` keeps product-visible orchestration / collaboration / multi-Builder as APPROVED FUTURE; current private-beta promise remains single-shot Builder Ask/Build. `ARCHITECTURE.md` records an in-memory Gateway coordinator that is not product-reachable; durable orchestration remains FUTURE HOW. This child does **not** promote product-visible orchestration into CURRENT product. Historical `docs/AGENT-PLATFORM-05-MULTI-BUILDER-ORCHESTRATION-PLAN.md` and `docs/AGENT-PLATFORM-07-READ-ONLY-ORCHESTRATION-COORDINATOR-PLAN.md` are not living authority.
+**Product-visible orchestration / Harness capability:** FUTURE / gated / disabled / unavailable. Unchanged.
+**Classification:** CURRENT required persistence slice for the locked Gateway-coordinator HOW (Keith-named); product-visible orchestration remains FUTURE/gated. Machine `productClass=CURRENT` with `futureAuthorization=NONE`. Activation effect of this registration: NONE.
+**Lifecycle:** 4-STEP HIGH-RISK (persistence / schema / coordinator state; must not collapse exact write-set freeze, source authorship, and lock into one unreviewed step):
+1. Step 1 — registration — COMPLETE — 2026-09-14 — control-plane only; no implementation; no admission; no stage-start; no ARCHITECTURE.md rewrite; no runtime procedure.
+2. Step 2 — stage-start / exact write-set freeze / persistence design freeze — NOT AUTHORIZED.
+3. Step 3 — bounded implementation of the frozen write set — NOT AUTHORIZED.
+4. Step 4 — independent verification / checkpoint / lock — NOT AUTHORIZED.
+**Start condition:** READY (satisfied for this registration). NOT ADMITTED to an implementation lane. Occupies no implementation lane. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. Parent AGENT-PLATFORM-ORCH-ARCH-01 COMPLETE AND LOCKED. EXEC-01C6A sidecar `startCondition=NOT_READY` remains UNCHANGED. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. Candidate `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true`.
+**Depends on (canonical / human):** AGENT-PLATFORM-ORCH-ARCH-01 COMPLETE AND LOCKED — 2026-09-14 — Checkpoint: `docs/AGENT-PLATFORM-ORCH-ARCH-01-STAGE-START.md`. Keith 2026-09-14 authorization of this named child registration. BUILDER-LIVE-GATE-01 COMPLETE AND LOCKED (gate LEFT ON). PM2-FENCE-01 COMPLETE AND LOCKED (OUTCOME_BLOCKED under M3). Does not depend on unfinished implementation output from another admitted lane. Unlocked EXEC-01C6A / EXEC-01C6 / EXEC-01C are not dependencies.
+**Depends on (machine sidecar `dependsOn`):** `["AGENT-PLATFORM-ORCH-ARCH-01"]` — sidecar `lockedTaskIds` contains it after this registration. Unlocked EXEC-01C6A / EXEC-01C6 / EXEC-01C MUST NOT appear in machine `dependsOn`.
+**Primary write scope (Step 1, this write):** `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body; `docs/control-plane/lane-saturation-state.json` candidate record plus `lockedTaskIds` proof for AGENT-PLATFORM-ORCH-ARCH-01; `docs/control-plane/SATURATION_PROOF.json` only as validator output. Occupancy remains EMPTY / GOVERNANCE UNOWNED at end of this write. No application source. No test file. No stage-start. No checkpoint. No ARCHITECTURE.md / PRD.md / CLAUDE.md / AGENTS.md rewrite. No Git.
+**Primary write scope (Step 2):** NOT FROZEN. Stage-start must freeze the exact entity / repository / migration filenames, whether `orchestration.contracts.ts` remains writable, and whether `entities/index.ts` is required. Not authorized now.
+**Primary write scope (Step 3):** separately authorized bounded slice only, frozen at Step 2. Not authorized now.
+**Primary write scope (Step 4):** independent verification / checkpoint / lock only after Step 3 evidence exists. Not authorized now.
+**Mutexes / resources (Step 1, this write):** GOVERNANCE held only for this control-plane registration then released UNOWNED. IMPLEMENTATION candidate mutexes declared not acquired: GATEWAY, MIGRATION. GOVERNANCE must not appear in the IMPLEMENTATION candidate mutex list. GATEWAY / MIGRATION / AI-SERVICE / CONTAINER-MANAGER / FRONTEND / I18N / PACKAGE / COMPOSE / ENV / LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT remain UNOWNED and unauthorized. MIGRATION_EXECUTION_AUTHORIZED=NO.
+**Hot-file leases:** none in Step 1. GATEWAY already covers `services/api-gateway/`. Do not add a redundant HOTFILE for `entities/index.ts` unless stage-start proves GATEWAY is not held for that slice.
+**Shared contracts:** none consumed or mutated (`sharedContractIds=[]`; `mutatesSharedContractIds=[]`). Frozen catalog ID `HARNESS_ENTITLEMENT_PROOF_V1` remains FROZEN and is not consumed or mutated by this child. Leaf jobs remain ordinary plain Builder execute-path jobs and must omit `harnessVersion`.
+**Evidence class:** LOCAL-TESTS. No provider-live. No Docker/Postgres/Redis. No STAGING / PROVIDER-LIVE / CREDIT / LOCAL-RUNTIME runtime needs. No staging/browser/runtime in this Step 1. Migration apply is not authorized by this registration.
+**Revert isolation:** Step 1 revert = discard this child's board/registry/stanza/sidecar-candidate additions and restore Lane 1 / Lane 2 EMPTY and GOVERNANCE UNOWNED (both already unchanged by this write occupancy). Must not mutate EXEC-01C6A prepared artifacts. Cannot invalidate locked AGENT-PLATFORM-ORCH-ARCH-01 / BUILDER-LIVE-GATE-01 / PM2-FENCE-01 / EXEC-01A / 01B / 01C1..01C5B2 / IDENTITY-01 / SCHEMA-01 / KEY-REVOKE-01 / GOV-AUTH-03 evidence. Parent EXEC-01C6A sidecar `startCondition=NOT_READY` must remain. Lane 1 and Lane 2 remain EMPTY.
+**saturationClass:** FORCING (explicit; first named implementation child of locked ORCH-ARCH-01; required before any later internal-only canary or UI/product exposure). A READY FORCING PROVISIONAL candidate with empty lanes does not by itself invalidate idle because `admissionUncertain=true` yields ADMISSION_UNCERTAIN.
+**productClass:** CURRENT
+**futureAuthorization:** NONE — schema requires `futureAuthorization=NONE` when `productClass=CURRENT`. Product-visible orchestration remains FUTURE/gated and is not encoded as `AUTHORIZED` FUTURE product.
+**writeSetPrecision:** PROVISIONAL
+**admissionUncertain:** true
+**exclusiveCapacity:** false
+**runtimeNeeds:** none
+**i18n:** false
+
+**Identifier search:** Repo-wide search for a canonical `AGENT-PLATFORM-ORCH-PERSIST-01` heading, an `AISB_MACHINE_REG_V1` stanza, a current-board occupancy, a sidecar candidate, a `lockedTaskIds` entry, and an equivalent unfinished durable-orchestration-persistence task returned none at HEAD `6127c54e76ddf4ea7430f88be36c6b6ae9066a6c`. The only prior appearances are narrative named-future-child references inside locked AGENT-PLATFORM-ORCH-ARCH-01 (`TASKS_BACKLOG_FULL.md` and `docs/AGENT-PLATFORM-ORCH-ARCH-01-STAGE-START.md` §5.1), which are explicit non-registrations. AGENT-PLATFORM-ORCH-ARCH-01 is the locked parent, not this child. No equivalent unfinished Gateway PostgreSQL collaboration/referral persistence task exists. AGENT-PLATFORM-ORCH-PERSIST-01 is the smallest correct first implementation-child ID frozen by the parent architecture.
+
+**Selected v1 architecture inherited from locked parent (must not reopen):**
+1. Gateway durable orchestration coordinator
+2. PostgreSQL-backed collaboration/referral state (this child)
+3. Leaf executions are ordinary plain Builder jobs on the existing execute path
+4. No `harnessVersion` for v1 orchestration
+5. No temporary PM2 overlays
+6. No product-visible orchestration UI yet
+7. Working single-shot Builder Ask/Build path must remain untouched
+
+**Registered purpose (Step 1 — identity and bounded persistence scope only):**
+- Add durable persistence for the existing Gateway `OrchestrationService`
+- Introduce PostgreSQL-backed collaboration/referral state in API Gateway application source
+- Preserve existing orchestration contracts and safety limits
+- Replace in-memory Maps (`collaborationRunStore`, `referralStore`, `idempotencyStore`, `referralExecutionMap`) with durable state owned by API Gateway
+- Keep read-only v1 constraints until a later write-tools decision
+- Keep coordinator-enqueued leaf jobs on the existing `POST /api/ai/execute` → BullMQ `ai-execution` path with `harnessVersion` omitted
+- Occupy no implementation lane until a later authorized admission
+
+**This registration does not authorize:**
+Implementation source changes; migration apply; frontend work; HTTP surface; tests except the lane-capacity validator; staging/SSH/AWS/PM2/env/provider/credit; Docker/Postgres/Redis; Harness enablement; EXEC-01C6A reopen; PRIVATE-BETA-INVITE-01; Git commit/push; product-visible orchestration UI; frontend orchestration checkbox work; temporary PM2 overlays; dedicated worker/queue; provider/key changes; credit ledger changes beyond existing plain jobs; rewriting `ARCHITECTURE.md` / `PRD.md` / `CLAUDE.md` / `AGENTS.md`. Runtime authorization must remain entirely false. MIGRATION_EXECUTION_AUTHORIZED=NO.
+
+**Mandatory Step 2 questions (stage-start must resolve every one before source implementation):**
+1. Exact PostgreSQL tables / TypeORM entity filenames for collaboration runs, referrals, idempotency, and referral-execution mapping.
+2. Whether `orchestration.contracts.ts` remains frozen-read or needs a bounded type-only change.
+3. Exact migration timestamp after `1773000000000-AddInternalAccessToApiKeys` and fail-closed existing-table behavior.
+4. How in-memory Map semantics (including restart-loss today) map onto durable rows without changing public HTTP (there is none) or frontend behavior.
+5. How existing safety limits (`DEFAULT_MAX_AGENTS_PER_COLLABORATION`, `DEFAULT_MAX_REFERRAL_DEPTH`, read-only / no-write-tools indicators) are preserved.
+6. How `startReferralExecution` continues to enqueue ordinary plain Builder jobs and continues to omit `harnessVersion`.
+7. Whether `entities/index.ts` must be updated, and whether that remains covered by GATEWAY without a HOTFILE.
+8. Test requirements proving durability, idempotency, and unchanged ordinary Builder Ask/Build contracts.
+9. Confirmation that no controller / HTTP route is added.
+10. Confirmation that container-manager SQLite leftover `orchestrator_*` columns remain unused and out of scope.
+
+**Keith-decision boundary:**
+KEITH_DECISION_REQUIRED_BEFORE_REGISTRATION=NO (this window is the authorized registration)
+KEITH_DECISION_REQUIRED_BEFORE_STAGE_START=YES
+KEITH_DECISION_REQUIRED_BEFORE_ADMISSION=YES
+KEITH_DECISION_REQUIRED_BEFORE_IMPLEMENTATION=YES
+KEITH_DECISION_REQUIRED_BEFORE_MIGRATION_APPLY=YES
+KEITH_DECISION_REQUIRED_BEFORE_CHECKPOINT_LOCK=YES
+KEITH_DECISION_REQUIRED_BEFORE_REOPENING_EXEC_01C6A=YES
+KEITH_DECISION_REQUIRED_BEFORE_HARNESS_ENABLEMENT=YES
+KEITH_DECISION_REQUIRED_BEFORE_PRODUCT_VISIBLE_ORCHESTRATION_UI=YES
+This registration does **not** reopen EXEC-01C6A. It does **not** change BUILDER-LIVE-GATE-01. Gate remains ON.
+
+**Activation effect:** NONE
+**Rollback boundary:** Step 1 = discard this child's board/registry/stanza/sidecar-candidate additions. No implementation to roll back. Ordinary Builder path and the live gate are untouched.
+
+**Machine registration (post-epoch):** Present exactly once immediately under this canonical heading (`taskId=AGENT-PLATFORM-ORCH-PERSIST-01`, `nature=IMPLEMENTATION`). Enforcement epoch unchanged. Do not duplicate the machine-registration markers elsewhere in this body. Sidecar candidate required (`saturationClass=FORCING`). Occupancy remains EMPTY. Do not admit a lane in this window. Do not reopen AGENT-PLATFORM-EXEC-01C6A.
+
+**Lane / admission:**
+REGISTERED / READY / NOT ADMITTED — IMPLEMENTATION — Step 1 COMPLETE — Steps 2–4 NOT AUTHORIZED — 2026-09-14. This child does not occupy a lane. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. Occupancy hash `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d`. Candidate is not in S (`ADMISSION_UNCERTAIN`). EXEC-01C6A remains `startCondition=NOT_READY` / not in S / not reopened. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON.
+
+#### Acceptance Criteria
+
+Step 1 (Registration):
+- [x] canonical ID AGENT-PLATFORM-ORCH-PERSIST-01 verified unused
+- [x] equivalent unfinished task NONE
+- [x] 4-step IMPLEMENTATION lifecycle recorded
+- [x] parent AGENT-PLATFORM-ORCH-ARCH-01 COMPLETE AND LOCKED recorded
+- [x] selected v1 architecture inherited and not reopened
+- [x] GATEWAY + MIGRATION mutexes declared conservatively and not acquired
+- [x] provisional write set recorded; exact freeze deferred to Step 2
+- [x] no HTTP surface / no frontend UI / no Harness enablement
+- [x] does not reopen EXEC-01C6A
+- [x] must not change EXEC-01C6A `startCondition=NOT_READY`
+- [x] BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON
+- [x] post-epoch machine stanza exactly once (`nature=IMPLEMENTATION`)
+- [x] sidecar candidate present (`saturationClass=FORCING`)
+- [x] Lane 1 EMPTY
+- [x] Lane 2 EMPTY
+- [x] Lane 3 DISABLED
+- [x] PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED
+- [x] No Git commit/push by the worker
+
+Step 2 (stage-start / exact write-set freeze):
+- [ ] NOT AUTHORIZED
+
+Step 3 (implementation):
+- [ ] NOT AUTHORIZED
+
+Step 4 (checkpoint / lock):
+- [ ] NOT AUTHORIZED
+
+**Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. INVITATION_EXECUTION_PERMITTED=NO. Unchanged.
+
+**Lane 3 invariant:** Lane 3 remains DISABLED. Unchanged.
+
+**Step 1 HEAD:** `6127c54e76ddf4ea7430f88be36c6b6ae9066a6c` (branch main; message `docs: lock orchestration architecture`)
+**Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=0, application source=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0. Governance writes: TASKS.md CURRENT EXECUTION BOARD fields; this registry body; sidecar candidate + `lockedTaskIds` proof for AGENT-PLATFORM-ORCH-ARCH-01; occupancy facts unchanged at end-state (EMPTY / GOVERNANCE UNOWNED); SATURATION_PROOF.json only as validator output.
+
+---
+
 ### AGENT-PLATFORM-ORCH-ARCH-01 — Independent in-app orchestration architecture freeze
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=AGENT-PLATFORM-ORCH-ARCH-01
