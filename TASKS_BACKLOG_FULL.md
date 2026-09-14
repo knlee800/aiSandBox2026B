@@ -75955,6 +75955,120 @@ Step 4 (independent verification / checkpoint / lock):
 
 ---
 
+### BUILDER-LIVE-GATE-01 — Durable GLOBAL_EXECUTION_ENABLED=true for normal Builder Ask/Build on ainow.biz
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=BUILDER-LIVE-GATE-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** COMPLETE AND LOCKED — PASS — 2026-09-14 — Step 1 COMPLETE — Step 2 COMPLETE — Step 3 COMPLETE (durable `GLOBAL_EXECUTION_ENABLED=true`; Gateway health 200; Keith Ask assistant reply `ping`; gate LEFT ON) — Step 4 COMPLETE — Checkpoint: `docs/BUILDER-LIVE-GATE-01-CHECKPOINT.md` — Stage-start: `docs/BUILDER-LIVE-GATE-01-STAGE-START.md` — GOVERNANCE acquired transiently then released UNOWNED — no implementation lane — no sidecar candidate — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — EXEC-01C6A remains MACHINE BLOCKER ENFORCED / sidecar startCondition=NOT_READY UNCHANGED / not reopened / not admitted / not LANE-DONE / not LOCKED — PM2-FENCE-01 remains COMPLETE AND LOCKED (OUTCOME_BLOCKED under M3). Previous: **Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-14 — Step 1 COMPLETE — Step 2 COMPLETE (procedure freeze) — Stage-start: `docs/BUILDER-LIVE-GATE-01-STAGE-START.md` — Step 3 AUTHORIZED this window (Keith 2026-09-14: persist `GLOBAL_EXECUTION_ENABLED=true`, restart Gateway, verify health, one signed-in Ask smoke, leave gate ON) — Step 4 NOT STARTED — GOVERNANCE acquired transiently then released UNOWNED after this control-plane write — no implementation lane — no sidecar candidate — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — EXEC-01C6A remains MACHINE BLOCKER ENFORCED / sidecar startCondition=NOT_READY UNCHANGED / not reopened / not admitted / not LANE-DONE / not LOCKED — PM2-FENCE-01 remains COMPLETE AND LOCKED (OUTCOME_BLOCKED under M3)
+**Task ID:** BUILDER-LIVE-GATE-01
+**Title:** Durable `GLOBAL_EXECUTION_ENABLED=true` for normal Builder Ask/Build on ainow.biz
+**Family:** BUILDER / LIVE-OPS (bounded GOVERNANCE/ops; not a product frontier; not EXEC-01C6A; not Harness)
+**Parent task:** none. Not a child of AGENT-PLATFORM-EXEC-01C6A. Does **not** reopen EXEC-01C6A. Unlocked EXEC-01C6A / EXEC-01C6 / EXEC-01C MUST NOT appear in machine `dependsOn`.
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE / LIVE-OPS — does NOT consume Lane 1 or Lane 2 — no implementation candidate
+**Development program:** CURRENT — restore already-CURRENT Builder Ask/Build usability on ainow.biz after LIVE-11 `executionGateFinal=restored-false`. GO-NO-GO said GO for 1–3 trusted users but did not enable the gate. This is a named Keith-authorized live-ops task, not a new product-priority selection.
+**Product-visible Harness capability:** FUTURE / gated / disabled / unavailable. Unchanged.
+**Classification:** CURRENT required live-ops; product-visible Harness remains FUTURE/gated. Machine productClass is not encoded on a sidecar candidate because this task is GOVERNANCE.
+**Lifecycle:** 4-STEP GOVERNANCE (risky / live-ops):
+1. Step 1 — registration — COMPLETE — 2026-09-14 — control-plane only.
+2. Step 2 — stage-start / procedure freeze — COMPLETE — 2026-09-14 — Stage-start: `docs/BUILDER-LIVE-GATE-01-STAGE-START.md`.
+3. Step 3 — inspect + persist + Gateway restart + health + one signed-in Ask smoke + leave gate ON — COMPLETE — 2026-09-14 — PASS (Keith assistant reply `ping`; HTTP 202 not captured; 503 cannot produce that reply).
+4. Step 4 — independent verification / checkpoint / lock — COMPLETE AND LOCKED — 2026-09-14 — Checkpoint: `docs/BUILDER-LIVE-GATE-01-CHECKPOINT.md`. Gate LEFT ON. EXEC-01C6A remains startCondition=NOT_READY / not reopened / not admitted / not LANE-DONE / not LOCKED.
+**Start condition:** COMPLETE AND LOCKED — 2026-09-14 — GOVERNANCE live-ops PASS; gate LEFT ON. Occupies no implementation lane. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. EXEC-01C6A sidecar `startCondition=NOT_READY` remains UNCHANGED. Previous: **Start condition:** READY (satisfied for this GOVERNANCE registration). NOT ADMITTED to an implementation lane. Occupies no implementation lane. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. EXEC-01C6A sidecar `startCondition=NOT_READY` remains UNCHANGED.
+**Depends on (canonical / human):** Keith 2026-09-14 authorization of this named task after confirmed 503 (`AI execution temporarily disabled for maintenance`) on ainow.biz. LIVE-11 leftover `executionGateFinal=restored-false`. Does not depend on unfinished implementation output from another admitted lane.
+**Depends on (machine sidecar `dependsOn`):** none — GOVERNANCE; no implementation candidate.
+**Primary write scope (Steps 1–2, this write):** `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body; `docs/BUILDER-LIVE-GATE-01-STAGE-START.md`; `docs/control-plane/SATURATION_PROOF.json` only as validator output. No sidecar candidate. Occupancy remains EMPTY / GOVERNANCE UNOWNED at end of this write. No application source. No test file. No Git.
+**Primary write scope (Step 3):** `/opt/aisandbox/.env` `GLOBAL_EXECUTION_ENABLED` only; PM2 restart of `aisandbox-api-gateway --update-env`; health; one Ask smoke. No application source. No provider/key/harness/credit-top-up.
+**Primary write scope (Step 4):** checkpoint `docs/BUILDER-LIVE-GATE-01-CHECKPOINT.md`; TASKS.md board fields; this registry body. COMPLETE 2026-09-14.
+**Mutexes / resources (Steps 1–2):** GOVERNANCE held only for this control-plane write then released UNOWNED. No implementation mutex. Occupancy EMPTY.
+**Mutexes / resources (Step 3):** GOVERNANCE, STAGING, ENV held only for enable/Ask then released UNOWNED. Incidental PROVIDER-LIVE + CREDIT from the one Ask only. End-state UNOWNED. Occupancy EMPTY.
+**Hot-file leases:** none.
+**Shared contracts:** none frozen/mutated. `HARNESS_ENTITLEMENT_PROOF_V1` remains FROZEN and is not consumed.
+**Evidence class:** GOVERNANCE (Steps 1–2); Step 3 evidence class PROVIDER-LIVE for the one Ask only
+**Revert isolation:** Steps 1–2 revert = discard this child's board/registry/stanza/stage-start. Step 3 revert = restore `GLOBAL_EXECUTION_ENABLED=false` only if Gateway health fails. Success leaves the gate ON. Must not mutate EXEC-01C6A prepared artifacts. Lane 1 and Lane 2 remain EMPTY.
+**saturationClass:** not applicable (GOVERNANCE; no sidecar candidate required)
+**productClass:** CURRENT
+**futureAuthorization:** NONE
+**writeSetPrecision:** not applicable (GOVERNANCE; no implementation candidate)
+**admissionUncertain:** not applicable (GOVERNANCE; no implementation candidate)
+**exclusiveCapacity:** false
+**runtimeNeeds:** none at registration; Step 3 uses STAGING + ENV + incidental PROVIDER-LIVE/CREDIT
+**i18n:** false
+
+**Identifier search:** Repo-wide search for a canonical `BUILDER-LIVE-GATE-01` heading, an `AISB_MACHINE_REG_V1` stanza, a current-board occupancy, a sidecar candidate, and a `lockedTaskIds` entry returned none at HEAD `12eaf6d1d2a7f0ac178d8ef1bc1890ee4207893f`. LIVE-11 / FR-04 / GO-NO-GO / PRIVATE-BETA-EXEC-01 / EXEC-01C6A / PM2-FENCE-01 do not authorize this enablement. BUILDER-LIVE-GATE-01 is the smallest correct next bounded GOVERNANCE/ops ID.
+
+**Keith-decision boundary:**
+KEITH_DECISION_REQUIRED_BEFORE_REGISTRATION=NO (this window is the authorized registration)
+KEITH_DECISION_REQUIRED_BEFORE_STAGE_START=NO (Step 2 authorized this window)
+KEITH_DECISION_REQUIRED_BEFORE_STEP_3_ENABLE=NO (Keith 2026-09-14 authorized persist/restart/health/Ask/leave ON)
+KEITH_DECISION_REQUIRED_BEFORE_CHECKPOINT_LOCK=NO (Step 3 evidence received this window: Keith assistant reply `ping`; original 2026-09-14 authorization included leave-ON after success plus required checkpoint)
+KEITH_DECISION_REQUIRED_BEFORE_REOPENING_EXEC_01C6A=YES
+This registration does **not** reopen EXEC-01C6A.
+
+**Registered purpose:**
+- Persist `GLOBAL_EXECUTION_ENABLED=true` for Gateway on ainow.biz
+- Restart Gateway and verify health
+- Run one signed-in Ask smoke
+- Leave the gate ON after success
+- Occupy no implementation lane and create no sidecar candidate
+
+**This registration does not authorize:**
+Harness; tool-loop; EXEC-01C6A reopen; temporary PM2 overlays; provider or key changes; credit top-up; billing/Stripe; PRIVATE-BETA-INVITE-01; BUILDER-CREDIT-UX-01; application source; Git commit/push.
+
+**Activation effect:** NONE at Steps 1–2. Step 3 (authorized) mutates only `GLOBAL_EXECUTION_ENABLED` and restarts Gateway.
+**Rollback boundary:** Steps 1–2 = discard board/registry/stage-start. Step 3 health-failure rollback = restore `false`. Success leaves `true`.
+
+**Machine registration (post-epoch):** Present exactly once immediately under this canonical heading (`taskId=BUILDER-LIVE-GATE-01`, `nature=GOVERNANCE`). Enforcement epoch unchanged. Do not create an implementation candidate. Do not reopen AGENT-PLATFORM-EXEC-01C6A.
+
+**Lane / admission:**
+COMPLETE AND LOCKED — PASS — GOVERNANCE-only — 2026-09-14. This child does not occupy a lane. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. Occupancy hash `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d`. No sidecar candidate so this ID is not in S. EXEC-01C6A remains `startCondition=NOT_READY` / not in S / not reopened. Previous: REGISTERED / READY / NOT ADMITTED — GOVERNANCE-only — Step 1 COMPLETE — Step 2 COMPLETE — Step 3 AUTHORIZED — 2026-09-14. This child does not occupy a lane. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. Occupancy hash `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d`. No sidecar candidate so this ID is not in S. EXEC-01C6A remains `startCondition=NOT_READY` / not in S / not reopened.
+
+#### Acceptance Criteria
+
+Step 1 (Registration):
+- [x] canonical ID BUILDER-LIVE-GATE-01 verified unused
+- [x] equivalent unfinished task NONE
+- [x] 4-step GOVERNANCE lifecycle recorded
+- [x] does not reopen EXEC-01C6A
+- [x] must not change EXEC-01C6A `startCondition=NOT_READY`
+- [x] post-epoch machine stanza exactly once (`nature=GOVERNANCE`)
+- [x] no implementation candidate
+- [x] Lane 1 EMPTY
+- [x] Lane 2 EMPTY
+- [x] Lane 3 DISABLED
+- [x] PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED
+- [x] No Git commit/push by the worker
+
+Step 2 (stage-start / procedure freeze):
+- [x] stage-start created: `docs/BUILDER-LIVE-GATE-01-STAGE-START.md`
+- [x] inspect-first stop conditions frozen (`AI_PROVIDER=stub`, health not 200, harness tool-loop true)
+- [x] durable `.env` persist + Gateway-only restart frozen
+- [x] leave-ON after PASS frozen
+- [x] Harness / EXEC-01C6A / overlays / provider-key / credit-top-up excluded
+
+Step 3 (enable + Ask smoke):
+- [x] inspect current `GLOBAL_EXECUTION_ENABLED` and `AI_PROVIDER`
+- [x] persist `GLOBAL_EXECUTION_ENABLED=true` in `/opt/aisandbox/.env`
+- [x] restart `aisandbox-api-gateway --update-env` (plus required inline `GLOBAL_EXECUTION_ENABLED=true` merge so PM2 process env matched `.env`; not a temporary overlay)
+- [x] verify health HTTP 200 and PM2 env `true`
+- [x] one signed-in Ask smoke on the live Builder (`staging.ainow.biz`); Keith assistant reply `ping` (HTTP 202 not captured; PASS)
+- [x] leave gate ON after success
+- [x] no Harness / overlay / provider-key / credit-top-up / code change
+
+Step 4 (checkpoint / lock):
+- [x] checkpoint `docs/BUILDER-LIVE-GATE-01-CHECKPOINT.md` — COMPLETE AND LOCKED — PASS — 2026-09-14 — gate LEFT ON
+
+**Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. INVITATION_EXECUTION_PERMITTED=NO. Unchanged.
+
+**Lane 3 invariant:** Lane 3 remains DISABLED. Unchanged.
+
+**Step 1 HEAD:** `12eaf6d1d2a7f0ac178d8ef1bc1890ee4207893f` (branch main)
+**Step 1–2 activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=0, application source=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0. Governance writes: `docs/BUILDER-LIVE-GATE-01-STAGE-START.md`, TASKS.md, this registry body; sidecar occupancy facts unchanged at end-state (EMPTY / GOVERNANCE UNOWNED; no candidate added); SATURATION_PROOF.json only as validator output.
+
+---
+
 ### AGENT-PLATFORM-EXEC-01C-SCHEMA-01 — Additive create-table migration for missing public.api_keys
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=AGENT-PLATFORM-EXEC-01C-SCHEMA-01
