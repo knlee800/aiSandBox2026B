@@ -679,7 +679,7 @@
       "taskId": "PREVIEW-NODE-STAGING-01",
       "nature": "IMPLEMENTATION",
       "lifecycle": "4-STEP",
-      "status": "READY",
+      "status": "LOCKED",
       "startCondition": "READY",
       "saturationClass": "FORCING",
       "productClass": "CURRENT",
@@ -694,14 +694,14 @@
       "evidenceClass": "STAGING-RUNTIME",
       "exclusiveCapacity": false,
       "runtimeNeeds": ["STAGING"],
-      "admissionUncertain": true,
+      "admissionUncertain": false,
       "writeSetPrecision": "EXACT"
     },
     {
       "taskId": "PREVIEW-NODE-STAGING-APPLY-01",
       "nature": "IMPLEMENTATION",
       "lifecycle": "4-STEP",
-      "status": "READY",
+      "status": "LOCKED",
       "startCondition": "READY",
       "saturationClass": "FORCING",
       "productClass": "CURRENT",
@@ -716,11 +716,11 @@
       "evidenceClass": "STAGING-RUNTIME",
       "exclusiveCapacity": false,
       "runtimeNeeds": ["STAGING"],
-      "admissionUncertain": true,
+      "admissionUncertain": false,
       "writeSetPrecision": "EXACT"
     }
   ],
-  "lockedTaskIds": ["GOV-OS-03", "GOV-OS-03R1", "AGENT-PLATFORM-CREATE-01F", "I18N-SHELL-07", "AGENT-PLATFORM-EXEC-01A", "AGENT-PLATFORM-EXEC-01B", "GOV-AUTH-03", "AGENT-PLATFORM-EXEC-01C1", "AGENT-PLATFORM-EXEC-01C2", "AGENT-PLATFORM-EXEC-01C3", "AGENT-PLATFORM-EXEC-01C4", "AGENT-PLATFORM-EXEC-01C4B", "AGENT-PLATFORM-EXEC-01C5", "AGENT-PLATFORM-EXEC-01C5R1", "AGENT-PLATFORM-EXEC-01C5B1", "AGENT-PLATFORM-EXEC-01C5B2", "AGENT-PLATFORM-EXEC-01C5B", "AGENT-PLATFORM-EXEC-01C-KEY-REVOKE-01", "AGENT-PLATFORM-EXEC-01C-SCHEMA-01", "AGENT-PLATFORM-EXEC-01C-IDENTITY-01", "AGENT-PLATFORM-ORCH-ARCH-01", "AGENT-PLATFORM-ORCH-PERSIST-01", "PREVIEW-NODE-01"],
+  "lockedTaskIds": ["GOV-OS-03", "GOV-OS-03R1", "AGENT-PLATFORM-CREATE-01F", "I18N-SHELL-07", "AGENT-PLATFORM-EXEC-01A", "AGENT-PLATFORM-EXEC-01B", "GOV-AUTH-03", "AGENT-PLATFORM-EXEC-01C1", "AGENT-PLATFORM-EXEC-01C2", "AGENT-PLATFORM-EXEC-01C3", "AGENT-PLATFORM-EXEC-01C4", "AGENT-PLATFORM-EXEC-01C4B", "AGENT-PLATFORM-EXEC-01C5", "AGENT-PLATFORM-EXEC-01C5R1", "AGENT-PLATFORM-EXEC-01C5B1", "AGENT-PLATFORM-EXEC-01C5B2", "AGENT-PLATFORM-EXEC-01C5B", "AGENT-PLATFORM-EXEC-01C-KEY-REVOKE-01", "AGENT-PLATFORM-EXEC-01C-SCHEMA-01", "AGENT-PLATFORM-EXEC-01C-IDENTITY-01", "AGENT-PLATFORM-ORCH-ARCH-01", "AGENT-PLATFORM-ORCH-PERSIST-01", "PREVIEW-NODE-01", "PREVIEW-NODE-STAGING-01", "PREVIEW-NODE-STAGING-APPLY-01"],
   "sharedContracts": [
     {
       "id": "HARNESS_ENTITLEMENT_PROOF_V1",

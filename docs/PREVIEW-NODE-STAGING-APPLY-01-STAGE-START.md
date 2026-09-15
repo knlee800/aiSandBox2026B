@@ -5,12 +5,12 @@
 **Date:** 2026-09-15
 **Nature:** IMPLEMENTATION / staging-ops — high-risk live version check plus possible staging apply of already-locked container-manager Vite preview
 **Lifecycle:** 4-step IMPLEMENTATION
-**Step:** 3 PASS — hygiene-cleared retry applied locked code then frozen Vite/static proof
-**Step status:** Step 1 COMPLETE — 2026-09-15 (registration / control-plane only; registered at `a4a89f2`); Step 2 COMPLETE — 2026-09-15 (freeze committed `158786d`); Step 3 AUTHORIZED and PASS — 2026-09-15 (retry after PREVIEW-NODE-STAGING-HYGIENE-01; supersedes §14 `S_DIRTY_TREE` BLOCKED); Step 4 NOT AUTHORIZED
-**This document:** Authoritative Step 2 freeze plus Step 3 evidence. §16 retry supersedes §14 BLOCKED. Step 3 did **not** admit a lane, did **not** lock the task, and did **not** edit application source, `.env`, provider, credit, or EXEC-01C6A.
+**Step:** 4 COMPLETE AND LOCKED — independent verification / checkpoint / lock
+**Step status:** Step 1 COMPLETE — 2026-09-15 (registration / control-plane only; registered at `a4a89f2`); Step 2 COMPLETE — 2026-09-15 (freeze committed `158786d`); Step 3 AUTHORIZED and PASS — 2026-09-15 (retry after PREVIEW-NODE-STAGING-HYGIENE-01; supersedes §14 `S_DIRTY_TREE` BLOCKED; committed `a1561a9`); Step 4 COMPLETE AND LOCKED — 2026-09-15
+**This document:** Authoritative Step 2 freeze, Step 3 evidence, and Step 4 checkpoint. §16 retry supersedes §14 BLOCKED. Step 4 did **not** admit a lane, did **not** edit application source, `.env`, provider, credit, or EXEC-01C6A, and did **not** use runtime/SSH/PM2/Git.
 
 **Parent:** PREVIEW-NODE-01 COMPLETE AND LOCKED — Checkpoint: `docs/PREVIEW-NODE-01-STAGE-START.md` — implementation HEAD `443d7eeecba7d8ef403fc77a3eee37d6d62f418a` (`feat: support vite preview`) — lock `26a1333` (`docs: lock vite preview slice`)
-**Sibling proof:** PREVIEW-NODE-STAGING-01 REGISTERED / READY / NOT ADMITTED — historical Step 3 FAIL remains in §16; APPLY-01 Phase D reran the same frozen §5 procedure as §17 PASS. Frozen proof procedure: same document §5 Phases 0–8.
+**Sibling proof:** PREVIEW-NODE-STAGING-01 COMPLETE AND LOCKED this same Step 4 window — historical Step 3 FAIL remains in §16; APPLY-01 Phase D reran the same frozen §5 procedure as §17 PASS. Frozen proof procedure: same document §5 Phases 0–8. Dual-lock decision: §18.
 **Occupancy hash (end-state):** `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d` (Lane 1 EMPTY, Lane 2 EMPTY, GOVERNANCE UNOWNED)
 
 ```
@@ -22,15 +22,15 @@ STEP3_VERDICT=PASS
 STOP_ID=NONE
 LIVE_CLASS=LIVE_LOCKED
 LIVE_CLASS_PHASE_A=LIVE_OLD
-STEP4_AUTHORIZED=NO
-STEP4_COMPLETE=NO
-LOCKED=NO
+STEP4_AUTHORIZED=YES
+STEP4_COMPLETE=YES
+LOCKED=YES
 IMPLEMENTATION_STARTED=NO
 ADMITTED=NO
 WRITE_SET_PRECISION=EXACT
-CANDIDATE_STATUS=READY
-ADMISSION_UNCERTAIN=true
-TEST_ADMISSIBLE=ADMISSION_UNCERTAIN
+CANDIDATE_STATUS=LOCKED
+ADMISSION_UNCERTAIN=false
+TEST_ADMISSIBLE=NOT_READY
 APPLICATION_SOURCE=NONE
 PREVIEW_SERVICE_TS_EDIT=FORBIDDEN_THIS_TASK
 TEST_HARNESS_EXPANSION=NONE
@@ -62,7 +62,7 @@ APEX_ROUTING=NO
 EXEC_01C6A_REOPENED=NO
 EXEC_01C6A_START_CONDITION=NOT_READY
 BUILDER_LIVE_GATE_01=COMPLETE AND LOCKED / LEFT_ON
-PREVIEW_NODE_STAGING_01_STEP4=NOT_AUTHORIZED
+PREVIEW_NODE_STAGING_01_STEP4=COMPLETE AND LOCKED (same window)
 LANE_1=EMPTY
 LANE_2=EMPTY
 LANE_3=DISABLED
@@ -71,7 +71,7 @@ PRIVATE_BETA_INVITE_01=PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / P
 FOLLOW_ON_REGISTERED=NO
 ```
 
-Keith authorized Step 3 retry of this freeze after PREVIEW-NODE-STAGING-HYGIENE-01 (not admission, not Step 4, not lock). Occupancy remains EMPTY. Sidecar candidate remains `status=READY` / `writeSetPrecision=EXACT` / `admissionUncertain=true` so the candidate is **not** in S (`Test-Admissible` = ADMISSION_UNCERTAIN). Do **not** admit Lane 1 or Lane 2. Do **not** start Step 4. Do **not** reopen AGENT-PLATFORM-EXEC-01C6A. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. Step 3 verdict = **PASS**. §16 retry supersedes §14 BLOCKED. Phase A classified `LIVE_OLD` on a clean tree; Phase B/C applied locked container-manager code to `LIVE_LOCKED`; Phase D reran PREVIEW-NODE-STAGING-01 §5 Vite/static proof.
+Keith authorized Step 4 checkpoint/lock after Step 3 PASS (committed `a1561a9`). Occupancy remains EMPTY. Sidecar candidate is `status=LOCKED` / `writeSetPrecision=EXACT` / `admissionUncertain=false` so the candidate is **not** in S (`Test-Admissible` = NOT_READY). Do **not** admit Lane 1 or Lane 2. Do **not** register follow-on tasks. Do **not** reopen AGENT-PLATFORM-EXEC-01C6A. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. Step 3 verdict = **PASS**. Step 4 verdict = **COMPLETE AND LOCKED**. §16 retry supersedes §14 BLOCKED. Phase A classified `LIVE_OLD` on a clean tree; Phase B/C applied locked container-manager code to `LIVE_LOCKED`; Phase D reran PREVIEW-NODE-STAGING-01 §5 Vite/static proof. PREVIEW-NODE-STAGING-01 is COMPLETE AND LOCKED in this same window (dual-lock decision §18).
 
 ---
 
@@ -488,12 +488,12 @@ Do not capture cookies, CSRF tokens, Authorization headers, or `.env` secret val
 
 ## 12. Invariants this freeze must not change
 
-- Occupancy EMPTY; not admitted; not LANE-DONE; not LOCKED
+- Occupancy EMPTY; not admitted; not LANE-DONE
 - Lane 3 DISABLED
 - EXEC-01C6A `startCondition=NOT_READY` / not reopened
 - BUILDER-LIVE-GATE-01 COMPLETE AND LOCKED / gate LEFT ON
 - PREVIEW-NODE-01 remains COMPLETE AND LOCKED
-- PREVIEW-NODE-STAGING-01 remains REGISTERED / READY / NOT ADMITTED (Step 3 FAIL; Step 4 NOT AUTHORIZED) until a later control-plane write after a successful proof retry
+- PREVIEW-NODE-STAGING-01 COMPLETE AND LOCKED this Step 4 window (historical §16 FAIL preserved; §17 PASS is lock evidence)
 - PRIVATE-BETA-INVITE-01 PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED
 
 ---
@@ -609,4 +609,95 @@ This pointer does **not** itself lock PREVIEW-NODE-STAGING-APPLY-01. Step 3 retr
 - No `.env` restore (`.env` not edited). No Docker/Postgres/Redis. No Git commit/push.
 - Isolated CDP Chrome (temp user-data-dir) stopped; Keith’s signed-in Profile 5 Chrome was not killed.
 
-**Follow-on:** Step 4 / lock NOT AUTHORIZED. Do not admit a lane. Do not reopen EXEC-01C6A.
+**Follow-on:** Step 4 COMPLETE AND LOCKED this window (Keith 2026-09-15). Dual-lock with PREVIEW-NODE-STAGING-01 recorded in §18. Do not admit a lane. Do not reopen EXEC-01C6A.
+
+---
+
+## 18. Dual-lock decision (Step 4 window)
+
+**Question:** May PREVIEW-NODE-STAGING-APPLY-01 and PREVIEW-NODE-STAGING-01 both be marked COMPLETE AND LOCKED in this one Step 4 checkpoint window?
+
+**Verdict:** **YES.**
+
+Grounded rules:
+
+1. CLAUDE.md “each admitted implementation lane may contain only ONE bounded implementation task” is a **lane occupancy** rule. Neither task occupies Lane 1 or Lane 2. Occupancy remains EMPTY.
+2. Control-plane LOCK / consolidation may cover related completed work in one window when Keith authorizes checkpoint lock (`KEITH_DECISION_REQUIRED_BEFORE_CHECKPOINT_LOCK`).
+3. The 4-step anti-collapse rule is already satisfied: freeze (Step 2), apply/proof (Step 3, committed `a1561a9`), and this lock are separate Keith-authorized windows. This window is lock-only (no runtime, SSH, PM2, or Git).
+4. APPLY-01 freeze §12 anticipated “a later control-plane write after a successful proof retry” for STAGING-01. This window is that write.
+5. APPLY-01 Step 3 freeze forbade starting STAGING-01 Step 4 **during Step 3**. That prohibition does not survive Keith’s explicit Step 4 dual-lock check.
+6. STAGING-01 registered purpose is proven by §17 PASS of the frozen §5 procedure after `LIVE_LOCKED` apply. Historical §16 FAIL is preserved as the pre-apply attempt and is not rewritten.
+7. GOV-OS-03: both candidates become `status=LOCKED` / `admissionUncertain=false` and are **not** in S (`Test-Admissible` = NOT_READY). Occupancy EMPTY. Idle implementation capacity remains valid. EXEC-01C6A `startCondition=NOT_READY` UNCHANGED.
+
+Each task keeps its own checkpoint record in its stage-start document (this §18–§21; STAGING-01 §18–§21). No follow-on task is registered.
+
+---
+
+## 19. Step 4 acceptance (COMPLETE AND LOCKED — 2026-09-15)
+
+- [x] Independent verification of Step 3 PASS against freeze + committed evidence `a1561a9`
+- [x] Phase A `LIVE_OLD` on clean tree; apply to `LIVE_LOCKED`; CM health 200; Gateway ready 200
+- [x] PREVIEW-NODE-STAGING-01 frozen §5 Vite/static proof PASS (`docs/PREVIEW-NODE-STAGING-01-STAGE-START.md` §17)
+- [x] Dual-lock with PREVIEW-NODE-STAGING-01 authorized and recorded (§18)
+- [x] no application source; no `.env`; no Ask/Build; no provider/credit
+- [x] EXEC-01C6A `startCondition=NOT_READY` UNCHANGED / not reopened
+- [x] BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON
+- [x] sidecar `status=LOCKED` / `admissionUncertain=false`; `lockedTaskIds` includes PREVIEW-NODE-STAGING-APPLY-01
+- [x] Occupancy EMPTY; no lane admitted; no runtime mutex acquired this lock window; no follow-on registered
+- [x] Validator PASS this lock window
+- [x] `git diff --check` PASS
+- [x] No Git commit/push by the worker
+- [x] No runtime/SSH/AWS/PM2/Docker/Postgres/Redis this window
+
+---
+
+## 20. Authorization state (end of Step 4 lock)
+
+```
+IMPLEMENTATION_AUTHORIZED=NO (ops already COMPLETE; this window is lock-only)
+ADMISSION_AUTHORIZED=NO
+STAGING_AUTHORIZED=NO
+STAGING_EXECUTION_AUTHORIZED=NO
+LOCAL_RUNTIME_AUTHORIZED=NO
+PROVIDER_LIVE_AUTHORIZED=NO
+CREDIT_AUTHORIZED=NO
+TESTS_EXECUTED=NO (this lock window)
+APPLICATION_SOURCE_CHANGED=NO
+LANE_1=EMPTY
+LANE_2=EMPTY
+CONTAINER_MANAGER_ACQUIRED=NO
+STAGING_ACQUIRED=NO
+STEP4_AUTHORIZED=YES
+STEP4_COMPLETE=YES
+LOCKED=YES
+FOLLOW_ON_REGISTERED=NO
+EXEC_01C6A_REOPENED=NO
+PREVIEW_NODE_STAGING_01_LOCKED=YES (same window)
+```
+
+Previous (end of Step 3 retry): STEP4_AUTHORIZED=NO; LOCKED=NO; PREVIEW_NODE_STAGING_01_STEP4=NOT_AUTHORIZED.
+
+---
+
+## 21. Activity ledger (Step 4) and lock evidence
+
+**Step 4 lock ledger (this window):** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=0, application source=0, frontend=0, i18n=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0, follow-on registration=0, Ask/Build=0. Governance writes: this stage-start Step 4 checkpoint; `docs/PREVIEW-NODE-STAGING-01-STAGE-START.md` Step 4 checkpoint; `TASKS.md` CURRENT EXECUTION BOARD fields; `TASKS_BACKLOG_FULL.md` APPLY-01 and STAGING-01 bodies; sidecar candidates `status=LOCKED` / `admissionUncertain=false` + `lockedTaskIds`; `SATURATION_PROOF.json` only as validator output. Occupancy facts unchanged (EMPTY / GOVERNANCE UNOWNED).
+
+**Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED.
+
+**Lane 3 invariant:** Lane 3 remains DISABLED.
+
+**Activation effect:** NONE
+**Rollback boundary:** this lock = discard this window’s board/registry/stage-start/sidecar lock field updates. Staging `LIVE_LOCKED` dist, locked PREVIEW-NODE-01, HYGIENE-01, and the live gate are untouched.
+
+### Verdict
+
+**PREVIEW-NODE-STAGING-APPLY-01 is COMPLETE AND LOCKED.**
+
+**Step 3 committed HEAD (user-supplied; not re-queried this window):** `a1561a9`
+
+**Scope:** staging apply of locked PREVIEW-NODE-01 container-manager Vite preview (`LIVE_OLD` → `LIVE_LOCKED`) plus frozen STAGING-01 Vite/static proof. No `preview.service.ts` edit. No application source. No `.env`. No Ask/Build.
+
+**Sibling:** PREVIEW-NODE-STAGING-01 COMPLETE AND LOCKED this same window. Checkpoint: `docs/PREVIEW-NODE-STAGING-01-STAGE-START.md`.
+
+**Invariants:** EXEC-01C6A `startCondition=NOT_READY` UNCHANGED / not reopened. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. Lane 3 remains DISABLED. No follow-on task registered. No admitted next product gate / selection pending.
