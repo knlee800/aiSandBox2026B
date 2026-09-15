@@ -555,3 +555,13 @@ Do not capture cookies, CSRF tokens, Authorization headers, or `.env` secret val
 **Activation effect:** NONE (Phase A stop)
 **Rollback boundary:** Step 3 BLOCKED = discard §14 plus this window’s board/registry field updates. No runtime rollback (no apply). Locked PREVIEW-NODE-01, STAGING-01 §16 FAIL evidence, and the live gate are untouched.
 **Follow-on:** later Step 3 retry after the staging worktree is clean, or an explicit control-plane exception. Do not convert this BLOCKED into a `preview.service.ts` product fix. Do not start Step 4.
+
+---
+
+## 15. Hygiene unblocker pointer (2026-09-15) — PREVIEW-NODE-STAGING-HYGIENE-01
+
+Separate GOVERNANCE task PREVIEW-NODE-STAGING-HYGIENE-01 COMPLETE AND LOCKED — PASS. Checkpoint: `docs/PREVIEW-NODE-STAGING-HYGIENE-01-CHECKPOINT.md`.
+
+The untracked `services/ai-service/dist.outgoing-20260910T082304Z-467f0d51/` directory was **moved** (not deleted) to `/home/ubuntu/aisb-preserved/dist.outgoing-20260910T082304Z-467f0d51/`. Remote `git -C /opt/aisandbox status --short` is now empty.
+
+This pointer does **not** authorize a Step 3 retry, apply, PM2 restart, or lock of PREVIEW-NODE-STAGING-APPLY-01.
