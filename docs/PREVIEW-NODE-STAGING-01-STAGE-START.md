@@ -5,9 +5,9 @@
 **Date:** 2026-09-15
 **Nature:** IMPLEMENTATION / validation-ops — high-risk staging/browser proof of locked Vite preview (container process launch, ports, process-proxy, sandbox npm/dev-server)
 **Lifecycle:** 4-step IMPLEMENTATION
-**Step:** 3 BLOCKED — live Vite staging/browser proof stopped at Phase 0
-**Step status:** Step 1 COMPLETE — 2026-09-14 (registration / control-plane only; committed `f82d747`); Step 2 COMPLETE — 2026-09-15 (committed `40a0b06`); Step 3 AUTHORIZED this window and BLOCKED — 2026-09-15 (Phase 0 signed-out / S2); Step 4 NOT AUTHORIZED
-**This document:** Authoritative Step 2 freeze plus Step 3 evidence. Step 3 did **not** admit a lane, did **not** lock the task, and did **not** mutate application source, PM2, `.env`, provider, credit, or EXEC-01C6A.
+**Step:** 3 FAIL — live Vite staging/browser proof reached UI Start Preview; Vite remained `starting`
+**Step status:** Step 1 COMPLETE — 2026-09-14 (registration / control-plane only; committed `f82d747`); Step 2 COMPLETE — 2026-09-15 (committed `40a0b06`); Step 3 AUTHORIZED and FAIL — 2026-09-15 (signed-in retry supersedes §14 BLOCKED / `b14e724`; S4/S5/S6); Step 4 NOT AUTHORIZED
+**This document:** Authoritative Step 2 freeze plus Step 3 evidence. §16 retry supersedes §14 BLOCKED. Step 3 did **not** admit a lane, did **not** lock the task, and did **not** mutate application source, PM2, `.env`, provider, credit, or EXEC-01C6A.
 
 **Parent:** PREVIEW-NODE-01 COMPLETE AND LOCKED — Checkpoint: `docs/PREVIEW-NODE-01-STAGE-START.md` — implementation HEAD `443d7eeecba7d8ef403fc77a3eee37d6d62f418a` (`feat: support vite preview`) — lock `26a1333` (`docs: lock vite preview slice`)
 **Occupancy hash (end-state):** `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d` (Lane 1 EMPTY, Lane 2 EMPTY, GOVERNANCE UNOWNED)
@@ -16,8 +16,8 @@
 STEP1_COMPLETE=YES
 STEP2_COMPLETE=YES
 STEP3_AUTHORIZED=YES
-STEP3_COMPLETE=NO
-STEP3_VERDICT=BLOCKED
+STEP3_COMPLETE=YES
+STEP3_VERDICT=FAIL
 STEP4_AUTHORIZED=NO
 STEP4_COMPLETE=NO
 LOCKED=NO
@@ -39,6 +39,8 @@ MUTEXES_ACQUIRED=NO
 STAGING_AUTHORIZED=NO
 STAGING_EXECUTION_AUTHORIZED=NO
 SSH_USED=NO
+STEP3_RETRY=YES
+STEP3_RETRY_SUPERSEDES=b14e724 BLOCKED / §14
 EVIDENCE_CLASS=STAGING-RUNTIME
 HOST=https://staging.ainow.biz
 APEX_AINOW_BIZ=OUT_OF_SCOPE
@@ -61,7 +63,7 @@ PRIVATE_BETA_INVITE_01=PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / P
 FOLLOW_ON_REGISTERED=NO
 ```
 
-Keith authorized Step 3 proof only this window (not admission, not Step 4, not lock). Occupancy remains EMPTY. Sidecar candidate remains `status=READY` / `writeSetPrecision=EXACT` / `admissionUncertain=true` so the candidate is **not** in S (`Test-Admissible` = ADMISSION_UNCERTAIN). Do **not** admit Lane 1 or Lane 2. Do **not** start Step 4. Do **not** reopen AGENT-PLATFORM-EXEC-01C6A. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. Step 3 verdict = **BLOCKED** at Phase 0 (signed-out / S2).
+Keith authorized Step 3 proof only (not admission, not Step 4, not lock). Occupancy remains EMPTY. Sidecar candidate remains `status=READY` / `writeSetPrecision=EXACT` / `admissionUncertain=true` so the candidate is **not** in S (`Test-Admissible` = ADMISSION_UNCERTAIN). Do **not** admit Lane 1 or Lane 2. Do **not** start Step 4. Do **not** reopen AGENT-PLATFORM-EXEC-01C6A. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. Step 3 verdict = **FAIL** (signed-in retry; S4/S5/S6). §14 BLOCKED is superseded by §16.
 
 ---
 
@@ -509,7 +511,9 @@ KEITH_DECISION_REQUIRED_BEFORE_ASK_BUILD_FIXTURE=YES (not in this freeze; ZIP pa
 
 ---
 
-## 14. Step 3 evidence (2026-09-15) — BLOCKED
+## 14. Step 3 evidence (2026-09-15) — BLOCKED (superseded)
+
+**Superseded by:** §16 signed-in retry — verdict **FAIL**. Keep this section as the first-attempt record (`b14e724`). Do not treat §14 as the current Step 3 verdict.
 
 **Verdict:** BLOCKED (not FAIL of locked Vite preview; the product path was not reached)
 **Stop:** Phase 0 — signed-out / S2. Later phases not run.
@@ -560,8 +564,62 @@ Screenshots: none captured of Vite/static iframe markers (not reached). Login pa
 ## 15. Activity ledger (Step 3)
 
 **Step 3 HEAD:** not mutated (Keith instruction: no Git commit/push; `git diff --check` only)
-**Step 3 activity ledger:** LIVE/browser preflight=1 (Phase 0 only; signed-out), SSH=0, AWS=0, provider=0, credits=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=0, application source=0, frontend=0, i18n=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0, named children registered=0, Ask/Build=0. Staging project/session/preview mutation=0. Governance writes: this evidence section; `TASKS.md` CURRENT EXECUTION BOARD fields; `TASKS_BACKLOG_FULL.md` PREVIEW-NODE-STAGING-01 body; `SATURATION_PROOF.json` only as validator output. Sidecar occupancy unchanged EMPTY / GOVERNANCE UNOWNED / `admissionUncertain=true` / `stagingAuthorized=false`.
+**Step 3 activity ledger (current / §16 retry):** LIVE/browser=1 (signed-in `/en/app`), SSH=0, AWS=0, provider=0, credits=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=0, application source=0, frontend=0, i18n=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0, named children registered=0, Ask/Build=0, Send=0. Staging project/session/preview mutation=1 Vite disposable project + one session + one Start Preview + session Stop. Static project=0 (S4/S5/S6 stop-condition). Governance writes: this evidence section; `TASKS.md` CURRENT EXECUTION BOARD fields; `TASKS_BACKLOG_FULL.md` PREVIEW-NODE-STAGING-01 body; `SATURATION_PROOF.json` only as validator output. Sidecar occupancy unchanged EMPTY / GOVERNANCE UNOWNED / `admissionUncertain=true` / `stagingAuthorized=false`.
 
 **Activation effect:** NONE
-**Rollback boundary:** Step 3 BLOCKED = discard this evidence section plus this window’s board/registry field updates. No application source to revert. Locked PREVIEW-NODE-01 and the live gate are untouched.
-**Retry:** requires a later Keith-authorized Step 3 window that can use a already-signed-in Keith browser session on `https://staging.ainow.biz/en/app` (Cursor browser tools, or Keith signed-in before CDP). Do not reopen EXEC-01C6A. Do not admit a lane unless the control plane separately admits.
+**Rollback boundary:** Step 3 FAIL = discard §16 plus this window’s board/registry field updates. No application source to revert. Vite session already Stopped; project retained. Locked PREVIEW-NODE-01 and the live gate are untouched.
+**Follow-on:** a later product/fix child may address `npm install` skip / `sh: vite: not found` while status remains `starting`. Do not silently edit preview source in this task. Do not start Step 4. Do not reopen EXEC-01C6A. Do not admit a lane unless the control plane separately admits.
+
+---
+
+## 16. Step 3 retry evidence (2026-09-15) — FAIL (supersedes §14)
+
+**Verdict:** **FAIL**
+**Supersedes:** §14 BLOCKED / committed `b14e724` (Phase 0 signed-out / S2). This retry used Keith’s already-signed-in browser session on `https://staging.ainow.biz/en/app` with no `/en/login` redirect.
+**Stop:** S4 (Vite `/start` HTTP 400 + still not `running` after 180s) + S5 (status remained `starting`) + S6 (iframe never showed the Vite marker). Phase 7 static regression **not run** (stop immediately; do not continue later phases).
+**Phase 0:** PASS (signed-in). HTTPS `https://staging.ainow.biz/en/app`. User visible in account menu (`knlee807@gmail.com`). No Google login click this retry.
+
+### E1–E16
+
+| ID | Record |
+|---|---|
+| E1 | 2026-09-15 17:23–17:51 UTC+8. Operator: Keith signed-in staging session (controllable Chrome already on `/en/app`; no `/en/login` redirect). Host `https://staging.ainow.biz` (HTTPS). Not apex `ainow.biz`. Not localhost. |
+| E2 | Vite project name `preview-node-staging-01-vite-20260915-1723`. projectId=`df790111-fa99-4f0a-a990-4fbe6e4dfc23`. sessionId=`12bf5d2a-e91d-4f0c-a9be-2ce2838ea8fc`. Empty-workspace auto-start `POST /start` 400 before import (expected). |
+| E3 | Static project **not created** (S4/S5/S6 stop-condition). projectId=NONE. sessionId=NONE. ZIP B was prepared and not imported. |
+| E4 | ZIP A `preview-node-staging-01-vite-20260915-1723.zip` (477 bytes; members `package.json`, `index.html` at archive root). ZIP B `preview-node-staging-01-static-20260915-1723.zip` (267 bytes; member `index.html` only). Path: `%TEMP%\preview-node-staging-01-retry-20260915-1723\`. Ask/Build = 0. Send = 0. |
+| E5 | After Vite ZIP import, Code Files tree: `workspace-file-node-index.html`, `workspace-file-node-package.json` at workspace root (no nested folder). Container `ls /workspace`: `index.html` (208 bytes) + `package.json` (158 bytes) only. |
+| E6 | UI Start Preview clicked **once** (`workspace-preview-start`; no request body). Network: `POST /api/preview/12bf5d2a-e91d-4f0c-a9be-2ce2838ea8fc/start` **HTTP 400** body empty. Follow-up `GET /status` HTTP 200 `{"running":true,"port":3003,"status":"starting","framework":"Vite","uptime":0,"previewUrl":"/api/preview/12bf5d2a-e91d-4f0c-a9be-2ce2838ea8fc/proxy"}`. Same `starting` / port 3003 at uptime 263s and 565s. Did **not** return 2xx `status:"running"`. |
+| E7 | iframe `src` `https://staging.ainow.biz/api/preview/12bf5d2a-e91d-4f0c-a9be-2ce2838ea8fc/proxy?refresh=1789465123778`. Visible iframe body: `{"error":"Proxy error","message":"Failed to connect to preview server"}`. Vite marker **`PREVIEW-NODE-STAGING-01 Vite OK` not observed**. Marker FAIL. |
+| E8 | Advanced Command Input was in the compact-sidebar footer (not visible until expand). Inspect used the same product `POST /api/sessions/{sessionId}/exec` API as Command Input (no SSH). While status=`starting` / port 3003: `ps aux \| grep -E 'vite\|node' \| grep -v grep` → exit 1 empty stdout (no vite/node). `ls -l /tmp/preview-*.log` → `/tmp/preview-3003.log` 35 bytes. Listen `3001`–`3100`: `NO_LISTEN_3001_3100`. `NODE_MODULES=NO`. `PACKAGE_JSON=YES`. Log: `> dev` / `> vite` / `sh: vite: not found`. |
+| E9 | `POST /api/preview/{sessionId}/stop` HTTP **400** empty body. Follow-up `GET /status` still HTTP 200 `starting` / Vite / port 3003 / uptime 565. Post-stop inspect: no vite/node; `NO_LISTEN_3001_3100`. |
+| E10 | Orphan/leak: **no** vite/node process and **no** listen on `3001`–`3100` while mapped `starting` (launch died immediately). `POST /stop` did **not** clear `starting` (S4). No second Start Preview. After session Stop, preview map is not re-inspected inside a live container. Leak of a listening port: not observed. Fail criterion for leftover `starting` map until session Stop: recorded. |
+| E11 | Static `POST /start` / Static marker: **not run** (stop-condition). |
+| E12 | Static no-package.json / no-vite-process: **not run**. |
+| E13 | Advanced **Stop** (`workspace-advanced-stop-session`) with confirm override → `POST /api/sessions/12bf5d2a-e91d-4f0c-a9be-2ce2838ea8fc/stop` HTTP 200 `{"message":"Session stopped successfully"}`. Advanced sessionStatus=`stopped`. Repeat `POST /stop` HTTP 200 same message. Post-stop exec `echo still-alive` → HTTP 500 `Internal server error` (not a live exec 200). SSH/`docker ps` **not used**. Static session: none. Project retained in the list (no delete endpoint). |
+| E14 | Provider used = 0. Credit mutation = 0. Ask/Build = 0. Send = 0. PM2 = 0. `.env` = 0. Docker compose / Postgres / Redis / AWS = 0. No temporary PM2 overlay. |
+| E15 | Builder live gate left ON (not inspected via SSH/PM2; not flipped). EXEC-01C6A not reopened; `startCondition=NOT_READY` unchanged. |
+| E16 | **S4 / S5 / S6 after signed-in Phase 0–4.** Vite detected (`framework:"Vite"`, port 3003) but `npm install` did not create `/workspace/node_modules`; `npm run dev` ran `vite` and logged `sh: vite: not found`; status remained `starting` past 180s; iframe proxy never connected; `POST /start` and `POST /stop` both HTTP 400 empty. Cleanup: session Stop 200; project retained; gate ON. Static proof skipped by freeze stop-condition. |
+
+### Runtime / browser / SSH commands used
+
+- Local ZIP A/B under `%TEMP%\preview-node-staging-01-retry-20260915-1723\` (not repo files)
+- Keith’s already-signed-in Chrome on `https://staging.ainow.biz/en/app` (HWND AI Sandbox tab). No Google OAuth click.
+- Console-driven UI: History Import Project (native Open dialog → ZIP A); `workspace-tab-codeFiles`; `workspace-tab-preview`; `workspace-preview-start` once
+- `POST /api/preview/{sessionId}/start` (UI, no body)
+- `GET /api/preview/{sessionId}/status`
+- `POST /api/sessions/{sessionId}/exec` commands (frozen Phase 5 set plus log `cat`): `ps aux | grep -E 'vite|node' | grep -v grep`; `ls -l /tmp/preview-*.log`; `ss`/`netstat` listen grep `3001`–`3100`; `test -d /workspace/node_modules`; `test -f /workspace/package.json`; `ls -la /workspace`; `cat /tmp/preview-3003.log`
+- `POST /api/preview/{sessionId}/stop`
+- Advanced drawer expand + `workspace-advanced-stop-session` (product `POST /api/sessions/{sessionId}/stop`)
+- **SSH fallback: not used**
+
+### Cleanup confirmation
+
+- Vite session Stop HTTP 200; Advanced sessionStatus=`stopped`
+- Static session: none created
+- Disposable Vite project retained (`preview-node-staging-01-vite-20260915-1723`)
+- No `pm2 restart`; no `.env` edit; gate left ON
+- Local ZIP fixtures remain in TEMP (not repo files)
+- No application source changes
+- No Git commit/push
+
+**Root-cause note (evidence only; not a source fix):** first Vite start allocated port 3003 and wrote `/tmp/preview-3003.log` with `sh: vite: not found` because `NODE_MODULES=NO`. Locked PREVIEW-NODE-01 expected foreground `npm install` when `[ -d /workspace/node_modules ]` is false. Status remained `starting` (S5). A later product/fix child may address this; Step 3 must not edit `services/container-manager/src/preview/**`.
