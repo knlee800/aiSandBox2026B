@@ -7,7 +7,7 @@
 **Lifecycle:** 4-step IMPLEMENTATION
 **Step:** 3 FAIL — live Vite staging/browser proof reached UI Start Preview; Vite remained `starting`
 **Step status:** Step 1 COMPLETE — 2026-09-14 (registration / control-plane only; committed `f82d747`); Step 2 COMPLETE — 2026-09-15 (committed `40a0b06`); Step 3 AUTHORIZED and FAIL — 2026-09-15 (signed-in retry supersedes §14 BLOCKED / `b14e724`; S4/S5/S6); Step 4 NOT AUTHORIZED
-**This document:** Authoritative Step 2 freeze plus Step 3 evidence. §16 retry supersedes §14 BLOCKED. Step 3 did **not** admit a lane, did **not** lock the task, and did **not** mutate application source, PM2, `.env`, provider, credit, or EXEC-01C6A.
+**This document:** Authoritative Step 2 freeze plus Step 3 evidence. §16 is the historical signed-in FAIL (S4/S5/S6 on `LIVE_OLD` code). §17 is APPLY-01 Phase D rerun of this frozen §5 procedure after `LIVE_LOCKED` apply — **PASS**. This document does **not** lock PREVIEW-NODE-STAGING-01. Step 4 NOT AUTHORIZED.
 
 **Parent:** PREVIEW-NODE-01 COMPLETE AND LOCKED — Checkpoint: `docs/PREVIEW-NODE-01-STAGE-START.md` — implementation HEAD `443d7eeecba7d8ef403fc77a3eee37d6d62f418a` (`feat: support vite preview`) — lock `26a1333` (`docs: lock vite preview slice`)
 **Occupancy hash (end-state):** `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d` (Lane 1 EMPTY, Lane 2 EMPTY, GOVERNANCE UNOWNED)
@@ -623,3 +623,49 @@ Screenshots: none captured of Vite/static iframe markers (not reached). Login pa
 - No Git commit/push
 
 **Root-cause note (evidence only; not a source fix):** first Vite start allocated port 3003 and wrote `/tmp/preview-3003.log` with `sh: vite: not found` because `NODE_MODULES=NO`. Locked PREVIEW-NODE-01 expected foreground `npm install` when `[ -d /workspace/node_modules ]` is false. Status remained `starting` (S5). A later product/fix child may address this; Step 3 must not edit `services/container-manager/src/preview/**`.
+
+---
+
+## 17. APPLY-01 Phase D proof retry (2026-09-15) — PASS
+
+**Context:** PREVIEW-NODE-STAGING-APPLY-01 Step 3 retry applied locked container-manager code (`LIVE_LOCKED`) then reran this frozen §5 procedure. This is **not** PREVIEW-NODE-STAGING-01 Step 4 and does **not** lock this task. Historical §16 FAIL stands as the pre-apply attempt.
+
+**Phase 0:** PASS. Keith signed-in Chrome (`knlee801@gmail.com`) already on `https://staging.ainow.biz/en/app`. HTTPS. Not apex, not localhost. No Google login click. Chat unused (Ask/Build/Send = 0).
+**Stop:** none for S4/S5/S6. Vite marker visible. Static marker visible.
+
+### E1–E16
+
+| ID | Record |
+|---|---|
+| **E1** | 2026-09-15 22:11–22:36 UTC+8. Operator: Keith signed-in Chrome on `https://staging.ainow.biz/en/app`. HTTPS. |
+| **E2** | Vite `preview-node-staging-01-vite-20260915-2211`. projectId `803d2bc2-a4f1-47f3-9562-38ab9721bf4d`. sessionId `08a1491f-bb30-490e-8c4b-bb59fda0ac78`. |
+| **E3** | Static `preview-node-staging-01-static-20260915-2211`. projectId `4a511002-29b4-4459-a468-5c8af0d98116`. sessionId `1927d645-c7ce-4fdf-b76b-9e4f63b01adb`. |
+| **E4** | ZIP A `preview-node-staging-01-vite-20260915-2211.zip` (475 B; members `index.html`, `package.json` at archive root). ZIP B `preview-node-staging-01-static-20260915-2211.zip` (266 B; member `index.html` only). Path: `%TEMP%\preview-node-staging-01-apply01-retry-20260915-2211\`. Created via .NET `ZipFile.CreateFromDirectory`. Ask/Build = 0. Send = 0. |
+| **E5** | Vite tree after import: `index.html`, `package.json` only. Toast `Workspace archive imported.` Static tree after import: `index.html` only (no `package.json`). |
+| **E6** | UI Start Preview clicked **once** (mouse on `workspace-preview-start`; an earlier InvokePattern attempt did not change UI and left Network `POST /start` 400s). Successful path: UI `Preview unavailable` → `Preview ready` in ~8s. Exec showed Vite on port **3001** (`node /workspace/node_modules/.bin/vite --host 0.0.0.0 --port 3001`). Truncated start JSON not captured (no CDP Network on the signed-in profile). |
+| **E7** | iframe document title `PREVIEW-NODE-STAGING-01 Vite fixture`. Visible heading **`PREVIEW-NODE-STAGING-01 Vite OK`**. PASS. |
+| **E8** | `ps`: pid 182 `node .../vite --host 0.0.0.0 --port 3001`; pid 193 esbuild service. `/tmp/preview-3001.log` 156 bytes. `ss`: `0.0.0.0:3001 LISTEN 182/node`. `NODE_MODULES=YES`. `PACKAGE_JSON=YES`. |
+| **E9** | DevTools `POST /api/preview/08a1491f-bb30-490e-8c4b-bb59fda0ac78/stop` HTTP **400** (`net::ERR_ABORTED`). GET `/status` JSON not observed (Promise pending in console a11y). |
+| **E10** | After failed `/stop`, pid 182 still listened on 3001 (leak until session Stop). Freeze hard-cleanup: Advanced **Stop** + OK. Runtime status **`stopped`**. No second Start Preview. PASS after session Stop (container gone; leftover listen not re-inspected inside a live container). |
+| **E11** | Static Start Preview once. UI `Preview ready`. Document title `PREVIEW-NODE-STAGING-01 static fixture`. Visible heading **`PREVIEW-NODE-STAGING-01 Static OK`**. PASS. |
+| **E12** | Static exec: no vite/node lines; `NO_PREVIEW_LOG`; `PACKAGE_JSON=NO`; `NODE_MODULES=NO`. |
+| **E13** | Vite session Stopped (`stopped`). Static session Stopped (`stopped`). Projects retained. |
+| **E14** | Provider = 0. Credit = 0. Ask/Build = 0. Phase D PM2 restart = 0 (CM restart was APPLY-01 Phase B3 only). `.env` = 0. |
+| **E15** | Gate LEFT ON. EXEC-01C6A not reopened. |
+| **E16** | No S4/S5/S6. `POST /stop` 400 recorded; session Stop used as frozen hard cleanup. |
+
+### Runtime / browser commands used
+
+- Local ZIP A/B under `%TEMP%\preview-node-staging-01-apply01-retry-20260915-2211\` (not repo files)
+- Windows UI Automation against Keith’s already-signed-in Chrome HWND `AI Sandbox - Google Chrome` (no Profile 5 kill; isolated CDP Chrome was signed-out and stopped)
+- New Project / Create Project; History Import Project (native Open dialog → ZIP A then ZIP B)
+- `workspace-preview-start` once per project (mouse click)
+- Advanced Command Input exec (frozen Phase 5 set)
+- DevTools console `fetch` for `/stop` (400) and projectId lookup (`GET /api/projects` name filter only)
+- Advanced session Stop + confirm OK for both sessions
+
+### Cleanup confirmation
+
+- Both sessions `stopped`. Projects retained (`preview-node-staging-01-vite-20260915-2211`, `preview-node-staging-01-static-20260915-2211`).
+- No `.env` edit. Gate ON. No Git commit/push. No application source changes.
+- Isolated temp-user-data-dir Chrome stopped. Keith’s signed-in Chrome left running.

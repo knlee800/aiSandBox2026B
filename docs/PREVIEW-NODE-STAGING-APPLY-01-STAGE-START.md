@@ -5,12 +5,12 @@
 **Date:** 2026-09-15
 **Nature:** IMPLEMENTATION / staging-ops — high-risk live version check plus possible staging apply of already-locked container-manager Vite preview
 **Lifecycle:** 4-step IMPLEMENTATION
-**Step:** 3 BLOCKED — `S_DIRTY_TREE` after read-only live version check
-**Step status:** Step 1 COMPLETE — 2026-09-15 (registration / control-plane only; registered at `a4a89f2`); Step 2 COMPLETE — 2026-09-15 (freeze committed `158786d`); Step 3 AUTHORIZED and BLOCKED — 2026-09-15 (`S_DIRTY_TREE`; classification `LIVE_OLD`; no apply); Step 4 NOT AUTHORIZED
-**This document:** Authoritative Step 2 freeze plus Step 3 evidence. Step 3 did **not** admit a lane, did **not** lock the task, did **not** apply/restart, and did **not** edit application source, `.env`, provider, credit, or EXEC-01C6A.
+**Step:** 3 PASS — hygiene-cleared retry applied locked code then frozen Vite/static proof
+**Step status:** Step 1 COMPLETE — 2026-09-15 (registration / control-plane only; registered at `a4a89f2`); Step 2 COMPLETE — 2026-09-15 (freeze committed `158786d`); Step 3 AUTHORIZED and PASS — 2026-09-15 (retry after PREVIEW-NODE-STAGING-HYGIENE-01; supersedes §14 `S_DIRTY_TREE` BLOCKED); Step 4 NOT AUTHORIZED
+**This document:** Authoritative Step 2 freeze plus Step 3 evidence. §16 retry supersedes §14 BLOCKED. Step 3 did **not** admit a lane, did **not** lock the task, and did **not** edit application source, `.env`, provider, credit, or EXEC-01C6A.
 
 **Parent:** PREVIEW-NODE-01 COMPLETE AND LOCKED — Checkpoint: `docs/PREVIEW-NODE-01-STAGE-START.md` — implementation HEAD `443d7eeecba7d8ef403fc77a3eee37d6d62f418a` (`feat: support vite preview`) — lock `26a1333` (`docs: lock vite preview slice`)
-**Sibling proof:** PREVIEW-NODE-STAGING-01 REGISTERED / READY / NOT ADMITTED — Step 3 FAIL — evidence `docs/PREVIEW-NODE-STAGING-01-STAGE-START.md` §16 (S4/S5/S6; `NODE_MODULES=NO`; `sh: vite: not found`; status stuck `starting`). Frozen proof procedure: same document §5 Phases 0–8.
+**Sibling proof:** PREVIEW-NODE-STAGING-01 REGISTERED / READY / NOT ADMITTED — historical Step 3 FAIL remains in §16; APPLY-01 Phase D reran the same frozen §5 procedure as §17 PASS. Frozen proof procedure: same document §5 Phases 0–8.
 **Occupancy hash (end-state):** `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d` (Lane 1 EMPTY, Lane 2 EMPTY, GOVERNANCE UNOWNED)
 
 ```
@@ -18,9 +18,10 @@ STEP1_COMPLETE=YES
 STEP2_COMPLETE=YES
 STEP3_AUTHORIZED=YES
 STEP3_COMPLETE=YES
-STEP3_VERDICT=BLOCKED
-STOP_ID=S_DIRTY_TREE
-LIVE_CLASS=LIVE_OLD
+STEP3_VERDICT=PASS
+STOP_ID=NONE
+LIVE_CLASS=LIVE_LOCKED
+LIVE_CLASS_PHASE_A=LIVE_OLD
 STEP4_AUTHORIZED=NO
 STEP4_COMPLETE=NO
 LOCKED=NO
@@ -43,10 +44,10 @@ STAGING_AUTHORIZED=NO
 STAGING_EXECUTION_AUTHORIZED=NO
 SSH_USED=YES
 AWS_USED=NO
-PM2_RESTART=NO
-APPLY=NO
-GIT_PULL=NO
-CM_BUILD=NO
+PM2_RESTART=YES (aisandbox-container-manager only)
+APPLY=YES
+GIT_PULL=YES
+CM_BUILD=YES
 EVIDENCE_CLASS=STAGING-RUNTIME
 HOST=https://staging.ainow.biz
 LIGHTSAIL=aisandbox-staging
@@ -70,7 +71,7 @@ PRIVATE_BETA_INVITE_01=PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / P
 FOLLOW_ON_REGISTERED=NO
 ```
 
-Keith authorized Step 3 execution of this freeze (not admission, not Step 4, not lock). Occupancy remains EMPTY. Sidecar candidate remains `status=READY` / `writeSetPrecision=EXACT` / `admissionUncertain=true` so the candidate is **not** in S (`Test-Admissible` = ADMISSION_UNCERTAIN). Do **not** admit Lane 1 or Lane 2. Do **not** start Step 4. Do **not** reopen AGENT-PLATFORM-EXEC-01C6A. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. Step 3 verdict = **BLOCKED** (`S_DIRTY_TREE`). Classification `LIVE_OLD` does **not** authorize apply while the remote worktree is dirty.
+Keith authorized Step 3 retry of this freeze after PREVIEW-NODE-STAGING-HYGIENE-01 (not admission, not Step 4, not lock). Occupancy remains EMPTY. Sidecar candidate remains `status=READY` / `writeSetPrecision=EXACT` / `admissionUncertain=true` so the candidate is **not** in S (`Test-Admissible` = ADMISSION_UNCERTAIN). Do **not** admit Lane 1 or Lane 2. Do **not** start Step 4. Do **not** reopen AGENT-PLATFORM-EXEC-01C6A. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. Step 3 verdict = **PASS**. §16 retry supersedes §14 BLOCKED. Phase A classified `LIVE_OLD` on a clean tree; Phase B/C applied locked container-manager code to `LIVE_LOCKED`; Phase D reran PREVIEW-NODE-STAGING-01 §5 Vite/static proof.
 
 ---
 
@@ -564,4 +565,48 @@ Separate GOVERNANCE task PREVIEW-NODE-STAGING-HYGIENE-01 COMPLETE AND LOCKED —
 
 The untracked `services/ai-service/dist.outgoing-20260910T082304Z-467f0d51/` directory was **moved** (not deleted) to `/home/ubuntu/aisb-preserved/dist.outgoing-20260910T082304Z-467f0d51/`. Remote `git -C /opt/aisandbox status --short` is now empty.
 
-This pointer does **not** authorize a Step 3 retry, apply, PM2 restart, or lock of PREVIEW-NODE-STAGING-APPLY-01.
+This pointer does **not** itself lock PREVIEW-NODE-STAGING-APPLY-01. Step 3 retry evidence is §16.
+
+---
+
+## 16. Step 3 retry evidence (2026-09-15) — PASS (supersedes §14)
+
+**Supersedes:** §14 BLOCKED / `S_DIRTY_TREE` (dirty `?? services/ai-service/dist.outgoing-20260910T082304Z-467f0d51/`). Hygiene PREVIEW-NODE-STAGING-HYGIENE-01 COMPLETE AND LOCKED PASS moved that artifact to `/home/ubuntu/aisb-preserved/dist.outgoing-20260910T082304Z-467f0d51/`.
+**Stop:** none. Step 4 NOT AUTHORIZED. Task not locked.
+**Phase A:** `LIVE_OLD`. Remote `git -C /opt/aisandbox status --short` empty (0 bytes). HEAD before git update `b6b94516aff9981101ae8815aec2e2d36b8b231b`. CM `aisandbox-container-manager` pm_id=1 online pid `844883` cwd `/opt/aisandbox/services/container-manager` script `dist/main.js`. Running `dist/preview/preview.service.js` missing all four §2.1 locked fingerprints (`DIST_HIT=NO`). Not `S_DIRTY_TREE` / `S_UNKNOWN_PATH` / `S_ALREADY_LOCKED`.
+**Phase B:** dist backup `/tmp/preview-node-staging-apply-01-dist-20260915T140643Z`. `git fetch` then `git pull --ff-only` → POST_HEAD `cbeb5c6aa0f8af50114bacd27e1dbd8e269d8b5c` (`FETCH_HAS_443d7ee=YES`). `npm run build` in `services/container-manager` only; `BUILD_EXIT=0`. New dist contains all four §2.1 fingerprints (`DIST_HIT=YES`).
+**Phase B3/C:** `pm2 restart aisandbox-container-manager` only (no `--update-env`; no restart of Gateway/frontend/AI-service/watchdog). New pid `924496` restarts=1. CM `GET :4002/api/health` HTTP 200 `{"status":"ok","service":"container-manager",...}`. Gateway `GET :4000/api/health/ready` HTTP 200. Running dist classified **`LIVE_LOCKED`**. Other PM2 apps untouched (AI pid 844882 ↺0; frontend 844894 ↺0; gateway 898373 ↺2; watchdog 844905 ↺0).
+**Phase D:** PREVIEW-NODE-STAGING-01 §5 Phases 0–8 rerun with new ZIP timestamps. Result **PASS**. Evidence also appended to `docs/PREVIEW-NODE-STAGING-01-STAGE-START.md` §17.
+
+### APPLY-01 E1–E12
+
+| ID | Record |
+|---|---|
+| **E1** | Host `aisandbox-staging` → `18.136.141.186` user `ubuntu`. Path `/opt/aisandbox`. Pre-pull HEAD `b6b94516aff9981101ae8815aec2e2d36b8b231b`. Post-pull HEAD `cbeb5c6aa0f8af50114bacd27e1dbd8e269d8b5c`. `status --short` empty. `FETCH_HAS_443d7ee=YES` after fetch. |
+| **E2** | `aisandbox-container-manager` pm_id=1 online. Pre-apply pid `844883`. Post-apply pid `924496` restarts=1. cwd `/opt/aisandbox/services/container-manager`. script `/opt/aisandbox/services/container-manager/dist/main.js`. |
+| **E3** | `DIST_PREVIEW=/opt/aisandbox/services/container-manager/dist/preview/preview.service.js`. Phase A: all four locked fingerprints `DIST_HIT=NO`. Post-build / running: all four `DIST_HIT=YES` (`npm install --no-audit --no-fund`; `[ -d /workspace/node_modules ]`; `npm run dev -- --host 0.0.0.0 --port`; `Preview server did not become reachable in time`). |
+| **E4** | Phase A **`LIVE_OLD`**. Stop-id none (tree clean). Not `LIVE_UNKNOWN`. After apply **`LIVE_LOCKED`**. |
+| **E5** | Pre-HEAD `b6b94516…`. Pre-PID `844883`. Dist backup `/tmp/preview-node-staging-apply-01-dist-20260915T140643Z`. Git update **yes** (`pull --ff-only`). Post-HEAD `cbeb5c6aa0f8af50114bacd27e1dbd8e269d8b5c`. |
+| **E6** | `npm run build` exit 0 (tsc in container-manager only). Post-build all four `DIST_HIT=YES`. |
+| **E7** | `pm2 restart aisandbox-container-manager` **yes**. Post PID `924496`. CM health HTTP 200. Gateway ready HTTP 200. |
+| **E8** | Post-apply **`LIVE_LOCKED`**. Phase D entered. |
+| **E9** | STAGING-01 §5 proof **PASS** — see that document §17 (new ZIP stamp `20260915-2211`). |
+| **E10** | Vite session `08a1491f-bb30-490e-8c4b-bb59fda0ac78` Advanced Stop → `stopped`. Static session `1927d645-c7ce-4fdf-b76b-9e4f63b01adb` Advanced Stop → `stopped`. Projects retained. Gate ON. Other PM2 apps not restarted this retry after the CM-only apply. `.env` not read/edited. Dist backup kept under `/tmp/` until Step 4. |
+| **E11** | `preview.service.ts` **not edited**. No application source rewrite in the repo. Staging tree updated only by frozen clean-tree git pull of already-committed locked code. |
+| **E12** | EXEC-01C6A not reopened / `startCondition=NOT_READY` UNCHANGED. BUILDER-LIVE-GATE-01 gate LEFT ON. |
+
+### Runtime commands used (apply)
+
+- SSH `aisandbox-staging`: `git -C /opt/aisandbox rev-parse HEAD`; `git status --short`; `pm2 jlist`; fingerprint grep of running `dist/preview/preview.service.js`; `curl` CM `:4002/api/health` and Gateway `:4000/api/health/ready`
+- `git fetch` + `git pull --ff-only` in `/opt/aisandbox`
+- `npm run build` in `/opt/aisandbox/services/container-manager` only
+- `pm2 restart aisandbox-container-manager` only (no `--update-env`)
+
+### Cleanup confirmation
+
+- Proof sessions Stopped (Advanced session Stop + OK confirm). Projects retained.
+- Gate LEFT ON. CM remains online on `LIVE_LOCKED` dist. Dist backup retained until Step 4.
+- No `.env` restore (`.env` not edited). No Docker/Postgres/Redis. No Git commit/push.
+- Isolated CDP Chrome (temp user-data-dir) stopped; Keith’s signed-in Profile 5 Chrome was not killed.
+
+**Follow-on:** Step 4 / lock NOT AUTHORIZED. Do not admit a lane. Do not reopen EXEC-01C6A.
