@@ -5,9 +5,9 @@
 **Date:** 2026-09-15
 **Nature:** IMPLEMENTATION / validation-ops — high-risk staging/browser proof of locked Vite preview (container process launch, ports, process-proxy, sandbox npm/dev-server)
 **Lifecycle:** 4-step IMPLEMENTATION
-**Step:** 2 COMPLETE — stage-start / exact live proof procedure freeze
-**Step status:** Step 1 COMPLETE — 2026-09-14 (registration / control-plane only; committed `f82d747`); Step 2 COMPLETE — 2026-09-15; Step 3 NOT AUTHORIZED; Step 4 NOT AUTHORIZED
-**This document:** Authoritative Step 2 freeze of the exact Step 3 live proof procedure for Vite preview on staging. It does **not** authorize admission, Step 3 execution, staging/browser/SSH/runtime mutation, Harness, orchestration, Stripe, apex cutover, invitations, EXEC-01C6A reopen, application source, or Git.
+**Step:** 3 BLOCKED — live Vite staging/browser proof stopped at Phase 0
+**Step status:** Step 1 COMPLETE — 2026-09-14 (registration / control-plane only; committed `f82d747`); Step 2 COMPLETE — 2026-09-15 (committed `40a0b06`); Step 3 AUTHORIZED this window and BLOCKED — 2026-09-15 (Phase 0 signed-out / S2); Step 4 NOT AUTHORIZED
+**This document:** Authoritative Step 2 freeze plus Step 3 evidence. Step 3 did **not** admit a lane, did **not** lock the task, and did **not** mutate application source, PM2, `.env`, provider, credit, or EXEC-01C6A.
 
 **Parent:** PREVIEW-NODE-01 COMPLETE AND LOCKED — Checkpoint: `docs/PREVIEW-NODE-01-STAGE-START.md` — implementation HEAD `443d7eeecba7d8ef403fc77a3eee37d6d62f418a` (`feat: support vite preview`) — lock `26a1333` (`docs: lock vite preview slice`)
 **Occupancy hash (end-state):** `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d` (Lane 1 EMPTY, Lane 2 EMPTY, GOVERNANCE UNOWNED)
@@ -15,8 +15,9 @@
 ```
 STEP1_COMPLETE=YES
 STEP2_COMPLETE=YES
-STEP3_AUTHORIZED=NO
+STEP3_AUTHORIZED=YES
 STEP3_COMPLETE=NO
+STEP3_VERDICT=BLOCKED
 STEP4_AUTHORIZED=NO
 STEP4_COMPLETE=NO
 LOCKED=NO
@@ -37,6 +38,7 @@ MUTEXES_DECLARED=CONTAINER-MANAGER,STAGING
 MUTEXES_ACQUIRED=NO
 STAGING_AUTHORIZED=NO
 STAGING_EXECUTION_AUTHORIZED=NO
+SSH_USED=NO
 EVIDENCE_CLASS=STAGING-RUNTIME
 HOST=https://staging.ainow.biz
 APEX_AINOW_BIZ=OUT_OF_SCOPE
@@ -59,7 +61,7 @@ PRIVATE_BETA_INVITE_01=PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / P
 FOLLOW_ON_REGISTERED=NO
 ```
 
-Keith authorized Step 2 only. Occupancy remains EMPTY. Sidecar candidate is `status=READY` / `writeSetPrecision=EXACT` / `admissionUncertain=true` so the candidate is **not** in S (`Test-Admissible` = ADMISSION_UNCERTAIN). Do **not** admit Lane 1 or Lane 2. Do **not** start Step 3. Do **not** reopen AGENT-PLATFORM-EXEC-01C6A. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON.
+Keith authorized Step 3 proof only this window (not admission, not Step 4, not lock). Occupancy remains EMPTY. Sidecar candidate remains `status=READY` / `writeSetPrecision=EXACT` / `admissionUncertain=true` so the candidate is **not** in S (`Test-Admissible` = ADMISSION_UNCERTAIN). Do **not** admit Lane 1 or Lane 2. Do **not** start Step 4. Do **not** reopen AGENT-PLATFORM-EXEC-01C6A. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. Step 3 verdict = **BLOCKED** at Phase 0 (signed-out / S2).
 
 ---
 
@@ -504,3 +506,62 @@ KEITH_DECISION_REQUIRED_BEFORE_ASK_BUILD_FIXTURE=YES (not in this freeze; ZIP pa
 
 **Activation effect:** NONE
 **Rollback boundary:** Step 2 = discard this document plus this window’s board/registry/sidecar write-set field updates. Ordinary Builder Ask/Build/static Preview path, locked PREVIEW-NODE-01, and the live gate are untouched.
+
+---
+
+## 14. Step 3 evidence (2026-09-15) — BLOCKED
+
+**Verdict:** BLOCKED (not FAIL of locked Vite preview; the product path was not reached)
+**Stop:** Phase 0 — signed-out / S2. Later phases not run.
+
+### E1–E16
+
+| ID | Record |
+|---|---|
+| E1 | 2026-09-15 16:41–17:05 UTC+8. Operator attempted Keith signed-in staging proof. Host `https://staging.ainow.biz` (HTTPS). Not apex `ainow.biz`. Not localhost. Optional health: `GET https://staging.ainow.biz/api/health/ready` → HTTP 200 JSON `status=ready`, `database=connected`. `/en/app` unauthenticated fetch did not 5xx; signed-in browser redirected to `/en/login`. |
+| E2 | Vite project **not created**. projectId=NONE. sessionId=NONE. Intended name would have been `preview-node-staging-01-vite-20260915-1641`. |
+| E3 | Static project **not created**. projectId=NONE. sessionId=NONE. Intended name would have been `preview-node-staging-01-static-20260915-1641`. |
+| E4 | ZIP A `preview-node-staging-01-vite-20260915-1641.zip` (477 bytes; members `package.json`, `index.html` at archive root). ZIP B `preview-node-staging-01-static-20260915-1641.zip` (267 bytes; member `index.html` only). Created on operator workstation via PowerShell `Compress-Archive` (Explorer-equivalent). Path: `%TEMP%\preview-node-staging-01-20260915-1641\`. **Not imported.** Ask/Build = 0. |
+| E5 | File tree after import: **N/A** (import not reached). |
+| E6 | Vite `POST /api/preview/{sessionId}/start`: **not sent**. |
+| E7 | Vite iframe marker: **not observed**. PASS/FAIL for marker = N/A. |
+| E8 | Running-process inspect: **not run**. SSH fallback **not used**. |
+| E9 | `POST /stop` / follow-up status GET / post-stop inspect: **not run**. |
+| E10 | Orphan/leak verdict: **N/A** (no preview started; no port allocated). |
+| E11 | Static `POST /start` / Static marker: **not run**. |
+| E12 | Static no-package.json / no-vite-process: **not run**. |
+| E13 | Session Stop: no disposable sessions created. Chrome debug processes stopped. No `sandbox-session-*` containers created by this proof. |
+| E14 | Provider used = 0. Credit mutation = 0. Ask/Build = 0. Send = 0. PM2 = 0. `.env` = 0. Docker compose / Postgres / Redis / AWS = 0. One platform-auth Google button click on `/en/login` returned `oauth_failed`; not retried; not an AI provider call. |
+| E15 | Builder live gate left ON (not inspected via SSH/PM2 this window; not flipped). EXEC-01C6A not reopened; `startCondition=NOT_READY` unchanged. |
+| E16 | **S2 / Phase 0 signed-out.** This window has no Cursor browser MCP with an already-signed-in Keith session. Chrome 152 refuses `--remote-debugging-port` on the default User Data directory, so a CDP-attached window cannot present the live Profile 5 workspace session. A Continue-with-Google click on `/en/login` returned `?error=oauth_failed`. Stopped immediately. No disposable projects. No ZIP import. No Start Preview. No SSH. Cleanup: debug Chrome stopped; User Data junction removed; Profile 5 cookie DB restored from the pre-debug copy so `aisandbox_session` remains present in that profile file (values not recorded). Local ZIPs retained in `%TEMP%` for a later authorized retry. |
+
+Screenshots: none captured of Vite/static iframe markers (not reached). Login page observed at `https://staging.ainow.biz/en/login` (and `?error=oauth_failed` after the single Google click). Cookies / CSRF / Authorization headers not recorded.
+
+### Runtime commands used
+
+- Local ZIP creation (`Compress-Archive`) under `%TEMP%\preview-node-staging-01-20260915-1641\`
+- Read-only `GET https://staging.ainow.biz/api/health/ready` and `/en` / `/en/app`
+- Chrome CDP attach attempts (default User Data blocked; custom user-data-dir / junction used only for signed-in probe)
+- One UI click: Continue with Google → `oauth_failed`
+- **SSH fallback: not used**
+
+### Cleanup confirmation
+
+- No staging projects or sandbox sessions created
+- No preview processes or 3001–3100 ports allocated by this proof
+- Debug Chrome stopped (`chrome.exe` count 0 after cleanup)
+- Junction `C:\Users\knlee\AppData\Local\Temp\chrome-ud-real` removed
+- Profile 5 cookie DB restored from the pre-debug copy
+- Builder gate not flipped
+- Local ZIP fixtures remain in TEMP (not repo files)
+
+---
+
+## 15. Activity ledger (Step 3)
+
+**Step 3 HEAD:** not mutated (Keith instruction: no Git commit/push; `git diff --check` only)
+**Step 3 activity ledger:** LIVE/browser preflight=1 (Phase 0 only; signed-out), SSH=0, AWS=0, provider=0, credits=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=0, application source=0, frontend=0, i18n=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0, named children registered=0, Ask/Build=0. Staging project/session/preview mutation=0. Governance writes: this evidence section; `TASKS.md` CURRENT EXECUTION BOARD fields; `TASKS_BACKLOG_FULL.md` PREVIEW-NODE-STAGING-01 body; `SATURATION_PROOF.json` only as validator output. Sidecar occupancy unchanged EMPTY / GOVERNANCE UNOWNED / `admissionUncertain=true` / `stagingAuthorized=false`.
+
+**Activation effect:** NONE
+**Rollback boundary:** Step 3 BLOCKED = discard this evidence section plus this window’s board/registry field updates. No application source to revert. Locked PREVIEW-NODE-01 and the live gate are untouched.
+**Retry:** requires a later Keith-authorized Step 3 window that can use a already-signed-in Keith browser session on `https://staging.ainow.biz/en/app` (Cursor browser tools, or Keith signed-in before CDP). Do not reopen EXEC-01C6A. Do not admit a lane unless the control plane separately admits.
