@@ -5,9 +5,9 @@
 **Date:** 2026-09-15
 **Nature:** IMPLEMENTATION / staging-ops — high-risk live version check plus possible staging apply of already-locked container-manager Vite preview
 **Lifecycle:** 4-step IMPLEMENTATION
-**Step:** 2 COMPLETE — procedure freeze only
-**Step status:** Step 1 COMPLETE — 2026-09-15 (registration / control-plane only; registered at `a4a89f2`); Step 2 COMPLETE — 2026-09-15 (this document); Step 3 NOT AUTHORIZED; Step 4 NOT AUTHORIZED
-**This document:** Authoritative Step 2 freeze of the read-only live version check, stop conditions, container-manager-only apply, health, PREVIEW-NODE-STAGING-01 proof retry, and rollback. It does **not** authorize admission, SSH, apply/deploy/restart, live version check execution, PREVIEW-NODE-STAGING-01 Step 3 retry, PREVIEW-NODE-STAGING-01 Step 4, Harness, orchestration, Stripe, apex cutover, invitations, EXEC-01C6A reopen, or application-source edits.
+**Step:** 3 BLOCKED — `S_DIRTY_TREE` after read-only live version check
+**Step status:** Step 1 COMPLETE — 2026-09-15 (registration / control-plane only; registered at `a4a89f2`); Step 2 COMPLETE — 2026-09-15 (freeze committed `158786d`); Step 3 AUTHORIZED and BLOCKED — 2026-09-15 (`S_DIRTY_TREE`; classification `LIVE_OLD`; no apply); Step 4 NOT AUTHORIZED
+**This document:** Authoritative Step 2 freeze plus Step 3 evidence. Step 3 did **not** admit a lane, did **not** lock the task, did **not** apply/restart, and did **not** edit application source, `.env`, provider, credit, or EXEC-01C6A.
 
 **Parent:** PREVIEW-NODE-01 COMPLETE AND LOCKED — Checkpoint: `docs/PREVIEW-NODE-01-STAGE-START.md` — implementation HEAD `443d7eeecba7d8ef403fc77a3eee37d6d62f418a` (`feat: support vite preview`) — lock `26a1333` (`docs: lock vite preview slice`)
 **Sibling proof:** PREVIEW-NODE-STAGING-01 REGISTERED / READY / NOT ADMITTED — Step 3 FAIL — evidence `docs/PREVIEW-NODE-STAGING-01-STAGE-START.md` §16 (S4/S5/S6; `NODE_MODULES=NO`; `sh: vite: not found`; status stuck `starting`). Frozen proof procedure: same document §5 Phases 0–8.
@@ -16,8 +16,11 @@
 ```
 STEP1_COMPLETE=YES
 STEP2_COMPLETE=YES
-STEP3_AUTHORIZED=NO
-STEP3_COMPLETE=NO
+STEP3_AUTHORIZED=YES
+STEP3_COMPLETE=YES
+STEP3_VERDICT=BLOCKED
+STOP_ID=S_DIRTY_TREE
+LIVE_CLASS=LIVE_OLD
 STEP4_AUTHORIZED=NO
 STEP4_COMPLETE=NO
 LOCKED=NO
@@ -38,10 +41,12 @@ MUTEXES_DECLARED=CONTAINER-MANAGER,STAGING
 MUTEXES_ACQUIRED=NO
 STAGING_AUTHORIZED=NO
 STAGING_EXECUTION_AUTHORIZED=NO
-SSH_USED=NO
+SSH_USED=YES
 AWS_USED=NO
-PM2_RESTART=NO_THIS_WINDOW
-PM2_RESTART_STEP3=ONLY_IF_LIVE_OLD_AND_APPLY_PROCEEDS
+PM2_RESTART=NO
+APPLY=NO
+GIT_PULL=NO
+CM_BUILD=NO
 EVIDENCE_CLASS=STAGING-RUNTIME
 HOST=https://staging.ainow.biz
 LIGHTSAIL=aisandbox-staging
@@ -65,7 +70,7 @@ PRIVATE_BETA_INVITE_01=PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / P
 FOLLOW_ON_REGISTERED=NO
 ```
 
-Keith authorized Step 2 freeze only (not admission, not Step 3, not Step 4, not lock). Occupancy remains EMPTY. Sidecar candidate is `status=READY` / `writeSetPrecision=EXACT` / `admissionUncertain=true` so the candidate is **not** in S (`Test-Admissible` = ADMISSION_UNCERTAIN). Do **not** admit Lane 1 or Lane 2. Do **not** start Step 3 or Step 4. Do **not** reopen AGENT-PLATFORM-EXEC-01C6A. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON.
+Keith authorized Step 3 execution of this freeze (not admission, not Step 4, not lock). Occupancy remains EMPTY. Sidecar candidate remains `status=READY` / `writeSetPrecision=EXACT` / `admissionUncertain=true` so the candidate is **not** in S (`Test-Admissible` = ADMISSION_UNCERTAIN). Do **not** admit Lane 1 or Lane 2. Do **not** start Step 4. Do **not** reopen AGENT-PLATFORM-EXEC-01C6A. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. Step 3 verdict = **BLOCKED** (`S_DIRTY_TREE`). Classification `LIVE_OLD` does **not** authorize apply while the remote worktree is dirty.
 
 ---
 
@@ -499,4 +504,54 @@ Do not capture cookies, CSRF tokens, Authorization headers, or `.env` secret val
 
 **Activation effect:** NONE
 **Rollback boundary:** Step 2 = discard this document plus this window’s board/registry/sidecar write-set field updates. Ordinary Builder Ask/Build/static Preview path, locked PREVIEW-NODE-01, PREVIEW-NODE-STAGING-01 Step 3 FAIL evidence, and the live gate are untouched.
-**Follow-on:** Step 3 is a later Keith authorization (live version check + conditional apply + STAGING-01 §5 retry). Do not start it in this window.
+**Follow-on:** Step 3 BLOCKED (`S_DIRTY_TREE`). A later Keith-authorized Step 3 retry may apply only after the remote worktree is clean (or an explicit exception is frozen). Do not start Step 4.
+
+---
+
+## 14. Step 3 evidence (2026-09-15) — BLOCKED (`S_DIRTY_TREE`)
+
+**Verdict:** **BLOCKED**
+**Stop:** `S_DIRTY_TREE` — `git -C /opt/aisandbox status --short` was non-empty. Frozen procedure forbids apply/build/restart on a dirty remote worktree.
+**Classification:** `LIVE_OLD` (running dist missing all four locked §2.1 fingerprints). Apply was **not** started.
+**Admission:** NO. Occupancy EMPTY. Step 4 NOT AUTHORIZED. PREVIEW-NODE-STAGING-01 §5 proof **not run**.
+
+### E1–E12
+
+| ID | Record |
+|---|---|
+| E1 | SSH `aisandbox-staging` (`ip-172-26-6-228.ap-southeast-1.compute.internal`). Toplevel `/opt/aisandbox`. Branch `main`. HEAD `b6b94516aff9981101ae8815aec2e2d36b8b231b`. `status --short`: `?? services/ai-service/dist.outgoing-20260910T082304Z-467f0d51/`. `ANCESTOR_443d7ee=NO` (`fatal: Not a valid commit name 443d7eeecba7d8ef403fc77a3eee37d6d62f418a` — object not in the staging clone). |
+| E2 | PM2 `aisandbox-container-manager` count=1, `pm_id=1`, status `online`, cwd `/opt/aisandbox/services/container-manager`, exec/script `/opt/aisandbox/services/container-manager/dist/main.js` (file exists), pid `844883`, uptime 4D, restarts 0. Path known. Not `S_UNKNOWN_PATH`. |
+| E3 | `DIST_PREVIEW=/opt/aisandbox/services/container-manager/dist/preview/preview.service.js` (mtime Aug 17 11:02). DIST_HIT: `npm install --no-audit --no-fund`=NO; `[ -d /workspace/node_modules ]`=NO; `npm run dev -- --host 0.0.0.0 --port`=NO; `Preview server did not become reachable in time`=NO. SRC `/opt/aisandbox/services/container-manager/src/preview/preview.service.ts` EXISTS. SRC_HIT: same four strings NO; `activePreviews.delete`=YES (legacy stop path, not wait-clear). |
+| E4 | `LIVE_OLD`. Stop-id **`S_DIRTY_TREE`** (outranks apply). Not `LIVE_LOCKED`. Not `LIVE_UNKNOWN`. |
+| E5 | Apply **not started**. No dist backup. No git fetch/pull. pre-HEAD remains `b6b94516aff9981101ae8815aec2e2d36b8b231b`. pre-PID `844883`. |
+| E6 | `npm run build` **not run**. |
+| E7 | `pm2 restart aisandbox-container-manager` **no**. Post PID still `844883`. CM health / Gateway ready **not required** after Phase A stop (no apply). Post-stop `pm2 list`: CM online 4D ↺0; Gateway pid 898373 31h ↺2; frontend/AI/watchdog 4D ↺0. |
+| E8 | Running dist remains `LIVE_OLD`. Phase D not entered. |
+| E9 | STAGING-01 §5 proof **not run** (stop-condition). New E1–E16 = N/A. |
+| E10 | No proof sessions created. Gate not flipped. Other PM2 apps not restarted. `.env` not read or edited. Helper scripts `/tmp/aisb-apply01-phase-a.sh`, `/tmp/aisb-apply01-phase-a3.sh`, `/tmp/aisb-apply01-pm2.json` removed. Untracked `services/ai-service/dist.outgoing-20260910T082304Z-467f0d51/` left untouched. |
+| E11 | Local and remote `preview.service.ts` **not edited**. |
+| E12 | EXEC-01C6A not reopened. BUILDER-LIVE-GATE-01 gate LEFT ON (not inspected via `.env`; not flipped). |
+
+### Runtime commands used
+
+- `ssh` / `scp` to `aisandbox-staging` (BatchMode)
+- Frozen A1: `hostname`, `git -C /opt/aisandbox rev-parse` / `branch` / `status --short` / `merge-base --is-ancestor 443d7ee...`
+- Frozen A2: `pm2 describe aisandbox-container-manager`; `pm2 jlist` python extract
+- Frozen A3: `ls` dist candidates; `grep -F` of §2.1 strings in running `dist/preview/preview.service.js` and source `.ts`
+- `pm2 list` (read-only confirmation after stop)
+- `rm -f` of `/tmp/aisb-apply01-phase-a.sh` `/tmp/aisb-apply01-phase-a3.sh` `/tmp/aisb-apply01-pm2.json`
+
+**Not used:** `git pull` / `fetch` / `reset` / `stash`; `npm run build`; `pm2 restart`; `.env` grep of secrets; AWS instance APIs; Docker/Postgres/Redis; Ask/Build; browser proof.
+
+### Cleanup confirmation
+
+- No apply, no CM restart, no other-service restart
+- No `.env` edit; Builder gate left ON
+- No disposable projects/sessions created this window
+- Remote helper scripts removed
+- Dirty untracked `dist.outgoing-*` directory **not** deleted (would be a mutation)
+- No local Git commit/push
+
+**Activation effect:** NONE (Phase A stop)
+**Rollback boundary:** Step 3 BLOCKED = discard §14 plus this window’s board/registry field updates. No runtime rollback (no apply). Locked PREVIEW-NODE-01, STAGING-01 §16 FAIL evidence, and the live gate are untouched.
+**Follow-on:** later Step 3 retry after the staging worktree is clean, or an explicit control-plane exception. Do not convert this BLOCKED into a `preview.service.ts` product fix. Do not start Step 4.
