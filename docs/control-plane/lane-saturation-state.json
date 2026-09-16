@@ -730,7 +730,19 @@
       "futureAuthorization": "NONE",
       "dependsOn": [],
       "mutexes": ["FRONTEND", "I18N"],
-      "writePaths": [],
+      "writePaths": [
+        "frontend/hooks/useCreditBalance.ts",
+        "frontend/hooks/useCreditBalance.test.ts",
+        "frontend/components/workspace/workspace-credit-error.logic.ts",
+        "frontend/components/workspace/workspace-credit-error.logic.test.ts",
+        "frontend/components/workspace/workspace-sidebar-credit-balance.test.ts",
+        "frontend/components/workspace/workspace-shell.tsx",
+        "frontend/components/workspace/workspace-sidebar.tsx",
+        "frontend/components/workspace/workspace-quota-usage.logic.test.ts",
+        "frontend/messages/en.json",
+        "frontend/messages/zh-TW.json",
+        "frontend/messages/zh-CN.json"
+      ],
       "hotfiles": [],
       "i18n": true,
       "sharedContractIds": [],
@@ -739,7 +751,7 @@
       "exclusiveCapacity": false,
       "runtimeNeeds": [],
       "admissionUncertain": true,
-      "writeSetPrecision": "PROVISIONAL"
+      "writeSetPrecision": "EXACT"
     }
   ],
   "lockedTaskIds": ["GOV-OS-03", "GOV-OS-03R1", "AGENT-PLATFORM-CREATE-01F", "I18N-SHELL-07", "AGENT-PLATFORM-EXEC-01A", "AGENT-PLATFORM-EXEC-01B", "GOV-AUTH-03", "AGENT-PLATFORM-EXEC-01C1", "AGENT-PLATFORM-EXEC-01C2", "AGENT-PLATFORM-EXEC-01C3", "AGENT-PLATFORM-EXEC-01C4", "AGENT-PLATFORM-EXEC-01C4B", "AGENT-PLATFORM-EXEC-01C5", "AGENT-PLATFORM-EXEC-01C5R1", "AGENT-PLATFORM-EXEC-01C5B1", "AGENT-PLATFORM-EXEC-01C5B2", "AGENT-PLATFORM-EXEC-01C5B", "AGENT-PLATFORM-EXEC-01C-KEY-REVOKE-01", "AGENT-PLATFORM-EXEC-01C-SCHEMA-01", "AGENT-PLATFORM-EXEC-01C-IDENTITY-01", "AGENT-PLATFORM-ORCH-ARCH-01", "AGENT-PLATFORM-ORCH-PERSIST-01", "PREVIEW-NODE-01", "PREVIEW-NODE-STAGING-01", "PREVIEW-NODE-STAGING-APPLY-01"],
