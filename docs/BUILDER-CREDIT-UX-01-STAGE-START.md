@@ -5,9 +5,9 @@
 **Date:** 2026-09-16
 **Nature:** IMPLEMENTATION — authenticated Builder workspace credit-balance display + Ask/Build 402 mapping; multilingual-first; no Stripe; no credit mutation
 **Lifecycle:** 4-step IMPLEMENTATION
-**Step:** 3 COMPLETE — frozen write-set implementation
-**Step status:** Step 1 COMPLETE — 2026-09-16 (registration / control-plane only; registered at `a69a0b6`); Step 2 COMPLETE — 2026-09-16; Step 3 COMPLETE — 2026-09-16 (implementation; not admitted; not LOCKED); Step 4 NOT AUTHORIZED
-**This document:** Authoritative Step 2 freeze for BUILDER-CREDIT-UX-01, plus Step 3 completion status. It does **not** authorize Step 4 lock, admission, runtime, browser, Stripe/top-up, credit-ledger mutation, Harness, orchestration, apex cutover, invitations, or EXEC-01C6A reopen.
+**Step:** 4 COMPLETE AND LOCKED — independent verification / checkpoint / lock
+**Step status:** Step 1 COMPLETE — 2026-09-16 (registration / control-plane only; registered at `a69a0b6`); Step 2 COMPLETE — 2026-09-16; Step 3 COMPLETE — 2026-09-16 (Keith-authorized frozen write-set implementation; committed `42fe988` `feat: show builder credit balance`; LOCAL-TESTS PASS); Step 4 COMPLETE AND LOCKED — 2026-09-16
+**This document:** Authoritative Step 2 freeze, Step 3 completion record, and Step 4 checkpoint / lock for BUILDER-CREDIT-UX-01. It does **not** authorize admission, runtime, browser, Stripe/top-up, credit-ledger mutation, Harness, orchestration, apex cutover, invitations, follow-on registration, or EXEC-01C6A reopen.
 
 **Step 1 registered HEAD (user-supplied; not re-queried this window):** `a69a0b6`
 **Occupancy hash (end-state):** `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d` (Lane 1 EMPTY, Lane 2 EMPTY, GOVERNANCE UNOWNED)
@@ -18,16 +18,17 @@ STEP2_COMPLETE=YES
 STEP2_AUTHORIZED=YES
 STEP3_AUTHORIZED=YES
 STEP3_COMPLETE=YES
-STEP4_AUTHORIZED=NO
-LOCKED=NO
+STEP4_AUTHORIZED=YES
+STEP4_COMPLETE=YES
+LOCKED=YES
 IMPLEMENTATION_STARTED=YES
 ADMITTED=NO
 WRITE_SET_PRECISION=EXACT
-CANDIDATE_STATUS=READY
-ADMISSION_UNCERTAIN=true
-TEST_ADMISSIBLE=ADMISSION_UNCERTAIN
+CANDIDATE_STATUS=LOCKED
+ADMISSION_UNCERTAIN=false
+TEST_ADMISSIBLE=NOT_READY
 MUTEXES_DECLARED=FRONTEND,I18N
-MUTEXES_ACQUIRED=NO (end-state UNOWNED after Step 3 write)
+MUTEXES_ACQUIRED=NO (end-state UNOWNED after Step 4 lock)
 CREDIT_MUTEX=UNDECLARED
 CREDIT_MUTATION_AUTHORIZED=NO
 STRIPE=NO
@@ -49,7 +50,7 @@ BROWSER=NO
 GIT_COMMIT=NO
 ```
 
-Keith authorized this Step 3 implementation only. Occupancy remains EMPTY. Sidecar candidate remains `status=READY` / `writeSetPrecision=EXACT` / `admissionUncertain=true` so the candidate is **not** in S (`Test-Admissible` = ADMISSION_UNCERTAIN). Do **not** admit Lane 1 or Lane 2. Do **not** start Step 4. Do **not** register follow-on tasks. Do **not** reopen AGENT-PLATFORM-EXEC-01C6A. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON.
+Keith authorized this Step 4 checkpoint / lock after Step 3 PASS (committed `42fe988`). Occupancy remains EMPTY. Sidecar candidate is `status=LOCKED` / `writeSetPrecision=EXACT` / `admissionUncertain=false` so the candidate is **not** in S (`Test-Admissible` = NOT_READY). Do **not** admit Lane 1 or Lane 2. Do **not** register follow-on tasks. Do **not** reopen AGENT-PLATFORM-EXEC-01C6A. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. Step 3 verdict = **PASS**. Step 4 verdict = **COMPLETE AND LOCKED**.
 
 ---
 
@@ -438,7 +439,7 @@ No frontend tests. No tsc. No runtime. No browser.
 
 `stagingAuthorized=false`. `STAGING_EXECUTION_AUTHORIZED=NO`. `PROVIDER_LIVE_AUTHORIZED=NO`. `CREDIT_MUTATION_AUTHORIZED=NO`. `LOCAL_RUNTIME_AUTHORIZED=NO`.
 
-Admission remains **not** performed. `admissionUncertain=true` until a later control-plane admission step.
+Admission remains **not** performed. Sidecar `admissionUncertain=false` is the lock-state field (candidate `status=LOCKED`; not in S), not an admission.
 
 ---
 
@@ -464,7 +465,7 @@ Must not mutate EXEC-01C6A prepared artifacts. Cannot invalidate locked PREVIEW-
 KEITH_DECISION_REQUIRED_BEFORE_STAGE_START=NO (Step 2 authorized and COMPLETE this window)
 KEITH_DECISION_REQUIRED_BEFORE_ADMISSION=YES
 KEITH_DECISION_REQUIRED_BEFORE_IMPLEMENTATION=NO (Step 3 authorized and COMPLETE this window)
-KEITH_DECISION_REQUIRED_BEFORE_CHECKPOINT_LOCK=YES
+KEITH_DECISION_REQUIRED_BEFORE_CHECKPOINT_LOCK=NO (Step 4 authorized by Keith and COMPLETE AND LOCKED 2026-09-16)
 KEITH_DECISION_REQUIRED_BEFORE_REOPENING_EXEC_01C6A=YES
 KEITH_DECISION_REQUIRED_BEFORE_HARNESS_ENABLEMENT=YES
 KEITH_DECISION_REQUIRED_BEFORE_STRIPE_OR_TOP_UP=YES
@@ -517,7 +518,7 @@ Governance writes: `docs/BUILDER-CREDIT-UX-01-STAGE-START.md`; `TASKS.md` CURREN
 - [x] No backend Ask/Build execution behavior change
 - [x] Frozen frontend tests PASS 33/33; `npx tsc --noEmit` PASS; existing `workspace-shell.test.tsx` 455/455 PASS
 - [x] `git diff --check` PASS
-- [x] occupancy EMPTY; not admitted; not LOCKED; sidecar unchanged (`status=READY` / `admissionUncertain=true`)
+- [x] occupancy EMPTY; not admitted; not LOCKED at end of Step 3; sidecar unchanged then (`status=READY` / `admissionUncertain=true`)
 - [x] EXEC-01C6A `startCondition=NOT_READY` UNCHANGED
 - [x] BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON
 - [x] No Git commit/push
@@ -527,3 +528,94 @@ Governance writes: `docs/BUILDER-CREDIT-UX-01-STAGE-START.md`; `TASKS.md` CURREN
 LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=1 (frozen frontend write set only), application source=1 (frozen frontend write set only), frontend=1, i18n=1, tests executed=1, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0, named other children registered=0, Stripe=0, credit mutation=0.
 
 Governance writes: `docs/BUILDER-CREDIT-UX-01-STAGE-START.md` Step 3 status; `TASKS.md` CURRENT EXECUTION BOARD fields; `TASKS_BACKLOG_FULL.md` BUILDER-CREDIT-UX-01 body; sidecar unchanged unless validator requires proof refresh. Occupancy remains EMPTY / GOVERNANCE UNOWNED. Candidate remains READY / not LOCKED.
+
+---
+
+## 16. Step 4 acceptance (COMPLETE AND LOCKED — 2026-09-16)
+
+- [x] Independent verification against freeze + committed HEAD `42fe9887318474481b9068947295f770e276e3aa` (`feat: show builder credit balance`)
+- [x] Frozen write set confirmed: 11 sidecar `writePaths` plus human-required `frontend/app/[locale]/app/page.tsx`
+- [x] LOCAL-TESTS preserved from Step 3: `npx tsc --noEmit` PASS; focused `node --import tsx --test` PASS 33/33; existing `workspace-shell.test.tsx` neighbor PASS 455/455
+- [x] no Stripe/top-up/subscription/upgrade; no ledger POST; no backend Ask/Build behavior change; no runtime/browser/staging/SSH/AWS/PM2/Docker/Postgres/Redis/provider/credit
+- [x] EXEC-01C6A `startCondition=NOT_READY` UNCHANGED
+- [x] BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON
+- [x] sidecar `status=LOCKED` / `admissionUncertain=false`; `lockedTaskIds` includes BUILDER-CREDIT-UX-01
+- [x] Occupancy EMPTY; no lane admitted; GOVERNANCE released UNOWNED; no follow-on registered
+- [x] Validator PASS this lock window
+- [x] `git diff --check` PASS
+- [x] No Git commit/push by the worker
+
+---
+
+## 17. Authorization state (end of Step 4 lock)
+
+```
+IMPLEMENTATION_AUTHORIZED=YES (Step 3 source COMPLETE AND LOCKED; frozen frontend write set only)
+ADMISSION_AUTHORIZED=NO
+STAGING_AUTHORIZED=NO
+LOCAL_RUNTIME_AUTHORIZED=NO
+PROVIDER_LIVE_AUTHORIZED=NO
+CREDIT_AUTHORIZED=NO
+CREDIT_MUTATION_AUTHORIZED=NO
+TESTS_EXECUTED=YES (tsc PASS; focused 33/33; workspace-shell neighbor 455/455; recorded from Step 3; not re-run this lock window)
+APPLICATION_SOURCE_CHANGED=YES (frozen write set only; committed at 42fe988; this lock does not behavior-change those files)
+LANE_1=EMPTY
+LANE_2=EMPTY
+FRONTEND_ACQUIRED=NO
+I18N_ACQUIRED=NO
+STEP4_AUTHORIZED=YES
+STEP4_COMPLETE=YES
+LOCKED=YES
+FOLLOW_ON_REGISTERED=NO
+EXEC_01C6A_REOPENED=NO
+```
+
+Previous (end of Step 3): IMPLEMENTATION_AUTHORIZED=YES; ADMISSION_AUTHORIZED=NO; STEP4_AUTHORIZED=NO; LOCKED=NO.
+
+---
+
+## 18. Activity ledger (Step 4) and lock evidence
+
+**Step 4 lock ledger (this window):** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=0, application source=0, frontend=0, i18n=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0, named other children registered=0, Stripe=0, credit mutation=0, follow-on registration=0. Governance writes: this stage-start Step 4 checkpoint; `TASKS.md` CURRENT EXECUTION BOARD fields; `TASKS_BACKLOG_FULL.md` BUILDER-CREDIT-UX-01 body; sidecar candidate `status=LOCKED` / `admissionUncertain=false` + `lockedTaskIds`; `SATURATION_PROOF.json` only as validator output. Occupancy facts unchanged (EMPTY / GOVERNANCE UNOWNED).
+
+**Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED.
+
+**Lane 3 invariant:** Lane 3 remains DISABLED.
+
+**Activation effect:** NONE
+**Rollback boundary:** Step 2 = discard this document’s freeze plus that window’s board/registry/sidecar write-set field updates. Step 3 source = committed at `42fe988` (do not revert in this lock window). This lock = discard this window’s board/registry/stage-start/sidecar lock field updates (candidate `status=LOCKED` / `lockedTaskIds` membership). Ordinary Builder Ask/Build/preview path, live gate, and credit ledger are otherwise untouched.
+
+### Verdict
+
+**BUILDER-CREDIT-UX-01 is COMPLETE AND LOCKED.**
+
+**Committed implementation HEAD:** `42fe9887318474481b9068947295f770e276e3aa` (`feat: show builder credit balance`)
+
+**Frozen write set (implemented):**
+
+Create:
+
+1. `frontend/hooks/useCreditBalance.ts`
+2. `frontend/hooks/useCreditBalance.test.ts`
+3. `frontend/components/workspace/workspace-credit-error.logic.ts`
+4. `frontend/components/workspace/workspace-credit-error.logic.test.ts`
+5. `frontend/components/workspace/workspace-sidebar-credit-balance.test.ts`
+
+Modify (machine `writePaths`):
+
+6. `frontend/components/workspace/workspace-shell.tsx`
+7. `frontend/components/workspace/workspace-sidebar.tsx`
+8. `frontend/components/workspace/workspace-quota-usage.logic.test.ts`
+9. `frontend/messages/en.json`
+10. `frontend/messages/zh-TW.json`
+11. `frontend/messages/zh-CN.json`
+
+Modify (human-required; FRONTEND-covered):
+
+12. `frontend/app/[locale]/app/page.tsx`
+
+**Scope:** Authenticated Builder workspace credit-balance display + Ask/Build 402 mapping. No Stripe. No credit mutation. No Gateway/credit-guard/ledger. No Harness. No orchestration. No apex. No invitations. No EXEC-01C6A reopen.
+
+**Tests (preserved Step 3 evidence; not re-run this lock window):** `npx tsc --noEmit` PASS. Focused `node --import tsx --test hooks/useCreditBalance.test.ts components/workspace/workspace-credit-error.logic.test.ts components/workspace/workspace-quota-usage.logic.test.ts components/workspace/workspace-sidebar-credit-balance.test.ts` PASS 33/33. Existing `workspace-shell.test.tsx` neighbor PASS 455/455. `git diff --check` PASS.
+
+**Invariants:** EXEC-01C6A `startCondition=NOT_READY` UNCHANGED / not reopened. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. Lane 3 remains DISABLED. No follow-on task registered. No admitted next product gate / selection pending. Occupancy EMPTY. GOVERNANCE released UNOWNED.
