@@ -592,6 +592,9 @@ interface WorkspaceShellProps {
   userSummary: WorkspaceUserSummary | null;
   usageSummary: WorkspaceUsageSummary | null;
   quotaSummary: WorkspaceQuotaSummary | null;
+  creditBalance?: number | null;
+  creditBalanceLoading?: boolean;
+  creditBalanceError?: boolean;
   isLoadingDashboard: boolean;
   dashboardError: string | null;
   chatPromptInput?: string;
@@ -2361,6 +2364,9 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
             userSummary={props.userSummary}
             usageSummary={props.usageSummary}
             quotaSummary={props.quotaSummary}
+            creditBalance={props.creditBalance}
+            creditBalanceLoading={props.creditBalanceLoading}
+            creditBalanceError={props.creditBalanceError}
             activeSessions={activeSessions}
             onLogout={props.onLogout}
             onLanguageChange={props.onLanguageChange}

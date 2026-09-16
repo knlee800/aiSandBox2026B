@@ -106,6 +106,18 @@ describe('workspace quota usage logic', () => {
     assert.equal(shouldRefreshDashboardForChatStatus('completed'), true);
     assert.equal(shouldRefreshDashboardForChatStatus('failed'), true);
     assert.equal(shouldRefreshDashboardForChatStatus('cancelled'), true);
-    assert.equal(shouldRefreshDashboardForChatStatus('timeout'), true);
+    assert.equal(
+      shouldRefreshDashboardForChatStatus('timeout'),
+      true,
+    );
+  });
+
+  test('402 insufficient-credit raw message is not stolen as quota guidance', () => {
+    const message = toQuotaRateLimitGuidance({
+      rawMessage: 'Insufficient credit balance',
+      fallbackMessage: 'Chat execution failed.',
+      statusCode: 402,
+    });
+    assert.equal(message, 'Insufficient credit balance');
   });
 });

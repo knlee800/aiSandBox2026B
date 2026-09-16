@@ -140,7 +140,12 @@
     "moveToWorkspace": "Move to Workspace",
     "workspaceLabel": "Workspace",
     "expandSidebar": "Expand sidebar",
-    "collapseSidebar": "Collapse sidebar"
+    "collapseSidebar": "Collapse sidebar",
+    "creditBalance": "Credit balance",
+    "creditBalanceValue": "{count}",
+    "creditBalanceHint": "Separate from token and session quota",
+    "creditBalanceLoading": "Loading credit balance...",
+    "creditBalanceLoadError": "Credit balance unavailable"
   },
   "recovery": {
     "actions": {
@@ -410,7 +415,10 @@
     "userAgentAskBound": "Asking as selected agent",
     "userAgentAskDismiss": "Stop asking as this agent",
     "userAgentAskNotFound": "This agent is no longer available.",
-    "userAgentAskSessionNotFound": "This workspace session is no longer available. Create or select a session, then try again."
+    "userAgentAskSessionNotFound": "This workspace session is no longer available. Create or select a session, then try again.",
+    "creditBalanceExhausted": "Ask/Build is blocked because your credit balance is {count}. Credit balance is separate from token and session quota.",
+    "creditBalanceNotProvisioned": "Ask/Build is blocked because a credit balance has not been provisioned for this account. Credit balance is separate from token and session quota.",
+    "creditBalancePaymentRequired": "Ask/Build is blocked because credit is required. Credit balance is separate from token and session quota."
   },
   "authModule": {
     "installing": "Installing auth module — preparing your workspace...",

@@ -97,6 +97,8 @@ import {
   shouldRefreshDashboardForChatStatus,
   toQuotaRateLimitGuidance,
 } from '@/components/workspace/workspace-quota-usage.logic';
+import { toCreditBalanceGuidance } from '@/components/workspace/workspace-credit-error.logic';
+import { useCreditBalance } from '@/hooks/useCreditBalance';
 import {
   buildProjectScopedSnapshotLabel,
   exportWorkspaceArchive,
@@ -785,6 +787,24 @@ function buildAutosaveHintFromFileActions(actions: WorkspaceFileAction[]): strin
   return `${firstBasename} +${uniquePaths.length - 1}`;
 }
 
+function extractExecuteErrorRawMessage(payload: unknown): string {
+  if (!payload || typeof payload !== 'object') {
+    return '';
+  }
+
+  const record = payload as { message?: string; error?: string; detail?: string };
+  if (typeof record.message === 'string' && record.message.trim()) {
+    return record.message.trim();
+  }
+  if (typeof record.error === 'string' && record.error.trim()) {
+    return record.error.trim();
+  }
+  if (typeof record.detail === 'string' && record.detail.trim()) {
+    return record.detail.trim();
+  }
+  return '';
+}
+
 function toChatAssistantFailureMessage(input: {
   rawMessage?: string;
   fallbackMessage: string;
@@ -794,26 +814,23 @@ function toChatAssistantFailureMessage(input: {
   return toQuotaRateLimitGuidance(input);
 }
 
-async function readResponseErrorMessage(response: Response): Promise<string> {
+async function readExecuteErrorBody(
+  response: Response,
+): Promise<{ rawMessage: string; payload: unknown }> {
   try {
-    const payload = (await response.json()) as
-      | { message?: string; error?: string; detail?: string }
-      | null;
-    if (payload && typeof payload === 'object') {
-      if (typeof payload.message === 'string' && payload.message.trim()) {
-        return payload.message.trim();
-      }
-      if (typeof payload.error === 'string' && payload.error.trim()) {
-        return payload.error.trim();
-      }
-      if (typeof payload.detail === 'string' && payload.detail.trim()) {
-        return payload.detail.trim();
-      }
-    }
+    const payload: unknown = await response.json();
+    return {
+      rawMessage: extractExecuteErrorRawMessage(payload),
+      payload,
+    };
   } catch {
-    // Ignore parse errors and fallback to empty detail.
+    return { rawMessage: '', payload: null };
   }
-  return '';
+}
+
+async function readResponseErrorMessage(response: Response): Promise<string> {
+  const { rawMessage } = await readExecuteErrorBody(response);
+  return rawMessage;
 }
 
 
@@ -959,6 +976,17 @@ export default function AppPage() {
   const [userSummary, setUserSummary] = useState<WorkspaceUserSummary | null>(null);
   const [usageSummary, setUsageSummary] = useState<WorkspaceUsageSummary | null>(null);
   const [quotaSummary, setQuotaSummary] = useState<WorkspaceQuotaSummary | null>(null);
+  const {
+    balance: creditBalance,
+    loading: creditBalanceLoading,
+    error: creditBalanceFetchError,
+    refetch: refetchCreditBalance,
+  } = useCreditBalance();
+  const creditBalanceCopies = {
+    exhausted: aiMessages.creditBalanceExhausted,
+    notProvisioned: aiMessages.creditBalanceNotProvisioned,
+    paymentRequired: aiMessages.creditBalancePaymentRequired,
+  };
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
   const [dashboardError, setDashboardError] = useState<string | null>(null);
   const [commandInput, setCommandInput] = useState('');
@@ -4055,7 +4083,15 @@ export default function AppPage() {
       });
 
       if (!executeResponse.ok) {
-        const rawMessage = await readResponseErrorMessage(executeResponse);
+        const { rawMessage, payload } = await readExecuteErrorBody(executeResponse);
+        const creditMessage = toCreditBalanceGuidance({
+          statusCode: executeResponse.status,
+          payload,
+          copies: creditBalanceCopies,
+        });
+        if (creditMessage) {
+          void refetchCreditBalance();
+        }
         const mappedMessage = resolvePersistedUserAgentAskExecuteError({
           boundUserAgentId,
           statusCode: executeResponse.status,
@@ -4063,7 +4099,10 @@ export default function AppPage() {
           notFoundMessage: aiMessages.userAgentAskNotFound,
           sessionNotFoundMessage: aiMessages.userAgentAskSessionNotFound,
         });
-        const failureMessage = mappedMessage ?? toChatAssistantFailureMessage({
+        const failureMessage =
+          creditMessage ??
+          mappedMessage ??
+          toChatAssistantFailureMessage({
           rawMessage,
           fallbackMessage: `Orchestration step ${index + 1} failed (${executeResponse.status}).`,
           statusCode: executeResponse.status,
@@ -4393,7 +4432,15 @@ export default function AppPage() {
       });
 
       if (!response.ok) {
-        const rawMessage = await readResponseErrorMessage(response);
+        const { rawMessage, payload } = await readExecuteErrorBody(response);
+        const creditMessage = toCreditBalanceGuidance({
+          statusCode: response.status,
+          payload,
+          copies: creditBalanceCopies,
+        });
+        if (creditMessage) {
+          void refetchCreditBalance();
+        }
         const mappedMessage = resolvePersistedUserAgentAskExecuteError({
           boundUserAgentId,
           statusCode: response.status,
@@ -4401,7 +4448,10 @@ export default function AppPage() {
           notFoundMessage: aiMessages.userAgentAskNotFound,
           sessionNotFoundMessage: aiMessages.userAgentAskSessionNotFound,
         });
-        const failureMessage = mappedMessage ?? toChatAssistantFailureMessage({
+        const failureMessage =
+          creditMessage ??
+          mappedMessage ??
+          toChatAssistantFailureMessage({
           rawMessage,
           fallbackMessage: `Chat execution failed (${response.status}).`,
           statusCode: response.status,
@@ -5901,6 +5951,9 @@ export default function AppPage() {
       userRole={userRole}
       usageSummary={usageSummary}
       quotaSummary={quotaSummary}
+      creditBalance={creditBalance}
+      creditBalanceLoading={creditBalanceLoading}
+      creditBalanceError={creditBalanceFetchError !== null}
       isLoadingDashboard={isLoadingDashboard}
       dashboardError={dashboardError}
       chatPromptInput={chatPromptInput}

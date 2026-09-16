@@ -140,7 +140,12 @@
     "moveToWorkspace": "移動到工作區",
     "workspaceLabel": "工作區",
     "expandSidebar": "展開側邊欄",
-    "collapseSidebar": "收合側邊欄"
+    "collapseSidebar": "收合側邊欄",
+    "creditBalance": "信用餘額",
+    "creditBalanceValue": "{count}",
+    "creditBalanceHint": "與 token 及工作階段配額不同",
+    "creditBalanceLoading": "正在載入信用餘額...",
+    "creditBalanceLoadError": "無法載入信用餘額"
   },
   "recovery": {
     "actions": {
@@ -410,7 +415,10 @@
     "userAgentAskBound": "正以所選代理詢問",
     "userAgentAskDismiss": "停止以此代理詢問",
     "userAgentAskNotFound": "此代理已無法使用。",
-    "userAgentAskSessionNotFound": "此工作區工作階段已無法使用。請建立或選擇工作階段後再試。"
+    "userAgentAskSessionNotFound": "此工作區工作階段已無法使用。請建立或選擇工作階段後再試。",
+    "creditBalanceExhausted": "Ask/Build 已停用，因為你的信用餘額為 {count}。信用餘額與 token 及工作階段配額不同。",
+    "creditBalanceNotProvisioned": "Ask/Build 已停用，因為此帳戶尚未配置信用餘額。信用餘額與 token 及工作階段配額不同。",
+    "creditBalancePaymentRequired": "Ask/Build 已停用，因為需要信用餘額。信用餘額與 token 及工作階段配額不同。"
   },
   "authModule": {
     "installing": "正在安裝驗證模組 — 正在準備你的工作區...",

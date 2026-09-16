@@ -76518,7 +76518,7 @@ taskId=BUILDER-CREDIT-UX-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-16 — 4-step IMPLEMENTATION / Builder credit UX — Step 1 COMPLETE (registration / control-plane only; registered at `a69a0b6`) — Step 2 COMPLETE (stage-start / exact write-set freeze; Checkpoint: `docs/BUILDER-CREDIT-UX-01-STAGE-START.md`) — Step 3 NOT AUTHORIZED — Step 4 NOT AUTHORIZED — GOVERNANCE acquired transiently then released UNOWNED — no implementation lane — candidate `status=READY` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=EXACT` / `admissionUncertain=true` (`Test-Admissible` = ADMISSION_UNCERTAIN; not in S) — mutexes FRONTEND + I18N declared not acquired — runtimeNeeds none — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — EXEC-01C6A remains MACHINE BLOCKER ENFORCED / sidecar startCondition=NOT_READY UNCHANGED / not reopened / not admitted / not LANE-DONE / not LOCKED — BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON (`GLOBAL_EXECUTION_ENABLED=true`) — PREVIEW-NODE-01 / PREVIEW-NODE-STAGING-01 / PREVIEW-NODE-STAGING-APPLY-01 remain COMPLETE AND LOCKED — product-visible orchestration remains FUTURE/gated — working single-shot Builder Ask/Build path remains the product to complete, not to replace — IMPLEMENTATION_STARTED=NO
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-16 — 4-step IMPLEMENTATION / Builder credit UX — Step 1 COMPLETE (registration / control-plane only; registered at `a69a0b6`) — Step 2 COMPLETE (stage-start / exact write-set freeze; Checkpoint: `docs/BUILDER-CREDIT-UX-01-STAGE-START.md`) — Step 3 COMPLETE (frozen write-set implementation; LOCAL-TESTS PASS; not admitted; not LOCKED) — Step 4 NOT AUTHORIZED — GOVERNANCE acquired transiently then released UNOWNED — no implementation lane — candidate `status=READY` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=EXACT` / `admissionUncertain=true` (`Test-Admissible` = ADMISSION_UNCERTAIN; not in S) — mutexes FRONTEND + I18N used for the authorized Step 3 write then released UNOWNED — runtimeNeeds none — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — EXEC-01C6A remains MACHINE BLOCKER ENFORCED / sidecar startCondition=NOT_READY UNCHANGED / not reopened / not admitted / not LANE-DONE / not LOCKED — BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON (`GLOBAL_EXECUTION_ENABLED=true`) — PREVIEW-NODE-01 / PREVIEW-NODE-STAGING-01 / PREVIEW-NODE-STAGING-APPLY-01 remain COMPLETE AND LOCKED — product-visible orchestration remains FUTURE/gated — working single-shot Builder Ask/Build path remains the product to complete, not to replace — IMPLEMENTATION_STARTED=YES
 **Task ID:** BUILDER-CREDIT-UX-01
 **Title:** Builder credit visibility and 402 error UX
 **Family:** BUILDER / CREDIT-UX (productization of already-CURRENT free-plan credit balance visibility and governed 402 Ask/Build errors in the authenticated Builder workspace; not Stripe; not credit mutation; not Harness; not orchestration; not EXEC-01C6A)
@@ -76531,15 +76531,15 @@ nature=IMPLEMENTATION
 **Lifecycle:** 4-STEP (exact files and copy are frozen at Step 2; must not collapse source authorship and lock into one unreviewed step):
 1. Step 1 — registration — COMPLETE — 2026-09-16 — control-plane only; registered at `a69a0b6`.
 2. Step 2 — stage-start / exact write-set freeze — COMPLETE — 2026-09-16 — Freeze: `docs/BUILDER-CREDIT-UX-01-STAGE-START.md`.
-3. Step 3 — bounded implementation of the frozen write set — NOT AUTHORIZED.
+3. Step 3 — bounded implementation of the frozen write set — COMPLETE — 2026-09-16 — not admitted; not LOCKED.
 4. Step 4 — independent verification / checkpoint / lock — NOT AUTHORIZED.
-**Start condition:** READY (satisfied). NOT ADMITTED to an implementation lane. Occupies no implementation lane. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. EXEC-01C6A sidecar `startCondition=NOT_READY` remains UNCHANGED. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. Candidate `writeSetPrecision=EXACT` / `admissionUncertain=true`. Steps 3-4 NOT AUTHORIZED.
+**Start condition:** READY (satisfied). NOT ADMITTED to an implementation lane. Occupies no implementation lane. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. EXEC-01C6A sidecar `startCondition=NOT_READY` remains UNCHANGED. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. Candidate `writeSetPrecision=EXACT` / `admissionUncertain=true`. Step 3 COMPLETE. Step 4 NOT AUTHORIZED.
 **Depends on (canonical / human):** Keith 2026-09-16 authorization to register this Builder-completion credit-UX slice. PREVIEW-NODE-01 / PREVIEW-NODE-STAGING-01 / PREVIEW-NODE-STAGING-APPLY-01 COMPLETE AND LOCKED (Vite/node preview proven; sequencing context, not machine `dependsOn`). BUILDER-LIVE-GATE-01 COMPLETE AND LOCKED (gate LEFT ON). Existing CURRENT credit model (`CreditBalanceGuard` HTTP 402; `GET /api/billing/balance`). Does not depend on unfinished implementation output from another admitted lane. Unlocked EXEC-01C6A / EXEC-01C6 / EXEC-01C are not dependencies. Orchestration is not required for this Builder slice.
 **Depends on (machine sidecar `dependsOn`):** `[]`. Unlocked EXEC-01C6A / EXEC-01C6 / EXEC-01C MUST NOT appear in machine `dependsOn`.
 **Primary write scope (Step 2, this write):** `docs/BUILDER-CREDIT-UX-01-STAGE-START.md`; `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body; `docs/control-plane/lane-saturation-state.json` candidate `writeSetPrecision=EXACT` + exact `writePaths`; `docs/control-plane/SATURATION_PROOF.json` only as validator output. Occupancy remains EMPTY / GOVERNANCE UNOWNED at end of this write. No application source. No ARCHITECTURE.md / PRD.md / CLAUDE.md / AGENTS.md rewrite. No Git.
-**Primary write scope (Step 3, frozen, not authorized now):** sidecar `writePaths` (11 files) plus human-required `frontend/app/[locale]/app/page.tsx` under FRONTEND, per `docs/BUILDER-CREDIT-UX-01-STAGE-START.md` §5.2.
+**Primary write scope (Step 3, this write):** sidecar `writePaths` (11 files) plus human-required `frontend/app/[locale]/app/page.tsx` under FRONTEND, per `docs/BUILDER-CREDIT-UX-01-STAGE-START.md` §5.2. Governance status fields only. Occupancy remains EMPTY / GOVERNANCE UNOWNED at end of this write. No sidecar status/LOCK change. No Git.
 **Primary write scope (Step 4):** separately authorized later. Not authorized now.
-**Mutexes / resources (Step 2, this write):** GOVERNANCE held only for this control-plane freeze then released UNOWNED. IMPLEMENTATION candidate mutexes declared not acquired: FRONTEND, I18N. GOVERNANCE must not appear in the IMPLEMENTATION candidate mutex list. GATEWAY / MIGRATION / AI-SERVICE / CONTAINER-MANAGER / PACKAGE / COMPOSE / ENV / LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT remain UNOWNED and unauthorized. FRONTEND remains UNOWNED. I18N remains UNOWNED. `stagingAuthorized=false`. `STAGING_EXECUTION_AUTHORIZED=NO`. `PROVIDER_LIVE_AUTHORIZED=NO`. `CREDIT_MUTATION_AUTHORIZED=NO`. `LOCAL_RUNTIME_AUTHORIZED=NO`. MIGRATION_EXECUTION_AUTHORIZED=NO.
+**Mutexes / resources (Step 3, this write):** GOVERNANCE held only for this control-plane Step 3 status write then released UNOWNED. FRONTEND + I18N used for the authorized frozen write set then released UNOWNED. GOVERNANCE must not appear in the IMPLEMENTATION candidate mutex list. GATEWAY / MIGRATION / AI-SERVICE / CONTAINER-MANAGER / PACKAGE / COMPOSE / ENV / LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT remain UNOWNED and unauthorized. FRONTEND remains UNOWNED at end-state. I18N remains UNOWNED. `stagingAuthorized=false`. `STAGING_EXECUTION_AUTHORIZED=NO`. `PROVIDER_LIVE_AUTHORIZED=NO`. `CREDIT_MUTATION_AUTHORIZED=NO`. `LOCAL_RUNTIME_AUTHORIZED=NO`. MIGRATION_EXECUTION_AUTHORIZED=NO.
 **Hot-file leases:** none. I18N atomic 3-file lease covers `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json` when later acquired. FRONTEND covers Builder workspace source. Exact files frozen at Step 2 (`docs/BUILDER-CREDIT-UX-01-STAGE-START.md` §5.2).
 **Shared contracts:** none consumed or mutated (`sharedContractIds=[]`; `mutatesSharedContractIds=[]`). Frozen catalog ID `HARNESS_ENTITLEMENT_PROOF_V1` remains FROZEN and is not consumed or mutated by this child. HTTP 402 JSON body from `CreditBalanceGuard` is consumed as a read-only existing contract (`error_code: credit_balance_exhausted` / `credit_balance_not_provisioned`); this registration must not change Gateway execute/credit-guard behavior.
 **Evidence class:** LOCAL-TESTS. No provider-live. No Docker/Postgres/Redis. No STAGING / PROVIDER-LIVE / CREDIT / LOCAL-RUNTIME runtime needs in this Step 2.
@@ -76588,7 +76588,7 @@ Stripe / live payment / credit top-up remains APPROVED FUTURE / not needed for B
 KEITH_DECISION_REQUIRED_BEFORE_REGISTRATION=NO (this window is the authorized registration)
 KEITH_DECISION_REQUIRED_BEFORE_STAGE_START=NO (Step 2 authorized and COMPLETE this window)
 KEITH_DECISION_REQUIRED_BEFORE_ADMISSION=YES
-KEITH_DECISION_REQUIRED_BEFORE_IMPLEMENTATION=YES
+KEITH_DECISION_REQUIRED_BEFORE_IMPLEMENTATION=NO (Step 3 authorized and COMPLETE this window)
 KEITH_DECISION_REQUIRED_BEFORE_CHECKPOINT_LOCK=YES
 KEITH_DECISION_REQUIRED_BEFORE_REOPENING_EXEC_01C6A=YES
 KEITH_DECISION_REQUIRED_BEFORE_HARNESS_ENABLEMENT=YES
@@ -76604,12 +76604,12 @@ This registration does **not** reopen EXEC-01C6A. It does **not** change BUILDER
 - Leave Stripe/top-up, credit mutation, Harness, orchestration, and invitations unregistered
 
 **Activation effect:** NONE
-**Rollback boundary:** Step 2 = discard this stage-start and restore board/registry/sidecar to Step 1 PROVISIONAL fields. Ordinary Builder Ask/Build/preview path, live gate, and credit ledger are untouched.
+**Rollback boundary:** Step 3 = discard the frozen frontend write-set edits and restore this child's Step 3 board/registry/stage-start status fields to Step 2 COMPLETE / Step 3 NOT AUTHORIZED. Occupancy remains EMPTY. Sidecar remains READY / EXACT / admissionUncertain=true. Ordinary Builder Ask/Build/preview path, live gate, and credit ledger are otherwise untouched.
 
 **Machine registration (post-epoch):** Present exactly once immediately under this canonical heading (`taskId=BUILDER-CREDIT-UX-01`, `nature=IMPLEMENTATION`). Enforcement epoch unchanged. Do not duplicate the machine-registration markers elsewhere in this body. Sidecar candidate required (`saturationClass=FORCING`; `status=READY`; `admissionUncertain=true`; `writeSetPrecision=EXACT`; exact `writePaths` per freeze §5.2). Occupancy remains EMPTY. Do not admit a lane in this window. Do not register follow-on tasks. Do not reopen AGENT-PLATFORM-EXEC-01C6A.
 
 **Lane / admission:**
-REGISTERED / READY / NOT ADMITTED — IMPLEMENTATION — Step 1 COMPLETE — Step 2 COMPLETE — Steps 3-4 NOT AUTHORIZED — 2026-09-16. This child does not occupy a lane. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. Occupancy hash `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d`. Candidate is not in S (`ADMISSION_UNCERTAIN`; `writeSetPrecision=EXACT`). EXEC-01C6A remains `startCondition=NOT_READY` / not in S / not reopened. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON.
+REGISTERED / READY / NOT ADMITTED — IMPLEMENTATION — Step 1 COMPLETE — Step 2 COMPLETE — Step 3 COMPLETE — Step 4 NOT AUTHORIZED — 2026-09-16. This child does not occupy a lane. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. Occupancy hash `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d`. Candidate is not in S (`ADMISSION_UNCERTAIN`; `writeSetPrecision=EXACT`). EXEC-01C6A remains `startCondition=NOT_READY` / not in S / not reopened. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON.
 
 #### Acceptance Criteria
 
@@ -76652,7 +76652,23 @@ Step 2 (stage-start / exact write-set freeze):
 - [x] Stripe/top-up child remains unregistered
 
 Step 3 (implementation):
-- [ ] NOT AUTHORIZED this window
+- [x] Keith authorized Step 3 this window
+- [x] frozen write set implemented (11 sidecar `writePaths` plus human-required `frontend/app/[locale]/app/page.tsx`)
+- [x] `useCreditBalance` GET `/api/billing/balance` only
+- [x] sidebar compact usage credit row with row-local loading/error
+- [x] GET unprovisioned balance 0 displays 0
+- [x] dedicated 402 mapper: exhausted / not-provisioned / generic 402
+- [x] existing quota 403/429 mapping unchanged
+- [x] no Stripe/top-up/subscription/upgrade activation
+- [x] no ledger POST
+- [x] no backend Ask/Build behavior change
+- [x] frozen frontend tests PASS (33/33) + `npx tsc --noEmit` PASS + existing `workspace-shell.test.tsx` 455/455 PASS
+- [x] `git diff --check` PASS
+- [x] occupancy EMPTY / not admitted / not LOCKED
+- [x] EXEC-01C6A `startCondition=NOT_READY` UNCHANGED
+- [x] BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON
+- [x] Stripe/top-up child remains unregistered
+- [x] No Git commit/push by the worker
 
 Step 4 (checkpoint / lock):
 - [ ] NOT AUTHORIZED this window
@@ -76665,6 +76681,8 @@ Step 4 (checkpoint / lock):
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=0, application source=0, frontend=0, i18n=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0, named other children registered=0, Stripe=0, credit mutation=0. Governance writes: TASKS.md CURRENT EXECUTION BOARD fields; this registry body; sidecar candidate; occupancy facts unchanged at end-state (EMPTY / GOVERNANCE UNOWNED); SATURATION_PROOF.json only as validator output.
 **Step 2 HEAD:** not queried this window (Keith instruction: Do not Git except validator + `git diff --check`)
 **Step 2 activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=0, application source=0, frontend=0, i18n=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0, named other children registered=0, Stripe=0, credit mutation=0. Governance writes: `docs/BUILDER-CREDIT-UX-01-STAGE-START.md`; TASKS.md CURRENT EXECUTION BOARD fields; this registry body; sidecar candidate `writeSetPrecision=EXACT` / exact `writePaths` / occupancy facts unchanged at end-state (EMPTY / GOVERNANCE UNOWNED); SATURATION_PROOF.json only as validator output.
+**Step 3 HEAD:** not queried this window (Keith instruction: Do not Git commit/push)
+**Step 3 activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=1 (frozen frontend write set only), application source=1 (frozen frontend write set only), frontend=1, i18n=1, tests executed=1 (frozen Step 3 files + tsc + existing workspace-shell.test.tsx neighbor), dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0, named other children registered=0, Stripe=0, credit mutation=0. Governance writes: TASKS.md CURRENT EXECUTION BOARD fields; this registry body; `docs/BUILDER-CREDIT-UX-01-STAGE-START.md` Step 3 status; SATURATION_PROOF.json only if validator required. Occupancy facts unchanged at end-state (EMPTY / GOVERNANCE UNOWNED). Sidecar candidate remains READY / EXACT / admissionUncertain=true / not LOCKED.
 
 ---
 

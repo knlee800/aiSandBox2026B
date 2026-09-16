@@ -42,6 +42,9 @@ interface WorkspaceSidebarProps {
   userSummary?: WorkspaceUserSummary | null;
   usageSummary?: WorkspaceUsageSummary | null;
   quotaSummary?: WorkspaceQuotaSummary | null;
+  creditBalance?: number | null;
+  creditBalanceLoading?: boolean;
+  creditBalanceError?: boolean;
   activeSessions?: number;
   onLogout?: () => void;
   onLanguageChange?: (locale: string) => void;
@@ -118,6 +121,11 @@ export function getWorkspaceScaffoldMessages(locale?: string) {
     comingSoon: read('tabs.comingSoon'),
     activeSessions: read('workspace.activeSessions'),
     tokens: read('workspace.tokens'),
+    creditBalance: read('workspace.creditBalance'),
+    creditBalanceValue: read('workspace.creditBalanceValue'),
+    creditBalanceHint: read('workspace.creditBalanceHint'),
+    creditBalanceLoading: read('workspace.creditBalanceLoading'),
+    creditBalanceLoadError: read('workspace.creditBalanceLoadError'),
     expandSidebar: read('workspace.expandSidebar'),
     collapseSidebar: read('workspace.collapseSidebar'),
     commandCenter: read('platform.title'),
@@ -156,6 +164,11 @@ export default function WorkspaceSidebar(props: WorkspaceSidebarProps) {
   const canShowCompactUsage = Boolean(
     props.userSummary && props.usageSummary && props.quotaSummary,
   );
+  const creditBalance = props.creditBalance ?? null;
+  const creditBalanceLoading = props.creditBalanceLoading === true;
+  const creditBalanceError = props.creditBalanceError === true;
+  const shouldShowCreditRow =
+    creditBalanceLoading || creditBalanceError || typeof creditBalance === 'number';
   const accountAvatarInitial = getUserAvatarInitial(props.userSummary?.email);
   const compactToggleLabel = isCompact ? messages.expandSidebar : messages.collapseSidebar;
   const compactWorkspaceMark = selectedWorkspace?.name?.trim().charAt(0).toUpperCase() || 'W';
@@ -472,6 +485,46 @@ export default function WorkspaceSidebar(props: WorkspaceSidebarProps) {
                     {props.quotaSummary?.maxTokens24h ?? 0}
                   </span>
                 </div>
+                {shouldShowCreditRow ? (
+                  <div data-testid="workspace-sidebar-credit-balance">
+                    {creditBalanceLoading ? (
+                      <p
+                        className="text-xs text-gray-500"
+                        data-testid="workspace-sidebar-credit-balance-loading"
+                      >
+                        {messages.creditBalanceLoading}
+                      </p>
+                    ) : creditBalanceError ? (
+                      <p
+                        className="text-xs text-gray-500"
+                        data-testid="workspace-sidebar-credit-balance-error"
+                      >
+                        {messages.creditBalanceLoadError}
+                      </p>
+                    ) : (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-500">{messages.creditBalance}</span>
+                          <span
+                            className="text-xs font-medium text-gray-700"
+                            data-testid="workspace-sidebar-credit-balance-value"
+                          >
+                            {messages.creditBalanceValue.replace(
+                              '{count}',
+                              (creditBalance ?? 0).toLocaleString(),
+                            )}
+                          </span>
+                        </div>
+                        <p
+                          className="mt-1 text-[11px] text-gray-500"
+                          data-testid="workspace-sidebar-credit-balance-hint"
+                        >
+                          {messages.creditBalanceHint}
+                        </p>
+                      </>
+                    )}
+                  </div>
+                ) : null}
               </div>
             </div>
           ) : null}

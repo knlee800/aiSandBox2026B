@@ -140,7 +140,12 @@
     "moveToWorkspace": "移动到工作区",
     "workspaceLabel": "工作区",
     "expandSidebar": "展开侧边栏",
-    "collapseSidebar": "收起侧边栏"
+    "collapseSidebar": "收起侧边栏",
+    "creditBalance": "信用余额",
+    "creditBalanceValue": "{count}",
+    "creditBalanceHint": "与 token 及会话配额不同",
+    "creditBalanceLoading": "正在加载信用余额...",
+    "creditBalanceLoadError": "无法加载信用余额"
   },
   "recovery": {
     "actions": {
@@ -410,7 +415,10 @@
     "userAgentAskBound": "正在以所选代理提问",
     "userAgentAskDismiss": "停止以此代理提问",
     "userAgentAskNotFound": "此代理已不可用。",
-    "userAgentAskSessionNotFound": "此工作区会话已不可用。请创建或选择会话后再试。"
+    "userAgentAskSessionNotFound": "此工作区会话已不可用。请创建或选择会话后再试。",
+    "creditBalanceExhausted": "Ask/Build 已停用，因为你的信用余额为 {count}。信用余额与 token 及会话配额不同。",
+    "creditBalanceNotProvisioned": "Ask/Build 已停用，因为此账户尚未配置信用余额。信用余额与 token 及会话配额不同。",
+    "creditBalancePaymentRequired": "Ask/Build 已停用，因为需要信用余额。信用余额与 token 及会话配额不同。"
   },
   "authModule": {
     "installing": "正在安装认证模块 — 正在准备你的工作区...",
