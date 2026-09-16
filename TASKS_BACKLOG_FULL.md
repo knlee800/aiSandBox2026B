@@ -76702,6 +76702,151 @@ Step 4 (checkpoint / lock):
 
 ---
 
+### PREVIEW-STOP-01 — Preview stop/restart reliability for static and Vite previews
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=PREVIEW-STOP-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-16 — 4-step IMPLEMENTATION / preview stop-restart reliability — Step 1 COMPLETE (registration / control-plane only) — Step 2 NOT AUTHORIZED — Step 3 NOT AUTHORIZED — Step 4 NOT AUTHORIZED — GOVERNANCE acquired transiently then released UNOWNED — no implementation lane — candidate `status=READY` / `saturationClass=FORCING` / `productClass=CURRENT` / `futureAuthorization=NONE` / `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true` (`Test-Admissible` = ADMISSION_UNCERTAIN; not in S) — mutexes CONTAINER-MANAGER + GATEWAY declared not acquired — FRONTEND undeclared unless Step 2 discovers UI wiring is required — runtimeNeeds none — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — EXEC-01C6A remains MACHINE BLOCKER ENFORCED / sidecar startCondition=NOT_READY UNCHANGED / not reopened / not admitted / not LANE-DONE / not LOCKED — BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON (`GLOBAL_EXECUTION_ENABLED=true`) — BUILDER-CREDIT-UX-01 / PREVIEW-NODE-01 / PREVIEW-NODE-STAGING-01 / PREVIEW-NODE-STAGING-APPLY-01 remain COMPLETE AND LOCKED — product-visible orchestration remains FUTURE/gated — working single-shot Builder Ask/Build path remains the product to complete, not to replace — IMPLEMENTATION_STARTED=NO
+**Task ID:** PREVIEW-STOP-01
+**Title:** Preview stop/restart reliability for static and Vite previews
+**Family:** BUILDER / PREVIEW (productization of already-CURRENT preview stop so a user can start, stop, and restart preview without orphaning Vite/node processes or requiring full session Stop; not Harness; not orchestration; not EXEC-01C6A)
+**Parent task:** none. Named later-product child from locked PREVIEW-NODE-01 "later preview reliability / refresh behavior" exclusion, observed during locked PREVIEW-NODE-STAGING-01 proof. Those locked tasks are sequencing context, not machine `dependsOn`. Does **not** reopen EXEC-01C6A. Unlocked EXEC-01C6A / EXEC-01C6 / EXEC-01C MUST NOT appear in machine `dependsOn`.
+**Workstream:** CORE (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (high-risk; container process stop, ports, process-proxy, Vite/node orphan cleanup; Gateway preview stop routing may be in the frozen write set)
+**Development program:** CURRENT Builder-completion product frontier. Keith 2026-09-16 named this preview stop/restart reliability slice after locked Vite/node preview proof. Light CURRENT/FUTURE check: `PRD.md` CURRENT includes integrated workspace preview, HTTP/WebSocket (HMR/dev servers), and predictable lifecycle behavior for sessions, workspaces, and previews. `ARCHITECTURE.md` §6 records preview strategy resolution, Gateway preview proxy to container-manager, and `node-dev-server` as CURRENT HOW. Stop already exists as CURRENT HOW (`PreviewService.stopPreview`; container-manager `DELETE :sessionId/stop`) but is not reliable enough for Builder completion. This child productizes that already-CURRENT stop path. It does **not** promote Harness, orchestration, Stripe, apex cutover, or invitations into CURRENT product.
+**Product-visible Harness / orchestration capability:** FUTURE / gated / disabled / unavailable. Unchanged.
+**Classification:** CURRENT required Builder-completion slice (Keith-named). Machine `productClass=CURRENT` with `futureAuthorization=NONE`. Activation effect of this registration: NONE.
+**Lifecycle:** 4-STEP HIGH-RISK (container process / preview proxy / stop-restart contract; must not collapse diagnosis, exact write-set freeze, source authorship, and lock into one unreviewed step):
+1. Step 1 — registration — COMPLETE this window — control-plane only; no implementation; no admission; no stage-start; no ARCHITECTURE.md / PRD.md rewrite; no runtime procedure.
+2. Step 2 — stage-start / exact write-set freeze — NOT AUTHORIZED.
+3. Step 3 — bounded implementation of the frozen write set — NOT AUTHORIZED.
+4. Step 4 — independent verification / checkpoint / lock — NOT AUTHORIZED.
+**Start condition:** READY (satisfied for this registration). NOT ADMITTED to an implementation lane. Occupies no implementation lane. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. EXEC-01C6A sidecar `startCondition=NOT_READY` remains UNCHANGED. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. Candidate `writeSetPrecision=PROVISIONAL` / `admissionUncertain=true`. Steps 2-4 NOT AUTHORIZED.
+**Depends on (canonical / human):** Keith 2026-09-16 authorization to register this Builder-completion preview-stop slice. PREVIEW-NODE-01 / PREVIEW-NODE-STAGING-01 / PREVIEW-NODE-STAGING-APPLY-01 COMPLETE AND LOCKED (Vite preview proven; stop/orphan gap recorded in `docs/PREVIEW-NODE-STAGING-01-STAGE-START.md` §17 E9/E10/E16; sequencing context, not machine `dependsOn`). BUILDER-LIVE-GATE-01 COMPLETE AND LOCKED (gate LEFT ON). Staging-proven static Preview remains the baseline that must not regress. Does not depend on unfinished implementation output from another admitted lane. Unlocked EXEC-01C6A / EXEC-01C6 / EXEC-01C are not dependencies. Orchestration is not required for this Builder slice.
+**Depends on (machine sidecar `dependsOn`):** `[]`. Unlocked EXEC-01C6A / EXEC-01C6 / EXEC-01C MUST NOT appear in machine `dependsOn`.
+**Primary write scope (Step 1, this write):** `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body; `docs/control-plane/lane-saturation-state.json` candidate record; `docs/control-plane/SATURATION_PROOF.json` only as validator output. Occupancy remains EMPTY / GOVERNANCE UNOWNED at end of this write. No application source. No test file. No stage-start. No checkpoint. No ARCHITECTURE.md / PRD.md / CLAUDE.md / AGENTS.md rewrite. No Git.
+**Primary write scope (Steps 2-4):** separately authorized after Step 1. Not authorized now. Exact files frozen at Step 2.
+**Mutexes / resources (Step 1, this write):** GOVERNANCE held only for this control-plane registration then released UNOWNED. IMPLEMENTATION candidate mutexes declared not acquired: CONTAINER-MANAGER, GATEWAY. GOVERNANCE must not appear in the IMPLEMENTATION candidate mutex list. FRONTEND / I18N remain undeclared unless Step 2 discovers UI wiring is required. MIGRATION / AI-SERVICE / PACKAGE / COMPOSE / ENV / LOCAL-RUNTIME / STAGING / PROVIDER-LIVE / CREDIT remain UNOWNED and unauthorized. CONTAINER-MANAGER remains UNOWNED. GATEWAY remains UNOWNED. `stagingAuthorized=false`. `STAGING_EXECUTION_AUTHORIZED=NO`. `PROVIDER_LIVE_AUTHORIZED=NO`. `CREDIT_MUTATION_AUTHORIZED=NO`. `LOCAL_RUNTIME_AUTHORIZED=NO`. MIGRATION_EXECUTION_AUTHORIZED=NO.
+**Hot-file leases:** none. CONTAINER-MANAGER covers `services/container-manager/`. GATEWAY covers `services/api-gateway/`. Frontend copy is out of this registration unless Step 2 discovers a Stop Preview control is required; FRONTEND + I18N remain undeclared.
+**Shared contracts:** none consumed or mutated (`sharedContractIds=[]`; `mutatesSharedContractIds=[]`). Frozen catalog ID `HARNESS_ENTITLEMENT_PROOF_V1` remains FROZEN and is not consumed or mutated by this child.
+**Evidence class:** LOCAL-TESTS initially. No provider-live. No Docker/Postgres/Redis. No STAGING / PROVIDER-LIVE / CREDIT / LOCAL-RUNTIME runtime needs in this Step 1. A later staging/browser proof child may be registered if Step 2 requires it; this registration does not authorize that child or that proof.
+**Revert isolation:** Step 1 revert = discard this child's board/registry/stanza/sidecar-candidate additions and restore Lane 1 / Lane 2 EMPTY and GOVERNANCE UNOWNED (both already unchanged by this write occupancy). Must not mutate EXEC-01C6A prepared artifacts. Cannot invalidate locked BUILDER-CREDIT-UX-01 / PREVIEW-NODE-01 / PREVIEW-NODE-STAGING-01 / PREVIEW-NODE-STAGING-APPLY-01 / BUILDER-LIVE-GATE-01 / PREVIEW-STRATEGY-01A / PREVIEW-STATIC-01B / PREVIEW-AUTOSTART-01A / EXEC-01A / 01B / 01C1..01C5B2 / IDENTITY-01 / SCHEMA-01 / KEY-REVOKE-01 / GOV-AUTH-03 evidence. Parent EXEC-01C6A sidecar `startCondition=NOT_READY` must remain. Lane 1 and Lane 2 remain EMPTY.
+**saturationClass:** FORCING (explicit; Keith-named next Builder-completion implementation after locked Vite/node preview and credit-UX). Candidate is not in S because `admissionUncertain=true` (`Test-Admissible` = ADMISSION_UNCERTAIN). Occupancy remains EMPTY. Idle implementation capacity is valid.
+**productClass:** CURRENT
+**futureAuthorization:** NONE — schema requires `futureAuthorization=NONE` when `productClass=CURRENT`. Stripe, Harness-as-default, product-visible orchestration, and apex production cutover remain FUTURE/gated and are not encoded as `AUTHORIZED` FUTURE product.
+**writeSetPrecision:** PROVISIONAL (exact freeze deferred to Step 2)
+**admissionUncertain:** true (not admitted; Step 2 not authorized; keeps candidate out of S)
+**exclusiveCapacity:** false
+**runtimeNeeds:** none
+**i18n:** false
+
+**Identifier search:** Repo-wide search for a canonical `PREVIEW-STOP-01` heading, an `AISB_MACHINE_REG_V1` stanza, a current-board occupancy, a sidecar candidate, a `lockedTaskIds` entry, and an equivalent unfinished preview stop/restart reliability task returned none. The ID appears nowhere before this registration. Locked PREVIEW-NODE-01 named "later preview reliability / refresh behavior" as an exclusion, not a registration. Locked PREVIEW-NODE-STAGING-01 / PREVIEW-NODE-STAGING-APPLY-01 proved Vite preview and recorded the stop/orphan gap; they are not this product slice. Locked PREVIEW-STRATEGY-01A / PREVIEW-STATIC-01B / PREVIEW-AUTOSTART-01A closed the static-html family; they are not this stop/restart slice. BUILDER-CREDIT-UX-01 is locked credit UX, not preview stop. PREVIEW-STOP-01 is the smallest correct next Builder-completion implementation ID.
+
+**Source-grounded gap this child exists to close:**
+- Vite preview proved working on staging after PREVIEW-NODE-STAGING-APPLY-01 (`docs/PREVIEW-NODE-STAGING-01-STAGE-START.md` §17 PASS; marker `PREVIEW-NODE-STAGING-01 Vite OK`; Vite on port 3001).
+- During that proof, operator `POST /api/preview/{viteSessionId}/stop` returned HTTP 400 (`net::ERR_ABORTED`; session `08a1491f-bb30-490e-8c4b-bb59fda0ac78`).
+- Vite process stayed alive on port 3001 until Advanced session Stop (pid 182 `node .../vite --host 0.0.0.0 --port 3001`).
+- Static preview passed (`PREVIEW-NODE-STAGING-01 Static OK`; no Vite/node process).
+- No Ask/Build / provider / credit was involved.
+- Freeze already records: no Stop Preview button; stop is `POST /api/preview/:sessionId/stop` then optional Advanced session Stop as hard cleanup.
+- Container-manager currently exposes `DELETE :sessionId/stop` and `PreviewService.stopPreview`; Gateway preview controller is a method-forwarding `@All('*')` proxy. Exact root cause (method mismatch, CSRF, kill-path, in-memory map, abort) is a Step 2 diagnosis, not a Step 1 freeze.
+
+**This registration does not authorize:**
+Implementation source changes; frontend work; i18n; tests except the lane-capacity validator; staging/SSH/AWS/PM2/env/provider/credit; Docker/Postgres/Redis; browser proof; Harness enablement; EXEC-01C6A reopen; PRIVATE-BETA-INVITE-01; Git commit/push; Stripe / live payment / credit top-up; apex/domain production routing; registering later named children; rewriting `ARCHITECTURE.md` / `PRD.md` / `CLAUDE.md` / `AGENTS.md`. Runtime authorization must remain entirely false.
+
+**Mandatory Step 2 questions (stage-start must resolve every one before source implementation):**
+1. Exact root cause of `POST /api/preview/{sessionId}/stop` HTTP 400 (method DELETE vs POST, CSRF/session-cookie, `BadRequestException` in `stopPreview`, missing in-memory preview map, client abort, or other) and the intended public stop verb/contract.
+2. Whether stop must kill the Vite/node process tree (pid + children/esbuild) and release the allocated port so listen `3001`-`3100` is gone.
+3. Static vs Vite stop paths (static `direct-read` may have no process; stop must still be idempotent / user-safe).
+4. Restart contract: after a successful stop, a second Start Preview must work without Advanced session Stop and without `No available ports`.
+5. Exact container-manager and/or Gateway filenames in the frozen write set. Likely provisional files (not frozen): `services/container-manager/src/preview/preview.service.ts`; `services/container-manager/src/preview/preview.service.spec.ts`; `services/container-manager/src/preview/preview.controller.ts`; `services/api-gateway/src/preview/preview.controller.ts`; related existing Gateway/CM preview tests. Confirm whether `services/container-manager/src/previews/` (plural, public proxy) is in or out.
+6. Whether a user-visible Stop Preview button is in this slice (if yes: FRONTEND + I18N must be declared; multilingual-first copy required). Default unless Step 2 proves otherwise: no new UI; make the existing stop API reliable.
+7. Test requirements proving: stop returns success for an active Vite preview and leaves no orphan listen; restart Start Preview works; static stop does not require a process and does not regress static HTML; Ask/Build execute path unchanged.
+8. Whether any STAGING/browser proof is a later child, not this first slice (default: LOCAL-TESTS this slice; later staging/browser child only if Step 2 requires it).
+9. Confirmation that no Harness, orchestration, Stripe, apex DNS, invitation, or EXEC-01C6A work is included.
+10. Confirmation that Advanced session Stop remains hard cleanup, not the normal product stop path.
+
+**Named later Builder-completion children (NOT registered this window):**
+- later preview refresh behavior (distinct from stop/restart)
+- later Stop Preview button / frontend copy if excluded from this slice
+- later Next.js / CRA / Vue / Express preview productization
+- later mobile / layout polish
+- later apex / domain production routing (`ainow.biz` vs `staging.ainow.biz`)
+Stripe / live payment remains APPROVED FUTURE / not needed for Builder completion while admin credit grants exist.
+
+**Keith-decision boundary:**
+KEITH_DECISION_REQUIRED_BEFORE_REGISTRATION=NO (this window is the authorized registration)
+KEITH_DECISION_REQUIRED_BEFORE_STAGE_START=YES
+KEITH_DECISION_REQUIRED_BEFORE_ADMISSION=YES
+KEITH_DECISION_REQUIRED_BEFORE_IMPLEMENTATION=YES
+KEITH_DECISION_REQUIRED_BEFORE_CHECKPOINT_LOCK=YES
+KEITH_DECISION_REQUIRED_BEFORE_STAGING_OR_BROWSER_PROOF=YES
+KEITH_DECISION_REQUIRED_BEFORE_REOPENING_EXEC_01C6A=YES
+KEITH_DECISION_REQUIRED_BEFORE_HARNESS_ENABLEMENT=YES
+KEITH_DECISION_REQUIRED_BEFORE_STRIPE_OR_TOP_UP=YES
+KEITH_DECISION_REQUIRED_BEFORE_APEX_PRODUCTION_ROUTING=YES
+KEITH_DECISION_REQUIRED_BEFORE_REGISTERING_NAMED_CHILDREN=YES
+This registration does **not** reopen EXEC-01C6A. It does **not** change BUILDER-LIVE-GATE-01. Gate remains ON.
+
+**Registered purpose (Step 1 — identity and bounded productization scope only):**
+- Make preview stop reliable enough that a user can start, stop, and restart preview without orphaning Vite/node processes or requiring full session Stop
+- Cover both static and Vite preview stop/restart contracts
+- Freeze later (Step 2) the smallest first slice of that reliability
+- Occupy no implementation lane until a later authorized admission
+- Leave refresh UX, Stop Preview button (unless Step 2 includes it), apex routing, Stripe, orchestration, and invitations unregistered
+
+**Activation effect:** NONE
+**Rollback boundary:** Step 1 = discard this child's board/registry/stanza/sidecar-candidate additions. Ordinary Builder Ask/Build/static Preview path, locked Vite start path, live gate, and credit UX are untouched.
+
+**Machine registration (post-epoch):** Present exactly once immediately under this canonical heading (`taskId=PREVIEW-STOP-01`, `nature=IMPLEMENTATION`). Enforcement epoch unchanged. Do not duplicate the machine-registration markers elsewhere in this body. Sidecar candidate required (`saturationClass=FORCING`; `status=READY`; `admissionUncertain=true`; `writeSetPrecision=PROVISIONAL`; `writePaths=[]` until Step 2). Occupancy remains EMPTY. Do not admit a lane in this window. Do not register follow-on tasks. Do not reopen AGENT-PLATFORM-EXEC-01C6A.
+
+**Lane / admission:**
+REGISTERED / READY / NOT ADMITTED — IMPLEMENTATION — Step 1 COMPLETE — Steps 2-4 NOT AUTHORIZED — 2026-09-16. This child does not occupy a lane. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. Occupancy hash `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d`. Candidate is not in S (`ADMISSION_UNCERTAIN`; `writeSetPrecision=PROVISIONAL`). EXEC-01C6A remains `startCondition=NOT_READY` / not in S / not reopened. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON.
+
+#### Acceptance Criteria
+
+Step 1 (Registration):
+- [x] canonical ID PREVIEW-STOP-01 verified unused
+- [x] equivalent unfinished task NONE
+- [x] 4-step IMPLEMENTATION lifecycle recorded
+- [x] CURRENT vs FUTURE check recorded (preview stop is CURRENT HOW; Stripe/orchestration/Harness/apex/invites stay out)
+- [x] CONTAINER-MANAGER + GATEWAY mutexes declared conservatively and not acquired
+- [x] FRONTEND undeclared unless Step 2 discovers UI wiring is required
+- [x] provisional write set recorded; exact freeze deferred to Step 2
+- [x] named later children recorded and not registered
+- [x] observed STAGING-01 stop/orphan evidence preserved in the body
+- [x] no STAGING / PROVIDER-LIVE / CREDIT / LOCAL-RUNTIME runtime needs
+- [x] does not reopen EXEC-01C6A
+- [x] must not change EXEC-01C6A `startCondition=NOT_READY`
+- [x] BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON
+- [x] post-epoch machine stanza exactly once (`nature=IMPLEMENTATION`)
+- [x] sidecar candidate present (`saturationClass=FORCING`)
+- [x] Lane 1 EMPTY
+- [x] Lane 2 EMPTY
+- [x] Lane 3 DISABLED
+- [x] PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED
+- [x] No Git commit/push by the worker
+
+Step 2 (stage-start / exact write-set freeze):
+- [ ] NOT AUTHORIZED
+
+Step 3 (implementation):
+- [ ] NOT AUTHORIZED
+
+Step 4 (checkpoint / lock):
+- [ ] NOT AUTHORIZED
+
+**Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. INVITATION_EXECUTION_PERMITTED=NO. Unchanged.
+
+**Lane 3 invariant:** Lane 3 remains DISABLED. Unchanged.
+
+**Step 1 HEAD:** not queried this window (Keith instruction: Do not Git except validator + `git diff --check`)
+**Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=0, application source=0, frontend=0, i18n=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0, named other children registered=0. Governance writes: TASKS.md CURRENT EXECUTION BOARD fields; this registry body; sidecar candidate; occupancy facts unchanged at end-state (EMPTY / GOVERNANCE UNOWNED); SATURATION_PROOF.json only as validator output.
+
+---
+
 ### PREVIEW-NODE-STAGING-HYGIENE-01 — Preserve untracked staging ai-service dist.outgoing artifact
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=PREVIEW-NODE-STAGING-HYGIENE-01
