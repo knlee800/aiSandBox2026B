@@ -5,9 +5,9 @@
 **Date:** 2026-09-17
 **Nature:** IMPLEMENTATION — high-risk; user-visible preview lifecycle control / i18n / frontend caller of already-CURRENT public POST `/api/preview/:sessionId/stop`
 **Lifecycle:** 4-step IMPLEMENTATION
-**Step:** 3 COMPLETE — bounded implementation of the frozen write set
-**Step status:** Step 1 COMPLETE — 2026-09-17 (registration / control-plane only; registered at `61040fd821625af0ddb48c6487a06ae82ea9b32b` `docs: register preview stop ui`) — Step 2 COMPLETE — 2026-09-17 (committed `4880983451108ac3bd19d3cb9471d329aeb9df58` `docs: freeze preview stop ui`) — Step 3 COMPLETE — 2026-09-17 — Step 4 NOT AUTHORIZED
-**This document:** Authoritative Step 2 freeze for PREVIEW-STOP-UI-01, with Step 3 end-state recorded. It does **not** authorize admission, Step 4 lock, runtime, staging/browser proof, Gateway/container-manager rewrite, Harness, orchestration, Stripe, apex cutover, invitations, EXEC-01C6A reopen, or follow-on registration.
+**Step:** 4 COMPLETE AND LOCKED — independent verification / checkpoint / lock
+**Step status:** Step 1 COMPLETE — 2026-09-17 (registration / control-plane only; registered at `61040fd821625af0ddb48c6487a06ae82ea9b32b` `docs: register preview stop ui`) — Step 2 COMPLETE — 2026-09-17 (committed `4880983451108ac3bd19d3cb9471d329aeb9df58` `docs: freeze preview stop ui`) — Step 3 COMPLETE — 2026-09-17 (Keith-authorized frozen five-file frontend+i18n write set; committed `e165ede0b611210b98894066d516dc02f6071bc8` `feat: add preview stop control`; LOCAL-TESTS 466/466; `npx tsc --noEmit` PASS) — Step 4 COMPLETE AND LOCKED — 2026-09-17
+**This document:** Authoritative Step 2 freeze, Step 3 completion record, and Step 4 checkpoint / lock for PREVIEW-STOP-UI-01. It does **not** authorize admission, runtime, staging/browser proof, Gateway/container-manager rewrite, Harness, orchestration, Stripe, apex cutover, invitations, EXEC-01C6A reopen, APPLY-01 lock, or follow-on registration.
 
 **Parents:** PREVIEW-STOP-01 COMPLETE AND LOCKED — Checkpoint: `docs/PREVIEW-STOP-01-STAGE-START.md` — implementation HEAD `79510ca` (`fix: make preview stop reliable`). PREVIEW-STOP-PUBLIC-ROUTE-01 COMPLETE AND LOCKED — Checkpoint: `docs/PREVIEW-STOP-PUBLIC-ROUTE-01-STAGE-START.md` — committed `0af3a17` (`fix: return json for preview stop route`). PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01 COMPLETE AND LOCKED — Checkpoint: `docs/PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01-STAGE-START.md` — evidence `3c67e2d`.
 **Observed gap (must not rewrite):** Workspace UX still has Start Preview and Refresh with no Stop Preview button. Public POST `/api/preview/:sessionId/stop` is already CURRENT (CM + Gateway JSON 200 + staging public-origin proof). PREVIEW-STOP-STAGING-APPLY-01 remains REGISTERED / READY / NOT ADMITTED / not locked / partial pass and is **not** machine `dependsOn`. This freeze does **not** alter APPLY-01.
@@ -19,14 +19,14 @@ STEP2_COMPLETE=YES
 STEP2_AUTHORIZED=YES
 STEP3_AUTHORIZED=YES
 STEP3_COMPLETE=YES
-STEP4_AUTHORIZED=NO
-LOCKED=NO
+STEP4_AUTHORIZED=YES
+LOCKED=YES
 IMPLEMENTATION_STARTED=YES
 ADMITTED=NO
 WRITE_SET_PRECISION=EXACT
-CANDIDATE_STATUS=READY
-ADMISSION_UNCERTAIN=true
-TEST_ADMISSIBLE=ADMISSION_UNCERTAIN
+CANDIDATE_STATUS=LOCKED
+ADMISSION_UNCERTAIN=false
+TEST_ADMISSIBLE=NOT_READY
 MUTEXES_DECLARED=FRONTEND,I18N
 MUTEXES_ACQUIRED=NO
 GATEWAY_DECLARED=NO
@@ -58,7 +58,7 @@ BROWSER=NO
 GIT_COMMIT=NO
 ```
 
-Keith authorized this Step 3 implementation of the frozen write set. Occupancy remains EMPTY. Sidecar candidate remains `status=READY` / `writeSetPrecision=EXACT` / exact frontend+i18n `writePaths` / `admissionUncertain=true` so the candidate is **not** in S (`Test-Admissible` = ADMISSION_UNCERTAIN). Do **not** admit Lane 1 or Lane 2. Do **not** lock. Do **not** register follow-on tasks. Do **not** reopen AGENT-PLATFORM-EXEC-01C6A. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. PREVIEW-STOP-STAGING-APPLY-01 remains unchanged.
+Keith authorized this Step 4 checkpoint / lock after Step 3 PASS (committed `e165ede` `feat: add preview stop control`). Occupancy remains EMPTY. Sidecar candidate is `status=LOCKED` / `writeSetPrecision=EXACT` / exact frontend+i18n `writePaths` / `admissionUncertain=false` so the candidate is **not** in S (`Test-Admissible` = NOT_READY). Do **not** admit Lane 1 or Lane 2. Do **not** register follow-on tasks. Do **not** reopen AGENT-PLATFORM-EXEC-01C6A. Do **not** lock or modify PREVIEW-STOP-STAGING-APPLY-01. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. PREVIEW-STOP-STAGING-APPLY-01 remains unchanged. Step 3 verdict = **PASS**. Step 4 verdict = **COMPLETE AND LOCKED**.
 
 ---
 
@@ -427,7 +427,7 @@ Must not mutate EXEC-01C6A prepared artifacts. Cannot invalidate locked PREVIEW-
 KEITH_DECISION_REQUIRED_BEFORE_STAGE_START=NO (Step 2 authorized and COMPLETE this window)
 KEITH_DECISION_REQUIRED_BEFORE_ADMISSION=YES
 KEITH_DECISION_REQUIRED_BEFORE_IMPLEMENTATION=NO (Step 3 authorized and COMPLETE this window)
-KEITH_DECISION_REQUIRED_BEFORE_CHECKPOINT_LOCK=YES
+KEITH_DECISION_REQUIRED_BEFORE_CHECKPOINT_LOCK=NO (Step 4 authorized by Keith and COMPLETE AND LOCKED 2026-09-17)
 KEITH_DECISION_REQUIRED_BEFORE_STAGING_OR_BROWSER_PROOF=YES
 KEITH_DECISION_REQUIRED_BEFORE_REOPENING_EXEC_01C6A=YES
 KEITH_DECISION_REQUIRED_BEFORE_HARNESS_ENABLEMENT=YES
@@ -583,3 +583,103 @@ BUILDER_LIVE_GATE_01=COMPLETE AND LOCKED / LEFT_ON
 
 **Activation effect:** NONE
 **Rollback boundary:** restore the five frozen frontend/i18n files plus this window’s board/registry/stage-start Step 3 fields. Ordinary Builder Ask/Build/static Preview path, locked PREVIEW-STOP-01 LOCAL-TESTS evidence, locked PUBLIC-ROUTE-01 / STAGING-01 public stop evidence, locked Vite start path, APPLY-01 Step 3 staging apply/proof, live gate, and credit UX are untouched.
+
+---
+
+## 18. Step 4 checkpoint / lock (COMPLETE AND LOCKED — 2026-09-17)
+
+**Verdict:** **COMPLETE AND LOCKED — PASS.** Independent verification of committed Step 3 source `e165ede0b611210b98894066d516dc02f6071bc8` (`feat: add preview stop control`) against the frozen five-file write set and LOCAL-TESTS evidence. Occupancy EMPTY. No application source this window. No runtime / SSH / browser / PM2 / Docker / Postgres / Redis / provider / credit. No Git commit/push by this worker.
+
+### 18.1 Independent verification
+
+- Frozen five-file frontend+i18n write set confirmed in commit `e165ede` (plus Step 3 control-plane fields in the same commit):
+  1. `frontend/components/workspace/workspace-shell.tsx`
+  2. `frontend/components/workspace/workspace-shell.test.tsx`
+  3. `frontend/messages/en.json`
+  4. `frontend/messages/zh-TW.json`
+  5. `frontend/messages/zh-CN.json`
+- `page.tsx` / Gateway / container-manager / `workspace-preview.logic.ts` absent from the commit and still have no preview-stop caller.
+- Stop Preview button lives in `WorkspacePreviewPanel` at `data-testid="workspace-preview-stop"` after Start and before Refresh. Both existing mounts inherit it.
+- Visible only when a session exists and `previewState` is `loading` or `ready`, or while `previewStopInFlight`. Hidden for `unavailable`, `error`, or no session.
+- POST `/api/preview/${selectedSessionId}/stop` with `method: 'POST'`, no body, no CSRF, no DELETE, no session Stop.
+- On `response.ok`, awaits existing `onRefreshPreview()`. On failure, local `preview.stopFailed` at `workspace-preview-stop-error`; previewState/url kept.
+- i18n keys match freeze: `preview.stopPreview` / `preview.stopFailed` in en / zh-TW / zh-CN.
+- LOCAL-TESTS preserved from Step 3: `node --import tsx --test components/workspace/workspace-shell.test.tsx` PASS 466/466; `npx tsc --noEmit` PASS. Not re-run this lock window.
+- Evidence class LOCAL-TESTS. Staging/browser proof was not in this slice and is not required to lock.
+
+### 18.2 APPLY-01 remains unlocked
+
+PREVIEW-STOP-STAGING-APPLY-01 remains REGISTERED / READY / NOT ADMITTED / Step 3 COMPLETE / Step 4 EVALUATED NOT LOCKED / not locked / partial pass. This lock does not rewrite APPLY-01.
+
+### 18.3 Step 4 acceptance
+
+- [x] Keith authorized Step 4 this window
+- [x] Independent verification against freeze + committed HEAD `e165ede0b611210b98894066d516dc02f6071bc8` (`feat: add preview stop control`)
+- [x] Frozen write set confirmed: exactly the five frontend/i18n files; no `page.tsx` / Gateway / container-manager
+- [x] LOCAL-TESTS preserved from Step 3: workspace-shell.test.tsx 466/466; `npx tsc --noEmit` PASS
+- [x] PREVIEW-STOP-STAGING-APPLY-01 not locked / not modified
+- [x] no runtime/browser/staging/SSH/AWS/PM2/Docker/Postgres/Redis/provider/credit this lock window
+- [x] EXEC-01C6A `startCondition=NOT_READY` UNCHANGED
+- [x] BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON
+- [x] sidecar `status=LOCKED` / `admissionUncertain=false`; `lockedTaskIds` includes PREVIEW-STOP-UI-01
+- [x] Occupancy EMPTY; no lane admitted; GOVERNANCE released UNOWNED; no follow-on registered
+- [x] Validator PASS this lock window
+- [x] `git diff --check` PASS
+- [x] No Git commit/push by the worker
+
+### 18.4 Authorization state (end of Step 4 lock)
+
+```
+IMPLEMENTATION_AUTHORIZED=YES (Step 3 source COMPLETE AND LOCKED; frozen five-file frontend+i18n write set only)
+ADMISSION_AUTHORIZED=NO
+STAGING_AUTHORIZED=NO
+LOCAL_RUNTIME_AUTHORIZED=NO
+PROVIDER_LIVE_AUTHORIZED=NO
+CREDIT_AUTHORIZED=NO
+CREDIT_MUTATION_AUTHORIZED=NO
+TESTS_EXECUTED=YES (workspace-shell.test.tsx 466/466; npx tsc --noEmit; recorded from Step 3; not re-run this lock window)
+APPLICATION_SOURCE_CHANGED=YES (frozen write set only; committed at e165ede; this lock does not behavior-change those files)
+LANE_1=EMPTY
+LANE_2=EMPTY
+FRONTEND_DECLARED=YES
+FRONTEND_ACQUIRED=NO
+I18N_DECLARED=YES
+I18N_ACQUIRED=NO
+GATEWAY_DECLARED=NO
+CONTAINER_MANAGER_DECLARED=NO
+STEP4_AUTHORIZED=YES
+STEP4_COMPLETE=YES
+LOCKED=YES
+FOLLOW_ON_REGISTERED=NO
+EXEC_01C6A_REOPENED=NO
+CANDIDATE_STATUS=LOCKED
+ADMISSION_UNCERTAIN=false
+WRITE_SET_PRECISION=EXACT
+PREVIEW_STOP_STAGING_APPLY_01=UNCHANGED
+BUILDER_LIVE_GATE_01=COMPLETE AND LOCKED / LEFT_ON
+```
+
+**Step 4 lock ledger (this window):** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=0, application source=0, frontend=0, i18n=0, tests executed=0 except lane-capacity validator, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0, named other children registered=0, Stripe=0, credit mutation=0, follow-on registration=0. Governance writes: this stage-start Step 4 checkpoint; `TASKS.md` CURRENT EXECUTION BOARD fields; `TASKS_BACKLOG_FULL.md` PREVIEW-STOP-UI-01 body; sidecar candidate `status=LOCKED` / `admissionUncertain=false` + `lockedTaskIds`; `SATURATION_PROOF.json` only as validator output. Occupancy facts unchanged (EMPTY / GOVERNANCE UNOWNED).
+
+**Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED.
+
+**Lane 3 invariant:** Lane 3 remains DISABLED.
+
+**Activation effect:** NONE (source already committed at `e165ede`; this window records evidence only).
+**Rollback boundary:** this lock = discard this window's board/registry/stage-start/sidecar lock field updates. Step 3 source = revert `e165ede` (five frozen frontend/i18n files plus Step 3 control-plane fields; not performed). Ordinary Builder Ask/Build/static Preview path, locked PREVIEW-STOP-01 LOCAL-TESTS evidence, locked PUBLIC-ROUTE-01 / STAGING-01 public stop evidence, locked Vite start path, APPLY-01 Step 3 staging apply/proof, live gate, and credit UX are otherwise untouched.
+
+### Verdict
+
+**PREVIEW-STOP-UI-01 is COMPLETE AND LOCKED.**
+
+**Committed implementation HEAD:** `e165ede0b611210b98894066d516dc02f6071bc8` (`feat: add preview stop control`)
+
+**Frozen write set (implemented):**
+
+1. `frontend/components/workspace/workspace-shell.tsx`
+2. `frontend/components/workspace/workspace-shell.test.tsx`
+3. `frontend/messages/en.json`
+4. `frontend/messages/zh-TW.json`
+5. `frontend/messages/zh-CN.json`
+
+**Invariants:** EXEC-01C6A `startCondition=NOT_READY` UNCHANGED / not reopened. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. Lane 3 remains DISABLED. No follow-on task registered. PREVIEW-STOP-STAGING-APPLY-01 remains unchanged / not locked. Occupancy EMPTY. GOVERNANCE released UNOWNED.
