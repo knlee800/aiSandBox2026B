@@ -219,7 +219,9 @@
   },
   "preview": {
     "livePreview": "Live Preview",
-    "startPreview": "Start Preview"
+    "startPreview": "Start Preview",
+    "stopPreview": "Stop Preview",
+    "stopFailed": "Failed to stop preview."
   },
   "project": {
     "chat": "Chat",

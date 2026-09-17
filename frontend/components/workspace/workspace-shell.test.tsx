@@ -5477,6 +5477,117 @@ describe('workspace shell component', () => {
     assert.match(html, /Preview unavailable/);
     assert.match(html, /data-testid="workspace-preview-start"/);
     assert.match(html, />Start Preview</);
+    assert.doesNotMatch(html, /data-testid="workspace-preview-stop"/);
+  });
+
+  test('hides Stop Preview when preview state is error', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      previewState: 'error',
+      previewUrl: null,
+    });
+
+    assert.doesNotMatch(html, /data-testid="workspace-preview-stop"/);
+    assert.match(html, /data-testid="workspace-preview-start"/);
+    assert.match(html, /data-testid="workspace-preview-refresh"/);
+  });
+
+  test('hides Stop Preview when no session is selected even if preview is ready', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: null,
+      previewState: 'ready',
+      previewUrl: '/api/preview/missing/proxy?refresh=stop-no-session',
+    });
+
+    assert.doesNotMatch(html, /data-testid="workspace-preview-stop"/);
+    assert.match(html, /data-testid="workspace-preview-start"/);
+    assert.match(html, /data-testid="workspace-preview-refresh"/);
+  });
+
+  test('shows Stop Preview when preview is loading', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      previewState: 'loading',
+      previewUrl: `/api/preview/${session.id}/proxy?refresh=stop-loading`,
+    });
+    const stopButton = renderWorkspaceShellElementByTestId('workspace-preview-stop', {
+      selectedSessionId: session.id,
+      previewState: 'loading',
+      previewUrl: `/api/preview/${session.id}/proxy?refresh=stop-loading`,
+    });
+
+    assert.match(html, /data-testid="workspace-preview-stop"/);
+    assert.match(html, />Stop Preview</);
+    assert.ok(stopButton);
+    assert.equal(stopButton.props.disabled, false);
+    assert.match(html, /data-testid="workspace-preview-start"/);
+    assert.match(html, /data-testid="workspace-preview-refresh"/);
+  });
+
+  test('shows Stop Preview when preview is ready', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      previewState: 'ready',
+      previewUrl: `/api/preview/${session.id}/proxy?refresh=stop-ready`,
+    });
+    const stopButton = renderWorkspaceShellElementByTestId('workspace-preview-stop', {
+      selectedSessionId: session.id,
+      previewState: 'ready',
+      previewUrl: `/api/preview/${session.id}/proxy?refresh=stop-ready`,
+    });
+
+    assert.match(html, /data-testid="workspace-preview-stop"/);
+    assert.match(html, />Stop Preview</);
+    assert.ok(stopButton);
+    assert.equal(stopButton.props.disabled, false);
+    assert.match(html, /data-testid="workspace-preview-start"/);
+    assert.match(html, /data-testid="workspace-preview-refresh"/);
+    assert.match(html, /data-testid="workspace-preview-iframe"/);
+  });
+
+  test('does not render Stop Preview error text by default', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      previewState: 'ready',
+      previewUrl: `/api/preview/${session.id}/proxy?refresh=stop-error-absent`,
+    });
+
+    assert.doesNotMatch(html, /data-testid="workspace-preview-stop-error"/);
+    assert.doesNotMatch(html, /Failed to stop preview\./);
+  });
+
+  test('disables Stop Preview while the stop request is in flight', () => {
+    withPatchedWorkspaceShellWindow(() => {
+      withPatchedReactHooksWithPersistentState((beginRender) => {
+        (globalThis as typeof globalThis & { fetch: typeof fetch }).fetch = () =>
+          new Promise<Response>(() => {}) as Promise<Response>;
+
+        beginRender();
+        let node: React.ReactNode = WorkspaceShell(
+          buildWorkspaceShellProps({
+            selectedSessionId: session.id,
+            previewState: 'ready',
+            previewUrl: `/api/preview/${session.id}/proxy?refresh=stop-inflight`,
+          }),
+        );
+        const stopButton = findElementByTestId(node, 'workspace-preview-stop');
+        assert.ok(stopButton);
+        assert.equal(stopButton.props.disabled, false);
+        stopButton.props.onClick?.();
+
+        beginRender();
+        node = WorkspaceShell(
+          buildWorkspaceShellProps({
+            selectedSessionId: session.id,
+            previewState: 'ready',
+            previewUrl: `/api/preview/${session.id}/proxy?refresh=stop-inflight`,
+          }),
+        );
+        const inFlightStopButton = findElementByTestId(node, 'workspace-preview-stop');
+        assert.ok(inFlightStopButton);
+        assert.equal(inFlightStopButton.props.disabled, true);
+      });
+    });
   });
 
   test('renders ready preview state with iframe', () => {
@@ -8101,7 +8212,7 @@ describe('workspace session and preview controls i18n wiring — I18N-SHELL-03',
       'commandRun',
       'commandRunning',
     ] as const;
-    const requiredPreviewKeys = ['livePreview', 'startPreview'] as const;
+    const requiredPreviewKeys = ['livePreview', 'startPreview', 'stopPreview', 'stopFailed'] as const;
     const requiredCommonKeys = ['refresh', 'refreshing'] as const;
 
     for (const key of requiredWorkspaceKeys) {
@@ -8121,6 +8232,13 @@ describe('workspace session and preview controls i18n wiring — I18N-SHELL-03',
       assert.ok(typeof zhTw.common?.[key] === 'string' && zhTw.common[key].length > 0);
       assert.ok(typeof zhCn.common?.[key] === 'string' && zhCn.common[key].length > 0);
     }
+
+    assert.equal(en.preview.stopPreview, 'Stop Preview');
+    assert.equal(zhTw.preview.stopPreview, '停止預覽');
+    assert.equal(zhCn.preview.stopPreview, '停止预览');
+    assert.equal(en.preview.stopFailed, 'Failed to stop preview.');
+    assert.equal(zhTw.preview.stopFailed, '無法停止預覽。');
+    assert.equal(zhCn.preview.stopFailed, '无法停止预览。');
   });
 
   test('workspace shell source removes targeted hardcoded English in session/preview control areas', () => {
@@ -8133,6 +8251,7 @@ describe('workspace session and preview controls i18n wiring — I18N-SHELL-03',
     );
     assert.doesNotMatch(shellSource, /<p className="text-xs font-semibold text-gray-700">Live Preview<\/p>/);
     assert.doesNotMatch(shellSource, />\s*Start Preview\s*<\/button>/);
+    assert.doesNotMatch(shellSource, />\s*Stop Preview\s*<\/button>/);
     assert.doesNotMatch(shellSource, /\{props\.previewState === 'loading' \? 'Refreshing\.\.\.' : 'Refresh'\}/);
     assert.doesNotMatch(shellSource, /placeholder="Enter shell command \(e\.g\. ls -la\)"/);
     assert.doesNotMatch(shellSource, /\{isSending \? 'Running\.\.\.' : 'Run'\}/);
@@ -8163,9 +8282,77 @@ describe('workspace session and preview controls i18n wiring — I18N-SHELL-03',
     assert.match(shellSource, /window\.confirm\(workspaceMessages\.stopSessionConfirm\)/);
     assert.match(shellSource, /\{props\.previewMessages\.livePreview\}/);
     assert.match(shellSource, /\{props\.previewMessages\.startPreview\}/);
+    assert.match(shellSource, /\{props\.previewMessages\.stopPreview\}/);
+    assert.match(shellSource, /\{props\.previewMessages\.stopFailed\}/);
     assert.match(
       shellSource,
       /\{props\.previewState === 'loading'\s*\?\s*props\.commonMessages\.refreshing\s*:\s*props\.commonMessages\.refresh\}/,
+    );
+  });
+});
+
+describe('workspace preview stop caller — PREVIEW-STOP-UI-01', () => {
+  test('Stop Preview POSTs /api/preview/:sessionId/stop with no body', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    const stopHandlerMatch = shellSource.match(
+      /async function handleStopPreview\(\): Promise<void> \{[\s\S]*?\n  \}/,
+    );
+    assert.ok(stopHandlerMatch);
+    const stopHandler = stopHandlerMatch[0];
+    assert.match(
+      stopHandler,
+      /fetch\(`\/api\/preview\/\$\{props\.selectedSessionId\}\/stop`, \{\s*method: 'POST',\s*\}\)/,
+    );
+    assert.doesNotMatch(stopHandler, /body\s*:/);
+    assert.doesNotMatch(stopHandler, /JSON\.stringify/);
+    assert.doesNotMatch(stopHandler, /Content-Type/);
+    assert.doesNotMatch(stopHandler, /method:\s*'DELETE'/);
+  });
+
+  test('successful stop awaits onRefreshPreview so Start can run again', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(
+      shellSource,
+      /if \(!response\.ok\) \{\s+throw new Error\(`HTTP \$\{response\.status\}`\);\s+\}\s+setPreviewStopFailed\(false\);\s+await props\.onRefreshPreview\(\);/,
+    );
+  });
+
+  test('failed stop keeps preview state and shows workspace-preview-stop-error', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    const stopHandlerMatch = shellSource.match(
+      /async function handleStopPreview\(\): Promise<void> \{[\s\S]*?\n  \}/,
+    );
+    assert.ok(stopHandlerMatch);
+    const stopHandler = stopHandlerMatch[0];
+    assert.match(stopHandler, /console\.error\('Failed to stop preview:', error\);/);
+    assert.match(stopHandler, /setPreviewStopFailed\(true\);/);
+    assert.match(stopHandler, /await props\.onRefreshPreview\(\);/);
+    const refreshIndex = stopHandler.indexOf('await props.onRefreshPreview();');
+    const catchIndex = stopHandler.indexOf('catch (error)');
+    assert.ok(refreshIndex >= 0 && catchIndex > refreshIndex);
+    assert.equal(stopHandler.includes('await props.onRefreshPreview();', catchIndex), false);
+    assert.match(shellSource, /data-testid="workspace-preview-stop-error"/);
+    assert.match(shellSource, /\{props\.previewMessages\.stopFailed\}/);
+    assert.doesNotMatch(stopHandler, /setPreviewState\(/);
+    assert.doesNotMatch(stopHandler, /setPreviewUrl\(/);
+  });
+
+  test('Stop Preview handler does not call session Stop', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    const stopHandlerMatch = shellSource.match(
+      /async function handleStopPreview\(\): Promise<void> \{[\s\S]*?\n  \}/,
+    );
+    assert.ok(stopHandlerMatch);
+    assert.doesNotMatch(stopHandlerMatch[0], /\/api\/sessions\//);
+    assert.doesNotMatch(stopHandlerMatch[0], /onStopSession/);
+  });
+
+  test('Stop Preview is disabled from local previewStopInFlight state', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /disabled=\{previewStopInFlight\}/);
+    assert.match(
+      shellSource,
+      /const canShowStopPreview =\s+Boolean\(props\.selectedSessionId\) &&\s+\(props\.previewState === 'loading' \|\|\s+props\.previewState === 'ready' \|\|\s+previewStopInFlight\);/,
     );
   });
 });

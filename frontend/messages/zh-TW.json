@@ -219,7 +219,9 @@
   },
   "preview": {
     "livePreview": "即時預覽",
-    "startPreview": "啟動預覽"
+    "startPreview": "啟動預覽",
+    "stopPreview": "停止預覽",
+    "stopFailed": "無法停止預覽。"
   },
   "project": {
     "chat": "聊天",

@@ -4780,7 +4780,10 @@ function WorkspacePreviewPanel(props: {
     typeof enMessages.project,
     'selectElement' | 'pickerActive' | 'deselectElement' | 'elementSelected'
   >;
-  previewMessages: Pick<typeof enMessages.preview, 'livePreview' | 'startPreview'>;
+  previewMessages: Pick<
+    typeof enMessages.preview,
+    'livePreview' | 'startPreview' | 'stopPreview' | 'stopFailed'
+  >;
   commonMessages: Pick<typeof enMessages.common, 'refresh' | 'refreshing'>;
   chatRequestState?: 'idle' | 'submitting' | 'queued' | 'running' | 'completed' | 'failed';
   selectedSessionId: string | null;
@@ -4797,9 +4800,16 @@ function WorkspacePreviewPanel(props: {
   selectedPreviewElement?: SelectedPreviewElement | null;
   fillHeight?: boolean;
 }) {
+  const [previewStopInFlight, setPreviewStopInFlight] = React.useState(false);
+  const [previewStopFailed, setPreviewStopFailed] = React.useState(false);
   const canStartPreview =
     Boolean(props.selectedSessionId) && props.previewState === 'unavailable';
   const canRefresh = Boolean(props.selectedSessionId) && props.previewState !== 'loading';
+  const canShowStopPreview =
+    Boolean(props.selectedSessionId) &&
+    (props.previewState === 'loading' ||
+      props.previewState === 'ready' ||
+      previewStopInFlight);
   const canTogglePicker =
     Boolean(props.selectedSessionId) && Boolean(props.previewUrl) && props.previewState === 'ready';
   const pickerActive = props.pickerActive ?? false;
@@ -4813,6 +4823,29 @@ function WorkspacePreviewPanel(props: {
     ? 'mt-2 w-full flex-1 min-h-[60dvh] md:min-h-0 rounded border border-gray-200 bg-white'
     : 'mt-2 h-56 w-full rounded border border-gray-200 bg-white';
 
+  async function handleStopPreview(): Promise<void> {
+    if (!props.selectedSessionId || previewStopInFlight) {
+      return;
+    }
+
+    setPreviewStopInFlight(true);
+    try {
+      const response = await fetch(`/api/preview/${props.selectedSessionId}/stop`, {
+        method: 'POST',
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      setPreviewStopFailed(false);
+      await props.onRefreshPreview();
+    } catch (error) {
+      console.error('Failed to stop preview:', error);
+      setPreviewStopFailed(true);
+    } finally {
+      setPreviewStopInFlight(false);
+    }
+  }
+
   return (
     <div className={panelClassName} data-testid="workspace-preview-panel">
       <div className="mb-2 flex items-center justify-between gap-2">
@@ -4822,16 +4855,33 @@ function WorkspacePreviewPanel(props: {
             type="button"
             data-testid="workspace-preview-start"
             disabled={!canStartPreview}
-            onClick={() => void props.onStartPreview()}
+            onClick={() => {
+              setPreviewStopFailed(false);
+              void props.onStartPreview();
+            }}
             className="rounded border border-blue-300 bg-white px-3 py-1 text-xs text-blue-700 disabled:border-gray-200 disabled:text-gray-400"
           >
             {props.previewMessages.startPreview}
           </button>
+          {canShowStopPreview ? (
+            <button
+              type="button"
+              data-testid="workspace-preview-stop"
+              disabled={previewStopInFlight}
+              onClick={() => void handleStopPreview()}
+              className="rounded border border-red-300 bg-white px-3 py-1 text-xs text-red-700 disabled:border-gray-200 disabled:text-gray-400"
+            >
+              {props.previewMessages.stopPreview}
+            </button>
+          ) : null}
           <button
             type="button"
             data-testid="workspace-preview-refresh"
             disabled={!canRefresh}
-            onClick={() => void props.onRefreshPreview()}
+            onClick={() => {
+              setPreviewStopFailed(false);
+              void props.onRefreshPreview();
+            }}
             className="rounded bg-blue-600 px-3 py-1 text-xs text-white disabled:bg-blue-300"
           >
             {props.previewState === 'loading'
@@ -4850,6 +4900,11 @@ function WorkspacePreviewPanel(props: {
           </button>
         </div>
       </div>
+      {previewStopFailed ? (
+        <p className="mb-2 text-[11px] text-red-700" data-testid="workspace-preview-stop-error">
+          {props.previewMessages.stopFailed}
+        </p>
+      ) : null}
 
       <PreviewStateMessage
         state={props.previewState}

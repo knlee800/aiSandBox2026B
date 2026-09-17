@@ -219,7 +219,9 @@
   },
   "preview": {
     "livePreview": "实时预览",
-    "startPreview": "启动预览"
+    "startPreview": "启动预览",
+    "stopPreview": "停止预览",
+    "stopFailed": "无法停止预览。"
   },
   "project": {
     "chat": "聊天",
