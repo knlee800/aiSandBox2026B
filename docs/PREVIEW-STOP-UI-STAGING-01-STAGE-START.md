@@ -5,9 +5,9 @@
 **Date:** 2026-09-17
 **Nature:** IMPLEMENTATION / staging-ops — high-risk live version check plus possible staging apply of already-committed Stop Preview frontend (`e165ede`), then live workspace-UI proof that the Stop Preview button is visible and stops preview via already-CURRENT public POST `/api/preview/:sessionId/stop`
 **Lifecycle:** 4-step IMPLEMENTATION
-**Step:** 3 COMPLETE — live frontend version-check + LIVE_OLD apply + workspace-UI Stop Preview proof
-**Step status:** Step 1 COMPLETE — 2026-09-17 (registration / control-plane only; registered at `045fe3b0eaab5ecae986bffb0f91067cbea3947d` `docs: register preview stop ui staging`) — Step 2 COMPLETE — 2026-09-17 (committed `d09a176933b9e25d2f29b54e4286fce2e2600a5d` `docs: freeze preview stop ui staging`) — Step 3 COMPLETE — 2026-09-17 — Step 4 NOT AUTHORIZED
-**This document:** Authoritative Step 2 freeze of the exact staging apply/proof procedure. It does **not** authorize admission, runtime, SSH, PM2, browser, Harness, orchestration, Stripe, apex cutover, invitations, EXEC-01C6A reopen, PREVIEW-STOP-STAGING-APPLY-01 changes, or follow-on registration.
+**Step:** 4 COMPLETE AND LOCKED — independent verification / checkpoint / lock
+**Step status:** Step 1 COMPLETE — 2026-09-17 (registration / control-plane only; registered at `045fe3b0eaab5ecae986bffb0f91067cbea3947d` `docs: register preview stop ui staging`) — Step 2 COMPLETE — 2026-09-17 (committed `d09a176933b9e25d2f29b54e4286fce2e2600a5d` `docs: freeze preview stop ui staging`) — Step 3 COMPLETE — 2026-09-17 (LIVE_OLD apply PASS; workspace-UI Stop Preview Vite+static PASS; evidence `16cb500b386affc9e1e5b79ba40d7916f7d02e89` `docs: record preview stop ui staging pass`) — Step 4 COMPLETE AND LOCKED — 2026-09-17
+**This document:** Authoritative Step 2 freeze, Step 3 completion record, and Step 4 checkpoint / lock for PREVIEW-STOP-UI-STAGING-01. It does **not** authorize admission, runtime, SSH, PM2, browser, Harness, orchestration, Stripe, apex cutover, invitations, EXEC-01C6A reopen, PREVIEW-STOP-STAGING-APPLY-01 changes, or follow-on registration.
 
 **Parents:** PREVIEW-STOP-UI-01 COMPLETE AND LOCKED — PASS — 2026-09-17 — Checkpoint: `docs/PREVIEW-STOP-UI-01-STAGE-START.md` — implementation `e165ede0b611210b98894066d516dc02f6071bc8` (`feat: add preview stop control`); lock `fbf00964772ebba319fe2e10bc284bcc834befac` (`docs: lock preview stop ui`); LOCAL-TESTS 466/466. PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01 COMPLETE AND LOCKED — Checkpoint: `docs/PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01-STAGE-START.md` — evidence `3c67e2d` (public-origin POST `/stop` HTTP 200 JSON; **no UI button**).
 **Observed gap (must not rewrite):** Locked PREVIEW-STOP-UI-01 is LOCAL-TESTS only. Locked PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01 proved operator/DevTools public POST `/stop` HTTP 200 JSON and recorded **no UI Stop Preview button**. Remaining Builder blocker: user-visible Stop Preview from the workspace UI on staging.
@@ -20,15 +20,16 @@ STEP2_COMPLETE=YES
 STEP2_AUTHORIZED=YES
 STEP3_AUTHORIZED=YES
 STEP3_COMPLETE=YES
-STEP4_AUTHORIZED=NO
-LOCKED=NO
+STEP4_AUTHORIZED=YES
+STEP4_COMPLETE=YES
+LOCKED=YES
 IMPLEMENTATION_STARTED=YES (staging apply/proof; no application source)
 ADMITTED=NO
 WRITE_SET_PRECISION=EXACT
 WRITE_PATHS=[]
-CANDIDATE_STATUS=READY
-ADMISSION_UNCERTAIN=true
-TEST_ADMISSIBLE=ADMISSION_UNCERTAIN
+CANDIDATE_STATUS=LOCKED
+ADMISSION_UNCERTAIN=false
+TEST_ADMISSIBLE=NOT_READY
 APPLICATION_SOURCE=NONE
 FRONTEND_SOURCE_EDIT=FORBIDDEN_THIS_TASK
 I18N_WRITE=FORBIDDEN_THIS_TASK
@@ -86,7 +87,7 @@ BROWSER=YES (this window; ended)
 GIT_COMMIT=NO
 ```
 
-Keith authorized this Step 2 freeze. Occupancy remains EMPTY. Sidecar candidate is `status=READY` / `writeSetPrecision=EXACT` / `writePaths=[]` / `admissionUncertain=true` so the candidate is **not** in S (`Test-Admissible` = ADMISSION_UNCERTAIN). Do **not** admit Lane 1 or Lane 2. Do **not** register follow-on tasks. Do **not** reopen AGENT-PLATFORM-EXEC-01C6A. Do **not** lock or modify PREVIEW-STOP-STAGING-APPLY-01. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. Keith later authorized Step 3 (this window). Step 3 COMPLETE — recorded in §17. Step 4 remains NOT AUTHORIZED.
+Keith authorized this Step 4 checkpoint / lock after Step 3 PASS (committed evidence `16cb500b386affc9e1e5b79ba40d7916f7d02e89` `docs: record preview stop ui staging pass`). Occupancy remains EMPTY. Sidecar candidate is `status=LOCKED` / `writeSetPrecision=EXACT` / `writePaths=[]` / `admissionUncertain=false` so the candidate is **not** in S (`Test-Admissible` = NOT_READY). Do **not** admit Lane 1 or Lane 2. Do **not** register follow-on tasks. Do **not** reopen AGENT-PLATFORM-EXEC-01C6A. Do **not** lock or modify PREVIEW-STOP-STAGING-APPLY-01. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. PREVIEW-STOP-STAGING-APPLY-01 remains unchanged. Step 3 verdict = **PASS**. Step 4 verdict = **COMPLETE AND LOCKED**. `/tmp/preview-stop-ui-staging-01-*` backup on staging may now be removed manually later or left harmlessly; this lock window does not SSH/runtime.
 
 ---
 
@@ -704,7 +705,7 @@ KEITH_DECISION_REQUIRED_BEFORE_ADMISSION=YES
 KEITH_DECISION_REQUIRED_BEFORE_LIVE_VERSION_CHECK=YES
 KEITH_DECISION_REQUIRED_BEFORE_STAGING_APPLY=YES
 KEITH_DECISION_REQUIRED_BEFORE_STAGING_OR_BROWSER_PROOF=YES
-KEITH_DECISION_REQUIRED_BEFORE_CHECKPOINT_LOCK=YES
+KEITH_DECISION_REQUIRED_BEFORE_CHECKPOINT_LOCK=NO (Step 4 authorized by Keith and COMPLETE AND LOCKED 2026-09-17)
 KEITH_DECISION_REQUIRED_BEFORE_REOPENING_EXEC_01C6A=YES
 KEITH_DECISION_REQUIRED_BEFORE_HARNESS_ENABLEMENT=YES
 KEITH_DECISION_REQUIRED_BEFORE_STRIPE_OR_TOP_UP=YES
@@ -712,7 +713,7 @@ KEITH_DECISION_REQUIRED_BEFORE_APEX_PRODUCTION_ROUTING=YES
 KEITH_DECISION_REQUIRED_BEFORE_REGISTERING_NAMED_CHILDREN=YES
 ```
 
-This freeze does **not** reopen EXEC-01C6A. It does **not** change BUILDER-LIVE-GATE-01. Gate remains ON. It does **not** lock or reopen PREVIEW-STOP-STAGING-APPLY-01. It does **not** authorize Step 3.
+This lock does **not** reopen EXEC-01C6A. It does **not** change BUILDER-LIVE-GATE-01. Gate remains ON. It does **not** lock or reopen PREVIEW-STOP-STAGING-APPLY-01. It does **not** register a follow-on task.
 
 ---
 
@@ -855,7 +856,7 @@ Gateway `POST /start` returned HTTP 400 empty `text/html` while CM continued lau
 - No `.env` restore (`.env` not edited). No Docker/Postgres/Redis. No Git commit/push.
 - Local ZIPs remain under `%TEMP%\preview-stop-ui-staging-01-20260917-1840\` (not repo files).
 
-**Follow-on:** Step 4 NOT STARTED. Do not admit a lane. Do not reopen EXEC-01C6A. PREVIEW-STOP-STAGING-APPLY-01 remains not locked.
+**Follow-on:** Step 4 COMPLETE AND LOCKED — see §18. Do not admit a lane. Do not reopen EXEC-01C6A. PREVIEW-STOP-STAGING-APPLY-01 remains not locked.
 
 ### Step 3 activity ledger
 
@@ -867,4 +868,104 @@ Gateway `POST /start` returned HTTP 400 empty `text/html` while CM continued lau
 **Lane 3 invariant:** Lane 3 remains DISABLED.
 
 **Activation effect:** staging `/opt/aisandbox` fast-forwarded to `d09a176` and frontend rebuilt/restarted onto committed PREVIEW-STOP-UI-01 `.next` (`e165ede` ancestor). Gateway/CM/AI/watchdog processes unchanged.
-**Rollback boundary:** restore `/tmp/preview-stop-ui-staging-01-next-20260917T103814Z` over `$FE_CWD/.next` and restart frontend only if Step 4 later requires it. Do not invent a source fix. Ordinary Builder Ask/Build/static Preview path, locked PREVIEW-STOP-UI-01 LOCAL-TESTS evidence, locked PUBLIC-ROUTE-01 / STAGING-01 public stop evidence, locked Vite start path, APPLY-01 Step 3 staging apply/proof, live gate, and credit UX remain otherwise untouched.
+**Rollback boundary:** restore `/tmp/preview-stop-ui-staging-01-next-20260917T103814Z` over `$FE_CWD/.next` and restart frontend only if later required. Do not invent a source fix. Ordinary Builder Ask/Build/static Preview path, locked PREVIEW-STOP-UI-01 LOCAL-TESTS evidence, locked PUBLIC-ROUTE-01 / STAGING-01 public stop evidence, locked Vite start path, APPLY-01 Step 3 staging apply/proof, live gate, and credit UX remain otherwise untouched.
+
+---
+
+## 18. Step 4 checkpoint / lock (COMPLETE AND LOCKED — 2026-09-17)
+
+**Verdict:** **COMPLETE AND LOCKED — PASS.** Independent verification of committed Step 3 evidence `16cb500b386affc9e1e5b79ba40d7916f7d02e89` (`docs: record preview stop ui staging pass`) against the frozen procedure and §17 live proof. Occupancy EMPTY. No application source. No runtime / SSH / browser / PM2 / Docker / Postgres / Redis / provider / credit. No Git commit/push by this worker. `/tmp/preview-stop-ui-staging-01-*` backup on staging may now be removed manually later or left harmlessly; this lock window does not SSH/runtime.
+
+### 18.1 Independent verification
+
+- Frozen write set confirmed: `writePaths=[]`; no application source in this task.
+- Phase A `LIVE_OLD` on clean tree. Phase B/C frontend-only apply PASS: `/opt/aisandbox` clean; `git pull --ff-only` `de32e1a` → `d09a176` containing `e165ede` / `fbf0096` / `045fe3b`; `npm run build` in `/opt/aisandbox/frontend` only; `pm2 restart aisandbox-frontend` only; no `--update-env`; no `.env`; no Gateway / CM / AI / watchdog restart.
+- Health PASS: frontend `:3002` HTTP 307; `/en/app` HTTP 200; Gateway ready HTTP 200. Running `.next` **LIVE_LOCKED**.
+- Vite workspace-UI proof PASS: marker `PREVIEW-STOP-UI-STAGING-01 Vite OK`; **Stop Preview button click** (not DevTools POST); `POST /stop` HTTP 200 JSON; process/port/map gone; Start available again; same-session restart worked; second Stop PASS.
+- Static workspace-UI proof PASS: marker `PREVIEW-STOP-UI-STAGING-01 Static OK`; no Vite/node; Stop Preview button click; `POST /stop` HTTP 200 JSON.
+- Cleanup PASS: sessions stopped; containers gone; projects retained; Builder gate LEFT ON; frontend online on LIVE_LOCKED.
+- No source fix invented. No Ask/Build/provider/credit. EXEC-01C6A not reopened. PREVIEW-STOP-STAGING-APPLY-01 unchanged / not locked.
+- Step 3 validator PASS and `git diff --check` PASS preserved. This lock window re-runs both.
+
+### 18.2 APPLY-01 remains unlocked
+
+PREVIEW-STOP-STAGING-APPLY-01 remains REGISTERED / READY / NOT ADMITTED / Step 3 COMPLETE / Step 4 EVALUATED NOT LOCKED / not locked / partial pass. This lock does not rewrite APPLY-01.
+
+### 18.3 `/tmp` backup after lock
+
+`/tmp/preview-stop-ui-staging-01-next-20260917T103814Z` (and sibling `/tmp/preview-stop-ui-staging-01-*` handles) may now be removed manually later or left harmlessly. This Step 4 window does **not** SSH, runtime, or delete them.
+
+### 18.4 Step 4 acceptance
+
+- [x] Keith authorized Step 4 this window
+- [x] Independent verification against freeze + committed evidence `16cb500` / §17
+- [x] Frozen empty write set confirmed; no application source
+- [x] LIVE_OLD → LIVE_LOCKED apply PASS; frontend-only; health PASS
+- [x] Vite/static workspace-UI Stop Preview button click PASS; restart PASS; process/port/map PASS
+- [x] Cleanup PASS; gate LEFT ON; frontend remains LIVE_LOCKED
+- [x] PREVIEW-STOP-STAGING-APPLY-01 not locked / not modified
+- [x] `/tmp` backup recorded as removable later or harmless; no SSH/runtime this lock window
+- [x] no runtime/browser/staging/SSH/AWS/PM2/Docker/Postgres/Redis/provider/credit this lock window
+- [x] EXEC-01C6A `startCondition=NOT_READY` UNCHANGED
+- [x] BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON
+- [x] sidecar `status=LOCKED` / `admissionUncertain=false`; `lockedTaskIds` includes PREVIEW-STOP-UI-STAGING-01
+- [x] Occupancy EMPTY; no lane admitted; GOVERNANCE released UNOWNED; no follow-on registered
+- [x] Validator PASS this lock window
+- [x] `git diff --check` PASS
+- [x] No Git commit/push by the worker
+
+### 18.5 Authorization state (end of Step 4 lock)
+
+```
+IMPLEMENTATION_AUTHORIZED=YES (Step 3 apply/proof COMPLETE AND LOCKED; no application source)
+ADMISSION_AUTHORIZED=NO
+STAGING_AUTHORIZED=NO
+LOCAL_RUNTIME_AUTHORIZED=NO
+PROVIDER_LIVE_AUTHORIZED=NO
+CREDIT_AUTHORIZED=NO
+CREDIT_MUTATION_AUTHORIZED=NO
+TESTS_EXECUTED=NO this lock window (lane-capacity validator + git diff --check only; Step 3 live proof preserved)
+APPLICATION_SOURCE_CHANGED=NO
+LANE_1=EMPTY
+LANE_2=EMPTY
+FRONTEND_DECLARED=YES
+FRONTEND_ACQUIRED=NO
+STAGING_DECLARED=YES
+STAGING_ACQUIRED=NO
+I18N_DECLARED=NO
+GATEWAY_DECLARED=NO
+CONTAINER_MANAGER_DECLARED=NO
+STEP4_AUTHORIZED=YES
+STEP4_COMPLETE=YES
+LOCKED=YES
+FOLLOW_ON_REGISTERED=NO
+EXEC_01C6A_REOPENED=NO
+CANDIDATE_STATUS=LOCKED
+ADMISSION_UNCERTAIN=false
+WRITE_SET_PRECISION=EXACT
+WRITE_PATHS=[]
+PREVIEW_STOP_STAGING_APPLY_01=UNCHANGED
+BUILDER_LIVE_GATE_01=COMPLETE AND LOCKED / LEFT_ON
+TMP_BACKUP_MAY_BE_REMOVED_LATER=YES (no SSH this window)
+```
+
+**Step 4 lock ledger (this window):** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=0, application source=0, frontend=0, i18n=0, tests executed=0 except lane-capacity validator, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0, named other children registered=0, Stripe=0, credit mutation=0, follow-on registration=0. Governance writes: this stage-start Step 4 checkpoint; `TASKS.md` CURRENT EXECUTION BOARD fields; `TASKS_BACKLOG_FULL.md` PREVIEW-STOP-UI-STAGING-01 body; sidecar candidate `status=LOCKED` / `admissionUncertain=false` + `lockedTaskIds`; `SATURATION_PROOF.json` only as validator output. Occupancy facts unchanged (EMPTY / GOVERNANCE UNOWNED). PREVIEW-STOP-STAGING-APPLY-01 unchanged.
+
+**Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED.
+
+**Lane 3 invariant:** Lane 3 remains DISABLED.
+
+**Activation effect:** NONE this lock window (staging frontend already on surviving `LIVE_LOCKED` `.next` from Step 3).
+**Rollback boundary:** this lock = discard this window's board/registry/stage-start/sidecar lock field updates (candidate `status=LOCKED` / `lockedTaskIds` membership). Step 3 staging `.next` rollback remains restore `/tmp/preview-stop-ui-staging-01-next-20260917T103814Z` over `$FE_CWD/.next` and restart frontend only; not performed. Ordinary Builder Ask/Build/static Preview path, locked PREVIEW-STOP-UI-01 LOCAL-TESTS evidence, locked PUBLIC-ROUTE-01 / STAGING-01 public stop evidence, locked Vite start path, APPLY-01 Step 3 staging apply/proof, live gate, and credit UX remain otherwise untouched.
+
+### Verdict
+
+**PREVIEW-STOP-UI-STAGING-01 is COMPLETE AND LOCKED.**
+
+**Committed Step 3 evidence HEAD:** `16cb500b386affc9e1e5b79ba40d7916f7d02e89` (`docs: record preview stop ui staging pass`)
+
+**Parents:** PREVIEW-STOP-UI-01 COMPLETE AND LOCKED — PASS — implementation `e165ede` (`feat: add preview stop control`); lock `fbf0096`. PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01 COMPLETE AND LOCKED — evidence `3c67e2d`.
+
+**APPLY-01:** remains not locked.
+
+**Invariants:** EXEC-01C6A `startCondition=NOT_READY` UNCHANGED / not reopened. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. Lane 3 remains DISABLED. No follow-on task registered. Occupancy EMPTY. GOVERNANCE released UNOWNED.
