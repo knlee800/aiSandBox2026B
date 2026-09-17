@@ -1,4 +1,4 @@
-import { All, Controller, Req, Res, UseGuards } from '@nestjs/common';
+import { All, Controller, Param, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import axios from 'axios';
 import { SessionCookieGuard } from '../auth/session-cookie.guard';
@@ -30,6 +30,33 @@ export function sanitizeProxyHeaders(
 @Controller('preview')
 export class PreviewController {
   private readonly containerManagerUrl = process.env.CONTAINER_MANAGER_URL || 'http://localhost:4002';
+
+  @Post(':sessionId/stop')
+  async stopPreview(
+    @Param('sessionId') sessionId: string,
+    @Res() res: Response,
+  ) {
+    try {
+      const url = `${this.containerManagerUrl}/api/preview/${sessionId}/stop`;
+
+      console.log(`[Preview Stop] POST /api/preview/${sessionId}/stop -> ${url}`);
+
+      const response = await axios({
+        method: 'POST',
+        url,
+        responseType: 'json',
+        validateStatus: () => true,
+      });
+
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      console.error('[Preview Stop] Error:', error.message);
+      res.status(502).json({
+        error: 'Proxy error',
+        message: 'Failed to connect to container manager',
+      });
+    }
+  }
 
   @All('*')
   async proxyToContainerManager(
