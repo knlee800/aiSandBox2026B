@@ -5,9 +5,9 @@
 **Date:** 2026-09-17
 **Nature:** IMPLEMENTATION / staging-ops — high-risk live version check plus possible staging apply of already-committed Gateway public stop JSON route (`0af3a17`), then live public-origin proof of POST `/api/preview/:sessionId/stop` HTTP 200 JSON
 **Lifecycle:** 4-step IMPLEMENTATION
-**Step:** 2 COMPLETE — freeze read-only live version check and apply/proof procedure (not executed)
-**Step status:** Step 1 COMPLETE — 2026-09-17 (registration / control-plane only) — Step 2 COMPLETE — 2026-09-17 — Steps 3–4 NOT AUTHORIZED
-**This document:** Authoritative Step 2 freeze for PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01. It does **not** authorize admission, Step 3 apply/proof, Step 4 lock, runtime, SSH, PM2, browser, Harness, orchestration, Stripe, apex cutover, invitations, EXEC-01C6A reopen, or follow-on registration.
+**Step:** 3 COMPLETE — live Gateway version check + apply + Vite/static public-stop proof
+**Step status:** Step 1 COMPLETE — 2026-09-17 (registration / control-plane only) — Step 2 COMPLETE — 2026-09-17 — Step 3 COMPLETE — 2026-09-17 (LIVE_OLD apply to LIVE_LOCKED; Vite public POST `/stop` HTTP 200 JSON PASS; same-session restart PASS; static public POST `/stop` HTTP 200 JSON PASS) — Step 4 NOT AUTHORIZED
+**This document:** Authoritative Step 2 freeze plus Step 3 evidence (§18). Step 4 is **not** authorized. Do **not** lock. Do **not** invent a source fix. Do **not** reopen EXEC-01C6A.
 
 **Parent:** PREVIEW-STOP-PUBLIC-ROUTE-01 REGISTERED / READY / NOT ADMITTED — Step 3 COMPLETE — committed `0af3a17bcbc556b42099404b4657f9814edab49a` (`fix: return json for preview stop route`) — LOCAL-TESTS 9/9 — not LOCKED — Stage-start: `docs/PREVIEW-STOP-PUBLIC-ROUTE-01-STAGE-START.md`
 **Observed gap (must not rewrite):** `docs/PREVIEW-STOP-STAGING-APPLY-01-STAGE-START.md` §18 E11–E13 / E15 — public origin `POST /api/preview/{sessionId}/stop` HTTP 400 `text/html; charset=utf-8` empty body; CM `:4002` POST stop HTTP 200 JSON; process/port/map cleanup still happened. APPLY-01 remains REGISTERED / READY / NOT ADMITTED / not locked / partial pass and is **not** machine `dependsOn`.
@@ -18,11 +18,11 @@
 STEP1_COMPLETE=YES
 STEP2_COMPLETE=YES
 STEP2_AUTHORIZED=YES
-STEP3_AUTHORIZED=NO
-STEP3_COMPLETE=NO
+STEP3_AUTHORIZED=YES
+STEP3_COMPLETE=YES
 STEP4_AUTHORIZED=NO
 LOCKED=NO
-IMPLEMENTATION_STARTED=NO
+IMPLEMENTATION_STARTED=YES
 ADMITTED=NO
 WRITE_SET_PRECISION=EXACT
 WRITE_PATHS=[]
@@ -39,15 +39,17 @@ PROVIDER_LIVE=NO
 CREDIT=NO
 LOCAL_RUNTIME=NO
 MUTEXES_DECLARED=GATEWAY,STAGING
-MUTEXES_ACQUIRED=NO
-STAGING_AUTHORIZED=NO
-STAGING_EXECUTION_AUTHORIZED=NO
-SSH_USED=NO
+MUTEXES_ACQUIRED=NO (end-state; GATEWAY + STAGING acquired for Step 3 then released)
+STAGING_AUTHORIZED=NO (end-state; used then released)
+STAGING_EXECUTION_AUTHORIZED=NO (end-state)
+SSH_USED=YES (this window; ended)
 AWS_USED=NO
-PM2_RESTART=NO
-APPLY=NO
-GIT_PULL=NO
-GATEWAY_BUILD=NO
+PM2_RESTART=YES (aisandbox-api-gateway only; no --update-env; ended)
+APPLY=YES (LIVE_OLD to LIVE_LOCKED)
+GIT_PULL=YES (ff-only 185e819..de32e1a)
+GATEWAY_BUILD=YES (services/api-gateway only)
+LIVE_CLASS_PHASE_A=LIVE_OLD
+LIVE_CLASS_PHASE_C=LIVE_LOCKED
 EVIDENCE_CLASS=STAGING-RUNTIME
 HOST=https://staging.ainow.biz
 LIGHTSAIL=aisandbox-staging
@@ -74,12 +76,12 @@ LANE_3=DISABLED
 GOVERNANCE=UNOWNED (end-state)
 PRIVATE_BETA_INVITE_01=PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED
 FOLLOW_ON_REGISTERED=NO
-RUNTIME=NO
-BROWSER=NO
+RUNTIME=YES (this window; ended)
+BROWSER=YES (this window; ended)
 GIT_COMMIT=NO
 ```
 
-Keith authorized this Step 2 freeze only. Occupancy remains EMPTY. Sidecar candidate remains `status=READY` / `writeSetPrecision=EXACT` / `writePaths=[]` / `admissionUncertain=true` so the candidate is **not** in S (`Test-Admissible` = ADMISSION_UNCERTAIN) and is **not** locked. Do **not** admit Lane 1 or Lane 2. Do **not** start Step 3. Do **not** start Step 4. Do **not** register follow-on tasks. Do **not** reopen AGENT-PLATFORM-EXEC-01C6A. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. This freeze does **not** execute SSH, PM2, git pull, build, browser, or live proof.
+Keith authorized this Step 3 apply/proof. Occupancy remains EMPTY. Sidecar candidate is unchanged this window (`status=READY` / `writeSetPrecision=EXACT` / `writePaths=[]` / `admissionUncertain=true`; not in S). Do **not** admit Lane 1 or Lane 2. Do **not** start Step 4. Do **not** register follow-on tasks. Do **not** reopen AGENT-PLATFORM-EXEC-01C6A. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. Phase A classified `LIVE_OLD` on a clean tree; Phase B/C applied committed Gateway `0af3a17` code to `LIVE_LOCKED`; Phase D proved Vite and static public `POST /api/preview/{sessionId}/stop` HTTP 200 `application/json` with `success: true`, process/port/map clear, and same-session Vite restart. No application source fix was invented.
 
 ---
 
@@ -701,13 +703,13 @@ This freeze does **not** reopen EXEC-01C6A. It does **not** change BUILDER-LIVE-
 
 ---
 
-## 17. Authorization state (end of Step 2)
+## 17. Authorization state (end of Step 3)
 
 ```
-IMPLEMENTATION_AUTHORIZED=NO
+IMPLEMENTATION_AUTHORIZED=YES (this window; ended)
 ADMISSION_AUTHORIZED=NO
-STAGING_AUTHORIZED=NO
-STAGING_EXECUTION_AUTHORIZED=NO
+STAGING_AUTHORIZED=NO (end-state; used then released)
+STAGING_EXECUTION_AUTHORIZED=NO (end-state)
 LOCAL_RUNTIME_AUTHORIZED=NO
 PROVIDER_LIVE_AUTHORIZED=NO
 CREDIT_AUTHORIZED=NO
@@ -717,12 +719,13 @@ APPLICATION_SOURCE_CHANGED=NO
 LANE_1=EMPTY
 LANE_2=EMPTY
 GATEWAY_DECLARED=YES
-GATEWAY_ACQUIRED=NO
+GATEWAY_ACQUIRED=NO (end-state; acquired for LIVE_OLD apply then released)
 STAGING_DECLARED=YES
-STAGING_ACQUIRED=NO
+STAGING_ACQUIRED=NO (end-state; acquired for SSH/browser proof then released)
 CONTAINER_MANAGER_DECLARED=NO
 FRONTEND_I18N=NO
-STEP3_AUTHORIZED=NO
+STEP3_AUTHORIZED=YES
+STEP3_COMPLETE=YES
 STEP4_AUTHORIZED=NO
 LOCKED=NO
 FOLLOW_ON_REGISTERED=NO
@@ -732,9 +735,9 @@ ADMISSION_UNCERTAIN=true
 WRITE_SET_PRECISION=EXACT
 WRITE_PATHS=[]
 BUILDER_LIVE_GATE_01=COMPLETE AND LOCKED / LEFT_ON
-SSH=NO
-PM2=NO
-BROWSER=NO
+SSH=YES (this window; ended)
+PM2=YES (aisandbox-api-gateway restart only; no --update-env; ended)
+BROWSER=YES (this window; ended)
 GIT_COMMIT=NO
 ```
 
@@ -742,5 +745,72 @@ GIT_COMMIT=NO
 
 **Lane 3 invariant:** Lane 3 remains DISABLED.
 
-**Activation effect:** NONE
-**Rollback boundary:** Step 2 = discard this document’s freeze plus this window’s board/registry/sidecar write-set field updates. Ordinary Builder Ask/Build/static Preview path, locked PREVIEW-STOP-01 LOCAL-TESTS evidence, locked Vite start path, APPLY-01 Step 3 staging apply/proof, PUBLIC-ROUTE-01 committed `0af3a17` LOCAL-TESTS evidence, live gate, and credit UX are untouched.
+**Activation effect:** staging `/opt/aisandbox` fast-forwarded to `de32e1a` and api-gateway rebuilt/restarted onto committed PREVIEW-STOP-PUBLIC-ROUTE-01 dist (`0af3a17` ancestor). Frontend/CM/AI/watchdog processes unchanged.
+**Rollback boundary:** restore `/tmp/preview-stop-public-route-staging-01-dist-20260917T065249Z` over `$GW_CWD/dist` and restart Gateway only if Step 4 later requires it. Do not invent a source fix. Ordinary Builder Ask/Build/static Preview path, locked PREVIEW-STOP-01 LOCAL-TESTS evidence, locked Vite start path, APPLY-01 Step 3 staging apply/proof, PUBLIC-ROUTE-01 committed `0af3a17` LOCAL-TESTS evidence, live gate, and credit UX remain otherwise untouched.
+
+---
+
+## 18. Step 3 evidence (2026-09-17) — COMPLETE (apply PASS; public HTTP 200 JSON PASS)
+
+**Verdict:** **COMPLETE.** Apply/health **PASS**. Vite public `POST /api/preview/{sessionId}/stop` HTTP **200** `application/json` **PASS** (`success: true`). Same-session restart **PASS**. Second Vite stop HTTP 200 JSON `Preview stopped successfully` **PASS**. Process/port/map clear **PASS**. Static public POST `/stop` HTTP 200 JSON **PASS**. No Vite/node on static. **No source fix invented.** Step 4 NOT AUTHORIZED. Task not locked. Occupancy EMPTY. Sidecar unchanged.
+**Stop-id:** none. First Vite stop returned HTTP 200 JSON `success: true` with message `No active preview for this session` after inspect had shown a Vite process (UI Refresh elapsed before POST); process/port/map were still cleared. Immediate second stop after restart returned the exact `Preview stopped successfully` body.
+**Admission:** NO.
+
+### Phase A — `LIVE_OLD`
+
+SSH `aisandbox-staging` (`ip-172-26-6-228.ap-southeast-1.compute.internal`). Toplevel `/opt/aisandbox`. Branch `main`. HEAD `185e81934e43730117044dff43ac358dec575b45`. `status --short` empty (0 bytes). `ANCESTOR_0af3a17=NO` (`fatal: Not a valid commit name 0af3a17bcbc556b42099404b4657f9814edab49a` — object not yet in the staging clone). Not `S_DIRTY_TREE`.
+
+Gateway `aisandbox-api-gateway` count=1, `pm_id=3`, status `online`, cwd `/opt/aisandbox/services/api-gateway`, exec/script `/opt/aisandbox/services/api-gateway/dist/src/main.js` (file exists), pid `898373`, restarts 2. Dist controller: `$GW_CWD/dist/src/preview/preview.controller.js` exists (`dist/preview/preview.controller.js` does not).
+
+Running dist missing locked stop fingerprints (`LIVE_OLD`): `Post(':sessionId/stop')` HIT=NO; `(0, common_1.Post)(':sessionId/stop')` HIT=NO; `res.status(response.status).json(response.data)` HIT=NO; `stopPreview` HIT=NO; `All('*')` HIT=NO; `(0, common_1.All)('*')` HIT=YES; `STOP_BEFORE_CATCHALL=NO`; `STOP_BODY_EXTRACTED=NO`; `STOP_BODY_JSON=NO`; `STOP_BODY_HOP_BY_HOP=UNKNOWN`; Gateway DELETE stop `DIST_CTRL_DELETE_PRESENT=NO` both forms. Source also old (`@Post(':sessionId/stop')` SRC HIT=NO; json HIT=NO; `async stopPreview` HIT=NO; `@Delete` SRC HIT=NO). Catch-all remains. Not `LIVE_UNKNOWN`.
+
+### Phase B/C — apply to `LIVE_LOCKED`
+
+- Dist backup `/tmp/preview-stop-public-route-staging-01-dist-20260917T065249Z`. Pre-HEAD `185e81934e43730117044dff43ac358dec575b45`. Pre-PID `898373`.
+- `git fetch origin` then `git pull --ff-only` → POST_HEAD `de32e1a9650319b3b417f4654cdfb9297feaab5b` (`FETCH_HAS_0af3a17=YES`; `ANCESTOR_0af3a17=YES`). Tree remained clean.
+- Post-pull source all §2.1 HIT=YES (`@Post(':sessionId/stop')`, `res.status(response.status).json(response.data)`, `async stopPreview`; `@Delete` absent; `@All('*')` remains). `npm run build` in `services/api-gateway` only; `BUILD_EXIT=0`.
+- New dist compiled POST/catch-all as `(0, common_1.Post)(':sessionId/stop')` and `(0, common_1.All)('*')`. `STOP_BEFORE_CATCHALL=YES`; `STOP_BODY_EXTRACTED=YES`; `STOP_BODY_JSON=YES`; `STOP_BODY_HOP_BY_HOP=NO`; DELETE absent. Classified **LIVE_LOCKED**.
+- `pm2 restart aisandbox-api-gateway` only (no `--update-env`; PM2 printed the unused `--update-env` hint). New pid `975025` restarts=3. Other apps untouched: CM pid `963390` ↺2; frontend `844894` ↺0; AI `844882` ↺0; watchdog `844905` ↺0.
+- Gateway `GET :4000/api/health/ready` HTTP 200 `{"status":"ready",...}` (listen after ~1m boot). CM `GET :4002/api/health` HTTP 200 `{"status":"ok","service":"container-manager",...}`. Running dist **LIVE_LOCKED**.
+
+### Phase D — Vite + static
+
+Signed-in `knlee801@gmail.com` on `https://staging.ainow.biz/en/app`. HTTPS. Not apex, not localhost. Ask/Build/Send = 0.
+
+| ID | Record |
+|---|---|
+| **E1** | Host `aisandbox-staging`. Pre-pull HEAD `185e81934e43730117044dff43ac358dec575b45`. Post-pull HEAD `de32e1a9650319b3b417f4654cdfb9297feaab5b`. `status --short` empty. `FETCH_HAS_0af3a17=YES`. `ANCESTOR_0af3a17=YES` after pull. |
+| **E2** | Gateway pm_id=3 online. Pre-apply pid `898373`. Post-apply pid `975025` restarts=3. cwd `/opt/aisandbox/services/api-gateway`. script `/opt/aisandbox/services/api-gateway/dist/src/main.js`. |
+| **E3** | `DIST_CTRL=/opt/aisandbox/services/api-gateway/dist/src/preview/preview.controller.js`. Phase A: dedicated POST/json/stopPreview HIT=NO; compiled All HIT=YES; DELETE absent. Post-build/running: POST compiled HIT=YES; `STOP_BEFORE_CATCHALL=YES`; `STOP_BODY_JSON=YES`; `STOP_BODY_HOP_BY_HOP=NO`; DELETE absent; catch-all compiled HIT=YES. |
+| **E4** | Phase A **`LIVE_OLD`**. Stop-id none at Phase A. After apply **`LIVE_LOCKED`**. |
+| **E5** | Pre-HEAD `185e819…`. Pre-PID `898373`. Dist backup `/tmp/preview-stop-public-route-staging-01-dist-20260917T065249Z`. Git update **yes** (`pull --ff-only`). Post-HEAD `de32e1a…`. |
+| **E6** | `npm run build` exit 0 (tsc in api-gateway only). Post-build dist LIVE_LOCKED. `pm2 restart aisandbox-api-gateway` **yes**. No `--update-env`. |
+| **E7** | Gateway `:4000` ready HTTP 200. CM `:4002` health HTTP 200 `service":"container-manager"`. Other PM2 apps not restarted. |
+| **E8** | Post-apply **`LIVE_LOCKED`**. Phase D entered. |
+| **E9** | Vite project `preview-stop-public-route-staging-01-vite-20260917-1456` projectId `68833150-cc5b-429f-8022-759892c18c15` sessionId `27c1b821-0150-4ac9-a944-9e6054ff1242`. ZIP A `preview-stop-public-route-staging-01-vite-20260917-1456.zip` (501 B; members `index.html`, `package.json` at archive root). Path `%TEMP%\preview-stop-public-route-staging-01-20260917-1456\`. Ask/Build=0. Send=0. |
+| **E10** | UI Start Preview clicked **once**. Status HTTP 200 `{"running":true,"status":"running","framework":"Vite","port":3004,...}`. Proxy HTML heading **`PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01 Vite OK`** (`/@vite/client` present). iframe src `/api/preview/27c1b821-…/proxy?refresh=…`. Inspect: node pid **178** `vite --host 0.0.0.0 --port 3004`; listen `0.0.0.0:3004`; `/tmp/preview-3004.log`. |
+| **E11** | Operator `POST /api/preview/{viteSessionId}/stop` on signed-in origin: HTTP **200**, `Content-Type: application/json; charset=utf-8`, body `{"success":true,"message":"No active preview for this session"}` (inspect had shown pid 178; UI Refresh elapsed before POST). After ~2s: `GET /status` HTTP 200 `{"running":false,"message":"No active preview for this session"}`. Inspect: pid 178 gone; **NO_VITE_NODE**; **no** listen on `3001`–`3100`. Public HTTP 200 JSON **observed**. Not `text/html`. |
+| **E12** | Same-session second Start Preview: status HTTP 200 Vite **port 3005** `running`. Marker **`PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01 Vite OK`**. New pid **274** listen `0.0.0.0:3005`. Second POST `/stop`: HTTP **200** `application/json; charset=utf-8` `{"success":true,"message":"Preview stopped successfully"}`; status then `running:false` / no active preview; process/port gone. |
+| **E13** | Static project `preview-stop-public-route-staging-01-static-20260917-1456` projectId `f7b47ede-f512-4c45-b55c-a5727ea63457` sessionId `8d4c0533-ee96-4441-91fb-b4d6fd3dd0ba`. ZIP B `preview-stop-public-route-staging-01-static-20260917-1456.zip` (279 B; `index.html` only). File tree `index.html` only (no `package.json`). Start Preview once: framework **`Static HTML`** port **3006**; marker **`PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01 Static OK`**; no `/@vite/client`. Inspect: **NO_VITE_NODE**; no listen ports. Public POST `/stop` HTTP **200** `application/json; charset=utf-8` `{"success":true,"message":"Preview stopped successfully"}`; status then `running:false` / no active preview. |
+| **E14** | `POST /api/sessions/{id}/stop` HTTP 200 `{"message":"Session stopped successfully"}` for both sessions (Advanced-equivalent session Stop). Both `sandbox-session-*` proof containers **gone**. Projects **retained**. Gate LEFT ON (`.env` not read/edited). Gateway remains pid `975025` on LIVE_LOCKED dist. Dist backup kept under `/tmp/` until Step 4. |
+| **E15** | Public HTTP 200 JSON stop **PASS** after confirmed `LIVE_LOCKED`. No `preview.controller.ts` / endpoint-contract spec edit. No CM/frontend/AI/watchdog restart. No `.env`. No PM2 overlay. No provider/credit/Ask/Build. EXEC-01C6A not reopened. Rollback **not** performed (health PASS). |
+
+### Runtime commands used
+
+- SSH/SCP `aisandbox-staging` (BatchMode)
+- Frozen A1–A3 git/pm2/fingerprint greps
+- Dist backup; `git fetch` + `git pull --ff-only`; `npm run build` in api-gateway only; `pm2 restart aisandbox-api-gateway` only
+- `curl` Gateway `:4000/api/health/ready` and CM `:4002/api/health`
+- Browser on `https://staging.ainow.biz/en/app`: New Project; History Import; Start Preview; operator POST `/stop`; session Stop
+- `docker exec sandbox-session-{id}` process/port inspect (SSH fallback authorized)
+
+**Not used:** `git reset` / stash / force; `--update-env`; CM/frontend/AI/watchdog restart; Docker/Postgres/Redis compose; Ask/Build/Send; provider/credit; `.env` read/edit; local Git commit/push; sidecar write.
+
+### Cleanup confirmation
+
+- Both proof session containers gone. Named disposable projects retained.
+- Gate LEFT ON. Gateway remains online on surviving `LIVE_LOCKED` dist. Dist backup retained until Step 4.
+- No `.env` restore (`.env` not edited). No Docker/Postgres/Redis. No Git commit/push.
+- Local ZIPs remain under `%TEMP%\preview-stop-public-route-staging-01-20260917-1456\` (not repo files).
+
+**Follow-on:** Step 4 NOT AUTHORIZED. Do not admit a lane. Do not reopen EXEC-01C6A.
