@@ -5,9 +5,9 @@
 **Date:** 2026-09-17
 **Nature:** IMPLEMENTATION — high-risk; public API response / Gateway preview proxy / stop-response contract
 **Lifecycle:** 4-step IMPLEMENTATION
-**Step:** 3 COMPLETE — bounded implementation of the frozen write set (governance/evidence record this window)
-**Step status:** Step 1 COMPLETE — 2026-09-17 (registration / control-plane only) — Step 2 COMPLETE — 2026-09-17 — Step 3 COMPLETE — 2026-09-17 (Keith-authorized frozen 2-file Gateway write set; committed `0af3a17` `fix: return json for preview stop route`; LOCAL-TESTS 9/9; this window governance/evidence only) — Step 4 NOT AUTHORIZED
-**This document:** Authoritative Step 2 freeze and Step 3 completion record for PREVIEW-STOP-PUBLIC-ROUTE-01. It does **not** authorize admission, Step 4 lock, runtime, staging/browser proof, Harness, orchestration, Stripe, apex cutover, invitations, EXEC-01C6A reopen, or follow-on registration.
+**Step:** 4 COMPLETE AND LOCKED — independent verification / checkpoint / lock
+**Step status:** Step 1 COMPLETE — 2026-09-17 (registration / control-plane only) — Step 2 COMPLETE — 2026-09-17 — Step 3 COMPLETE — 2026-09-17 (Keith-authorized frozen 2-file Gateway write set; committed `0af3a17` `fix: return json for preview stop route`; LOCAL-TESTS 9/9) — Step 4 COMPLETE AND LOCKED — 2026-09-17
+**This document:** Authoritative Step 2 freeze, Step 3 completion record, and Step 4 checkpoint / lock for PREVIEW-STOP-PUBLIC-ROUTE-01. It does **not** authorize admission, runtime, Harness, orchestration, Stripe, apex cutover, invitations, EXEC-01C6A reopen, or follow-on registration.
 
 **Parent:** PREVIEW-STOP-01 COMPLETE AND LOCKED — Checkpoint: `docs/PREVIEW-STOP-01-STAGE-START.md` — implementation HEAD `79510ca200c9bfda999cb6140c6596d65ccec02f` (`fix: make preview stop reliable`) — LOCAL-TESTS only
 **Observed gap (must not rewrite):** `docs/PREVIEW-STOP-STAGING-APPLY-01-STAGE-START.md` §18 E11–E13 / E15 — public origin `POST /api/preview/{sessionId}/stop` HTTP 400 `text/html; charset=utf-8` empty body; CM `:4002` POST stop HTTP 200 JSON; process/port/map cleanup still happened. APPLY-01 remains REGISTERED / READY / NOT ADMITTED / not locked / partial pass and is **not** machine `dependsOn`.
@@ -19,14 +19,14 @@ STEP2_COMPLETE=YES
 STEP2_AUTHORIZED=YES
 STEP3_AUTHORIZED=YES
 STEP3_COMPLETE=YES
-STEP4_AUTHORIZED=NO
-LOCKED=NO
+STEP4_AUTHORIZED=YES
+LOCKED=YES
 IMPLEMENTATION_STARTED=YES
 ADMITTED=NO
 WRITE_SET_PRECISION=EXACT
-CANDIDATE_STATUS=READY
-ADMISSION_UNCERTAIN=true
-TEST_ADMISSIBLE=ADMISSION_UNCERTAIN
+CANDIDATE_STATUS=LOCKED
+ADMISSION_UNCERTAIN=false
+TEST_ADMISSIBLE=NOT_READY
 MUTEXES_DECLARED=GATEWAY
 MUTEXES_ACQUIRED=NO
 GATEWAY_DECLARED=YES
@@ -39,7 +39,7 @@ STOP_RESPONSE=HTTP_200_JSON
 STOP_HTML_FORBIDDEN=YES
 NO_ACTIVE_PREVIEW=CM_IDEMPOTENT_SUCCESS
 EVIDENCE_CLASS=LOCAL-TESTS
-STAGING_BROWSER_PROOF=LATER_CHILD_NOT_REGISTERED
+STAGING_BROWSER_PROOF=PROVEN_BY_PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01
 HARNESS_ENABLEMENT=NO
 ORCHESTRATION=NO
 STRIPE=NO
@@ -58,7 +58,7 @@ BROWSER=NO
 GIT_COMMIT=NO
 ```
 
-Keith authorized this Step 3 governance/evidence record after Step 3 source COMPLETE (committed `0af3a17` `fix: return json for preview stop route`). Occupancy remains EMPTY. Sidecar candidate remains `status=READY` / `writeSetPrecision=EXACT` / exact Gateway `writePaths` / `admissionUncertain=true` so the candidate is **not** in S (`Test-Admissible` = ADMISSION_UNCERTAIN) and is **not** locked. Do **not** admit Lane 1 or Lane 2. Do **not** start Step 4. Do **not** register follow-on tasks. Do **not** reopen AGENT-PLATFORM-EXEC-01C6A. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. Step 3 verdict = **COMPLETE**. Step 4 = **NOT AUTHORIZED**.
+Keith authorized this Step 4 checkpoint / lock after Step 3 PASS (committed `0af3a17` `fix: return json for preview stop route`) plus PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01 Step 3 public-origin HTTP 200 JSON PASS (committed evidence `3c67e2d`). Occupancy remains EMPTY. Sidecar candidate is `status=LOCKED` / `writeSetPrecision=EXACT` / exact Gateway `writePaths` / `admissionUncertain=false` so the candidate is **not** in S (`Test-Admissible` = NOT_READY). PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01 is COMPLETE AND LOCKED in the same window. PREVIEW-STOP-STAGING-APPLY-01 remains not locked (frozen public HTTP 200 AC remains FAIL). Do **not** admit Lane 1 or Lane 2. Do **not** register follow-on tasks. Do **not** reopen AGENT-PLATFORM-EXEC-01C6A. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. Step 3 verdict = **PASS**. Step 4 verdict = **COMPLETE AND LOCKED**.
 
 ---
 
@@ -335,8 +335,8 @@ Must not mutate EXEC-01C6A prepared artifacts. Cannot invalidate locked PREVIEW-
 KEITH_DECISION_REQUIRED_BEFORE_STAGE_START=NO (Step 2 authorized and COMPLETE)
 KEITH_DECISION_REQUIRED_BEFORE_ADMISSION=YES
 KEITH_DECISION_REQUIRED_BEFORE_IMPLEMENTATION=NO (Step 3 COMPLETE; committed `0af3a17`)
-KEITH_DECISION_REQUIRED_BEFORE_CHECKPOINT_LOCK=YES
-KEITH_DECISION_REQUIRED_BEFORE_STAGING_OR_BROWSER_PROOF=YES
+KEITH_DECISION_REQUIRED_BEFORE_CHECKPOINT_LOCK=NO (Step 4 authorized by Keith and COMPLETE AND LOCKED 2026-09-17)
+KEITH_DECISION_REQUIRED_BEFORE_STAGING_OR_BROWSER_PROOF=NO (proven by PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01 COMPLETE AND LOCKED same window)
 KEITH_DECISION_REQUIRED_BEFORE_REOPENING_EXEC_01C6A=YES
 KEITH_DECISION_REQUIRED_BEFORE_HARNESS_ENABLEMENT=YES
 KEITH_DECISION_REQUIRED_BEFORE_STRIPE_OR_TOP_UP=YES
@@ -344,7 +344,7 @@ KEITH_DECISION_REQUIRED_BEFORE_APEX_PRODUCTION_ROUTING=YES
 KEITH_DECISION_REQUIRED_BEFORE_REGISTERING_NAMED_CHILDREN=YES
 ```
 
-This freeze / Step 3 record does **not** reopen EXEC-01C6A. It does **not** change BUILDER-LIVE-GATE-01. Gate remains ON. It does **not** lock this task. Named later children remain unregistered (Stop Preview button, APPLY-01 Step 4 lock, staging origin re-proof after Gateway JSON 200, preview refresh UX, Next/CRA/Vue/Express, mobile polish, apex routing).
+This freeze / Step 4 lock does **not** reopen EXEC-01C6A. It does **not** change BUILDER-LIVE-GATE-01. Gate remains ON. Named later children remain unregistered (Stop Preview button, APPLY-01 Step 4 lock, preview refresh UX, Next/CRA/Vue/Express, mobile polish, apex routing).
 
 ---
 
@@ -519,3 +519,90 @@ BUILDER_LIVE_GATE_01=COMPLETE AND LOCKED / LEFT_ON
 
 **Activation effect:** NONE (source already committed; this window records evidence only)
 **Rollback boundary:** this governance window = discard Step 3 board/registry/stage-start evidence fields. Step 3 source = revert `0af3a17` (two frozen Gateway files only). Ordinary Builder Ask/Build/static Preview path, locked PREVIEW-STOP-01 LOCAL-TESTS evidence, locked Vite start path, APPLY-01 Step 3 staging apply/proof, live gate, and credit UX are untouched.
+
+---
+
+## 17. Step 4 checkpoint / lock (COMPLETE AND LOCKED — 2026-09-17)
+
+**Verdict:** **COMPLETE AND LOCKED — PASS.** Independent verification of committed Step 3 source `0af3a17bcbc556b42099404b4657f9814edab49a` (`fix: return json for preview stop route`) plus PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01 public-origin HTTP 200 JSON PASS (`3c67e2d` / `docs/PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01-STAGE-START.md` §18). Occupancy EMPTY. No application source this window. No runtime / SSH / browser / PM2 / Docker / Postgres / Redis / provider / credit. No Git commit/push by this worker.
+
+### 17.1 Independent verification
+
+- Frozen 2-file Gateway write set confirmed: `preview.controller.ts` + `preview.endpoint-contract.spec.ts`.
+- LOCAL-TESTS preserved: `npx jest --testPathPattern "preview\\.endpoint-contract.spec"` PASS 1 suite / 9 tests. `npx tsc --noEmit --incremental false` FAIL only pre-existing `queue.service.ts` TS2322. No errors in the two preview files.
+- Public POST `/api/preview/:sessionId/stop` returns Nest JSON 200; `text/html` forbidden; no hop-by-hop copy; no Gateway `@Delete`.
+- Staging origin re-proof (the remaining parent lock gate) is now PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01 Step 3 PASS: Vite and static public POST `/stop` HTTP 200 JSON; restart PASS; process/port/map clear.
+- First Vite stop returned HTTP 200 JSON `No active preview for this session` after UI Refresh elapsed; freeze allows that idempotent message; second stop after restart returned `Preview stopped successfully`. Not a source defect.
+
+### 17.2 APPLY-01 remains unlocked
+
+PREVIEW-STOP-STAGING-APPLY-01 remains not locked. Its frozen public HTTP 200 JSON AC remains FAIL. Later Gateway-apply proof is a different task.
+
+### 17.3 Step 4 acceptance
+
+- [x] Keith authorized Step 4 this window
+- [x] Independent verification against freeze + committed HEAD `0af3a17bcbc556b42099404b4657f9814edab49a` (`fix: return json for preview stop route`)
+- [x] Frozen write set confirmed: exactly the two Gateway preview files
+- [x] LOCAL-TESTS preserved from Step 3: jest 9/9; tsc FAIL only pre-existing `queue.service.ts` TS2322
+- [x] Staging public-origin HTTP 200 JSON proven by PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01 COMPLETE AND LOCKED (same window)
+- [x] PREVIEW-STOP-STAGING-APPLY-01 not locked (frozen public HTTP 200 AC remains FAIL)
+- [x] no runtime/browser/staging/SSH/AWS/PM2/Docker/Postgres/Redis/provider/credit this lock window
+- [x] EXEC-01C6A `startCondition=NOT_READY` UNCHANGED
+- [x] BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON
+- [x] sidecar `status=LOCKED` / `admissionUncertain=false`; `lockedTaskIds` includes PREVIEW-STOP-PUBLIC-ROUTE-01
+- [x] Occupancy EMPTY; no lane admitted; GOVERNANCE released UNOWNED; no follow-on registered
+- [x] Validator PASS this lock window
+- [x] `git diff --check` PASS
+- [x] No Git commit/push by the worker
+
+### 17.4 Authorization state (end of Step 4 lock)
+
+```
+IMPLEMENTATION_AUTHORIZED=YES (Step 3 source COMPLETE AND LOCKED; frozen 2-file Gateway write set only)
+ADMISSION_AUTHORIZED=NO
+STAGING_AUTHORIZED=NO
+LOCAL_RUNTIME_AUTHORIZED=NO
+PROVIDER_LIVE_AUTHORIZED=NO
+CREDIT_AUTHORIZED=NO
+CREDIT_MUTATION_AUTHORIZED=NO
+TESTS_EXECUTED=YES (jest 1 suite / 9 tests PASS; tsc FAIL only pre-existing queue.service.ts TS2322; recorded from Step 3; not re-run this lock window)
+APPLICATION_SOURCE_CHANGED=YES (frozen write set only; committed at 0af3a17; this lock does not behavior-change those files)
+LANE_1=EMPTY
+LANE_2=EMPTY
+GATEWAY_DECLARED=YES
+GATEWAY_ACQUIRED=NO
+CONTAINER_MANAGER_DECLARED=NO
+FRONTEND_I18N=NO
+STEP4_AUTHORIZED=YES
+STEP4_COMPLETE=YES
+LOCKED=YES
+FOLLOW_ON_REGISTERED=NO
+EXEC_01C6A_REOPENED=NO
+CANDIDATE_STATUS=LOCKED
+ADMISSION_UNCERTAIN=false
+BUILDER_LIVE_GATE_01=COMPLETE AND LOCKED / LEFT_ON
+```
+
+**Step 4 lock ledger (this window):** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, product implementation=0, application source=0, frontend=0, i18n=0, tests executed=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, EXEC-01C6A reopened=0, named other children registered=0, Stripe=0, credit mutation=0, follow-on registration=0. Governance writes: this stage-start Step 4 checkpoint; `TASKS.md` CURRENT EXECUTION BOARD fields; `TASKS_BACKLOG_FULL.md` PREVIEW-STOP-PUBLIC-ROUTE-01 body; sidecar candidate `status=LOCKED` / `admissionUncertain=false` + `lockedTaskIds`; `SATURATION_PROOF.json` only as validator output. Occupancy facts unchanged (EMPTY / GOVERNANCE UNOWNED).
+
+**Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED.
+
+**Lane 3 invariant:** Lane 3 remains DISABLED.
+
+**Activation effect:** NONE (source already committed at `0af3a17`; staging apply/proof locked on PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01).
+**Rollback boundary:** this lock = discard this window's board/registry/stage-start/sidecar lock field updates. Step 3 source = revert `0af3a17` (two frozen Gateway files only; not performed). Ordinary Builder Ask/Build/static Preview path, locked PREVIEW-STOP-01 LOCAL-TESTS evidence, locked Vite start path, APPLY-01 Step 3 staging apply/proof, live gate, and credit UX are otherwise untouched.
+
+### Verdict
+
+**PREVIEW-STOP-PUBLIC-ROUTE-01 is COMPLETE AND LOCKED.**
+
+**Committed implementation HEAD:** `0af3a17bcbc556b42099404b4657f9814edab49a` (`fix: return json for preview stop route`)
+
+**Frozen write set (implemented):**
+
+1. `services/api-gateway/src/preview/preview.controller.ts`
+2. `services/api-gateway/src/preview/__tests__/preview.endpoint-contract.spec.ts`
+
+**Staging proof (same window):** PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01 COMPLETE AND LOCKED — Checkpoint: `docs/PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01-STAGE-START.md` — evidence `3c67e2d`.
+
+**Invariants:** EXEC-01C6A `startCondition=NOT_READY` UNCHANGED / not reopened. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. Lane 3 remains DISABLED. No follow-on task registered. Occupancy EMPTY. GOVERNANCE released UNOWNED.
