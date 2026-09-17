@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { PATH_METADATA, METHOD_METADATA } from '@nestjs/common/constants';
+import { RequestMethod } from '@nestjs/common/enums/request-method.enum';
 import axios from 'axios';
+import { PreviewController } from './preview.controller';
 import { PreviewService } from './preview.service';
 
 jest.mock('axios');
@@ -588,5 +591,205 @@ describe('PreviewService Vite-only node preview', () => {
     expect(execMock).not.toHaveBeenCalled();
     const scripts = execScripts();
     expect(scripts.some((script) => script.includes('npm install'))).toBe(false);
+  });
+
+  it('stops a running Vite preview by killing the process tree, clearing state, and releasing the port', async () => {
+    mockViteExec({ nodeModulesExists: true });
+
+    await service.startPreview('session-vite');
+    const result = await service.stopPreview('session-vite');
+
+    expect(result).toEqual({ message: 'Preview stopped successfully' });
+    expect(service.getPreviewStatus('session-vite')).toBeNull();
+    expect((service as any).portPool.has(3001)).toBe(true);
+    expect((service as any).portPool.size).toBe(100);
+
+    const killScript = execScripts().find((script) => script.includes('kill -TERM 4242'));
+    expect(killScript).toBeDefined();
+    expect(killScript).toContain('kill -KILL 4242');
+    expect(killScript).toContain('kill -TERM -4242');
+    expect(killScript).toContain('kill -KILL -4242');
+    expect(killScript).toContain('fuser -k 3001/tcp');
+    expect(killScript).toContain('/proc/net/tcp');
+  });
+
+  it('stops a starting Vite preview, clears state, and releases the port without throwing', async () => {
+    mockViteExec({ nodeModulesExists: true });
+    (service as any).portPool.delete(3001);
+    (service as any).activePreviews.set('session-vite', {
+      pid: 4242,
+      port: 3001,
+      status: 'starting',
+      command: 'npm run dev -- --host 0.0.0.0 --port 3001',
+      framework: 'Vite',
+      startedAt: new Date(),
+    });
+
+    await expect(service.stopPreview('session-vite')).resolves.toEqual({
+      message: 'Preview stopped successfully',
+    });
+
+    const killScript = execScripts().find((script) => script.includes('kill -TERM 4242'));
+    expect(killScript).toBeDefined();
+    expect(killScript).toContain('kill -KILL 4242');
+    expect(service.getPreviewStatus('session-vite')).toBeNull();
+    expect((service as any).portPool.has(3001)).toBe(true);
+    expect((service as any).portPool.size).toBe(100);
+  });
+
+  it('returns idempotent success when no active preview exists', async () => {
+    await expect(service.stopPreview('session-empty')).resolves.toEqual({
+      message: 'No active preview for this session',
+    });
+    expect(sessionsService.assertSessionUsable).toHaveBeenCalledWith('session-empty');
+    expect(execMock).not.toHaveBeenCalled();
+    expect(service.getPreviewStatus('session-empty')).toBeNull();
+  });
+
+  it('stops static preview without process kill, clears state, and releases the port', async () => {
+    previewStrategyResolver.resolve.mockResolvedValue({
+      type: 'static-html',
+      framework: 'Static HTML',
+      command: 'npx serve -s . -l tcp://0.0.0.0:$PORT',
+      appRoot: '/workspace',
+      servingMode: 'direct-read',
+    });
+
+    const started = await service.startPreview('session-static-stop');
+    expect(started.status).toBe('running');
+    expect(execMock).not.toHaveBeenCalled();
+
+    const result = await service.stopPreview('session-static-stop');
+
+    expect(result).toEqual({ message: 'Preview stopped successfully' });
+    expect(execMock).not.toHaveBeenCalled();
+    expect(service.getPreviewStatus('session-static-stop')).toBeNull();
+    expect((service as any).portPool.has(3001)).toBe(true);
+    expect((service as any).portPool.size).toBe(100);
+  });
+
+  it('can start Vite again after stop instead of early-returning the previous preview', async () => {
+    mockViteExec({ nodeModulesExists: true });
+
+    const first = await service.startPreview('session-vite');
+    expect(first.port).toBe(3001);
+    expect(first.status).toBe('running');
+    await service.stopPreview('session-vite');
+    expect(service.getPreviewStatus('session-vite')).toBeNull();
+    expect((service as any).portPool.has(3001)).toBe(true);
+
+    const second = await service.startPreview('session-vite');
+    expect(second.status).toBe('running');
+    expect(second.port).toBeGreaterThanOrEqual(3001);
+    expect(second.port).toBeLessThanOrEqual(3100);
+
+    const launchScripts = execScripts().filter((script) => script.includes('& echo $!'));
+    expect(launchScripts).toHaveLength(2);
+    expect(launchScripts[1]).toContain('npm run dev -- --host 0.0.0.0 --port');
+    expect(launchScripts[1]).toContain(`--port ${second.port}`);
+    expect(launchScripts[1]).toContain('& echo $!');
+  });
+
+  it('clears state and releases the port when process kill throws', async () => {
+    mockViteExec({ nodeModulesExists: true });
+    await service.startPreview('session-vite');
+
+    execMock.mockImplementation(async () => {
+      throw new Error('exec kill failed');
+    });
+
+    await expect(service.stopPreview('session-vite')).resolves.toEqual({
+      message: 'Preview stopped successfully',
+    });
+
+    expect(service.getPreviewStatus('session-vite')).toBeNull();
+    expect((service as any).portPool.has(3001)).toBe(true);
+    expect((service as any).portPool.size).toBe(100);
+  });
+
+  it('fails closed when the preview map is cleared during start wait', async () => {
+    mockViteExec({ nodeModulesExists: true });
+    axiosGet.mockImplementation(async () => {
+      (service as any).activePreviews.delete('session-vite');
+      (service as any).portPool.add(3001);
+      return { status: 200 };
+    });
+
+    await expect(service.startPreview('session-vite')).rejects.toThrow(
+      'Preview was stopped before it became ready.',
+    );
+
+    expect(service.getPreviewStatus('session-vite')).toBeNull();
+  });
+});
+
+describe('PreviewController stop route mapping', () => {
+  function controllerRoutes() {
+    return Object.getOwnPropertyNames(PreviewController.prototype)
+      .filter((name) => name !== 'constructor')
+      .map((name) => {
+        const fn = (PreviewController.prototype as any)[name];
+        return {
+          name,
+          path: Reflect.getMetadata(PATH_METADATA, fn),
+          method: Reflect.getMetadata(METHOD_METADATA, fn),
+        };
+      })
+      .filter((entry) => entry.path !== undefined);
+  }
+
+  it('registers POST and DELETE on :sessionId/stop and keeps POST :sessionId/start', () => {
+    expect(Reflect.getMetadata(PATH_METADATA, PreviewController.prototype.stopPreview)).toBe(
+      ':sessionId/stop',
+    );
+    expect(Reflect.getMetadata(METHOD_METADATA, PreviewController.prototype.stopPreview)).toBe(
+      RequestMethod.POST,
+    );
+    expect(Reflect.getMetadata(PATH_METADATA, PreviewController.prototype.stopPreviewByDelete)).toBe(
+      ':sessionId/stop',
+    );
+    expect(Reflect.getMetadata(METHOD_METADATA, PreviewController.prototype.stopPreviewByDelete)).toBe(
+      RequestMethod.DELETE,
+    );
+
+    const stopMethods = controllerRoutes()
+      .filter((entry) => entry.path === ':sessionId/stop')
+      .map((entry) => entry.method);
+    expect(stopMethods).toEqual(expect.arrayContaining([RequestMethod.POST, RequestMethod.DELETE]));
+    expect(stopMethods).toHaveLength(2);
+
+    const startRoutes = controllerRoutes().filter((entry) => entry.path === ':sessionId/start');
+    expect(startRoutes).toHaveLength(1);
+    expect(startRoutes[0].method).toBe(RequestMethod.POST);
+  });
+
+  it('POST stop route delegates to PreviewService.stopPreview', async () => {
+    const previewService = {
+      stopPreview: jest.fn(async () => ({ message: 'Preview stopped successfully' })),
+    };
+    const controller = new PreviewController(previewService as any);
+
+    const result = await controller.stopPreview('session-stop');
+
+    expect(previewService.stopPreview).toHaveBeenCalledWith('session-stop');
+    expect(result).toEqual({
+      success: true,
+      message: 'Preview stopped successfully',
+    });
+  });
+
+  it('DELETE stop route still delegates to PreviewService.stopPreview', async () => {
+    const previewService = {
+      stopPreview: jest.fn(async () => ({ message: 'Preview stopped successfully' })),
+    };
+    const controller = new PreviewController(previewService as any);
+
+    const result = await controller.stopPreviewByDelete('session-stop');
+
+    expect(previewService.stopPreview).toHaveBeenCalledWith('session-stop');
+    expect(result).toEqual({
+      success: true,
+      message: 'Preview stopped successfully',
+    });
   });
 });

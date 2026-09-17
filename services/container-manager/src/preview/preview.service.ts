@@ -175,10 +175,16 @@ export class PreviewService {
       port,
       this.VITE_WAIT_TIMEOUT_MS,
     );
+
+    const previewAfterWait = this.activePreviews.get(sessionId);
+    if (!previewAfterWait) {
+      throw new BadRequestException('Preview was stopped before it became ready.');
+    }
+
     if (!didStart) {
       try {
-        if (pid && Number.isInteger(pid)) {
-          await this.killPreviewPid(sessionId, pid);
+        if (pid && Number.isInteger(pid) && pid > 0) {
+          await this.killPreviewPid(sessionId, pid, port);
         }
       } finally {
         this.releasePort(port);
@@ -187,15 +193,12 @@ export class PreviewService {
       throw new BadRequestException('Preview server did not become reachable in time.');
     }
 
-    const preview = this.activePreviews.get(sessionId);
-    if (preview) {
-      preview.status = 'running';
-    }
+    previewAfterWait.status = 'running';
 
     return {
       port,
-      status: preview?.status || 'running',
-      framework: preview?.framework,
+      status: previewAfterWait.status,
+      framework: previewAfterWait.framework,
     };
   }
 
@@ -207,22 +210,21 @@ export class PreviewService {
     const preview = this.activePreviews.get(sessionId);
 
     if (!preview) {
-      throw new NotFoundException('No active preview for this session');
+      return { message: 'No active preview for this session' };
     }
 
     try {
-      if (preview.pid && Number.isInteger(preview.pid)) {
-        await this.killPreviewPid(sessionId, preview.pid);
+      if (preview.framework !== 'Static HTML') {
+        await this.killPreviewPid(sessionId, preview.pid, preview.port);
       }
-
-      this.releasePort(preview.port);
-      this.activePreviews.delete(sessionId);
-
-      return { message: 'Preview stopped successfully' };
     } catch (error) {
       console.error(`Error stopping preview for session ${sessionId}:`, error);
-      throw new BadRequestException('Failed to stop preview');
     }
+
+    this.releasePort(preview.port);
+    this.activePreviews.delete(sessionId);
+
+    return { message: 'Preview stopped successfully' };
   }
 
   /**
@@ -372,13 +374,48 @@ export class PreviewService {
     return /timeout/i.test(message);
   }
 
-  private async killPreviewPid(sessionId: string, pid: number): Promise<void> {
+  private async killPreviewPid(
+    sessionId: string,
+    pid: number | undefined,
+    port: number,
+  ): Promise<void> {
     await this.runShellInSession(
       sessionId,
-      `kill -TERM ${pid} >/dev/null 2>&1 || true; sleep 1; kill -0 ${pid} >/dev/null 2>&1 && kill -KILL ${pid} >/dev/null 2>&1 || true`,
+      this.buildKillPreviewScript(pid, port),
       undefined,
       10000,
     );
+  }
+
+  private buildKillPreviewScript(pid: number | undefined, port: number): string {
+    const steps: string[] = [];
+
+    if (pid && Number.isInteger(pid) && pid > 0) {
+      steps.push(
+        `kill -TERM ${pid} >/dev/null 2>&1 || true`,
+        `kill -TERM -${pid} >/dev/null 2>&1 || true`,
+        'sleep 1',
+        `kill -0 ${pid} >/dev/null 2>&1 && kill -KILL ${pid} >/dev/null 2>&1 || true`,
+        `kill -KILL -${pid} >/dev/null 2>&1 || true`,
+      );
+    }
+
+    steps.push(`fuser -k ${port}/tcp >/dev/null 2>&1 || true`);
+    steps.push(
+      `hexport=$(printf '%04X' ${port}); ` +
+        'for inode in $(awk -v hp="$hexport" \'$2 ~ ":" hp "$" { print $10 }\' /proc/net/tcp /proc/net/tcp6 2>/dev/null); do ' +
+        '[ "$inode" = "0" ] && continue; ' +
+        'for fd in /proc/[0-9]*/fd/[0-9]*; do ' +
+        'target=$(readlink "$fd" 2>/dev/null) || continue; ' +
+        'if [ "$target" = "socket:[$inode]" ]; then ' +
+        'tpid=${fd#/proc/}; tpid=${tpid%%/fd/*}; ' +
+        'kill -KILL "$tpid" >/dev/null 2>&1 || true; ' +
+        'fi; ' +
+        'done; ' +
+        'done || true',
+    );
+
+    return steps.join('; ');
   }
 
   private async waitForPreviewServer(

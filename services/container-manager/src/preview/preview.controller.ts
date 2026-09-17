@@ -21,7 +21,7 @@ export class PreviewController {
     };
   }
 
-  @Delete(':sessionId/stop')
+  @Post(':sessionId/stop')
   @HttpCode(200)
   async stopPreview(@Param('sessionId') sessionId: string) {
     const result = await this.previewService.stopPreview(sessionId);
@@ -29,6 +29,12 @@ export class PreviewController {
       success: true,
       ...result,
     };
+  }
+
+  @Delete(':sessionId/stop')
+  @HttpCode(200)
+  async stopPreviewByDelete(@Param('sessionId') sessionId: string) {
+    return this.stopPreview(sessionId);
   }
 
   @Get(':sessionId/status')
