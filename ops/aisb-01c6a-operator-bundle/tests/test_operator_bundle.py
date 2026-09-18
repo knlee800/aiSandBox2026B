@@ -136,6 +136,124 @@ class MemoryPm2(Pm2Adapter):
         return dict(self.apps[app])
 
 
+class FakePm2Dual(Pm2Adapter):
+    """Two-field PM2 fake (stage-start §5.3 / §4.8).
+
+    ``top`` models ``pm2_env`` (last spawned process); ``nested`` models
+    ``pm2_env.env`` (daemon merged env). ``restart_update_env`` runs its
+    "spawn" step through the caller's ``spawn_gate`` (so the admission-gated
+    pre-spawn recheck is exercised) and then behaves per the injected
+    behaviour for that call. Behaviours (``self.behaviors[app]`` is a list
+    consumed per call, default ``"ack"``):
+
+    * ``"ack"`` — merge into nested, spawn (copy nested -> top), return.
+    * ``"latent_ack"`` — merge, no spawn, return (daemon merged; process stale).
+    * ``"timeout_after_merge"`` — merge (+spawn) then raise TimeoutExpired.
+    * ``"timeout_before_merge"`` — raise TimeoutExpired without mutation.
+    * ``"exit_nonzero"`` — merge then raise CalledProcessError.
+    * ``"oserror_before_spawn"`` — the spawn thunk raises OSError (proven not delivered).
+    * ``("block", release, entered)`` — merge+spawn, set ``entered``, then wait
+      on ``release`` before acking (in-flight apply; late acknowledgement).
+    * ``("hold_before_spawn", proceed, entered)`` — set ``entered`` and wait on
+      ``proceed`` *before* the spawn step (ownership between INTENT and spawn).
+    * ``"interrupt"`` — merge then raise KeyboardInterrupt.
+    Every call is recorded in ``self.calls``.
+    """
+
+    supports_spawn_gate = True
+    timeout_sec = 0.05
+
+    def __init__(self) -> None:
+        self.top: dict[str, dict[str, str | None]] = {}
+        self.nested: dict[str, dict[str, str | None]] = {}
+        self.behaviors: dict[str, list] = {}
+        self.calls: list[tuple[str, dict]] = []
+        self.spawned: list[str] = []
+        self.dump_calls = 0
+        self.dump_error: Exception | None = None
+
+    # -- fixtures ---------------------------------------------------------
+    def seed(self, app: str, env: dict[str, str | None], *, nested: dict[str, str | None] | None = None) -> None:
+        self.top[app] = dict(env)
+        self.nested[app] = dict(env if nested is None else nested)
+
+    def apps_equal_baseline(self, app: str, baseline: dict[str, str | None]) -> bool:
+        return all(self.top[app].get(k) == v and self.nested[app].get(k) == v for k, v in baseline.items())
+
+    # -- adapter ----------------------------------------------------------
+    def _next_behavior(self, app: str):
+        queue = self.behaviors.get(app) or []
+        if queue:
+            return queue.pop(0)
+        return "ack"
+
+    def _merge(self, app: str, env: dict[str, str | None]) -> None:
+        cur = dict(self.nested.get(app, {}))
+        for key, value in env.items():
+            if value is None:
+                raise TypeError("PM2 merge cannot unset %s" % key)
+            cur[key] = value
+        self.nested[app] = cur
+
+    def _spawn(self, app: str) -> None:
+        self.top[app] = dict(self.nested.get(app, {}))
+        self.spawned.append(app)
+
+    def restart_update_env(self, app: str, env, *, spawn_gate=None) -> None:
+        import subprocess
+
+        behavior = self._next_behavior(app)
+        self.calls.append((app, dict(env)))
+        gate = spawn_gate or (lambda thunk: thunk())
+        kind = behavior[0] if isinstance(behavior, tuple) else behavior
+        if kind == "timeout_before_merge":
+            gate(lambda: object())  # a process was created but did nothing yet
+            raise subprocess.TimeoutExpired(["pm2", "restart", app], self.timeout_sec)
+        if kind == "oserror_before_spawn":
+
+            def boom():
+                raise OSError("spawn failed")
+
+            gate(boom)
+            return  # unreachable: gate re-raises
+        if kind == "hold_before_spawn":
+            # INTENT is persisted by the caller; the process has not been created yet.
+            behavior[2].set()
+            behavior[1].wait(timeout=10)
+
+        # "spawn" step: the daemon receives the command here.
+        def deliver():
+            self._merge(app, dict(env))
+            if kind != "latent_ack":
+                self._spawn(app)
+            return object()
+
+        gate(deliver)
+        if kind == "timeout_after_merge":
+            raise subprocess.TimeoutExpired(["pm2", "restart", app], self.timeout_sec)
+        if kind == "exit_nonzero":
+            raise subprocess.CalledProcessError(7, ["pm2", "restart", app])
+        if kind == "interrupt":
+            raise KeyboardInterrupt
+        if kind == "block":
+            # dispatched (daemon has the command); the acknowledgement is held back
+            behavior[2].set()
+            behavior[1].wait(timeout=10)
+        return None
+
+    def dump_env(self, app: str) -> dict[str, str | None]:
+        self.dump_calls += 1
+        if self.dump_error is not None:
+            raise self.dump_error
+        return dict(self.top[app])
+
+    def dump_env_dual(self, app: str):
+        self.dump_calls += 1
+        if self.dump_error is not None:
+            raise self.dump_error
+        return dict(self.top[app]), dict(self.nested[app])
+
+
 class FakeProc(ProcAdapter):
     def __init__(self) -> None:
         self.next_pid = 2000
@@ -742,12 +860,22 @@ class OrchestrateFailurePathTests(unittest.TestCase):
                 capture_tail_sec=0,
             )
             self.assertFalse(result.capture_tail_started)
-            self.assertTrue(result.overlays_restored)
+            # T14 re-base (stage-start §10.3.A.8): restoration success requires
+            # an F1-F4 proof no shipped path can supply. Evidence fields carry
+            # what was observed; the success flags stay False and nothing is
+            # deleted.
+            self.assertFalse(result.overlays_restored)
+            self.assertFalse(result.restore_ok)
+            self.assertTrue(result.commands_acked)
+            self.assertTrue(result.snapshot_matched)
+            self.assertFalse(result.unknown_pending_overlay)
+            self.assertEqual(result.result_class, "RESTORE_ATTEMPTED_ACKED_MATCHED_UNPROVEN")
             self.assertFalse(result.next_canary_allowed)
             self.assertEqual(result.classification, "INCOMPLETE")
             self.assertEqual(result.script_provider_traffic_proof, "NOT_ESTABLISHED")
             self.assertEqual(pm2.apps["aisandbox-api-gateway"]["GLOBAL_EXECUTION_ENABLED"], "false")
-            self.assertEqual(deleted["n"], 1)
+            self.assertEqual(deleted["n"], 0)
+            self.assertTrue(result.vault_preserved)
 
     def test_capture_start_fail_still_restores(self) -> None:
         with tempfile.TemporaryDirectory() as td:
@@ -780,10 +908,15 @@ class OrchestrateFailurePathTests(unittest.TestCase):
                 delete_vault=delete_vault,
                 capture_tail_sec=0,
             )
-            self.assertTrue(result.overlays_restored)
+            # T14 re-base: restore was attempted and acked (evidence); success is not claimed.
+            self.assertFalse(result.overlays_restored)
+            self.assertTrue(result.commands_acked)
+            self.assertTrue(result.snapshot_matched)
+            self.assertEqual(result.result_class, "RESTORE_ATTEMPTED_ACKED_MATCHED_UNPROVEN")
             self.assertFalse(result.next_canary_allowed)
             self.assertFalse(result.capture_tail_started)
             self.assertEqual(pm2.apps["aisandbox-api-gateway"]["GLOBAL_EXECUTION_ENABLED"], "false")
+            self.assertEqual(deleted["n"], 0)
 
 
 class ManifestTests(unittest.TestCase):
@@ -827,6 +960,27 @@ class MockPm2CliTests(unittest.TestCase):
             apps = json.loads(out)
             self.assertEqual(apps[0]["pm2_env"]["GLOBAL_EXECUTION_ENABLED"], "true")
             self.assertEqual(apps[0]["pm2_env"]["HARNESS_ENTITLEMENT_HMAC_SECRET"], "keep-me")
+            # W5: the mock models pm2_env.env separately; a normal restart spawns
+            # so both fields agree.
+            self.assertEqual(apps[0]["pm2_env"]["env"]["GLOBAL_EXECUTION_ENABLED"], "true")
+            self.assertEqual(apps[0]["pm2_env"]["env"]["HARNESS_ENTITLEMENT_HMAC_SECRET"], "keep-me")
+
+    def test_mock_pm2_latent_merge_leaves_top_level_stale(self) -> None:
+        """W5 / §4.8: a latent merge updates pm2_env.env but not the spawned env."""
+        import subprocess
+
+        with tempfile.TemporaryDirectory() as td:
+            state = Path(td) / "state.json"
+            state.write_text(json.dumps({"apps": {"gw": {"GLOBAL_EXECUTION_ENABLED": "false"}}}), encoding="utf-8")
+            Path(str(state) + ".controls.json").write_text(json.dumps({"latent": True}), encoding="utf-8")
+            env = os.environ.copy()
+            env["MOCK_PM2_STATE"] = str(state)
+            env["GLOBAL_EXECUTION_ENABLED"] = "true"
+            subprocess.check_call([sys.executable, str(BIN / "mock-pm2.py"), "restart", "gw", "--update-env"], env=env)
+            out = subprocess.check_output([sys.executable, str(BIN / "mock-pm2.py"), "jlist"], env=env, text=True)
+            apps = json.loads(out)
+            self.assertEqual(apps[0]["pm2_env"]["GLOBAL_EXECUTION_ENABLED"], "false")
+            self.assertEqual(apps[0]["pm2_env"]["env"]["GLOBAL_EXECUTION_ENABLED"], "true")
 
 
 def _eth_ipv4_tcp(src="10.0.0.5", dst="1.2.3.4", sport=5555, dport=443) -> bytes:
@@ -965,9 +1119,18 @@ class AcceptedScriptGateTests(unittest.TestCase):
                 delete_vault=delete_vault,
                 capture_tail_sec=0,
             )
-            self.assertTrue(result.next_canary_allowed)
-            self.assertTrue(result.overlays_restored)
+            # T14 re-base (§10.3.A.5/8): an intended-accepted stub with a matching
+            # dual snapshot is evidence only. Without an F1-F4 proof there is no
+            # restoration claim, so the next canary is not allowed.
+            self.assertFalse(result.next_canary_allowed)
+            self.assertFalse(result.overlays_restored)
+            self.assertFalse(result.restore_ok)
+            self.assertTrue(result.commands_acked)
+            self.assertTrue(result.snapshot_matched)
+            self.assertEqual(result.result_class, "RESTORE_ATTEMPTED_ACKED_MATCHED_UNPROVEN")
+            self.assertEqual(result.classification, "INCOMPLETE")
             self.assertEqual(result.network_independent, "PASS")
+            self.assertEqual(result.fence_proof, "NONE")
 
     def test_cleanup_incomplete_never_allows_next(self) -> None:
         from accepted_result import allows_next_canary, parse_accepted_script_result
@@ -1041,22 +1204,37 @@ class AcceptedScriptGateTests(unittest.TestCase):
 
 class OverlayRestoreDriverTests(unittest.TestCase):
     def test_mark_before_apply_restores_after_exception(self) -> None:
+        """T14 correction of the D1-encoding test (stage-start §5.4 / §10.3.A.8).
+
+        An apply whose client fails *after* the daemon may have merged is an
+        uncertain command fate. Restore is still attempted, but the run is
+        latched UNKNOWN_PENDING_OVERLAY, nothing claims restoration, and the
+        recovery material is retained. Uses the real driver path so the
+        attempt is journaled.
+        """
+        from vault import load_journal_entries, unknown_latched
+
         with tempfile.TemporaryDirectory() as td:
             proc = FakeProc()
             cap = FakeCapture()
-            helper = OrchestrateFailurePathTests()
-            vault, work, pm2, _apply, delete_vault, deleted = helper._common(td, proc, cap)
-
-            def apply_partial():
-                pm2.apps["aisandbox-api-gateway"]["GLOBAL_EXECUTION_ENABLED"] = "true"
-                raise RuntimeError("partial apply")
-
+            vault = Path(td) / "vault"
+            work = Path(td) / "work"
+            work.mkdir()
+            pm2 = FakePm2Dual()
+            pm2.seed("aisandbox-api-gateway", {"GLOBAL_EXECUTION_ENABLED": "false"})
+            pm2.seed(
+                "aisandbox-ai-service",
+                {"GLOBAL_EXECUTION_ENABLED": "false", "AGENT_HARNESS_ENABLE_TOOL_LOOP": "false", "XAI_API_KEY": "orig"},
+            )
+            # worker apply: merged, spawned, then the client raised (partial apply)
+            pm2.behaviors["aisandbox-ai-service"] = ["timeout_after_merge"]
+            deleted = {"n": 0}
             result = orchestrate(
                 which="stub",
                 workdir=str(work),
                 vault_dir=str(vault),
                 submit_argv=["/usr/bin/node", str(work / "c.js")],
-                submit_env={},
+                submit_env={"AISB_01C6A_HMAC_SECRET": "driver-hmac"},
                 expected_js=str(work / "c.js"),
                 overlay_apps=["aisandbox-api-gateway", "aisandbox-ai-service"],
                 captured_overlay={"GLOBAL_EXECUTION_ENABLED": "false"},
@@ -1068,13 +1246,27 @@ class OverlayRestoreDriverTests(unittest.TestCase):
                 **_cov(),
                 hmac_absent_empty_authorized=True,
                 reconcile_runner=lambda env, tmo: (3, "", "", False, False),
-                apply_overlays=apply_partial,
-                delete_vault=delete_vault,
+                apply_overlays=None,
+                delete_vault=lambda: deleted.__setitem__("n", deleted["n"] + 1),
                 capture_tail_sec=0,
             )
-            self.assertEqual(pm2.apps["aisandbox-api-gateway"]["GLOBAL_EXECUTION_ENABLED"], "false")
-            self.assertTrue(result.overlays_restored)
+            self.assertFalse(proc.spawn_calls)
+            self.assertIn("COMMAND_UNCERTAIN", result.reasons)
+            self.assertTrue(result.unknown_pending_overlay)
+            self.assertEqual(result.result_class, "UNKNOWN_PENDING_OVERLAY")
+            self.assertFalse(result.overlays_restored)
+            self.assertFalse(result.restore_ok)
             self.assertFalse(result.next_canary_allowed)
+            self.assertEqual(result.classification, "INCOMPLETE")
+            self.assertTrue(result.vault_preserved)
+            self.assertEqual(deleted["n"], 0)
+            self.assertTrue(unknown_latched(str(vault)))
+            self.assertTrue((vault / "unknown_overlay.json").is_file())
+            self.assertTrue((vault / "pending_apps.json").is_file())
+            # restore was still attempted after the uncertain apply (PM2-FENCE-01 §6.1)
+            self.assertTrue(any(app == "aisandbox-ai-service" and env.get("XAI_API_KEY") == "orig" for app, env in pm2.calls))
+            fates = [e["phase"] for e in load_journal_entries(str(vault)) if e["op"] == "APPLY"]
+            self.assertIn("UNCERTAIN", fates)
 
     def test_cli_pm2_partial_failure_continues(self) -> None:
         from overlay_restore import CliPm2, restore_overlays
@@ -1095,21 +1287,34 @@ class OverlayRestoreDriverTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
+            prior_state = os.environ.get("MOCK_PM2_STATE")
             os.environ["MOCK_PM2_STATE"] = str(state)
+            try:
 
-            class Flaky(CliPm2):
-                def restart_update_env(self, app, envmap):
-                    if app == "ai":
-                        raise RuntimeError("pm2 fail")
-                    return super().restart_update_env(app, envmap)
+                class Flaky(CliPm2):
+                    def restart_update_env(self, app, envmap):
+                        if app == "ai":
+                            raise RuntimeError("pm2 fail")
+                        return super().restart_update_env(app, envmap)
 
-            pm2 = Flaky(str(BIN / "mock-pm2.py"))
-            result = restore_overlays(str(vault), ["gw", "ai"], pm2, hmac_absent_empty_authorized=True)
+                pm2 = Flaky(str(BIN / "mock-pm2.py"))
+                result = restore_overlays(str(vault), ["gw", "ai"], pm2, hmac_absent_empty_authorized=True)
+            finally:
+                if prior_state is None:
+                    os.environ.pop("MOCK_PM2_STATE", None)
+                else:
+                    os.environ["MOCK_PM2_STATE"] = prior_state
+            # T14 re-base: a client exception after dispatch is an uncertain fate
+            # (§4.2), so the run is UNKNOWN; the other app is still attempted.
             self.assertFalse(result.ok)
             self.assertIn("gw", result.apps_restored)
             self.assertIn("ai", result.apps_failed)
+            self.assertTrue(result.unknown_pending_overlay)
+            self.assertEqual(result.result_class, "UNKNOWN_PENDING_OVERLAY")
+            self.assertFalse(result.commands_acked)
             self.assertTrue(result.preserved_vault)
             self.assertTrue(Path(vault, "metadata.json").is_file())
+            self.assertTrue(Path(vault, "unknown_overlay.json").is_file())
 
     def test_interrupt_during_restore_attempts_other_apps(self) -> None:
         from overlay_restore import restore_overlays
@@ -1895,11 +2100,24 @@ class RemainingDefectTests(unittest.TestCase):
                 hmac_absent_empty_authorized=True,
                 reconcile_runner=lambda env, tmo: (3, "", "", False, False),
                 apply_overlays=apply_overlays,
-                delete_vault=lambda: delete_protected_recovery(str(vault)),
+                delete_vault=None,
                 capture_tail_sec=0,
             )
-            self.assertTrue(result.overlays_restored)
-            self.assertFalse(protected_recovery_present(str(vault)))
+            # T14 re-base (§10.3.A.4): a matching snapshot is evidence, not proof.
+            # Deletion requires a proven restore, which no shipped path produces;
+            # the vault-side gate refuses even a direct call.
+            self.assertTrue(result.snapshot_matched)
+            self.assertTrue(result.commands_acked)
+            self.assertFalse(result.overlays_restored)
+            self.assertTrue(result.vault_preserved)
+            self.assertTrue(protected_recovery_present(str(vault)))
+            self.assertTrue((Path(vault) / "pending_apps.json").is_file())
+            from vault import VaultStateError
+
+            with self.assertRaises(VaultStateError) as ctx:
+                delete_protected_recovery(str(vault))
+            self.assertEqual(ctx.exception.code, "RESTORE_UNPROVEN")
+            self.assertTrue(protected_recovery_present(str(vault)))
 
     def test_worker_window_failure_restores(self) -> None:
         import time as time_mod
@@ -2047,16 +2265,64 @@ class ShippedCliDriverTests(unittest.TestCase):
                 [sys.executable, str(BIN / "mock-pm2.py"), "jlist"], env=env, text=True
             )
             apps = {item["name"]: item["pm2_env"] for item in json.loads(jlist)}
-            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+            # T14 re-base (§10.3.A.3/6): without an F1-F4 proof the shipped CLI
+            # ends INCOMPLETE (exit 3) with evidence fields set and recovery
+            # material retained; the next run is refused.
+            self.assertEqual(proc.returncode, 3, proc.stdout + proc.stderr)
             self.assertEqual(apps["aisandbox-api-gateway"]["GLOBAL_EXECUTION_ENABLED"], "false")
             self.assertEqual(apps["aisandbox-ai-service"].get("AGENT_HARNESS_ENABLE_TOOL_LOOP"), "false")
             self.assertEqual(apps["aisandbox-ai-service"].get("XAI_API_KEY"), "staging-original-key")
+            self.assertEqual(apps["aisandbox-ai-service"]["env"].get("AGENT_HARNESS_ENABLE_TOOL_LOOP"), "false")
+            self.assertEqual(apps["aisandbox-ai-service"]["env"].get("XAI_API_KEY"), "staging-original-key")
             self.assertIn("ORCHESTRATE_DONE", proc.stdout)
-            self.assertIn("classification=OBSERVATION_COMPLETE", proc.stdout)
+            self.assertIn("classification=INCOMPLETE", proc.stdout)
+            self.assertIn("result_class=RESTORE_ATTEMPTED_ACKED_MATCHED_UNPROVEN", proc.stdout)
+            self.assertIn("commands_acked=1 snapshot_matched=1", proc.stdout)
+            payload = json.loads((work / "orchestrate-result.json").read_text(encoding="utf-8"))
+            self.assertFalse(payload["restore_ok"])
+            self.assertFalse(payload["overlays_restored"])
+            self.assertFalse(payload["next_canary_allowed"])
+            self.assertTrue(payload["commands_acked"])
+            self.assertTrue(payload["snapshot_matched"])
+            self.assertFalse(payload["unknown_pending_overlay"])
+            self.assertEqual(payload["fence_proof"], "NONE")
+            self.assertTrue(payload["vault_preserved"])
+            self.assertTrue((vault / "pending_apps.json").is_file())
+            self.assertTrue((vault / "overlay_commands.json").is_file())
+            self.assertTrue((vault / "restore_result.json").is_file())
+            self.assertFalse((vault / "unknown_overlay.json").is_file())
             state = json.loads(Path(env["MOCK_PM2_STATE"]).read_text(encoding="utf-8"))
             for item in state.get("history") or []:
                 if item.get("app") == "aisandbox-api-gateway":
                     self.assertNotEqual(item.get("env", {}).get("GLOBAL_EXECUTION_ENABLED"), "true")
+            # §4.7: the following run is refused while recovery material remains.
+            second = subprocess.run(
+                [
+                    sys.executable,
+                    str(LIB / "orchestrate.py"),
+                    "--prep",
+                    str(ROOT),
+                    "--which",
+                    "stub",
+                    "--workdir",
+                    str(work),
+                    "--vault",
+                    str(vault),
+                    "--js",
+                    str(BIN / "mock-node.py"),
+                    "--resolv",
+                    str(resolv),
+                ],
+                env=env,
+                cwd=str(ROOT),
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(second.returncode, 3, second.stdout + second.stderr)
+            payload2 = json.loads((work / "orchestrate-result.json").read_text(encoding="utf-8"))
+            self.assertIn("UNRESOLVED_VAULT_EXISTS", payload2["reasons"])
+            history_after = json.loads(Path(env["MOCK_PM2_STATE"]).read_text(encoding="utf-8")).get("history") or []
+            self.assertEqual(len(history_after), len(state.get("history") or []), "refused run must not restart anything")
 
     def test_cli_xai_expected_rejection_exits_zero(self) -> None:
         import subprocess
@@ -2092,10 +2358,18 @@ class ShippedCliDriverTests(unittest.TestCase):
                 capture_output=True,
                 text=True,
             )
-            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+            # T14 re-base: exit 0 / OBSERVATION_COMPLETE required restore_ok, which
+            # needs an F1-F4 proof no shipped path supplies. The expected xAI
+            # rejection is still terminal; the run ends INCOMPLETE (exit 3) with
+            # acked/matched evidence and retained recovery material.
+            self.assertEqual(proc.returncode, 3, proc.stdout + proc.stderr)
             self.assertIn("ORCHESTRATE_DONE", proc.stdout)
             payload = json.loads((work / "orchestrate-result.json").read_text(encoding="utf-8"))
-            self.assertEqual(payload.get("classification"), "OBSERVATION_COMPLETE")
+            self.assertEqual(payload.get("classification"), "INCOMPLETE")
+            self.assertEqual(payload.get("result_class"), "RESTORE_ATTEMPTED_ACKED_MATCHED_UNPROVEN")
+            self.assertTrue(payload.get("commands_acked"))
+            self.assertTrue(payload.get("snapshot_matched"))
+            self.assertFalse(payload.get("restore_ok"))
             self.assertFalse(payload.get("next_canary_allowed"))
             state = json.loads(Path(env["MOCK_PM2_STATE"]).read_text(encoding="utf-8"))
             gw_vals = [
@@ -2324,8 +2598,13 @@ class DriverOverlayContractTests(unittest.TestCase):
             self.assertEqual(pm2.apps["aisandbox-api-gateway"]["GLOBAL_EXECUTION_ENABLED"], "false")
             self.assertEqual(pm2.apps["aisandbox-ai-service"].get("AGENT_HARNESS_ENABLE_TOOL_LOOP"), "false")
             self.assertEqual(pm2.apps["aisandbox-ai-service"].get("XAI_API_KEY"), "staging-original-key")
-            self.assertTrue(result.overlays_restored)
-            self.assertTrue(result.next_canary_allowed)
+            # T14 re-base: observed fake state equals baseline (evidence); no
+            # restoration claim and no next canary without proof.
+            self.assertTrue(result.commands_acked)
+            self.assertTrue(result.snapshot_matched)
+            self.assertFalse(result.overlays_restored)
+            self.assertFalse(result.next_canary_allowed)
+            self.assertEqual(result.result_class, "RESTORE_ATTEMPTED_ACKED_MATCHED_UNPROVEN")
 
     def test_hmac_unauthorized_driver_writes_no_recovery_vault(self) -> None:
         with tempfile.TemporaryDirectory() as td:
@@ -3606,6 +3885,863 @@ class CorrectionBoundaryTests(unittest.TestCase):
             self.assertEqual(pm2.apps["aisandbox-ai-service"]["GLOBAL_EXECUTION_ENABLED"], "false")
             self.assertEqual(result.classification, "INCOMPLETE")
             self.assertIn("EVIDENCE_IPV4_NOT_OBSERVED", result.reasons)
+
+
+GW = "aisandbox-api-gateway"
+WK = "aisandbox-ai-service"
+WK_BASELINE = {"GLOBAL_EXECUTION_ENABLED": "false", "AGENT_HARNESS_ENABLE_TOOL_LOOP": "false", "XAI_API_KEY": "orig-key"}
+GW_BASELINE = {"GLOBAL_EXECUTION_ENABLED": "false"}
+
+
+class UnknownLatchTests(unittest.TestCase):
+    """PM2-OVERLAY-UNKNOWN-01 test matrix (stage-start §5.4 as corrected by §10.3.D).
+
+    WRITTEN / NOT RUN in the authoring window (K4 not authorized). Every test
+    uses the two-field fake, a temporary vault with dummy recovery material,
+    and threading.Event barriers; no wall-clock sleep is used for assertions
+    except the watchdog-window case (T5), which follows the tolerance of the
+    pre-existing ``test_restore_while_supervise_remains_blocked``.
+
+    T13b (proof-double gating) is intentionally OMITTED: exercising the
+    ``RESTORED_PROVEN`` branch would require ``orchestrate()`` /
+    ``restore_overlays()`` to accept a caller-supplied fence-proof input,
+    i.e. a production-accessible bypass. Per §10.3.A.7 the test is dropped
+    rather than the boundary weakened; ``test_fence_proof_boundary_static``
+    asserts the boundary instead.
+    """
+
+    # -- fixtures ---------------------------------------------------------
+    def _dual(self, td: str):
+        vault = Path(td) / "vault"
+        work = Path(td) / "work"
+        work.mkdir()
+        pm2 = FakePm2Dual()
+        pm2.seed(GW, GW_BASELINE)
+        pm2.seed(WK, WK_BASELINE)
+        return vault, work, pm2
+
+    def _accepted_proc(self) -> FakeProc:
+        proc = FakeProc()
+        proc.next_behavior = {
+            "immediate": True,
+            "exit_code": 0,
+            "stdout": _stub_result(
+                outcome="completed",
+                proof="accepted",
+                accounting="pass",
+                job_state="completed",
+                execution_id="eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+            ),
+            "stderr": "",
+        }
+        return proc
+
+    def _run(self, vault, work, pm2, *, which="stub", proc=None, cap=None, deleted=None, **extra):
+        proc = proc or self._accepted_proc()
+        cap = cap or FakeCapture()
+        deleted = deleted if deleted is not None else {"n": 0}
+        kwargs = dict(
+            which=which,
+            workdir=str(work),
+            vault_dir=str(vault),
+            submit_argv=["/usr/bin/node", str(work / "c.js")],
+            submit_env={
+                "AISB_01C6A_HMAC_SECRET": "driver-hmac",
+                "AISB_01C6A_DUMMY_XAI_API_KEY": "01C6A-NONSECRET-DUMMY-XAI-KEY",
+            },
+            expected_js=str(work / "c.js"),
+            overlay_apps=[GW, WK],
+            captured_overlay={"GLOBAL_EXECUTION_ENABLED": "false"},
+            pm2=pm2,
+            proc=proc,
+            capture_adapter=cap,
+            exec_helper="helper",
+            resolv_conf="nameserver 172.26.0.1\n",
+            **_cov(),
+            hmac_absent_empty_authorized=True,
+            reconcile_runner=lambda env, tmo: (3, "", "", False, False),
+            apply_overlays=None,
+            delete_vault=lambda: deleted.__setitem__("n", deleted["n"] + 1),
+            capture_tail_sec=0,
+        )
+        kwargs.update(extra)
+        return orchestrate(**kwargs), deleted
+
+    def _assert_unknown(self, result, vault: Path, deleted: dict) -> None:
+        from vault import unknown_latched
+
+        self.assertTrue(result.unknown_pending_overlay)
+        self.assertEqual(result.result_class, "UNKNOWN_PENDING_OVERLAY")
+        self.assertIn("UNKNOWN_PENDING_OVERLAY", result.reasons)
+        self.assertFalse(result.restore_ok)
+        self.assertFalse(result.overlays_restored)
+        self.assertFalse(result.next_canary_allowed)
+        self.assertEqual(result.classification, "INCOMPLETE")
+        self.assertTrue(result.vault_preserved)
+        self.assertEqual(deleted["n"], 0)
+        self.assertTrue(unknown_latched(str(vault)))
+        self.assertTrue((vault / "unknown_overlay.json").is_file())
+        self.assertTrue((vault / "overlay_commands.json").is_file())
+        self.assertTrue((vault / "restore_result.json").is_file())
+        pending = json.loads((vault / "pending_apps.json").read_text(encoding="utf-8"))
+        self.assertTrue(pending, "pending_apps.json must be retained non-empty under UNKNOWN")
+        # protected recovery material retained
+        self.assertTrue((vault / "apps" / WK / "protected" / "XAI_API_KEY.value").is_file())
+
+    @staticmethod
+    def _journal(vault: Path) -> list[dict]:
+        from vault import load_journal_entries
+
+        return load_journal_entries(str(vault))
+
+    @staticmethod
+    def _restore_calls(pm2: FakePm2Dual, app: str) -> list[dict]:
+        baseline = WK_BASELINE if app == WK else GW_BASELINE
+        return [env for a, env in pm2.calls if a == app and all(env.get(k) == v for k, v in baseline.items() if k in env)
+                and env.get("AGENT_HARNESS_ENABLE_TOOL_LOOP", "false") == "false"]
+
+    # -- T1 / T2 -----------------------------------------------------------
+    def test_t1_apply_timeout_after_delivery_latches_unknown(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            vault, work, pm2 = self._dual(td)
+            pm2.behaviors[WK] = ["timeout_after_merge"]
+            result, deleted = self._run(vault, work, pm2)
+            self.assertIn("COMMAND_UNCERTAIN", result.reasons)
+            self._assert_unknown(result, vault, deleted)
+            apply_entries = [e for e in self._journal(vault) if e["op"] == "APPLY"]
+            self.assertEqual(len(apply_entries), 1)
+            self.assertEqual(apply_entries[0]["phase"], "UNCERTAIN")
+            self.assertEqual(apply_entries[0]["reason"], "TIMEOUT")
+            self.assertIn("XAI_API_KEY", apply_entries[0]["keys"])
+            self.assertNotIn("orig-key", json.dumps(apply_entries))  # names only, never values
+            # restore was still attempted and acked; snapshot matched; still UNKNOWN
+            self.assertTrue(self._restore_calls(pm2, WK))
+            self.assertTrue(pm2.apps_equal_baseline(WK, WK_BASELINE))
+            marker = json.loads((vault / "unknown_overlay.json").read_text(encoding="utf-8"))
+            self.assertEqual(marker["format"], 1)
+            self.assertIn(WK, marker["apps"])
+            self.assertNotIn("driver-hmac", json.dumps(marker))
+
+    def test_t2_apply_timeout_before_delivery_identical_outcome(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            vault, work, pm2 = self._dual(td)
+            pm2.behaviors[WK] = ["timeout_before_merge"]
+            result, deleted = self._run(vault, work, pm2)
+            self.assertIn("COMMAND_UNCERTAIN", result.reasons)
+            self._assert_unknown(result, vault, deleted)
+            apply_entries = [e for e in self._journal(vault) if e["op"] == "APPLY"]
+            self.assertEqual(apply_entries[0]["phase"], "UNCERTAIN")
+            # the client cannot distinguish the two cases: same class, same flags
+            self.assertTrue(self._restore_calls(pm2, WK))
+            self.assertTrue(pm2.apps_equal_baseline(WK, WK_BASELINE))
+
+    # -- T3 -----------------------------------------------------------------
+    def test_t3_restore_timeout_latches(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            vault, work, pm2 = self._dual(td)
+            pm2.behaviors[WK] = ["ack", "timeout_after_merge"]  # apply acks; restore times out
+            result, deleted = self._run(vault, work, pm2)
+            self._assert_unknown(result, vault, deleted)
+            restore_entries = [e for e in self._journal(vault) if e["op"] == "RESTORE"]
+            self.assertEqual([e["phase"] for e in restore_entries], ["UNCERTAIN"])
+            self.assertFalse(result.commands_acked)
+            self.assertFalse(result.snapshot_matched)
+            rr = json.loads((vault / "restore_result.json").read_text(encoding="utf-8"))
+            self.assertIn(WK, rr["apps_failed"])
+            self.assertNotIn("orig-key", json.dumps(rr))
+
+    # -- T4 -----------------------------------------------------------------
+    def test_t4_matching_snapshot_while_latched_is_not_success(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            vault, work, pm2 = self._dual(td)
+            pm2.behaviors[WK] = ["exit_nonzero", "ack"]  # apply uncertain (non-zero exit); restore acks
+            result, deleted = self._run(vault, work, pm2)
+            self._assert_unknown(result, vault, deleted)
+            self.assertTrue(result.snapshot_matched, "matching dual snapshot is recorded as evidence")
+            self.assertFalse(result.commands_acked, "an uncertain apply denies the acked claim")
+            self.assertFalse(result.restore_ok)
+            self.assertTrue(pm2.apps_equal_baseline(WK, WK_BASELINE))
+            apply_entries = [e for e in self._journal(vault) if e["op"] == "APPLY"]
+            self.assertEqual(apply_entries[0]["phase"], "UNCERTAIN")
+            self.assertEqual(apply_entries[0]["exit_code"], 7)
+
+    # -- T5 (watchdog overlap; wall-clock window like the existing blocked test) --
+    def test_t5_watchdog_restore_overlaps_in_flight_apply(self) -> None:
+        import threading
+        import time as time_mod
+
+        from overlay_restore import OverlayError, OverlayWindowState
+
+        release = threading.Event()
+        entered = threading.Event()
+        with tempfile.TemporaryDirectory() as td:
+            vault, work, pm2 = self._dual(td)
+            # xai: gateway is applied first and blocks after the daemon received it;
+            # the worker apply must then be refused before spawn.
+            pm2.behaviors[GW] = [("block", release, entered), "ack"]
+            windows = OverlayWindowState(
+                worker_app=WK,
+                gateway_app=GW,
+                worker_limit_sec=0.2,
+                gateway_limit_sec=0.2,
+                restore_reserve_sec=0.0,
+            )
+            holder: dict = {}
+
+            def run() -> None:
+                holder["r"], holder["d"] = self._run(
+                    vault, work, pm2, which="xai", overlay_windows=windows, now=time_mod.monotonic, sleep=time_mod.sleep
+                )
+
+            thread = threading.Thread(target=run)
+            thread.start()
+            try:
+                self.assertTrue(entered.wait(timeout=5), "gateway apply did not reach the blocked state")
+                time_mod.sleep(0.5)  # window (0.2s) is due; watchdog owns restore
+                # T6: a late apply through the gated adapter without the owner token
+                journal_before = len(self._journal(vault))
+                with self.assertRaises(OverlayError) as ctx:
+                    pm2.restart_update_env(WK, {"AGENT_HARNESS_ENABLE_TOOL_LOOP": "true"})
+                self.assertEqual(ctx.exception.code, "OVERLAY_AFTER_RESTORE")
+                self.assertEqual(len(self._journal(vault)), journal_before, "refused late apply writes no INTENT")
+            finally:
+                release.set()
+                thread.join(timeout=15)
+            self.assertFalse(thread.is_alive())
+            result, deleted = holder["r"], holder["d"]
+            self._assert_unknown(result, vault, deleted)
+            self.assertTrue(any(r in result.reasons for r in ("GATEWAY_WINDOW_EXCEEDED", "WORKER_WINDOW_EXCEEDED")))
+            # in-flight apply recorded DISPATCHED then latched as uncertain (unsettled at restore)
+            apply_entries = [e for e in self._journal(vault) if e["op"] == "APPLY"]
+            self.assertEqual(len(apply_entries), 1, "second app's apply never reached INTENT")
+            self.assertEqual(apply_entries[0]["app"], GW)
+            self.assertEqual(apply_entries[0]["phase"], "UNCERTAIN")
+            self.assertIsNotNone(apply_entries[0].get("client_pid") or apply_entries[0].get("dispatched_mono_ts"))
+            # restore_reserve_sec=0 bounds the owner's accounting wait to zero, so the
+            # in-flight apply is settled UNCERTAIN (UNSETTLED_AT_RESTORE) before restore.
+            result_latch = json.loads((vault / "restore_result.json").read_text(encoding="utf-8"))["latch_reasons"]
+            self.assertIn("APPLY_UNSETTLED_AT_RESTORE", result_latch)
+            # the blocked apply acked only after ownership (release in ``finally``):
+            # the late ack widens the marker but cannot overwrite the UNCERTAIN terminal.
+            marker = json.loads((vault / "unknown_overlay.json").read_text(encoding="utf-8"))
+            self.assertIn("APPLY_ACKED_LATE", marker["reasons"])
+            self.assertIn("APPLY_UNSETTLED_AT_RESTORE", marker["reasons"])
+            self.assertEqual(apply_entries[0]["reason"], "UNSETTLED_AT_RESTORE")
+            # worker apply refused before spawn: no worker call with the overlay value
+            self.assertFalse(any(a == WK and env.get("AGENT_HARNESS_ENABLE_TOOL_LOOP") == "true" for a, env in pm2.calls))
+            # exactly one restore per app
+            restore_entries = [e for e in self._journal(vault) if e["op"] == "RESTORE"]
+            self.assertEqual(sorted(e["app"] for e in restore_entries), sorted([GW, WK]))
+            self.assertEqual(len(self._restore_calls(pm2, GW)), 1)
+            self.assertEqual(len(self._restore_calls(pm2, WK)), 1)
+
+    # -- T6 / T7 / T15 (deterministic, unit-level on the dispatch context) --
+    def test_t6_late_apply_without_token_refused_no_intent(self) -> None:
+        from overlay_restore import DispatchContext, OverlayError, dispatch_restart
+
+        with tempfile.TemporaryDirectory() as td:
+            pm2 = FakePm2Dual()
+            pm2.seed(GW, GW_BASELINE)
+            ctx = DispatchContext(td)
+            ctx.orig_restart = pm2.restart_update_env
+            token = ctx.take_ownership()
+            self.assertIsNotNone(token)
+            with self.assertRaises(OverlayError) as err:
+                dispatch_restart(pm2, GW, {"GLOBAL_EXECUTION_ENABLED": "true"}, ctx, owner_token=None)
+            self.assertEqual(err.exception.code, "OVERLAY_AFTER_RESTORE")
+            self.assertEqual(self._journal(Path(td)), [])
+            self.assertEqual(pm2.calls, [])
+            self.assertFalse(ctx.latched)
+            # the owner's own dispatch with its token is admitted
+            attempt = dispatch_restart(pm2, GW, GW_BASELINE, ctx, op="RESTORE", owner_token=token)
+            self.assertEqual(attempt.fate, "ACKED")
+            self.assertFalse(attempt.acked_late)
+
+    def test_t7_late_ack_after_ownership_latches(self) -> None:
+        import threading
+
+        from overlay_restore import DispatchContext, dispatch_restart
+        from vault import unknown_latched
+
+        release = threading.Event()
+        entered = threading.Event()
+        with tempfile.TemporaryDirectory() as td:
+            pm2 = FakePm2Dual()
+            pm2.seed(GW, GW_BASELINE)
+            pm2.behaviors[GW] = [("block", release, entered)]
+            ctx = DispatchContext(td)
+            ctx.orig_restart = pm2.restart_update_env
+            holder: dict = {}
+
+            def apply() -> None:
+                holder["a"] = dispatch_restart(pm2, GW, {"GLOBAL_EXECUTION_ENABLED": "true"}, ctx, op="APPLY")
+
+            thread = threading.Thread(target=apply)
+            thread.start()
+            self.assertTrue(entered.wait(timeout=5))
+            # daemon has the command (DISPATCHED); ownership is taken before the ack arrives
+            self.assertEqual([e["phase"] for e in self._journal(Path(td))], ["DISPATCHED"])
+            self.assertIsNotNone(ctx.take_ownership())
+            release.set()
+            thread.join(timeout=10)
+            attempt = holder["a"]
+            self.assertEqual(attempt.fate, "ACKED")
+            self.assertTrue(attempt.acked_late)
+            entry = self._journal(Path(td))[0]
+            self.assertEqual(entry["phase"], "ACKED")
+            self.assertEqual(entry["reason"], "ACKED_LATE")
+            self.assertTrue(ctx.latched)
+            self.assertIn("APPLY_ACKED_LATE", ctx.latch_reasons)
+            self.assertTrue(unknown_latched(td))
+
+    def test_t15_ownership_between_intent_and_spawn_refuses_before_spawn(self) -> None:
+        import threading
+
+        from overlay_restore import DispatchContext, OverlayError, dispatch_restart
+        from vault import unknown_latched
+
+        proceed = threading.Event()
+        entered = threading.Event()
+        with tempfile.TemporaryDirectory() as td:
+            pm2 = FakePm2Dual()
+            pm2.seed(GW, GW_BASELINE)
+            pm2.behaviors[GW] = [("hold_before_spawn", proceed, entered)]
+            ctx = DispatchContext(td)
+            ctx.orig_restart = pm2.restart_update_env
+            holder: dict = {}
+
+            def apply() -> None:
+                try:
+                    dispatch_restart(pm2, GW, {"GLOBAL_EXECUTION_ENABLED": "true"}, ctx, op="APPLY")
+                except OverlayError as exc:
+                    holder["code"] = exc.code
+
+            thread = threading.Thread(target=apply)
+            thread.start()
+            self.assertTrue(entered.wait(timeout=5))
+            # INTENT is durable; no process exists yet
+            self.assertEqual([e["phase"] for e in self._journal(Path(td))], ["INTENT"])
+            self.assertIsNotNone(ctx.take_ownership())
+            proceed.set()
+            thread.join(timeout=10)
+            self.assertEqual(holder.get("code"), "OVERLAY_AFTER_RESTORE")
+            entry = self._journal(Path(td))[0]
+            self.assertEqual(entry["phase"], "NOT_DELIVERED")
+            self.assertEqual(entry["reason"], "REFUSED_BEFORE_SPAWN")
+            self.assertEqual(pm2.spawned, [])
+            self.assertEqual(pm2.nested[GW], GW_BASELINE)
+            self.assertFalse(ctx.latched)
+            self.assertFalse(unknown_latched(td))
+            # owner accounting sees the settled NOT_DELIVERED attempt: no latch from it
+            from overlay_restore import account_live_attempts
+
+            self.assertEqual(account_live_attempts(ctx), [])
+            self.assertFalse(ctx.latched)
+
+    # -- T8 / T16 -------------------------------------------------------------
+    def test_t8_interrupted_run_persists_and_blocks_next_run(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            vault, work, pm2 = self._dual(td)
+            pm2.behaviors[WK] = ["interrupt"]  # KeyboardInterrupt after the daemon merged
+            result, deleted = self._run(vault, work, pm2)
+            self.assertIn("ORCHESTRATE_INTERRUPTED", result.reasons)
+            self._assert_unknown(result, vault, deleted)
+            # next run on the same vault: refused before any mutation or capture
+            pm2_second = FakePm2Dual()
+            pm2_second.seed(GW, GW_BASELINE)
+            pm2_second.seed(WK, WK_BASELINE)
+            cap = FakeCapture()
+            proc = self._accepted_proc()
+            second, deleted2 = self._run(vault, work, pm2_second, cap=cap, proc=proc)
+            self.assertEqual(second.classification, "INCOMPLETE")
+            self.assertIn("UNRESOLVED_VAULT_EXISTS", second.reasons)
+            self.assertIn("UNRESOLVED_UNKNOWN_OVERLAY", second.reasons)
+            self.assertEqual(pm2_second.calls, [])
+            self.assertEqual(pm2_second.dump_calls, 0)
+            self.assertFalse(proc.spawn_calls)
+            self.assertEqual(cap.argv, {})
+            self.assertEqual(deleted2["n"], 0)
+
+    def test_t8_t16_orphaned_intent_and_dispatched_block_next_run(self) -> None:
+        from vault import CommandJournal, orphaned_attempts, refuse_unresolved_vault, VaultStateError
+
+        for orphan_phase in ("INTENT", "DISPATCHED"):
+            with tempfile.TemporaryDirectory() as td:
+                vault, work, pm2 = self._dual(td)
+                vault.mkdir()
+                other = CommandJournal(str(vault), run_id="deadbeef-other-run", pid=1)
+                aid = other.intent("APPLY", WK, ["AGENT_HARNESS_ENABLE_TOOL_LOOP"])
+                if orphan_phase == "DISPATCHED":
+                    other.dispatched(aid, 4242)
+                before = json.dumps(self._journal(vault), sort_keys=True)
+                with self.assertRaises(VaultStateError) as err:
+                    refuse_unresolved_vault(str(vault))
+                self.assertIn("UNRESOLVED_COMMAND_ATTEMPTS", err.exception.codes)
+                self.assertEqual([e["attempt_id"] for e in orphaned_attempts(str(vault), run_id="me")], [aid])
+                cap = FakeCapture()
+                proc = self._accepted_proc()
+                result, deleted = self._run(vault, work, pm2, cap=cap, proc=proc)
+                self.assertEqual(result.classification, "INCOMPLETE")
+                self.assertIn("UNRESOLVED_COMMAND_ATTEMPTS", result.reasons)
+                self.assertEqual(pm2.calls, [], orphan_phase)
+                self.assertEqual(pm2.dump_calls, 0)
+                self.assertFalse(proc.spawn_calls)
+                self.assertEqual(cap.argv, {})
+                self.assertEqual(deleted["n"], 0)
+                # the orphan is neither adopted nor rewritten by the refused run
+                self.assertEqual(json.dumps(self._journal(vault), sort_keys=True), before)
+
+    def test_t16_standalone_restore_on_orphaned_vault_latches_without_adopting(self) -> None:
+        from overlay_restore import restore_overlays
+        from vault import CommandJournal, write_app_vault
+
+        with tempfile.TemporaryDirectory() as td:
+            vault = Path(td) / "vault"
+            vault.mkdir()
+            write_app_vault(str(vault), WK, WK_BASELINE)
+            other = CommandJournal(str(vault), run_id="deadbeef-other-run", pid=1)
+            aid = other.intent("APPLY", WK, ["AGENT_HARNESS_ENABLE_TOOL_LOOP"])
+            pm2 = FakePm2Dual()
+            pm2.seed(WK, {**WK_BASELINE, "AGENT_HARNESS_ENABLE_TOOL_LOOP": "true"})
+            result = restore_overlays(str(vault), [WK], pm2, hmac_absent_empty_authorized=True)
+            self.assertTrue(result.unknown_pending_overlay)
+            self.assertEqual(result.result_class, "UNKNOWN_PENDING_OVERLAY")
+            self.assertFalse(result.ok)
+            self.assertTrue(result.snapshot_matched, "restore itself acked and matched (evidence)")
+            self.assertFalse(result.commands_acked, "an orphaned attempt denies the acked claim")
+            self.assertIn("ORPHANED_ATTEMPT", result.latch_reasons)
+            self.assertTrue((vault / "unknown_overlay.json").is_file())
+            orphan = [e for e in self._journal(vault) if e["attempt_id"] == aid][0]
+            self.assertEqual(orphan["phase"], "INTENT", "orphan is never resolved or rewritten")
+            self.assertEqual(orphan["run_id"], "deadbeef-other-run")
+
+    # -- T9 -----------------------------------------------------------------
+    def test_t9_corrupt_marker_or_journal_fails_closed(self) -> None:
+        from vault import refuse_unresolved_vault, unknown_latched, VaultStateError
+
+        cases = {
+            "truncated_marker": ("unknown_overlay.json", '{"format": 1, "attempts": ['),
+            "wrong_shape_marker": ("unknown_overlay.json", "[]\n"),
+            "truncated_journal": ("overlay_commands.json", '{"format": 1, "entries": [{"attempt_id": "x"'),
+            "wrong_shape_journal": ("overlay_commands.json", '{"format": 1, "entries": [{"attempt_id": "x"}]}\n'),
+            "bad_seq_journal": (
+                "overlay_commands.json",
+                json.dumps({"format": 1, "entries": [
+                    {"attempt_id": "a", "run_id": "r", "op": "APPLY", "app": WK, "phase": "ACKED", "seq": 2}
+                ]}),
+            ),
+            "unknown_format_journal": ("overlay_commands.json", '{"format": 99, "entries": []}\n'),
+        }
+        for name, (fname, content) in cases.items():
+            with tempfile.TemporaryDirectory() as td:
+                vault, work, pm2 = self._dual(td)
+                vault.mkdir()
+                (vault / fname).write_text(content, encoding="utf-8")
+                self.assertTrue(unknown_latched(str(vault)), name)
+                with self.assertRaises(VaultStateError) as err:
+                    refuse_unresolved_vault(str(vault))
+                self.assertIn("UNKNOWN_STATE_CORRUPT", err.exception.codes, name)
+                cap = FakeCapture()
+                proc = self._accepted_proc()
+                result, deleted = self._run(vault, work, pm2, cap=cap, proc=proc)
+                self.assertEqual(result.classification, "INCOMPLETE", name)
+                self.assertIn("UNKNOWN_STATE_CORRUPT", result.reasons, name)
+                self.assertEqual(pm2.calls, [], name)
+                self.assertEqual(pm2.dump_calls, 0, name)
+                self.assertFalse(proc.spawn_calls, name)
+                self.assertEqual(cap.argv, {}, name)
+                self.assertEqual(deleted["n"], 0, name)
+                # the corrupt file is left in place (never "repaired" or removed)
+                self.assertEqual((vault / fname).read_text(encoding="utf-8"), content, name)
+
+    # -- T10 ----------------------------------------------------------------
+    def test_t10_divergence_after_restore_is_unknown(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            vault, work, pm2 = self._dual(td)
+            pm2.behaviors[WK] = ["ack", "latent_ack"]  # restore merged into env but no process reflects it
+            result, deleted = self._run(vault, work, pm2)
+            self._assert_unknown(result, vault, deleted)
+            self.assertFalse(result.snapshot_matched)
+            self.assertIn("DIVERGENT", result.latch_reasons if hasattr(result, "latch_reasons") else
+                          json.loads((vault / "restore_result.json").read_text(encoding="utf-8"))["latch_reasons"])
+            rr = json.loads((vault / "restore_result.json").read_text(encoding="utf-8"))
+            self.assertIn("DIVERGENT", rr["latch_reasons"])
+            self.assertIn(WK, rr["apps_failed"])
+            self.assertTrue(any("DIVERGENT" in v for v in rr["compared"][WK].values()))
+            # pm2_env stale vs pm2_env.env restored
+            self.assertEqual(pm2.top[WK]["AGENT_HARNESS_ENABLE_TOOL_LOOP"], "true")
+            self.assertEqual(pm2.nested[WK]["AGENT_HARNESS_ENABLE_TOOL_LOOP"], "false")
+
+    def test_t10_pre_mutation_divergence_refuses_before_first_mutation(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            vault, work, pm2 = self._dual(td)
+            pm2.seed(WK, WK_BASELINE, nested={**WK_BASELINE, "AGENT_HARNESS_ENABLE_TOOL_LOOP": "true"})
+            cap = FakeCapture()
+            proc = self._accepted_proc()
+            result, deleted = self._run(vault, work, pm2, cap=cap, proc=proc)
+            self.assertEqual(result.classification, "INCOMPLETE")
+            self.assertIn("BASELINE_DIVERGENT", result.reasons)
+            self.assertEqual(pm2.calls, [])
+            self.assertFalse(proc.spawn_calls)
+            self.assertEqual(cap.argv, {})
+            self.assertFalse((vault / "pending_apps.json").is_file())
+            self.assertFalse((vault / "overlay_commands.json").is_file())
+            self.assertFalse(result.unknown_pending_overlay)
+
+    # -- T11 ----------------------------------------------------------------
+    def test_t11_dual_field_states_and_named_exceptions(self) -> None:
+        from overlay_restore import compare_restore_dual, desired_env_for_restore
+        from vault import write_vault
+
+        with tempfile.TemporaryDirectory() as td:
+            write_vault(
+                td,
+                {
+                    "GLOBAL_EXECUTION_ENABLED": "false",  # SET
+                    "PROVIDER_XAI_ENABLED": "",  # EMPTY
+                    "HARNESS_ENTITLEMENT_HMAC_SECRET": None,  # ABSENT (HMAC named exception)
+                    "XAI_API_KEY": "orig-key",  # SET secret
+                },
+            )
+            from vault import load_metadata
+
+            meta = load_metadata(td)
+            good = {"GLOBAL_EXECUTION_ENABLED": "false", "PROVIDER_XAI_ENABLED": "", "HARNESS_ENTITLEMENT_HMAC_SECRET": "", "XAI_API_KEY": "orig-key"}
+            # both fields match, HMAC ABSENT->EMPTY authorized
+            matched, compared, divergent = compare_restore_dual(meta, good, dict(good), True)
+            self.assertTrue(matched)
+            self.assertEqual(divergent, [])
+            self.assertEqual(compared["PROVIDER_XAI_ENABLED"], {"expected": "EMPTY", "actual": "EMPTY"})
+            # HMAC ABSENT->EMPTY unauthorized: pending on both fields, not matched, not divergent
+            matched, compared, divergent = compare_restore_dual(meta, good, dict(good), False)
+            self.assertFalse(matched)
+            self.assertEqual(divergent, [])
+            self.assertEqual(compared["HARNESS_ENTITLEMENT_HMAC_SECRET"]["expected"], "ABSENT_PENDING_AUTH")
+            # per-field state difference: SET on top, ABSENT in env
+            top = dict(good)
+            nested = {k: v for k, v in good.items() if k != "GLOBAL_EXECUTION_ENABLED"}
+            matched, compared, divergent = compare_restore_dual(meta, top, nested, True)
+            self.assertFalse(matched)
+            self.assertEqual(divergent, ["GLOBAL_EXECUTION_ENABLED"])
+            self.assertIn("DIVERGENT(top=SET,env=ABSENT)", compared["GLOBAL_EXECUTION_ENABLED"]["actual"])
+            # both SET, different values
+            nested = {**good, "GLOBAL_EXECUTION_ENABLED": "true"}
+            matched, compared, divergent = compare_restore_dual(meta, top, nested, True)
+            self.assertFalse(matched)
+            self.assertEqual(divergent, ["GLOBAL_EXECUTION_ENABLED"])
+            # EMPTY vs ABSENT is a distinct state per field
+            nested = {k: v for k, v in good.items() if k != "PROVIDER_XAI_ENABLED"}
+            matched, compared, divergent = compare_restore_dual(meta, top, nested, True)
+            self.assertEqual(divergent, ["PROVIDER_XAI_ENABLED"])
+            # no new exception: a non-HMAC ABSENT baseline is still UNSUPPORTED_ABSENT_RESTORE
+            write_vault(td, {"WRITE_ENABLED": None, "GLOBAL_EXECUTION_ENABLED": "false"})
+            desired, refuse = desired_env_for_restore(td, True)
+            self.assertEqual(refuse, "UNSUPPORTED_ABSENT_RESTORE")
+            self.assertEqual(desired, {})
+
+    # -- T12 ----------------------------------------------------------------
+    def test_t12_child_env_allowlist_per_binary_branch(self) -> None:
+        from unittest import mock
+
+        from overlay_restore import CliPm2, OverlayError, _child_env_for_pm2
+
+        with mock.patch.dict(os.environ, {
+            "MOCK_PM2_STATE": "/tmp/x.json",
+            "PYTHONPATH": "/prep/lib",
+            "PYTHONHOME": "/py",
+            "PYTHONIOENCODING": "utf-8",
+            "PATH": os.environ.get("PATH", "/usr/bin"),
+            "HOME": "/home/op",
+            "LANG": "C.UTF-8",
+        }, clear=False):
+            live = _child_env_for_pm2({"GLOBAL_EXECUTION_ENABLED": "true"}, mock_cli=False)
+            for key in ("MOCK_PM2_STATE", "PYTHONPATH", "PYTHONHOME", "PYTHONIOENCODING"):
+                self.assertNotIn(key, live, key)
+            for key in ("PATH", "HOME", "LANG", "GLOBAL_EXECUTION_ENABLED"):
+                self.assertIn(key, live, key)
+            mocked = _child_env_for_pm2({"GLOBAL_EXECUTION_ENABLED": "true"}, mock_cli=True)
+            for key in ("MOCK_PM2_STATE", "PYTHONPATH", "PYTHONHOME", "PYTHONIOENCODING", "PATH", "HOME"):
+                self.assertIn(key, mocked, key)
+            # live binary with MOCK_PM2_STATE set: refused before any spawn
+            with mock.patch("overlay_restore.subprocess.check_call") as check_call, mock.patch(
+                "overlay_restore.subprocess.Popen"
+            ) as popen:
+                with self.assertRaises(OverlayError) as err:
+                    CliPm2("pm2").restart_update_env("gw", {"GLOBAL_EXECUTION_ENABLED": "true"})
+                self.assertEqual(err.exception.code, "MOCK_STATE_IN_LIVE_ENV")
+                check_call.assert_not_called()
+                popen.assert_not_called()
+            # .py mock branch: not refused; argv uses sys.executable; child env carries mock-only keys
+            with mock.patch("overlay_restore.subprocess.check_call") as check_call:
+                CliPm2(str(BIN / "mock-pm2.py")).restart_update_env("gw", {"GLOBAL_EXECUTION_ENABLED": "true"})
+                self.assertEqual(check_call.call_count, 1)
+                argv = check_call.call_args.args[0]
+                self.assertEqual(argv[0], sys.executable)
+                child_env = check_call.call_args.kwargs["env"]
+                self.assertIn("MOCK_PM2_STATE", child_env)
+                self.assertIn("PYTHONPATH", child_env)
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("MOCK_PM2_STATE", None)
+            with mock.patch("overlay_restore.subprocess.check_call") as check_call:
+                CliPm2("pm2").restart_update_env("gw", {"GLOBAL_EXECUTION_ENABLED": "true"})
+                child_env = check_call.call_args.kwargs["env"]
+                self.assertNotIn("PYTHONPATH", child_env)
+                self.assertNotIn("MOCK_PM2_STATE", child_env)
+                self.assertEqual(check_call.call_args.args[0][0], "pm2")
+
+    # -- T13 (corrected per §10.3.A.7) ----------------------------------------
+    def test_t13_acked_matched_unproven_is_not_restoration_success(self) -> None:
+        from accepted_result import allows_next_canary
+
+        with tempfile.TemporaryDirectory() as td:
+            vault, work, pm2 = self._dual(td)
+            result, deleted = self._run(vault, work, pm2, which="xai")
+            self.assertTrue(result.commands_acked)
+            self.assertTrue(result.snapshot_matched)
+            self.assertFalse(result.unknown_pending_overlay)
+            self.assertEqual(result.result_class, "RESTORE_ATTEMPTED_ACKED_MATCHED_UNPROVEN")
+            self.assertFalse(result.restore_ok)
+            self.assertFalse(result.overlays_restored)
+            self.assertFalse(result.next_canary_allowed)
+            self.assertEqual(result.classification, "INCOMPLETE")
+            self.assertEqual(result.fence_proof, "NONE")
+            self.assertTrue(result.vault_preserved)
+            self.assertEqual(deleted["n"], 0)
+            self.assertTrue(pm2.apps_equal_baseline(GW, GW_BASELINE))
+            self.assertTrue(pm2.apps_equal_baseline(WK, WK_BASELINE))
+            self.assertFalse((vault / "unknown_overlay.json").is_file())
+            self.assertTrue((vault / "pending_apps.json").is_file())
+            self.assertTrue((vault / "apps" / WK / "protected" / "XAI_API_KEY.value").is_file())
+            journal = self._journal(vault)
+            self.assertTrue(journal)
+            self.assertTrue(all(e["phase"] == "ACKED" for e in journal))
+            self.assertEqual(sorted(e["op"] for e in journal), ["APPLY", "APPLY", "RESTORE", "RESTORE"])
+            # allows_next_canary (out of write set) already denies without restore_ok
+            self.assertFalse(
+                allows_next_canary(
+                    "stub",
+                    result.accepted,
+                    restore_ok=result.restore_ok,
+                    overlays_restored=result.overlays_restored,
+                    network_independent=result.network_independent,
+                )
+            )
+            # the recorded result file carries evidence, never values
+            rr = json.loads((vault / "restore_result.json").read_text(encoding="utf-8"))
+            self.assertEqual(rr["result_class"], "RESTORE_ATTEMPTED_ACKED_MATCHED_UNPROVEN")
+            self.assertFalse(rr["restore_proven"])
+            self.assertNotIn("orig-key", json.dumps(rr))
+            self.assertNotIn("driver-hmac", json.dumps(rr))
+
+    def test_fence_proof_boundary_static(self) -> None:
+        """§10.3.A.2: no production input, flag, env, config, or caller assertion
+        can produce a non-NONE fence proof; T13b is omitted for this reason."""
+        import inspect
+        import re
+
+        from overlay_restore import FENCE_PROOF_NONE, RestoreResult, restore_overlays
+
+        self.assertEqual(FENCE_PROOF_NONE, "NONE")
+        self.assertNotIn("fence_proof", inspect.signature(orchestrate).parameters)
+        self.assertNotIn("fence_proof", inspect.signature(restore_overlays).parameters)
+        self.assertEqual(RestoreResult.__dataclass_fields__["fence_proof"].default, "NONE")
+        allowed = re.compile(
+            r"fence_proof(: str)?\s*=\s*(FENCE_PROOF_NONE|\"NONE\")"  # constant definition / field default
+            r"|fence_proof\s*=\s*FENCE_PROOF_NONE"  # local binding in finalize()
+            r"|fence_proof=result\.fence_proof"  # payload copy
+            r"|\"fence_proof\": result\.fence_proof"  # payload copy
+            r"|fence_proof=fence_proof"  # constructor pass-through of the NONE local
+        )
+        for path in sorted(LIB.glob("*.py")):
+            for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+                stripped = line.strip()
+                if "fence_proof" not in stripped or stripped.startswith("#") or stripped.startswith(("*", "\"\"\"")):
+                    continue
+                if "=" in stripped and not stripped.startswith(("self.", "proven", "ok ", "if ", "return", "\"", "fence_proof !=", "result.fence_proof")):
+                    self.assertRegex(stripped, allowed, f"{path.name}:{lineno}: {stripped}")
+        # shell entry points and defaults.env carry no fence-proof plumbing
+        for rel in ("bin/orchestrate-canary.sh", "bin/restore-overlays.sh", "config/defaults.env"):
+            self.assertNotIn("fence", (ROOT / rel).read_text(encoding="utf-8", errors="replace").lower(), rel)
+        # main() passes no proof and no override to orchestrate()
+        src = (LIB / "orchestrate.py").read_text(encoding="utf-8")
+        main_src = src[src.index("def main("):]
+        self.assertNotIn("fence_proof=", main_src.split("payload = {")[0])
+        self.assertNotIn("delete_vault=lambda", main_src)
+
+    # -- T17 ----------------------------------------------------------------
+    def test_t17_durable_replace_call_sequence_and_seq_mismatch(self) -> None:
+        from unittest import mock
+
+        import vault as vault_mod
+        from vault import CommandJournal, VaultStateError, durable_replace
+
+        with tempfile.TemporaryDirectory() as td:
+            events: list[str] = []
+            real_fsync, real_replace = os.fsync, os.replace
+
+            def spy_fsync(fd):
+                import stat
+
+                mode = os.fstat(fd).st_mode
+                events.append("fsync_dir" if stat.S_ISDIR(mode) else "fsync_file")
+                return real_fsync(fd) if not stat.S_ISDIR(mode) or os.name != "nt" else None
+
+            def spy_replace(src, dst):
+                events.append("replace")
+                return real_replace(src, dst)
+
+            target = os.path.join(td, "overlay_commands.json")
+            with mock.patch.object(vault_mod, "_fsync", spy_fsync), mock.patch.object(vault_mod, "_replace", spy_replace):
+                durability = durable_replace(target, b'{"format": 1, "entries": []}\n')
+            self.assertEqual(Path(target).read_bytes(), b'{"format": 1, "entries": []}\n')
+            if os.name == "nt":
+                self.assertEqual(events, ["fsync_file", "replace"])
+                self.assertEqual(durability, "RENAME_ONLY")
+            else:
+                self.assertEqual(events, ["fsync_file", "replace", "fsync_dir"])
+                self.assertEqual(durability, "FULL")
+                self.assertEqual(os.stat(target).st_mode & 0o777, 0o600)
+            self.assertFalse([p for p in os.listdir(td) if p.startswith(".tmp-")], "no temp file left behind")
+
+            # write failure refuses without touching the target
+            with mock.patch.object(vault_mod, "_fsync", side_effect=OSError("disk")):
+                with self.assertRaises(OSError):
+                    durable_replace(target, b"x")
+            self.assertEqual(Path(target).read_bytes(), b'{"format": 1, "entries": []}\n')
+            self.assertFalse([p for p in os.listdir(td) if p.startswith(".tmp-")])
+
+            # lost-update guard: an external writer changed the journal seq
+            journal = CommandJournal(td, run_id="me", pid=1)
+            aid = journal.intent("APPLY", WK, ["K"])
+            raw = json.loads(Path(target).read_text(encoding="utf-8"))
+            raw["entries"].append({**raw["entries"][0], "attempt_id": "foreign", "seq": 2})
+            Path(target).write_text(json.dumps(raw), encoding="utf-8")
+            with self.assertRaises(VaultStateError) as err:
+                journal.terminal(aid, "ACKED", exit_code=0)
+            self.assertEqual(err.exception.code, "JOURNAL_SEQ_MISMATCH")
+            # a dispatch that cannot journal its INTENT is refused with no spawn
+            from overlay_restore import DispatchContext, OverlayError, dispatch_restart
+
+            pm2 = FakePm2Dual()
+            pm2.seed(WK, WK_BASELINE)
+            ctx = DispatchContext(td, journal=journal)
+            ctx.orig_restart = pm2.restart_update_env
+            with self.assertRaises(OverlayError) as err2:
+                dispatch_restart(pm2, WK, {"K": "1"}, ctx)
+            self.assertEqual(err2.exception.code, "JOURNAL_WRITE_FAILED")
+            self.assertEqual(pm2.calls, [])
+            self.assertEqual(pm2.spawned, [])
+
+    def test_t17_journal_uncertain_is_monotonic(self) -> None:
+        from vault import CommandJournal, entry_is_unresolved
+
+        with tempfile.TemporaryDirectory() as td:
+            journal = CommandJournal(td, run_id="me", pid=1)
+            aid = journal.intent("APPLY", WK, ["K"])
+            journal.dispatched(aid, 99)
+            journal.terminal(aid, "UNCERTAIN", reason="TIMEOUT")
+            journal.terminal(aid, "ACKED", exit_code=0)  # late ack cannot overwrite uncertainty
+            entry = journal.entries()[0]
+            self.assertEqual(entry["phase"], "UNCERTAIN")
+            self.assertTrue(entry_is_unresolved(entry))
+            self.assertEqual(entry["durability"], "RENAME_ONLY" if os.name == "nt" else "FULL")
+            bid = journal.intent("RESTORE", WK, ["K"])
+            journal.terminal(bid, "ACKED", exit_code=0)
+            journal.terminal(bid, "UNCERTAIN", reason="LATE_DOUBT")  # upgrade to uncertainty is allowed
+            self.assertEqual(journal.entries()[1]["phase"], "UNCERTAIN")
+            self.assertEqual([e["seq"] for e in journal.entries()], [1, 2])
+
+    # -- T18 ----------------------------------------------------------------
+    def test_t18_second_run_on_same_vault_gets_run_lock_held(self) -> None:
+        from overlay_restore import restore_overlays
+        from vault import VaultRunLock, VaultStateError, write_app_vault
+
+        with tempfile.TemporaryDirectory() as td:
+            vault, work, pm2 = self._dual(td)
+            vault.mkdir()
+            write_app_vault(str(vault), WK, WK_BASELINE)
+            holder = VaultRunLock(str(vault)).acquire()
+            try:
+                with self.assertRaises(VaultStateError) as err:
+                    VaultRunLock(str(vault)).acquire()
+                self.assertEqual(err.exception.code, "RUN_LOCK_HELD")
+                result = restore_overlays(str(vault), [WK], pm2, hmac_absent_empty_authorized=True)
+                self.assertEqual(result.result_class, "RUN_LOCK_HELD")
+                self.assertFalse(result.ok)
+                self.assertTrue(result.preserved_vault)
+                self.assertEqual(pm2.calls, [])
+                self.assertFalse((vault / "overlay_commands.json").is_file())
+                cap = FakeCapture()
+                proc = self._accepted_proc()
+                orch, deleted = self._run(vault, work, pm2, cap=cap, proc=proc)
+                self.assertEqual(orch.classification, "INCOMPLETE")
+                self.assertIn("RUN_LOCK_HELD", orch.reasons)
+                self.assertEqual(pm2.calls, [])
+                self.assertEqual(pm2.dump_calls, 0)
+                self.assertFalse(proc.spawn_calls)
+                self.assertEqual(cap.argv, {})
+            finally:
+                holder.release()
+            # after release the vault is usable again; the owning run's nested
+            # restore does not collide with its own lock (exercised by every
+            # orchestrate-based test above)
+            relock = VaultRunLock(str(vault)).acquire()
+            relock.release()
+            result = restore_overlays(str(vault), [WK], pm2, hmac_absent_empty_authorized=True)
+            self.assertNotEqual(result.result_class, "RUN_LOCK_HELD")
+
+    # -- retention / deletion gate ------------------------------------------
+    def test_recovery_deletion_and_pending_clear_refuse_under_unknown(self) -> None:
+        from vault import (
+            VaultStateError,
+            clear_pending_app,
+            delete_protected_recovery,
+            latch_unknown,
+            mark_pending_apps,
+            protected_recovery_present,
+            write_app_vault,
+        )
+
+        class FakeProven:
+            restore_proven = True
+
+        with tempfile.TemporaryDirectory() as td:
+            write_app_vault(td, WK, WK_BASELINE)
+            mark_pending_apps(td, [WK])
+            # no proof: refused
+            with self.assertRaises(VaultStateError) as err:
+                delete_protected_recovery(td)
+            self.assertEqual(err.exception.code, "RESTORE_UNPROVEN")
+            with self.assertRaises(VaultStateError):
+                delete_protected_recovery(td, proven_result=object())
+            with self.assertRaises(VaultStateError):
+                delete_protected_recovery(td, proven_result=True)  # a bare boolean is not a proof record
+            # latched: refused even with a (test-only) proof-bearing object
+            latch_unknown(td, apps=[WK], reasons=["TEST"])
+            with self.assertRaises(VaultStateError) as err2:
+                delete_protected_recovery(td, proven_result=FakeProven())
+            self.assertEqual(err2.exception.code, "UNKNOWN_LATCHED")
+            with self.assertRaises(VaultStateError) as err3:
+                clear_pending_app(td, WK)
+            self.assertEqual(err3.exception.code, "UNKNOWN_LATCHED")
+            self.assertTrue(protected_recovery_present(td))
+            self.assertTrue(Path(td, "apps", WK, "protected", "XAI_API_KEY.value").is_file())
+            self.assertEqual(json.loads(Path(td, "pending_apps.json").read_text(encoding="utf-8")), [WK])
+            # the marker is never removed by any vault API; a second latch only widens it
+            latch_unknown(td, apps=[GW], reasons=["TEST2"])
+            marker = json.loads(Path(td, "unknown_overlay.json").read_text(encoding="utf-8"))
+            self.assertEqual(sorted(marker["apps"]), sorted([GW, WK]))
+            self.assertEqual(marker["reasons"], ["TEST", "TEST2"])
+            import vault as vault_mod
+
+            self.assertFalse(
+                [
+                    n
+                    for n in dir(vault_mod)
+                    if n.lower().startswith(("clear_unknown", "unlatch", "resolve", "clear_latch", "remove_unknown"))
+                ],
+                "no clearance API may exist",
+            )
 
 
 if __name__ == "__main__":

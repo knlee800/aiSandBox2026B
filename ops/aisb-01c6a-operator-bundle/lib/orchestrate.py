@@ -27,14 +27,20 @@ from config_deadlines import CAPTURE_TAIL_AFTER_TERMINAL_SEC, outer_timeout_ms, 
 from coverage import CoverageReport, assess_coverage, coverage_from_env_files, read_optional_file
 from network_evidence import classify_network
 from overlay_restore import (
+    FENCE_PROOF_NONE,
+    OP_APPLY,
+    RESULT_UNKNOWN_PENDING_OVERLAY,
+    DispatchContext,
     OverlayError,
     OverlayWindowState,
     Pm2Adapter,
     RestoreResult,
     apply_overlay_payloads,
+    assert_baseline_consistent,
     assert_payloads_restorable,
     assert_restore_feasible,
     build_overlay_payloads,
+    dispatch_restart,
     dump_app_envs,
     normalize_restore_reserve_sec,
     restore_overlays,
@@ -53,15 +59,26 @@ from reconcile import (
 )
 from supervise import ProcAdapter, supervise
 from vault import (
+    VaultRunLock,
+    VaultStateError,
     delete_protected_recovery,
     mark_pending_apps,
     protected_recovery_present,
     refuse_unresolved_vault,
+    unresolved_state_codes,
 )
 
 
 @dataclass
 class OrchestrateResult:
+    """Run outcome.
+
+    ``restore_ok`` / ``overlays_restored`` are restoration-success claims and
+    require an F1–F4 fence proof that this bundle cannot produce; they are
+    always False in production (stage-start §10.3.A). ``commands_acked`` and
+    ``snapshot_matched`` are evidence only.
+    """
+
     classification: str
     next_canary_allowed: bool
     capture_tail_started: bool
@@ -72,6 +89,13 @@ class OrchestrateResult:
     reasons: list[str] = field(default_factory=list)
     restore_ok: bool = False
     accepted: AcceptedScriptResult | None = None
+    result_class: str = "NOT_ATTEMPTED"
+    unknown_pending_overlay: bool = False
+    commands_acked: bool = False
+    snapshot_matched: bool = False
+    restore_attempts: list[str] = field(default_factory=list)
+    run_id: str = ""
+    fence_proof: str = FENCE_PROOF_NONE
 
 
 def _write_json(path: str, obj: Any) -> None:
@@ -220,7 +244,12 @@ def orchestrate(
     known_xai = set(xai_addrs or ())
     known_xai |= _load_xai_addrs(xai_addrs_path)
     ss_set = set(ss_before or ())
-    delete_vault_fn = delete_vault or (lambda: delete_protected_recovery(vault_dir))
+    if delete_vault is None:
+        # Default deletion path passes the restore result so the vault-side
+        # gate (RESTORE_UNPROVEN / UNKNOWN_LATCHED) is enforced.
+        delete_vault_fn = lambda res: delete_protected_recovery(vault_dir, proven_result=res)
+    else:
+        delete_vault_fn = lambda res: delete_vault()
     gateway_app = overlay_apps[0] if overlay_apps else ""
     worker_app = overlay_apps[1] if len(overlay_apps) > 1 else (overlay_apps[0] if overlay_apps else "")
     mutated_apps = list(overlay_apps)
@@ -230,62 +259,80 @@ def orchestrate(
     clock = now or time.monotonic
     sleeper = sleep or time.sleep
     now_ms = lambda: int(clock() * 1000)
-    restore_gate: dict[str, Any] = {
-        "started": False,
-        "result": None,
-        "in_flight": False,
-        "in_restore": False,
-        "done": threading.Event(),
-    }
-    restore_lock = threading.Lock()
+    # Coordination context (§10.3.B): ownership, admission, journal, latch.
+    os.makedirs(vault_dir, exist_ok=True)
+    ctx = DispatchContext(vault_dir)
+    restore_pub: dict[str, Any] = {"result": None, "in_flight": False, "done": threading.Event()}
+    restore_result: RestoreResult | None = None
+    run_lock = VaultRunLock(vault_dir)
     watch_stop = threading.Event()
     watch_thread: threading.Thread | None = None
 
+    def _synthetic_unknown(message: str) -> RestoreResult:
+        return RestoreResult(
+            ok=False,
+            matched=False,
+            pending_hmac_authorization=False,
+            preserved_vault=True,
+            message=message,
+            result_class=RESULT_UNKNOWN_PENDING_OVERLAY,
+            unknown_pending_overlay=True,
+            run_id=ctx.run_id,
+            latch_reasons=list(ctx.latch_reasons),
+        )
+
     def restore_always() -> RestoreResult:
-        nonlocal restore_ok, vault_preserved, overlays_restored
+        nonlocal restore_ok, vault_preserved, overlays_restored, restore_result
         wait_for = False
-        with restore_lock:
-            if restore_gate["started"]:
-                existing = restore_gate.get("result")
+        with ctx.restore_lock:
+            if ctx.started:
+                existing = restore_pub["result"]
                 if existing is not None:
                     return existing
-                wait_for = bool(restore_gate.get("in_flight"))
+                wait_for = bool(restore_pub["in_flight"])
+                if not wait_for:
+                    # Owner finished without publishing: never re-run restore.
+                    return _synthetic_unknown("restore owner published no result")
             else:
-                restore_gate["started"] = True
-                restore_gate["in_flight"] = True
+                ctx.take_ownership_locked()
+                restore_pub["in_flight"] = True
         if wait_for:
-            restore_gate["done"].wait(timeout=120)
-            existing = restore_gate.get("result")
+            restore_pub["done"].wait(timeout=120)
+            existing = restore_pub["result"]
             if existing is not None:
                 return existing
-            return RestoreResult(
-                ok=False,
-                matched=False,
-                pending_hmac_authorization=False,
-                preserved_vault=True,
-                message="restore owner did not publish a result",
-            )
-        restore_gate["in_restore"] = True
+            return _synthetic_unknown("restore owner did not publish a result")
+        apps = mutated_apps or overlay_apps
         try:
-            apps = mutated_apps or overlay_apps
-            result = restore_overlays(
-                vault_dir,
-                apps,
-                pm2,
-                hmac_absent_empty_authorized=hmac_absent_empty_authorized,
-            )
+            try:
+                result = restore_overlays(
+                    vault_dir,
+                    apps,
+                    pm2,
+                    hmac_absent_empty_authorized=hmac_absent_empty_authorized,
+                    ctx=ctx,
+                    run_lock=run_lock if run_lock.held else None,
+                    accounting_bound_sec=windows.restore_reserve_sec if windows is not None else None,
+                )
+            except BaseException as exc:  # noqa: BLE001 - never propagate to the watchdog thread
+                ctx.latch(apps=list(apps), reasons=[f"RESTORE_EXCEPTION:{type(exc).__name__}"])
+                result = _synthetic_unknown(f"restore raised {type(exc).__name__}; UNKNOWN latched; vault preserved")
             restore_ok = result.ok
             overlays_restored = result.ok
             due = windows.restore_due(clock()) if windows is not None else None
-            if result.ok and due is None:
-                delete_vault_fn()
+            if result.ok and due is None and not ctx.is_latched() and not unresolved_state_codes(vault_dir):
+                # Requires a proven restore (unreachable in this bundle).
+                try:
+                    delete_vault_fn(result)
+                except VaultStateError as exc:
+                    reasons.append(exc.code)
             vault_preserved = protected_recovery_present(vault_dir)
-            restore_gate["result"] = result
+            restore_result = result
+            restore_pub["result"] = result
             return result
         finally:
-            restore_gate["in_restore"] = False
-            restore_gate["in_flight"] = False
-            restore_gate["done"].set()
+            restore_pub["in_flight"] = False
+            restore_pub["done"].set()
 
     def finish(
         classification: str,
@@ -300,6 +347,11 @@ def orchestrate(
             watch_thread.join(timeout=2.0)
         if extra:
             reasons.extend(extra)
+        rr = restore_result
+        latched = bool(rr.unknown_pending_overlay) if rr is not None else (ctx.latched or (overlay_applied and ctx.is_latched()))
+        if latched and "UNKNOWN_PENDING_OVERLAY" not in reasons:
+            reasons.append("UNKNOWN_PENDING_OVERLAY")
+        run_lock.release()
         return OrchestrateResult(
             classification=classification,
             next_canary_allowed=next_canary,
@@ -311,6 +363,13 @@ def orchestrate(
             reasons=list(reasons),
             restore_ok=restore_ok,
             accepted=accepted,
+            result_class=rr.result_class if rr is not None else ("UNKNOWN_PENDING_OVERLAY" if latched else "NOT_ATTEMPTED"),
+            unknown_pending_overlay=latched,
+            commands_acked=bool(rr.commands_acked) if rr is not None else False,
+            snapshot_matched=bool(rr.snapshot_matched) if rr is not None else False,
+            restore_attempts=list(rr.attempts) if rr is not None else [],
+            run_id=ctx.run_id,
+            fence_proof=FENCE_PROOF_NONE,
         )
 
     def window_due() -> str | None:
@@ -346,8 +405,23 @@ def orchestrate(
         stop_handles(handles, 0)
         return finish("INCOMPLETE", next_canary=False, tail=False, net="INCOMPLETE")
 
+    # Cross-process exclusion first (§10.3.C): a competing run on the same
+    # vault performs no mutation at all.
+    try:
+        run_lock.acquire()
+    except VaultStateError as exc:
+        reasons.append(exc.code)
+        return finish("INCOMPLETE", next_canary=False, tail=False, net="INCOMPLETE")
+
     try:
         refuse_unresolved_vault(vault_dir)
+    except VaultStateError as exc:
+        for code in exc.codes:
+            if code not in reasons:
+                reasons.append(code)
+        if "UNRESOLVED_VAULT_EXISTS" not in reasons and exc.codes:
+            reasons.append("UNRESOLVED_VAULT_EXISTS")
+        return finish("INCOMPLETE", next_canary=False, tail=False, net="INCOMPLETE")
     except Exception:
         reasons.append("UNRESOLVED_VAULT_EXISTS")
         return finish("INCOMPLETE", next_canary=False, tail=False, net="INCOMPLETE")
@@ -397,6 +471,10 @@ def orchestrate(
             payloads = build_overlay_payloads(which, dumps, submit_env, gateway_app, worker_app)
             mutated_apps = [app for app, payload in payloads.items() if payload]
             assert_payloads_restorable(dumps, payloads, hmac_absent_empty_authorized)
+            # §4.8 pre-mutation guard: named keys must agree in pm2_env and
+            # pm2_env.env before the first mutation.
+            named_keys = sorted({k for payload in payloads.values() for k in payload})
+            assert_baseline_consistent(pm2, mutated_apps, named_keys)
             for app, payload in payloads.items():
                 if not payload:
                     continue
@@ -412,12 +490,25 @@ def orchestrate(
                     raise OverlayError("BASELINE_VAULT_WRITE_FAILED", f"{app}: {type(exc).__name__}") from exc
 
             def driver_apply() -> None:
-                apply_overlay_payloads(pm2, payloads, abort=lambda: bool(restore_gate["started"]))
+                # Each app passes through the journaled admission path; a
+                # restore starting between two apps refuses the second before
+                # spawn (OVERLAY_AFTER_RESTORE) and an uncertain fate latches.
+                for app, payload in payloads.items():
+                    if ctx.started:
+                        return
+                    if payload:
+                        try:
+                            dispatch_restart(pm2, app, payload, ctx, op=OP_APPLY)
+                        except OverlayError as exc:
+                            if exc.code == "OVERLAY_AFTER_RESTORE":
+                                return
+                            raise
 
             apply_fn = driver_apply
         else:
             write_baselines_from_dumps(vault_dir, overlay_apps, dumps, captured_overlay)
             assert_restore_feasible(vault_dir, overlay_apps, hmac_absent_empty_authorized)
+            assert_baseline_consistent(pm2, overlay_apps, list(captured_overlay))
     except OverlayError as exc:
         reasons.append(exc.code)
         vault_preserved = protected_recovery_present(vault_dir) or True
@@ -426,16 +517,23 @@ def orchestrate(
         reasons.append(f"BASELINE_CAPTURE_FAILED:{type(exc).__name__}")
         return finish("INCOMPLETE", next_canary=False, tail=False, net="INCOMPLETE")
 
-    mark_pending_apps(vault_dir, mutated_apps or overlay_apps)
+    try:
+        mark_pending_apps(vault_dir, mutated_apps or overlay_apps)
+    except (OSError, VaultStateError) as exc:
+        reasons.append(f"PENDING_MARK_WRITE_FAILED:{type(exc).__name__}")
+        return finish("INCOMPLETE", next_canary=False, tail=False, net="INCOMPLETE")
     if windows is not None:
         windows.arm_apps(list(mutated_apps or overlay_apps), clock())
     overlay_applied = True
     orig_restart = pm2.restart_update_env
+    ctx.orig_restart = orig_restart
 
-    def gated_restart(app: str, envmap: Mapping[str, str | None]) -> None:
-        if restore_gate["started"] and not restore_gate.get("in_restore"):
-            raise OverlayError("OVERLAY_AFTER_RESTORE", "refusing to re-enable overlay after restore")
-        return orig_restart(app, envmap)
+    def gated_restart(app: str, envmap: Mapping[str, str | None], **kw: Any) -> None:
+        """Every restart on this adapter object is a journaled, admission-gated
+        attempt. Apply callers hold no owner token; only the restore owner's
+        dispatches (which call ``ctx.orig_restart`` directly) bypass this
+        wrapper. The shared ``in_restore`` flag no longer exists (§4.6)."""
+        dispatch_restart(pm2, app, envmap, ctx, op=OP_APPLY, owner_token=None)
 
     pm2.restart_update_env = gated_restart  # type: ignore[method-assign]
 
@@ -451,10 +549,15 @@ def orchestrate(
             stop=watch_stop,
         )
     try:
-        if restore_gate["started"]:
+        if ctx.started:
             return abort_window(window_due() or "WORKER_WINDOW_EXCEEDED")
-        apply_fn()
-        if restore_gate["started"]:
+        try:
+            apply_fn()
+        except OverlayError as exc:
+            if exc.code == "OVERLAY_AFTER_RESTORE" and ctx.started:
+                return abort_window(window_due() or "WORKER_WINDOW_EXCEEDED")
+            raise
+        if ctx.started:
             return abort_window(window_due() or "WORKER_WINDOW_EXCEEDED")
         expired = window_due()
         if expired:
@@ -582,7 +685,7 @@ def orchestrate(
         network_independent = net.independent_result
         reasons.extend(net.reasons)
         expired = window_due()
-        restore_always()
+        rr = restore_always()
         if expired:
             reasons.append(expired)
             return finish("INCOMPLETE", next_canary=False, tail=tail_started, net=network_independent)
@@ -590,6 +693,11 @@ def orchestrate(
         if late:
             reasons.append(late)
             return finish("INCOMPLETE", next_canary=False, tail=tail_started, net=network_independent)
+        if rr.result_class not in reasons:
+            reasons.append(rr.result_class)
+        # F5 boundary: ``restore_ok`` / ``overlays_restored`` are True only for
+        # a proof-bearing restore, which no shipped path produces. Evidence
+        # fields (commands_acked, snapshot_matched) never substitute for them.
         next_allowed = allows_next_canary(
             which,
             accepted,
@@ -616,6 +724,12 @@ def orchestrate(
             tail=tail_started,
             net=network_independent,
         )
+    except OverlayError as exc:
+        reasons.append(exc.code)
+        stop_handles(handles, 0)
+        if overlay_applied:
+            restore_always()
+        return finish("INCOMPLETE", next_canary=False, tail=False, net="INCOMPLETE")
     except CaptureStartError as exc:
         reasons.append(exc.code)
         to_stop = list(handles)
@@ -779,7 +893,8 @@ def main(argv: list[str] | None = None) -> int:
         hmac_absent_empty_authorized=hmac_auth,
         reconcile_runner=runner,
         apply_overlays=None,
-        delete_vault=lambda: delete_protected_recovery(args.vault),
+        # delete_vault=None -> vault-side gate (requires a proven restore).
+        delete_vault=None,
         xai_addrs_path=os.path.join(prep, "config", "xai-observation-addrs.txt"),
         coverage=cov,
         route_table=route_text,
@@ -798,16 +913,29 @@ def main(argv: list[str] | None = None) -> int:
         "script_provider_traffic_proof": result.script_provider_traffic_proof,
         "reasons": result.reasons,
         "restore_ok": result.restore_ok,
+        # Evidence fields (never a restoration-success claim):
+        "result_class": result.result_class,
+        "unknown_pending_overlay": result.unknown_pending_overlay,
+        "commands_acked": result.commands_acked,
+        "snapshot_matched": result.snapshot_matched,
+        "restore_attempts": result.restore_attempts,
+        "run_id": result.run_id,
+        "fence_proof": result.fence_proof,
     }
     out_path = os.path.join(args.workdir, "orchestrate-result.json")
     _write_json(out_path, redact_mapping(payload))
     print(
-        "ORCHESTRATE_DONE classification=%s next_canary_allowed=%s overlays_restored=%s network=%s"
+        "ORCHESTRATE_DONE classification=%s next_canary_allowed=%s overlays_restored=%s network=%s "
+        "result_class=%s unknown_pending_overlay=%s commands_acked=%s snapshot_matched=%s"
         % (
             result.classification,
             int(result.next_canary_allowed),
             int(result.overlays_restored),
             result.network_independent,
+            result.result_class,
+            int(result.unknown_pending_overlay),
+            int(result.commands_acked),
+            int(result.snapshot_matched),
         )
     )
     if result.classification == "OBSERVATION_COMPLETE":
