@@ -2,13 +2,15 @@
 
 **Task:** PM2-RECOVERY-POLICY-01 — Decide whether to authorize a bounded UNKNOWN_PENDING_OVERLAY recovery policy
 **Nature:** GOVERNANCE / DECISION (no implementation lane; no sidecar candidate)
-**Step status:** Step 1 COMPLETE — 2026-09-18 (registration `f434ec80ce5e32114f063258ddb9842bd3039446` `docs: register pm2 recovery policy decision`); Step 2 COMPLETE — 2026-09-18 (freeze `8433346a47bb194295aa60675f5afc46bc358997`; matrix correction `0add5cf6183911770bab8cd58598aa3c183a9eed`); **Step 3 COMPLETE — 2026-09-19 (explicit Keith decision; §13)**; Step 4 NOT AUTHORIZED; task NOT LOCKED
-**Base HEAD (Step 2 window):** `f434ec80ce5e32114f063258ddb9842bd3039446` (branch `main`; working tree clean at window open; matches the expected baseline)
-**Base HEAD (Step 3 window):** `0add5cf6183911770bab8cd58598aa3c183a9eed` (branch `main`; working tree clean at window open; matches the expected baseline)
-**Current status (Step 3):** OUTCOME_SELECTED=R3 OUTCOME_POLICY_APPROVED_AMENDED — POLICY_AUTHORIZED=YES (S1 contract only) — SUBSTANTIVE_AMENDMENTS_ADOPTED=A4 only — FIRST_RUN_AMENDMENT_ADOPTED=NO (A1 OPEN) — BASELINE_DESIGNATED=NO (A2 OPEN) — PROCEDURE_SELECTION=VERIFIER (direction only) — ACCEPTANCE_DIRECTION=C1 (direction only) — P7_ACCEPTED=NO — HOST_CLEAN=NO — REOPEN_GATE_SATISFIED=NO — EXEC_01C6A_REOPENED=NO — LOCKED=NO
+**Step status:** Step 1 COMPLETE — 2026-09-18 (registration `f434ec80ce5e32114f063258ddb9842bd3039446`); Step 2 COMPLETE — 2026-09-18 (freeze `8433346a47bb194295aa60675f5afc46bc358997`; matrix correction `0add5cf6183911770bab8cd58598aa3c183a9eed`); Step 3 COMPLETE — 2026-09-19 (explicit Keith decision; §13; commit `93d36d2a7e49876144f8ca2c383872236250231e`); **Step 4 COMPLETE AND LOCKED — 2026-09-19 (§14); acceptance object = S1 governance decision only**
+**Base HEAD (Step 2 window):** `f434ec80ce5e32114f063258ddb9842bd3039446`
+**Base HEAD (Step 3 window):** `0add5cf6183911770bab8cd58598aa3c183a9eed`
+**Base HEAD (Step 4 window):** `93d36d2a7e49876144f8ca2c383872236250231e` (branch `main`; working tree clean at window open; matches the expected baseline)
+**Current status (Step 4 lock):** COMPLETE AND LOCKED — OUTCOME_SELECTED=R3 OUTCOME_POLICY_APPROVED_AMENDED — POLICY_AUTHORIZED=YES (S1 contract only) — SUBSTANTIVE_AMENDMENTS_ADOPTED=A4 only — FIRST_RUN_AMENDMENT_ADOPTED=NO (A1 OPEN) — BASELINE_DESIGNATED=NO (A2 OPEN) — PROCEDURE_SELECTION=VERIFIER (direction only) — ACCEPTANCE_DIRECTION=C1 (direction only) — P7_ACCEPTED=NO — HOST_CLEAN=NO — REOPEN_GATE_SATISFIED=NO — EXEC_01C6A_REOPENED=NO — LOCKED=YES (S1 governance decision only)
+**Superseded Step 3 status line (historical):** OUTCOME_SELECTED=R3 OUTCOME_POLICY_APPROVED_AMENDED — POLICY_AUTHORIZED=YES (S1 contract only) — SUBSTANTIVE_AMENDMENTS_ADOPTED=A4 only — FIRST_RUN_AMENDMENT_ADOPTED=NO (A1 OPEN) — BASELINE_DESIGNATED=NO (A2 OPEN) — PROCEDURE_SELECTION=VERIFIER (direction only) — ACCEPTANCE_DIRECTION=C1 (direction only) — P7_ACCEPTED=NO — HOST_CLEAN=NO — REOPEN_GATE_SATISFIED=NO — EXEC_01C6A_REOPENED=NO — LOCKED=NO
 **Superseded Step 2 status line (historical):** OUTCOME_SELECTED=NONE — POLICY_AUTHORIZED=NO — FIRST_RUN_AMENDMENT_ADOPTED=NO — P7_ACCEPTED=NO — HOST_CLEAN=NO — EXEC_01C6A_REOPENED=NO
 
-> **Reading order:** §§0–12 are the Step 2 freeze with its two controlling corrections (§3.2, §8.0–§8.2a), preserved unchanged. §13 is the Step 3 decision record. Where §§0–12 say "no outcome selected" they describe the Step 2 window; §13 is current.
+> **Reading order:** §§0–12 are the Step 2 freeze with its two controlling corrections (§3.2, §8.0–§8.2a), preserved unchanged. §13 is the Step 3 decision record, preserved unchanged. §14 is the Step 4 independent-verification checkpoint and lock. Where §§0–12 say "no outcome selected" they describe the Step 2 window; where §13 says LOCKED=NO it describes the Step 3 window; §14 is current.
 
 ---
 
@@ -605,3 +607,98 @@ LOCKED=NO
 
 LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, canary submission=0, vendor fetch=0, network=0, workflow dispatched=0, r3 transferred/extracted/executed=0, Python executed=0, tests=0 except lane-capacity validator, mocks=0, imports=0, builds=0, installs=0, browser=0, subagents=0, bundle/manifests/archive edited=0, workflow edited=0, sidecar edited=0, lockedTaskIds edited=0, predecessor bodies edited=0, EXEC-01C6 / 01C6A documents or body edited=0, locked freezes edited=0, verifier/child registered=0, P4/P5/P6/P7 recorded=0, host CLEAN attested=0, Git add/commit/push=0.
 Writes: this document (status header + §13 appended; §§0–12 preserved); `TASKS.md` this task's current board fields; `TASKS_BACKLOG_FULL.md` this task's body; `docs/control-plane/SATURATION_PROOF.json` as validator output only. GOVERNANCE acquired transiently for this decision record then released UNOWNED. Occupancy EMPTY.
+
+---
+
+## 14. Step 4 — Independent verification / checkpoint / lock (2026-09-19; base `93d36d2a7e49876144f8ca2c383872236250231e`)
+
+### 14.1 Authorization
+
+Keith 2026-09-19 authorized **Step 4 only**: verify the committed Step 3 decision record against the controlling freeze and lock this GOVERNANCE task if the checkpoint criteria are met. This step does not select or change Keith's choices, register a successor or verifier, amend EXEC-01C6A, or edit sidecar / `lockedTaskIds`. GOVERNANCE was acquired transiently for this checkpoint then released UNOWNED.
+
+### 14.2 Criterion-by-criterion verification (committed record at `93d36d2a7e49876144f8ca2c383872236250231e`)
+
+Keith's explicit choices (verified present in §13.2, board `PM2_RECOVERY_POLICY_01_STEP_3_DECISIONS`, and canonical body): K-A=APPROVE; K-B1=UNRESOLVED_INPUT; K-B2=UNRESOLVED_INPUT; K-B3=VERIFIER; K-B4=YES; K-C=C1.
+
+| # | Criterion | Result | Evidence |
+|---|---|---|---|
+| 1 | R3 follows from exactly one complete affirmative: K-B4 | **PASS** | Controlling §8.2: K-A=APPROVE (not R0/R1/R4); class II complete affirmatives = {K-B4=YES}; K-B1 and K-B2 = UNRESOLVED_INPUT (0); count = 1 ≥ 1 → R3. Class III/IV do not alter the row. Matches §13.3 and illustrative V9. |
+| 2 | A4 is the sole adopted substantive amendment, recorded verbatim | **PASS** | §13.4 quotes §3.3 A4 proposed wording verbatim: "P7 for a first run covers the risk that a *pre-existing* unrecorded daemon-side mutation (not produced by the run) applies after CLEAN; P7 for later runs covers the recorded UNKNOWN attempts of prior runs as well." No other class II YES. |
+| 3 | A1 and A2 remain OPEN — not approved, refused, or implicitly resolved | **PASS** | K-B1=UNRESOLVED_INPUT → A1 OPEN / unadopted; K-B2=UNRESOLVED_INPUT → A2 OPEN. Explicit (U-ii); silence is not used. FIRST_RUN_AMENDMENT_ADOPTED=NO. |
+| 4 | No expected baseline source or values designated | **PASS** | BASELINE_DESIGNATED=NO; no §3.4 candidate named; no B(H) values. |
+| 5 | VERIFIER and C1 remain directions only: no child registration, implementation, or EXEC-01C6A amendment | **PASS** | PROCEDURE_SELECTION=VERIFIER; ACCEPTANCE_DIRECTION=C1; VERIFIER_CHILD_REGISTERED=NO; EXEC_01C6A_AMENDED=NO; no new canonical heading / stanza / sidecar candidate; EXEC-01C6A body and sidecar candidate untouched. |
+| 6 | P1 authorizes the S1 contract only. P7_ACCEPTED=NO and HOST_CLEAN=NO | **PASS** | POLICY_AUTHORIZED=YES (S1 only); AUTHORIZES_P1=YES with S1 qualifier; K-B4 wording-only; ACCEPTS_RESIDUAL_RISK_P7=NO; ATTESTS_HOST_CLEAN=NO; P7_ACCEPTED=NO; HOST_CLEAN=NO. |
+| 7 | Historical UNKNOWN, recovery retention, host/app HOLD, and new-canary vs separately authorized recovery distinction preserved | **PASS** | §§0–12 freeze text byte-stable except the status header; §4.1–§4.3 HOLD / blocked-vs-permitted / retention prohibitions unchanged; §13.4 applies §6.1 / §6.2 / §6.3 / §4 / E1–E5 in full; HOLD_PRESERVED=YES. |
+| 8 | Committed Step 3 changes stay within the authorized four-file scope | **PASS** | `git show --name-only 93d36d2a7e49876144f8ca2c383872236250231e` lists only `TASKS.md`, `TASKS_BACKLOG_FULL.md`, `docs/PM2-RECOVERY-POLICY-01-STAGE-START.md`, `docs/control-plane/SATURATION_PROOF.json`. Sidecar occupancy EMPTY / GOVERNANCE UNOWNED; EXEC-01C6A `startCondition=NOT_READY`; this ID absent from `lockedTaskIds` (GOVERNANCE; no implementation candidate). |
+| 9 | No claim treats the contract lock as satisfying the reopen gate | **PASS** | §13.5 and board `PM2_RECOVERY_POLICY_01_REOPEN_GATE_SATISFIED=NO` record the mandatory statement; SATISFIES_REOPEN_GATE=NO; REOPENS_EXEC_01C6A=NO; AUTHORIZES_CANARY=NO. |
+
+**All nine criteria PASS. No blocker. Task is lockable.**
+
+### 14.3 Acceptance object (what this lock accepts)
+
+This lock accepts **only** the S1 governance decision:
+
+- **Outcome:** R3 `OUTCOME_POLICY_APPROVED_AMENDED`
+- **Contract:** UNKNOWN_PENDING_OVERLAY recovery policy (PM2-FENCE-01 §6; P1 granted; P2–P8 frozen §6.4 meanings) **as amended only by A4**
+- **A4 (verbatim, P7 first-run wording only):** "P7 for a first run covers the risk that a *pre-existing* unrecorded daemon-side mutation (not produced by the run) applies after CLEAN; P7 for later runs covers the recorded UNKNOWN attempts of prior runs as well."
+- **Directions recorded, not executed:** PROCEDURE_SELECTION=VERIFIER; ACCEPTANCE_DIRECTION=C1
+
+This lock does **not** accept: host CLEAN; P4/P5/P6 evidence; a P7 host/time attestation; residual-risk acceptance for staging; A1; A2; a designated baseline; a verifier child; an EXEC-01C6A amendment; reopen; canary; r3 live use or transfer; a fence or F1–F5.
+
+### 14.4 Mandatory contract-only statement (§2)
+
+**OUTCOME_UNKNOWN_POLICY reopen gate (PM2-FENCE-01 §8) remains UNSATISFIED; host remains UNCLEAN / HOLD; EXEC-01C6A `startCondition=NOT_READY` unchanged; no canary authorized.**
+
+Sequence after this lock: S1 APPROVED (this lock) → S2 host-specific gate NOT STARTED → S3 explicit reopen NOT AUTHORIZED → S4 separately authorized canary NOT AUTHORIZED. HARNESS-RESTART-GOV-01 §3.3 item 1 is recorded; items 2–4 remain outstanding.
+
+### 14.5 Unresolved items carried forward (not silently resolved by this lock)
+
+| Item | Status after lock |
+|---|---|
+| A1 first-run applicability (K-B1 OPEN) | OPEN; later explicit governance record |
+| A2 baseline requirement and provenance (K-B2 OPEN); no B(H) values | OPEN; later explicit governance record; §3.4 requirements govern |
+| Verifier child registration, implementation, fake-verification, packaging | not this task; separate control-plane registration required |
+| EXEC-01C6A C1 amendment; two-canary sequencing under `next_canary_allowed=False` | not this task; separate control-plane step required |
+| P4 / P5 attestations; P6 record; P7 attestation; daemon PID/version re-confirmation | later S2 host window |
+| Host overlay history for (`aisandbox-staging`, named apps) | later S2 / A1 |
+| r3 raw-hash-verified transfer to staging | later separately authorized window; r3 remains NOT APPROVED FOR LIVE USE |
+| P8 reopen; `startCondition` write; lane admission | S3 / S4; sidecar `lockedTaskIds` and EXEC-01C6A candidate unchanged by this lock |
+
+No successor and no verifier are registered by this lock.
+
+### 14.6 What this lock does not do
+
+Does not: edit sidecar occupancy, candidates, or `lockedTaskIds`; register a successor, verifier, EXEC-01C6B, EXEC-01C7, or fence successor; amend EXEC-01C6A or any predecessor; attest P4/P5/P6/P7; declare host CLEAN; adopt A1 or A2; designate a baseline; acquire STAGING / PM2 / ENV / CREDIT / PROVIDER-LIVE / LOCAL-RUNTIME; run application code, tests, mocks, builds, installs, SSH, browser, or subagents; dispatch a workflow; commit or push; change Builder gate or Harness flags.
+
+### 14.7 Step 4 verdict
+
+```
+STEP_4_VERDICT=COMPLETE_AND_LOCKED
+ACCEPTANCE_OBJECT=S1_GOVERNANCE_DECISION_ONLY
+CRITERIA_1_THROUGH_9=PASS
+OUTCOME_SELECTED=R3 OUTCOME_POLICY_APPROVED_AMENDED
+POLICY_AUTHORIZED=YES (S1 contract only)
+SUBSTANTIVE_AMENDMENTS_ADOPTED=A4 (verbatim)
+A1_STATUS=OPEN / UNADOPTED
+A2_STATUS=OPEN / no source or values designated
+PROCEDURE_SELECTION=VERIFIER (direction only)
+ACCEPTANCE_DIRECTION=C1 (direction only)
+P7_ACCEPTED=NO
+HOST_CLEAN=NO
+REOPEN_GATE_SATISFIED=NO
+EXEC_01C6A_START_CONDITION=NOT_READY (unchanged)
+VERIFIER_CHILD_REGISTERED=NO
+EXEC_01C6A_AMENDED=NO
+SUCCESSOR_REGISTERED=NO
+SIDECAR_LOCKEDTASKIDS_EDITED=NO
+BUILDER_GATE=ON (unchanged)
+HARNESS_FLAGS=unchanged
+OCCUPANCY=EMPTY
+GOVERNANCE=UNOWNED
+LOCKED=YES
+```
+
+### 14.8 Step 4 activity ledger (2026-09-19)
+
+LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, canary submission=0, vendor fetch=0, network=0, workflow dispatched=0, r3 transferred/extracted/executed=0, Python executed=0, tests=0 except lane-capacity validator, mocks=0, imports=0, builds=0, installs=0, browser=0, subagents=0, bundle/manifests/archive edited=0, workflow edited=0, sidecar edited=0, lockedTaskIds edited=0, predecessor bodies edited=0, EXEC-01C6 / 01C6A documents or body edited=0, locked freezes edited=0, verifier/child/successor registered=0, P4/P5/P6/P7 recorded=0, host CLEAN attested=0, Keith choices changed=0, Git add/commit/push=0.
+Writes: this document (status header + §14 appended; freeze §§0–12 and §13 preserved); `TASKS.md` this task's current board fields; `TASKS_BACKLOG_FULL.md` this task's body; `docs/control-plane/SATURATION_PROOF.json` as validator output only. GOVERNANCE acquired transiently then released UNOWNED. Occupancy EMPTY.
