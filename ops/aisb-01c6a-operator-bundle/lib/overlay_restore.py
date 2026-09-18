@@ -769,9 +769,44 @@ def _settle_not_delivered(ctx: DispatchContext, attempt: Attempt, reason: str) -
     attempt.settle(FATE_NOT_DELIVERED, reason)
 
 
+def _record_late_ack_after_settled(ctx: DispatchContext, attempt: Attempt) -> None:
+    """Caller holds ``restore_lock``. The client returned 0 *after* the owner's
+    accounting already settled this attempt (UNCERTAIN, e.g.
+    ``UNSETTLED_AT_RESTORE``). The terminal and its reason are immutable
+    (§10.3.B.5): the acknowledgement is recorded as *late evidence* only —
+    an annotation on the journal entry plus ``APPLY_ACKED_LATE`` widened into
+    the monotonic marker. The attempt is never converted back to ACKED and
+    no restore is re-run.
+    """
+    if attempt.op != OP_APPLY or attempt.fate != FATE_UNCERTAIN:
+        return
+    attempt.acked_late = True
+    extra: list[str] = ["APPLY_ACKED_LATE"]
+    try:
+        ctx.journal.annotate(
+            attempt.attempt_id,
+            late_ack="ACKED_LATE_AFTER_UNCERTAIN",
+            late_ack_exit_code=0,
+            late_ack_mono_ts=time.monotonic(),
+        )
+    except VaultStateError as exc:
+        extra.append(exc.code)
+    ctx.latch(
+        attempts=[attempt.attempt_id],
+        apps=[attempt.app],
+        keys=list(attempt.keys),
+        reasons=extra,
+    )
+
+
 def _settle_acked(ctx: DispatchContext, attempt: Attempt, owner_token: object | None) -> None:
     # Total order against ownership: decided under the coordination lock.
     with ctx.restore_lock:
+        if attempt.settled.is_set():
+            # Settled meanwhile by the restore owner's accounting: keep that
+            # terminal; record the acknowledgement as late evidence only.
+            _record_late_ack_after_settled(ctx, attempt)
+            return
         late = bool(ctx.started and owner_token is not ctx.owner_token and attempt.op == OP_APPLY)
         try:
             ctx.journal.terminal(attempt.attempt_id, FATE_ACKED, exit_code=0, reason="ACKED_LATE" if late else None)
@@ -901,8 +936,11 @@ def dispatch_restart(
             _settle_uncertain(ctx, attempt, type(exc).__name__)
         raise OverlayError("COMMAND_UNCERTAIN", f"{op} {app}: {type(exc).__name__}; fate uncertain") from exc
     else:
-        if not attempt.settled.is_set():
-            _settle_acked(ctx, attempt, owner_token)
+        # Decided under ``restore_lock``: a first ack settles ACKED (late if
+        # ownership was taken meanwhile); an ack arriving after the owner's
+        # accounting already settled the attempt is recorded as late evidence
+        # only and never re-opens the UNCERTAIN terminal.
+        _settle_acked(ctx, attempt, owner_token)
     return attempt
 
 

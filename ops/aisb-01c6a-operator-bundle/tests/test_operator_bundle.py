@@ -93,6 +93,7 @@ from capture import (  # noqa: E402
 from cleanup_contract import CleanupPlan, may_remove_canary_failed_job, key_revoke_action, session_terminate_action
 from config_deadlines import outer_timeout_ms, parse_wait_ms
 from drop_stats import parse_tcpdump_stderr
+from linux_capture import LinuxCapture
 from network_evidence import Flow, classify_network
 from orchestrate import orchestrate
 from overlay_restore import Pm2Adapter, restore_overlays
@@ -252,6 +253,164 @@ class FakePm2Dual(Pm2Adapter):
         if self.dump_error is not None:
             raise self.dump_error
         return dict(self.top[app]), dict(self.nested[app])
+
+
+MOCK_TCPDUMP_SIMULATED_ARGV0 = "/usr/bin/tcpdump"
+
+
+def _same_file(a: str, b: str) -> bool:
+    try:
+        return os.path.realpath(a) == os.path.realpath(b)
+    except (OSError, ValueError):
+        return False
+
+
+class MockTcpdumpIdentityCapture(LinuxCapture):
+    """Test-only ``LinuxCapture`` whose live-argv reader recognises the *mock* tcpdump.
+
+    MOCK IDENTITY SIMULATION — NOT PRODUCTION EXECUTABLE VERIFICATION.
+
+    Production ``LinuxCapture.live_argv`` reads ``/proc/<pid>/cmdline`` and
+    ``capture.executable_is_tcpdump`` accepts only a ``tcpdump`` basename in
+    argv[0]. The fixture's "tcpdump" is ``bin/mock-tcpdump.py``: on POSIX
+    ``mock-sudo.py`` execs ``tcpdump-exec.py`` which execs
+    ``[sys.executable, <bin>/mock-tcpdump.py, -nn, -i, IFACE, -U, -w, PCAP, FILTER...]``
+    (same pid throughout; that pid is the one written to the pidfile). Its
+    real cmdline therefore starts with the Python interpreter, and production
+    identity verification rejects it with ``TCPDUMP_CMDLINE_NOT_TCPDUMP`` —
+    correctly: a Python process is not tcpdump. On a fake-only runner no real
+    tcpdump identity can ever appear.
+
+    This subclass performs the SAME live read as production (real process,
+    real ``/proc``; ownership, start identity, pidfile identity, interface and
+    pcap-path checks are unchanged and still evaluated against the live argv
+    by the production matcher). Only when the live argv[0:2] is exactly
+    ``[this interpreter, this bundle's mock-tcpdump.py]`` does it present that
+    two-token prefix as ``/usr/bin/tcpdump`` — the identity the mock simulates
+    (and the identity ``LinuxCapture.start`` records as ``tcpdump_argv``). Any
+    other live process (pid reuse, sshd, a different python script) is returned
+    unchanged and is rejected by production code exactly as before. The raw
+    live tokens remain available via ``raw_live_argv`` so tests can assert that
+    production verification alone would reject the mock.
+
+    Defined only inside this test module; no production module references it;
+    production identity acceptance is not broadened.
+    """
+
+    mock_tcpdump_path = str(BIN / "mock-tcpdump.py")
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.simulated_pids: set[int] = set()
+        self.rejected_raw_pids: set[int] = set()
+
+    def raw_live_argv(self, pid: int) -> list[str]:
+        """Production live read, untouched (what production alone would verify)."""
+        return LinuxCapture.live_argv(self, pid)
+
+    def _simulate_mock_identity(self, pid: int, tokens: list[str]) -> list[str]:
+        if (
+            len(tokens) >= 2
+            and _same_file(tokens[0], sys.executable)
+            and _same_file(tokens[1], self.mock_tcpdump_path)
+        ):
+            self.simulated_pids.add(int(pid))
+            return [MOCK_TCPDUMP_SIMULATED_ARGV0, *tokens[2:]]
+        self.rejected_raw_pids.add(int(pid))
+        return tokens
+
+    def _exec_chain_in_flight(self, tokens: list[str]) -> bool:
+        """True while the live cmdline is still a pre-exec helper of the mock chain.
+
+        ``tcpdump-exec.py`` writes the pidfile *before* it execs the mock, so
+        a reader can observe ``[python, tcpdump-exec.py, ...]`` for an instant
+        after the pidfile appears. Waiting for the exec to settle is fixture
+        synchronisation only; the helper identity is never accepted.
+        """
+        return (
+            len(tokens) >= 2
+            and _same_file(tokens[0], sys.executable)
+            and (_same_file(tokens[1], str(BIN / "tcpdump-exec.py")) or _same_file(tokens[1], str(BIN / "mock-sudo.py")))
+        )
+
+    def live_argv(self, pid: int) -> list[str]:
+        tokens = self.raw_live_argv(pid)
+        deadline = time.monotonic() + 2.0
+        while self._exec_chain_in_flight(tokens) and time.monotonic() < deadline:
+            time.sleep(0.01)
+            tokens = self.raw_live_argv(pid)
+        return self._simulate_mock_identity(pid, tokens)
+
+    def live_cmdline(self, pid: int) -> str:
+        return " ".join(self.live_argv(pid))
+
+    def _reap_if_own_exited_child(self, pid: int) -> None:
+        """Reap ``pid`` only if it is an *exited* child of this test process.
+
+        Production tcpdump runs under real ``sudo`` (which forks), so the
+        tcpdump pid is never a zombie of the orchestrator. The mock chain
+        execs in place (``mock-sudo.py`` -> ``tcpdump-exec.py`` ->
+        ``mock-tcpdump.py``), so the mock IS a direct child of the test
+        process and lingers as a zombie after exit until reaped; a zombie
+        still answers ``kill(pid, 0)``. Reaping our own exited child is test
+        housekeeping, not an identity decision: a running child returns
+        immediately (WNOHANG) and a pid that is not our child is untouched.
+        """
+        if os.name == "nt":
+            return
+        popen = self._popens.get(int(pid))
+        if popen is not None:
+            popen.poll()
+            return
+        try:
+            os.waitpid(int(pid), os.WNOHANG)
+        except ChildProcessError:
+            pass
+
+    def alive(self, pid: int) -> bool:
+        ident = self._idents.get(pid) or {}
+        tcpdump_pid = ident.get("tcpdump_pid")
+        self._reap_if_own_exited_child(int(tcpdump_pid) if tcpdump_pid is not None else int(pid))
+        return LinuxCapture.alive(self, pid)
+
+
+def _reap_capture_children(*caps, timeout: float = 5.0) -> list[int]:
+    """Stop and reap every child a ``LinuxCapture`` fixture still owns.
+
+    Used in ``finally`` blocks so a failed capture fixture never leaks its
+    disposable mock process (which would otherwise surface later as a
+    ``ResourceWarning: subprocess N is still running`` at garbage collection
+    and keep running after the suite). Returns the pids that had to be reaped.
+    Only Popen objects created by the fixture itself are touched.
+    """
+    reaped: list[int] = []
+    for cap in caps:
+        popens = getattr(cap, "_popens", None)
+        if not isinstance(popens, dict):
+            continue
+        for pid, p in list(popens.items()):
+            try:
+                if p.poll() is None:
+                    reaped.append(int(pid))
+                    p.terminate()
+                    try:
+                        p.wait(timeout=timeout)
+                    except Exception:
+                        p.kill()
+                        p.wait(timeout=timeout)
+                else:
+                    p.wait(timeout=0)
+            except Exception:
+                pass
+        files = getattr(cap, "_files", None)
+        if isinstance(files, dict):
+            for handles in list(files.values()):
+                for fh in handles:
+                    try:
+                        fh.close()
+                    except Exception:
+                        pass
+    return reaped
 
 
 class FakeProc(ProcAdapter):
@@ -1579,25 +1738,41 @@ class AdapterBoundaryTests(unittest.TestCase):
             shutil.rmtree(td, ignore_errors=True)
 
     def test_linux_capture_alive_and_stop_with_mocks(self) -> None:
-        from capture import start_capture, stop_capture
-        from linux_capture import LinuxCapture
+        from capture import executable_is_tcpdump, match_tcpdump_argv, start_capture, stop_capture
 
         td = tempfile.mkdtemp()
         os.environ["AISB_TCPDUMP_BIN"] = str(BIN / "mock-tcpdump.py")
-        cap = LinuxCapture(str(BIN / "mock-sudo.py"), sys.executable, str(BIN / "tcpdump-exec.py"))
+        # Mock identity simulation (see MockTcpdumpIdentityCapture): the live
+        # process is the Python mock; production verification alone rejects it.
+        cap = MockTcpdumpIdentityCapture(str(BIN / "mock-sudo.py"), sys.executable, str(BIN / "tcpdump-exec.py"))
         try:
             h = start_capture("live-ens5", "ens5", "tcp port 443", td, str(BIN / "tcpdump-exec.py"), cap)
             self.assertTrue(h.listening)
             self.assertTrue(cap.alive(h.tcpdump_pid))
+            if os.name != "nt":
+                # distinguish: raw production read of the real /proc cmdline is
+                # NOT tcpdump; only the simulated view is, and the production
+                # matcher still enforces iface + pcap path on the live tokens.
+                raw = cap.raw_live_argv(h.tcpdump_pid)
+                self.assertFalse(executable_is_tcpdump(raw), raw)
+                self.assertEqual(match_tcpdump_argv(raw, pcap_path=h.pcap_path, iface="ens5")[1], "TCPDUMP_CMDLINE_NOT_TCPDUMP")
+                self.assertTrue(_same_file(raw[1], str(BIN / "mock-tcpdump.py")))
+                self.assertEqual(match_tcpdump_argv(cap.live_argv(h.tcpdump_pid), pcap_path=h.pcap_path, iface="ens5"), (True, "OK"))
+                self.assertEqual(match_tcpdump_argv(cap.live_argv(h.tcpdump_pid), pcap_path=h.pcap_path, iface="eth0")[1], "TCPDUMP_CMDLINE_IFACE_MISMATCH")
+                self.assertEqual(cap.simulated_pids, {h.tcpdump_pid})
+                self.assertEqual(h.tcpdump_argv, [MOCK_TCPDUMP_SIMULATED_ARGV0, *raw[2:]])
+                self.assertTrue(h.start_identity)
             sr = stop_capture(h, cap, tail_sec=0)
             self.assertFalse(cap.alive(h.tcpdump_pid))
             if os.name != "nt":
-                self.assertTrue(sr.ok)
+                self.assertTrue(sr.ok, sr.code)
         finally:
+            leaked = _reap_capture_children(cap)
             os.environ.pop("AISB_TCPDUMP_BIN", None)
             import shutil
 
             shutil.rmtree(td, ignore_errors=True)
+        self.assertEqual(leaked, [], "capture fixture left a disposable child running")
 
     def test_pcap_https_unexplained_from_capture(self) -> None:
         from pcap_flows import parse_pcap_flows
@@ -2005,12 +2180,13 @@ class RemainingDefectTests(unittest.TestCase):
             self.assertFalse(result.surviving_pids)
 
     def test_linux_capture_signals_recorded_tcpdump_not_fixture_pid(self) -> None:
-        from capture import start_capture, stop_capture
-        from linux_capture import LinuxCapture
+        from capture import executable_is_tcpdump, start_capture, stop_capture
 
         td = tempfile.mkdtemp()
         os.environ["AISB_TCPDUMP_BIN"] = str(BIN / "mock-tcpdump.py")
-        cap = LinuxCapture(str(BIN / "mock-sudo.py"), sys.executable, str(BIN / "tcpdump-exec.py"))
+        # Mock identity simulation (MockTcpdumpIdentityCapture); the signal
+        # target is still the live-verified recorded tcpdump pid, never a fixture pid.
+        cap = MockTcpdumpIdentityCapture(str(BIN / "mock-sudo.py"), sys.executable, str(BIN / "tcpdump-exec.py"))
         sent: list[int] = []
         orig = cap.send
 
@@ -2023,6 +2199,9 @@ class RemainingDefectTests(unittest.TestCase):
             h = start_capture("live-ens5", "ens5", "tcp port 443", td, str(BIN / "tcpdump-exec.py"), cap)
             self.assertNotEqual(h.tcpdump_pid, 8000)
             self.assertNotIn(8000, sent)
+            if os.name != "nt":
+                # production verification alone rejects the raw mock cmdline
+                self.assertFalse(executable_is_tcpdump(cap.raw_live_argv(h.tcpdump_pid)))
             sr = stop_capture(h, cap, tail_sec=0)
             self.assertTrue(sent)
             self.assertNotIn(8000, sent)
@@ -2030,12 +2209,15 @@ class RemainingDefectTests(unittest.TestCase):
             if h.sudo_parent_pid and h.sudo_parent_pid != h.tcpdump_pid:
                 self.assertNotEqual(sent[0], h.sudo_parent_pid)
             if os.name != "nt":
-                self.assertTrue(sr.ok)
+                self.assertTrue(sr.ok, sr.code)
+                self.assertIn(h.tcpdump_pid, cap.simulated_pids)
         finally:
+            leaked = _reap_capture_children(cap)
             os.environ.pop("AISB_TCPDUMP_BIN", None)
             import shutil
 
             shutil.rmtree(td, ignore_errors=True)
+        self.assertEqual(leaked, [], "capture fixture left a disposable child running")
 
     def test_unresolved_vault_not_overwritten(self) -> None:
         from vault import write_vault
@@ -2882,29 +3064,39 @@ class CorrectionBoundaryTests(unittest.TestCase):
         self.assertEqual(signaled["n"], 0)
 
     def test_fresh_process_stop_owned_disposable(self) -> None:
-        from capture import load_handle, persist_handle, start_capture, stop_capture
-        from linux_capture import LinuxCapture
+        from capture import executable_is_tcpdump, load_handle, persist_handle, start_capture, stop_capture
 
         td = tempfile.mkdtemp()
         os.environ["AISB_TCPDUMP_BIN"] = str(BIN / "mock-tcpdump.py")
-        starter = LinuxCapture(str(BIN / "mock-sudo.py"), sys.executable, str(BIN / "tcpdump-exec.py"))
-        stopper = LinuxCapture(str(BIN / "mock-sudo.py"), sys.executable, str(BIN / "tcpdump-exec.py"))
+        # Mock identity simulation (MockTcpdumpIdentityCapture) on both the
+        # starter and the fresh stopper; the stopper recovers identity only from
+        # the persisted handle + identity file and re-verifies the live process.
+        starter = MockTcpdumpIdentityCapture(str(BIN / "mock-sudo.py"), sys.executable, str(BIN / "tcpdump-exec.py"))
+        stopper = MockTcpdumpIdentityCapture(str(BIN / "mock-sudo.py"), sys.executable, str(BIN / "tcpdump-exec.py"))
         try:
             h = start_capture("fresh-ens5", "ens5", "tcp port 443", td, str(BIN / "tcpdump-exec.py"), starter)
             persist_handle(h)
             self.assertTrue(starter.alive(h.tcpdump_pid))
+            self.assertFalse(stopper._idents, "fresh stopper starts with no in-memory identity")
+            if os.name != "nt":
+                self.assertFalse(executable_is_tcpdump(stopper.raw_live_argv(h.tcpdump_pid)))
             loaded = load_handle(h.handle_path)
+            self.assertEqual(loaded.tcpdump_pid, h.tcpdump_pid)
+            self.assertEqual(loaded.tcpdump_argv, h.tcpdump_argv)
             sr = stop_capture(loaded, stopper, tail_sec=0)
             self.assertFalse(stopper.alive(loaded.tcpdump_pid) or starter.alive(h.tcpdump_pid))
             if os.name != "nt":
                 self.assertTrue(sr.ok, sr.code)
+                self.assertIn(h.tcpdump_pid, stopper.simulated_pids)
             else:
                 self.assertIn(sr.code, ("CAPTURE_STOPPED", "TCPDUMP_PID_REUSED", "CAPTURE_SIGNAL_FAILED", "TCPDUMP_CMDLINE_UNREADABLE"))
         finally:
+            leaked = _reap_capture_children(starter, stopper)
             os.environ.pop("AISB_TCPDUMP_BIN", None)
             import shutil
 
             shutil.rmtree(td, ignore_errors=True)
+        self.assertEqual(leaked, [], "capture fixture left a disposable child running")
 
     def test_window_limits_reject_nonfinite_negative_and_86400(self) -> None:
         from overlay_restore import OverlayError, OverlayWindowState, window_limits_from_env
@@ -4095,9 +4287,24 @@ class UnknownLatchTests(unittest.TestCase):
 
             thread = threading.Thread(target=run)
             thread.start()
+            restore_result_path = vault / "restore_result.json"
             try:
                 self.assertTrue(entered.wait(timeout=5), "gateway apply did not reach the blocked state")
-                time_mod.sleep(0.5)  # window (0.2s) is due; watchdog owns restore
+                # Deterministic ordering: the window (0.2s) expires, the watchdog takes
+                # ownership, accounts the in-flight apply (bound 0 -> UNSETTLED_AT_RESTORE),
+                # restores, and publishes restore_result.json — all while the gateway
+                # apply is still blocked. Wait for that publication (bounded) instead of
+                # sleeping, so the late ack below is provably *after* the owner settled.
+                deadline = time_mod.monotonic() + 10.0
+                while not restore_result_path.is_file() and time_mod.monotonic() < deadline:
+                    time_mod.sleep(0.01)
+                self.assertTrue(restore_result_path.is_file(), "watchdog owner did not publish restore_result.json")
+                marker_before = json.loads((vault / "unknown_overlay.json").read_text(encoding="utf-8"))
+                self.assertIn("APPLY_UNSETTLED_AT_RESTORE", marker_before["reasons"])
+                self.assertNotIn("APPLY_ACKED_LATE", marker_before["reasons"], "no ack has been delivered yet")
+                settled_before = [e for e in self._journal(vault) if e["op"] == "APPLY"]
+                self.assertEqual([e["phase"] for e in settled_before], ["UNCERTAIN"])
+                self.assertEqual(settled_before[0]["reason"], "UNSETTLED_AT_RESTORE")
                 # T6: a late apply through the gated adapter without the owner token
                 journal_before = len(self._journal(vault))
                 with self.assertRaises(OverlayError) as ctx:
@@ -4105,7 +4312,7 @@ class UnknownLatchTests(unittest.TestCase):
                 self.assertEqual(ctx.exception.code, "OVERLAY_AFTER_RESTORE")
                 self.assertEqual(len(self._journal(vault)), journal_before, "refused late apply writes no INTENT")
             finally:
-                release.set()
+                release.set()  # the blocked gateway apply now returns 0: a late ack after settlement
                 thread.join(timeout=15)
             self.assertFalse(thread.is_alive())
             result, deleted = holder["r"], holder["d"]
@@ -4119,14 +4326,19 @@ class UnknownLatchTests(unittest.TestCase):
             self.assertIsNotNone(apply_entries[0].get("client_pid") or apply_entries[0].get("dispatched_mono_ts"))
             # restore_reserve_sec=0 bounds the owner's accounting wait to zero, so the
             # in-flight apply is settled UNCERTAIN (UNSETTLED_AT_RESTORE) before restore.
-            result_latch = json.loads((vault / "restore_result.json").read_text(encoding="utf-8"))["latch_reasons"]
+            result_latch = json.loads(restore_result_path.read_text(encoding="utf-8"))["latch_reasons"]
             self.assertIn("APPLY_UNSETTLED_AT_RESTORE", result_latch)
-            # the blocked apply acked only after ownership (release in ``finally``):
-            # the late ack widens the marker but cannot overwrite the UNCERTAIN terminal.
+            # the blocked apply acked only after ownership AND after the owner had already
+            # settled it UNCERTAIN: the late ack is recorded as evidence (marker reason +
+            # journal annotation) and cannot overwrite the UNCERTAIN terminal or its reason.
             marker = json.loads((vault / "unknown_overlay.json").read_text(encoding="utf-8"))
             self.assertIn("APPLY_ACKED_LATE", marker["reasons"])
             self.assertIn("APPLY_UNSETTLED_AT_RESTORE", marker["reasons"])
             self.assertEqual(apply_entries[0]["reason"], "UNSETTLED_AT_RESTORE")
+            self.assertEqual(apply_entries[0]["late_ack"], "ACKED_LATE_AFTER_UNCERTAIN")
+            self.assertEqual(apply_entries[0]["late_ack_exit_code"], 0)
+            self.assertIsNone(apply_entries[0]["exit_code"], "the UNCERTAIN terminal's exit_code is not rewritten")
+            self.assertIn(apply_entries[0]["attempt_id"], marker["attempts"])
             # worker apply refused before spawn: no worker call with the overlay value
             self.assertFalse(any(a == WK and env.get("AGENT_HARNESS_ENABLE_TOOL_LOOP") == "true" for a, env in pm2.calls))
             # exactly one restore per app
@@ -4193,6 +4405,75 @@ class UnknownLatchTests(unittest.TestCase):
             self.assertTrue(ctx.latched)
             self.assertIn("APPLY_ACKED_LATE", ctx.latch_reasons)
             self.assertTrue(unknown_latched(td))
+
+    def test_t7b_ack_after_owner_settled_uncertain_is_evidence_only(self) -> None:
+        """T5 regression (K4 run 35327293618): the owner's accounting settles the
+        in-flight apply UNCERTAIN/UNSETTLED_AT_RESTORE *before* the client returns.
+        The later ack must not re-open the terminal; it is late evidence only.
+        Deterministic: events, no window or wall-clock wait."""
+        import threading
+
+        from overlay_restore import DispatchContext, account_live_attempts, dispatch_restart
+        from vault import unknown_latched
+
+        release = threading.Event()
+        entered = threading.Event()
+        with tempfile.TemporaryDirectory() as td:
+            pm2 = FakePm2Dual()
+            pm2.seed(GW, GW_BASELINE)
+            pm2.behaviors[GW] = [("block", release, entered)]
+            ctx = DispatchContext(td)
+            ctx.orig_restart = pm2.restart_update_env
+            holder: dict = {}
+
+            def apply() -> None:
+                holder["a"] = dispatch_restart(pm2, GW, {"GLOBAL_EXECUTION_ENABLED": "true"}, ctx, op="APPLY")
+
+            thread = threading.Thread(target=apply)
+            thread.start()
+            self.assertTrue(entered.wait(timeout=5))
+            self.assertEqual([e["phase"] for e in self._journal(Path(td))], ["DISPATCHED"])
+            # owner: take ownership and account with a zero bound -> UNSETTLED_AT_RESTORE
+            self.assertIsNotNone(ctx.take_ownership())
+            added = account_live_attempts(ctx, bound_sec=0)
+            self.assertEqual(added, ["APPLY_UNSETTLED_AT_RESTORE"])
+            attempt = next(iter(ctx.attempts.values()))
+            self.assertTrue(attempt.settled.is_set())
+            self.assertEqual((attempt.fate, attempt.reason), ("UNCERTAIN", "UNSETTLED_AT_RESTORE"))
+            self.assertFalse(attempt.acked_late)
+            entry = self._journal(Path(td))[0]
+            self.assertEqual((entry["phase"], entry["reason"], entry["exit_code"]), ("UNCERTAIN", "UNSETTLED_AT_RESTORE", None))
+            terminal_ts = entry["terminal_mono_ts"]
+            self.assertNotIn("late_ack", entry)
+            self.assertNotIn("APPLY_ACKED_LATE", ctx.latch_reasons)
+            # the blocked client now returns 0: a late ack after settlement
+            release.set()
+            thread.join(timeout=10)
+            self.assertFalse(thread.is_alive())
+            self.assertIs(holder["a"], attempt)
+            # terminal + reason preserved; ack recorded as evidence only
+            self.assertEqual((attempt.fate, attempt.reason), ("UNCERTAIN", "UNSETTLED_AT_RESTORE"))
+            self.assertTrue(attempt.acked_late)
+            entry = self._journal(Path(td))[0]
+            self.assertEqual((entry["phase"], entry["reason"], entry["exit_code"]), ("UNCERTAIN", "UNSETTLED_AT_RESTORE", None))
+            self.assertEqual(entry["terminal_mono_ts"], terminal_ts)
+            self.assertEqual(entry["late_ack"], "ACKED_LATE_AFTER_UNCERTAIN")
+            self.assertEqual(entry["late_ack_exit_code"], 0)
+            self.assertIn("APPLY_ACKED_LATE", ctx.latch_reasons)
+            self.assertIn("APPLY_UNSETTLED_AT_RESTORE", ctx.latch_reasons)
+            marker = json.loads((Path(td) / "unknown_overlay.json").read_text(encoding="utf-8"))
+            self.assertIn("APPLY_ACKED_LATE", marker["reasons"])
+            self.assertIn("APPLY_UNSETTLED_AT_RESTORE", marker["reasons"])
+            self.assertIn(attempt.attempt_id, marker["attempts"])
+            self.assertTrue(unknown_latched(td))
+            # a second accounting pass adds nothing new and re-runs no restore
+            self.assertEqual(account_live_attempts(ctx, bound_sec=0), ["APPLY_UNSETTLED_AT_RESTORE"])
+            self.assertEqual(len([c for c in pm2.calls if c[0] == GW]), 1)
+            # annotate() can never rewrite identity or terminal fields
+            ctx.journal.annotate(attempt.attempt_id, phase="ACKED", reason="x", exit_code=0, terminal_mono_ts=0, note="n")
+            entry = self._journal(Path(td))[0]
+            self.assertEqual((entry["phase"], entry["reason"], entry["exit_code"], entry["terminal_mono_ts"]), ("UNCERTAIN", "UNSETTLED_AT_RESTORE", None, terminal_ts))
+            self.assertEqual(entry["note"], "n")
 
     def test_t15_ownership_between_intent_and_spawn_refuses_before_spawn(self) -> None:
         import threading
@@ -4503,7 +4784,14 @@ class UnknownLatchTests(unittest.TestCase):
             self.assertFalse(result.restore_ok)
             self.assertFalse(result.overlays_restored)
             self.assertFalse(result.next_canary_allowed)
+            # §10.3.A.3: unproven restoration -> INCOMPLETE. The underlying terminal
+            # rejection (xai parser did not accept the stub-format terminal) is
+            # preserved separately as evidence, never as the run classification.
             self.assertEqual(result.classification, "INCOMPLETE")
+            self.assertIsNotNone(result.accepted)
+            self.assertFalse(result.accepted.intended_accepted)
+            self.assertIn("TERMINAL_NOT_ACCEPTED", result.reasons)
+            self.assertEqual(result.reasons.count("TERMINAL_NOT_ACCEPTED"), 1)
             self.assertEqual(result.fence_proof, "NONE")
             self.assertTrue(result.vault_preserved)
             self.assertEqual(deleted["n"], 0)

@@ -367,18 +367,39 @@ jobs:
       - name: C. Run the complete test suite (verbose, bounded, real exit code preserved)
         id: tests
         run: |
+          # GitHub runs `bash -e -o pipefail` for shell: bash. The inherited -e is
+          # NOT cleared by `set -uo pipefail`; with pipefail a failing suite made
+          # the pipeline itself fail and the shell exited before unittest.exit /
+          # unittest.timing were written (run 35327293618). The pipeline status
+          # is therefore captured explicitly with -e disabled around it, the
+          # evidence is written unconditionally, and the step then fails with
+          # the suite's real exit status.
           set -uo pipefail
           cd "$BUNDLE"
           echo "cwd=$(pwd)"
           echo "cmd=timeout -k 30 ${SUITE_TIMEOUT_SEC} python3 -m unittest -v tests.test_operator_bundle"
           start="$(date +%s)"
+          rc=1
+          set +e
           timeout -k 30 "$SUITE_TIMEOUT_SEC" python3 -m unittest -v tests.test_operator_bundle 2>&1 | tee "$EVIDENCE/unittest.log"
           rc="${PIPESTATUS[0]}"
+          tee_rc="${PIPESTATUS[1]}"
+          set -e
           end="$(date +%s)"
           echo "$rc" > "$EVIDENCE/unittest.exit"
-          echo "unittest exit=$rc elapsed=$((end - start))s" | tee "$EVIDENCE/unittest.timing"
-          if [ "$rc" -eq 124 ] || [ "$rc" -eq 137 ]; then echo "::error::suite exceeded ${SUITE_TIMEOUT_SEC}s bound"; fi
-          exit "$rc"
+          {
+            echo "unittest exit=$rc elapsed=$((end - start))s"
+            echo "tee exit=$tee_rc"
+            echo "started_utc=$(date -u -d "@$start" +%Y-%m-%dT%H:%M:%SZ) finished_utc=$(date -u -d "@$end" +%Y-%m-%dT%H:%M:%SZ)"
+          } | tee "$EVIDENCE/unittest.timing"
+          if [ "$rc" -eq 124 ] || [ "$rc" -eq 137 ]; then echo "::error::suite exceeded ${SUITE_TIMEOUT_SEC}s bound (exit $rc)"; fi
+          if [ "$tee_rc" -ne 0 ]; then echo "::error::log capture (tee) exited $tee_rc; unittest.log may be incomplete"; fi
+          if [ "$rc" -ne 0 ]; then
+            echo "::error::unittest exited $rc (see unittest.log); failing the step with that status"
+            exit "$rc"
+          fi
+          if [ "$tee_rc" -ne 0 ]; then exit "$tee_rc"; fi
+          echo "unittest exit 0"
 
       - name: D. Parse results (counts, required Linux-specific cases, skips, simulated vs real durability)
         if: ${{ !cancelled() && steps.preflight.outcome == 'success' }}
@@ -395,54 +416,152 @@ jobs:
           log = open(log_path, encoding="utf-8", errors="replace").read().splitlines()
           rc = int(open(exit_path).read().strip()) if os.path.isfile(exit_path) else -1
 
-          # expected test count from the module AST (every test_* method in a class body)
+          # Expected tests from the module AST: fully qualified ids
+          # "tests.test_operator_bundle.<Class>.<test_name>" for every test_* method
+          # in a class body. Short names are resolved through this map (fail closed
+          # on unknown / ambiguous names) so the gates never key on a bare method name.
+          MODULE = "tests.test_operator_bundle"
           tree = ast.parse(open(test_file, encoding="utf-8").read(), test_file)
-          expected = sum(1 for c in ast.walk(tree) if isinstance(c, ast.ClassDef)
-                         for f in c.body if isinstance(f, (ast.FunctionDef, ast.AsyncFunctionDef)) and f.name.startswith("test_"))
+          expected_ids = set()
+          by_short = {}
+          for c in ast.walk(tree):
+              if isinstance(c, ast.ClassDef):
+                  for f in c.body:
+                      if isinstance(f, (ast.FunctionDef, ast.AsyncFunctionDef)) and f.name.startswith("test_"):
+                          tid = f"{MODULE}.{c.name}.{f.name}"
+                          expected_ids.add(tid)
+                          by_short.setdefault(f.name, []).append(tid)
+          expected = len(expected_ids)
 
-          # verbose format: "test_x (pkg.Class.test_x) ... ok"; with a docstring the
-          # description continues on the next line: "<docstring> ... ok".
+          # unittest -v output (Python 3.12), stdout+stderr merged by the workflow:
+          #   test_x (pkg.mod.Class.test_x) ... ok                 # no docstring
+          #   test_x (pkg.mod.Class.test_x)                        # docstring: header alone,
+          #   First docstring line ... ok                          #   status after the description
+          #   test_x (pkg.mod.Class.test_x) ... <warning text>     # output emitted during the test
+          #   <more warning lines>                                 #   lands after "... " and before
+          #   ok                                                   #   the status on its own line
+          # Only the exact unittest status tokens are accepted as a status. Anything
+          # else after "... " or between header and status is interleaved output and is
+          # recorded per test, never taken as an outcome (run 35327293618 mistook a
+          # ResourceWarning line for a status).
+          STATUS_TOKEN = r"(ok|FAIL|ERROR|skipped '(?:[^'\\]|\\.)*'|skipped \"(?:[^\"\\]|\\.)*\"|expected failure|unexpected success)"
           HEAD = re.compile(r"^(test_\w+) \(([\w.]+)\)(?: \.\.\. (.*))?$")
-          STATUS = re.compile(r"^(?:.* \.\.\. )?(ok|FAIL|ERROR|skipped .*|expected failure|unexpected success)$")
-          status = {}
+          STATUS_ONLY = re.compile(r"^" + STATUS_TOKEN + r"$")
+          DESC_STATUS = re.compile(r"^(.*) \.\.\. " + STATUS_TOKEN + r"$")
+          SEPARATOR = re.compile(r"^(={20,}|-{20,})$")
+          RAN = re.compile(r"^Ran (\d+) tests? in ([\d.]+)s$")
+          status = {}          # fully qualified id -> status token
+          interleaved = {}     # fully qualified id -> list of output lines seen before its status
+          duplicates = []
+          unmatched_heads = []
           current = None
+          body_ended = False
+          def close(tid, tok):
+              if tid in status:
+                  duplicates.append(tid)
+              status[tid] = tok
           for line in log:
+              if body_ended:
+                  break
+              if SEPARATOR.match(line) or RAN.match(line):
+                  if current is not None:
+                      unmatched_heads.append(current)
+                      current = None
+                  if RAN.match(line):
+                      body_ended = True
+                  continue
               m = HEAD.match(line)
               if m:
-                  current = m.group(1)
-                  if m.group(3):
-                      status[current] = m.group(3); current = None
+                  if current is not None:
+                      unmatched_heads.append(current); current = None
+                  short, qualified, trailing = m.group(1), m.group(2), m.group(3)
+                  if not qualified.endswith("." + short):
+                      problems.append(f"header id mismatch: {line!r}")
+                  tid = qualified
+                  if trailing is None:
+                      current = tid                                   # docstring or output follows
+                  elif STATUS_ONLY.match(trailing):
+                      close(tid, trailing)                            # inline status
+                  else:
+                      interleaved.setdefault(tid, []).append(trailing)  # output on the header line
+                      current = tid
                   continue
-              s = STATUS.match(line) if current else None
-              if s:
-                  status[current] = s.group(1); current = None
-          fail_heads = re.findall(r"^(?:FAIL|ERROR): (test_\w+) \(", "\n".join(log), re.M)
-          ran = re.search(r"^Ran (\d+) tests? in ([\d.]+)s$", "\n".join(log), re.M)
+              if current is not None:
+                  s = STATUS_ONLY.match(line)
+                  if s:
+                      close(current, s.group(1)); current = None; continue
+                  d = DESC_STATUS.match(line)
+                  if d:
+                      close(current, d.group(2)); current = None; continue
+                  interleaved.setdefault(current, []).append(line)
+          if current is not None:
+              unmatched_heads.append(current)
+
+          text = "\n".join(log)
+          fail_heads = re.findall(r"^(?:FAIL|ERROR): test_\w+ \(([\w.]+)\)", text, re.M)
+          ran = RAN.search(text)
           final = next((l for l in reversed(log) if l.startswith(("OK", "FAILED"))), "")
           counts = {"failures": 0, "errors": 0, "skipped": 0, "expected failures": 0, "unexpected successes": 0}
           for k, v in re.findall(r"(failures|errors|skipped|expected failures|unexpected successes)=(\d+)", final):
               counts[k] = int(v)
           ran_n = int(ran.group(1)) if ran else -1
 
-          skipped = sorted(n for n, s in status.items() if s.startswith("skipped"))
-          ALLOWED_SKIPS = {"test_bash_stop_wrapper_if_present"}  # Windows Git-bash wrapper; skips on Linux by design
-          bad_skips = [n for n in skipped if n not in ALLOWED_SKIPS]
+          parsed_counts = {
+              "ok": sum(1 for s in status.values() if s == "ok"),
+              "FAIL": sum(1 for s in status.values() if s == "FAIL"),
+              "ERROR": sum(1 for s in status.values() if s == "ERROR"),
+              "skipped": sum(1 for s in status.values() if s.startswith("skipped")),
+              "expected failure": sum(1 for s in status.values() if s == "expected failure"),
+              "unexpected success": sum(1 for s in status.values() if s == "unexpected success"),
+          }
+          skipped = sorted(t for t, s in status.items() if s.startswith("skipped"))
+          ALLOWED_SKIPS = {f"{MODULE}.AdapterBoundaryTests.test_bash_stop_wrapper_if_present"}  # Windows Git-bash wrapper; skips on Linux by design
+          bad_skips = [t for t in skipped if t not in ALLOWED_SKIPS]
+          for t in ALLOWED_SKIPS:
+              if t not in expected_ids:
+                  problems.append(f"allowed skip {t} is not defined in the module (stale allowlist)")
+
+          # Parser self-consistency: fail closed if the verbose body could not be
+          # parsed completely, rather than letting an unparsed test count as "not run".
+          if duplicates:
+              problems.append(f"duplicate status for tests: {sorted(set(duplicates))}")
+          if unmatched_heads:
+              problems.append(f"test headers without a recognised status: {sorted(set(unmatched_heads))}")
+          unknown_ids = sorted(set(status) - expected_ids)
+          if unknown_ids:
+              problems.append(f"statuses for tests not defined in the module: {unknown_ids}")
+          missing_ids = sorted(expected_ids - set(status))
+          if missing_ids:
+              problems.append(f"module tests with no status in the log: {missing_ids}")
+          if ran and len(status) != ran_n:
+              problems.append(f"parsed {len(status)} statuses but unittest ran {ran_n}")
+          if final and (parsed_counts["FAIL"] != counts["failures"] or parsed_counts["ERROR"] != counts["errors"] or parsed_counts["skipped"] != counts["skipped"]):
+              problems.append(f"parsed per-test counts {parsed_counts} disagree with final line {final!r}")
+          if sorted(set(fail_heads)) != sorted(t for t, s in status.items() if s in ("FAIL", "ERROR")):
+              problems.append(f"FAIL/ERROR detail heads {sorted(set(fail_heads))} disagree with per-test statuses")
 
           REQUIRED = {
               "lock (fcntl.flock run lock)": ["test_t18_second_run_on_same_vault_gets_run_lock_held"],
               "durability (durable_replace / journal)": ["test_t17_durable_replace_call_sequence_and_seq_mismatch", "test_t17_journal_uncertain_is_monotonic"],
               "interrupt (fake interrupt + orphaned journal)": ["test_interrupt_does_not_abandon", "test_interrupt_during_restore_attempts_other_apps", "test_orchestrate_interrupt_restores", "test_t8_interrupted_run_persists_and_blocks_next_run"],
-              "signals to disposable child processes": ["test_timeout_kills_owned_group", "test_linux_capture_alive_and_stop_with_mocks", "test_linux_capture_signals_recorded_tcpdump_not_fixture_pid", "test_linux_capture_start_failure_cleans_up", "test_posix_privileged_kill_spy_not_mock_sudo"],
+              "late ack after owner settlement (T5 / T7b)": ["test_t5_watchdog_restore_overlaps_in_flight_apply", "test_t7_late_ack_after_ownership_latches", "test_t7b_ack_after_owner_settled_uncertain_is_evidence_only"],
+              "signals to disposable child processes": ["test_timeout_kills_owned_group", "test_linux_capture_alive_and_stop_with_mocks", "test_linux_capture_signals_recorded_tcpdump_not_fixture_pid", "test_fresh_process_stop_owned_disposable", "test_linux_capture_start_failure_cleans_up", "test_posix_privileged_kill_spy_not_mock_sudo"],
               "allowlist / F5 boundary": ["test_t12_child_env_allowlist_per_binary_branch", "test_fence_proof_boundary_static", "test_t13_acked_matched_unproven_is_not_restoration_success"],
           }
           required_report = {}
           for group, names in REQUIRED.items():
               for n in names:
-                  st = status.get(n, "NOT RUN")
-                  ok = (st == "ok") and n not in fail_heads
-                  required_report[n] = {"group": group, "status": st, "passed": ok}
+                  ids = by_short.get(n, [])
+                  if len(ids) != 1:
+                      problems.append(f"required {group}: {n} resolves to {len(ids)} module tests (must be exactly 1)")
+                      required_report[n] = {"group": group, "id": None, "status": "UNRESOLVED", "passed": False}
+                      continue
+                  tid = ids[0]
+                  st = status.get(tid, "NOT RUN")
+                  ok = (st == "ok") and tid not in fail_heads
+                  required_report[tid] = {"group": group, "short": n, "status": st, "passed": ok}
                   if not ok:
-                      problems.append(f"required {group}: {n} -> {st}")
+                      problems.append(f"required {group}: {tid} -> {st}")
 
           if not ran:
               problems.append("no 'Ran N tests' summary line")
@@ -454,16 +573,24 @@ jobs:
               problems.append(f"final status: {final or 'missing'}")
           if bad_skips:
               problems.append(f"unexpected skips: {bad_skips}")
-          if counts["failures"] or counts["errors"] or fail_heads:
-              problems.append(f"failures={counts['failures']} errors={counts['errors']} heads={fail_heads}")
+          if counts["failures"] or counts["errors"] or fail_heads or parsed_counts["FAIL"] or parsed_counts["ERROR"] or parsed_counts["unexpected success"]:
+              problems.append(f"failures={counts['failures']} errors={counts['errors']} heads={sorted(set(fail_heads))}")
+
+          # Interleaved output is reported (not gated): a ResourceWarning here means a
+          # test-owned child was still running at garbage collection.
+          warning_lines = {t: [l for l in ls if "Warning" in l] for t, ls in interleaved.items()}
+          warning_lines = {t: ls for t, ls in warning_lines.items() if ls}
 
           summary = {
               "unittest_exit": rc,
               "ran": ran_n, "expected_from_ast": expected, "elapsed_s": float(ran.group(2)) if ran else None,
               "final_status_line": final,
               "failures": counts["failures"], "errors": counts["errors"], "skipped": counts["skipped"],
+              "parsed_status_counts": parsed_counts,
               "skipped_tests": skipped, "allowed_skips": sorted(ALLOWED_SKIPS),
               "fail_or_error_tests": sorted(set(fail_heads)),
+              "tests_with_interleaved_output": {t: len(ls) for t, ls in sorted(interleaved.items())},
+              "tests_with_warning_output": warning_lines,
               "required_linux_cases": required_report,
               "durability_evidence": "SIMULATED — fsync/replace ordering observed through unittest.mock spies on a real ext4 tmpdir; NOT power-loss / crash-consistency evidence",
               "lock_evidence": "fcntl.flock LOCK_EX|LOCK_NB exercised with two lock handles inside ONE OS process; no two-OS-process contention test exists in the suite",
@@ -572,7 +699,13 @@ jobs:
           import json, sys
           d = json.load(open(sys.argv[1]))
           print(f"- ran {d['ran']} / expected {d['expected_from_ast']}; failures={d['failures']} errors={d['errors']} skipped={d['skipped']} -> {d['final_status_line']}")
+          print(f"- parsed per-test statuses: {d.get('parsed_status_counts')}")
           print(f"- skipped: {d['skipped_tests']} (allowed: {d['allowed_skips']})")
+          warn = d.get("tests_with_warning_output") or {}
+          print(f"- tests with warning output interleaved (reported, not gated): {len(warn)}")
+          for t, ls in warn.items():
+              for l in ls[:3]:
+                  print(f"  - {t}: {l}")
           req = d["required_linux_cases"]
           print(f"- required Linux-specific cases passed: {sum(1 for v in req.values() if v['passed'])}/{len(req)}")
           for n, v in req.items():

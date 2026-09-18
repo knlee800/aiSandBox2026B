@@ -705,6 +705,12 @@ def orchestrate(
             overlays_restored=overlays_restored,
             network_independent=network_independent,
         )
+        # Terminal-rejection evidence is preserved separately from the run
+        # classification: a terminal outcome the accepted-script parser did not
+        # accept is recorded as a reason, never as a classification of its own.
+        terminal_not_accepted = bool(accepted and not accepted.intended_accepted and decision.execution_terminal)
+        if terminal_not_accepted and "TERMINAL_NOT_ACCEPTED" not in reasons:
+            reasons.append("TERMINAL_NOT_ACCEPTED")
         if next_allowed:
             classification = "OBSERVATION_COMPLETE"
         elif (
@@ -714,9 +720,12 @@ def orchestrate(
             and restore_ok
         ):
             classification = "OBSERVATION_COMPLETE"
-        elif accepted and not accepted.intended_accepted and decision.execution_terminal:
-            classification = "TERMINAL_NOT_ACCEPTED"
         else:
+            # §10.3.A.3: an unproven restoration (every shipped path, including
+            # RESTORE_ATTEMPTED_ACKED_MATCHED_UNPROVEN) yields INCOMPLETE. The
+            # historical TERMINAL_NOT_ACCEPTED classification is withdrawn: it
+            # implied that the run itself had reached a terminal state, which
+            # cannot be claimed while restoration is unproven.
             classification = "INCOMPLETE"
         return finish(
             classification,

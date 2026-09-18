@@ -442,16 +442,30 @@ class CommandJournal:
             entry["terminal_mono_ts"] = time.monotonic()
             self._write_locked(entries)
 
+    #: Fields that identify an entry or constitute its (write-once) terminal.
+    #: ``annotate`` never touches them; late evidence goes into separate keys.
+    IMMUTABLE_ENTRY_FIELDS = frozenset(
+        {"attempt_id", "run_id", "pid", "seq", "op", "app", "keys", "phase", "reason", "exit_code", "terminal_mono_ts"}
+    )
+
     def annotate(self, attempt_id: str, **fields: Any) -> None:
-        """Attach non-value metadata (e.g. reason=ACKED_LATE) to an entry."""
+        """Attach non-value evidence metadata (e.g. ``late_ack=...``) to an entry.
+
+        Identity and terminal fields (``phase`` / ``reason`` / ``exit_code`` /
+        ``terminal_mono_ts`` ...) are never rewritten: a late acknowledgement
+        after an UNCERTAIN terminal is additional evidence, not a new fate.
+        """
         with self.lock:
             entries = self._load_locked()
             entry = self._find_locked(entries, attempt_id)
+            changed = False
             for key, value in fields.items():
-                if key in ("attempt_id", "run_id", "seq", "phase"):
+                if key in self.IMMUTABLE_ENTRY_FIELDS:
                     continue
                 entry[key] = value
-            self._write_locked(entries)
+                changed = True
+            if changed:
+                self._write_locked(entries)
 
 
 # ---------------------------------------------------------------------------

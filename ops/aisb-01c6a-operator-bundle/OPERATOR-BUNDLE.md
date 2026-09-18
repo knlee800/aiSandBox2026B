@@ -160,11 +160,30 @@ the OS supports it, an owned disposable mock-tcpdump process.
 
 ## Revision r3 — PM2-OVERLAY-UNKNOWN-01 (UNTESTED / NOT APPROVED FOR LIVE USE)
 
-**Status of this revision: implementation written; behavioural verification
-NOT RUN (K4 not authorized); NOT APPROVED FOR LIVE USE; not READY for live
-execution.** Nothing in this revision was executed, compiled, tested, packaged,
-transferred, or accepted. Static hashing and read-only inspection are the only
-checks performed. Restoration remains BLOCKED.
+**Status of this revision: implementation written; first fake-only remote
+verification FAILED (GitHub-hosted Linux run 35327293618 on commit 810428994,
+127 tests, failures=2 errors=3 skipped=1); corrections WRITTEN / NOT YET
+REMOTELY VERIFIED; NOT APPROVED FOR LIVE USE; not READY for live execution.**
+Nothing in this tree was executed, compiled, tested, packaged, transferred, or
+accepted on the authoring host. Static hashing and read-only inspection are the
+only local checks performed. Restoration remains BLOCKED.
+
+K4 first-run corrections (same eight-file write set; the 32 read-only files are
+unchanged): (1) the three Linux capture fixtures use a test-only
+`MockTcpdumpIdentityCapture` — the mock chain execs
+`[python, bin/mock-tcpdump.py, ...]` in place, which production identity
+verification correctly rejects (`TCPDUMP_CMDLINE_NOT_TCPDUMP`); the fixture
+presents that exact two-token prefix as tcpdump for the production matcher
+(mock identity simulation, asserted separately from the raw production read)
+and reaps its own exited mock child; production identity acceptance is
+unchanged. (2) `orchestrate` no longer emits a `TERMINAL_NOT_ACCEPTED`
+classification: an unproven restoration is `INCOMPLETE` (§10.3.A.3) and the
+terminal rejection is preserved as the reason `TERMINAL_NOT_ACCEPTED`. (3) An
+acknowledgement that returns after the restore owner already settled the
+attempt `UNCERTAIN` is recorded as late evidence only (journal annotation
+`late_ack=ACKED_LATE_AFTER_UNCERTAIN`, marker reason `APPLY_ACKED_LATE`); the
+terminal, its reason, and `exit_code` are never rewritten (`annotate` refuses
+identity/terminal fields).
 
 ### Provenance chain (archives are never modified)
 
@@ -232,10 +251,16 @@ other 32 files are byte-identical to ZIP B.
 
 ### Verification state
 
-Tests T1–T12, T13 (corrected), T14 re-base, T15–T18 and the retention gate are
-**WRITTEN / NOT RUN**. T13b is omitted: exercising the proven branch would
-require a production-accessible proof input. Manifest regeneration used static
-hashing only; byte equivalence with `bin/write-transfer-manifest.py` output, the
-`CRLF=0` census, unittest results, and the r3 archive hash are Step 4 items in
-an authorized, isolated environment. Nothing here establishes F1–F4, P4–P7,
-host CLEAN, or reopen readiness.
+Tests T1–T12, T13 (corrected), T14 re-base, T15–T18, T7b and the retention
+gate are **WRITTEN**; the first remote fake-only run (GitHub-hosted
+ubuntu-24.04, Python 3.12, run 35327293618) executed 127 tests with
+failures=2 errors=3 skipped=1 (the three Linux capture fixtures, T13
+classification, T5 late acknowledgement); the corrections above are **WRITTEN /
+NOT YET REMOTELY VERIFIED** and the complete suite must be rerun remotely. T13b
+is omitted: exercising the proven branch would require a production-accessible
+proof input. Manifest regeneration used static hashing only; the remote run's
+manifest verification, transfer verifier, byte-compilation, and tracked-bytes
+checks passed on commit 810428994 and must be re-established on the corrected
+tree. The r3 archive hash remains a Step 4 item. Nothing here establishes F1–F4,
+P4–P7, host CLEAN, or reopen readiness. Remote fake-only evidence is
+LOCAL-TESTS class, not staging execution.
