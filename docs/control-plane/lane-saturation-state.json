@@ -924,7 +924,8 @@
         "ops/aisb-01c6a-operator-bundle/bin/mock-pm2.py",
         "ops/aisb-01c6a-operator-bundle/TRANSFER.manifest",
         "ops/aisb-01c6a-operator-bundle/REVIEW-SHA256.txt",
-        "ops/aisb-01c6a-operator-bundle/OPERATOR-BUNDLE.md"
+        "ops/aisb-01c6a-operator-bundle/OPERATOR-BUNDLE.md",
+        ".github/workflows/pm2-overlay-unknown-verify.yml"
       ],
       "hotfiles": [
         "ops/aisb-01c6a-operator-bundle/lib/overlay_restore.py",
@@ -934,7 +935,8 @@
         "ops/aisb-01c6a-operator-bundle/bin/mock-pm2.py",
         "ops/aisb-01c6a-operator-bundle/TRANSFER.manifest",
         "ops/aisb-01c6a-operator-bundle/REVIEW-SHA256.txt",
-        "ops/aisb-01c6a-operator-bundle/OPERATOR-BUNDLE.md"
+        "ops/aisb-01c6a-operator-bundle/OPERATOR-BUNDLE.md",
+        ".github/workflows/pm2-overlay-unknown-verify.yml"
       ],
       "i18n": false,
       "sharedContractIds": [],

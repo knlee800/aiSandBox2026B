@@ -1,0 +1,606 @@
+# PM2-OVERLAY-UNKNOWN-01 — K4 off-host, fake-only verification of the
+# EXEC-01C6A operator bundle (ops/aisb-01c6a-operator-bundle).
+#
+# Scope (Keith K4 selection, 2026-09-18): standard GitHub-hosted ubuntu-24.04,
+# manual dispatch only, fake adapters / mock executables / disposable child
+# processes / temporary recovery data only. This is NOT staging execution and
+# NOT live execution. No real pm2, tcpdump, sudo, node, capture, provider,
+# canary, database, or Redis operation is performed or authorized. No secrets,
+# SSH keys, deployment credentials, or cloud configuration are used.
+#
+# Evidence produced here is LOCAL-TESTS evidence (fake-only). It does not
+# establish F1–F5, P1/P4–P7, host CLEAN, EXEC-01C6A reopen readiness, or a
+# canary. K5 checkpoint / lock remains a separate Keith decision.
+
+name: pm2-overlay-unknown-verify
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  BUNDLE: ops/aisb-01c6a-operator-bundle
+  PYTHONUNBUFFERED: "1"
+  # Bounded wall-clock for the whole unittest run (seconds); job cap is 20 min.
+  SUITE_TIMEOUT_SEC: "900"
+  # Runner-scoped paths (EVIDENCE, TMPDIR, PYTHONPYCACHEPREFIX, TRIPWIRE_*) are
+  # derived from $RUNNER_TEMP in the first run step and exported via $GITHUB_ENV;
+  # the `runner` context is not available in workflow-level env.
+
+jobs:
+  verify:
+    name: fake-only verification (ubuntu-24.04, Python 3.12)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout dispatch commit (read-only, no persisted credentials)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Prepare disposable paths and record workflow / run identity
+        env:
+          GH_WORKFLOW: ${{ github.workflow }}
+          GH_WORKFLOW_REF: ${{ github.workflow_ref }}
+          GH_RUN_ID: ${{ github.run_id }}
+          GH_RUN_NUMBER: ${{ github.run_number }}
+          GH_RUN_ATTEMPT: ${{ github.run_attempt }}
+          GH_EVENT: ${{ github.event_name }}
+          GH_REF: ${{ github.ref }}
+          GH_SHA: ${{ github.sha }}
+          GH_ACTOR: ${{ github.actor }}
+          RUNNER_OS_NAME: ${{ runner.os }}
+          RUNNER_ARCH_NAME: ${{ runner.arch }}
+        run: |
+          set -euo pipefail
+          # All disposable state lives under RUNNER_TEMP, outside the checkout:
+          #  EVIDENCE            bounded logs/summary uploaded as the artifact
+          #  TMPDIR              tempfile.TemporaryDirectory() vaults/journals/mock state (never uploaded)
+          #  PYTHONPYCACHEPREFIX every .pyc (compileall and import-time) kept out of the tracked tree
+          #  TRIPWIRE_*          PATH shims that refuse and log any real sudo/pm2/tcpdump/node by name
+          EVIDENCE="$RUNNER_TEMP/evidence"
+          TMPDIR="$RUNNER_TEMP/tmp"
+          PYTHONPYCACHEPREFIX="$RUNNER_TEMP/pycache"
+          TRIPWIRE_DIR="$RUNNER_TEMP/tripwire"
+          TRIPWIRE_LOG="$TRIPWIRE_DIR/invocations.log"
+          mkdir -p "$EVIDENCE" "$TMPDIR" "$PYTHONPYCACHEPREFIX" "$TRIPWIRE_DIR"
+          {
+            echo "EVIDENCE=$EVIDENCE"
+            echo "TMPDIR=$TMPDIR"
+            echo "PYTHONPYCACHEPREFIX=$PYTHONPYCACHEPREFIX"
+            echo "TRIPWIRE_DIR=$TRIPWIRE_DIR"
+            echo "TRIPWIRE_LOG=$TRIPWIRE_LOG"
+          } >> "$GITHUB_ENV"
+          actual_sha="$(git rev-parse HEAD)"
+          {
+            echo "workflow=$GH_WORKFLOW"
+            echo "workflow_ref=$GH_WORKFLOW_REF"
+            echo "run_id=$GH_RUN_ID"
+            echo "run_number=$GH_RUN_NUMBER"
+            echo "run_attempt=$GH_RUN_ATTEMPT"
+            echo "event=$GH_EVENT"
+            echo "dispatch_ref=$GH_REF"
+            echo "dispatch_sha=$GH_SHA"
+            echo "checkout_sha=$actual_sha"
+            echo "actor=$GH_ACTOR"
+            echo "runner_os=$RUNNER_OS_NAME"
+            echo "runner_arch=$RUNNER_ARCH_NAME"
+            echo "runner_kernel=$(uname -srm)"
+            echo "os_release=$(. /etc/os-release && echo "$PRETTY_NAME")"
+            echo "python=$(python3 -c 'import sys,platform; print(sys.version.replace(chr(10)," "), "|", platform.python_implementation(), "|", sys.executable)')"
+            echo "git=$(git --version)"
+            echo "utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } | tee "$EVIDENCE/identity.txt"
+          if [ "$actual_sha" != "$GH_SHA" ]; then
+            echo "::error::checkout SHA $actual_sha != dispatch SHA $GH_SHA"; exit 1
+          fi
+          if [ "$GH_EVENT" != "workflow_dispatch" ]; then
+            echo "::error::unexpected trigger $GH_EVENT (workflow_dispatch only)"; exit 1
+          fi
+          case "$(python3 -c 'import sys; print("%d.%d" % sys.version_info[:2])')" in
+            3.12) ;;
+            *) echo "::error::Python 3.12 required"; exit 1 ;;
+          esac
+
+      - name: Isolation preflight (fail closed before any test runs)
+        id: preflight
+        run: |
+          set -euo pipefail
+          out="$EVIDENCE/preflight.txt"
+          : > "$out"
+          fail=0
+          note() { echo "$*" | tee -a "$out"; }
+
+          note "== bundle attributes (.gitattributes must be honoured by this checkout) =="
+          git check-attr text eol -- "$BUNDLE/lib/vault.py" "$BUNDLE/TRANSFER.manifest" "$BUNDLE/REVIEW-SHA256.txt" | tee -a "$out"
+          git check-attr text -- "$BUNDLE/lib/vault.py" | grep -q ': text: set$' || { note "FAIL: lib/vault.py not text"; fail=1; }
+          git check-attr eol -- "$BUNDLE/lib/vault.py" | grep -q ': eol: lf$' || { note "FAIL: lib/vault.py not eol=lf"; fail=1; }
+          for m in TRANSFER.manifest REVIEW-SHA256.txt; do
+            git check-attr text -- "$BUNDLE/$m" | grep -q ': text: unset$' || { note "FAIL: $m not -text"; fail=1; }
+          done
+          note "git core.autocrlf=$(git config --get core.autocrlf || echo unset)"
+
+          note "== runner environment must not pre-select any live adapter or authorization =="
+          # Names only are recorded; values are never printed.
+          bad_env="$(env | cut -d= -f1 | grep -E '^(AISB_01C6A_|PM2_BIN$|NODE_BIN$|SUDO_BIN$|AISB_SUDO_BIN$|TCPDUMP_BIN$|AISB_TCPDUMP_BIN$|MOCK_PM2_STATE$|MOCK_TCPDUMP_READ_FAIL$|PREP$|PYTHON3$)' || true)"
+          if [ -n "$bad_env" ]; then note "FAIL: forbidden variables present: $(echo "$bad_env" | tr '\n' ' ')"; fail=1; else note "ok: no AISB_01C6A_* / *_BIN / MOCK_* / PREP variables in runner env"; fi
+
+          note "== real binaries visible on PATH (recorded; bundle refuses them without explicit authorization) =="
+          for b in pm2 tcpdump sudo node; do
+            if p="$(command -v "$b" 2>/dev/null)"; then note "present: $b -> $p"; else note "absent: $b"; fi
+          done
+          if command -v pm2 >/dev/null 2>&1; then note "FAIL: a real pm2 is on PATH; fake-only runner expected none"; fail=1; fi
+
+          note "== PATH tripwire shims (any invocation of sudo/pm2/tcpdump/node by name fails and is logged) =="
+          mkdir -p "$TRIPWIRE_DIR"
+          for b in sudo pm2 tcpdump node; do
+            cat > "$TRIPWIRE_DIR/$b" <<'SH'
+          #!/usr/bin/env bash
+          printf 'TRIPWIRE %s argv=%s\n' "$(basename "$0")" "$*" >> "${TRIPWIRE_LOG:?}"
+          echo "tripwire: real '$(basename "$0")' invocation refused in fake-only verification" >&2
+          exit 97
+          SH
+            chmod 0755 "$TRIPWIRE_DIR/$b"
+          done
+          echo "$TRIPWIRE_DIR" >> "$GITHUB_PATH"
+          note "shims installed: $(ls "$TRIPWIRE_DIR" | tr '\n' ' ')"
+
+          note "== static scan of the test module: every spawn is sys.executable; every privileged kill is spied =="
+          python3 - "$BUNDLE/tests/test_operator_bundle.py" <<'PY' | tee -a "$out"
+          import ast, sys
+          path = sys.argv[1]
+          tree = ast.parse(open(path, encoding="utf-8").read(), path)
+          problems = []
+          spawn_names = {"run", "check_call", "check_output", "Popen", "call"}
+
+          def is_sys_executable(node):
+              return isinstance(node, ast.Attribute) and node.attr == "executable" and isinstance(node.value, ast.Name) and node.value.id == "sys"
+
+          def is_str_of_name(node, names):
+              return (isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "str"
+                      and len(node.args) == 1 and isinstance(node.args[0], ast.Name) and node.args[0].id in names)
+
+          spawns = 0
+          for node in ast.walk(tree):
+              if not isinstance(node, ast.Call):
+                  continue
+              f = node.func
+              # subprocess.<spawn>(...)
+              if isinstance(f, ast.Attribute) and f.attr in spawn_names and isinstance(f.value, ast.Name) and f.value.id == "subprocess":
+                  spawns += 1
+                  argv = node.args[0] if node.args else None
+                  ok = False
+                  if isinstance(argv, ast.List) and argv.elts:
+                      first = argv.elts[0]
+                      # [sys.executable, ...] or [str(bash), ...] (Windows Git-bash wrapper test; skips on Linux)
+                      ok = is_sys_executable(first) or is_str_of_name(first, {"bash"})
+                  if not ok:
+                      problems.append(f"line {node.lineno}: subprocess.{f.attr} argv[0] is not sys.executable / str(bash)")
+              # os.system / os.exec* / os.spawn* / os.popen must not appear in tests
+              if isinstance(f, ast.Attribute) and isinstance(f.value, ast.Name) and f.value.id == "os" and (
+                  f.attr == "system" or f.attr.startswith("exec") or f.attr.startswith("spawn") or f.attr == "popen"):
+                  problems.append(f"line {node.lineno}: os.{f.attr} in tests")
+              # posix_privileged_kill(...) must inject run=
+              if isinstance(f, ast.Name) and f.id == "posix_privileged_kill":
+                  if not any(k.arg == "run" for k in node.keywords):
+                      problems.append(f"line {node.lineno}: posix_privileged_kill without run= spy (would call real sudo)")
+              # .send(..., privileged=True, ...) must inject run_cmd=
+              if isinstance(f, ast.Attribute) and f.attr == "send":
+                  priv = any(k.arg == "privileged" and isinstance(k.value, ast.Constant) and k.value.value is True for k in node.keywords)
+                  if priv and not any(k.arg == "run_cmd" for k in node.keywords):
+                      problems.append(f"line {node.lineno}: send(privileged=True) without run_cmd= spy (would call real sudo)")
+          # AISB_01C6A_STAGING_EXECUTION_AUTHORIZED must never be assigned / dict-literal-set in tests
+          KEY = "AISB_01C6A_STAGING_EXECUTION_AUTHORIZED"
+          for node in ast.walk(tree):
+              if isinstance(node, ast.Assign):
+                  for t in node.targets:
+                      if isinstance(t, ast.Subscript) and isinstance(t.slice, ast.Constant) and t.slice.value == KEY:
+                          problems.append(f"line {node.lineno}: assigns {KEY}")
+              if isinstance(node, ast.Dict):
+                  for k in node.keys:
+                      if isinstance(k, ast.Constant) and k.value == KEY:
+                          problems.append(f"line {node.lineno}: dict literal sets {KEY}")
+          # no network socket construction in tests (socket.gethostname() is allowed)
+          for node in ast.walk(tree):
+              if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name) \
+                 and node.func.value.id == "socket" and node.func.attr != "gethostname":
+                  problems.append(f"line {node.lineno}: socket.{node.func.attr} in tests")
+          print(f"subprocess spawn sites inspected: {spawns}")
+          if problems:
+              print("STATIC_ISOLATION_FAIL")
+              for p in problems:
+                  print("  " + p)
+              sys.exit(1)
+          print("STATIC_ISOLATION_OK: all spawns are sys.executable (or the Linux-skipped Git-bash wrapper); all privileged kills are spied; no staging authorization is set; no sockets")
+          PY
+
+          note "== static scan of bundle libs/bin: no network sockets =="
+          if grep -RInE 'socket\.(socket|create_connection|getaddrinfo)|urllib\.request|http\.client|requests\.' "$BUNDLE/lib" "$BUNDLE/bin" | tee -a "$out"; then
+            note "FAIL: network client code present in lib/bin"; fail=1
+          else
+            note "ok: no network client code in lib/bin"
+          fi
+
+          note "== authorization gate present in every CLI entry point =="
+          for f in lib/orchestrate.py lib/reconcile.py lib/capture.py; do
+            grep -q 'require_explicit_live_authorization' "$BUNDLE/$f" && note "ok: $f gates live-capable adapters" || { note "FAIL: $f lacks require_explicit_live_authorization"; fail=1; }
+          done
+          grep -q 'def require_explicit_live_authorization' "$BUNDLE/lib/secret_io.py" || { note "FAIL: secret_io gate missing"; fail=1; }
+
+          if [ "$fail" -ne 0 ]; then echo "::error::isolation preflight failed; tests will not run"; exit 1; fi
+          note "PREFLIGHT_OK"
+
+      - name: A. Verify both manifests (raw SHA-256, strict format, duplicates) + transfer verifier
+        id: manifests
+        run: |
+          set -euo pipefail
+          # Pre-verification raw hashes of every tracked bundle file (used again in step E).
+          git ls-files -z -- "$BUNDLE" | xargs -0 sha256sum > "$EVIDENCE/sha256-before.txt"
+          wc -l < "$EVIDENCE/sha256-before.txt" | xargs -I{} echo "tracked bundle files hashed: {}"
+          python3 - "$BUNDLE" <<'PY' | tee "$EVIDENCE/manifest-verify.txt"
+          import hashlib, os, re, subprocess, sys
+          root = sys.argv[1]
+          tracked = subprocess.run(["git", "ls-files", "-z", "--", root], check=True, capture_output=True).stdout.decode().split("\0")
+          tracked = sorted(t[len(root) + 1:] for t in tracked if t)
+          ENTRY = re.compile(rb"^([0-9a-f]{64})  ([^\s]+)$")
+          problems = []
+
+          def sha(p):
+              h = hashlib.sha256()
+              with open(p, "rb") as f:
+                  for chunk in iter(lambda: f.read(1 << 20), b""):
+                      h.update(chunk)
+              return h.hexdigest()
+
+          def check(name, expected_headers, expected_paths):
+              raw = open(os.path.join(root, name), "rb").read()
+              if not raw.endswith(b"\r\n"):
+                  problems.append(f"{name}: does not end with CRLF")
+              if raw.count(b"\n") != raw.count(b"\r\n"):
+                  problems.append(f"{name}: bare LF present (expected CRLF-only)")
+              lines = raw[:-2].split(b"\r\n") if raw.endswith(b"\r\n") else raw.split(b"\n")
+              headers = [l for l in lines if l.startswith(b"#")]
+              if [h.decode() for h in headers] != expected_headers:
+                  problems.append(f"{name}: header lines differ from baseline convention: {[h.decode() for h in headers]}")
+              seen = {}
+              order = []
+              for i, l in enumerate(lines, 1):
+                  if l.startswith(b"#"):
+                      continue
+                  if l == b"":
+                      problems.append(f"{name}:{i}: empty line")
+                      continue
+                  m = ENTRY.match(l)
+                  if not m:
+                      problems.append(f"{name}:{i}: malformed entry {l[:80]!r}")
+                      continue
+                  digest, rel = m.group(1).decode(), m.group(2).decode()
+                  if rel.startswith("/") or ".." in rel.split("/") or "\\" in rel:
+                      problems.append(f"{name}:{i}: unsafe path {rel}")
+                      continue
+                  if rel in seen:
+                      problems.append(f"{name}:{i}: duplicate entry {rel}")
+                      continue
+                  seen[rel] = digest
+                  order.append(rel)
+                  full = os.path.join(root, rel)
+                  if not os.path.isfile(full) or os.path.islink(full):
+                      problems.append(f"{name}:{i}: missing or non-regular file {rel}")
+                      continue
+                  actual = sha(full)
+                  if actual != digest:
+                      problems.append(f"{name}:{i}: HASH_MISMATCH {rel} manifest={digest} actual={actual}")
+              listed = set(seen)
+              missing = sorted(set(expected_paths) - listed)
+              extra = sorted(listed - set(expected_paths))
+              if missing:
+                  problems.append(f"{name}: files not listed: {missing}")
+              if extra:
+                  problems.append(f"{name}: entries not in expected set: {extra}")
+              crlf_only = raw.count(b"\n") == raw.count(b"\r\n")
+              ordinal = order == sorted(order)  # informational; ordering is not a correctness requirement
+              print(f"{name}: entries={len(seen)} headers={len(headers)} bytes={len(raw)} crlf_only={crlf_only} ordinal_order={ordinal}")
+              return seen
+
+          helpers = [t for t in tracked if t.startswith(("bin/", "lib/", "config/"))]
+          review_expected = [t for t in tracked if t != "REVIEW-SHA256.txt"]
+          transfer = check("TRANSFER.manifest",
+                           ["# AISB-01C6A operator helper transfer manifest", "# sha256  relative-path"],
+                           helpers)
+          review = check("REVIEW-SHA256.txt",
+                         ["# SHA-256 of every file in the operator review bundle (excluding ZIP)"],
+                         review_expected)
+          # cross-consistency: helper hashes identical in both; REVIEW lists the actual TRANSFER.manifest hash
+          for rel, d in transfer.items():
+              if review.get(rel) != d:
+                  problems.append(f"cross: {rel} differs between TRANSFER.manifest and REVIEW-SHA256.txt")
+          if review.get("TRANSFER.manifest") != sha(os.path.join(root, "TRANSFER.manifest")):
+              problems.append("cross: REVIEW-SHA256.txt entry for TRANSFER.manifest does not match its raw hash")
+          for must in ("tests/test_operator_bundle.py", "OPERATOR-BUNDLE.md", "TRANSFER.manifest"):
+              if must not in review:
+                  problems.append(f"REVIEW-SHA256.txt: {must} not listed")
+          print(f"tracked bundle files: {len(tracked)}; helpers(bin/lib/config): {len(helpers)}")
+          if problems:
+              print("MANIFEST_VERIFY_FAIL")
+              for p in problems:
+                  print("  " + p)
+              sys.exit(1)
+          print("MANIFEST_VERIFY_OK: every entry in both manifests matches raw SHA-256; no malformed, duplicate, missing, or extra entries")
+          PY
+          echo "== existing transfer verifier (read-only; exit code preserved) =="
+          python3 "$BUNDLE/bin/verify-transfer.py" "$BUNDLE" 2>&1 | tee -a "$EVIDENCE/manifest-verify.txt"
+          test "${PIPESTATUS[0]}" -eq 0
+          grep -q '^TRANSFER_VERIFY_OK helpers=36$' "$EVIDENCE/manifest-verify.txt"
+
+      - name: B. Byte-compile bundle Python (bytecode kept outside the tracked tree)
+        run: |
+          set -euo pipefail
+          {
+            echo "PYTHONPYCACHEPREFIX=$PYTHONPYCACHEPREFIX"
+            echo "== changed files (W1–W5) =="
+            for f in lib/overlay_restore.py lib/orchestrate.py lib/vault.py tests/test_operator_bundle.py bin/mock-pm2.py; do
+              python3 -m py_compile "$BUNDLE/$f" && echo "compiled: $f"
+            done
+            echo "== whole bundle =="
+            python3 -m compileall -q -f "$BUNDLE/lib" "$BUNDLE/bin" "$BUNDLE/tests" && echo "compileall: OK"
+            stray="$(find "$BUNDLE" \( -name '__pycache__' -o -name '*.pyc' \) -print)"
+            if [ -n "$stray" ]; then echo "FAIL: bytecode inside tracked tree: $stray"; exit 1; fi
+            echo "bytecode inside tracked tree: none"
+            echo "bytecode files under prefix: $(find "$PYTHONPYCACHEPREFIX" -name '*.pyc' | wc -l)"
+          } | tee "$EVIDENCE/compile.txt"
+
+      - name: C. Run the complete test suite (verbose, bounded, real exit code preserved)
+        id: tests
+        run: |
+          set -uo pipefail
+          cd "$BUNDLE"
+          echo "cwd=$(pwd)"
+          echo "cmd=timeout -k 30 ${SUITE_TIMEOUT_SEC} python3 -m unittest -v tests.test_operator_bundle"
+          start="$(date +%s)"
+          timeout -k 30 "$SUITE_TIMEOUT_SEC" python3 -m unittest -v tests.test_operator_bundle 2>&1 | tee "$EVIDENCE/unittest.log"
+          rc="${PIPESTATUS[0]}"
+          end="$(date +%s)"
+          echo "$rc" > "$EVIDENCE/unittest.exit"
+          echo "unittest exit=$rc elapsed=$((end - start))s" | tee "$EVIDENCE/unittest.timing"
+          if [ "$rc" -eq 124 ] || [ "$rc" -eq 137 ]; then echo "::error::suite exceeded ${SUITE_TIMEOUT_SEC}s bound"; fi
+          exit "$rc"
+
+      - name: D. Parse results (counts, required Linux-specific cases, skips, simulated vs real durability)
+        if: ${{ !cancelled() && steps.preflight.outcome == 'success' }}
+        run: |
+          set -euo pipefail
+          python3 - "$BUNDLE/tests/test_operator_bundle.py" "$EVIDENCE" <<'PY' | tee "$EVIDENCE/test-summary.txt"
+          import ast, json, os, re, sys
+          test_file, evidence = sys.argv[1], sys.argv[2]
+          log_path = os.path.join(evidence, "unittest.log")
+          exit_path = os.path.join(evidence, "unittest.exit")
+          problems = []
+          if not os.path.isfile(log_path):
+              print("RESULT_PARSE_FAIL: unittest.log missing (suite did not run)"); sys.exit(1)
+          log = open(log_path, encoding="utf-8", errors="replace").read().splitlines()
+          rc = int(open(exit_path).read().strip()) if os.path.isfile(exit_path) else -1
+
+          # expected test count from the module AST (every test_* method in a class body)
+          tree = ast.parse(open(test_file, encoding="utf-8").read(), test_file)
+          expected = sum(1 for c in ast.walk(tree) if isinstance(c, ast.ClassDef)
+                         for f in c.body if isinstance(f, (ast.FunctionDef, ast.AsyncFunctionDef)) and f.name.startswith("test_"))
+
+          # verbose format: "test_x (pkg.Class.test_x) ... ok"; with a docstring the
+          # description continues on the next line: "<docstring> ... ok".
+          HEAD = re.compile(r"^(test_\w+) \(([\w.]+)\)(?: \.\.\. (.*))?$")
+          STATUS = re.compile(r"^(?:.* \.\.\. )?(ok|FAIL|ERROR|skipped .*|expected failure|unexpected success)$")
+          status = {}
+          current = None
+          for line in log:
+              m = HEAD.match(line)
+              if m:
+                  current = m.group(1)
+                  if m.group(3):
+                      status[current] = m.group(3); current = None
+                  continue
+              s = STATUS.match(line) if current else None
+              if s:
+                  status[current] = s.group(1); current = None
+          fail_heads = re.findall(r"^(?:FAIL|ERROR): (test_\w+) \(", "\n".join(log), re.M)
+          ran = re.search(r"^Ran (\d+) tests? in ([\d.]+)s$", "\n".join(log), re.M)
+          final = next((l for l in reversed(log) if l.startswith(("OK", "FAILED"))), "")
+          counts = {"failures": 0, "errors": 0, "skipped": 0, "expected failures": 0, "unexpected successes": 0}
+          for k, v in re.findall(r"(failures|errors|skipped|expected failures|unexpected successes)=(\d+)", final):
+              counts[k] = int(v)
+          ran_n = int(ran.group(1)) if ran else -1
+
+          skipped = sorted(n for n, s in status.items() if s.startswith("skipped"))
+          ALLOWED_SKIPS = {"test_bash_stop_wrapper_if_present"}  # Windows Git-bash wrapper; skips on Linux by design
+          bad_skips = [n for n in skipped if n not in ALLOWED_SKIPS]
+
+          REQUIRED = {
+              "lock (fcntl.flock run lock)": ["test_t18_second_run_on_same_vault_gets_run_lock_held"],
+              "durability (durable_replace / journal)": ["test_t17_durable_replace_call_sequence_and_seq_mismatch", "test_t17_journal_uncertain_is_monotonic"],
+              "interrupt (fake interrupt + orphaned journal)": ["test_interrupt_does_not_abandon", "test_interrupt_during_restore_attempts_other_apps", "test_orchestrate_interrupt_restores", "test_t8_interrupted_run_persists_and_blocks_next_run"],
+              "signals to disposable child processes": ["test_timeout_kills_owned_group", "test_linux_capture_alive_and_stop_with_mocks", "test_linux_capture_signals_recorded_tcpdump_not_fixture_pid", "test_linux_capture_start_failure_cleans_up", "test_posix_privileged_kill_spy_not_mock_sudo"],
+              "allowlist / F5 boundary": ["test_t12_child_env_allowlist_per_binary_branch", "test_fence_proof_boundary_static", "test_t13_acked_matched_unproven_is_not_restoration_success"],
+          }
+          required_report = {}
+          for group, names in REQUIRED.items():
+              for n in names:
+                  st = status.get(n, "NOT RUN")
+                  ok = (st == "ok") and n not in fail_heads
+                  required_report[n] = {"group": group, "status": st, "passed": ok}
+                  if not ok:
+                      problems.append(f"required {group}: {n} -> {st}")
+
+          if not ran:
+              problems.append("no 'Ran N tests' summary line")
+          elif ran_n != expected:
+              problems.append(f"ran {ran_n} tests but module defines {expected}")
+          if rc != 0:
+              problems.append(f"unittest exit code {rc}")
+          if not final.startswith("OK"):
+              problems.append(f"final status: {final or 'missing'}")
+          if bad_skips:
+              problems.append(f"unexpected skips: {bad_skips}")
+          if counts["failures"] or counts["errors"] or fail_heads:
+              problems.append(f"failures={counts['failures']} errors={counts['errors']} heads={fail_heads}")
+
+          summary = {
+              "unittest_exit": rc,
+              "ran": ran_n, "expected_from_ast": expected, "elapsed_s": float(ran.group(2)) if ran else None,
+              "final_status_line": final,
+              "failures": counts["failures"], "errors": counts["errors"], "skipped": counts["skipped"],
+              "skipped_tests": skipped, "allowed_skips": sorted(ALLOWED_SKIPS),
+              "fail_or_error_tests": sorted(set(fail_heads)),
+              "required_linux_cases": required_report,
+              "durability_evidence": "SIMULATED — fsync/replace ordering observed through unittest.mock spies on a real ext4 tmpdir; NOT power-loss / crash-consistency evidence",
+              "lock_evidence": "fcntl.flock LOCK_EX|LOCK_NB exercised with two lock handles inside ONE OS process; no two-OS-process contention test exists in the suite",
+              "interrupt_evidence": "KeyboardInterrupt injected by fake adapters; SIGTERM/SIGKILL delivered to disposable python child processes spawned by the suite; no real service was signalled",
+              "execution_class": "fake-only LOCAL-TESTS evidence on a GitHub-hosted runner; NOT staging; NOT live",
+              "problems": problems,
+          }
+          json.dump(summary, open(os.path.join(evidence, "test-summary.json"), "w"), indent=2)
+          print(json.dumps(summary, indent=2))
+          if problems:
+              print("RESULT_GATE_FAIL"); sys.exit(1)
+          print("RESULT_GATE_OK")
+          PY
+
+      - name: Manifest writer on a disposable copy (raw bytes vs entry content, reported separately)
+        if: ${{ !cancelled() && steps.preflight.outcome == 'success' }}
+        run: |
+          set -euo pipefail
+          copy="$RUNNER_TEMP/bundle-copy"
+          rm -rf "$copy"; mkdir -p "$copy"
+          cp -a "$BUNDLE/." "$copy/"
+          cmp "$BUNDLE/TRANSFER.manifest" "$copy/TRANSFER.manifest"
+          ( cd "$copy" && python3 bin/write-transfer-manifest.py ) | tee "$EVIDENCE/manifest-writer-compare.txt"
+          python3 - "$BUNDLE/TRANSFER.manifest" "$copy/TRANSFER.manifest" <<'PY' | tee -a "$EVIDENCE/manifest-writer-compare.txt"
+          import re, sys
+          tracked_raw = open(sys.argv[1], "rb").read()
+          written_raw = open(sys.argv[2], "rb").read()
+          def entries(raw):
+              out = []
+              for l in raw.replace(b"\r\n", b"\n").split(b"\n"):
+                  if not l or l.startswith(b"#"):
+                      continue
+                  m = re.match(rb"^([0-9a-f]{64})  (\S+)$", l)
+                  if not m:
+                      print("MALFORMED", l[:80]); sys.exit(1)
+                  out.append((m.group(2).decode(), m.group(1).decode()))
+              return out
+          t, w = entries(tracked_raw), entries(written_raw)
+          t_crlf, t_lf = tracked_raw.count(b"\r\n"), tracked_raw.count(b"\n")
+          w_crlf, w_lf = written_raw.count(b"\r\n"), written_raw.count(b"\n")
+          print(f"RAW_BYTES_IDENTICAL={tracked_raw == written_raw}  (tracked is CRLF by design; writer emits LF — a difference here is expected and is NOT a failure)")
+          print(f"tracked: {len(t)} entries, CRLF={t_crlf}, bare_LF={t_lf - t_crlf}")
+          print(f"written: {len(w)} entries, CRLF={w_crlf}, bare_LF={w_lf - w_crlf}")
+          print(f"ENTRY_SET_IDENTICAL={set(t) == set(w)}  (path->sha256 pairs)")
+          print(f"ENTRY_ORDER_IDENTICAL={[p for p, _ in t] == [p for p, _ in w]}  (tracked is ordinal bin/config/lib; writer loops bin, lib, config — an order difference is reported, not failed)")
+          diff = set(t) ^ set(w)
+          if diff:
+              for p, d in sorted(diff):
+                  print("  ENTRY_DIFF", p, d)
+              print("MANIFEST_WRITER_ENTRY_MISMATCH"); sys.exit(1)
+          print("MANIFEST_WRITER_ENTRY_CONTENT_MATCH")
+          PY
+          rm -rf "$copy"
+          cmp "$BUNDLE/TRANSFER.manifest" <(git show "HEAD:$BUNDLE/TRANSFER.manifest") && echo "tracked TRANSFER.manifest unchanged by writer check" | tee -a "$EVIDENCE/manifest-writer-compare.txt"
+
+      - name: E. Confirm tracked bundle bytes unchanged and tripwire untouched
+        if: ${{ !cancelled() && steps.preflight.outcome == 'success' }}
+        run: |
+          set -euo pipefail
+          {
+            echo "== git status (bundle + .gitattributes; must be empty) =="
+            st="$(git status --porcelain --untracked-files=all -- "$BUNDLE" .gitattributes)"
+            if [ -n "$st" ]; then echo "$st"; echo "FAIL: working tree changed"; exit 1; fi
+            echo "clean"
+            echo "== raw SHA-256 of every tracked bundle file vs pre-verification snapshot =="
+            git ls-files -z -- "$BUNDLE" | xargs -0 sha256sum > "$EVIDENCE/sha256-after.txt"
+            cmp "$EVIDENCE/sha256-before.txt" "$EVIDENCE/sha256-after.txt" && echo "identical: $(wc -l < "$EVIDENCE/sha256-after.txt") files"
+            echo "== bytecode inside tracked tree =="
+            stray="$(find "$BUNDLE" \( -name '__pycache__' -o -name '*.pyc' \) -print)"
+            if [ -n "$stray" ]; then echo "$stray"; echo "FAIL"; exit 1; fi; echo "none"
+            echo "== PATH tripwire (real sudo/pm2/tcpdump/node by name) =="
+            if [ -s "$TRIPWIRE_LOG" ]; then cat "$TRIPWIRE_LOG"; echo "FAIL: REAL_BINARY_INVOKED_VIA_PATH"; exit 1; fi
+            echo "no invocation recorded"
+            echo "TRACKED_BYTES_UNCHANGED"
+          } | tee "$EVIDENCE/tracked-bytes.txt"
+
+      - name: Write summary (also on failure)
+        if: ${{ always() }}
+        env:
+          TESTS_OUTCOME: ${{ steps.tests.outcome }}
+          PREFLIGHT_OUTCOME: ${{ steps.preflight.outcome }}
+          MANIFESTS_OUTCOME: ${{ steps.manifests.outcome }}
+          GH_RUN_ID: ${{ github.run_id }}
+          GH_RUN_ATTEMPT: ${{ github.run_attempt }}
+          GH_SHA: ${{ github.sha }}
+        run: |
+          set -uo pipefail
+          mkdir -p "$EVIDENCE"
+          # Bound the verbose log kept as an artifact (head 4 MiB + tail 1 MiB if larger).
+          if [ -f "$EVIDENCE/unittest.log" ] && [ "$(stat -c %s "$EVIDENCE/unittest.log")" -gt $((5 * 1024 * 1024)) ]; then
+            { head -c $((4 * 1024 * 1024)) "$EVIDENCE/unittest.log"; printf '\n\n[... truncated for artifact size ...]\n\n'; tail -c $((1 * 1024 * 1024)) "$EVIDENCE/unittest.log"; } > "$EVIDENCE/unittest.truncated.log"
+            mv "$EVIDENCE/unittest.truncated.log" "$EVIDENCE/unittest.log"
+            echo "unittest.log truncated for artifact size" >> "$EVIDENCE/unittest.timing"
+          fi
+          s="$EVIDENCE/SUMMARY.md"
+          {
+            echo "# PM2-OVERLAY-UNKNOWN-01 — K4 fake-only verification"
+            echo
+            echo "- run: ${GH_RUN_ID} attempt ${GH_RUN_ATTEMPT}; commit: ${GH_SHA}"
+            echo "- runner: GitHub-hosted ubuntu-24.04 (NOT staging, NOT live); Python 3.12; stdlib only; no secrets"
+            echo "- preflight: ${PREFLIGHT_OUTCOME}; manifests: ${MANIFESTS_OUTCOME}; unittest step: ${TESTS_OUTCOME}"
+            [ -f "$EVIDENCE/unittest.exit" ] && echo "- unittest exit code: $(cat "$EVIDENCE/unittest.exit")"
+            [ -f "$EVIDENCE/unittest.timing" ] && echo "- $(head -1 "$EVIDENCE/unittest.timing")"
+            if [ -f "$EVIDENCE/test-summary.json" ]; then
+              python3 - "$EVIDENCE/test-summary.json" <<'PY'
+          import json, sys
+          d = json.load(open(sys.argv[1]))
+          print(f"- ran {d['ran']} / expected {d['expected_from_ast']}; failures={d['failures']} errors={d['errors']} skipped={d['skipped']} -> {d['final_status_line']}")
+          print(f"- skipped: {d['skipped_tests']} (allowed: {d['allowed_skips']})")
+          req = d["required_linux_cases"]
+          print(f"- required Linux-specific cases passed: {sum(1 for v in req.values() if v['passed'])}/{len(req)}")
+          for n, v in req.items():
+              print(f"  - {'PASS' if v['passed'] else 'FAIL'} {n} [{v['group']}] {v['status']}")
+          print(f"- durability evidence: {d['durability_evidence']}")
+          print(f"- lock evidence: {d['lock_evidence']}")
+          print(f"- interrupt evidence: {d['interrupt_evidence']}")
+          if d["problems"]:
+              print("- problems:")
+              for p in d["problems"]:
+                  print(f"  - {p}")
+          PY
+            fi
+            for f in manifest-verify.txt manifest-writer-compare.txt tracked-bytes.txt; do
+              [ -f "$EVIDENCE/$f" ] && echo "- $f: $(grep -E '^(MANIFEST_VERIFY_OK|MANIFEST_VERIFY_FAIL|TRANSFER_VERIFY_OK|MANIFEST_WRITER_ENTRY_CONTENT_MATCH|MANIFEST_WRITER_ENTRY_MISMATCH|RAW_BYTES_IDENTICAL=|ENTRY_ORDER_IDENTICAL=|TRACKED_BYTES_UNCHANGED|FAIL)' "$EVIDENCE/$f" | tr '\n' ' ')"
+            done
+            echo
+            echo "This run produces fake-only LOCAL-TESTS evidence. It does not establish F1–F5, P1/P4–P7, host CLEAN, EXEC-01C6A reopen readiness, staging transfer, or a canary. K5 checkpoint/lock is a separate decision."
+          } > "$s"
+          cat "$s"
+          cat "$s" >> "$GITHUB_STEP_SUMMARY"
+          echo "== artifact contents =="; ls -la "$EVIDENCE"
+
+      - name: Upload bounded evidence artifact (also on failure)
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pm2-overlay-unknown-verify-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/evidence
+          if-no-files-found: error
+          retention-days: 7
