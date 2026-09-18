@@ -2,15 +2,17 @@
 
 **Task ID:** PM2-DAEMON-INVESTIGATION-01
 **Title:** Produce version-specific evidence and remediation requirements for a possible PM2 fencing/recovery successor
-**Step:** 3 — investigation (evidence report in §12)
-**Step status:** Step 1 COMPLETE — 2026-09-18 (registration `b6924cd4f3583fd26807e24796c45f834d20e7fe` `docs: register pm2 daemon investigation`); Step 2 COMPLETE — 2026-09-18 (evidence-scope freeze, §2–§11); Step 3 COMPLETE — 2026-09-18 (Keith-authorized investigation A–E; evidence report §12; Keith-authorized documentation-only correction pass applied 2026-09-18, ledger §12.9); Step 4 NOT AUTHORIZED
+**Step:** 4 — independent verification / checkpoint / lock (§13)
+**Step status:** Step 1 COMPLETE — 2026-09-18 (registration `b6924cd4f3583fd26807e24796c45f834d20e7fe` `docs: register pm2 daemon investigation`); Step 2 COMPLETE — 2026-09-18 (evidence-scope freeze `1241f7aefe98318d94acce6e9421c257d1a55441` `docs: freeze pm2 daemon investigation`, §2–§11); Step 3 COMPLETE — 2026-09-18 (Keith-authorized investigation A–E; evidence report §12; Keith-authorized documentation-only correction pass, ledger §12.9; committed `203dd1500b7d7563881146c93b6fbe1210dca815` `docs: record corrected pm2 daemon investigation`); Step 4 COMPLETE AND LOCKED — 2026-09-18 (checkpoint §13; verdict PASS_WITH_DISCLOSED_LIMITATIONS = investigation deliverable complete; not fence proof)
 **Nature:** GOVERNANCE / TECHNICAL INVESTIGATION — does NOT consume Lane 1 or Lane 2
 **Risk:** HIGH (read-only evidence collection only; no fence implemented; no host mutation)
-**Lifecycle:** 4-step GOVERNANCE
+**Lifecycle:** 4-step GOVERNANCE — COMPLETE AND LOCKED
 **Parent:** none. Not a child of AGENT-PLATFORM-EXEC-01C6A. Does **not** reopen EXEC-01C6A. Not the fencing/recovery successor required by HARNESS-RESTART-GOV-01 OUTCOME_A / R1.
-**This document:** Authoritative frozen investigation procedure (work packages A–E, §2–§6) and the Step 3 evidence report (§12). It is not a scheduler, not an EXEC-01C6A reopen, not fence proof, and grants no runtime, staging, PM2, or implementation permission. Step 3 findings are evidence and design candidates only.
+**This document:** Authoritative frozen investigation procedure (work packages A–E, §2–§6), the Step 3 evidence report with its correction ledger (§12), and the Step 4 checkpoint / lock (§13). It is not a scheduler, not an EXEC-01C6A reopen, not fence proof, and grants no runtime, staging, PM2, or implementation permission. Step 3 findings are evidence and design candidates only. Locked: no further edits except explicitly approved documentation correction.
+**Exact next step after this lock:** none authorized. This task is COMPLETE AND LOCKED. No successor is registered. Option A / Option B (§12.5) remain UNREGISTERED and unselected. EXEC-01C6A remains `startCondition=NOT_READY`.
 **Step 2 base HEAD:** `b6924cd4f3583fd26807e24796c45f834d20e7fe` (branch `main`; registration commit; working tree clean at window open; occupancy EMPTY / GOVERNANCE UNOWNED)
 **Step 3 base HEAD:** `1241f7aefe98318d94acce6e9421c257d1a55441` (branch `main`; Step 2 freeze commit; working tree clean at window open; occupancy EMPTY / GOVERNANCE UNOWNED)
+**Step 4 base HEAD:** `203dd1500b7d7563881146c93b6fbe1210dca815` (branch `main`; corrected Step 3 evidence commit; working tree clean at window open; occupancy EMPTY / GOVERNANCE UNOWNED)
 **Occupancy hash (end-state):** `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d` (Lane 1 EMPTY, Lane 2 EMPTY, GOVERNANCE UNOWNED)
 
 ```
@@ -18,7 +20,11 @@ STEP1_COMPLETE=YES
 STEP2_COMPLETE=YES
 STEP3_AUTHORIZED=YES
 STEP3_COMPLETE=YES
-STEP4_AUTHORIZED=NO
+STEP4_AUTHORIZED=YES
+STEP4_COMPLETE=YES
+TASK_STATE=COMPLETE AND LOCKED
+CHECKPOINT_VERDICT=PASS_WITH_DISCLOSED_LIMITATIONS (investigation deliverable complete; §13)
+LOCK_CLOSES=INVESTIGATION_ONLY (not the fencing/recovery successor; not a reopen gate)
 INVESTIGATION_EXECUTED=YES
 VENDOR_SOURCE_FETCHED=YES (pm2@7.0.3, amp@0.3.1, amp-message@0.1.2 registry artifacts; integrity verified; not installed; not executed)
 LIVE_STAGING_INSPECTION_PERFORMED=YES (read-only SSH as ubuntu; frozen A1–A8 plus recorded bounded A3/A8 adaptations; no PM2 client invoked)
@@ -450,3 +456,66 @@ Scope: corrections to the §12 findings and the current header only. §2–§11 
 Retained unchanged in substance: D1 static control-flow path (now labelled statically established, not reproduced); D2 (F4 blind spot); D3; transport delivery/dispatch/ack facts; vendor artifact integrity; version inventory.
 
 Correction-pass ledger: SSH=0, staging=0, PM2=0, AWS=0, network=0, vendor/bundle code executed=0, Python/tests/mocks=0, bundle/manifest/captured-output mutation=0, sidecar=0, predecessor bodies=0, application source=0, Git add/commit/push=0, successor registration=0, Step 4=0, EXEC-01C6A reopen=0. Writes: this document (§12 findings, header, this ledger); `TASKS.md` current board fields for this task; `TASKS_BACKLOG_FULL.md` this task's body; `docs/control-plane/SATURATION_PROOF.json` as validator output. GOVERNANCE acquired transiently then released UNOWNED. Occupancy EMPTY.
+
+---
+
+## 13. Step 4 — independent verification / checkpoint / lock (2026-09-18)
+
+**Base HEAD:** `203dd1500b7d7563881146c93b6fbe1210dca815` (`docs: record corrected pm2 daemon investigation`; branch `main`; working tree clean at window open).
+**Authorization:** Keith 2026-09-18 — Step 4 only: verify the corrected Step 3 evidence report and checkpoint/lock this GOVERNANCE investigation if its acceptance criteria are satisfied. No repetition of the investigation.
+**Method:** read-only inspection of the committed report (`git show 203dd15:docs/PM2-DAEMON-INVESTIGATION-01-STAGE-START.md`), the canonical body, and the board; frozen PM2-FENCE-01 §5 / §6.4 and HARNESS-RESTART-GOV-01 §3.3 consulted as references only. No source, vendor, bundle, staging, or runtime re-inspection.
+
+### 13.1 Checkpoint verdict
+
+```
+CHECKPOINT_VERDICT=PASS_WITH_DISCLOSED_LIMITATIONS
+ACCEPTANCE_OBJECT=INVESTIGATION_EVIDENCE_DELIVERABLE (work packages A–E; frozen §2–§6 procedure; canonical scope items 1–8)
+ACCEPTANCE_OBJECT_IS_NOT=FENCE_SUCCESS / F1_F5_PROOF / HOST_CLEAN / RISK_ACCEPTANCE / REOPEN_GATE
+TASK_STATE=COMPLETE AND LOCKED
+```
+
+PASS means: the Step 3 deliverable that the freeze required exists, is version-pinned, is internally consistent after the §12.9 corrections, and does not overclaim. PASS does **not** mean any fence works, any UNKNOWN was resolved by inference, or the frozen raw-hash procedure was satisfied.
+
+### 13.2 Criterion-by-criterion verification against the committed report
+
+| # | Criterion | Committed-report evidence | Result |
+|---|---|---|---|
+| 1 | All six corrections recorded in §12.9 | §12.9 table rows 1–6 present, each naming correction, location, and source basis; each row cross-checks against the corrected sections it cites (lead verdict, §12.1.1 A8, §12.1.3, §12.1.4, §12.1.5, §12.2 bullets/matrix/F-table/P-table, §12.3, §12.4, §12.5, §12.6, §12.7) | MET |
+| 2 | Installed-source identity KNOWN; daemon version CORROBORATED; loaded-code applicability UNKNOWN | §12.1.3 three-row table: "Installed on-disk source identity — **KNOWN**", "Running-daemon **version** — **CORROBORATED 7.0.3**", "Exact **loaded-code** identity of daemon PID 844871 — **UNKNOWN**"; header fields `STAGING_APPLICABILITY_INSTALLED_SOURCE=KNOWN`, `STAGING_APPLICABILITY_DAEMON_VERSION=CORROBORATED 7.0.3`, `STAGING_APPLICABILITY=UNKNOWN for daemon loaded-code identity`; freeze §2 UNKNOWN rule applied to daemon-side findings in §12.1.4 and §12.2 heading | MET |
+| 3 | Raw-hash mismatches vs normalized-content equivalence distinguished; deviation disclosed | §12.1.5: `RAW_MATCH — 1` (`TRANSFER.manifest`) and `RAW_MISMATCH — 20` recorded as the frozen-procedure result; separate row for in-memory CRLF→LF normalized equivalence; explicit "**Deviation recorded:**" paragraph stating the frozen "audit only what matches" condition was not met for 20 files, the strictly matched set is `TRANSFER.manifest` alone, static readings are "normalized-equivalent, not raw-verified", and the bundle "cannot be claimed as transfer-verified"; no file or manifest normalized or modified | MET |
+| 4 | D1 described as a statically established possible control-flow path, not a reproduced runtime result | §12.4 heading "Statically established bundle defects"; D1 body and F5 row use "statically established possible control-flow path"; header `BUNDLE_F5_DEFECT=STATICALLY_ESTABLISHED_POSSIBLE_CONTROL_FLOW_PATH (not executed / not reproduced)`; tests recorded as read, not run | MET |
+| 5 | F1–F5 not established collectively; FIFO/ping not promoted into completion or fencing proof | Lead verdict: "has not established any mechanism that satisfies F1–F5"; F-table: F1 NOT ESTABLISHED, F2 NOT ESTABLISHED (open conditions listed), F3 NOT ESTABLISHED, F4 PARTIALLY SUPPORTED WITH A BLIND SPOT, F5 NOT MET; `ping` bullet: "shows dispatch ordering only"; §12.3 same-connection row: "DESIGN CANDIDATE — INSUFFICIENT AS EVIDENCED; open conditions"; header `FENCE_VERDICT=NO_MECHANISM_SATISFYING_F1_F5_ESTABLISHED_IN_INSPECTED_VERSION_AND_SCOPE`; `F1_F5_PROVEN=NO` | MET |
+| 6 | P1–P8 retain their frozen meanings | §12.2 P-table columns "ID / Frozen meaning / Step 3 finding"; P1 Keith policy authorization, P2 result class remains UNKNOWN, P3 vault intact, P4 exclusive operator control, P5 operator PM2 CLI children absent, P6 named-key verification after P4/P5, P7 Keith residual daemon-buffer risk attestation, P8 separate EXEC-01C6A reopen authorization — matches `docs/AGENT-PLATFORM-EXEC-01C6A-PM2-FENCE-01-STAGE-START.md` §6.4; prior P6/P7/P8 mislabelling recorded as corrected in §12.9 row 1 | MET |
+| 7 | Options A/B unregistered and unauthorized; no policy selection, host CLEAN, residual-risk acceptance, or EXEC-01C6A reopen | §12.5: "Neither option is registered, admitted, or authorized"; §12.5/§12.6: selects no policy, accepts no residual risk, declares no host CLEAN, reopens nothing; header `EXEC_01C6A_REOPENED=NO`, `EXEC_01C6A_START_CONDITION=NOT_READY`, `FENCE_RECOVERY_SUCCESSOR_REGISTERED=NO`, `IMPLEMENTATION_CANDIDATE_CREATED=NO`, `P1_P8_AUTHORIZED=NO`, `HOST_CLEAN_ATTESTED=NO`, `RESIDUAL_DAEMON_BUFFER_RISK_ACCEPTED=NO` | MET |
+
+Coverage of the frozen deliverable (§6 / canonical scope items 1–8): (1) version applicability §12.1; (2) ordering/failure semantics §12.2 transport facts + failure-mode matrix; (3) F1–F5 independent mapping §12.2 F-table; (4) bundle F5 / recovery-material audit §12.1.5 + §12.4 D1–D3, with canary-job vs PM2-overlay acknowledgement distinguished; (5) evidence quality — vendor artifacts pinned to registry tarballs with integrity, master-branch review caveat preserved, observed behavior separated from documented guarantee; (6) exclusivity — P4/P5 recorded as operational attestations that source inspection cannot supply; (7) outcomes — per-mechanism supported/rejected/insufficient table §12.3; (8) scope boundaries — §12.5 UNREGISTERED options, §12.6 decisions left to Keith. All six report parts required by work package E are present.
+
+### 13.3 Acceptance basis — how disclosed deviations and UNKNOWNs affect acceptance
+
+- **Raw-hash procedure deviation (§12.1.5).** The frozen §4 procedure was **not** satisfied for 20 of 21 files; only `TRANSFER.manifest` raw-matched. Step 3 disclosed this rather than repairing files or rewriting the freeze. Acceptance treats the static bundle findings (D1–D4) as **normalized-equivalent, not raw-verified**: they are accepted as accurate readings of the local review copy, and they are **not** accepted as verification that the local copy is the transferred/accepted bundle. This checkpoint does not claim the raw-hash procedure passed. Any successor that relies on D1–D4 must first obtain a raw-verified bundle or re-hash under the frozen procedure.
+- **Loaded-code applicability UNKNOWN (§12.1.3).** Daemon-side findings (env merge at `ActionMethods.js` l.405, `rep.js` reply-only-if-writable, `gracefullExit` dump behavior, `pm2 kill` no-dump) are accepted as findings about pm2 7.0.3 **on-disk source**, corroborated for the running daemon by version banner and process title only. They are **not** accepted as byte-level facts about daemon PID 844871's loaded code. The freeze §2 UNKNOWN rule stands; no inference resolved it.
+- **F1–F5 NOT ESTABLISHED / F5 NOT MET.** Non-establishment is an acceptable investigation outcome under canonical scope item 7 ("supported candidate, rejected candidate, or insufficient evidence"). It does not lower the deliverable's completeness; it is the deliverable's result.
+- **D1 not reproduced.** The static control-flow path is accepted as a statically established possibility requiring remediation before any UNKNOWN_PENDING_OVERLAY policy could rely on the bundle; it is not accepted as an observed runtime failure.
+- **P4/P5/P7 attestations and P1/P8 authorizations absent.** These are Keith decisions and operational attestations outside investigation scope (§12.6, §12.7). Their absence is recorded, not waived.
+- **Advisory Opus/Fable reviews.** Treated as hypotheses; adopted only where §12 cites version-pinned source. The transport master-branch caveat from scope item 5 remains in force.
+
+None of these limitations blocks acceptance of the **evidence deliverable**, because the freeze (§2 UNKNOWN rule; §4 step 5 "record mismatches as limitations, do not repair"; §6 outcomes) explicitly permits UNKNOWN and non-established results as long as they are disclosed. All are disclosed. No criterion was found unmet; no blocker is recorded.
+
+### 13.4 What this lock does and does not do
+
+- This lock closes an **investigation**, not the fencing/recovery successor required by HARNESS-RESTART-GOV-01 OUTCOME_A / R1.
+- **No fence implemented or proven.** F1–F5 remain NOT ESTABLISHED / NOT MET as recorded in §12.2.
+- **No UNKNOWN_PENDING_OVERLAY policy authorized.** P1–P8 remain unauthorized / not recorded.
+- **No residual-risk acceptance** (P7) and **no host CLEAN attestation** (P2 remains UNKNOWN; P4/P5 not attested).
+- **EXEC-01C6A remains `startCondition=NOT_READY`.** Not reopened. EXEC-01C6A body untouched.
+- **No successor registered.** Option A / Option B (§12.5) remain UNREGISTERED and **unselected**. EXEC-01C6B / EXEC-01C7 not registered. No implementation candidate created.
+- **Occupancy EMPTY; GOVERNANCE acquired transiently for this checkpoint then released UNOWNED.** Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED.
+- **Builder gate LEFT ON; Harness flags unchanged.** Product-visible Harness remains FUTURE / gated.
+- `docs/control-plane/lane-saturation-state.json` unchanged (no candidate; no `lockedTaskIds` change — GOVERNANCE tasks carry no sidecar candidate).
+- Predecessor bodies (HARNESS-RESTART-GOV-01, PM2-FENCE-01, EXEC-01C6 / EXEC-01C6A) unchanged.
+
+### 13.5 Step 4 activity ledger
+
+SSH=0, staging=0, PM2=0, AWS=0, network=0, vendor fetch=0, bundle read/hash/mutation=0, Python/tests/mocks/builds/installs=0, Docker/databases=0, browser=0, provider/credit=0, environment changes=0, subagents=0, application source=0, sidecar=0, predecessor bodies=0, successor registration=0, EXEC-01C6A reopen=0, Git add/commit/push=0.
+Writes: this document (header current status; this §13); `TASKS.md` current board fields for this task; `TASKS_BACKLOG_FULL.md` this task's body (status, lifecycle Step 4, Step 4 AC, Step 4 HEAD/ledger); `docs/control-plane/SATURATION_PROOF.json` as validator output only.
+Verification run: `scripts/validate-lane-capacity.ps1`; `git diff --check`; read-only hunk-by-hunk scope inspection. Results recorded in the canonical body's Step 4 AC.
