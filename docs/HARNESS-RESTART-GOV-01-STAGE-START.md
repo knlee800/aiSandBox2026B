@@ -2,32 +2,42 @@
 
 **Task ID:** HARNESS-RESTART-GOV-01
 **Title:** Decide the safe path to resume Harness after Builder completion
-**Step:** 2 — stage-start / freeze A/B/C options and evidence
-**Step status:** Step 1 COMPLETE — 2026-09-17 (registration `8eb40707c1dfdc903354c1c3b88049030b7b63a4` `docs: register harness restart governance`); Step 2 COMPLETE — 2026-09-17; Steps 3–4 NOT AUTHORIZED
+**Step:** 3 — decision record of exactly one frozen path
+**Step status:** Step 1 COMPLETE — 2026-09-17 (registration `8eb40707c1dfdc903354c1c3b88049030b7b63a4` `docs: register harness restart governance`); Step 2 COMPLETE — 2026-09-17 (freeze `2376ae8f6d30d0ac5ce2bb80a0b241f2a21efcca` `docs: freeze harness restart governance`); Step 3 COMPLETE — 2026-09-18 — **OUTCOME_A under R1**; Step 4 NOT AUTHORIZED
 **Nature:** GOVERNANCE / DECISION — does NOT consume Lane 1 or Lane 2
 **Risk:** HIGH (path selection after Builder closeout; EXEC-01C6A PM2 overlay blocker; product-visible Harness remains FUTURE/gated)
 **Lifecycle:** 4-step GOVERNANCE
 **Parent:** none. Not a child of AGENT-PLATFORM-EXEC-01C6A. Does **not** reopen EXEC-01C6A.
-**This document:** Authoritative frozen A/B/C options, evidence thresholds, and Step 3 selection matrix. It is not a scheduler. It does not admit EXEC-01C6A. It does not select an outcome.
-**Exact next step after this freeze:** none authorized. Step 3, if later authorized, applies §7 and records exactly one of A / B / C.
+**This document:** Authoritative frozen A/B/C options, evidence thresholds, Step 3 selection matrix, and the Step 3 selected-outcome record. It is not a scheduler. It does not admit EXEC-01C6A. Step 3 selected OUTCOME_A; it does not establish a supported fence or authorize UNKNOWN_PENDING_OVERLAY recovery policy.
+**Exact next step after this freeze:** none authorized. Step 4, if later authorized, independently verifies this GOVERNANCE decision only. This Step 3 does not register a successor, reopen EXEC-01C6A, or start Step 4.
 **Step 2 base HEAD:** `8eb40707c1dfdc903354c1c3b88049030b7b63a4` (branch `main`; registration commit; occupancy EMPTY / GOVERNANCE UNOWNED)
+**Step 3 base HEAD:** `2376ae8f6d30d0ac5ce2bb80a0b241f2a21efcca` (branch `main`; Step 2 freeze commit; occupancy EMPTY / GOVERNANCE UNOWNED)
 **Occupancy hash (end-state):** `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d` (Lane 1 EMPTY, Lane 2 EMPTY, GOVERNANCE UNOWNED)
 
-Step 2 is a bounded, local, read-only decision freeze. It does **not** select an outcome.
+Step 2 remains a bounded, local, read-only decision freeze. It did **not** select an outcome.
+
+Step 3 independently applied the frozen §7 matrix and recorded exactly one outcome: **OUTCOME_A under R1**. It does **not** reopen EXEC-01C6A. It does **not** change sidecar `startCondition=NOT_READY`. It does **not** register a fencing/recovery successor. It does **not** establish that a supported fence exists. It does **not** authorize UNKNOWN_PENDING_OVERLAY recovery policy. It does **not** create an operator bundle, implementation code, or runtime procedure. It does **not** authorize live canary, PM2 overlay, staging, runtime mutation, or operator-bundle change. Step 4 is **not** authorized. This task is **not** locked.
 
 ```
 STEP1_COMPLETE=YES
 STEP2_COMPLETE=YES
-STEP3_AUTHORIZED=NO
+STEP3_AUTHORIZED=YES
+STEP3_COMPLETE=YES
 STEP4_AUTHORIZED=NO
 LOCKED=NO
-OUTCOME_SELECTED=NONE
-MATRIX_ROW=NONE
+OUTCOME_SELECTED=OUTCOME_A
+MATRIX_ROW=R1
 EXEC_01C6A_REOPENED=NO
 EXEC_01C6A_START_CONDITION=NOT_READY
 EXEC_01C6A_ADMITTED=NO
 EXEC_01C6A_LANE_DONE=NO
 EXEC_01C6A_LOCKED=NO
+SUCCESSOR_REGISTERED=NO
+FENCE_VS_POLICY_RESOLVED=NO
+F1_F5_PROVEN=NO
+P1_P8_AUTHORIZED=NO
+HOST_CLEAN_ATTESTED=NO
+RESIDUAL_DAEMON_BUFFER_RISK_ACCEPTED=NO
 IMPLEMENTATION_STARTED=NO
 SIDECAR_CANDIDATE_ADDED=NO
 STAGING_EXECUTION_AUTHORIZED=NO
@@ -45,9 +55,9 @@ GOVERNANCE_FINAL=UNOWNED
 
 ---
 
-## 0. Step 2 statement
+## 0. Step 2 statement (historical; unchanged)
 
-This freeze defines the **exact A/B/C options** and the evidence that Step 3 may use to choose exactly one of:
+This freeze defined the **exact A/B/C options** and the evidence that Step 3 may use to choose exactly one of:
 
 1. **OUTCOME_A** — new fencing/recovery capability so EXEC-01C6A can be reopened later;
 2. **OUTCOME_B** — different bounded Harness child that avoids PM2 process-env overlay;
@@ -61,6 +71,45 @@ Source evidence consulted this window does **not** make exactly one option sourc
 OUTCOME_SELECTED=NONE
 ```
 
+## 0A. Step 3 decision record — 2026-09-18
+
+Keith authorized Step 3 only and explicitly selected option A. Missing evidence was not filled by assumption.
+
+Authorized facts applied to the frozen §7 matrix:
+
+1. Keith authorizes A **and** records that a new fencing/recovery successor will be registered before any EXEC-01C6A reopen, because PM2-FENCE-01 OUTCOME_BLOCKED has no reopen gate. **R1 is true.**
+2. Therefore the first matching row is **R1**. Selected outcome: **OUTCOME_A**.
+
+This selects a **direction**. It does **not** establish that a supported fence exists. It does **not** authorize UNKNOWN_PENDING_OVERLAY recovery policy.
+
+Fence-capability versus recovery-policy remains **unresolved**. Selecting A does **not**:
+
+- prove F1–F5
+- authorize P1–P8
+- accept residual daemon-buffer risk
+- attest host CLEAN
+- reopen EXEC-01C6A
+- change sidecar or canonical `startCondition=NOT_READY`
+- register the successor
+- authorize live canary execution
+
+PM2-FENCE-01 remains COMPLETE AND LOCKED with **OUTCOME_BLOCKED under M3**. Rejected fencing claims remain rejected: CLI completion, timeout, process kill, point-in-time snapshots (`jlist`/`dump_env`), `pm2 save`, filesystem lock, and assumed daemon ordering are still not a supported fence.
+
+Required sequence before any EXEC-01C6A reopen (frozen §3.3; recorded as the R1 condition):
+
+1. A new fencing/recovery successor must be separately registered and authorized. Do not reuse PM2-FENCE-01. Do not treat HARNESS-RESTART-GOV-01 as that successor.
+2. That successor must establish the applicable frozen reopen gate (F1–F5 fence path **or** authorized P1–P8 policy path) and be COMPLETE AND LOCKED.
+3. Only a later separately authorized control-plane step may change EXEC-01C6A `startCondition`.
+4. Live canary execution requires its own authorization.
+
+This Step 3 does not perform items 1–4. Step 4 is **not** authorized. This task is **not** locked.
+
+AGENT-PLATFORM-EXEC-01C6A remains `startCondition=NOT_READY`. It is not reopened, admitted, LANE-DONE, or LOCKED.
+
+No live canary, PM2 overlay, staging, runtime mutation, operator-bundle change, Harness-flag mutation, or successor registration is authorized.
+
+GOVERNANCE was acquired only for this decision-record write, then released UNOWNED. End-state occupancy remains Lane 1 EMPTY / Lane 2 EMPTY / GOVERNANCE UNOWNED. No sidecar candidate was added. `lane-saturation-state.json` was not edited.
+
 ---
 
 ## 1. Authority and allowed evidence
@@ -69,7 +118,7 @@ OUTCOME_SELECTED=NONE
 
 - `TASKS.md` CURRENT EXECUTION BOARD is the only scheduler.
 - `TASKS_BACKLOG_FULL.md` is the canonical task registry.
-- This document is evidence for HARNESS-RESTART-GOV-01 Step 2. It is not a scheduler and does not admit EXEC-01C6A.
+- This document is evidence for HARNESS-RESTART-GOV-01 Steps 2–3. It is not a scheduler and does not admit EXEC-01C6A.
 - The sidecar `docs/control-plane/lane-saturation-state.json` is not a scheduler. EXEC-01C6A `startCondition=NOT_READY` remains UNCHANGED.
 - Locked Builder checkpoints are evidence only that Builder is no longer the CURRENT closeout blocker. They do not admit Harness, reopen EXEC-01C6A, or select A/B/C.
 - `docs/AINOW-EXECUTION-ROADMAP.md` and `docs/AGENT-PLATFORM-00-AINOW-MULTI-AGENT-PLAN.md` are historical / strategic only. They have no admission or selection authority here.
@@ -156,7 +205,7 @@ If Step 3 later selects A, register **before** any EXEC-01C6A reopen attempt:
 2. After that successor is locked with its reopen gate satisfied: a distinct control-plane step to change EXEC-01C6A `startCondition` and, only then, any live-execution admission.
 3. Do **not** register EXEC-01C6B or EXEC-01C7 as a substitute reopen of EXEC-01C6A. Frozen 01C6B still depends on EXEC-01C6A COMPLETE AND LOCKED.
 
-This Step 2 does not register those successors.
+This Step 2 did not register those successors. Step 3 (2026-09-18) selected A. This Step 3 window still does **not** register those successors.
 
 ---
 
@@ -259,7 +308,7 @@ Consulted only to prove Builder is no longer the CURRENT closeout blocker:
 
 ---
 
-## 7. Frozen decision matrix (Step 3 applies; this window does not select)
+## 7. Frozen decision matrix (Step 3 applied; matrix unchanged)
 
 Step 3 evaluates rows in order. The first matching row is the **only** allowed selection. Missing evidence is not filled by assumption, chat memory, roadmap, or web research unless Keith later authorizes a specific evidence source.
 
@@ -279,14 +328,17 @@ Tie-break / safety:
 - EXEC-01C6B remaining unregistered is **not** R2.
 - Local application tests are **not** valid live-canary evidence for A or B.
 
-Step 2 selected row: **NONE**.
+Step 2 selected row: **NONE** (historical).
 
-Current source-grounded application of the matrix (this window; not a Step 3 selection):
+Step 3 selected row: **R1 → OUTCOME_A** (2026-09-18). Keith authorized A and recorded that a new fencing/recovery successor will be registered before any EXEC-01C6A reopen, because PM2-FENCE-01 OUTCOME_BLOCKED has no reopen gate. Fence-capability versus UNKNOWN_PENDING_OVERLAY recovery-policy remains unresolved. F1–F5 are not proven. P1–P8 are not authorized. Host CLEAN is not attested. Residual daemon-buffer risk is not accepted. Selecting A does not reopen EXEC-01C6A.
 
-- R1 is not forced: no F1–F5 package is present; no P1–P8 authorization is present; Keith has not chosen A.
-- R2 is not forced: no non-overlay child is registered; isolated worker remains an unregistered production-capability change; Keith has not chosen B.
-- R3 is not forced: Keith named this as a Harness-resume **decision container**, which keeps A and B available; Builder completion makes parking eligible, not mandatory.
-- Therefore OUTCOME_SELECTED remains **NONE**.
+Current source-grounded application of the matrix (Step 3):
+
+- R1 matches: Keith authorizes A and records the successor-before-reopen sequence. First matching row is R1.
+- R2 is not reached.
+- R3 is not reached.
+- R0 is not reached.
+- Therefore OUTCOME_SELECTED = **OUTCOME_A**. MATRIX_ROW = **R1**.
 
 ---
 
@@ -294,7 +346,7 @@ Current source-grounded application of the matrix (this window; not a Step 3 sel
 
 Frozen for this entire HARNESS-RESTART-GOV-01 task, including later Step 3 / Step 4 unless a **later separately authorized** control-plane step explicitly writes otherwise:
 
-> AGENT-PLATFORM-EXEC-01C6A sidecar and canonical `startCondition` remain `NOT_READY`. HARNESS-RESTART-GOV-01 must not reopen EXEC-01C6A. Selecting A in a later Step 3 still does not change `startCondition` until the §3.3 reopen sequence is complete. Selecting B or C never reopens EXEC-01C6A.
+> AGENT-PLATFORM-EXEC-01C6A sidecar and canonical `startCondition` remain `NOT_READY`. HARNESS-RESTART-GOV-01 must not reopen EXEC-01C6A. Selecting A in Step 3 still does not change `startCondition` until the §3.3 reopen sequence is complete. Selecting B or C never reopens EXEC-01C6A.
 
 ```
 EXEC-01C6A startCondition = NOT_READY
@@ -302,14 +354,19 @@ EXEC-01C6A Test-Admissible = NOT_READY
 EXEC-01C6A admitted = NO
 EXEC-01C6A LANE-DONE = NO
 EXEC-01C6A LOCKED = NO
-HARNESS-RESTART-GOV-01 outcome = NONE (this Step 2)
+HARNESS-RESTART-GOV-01 outcome = OUTCOME_A (Step 3; MATRIX_ROW=R1; direction only)
+SUCCESSOR_REGISTERED = NO
+FENCE_VS_POLICY_RESOLVED = NO
 ```
 
 ---
 
-## 9. What this freeze does not authorize
+## 9. What this freeze / Step 3 does not authorize
 
-- Selecting OUTCOME_A, OUTCOME_B, or OUTCOME_C
+- Selecting OUTCOME_B or OUTCOME_C (Step 3 selected OUTCOME_A / R1 only)
+- Establishing that a supported fence exists; proving F1–F5
+- Authorizing UNKNOWN_PENDING_OVERLAY recovery policy P1–P8; accepting residual daemon-buffer risk; attesting host CLEAN
+- Reinterpreting CLI completion, timeout, process kill, snapshots, or assumed daemon ordering as a supported fence
 - Reopening AGENT-PLATFORM-EXEC-01C6A
 - Changing EXEC-01C6A `startCondition=NOT_READY`
 - Registering a fencing/recovery successor, a non-overlay Harness child, EXEC-01C6B, EXEC-01C7, or another CURRENT product slice
@@ -323,14 +380,15 @@ HARNESS-RESTART-GOV-01 outcome = NONE (this Step 2)
 - Editing the three prepared 01C6A canary artifacts
 - Enabling Lane 3
 - Editing PRD.md, ARCHITECTURE.md, CLAUDE.md, AGENTS.md, validator, mutex catalog, or the EXEC-01C6A sidecar candidate
+- Starting Step 4 or locking this task
 
 ---
 
 ## 10. Step 3 / Step 4 boundary
 
-**Step 3 (NOT AUTHORIZED):** If later authorized, independently apply §7 and record exactly one of OUTCOME_A / OUTCOME_B / OUTCOME_C. Must not invent runtime facts. Must not reopen EXEC-01C6A. Must not implement a fence, non-overlay child, or replacement product slice.
+**Step 3 (COMPLETE — 2026-09-18):** Independently applied §7 and recorded exactly one outcome: **OUTCOME_A under R1**. Did not invent runtime facts. Did not reopen EXEC-01C6A. Did not register a successor. Did not implement a fence, recovery policy, non-overlay child, or replacement product slice. Fence-capability versus recovery-policy remains unresolved. Write set remained control-plane / this document only.
 
-**Step 4 (NOT AUTHORIZED):** Independent verification / checkpoint / lock of this GOVERNANCE decision only after Step 3 has recorded exactly one outcome.
+**Step 4 (NOT AUTHORIZED):** Independent verification / checkpoint / lock of this GOVERNANCE decision only after Step 3 has recorded exactly one outcome. Not started this window. This task is not locked.
 
 ---
 
@@ -353,3 +411,11 @@ HARNESS-RESTART-GOV-01 outcome = NONE (this Step 2)
 LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, canary submission=0, operator-bundle mutation=0, canary-script mutation=0, evidence-doc mutation=0, sidecar mutation=0, application source=0, local application tests=0, tests executed=0 except lane-capacity validator, dependencies=0, migrations=0, PRD.md=0, ARCHITECTURE.md=0, CLAUDE.md=0, AGENTS.md=0, validator edits=0, mutex-catalog edits=0, Git commit/push=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, EXEC-01C6A reopened=0, EXEC-01C6B registered=0, EXEC-01C7 registered=0, outcome selected=0.
 
 Governance writes expected (Step 2): this document; `TASKS.md`; `TASKS_BACKLOG_FULL.md` HARNESS-RESTART-GOV-01 body; `docs/control-plane/SATURATION_PROOF.json` only if the validator regenerates it. `docs/control-plane/lane-saturation-state.json` occupancy/candidates/lockedTaskIds unchanged unless the validator strictly requires a rewrite (not expected: occupancy EMPTY / GOVERNANCE UNOWNED / no candidate added).
+
+---
+
+## 13. Activity ledger (Step 3 window)
+
+LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, canary submission=0, operator-bundle mutation=0, canary-script mutation=0, evidence-doc mutation=0, sidecar mutation=0, application source=0, local application tests=0, tests executed=0 except lane-capacity validator, dependencies=0, migrations=0, PRD.md=0, ARCHITECTURE.md=0, CLAUDE.md=0, AGENTS.md=0, validator edits=0, mutex-catalog edits=0, Git commit/push=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, EXEC-01C6A reopened=0, EXEC-01C6B registered=0, EXEC-01C7 registered=0, fencing/recovery successor registered=0, outcome selected=OUTCOME_A (R1; direction only; fence-vs-policy unresolved).
+
+Governance writes expected (Step 3): this document; `TASKS.md` current board fields; `TASKS_BACKLOG_FULL.md` HARNESS-RESTART-GOV-01 body; `docs/control-plane/SATURATION_PROOF.json` only if the validator regenerates it. `docs/control-plane/lane-saturation-state.json` occupancy/candidates/lockedTaskIds unchanged (occupancy EMPTY / GOVERNANCE UNOWNED / no candidate added).
