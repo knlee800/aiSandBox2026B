@@ -370,20 +370,25 @@ jobs:
           # GitHub runs `bash -e -o pipefail` for shell: bash. The inherited -e is
           # NOT cleared by `set -uo pipefail`; with pipefail a failing suite made
           # the pipeline itself fail and the shell exited before unittest.exit /
-          # unittest.timing were written (run 35327293618). The pipeline status
-          # is therefore captured explicitly with -e disabled around it, the
-          # evidence is written unconditionally, and the step then fails with
-          # the suite's real exit status.
+          # unittest.timing were written (run 35327293618). Capturing PIPESTATUS[0]
+          # then PIPESTATUS[1] as two commands also fails: after the first
+          # assignment PIPESTATUS is reset, so PIPESTATUS[1] is unbound under -u
+          # (run 35342598626). The entire PIPESTATUS array is therefore captured
+          # in one command immediately after the pipeline (no intervening command),
+          # evidence is written unconditionally, and the step then fails with the
+          # suite's real exit status (or tee's, if tee failed).
           set -uo pipefail
           cd "$BUNDLE"
           echo "cwd=$(pwd)"
           echo "cmd=timeout -k 30 ${SUITE_TIMEOUT_SEC} python3 -m unittest -v tests.test_operator_bundle"
           start="$(date +%s)"
           rc=1
+          tee_rc=1
           set +e
           timeout -k 30 "$SUITE_TIMEOUT_SEC" python3 -m unittest -v tests.test_operator_bundle 2>&1 | tee "$EVIDENCE/unittest.log"
-          rc="${PIPESTATUS[0]}"
-          tee_rc="${PIPESTATUS[1]}"
+          pipeline_status=("${PIPESTATUS[@]}")
+          rc="${pipeline_status[0]}"
+          tee_rc="${pipeline_status[1]}"
           set -e
           end="$(date +%s)"
           echo "$rc" > "$EVIDENCE/unittest.exit"
@@ -499,12 +504,26 @@ jobs:
 
           text = "\n".join(log)
           fail_heads = re.findall(r"^(?:FAIL|ERROR): test_\w+ \(([\w.]+)\)", text, re.M)
-          ran = RAN.search(text)
+          # RAN is ^...$-anchored. RAN.search(text) without re.MULTILINE cannot
+          # match a summary line inside a multiline blob (run 35342598626:
+          # unittest.log contained "Ran 128 tests in 9.307s" but the gate
+          # reported "no 'Ran N tests' summary line"). Match each splitlines()
+          # entry with fullmatch; require exactly one summary.
+          ran_matches = [m for line in log if (m := RAN.fullmatch(line))]
+          if len(ran_matches) == 1:
+              ran = ran_matches[0]
+              ran_n = int(ran.group(1))
+          else:
+              if len(ran_matches) == 0:
+                  problems.append("no 'Ran N tests' summary line")
+              else:
+                  problems.append(f"duplicate 'Ran N tests' summary lines: {len(ran_matches)}")
+              ran = None
+              ran_n = -1
           final = next((l for l in reversed(log) if l.startswith(("OK", "FAILED"))), "")
           counts = {"failures": 0, "errors": 0, "skipped": 0, "expected failures": 0, "unexpected successes": 0}
           for k, v in re.findall(r"(failures|errors|skipped|expected failures|unexpected successes)=(\d+)", final):
               counts[k] = int(v)
-          ran_n = int(ran.group(1)) if ran else -1
 
           parsed_counts = {
               "ok": sum(1 for s in status.values() if s == "ok"),
@@ -563,9 +582,7 @@ jobs:
                   if not ok:
                       problems.append(f"required {group}: {tid} -> {st}")
 
-          if not ran:
-              problems.append("no 'Ran N tests' summary line")
-          elif ran_n != expected:
+          if ran and ran_n != expected:
               problems.append(f"ran {ran_n} tests but module defines {expected}")
           if rc != 0:
               problems.append(f"unittest exit code {rc}")
