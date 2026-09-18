@@ -314,7 +314,94 @@ A matching dual-field snapshot (P6 PASS) shows the daemon's *current* `pm2_env` 
 
 ## 8. Decision matrix and checkpoint (FROZEN; Step 3 applies; this window selects nothing)
 
-### 8.1 Decisions ready for Keith (Step 3 records exactly one value per row)
+### 8.0 Controlling Step 2 correction of the matrix (2026-09-18, Keith-directed; base commit `8433346a47bb194295aa60675f5afc46bc358997`)
+
+The matrix originally frozen in this section (retained verbatim below as §8.1-H / §8.2-H, **not controlling**) had three defects: (1) K-B3's values (MANUAL / VERIFIER / NEITHER) were evaluated as if they were YES/NO amendment answers in R2/R3; (2) R0 could override an explicit K-A approval merely because an independently selectable amendment or later host evidence was unresolved; (3) the mapping was not exhaustive for valid combinations. §8.1–§8.2c below are controlling. No Step 3 selection is made here; `OUTCOME_SELECTED=NONE`, `POLICY_AUTHORIZED=NO`.
+
+### 8.1 Decision classes (controlling; Step 3 records exactly one value per ID)
+
+Three classes. Only class I and class II drive the outcome row. Classes III and IV are **recorded separately** in every row and grant nothing.
+
+**Class I — Policy contract**
+
+| ID | Decision | Allowed values |
+|---|---|---|
+| **K-A** | Authorize the UNKNOWN_PENDING_OVERLAY recovery policy (P1) with P2–P8 recorded in their frozen §6.4 meanings, as amended **only** by class II decisions that are *complete affirmatives* | APPROVE / REFUSE / UNRESOLVED_INPUT |
+
+**Class II — Substantive contract amendments** (A1, A2, A4; each independently selectable; none is a prerequisite of another or of K-A)
+
+| ID | Amendment | Allowed values | *Complete affirmative* means |
+|---|---|---|---|
+| **K-B1** | A1 first-run applicability amendment — different first-run prerequisites (a)–(c) for P2/P3 (§3.3; §3.2 correction applies: P2/P3 remain binding; not a satisfaction claim; no run or vault verified; reopen gate unsatisfied) | YES / NO / UNRESOLVED_INPUT | YES |
+| **K-B2** | A2 authoritative expected baseline B(H) required before any first run, **with** explicit accepted provenance from the §3.4 candidates | YES(+provenance) / NO / UNRESOLVED_INPUT | YES **and** the record names the accepted §3.4 source candidate(s), the provenance chain accepted (§3.4 item 3), and the validity conditions accepted (§3.4 item 4). **YES without that provenance is an INCOMPLETE_AFFIRMATIVE**: recorded verbatim as "YES — provenance not stated", mapped as *not approved* (equivalent to UNRESOLVED_INPUT for row selection), never as approval and never as refusal. No provenance is inferred, supplied, or invented by the control plane. |
+| **K-B4** | A4 P7 first-run wording (wording only; never a P7 attestation) | YES / NO / UNRESOLVED_INPUT | YES |
+
+**Class III — Procedure selection** (not an amendment; not a YES/NO question; never evaluated in R2/R3)
+
+| ID | Selection | Allowed values | Effect of recording |
+|---|---|---|---|
+| **K-B3** | P6 comparison-only procedure form (§5.3 / §5.5) | MANUAL / VERIFIER / NEITHER / UNRESOLVED_INPUT | MANUAL: §5.3 procedure text becomes the frozen manual form a later S2 window must follow — **not authorized to run**. VERIFIER: a verifier child *may later* be registered by a separate control-plane step — **none is registered by this task**. NEITHER: P6 has no authorized procedure; S2 impossible until one is authorized. UNRESOLVED_INPUT: recorded as open. No value grants execution, STAGING, PM2, or reopen permission. |
+
+**Class IV — Acceptance direction** (not an amendment; never evaluated in R2/R3)
+
+| ID | Direction | Allowed values | Effect of recording |
+|---|---|---|---|
+| **K-C** | r3 mandatory INCOMPLETE vs EXEC-01C6A acceptance (§7.3) | C1 / C2 / C3 / UNRESOLVED_INPUT | Direction only. C1 requires a later, separately authorized EXEC-01C6A amendment step; C2 is not available from existing evidence and would require a fencing successor; C3 returns the question to the control plane. No value amends EXEC-01C6A, changes `startCondition`, or grants execution permission. |
+
+Rules across classes: K-A is independent of class II — approval may be recorded with every amendment refused or unresolved. Class II values cannot be complete affirmatives if K-A = REFUSE (they are recorded but void, "not applicable — policy refused"). Class III/IV values are recorded whatever K-A is. Silence on any ID is **not** a value; it is handled by §8.2 R0 only if it prevents interpreting K-A, otherwise the ID is recorded as `NOT_RECORDED` and treated as UNRESOLVED_INPUT for that ID alone.
+
+### 8.2 Outcome mapping (controlling; exhaustive and disjoint over K-A; class II decides R2 vs R3 only)
+
+**Three kinds of "unresolved" — never conflated:**
+
+| Kind | Definition | Matrix effect |
+|---|---|---|
+| **(U-i) Interpretive gap** | Information missing that is necessary to interpret the *current* K-A decision itself: K-A absent, ambiguous, conditional on a fact not in the record ("approve if host history is clean"), or referencing an amendment text that is not recorded | R0 — the only case where the outcome is withheld |
+| **(U-ii) Explicit UNRESOLVED_INPUT choice** | Keith records UNRESOLVED_INPUT as the value of an ID | K-A → R4. Any class II/III/IV ID → that ID is recorded OPEN; K-A's row is **not** affected |
+| **(U-iii) Later-window operational evidence** | P4 / P5 / P6 records, P7 attestation, B(H) values, host history attestation, daemon identity, r3 transfer — evidence intentionally required only in a later host window (S2) or later step (S3/S4) | **Never a matrix input.** Its absence cannot move any row, cannot block R2/R3, and cannot be inferred as approval of anything |
+
+No missing information of any kind is ever inferred as approval.
+
+**Rows (exactly one applies):**
+
+| Row | Condition on K-A | Condition on class II (K-B1, K-B2, K-B4) | Outcome | Lock effect |
+|---|---|---|---|---|
+| **R0** | (U-i) interpretive gap — K-A cannot be read as exactly one of APPROVE / REFUSE / UNRESOLVED_INPUT | — | **OUTCOME_UNRESOLVED_INPUT** `cause=INTERPRETIVE_GAP` | No policy; the missing information listed verbatim; Keith may re-record in a later Step 3; HOLD unchanged |
+| **R1** | REFUSE | any (all class II recorded void) | **OUTCOME_POLICY_REFUSED** | Lock records refusal; OUTCOME_UNKNOWN_POLICY path closed for now; HARNESS-RESTART-GOV-01 R1 successor question returns to the control plane; HOLD unchanged |
+| **R2** | APPROVE | **zero** complete affirmatives (each of K-B1, K-B2, K-B4 ∈ {NO, UNRESOLVED_INPUT, INCOMPLETE_AFFIRMATIVE, NOT_RECORDED}) | **OUTCOME_POLICY_APPROVED_UNAMENDED** | **Contract approval only** (S1): contract = frozen §6.4 exactly. Open amendments listed as OPEN (decidable only by a later explicit governance record, never by silence). §2 contract-only rule text mandatory |
+| **R3** | APPROVE | **one or more** complete affirmatives | **OUTCOME_POLICY_APPROVED_AMENDED** | **Contract approval only** (S1) with **only** the complete-affirmative amendment texts applied verbatim as *prerequisites* for future runs; NO / OPEN / INCOMPLETE amendments recorded as such and not applied. §2 contract-only rule text mandatory. Does **not** imply host CLEAN, satisfied operational evidence (P2–P7 for any host/run), a verified run outcome or vault, or reopen permission; reopen gate remains UNSATISFIED until S2 host evidence and S3 are separately approved |
+| **R4** | UNRESOLVED_INPUT (explicit, U-ii) | — | **OUTCOME_UNRESOLVED_INPUT** `cause=EXPLICIT_UNRESOLVED` | No policy; class II/III/IV values still recorded; HOLD unchanged |
+
+Exhaustiveness: K-A is either uninterpretable (R0) or exactly one of REFUSE (R1), UNRESOLVED_INPUT (R4), APPROVE (R2 xor R3, decided by whether the count of complete affirmatives is 0 or ≥ 1). No other K-A state exists; no two rows can match.
+
+**Separate records (present in every row; never change the row; grant nothing):**
+
+```
+PROCEDURE_SELECTION=<K-B3 value>      # MANUAL / VERIFIER / NEITHER / UNRESOLVED_INPUT / NOT_RECORDED
+ACCEPTANCE_DIRECTION=<K-C value>      # C1 / C2 / C3 / UNRESOLVED_INPUT / NOT_RECORDED
+```
+
+Neither record authorizes execution, STAGING, PM2, ENV, CREDIT, PROVIDER-LIVE, a verifier implementation, an EXEC-01C6A amendment, a `startCondition` change, or reopen.
+
+**Safety rules (controlling):** missing evidence stays missing; nothing defaults to APPROVE or REFUSE; (U-iii) evidence is never a matrix input; K-B3 and K-C never select or alter a row; no row attests P4/P5/P7, declares CLEAN, verifies a run outcome or vault, designates B(H) values, registers a child, amends EXEC-01C6A, or touches `startCondition`; every contract-only lock restriction in §2 applies to R2 and R3 alike. The six decisions remain separate: policy authorization (K-A); first-run applicability amendment (K-B1); baseline provenance (K-B2); comparison procedure (K-B3); host/time-specific residual-risk acceptance (P7 — S2 attestation, never recorded by this task; K-B4 decides wording only); acceptance-contract compatibility (K-C).
+
+### 8.2a Static verification of the controlling matrix (illustrative combinations only — **none records Keith's actual choices**)
+
+| # | K-A | K-B1 | K-B2 | K-B4 | K-B3 | K-C | Row | Outcome | Separate records | What is **not** granted |
+|---|---|---|---|---|---|---|---|---|---|---|
+| V1 | APPROVE | UNRESOLVED_INPUT | UNRESOLVED_INPUT | UNRESOLVED_INPUT | VERIFIER | UNRESOLVED_INPUT | R2 | POLICY_APPROVED_UNAMENDED; A1/A2/A4 OPEN | PROCEDURE_SELECTION=VERIFIER (child may later be registered by a separate step; none registered); ACCEPTANCE_DIRECTION=UNRESOLVED_INPUT | no verifier implementation, no S2, no reopen |
+| V2 | APPROVE | NO | NO | NO | MANUAL | C3 | R2 | POLICY_APPROVED_UNAMENDED; contract = frozen §6.4 exactly | PROCEDURE_SELECTION=MANUAL (§5.3 text frozen; not authorized to run); ACCEPTANCE_DIRECTION=C3 | no procedure execution, no S2, no reopen |
+| V3 | APPROVE | YES | NO | NO | NEITHER | C1 | R3 | POLICY_APPROVED_AMENDED; A1 applied as prerequisites only; A2/A4 refused | PROCEDURE_SELECTION=NEITHER (S2 impossible until a procedure is authorized); ACCEPTANCE_DIRECTION=C1 (later separate EXEC-01C6A amendment step required) | no host CLEAN, no P2/P3 satisfaction, no run/vault verified, no reopen |
+| V4 | REFUSE | YES | YES(+provenance) | YES | MANUAL | C1 | R1 | POLICY_REFUSED; all class II void ("not applicable — policy refused") | PROCEDURE_SELECTION=MANUAL; ACCEPTANCE_DIRECTION=C1 (recorded; inert) | nothing |
+| V5 | UNRESOLVED_INPUT | NO | NO | NO | MANUAL | C3 | R4 | OUTCOME_UNRESOLVED_INPUT `cause=EXPLICIT_UNRESOLVED` | PROCEDURE_SELECTION=MANUAL; ACCEPTANCE_DIRECTION=C3 (recorded; inert) | nothing |
+| V6 | APPROVE | NO | "YES" — provenance not stated | NO | MANUAL | C3 | R2 | POLICY_APPROVED_UNAMENDED; K-B2 recorded INCOMPLETE_AFFIRMATIVE / OPEN (**not** R0: K-A is interpretable; **not** R3: no complete affirmative) | PROCEDURE_SELECTION=MANUAL; ACCEPTANCE_DIRECTION=C3 | no B(H) designated; no provenance inferred |
+| V7 | APPROVE | UNRESOLVED_INPUT | YES + explicitly named §3.4 candidate, accepted provenance chain and validity conditions (placeholder — no candidate named here) | UNRESOLVED_INPUT | UNRESOLVED_INPUT | UNRESOLVED_INPUT | R3 | POLICY_APPROVED_AMENDED; A2 applied (B(H) *required*, provenance class accepted); A1/A4 OPEN | PROCEDURE_SELECTION=UNRESOLVED_INPUT; ACCEPTANCE_DIRECTION=UNRESOLVED_INPUT | no B(H) **values** designated; no P6 procedure; no S2 |
+| V8 | "approve if host history is clean" (conditional on U-iii evidence) | — | — | — | — | — | R0 | OUTCOME_UNRESOLVED_INPUT `cause=INTERPRETIVE_GAP`; gap listed verbatim | as recorded, if any | nothing |
+| V9 | APPROVE | YES | NO | NO | UNRESOLVED_INPUT | UNRESOLVED_INPUT | R3 | POLICY_APPROVED_AMENDED (A1 only); class III/IV OPEN — **does not** demote to R0 or R2 | PROCEDURE_SELECTION=UNRESOLVED_INPUT; ACCEPTANCE_DIRECTION=UNRESOLVED_INPUT | no procedure, no S2, no reopen |
+
+Checks: every row of V1–V9 matches exactly one R-row; V1 and V9 confirm unresolved class II/III/IV values never produce R0; V6 confirms an incomplete K-B2 affirmative is neither approval nor an interpretive gap; V4 confirms class II is void under REFUSE; V2/V3 confirm K-B3 is recorded, not evaluated. Later host evidence (U-iii) appears in no column because it is not a matrix input.
+
+### 8.1-H Superseded decision table (historical; **not controlling** — replaced by §8.1 under the §8.0 correction)
 
 | ID | Decision | Allowed values |
 |---|---|---|
@@ -327,7 +414,7 @@ A matching dual-field snapshot (P6 PASS) shows the daemon's *current* `pm2_env` 
 
 K-A is independent of K-B1..K-B4: policy approval can be recorded with every amendment refused (contract = frozen §6.4 exactly) or unresolved. K-B rows cannot be answered YES if K-A = REFUSE.
 
-### 8.2 Outcome rows (first matching row is the only allowed selection)
+### 8.2-H Superseded outcome rows (historical; **not controlling** — replaced by §8.2 under the §8.0 correction; defects: K-B3 evaluated as YES/NO in R2/R3; R0 could override explicit K-A approval; mapping not exhaustive)
 
 | Row | Condition | Outcome | Lock effect |
 |---|---|---|---|
@@ -337,11 +424,11 @@ K-A is independent of K-B1..K-B4: policy approval can be recorded with every ame
 | R3 | K-A = APPROVE and at least one K-B = YES | **OUTCOME_POLICY_APPROVED_AMENDED** | **Contract approval only** (S1) with amendment text recorded verbatim; §2 contract-only rule text mandatory; amendments apply only as recorded as *prerequisites* for future runs. R3 does **not** imply host CLEAN, does **not** imply any operational evidence (P2–P7) is satisfied for any host/run, does **not** verify any run outcome or vault, and does **not** grant reopen permission; the reopen gate remains UNSATISFIED until S2 host evidence and S3 are separately approved |
 | R4 | K-A = UNRESOLVED_INPUT | **OUTCOME_UNRESOLVED_INPUT** | as R0 |
 
-Safety rules: missing evidence stays missing (no default to APPROVE or REFUSE); K-C is recorded alongside any R1–R3 outcome but never changes the row; no row attests P4/P5/P7, declares CLEAN, verifies a run outcome or vault, or touches EXEC-01C6A `startCondition`. The six decisions remain separate and are never collapsed: policy authorization (K-A); first-run applicability amendment (K-B1); baseline provenance (K-B2); comparison procedure (K-B3); host/time-specific residual-risk acceptance (P7 — an S2 attestation, never recorded by this task; K-B4 decides only its first-run *wording*); acceptance-contract compatibility (K-C).
+Historical safety rules (superseded by §8.2 controlling safety rules): missing evidence stays missing (no default to APPROVE or REFUSE); K-C is recorded alongside any R1–R3 outcome but never changes the row; no row attests P4/P5/P7, declares CLEAN, verifies a run outcome or vault, or touches EXEC-01C6A `startCondition`. The six decisions remain separate and are never collapsed: policy authorization (K-A); first-run applicability amendment (K-B1); baseline provenance (K-B2); comparison procedure (K-B3); host/time-specific residual-risk acceptance (P7 — an S2 attestation, never recorded by this task; K-B4 decides only its first-run *wording*); acceptance-contract compatibility (K-C).
 
 ### 8.3 What this task could lock (maximum) and what would still be required
 
-**Could lock (Step 4, if Step 3 records R1, R2 or R3):** the S1 contract decision (or its refusal); the amendment decisions K-B1..K-B4 as text; the K-C direction; the §4 HOLD rules and §4.4 E1–E5 operational requirements as governance; the §5 procedure **proposals** as the frozen procedure text a later S2 window must follow (still not authorized to run); the §5.6 client model correction in this task's body.
+**Could lock (Step 4, if Step 3 records R1, R2 or R3 under the controlling §8.2):** the S1 contract decision (or its refusal); the substantive amendment decisions K-B1 / K-B2 / K-B4 as text (complete affirmatives applied; others recorded NO / OPEN / INCOMPLETE); the procedure selection K-B3 as a record (no execution, no child registration); the K-C direction as a record (no EXEC-01C6A amendment); the §4 HOLD rules and §4.4 E1–E5 operational requirements as governance; the §5 procedure **proposals** as the frozen procedure text a later S2 window must follow (still not authorized to run); the §5.6 client model correction in this task's body.
 
 **Would still be required after any lock (none supplied by this task):**
 
@@ -378,6 +465,10 @@ VERIFIER_CHILD_REGISTERED=NO
 EXEC_01C6A_AMENDED=NO
 REOPEN_GATE_SATISFIED=NO
 STEP_2_CORRECTION_2026_09_18=APPLIED (§3.2 controlling correction; A1 / K-B1 / R3 reworded; "P2/P3 prospectively satisfied" withdrawn)
+STEP_2_CORRECTION_2_2026_09_18=APPLIED (§8.0 controlling matrix correction at base 8433346a47bb194295aa60675f5afc46bc358997; decision classes I policy / II substantive amendments A1 A2 A4 / III procedure selection K-B3 / IV acceptance direction K-C; K-B2 complete affirmative requires explicit accepted provenance, else INCOMPLETE_AFFIRMATIVE = not approved; R0 limited to interpretive gaps in K-A; U-i / U-ii / U-iii distinguished; mapping exhaustive over K-A; §8.2a static verification V1–V9 illustrative only; prior matrix retained as §8.1-H / §8.2-H not controlling)
+DECISION_CLASSES=I K-A; II K-B1 K-B2 K-B4; III K-B3; IV K-C
+PROCEDURE_SELECTION=NOT_RECORDED
+ACCEPTANCE_DIRECTION=NOT_RECORDED
 ```
 
 ## 12. Activity ledger (Step 2 window, 2026-09-18)
@@ -386,3 +477,5 @@ LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Pos
 Writes: this document (new); `TASKS.md` this task's current board fields; `TASKS_BACKLOG_FULL.md` this task's body (status, lifecycle Step 2, §5.6 wording correction, Step 2 AC, Step 2 HEAD/ledger); `docs/control-plane/SATURATION_PROOF.json` as validator output only.
 
 **Same-window bounded correction (2026-09-18, before commit, Keith-directed):** §3.2 controlling correction added; A1 proposed wording replaced (historical wording retained and marked not controlling); K-B1 (A1 table and §8.1) and R3 / safety rules (§8.2) reworded; §11 verdict keys added. No other section changed. Mirrors updated in this task's board fields and canonical body only. Validator rerun.
+
+**Second bounded correction (2026-09-18, after commit `8433346a47bb194295aa60675f5afc46bc358997`, Keith-directed; matrix only):** §8.0 added; §8.1 decision classes, §8.2 outcome mapping, §8.2a static verification (illustrative V1–V9) added as controlling; prior §8.1 / §8.2 retained verbatim as §8.1-H / §8.2-H (not controlling); §8.3 "Could lock" reworded to the class structure; §11 keys added. No Step 3 selection made. No other section changed. Mirrors updated in this task's board fields and canonical body only. Validator rerun. No scripts, tests, runtime, SSH, staging, PM2, workflow dispatch, Git mutation, or subagents.
