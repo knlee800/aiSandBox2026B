@@ -2,9 +2,13 @@
 
 **Task:** PM2-RECOVERY-POLICY-01 — Decide whether to authorize a bounded UNKNOWN_PENDING_OVERLAY recovery policy
 **Nature:** GOVERNANCE / DECISION (no implementation lane; no sidecar candidate)
-**Step status:** Step 1 COMPLETE — 2026-09-18 (registration `f434ec80ce5e32114f063258ddb9842bd3039446` `docs: register pm2 recovery policy decision`); **Step 2 COMPLETE — 2026-09-18 (this freeze)**; Step 3 NOT AUTHORIZED; Step 4 NOT AUTHORIZED
+**Step status:** Step 1 COMPLETE — 2026-09-18 (registration `f434ec80ce5e32114f063258ddb9842bd3039446` `docs: register pm2 recovery policy decision`); Step 2 COMPLETE — 2026-09-18 (freeze `8433346a47bb194295aa60675f5afc46bc358997`; matrix correction `0add5cf6183911770bab8cd58598aa3c183a9eed`); **Step 3 COMPLETE — 2026-09-19 (explicit Keith decision; §13)**; Step 4 NOT AUTHORIZED; task NOT LOCKED
 **Base HEAD (Step 2 window):** `f434ec80ce5e32114f063258ddb9842bd3039446` (branch `main`; working tree clean at window open; matches the expected baseline)
-**OUTCOME_SELECTED=NONE — POLICY_AUTHORIZED=NO — FIRST_RUN_AMENDMENT_ADOPTED=NO — P7_ACCEPTED=NO — HOST_CLEAN=NO — EXEC_01C6A_REOPENED=NO**
+**Base HEAD (Step 3 window):** `0add5cf6183911770bab8cd58598aa3c183a9eed` (branch `main`; working tree clean at window open; matches the expected baseline)
+**Current status (Step 3):** OUTCOME_SELECTED=R3 OUTCOME_POLICY_APPROVED_AMENDED — POLICY_AUTHORIZED=YES (S1 contract only) — SUBSTANTIVE_AMENDMENTS_ADOPTED=A4 only — FIRST_RUN_AMENDMENT_ADOPTED=NO (A1 OPEN) — BASELINE_DESIGNATED=NO (A2 OPEN) — PROCEDURE_SELECTION=VERIFIER (direction only) — ACCEPTANCE_DIRECTION=C1 (direction only) — P7_ACCEPTED=NO — HOST_CLEAN=NO — REOPEN_GATE_SATISFIED=NO — EXEC_01C6A_REOPENED=NO — LOCKED=NO
+**Superseded Step 2 status line (historical):** OUTCOME_SELECTED=NONE — POLICY_AUTHORIZED=NO — FIRST_RUN_AMENDMENT_ADOPTED=NO — P7_ACCEPTED=NO — HOST_CLEAN=NO — EXEC_01C6A_REOPENED=NO
+
+> **Reading order:** §§0–12 are the Step 2 freeze with its two controlling corrections (§3.2, §8.0–§8.2a), preserved unchanged. §13 is the Step 3 decision record. Where §§0–12 say "no outcome selected" they describe the Step 2 window; §13 is current.
 
 ---
 
@@ -479,3 +483,125 @@ Writes: this document (new); `TASKS.md` this task's current board fields; `TASKS
 **Same-window bounded correction (2026-09-18, before commit, Keith-directed):** §3.2 controlling correction added; A1 proposed wording replaced (historical wording retained and marked not controlling); K-B1 (A1 table and §8.1) and R3 / safety rules (§8.2) reworded; §11 verdict keys added. No other section changed. Mirrors updated in this task's board fields and canonical body only. Validator rerun.
 
 **Second bounded correction (2026-09-18, after commit `8433346a47bb194295aa60675f5afc46bc358997`, Keith-directed; matrix only):** §8.0 added; §8.1 decision classes, §8.2 outcome mapping, §8.2a static verification (illustrative V1–V9) added as controlling; prior §8.1 / §8.2 retained verbatim as §8.1-H / §8.2-H (not controlling); §8.3 "Could lock" reworded to the class structure; §11 keys added. No Step 3 selection made. No other section changed. Mirrors updated in this task's board fields and canonical body only. Validator rerun. No scripts, tests, runtime, SSH, staging, PM2, workflow dispatch, Git mutation, or subagents.
+
+---
+
+## 13. Step 3 — Explicit Keith decision record (2026-09-19; base `0add5cf6183911770bab8cd58598aa3c183a9eed`)
+
+### 13.1 Authorization
+
+Keith 2026-09-19 authorized **Step 3 only** and explicitly approved the decision set in §13.2. This step records those choices against the controlling matrix (§8.0–§8.2a). It does not authorize Step 4, lock the task, attest any host evidence, register any child, amend EXEC-01C6A, or change any sidecar or predecessor state.
+
+### 13.2 The six recorded choices (one value per ID; recorded verbatim as approved)
+
+| Class | ID | Recorded value | Classification under §8.1 |
+|---|---|---|---|
+| I — Policy contract | **K-A** | **APPROVE** | Interpretable; not conditional; not an interpretive gap |
+| II — Substantive amendment A1 | **K-B1** | **UNRESOLVED_INPUT** | Explicit (U-ii) choice → A1 **OPEN**; not a complete affirmative; not approval; not refusal |
+| II — Substantive amendment A2 | **K-B2** | **UNRESOLVED_INPUT** | Explicit (U-ii) choice → A2 **OPEN**; no provenance stated or inferred; no source or values designated |
+| III — Procedure selection | **K-B3** | **VERIFIER** | Recorded separately; direction only; never evaluated in R2/R3 |
+| II — Substantive amendment A4 | **K-B4** | **YES** | **Complete affirmative** (per §8.1: YES suffices for K-B4) |
+| IV — Acceptance direction | **K-C** | **C1** | Recorded separately; direction only; never evaluated in R2/R3 |
+
+### 13.3 Row selection — validated against the controlling §8.2
+
+1. K-A is readable as exactly one of APPROVE / REFUSE / UNRESOLVED_INPUT → **not R0**.
+2. K-A ≠ REFUSE → **not R1**. K-A ≠ UNRESOLVED_INPUT → **not R4**.
+3. K-A = APPROVE → R2 xor R3, decided by the count of complete affirmatives among K-B1, K-B2, K-B4.
+4. Complete affirmatives: K-B1 = UNRESOLVED_INPUT (0); K-B2 = UNRESOLVED_INPUT (0); K-B4 = YES (1). Count = **1 ≥ 1** → **R3**.
+5. Class III (VERIFIER) and class IV (C1) are recorded and do not alter the row (§8.2 safety rules). Two OPEN class II items do not demote to R0 or R2 (§8.2 (U-ii); cf. illustrative V9).
+
+**Selected row: R3 — `OUTCOME_POLICY_APPROVED_AMENDED`.**
+
+### 13.4 What R3 records (contract approval only — S1)
+
+**POLICY_AUTHORIZED=YES for the S1 policy contract only.** P1 is granted: the UNKNOWN_PENDING_OVERLAY recovery policy of PM2-FENCE-01 §6 is authorized as the recovery **contract**, with P2–P8 in their frozen §6.4 meanings (§3.1 verbatim) **as amended only by A4**. §6.1 (restore may be attempted but cannot clear UNKNOWN), §6.2 (recovery material never deleted), §6.3 (UNCLEAN / HOLD until the gate passes), §6.5 (forbidden proofs), the §3.2 controlling correction (P2/P3 remain binding; no run outcome or vault verified; first-run prerequisites are an amendment question, not satisfaction), the §4 HOLD rules and §4.4 E1–E5 operational requirements apply in full.
+
+**Sole approved substantive amendment — A4 (P7 first-run wording), frozen text adopted verbatim from §3.3 A4 "Proposed wording":**
+
+> "P7 for a first run covers the risk that a *pre-existing* unrecorded daemon-side mutation (not produced by the run) applies after CLEAN; P7 for later runs covers the recorded UNKNOWN attempts of prior runs as well."
+
+A4 amends the **meaning** of P7 for first runs only. Per §3.3 A4 and §6.1: acceptance of the wording is **not** a P7 attestation for any host or time, does **not** accept residual risk for staging or any other host, and does **not** record P7 as satisfied. **P7_ACCEPTED=NO.**
+
+**Open (not adopted; not refused; decidable only by a later explicit governance record, never by silence):**
+
+- **A1 first-run applicability (K-B1 OPEN):** P2/P3 remain binding obligations with their frozen §6.4 meanings and no amended first-run prerequisites. No host-history attestation exists. **FIRST_RUN_AMENDMENT_ADOPTED=NO.** Consequence: a first run on a host with no prior vault has no approved way to meet P2/P3 until A1 (or an equivalent later record) is decided.
+- **A2 baseline provenance (K-B2 OPEN):** no authoritative expected baseline B(H) is required or designated; no §3.4 source candidate is accepted; no values exist. **BASELINE_DESIGNATED=NO.** A current snapshot remains an observation, not a baseline.
+
+**Separate records (grant nothing):**
+
+```
+PROCEDURE_SELECTION=VERIFIER
+ACCEPTANCE_DIRECTION=C1
+```
+
+- `PROCEDURE_SELECTION=VERIFIER` — direction only. A comparison-only verifier (§5.3 / §5.5) is the selected P6 form. **No verifier child is registered, admitted, or implemented by this step**; any child requires a separate control-plane registration with its own lifecycle, sidecar candidate, saturation class, and admission. Until such a child is LOCKED and a P6 procedure is separately authorized to run, P6 has no executable procedure and S2 is impossible. **VERIFIER_CHILD_REGISTERED=NO.**
+- `ACCEPTANCE_DIRECTION=C1` — direction only: r3's mandatory `INCOMPLETE` / `RESTORE_ATTEMPTED_ACKED_MATCHED_UNPROVEN` result is to be treated as the expected orchestrator result, with EXEC-01C6A restoration criteria to be accepted via a separate post-run P6 record plus P7 attestation. **This step does not amend, reinterpret, or execute EXEC-01C6A**; the actual amendment of EXEC-01C6A's stage-start / AC / evidence document is a later, separately authorized control-plane step (§7.3 C1 consequences, including re-planning the two-canary sequence). Evidence fields (`commands_acked`, `snapshot_matched`) remain **not** acceptance. **EXEC_01C6A_AMENDED=NO.**
+
+### 13.5 Mandatory contract-only statement (§2)
+
+**OUTCOME_UNKNOWN_POLICY reopen gate (PM2-FENCE-01 §8) remains UNSATISFIED; host remains UNCLEAN / HOLD; EXEC-01C6A `startCondition=NOT_READY` unchanged; no canary authorized.**
+
+### 13.6 Sequence preserved (§2 four objects)
+
+| Object | State after Step 3 |
+|---|---|
+| S1 policy contract | **APPROVED (R3; A4 only)** — this step |
+| S2 host-specific gate | **NOT STARTED.** Requires, for a named (H, A, window): P4 and P5 attestations (§5.1, §5.2), an authorized and executed P6 procedure (needs the VERIFIER child first), P7 attestation for that host/time (under the A4 meaning for a first run), and — for a first run — a decided A1 (and A2 if required). None exists. **HOST_CLEAN=NO.** |
+| S3 explicit reopen | **NOT AUTHORIZED.** P8 remains a separate Keith authorization after CLEAN. `startCondition=NOT_READY` unchanged. |
+| S4 separately authorized canary | **NOT AUTHORIZED.** STAGING / PM2 / ENV / CREDIT / PROVIDER-LIVE not acquired; r3 NOT APPROVED FOR LIVE USE. |
+
+HARNESS-RESTART-GOV-01 §3.3: item 1 (policy contract) is now recorded; items 2–4 remain outstanding.
+
+### 13.7 Unresolved items carried forward (missing evidence remains missing)
+
+| Item | Owner / where decided |
+|---|---|
+| A1 first-run applicability (K-B1 OPEN) | later explicit governance record |
+| A2 baseline requirement and provenance (K-B2 OPEN); no B(H) values | later explicit governance record; §3.4 requirements govern |
+| Verifier child registration, implementation, fake-verification, packaging | separate control-plane registration (not this task) |
+| EXEC-01C6A C1 amendment step; two-canary sequencing under `next_canary_allowed=False` | separate control-plane step (not this task) |
+| P4 / P5 attestations; P6 record; P7 attestation; daemon PID/version re-confirmation | later S2 host window |
+| Host overlay history for (`aisandbox-staging`, named apps) | later S2 host window / A1 |
+| r3 raw-hash-verified transfer to staging | later separately authorized window |
+| P8 reopen; `startCondition` write; lane admission | S3 / S4 control-plane steps |
+
+### 13.8 What Step 3 did not do
+
+Did not: lock the task; authorize Step 4; attest P4, P5, P6, or P7; declare host CLEAN; adopt A1 or A2; designate a baseline source or value; register, admit, or implement a verifier or any child; amend, reinterpret, or execute EXEC-01C6A; change sidecar `startCondition`, `lockedTaskIds`, candidates, or occupancy; edit any predecessor body or locked freeze, the bundle, manifests, archive, or workflow; touch Harness flags or the Builder gate; run any `pm2` command; acquire STAGING / PM2 / ENV / CREDIT / PROVIDER-LIVE / LOCAL-RUNTIME; run local application code, tests, mocks, builds, installs, SSH, browser, or subagents; dispatch a workflow; commit or push.
+
+### 13.9 Step 3 verdict
+
+```
+STEP_3_VERDICT=DECISION_RECORDED
+K_A=APPROVE
+K_B1=UNRESOLVED_INPUT
+K_B2=UNRESOLVED_INPUT
+K_B3=VERIFIER
+K_B4=YES
+K_C=C1
+COMPLETE_AFFIRMATIVE_COUNT=1 (K-B4)
+OUTCOME_SELECTED=R3 OUTCOME_POLICY_APPROVED_AMENDED
+POLICY_AUTHORIZED=YES (S1 contract only; P1 granted; P2–P8 frozen meanings as amended only by A4)
+SUBSTANTIVE_AMENDMENTS_ADOPTED=A4 (verbatim §3.3 A4 proposed wording)
+A1_STATUS=OPEN / UNADOPTED
+A2_STATUS=OPEN / no source or values designated
+PROCEDURE_SELECTION=VERIFIER (direction only; no child registered or implemented)
+ACCEPTANCE_DIRECTION=C1 (direction only; EXEC-01C6A not amended, reinterpreted, or executed)
+P7_ACCEPTED=NO
+HOST_CLEAN=NO
+REOPEN_GATE_SATISFIED=NO
+EXEC_01C6A_REOPENED=NO
+EXEC_01C6A_START_CONDITION=NOT_READY (unchanged)
+VERIFIER_CHILD_REGISTERED=NO
+EXEC_01C6A_AMENDED=NO
+BUILDER_GATE=ON (unchanged)
+HARNESS_FLAGS=unchanged
+STEP_4=NOT AUTHORIZED
+LOCKED=NO
+```
+
+### 13.10 Step 3 activity ledger (2026-09-19)
+
+LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, canary submission=0, vendor fetch=0, network=0, workflow dispatched=0, r3 transferred/extracted/executed=0, Python executed=0, tests=0 except lane-capacity validator, mocks=0, imports=0, builds=0, installs=0, browser=0, subagents=0, bundle/manifests/archive edited=0, workflow edited=0, sidecar edited=0, lockedTaskIds edited=0, predecessor bodies edited=0, EXEC-01C6 / 01C6A documents or body edited=0, locked freezes edited=0, verifier/child registered=0, P4/P5/P6/P7 recorded=0, host CLEAN attested=0, Git add/commit/push=0.
+Writes: this document (status header + §13 appended; §§0–12 preserved); `TASKS.md` this task's current board fields; `TASKS_BACKLOG_FULL.md` this task's body; `docs/control-plane/SATURATION_PROOF.json` as validator output only. GOVERNANCE acquired transiently for this decision record then released UNOWNED. Occupancy EMPTY.
