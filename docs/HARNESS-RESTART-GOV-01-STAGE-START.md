@@ -2,29 +2,31 @@
 
 **Task ID:** HARNESS-RESTART-GOV-01
 **Title:** Decide the safe path to resume Harness after Builder completion
-**Step:** 3 — decision record of exactly one frozen path
-**Step status:** Step 1 COMPLETE — 2026-09-17 (registration `8eb40707c1dfdc903354c1c3b88049030b7b63a4` `docs: register harness restart governance`); Step 2 COMPLETE — 2026-09-17 (freeze `2376ae8f6d30d0ac5ce2bb80a0b241f2a21efcca` `docs: freeze harness restart governance`); Step 3 COMPLETE — 2026-09-18 — **OUTCOME_A under R1**; Step 4 NOT AUTHORIZED
+**Step:** 4 — independent verification / checkpoint / lock
+**Step status:** Step 1 COMPLETE — 2026-09-17 (registration `8eb40707c1dfdc903354c1c3b88049030b7b63a4` `docs: register harness restart governance`); Step 2 COMPLETE — 2026-09-17 (freeze `2376ae8f6d30d0ac5ce2bb80a0b241f2a21efcca` `docs: freeze harness restart governance`); Step 3 COMPLETE — 2026-09-18 (decision `2a477b5aac78794e83894c772a6b84f8a47812bc` `docs: select harness fencing recovery direction`) — **OUTCOME_A under R1**; Step 4 COMPLETE AND LOCKED — 2026-09-18 — **OUTCOME_A / R1**
 **Nature:** GOVERNANCE / DECISION — does NOT consume Lane 1 or Lane 2
 **Risk:** HIGH (path selection after Builder closeout; EXEC-01C6A PM2 overlay blocker; product-visible Harness remains FUTURE/gated)
 **Lifecycle:** 4-step GOVERNANCE
 **Parent:** none. Not a child of AGENT-PLATFORM-EXEC-01C6A. Does **not** reopen EXEC-01C6A.
-**This document:** Authoritative frozen A/B/C options, evidence thresholds, Step 3 selection matrix, and the Step 3 selected-outcome record. It is not a scheduler. It does not admit EXEC-01C6A. Step 3 selected OUTCOME_A; it does not establish a supported fence or authorize UNKNOWN_PENDING_OVERLAY recovery policy.
-**Exact next step after this freeze:** none authorized. Step 4, if later authorized, independently verifies this GOVERNANCE decision only. This Step 3 does not register a successor, reopen EXEC-01C6A, or start Step 4.
+**This document:** Authoritative frozen A/B/C options, evidence thresholds, Step 3 selection matrix, the Step 3 selected-outcome record, and the Step 4 checkpoint / lock. It is not a scheduler. It does not admit EXEC-01C6A. Step 3 selected OUTCOME_A; Step 4 locks that GOVERNANCE decision. PASS means the freeze is satisfied. It does not establish a supported fence, authorize UNKNOWN_PENDING_OVERLAY recovery policy, or prove Harness recovery or activation.
+**Exact next step after this freeze:** none authorized. This task is COMPLETE AND LOCKED. No successor is registered. EXEC-01C6A remains `startCondition=NOT_READY`.
 **Step 2 base HEAD:** `8eb40707c1dfdc903354c1c3b88049030b7b63a4` (branch `main`; registration commit; occupancy EMPTY / GOVERNANCE UNOWNED)
 **Step 3 base HEAD:** `2376ae8f6d30d0ac5ce2bb80a0b241f2a21efcca` (branch `main`; Step 2 freeze commit; occupancy EMPTY / GOVERNANCE UNOWNED)
+**Step 4 base HEAD:** `2a477b5aac78794e83894c772a6b84f8a47812bc` (branch `main`; Step 3 decision commit; occupancy EMPTY / GOVERNANCE UNOWNED)
 **Occupancy hash (end-state):** `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d` (Lane 1 EMPTY, Lane 2 EMPTY, GOVERNANCE UNOWNED)
 
 Step 2 remains a bounded, local, read-only decision freeze. It did **not** select an outcome.
 
-Step 3 independently applied the frozen §7 matrix and recorded exactly one outcome: **OUTCOME_A under R1**. It does **not** reopen EXEC-01C6A. It does **not** change sidecar `startCondition=NOT_READY`. It does **not** register a fencing/recovery successor. It does **not** establish that a supported fence exists. It does **not** authorize UNKNOWN_PENDING_OVERLAY recovery policy. It does **not** create an operator bundle, implementation code, or runtime procedure. It does **not** authorize live canary, PM2 overlay, staging, runtime mutation, or operator-bundle change. Step 4 is **not** authorized. This task is **not** locked.
+Step 3 independently applied the frozen §7 matrix and recorded exactly one outcome: **OUTCOME_A under R1**. Step 4 independently verified that record and locked it. The lock does **not** reopen EXEC-01C6A. It does **not** change sidecar `startCondition=NOT_READY`. It does **not** register a fencing/recovery successor. It does **not** establish that a supported fence exists. It does **not** authorize UNKNOWN_PENDING_OVERLAY recovery policy. It does **not** create an operator bundle, implementation code, or runtime procedure. It does **not** authorize live canary, PM2 overlay, staging, runtime mutation, or operator-bundle change.
 
 ```
 STEP1_COMPLETE=YES
 STEP2_COMPLETE=YES
 STEP3_AUTHORIZED=YES
 STEP3_COMPLETE=YES
-STEP4_AUTHORIZED=NO
-LOCKED=NO
+STEP4_AUTHORIZED=YES
+STEP4_COMPLETE=YES
+LOCKED=YES
 OUTCOME_SELECTED=OUTCOME_A
 MATRIX_ROW=R1
 EXEC_01C6A_REOPENED=NO
@@ -102,7 +104,7 @@ Required sequence before any EXEC-01C6A reopen (frozen §3.3; recorded as the R1
 3. Only a later separately authorized control-plane step may change EXEC-01C6A `startCondition`.
 4. Live canary execution requires its own authorization.
 
-This Step 3 does not perform items 1–4. Step 4 is **not** authorized. This task is **not** locked.
+This Step 3 does not perform items 1–4. Historical Step 3 record: Step 4 was **not** authorized in that window. This task was **not** locked in that window.
 
 AGENT-PLATFORM-EXEC-01C6A remains `startCondition=NOT_READY`. It is not reopened, admitted, LANE-DONE, or LOCKED.
 
@@ -112,13 +114,50 @@ GOVERNANCE was acquired only for this decision-record write, then released UNOWN
 
 ---
 
+## 0B. Step 4 checkpoint / lock — 2026-09-18
+
+Keith authorized Step 4 only: independent verification, checkpoint, and lock of the completed GOVERNANCE decision.
+
+Independent verification (no new investigation; no invented runtime/PM2/host/product-frontier facts):
+
+1. Step 3 recorded Keith’s explicit option A selection (`docs: select harness fencing recovery direction` `2a477b5aac78794e83894c772a6b84f8a47812bc`).
+2. Frozen matrix R1 applies: **OUTCOME_SELECTED=OUTCOME_A**. First matching row remains **R1**.
+3. The decision requires a separately registered and authorized fencing/recovery successor before any EXEC-01C6A reopen. Do not reuse PM2-FENCE-01. Do not treat HARNESS-RESTART-GOV-01 as that successor.
+4. No supported fence, F1–F5 proof, P1–P8 authorization, host CLEAN attestation, or residual-risk acceptance is claimed.
+5. Fence-capability versus UNKNOWN_PENDING_OVERLAY recovery-policy remains **unresolved**.
+6. EXEC-01C6A sidecar and canonical `startCondition` remain `NOT_READY`. Not reopened. Not admitted. Not LANE-DONE. Not LOCKED.
+7. Step 3 changed only its authorized governance files: `TASKS.md`, `TASKS_BACKLOG_FULL.md`, `docs/HARNESS-RESTART-GOV-01-STAGE-START.md`, `docs/control-plane/SATURATION_PROOF.json`.
+
+**Verdict:** HARNESS-RESTART-GOV-01 is **COMPLETE AND LOCKED** with **OUTCOME_A / R1**.
+
+PASS means the GOVERNANCE decision satisfies its freeze. It does **not** mean Harness recovery or activation is proven.
+
+This checkpoint states:
+
+- OUTCOME_SELECTED=OUTCOME_A. MATRIX_ROW=R1.
+- Direction only: a new fencing/recovery successor must be separately registered and authorized before any EXEC-01C6A reopen.
+- Fence-capability versus recovery-policy remains unresolved.
+- F1–F5 are not proven. P1–P8 are not authorized. Host CLEAN is not attested. Residual daemon-buffer risk is not accepted.
+- EXEC-01C6A remains `startCondition=NOT_READY` / not reopened / not admitted / not LANE-DONE / not LOCKED.
+- PM2-FENCE-01 remains COMPLETE AND LOCKED with **OUTCOME_BLOCKED under M3**.
+- BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON.
+- Occupancy EMPTY. GOVERNANCE UNOWNED. No successor registered. No implementation candidate created.
+
+`lane-saturation-state.json` was **not** edited. Freeze Decision 7 (`lockedTaskIds` append on COMPLETE AND LOCKED) is the implementation-candidate dependency-proof mechanism. This GOVERNANCE task has no sidecar candidate. No candidate `dependsOn` HARNESS-RESTART-GOV-01. The closest analog, PM2-FENCE-01 COMPLETE AND LOCKED, left the sidecar unedited. The validator does not fail closed for a locked GOVERNANCE ID absent from `lockedTaskIds` unless a candidate depends on it. Therefore recording this ID is not required for this lock.
+
+GOVERNANCE was acquired only for this checkpoint write, then released UNOWNED. End-state occupancy remains Lane 1 EMPTY / Lane 2 EMPTY / GOVERNANCE UNOWNED.
+
+No SSH, AWS, PM2, Docker, database, Redis, browser, package installation, application tests, provider calls, credit activity, or canary submission ran.
+
+---
+
 ## 1. Authority and allowed evidence
 
 ### 1.1 Authority
 
 - `TASKS.md` CURRENT EXECUTION BOARD is the only scheduler.
 - `TASKS_BACKLOG_FULL.md` is the canonical task registry.
-- This document is evidence for HARNESS-RESTART-GOV-01 Steps 2–3. It is not a scheduler and does not admit EXEC-01C6A.
+- This document is evidence for HARNESS-RESTART-GOV-01 Steps 2–4. It is not a scheduler and does not admit EXEC-01C6A. The Step 4 lock records the GOVERNANCE decision only.
 - The sidecar `docs/control-plane/lane-saturation-state.json` is not a scheduler. EXEC-01C6A `startCondition=NOT_READY` remains UNCHANGED.
 - Locked Builder checkpoints are evidence only that Builder is no longer the CURRENT closeout blocker. They do not admit Harness, reopen EXEC-01C6A, or select A/B/C.
 - `docs/AINOW-EXECUTION-ROADMAP.md` and `docs/AGENT-PLATFORM-00-AINOW-MULTI-AGENT-PLAN.md` are historical / strategic only. They have no admission or selection authority here.
@@ -354,9 +393,10 @@ EXEC-01C6A Test-Admissible = NOT_READY
 EXEC-01C6A admitted = NO
 EXEC-01C6A LANE-DONE = NO
 EXEC-01C6A LOCKED = NO
-HARNESS-RESTART-GOV-01 outcome = OUTCOME_A (Step 3; MATRIX_ROW=R1; direction only)
+HARNESS-RESTART-GOV-01 outcome = OUTCOME_A (Step 4 COMPLETE AND LOCKED; MATRIX_ROW=R1; direction only)
 SUCCESSOR_REGISTERED = NO
 FENCE_VS_POLICY_RESOLVED = NO
+LOCKED = YES
 ```
 
 ---
@@ -380,7 +420,7 @@ FENCE_VS_POLICY_RESOLVED = NO
 - Editing the three prepared 01C6A canary artifacts
 - Enabling Lane 3
 - Editing PRD.md, ARCHITECTURE.md, CLAUDE.md, AGENTS.md, validator, mutex catalog, or the EXEC-01C6A sidecar candidate
-- Starting Step 4 or locking this task
+- Treating this lock as Harness recovery or activation proof
 
 ---
 
@@ -388,7 +428,7 @@ FENCE_VS_POLICY_RESOLVED = NO
 
 **Step 3 (COMPLETE — 2026-09-18):** Independently applied §7 and recorded exactly one outcome: **OUTCOME_A under R1**. Did not invent runtime facts. Did not reopen EXEC-01C6A. Did not register a successor. Did not implement a fence, recovery policy, non-overlay child, or replacement product slice. Fence-capability versus recovery-policy remains unresolved. Write set remained control-plane / this document only.
 
-**Step 4 (NOT AUTHORIZED):** Independent verification / checkpoint / lock of this GOVERNANCE decision only after Step 3 has recorded exactly one outcome. Not started this window. This task is not locked.
+**Step 4 (COMPLETE AND LOCKED — 2026-09-18):** Independent verification / checkpoint / lock of this GOVERNANCE decision. Frozen Step 3 result confirmed: OUTCOME_A under R1. Task status COMPLETE AND LOCKED. PASS means the freeze is satisfied; it does not prove Harness recovery or activation. EXEC-01C6A remains `startCondition=NOT_READY` / not reopened / not admitted / not LANE-DONE / not LOCKED. No successor registered.
 
 ---
 
@@ -419,3 +459,11 @@ Governance writes expected (Step 2): this document; `TASKS.md`; `TASKS_BACKLOG_F
 LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, canary submission=0, operator-bundle mutation=0, canary-script mutation=0, evidence-doc mutation=0, sidecar mutation=0, application source=0, local application tests=0, tests executed=0 except lane-capacity validator, dependencies=0, migrations=0, PRD.md=0, ARCHITECTURE.md=0, CLAUDE.md=0, AGENTS.md=0, validator edits=0, mutex-catalog edits=0, Git commit/push=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, EXEC-01C6A reopened=0, EXEC-01C6B registered=0, EXEC-01C7 registered=0, fencing/recovery successor registered=0, outcome selected=OUTCOME_A (R1; direction only; fence-vs-policy unresolved).
 
 Governance writes expected (Step 3): this document; `TASKS.md` current board fields; `TASKS_BACKLOG_FULL.md` HARNESS-RESTART-GOV-01 body; `docs/control-plane/SATURATION_PROOF.json` only if the validator regenerates it. `docs/control-plane/lane-saturation-state.json` occupancy/candidates/lockedTaskIds unchanged (occupancy EMPTY / GOVERNANCE UNOWNED / no candidate added).
+
+---
+
+## 14. Activity ledger (Step 4 window)
+
+LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, canary submission=0, operator-bundle mutation=0, canary-script mutation=0, evidence-doc mutation=0, sidecar mutation=0, application source=0, local application tests=0, tests executed=0 except lane-capacity validator, dependencies=0, migrations=0, PRD.md=0, ARCHITECTURE.md=0, CLAUDE.md=0, AGENTS.md=0, validator edits=0, mutex-catalog edits=0, Git commit/push=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, EXEC-01C6A reopened=0, EXEC-01C6A locked=0, EXEC-01C6B registered=0, EXEC-01C7 registered=0, fencing/recovery successor registered=0, outcome selected=OUTCOME_A (R1; independently verified; direction only; fence-vs-policy unresolved; PASS = freeze satisfied, not Harness recovery/activation proof).
+
+Governance writes (Step 4): this document (Step 4 checkpoint / lock); `TASKS.md` current board fields; `TASKS_BACKLOG_FULL.md` HARNESS-RESTART-GOV-01 body; `docs/control-plane/SATURATION_PROOF.json` only as validator output. `docs/control-plane/lane-saturation-state.json` occupancy/candidates/lockedTaskIds unchanged (occupancy EMPTY / GOVERNANCE UNOWNED / no candidate added; this GOVERNANCE ID not appended). GOVERNANCE acquired transiently then released UNOWNED. End-state occupancy EMPTY / GOVERNANCE UNOWNED. Prepared 01C6A canary artifacts preserved untouched. Task COMPLETE AND LOCKED. EXEC-01C6A remains NOT_READY / not locked. No successor registered.
