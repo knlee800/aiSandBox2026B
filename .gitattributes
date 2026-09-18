@@ -1,0 +1,6 @@
+# PM2-OVERLAY-UNKNOWN-01 Step 3a — byte-faithful baseline of the EXEC-01C6A operator bundle (ZIP B).
+# Scoped to this directory only. LF source/text files stay LF on every platform; the two CRLF
+# manifests are marked -text so their baseline bytes (and raw SHA-256) are never rewritten.
+ops/aisb-01c6a-operator-bundle/** text eol=lf
+ops/aisb-01c6a-operator-bundle/TRANSFER.manifest -text -eol
+ops/aisb-01c6a-operator-bundle/REVIEW-SHA256.txt -text -eol

@@ -1,0 +1,3 @@
+# EXEC-01C6A independent xAI address list for packet classification.
+# Empty is valid: HTTPS to unknown destinations stays unexplained/INCOMPLETE.
+# One IP or CIDR per line. Comments start with #.

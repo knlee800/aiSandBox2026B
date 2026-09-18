@@ -1,11 +1,13 @@
-# PM2-OVERLAY-UNKNOWN-01 — Stage-start / Step 2 freeze
+# PM2-OVERLAY-UNKNOWN-01 — Stage-start / Step 2 freeze / Step 3a addendum
 
 **Task:** PM2-OVERLAY-UNKNOWN-01 — Fail-closed PM2 overlay outcomes and recovery-material retention
 **Nature:** IMPLEMENTATION (4-step, high-risk; operator-bundle safety mechanics)
-**Current status:** Step 1 COMPLETE (registration `3a8f14d189d533102af27061052b0debe94c2d09`) — **Step 2 COMPLETE — FREEZE WITH ONE UNMET IMPLEMENTATION PREREQUISITE** — 2026-09-18 — Steps 3–4 NOT AUTHORIZED
+**Current status:** Step 1 COMPLETE (registration `3a8f14d189d533102af27061052b0debe94c2d09`) — Step 2 COMPLETE (freeze `0373c3e5b13c64b396c433e3ce5e0d6bc938b125`) — **Step 3a COMPLETE — BASELINE_IMPORTED_FREEZE_CORRECTED** — 2026-09-18 — K1/K2 approved and executed; **K3 implementation, K4 test execution, K5 checkpoint/lock NOT AUTHORIZED**. Previous: **Current status:** Step 1 COMPLETE (registration `3a8f14d189d533102af27061052b0debe94c2d09`) — **Step 2 COMPLETE — FREEZE WITH ONE UNMET IMPLEMENTATION PREREQUISITE** — 2026-09-18 — Steps 3–4 NOT AUTHORIZED
 **Step 2 base HEAD:** `3a8f14d189d533102af27061052b0debe94c2d09` (branch main; working tree clean at window open; Step 1 registration commit)
 **Evidence predecessor:** PM2-DAEMON-INVESTIGATION-01 COMPLETE AND LOCKED `a3e327e7ffe70666cb75e90b65cb4d6e336ea784` (PASS_WITH_DISCLOSED_LIMITATIONS; `docs/PM2-DAEMON-INVESTIGATION-01-STAGE-START.md` §12–§13)
 **Frozen semantics inherited, not reinterpreted:** F1–F5 and the four CLI/daemon states (`docs/AGENT-PLATFORM-EXEC-01C6A-PM2-FENCE-01-STAGE-START.md` §3, §5.1); P1–P8 host-clean gate (§6.4); HARNESS-RESTART-GOV-01 OUTCOME_A / R1.
+
+**Step 3a verdict (summary; detail in §10):** the byte-faithful ZIP B baseline is imported under `ops/aisb-01c6a-operator-bundle/` (40/40 raw SHA-256; 39/39 manifest entries; scoped `.gitattributes` verified to store exact bytes). The §8.2 prerequisite is **MET**. §10.3 corrects the freeze (F5-compatible result/cleanup rules; journal live-vs-orphan lifecycle and pre-spawn ownership check; durable-write and lost-update rules) and is **controlling**. Sidecar candidate now `writeSetPrecision=EXACT` over the eight-file modification set; `admissionUncertain=true`; no lane admission; nothing implemented or executed.
 
 **Step 2 verdict (summary; detail in §8):** the raw-SHA256-verified **source baseline is established** (§2.2). The **authoritative editable location is NOT yet established**: it requires a Keith decision (structural approval of an in-repo import) and a Step 3a import that has not been performed (§2.4). The exact write set, failure/concurrency semantics, retention rules, and verification plan are frozen (§3–§5). Implementation prerequisites are therefore **NOT all satisfied**; Step 3 may not start until §8.2 is resolved.
 
@@ -179,6 +181,8 @@ Vocabulary: a **command attempt** is one `CliPm2` child invocation (`pm2 restart
 
 ### 4.1 Command-attempt journal — persisted before any mutation can be dispatched
 
+> **Step 3a note (2026-09-18):** superseded in part by §10.3 (controlling for implementation). This section is retained unchanged as the Step 2 historical record.
+
 - File: `<vault>/overlay_commands.json` (JSON list, atomic replace via write-temp + `os.replace`; mode 0o600 on POSIX). Written by W3 helpers `journal_intent`, `journal_dispatched`, `journal_terminal`.
 - Entry fields (names only, never values): `attempt_id` (uuid4), `op` (`APPLY` | `RESTORE`), `app`, `keys` (sorted key names), `phase`, `mono_ts`, `wall_ts`, `client_pid` (after spawn), `exit_code`, `reason`.
 - Phases: `INTENT` (written under the coordination lock **before** `Popen`) → `DISPATCHED` (written immediately after `Popen` returns; child is alive) → terminal `ACKED` | `NOT_DELIVERED` | `UNCERTAIN`.
@@ -204,6 +208,8 @@ Non-zero exit is classified `UNCERTAIN`, not `NOT_DELIVERED`, because the client
 
 ### 4.4 Result classes and flags (three separate claims)
 
+> **Step 3a note (2026-09-18):** superseded in part by §10.3 (controlling for implementation). This section is retained unchanged as the Step 2 historical record.
+
 `RestoreResult` gains: `result_class` ∈ {`RESTORED_ACKED_MATCHED`, `UNKNOWN_PENDING_OVERLAY`, `RESTORE_FAILED`, `PENDING_HMAC`, `UNSUPPORTED_ABSENT_RESTORE`, `RESTORE_INTERRUPTED`}, `unknown_pending_overlay: bool`, `snapshot_matched: bool`, `commands_acked: bool`, `attempts: list[str]`. `OrchestrateResult` and the `orchestrate-result.json` payload gain `result_class` and `unknown_pending_overlay`.
 
 | Claim | Meaning | Source | Sufficient for |
@@ -216,6 +222,8 @@ Invariants: `unknown_pending_overlay=True` ⇒ `ok=False`, `restore_ok=False`, `
 
 ### 4.5 Restore owner algorithm (single owner; frozen order)
 
+> **Step 3a note (2026-09-18):** superseded in part by §10.3 (controlling for implementation). This section is retained unchanged as the Step 2 historical record.
+
 1. Acquire ownership under `restore_lock`: set `started=True`, create a fresh `owner_token` object, `in_flight=True`. Losers wait on `done` (existing behaviour) and receive the published result; if the owner publishes nothing within the bound, the loser's synthetic result is `UNKNOWN_PENDING_OVERLAY` (not the current generic failure).
 2. Read the journal. For every `APPLY` entry still `DISPATCHED`: wait on that attempt's completion event for at most `remaining apply timeout + 2 s` (bounded by `restore_reserve`). If it resolves `ACKED` **after** ownership was taken, record `ACKED_LATE` in `reason` and treat the run as latched (ordering versus the upcoming restore is unknown). If unresolved → mark `UNCERTAIN` and latch.
 3. For each app: journal `INTENT(RESTORE)` → dispatch via `orig_restart` with the owner token (§4.6) → terminal per §4.2 → if `ACKED`, take the dual-field snapshot (§4.8) and compare; if the snapshot read fails → `UNCERTAIN` for that app.
@@ -227,6 +235,8 @@ Invariants: `unknown_pending_overlay=True` ⇒ `ok=False`, `restore_ok=False`, `
 `vault_preserved` continues to be read from disk (`protected_recovery_present`, extended to count the UNKNOWN marker and a non-empty journal as recovery material).
 
 ### 4.6 Dispatch admission and the late-apply problem
+
+> **Step 3a note (2026-09-18):** superseded in part by §10.3 (controlling for implementation). This section is retained unchanged as the Step 2 historical record.
 
 Current defect (ZIP B `orchestrate.py` l.435–438): `gated_restart` refuses a restart when `started and not in_restore`; while the owner is inside `restore_overlays`, `in_restore` is a **shared** flag, so a late apply arriving from the main thread during that interval is **permitted**. Frozen replacement:
 
@@ -290,6 +300,8 @@ Keith prohibits local application execution, tests, mocks, builds, and installs 
 
 ### 5.4 Test matrix (each maps to a Keith-listed case)
 
+> **Step 3a note (2026-09-18):** superseded in part by §10.3 (controlling for implementation). This section is retained unchanged as the Step 2 historical record.
+
 | ID | Case | Must assert |
 |---|---|---|
 | T1 | apply `TimeoutExpired` **after** simulated delivery (merge happened, latent) | journal `UNCERTAIN`; marker present; restore attempted; `result_class=UNKNOWN_PENDING_OVERLAY`; `restore_ok=False`; `overlays_restored=False`; vault + `pending_apps.json` retained; `next_canary_allowed=False` |
@@ -327,9 +339,9 @@ This Step 2 does not authorize: Step 3 or 4; the Step 3a import; creating `ops/�
 
 | ID | Decision | Status |
 |---|---|---|
-| K1 | Approve the authoritative editable location (L1 `ops/aisb-01c6a-operator-bundle/` or an alternative root) as a structural deviation, including the path-scoped LF `.gitattributes` rule | OPEN |
-| K2 | Authorize Step 3a import (byte-faithful copy of ZIP B entries) and the 39/39 raw re-verification gate | OPEN |
-| K3 | Authorize Step 3 implementation within W1–W8 exactly | OPEN |
+| K1 | Approve the authoritative editable location (L1 `ops/aisb-01c6a-operator-bundle/` or an alternative root) as a structural deviation, including the path-scoped LF `.gitattributes` rule | **APPROVED 2026-09-18** (Keith: `ops/aisb-01c6a-operator-bundle/`; scoped `.gitattributes`; executed in Step 3a, §10.1–§10.2) |
+| K2 | Authorize Step 3a import (byte-faithful copy of ZIP B entries) and the 39/39 raw re-verification gate | **APPROVED 2026-09-18** (executed: 40/40 raw match; §10.1) |
+| K3 | Authorize Step 3 implementation within W1–W8 exactly | OPEN (NOT AUTHORIZED; scope = eight-file modification set under §4 as corrected by §10.3) |
 | K4 | Select and authorize the verification environment (§5.2) and its resource declaration, if any | OPEN |
 | K5 | Authorize Step 4 verification / checkpoint / lock | OPEN |
 | — | P1 UNKNOWN policy, P6 procedure, P7 acceptance, P4/P5 attestations, Option A/B, EXEC-01C6A reopen, canary | OUTSIDE THIS TASK; not requested |
@@ -343,6 +355,8 @@ This Step 2 does not authorize: Step 3 or 4; the Step 3a import; creating `ops/�
 Source baseline identity and 39/39 raw verification (§2.2); provenance chain and limitations (§2.1, §2.5); exact bundle-relative write set W1–W8 and exclusions (§3.2–§3.3); artifact/manifest/packaging handling (§3.4); conditional lease declarations (§3.5); failure/concurrency/retention semantics (§4.1–§4.10); allowlist assessment (§4.10); verification environment proposal, doubles, matrix T1–T14, evidence, and evidenceClass reconciliation (§5).
 
 ### 8.2 Unmet implementation prerequisite (blocking Step 3)
+
+> **Step 3a note (2026-09-18):** this prerequisite is now **MET** — see §10.1–§10.2 and §10.5. The paragraph below is retained as the Step 2 record.
 
 **Authoritative editable bundle location — NOT ESTABLISHED.** Missing artifact: an approved, LF-faithful, raw-verified editable tree of ZIP B under version control. Next action: Keith decision K1 → Step 3a import under K2 → 39/39 raw match against §2.2 via `Get-FileHash` → control plane updates `writePaths`/`hotfiles`/`writeSetPrecision=EXACT` on the sidecar candidate. Until then `writeSetPrecision=PROVISIONAL`, `admissionUncertain=true`, and no lane admission.
 
@@ -361,3 +375,125 @@ LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Pos
 Read-only actions performed: repository search for bundle references; TEMP directory inventory (names/sizes/mtimes); in-memory raw SHA-256 of all 80 archive entries (ZIP A + ZIP B) and of the review-directory and `zip-orig` files; parse of ZIP B's two manifest entries; throw-away read-only extraction of ZIP B for static source reading (removed at window end); static reads of `OPERATOR-BUNDLE.md`, `lib/overlay_restore.py`, `lib/orchestrate.py`, `lib/vault.py`, `lib/accepted_result.py`, `lib/cleanup_contract.py`, `lib/secret_io.py` (redaction helper only), `bin/*.sh` entry points, `bin/verify-transfer.py`, `bin/write-transfer-manifest.py`, `bin/mock-pm2.py`, and targeted sections of `tests/test_operator_bundle.py`.
 
 Governance writes this window: this document (created); `TASKS.md` current board fields for this task; `TASKS_BACKLOG_FULL.md` PM2-OVERLAY-UNKNOWN-01 body; `docs/control-plane/lane-saturation-state.json` **unchanged** (no scope/resource/evidence field change justified — §3.5, §5.6); `docs/control-plane/SATURATION_PROOF.json` only as validator output. GOVERNANCE acquired transiently then released UNOWNED. Occupancy EMPTY. Lane 3 DISABLED. EXEC-01C6A `startCondition=NOT_READY` unchanged. Builder gate LEFT ON. Harness flags unchanged.
+
+---
+
+## 10. Step 3a addendum — version-controlled baseline and freeze corrections (CONTROLLING) — 2026-09-18
+
+**Window:** Step 3a only (preparation; no implementation-lane admission). Base HEAD `0373c3e5b13c64b396c433e3ce5e0d6bc938b125` (Step 2 freeze commit). Keith approved **K1** (editable location `ops/aisb-01c6a-operator-bundle/`) and **K2** (byte-faithful import of ZIP B, raw-hash verification, scoped `.gitattributes`). **K3 implementation, K4 test execution, and K5 checkpoint/lock remain NOT AUTHORIZED.**
+
+**Precedence:** §10 is controlling for later implementation. Where §10.3 differs from §4.1, §4.4, §4.5, §4.6, §5.4 or §3.4, §10.3 governs; the earlier text is preserved unchanged as the Step 2 historical record. Nothing in §10 has been implemented or tested; §10 describes design and an import, not verified behaviour.
+
+### 10.1 Import record (K1/K2 executed)
+
+| Item | Result |
+|---|---|
+| Source archive | `%TEMP%\aisb-01c6a-operator-review-coverage-corrected.zip` (ZIP B) |
+| Archive SHA-256 (required = observed) | `2edb2e2fa716b326ee61b9d41af0db78dbd0864127bed6959ccc882df10aa4b3` — **ARCHIVE_HASH_OK** |
+| Entry safety | 40 file entries; 0 directory-only entries; every path matched the §2.2 table exactly; no backslash, absolute, drive-letter, `.`/`..` segment, control character, or symlink-mode (`S_IFLNK` in external attributes) entry; each entry's decompressed length equalled the header length — **PRE_IMPORT_VERIFY_OK 40/40** (in memory, before any write) |
+| Config template check (bounded, non-printing) | `config/defaults.env`: **SAFE** — 16 lines, 10 non-comment `KEY=value` lines; no secret-named key with a non-placeholder value, no token-shaped / high-entropy / credential-URL / PEM value. `config/xai-observation-addrs.txt`: **SAFE** — 4 lines, all comment/blank (0 address lines). No value was printed, copied, or recorded. Result classes reported: SAFE / SAFE (no BLOCKED). |
+| Destination | `ops/aisb-01c6a-operator-bundle/` (did not previously exist; created; no overwrite conflict; every target path confirmed inside the destination root) |
+| Imported | exactly the 40 ZIP B file entries, byte-for-byte (`File.WriteAllBytes` from the in-memory entry bytes). **Not** copied: the CRLF review directory, `__pycache__`/`.pyc`, `mocks\`, vaults, runtime outputs, or any other `%TEMP%` content |
+| Post-import re-verification (`Get-FileHash -Algorithm SHA256` on disk) | **40/40** match §2.2, including `REVIEW-SHA256.txt` against its separately recorded hash `a58857137103d5c9fd4606e8ac02e0ab9c11924a493c54efa2a0480077b3d10f`; 0 unexpected files on disk |
+| Manifest-listed entries vs imported manifests | **39/39** (`REVIEW-SHA256.txt` 39 ∪ `TRANSFER.manifest` 36) |
+| Line-ending census on disk | 38 LF-only files; 2 CRLF files (`REVIEW-SHA256.txt`, `TRANSFER.manifest`) — identical to ZIP B |
+| Manifests regenerated / bundle code modified / anything executed | **NO / NO / NO** |
+
+The imported tree is now the **authoritative editable location**; §8.2's blocking prerequisite is **MET** (see §10.5). ZIP A and ZIP B remain unmodified historical evidence in `%TEMP%`; the CRLF review directory remains untouched and is not a baseline.
+
+### 10.2 Byte preservation through Git (`.gitattributes`, scoped)
+
+No `.gitattributes` existed anywhere in the repository (`git ls-files` had no match), so the new root file contains only this task's rules:
+
+```text
+ops/aisb-01c6a-operator-bundle/** text eol=lf
+ops/aisb-01c6a-operator-bundle/TRANSFER.manifest -text -eol
+ops/aisb-01c6a-operator-bundle/REVIEW-SHA256.txt -text -eol
+```
+
+Rationale: `core.autocrlf=true` is set for this checkout; without attributes the 38 LF files would be checked out CRLF (breaking §2.2 raw identity), and a blanket `text eol=lf` would LF-normalise the two CRLF manifests in the index (breaking their accepted hashes and `verify-transfer.py`). The `-text -eol` exceptions keep the manifests' baseline bytes exactly. Global Git configuration was not changed; no unrelated file is renormalised (the rules match only this directory).
+
+Read-only verification performed:
+
+- `git check-attr text eol` over all 40 files: 38 × `text: set / eol: lf`; 2 × `text: unset / eol: unset` (the two manifests). Unrelated paths (`TASKS.md`, `frontend/package.json`) report no attributes.
+- Filter simulation without touching the index: for every file, `git hash-object --path=<file>` (applies the attribute filters as `git add` would) equalled `git hash-object --no-filters` — **0 / 40 files would be altered by Git's clean filter**, i.e. the blobs Git would store are the exact §2.2 bytes.
+- `.gitattributes` itself is LF, UTF-8, no BOM.
+
+No `git add`, commit, push, branch, or worktree was performed (Keith owns Git).
+
+### 10.3 Design corrections (controlling; design only — NOT implemented)
+
+#### 10.3.A F5 compatibility — restoration success requires proof, not disclaimers
+
+**Defect in §4.4:** it allowed `ok` / `restore_ok` / `overlays_restored = True` from `commands_acked ∧ snapshot_matched ∧ ¬latched` while attaching `fence_claim="NONE"`. PM2-FENCE-01 F5 states that automation must not report `restore_ok=True` unless F1–F4 hold; a disclaimer does not satisfy F5. §4.4's success rule, the cleanup rule in §4.5 step 6, and T13 are **withdrawn** and replaced as follows.
+
+1. **Evidence fields stay separate and are reported as evidence only:** `commands_acked` (every restore attempt in this run `ACKED`; no non-`ACKED`/non-`NOT_DELIVERED` apply attempt in this run or in the journal), `snapshot_matched` (dual-field comparison matched for every app, §4.8), `unknown_pending_overlay` (latched), `attempts` (journal ids). These fields never imply restoration success.
+2. **Restoration claim requires an F1–F4 proof input.** `RestoreResult` and `orchestrate()` gain a `fence_proof` input/field whose value is `NONE` or a proof record. `restore_ok = overlays_restored = (fence_proof ≠ NONE) ∧ commands_acked ∧ snapshot_matched ∧ ¬latched`. The bundle has **no** source of a proof record: `CliPm2`, `bin/orchestrate-canary.sh`, `bin/restore-overlays.sh`, and `main()` always supply `fence_proof=NONE`. Consequently, as implemented by this task, `restore_ok` and `overlays_restored` are **always False in production**, which is the F5-correct statement of the bundle's actual capability (PM2-FENCE-01 §5.2: `CliPm2` does not implement F1–F3). The field `fence_claim` is removed from the design; there is no disclaimer path to success.
+   **`fence_proof` boundary (correction, 2026-09-18):** `fence_proof` is not a boolean and is not settable from outside the process. No CLI flag, environment variable, configuration value (`defaults.env` or otherwise), file marker, or caller assertion may construct, load, or pass a non-`NONE` value; no production module, entry point, or shell wrapper may accept one; the type check in `orchestrate()` must reject anything other than the `NONE` sentinel that did not originate from the (non-existent) authorized provider. This task has **no authorized production proof provider and no override**. Production restoration-success flags therefore remain False under the current scope, and the only way for them to become True is a separately authorized future task that registers a provider satisfying F1–F4 — not a configuration or flag change. The plumbing exists solely so that F5 gating is a property of the result type rather than a disclaimer.
+3. **Result classes (replacing §4.4's list):** `UNKNOWN_PENDING_OVERLAY` (latched), `RESTORE_FAILED`, `PENDING_HMAC`, `UNSUPPORTED_ABSENT_RESTORE`, `RESTORE_INTERRUPTED`, `RESTORE_ATTEMPTED_ACKED_MATCHED_UNPROVEN` (all restore clients acked, dual snapshot matched, not latched, **no proof** — evidence class, not success), and `RESTORED_PROVEN` (the same **plus** `fence_proof ≠ NONE`; unreachable from any shipped entry point). `RESTORE_ATTEMPTED_ACKED_MATCHED_UNPROVEN` yields classification `INCOMPLETE`, `next_canary_allowed=False`.
+4. **Cleanup rule (replacing §4.5 step 6):** `clear_pending_app` and `delete_vault_fn()` run **only if** `restore_ok=True` (which requires proof) **and** `windows.restore_due()` is `None` **and** no latch **and** the journal has no non-terminal or `UNCERTAIN` entries. Without proof: recovery material, `pending_apps.json`, the journal, and the result file are all retained; `vault_preserved=True`. `delete_protected_recovery` additionally refuses (`RESTORE_UNPROVEN`) when called without a proof-bearing result, so a caller-supplied `delete_vault` cannot bypass the rule.
+5. **Next-canary permission:** `allows_next_canary` is unchanged in code (out of write set) and already requires `restore_ok ∧ overlays_restored`; under this design it therefore returns False in production. No new gate is added; none is weakened.
+6. **Operational consequence (disclosed, intended; corrected 2026-09-18):** every production run now ends with recovery material retained, and the following run is refused by `refuse_unresolved_vault` (`UNRESOLVED_VAULT_EXISTS` / §4.7 codes). **This task provides no clearance or unblock mechanism. Recovery material and next-run blocking remain. Any later resolution requires a separately authorized procedure satisfying the applicable frozen requirements; P6 verification alone is insufficient.** P6 is named-key verification within the frozen policy sequence; it does not resolve command fate, establish a fence, clear UNKNOWN, authorize deletion of recovery material, or independently permit another run. This addendum does not select or authorize that later procedure. This is the frozen program's intent (host UNCLEAN until P1–P8; PM2-FENCE-01 §6.3): the bundle must not clear its own state. `bin/restore-overlays.sh` (unchanged) exits 1 whenever `result.ok` is False, i.e. always without proof; its printed `matched=` flag remains an operator evidence field, not a restoration-success claim. This task does **not** define any resolution procedure, accept P7, or alter P1–P8 meanings.
+7. **T13 corrected:** full acknowledgement + matching dual snapshot + window inside bounds + `fence_proof=NONE` (the real entry-point condition) → `commands_acked=True`, `snapshot_matched=True`, `result_class=RESTORE_ATTEMPTED_ACKED_MATCHED_UNPROVEN`, `restore_ok=False`, `overlays_restored=False`, cleanup **not** performed, `vault_preserved=True`, `next_canary_allowed=False`, classification `INCOMPLETE`, fake-PM2 state equals baseline on both fields. **T13b (gating logic only; corrected 2026-09-18):** same inputs with an isolated test double injected directly into `orchestrate(... fence_proof=<double>)` from within the test module → `RESTORED_PROVEN`, cleanup performed once, `allows_next_canary` reachable for the double. Constraints: the double is defined only inside `tests/test_operator_bundle.py`; no production module, entry point, shell wrapper, flag, environment variable, or configuration value may construct, import, or reach it; the test must also assert by static inspection that `main()` and both shell entry points pass `fence_proof=NONE` and that no production module constructs a non-`NONE` value. T13b examines gating behaviour only. It is **not** fence evidence, does not imply F1–F4 are or can be satisfied, and must not be described as such; if implementing it would require any production-accessible bypass, T13b is dropped rather than the boundary weakened. No test execution is authorized now (K4/K5 open).
+8. **T14 widened:** every existing assertion of `overlays_restored=True`, `restore_ok=True`, vault deletion after a match, or `next_canary_allowed=True` (e.g. `test_vault_deleted_only_after_restore_match` l.1869, `test_mark_before_apply_restores_after_exception` l.1043, and any others found by `grep` in Step 3 — the list is to be established by static inspection, not assumed here) must be re-based onto the evidence fields and observed fake-PM2 state, or moved under a T13b-style stub. Tests asserting fail-closed behaviour (window expiry, interrupt, unresolved vault, double-restart prevention, apply stop after restore start) keep their meaning.
+
+#### 10.3.B Journal lifecycle — live vs orphaned attempts; ownership between INTENT and spawn
+
+**Gap in §4.1/§4.5/§4.6:** they did not distinguish an attempt this process owns from one found on disk, and did not state what happens when the restore owner takes ownership after an apply's `INTENT` is persisted but before its child is spawned.
+
+1. **Entry identity:** every journal entry carries `run_id` (uuid4 generated once per `orchestrate()` / `restore_overlays()` invocation), `pid`, `attempt_id`, `seq` (monotonic within the file), plus the §4.1 fields.
+2. **LIVE attempt:** an entry whose `run_id` equals the current run's and for which an in-memory `Attempt` object exists (holding the `settled` event, the admitted state, the `Popen` handle once spawned). Only LIVE attempts can be waited on.
+3. **ORPHANED attempt:** any entry without a terminal phase whose `run_id` differs from the current run's (found at next-run start by `refuse_unresolved_vault`), or — within a run — an entry without a terminal for which no `Attempt` object exists (corrupt in-process state). An ORPHANED `INTENT` is classified `UNCERTAIN`, not `NOT_DELIVERED`: the disk record cannot show whether `Popen` ran before the crash (`DISPATCHED` is written only after `Popen` returns). Orphans are therefore latched and block the next run (§4.7 `UNRESOLVED_COMMAND_ATTEMPTS`). No code path adopts or resolves an orphan.
+4. **Admission → spawn protocol (replacing §4.6 paragraph 2):**
+   - (a) under `restore_lock`: if `restore_gate.started` → refuse (`OVERLAY_AFTER_RESTORE`), nothing written; else create `Attempt(state=ADMITTED_NOT_SPAWNED)`, register it in `restore_gate.attempts`, write `INTENT` (durable per §10.3.C), release the lock;
+   - (b) build argv/env; then **re-acquire `restore_lock`** immediately before `Popen`: if `restore_gate.started` is now True → write terminal `NOT_DELIVERED` with `reason=REFUSED_BEFORE_SPAWN` (proven: no process was ever created), set `settled`, release, raise `OVERLAY_AFTER_RESTORE`; else call `Popen` **while still holding the lock** (spawn is fast; the lock is *not* held across `wait`), write `DISPATCHED` (with `client_pid`), release;
+   - (c) `communicate/wait` with the timeout outside the lock; write the terminal phase; set `settled`.
+   - Because ownership (`started=True`) is taken under the same lock and never reset, once the owner observes `started=True` no LIVE attempt can pass step (b)'s check; **no admitted attempt can spawn after ownership, cleanup, or result publication**. This holds by construction, not by timing.
+5. **Owner accounting (replacing §4.5 step 2):** after taking ownership the owner snapshots `restore_gate.attempts`. For each LIVE `APPLY` attempt: if `ADMITTED_NOT_SPAWNED` → wait on `settled` for a short bound (2 s; the pre-spawn check runs promptly) expecting `NOT_DELIVERED/REFUSED_BEFORE_SPAWN` → not latched; if it does not settle within the bound → `UNCERTAIN` (fail closed: an in-memory state the owner cannot account for is uncertainty) → latch. If `DISPATCHED` → wait on `settled` up to the attempt's remaining client timeout + 2 s (bounded by `restore_reserve`); `ACKED` after ownership → `ACKED_LATE` → latched (ordering versus the restore is unknown); non-`ACKED` → `UNCERTAIN` → latched; unsettled → `UNCERTAIN` → latched. Every entry on disk lacking a terminal after this accounting is latched as `UNCERTAIN`. The owner then proceeds with restore attempts (which use the owner token and follow the same INTENT/DISPATCHED/terminal protocol).
+6. **Latch monotonicity (unchanged, restated):** once any attempt is `UNCERTAIN`, `ACKED_LATE`, or ORPHANED, or the marker exists, the run and all later runs are latched. Nothing in §10.3.B relaxes §4.3.
+
+#### 10.3.C Durability of atomic writes and lost-update prevention
+
+`os.replace` alone gives atomic *visibility* of a rename, not crash *durability*: the new inode's data and the directory entry may still be in volatile caches. The frozen write procedure for `overlay_commands.json`, `unknown_overlay.json`, `restore_result.json`, and `pending_apps.json` (W3 helper `durable_replace(path, bytes)`):
+
+1. open a temp file in the **same directory** (`tempfile.NamedTemporaryFile(dir=..., delete=False)`; mode 0o600 on POSIX);
+2. write all bytes; `flush()`; `os.fsync(tmp_fd)`; close;
+3. `os.replace(tmp, path)`;
+4. on POSIX: `dfd = os.open(dirname, os.O_RDONLY)`; `os.fsync(dfd)`; `os.close(dfd)` (makes the rename itself durable). On Windows directory fsync is unavailable; the helper records `durability=RENAME_ONLY` in the entry and Windows is documented as not a supported execution target for this state machine (tests run on the Linux runner, §5.2). An `OSError` in steps 1–4 is a `JOURNAL_WRITE_FAILED`: the operation that required the write is refused (no spawn; or, for a terminal/latch write, the exception is re-raised after a best-effort marker write attempt and the process exits non-zero — uncertainty is never dropped silently).
+
+Concurrency (single process, multiple threads — main path, watchdog thread, apply threads):
+
+- all journal mutations go through one `journal_lock` (`threading.Lock`), always acquired **after** `restore_lock` when both are held (fixed order; no path acquires `restore_lock` while holding `journal_lock`) — eliminates lost updates from interleaved read-modify-write;
+- each mutation reloads the file under the lock, appends/updates, verifies that the loaded `seq` sequence is contiguous and the last `seq` equals the in-memory expectation (`JOURNAL_SEQ_MISMATCH` → treat as corrupt → latch, fail closed), then writes with `durable_replace`;
+- the marker file is written by the same helper under `journal_lock`; marker and journal are two files, so the invariant "latched iff marker exists **or** journal shows any `UNCERTAIN`/non-terminal entry" (§4.3) tolerates a crash between the two writes without losing the latch.
+
+Cross-process: a vault-scoped run lock `<vault>/.run.lock` (`fcntl.flock(LOCK_EX|LOCK_NB)` on POSIX; `msvcrt.locking` fallback) is taken by `orchestrate()` and by `restore_overlays()` (W1, so `bin/restore-overlays.sh` needs no change) for the duration of the run; a second process gets `RUN_LOCK_HELD` and performs no mutation. `refuse_unresolved_vault` runs after the lock is held.
+
+#### 10.3.D Effect on the test matrix
+
+Added: **T13b** (gating behaviour via an isolated test double confined to the test module; not fence evidence; no production-accessible bypass; §10.3.A.7); **T15** ownership between `INTENT` and spawn → `NOT_DELIVERED/REFUSED_BEFORE_SPAWN`, no spawn, no latch from that attempt; **T16** orphaned `INTENT`/`DISPATCHED` from another `run_id` → `UNCERTAIN`, latched, next run blocked; **T17** `durable_replace` call-sequence spy (fsync file → replace → fsync dir) and `JOURNAL_SEQ_MISMATCH` → latch; **T18** second process / second `restore_overlays` on the same vault → `RUN_LOCK_HELD`, no mutation. T13 and T14 replaced per §10.3.A.7–8. T1–T12 unchanged in intent; their expected `restore_ok`/`overlays_restored` values are already False.
+
+### 10.4 Control-plane scope after Step 3a
+
+Two distinct scopes:
+
+| Scope | Files | Status |
+|---|---|---|
+| **Import scope (Step 3a, done)** | the 40 imported baseline files under `ops/aisb-01c6a-operator-bundle/` (byte-for-byte; no edits permitted), `.gitattributes` (scoped rules above), this document, `TASKS.md` fields, `TASKS_BACKLOG_FULL.md` body, sidecar candidate fields, `SATURATION_PROOF.json` | written this window; untracked import files verified 40/40 |
+| **Modification set (Step 3, NOT AUTHORIZED)** | exactly eight files: `ops/aisb-01c6a-operator-bundle/lib/overlay_restore.py`, `…/lib/orchestrate.py`, `…/lib/vault.py`, `…/tests/test_operator_bundle.py`, `…/bin/mock-pm2.py`, `…/TRANSFER.manifest`, `…/REVIEW-SHA256.txt`, `…/OPERATOR-BUNDLE.md` (W1–W8) | frozen; the other 32 imported files and `.gitattributes` are read-only for Step 3 |
+
+Sidecar candidate (`docs/control-plane/lane-saturation-state.json`) updated for this candidate only: `writePaths` = the eight W1–W8 repository paths; `hotfiles` = the same eight (no catalogue mutex covers `ops/`; HOTFILE is the existing mechanism); `writeSetPrecision=EXACT` (paths now exist and are frozen); `mutexes=[]`, `runtimeNeeds=[]`, `evidenceClass=LOCAL-TESTS`, `exclusiveCapacity=false`, `admissionUncertain=true` (execution environment K4 still open; K3 not granted) — unchanged. Occupancy EMPTY; `lockedTaskIds` untouched; runtime authorization false; GOVERNANCE released UNOWNED after this write. `mutex-catalog.json` not edited.
+
+### 10.5 Prerequisite status and remaining decisions
+
+- §8.2 blocking prerequisite (authoritative editable bundle location): **MET** by §10.1–§10.2. STEP_3A_VERDICT=BASELINE_IMPORTED_FREEZE_CORRECTED.
+- Remaining before Step 3: **K3** (authorize implementation within the eight-file modification set under §4 as corrected by §10.3). Remaining before Step 4: **K4** (verification environment; nothing exists or is provisioned) and **K5** (verification / checkpoint / lock). P1, P6, P7, P4/P5, Option A/B, EXEC-01C6A reopen, canary: outside this task; not requested.
+- Step 3 must begin by re-running `Get-FileHash` over the 40 imported files and confirming 40/40 against §2.2 before the first edit.
+
+### 10.6 Activity ledger (Step 3a window, 2026-09-18)
+
+LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, canary submission=0, browser=0, subagents=0, Git add/commit/push/branch/worktree=0, global Git config changes=0, application source=0, bundle code modified=0, manifests regenerated=0, archives mutated=0, review-directory files touched=0, protected values read=0, config values printed or copied=0 (bounded pattern check only), bundle scripts executed=0, archive contents executed=0, tests executed=0 except lane-capacity validator, mocks=0, builds=0, installs=0, dependencies=0, predecessor body edits=0, successor registration=0, EXEC-01C6A changes=0, Lane admission=0, Lane 3 enablement=0, Option A/B selected=0, P1/P7 recorded=0.
+
+**Documentation-only correction (same day, second window):** §10.3.A.2 gained the `fence_proof` boundary paragraph (no boolean / flag / env / config / caller-assertion path to a non-`NONE` value; no authorized production provider or override); §10.3.A.6 no longer states that a P6 procedure resolves the next-run block — this task provides no clearance or unblock mechanism, and P6 verification alone is insufficient; §10.3.A.7 T13b and §10.3.D restated as an isolated test double confined to the test module that is not fence evidence and creates no production-accessible bypass. No imported file, manifest, `.gitattributes`, sidecar, predecessor body, or P1–P8 meaning was changed; inherited baseline whitespace (manifest trailing whitespace; EOF blank lines in `lib/capture.py`, `lib/reconcile.py`) is preserved and disclosed, not cleaned up. Only the validator and static diff/scope checks were run.
+
+Actions performed: archive hash verification; in-memory entry safety and 40/40 pre-import hash check; non-printing config template check (SAFE/SAFE); creation of `ops/aisb-01c6a-operator-bundle/` with 40 byte-faithful files; post-import `Get-FileHash` 40/40 and manifest 39/39; line-ending census (38 LF / 2 CRLF); creation of `.gitattributes`; `git check-attr` and `git hash-object --path` vs `--no-filters` simulation (0/40 altered); this addendum; board / backlog / sidecar / proof mirrors; lane validator; `git diff --check` and scope inspection including untracked files.
