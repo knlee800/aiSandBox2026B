@@ -78645,7 +78645,7 @@ taskId=HARNESS-RESTART-GOV-01
 nature=GOVERNANCE
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-17 — Step 1 COMPLETE (registration / control-plane only) — Step 2 NOT AUTHORIZED — Step 3 NOT AUTHORIZED — Step 4 NOT AUTHORIZED — GOVERNANCE acquired transiently then released UNOWNED — no implementation lane — no sidecar candidate — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — EXEC-01C6A remains MACHINE BLOCKER ENFORCED / sidecar startCondition=NOT_READY UNCHANGED / not reopened / not admitted / not LANE-DONE / not LOCKED — PM2-FENCE-01 remains COMPLETE AND LOCKED (OUTCOME_BLOCKED under M3) — BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON (`GLOBAL_EXECUTION_ENABLED=true`) — PREVIEW-STOP-UI-STAGING-01 remains COMPLETE AND LOCKED — product-visible Harness remains FUTURE/gated — decision target NONE this window
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-17 — Step 1 COMPLETE (registration / control-plane only) — Step 2 COMPLETE (stage-start / freeze A/B/C options and evidence; OUTCOME_SELECTED=NONE) — Stage-start: `docs/HARNESS-RESTART-GOV-01-STAGE-START.md` — Step 3 NOT AUTHORIZED — Step 4 NOT AUTHORIZED — GOVERNANCE acquired transiently then released UNOWNED — no implementation lane — no sidecar candidate — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — EXEC-01C6A remains MACHINE BLOCKER ENFORCED / sidecar startCondition=NOT_READY UNCHANGED / not reopened / not admitted / not LANE-DONE / not LOCKED — PM2-FENCE-01 remains COMPLETE AND LOCKED (OUTCOME_BLOCKED under M3) — BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON (`GLOBAL_EXECUTION_ENABLED=true`) — PREVIEW-STOP-UI-STAGING-01 remains COMPLETE AND LOCKED — product-visible Harness remains FUTURE/gated — decision target NONE this window. Previous: **Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-17 — Step 1 COMPLETE (registration / control-plane only) — Step 2 NOT AUTHORIZED — Step 3 NOT AUTHORIZED — Step 4 NOT AUTHORIZED — GOVERNANCE acquired transiently then released UNOWNED — no implementation lane — no sidecar candidate — Lane 1 EMPTY — Lane 2 EMPTY — Lane 3 DISABLED — EXEC-01C6A remains MACHINE BLOCKER ENFORCED / sidecar startCondition=NOT_READY UNCHANGED / not reopened / not admitted / not LANE-DONE / not LOCKED — PM2-FENCE-01 remains COMPLETE AND LOCKED (OUTCOME_BLOCKED under M3) — BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON (`GLOBAL_EXECUTION_ENABLED=true`) — PREVIEW-STOP-UI-STAGING-01 remains COMPLETE AND LOCKED — product-visible Harness remains FUTURE/gated — decision target NONE this window
 **Task ID:** HARNESS-RESTART-GOV-01
 **Title:** Decide the safe path to resume Harness after Builder completion
 **Family:** AGENT PLATFORM / EXEC (bounded GOVERNANCE decision container after Builder closeout; not a product frontier; not an EXEC-01C6A reopen; not PM2-FENCE-01; not Harness/tool-loop enablement)
@@ -78657,19 +78657,21 @@ nature=GOVERNANCE
 **Classification:** CURRENT required governance decision; product-visible Harness remains FUTURE/gated. Machine productClass is not encoded on a sidecar candidate because this task is GOVERNANCE.
 **Lifecycle:** 4-STEP GOVERNANCE (risky / path-selection):
 1. Step 1 — registration — COMPLETE — 2026-09-17 — control-plane only; freeze identity and the three decision options; no implementation; no admission; no stage-start; no runtime procedure; no EXEC-01C6A reopen.
-2. Step 2 — stage-start / freeze options and evidence — NOT AUTHORIZED.
+2. Step 2 — stage-start / freeze options and evidence — COMPLETE — 2026-09-17 — Stage-start: `docs/HARNESS-RESTART-GOV-01-STAGE-START.md` — A/B/C options and evidence thresholds frozen; OUTCOME_SELECTED=NONE; no implementation; no EXEC-01C6A reopen.
 3. Step 3 — decision record of exactly one frozen path — NOT AUTHORIZED.
 4. Step 4 — independent verification / checkpoint / lock — NOT AUTHORIZED.
 **Start condition:** READY (satisfied for this GOVERNANCE registration). NOT ADMITTED to an implementation lane. Occupies no implementation lane. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. EXEC-01C6A sidecar `startCondition=NOT_READY` remains UNCHANGED. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. PM2-FENCE-01 remains COMPLETE AND LOCKED / OUTCOME_BLOCKED.
 **Depends on (canonical / human):** Keith 2026-09-17 authorization of this named decision-container registration after Builder closeout. BUILDER-LIVE-GATE-01 COMPLETE AND LOCKED (gate LEFT ON). PREVIEW-STOP-UI-STAGING-01 COMPLETE AND LOCKED (Stop Preview UI live-proven). Public preview stop HTTP 200 JSON live-proven. Vite/static preview live-proven. AGENT-PLATFORM-EXEC-01C6A-PM2-FENCE-01 COMPLETE AND LOCKED (OUTCOME_BLOCKED under M3). AGENT-PLATFORM-EXEC-01C6A remains MACHINE BLOCKER ENFORCED / startCondition=NOT_READY. Does not depend on unfinished implementation output from another admitted lane. Unlocked EXEC-01C6A / EXEC-01C6 / EXEC-01C are not machine dependencies and are not reopened.
 **Depends on (machine sidecar `dependsOn`):** none — GOVERNANCE; no implementation candidate. Unlocked EXEC-01C6A / EXEC-01C6 / EXEC-01C MUST NOT appear in machine `dependsOn`.
 **Primary write scope (Step 1, this write):** `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body; `docs/control-plane/SATURATION_PROOF.json` only as validator output. No sidecar candidate. Occupancy remains EMPTY / GOVERNANCE UNOWNED at end of this write. `docs/control-plane/lane-saturation-state.json` occupancy/candidates/lockedTaskIds unchanged. No application source. No test file. No stage-start. No checkpoint. No operator bundle. No runtime procedure. No Git.
-**Primary write scope (Steps 2–4):** not authorized now.
+**Primary write scope (Step 2, 2026-09-17):** `docs/HARNESS-RESTART-GOV-01-STAGE-START.md`; `TASKS.md` CURRENT EXECUTION BOARD fields; this registry body; `docs/control-plane/SATURATION_PROOF.json` only if the validator regenerates it. No sidecar candidate change. Occupancy remains EMPTY / GOVERNANCE UNOWNED at end of this write. No application source. No test file. No operator bundle. No runtime procedure. No Git. No EXEC-01C6A reopen. Previous: **Primary write scope (Steps 2–4):** not authorized now.
+**Primary write scope (Steps 3–4):** not authorized now.
 **Mutexes / resources (Step 1, registration):** GOVERNANCE held only for this control-plane registration then released UNOWNED. No implementation mutex. No runtime mutex. GOVERNANCE must not appear on any IMPLEMENTATION candidate mutex list. Occupancy EMPTY.
+**Mutexes / resources (Step 2, stage-start):** GOVERNANCE held only for this control-plane stage-start write then released UNOWNED. No implementation mutex. No runtime mutex. Occupancy EMPTY.
 **Hot-file leases:** none.
 **Shared contracts:** none frozen/mutated. Frozen catalog ID `HARNESS_ENTITLEMENT_PROOF_V1` remains FROZEN and is not consumed or mutated by this GOVERNANCE task.
 **Evidence class:** GOVERNANCE
-**Revert isolation:** Step 1 revert = discard this child's board/registry/stanza additions and restore Lane 1 / Lane 2 EMPTY and GOVERNANCE UNOWNED. Must not mutate EXEC-01C6A prepared artifacts (`services/ai-service/scripts/canary-01c6a-stub-submit.ts`, `services/ai-service/scripts/canary-01c6a-xai-negative.ts`, `docs/AGENT-PLATFORM-EXEC-01C6A-CANARY-EVIDENCE.md`). Cannot invalidate locked BUILDER-LIVE-GATE-01 / PREVIEW-STOP-UI-STAGING-01 / PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01 / PREVIEW-NODE-STAGING-APPLY-01 / PREVIEW-STOP-01 / BUILDER-CREDIT-UX-01 / PM2-FENCE-01 / EXEC-01A / 01B / 01C1..01C5B2 / IDENTITY-01 / SCHEMA-01 / KEY-REVOKE-01 / GOV-AUTH-03 evidence. Parent EXEC-01C6A sidecar `startCondition=NOT_READY` must remain. Lane 1 and Lane 2 remain EMPTY.
+**Revert isolation:** Step 1 revert = discard this child's board/registry/stanza additions and restore Lane 1 / Lane 2 EMPTY and GOVERNANCE UNOWNED. Step 2 revert = discard `docs/HARNESS-RESTART-GOV-01-STAGE-START.md` plus Step 2 lifecycle edits in `TASKS.md` / this body. Must not mutate EXEC-01C6A prepared artifacts (`services/ai-service/scripts/canary-01c6a-stub-submit.ts`, `services/ai-service/scripts/canary-01c6a-xai-negative.ts`, `docs/AGENT-PLATFORM-EXEC-01C6A-CANARY-EVIDENCE.md`). Cannot invalidate locked BUILDER-LIVE-GATE-01 / PREVIEW-STOP-UI-STAGING-01 / PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01 / PREVIEW-NODE-STAGING-APPLY-01 / PREVIEW-STOP-01 / BUILDER-CREDIT-UX-01 / PM2-FENCE-01 / EXEC-01A / 01B / 01C1..01C5B2 / IDENTITY-01 / SCHEMA-01 / KEY-REVOKE-01 / GOV-AUTH-03 evidence. Parent EXEC-01C6A sidecar `startCondition=NOT_READY` must remain. Lane 1 and Lane 2 remain EMPTY.
 **saturationClass:** not applicable (GOVERNANCE; no sidecar candidate required)
 **productClass:** CURRENT
 **futureAuthorization:** NONE
@@ -78681,22 +78683,22 @@ nature=GOVERNANCE
 
 **Identifier search:** Repo-wide search for a canonical `HARNESS-RESTART-GOV-01` heading, an `AISB_MACHINE_REG_V1` stanza (`taskId=HARNESS-RESTART-GOV-01`), a current-board occupancy, a sidecar candidate, a `lockedTaskIds` entry, and an equivalent unfinished Harness-restart governance task returned none at HEAD `fdbd2ec5e2ef36db94a9aba6bfe1db8032ddb0e7`. AGENT-PLATFORM-EXEC-01C6A is the blocked IMPLEMENTATION child and is not this decision task. AGENT-PLATFORM-EXEC-01C6A-PM2-FENCE-01 is COMPLETE AND LOCKED (OUTCOME_BLOCKED under M3) and is the predecessor PM2-overlay blocker decision, not this post-Builder path-selection container. AGENT-PLATFORM-EXEC-01C6 / EXEC-01C remain unlocked umbrellas and are not this task. AGENT-PLATFORM-EXEC-01C6B / EXEC-01C7 remain unregistered. HARNESS-RESTART-GOV-01 is the smallest correct next bounded GOVERNANCE ID for the named Harness-resume decision.
 
-**Frozen decision target (exactly one; not chosen in Step 1):**
+**Frozen decision target (exactly one; not chosen in Step 1 or Step 2):**
 A. new fencing/recovery capability so EXEC-01C6A can be reopened later; OR
 B. different bounded Harness child that avoids PM2 process-env overlay; OR
 C. keep Harness parked and choose another CURRENT product slice.
-Step 2 will freeze the options and evidence. Step 3 will select exactly one path. This Step 1 only registers the decision container. OUTCOME_SELECTED=NONE.
+Proof threshold and decision matrix: `docs/HARNESS-RESTART-GOV-01-STAGE-START.md`. Step 2 froze the options and evidence. Step 3, if later authorized, will select exactly one path. OUTCOME_SELECTED=NONE. Source evidence does not force exactly one option.
 
 **Keith-decision boundary:**
 KEITH_DECISION_REQUIRED_BEFORE_REGISTRATION=NO (this window is the authorized registration)
-KEITH_DECISION_REQUIRED_BEFORE_STAGE_START=YES
+KEITH_DECISION_REQUIRED_BEFORE_STAGE_START=NO (Step 2 authorized and COMPLETE 2026-09-17)
 KEITH_DECISION_REQUIRED_BEFORE_CHOOSING_THE_FROZEN_TARGET=YES
 KEITH_DECISION_REQUIRED_BEFORE_CHECKPOINT_LOCK=YES
 KEITH_DECISION_REQUIRED_BEFORE_REOPENING_EXEC_01C6A=YES
 KEITH_DECISION_REQUIRED_BEFORE_HARNESS_ENABLEMENT=YES
 KEITH_DECISION_REQUIRED_BEFORE_STAGING=YES
 KEITH_DECISION_REQUIRED_BEFORE_PM2=YES
-This registration did **not** choose among A / B / C. It does **not** reopen EXEC-01C6A.
+This registration did **not** choose among A / B / C. Step 2 froze A/B/C and kept OUTCOME_SELECTED=NONE. It does **not** reopen EXEC-01C6A.
 
 **Registered purpose (Step 1 — freeze identity only):**
 - Bound the post-Builder Harness-resume choice as its own GOVERNANCE decision container
@@ -78705,7 +78707,7 @@ This registration did **not** choose among A / B / C. It does **not** reopen EXE
 - Occupy no implementation lane and create no sidecar candidate
 
 **This registration does not authorize:**
-Reopening AGENT-PLATFORM-EXEC-01C6A; changing EXEC-01C6A `startCondition=NOT_READY`; Harness/tool-loop flag changes; PM2 overlays; STAGING; ENV; CREDIT; PROVIDER-LIVE; LOCAL-RUNTIME; SSH; Docker; database; Redis; flags; key creation; canary submission; a stage-start; an operator bundle; implementation source; a new runtime procedure; Builder follow-on work; Orchestration UI; Stripe/credit mutation; apex/invites; Git commit/push. Runtime authorization must remain entirely false. Steps 2–4 are **not** authorized.
+Reopening AGENT-PLATFORM-EXEC-01C6A; changing EXEC-01C6A `startCondition=NOT_READY`; Harness/tool-loop flag changes; PM2 overlays; STAGING; ENV; CREDIT; PROVIDER-LIVE; LOCAL-RUNTIME; SSH; Docker; database; Redis; flags; key creation; canary submission; an operator bundle; implementation source; a new runtime procedure; Builder follow-on work; Orchestration UI; Stripe/credit mutation; apex/invites; Git commit/push; selecting A/B/C; registering EXEC-01C6B / EXEC-01C7 / a fencing successor / a non-overlay Harness child / another CURRENT product slice. Runtime authorization must remain entirely false. Steps 3–4 are **not** authorized. Previous: Reopening AGENT-PLATFORM-EXEC-01C6A; changing EXEC-01C6A `startCondition=NOT_READY`; Harness/tool-loop flag changes; PM2 overlays; STAGING; ENV; CREDIT; PROVIDER-LIVE; LOCAL-RUNTIME; SSH; Docker; database; Redis; flags; key creation; canary submission; a stage-start; an operator bundle; implementation source; a new runtime procedure; Builder follow-on work; Orchestration UI; Stripe/credit mutation; apex/invites; Git commit/push. Runtime authorization must remain entirely false. Steps 2–4 are **not** authorized.
 
 **Activation effect:** NONE
 **Rollback boundary:** registration-only; control-plane rollback = discard this child's board/registry/stanza. No implementation to roll back. Dirty EXEC-01C6A prepared artifacts must remain untouched.
@@ -78713,9 +78715,9 @@ Reopening AGENT-PLATFORM-EXEC-01C6A; changing EXEC-01C6A `startCondition=NOT_REA
 **Machine registration (post-epoch):** Present exactly once immediately under this canonical heading (`taskId=HARNESS-RESTART-GOV-01`, `nature=GOVERNANCE`). Enforcement epoch unchanged. No second epoch. Do not duplicate the machine-registration markers elsewhere in this body. Do not create an implementation candidate. Do not register AGENT-PLATFORM-EXEC-01C6B or AGENT-PLATFORM-EXEC-01C7 in this window. Do not reopen AGENT-PLATFORM-EXEC-01C6A.
 
 **Lane / admission:**
-REGISTERED / READY / NOT ADMITTED — GOVERNANCE-only — Step 1 COMPLETE — 2026-09-17. This child does not occupy a lane. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. Occupancy hash `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d`. No sidecar candidate so this ID is not in S. Parent EXEC-01C6A remains `startCondition=NOT_READY` / Test-Admissible=NOT_READY / not in S / not reopened / not admitted / not LANE-DONE / not LOCKED. Do not admit this child to an implementation lane. Do not admit EXEC-01C6A.
+REGISTERED / READY / NOT ADMITTED — GOVERNANCE-only — Step 1 COMPLETE — Step 2 COMPLETE — 2026-09-17. This child does not occupy a lane. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. Occupancy hash `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d`. No sidecar candidate so this ID is not in S. Parent EXEC-01C6A remains `startCondition=NOT_READY` / Test-Admissible=NOT_READY / not in S / not reopened / not admitted / not LANE-DONE / not LOCKED. Do not admit this child to an implementation lane. Do not admit EXEC-01C6A.
 
-HARNESS-RESTART-GOV-01 Step 1 does NOT: reopen EXEC-01C6A; change EXEC-01C6A `startCondition=NOT_READY`; start implementation; admit a lane; acquire STAGING / PM2 / ENV / CREDIT / PROVIDER-LIVE / LOCAL-RUNTIME / AI-SERVICE / GATEWAY / FRONTEND; create a stage-start, operator bundle, implementation code, or runtime procedure; enable Harness flags; make provider calls or credit mutations; create keys; alter PM2; run a canary; declare LANE-DONE or LOCKED; register AGENT-PLATFORM-EXEC-01C6B or AGENT-PLATFORM-EXEC-01C7; choose among A / B / C; edit PRD.md / ARCHITECTURE.md / CLAUDE.md / AGENTS.md / validator / mutex catalog / EXEC-01C6A sidecar candidate / application source / canary scripts / canary evidence in this window.
+HARNESS-RESTART-GOV-01 Step 2 does NOT: reopen EXEC-01C6A; change EXEC-01C6A `startCondition=NOT_READY`; select an outcome; start implementation; admit a lane; acquire STAGING / PM2 / ENV / CREDIT / PROVIDER-LIVE / LOCAL-RUNTIME / AI-SERVICE / GATEWAY / FRONTEND; create an operator bundle, implementation code, or runtime procedure; enable Harness flags; make provider calls or credit mutations; create keys; alter PM2; run a canary; declare LANE-DONE or LOCKED; register AGENT-PLATFORM-EXEC-01C6B or AGENT-PLATFORM-EXEC-01C7 or a fencing successor or a non-overlay Harness child or another CURRENT product slice; edit PRD.md / ARCHITECTURE.md / CLAUDE.md / AGENTS.md / validator / mutex catalog / EXEC-01C6A sidecar candidate / application source / canary scripts / canary evidence in this window. Previous: HARNESS-RESTART-GOV-01 Step 1 does NOT: reopen EXEC-01C6A; change EXEC-01C6A `startCondition=NOT_READY`; start implementation; admit a lane; acquire STAGING / PM2 / ENV / CREDIT / PROVIDER-LIVE / LOCAL-RUNTIME / AI-SERVICE / GATEWAY / FRONTEND; create a stage-start, operator bundle, implementation code, or runtime procedure; enable Harness flags; make provider calls or credit mutations; create keys; alter PM2; run a canary; declare LANE-DONE or LOCKED; register AGENT-PLATFORM-EXEC-01C6B or AGENT-PLATFORM-EXEC-01C7; choose among A / B / C; edit PRD.md / ARCHITECTURE.md / CLAUDE.md / AGENTS.md / validator / mutex catalog / EXEC-01C6A sidecar candidate / application source / canary scripts / canary evidence in this window.
 
 #### Acceptance Criteria
 
@@ -78750,7 +78752,34 @@ Step 1 (Registration):
 - [x] No Git commit/push by the worker
 
 Step 2 (stage-start / freeze options and evidence):
-- [ ] NOT AUTHORIZED this window
+- [x] Keith authorized Step 2 only — 2026-09-17 — freeze A/B/C options and evidence; do not select an outcome
+- [x] stage-start created: `docs/HARNESS-RESTART-GOV-01-STAGE-START.md`
+- [x] option A frozen (fencing/recovery evidence; why PM2-FENCE-01 OUTCOME_BLOCKED is not enough; what must be registered later before reopening EXEC-01C6A)
+- [x] option B frozen (non-overlay definition; later child shape; allowed evidence class and mutexes; no Harness/live flag mutation this task)
+- [x] option C frozen (parking evidence; Next-Work Selection Protocol / do not invent work to fill lanes)
+- [x] Builder-completion evidence recorded as closeout-only (BUILDER-LIVE-GATE-01 LEFT ON; PREVIEW-STOP-UI-STAGING-01 locked); does not force A/B/C
+- [x] decision matrix frozen (R1/R2/R3/R0) so Step 3 can select exactly one outcome without inventing runtime facts
+- [x] outcome NONE this window (source evidence does not force exactly one option)
+- [x] EXEC-01C6A remains startCondition=NOT_READY
+- [x] does not reopen EXEC-01C6A
+- [x] no operator bundle mutation
+- [x] no implementation code
+- [x] no new runtime procedure
+- [x] no implementation candidate
+- [x] GOVERNANCE acquired transiently then released UNOWNED
+- [x] no implementation mutex acquired
+- [x] Lane 1 EMPTY
+- [x] Lane 2 EMPTY
+- [x] Lane 3 DISABLED
+- [x] EXEC-01C6B not registered
+- [x] EXEC-01C7 not registered
+- [x] dirty EXEC-01C6A prepared artifacts preserved untouched
+- [x] validator PASS
+- [x] no application source, test, environment, sidecar candidate, operator bundle, checkpoint, PRD, ARCHITECTURE, or migration file changes except this stage-start and control-plane mirrors
+- [x] no runtime/staging/browser/provider/credit/SSH/PM2
+- [x] no local application tests / local runtime
+- [x] PRIVATE-BETA invariant unchanged
+- [x] No Git commit/push by the worker
 
 Step 3 (decision record of exactly one frozen path):
 - [ ] NOT AUTHORIZED this window
@@ -78764,3 +78793,5 @@ Step 4 (independent verification / checkpoint / lock):
 
 **Step 1 HEAD:** `fdbd2ec5e2ef36db94a9aba6bfe1db8032ddb0e7` (branch main; working tree clean at window open)
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, canary submission=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, canary scripts mutated=0, evidence doc mutated=0, local application tests=0, tests executed=0 except lane-capacity validator, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0, later child tasks registered=0 (EXEC-01C6B and EXEC-01C7 not registered), EXEC-01C6A reopened=0, outcome selected=0. Governance writes: TASKS.md, this registry body; sidecar occupancy/candidates/lockedTaskIds unchanged at end-state (EMPTY / GOVERNANCE UNOWNED; no candidate added); SATURATION_PROOF.json only as validator output.
+**Step 2 HEAD:** `8eb40707c1dfdc903354c1c3b88049030b7b63a4` (branch main; registration commit; occupancy EMPTY / GOVERNANCE UNOWNED)
+**Step 2 activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, canary submission=0, operator-bundle mutation=0, canary scripts mutated=0, evidence doc mutated=0, sidecar mutation=0, application source=0, local application tests=0, tests executed=0 except lane-capacity validator, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, browser=0, later child tasks registered=0 (EXEC-01C6B and EXEC-01C7 not registered), EXEC-01C6A reopened=0, outcome selected=0. Governance writes: `docs/HARNESS-RESTART-GOV-01-STAGE-START.md`, TASKS.md, this registry body; sidecar occupancy/candidates/lockedTaskIds unchanged at end-state (EMPTY / GOVERNANCE UNOWNED; no candidate added); SATURATION_PROOF.json only as validator output.
