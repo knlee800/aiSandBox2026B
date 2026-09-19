@@ -237,7 +237,7 @@ jobs:
           [ "$rc" -eq 0 ] || { echo "sha256sum -c exit=$rc" >> "$out"; fail=1; }
           if grep -Evq '^[0-9a-f]{64}  [^ ]+$' -- "$TOOL/SHA256SUMS"; then echo "FAIL: malformed manifest line" >> "$out"; fail=1; fi
           if grep -q $'\r' -- "$TOOL/SHA256SUMS"; then echo "FAIL: CR in manifest" >> "$out"; fail=1; fi
-          listed="$(awk '{print $2}' -- "$TOOL/SHA256SUMS" | LC_ALL=C sort)"
+          listed="$(awk '{print $2}' "$TOOL/SHA256SUMS" | LC_ALL=C sort)"
           tracked="$(git ls-files -- "$TOOL" | sed "s#^$TOOL/##" | awk '$0 != "SHA256SUMS"' | LC_ALL=C sort)"
           if [ "$listed" = "$tracked" ]; then echo "ok: listed set equals tracked set minus SHA256SUMS" >> "$out"; else echo "FAIL: listed set differs from tracked set" >> "$out"; fail=1; fi
           f1hash="$(sha256sum -- "$F1" | cut -d' ' -f1)" || { echo "SUMS_FAIL"; exit 1; }
