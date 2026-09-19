@@ -79952,3 +79952,194 @@ Step 4 (independent verification / checkpoint / lock) — COMPLETE 2026-09-19 (s
 **Step 2 second correction (2026-09-19; same uncommitted freeze; baseline `b3b2f10895c2b90954db31dafaa6da6e2e0427be`; stage-start §13):** remaining rule conflicts corrected with §12 improvements preserved: coverage authority (POLICY §3.4 item 1 fixes the key list, not per-app coverage; explicit proposals M-1 / M-2; no default; refusing AM-5 adopts nothing; APPROVE_M1 / APPROVE_M2 / APPROVE_AMENDED); recording (option classes F / L / C; Rule F-2 redaction; Rule F-3 amendment review; D3-ALT proposal only); §7.5b cross-decision compatibility (AM-3↔D4, AM-5↔I-1, AM-1↔D6, matrix↔D8; CONTRADICTORY → OPEN); AM-2 refusal cannot disable the verifier window check; UNCLASSIFIED material keeps eligibility unresolved; A1-F (c) requires valid comparison evidence with MISMATCH → separately authorized corrective decision → subsequent accepted MATCH; Rule C-0 cause claim removed; §8 D5 reason corrected; cases V13a–V20 added; §10 re-performed. No decision selected. Steps 3–4 remain NOT AUTHORIZED. Same four-path write set. Activity: no Python, tests, runtime, host access, subagents, or Git mutation.
 **Step 1 HEAD:** `2c01bff9ebdb00c84c3ff30af23201a636f60096` (branch main; working tree clean at window open; matches the expected baseline)
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, canary submission=0, vendor-source fetch=0, live inspection=0, workflow dispatched=0, r3 transferred/extracted/executed=0, F1 transferred/executed=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, canary scripts mutated=0, evidence doc mutated=0, operator-bundle mutation=0, verifier-tree mutation=0, workflow mutated=0, `.gitattributes` mutated=0, local application tests=0, tests executed=0 except lane-capacity validator, mocks=0, imports=0, builds=0, installs=0, browser=0, subagents=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, sidecar edits=0, lockedTaskIds edits=0, predecessor body edits=0, EXEC-01C6A body/candidate edits=0, locked freeze edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, later child tasks registered=0 (EXEC-01C6B / EXEC-01C7 / acquisition / C1 amendment not registered), EXEC-01C6A reopened=0, outcome selected=0, A1 adopted=0, A2 adopted=0, baseline designated=0, requirement waived=0, stage-start created=0. Governance writes: TASKS.md this registration's current board fields, this registry body; sidecar occupancy/candidates/lockedTaskIds unchanged at end-state (EMPTY / GOVERNANCE UNOWNED; no candidate added); SATURATION_PROOF.json only as validator output.
+
+### PM2-RECOVERY-ACQUISITION-01 — Define the bounded PM2 observation-acquisition procedure and evidence handling
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=PM2-RECOVERY-ACQUISITION-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-19 — Step 1 COMPLETE (registration / control-plane only) — Steps 2–4 NOT AUTHORIZED — no stage-start created — no procedure selected or approved — no live acquisition, transfer or runtime authorization — GOVERNANCE / DECISION — no implementation lane — no sidecar candidate — occupancy EMPTY — GOVERNANCE acquired transiently then released UNOWNED — LOCKED=NO
+**Task ID:** PM2-RECOVERY-ACQUISITION-01
+**Title:** Define the bounded PM2 observation-acquisition procedure and evidence handling
+**Family:** AGENT PLATFORM / EXEC (bounded GOVERNANCE / DECISION container on the observation-acquisition procedure required by locked PM2-RECOVERY-VERIFY-01 §3.4; not a product frontier; not an EXEC-01C6A reopen; not PM2-FENCE-01; not a fence; not an implementation task; not Harness/tool-loop enablement; not a C1 EXEC-01C6A amendment; not a live acquisition; not a P6 execution; not B(H) construction)
+**Parent task:** none. Not a child of AGENT-PLATFORM-EXEC-01C6A. Does **not** reopen EXEC-01C6A. Unlocked EXEC-01C6A / EXEC-01C6 / EXEC-01C MUST NOT appear in machine `dependsOn`. Locked PM2-RECOVERY-VERIFY-01 (bounded comparison-only verifier mechanics; fake-only LOCAL-TESTS; NOT APPROVED FOR LIVE USE; §3.4 acquisition prerequisite identified, not registered) is the verifier-contract predecessor and is not this task. Locked PM2-RECOVERY-BASELINE-GOV-01 (A1 ADOPTED as contract text only; A2 ADOPTED as REQUIRED provenance policy only; first-run contract DEFINED; no usable first-run path; D7=LEDGER_ONLY; §15 lock of the decision record) is the baseline-governance predecessor and is not this task. Locked PM2-RECOVERY-POLICY-01 (S1 contract only; P4/P5 forms; E1–E5; HOLD and separately authorized recovery-attempt distinction; §5.6 PM2-client side-effect model) is the policy predecessor and is not this task. Locked PM2-DAEMON-INVESTIGATION-01 (PASS_WITH_DISCLOSED_LIMITATIONS; PM2-client auto-launch / reconnect / queue findings) is the client-findings predecessor and is not this task. Locked AGENT-PLATFORM-EXEC-01C6A-PM2-FENCE-01, HARNESS-RESTART-GOV-01, PM2-OVERLAY-UNKNOWN-01, BUILDER-LIVE-GATE-01, EXEC-01C6 stage-start, and EXEC-01C6A CANARY-EVIDENCE remain locked references and are not this task.
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE / DECISION — does NOT consume Lane 1 or Lane 2 — no implementation candidate
+**Development program:** CURRENT — Keith 2026-09-19 named this GOVERNANCE / DECISION registration as the next bounded prerequisite for PM2 recovery: define the observation-acquisition procedure required by locked PM2-RECOVERY-VERIFY-01 §3.4. Light CURRENT/FUTURE check per CLAUDE.md Next-Work Selection Protocol (named task; no frontier audit): `PRD.md` keeps product-visible Harness / tool-loop FUTURE/gated; the current private-beta promise remains single-shot Builder Ask/Build; BUILDER-LIVE-GATE-01 left the Ask gate ON. This registration is a Keith-named decision container, not a new product-priority selection, not Harness enablement, not a live acquisition, and not a source or value designation.
+**Product-visible Harness capability:** FUTURE / gated / disabled / unavailable to users. Unchanged.
+**Classification:** CURRENT required governance decision; product-visible Harness remains FUTURE/gated. Machine productClass is not encoded on a sidecar candidate because this task is GOVERNANCE.
+**Lifecycle:** 4-STEP GOVERNANCE (risky / security-sensitive / decision; the procedure and authorization boundary remain unresolved so a reviewable freeze precedes Keith's explicit decision):
+1. Step 1 — registration — COMPLETE — 2026-09-19 — control-plane only; freeze identity and the scope boundaries below for the later Step 2 freeze; no procedure selected or approved; no live acquisition; no stage-start; no implementation; no admission; no EXEC-01C6A reopen.
+2. Step 2 — procedure freeze (stage-start: acquisition contract; PM2-client side effects; operational authorization boundary; evidence handling; missing-tooling determination) — NOT AUTHORIZED.
+3. Step 3 — explicit Keith decision — NOT AUTHORIZED.
+4. Step 4 — independent verification / checkpoint / lock — NOT AUTHORIZED.
+**Stage-start / freeze:** none. Expected later if Step 2 is authorized: `docs/PM2-RECOVERY-ACQUISITION-01-STAGE-START.md`.
+**Start condition:** READY (satisfied for this GOVERNANCE registration). NOT ADMITTED to an implementation lane. Occupies no implementation lane. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. EXEC-01C6A sidecar `startCondition=NOT_READY` remains UNCHANGED. BUILDER-LIVE-GATE-01 remains COMPLETE AND LOCKED / gate LEFT ON. PM2-RECOVERY-VERIFY-01, PM2-RECOVERY-BASELINE-GOV-01, PM2-RECOVERY-POLICY-01, PM2-DAEMON-INVESTIGATION-01, PM2-FENCE-01, HARNESS-RESTART-GOV-01, and PM2-OVERLAY-UNKNOWN-01 remain COMPLETE AND LOCKED and are not edited.
+**Depends on (canonical / human):** Keith 2026-09-19 authorization of this named registration. Locked verifier-contract predecessor: `docs/PM2-RECOVERY-VERIFY-01-STAGE-START.md` §3.4 (acquisition prerequisite identified, not registered, not authorized), §4.0–§4.3 / §4.8 / §4.10 (input contract, raw-jlist byte hashing, observation-meta schema, declared host / `pm2_home` / `daemon_pid` / timestamps, Mode A verified vs Mode B declared hash), §4.6 / §6 (tokens RESTRICTED / equality oracles; raw jlist class C; LEDGER_ONLY interaction), §5.4 / §9.3 / §10 (non-claims; live-use limitations; acquisition outside the verifier). Locked baseline-governance predecessor: `docs/PM2-RECOVERY-BASELINE-GOV-01-STAGE-START.md` A1 ADOPTED as contract text only; A2 ADOPTED as REQUIRED provenance policy only; first-run contract DEFINED; no usable first-run path (Rule A-1); D7=LEDGER_ONLY; §15 lock of the decision record, not of host state; observation never becomes an expected baseline automatically (Rule C-4). Locked policy predecessor: `docs/PM2-RECOVERY-POLICY-01-STAGE-START.md` §4 (HOLD; separately authorized recovery-attempt distinction; canary blocked), §4.4 (E1–E5), §5.1 / §5.2 (P4/P5 forms), §5.6 (PM2-client side-effect model: connection, auto-reconnect, possible daemon auto-launch; jlist does not merge client env; `restart --update-env` merge is not a jlist effect). Locked client-findings predecessor: `docs/PM2-DAEMON-INVESTIGATION-01-STAGE-START.md` §12.2 (Client.start auto-launch; Socket.connect auto-reconnect; queue replay; no request timeout; a socket/PID pre-check is point-in-time and does not prove a later invocation side-effect-free). Does not depend on unfinished implementation output from another admitted lane. Unlocked EXEC-01C6A / EXEC-01C6 / EXEC-01C are not machine dependencies and are not reopened.
+**Depends on (machine sidecar `dependsOn`):** none — GOVERNANCE; no implementation candidate. Unlocked EXEC-01C6A / EXEC-01C6 / EXEC-01C MUST NOT appear in machine `dependsOn`. Locked predecessors are recorded in the human/canonical Depends on field and in board fields `PM2_RECOVERY_ACQUISITION_01_VERIFIER_PREDECESSOR`, `PM2_RECOVERY_ACQUISITION_01_BASELINE_GOV_PREDECESSOR`, `PM2_RECOVERY_ACQUISITION_01_POLICY_PREDECESSOR`, `PM2_RECOVERY_ACQUISITION_01_DAEMON_INVESTIGATION_PREDECESSOR`. No machine dependency is manufactured for any GOVERNANCE predecessor. VERIFY-01 is an IMPLEMENTATION predecessor present in `lockedTaskIds` but is **not** placed in a sidecar `dependsOn` because this task has no implementation candidate. Nothing is added to sidecar `lockedTaskIds`; no sidecar candidate exists because this task has no implementation candidate.
+**Primary write scope (Step 1, this write):** `TASKS.md` CURRENT EXECUTION BOARD fields for this registration only; this registry body; `docs/control-plane/SATURATION_PROOF.json` only as validator output. No sidecar candidate. Occupancy remains EMPTY / GOVERNANCE UNOWNED at end of this write. `docs/control-plane/lane-saturation-state.json` occupancy/candidates/lockedTaskIds unchanged. No predecessor body edit. No EXEC-01C6A body/candidate edit. No operator bundle, verifier tree, workflow, `.gitattributes`, or archive edit. No locked freeze edit. No application source. No test file. No stage-start. No checkpoint. No runtime procedure. No Git.
+**Primary write scope (Steps 2–4):** not authorized now. Expected later: a stage-start document `docs/PM2-RECOVERY-ACQUISITION-01-STAGE-START.md` (Step 2), decision record and checkpoint in that document (Steps 3–4), board fields, this body, validator output. Any collector implementation, live acquisition, transfer, verifier live run, B(H) construction, C1 EXEC-01C6A amendment, or host-evidence acceptance is separately registered scope, never this task's write set.
+**Mutexes / resources (Step 1, registration):** GOVERNANCE held only for this control-plane registration then released UNOWNED. No implementation mutex. No runtime mutex (STAGING / ENV / CREDIT / PROVIDER-LIVE / LOCAL-RUNTIME / AI-SERVICE / GATEWAY / CONTAINER-MANAGER / FRONTEND / I18N / PACKAGE / COMPOSE / MIGRATION not acquired). GOVERNANCE must not appear on any IMPLEMENTATION candidate mutex list. Occupancy EMPTY.
+**Hot-file leases:** none.
+**Shared contracts:** none frozen/mutated. Frozen catalog ID `HARNESS_ENTITLEMENT_PROOF_V1` remains FROZEN and is not consumed or mutated. The PM2-FENCE-01 §6 policy contract, POLICY-01 A4 wording, BASELINE-GOV-01 A1/A2 adopted text, and VERIFY-01 input/output contracts are locked references; this Step 1 does not amend them.
+**Evidence class:** GOVERNANCE
+**Revert isolation:** Step 1 revert = discard this task's board/registry/stanza additions and restore Lane 1 / Lane 2 EMPTY and GOVERNANCE UNOWNED. Must not mutate EXEC-01C6A prepared artifacts, the operator bundle, `ops/pm2-recovery-verify/`, `.github/workflows/pm2-recovery-verify.yml`, `.github/workflows/pm2-overlay-unknown-verify.yml`, or `.gitattributes`. Cannot invalidate locked PM2-RECOVERY-VERIFY-01 / PM2-RECOVERY-BASELINE-GOV-01 / PM2-RECOVERY-POLICY-01 / PM2-OVERLAY-UNKNOWN-01 / PM2-DAEMON-INVESTIGATION-01 / HARNESS-RESTART-GOV-01 / PM2-FENCE-01 / BUILDER-LIVE-GATE-01 evidence. EXEC-01C6A sidecar `startCondition=NOT_READY` must remain. Lane 1 and Lane 2 remain EMPTY.
+**saturationClass:** not applicable (GOVERNANCE; no sidecar candidate required)
+**productClass:** CURRENT
+**futureAuthorization:** NONE
+**writeSetPrecision:** not applicable (GOVERNANCE; no implementation candidate)
+**admissionUncertain:** not applicable (GOVERNANCE; no implementation candidate)
+**exclusiveCapacity:** false
+**runtimeNeeds:** none
+**i18n:** false
+
+**Identifier search:** Repo-wide search for a canonical `PM2-RECOVERY-ACQUISITION-01` heading, an `AISB_MACHINE_REG_V1` stanza (`taskId=PM2-RECOVERY-ACQUISITION-01`), any `PM2-RECOVERY-ACQUISITION` identifier, a current-board occupancy, a sidecar candidate, a `lockedTaskIds` entry, and an equivalent unfinished observation-acquisition / jlist-acquisition / VERIFY-01 §3.4 procedure task returned none at HEAD `6557e8a7f068b54ba8f0a82dbeeb7dc161819d59`. The strings "acquisition prerequisite", "observation acquisition", and VERIFY-01 §3.4 appear only as identified-unregistered prerequisite prose inside locked `docs/PM2-RECOVERY-VERIFY-01-STAGE-START.md`, locked `docs/PM2-RECOVERY-BASELINE-GOV-01-STAGE-START.md`, and locked predecessor bodies (`PM2_RECOVERY_BASELINE_GOV_01_ACQUISITION_REGISTERED=NO`); those are not registrations. PM2-RECOVERY-VERIFY-01 is COMPLETE AND LOCKED (bounded verifier mechanics; §3.4 identified, not registered) and is the contract predecessor, not this task. PM2-RECOVERY-BASELINE-GOV-01 is COMPLETE AND LOCKED (A1/A2 contract only) and is not this task. PM2-RECOVERY-POLICY-01 is COMPLETE AND LOCKED (S1 contract only) and is not this task. PM2-DAEMON-INVESTIGATION-01 is COMPLETE AND LOCKED and is not this task. AGENT-PLATFORM-EXEC-01C6A is the blocked IMPLEMENTATION child (startCondition=NOT_READY) and is not an acquisition procedure. AGENT-PLATFORM-EXEC-01C6 / EXEC-01C remain unlocked umbrellas and are not this task. PREVIEW-STOP-STAGING-APPLY-01 is an unrelated READY implementation candidate. AGENT-PLATFORM-EXEC-01C6B / EXEC-01C7 remain unregistered. Equivalent unfinished task: NONE. PM2-RECOVERY-ACQUISITION-01 is the smallest correct bounded GOVERNANCE / DECISION ID for the named VERIFY-01 §3.4 observation-acquisition procedure.
+
+**Registered purpose (Step 1 — freeze identity and later Step 2 scope boundaries only):**
+Define the bounded observation-acquisition procedure and evidence-handling rules required before the LOCKED verifier can be used on a real host. Registration decides nothing. Step 2, if authorized, freezes a reviewable procedure and authorization boundary. Step 3, if authorized, records Keith's explicit decision against that freeze. Adopting a procedure does **not** authorize its later use, establish host CLEAN, satisfy the EXEC-01C6A reopen gate, designate B(H) values, acquire host evidence, run the verifier, transfer a tool, or permit any reopening or canary.
+
+**Acceptance object:** a procedure and authorization-boundary decision only. No collector implementation. No execution.
+
+**Scope of the later freeze (recorded now; nothing below is adopted, selected, or authorized here):**
+
+**A. Acquisition contract**
+- Define how raw PM2 `jlist` bytes and observation metadata would be obtained and bound to a capture under later explicit authorization.
+- Align with the LOCKED verifier's exact input contract (`docs/PM2-RECOVERY-VERIFY-01-STAGE-START.md` §4.0–§4.3, §4.8, §4.10): Mode A binds `jlist_sha256` over the exact raw bytes that are then decoded and parsed; observation-meta schema `aisb.pm2-dual-env-observation-meta.v1` carries `observation_id`, `host`, optional `pm2_home` / `daemon_pid`, `captured_at`, `captured_by`, `acquisition_record`, and `jlist_sha256`; timestamps `YYYY-MM-DDTHH:MM:SSZ`.
+- Treat identity fields (`host`, `pm2_home`, `daemon_pid`, `captured_at`, `captured_by`) as **declared evidence**. Do not claim authenticated identity, daemon continuity, quiescence, fence proof (F1–F5), or command fate. VERIFY-01 §4.8 compares declared strings and integers; it does not authenticate host, daemon, operator, or time.
+- Identify what evidence supports metadata and where uncertainty stays explicit. Do not manufacture values.
+
+**B. PM2-client side effects**
+- `jlist` is a PM2 client invocation (POLICY-01 §5.6; DAEMON-INVESTIGATION-01 §12.2): it connects to `rpc.sock`, may auto-reconnect with backoff, has no request timeout in the client path, may enqueue and replay on connect, and may auto-launch a daemon from the client's environment if `pingDaemon` fails. It is **not** side-effect-free.
+- A socket/PID pre-check is point-in-time and does **not** prove the subsequent invocation side-effect-free.
+- Do not attribute `restart --update-env` client-env merging (`ActionMethods.js` l.405 / `API.js` l.1361–1369) to `jlist`. POLICY-01 §5.6 records that merge as specific to `_operate` / `--update-env`, not to `jlist` / `getMonitorData`.
+- Define prerequisites, stop conditions, and treatment of an absent, changed, or uncertain daemon using the locked findings (including Client.start auto-launch if no daemon answers).
+- No daemon restart, resurrect, save, update, `restart --update-env`, or other mutation is authorized by this task.
+
+**C. Operational authorization**
+- Separate adopting the procedure from authorizing its later use.
+- Identify required P4/P5 evidence (POLICY-01 §5.1 / §5.2), STAGING/PM2 ownership, E1/E2 records, exclusivity assumptions (E3/E4) and E5 invalidation.
+- Preserve host/app HOLD (POLICY-01 §4.1) and the separately authorized recovery-attempt distinction (POLICY-01 §4.2). Acquisition does not permit a canary. Comparison-only `jlist` is PERMITTED only when separately authorized; this registration does not supply that authorization.
+- Acquisition approval must not imply approval to run the offline verifier, transfer a tool, construct B(H), or accept host evidence.
+
+**D. Evidence handling**
+- Raw `jlist` may contain unrelated environment values and secrets. It is restricted input (VERIFY-01 §6.4 class C), not a publishable report.
+- Define private capture, access permissions, retention, integrity, transfer boundaries and failure handling before any live use.
+- No raw values or restricted tokens in chat, Git, console logs, workflow artifacts or governance records under this task.
+- Respect the adopted LEDGER_ONLY convention (BASELINE-GOV-01 D7): tokens exist only inside the reference / operator ledger (0600, off-repo); governance records reference ids and file hashes only.
+- Do not read `dump.pm2` or existing vault/journal/marker material. Any discovery or inspection of recovery material needs its own explicit scope and authorization.
+- Keep acquisition metadata distinct from baseline authority: an observation never becomes an expected baseline automatically (BASELINE-GOV-01 Rule C-4).
+
+**E. Missing tooling and scope limits**
+- Determine during the freeze whether the procedure can be expressed using an authorized manual process or requires a bounded implementation child.
+- Name any missing mechanism as a dependency; do not implement, register or admit a child in this Step 1.
+- Do not label an unimplemented procedure executable.
+- Keep configuration-source reads (`.env`, ecosystem, systemd), host-history investigation, B(H) construction, per-run reference conversion and per-key adoption outside this registration's scope.
+
+**Controlling constraints (carried into registration; apply to Steps 2–4 if later authorized):**
+
+1. **Declared ≠ authenticated.** Host / `pm2_home` / `daemon_pid` / timestamps / `captured_by` are operator-declared. Binding the SHA-256 of raw bytes to the meta file proves byte identity of that file pair, not host identity, daemon continuity, or capture-time truth.
+
+2. **A pre-check is not a side-effect proof.** Observing `rpc.sock` holders or a daemon PID before a `jlist` does not make the invocation side-effect-free. Auto-launch, reconnect, and queue replay remain possible on the invocation itself.
+
+3. **HOLD is preserved.** Acquisition, even if later authorized, does not clear UNKNOWN, does not move (H, A) out of HOLD, and is not a recovery attempt. A recovery attempt remains a separately Keith-authorized object. A canary remains blocked.
+
+4. **Adopting ≠ authorizing use.** A Step 3 decision that adopts procedure text does not authorize STAGING, PM2, live `jlist`, verifier execution, tool transfer, B(H) construction, S2 host-evidence acceptance, EXEC-01C6A reopen, or a canary.
+
+5. **Restricted material stays off the governance record.** Raw `jlist`, env values, and tokens follow LEDGER_ONLY. This task produces no capture and publishes no restricted value.
+
+6. **Observation is not a baseline.** Capture metadata and raw bytes, if later obtained under a separate authorization, remain observations. Adoption as expectation is a later explicit per-(app, key) Keith decision under A2, not an automatic consequence of acquisition.
+
+**Keith-decision boundary:**
+KEITH_DECISION_REQUIRED_BEFORE_REGISTRATION=NO (this window is the authorized registration)
+KEITH_DECISION_REQUIRED_BEFORE_STAGE_START=YES (Step 2 NOT AUTHORIZED)
+KEITH_DECISION_REQUIRED_BEFORE_OUTCOME_SELECTION=YES (Step 3 NOT AUTHORIZED; Step 3 is itself the explicit Keith decision against the frozen procedure)
+KEITH_DECISION_REQUIRED_BEFORE_CHECKPOINT_LOCK=YES (Step 4 NOT AUTHORIZED)
+KEITH_DECISION_REQUIRED_BEFORE_LIVE_ACQUISITION=YES (outside this Step 1; not implied by later procedure adoption)
+KEITH_DECISION_REQUIRED_BEFORE_STAGING=YES
+KEITH_DECISION_REQUIRED_BEFORE_PM2=YES
+KEITH_DECISION_REQUIRED_BEFORE_VERIFIER_LIVE_RUN=YES
+KEITH_DECISION_REQUIRED_BEFORE_TOOL_TRANSFER=YES
+KEITH_DECISION_REQUIRED_BEFORE_BH_CONSTRUCTION=YES
+KEITH_DECISION_REQUIRED_BEFORE_HOST_EVIDENCE_ACCEPTANCE=YES
+KEITH_DECISION_REQUIRED_BEFORE_REOPENING_EXEC_01C6A=YES
+KEITH_DECISION_REQUIRED_BEFORE_CANARY=YES
+KEITH_DECISION_REQUIRED_BEFORE_HARNESS_ENABLEMENT=YES
+KEITH_DECISION_REQUIRED_BEFORE_IMPLEMENTATION_CHILD=YES (if Step 2 names a missing mechanism; not registered here)
+This registration did **not** select a procedure, approve live use, create a stage-start, register an implementation child, or authorize STAGING / PM2.
+
+**This registration does not authorize:**
+Reopening AGENT-PLATFORM-EXEC-01C6A; changing EXEC-01C6A `startCondition=NOT_READY`; selecting or approving an acquisition procedure; live `jlist` or any PM2 client invocation; running the offline verifier; transferring a tool; constructing B(H); accepting host evidence; waiving P2/P3; P7 residual-risk acceptance; host CLEAN; latch deletion, journal rewriting, directory rotation, proof override, or an automatic CLEAN claim; registering or executing a collector implementation child; amending EXEC-01C6A (C1) or any locked predecessor; a verifier schema change; Harness/tool-loop flag changes; PM2 overlays; STAGING; ENV; CREDIT; PROVIDER-LIVE; LOCAL-RUNTIME; SSH; Docker; database; Redis; flags; key creation; canary submission; staging transfer, extraction, or execution of r3 or F1; workflow dispatch; vendor-source fetch; live inspection; `.env` / `dump.pm2` / vault / journal / marker access; Git commit/push; registering EXEC-01C6B / EXEC-01C7 / a fence successor / a collector child / another CURRENT product slice. Runtime authorization must remain entirely false. Steps 2–4 are **not** authorized.
+
+**Activation effect:** NONE
+**Rollback boundary:** registration-only; control-plane rollback = discard this task's board/registry/stanza. No implementation to roll back. Dirty or prepared EXEC-01C6A artifacts, the operator bundle, the verifier tree, the workflows, and locked freezes must remain untouched.
+
+**Machine registration (post-epoch):** Present exactly once immediately under this canonical heading (`taskId=PM2-RECOVERY-ACQUISITION-01`, `nature=GOVERNANCE`). Enforcement epoch unchanged. No second epoch. Do not duplicate the machine-registration markers elsewhere in this body. Do not create an implementation candidate. Do not register AGENT-PLATFORM-EXEC-01C6B or AGENT-PLATFORM-EXEC-01C7 in this window. Do not reopen AGENT-PLATFORM-EXEC-01C6A. Do not register a collector implementation child in this window.
+
+**Lane / admission:**
+REGISTERED / READY / NOT ADMITTED — GOVERNANCE-only — Step 1 COMPLETE — 2026-09-19. This task does not occupy a lane. Lane 1 EMPTY. Lane 2 EMPTY. Lane 3 DISABLED. Occupancy hash `sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d`. No sidecar candidate so this ID is not in S. EXEC-01C6A remains `startCondition=NOT_READY` / Test-Admissible=NOT_READY / not in S / not reopened / not admitted / not LANE-DONE / not LOCKED. Do not admit this task to an implementation lane. Do not admit EXEC-01C6A.
+
+PM2-RECOVERY-ACQUISITION-01 Step 1 does NOT: select or approve a procedure; authorize live acquisition; run `jlist` or any PM2 client; run the verifier; transfer a tool; construct B(H); accept host evidence; treat an observation as a baseline; waive P2/P3; claim absence of recorded dispatch proves host state; delete a latch, rewrite a journal, rotate a directory, override a proof, or claim CLEAN; treat comparison MATCH as restoration success or command fate; register a collector child or C1 amendment; reopen EXEC-01C6A; change EXEC-01C6A `startCondition=NOT_READY`; create a stage-start; prove F1–F5; accept residual daemon-buffer risk (P7); attest host CLEAN; approve r3 or F1 for live use or transfer; admit a lane; acquire STAGING / PM2 / ENV / CREDIT / PROVIDER-LIVE / LOCAL-RUNTIME / AI-SERVICE / GATEWAY / CONTAINER-MANAGER / FRONTEND; run tests, mocks, imports, builds, installs, SSH, staging, PM2, browser, provider/credit, workflow dispatch, or subagents; enable Harness flags; run a canary; declare EXEC-01C6A LANE-DONE or LOCKED; register AGENT-PLATFORM-EXEC-01C6B or AGENT-PLATFORM-EXEC-01C7; edit PRD.md / ARCHITECTURE.md / CLAUDE.md / AGENTS.md / validator / mutex catalog / predecessor bodies / EXEC-01C6A body or sidecar candidate / lane-saturation-state.json / lockedTaskIds / operator bundle / verifier tree / workflow / locked freezes / application source / canary scripts / canary evidence in this window.
+
+#### Acceptance Criteria
+
+Step 1 (Registration):
+- [x] canonical ID PM2-RECOVERY-ACQUISITION-01 verified unused (no heading, stanza, `PM2-RECOVERY-ACQUISITION` identifier, board occupancy, sidecar candidate, locked ID, or equivalent unfinished observation-acquisition / jlist-acquisition / VERIFY-01 §3.4 procedure task)
+- [x] equivalent unfinished task NONE
+- [x] verifier predecessor recorded as PM2-RECOVERY-VERIFY-01 COMPLETE AND LOCKED (§3.4 identified not registered; input contract / hashing / identity / redaction / live-use limits)
+- [x] baseline-governance predecessor recorded as PM2-RECOVERY-BASELINE-GOV-01 COMPLETE AND LOCKED (A1 ADOPTED contract only; A2 ADOPTED policy only; DEFINED; not usable; D7=LEDGER_ONLY; §15 lock)
+- [x] policy predecessor recorded as PM2-RECOVERY-POLICY-01 COMPLETE AND LOCKED (P4/P5 forms; E1–E5; HOLD and recovery-attempt distinction; §5.6 client model)
+- [x] daemon-investigation predecessor recorded as PM2-DAEMON-INVESTIGATION-01 COMPLETE AND LOCKED (relevant PM2-client findings only)
+- [x] locked predecessors referenced only; no machine `dependsOn` manufactured for GOVERNANCE predecessors; no implementation candidate; VERIFY-01 not placed in sidecar `dependsOn`
+- [x] 4-step GOVERNANCE / DECISION lifecycle recorded (registration → procedure freeze → explicit Keith decision → checkpoint)
+- [x] acceptance object recorded as procedure and authorization-boundary decision only (no collector implementation; no execution)
+- [x] scope of later freeze recorded (A acquisition contract; B PM2-client side effects; C operational authorization; D evidence handling; E missing tooling / scope limits)
+- [x] controlling constraints 1–6 recorded (declared ≠ authenticated; pre-check ≠ side-effect-free; HOLD preserved; adopting ≠ authorizing use; LEDGER_ONLY; observation ≠ baseline)
+- [x] OUTCOME_SELECTED=NONE; PROCEDURE_SELECTED=NO; PROCEDURE_APPROVED=NO
+- [x] A1 ADOPTED (contract only) / A2 ADOPTED (policy only) preserved; first-run contract DEFINED; no usable path
+- [x] P2/P3 remain binding; P7_ACCEPTED=NO; HOST_CLEAN=NO; host UNCLEAN / HOLD; reopen gate UNSATISFIED
+- [x] I-4 / I-5, reference preparation, C1 and S2 evidence remain outstanding
+- [x] does not reopen EXEC-01C6A
+- [x] must not change EXEC-01C6A `startCondition=NOT_READY`
+- [x] no collector implementation child registered or admitted
+- [x] no live acquisition, transfer, verifier run, B(H) construction, or host-evidence acceptance authorized
+- [x] does not authorize STAGING, PM2, ENV, CREDIT, PROVIDER-LIVE, LOCAL-RUNTIME, SSH, Docker, database, Redis, flags, key creation, canary submission, r3/F1 transfer/extraction/execution, workflow dispatch, vendor-source fetch, live inspection, `.env` / `dump.pm2` / vault / journal / marker access
+- [x] no stage-start created
+- [x] no predecessor body, EXEC-01C6A body, sidecar, lockedTaskIds, operator bundle, verifier tree, workflow, or locked freeze edited
+- [x] no implementation code; no new runtime procedure
+- [x] post-epoch machine stanza exactly once (`nature=GOVERNANCE`)
+- [x] no implementation candidate
+- [x] GOVERNANCE acquired transiently then released UNOWNED
+- [x] no implementation or runtime mutex acquired
+- [x] Lane 1 EMPTY
+- [x] Lane 2 EMPTY
+- [x] Lane 3 DISABLED
+- [x] EXEC-01C6A sidecar startCondition remains NOT_READY
+- [x] EXEC-01C6B not registered
+- [x] EXEC-01C7 not registered
+- [x] occupancy EMPTY
+- [x] sidecar occupancy/candidates/lockedTaskIds unchanged
+- [x] validator PASS (`scripts/validate-lane-capacity.ps1`; `SATURATION_PROOF.json` rewritten by the validator only)
+- [x] Git diff / scope check: exactly `TASKS.md`, `TASKS_BACKLOG_FULL.md`, `docs/control-plane/SATURATION_PROOF.json` changed
+- [x] no application source, test, environment, stage-start, checkpoint, PRD, ARCHITECTURE, or migration file changes
+- [x] no local application execution, tests, mocks, imports, builds, installs, SSH, staging, PM2, browser, provider/credit, workflow dispatch, Git mutations, or subagents
+- [x] PRIVATE-BETA invariant unchanged
+- [x] Builder gate ON unchanged
+- [x] Harness flags unchanged
+- [x] No Git commit/push by the worker
+
+Step 2 (procedure freeze / stage-start):
+- [ ] NOT AUTHORIZED
+
+Step 3 (explicit Keith decision):
+- [ ] NOT AUTHORIZED
+
+Step 4 (independent verification / checkpoint / lock):
+- [ ] NOT AUTHORIZED
+
+**Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. INVITATION_EXECUTION_PERMITTED=NO. Unchanged.
+
+**Lane 3 invariant:** Lane 3 remains DISABLED. Unchanged.
+
+**Step 1 HEAD:** `6557e8a7f068b54ba8f0a82dbeeb7dc161819d59` (branch main; working tree clean at window open; matches the expected baseline)
+**Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, canary submission=0, vendor-source fetch=0, live inspection=0, `.env` / `dump.pm2` / vault / journal / marker access=0, workflow dispatched=0, r3 transferred/extracted/executed=0, F1 transferred/executed=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, canary scripts mutated=0, evidence doc mutated=0, operator-bundle mutation=0, verifier-tree mutation=0, workflow mutated=0, `.gitattributes` mutated=0, local application tests=0, tests executed=0 except lane-capacity validator, mocks=0, imports=0, builds=0, installs=0, browser=0, subagents=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, sidecar edits=0, lockedTaskIds edits=0, predecessor body edits=0, EXEC-01C6A body/candidate edits=0, locked freeze edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, later child tasks registered=0 (EXEC-01C6B / EXEC-01C7 / collector child / C1 amendment not registered), EXEC-01C6A reopened=0, procedure selected=0, procedure approved=0, live acquisition=0, baseline designated=0, observation adopted=0, requirement waived=0, stage-start created=0. Governance writes: TASKS.md this registration's current board fields, this registry body; sidecar occupancy/candidates/lockedTaskIds unchanged at end-state (EMPTY / GOVERNANCE UNOWNED; no candidate added); SATURATION_PROOF.json only as validator output.
