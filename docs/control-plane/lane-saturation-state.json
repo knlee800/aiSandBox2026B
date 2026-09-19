@@ -946,6 +946,30 @@
       "runtimeNeeds": [],
       "admissionUncertain": false,
       "writeSetPrecision": "EXACT"
+    },
+    {
+      "taskId": "PM2-RECOVERY-VERIFY-01",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "4-STEP",
+      "status": "READY",
+      "startCondition": "READY",
+      "saturationClass": "FORCING",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": [
+        "PM2-OVERLAY-UNKNOWN-01"
+      ],
+      "mutexes": [],
+      "writePaths": [],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "LOCAL-TESTS",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": [],
+      "admissionUncertain": true,
+      "writeSetPrecision": "PROVISIONAL"
     }
   ],
   "lockedTaskIds": ["GOV-OS-03", "GOV-OS-03R1", "AGENT-PLATFORM-CREATE-01F", "I18N-SHELL-07", "AGENT-PLATFORM-EXEC-01A", "AGENT-PLATFORM-EXEC-01B", "GOV-AUTH-03", "AGENT-PLATFORM-EXEC-01C1", "AGENT-PLATFORM-EXEC-01C2", "AGENT-PLATFORM-EXEC-01C3", "AGENT-PLATFORM-EXEC-01C4", "AGENT-PLATFORM-EXEC-01C4B", "AGENT-PLATFORM-EXEC-01C5", "AGENT-PLATFORM-EXEC-01C5R1", "AGENT-PLATFORM-EXEC-01C5B1", "AGENT-PLATFORM-EXEC-01C5B2", "AGENT-PLATFORM-EXEC-01C5B", "AGENT-PLATFORM-EXEC-01C-KEY-REVOKE-01", "AGENT-PLATFORM-EXEC-01C-SCHEMA-01", "AGENT-PLATFORM-EXEC-01C-IDENTITY-01", "AGENT-PLATFORM-ORCH-ARCH-01", "AGENT-PLATFORM-ORCH-PERSIST-01", "PREVIEW-NODE-01", "PREVIEW-NODE-STAGING-01", "PREVIEW-NODE-STAGING-APPLY-01", "BUILDER-CREDIT-UX-01", "PREVIEW-STOP-01", "PREVIEW-STOP-PUBLIC-ROUTE-01", "PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01", "PREVIEW-STOP-UI-01", "PREVIEW-STOP-UI-STAGING-01", "PM2-OVERLAY-UNKNOWN-01"],
