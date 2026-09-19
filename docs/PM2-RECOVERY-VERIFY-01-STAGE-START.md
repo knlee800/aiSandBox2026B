@@ -2,7 +2,7 @@
 
 **Task:** PM2-RECOVERY-VERIFY-01 — Bounded comparison-only PM2 dual-field overlay verifier
 **Nature:** IMPLEMENTATION (4-step, high-risk; operator-side comparison evidence tooling)
-**Current status:** **Step 2 COMPLETE — FREEZE — 2026-09-19; CORRECTED 2026-09-19 before implementation (§14).** Step 1 COMPLETE (registration `f020941afa3258ef80e9cad6939051fa26c3e4a2`, board/backlog/sidecar only). **Steps 3–4 NOT AUTHORIZED.** Nothing implemented, executed, dispatched, transferred, or admitted. Occupancy EMPTY. `admissionUncertain=true`. EXEC-01C6A `startCondition=NOT_READY` unchanged.
+**Current status:** **COMPLETE AND LOCKED (bounded verifier mechanics only) — 2026-09-19 — Step 4 attempt 3 run `35429687692` @ `aff201fa8981e16f47a3141bcf8c53a36a9282c3` established every §9.2 criterion (§14.8; §11 filled).** Step 1 COMPLETE (`f020941afa3258ef80e9cad6939051fa26c3e4a2`); Step 2 COMPLETE (freeze; corrected §14–§14.1.1); Step 3 COMPLETE (§14.2–§14.3); Step 4 COMPLETE after two failed attempts retained as history (§14.4–§14.7). `VERIFIER_SHA256=f3f05e57ac83034e175e115cc296a8f41f73519d23eb2618b55ffcd44def32fc`. Fake-only LOCAL-TESTS evidence only (§9.3); NOT APPROVED FOR LIVE USE; not transferred to or run on any host. Occupancy EMPTY; sidecar candidate `LOCKED` / `admissionUncertain=false`. A1 / A2 OPEN; P6 not executed; EXEC-01C6A `startCondition=NOT_READY` unchanged. Previous: **Step 2 COMPLETE — FREEZE — 2026-09-19; CORRECTED 2026-09-19 before implementation (§14).** Step 1 COMPLETE (registration `f020941afa3258ef80e9cad6939051fa26c3e4a2`, board/backlog/sidecar only). **Steps 3–4 NOT AUTHORIZED.** Nothing implemented, executed, dispatched, transferred, or admitted. Occupancy EMPTY. `admissionUncertain=true`. EXEC-01C6A `startCondition=NOT_READY` unchanged.
 **Step 2 base HEAD:** `f020941afa3258ef80e9cad6939051fa26c3e4a2` (branch main; working tree clean at window open; Step 1 registration commit `docs: register pm2 recovery verifier`; matches the expected baseline named in the authorization)
 **Governance decision predecessor (LOCKED):** PM2-RECOVERY-POLICY-01 — `docs/PM2-RECOVERY-POLICY-01-STAGE-START.md` §3.4 (B(H) requirements), §4.3 (prohibited in every outcome), §5.3 (P6 comparison-only procedure), §5.5 (manual vs verifier), §5.6 (PM2 client side-effect model), §13 (K-B3=VERIFIER direction only; A1 / A2 OPEN), §14 (lock)
 **Implementation predecessor (LOCKED):** PM2-OVERLAY-UNKNOWN-01 — `docs/PM2-OVERLAY-UNKNOWN-01-STAGE-START.md` §3.4 (packaging), §4.8 (dual-field verification), §15.3 / §16.3 (evidence limits; lock); r3 tree `ops/aisb-01c6a-operator-bundle/` at `17a9855bc9ada298bcdbaf029eb208a3868a425d`; archive `aisb-01c6a-operator-review-r3-unknown-latch.zip` SHA-256 `e4473a8003ddad2f61747f7f8a576d4079302fd37f4c6a9ec2bf301b3d6ec2a2` (NOT APPROVED FOR LIVE USE; preserved unchanged by this task)
@@ -667,15 +667,18 @@ No clearance mechanism, proof provider, override, or latch-clearing path is intr
 
 ---
 
-## 11. Frozen values to be filled at Step 4 (placeholders; not evidence)
+## 11. Frozen values filled at Step 4 (2026-09-19; run `35429687692`; evidence preserved outside the repository at `C:\Users\knlee\aisb-k4-evidence\pm2-recovery-verify\run-35429687692\`)
 
 ```
-STEP_3_COMMIT=<sha>            (F1–F6 written)
-STEP_4_RUN_ID=<id> ATTEMPT=<n> (single authorized dispatch)
-VERIFIER_SHA256=<hex>          (F1 blob at STEP_3_COMMIT; == SHA256SUMS entry == runner sha256sum == report self_sha256)
-TESTS_RAN=<N> DEFINED=<N> FAILURES=0 ERRORS=0 SKIPPED=0
-R3_BYTES_UNCHANGED=40/40
+STEP_3_COMMIT=aff201fa8981e16f47a3141bcf8c53a36a9282c3   (F1–F6 as corrected by §14.3 / §14.5 / §14.7; the SHA named in the attempt-3 authorization; local HEAD = origin/main = GitHub main at dispatch)
+STEP_4_RUN_ID=35429687692 ATTEMPT=1                       (single authorized workflow_dispatch on main 2026-09-19T07:34:18Z; job 105861926299; conclusion=success; dispatch_sha == checkout_sha; attempts 1–2 = runs 35427018420 / 35428399072, FAILED, retained as history §14.4 / §14.6)
+VERIFIER_SHA256=f3f05e57ac83034e175e115cc296a8f41f73519d23eb2618b55ffcd44def32fc   (F1 blob 22769d248db8477a100fefd9dc7d4d2e9469befd at STEP_3_COMMIT hashed locally over `git cat-file blob` bytes == SHA256SUMS entry == runner sha256sums-verify.txt verifier_sha256 == report self_sha256 asserted by passing T8 on the same checkout bytes)
+TESTS_RAN=56 DEFINED=56 FAILURES=0 ERRORS=0 SKIPPED=0    (final status OK; groups T1=4 T2=3 T3=3 T4=14 T5=4 T6=8 T7=4 T8=3 T9=3 T10=4 T11=3 T12=3; problems=[]; unittest.exit=0; 6.930 s)
+R3_BYTES_UNCHANGED=40/40                                  (TRACKED_BYTES_UNCHANGED; snapshots identical; porcelain empty; tripwire log empty)
+REDACTION_GATE=CLEARED files=13 scanned_bytes=22076       (cleared artifact pm2-recovery-verify-35429687692-1: exactly 14 files = 13 gate-cleared + SUMMARY.md; no -FAILURE artifact; steps 13 / 15 skipped)
 ```
+
+Previous (placeholders as frozen at Step 2): `STEP_3_COMMIT=<sha>`, `STEP_4_RUN_ID=<id> ATTEMPT=<n>`, `VERIFIER_SHA256=<hex>`, `TESTS_RAN=<N> DEFINED=<N> FAILURES=0 ERRORS=0 SKIPPED=0`, `R3_BYTES_UNCHANGED=40/40`.
 
 ---
 
@@ -697,7 +700,9 @@ STEP_2_CORRECTION_2=APPLIED_2026-09-19 (§14.1; §8.3 evidence handling; contrac
 ACQUISITION_PREREQUISITE=IDENTIFIED_NOT_REGISTERED_NOT_AUTHORIZED
 A1_STATUS=OPEN  A2_STATUS=OPEN  BASELINE_DESIGNATED=NO
 P6_EXECUTED=NO  HOST_CLEAN=NO  REOPEN_GATE_SATISFIED=NO  EXEC_01C6A_START_CONDITION=NOT_READY (unchanged)
-STEP_3=NOT AUTHORIZED  STEP_4=NOT AUTHORIZED  LOCKED=NO
+STEP_3=COMPLETE (2026-09-19; §14.2–§14.3)  STEP_4=COMPLETE (2026-09-19; run 35429687692 @ aff201fa8981e16f47a3141bcf8c53a36a9282c3; §14.8)  LOCKED=YES (bounded verifier mechanics only; §9.3 limits carried; §14.8)
+STEP_4_ATTEMPT_HISTORY=run 35427018420 @ 8186de3a… FAILED step 5 (§14.4, F6 fix §14.5); run 35428399072 @ c3bc92d4… FAILED step 8 (§14.6, F2/F4 fix §14.7); run 35429687692 @ aff201fa… SUCCESS (§14.8)
+Previous (as frozen at Step 2): STEP_3=NOT AUTHORIZED  STEP_4=NOT AUTHORIZED  LOCKED=NO
 ```
 
 ---
@@ -814,3 +819,28 @@ F2 `ops/pm2-recovery-verify/tests/test_compare_dual_env.py` only:
    Static scan of F2 found no other `assertNotIn(".pm2", …)` occurrence. Mismatch, missing-field, identity and result assertions are unchanged. No test added, skipped or removed (56 `test_t<N>_*` methods).
 
 F4 `SHA256SUMS`: only the `tests/test_compare_dual_env.py` entry regenerated by static PowerShell hashing (`059e25d7c685823dca529f631c0279af9f29d16191d1a18631f50852f5a22420`). The other three members (`.gitattributes`, `README.md`, `compare_dual_env.py`) are byte-identical to HEAD. F1, F3, F5, F6, r3 and `.github/workflows/pm2-overlay-unknown-verify.yml` are untouched. F2 working-tree sha256 `059e25d7c685823dca529f631c0279af9f29d16191d1a18631f50852f5a22420` (83550 B, LF, no CR). Status: F2/F4 correction written; Attempt 1 failed before tests; Attempt 2 failed at step 8 (two F2 assertion defects); behavioural verification still pending a newly authorized Step 4 dispatch. §11 placeholders remain unfilled. §14.4 / §14.5 / §14.6 retained. `EXEC-01C6A` stays `NOT_READY`. No lock.
+
+### 14.8 Step 4 attempt 3 — independent verification / checkpoint / LOCK (2026-09-19; Keith-authorized single dispatch; COMPLETE AND LOCKED — bounded)
+
+**Authorization and identity.** Keith authorized one Step 4 run against exactly `aff201fa8981e16f47a3141bcf8c53a36a9282c3` (`knlee800/aiSandBox2026B`, `pm2-recovery-verify.yml`). Pre-dispatch: local HEAD = fetched `origin/main` = GitHub `main` API = authorized SHA; working tree clean. Duplicate-run check: two prior runs of this workflow (`35427018420` @ `8186de3a…`, `35428399072` @ `c3bc92d4…`; both FAILED; retained as history in §14.4 / §14.6) and zero runs at the authorized SHA. One `workflow_dispatch` on `main` at 2026-09-19T07:34:18Z created run `35429687692` attempt 1, job `105861926299` (`fake-only verification (ubuntu-24.04, Python 3.12)`), created 2026-09-19T07:34:21Z, completed 2026-09-19T07:34:44Z, conclusion `success`. `identity.txt`: `dispatch_sha == checkout_sha == aff201fa8981e16f47a3141bcf8c53a36a9282c3`; `event=workflow_dispatch`; Linux 6.17.0-1022-azure x86_64; CPython 3.12.14. Retries 0; redispatch 0. No lane was admitted and no HOTFILE lease taken (no F1–F6 path written); GOVERNANCE acquired transiently for these §7.1b mirrors then released UNOWNED.
+
+**Step outcomes.** 0 dirs / 1 checkout / 2 setup-python / 3 identity / 4 preflight / 5 sums / 6 before-snapshot / 7 compile / 8 tests / 9 parse / 10 bytes / 11 summary / 12 gate / 14 upload-cleared = `success`; 13 failure-diagnostics and 15 upload-failure = `skipped`. Console (job log, 1064 lines) shows only GitHub's script-header echo and the fixed lines `IDENTITY_OK commit=aff201fa…`, `PREFLIGHT_OK`, `SUMS_OK`, `COMPILE_OK`, `TESTS_FINISHED unittest_exit=0`, `PARSE_OK ran=56 defined=56`, `BYTES_OK`, `REDACTION_GATE CLEARED files=13`; zero lines matching `... ok` / `... FAIL` / `... ERROR` / `Traceback` / `AssertionError` / `Ran N tests`.
+
+**Cleared artifact** `pm2-recovery-verify-35429687692-1` (id 10580825396; 9963 B; digest `sha256:6591f088d475cc539ba3f55afdbcc20db95231f5e5b3a8155e3f94e10bf5f0bb`): exactly fourteen files — `compile.txt`, `identity.txt`, `preflight.txt`, `redaction-gate.txt`, `sha256-after.txt`, `sha256-before.txt`, `sha256sums-verify.txt`, `SUMMARY.md`, `test-summary.json`, `tracked-bytes.txt`, `tripwire.log`, `unittest.exit`, `unittest.log`, `unittest.timing` (13 gate-cleared + `SUMMARY.md`; `redaction-gate.txt` = `REDACTION_GATE_PASS files=13 scanned_bytes=22076`). No `-FAILURE` artifact (artifacts `total_count=1`).
+
+**§9.2 criteria — all ESTABLISHED.** `test-summary.json`: `unittest_exit=0`, `ran=56`, `defined=56`, `final_status_line=OK`, failures/errors/skipped/expected-failures/unexpected-successes all 0, `status_counts.ok=56`, groups T1=4/4 T2=3/3 T3=3/3 T4=14/14 T5=4/4 T6=8/8 T7=4/4 T8=3/3 T9=3/3 T10=4/4 T11=3/3 T12=3/3, `problems=[]`. `unittest.log`: `Ran 56 tests in 6.930s — OK` (the only textual `skipped` is the passing test name `test_t5_unrelated_processes_skipped_and_metadata_ignored … ok`). `unittest.exit` = `0`; `unittest.timing seconds=8`. `compile.txt`: `py_compile exit=0`; `bytecode inside checkout: 0`. `sha256sums-verify.txt`: four `OK` lines; `listed set equals tracked set minus SHA256SUMS`; `verifier_sha256=f3f05e57ac83034e175e115cc296a8f41f73519d23eb2618b55ffcd44def32fc`. `tracked-bytes.txt`: `snapshots identical`, `working tree clean (porcelain empty)`, `tripwire log empty`, `R3_BYTES_UNCHANGED 40/40`, `TRACKED_BYTES_UNCHANGED`; `sha256-before.txt` and `sha256-after.txt` byte-identical (`d20ccd0f…40c3`); `tripwire.log` 0 B. Gate: `steps.gate.outcome=success`, `cleared=true`, `gate_status=CLEARED`.
+
+**Verifier hash chain.** `VERIFIER_SHA256=f3f05e57ac83034e175e115cc296a8f41f73519d23eb2618b55ffcd44def32fc` = F1 blob `22769d248db8477a100fefd9dc7d4d2e9469befd` at `aff201fa…` hashed locally by `Get-FileHash` over `git cat-file blob` bytes redirected to a temporary file (not the working copy) = F4 `SHA256SUMS` entry for `compare_dual_env.py` at `aff201fa…` = runner `sha256sums-verify.txt verifier_sha256` = report `tool.self_sha256`, asserted equal to the hash of the runner's F1 bytes across all five outcomes by the passing `test_t8_non_claims_in_all_five_outcomes` on the SHA256SUMS-verified checkout. The remaining F4 entries (`.gitattributes` `a79691a9…`, `README.md` `13543050…`, `tests/test_compare_dual_env.py` `059e25d7…`) equal the committed blobs. Recorded in §11, the board field `PM2_RECOVERY_VERIFY_01_VERIFIER_SHA256`, and the canonical body; not inside F1.
+
+**Evidence preserved outside the repository** at `C:\Users\knlee\aisb-k4-evidence\pm2-recovery-verify\run-35429687692\`: `run.json`, `run-api.json`, `artifacts-api.json`, `job-log.txt`, `artifacts/pm2-recovery-verify-35429687692-1/*` (14 files with per-file SHA-256 in `STEP4-VERDICT.txt`), `STEP4-VERDICT.txt`. The `run-35427018420` and `run-35428399072` directories are retained unchanged.
+
+**Evidence limits carried into this lock (§9.3, verbatim class).** Fake-only LOCAL-TESTS on a GitHub-hosted runner; the jlist shape was never validated against a live daemon (§2.3); single platform / Python version (ubuntu-24.04 / CPython 3.12.14 — syntax-compatibility with older Pythons is a reviewed rule, not tested); no acquisition procedure exists or is tested and the §3.4 acquisition prerequisite remains unregistered and unauthorized; tokens are equality oracles, not anonymous or non-reversible (§4.6); operator-declared fields are compared, not authenticated (§4.8); Mode B `jlist_sha256` is declared, not verified (§4.10); the redaction gate detects the synthetic sentinel prefix and `sha256:` tokens and cannot detect a leak of an arbitrary string carrying neither marker — code review of the echo boundary (§4.0) remains the primary control, the console before clearance is protected by construction, and GitHub's step-header echo of `run:` scripts is outside the workflow's control; the tool reads its own file for `self_sha256` and does not prove which bytes a future host executes; the tool has not been transferred to or run on any host; **NOT APPROVED FOR LIVE USE until a P6 procedure is separately authorized.**
+
+**This lock does not:** resolve A1 / A2; designate B(H); attest P4 / P5 / P7; establish host CLEAN; prove F1–F5; amend EXEC-01C6A acceptance; satisfy the reopen gate; authorize r3 / r4 or F1 live use or transfer; authorize a canary. `EXEC-01C6A startCondition=NOT_READY` unchanged.
+
+**Control-plane end state.** Sidecar candidate `status=LOCKED`, `admissionUncertain=false` (locked-candidate convention), `writeSetPrecision=EXACT`, `writePaths` / `hotfiles` retained as record; `PM2-RECOVERY-VERIFY-01` appended to `lockedTaskIds`. Occupancy EMPTY (`occupancyHash sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d` unchanged); GOVERNANCE UNOWNED; validator PASS. Activity: workflow dispatched=1 (authorized), retries=0, redispatch=0, GitHub settings / billing changed=0, local Python / tests / imports=0, source edits=0, gate changes=0, staging / SSH / PM2 / acquisition / transfer / provider / credit=0, subagents=0, Git add / commit / push=0 (Keith owns the commit).
+
+```
+STEP_4_VERDICT=ALL_9_2_CRITERIA_ESTABLISHED / COMPLETE AND LOCKED (bounded verifier mechanics; fake-only LOCAL-TESTS evidence only)
+LOCKED=YES  LIVE_USE_APPROVED=NO  TRANSFERRED=NO  A1=OPEN  A2=OPEN  BASELINE_DESIGNATED=NO  P6_EXECUTED=NO  P7_ACCEPTED=NO  HOST_CLEAN=NO  REOPEN_GATE_SATISFIED=NO  CANARY=NO  EXEC_01C6A_START_CONDITION=NOT_READY
+```
