@@ -15,7 +15,8 @@ cross-field **divergence** (`pm2_env[k] ≠ pm2_env.env[k]`, the latent-overlay 
 It is a **comparison core only**:
 
 - no PM2 client, no `subprocess`, no socket, no network, no `argparse`, stdlib only (Python ≥ 3.8 syntax);
-- reads exactly its input files (`O_RDONLY|O_NOFOLLOW`, read once, ≤ 16 MiB each) and writes only the
+- reads exactly its input files (`O_RDONLY|O_NOFOLLOW`, plus `O_NONBLOCK` where defined so a FIFO cannot
+  block the open; regular files only — anything else is `INPUT_UNREADABLE`; read once, ≤ 16 MiB each) and writes only the
   two optional output files requested on the command line, created exclusively (`O_CREAT|O_EXCL|O_NOFOLLOW`,
   mode `0600`) **before any input is read**, refusing to overwrite (`OUTPUT_EXISTS`), and removed on a
   later failure **only if this invocation created them**;
@@ -49,7 +50,9 @@ any input. Any other flag combination, repeated flag, missing value, or non-inte
 `--max-age-seconds` is `USAGE` (exit 2); the supplied argument text is never repeated.
 
 Mode B re-applies every check (strict schema, protected-name rule, field shape, `reference_id` / key set /
-protected-flag equality with the reference, `normalized_at ≥ captured_at`, identity, freshness). A
+protected-flag equality with the reference, `captured_at ≤ normalized_at + 300 s` (the same
+future-skew allowance Mode A applies to `captured_at`, so a Mode A run that accepted a slightly
+future-skewed capture round-trips into Mode B), identity, freshness). A
 normalized record edited after emission cannot be detected.
 
 ## 4. Schemas (summary; exact rules in the stage-start §4)

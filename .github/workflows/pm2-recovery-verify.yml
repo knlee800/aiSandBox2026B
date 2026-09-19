@@ -49,11 +49,12 @@ jobs:
         run: |
           set -u
           mkdir -p "$RUNNER_TEMP/evidence" "$RUNNER_TEMP/publish" "$RUNNER_TEMP/failure" \
-                   "$RUNNER_TEMP/tmp" "$RUNNER_TEMP/pycache" "$RUNNER_TEMP/shims" || exit 80
+                   "$RUNNER_TEMP/gate" "$RUNNER_TEMP/tmp" "$RUNNER_TEMP/pycache" "$RUNNER_TEMP/shims" || exit 80
           {
             echo "EV=$RUNNER_TEMP/evidence"
             echo "PUB=$RUNNER_TEMP/publish"
             echo "FAIL=$RUNNER_TEMP/failure"
+            echo "GATE=$RUNNER_TEMP/gate"
             echo "TMPDIR=$RUNNER_TEMP/tmp"
             echo "PYTHONPYCACHEPREFIX=$RUNNER_TEMP/pycache"
             echo "SHIMS=$RUNNER_TEMP/shims"
@@ -550,9 +551,39 @@ jobs:
             exit 1
           }
           if [ -z "${EV:-}" ] || [ ! -d "$EV" ] || [ -z "${PUB:-}" ] || [ ! -d "$PUB" ]; then not_cleared NOT_CLEARED_EMPTY 0; fi
+          # Inventory scratch lives in $GATE: outside the scanned ($EV) and published ($PUB) trees,
+          # never uploaded. find's stderr is captured there privately (it can echo entry names).
+          if [ -z "${GATE:-}" ] || [ ! -d "$GATE" ]; then not_cleared NOT_CLEARED_ENUMERATION_ERROR 0; fi
           ALLOW=" identity.txt preflight.txt tripwire.log sha256sums-verify.txt sha256-before.txt sha256-after.txt compile.txt unittest.log unittest.exit unittest.timing test-summary.json tracked-bytes.txt SUMMARY.md "
+          # enumerate <dir> <inventory-file>: exit status, stderr and NUL-termination are all checked
+          # explicitly (process-substitution status is invisible to the reading loop). Sets
+          # ENUM_COUNT to the number of NUL-terminated entries; any error -> NOT_CLEARED_ENUMERATION_ERROR.
+          # Called in the step shell itself (not a subshell) so not_cleared terminates the step.
+          ENUM_COUNT=""
+          enumerate() {
+            local dir="$1" inv="$2" frc=0 size="" nuls="" last=""
+            ENUM_COUNT=""
+            : > "$inv" || not_cleared NOT_CLEARED_ENUMERATION_ERROR 0
+            : > "$inv.err" || not_cleared NOT_CLEARED_ENUMERATION_ERROR 0
+            if find "$dir" -mindepth 1 -print0 > "$inv" 2> "$inv.err"; then frc=0; else frc=$?; fi
+            [ "$frc" -eq 0 ] || not_cleared NOT_CLEARED_ENUMERATION_ERROR 0
+            if [ -s "$inv.err" ]; then not_cleared NOT_CLEARED_ENUMERATION_ERROR 0; fi
+            size="$(stat -c %s -- "$inv")" || not_cleared NOT_CLEARED_ENUMERATION_ERROR 0
+            case "$size" in ''|*[!0-9]*) not_cleared NOT_CLEARED_ENUMERATION_ERROR 0 ;; esac
+            if [ "$size" -gt 0 ]; then
+              # a partial listing (no terminating NUL) would be silently dropped by read -d ''
+              last="$(tail -c 1 -- "$inv" | od -An -tx1 | tr -d ' \n')" || not_cleared NOT_CLEARED_ENUMERATION_ERROR 0
+              [ "$last" = "00" ] || not_cleared NOT_CLEARED_ENUMERATION_ERROR 0
+            fi
+            nuls="$(tr -cd '\000' < "$inv" | wc -c | tr -d ' ')" || not_cleared NOT_CLEARED_ENUMERATION_ERROR 0
+            case "$nuls" in ''|*[!0-9]*) not_cleared NOT_CLEARED_ENUMERATION_ERROR 0 ;; esac
+            ENUM_COUNT="$nuls"
+          }
 
-          # 12.1 enumerate
+          # 12.1 enumerate $EV completely (explicit find status; every entry classified)
+          enumerate "$EV" "$GATE/evidence.list"
+          ev_expected="$ENUM_COUNT"
+          case "$ev_expected" in ''|*[!0-9]*) not_cleared NOT_CLEARED_ENUMERATION_ERROR 0 ;; esac
           enumerated=0; bad_type=0; bad_name=0; unreadable=0
           files=()
           while IFS= read -r -d '' f; do
@@ -563,7 +594,9 @@ jobs:
             case "$ALLOW" in *" $rel "*) ;; *) bad_name=1; continue ;; esac
             if [ ! -r "$f" ]; then unreadable=1; continue; fi
             files+=("$f")
-          done < <(find "$EV" -mindepth 1 -print0)
+          done < "$GATE/evidence.list"
+          # the loop must have consumed exactly the entries find wrote
+          [ "$enumerated" -eq "$ev_expected" ] || not_cleared NOT_CLEARED_ENUMERATION_ERROR 0
           [ "$enumerated" -gt 0 ] || not_cleared NOT_CLEARED_EMPTY 0
           [ "$bad_type" -eq 0 ] || not_cleared NOT_CLEARED_UNEXPECTED_TYPE 0
           [ "$bad_name" -eq 0 ] || not_cleared NOT_CLEARED_UNEXPECTED_FILE 0
@@ -606,14 +639,22 @@ jobs:
               mv -f -- "$PUB/unittest.log.bounded" "$PUB/unittest.log" || not_cleared NOT_CLEARED_COPY_FAILED 0
             fi
           fi
-          # rescan the published bytes themselves
+          # 12.4 rescan the published bytes themselves: complete enumeration of $PUB (explicit find
+          # status, no -type filter so an unexpected entry is seen and rejected, not hidden)
+          enumerate "$PUB" "$GATE/publish.list"
+          pub_expected="$ENUM_COUNT"
+          case "$pub_expected" in ''|*[!0-9]*) not_cleared NOT_CLEARED_ENUMERATION_ERROR 0 ;; esac
           pmatch=0; pclean=0; perr=0; pcount=0
           while IFS= read -r -d '' f; do
             pcount=$((pcount+1))
+            rel="${f#"$PUB"/}"
+            case "$rel" in */*) perr=1; continue ;; esac
+            if [ -L "$f" ] || [ ! -f "$f" ] || [ ! -r "$f" ]; then perr=1; continue; fi
             grc=0
             if grep -a -q -E -e 'SENTINEL-NOT-A-SECRET-' -e 'sha256:[0-9a-f]{64}' -- "$f"; then grc=0; else grc=$?; fi
             case "$grc" in 0) pmatch=$((pmatch+1)) ;; 1) pclean=$((pclean+1)) ;; *) perr=1 ;; esac
-          done < <(find "$PUB" -mindepth 1 -maxdepth 1 -type f -print0)
+          done < "$GATE/publish.list"
+          [ "$pcount" -eq "$pub_expected" ] || not_cleared NOT_CLEARED_ENUMERATION_ERROR 0
           if [ "$perr" -ne 0 ] || [ "$pmatch" -ne 0 ] || [ "$pclean" -ne "$pcount" ] || [ "$pcount" -ne "${#files[@]}" ]; then
             not_cleared NOT_CLEARED_PUBLISH_RESCAN "$pmatch"
           fi
@@ -654,7 +695,7 @@ jobs:
           outcome() { case "$1" in success|failure|cancelled|skipped) printf '%s' "$1" ;; *) printf 'UNAVAILABLE' ;; esac; }
           gs="$GATE_STATUS"
           case "$gs" in
-            CLEARED|NOT_CLEARED_INCOMPLETE|NOT_CLEARED_EMPTY|NOT_CLEARED_UNEXPECTED_TYPE|NOT_CLEARED_UNEXPECTED_FILE|NOT_CLEARED_UNREADABLE|NOT_CLEARED_SCANNER_ERROR|NOT_CLEARED_MATCH|NOT_CLEARED_SCAN_INCOMPLETE|NOT_CLEARED_COPY_FAILED|NOT_CLEARED_PUBLISH_RESCAN) ;;
+            CLEARED|NOT_CLEARED_INCOMPLETE|NOT_CLEARED_EMPTY|NOT_CLEARED_ENUMERATION_ERROR|NOT_CLEARED_UNEXPECTED_TYPE|NOT_CLEARED_UNEXPECTED_FILE|NOT_CLEARED_UNREADABLE|NOT_CLEARED_SCANNER_ERROR|NOT_CLEARED_MATCH|NOT_CLEARED_SCAN_INCOMPLETE|NOT_CLEARED_COPY_FAILED|NOT_CLEARED_PUBLISH_RESCAN) ;;
             '') gs="NOT_CLEARED_GATE_SKIPPED" ;;
             *) gs="NOT_CLEARED_INCOMPLETE" ;;
           esac

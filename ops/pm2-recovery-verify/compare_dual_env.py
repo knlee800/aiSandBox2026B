@@ -121,13 +121,15 @@ FIELD_NESTED = "pm2_env.env"
 PLACEHOLDER_UNKNOWN = "<unknown-member>"
 PLACEHOLDER_INVALID = "<invalid-identifier>"
 
-ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
-HOST_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9.-]{0,253}$")
-APP_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
-KEY_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]{0,255}$")
-TOKEN_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
-HEX64_RE = re.compile(r"^[0-9a-f]{64}$")
-TIMESTAMP_RE = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$")
+# Whole-string patterns: always applied with ``fullmatch`` (``$`` alone would admit a trailing newline).
+ID_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}")
+HOST_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9.-]{0,253}")
+APP_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}")
+KEY_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]{0,255}")
+TOKEN_RE = re.compile(r"sha256:[0-9a-f]{64}")
+HEX64_RE = re.compile(r"[0-9a-f]{64}")
+TIMESTAMP_RE = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z")
+MAX_AGE_RE = re.compile(r"[0-9]{1,12}")
 
 FLAG_REFERENCE = "--reference"
 FLAG_OBSERVATION_META = "--observation-meta"
@@ -201,7 +203,7 @@ DETAIL = {
     "PROTECTED_FLAG_MISMATCH": "normalized observation protected flag differs from the reference",
     "OBSERVATION_FIELD_SHAPE": "normalized observation field shape does not match its state and protection flag",
     "PROTECTED_VALUE_IN_OBSERVATION": "a protected key carries a value member in the normalized observation; only a token is permitted",
-    "OBSERVATION_TIMESTAMPS_INCONSISTENT": "normalized_at is earlier than captured_at",
+    "OBSERVATION_TIMESTAMPS_INCONSISTENT": "captured_at is more than 300 seconds after normalized_at",
     "HOST_MISMATCH": "reference host and observation host differ",
     "PM2_HOME_MISSING_IN_OBSERVATION": "reference declares pm2_home but the observation does not",
     "PM2_HOME_MISMATCH": "reference pm2_home and observation pm2_home differ",
@@ -252,7 +254,7 @@ def pointer(*segments: Any) -> str:
 
 
 def parse_timestamp(text: str) -> Optional[datetime.datetime]:
-    if not isinstance(text, str) or not TIMESTAMP_RE.match(text):
+    if not isinstance(text, str) or TIMESTAMP_RE.fullmatch(text) is None:
         return None
     try:
         parsed = datetime.datetime.strptime(text, "%Y-%m-%dT%H:%M:%SZ")
@@ -352,7 +354,11 @@ AppsSpec = Dict[str, Dict[str, KeySpec]]
 
 
 def read_input_bytes(path: str, role: str) -> bytes:
-    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_BINARY", 0)
+    # O_NONBLOCK is POSIX-only. It makes open of a FIFO return immediately when
+    # no writer is present; a later fstat then rejects the non-regular descriptor
+    # before any read. Regular files are unaffected. fcntl is not on the import allowlist,
+    # so the flag is left set; Linux regular-file reads ignore it.
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_BINARY", 0) | getattr(os, "O_NONBLOCK", 0)
     try:
         fd = os.open(path, flags)
     except (OSError, ValueError, TypeError):
@@ -457,7 +463,7 @@ def _req_identifier(col: Collector, obj: Dict[str, Any], name: str, base: str, p
     if not isinstance(value, str):
         col.add("WRONG_TYPE", base + pointer(name))
         return None
-    if not pattern.match(value):
+    if pattern.fullmatch(value) is None:
         col.add("IDENTIFIER_FORMAT", base + pointer(name))
         return None
     return value
@@ -546,7 +552,7 @@ def _validate_field_spec(
         if not isinstance(token, str):
             col.add("WRONG_TYPE", base + pointer("token"))
             return None
-        if not TOKEN_RE.match(token):
+        if TOKEN_RE.fullmatch(token) is None:
             col.add("TOKEN_FORMAT", base + pointer("token"))
             return None
         return FieldSpec(STATE_SET, token=token)
@@ -581,7 +587,7 @@ def _validate_apps(
         col.add("NO_APPS", base)
         return result
     for app_name, app_obj in apps.items():
-        app_ok = APP_RE.match(app_name) is not None
+        app_ok = APP_RE.fullmatch(app_name) is not None
         if not app_ok:
             col.add("IDENTIFIER_FORMAT", base + pointer(PLACEHOLDER_INVALID))
             app_seg = PLACEHOLDER_INVALID
@@ -607,7 +613,7 @@ def _validate_apps(
             continue
         app_keys = {}  # type: Dict[str, KeySpec]
         for key_name, key_obj in keys.items():
-            key_ok = KEY_RE.match(key_name) is not None
+            key_ok = KEY_RE.fullmatch(key_name) is not None
             if not key_ok:
                 col.add("IDENTIFIER_FORMAT", keys_base + pointer(PLACEHOLDER_INVALID))
                 key_seg = PLACEHOLDER_INVALID
@@ -760,7 +766,7 @@ def _validate_observation_common(col: Collector, doc: Dict[str, Any], obs: Obser
         col.add("MISSING_FIELD", pointer("jlist_sha256"))
     elif not isinstance(doc["jlist_sha256"], str):
         col.add("WRONG_TYPE", pointer("jlist_sha256"))
-    elif not HEX64_RE.match(doc["jlist_sha256"]):
+    elif HEX64_RE.fullmatch(doc["jlist_sha256"]) is None:
         col.add("IDENTIFIER_FORMAT", pointer("jlist_sha256"))
     else:
         obs.jlist_sha256 = doc["jlist_sha256"]
@@ -812,8 +818,9 @@ def validate_normalized_observation(doc: Any, obs: Observation, ref: Reference) 
     if col.errors:
         return col.errors
     # Cross-checks against the reference (observation-shape stage)
-    if obs.normalized_at is not None and obs.captured_at is not None and obs.normalized_at < obs.captured_at:
-        col.add("OBSERVATION_TIMESTAMPS_INCONSISTENT", pointer("normalized_at"))
+    if obs.normalized_at is not None and obs.captured_at is not None:
+        if obs.captured_at > obs.normalized_at + datetime.timedelta(seconds=FUTURE_SKEW_SECONDS):
+            col.add("OBSERVATION_TIMESTAMPS_INCONSISTENT", pointer("normalized_at"))
     if obs.reference_id != ref.reference_id:
         col.add("OBSERVATION_REFERENCE_ID_MISMATCH", pointer("reference_id"))
     if set(obs.apps.keys()) != set(ref.apps.keys()):
@@ -1272,7 +1279,7 @@ def parse_argv(argv: List[str]) -> Invocation:
         return inv
     if FLAG_MAX_AGE in seen:
         raw = seen[FLAG_MAX_AGE]
-        if not re.match(r"^[0-9]{1,12}$", raw):
+        if MAX_AGE_RE.fullmatch(raw) is None:
             raise _usage_error("max_age")
         inv.max_age_seconds = int(raw)
     has_ref = FLAG_REFERENCE in seen

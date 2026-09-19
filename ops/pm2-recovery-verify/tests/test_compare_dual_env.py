@@ -654,6 +654,128 @@ class T4Malformed(Base):
                 finally:
                     os.chmod(fx.ref_path, 0o600)
 
+    def test_t4_trailing_newline_and_malformed_identifiers(self):
+        # Whole-string validation: prefix/end-anchor matching must not admit trailing LF/CR.
+        # (Comments, not docstrings: unittest -v would print a docstring line into the log.)
+        self.assertIsNone(cde.ID_RE.fullmatch("ref-1\n"))
+        self.assertIsNotNone(cde.ID_RE.match("ref-1\n"))
+        self.assertIsNone(cde.HOST_RE.fullmatch(HOST + "\r"))
+        self.assertIsNone(cde.TIMESTAMP_RE.fullmatch(TS + "\n"))
+        self.assertIsNone(cde.HEX64_RE.fullmatch(("0" * 64) + "\n"))
+        self.assertIsNone(cde.TOKEN_RE.fullmatch(cde.token_for("x") + "\n"))
+        self.assertIsNone(cde.APP_RE.fullmatch(APP + "\n"))
+        self.assertIsNone(cde.KEY_RE.fullmatch("PLAIN_KEY\n"))
+        self.assertIsNone(cde.MAX_AGE_RE.fullmatch("12\n"))
+        self.assertIsNone(cde.ID_RE.fullmatch("ref 1"))
+        self.assertIsNone(cde.ID_RE.fullmatch("ref-1 "))
+
+        def _absent(probe, *texts):
+            for text in texts:
+                self.assertFalse(probe in text, "invalid identifier leaked into a class-A output")
+
+        fx = Fixture(self.subdir())
+        bad_ref = "badrefidlf"
+        write_json(fx.ref_path, reference(reference_id=bad_ref + "\n"))
+        rc, out, err = run_cli(fx.args())
+        report = self.assert_invalid(rc, out, ["IDENTIFIER_FORMAT"])
+        self.assertIsNone(report["reference"]["reference_id"])
+        self.assertTrue(err.startswith("PM2_DUAL_ENV_COMPARE result=INVALID_INPUT"))
+        self.assertIn("reference=-", err)
+        _absent(bad_ref, out, err)
+        self.assert_leak_free(out, err)
+
+        fx = Fixture(self.subdir())
+        bad_host = "badhostcr"
+        write_json(fx.ref_path, reference(host=bad_host + "\r"))
+        rc, out, err = run_cli(fx.args())
+        report = self.assert_invalid(rc, out, ["IDENTIFIER_FORMAT"])
+        self.assertIsNone(report["reference"]["host"])
+        _absent(bad_host, out, err)
+
+        fx = Fixture(self.subdir())
+        bad_ts = "1999-12-31T23:59:59Z"
+        write_json(fx.ref_path, reference(valid_from=bad_ts + "\n"))
+        rc, out, err = run_cli(fx.args())
+        report = self.assert_invalid(rc, out, ["TIMESTAMP_FORMAT"])
+        self.assertIsNone(report["reference"]["valid_from"])
+        _absent(bad_ts, out, err)
+
+        fx = Fixture(self.subdir())
+        bad_hex = "ab" * 32
+        with open(fx.jlist_path, "rb") as handle:
+            jlist_data = handle.read()
+        write_json(fx.meta_path, meta(jlist_data, jlist_sha256=bad_hex + "\n"))
+        rc, out, err = run_cli(fx.args())
+        report = self.assert_invalid(rc, out, ["IDENTIFIER_FORMAT"])
+        self.assertIsNone(report["observation"]["jlist_sha256"])
+        _absent(bad_hex, out, err)
+
+        fx = Fixture(self.subdir())
+        bad_tok = cde.token_for("token-lf-probe")
+        ref = reference()
+        ref["apps"][APP]["keys"]["XAI_API_KEY"]["pm2_env"]["token"] = bad_tok + "\n"
+        ref["apps"][APP]["keys"]["XAI_API_KEY"]["pm2_env.env"]["token"] = bad_tok + "\n"
+        write_json(fx.ref_path, ref)
+        rc, out, err = run_cli(fx.args())
+        report = self.assert_invalid(rc, out, ["TOKEN_FORMAT"])
+        _absent(bad_tok, out, err)
+        self.assert_leak_free(out, err)
+
+        fx = Fixture(self.subdir())
+        bad_app = "badappnl"
+        write_json(fx.ref_path, reference(apps={bad_app + "\n": {"keys": {"PLAIN_KEY": key(False, fset("plain-value"))}}}))
+        rc, out, err = run_cli(fx.args())
+        report = self.assert_invalid(rc, out, ["IDENTIFIER_FORMAT"])
+        self.assertEqual(report["apps"], {})
+        _absent(bad_app, out, err)
+
+        fx = Fixture(self.subdir())
+        bad_key = "BADKEYNL"
+        write_json(fx.ref_path, reference(apps={APP: {"keys": {bad_key + "\n": key(False, fset("plain-value"))}}}))
+        rc, out, err = run_cli(fx.args())
+        report = self.assert_invalid(rc, out, ["IDENTIFIER_FORMAT"])
+        _absent(bad_key, out, err)
+
+        fx = Fixture(self.subdir())
+        write_json(fx.ref_path, reference(reference_id="ref 1"))
+        rc, out, err = run_cli(fx.args())
+        report = self.assert_invalid(rc, out, ["IDENTIFIER_FORMAT"])
+        self.assertIsNone(report["reference"]["reference_id"])
+        _absent("ref 1", out, err)
+
+        fx = Fixture(self.subdir())
+        rc, out, err = run_cli(fx.args("--max-age-seconds", "123456789\n"))
+        self.assertEqual(rc, 2)
+        self.assertIn('"code": "USAGE"', out)
+        _absent("123456789", out, err)
+
+    def test_t4_fifo_does_not_block(self):
+        # POSIX-only mechanics (the supported target); on other platforms the
+        # regular-file rejection is covered by the directory case above. A plain
+        # return (not skipTest) keeps the workflow parser's no-skip rule intact.
+        if os.name != "posix" or not hasattr(os, "mkfifo"):
+            return
+        fx = Fixture(self.subdir())
+        fifo = os.path.join(fx.directory, "input.fifo")
+        os.mkfifo(fifo, 0o600)
+        try:
+            # No writer is ever attached: without O_NONBLOCK this open would block forever.
+            # The 120 s run_cli timeout bounds the regression if the fix regresses.
+            rc, out, err = run_cli(["--reference", fifo, "--observation-meta", fx.meta_path, "--jlist", fx.jlist_path])
+            report = self.assert_invalid(rc, out, ["INPUT_UNREADABLE"])
+            self.assertTrue(stat.S_ISFIFO(os.stat(fifo).st_mode))
+            self.assertEqual(report["errors"][0]["path"], "")
+            self.assertIn("reference", report["errors"][0]["detail"])
+            self.assertIsNone(report["reference"]["reference_id"])
+            self.assertNotIn(fifo, out)
+            self.assertNotIn(fifo, err)
+            self.assert_leak_free(out, err)
+        finally:
+            try:
+                os.unlink(fifo)
+            except OSError:
+                pass
+
     def test_t4_invalid_input_report_shape(self):
         fx = Fixture(self.subdir())
         write_bytes(fx.ref_path, b"{")
@@ -1371,6 +1493,77 @@ class T12RoundTrip(Base):
         self.assertEqual(emitted_doc["apps"][APP]["keys"]["GONE"]["pm2_env"], {"state": "ABSENT"})
         self.assertEqual(emitted_doc["apps"][APP]["keys"]["PLAIN_KEY"]["pm2_env.env"], {"state": "SET", "value": "other-value"})
         self.assertEqual(emitted_doc["normalized_at"], report_a["evaluated_at"])
+
+    def test_t12_round_trip_future_skew_inside_allowance(self):
+        # captured_at ahead of the normalizing clock by less than 300 s must round-trip A -> B.
+        # Mode A accepts the observation (future check, 300 s); the emitted record keeps the
+        # actual normalization time, which is then EARLIER than captured_at. Mode B must accept
+        # that record under the same 300 s allowance instead of rejecting it as inconsistent.
+        directory = self.subdir()
+        fx = Fixture(directory, meta_over={"captured_at": now_plus(200)})
+        emitted = os.path.join(directory, "normalized-skew.json")
+        rc, out_a, err_a = run_cli(fx.args("--emit-observation", emitted))
+        self.assertEqual(rc, 0)
+        report_a = parse_report(out_a)
+        self.assertEqual(report_a["result"], "MATCH")
+        self.assertTrue(report_a["freshness"]["age_seconds_at_evaluation"] < 0)
+        with open(emitted, "rb") as handle:
+            emitted_doc = json.loads(handle.read().decode("utf-8"))
+        # actual normalization time preserved (not clamped to captured_at, not fabricated)
+        self.assertEqual(emitted_doc["normalized_at"], report_a["evaluated_at"])
+        captured = cde.parse_timestamp(emitted_doc["captured_at"])
+        normalized = cde.parse_timestamp(emitted_doc["normalized_at"])
+        self.assertTrue(captured > normalized, "fixture must exercise captured_at > normalized_at")
+        self.assertTrue((captured - normalized).total_seconds() <= cde.FUTURE_SKEW_SECONDS)
+        rc, out_b, err_b = run_cli(["--reference", fx.ref_path, "--observation", emitted])
+        self.assertEqual(rc, 0)
+        report_b = parse_report(out_b)
+        self.assertEqual(report_b["result"], "MATCH")
+        self.assertEqual(report_b["mode"], "B")
+        self.assertEqual(report_a["apps"], report_b["apps"])
+        self.assertNotIn("OBSERVATION_TIMESTAMPS_INCONSISTENT", out_b)
+        self.assert_leak_free(out_a, err_a, out_b, err_b)
+
+    def test_t12_round_trip_future_skew_beyond_allowance(self):
+        # Beyond 300 s: Mode A refuses (no normalized record emitted); Mode B refuses a record
+        # whose captured_at exceeds normalized_at by more than 300 s; exactly 300 s is accepted.
+        directory = self.subdir()
+        fx = Fixture(directory, meta_over={"captured_at": now_plus(400)})
+        emitted = os.path.join(directory, "never-emitted.json")
+        rc, out_a, _ = run_cli(fx.args("--emit-observation", emitted))
+        self.assert_invalid(rc, out_a, ["OBSERVATION_IN_FUTURE"])
+        self.assertFalse(os.path.exists(emitted), "no normalized record may be emitted on INVALID_INPUT")
+
+        good = Fixture(self.subdir())
+        base = os.path.join(good.directory, "normalized-base.json")
+        rc, _, _ = run_cli(good.args("--emit-observation", base))
+        self.assertEqual(rc, 0)
+        with open(base, "rb") as handle:
+            norm = json.loads(handle.read().decode("utf-8"))
+        normalized = cde.parse_timestamp(norm["normalized_at"])
+
+        beyond = json.loads(json.dumps(norm))
+        beyond["captured_at"] = cde.format_timestamp(normalized + cde.datetime.timedelta(seconds=cde.FUTURE_SKEW_SECONDS + 1))
+        path = write_json(os.path.join(good.directory, "beyond.json"), beyond)
+        rc, out, err = run_cli(["--reference", good.ref_path, "--observation", path])
+        report = self.assert_invalid(rc, out, ["OBSERVATION_TIMESTAMPS_INCONSISTENT"])
+        self.assertEqual(report["mode"], "B")
+        self.assertEqual(report["errors"][0]["path"], "/normalized_at")
+        self.assert_leak_free(out, err)
+
+        boundary = json.loads(json.dumps(norm))
+        boundary["captured_at"] = cde.format_timestamp(normalized + cde.datetime.timedelta(seconds=cde.FUTURE_SKEW_SECONDS))
+        path = write_json(os.path.join(good.directory, "boundary.json"), boundary)
+        rc, out, _ = run_cli(["--reference", good.ref_path, "--observation", path])
+        self.assertEqual(rc, 0)
+        self.assertEqual(parse_report(out)["result"], "MATCH")
+
+        # the ordinary case (normalized_at well after captured_at) is unaffected
+        later = json.loads(json.dumps(norm))
+        later["normalized_at"] = cde.format_timestamp(normalized + cde.datetime.timedelta(seconds=3600))
+        path = write_json(os.path.join(good.directory, "later.json"), later)
+        rc, out, _ = run_cli(["--reference", good.ref_path, "--observation", path])
+        self.assertEqual(rc, 0)
 
 
 if __name__ == "__main__":
