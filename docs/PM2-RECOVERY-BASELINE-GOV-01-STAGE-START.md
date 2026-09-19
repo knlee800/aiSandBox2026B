@@ -2,18 +2,19 @@
 
 **Task:** PM2-RECOVERY-BASELINE-GOV-01 — Decide A1 first-run applicability wording and A2 expected-baseline provenance policy
 **Nature:** GOVERNANCE / DECISION (4-step). No implementation lane. No sidecar candidate.
-**Step:** 3 of 4 COMPLETE — explicit Keith decision recorded against the frozen §7 matrix (§14). Previous: 2 of 4 — reviewable freeze of the A1 / A2 decision object and decision matrix.
+**Step:** 4 of 4 **COMPLETE AND LOCKED** — independent verification passed; decision record locked (§15). Previous: 3 of 4 COMPLETE — explicit Keith decision recorded against the frozen §7 matrix (§14). Previous: 2 of 4 — reviewable freeze of the A1 / A2 decision object and decision matrix.
 **Step 2 date:** 2026-09-19
 **Step 2 HEAD at window open:** `b3b2f10895c2b90954db31dafaa6da6e2e0427be` (branch main; working tree clean; matches the expected baseline)
 **Step 3 date:** 2026-09-19
 **Step 3 HEAD at window open:** `d02639a3b7ec6589c12f4e6d9c272d59fe08f66b` (branch main; working tree clean; matches the expected baseline; Step 2 freeze + corrections §12 / §13 committed by Keith)
+**Step 4 date:** 2026-09-19
+**Step 4 HEAD at window open:** `39c7b5d11b52c755efc006ff757e345409c6449a` (branch main; working tree clean; matches the expected baseline; Step 3 commit)
 **Registration:** `TASKS_BACKLOG_FULL.md` § PM2-RECOVERY-BASELINE-GOV-01 (Step 1 COMPLETE at HEAD `2c01bff9ebdb00c84c3ff30af23201a636f60096`)
-**Current status (after Step 3):** A1 **ADOPTED** (A1-F; contract text only). A2 **ADOPTED** (P-A; REQUIRED provenance policy only). First-run contract **DEFINED**. **No usable first-run path** (Rule A-1). Status expressed only in the frozen §7.4 vocabulary (A1 ADOPTED; A2 ADOPTED (REQUIRED); DEFINED; not usable); no outcome identifier is introduced. Task **NOT LOCKED**. Step 4 **NOT AUTHORIZED**.
+**Current status (after Step 4 — LOCKED):** **COMPLETE AND LOCKED.** A1 **ADOPTED** (A1-F; contract text only). A2 **ADOPTED** (P-A; REQUIRED provenance policy only). First-run contract **DEFINED. No usable first-run path established.** Host remains **UNCLEAN / HOLD**; reopen gate **UNSATISFIED**; EXEC-01C6A `startCondition=NOT_READY`; **no canary authorized.** Acceptance object = A1 applicability text and A2 provenance policy only. Lock is of a decision record, not of any host state.
 **Freeze status (historical, Step 2):** FROZEN for review. No decision was selected in §§0–13. At Step 2 close: `OUTCOME_SELECTED=NONE`; A1 OPEN; A2 OPEN; K-B1 / K-B2 `UNRESOLVED_INPUT`. §§0–13 are preserved unchanged as the controlling decision specification.
 **Correction record:** one consolidated Step 2 correction applied 2026-09-19 before any Step 3 (§12), and a second correction of remaining rule conflicts (§13). The corrected text in §§0–13 is the controlling freeze against which §14 records.
-**Step 4:** NOT AUTHORIZED by this document or by the Step 3 authorization.
 
-Sections §§0–13 freeze *what Keith was asked to decide* and *what each answer does and does not do*; they adopt nothing by themselves. §14 records Keith's explicit Step 3 decision against §7. Any prior chat brief is superseded by this document and has no authority.
+Sections §§0–13 freeze *what Keith was asked to decide* and *what each answer does and does not do*; they adopt nothing by themselves. §14 records Keith's explicit Step 3 decision against §7. §15 is the Step 4 independent verification and lock. Any prior chat brief is superseded by this document and has no authority.
 
 ---
 
@@ -696,3 +697,81 @@ No CONTRADICTORY, INCOMPATIBLE, REQUIRES_CLARIFICATION, INCOMPLETE_AFFIRMATIVE, 
 - Mutex: GOVERNANCE acquired transiently for this control-plane step; released UNOWNED at end of step. No implementation lane. Occupancy: Lane 1 EMPTY; Lane 2 EMPTY; Lane 3 DISABLED.
 - Runtime / activity: none (no Python, imports, tests, mocks, builds, installs, SSH, staging, PM2, config / vault access, browser, workflow dispatch, subagents). Git: no add / commit / push / reset / restore; Keith owns Git.
 - Result: **Step 3 COMPLETE. A1 ADOPTED (contract text only). A2 ADOPTED (REQUIRED provenance policy only). First-run contract DEFINED. No usable first-run path. Step 4 NOT AUTHORIZED. NOT LOCKED.**
+
+---
+
+## 15. Step 4 — independent verification / checkpoint / lock (2026-09-19; HEAD `39c7b5d11b52c755efc006ff757e345409c6449a`)
+
+This section independently verifies the Step 3 record (§14) against the controlling freeze (§§0–13), re-performs every required check, and locks the decision record. It does not reopen settled design choices and does not alter Keith's decisions. §§0–14 are unchanged.
+
+### 15.1 Baseline
+
+- Step 4 HEAD: `39c7b5d11b52c755efc006ff757e345409c6449a` (matches expected baseline; working tree clean at window open; Step 3 commit by Keith).
+- Step 3 commit (`d02639a3b7ec6589c12f4e6d9c272d59fe08f66b` → `39c7b5d11b52c755efc006ff757e345409c6449a`) changed exactly 4 files: this document, `TASKS.md`, `TASKS_BACKLOG_FULL.md`, `docs/control-plane/SATURATION_PROOF.json`. No other path changed. Protected paths (sidecar, scripts, workflows, services, frontend, mutex catalog, predecessor bodies, EXEC-01C6A) unchanged.
+- §§0–13 of this document are byte-identical between the pre-Step-3 commit and the current HEAD. Only header lines 2–18 and the appended §14 differ.
+
+### 15.2 Independent criterion-by-criterion verification
+
+| # | Criterion | Independent finding | Verdict |
+|---|---|---|---|
+| 1 | **Selections faithfully record Keith's approved package.** Keith's statement: "Approve this package and authorize Step 3 only"; object: §8 recommended package. §14.2 enumerates: D2=A1-F, D2b=ACCEPTANCE, D9=ACCEPT, D3=P-A, I-1=APPROVE_M1, I-2=APPROVE (AM-1…AM-5 each APPROVED; AM-6 INFORMATIONAL / UNCHANGED), D4=REISSUE_PER_WINDOW, D5=ACCEPT, D6=PROVENANCE_RECORD, D7=LEDGER_ONLY, D8=EXCLUDE. D3-ALT VOID (D3 ≠ P-N). I-4 / I-5 remain OPEN. Compared against §8 table: every item matches. | **PASS** |
+| 2 | **Rule F-1 classifications correct.** Every selection in §14.2 is a Class F fixed token (§7.1) with no addition, condition, designation, alternative policy, or out-of-scope action. Each is classified "independently interpretable". No Class L or Class C answer. Nothing stripped or read down. I-2 = APPROVE carries a value for each of AM-1…AM-5 (AM-6 informational per §3.4a). Independently confirmed. | **PASS** |
+| 3 | **Rule F-2 (no protected material reproduced).** The statement and all selections contain no secret value, restricted token, or other protected material. Nothing redacted. No `sha256:` token string in the record. Confirmed. | **PASS** |
+| 4 | **Rule F-3 not applicable.** Every selection is a fixed option adopting frozen text as written. No P-A-AMENDED, no APPROVE_AMENDED, no amendment text. D3-ALT is VOID. Rule F-3 review is correctly stated as not applicable. Independently confirmed. | **PASS** |
+| 5 | **§7.4 completeness — A1 ADOPTED.** Requires D2 ∈ {A1-F, A1-L} ∧ D2b ∈ {ACCEPTANCE, STRICT} ∧ D9 = ACCEPT, each independently interpretable. Present: D2=A1-F (independently interpretable); D2b=ACCEPTANCE (independently interpretable); D9=ACCEPT (independently interpretable). | **PASS** — A1 ADOPTED |
+| 6 | **§7.4 completeness — A2 ADOPTED (REQUIRED).** Requires D3 ∈ {P-A, P-A-AMENDED(CONSISTENT)} ∧ I-1 ∈ {APPROVE_M1, APPROVE_M2, APPROVE_AMENDED(CONSISTENT)} ∧ I-2 ∈ {APPROVE, APPROVE_AMENDED(CONSISTENT)} with value for each AM-1…AM-5 ∧ D4 ∈ {PRE_RUN_ONLY, REISSUE_PER_WINDOW} ∧ D5=ACCEPT ∧ D6=PROVENANCE_RECORD ∧ D7 ∈ {LEDGER_ONLY, GOVERNANCE_EVIDENCE_PERMITTED}, each independently interpretable ∧ every §7.5b row compatible ∧ AM-1 not refused. Present: D3=P-A; I-1=APPROVE_M1; I-2=APPROVE (AM-1…AM-5 APPROVED); D4=REISSUE_PER_WINDOW; D5=ACCEPT; D6=PROVENANCE_RECORD; D7=LEDGER_ONLY. All independently interpretable. §7.5b verified at criterion 8. AM-1 approved. | **PASS** — A2 ADOPTED (REQUIRED) |
+| 7 | **§7.5 incompatibilities — none triggered.** Row 1 (D3 affirmative + D5=REFUSE): D5=ACCEPT → not triggered. Row 2 (I-2 refuses AM-1): AM-1 APPROVED → not triggered. Row 4 (D2b=STRICT + "passes"): D2b=ACCEPTANCE, no host statement → not triggered. Row 5 (D4 REISSUE with canary exemption): no exemption wording → not triggered. Row 6 (D7 blanket authorization): D7=LEDGER_ONLY → not triggered. Row 7 (option + designation): no designation attached → not triggered. | **PASS** |
+| 8 | **§7.5b cross-decision compatibility — independently re-performed.** C-1 (AM-3 ↔ D4): AM-3 APPROVED with D4=REISSUE_PER_WINDOW → listed compatible combination → **COMPATIBLE**. C-2 (AM-5 ↔ I-1): AM-5 APPROVED with I-1=APPROVE_M1 → listed compatible combination → **COMPATIBLE**. C-3 (AM-1 ↔ D6): AM-1 APPROVED with D6=PROVENANCE_RECORD → listed compatible combination → **COMPATIBLE**. C-4 (approved matrix ↔ D8): D8=EXCLUDE, M-1 contains no `OPENAI_API_KEY` REQUIRED pair (OPTIONAL (D8) row) → listed compatible combination → **COMPATIBLE**. AM-2 note: AM-2 APPROVED; no issue. | **PASS** — all COMPATIBLE |
+| 9 | **First-run contract DEFINED.** §7.4: DEFINED ⇔ A1 ADOPTED ∧ (A2 ADOPTED or approved D3-ALT). A1 ADOPTED (criterion 5); A2 ADOPTED (criterion 6). | **PASS** — DEFINED |
+| 10 | **No usable first-run path.** Rule A-1: DEFINED ≠ usable. Usability requires acquisition prerequisite (UNREGISTERED), B(H) construction, I-4 / I-5 resolution, S2 host evidence, reopen gate, EXEC-01C6A reopened. None present. | **PASS** — not usable |
+| 11 | **Step 3 changed only authorized files and preserved frozen sections.** Step 3 commit diff: exactly 4 files (this document, TASKS.md, TASKS_BACKLOG_FULL.md, SATURATION_PROOF.json). Protected paths: zero diff. §§0–13 byte-identical. §14 appended. Header updated with historical Step 2 status preserved. | **PASS** |
+
+### 15.3 Independent verification of non-effects (lock boundaries)
+
+| Boundary | Independent finding | Verdict |
+|---|---|---|
+| P2 / P3 remain binding | A1-F preamble: "P2 and P3 remain binding obligations for every future applicable run." §14.6 records this. Not weakened by any selection. | **PASS** |
+| No run outcome or recovery vault verified | No comparison performed; no MATCH / MISMATCH / DIVERGENT exists; no run has occurred under this contract. | **PASS** |
+| ACCEPTANCE accepts no current host history or attestation | §14.2 D2b notes: "Accepts **no** current host history, **no** attestation for any host, and **no** residual risk." ACCEPTANCE is a later threshold, not a current acceptance. No attestation exists, none is accepted. | **PASS** |
+| P7_ACCEPTED=NO; HOST_CLEAN=NO; host UNCLEAN / HOLD | §14.6 records. §0 invariant: "UNCLEAN / HOLD; `HOST_CLEAN=NO`; `P7_ACCEPTED=NO`". Board fields unchanged: lines 119–120 confirm. | **PASS** |
+| Reopen gate UNSATISFIED | §0 invariant: "UNSATISFIED". §14.6 records. Board line 122. | **PASS** |
+| EXEC-01C6A startCondition=NOT_READY | §0 invariant. Board line 125. §14.6 records. | **PASS** |
+| Builder gate ON; Harness flags unchanged | §0 invariant: "LEFT ON (2026-09-14 evidence)". Board line 130. §14.6 records. | **PASS** |
+| M-1 keeps XAI_API_KEY REQUIRED on both apps | §14.2 I-1 notes: "**`XAI_API_KEY` remains REQUIRED on both apps** (I-4 reconciliation) until a later explicit I-1 coverage amendment; I-4 resolution alone never narrows it." §3.2 I-4 reconciliation paragraph confirms. | **PASS** |
+| REISSUE_PER_WINDOW authorizes no current reference or reissue | §14.2 D4 notes: "**Issues no reference and authorizes no current reissue.**" §14.6 records: "no reference is issued and no reissue is authorized now." | **PASS** |
+| LEDGER_ONLY generates and publishes no token | §14.2 D7 notes: "**Deciding D7 produces and publishes no token.**" §14.6 records. No `sha256:` token in this document. | **PASS** |
+| B(H) comparison-only; locked restore payload unchanged | §14.2 D5 notes: "B(H) comparison-only; the **locked restoration payload is unchanged**". §14.6 records. §0 invariant table restoration payload row: "UNCHANGED". | **PASS** |
+| No source, expectation, value, token, or observation designated | §14.2 D3 notes: "designates no source, value, token, or observation". No PV-x adopted. No I-5 adoption. Board line 107 confirms BASELINE_DESIGNATED=NO. | **PASS** |
+| No acquisition, reference preparation, live-use approval, P4–P7 collection/attestation, C1 amendment, reopen, or canary | §14.6 records. §14.8 ledger records. Board lines 117–127 confirm. None of these actions occurred. | **PASS** |
+| I-4 / I-5 and remaining operational prerequisites stay outstanding | §14.7 table lists all outstanding inputs. Board line 150 confirms. | **PASS** |
+| Lock is of a decision record, not of host state | Acceptance object (§1.1): A1 applicability text and A2 provenance policy. §9: "Lock of this task is a lock of a **decision record**, not of any host state." Neither established nor authorized by this task: any claim about the absence of unknown host activity or recovery material. H2, H3, host-side discovery, and unrecorded operator activity remain UNKNOWN per §6 and Rule B-1. This lock records *what was decided*, not *what is true about any host*. | **PASS** |
+
+### 15.4 Lock record
+
+All 11 verification criteria (§15.2) and all non-effect boundaries (§15.3) **PASS**. The Step 3 record (§14) is consistent with §7 and the controlling freeze (§§0–13).
+
+**PM2-RECOVERY-BASELINE-GOV-01 is COMPLETE AND LOCKED.**
+
+**Acceptance object (locked):** A1 first-run applicability text (A1-F, §2.2) and A2 expected-baseline provenance policy (P-A, §3.4, with AM-1…AM-5, coverage matrix M-1, D4 REISSUE_PER_WINDOW, D5 comparison-only, D6 PROVENANCE_RECORD, D7 LEDGER_ONLY, D8 EXCLUDE). Contract text and provenance policy only. No host state, reference, observation, source designation, token, or operational outcome.
+
+**First-run contract DEFINED; no usable first-run path established. Host remains UNCLEAN / HOLD; reopen gate UNSATISFIED; EXEC-01C6A startCondition=NOT_READY; no canary authorized.**
+
+### 15.5 Outstanding inputs carried forward (unchanged from §14.7)
+
+| Input | Status |
+|---|---|
+| I-4 — `XAI_API_KEY` app assignment | OPEN; both apps REQUIRED meanwhile; narrowing needs explicit I-1 amendment |
+| I-5 — LIVE-GATE record vs fresh PV-3 adoption | OPEN; belongs to reference construction |
+| Acquisition prerequisite (VERIFY-01 §3.4) | UNREGISTERED |
+| B(H) reference preparation + external provenance / authorization record | not started |
+| Per-run reference (fidelity) preparation | not started |
+| C1 acceptance-contract amendment | not registered |
+| S2 host evidence (P4 / P5; H2 attestation; A1-F (c) comparison evidence) | none |
+
+### 15.6 Step 4 ledger
+
+- Write set: this document (header current-status lines updated with historical status preserved; §15 appended; §§0–14 unchanged); `TASKS.md` (this task's current fields and governance ledger entries, `Previous:` preserved); `TASKS_BACKLOG_FULL.md` (this task's body only); `docs/control-plane/SATURATION_PROOF.json` (validator output only).
+- Not touched: sidecar `lane-saturation-state.json`, candidates, `lockedTaskIds`, mutex catalog, any predecessor body or locked freeze, EXEC-01C6A body / candidate, verifier tree, operator / r3 bundle, workflows, application source, tests, PRD, ARCHITECTURE, CLAUDE, AGENTS.
+- Mutex: GOVERNANCE acquired transiently for this control-plane step; released UNOWNED at end of step. No implementation lane. Occupancy: Lane 1 EMPTY; Lane 2 EMPTY; Lane 3 DISABLED.
+- Runtime / activity: none (no Python, imports, tests, mocks, builds, installs, SSH, staging, PM2, config / vault access, browser, workflow dispatch, subagents). Git: no add / commit / push / reset / restore; Keith owns Git.
+- Result: **Step 4 COMPLETE AND LOCKED. PM2-RECOVERY-BASELINE-GOV-01 COMPLETE AND LOCKED. First-run contract DEFINED; no usable first-run path established. Host remains UNCLEAN / HOLD; reopen gate UNSATISFIED; EXEC-01C6A startCondition=NOT_READY; no canary authorized.**
