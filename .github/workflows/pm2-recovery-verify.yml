@@ -1,0 +1,711 @@
+# PM2-RECOVERY-VERIFY-01 — fake-only, off-host verification of the offline
+# dual-field PM2 environment comparison verifier (ops/pm2-recovery-verify).
+#
+# Scope: GitHub-hosted ubuntu-24.04, Python 3.12, manual dispatch only.
+# Synthetic JSON fixtures only. NOT staging execution, NOT live execution.
+# No real pm2, node, sudo, tcpdump, network client, secret, SSH key, deployment
+# credential, or cloud configuration is used. Nothing here authorizes
+# acquisition, transfer, live use, P6, a canary, or EXEC-01C6A acceptance.
+#
+# Evidence handling (stage-start §8.3): raw evidence is written under
+# $RUNNER_TEMP/evidence and is NEVER uploaded. A cleared copy under
+# $RUNNER_TEMP/publish is uploaded only when the redaction gate step succeeded
+# AND emitted cleared=true. Fixed allowlisted failure diagnostics under
+# $RUNNER_TEMP/failure are uploaded otherwise. The console receives fixed
+# progress strings and regex-validated fields only; raw test output is
+# captured privately by direct redirection (no tee, no console mirror).
+
+name: pm2-recovery-verify
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    # GitHub runs this as `bash --noprofile --norc -eo pipefail {0}`; -e is not disabled.
+    shell: bash
+
+env:
+  TOOL: ops/pm2-recovery-verify
+  F1: ops/pm2-recovery-verify/compare_dual_env.py
+  F2: ops/pm2-recovery-verify/tests/test_compare_dual_env.py
+  R3: ops/aisb-01c6a-operator-bundle
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  verify:
+    name: fake-only verification (ubuntu-24.04, Python 3.12)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      # 0 ---------------------------------------------------------------
+      - name: 0. Directories (evidence / publish / failure created empty)
+        id: dirs
+        run: |
+          set -u
+          mkdir -p "$RUNNER_TEMP/evidence" "$RUNNER_TEMP/publish" "$RUNNER_TEMP/failure" \
+                   "$RUNNER_TEMP/tmp" "$RUNNER_TEMP/pycache" "$RUNNER_TEMP/shims" || exit 80
+          {
+            echo "EV=$RUNNER_TEMP/evidence"
+            echo "PUB=$RUNNER_TEMP/publish"
+            echo "FAIL=$RUNNER_TEMP/failure"
+            echo "TMPDIR=$RUNNER_TEMP/tmp"
+            echo "PYTHONPYCACHEPREFIX=$RUNNER_TEMP/pycache"
+            echo "SHIMS=$RUNNER_TEMP/shims"
+            echo "TRIPWIRE_LOG=$RUNNER_TEMP/evidence/tripwire.log"
+          } >> "$GITHUB_ENV" || exit 80
+          echo "DIRECTORIES_OK"
+
+      # 1 ---------------------------------------------------------------
+      - name: 1. Checkout dispatch commit (read-only, no persisted credentials)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      # 2 ---------------------------------------------------------------
+      - name: 2. Set up Python 3.12
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      # 3 ---------------------------------------------------------------
+      - name: 3. Identity (dispatch SHA == checkout SHA; workflow_dispatch; Python 3.12)
+        id: identity
+        env:
+          GH_WORKFLOW: ${{ github.workflow }}
+          GH_WORKFLOW_REF: ${{ github.workflow_ref }}
+          GH_RUN_ID: ${{ github.run_id }}
+          GH_RUN_ATTEMPT: ${{ github.run_attempt }}
+          GH_EVENT: ${{ github.event_name }}
+          GH_REF: ${{ github.ref }}
+          GH_SHA: ${{ github.sha }}
+          RUNNER_OS_NAME: ${{ runner.os }}
+          RUNNER_ARCH_NAME: ${{ runner.arch }}
+        run: |
+          set -u
+          actual="$(git rev-parse HEAD)" || { echo "IDENTITY_FAIL"; exit 1; }
+          pyver="$(python3 -c 'import sys; print("%d.%d" % sys.version_info[:2])')" || { echo "IDENTITY_FAIL"; exit 1; }
+          {
+            echo "workflow=$GH_WORKFLOW"
+            echo "workflow_ref=$GH_WORKFLOW_REF"
+            echo "run_id=$GH_RUN_ID"
+            echo "run_attempt=$GH_RUN_ATTEMPT"
+            echo "event=$GH_EVENT"
+            echo "dispatch_ref=$GH_REF"
+            echo "dispatch_sha=$GH_SHA"
+            echo "checkout_sha=$actual"
+            echo "runner_os=$RUNNER_OS_NAME"
+            echo "runner_arch=$RUNNER_ARCH_NAME"
+            echo "runner_kernel=$(uname -srm)"
+            echo "python=$(python3 -c 'import sys, platform; print(sys.version.replace(chr(10), " "), "|", platform.python_implementation())')"
+            echo "utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } > "$EV/identity.txt" || exit 81
+          case "$actual" in *[!0-9a-f]*|'') echo "IDENTITY_FAIL"; exit 1 ;; esac
+          [ "${#actual}" -eq 40 ] || { echo "IDENTITY_FAIL"; exit 1; }
+          [ "$actual" = "$GH_SHA" ] || { echo "IDENTITY_FAIL"; exit 1; }
+          [ "$GH_EVENT" = "workflow_dispatch" ] || { echo "IDENTITY_FAIL"; exit 1; }
+          [ "$pyver" = "3.12" ] || { echo "IDENTITY_FAIL"; exit 1; }
+          echo "IDENTITY_OK commit=$actual"
+
+      # 4 ---------------------------------------------------------------
+      - name: 4. Preflight (attributes, runner env, no real pm2, PATH tripwires, static isolation scans)
+        id: preflight
+        run: |
+          set -u
+          out="$EV/preflight.txt"
+          : > "$out" || exit 82
+          fail=0
+          note() { printf '%s\n' "$*" >> "$out" || exit 82; }
+
+          note "== attributes of F1 (directory .gitattributes must be honoured) =="
+          git check-attr text eol -- "$F1" >> "$out" 2>&1 || fail=1
+          if git check-attr text -- "$F1" | grep -q ': text: set$'; then note "ok: text set"; else note "FAIL: F1 not text"; fail=1; fi
+          if git check-attr eol -- "$F1" | grep -q ': eol: lf$'; then note "ok: eol lf"; else note "FAIL: F1 not eol=lf"; fail=1; fi
+
+          note "== runner environment (names only; values never recorded) =="
+          bad_env=""
+          if bad_env="$(env | cut -d= -f1 | grep -E '^(PM2_HOME|PM2_BIN|NODE_BIN|AISB_.*|MOCK_.*)$')"; then
+            note "FAIL: forbidden variable names present:"
+            printf '%s\n' "$bad_env" >> "$out" || exit 82
+            fail=1
+          else
+            note "ok: no PM2_HOME / PM2_BIN / NODE_BIN / AISB_* / MOCK_* variables"
+          fi
+
+          note "== real pm2 on PATH must be absent =="
+          if command -v pm2 >/dev/null 2>&1; then note "FAIL: a real pm2 is on PATH"; fail=1; else note "ok: no pm2 on PATH"; fi
+
+          note "== PATH tripwire shims (sudo pm2 tcpdump node -> exit 97 + private log) =="
+          : > "$TRIPWIRE_LOG" || exit 82
+          for b in sudo pm2 tcpdump node; do
+            {
+              echo '#!/usr/bin/env bash'
+              printf 'printf "TRIPWIRE %%s\\n" "$(basename "$0")" >> %q\n' "$TRIPWIRE_LOG"
+              echo 'exit 97'
+            } > "$SHIMS/$b" || exit 82
+            chmod 0755 "$SHIMS/$b" || exit 82
+          done
+          echo "$SHIMS" >> "$GITHUB_PATH" || exit 82
+          note "ok: shims installed"
+
+          note "== static isolation scan of F1 and F2 =="
+          rc=0
+          python3 - "$F1" "$F2" >> "$out" 2>&1 <<'PY' || rc=$?
+          import ast, sys
+          f1, f2 = sys.argv[1], sys.argv[2]
+          ALLOW = {"__future__", "dataclasses", "datetime", "hashlib", "json", "os", "re", "stat", "sys", "typing"}
+          problems = []
+
+          def imports(tree):
+              names = set()
+              for node in ast.walk(tree):
+                  if isinstance(node, ast.Import):
+                      for a in node.names:
+                          names.add(a.name.split(".")[0])
+                  elif isinstance(node, ast.ImportFrom):
+                      names.add((node.module or "").split(".")[0])
+              return names
+
+          def spawn_or_socket(tree, label):
+              for node in ast.walk(tree):
+                  if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name):
+                      owner, attr = node.func.value.id, node.func.attr
+                      if owner == "os" and (attr == "system" or attr.startswith("exec") or attr.startswith("spawn") or attr in ("popen", "fork", "forkpty")):
+                          problems.append("%s: os.%s at line %d" % (label, attr, node.lineno))
+                      if owner == "socket":
+                          problems.append("%s: socket.%s at line %d" % (label, attr, node.lineno))
+
+          def is_sys_executable(node):
+              return isinstance(node, ast.Attribute) and node.attr == "executable" and isinstance(node.value, ast.Name) and node.value.id == "sys"
+
+          t1 = ast.parse(open(f1, encoding="utf-8").read(), f1)
+          t2 = ast.parse(open(f2, encoding="utf-8").read(), f2)
+          extra = sorted(imports(t1) - ALLOW)
+          if extra:
+              problems.append("F1 imports outside allowlist: %s" % extra)
+          if "argparse" in imports(t1):
+              problems.append("F1 imports argparse")
+          spawn_or_socket(t1, "F1")
+          for node in ast.walk(t1):
+              if isinstance(node, ast.Constant) and node.value == "pm2":
+                  problems.append("F1 contains the string constant pm2 at line %d" % node.lineno)
+          spawns = 0
+          for node in ast.walk(t2):
+              if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name) and node.func.value.id == "subprocess":
+                  spawns += 1
+                  argv = node.args[0] if node.args else None
+                  if isinstance(argv, ast.BinOp):
+                      argv = argv.left
+                  ok = isinstance(argv, ast.List) and bool(argv.elts) and is_sys_executable(argv.elts[0])
+                  if not ok:
+                      problems.append("F2: subprocess.%s argv[0] is not sys.executable at line %d" % (node.func.attr, node.lineno))
+          spawn_or_socket(t2, "F2")
+          print("F2 subprocess spawn sites inspected: %d" % spawns)
+          if spawns == 0:
+              problems.append("F2: no subprocess spawn site found (CLI tests expected)")
+          if problems:
+              print("STATIC_ISOLATION_FAIL")
+              for p in problems:
+                  print("  " + p)
+              sys.exit(1)
+          print("STATIC_ISOLATION_OK")
+          PY
+          [ "$rc" -eq 0 ] || { note "FAIL: static isolation scan exit $rc"; fail=1; }
+
+          if [ "$fail" -ne 0 ]; then echo "PREFLIGHT_FAIL"; exit 1; fi
+          note "PREFLIGHT_OK"
+          echo "PREFLIGHT_OK"
+
+      # 5 ---------------------------------------------------------------
+      - name: 5. A. SHA256SUMS (strict check; listed set == tracked set; VERIFIER_SHA256)
+        id: sums
+        run: |
+          set -u
+          out="$EV/sha256sums-verify.txt"
+          : > "$out" || exit 82
+          fail=0
+          rc=0
+          if (cd "$TOOL" && sha256sum -c --strict SHA256SUMS) >> "$out" 2>&1; then rc=0; else rc=$?; fi
+          [ "$rc" -eq 0 ] || { echo "sha256sum -c exit=$rc" >> "$out"; fail=1; }
+          if grep -Evq '^[0-9a-f]{64}  [^ ]+$' -- "$TOOL/SHA256SUMS"; then echo "FAIL: malformed manifest line" >> "$out"; fail=1; fi
+          if grep -q $'\r' -- "$TOOL/SHA256SUMS"; then echo "FAIL: CR in manifest" >> "$out"; fail=1; fi
+          listed="$(awk '{print $2}' -- "$TOOL/SHA256SUMS" | LC_ALL=C sort)"
+          tracked="$(git ls-files -- "$TOOL" | sed "s#^$TOOL/##" | awk '$0 != "SHA256SUMS"' | LC_ALL=C sort)"
+          if [ "$listed" = "$tracked" ]; then echo "ok: listed set equals tracked set minus SHA256SUMS" >> "$out"; else echo "FAIL: listed set differs from tracked set" >> "$out"; fail=1; fi
+          f1hash="$(sha256sum -- "$F1" | cut -d' ' -f1)" || { echo "SUMS_FAIL"; exit 1; }
+          case "$f1hash" in *[!0-9a-f]*|'') echo "SUMS_FAIL"; exit 1 ;; esac
+          [ "${#f1hash}" -eq 64 ] || { echo "SUMS_FAIL"; exit 1; }
+          echo "verifier_sha256=$f1hash" >> "$out" || exit 82
+          if [ "$fail" -ne 0 ]; then echo "SUMS_FAIL"; exit 1; fi
+          echo "verifier_sha256=$f1hash" >> "$GITHUB_OUTPUT" || exit 82
+          echo "SUMS_OK"
+          echo "VERIFIER_SHA256=$f1hash"
+
+      # 6 ---------------------------------------------------------------
+      - name: 6. Before-snapshot (raw SHA-256 of tracked r3, verifier, root .gitattributes, workflows)
+        run: |
+          set -u
+          git ls-files -z -- "$R3" "$TOOL" .gitattributes .github/workflows | xargs -0 sha256sum > "$EV/sha256-before.txt" || exit 81
+          n="$(grep -c -- "  $R3/" "$EV/sha256-before.txt")" || exit 81
+          case "$n" in *[!0-9]*|'') exit 81 ;; esac
+          echo "SNAPSHOT_OK r3_files=$n"
+
+      # 7 ---------------------------------------------------------------
+      - name: 7. B. Byte-compile F1 and F2 (bytecode outside the tracked tree)
+        id: compile
+        run: |
+          set -u
+          out="$EV/compile.txt"
+          : > "$out" || exit 83
+          rc=0
+          if python3 -m py_compile "$F1" "$F2" >> "$out" 2>&1; then rc=0; else rc=$?; fi
+          echo "py_compile exit=$rc" >> "$out" || exit 83
+          stray="$(find "$GITHUB_WORKSPACE" -path '*/.git' -prune -o \( -name '__pycache__' -o -name '*.pyc' \) -print | wc -l)" || exit 83
+          case "$stray" in *[!0-9]*|'') exit 83 ;; esac
+          echo "bytecode inside checkout: $stray" >> "$out" || exit 83
+          if [ "$rc" -ne 0 ] || [ "$stray" -ne 0 ]; then echo "COMPILE_FAIL"; exit 1; fi
+          echo "COMPILE_OK"
+
+      # 8 ---------------------------------------------------------------
+      - name: 8. C. Tests (private capture by direct redirection; real exit status preserved)
+        id: tests
+        run: |
+          set -u                             # GitHub's `shell: bash` already runs `bash -eo pipefail`; -e stays on
+          cd "$GITHUB_WORKSPACE/ops/pm2-recovery-verify" || exit 90
+          : > "$EV/unittest.log"            || exit 91      # capture file must be creatable before the suite runs
+          start=$(date -u +%s)
+          rc=0
+          if timeout -k 30 600 python3 -m unittest -v tests.test_compare_dual_env \
+              > "$EV/unittest.log" 2>&1; then
+              rc=0
+          else
+              rc=$?                          # the suite's real exit status; 124 / 137 from timeout preserved;
+          fi                                 # the `if` keeps inherited -e from terminating the step here
+          end=$(date -u +%s)
+          [ -f "$EV/unittest.log" ] && [ -r "$EV/unittest.log" ] || exit 92   # capture verification
+          [ -s "$EV/unittest.log" ]          || exit 93      # unittest -v always writes; an empty capture is a capture failure
+          printf '%s\n' "$rc" > "$EV/unittest.exit"          || exit 94
+          printf 'start=%s end=%s seconds=%s\n' "$start" "$end" "$((end-start))" > "$EV/unittest.timing" || exit 95
+          case "$rc" in ''|*[!0-9]*) exit 96 ;; esac         # rc must be a validated integer before it is echoed
+          echo "TESTS_FINISHED unittest_exit=$rc"            # fixed message + validated integer only
+          exit "$rc"
+
+      # 9 ---------------------------------------------------------------
+      - name: 9. D. Parse results privately (counts, AST-defined tests, T1–T12 groups, no skips)
+        id: parse
+        run: |
+          set -u
+          rc=0
+          python3 - "$EV" "$F2" <<'PY' || rc=$?
+          import ast, json, os, re, sys
+          ev, test_file = sys.argv[1], sys.argv[2]
+          problems = []
+          MODULE = "tests.test_compare_dual_env"
+
+          def fail():
+              print("PARSE_FAIL")
+              sys.exit(1)
+
+          log_path = os.path.join(ev, "unittest.log")
+          exit_path = os.path.join(ev, "unittest.exit")
+          if not os.path.isfile(log_path) or not os.path.isfile(exit_path):
+              fail()
+          try:
+              rc = int(open(exit_path, encoding="utf-8").read().strip())
+          except ValueError:
+              rc = -1
+          log = open(log_path, encoding="utf-8", errors="replace").read().splitlines()
+
+          tree = ast.parse(open(test_file, encoding="utf-8").read(), test_file)
+          expected_ids = set()
+          by_short = {}
+          for c in ast.walk(tree):
+              if isinstance(c, ast.ClassDef):
+                  for f in c.body:
+                      if isinstance(f, (ast.FunctionDef, ast.AsyncFunctionDef)) and f.name.startswith("test_"):
+                          tid = "%s.%s.%s" % (MODULE, c.name, f.name)
+                          expected_ids.add(tid)
+                          by_short.setdefault(f.name, []).append(tid)
+          defined = len(expected_ids)
+
+          STATUS = r"(ok|FAIL|ERROR|skipped '(?:[^'\\]|\\.)*'|skipped \"(?:[^\"\\]|\\.)*\"|expected failure|unexpected success)"
+          HEAD = re.compile(r"^(test_\w+) \(([\w.]+)\)(?: \.\.\. (.*))?$")
+          STATUS_ONLY = re.compile(r"^" + STATUS + r"$")
+          DESC_STATUS = re.compile(r"^(.*) \.\.\. " + STATUS + r"$")
+          SEPARATOR = re.compile(r"^(={20,}|-{20,})$")
+          RAN = re.compile(r"^Ran (\d+) tests? in ([\d.]+)s$")
+          status = {}
+          duplicates = 0
+          unmatched = 0
+          current = None
+          ran_lines = []
+          for line in log:
+              if RAN.fullmatch(line):
+                  ran_lines.append(line)
+                  if current is not None:
+                      unmatched += 1
+                      current = None
+                  continue
+              if SEPARATOR.match(line):
+                  if current is not None:
+                      unmatched += 1
+                      current = None
+                  continue
+              m = HEAD.match(line)
+              if m:
+                  if current is not None:
+                      unmatched += 1
+                  short, qualified, trailing = m.group(1), m.group(2), m.group(3)
+                  if not qualified.endswith("." + short):
+                      problems.append("header id mismatch")
+                  if trailing is not None and STATUS_ONLY.match(trailing):
+                      if qualified in status:
+                          duplicates += 1
+                      status[qualified] = trailing
+                      current = None
+                  else:
+                      current = qualified
+                  continue
+              if current is not None:
+                  s = STATUS_ONLY.match(line)
+                  d = DESC_STATUS.match(line)
+                  tok = s.group(1) if s else (d.group(2) if d else None)
+                  if tok is not None:
+                      if current in status:
+                          duplicates += 1
+                      status[current] = tok
+                      current = None
+          if current is not None:
+              unmatched += 1
+
+          if len(ran_lines) != 1:
+              problems.append("ran summary lines: %d" % len(ran_lines))
+              ran_n = -1
+          else:
+              ran_n = int(RAN.fullmatch(ran_lines[0]).group(1))
+          final = next((l for l in reversed(log) if l.startswith(("OK", "FAILED"))), "")
+          counts = {"failures": 0, "errors": 0, "skipped": 0, "expected failures": 0, "unexpected successes": 0}
+          for k, v in re.findall(r"(failures|errors|skipped|expected failures|unexpected successes)=(\d+)", final):
+              counts[k] = int(v)
+          status_counts = {
+              "ok": sum(1 for s in status.values() if s == "ok"),
+              "FAIL": sum(1 for s in status.values() if s == "FAIL"),
+              "ERROR": sum(1 for s in status.values() if s == "ERROR"),
+              "skipped": sum(1 for s in status.values() if s.startswith("skipped")),
+              "expected failure": sum(1 for s in status.values() if s == "expected failure"),
+              "unexpected success": sum(1 for s in status.values() if s == "unexpected success"),
+          }
+          if duplicates:
+              problems.append("duplicate statuses: %d" % duplicates)
+          if unmatched:
+              problems.append("headers without status: %d" % unmatched)
+          unknown = sorted(set(status) - expected_ids)
+          if unknown:
+              problems.append("statuses for undefined tests: %d" % len(unknown))
+          missing = sorted(expected_ids - set(status))
+          if missing:
+              problems.append("defined tests without status: %d" % len(missing))
+          if ran_n != len(status):
+              problems.append("parsed %d statuses but Ran %d" % (len(status), ran_n))
+          if ran_n != defined:
+              problems.append("Ran %d but module defines %d" % (ran_n, defined))
+          if rc != 0:
+              problems.append("unittest exit %d" % rc)
+          if final != "OK":
+              problems.append("final status line is not exactly OK")
+          for k in ("failures", "errors", "skipped", "unexpected successes"):
+              if counts[k]:
+                  problems.append("%s=%d" % (k, counts[k]))
+          for k in ("FAIL", "ERROR", "skipped", "unexpected success"):
+              if status_counts[k]:
+                  problems.append("per-test %s=%d" % (k, status_counts[k]))
+          groups = {}
+          for n in range(1, 13):
+              prefix = "test_t%d_" % n
+              ids = sorted(t for short, tids in by_short.items() if short.startswith(prefix) for t in tids)
+              groups["T%d" % n] = {"defined": len(ids), "ok": sum(1 for t in ids if status.get(t) == "ok")}
+              if not ids:
+                  problems.append("group T%d has no test" % n)
+              elif groups["T%d" % n]["ok"] != len(ids):
+                  problems.append("group T%d not fully ok" % n)
+          summary = {
+              "unittest_exit": rc,
+              "ran": ran_n,
+              "defined": defined,
+              "final_status_line": final,
+              "counts": counts,
+              "status_counts": status_counts,
+              "groups": groups,
+              "execution_class": "fake-only LOCAL-TESTS evidence on a GitHub-hosted runner; NOT staging; NOT live; does not authorize acquisition, transfer, live use, P6, a canary, or EXEC-01C6A acceptance",
+              "problems": problems,
+          }
+          with open(os.path.join(ev, "test-summary.json"), "w", encoding="utf-8") as h:
+              json.dump(summary, h, indent=2)
+          if problems:
+              fail()
+          if not (re.fullmatch(r"[0-9]{1,10}", str(ran_n)) and re.fullmatch(r"[0-9]{1,10}", str(defined))):
+              fail()
+          print("PARSE_OK ran=%d defined=%d" % (ran_n, defined))
+          PY
+          [ "$rc" -eq 0 ] || exit "$rc"
+
+      # 10 --------------------------------------------------------------
+      - name: 10. E. Bytes unchanged (snapshot equality; whole-checkout porcelain empty; tripwire empty; r3 40/40)
+        id: bytes
+        run: |
+          set -u
+          out="$EV/tracked-bytes.txt"
+          : > "$out" || exit 84
+          fail=0
+          git ls-files -z -- "$R3" "$TOOL" .gitattributes .github/workflows | xargs -0 sha256sum > "$EV/sha256-after.txt" || exit 84
+          crc=0
+          if cmp -s -- "$EV/sha256-before.txt" "$EV/sha256-after.txt"; then crc=0; else crc=$?; fi
+          if [ "$crc" -eq 0 ]; then echo "snapshots identical" >> "$out"; else echo "FAIL: snapshots differ (cmp exit $crc)" >> "$out"; fail=1; fi
+          porcelain="$(git status --porcelain --untracked-files=all)" || exit 84
+          if [ -n "$porcelain" ]; then
+            echo "FAIL: working tree not clean:" >> "$out"
+            printf '%s\n' "$porcelain" >> "$out" || exit 84
+            fail=1
+          else
+            echo "working tree clean (porcelain empty)" >> "$out"
+          fi
+          if [ -s "$TRIPWIRE_LOG" ]; then echo "FAIL: REAL_BINARY_INVOKED_VIA_PATH" >> "$out"; fail=1; else echo "tripwire log empty" >> "$out"; fi
+          n="$(grep -c -- "  $R3/" "$EV/sha256-after.txt")" || n=0
+          case "$n" in *[!0-9]*|'') n=0 ;; esac
+          if [ "$n" -eq 40 ]; then echo "R3_BYTES_UNCHANGED 40/40" >> "$out"; else echo "FAIL: r3 tracked files=$n (expected 40)" >> "$out"; fail=1; fi
+          if [ "$fail" -ne 0 ]; then echo "BYTES_FAIL"; exit 1; fi
+          echo "TRACKED_BYTES_UNCHANGED" >> "$out" || exit 84
+          echo "BYTES_OK"
+
+      # 11 --------------------------------------------------------------
+      - name: 11. Private summary (written to evidence only; published via the gate)
+        if: ${{ always() }}
+        id: summary
+        env:
+          GH_RUN_ID: ${{ github.run_id }}
+          GH_RUN_ATTEMPT: ${{ github.run_attempt }}
+          GH_SHA: ${{ github.sha }}
+          VERIFIER_SHA256: ${{ steps.sums.outputs.verifier_sha256 }}
+          O_IDENTITY: ${{ steps.identity.outcome }}
+          O_PREFLIGHT: ${{ steps.preflight.outcome }}
+          O_SUMS: ${{ steps.sums.outcome }}
+          O_COMPILE: ${{ steps.compile.outcome }}
+          O_TESTS: ${{ steps.tests.outcome }}
+          O_PARSE: ${{ steps.parse.outcome }}
+          O_BYTES: ${{ steps.bytes.outcome }}
+        run: |
+          set -u
+          if [ -z "${EV:-}" ] || [ ! -d "$EV" ]; then echo "SUMMARY_SKIPPED"; exit 0; fi
+          s="$EV/SUMMARY.md"
+          {
+            echo "# PM2-RECOVERY-VERIFY-01 — fake-only verification of compare_dual_env.py"
+            echo
+            echo "- run: ${GH_RUN_ID} attempt ${GH_RUN_ATTEMPT}; commit: ${GH_SHA}"
+            echo "- runner: GitHub-hosted ubuntu-24.04 (NOT staging, NOT live); Python 3.12; stdlib only; no secrets"
+            echo "- VERIFIER_SHA256: ${VERIFIER_SHA256:-UNAVAILABLE}"
+            echo "- outcomes: identity=${O_IDENTITY} preflight=${O_PREFLIGHT} sums=${O_SUMS} compile=${O_COMPILE} tests=${O_TESTS} parse=${O_PARSE} bytes=${O_BYTES}"
+            if [ -f "$EV/unittest.exit" ]; then echo "- unittest exit code: $(cat "$EV/unittest.exit")"; fi
+            if [ -f "$EV/unittest.timing" ]; then echo "- $(head -1 "$EV/unittest.timing")"; fi
+            if [ -f "$EV/test-summary.json" ]; then
+              python3 - "$EV/test-summary.json" <<'PY'
+          import json, sys
+          d = json.load(open(sys.argv[1], encoding="utf-8"))
+          print("- ran %s / defined %s; final: %s" % (d["ran"], d["defined"], d["final_status_line"]))
+          print("- counts: %s" % json.dumps(d["counts"], sort_keys=True))
+          print("- groups: %s" % json.dumps({k: v["ok"] for k, v in sorted(d["groups"].items())}, sort_keys=True))
+          print("- problems: %d" % len(d["problems"]))
+          for p in d["problems"]:
+              print("  - %s" % p)
+          PY
+            fi
+            for f in sha256sums-verify.txt compile.txt tracked-bytes.txt; do
+              if [ -f "$EV/$f" ]; then echo "- $f: $(grep -E '^(verifier_sha256=|py_compile exit=|TRACKED_BYTES_UNCHANGED|R3_BYTES_UNCHANGED|FAIL)' "$EV/$f" | tr '\n' ' ')"; fi
+            done
+            echo
+            echo "fake-only LOCAL-TESTS evidence; not live PM2; not staging; does not establish F1–F5, P4–P7, host CLEAN, reopen readiness, or a canary; does not authorize acquisition."
+          } > "$s" || { echo "SUMMARY_WRITE_FAILED"; exit 1; }
+          echo "SUMMARY_WRITTEN"
+
+      # 12 --------------------------------------------------------------
+      - name: 12. R. Redaction gate (enumerate, scan every evidence file completely, then copy to publish)
+        if: ${{ always() }}
+        id: gate
+        run: |
+          set -u
+          echo "cleared=false" >> "$GITHUB_OUTPUT"
+          echo "gate_status=NOT_CLEARED_INCOMPLETE" >> "$GITHUB_OUTPUT"
+          not_cleared() {
+            # $1 fixed enum; $2 validated integer match count
+            if [ -n "${PUB:-}" ] && [ -d "$PUB" ]; then rm -f -- "$PUB"/* 2>/dev/null || true; fi
+            echo "gate_status=$1" >> "$GITHUB_OUTPUT"
+            echo "match_files=$2" >> "$GITHUB_OUTPUT"
+            echo "REDACTION_GATE $1 match_files=$2"
+            exit 1
+          }
+          if [ -z "${EV:-}" ] || [ ! -d "$EV" ] || [ -z "${PUB:-}" ] || [ ! -d "$PUB" ]; then not_cleared NOT_CLEARED_EMPTY 0; fi
+          ALLOW=" identity.txt preflight.txt tripwire.log sha256sums-verify.txt sha256-before.txt sha256-after.txt compile.txt unittest.log unittest.exit unittest.timing test-summary.json tracked-bytes.txt SUMMARY.md "
+
+          # 12.1 enumerate
+          enumerated=0; bad_type=0; bad_name=0; unreadable=0
+          files=()
+          while IFS= read -r -d '' f; do
+            enumerated=$((enumerated+1))
+            rel="${f#"$EV"/}"
+            case "$rel" in */*) bad_type=1; continue ;; esac
+            if [ -L "$f" ] || [ ! -f "$f" ]; then bad_type=1; continue; fi
+            case "$ALLOW" in *" $rel "*) ;; *) bad_name=1; continue ;; esac
+            if [ ! -r "$f" ]; then unreadable=1; continue; fi
+            files+=("$f")
+          done < <(find "$EV" -mindepth 1 -print0)
+          [ "$enumerated" -gt 0 ] || not_cleared NOT_CLEARED_EMPTY 0
+          [ "$bad_type" -eq 0 ] || not_cleared NOT_CLEARED_UNEXPECTED_TYPE 0
+          [ "$bad_name" -eq 0 ] || not_cleared NOT_CLEARED_UNEXPECTED_FILE 0
+          [ "$unreadable" -eq 0 ] || not_cleared NOT_CLEARED_UNREADABLE 0
+
+          # 12.2 scan every enumerated file completely, before any truncation or copy
+          match=0; clean=0; scanner_error=0; scanned_bytes=0
+          for f in "${files[@]}"; do
+            grc=0
+            if grep -a -q -E -e 'SENTINEL-NOT-A-SECRET-' -e 'sha256:[0-9a-f]{64}' -- "$f"; then
+              grc=0                      # match
+            else
+              grc=$?                     # 1 = clean; >=2 = scanner error; never terminates the step
+            fi
+            case "$grc" in 0) match=$((match+1)) ;; 1) clean=$((clean+1)) ;; *) scanner_error=1 ;; esac
+            sz="$(stat -c %s -- "$f")" || sz=""
+            case "$sz" in ''|*[!0-9]*) scanner_error=1 ;; *) scanned_bytes=$((scanned_bytes+sz)) ;; esac
+          done
+          [ "$scanner_error" -eq 0 ] || not_cleared NOT_CLEARED_SCANNER_ERROR "$match"
+          [ "$match" -eq 0 ] || not_cleared NOT_CLEARED_MATCH "$match"
+          [ "$((clean+match))" -eq "$enumerated" ] || not_cleared NOT_CLEARED_SCAN_INCOMPLETE "$match"
+
+          # 12.3 copy only present, enumerated, successfully scanned allowlisted files
+          copy_fail=0
+          for f in "${files[@]}"; do
+            rel="${f#"$EV"/}"
+            cp -- "$f" "$PUB/$rel" || copy_fail=1
+          done
+          [ "$copy_fail" -eq 0 ] || not_cleared NOT_CLEARED_COPY_FAILED 0
+          # bound the publication copy only ($EV/unittest.log is untouched)
+          if [ -f "$PUB/unittest.log" ]; then
+            psz="$(stat -c %s -- "$PUB/unittest.log")" || not_cleared NOT_CLEARED_COPY_FAILED 0
+            case "$psz" in ''|*[!0-9]*) not_cleared NOT_CLEARED_COPY_FAILED 0 ;; esac
+            if [ "$psz" -gt $((5 * 1024 * 1024)) ]; then
+              {
+                head -c $((5 * 1024 * 1024 / 2)) -- "$PUB/unittest.log"
+                printf '\n--- TRUNCATED FOR PUBLICATION ---\n'
+                tail -c $((5 * 1024 * 1024 / 2)) -- "$PUB/unittest.log"
+              } > "$PUB/unittest.log.bounded" || not_cleared NOT_CLEARED_COPY_FAILED 0
+              mv -f -- "$PUB/unittest.log.bounded" "$PUB/unittest.log" || not_cleared NOT_CLEARED_COPY_FAILED 0
+            fi
+          fi
+          # rescan the published bytes themselves
+          pmatch=0; pclean=0; perr=0; pcount=0
+          while IFS= read -r -d '' f; do
+            pcount=$((pcount+1))
+            grc=0
+            if grep -a -q -E -e 'SENTINEL-NOT-A-SECRET-' -e 'sha256:[0-9a-f]{64}' -- "$f"; then grc=0; else grc=$?; fi
+            case "$grc" in 0) pmatch=$((pmatch+1)) ;; 1) pclean=$((pclean+1)) ;; *) perr=1 ;; esac
+          done < <(find "$PUB" -mindepth 1 -maxdepth 1 -type f -print0)
+          if [ "$perr" -ne 0 ] || [ "$pmatch" -ne 0 ] || [ "$pclean" -ne "$pcount" ] || [ "$pcount" -ne "${#files[@]}" ]; then
+            not_cleared NOT_CLEARED_PUBLISH_RESCAN "$pmatch"
+          fi
+          printf 'REDACTION_GATE_PASS files=%s scanned_bytes=%s\n' "$pcount" "$scanned_bytes" > "$PUB/redaction-gate.txt" || not_cleared NOT_CLEARED_COPY_FAILED 0
+          if [ -f "$PUB/SUMMARY.md" ]; then cat -- "$PUB/SUMMARY.md" >> "$GITHUB_STEP_SUMMARY" || true; fi
+          echo "match_files=0" >> "$GITHUB_OUTPUT"
+          echo "cleared=true" >> "$GITHUB_OUTPUT"
+          echo "gate_status=CLEARED" >> "$GITHUB_OUTPUT"
+          echo "REDACTION_GATE CLEARED files=$pcount"
+          exit 0
+
+      # CLEARED <=> steps.gate.outcome == 'success' && steps.gate.outputs.cleared == 'true'
+      # 13 --------------------------------------------------------------
+      - name: 13. Failure diagnostics (fixed allowlisted fields only; never copies evidence)
+        if: ${{ always() && !(steps.gate.outcome == 'success' && steps.gate.outputs.cleared == 'true') }}
+        id: faildiag
+        env:
+          GH_RUN_ID: ${{ github.run_id }}
+          GH_RUN_ATTEMPT: ${{ github.run_attempt }}
+          GH_SHA: ${{ github.sha }}
+          O_IDENTITY: ${{ steps.identity.outcome }}
+          O_PREFLIGHT: ${{ steps.preflight.outcome }}
+          O_SUMS: ${{ steps.sums.outcome }}
+          O_COMPILE: ${{ steps.compile.outcome }}
+          O_TESTS: ${{ steps.tests.outcome }}
+          O_PARSE: ${{ steps.parse.outcome }}
+          O_BYTES: ${{ steps.bytes.outcome }}
+          O_SUMMARY: ${{ steps.summary.outcome }}
+          O_GATE: ${{ steps.gate.outcome }}
+          GATE_STATUS: ${{ steps.gate.outputs.gate_status }}
+          MATCH_FILES: ${{ steps.gate.outputs.match_files }}
+        run: |
+          set -u
+          faildir="${FAIL:-$RUNNER_TEMP/failure}"
+          mkdir -p "$faildir" || exit 1
+          int_or() { case "$1" in ''|*[!0-9]*) printf '%s' "$2" ;; *) printf '%s' "$1" ;; esac; }
+          hex_or() { case "$1" in *[!0-9a-f]*|'') printf '%s' "$2" ;; *) if [ "${#1}" -eq 40 ]; then printf '%s' "$1"; else printf '%s' "$2"; fi ;; esac; }
+          outcome() { case "$1" in success|failure|cancelled|skipped) printf '%s' "$1" ;; *) printf 'UNAVAILABLE' ;; esac; }
+          gs="$GATE_STATUS"
+          case "$gs" in
+            CLEARED|NOT_CLEARED_INCOMPLETE|NOT_CLEARED_EMPTY|NOT_CLEARED_UNEXPECTED_TYPE|NOT_CLEARED_UNEXPECTED_FILE|NOT_CLEARED_UNREADABLE|NOT_CLEARED_SCANNER_ERROR|NOT_CLEARED_MATCH|NOT_CLEARED_SCAN_INCOMPLETE|NOT_CLEARED_COPY_FAILED|NOT_CLEARED_PUBLISH_RESCAN) ;;
+            '') gs="NOT_CLEARED_GATE_SKIPPED" ;;
+            *) gs="NOT_CLEARED_INCOMPLETE" ;;
+          esac
+          ue="UNAVAILABLE"
+          if [ -n "${EV:-}" ] && [ -f "$EV/unittest.exit" ]; then
+            v="$(head -c 8 -- "$EV/unittest.exit" | tr -d '\n')" || v=""
+            case "$v" in [0-9]|[0-9][0-9]|[0-9][0-9][0-9]) ue="$v" ;; esac
+          fi
+          {
+            echo "run_id=$(int_or "$GH_RUN_ID" 0)"
+            echo "run_attempt=$(int_or "$GH_RUN_ATTEMPT" 0)"
+            echo "sha=$(hex_or "$GH_SHA" UNAVAILABLE)"
+            echo "outcome_identity=$(outcome "$O_IDENTITY")"
+            echo "outcome_preflight=$(outcome "$O_PREFLIGHT")"
+            echo "outcome_sums=$(outcome "$O_SUMS")"
+            echo "outcome_compile=$(outcome "$O_COMPILE")"
+            echo "outcome_tests=$(outcome "$O_TESTS")"
+            echo "outcome_parse=$(outcome "$O_PARSE")"
+            echo "outcome_bytes=$(outcome "$O_BYTES")"
+            echo "outcome_summary=$(outcome "$O_SUMMARY")"
+            echo "outcome_gate=$(outcome "$O_GATE")"
+            echo "gate_status=$gs"
+            echo "match_files=$(int_or "$MATCH_FILES" 0)"
+            echo "unittest_exit=$ue"
+            echo "raw evidence was not cleared for publication and is not attached"
+          } > "$faildir/FAILURE.txt" || exit 1
+          {
+            echo "## PM2-RECOVERY-VERIFY-01 — run not cleared"
+            echo
+            echo '```'
+            cat -- "$faildir/FAILURE.txt"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY" || true
+          echo "FAILURE_DIAGNOSTICS_WRITTEN gate_status=$gs"
+
+      # 14 --------------------------------------------------------------
+      - name: 14. Upload cleared artifact (explicit clearance only)
+        if: ${{ !cancelled() && steps.gate.outcome == 'success' && steps.gate.outputs.cleared == 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pm2-recovery-verify-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/publish
+          if-no-files-found: error
+          retention-days: 7
+
+      # 15 --------------------------------------------------------------
+      - name: 15. Upload failure diagnostics (FAILURE.txt only)
+        if: ${{ always() && !(steps.gate.outcome == 'success' && steps.gate.outputs.cleared == 'true') }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pm2-recovery-verify-${{ github.run_id }}-${{ github.run_attempt }}-FAILURE
+          path: ${{ runner.temp }}/failure
+          if-no-files-found: error
+          retention-days: 7
