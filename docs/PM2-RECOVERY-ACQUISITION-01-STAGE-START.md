@@ -2,11 +2,14 @@
 
 **Task:** PM2-RECOVERY-ACQUISITION-01 — Define the bounded PM2 observation-acquisition procedure and evidence handling
 **Nature:** GOVERNANCE / DECISION (4-step). No implementation lane. No sidecar candidate.
-**Step:** 2 of 4 — reviewable procedure freeze. Previous: 1 of 4 COMPLETE — registration / control-plane only (2026-09-19).
+**Step:** 3 of 4 COMPLETE — explicit Keith decision recorded against the frozen §7 matrix (§15). Previous: 2 of 4 COMPLETE — reviewable procedure freeze. Previous: 1 of 4 COMPLETE — registration / control-plane only (2026-09-19).
 **Step 2 date:** 2026-09-19
 **Step 2 HEAD at window open:** `0e208ef219d1b373546b53267bbc0664aede5621` (branch main; working tree clean; matches the expected baseline)
+**Step 3 date:** 2026-09-20
+**Step 3 HEAD at window open:** `90f5957025e96a1f80252b3fb78ac776bac0e842` (branch main; working tree clean; matches the expected baseline; Step 2 freeze + corrections §10–§14 committed by Keith)
 **Registration:** `TASKS_BACKLOG_FULL.md` § PM2-RECOVERY-ACQUISITION-01 (Step 1 COMPLETE at HEAD `6557e8a7f068b54ba8f0a82dbeeb7dc161819d59`)
-**Current status (after Step 2 — FROZEN):** **Step 2 COMPLETE — freeze ready for review.** Steps 3–4 NOT AUTHORIZED. `PROCEDURE_SELECTED=NO`. `PROCEDURE_APPROVED=NO`. `EXECUTION_AUTHORIZED=NO`. `MECHANISM_ESTABLISHED=NO`. No live acquisition, transfer, or runtime authorization. Host remains UNCLEAN / HOLD. EXEC-01C6A `startCondition=NOT_READY`. Builder gate ON. Harness flags unchanged.
+**Current status (after Step 3):** **Step 3 COMPLETE.** Requirements contract adopted at C-ADOPT. Q1-A `ABORT_IF_ABSENT`; Q2-B `TOOLING`; Q3-A `NO_RETRY`. `PROCEDURE_SELECTED=YES` (requirements contract). `PROCEDURE_APPROVED=YES` (C-ADOPT). `EXECUTION_AUTHORIZED=NO`. `MECHANISM_ESTABLISHED=NO`. No live acquisition, C-ACQ, transfer, or runtime authorization. Step 4 NOT AUTHORIZED. NOT LOCKED. Host remains UNCLEAN / HOLD. EXEC-01C6A `startCondition=NOT_READY`. Builder gate ON. Harness flags unchanged.
+**Freeze status (historical, Step 2):** FROZEN for review. No decision was selected in §§0–14. At Step 2 close: `PROCEDURE_SELECTED=NO`; `PROCEDURE_APPROVED=NO`; `EXECUTION_AUTHORIZED=NO`; `MECHANISM_ESTABLISHED=NO`. §§0–14 are preserved unchanged as the controlling requirements specification. The §7.4 recommended-package `UNADOPTED` label is historical.
 **Acceptance object:** A bounded observation-acquisition requirements contract and its authorization boundary. Adoption of this procedure will **not** authorize execution. The mechanism to implement the requirements is not established by this freeze (§6.3); a separately authorized capture child is the proposed follow-on dependency (§6.5).
 
 **Locked predecessors read in this Step 2 (evidence only; not edited):**
@@ -945,3 +948,92 @@ Final consistency correction, 5 findings. Requirements-only approach and UNADOPT
 | 5 | §3.5 AUTO_LAUNCH_SUSPECTED defined as "daemon absent at ACQ-1 but present at ACQ-3" — unreachable under Q1-A (absent → STOP) | §3.5: redefined for the residual-race scenario — daemon present at ACQ-1, identity changed or disappeared/reappeared at ACQ-3, consistent with auto-launch race; set alongside IDENTITY_CHANGE or DAEMON_DISAPPEARED; changed PID supports suspicion, cannot prove cause; same-PID limitation preserved. §8.12 walkthrough updated |
 
 No decision selected. Steps 3–4 NOT AUTHORIZED. PROCEDURE_SELECTED=NO. PROCEDURE_APPROVED=NO. EXECUTION_AUTHORIZED=NO. MECHANISM_ESTABLISHED=NO. Host UNCLEAN / HOLD. EXEC-01C6A NOT_READY. Builder gate ON. Occupancy EMPTY. GOVERNANCE released UNOWNED.
+
+---
+
+## 15. Step 3 — explicit Keith decision record (2026-09-20; HEAD `90f5957025e96a1f80252b3fb78ac776bac0e842`)
+
+This section records Keith's decision against the frozen §7 matrix. It adds no requirements text, rewrites no frozen option, registers no child, authorizes no invocation, and performs no Step 4 verification. §§0–14 are unchanged. The §7.4 recommended-package `UNADOPTED` label is historical and is not edited.
+
+### 15.1 Authorization and Keith's answer
+
+- **Keith's statement (recorded in full):** "Approve Q1-A (ABORT_IF_ABSENT), Q2-B (TOOLING), and Q3-A (NO_RETRY). Authorize Step 3 only at baseline 90f5957025e96a1f80252b3fb78ac776bac0e842."
+- **Object of the approval:** the frozen §7 questions Q1, Q2 and Q3, with the three named available options. The §7.4 recommended package (Q1-A + Q2-B + Q3-A) was labelled UNADOPTED at freeze time; that label remains historical. Adoption is by this record only.
+- **Authorization scope:** Step 3 only. Step 4 (independent verification / checkpoint / lock) is **NOT AUTHORIZED**. "Authorize Step 3 only" is a process authorization, not an operational authorization and not a C-ACQ.
+- **Git:** Keith owns Git. This record is written uncommitted for Keith's commit.
+
+### 15.2 Recorded selections
+
+| Question | Keith's selection | Frozen availability (§7) | Completeness | Notes recorded with the selection |
+|---|---|---|---|---|
+| Q1 | **Q1-A: ABORT_IF_ABSENT** | available (§7.1) | independently interpretable | Known-absent daemon at ACQ-1 → stop; no invocation. Residual auto-launch race remains (§3.6) and is **not** accepted for any current invocation |
+| Q2 | **Q2-B: TOOLING** | available for selection at C-ADOPT (§7.2; no child need exist yet) | independently interpretable | Selects the future capture-child route. Registers, implements, tests, transfers, and executes nothing. Child lifecycle remains a C-ACQ prerequisite |
+| Q3 | **Q3-A: NO_RETRY** | available (§7.3) | independently interpretable | No additional invocation under the same C-ACQ. A fresh attempt requires a new explicit C-ACQ and all prerequisites. Silence is not inferred |
+
+**Unavailable options not selected:** Q1-B remains unavailable under the frozen contract (§7.1). Q2-A remains unavailable (`MANUAL_MECHANISM_NOT_ESTABLISHED`; §7.2). Q1-C and Q2-C (UNRESOLVED) are not selected. Q3-B and Q3-C are not selected.
+
+No secret value, restricted token, or protected material appears in the statement or the selections. Nothing redacted.
+
+### 15.3 Completeness and compatibility against frozen §7
+
+| Check | Required | Present | Result |
+|---|---|---|---|
+| Q1 resolved for C-ADOPT (§7.5) | Q1-A or Q1-C; Q1-B unavailable | Q1-A | **complete** — abort conditions determined; C-ADOPT unblocked on Q1 |
+| Q2 resolved for C-ADOPT (§7.5) | Q2 does not block C-ADOPT; Q2-B may be selected now | Q2-B | **complete** for C-ADOPT. C-ACQ remains blocked until the capture child is registered, implemented with fake-only verification, LOCKED, and transferred |
+| Q3 resolved as policy (§7.3 / §7.5) | Q3-A / Q3-B / Q3-C each independently interpretable; UNRESOLVED ≠ NO_RETRY | Q3-A | **complete** — adopted contract has a NO_RETRY provision. C-ACQ must still state explicit invocation/attempt scope; missing scope still blocks execution |
+| Unavailable options not used | Q1-B and Q2-A must not be treated as selected | neither selected | **compatible** |
+| Residual auto-launch vs Q1-A | Q1-A does not claim a strict no-auto-launch guarantee | residual race disclosed; not accepted for current invocation | **compatible** with §3.6 / §7.1 |
+| TOOLING vs child registration | Q2-B selection ≠ C-TOOL-REG | no child registered | **compatible** with §7.2 / §4.1 |
+| NO_RETRY vs fresh attempt | Q3-A permits no retry under the same C-ACQ; a new C-ACQ is not a retry | recorded in §15.4 | **compatible** with §3.7 / §7.3 |
+| P5 checkpoint analysis (§4.3) | analysis, not a decision | not treated as exemption, waiver, host attestation, or inferred decision | **compatible** — no new P5 rule adopted |
+| P5 journal-applicability (§4.2) | unresolved blocks C-ACQ; does not block C-ADOPT | remains unresolved | **compatible** |
+
+No UNRESOLVED, incomplete, or incompatible combination. The selected set corresponds to the historically UNADOPTED §7.4 recommended package and is now Keith's recorded choice by this section, not by §7.4.
+
+### 15.4 Derived effects (existing task vocabulary)
+
+- **C-ADOPT:** YES. The frozen requirements contract (§§2–6) is adopted as the authorized specification. Adoption accepts **no** current invocation risk, **no** mutation authorization, and **no** P7 risk (§3.6 / §4.5).
+- **Q1-A ABORT_IF_ABSENT:** DAEMON_ABSENT at pre-check → no invocation. Residual auto-launch race after a successful pre-check remains. That residual is **not** accepted for any current invocation. No current C-ACQ exists.
+- **Q2-B TOOLING:** method is the future capture-child route (§6.5). This decision registers, implements, tests, transfers, and executes **nothing**. `MECHANISM_ESTABLISHED=NO`.
+- **Q3-A NO_RETRY:** no additional invocation under the same C-ACQ. A fresh attempt requires a new explicit C-ACQ, fresh prerequisites, and preservation of earlier evidence. No retry is implied by a first invocation. Silence remains UNRESOLVED and is not this selection.
+- **C-ACQ:** NO. No capture is executable or operationally authorized. Each later C-ACQ requires explicit invocation/attempt scope.
+- **C-TOOL-REG / C-TOOL-IMPL / C-TOOL-TRANSFER:** not authorized. No child registered.
+- **C-VERIFY / C-REF / C-HOST / C-REOPEN / C-CANARY:** not authorized.
+- **PROCEDURE_SELECTED=YES** (requirements contract). **PROCEDURE_APPROVED=YES** (C-ADOPT). **EXECUTION_AUTHORIZED=NO**. **LOCKED=NO**.
+
+### 15.5 Explicit non-effects (preserved boundaries)
+
+- Capture mechanism readiness remains outstanding; no child registered.
+- P5 journal-applicability remains unresolved and blocks C-ACQ.
+- Host tools and target tuple remain unconfirmed for operational use.
+- Each later C-ACQ requires explicit invocation/attempt scope.
+- I-4 / I-5, reference preparation, verifier live-use approval, C1, S2 host evidence, and reopening remain outside this step.
+- A1 ADOPTED as contract text only; A2 ADOPTED as REQUIRED provenance policy only; first-run contract DEFINED; no usable first-run path.
+- P2 / P3 binding. `P7_ACCEPTED=NO`. `HOST_CLEAN=NO`. Host UNCLEAN / HOLD. Reopen gate UNSATISFIED. EXEC-01C6A `startCondition=NOT_READY`. Builder gate ON. Harness flags unchanged.
+- P5 checkpoint analysis remains analysis: not a new exemption, waiver, host attestation, or separate decision inferred from this approval.
+- No live acquisition, PM2 client invocation, verifier live use, tool transfer, B(H) construction, host-evidence acceptance, canary, or mutation.
+- **Step 3 COMPLETE does not mean checkpoint verified or task LOCKED. Step 4 remains NOT AUTHORIZED.**
+
+### 15.6 Outstanding dependencies carried forward
+
+| Dependency | Status | Effect |
+|---|---|---|
+| Capture mechanism readiness (§6.5 child LOCKED and transferred) | outstanding; no child registered | blocks C-ACQ |
+| P5 journal-applicability (§4.2) | unresolved | blocks C-ACQ |
+| Host tool availability / target-tuple confirmation | unconfirmed | blocks C-ACQ |
+| Explicit C-ACQ invocation/attempt scope | none | blocks any later execution |
+| I-4 / I-5 | OPEN | reference construction; outside this step |
+| Verifier live-use authorization | none | blocks C-VERIFY |
+| B(H) reference construction | not started | C-REF; outside this step |
+| C1 EXEC-01C6A amendment | not registered | outside this step |
+| S2 host-evidence acceptance | none | C-HOST; outside this step |
+| EXEC-01C6A reopen gate | UNSATISFIED | C-REOPEN; outside this step |
+| Step 4 independent verification / checkpoint / lock | NOT AUTHORIZED | requires Keith's separate authorization |
+
+### 15.7 Step 3 ledger
+
+- Write set: this document (header current-status lines updated; historical freeze status preserved; §§0–14 unchanged; §15 appended); `TASKS.md` (this task's current fields and governance ledger entries, `Previous:` preserved); `TASKS_BACKLOG_FULL.md` (this task's body only); `docs/control-plane/SATURATION_PROOF.json` (validator output only).
+- Not touched: sidecar, candidates, `lockedTaskIds`, mutex catalog, any predecessor body or locked freeze, EXEC-01C6A body / candidate, operator bundle, `ops/pm2-recovery-verify/`, workflows, application source, tests, PRD, ARCHITECTURE, CLAUDE, AGENTS.
+- Mutex: GOVERNANCE acquired transiently for this control-plane step; released UNOWNED at end of step. No implementation lane. Occupancy: Lane 1 EMPTY; Lane 2 EMPTY; Lane 3 DISABLED.
+- Runtime / activity: none (no Python, imports, tests, mocks, builds, installs, SSH, staging, PM2, config / vault / journal access, browser, workflow dispatch, subagents, child registration). Git: no add / commit / push / reset / restore; Keith owns Git.
+- Result: **Step 3 COMPLETE. C-ADOPT. Q1-A / Q2-B / Q3-A. MECHANISM_ESTABLISHED=NO. EXECUTION_AUTHORIZED=NO. Step 4 NOT AUTHORIZED. NOT LOCKED.**
