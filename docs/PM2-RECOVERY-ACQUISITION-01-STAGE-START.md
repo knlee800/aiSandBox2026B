@@ -2,13 +2,15 @@
 
 **Task:** PM2-RECOVERY-ACQUISITION-01 — Define the bounded PM2 observation-acquisition procedure and evidence handling
 **Nature:** GOVERNANCE / DECISION (4-step). No implementation lane. No sidecar candidate.
-**Step:** 3 of 4 COMPLETE — explicit Keith decision recorded against the frozen §7 matrix (§15). Previous: 2 of 4 COMPLETE — reviewable procedure freeze. Previous: 1 of 4 COMPLETE — registration / control-plane only (2026-09-19).
+**Step:** 4 of 4 **COMPLETE AND LOCKED** — independent verification passed (29 criteria); decision record locked (§16). Previous: 3 of 4 COMPLETE — explicit Keith decision recorded against the frozen §7 matrix (§15). Previous: 2 of 4 COMPLETE — reviewable procedure freeze. Previous: 1 of 4 COMPLETE — registration / control-plane only (2026-09-19).
 **Step 2 date:** 2026-09-19
 **Step 2 HEAD at window open:** `0e208ef219d1b373546b53267bbc0664aede5621` (branch main; working tree clean; matches the expected baseline)
 **Step 3 date:** 2026-09-20
 **Step 3 HEAD at window open:** `90f5957025e96a1f80252b3fb78ac776bac0e842` (branch main; working tree clean; matches the expected baseline; Step 2 freeze + corrections §10–§14 committed by Keith)
+**Step 4 date:** 2026-09-20
+**Step 4 HEAD at window open:** `63f6bd6746dc6edbecb5fa8e987fb1666077efc7` (branch main; matches the expected baseline; Step 3 commit by Keith; working tree at window open already contained an uncommitted same-scope Step 4 draft on the three authorized markdown paths — independently re-checked and corrected; `SATURATION_PROOF.json` not dirty at window open)
 **Registration:** `TASKS_BACKLOG_FULL.md` § PM2-RECOVERY-ACQUISITION-01 (Step 1 COMPLETE at HEAD `6557e8a7f068b54ba8f0a82dbeeb7dc161819d59`)
-**Current status (after Step 3):** **Step 3 COMPLETE.** Requirements contract adopted at C-ADOPT. Q1-A `ABORT_IF_ABSENT`; Q2-B `TOOLING`; Q3-A `NO_RETRY`. `PROCEDURE_SELECTED=YES` (requirements contract). `PROCEDURE_APPROVED=YES` (C-ADOPT). `EXECUTION_AUTHORIZED=NO`. `MECHANISM_ESTABLISHED=NO`. No live acquisition, C-ACQ, transfer, or runtime authorization. Step 4 NOT AUTHORIZED. NOT LOCKED. Host remains UNCLEAN / HOLD. EXEC-01C6A `startCondition=NOT_READY`. Builder gate ON. Harness flags unchanged.
+**Current status (after Step 4 — LOCKED):** **COMPLETE AND LOCKED.** Requirements contract adopted at C-ADOPT. Q1-A `ABORT_IF_ABSENT`; Q2-B `TOOLING`; Q3-A `NO_RETRY`. `PROCEDURE_SELECTED=YES` (requirements contract). `PROCEDURE_APPROVED=YES` (C-ADOPT). `EXECUTION_AUTHORIZED=NO`. `MECHANISM_ESTABLISHED=NO`. No live acquisition, C-ACQ, transfer, or runtime authorization. Host remains UNCLEAN / HOLD. EXEC-01C6A `startCondition=NOT_READY`. Builder gate ON. Harness flags unchanged. Acceptance object = acquisition requirements contract and authorization boundary only. Lock is of a decision record, not of any host state, mechanism, or operational authorization.
 **Freeze status (historical, Step 2):** FROZEN for review. No decision was selected in §§0–14. At Step 2 close: `PROCEDURE_SELECTED=NO`; `PROCEDURE_APPROVED=NO`; `EXECUTION_AUTHORIZED=NO`; `MECHANISM_ESTABLISHED=NO`. §§0–14 are preserved unchanged as the controlling requirements specification. The §7.4 recommended-package `UNADOPTED` label is historical.
 **Acceptance object:** A bounded observation-acquisition requirements contract and its authorization boundary. Adoption of this procedure will **not** authorize execution. The mechanism to implement the requirements is not established by this freeze (§6.3); a separately authorized capture child is the proposed follow-on dependency (§6.5).
 
@@ -1037,3 +1039,110 @@ No UNRESOLVED, incomplete, or incompatible combination. The selected set corresp
 - Mutex: GOVERNANCE acquired transiently for this control-plane step; released UNOWNED at end of step. No implementation lane. Occupancy: Lane 1 EMPTY; Lane 2 EMPTY; Lane 3 DISABLED.
 - Runtime / activity: none (no Python, imports, tests, mocks, builds, installs, SSH, staging, PM2, config / vault / journal access, browser, workflow dispatch, subagents, child registration). Git: no add / commit / push / reset / restore; Keith owns Git.
 - Result: **Step 3 COMPLETE. C-ADOPT. Q1-A / Q2-B / Q3-A. MECHANISM_ESTABLISHED=NO. EXECUTION_AUTHORIZED=NO. Step 4 NOT AUTHORIZED. NOT LOCKED.**
+
+---
+
+## 16. Step 4 — independent verification / checkpoint / lock (2026-09-20; HEAD `63f6bd6746dc6edbecb5fa8e987fb1666077efc7`)
+
+This section independently verifies the Step 3 record (§15) against the controlling freeze (§§0–14) and the registered acceptance criteria. It does not reopen settled choices, does not alter Keith's decisions, does not rewrite frozen requirements, and does not expand scope. §§0–15 are unchanged.
+
+### 16.1 Baseline
+
+- Step 4 HEAD: `63f6bd6746dc6edbecb5fa8e987fb1666077efc7` (matches expected baseline; Step 3 commit by Keith).
+- Working tree at window open: **not clean**. Uncommitted same-scope Step 4 draft already present on `TASKS.md`, `TASKS_BACKLOG_FULL.md`, and this document. `docs/control-plane/SATURATION_PROOF.json` was not dirty. Concurrent changes were same-task authorized writes; they did not overlap other tasks. Independent verification used committed blobs `63f6bd6` vs parent `90f5957`. The draft was independently re-checked and corrected (false “working tree clean” claim; duplicate `OUTSTANDING` / lost `STEP_1_HEAD`; exact Step 3 hunks). The draft was not copied as evidence.
+- Step 3 commit (`90f5957025e96a1f80252b3fb78ac776bac0e842` → `63f6bd6746dc6edbecb5fa8e987fb1666077efc7`) changed exactly 4 files: this document, `TASKS.md`, `TASKS_BACKLOG_FULL.md`, `docs/control-plane/SATURATION_PROOF.json`. No other path changed. Protected paths (sidecar, scripts, workflows, services, frontend, mutex catalog, predecessor bodies, EXEC-01C6A, CLAUDE, AGENTS, PRD, ARCHITECTURE) unchanged.
+- Frozen §§0–14 body is unchanged: `git diff -U0 90f5957 63f6bd6` on this document shows only `@@ -5 +5 @@`, `@@ -7,0 +8,2 @@`, `@@ -9 +11,2 @@` (current-status header) and `@@ -947,0 +951,89 @@` (appended `---` + §15). No hunk touches the §§0–14 body.
+
+### 16.2 Independent criterion-by-criterion verification
+
+| # | Criterion | Evidence (independently verified) | Result |
+|---|---|---|---|
+| V1 | Keith's full statement faithfully recorded in §15.1 | §15.1 reads: "Approve Q1-A (ABORT_IF_ABSENT), Q2-B (TOOLING), and Q3-A (NO_RETRY). Authorize Step 3 only at baseline 90f5957025e96a1f80252b3fb78ac776bac0e842." — matches Keith's instruction verbatim | **PASS** |
+| V2 | Q1-A is an available selection under frozen §7.1 | §7.1 table: Q1-A ABORT_IF_ABSENT — prerequisites: none; available | **PASS** |
+| V3 | Q2-B is an available selection under frozen §7.2 | §7.2 table: Q2-B TOOLING — prerequisites: "none beyond this freeze for selection at C-ADOPT"; available | **PASS** |
+| V4 | Q3-A is an available selection under frozen §7.3 | §7.3 table: Q3-A NO_RETRY — prerequisites: none; available | **PASS** |
+| V5 | Q1-A, Q2-B, Q3-A are each independently interpretable | §15.2 classifies each as "independently interpretable"; verified: each has a determinate meaning without reference to the others | **PASS** |
+| V6 | Q1-C blocks adoption; not selected | §7.1: Q1-C → "Requirements contract cannot be adopted"; Keith selected Q1-A, not Q1-C | **PASS** |
+| V7 | Unavailable Q1-B not selected | §7.1: Q1-B is "Unavailable in this requirements contract"; §15.2 confirms Q1-B not selected | **PASS** |
+| V8 | Unavailable Q2-A not selected | §7.2: Q2-A is "Unavailable" (`MANUAL_MECHANISM_NOT_ESTABLISHED`); §15.2 confirms Q2-A not selected | **PASS** |
+| V9 | Q2-B selection requires no existing child | §7.2 Q2-B effect: "Q2-B may be selected now; no child need exist yet. The child lifecycle … is a prerequisite for C-ACQ, not for selecting Q2-B" | **PASS** |
+| V10 | Q2-B authorizes no registration, implementation, testing, transfer, or use | §15.4: "registers, implements, tests, transfers, and executes **nothing**"; §15.2: "Child lifecycle remains a C-ACQ prerequisite" | **PASS** |
+| V11 | Q3-A prohibits another invocation under the same C-ACQ | §7.3 Q3-A effect: "Any failure stops the acquisition"; §3.7 "Retry" section requires Q3-B for retry under existing C-ACQ; Q3-A selected → no such retry authorized | **PASS** |
+| V12 | A fresh attempt requires a new explicit C-ACQ with all prerequisites | §3.7 "Fresh attempt under a new C-ACQ" section: "A separate C-ACQ authorization constitutes a fresh attempt, not a retry. It is permitted regardless of Q3, subject to: its own explicit invocation/attempt scope; fresh P4/P5 evidence; all §2.1 prerequisites re-satisfied independently; …" | **PASS** |
+| V13 | C-ADOPT adopts requirements text only | §15.4: "The frozen requirements contract (§§2–6) is adopted as the authorized specification. Adoption accepts **no** current invocation risk, **no** mutation authorization, and **no** P7 risk"; §4.5, §3.6 consistent | **PASS** |
+| V14 | Residual auto-launch race remains; no current invocation risk, mutation, or P7 risk accepted | §15.4 Q1-A: "Residual auto-launch race after a successful pre-check remains. That residual is **not** accepted for any current invocation. No current C-ACQ exists"; §15.5: "`P7_ACCEPTED=NO`" | **PASS** |
+| V15 | P5 checkpoint analysis remains analysis only, no invented exemption | §15.5: "P5 checkpoint analysis remains analysis: not a new exemption, waiver, host attestation, or separate decision inferred from this approval" | **PASS** |
+| V16 | P5 journal-applicability remains unresolved and blocks C-ACQ | §15.6 dependency table: "P5 journal-applicability (§4.2) | unresolved | blocks C-ACQ" | **PASS** |
+| V17 | MECHANISM_ESTABLISHED=NO | §15.4: "`MECHANISM_ESTABLISHED=NO`"; current-status header: "`MECHANISM_ESTABLISHED=NO`" | **PASS** |
+| V18 | EXECUTION_AUTHORIZED=NO | §15.4: "`EXECUTION_AUTHORIZED=NO`"; current-status header: "`EXECUTION_AUTHORIZED=NO`" | **PASS** |
+| V19 | Proposed capture child remains unregistered | §15.4: "No child registered"; §15.5: "Capture mechanism readiness remains outstanding; no child registered" | **PASS** |
+| V20 | Step 3 commit changed exactly the four authorized paths | `git diff --name-only 90f5957..63f6bd6` → TASKS.md, TASKS_BACKLOG_FULL.md, docs/PM2-RECOVERY-ACQUISITION-01-STAGE-START.md, docs/control-plane/SATURATION_PROOF.json | **PASS** |
+| V21 | Stage-start changes = header + appended §15; frozen §§0–14 unchanged | Independent `git diff -U0 90f5957 63f6bd6 -- docs/PM2-RECOVERY-ACQUISITION-01-STAGE-START.md`: `@@ -5 +5 @@`; `@@ -7,0 +8,2 @@`; `@@ -9 +11,2 @@`; `@@ -947,0 +951,89 @@`. Frozen §§0–14 body has no hunk | **PASS** |
+| V22 | Board/backlog changes confined to this task | TASKS.md hunks at lines 20–51 (board lines prefixed PM2-RECOVERY-ACQUISITION-01 or governance-owner/mutex entries for this task) and lines 90–149 (PM2_RECOVERY_ACQUISITION_01_ keyed fields). Line 150 begins PM2_RECOVERY_BASELINE_GOV_01 — unchanged | **PASS** |
+| V23 | Predecessors not changed | `git diff --name-only 90f5957..63f6bd6` contains no predecessor document (VERIFY-01, BASELINE-GOV-01, POLICY-01, DAEMON-INVESTIGATION-01, FENCE-01, OVERLAY-UNKNOWN-01) | **PASS** |
+| V24 | Sidecar, rules, source, workflows, runtime gates not changed | No `.github/`, `services/`, `frontend/`, `ops/`, `scripts/`, `CLAUDE.md`, `AGENTS.md`, `PRD.md`, `ARCHITECTURE.md`, or `docs/control-plane/lane-saturation-state.json` in the commit diff | **PASS** |
+| V25 | A1/A2 adopted-contract-only preserved | §0 invariant table: A1 ADOPTED (A1-F; contract text only), A2 ADOPTED (P-A; REQUIRED provenance policy only) — unchanged in §15 | **PASS** |
+| V26 | All non-effect boundaries in §15.5 consistent with §0 | P2/P3 binding, P7_ACCEPTED=NO, HOST_CLEAN=NO, UNCLEAN/HOLD, reopen UNSATISFIED, EXEC-01C6A NOT_READY, Builder gate ON, Harness unchanged — each matches §0 invariant table | **PASS** |
+| V27 | Outstanding dependencies in §15.6 match Step 2 §9 unresolved list | §15.6 carries: mechanism readiness, P5 journal-applicability, host tools/target tuple, C-ACQ scope, I-4/I-5, verifier live-use, B(H), C1, S2, reopen gate. All present in §9 unresolved list | **PASS** |
+| V28 | All registered Step 3 acceptance criteria addressed | Committed backlog Step 3 AC (10 items, all `[x]` at HEAD `63f6bd6`): statement; §7 mapping; completeness/compatibility; C-ADOPT / residual race not accepted; TOOLING registers nothing; NO_RETRY / fresh C-ACQ; MECHANISM_ESTABLISHED=NO / EXECUTION_AUTHORIZED=NO / no child; frozen §§0–14 unchanged; Step 4 NOT AUTHORIZED / LOCKED=NO at Step 3 close; A1/A2 and non-effect boundaries. Independently verified by V1–V27 | **PASS** |
+| V29 | All registered Step 4 acceptance criteria addressed | Registered Step 4 AC at HEAD `63f6bd6` was the placeholder `[ ] NOT AUTHORIZED`. Keith authorized Step 4 only at this baseline. Every criterion in that authorization is independently verified above: statement fidelity (V1); Q1-A / Q2-B / Q3-A available, complete, compatible (V2–V5); Q1-C blocks and was not selected (V6); unavailable Q1-B / Q2-A not selected (V7–V8); Q2-B requires no child and authorizes no registration / implementation / testing / transfer / use (V9–V10); Q3-A prohibits another invocation under the same C-ACQ; a fresh attempt requires a new explicit C-ACQ and all prerequisites (V11–V12); C-ADOPT adopts requirements text only (V13); residual auto-launch race remains; no current invocation risk, mutation, or P7 risk accepted (V14); P5 checkpoint analysis remains analysis with no invented exemption (V15); P5 journal-applicability remains unresolved and blocks C-ACQ (V16); MECHANISM_ESTABLISHED=NO; EXECUTION_AUTHORIZED=NO (V17–V18); proposed capture child unregistered (V19); Step 3 commit path / hunk / board-scope / predecessor / sidecar / rules / source / workflow / runtime-gate checks (V20–V24); preserved non-effects and outstanding dependencies (V25–V27). This checkpoint is of the adopted requirements and faithful decision recording only — not capture-mechanism verification or host readiness | **PASS** |
+
+All 29 criteria **PASS**. No blocker. No criterion required rewriting frozen requirements or altering Keith's selections.
+
+### 16.3 Lock record
+
+**Verdict: COMPLETE AND LOCKED.**
+
+**Lock scope:** Acquisition requirements contract (§§2–6) and authorization boundary, with Q1-A ABORT_IF_ABSENT / Q2-B TOOLING / Q3-A NO_RETRY as recorded in §15. Lock is of a decision record — it does **not** lock any host state, mechanism implementation, operational authorization, or capture.
+
+**Acceptance object:** acquisition requirements contract and authorization boundary only.
+
+**What this lock establishes:**
+- The requirements contract text (§§2–6) is the adopted specification (C-ADOPT).
+- Q1-A: daemon absent at pre-check → stop (no invocation).
+- Q2-B: the capture-child route is the selected mechanism direction.
+- Q3-A: no retry under the same C-ACQ; fresh attempts require a new C-ACQ.
+
+**What this lock does NOT establish:**
+- No capture mechanism exists or is verified.
+- No child has been registered, implemented, tested, or transferred.
+- No host tool availability or target-tuple confirmation exists.
+- No C-ACQ has been issued. No invocation is authorized.
+- No P5 journal-applicability resolution.
+- No B(H) reference, S2 host evidence, verifier live-use authorization, C1 amendment, or reopen.
+- No host attestation, P7 acceptance, or CLEAN status.
+- Locking this record does not establish any of the §15.6 outstanding dependencies.
+
+### 16.4 Explicit non-effects (preserved boundaries)
+
+| Boundary | Status |
+|---|---|
+| A1 | ADOPTED (contract text only) |
+| A2 | ADOPTED (REQUIRED provenance policy only) |
+| First-run contract | DEFINED; no usable first-run path |
+| P2 / P3 | binding |
+| P7_ACCEPTED | NO |
+| HOST_CLEAN | NO |
+| Host state | UNCLEAN / HOLD |
+| Reopen gate | UNSATISFIED |
+| EXEC-01C6A | `startCondition=NOT_READY`; not reopened; not admitted |
+| Builder gate | ON |
+| Harness flags | unchanged |
+| MECHANISM_ESTABLISHED | NO |
+| EXECUTION_AUTHORIZED | NO |
+| Capture child | unregistered |
+| C-ACQ | none |
+| Verifier live-use | not authorized |
+| B(H) | not constructed |
+| I-4 / I-5 | OPEN |
+| C1 | not registered |
+| S2 | none |
+| Sidecar / lockedTaskIds | unchanged; no candidate added |
+
+### 16.5 Step 4 ledger
+
+- Write set: this document (header current-status updated with historical status preserved; §§0–15 unchanged; §16 appended); `TASKS.md` (this task's current fields and governance ledger entries, `Previous:` preserved); `TASKS_BACKLOG_FULL.md` (this task's body only); `docs/control-plane/SATURATION_PROOF.json` (validator output only).
+- Not touched: sidecar, candidates, `lockedTaskIds`, mutex catalog, any predecessor body or locked freeze, EXEC-01C6A body / candidate, operator bundle, `ops/pm2-recovery-verify/`, workflows, application source, tests, PRD, ARCHITECTURE, CLAUDE, AGENTS.
+- Mutex: GOVERNANCE acquired transiently for this control-plane step; released UNOWNED at end of step. No implementation lane. Occupancy: Lane 1 EMPTY; Lane 2 EMPTY; Lane 3 DISABLED.
+- Runtime / activity: none (no Python, imports, tests, mocks, builds, installs, SSH, staging, PM2, config / vault / journal access, browser, workflow dispatch, subagents, child registration). Git: no add / commit / push / reset / restore; Keith owns Git.
+- Result: **COMPLETE AND LOCKED. C-ADOPT. Q1-A / Q2-B / Q3-A. MECHANISM_ESTABLISHED=NO. EXECUTION_AUTHORIZED=NO.**
