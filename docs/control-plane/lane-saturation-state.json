@@ -10,17 +10,29 @@
   },
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
-      "hotfiles": [],
+      "state": "ACTIVE",
+      "taskId": "PM2-RECOVERY-CAPTURE-01",
+      "mutexes": ["CONTAINER-MANAGER", "LOCAL-RUNTIME"],
+      "writePaths": [
+        "ops/pm2-recovery-capture/capture.py",
+        "ops/pm2-recovery-capture/tests/test_capture.py",
+        "ops/pm2-recovery-capture/.gitattributes",
+        "ops/pm2-recovery-capture/SHA256SUMS",
+        "ops/pm2-recovery-capture/README.md"
+      ],
+      "hotfiles": [
+        "ops/pm2-recovery-capture/capture.py",
+        "ops/pm2-recovery-capture/tests/test_capture.py",
+        "ops/pm2-recovery-capture/.gitattributes",
+        "ops/pm2-recovery-capture/SHA256SUMS",
+        "ops/pm2-recovery-capture/README.md"
+      ],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
-      "runtimeNeeds": []
+      "runtimeNeeds": ["LOCAL-RUNTIME"]
     },
     "lane2": {
       "state": "EMPTY",
@@ -989,7 +1001,7 @@
       "taskId": "PM2-RECOVERY-CAPTURE-01",
       "nature": "IMPLEMENTATION",
       "lifecycle": "4-STEP",
-      "status": "READY",
+      "status": "ADMITTED",
       "startCondition": "READY",
       "saturationClass": "FORCING",
       "productClass": "CURRENT",
@@ -997,7 +1009,7 @@
       "dependsOn": [
         "PM2-RECOVERY-VERIFY-01"
       ],
-      "mutexes": [],
+      "mutexes": ["CONTAINER-MANAGER", "LOCAL-RUNTIME"],
       "writePaths": [
         "ops/pm2-recovery-capture/capture.py",
         "ops/pm2-recovery-capture/tests/test_capture.py",
@@ -1017,8 +1029,8 @@
       "mutatesSharedContractIds": [],
       "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
-      "runtimeNeeds": [],
-      "admissionUncertain": true,
+      "runtimeNeeds": ["LOCAL-RUNTIME"],
+      "admissionUncertain": false,
       "writeSetPrecision": "EXACT"
     }
   ],
@@ -1035,7 +1047,7 @@
     }
   ],
   "runtimeAuthorization": {
-    "localRuntimeAuthorized": false,
+    "localRuntimeAuthorized": true,
     "stagingAuthorized": false,
     "providerLiveAuthorized": false,
     "creditAuthorized": false

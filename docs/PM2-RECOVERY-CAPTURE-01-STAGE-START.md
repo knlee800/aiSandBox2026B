@@ -5,7 +5,7 @@
 **Date:** 2026-09-20
 **Baseline:** e5457b55ac86ddd50cad38434a70f061153d949e
 **Nature:** IMPLEMENTATION (4-step lifecycle)
-**Status:** Step 2 COMPLETE / DESIGN FROZEN (pipe/EOF architecture consolidated; corrections #7–#12 applied; Keith-authorized design selection; targeted static review found all findings addressed; no implementation or runtime verification performed) — Steps 3–4 NOT AUTHORIZED
+**Status:** Step 3 IN PROGRESS — T-BOUND-04 readiness replaced with non-blocking byte reader under absolute monotonic deadline; partial-then-stalls negative test added; 130 collected / 130 passed / 0 skipped non-root uid=1000 Linux python:3.10-slim pytest 9.1.1; SHA256SUMS verified; Step 4 NOT AUTHORIZED
 **MECHANISM_ESTABLISHED:** NO
 
 **Requirements predecessor (LOCKED):** PM2-RECOVERY-ACQUISITION-01 — `docs/PM2-RECOVERY-ACQUISITION-01-STAGE-START.md` §2–§5 (requirements contract), §6.5 (capture child acceptance criteria), §7 decisions (Q1-A ABORT_IF_ABSENT, Q2-B TOOLING, Q3-A NO_RETRY), §5.5 (publication allowlist), §3.2 (target tuple), §3.3 (P5 filtering), §3.4 (bounded invocation), §3.5 (failure conditions), §5.1–§5.4 (private storage and evidence handling)
@@ -1446,3 +1446,382 @@ Prior finding closure details from corrections #7 and #8 have been incorporated 
 - `TASKS.md` — this task's fields
 - `TASKS_BACKLOG_FULL.md` — this task's body
 - `docs/control-plane/SATURATION_PROOF.json` — validator output
+
+---
+
+## 29. Step 3 record — Implementation (2026-09-21, baseline `4e2231a8e2841fce3c134c0c861f02362e3ba5b9`)
+
+**Scope:** Implement the frozen five-file scope and run the frozen fake-only verification plan.
+
+### 29.1 Admission
+
+Admitted to Lane 1 at baseline `4e2231a8e2841fce3c134c0c861f02362e3ba5b9`. Both lanes EMPTY, GOVERNANCE UNOWNED, all admission checks passed. HOTFILE leases acquired for all five implementation files. Validator PASS at admission.
+
+### 29.2 Implementation
+
+All five frozen files created:
+
+| Path | Action | Notes |
+|---|---|---|
+| `ops/pm2-recovery-capture/capture.py` | CREATE | Full pipe/EOF architecture per §§1–15; ~650 lines |
+| `ops/pm2-recovery-capture/tests/test_capture.py` | CREATE | Fake-only test suite; covers T-ARG, T-TARGET, T-STORE, T-INVOKE, T-HASH, T-WRITER, T-MEM, T-STATE, T-BOUND, T-STATUS, T-TOOL, T-INT, T-PRE, T-POST |
+| `ops/pm2-recovery-capture/.gitattributes` | CREATE | `* text eol=lf` |
+| `ops/pm2-recovery-capture/SHA256SUMS` | CREATE | SHA-256 of all four other files |
+| `ops/pm2-recovery-capture/README.md` | CREATE | Purpose, usage, constraints, operational status |
+
+### 29.3 Deviations
+
+None from the frozen design. All mechanisms implemented as specified in §§1–15.
+
+### 29.4 Test environment blocker
+
+**LINUX_REQUIRED.** The capture mechanism uses Linux-only APIs (`signal.SIGCHLD`, `os.waitpid` with `WNOHANG`, `select.poll`, `pwd` module, Unix domain sockets). The available environment is Windows 10 with Python 3.13.1. WSL has only a stopped `docker-desktop` distribution with no Python or pytest.
+
+Per Keith's instruction: "Use an existing permitted local Linux environment if available; do not substitute live staging, start Docker, or install new infrastructure to bypass a missing environment. Report a genuine environment blocker."
+
+- **Tests written:** All frozen case IDs mapped to test functions.
+- **Tests executed:** 0 (Linux environment unavailable).
+- **Python syntax verified:** Both `capture.py` and `test_capture.py` pass `ast.parse` on Windows.
+
+### 29.5 Verification status
+
+| Check | Result |
+|---|---|
+| Python syntax (capture.py) | PASS (ast.parse) |
+| Python syntax (test_capture.py) | PASS (ast.parse) |
+| SHA256SUMS computed | PASS (excludes manifest itself) |
+| git diff --check | PASS (exit 0; known LF/CRLF warning on sidecar) |
+| Lane validator | PASS |
+| Fake-only test suite | NOT EXECUTED (LINUX_REQUIRED) |
+
+### 29.6 Preserved statuses
+
+MECHANISM_ESTABLISHED=NO. P7_ACCEPTED=NO. HOST_CLEAN=NO. UNCLEAN/HOLD. EXEC-01C6A NOT_READY. Builder gate ON. Harness UNCHANGED. P5 journal-applicability UNRESOLVED. A1/A2 contract-only. P2/P3 binding.
+
+### 29.7 Files modified (control-plane)
+
+- `docs/PM2-RECOVERY-CAPTURE-01-STAGE-START.md` — status header + §29
+- `TASKS.md` — occupancy block, this task's fields
+- `TASKS_BACKLOG_FULL.md` — this task's body
+- `docs/control-plane/lane-saturation-state.json` — admission, candidate status
+- `docs/control-plane/SATURATION_PROOF.json` — validator output
+
+### 29.8 Step 3 continuation — Linux test environment (2026-09-21)
+
+**Authorization:** Keith authorized Docker Desktop startup and a disposable Linux Python/pytest container with LOCAL-RUNTIME and CONTAINER-MANAGER leases.
+
+**Environment:**
+- Image: `python:3.12-slim` (`sha256:2f17fc044b579bab302c2e8054d3a686e2cb9a83de48e70534b94cd8ebbe06a9`, linux/amd64)
+- Python: 3.12.14
+- pytest: 9.1.1
+- Container: `pm2capture-test` (disposable, `--rm`)
+- Test user: `testrunner` (uid=1000, non-root)
+- Mount: `ops/pm2-recovery-capture` → `/mnt/capture:ro`
+- Working copy: `/home/testrunner/work/` (copied from read-only mount, sha256 verified)
+
+**Test defects fixed (5):**
+
+| Test | Defect | Fix |
+|---|---|---|
+| `test_target_01_account_mismatch` | `monkeypatch.setattr('os.geteuid', lambda: os.geteuid())` creates infinite recursion | Capture `real_euid = os.geteuid()` before patching; use `lambda: real_euid` |
+| `test_store_06_group_writable` | `d.mkdir(mode=0o770)` masked by umask; actual mode lacks S_IWGRP | Add explicit `d.chmod(0o770)` after mkdir |
+| `test_store_07_other_writable` | `d.mkdir(mode=0o707)` masked by umask; actual mode lacks S_IWOTH | Add explicit `d.chmod(0o707)` after mkdir |
+| `test_store_08_mode_0757` | `d.mkdir(mode=0o757)` masked by umask; forbidden bits absent | Add explicit `d.chmod(0o757)` after mkdir |
+| `test_store_01_not_writable` | Root user bypasses `os.access(path, os.W_OK)` | Run as non-root `testrunner` (uid=1000); no code change needed |
+
+**Files changed:** `ops/pm2-recovery-capture/tests/test_capture.py` only (4 targeted edits). `ops/pm2-recovery-capture/SHA256SUMS` regenerated.
+
+**Test command:**
+```
+docker exec --user testrunner pm2capture-test bash -c \
+  "cd /home/testrunner/work && PYTHONDONTWRITEBYTECODE=1 python3 -m pytest tests/test_capture.py -v --tb=long"
+```
+
+**Results:** 52 collected, **52 passed**, 0 failed, 0 skipped in 0.12s.
+
+**SHA256SUMS:** Regenerated and verified (`sha256sum -c SHA256SUMS` → all OK).
+
+**Environment blocker:** RESOLVED. Linux execution succeeded via authorized Docker Desktop container.
+
+### 29.9 Verification status (final)
+
+| Check | Result |
+|---|---|
+| Python syntax (capture.py) | PASS (ast.parse) |
+| Python syntax (test_capture.py) | PASS (ast.parse) |
+| Fake-only test suite (Linux) | **PASS** (52/52) |
+| SHA256SUMS computed and verified | PASS (excludes manifest itself) |
+| git diff --check | See final report |
+| Lane validator | See final report |
+
+### 29.10 Preserved statuses
+
+MECHANISM_ESTABLISHED=NO. P7_ACCEPTED=NO. HOST_CLEAN=NO. UNCLEAN/HOLD. EXEC-01C6A NOT_READY. Builder gate ON. Harness UNCHANGED. P5 journal-applicability UNRESOLVED. A1/A2 contract-only. P2/P3 binding. Step 4 NOT AUTHORIZED.
+
+### 29.11 Step 3 correction — six-group implementation and test defects (2026-09-21)
+
+**Trigger:** Source review found that the previous 52-test suite did not exercise `run_capture()`, `main()`, or fake PM2 processes. Coverage claims withdrawn; limited coverage recorded honestly.
+
+**capture.py corrections (6 groups):**
+
+| Group | Defect | Fix |
+|---|---|---|
+| 1. Behavioral coverage | Tests only checked constants, not behavior | New behavioral tests exercising `run_capture()` with fake processes |
+| 2. Metadata compatibility | `build_observation_meta()` emitted wrong field names (`acq_record` not `acquisition_record`, `T_invoke` not `captured_at`), extra keys (`account`, `pm2_binary`, `anomaly_flags`, etc.), missing `schema` field | Rewrote to emit only verifier-accepted fields; added `SCHEMA_OBSERVATION_META` constant; private evidence moved to E2 only |
+| 3. Stream completion | `OSError` catch on `os.read` conflated EAGAIN (no data yet) with true errors and EOF | Separate `BlockingIOError` handler (continue); `OSError` sets `read_error=True`; only zero-byte read without exception = EOF; `read_error` prevents COMPLETED |
+| 4. Observation checks | Command-substring exclusions (`'pgrep' in cmd`); no post-invocation socket check; tool signal termination ignored | PID-based exclusions using `subprocess.Popen` to capture pgrep PID; added post-invocation `lsof` socket-holder observation; signal termination handled as failure |
+| 5. Post-launch exception | Poller construction unprotected after launch; child could be orphaned | Wrapped `select.poll()`/`register()` in try/except calling `_bounded_terminate` |
+| 6. Evidence/outcomes | `T_post_cmd` recorded after drain, not at reap; DEFERRED ignores status write failure; E2 not written for DEFERRED | `T_post_cmd` recorded inside loop at reap; E2 written before status for DEFERRED; failed status write exits 2, not DEFERRED |
+
+**test_capture.py rewrite:**
+- Previous: 52 tests — constants, helpers, pattern matching, unit-only
+- Current: 76 tests — adds behavioral tests exercising `run_capture()` with fake processes (normal, error, timeout, fork/descendant), stream completion (EAGAIN vs EOF, read errors), metadata compatibility (8 tests against verifier schema), memory saturation, poller failure, stalled writer, close-then-raise with fd reuse, cleanup deadline preservation, status write failure paths
+
+**Test defects fixed during this cycle (3):**
+
+| Test | Defect | Fix |
+|---|---|---|
+| `test_stream_read_error_prevents_completed` | Global `os.read` monkeypatch broke `subprocess.Popen` internals | Target only non-blocking fds via `fcntl.F_GETFL` check |
+| `test_writer_10_close_then_raise_reuse` | Close log matched pre-creation close of same fd number | Track `replacement_created` flag; only check closes after replacement creation |
+| `test_stream_read_error_prevents_completed` | Intentional `raise OSError` caught by same try/except block | Moved `fcntl` check into try; raise outside the except handler |
+
+**Environment:** Docker Desktop, `python:3.12-slim`, Python 3.12.14, pytest 9.1.1, non-root `testrunner` (uid=1000).
+
+**Results:** 76 collected, **76 passed**, 0 failed, 0 skipped in 13.54s.
+
+**SHA256SUMS:** Regenerated and verified.
+
+**Frozen-case-to-test mapping:**
+
+| Frozen case | Test | Exercises |
+|---|---|---|
+| Normal capture (exit 0, both EOF) | `test_invoke_normal_capture` | `run_capture()` with fake pm2 → REAPED, exit 0, EOF both, stdout content |
+| Non-zero exit | `test_invoke_nonzero_exit` | `run_capture()` with fake pm2 error → REAPED, exit 1, NON_ZERO_EXIT |
+| Timeout + SIGTERM + SIGKILL | `test_invoke_timeout_sigterm_sigkill` | `run_capture()` with SIGTERM-ignoring fake → REAPED via SIGKILL, TIMEOUT flag |
+| Slow process timeout | `test_invoke_slow_timeout` | `run_capture()` with sleeping fake → SIGTERM kills, TIMEOUT flag |
+| Descendant holds pipe | `test_invoke_fork_descendant_holds_pipe` | `run_capture()` with forking fake → parent data captured, drain timeout |
+| T_post_cmd at reap | `test_invoke_t_post_cmd_at_reap` | T_post_cmd recorded when child exits, not after drain |
+| Identity enqueue failure | `test_invoke_identity_enqueue_failure` | Supervision continues despite identity enqueue error |
+| EAGAIN vs EOF | `test_stream_eagain_not_eof` | Delayed output not lost to premature EOF |
+| Read error prevents COMPLETED | `test_stream_read_error_prevents_completed` | OSError on pipe read → read_error=True |
+| Metadata schema | `test_meta_schema_field_present` | schema field = verifier constant |
+| Metadata allowed keys only | `test_meta_only_allowed_keys` | No extra keys beyond verifier set |
+| Metadata required fields | `test_meta_required_fields_present` | All 7 required fields present |
+| Metadata field names | `test_meta_field_name_mapping` | `acquisition_record` not `acq_record`, `captured_at` not `T_invoke` |
+| daemon_pid omission on IDENTITY_CHANGE | `test_meta_daemon_pid_omitted_on_identity_change` | Key absent when flag set |
+| daemon_pid omission on DAEMON_DISAPPEARED | `test_meta_daemon_pid_omitted_on_disappeared` | Key absent when flag set |
+| jlist_sha256 hex format | `test_meta_jlist_sha256_format` | Lowercase 64-char hex |
+| daemon_pid positive int | `test_meta_daemon_pid_positive_int` | Not null, not bool, positive |
+| Stalled writer | `test_writer_06_stalled_writer` | Writer event not set while write blocks |
+| Close-then-raise reuse | `test_writer_10_close_then_raise_reuse` | Replacement fd not closed by cleanup |
+| Memory saturation | `test_mem_large_output_saturates` | Output > MEM_CAP → backpressure, some data captured |
+| Cleanup preserves deadline | `test_state_cleanup_preserves_deadline` | _bounded_terminate waits near TIMEOUT_LIMIT before SIGTERM |
+| Poller failure after launch | `test_except_poller_failure_exits` | select.poll() failure → bounded terminate + exit 2 |
+| Status write failure | `test_status_write_failure_returns_false` | create_private_file error → returns False |
+| DEFERRED status failure | `test_deferred_status_write_failure` | Failed status write not ignored |
+
+**Remaining gaps:**
+- Ambiguous reaping — **CLOSED.** 7 fault-injection tests added (see §29.13).
+- Offline verifier compatibility — **CLOSED.** 4 tests using the real locked verifier (see §29.13).
+- Persistence-timeout → ABANDONED — **CLOSED.** 3 subprocess-isolated tests (see §29.13).
+
+### 29.13 Step 3 gap-closure cycle — three verification gaps
+
+**Date:** 2026-09-21
+**Environment:** Docker Desktop, `python:3.10-slim`, Python 3.10.21, pytest 9.1.1, root testrunner.
+**Results:** 90 collected, **89 passed**, **1 skipped** (root permission test), 0 failed in 19.49s.
+
+**Gap 1: Ambiguous reaping** (7 tests added)
+
+| Test | Mechanism |
+|---|---|
+| `test_ambig_01_reap_then_runtime_error` | waitpid performs real reap, then raises RuntimeError → STATE_UNKNOWN, no signal to child PID |
+| `test_ambig_02_child_process_error` | waitpid raises ChildProcessError → IDENTITY_LOST, no signal |
+| `test_ambig_03_exception_during_term_grace` | Exception after SIGTERM sent during TERM_GRACE → STATE_UNKNOWN |
+| `test_ambig_04_exception_during_kill_grace` | Exception after SIGKILL sent → STATE_UNKNOWN |
+| `test_ambig_05_bounded_terminate_no_signal_after_reap` | _bounded_terminate with REAPED → no signals |
+| `test_ambig_06_bounded_terminate_no_signal_state_unknown` | _bounded_terminate with STATE_UNKNOWN → no signals |
+| `test_ambig_07_cleanup_preserves_existing_term` | SIGTERM already sent → preserves deadline, does not re-send SIGTERM |
+
+**Gap 2: Offline verifier compatibility** (4 tests added)
+
+| Test | Mechanism |
+|---|---|
+| `test_verifier_01_normal_capture_passes` | Imports locked `compare_dual_env.py`, generates synthetic observation-meta via `build_observation_meta()`, validates with `validate_observation_meta()` → 0 errors |
+| `test_verifier_02_captured_at_is_t_obs_start` | Confirms `captured_at` is T_obs_start per acquisition §2.4, not T_invoke |
+| `test_verifier_03_daemon_pid_omitted_identity_change` | IDENTITY_CHANGE → verifier accepts metadata without daemon_pid |
+| `test_verifier_04_hash_binding` | jlist_sha256 in metadata matches actual file hash; verifier extracts matching value |
+
+**captured_at fix:** `build_observation_meta()` now accepts `t_obs_start` parameter (was `T_invoke_utc`). `main()` passes `t_obs_start` per acquisition §2.4: "captured_at definition: T_obs_start from ACQ-1a."
+
+**Gap 3: Persistence timeout / ABANDONED** (3 tests added)
+
+All three tests run in a subprocess to isolate `os._exit(2)` from pytest:
+
+| Test | Mechanism |
+|---|---|
+| `test_abandoned_01_persistence_timeout` | Writer blocked at fsync → PERSIST_TIMEOUT expires → exit 2; no metadata, no status; partial files preserved |
+| `test_abandoned_02_no_descriptor_close` | Supervisor does not close writer-owned descriptors during ABANDONED |
+| `test_abandoned_03_no_fallback_logging` | No fallback persistence, notification writes, or status/e2 files after ABANDONED |
+
+**Additional fix:** `test_store_01_not_writable` now skips when running as root (Docker container).
+
+**Updated frozen-case-to-test mapping (additions only):**
+
+| Frozen case | Test | Decisive assertion |
+|---|---|---|
+| Ambiguous reap → STATE_UNKNOWN | `test_ambig_01` | `child_state == STATE_UNKNOWN`, no signals to child PID |
+| ChildProcessError → IDENTITY_LOST | `test_ambig_02` | `child_state == IDENTITY_LOST`, no signals |
+| Exception during TERM grace | `test_ambig_03` | `child_state == STATE_UNKNOWN` |
+| Exception during KILL grace | `test_ambig_04` | `child_state == STATE_UNKNOWN` |
+| No signal after REAPED | `test_ambig_05` | `len(signals_sent) == 0` |
+| No signal after STATE_UNKNOWN | `test_ambig_06` | `len(signals_sent) == 0` |
+| Existing SIGTERM preserved | `test_ambig_07` | No re-sent SIGTERM, SIGKILL escalated |
+| Verifier full normal | `test_verifier_01` | `errors == []`, all obs fields populated |
+| captured_at = T_obs_start | `test_verifier_02` | `doc['captured_at'] == t_obs_start` |
+| daemon_pid omission identity | `test_verifier_03` | `'daemon_pid' not in doc`, verifier 0 errors |
+| Hash binding exact bytes | `test_verifier_04` | `doc['jlist_sha256'] == expected_hash` |
+| Persistence timeout → exit 2 | `test_abandoned_01` | `proc.returncode == 2`, no metadata/status, partial files exist |
+| No descriptor close on ABANDONED | `test_abandoned_02` | `proc.returncode == 2`, no supervisor_close logged |
+| No fallback writes on ABANDONED | `test_abandoned_03` | `proc.returncode == 2`, no status/e2/meta files |
+
+**SHA256SUMS:** Regenerated and verified (`sha256sum -c` in Linux container).
+
+### 29.14 Preserved statuses (updated)
+
+MECHANISM_ESTABLISHED=NO. P7_ACCEPTED=NO. HOST_CLEAN=NO. UNCLEAN/HOLD. EXEC-01C6A NOT_READY. Builder gate ON. Harness UNCHANGED. P5 journal-applicability UNRESOLVED. A1/A2 contract-only. P2/P3 binding. Step 4 NOT AUTHORIZED.
+
+### 29.15 Step 3 correction — three verified review findings (2026-09-21)
+
+**Finding 1: T-BOUND-04 SCM_RIGHTS survivor EPIPE/SIGPIPE observation**
+
+Previous test proved descriptor transfer prevents EOF and blocks finalization but did not observe EPIPE/SIGPIPE after pipe-reader closure. Corrected: after `run_capture()` returns (pipe readers closed), the test notifies the holder via a separate AF_UNIX socket channel. The holder writes to the transferred pipe fd with a SIGPIPE handler installed. Outcome (EPIPE or SIGPIPE) is written to a marker file and asserted by the test.
+
+| Assertion | Result |
+|---|---|
+| `child_state == REAPED` | PASSED |
+| `not all(eof.values())` | PASSED |
+| `write_result in ('EPIPE', 'SIGPIPE')` | PASSED |
+
+**Finding 2: T-STATUS-12/13 targeted fault injection**
+
+Previous tests replaced `write_status_record()` with an unconditional `False` stub. The real code path was not exercised. Corrected: both tests now run `main()` via subprocess with the real `write_status_record()`. Faults are injected at the `os.fsync` (T-STATUS-12) and `os.close` (T-STATUS-13) calls specifically when the target fd points to `status.json`, using `/proc/self/fd` readlink. Marker files confirm the fault was reached.
+
+**T-STATUS-12 (fsync failure):**
+
+| Assertion | Result |
+|---|---|
+| `proc.returncode == 2` (collector exit) | PASSED |
+| `fsync_fault.marker` exists with `FSYNC_FAULT_REACHED` | PASSED |
+| `status.json` exists with `attempt_outcome == COMPLETED` | PASSED |
+| `stdout.raw` preserved | PASSED |
+
+**T-STATUS-13 (close-after-kernel-close failure):**
+
+| Assertion | Result |
+|---|---|
+| `proc.returncode == 2` (collector exit) | PASSED |
+| `close_fault.marker` exists with `CLOSE_FAULT_REACHED` | PASSED |
+| `status.json` exists with content | PASSED |
+| `stdout.raw` preserved | PASSED |
+
+**Environment:** python:3.10-slim, non-root testrunner uid=1000, pytest 9.1.1, repository read-only mount.
+
+**Suite:** 128 collected / 128 passed / 0 skipped.
+
+**SHA256SUMS:** Regenerated and verified in Linux (`sha256sum -c`).
+
+```
+3edfae233640d5a882dc4c1babceb0b30d6865315ff0376bf079b05cbe35aae5  capture.py
+ab824e14c933c38f444fd4c8f52c1f54be78f74637402f106a38f158af626f36  tests/test_capture.py
+a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9  .gitattributes
+9ab5347c7e9fa3343c85176680190ea46d1fe3222736efea5e3c41eff4d9d17a  README.md
+```
+
+capture.py NOT changed this session.
+
+### 29.16 Preserved statuses (updated)
+
+MECHANISM_ESTABLISHED=NO. P7_ACCEPTED=NO. HOST_CLEAN=NO. UNCLEAN/HOLD. EXEC-01C6A NOT_READY. Builder gate ON. Harness UNCHANGED. P5 journal-applicability UNRESOLVED. A1/A2 contract-only. P2/P3 binding. Step 4 NOT AUTHORIZED.
+
+### 29.17 Step 3 correction — T-BOUND-04 deadline bounding (2026-09-21)
+
+**Problem:** `test_bound_04_scm_rights_transfer` used two blocking `readline()` calls for READY and HOLD_READY messages and an unbounded connect loop for the notification socket. A misbehaving helper could hang the test indefinitely.
+
+**Correction:**
+- Both `readline()` calls replaced with `select.select()` on the helper's stdout fd, bounded by `READINESS_DEADLINE` (10 s). `select` returns readable/empty; the exact message (`READY` / `HOLD_READY`) is asserted.
+- Notification socket connect loop bounded by `time.monotonic()` deadline with `settimeout()` on the socket.
+- `helper_proc.wait(timeout=READINESS_DEADLINE)` replaces unbounded wait.
+- New `test_bound_04_helper_never_ready`: launches a helper that hangs, confirms `select` timeout (2 s), kills helper, asserts reap. Proves test infrastructure itself fails bounded when a helper misbehaves.
+
+| Test | Assertion | Result |
+|---|---|---|
+| `test_bound_04_scm_rights_transfer` | `rlist` truthy after select (READY) | **PASSED** |
+| | `ready_line.strip() == b'READY'` | **PASSED** |
+| | `rlist` truthy after select (HOLD_READY) | **PASSED** |
+| | `hold_line.strip() == b'HOLD_READY'` | **PASSED** |
+| | `connected` (notify socket) | **PASSED** |
+| | `write_result in ('EPIPE', 'SIGPIPE')` | **PASSED** |
+| `test_bound_04_helper_never_ready` | `not rlist` (select timeout) | **PASSED** |
+| | `helper_proc.returncode is not None` (cleanup) | **PASSED** |
+
+**Suite:** 129 collected / 129 passed / 0 skipped. capture.py NOT changed.
+
+**SHA256SUMS:**
+
+```
+3edfae233640d5a882dc4c1babceb0b30d6865315ff0376bf079b05cbe35aae5  capture.py
+6b80351fc8c0f52d86345fb45fbc51f0401227f5af70c14839466268fa75afe9  tests/test_capture.py
+a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9  .gitattributes
+9ab5347c7e9fa3343c85176680190ea46d1fe3222736efea5e3c41eff4d9d17a  README.md
+```
+
+### 29.18 Preserved statuses (updated)
+
+MECHANISM_ESTABLISHED=NO. P7_ACCEPTED=NO. HOST_CLEAN=NO. UNCLEAN/HOLD. EXEC-01C6A NOT_READY. Builder gate ON. Harness UNCHANGED. P5 journal-applicability UNRESOLVED. A1/A2 contract-only. P2/P3 binding. Step 4 NOT AUTHORIZED.
+
+### 29.19 Step 3 correction — non-blocking readiness reader (2026-09-21)
+
+**Problem:** The `select()+readline()` readiness pattern used a blocking `readline()` after `select` indicated readability. If `select` returned for a partial write (bytes available but no newline), `readline()` would block indefinitely. Two separate per-call deadlines did not share a single absolute bound.
+
+**Correction:**
+
+- Added `_read_readiness_line(proc_stdout, deadline_abs, max_bytes=256)` static method to `TestRunCapture`.
+- Sets fd non-blocking via `os.set_blocking(fd, False)`.
+- Loops: `select.select` with remaining time → `os.read(fd, 1024)` → accumulate into `buf`.
+- Returns stripped line bytes on first `\n`.
+- Raises `AssertionError` on: deadline expiry (includes partial bytes in message), premature EOF (`os.read` returns empty), or oversized message (> `max_bytes` before newline).
+- Restores blocking mode in `finally`.
+- Both READY and HOLD_READY use the same reader under one shared `deadline_abs = time.monotonic() + 10`.
+- Notification socket connect loop bounded by the same `deadline_abs`.
+- `helper_proc.wait` timeout derived from remaining deadline.
+
+**Negative tests:**
+
+| Test | Scenario | Assertion | Result |
+|---|---|---|---|
+| `test_bound_04_helper_never_ready` | Helper hangs, writes nothing | `AssertionError` matching `deadline expired`; helper killed and reaped | **PASSED** |
+| `test_bound_04_helper_partial_then_stalls` | Helper writes `"REA"` (no newline) then hangs | `AssertionError` matching `deadline expired.*REA`; helper killed and reaped | **PASSED** |
+
+**Main test unchanged assertions:**
+
+| Assertion | Result |
+|---|---|
+| `ready_msg == b'READY'` (via reader) | **PASSED** |
+| `hold_msg == b'HOLD_READY'` (via reader) | **PASSED** |
+| `write_result in ('EPIPE', 'SIGPIPE')` | **PASSED** |
+
+**Suite:** 130 collected / 130 passed / 0 skipped. capture.py NOT changed.
+
+**SHA256SUMS:**
+
+```
+3edfae233640d5a882dc4c1babceb0b30d6865315ff0376bf079b05cbe35aae5  capture.py
+31886a065fb446c4558a87a6f829334ce6e1708af0db3f7718647c546ec7eae5  tests/test_capture.py
+a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9  .gitattributes
+9ab5347c7e9fa3343c85176680190ea46d1fe3222736efea5e3c41eff4d9d17a  README.md
+```
+
+### 29.20 Preserved statuses (updated)
+
+MECHANISM_ESTABLISHED=NO. P7_ACCEPTED=NO. HOST_CLEAN=NO. UNCLEAN/HOLD. EXEC-01C6A NOT_READY. Builder gate ON. Harness UNCHANGED. P5 journal-applicability UNRESOLVED. A1/A2 contract-only. P2/P3 binding. Step 4 NOT AUTHORIZED.
