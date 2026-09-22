@@ -5,8 +5,8 @@
 **Date:** 2026-09-20
 **Baseline:** e5457b55ac86ddd50cad38434a70f061153d949e
 **Nature:** IMPLEMENTATION (4-step lifecycle)
-**Status:** Step 3 IN PROGRESS — T-BOUND-04 readiness replaced with non-blocking byte reader under absolute monotonic deadline; partial-then-stalls negative test added; 130 collected / 130 passed / 0 skipped non-root uid=1000 Linux python:3.10-slim pytest 9.1.1; SHA256SUMS verified; Step 4 NOT AUTHORIZED
-**MECHANISM_ESTABLISHED:** NO
+**Status:** COMPLETE AND LOCKED — Step 4 independent verification passed; 130/130 tests passed non-root uid=1000 Linux python:3.10-slim pytest 9.1.1; SHA256SUMS verified; bounded tooling evidence only; NOT approved for live use
+**MECHANISM_ESTABLISHED:** YES
 
 **Requirements predecessor (LOCKED):** PM2-RECOVERY-ACQUISITION-01 — `docs/PM2-RECOVERY-ACQUISITION-01-STAGE-START.md` §2–§5 (requirements contract), §6.5 (capture child acceptance criteria), §7 decisions (Q1-A ABORT_IF_ABSENT, Q2-B TOOLING, Q3-A NO_RETRY), §5.5 (publication allowlist), §3.2 (target tuple), §3.3 (P5 filtering), §3.4 (bounded invocation), §3.5 (failure conditions), §5.1–§5.4 (private storage and evidence handling)
 **Implementation predecessor (LOCKED):** PM2-RECOVERY-VERIFY-01 — `docs/PM2-RECOVERY-VERIFY-01-STAGE-START.md` §4.2 (observation-meta schema), §4.3 (raw jlist input), §4.4 (field-state classification); source `ops/pm2-recovery-verify/compare_dual_env.py`
@@ -1825,3 +1825,71 @@ a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9  .gitattributes
 ### 29.20 Preserved statuses (updated)
 
 MECHANISM_ESTABLISHED=NO. P7_ACCEPTED=NO. HOST_CLEAN=NO. UNCLEAN/HOLD. EXEC-01C6A NOT_READY. Builder gate ON. Harness UNCHANGED. P5 journal-applicability UNRESOLVED. A1/A2 contract-only. P2/P3 binding. Step 4 NOT AUTHORIZED.
+
+---
+
+## 30. Step 4 — Independent Verification and Lock (2026-09-21)
+
+### 30.1 Baseline and scope
+
+- **HEAD:** `4c8139a4a81f529438606a1fdeab68d9e39b972a`
+- **Working tree:** Clean
+- **Implementation files (5):** `capture.py`, `tests/test_capture.py`, `.gitattributes`, `SHA256SUMS`, `README.md`
+- **Control-plane files (5):** `TASKS.md`, `TASKS_BACKLOG_FULL.md`, `docs/PM2-RECOVERY-CAPTURE-01-STAGE-START.md`, `docs/control-plane/lane-saturation-state.json`, `docs/control-plane/SATURATION_PROOF.json`
+- **SHA256SUMS:** Verified in Linux before testing — all 4 implementation artifacts OK (manifest excludes itself; 5 files in package)
+
+### 30.2 Mechanism verification
+
+Independently read the committed `capture.py` (1222 lines) against the 14 frozen §6.5 acceptance criteria:
+
+| # | Criterion | Mechanism | Verdict |
+|---|---|---|---|
+| 1 | Account/binary/PM2_HOME enforcement | `enforce_target()`: geteuid→pw_name, realpath, isfile, X_OK, isdir, socket stat, lsof cross-ref | **PASS** |
+| 2 | Fresh private storage | `create_private_storage()`: realpath==abspath, st_uid, forbidden bits, mkdtemp, O_CREAT\|O_EXCL, 0o600 | **PASS** |
+| 3 | Private stdout/stderr routing | Pipes: out_w/err_w to child, out_r/err_r in supervisor, writer thread owns file fds | **PASS** |
+| 4 | Fixed safe diagnostics | `_safe_excepthook`: fixed `[capture] INTERNAL` message, `os._exit(2)`; `SafeArgumentParser` | **PASS** |
+| 5 | Exact child identity | `proc.pid` from `subprocess.Popen`; `os.waitpid(proc.pid, WNOHANG)`; `_safe_kill(proc.pid, sig)` | **PASS** |
+| 6 | Bounded 30/5/5 deadlines | `TIMEOUT_LIMIT=30`, `TERM_GRACE=5`, `KILL_GRACE=5` from `T_invoke_mono`; `_bounded_terminate` preserves | **PASS** |
+| 7 | No broad/daemon signals | `_safe_kill` targets only `proc.pid`; ESRCH/EPERM caught | **PASS** |
+| 8 | Post-launch failure recovery | Identity enqueue failure → `identity_recorded=False` → exit 2; writer failure → `storage_failed` → exit 2 | **PASS** |
+| 9 | Partial evidence preservation | Writer closes owned fds in exception; existing partial files preserved; ABANDONED path uses `os._exit(2)` | **PASS** |
+| 10 | Output-writer boundary / EOF | EOF requires `os.read` returns empty bytes; both EOF + child REAPED + ACK_OK required for COMPLETED | **PASS** |
+| 11 | Exact-byte hashing | `_hash_file` with SHA-256; metadata written → fsync → close → reread → hash actual file bytes | **PASS** |
+| 12 | Observation tool failure handling | `_run_tool` returncode checks; signal termination (< 0) distinct from absence (== 1); TOOL_FAILURE status | **PASS** |
+| 13 | No retry/cleanup/host correction | Single attempt; exit 1/2/3; no loop; no host mutation | **PASS** |
+| 14 | Fake-only verification | 130 tests, all synthetic; locked verifier used read-only; no real PM2 | **PASS** |
+
+### 30.3 Independent test execution
+
+- **Image:** `python:3.10-slim` (Debian 13 trixie)
+- **Image digest (post-run inspection):** `sha256:31dd4d9529d02d7436659061cb7564cd4733fc90e5e152709a942d53382ec8d0`
+- **Digest evidence:** Post-run `docker inspect python:3.10-slim` on the local host showed this as the sole cached image for the tag (created 2026-09-19). The Step 4 `docker run` used the `python:3.10-slim` tag without an explicit pull; execution time (43s) and absence of pull progress are consistent with a cached image, but no container ID or runtime-linked digest was retained. The association is inferred, not directly evidenced.
+- **Python:** 3.10.21
+- **Pytest:** 9.1.1
+- **UID:** 1000 (testrunner), non-root
+- **Repository mount:** read-only (`/workspace/ops:ro`)
+- **Artifacts:** isolated `/tmp`
+- **Command:** `python3 -m pytest /workspace/ops/pm2-recovery-capture/tests/test_capture.py -v --tb=short`
+- **Result:** **130 collected / 130 passed / 0 failed / 0 skipped** (34.14s)
+
+### 30.4 Lock scope
+
+This lock establishes:
+- A bounded PM2 observation capture mechanism implementing the 14 §6.5 criteria
+- Fake-only verification evidence (130 tests, all synthetic data, non-root)
+- Verifier-compatible metadata generation (confirmed against locked `compare_dual_env.py`)
+- SHA256SUMS integrity for the 4 verified implementation artifacts (manifest excludes itself; 5 files in package)
+
+This lock does **NOT** establish or authorize:
+- Host readiness or HOST_CLEAN
+- P7 acceptance
+- Live PM2 invocation or staging access
+- Transfer, deployment, or operational use
+- C-ACQ completion
+- EXEC-01C6A reopen or canary execution
+- Baseline adoption or reference construction
+- P5 journal-applicability resolution
+
+### 30.5 Preserved operational restrictions
+
+MECHANISM_ESTABLISHED=YES. P7_ACCEPTED=NO. HOST_CLEAN=NO. UNCLEAN/HOLD. EXEC-01C6A NOT_READY. Builder gate ON. Harness UNCHANGED. P5 journal-applicability UNRESOLVED. A1/A2 contract-only. P2/P3 binding. Transfer NOT AUTHORIZED. Live use NOT APPROVED.
