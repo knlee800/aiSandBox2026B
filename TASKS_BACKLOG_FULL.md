@@ -80353,3 +80353,81 @@ Step 4 (independent verification / checkpoint / lock):
 
 **Step 1 HEAD:** `2f604a4371de5e94138140121909b9f82917f242` (branch main; working tree clean at window open; matches the expected baseline)
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, canary submission=0, vendor-source fetch=0, live inspection=0, `.env` / `dump.pm2` / vault / journal / marker access=0, workflow dispatched=0, r3 transferred/extracted/executed=0, F1 transferred/executed=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, canary scripts mutated=0, evidence doc mutated=0, operator-bundle mutation=0, verifier-tree mutation=0, workflow mutated=0, `.gitattributes` mutated=0, local application tests=0, tests executed=0 except lane-capacity validator, mocks=0, imports=0, builds=0, installs=0, browser=0, subagents=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, occupancy edits=0, lockedTaskIds edits=0, existing-candidate edits=0, predecessor body edits=0, EXEC-01C6A body/candidate edits=0, locked freeze edits=0, Git mutations=0, Lane 1 admission=0, Lane 2 admission=0, Lane 3 enablement=0, invitation registration=0, Harness activation=0, UI=0, later child tasks registered=0 (EXEC-01C6B / EXEC-01C7 / C1 amendment not registered), EXEC-01C6A reopened=0, C-TOOL-IMPL=0, C-TOOL-TRANSFER=0, C-ACQ=0, live acquisition=0, baseline designated=0, observation adopted=0, requirement waived=0, stage-start created=0. Governance writes: TASKS.md this registration's current board fields, this registry body; sidecar new provisional implementation candidate only (occupancy / lockedTaskIds / existing candidates / runtimeAuthorization unchanged; EMPTY / GOVERNANCE UNOWNED); SATURATION_PROOF.json only as validator output.
+
+### PM2-RECOVERY-P5-JOURNAL-01 — Prospective P5 journal-applicability rule and evidence requirements for first acquisition
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=PM2-RECOVERY-P5-JOURNAL-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-22 — Step 1 COMPLETE (registration / control-plane only) — GOVERNANCE / DECISION — 4-step — no implementation lane — no sidecar candidate — occupancy EMPTY — GOVERNANCE acquired transiently then released UNOWNED
+**Task ID:** PM2-RECOVERY-P5-JOURNAL-01
+**Title:** Prospective P5 journal-applicability rule and evidence requirements for first acquisition
+**Family:** AGENT PLATFORM / EXEC (bounded GOVERNANCE / DECISION container on P5 journal-applicability; required unresolved dependency identified in locked PM2-RECOVERY-ACQUISITION-01 §4.2; not a product frontier; not an EXEC-01C6A reopen; not a fence; not an implementation task; not Harness/tool-loop enablement; not a live acquisition; not a P6 execution; not B(H) construction)
+**Parent task:** none. Not a child of AGENT-PLATFORM-EXEC-01C6A. Does **not** reopen EXEC-01C6A.
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE / DECISION — does NOT consume Lane 1 or Lane 2 — no implementation candidate
+**Development program:** CURRENT — Keith 2026-09-22 named this GOVERNANCE / DECISION registration. Light CURRENT/FUTURE check per CLAUDE.md Next-Work Selection Protocol (named task; no frontier audit): P5 journal-applicability is an unresolved dependency blocking C-ACQ in the adopted acquisition requirements contract (ACQUISITION-01 §4.2 LOCKED). This registration is a Keith-named decision container, not a new product-priority selection.
+**Product-visible Harness capability:** FUTURE / gated / disabled / unavailable to users. Unchanged.
+**Classification:** CURRENT required governance decision; product-visible Harness remains FUTURE/gated.
+**Lifecycle:** 4-STEP GOVERNANCE / DECISION:
+1. Step 1 — registration — COMPLETE — 2026-09-22 — control-plane only; no decision freeze; no decision selected; no host inspection; no vault/journal access; no runtime
+2. Step 2 — freeze decision options and evidence requirements — NOT AUTHORIZED
+3. Step 3 — record Keith's explicit selection — NOT AUTHORIZED
+4. Step 4 — independently verify and lock the decision record — NOT AUTHORIZED
+**Start condition:** READY (all declared dependencies LOCKED)
+**Depends on:** PM2-RECOVERY-POLICY-01 (COMPLETE AND LOCKED), PM2-RECOVERY-ACQUISITION-01 (COMPLETE AND LOCKED), PM2-RECOVERY-BASELINE-GOV-01 (COMPLETE AND LOCKED). PM2-RECOVERY-CAPTURE-01 remains COMPLETE AND LOCKED and is not reopened.
+**Primary write scope:** docs/ (governance checkpoint only; no application source)
+**Mutexes / resources:** GOVERNANCE (acquired transiently for each step then released)
+**Hot-file leases:** none
+**Shared contracts:** none
+**Evidence class:** none (governance decision record; no tests, runtime, or provider)
+**Revert isolation:** acceptable (governance-only; no application source changes)
+**Acceptance object:** A prospective P5 journal-applicability rule and its evidence requirements for first acquisition, consistent with ACQUISITION-01 §4.2.
+**Scope constraints (Keith-specified):**
+- Distinguish no registered vault from no applicable recovery material
+- Define what evidence would support applicability or inapplicability, including unknown or incomplete history
+- Do not assume this host lacks a vault, journal, or recovery material
+- Distinguish interpretation supported by existing authority from a proposed amendment requiring explicit Keith adoption
+- A contract-only lock must not claim host-specific P5 satisfaction or unblock C-ACQ without the required external evidence
+- Preserve the process-table component of P5 and all other acquisition prerequisites
+
+**Non-effects (Step 1 registration):**
+- Does NOT resolve P5 journal-applicability
+- Does NOT select a decision option or rule
+- Does NOT freeze decision options or evidence requirements
+- Does NOT inspect the host, any vault, any journal, or any recovery material
+- Does NOT authorize or perform any live acquisition, SSH, PM2, transfer, or runtime activity
+- Does NOT claim host-specific P5 satisfaction or unblock C-ACQ
+- Does NOT amend or reopen POLICY-01, ACQUISITION-01, BASELINE-GOV-01, or CAPTURE-01
+- Does NOT change EXEC-01C6A startCondition=NOT_READY
+- Does NOT attest HOST_CLEAN, accept P7, or satisfy the reopen gate
+- Does NOT authorize canary, B(H), verifier live use, or any implementation
+
+**AC (Step 1):**
+- [x] Identifier confirmed available (no collision, no equivalent unfinished task)
+- [x] Machine registration stanza (AISB_MACHINE_REG_V1 nature=GOVERNANCE) in TASKS_BACKLOG_FULL.md
+- [x] Board registration fields in TASKS.md code block
+- [x] Governance ledger updated (GOVERNANCE acquired transiently then released UNOWNED)
+- [x] Dependencies confirmed LOCKED: POLICY-01, ACQUISITION-01, BASELINE-GOV-01
+- [x] CAPTURE-01 not reopened
+- [x] Validator run; git diff --check clean
+- [x] No runtime, host inspection, vault/journal access, SSH, PM2, transfer, decision selection, or implementation
+- [x] No predecessor body edits
+- [x] No Git commit/push by the worker
+
+Step 2 (freeze decision options and evidence requirements):
+- [ ] NOT AUTHORIZED
+
+Step 3 (record Keith's explicit selection):
+- [ ] NOT AUTHORIZED
+
+Step 4 (independently verify and lock the decision record):
+- [ ] NOT AUTHORIZED
+
+**Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. INVITATION_EXECUTION_PERMITTED=NO. Unchanged.
+
+**Lane 3 invariant:** Lane 3 remains DISABLED. Unchanged.
+
+**Step 1 HEAD:** `306b062125a701efa1b890f4314fda4401a810b3` (branch main; working tree clean at window open; matches the expected baseline)
+**Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, canary submission=0, vendor-source fetch=0, live inspection=0, workflow dispatched=0, host inspection=0, vault/journal access=0, transfer=0, r3 transferred/extracted/executed=0, F1 transferred/executed=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, canary scripts mutated=0, evidence doc mutated=0, operator-bundle mutation=0, verifier-tree mutation=0, workflow mutated=0, `.gitattributes` mutated=0, local application tests=0, tests executed=0 except lane-capacity validator, mocks=0, imports=0, builds=0, installs=0, browser=0, subagents=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, sidecar edits=0, lockedTaskIds edits=0, predecessor body edits=0, EXEC-01C6A body/candidate edits=0, locked freeze edits=0, Git mutations=0, Lane 3 changes=0, builder-gate changes=0, harness-flags changes=0, decision selected=0, decision frozen=0, P5 applicability resolved=0, sidecar writes=0 (GOVERNANCE; no candidate required); TASKS.md + TASKS_BACKLOG_FULL.md only (board registration fields and canonical task body); SATURATION_PROOF.json only as validator output.
