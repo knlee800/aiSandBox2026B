@@ -2,11 +2,13 @@
 
 **Task:** PM2-RECOVERY-P5-JOURNAL-01 — Prospective P5 journal-applicability rule and evidence requirements for first acquisition
 **Nature:** GOVERNANCE / DECISION (4-step). No implementation lane. No sidecar candidate.
-**Step:** 3 of 4 — record Keith's explicit selection (J-2 adopted)
+**Step:** 4 of 4 — independent verification and lock (COMPLETE AND LOCKED)
 **Step 2 date:** 2026-09-23
 **Step 2 HEAD at window open:** `1652d60fe06499d5b129e54fdbdbcdbee4f9d42e` (branch main; working tree clean; matches the expected baseline)
 **Step 3 date:** 2026-09-23
 **Step 3 HEAD at window open:** `4ec6fc550ac4f24369cde1b7a56faddca52909b4` (branch main; working tree clean; matches the expected baseline)
+**Step 4 date:** 2026-09-23
+**Step 4 HEAD at window open:** `6f192d751fea8a9387c06f2fead3698e35023c30` (branch main; working tree clean; matches the expected baseline)
 **Registration:** `TASKS_BACKLOG_FULL.md` § PM2-RECOVERY-P5-JOURNAL-01 (Step 1 COMPLETE at HEAD `306b062125a701efa1b890f4314fda4401a810b3`)
 **Dependencies:** PM2-RECOVERY-POLICY-01 (COMPLETE AND LOCKED), PM2-RECOVERY-ACQUISITION-01 (COMPLETE AND LOCKED), PM2-RECOVERY-BASELINE-GOV-01 (COMPLETE AND LOCKED). PM2-RECOVERY-CAPTURE-01 remains COMPLETE AND LOCKED and is not reopened.
 **Acceptance object:** A prospective P5 journal-applicability rule and its evidence requirements for first acquisition, consistent with ACQUISITION-01 §4.2.
@@ -362,3 +364,78 @@ For a first acquisition under A1 first-run prerequisites where clause (a) is sat
 - **Step 4 (NOT AUTHORIZED):** Independent verification that the decision record is internally consistent, correctly recorded, and that §0 invariants are preserved. J-2 was explicitly adopted at Step 3. Step 4 independently verifies and locks the decision record; it creates no additional authority. Host-specific application remains blocked pending separately authorized qualifying evidence and all other prerequisites.
 - **Host-specific evidence (separate future task):** External evidence for a specific (H, A) obtained under separate authorization, applying the adopted J-2 rule's scope-approval gate, criteria 1–6, and E-J5 validity/invalidation requirements.
 - **P5 journal cross-check resolved (for a specific acquisition):** Only after qualifying evidence is accepted for that (H, A). All other C-ACQ prerequisites must still be independently satisfied.
+
+---
+
+## §8. Step 4 — Independent verification and lock (2026-09-23)
+
+### 8.1 Verification scope
+
+This section independently verifies the decision record against the frozen §5.2 acceptance criteria and committed evidence. Step 4 creates no additional authority beyond what Step 3 adopted.
+
+**Evidence base:**
+- Step 2 freeze commit: `4ec6fc550ac4f24369cde1b7a56faddca52909b4`
+- Step 3 decision commit: `6f192d751fea8a9387c06f2fead3698e35023c30`
+- Frozen §§0–6 body hash (sans trailing LF): `C9570BC506181169BD3F0871D1AE39A021FE283BF6FCBC08E22F8E8B54A9B9CB`
+- Step 2 freeze document SHA-256: `0F474A9AB700C0917CDD33713D0E6B8DE865132C13B63FCE7195E6C88EB20DBB`
+- Step 3 current artifact SHA-256: `FEE3B6698A5DB30232AD21AE310576D99BFFA446903509E3CFC9A11824F1BCAC`
+
+### 8.2 §5.2 criterion verdicts
+
+| §5.2 Criterion | Verdict | Evidence |
+|---|---|---|
+| Selected option correctly identified and recorded | **PASS** | §7.1 verbatim quote identifies J-2; §7.2 records "§2 Option J-2 — Prospective first-run journal-applicability rule — recovery-material absence attestation required" |
+| J-2 amendment character acknowledged; explicit Keith adoption confirmed | **PASS** | §7.2: "J-2 goes beyond what the locked P5 text explicitly provides and was adopted through explicit Keith decision, not through interpretation of existing locked authority" |
+| Evidence requirements (§3) frozen and internally consistent with selected option | **PASS** | §7.3 item 4 confirms §3 matrix applies in full; §7.2 carries scope-approval gate, criteria 1–6, and E-J5 validity/invalidation "without alteration"; E-J3 and E-J5 blocking outcomes reference adopted J-2 conditions |
+| §4 non-effects confirmed | **PASS** | §7.4 items 1–10 confirm: no host-specific satisfaction (item 1), no C-ACQ unblocking (item 2), HOST_CLEAN/P7/REOPEN unchanged (items 3–5), EXEC-01C6A NOT_READY (item 6), no operational authorization (item 7), predecessor bodies physically unchanged (item 8), no sidecar/occupancy changes (item 9), task was not LOCKED at Step 3 (item 10). §7.6 confirms "Step 4 creates no additional authority" |
+| §0 invariants verified | **PASS** | (1) Predecessor bodies: git diff across 4ec6fc5→6f192d7 shows zero changes to POLICY-01, ACQUISITION-01, BASELINE-GOV-01, CAPTURE-01 stage-starts. (2) P5 process-table: §7.2 "Component 1 (process-table): Unchanged." (3) E1: §7.3 item 1 "Independently required by ACQUISITION-01 §2.1." (4) All other prerequisites: §7.3 items 2–3. (5) HOST_CLEAN=NO: §7.4 item 3. (6) P7_ACCEPTED=NO: §7.4 item 4. (7) REOPEN_GATE=UNSATISFIED: §7.4 item 5. (8) EXEC-01C6A NOT_READY: §7.4 item 6 |
+| No predecessor body edits | **PASS** | git diff 4ec6fc5..6f192d7 — four predecessor stage-starts all show zero diff; sidecar identical between commits |
+| Validator run; git diff --check clean | **PASS** | Run at Step 4 write time (see below) |
+
+### 8.3 Keith's 11-point extended verification
+
+| # | Check | Verdict | Evidence |
+|---|---|---|---|
+| 1 | §7.1 preserves Keith's full decision | **PASS** | Verbatim block quote in §7.1 matches Keith's authorization text |
+| 2 | J-2 alone selected, explicitly as prospective amendment | **PASS** | §7.1 "Selected option: J-2"; "Options not selected: J-1, J-3"; §7.2 "amendment character is acknowledged" |
+| 3 | Scope-approval gate, criteria 1–6, E-J5 binding without alteration | **PASS** | §7.2: "Carried without alteration" for scope-approval gate, attestation criteria 1–6, and E-J5 validity/invalidation |
+| 4 | §§0–6 preserved by Step 3 | **PASS** | Byte-level hash comparison: freeze commit body (sans trailing LF) = current §§0–6 body = `C9570BC5...` |
+| 5 | Adoption at Step 3; Step 4 no additional authority | **PASS** | §7.6: "J-2 was explicitly adopted at Step 3. Step 4 independently verifies and locks the decision record; it creates no additional authority" |
+| 6 | Host-specific P5 unresolved | **PASS** | §7.4 item 2: "P5 journal applicability for the actual host remains unresolved pending separately authorized qualifying evidence" |
+| 7 | E1, process-table, all other prerequisites independently binding | **PASS** | §7.3 items 1–3: E1 (ACQUISITION-01 §2.1), process-table (§1.1/§4.3), all other prerequisites unaffected |
+| 8 | Missing journals / insufficient scope / unclassified / conflicting / invalidation cannot bypass | **PASS** | §3.2: E-J2 (missing journal → blocked), E-J4 (unclassified → blocked; H1 → journal required), E-J5 (insufficient scope → blocked), E-J6 (inaccessible → blocked), E-J7 (conflicting → blocked); E-J5 invalidation rules carried |
+| 9 | No host-clean / P7 / acquisition / transfer / reopen / operational permission | **PASS** | §7.4 items 1–9 and §5.3 explicitly negate all |
+| 10 | Historical freeze hashes distinct from current-artifact hashes | **PASS** | Freeze SHA `0F474A...20DBB` ≠ current artifact SHA `FEE3B6...BCAC`; zero stale intermediate references |
+| 11 | Step 3 within four authorized paths; predecessors/sidecar/occupancy/lockedTaskIds unchanged | **PASS** | git diff 4ec6fc5..6f192d7 shows exactly: TASKS.md, TASKS_BACKLOG_FULL.md, stage-start, SATURATION_PROOF.json; sidecar byte-identical; predecessor stage-starts zero diff |
+
+### 8.4 Lock definition
+
+This task — PM2-RECOVERY-P5-JOURNAL-01 — is **COMPLETE AND LOCKED**.
+
+**Lock scope:** Verification of the adopted prospective P5 first-run journal-applicability rule (J-2) and its decision record. The lock confirms:
+
+1. Keith explicitly selected J-2 at Step 3 as a prospective amendment to P5 for first acquisitions.
+2. The adopted rule's scope-approval gate (5 elements), attestation criteria (1–6), and E-J5 validity/invalidation requirements are binding without alteration.
+3. The decision record (§§0–7) is internally consistent and correctly recorded.
+4. §0 invariants are preserved.
+
+**Lock does NOT:**
+
+- Establish host-specific P5 satisfaction for any (H, A)
+- Unblock C-ACQ
+- Change HOST_CLEAN, P7_ACCEPTED, REOPEN_GATE, or EXEC-01C6A startCondition
+- Authorize acquisition, transfer, SSH, PM2, host inspection, canary, or any runtime activity
+- Edit locked predecessor document bodies
+- Modify sidecar, lockedTaskIds, implementation candidates, or occupancy
+- Create authority beyond what Step 3 adopted
+
+### 8.5 §0 invariants — final confirmation
+
+1. Predecessor bodies physically unchanged ✓
+2. P5 process-table component preserved ✓
+3. All other acquisition prerequisites including E1 preserved ✓
+4. No host condition established ✓
+5. EXEC-01C6A startCondition=NOT_READY ✓
+6. HOST_CLEAN=NO ✓
+7. P7_ACCEPTED=NO ✓
+8. REOPEN_GATE=UNSATISFIED ✓
