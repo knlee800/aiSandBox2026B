@@ -80360,7 +80360,7 @@ taskId=PM2-RECOVERY-P5-JOURNAL-01
 nature=GOVERNANCE
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-22 — Step 1 COMPLETE (registration / control-plane only) — GOVERNANCE / DECISION — 4-step — no implementation lane — no sidecar candidate — occupancy EMPTY — GOVERNANCE acquired transiently then released UNOWNED
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-23 — Step 1 COMPLETE — Step 2 COMPLETE / DECISION FROZEN — GOVERNANCE / DECISION — 4-step — no implementation lane — no sidecar candidate — occupancy EMPTY — GOVERNANCE acquired transiently then released UNOWNED. Previous: REGISTERED / READY / NOT ADMITTED — 2026-09-22 — Step 1 COMPLETE (registration / control-plane only) — GOVERNANCE / DECISION — 4-step — no implementation lane — no sidecar candidate — occupancy EMPTY — GOVERNANCE acquired transiently then released UNOWNED
 **Task ID:** PM2-RECOVERY-P5-JOURNAL-01
 **Title:** Prospective P5 journal-applicability rule and evidence requirements for first acquisition
 **Family:** AGENT PLATFORM / EXEC (bounded GOVERNANCE / DECISION container on P5 journal-applicability; required unresolved dependency identified in locked PM2-RECOVERY-ACQUISITION-01 §4.2; not a product frontier; not an EXEC-01C6A reopen; not a fence; not an implementation task; not Harness/tool-loop enablement; not a live acquisition; not a P6 execution; not B(H) construction)
@@ -80372,7 +80372,7 @@ nature=GOVERNANCE
 **Classification:** CURRENT required governance decision; product-visible Harness remains FUTURE/gated.
 **Lifecycle:** 4-STEP GOVERNANCE / DECISION:
 1. Step 1 — registration — COMPLETE — 2026-09-22 — control-plane only; no decision freeze; no decision selected; no host inspection; no vault/journal access; no runtime
-2. Step 2 — freeze decision options and evidence requirements — NOT AUTHORIZED
+2. Step 2 — freeze decision options and evidence requirements — COMPLETE — 2026-09-23 — stage-start: `docs/PM2-RECOVERY-P5-JOURNAL-01-STAGE-START.md` (SHA256=0F474A9AB700C0917CDD33713D0E6B8DE865132C13B63FCE7195E6C88EB20DBB); options J-1 (universal journal cross-check) / J-2 (first-run recovery-material absence attestation; recommended UNADOPTED) / J-3 (leave unresolved); evidence requirements §3; non-effects §4/§5; 4 unresolved contract questions §6. Correction #1 2026-09-23: removed vacuous-satisfaction from J-1/E-J2/E-J4; added scope-approval gate and E1 independence to J-2; added amendment lifecycle §0.8/§4.1; reconciled §§5–6. Correction #2 2026-09-23: E-J3 referential (replaced duplicated J-2 criteria with §2/E-J5 reference; outcome = conditional inapplicability only); E-J2 reconciled with J-1/§6.4 (investigation = evidence, not authority; conditional inapplicability requires adopted J-2 or separate amendment); §4.2 heading aligned; §6.4 reconciled; backlog "4 unresolved contract questions"
 3. Step 3 — record Keith's explicit selection — NOT AUTHORIZED
 4. Step 4 — independently verify and lock the decision record — NOT AUTHORIZED
 **Start condition:** READY (all declared dependencies LOCKED)
@@ -80417,7 +80417,18 @@ nature=GOVERNANCE
 - [x] No Git commit/push by the worker
 
 Step 2 (freeze decision options and evidence requirements):
-- [ ] NOT AUTHORIZED
+- [x] Stage-start created: `docs/PM2-RECOVERY-P5-JOURNAL-01-STAGE-START.md` (SHA256=0F474A9AB700C0917CDD33713D0E6B8DE865132C13B63FCE7195E6C88EB20DBB)
+- [x] §1 controlling requirements cited with exact source sections; interpretation vs amendment distinguished
+- [x] §2 decision options: J-1 (universal), J-2 (first-run attestation; recommended UNADOPTED), J-3 (leave unresolved); each independently selectable
+- [x] §3 evidence requirements matrix (7 states, 8 columns per state; provenance, scope, reviewer, validity, invalidation, blocking outcome)
+- [x] §4 effect of later decision: adoption vs application separated; contract-only lock non-effects stated
+- [x] §5 Step 3/Step 4 AC defined; explicit non-effects listed
+- [x] §0 invariants: predecessor bodies unchanged; process-table component preserved; all other prerequisites preserved; no host condition established
+- [x] ACQUISITION-01 §4.2 three-state framework respected
+- [x] No host inspection, vault/journal access, SSH, PM2, transfer, runtime, or decision selection
+- [x] No predecessor body edits
+- [x] Validator run; git diff --check clean
+- [x] No Git commit/push by the worker
 
 Step 3 (record Keith's explicit selection):
 - [ ] NOT AUTHORIZED
@@ -80430,4 +80441,6 @@ Step 4 (independently verify and lock the decision record):
 **Lane 3 invariant:** Lane 3 remains DISABLED. Unchanged.
 
 **Step 1 HEAD:** `306b062125a701efa1b890f4314fda4401a810b3` (branch main; working tree clean at window open; matches the expected baseline)
+**Stage-start:** `docs/PM2-RECOVERY-P5-JOURNAL-01-STAGE-START.md` (Step 2 decision freeze — 2026-09-23; SHA256=0F474A9AB700C0917CDD33713D0E6B8DE865132C13B63FCE7195E6C88EB20DBB; §§0–6; options J-1 / J-2 / J-3; recommendation J-2 UNADOPTED; evidence requirements §3; non-effects §4/§5; 4 unresolved contract questions §6)
+**Step 2 HEAD at window open:** `1652d60fe06499d5b129e54fdbdbcdbee4f9d42e` (branch main; working tree clean; matches the expected baseline)
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, canary submission=0, vendor-source fetch=0, live inspection=0, workflow dispatched=0, host inspection=0, vault/journal access=0, transfer=0, r3 transferred/extracted/executed=0, F1 transferred/executed=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, canary scripts mutated=0, evidence doc mutated=0, operator-bundle mutation=0, verifier-tree mutation=0, workflow mutated=0, `.gitattributes` mutated=0, local application tests=0, tests executed=0 except lane-capacity validator, mocks=0, imports=0, builds=0, installs=0, browser=0, subagents=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, sidecar edits=0, lockedTaskIds edits=0, predecessor body edits=0, EXEC-01C6A body/candidate edits=0, locked freeze edits=0, Git mutations=0, Lane 3 changes=0, builder-gate changes=0, harness-flags changes=0, decision selected=0, decision frozen=0, P5 applicability resolved=0, sidecar writes=0 (GOVERNANCE; no candidate required); TASKS.md + TASKS_BACKLOG_FULL.md only (board registration fields and canonical task body); SATURATION_PROOF.json only as validator output.
