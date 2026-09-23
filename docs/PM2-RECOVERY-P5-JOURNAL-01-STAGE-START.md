@@ -2,9 +2,11 @@
 
 **Task:** PM2-RECOVERY-P5-JOURNAL-01 — Prospective P5 journal-applicability rule and evidence requirements for first acquisition
 **Nature:** GOVERNANCE / DECISION (4-step). No implementation lane. No sidecar candidate.
-**Step:** 2 of 4 — reviewable freeze of the decision options and evidence requirements
+**Step:** 3 of 4 — record Keith's explicit selection (J-2 adopted)
 **Step 2 date:** 2026-09-23
 **Step 2 HEAD at window open:** `1652d60fe06499d5b129e54fdbdbcdbee4f9d42e` (branch main; working tree clean; matches the expected baseline)
+**Step 3 date:** 2026-09-23
+**Step 3 HEAD at window open:** `4ec6fc550ac4f24369cde1b7a56faddca52909b4` (branch main; working tree clean; matches the expected baseline)
 **Registration:** `TASKS_BACKLOG_FULL.md` § PM2-RECOVERY-P5-JOURNAL-01 (Step 1 COMPLETE at HEAD `306b062125a701efa1b890f4314fda4401a810b3`)
 **Dependencies:** PM2-RECOVERY-POLICY-01 (COMPLETE AND LOCKED), PM2-RECOVERY-ACQUISITION-01 (COMPLETE AND LOCKED), PM2-RECOVERY-BASELINE-GOV-01 (COMPLETE AND LOCKED). PM2-RECOVERY-CAPTURE-01 remains COMPLETE AND LOCKED and is not reopened.
 **Acceptance object:** A prospective P5 journal-applicability rule and its evidence requirements for first acquisition, consistent with ACQUISITION-01 §4.2.
@@ -283,3 +285,80 @@ Every other acquisition prerequisite (P1–P4, P6–P8, E1–E5, A1(a)–(f), A2
 3. **E1 (vault registry) requirement.** ACQUISITION-01 §2.1 independently requires E1 vault registration before first authorized run. This requirement applies regardless of which journal-applicability option is adopted and regardless of whether the P5 journal cross-check is satisfied or determined inapplicable. This task resolves only the P5 journal cross-check dependency; E1 remains a separate C-ACQ prerequisite.
 
 4. **Journal absence under J-1 (E-J2).** Under J-1, a registered vault with no journal file triggers C-ACQ blocking (§3.2 E-J2). The locked text does not prescribe a specific procedure for determining whether applicable attempts exist when no journal is found. Under J-1, the only resolution path is to produce the applicable journal and perform the cross-check (E-J1). An investigation finding no applicable attempts is evidence that may inform a future determination, but under J-1 it is not authority to waive the journal cross-check and does not by itself unblock C-ACQ. Conditional inapplicability of the journal cross-check requires either adopted J-2 with all its conditions, or a separately adopted amendment — investigation alone cannot produce conditional inapplicability under J-1.
+
+---
+
+## §7. Step 3 — Keith's explicit decision (2026-09-23)
+
+### 7.1 Verbatim Keith selection
+
+> "Select J-2 as frozen in §2, including its scope-approval gate, criteria 1–6, and E-J5 validity/invalidation requirements. Authorize Step 3 only for PM2-RECOVERY-P5-JOURNAL-01 at baseline 4ec6fc550ac4f24369cde1b7a56faddca52909b4 to record this explicit prospective P5 amendment. E1 and all other acquisition prerequisites remain binding. No host-specific P5 satisfaction, host inspection, operational authorization, Step 4, subagents, or Git mutations."
+
+**Date recorded:** 2026-09-23
+**Baseline at selection:** `4ec6fc550ac4f24369cde1b7a56faddca52909b4`
+**Selected option:** J-2 (§2 Option J-2 — Prospective first-run journal-applicability rule — recovery-material absence attestation required)
+**Options not selected:** J-1, J-3
+
+### 7.2 What J-2 adoption means
+
+Keith's explicit selection of J-2 constitutes adoption of the precisely scoped prospective P5 first-run amendment described in §2 Option J-2. The amendment character is acknowledged: J-2 goes beyond what the locked P5 text explicitly provides and was adopted through explicit Keith decision, not through interpretation of existing locked authority.
+
+**Adopted rule (carried without alteration from §2 Option J-2):**
+
+For a first acquisition under A1 first-run prerequisites where clause (a) is satisfied (no H1 item for (H, A)):
+
+- **Component 1 (process-table):** Unchanged. Applies at assessment times per §1.1.
+- **Component 2 (journal cross-check):** Replaced by a recovery-material absence attestation under the prospective scope-approval gate (§2 Option J-2 criteria 1–6).
+
+**Scope-approval gate:** Carried without alteration from §2 Option J-2. All five gate elements (scope proposal, scope approval, coverage justification, unknowns that prevent acceptance, incomplete coverage) apply.
+
+**Attestation criteria 1–6:** Carried without alteration from §2 Option J-2.
+
+**E-J5 validity/invalidation requirements:** Carried without alteration from §3.2 E-J5.
+
+**Conditional inapplicability vs completed cross-check:** The distinction from §2 Option J-2 applies. An accepted attestation finding no H1 material in an approved scope produces **conditional inapplicability** under the adopted amendment — not a completed journal cross-check.
+
+### 7.3 Independently preserved requirements
+
+1. **E1 (vault registry):** Independently required by ACQUISITION-01 §2.1 regardless of J-2 adoption. J-2 resolves only the P5 journal cross-check dependency; E1 registration remains a separate, independent C-ACQ prerequisite.
+2. **P5 process-table component (§1.1 component 1):** Unchanged. Applies at assessment times per §1.1 and §4.3.
+3. **All other acquisition prerequisites:** P1–P4, P6–P8, E1–E5, A1 clauses (a)–(f), A2, §4.1 authorization stages — all unaffected.
+4. **§3 evidence requirements matrix:** Applies in full. E-J1 through E-J7 states and their evidence/blocking outcomes remain as frozen.
+5. **§6 unresolved contract questions:** All four questions remain unresolved and applicable under J-2. In particular: §6.1 (scope adequacy standard) and §6.2 (material outside approved scope) are directly relevant to applying the adopted J-2 rule to any specific (H, A).
+
+### 7.4 What this decision does NOT do
+
+1. **Does NOT establish host-specific P5 satisfaction.** No host, vault, journal, or recovery material has been inspected. The adopted rule defines what evidence is required; evidence must be separately obtained and accepted under separate authorization.
+2. **Does NOT unblock C-ACQ.** P5 journal applicability for the actual host remains unresolved pending separately authorized qualifying evidence meeting all adopted J-2 requirements.
+3. **Does NOT establish HOST_CLEAN.** HOST_CLEAN=NO unchanged.
+4. **Does NOT accept P7.** P7_ACCEPTED=NO unchanged.
+5. **Does NOT satisfy the reopen gate.** REOPEN_GATE=UNSATISFIED unchanged.
+6. **Does NOT change EXEC-01C6A startCondition=NOT_READY.**
+7. **Does NOT authorize acquisition, transfer, SSH, PM2, host inspection, canary, or any runtime activity.**
+8. **Does NOT edit locked predecessor document bodies.** POLICY-01, ACQUISITION-01, BASELINE-GOV-01, and CAPTURE-01 stage-start documents and backlog bodies remain physically unchanged. This task's decision record carries the adopted amendment text; the predecessor documents that the amendment modifies the application of are not themselves edited.
+9. **Does NOT modify sidecar, lockedTaskIds, implementation candidates, or occupancy.**
+10. **Does NOT LOCK this task.** Step 3 is COMPLETE; Step 4 (independent verification and lock) is NOT AUTHORIZED. The task is not LOCKED.
+
+### 7.5 §5.1 checklist verification
+
+- [x] Keith selects exactly one of: J-1, J-2, J-3 — **J-2 selected**
+- [x] J-2 selected: Keith's selection constitutes explicit adoption of the precisely scoped prospective P5 first-run amendment described in §2 Option J-2; the amendment character is acknowledged in the decision record
+- [x] Selection recorded verbatim with date (§7.1); no paraphrase, no inference, no supplied value
+- [x] Keith provided no conditions, modifications, or different option beyond the verbatim text recorded
+- [x] Locked predecessor document bodies remain physically unchanged regardless of selection
+- [x] No host-specific P5 satisfaction claimed; no C-ACQ unblocked; no operational permission granted
+- [x] §0 invariants confirmed preserved:
+  - Predecessor bodies physically unchanged ✓
+  - Process-table component preserved ✓
+  - All other prerequisites including E1 preserved ✓
+  - No host condition established ✓
+  - EXEC-01C6A NOT_READY ✓
+  - HOST_CLEAN=NO ✓
+  - P7_ACCEPTED=NO ✓
+  - REOPEN_GATE=UNSATISFIED ✓
+
+### 7.6 Remaining path
+
+- **Step 4 (NOT AUTHORIZED):** Independent verification that the decision record is internally consistent, correctly recorded, and that §0 invariants are preserved. J-2 was explicitly adopted at Step 3. Step 4 independently verifies and locks the decision record; it creates no additional authority. Host-specific application remains blocked pending separately authorized qualifying evidence and all other prerequisites.
+- **Host-specific evidence (separate future task):** External evidence for a specific (H, A) obtained under separate authorization, applying the adopted J-2 rule's scope-approval gate, criteria 1–6, and E-J5 validity/invalidation requirements.
+- **P5 journal cross-check resolved (for a specific acquisition):** Only after qualifying evidence is accepted for that (H, A). All other C-ACQ prerequisites must still be independently satisfied.
