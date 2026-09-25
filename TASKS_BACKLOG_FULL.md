@@ -80471,3 +80471,78 @@ Step 4 (independently verify and lock the decision record):
 **Step 3 HEAD at window open:** `4ec6fc550ac4f24369cde1b7a56faddca52909b4` (branch main; working tree clean; matches the expected baseline)
 **Step 4 HEAD at window open:** `6f192d751fea8a9387c06f2fead3698e35023c30` (branch main; working tree clean; matches the expected baseline)
 **Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, canary submission=0, vendor-source fetch=0, live inspection=0, workflow dispatched=0, host inspection=0, vault/journal access=0, transfer=0, r3 transferred/extracted/executed=0, F1 transferred/executed=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, canary scripts mutated=0, evidence doc mutated=0, operator-bundle mutation=0, verifier-tree mutation=0, workflow mutated=0, `.gitattributes` mutated=0, local application tests=0, tests executed=0 except lane-capacity validator, mocks=0, imports=0, builds=0, installs=0, browser=0, subagents=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, sidecar edits=0, lockedTaskIds edits=0, predecessor body edits=0, EXEC-01C6A body/candidate edits=0, locked freeze edits=0, Git mutations=0, Lane 3 changes=0, builder-gate changes=0, harness-flags changes=0, decision selected=0, decision frozen=0, P5 applicability resolved=0, sidecar writes=0 (GOVERNANCE; no candidate required); TASKS.md + TASKS_BACKLOG_FULL.md only (board registration fields and canonical task body); SATURATION_PROOF.json only as validator output.
+
+### PM2-RECOVERY-P5-INVENTORY-01 — Bounded inventory finding for J-2 search-scope approval
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=PM2-RECOVERY-P5-INVENTORY-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-25 — Step 1 COMPLETE — GOVERNANCE / EVIDENCE — 4-step — no implementation lane — no sidecar candidate — occupancy EMPTY — GOVERNANCE acquired transiently then released UNOWNED
+**Task ID:** PM2-RECOVERY-P5-INVENTORY-01
+**Title:** Bounded inventory finding for J-2 search-scope approval
+**Family:** AGENT PLATFORM / EXEC (bounded GOVERNANCE / EVIDENCE container for inventory finding informing adopted J-2 scope-approval gate in locked PM2-RECOVERY-P5-JOURNAL-01; not a product frontier; not an EXEC-01C6A reopen; not a fence; not an implementation task; not a live acquisition; not a P6 execution; not B(H) construction)
+**Parent task:** none. Not a child of AGENT-PLATFORM-EXEC-01C6A. Does **not** reopen EXEC-01C6A.
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE / EVIDENCE — does NOT consume Lane 1 or Lane 2 — no implementation candidate
+**Development program:** CURRENT — Keith 2026-09-25 named this GOVERNANCE / EVIDENCE registration. Light CURRENT/FUTURE check per CLAUDE.md Next-Work Selection Protocol (named task; no frontier audit): inventory finding is required by the adopted J-2 scope-approval gate (P5-JOURNAL-01 LOCKED §2). This registration is a Keith-named evidence container, not a new product-priority selection.
+**Product-visible Harness capability:** FUTURE / gated / disabled / unavailable to users. Unchanged.
+**Classification:** CURRENT required governance evidence; product-visible Harness remains FUTURE/gated.
+**Lifecycle:** 4-STEP GOVERNANCE / EVIDENCE:
+1. Step 1 — registration — COMPLETE — 2026-09-25 — control-plane only; no inspection plan freeze; no host inspection; no vault/journal access; no runtime
+2. Step 2 — freeze bounded inventory inspection plan — NOT AUTHORIZED
+3. Step 3 — separately authorized inspection — NOT AUTHORIZED
+4. Step 4 — independent evidence review and consolidation/lock — NOT AUTHORIZED
+**Start condition:** READY (all declared dependencies LOCKED)
+**Depends on:** PM2-RECOVERY-P5-JOURNAL-01 (COMPLETE AND LOCKED), PM2-RECOVERY-ACQUISITION-01 (COMPLETE AND LOCKED), PM2-RECOVERY-POLICY-01 (COMPLETE AND LOCKED), PM2-RECOVERY-BASELINE-GOV-01 (COMPLETE AND LOCKED). PM2-RECOVERY-CAPTURE-01 remains COMPLETE AND LOCKED and is not reopened.
+**Primary write scope:** docs/ (governance evidence only; no application source)
+**Mutexes / resources:** GOVERNANCE (acquired transiently for each step then released)
+**Hot-file leases:** none
+**Shared contracts:** none
+**Evidence class:** none at Step 1 registration (Step 2 will determine applicable evidence class)
+**Revert isolation:** acceptable (governance-only; no application source changes)
+**Acceptance object:** A bounded inventory finding that informs J-2 search-scope approval, records observed current accounts and default PM2-home candidates, and explicitly retains custom-location, historical, inaccessible, and incomplete-coverage uncertainties. An incomplete or blocked finding is a valid recorded outcome, not proof of absence.
+**Issues deferred to Step 2:**
+- Exact account-selection and observation methods, including relevant service accounts
+- Enforceable command/session deadlines and output limits covering bytes as well as lines, with failure and truncation classification
+- Trusted server-host-key provenance and exact SSH configuration. Do not assume the Lightsail Connect panel displays a server fingerprint; verify the proposed independent verification method before relying on it
+- Applicable STAGING and other leases, private evidence handling, and ordinary SSH side effects
+- GOVERNANCE ownership whenever required records are written, including Step 3 if it writes them
+- Operator testimony may contribute evidence; do not invent a blanket rule excluding it or treat inventory as the only possible evidence source. Apply the adopted J-2 requirements
+
+**Non-effects (Step 1 registration):**
+- Does NOT freeze an inspection plan or define search scope
+- Does NOT inspect the host, any vault, any journal, or any recovery material
+- Does NOT observe accounts, PM2 homes, or filesystem state
+- Does NOT authorize or perform any live acquisition, SSH, PM2, transfer, or runtime activity
+- Does NOT acquire STAGING lease or any runtime authorization
+- Does NOT claim host-specific P5 satisfaction or unblock C-ACQ
+- Does NOT amend or reopen POLICY-01, ACQUISITION-01, BASELINE-GOV-01, CAPTURE-01, or P5-JOURNAL-01
+- Does NOT change EXEC-01C6A startCondition=NOT_READY
+- Does NOT attest HOST_CLEAN, accept P7, or satisfy the reopen gate
+- Does NOT authorize canary, B(H), verifier live use, or any implementation
+- Does NOT create a stage-start document
+- Does NOT add a sidecar candidate or saturationClass
+- Does NOT freeze proposed commands or assert that this inventory will resolve K1/K2 completely
+
+**AC (Step 1):**
+- [x] Identifier confirmed available (no collision, no equivalent unfinished task)
+- [x] Machine registration stanza (AISB_MACHINE_REG_V1 nature=GOVERNANCE) in TASKS_BACKLOG_FULL.md
+- [x] Board registration fields in TASKS.md code block
+- [x] Governance ledger updated (GOVERNANCE acquired transiently then released UNOWNED)
+- [x] Dependencies confirmed LOCKED: P5-JOURNAL-01, ACQUISITION-01, POLICY-01, BASELINE-GOV-01
+- [x] CAPTURE-01 not reopened; P5-JOURNAL-01 not reopened
+- [x] E1 and all other acquisition prerequisites preserved
+- [x] Issues deferred to Step 2 recorded
+- [x] Validator run; git diff --check clean
+- [x] No runtime, host inspection, vault/journal access, SSH, PM2, transfer, or implementation
+- [x] No stage-start creation, sidecar candidate, or saturationClass
+- [x] No predecessor body edits
+- [x] No Git commit/push by the worker
+
+**Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. INVITATION_EXECUTION_PERMITTED=NO. Unchanged.
+
+**Lane 3 invariant:** Lane 3 remains DISABLED. Unchanged.
+
+**Step 1 HEAD:** `8d381aa4dbf69e7f528b16715c9042d5b134e206` (branch main; working tree clean at window open; matches the expected baseline)
+**Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, canary submission=0, vendor-source fetch=0, live inspection=0, workflow dispatched=0, host inspection=0, vault/journal access=0, transfer=0, r3 transferred/extracted/executed=0, F1 transferred/executed=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, canary scripts mutated=0, evidence destroyed=0, predecessor bodies edited=0, STAGING acquired=0, stage-start created=0, sidecar candidate added=0, proposed commands frozen=0
