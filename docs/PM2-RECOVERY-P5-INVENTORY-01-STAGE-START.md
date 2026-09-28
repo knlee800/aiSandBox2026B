@@ -587,6 +587,8 @@ The SSH invocation is bound to these specific parameters:
 | **Authentication** | Key-based only (`BatchMode=yes`) | SSH option |
 | **Trusted key source** | EXECUTION PREREQUISITE — §3.3 | Must be established before Step 3 |
 
+> **Amended 2026-09-28 (Step 3 run 4 — §16.4):** the **host-key lookup identity** is determined from the effective client configuration (`ssh -G`, no connection) as the static IPv4 literal configured as `HostName` for `Host aisandbox-staging` (no `HostKeyAlias`, `CheckHostIP no`, port 22 → un-bracketed form); the alias `aisandbox-staging` itself is not a lookup identity. Keith's confirmation of this row remains required. The **trusted key source** row remains an unestablished prerequisite (§3.3; §16.6). The frozen table is not rewritten.
+
 **Connection command:**
 
 ```
@@ -627,6 +629,8 @@ The §2.7 inspection script is piped to stdin by the local supervision procedure
 **NOT independent provenance:** First SSH connection (TOFU); absence of third-party access; fingerprint from unauthenticated channel; known_hosts continuity alone.
 
 **If unestablished:** BLOCKER. No trust exception adopted. Blocked status is a valid outcome (§0.9).
+
+> **Amended 2026-09-28 (Step 3 run 4 — §16):** provenance collection was attempted under Keith's narrow authorization. The AWS-side path is **BLOCKED** (no existing authorized AWS authentication context on the operator host; none of `sts:GetCallerIdentity`, `lightsail:GetInstance`, `lightsail:GetInstanceAccessDetails` was called; no credentials created). The only local candidate — `known_hosts` line 12, `ssh-ed25519`, `SHA256:kwAg4iEcpglnu4XTqy6NrQOlz8xzybbV3xY6rzwmwO0` (same key under `staging.ainow.biz`) — is continuity / first-connection-class evidence, not independent provenance. **§3.3 remains UNESTABLISHED — BLOCKER.** No trust exception adopted; no key replaced or accepted. See §16.3–16.6.
 
 ---
 
@@ -1100,6 +1104,8 @@ Glob expansion enumerates `/home/` (and, per home, `.nvm/versions/node/`) only. 
 
 > **Amended 2026-09-28 (Step 3 run 3 — §15.5):** the prerequisite "Local supervision verification passed" is **TICKED** by §15.5 (runs 2 + 3: all deterministic assertions hold, all scheduling-dependent values within their sets, 0 failed / 0 blocked / 0 unverified; retained fixture substitutions and platform limitations disclosed in §15.3, not waived). The first prerequisite (trusted host-key provenance, §3.3) remains **UNTICKED / BLOCKER**. The frozen check-box lines above are not rewritten.
 
+> **Amended 2026-09-28 (Step 3 run 4 — §16.8):** the first prerequisite (trusted host-key provenance, §3.3) remains **UNTICKED / BLOCKER** after run 4 (AWS-side path BLOCKED — no existing authorized AWS authentication context; local `known_hosts` candidate documented but not independently bound to the instance). The second prerequisite stays TICKED per §15.5. The frozen check-box lines above are not rewritten.
+
 **Pre-flight:**
 - [ ] Keith authorizes Step 3 at stated baseline
 - [ ] STAGING acquired; known_hosts confirmed; provenance recorded
@@ -1471,3 +1477,81 @@ Any later execution must load `AisbSupervisor.dll` `E5AF106E…` (or a rebuild o
 - §10 execution prerequisite **trusted host-key provenance (§3.3) — UNRESOLVED / BLOCKER.** SSH, SSH preflight and host inspection remain blocked pending that prerequisite and separate Keith authorization.
 - Design findings: none new. No assertion weakened, no requirement waived, no design amendment made in run 3.
 - **Activity ledger (run 3):** SSH=0, SSH preflight=0, STAGING acquired=0, AWS=0, host inspection=0, vault/journal access=0, real PM2=0, application runtime=0, transfer=0, acquisition=0, host-specific P5 claims=0, operational authorization=0, Step 4=0, subagents=0, Git commit/push=0, predecessor bodies edited=0, frozen §§0–14 sentences altered=0 (dated pointer lines inserted only), shared supervisor/classifier code changed=0, Windows system clock changed=0. **Local Docker=YES (U-1 only):** Docker Desktop was not running and was started for this step (LOCAL-RUNTIME acquired transiently, released); `ubuntu:22.04` pulled from Docker Hub (network egress for the pull only; retained locally as the recorded image); one disposable container, `--network none`, one read-only mount, removed after the run; no other container, database, Redis or service touched. A stop of Docker Desktop was attempted afterwards; the application relaunched itself and is left running for Keith to quit. Local synthetic child processes and instrumented supervisor builds=YES (Windows).
+
+> **Amended 2026-09-28 (Step 3 run 4 — §16):** the §3.3 blocker bullet in 15.5 was worked in run 4 (provenance collection). Outcome: **BLOCKED / UNRESOLVED** — see §16.3 (AWS path blocked), §16.4–16.5 (local candidate and binding), §16.6 (assessment). Step 3 remains PARTIAL — NOT INSPECTION COMPLETE.
+
+---
+
+## §16. Step 3 run 4 — trusted host-key provenance collection under §3.3 (2026-09-28)
+
+### 16.1 Authorization, baseline and scope
+
+Keith authorized (2026-09-28) continued Step 3 at baseline `b9b3ee08a7c70f3d4b2a0d23665c91c1261ec690` (HEAD verified; working tree clean at window open; this file SHA256 `6DA57B6AFB3ECD2AE41B75F6E4E9E8CB79C27E0F9D21A19B4F3E633388AFF295` before this run), limited to collecting and evaluating trusted server-host-key provenance under frozen §3.3. Permitted: narrow AWS read calls (`sts:GetCallerIdentity`, `lightsail:GetInstance`, `lightsail:GetInstanceAccessDetails` with protocol `ssh`) through an **existing** authorized AWS authentication context only — no credential creation or alteration, no IAM change, no `CreateKeyPair` / `DownloadDefaultKeyPair` / `ImportKeyPair`; if no such context exists, report BLOCKED. Also permitted: local fingerprint recompute; read-only inspection of the local SSH client configuration and `known_hosts` (no configuration hooks executed, no connection, no keyscan, no modification); comparison with the frozen §3.1 binding. Excluded: SSH of any kind (including browser SSH and benign preflight), STAGING, host inspection, vault/journal, PM2, transfer, acquisition, Docker, application runtime, host-specific P5 satisfaction, Step 4, subagents, Git mutations, instance / firewall / IAM / host-key changes. Repository writes limited to this file, `TASKS.md`, `TASKS_BACKLOG_FULL.md`, `docs/control-plane/SATURATION_PROOF.json`. GOVERNANCE acquired transiently for the record updates; no STAGING, PROVIDER-LIVE or LOCAL-RUNTIME lease was needed (no SSH, no provider execution, no local runtime started).
+
+### 16.2 Intended account / region / instance from project records
+
+| Item | Value | Source (tracked records) |
+|---|---|---|
+| Provider / account | AWS Lightsail, Keith's account. **Account ID is not recorded in tracked docs**; it was to be established from `sts:GetCallerIdentity`, which was not reached (16.3) | `docs/PRIVATE-BETA-STAGING-SETUP-01-CHECKPOINT.md` |
+| Region | `ap-southeast-1` (Singapore) | SETUP-01 / `docs/PRIVATE-BETA-STAGING-SETUP-02-CHECKPOINT.md` |
+| Instance name | `aisandbox-staging` | `docs/PRIVATE-BETA-STAGING-EXECUTION-01-CHECKPOINT.md` |
+| Static IP | `aisandbox-staging-ip` attached; the IPv4 value is recorded in `docs/PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT.md` and is not repeated in this file | EXECUTION-01 / 04H checkpoints |
+| Public hostname | `staging.ainow.biz` → the static IP (DNS A record) | 04H checkpoint |
+| SSH user / port | `ubuntu` / 22 (Lightsail firewall TCP 22 open) | EXECUTION-01 checkpoint; frozen §3.1 |
+| Local SSH configuration | "Not in this task" at EXECUTION-01; present on the operator host today (16.4) | EXECUTION-01 checkpoint |
+
+The intended context was determined from these records only. No other account, region or instance was enumerated or queried.
+
+### 16.3 AWS retrieval — BLOCKED (no existing authorized AWS authentication context)
+
+Discovery on the operator host was limited to presence checks (names and existence only; no credential file contents read; nothing created or altered): `aws` is not on `PATH` and is not installed at the standard AWS CLI v2 locations; no Amazon/AWS program directories exist; no AWS Tools for PowerShell modules are installed (`Get-AWSCredential` absent); `%USERPROFILE%\.aws` exists but is **empty** (no `config`, `credentials`, `sso\` or `cli\` caches); no `AWS_*` environment variables are set; no Session Manager plugin. Keith's authorization permits only an existing authorized context and forbids creating a new authentication setup.
+
+Consequently **none of the three permitted API calls was made**: the authenticated account / principal was not established; the instance record (name, ARN, region, creation time, endpoint) was not retrieved from AWS; no temporary SSH access credentials were ever received; no AWS-recorded server `hostKeys` (algorithm, public key, fingerprint, `witnessedAt`) were obtained; no fingerprint recompute against AWS values was possible. The AWS-side provenance path is **BLOCKED** (not failed, not attempted with substitute credentials).
+
+### 16.4 Local SSH client configuration and known_hosts (read-only)
+
+- **`%USERPROFILE%\.ssh\config`** (173 bytes, written 2026-08-10): a single block `Host aisandbox-staging` with `HostName <static IPv4>`, `User ubuntu`, `IdentityFile …\LightsailDefaultKey-ap-southeast-1.pem`, `IdentitiesOnly yes`. No `Match`, `Include`, `ProxyCommand`, `ProxyJump`, `LocalCommand`, `KnownHostsCommand`, `HostKeyAlias`, `UserKnownHostsFile` or `StrictHostKeyChecking` directive; no system-wide `ssh_config`. Because the configuration is hook-free, `ssh -G -p 22 ubuntu@aisandbox-staging` (OpenSSH_for_Windows_9.5p1; prints the effective configuration only; no connection) was used to resolve the effective binding: user `ubuntu`; `hostname` = the configured static IPv4; `port 22`; `hostkeyalias` empty; `checkhostip no`; `hashknownhosts no`; `stricthostkeychecking ask` (client default — the frozen §3.1 command overrides it with `=yes`); `updatehostkeys true` (client default); `userknownhostsfile` = `~/.ssh/known_hosts` and `~/.ssh/known_hosts2` (absent); global known_hosts files absent. The identity file was neither read nor used.
+- **Host-key lookup identity (§3.1 row):** with no `HostKeyAlias` and `CheckHostIP no`, OpenSSH looks up the *effective `HostName`* — the static IPv4 literal, in its un-bracketed form because the port is 22. The alias `aisandbox-staging` is **not** itself a lookup identity. Keith's confirmation of this row remains required (16.6).
+- **`~/.ssh/known_hosts`** (13 lines, 2,516 bytes, SHA256 `54E7C8165AACFF09C90A7119974D9ADAAC3260D7A638235858E673E12B9A6BD2`, last written 2026-08-20; plain, unhashed entries; inspected only with offline `ssh-keygen -F` / `-l`):
+  - lookup identity (static IPv4): **exactly one entry — line 12, `ssh-ed25519`, fingerprint `SHA256:kwAg4iEcpglnu4XTqy6NrQOlz8xzybbV3xY6rzwmwO0`**. Recomputing the fingerprint locally from the extracted public key (`ssh-keygen -lf`) reproduces the same value.
+  - `staging.ainow.biz`: one entry — line 11, `ssh-ed25519`, the **same** fingerprint (consistent across the DNS name and the IP).
+  - `aisandbox-staging` and `[<static IPv4>]:22`: no entries. No ECDSA or RSA entry exists for the host. `~/.ssh/known_hosts.old` (2025-03-10) contains no entry for the IP, so the candidate was recorded between 2025-03 and 2026-08-20; the recording channel is not documented in tracked records.
+- No file under `~/.ssh` was modified. No endpoint was contacted.
+
+### 16.5 Comparison with the frozen §3.1 binding
+
+| Frozen §3.1 | Local effective (16.4) | AWS record (16.3) | Result |
+|---|---|---|---|
+| User `ubuntu` | `ubuntu` | not retrieved | consistent locally |
+| Endpoint `aisandbox-staging` | client alias → static IPv4 recorded for `aisandbox-staging-ip` (04H) | instance name / endpoint not AWS-confirmed | consistent with tracked records only |
+| Port 22 | 22 | — | consistent |
+| Host-key lookup identity | static IPv4 literal | — | determined; Keith confirmation pending |
+| Trusted key source (§3.3) | one ED25519 candidate `SHA256:kwAg4iEcpglnu4XTqy6NrQOlz8xzybbV3xY6rzwmwO0` (known_hosts line 12; identical key on line 11) | **no AWS-recorded host key retrieved** | **no independent, instance-specific binding** |
+
+### 16.6 Assessment against §3.3
+
+The evidence collected in this run does **not** establish §3.3. What exists is a single, internally consistent `known_hosts` candidate (ED25519; the same key under the DNS name and the IP) whose original source is undocumented in tracked records. That is `known_hosts` continuity / first-connection-class evidence, which §3.3 explicitly lists as **NOT independent provenance**. Nothing collected binds the candidate to the instance `aisandbox-staging` through a channel that is independent of SSH, authenticated and instance-specific; AWS-recorded keys and their `witnessedAt` values were not obtained, so no AWS comparison, no timing evaluation and no mismatch determination could be made. **§3.3 remains UNESTABLISHED — BLOCKER.** No trust exception is adopted; the existing entry was neither replaced, accepted nor altered; final provenance acceptance stays pending Keith's review. Blocked status is a valid outcome (§0.9). No SSH execution follows from this run.
+
+Routes that could still satisfy §3.3 (Keith's decision; none started here, none authorized by this run): (a) an existing or newly Keith-authorized authenticated AWS context (CLI or console) yielding `GetInstanceAccessDetails` server `hostKeys` for `aisandbox-staging` in `ap-southeast-1`, compared with `SHA256:kwAg4iEcpglnu4XTqy6NrQOlz8xzybbV3xY6rzwmwO0` and read with `witnessedAt` as Lightsail's recording time rather than a fresh observation; (b) provisioning-time deployment records for the host key, if any exist; (c) Keith's attestation recording the source, channel, date and instance binding of the 2026-08 `known_hosts` entries. Under every route a missing key, mismatch, ambiguous instance / endpoint binding or unexplained timing concern remains blocking.
+
+### 16.7 Artifacts and hashes (run 4; runs 1–3 preserved)
+
+Root `C:\Users\knlee\aisb-preflight\INVENTORY-01\runs\run4-2026-09-28-PROVENANCE\`. Manifest `manifest-sha256.txt` (7 entries) SHA256 `44F60E995D9CFD9A48BA6E957741B79ADCECA20C2763AB3D692F9C81148007B9`. Root run-2 artifacts and manifest (`164048E8…`), the run-1 snapshot (`DFB38550…`) and the run-3 directory (manifest `202DC8F6…`) are byte-unchanged. No artifact contains credentials (none were received). Files under `private\` and the two `evidence\` files marked below contain the static IPv4 literal and the public host key and are retained privately only.
+
+| Path (relative to run-4 root) | SHA256 | Role |
+|---|---|---|
+| `evidence\aws-context-discovery.txt` | `E4DBAC9FBF35906B626C78C87316A0FA600896F45715F312A038ED95EDB56D56` | presence-only discovery of an existing AWS authentication context; BLOCKED result; retrieval time |
+| `evidence\provenance-record.json` | `795343B45BA1844094A82FF6B15278EF98952DB65E7F1D2E7D92C3AA6EA19F0C` | private record: intended context, AWS outcome (not called), effective SSH binding, known_hosts candidate and recompute, binding comparison, assessment, ledger (contains the IPv4) |
+| `evidence\ssh-G-ubuntu-at-aisandbox-staging-p22.txt` | `CD63DB1EDF0CE5A80462166C476C48216EC3615323E088B653FEF6A8CC0109AE` | `ssh -G` effective configuration (contains the IPv4) |
+| `evidence\known_hosts-lookups.txt` | `C4DF99276456403D3A8F2F208F04770EA2E7FDDD4C29FA58409C2184D9A51777` | offline `ssh-keygen -F` / `-l` lookups, known_hosts hash and mtime, local recompute (contains the IPv4) |
+| `private\ssh-config-copy.txt` / `known_hosts-candidate-lines-11-12.txt` / `candidate-ed25519.pub` | `C2DA0133…` / `DD713897…` / `41E44B55…` | byte copies of the client config block and the two candidate entries; extracted public key used for the recompute |
+
+Post-manifest (this run's record-application scripts and this section text) are listed in the records ledger of `TASKS_BACKLOG_FULL.md`.
+
+### 16.8 Step status after run 4
+
+- **Step 3 = PARTIAL / LOCAL PREFLIGHT ONLY — NOT INSPECTION COMPLETE.**
+- §10 execution prerequisite **trusted host-key provenance (§3.3) — UNRESOLVED / BLOCKER** after run 4: the AWS-side path is BLOCKED (no existing authorized AWS authentication context; zero API calls); the local candidate is documented but not independently bound to the instance. Keith's confirmation of the host-key lookup identity (16.4) is also pending.
+- §10 execution prerequisite "Local supervision verification passed" — TICKED (§15.5), unchanged.
+- Design findings: none new. No assertion weakened, no requirement waived, no design amendment made in run 4; no frozen sentence rewritten (dated pointer lines inserted under §3.1, §3.3, §10 and §15.5 only).
+- **Activity ledger (run 4):** SSH=0 (including browser SSH and benign preflight), SSH keyscan=0, STAGING acquired=0, AWS API calls=0 (presence-only context discovery; credentials created / altered / read=0; temporary credentials received=0), host inspection=0, vault/journal access=0, PM2=0, transfer=0, acquisition=0, Docker=0, application runtime=0, host-specific P5 claims=0, operational authorization=0, Step 4=0, subagents=0, Git commit/push/branch=0, predecessor bodies edited=0, frozen §§0–15 sentences altered=0, SSH configuration / known_hosts modified=0, identity file read or used=0, instance / firewall / IAM / host-key changes=0. Local read-only activity only: `ssh -G`, `ssh-keygen -F` / `-l` / `-lf`, filesystem presence checks and hashing.
