@@ -591,6 +591,8 @@ The SSH invocation is bound to these specific parameters:
 
 > **Amended 2026-09-28 (Step 3 run 5 — §17.5):** the lookup identity (static IPv4 literal) is re-confirmed unchanged, and the AWS instance record retrieved by Keith reports the **same IPv4** as the local `HostName` (§17.3). Keith's confirmation of this row is still required before execution. The frozen table is not rewritten.
 
+> **Accepted 2026-09-28 (Keith — Step 3 run 6 authorization; §18.1):** Keith confirms that the **host-key lookup identity** is the static IPv4 literal configured for `aisandbox-staging`, verified equal to the AWS instance / access-details IP (§17.3). The "Keith must confirm at Step 3" condition of this row is satisfied. The frozen table is not rewritten.
+
 **Connection command:**
 
 ```
@@ -635,6 +637,8 @@ The §2.7 inspection script is piped to stdin by the local supervision procedure
 > **Amended 2026-09-28 (Step 3 run 4 — §16):** provenance collection was attempted under Keith's narrow authorization. The AWS-side path is **BLOCKED** (no existing authorized AWS authentication context on the operator host; none of `sts:GetCallerIdentity`, `lightsail:GetInstance`, `lightsail:GetInstanceAccessDetails` was called; no credentials created). The only local candidate — `known_hosts` line 12, `ssh-ed25519`, `SHA256:kwAg4iEcpglnu4XTqy6NrQOlz8xzybbV3xY6rzwmwO0` (same key under `staging.ainow.biz`) — is continuity / first-connection-class evidence, not independent provenance. **§3.3 remains UNESTABLISHED — BLOCKER.** No trust exception adopted; no key replaced or accepted. See §16.3–16.6.
 
 > **Amended 2026-09-28 (Step 3 run 5 — §17):** independent provenance evidence has now been **obtained and locally verified**: Keith retrieved `GetInstanceAccessDetails` server `hostKeys` for `aisandbox-staging` (`ap-southeast-1`) in an authenticated AWS CloudShell session; all three AWS fingerprints recompute locally, and the ED25519 key is byte-identical to the `known_hosts` entry for the lookup identity with fingerprint `SHA256:kwAg4iEcpglnu4XTqy6NrQOlz8xzybbV3xY6rzwmwO0` (`witnessedAt` 2026-07-24 = Lightsail recording time). **Keith's final provenance acceptance is PENDING; acceptance is not inferred from the download.** The run-4 BLOCKED classification is superseded by this evidence; the gate stays closed until Keith records acceptance. See §17.3–17.7.
+
+> **Accepted 2026-09-28 (Keith — Step 3 run 6 authorization; §18.1):** Keith accepts the independently obtained AWS host-key provenance recorded in §17. Accepted ED25519 fingerprint: `SHA256:kwAg4iEcpglnu4XTqy6NrQOlz8xzybbV3xY6rzwmwO0`. This accepts the AWS-recorded key binding only; it does not establish fresh host state or host-specific P5 satisfaction. **§3.3 execution prerequisite: ESTABLISHED.**
 
 ---
 
@@ -1111,6 +1115,8 @@ Glob expansion enumerates `/home/` (and, per home, `.nvm/versions/node/`) only. 
 > **Amended 2026-09-28 (Step 3 run 4 — §16.8):** the first prerequisite (trusted host-key provenance, §3.3) remains **UNTICKED / BLOCKER** after run 4 (AWS-side path BLOCKED — no existing authorized AWS authentication context; local `known_hosts` candidate documented but not independently bound to the instance). The second prerequisite stays TICKED per §15.5. The frozen check-box lines above are not rewritten.
 
 > **Amended 2026-09-28 (Step 3 run 5 — §17.7):** for the first prerequisite (trusted host-key provenance, §3.3) independent evidence is now obtained and locally verified (§17); the box remains **UNTICKED pending Keith's final acceptance and lookup-binding confirmation**. The second prerequisite stays TICKED per §15.5. The frozen check-box lines above are not rewritten.
+
+> **Amended 2026-09-28 (Step 3 run 6 — §18.1):** both execution prerequisites are now **TICKED**: trusted host-key provenance (§3.3) by Keith's dated acceptance recorded under §3.3 and in §18.1; local supervision verification by §15.5. Pre-flight: Keith authorized one bounded Step 3 SSH inventory session at baseline `eed1c809f7e4e5113e8a1ac4390e8ede8dd5ffa0`; STAGING acquired before connection; the accepted `known_hosts` entry, the local target mapping and every retained artifact hash re-verified (§18.2); supervision verified with production parameters (§15.5). Execution and post-session items are recorded in §18. The frozen check-box lines above are not rewritten.
 
 **Pre-flight:**
 - [ ] Keith authorizes Step 3 at stated baseline
@@ -1629,3 +1635,89 @@ Post-manifest (this section text and the record-application scripts) are listed 
 - **Step 3 = PARTIAL / LOCAL PREFLIGHT ONLY — NOT INSPECTION COMPLETE.** No SSH execution follows from this run; SSH under supervision still requires Keith's acceptance above, STAGING lease, and separate authorization at a stated baseline (§10 pre-flight).
 - Design findings: none new. No assertion weakened, no requirement waived, no design amendment; no frozen sentence rewritten (dated pointer lines inserted under §3.1, §3.3, §10, §16.6 and §16.8 only).
 - **Activity ledger (run 5):** AWS API calls by this run=0 (Keith's CloudShell retrieval preceded the run), SSH=0 (including browser SSH and benign preflight), SSH keyscan=0, STAGING acquired=0, host inspection=0, vault/journal access=0, PM2=0, transfer=0, acquisition=0, Docker=0, application runtime=0, host-specific P5 claims=0, operational authorization=0, Step 4=0, subagents=0, Git commit/push/branch=0, predecessor bodies edited=0, frozen §§0–16 sentences altered=0, SSH configuration / known_hosts modified=0, private keys read=0, credentials received=0, instance / firewall / IAM / host-key changes=0. Local read-only activity only: JSON parsing, SHA-256 / base64 recomputation, `ssh -G`, `ssh-keygen -F`, filesystem hashing and one byte-copy into the private evidence directory.
+
+> **Amended 2026-09-28 (Step 3 run 6 — §18):** Keith accepted the §17 provenance and confirmed the lookup identity (§18.1); the authorized bounded SSH inventory session was executed under the verified supervisor (outcome NORMAL, exit 0; SESSION_EXEC_COMPLETE; SESSION_COVERAGE_INCOMPLETE). Step 3 = COMPLETE — INSPECTION CAPTURE PRODUCED; Step 4 NOT AUTHORIZED. See §18.
+
+---
+
+## §18. Step 3 run 6 — the bounded SSH inventory session (2026-09-28)
+
+### 18.1 Keith's acceptance and authorization
+
+Recorded 2026-09-28 at baseline `eed1c809f7e4e5113e8a1ac4390e8ede8dd5ffa0` (HEAD verified; working tree clean at window open; this file SHA256 `BE77A63E63B14AA760C6C8D1F7222B968DC4466A3A2EF235CBCCAB6D75511CD3` — the reviewed artifact — before this run). Keith accepted the independently obtained AWS host-key provenance recorded in §17 and confirmed that the §3.1 host-key lookup identity is the static IPv4 literal configured for `aisandbox-staging`, verified equal to the AWS instance / access-details IP. Accepted ED25519 fingerprint: `SHA256:kwAg4iEcpglnu4XTqy6NrQOlz8xzybbV3xY6rzwmwO0`. The acceptance covers the AWS-recorded key binding only; it does not establish fresh host state or host-specific P5 satisfaction. Keith authorized **one** bounded Step 3 SSH inventory session as `ubuntu@aisandbox-staging`, port 22, using the frozen §2.7 inspection script, the verified supervisor / classifier and the applicable §14 amendments. Step 4 remains NOT AUTHORIZED. The dated acceptance pointers were inserted under §3.1, §3.3 and §10 **before** connection (phase A); both §10 execution prerequisites are TICKED.
+
+### 18.2 Pre-connection verification (all passed; any mismatch would have blocked)
+
+- Stage-start SHA256 equal to the reviewed artifact; HEAD equal to the authorized baseline; working tree clean; locked predecessors unchanged.
+- Retained artifacts re-hashed and equal to their recorded values: `AisbSupervisor.dll` `E5AF106E…`, `Supervisor.cs` `D50DCB71…`, `Classifier.ps1` `D417D10E…`, `Run-Tests.ps1` `7872A55E…`, `inspection.sh` `F950CAE6…` (6,123 bytes, LF), root manifest `164048E8…` (every entry re-verified), run manifests `DFB38550…` / `202DC8F6…` / `44F60E99…` / `592055C3…`, AWS evidence file `86475693…`.
+- Local SSH target mapping unchanged: `~/.ssh/config` `C2DA0133…`, `~/.ssh/known_hosts` `54E7C816…`; zero hook / alias directives; `ssh -G` effective binding `ubuntu` / static IPv4 (= AWS-reported IP) / 22 / no `HostKeyAlias`; exactly one `known_hosts` entry for the lookup identity — the accepted ED25519 key. The same gate was re-executed inside the session harness immediately before launch.
+- Supervision: production parameters confirmed in the loaded configuration (131,072 B / 3,000 L / 180 s from launch / 10 s stdin / 5 s kill wait / one shared 5 s drain / 500 ms poll); `RealProc` with `KillTree=false` (plain `Process.Kill()`, §4.3.3 T1). The completed synthetic suite was not rerun (no integrity discrepancy).
+- Leases: STAGING acquired on the board before connection (phase A, GOVERNANCE transient); released after the session (phase B).
+
+### 18.3 Invocation
+
+`C:\Windows\System32\OpenSSH\ssh.exe` (OpenSSH_for_Windows_9.5p1, LibreSSL 3.8.2) `-T -p 22 -o StrictHostKeyChecking=yes -o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=15 -o ServerAliveCountMax=4 ubuntu@aisandbox-staging "bash -s"` — the frozen §3.1 command; no PTY; the byte-identical §2.7 script delivered on stdin by the supervisor's stdin-writer thread. Launch 2026-09-28 10:44:12 UTC (wall clock, invocation record only; all supervisor durations are Stopwatch-based). Retries 0; interactive fallback none; key acceptance / replacement none; additional remote commands none; privilege escalation none. Remote markers: `INVENTORY-START 2026-09-28T10:44:14Z`, `INVENTORY-END 2026-09-28T10:44:15Z`; `WHOAMI: ubuntu`; the remote hostname marker is present in the capture and is retained privately (it embeds an internal address).
+
+### 18.4 Supervisor record (§4.3.5, reconciled)
+
+| Field | Value |
+|---|---|
+| `supervisorOutcome` | **NORMAL** (note empty) |
+| `pollTrigger` | `PROCESS_EXITED` |
+| Process exit code | **0** (integer; `HasExited` true at reconciliation) |
+| Kill / wait | not attempted (`killAttempted=false`; `killFailed`/`killUnconfirmed`/`waitFailed` all false) |
+| Elapsed at trigger / drain start / drain end / reconciliation | 2.543 s / 2.544 s / 2.544 s / 2.544 s (Stopwatch from launch) |
+| `drainDeadlineElapsed`; per-join `remaining()` / waited | 7.544 s; stdout 4.9996 s / <1 ms, stderr 4.9996 s / <1 ms, stdin 4.9996 s / <1 ms |
+| `bytesReserved` / `linesReserved` | 5,105 B / 129 L (`limitExhausted=false`; defensive branch not hit) |
+| stdout reader | 4,722 B / 124 L persisted; `readCount` 18; finished; no timeout; no read/write/flush/close failure; file size on disk 4,722 |
+| stderr reader | 383 B / 5 L persisted; `readCount` 7; finished; no timeout; no failure; file size on disk 383 |
+| Σ persisted vs reserved | 5,105 B = 5,105 B; 129 L = 129 L |
+| stdin | delivered; `stdinFailed`/`stdinDeliveryFailed`/`stdinWriterTimeout` false |
+
+Session classification (§5.3): **SESSION_EXEC_COMPLETE**. Session coverage (§5.4): **SESSION_COVERAGE_INCOMPLETE**. No SSH client diagnostic on stderr (stderr holds only the five remote `stat` diagnostics listed in 18.5). No cap, candidate-limit or PID-limit marker fired. Measured total wall-clock for the session: 2.56 s (launch → supervisor return).
+
+### 18.5 Observations (execution class §5.1 / coverage class §5.4; publication per §7.3)
+
+| Obs | Execution | Coverage | Observed |
+|---|---|---|---|
+| INV-1 account enumeration | EXEC_COMPLETE (producer 0 / filter 0 / cap 0) | COVERAGE_FULL | 38 accounts. Interactive-shell accounts: `root` (uid 0, `/root`, bash), `ubuntu` (uid 1000, `/home/ubuntu`, bash), `postgres` (uid 111, `/var/lib/postgresql`, bash). Service accounts of note: `caddy` (999, `/var/lib/caddy`, nologin), `redis` (112, `/var/lib/redis`, nologin), `www-data` (33). All remaining accounts are system accounts with `nologin` / `false`. |
+| INV-2 `/home` listing | EXEC_COMPLETE (rc 0 / cap 0) | COVERAGE_FULL | `/home` contains exactly one entry: `ubuntu` (`drwxr-x---`, owner `ubuntu:ubuntu`, mtime Sep 15 21:40). |
+| INV-3 PM2 home discovery | EXEC_COMPLETE (CHECKS 2; CHECK-RC 1, 0; PRESENT 1 / FAILED 1 / UNRESOLVED 0; group 0 / cap 0) | **COVERAGE_INCOMPLETE** — `INACCESSIBLE(/root/.pm2)` | `/home/ubuntu/.pm2` **PRESENT** (directory, owner `ubuntu`). `/root/.pm2` **INACCESSIBLE** — `stat` rc 1 with path-matched `Permission denied` on stderr; presence or absence under `/root` is unknown to `ubuntu`. |
+| INV-4a systemd unit files | EXEC_COMPLETE (0 / 0 / 0) | COVERAGE_FULL | `pm2-ubuntu.service` — `enabled` (vendor preset enabled). Two `systemd-tpm2-setup*` units also match the `pm2` substring filter (TPM2 units; heuristic pattern noise, not PM2). |
+| INV-4b systemd units (all) | EXEC_COMPLETE (0 / 0 / 0) | COVERAGE_FULL | `pm2-ubuntu.service` — `loaded active running "PM2 process manager"`. Six `systemd-pcr*`/`tpm2*` units are inactive/dead TPM2 substring matches (noise). |
+| INV-5 PM2 installation search | EXEC_COMPLETE (CHECKS 5; PRESENT 1 / FAILED 4 / UNRESOLVED 1; group 0 / cap 0) | COVERAGE_FULL (glob resolved by parent `stat`) | `/usr/lib/node_modules/pm2` **PRESENT** (directory, owner `root`) at that checked candidate path. Absent with path-matched ENOENT: `/usr/local/lib/node_modules/pm2`, `/home/ubuntu/node_modules/pm2`, `/home/ubuntu/.npm-global/lib/node_modules/pm2`. `GLOB-UNRESOLVED /home/ubuntu/.nvm/versions/node/*/` resolved by the parent check `/home/ubuntu/.nvm/versions/node` → ENOENT (the checked path `/home/ubuntu/.nvm/versions/node` is absent; nothing is asserted about nvm or PM2 installations outside the checked candidates). COVERAGE_FULL here means every defined candidate of this observation was resolved — not exhaustive host-wide discovery; out-of-scope prefixes per §9.5 remain unchecked. |
+| INV-6 running PM2 daemons | EXEC_COMPLETE (PGREP-RC 0; TOTAL-PIDS 2; PS-ATTEMPTED 2; PS-OK 1 / PS-FAIL 1; group 0 / cap 0) | **COVERAGE_INCOMPLETE** — `PS_FAIL(1177465, 1)` | PID **844871**: a process matching the frozen PM2-daemon heuristic (§2.6 `pgrep` pattern); user `ubuntu` and lstart `Fri Sep 11 06:15:45 2026` successfully observed. PID 1177465: `pgrep` matched the PID; `ps` returned 1 without output; cause, user and start time remain **UNKNOWN** (not absent; §0.13). |
+
+Consolidated (bounded to the checked candidates): the host presently shows **one PM2 home visible to `ubuntu`** (`/home/ubuntu/.pm2`), **one PM2 installation at a checked candidate path** (`/usr/lib/node_modules/pm2`), **one enabled and running systemd unit** (`pm2-ubuntu.service`), and **one process matching the PM2-daemon heuristic with user and start time observed** (`ubuntu`, PID 844871, lstart 2026-09-11 06:15:45 host time; the systemd observation is not independently linked to this PID). Unknowns retained: `/root/.pm2` (inaccessible), PID 1177465 (`ps` rc 1; cause unknown), non-standard `PM2_HOME` locations, other users' crontabs, historical accounts, prefixes outside the §2 candidate list (§9). COVERAGE_FULL for INV-1, INV-2, INV-4 and INV-5 means full coverage of each defined observation, not exhaustive host-wide discovery. The `postgres` account has an interactive shell and a home outside `/home`; INV-3 checked only `/root` and `/home/*` homes (§9.5) — `/var/lib/postgresql/.pm2` was not a candidate and is unchecked.
+
+### 18.6 Non-inference statements
+
+- Execution completeness (for every observation the required START / END / RC / CAP markers and marker counts satisfied the §5.1 execution-completeness rules, and the session accounting reconciled) is recorded separately from coverage completeness (candidate-level and per-PID failures — `INACCESSIBLE(/root/.pm2)`, `PS_FAIL(1177465, 1)` — produced COVERAGE_INCOMPLETE for INV-3 and INV-6). Neither is presented as the other.
+- INACCESSIBLE and PS_FAIL results are not converted into absence. `pgrep` matches are heuristic (§0.13 / §9.8).
+- Remote cleanup is not inferred from SSH disconnection (§0.11 / §9.9); the session exited normally (exit 0) with the remote script's own END marker, so no local kill occurred.
+- No host-specific P5 satisfaction, C-ACQ approval, transfer, canary, reopen or host-clean claim is made or implied. No PM2 invocation, deployment, restart, save, recovery-material search, vault / journal access, configuration-content inspection, file upload or intentional remote file creation occurred; ordinary SSH auth-log / lastlog side effects are acknowledged (§7.4). No AWS call, no Docker.
+
+### 18.7 Artifacts and hashes (run 6; runs 1–5 preserved)
+
+Root `C:\Users\knlee\aisb-preflight\INVENTORY-01\runs\run6-2026-09-28-SSH-INVENTORY\`. Manifest `manifest-sha256.txt` (8 entries) SHA256 `BA922E295C292EBCE402256E455AA1E116AD548C7CE785991C51E65871C36796`. Root run-2 manifest (`164048E8…`) and run manifests 1 / 3 / 4 / 5 (`DFB38550…` / `202DC8F6…` / `44F60E99…` / `592055C3…`) are byte-unchanged. Capture files were created `FileMode.CreateNew` with an owner-only ACL (§7.1) and are retained through Step 4 review (§7.2); streams were not merged.
+
+| Path (relative to run-6 root) | SHA256 | Role |
+|---|---|---|
+| `evidence\inv-stdout.bin` | `09E1500EB9BF69D84349A6D0FB16E290C9881F1A34AA2C9F0849A4A76F315746` | raw SSH stdout, 4,722 B / 124 L (markers, observation data, RCs; contains the internal hostname marker — private) |
+| `evidence\inv-stderr.bin` | `6A01CF1E5F9181E0F9CBC2F916EE94F2222924B4FC0D421CB28C48D6C91F39FF` | raw SSH stderr, 383 B / 5 L (five remote `stat` diagnostics; no SSH client message) |
+| `evidence\record.json` | `D99BF7B237149EB41B29D6CEFB083974A2AD9AEDB0453AC01932AFD5E96F72CA` | reconciled §4.3.5 supervisor record (Stopwatch timings, per-reader state, process call log) |
+| `evidence\classification.json` | `CB1999B8EB32BAA4056891743D314A4881C287B2B12C5722A02FCE2D5A71DEA0` | §5 per-observation execution / coverage classes and session classes from the verified classifier |
+| `evidence\invocation.json` | `9326780B64E350A4362B208706A1D5DCED7F215DA9843C199659BC7453CB80A3` | command line, client version, effective binding (contains the IPv4 — private), accepted key, parameters, wall-clock launch / return, capture hashes, zero-retry statement |
+| `evidence\run-console.txt` | `E4238472BD21D4D971B1DB62F88553471CFCFC8C2A471ADDBE81EA021B174083` | harness console (IP-redacted) |
+| `Run-Session.ps1` / `Apply-Run6-PhaseA.ps1` | `04F0397A…` / `87A97763…` | session harness (integrity gate + supervised launch + classification; loads only the verified artifacts) and the phase-A record script |
+
+Harness note (no mechanism change, no connection): two harness-only aborts preceded the recorded launch — a `$null`-vs-empty comparison on the parsed `hostkeyalias` line, and `ssh -V` stderr raised under `$ErrorActionPreference='Stop'`; both stopped before `Process.Start()`, the second after creating an empty evidence directory, which was removed. The recorded session is the only SSH connection made.
+
+### 18.8 §10 acceptance review and step status after run 6
+
+- Execution prerequisites: both TICKED (§3.3 accepted by Keith, 18.1; supervision verified, §15.5).
+- Pre-flight: Keith authorized at the stated baseline; STAGING acquired before connection, `known_hosts` confirmed, provenance recorded; supervision verified and configured with production parameters — all TICKED.
+- Execution: SSH under supervision with `supervisorOutcome` recorded after reconciliation (NORMAL) — TICKED; session classified (SESSION_EXEC_COMPLETE) with per-observation execution and coverage classes and session coverage (SESSION_COVERAGE_INCOMPLETE) recorded — TICKED; STAGING released after the session — TICKED; "pre-launch blocked" branch — not applicable (capture produced); capture produced, files retained, finding recorded, §9 limitations retained — TICKED; GOVERNANCE transient, board / backlog updated — TICKED; validator and `git diff --check` — TICKED; no PM2, no file creation on host, no privilege escalation — TICKED; no predecessor edits, no Git commit / push — TICKED; Step 4 NOT AUTHORIZED, §0 preserved — TICKED.
+- **Step 3 = COMPLETE — INSPECTION CAPTURE PRODUCED (SESSION_EXEC_COMPLETE; SESSION_COVERAGE_INCOMPLETE: INACCESSIBLE(/root/.pm2), PS_FAIL(1177465, 1)).** Not LOCKED; Step 4 review and lock remain a separate, unauthorized step. The frozen §10 check-box lines are not rewritten; this section is the dated record of their status.
+- **Activity ledger (run 6):** SSH sessions=1 (the authorized bounded session; exit 0; ~2.5 s), retries=0, interactive fallback=0, key acceptance / replacement=0, additional remote commands=0, privilege escalation=0, PM2 invocation=0, deployment / restart / save=0, recovery-material search=0, vault / journal access=0, configuration-content inspection=0, file upload=0, intentional remote file creation=0, AWS API calls=0, Docker=0, application runtime=0, host-specific P5 claims=0, C-ACQ / transfer / canary / reopen / host-clean claims=0, Step 4=0, subagents=0, Git commit / push / branch=0, predecessor bodies edited=0, frozen §§0–17 sentences altered=0 (dated pointer lines inserted only), SSH configuration / known_hosts modified=0. STAGING acquired before connection and released after the session; GOVERNANCE acquired transiently twice (phase A before connection; phase B for the post-session records) and released UNOWNED.
+- **Documentation-only correction (2026-09-28, pre-commit; Keith-directed):** wording in 18.5 / 18.6 and the board / backlog mirrors corrected for accuracy — PID 844871 is described as a process matching the frozen PM2-daemon heuristic with user / start time observed (not a "confirmed daemon"; the systemd unit is not independently linked to it); PID 1177465 is recorded only as pgrep-matched with `ps` rc 1 and no output, cause unknown; execution completeness is restated in marker / accounting terms; installation findings are bounded to the checked candidates and COVERAGE_FULL is clarified as full coverage of the defined observation. Captured evidence, classifications, hashes of the evidence files, Step 3 status and the frozen design are unchanged; the pre-correction record hash was `40F59DE2267899CB4072882690067EBE62CEEA8DB82B5F971B7DF10C214E7222`.
