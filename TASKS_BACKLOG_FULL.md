@@ -80682,3 +80682,116 @@ Step 4 — independent evidence review and lock (2026-09-28 — baseline d7d4d1c
 **Step 3 run 5 (local provenance reconciliation) activity ledger:** LIVE=0, AWS API calls by the run=0 (Keith's CloudShell retrieval preceded the run), SSH=0 (including browser SSH and benign preflight), SSH keyscan=0, staging=0, provider=0, credits=0, host inspection=0, vault/journal=0, real PM2=0, application runtime=0, Docker=0, Postgres=0, Redis=0, transfer=0, acquisition=0, host-specific P5 claims=0, operational authorization=0, Step 4=0, subagents=0, Git commit/push/branch=0, predecessor bodies edited=0, frozen sentences altered=0 (5 dated pointer lines inserted), SSH configuration / known_hosts modified=0, private keys read=0, credentials received=0, instance / firewall / IAM / host-key changes=0; local read-only activity only: JSON parsing, SHA-256 / base64 recomputation, ssh -G, ssh-keygen -F, filesystem hashing, one byte-copy into the private evidence directory.
 **Step 3 run 6 (SSH inventory session) activity ledger:** LIVE SSH sessions=1 (Keith-authorized bounded session; exit 0; ~2.5 s), retries=0, interactive fallback=0, key acceptance / replacement=0, additional remote commands=0, privilege escalation=0, PM2 invocation / deployment / restart / save=0, recovery-material search=0, vault / journal access=0, configuration-content inspection=0, file upload=0, intentional remote file creation=0, AWS API calls=0, Docker=0, application runtime=0, Postgres=0, Redis=0, transfer=0, acquisition=0, host-specific P5 claims=0, C-ACQ / canary / reopen / host-clean claims=0, operational authorization=0, Step 4=0, subagents=0, Git commit / push / branch=0, predecessor bodies edited=0, frozen sentences altered=0 (4 dated pointer lines inserted), SSH configuration / known_hosts modified=0; STAGING acquired before connection and released after the session; GOVERNANCE transient twice; ordinary SSH auth-log / lastlog side effects on the host acknowledged.
 **Step 4 (independent evidence review and lock) activity ledger:** LIVE=0, SSH=0 (including preflight / keyscan), STAGING lease=0, AWS API calls=0, provider=0, credits=0, host inspection=0, vault / journal access=0, PM2=0, Docker / Postgres / Redis / service runtime=0, transfer / acquisition / canary / reopen=0, operational authorization=0, harness execution=0, supervision-test reruns=0, fresh host evidence=0, successor registration=0, subagents=0, code changes=0, Git mutations by the worker=0; local read-only parsing / hashing / counting / classification of retained files only; four record files changed under transient GOVERNANCE.
+
+### PM2-RECOVERY-P5-SCOPE-01 — J-2 scope decision for (H = aisandbox-staging, A = {aisandbox-api-gateway, aisandbox-ai-service})
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=PM2-RECOVERY-P5-SCOPE-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-28 — Step 1 COMPLETE (registration / control-plane only) — Steps 2–5 NOT AUTHORIZED — GOVERNANCE / EVIDENCE + DECISION — 5-step — no implementation lane — no sidecar candidate — occupancy EMPTY — GOVERNANCE acquired transiently then released UNOWNED
+**Task ID:** PM2-RECOVERY-P5-SCOPE-01
+**Title:** J-2 scope decision for (H = aisandbox-staging, A = {aisandbox-api-gateway, aisandbox-ai-service})
+**Family:** AGENT PLATFORM / EXEC (bounded GOVERNANCE / EVIDENCE + DECISION container for the scope-approval-gate decision required by the adopted J-2 rule in locked PM2-RECOVERY-P5-JOURNAL-01 §2 / §7.2 for the target (H, A); not a product frontier; not an EXEC-01C6A reopen; not a fence; not an implementation task; not a live acquisition; not a P6 execution; not B(H) construction; not the recovery-material search or the criteria 1–6 attestation itself, which remain a later, unregistered task and are not implied)
+**Parent task:** none. Not a child of AGENT-PLATFORM-EXEC-01C6A. Does **not** reopen EXEC-01C6A.
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE / EVIDENCE + DECISION — does NOT consume Lane 1 or Lane 2 — no implementation candidate — no saturationClass
+**Development program:** CURRENT — Keith 2026-09-28 named this GOVERNANCE / EVIDENCE + DECISION registration. Light CURRENT/FUTURE check per CLAUDE.md Next-Work Selection Protocol (named task; no frontier audit): the scope decision is required by the adopted J-2 scope-approval gate (P5-JOURNAL-01 LOCKED §2, carried §7.2); P5-JOURNAL-01 §6.1 records that the scope-adequacy standard for (H, A) is undefined and belongs to a separately authorized evidence task; the P5-INVENTORY-01 lock (§19.4) expressly does not establish J-2 scope adequacy. This registration is a Keith-named decision container, not a new product-priority selection.
+**Product-visible Harness capability:** FUTURE / gated / disabled / unavailable to users. Unchanged.
+**Classification:** CURRENT required governance evidence + decision; product-visible Harness remains FUTURE/gated.
+**Target:** host H = aisandbox-staging; app set A = {aisandbox-api-gateway, aisandbox-ai-service} (per locked ACQUISITION-01 §3.2 / POLICY-01 §3.1 as carried by INVENTORY-01 §1.2). aisandbox-container-manager and aisandbox-frontend are deployment context on H, not an expansion of A.
+**Lifecycle:** 5-STEP GOVERNANCE / EVIDENCE + DECISION. Each of Steps 2–5 requires its own explicit Keith authorization. Step 4 (decision) and Step 5 (independent verification) must occur in separate authorization windows: the deciding step must not verify itself.
+1. Step 1 — registration — COMPLETE — 2026-09-28 — control-plane only; no decision; no evidence plan; no stage-start; no script or parser; no host inspection; no vault/journal access; no SSH, AWS, sudo, STAGING lease, PM2, or runtime
+2. Step 2 — decision-feasibility review and bounded evidence-plan freeze — NOT AUTHORIZED — Sequencing rule: Step 2 must FIRST determine whether the unresolved historical / custom-location gaps (carried inputs: historical or removed operator accounts, dormant or deleted custom PM2 homes, unrecorded operator sessions, and the P5-JOURNAL-01 §6.1 undefined scope-adequacy standard) leave scope approval BLOCKED under adopted J-2 regardless of the proposed current-host observations. If so, Step 2 reports the blocker and the available decision path (record BLOCKED at Step 4, or a separately authorized explicit J-2 amendment under P5-JOURNAL-01 §0.8 / §4.1, which is outside this task) BEFORE proposing any host execution. Do not schedule SSH merely to complete the lifecycle. Only if current-host observations are both necessary and capable of informing the decision may Step 2 freeze a bounded evidence plan in a stage-start (versioned successor script with its own hash — the locked INVENTORY-01 §2.7 script is neither modified nor superseded; classifier deltas and focused fixtures for new or changed behavior only; §7.3 allowlist extension; exact privileged command set declared, if any; draft scope proposal; A1-F clause (b) H2 attestation template; three-valued acceptance definition). The advisory observation / parser proposals from the 2026-09-28 pre-registration review (INV-3b account-home `.pm2`, INV-6 re-observation with self/parent exclusion, INV-6b title parser, INV-7 unit-property parser, INV-8 privileged `/root/.pm2` existence stat) are INPUTS for this review, not approved executable designs.
+3. Step 3 — separately authorized evidence collection — NOT AUTHORIZED — only where Step 2 finds it necessary and capable of informing the decision: (a) at most one bounded read-only SSH session on H under a transient STAGING lease and the verified supervisor, and/or (b) Keith's dated testimony / A1-F clause (b) H2 attestation recorded as testimony. Produces evidence only; establishes no absence; an incomplete or blocked collection is a valid recorded outcome.
+4. Step 4 — Keith's explicit scope decision — NOT AUTHORIZED — after reviewing the Step 2 / Step 3 record, Keith records exactly one of: APPROVED (approved paths / accounts / PM2 homes / apps, fact-cited coverage justification, known limitations), REJECTED (reasons), or BLOCKED (which gate unknown remains and why it is unclosable under adopted J-2). Recorded verbatim with date; no paraphrase, no inference, no supplied value.
+5. Step 5 — separately authorized independent verification and lock — NOT AUTHORIZED — separate authorization window from Step 4; verifies the decision record against the P5-JOURNAL-01 §2 gate elements, criteria 1–6 references, E-J5 validity conditions, and this task's AC; locks the record. The lock records whichever value Keith chose and NEVER implies scope approval.
+**Start condition:** READY (all declared dependencies LOCKED)
+**Depends on:** PM2-RECOVERY-P5-JOURNAL-01 (COMPLETE AND LOCKED 2026-09-23; J-2 adopted), PM2-RECOVERY-P5-INVENTORY-01 (COMPLETE AND LOCKED 2026-09-28; bounded inventory finding only). PM2-RECOVERY-ACQUISITION-01, PM2-RECOVERY-POLICY-01, PM2-RECOVERY-BASELINE-GOV-01, and PM2-RECOVERY-CAPTURE-01 remain COMPLETE AND LOCKED and are not reopened.
+**Primary write scope:** docs/ (governance evidence and decision record only; no application source). Step 1 exact write set: `TASKS.md` (this task's CURRENT EXECUTION BOARD records), `TASKS_BACKLOG_FULL.md` (this canonical body and stanza), `docs/control-plane/SATURATION_PROOF.json` (validator output only).
+**Mutexes / resources:** GOVERNANCE (acquired transiently for each step's required record writes then released UNOWNED); STAGING only if Step 3(a) is separately authorized (transient; acquired before connection, released after the session)
+**Hot-file leases:** none
+**Shared contracts:** adopted J-2 rule (P5-JOURNAL-01 §2 / §7.2 — scope-approval gate, criteria 1–6, E-J5 validity/invalidation) — FROZEN for this task. Any change to J-2 requires separate explicit authorization under P5-JOURNAL-01 §0.8 / §4.1 and is outside this task's scope.
+**Evidence class:** none at Steps 1, 2, 4, 5 (governance records); STAGING-RUNTIME only if Step 3(a) is separately authorized (read-only SSH observation; no PM2 client; no application interaction)
+**Revert isolation:** acceptable (governance-only; no application source changes)
+**saturationClass:** not applicable (GOVERNANCE; no sidecar candidate)
+**Acceptance object:** A fact-supported J-2 scope decision for (H, A) recorded as exactly one of APPROVED, REJECTED, or BLOCKED, with reasons, followed by independent verification of the record. Task completion or lock NEVER implies scope approval; the outcome is whichever value Keith recorded. BLOCKED is a valid, complete outcome.
+
+**Carried inputs (references only; not evidence of absence; not approved designs):**
+- Adopted J-2 (P5-JOURNAL-01 §2, carried §7.2): scope proposal; scope approval; coverage justification citing specific facts, not assumptions; unknowns that prevent acceptance (unknown operator accounts on H, unknown PM2 home directories, unexplored filesystem areas where material could exist, gaps in operator activity history that could conceal prior recovery work, any pending operation); incomplete-coverage invalidation; attestation criteria 1–6; E-J5 validity/invalidation.
+- P5-JOURNAL-01 §6.1 / §6.2: the scope-adequacy and completeness standards for (H, A) are undefined by the locked contracts; no observation produces them; approval alone cannot establish factual absence.
+- P5-INVENTORY-01 bounded findings (§18.5, verified §19): 38 accounts returned by the defined `getent passwd` enumeration at 2026-09-28T10:44Z; interactive shells root / ubuntu / postgres; /home contains only ubuntu; /home/ubuntu/.pm2 PRESENT; /root/.pm2 INACCESSIBLE (unknown, not absent); pm2-ubuntu.service enabled and running (systemd unit not independently linked to a PID); /usr/lib/node_modules/pm2 PRESENT; PID 844871 heuristic match (user ubuntu, lstart 2026-09-11); PID 1177465 pgrep-matched, ps rc 1, cause unknown; /var/lib/postgresql/.pm2 and other non-/home account homes unchecked (§9.5); SESSION_COVERAGE_INCOMPLETE retained; the lock does not establish exhaustive inventory, recovery-material absence, or J-2 scope adequacy.
+- Advisory gap table (G1–G11) and observation / parser proposals (INV-3b, INV-6 re-observation, INV-6b, INV-7, INV-8) from the 2026-09-28 pre-registration review: inputs for Step 2 only; not approved; not frozen; not executable; not implemented; not tested. The proposed single privileged command (`sudo -n stat` of `/root/.pm2`) is a proposal only; no sudo is authorized.
+- Keith's testimony on prior recovery work: "probably no, but uncertain" — recorded as testimony only (P5-INVENTORY-01 §8 treats operator testimony as a valid evidence source); it is never converted into confirmed absence.
+- D2b=ACCEPTANCE governs Keith's judgment of the disclosed A1-F clause (b) H2 attestation; it is preserved and is NOT a waiver of any J-2 unknown. A gap is J-2-blocking whenever it could conceal applicable recovery work or material, regardless of its H2 classification.
+- Repository statements (tooling never transferred, canary live fields NOT RUN, no designated E1 vault) are records (BASELINE-GOV-01 Rule B-1); they cannot prove that unrecorded recovery work was impossible and are not proposed as closure for any gap.
+- Criterion 5 ("does not claim absence outside scope") is a disclaimer on an adequate scope; it cannot cure an inadequate one.
+- E1 (ACQUISITION-01 §2.1) remains an independent C-ACQ blocker; not a J-2 input; out of scope for this task.
+
+**Unresolved references carried without repair (control-plane attention only; NOT edited by this task; no general registry-over-board rule asserted):**
+- `TASKS.md` board field `PM2_RECOVERY_CAPTURE_01_LOCKED=NO` (board code block) vs the canonical registry body "COMPLETE AND LOCKED 2026-09-21" and the Lane 1 text.
+- `TASKS.md` blocker line "PM2-DAEMON-INVESTIGATION-01: REGISTERED / READY / NOT ADMITTED — 2026-09-18" vs the canonical registry body "COMPLETE AND LOCKED 2026-09-18".
+
+**Non-effects (Step 1 registration):**
+- Does NOT decide, propose, approve, reject, or block the J-2 scope
+- Does NOT freeze an evidence plan, script, parser, classifier delta, allowlist extension, attestation template, or acceptance form
+- Does NOT create a stage-start document
+- Does NOT inspect the host, any vault, any journal, or any recovery material; no SSH, AWS, sudo, STAGING lease, PM2, Docker, or runtime
+- Does NOT amend J-2 or reopen P5-JOURNAL-01, P5-INVENTORY-01, ACQUISITION-01, POLICY-01, BASELINE-GOV-01, or CAPTURE-01
+- Does NOT convert Keith's testimony into confirmed absence; does NOT treat D2b=ACCEPTANCE as a J-2 waiver
+- Does NOT claim host-specific P5 satisfaction, E1 satisfaction, or C-ACQ approval
+- Does NOT change EXEC-01C6A startCondition=NOT_READY; does NOT attest HOST_CLEAN, accept P7, or satisfy the reopen gate
+- Does NOT authorize canary, B(H), verifier live use, transfer, acquisition, or any implementation
+- Does NOT add a sidecar candidate or saturationClass; sidecar / lockedTaskIds unchanged
+- Does NOT repair the two stale board mirrors
+- Does NOT authorize Steps 2–5; grants no host-execution permission
+
+**AC (Step 1):**
+- [x] Baseline verified (HEAD = cf50b20699d861dc43994e16468a11ad18a6ba9f; branch main; working tree clean at window open)
+- [x] Identifier confirmed available (repository-wide search: zero matches for PM2-RECOVERY-P5-SCOPE-01 before registration)
+- [x] No equivalent unfinished owner: P5-JOURNAL-01 and P5-INVENTORY-01 are COMPLETE AND LOCKED and their lock scopes exclude J-2 scope adequacy; no other registered task owns the (H, A) scope decision
+- [x] Machine registration stanza (AISB_MACHINE_REG_V1 nature=GOVERNANCE) in TASKS_BACKLOG_FULL.md (post-epoch)
+- [x] Board registration fields in TASKS.md code block; board header and governance ledger lines updated
+- [x] Governance ledger updated (GOVERNANCE acquired transiently then released UNOWNED)
+- [x] Dependencies confirmed LOCKED: P5-JOURNAL-01, P5-INVENTORY-01; ACQUISITION-01 / POLICY-01 / BASELINE-GOV-01 / CAPTURE-01 not reopened
+- [x] No implementation lane, sidecar candidate, or saturationClass
+- [x] Five-step lifecycle recorded with the Step 2 sequencing rule (blocker determination before any host-execution proposal; no SSH merely to complete the lifecycle) and the Step 4 / Step 5 separation
+- [x] Three-valued acceptance object recorded; completion never implies approval
+- [x] Carried inputs recorded as references; advisory proposals marked as inputs, not approved designs; testimony preserved as uncertain; D2b preserved without waiver effect; J-2 unchanged
+- [x] Two stale board mirrors carried as unresolved references, not repaired
+- [x] Validator run (PASS); git diff --check clean
+- [x] No stage-start, script, parser, tests beyond the control-plane validator, SSH, AWS, sudo, STAGING lease, host inspection, vault/journal access, PM2, runtime, subagents, or Git mutation
+- [x] No predecessor body edits; sidecar / lockedTaskIds unchanged
+- [x] Steps 2–5 NOT AUTHORIZED
+
+Step 2 (decision-feasibility review and bounded evidence-plan freeze) — NOT AUTHORIZED:
+- [ ] Blocker determination performed FIRST: whether historical / custom-location gaps leave scope approval BLOCKED under adopted J-2 regardless of current-host observations
+- [ ] If BLOCKED regardless: blocker and available decision path reported; no host execution proposed; no SSH scheduled merely to complete the lifecycle
+- [ ] Otherwise: bounded evidence plan frozen in a stage-start (versioned successor script with own hash; INVENTORY-01 §2.7 script neither modified nor superseded; classifier deltas / fixtures for new behavior only; allowlist extension; exact privileged command set declared, if any; draft scope proposal; H2 attestation template; three-valued acceptance definition)
+- [ ] J-2 unchanged; testimony not converted into absence; D2b not treated as waiver
+- [ ] No SSH, AWS, sudo, STAGING, host inspection, vault/journal access, PM2, runtime, or predecessor edits; validator run; git diff --check clean; no Git commit/push by the worker
+
+Step 3 (separately authorized evidence collection) — NOT AUTHORIZED:
+- [ ] Executed only where Step 2 found it necessary and capable of informing the decision; scope exactly as frozen
+- [ ] (a) at most one bounded read-only SSH session under transient STAGING and the verified supervisor, and/or (b) Keith's dated testimony / H2 attestation recorded as testimony
+- [ ] Evidence only; no absence inferred; incomplete or blocked collection recorded as a valid outcome; private evidence retained outside Git
+- [ ] Validator run; git diff --check clean; no Git commit/push by the worker
+
+Step 4 (Keith's explicit scope decision) — NOT AUTHORIZED:
+- [ ] Keith records exactly one of APPROVED / REJECTED / BLOCKED with reasons, verbatim and dated
+- [ ] APPROVED cites specific facts covering every J-2 gate element and states known limitations; REJECTED states reasons; BLOCKED names the gate unknown(s) and why unclosable under adopted J-2
+- [ ] No host-specific P5 satisfaction, E1 satisfaction, or C-ACQ approval claimed; Step 5 NOT AUTHORIZED; task not LOCKED
+
+Step 5 (separately authorized independent verification and lock) — NOT AUTHORIZED:
+- [ ] Separate authorization window from Step 4
+- [ ] Decision record verified against P5-JOURNAL-01 §2 gate elements and this task's AC; §0-class invariants confirmed (predecessor bodies unchanged; EXEC-01C6A NOT_READY; HOST_CLEAN=NO; P7_ACCEPTED=NO; REOPEN_GATE=UNSATISFIED; E1 independently binding)
+- [ ] Lock records the decision value only; lock never implies scope approval
+- [ ] Validator run; git diff --check clean; no Git commit/push by the worker
+
+**Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. INVITATION_EXECUTION_PERMITTED=NO. Unchanged.
+
+**Lane 3 invariant:** Lane 3 remains DISABLED. Unchanged.
+
+**Step 1 HEAD:** `cf50b20699d861dc43994e16468a11ad18a6ba9f` (branch main; working tree clean at window open; matches the expected baseline)
+**Stage-start:** none (not created at Step 1; created only if Step 2 is authorized and proceeds to an evidence-plan freeze)
+**Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, STAGING lease=0, AWS=0, sudo=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, canary submission=0, vendor-source fetch=0, live inspection=0, workflow dispatched=0, host inspection=0, vault/journal access=0, transfer=0, acquisition=0, r3 transferred/extracted/executed=0, F1 transferred/executed=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, canary scripts mutated=0, evidence doc mutated=0, stage-start created=0, script created=0, parser created=0, tests executed=0 except lane-capacity validator, subagents=0, dependencies=0, migrations=0, PRD.md edits=0, ARCHITECTURE.md edits=0, CLAUDE.md edits=0, AGENTS.md edits=0, validator edits=0, mutex-catalog edits=0, sidecar edits=0, lockedTaskIds edits=0, predecessor body edits=0, stale-board-mirror edits=0, EXEC-01C6A body/candidate edits=0, J-2 edits=0, decision selected=0, evidence plan frozen=0, Git mutations=0, Lane 3 changes=0, builder-gate changes=0; TASKS.md + TASKS_BACKLOG_FULL.md only (board registration fields / header / ledger lines and canonical task body); SATURATION_PROOF.json only as validator output.
