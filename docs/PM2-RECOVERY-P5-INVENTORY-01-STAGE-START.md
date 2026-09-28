@@ -589,6 +589,8 @@ The SSH invocation is bound to these specific parameters:
 
 > **Amended 2026-09-28 (Step 3 run 4 — §16.4):** the **host-key lookup identity** is determined from the effective client configuration (`ssh -G`, no connection) as the static IPv4 literal configured as `HostName` for `Host aisandbox-staging` (no `HostKeyAlias`, `CheckHostIP no`, port 22 → un-bracketed form); the alias `aisandbox-staging` itself is not a lookup identity. Keith's confirmation of this row remains required. The **trusted key source** row remains an unestablished prerequisite (§3.3; §16.6). The frozen table is not rewritten.
 
+> **Amended 2026-09-28 (Step 3 run 5 — §17.5):** the lookup identity (static IPv4 literal) is re-confirmed unchanged, and the AWS instance record retrieved by Keith reports the **same IPv4** as the local `HostName` (§17.3). Keith's confirmation of this row is still required before execution. The frozen table is not rewritten.
+
 **Connection command:**
 
 ```
@@ -631,6 +633,8 @@ The §2.7 inspection script is piped to stdin by the local supervision procedure
 **If unestablished:** BLOCKER. No trust exception adopted. Blocked status is a valid outcome (§0.9).
 
 > **Amended 2026-09-28 (Step 3 run 4 — §16):** provenance collection was attempted under Keith's narrow authorization. The AWS-side path is **BLOCKED** (no existing authorized AWS authentication context on the operator host; none of `sts:GetCallerIdentity`, `lightsail:GetInstance`, `lightsail:GetInstanceAccessDetails` was called; no credentials created). The only local candidate — `known_hosts` line 12, `ssh-ed25519`, `SHA256:kwAg4iEcpglnu4XTqy6NrQOlz8xzybbV3xY6rzwmwO0` (same key under `staging.ainow.biz`) — is continuity / first-connection-class evidence, not independent provenance. **§3.3 remains UNESTABLISHED — BLOCKER.** No trust exception adopted; no key replaced or accepted. See §16.3–16.6.
+
+> **Amended 2026-09-28 (Step 3 run 5 — §17):** independent provenance evidence has now been **obtained and locally verified**: Keith retrieved `GetInstanceAccessDetails` server `hostKeys` for `aisandbox-staging` (`ap-southeast-1`) in an authenticated AWS CloudShell session; all three AWS fingerprints recompute locally, and the ED25519 key is byte-identical to the `known_hosts` entry for the lookup identity with fingerprint `SHA256:kwAg4iEcpglnu4XTqy6NrQOlz8xzybbV3xY6rzwmwO0` (`witnessedAt` 2026-07-24 = Lightsail recording time). **Keith's final provenance acceptance is PENDING; acceptance is not inferred from the download.** The run-4 BLOCKED classification is superseded by this evidence; the gate stays closed until Keith records acceptance. See §17.3–17.7.
 
 ---
 
@@ -1106,6 +1110,8 @@ Glob expansion enumerates `/home/` (and, per home, `.nvm/versions/node/`) only. 
 
 > **Amended 2026-09-28 (Step 3 run 4 — §16.8):** the first prerequisite (trusted host-key provenance, §3.3) remains **UNTICKED / BLOCKER** after run 4 (AWS-side path BLOCKED — no existing authorized AWS authentication context; local `known_hosts` candidate documented but not independently bound to the instance). The second prerequisite stays TICKED per §15.5. The frozen check-box lines above are not rewritten.
 
+> **Amended 2026-09-28 (Step 3 run 5 — §17.7):** for the first prerequisite (trusted host-key provenance, §3.3) independent evidence is now obtained and locally verified (§17); the box remains **UNTICKED pending Keith's final acceptance and lookup-binding confirmation**. The second prerequisite stays TICKED per §15.5. The frozen check-box lines above are not rewritten.
+
 **Pre-flight:**
 - [ ] Keith authorizes Step 3 at stated baseline
 - [ ] STAGING acquired; known_hosts confirmed; provenance recorded
@@ -1532,6 +1538,8 @@ Consequently **none of the three permitted API calls was made**: the authenticat
 
 The evidence collected in this run does **not** establish §3.3. What exists is a single, internally consistent `known_hosts` candidate (ED25519; the same key under the DNS name and the IP) whose original source is undocumented in tracked records. That is `known_hosts` continuity / first-connection-class evidence, which §3.3 explicitly lists as **NOT independent provenance**. Nothing collected binds the candidate to the instance `aisandbox-staging` through a channel that is independent of SSH, authenticated and instance-specific; AWS-recorded keys and their `witnessedAt` values were not obtained, so no AWS comparison, no timing evaluation and no mismatch determination could be made. **§3.3 remains UNESTABLISHED — BLOCKER.** No trust exception is adopted; the existing entry was neither replaced, accepted nor altered; final provenance acceptance stays pending Keith's review. Blocked status is a valid outcome (§0.9). No SSH execution follows from this run.
 
+> **Amended 2026-09-28 (Step 3 run 5 — §17):** this run-4 assessment is superseded by §17: route (a) was completed by Keith (authenticated AWS CloudShell), the evidence was locally verified with no mismatch, and §3.3 acceptance is now pending Keith's review rather than blocked on missing evidence. The run-4 text above is retained as history.
+
 Routes that could still satisfy §3.3 (Keith's decision; none started here, none authorized by this run): (a) an existing or newly Keith-authorized authenticated AWS context (CLI or console) yielding `GetInstanceAccessDetails` server `hostKeys` for `aisandbox-staging` in `ap-southeast-1`, compared with `SHA256:kwAg4iEcpglnu4XTqy6NrQOlz8xzybbV3xY6rzwmwO0` and read with `witnessedAt` as Lightsail's recording time rather than a fresh observation; (b) provisioning-time deployment records for the host key, if any exist; (c) Keith's attestation recording the source, channel, date and instance binding of the 2026-08 `known_hosts` entries. Under every route a missing key, mismatch, ambiguous instance / endpoint binding or unexplained timing concern remains blocking.
 
 ### 16.7 Artifacts and hashes (run 4; runs 1–3 preserved)
@@ -1555,3 +1563,69 @@ Post-manifest (this run's record-application scripts and this section text) are 
 - §10 execution prerequisite "Local supervision verification passed" — TICKED (§15.5), unchanged.
 - Design findings: none new. No assertion weakened, no requirement waived, no design amendment made in run 4; no frozen sentence rewritten (dated pointer lines inserted under §3.1, §3.3, §10 and §15.5 only).
 - **Activity ledger (run 4):** SSH=0 (including browser SSH and benign preflight), SSH keyscan=0, STAGING acquired=0, AWS API calls=0 (presence-only context discovery; credentials created / altered / read=0; temporary credentials received=0), host inspection=0, vault/journal access=0, PM2=0, transfer=0, acquisition=0, Docker=0, application runtime=0, host-specific P5 claims=0, operational authorization=0, Step 4=0, subagents=0, Git commit/push/branch=0, predecessor bodies edited=0, frozen §§0–15 sentences altered=0, SSH configuration / known_hosts modified=0, identity file read or used=0, instance / firewall / IAM / host-key changes=0. Local read-only activity only: `ssh -G`, `ssh-keygen -F` / `-l` / `-lf`, filesystem presence checks and hashing.
+
+> **Amended 2026-09-28 (Step 3 run 5 — §17):** the §3.3 blocker recorded in 16.8 was worked in run 5 (local reconciliation of Keith-retrieved AWS evidence). Outcome: **EVIDENCE OBTAINED AND VERIFIED — Keith acceptance PENDING** — see §17.3–17.7. Step 3 remains PARTIAL — NOT INSPECTION COMPLETE.
+
+---
+
+## §17. Step 3 run 5 — local provenance reconciliation of Keith-retrieved AWS host-key evidence (2026-09-28)
+
+### 17.1 Authorization, baseline and scope
+
+Keith authorized (2026-09-28) continued Step 3 at baseline `95b1a3592894297690b33ee31912c4d5bfe7d735` (HEAD verified; working tree clean at window open; this file SHA256 `84D9B80B23CE9EFDF3C2172F504B92B7F2C88D7D2F6861346E90F8ED195DCF84` before this run), limited to **local provenance reconciliation only**. Between run 4 (§16, AWS-side path BLOCKED on the operator host) and this run, Keith used an **authenticated AWS CloudShell session**, confirmed that the authenticated account is the intended account, ran the three narrow read calls permitted by the run-4 authorization (`sts:GetCallerIdentity`, `lightsail:GetInstance`, `lightsail:GetInstanceAccessDetails` protocol `ssh`), filtered the output to identity / instance / server `hostKeys`, and downloaded the result to the operator host as `aws-host-key-evidence.json`. This run made **no AWS call**, no SSH, no keyscan, no STAGING lease, no host inspection, no runtime activity; it read the downloaded file and the local SSH client configuration / `known_hosts` read-only. Repository writes limited to this file, `TASKS.md`, `TASKS_BACKLOG_FULL.md`, `docs/control-plane/SATURATION_PROOF.json`; GOVERNANCE acquired transiently for the record updates. Account ID, ARNs, IP literals and raw key material are kept out of this file; they are retained in the private evidence only.
+
+### 17.2 Downloaded evidence — identity, preservation and field inventory
+
+- Source `C:\Users\knlee\Downloads\aws-host-key-evidence.json`, 3,037 bytes, UTF-8 without BOM, LF, downloaded 2026-09-28 10:14:34 UTC. **SHA256 `86475693269A632C7E7B7F30E49E74B3B41F40D69F5856A6FC71AD274B3072EE`.** Preserved byte-for-byte (hash equal) as `runs\run5-2026-09-28-PROVENANCE-RECONCILIATION\evidence\aws-host-key-evidence.json` (17.6).
+- Field inventory (structure inspected before any value was displayed): `retrievedAtUTC`; `identity{Account, Arn}`; `instance{name, arn, location{availabilityZone, regionName}, createdAt, publicIpAddress, username}`; `access{instanceName, username, ipAddress, hostKeys[3]{algorithm, publicKey, fingerprintSHA256, witnessedAt}}`; `bindingMatches`; `checks[3]`. **No credential field is present** (no `privateKey`, `certKey`, `password`, `passwordData`). The saved `bindingMatches` / `checks[]` Booleans were treated as Keith's working notes and were **not relied upon**; every property below was recomputed locally.
+- `retrievedAtUTC` = 2026-09-28 10:11:13 UTC — the time Keith's CloudShell session retrieved the records. This is distinct from each key's `witnessedAt` (17.4), which is the time Lightsail recorded that key; neither is a fresh observation of the running server by this run.
+
+### 17.3 Identity and instance binding verification (local recomputation)
+
+| Check | Result |
+|---|---|
+| Caller `identity.Account` is a 12-digit account ID; `identity.Arn` account segment equals it | PASS (principal type: account root) |
+| `instance.arn` service `lightsail`; ARN account segment **equals the caller account** | PASS |
+| `instance.arn` region and `instance.location.regionName` both `ap-southeast-1` (AZ `ap-southeast-1a`) | PASS |
+| `instance.name` = `access.instanceName` = `aisandbox-staging` | PASS |
+| `instance.username` = `access.username` = `ubuntu` | PASS |
+| `instance.publicIpAddress` is IPv4 and equals `access.ipAddress` | PASS |
+| That IPv4 equals the effective `HostName` of local `Host aisandbox-staging` (17.5) | PASS |
+| `instance.createdAt` = 2026-07-24 02:03:02 UTC (consistent with the 2026-07 staging provisioning records) | recorded |
+
+Keith separately confirmed in CloudShell that the authenticated account is the intended account; the ARN-level agreement above is the local corroboration of that statement.
+
+### 17.4 Server host keys — independent fingerprint recomputation
+
+Each `publicKey` (bare base64 SSH wire blob) was base64-decoded, the wire algorithm string was parsed from the blob, SHA-256 was computed over the blob and encoded as unpadded base64 with the `SHA256:` prefix, then compared with AWS's `fingerprintSHA256` and with the run-4 `known_hosts` candidate.
+
+| `algorithm` | wire algorithm | blob bytes | `witnessedAt` (Lightsail recording time, UTC) | recomputed = AWS `fingerprintSHA256` | = known_hosts candidate |
+|---|---|---|---|---|---|
+| `ssh-ed25519` | `ssh-ed25519` | 51 | 2026-07-24 02:13:08.818 | **PASS** — `SHA256:kwAg4iEcpglnu4XTqy6NrQOlz8xzybbV3xY6rzwmwO0` | **PASS** |
+| `ecdsa-sha2-nistp256` | `ecdsa-sha2-nistp256` | 104 | 2026-07-24 02:13:08.815 | PASS — `SHA256:mSIaDC72Rs6klm5cgqn1Ht9t6Yv9Ul+nHv6G5/kkLqE` | n/a (no local ECDSA entry) |
+| `ssh-rsa` | `ssh-rsa` | 407 | 2026-07-24 02:13:08.823 | PASS — `SHA256:IVWPFb16aTgN6IQC2kyk4b8dGQ3L5FAMqhap9yEAZeo` | n/a (no local RSA entry) |
+
+All three AWS fingerprints recompute exactly. The ED25519 key matches AWS's fingerprint **and** the candidate required by Keith's authorization, `SHA256:kwAg4iEcpglnu4XTqy6NrQOlz8xzybbV3xY6rzwmwO0`. Beyond the fingerprint, the decoded AWS ED25519 blob is **byte-identical** to the key blob on `known_hosts` line 12 and to the `staging.ainow.biz` entry (line 11). The three `witnessedAt` values fall within 8 ms of one another, about 10 minutes after `instance.createdAt` — consistent with first-boot host-key generation of the instance recorded by Lightsail. No mismatch, no missing algorithm on the AWS side.
+
+### 17.5 Local SSH binding (read-only re-confirmation; unchanged since run 4)
+
+`~/.ssh/config` SHA256 `C2DA0133…` and `~/.ssh/known_hosts` SHA256 `54E7C8165AACFF09C90A7119974D9ADAAC3260D7A638235858E673E12B9A6BD2` are **byte-identical to run 4**; zero hook / alias directives. `ssh -G -p 22 ubuntu@aisandbox-staging` (effective configuration only; no connection): user `ubuntu`, port 22, `hostkeyalias` empty, `checkhostip no`, `hostname` = the AWS-reported static IPv4 (17.3). Host-key lookup identity therefore remains the **static IPv4 literal**; offline `ssh-keygen -F` returns exactly one entry for it — line 12, `ssh-ed25519`, `SHA256:kwAg4iEcpglnu4XTqy6NrQOlz8xzybbV3xY6rzwmwO0`. No connection, keyscan, hook execution, private-key read, or modification occurred.
+
+### 17.6 Artifacts and hashes (run 5; runs 1–4 preserved)
+
+Root `C:\Users\knlee\aisb-preflight\INVENTORY-01\runs\run5-2026-09-28-PROVENANCE-RECONCILIATION\`. Manifest `manifest-sha256.txt` (2 entries) SHA256 `592055C382EEDEB091E6B1B82CB14C408A07ED19D60CF521C3EDE20C71A1D087`. Root run-2 manifest (`164048E8…`), run-1 (`DFB38550…`), run-3 (`202DC8F6…`) and run-4 (`44F60E99…`) manifests are byte-unchanged.
+
+| Path (relative to run-5 root) | SHA256 | Role |
+|---|---|---|
+| `evidence\aws-host-key-evidence.json` | `86475693269A632C7E7B7F30E49E74B3B41F40D69F5856A6FC71AD274B3072EE` | byte-for-byte copy of Keith's CloudShell download (contains account ID, ARNs, IPv4 and public keys — private only; no credentials) |
+| `evidence\verification-record.json` | `31EC6881DA812AB4CB6A7FF0FC15E7570E5CD47FED6B41EE7D924D6D487E4BFB` | provenance (channel, retrieval time), 14 recomputed checks, per-key recompute and byte comparison, local SSH state, timing assessment, verdict |
+
+Post-manifest (this section text and the record-application scripts) are listed in the records ledger of `TASKS_BACKLOG_FULL.md`.
+
+### 17.7 Assessment against §3.3 and step status after run 5
+
+- **Independent provenance evidence has been obtained and locally verified.** The channel is (1) independent of the SSH connection (AWS Lightsail control-plane record), (2) authenticated (Keith's AWS CloudShell session; caller and instance ARN in the same account, confirmed by Keith as the intended account), and (3) instance-specific (`GetInstanceAccessDetails` for `aisandbox-staging` in `ap-southeast-1`). The AWS-recorded ED25519 host key is byte-identical to the `known_hosts` entry that the frozen §3.1 command will consult (static IPv4 lookup identity), and its fingerprint equals `SHA256:kwAg4iEcpglnu4XTqy6NrQOlz8xzybbV3xY6rzwmwO0`. `witnessedAt` (2026-07-24) is Lightsail's recording time, not a fresh observation of the running server; `StrictHostKeyChecking=yes` at execution provides the continuity check (§3.2).
+- **§3.3 status: EVIDENCE OBTAINED AND VERIFIED — Keith's final provenance acceptance and confirmation of the host-key lookup identity (§3.1 row: static IPv4 literal) are PENDING.** Acceptance is not inferred from the download. Until Keith records acceptance, the §10 prerequisite box stays unticked; the run-4 BLOCKER classification is superseded by this evidence but the gate remains closed pending that review. No key was replaced; no mismatch exists; no trust exception is adopted.
+- **Step 3 = PARTIAL / LOCAL PREFLIGHT ONLY — NOT INSPECTION COMPLETE.** No SSH execution follows from this run; SSH under supervision still requires Keith's acceptance above, STAGING lease, and separate authorization at a stated baseline (§10 pre-flight).
+- Design findings: none new. No assertion weakened, no requirement waived, no design amendment; no frozen sentence rewritten (dated pointer lines inserted under §3.1, §3.3, §10, §16.6 and §16.8 only).
+- **Activity ledger (run 5):** AWS API calls by this run=0 (Keith's CloudShell retrieval preceded the run), SSH=0 (including browser SSH and benign preflight), SSH keyscan=0, STAGING acquired=0, host inspection=0, vault/journal access=0, PM2=0, transfer=0, acquisition=0, Docker=0, application runtime=0, host-specific P5 claims=0, operational authorization=0, Step 4=0, subagents=0, Git commit/push/branch=0, predecessor bodies edited=0, frozen §§0–16 sentences altered=0, SSH configuration / known_hosts modified=0, private keys read=0, credentials received=0, instance / firewall / IAM / host-key changes=0. Local read-only activity only: JSON parsing, SHA-256 / base64 recomputation, `ssh -G`, `ssh-keygen -F`, filesystem hashing and one byte-copy into the private evidence directory.
