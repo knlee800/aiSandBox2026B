@@ -2,18 +2,21 @@
 
 **Task:** PM2-RECOVERY-P5-J2-AMENDMENT-01 — Assess prospective J-2 amendment for historical uncertainty treatment
 **Nature:** GOVERNANCE / DECISION (4-step). No implementation lane. No sidecar candidate.
-**Step:** 3 of 4 — Keith's explicit selection / adoption (this record). Step 2 freeze §§0–9 preserved as committed at `2b334ec7492f18fff332946c67dd41b4e8721a25`.
+**Step:** 4 of 4 — independent verification and lock (this record). Step 2 freeze §§0–9 preserved as committed at `2b334ec7492f18fff332946c67dd41b4e8721a25`. Step 3 adoption §10 preserved as committed at `a3398de093941a0e68c8bc89149329eaf5b68865`.
 **Step 2 date:** 2026-09-29
 **Step 2 HEAD at window open:** `0afbe3704a7d3fe4e0a0dfbaad0a46f6f196fcff` (branch main; working tree clean; matches the expected baseline)
 **Step 3 date:** 2026-09-29
 **Step 3 HEAD at window open:** `2b334ec7492f18fff332946c67dd41b4e8721a25` (branch main; index empty; expected dirtiness `docs/control-plane/SATURATION_PROOF.json` only, preserved unchanged; matches the expected baseline)
+**Step 4 date:** 2026-09-29
+**Step 4 HEAD at window open:** `a3398de093941a0e68c8bc89149329eaf5b68865` (branch main; index empty; expected inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` only, preserved unchanged; matches the expected baseline)
 **Registration:** `TASKS_BACKLOG_FULL.md` § PM2-RECOVERY-P5-J2-AMENDMENT-01 (Step 1 COMPLETE at HEAD `ba8b0a4d848759e68c042f89ae2a369632273ca6`)
 **Dependencies:** PM2-RECOVERY-P5-JOURNAL-01 (COMPLETE AND LOCKED 2026-09-23; J-2 adopted; §0.8 / §4.1 amendment lifecycle), PM2-RECOVERY-P5-SCOPE-01 (COMPLETE AND LOCKED 2026-09-29; BLOCKED scope decision for (H, A)), PM2-RECOVERY-P5-INVENTORY-01 (COMPLETE AND LOCKED 2026-09-28; bounded inventory finding only). PM2-RECOVERY-ACQUISITION-01, PM2-RECOVERY-POLICY-01, PM2-RECOVERY-BASELINE-GOV-01, and PM2-RECOVERY-CAPTURE-01 remain COMPLETE AND LOCKED and are not reopened.
-**Authorization:** Keith authorized **Step 2 only** at baseline `0afbe3704a7d3fe4e0a0dfbaad0a46f6f196fcff`. Keith later authorized **Step 3 only** at baseline `2b334ec7492f18fff332946c67dd41b4e8721a25` (see §10). Step 4 remains NOT AUTHORIZED.
+**Authorization:** Keith authorized **Step 2 only** at baseline `0afbe3704a7d3fe4e0a0dfbaad0a46f6f196fcff`. Keith later authorized **Step 3 only** at baseline `2b334ec7492f18fff332946c67dd41b4e8721a25` (see §10). Keith later authorized **Step 4 only** at baseline `a3398de093941a0e68c8bc89149329eaf5b68865` (see §11).
 **Acceptance object:** A frozen set of decision options (retain J-2 unchanged, propose a bounded prospective amendment, or leave unresolved) with their evidence requirements, compatibility checks, and practical consequences, for Keith's explicit selection at a separately authorized Step 3.
 **Step 2 correction #1 (C1):** 2026-09-29 — documentation-only, localized. (1) Search sequencing: Option B rewritten so current-host scope approval precedes any search; U-2 residual-uncertainty acceptance is attestation-time only. (2) Amendment scope: "exactly one element modified" removed; Option B is a primary replacement of the "Unknowns that prevent acceptance" element, plus consequential historical-territory coverage justification through U-2 disclosure, plus a U-2-specific additional invalidation trigger; current-host coverage justification remains "specific facts, not assumptions." (3) E-J5: existing validity/invalidation regime is preserved; U-2 acceptances carry one additional invalidation trigger. Nothing adopted. Steps 3–4 remain NOT AUTHORIZED. SCOPE-01 BLOCKED remains valid under unamended J-2. C1 has **not** passed independent review.
 **Step 2 correction #2 (C2):** 2026-09-29 — documentation-only, localized. Reconciles U-1/U-2 so current relevant locations remain U-1 when access is denied, privileges are unavailable, traversal fails, or current existence/location is uncertain; distinguishes unavailable historical records from unresolved present-day coverage; dormant existing paths, surviving directories of removed accounts, and unresolved current relocation destinations cannot be waived through U-2 solely because their origin is historical; E-J6 blocking preserved; sequence preserved (fact-supported proposal and Keith approval before search; search under approved scope; all U-1 resolved before any U-2(e)); decision-table cases 6–7 added. Nothing adopted. Steps 3–4 remain NOT AUTHORIZED. This C2 record does **not** claim independent review PASS.
 **Step 3 record:** 2026-09-29 — Keith selected Option B as frozen in commit `2b334ec7492f18fff332946c67dd41b4e8721a25` (see §10). Step 4 remains NOT AUTHORIZED. Task NOT LOCKED.
+**Step 4 record:** 2026-09-29 — independent verification PASS; task COMPLETE AND LOCKED. Lock verifies the adopted amendment and faithful decision recording only; it creates no additional authority. Historical Step 3 record above preserved.
 
 ---
 
@@ -534,3 +537,85 @@ The adopted Option B is identified by reference to the frozen text:
 LIVE=0, SSH=0, STAGING lease=0, AWS=0, sudo=0, host inspection=0, vault/journal access=0, PM2=0, Docker / Postgres / Redis / service runtime=0, provider=0, credits=0, transfer / acquisition / canary / reopen=0, operational authorization=0, scripts / parsers created=0, tests created=0, tests executed=0 except the lane-capacity validator if run to `$env:TEMP`, executable artifacts created=0, subagents=0, frozen Option B text unaltered=yes, decision selected=Option B, predecessor bodies edited=0, sidecar / lockedTaskIds / mutex-catalog / validator source edits=0, SATURATION_PROOF.json mutated by this step=0, stale-board-mirror edits=0, EXEC-01C6A body/candidate edits=0, PRD / ARCHITECTURE / CLAUDE / AGENTS edits=0, Git commit / push / branch / worktree=0, Lane 3 changes=0; files written under transient GOVERNANCE: this stage-start (§10 appended; header current-status only), `TASKS.md` (this task's board records), `TASKS_BACKLOG_FULL.md` (this task's canonical body). GOVERNANCE released UNOWNED.
 
 **Status: PM2-RECOVERY-P5-J2-AMENDMENT-01 — Step 3 COMPLETE (Keith selected Option B as frozen at `2b334ec7492f18fff332946c67dd41b4e8721a25`; explicit adoption of the prospective J-2 amendment; Options A and C not selected) — 2026-09-29 at baseline `2b334ec7492f18fff332946c67dd41b4e8721a25`. Step 4 NOT AUTHORIZED. Task NOT LOCKED.**
+
+---
+
+## §11. Step 4 — Independent verification and lock (2026-09-29)
+
+**Step:** 4 of 4 — independent verification and lock
+**Step 4 date:** 2026-09-29
+**Step 4 HEAD at window open:** `a3398de093941a0e68c8bc89149329eaf5b68865` (branch main; index empty; inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` only, preserved unchanged; matches the expected baseline)
+**Authorization:** Keith authorized Step 4 only at baseline `a3398de093941a0e68c8bc89149329eaf5b68865`. No successor work or operational activity is authorized.
+**Separate window:** This verification window is independent of Step 3. Corroborating Git evidence: Step 2 freeze `2b334ec7492f18fff332946c67dd41b4e8721a25`; Step 3 adoption `a3398de093941a0e68c8bc89149329eaf5b68865` (this window's HEAD). Separation rests on Keith's explicit Step 4 authorization and the provenance boundary (Step 3 = adoption recording; Step 4 = independently initiated verification).
+
+### 11.1 Verification scope and evidence base
+
+This section independently verifies the existing §5.2 acceptance criteria from committed evidence. Frozen §§0–10 are not rewritten. Step 4 creates no additional authority beyond what Step 3 adopted.
+
+**Committed evidence:**
+- Baseline / Step 3 adoption commit: `a3398de093941a0e68c8bc89149329eaf5b68865` (`docs: record Keith adoption of PM2 J-2 amendment Option B`)
+- Step 2 freeze commit: `2b334ec7492f18fff332946c67dd41b4e8721a25` (`docs: freeze PM2 J-2 amendment Step 2 options with C1/C2 corrections`)
+- origin/main at window open: `a3398de093941a0e68c8bc89149329eaf5b68865` (matches HEAD; Keith's push of both commits succeeded)
+- Index: empty. Unstaged inherited dirtiness: `docs/control-plane/SATURATION_PROOF.json` only (HEAD blob `1e6078f459826aec36f1f1162342838665b4d597`; work blob `50ce410efe547a7e24f06ef75b9410916d5dae8a`; SHA-256 `7B7215FCA68D0724F15BAF2F73618C57069C53715743040C2B2BFBA959CEB9C2` / 2496 bytes). Preserved unchanged and unstaged.
+- Occupancy at window open: `lane1.state=EMPTY`; `lane2.state=EMPTY`; `governance.state=UNOWNED`; `occupancyHash=sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d`
+- Step 2 freeze stage-start SHA-256 (UTF-8, LF): `F82609194B185424A2DB8F05FB850A4BE9CC801C322ACBD884311656579A9C4A` (61993 bytes as extracted from freeze blob `bf21e0d9193121e449f7f1bc92cc7b105d52509e`)
+- Step 3 adoption stage-start SHA-256 (UTF-8, LF): `C7D1BAEDFF876CC99015AFBDCF43AFD7484C8583937DAE864CBB26C94BC90614` (70206 bytes; blob `8f7966c385d15e86db4e50615aeb4021b93dcf49`)
+- Frozen §§0–9 body SHA-256 (from `## §0` through end of freeze file, trailing newlines trimmed): `1858CC31AB35A6A8C3142C73F79604AAB45420DE1950A006151F09682BDD783C` (58471 chars). Identical to Step 3 tree after stripping the `---` delimiter that precedes §10.
+
+**Predecessor provisions consulted:** P5-JOURNAL-01 §0.8 / §2 Option J-2 / §3.2 E-J5 and E-J6 / §4.1 / §4.2 / §7.2; P5-SCOPE-01 §4.1 / §4.4 / §10.2 BLOCKED decision; BASELINE-GOV-01 §2.1 H0/H1/H2/UNCLASSIFIED and Rule B-1 / §2.2 A1-F / §2.5 D2b=ACCEPTANCE; ACQUISITION-01 §2.1 E1 / §4.2 three-state framework.
+
+### 11.2 Criterion-by-criterion findings
+
+| # | Criterion | Verdict | Evidence |
+|---|---|---|---|
+| 1 | §10 accurately records Keith's actual reply, “yes, do what you said”, separately from the ChatGPT proposal it affirmed | **PASS** | §10.1 records the ChatGPT proposal in its own block quote (“Select Option B as frozen in commit 2b334ec7492f18fff332946c67dd41b4e8721a25 and authorize Step 3 only.”), then Keith's reply in a separate verbatim block quote: `yes, do what you said`. Relationship sentence states the proposal is **not** Keith's verbatim statement. Captured reply is exactly those five words. |
+| 2 | Option B alone was explicitly adopted, as the precise prospective amendment frozen at the Step 2 commit; Options A/C were not selected | **PASS** | §10.2: “Selected option: Option B … as frozen at `2b334ec7492f18fff332946c67dd41b4e8721a25`.” “Options not selected: Option A, Option C.” Object selected is the committed §2 Option B text including C1/C2 “without alteration.” Amendment character acknowledged under P5-JOURNAL-01 §0.8 / §4.1. |
+| 3 | Frozen §§0–9, including C2 §9, were preserved by Step 3 (actual commit diff; not the worker report) | **PASS** | `git diff --name-status 2b334ec..a3398de` for the stage-start: header current-status lines only, then `@@ -446,3 +449,88` appending §10 after the unchanged last three lines of §9. Option B slice is byte-identical (27058 chars). Trimmed §§0–9 body including C2 §9 is byte-identical to the freeze file (58471 chars; SHA-256 `1858CC31…DD783C`). C1/C2 headers were not rewritten. |
+| 4 | Adoption preserves scope approval before search, attestation-time U-2(e), blocking U-1/E-J6 current coverage, disclosed historical uncertainty, and the additional invalidation trigger | **PASS** | Because Option B text is unaltered: B.1 application sequence (1)–(4) requires Keith current-host scope approval before any search; U-2(e) is attestation-time only; U-1 remains blocking at attestation including inaccessible/uncertain current locations; E-J6 blocking is preserved (B.1, B.2 item 11, B.6, B.9); U-2(d) disclosure and U-2(e) acceptance of disclosed residual historical uncertainty remain; U-2(e) / B.7 carry one additional invalidation trigger while preserving the existing E-J5 regime. §10.5 items 1–11 confirm no host-specific scope approval or U-2(e) acceptance occurred at adoption. |
+| 5 | B.8 compatibility and §3's seven scenarios against the controlling provisions; preserve A1-F, H0/H1/UNCLASSIFIED, Rule B-1, D2b, three-state framework, E1 independence, and the P5 process-table component | **PASS** | B.8 checked against BASELINE-GOV-01 §2.1/§2.2/§2.5 (A1-F; H0/H1/H2/UNCLASSIFIED; Rule B-1; D2b=ACCEPTANCE as A1-F clause (b) threshold, not a J-2 waiver — SCOPE-01 §4.4); ACQUISITION-01 §4.2 three states (Option B is a path to “explicitly determined inapplicable” only after U-2 conditions and complete attestation, citing this adopted amendment as controlling authority; unresolved remains blocking); ACQUISITION-01 §2.1 E1 independently required; P5-JOURNAL-01 §1.1/§4.3 process-table unchanged (B.2 item 8). §3 cases 1–7 remain internally consistent with B.1/B.6/B.7 and with E-J6 (JOURNAL-01 §3.2: inaccessible evidence cannot satisfy the journal cross-check under any option), J-2 criterion 4 / A1-F clause (a) on H1 discovery, J-2 criterion 6 / E-J5 on new activity, and SCOPE-01 GAP-4 on PID 1177465. No contradiction found. |
+| 6 | §0 and §4 non-effects, accounting for historical “nothing adopted” statements being superseded only by the explicit Step 3 adoption | **PASS** | §0 items 1–10 and C1/C2 headers remain freeze-time historical text (“adopts nothing”; “Steps 3–4 remain NOT AUTHORIZED”). §10.6 records that §0 freeze invariants are preserved as historical Step 2 text and that adoption is recorded in §10 rather than by rewriting §§0–9. §4.1 already distinguished Step 2 (nothing adopted) from Step 3 (if Option B: explicit adoption) from Step 4 (LOCKED; no new authority). §4.2 / §5.3 / §10.5 non-effects remain: no host-specific P5, no C-ACQ unblocking, HOST_CLEAN=NO, P7_ACCEPTED=NO, REOPEN_GATE=UNSATISFIED, EXEC-01C6A startCondition=NOT_READY, no operational permission, predecessor bodies unchanged, testimony unconverted, D2b not a J-2 waiver, SCOPE-01 BLOCKED preserved as valid under the unamended rule applied then. The Step 3 adoption supersedes freeze-time “nothing adopted” for current binding status only; it does not rewrite those historical statements. |
+| 7 | Step 3 changed only the three authorized documentation files, with no predecessor, sidecar, lockedTaskIds, source, or operational-gate changes | **PASS** | `git diff --name-only 2b334ec..a3398de` lists exactly: `TASKS.md`, `TASKS_BACKLOG_FULL.md`, `docs/PM2-RECOVERY-P5-J2-AMENDMENT-01-STAGE-START.md`. Zero diff on P5-JOURNAL-01, P5-SCOPE-01, P5-INVENTORY-01, ACQUISITION-01, POLICY-01, BASELINE-GOV-01, CAPTURE-01 stage-starts; zero diff on `docs/control-plane/lane-saturation-state.json` (lockedTaskIds unchanged; this GOVERNANCE task is correctly absent) and `mutex-catalog.json`. Occupancy block unchanged. HOST_CLEAN=NO; P7_ACCEPTED=NO; REOPEN_GATE=UNSATISFIED; EXEC-01C6A startCondition=NOT_READY; E1 UNREGISTERED; Lane 3 DISABLED; INVITE-01 PARKED / UNAUTHORIZED / PROHIBITED. No application source in the commit. |
+
+### 11.3 §5.2 checklist (verified here; frozen §5.2 boxes not rewritten)
+
+- [x] Selected option correctly identified and recorded — Option B (§10.2)
+- [x] Option B: amendment character acknowledged; explicit Keith adoption confirmed; proposed wording carried without alteration from §2 Option B (criterion 2–3)
+- [x] Compatibility checks (§B.8) verified (criterion 5)
+- [x] Decision table (§3) verified for internal consistency (criterion 5)
+- [x] §4 non-effects confirmed (criterion 6)
+- [x] §0 invariants verified as freeze-time historical text, with adoption recorded in §10 (criterion 6)
+- [x] No predecessor body edits (criterion 7)
+- [x] Validator run; git diff --check clean (recorded after Step 4 writes)
+
+### 11.4 Lock definition
+
+This task — PM2-RECOVERY-P5-J2-AMENDMENT-01 — is **COMPLETE AND LOCKED**.
+
+**Lock scope:** Verification of the adopted prospective J-2 historical-uncertainty amendment (Option B as frozen at `2b334ec7492f18fff332946c67dd41b4e8721a25` and adopted at `a3398de093941a0e68c8bc89149329eaf5b68865`) and faithful decision recording only.
+
+The lock confirms:
+
+1. Keith explicitly selected Option B at Step 3. Options A and C were not selected.
+2. The adopted Option B wording is the frozen §2 text, including C1/C2, without alteration.
+3. The decision record (§§0–10) is internally consistent and correctly recorded.
+4. §0 freeze invariants and §4 / §5.3 / §10.5 non-effects are preserved.
+
+**This lock creates no additional authority.** It does NOT:
+
+- Approve any host-specific J-2 search scope or perform any U-2(e) acceptance
+- Establish host-specific P5 satisfaction
+- Unblock C-ACQ
+- Change HOST_CLEAN, P7_ACCEPTED, REOPEN_GATE, or EXEC-01C6A startCondition=NOT_READY
+- Authorize acquisition, transfer, SSH, AWS, sudo, PM2, host inspection, canary, or any runtime activity
+- Edit locked predecessor document bodies, sidecar, lockedTaskIds, or occupancy
+- Convert testimony or treat D2b as a J-2 waiver
+- Retroactively alter the SCOPE-01 BLOCKED decision
+- Authorize any successor task, host-specific scope approval, or operational activity
+
+SCOPE-01 BLOCKED remains valid under the unamended J-2 rule applied then. EXEC-01C6A startCondition=NOT_READY; HOST_CLEAN=NO; P7_ACCEPTED=NO; REOPEN_GATE=UNSATISFIED.
+
+### 11.5 Activity ledger (Step 4)
+
+LIVE=0, SSH=0, STAGING lease=0, AWS=0, sudo=0, host inspection=0, vault/journal access=0, PM2=0, Docker / Postgres / Redis / service runtime=0, provider=0, credits=0, transfer / acquisition / canary / reopen=0, operational authorization=0, scripts / parsers created=0, tests created=0, tests executed=0 except the lane-capacity validator once with proof under `$env:TEMP`, executable artifacts created=0, subagents=0, frozen §§0–10 unaltered except current-status header lines, predecessor bodies edited=0, sidecar / lockedTaskIds / mutex-catalog / validator source edits=0, SATURATION_PROOF.json mutated by this step=0, stale-board-mirror edits=0, EXEC-01C6A body/candidate edits=0, PRD / ARCHITECTURE / CLAUDE / AGENTS edits=0, Git commit / push / branch / worktree=0, Lane 3 changes=0; files written under transient GOVERNANCE: this stage-start (§11 appended; header current-status only), `TASKS.md` (this task's current board records), `TASKS_BACKLOG_FULL.md` (this task's canonical body/status). GOVERNANCE released UNOWNED.
+
+**Status: PM2-RECOVERY-P5-J2-AMENDMENT-01 — COMPLETE AND LOCKED — 2026-09-29 at baseline `a3398de093941a0e68c8bc89149329eaf5b68865`. Lock = verification of the adopted Option B amendment and faithful decision recording only; it creates no additional authority. SCOPE-01 BLOCKED preserved. No host-specific scope approval, U-2(e) acceptance, P5 satisfaction, C-ACQ unblocking, or successor authorization.**
