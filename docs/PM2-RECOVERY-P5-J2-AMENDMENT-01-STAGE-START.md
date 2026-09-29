@@ -2,15 +2,18 @@
 
 **Task:** PM2-RECOVERY-P5-J2-AMENDMENT-01 — Assess prospective J-2 amendment for historical uncertainty treatment
 **Nature:** GOVERNANCE / DECISION (4-step). No implementation lane. No sidecar candidate.
-**Step:** 2 of 4 — options and evidence-requirements freeze (this record)
+**Step:** 3 of 4 — Keith's explicit selection / adoption (this record). Step 2 freeze §§0–9 preserved as committed at `2b334ec7492f18fff332946c67dd41b4e8721a25`.
 **Step 2 date:** 2026-09-29
 **Step 2 HEAD at window open:** `0afbe3704a7d3fe4e0a0dfbaad0a46f6f196fcff` (branch main; working tree clean; matches the expected baseline)
+**Step 3 date:** 2026-09-29
+**Step 3 HEAD at window open:** `2b334ec7492f18fff332946c67dd41b4e8721a25` (branch main; index empty; expected dirtiness `docs/control-plane/SATURATION_PROOF.json` only, preserved unchanged; matches the expected baseline)
 **Registration:** `TASKS_BACKLOG_FULL.md` § PM2-RECOVERY-P5-J2-AMENDMENT-01 (Step 1 COMPLETE at HEAD `ba8b0a4d848759e68c042f89ae2a369632273ca6`)
 **Dependencies:** PM2-RECOVERY-P5-JOURNAL-01 (COMPLETE AND LOCKED 2026-09-23; J-2 adopted; §0.8 / §4.1 amendment lifecycle), PM2-RECOVERY-P5-SCOPE-01 (COMPLETE AND LOCKED 2026-09-29; BLOCKED scope decision for (H, A)), PM2-RECOVERY-P5-INVENTORY-01 (COMPLETE AND LOCKED 2026-09-28; bounded inventory finding only). PM2-RECOVERY-ACQUISITION-01, PM2-RECOVERY-POLICY-01, PM2-RECOVERY-BASELINE-GOV-01, and PM2-RECOVERY-CAPTURE-01 remain COMPLETE AND LOCKED and are not reopened.
-**Authorization:** Keith authorized **Step 2 only** at baseline `0afbe3704a7d3fe4e0a0dfbaad0a46f6f196fcff`. Steps 3–4 remain NOT AUTHORIZED.
+**Authorization:** Keith authorized **Step 2 only** at baseline `0afbe3704a7d3fe4e0a0dfbaad0a46f6f196fcff`. Keith later authorized **Step 3 only** at baseline `2b334ec7492f18fff332946c67dd41b4e8721a25` (see §10). Step 4 remains NOT AUTHORIZED.
 **Acceptance object:** A frozen set of decision options (retain J-2 unchanged, propose a bounded prospective amendment, or leave unresolved) with their evidence requirements, compatibility checks, and practical consequences, for Keith's explicit selection at a separately authorized Step 3.
 **Step 2 correction #1 (C1):** 2026-09-29 — documentation-only, localized. (1) Search sequencing: Option B rewritten so current-host scope approval precedes any search; U-2 residual-uncertainty acceptance is attestation-time only. (2) Amendment scope: "exactly one element modified" removed; Option B is a primary replacement of the "Unknowns that prevent acceptance" element, plus consequential historical-territory coverage justification through U-2 disclosure, plus a U-2-specific additional invalidation trigger; current-host coverage justification remains "specific facts, not assumptions." (3) E-J5: existing validity/invalidation regime is preserved; U-2 acceptances carry one additional invalidation trigger. Nothing adopted. Steps 3–4 remain NOT AUTHORIZED. SCOPE-01 BLOCKED remains valid under unamended J-2. C1 has **not** passed independent review.
 **Step 2 correction #2 (C2):** 2026-09-29 — documentation-only, localized. Reconciles U-1/U-2 so current relevant locations remain U-1 when access is denied, privileges are unavailable, traversal fails, or current existence/location is uncertain; distinguishes unavailable historical records from unresolved present-day coverage; dormant existing paths, surviving directories of removed accounts, and unresolved current relocation destinations cannot be waived through U-2 solely because their origin is historical; E-J6 blocking preserved; sequence preserved (fact-supported proposal and Keith approval before search; search under approved scope; all U-1 resolved before any U-2(e)); decision-table cases 6–7 added. Nothing adopted. Steps 3–4 remain NOT AUTHORIZED. This C2 record does **not** claim independent review PASS.
+**Step 3 record:** 2026-09-29 — Keith selected Option B as frozen in commit `2b334ec7492f18fff332946c67dd41b4e8721a25` (see §10). Step 4 remains NOT AUTHORIZED. Task NOT LOCKED.
 
 ---
 
@@ -446,3 +449,88 @@ Keith-directed. C1 has **not** passed independent review. This C2 record does **
 Unchanged by this correction: Options A and C; nothing adopted; Step 3 NOT AUTHORIZED; Step 4 NOT AUTHORIZED; C1 unpassed independent review; SCOPE-01 BLOCKED; testimony; D2b; no host-specific P5; no C-ACQ unblocking; HOST_CLEAN / P7_ACCEPTED / REOPEN_GATE; EXEC-01C6A startCondition=NOT_READY; no operational authorization; predecessor bodies; sidecar; lockedTaskIds; SATURATION_PROOF.json not mutated.
 
 Corresponding wording corrections applied only to this task's current board / backlog summaries under transient GOVERNANCE. GOVERNANCE acquired transiently then released UNOWNED.
+
+---
+
+## §10. Step 3 — Keith's explicit selection / adoption of Option B (2026-09-29)
+
+**Step:** 3 of 4 — record Keith's explicit selection
+**Step 3 date:** 2026-09-29
+**Step 3 HEAD at window open:** `2b334ec7492f18fff332946c67dd41b4e8721a25` (branch main; index empty; `docs/control-plane/SATURATION_PROOF.json` dirty as inherited and preserved unchanged)
+**Authorization scope:** Step 3 only. Step 4 (independent verification and lock) remains **NOT AUTHORIZED**. Task **NOT LOCKED**.
+**Object selected:** Option B as frozen in commit `2b334ec7492f18fff332946c67dd41b4e8721a25` — the committed §2 Option B text, including C1/C2 corrections as frozen in that commit, **without alteration**.
+
+### 10.1 Authorization evidence (verbatim; relationship stated)
+
+**ChatGPT proposal (not Keith's words):**
+
+> Select Option B as frozen in commit 2b334ec7492f18fff332946c67dd41b4e8721a25 and authorize Step 3 only.
+
+**Keith's reply (verbatim):**
+
+> yes, do what you said
+
+**Relationship:** Keith's 2026-09-29 reply affirms the ChatGPT proposal above. The proposal text is **not** Keith's verbatim statement. Keith's actual reply is the five words recorded here. No other conditions, modifications, or different option were stated.
+
+**Date recorded:** 2026-09-29
+**Baseline at selection:** `2b334ec7492f18fff332946c67dd41b4e8721a25`
+
+### 10.2 Selection
+
+**Selected option:** Option B (§2 Option B — Bounded prospective amendment for historical uncertainty treatment), as frozen at `2b334ec7492f18fff332946c67dd41b4e8721a25`.
+**Options not selected:** Option A, Option C.
+
+Keith's affirmation of the ChatGPT proposal constitutes **explicit adoption**, under P5-JOURNAL-01 §0.8 / §4.1, of the precisely scoped prospective J-2 amendment frozen as Option B. The amendment character is acknowledged: Option B goes beyond locked J-2 as adopted by P5-JOURNAL-01 §7.2 and is adopted through this explicit Keith decision, not through interpretation of existing locked authority.
+
+The adopted text is the frozen Option B wording in this document's §2 (B.1–B.10), including the C1/C2 corrections as they stand in commit `2b334ec7492f18fff332946c67dd41b4e8721a25`. **No wording is altered by this Step 3 record.**
+
+### 10.3 Adopted content identified by reference (not restated)
+
+The adopted Option B is identified by reference to the frozen text:
+
+| Element | Frozen location |
+|---|---|
+| U-1 / U-2 treatment | §2 Option B **B.1** replacement wording (U-1 current relevant coverage, including inaccessible/uncertain current locations; U-2 unavailable historical records and locations established as deleted / no longer present; classification rule) |
+| Historical-territory coverage treatment | §2 Option B **B.1** consequential treatment; **B.2** items 3–4; **B.3** |
+| Application sequence | §2 Option B **B.1** steps (1)–(4): fact-supported scope proposal identifying U-1 and U-2; Keith may approve current-host scope before any search with U-2 disclosed as unresolved; search under that approved scope; all U-1 resolved before any U-2(e) attestation-time acceptance |
+| Additional invalidation trigger | §2 Option B U-2(e); **B.7** (existing E-J5 regime preserved; U-2 acceptances carry one additional invalidation trigger) |
+| E-J6 | §2 Option B **B.1**, **B.2** item 11, **B.6**, **B.9** — blocking, preserved |
+
+### 10.4 Historical C1/C2 statements preserved; later review distinguished
+
+§8 and §9, and the C1/C2 header lines, are **historical Step 2 records** and are not rewritten. Their statements that C1 had not passed independent review and that C2 did not claim independent review PASS remain as written at those times.
+
+**Later fact, recorded only here:** after those C1/C2 records were written, Step 2 including C1/C2 passed ChatGPT's independent artifact review, and the freeze was committed as `2b334ec7492f18fff332946c67dd41b4e8721a25`. That later review-and-commit is distinct from the historical C1/C2 in-progress statements. This Step 3 record adopts the committed freeze; it does not rewrite §§8–9.
+
+### 10.5 What this decision does NOT do
+
+1. Does **not** approve any host-specific J-2 search scope or perform any U-2(e) acceptance for any (H, A).
+2. Does **not** establish host-specific P5 satisfaction.
+3. Does **not** unblock C-ACQ.
+4. Does **not** change HOST_CLEAN, P7_ACCEPTED, or REOPEN_GATE. HOST_CLEAN=NO; P7_ACCEPTED=NO; REOPEN_GATE=UNSATISFIED.
+5. Does **not** change EXEC-01C6A startCondition=NOT_READY.
+6. Does **not** override, alter, or retroactively change the locked SCOPE-01 BLOCKED decision. That decision remains valid under the unamended J-2 rule applied then.
+7. Does **not** authorize search, privilege escalation, acquisition, transfer, SSH, AWS, sudo, PM2, host inspection, canary, or any runtime activity.
+8. Does **not** edit locked predecessor document bodies. Sidecar and `lockedTaskIds` unchanged.
+9. Does **not** convert testimony. Keith's testimony remains "probably no, but uncertain."
+10. Does **not** treat D2b as a J-2 waiver.
+11. Does **not** LOCK this task. Step 4 remains NOT AUTHORIZED.
+
+### 10.6 §5.1 checklist
+
+- [x] Keith selects exactly one of: Option A, Option B, Option C — **Option B selected**
+- [x] Option B selected: Keith's selection constitutes explicit adoption of the precisely scoped prospective J-2 amendment under P5-JOURNAL-01 §0.8 / §4.1; the amendment character is acknowledged
+- [x] Option A not selected; Option C not selected
+- [x] Selection recorded with date; Keith's actual reply recorded verbatim; ChatGPT proposal recorded separately and not presented as Keith's verbatim words
+- [x] Keith provided no conditions, modifications, or different option beyond affirming the recorded proposal
+- [x] Locked predecessor document bodies remain physically unchanged
+- [x] No host-specific P5 satisfaction claimed; no C-ACQ unblocked; no operational permission granted
+- [x] SCOPE-01 BLOCKED decision preserved as valid under the rule applied at that time
+- [x] §0 freeze invariants preserved as historical Step 2 text; adoption is recorded in this §10 rather than by rewriting §§0–9 option text
+- [x] Keith's testimony preserved as "probably no, but uncertain" — not strengthened or converted
+
+### 10.7 Activity ledger (Step 3)
+
+LIVE=0, SSH=0, STAGING lease=0, AWS=0, sudo=0, host inspection=0, vault/journal access=0, PM2=0, Docker / Postgres / Redis / service runtime=0, provider=0, credits=0, transfer / acquisition / canary / reopen=0, operational authorization=0, scripts / parsers created=0, tests created=0, tests executed=0 except the lane-capacity validator if run to `$env:TEMP`, executable artifacts created=0, subagents=0, frozen Option B text unaltered=yes, decision selected=Option B, predecessor bodies edited=0, sidecar / lockedTaskIds / mutex-catalog / validator source edits=0, SATURATION_PROOF.json mutated by this step=0, stale-board-mirror edits=0, EXEC-01C6A body/candidate edits=0, PRD / ARCHITECTURE / CLAUDE / AGENTS edits=0, Git commit / push / branch / worktree=0, Lane 3 changes=0; files written under transient GOVERNANCE: this stage-start (§10 appended; header current-status only), `TASKS.md` (this task's board records), `TASKS_BACKLOG_FULL.md` (this task's canonical body). GOVERNANCE released UNOWNED.
+
+**Status: PM2-RECOVERY-P5-J2-AMENDMENT-01 — Step 3 COMPLETE (Keith selected Option B as frozen at `2b334ec7492f18fff332946c67dd41b4e8721a25`; explicit adoption of the prospective J-2 amendment; Options A and C not selected) — 2026-09-29 at baseline `2b334ec7492f18fff332946c67dd41b4e8721a25`. Step 4 NOT AUTHORIZED. Task NOT LOCKED.**
