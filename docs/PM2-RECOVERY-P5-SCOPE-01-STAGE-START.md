@@ -177,3 +177,102 @@ Keith-directed. Pre-correction stage-start SHA-256 `79EAD2E9D9267E6004F6C3FD88AD
 Unchanged by this correction: §0 invariants, the §1.1 quoted J-2 wording, the R1–R8 record base, the BLOCKED-regardless determination, §4.4 (D2b), §4.5 (no strengthening), §7 non-effects, §8 AC verdicts, Step 3–5 NOT AUTHORIZED, task NOT LOCKED. No J-2 amendment; no new investigation; no operational plan; no script / parser; no host access; no predecessor edits; no Git mutation. Corresponding wording corrections applied only to this task's current board / backlog summaries under transient GOVERNANCE; the two stale board mirrors remain carried, unrepaired.
 
 **Status: PM2-RECOVERY-P5-SCOPE-01 — Step 2 COMPLETE (FEASIBILITY-ONLY; scope approval BLOCKED on the available records regardless of proposed current-host observations; no evidence plan frozen; correction #1 applied 2026-09-29) — 2026-09-28 at baseline `c4a83a9ed0f61467bd5051c18e53f9c47afc4259`. Steps 3–5 NOT AUTHORIZED. Task NOT LOCKED.**
+
+---
+
+## §10. Step 4: Keith's explicit scope decision — BLOCKED on the available evidence
+
+**Step:** 4 of 5 — Keith's explicit scope decision
+**Step 4 date:** 2026-09-29
+**Step 4 HEAD at window open:** `c36b0fc859486caf8d4eb7e56b104251bd6deba8` (branch main; working tree clean; matches the stated baseline)
+**Authorization:** Keith authorized Step 4 only at baseline `c36b0fc859486caf8d4eb7e56b104251bd6deba8`.
+**Decision path applied:** P-A (§5): Keith records BLOCKED, naming the gate unknowns and why they are unclosable under adopted J-2 on the available evidence.
+**Grounding:** Step 2 feasibility finding (§4.1) and correction #1 (§9).
+
+### 10.1 Decision value
+
+**BLOCKED** — for H = aisandbox-staging, A = {aisandbox-api-gateway, aisandbox-ai-service}.
+
+J-2 scope approval is blocked on the available evidence. This is not a finding that adequate scope is impossible under all future evidence (§4.3).
+
+### 10.2 Gate unknowns that remain and why unclosable on the available evidence
+
+The Step 2 feasibility finding (§4.1; correction #1 §9) identified the following gaps that leave scope approval BLOCKED under adopted J-2 regardless of the proposed current-host observations. This decision adopts that finding.
+
+**Historical / operator-history gaps (blocking):**
+
+| Gap | Description | J-2 element engaged | Source citations |
+|---|---|---|---|
+| **GAP-7** | Operator-history gap that could conceal prior 01C6A-class recovery work. The tooling exists and takes operator-chosen `--vault` / `--workdir` with no default (R4: `ops/aisb-01c6a-operator-bundle/lib/orchestrate.py`). Unrecorded operator activity on H is UNKNOWN and unknowable from the repository (R6: BASELINE-GOV-01 Rule B-1, §6). Keith's testimony is "probably no, but uncertain" (R7) — admissible with limited weight, insufficient to close the gap on the present record. No other historical evidence (retained deployment / invocation / configuration / audit / backup records) is on the record; none is newly accessed or presumed available. | "gaps in operator activity history that could conceal prior recovery work"; coverage justification ("known operator history", "specific facts, not assumptions") | §4.1 items 1–2; R4, R6, R7; correction #1 §9 |
+| **GAP-6** | Historical / removed operator accounts on H not visible in current `passwd` enumeration (R2 §9.3). Current accounts are known (R1: 38 returned by `getent passwd`); past accounts and their possible leftover directories are not. | "unknown operator accounts on H"; "gaps in operator activity history" | §4.1 item 3; R1, R2 |
+| **GAP-5** (history-dependent) | Dormant or deleted custom `PM2_HOME` locations and non-standard paths (R2 §9.2, §9.5). The proposed current-state observations do not reconstruct deleted locations; only historical evidence could bear on them (correction #1 §9). | "unexplored filesystem areas where material could exist" | §3; R2; correction #1 §9 |
+
+**Current-host residuals (distinguished from historical uncertainties; remain unresolved — this decision neither clears them nor changes their treatment under J-2; resolving them would still leave the identified historical gaps blocking approval):**
+
+| Gap | Description | Note |
+|---|---|---|
+| **GAP-1** | `/root/.pm2` existence / contents unknown to `ubuntu` (R1). `root` has an interactive shell. | Existence resolvable by INV-8 (privileged; sudo not authorized). If PRESENT, contents remain unexplored. |
+| **GAP-2** | `.pm2` under non-`/home` account homes unchecked (R1 §9.5). | Partially resolvable by INV-3b (readable homes only). |
+| **GAP-3** | `PM2_HOME` of currently running daemons and of `pm2-ubuntu.service` not captured (R2 §9.2; R1). | Resolvable by INV-6b / INV-7 for current state only. |
+| **GAP-4** | PID 1177465: pgrep-matched, `ps` rc 1, cause unknown (R1). The historical finding is retained as unresolved with the INVENTORY-01 lock. | New observations (INV-6 re-observation) would produce a fresh point-in-time picture; they cannot establish the earlier PID is the same process or explain the `ps` rc 1; the historical finding is not retroactively resolved (correction #1 §9). |
+
+GAP-1 through GAP-4 are current-host landscape questions that the R8 proposals could refine (some only partially; GAP-1 only under a new privilege class). Their resolution would not lift the block established by GAP-7, GAP-6 and GAP-5.
+
+### 10.3 Testimony preserved
+
+Keith's testimony on prior recovery work remains **"probably no, but uncertain"** — recorded as testimony only (P5-INVENTORY-01 §8). It is not strengthened, not converted into confirmed absence, not converted into confirmed presence. No inference of absence or presence is drawn. No A1-F clause (a) determination is made by this decision.
+
+### 10.4 Step 3 — no evidence collection occurred
+
+No Step 3 evidence collection occurred. Step 3 remains NOT AUTHORIZED. Nothing in Step 3 is marked complete, satisfied, skipped or waived. No SSH, host inspection, vault/journal access, testimony recording, or evidence collection was performed under Step 3. This decision does not perform collection merely to complete the lifecycle.
+
+### 10.5 J-2 unchanged
+
+The adopted J-2 scope-approval gate (P5-JOURNAL-01 §2, carried §7.2) is applied as worded and is unchanged by this decision. Any amendment requires separate explicit authorization under P5-JOURNAL-01 §0.8 / §4.1 and is outside this task.
+
+### 10.6 Possible future paths (identified only; none selected or authorized)
+
+Two possible paths are identified without selecting or authorizing either:
+
+1. **P-B — relevant new evidence on operator history.** If relevant new historical evidence were supplied under separate authorization — truthful dated testimony recorded under Step 3(b) assessed for basis, scope and consistency (definiteness alone does not clear the gate), and/or retained deployment / invocation / configuration / audit / backup records — a Step 2-class reassessment could follow. If the evidence does not resolve the relevant gaps, the finding remains blocked. This path is not authorized, not solicited, and no stronger statement is predicted or presumed.
+
+2. **P-D — separately authorized explicit J-2 amendment.** Under P5-JOURNAL-01 §0.8 / §4.1, addressing how the gate treats operator-history gaps that cannot be closed. This path requires its own registration and Keith adoption. It is identified only; not drafted, adopted, applied or recommended.
+
+Neither path is selected or authorized by this decision.
+
+### 10.7 Step 5 and task status
+
+Step 5 (independent verification and lock) remains **NOT AUTHORIZED**. The task remains **NOT LOCKED**.
+
+This decision records Keith's explicit scope decision only. It does not claim host-specific P5 satisfaction, E1 satisfaction, or C-ACQ approval. EXEC-01C6A startCondition=NOT_READY, HOST_CLEAN=NO, P7_ACCEPTED=NO, REOPEN_GATE=UNSATISFIED — all unchanged.
+
+### 10.8 §0 invariants preserved
+
+1. **Predecessor bodies unchanged.** P5-JOURNAL-01, P5-INVENTORY-01, ACQUISITION-01, POLICY-01, BASELINE-GOV-01 and CAPTURE-01 stage-start documents and backlog bodies are physically unchanged.
+2. **J-2 unchanged** (§10.5).
+3. **No host condition established.** No host, vault, journal or recovery material was inspected.
+4. **Testimony preserved** (§10.3).
+5. **D2b = ACCEPTANCE preserved** as the threshold for the later A1-F clause (b) H2 attestation. Not a J-2 waiver.
+6. **Lane 3 DISABLED; INVITE-01 PARKED / UNAUTHORIZED / PROHIBITED.** Unchanged. Sidecar and `lockedTaskIds` unchanged. The two stale board mirrors carried at Step 1 remain carried, unrepaired.
+
+### 10.9 Step 4 AC
+
+- [x] Keith records BLOCKED with reasons, verbatim and dated (2026-09-29)
+- [x] BLOCKED names the gate unknowns (GAP-7 operator-history gap, GAP-6 historical / removed accounts, GAP-5 dormant / deleted custom PM2 homes as history-dependent) and why unclosable under adopted J-2 on the available evidence (§10.2)
+- [x] Current-host residuals (GAP-1..4) distinguished from historical uncertainties (§10.2)
+- [x] Testimony preserved as "probably no, but uncertain" — not strengthened, not converted, no A1-F clause (a) determination (§10.3)
+- [x] No Step 3 evidence collection occurred; Step 3 not marked complete / satisfied / waived (§10.4)
+- [x] J-2 unchanged (§10.5); future paths identified only, none selected or authorized (§10.6)
+- [x] No host-specific P5 satisfaction, E1 satisfaction, or C-ACQ approval claimed; Step 5 NOT AUTHORIZED; task not LOCKED (§10.7)
+- [x] §0 invariants preserved (§10.8)
+- [x] Validator run; git diff --check clean; no Git commit / push by the worker
+
+### 10.10 Activity ledger (Step 4)
+
+LIVE=0, SSH=0 (including preflight / keyscan), STAGING lease=0, AWS=0, sudo=0, host inspection=0, vault/journal access=0, PM2=0, Docker / Postgres / Redis / service runtime=0, provider=0, credits=0, transfer / acquisition / canary / reopen=0, operational authorization=0, scripts / parsers created=0, tests created=0, tests executed=0 except the lane-capacity validator, executable artifacts created=0, subagents=0, J-2 edits=0, evidence plan frozen=0, evidence collection=0, predecessor bodies edited=0, sidecar / lockedTaskIds / mutex-catalog / validator edits=0, stale-board-mirror edits=0, EXEC-01C6A body/candidate edits=0, PRD / ARCHITECTURE / CLAUDE / AGENTS edits=0, Git commit / push / branch / worktree=0, Lane 3 changes=0, builder-gate changes=0; files written under transient GOVERNANCE: this stage-start (Step 4 decision appended), `TASKS.md` (this task's board records), `TASKS_BACKLOG_FULL.md` (this task's canonical body), `docs/control-plane/SATURATION_PROOF.json` (validator output only). GOVERNANCE released UNOWNED.
+
+### 10.11 Step 4 correction #1 — documentation-only, localized (2026-09-29; same uncommitted Step 4 record at baseline `c36b0fc859486caf8d4eb7e56b104251bd6deba8`)
+
+Keith-directed. §10.2 current-host residuals heading: replaced "not independently blocking given the above, but unresolved" with "remain unresolved — this decision neither clears them nor changes their treatment under J-2; resolving them would still leave the identified historical gaps blocking approval." The original phrasing incorrectly implied that unresolved current-host gaps had been cleared under J-2. The historical gaps (GAP-7, GAP-6, GAP-5) are sufficient to keep approval blocked, but do not remove the other unknowns; GAP-1..4 remain unresolved J-2 unknowns whose treatment under the gate is unchanged. The historical PID 1177465 limitation (GAP-4) is preserved: fresh observations cannot retroactively establish its identity or explain the earlier `ps` failure. No new findings. Corresponding wording corrections applied to TASKS.md header and STEP_4 field, and to TASKS_BACKLOG_FULL.md Step 4 lifecycle and decision paragraphs. Decision value BLOCKED, reasons, testimony, all authorization boundaries, Steps 3 and 5 status, and task NOT LOCKED — all unchanged.
+
+**Status: PM2-RECOVERY-P5-SCOPE-01 — Step 4 COMPLETE (Keith's scope decision: BLOCKED on the available evidence for (H, A); not impossible under all future evidence; correction #1 2026-09-29) — 2026-09-29 at baseline `c36b0fc859486caf8d4eb7e56b104251bd6deba8`. Step 5 NOT AUTHORIZED. Task NOT LOCKED.**
