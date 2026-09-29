@@ -276,3 +276,84 @@ LIVE=0, SSH=0 (including preflight / keyscan), STAGING lease=0, AWS=0, sudo=0, h
 Keith-directed. §10.2 current-host residuals heading: replaced "not independently blocking given the above, but unresolved" with "remain unresolved — this decision neither clears them nor changes their treatment under J-2; resolving them would still leave the identified historical gaps blocking approval." The original phrasing incorrectly implied that unresolved current-host gaps had been cleared under J-2. The historical gaps (GAP-7, GAP-6, GAP-5) are sufficient to keep approval blocked, but do not remove the other unknowns; GAP-1..4 remain unresolved J-2 unknowns whose treatment under the gate is unchanged. The historical PID 1177465 limitation (GAP-4) is preserved: fresh observations cannot retroactively establish its identity or explain the earlier `ps` failure. No new findings. Corresponding wording corrections applied to TASKS.md header and STEP_4 field, and to TASKS_BACKLOG_FULL.md Step 4 lifecycle and decision paragraphs. Decision value BLOCKED, reasons, testimony, all authorization boundaries, Steps 3 and 5 status, and task NOT LOCKED — all unchanged.
 
 **Status: PM2-RECOVERY-P5-SCOPE-01 — Step 4 COMPLETE (Keith's scope decision: BLOCKED on the available evidence for (H, A); not impossible under all future evidence; correction #1 2026-09-29) — 2026-09-29 at baseline `c36b0fc859486caf8d4eb7e56b104251bd6deba8`. Step 5 NOT AUTHORIZED. Task NOT LOCKED.**
+
+**Step 5 update (2026-09-29):** Step 5 was subsequently authorized at baseline `6ceba3e87d8d1f08ddc2968623ed66f6f0303ded` and completed; the above Step 4 status record is preserved as committed. See §11 for the Step 5 verification and lock record, which supersedes the Step 4 status for current task state.
+
+---
+
+## §11. Step 5: Independent verification and lock — COMPLETE AND LOCKED — BLOCKED SCOPE DECISION ONLY
+
+**Step:** 5 of 5 — independent verification and lock
+**Step 5 date:** 2026-09-29
+**Step 5 HEAD at window open:** `6ceba3e87d8d1f08ddc2968623ed66f6f0303ded` (branch main; working tree clean; matches the stated baseline)
+**Authorization:** Keith authorized Step 5 only at baseline `6ceba3e87d8d1f08ddc2968623ed66f6f0303ded`.
+**Separate window:** Declared by Keith's Step 5 authorization ("This is a separate verification window from Step 4"). Corroborating Git evidence: Step 4 baseline `c36b0fc859486caf8d4eb7e56b104251bd6deba8`; Step 5 baseline `6ceba3e87d8d1f08ddc2968623ed66f6f0303ded` — different commits with intervening changes, indicating the Step 4 record was committed before this window opened. Baselines alone do not establish session separation; the declaration rests on Keith's explicit statement and the provenance boundary (Step 4 was Keith's own decision recording; Step 5 is an independent verification by a separately initiated agent session).
+**Reviewed stage-start SHA-256 (CRLF form):** `4999BDA5EA88CA2A29866DD9909669DBB24018C2EE4E2D1A52CCB8B265961E44` ✓ matches board field and Keith's reviewed value.
+
+### 11.1 Verification verdict: PASS
+
+Independent verification of Keith's BLOCKED scope-decision record for H = aisandbox-staging, A = {aisandbox-api-gateway, aisandbox-ai-service}. Seven verification items checked:
+
+**V-1. Decision value verified.** Keith's recorded decision is exactly **BLOCKED ON THE AVAILABLE EVIDENCE** for H = aisandbox-staging, A = {aisandbox-api-gateway, aisandbox-ai-service} (stage-start §10.1). It is explicitly not a claim of impossibility under all future evidence (§4.3, §10.1: "This is not a finding that adequate scope is impossible under all future evidence").
+
+**V-2. Reasons and citations support the BLOCKED decision under adopted J-2.** Three blocking historical / operator-history gaps (§10.2): GAP-7 — operator-history gap that could conceal prior 01C6A-class recovery work (R4: tooling requires operator-chosen `--vault`/`--workdir`, no default; R6: BASELINE-GOV-01 Rule B-1 / §6, unrecorded operator activity UNKNOWN from the repository; R7: Keith's testimony "probably no, but uncertain" — admissible with limited weight, insufficient; J-2 element: "gaps in operator activity history that could conceal prior recovery work" and coverage justification "specific facts, not assumptions"). GAP-6 — historical / removed operator accounts (R2 §9.3, R1; J-2 element: "unknown operator accounts on H"). GAP-5 (history-dependent) — dormant / deleted custom PM2_HOME locations (R2 §9.2/§9.5; J-2 element: "unexplored filesystem areas where material could exist"). Each gap independently engages a J-2 "Unknowns that prevent acceptance" element. The finding distinguishes insufficient evidence from proven absence or presence (§4.2: neither presence nor absence established; no A1-F clause (a) determination).
+
+**V-3. Historical gaps remain unresolved; GAP-1..4 also remain unresolved.** The decision neither clears GAP-1..4 nor changes their treatment under J-2; resolving them would still leave historical gaps blocking approval (§10.2, correction #1 §10.11). The historical PID 1177465 limitation is preserved: fresh observations cannot retroactively establish its identity or explain the earlier `ps` rc 1 (GAP-4; correction #1 §9, §10.2).
+
+**V-4. Testimony preserved as "probably no, but uncertain."** Not strengthened, not converted into confirmed absence or presence. No A1-F clause (a) determination. D2b = ACCEPTANCE preserved as the A1-F clause (b) attestation threshold only; not a J-2 waiver (§10.3, §0 invariants 4–5, §4.4).
+
+**V-5. No Step 3 collection occurred.** Step 3 remains NOT AUTHORIZED. Nothing in Step 3 is marked complete, satisfied, skipped or waived (§10.4, board STEP_3 field). The registered feasibility-only / P-A decision branch supports locking the BLOCKED decision without collection: Step 2 established that the proposed current-host observations are insufficient to unblock (the registration's "necessary and capable" test is not met); the P-A path (§5) is record BLOCKED at Step 4, then Step 5 verification and lock. The acceptance object defines BLOCKED as a valid, complete outcome. Backlog Step 3 AC items remain unchecked.
+
+**V-6. Step 5 AC checked against J-2 gate, criteria 1–6, and E-J5.** This verification confirms the decision RECORD correctly applies J-2 as worded. It does not claim that J-2 criteria 1–6 attestation was performed (no scope was approved; no search occurred; criteria 1–6 govern the attestation after a search, §1.3). It does not claim E-J5 validity or invalidation was triggered (no attestation exists to evaluate). This is decision-record verification, not a recovery-material search or absence attestation.
+
+**V-7. Record consistency, preservation, and write boundary verified.** Decision value BLOCKED appears consistently across stage-start §10.1, board header, governance ledger, STEP_4 field, and backlog body. Predecessor preservation verified by bounded Git comparison over the range `cf50b20699d861dc43994e16468a11ad18a6ba9f` (pre-SCOPE-01 registration) through HEAD `6ceba3e87d8d1f08ddc2968623ed66f6f0303ded` plus the uncommitted working tree: (a) `git diff cf50b20..HEAD` for the six predecessor stage-start files (`PM2-RECOVERY-P5-JOURNAL-01-STAGE-START.md`, `PM2-RECOVERY-P5-INVENTORY-01-STAGE-START.md`, `PM2-RECOVERY-ACQUISITION-01-STAGE-START.md`, `PM2-RECOVERY-POLICY-01-STAGE-START.md`, `PM2-RECOVERY-BASELINE-GOV-01-STAGE-START.md`, `PM2-RECOVERY-CAPTURE-01-STAGE-START.md`) returned empty — no changes; (b) `git diff cf50b20..HEAD` for `docs/control-plane/lane-saturation-state.json` returned empty — sidecar unchanged; (c) `git diff cf50b20..HEAD -- TASKS_BACKLOG_FULL.md` shows a single hunk at line 80682+ (the SCOPE-01 body insertion) — no predecessor body lines affected; (d) `git diff cf50b20..HEAD -- TASKS.md` shows four hunks all within SCOPE-01's own board records (lines 1, 18, 43, 155+) — no predecessor board records affected; (e) uncommitted `git diff` for the six predecessor stage-starts and sidecar returned empty; (f) uncommitted `git diff -- TASKS_BACKLOG_FULL.md` shows four hunks all at line 80689+ (SCOPE-01 body only); (g) uncommitted `git diff -- TASKS.md` shows five hunks all within SCOPE-01's own board records. Limitation: this comparison verifies Git-tracked content over the stated range; it does not verify content against non-Git external copies. Operational gates unchanged: EXEC-01C6A startCondition=NOT_READY; HOST_CLEAN=NO; P7_ACCEPTED=NO; REOPEN_GATE=UNSATISFIED; E1=UNREGISTERED; INVITE-01 PARKED/UNAUTHORIZED/PROHIBITED; Lane 3 DISABLED; builder gate ON. Sidecar lockedTaskIds intact; PM2-RECOVERY-P5-SCOPE-01 not in lockedTaskIds (GOVERNANCE task, correct). Two stale board mirrors carried without repair. Four-file write boundary: `docs/PM2-RECOVERY-P5-SCOPE-01-STAGE-START.md`, `TASKS.md`, `TASKS_BACKLOG_FULL.md`, `docs/control-plane/SATURATION_PROOF.json`. Stage-start SHA-256 (CRLF form) verified ✓.
+
+### 11.2 Lock
+
+**COMPLETE AND LOCKED — BLOCKED SCOPE DECISION ONLY.**
+
+Decision value: BLOCKED on the available evidence for H = aisandbox-staging, A = {aisandbox-api-gateway, aisandbox-ai-service}. Not impossible under all future evidence.
+
+This lock records the decision value only. It does NOT:
+- establish scope adequacy, recovery-material absence, or criteria 1–6 attestation
+- establish host-specific P5, E1, C-ACQ approval, HOST_CLEAN, P7, or reopen-gate satisfaction
+- select or authorize future evidence paths (P-B / P-D)
+- authorize a successor task
+- amend J-2
+- convert testimony
+- treat D2b as a J-2 waiver
+- repair the two stale board mirrors
+
+### 11.3 §0 invariants preserved
+
+1. Predecessor bodies unchanged.
+2. J-2 unchanged.
+3. No host condition established.
+4. Testimony preserved as "probably no, but uncertain."
+5. D2b = ACCEPTANCE preserved; not a J-2 waiver.
+6. Lane 3 DISABLED; INVITE-01 PARKED/UNAUTHORIZED/PROHIBITED. Sidecar and lockedTaskIds unchanged. Two stale board mirrors carried.
+
+### 11.4 Step 5 AC
+
+- [x] Separate authorization window from Step 4 (declared by Keith's Step 5 authorization; corroborated by different baselines — Step 4 `c36b0fc859486caf8d4eb7e56b104251bd6deba8`, Step 5 `6ceba3e87d8d1f08ddc2968623ed66f6f0303ded` — but separation rests on Keith's declaration and provenance boundary, not baselines alone)
+- [x] Decision record verified against P5-JOURNAL-01 §2 gate elements and this task's AC (V-1 through V-7); §0-class invariants confirmed (§11.3; predecessor bodies unchanged; EXEC-01C6A NOT_READY; HOST_CLEAN=NO; P7_ACCEPTED=NO; REOPEN_GATE=UNSATISFIED; E1 independently binding)
+- [x] Lock records the decision value only; lock never implies scope approval
+- [x] Validator run; git diff --check clean; no Git commit/push by the worker
+
+### 11.5 Activity ledger (Step 5)
+
+LIVE=0, SSH=0 (including preflight / keyscan), STAGING lease=0, AWS=0, sudo=0, host inspection=0, vault/journal access=0, PM2=0, Docker / Postgres / Redis / service runtime=0, provider=0, credits=0, transfer / acquisition / canary / reopen=0, operational authorization=0, scripts / parsers created=0, tests created=0, tests executed=0 except the lane-capacity validator, executable artifacts created=0, subagents=0, J-2 edits=0, evidence plan frozen=0, evidence collection=0, predecessor bodies edited=0, sidecar / lockedTaskIds / mutex-catalog / validator edits=0, stale-board-mirror edits=0, EXEC-01C6A body/candidate edits=0, PRD / ARCHITECTURE / CLAUDE / AGENTS edits=0, Git commit / push / branch / worktree=0, Lane 3 changes=0, builder-gate changes=0; files written under transient GOVERNANCE: this stage-start (Step 5 verification/lock appended), `TASKS.md` (this task's board records), `TASKS_BACKLOG_FULL.md` (this task's canonical body), `docs/control-plane/SATURATION_PROOF.json` (validator output only). GOVERNANCE released UNOWNED.
+
+**Status: PM2-RECOVERY-P5-SCOPE-01 — COMPLETE AND LOCKED — BLOCKED SCOPE DECISION ONLY — 2026-09-29 at baseline `6ceba3e87d8d1f08ddc2968623ed66f6f0303ded`. Lock does not establish scope adequacy, recovery-material absence, host-specific P5, E1, C-ACQ, HOST_CLEAN, P7, reopen, or successor authorization. Future evidence or amendment paths remain unselected and unauthorized.**
+
+### 11.6 Step 5 correction #1 — documentation-only, localized (2026-09-29; same uncommitted Step 5 record at baseline `6ceba3e87d8d1f08ddc2968623ed66f6f0303ded`)
+
+Keith-directed. Three localized corrections to the Step 5 verification record. BLOCKED decision, all unresolved gaps (GAP-1..7), testimony ("probably no, but uncertain"), D2b, J-2, and all operational boundaries unchanged. Lock retained — verification criteria remain supported after correction.
+
+| # | Location | Correction |
+|---|---|---|
+| 1 | §11.1 V-7 | **Predecessor-preservation evidence corrected.** "Confirmed by clean working tree at baseline" (which establishes only that the checkout matched HEAD) replaced by bounded Git comparison evidence: `git diff cf50b20..HEAD` for six predecessor stage-start files and sidecar returned empty; `TASKS_BACKLOG_FULL.md` and `TASKS.md` diffs in both the committed range and the uncommitted working tree show changes only within SCOPE-01's own body/records. Comparison range, commands, results and limitation (Git-tracked content only) recorded. |
+| 2 | §11 header, §11.4 AC | **Separate-window evidence corrected.** "Different baselines; different windows" replaced: the separate-window declaration rests on Keith's explicit Step 5 authorization statement ("This is a separate verification window from Step 4") and the provenance boundary (Step 4 = Keith's decision recording; Step 5 = independently initiated verification agent session). Different HEAD baselines corroborate but do not alone establish session separation. |
+| 3 | §10 final status | **Historical Step 4 status record restored.** The committed wording "Step 5 NOT AUTHORIZED. Task NOT LOCKED." restored. A separate dated pointer added stating that Step 5 subsequently supersedes that status in §11. The historical record is not rewritten as though Step 5 was already complete at Step 4. |
+
+Unchanged by this correction: BLOCKED decision value, gate unknowns GAP-7/GAP-6/GAP-5/GAP-1..4, testimony, D2b, J-2, §0 invariants, §11.2 lock statement, §11.3 invariants, §11.5 activity ledger, all operational gates, all non-effects, Steps 1–4 records, predecessor bodies, sidecar, lockedTaskIds, stale board mirrors. Corresponding hash/status updates applied to TASKS.md and TASKS_BACKLOG_FULL.md. GOVERNANCE acquired transiently then released UNOWNED.
