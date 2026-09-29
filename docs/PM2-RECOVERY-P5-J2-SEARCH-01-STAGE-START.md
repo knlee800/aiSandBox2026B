@@ -1,17 +1,19 @@
-# PM2-RECOVERY-P5-J2-SEARCH-01 — Stage-Start / Current-Host Search Execution Plan (UNEXECUTED)
+# PM2-RECOVERY-P5-J2-SEARCH-01 — Stage-Start / Current-Host Search Execution Plan (Step 3 COMPLETE; UNLOCKED)
 
 **Task:** PM2-RECOVERY-P5-J2-SEARCH-01 — Bounded current-host search execution plan under the already-approved current-host J-2 scope for (H = aisandbox-staging, A = {aisandbox-api-gateway, aisandbox-ai-service})
 **Nature:** GOVERNANCE / EVIDENCE (4-step). No implementation lane. No sidecar candidate.
-**Step:** 2 of 4 — search-plan freeze for review (this record). Step 1 registration is in the same window. Steps 3–4 are NOT AUTHORIZED.
+**Step:** 3 of 4 — bounded current-host search execution (this record). Frozen plan §§0–13 preserved as committed at `cab1163acd41f3e21ff3d3a65ecc2081a94700c3`. Step 4 NOT AUTHORIZED.
 **Date:** 2026-09-29
+**Step 3 date:** 2026-09-29
+**Step 3 HEAD at window open:** `cab1163acd41f3e21ff3d3a65ecc2081a94700c3` (branch main; index empty; expected inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` only, preserved unchanged; origin/main includes this commit)
 **HEAD at window open:** `7ae6fb4051d1227ac801c9b5d33acf836f28ee0b` (branch main; index empty; expected inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` only, preserved unchanged; origin/main includes this commit)
 **Registration:** `TASKS_BACKLOG_FULL.md` § PM2-RECOVERY-P5-J2-SEARCH-01 (Step 1 COMPLETE this window)
 **Dependencies:** PM2-RECOVERY-P5-J2-SCOPE-01 (COMPLETE AND LOCKED 2026-09-29 at `7ae6fb4051d1227ac801c9b5d33acf836f28ee0b`; current-host scope approved as proposed at Step 3 and locked at Step 4/C1; lock creates no additional authority; not a search authorization), PM2-RECOVERY-P5-J2-AMENDMENT-01 (COMPLETE AND LOCKED 2026-09-29; Option B adopted), PM2-RECOVERY-P5-JOURNAL-01 (COMPLETE AND LOCKED 2026-09-23; J-2 adopted; body physically unchanged), PM2-RECOVERY-P5-SCOPE-01 (COMPLETE AND LOCKED 2026-09-29; BLOCKED under the unamended rule applied then), PM2-RECOVERY-P5-INVENTORY-01 (COMPLETE AND LOCKED 2026-09-28; bounded inventory finding only; SSH/host-key/supervisor class cited as proposed Step 3 preconditions only). PM2-RECOVERY-ACQUISITION-01, PM2-RECOVERY-POLICY-01, PM2-RECOVERY-BASELINE-GOV-01, and PM2-RECOVERY-CAPTURE-01 remain COMPLETE AND LOCKED and are not reopened.
-**Authorization:** Keith authorized Steps 1–2 only at baseline `7ae6fb4051d1227ac801c9b5d33acf836f28ee0b`: register this successor and freeze the bounded current-host search execution plan for review. Keith did not authorize Step 3 execution.
-**Acceptance object:** this freeze is an UNEXECUTED current-host search plan under the already-approved SCOPE-01 current-host scope. It is not search execution, not U-2(e) acceptance, not P5 satisfaction, and not C-ACQ.
+**Authorization:** Keith authorized Steps 1–2 only at baseline `7ae6fb4051d1227ac801c9b5d33acf836f28ee0b`: register this successor and freeze the bounded current-host search execution plan for review. Keith later authorized **Step 3 only** at baseline `cab1163acd41f3e21ff3d3a65ecc2081a94700c3` (see §14). Step 4 is NOT AUTHORIZED.
+**Acceptance object:** Steps 1–2 froze the UNEXECUTED plan. Step 3 executed that plan as a bounded current-host search. The Step 3 object is the search execution record in §14. It is not U-2(e) acceptance, not P5 satisfaction, and not C-ACQ.
 **Controlling approved-scope source:** PM2-RECOVERY-P5-J2-SCOPE-01 §6 current-host scope boundaries with §4 U-1 and §5 U-2 as frozen at `8b0afa889fc93aded5a178b324513166ebd388a5`, approved by Step 3 and locked by Step 4/C1. The approved scope is not itself search execution authorization.
 
-**Status: PM2-RECOVERY-P5-J2-SEARCH-01 — Steps 1–2 COMPLETE (registration + current-host search-plan freeze for review; UNEXECUTED; Step 3 NOT AUTHORIZED) — 2026-09-29 at baseline `7ae6fb4051d1227ac801c9b5d33acf836f28ee0b`. Step 3 execution is NOT AUTHORIZED by this window. Task NOT LOCKED.**
+**Status: PM2-RECOVERY-P5-J2-SEARCH-01 — Step 3 COMPLETE (bounded current-host search executed; SESSION_EXEC_COMPLETE; SESSION_COVERAGE_INCOMPLETE; residual U-1 remain) — 2026-09-29 at baseline `cab1163acd41f3e21ff3d3a65ecc2081a94700c3`. Step 4 NOT AUTHORIZED. Task NOT LOCKED. Not U-2(e); not P5 / C-ACQ / HOST_CLEAN / P7 / reopen.**
 
 ---
 
@@ -406,3 +408,206 @@ LIVE=0, SSH=0 (including preflight / keyscan / `ssh -G`), STAGING lease=0, AWS=0
 ---
 
 **End of freeze. This document is a current-host search execution plan for review. Step 3 execution is NOT AUTHORIZED by this window. It is not U-2(e) acceptance and not P5 / C-ACQ / HOST_CLEAN / P7 / reopen authority.**
+
+## §14. Step 3 — Bounded current-host search execution (2026-09-29)
+
+**Step:** 3 of 4 — bounded current-host search execution (this record). Frozen plan §§0–13 are not rewritten.
+**Step 3 date:** 2026-09-29
+**Step 3 HEAD at window open:** `cab1163acd41f3e21ff3d3a65ecc2081a94700c3` (branch main; index empty; expected inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` only, preserved unchanged; origin/main includes this commit)
+**Frozen plan commit:** `cab1163acd41f3e21ff3d3a65ecc2081a94700c3`
+**Approved-scope freeze:** SCOPE-01 §6 / §4 / §5 at `8b0afa889fc93aded5a178b324513166ebd388a5` (approved Step 3; locked Step 4/C1)
+**Evidence directory:** `C:\Users\knlee\aisb-k4-evidence\PM2-RECOVERY-P5-J2-SEARCH-01\run-1-20260929-185706`
+**Result:** **PASS** (authorized search executed; supervisor `NORMAL`; exit 0; `SESSION_EXEC_COMPLETE`; `SESSION_COVERAGE_INCOMPLETE`). Residual U-1 remain. Not attestation. Not U-2(e). Step 4 NOT AUTHORIZED. Task NOT LOCKED.
+
+### 14.1 Keith's authorization
+
+Keith authorized **SEARCH-01 Step 3 only** at baseline `cab1163acd41f3e21ff3d3a65ecc2081a94700c3`, naming this frozen plan as committed at that SHA, under SCOPE-01 §6 boundaries with §4 U-1 and §5 U-2 as frozen at `8b0afa889fc93aded5a178b324513166ebd388a5`.
+
+Not authorized and not performed: U-2(e); P5 satisfaction; C-ACQ; E1; HOST_CLEAN; P7; reopen; sudo; AWS; Docker/Postgres/Redis mutation; PM2 mutating commands; runtime mutation, restart, save, delete, update, transfer, canary, acquisition, vault/journal write, or protected-value content transfer; browser automation; subagents; commit, push, reset, restore, or clean.
+
+### 14.2 Precondition record
+
+| ID | Result |
+|---|---|
+| **P-AUTH** | SATISFIED — this window; Step 3 only |
+| **P-SCOPE** | SATISFIED — controlling object unchanged at `8b0afa8`; Option B remains controlling |
+| **P-SSH-BIND** | SATISFIED — `ubuntu@aisandbox-staging:22`; key-based; `BatchMode=yes`; `-T` (no PTY) |
+| **P-HOSTKEY-ID** | SATISFIED — `ssh -G` lookup identity is the static IPv4 `HostName` for `Host aisandbox-staging`; alias is not the lookup identity; `hostkeyalias` unset; `CheckHostIP no`; port 22 |
+| **P-HOSTKEY-PROV** | SATISFIED by Keith's carry-forward — current local SSH lookup identity and `known_hosts` ED25519 fingerprint **exactly match** the locked SEARCH-01 / INVENTORY-01 class: `known_hosts` line 12 `ssh-ed25519` `SHA256:kwAg4iEcpglnu4XTqy6NrQOlz8xzybbV3xY6rzwmwO0`; `~/.ssh/config` SHA256 `C2DA0133482289909A424CF120E3912026B2EDA7C9876F89417BE9B10068E8AB`; `~/.ssh/known_hosts` SHA256 `54E7C8165AACFF09C90A7119974D9ADAAC3260D7A638235858E673E12B9A6BD2`; exactly one `known_hosts` entry for the lookup identity; zero hook/alias directives. No connection was made until this match was recorded. |
+| **P-SSH-OPTS** | SATISFIED — `StrictHostKeyChecking=yes`; `BatchMode=yes`; `ConnectTimeout=10`; `ServerAliveInterval=15`; `ServerAliveCountMax=4` |
+| **P-SUPERVISOR** | SATISFIED — INVENTORY-01 §4.3 class `AisbSupervisor.dll` SHA256 `E5AF106E4299D7C76F9B2DA1811A1AD9FCFD3749D0CE4F33516308D87CE2F5CC`; piped stdin; no files uploaded; finite bounds §14.4; captures never deleted by the supervisor |
+| **P-STAGING** | SATISFIED — STAGING acquired on the board before connection; released UNOWNED after this record |
+| **P-RO** | SATISFIED — read-only; no PM2 client; no Docker/Postgres/Redis/service mutation; no vault/journal writes; no canary; no transfer |
+| **P-PRIV** | SATISFIED as a non-grant — no sudo; inaccessible paths remain U-1 / E-J6 |
+| **P-GOV** | SATISFIED — GOVERNANCE acquired for this window's records then released UNOWNED; occupancy EMPTY throughout |
+| **P-NO-COMINGLE** | SATISFIED — this window did not perform U-2(e), P5, C-ACQ, E1, HOST_CLEAN, P7, or reopen |
+
+### 14.3 Host-key / SSH identity result
+
+**MATCH.** Carry-forward of `SHA256:kwAg4iEcpglnu4XTqy6NrQOlz8xzybbV3xY6rzwmwO0` accepted under Keith's stated condition because the current lookup identity class and `known_hosts` ED25519 fingerprint exactly match the locked inventory class. IPv4 literal retained privately (not published). Command class used (no secrets):
+
+```
+C:\Windows\System32\OpenSSH\ssh.exe -T -p 22 \
+    -o StrictHostKeyChecking=yes \
+    -o BatchMode=yes \
+    -o ConnectTimeout=10 \
+    -o ServerAliveInterval=15 \
+    -o ServerAliveCountMax=4 \
+    ubuntu@aisandbox-staging \
+    "bash -s"
+```
+
+Client: OpenSSH_for_Windows_9.5p1, LibreSSL 3.8.2. Stdin: local `observation.sh` (18404 bytes, LF, SHA256 `39198F6DAE97C2CBD853E19BED867A153A6E4D59632B90601C30F3D7C07EF539`) piped; not uploaded. Retries 0. Interactive fallback none. Key acceptance/replacement none. Additional remote commands none. Privilege escalation none.
+
+### 14.4 Confirmed numeric bounds (this Step 3)
+
+| Bound | Confirmed value |
+|---|---|
+| SSH `ConnectTimeout` | 10 s |
+| SSH keepalive | 15 s × 4 |
+| Session deadline | 300 s |
+| Session byte budget | 262144 |
+| Session line budget | 8000 |
+| Stdin delivery | 10 s |
+| Kill wait | 5 s |
+| Drain | 5 s |
+| Poll | 500 ms |
+| Per-producer | 30 s TERM / 32 s KILL |
+| Per-candidate `stat` | 5 s TERM / 6 s KILL |
+| OG-DORMANT-LEFTOVER maxdepth | 4 |
+| Candidate cap OG-HOMES-PM2 | 128 |
+| Candidate cap leftover find | 256 |
+| Candidate cap OG-MATERIAL locations | 128 |
+| PID cap | 200 |
+| Per-observation caps | OG-ACCOUNTS 500/32768; OG-HOMES-PM2 800/40960; OG-UNIT-DAEMON 640/20480; OG-DORMANT-LEFTOVER 800/40960; OG-MATERIAL 800/40960; OG-PENDING 200/8192 |
+
+Named leftover/dormant roots: `/home`, `/root`, `/var/lib`, plus current account homes from OG-ACCOUNTS (skipping `/`, `/nonexistent`, `/bin`, `/usr/sbin`, `/usr/bin`, `/dev/null`). Extra current-home roots actually added: `/dev`, `/usr/games`, `/var/cache/man`, `/var/spool/{lpd,news,uucp}`, `/var/mail`, `/var/www`, `/var/backups`, `/var/list`, `/run/ircd`, `/usr/lib/dhcpcd`, `/run/uuidd`, `/run/sshd`, `/var/cache/pollinate`. This is not a widening of the named-root set; it is the plan's "plus every current home" clause.
+
+### 14.5 Supervisor record
+
+| Field | Value |
+|---|---|
+| `supervisorOutcome` | **NORMAL** |
+| `pollTrigger` | `PROCESS_EXITED` |
+| Exit code | **0** |
+| Kill | not attempted |
+| Elapsed at trigger / drain / reconcile | 4.625 s / 4.625 s / 4.626 s (Stopwatch from launch) |
+| `bytesReserved` / `linesReserved` | 55126 B / 765 L; `limitExhausted=false` |
+| stdout | 53823 B / 740 L persisted; finished; SHA256 `7DD3EDCA000DA3819F228F430E6E9C72D4928EC1077557BC38987C4C29D68FB6` |
+| stderr | 1303 B / 25 L persisted; finished; SHA256 `43449A9F1D91110D73155AE33C7646681F003E11A4D38C5ED4BADE1E1F5D2E36` |
+| stdin | delivered |
+| Session execution | **SESSION_EXEC_COMPLETE** (all six OG START/END present; no cap-hit) |
+| Session coverage | **SESSION_COVERAGE_INCOMPLETE** (inaccessible current paths; incomplete find; unidentified heuristic PID) |
+| Launch / return (wall clock only) | 2026-09-29T11:00:59.997Z / 2026-09-29T11:01:04.635Z |
+| Remote markers | `SEARCH-01-START 2026-09-29T11:01:02Z`; `SEARCH-01-END 2026-09-29T11:01:05Z`; `WHOAMI: ubuntu`; `UID: 1000` |
+
+### 14.6 Observation groups
+
+| Group | Execution | Coverage notes |
+|---|---|---|
+| **OG-ACCOUNTS** | EXEC_COMPLETE (getent 0 / cap 0) | 38 accounts at search time. Interactive: `root` (`/root`, bash), `ubuntu` (`/home/ubuntu`, bash), `postgres` (`/var/lib/postgresql`, bash). Service accounts include `caddy`, `redis`, `www-data`, and remaining nologin/false accounts. Snapshot comparison: same count as 2026-09-28 inventory; used as history only. |
+| **OG-HOMES-PM2** | EXEC_COMPLETE (checks 28; candidate-limit 0; cap 0) | PRESENT 1: `/home/ubuntu/.pm2` (directory, owner `ubuntu`). ABSENT 22 named `.pm2` paths including `/var/lib/postgresql/.pm2`. INACCESSIBLE 5: `/root/.pm2`, `/var/lib/caddy/.pm2`, `/var/lib/redis/.pm2`, `/var/cache/pollinate/.pm2`, `/var/lib/chrony/.pm2`. Timeout 0. |
+| **OG-UNIT-DAEMON** | EXEC_COMPLETE (cap 0) | `pm2-ubuntu.service` loaded/active/running/enabled. `User=ubuntu`. `MainPID=844871`. `ExecStart` path `/usr/lib/node_modules/pm2/bin/pm2 resurrect`. Unit `PM2_HOME=/home/ubuntu/.pm2` (Environment= line and unit file). PID **844871** linked to MainPID; `ps` OK; proc `PM2_HOME=/home/ubuntu/.pm2`. pgrep `God Daemon` TOTAL-PIDS 2. PID **1193674**: `ps` rc 1; environ inaccessible; PM2 home unidentified. PS-OK 1 / PS-FAIL 1. No PM2 client invoked. |
+| **OG-DORMANT-LEFTOVER** | EXEC_COMPLETE (cap 0) | `/home` contains only `ubuntu` (matched current account). `/root` listing rc 2 permission denied. `/var/lib` top-level listing succeeded. Find maxdepth 4 named-class hits emitted: 1 (`/home/ubuntu/.pm2`). Find producer rc 1 (inaccessible subtrees). Candidate-limit not hit. |
+| **OG-MATERIAL** | EXEC_COMPLETE (55 locations; cap 0; finds 0) | Filename-class checks only. No `overlay_commands.json`, `pending_apps.json`, `unknown_overlay.json`, `restore_result.json`, or `protected/` present at accessible locations. Inaccessible material checks remain unresolved (not converted to absence). Contents not read. Protected values not printed. |
+| **OG-PENDING** | EXEC_COMPLETE (cap 0) | `systemctl list-jobs`: "No jobs running." Filename-class pending hits: 0 at covered locations. Observation only; not a permanent closure. |
+
+Find stderr (inaccessible / missing; ephemeral `/dev/shm` name redacted): `/root`; `/var/lib/{docker,containerd,caddy,redis,chrony,private,amazon,polkit-1,udisks2}`; `/var/lib/postgresql/15/main`; snapd cache/cookie/void; apt lists partial; update-notifier partial; `/var/cache/pollinate`; several current-home placeholders ENOENT (`/var/spool/{lpd,news,uucp}`, `/var/www`, `/var/list`, `/run/ircd`). Docker/containerd directories were not entered (read-only find permission denial only; no Docker command).
+
+### 14.7 Coverage matrix — SCOPE-01 §4 U-1
+
+| ID | Observation | §7.4 result |
+|---|---|---|
+| **U1-G1** | `/root/.pm2` INACCESSIBLE (`stat` rc 1; permission denied). No sudo. | **U1-REMAINS** / E-J6 |
+| **U1-G2** | `.pm2` checked under 28 current-home candidates. `/var/lib/postgresql/.pm2` ABSENT. `/var/lib/caddy/.pm2` and `/var/lib/redis/.pm2` INACCESSIBLE. Other inaccessible: pollinate, chrony. Remainder ABSENT. | **U1-REMAINS** / E-J6 (inaccessible current homes) |
+| **U1-G3** | Unit and MainPID 844871 `PM2_HOME=/home/ubuntu/.pm2`. Heuristic PID 1193674 PM2 home not captured. | **U1-REMAINS** (unidentified current-daemon home) |
+| **U1-G4-current** | Two pgrep matches. 844871 identified and already in the current-home list. 1193674 unidentified (`ps` fail; environ inaccessible). Historical PID 1177465 was not this row. | **U1-REMAINS** |
+| **U1-G5-dormant** | Named-class find emitted only `/home/ubuntu/.pm2`. Find incomplete (producer rc 1; inaccessible `/root` and multiple `/var/lib` subtrees). Current existence of dormant custom PM2 homes under those subtrees remains uncertain. | **U1-REMAINS** |
+| **U1-G6-leftover** | `/home` has no leftover account directory. `/root` listing inaccessible. `/var/lib` top-level visible; leftover dirs inside inaccessible subtrees not fully traversed. | **U1-REMAINS** |
+| **U1-reloc** | No relocation destination identified. Inaccessible current paths prevent establishing absence of relocated vault/workdir/`PM2_HOME` there. | **U1-REMAINS** |
+| **U1-accounts-now** | 38 accounts re-enumerated at search time; getent 0; cap 0. | **RESOLVED-COVERED** (enumeration only) |
+| **U1-pending** | No systemd jobs; no pending filename-class at accessible covered locations. Inaccessible paths could hide pending material. Recorded as observation, not permanent closure. | **U1-REMAINS** (attestation-time) |
+| **U1-unexplored** | Covered current relevant locations from accounts, homes, unit/daemon, and named-root leftover/material checks. Incomplete because of inaccessible subtrees and because operator-chosen `--vault`/`--workdir` has no default. Honesty rule applies. | **U1-REMAINS** |
+
+No U-1 row was recategorized as U-2 because of historical origin, access failure, timeout, or incomplete traversal.
+
+### 14.8 Coverage matrix — SCOPE-01 §6 territory
+
+| §6.1 class | Location / set | Outcome |
+|---|---|---|
+| Account interactive | `root` / `/root` | Present as account; `/root` listing and `/root/.pm2` INACCESSIBLE |
+| Account interactive | `ubuntu` / `/home/ubuntu` | COVERED; `/home/ubuntu/.pm2` PRESENT |
+| Account interactive | `postgres` / `/var/lib/postgresql` | Home reachable; `.pm2` ABSENT; material filename-class ABSENT |
+| Account service | `caddy` / `/var/lib/caddy`; `redis` / `/var/lib/redis`; remaining current homes | Enumerated; several `.pm2` ABSENT; caddy/redis/chrony/pollinate INACCESSIBLE |
+| PM2 home visible | `/home/ubuntu/.pm2` | PRESENT; material filename-class ABSENT inside it |
+| PM2 home inaccessible | `/root/.pm2` | INACCESSIBLE (included; not omitted) |
+| PM2 home candidates | `.pm2` under every current home | 28 checked; see OG-HOMES-PM2 |
+| Unit / daemon homes | `pm2-ubuntu.service` and current heuristic PIDs | Unit + PID 844871 identified `/home/ubuntu/.pm2`; PID 1193674 unidentified |
+| Installation context | `/usr/lib/node_modules/pm2` | Observed only as `ExecStart` path; not treated as a vault default |
+
+§6.2 (re)establishment: current accounts = 38 (OG-ACCOUNTS). Current identified PM2 home = `/home/ubuntu/.pm2`. Dormant/leftover/reloc under named roots: find incomplete; remainder U-1. Current relevant filesystem areas actually examined: listed OG-MATERIAL locations (55), with inaccessible rows recorded as unresolved.
+
+### 14.9 Residual U-1 list
+
+1. **U1-G1** — `/root/.pm2` inaccessible
+2. **U1-G2** — current-home `.pm2` inaccessible for `caddy`, `redis`, `pollinate`, `chrony` (and any other inaccessible current home)
+3. **U1-G3** — PM2 home of heuristic PID 1193674 unidentified
+4. **U1-G4-current** — PID 1193674 unmatched by `ps` / environ
+5. **U1-G5-dormant** — incomplete named-root traversal
+6. **U1-G6-leftover** — `/root` leftover unknown; inaccessible `/var/lib` subtrees
+7. **U1-reloc** — relocation destinations under inaccessible current paths uncertain
+8. **U1-pending** — attestation-time; not permanently closed
+9. **U1-unexplored** — no default vault/workdir; inaccessible/unsearched remainder
+
+**U1-accounts-now** does not remain as an enumeration gap.
+
+Remaining U-1 is E-J6 where inaccessibility/incompleteness applies and **blocks attestation**. U-2(e) cannot be invoked.
+
+### 14.10 U-2 list (disclosed / unresolved; unchanged)
+
+| ID | After this search |
+|---|---|
+| **U2-G7** | Unchanged; disclosed unresolved |
+| **U2-G6-records** | Unchanged; disclosed unresolved |
+| **U2-G5-deleted** | Still none established as deleted. Incomplete current-host traversal does **not** establish historical deletion |
+| **U2-PID-1177465-historical** | Unchanged; not retroactively identified. Current PID 1193674 is a separate U-1 current artifact |
+| **U2-testimony-limit** | Unchanged; testimony "probably no, but uncertain" preserved |
+
+### 14.11 Material-find log
+
+**Empty.** `OG-MATERIAL-FINDS: 0`. No vault directory, `overlay_commands.json`, `pending_apps.json`, `protected/*.value`, `unknown_overlay.json`, or `restore_result.json` was observed as PRESENT at an accessible covered location. Empty log is an observation, not proof of absence outside the searched/accessible scope. No H0 / H1 / UNCLASSIFIED item was classified because none was found. No recovery material was copied off-host. Inaccessible locations are not treated as confirmed absence.
+
+### 14.12 Negative ledger
+
+| Activity | Count |
+|---|---|
+| SSH sessions (this authorized search) | 1 |
+| Local `ssh -G` / `ssh-keygen -l` (no connection) | preflight only |
+| sudo | 0 |
+| AWS | 0 |
+| Docker / Postgres / Redis commands | 0 |
+| PM2 client (`restart`/`save`/`delete`/`update`/dump-that-writes/`list`/`jlist`) | 0 |
+| Runtime mutation / restart / save / delete / update | 0 |
+| Transfer / canary / acquisition / vault-journal write / protected-value transfer | 0 |
+| U-2(e) / P5 / C-ACQ / E1 / HOST_CLEAN / P7 / reopen | 0 |
+| Browser automation / subagents | 0 |
+| Git commit / push / reset / restore / clean / stage | 0 |
+| Files uploaded to staging | 0 |
+| Sidecar / SATURATION_PROOF.json / locked predecessors mutated | 0 |
+
+Ordinary SSH auth-log / lastlog side effects are acknowledged and are not claimed as mutation of PM2 or recovery material.
+
+### 14.13 Step 3 acceptance
+
+- [x] Keith authorized Step 3 only against the frozen plan at `cab1163`
+- [x] Host-key / SSH identity MATCH before connect
+- [x] STAGING and GOVERNANCE acquired then released
+- [x] One bounded piped-stdin search; six observation groups with START/END
+- [x] Fail-closed: inaccessible / privilege-unavailable / incomplete find remain U-1 / E-J6
+- [x] Coverage matrix, residual U-1, disclosed U-2, material-find log, precondition record, negative ledger recorded
+- [x] No U-2(e), P5, C-ACQ, E1, HOST_CLEAN, P7, reopen
+- [x] No sudo, AWS, Docker/Postgres/Redis, PM2 mutation, transfer, acquisition
+- [x] No commit / push / reset / restore / clean
+- [x] Step 4 NOT AUTHORIZED
+
+**End of Step 3 execution record. This is not attestation, not U-2(e), and not P5 / C-ACQ / HOST_CLEAN / P7 / reopen authority.**
