@@ -1,19 +1,21 @@
-# PM2-RECOVERY-P5-J2-SEARCH-01 — Stage-Start / Current-Host Search Execution Plan (Step 3 COMPLETE; UNLOCKED)
+# PM2-RECOVERY-P5-J2-SEARCH-01 — Stage-Start / Current-Host Search Execution Plan (COMPLETE AND LOCKED)
 
 **Task:** PM2-RECOVERY-P5-J2-SEARCH-01 — Bounded current-host search execution plan under the already-approved current-host J-2 scope for (H = aisandbox-staging, A = {aisandbox-api-gateway, aisandbox-ai-service})
 **Nature:** GOVERNANCE / EVIDENCE (4-step). No implementation lane. No sidecar candidate.
-**Step:** 3 of 4 — bounded current-host search execution (this record). Frozen plan §§0–13 preserved as committed at `cab1163acd41f3e21ff3d3a65ecc2081a94700c3`. Step 4 NOT AUTHORIZED.
+**Step:** 4 of 4 — independent review and lock (this record). Frozen plan §§0–13 and Step 3 §14 preserved as committed at `5ee2d9a8821db761a5de99bdee785c5289bab102`. This lock creates no additional authority.
 **Date:** 2026-09-29
 **Step 3 date:** 2026-09-29
 **Step 3 HEAD at window open:** `cab1163acd41f3e21ff3d3a65ecc2081a94700c3` (branch main; index empty; expected inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` only, preserved unchanged; origin/main includes this commit)
+**Step 4 date:** 2026-09-29
+**Step 4 HEAD at window open:** `5ee2d9a8821db761a5de99bdee785c5289bab102` (branch main; index empty; inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` only, preserved unchanged and unstaged; origin/main matches HEAD)
 **HEAD at window open:** `7ae6fb4051d1227ac801c9b5d33acf836f28ee0b` (branch main; index empty; expected inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` only, preserved unchanged; origin/main includes this commit)
 **Registration:** `TASKS_BACKLOG_FULL.md` § PM2-RECOVERY-P5-J2-SEARCH-01 (Step 1 COMPLETE this window)
 **Dependencies:** PM2-RECOVERY-P5-J2-SCOPE-01 (COMPLETE AND LOCKED 2026-09-29 at `7ae6fb4051d1227ac801c9b5d33acf836f28ee0b`; current-host scope approved as proposed at Step 3 and locked at Step 4/C1; lock creates no additional authority; not a search authorization), PM2-RECOVERY-P5-J2-AMENDMENT-01 (COMPLETE AND LOCKED 2026-09-29; Option B adopted), PM2-RECOVERY-P5-JOURNAL-01 (COMPLETE AND LOCKED 2026-09-23; J-2 adopted; body physically unchanged), PM2-RECOVERY-P5-SCOPE-01 (COMPLETE AND LOCKED 2026-09-29; BLOCKED under the unamended rule applied then), PM2-RECOVERY-P5-INVENTORY-01 (COMPLETE AND LOCKED 2026-09-28; bounded inventory finding only; SSH/host-key/supervisor class cited as proposed Step 3 preconditions only). PM2-RECOVERY-ACQUISITION-01, PM2-RECOVERY-POLICY-01, PM2-RECOVERY-BASELINE-GOV-01, and PM2-RECOVERY-CAPTURE-01 remain COMPLETE AND LOCKED and are not reopened.
-**Authorization:** Keith authorized Steps 1–2 only at baseline `7ae6fb4051d1227ac801c9b5d33acf836f28ee0b`: register this successor and freeze the bounded current-host search execution plan for review. Keith later authorized **Step 3 only** at baseline `cab1163acd41f3e21ff3d3a65ecc2081a94700c3` (see §14). Step 4 is NOT AUTHORIZED.
-**Acceptance object:** Steps 1–2 froze the UNEXECUTED plan. Step 3 executed that plan as a bounded current-host search. The Step 3 object is the search execution record in §14. It is not U-2(e) acceptance, not P5 satisfaction, and not C-ACQ.
+**Authorization:** Keith authorized Steps 1–2 only at baseline `7ae6fb4051d1227ac801c9b5d33acf836f28ee0b`: register this successor and freeze the bounded current-host search execution plan for review. Keith later authorized **Step 3 only** at baseline `cab1163acd41f3e21ff3d3a65ecc2081a94700c3` (see §14). Keith authorized **Step 4 only** at baseline `5ee2d9a8821db761a5de99bdee785c5289bab102` (see §15). This lock verifies Step 3 evidence only and creates no additional authority.
+**Acceptance object:** The locked object is the Step 3 search execution record in §14 as committed at `5ee2d9a8821db761a5de99bdee785c5289bab102` and verified against evidence package `run-1-20260929-185706`. Residual U-1 remain blocking. It is not U-2(e) acceptance, not P5 satisfaction, and not C-ACQ.
 **Controlling approved-scope source:** PM2-RECOVERY-P5-J2-SCOPE-01 §6 current-host scope boundaries with §4 U-1 and §5 U-2 as frozen at `8b0afa889fc93aded5a178b324513166ebd388a5`, approved by Step 3 and locked by Step 4/C1. The approved scope is not itself search execution authorization.
 
-**Status: PM2-RECOVERY-P5-J2-SEARCH-01 — Step 3 COMPLETE (bounded current-host search executed; SESSION_EXEC_COMPLETE; SESSION_COVERAGE_INCOMPLETE; residual U-1 remain) — 2026-09-29 at baseline `cab1163acd41f3e21ff3d3a65ecc2081a94700c3`. Step 4 NOT AUTHORIZED. Task NOT LOCKED. Not U-2(e); not P5 / C-ACQ / HOST_CLEAN / P7 / reopen.**
+**Status: PM2-RECOVERY-P5-J2-SEARCH-01 — COMPLETE AND LOCKED — 2026-09-29 at baseline `5ee2d9a8821db761a5de99bdee785c5289bab102`. Lock = independent verification of the Step 3 search execution record and evidence package only; it creates no additional authority. Residual U-1 remain blocking. Not U-2(e); not P5 / C-ACQ / HOST_CLEAN / P7 / reopen / successor authorization.**
 
 ---
 
@@ -611,3 +613,105 @@ Ordinary SSH auth-log / lastlog side effects are acknowledged and are not claime
 - [x] Step 4 NOT AUTHORIZED
 
 **End of Step 3 execution record. This is not attestation, not U-2(e), and not P5 / C-ACQ / HOST_CLEAN / P7 / reopen authority.**
+
+## §15. Step 4 — Independent review and lock (2026-09-29)
+
+**Step:** 4 of 4 — independent review and lock of the committed Step 3 search execution record
+**Step 4 date:** 2026-09-29
+**Step 4 HEAD at window open:** `5ee2d9a8821db761a5de99bdee785c5289bab102` (branch main; index empty; inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` only, preserved unchanged and unstaged; origin/main matches HEAD)
+**Authorization:** Keith authorized **SEARCH-01 Step 4 only** at baseline `5ee2d9a8821db761a5de99bdee785c5289bab102`. No new search, SSH, host access, U-2(e), P5, C-ACQ, E1, HOST_CLEAN, P7, reopen, or successor work is authorized.
+**Separate window:** This verification window is independent of Step 3. Corroborating Git evidence: frozen plan commit `cab1163acd41f3e21ff3d3a65ecc2081a94700c3`; Step 3 execution record commit `5ee2d9a8821db761a5de99bdee785c5289bab102` (this window's HEAD; parent of HEAD is `cab1163`). Separation rests on Keith's explicit Step 4 authorization and the provenance boundary (Step 3 = one bounded current-host search; Step 4 = independently initiated evidence review and lock).
+
+### 15.1 Verification scope and evidence base
+
+This section independently verifies the committed Step 3 search execution record against the retained evidence package. Frozen §§0–13 and Step 3 §14 are not rewritten. Step 4 creates no additional authority beyond what Step 3 recorded.
+
+**Committed evidence:**
+- Baseline / Step 3 execution-record commit: `5ee2d9a8821db761a5de99bdee785c5289bab102` (`docs: record PM2 J-2 current-host search execution`)
+- Frozen plan / Step 3 authorization baseline: `cab1163acd41f3e21ff3d3a65ecc2081a94700c3`
+- origin/main at window open: `5ee2d9a8821db761a5de99bdee785c5289bab102` (matches HEAD)
+- Index: empty. Unstaged inherited dirtiness: `docs/control-plane/SATURATION_PROOF.json` only. Preserved unchanged and unstaged. Not written by this Step 4.
+- Occupancy at window open: `lane1.state=EMPTY`; `lane2.state=EMPTY`; `governance.state=UNOWNED`; `occupancyHash=sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d` (occupancy block unchanged)
+- Step 3 stage-start SHA-256 before this lock (UTF-8, LF, no BOM): `29CFC87069AD6D94B82A458217630F3AD61D956E390515E2AFCBDCFB06A8A199` / 54789 bytes
+- Step 3 review diff SHA-256: `0214EC25356C383BEF0CB867728B22288EA6C757F07FC04B212AB87A37C75964`
+- Frozen §§0–13 body: trim-identical between `cab1163` and `5ee2d9a` (trailing newline only). Frozen plan not rewritten by Step 3 except current-status header lines plus appended §14.
+
+**Evidence package:**
+- Directory: `C:\Users\knlee\aisb-k4-evidence\PM2-RECOVERY-P5-J2-SEARCH-01\run-1-20260929-185706`
+- Manifest: `manifest-sha256.txt` SHA-256 `DE76941EBF9858B46F26AE070397897DC669B8F97BCB33CC9542B74956638BB6` / 1375 bytes
+- Manifest entries rehashed this window: 14 / 14 exist; SHA-256 and byte size match; 0 mismatches; 0 extra files outside the manifest (other than the manifest file itself)
+- `section-14.md` is character-identical to committed §14 after newline normalization (17119 chars)
+
+**Metadata read:** `evidence\invocation.json`; `evidence\record.json`; `evidence\classification.json`; `evidence\run-console.txt`; `command-transcript.txt`; `section-14.md`; `evidence\search-stdout.redacted.txt`; `evidence\search-stderr.redacted.txt`. Raw captures `search-stdout.bin` / `search-stderr.bin` were hashed against the manifest and invocation record; contents were corroborated via the redacted transcripts.
+
+### 15.2 Criterion-by-criterion findings
+
+| # | Criterion | Verdict | Evidence |
+|---|---|---|---|
+| 1 | Branch, HEAD, origin/main, empty index, and dirty set match the Step 4 baseline | **PASS** | `git branch --show-current` = `main`; HEAD = `5ee2d9a8821db761a5de99bdee785c5289bab102`; origin/main = same; `git diff --cached --name-only` empty; `git status --porcelain` shows only ` M docs/control-plane/SATURATION_PROOF.json` |
+| 2 | Committed Step 3 stage-start is the reviewed artifact | **PASS** | `docs/PM2-RECOVERY-P5-J2-SEARCH-01-STAGE-START.md` SHA-256 `29CFC87069AD6D94B82A458217630F3AD61D956E390515E2AFCBDCFB06A8A199` / 54789 bytes at window open, matching the named pre-lock hash |
+| 3 | Canonical SEARCH-01 body and board current-status fields record Step 3 COMPLETE and Step 4 not yet locked | **PASS** | Backlog Status / Lifecycle / AC (Step 3) record SESSION_EXEC_COMPLETE, SESSION_COVERAGE_INCOMPLETE, residual U-1, no U-2(e). Board header / GOVERNANCE / STAGING lines record Step 3 COMPLETE then released UNOWNED. **Noted (not a fail):** the `PM2_RECOVERY_P5_J2_SEARCH_01_*` flag block at HEAD still carried freeze-time `STEP_3=NOT AUTHORIZED` / `LOCKED=NO`. §14 and the header/ledger are the Step 3 evidence of record. This Step 4 reconciles those current-status flags as part of the lock, analogous to SCOPE-01 §15.6 header reconciliation. |
+| 4 | Evidence-package manifest is complete and byte-exact | **PASS** | Manifest file hash `DE76941E...` / 1375 bytes. All 14 listed paths exist. Each SHA-256 and byte size match. No unlisted extra files in the package directory. |
+| 5 | Supervisor / invocation / classification metadata match one bounded read-only session | **PASS** | `record.json`: `SupervisorOutcome=NORMAL`; `PollTrigger=PROCESS_EXITED`; `ExitCode=0`; kill not attempted; stdin delivered; `limitExhausted=false`; stdout 53823 B / 740 L; stderr 1303 B / 25 L. `invocation.json`: authorization/frozen-plan baseline `cab1163acd41f3e21ff3d3a65ecc2081a94700c3`; command class `ssh.exe -T -p 22 -o StrictHostKeyChecking=yes -o BatchMode=yes ... ubuntu@aisandbox-staging "bash -s"`; `pty=false`; retries 0; additional remote commands 0; sudo/AWS/docker/pm2Client/transfer = 0. `classification.json`: all six OGs `EXEC_COMPLETE` with Start=1 End=1. `run-console.txt` / `command-transcript.txt`: `SESSION_EXEC_COMPLETE`; supervisor NORMAL; exit 0. **Noted:** `invocation.json` `step` field shows `??` where a section-sign was lost in JSON serialization; the surrounding fields still identify Step 3 bounded current-host search. |
+| 6 | `section-14.md` matches committed §14 substance | **PASS** | Character-identical after newline normalization. SHA-256 of on-disk `section-14.md` is `13788EDB4DC2B3195953E2801AAAB3DF0715A269C35EE7E3491E4CDBFA8BF601` / 17189 bytes as listed in the manifest. |
+| 7 | Step 3 did exactly one bounded read-only SSH search under the frozen plan | **PASS** | Frozen plan commit `cab1163`. One session. No PTY (`-T`; `pty=false`). `StrictHostKeyChecking=yes`. No sudo. No AWS. No Docker/Postgres/Redis commands (find permission denials on `/var/lib/docker` and `/var/lib/containerd` only; no Docker client). No PM2 client (`OG-PENDING-PM2-CLIENT: not invoked`; observation.sh has no `pm2 restart/save/delete/update/list/jlist`). No transfer/acquisition. No extra remote commands. Supervisor NORMAL. Exit 0. SESSION_EXEC_COMPLETE. SESSION_COVERAGE_INCOMPLETE. Stdin: local `observation.sh` piped (18404 B, SHA-256 `39198F6DAE97C2CBD853E19BED867A153A6E4D59632B90601C30F3D7C07EF539`), not uploaded. |
+| 8 | Residual U-1 remains blocking and was not recategorized as U-2 | **PASS** | Capture: `/root/.pm2` INACCESSIBLE; `caddy`/`redis`/`pollinate`/`chrony` `.pm2` INACCESSIBLE; find producer rc 1; PID 1193674 `ps` rc 1 and `ENVIRON_INACCESSIBLE`. §14.7 / §14.9 keep these as U-1 / E-J6. Explicit statement: no U-1 row recategorized as U-2. U2-PID-1177465 remains a separate historical U-2 row. Inaccessible material checks have per-path `OG-MATERIAL-UNRESOLVED` markers and are not treated as absence in §14.11. **Noted (not a fail):** the summary line `OG-MATERIAL-UNRESOLVED: 0` is internally inconsistent with those per-path unresolved markers; §14 did not use the summary counter as proof of absence. |
+| 9 | No H0 / H1 / UNCLASSIFIED material item was found or classified; no recovery material copied off-host | **PASS** | `OG-MATERIAL-FINDS: 0`; zero `OG-MATERIAL-FIND:` lines. §14.11 material-find log empty. Negative ledger transfer = 0. Invocation `transfer=0`. |
+| 10 | Step 3 created no U-2(e), P5, C-ACQ, E1, HOST_CLEAN, P7, reopen, or successor authorization | **PASS** | §14.1 / §14.12 / §14.13 and board flags `U2E_ACCEPTANCE=NO`; `HOST_CLEAN=NO`; `P7_ACCEPTED=NO`; `REOPEN_GATE=UNSATISFIED`; `AUTHORIZES_ACQUISITION=NO`; `PARENT_START_CONDITION=NOT_READY`. This lock does not create those authorities either. |
+| 11 | Predecessor documents, sidecar, lockedTaskIds, mutex catalog, validator source, application source, runtime files, and operational gates were not changed by Step 3 | **PASS** | `git diff --name-only cab1163..5ee2d9a` lists exactly `TASKS.md`, `TASKS_BACKLOG_FULL.md`, `docs/PM2-RECOVERY-P5-J2-SEARCH-01-STAGE-START.md`. Empty diff on SCOPE-01 / AMENDMENT-01 / JOURNAL-01 / SCOPE-01-unamended / INVENTORY-01 stage-starts; `docs/control-plane/lane-saturation-state.json`; `mutex-catalog.json`; `scripts/validate-lane-capacity.ps1`; CLAUDE.md; AGENTS.md; PRD.md; ARCHITECTURE.md; `frontend/`; `services/`; `ops/`. Occupancy EMPTY / Lane 3 DISABLED / GOVERNANCE UNOWNED. EXEC-01C6A startCondition=NOT_READY unchanged. |
+| 12 | Lane-capacity validator with ProofPath under `$env:TEMP` only; repository SATURATION_PROOF.json not written by this step | **PASS** (recorded after Step 4 writes) | See §15.5 |
+| 13 | `git diff --check` on authorized files only | **PASS** (recorded after Step 4 writes) | See §15.5 |
+
+### 15.3 Residual U-1 retained with the lock
+
+The following remain **U-1 / E-J6 where inaccessibility or incompleteness applies** and **block attestation**. They are not U-2. U-2(e) cannot be invoked.
+
+1. **U1-G1** — `/root/.pm2` inaccessible
+2. **U1-G2** — current-home `.pm2` inaccessible for `caddy`, `redis`, `pollinate`, `chrony` (and any other inaccessible current home)
+3. **U1-G3** — PM2 home of heuristic PID 1193674 unidentified
+4. **U1-G4-current** — PID 1193674 unmatched by `ps` / environ
+5. **U1-G5-dormant** — incomplete named-root traversal
+6. **U1-G6-leftover** — `/root` leftover unknown; inaccessible `/var/lib` subtrees
+7. **U1-reloc** — relocation destinations under inaccessible current paths uncertain
+8. **U1-pending** — attestation-time; not permanently closed
+9. **U1-unexplored** — no default vault/workdir; inaccessible/unsearched remainder
+
+**U1-accounts-now** remains RESOLVED-COVERED (enumeration only; 38 accounts at search time). Disclosed U-2 rows (U2-G7, U2-G6-records, U2-G5-deleted, U2-PID-1177465-historical, U2-testimony-limit) remain disclosed unresolved and unchanged.
+
+### 15.4 Lock definition
+
+This task — PM2-RECOVERY-P5-J2-SEARCH-01 — is **COMPLETE AND LOCKED**.
+
+**Lock scope:** Independent verification of the Step 3 bounded current-host search execution record (§14 as committed at `5ee2d9a8821db761a5de99bdee785c5289bab102`) against evidence package `run-1-20260929-185706` only.
+
+The lock confirms:
+
+1. Keith authorized SEARCH-01 Step 3 only against the frozen plan at `cab1163acd41f3e21ff3d3a65ecc2081a94700c3`.
+2. Exactly one bounded read-only SSH search ran under that plan: no PTY, strict host-key checking, no sudo, no AWS, no Docker/Postgres/Redis commands, no PM2 client, no transfer/acquisition, no extra remote commands.
+3. Supervisor outcome NORMAL, exit 0, SESSION_EXEC_COMPLETE, SESSION_COVERAGE_INCOMPLETE.
+4. Residual U-1 listed in §15.3 remain blocking and were not recategorized as U-2.
+5. No H0 / H1 / UNCLASSIFIED item was found or classified; no recovery material was copied off-host.
+6. Step 3 created no U-2(e), P5, C-ACQ, E1, HOST_CLEAN, P7, reopen, or successor authorization.
+
+**This lock verifies Step 3 evidence only. It creates no additional authority.** It does NOT:
+
+- Authorize a further search, host access, SSH, AWS, sudo, STAGING lease, PM2 client, vault/journal access, Docker/Postgres/Redis, transfer, acquisition, canary, or any runtime activity
+- Create U-2(e) attestation-time acceptance
+- Establish host-specific P5 satisfaction
+- Unblock C-ACQ
+- Register or satisfy E1
+- Change HOST_CLEAN, P7_ACCEPTED, REOPEN_GATE, or EXEC-01C6A startCondition=NOT_READY
+- Recategorize residual U-1 as U-2
+- Treat inaccessible material checks as absence
+- Edit locked predecessor document bodies, sidecar, lockedTaskIds, occupancy, or repository SATURATION_PROOF.json
+- Convert testimony or treat D2b as a J-2 waiver
+- Retroactively alter the SCOPE-01 BLOCKED decision
+- Authorize any successor task
+
+U-1 remains blocking at attestation. U-2 remains disclosed and unresolved. Option B application-sequence step 4 (U-2(e)) remains not authorized.
+
+### 15.5 Activity ledger (Step 4)
+
+LIVE=0, SSH=0, STAGING lease=0, AWS=0, sudo=0, host inspection=0, vault/journal access=0, PM2=0, Docker / Postgres / Redis / service runtime=0, provider=0, credits=0, transfer / acquisition / canary / reopen=0, operational authorization=0, new search=0, scripts / parsers created=0, tests created=0, tests executed=0 except the lane-capacity validator once with proof under `$env:TEMP`, executable artifacts created=0, subagents=0, browser automation=0, frozen §§0–14 unaltered except current-status header lines, U-2(e) created=0, P5=0, C-ACQ=0, E1=0, HOST_CLEAN=0, P7=0, predecessor bodies edited=0, sidecar / lockedTaskIds / mutex-catalog / validator source edits=0, SATURATION_PROOF.json mutated by this step=0, stale-board-mirror edits=0, EXEC-01C6A body/candidate edits=0, PRD / ARCHITECTURE / CLAUDE / AGENTS edits=0, Git commit / push / branch / worktree / reset / restore / clean / stage=0, Lane 3 changes=0; files written under transient GOVERNANCE: this stage-start (§15 appended; header current-status only), `TASKS.md` (this task's current board records, including reconciliation of the freeze-time SEARCH_01 flag block), `TASKS_BACKLOG_FULL.md` (this task's canonical body/status). GOVERNANCE released UNOWNED.
+
+**Status: PM2-RECOVERY-P5-J2-SEARCH-01 — COMPLETE AND LOCKED — 2026-09-29 at baseline `5ee2d9a8821db761a5de99bdee785c5289bab102`. Lock = independent verification of the Step 3 search execution record and evidence package only; it creates no additional authority. Residual U-1 remain blocking. Not U-2(e) acceptance; no host access; no runtime work; no successor authorization. SCOPE-01 BLOCKED preserved. U-2 remains disclosed unresolved.**
