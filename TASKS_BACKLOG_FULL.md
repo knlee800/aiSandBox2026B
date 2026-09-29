@@ -81162,3 +81162,95 @@ nature=GOVERNANCE
 **Step 1–2 activity ledger:** LIVE=0, SSH=0, staging=0, STAGING lease=0, AWS=0, sudo=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, canary submission=0, vendor-source fetch=0, live inspection=0, workflow dispatched=0, host inspection=0, vault/journal access=0, transfer=0, acquisition=0, r3 transferred/extracted/executed=0, F1 transferred/executed=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, canary scripts mutated=0, evidence doc mutated=0 (predecessors), script created=0, parser created=0, tests executed=0 except lane-capacity validator, subagents=0, browser automation=0, J-2 journal body edits=0, SCOPE-01 edits=0, search performed=0, U-2(e)=0, predecessor body edits=0, sidecar edits=0, lockedTaskIds edits=0, stale-board-mirror edits=0, EXEC-01C6A body/candidate edits=0, PRD/ARCHITECTURE/CLAUDE/AGENTS edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 3 changes=0, builder-gate changes=0; files written under transient GOVERNANCE: TASKS.md (this task's board records), TASKS_BACKLOG_FULL.md (this canonical body), docs/PM2-RECOVERY-P5-J2-SEARCH-01-STAGE-START.md (created); repository SATURATION_PROOF.json not mutated.
 **Step 3 activity ledger:** LIVE=0, SSH=1 (authorized bounded search; plus local ssh -G / ssh-keygen -l preflight with no extra connection), STAGING lease=1 (acquired then released), AWS=0, sudo=0, provider=0, credits=0, runtime mutation=0, Docker=0, Postgres=0, Redis=0, PM2 client=0, transfer=0, acquisition=0, canary=0, U-2(e)=0, P5=0, C-ACQ=0, HOST_CLEAN=0, P7=0, reopen=0, subagents=0, browser automation=0, predecessor body edits=0, sidecar edits=0, SATURATION_PROOF.json not mutated, Git commit/push/reset/restore/clean/stage=0.
 **Step 4 activity ledger:** LIVE=0, SSH=0, STAGING lease=0, AWS=0, sudo=0, host inspection=0, new search=0, PM2=0, Docker=0, Postgres=0, Redis=0, transfer=0, acquisition=0, canary=0, U-2(e)=0, P5=0, C-ACQ=0, E1=0, HOST_CLEAN=0, P7=0, reopen=0, successor authorization=0, subagents=0, browser automation=0, predecessor body edits=0, sidecar edits=0, SATURATION_PROOF.json not mutated, Git commit/push/reset/restore/clean/stage=0; files written under transient GOVERNANCE: TASKS.md, TASKS_BACKLOG_FULL.md, docs/PM2-RECOVERY-P5-J2-SEARCH-01-STAGE-START.md.
+
+### PM2-RECOVERY-P5-J2-U1-RESOLUTION-01 — Residual U-1 resolution options after locked SEARCH-01
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=PM2-RECOVERY-P5-J2-U1-RESOLUTION-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-29 — Step 1 COMPLETE — Step 2 COMPLETE / OPTIONS FROZEN FOR REVIEW (UNSELECTED; Options A/B/C/D frozen; Step 3 NOT AUTHORIZED; SEARCH-01 remains COMPLETE AND LOCKED; no search; no host access; no U-2(e); SCOPE-01 BLOCKED preserved as historically valid under the unamended rule applied then) — GOVERNANCE / OPTIONS — 4-step — no implementation lane — no sidecar candidate — occupancy EMPTY — GOVERNANCE acquired transiently then released UNOWNED. Previous: none (new identifier)
+**Task ID:** PM2-RECOVERY-P5-J2-U1-RESOLUTION-01
+**Title:** Governance/options plan to resolve residual U-1 blockers from locked PM2-RECOVERY-P5-J2-SEARCH-01, including inaccessible current paths and PID 1193674 uncertainty
+**Family:** AGENT PLATFORM / EXEC (bounded GOVERNANCE / OPTIONS container for residual U-1 resolution options after locked SEARCH-01; not a product frontier; not an EXEC-01C6A reopen; not a fence; not an implementation task; not a live acquisition; not a P6 execution; not B(H) construction; not search execution; not a privilege grant; not U-2(e) acceptance; not P5 satisfaction)
+**Parent task:** none. Not a child of AGENT-PLATFORM-EXEC-01C6A. Does **not** reopen EXEC-01C6A. Does **not** reopen PM2-RECOVERY-P5-J2-SEARCH-01.
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE / OPTIONS — does NOT consume Lane 1 or Lane 2 — no implementation candidate — no saturationClass
+**Development program:** CURRENT — Keith 2026-09-29 named this GOVERNANCE / OPTIONS successor after PM2-RECOVERY-P5-J2-SEARCH-01 COMPLETE AND LOCKED. Light CURRENT/FUTURE check per CLAUDE.md Next-Work Selection Protocol (named task; no frontier audit): locked SEARCH-01 residual U-1 remain blocking; no existing unlocked task covers this exact residual-U-1 options freeze; SEARCH-01 remains LOCKED and is not reused as the options task. This registration is a Keith-named options/plan container, not a new product-priority selection.
+**Product-visible Harness capability:** FUTURE / gated / disabled / unavailable to users. Unchanged.
+**Classification:** CURRENT required governance options plan; product-visible Harness remains FUTURE/gated.
+**Target:** host H = aisandbox-staging; app set A = {aisandbox-api-gateway, aisandbox-ai-service} (per locked ACQUISITION-01 §3.2 / POLICY-01 §3.1 as carried by INVENTORY-01 / SCOPE-01 / SEARCH-01). aisandbox-container-manager and aisandbox-frontend are deployment context on H, not an expansion of A.
+**Lifecycle:** 4-STEP GOVERNANCE / OPTIONS. Each of Steps 3–4 requires its own explicit Keith authorization. Step 3 (explicit selection among frozen options) and Step 4 (independent verification / lock) must occur in separate authorization windows: the deciding step must not verify itself. Privileged inspection (Option B) and host/provider-assisted evidence (Option C) are **not** steps of this task; they remain later separately registered tasks if selected.
+1. Step 1 — registration — COMPLETE — 2026-09-29 — control-plane only; same window as Step 2 because Keith authorized registration and options freeze together
+2. Step 2 — residual U-1 options/plan freeze — COMPLETE — 2026-09-29 — stage-start: `docs/PM2-RECOVERY-P5-J2-U1-RESOLUTION-01-STAGE-START.md`; UNSELECTED; Options A/B/C/D frozen; SEARCH-01 COMPLETE AND LOCKED cited; U-1 residual list carried forward; U1-accounts-now RESOLVED-COVERED; U-2 disclosed unresolved; Step 3 NOT AUTHORIZED; no search; no privilege grant; no host access; no U-2(e)
+3. Step 3 — Keith's separately authorized explicit selection among frozen Options A/B/C/D — NOT AUTHORIZED
+4. Step 4 — independently authorized verification and lock in a separate window — NOT AUTHORIZED
+**Start condition:** READY (all declared dependencies LOCKED). Ready is not Step 3 authorization.
+**Depends on:** PM2-RECOVERY-P5-J2-SEARCH-01 (COMPLETE AND LOCKED 2026-09-29 at `680387c3237cfdf35bceadbb78e7058b8defa94c`; lock verifies Step 3 evidence only; residual U-1 remain blocking; not reopened), PM2-RECOVERY-P5-J2-SCOPE-01 (COMPLETE AND LOCKED 2026-09-29; current-host scope approved as proposed as frozen at `8b0afa889fc93aded5a178b324513166ebd388a5`; lock creates no additional authority; not a search authorization; not U-2(e)), PM2-RECOVERY-P5-J2-AMENDMENT-01 (COMPLETE AND LOCKED 2026-09-29; Option B adopted and locked; lock creates no additional authority), PM2-RECOVERY-P5-JOURNAL-01 (COMPLETE AND LOCKED 2026-09-23; J-2 adopted; body physically unchanged), PM2-RECOVERY-P5-SCOPE-01 (COMPLETE AND LOCKED 2026-09-29; BLOCKED under the unamended rule applied then), PM2-RECOVERY-P5-INVENTORY-01 (COMPLETE AND LOCKED 2026-09-28; bounded inventory finding only). PM2-RECOVERY-ACQUISITION-01, PM2-RECOVERY-POLICY-01, PM2-RECOVERY-BASELINE-GOV-01, and PM2-RECOVERY-CAPTURE-01 remain COMPLETE AND LOCKED and are not reopened.
+**Primary write scope:** docs/ (governance options/plan record only; no application source). This window exact write set: `TASKS.md` (this task's CURRENT EXECUTION BOARD records), `TASKS_BACKLOG_FULL.md` (this canonical body and stanza), `docs/PM2-RECOVERY-P5-J2-U1-RESOLUTION-01-STAGE-START.md` (created). Repository `docs/control-plane/SATURATION_PROOF.json` is not mutated; validator proof written under `$env:TEMP`.
+**Mutexes / resources:** GOVERNANCE (acquired transiently for this window's required record writes then released UNOWNED). STAGING not acquired (no host access this window).
+**Hot-file leases:** none
+**Shared contracts:** adopted Option B (PM2-RECOVERY-P5-J2-AMENDMENT-01 §2 Option B / §10 / §11) applied as contract text only; locked P5-JOURNAL-01 J-2 body physically unchanged; locked SEARCH-01 residual U-1 list at `680387c3237cfdf35bceadbb78e7058b8defa94c` is the input and is not re-opened. This freeze is not U-2(e), not a privilege grant, and not search execution authorization.
+**Evidence class:** none (governance options record; no tests, runtime, or provider)
+**Revert isolation:** acceptable (governance-only; no application source changes)
+**saturationClass:** not applicable (GOVERNANCE; no sidecar candidate)
+**Acceptance object:** Frozen residual U-1 resolution options A (no further privilege/access; J-2 remains blocked), B (separately authorized sudo/read-only privilege session), C (separately authorized host/provider-assisted evidence path), and D (abandon or defer J-2 acceptance and proceed only with unrelated app work that does not require P5/J-2 closure), for Keith/ChatGPT review. Nothing selected. SEARCH-01 remains COMPLETE AND LOCKED. Residual U-1 remain blocking. Not U-2(e). Not P5. Not C-ACQ.
+
+**Registration purpose:** Freeze residual U-1 resolution options after locked SEARCH-01, including inaccessible current paths and PID 1193674 uncertainty, for Keith/ChatGPT review, without executing a search, granting privilege, creating U-2(e) acceptance, or claiming P5 / C-ACQ / HOST_CLEAN / P7 / reopen.
+
+**Non-effects (Steps 1–2):**
+- Does NOT authorize or perform a search
+- Does NOT grant a privilege class or sudo
+- Does NOT create U-2(e) acceptance
+- Does NOT inspect the host, any vault, any journal, or any recovery material
+- Does NOT authorize or perform any live acquisition, SSH, AWS, sudo, PM2, transfer, Docker, Postgres, Redis, or runtime activity
+- Does NOT claim host-specific P5 satisfaction or unblock C-ACQ
+- Does NOT register or satisfy E1
+- Does NOT amend or reopen POLICY-01, ACQUISITION-01, BASELINE-GOV-01, CAPTURE-01, P5-JOURNAL-01, P5-INVENTORY-01, P5-SCOPE-01, P5-J2-AMENDMENT-01, P5-J2-SCOPE-01, or P5-J2-SEARCH-01
+- Does NOT retroactively alter the locked SCOPE-01 BLOCKED decision
+- Does NOT recategorize residual U-1 as U-2
+- Does NOT change EXEC-01C6A startCondition=NOT_READY
+- Does NOT attest HOST_CLEAN, accept P7, or satisfy the reopen gate
+- Does NOT authorize canary, B(H), verifier live use, or any implementation
+- Does NOT add a sidecar candidate or saturationClass
+- Does NOT convert testimony; does NOT treat D2b as a J-2 waiver
+- Does NOT mutate repository `docs/control-plane/SATURATION_PROOF.json`
+- Does NOT select Option A, B, C, or D; Step 3 is NOT AUTHORIZED
+
+**AC (Step 1):**
+- [x] Identifier confirmed available (no collision, no equivalent unfinished residual-U-1 options/plan task)
+- [x] Machine registration stanza (AISB_MACHINE_REG_V1 nature=GOVERNANCE) in TASKS_BACKLOG_FULL.md
+- [x] Board registration fields in TASKS.md
+- [x] Governance ledger updated (GOVERNANCE acquired transiently then released UNOWNED)
+- [x] Dependencies confirmed LOCKED: P5-J2-SEARCH-01 (COMPLETE AND LOCKED; residual U-1 remain), P5-J2-SCOPE-01 (approved current-host scope), P5-J2-AMENDMENT-01 (Option B), P5-JOURNAL-01, P5-SCOPE-01 (BLOCKED), P5-INVENTORY-01
+- [x] SEARCH-01 COMPLETE AND LOCKED preserved; not reopened
+- [x] SCOPE-01 BLOCKED decision preserved as historically valid under the unamended rule applied then
+- [x] P5 process-table component and E1 preserved
+- [x] Keith's testimony preserved as "probably no, but uncertain" — not strengthened
+- [x] No predecessor body edits; sidecar / lockedTaskIds / stale board mirrors unchanged
+- [x] Validator run with proof under `$env:TEMP`; git diff --check clean; repository SATURATION_PROOF.json not mutated
+- [x] No runtime, host inspection, vault/journal access, SSH, AWS, sudo, PM2, transfer, search, privilege grant, U-2(e), P5 satisfaction, C-ACQ, HOST_CLEAN, P7, reopen, or implementation
+- [x] No sidecar candidate, no saturationClass
+- [x] Occupancy EMPTY; GOVERNANCE released UNOWNED
+- [x] No Git commit/push/reset/restore/clean/stage by the worker
+
+**AC (Step 2):**
+- [x] Stage-start created: `docs/PM2-RECOVERY-P5-J2-U1-RESOLUTION-01-STAGE-START.md` (UTF-8, no BOM, LF)
+- [x] Locked SEARCH-01 outcome restated: Step 3 evidence locked at `680387c3237cfdf35bceadbb78e7058b8defa94c`; SESSION_EXEC_COMPLETE; SESSION_COVERAGE_INCOMPLETE; residual U-1 remain blocking; no U-2(e), P5, C-ACQ, HOST_CLEAN, P7, or reopen
+- [x] Exact residual U-1 blockers listed: U1-G1, U1-G2, U1-G3, U1-G4-current, U1-G5-dormant, U1-G6-leftover, U1-reloc, U1-pending, U1-unexplored
+- [x] U1-accounts-now recorded as RESOLVED-COVERED, not a remaining blocker
+- [x] U-2 preserved as disclosed unresolved and not accepted
+- [x] Options A/B/C/D frozen with what each would resolve, later authority, risks/constraints, what it cannot resolve, and that U-2(e)/P5/C-ACQ/HOST_CLEAN/P7/reopen remain later separate decisions
+- [x] Non-objectives listed (no search execution; no privilege grant; no host access; no operational mutation; no U-2(e); no P5/C-ACQ/HOST_CLEAN/P7/reopen)
+- [x] Step 3 decision/selection explicitly NOT AUTHORIZED
+- [x] Committed records only; no host access
+- [x] Validator run with proof under `$env:TEMP`; git diff --check clean; repository SATURATION_PROOF.json not mutated
+- [x] No Git commit/push/reset/restore/clean/stage by the worker
+**Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. INVITATION_EXECUTION_PERMITTED=NO. Unchanged.
+
+**Lane 3 invariant:** Lane 3 remains DISABLED. Unchanged.
+
+**Step 1 HEAD:** `680387c3237cfdf35bceadbb78e7058b8defa94c` (branch main; index empty at window open; inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` preserved unchanged; origin/main matches HEAD)
+**Step 2 HEAD:** `680387c3237cfdf35bceadbb78e7058b8defa94c` (same window as Step 1)
+**Stage-start:** `docs/PM2-RECOVERY-P5-J2-U1-RESOLUTION-01-STAGE-START.md`
+**Step 1–2 activity ledger:** LIVE=0, SSH=0, staging=0, STAGING lease=0, AWS=0, sudo=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, canary submission=0, vendor-source fetch=0, live inspection=0, workflow dispatched=0, host inspection=0, vault/journal access=0, transfer=0, acquisition=0, r3 transferred/extracted/executed=0, F1 transferred/executed=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, canary scripts mutated=0, evidence doc mutated=0 (predecessors), script created=0, parser created=0, tests executed=0 except lane-capacity validator, subagents=0, browser automation=0, J-2 journal body edits=0, SCOPE-01 edits=0, SEARCH-01 edits=0, search performed=0, privilege grant=0, U-2(e)=0, predecessor body edits=0, sidecar edits=0, lockedTaskIds edits=0, stale-board-mirror edits=0, EXEC-01C6A body/candidate edits=0, PRD/ARCHITECTURE/CLAUDE/AGENTS edits=0, validator edits=0, mutex-catalog edits=0, Git mutations=0, Lane 3 changes=0, builder-gate changes=0; files written under transient GOVERNANCE: TASKS.md (this task's board records), TASKS_BACKLOG_FULL.md (this canonical body), docs/PM2-RECOVERY-P5-J2-U1-RESOLUTION-01-STAGE-START.md (created); repository SATURATION_PROOF.json not mutated.
