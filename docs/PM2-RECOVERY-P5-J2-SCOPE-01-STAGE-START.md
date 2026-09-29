@@ -2,16 +2,19 @@
 
 **Task:** PM2-RECOVERY-P5-J2-SCOPE-01 — Current-host J-2 scope proposal under adopted Option B for (H = aisandbox-staging, A = {aisandbox-api-gateway, aisandbox-ai-service})
 **Nature:** GOVERNANCE / DECISION (4-step). No implementation lane. No sidecar candidate.
-**Step:** 2 of 4 — current-host J-2 scope proposal freeze for Keith/ChatGPT review. Step 1 registration recorded in the same window. Steps 3–4 NOT AUTHORIZED. Task NOT LOCKED.
+**Step:** 3 of 4 — current-host scope approval (this record). Frozen proposal §§0–13 preserved as committed at `8b0afa889fc93aded5a178b324513166ebd388a5`. Step 4 NOT AUTHORIZED. Task NOT LOCKED.
 **Date:** 2026-09-29
 **HEAD at window open:** `fabc75277e9c0ef6f9d9bbea5dd24418ca041222` (branch main; index empty; expected inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` only, preserved unchanged; origin/main includes this commit)
-**Registration:** `TASKS_BACKLOG_FULL.md` § PM2-RECOVERY-P5-J2-SCOPE-01 (Step 1 COMPLETE in this window)
+**Step 3 date:** 2026-09-29
+**Step 3 HEAD at window open:** `8b0afa889fc93aded5a178b324513166ebd388a5` (branch main; index empty; expected inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` only, preserved unchanged; origin/main includes this commit)
+**Registration:** `TASKS_BACKLOG_FULL.md` § PM2-RECOVERY-P5-J2-SCOPE-01 (Step 1 COMPLETE at HEAD `fabc75277e9c0ef6f9d9bbea5dd24418ca041222`; Step 2 freeze committed as `8b0afa889fc93aded5a178b324513166ebd388a5`)
 **Dependencies:** PM2-RECOVERY-P5-J2-AMENDMENT-01 (COMPLETE AND LOCKED 2026-09-29; Option B adopted and locked; lock creates no additional authority), PM2-RECOVERY-P5-JOURNAL-01 (COMPLETE AND LOCKED 2026-09-23; J-2 adopted; body physically unchanged), PM2-RECOVERY-P5-SCOPE-01 (COMPLETE AND LOCKED 2026-09-29; BLOCKED scope decision for (H, A) under the unamended rule applied then), PM2-RECOVERY-P5-INVENTORY-01 (COMPLETE AND LOCKED 2026-09-28; bounded inventory finding only). PM2-RECOVERY-ACQUISITION-01, PM2-RECOVERY-POLICY-01, PM2-RECOVERY-BASELINE-GOV-01, and PM2-RECOVERY-CAPTURE-01 remain COMPLETE AND LOCKED and are not reopened.
-**Authorization:** Keith authorized this window to register the named successor and to draft an Option B current-host J-2 scope proposal from committed records only, for Keith/ChatGPT review. This window does not approve scope, does not perform a search, and does not create U-2(e) acceptance.
+**Authorization:** Keith authorized Steps 1–2 at the proposal-freeze window (committed as `8b0afa889fc93aded5a178b324513166ebd388a5`). Keith later authorized **Step 3 only** at baseline `8b0afa889fc93aded5a178b324513166ebd388a5` (see §14). Step 4 remains NOT AUTHORIZED.
 **Acceptance object:** A fact-supported **current-host** J-2 scope **proposal** under adopted Option B, identifying U-1 current-host unknowns, U-2 historical unknowns, excluded operational actions, proposed current-host search boundaries, evidence required before any later U-2(e), and invalidation triggers. The proposal is **UNAPPROVED**. Keith's later separately authorized Step 3 may approve, reject, or modify the proposed current-host scope. Completion of this freeze NEVER implies scope approval, search authorization, or U-2(e) acceptance.
 **Controlling authority for this proposal:** adopted Option B as locked at PM2-RECOVERY-P5-J2-AMENDMENT-01 (`docs/PM2-RECOVERY-P5-J2-AMENDMENT-01-STAGE-START.md` §2 Option B / §10 / §11), applied as contract text only. Locked predecessor document bodies remain physically unchanged.
 
-**Status: PM2-RECOVERY-P5-J2-SCOPE-01 — Steps 1–2 COMPLETE (registration + current-host J-2 scope proposal freeze; UNAPPROVED; no search; no U-2(e)) — 2026-09-29 at baseline `fabc75277e9c0ef6f9d9bbea5dd24418ca041222`. Steps 3–4 NOT AUTHORIZED. Task NOT LOCKED.**
+**Status: PM2-RECOVERY-P5-J2-SCOPE-01 — Step 3 COMPLETE (Keith APPROVE current-host scope as proposed, frozen at `8b0afa889fc93aded5a178b324513166ebd388a5`; not a search authorization; not U-2(e) acceptance) — 2026-09-29 at baseline `8b0afa889fc93aded5a178b324513166ebd388a5`. Step 4 NOT AUTHORIZED. Task NOT LOCKED.**
+**Step 2 status (historical):** Steps 1–2 COMPLETE (registration + current-host J-2 scope proposal freeze; UNAPPROVED; no search; no U-2(e)) — 2026-09-29 at baseline `fabc75277e9c0ef6f9d9bbea5dd24418ca041222`.
 
 ---
 
@@ -301,3 +304,76 @@ LIVE=0, SSH=0 (including preflight / keyscan), STAGING lease=0, AWS=0, sudo=0, h
 ---
 
 **End of freeze. This document is a proposal for review. It is not current-host scope approval and not U-2(e) acceptance.**
+
+---
+
+## §14. Step 3 — Current-host scope approval (2026-09-29)
+
+**Step:** 3 of 4 — current-host scope approval (this record). Frozen proposal §§0–13 are not rewritten.
+**Step 3 date:** 2026-09-29
+**Step 3 HEAD at window open:** `8b0afa889fc93aded5a178b324513166ebd388a5` (branch main; index empty; expected inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` only, preserved unchanged; origin/main includes this commit)
+**Authorization:** Keith authorized **Step 3 only** at baseline `8b0afa889fc93aded5a178b324513166ebd388a5`. Step 4 is NOT AUTHORIZED. The bounded current-host search is not a step of this task and is not authorized here.
+
+### 14.1 Keith's authorization (verbatim)
+
+Keith authorized Step 3 with the following statement, recorded verbatim:
+
+> Approve the PM2-RECOVERY-P5-J2-SCOPE-01 current-host scope as proposed and frozen in commit 8b0afa889fc93aded5a178b324513166ebd388a5. Authorize Step 3 only. This approval is not a search authorization and not U-2(e) acceptance.
+
+No conditions, modifications, or different Step 3 value were stated.
+
+### 14.2 Selected Step 3 value
+
+**Selected value:** **APPROVE current-host scope as proposed.**
+
+This is the first §10 value. Values not selected: APPROVE current-host scope as modified; REJECT; BLOCKED.
+
+**Approved object:** the PM2-RECOVERY-P5-J2-SCOPE-01 §6 current-host scope boundaries with §4 U-1 and §5 U-2 as frozen in commit `8b0afa889fc93aded5a178b324513166ebd388a5`, without alteration.
+
+**Character of this approval under adopted Option B (AMENDMENT-01 §2 B.1 application sequence step 2):** current-host scope approval **before any search**. U-2 historical uncertainties remain disclosed as unresolved. This approval is **not** U-2(e) acceptance and does not clear, close, or resolve U-2 unknowns.
+
+### 14.3 What this Step 3 approval is not
+
+This approval is NOT:
+
+- U-2(e) attestation-time acceptance
+- A search authorization
+- Host access, SSH, AWS, sudo, STAGING lease, PM2, vault/journal, Docker/Postgres/Redis, or runtime authorization
+- Host-specific P5 satisfaction
+- C-ACQ unblocking
+- E1 registration or satisfaction
+- HOST_CLEAN, P7 acceptance, or reopen-gate satisfaction
+- EXEC-01C6A readiness (`startCondition=NOT_READY` unchanged)
+- A rewrite of locked SCOPE-01 BLOCKED (that decision remains historically valid under the unamended rule applied then)
+- Step 4 verification or lock
+
+### 14.4 U-1 / U-2 after this approval
+
+- **U-1 remains blocking at attestation.** The §4 current-host unknowns remain U-1. They did not forbid this current-host scope approval. Any U-1 unknown remaining after a later approved search leaves the attestation insufficient. U-2(e) cannot be invoked while any U-1 unknown remains. E-J6 remains blocking.
+- **U-2 remains disclosed and unresolved.** The §5 historical unknowns remain disclosed. This approval does not accept, clear, close, or resolve them.
+
+### 14.5 Search
+
+The bounded current-host search remains a **later separately authorized task only**. It is not a step of PM2-RECOVERY-P5-J2-SCOPE-01. This Step 3 record does not schedule, design, or authorize that search.
+
+### 14.6 Step 3 acceptance criteria
+
+- [x] Keith selected exactly one §10 value — APPROVE current-host scope as proposed
+- [x] Approved object is the frozen §6 boundaries with §4 U-1 and §5 U-2 at `8b0afa889fc93aded5a178b324513166ebd388a5`, without alteration
+- [x] Keith's authorization recorded verbatim; no conditions, modifications, or different value stated
+- [x] Approval recorded as Option B application-sequence step 2 (current-host scope before any search); not U-2(e)
+- [x] Frozen §§0–13 not rewritten except current-status header lines
+- [x] U-1 remains blocking at attestation; U-2 remains disclosed and unresolved
+- [x] Search not authorized; Step 4 NOT AUTHORIZED; task NOT LOCKED
+- [x] SCOPE-01 BLOCKED preserved as historically valid under the unamended rule applied then
+- [x] Testimony preserved as "probably no, but uncertain" — not strengthened or converted
+- [x] EXEC-01C6A startCondition=NOT_READY unchanged; HOST_CLEAN=NO; P7_ACCEPTED=NO; REOPEN_GATE=UNSATISFIED; E1 independently binding
+- [x] No predecessor body, sidecar, lockedTaskIds, mutex-catalog, validator-source, CLAUDE.md, AGENTS.md, PRD.md, ARCHITECTURE.md, or application-source edits
+- [x] Validator run with proof under `$env:TEMP`; git diff --check clean; repository SATURATION_PROOF.json not mutated
+- [x] No Git commit / push / reset / restore / clean / stage by the worker
+
+### 14.7 Activity ledger (Step 3)
+
+LIVE=0, SSH=0 (including preflight / keyscan), STAGING lease=0, AWS=0, sudo=0, host inspection=0, vault/journal access=0, PM2=0, Docker / Postgres / Redis / service runtime=0, provider=0, credits=0, transfer / acquisition / canary / reopen=0, operational authorization=0, scripts / parsers created=0, tests created=0, tests executed=0 except the lane-capacity validator, executable artifacts created=0, subagents=0, frozen §§0–13 rewritten=0 (header current-status only), search authorized=0, U-2(e) created=0, predecessor bodies edited=0, sidecar / lockedTaskIds / mutex-catalog / validator-source edits=0, SATURATION_PROOF.json mutated by this step=0, stale-board-mirror edits=0, EXEC-01C6A body/candidate edits=0, PRD / ARCHITECTURE / CLAUDE / AGENTS edits=0, Git commit / push / branch / worktree / reset / restore / clean / stage=0, Lane 3 changes=0, builder-gate changes=0; files written under transient GOVERNANCE: this stage-start (header current-status + appended §14), `TASKS.md` (this task's board records), `TASKS_BACKLOG_FULL.md` (this task's canonical body). GOVERNANCE released UNOWNED.
+
+**Status: PM2-RECOVERY-P5-J2-SCOPE-01 — Step 3 COMPLETE (Keith APPROVE current-host scope as proposed as frozen at `8b0afa889fc93aded5a178b324513166ebd388a5`; not a search authorization; not U-2(e) acceptance) — 2026-09-29 at baseline `8b0afa889fc93aded5a178b324513166ebd388a5`. Step 4 NOT AUTHORIZED. Task NOT LOCKED.**
