@@ -2,18 +2,21 @@
 
 **Task:** PM2-RECOVERY-P5-J2-U1-RESOLUTION-01 — Governance/options plan to resolve residual U-1 blockers from locked PM2-RECOVERY-P5-J2-SEARCH-01, including inaccessible current paths and PID 1193674 uncertainty
 **Nature:** GOVERNANCE / OPTIONS (4-step). No implementation lane. No sidecar candidate.
-**Step:** 3 of 4 — option selection (this record). Frozen options sections 0–10 preserved as committed at `f34234cebb3649cb9608cbaee65bed2c8549384b`. Historical Step 2 statements that Step 3 was not yet authorized remain in the freeze body. Step 4 is **NOT AUTHORIZED**. Task **NOT LOCKED**.
+**Step:** 4 of 4 — independent review and lock (this record). Step 3 selection preserved as committed at `37380505b815089b620de5b473ca0fb861b67404`. Frozen sections 0-10 preserved. This lock creates no additional authority. Task **COMPLETE AND LOCKED**.
 **Date:** 2026-09-29
 **HEAD at window open:** `680387c3237cfdf35bceadbb78e7058b8defa94c` (branch main; index empty; expected inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` only, preserved unchanged and unstaged; origin/main matches HEAD)
 **Step 3 date:** 2026-09-29
 **Step 3 HEAD at window open:** `f34234cebb3649cb9608cbaee65bed2c8549384b` (branch main; index empty; inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` only, preserved unchanged and unstaged; origin/main matches HEAD)
+**Step 4 date:** 2026-09-29
+**Step 4 HEAD at window open:** `37380505b815089b620de5b473ca0fb861b67404` (branch main; index empty; inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` only, preserved unchanged and unstaged; origin/main matches HEAD)
 **Registration:** `TASKS_BACKLOG_FULL.md` § PM2-RECOVERY-P5-J2-U1-RESOLUTION-01 (Step 1 COMPLETE this window)
 **Dependencies:** PM2-RECOVERY-P5-J2-SEARCH-01 (COMPLETE AND LOCKED 2026-09-29; lock commit `680387c3237cfdf35bceadbb78e7058b8defa94c`; Step 3 evidence committed at `5ee2d9a8821db761a5de99bdee785c5289bab102`; residual U-1 remain blocking; not reopened), PM2-RECOVERY-P5-J2-SCOPE-01 (COMPLETE AND LOCKED 2026-09-29; current-host scope approved as proposed at `8b0afa889fc93aded5a178b324513166ebd388a5`; lock creates no additional authority; not a search authorization), PM2-RECOVERY-P5-J2-AMENDMENT-01 (COMPLETE AND LOCKED 2026-09-29; Option B adopted), PM2-RECOVERY-P5-JOURNAL-01 (COMPLETE AND LOCKED 2026-09-23; J-2 adopted; E-J6 blocking; body physically unchanged), PM2-RECOVERY-P5-SCOPE-01 (COMPLETE AND LOCKED 2026-09-29; BLOCKED under the unamended rule applied then), PM2-RECOVERY-P5-INVENTORY-01 (COMPLETE AND LOCKED 2026-09-28; bounded inventory finding only). PM2-RECOVERY-ACQUISITION-01, PM2-RECOVERY-POLICY-01, PM2-RECOVERY-BASELINE-GOV-01, and PM2-RECOVERY-CAPTURE-01 remain COMPLETE AND LOCKED and are not reopened.
 **Authorization:** Keith authorized **Steps 1–2 only** at baseline `680387c3237cfdf35bceadbb78e7058b8defa94c`: register this successor and freeze residual U-1 resolution options for Keith/ChatGPT review. This window is documentation / governance planning only.
 **Step 3 authorization:** Keith authorized **Step 3 only** at baseline `f34234cebb3649cb9608cbaee65bed2c8549384b`: select Option B as frozen in that commit. This record is option selection only. The privileged session is not executed.
-**Acceptance object:** Keith selected Option B as frozen at `f34234cebb3649cb9608cbaee65bed2c8549384b`: separately authorized sudo/read-only privilege session to inspect inaccessible current paths. Selection only. Options A, C, and D not selected. Privilege not granted. Successor inspection not authorized. Step 4 NOT AUTHORIZED. Task NOT LOCKED. Historical: Steps 1–2 froze options A/B/C/D with nothing selected.
+**Step 4 authorization:** Keith authorized **Step 4 only** at baseline `37380505b815089b620de5b473ca0fb861b67404`: independently review and lock the committed Step 3 option-selection record. This lock creates no additional authority. The privileged session is not executed. No successor inspection task is registered.
+**Acceptance object:** Step 4 independently verified and locked the Step 3 record at `37380505b815089b620de5b473ca0fb861b67404`: Option B selected exactly as frozen at `f34234cebb3649cb9608cbaee65bed2c8549384b` (separately authorized sudo/read-only privilege session to inspect inaccessible current paths); Options A, C, and D not selected; frozen sections 0-10 unchanged. Lock verifies that selection record only and creates no additional authority. Privileged session not executed. No successor registered.
 
-**Status: PM2-RECOVERY-P5-J2-U1-RESOLUTION-01 — Step 3 COMPLETE (Keith selected Option B as frozen at `f34234cebb3649cb9608cbaee65bed2c8549384b`; separately authorized sudo/read-only privilege session to inspect inaccessible current paths; selection only; Options A, C, and D not selected; privileged session not executed; Step 4 NOT AUTHORIZED; task NOT LOCKED; SEARCH-01 remains COMPLETE AND LOCKED) — 2026-09-29 at baseline `f34234cebb3649cb9608cbaee65bed2c8549384b`. No U-2(e); no P5; no C-ACQ; no HOST_CLEAN; no P7; no reopen.**
+**Status: PM2-RECOVERY-P5-J2-U1-RESOLUTION-01 — COMPLETE AND LOCKED — 2026-09-29 at baseline `37380505b815089b620de5b473ca0fb861b67404` (independent verification PASS of the Step 3 Option B selection; lock creates no additional authority; privileged session not executed; no successor registered; SEARCH-01 remains COMPLETE AND LOCKED). No U-2(e); no P5; no C-ACQ; no HOST_CLEAN; no P7; no reopen.**
 
 ---
 
@@ -416,3 +419,64 @@ Per the frozen Option B text, performing the privileged read-only session is **n
 LIVE=0, SSH=0, STAGING lease=0, AWS=0, sudo=0, host inspection=0, vault/journal access=0, PM2=0, Docker=0, Postgres=0, Redis=0, service runtime=0, provider=0, credits=0, transfer=0, acquisition=0, canary=0, reopen=0, operational authorization=0, privilege grant=0, search execution=0, scripts created=0, parsers created=0, tests created=0, tests executed=0 except the lane-capacity validator once with proof under $env:TEMP, executable artifacts created=0, subagents=0, browser automation=0, U-2(e)=0, P5=0, C-ACQ=0, E1=0, HOST_CLEAN=0, P7=0, SEARCH-01 reopened=0, successor authorization=0, predecessor bodies edited=0, sidecar edits=0, lockedTaskIds edits=0, mutex-catalog edits=0, validator-source edits=0, SATURATION_PROOF.json mutated by this step=0, EXEC-01C6A body/candidate edits=0, PRD / ARCHITECTURE / CLAUDE / AGENTS edits=0, Git commit=0, push=0, branch=0, worktree=0, reset=0, restore=0, clean=0, stage=0, Lane 3 changes=0. Files written under transient GOVERNANCE: this stage-start (section 11 appended; header current-status only), TASKS.md (this task's current board records), TASKS_BACKLOG_FULL.md (this task's canonical body current-status / Step 3 record). GOVERNANCE released UNOWNED.
 
 **Status: PM2-RECOVERY-P5-J2-U1-RESOLUTION-01 — Step 3 COMPLETE (Keith selected Option B as frozen at `f34234cebb3649cb9608cbaee65bed2c8549384b`; selection only; Options A, C, and D not selected; privileged session not executed) — 2026-09-29 at baseline `f34234cebb3649cb9608cbaee65bed2c8549384b`. Step 4 NOT AUTHORIZED. Task NOT LOCKED. Not a privilege grant. Not host access. Not U-2(e). Not P5 / C-ACQ / HOST_CLEAN / P7 / reopen.**
+
+## §12. Step 4 — Independent review and lock (2026-09-29)
+
+**Step:** 4 of 4 — independent review and lock. Frozen sections 0–10 and the Step 3 selection record in §11 are not rewritten.
+**Step 4 date:** 2026-09-29
+**Step 4 HEAD at window open:** `37380505b815089b620de5b473ca0fb861b67404` (branch main; index empty; inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` only, preserved unchanged and unstaged; origin/main matches HEAD)
+**Authorization:** Keith authorized Step 4 only: independently review and lock the committed Step 3 option-selection record at `37380505b815089b620de5b473ca0fb861b67404`.
+**Lock scope:** Verification of that committed selection record only. This lock creates no additional authority.
+
+### 12.1 Evidence base
+
+| Item | Value |
+|---|---|
+| Branch | `main` |
+| HEAD / origin/main | `37380505b815089b620de5b473ca0fb861b67404` |
+| Index | empty |
+| Inherited dirty file | `docs/control-plane/SATURATION_PROOF.json` SHA-256 `7B7215FCA68D0724F15BAF2F73618C57069C53715743040C2B2BFBA959CEB9C2` / 2496 bytes; not written by this step |
+| Step 3 commit | `37380505b815089b620de5b473ca0fb861b67404` (`docs: record PM2 J-2 residual U-1 option selection`; 2026-09-29) |
+| Step 3 parent / freeze commit | `f34234cebb3649cb9608cbaee65bed2c8549384b` (`docs: freeze PM2 J-2 residual U-1 resolution options`) |
+| Freeze stage-start | SHA-256 `3F53A2CD8B15E5FE2BDEBE3DF786361453E952B549F78FF44893DC49D50B6A19` / 27871 bytes |
+| Step 3 stage-start | SHA-256 `B7BBC69D98518F7B18D7EC445892EF1A25B0BCBA3C9BF083832E936153FFBB92` / 32990 bytes |
+| Occupancy | EMPTY; `occupancyHash=sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d` |
+
+### 12.2 Findings
+
+| # | Criterion | Verdict | Evidence |
+|---|---|---|---|
+| 1 | Baseline matches the Step 4 authorization | **PASS** | Branch `main`. HEAD = origin/main = `37380505b815089b620de5b473ca0fb861b67404`. Index empty. Inherited dirty file is `docs/control-plane/SATURATION_PROOF.json` only. |
+| 2 | Step 3 commit is the reviewed selection record | **PASS** | `37380505b815089b620de5b473ca0fb861b67404` records the option selection. Parent is the freeze `f34234cebb3649cb9608cbaee65bed2c8549384b`. |
+| 3 | Step 3 changed only the three authorized documentation files | **PASS** | `git diff --name-status f34234c..3738050` lists exactly `TASKS.md`, `TASKS_BACKLOG_FULL.md`, `docs/PM2-RECOVERY-P5-J2-U1-RESOLUTION-01-STAGE-START.md`. |
+| 4 | Frozen sections 0–10 were not altered | **PASS** | Slice from `## §0` through the end-of-freeze paragraph is identical in both commits. SHA-256 `C407E2D34DD3DF0005B475B12F969AB23B34E14B3C449EC839FECD3198097D9E` / 24639 bytes. Stage-start hunks are header current-status lines plus the §11 append after the freeze end. |
+| 5 | Option B text is the frozen text | **PASS** | Option B slice from `### Option B:` through the start of `### Option C:` is identical. SHA-256 `3C33146C63A4BC3F71AEFB8709CC5E3D7812B6F2C8CEE8721CF4427FC142E997`. |
+| 6 | Step 3 selected Option B only | **PASS** | §11.1: selected option is Option B as frozen at `f34234cebb3649cb9608cbaee65bed2c8549384b`, without alteration. Options not selected: Option A, Option C, Option D. |
+| 7 | Selection did not execute the privileged session or register a successor | **PASS** | §11 states selection only, privilege not granted, successor inspection not registered or authorized, and no sudo, SSH, AWS, Docker/Postgres/Redis, PM2, runtime, or search. |
+| 8 | No U-2(e), P5, C-ACQ, HOST_CLEAN, P7, or reopen was created | **PASS** | §11.2 and §11.3 keep those at zero. Residual U-1 remain blocking. SEARCH-01 remains COMPLETE AND LOCKED. |
+| 9 | Predecessors, sidecar, mutex catalog, and validator source were not changed by Step 3 | **PASS** | Empty diff on SEARCH-01 / SCOPE-01 / AMENDMENT-01 / JOURNAL-01 stage-starts, `docs/control-plane/lane-saturation-state.json`, `mutex-catalog.json`, and `scripts/validate-lane-capacity.ps1`. |
+| 10 | This lock creates no additional authority | **PASS** | Recorded here. No privileged session, no successor registration, no host access, no operational gate change. |
+
+### 12.3 Lock definition
+
+This task — PM2-RECOVERY-P5-J2-U1-RESOLUTION-01 — is **COMPLETE AND LOCKED**.
+
+The lock confirms that Step 3 selected Option B exactly as frozen at `f34234cebb3649cb9608cbaee65bed2c8549384b`: a separately authorized sudo/read-only privilege session to inspect inaccessible current paths. Options A, C, and D were not selected. Frozen sections 0–10 were not altered.
+
+**This lock verifies the Step 3 selection record only. It creates no additional authority.** It does not:
+
+- Execute the privileged session
+- Grant sudo or any privilege class
+- Register or authorize a successor inspection task
+- Perform host access, SSH, AWS, Docker, Postgres, Redis, PM2, runtime mutation, or search execution
+- Create U-2(e), P5 satisfaction, C-ACQ, E1, HOST_CLEAN, P7, or reopen
+- Reopen SEARCH-01
+- Close any residual U-1 blocker
+
+U-1 remains blocking. U-2 remains disclosed unresolved and not accepted. U1-accounts-now remains RESOLVED-COVERED.
+
+### 12.4 Activity ledger (Step 4)
+
+LIVE=0, SSH=0, STAGING lease=0, AWS=0, sudo=0, host inspection=0, vault/journal access=0, PM2=0, Docker=0, Postgres=0, Redis=0, service runtime=0, provider=0, credits=0, transfer=0, acquisition=0, canary=0, reopen=0, operational authorization=0, privilege grant=0, search execution=0, successor registration=0, scripts created=0, parsers created=0, tests created=0, tests executed=0 except the lane-capacity validator once with proof under $env:TEMP, executable artifacts created=0, subagents=0, browser automation=0, U-2(e)=0, P5=0, C-ACQ=0, E1=0, HOST_CLEAN=0, P7=0, SEARCH-01 reopened=0, predecessor bodies edited=0, sidecar edits=0, lockedTaskIds edits=0, mutex-catalog edits=0, validator-source edits=0, SATURATION_PROOF.json mutated by this step=0, EXEC-01C6A body/candidate edits=0, PRD / ARCHITECTURE / CLAUDE / AGENTS edits=0, Git commit=0, push=0, branch=0, worktree=0, reset=0, restore=0, clean=0, stage=0, Lane 3 changes=0. Files written under transient GOVERNANCE: this stage-start (section 12 appended; header current-status only), TASKS.md (this task's current board records), TASKS_BACKLOG_FULL.md (this task's canonical body current-status / Step 4 record). GOVERNANCE released UNOWNED.
+
+**Status: PM2-RECOVERY-P5-J2-U1-RESOLUTION-01 — COMPLETE AND LOCKED — 2026-09-29 at baseline `37380505b815089b620de5b473ca0fb861b67404`. Lock = independent verification of the Step 3 Option B selection record only. It creates no additional authority. Privileged session not executed. No successor registered. No host access. Not U-2(e). Not P5 / C-ACQ / HOST_CLEAN / P7 / reopen.**
