@@ -80810,3 +80810,84 @@ Step 5 (separately authorized independent verification and lock) — COMPLETE �
 **Non-effects (Step 5):** does NOT approve or reject the J-2 scope; does NOT claim host-specific P5 satisfaction, E1 satisfaction, or C-ACQ approval; does NOT change EXEC-01C6A startCondition=NOT_READY, HOST_CLEAN, P7 or the reopen gate; does NOT amend J-2 or reopen any locked predecessor; does NOT convert testimony; does NOT treat D2b as a J-2 waiver; does NOT authorize canary, B(H), verifier live use, transfer, acquisition or implementation; does NOT add a sidecar candidate or saturationClass; does NOT repair the two stale board mirrors; does NOT mark Step 3 complete, satisfied or waived; does NOT authorize a successor task.
 **Step 5 activity ledger:** LIVE=0, SSH=0 (including preflight / keyscan), STAGING lease=0, AWS=0, sudo=0, host inspection=0, vault/journal access=0, PM2=0, Docker / Postgres / Redis / service runtime=0, provider=0, credits=0, transfer / acquisition / canary / reopen=0, operational authorization=0, scripts / parsers created=0, tests created=0, tests executed=0 except the lane-capacity validator, executable artifacts created=0, subagents=0, J-2 edits=0, evidence plan frozen=0, evidence collection=0, predecessor bodies edited=0, sidecar / lockedTaskIds / mutex-catalog / validator edits=0, stale-board-mirror edits=0, EXEC-01C6A body/candidate edits=0, PRD / ARCHITECTURE / CLAUDE / AGENTS edits=0, Git commit / push / branch / worktree=0, Lane 3 changes=0, builder-gate changes=0; files written under transient GOVERNANCE: `docs/PM2-RECOVERY-P5-SCOPE-01-STAGE-START.md` (Step 5 verification/lock appended), `TASKS.md` (this task's board records), `TASKS_BACKLOG_FULL.md` (this task's canonical body), `docs/control-plane/SATURATION_PROOF.json` (validator output only); GOVERNANCE released UNOWNED.
 **Step 5 correction #1 (2026-09-29; documentation-only; localized; baseline `6ceba3e87d8d1f08ddc2968623ed66f6f0303ded`):** Keith-directed. Stage-start §11.6. (1) Predecessor-preservation evidence: "confirmed by clean working tree at baseline" replaced by bounded Git comparison evidence (`git diff cf50b20..HEAD` for six predecessor stage-starts and sidecar returned empty; TASKS_BACKLOG_FULL.md and TASKS.md diffs in committed range and uncommitted working tree show changes only within SCOPE-01's own body/records; limitation: Git-tracked content only). (2) Separate-window evidence: "Different baselines; different windows" replaced; declaration rests on Keith's explicit authorization statement ("This is a separate verification window from Step 4") and provenance boundary; baselines corroborate but do not alone establish session separation. (3) Historical Step 4 status record restored: committed wording "Step 5 NOT AUTHORIZED. Task NOT LOCKED." preserved; separate dated pointer added. BLOCKED decision, all gaps, testimony, J-2, D2b, lock, all operational boundaries unchanged. GOVERNANCE acquired transiently then released UNOWNED.
+
+### PM2-RECOVERY-P5-J2-AMENDMENT-01 — Assess prospective J-2 amendment for historical uncertainty treatment
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=PM2-RECOVERY-P5-J2-AMENDMENT-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-09-29 — Step 1 COMPLETE (registration / control-plane only) — GOVERNANCE / DECISION — 4-step — no implementation lane — no sidecar candidate — occupancy EMPTY — GOVERNANCE acquired transiently then released UNOWNED
+**Task ID:** PM2-RECOVERY-P5-J2-AMENDMENT-01
+**Title:** Assess prospective J-2 amendment for historical uncertainty treatment
+**Family:** AGENT PLATFORM / EXEC (bounded GOVERNANCE / DECISION container to assess whether a prospective amendment to J-2's treatment of historical uncertainty could permit justified scope approval with explicitly disclosed residual uncertainty while preserving meaningful evidence requirements; uses the governance amendment lifecycle established by P5-JOURNAL-01 §0.8 / §4.1; not a product frontier; not an EXEC-01C6A reopen; not a fence; not an implementation task; not a live acquisition; not a P6 execution; not B(H) construction; no amendment is presumed necessary, acceptable or adopted)
+**Parent task:** none. Not a child of AGENT-PLATFORM-EXEC-01C6A. Does **not** reopen EXEC-01C6A.
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE / DECISION — does NOT consume Lane 1 or Lane 2 — no implementation candidate — no saturationClass
+**Development program:** CURRENT — Keith 2026-09-29 named this GOVERNANCE / DECISION registration. Light CURRENT/FUTURE check per CLAUDE.md Next-Work Selection Protocol (named task; no frontier audit): the assessment of a prospective J-2 amendment follows the governance amendment lifecycle established by P5-JOURNAL-01 §0.8 / §4.1, identified as decision path P-D in locked P5-SCOPE-01 (BLOCKED scope decision for (H, A)). This registration is a Keith-named decision container, not a new product-priority selection.
+**Product-visible Harness capability:** FUTURE / gated / disabled / unavailable to users. Unchanged.
+**Classification:** CURRENT required governance decision; product-visible Harness remains FUTURE/gated.
+**Lifecycle:** 4-STEP GOVERNANCE / DECISION (amendment-assessment lifecycle per P5-JOURNAL-01 §0.8 / §4.1):
+1. Step 1 — registration — COMPLETE — 2026-09-29 — control-plane only; no amendment drafted; no options frozen; no decision; no host inspection; no vault/journal access; no runtime
+2. Step 2 — separately authorized options/evidence-requirements freeze — NOT AUTHORIZED
+3. Step 3 — Keith's separately authorized explicit selection or adoption — NOT AUTHORIZED
+4. Step 4 — independently authorized verification and lock in a separate window — NOT AUTHORIZED
+**Start condition:** READY (all declared dependencies LOCKED)
+**Depends on:** PM2-RECOVERY-P5-JOURNAL-01 (COMPLETE AND LOCKED 2026-09-23; J-2 adopted; §0.8 / §4.1 amendment lifecycle), PM2-RECOVERY-P5-SCOPE-01 (COMPLETE AND LOCKED 2026-09-29; BLOCKED scope decision for (H, A)), PM2-RECOVERY-P5-INVENTORY-01 (COMPLETE AND LOCKED 2026-09-28; bounded inventory finding only). PM2-RECOVERY-ACQUISITION-01, PM2-RECOVERY-POLICY-01, PM2-RECOVERY-BASELINE-GOV-01, and PM2-RECOVERY-CAPTURE-01 remain COMPLETE AND LOCKED and are not reopened.
+**Primary write scope:** docs/ (governance decision record only; no application source). Step 1 exact write set: `TASKS.md` (this task's CURRENT EXECUTION BOARD records), `TASKS_BACKLOG_FULL.md` (this canonical body and stanza), `docs/control-plane/SATURATION_PROOF.json` (validator output only).
+**Mutexes / resources:** GOVERNANCE (acquired transiently for each step's required record writes then released UNOWNED)
+**Hot-file leases:** none
+**Shared contracts:** adopted J-2 rule (P5-JOURNAL-01 §2 / §7.2 — scope-approval gate, criteria 1–6, E-J5 validity/invalidation) — Step 2 may propose and freeze options only; any amendment adoption requires Keith's separately authorized explicit selection at Step 3 under P5-JOURNAL-01 §0.8 / §4.1; Step 4 independently verifies and locks the resulting decision record
+**Evidence class:** none (governance decision record; no tests, runtime, or provider)
+**Revert isolation:** acceptable (governance-only; no application source changes)
+**Acceptance object:** Assessment of whether a precisely bounded prospective amendment to J-2's treatment of historical uncertainty could permit justified scope approval with explicitly disclosed residual uncertainty, while preserving meaningful evidence requirements. Retaining J-2 unchanged or leaving the question unresolved must remain available outcomes. No amendment is presumed necessary, acceptable or adopted.
+
+**Registration purpose:** Determine whether a precisely bounded prospective amendment could permit justified scope approval with explicitly disclosed historical uncertainty, while preserving meaningful evidence requirements. Retaining J-2 unchanged or leaving the question unresolved must remain available outcomes. No amendment is presumed necessary, acceptable or adopted.
+
+**Requirements for the future assessment (Steps 2–4):**
+- Preserve the locked SCOPE-01 BLOCKED decision as valid under the rule applied at that time.
+- Distinguish current observable gaps, historical evidence gaps, and the unresolved historical PID 1177465 identity. Do not promise that current inspection resolves historical identity.
+- Identify exactly which J-2 provisions an option would change and which remain binding.
+- Distinguish acceptance of disclosed residual uncertainty from proof of material absence.
+- Require options to address scope justification, bounded search evidence, discovered material, new activity, expiry/invalidation and escalation.
+- Preserve the P5 process-table component, E1 and all other independent acquisition prerequisites; no implicit amendment to A1 or other gates.
+- Preserve Keith's testimony as "probably no, but uncertain."
+- No host-specific satisfaction, operational permission or retrospective approval follows from registration or adoption alone.
+
+**Non-effects (Step 1 registration):**
+- Does NOT draft, propose, or adopt any J-2 amendment
+- Does NOT change the adopted J-2 rule or any J-2 provision
+- Does NOT freeze decision options or evidence requirements
+- Does NOT override, weaken, or retroactively alter the locked SCOPE-01 BLOCKED decision
+- Does NOT inspect the host, any vault, any journal, or any recovery material
+- Does NOT authorize or perform any live acquisition, SSH, AWS, sudo, PM2, transfer, or runtime activity
+- Does NOT claim host-specific P5 satisfaction or unblock C-ACQ
+- Does NOT amend or reopen POLICY-01, ACQUISITION-01, BASELINE-GOV-01, CAPTURE-01, P5-JOURNAL-01, P5-INVENTORY-01, or P5-SCOPE-01
+- Does NOT change EXEC-01C6A startCondition=NOT_READY
+- Does NOT attest HOST_CLEAN, accept P7, or satisfy the reopen gate
+- Does NOT authorize canary, B(H), verifier live use, or any implementation
+- Does NOT add a sidecar candidate or saturationClass
+- Does NOT convert testimony; does NOT treat D2b as a J-2 waiver
+
+**AC (Step 1):**
+- [x] Identifier confirmed available (no collision, no equivalent unfinished task)
+- [x] Machine registration stanza (AISB_MACHINE_REG_V1 nature=GOVERNANCE) in TASKS_BACKLOG_FULL.md
+- [x] Board registration fields in TASKS.md code block
+- [x] Governance ledger updated (GOVERNANCE acquired transiently then released UNOWNED)
+- [x] Dependencies confirmed LOCKED: P5-JOURNAL-01 (§0.8 / §4.1), P5-SCOPE-01 (BLOCKED), P5-INVENTORY-01 (bounded finding)
+- [x] SCOPE-01 BLOCKED decision preserved as valid; J-2 unchanged
+- [x] P5 process-table component and E1 preserved
+- [x] Keith's testimony preserved as "probably no, but uncertain" — not strengthened
+- [x] Assessment requirements for Steps 2–4 recorded
+- [x] No predecessor body edits; sidecar / lockedTaskIds / stale board mirrors unchanged
+- [x] Validator run; git diff --check clean
+- [x] No runtime, host inspection, vault/journal access, SSH, AWS, sudo, PM2, transfer, amendment drafting, or implementation
+- [x] No sidecar candidate, no saturationClass
+- [x] No Git commit/push by the worker
+
+**Invitation invariant:** PRIVATE-BETA-INVITE-01 remains PARKED / UNREGISTERED / UNAUTHORIZED / NOT EXECUTABLE / PROHIBITED. INVITATION_EXECUTION_PERMITTED=NO. Unchanged.
+
+**Lane 3 invariant:** Lane 3 remains DISABLED. Unchanged.
+
+**Step 1 HEAD:** `ba8b0a4d848759e68c042f89ae2a369632273ca6` (branch main; working tree clean at window open; matches the expected baseline)
+**Step 1 activity ledger:** LIVE=0, SSH=0, staging=0, AWS=0, sudo=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, flags=0, key creation=0, canary submission=0, vendor-source fetch=0, live inspection=0, workflow dispatched=0, host inspection=0, vault/journal access=0, transfer=0, r3 transferred/extracted/executed=0, F1 transferred/executed=0, product implementation=0, frontend implementation=0, backend implementation=0, application source=0, canary scripts mutated=0, evidence doc mutated=0, operator-bundle mutation=0, verifier-tree mutation=0, workflow mutated=0, amendment drafted=0, decision selected=0, decision frozen=0, J-2 provisions changed=0, predecessor body edits=0, sidecar edits=0, lockedTaskIds edits=0, stale-board-mirror edits=0, EXEC-01C6A body/candidate edits=0, PRD/ARCHITECTURE/CLAUDE/AGENTS edits=0, validator edits=0, mutex-catalog edits=0, sidecar writes=0 (GOVERNANCE; no candidate required), Git mutations=0, Lane 3 changes=0, builder-gate changes=0, subagents=0; TASKS.md + TASKS_BACKLOG_FULL.md only (board registration fields and canonical task body); SATURATION_PROOF.json only as validator output.
