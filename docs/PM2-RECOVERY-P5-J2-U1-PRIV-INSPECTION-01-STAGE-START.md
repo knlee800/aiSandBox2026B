@@ -2,15 +2,18 @@
 
 **Task:** PM2-RECOVERY-P5-J2-U1-PRIV-INSPECTION-01 — Read-only privileged inspection plan for residual U-1 blockers left by locked PM2-RECOVERY-P5-J2-SEARCH-01 and selected by locked PM2-RECOVERY-P5-J2-U1-RESOLUTION-01 Option B
 **Nature:** GOVERNANCE / PLAN (4-step). No implementation lane. No sidecar candidate. No saturationClass.
-**Step:** 2 of 4 — plan freeze (this record). Step 1 registration is the same window. Steps 3–4 are NOT AUTHORIZED. Task is NOT LOCKED.
+**Step:** 3 of 4 was executed. Step 3-C1 documentation reconciliation is recorded in §14.6–§14.8. Frozen §§0–13 are not rewritten. Independent review remains pending. Step 4 is NOT AUTHORIZED. Task is NOT LOCKED.
 **Date:** 2026-09-30
-**HEAD at window open:** `efd2140c9a8b0742bae76a9b1ef9566ab27ba68d` (branch main; index empty; inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` only, preserved unchanged and unstaged; origin/main matches HEAD)
+**Steps 1–2 HEAD at that window open (historical):** `efd2140c9a8b0742bae76a9b1ef9566ab27ba68d` (branch main; index empty; inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` only, preserved unchanged and unstaged; origin/main matches HEAD)
+**Step 3 HEAD at that window open:** `8b77d3ab9ea4831046a15cfac9363a0839d9dbd8`
+**Step 3-C1 HEAD at this window open:** `8b77d3ab9ea4831046a15cfac9363a0839d9dbd8` (branch main; index empty; existing Step 3 documentation changes preserved; inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` preserved unstaged; origin/main matches HEAD)
 **Registration:** `TASKS_BACKLOG_FULL.md` § PM2-RECOVERY-P5-J2-U1-PRIV-INSPECTION-01 (Step 1 COMPLETE this window)
 **Controlling selection:** PM2-RECOVERY-P5-J2-U1-RESOLUTION-01 Option B, selected in the record committed at `37380505b815089b620de5b473ca0fb861b67404` and locked at `efd2140c9a8b0742bae76a9b1ef9566ab27ba68d`. Option text frozen at `f34234cebb3649cb9608cbaee65bed2c8549384b`. Options A, C, and D were not selected. That lock creates no execution authority. This plan does not alter it.
 **Dependencies:** PM2-RECOVERY-P5-J2-U1-RESOLUTION-01 (COMPLETE AND LOCKED at `efd2140c9a8b0742bae76a9b1ef9566ab27ba68d`; not reopened), PM2-RECOVERY-P5-J2-SEARCH-01 (COMPLETE AND LOCKED 2026-09-29; lock commit `680387c3237cfdf35bceadbb78e7058b8defa94c`; Step 3 evidence committed at `5ee2d9a8821db761a5de99bdee785c5289bab102`; residual U-1 remain blocking; not reopened), PM2-RECOVERY-P5-J2-SCOPE-01 (COMPLETE AND LOCKED; current-host scope approved as proposed at `8b0afa889fc93aded5a178b324513166ebd388a5`), PM2-RECOVERY-P5-J2-AMENDMENT-01 (COMPLETE AND LOCKED; Option B adopted), PM2-RECOVERY-P5-JOURNAL-01 (COMPLETE AND LOCKED; J-2 adopted; E-J6 blocking; body physically unchanged), PM2-RECOVERY-P5-SCOPE-01 (COMPLETE AND LOCKED; BLOCKED under the unamended rule applied then), PM2-RECOVERY-P5-INVENTORY-01 (COMPLETE AND LOCKED; bounded inventory finding only). PM2-RECOVERY-ACQUISITION-01, PM2-RECOVERY-POLICY-01, PM2-RECOVERY-BASELINE-GOV-01, and PM2-RECOVERY-CAPTURE-01 remain COMPLETE AND LOCKED and are not reopened.
-**Authorization:** Keith authorized **registration and Step 2 plan-freeze only** at baseline `efd2140c9a8b0742bae76a9b1ef9566ab27ba68d`. This window is documentation / governance planning only. It does not execute the privileged session.
+**Step 3 authorization (verbatim):** Keith authorized Step 3 only at baseline `8b77d3ab9ea4831046a15cfac9363a0839d9dbd8`: `Authorize PM2-RECOVERY-P5-J2-U1-PRIV-INSPECTION-01 Step 3 only: execute the frozen read-only privileged inspection plan from commit 8b77d3ab9ea4831046a15cfac9363a0839d9dbd8. Limit the session to the approved closed path set and PID 1193674 rules. No root shell, no file body reads, no PM2/Docker/Postgres/Redis commands, no AWS, no runtime mutation, no transfer/acquisition, no U-2(e), no P5, no C-ACQ, no HOST_CLEAN, no P7, and no reopen authorization.`
+**Historical Steps 1–2 authorization:** Keith authorized **registration and Step 2 plan-freeze only** at baseline `efd2140c9a8b0742bae76a9b1ef9566ab27ba68d`. That window was documentation / governance planning only. It did not execute the privileged session. This paragraph is a Steps 1–2 record. Step 3 execution later occurred and is recorded in §14.
 
-**Status: PM2-RECOVERY-P5-J2-U1-PRIV-INSPECTION-01 — REGISTERED / READY / NOT ADMITTED — Steps 1–2 COMPLETE / PLAN FROZEN — 2026-09-30 at baseline `efd2140c9a8b0742bae76a9b1ef9566ab27ba68d`. Step 3 NOT AUTHORIZED. Step 4 NOT AUTHORIZED. Task NOT LOCKED. Privileged session not executed. No successor registered beyond this plan. SEARCH-01 and U1-RESOLUTION-01 remain COMPLETE AND LOCKED. No U-2(e); no P5; no C-ACQ; no HOST_CLEAN; no P7; no reopen.**
+**Status: PM2-RECOVERY-P5-J2-U1-PRIV-INSPECTION-01 — Step 3 execution occurred — Step 3-C1 documentation reconciliation recorded — 2026-09-30 at baseline `8b77d3ab9ea4831046a15cfac9363a0839d9dbd8`. Independent review remains pending. Step 4 NOT AUTHORIZED. Task NOT LOCKED. No successor registered. SEARCH-01 and U1-RESOLUTION-01 remain COMPLETE AND LOCKED. No U-2(e); no P5; no C-ACQ; no HOST_CLEAN; no P7; no reopen.**
 
 ---
 
@@ -324,3 +327,113 @@ This registration and plan freeze:
 LIVE=0, SSH=0, staging=0, STAGING lease=0, AWS=0, sudo=0, provider=0, credits=0, runtime=0, Docker=0, Postgres=0, Redis=0, PM2=0, host inspection=0, search execution=0, privilege grant=0, transfer=0, acquisition=0, canary=0, U-2(e)=0, P5=0, C-ACQ=0, E1=0, HOST_CLEAN=0, P7=0, reopen=0, successor registration=0, subagents=0, browser automation=0, predecessor body edits=0, sidecar edits=0, lockedTaskIds edits=0, SATURATION_PROOF.json not mutated, Git commit/push/reset/restore/clean/stage=0.
 
 Files written under transient GOVERNANCE: `TASKS.md`, `TASKS_BACKLOG_FULL.md`, `docs/PM2-RECOVERY-P5-J2-U1-PRIV-INSPECTION-01-STAGE-START.md`.
+
+## §14. Step 3 — Bounded read-only privileged inspection (2026-09-30)
+
+**Step:** 3 of 4. Frozen §§0–13 are not rewritten.
+**Step 3 HEAD at window open:** `8b77d3ab9ea4831046a15cfac9363a0839d9dbd8` (branch main; index empty; origin/main matches HEAD; inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` only, git blob `50ce410efe547a7e24f06ef75b9410916d5dae8a`, preserved unstaged)
+**Frozen plan commit:** `8b77d3ab9ea4831046a15cfac9363a0839d9dbd8`
+**Evidence directory:** `C:\Users\knlee\aisb-k4-evidence\PM2-RECOVERY-P5-J2-U1-PRIV-INSPECTION-01\run-1-20260930-1037`
+**Manifest SHA-256:** `fa0aea2208b127da2ea41a6915be38dc57d95cb843d559ffa7f027556a878248` (855 bytes; 9 entries re-verified)
+**Result:** SESSION_EXEC_COMPLETE. SESSION_COVERAGE_INCOMPLETE. Not attestation. Step 3-C1 corrects the record below and does not authorize the session after the fact. Independent review remains pending. Step 4 NOT AUTHORIZED. Task NOT LOCKED. No successor registered.
+
+### 14.1 Preconditions
+
+| ID | Result |
+|---|---|
+| P-AUTH | SATISFIED — Step 3 only, naming commit `8b77d3ab9ea4831046a15cfac9363a0839d9dbd8` |
+| P-SELECT | SATISFIED — Option B remains the locked selection at `efd2140c9a8b0742bae76a9b1ef9566ab27ba68d` |
+| P-SSH-BIND | SATISFIED — `ubuntu` uid 1000; port 22; `BatchMode=yes`; no PTY |
+| P-HOSTKEY | **NOT INDEPENDENTLY ESTABLISHED.** See §14.7. `StrictHostKeyChecking=yes` was used. A worker hash comparison is recorded in `evidence/invocation.json`. That comparison is not Keith's confirmation |
+| P-SUPERVISOR | SATISFIED — `AisbSupervisor.dll` SHA-256 `E5AF106E4299D7C76F9B2DA1811A1AD9FCFD3749D0CE4F33516308D87CE2F5CC`; stdin script; caps 65536 bytes / 2000 lines / 120 s; captures retained |
+| P-STAGING | SATISFIED — acquired before connection; released UNOWNED after this record |
+| P-PRIV-GRANT | SATISFIED — `sudo -n` only. Probe rc 0, uid 0. Remote uid before sudo was 1000. No root shell |
+| P-RO | SATISFIED — no file-body reads, no PM2/Docker/Postgres/Redis clients, no signals, no remote writes, no transfer |
+| P-NO-COMINGLE | SATISFIED — no U-2(e), P5, C-ACQ, E1, HOST_CLEAN, P7, or reopen |
+
+### 14.2 Session
+
+Supervisor `NORMAL`. Exit 0. `PROCESS_EXITED`. Elapsed 2.044 s. Limits not exhausted. Kill not attempted. One SSH process. Stdin delivered. Retries 0.
+
+Command class: `ssh -T -p 22 -o StrictHostKeyChecking=yes -o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=15 -o ServerAliveCountMax=4 ubuntu@aisandbox-staging bash -s`.
+
+Timeouts, from the retained `observation.sh`, which is not modified by this reconciliation:
+
+| Wrapper | Commands |
+|---|---|
+| `timeout 15` | privilege probe only: `sudo -n id -u` |
+| `timeout 8` | `stat`, `ls -1`, and `find` on the closed paths |
+| none | `whoami`, `id -u`, `hostname`, and the PID `ps` commands |
+
+The supervisor deadline was 120 s (`invocation.json` `deadlineSec`). That deadline is separate from the per-command wrappers. Elapsed time at process exit was 2.044 s. The `SAME-PROCESS` environ branch, including its `timeout 15` awk line, was not entered. stdout has `PID_CLASS=PID-GONE` and no `CC-PID-ENV` marker. Find maxdepth was 4. Snapd, apt, and update-notifier paths were not quoted in the Step 3 authorization and were not searched.
+
+### 14.3 Coverage matrix
+
+Command completion is not coverage completion and not attestation. Zero name-class hits are absence only inside a find that returned rc 0 on that closed root. They are not whole-filesystem absence.
+
+| ID | Evidence | Disposition |
+|---|---|---|
+| **U1-G1** | `sudo -n stat` rc 0: `/root/.pm2` directory, mode 755, owner root, group root. Find under `/root` printed only `/root/.pm2` | **RESOLVED-COVERED** (present). No file body read. No other filename-class hit under `/root` |
+| **U1-G2** | `stat` rc 1, stderr `No such file or directory`, for `/var/lib/caddy/.pm2`, `/var/lib/redis/.pm2`, `/var/cache/pollinate/.pm2`, `/var/lib/chrony/.pm2` | **RESOLVED-ABSENT** |
+| **U1-G3** | `ps -p 1193674` rc 1. Class PID-GONE. Environ not read | **U1-REMAINS**. Vanished PID. PM2 home not identified |
+| **U1-G4-current** | Same PID-GONE record. Historical PID 1177465 was not inspected | **U1-REMAINS** |
+| **U1-G5-dormant** | `find -xdev -maxdepth 4` name class, rc 0, on every closed root. Only hit: `/root/.pm2` | **RESOLVED-COVERED** for that name class inside the closed roots and depth. Not whole-disk |
+| **U1-G6-leftover** | `ls -1` rc 0 on every closed root. Non-dot names were listed. `ls -1` does not emit dot names. `/root/.pm2` was invisible to `ls -1` and visible to stat/find | **U1-REMAINS** for hidden names the frozen `ls -1` shape does not print. Non-dot names are an observation, not full leftover closure |
+| **U1-reloc** | No filename-class hit other than `/root/.pm2` | **RESOLVED-ABSENT** for the frozen name class inside the closed roots. Not a claim about unnamed paths |
+| **U1-pending** | No `pending_apps.json` or other filename-class pending name | **U1-REMAINS** (session-time observation only; not permanent closure) |
+| **U1-unexplored** | Closed roots only. No default `--vault` / `--workdir` | **U1-REMAINS** |
+
+U1-accounts-now stays RESOLVED-COVERED and was not re-enumerated. U-2 IDs, including historical PID 1177465, stay disclosed and unresolved. No U-1 row was recategorized as U-2.
+
+CC-PID discriminator `ps -p 844871` was not run. The environ branch was not run. The script stopped further PID commands after `PID-GONE`. It did not stop the session. §14.6 records that conflict. `/proc/1193674/environ` was not read.
+
+### 14.4 Non-effects
+
+This execution does not authorize U-2(e), P5, C-ACQ, E1, HOST_CLEAN, P7, reopen, or Step 4. It does not lock the task. It does not register a successor. It does not change EXEC-01C6A `startCondition=NOT_READY`. It does not edit SEARCH-01 or U1-RESOLUTION-01. It does not mutate repository `docs/control-plane/SATURATION_PROOF.json`.
+
+### 14.5 Activity ledger
+
+SSH=1 (one supervised session). STAGING lease=1 (acquired then released during Step 3). sudo -n=probe plus closed-path stat/list/find after PID-GONE. AWS=0. PM2 client=0. Docker CLI=0. Postgres client=0. Redis client=0. file-body reads=0. environ branch executed=0. signals=0. remote writes=0. transfer=0. acquisition=0. U-2(e)=0. P5=0. C-ACQ=0. HOST_CLEAN=0. P7=0. reopen=0. successor=0. Step 4 authorization=0. Git commit/push/reset/restore/clean/stage=0. SATURATION_PROOF.json not mutated.
+
+### 14.6 PID-GONE: frozen rules, actual sequence, interpretation, limitation
+
+Frozen §6 says that PID-GONE stops the PID class and that the worker must not invent `PM2_HOME` or scan other PIDs. Frozen §8 item 6 lists the same PID-GONE result as a condition to stop the later session. Those two statements are in tension: one names the PID class, and the other names the session. This reconciliation does not rewrite either rule and does not treat the executed continuation as authorized after the fact.
+
+Actual stdout order in the retained capture:
+
+1. `CC-BIND` completed as `ubuntu`.
+2. `CC-PID` recorded `PS_RC=1`, `PID_EXISTS=0`, `PID_CLASS=PID-GONE`, then `CC-PID: END`.
+3. `CC-PRIV-PROBE` then ran. `PROBE_RC=0`. `SUDO_CLASSES=RUN`.
+4. `CC-STAT`, `CC-LIST`, and `CC-FIND` then ran on the closed path set.
+5. `PRIV-01-END`.
+
+No `CC-PID-ENV` marker appears. The environ branch was not executed. `ps -p 844871` was not executed.
+
+Interpretation used at execution: the script treated PID-GONE as the end of the PID class only. Privilege probe and filesystem classes were already later in the same script, and they ran. That interpretation was the worker's. Keith did not separately authorize continuing after PID-GONE.
+
+Compliance limitation: §8 item 6 had already been met when the privilege probe and filesystem classes ran. Those later observations are in the capture and are reported in §14.3 as what was observed. They are not a compliant session stop, and this note does not ratify them.
+
+### 14.7 P-HOSTKEY citation and result
+
+Frozen §7 requires Keith to confirm host-key lookup identity and independent provenance at this Step 3. Frozen §6.1 says carry-forward of `SHA256:kwAg4iEcpglnu4XTqy6NrQOlz8xzybbV3xY6rzwmwO0` is not automatic.
+
+Records examined:
+
+- The verbatim Step 3 authorization in this header names the frozen plan and the closed path set and PID rules. It does not confirm lookup identity or provenance.
+- The same Step 3 request told the worker to complete SSH identity, host-key provenance, and local supervisor checks before connecting, and not to weaken host-key checking. That is an instruction to perform checks. It is not the confirmation §7 requires.
+- INVENTORY-01 stage-start, the 2026-09-28 acceptance under §3.3: Keith accepts that fingerprint for the inventory §3.3 prerequisite, and the amendment says the acceptance is of the AWS-recorded key binding only.
+- SEARCH-01 stage-start §14.2 `P-HOSTKEY-PROV` and §14.3: carry-forward for that search was recorded as accepted under Keith's stated condition for SEARCH-01. This task's frozen plan does not carry that acceptance forward automatically.
+
+Retained local material in the package is `evidence/invocation.json`: `configSha256` `C2DA0133482289909A424CF120E3912026B2EDA7C9876F89417BE9B10068E8AB`, `knownHostsSha256` `54E7C8165AACFF09C90A7119974D9ADAAC3260D7A638235858E673E12B9A6BD2`, `acceptedHostKey`, and `hostKeyMatch`. The package has no separate `ssh -G` or `ssh-keygen` preflight capture. Those hash fields are worker metadata. Matching hashes do not document Keith's confirmation.
+
+**P-HOSTKEY for this connection is not independently established.** No new connection is requested by this reconciliation.
+
+### 14.8 Correction note C1 — original evidence metadata
+
+This note is the correction. It does not replace or rewrite the evidence package.
+
+`evidence/invocation.json` field `perCommandTimeoutSecTightened` is `8`. That single value is inaccurate as a description of every command. The retained script uses `timeout 15` for the privilege probe, `timeout 8` for stat, list, and find, and no per-command timeout wrapper for identity and PID commands. `deadlineSec` `120` is the supervisor session deadline, not a per-command timeout. `environReads` is `0`, which matches the capture: the environ branch did not run.
+
+`hostKeyMatch` in the same file states a worker hash comparison. §14.7 is the correction: that field is not Keith's confirmation, and P-HOSTKEY is not independently established.
+
+`MANIFEST.sha256`, `observation.sh`, `invocation.json`, `review-three-file.diff`, and the other package files are left byte-identical.
