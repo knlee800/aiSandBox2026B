@@ -2,18 +2,20 @@
 
 **Task:** PM2-RECOVERY-P5-J2-U1-PRIV-INSPECTION-01 — Read-only privileged inspection plan for residual U-1 blockers left by locked PM2-RECOVERY-P5-J2-SEARCH-01 and selected by locked PM2-RECOVERY-P5-J2-U1-RESOLUTION-01 Option B
 **Nature:** GOVERNANCE / PLAN (4-step). No implementation lane. No sidecar candidate. No saturationClass.
-**Step:** 3 of 4 was executed. Step 3-C1 documentation reconciliation is recorded in §14.6–§14.8. Frozen §§0–13 are not rewritten. Independent review remains pending. Step 4 is NOT AUTHORIZED. Task is NOT LOCKED.
+**Step:** 4 of 4 — independent review recorded. Lock criteria are unmet. The task is NOT LOCKED. Frozen §§0–13 are not rewritten. Committed §14 / C1 is not rewritten.
 **Date:** 2026-09-30
 **Steps 1–2 HEAD at that window open (historical):** `efd2140c9a8b0742bae76a9b1ef9566ab27ba68d` (branch main; index empty; inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` only, preserved unchanged and unstaged; origin/main matches HEAD)
 **Step 3 HEAD at that window open:** `8b77d3ab9ea4831046a15cfac9363a0839d9dbd8`
-**Step 3-C1 HEAD at this window open:** `8b77d3ab9ea4831046a15cfac9363a0839d9dbd8` (branch main; index empty; existing Step 3 documentation changes preserved; inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` preserved unstaged; origin/main matches HEAD)
+**Step 3-C1 HEAD at that window open:** `8b77d3ab9ea4831046a15cfac9363a0839d9dbd8` (branch main; index empty; existing Step 3 documentation changes preserved; inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` preserved unstaged; origin/main matches HEAD)
+**Step 4 HEAD at this window open:** `6779aca2eda071f38f636b782704d5187cb404ef` (branch main; index empty; inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` only, git blob `50ce410efe547a7e24f06ef75b9410916d5dae8a`, preserved unchanged and unstaged; origin/main matches HEAD)
+**Step 4 authorization provenance:** A proposal requested independent review and disposition of the committed Step 3/C1 record at `6779aca2eda071f38f636b782704d5187cb404ef`. Keith's verbatim reply was `authorize`. The proposal and that reply are separate. This review does not treat `authorize` as retrospective authorization of the executed session, as acceptance of U-1 closure, or as a lock.
 **Registration:** `TASKS_BACKLOG_FULL.md` § PM2-RECOVERY-P5-J2-U1-PRIV-INSPECTION-01 (Step 1 COMPLETE this window)
 **Controlling selection:** PM2-RECOVERY-P5-J2-U1-RESOLUTION-01 Option B, selected in the record committed at `37380505b815089b620de5b473ca0fb861b67404` and locked at `efd2140c9a8b0742bae76a9b1ef9566ab27ba68d`. Option text frozen at `f34234cebb3649cb9608cbaee65bed2c8549384b`. Options A, C, and D were not selected. That lock creates no execution authority. This plan does not alter it.
 **Dependencies:** PM2-RECOVERY-P5-J2-U1-RESOLUTION-01 (COMPLETE AND LOCKED at `efd2140c9a8b0742bae76a9b1ef9566ab27ba68d`; not reopened), PM2-RECOVERY-P5-J2-SEARCH-01 (COMPLETE AND LOCKED 2026-09-29; lock commit `680387c3237cfdf35bceadbb78e7058b8defa94c`; Step 3 evidence committed at `5ee2d9a8821db761a5de99bdee785c5289bab102`; residual U-1 remain blocking; not reopened), PM2-RECOVERY-P5-J2-SCOPE-01 (COMPLETE AND LOCKED; current-host scope approved as proposed at `8b0afa889fc93aded5a178b324513166ebd388a5`), PM2-RECOVERY-P5-J2-AMENDMENT-01 (COMPLETE AND LOCKED; Option B adopted), PM2-RECOVERY-P5-JOURNAL-01 (COMPLETE AND LOCKED; J-2 adopted; E-J6 blocking; body physically unchanged), PM2-RECOVERY-P5-SCOPE-01 (COMPLETE AND LOCKED; BLOCKED under the unamended rule applied then), PM2-RECOVERY-P5-INVENTORY-01 (COMPLETE AND LOCKED; bounded inventory finding only). PM2-RECOVERY-ACQUISITION-01, PM2-RECOVERY-POLICY-01, PM2-RECOVERY-BASELINE-GOV-01, and PM2-RECOVERY-CAPTURE-01 remain COMPLETE AND LOCKED and are not reopened.
 **Step 3 authorization (verbatim):** Keith authorized Step 3 only at baseline `8b77d3ab9ea4831046a15cfac9363a0839d9dbd8`: `Authorize PM2-RECOVERY-P5-J2-U1-PRIV-INSPECTION-01 Step 3 only: execute the frozen read-only privileged inspection plan from commit 8b77d3ab9ea4831046a15cfac9363a0839d9dbd8. Limit the session to the approved closed path set and PID 1193674 rules. No root shell, no file body reads, no PM2/Docker/Postgres/Redis commands, no AWS, no runtime mutation, no transfer/acquisition, no U-2(e), no P5, no C-ACQ, no HOST_CLEAN, no P7, and no reopen authorization.`
 **Historical Steps 1–2 authorization:** Keith authorized **registration and Step 2 plan-freeze only** at baseline `efd2140c9a8b0742bae76a9b1ef9566ab27ba68d`. That window was documentation / governance planning only. It did not execute the privileged session. This paragraph is a Steps 1–2 record. Step 3 execution later occurred and is recorded in §14.
 
-**Status: PM2-RECOVERY-P5-J2-U1-PRIV-INSPECTION-01 — Step 3 execution occurred — Step 3-C1 documentation reconciliation recorded — 2026-09-30 at baseline `8b77d3ab9ea4831046a15cfac9363a0839d9dbd8`. Independent review remains pending. Step 4 NOT AUTHORIZED. Task NOT LOCKED. No successor registered. SEARCH-01 and U1-RESOLUTION-01 remain COMPLETE AND LOCKED. No U-2(e); no P5; no C-ACQ; no HOST_CLEAN; no P7; no reopen.**
+**Status: PM2-RECOVERY-P5-J2-U1-PRIV-INSPECTION-01 — Step 4 independent review recorded — 2026-09-30 at baseline `6779aca2eda071f38f636b782704d5187cb404ef`. Evidence integrity PASS. Committed C1 record accuracy PASS as documentation. Execution compliance FAIL. Coverage INCOMPLETE. Lock criteria unmet. Task NOT LOCKED. No retrospective authorization. No accepted U-1 closure. No successor registered. SEARCH-01 and U1-RESOLUTION-01 remain COMPLETE AND LOCKED. No U-2(e); no P5; no C-ACQ; no HOST_CLEAN; no P7; no reopen.**
 
 ---
 
@@ -437,3 +439,108 @@ This note is the correction. It does not replace or rewrite the evidence package
 `hostKeyMatch` in the same file states a worker hash comparison. §14.7 is the correction: that field is not Keith's confirmation, and P-HOSTKEY is not independently established.
 
 `MANIFEST.sha256`, `observation.sh`, `invocation.json`, `review-three-file.diff`, and the other package files are left byte-identical.
+
+**Status: PM2-RECOVERY-P5-J2-U1-PRIV-INSPECTION-01 — Step 3 execution occurred — Step 3-C1 documentation reconciliation recorded — 2026-09-30 at baseline `8b77d3ab9ea4831046a15cfac9363a0839d9dbd8`. Independent review remains pending. Step 4 NOT AUTHORIZED. Task NOT LOCKED. No successor registered. SEARCH-01 and U1-RESOLUTION-01 remain COMPLETE AND LOCKED. No U-2(e); no P5; no C-ACQ; no HOST_CLEAN; no P7; no reopen.**
+
+## §15. Step 4 — Independent review and disposition (2026-09-30)
+
+**Step:** 4 of 4 — independent review and disposition. Frozen §§0–13 and committed §14 / C1 are not rewritten.
+**Step 4 date:** 2026-09-30
+**Step 4 HEAD at window open:** `6779aca2eda071f38f636b782704d5187cb404ef` (branch main; index empty; origin/main matches HEAD; inherited dirtiness `docs/control-plane/SATURATION_PROOF.json` only, git blob `50ce410efe547a7e24f06ef75b9410916d5dae8a`, preserved unstaged)
+**Reviewed commit:** `6779aca2eda071f38f636b782704d5187cb404ef` (`docs: record PM2 J-2 inspection evidence and C1 deviations`; parent `8b77d3ab9ea4831046a15cfac9363a0839d9dbd8`)
+**Authorization provenance:** A proposal requested independent review and disposition of that committed Step 3/C1 record. Keith's verbatim reply was `authorize`. The proposal and that reply are separate. This section does not treat `authorize` as retrospective authorization of the executed session, as acceptance of any U-1 closure, or as COMPLETE AND LOCKED.
+
+### 15.1 Evidence base
+
+| Item | Value |
+|---|---|
+| Branch | `main` |
+| HEAD / main / origin/main | `6779aca2eda071f38f636b782704d5187cb404ef` |
+| Index | empty |
+| Inherited dirty file | `docs/control-plane/SATURATION_PROOF.json` git blob `50ce410efe547a7e24f06ef75b9410916d5dae8a`; not written by this step |
+| Freeze commit | `8b77d3ab9ea4831046a15cfac9363a0839d9dbd8` |
+| Reviewed commit changed files | `TASKS.md`, `TASKS_BACKLOG_FULL.md`, `docs/PM2-RECOVERY-P5-J2-U1-PRIV-INSPECTION-01-STAGE-START.md` |
+| Frozen §§0–13 | Trimmed text from `## §0` through the end of §13 is identical in the freeze commit and in `6779aca`. SHA-256 `f52b08cb99c78863a729d015d039a6728ec8b21c7c814a231a1838fc054c11aa` / 19971 bytes. `git diff -U0` hunks are the current header and the §14 append only |
+| Evidence directory | `C:\Users\knlee\aisb-k4-evidence\PM2-RECOVERY-P5-J2-U1-PRIV-INSPECTION-01\run-1-20260930-1037` |
+| Manifest | SHA-256 `fa0aea2208b127da2ea41a6915be38dc57d95cb843d559ffa7f027556a878248` / 855 bytes |
+| Occupancy | EMPTY; `occupancyHash=sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d` unchanged |
+
+Manifest entries re-hashed from the package bytes:
+
+| Entry | SHA-256 | Bytes |
+|---|---|---|
+| `observation.sh` | `3b858db03a1c41717c11647dfad1329a375b6b374e5c6f11c383ce70b3f6dbf8` | 3473 |
+| `command-transcript.txt` | `ab69589f5c2f67f5111374ae2cbe0d1fa03e83a6c45057408ee159b07f5eb7bc` | 424 |
+| `evidence/stdout.bin` | `61b7b7e0d5665cfd1d14b6128869a64216f8e094cb5790cecedbe9421cbbb652` | 3638 |
+| `evidence/stderr.bin` | `0f1eadae95de9c091ddb39542aad1e109397c524e30802d277a056fe26913a38` | 279 |
+| `evidence/stdout.redacted.txt` | `61b7b7e0d5665cfd1d14b6128869a64216f8e094cb5790cecedbe9421cbbb652` | 3638 |
+| `evidence/stderr.redacted.txt` | `0f1eadae95de9c091ddb39542aad1e109397c524e30802d277a056fe26913a38` | 279 |
+| `evidence/record.json` | `2f56c2050540970b07d26d16588fa3e6e93d755309a13ac81c011b869cf6b7bd` | 2581 |
+| `evidence/invocation.json` | `2def6a832392a43e0acbc2cb2cb6cc166c098829170388454dc20ede3e335454` | 1829 |
+| `evidence/classification.json` | `681a487f1cc6d27cec530b4a541fb95573664737161dd1165c774faa6e090b31` | 529 |
+
+`stdout.bin` is byte-identical to `stdout.redacted.txt`. `stderr.bin` is byte-identical to `stderr.redacted.txt`. This step does not modify the package.
+
+### 15.2 Distinct conclusions
+
+These conclusions are separate. A pass on one does not establish the others. Exit 0, a matching manifest, and accuracy of the C1 documentation are not execution compliance. §14.3 RESOLVED labels are not accepted U-1 closure.
+
+| Conclusion | Result | Basis |
+|---|---|---|
+| Evidence integrity | **PASS** | Manifest hash and all nine entry hashes and sizes match the retained bytes |
+| Record accuracy of committed C1 | **PASS** as documentation | §14.2, §14.6, §14.7, and §14.8 match `observation.sh`, the captures, `record.json`, `invocation.json`, the Step 3 authorization text, INVENTORY-01 §3.3, and SEARCH-01 §14.2 / §14.3 |
+| Execution compliance | **FAIL** | §15.3 items 7, 8, and 9 |
+| Coverage | **INCOMPLETE** | §15.3 item 10 |
+| Lock eligibility | **NOT ELIGIBLE** | §15.4 |
+
+### 15.3 Findings
+
+| # | Criterion | Verdict | Evidence |
+|---|---|---|---|
+| 1 | Baseline matches this Step 4 window | **PASS** | Branch `main`. HEAD = main = origin/main = `6779aca2eda071f38f636b782704d5187cb404ef`. Index empty. Inherited dirty file is `docs/control-plane/SATURATION_PROOF.json` only, blob `50ce410efe547a7e24f06ef75b9410916d5dae8a`. |
+| 2 | Reviewed commit is the committed Step 3/C1 record | **PASS** | `6779aca2eda071f38f636b782704d5187cb404ef` records the execution and C1. Parent is the freeze `8b77d3ab9ea4831046a15cfac9363a0839d9dbd8`. |
+| 3 | That commit changed only the three documentation files | **PASS** | `git diff --name-status 8b77d3ab..6779aca` lists exactly `TASKS.md`, `TASKS_BACKLOG_FULL.md`, and this stage-start. |
+| 4 | Frozen §§0–13 were not altered | **PASS** | Trimmed §§0–13 SHA-256 in §15.1. Header current-status lines and the §14 append are the only stage-start hunks. |
+| 5 | Evidence package integrity | **PASS** | Manifest SHA-256 `fa0aea2208b127da2ea41a6915be38dc57d95cb843d559ffa7f027556a878248` / 855 bytes. All nine entries match. |
+| 6 | C1 documentation matches the retained material | **PASS** | Stdout order is CC-BIND, CC-PID `PID_CLASS=PID-GONE`, then CC-PRIV-PROBE `PROBE_RC=0` / `SUDO_CLASSES=RUN`, then CC-STAT, CC-LIST, and CC-FIND, then `PRIV-01-END`. No `CC-PID-ENV`. `ps -p 844871` is absent. `observation.sh` wraps the probe in `timeout 15`, wraps stat/list/find in `timeout 8`, and leaves `whoami`, `id -u`, `hostname`, and the PID `ps` commands unwrapped. `invocation.json` `perCommandTimeoutSecTightened` is `8` and `deadlineSec` is `120`. `hostKeyMatch` is worker metadata. Supervisor `record.json`: `NORMAL`, exit `0`, `PROCESS_EXITED`, elapsed about 2.044 s, kill not attempted, stdin delivered, limits not exhausted. |
+| 7 | Session stop after PID-GONE (§8 item 6) | **FAIL** | Frozen §6 stops the PID class on PID-GONE. Frozen §8 item 6 stops the later session on PID-GONE, PID-REUSED, or UNBOUND. Stdout shows the privilege probe and the filesystem classes ran after `PID_CLASS=PID-GONE`. `observation.sh` falls through into those classes. §14.6 records that sequence and states that the continuation is not a compliant session stop and is not ratified. This review agrees. The continuation is not authorized after the fact. |
+| 8 | P-HOSTKEY independently established (§7, §8 item 1) | **FAIL** | Frozen §7 requires Keith to confirm host-key lookup identity and independent provenance at Step 3. Frozen §6.1 says carry-forward of `SHA256:kwAg4iEcpglnu4XTqy6NrQOlz8xzybbV3xY6rzwmwO0` is not automatic. The verbatim Step 3 authorization names the frozen plan, the closed path set, and the PID rules. It does not confirm lookup identity or provenance. INVENTORY-01 §3.3 acceptance is of the AWS-recorded key binding only. SEARCH-01 §14.2 `P-HOSTKEY-PROV` and §14.3 record carry-forward for that search under Keith's stated condition for SEARCH-01. The package has no `ssh -G` or `ssh-keygen` preflight capture. `invocation.json` hash fields are worker metadata. §8 item 1 requires the session to stop when a §7 precondition is missing. The session connected anyway. |
+| 9 | Actual timeout wrappers (§6.3) | **FAIL** for the unwrapped commands | The ceiling is 15 s per command. Tightening is permitted. Widening is a plan modification. The probe uses `timeout 15`. Stat, list, and find use `timeout 8`, which is a permitted tightening. Identity and PID commands have no per-command `timeout` wrapper, so they are bounded only by the separate 120 s supervisor deadline. That is wider than 15 s. The short elapsed time does not supply the missing wrapper. `perCommandTimeoutSecTightened=8` does not describe every command. C1 states that inaccuracy. Stating it does not make the wrappers compliant. |
+| 10 | Coverage of in-scope rows (§9, §10, §3) | **INCOMPLETE** | Captures support the §14.3 descriptions as descriptions of what was printed. They do not accept those RESOLVED labels as U-1 closure. U1-G3 and U1-G4-current remain because PID 1193674 was PID-GONE and environ was not read. U1-G6 remains because `ls -1` does not emit dot names; `/root` listed `snap` and did not list `.pm2`, while stat/find showed `/root/.pm2`. U1-pending and U1-unexplored remain. §10 keeps pending non-permanent and unexplored short of whole-filesystem coverage even for a completed session. Post-PID-GONE stat, list, and find output stays in the capture. It is not a compliant-session result. U-2, including historical PID 1177465, stays unresolved. No row is recategorized as U-2. |
+| 11 | Operational non-effects | **PASS** as non-performance | The script and captures show no root shell, no file-body read, no PM2/Docker/Postgres/Redis client, no signal, no remote write, no transfer, and no acquisition. U-2(e), P5, C-ACQ, HOST_CLEAN, P7, and reopen were not performed. EXEC-01C6A `startCondition=NOT_READY` is unchanged. SEARCH-01 and U1-RESOLUTION-01 stay COMPLETE AND LOCKED. This pass does not cure items 7–10. |
+| 12 | Predecessor and machine-state scope of `6779aca` | **PASS** | That commit does not edit predecessor stage-starts, the sidecar, `lockedTaskIds`, the mutex catalog, or the validator source. |
+
+### 15.4 Lock disposition
+
+The lifecycle of this task names Step 4 as independent verification and lock. `CLAUDE.md` defines LOCKED as control-plane integration completed and required integrated validation / evidence passed, and states that lane-local green is insufficient for LOCK.
+
+Required evidence for this lock is compliance with the frozen plan that the session was authorized to execute. Items 7, 8, and 9 fail that requirement. Item 10 leaves coverage incomplete. Exit 0, the matching manifest, and the accuracy of C1 are lane-local or documentary facts. They are not passed execution evidence.
+
+This task remains **NOT LOCKED**. This review does not create a successful-lock category for a noncompliant execution. It does not mark the task COMPLETE AND LOCKED. It does not retrospectively authorize the continuation after PID-GONE. It does not accept the §14.3 RESOLVED labels as U-1 closure.
+
+Unresolved requirements that remain:
+
+- U1-G3, U1-G4-current, U1-G6 for names `ls -1` does not print, U1-pending, and U1-unexplored remain U-1 / E-J6.
+- Rows described in §14.3 as RESOLVED-COVERED or RESOLVED-ABSENT are not accepted closure.
+- U-2 stays disclosed and unresolved, including historical PID 1177465.
+- P-HOSTKEY for this connection stays not independently established.
+- EXEC-01C6A `startCondition=NOT_READY`. HOST_CLEAN=NO. P7_ACCEPTED=NO. REOPEN_GATE=UNSATISFIED. E1 stays unregistered.
+- U-2(e), P5, C-ACQ, and reopen stay unperformed and unauthorized.
+
+### 15.5 Recommended next action
+
+This is a recommendation only. This step does not register it, does not amend §§0–13, and does not execute it.
+
+The smallest justified next action is a later Keith authorization for a governance-only plan correction of this same task. That correction would record one reading of frozen §6 CC-PID class-stop together with frozen §8 item 6 session-stop, and would record how the §6.3 per-command ceiling of 15 seconds applies to commands that had no `timeout` wrapper.
+
+The rule requiring that correction before any further command is frozen §4: a plan modification must be recorded before any command, and silent expansion invalidates the session under §8. Frozen §6.3 states that widening a ceiling is a plan modification. The executed session already reached the stop conditions in frozen §8 items 1 and 6, so a further command under the same unresolved text would repeat the defect. Frozen §7 P-HOSTKEY still requires Keith's own confirmation of lookup identity and independent provenance before any later connection. The verbatim reply `authorize` is not that confirmation.
+
+The authorization that correction would need is an explicit Keith authorization, separate from this Step 4 reply, naming PM2-RECOVERY-P5-J2-U1-PRIV-INSPECTION-01 plan-correction documentation only and naming the baseline of that later window. A later inspection session would need a further authorization after that correction and after P-HOSTKEY is confirmed by Keith.
+
+### 15.6 Activity ledger (Step 4)
+
+LIVE=0, SSH=0, STAGING lease=0, AWS=0, sudo=0, host inspection=0, search=0, PM2=0, Docker=0, Postgres=0, Redis=0, runtime=0, privilege grant=0, transfer=0, acquisition=0, canary=0, U-2(e)=0, P5=0, C-ACQ=0, E1=0, HOST_CLEAN=0, P7=0, reopen=0, successor registration=0, subagents=0, browser automation=0, predecessor body edits=0, sidecar edits=0, lockedTaskIds edits=0, mutex-catalog edits=0, validator-source edits=0, SATURATION_PROOF.json mutated by this step=0, Git commit=0, push=0, branch=0, worktree=0, reset=0, restore=0, clean=0, stage=0. Lane-capacity validator run once; proof `C:\Users\knlee\AppData\Local\Temp\PM2-RECOVERY-P5-J2-U1-PRIV-INSPECTION-01-step4-saturation-proof.json` SHA-256 `6815aee5fbe49d1ea24a0476721087f7b91a0538df67a256e8d01cc78cc7c52e` / 2496 bytes; result PASS; exit 0. Original evidence package not modified.
+
+Files written under transient GOVERNANCE: this stage-start (current header and §15 appended), `TASKS.md` (this task's current board records), `TASKS_BACKLOG_FULL.md` (this task's canonical body current fields and Step 4 record). GOVERNANCE released UNOWNED. STAGING not acquired.
+
+**Status: PM2-RECOVERY-P5-J2-U1-PRIV-INSPECTION-01 — Step 4 independent review recorded — 2026-09-30 at baseline `6779aca2eda071f38f636b782704d5187cb404ef`. Evidence integrity PASS. Committed C1 record accuracy PASS as documentation. Execution compliance FAIL. Coverage INCOMPLETE. Lock criteria unmet. Task NOT LOCKED. No retrospective authorization. No accepted U-1 closure. No successor registered. No host access. Not U-2(e). Not P5 / C-ACQ / HOST_CLEAN / P7 / reopen.**
