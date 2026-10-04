@@ -630,3 +630,99 @@ The Step 3 record otherwise stands. C-1 PASS remains bounded. Readiness remains 
 **Non-effects:** no experiment, harness, assertion, probe, Step 4, lock, or host action. STAGING was not acquired. The repository `SATURATION_PROOF.json` was not written. No Git stage, commit, push, restore, reset, or clean. Occupancy EMPTY. Lane 3 DISABLED.
 
 GOVERNANCE was acquired transiently for these records, then released UNOWNED.
+
+## 20. Step 4 independent review and closure (2026-10-04) — appended; §§0–19 are not edited
+
+**Authorization (Keith, 2026-10-04):** Step 4 only. Independent review of the retained C-1 evidence and, only if the closure criteria pass, documentation closure and lock of this bounded experiment record. No candidate, harness, fixture, assertion-script, or probe execution. No host, SSH, sudo, or AWS access. No source change, successor registration, recovery acceptance, or Git mutation. GOVERNANCE was acquired transiently for this section and this task's board / backlog records, then released UNOWNED. STAGING was not acquired. The bytes through the end of §19 (69536 B, SHA-256 `91307fe4cfbbb75635a1c671037457e0ab8c58102889848c30871801dfe9ba59`) are preserved. The bytes through §18 remain `563d05f2b3201c8d1df7aa3d0d523f84c4530d012e48ffc4aaadd2fcfe6f32cb` / 66939 B. §§0–17 remain `075457374971ef14ead0d8224491e99a772241eee60ec12c736912780d0ea2eb` / 48883 B.
+
+§19 controls the two withdrawn §18 statements. This section does not claim that all 101 CRLF files were newly converted, and it does not attribute the writer. `elapsedSec` is harness elapsed time at result creation. It is not candidate runtime and it is not proof of timing enforcement.
+
+### 20.1 Inputs verified before any repository write
+
+- **Repository.** HEAD `f4cb44dec205539ec697110a77e590207c39986f` on `main`, equal to `f4cb44d`. The index was empty. The only inherited dirty file was `docs/control-plane/SATURATION_PROOF.json`, Git blob `50ce410efe547a7e24f06ef75b9410916d5dae8a`. It was not written.
+- **Stage-start.** The file before this section was 69536 B, SHA-256 `91307fe4cfbbb75635a1c671037457e0ab8c58102889848c30871801dfe9ba59`. The §18 and §§0–17 prefixes matched the hashes above, and the section boundaries fall at those byte offsets.
+- **Effective sources.** Working `SHA256SUMS` is `373c96921f24854e7ab9bc3acb79a57c01db32fd545a7618dd30fae70918655f` (426 B). All five entries match §17.4: `candidate.sh` `01043cee22cba7029f657b7c5d01b107d44d6b095c02e90ea8de77eb4266d971`, `Assert-C1.ps1` `17cffa68422ef37c2b8b8771b46d6d475e370599c5743bbeb214a4b56ba72cb0`, `Run-Case.ps1` `25f9938cd8d215c5453b57e4ed1b04031ccb870b6d3bb192a867c40ebcdc9315`, `AisbJob.cs` `6d39c70ffe99081f4feb1914749b28ba10a251a0e72a98488bcccd074a3c861d`, `fixtures\util.sh` `9f7686a92bfe1844aba8a28d27366bf91f90a17cc6eb386942f3ed8549ecc6ba`. `evidence\manual-step3\source-hashes-after.txt` is byte-equal to that manifest.
+- **Retained ZIP.** `evidence\EXP-03-manual-step3-review.zip` is SHA-256 `0d728941f191493a7685c587c4ee8a0e6e69bce7bc77df3fb4ee387d76710bd0` (18897 B). Extraction compared all 15 entries with the loose copies and with `evidence\step3-record\EXECUTION-SHA256SUMS` (`b7ba6989b8fa89efa00953648039679254d9f6d3c57bdd54c7c4300b63746be9`). All 15 matched.
+
+### 20.2 Method
+
+Read-only with respect to the candidate, harness, fixture, and assertion script. `Assert-C1.ps1` was not executed. `candidate.sh`, `Run-Case.ps1`, and `util.sh` were not executed. `Run-Case.ps1` was read far enough to identify the assignment `elapsedSec=$sw.Elapsed.TotalSeconds` at result-object creation, after `JOB-CLOSED` and before `CASE-END`.
+
+The review script `evidence\step4-closure\Verify-Independent.ps1` parses the retained audit, harness log, `result.json`, both capture files, the launcher, and the exit-code files with its own parser and rebuilds the §9.4 bytes itself. Its final run is `evidence\step4-closure\verify-evidence-output.txt` and reports `FAIL_COUNT=0`. Earlier runs of that script stopped on defects in the review script (byte-array unrolling, the `Cat` alias, a `$Matches` overwrite, and a character index used on a UTF-8 boundary). Those runs are not evidence about C-1. No evidence file was modified to obtain the pass.
+
+### 20.3 Review criteria and findings — all met
+
+| # | Criterion | Finding |
+|---|---|---|
+| R-1 | Baseline and frozen hashes | Met (§20.1). |
+| R-2 | All 23 assertion conclusions, recomputed | U1, R1, X1, XE, CAPT, S0, S1, S2, S3, A1, P1, K1, A2, P2, K2, G2, N3, W, B1, B2, B3, O1, and E1 each pass from the underlying files. `assertions.json` (`2c0bb38ae37a9242c9f743f02473abe3dfd1d0bead72311b4959fbf2e36c91e5`) records the same 23 ids once each, all `ok=true`, verdict PASS, rule 5, `completeEvidence=true`, `interventionObserved=false`, `evaluationError` empty. |
+| R-3 | Real c2 CAP-HIT and charging arithmetic | One `CAP-HIT`, writer 139: `tag=OUT idx=2 lines=249 bytes=12201 passed_lines=248 passed_bytes=12152`. Independently, 248 × 49 = 12152 ≤ 12158 < 12201 = 249 × 49, and 249 ≤ 592, so the byte check fired. Idx 1 charge is 50117 B / 1253 L leaving 15315 B / 744 L. Idx 2, from that remainder, charges oB 12158, eB 3040, oL 592, eL 149, charge 15315 B / 744 L, remainder 0 / 0. Session reservation 104 B / 3 L plus both charges is 65536 B / 2000 L. |
+| R-4 | Exact captures, order, STOPPED CAP, no c3 | Stdout and stderr were rebuilt from nonce `741409ca34814197` and are byte-equal to the captures (51482 B / 1054 L, `e739d67ab6712a9cc4739aea8d8b5243f346011a15e85fc1a6640bcd44bec974`; 9800 B / 200 L, `fd1f443c05e58acea28579e9629f16815cd384c0b17d44236c80e5152fdb9147`). Parent writer 120's file order is the §10 W sequence. `STOP-EVENT CAP idx=2` and `STOPPED CAP idx=2` are present. There is no `DISPATCH-OK idx=2`. `NOT-STARTED idx=3 name=c3 reason=CAP`. There is no `ALLOC`, `PRE-EXEC`, `FILTER-START`, or `UTIL-EXEC` for idx 3 / c3. |
+| R-5 | Charged budget distinct from captured output | Charged pool: 65536 B / 2000 L. Captured channel output: 61282 B / 1254 L. c2's 12158 B slice is the remainder after c1's full allocation was charged, not after c1's 49000 B of records were charged. |
+| R-6 | Invocation and manual method, kept separate | The launcher's `Run-Case.ps1` line is byte-identical to the §9.3 harness line, including `-Root`. Both exit-code files are `0` followed by CRLF. The harness log has `JOB-ASSIGN ok=True` at sw 0.310044 before `GO-SENT` at sw 0.461603, no intervention event, `PROC-EXIT code=0`, `SURVIVOR-CHECK activeProcessesInJob=0`, and `JOB-CLOSED`. Declared deviations remain deviations. |
+| R-7 | §19 controls the withdrawn §18 sentences | Applied. The LF-to-CRLF count stays withdrawn and the writer stays unattributed. `elapsedSec` stays harness elapsed time at result creation. |
+| R-8 | Bounded meaning of PASS | A pass here is only the Windows / MSYS C-1 result in §12. It does not establish general aggregate enforcement, a binding line limit, timeout enforcement, descendant termination, Linux or sudo behavior, remote delivery, or host readiness. |
+
+### 20.4 Candidate outcome
+
+**C-1 PASS, bounded to this fixture and MSYS bash 5.2.15.**
+
+- c1 passed 800 stdout records / 39200 B and 200 stderr records / 9800 B inside its 40000 B / 1000 L and 10000 B / 250 L slices, then `DISPATCH-OK`.
+- c2's stdout slice, reduced by conservative full-allocation charging to 12158 B, was exhausted by the OUT filter's own byte check at record 249. The filter wrote one marker, `--- OUT-CAP-TRUNCATED lines=248 bytes=12152 ---`, drained the producer to EOF (`FILTER-EOF rc=3 lines_seen=400 bytes_seen=19600`; `UTIL-EXIT tag=c2 rc=0`), and returned 3.
+- The gate recorded `STOPPED CAP`. c3 was not dispatched.
+- Channel output is byte-exact and within 65536 B / 2000 L. The captured total, 61282 B / 1254 L, is not the charged total.
+
+There is one `CAP-HIT`. No filter test knob was supplied. This is not the B-1 case, whose `STOPPED CAP` came from an injected filter status.
+
+### 20.5 Execution compliance, separate from the outcome
+
+**Compliant with the authorized core:** one case, C-1; one retained harness run and one retained assertion evaluation, both exit 0; the §9.3 harness line byte-exact; effective sources unchanged after the run; `evidence\batch.json` has one case.
+
+**Deviations, recorded and not waived.** No retroactive authorization is granted.
+
+- Manual execution. The retained account is that Keith ran Step 3 from standalone Windows PowerShell with Cursor closed. The retained files do not themselves show that the launcher was a fresh child process.
+- Launcher wrapper lines around the byte-exact harness line (`Set-Location -LiteralPath`, `ErrorActionPreference`, `try` / `catch`, and `LASTEXITCODE`). The launcher does not call `Assert-C1.ps1`.
+- Missing records: pre-execution precheck output, the assertion command line, and the outer capture commands. `AISB_*` absence, apart from S1's default `go_wait=8s` and S2's `ENV` line, and the PowerShell 5.x claim, remain Keith's account.
+- The execution manifest was built after the run.
+- The §18.5 preparation incidents occurred before the 10:43:34Z run. §19.1 remains the line-ending record.
+
+### 20.6 Containment, separate from `elapsedSec`
+
+- `JOB-ASSIGN ok=True` (sw 0.310044) before `GO-SENT` (sw 0.461603).
+- No `WATCHDOG-FIRE`, `JOB-TERMINATE`, `READER-TIMEOUT`, `HARD-ABANDON`, `GO-REFUSED`, `GO-WRITE-FAILED`, `READY-NOT-FOUND`, or `BATCH-EXCEEDED`. `watchdogFired=false`.
+- Process exit 0. `SURVIVOR-CHECK activeProcessesInJob=0`. `survivorsBeforeClose=0`. `JOB-CLOSED`.
+- Retained 61282 of 262144 B, dropped 0 / 0.
+
+`result.json` serializes `elapsedSec` as `1.1271073999999999`. The same object serializes `exitAtSw` as `1.056934`. The source assignment is the harness stopwatch at result creation. `diagnosticBytes.harnessLog` is 3614, the log length before `CASE-END`; the CRLF `CASE-END` line brings `harness.log` to 3726 B. None of this is candidate runtime, and none of it establishes timeout enforcement.
+
+### 20.7 Observations that do not change the verdict
+
+- `harness.log` and `result.json` are CRLF. The audit log and both capture files are LF, and the captures contain no CR.
+- `assertions.json` records evidence class `none` for R1, X1, XE, CAPT, and S2. Those rows passed on the underlying files. The class label is not an evidence gap in the pass conditions.
+- `evidence\manual-step3\harness.stdout.txt` is the harness console transcript, including a truncated stderr display. The capture evidence is the two `.bin` files.
+
+### 20.8 Closure
+
+**COMPLETE AND LOCKED — bounded local experiment record, C-1 PASS.** Three results stay separate:
+
+- **Candidate outcome.** C-1 PASS by §11 rule 5, bounded to this Windows / MSYS fixture and to conservative full-allocation charging, slice exhaustion at c2, `STOPPED CAP`, and no c3 dispatch.
+- **Execution compliance.** The §18.6 deviations and the §19 corrections stand. They are not waived and not re-authorized after the fact.
+- **Containment.** Job Object assigned before GO; no harness intervention; process exit 0; zero survivors; job closed.
+
+The lock covers this experiment record only. It approves no candidate for host use.
+
+### 20.9 Limitations carried forward; state unchanged
+
+§12 stands. This pass does not establish general aggregate enforcement, the 2000 L bound being binding, ERR-slice exhaustion, `BUDGET-EXHAUSTED`, producer termination, the 15 s / 120 s deadlines, HOST-DEADLINE, 124 / 137 propagation, descendant termination, `sudo`, FG-6, Linux behavior, process-substitution or here-string backing on H, remote delivery or termination, pid reuse, or host readiness.
+
+Readiness: NO. Host use: BLOCKED. Stage B: NOT AUTHORIZED. No successor is registered. PRIV-INSPECTION-01 §17 remains unadopted. AGENT-PLATFORM-EXEC-01C6A `startCondition=NOT_READY`, HOST_CLEAN=NO, P7_ACCEPTED=NO, and REOPEN_GATE=UNSATISFIED are unchanged. Occupancy EMPTY. Lane 3 DISABLED.
+
+### 20.10 Write set and activity
+
+Written: this section; this task's current `TASKS.md` header, the two current lane-status clauses, the current GOVERNANCE clause, and `PM2_RECOVERY_MECH_EXP_03_STEP_4`; this task's current backlog status line, lifecycle item 4, and the appended closure paragraph; `evidence\step4-closure\` and its review package. The package hash is recorded beside the bundle, not in this section.
+
+Not written: source files; the retained ZIP; repository `SATURATION_PROOF.json`; the sidecar, catalog, and occupancy block; MECH-EXP-01 and MECH-EXP-02; any successor registration.
+
+Executions of the candidate, harness, fixture, and assertion script in this pass = 0. Probes = 0. Source edits = 0. Host access = 0. STAGING not acquired. Git stage / commit / push / checkout / restore / reset / stash / clean = 0. The lane-capacity validator proof is under `evidence\step4-closure\validation\` via `-ProofPath`.
+
+**Status: PM2-RECOVERY-MECH-EXP-03 — Step 4 COMPLETE — COMPLETE AND LOCKED — bounded local experiment record, C-1 PASS — 2026-10-04 at HEAD `f4cb44dec205539ec697110a77e590207c39986f`. Readiness NO. Host use BLOCKED. Stage B NOT AUTHORIZED. Not a readiness verdict.**
