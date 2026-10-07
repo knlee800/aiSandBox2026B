@@ -142,6 +142,7 @@ HISTORICAL: process-scoped Harness canaries used `PORT=4099` to avoid listen con
 | Topology | What it runs | Status |
 |----------|----------------|--------|
 | Current staging | Caddy + PM2 host processes: Gateway `:4000`, AI Service `:4001`, container-manager `:4002`, Frontend `:3002` | **CURRENT** public/private-beta topology |
+| Replacement staging (PLANNED) | Caddy + native systemd units aisandbox-gateway :4000, aisandbox-ai :4001, aisandbox-cm :4002, aisandbox-frontend :3002; local PostgreSQL 15 / Redis 7; Docker workspaces (node:24-alpine) | **PLANNED** — CLEAN-BASELINE-DEPLOY-01. Not deployed. Not accepted. Does not replace the CURRENT row. |
 | `docker-compose.yml` | PostgreSQL, Redis, Prometheus, Grafana **only** | **CURRENT local infrastructure.** Does not run application processes. |
 | `docker-compose.prod.yml` | Infra **plus** gateway / ai-service / container-manager / frontend images | **Alternate / future** image topology. **Not** current staging HOW. |
 

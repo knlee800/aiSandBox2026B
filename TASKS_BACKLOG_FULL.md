@@ -81718,3 +81718,199 @@ Step 3 execution recorded 2026-10-02 in stage-start section 18 (SHA-256 563d05f2
 Step 3 activity: harness runs=1; assertion-script runs=1; probes=0; retries=0; added cases=0; source changes=0; host access=0; successor registration=0; section 17 adoption=0; acceptance=0; lock=0; staging=0; Git stage / commit / push / reset / restore / clean=0; MECH-EXP-01 / MECH-EXP-02 writes=0; historical package writes=0; incident-file restorations=0; repository SATURATION_PROOF.json not mutated. This documentation pass executed no candidate, harness, fixture, assertion script, probe or recorder. GOVERNANCE acquired transiently for these records then released UNOWNED.
 Documentation correction recorded 2026-10-03 in stage-start section 19 (file SHA-256 91307fe4cfbbb75635a1c671037457e0ab8c58102889848c30871801dfe9ba59 / 69536 B; bytes through section 18 remain 563d05f2b3201c8d1df7aa3d0d523f84c4530d012e48ffc4aaadd2fcfe6f32cb / 66939 B; sections 0-17 remain 075457374971ef14ead0d8224491e99a772241eee60ec12c736912780d0ea2eb / 48883 B). The section 18.5 sentence that 101 files went from LF to CRLF is withdrawn. Established: 103 files had the incident timestamp; 101 were CRLF afterward and 2 TypeScript files remained LF; eight EXP-01 stage-a files were already CRLF and byte-identical to the earlier reviewed package; some files are proven new CRLF conversions and some remain unknown. The writer is not attributed. The Step 3 paragraph's phrase "Cursor rewrite" does not identify a writer. The section 18.4 sentence "Candidate exit 0 after 1.127 s" is withdrawn. The retained result.json elapsedSec value 1.1271073999999999, cited as 1.1271074, is harness elapsedSec at result creation. It is not candidate runtime and supplies no timing-enforcement claim. Retained separately: process exit 0, no harness intervention, zero survivors, job closed. C-1 PASS bounded, readiness NO, host use BLOCKED, Stage B NOT AUTHORIZED, and Step 4 NOT AUTHORIZED are unchanged. Sources unchanged. Existing review ZIP unchanged. No experiment, harness, assertion, probe, Step 4, lock, or host action. STAGING not acquired. Repository SATURATION_PROOF.json not written. No Git stage, commit, push, restore, reset, or clean. GOVERNANCE acquired transiently for these records then released UNOWNED.
 Step 4 independent review and closure recorded 2026-10-04 in stage-start section 20 (file SHA-256 fee8185109a925b963cb22c059e097a36652417b0f7adeea644298365d57c8c0 / 82242 B; bytes through section 19 remain 91307fe4cfbbb75635a1c671037457e0ab8c58102889848c30871801dfe9ba59 / 69536 B; bytes through section 18 remain 563d05f2b3201c8d1df7aa3d0d523f84c4530d012e48ffc4aaadd2fcfe6f32cb / 66939 B; sections 0-17 remain 075457374971ef14ead0d8224491e99a772241eee60ec12c736912780d0ea2eb / 48883 B). HEAD f4cb44dec205539ec697110a77e590207c39986f on main; index empty; inherited SATURATION_PROOF.json blob 50ce410efe547a7e24f06ef75b9410916d5dae8a unchanged. Independent review recomputed all 23 rows from the retained captures and records; Assert-C1.ps1 was not executed. C-1 PASS is a bounded local experiment record only: real OUT CAP-HIT at c2 record 249 against the 12158-byte slice; charged 65536 B / 2000 L; captured 61282 B / 1254 L; STOPPED CAP; c3 not dispatched. elapsedSec 1.1271073999999999 is harness elapsed time at result creation and is not candidate runtime. The section 18.5 sentence that 101 files went from LF to CRLF remains withdrawn; the writer is not attributed. Declared deviations are not waived and receive no retroactive authorization. Readiness NO. Host use BLOCKED. Stage B NOT AUTHORIZED. No successor registered. PRIV-INSPECTION-01 section 17 unadopted. EXEC-01C6A startCondition=NOT_READY. HOST_CLEAN=NO. P7_ACCEPTED=NO. REOPEN_GATE=UNSATISFIED. Occupancy EMPTY. Lane 3 DISABLED. STAGING not acquired. Repository SATURATION_PROOF.json not written. No Git stage, commit, push, checkout, restore, reset, stash, or clean. GOVERNANCE acquired transiently for these records then released UNOWNED.
+
+---
+
+## CLEAN BASELINE — Replacement staging path (planned)
+
+### CLEAN-BASELINE-GOV-01 — Clean-baseline governance registration
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CLEAN-BASELINE-GOV-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** COMPLETE AND LOCKED — 2026-10-07 — independent review accepted the ENV-validation package SHA-256 f30b05905b3a7acf13b79d7ddaca56714dd66b0c75d23cbef8046eeba4deb58b — governance closure only — no implementation candidate — no lane — AUTH-1 not granted. Earlier status, preserved as history: REGISTERED 2026-10-05 — NOT LOCKED — awaiting review. Not implementation. Not acceptance. Not host readiness.
+**Task ID:** CLEAN-BASELINE-GOV-01
+**Title:** Clean-baseline governance registration
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE — does not consume Lane 1 or Lane 2 — no sidecar candidate — no saturationClass
+**Lifecycle:** governance registration, then this 2026-10-07 closure. Lock is this closure only. It does not authorize implementation.
+**Start condition:** satisfied for this governance write by Keith's 2026-10-05 authorization of CLEAN-BASELINE-GOV-01 records only. No further step is authorized.
+**Depends on:** none for this write. Does not depend on old-host cleanliness, EXEC-01C6A, or the suspended inspection controller.
+**Primary write scope (this write):** `docs/CLEAN-BASELINE-GOV-01-DECISION.md`; `TASKS.md` current-board registration fields only (occupancy block not changed); this registry body; `docs/control-plane/lane-saturation-state.json` implementation candidates only; one PLANNED row in `ARCHITECTURE.md`.
+**Mutexes / resources:** GOVERNANCE used for this write and not left owned. Occupancy stays UNOWNED. No other mutex acquired.
+**Hot-file leases:** none
+**Shared contracts:** none
+**Evidence class:** governance records. The 2026-10-05 registration validation is history and left GOV-01 NOT LOCKED. This 2026-10-07 closure adds CLEAN-BASELINE-GOV-01 to `lockedTaskIds` and requires a new canonical validator run. A saturation PASS is not implementation acceptance.
+**Revert isolation:** reverting this registration removes the decision record, the four canonical bodies, the three sidecar candidates, the board section, and the PLANNED architecture row. It does not touch the inherited `SATURATION_PROOF.json` working-tree change.
+**saturationClass:** not applicable (GOVERNANCE)
+**Decision record:** `docs/CLEAN-BASELINE-GOV-01-DECISION.md`
+**Planning basis (unchanged):** consolidated plan SHA-256 `3012ee8161f7dbdf16aac01e026872aadf7fa3842c234edc6603e98e85924df9`; Addendum 01 SHA-256 `83f6b07332aeca04184228026ce662271d425a5ba17bfdece9b9ad177bd3774a`. Addendum governs its four operational conflicts. This decision's governing corrections govern OPS-01 implementation where they conflict with the addendum.
+
+**Direction recorded (not achieved):** preserve the old Lightsail host's evidence; keep the old host unproven and never describe it as clean; plan a replacement from a known Git commit and a reviewed environment; use native systemd instead of PM2 resurrect; require application behavior, backup, and restore verification before acceptance; keep old-host retirement planned until separately authorized and observed. Objective: a maintainable staging/production path for `ainow.biz`. That path is not claimed to exist and has not passed acceptance.
+
+**Old instance:** `RETIRED_UNPROVEN`. `STOPPED` is not recorded, because no console evidence exists. Retention is planned at 30 days. Day 0 has not started.
+
+**Preserved:** `HOST_CLEAN=NO`. `P7_ACCEPTED=NO`. `EXEC-01C6A=NOT_READY` (not reopened). Inspection controller remains suspended. MECH-EXP-01, MECH-EXP-02, and MECH-EXP-03 remain local fixture evidence only, not host readiness. Locked PM2 recovery decisions are not reopened or weakened. GO-NO-GO-01 GO and the LIVE-11 NO-GO stay historical and do not transfer. Unfinished work is not marked completed. This status change is not retirement.
+
+**U1 (recorded, not authorized):** Code preparation may proceed in parallel where lane rules allow, during separately authorized implementation. Runtime tests that share LOCAL-RUNTIME run sequentially. Establish local capability before proposing cloud tests. Cloud tests require separate authorization, a stated spending limit, and a cleanup scope. No resources, implementation, or tests are authorized now. Subagents are not authorized.
+
+**U2 (recorded, not authorized):** Stale execution or collaboration records require individual, recorded approval based on evidence. No automatic override, replay, or mutation. Changing a status does not establish that the work has stopped.
+
+**2026-10-05 registration correction:** GOVERNANCE acquired for the correction and released UNOWNED. Occupancy block unchanged. DEPLOY-01 machine `dependsOn` set to `[]` for slice A. RUNTIME-01 and OPS-01 acceptance bounds tightened. No admission. No LOCK. No implementation.
+
+**Non-effects:** no implementation, admission, build, application test, runtime, Docker, PostgreSQL, Redis, browser, host, SSH, console, provider, provisioning, shutdown, deletion, DNS, spending, credit use, invitation, PM2 action, or Git mutation. AUTH-1 through AUTH-9 and AUTH-W are not granted. The canonical validator may regenerate `SATURATION_PROOF.json`. That file is not hand-edited.
+
+### CLEAN-BASELINE-RUNTIME-01 — Supported host runtime and workspace image
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CLEAN-BASELINE-RUNTIME-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** PLANNED / NOT ADMITTED / NOT EXECUTED — registered 2026-10-05 by CLEAN-BASELINE-GOV-01. Registration is not implementation and is not success.
+**Task ID:** CLEAN-BASELINE-RUNTIME-01
+**Title:** Supported host runtime and workspace image
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Step 1 is this registration. Step 2 implementation and Step 3 consolidation are not authorized.
+**Start condition (human):** NOT READY. GOV-01 is COMPLETE AND LOCKED as of 2026-10-07. AUTH-1 is not granted. This lock does not make the task startable.
+**Start condition (machine):** `NOT_READY`. `status=READY` together with `startCondition=NOT_READY` is valid registration encoding and does not grant execution permission. `localRuntimeAuthorized` is already true; do not set `startCondition=READY` without AUTH-1, or this FORCING candidate becomes admissible against an empty lane.
+**Depends on (human):** CLEAN-BASELINE-GOV-01 lock, satisfied 2026-10-07. AUTH-1 is not granted. No dependency on old-host cleanliness or EXEC-01C6A.
+**Depends on (machine `dependsOn`):** `[]`. GOV-01 is GOVERNANCE and is not in `lockedTaskIds`. Do not add it there unless a later lock puts it there.
+**Primary write scope (exact, not authorized to edit now):** `services/container-manager/src/docker/docker-runtime.service.ts`; `services/container-manager/src/docker/docker-runtime.service.spec.ts`; `services/container-manager/.env.example`.
+**Mutexes / resources (not acquired):** CONTAINER-MANAGER, LOCAL-RUNTIME, ENV. ENV is the catalog matcher for the declared `.env.example` path. It is not a `runtimeNeeds` entry. It does not authorize editing environment files, reading secrets, or host access. The catalog marks ENV exclusive. OPS-01 lists no mutex, so RUNTIME-01 and OPS-01 still do not share one. DEPLOY-01 also declares ENV, so RUNTIME-01 and DEPLOY-01 are not a concurrent pair.
+**Hot-file leases:** none. CONTAINER-MANAGER already covers the service tree.
+**Shared contracts:** none
+**Evidence class:** LOCAL-TESTS. The planned compatibility check uses a local container under LOCAL-RUNTIME. It is not run.
+**Revert isolation:** acceptable against OPS-01. Write scopes do not overlap, and OPS-01 lists no mutex, so those two are a safe pair once both are later made startable. They are not a safe pair with DEPLOY-01, which also declares exclusive ENV. See U1: runtime tests that share LOCAL-RUNTIME run sequentially, not in parallel.
+**saturationClass:** FORCING
+**productClass:** CURRENT
+**futureAuthorization:** NONE
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** LOCAL-RUNTIME
+
+**Planned change (not made):** `SANDBOX_IMAGE` reads `process.env.SANDBOX_IMAGE` and otherwise uses `node:24-alpine`, plus spec coverage and an `.env.example` line. Node 20 is not an acceptable result. The approved path is Node 24, then Node 22 if Node 24's compatibility check fails, then a stop for a PACKAGE task if Node 22 also fails. No check is authorized now.
+
+**Acceptance bound.** Acceptance requires successful compatibility evidence for the runtime actually selected on that path, plus the consolidated plan §6.R builds, the four test suites, and the workspace-bootstrap verification. The selected host runtime, workspace image, and documented configuration must match that outcome. A failed check, an attempted check, or a stop for a PACKAGE task is BLOCKED / pending evidence. It is not acceptance and it is not grounds for LOCK.
+
+**U1 applies.** Code preparation may run in parallel with OPS-01 only after separate implementation authorization. The LOCAL-RUNTIME compatibility run is sequential with any other LOCAL-RUNTIME test. No cloud test is authorized. No implementation test or capability probe is run by this correction.
+
+#### Acceptance criteria (not started)
+
+- [ ] GOV-01 is complete and locked, and AUTH-1 is recorded, before any edit
+- [ ] Only the three write-scope files change
+- [ ] Default image is `node:24-alpine`; `SANDBOX_IMAGE` overrides it; specs cover both
+- [ ] §6.R builds, four test suites, and workspace-bootstrap verification passed on the selected supported runtime
+- [ ] Successful Node 24 compatibility evidence, or successful Node 22 evidence after a recorded Node 24 failure, with configuration consistent with that outcome
+- [ ] A failed check, an attempted check, or a PACKAGE-task stop remains unchecked here and is not acceptance
+- [ ] No host, staging, provider, or package-manifest change
+- [ ] Not LOCKED by the implementer
+
+### CLEAN-BASELINE-OPS-01 — Replacement operations files
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CLEAN-BASELINE-OPS-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** PLANNED / NOT ADMITTED / NOT EXECUTED — registered 2026-10-05 by CLEAN-BASELINE-GOV-01. Registration is not implementation and is not success. Governing corrections a-d below are requirements. They are not implemented and they are not passed.
+**Task ID:** CLEAN-BASELINE-OPS-01
+**Title:** Replacement operations files
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Step 1 is this registration. Step 2 implementation and Step 3 consolidation are not authorized.
+**Start condition (human):** NOT READY. GOV-01 is COMPLETE AND LOCKED as of 2026-10-07. AUTH-1 is not granted. This lock does not make the task startable.
+**Start condition (machine):** `NOT_READY`. `status=READY` together with `startCondition=NOT_READY` is valid registration encoding and does not grant execution permission.
+**Depends on (human):** CLEAN-BASELINE-GOV-01 lock, satisfied 2026-10-07. AUTH-1 is not granted. Safe pair with RUNTIME-01 for code preparation once both are later made startable: disjoint write scopes. Runtime tests that need LOCAL-RUNTIME are not covered by this registration's empty resource list and run sequentially with RUNTIME-01 after a separate resource update.
+**Depends on (machine `dependsOn`):** `[]`
+**Primary write scope (exact, not authorized to edit now):** `ops/clean-baseline/` only, including the addendum's script, unit, library, and focused-test files. No application source, package, compose, or i18n change.
+**Mutexes / resources (not acquired):** none. `mutexes=[]` and `runtimeNeeds=[]` cover code preparation and static checks only. Before any runtime test, a separate control-plane update must record the actual resource and evidence needs, including LOCAL-RUNTIME when that test uses it. Local runtime capability is to be established. It is not already proven. `localRuntimeAuthorized=true` is not that proof.
+**Hot-file leases:** none
+**Shared contracts:** none
+**Evidence class:** LOCAL-TESTS for static checks (`bash -n` and the static script checks). Focused root/systemd/Docker/PostgreSQL tests are not lane-local on this workstation. See U1.
+**Revert isolation:** acceptable against RUNTIME-01.
+**saturationClass:** FORCING
+**productClass:** CURRENT
+**futureAuthorization:** NONE
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** none in the sidecar. This empty list does not authorize a runtime test. U1 still governs any later runtime test.
+
+**Planning basis for the files:** consolidated plan §6.O, §6.D, §6.K, as corrected by Addendum 01, and as further corrected by the governing corrections in this body and in `docs/CLEAN-BASELINE-GOV-01-DECISION.md`.
+
+#### Governing corrections (implementation and acceptance requirements; not done)
+
+**a. Phase names and restart order.** Use one phase vocabulary across prepare, first-start, restore, deploy, backup, and maint. A recovery path may name only phases the scripts write. Any authorized writer restart removes the maintenance marker first, then starts the unit. Addendum §3.5 Q3 currently restarts the gateway and frontend and then removes the marker. That order cannot succeed while those units assert that the marker is absent. Required Q3 order: confirm the tree and schema are unchanged, remove the marker, then start the two units.
+
+**b. Pre-start and post-start failure.** Pre-start failure: the marker is still present and no writer has started in this operation. Post-start failure: the marker has been removed, or a writer start is already in the journal, including a start that then crashed. Do not claim writers never started after startup has occurred. Define and test interruption after marker removal, including reboot. With the marker gone, enabled units can start at boot. The test must show the documented recovery for that case.
+
+**c. Restore reproduces the backed-up persistent file set.** Restore removes tracked files that the prepared checkout contains and the backup does not, so a tracked file deleted on the source does not reappear. Ownership, ACLs, and extended attributes remain exact-diff requirements. A focused test deletes a tracked file under `workspaces/`, `database/`, or `projects/`, backs up, restores onto a fresh prepared target, and shows the file absent. Reconciliation runs only on a target that passed the empty-target checks. No mode overwrites a populated primary.
+
+**d. a-c are resolved only by this task's implementation and its focused tests.** This registration does not declare them implemented or passed.
+
+**U1 applies.** Static checks may be prepared in parallel with RUNTIME-01 after separate implementation authorization. Runtime tests that share LOCAL-RUNTIME run sequentially with RUNTIME-01, and only after the control plane records LOCAL-RUNTIME for this task. Establish local capability before proposing cloud tests. Its absence is not treated as already proven. Cloud tests need a separate authorization, a stated spending limit, and a cleanup scope. None of that is authorized now. Subagents are not authorized. Static checks alone cannot satisfy the focused operational tests and cannot justify LOCK. No implementation test or capability probe is run by this correction.
+
+**U2 applies.** A stale `usage_records` row in `pending`, `running`, or `cancel_requested`, or a non-terminal collaboration row, blocks maintenance until Keith approves that one record from evidence. No automatic override, replay, or mutation. Setting a terminal status does not establish that the work has stopped.
+
+#### Acceptance criteria (not started)
+
+- [ ] GOV-01 is complete and locked, and AUTH-1 is recorded, before any edit
+- [ ] Files exist only under `ops/clean-baseline/` and match the planning basis plus corrections a-c
+- [ ] Static checks are not treated as the focused operational tests and are not grounds for LOCK
+- [ ] Any runtime test is preceded by a control-plane resource/evidence update, including LOCAL-RUNTIME when used, and is sequential with RUNTIME-01
+- [ ] Correction a is implemented and covered by a focused test of Q3 order (marker removed before start)
+- [ ] Correction b is implemented and covered by a focused test of post-start interruption, including reboot recovery as documented
+- [ ] Correction c is implemented and covered by a focused test that a deleted tracked file stays absent after restore onto a fresh target, and that a populated primary is refused
+- [ ] Corrections a-c are not marked passed by this registration
+- [ ] U1 and U2 constraints are stated in `ops/clean-baseline/README.md`
+- [ ] No application source change
+- [ ] Not LOCKED by the implementer
+
+### CLEAN-BASELINE-DEPLOY-01 — Replacement preserve, deploy, accept, retain
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CLEAN-BASELINE-DEPLOY-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** PLANNED / NOT ADMITTED / NOT EXECUTED — registered 2026-10-05 by CLEAN-BASELINE-GOV-01. Registration is not implementation, not runtime readiness, and not authorization for any host action.
+**Task ID:** CLEAN-BASELINE-DEPLOY-01
+**Title:** Replacement preserve, deploy, accept, retain
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP. Step 1 is this registration. Stage-start, execution, and consolidation are not authorized. Slices A, B, C1, C2, C3, C4, and D stay planned.
+**Start condition (human):** NOT READY. GOV-01 is COMPLETE AND LOCKED as of 2026-10-07. Slice A preservation still requires AUTH-2. AUTH-2 does not authorize stopping the host. Stop and revocation require AUTH-3. Slice B requires AUTH-4 only after the pre-slice-B control-plane transition below. C1 needs AUTH-5. C2 needs AUTH-6. C3 needs AUTH-7. C4 needs AUTH-8. D needs AUTH-9. None of AUTH-2 through AUTH-9 are granted. The old host is not stopped, rebooted, or restarted by this closure.
+**Start condition (machine):** `NOT_READY`. `status=READY` together with `startCondition=NOT_READY` is valid registration encoding and does not grant execution permission. `saturationClass=OPTIONAL`. `stagingAuthorized`, `providerLiveAuthorized`, and `creditAuthorized` stay false.
+**Depends on (human):** GOV-01 lock, satisfied 2026-10-07, plus the authorization for the specific slice, which is not granted. Slice A does not depend on RUNTIME-01 or OPS-01 locks. Those locks are not preservation prerequisites.
+**Depends on (machine `dependsOn`):** `[]`. RUNTIME-01 and OPS-01 are intentionally absent. Because DEPLOY-01 is OPTIONAL, `Test-Admissible` returns `NOT_FORCING` before it checks `dependsOn` or runtime authorization. An empty list therefore does not prove dependency satisfaction, and a later non-empty list would not by itself prove host or provider authorization.
+**Pre-slice-B transition (mandatory, not performed):** Verify RUNTIME-01 and OPS-01 are LOCKED with their required evidence, including OPS-01 corrections a-d. Add those task IDs to this candidate's `dependsOn`. Record slice B's authorization, scope, resources, and admission. Slice A admission does not permit slice B or any later slice. C2 still requires a separate PROVIDER-LIVE and CREDIT authorization and resource transition.
+**Primary write scope:** no repository source. Host execution is under later slice authorizations. Repository evidence at a later lock is a control-plane write, not this registration.
+**Mutexes / resources (not acquired):** STAGING, ENV. C2 would also need PROVIDER-LIVE and CREDIT under AUTH-6. They are not in `runtimeNeeds` at registration, so this candidate does not require them to be authorized before a non-C2 slice. Acquiring them is a later control-plane change, not this write.
+**Hot-file leases:** none
+**Shared contracts:** none
+**Evidence class:** STAGING-RUNTIME. Nothing in that class has been run.
+**Revert isolation:** not admitted, so nothing to revert. Later slice evidence must follow the planning basis: fresh recovery target for data rollback; no overwrite of a populated primary; failed cutover does not resurrect the old host.
+**saturationClass:** OPTIONAL
+**productClass:** CURRENT
+**futureAuthorization:** NONE
+**writeSetPrecision:** EXACT (empty repository write set)
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** STAGING
+
+**Acceptance, when a later authorization allows execution (not now):** C1 core checks, then separately authorized C2, then flags off, then C3 backup and isolated restore, then C4. Deletion requires C4 plus the planning basis's other deletion prerequisites. C1 plus C2 alone are not acceptance. `/metrics` returning 200 is not AI readiness. The old host stays unproven. Retirement is observed only after separate authorization, not inferred from this registration.
+
+**Preserved for this task:** `HOST_CLEAN=NO`, `P7_ACCEPTED=NO`, `EXEC-01C6A=NOT_READY`, inspection controller suspended, MECH-EXP records are not host readiness, PM2 is not inspected or used.
+
+#### Acceptance criteria (not started)
+
+- [ ] No slice starts without its own authorization
+- [ ] AUTH-2 is not treated as authorization to stop the host; AUTH-3 remains separate
+- [ ] Slice B does not start until the control plane has verified RUNTIME-01 and OPS-01 LOCKED evidence, added those IDs to dependsOn, and recorded slice B authorization, scope, resources, and admission
+- [ ] Slice A admission is not used as permission for slice B or later slices
+- [ ] C2 does not start without its separate PROVIDER-LIVE and CREDIT authorization and resource transition
+- [ ] Final acceptance is C4, not C1+C2
+- [ ] Old host is not described as clean and is not retired by this task's registration
+- [ ] Not LOCKED by an implementer
+
