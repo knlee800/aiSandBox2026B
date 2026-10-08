@@ -3,7 +3,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import Docker from 'dockerode';
 import { GovernanceConfig } from '../config/governance.config';
 
-const SANDBOX_IMAGE = 'node:20-alpine';
+const SANDBOX_IMAGE = process.env.SANDBOX_IMAGE?.trim() || 'node:24-alpine';
 const BROWSER_SANDBOX_IMAGE = 'aisandbox-workspace-browser:local';
 
 export interface CreateContainerOptions {

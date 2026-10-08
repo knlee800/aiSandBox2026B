@@ -288,17 +288,90 @@ describe('DockerRuntimeService createContainer browser-capable path', () => {
     return mockCreateContainer.mock.calls[0][0];
   }
 
-  it('uses node:20-alpine when browserCapable is not set', async () => {
-    await service.createContainer('sess-1', '/tmp/ws');
+  function createIsolatedRuntime(sandboxImage: string | undefined): {
+    service: DockerRuntimeService;
+    mockCreateContainer: jest.Mock<any>;
+  } {
+    const previous = process.env.SANDBOX_IMAGE;
+    if (sandboxImage === undefined) {
+      delete process.env.SANDBOX_IMAGE;
+    } else {
+      process.env.SANDBOX_IMAGE = sandboxImage;
+    }
 
-    expect(mockCreateContainer).toHaveBeenCalledTimes(1);
-    expect(getCallArgs().Image).toBe('node:20-alpine');
+    let isolatedService: DockerRuntimeService | undefined;
+    let isolatedCreate: jest.Mock<any> | undefined;
+    jest.resetModules();
+    jest.isolateModules(() => {
+      const loaded = require('./docker-runtime.service') as typeof import('./docker-runtime.service');
+      isolatedService = new loaded.DockerRuntimeService({ ...DEFAULT_GOVERNANCE_MOCK } as any);
+      isolatedCreate = jest.fn<any>().mockResolvedValue({ id: 'container-abc' } as any);
+      (isolatedService as any).docker = {
+        createContainer: isolatedCreate,
+        ping: jest.fn<any>().mockResolvedValue('OK' as any),
+        pull: jest.fn(),
+        modem: { followProgress: jest.fn() },
+      };
+    });
+
+    if (previous === undefined) {
+      delete process.env.SANDBOX_IMAGE;
+    } else {
+      process.env.SANDBOX_IMAGE = previous;
+    }
+
+    if (!isolatedService || !isolatedCreate) {
+      throw new Error('isolated docker runtime module did not load');
+    }
+    return { service: isolatedService, mockCreateContainer: isolatedCreate };
+  }
+
+  function createdImage(mockCreate: jest.Mock<any>): string {
+    const args = mockCreate.mock.calls[0][0] as { Image: string };
+    return args.Image;
+  }
+
+  it('uses node:24-alpine when SANDBOX_IMAGE is unset and browserCapable is not set', async () => {
+    const isolated = createIsolatedRuntime(undefined);
+    await isolated.service.createContainer('sess-1', '/tmp/ws');
+
+    expect(isolated.mockCreateContainer).toHaveBeenCalledTimes(1);
+    expect(createdImage(isolated.mockCreateContainer)).toBe('node:24-alpine');
   });
 
-  it('uses node:20-alpine when browserCapable is false', async () => {
-    await service.createContainer('sess-2', '/tmp/ws', { browserCapable: false });
+  it('uses node:24-alpine when SANDBOX_IMAGE is unset and browserCapable is false', async () => {
+    const isolated = createIsolatedRuntime(undefined);
+    await isolated.service.createContainer('sess-2', '/tmp/ws', { browserCapable: false });
 
-    expect(getCallArgs().Image).toBe('node:20-alpine');
+    expect(createdImage(isolated.mockCreateContainer)).toBe('node:24-alpine');
+  });
+
+  it('uses node:24-alpine when SANDBOX_IMAGE is blank', async () => {
+    const isolated = createIsolatedRuntime('');
+    await isolated.service.createContainer('sess-blank', '/tmp/ws');
+
+    expect(createdImage(isolated.mockCreateContainer)).toBe('node:24-alpine');
+  });
+
+  it('uses node:24-alpine when SANDBOX_IMAGE is only whitespace', async () => {
+    const isolated = createIsolatedRuntime('   ');
+    await isolated.service.createContainer('sess-blank-ws', '/tmp/ws');
+
+    expect(createdImage(isolated.mockCreateContainer)).toBe('node:24-alpine');
+  });
+
+  it('uses a trimmed SANDBOX_IMAGE override for normal workspace creation', async () => {
+    const isolated = createIsolatedRuntime('  node:22-alpine  ');
+    await isolated.service.createContainer('sess-override', '/tmp/ws', { browserCapable: false });
+
+    expect(createdImage(isolated.mockCreateContainer)).toBe('node:22-alpine');
+  });
+
+  it('keeps the browser workspace image when SANDBOX_IMAGE is set', async () => {
+    const isolated = createIsolatedRuntime('node:22-alpine');
+    await isolated.service.createContainer('sess-browser-override', '/tmp/ws', { browserCapable: true });
+
+    expect(createdImage(isolated.mockCreateContainer)).toBe('aisandbox-workspace-browser:local');
   });
 
   it('applies standard resource limits when browserCapable is not set', async () => {

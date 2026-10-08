@@ -12,22 +12,23 @@
  * - PostgreSQL connectivity
  * - api-gateway startup validation
  * - Authentication & authorization
- * - End-to-end execution (real provider)
+ * - Current local execute contract: 503 while execution is disabled, otherwise 202 queued
  * - Billing visibility (read-only)
  *
  * INVARIANTS:
  * - No production logic changes
  * - No schema changes
  * - No new endpoints
- * - No env mutation inside tests
+ * - Execution enablement is changed only inside the queued-execute test and restored afterward
  * - No secrets committed
  *
  * PREREQUISITES:
  * - PostgreSQL running on localhost:5432
  * - Database 'aisandbox' created and migrated
- * - Valid API key in database
- * - AI_PROVIDER environment variable set
- * - Provider API key configured (e.g., XAI_API_KEY)
+ * - Redis for the gateway queue
+ * - Static internal test key test-api-key-user-1 and a test credit balance
+ * - AI_PROVIDER=stub. This file does not call a live provider.
+ * - Live provider-journey evidence remains a later DEPLOY acceptance requirement.
  *
  * USAGE:
  * npm test -- smoke.integration.spec.ts
@@ -38,14 +39,22 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { AppModule } from '../app.module';
 import request from 'supertest';
 import { DataSource } from 'typeorm';
+import * as bcrypt from 'bcrypt';
+import { QueueService } from '../queue/queue.service';
 
 describe('Release Candidate Smoke Pack (Phase 33A)', () => {
   let app: INestApplication;
   let dataSource: DataSource;
+  let enqueueSpy: jest.SpyInstance;
+  let savedGlobalExecutionEnabled: string | undefined;
 
-  // Test configuration
-  const API_KEY = 'valid-api-key'; // Must exist in database
+  // Billing checks use the public static test key. Execute checks use the internal static test key.
+  const API_KEY = 'valid-api-key';
+  const INTERNAL_EXECUTE_KEY = 'test-api-key-user-1';
+  const SEEDED_EXECUTE_KEY = 'runtime01-smoke-execute-key';
+  const SEEDED_USER_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
   const BASE_URL = 'http://localhost:4000';
+  const EXECUTION_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
   beforeAll(async () => {
     // Create NestJS test application
@@ -71,9 +80,54 @@ describe('Release Candidate Smoke Pack (Phase 33A)', () => {
 
     // Get DataSource for direct database queries
     dataSource = moduleFixture.get<DataSource>(DataSource);
+    savedGlobalExecutionEnabled = process.env.GLOBAL_EXECUTION_ENABLED;
+    // jest.spyOn alone records the call and still runs BullMQ queue.add.
+    // This replacement records the payload and resolves without submitting work.
+    enqueueSpy = jest
+      .spyOn(app.get(QueueService), 'enqueueExecution')
+      .mockImplementation(async () => undefined);
+    await dataSource.query(
+      `INSERT INTO users (id, email)
+       VALUES ($1, 'runtime01-smoke@example.test')
+       ON CONFLICT (id) DO NOTHING`,
+      [SEEDED_USER_ID],
+    );
+    const hashedKey = await bcrypt.hash(SEEDED_EXECUTE_KEY, 10);
+    await dataSource.query(
+      `INSERT INTO api_keys (hashed_key, key_prefix, user_id, scopes, is_internal)
+       VALUES ($1, $2, $3, $4::jsonb, true)`,
+      [hashedKey, SEEDED_EXECUTE_KEY.slice(0, 16), SEEDED_USER_ID, JSON.stringify(['ai:execute'])],
+    );
+    await dataSource.query(
+      `INSERT INTO credit_balances (owner_id, owner_type, plan_id, balance, monthly_allocation, period_start, period_end)
+       VALUES ($1, 'user', 'free', 100, 100, NOW(), NOW() + INTERVAL '30 days')
+       ON CONFLICT (owner_id, owner_type) DO UPDATE SET balance = EXCLUDED.balance`,
+      [SEEDED_USER_ID],
+    );
+    await dataSource.query(
+      `INSERT INTO sessions (id, user_id, status, expires_at, last_activity_at)
+       VALUES ($1, $2, 'pending', NOW() + INTERVAL '1 day', NOW())
+       ON CONFLICT (id) DO NOTHING`,
+      ['11111111-1111-4111-8111-111111111111', SEEDED_USER_ID],
+    );
+  });
+
+  afterEach(() => {
+    enqueueSpy.mockClear();
+    if (savedGlobalExecutionEnabled === undefined) {
+      delete process.env.GLOBAL_EXECUTION_ENABLED;
+    } else {
+      process.env.GLOBAL_EXECUTION_ENABLED = savedGlobalExecutionEnabled;
+    }
   });
 
   afterAll(async () => {
+    enqueueSpy.mockRestore();
+    if (savedGlobalExecutionEnabled === undefined) {
+      delete process.env.GLOBAL_EXECUTION_ENABLED;
+    } else {
+      process.env.GLOBAL_EXECUTION_ENABLED = savedGlobalExecutionEnabled;
+    }
     await app.close();
   });
 
@@ -180,39 +234,44 @@ describe('Release Candidate Smoke Pack (Phase 33A)', () => {
     });
   });
 
-  describe('End-to-End Execution Layer', () => {
-    it('POST /api/ai/execute should execute with real provider', async () => {
+  describe('Local execute contract', () => {
+    const executeBody = {
+      sessionId: '11111111-1111-4111-8111-111111111111',
+      conversationId: '22222222-2222-4222-8222-222222222222',
+      userId: 'ignored-by-auth',
+      prompt: 'What is 2+2? Answer in one sentence.',
+    };
+
+    it('POST /api/ai/execute returns maintenance 503 and does not enqueue when execution is disabled', async () => {
+      delete process.env.GLOBAL_EXECUTION_ENABLED;
+
       const response = await request(app.getHttpServer())
         .post('/api/ai/execute')
-        .set('Authorization', `Bearer ${API_KEY}`)
-        .send({
-          sessionId: '00000000-0000-0000-0000-000000000005',
-          conversationId: '00000000-0000-0000-0000-000000000006',
-          userId: 'smoke-test-user',
-          prompt: 'What is 2+2? Answer in one sentence.',
-        });
+        .set('Authorization', `Bearer ${INTERNAL_EXECUTE_KEY}`)
+        .send(executeBody);
 
-      // Success criteria from Phase 30A
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('output');
-      expect(response.body).toHaveProperty('tokensUsed');
-      expect(response.body).toHaveProperty('model');
-
-      // Validate NOT stub response
-      expect(response.body.output).not.toContain('[STUB]');
-      expect(response.body.output).not.toBe(
-        '[STUB] AI execution not implemented yet',
+      expect(response.status).toBe(503);
+      expect(response.body.message).toBe(
+        'AI execution temporarily disabled for maintenance',
       );
+      expect(enqueueSpy).not.toHaveBeenCalled();
+    });
 
-      // Validate real provider execution
-      expect(response.body.tokensUsed).toBeGreaterThan(0);
-      expect(response.body.model).toBeDefined();
-      expect(response.body.model).not.toBe('stub-model');
+    it('POST /api/ai/execute returns 202 queued and enqueues when execution is enabled for this test', async () => {
+      process.env.GLOBAL_EXECUTION_ENABLED = 'true';
 
-      // Validate output is natural language
-      expect(response.body.output.length).toBeGreaterThan(0);
-      expect(typeof response.body.output).toBe('string');
-    }, 10000); // 10 second timeout for provider API call
+      const response = await request(app.getHttpServer())
+        .post('/api/ai/execute')
+        .set('Authorization', `Bearer ${SEEDED_EXECUTE_KEY}`)
+        .send(executeBody);
+
+      expect(response.status).toBe(202);
+      expect(response.body.status).toBe('queued');
+      expect(response.body.executionId).toEqual(expect.stringMatching(EXECUTION_UUID));
+      expect(enqueueSpy).toHaveBeenCalledTimes(1);
+      expect(enqueueSpy.mock.calls[0][0].executionId).toBe(response.body.executionId);
+      expect(enqueueSpy.mock.calls[0][0].prompt).toBe(executeBody.prompt);
+    });
   });
 
   describe('Billing Visibility Layer', () => {
@@ -295,15 +354,18 @@ describe('Release Candidate Smoke Pack (Phase 33A)', () => {
       // Run minimal validation sequence
       await request(app.getHttpServer()).get('/api/health');
       await request(app.getHttpServer()).get('/api/health/ready');
-      await request(app.getHttpServer())
+      delete process.env.GLOBAL_EXECUTION_ENABLED;
+      const disabledExecute = await request(app.getHttpServer())
         .post('/api/ai/execute')
-        .set('Authorization', `Bearer ${API_KEY}`)
+        .set('Authorization', `Bearer ${INTERNAL_EXECUTE_KEY}`)
         .send({
-          sessionId: '00000000-0000-0000-0000-000000000007',
-          conversationId: '00000000-0000-0000-0000-000000000008',
+          sessionId: '33333333-3333-4333-8333-333333333333',
+          conversationId: '44444444-4444-4444-8444-444444444444',
           userId: 'smoke-final',
           prompt: 'Say hello in one word.',
         });
+      expect(disabledExecute.status).toBe(503);
+      expect(enqueueSpy).not.toHaveBeenCalled();
       await request(app.getHttpServer())
         .get('/api/billing/snapshots')
         .set('Authorization', `Bearer ${API_KEY}`);

@@ -1,7 +1,8 @@
 # CLEAN-BASELINE-GOV-01 — Decision record
 
 **Date:** 2026-10-05 registration; 2026-10-07 closure
-**Status:** COMPLETE AND LOCKED — 2026-10-07. Independent review accepted the ENV-validation package. Governance closure only. Not implementation acceptance. AUTH-1 is not granted.
+**Status:** COMPLETE AND LOCKED — 2026-10-07. Independent review accepted the ENV-validation package. Governance closure only. Not implementation acceptance. AUTH-1 is not granted by this lock.
+**Later RUNTIME-01 admission:** the final section of this record. GOV-01 review is not reopened.
 **Earlier status, preserved as history:** REGISTERED 2026-10-05. Governance records written. NOT LOCKED until this closure. At that time this record did not claim independent reviewer approval, implementation success, runtime readiness, or authority for any host action.
 **Repository HEAD at registration and closure:** `1abd3b6430fdd837413f4f4b39dc718a10954d04` (branch `main`; locally recorded `origin/main` is the same commit; no fetch).
 
@@ -140,3 +141,64 @@ This lock does not grant AUTH-1 or any later authorization. RUNTIME-01, OPS-01, 
 The exit-1 canonical failure and the separate diagnostic-copy run remain historical. Neither is withdrawn.
 
 **Closure validation.** After this lock was recorded and GOVERNANCE was released, the unchanged `scripts/validate-lane-capacity.ps1` was run with its default proof path. Exit code 0. Stderr was empty. `admissibleForcingCandidates` is empty. `idleCode` is `NO_PAIRWISE_ADMISSIBLE_CANDIDATE`. The three implementation candidates remain `NOT_READY`. This PASS closes the governance registration record only. It does not admit or accept implementation.
+
+
+## Scoped AUTH-1 - CLEAN-BASELINE-RUNTIME-01 admission - 2026-10-07
+
+Keith authorized a scoped AUTH-1 for CLEAN-BASELINE-RUNTIME-01 only: control-plane admission, the three registered implementation files, and the approved local validation. This is not the consolidated plan's paired admission of OPS-01. OPS-01 and DEPLOY-01 stay PLANNED / NOT ADMITTED / NOT EXECUTED with startCondition=NOT_READY. Their scopes and dependency order are unchanged. AUTH-2 through AUTH-9 and AUTH-W remain not granted.
+
+Lane 1 is ACTIVE for CLEAN-BASELINE-RUNTIME-01. Sidecar status=ADMITTED and startCondition=READY. Mutexes are CONTAINER-MANAGER, LOCAL-RUNTIME, and ENV. runtimeNeeds remains ["LOCAL-RUNTIME"]. ENV matches services/container-manager/.env.example. It is not authorization to edit other environment files, read secrets, or touch a host. stagingAuthorized, providerLiveAuthorized, and creditAuthorized stay false. localRuntimeAuthorized stays true.
+
+The RUNTIME-01 sentence that said GOV-01 is absent from lockedTaskIds is corrected in the canonical body. The 2026-10-07 closure already added CLEAN-BASELINE-GOV-01 to lockedTaskIds. That absence wording is preserved there as history. Machine dependsOn stays [].
+
+GOVERNANCE was acquired for this admission write and released UNOWNED before the canonical validator run. Occupancy hash for this end state is sha256:13d941df51bdb9f4eb912d0a89db71b4ca85e05b138de1cf501f69251e538358. Lane 2 stays EMPTY. Lane 3 stays DISABLED. saturationSuspended stays false.
+
+Before that validator run, the existing docs/control-plane/SATURATION_PROOF.json was copied outside the repository to C:\Users\knlee\aisb-preflight\CLEAN-BASELINE-RUNTIME-01-work\SATURATION_PROOF-before-RUNTIME-01-admission.json. SHA-256 7bc5535345ecd5e461fed00a2aebff807d2943e05981314432e2e993acffb015. That file is the committed closure proof. Its precommit HEAD is historical validation evidence and is not regenerated because HEAD moved.
+
+This admission does not accept implementation, does not LOCK RUNTIME-01, and does not authorize host access, deployment, retirement, invitations, harness activation, provider calls, spending, subagents, or Git mutation. HOST_CLEAN=NO, P7_ACCEPTED=NO, and EXEC-01C6A=NOT_READY stay. The inspection controller stays suspended. The ARCHITECTURE replacement row stays PLANNED.
+
+## RUNTIME-01 Step 2 result - 2026-10-07 - pending evidence
+
+The three registered files were edited in the working tree. The selected runtime is Node 24. The normal workspace default is `node:24-alpine`. Node 22 was not used.
+
+Official `node:24-bookworm` `sha256:3d27e5c11e5786e309ec3e03f93ae536eb36e6e5eb3714d5eb3300a36157add0` ran root `npm ci` with `NODE_ENV` unset, then the four builds and four test scripts. Official `node:24-alpine` `sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1` ran the workspace bootstrap: Git 2.54.0 and Node v24.21.0.
+
+Container-manager tests passed: 8 suites, 137 tests. AI-service tests passed: 38 suites, 903 passed, 1 skipped. Frontend tests passed: 776 passed, 0 failed, 0 skipped. Gateway `npm test` exited 1: 13 failed, 7 skipped, 2280 passed. The failure is `smoke.integration.spec.ts` with `ECONNREFUSED 127.0.0.1:5432`. That file's own prerequisite is PostgreSQL on localhost:5432. It was not started. Live `.env` files were not copied into the test copy. This is not evidence that Node 24 is incompatible, and it is not acceptance.
+
+Lane 1 stays ACTIVE. Candidate status stays ADMITTED. The task is not LANE-DONE and not LOCKED. OPS-01 and DEPLOY-01 stay `startCondition=NOT_READY`. The admission validator PASS is not implementation acceptance.
+
+## RUNTIME-01 gateway continuation - 2026-10-07 - still pending
+
+The first gateway failure was not only a missing database. All 13 smoke tests failed in `beforeAll`. The recorded assertion was `APP_BASE_URL is required for email auth`. TypeORM also logged `ECONNREFUSED 127.0.0.1:5432` because `NODE_ENV=test` resolves the host to localhost.
+
+A task-owned PostgreSQL 15.17 container and Redis 7 container shared one network namespace with the Node 24 test container, so `127.0.0.1:5432` and `127.0.0.1:6379` were those fixtures. Credentials were test-only. `npm run migration:run` applied the gateway migrations after `NODE_PATH` exposed the workspace `ts-node`. Schema check found `api_keys`, `usage_records`, `billing_snapshots`, and `invoices`. Image identity remained `sha256:3d27e5c11e5786e309ec3e03f93ae536eb36e6e5eb3714d5eb3300a36157add0`. The three implementation-file hashes matched. `AI_PROVIDER=stub`. No provider call was made.
+
+Final gateway command: `npm test -- --watchAll=false --ci`. Exit 1. Test Suites: 1 failed, 2 skipped, 170 passed, 171 of 173 total. Tests: 1 failed, 7 skipped, 2292 passed, 2300 total. The skipped suites remain the opt-in PostgreSQL suites. The failed test is `POST /api/ai/execute should execute with real provider`: expected 200, received 503. `GLOBAL_EXECUTION_ENABLED` defaults false and the guard returns 503 with `AI execution temporarily disabled for maintenance`. The current execute handler returns 202 `{ executionId, status: 'queued' }` and does not return provider output. Passing that test needs a gateway or test change outside the three-file scope, or a live provider execution this authorization does not allow.
+
+Node 24 stays the selected runtime. The task stays ACTIVE and is not LANE-DONE. Occupancy was not changed, so the admission saturation proof was not regenerated.
+
+## RUNTIME-01 scope amendment - smoke test only - 2026-10-07
+
+Keith authorized a prospective bounded amendment before the edit. The current application write scope adds exactly `services/api-gateway/src/__tests__/smoke.integration.spec.ts`. The original three container-manager paths remain. GATEWAY is added to the candidate and to Lane 1. CONTAINER-MANAGER, LOCAL-RUNTIME, and ENV stay. `runtimeNeeds` stays `["LOCAL-RUNTIME"]`. GATEWAY was UNOWNED on the current board. GOV-01 remains LOCKED. This amendment is not Step 3 and not LOCK.
+
+Controlling contract, confirmed before the edit: PRD §4 and §5 say Ask/Build and AI execution are asynchronous. ARCHITECTURE §11.1 step 7 says return `202 { executionId, status: 'queued' }`. §11.2 says `GLOBAL_EXECUTION_ENABLED` defaults false and then `POST /api/ai/execute` returns 503 before any logic runs. The smoke test's 200 and synchronous provider-output expectation conflicts with that current contract. It is not the production contract. The authorized correction is the smoke test only. A live provider call would not turn that obsolete 200 response into the current 202 contract. The corrected smoke test covers the documented 503 maintenance response with no enqueue, and the documented 202 queued response with enqueue, using test-only state. Focused smoke result: 14 passed. Full gateway result: 7 skipped, 2294 passed, 2301 total, exit 0. Lane 1 is LANE-DONE and not LOCKED.
+
+## Queue isolation and clean copy - 2026-10-07
+
+The lane returned from LANE-DONE to ACTIVE for this continuation, then returned to LANE-DONE after the checks below. Mutexes stayed CONTAINER-MANAGER, LOCAL-RUNTIME, ENV, and GATEWAY. `runtimeNeeds` stayed LOCAL-RUNTIME.
+
+Jest has no setupFiles and no queue mock. `QueueService.enqueueExecution` calls `this.queue.add`. The earlier spy recorded that call and still submitted the BullMQ job. The smoke test now replaces `enqueueExecution` with a function that records the payload and resolves without calling `queue.add`. The real handler, authentication, and guards still run. No gateway worker is constructed in api-gateway source.
+
+The scratch copy is root manifests, api-gateway source, other workspace package.json files, and the three container-manager runtime files. It excludes workstation databases, journals, `.git`, and the workstation `workspaces` and `projects` trees. `database/aisandbox.db` resolved to `/tmp/aisb-scratch/database/aisandbox.db` and was absent before the suite. Fresh PostgreSQL 15 and Redis 7 were used. `AI_PROVIDER=stub` and `EMAIL_PROVIDER=stub`.
+
+Focused smoke: 14 passed, exit 0. Full gateway: 7 skipped, 2294 passed, 2301 total, exit 0. The two opt-in PostgreSQL suites stayed skipped. A live provider run is not what this local contract test proves.
+
+## RUNTIME-01 Step 3 closure and LOCK - 2026-10-07
+
+Independent review accepted `C:\Users\knlee\aisb-preflight\CLEAN-BASELINE-RUNTIME-01-ISOLATION-2026-10-07.zip`, 9168136 bytes, SHA-256 815fbcd6d3a99514ec2e872ece98ea965eb58c5552618873a94cd8e2c1fe403b. That package is the lock basis. No further implementation or test cycle was run.
+
+CLEAN-BASELINE-RUNTIME-01 is COMPLETE AND LOCKED. Checkpoint: `docs/CLEAN-BASELINE-RUNTIME-01-CHECKPOINT.md`. Candidate status is LOCKED. The task ID is in `lockedTaskIds` exactly once. Lane 1 is EMPTY. Lane 2 stays EMPTY. Lane 3 stays DISABLED. CONTAINER-MANAGER, LOCAL-RUNTIME, ENV, and GATEWAY are UNOWNED. GOVERNANCE is UNOWNED.
+
+The locked outcome is the local runtime prerequisite: selected runtime Node 24 and normal workspace image `node:24-alpine`, with the local smoke contract in the accepted package. OPS-01 and DEPLOY-01 stay `startCondition=NOT_READY` and unadmitted. `localRuntimeAuthorized` stays true. `stagingAuthorized`, `providerLiveAuthorized`, and `creditAuthorized` stay false. HOST_CLEAN=NO, P7_ACCEPTED=NO, and EXEC-01C6A=NOT_READY stay. The inspection controller stays suspended. The ARCHITECTURE replacement row stays PLANNED.
+
+This lock does not accept deployment, a real Builder journey, backup or restore, host access, invitations, harness activation, provider calls, spending, or Git mutation. GOV-01 review is not reopened.

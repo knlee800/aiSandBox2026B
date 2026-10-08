@@ -81767,21 +81767,21 @@ taskId=CLEAN-BASELINE-RUNTIME-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** PLANNED / NOT ADMITTED / NOT EXECUTED — registered 2026-10-05 by CLEAN-BASELINE-GOV-01. Registration is not implementation and is not success.
+**Status:** COMPLETE AND LOCKED - 2026-10-07. Checkpoint: `docs/CLEAN-BASELINE-RUNTIME-01-CHECKPOINT.md`. Candidate `status=LOCKED`. Lane 1 released EMPTY. Mutexes CONTAINER-MANAGER, LOCAL-RUNTIME, ENV, and GATEWAY released. GOVERNANCE UNOWNED. Accepted evidence `C:\Users\knlee\aisb-preflight\CLEAN-BASELINE-RUNTIME-01-ISOLATION-2026-10-07.zip` SHA-256 815fbcd6d3a99514ec2e872ece98ea965eb58c5552618873a94cd8e2c1fe403b. Historical status, preserved: LANE-DONE / Lane 1 - 2026-10-07. Not LOCKED. Earlier this step: ADMITTED / Lane 1 ACTIVE - 2026-10-07. Scoped AUTH-1 recorded for this task's admission, three-file implementation, and approved local validation. Step 2 code is in the working tree on Node 24 with default image node:24-alpine. Container-manager, AI-service, and frontend test suites passed. Gateway continuation on an isolated PostgreSQL 15 fixture: 2292 passed, 7 skipped, 1 failed. Historical failed-check record, not the lock basis: the smoke real-provider execute check expected 200 and received 503. That result was pending evidence. It was not LANE-DONE, not LOCKED, and not implementation acceptance. OPS-01 and DEPLOY-01 are not admitted. Earlier status, preserved: PLANNED / NOT ADMITTED / NOT EXECUTED, registered 2026-10-05 by CLEAN-BASELINE-GOV-01. That registration was not implementation and was not success.
 **Task ID:** CLEAN-BASELINE-RUNTIME-01
 **Title:** Supported host runtime and workspace image
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
-**Lifecycle:** 3-STEP. Step 1 is this registration. Step 2 implementation and Step 3 consolidation are not authorized.
-**Start condition (human):** NOT READY. GOV-01 is COMPLETE AND LOCKED as of 2026-10-07. AUTH-1 is not granted. This lock does not make the task startable.
-**Start condition (machine):** `NOT_READY`. `status=READY` together with `startCondition=NOT_READY` is valid registration encoding and does not grant execution permission. `localRuntimeAuthorized` is already true; do not set `startCondition=READY` without AUTH-1, or this FORCING candidate becomes admissible against an empty lane.
-**Depends on (human):** CLEAN-BASELINE-GOV-01 lock, satisfied 2026-10-07. AUTH-1 is not granted. No dependency on old-host cleanliness or EXEC-01C6A.
-**Depends on (machine `dependsOn`):** `[]`. GOV-01 is GOVERNANCE and is not in `lockedTaskIds`. Do not add it there unless a later lock puts it there.
-**Primary write scope (exact, not authorized to edit now):** `services/container-manager/src/docker/docker-runtime.service.ts`; `services/container-manager/src/docker/docker-runtime.service.spec.ts`; `services/container-manager/.env.example`.
-**Mutexes / resources (not acquired):** CONTAINER-MANAGER, LOCAL-RUNTIME, ENV. ENV is the catalog matcher for the declared `.env.example` path. It is not a `runtimeNeeds` entry. It does not authorize editing environment files, reading secrets, or host access. The catalog marks ENV exclusive. OPS-01 lists no mutex, so RUNTIME-01 and OPS-01 still do not share one. DEPLOY-01 also declares ENV, so RUNTIME-01 and DEPLOY-01 are not a concurrent pair.
+**Lifecycle:** 3-STEP. Step 1 registration is complete. Step 2 implementation and approved local validation are authorized by scoped AUTH-1 on 2026-10-07. Step 3 closure and LOCK completed 2026-10-07 after independent review of the accepted isolation package. Historical sentence, preserved: Step 3 consolidation and LOCK await independent review and are not part of this admission.
+**Start condition (human):** READY. GOV-01 is COMPLETE AND LOCKED as of 2026-10-07. Scoped AUTH-1 was recorded on 2026-10-07 for this task only. Historical sentence, preserved: before this admission the human start condition was NOT READY because AUTH-1 had not been granted, and the GOV-01 lock alone did not make the task startable.
+**Start condition (machine):** `READY`. `status=LOCKED`. Lane 1 is EMPTY. Historical admission encoding, preserved: `status=ADMITTED` while Lane 1 is ACTIVE. Historical registration encoding, preserved: `status=READY` together with `startCondition=NOT_READY` did not grant execution permission. `localRuntimeAuthorized` was already true; `startCondition` was not set to `READY` until this scoped AUTH-1, because that change without occupying a lane would make this FORCING candidate admissible against an empty lane. Historical admission fact, preserved: this admission occupied Lane 1 in that same end state.
+**Depends on (human):** CLEAN-BASELINE-GOV-01 lock, satisfied 2026-10-07. Scoped AUTH-1 recorded 2026-10-07. No dependency on old-host cleanliness or EXEC-01C6A. Historical sentence, preserved: AUTH-1 was not granted at registration.
+**Depends on (machine `dependsOn`):** `[]`. Historical registration sentence, preserved: GOV-01 is GOVERNANCE and is not in `lockedTaskIds`. Do not add it there unless a later lock puts it there. Current fact: the 2026-10-07 closure added `CLEAN-BASELINE-GOV-01` to `lockedTaskIds`. The absence claim is historical only. Machine `dependsOn` stays `[]`.
+**Primary write scope (exact, current):** the original three runtime files, preserved: `services/container-manager/src/docker/docker-runtime.service.ts`; `services/container-manager/src/docker/docker-runtime.service.spec.ts`; `services/container-manager/.env.example`. 2026-10-07 scope amendment, authorized before the smoke edit: `services/api-gateway/src/__tests__/smoke.integration.spec.ts` only. No gateway production source, package, or migration path is authorized. Historical sentence, preserved: at admission no other application path was authorized.
+**Mutexes / resources (Lane 1):** released UNOWNED at lock 2026-10-07. Historical hold, preserved: CONTAINER-MANAGER, LOCAL-RUNTIME, ENV, and GATEWAY as of the 2026-10-07 smoke-test scope amendment. GATEWAY was UNOWNED before this amendment. Historical acquisition on 2026-10-07 was CONTAINER-MANAGER, LOCAL-RUNTIME, ENV. ENV is the catalog matcher for the declared `.env.example` path. It is not a `runtimeNeeds` entry. It does not authorize editing environment files, reading secrets, or host access. The catalog marks ENV exclusive. OPS-01 lists no mutex, so RUNTIME-01 and OPS-01 still do not share one. DEPLOY-01 also declares ENV, so RUNTIME-01 and DEPLOY-01 are not a concurrent pair.
 **Hot-file leases:** none. CONTAINER-MANAGER already covers the service tree.
 **Shared contracts:** none
-**Evidence class:** LOCAL-TESTS. The planned compatibility check uses a local container under LOCAL-RUNTIME. It is not run.
+**Evidence class:** LOCAL-TESTS. Lock basis: accepted isolation package. Focused smoke 14 passed. Full gateway 7 skipped, 2294 passed, 2301 total, exit 0. Historical pending result, not the lock basis: The planned compatibility check uses a local container under LOCAL-RUNTIME. The Node 24 run was executed. Container-manager tests passed. The gateway suite was rerun with an isolated PostgreSQL 15 fixture. 2292 tests passed, 7 were skipped, and 1 smoke execute test failed with HTTP 503. That failure was pending evidence, not acceptance.
 **Revert isolation:** acceptable against OPS-01. Write scopes do not overlap, and OPS-01 lists no mutex, so those two are a safe pair once both are later made startable. They are not a safe pair with DEPLOY-01, which also declares exclusive ENV. See U1: runtime tests that share LOCAL-RUNTIME run sequentially, not in parallel.
 **saturationClass:** FORCING
 **productClass:** CURRENT
@@ -81791,22 +81791,26 @@ nature=IMPLEMENTATION
 **exclusiveCapacity:** false
 **runtimeNeeds:** LOCAL-RUNTIME
 
-**Planned change (not made):** `SANDBOX_IMAGE` reads `process.env.SANDBOX_IMAGE` and otherwise uses `node:24-alpine`, plus spec coverage and an `.env.example` line. Node 20 is not an acceptable result. The approved path is Node 24, then Node 22 if Node 24's compatibility check fails, then a stop for a PACKAGE task if Node 22 also fails. No check is authorized now.
+**Planned change (LOCKED 2026-10-07):** `SANDBOX_IMAGE` reads `process.env.SANDBOX_IMAGE` and otherwise uses `node:24-alpine`, plus spec coverage and an `.env.example` line. Node 20 is not an acceptable result. The approved path is Node 24, then Node 22 if Node 24's compatibility check fails, then a stop for a PACKAGE task if Node 22 also fails. The approved Node 24 check was run. Node 22 was not selected. Historical pending sentence, not the lock basis: the remaining gateway smoke execute failure was pending evidence before the accepted isolation package.
 
 **Acceptance bound.** Acceptance requires successful compatibility evidence for the runtime actually selected on that path, plus the consolidated plan §6.R builds, the four test suites, and the workspace-bootstrap verification. The selected host runtime, workspace image, and documented configuration must match that outcome. A failed check, an attempted check, or a stop for a PACKAGE task is BLOCKED / pending evidence. It is not acceptance and it is not grounds for LOCK.
 
 **U1 applies.** Code preparation may run in parallel with OPS-01 only after separate implementation authorization. The LOCAL-RUNTIME compatibility run is sequential with any other LOCAL-RUNTIME test. No cloud test is authorized. No implementation test or capability probe is run by this correction.
 
-#### Acceptance criteria (not started)
+#### Acceptance criteria (closed 2026-10-07)
 
-- [ ] GOV-01 is complete and locked, and AUTH-1 is recorded, before any edit
-- [ ] Only the three write-scope files change
-- [ ] Default image is `node:24-alpine`; `SANDBOX_IMAGE` overrides it; specs cover both
-- [ ] §6.R builds, four test suites, and workspace-bootstrap verification passed on the selected supported runtime
-- [ ] Successful Node 24 compatibility evidence, or successful Node 22 evidence after a recorded Node 24 failure, with configuration consistent with that outcome
-- [ ] A failed check, an attempted check, or a PACKAGE-task stop remains unchecked here and is not acceptance
-- [ ] No host, staging, provider, or package-manifest change
-- [ ] Not LOCKED by the implementer
+- [x] GOV-01 is complete and locked, and AUTH-1 is recorded, before any edit
+- [x] Application edits stay within the three runtime files plus the one authorized smoke test `services/api-gateway/src/__tests__/smoke.integration.spec.ts`
+- [x] Default image is `node:24-alpine`; `SANDBOX_IMAGE` overrides it; specs cover both
+- [x] §6.R builds, four test suites, and workspace-bootstrap verification passed on the selected supported runtime
+- [x] Successful Node 24 compatibility evidence for `node:24-alpine`, with configuration consistent with that outcome. Node 22 was not selected
+- [x] A failed check, an attempted check, or a PACKAGE-task stop is labelled history and is not acceptance
+- [x] No host, staging, provider, or package-manifest change
+- [x] Not LOCKED by the implementer
+
+**Scoped AUTH-1 admission - 2026-10-07.** Keith authorized admission of CLEAN-BASELINE-RUNTIME-01 only, its three-file implementation, and the approved local validation. Lane 1 is ACTIVE. Mutexes CONTAINER-MANAGER, LOCAL-RUNTIME, and ENV are acquired. `runtimeNeeds` remains `["LOCAL-RUNTIME"]`. `startCondition=READY` and `status=ADMITTED`. OPS-01 and DEPLOY-01 stay `startCondition=NOT_READY` and are not admitted. `stagingAuthorized`, `providerLiveAuthorized`, and `creditAuthorized` stay false. `localRuntimeAuthorized` stays true. GOVERNANCE was used for the admission records and released UNOWNED before validation. This admission is not LOCK and is not implementation acceptance. Step 3 awaits independent review.
+
+**Step 3 closure and LOCK - 2026-10-07.** Independent review accepted `C:\Users\knlee\aisb-preflight\CLEAN-BASELINE-RUNTIME-01-ISOLATION-2026-10-07.zip`, 9168136 bytes, SHA-256 815fbcd6d3a99514ec2e872ece98ea965eb58c5552618873a94cd8e2c1fe403b. Candidate `status=LOCKED`. `CLEAN-BASELINE-RUNTIME-01` is in `lockedTaskIds` exactly once. Lane 1 is EMPTY. CONTAINER-MANAGER, LOCAL-RUNTIME, ENV, and GATEWAY are UNOWNED. GOVERNANCE is UNOWNED. OPS-01 and DEPLOY-01 stay `startCondition=NOT_READY` and unadmitted. Authorization flags are unchanged. This lock is the local runtime prerequisite only.
 
 ### CLEAN-BASELINE-OPS-01 — Replacement operations files
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
