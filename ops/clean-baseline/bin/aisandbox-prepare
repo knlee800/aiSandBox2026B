@@ -1,0 +1,505 @@
+#!/bin/bash
+# Fresh-target preparation. Does not start an application writer.
+set -euo pipefail
+
+# Pinned official package. The Cloudsmith apt index is not used.
+caddy_on_path() {
+  command -v caddy >/dev/null 2>&1
+}
+
+caddy_systemd_etc() {
+  printf '%s\n' "${AISB_SYSTEMD_ETC:-/etc/systemd/system}"
+}
+
+caddy_helper_mask_dir() {
+  printf '%s\n' "${AISB_CADDY_HELPER_MASK_DIR:-/var/lib/systemd/deb-systemd-helper-masked}"
+}
+
+caddy_note_inspect() {
+  note "Caddy inspection failed for ${1}: ${2}"
+  return 30
+}
+
+caddy_note_refuse() {
+  note "Caddy installation state is not admissible: ${1}"
+  return 30
+}
+
+caddy_probe_enabled() {
+  local unit="$1" out err rc=0 err_text
+  err="$(mktemp)"
+  out="$(LC_ALL=C systemctl is-enabled "$unit" 2>"$err")" || rc=$?
+  err_text="$(cat "$err")"
+  rm -f -- "$err"
+  if [[ -n "$err_text" || "$out" == *$'\n'* ]]; then
+    caddy_note_inspect "is-enabled ${unit}" "rc=${rc} out=${out:-<empty>}" || return $?
+  fi
+  case "${out}|${rc}" in
+    'not-found|4'|'masked|1'|'disabled|1'|'enabled|0'|'enabled-runtime|0'|'static|0'|'alias|0'|'indirect|0'|'generated|0'|'transient|0'|'linked|1'|'linked-runtime|1'|'masked-runtime|1')
+      printf '%s\n' "$out"
+      ;;
+    *)
+      caddy_note_inspect "is-enabled ${unit}" "rc=${rc} out=${out:-<empty>}" || return $?
+      ;;
+  esac
+}
+
+caddy_probe_active() {
+  local unit="$1" out err rc=0 err_text
+  err="$(mktemp)"
+  out="$(LC_ALL=C systemctl is-active "$unit" 2>"$err")" || rc=$?
+  err_text="$(cat "$err")"
+  rm -f -- "$err"
+  if [[ -n "$err_text" || "$out" == *$'\n'* ]]; then
+    caddy_note_inspect "is-active ${unit}" "rc=${rc} out=${out:-<empty>}" || return $?
+  fi
+  case "${out}|${rc}" in
+    'inactive|4'|'inactive|3'|'active|0'|'reloading|0'|'failed|3'|'activating|3'|'deactivating|3')
+      printf '%s|%s\n' "$out" "$rc"
+      ;;
+    *)
+      caddy_note_inspect "is-active ${unit}" "rc=${rc} out=${out:-<empty>}" || return $?
+      ;;
+  esac
+}
+
+caddy_probe_package() {
+  local out err rc=0 err_text
+  err="$(mktemp)"
+  out="$(LC_ALL=C dpkg-query -W -f='${db:Status-Status} ${Version}' caddy 2>"$err")" || rc=$?
+  err_text="$(cat "$err")"
+  rm -f -- "$err"
+  if [[ "$rc" -eq 1 && -z "$out" && "$err_text" == "dpkg-query: no packages found matching caddy" ]]; then
+    printf 'absent\n'
+    return 0
+  fi
+  if [[ "$rc" -eq 0 && -z "$err_text" && "$out" =~ ^(not-installed|config-files|half-installed|unpacked|half-configured|triggers-awaited|triggers-pending|installed)[[:space:]]([^[:space:]]*)$ ]]; then
+    printf '%s %s\n' "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}"
+    return 0
+  fi
+  caddy_note_inspect "dpkg-query caddy" "rc=${rc} out=${out:-<empty>} err=${err_text:-<empty>}" || return $?
+}
+
+caddy_path_kind() {
+  local path="$1" err rc=0 err_text dest
+  if [[ -L "$path" ]]; then
+    dest="$(readlink -- "$path")" || {
+      caddy_note_inspect "readlink ${path}" "readlink failed" || return $?
+    }
+    if [[ "$dest" == "/dev/null" ]]; then
+      printf 'mask\n'
+    else
+      printf 'other\n'
+    fi
+    return 0
+  fi
+  if [[ -e "$path" ]]; then
+    printf 'other\n'
+    return 0
+  fi
+  err="$(mktemp)"
+  LC_ALL=C stat -- "$path" >/dev/null 2>"$err" || rc=$?
+  err_text="$(cat "$err")"
+  rm -f -- "$err"
+  if [[ "$rc" -eq 1 && "$err_text" == *"No such file or directory"* && "$err_text" != *"Permission denied"* ]]; then
+    printf 'absent\n'
+    return 0
+  fi
+  caddy_note_inspect "stat ${path}" "rc=${rc} err=${err_text:-<empty>}" || return $?
+}
+
+caddy_unit_is_fresh() {
+  local n="$1"
+  [[ "${CADDY_EN[$n]}" == "not-found" && "${CADDY_AC[$n]}" == "inactive|4" && "${CADDY_LINK[$n]}" == "absent" && "${CADDY_WANTS[$n]}" == "absent" && "${CADDY_HELPER[$n]}" == "absent" ]]
+}
+
+caddy_unit_is_masked() {
+  local n="$1"
+  [[ "${CADDY_EN[$n]}" == "masked" && "${CADDY_AC[$n]}" == "inactive|3" && "${CADDY_LINK[$n]}" == "mask" && "${CADDY_WANTS[$n]}" == "absent" && "${CADDY_HELPER[$n]}" == "absent" ]]
+}
+
+caddy_classify() {
+  local pkg unit on_path=0 pkg_status pkg_version enabled active link wants helper
+  pkg="$(caddy_probe_package)" || return $?
+  if caddy_on_path; then
+    on_path=1
+  fi
+  CADDY_EN=()
+  CADDY_AC=()
+  CADDY_LINK=()
+  CADDY_WANTS=()
+  CADDY_HELPER=()
+  for unit in caddy.service caddy-api.service; do
+    enabled="$(caddy_probe_enabled "$unit")" || return $?
+    active="$(caddy_probe_active "$unit")" || return $?
+    link="$(caddy_path_kind "$(caddy_systemd_etc)/${unit}")" || return $?
+    wants="$(caddy_path_kind "$(caddy_systemd_etc)/multi-user.target.wants/${unit}")" || return $?
+    helper="$(caddy_path_kind "$(caddy_helper_mask_dir)/${unit}")" || return $?
+    CADDY_EN+=("$enabled")
+    CADDY_AC+=("$active")
+    CADDY_LINK+=("$link")
+    CADDY_WANTS+=("$wants")
+    CADDY_HELPER+=("$helper")
+  done
+  if [[ "$pkg" == "absent" ]]; then
+    pkg_status="absent"
+    pkg_version=""
+  else
+    read -r pkg_status pkg_version <<<"$pkg"
+  fi
+  if [[ "$on_path" -eq 0 && ( "$pkg_status" == "absent" || "$pkg_status" == "not-installed" || "$pkg_status" == "config-files" ) ]] && caddy_unit_is_fresh 0 && caddy_unit_is_fresh 1; then
+    printf 'fresh\n'
+    return 0
+  fi
+  if [[ "$on_path" -eq 0 && ( "$pkg_status" == "absent" || "$pkg_status" == "not-installed" ) ]] && caddy_unit_is_masked 0 && caddy_unit_is_masked 1; then
+    printf 'retry-before\n'
+    return 0
+  fi
+  if [[ "$on_path" -eq 1 && "$pkg_status" == "installed" && "$pkg_version" == "2.11.7" ]] && caddy_unit_is_masked 0 && caddy_unit_is_masked 1; then
+    printf 'retry-after\n'
+    return 0
+  fi
+  caddy_note_refuse "package=${pkg_status}${pkg_version:+ ${pkg_version}} path=${on_path} caddy.service=${CADDY_EN[0]}/${CADDY_AC[0]}/${CADDY_LINK[0]} caddy-api.service=${CADDY_EN[1]}/${CADDY_AC[1]}/${CADDY_LINK[1]}" || return $?
+}
+
+caddy_assert_masked() {
+  local unit enabled active link wants helper
+  for unit in caddy.service caddy-api.service; do
+    enabled="$(caddy_probe_enabled "$unit")" || return $?
+    active="$(caddy_probe_active "$unit")" || return $?
+    link="$(caddy_path_kind "$(caddy_systemd_etc)/${unit}")" || return $?
+    wants="$(caddy_path_kind "$(caddy_systemd_etc)/multi-user.target.wants/${unit}")" || return $?
+    helper="$(caddy_path_kind "$(caddy_helper_mask_dir)/${unit}")" || return $?
+    if [[ "$enabled" == "masked" && "$active" == "inactive|3" && "$link" == "mask" && "$wants" == "absent" && "$helper" == "absent" ]]; then
+      continue
+    fi
+    caddy_note_refuse "after prepare ${unit} enabled=${enabled} active=${active} link=${link} wants=${wants} helper=${helper}" || return $?
+  done
+}
+
+caddy_mask_units() {
+  systemctl mask caddy.service caddy-api.service || {
+    note "Caddy mask failed with status $?"
+    return 30
+  }
+}
+
+install_caddy_service_override() {
+  local dropin="${AISB_CADDY_DROPIN:-/etc/systemd/system/caddy.service.d/aisandbox.conf}"
+  install -d -o root -g root -m 0755 "$(dirname -- "$dropin")"
+  cat > "$dropin" <<'EOF'
+[Service]
+EnvironmentFile=/etc/caddy/aisandbox-operator.env
+ExecStart=
+ExecStart=/usr/bin/caddy run --config /etc/caddy/Caddyfile
+EOF
+  systemctl daemon-reload
+}
+
+acquire_pinned_caddy() {
+  local arch tmp rc class
+  finish_caddy_download() {
+    local prior="$1" cleanup_rc=0
+    rm -f -- "$tmp" || cleanup_rc=$?
+    if [[ "$cleanup_rc" -ne 0 ]]; then
+      note "Caddy package cleanup failed with status ${cleanup_rc}; temporary file remains at ${tmp}"
+      if [[ "$prior" -ne 0 ]]; then
+        exit "$prior"
+      fi
+      exit "$cleanup_rc"
+    fi
+    if [[ "$prior" -ne 0 ]]; then
+      exit "$prior"
+    fi
+  }
+  class="$(caddy_classify)" || exit $?
+  case "$class" in
+    fresh|retry-before) ;;
+    retry-after) return 0 ;;
+    *)
+      note "Caddy installation state is not admissible: ${class:-<empty>}"
+      exit 30
+      ;;
+  esac
+  arch="$(dpkg --print-architecture)"
+  if [[ "$arch" != "amd64" ]]; then
+    note "Caddy package is pinned to amd64, not ${arch}"
+    exit 30
+  fi
+  caddy_mask_units || exit $?
+  caddy_assert_masked || exit $?
+  tmp="$(mktemp)"
+  rc=0
+  curl -fsSL -o "$tmp" \
+    "https://github.com/caddyserver/caddy/releases/download/v2.11.7/caddy_2.11.7_linux_amd64.deb" || rc=$?
+  if [[ "$rc" -ne 0 ]]; then
+    finish_caddy_download "$rc"
+  fi
+  rc=0
+  printf '%s  %s\n' \
+    "47e8351c2317b427af14a103e763ca1118a3d2396a88b4c0669cdec9c4a68a957690194e2423a1633f53135741c33a41bdac2b55515b7d0f7adc8b733add50d9" \
+    "$tmp" | sha512sum -c - || rc=$?
+  if [[ "$rc" -ne 0 ]]; then
+    finish_caddy_download "$rc"
+  fi
+  rc=0
+  dpkg -i "$tmp" || rc=$?
+  if [[ "$rc" -ne 0 ]]; then
+    finish_caddy_download "$rc"
+  fi
+  caddy_assert_masked || finish_caddy_download 30
+  finish_caddy_download 0
+}
+
+prepare_parse_args() {
+  PREPARE_SHA=""
+  PREPARE_SITE=""
+  if [[ $# -ne 3 ]]; then
+    note "usage: aisandbox-prepare <40-hex-sha> --site public|localhost"
+    return 10
+  fi
+  if [[ "$2" != "--site" || ! "$1" =~ ^[0-9a-f]{40}$ ]]; then
+    note "usage: aisandbox-prepare <40-hex-sha> --site public|localhost"
+    return 10
+  fi
+  case "$3" in
+    public|localhost) ;;
+    *)
+      note "usage: aisandbox-prepare <40-hex-sha> --site public|localhost"
+      return 10
+      ;;
+  esac
+  PREPARE_SHA="$1"
+  PREPARE_SITE="$3"
+}
+
+prepare_caddyfile_source() {
+  local site="$1" tree="$2"
+  case "$site" in
+    public) printf '%s\n' "${tree}/caddy/Caddyfile" ;;
+    localhost) printf '%s\n' "${tree}/caddy/Caddyfile.drill" ;;
+    *) return 10 ;;
+  esac
+}
+
+if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
+  return 0
+fi
+
+HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if [[ -n "${AISB_OPS_LIB:-}" ]]; then
+  # shellcheck source=/dev/null
+  source "$AISB_OPS_LIB"
+elif [[ -f "$HERE/../lib/ops-lib.sh" ]]; then
+  # shellcheck source=/dev/null
+  source "$HERE/../lib/ops-lib.sh"
+else
+  # shellcheck source=/dev/null
+  source /usr/local/lib/aisandbox/ops-lib.sh
+fi
+
+ops_paths
+prepare_parse_args "$@" || exit 10
+sha="$PREPARE_SHA"
+site="$PREPARE_SITE"
+ops_require_root || exit 10
+ops_refuse_override || exit 10
+
+ops_lock || exit 10
+refuse_uid_collision || exit 10
+AISB_OP_ADMITTED=0
+prep_trap() {
+  local code=$1 class
+  [[ "${AISB_OP_ADMITTED:-0}" == "1" ]] || return 0
+  if [[ "$code" -eq 0 || "$code" -eq 10 || "$code" -eq 31 ]]; then
+    return 0
+  fi
+  class="$(classify_failure)"
+  if [[ "$class" == "unknown" ]]; then
+    note "failure class is unknown; this record does not say that no writer started"
+    return 0
+  fi
+  if [[ "$class" == "pre-start" && -f "$AISB_MARKER" ]]; then
+    marker_set_phase prepare-failed || true
+  fi
+}
+trap 'prep_trap $?' EXIT
+
+if [[ -f "$AISB_PREPARED" ]]; then
+  old="$(awk -F= '/^sha=/{print $2}' "$AISB_PREPARED")"
+  if [[ "$old" != "$sha" ]]; then
+    note "PREPARED records a different SHA"
+    exit 10
+  fi
+fi
+target_is_empty || exit 10
+
+op_begin prepare || exit 10
+marker_create prepare preparing prepare "" "" "" "$sha"
+op_set target_sha "$sha"
+AISB_OP_ADMITTED=1
+
+export DEBIAN_FRONTEND=noninteractive
+apt-get update
+if ! apt-cache show postgresql-15 >/dev/null 2>&1; then
+  apt-get install -y curl gnupg
+  install -d -o root -g root -m 0755 /usr/share/keyrings
+  curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgresql.gpg
+  printf 'deb [signed-by=/usr/share/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt %s-pgdg main\n' "$(. /etc/os-release && printf '%s' "$VERSION_CODENAME")" > /etc/apt/sources.list.d/pgdg.list
+  apt-get update
+fi
+apt-get install -y git sqlite3 age build-essential python3 acl attr postgresql-15 redis-server curl gnupg ca-certificates
+if ! command -v docker >/dev/null 2>&1; then
+  apt-get install -y ca-certificates curl
+  install -m 0755 -d /etc/apt/keyrings
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+  printf 'deb [arch=%s signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu %s stable\n' "$(dpkg --print-architecture)" "$(. /etc/os-release && printf '%s' "$VERSION_CODENAME")" > /etc/apt/sources.list.d/docker.list
+  apt-get update
+  apt-get install -y docker-ce docker-ce-cli containerd.io || {
+    note "Docker CE is not installable"
+    exit 30
+  }
+fi
+acquire_pinned_caddy
+if ! node -v 2>/dev/null | grep -q '^v24\.'; then
+  curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
+  apt-get install -y nodejs
+fi
+require_node24 >/dev/null
+if command -v pm2 >/dev/null 2>&1; then
+  note "pm2 is present; this path does not use it"
+  exit 30
+fi
+
+if ! getent group aisandbox >/dev/null; then
+  groupadd --system --gid 7300 aisandbox
+fi
+if ! id aisandbox >/dev/null 2>&1; then
+  useradd --system --uid 7300 --gid 7300 --home-dir /var/lib/aisandbox --create-home --shell /usr/sbin/nologin aisandbox
+fi
+[[ "$(id -u aisandbox)" == "7300" && "$(id -g aisandbox)" == "7300" ]] || {
+  note "aisandbox is not uid/gid 7300"
+  exit 10
+}
+
+install -d -o aisandbox -g aisandbox -m 0750 /opt/aisandbox
+install -d -o root -g root -m 0700 /etc/aisandbox
+install -d -o root -g root -m 0700 /var/lib/aisandbox-ops
+install -d -o root -g root -m 0700 /var/backups/aisandbox
+install -d -o root -g root -m 0700 /var/backups/aisandbox/records
+if id ubuntu >/dev/null 2>&1; then
+  install -d -o ubuntu -g ubuntu -m 0750 /var/backups/aisandbox-offhost
+fi
+
+tree="$(ops_tree)"
+install -m 0755 -o root -g root "$tree/bin/"aisandbox-* /usr/local/sbin/
+install -d -o root -g root -m 0755 /usr/local/lib/aisandbox
+install -m 0644 -o root -g root "$tree/lib/ops-lib.sh" /usr/local/lib/aisandbox/ops-lib.sh
+install_staged_tree || exit 30
+install -m 0644 -o root -g root "$tree/systemd/aisandbox.target" /etc/systemd/system/aisandbox.target
+for unit in "$tree"/systemd/aisandbox-*.service "$tree"/systemd/aisandbox-backup.timer; do
+  install -m 0644 -o root -g root "$unit" /etc/systemd/system/
+done
+systemctl daemon-reload
+systemctl disable aisandbox.target aisandbox-gateway aisandbox-ai aisandbox-cm aisandbox-frontend aisandbox-watchdog aisandbox-backup.timer || true
+
+install -d -o root -g root -m 0755 /etc/caddy
+caddy_src="$(prepare_caddyfile_source "$site" "$tree")" || exit 10
+install -m 0644 -o root -g root "$caddy_src" /etc/caddy/Caddyfile
+install_caddy_service_override
+caddy_assert_masked || exit $?
+if [[ ! -s /etc/caddy/aisandbox-operator.env ]]; then
+  oppass="$(openssl rand -hex 24)"
+  ophash="$(caddy hash-password --plaintext "$oppass")"
+  install -d -o root -g root -m 0700 /root/aisandbox-secret-store
+  printf 'AISB_OPERATOR_PASSWORD=%s\n' "$oppass" > /root/aisandbox-secret-store/caddy-operator.txt
+  chmod 0600 /root/aisandbox-secret-store/caddy-operator.txt
+  printf 'AISB_OPERATOR_USER=aisboperator\nAISB_OPERATOR_HASH=%s\n' "$ophash" > /etc/caddy/aisandbox-operator.env
+  chmod 0600 /etc/caddy/aisandbox-operator.env
+  unset oppass ophash
+fi
+
+for name in gateway ai cm frontend watchdog; do
+  if [[ ! -f "$AISB_ETC/${name}.env" ]]; then
+    install -m 0600 -o root -g root "$tree/env/${name}.env.template" "$AISB_ETC/${name}.env"
+  fi
+done
+
+fill_shared_url DATABASE_URL "$AISB_ETC/gateway.env" "$AISB_ETC/ai.env" || exit 30
+fill_shared_url REDIS_URL "$AISB_ETC/gateway.env" "$AISB_ETC/ai.env" || exit 30
+reconcile_pair INTERNAL_SERVICE_KEY "$AISB_ETC/gateway.env" "$AISB_ETC/ai.env" || exit 30
+reconcile_pair HARNESS_ENTITLEMENT_HMAC_SECRET "$AISB_ETC/gateway.env" "$AISB_ETC/ai.env" || exit 30
+reconcile_pair INTERNAL_SERVICE_KEY "$AISB_ETC/gateway.env" "$AISB_ETC/cm.env" || exit 30
+reconcile_pair JWT_SECRET "$AISB_ETC/gateway.env" "$AISB_ETC/cm.env" || exit 30
+for key in SESSION_SECRET OAUTH_STATE_SECRET; do
+  if [[ -z "$(env_file_value "$AISB_ETC/gateway.env" "$key")" ]]; then
+    kv_set "$AISB_ETC/gateway.env" "$key" "$(openssl rand -hex 32)"
+  fi
+done
+install -d -o root -g root -m 0700 /root/aisandbox-secret-store
+install -m 0600 -o root -g root "$AISB_ETC/gateway.env" /root/aisandbox-secret-store/gateway.env
+install -m 0600 -o root -g root "$AISB_ETC/ai.env" /root/aisandbox-secret-store/ai.env
+install -m 0600 -o root -g root "$AISB_ETC/cm.env" /root/aisandbox-secret-store/cm.env
+kv_set "$AISB_ETC/cm.env" SANDBOX_IMAGE "node:24-alpine"
+
+redispass="$(redis_password "$(env_file_value "$AISB_ETC/gateway.env" REDIS_URL)")"
+if [[ -f /etc/redis/redis.conf ]]; then
+  if grep -q '^requirepass ' /etc/redis/redis.conf; then
+    sed -i "s/^requirepass .*/requirepass ${redispass}/" /etc/redis/redis.conf
+  else
+    printf 'requirepass %s\n' "$redispass" >> /etc/redis/redis.conf
+  fi
+  if grep -q '^bind ' /etc/redis/redis.conf; then
+    sed -i "s/^bind .*/bind 127.0.0.1 -::1/" /etc/redis/redis.conf
+  else
+    printf 'bind 127.0.0.1 -::1\n' >> /etc/redis/redis.conf
+  fi
+  systemctl enable redis-server
+  systemctl stop redis-server || true
+  systemctl start redis-server
+fi
+unset redispass
+if [[ -f /etc/postgresql/15/main/postgresql.conf ]]; then
+  sed -i "s/^#\\?listen_addresses.*/listen_addresses = 'localhost'/" /etc/postgresql/15/main/postgresql.conf
+fi
+if [[ -f /etc/postgresql/15/main/pg_hba.conf ]] && ! grep -q 'aisandbox' /etc/postgresql/15/main/pg_hba.conf; then
+  printf '%s\n' 'host aisandbox aisandbox 127.0.0.1/32 scram-sha-256' 'host aisandbox aisandbox ::1/128 scram-sha-256' >> /etc/postgresql/15/main/pg_hba.conf
+fi
+systemctl enable postgresql@15-main.service
+systemctl start postgresql@15-main.service
+
+if [[ ! -d "$AISB_ROOT/.git" ]]; then
+  [[ -f "$AISB_ETC/source-url" ]] || {
+    note "missing source-url"
+    exit 30
+  }
+  url="$(tr -d '[:space:]' < "$AISB_ETC/source-url")"
+  runuser -u aisandbox -- git clone "$url" "$AISB_ROOT"
+fi
+runuser -u aisandbox -- git -C "$AISB_ROOT" fetch --tags origin
+checkout_and_build "$sha"
+AISB_OBSERVE_STRICT=1
+target_is_empty || exit 31
+listen_clear || exit 31
+journal_writers_empty || exit 31
+systemd-analyze verify /etc/systemd/system/aisandbox-*.service
+load_caddy_operator_env "$AISB_CADDY_ENV" || exit 30
+caddy validate --config /etc/caddy/Caddyfile
+unset AISB_OPERATOR_USER AISB_OPERATOR_HASH
+caddy_assert_masked || exit $?
+{
+  printf 'sha=%s\n' "$sha"
+  printf 'time=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  printf 'node=%s\n' "$(node -v)"
+  printf 'uid=%s\n' "$(id -u aisandbox)"
+  printf 'gid=%s\n' "$(id -g aisandbox)"
+  printf 'sandbox_image=%s\n' "$AISB_IMAGE"
+  printf 'caddy=masked\n'
+} > "$AISB_PREPARED"
+(
+  cd "$AISB_ROOT"
+  sha256sum -- services/api-gateway/dist/src/main.js services/ai-service/dist/main.js services/container-manager/dist/main.js frontend/.next/BUILD_ID > "$AISB_ETC/ARTIFACTS"
+)
+marker_set_phase prepared
+note "prepared ${sha}; no health check is required"
+exit 0

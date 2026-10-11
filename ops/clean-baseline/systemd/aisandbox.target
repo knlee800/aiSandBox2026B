@@ -1,0 +1,6 @@
+[Unit]
+Description=aiSandBox application writer group (operator handle; not a readiness signal)
+After=postgresql@15-main.service redis-server.service docker.service
+
+[Install]
+WantedBy=multi-user.target

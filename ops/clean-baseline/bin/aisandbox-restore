@@ -1,0 +1,131 @@
+#!/bin/bash
+# Restore onto an empty prepared target. There is no overwrite mode.
+set -euo pipefail
+HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if [[ -n "${AISB_OPS_LIB:-}" ]]; then
+  # shellcheck source=/dev/null
+  source "$AISB_OPS_LIB"
+elif [[ -f "$HERE/../lib/ops-lib.sh" ]]; then
+  # shellcheck source=/dev/null
+  source "$HERE/../lib/ops-lib.sh"
+else
+  # shellcheck source=/dev/null
+  source /usr/local/lib/aisandbox/ops-lib.sh
+fi
+
+ops_paths
+ops_require_root || exit 10
+ops_refuse_override || exit 10
+bundle=${1:-}
+keyfile=${2:-}
+[[ -n "$bundle" && -n "$keyfile" && $# -eq 2 ]] || {
+  note "usage: aisandbox-restore <bundle.tar.age> <age-key-file>"
+  exit 10
+}
+ops_require_activation || exit 10
+ops_lock || exit 10
+AISB_OP_ADMITTED=0
+AISB_RESTORE_WORK=""
+restore_trap() {
+  local code=$1 class
+  if [[ -n "${AISB_RESTORE_WORK:-}" && -d "$AISB_RESTORE_WORK" ]]; then
+    rm -rf -- "$AISB_RESTORE_WORK"
+  fi
+  [[ "$code" -eq 0 ]] && return 0
+  [[ "${AISB_OP_ADMITTED:-0}" == "1" ]] || return 0
+  class="$(classify_failure)"
+  if [[ "$class" == "post-start" ]]; then
+    post_start_recovery_text >&2
+    return 0
+  fi
+  if [[ "$class" == "unknown" ]]; then
+    note "failure class is unknown; this record does not say that no writer started"
+    return 0
+  fi
+  if [[ -f "$AISB_MARKER" ]]; then
+    marker_set_phase restore-failed || true
+    pre_start_summary >&2
+  fi
+}
+trap 'restore_trap $?' EXIT
+
+[[ -f "$AISB_PREPARED" ]] || {
+  note "PREPARED is absent"
+  exit 10
+}
+[[ "$(marker_field phase)" == "prepared" ]] || {
+  note "phase is not prepared"
+  exit 10
+}
+[[ "$(marker_field owner_op)" == "prepare" ]] || exit 10
+AISB_OBSERVE_STRICT=1
+target_is_empty || exit 10
+filesystem_supports_restore || exit 10
+
+work="$(mktemp -d)"
+AISB_RESTORE_WORK="$work"
+chmod 0700 "$work"
+age -d -i "$keyfile" "$bundle" | tar -C "$work" -xf -
+(
+  cd "$work"
+  sha256sum -c SHA256SUMS
+)
+man_sha="$(awk -F= '/^sha=/{print $2}' "$work/MANIFEST")"
+prep_sha="$(awk -F= '/^sha=/{print $2}' "$AISB_PREPARED")"
+[[ "$man_sha" == "$prep_sha" ]] || {
+  note "manifest SHA does not match PREPARED"
+  exit 10
+}
+[[ "$(git_as_owner rev-parse HEAD)" == "$man_sha" ]] || {
+  note "checkout SHA does not match the manifest"
+  exit 10
+}
+man_uid="$(awk -F= '/^aisandbox_uid=/{print $2}' "$work/MANIFEST")"
+man_gid="$(awk -F= '/^aisandbox_gid=/{print $2}' "$work/MANIFEST")"
+[[ "$(id -u aisandbox)" == "$man_uid" && "$(id -g aisandbox)" == "$man_gid" ]] || {
+  note "uid/gid does not match the manifest"
+  exit 10
+}
+
+restore_bind_preflight pass || exit 10
+marker_handoff restore || exit 10
+marker_set_phase restore-pre
+AISB_OP_ADMITTED=1
+
+printf '%s\n' "Set the aisandbox password to match gateway.env. Ctrl-C aborts."
+read -r _
+url="$(env_file_value "$AISB_ETC/gateway.env" DATABASE_URL)"
+pw="${url#postgresql://aisandbox:}"
+pw="${pw%%@*}"
+set +e
+apply_roles_sql "$work/roles.sql"
+roles_rc=$?
+set -e
+if [[ "$roles_rc" -ne 0 ]]; then
+  note "roles.sql did not restore the required roles"
+  exit 40
+fi
+runuser -u postgres -- psql -d postgres -v ON_ERROR_STOP=1 <<SQL
+ALTER ROLE aisandbox PASSWORD '${pw}';
+SQL
+unset pw url
+runuser -u postgres -- pg_restore --create --exit-on-error -d postgres - < "$work/db.dump"
+tar --extract --numeric-owner --same-owner --same-permissions --acls --xattrs --xattrs-include='*' -C "$AISB_ROOT" -f "$work/files.tar"
+reconcile_deleted_tracked_files "$work/files.tar"
+exact_metadata_match "$work" || exit 40
+install_restored_migration_ledger "$work" || exit 40
+printf 'restored %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > /var/lib/aisandbox-ops/restore-record
+rm -rf -- "$work"
+AISB_RESTORE_WORK=""
+systemctl enable aisandbox.target
+systemctl enable aisandbox-gateway aisandbox-ai aisandbox-cm aisandbox-frontend
+start_units_after_marker_removed aisandbox-gateway aisandbox-ai aisandbox-cm aisandbox-frontend
+health_wait
+sample="$(quiesce_sample Q-post)"
+[[ "$sample" == "ZERO" ]] || {
+  note "post-restore quiescence was ${sample}"
+  exit 30
+}
+write_deployed
+note "restore complete"
+exit 0

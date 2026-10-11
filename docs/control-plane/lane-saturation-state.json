@@ -10,17 +10,19 @@
   },
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "CLEAN-BASELINE-OPS-01",
+      "mutexes": ["STAGING"],
+      "writePaths": [
+        "ops/clean-baseline/"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "STAGING-RUNTIME",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
-      "runtimeNeeds": []
+      "runtimeNeeds": ["STAGING"]
     },
     "lane2": {
       "state": "EMPTY",
@@ -1052,13 +1054,13 @@
       "taskId": "CLEAN-BASELINE-OPS-01",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "FORCING",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
       "dependsOn": [],
-      "mutexes": [],
+      "mutexes": ["STAGING"],
       "writePaths": [
         "ops/clean-baseline/"
       ],
@@ -1066,9 +1068,9 @@
       "i18n": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
-      "evidenceClass": "LOCAL-TESTS",
+      "evidenceClass": "STAGING-RUNTIME",
       "exclusiveCapacity": false,
-      "runtimeNeeds": [],
+      "runtimeNeeds": ["STAGING"],
       "admissionUncertain": false,
       "writeSetPrecision": "EXACT"
     },
@@ -1109,7 +1111,7 @@
   ],
   "runtimeAuthorization": {
     "localRuntimeAuthorized": true,
-    "stagingAuthorized": false,
+    "stagingAuthorized": true,
     "providerLiveAuthorized": false,
     "creditAuthorized": false
   }

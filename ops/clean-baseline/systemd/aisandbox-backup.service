@@ -1,0 +1,12 @@
+[Unit]
+Description=aiSandBox backup (oneshot owner of the operations lock)
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart=/usr/local/sbin/aisandbox-backup
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+SyslogIdentifier=aisandbox-backup

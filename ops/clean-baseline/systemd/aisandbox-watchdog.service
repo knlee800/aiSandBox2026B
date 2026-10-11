@@ -1,0 +1,21 @@
+[Unit]
+Description=aiSandBox ops watchdog (installed disabled; enable requires AUTH-W)
+After=network-online.target
+PartOf=aisandbox.target
+
+[Service]
+Type=simple
+User=aisandbox
+Group=aisandbox
+WorkingDirectory=/opt/aisandbox
+EnvironmentFile=/etc/aisandbox/watchdog.env
+ExecStart=/usr/bin/node /opt/aisandbox/monitoring/watchdog/ops-watchdog.js
+Restart=on-failure
+RestartSec=5
+UMask=0027
+NoNewPrivileges=true
+PrivateTmp=true
+SyslogIdentifier=aisandbox-watchdog
+
+[Install]
+WantedBy=aisandbox.target

@@ -1,0 +1,100 @@
+#!/bin/bash
+# status is read-only. exit restarts writers only when the tree and schema are unchanged.
+set -euo pipefail
+HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if [[ -n "${AISB_OPS_LIB:-}" ]]; then
+  # shellcheck source=/dev/null
+  source "$AISB_OPS_LIB"
+elif [[ -f "$HERE/../lib/ops-lib.sh" ]]; then
+  # shellcheck source=/dev/null
+  source "$HERE/../lib/ops-lib.sh"
+else
+  # shellcheck source=/dev/null
+  source /usr/local/lib/aisandbox/ops-lib.sh
+fi
+
+ops_paths
+cmd=${1:-}
+case "$cmd" in
+  status)
+    class=$(classify_failure)
+    printf 'failure_class=%s\n' "$class"
+    if [[ -f "$AISB_MARKER" ]]; then
+      cat "$AISB_MARKER"
+    else
+      printf '%s\n' 'marker=absent'
+    fi
+    for u in aisandbox-gateway aisandbox-ai aisandbox-cm aisandbox-frontend; do
+      state=$(systemctl is-active "$u" 2>/dev/null || true)
+      printf 'unit=%s state=%s\n' "$u" "${state:-unknown}"
+    done
+    count=$(docker ps -q --filter 'name=^/sandbox-session-' | wc -l)
+    printf 'session_containers=%s\n' "$count"
+    if [[ "$class" == "post-start" ]]; then
+      post_start_recovery_text
+    elif [[ "$class" == "pre-start" ]]; then
+      pre_start_summary
+    else
+      printf '%s\n' 'failure class cannot be proven from the journal cursor'
+    fi
+    ;;
+  exit)
+    ops_require_root || exit 10
+    ops_refuse_override || exit 10
+    ops_lock || exit 10
+    [[ -f "$AISB_MARKER" ]] || {
+      note "no marker to exit"
+      exit 10
+    }
+    phase=$(marker_field phase)
+    owner=$(marker_field owner_op)
+    phase_allows_maint_exit "$phase" || {
+      note "phase ${phase} is not an unchanged-tree exit"
+      exit 10
+    }
+    [[ "$owner" == "backup" || "$owner" == "deploy" ]] || {
+      note "owner ${owner} is not exited by maint"
+      exit 10
+    }
+    assert_tree_and_schema_unchanged || exit 10
+    if [[ "$phase" == "work-detected" ]]; then
+      sample=""
+      sample_rc=0
+      sample="$(quiesce_sample S9)" || sample_rc=$?
+      if [[ "$sample_rc" -ne 0 ]]; then
+        note "quiescence sample failed"
+        exit 12
+      fi
+      case "$sample" in
+        ZERO) ;;
+        ACTIVE)
+          note "quiescence active"
+          append_ids_only >&2
+          exit 11
+          ;;
+        UNKNOWN)
+          note "quiescence unknown"
+          append_ids_only >&2
+          exit 12
+          ;;
+        *)
+          note "quiescence sample malformed"
+          exit 12
+          ;;
+      esac
+    fi
+    AISB_ADOPTED=1
+    units=$(op_field pre_active_units)
+    if [[ -n "$units" ]]; then
+      # shellcheck disable=SC2086
+      start_units_after_marker_removed ${units//,/ }
+      health_wait
+    else
+      marker_remove
+    fi
+    ;;
+  *)
+    note "usage: aisandbox-maint status|exit"
+    exit 10
+    ;;
+esac

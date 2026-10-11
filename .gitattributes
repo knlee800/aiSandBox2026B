@@ -4,3 +4,9 @@
 ops/aisb-01c6a-operator-bundle/** text eol=lf
 ops/aisb-01c6a-operator-bundle/TRANSFER.manifest -text -eol
 ops/aisb-01c6a-operator-bundle/REVIEW-SHA256.txt -text -eol
+# OPS-01 checkpoint: preserve Linux text and proof bytes.
+ops/clean-baseline/** text eol=lf
+docs/CLEAN-BASELINE-GOV-01-DECISION.md text eol=lf
+docs/control-plane/lane-saturation-state.json text eol=lf
+docs/control-plane/SATURATION_PROOF.json -text -eol
+docs/control-plane/SATURATION_PROOF-before-OPS-01-STAGING-2026-10-08.json -text -eol

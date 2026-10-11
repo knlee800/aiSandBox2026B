@@ -1,0 +1,102 @@
+#!/bin/bash
+# Brand-new empty environment only. Removes the marker before starting writers.
+set -euo pipefail
+HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if [[ -n "${AISB_OPS_LIB:-}" ]]; then
+  # shellcheck source=/dev/null
+  source "$AISB_OPS_LIB"
+elif [[ -f "$HERE/../lib/ops-lib.sh" ]]; then
+  # shellcheck source=/dev/null
+  source "$HERE/../lib/ops-lib.sh"
+else
+  # shellcheck source=/dev/null
+  source /usr/local/lib/aisandbox/ops-lib.sh
+fi
+
+ops_paths
+ops_require_root || exit 10
+ops_refuse_override || exit 10
+[[ $# -eq 0 ]] || {
+  note "usage: aisandbox-first-start"
+  exit 10
+}
+ops_require_activation || exit 10
+ops_lock || exit 10
+AISB_OP_ADMITTED=0
+first_trap() {
+  local code=$1 class
+  [[ "$code" -eq 0 ]] && return 0
+  [[ "${AISB_OP_ADMITTED:-0}" == "1" ]] || return 0
+  class="$(classify_failure)"
+  if [[ "$class" == "post-start" ]]; then
+    post_start_recovery_text >&2
+    return 0
+  fi
+  if [[ "$class" == "unknown" ]]; then
+    note "failure class is unknown; this record does not say that no writer started"
+    return 0
+  fi
+  if [[ -f "$AISB_MARKER" ]]; then
+    marker_set_phase first-start-failed || true
+    pre_start_summary >&2
+  fi
+}
+trap 'first_trap $?' EXIT
+
+[[ -f "$AISB_PREPARED" ]] || {
+  note "PREPARED is absent"
+  exit 10
+}
+[[ "$(marker_field phase)" == "prepared" ]] || {
+  note "phase is not prepared"
+  exit 10
+}
+[[ "$(marker_field owner_op)" == "prepare" ]] || {
+  note "first-start requires a prepare-owned marker"
+  exit 10
+}
+AISB_OBSERVE_STRICT=1
+target_is_empty || exit 10
+sha="$(awk -F= '/^sha=/{print $2}' "$AISB_PREPARED")"
+head="$(git_as_owner rev-parse HEAD)"
+[[ "$head" == "$sha" ]] || {
+  note "checkout SHA does not match PREPARED"
+  exit 10
+}
+(
+  cd "$AISB_ROOT"
+  sha256sum -c "$AISB_ETC/ARTIFACTS"
+) || {
+  note "artifact checksums do not match PREPARED"
+  exit 10
+}
+op_begin first-start || exit 10
+marker_handoff first-start || exit 10
+op_set target_sha "$sha"
+op_set pre_sha "$sha"
+op_set pre_migrations absent
+marker_set_phase first-start-pre
+AISB_OP_ADMITTED=1
+
+url="$(env_file_value "$AISB_ETC/gateway.env" DATABASE_URL)"
+pw="${url#postgresql://aisandbox:}"
+pw="${pw%%@*}"
+printf '%s\n' "Applying the aisandbox role password from gateway.env. Ctrl-C aborts."
+read -r _
+runuser -u postgres -- psql -d postgres -v ON_ERROR_STOP=1 <<SQL
+CREATE ROLE aisandbox LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD '${pw}';
+CREATE DATABASE aisandbox OWNER aisandbox;
+REVOKE ALL ON DATABASE aisandbox FROM PUBLIC;
+SQL
+unset pw url
+stage_attempted_blobs "$(git_as_owner rev-parse HEAD)" || exit 30
+start_migrate
+verify_migrations_applied || exit 30
+commit_attempted_blobs || exit 30
+systemctl enable aisandbox.target
+systemctl enable aisandbox-gateway aisandbox-ai aisandbox-cm aisandbox-frontend
+start_units_after_marker_removed aisandbox-gateway aisandbox-ai aisandbox-cm aisandbox-frontend
+health_wait
+write_deployed
+note "first-start complete"
+exit 0

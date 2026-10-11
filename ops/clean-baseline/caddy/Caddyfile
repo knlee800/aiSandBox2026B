@@ -1,0 +1,13 @@
+staging.ainow.biz {
+	basic_auth {
+		{$AISB_OPERATOR_USER} {$AISB_OPERATOR_HASH}
+	}
+	redir / /en 307
+	redir /app /en/app 307
+	handle /api/* {
+		reverse_proxy 127.0.0.1:4000
+	}
+	handle {
+		reverse_proxy 127.0.0.1:3002
+	}
+}

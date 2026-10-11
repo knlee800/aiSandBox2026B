@@ -1,0 +1,117 @@
+#!/bin/bash
+# Nightly or manual backup. backup_write_set does not take the lock and does not start units.
+set -euo pipefail
+HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if [[ -n "${AISB_OPS_LIB:-}" ]]; then
+  # shellcheck source=/dev/null
+  source "$AISB_OPS_LIB"
+elif [[ -f "$HERE/../lib/ops-lib.sh" ]]; then
+  # shellcheck source=/dev/null
+  source "$HERE/../lib/ops-lib.sh"
+else
+  # shellcheck source=/dev/null
+  source /usr/local/lib/aisandbox/ops-lib.sh
+fi
+
+ops_paths
+ops_require_root || exit 10
+ops_refuse_override || exit 10
+[[ $# -eq 0 ]] || {
+  note "usage: aisandbox-backup"
+  exit 10
+}
+ops_lock || exit 10
+if [[ -f "$AISB_MARKER" ]]; then
+  note "marker already present; backup does not adopt it"
+  exit 10
+fi
+op_begin backup || exit 10
+
+ts=$(date -u +%Y%m%dT%H%M%SZ)
+AISB_BACKUP_TS="$ts"
+out="$AISB_BACKUPS/${ts}.partial"
+AISB_EXIT_KIND=backup
+restarted=0
+
+backup_trap() {
+  local code=$1
+  if [[ "$code" -eq 0 || "$restarted" -eq 1 ]]; then
+    return 0
+  fi
+  if [[ ! -f "$AISB_MARKER" ]]; then
+    return 0
+  fi
+  local phase
+  phase=$(marker_field phase)
+  if phase_allows_automatic_restart "$phase"; then
+    if assert_tree_and_schema_unchanged; then
+      local units
+      units=$(op_field pre_active_units)
+      if [[ -n "$units" ]]; then
+        # shellcheck disable=SC2086
+        start_units_after_marker_removed ${units//,/ }
+      else
+        marker_remove || true
+      fi
+      restarted=1
+    fi
+  fi
+  if [[ -d "$out" && ! -f "$out/COMPLETE" ]]; then
+    mv "$out" "${out%.partial}.failed"
+  fi
+  if [[ -n "${AISB_BACKUP_TS:-}" && -f "$AISB_OFFHOST/${AISB_BACKUP_TS}.tar.age.partial" ]]; then
+    rm -f -- "$AISB_OFFHOST/${AISB_BACKUP_TS}.tar.age.partial"
+  fi
+}
+trap 'backup_trap $?' EXIT
+
+mkdir -p "$AISB_BACKUPS"
+mkdir -p "$out"
+chmod 0700 "$out"
+op_set record_dir "$out"
+quiesce_and_stop backup 1
+marker_set_phase prepared-for-backup
+if ! backup_write_set "$out"; then
+  note "backup set failed"
+  exit 20
+fi
+final="$AISB_BACKUPS/$ts"
+mv "$out" "$final"
+out="$final"
+units=$(op_field pre_active_units)
+if [[ -n "$units" ]]; then
+  # shellcheck disable=SC2086
+  start_units_after_marker_removed ${units//,/ }
+  restarted=1
+  health_wait
+else
+  marker_remove
+  restarted=1
+fi
+note "backup complete ${final}"
+mapfile -t nightly < <(find "$AISB_BACKUPS" -mindepth 1 -maxdepth 1 -type d -name '20*' ! -name '*.failed' -printf '%T@ %p\n' | sort -n | awk '{print $2}')
+keep=0
+for dir in "${nightly[@]}"; do
+  kind="$(awk -F= '/^kind=/{print $2}' "$dir/MANIFEST" 2>/dev/null || true)"
+  if [[ "$kind" == "pre-migration" ]]; then
+    continue
+  fi
+  keep=$((keep + 1))
+done
+excess=$((keep - 7))
+if [[ "$excess" -gt 0 ]]; then
+  for dir in "${nightly[@]}"; do
+    [[ "$excess" -gt 0 ]] || break
+    kind="$(awk -F= '/^kind=/{print $2}' "$dir/MANIFEST" 2>/dev/null || true)"
+    [[ "$kind" == "pre-migration" ]] && continue
+    rm -rf -- "$dir"
+    excess=$((excess - 1))
+  done
+fi
+find "$AISB_BACKUPS" -mindepth 1 -maxdepth 1 -type d -name '20*' -mtime +30 -print | while IFS= read -r dir; do
+  kind="$(awk -F= '/^kind=/{print $2}' "$dir/MANIFEST" 2>/dev/null || true)"
+  if [[ "$kind" == "pre-migration" ]]; then
+    rm -rf -- "$dir"
+  fi
+done
+exit 0

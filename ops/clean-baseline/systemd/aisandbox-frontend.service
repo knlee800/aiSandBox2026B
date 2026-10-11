@@ -1,0 +1,27 @@
+[Unit]
+Description=aiSandBox frontend (:3002)
+Wants=network-online.target
+After=network-online.target
+PartOf=aisandbox.target
+AssertPathExists=!/var/lib/aisandbox-ops/maintenance
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=aisandbox
+Group=aisandbox
+WorkingDirectory=/opt/aisandbox/frontend
+EnvironmentFile=/etc/aisandbox/frontend.env
+ExecStart=/usr/bin/node /opt/aisandbox/node_modules/next/dist/bin/next start -p 3002 -H 127.0.0.1
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+UMask=0027
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+SyslogIdentifier=aisandbox-frontend
+
+[Install]
+WantedBy=aisandbox.target

@@ -202,3 +202,261 @@ CLEAN-BASELINE-RUNTIME-01 is COMPLETE AND LOCKED. Checkpoint: `docs/CLEAN-BASELI
 The locked outcome is the local runtime prerequisite: selected runtime Node 24 and normal workspace image `node:24-alpine`, with the local smoke contract in the accepted package. OPS-01 and DEPLOY-01 stay `startCondition=NOT_READY` and unadmitted. `localRuntimeAuthorized` stays true. `stagingAuthorized`, `providerLiveAuthorized`, and `creditAuthorized` stay false. HOST_CLEAN=NO, P7_ACCEPTED=NO, and EXEC-01C6A=NOT_READY stay. The inspection controller stays suspended. The ARCHITECTURE replacement row stays PLANNED.
 
 This lock does not accept deployment, a real Builder journey, backup or restore, host access, invitations, harness activation, provider calls, spending, or Git mutation. GOV-01 review is not reopened.
+
+## Scoped AUTH-1 - CLEAN-BASELINE-OPS-01 admission - 2026-10-08
+
+Keith authorized a scoped AUTH-1 for CLEAN-BASELINE-OPS-01 only: control-plane admission, implementation preparation under ops/clean-baseline/, and static validation. This is not operational execution and not a LOCAL-RUNTIME grant. DEPLOY-01 stays PLANNED / NOT ADMITTED / NOT EXECUTED with startCondition=NOT_READY. AUTH-2 through AUTH-9 and AUTH-W remain not granted. stagingAuthorized, providerLiveAuthorized, and creditAuthorized stay false. localRuntimeAuthorized stays true and is not proof that a local operational capability check has been performed.
+
+Lane 1 is ACTIVE for CLEAN-BASELINE-OPS-01. Sidecar status=ADMITTED and startCondition=READY. mutexes=[] and runtimeNeeds=[] are unchanged. The write scope remains ops/clean-baseline/ only. Evidence class remains LOCAL-TESTS for static checks. RUNTIME-01 stays LOCKED. GOV-01 stays LOCKED. Machine dependsOn stays [].
+
+GOVERNANCE was acquired for this admission write and released UNOWNED before the canonical validator run. Occupancy hash for this end state is sha256:d2f1a029d868239bea7118ca5873aa7b91ad03b0b3ce238cef0f993e227584c1. Lane 2 stays EMPTY. Lane 3 stays DISABLED. saturationSuspended stays false.
+
+Before that validator run, the existing docs/control-plane/SATURATION_PROOF.json was copied outside the repository to C:\Users\knlee\aisb-preflight\CLEAN-BASELINE-OPS-01-work\SATURATION_PROOF-before-OPS-01-admission.json. SHA-256 96d6243eda3bf641468aed59f483fb08e321cc03f517873700b907d04e81c8fa. That preserved file is the proof that was already in the tree at HEAD 36f9a213b7e16c0cb12587a2d74cd0f679fdc54c. It is not regenerated in place. Its headSha is historical validation evidence.
+
+Repository HEAD at this admission is 36f9a213b7e16c0cb12587a2d74cd0f679fdc54c on main. The consolidated plan SHA-256 3012ee8161f7dbdf16aac01e026872aadf7fa3842c234edc6603e98e85924df9 and Addendum 01 SHA-256 83f6b07332aeca04184228026ce662271d425a5ba17bfdece9b9ad177bd3774a were recomputed and match. Governing corrections a-d and U1/U2 take precedence over the addendum where they conflict.
+
+This admission does not accept implementation, does not justify LANE-DONE or LOCK, and does not authorize host access, deployment, retirement, invitations, harness activation, provider calls, spending, subagents, or Git mutation. HOST_CLEAN=NO, P7_ACCEPTED=NO, and EXEC-01C6A=NOT_READY stay. The inspection controller stays suspended. The ARCHITECTURE replacement row stays PLANNED. Application source is untouched by this admission.
+
+## OPS-01 Step 2 static preparation - 2026-10-08
+
+The admitted scope was prepared under `ops/clean-baseline/` only. Application source and ARCHITECTURE.md were not edited. Node 24 and `node:24-alpine` remain the locked selection. DEPLOY-01 stays `startCondition=NOT_READY` and unadmitted. AUTH-2 through AUTH-9 and AUTH-W stay not granted. Authorization flags stay unchanged. HOST_CLEAN=NO, P7_ACCEPTED=NO, and EXEC-01C6A=NOT_READY stay.
+
+Static checks were run. Operational entry points were not executed. No runtime fixture was started and no tooling was installed. T2.6 and T4.4 passed. bash -n passed for the shell files. A static Q3-order check and a post-start wording check also passed. Those static results do not pass corrections a-c and do not justify LANE-DONE or LOCK.
+
+Lane 1 stays ACTIVE. Sidecar `status=ADMITTED`, `startCondition=READY`, `mutexes=[]`, and `runtimeNeeds=[]` stay as validated. The canonical admission proof was not rewritten after these preparation files were added, because the occupancy block and the sidecar were not changed again. GOVERNANCE was used for this status record and is not held.
+
+T3.7 stays a gap for a later AI-SERVICE task. The worker implements the claim-miss branches, and the behavioral specs that execute the worker call it once from a pending ledger. Those specs do not demonstrate the stalled-claim or duplicate-skip branches. No application test was added. RUNTIME-01 stays LOCKED.
+
+## OPS-01 correction pass F01-F11 - 2026-10-08
+
+Independent review required corrections before any operational execution. Those corrections are in `ops/clean-baseline/` only. The earlier operational scripts were scaffolding; they are now executable preparations and remain unexecuted. Admission is unchanged: Lane 1 ACTIVE, sidecar status=ADMITTED, startCondition=READY, mutexes=[], runtimeNeeds=[]. A later transition that adds LOCAL-RUNTIME must put that resource in both mutexes and runtimeNeeds. This record does not make that transition. DEPLOY-01 stays startCondition=NOT_READY and unadmitted. The canonical admission proof was not regenerated. No operational entry point, fixture, or validator was run for this correction pass.
+
+## OPS-01 correction pass R1-R6 - 2026-10-08
+
+A second independent review found control-flow defects and incomplete operational-case preparation. The corrections stay under `ops/clean-baseline/`. Standalone backup keeps an in-place quiescence record and still fails when that record is missing or a distinct copy fails. Restore binds the empty-target result onto the new operation record, reconciles tracked deletions without treating a present archive member as a fatal status, and continues a roles script past an expected duplicate. Preparation reads the Caddy operator hash literally, skips a same-directory install copy, and resumes partial shared configuration. Recovery compares the target with retained applied-migration blobs, including after `op_begin`, and a schema-ahead approval does not waive that check. Test hooks use the root-owned mode 0600/0400 gate. That gate remains an operator assertion and does not prove a disposable OS namespace.
+
+Shell-only regressions source the library, use temporary files, and mock external commands. They passed, including probes that show the reviewed failure mode and the corrected function. The operational scripts now state setup, actions, assertions, evidence, and cleanup for addendum T1-T4 and corrections b and c. Those scripts and the fixture builder were not executed. Mocked results do not prove them.
+
+Lane 1 stays ACTIVE. This pass is not LANE-DONE and not LOCK. Sidecar status=ADMITTED, startCondition=READY, mutexes=[], and runtimeNeeds=[] are unchanged. The canonical admission proof was not regenerated. DEPLOY-01 stays startCondition=NOT_READY and unadmitted. RUNTIME-01 stays LOCKED. GOVERNANCE was used for this status record and is not held.
+
+## OPS-01 residual pass R2/R3/R4/R6 - 2026-10-08
+
+The second R1-R6 review left role completion, configuration write failures, schema-ahead migration retention, and several prepared-case workflows open. Those residuals are corrected under `ops/clean-baseline/` only. Confirmed R1 and R5 behavior is unchanged. Role restore rejects a nonzero result that is not an expected duplicate `CREATE ROLE`, including a transport failure after an earlier role was created. Shared configuration writes return failure when generation or either write fails, and empty generated secrets are rejected. Applied migration content is a cumulative ledger: a schema-ahead checkout that lacks a migration does not delete that migration's blob, a later target that changes it is rejected, and a database row with no ledger entry fails closed.
+
+Shell regressions call those functions in failure and recovery order with temporary files and mocked commands. They passed. They do not execute entry points, and they are not operational acceptance. The operational scripts now share reboot evidence ids, clear an injected fault before rollback, fail a deploy after migration for the recovery rehearsal, bind bundle identity, and compare refusal snapshots. Those scripts and the fixture builder remain unexecuted.
+
+Lane 1 stays ACTIVE. This pass is not LANE-DONE and not LOCK. Sidecar status=ADMITTED, startCondition=READY, mutexes=[], and runtimeNeeds=[] are unchanged. The canonical admission proof was not regenerated. DEPLOY-01 stays startCondition=NOT_READY and unadmitted. RUNTIME-01 stays LOCKED.
+
+## OPS-01 follow-up — dump session, kv_set, and migration lifecycle — 2026-10-08
+
+The residual review found that splitting a PostgreSQL 15 roles dump across psql processes breaks `\restrict` / `\unrestrict`, that `kv_set` can drop unrelated settings when `grep` fails, and that the migration ledger was not created by first-start, backup, or an interrupted migrate. Those paths are now connected under `ops/clean-baseline/`.
+
+Role restore feeds one psql session, keeps the dump's meta-commands, and tolerates only `duplicate_object` on `CREATE ROLE`. `kv_set` leaves the original file in place when filtering returns an error. First-start and deploy stage attempted blobs before `start_migrate` and commit them only after verification. A from-maintenance recovery promotes that attempt when the database already has the rows. Backup copies the ledger when `DEPLOYED` exists, and restore installs it before writers start. A query error or a malformed timestamp is not treated as an empty migration set.
+
+Shell regressions use a sanitized `pg_dumpall --roles-only` fixture and the first-start, interruption, backup, and restore function order. They passed. They do not execute entry points. Operational acceptance remains pending.
+
+Lane 1 stays ACTIVE. This pass is not LANE-DONE and not LOCK. Sidecar status=ADMITTED, startCondition=READY, mutexes=[], and runtimeNeeds=[] are unchanged. The canonical admission proof was not regenerated. DEPLOY-01 stays startCondition=NOT_READY and unadmitted. RUNTIME-01 stays LOCKED.
+
+## OPS-01 R4 correction — confirmed promotion only — 2026-10-08
+
+`reconcile_attempted_after_interruption` no longer commits the whole attempt file. It promotes an attempt entry only when the database lists that timestamp and the attempt blob matches any blob already in the applied ledger. Entries the database does not confirm stay in the attempt file and are not applied-content restrictions. A query failure, a malformed timestamp, an applied timestamp with no attempt evidence, or a blob conflict returns 10 and does not replace the applied ledger. The post-verify commit path and the other deploy guards are unchanged. Shell regressions cover none, partial, and complete confirmation, an unapplied content change, a rejected applied content change, and invalid evidence. They do not execute entry points. Operational acceptance remains pending.
+
+Lane 1 stays ACTIVE. This correction is not LANE-DONE and not LOCK. Sidecar status=ADMITTED, startCondition=READY, mutexes=[], and runtimeNeeds=[] are unchanged. The canonical admission proof was not regenerated. DEPLOY-01 stays startCondition=NOT_READY and unadmitted. RUNTIME-01 stays LOCKED.
+
+## OPS-01 R6 correction — failure recording — 2026-10-08
+
+Failure recording now covers T4, the Q3-order case, the post-start reboot case, the deleted-tracked-file case, and the fixture builder, using the same record as T1–T3. The record is written only after the disposable gate arms it, and only into a safe case-state directory. Rejecting an unsafe fixture root does not create that record. Intentional reboot keeps the evidence file and does not record contamination when reboot succeeds. A failed reboot records the reboot status and keeps the evidence. The no-ACL cleanup runs with the failure record: the original exit status is preserved, and a cleanup failure is printed and included in the record. Migration logic and production entry points are unchanged. The failure-recording harness passed. Operational scripts and the fixture builder were not executed. Operational acceptance remains pending.
+
+Lane 1 stays ACTIVE. This correction is not LANE-DONE and not LOCK. Sidecar status=ADMITTED, startCondition=READY, mutexes=[], and runtimeNeeds=[] are unchanged. The canonical admission proof was not regenerated. DEPLOY-01 stays startCondition=NOT_READY and unadmitted. RUNTIME-01 stays LOCKED.
+
+## OPS-01 R6 cleanup correction — retained unmount failure and resolved case state — 2026-10-08
+
+`restore_noacl_mount` keeps the first failed unmount and still attempts the remaining unmount. A later check that the staging directory is not a mountpoint no longer replaces that failure with success. `case_finish` exits with the original case status when the case failed, and with the cleanup status when only cleanup failed. Both results write `case-contaminated`.
+
+A case-state path is resolved, including existing parent symlinks, before the destination policy is applied and before a directory is created. Traversal into a forbidden directory, a symlink alias to a forbidden directory, and a path whose parent is not a directory are rejected without a write.
+
+The failure-recording harness mocked `findmnt`, `umount`, and `mountpoint` and checked traversal and symlink aliases in temporary directories. Operational scripts, the fixture builder, real mounts, reboot, and services were not executed. R4 migration logic is unchanged. Operational acceptance remains pending. Snapshot coverage was not started.
+
+Lane 1 stays ACTIVE. This correction is not LANE-DONE and not LOCK. Sidecar status=ADMITTED, startCondition=READY, mutexes=[], and runtimeNeeds=[] are unchanged. The canonical admission proof was not regenerated. DEPLOY-01 stays startCondition=NOT_READY and unadmitted. RUNTIME-01 stays LOCKED.
+
+## OPS-01 T4.2 planted-file coverage — 2026-10-08
+
+`t4.2-ignored`, `t4.2-snapshot`, and `t4.2-snapshot-root` now select their planted files with `AISB_SNAPSHOT_FILES` before the refusal comparison and clear that selection afterward. The files are `/opt/aisandbox/projects/ignored.tmp`, `/opt/aisandbox/services/snapshot-store/extra`, and `/opt/aisandbox/snapshot-store/extra`. The snapshot helpers are unchanged. A focused regression calls those helpers with temporary files and mocked external commands: unchanged contents compare equal, changed contents compare unequal while the filename listing stays the same, and a missing selected file makes snapshot capture fail. The same regression reads the three case blocks and checks the selected path. It does not execute the operational script. R4 and the R6 failure-recording corrections are unchanged. Operational acceptance remains pending.
+
+Lane 1 stays ACTIVE. This correction is not LANE-DONE and not LOCK. Sidecar status=ADMITTED, startCondition=READY, mutexes=[], and runtimeNeeds=[] are unchanged. The canonical admission proof was not regenerated. DEPLOY-01 stays startCondition=NOT_READY and unadmitted. RUNTIME-01 stays LOCKED.
+
+## OPS-01 Lightsail OS-capability scope — 2026-10-08
+
+Keith authorized one new Lightsail instance, `aisb-ops-base-01`, in `ap-southeast-1`. The blueprint is Ubuntu 24. The bundle is the Linux public-IPv4 plan with 2 vCPU, 4 GB RAM, 80 GB SSD, and a US$24/month cap. The maximum lifetime is 72 hours from creation. The maximum incremental spending is US$15. Access is browser SSH only. No static IP, snapshot, second instance, or DNS change is authorized.
+
+Lane 1 and the OPS-01 candidate now reserve `STAGING`: `mutexes=["STAGING"]`, `runtimeNeeds=["STAGING"]`, `evidenceClass=STAGING-RUNTIME`. `stagingAuthorized=true` is the machine gate for that reservation. It does not authorize deployment, PM2, Caddy, DNS, or `ENV`. `localRuntimeAuthorized` stays true and is not this grant. `providerLiveAuthorized` and `creditAuthorized` stay false. `writePaths` stay `ops/clean-baseline/`. DEPLOY-01 stays `startCondition=NOT_READY` and unadmitted. It declares `STAGING` and does not own it.
+
+GOVERNANCE was held for these records and released UNOWNED before validation. The pre-transition proof is archived unchanged at `docs/control-plane/SATURATION_PROOF-before-OPS-01-STAGING-2026-10-08.json`. Canonical validation writes the new proof bound to the resulting occupancy and sidecar. OPS-01 stays ACTIVE. This scope is OS capability evidence only, not operational acceptance and not LOCK.
+
+## OPS-01 Batch 1A — 2026-10-09
+
+Keith authorized one prepare run on the existing instance `aisb-ops-base-01` only. Access stays Lightsail browser SSH. The deadline stays 2026-10-11 18:18:33 HKT. The incremental spending limit stays US$15. The command is `t1-prepare.sh t1.1 36f9a213b7e16c0cb12587a2d74cd0f679fdc54c` after the 42-file archive `CLEAN-BASELINE-OPS-01-BATCH-1A-TREE-2026-10-09.tar.gz` verifies. Archive SHA-256 is `247261e401f5424447a7ec990e7001163e7fad6b5f5531f0260fdcfec4fe7fc5`. Manifest SHA-256 is `b3af137e1e99963cdfa5893b82797d736c79c0bac5e95ae0fefc6c5d5f22eaeb`. Git access is anonymous. This batch creates no credential and no age key. It includes package installation, `npm ci`, and the builds performed inside prepare. It does not include first-start, a refusal case, backup, restore, deploy, fault injection, a test reboot, a firewall change, a snapshot, or another instance. A failed check is not bypassed. A failed run keeps its logs and contamination record and is not repaired or retried automatically. A successful run leaves the guest prepared and idle.
+
+Lane identity, mutexes, runtime needs, evidence class, and authorization flags stay as recorded for the STAGING reservation. Occupancy and the sidecar are unchanged, so saturation validation is not rerun. GOVERNANCE stays UNOWNED. DEPLOY-01 stays `startCondition=NOT_READY` and unadmitted. OPS-01 stays ACTIVE. This batch is not operational acceptance and not LOCK.
+
+## OPS-01 Batch 1B — 2026-10-09
+
+Keith authorized the nine T1.2 refusal cases on the existing instance `aisb-ops-base-01` only, through the existing Lightsail browser SSH session. The deadline stays 2026-10-11 18:18:33 HKT. The incremental spending limit stays US$15. Batch 1A is not rerun. Each case runs through `tests/operational/t1-prepare.sh` with the bound SHA `36f9a213b7e16c0cb12587a2d74cd0f679fdc54c`, in this order: `t1.2-database`, `t1.2-role`, `t1.2-untracked`, `t1.2-sqlite`, `t1.2-ignored`, `t1.2-snapshot`, `t1.2-redis`, `t1.2-enabled`, `t1.2-deployed`. The expected inner prepare refusal is 10. The expected overall case exit is 0. An unexpected result, failed snapshot comparison, failed cleanup, or contamination marker stops the batch. Evidence is preserved. The batch does not repair, retry, or continue automatically. It does not include a successful prepare rerun, first-start, backup, restore, deploy, an age key, a reboot, another instance, a snapshot, a firewall change, or a Git mutation. Missing empty snapshot-store directories may be created as fixtures and removed with `rmdir` only if this batch created them and they are empty afterward.
+
+Lane identity, mutexes, runtime needs, evidence class, and authorization flags stay as recorded for the STAGING reservation. Occupancy and the sidecar are unchanged, so saturation validation is not rerun. GOVERNANCE stays UNOWNED. DEPLOY-01 stays `startCondition=NOT_READY` and unadmitted. OPS-01 stays ACTIVE. This batch is not operational acceptance and not LOCK.
+
+## OPS-01 Batch 1C — 2026-10-09
+
+Keith authorized first-start case `t1.6`, and `t1.6-repeat` only if `t1.6` exits 0, on the existing instance `aisb-ops-base-01` only, through the existing Lightsail browser SSH session. The deadline stays 2026-10-11 18:18:33 HKT. The incremental spending limit stays US$15. Batch 1A and Batch 1B are not rerun. Both cases run through `tests/operational/t1-prepare.sh` with the bound SHA `36f9a213b7e16c0cb12587a2d74cd0f679fdc54c`, using `AISB_SBIN=/usr/local/sbin` and the verified library. The existing first-start confirmation that applies the generated database password may be answered interactively. Other prompts are not bypassed. `t1.6` may create the synthetic role and database, run migrations, remove the maintenance marker in the prescribed order, enable and start the four writers, and perform localhost readiness checks. `t1.6-repeat` expects inner first-start refusal 10 and overall case exit 0. A failed prerequisite, unexpected result, or contamination marker stops the batch. Logs and journals are preserved. The batch does not patch, repair, or retry automatically. It does not include backup, restore, a deploy command, an age key, a reboot, a provider call, an external user journey, a firewall or DNS change, another resource, a source edit, or a Git mutation. On success the guest stays running.
+
+Lane identity, mutexes, runtime needs, evidence class, and authorization flags stay as recorded for the STAGING reservation. Occupancy and the sidecar are unchanged, so saturation validation is not rerun. GOVERNANCE stays UNOWNED. DEPLOY-01 stays `startCondition=NOT_READY` and unadmitted. OPS-01 stays ACTIVE. This batch is not operational acceptance and not LOCK.
+
+## OPS-01 local migration-selection correction — 2026-10-09
+
+Keith authorized one local correction under `ops/clean-baseline/`. Batch 1C did not pass. `README.md` in the migrations directory was treated as an executable migration. The correction may change migration discovery only, using the TypeORM selection rule at commit `36f9a213b7e16c0cb12587a2d74cd0f679fdc54c`. It does not change application source, delete documentation, rerun an operational case, or touch the guest. Occupancy and the sidecar are unchanged, so saturation validation is not rerun. OPS-01 stays ACTIVE. DEPLOY-01 stays `startCondition=NOT_READY` and unadmitted. This correction is not operational acceptance and not LOCK.
+
+## OPS-01 one-for-one guest replacement — 2026-10-09
+
+Keith authorized one-for-one replacement of the contaminated OPS test guest only. This record is written before any cloud change.
+
+Before deletion, the off-guest archives were hashed again and match the reviewed values. They stay in place, with the disclosed evidence gaps. They are not regenerated.
+
+Batch 1A/1B archive: `C:\Users\knlee\aisb-preflight\CLEAN-BASELINE-OPS-01-work\batch-1b\CLEAN-BASELINE-OPS-01-BATCH-1AB-EVIDENCE-2026-10-09.tar.gz`, 15974 bytes, SHA-256 `65f2fdd3de9baef099fd0c2091b00bc43249c85cda0210bb86e1bc4439cbbad0`.
+
+Batch 1C failure archive: `C:\Users\knlee\aisb-preflight\CLEAN-BASELINE-OPS-01-work\batch-1c\CLEAN-BASELINE-OPS-01-BATCH-1C-FAILURE-2026-10-09.tar.gz`, 3204 bytes, SHA-256 `c1ccae39a27d0013cf18bebcf5a2652d0142f0c10dbc7b271a35f69915b64144`.
+
+Disclosed gaps that remain disclosed: no retained t1.6 transcript, `.out`, `.err`, or `.rc`; `attempted-migration-blobs.txt` was absent; the broader precheck narrative was not retained as a guest file, and only the ARTIFACTS checksum stdout and empty stderr remain. Journals read at 2026-10-09T07:27:25Z for the migrate unit and the four writers contained no entries. That journal read is an observation collected then, not original t1.6 process output.
+
+Account `ainow.biz` (`002559670476`), region `ap-southeast-1`. Delete only `aisb-ops-base-01`, and only if it is the instance created 2026-10-08 10:18:33 UTC. Confirm that deletion before creating `aisb-ops-base-02`. The replacement uses Ubuntu 24.04, the public-IPv4 `medium_3_0` bundle, 2 vCPU, 4 GB RAM, and 80 GB disk, and only while the console shows US$24/month. Stop if that price or specification does not match, or if `aisb-ops-base-02` already exists. Use the existing regional default SSH key and browser SSH. Keep only browser-SSH inbound access, and remove default HTTP and any other inbound rule on the new instance. `aisandbox-staging` stays untouched. No second concurrent test instance, static IP, snapshot, DNS change, application installation, corrected-code transfer, prepare, first-start, operational test, reboot test, or later access to the deleted host.
+
+The combined incremental spending limit stays US$15 across `aisb-ops-base-01` and `aisb-ops-base-02`. It is not reset. The replacement must be deleted by 2026-10-11 18:18:33 HKT unless Keith separately extends authorization. That deadline is not reset. This authorization does not automate cleanup.
+
+Lane identity, mutexes, runtime needs, evidence class, and authorization flags stay as recorded for the STAGING reservation. Occupancy and the sidecar are unchanged, so saturation validation is not rerun. GOVERNANCE stays UNOWNED. DEPLOY-01 stays `startCondition=NOT_READY` and unadmitted. OPS-01 stays ACTIVE. This replacement is not operational acceptance and not LOCK.
+
+## OPS-01 replacement prepare — 2026-10-09
+
+Keith authorized one prepare run only, on `aisb-ops-base-02` only, account `002559670476`, region `ap-southeast-1`, public IPv4 `18.143.145.9`, through browser SSH. This record is written before that run.
+
+The application SHA stays `36f9a213b7e16c0cb12587a2d74cd0f679fdc54c`. The operations tree is the verified Batch 1A tree with the five files from the accepted migration-discovery archive substituted by byte copy. That archive is `C:\Users\knlee\aisb-preflight\CLEAN-BASELINE-OPS-01-work\CLEAN-BASELINE-OPS-01-MIGRATION-DISCOVERY-REVIEW-2026-10-09.tar.gz`, 29249 bytes, SHA-256 `0e15dd1ef34e0f68b54840ff2adf60e00c35387c18c991c8dffec947054f00a7`. Its package manifest is 10/10. The reviewer's diff is not applied.
+
+The five files match the package: `lib/ops-lib.sh` `95d842de667f22e2ffcfcb5cb7f1e07f96e7b666fc67e9d165f5c3916869cce4`, `bin/aisandbox-deploy` `a97249f3845048d1318d3a0f5b4f0e7798bc4ece4d18e0101985cec5fdb7343d`, `tests/operational/t1-prepare.sh` `32629506d009027bab862bb7a778a64711bdeecc2d533eab026a8a5cc381bae3`, `tests/operational/t2-lock-and-fault.sh` `f29b0adf19a15221350fd4df391103c0298132b40e6de2213275a30a681236ab`, and `tests/regression/migration-inventory.sh` `dbdccae0a347771426db5bc93fd1bdc92b24d31ab9ef3a032d03e4798bea582f`. The Batch 1A archive `CLEAN-BASELINE-OPS-01-BATCH-1A-TREE-2026-10-09.tar.gz` still hashes to `247261e401f5424447a7ec990e7001163e7fad6b5f5531f0260fdcfec4fe7fc5`, and its manifest `b3af137e1e99963cdfa5893b82797d736c79c0bac5e95ae0fefc6c5d5f22eaeb` is 42/42. The other 38 operations files match that tree. `migration-inventory.sh` is the only added path, and it is the fifth package file. No unexplained difference remains.
+
+The run is `tests/operational/t1-prepare.sh t1.1 36f9a213b7e16c0cb12587a2d74cd0f679fdc54c` through the established sudo env form, after the fresh transfer archive verifies and the staged `ops-lib.sh` matches `95d842de667f22e2ffcfcb5cb7f1e07f96e7b666fc67e9d165f5c3916869cce4`. Staged values are `AISB_SBIN=/usr/local/sbin`, `AISB_OPS_LIB=/usr/local/lib/aisandbox/ops-lib.sh`, and `AISB_OPS_TREE=/root/aisb-ops-stage`. The disposable gate is `AISB_OPS_OPERATIONAL_TEST=1` and root-owned mode 0600 `/etc/aisandbox/ops-test-mode` containing `DISPOSABLE_NAMESPACE=1`. The anonymous repository URL is `https://github.com/knlee800/aiSandBox2026B.git`. Prepare may install packages, run `npm ci`, and perform its builds, and may generate only the synthetic configuration it requires. No GitHub credential and no age key. The case command, stdout, stderr, and exit status are captured from the outset, and prepare's own log is retained. A failure stops the run. Evidence is preserved. There is no repair or retry.
+
+On success the guest stays prepared and idle: `PREPARED` and HEAD match the bound SHA, the marker phase is `prepared` and the owner is `prepare`, `DEPLOYED` and contamination markers are absent, the writers are disabled and inactive, application ports have no listeners, the application role and database are absent, and Redis is empty. The evidence archive is verified off-guest. This run does not include a refusal case, first-start, backup, restore, deploy, reboot test, source edit, or another resource.
+
+The combined incremental spending limit stays US$15. The deletion deadline stays 2026-10-11 18:18:33 HKT. Neither is reset. Cleanup is not automated. Lane identity, mutexes, runtime needs, evidence class, and authorization flags stay as recorded for the STAGING reservation. Occupancy and the sidecar are unchanged, so saturation validation is not rerun. GOVERNANCE stays UNOWNED. DEPLOY-01 stays `startCondition=NOT_READY` and unadmitted. OPS-01 stays ACTIVE. This prepare is not operational acceptance and not LOCK.
+
+## OPS-01 Caddy acquisition correction — 2026-10-09
+
+The reviewed prepare on `aisb-ops-base-02` stopped at Cloudsmith HTTP 402 during `apt-get update`, with prepare exit 100. That guest stays contaminated. This correction does not contact, repair, retry, or replace it.
+
+When `caddy` is absent, `aisandbox-prepare` no longer writes a Cloudsmith source. It downloads only `https://github.com/caddyserver/caddy/releases/download/v2.11.7/caddy_2.11.7_linux_amd64.deb` and installs it with `dpkg` after `dpkg --print-architecture` is `amd64` and the file matches SHA-512 `47e8351c2317b427af14a103e763ca1118a3d2396a88b4c0669cdec9c4a68a957690194e2423a1633f53135741c33a41bdac2b55515b7d0f7adc8b733add50d9`. An existing `caddy` is still skipped. Unsupported architecture exits 30. Download, checksum, and `dpkg` failures keep their own status, and the temporary download is removed. Service start policy, the drop-in, the Caddyfile, and migration code are unchanged.
+
+Two integration items remain unresolved and block the next guest run. The package maintainer script enables and starts `caddy.service` during installation, before prepare replaces `/etc/caddy/Caddyfile`. The packaged unit's `caddy run --environ` prints the process environment before starting, which includes the operator environment supplied by the drop-in. Mocked checks of the acquisition function are not operational acceptance.
+
+The combined incremental spending limit stays US$15. The deletion deadline stays 2026-10-11 18:18:33 HKT. Neither is reset. Cleanup is not automated. Occupancy and the sidecar are unchanged. GOVERNANCE stays UNOWNED. DEPLOY-01 stays `startCondition=NOT_READY` and unadmitted. OPS-01 stays ACTIVE.
+
+## OPS-01 Caddy service integration — 2026-10-10
+
+The reviewed pin, digest, and cleanup-status behavior stay in place. The only package is `https://github.com/caddyserver/caddy/releases/download/v2.11.7/caddy_2.11.7_linux_amd64.deb`, SHA-512 `47e8351c2317b427af14a103e763ca1118a3d2396a88b4c0669cdec9c4a68a957690194e2423a1633f53135741c33a41bdac2b55515b7d0f7adc8b733add50d9`. Unsupported architecture exits 30. A download, checksum, or `dpkg` failure keeps that status. If removal of the temporary package fails, prepare reports the cleanup status and the retained path. A nonzero acquisition status is kept. If installation succeeded and removal failed, prepare returns the cleanup status. `trap 'prep_trap $?' EXIT` is unchanged, so the retained status still reaches maintenance-marker recording.
+
+Prepare refuses before download when `caddy.service` or `caddy-api.service` is not already disabled or absent, or when either unit is active. The same check applies when `caddy` is already installed, so prepare does not change an existing start policy it cannot preserve. During `dpkg`, a temporary policy-rc.d exits 101 for `caddy`, `caddy.service`, `caddy-api`, and `caddy-api.service`. An existing policy file is copied aside and restored after success or failure. If the copy or the restore cannot be completed, prepare stops and does not enable or start Caddy. After installation, both units are disabled and stopped, and prepare requires them to stay disabled and inactive. The verified 2.11.7 maintainer script is the regression reference. Host commands are mocked.
+
+The project drop-in remains `/etc/systemd/system/caddy.service.d/aisandbox.conf`. It keeps `EnvironmentFile=/etc/caddy/aisandbox-operator.env` and replaces the packaged command with an empty `ExecStart=` and `ExecStart=/usr/bin/caddy run --config /etc/caddy/Caddyfile`. The Caddyfile, `caddy hash-password`, and `caddy validate` are unchanged. This step does not start or reload Caddy. `caddy-api.service` is left disabled and inactive, and its packaged command is unchanged.
+
+Enabling or starting Caddy is a separately authorized pending step. This step closes the maintainer-start and `--environ` items recorded on 2026-10-09. The regression mocks host mutations. Remaining host checks are a real `dpkg` install on Ubuntu 24.04, systemd disabled and inactive state for both units, the effective drop-in, `caddy validate`, and a reboot that leaves both units inactive. `aisb-ops-base-02` stays contaminated and was not contacted.
+
+The combined incremental spending limit stays US$15. The deletion deadline stays 2026-10-11 18:18:33 HKT. Neither is reset. Cleanup is not automated. Occupancy and the sidecar are unchanged, so saturation validation is not rerun. GOVERNANCE stays UNOWNED. DEPLOY-01 stays `startCondition=NOT_READY` and unadmitted. OPS-01 stays ACTIVE.
+
+## OPS-01 Caddy mask-first installation — 2026-10-11
+
+Keith authorized this slice only. `aisandbox-prepare` masks `caddy.service` and `caddy-api.service` with persistent `systemctl mask` before `dpkg`, and it does not create or modify `policy-rc.d`. The 2026-10-10 temporary policy-rc.d wrapper is withdrawn by this section. The pin, digest, cleanup-status behavior, Caddyfile, drop-in without `--environ`, and `aisandbox-prepare <sha>` command stay as recorded on 2026-10-10. `PREPARED` gains `caddy=masked` only after the final masked check. Enabling or starting Caddy remains a separately authorized pending step. `caddy-api.service` stays masked.
+
+The wider service-start design and the operational acceptance matrix remain pending. This section does not adopt `--site`, Caddy activation, operational fault cases, restore-test repairs, `aisandbox.target` membership, or worker-readiness changes.
+
+Reviewed control, not yet a host result: the pinned 2.11.7 postinst calls `deb-systemd-helper unmask` and then `enable`/`start`/`try-restart` with `|| true`. Ubuntu noble `init-system-helpers` 1.66ubuntu1 `unmask_service` leaves an administrator `/dev/null` mask in place unless `/var/lib/systemd/deb-systemd-helper-masked/<unit>` exists, and `deb-systemd-invoke` does not start a unit whose `is-enabled` output does not contain `enabled`. systemd 255 prints `not-found` and exits 4 for a missing unit file, prints `masked` and exits 1 for an administrator mask, prints `inactive` and exits 4 when `is-active` finds no unit file, and prints `inactive` and exits 3 when the unit is known but not active. A real `dpkg` install, mask of a not-yet-installed unit, and reboot on Ubuntu 24.04 remain unverified. Mocked checks are not operational acceptance. `aisb-ops-base-02` stays contaminated and is not contacted.
+
+Admissible states, for both units together: Fresh means the package is absent, `not-installed`, or `config-files`, `caddy` is not on `PATH`, both units are `not-found`, and no mask link, wants link, or helper-owned mask record exists. Retry-before-dpkg means the package is absent or `not-installed`, and both units are already masked, inactive, and linked to `/dev/null`, with no wants link and no helper-owned mask record. Retry-after-dpkg means the package is `installed 2.11.7`, `caddy` is on `PATH`, and the masked condition already holds; prepare does not download or install again. A known state outside those three, a transitional package status, a version other than 2.11.7, or a probe whose output, exit code, and stderr do not match is refused with status 30 before download. Fresh and retry-before mask both units and require the masked condition before `dpkg` and again after `dpkg` returns 0. Download, checksum, and `dpkg` failures keep their own status.
+
+The combined incremental spending limit stays US$15. The deletion deadline stays 2026-10-11 18:18:33 HKT. Neither is reset. Cleanup is not automated. Occupancy and the sidecar are unchanged, so saturation validation is not rerun. GOVERNANCE stays UNOWNED. DEPLOY-01 stays `startCondition=NOT_READY` and unadmitted. OPS-01 stays ACTIVE. Not LANE-DONE. Not LOCKED.
+
+## OPS-01 aisandbox.target membership — 2026-10-11
+
+Keith authorized this slice only. `aisandbox.target` is the application group. It is an operator handle, not a readiness signal. `aisandbox-gateway`, `aisandbox-ai`, `aisandbox-cm`, and `aisandbox-frontend` gain `PartOf=aisandbox.target` and `WantedBy=aisandbox.target`. Their existing dependencies, `AssertPathExists=!/var/lib/aisandbox-ops/maintenance`, and restart settings stay. `aisandbox-watchdog` gains the same membership and stays disabled unless AUTH-W is recorded. Caddy, `aisandbox-migrate`, `aisandbox-backup.service`, and `aisandbox-backup.timer` are not members. `PartOf=` does not start a member. Startup membership is the enablement link created by `systemctl enable`.
+
+`aisandbox-prepare` installs the target and disables the target, the four writers, the watchdog, and the backup timer. It does not enable or start the target. `aisandbox-first-start` and `aisandbox-restore` enable `aisandbox.target` and then the four writers at the existing enablement step. They then remove the marker, start those writers one service at a time, and run the existing health check. They do not enable the watchdog. No entry point stops `aisandbox.target` or treats `systemctl is-active aisandbox.target` as readiness. The Caddy mask-first implementation stays as recorded. `--site`, Caddy activation, operational fault cases, restore-test repairs, and worker-readiness remain pending.
+
+The combined incremental spending limit stays US$15. The deletion deadline stays 2026-10-11 18:18:33 HKT. Neither is reset. Cleanup is not automated. Occupancy and the sidecar are unchanged, so saturation validation is not rerun. GOVERNANCE stays UNOWNED. DEPLOY-01 stays `startCondition=NOT_READY` and unadmitted. OPS-01 stays ACTIVE. Not LANE-DONE. Not LOCKED.
+
+## OPS-01 ACTIVATION prerequisite — 2026-10-11
+
+Keith authorized this slice only. `aisandbox-first-start` and `aisandbox-restore` require `/etc/aisandbox/ACTIVATION` before they take the operations lock, admit an operation, or change markers, application data, or services. The file must be a root-owned regular file, not a symlink, mode 0600, and contain one nonempty line naming the recorded authorization for that host. Missing, malformed, unreadable, or incorrectly owned or protected input exits 10. The operator creates the file by hand under a separately recorded authorization. Scripts do not create it and do not treat a missing `ops-test-mode` as authorization. The line is an operator attestation. It does not grant cloud or deployment permission, and it is not the Caddy unmask step. The Caddy mask-first implementation and `aisandbox.target` membership stay as recorded. Other service-start slices remain pending.
+
+The combined incremental spending limit stays US$15. The deletion deadline stays 2026-10-11 18:18:33 HKT. Neither is reset. Cleanup is not automated. Occupancy and the sidecar are unchanged, so saturation validation is not rerun. GOVERNANCE stays UNOWNED. DEPLOY-01 stays `startCondition=NOT_READY` and unadmitted. OPS-01 stays ACTIVE. Not LANE-DONE. Not LOCKED.
+
+## OPS-01 worker readiness — 2026-10-11
+
+Keith authorized this slice only. `health_wait` no longer treats the unconditional `Worker connected to ai-execution queue` journal line as AI readiness. Readiness still requires the existing HTTP checks inside the existing 120-second deadline and still returns 21 on timeout. AI readiness additionally requires `aisandbox-ai` to be active with a nonzero MainPID, a Redis client whose name field is exactly `bull:YWktZXhlY3V0aW9u`, an established socket for that client address owned by that MainPID, and a positive `TTL` on `bull:ai-execution:stalled-check`. A MainPID change during the observation is not accepted; the probe retries. Missing, malformed, failed, or mismatched observations do not pass. Redis credentials and raw client output are not logged. Socket acceptance compares parsed fields: the local endpoint must equal the selected client's `127.0.0.1` port, the peer must equal `127.0.0.1:6379`, and the owning PID must equal that MainPID. Malformed, wrong-peer, and reversed records do not pass. Each probe and the retry sleep are limited to the time remaining in the 120-second deadline. A result at or after that deadline is exit 21, not success. This matches installed BullMQ 5.70.1 and the nested ioredis 5.9.3 it loads: the unnamed `ai-execution` worker sets that client name, QueueEvents uses the `:qe` suffix, and the stall script sets the key with a millisecond expiry. No application source changes. The Caddy mask-first implementation, `aisandbox.target` membership, and ACTIVATION prerequisite stay as recorded. Host worker readiness is not verified. Other service-start slices remain pending.
+
+The combined incremental spending limit stays US$15. The deletion deadline stays 2026-10-11 18:18:33 HKT. Neither is reset. Cleanup is not automated. Occupancy and the sidecar are unchanged, so saturation validation is not rerun. GOVERNANCE stays UNOWNED. DEPLOY-01 stays `startCondition=NOT_READY` and unadmitted. OPS-01 stays ACTIVE. Not LANE-DONE. Not LOCKED.
+
+## OPS-01 S9 maintenance exit — 2026-10-11
+
+Keith authorized this reconciliation only. When `aisandbox-maint exit` finds marker phase `work-detected`, it takes one fresh `quiesce_sample` under the operations lock it already holds, before it removes the marker or starts a writer. `ZERO` continues through the existing unchanged-tree and schema check and the existing restart path. `ACTIVE` exits 11. `UNKNOWN`, malformed sample output, or a sampling failure exits 12. A refusal keeps the maintenance marker and leaves writers stopped. The sample stays as evidence. Any work-detail output is IDs only. The command does not resolve, delete, or replay jobs or ledger records. Manual U2 resolution stays separately authorized. Other exit phases and the existing root, path, owner, lock, and tree/schema checks stay. The quiescence algorithm is unchanged. The Caddy, target-membership, ACTIVATION, and worker-readiness slices stay as recorded.
+
+The combined incremental spending limit stays US$15. The deletion deadline stays 2026-10-11 18:18:33 HKT. Neither is reset. Cleanup is not automated. Occupancy and the sidecar are unchanged, so saturation validation is not rerun. GOVERNANCE stays UNOWNED. DEPLOY-01 stays `startCondition=NOT_READY` and unadmitted. OPS-01 stays ACTIVE. Not LANE-DONE. Not LOCKED.
+
+## OPS-01 S8 recovery guidance — 2026-10-11
+
+Keith authorized this reconciliation only. It changes guidance text, not behavior. With the maintenance marker absent, enabled writers may start after reboot, and that start is expected. If health passes, HEAD equals the recorded `target_sha`, and applied migrations match that target, the observation stays recorded. The later authorized recovery is a normal `aisandbox-deploy <target_sha>` with every existing deploy guard. `--from-maintenance` is not the route when the marker is absent. If health fails, or tree or schema evidence differs or is unavailable, the failed host stays as evidence. Recovery is a separately authorized fresh target at the recorded `pre_sha`, restoring the pre-migration bundle there. Nothing restores onto the failed primary, and nothing writes `DEPLOYED` from the observation. `aisandbox-maint status` stays read-only. Deploy, failure classification, markers, migration guards, and service behavior stay unchanged. The Caddy, target-membership, ACTIVATION, worker-readiness, and S9 slices stay as recorded.
+
+The combined incremental spending limit stays US$15. The deletion deadline stays 2026-10-11 18:18:33 HKT. Neither is reset. Cleanup is not automated. Occupancy and the sidecar are unchanged, so saturation validation is not rerun. GOVERNANCE stays UNOWNED. DEPLOY-01 stays `startCondition=NOT_READY` and unadmitted. OPS-01 stays ACTIVE. Not LANE-DONE. Not LOCKED.
+
+## OPS-01 watchdog deferral — 2026-10-11
+
+This is a scope amendment, not a completed watchdog implementation. The consolidated plan places watchdog activation under optional AUTH-W and Tier 2. AUTH-W remains ungranted. Revision 2's stop-before-quiescence and restart-after-health integration is deferred and is not implemented in this round. `aisandbox-watchdog.service` stays disabled, and its recorded `aisandbox.target` membership stays. Current operational testing requires the watchdog to remain disabled and inactive. This deferral does not establish support for operating with an active watchdog.
+
+Before any later activation, three decisions from the read-only map remain prerequisites, and none is passed here: a separate durable prior-activity record that survives `--from-maintenance` adoption; recovery after refusal before marker creation; and health verification before a watchdog restart after Q3 or automatic writer recovery. Reboot behavior of an enabled watchdog remains a later verification requirement. This record does not enable the unit and does not grant AUTH-W. The Caddy, target-membership, ACTIVATION, worker-readiness, S9, and S8 slices stay as recorded.
+
+The combined incremental spending limit stays US$15. The deletion deadline stays 2026-10-11 18:18:33 HKT. Neither is reset. Cleanup is not automated. Occupancy and the sidecar are unchanged, so saturation validation is not rerun. GOVERNANCE stays UNOWNED. DEPLOY-01 stays `startCondition=NOT_READY` and unadmitted. OPS-01 stays ACTIVE. Not LANE-DONE. Not LOCKED.
+
+## OPS-01 Caddy site selection — 2026-10-11
+
+Keith authorized this slice only. `aisandbox-prepare` requires `<40-hex-sha> --site public|localhost`. There is no default. A missing, invalid, duplicate, or unexpected argument exits 10 before the operations lock and before any mutation. `--site public` selects the existing `caddy/Caddyfile`. `--site localhost` selects the existing `caddy/Caddyfile.drill`. Both templates stay unchanged and are installed as `/etc/caddy/Caddyfile`. Operator-environment handling, `caddy validate`, the persistent masks, and the drop-in without `--environ` stay. Selection does not authorize Caddy activation, a DNS change, or public access.
+
+`caddy/Caddyfile.drill` has no `basic_auth` block. The later activation matrix's HTTP 401 expectation remains unresolved and is not accepted by this slice. Operational preparation calls now pass `--site localhost`, including refusals, lock contention, and the retry. Those operational cases were not executed. The mask-first, target-membership, ACTIVATION, worker-readiness, S9, S8, and watchdog-deferral records stay. AUTH-W stays ungranted.
+
+The combined incremental spending limit stays US$15. The deletion deadline stays 2026-10-11 18:18:33 HKT. Neither is reset. Cleanup is not automated. Occupancy and the sidecar are unchanged, so saturation validation is not rerun. GOVERNANCE stays UNOWNED. DEPLOY-01 stays `startCondition=NOT_READY` and unadmitted. OPS-01 stays ACTIVE. Not LANE-DONE. Not LOCKED.
+
+## OPS-01 localhost activation matrix — 2026-10-11
+
+This is an acceptance-matrix amendment under revision 3 §A.5. It does not change either Caddy template, any source file, or any test, and it does not mark any activation check passed.
+
+The existing `caddy/Caddyfile.drill` has no `basic_auth`. Its localhost activation check must not expect an unauthenticated 401. Later authorized localhost checks verify the existing routing: `/` redirects to `/en` with 307, and `/en` and the selected application health endpoint return their required successful responses once the application is ready. These checks establish neither public-site authentication nor public TLS acceptance.
+
+Public configuration retains `basic_auth`. Its unauthenticated 401 and its authenticated application checks remain required in the separately authorized deployment acceptance. Unmasking or starting Caddy remains separately authorized. The SSH-only firewall stays. Both templates stay unchanged. The site-selection, mask-first, target-membership, ACTIVATION, worker-readiness, S9, S8, and watchdog-deferral records stay. AUTH-W stays ungranted.
+
+The combined incremental spending limit stays US$15. The deletion deadline stays 2026-10-11 18:18:33 HKT. Neither is reset. Cleanup is not automated. Occupancy and the sidecar are unchanged, so saturation validation is not rerun. GOVERNANCE stays UNOWNED. DEPLOY-01 stays `startCondition=NOT_READY` and unadmitted. OPS-01 stays ACTIVE. Not LANE-DONE. Not LOCKED.
+
+## OPS-01 T1 assertion correction — 2026-10-11
+
+Keith authorized this correction only. It changes the prepared-state assertion and the `t1.6-repeat` case. Production entry points, service units, readiness, and the prepare log-probe policy stay unchanged. No activation check is marked passed. Acceptance status is unchanged.
+
+The prepared-state assertion keeps its existing checks. It also requires `caddy=masked` in `PREPARED`, both Caddy units masked and inactive with administrator links to `/dev/null` through the existing mask inspection, and `aisandbox.target` and `aisandbox-watchdog` disabled and inactive. A failed or ambiguous inspection fails the assertion.
+
+`t1.6-repeat` requires a completed first start on the same host: valid `ACTIVATION`, the same application SHA in `HEAD`, `PREPARED`, and `DEPLOYED`, an absent maintenance marker, and the four writers enabled and active. Equal SHA values do not require the record files to have identical contents. The case does not create `ACTIVATION` or prior success evidence. It records the invocation's stdout, stderr, and exit status, and it accepts only exit 10 with `phase is not prepared`. `PREPARED`, `DEPLOYED`, and `ACTIVATION` bytes must be unchanged. The marker must stay absent. Writer enablement and activity must be unchanged. A lock-owner trace append from normal lock acquisition is not part of that comparison.
+
+The combined incremental spending limit stays US$15. The deletion deadline stays 2026-10-11 18:18:33 HKT. Neither is reset. Cleanup is not automated. Occupancy and the sidecar are unchanged, so saturation validation is not rerun. GOVERNANCE stays UNOWNED. DEPLOY-01 stays `startCondition=NOT_READY` and unadmitted. OPS-01 stays ACTIVE. Not LANE-DONE. Not LOCKED.
+
+## OPS-01 checkpoint correction — 2026-10-11
+
+This correction is control-plane prose and the root `.gitattributes` only. It does not expand OPS implementation scope. Lane 1 stays ACTIVE. `mutexes` and `runtimeNeeds` stay `STAGING`. `evidenceClass` stays `STAGING-RUNTIME`. STAGING is not released.
+
+The root `.gitattributes` keeps `ops/clean-baseline/**`, this decision, and `docs/control-plane/lane-saturation-state.json` as LF text, and marks both saturation proof files `-text -eol`. Existing files were not normalized and permissions were not changed. The six `ops/clean-baseline/bin` scripts are not recorded as `100755` here. Keith records that mode in his Git step.
+
+The handoff reported deletion of `aisb-ops-base-02` at 2026-10-11 08:46:32 UTC / 16:46:32 HKT. This record does not claim a fresh cloud check. No disposable guest or operational run is currently authorized. The former US$15 cap and 2026-10-11 18:18:33 HKT deadline were not extended. `aisb-ops-base-03` and US$8 for 72 hours are proposals only.
+
+Independent packaging verification of `CLEAN-BASELINE-OPS-01-TRANSFER-2026-10-11.tar.gz` is SHA-256 `eb9514c708ea5b7ce3cfc2d49efadb1335634c5255955de9b3ec8f03d4b99e62`. That is packaging verification, not guest acceptance. The application target remains `36f9a213b7e16c0cb12587a2d74cd0f679fdc54c`.
+
+The occupancy block, sidecar, and both proof files stay byte-for-byte unchanged, so saturation validation is not rerun. GOVERNANCE is released UNOWNED. DEPLOY-01 stays `startCondition=NOT_READY` and unadmitted. OPS-01 stays ACTIVE. Not LANE-DONE. Not LOCKED. `HOST_CLEAN=NO`.

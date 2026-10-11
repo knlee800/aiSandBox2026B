@@ -1,0 +1,10 @@
+[Unit]
+Description=Nightly aiSandBox backup at 03:30
+
+[Timer]
+OnCalendar=*-*-* 03:30
+Persistent=true
+Unit=aisandbox-backup.service
+
+[Install]
+WantedBy=timers.target

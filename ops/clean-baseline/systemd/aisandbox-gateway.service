@@ -1,0 +1,27 @@
+[Unit]
+Description=aiSandBox API Gateway (:4000)
+Wants=network-online.target postgresql@15-main.service redis-server.service
+After=network-online.target postgresql@15-main.service redis-server.service
+PartOf=aisandbox.target
+AssertPathExists=!/var/lib/aisandbox-ops/maintenance
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=aisandbox
+Group=aisandbox
+WorkingDirectory=/opt/aisandbox/services/api-gateway
+EnvironmentFile=/etc/aisandbox/gateway.env
+ExecStart=/usr/bin/node /opt/aisandbox/services/api-gateway/dist/src/main.js
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+UMask=0027
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+SyslogIdentifier=aisandbox-gateway
+
+[Install]
+WantedBy=aisandbox.target

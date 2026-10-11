@@ -1,0 +1,29 @@
+[Unit]
+Description=aiSandBox container manager (:4002)
+Wants=network-online.target docker.service
+After=network-online.target docker.service
+Requires=docker.service
+PartOf=aisandbox.target
+AssertPathExists=!/var/lib/aisandbox-ops/maintenance
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=aisandbox
+Group=aisandbox
+SupplementaryGroups=docker
+WorkingDirectory=/opt/aisandbox/services/container-manager
+EnvironmentFile=/etc/aisandbox/cm.env
+ExecStart=/usr/bin/node /opt/aisandbox/services/container-manager/dist/main.js
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+UMask=0027
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+SyslogIdentifier=aisandbox-cm
+
+[Install]
+WantedBy=aisandbox.target

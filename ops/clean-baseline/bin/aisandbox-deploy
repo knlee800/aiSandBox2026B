@@ -1,0 +1,199 @@
+#!/bin/bash
+# Standard deploy. --initial and --no-migrate are removed.
+set -euo pipefail
+HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if [[ -n "${AISB_OPS_LIB:-}" ]]; then
+  # shellcheck source=/dev/null
+  source "$AISB_OPS_LIB"
+elif [[ -f "$HERE/../lib/ops-lib.sh" ]]; then
+  # shellcheck source=/dev/null
+  source "$HERE/../lib/ops-lib.sh"
+else
+  # shellcheck source=/dev/null
+  source /usr/local/lib/aisandbox/ops-lib.sh
+fi
+
+ops_paths
+ops_require_root || exit 10
+ops_refuse_override || exit 10
+from_maint=0
+allow_ahead=0
+sha=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --from-maintenance) from_maint=1 ;;
+    --allow-schema-ahead) allow_ahead=1 ;;
+    --initial|--no-migrate)
+      note "$1 is not a deploy mode"
+      exit 10
+      ;;
+    *)
+      if [[ -n "$sha" ]]; then
+        note "usage: aisandbox-deploy <sha> [--from-maintenance] [--allow-schema-ahead]"
+        exit 10
+      fi
+      sha=$1
+      ;;
+  esac
+  shift
+done
+[[ "$sha" =~ ^[0-9a-f]{40}$ ]] || {
+  note "usage: aisandbox-deploy <sha> [--from-maintenance] [--allow-schema-ahead]"
+  exit 10
+}
+ops_lock || exit 10
+AISB_OP_ADMITTED=0
+
+deploy_trap() {
+  local code=$1
+  [[ "$code" -eq 0 ]] && return 0
+  [[ "${AISB_OP_ADMITTED:-0}" == "1" ]] || return 0
+  local class phase
+  class=$(classify_failure)
+  if [[ "$class" == "post-start" ]]; then
+    post_start_recovery_text >&2
+    return 0
+  fi
+  if [[ "$class" == "unknown" ]]; then
+    note "failure class is unknown; this record does not say that no writer started"
+    return 0
+  fi
+  phase=$(marker_field phase)
+  case "$phase" in
+    mutating|migrating|starting)
+      marker_set_phase "${phase}-failed" || true
+      ;;
+  esac
+  if phase_allows_automatic_restart "$phase"; then
+    if assert_tree_and_schema_unchanged; then
+      units=$(op_field pre_active_units)
+      if [[ -n "$units" ]]; then
+        # shellcheck disable=SC2086
+        start_units_after_marker_removed ${units//,/ }
+      else
+        marker_remove || true
+      fi
+    fi
+  fi
+}
+trap 'deploy_trap $?' EXIT
+
+pre=""
+if [[ "$from_maint" -eq 1 ]]; then
+  [[ -f "$AISB_MARKER" ]] || {
+    note "from-maintenance requires the marker"
+    exit 10
+  }
+  [[ "$(marker_field owner_op)" == "deploy" ]] || {
+    note "from-maintenance requires owner_op=deploy"
+    exit 10
+  }
+  phase=$(marker_field phase)
+  phase_allows_from_maintenance "$phase" || {
+    note "phase ${phase} cannot continue in place"
+    exit 10
+  }
+  oldpid=$(marker_field owner_pid)
+  if [[ -n "$oldpid" ]] && kill -0 "$oldpid" 2>/dev/null; then
+    note "owner pid ${oldpid} is still alive"
+    exit 10
+  fi
+  class=$(classify_failure)
+  if [[ "$class" == "unknown" ]]; then
+    note "failure class is unknown; refusing adoption"
+    exit 12
+  fi
+  if [[ "$class" != "pre-start" ]]; then
+    post_start_recovery_text >&2
+    exit 30
+  fi
+  pre=$(op_field pre_sha)
+  [[ -n "$pre" ]] || exit 10
+  if [[ "$allow_ahead" -eq 1 ]]; then
+    require_schema_ahead_approval "$sha" "$pre" || exit 10
+  fi
+  migration_history_protected "$pre" "$sha" "$allow_ahead" || exit 10
+  target_covers_applied_migrations "$sha" "$allow_ahead" || exit 10
+  reconcile_attempted_after_interruption || exit 10
+  guard_migration_evidence "$sha" || exit 10
+  op_begin deploy || exit 10
+  restore_applied_blob_key || exit 10
+  op_set pre_sha "$pre"
+  store_migration_hash || exit 12
+  op_set prior_owner_pid "$oldpid"
+  op_set prior_owner_op deploy
+  kv_set "$AISB_MARKER" prior_owner_pid "$oldpid"
+  kv_set "$AISB_MARKER" owner_pid "$$"
+  AISB_ADOPTED=1
+  op_set target_sha "$sha"
+  record="$AISB_BACKUPS/records/deploy-$(date -u +%Y%m%dT%H%M%SZ)"
+  mkdir -p "$record"
+  op_set record_dir "$record"
+  AISB_OP_ADMITTED=1
+  sample=$(quiesce_sample Q6)
+  [[ "$sample" == "ZERO" ]] || exit 12
+else
+  if [[ -f "$AISB_MARKER" ]]; then
+    note "marker present; pass --from-maintenance to adopt a failed deploy"
+    exit 10
+  fi
+  execution_disabled || {
+    note "GLOBAL_EXECUTION_ENABLED is not false"
+    exit 11
+  }
+  pre=$(git_as_owner rev-parse HEAD)
+  runuser -u aisandbox -- git -C "$AISB_ROOT" fetch origin
+  runuser -u aisandbox -- git -C "$AISB_ROOT" cat-file -e "${sha}^{commit}"
+  if [[ "$allow_ahead" -eq 1 ]]; then
+    require_schema_ahead_approval "$sha" "$pre" || exit 10
+  fi
+  migration_history_protected "$pre" "$sha" "$allow_ahead" || exit 10
+  guard_migration_evidence "$sha" || exit 10
+  op_begin deploy || exit 10
+  restore_applied_blob_key || exit 10
+  op_set target_sha "$sha"
+  op_set pre_sha "$pre"
+  store_migration_hash || exit 12
+  record="$AISB_BACKUPS/records/deploy-$(date -u +%Y%m%dT%H%M%SZ)"
+  mkdir -p "$record"
+  op_set record_dir "$record"
+  AISB_OP_ADMITTED=1
+  quiesce_and_stop deploy 0
+fi
+
+added="$(count_added_executable_migrations HEAD "$sha")"
+if [[ "$added" -gt 0 ]]; then
+  ts=$(date -u +%Y%m%dT%H%M%SZ)
+  AISB_BACKUP_TS="$ts"
+  bout="$AISB_BACKUPS/${ts}.partial"
+  mkdir -p "$bout"
+  chmod 0700 "$bout"
+  AISB_BACKUP_KIND=pre-migration
+  if ! backup_write_set "$bout"; then
+    mv "$bout" "$AISB_BACKUPS/${ts}.failed"
+    rm -f -- "$AISB_OFFHOST/${ts}.tar.age.partial"
+    note "pre-migration backup failed"
+    exit 30
+  fi
+  mv "$bout" "$AISB_BACKUPS/$ts"
+fi
+
+marker_set_phase mutating
+ops_test_fault mutating
+checkout_and_build "$sha"
+marker_set_phase migrating
+ops_test_fault migrating
+if [[ "$added" -gt 0 || "$from_maint" -eq 1 ]]; then
+  stage_attempted_blobs HEAD || exit 30
+  start_migrate
+  verify_migrations_applied || exit 30
+  commit_attempted_blobs || exit 30
+fi
+ops_test_fault after-migrate
+marker_set_phase starting
+ops_test_fault starting
+start_units_after_marker_removed aisandbox-gateway aisandbox-ai aisandbox-cm aisandbox-frontend
+health_wait
+write_deployed
+note "deployed ${sha}"
+exit 0
