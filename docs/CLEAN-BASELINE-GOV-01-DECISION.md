@@ -460,3 +460,23 @@ The handoff reported deletion of `aisb-ops-base-02` at 2026-10-11 08:46:32 UTC /
 Independent packaging verification of `CLEAN-BASELINE-OPS-01-TRANSFER-2026-10-11.tar.gz` is SHA-256 `eb9514c708ea5b7ce3cfc2d49efadb1335634c5255955de9b3ec8f03d4b99e62`. That is packaging verification, not guest acceptance. The application target remains `36f9a213b7e16c0cb12587a2d74cd0f679fdc54c`.
 
 The occupancy block, sidecar, and both proof files stay byte-for-byte unchanged, so saturation validation is not rerun. GOVERNANCE is released UNOWNED. DEPLOY-01 stays `startCondition=NOT_READY` and unadmitted. OPS-01 stays ACTIVE. Not LANE-DONE. Not LOCKED. `HOST_CLEAN=NO`.
+
+## OPS-01 base-03 prepare-only authorization — 2026-10-12
+
+Keith approved one fresh aisb-ops-base-03 before any guest action. Account 002559670476, region ap-southeast-1, a new Ubuntu 24.04 medium_3_0 instance (2 vCPU, 4 GB RAM, 80 GB SSD), not created from a snapshot or a reused disk. The new maximum incremental cost is US$8 for this guest and its associated usage. Delete it by its AWS createdAt plus 72 hours, or earlier to remain within that budget. The former US$15 authorization is not extended or reused.
+
+The authorized scope is t1.1 prepare only, evidence export, and cleanup of this exact guest. Application target SHA remains 36f9a213b7e16c0cb12587a2d74cd0f679fdc54c. Repository checkpoint b6f4d7e678b69cb99af884caedc42dd0e3567a54 does not change that target and does not require rewriting historical proof headSha.
+
+The occupancy block, sidecar, and both proof files stay byte-for-byte unchanged, so saturation validation is not rerun. GOVERNANCE is released UNOWNED before any guest action. DEPLOY-01 stays startCondition=NOT_READY and unadmitted. OPS-01 stays ACTIVE. Not LANE-DONE. Not LOCKED. HOST_CLEAN=NO.
+
+## OPS-01 base-03 prepare-only result — 2026-10-12
+
+The authorized window is closed. No disposable guest or operational run is authorized. Lane 1 stays ACTIVE. STAGING stays owned by CLEAN-BASELINE-OPS-01. GOVERNANCE is UNOWNED. OPS-01 is not LANE-DONE and not LOCKED. DEPLOY-01 stays unadmitted. HOST_CLEAN=NO. Application target SHA remains 36f9a213b7e16c0cb12587a2d74cd0f679fdc54c. Checkpoint b6f4d7e678b69cb99af884caedc42dd0e3567a54 does not replace that target. The earlier base-03 authorization remains history. The US$8/72-hour authorization is spent and closed. It grants no replacement guest or next case.
+
+aisb-ops-base-03 was in account 002559670476, ap-southeast-1. The console displayed creation time 2026-10-12 09:23 HKT (01:23Z at the displayed minute). Machine ID ec2477d5ba4d841d4d018fc8303d89ef. One staged t1.1 prepare for the target SHA ran 2026-10-12T01:30:35Z to 2026-10-12T01:41:07Z. The captured case_rc and capture_rc are both 0. PREPARED records the target SHA, Node v24.21.0, and caddy=masked. The maintenance marker records phase=prepared and owner_op=prepare. ACTIVATION and DEPLOYED are absent.
+
+Off-guest archive t1.1-capture-20261012.tar.gz is 14,834 bytes, SHA-256 678016c87fff3282c388698e7347483697d3b7ae8025ff0348117863343cc83b. Its manifest covers exactly 13 payload files and every hash passed independent review. The two /home/ubuntu directory messages and two absent snapshot-store directory messages were non-failing. Absent snapshot-store directories satisfy the prepare empty-target rule. This single case does not complete OPS-01 acceptance.
+
+Keith reports the console confirmed deletion of aisb-ops-base-03 and then showed only aisandbox-staging running. Deletion is attributed to that report. The capture archive does not independently prove deletion. No exact deletion timestamp or actual AWS charge is recorded. aisandbox-staging was not changed.
+
+The occupancy block, sidecar, and both proof files stay byte-for-byte unchanged, so saturation validation is not rerun.
