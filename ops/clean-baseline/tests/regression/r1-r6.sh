@@ -218,7 +218,7 @@ SQL
 SCRIPT_CALLS="$tmp/roles-calls"
 : > "$SCRIPT_CALLS"
 runuser() {
-  if [[ "$*" == *"-f /dev/stdin"* ]]; then
+  if [[ "$*" == *"-f -"* ]]; then
     printf 'script\n' >> "$SCRIPT_CALLS"
     cat > "$tmp/roles-session.sql"
     return 0
@@ -245,7 +245,7 @@ else
   bad r2-roles-one-session-dump
 fi
 runuser() {
-  if [[ "$*" == *"-f /dev/stdin"* ]]; then
+  if [[ "$*" == *"-f -"* ]]; then
     cat > /dev/null
     printf '%s\n' 'connection reset by peer'
     return 2
@@ -260,7 +260,7 @@ fi
 ROLE_QUERIES="$tmp/roles-fatal-queries"
 : > "$ROLE_QUERIES"
 runuser() {
-  if [[ "$*" == *"-f /dev/stdin"* ]]; then
+  if [[ "$*" == *"-f -"* ]]; then
     cat > /dev/null
     printf '%s\n' 'FATAL:  connection to server was lost'
     return 2

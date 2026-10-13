@@ -255,7 +255,7 @@ apply_roles_sql() {
   }
   case $- in *e*) ere=1 ;; esac
   set +e
-  out="$(runuser -u postgres -- psql -d postgres -v ON_ERROR_STOP=1 -f /dev/stdin < "$script" 2>&1)"
+  out="$(runuser -u postgres -- psql -d postgres -v ON_ERROR_STOP=1 -f - < "$script" 2>&1)"
   rc=$?
   if [[ "$ere" -eq 1 ]]; then set -e; else set +e; fi
   if printf '%s\n' "$out" | grep -E -q 'FATAL:|PANIC:' || [[ "$rc" -ne 0 ]]; then
@@ -305,7 +305,7 @@ apply_q3_inject() {
   local expect out
   hook_enabled || return 0
   [[ -f "$AISB_ETC/q3-inject.sql" ]] || return 0
-  runuser -u postgres -- psql -d aisandbox -v ON_ERROR_STOP=1 -f /dev/stdin < "$AISB_ETC/q3-inject.sql" || return 12
+  runuser -u postgres -- psql -d aisandbox -v ON_ERROR_STOP=1 -f - < "$AISB_ETC/q3-inject.sql" || return 12
   expect="$(awk -F= '/^Q3_EXPECT_ID=/{print substr($0,14)}' "$AISB_ETC/ops-test-mode")"
   if [[ -n "$expect" ]]; then
     out="$(runuser -u postgres -- psql -d aisandbox -Atc "SELECT 1 FROM usage_records WHERE execution_id='${expect}'")" || return 12
