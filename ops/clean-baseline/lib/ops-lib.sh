@@ -396,7 +396,7 @@ require_ledger_covers_applied() {
   local applied rc ts ledger ere=0
   case $- in *e*) ere=1 ;; esac
   set +e
-  applied="$(runuser -u postgres -- psql -d aisandbox -Atc "SELECT timestamp FROM migrations ORDER BY timestamp" 2>&1)"
+  applied="$(runuser -u postgres -- psql -d aisandbox -Atc "SELECT timestamp FROM migrations ORDER BY timestamp" 2>/dev/null)"
   rc=$?
   if [[ "$ere" -eq 1 ]]; then set -e; else set +e; fi
   if [[ "$rc" -ne 0 ]]; then
@@ -505,7 +505,7 @@ reconcile_attempted_after_interruption() {
   local applied rc ts ledger attempt ere=0 line blob old tmp promoted
   case $- in *e*) ere=1 ;; esac
   set +e
-  applied="$(runuser -u postgres -- psql -d aisandbox -Atc "SELECT timestamp FROM migrations ORDER BY timestamp" 2>&1)"
+  applied="$(runuser -u postgres -- psql -d aisandbox -Atc "SELECT timestamp FROM migrations ORDER BY timestamp" 2>/dev/null)"
   rc=$?
   if [[ "$ere" -eq 1 ]]; then set -e; else set +e; fi
   if [[ "$rc" -ne 0 ]]; then
