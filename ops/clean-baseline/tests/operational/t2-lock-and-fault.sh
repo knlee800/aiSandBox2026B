@@ -134,6 +134,7 @@ case ${1:?case} in
     else
       [[ "$(systemctl is-active aisandbox-gateway || true)" != "active" ]]
     fi
+    clear_injected_fault
     ;;
   t2.4-deploy)
     printf 'FAULT=backup-postgres\nDISPOSABLE_NAMESPACE=1\n' > /etc/aisandbox/ops-test-mode

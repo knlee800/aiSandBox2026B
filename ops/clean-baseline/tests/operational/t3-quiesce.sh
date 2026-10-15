@@ -202,11 +202,19 @@ SQL
     [[ "$rc" -eq 11 ]]
     grep -q '^phase=work-detected$' /var/lib/aisandbox-ops/maintenance
     [[ "$(systemctl is-active aisandbox-ai || true)" != "active" ]]
+    set +e
     /usr/local/sbin/aisandbox-maint exit
-    [[ ! -f /var/lib/aisandbox-ops/maintenance ]]
+    exit_rc=$?
+    set -e
+    [[ "$exit_rc" -eq 11 ]]
+    grep -q '^phase=work-detected$' /var/lib/aisandbox-ops/maintenance
+    [[ "$(systemctl is-active aisandbox-ai || true)" != "active" ]]
     redis_auth_env
     redis-cli -h 127.0.0.1 --no-auth-warning DEL bull:ai-execution:wait
     unset REDISCLI_AUTH
+    clear_injected_fault
+    /usr/local/sbin/aisandbox-maint exit
+    [[ ! -f /var/lib/aisandbox-ops/maintenance ]]
     ;;
   t3.6)
     [[ "$(env_file_value /etc/aisandbox/gateway.env GLOBAL_EXECUTION_ENABLED)" == "false" ]]
