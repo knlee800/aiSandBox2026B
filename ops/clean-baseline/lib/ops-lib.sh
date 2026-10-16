@@ -1430,15 +1430,20 @@ target_is_empty() {
 }
 
 journal_has_writer_start() {
-  local cursor out
+  local cursor out line
   cursor=$(op_field journal_cursor)
   [[ -n "$cursor" ]] || return 2
   if ! out=$(journalctl -u aisandbox-gateway -u aisandbox-ai -u aisandbox-cm -u aisandbox-frontend --after-cursor "$cursor" -o cat --no-pager 2>/dev/null); then
     return 2
   fi
-  if printf '%s\n' "$out" | grep -E -q 'Starting |Started |Failed to start'; then
-    return 0
-  fi
+  while IFS= read -r line; do
+    if [[ "$line" == *"Starting requested but asserts failed."* ]]; then
+      continue
+    fi
+    if [[ "$line" == *"Starting "* || "$line" == *"Started "* || "$line" == *"Failed to start"* ]]; then
+      return 0
+    fi
+  done <<< "$out"
   return 1
 }
 
