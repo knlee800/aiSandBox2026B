@@ -144,13 +144,19 @@ case ${1:?case} in
     ;;
   t1.5-sha)
     require_prepared_idle
+    prepared_saved="$(mktemp)"
+    cp -p -- /etc/aisandbox/PREPARED "$prepared_saved"
     printf 'sha=0000000000000000000000000000000000000000\n' > /etc/aisandbox/PREPARED
     set +e
     "$sbin/aisandbox-restore" "$3" "$4"
     rc=$?
     set -e
+    cp -p -- "$prepared_saved" /etc/aisandbox/PREPARED
+    cmp -s -- "$prepared_saved" /etc/aisandbox/PREPARED
+    rm -f -- "$prepared_saved"
     [[ "$rc" -eq 10 ]]
     [[ ! -f /etc/aisandbox/DEPLOYED ]]
+    require_prepared_idle
     ;;
   t1.5-redis)
     require_prepared_idle

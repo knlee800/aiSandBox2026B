@@ -14,7 +14,7 @@ mode=${1:?source|target}
 AISB_CASE_NAME="t4c-${mode}"
 case_begin "$AISB_CASE_NAME"
 evidence="$(case_evidence t4c)"
-rel=database/tracked-delete-me.sql
+rel=database/README.md
 case "$mode" in
   source)
     git_as_owner ls-files --error-unmatch "$rel"
