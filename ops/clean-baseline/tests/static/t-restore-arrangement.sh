@@ -1,10 +1,11 @@
 #!/bin/bash
-# Static checks for the t4c deleted path, the t1.5-sha and t1.5-unprepared PREPARED handling, and the fixture-builder call. Reads source only. Executes nothing.
+# Static checks for the t4c deleted path, the t1.5-sha and t1.5-unprepared PREPARED handling, the fixture-builder call and its SQLite path. Reads source only. Executes nothing.
 set -euo pipefail
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 T1="$ROOT/tests/operational/t1-prepare.sh"
 T4C="$ROOT/tests/operational/t4c-deleted-tracked.sh"
 T4M="$ROOT/tests/operational/t4-metadata.sh"
+FB="$ROOT/tests/fixture-builder.sh"
 fail() { printf '%s\n' "$*" >&2; exit 1; }
 branch() {
   awk -v c="  $1)" '
@@ -42,4 +43,6 @@ last=$(printf '%s\n' "$body" | grep -v '^[[:space:]]*$' | tail -n 1)
 [[ "$last" == "    require_prepared_idle" ]] || fail "t1.5-unprepared must end with require_prepared_idle"
 [[ "$(grep -c -x -F '  bash "$HERE/../fixture-builder.sh" "$root"' "$T4M" || true)" -eq 1 ]] || fail "t4-metadata must run the fixture builder with bash"
 ! grep -q -x -F '  "$HERE/../fixture-builder.sh" "$root"' "$T4M" || fail "t4-metadata still runs the fixture builder directly"
+[[ "$(grep -c -F 'sqlite3 "$root/database/fixture.db" ' "$FB" || true)" -eq 1 ]] || fail "the fixture SQLite file must be database/fixture.db"
+! grep -q -F 'aisandbox.db' "$FB" || fail "the fixture builder must not write the application database"
 printf 'restore arrangement PASS\n'

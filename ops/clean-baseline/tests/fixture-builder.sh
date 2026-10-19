@@ -47,7 +47,7 @@ printf 'uid-1000\n' > "$root/workspaces/app/uid1000.txt"
 printf 'plain\n' > "$root/workspaces/app/plain.txt"
 ln -s plain.txt "$root/workspaces/app/link.txt"
 ln "$root/workspaces/app/plain.txt" "$root/workspaces/app/hard.txt"
-sqlite3 "$root/database/aisandbox.db" 'PRAGMA journal_mode=PERSIST; CREATE TABLE t(id INTEGER); INSERT INTO t VALUES (1);'
+sqlite3 "$root/database/fixture.db" 'PRAGMA journal_mode=PERSIST; CREATE TABLE t(id INTEGER); INSERT INTO t VALUES (1);'
 python3 - "$root/workspaces/app/dev.sock" <<'PY'
 import os
 import socket
