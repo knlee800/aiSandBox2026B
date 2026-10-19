@@ -18,7 +18,7 @@ case_begin "$AISB_CASE_NAME"
 
 bridge_fixture() {
   local root="$1" rel
-  "$HERE/../fixture-builder.sh" "$root"
+  bash "$HERE/../fixture-builder.sh" "$root"
   for rel in workspaces database projects services/snapshot-store snapshot-store; do
     mkdir -p "/opt/aisandbox/$rel"
     cp -a "$root/$rel/." "/opt/aisandbox/$rel/"

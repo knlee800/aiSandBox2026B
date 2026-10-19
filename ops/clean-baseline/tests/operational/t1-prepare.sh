@@ -132,15 +132,23 @@ case ${1:?case} in
     [[ "$rc" -eq 10 ]]
     ;;
   t1.5-unprepared)
+    require_prepared_idle
+    prepared_saved="$(mktemp)"
+    cp -p -- /etc/aisandbox/PREPARED "$prepared_saved"
+    rm -f -- /etc/aisandbox/PREPARED
     [[ ! -f /etc/aisandbox/PREPARED ]]
     prepare_snapshot "$evidence.before"
     set +e
     "$sbin/aisandbox-restore" "$3" "$4"
     rc=$?
     set -e
-    [[ "$rc" -eq 10 ]]
     prepare_snapshot "$evidence.after"
+    cp -p -- "$prepared_saved" /etc/aisandbox/PREPARED
+    cmp -s -- "$prepared_saved" /etc/aisandbox/PREPARED
+    rm -f -- "$prepared_saved"
+    [[ "$rc" -eq 10 ]]
     assert_same_snapshot "$evidence.before" "$evidence.after"
+    require_prepared_idle
     ;;
   t1.5-sha)
     require_prepared_idle
