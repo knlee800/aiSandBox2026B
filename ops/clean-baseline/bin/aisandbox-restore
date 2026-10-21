@@ -109,7 +109,7 @@ runuser -u postgres -- psql -d postgres -v ON_ERROR_STOP=1 <<SQL
 ALTER ROLE aisandbox PASSWORD '${pw}';
 SQL
 unset pw url
-runuser -u postgres -- pg_restore --create --exit-on-error -d postgres - < "$work/db.dump"
+runuser -u postgres -- pg_restore --create --exit-on-error -d postgres < "$work/db.dump"
 tar --extract --numeric-owner --same-owner --same-permissions --acls --xattrs --xattrs-include='*' -C "$AISB_ROOT" -f "$work/files.tar"
 reconcile_deleted_tracked_files "$work/files.tar"
 exact_metadata_match "$work" || exit 40

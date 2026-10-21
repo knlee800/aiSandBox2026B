@@ -1,5 +1,5 @@
 #!/bin/bash
-# Static form of psql standard input. Reads source only. Executes nothing.
+# Static form of psql and pg_restore standard input. Reads source only. Executes nothing.
 set -euo pipefail
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 LIB="$ROOT/lib/ops-lib.sh"
@@ -32,5 +32,15 @@ for fn in apply_roles_sql apply_q3_inject; do
     exit 1
   fi
 done
+
+restore_lines=$(grep -c -F 'pg_restore' "$BIN/aisandbox-restore" || true)
+if [[ "$restore_lines" -ne 1 ]]; then
+  printf 'aisandbox-restore must call pg_restore exactly once\n' >&2
+  exit 1
+fi
+if ! grep -q -x -F 'runuser -u postgres -- pg_restore --create --exit-on-error -d postgres < "$work/db.dump"' "$BIN/aisandbox-restore"; then
+  printf 'pg_restore must read the dump from standard input with no file argument\n' >&2
+  exit 1
+fi
 
 printf 'psql stdin PASS\n'
