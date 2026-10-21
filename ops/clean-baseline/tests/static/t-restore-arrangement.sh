@@ -1,5 +1,5 @@
 #!/bin/bash
-# Static checks for the t4c deleted path, the t1.5-sha and t1.5-unprepared PREPARED handling, the fixture-builder call and its SQLite path. Reads source only. Executes nothing.
+# Static checks for the t4c deleted path, the t1.5-sha and t1.5-unprepared PREPARED handling, the fixture-builder call and its SQLite path, and the t4.2-uid order. Reads source only. Executes nothing.
 set -euo pipefail
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 T1="$ROOT/tests/operational/t1-prepare.sh"
@@ -45,4 +45,21 @@ last=$(printf '%s\n' "$body" | grep -v '^[[:space:]]*$' | tail -n 1)
 ! grep -q -x -F '  "$HERE/../fixture-builder.sh" "$root"' "$T4M" || fail "t4-metadata still runs the fixture builder directly"
 [[ "$(grep -c -F 'sqlite3 "$root/database/fixture.db" ' "$FB" || true)" -eq 1 ]] || fail "the fixture SQLite file must be database/fixture.db"
 ! grep -q -F 'aisandbox.db' "$FB" || fail "the fixture builder must not write the application database"
+body=$(branch t4.2-uid "$T4M")
+[[ -n "$body" ]] || fail "t4.2-uid branch is missing"
+idle=($(line_of 'require_prepared_idle'))
+before=($(line_of 'prepare_snapshot "$evidence.before"'))
+uidoff=($(line_of 'usermod -u 7301 aisandbox'))
+plus=($(line_of 'set +e'))
+restore=($(line_of '/usr/local/sbin/aisandbox-restore "$2" "$3"'))
+saverc=($(line_of 'rc=$?'))
+minus=($(line_of 'set -e'))
+uidback=($(line_of 'usermod -u 7300 aisandbox'))
+after=($(line_of 'prepare_snapshot "$evidence.after"'))
+nothing=($(line_of 'assert_restore_wrote_nothing "$evidence.before" "$evidence.after"'))
+rcchk=($(line_of '[[ "$rc" -eq 10 ]]'))
+refuse=($(line_of 'refuse_with_snapshot'))
+[[ "${#idle[@]}" -eq 1 && "${#before[@]}" -eq 1 && "${#uidoff[@]}" -eq 1 && "${#plus[@]}" -eq 1 && "${#restore[@]}" -eq 1 && "${#saverc[@]}" -eq 1 && "${#minus[@]}" -eq 1 && "${#uidback[@]}" -eq 1 && "${#after[@]}" -eq 1 && "${#nothing[@]}" -eq 1 && "${#rcchk[@]}" -eq 1 ]] || fail "t4.2-uid idle check, snapshots, uid changes, restore, rc capture or assertions are missing or repeated"
+[[ "${#refuse[@]}" -eq 0 ]] || fail "t4.2-uid must not call refuse_with_snapshot"
+(( idle[0] < before[0] && before[0] < uidoff[0] && uidoff[0] < plus[0] && plus[0] < restore[0] && restore[0] < saverc[0] && saverc[0] < minus[0] && minus[0] < uidback[0] && uidback[0] < after[0] && after[0] < nothing[0] && nothing[0] < rcchk[0] )) || fail "t4.2-uid order must be: idle check, snapshot, uid 7301, restore, uid 7300, snapshot, assert nothing written, rc check"
 printf 'restore arrangement PASS\n'

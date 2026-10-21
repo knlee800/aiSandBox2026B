@@ -200,9 +200,16 @@ case ${1:?case} in
     ;;
   t4.2-uid)
     require_prepared_idle
+    prepare_snapshot "$evidence.before"
     usermod -u 7301 aisandbox
-    refuse_with_snapshot "$2" "$3"
+    set +e
+    /usr/local/sbin/aisandbox-restore "$2" "$3"
+    rc=$?
+    set -e
     usermod -u 7300 aisandbox
+    prepare_snapshot "$evidence.after"
+    assert_restore_wrote_nothing "$evidence.before" "$evidence.after"
+    [[ "$rc" -eq 10 ]]
     grep -q '^phase=prepared$' /var/lib/aisandbox-ops/maintenance
     ;;
   t4.2-noacl)
