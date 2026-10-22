@@ -82005,3 +82005,36 @@ nature=IMPLEMENTATION
 - [ ] Old host is not described as clean and is not retired by this task's registration
 - [ ] Not LOCKED by an implementer
 
+### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-EOL-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED — 2026-10-22 — Step 1 registration COMPLETE. Steps 2 to 4 approved by Keith on 2026-10-22 and not yet done. Governance only. No implementation lane. Not LOCKED.
+**Task ID:** GOV-EOL-01
+**Title:** Record the Cursor line-ending replay incident, its 2026-10-22 cleanup and restore, and its effect on four locked evidence tasks
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE / EVIDENCE — does NOT consume Lane 1 or Lane 2 — no implementation candidate — no saturationClass
+**Lifecycle:** 4-STEP GOVERNANCE / EVIDENCE. Step 1 registration → Step 2 evidence preservation (off-repo) → Step 3 incident record and post-lock notes (explicitly approved documentation correction) → Step 4 consolidation and lock.
+**Start condition:** READY — Keith approved GOV-EOL-01 and its four steps on 2026-10-22.
+**Depends on:** none. Reads, and does not reopen: PM2-RECOVERY-P5-INVENTORY-01, PM2-RECOVERY-MECH-EXP-01, PM2-RECOVERY-MECH-EXP-02 and PM2-RECOVERY-MECH-EXP-03, each COMPLETE AND LOCKED.
+**Primary write scope:** `docs/GOV-EOL-01-INCIDENT-RECORD.md`; required `TASKS.md` and `TASKS_BACKLOG_FULL.md` records, including one appended post-lock note in each of the four task bodies; `C:\Users\knlee\aisb-preflight\GOV-EOL-01\` (off-repo evidence copy and manifests). No status line, lock, criterion, stage-start document, evidence file or package of the four tasks changes.
+**Mutexes / resources:** GOVERNANCE transiently for record writes only, released UNOWNED by each write, and never held at the same time as a CLEAN-BASELINE-OPS-01 record write. STAGING=NO (CLEAN-BASELINE-OPS-01 keeps it); LOCAL-RUNTIME=NO; PROVIDER-LIVE=NO; ENV=NO; CREDIT=NO; I18N=NO; PACKAGE=NO; COMPOSE=NO; MIGRATION=NO.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS (file hashes, Cursor local logs and history, and Cursor state records on Keith's Windows machine).
+**Revert isolation:** acceptable (documentation and off-repo copies only; independent of CLEAN-BASELINE-OPS-01).
+**saturationClass:** not applicable (GOVERNANCE; no sidecar candidate).
+**Facts recorded at registration, 2026-10-22:** At 2026-10-22 09:10:21 +0800 Cursor rewrote 120 files in one second: 99 under `C:\Users\knlee\aisb-preflight`, 10 in this repository and 11 in `C:\Users\knlee\aisb-k4-evidence`. A read-only side investigation found the cause: leftover Cursor inline-diff records (`cursorDiskKV` keys `inlineDiff:<workspace>:<id>` in `D:\CursorData\User\globalStorage\state.vscdb`) made Cursor re-save each referenced existing file at every window start. The bytes written on 2026-10-22 were the same CRLF bytes written at earlier starts; the LF-to-CRLF conversions date from 2026-09-29 08:58 (INVENTORY-01), 2026-10-02 09:56 (EXP-01) and 2026-10-02 18:02 (EXP-02, EXP-03). No accepted run used CRLF bytes (times +0800). INVENTORY-01 was locked on 2026-09-28 at 21:44, before its first conversion. EXP-01's review verified all 22 `SHA256SUMS` entries as LF at 2026-10-02 00:23, before its 09:56 conversion, and its 11:46 lock already recorded the 8 CRLF files with cause unknown. EXP-02 was locked at 14:59, before its 18:02 conversion. EXP-03's files were converted at 18:02, before its C-1 run; Keith restored two of C-1's five sources to LF at 18:34, C-1 ran at 18:43 with all five source hashes equal to `SHA256SUMS` (EXP-03 stage-start section 18.3), and its 2026-10-04 lock recorded the remaining CRLF files. Before this record, on 2026-10-22, Keith removed the 152 inline-diff records that pointed at existing files (backups verified), and restored 78 files to their recorded LF hashes (CRLF backups verified); a Cursor restart then rewrote none of them. The reviewer re-verified 72 of the 78 against the investigation's per-file table; the other 6 are verified in Step 2. The six affected repository files were returned to their normal autocrlf CRLF form with git checkout and match HEAD. 32 rewritten files have no reference hash and stay CRLF. These cleanup and restore actions preceded this record; the record-first rule was not followed for them. The incident evidence (report, per-file table, scripts and backups) is at present only in the side session's notes folder, `C:\Users\knlee\AppData\Local\Claude-Data\claude_pzs8sxrjxfjjc\side-session-notes\local_08c8c62b-0b3b-43db-8263-db6a7343fd4d\`; Step 2 copies it to `C:\Users\knlee\aisb-preflight\GOV-EOL-01\evidence\` with a SHA-256 manifest. The 2026-10-02 18:02 rewrite has no Cursor history entry and stays unexplained. One renamed profile copy, `D:\CursorBackup\EXP03-beaca904-DO-NOT-OPEN-IN-CURSOR`, still holds replay records for 10 EXP-03 step4-closure files; opening it in Cursor would rewrite them. Encryption-key values for seven local Cursor conversations were printed into the side session's chat; no record names a value. This registration changes no lock, status line, criterion, stage-start document, evidence file or package of the four tasks. CLEAN-BASELINE-OPS-01 is unaffected and stays ACTIVE.
+
+#### Acceptance criteria (not started)
+
+- [ ] Step 2: the incident evidence is copied to `C:\Users\knlee\aisb-preflight\GOV-EOL-01\evidence\` with a SHA-256 manifest verified against the source
+- [ ] Step 2: current hashes of the 78 restored files and the 32 files without a reference are recorded in a manifest there
+- [ ] Step 3: `docs/GOV-EOL-01-INCIDENT-RECORD.md` records the cause, the per-task timeline, the file classes, the 32 unprovable files, the unexplained 2026-10-02 18:02 rewrite and the record-first deviation
+- [ ] Step 3: one dated post-lock note is appended to each of the four task bodies; no status line, lock, criterion, stage-start document, evidence file or package of those tasks changes
+- [ ] No encryption-key value appears in any record
+- [ ] GOVERNANCE is never held at the same time as a CLEAN-BASELINE-OPS-01 record write
+- [ ] Not LOCKED before Step 4 verification
+
