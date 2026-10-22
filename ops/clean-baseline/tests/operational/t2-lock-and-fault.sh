@@ -250,6 +250,42 @@ case ${1:?case} in
     done
     [[ "$compared" -eq 7 ]]
     ;;
+  t2-commit)
+    [[ $# -eq 1 ]]
+    fixture="$HERE/t2-synthetic-migration.txt"
+    path=services/api-gateway/src/migrations/1799000000000-OpsTestMarker.ts
+    ref=refs/ops-test/t2-commit
+    [[ -f "$fixture" && ! -e "$evidence" ]]
+    parent="$(git_as_owner rev-parse HEAD)"
+    if git_as_owner rev-parse -q --verify "$ref" >/dev/null; then
+      printf '%s\n' "$ref already exists" >&2
+      exit 1
+    fi
+    [[ -z "$(git_as_owner ls-tree "$parent" -- "$path")" ]]
+    blob="$(git_as_owner hash-object -w --stdin < "$fixture")"
+    work="$(runuser -u aisandbox -- mktemp -d)"
+    runuser -u aisandbox -- env GIT_INDEX_FILE="$work/index" git -C "$AISB_ROOT" read-tree "$parent"
+    runuser -u aisandbox -- env GIT_INDEX_FILE="$work/index" git -C "$AISB_ROOT" update-index --add --cacheinfo "100644,${blob},${path}"
+    tree="$(runuser -u aisandbox -- env GIT_INDEX_FILE="$work/index" git -C "$AISB_ROOT" write-tree)"
+    rm -rf -- "$work"
+    commit="$(runuser -u aisandbox -- env GIT_AUTHOR_NAME='OPS-01 T2' GIT_AUTHOR_EMAIL=ops-test@aisandbox.invalid GIT_AUTHOR_DATE='1792627200 +0000' GIT_COMMITTER_NAME='OPS-01 T2' GIT_COMMITTER_EMAIL=ops-test@aisandbox.invalid GIT_COMMITTER_DATE='1792627200 +0000' git -C "$AISB_ROOT" commit-tree "$tree" -p "$parent" -m 'ops-test: T2 synthetic migration')"
+    git_as_owner update-ref "$ref" "$commit" ""
+    [[ "$(git_as_owner rev-parse HEAD)" == "$parent" ]]
+    git_as_owner diff --quiet HEAD --
+    git_as_owner diff --cached --quiet HEAD --
+    [[ "$(git_as_owner diff --name-status "$parent" "$commit")" == $'A\t'"$path" ]]
+    [[ "$(git_as_owner rev-parse "${commit}:${path}")" == "$blob" ]]
+    [[ "$(count_added_executable_migrations "$parent" "$commit")" -eq 1 ]]
+    {
+      printf 'host=%s\n' "$(hostname)"
+      printf 'parent=%s\n' "$parent"
+      printf 'commit=%s\n' "$commit"
+      printf 'tree=%s\n' "$tree"
+      printf 'blob=%s\n' "$blob"
+      printf 'path=%s\n' "$path"
+    } > "$evidence"
+    printf '%s\n' "$commit"
+    ;;
   *)
     printf '%s\n' 'unknown T2 case' >&2
     exit 2

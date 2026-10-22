@@ -1,0 +1,10 @@
+import { MigrationInterface, QueryRunner } from 'typeorm';
+// OPS-01 T2 test migration. Only the t2-commit harness case adds it, in a commit made on a disposable guest.
+export class OpsTestMarker1799000000000 implements MigrationInterface {
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`CREATE TABLE IF NOT EXISTS "ops_test_marker" ("id" integer PRIMARY KEY)`);
+  }
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`DROP TABLE IF EXISTS "ops_test_marker"`);
+  }
+}
