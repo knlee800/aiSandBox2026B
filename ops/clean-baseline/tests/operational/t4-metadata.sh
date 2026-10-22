@@ -162,19 +162,35 @@ case ${1:?case} in
     ;;
   t4.2-snapshot)
     require_prepared_idle
+    made=0
+    if [[ ! -d /opt/aisandbox/services/snapshot-store ]]; then
+      mkdir /opt/aisandbox/services/snapshot-store
+      made=1
+    fi
     printf 'x\n' > /opt/aisandbox/services/snapshot-store/extra
     AISB_SNAPSHOT_FILES=/opt/aisandbox/services/snapshot-store/extra
     refuse_with_snapshot "$2" "$3"
     unset AISB_SNAPSHOT_FILES
     rm -f -- /opt/aisandbox/services/snapshot-store/extra
+    if [[ "$made" -eq 1 ]]; then
+      rmdir /opt/aisandbox/services/snapshot-store
+    fi
     ;;
   t4.2-snapshot-root)
     require_prepared_idle
+    made=0
+    if [[ ! -d /opt/aisandbox/snapshot-store ]]; then
+      mkdir /opt/aisandbox/snapshot-store
+      made=1
+    fi
     printf 'x\n' > /opt/aisandbox/snapshot-store/extra
     AISB_SNAPSHOT_FILES=/opt/aisandbox/snapshot-store/extra
     refuse_with_snapshot "$2" "$3"
     unset AISB_SNAPSHOT_FILES
     rm -f -- /opt/aisandbox/snapshot-store/extra
+    if [[ "$made" -eq 1 ]]; then
+      rmdir /opt/aisandbox/snapshot-store
+    fi
     ;;
   t4.2-database)
     require_prepared_idle
