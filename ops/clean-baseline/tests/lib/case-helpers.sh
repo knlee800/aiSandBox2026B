@@ -195,7 +195,7 @@ redis_auth_env() {
 }
 
 prepare_snapshot() {
-  local out="$1" unit path key val db role redis_size
+  local out="$1" unit path key val db role redis_size store stores
   redis_auth_env || return 1
   db="$(runuser -u postgres -- psql -d postgres -Atc "SELECT COALESCE(string_agg(datname, ',' ORDER BY datname), '') FROM pg_database WHERE datname='aisandbox'")" || return 1
   role="$(runuser -u postgres -- psql -d postgres -Atc "SELECT COALESCE(string_agg(rolname, ',' ORDER BY rolname), '') FROM pg_roles WHERE rolname='aisandbox'")" || return 1
@@ -205,7 +205,15 @@ prepare_snapshot() {
     printf 'role=%s\n' "$role"
     printf 'redis=%s\n' "$redis_size"
     git_as_owner status --porcelain=v1 --ignored=matching --untracked-files=all -- workspaces database projects || return 1
-    find /opt/aisandbox/services/snapshot-store /opt/aisandbox/snapshot-store -mindepth 1 -print 2>/dev/null | sort
+    stores="${AISB_SNAPSHOT_STORES:-$(printf '%s\n' /opt/aisandbox/services/snapshot-store /opt/aisandbox/snapshot-store)}"
+    while IFS= read -r store; do
+      [[ -n "$store" ]] || continue
+      if [[ -e "$store" || -L "$store" ]]; then
+        find "$store" -mindepth 1 -print | sort || return 1
+      else
+        printf 'absent=%s\n' "$store"
+      fi
+    done <<< "$stores"
     for unit in aisandbox-gateway aisandbox-ai aisandbox-cm aisandbox-frontend; do
       printf 'unit=%s enabled=%s active=%s\n' "$unit" "$(systemctl is-enabled "$unit" 2>/dev/null || true)" "$(systemctl is-active "$unit" 2>/dev/null || true)"
     done

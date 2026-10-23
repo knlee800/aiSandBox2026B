@@ -36,7 +36,7 @@ systemctl() {
     *) return 0 ;;
   esac
 }
-find() { printf '%s\n' "$planted"; }
+AISB_SNAPSHOT_STORES="$tmp/tree"
 sha256sum() {
   local path
   if [[ "${1:-}" == "--" ]]; then
@@ -98,6 +98,48 @@ if [[ "$missing_rc" -ne 0 && ! -e "$planted" ]]; then
 else
   bad t4-snapshot-missing-file-fails
 fi
+
+bare_snapshot() {
+  ( set -euo pipefail; prepare_snapshot "$1"; printf 'reached\n' )
+}
+failing_find_snapshot() {
+  ( find() { return 2; }; set -euo pipefail; prepare_snapshot "$1"; printf 'reached\n' )
+}
+unset AISB_SNAPSHOT_FILES
+AISB_SNAPSHOT_STORES="$tmp/no-services-store
+$tmp/no-root-store"
+stores_out="$(bare_snapshot "$tmp/stores-absent")"
+stores_rc=$?
+absent_one="$(grep -n -x -F "absent=$tmp/no-services-store" "$tmp/stores-absent" | cut -d: -f1)"
+absent_two="$(grep -n -x -F "absent=$tmp/no-root-store" "$tmp/stores-absent" | cut -d: -f1)"
+if [[ "$stores_rc" -eq 0 && "$stores_out" == "reached" && -n "$absent_one" && -n "$absent_two" ]] \
+  && [[ "$absent_one" -lt "$absent_two" ]]; then
+  ok t4-snapshot-stores-absent-pass
+else
+  bad t4-snapshot-stores-absent-pass
+fi
+mkdir "$tmp/services-store"
+printf 'gamma\n' > "$tmp/services-store/blob"
+AISB_SNAPSHOT_STORES="$tmp/services-store
+$tmp/no-root-store"
+stores_out="$(bare_snapshot "$tmp/stores-present")"
+stores_rc=$?
+if [[ "$stores_rc" -eq 0 && "$stores_out" == "reached" ]] \
+  && grep -q -x -F "$tmp/services-store/blob" "$tmp/stores-present" \
+  && grep -q -x -F "absent=$tmp/no-root-store" "$tmp/stores-present" \
+  && ! grep -q -x -F "absent=$tmp/services-store" "$tmp/stores-present"; then
+  ok t4-snapshot-stores-present-listed
+else
+  bad t4-snapshot-stores-present-listed
+fi
+stores_out="$(failing_find_snapshot "$tmp/stores-error")"
+stores_rc=$?
+if [[ "$stores_rc" -ne 0 && "$stores_out" != *reached* ]]; then
+  ok t4-snapshot-stores-find-error-fails
+else
+  bad t4-snapshot-stores-find-error-fails
+fi
+unset AISB_SNAPSHOT_STORES
 
 case_block() {
   local name="$1" line capture=0
