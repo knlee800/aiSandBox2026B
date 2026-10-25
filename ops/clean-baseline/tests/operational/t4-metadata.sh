@@ -211,7 +211,9 @@ case ${1:?case} in
     AISB_SNAPSHOT_REDIS_KEYS=ops-test
     refuse_with_snapshot "$2" "$3"
     unset AISB_SNAPSHOT_REDIS_KEYS
-    redis-cli -h 127.0.0.1 --no-auth-warning DEL ops-test
+    redis_auth_env
+    [[ "$(redis-cli -h 127.0.0.1 --no-auth-warning DEL ops-test)" == "1" ]]
+    [[ "$(redis-cli -h 127.0.0.1 --no-auth-warning EXISTS ops-test)" == "0" ]]
     unset REDISCLI_AUTH
     ;;
   t4.2-uid)
@@ -235,8 +237,33 @@ case ${1:?case} in
     grep -qx 'DISPOSABLE_NAMESPACE=1' /etc/aisandbox/ops-test-mode
     img=/var/tmp/aisb-ops-fixtures/noacl.img
     stage=/mnt/aisb-noacl-stage
-    mkdir -p /var/tmp/aisb-ops-fixtures "$stage"
-    case_cleanup() { restore_noacl_mount "$stage"; }
+    probe=/var/tmp/aisb-ops-fixtures/noacl-probe.img
+    probe_dir=/mnt/aisb-noacl-probe
+    mkdir -p /var/tmp/aisb-ops-fixtures "$stage" "$probe_dir"
+    case_cleanup() {
+      if mountpoint -q "$probe_dir"; then umount "$probe_dir" || umount -l "$probe_dir"; fi
+      rm -f -- "$probe"
+      rmdir -- "$probe_dir" 2>/dev/null || true
+      restore_noacl_mount "$stage"
+    }
+    truncate -s 16777216 "$probe"
+    mkfs.ext4 -q -F "$probe"
+    set +e
+    mount -o loop,noacl "$probe" "$probe_dir" 2>"$evidence.probe"
+    probe_rc=$?
+    set -e
+    if [[ "$probe_rc" -eq 0 ]]; then
+      umount "$probe_dir"
+    fi
+    rm -f -- "$probe"
+    rmdir -- "$probe_dir"
+    if [[ "$probe_rc" -ne 0 ]]; then
+      if dmesg | tail -n 50 | grep -qF "Unknown parameter 'noacl'"; then
+        printf '%s\n' 'FIXTURE_UNSUPPORTED kernel rejects the ext4 noacl mount option; t4.2-noacl is not accepted on this kernel' | tee "$evidence.unsupported"
+        exit 77
+      fi
+      exit "$probe_rc"
+    fi
     bytes="$(du -sb /opt/aisandbox | awk '{print $1}')"
     truncate -s "$((bytes + bytes / 5 + 67108864))" "$img"
     mkfs.ext4 -F "$img"
