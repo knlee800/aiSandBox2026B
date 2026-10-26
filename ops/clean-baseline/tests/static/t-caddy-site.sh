@@ -129,5 +129,29 @@ else
   bad harness-passes-localhost
 fi
 
+if awk '
+  BEGIN { depth = 0; badredir = 0; auth = 0; r1 = 0; r2 = 0; h = "" }
+  {
+    line = $0
+    sub(/^[ \t]+/, "", line)
+    sub(/[ \t]+$/, "", line)
+    if (depth == 1 && line ~ /^basic_auth[ \t]*\{/) auth = 1
+    if (depth == 1 && line ~ /^redir([ \t]|$)/) badredir = 1
+    if (depth == 1 && line ~ /^handle[ \t]/) h = line
+    if (depth == 2 && h == "handle / {" && line == "redir * /en 307") r1 = 1
+    if (depth == 2 && h == "handle /app {" && line == "redir * /en/app 307") r2 = 1
+    tmp = line
+    opens = gsub(/\{/, "", tmp)
+    tmp = line
+    closes = gsub(/\}/, "", tmp)
+    depth += opens - closes
+    if (depth < 2) h = ""
+  }
+  END { exit (auth && !badredir && r1 && r2 && depth == 0) ? 0 : 1 }
+' "$pub"; then
+  ok public-redirects-behind-basic-auth
+else
+  bad public-redirects-behind-basic-auth
+fi
 printf 'passed=%s failed=%s\n' "$pass" "$fail"
 [[ "$fail" -eq 0 ]]
