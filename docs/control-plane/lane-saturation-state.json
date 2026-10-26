@@ -1081,7 +1081,7 @@
       "saturationClass": "OPTIONAL",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
-      "dependsOn": [],
+      "dependsOn": ["CLEAN-BASELINE-RUNTIME-01", "CLEAN-BASELINE-OPS-01"],
       "mutexes": ["STAGING", "ENV"],
       "writePaths": [],
       "hotfiles": [],
