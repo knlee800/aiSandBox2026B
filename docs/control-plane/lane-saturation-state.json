@@ -13,7 +13,10 @@
       "state": "ACTIVE",
       "taskId": "CLEAN-BASELINE-DEPLOY-01",
       "mutexes": ["STAGING", "ENV"],
-      "writePaths": [],
+      "writePaths": [
+        "ops/clean-baseline/caddy/Caddyfile",
+        "ops/clean-baseline/tests/static/t-caddy-site.sh"
+      ],
       "hotfiles": [],
       "i18n": false,
       "evidenceClass": "STAGING-RUNTIME",
@@ -1083,7 +1086,10 @@
       "futureAuthorization": "NONE",
       "dependsOn": ["CLEAN-BASELINE-RUNTIME-01", "CLEAN-BASELINE-OPS-01"],
       "mutexes": ["STAGING", "ENV"],
-      "writePaths": [],
+      "writePaths": [
+        "ops/clean-baseline/caddy/Caddyfile",
+        "ops/clean-baseline/tests/static/t-caddy-site.sh"
+      ],
       "hotfiles": [],
       "i18n": false,
       "sharedContractIds": [],
