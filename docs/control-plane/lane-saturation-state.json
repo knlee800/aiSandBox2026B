@@ -11,19 +11,19 @@
   "occupancy": {
     "lane1": {
       "state": "ACTIVE",
-      "taskId": "CLEAN-BASELINE-DEPLOY-01",
-      "mutexes": ["STAGING", "ENV"],
+      "taskId": "CHECKPOINT-PERSIST-03",
+      "mutexes": ["GATEWAY"],
       "writePaths": [
-        "ops/clean-baseline/caddy/Caddyfile",
-        "ops/clean-baseline/tests/static/t-caddy-site.sh"
+        "services/api-gateway/src/projects/projects.service.ts",
+        "services/api-gateway/src/projects/projects.service.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "STAGING-RUNTIME",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
-      "runtimeNeeds": ["STAGING"]
+      "runtimeNeeds": []
     },
     "lane2": {
       "state": "EMPTY",
@@ -1079,8 +1079,8 @@
       "taskId": "CLEAN-BASELINE-DEPLOY-01",
       "nature": "IMPLEMENTATION",
       "lifecycle": "4-STEP",
-      "status": "ADMITTED",
-      "startCondition": "READY",
+      "status": "READY",
+      "startCondition": "NOT_READY",
       "saturationClass": "OPTIONAL",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
@@ -1168,6 +1168,57 @@
       "runtimeNeeds": [],
       "admissionUncertain": false,
       "writeSetPrecision": "EXACT"
+    },
+    {
+      "taskId": "CHECKPOINT-PERSIST-03",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "3-STEP",
+      "status": "ADMITTED",
+      "startCondition": "READY",
+      "saturationClass": "FORCING",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": [],
+      "mutexes": ["GATEWAY"],
+      "writePaths": [
+        "services/api-gateway/src/projects/projects.service.ts",
+        "services/api-gateway/src/projects/projects.service.spec.ts"
+      ],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "LOCAL-TESTS",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": [],
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
+    },
+    {
+      "taskId": "SESSION-STALE-01",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "4-STEP",
+      "status": "READY",
+      "startCondition": "NOT_READY",
+      "saturationClass": "FORCING",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": [],
+      "mutexes": ["CONTAINER-MANAGER", "GATEWAY", "FRONTEND", "I18N"],
+      "writePaths": [
+        "services/container-manager/",
+        "services/api-gateway/",
+        "frontend/"
+      ],
+      "hotfiles": [],
+      "i18n": true,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "LOCAL-TESTS",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": [],
+      "admissionUncertain": true,
+      "writeSetPrecision": "PROVISIONAL"
     }
   ],
   "lockedTaskIds": ["GOV-OS-03", "GOV-OS-03R1", "AGENT-PLATFORM-CREATE-01F", "I18N-SHELL-07", "AGENT-PLATFORM-EXEC-01A", "AGENT-PLATFORM-EXEC-01B", "GOV-AUTH-03", "AGENT-PLATFORM-EXEC-01C1", "AGENT-PLATFORM-EXEC-01C2", "AGENT-PLATFORM-EXEC-01C3", "AGENT-PLATFORM-EXEC-01C4", "AGENT-PLATFORM-EXEC-01C4B", "AGENT-PLATFORM-EXEC-01C5", "AGENT-PLATFORM-EXEC-01C5R1", "AGENT-PLATFORM-EXEC-01C5B1", "AGENT-PLATFORM-EXEC-01C5B2", "AGENT-PLATFORM-EXEC-01C5B", "AGENT-PLATFORM-EXEC-01C-KEY-REVOKE-01", "AGENT-PLATFORM-EXEC-01C-SCHEMA-01", "AGENT-PLATFORM-EXEC-01C-IDENTITY-01", "AGENT-PLATFORM-ORCH-ARCH-01", "AGENT-PLATFORM-ORCH-PERSIST-01", "PREVIEW-NODE-01", "PREVIEW-NODE-STAGING-01", "PREVIEW-NODE-STAGING-APPLY-01", "BUILDER-CREDIT-UX-01", "PREVIEW-STOP-01", "PREVIEW-STOP-PUBLIC-ROUTE-01", "PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01", "PREVIEW-STOP-UI-01", "PREVIEW-STOP-UI-STAGING-01", "PM2-OVERLAY-UNKNOWN-01", "PM2-RECOVERY-VERIFY-01", "PM2-RECOVERY-CAPTURE-01", "CLEAN-BASELINE-GOV-01", "CLEAN-BASELINE-RUNTIME-01", "CLEAN-BASELINE-OPS-01", "CHECKPOINT-PERSIST-01", "CHECKPOINT-PERSIST-02"],
@@ -1184,7 +1235,7 @@
   ],
   "runtimeAuthorization": {
     "localRuntimeAuthorized": true,
-    "stagingAuthorized": true,
+    "stagingAuthorized": false,
     "providerLiveAuthorized": false,
     "creditAuthorized": false
   }
