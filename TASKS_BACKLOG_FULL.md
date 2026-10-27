@@ -82181,14 +82181,14 @@ taskId=SESSION-STALE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-27. Step 2 stage-start complete (docs/SESSION-STALE-01-STAGE-START.md); Step 3 (implementation) not started. mutexes=CONTAINER-MANAGER, FRONTEND. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY / NOT ADMITTED — 2026-10-27. Step 2 (stage-start) not started; write scope PROVISIONAL.
+**Status:** COMPLETE AND LOCKED — 2026-10-27. LANE-DONE and LOCK recorded by the control plane; Lane 1, CONTAINER-MANAGER and FRONTEND released. Checkpoint: docs/SESSION-STALE-01-CHECKPOINT.md. Implementation commits b9b818f3e00563f92c6cf5d2b7bda7b7d04e5393 and c003daf64bb1a07d43759724e3f0b19fbfc0170b. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-27. Step 2 stage-start complete (docs/SESSION-STALE-01-STAGE-START.md); Step 3 (implementation) not started. mutexes=CONTAINER-MANAGER, FRONTEND. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY / NOT ADMITTED — 2026-10-27. Step 2 (stage-start) not started; write scope PROVISIONAL.
 **Task ID:** SESSION-STALE-01
 **Title:** Do not reuse a session whose container is gone
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP. Step 1 is this registration (2026-10-27); Step 2 a stage-start record that chooses where a session whose container is gone is detected and ended or replaced (for example the container manager marking such sessions stopped at startup, or the open path checking the container before it reuses a session), and freezes the exact write scope, mutexes, shared contracts and evidence class; Step 3 implementation; Step 4 consolidation, checkpoint and LOCK by the control plane.
 **Start condition (human):** READY — Keith approved the option 2 design and this stage-start on 2026-10-27. Previous: **Start condition (human):** NOT READY until the Step 2 stage-start record.
-**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE (2026-10-27). Previous: **Start condition (machine):** `NOT_READY`; `status=READY`; `admissionUncertain=true` and `writeSetPrecision=PROVISIONAL` until the stage-start.
+**Start condition (machine):** `READY`; `status=LOCKED` (2026-10-27). Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE (2026-10-27). Previous: **Start condition (machine):** `NOT_READY`; `status=READY`; `admissionUncertain=true` and `writeSetPrecision=PROVISIONAL` until the stage-start.
 **Depends on (human):** none.
 **Depends on (machine `dependsOn`):** `[]`
 **Primary write scope:** exactly `services/container-manager/src/sessions/sessions.service.ts`, `services/container-manager/src/sessions/sessions.service.spec.ts`, `services/container-manager/src/docker/docker-runtime.service.ts`, `services/container-manager/src/docker/docker-runtime.service.spec.ts`, `frontend/lib/open-project-in-fresh-session.ts`, `frontend/lib/open-project-in-fresh-session.test.ts`, `frontend/components/workspace/workspace-projects.logic.ts`, `frontend/components/workspace/workspace-projects.logic.test.ts`. Anything else is out of scope. Previous: **Primary write scope:** PROVISIONAL — `services/container-manager/`, `services/api-gateway/`, `frontend/`; the stage-start freezes the exact list.
@@ -82212,11 +82212,11 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Stage-start record written: design chosen, exact write scope, mutexes, evidence class and shared contracts frozen
-- [ ] Opening a project whose reusable session has no running container opens it in a working session without an error
-- [ ] Sessions with a running container are reused and behave as now; a dead session is ended the first time it is used, and a dead session nobody touches still counts until it expires (revised with the design at the stage-start, 2026-10-27; was: session quota counts are not inflated by dead sessions)
-- [ ] Tests cover the dead-container case, and the gates named at the stage-start pass
-- [ ] Not LOCKED by an implementer
+- [x] Stage-start record written: design chosen, exact write scope, mutexes, evidence class and shared contracts frozen
+- [x] Opening a project whose reusable session has no running container opens it in a working session without an error
+- [x] Sessions with a running container are reused and behave as now; a dead session is ended the first time it is used, and a dead session nobody touches still counts until it expires (revised with the design at the stage-start, 2026-10-27; was: session quota counts are not inflated by dead sessions)
+- [x] Tests cover the dead-container case, and the gates named at the stage-start pass
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
