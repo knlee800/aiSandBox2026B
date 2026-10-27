@@ -13,6 +13,7 @@ import {
   NotFoundException,
   GoneException,
   BadRequestException,
+  Logger,
   UploadedFile,
   UseInterceptors,
   StreamableFile,
@@ -40,6 +41,8 @@ import { Response } from 'express';
 @Controller('sessions')
 @UseGuards(SessionCookieGuard)
 export class SessionController {
+  private readonly logger = new Logger(SessionController.name);
+
   constructor(
     private readonly sessionService: SessionService,
     private readonly containerManagerHttpClient: ContainerManagerHttpClient,
@@ -377,11 +380,27 @@ export class SessionController {
       throw new GoneException(`Session ${id} is terminated`);
     }
 
-    return await this.snapshotPersistenceService.restoreSnapshot({
+    const result = await this.snapshotPersistenceService.restoreSnapshot({
       userId,
       sessionId: id,
       snapshotId: body.snapshotId,
     });
+
+    if (session.projectId) {
+      try {
+        await this.containerManagerHttpClient.restoreCheckpointHistory(
+          id,
+          session.projectId,
+        );
+      } catch (error: unknown) {
+        const detail = error instanceof Error ? error.message : String(error);
+        this.logger.error(
+          `Failed to restore checkpoint history for session ${id}: ${detail}`,
+        );
+      }
+    }
+
+    return result;
   }
 
   @Get(':id/export')

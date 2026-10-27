@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException, GoneException, BadRequestException } from '@nestjs/common';
+import { Logger, NotFoundException, GoneException, BadRequestException } from '@nestjs/common';
 import { SessionController } from './session.controller';
 import { SessionService } from './session.service';
 import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
@@ -664,6 +664,9 @@ describe('SessionController (PR-01-01 snapshots)', () => {
   let controller: SessionController;
   let sessionService: jest.Mocked<SessionService>;
   let snapshotService: jest.Mocked<SnapshotPersistenceService>;
+  let containerManagerClient: {
+    restoreCheckpointHistory: jest.Mock;
+  };
 
   const mockActiveSession = {
     id: 'session-1',
@@ -680,7 +683,18 @@ describe('SessionController (PR-01-01 snapshots)', () => {
     projectId: null,
   };
 
+  const restoredSnapshot = {
+    id: 'snapshot-1',
+    userId: 'user-1',
+    label: null as string | null,
+    createdAt: '2026-04-03T00:00:00.000Z',
+    fileCount: 3,
+  };
+
   beforeEach(async () => {
+    containerManagerClient = {
+      restoreCheckpointHistory: jest.fn(),
+    };
     const module: TestingModule = await Test.createTestingModule({
       controllers: [SessionController],
       providers: [
@@ -701,6 +715,7 @@ describe('SessionController (PR-01-01 snapshots)', () => {
             startSession: jest.fn(),
             stopSession: jest.fn(),
             deleteSession: jest.fn(),
+            restoreCheckpointHistory: containerManagerClient.restoreCheckpointHistory,
           },
         },
         {
@@ -803,6 +818,82 @@ describe('SessionController (PR-01-01 snapshots)', () => {
         { user: { userId: 'other-user' } },
       ),
     ).rejects.toThrow(NotFoundException);
+  });
+
+  it('awaits checkpoint history restore after the snapshot restore when the session has a project', async () => {
+    const session = { ...mockActiveSession, projectId: 'project-1' };
+    sessionService.getSessionById.mockResolvedValue(session);
+    snapshotService.restoreSnapshot.mockImplementation(async () => {
+      expect(containerManagerClient.restoreCheckpointHistory).not.toHaveBeenCalled();
+      return restoredSnapshot;
+    });
+    let releaseRestore: (value: { status: 'restored'; head: string }) => void = () => undefined;
+    const pending = new Promise<{ status: 'restored'; head: string }>((resolve) => {
+      releaseRestore = resolve;
+    });
+    containerManagerClient.restoreCheckpointHistory.mockReturnValue(pending);
+
+    let settled = false;
+    const resultPromise = controller
+      .restoreSessionSnapshot(
+        'session-1',
+        { snapshotId: 'snapshot-1' },
+        { user: { userId: 'user-1' } },
+      )
+      .then((value) => {
+        settled = true;
+        return value;
+      });
+
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(settled).toBe(false);
+    expect(containerManagerClient.restoreCheckpointHistory).toHaveBeenCalledWith(
+      'session-1',
+      'project-1',
+    );
+
+    releaseRestore({ status: 'restored', head: 'abc123' });
+    await expect(resultPromise).resolves.toEqual(restoredSnapshot);
+  });
+
+  it('returns the snapshot result when checkpoint history restore fails', async () => {
+    const errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+    sessionService.getSessionById.mockResolvedValue({
+      ...mockActiveSession,
+      projectId: 'project-1',
+    });
+    snapshotService.restoreSnapshot.mockResolvedValue(restoredSnapshot);
+    containerManagerClient.restoreCheckpointHistory.mockRejectedValue(
+      new Error('bundle missing'),
+    );
+
+    try {
+      const result = await controller.restoreSessionSnapshot(
+        'session-1',
+        { snapshotId: 'snapshot-1' },
+        { user: { userId: 'user-1' } },
+      );
+
+      expect(result).toEqual(restoredSnapshot);
+      expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('bundle missing'));
+      expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('session-1'));
+    } finally {
+      errorSpy.mockRestore();
+    }
+  });
+
+  it('does not restore checkpoint history when the session has no project', async () => {
+    sessionService.getSessionById.mockResolvedValue(mockActiveSession);
+    snapshotService.restoreSnapshot.mockResolvedValue(restoredSnapshot);
+
+    const result = await controller.restoreSessionSnapshot(
+      'session-1',
+      { snapshotId: 'snapshot-1' },
+      { user: { userId: 'user-1' } },
+    );
+
+    expect(result).toEqual(restoredSnapshot);
+    expect(containerManagerClient.restoreCheckpointHistory).not.toHaveBeenCalled();
   });
 });
 

@@ -729,6 +729,84 @@ export class ContainerManagerHttpClient implements OnModuleInit {
       );
     }
   }
+
+  /**
+   * Save the session workspace git history for a project.
+   * Calls POST /api/internal/checkpoint-history/:sessionId/save
+   */
+  async saveCheckpointHistory(
+    sessionId: string,
+    projectId: string,
+  ): Promise<CheckpointHistorySaveResult> {
+    if (this.isDisabled) {
+      throw new Error(
+        'ContainerManagerHttpClient is disabled (development mode, no INTERNAL_SERVICE_KEY)',
+      );
+    }
+
+    try {
+      const response = await this.axiosInstance.post(
+        `/api/internal/checkpoint-history/${sessionId}/save`,
+        { projectId },
+        {
+          headers: {
+            'X-Internal-Service-Key': this.internalServiceKey,
+          },
+        },
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status || 'unknown';
+        const message = error.response?.data?.message || error.message;
+        throw new Error(
+          `Failed to save checkpoint history for session ${sessionId}: HTTP ${status} - ${message}`,
+        );
+      }
+      throw new Error(
+        `Failed to save checkpoint history for session ${sessionId}: ${error}`,
+      );
+    }
+  }
+
+  /**
+   * Restore a project's saved git history into a session workspace.
+   * Calls POST /api/internal/checkpoint-history/:sessionId/restore
+   */
+  async restoreCheckpointHistory(
+    sessionId: string,
+    projectId: string,
+  ): Promise<CheckpointHistoryRestoreResult> {
+    if (this.isDisabled) {
+      throw new Error(
+        'ContainerManagerHttpClient is disabled (development mode, no INTERNAL_SERVICE_KEY)',
+      );
+    }
+
+    try {
+      const response = await this.axiosInstance.post(
+        `/api/internal/checkpoint-history/${sessionId}/restore`,
+        { projectId },
+        {
+          headers: {
+            'X-Internal-Service-Key': this.internalServiceKey,
+          },
+        },
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status || 'unknown';
+        const message = error.response?.data?.message || error.message;
+        throw new Error(
+          `Failed to restore checkpoint history for session ${sessionId}: HTTP ${status} - ${message}`,
+        );
+      }
+      throw new Error(
+        `Failed to restore checkpoint history for session ${sessionId}: ${error}`,
+      );
+    }
+  }
 }
 
 /**
@@ -822,6 +900,14 @@ export interface GitCommitResult {
   commitHash: string;
   filesChanged: number;
 }
+
+export type CheckpointHistorySaveResult =
+  | { status: 'saved'; bytes: number }
+  | { status: 'skipped' };
+
+export type CheckpointHistoryRestoreResult =
+  | { status: 'restored'; head: string }
+  | { status: 'none' };
 
 /**
  * BrowserSmokeResult interface

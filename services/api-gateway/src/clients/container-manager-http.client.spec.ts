@@ -220,3 +220,111 @@ describe('ContainerManagerHttpClient 410 lazy reconciliation (PRIVATE-BETA-BLOCK
     );
   });
 });
+
+describe('ContainerManagerHttpClient checkpoint history (CHECKPOINT-PERSIST-02)', () => {
+  let client: ContainerManagerHttpClient;
+  let mockAxiosInstance: { post: jest.Mock };
+  const sessionId = '11111111-1111-4111-8111-111111111111';
+  const projectId = '22222222-2222-4222-8222-222222222222';
+
+  function axiosError(status: number, message: string): Error {
+    const error: any = new Error('Request failed');
+    error.isAxiosError = true;
+    error.response = { status, data: { message } };
+    return error;
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.INTERNAL_SERVICE_KEY = 'test-internal-key';
+    mockAxiosInstance = { post: jest.fn() };
+    mockedAxios.create.mockReturnValue(mockAxiosInstance as never);
+    (mockedAxios.isAxiosError as unknown as jest.Mock) = jest.fn(
+      (error: unknown) => Boolean((error as { isAxiosError?: boolean })?.isAxiosError),
+    );
+    client = new ContainerManagerHttpClient();
+    client.onModuleInit();
+  });
+
+  afterEach(() => {
+    delete process.env.INTERNAL_SERVICE_KEY;
+  });
+
+  it('saves checkpoint history with the internal URL, header, and project body', async () => {
+    const body = { status: 'saved' as const, bytes: 128 };
+    mockAxiosInstance.post.mockResolvedValue({ data: body });
+
+    const result = await client.saveCheckpointHistory(sessionId, projectId);
+
+    expect(result).toEqual(body);
+    expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+      `/api/internal/checkpoint-history/${sessionId}/save`,
+      { projectId },
+      {
+        headers: {
+          'X-Internal-Service-Key': 'test-internal-key',
+        },
+      },
+    );
+  });
+
+  it('restores checkpoint history with the internal URL, header, and project body', async () => {
+    const body = { status: 'restored' as const, head: 'abc123' };
+    mockAxiosInstance.post.mockResolvedValue({ data: body });
+
+    const result = await client.restoreCheckpointHistory(sessionId, projectId);
+
+    expect(result).toEqual(body);
+    expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+      `/api/internal/checkpoint-history/${sessionId}/restore`,
+      { projectId },
+      {
+        headers: {
+          'X-Internal-Service-Key': 'test-internal-key',
+        },
+      },
+    );
+  });
+
+  it('throws the upstream HTTP error for a failed history save', async () => {
+    mockAxiosInstance.post.mockRejectedValue(axiosError(503, 'container down'));
+
+    await expect(client.saveCheckpointHistory(sessionId, projectId)).rejects.toThrow(
+      `Failed to save checkpoint history for session ${sessionId}: HTTP 503 - container down`,
+    );
+  });
+
+  it('throws the upstream HTTP error for a failed history restore', async () => {
+    mockAxiosInstance.post.mockRejectedValue(axiosError(500, 'bundle unreadable'));
+
+    await expect(client.restoreCheckpointHistory(sessionId, projectId)).rejects.toThrow(
+      `Failed to restore checkpoint history for session ${sessionId}: HTTP 500 - bundle unreadable`,
+    );
+  });
+
+  it('throws when the client is disabled in development', async () => {
+    const previousNodeEnv = process.env.NODE_ENV;
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    delete process.env.INTERNAL_SERVICE_KEY;
+    process.env.NODE_ENV = 'development';
+    const disabled = new ContainerManagerHttpClient();
+    disabled.onModuleInit();
+
+    try {
+      await expect(disabled.saveCheckpointHistory(sessionId, projectId)).rejects.toThrow(
+        'ContainerManagerHttpClient is disabled (development mode, no INTERNAL_SERVICE_KEY)',
+      );
+      await expect(disabled.restoreCheckpointHistory(sessionId, projectId)).rejects.toThrow(
+        'ContainerManagerHttpClient is disabled (development mode, no INTERNAL_SERVICE_KEY)',
+      );
+      expect(mockAxiosInstance.post).not.toHaveBeenCalled();
+    } finally {
+      warn.mockRestore();
+      if (previousNodeEnv === undefined) {
+        delete process.env.NODE_ENV;
+      } else {
+        process.env.NODE_ENV = previousNodeEnv;
+      }
+    }
+  });
+});

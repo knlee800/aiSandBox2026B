@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, GoneException } from '@nestjs/common';
 import { GitCheckpointService } from '../git-checkpoints/git-checkpoint.service';
 import { SessionService } from '../sessions/session.service';
 import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
+import { Session } from '../entities/session.entity';
 import { CheckpointResponseDto } from './dto/checkpoint-response.dto';
 import { DiffResponseDto } from './dto/diff-response.dto';
 import { RevertResponseDto } from './dto/revert-response.dto';
@@ -27,13 +28,14 @@ export class CheckpointsService {
    * @throws NotFoundException if session not found
    */
   async listCheckpoints(sessionId: string): Promise<CheckpointResponseDto[]> {
-    // Verify session exists (throws NotFoundException if not found)
-    await this.sessionService.getSessionById(sessionId);
+    const session = await this.sessionService.getSessionById(sessionId);
 
-    // Get checkpoints from git_checkpoints table
-    const checkpoints = await this.gitCheckpointService.getSessionTimeline(
-      sessionId,
-    );
+    const checkpoints = session.projectId
+      ? await this.gitCheckpointService.getProjectTimeline(
+          session.projectId,
+          session.userId,
+        )
+      : await this.gitCheckpointService.getSessionTimeline(sessionId);
 
     // Map to response DTO format (reverse order for newest-first)
     return checkpoints
@@ -60,21 +62,9 @@ export class CheckpointsService {
     sessionId: string,
     commitHash: string,
   ): Promise<DiffResponseDto> {
-    // Verify session exists
-    await this.sessionService.getSessionById(sessionId);
-
-    // Verify checkpoint exists
-    const checkpoint = await this.gitCheckpointService.getCheckpointByHash(
-      commitHash,
-    );
+    const session = await this.sessionService.getSessionById(sessionId);
+    const checkpoint = await this.findVisibleCheckpoint(session, commitHash);
     if (!checkpoint) {
-      throw new NotFoundException(
-        `Checkpoint with hash ${commitHash} not found`,
-      );
-    }
-
-    // Verify checkpoint belongs to session
-    if (checkpoint.sessionId !== sessionId) {
       throw new NotFoundException(
         `Checkpoint with hash ${commitHash} not found`,
       );
@@ -107,28 +97,16 @@ export class CheckpointsService {
     commitHash: string,
     userId: string,
   ): Promise<RevertResponseDto> {
-    // Verify session exists and not terminated
     const session = await this.sessionService.getSessionById(sessionId);
 
-    // Check if session is terminated
     if (session.terminatedAt !== null) {
       throw new GoneException(
         `Session ${sessionId} is terminated and cannot be reverted`,
       );
     }
 
-    // Verify checkpoint exists
-    const checkpoint = await this.gitCheckpointService.getCheckpointByHash(
-      commitHash,
-    );
+    const checkpoint = await this.findVisibleCheckpoint(session, commitHash);
     if (!checkpoint) {
-      throw new NotFoundException(
-        `Checkpoint with hash ${commitHash} not found`,
-      );
-    }
-
-    // Verify checkpoint belongs to session
-    if (checkpoint.sessionId !== sessionId) {
       throw new NotFoundException(
         `Checkpoint with hash ${commitHash} not found`,
       );
@@ -161,6 +139,23 @@ export class CheckpointsService {
         description: newCheckpoint.description || `Reverted to ${commitHash.substring(0, 7)}`,
       },
     };
+  }
+
+  private async findVisibleCheckpoint(session: Session, commitHash: string) {
+    if (session.projectId) {
+      return this.gitCheckpointService.findCheckpointForSession(
+        commitHash,
+        session,
+      );
+    }
+
+    const checkpoint = await this.gitCheckpointService.getCheckpointByHash(
+      commitHash,
+    );
+    if (!checkpoint || checkpoint.sessionId !== session.id) {
+      return null;
+    }
+    return checkpoint;
   }
 
   async createManualCheckpoint(

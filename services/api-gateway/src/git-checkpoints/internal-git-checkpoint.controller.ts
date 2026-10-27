@@ -1,5 +1,6 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Logger, Post } from '@nestjs/common';
 import { IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
 import { GitCheckpointService } from './git-checkpoint.service';
 
 /**
@@ -33,7 +34,12 @@ class RecordCheckpointDto {
  */
 @Controller('internal/git-checkpoints')
 export class InternalGitCheckpointController {
-  constructor(private readonly gitCheckpointService: GitCheckpointService) {}
+  private readonly logger = new Logger(InternalGitCheckpointController.name);
+
+  constructor(
+    private readonly gitCheckpointService: GitCheckpointService,
+    private readonly containerManagerHttpClient: ContainerManagerHttpClient,
+  ) {}
 
   /**
    * Record a git checkpoint after auto-commit
@@ -51,6 +57,24 @@ export class InternalGitCheckpointController {
       description: dto.description ?? null,
     });
 
+    void this.saveCheckpointHistoryInBackground(dto.sessionId).catch(
+      (error: unknown) => {
+        const detail = error instanceof Error ? error.message : String(error);
+        this.logger.error(
+          `Failed to save checkpoint history for session ${dto.sessionId}: ${detail}`,
+        );
+      },
+    );
+
     return { message: 'Git checkpoint recorded successfully' };
+  }
+
+  private async saveCheckpointHistoryInBackground(sessionId: string): Promise<void> {
+    const owner = await this.gitCheckpointService.getSessionOwnerAndProject(sessionId);
+    const projectId = owner?.projectId;
+    if (!projectId) {
+      return;
+    }
+    await this.containerManagerHttpClient.saveCheckpointHistory(sessionId, projectId);
   }
 }

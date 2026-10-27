@@ -15,7 +15,9 @@ describe('CheckpointsService (PHASE-68B)', () => {
   beforeEach(async () => {
     const mockGitCheckpointService = {
       getSessionTimeline: jest.fn(),
+      getProjectTimeline: jest.fn(),
       getCheckpointByHash: jest.fn(),
+      findCheckpointForSession: jest.fn(),
       recordCheckpoint: jest.fn(),
     };
 
@@ -87,6 +89,104 @@ describe('CheckpointsService (PHASE-68B)', () => {
       expect(result[1].id).toBe('checkpoint-1');
       expect(sessionService.getSessionById).toHaveBeenCalledWith(sessionId);
       expect(gitCheckpointService.getSessionTimeline).toHaveBeenCalledWith(sessionId);
+    });
+
+    it('returns the project timeline for the session owner, newest first', async () => {
+      const sessionId = 'session-new';
+      const mockSession = {
+        id: sessionId,
+        userId: 'owner-1',
+        projectId: 'project-1',
+      };
+      const older: Partial<GitCheckpoint> = {
+        id: 'checkpoint-earlier-session',
+        commitHash: 'aaa111',
+        messageNumber: 1,
+        description: 'Earlier session',
+        filesChanged: 1,
+        createdAt: new Date('2026-03-09T14:00:00Z'),
+      };
+      const newer: Partial<GitCheckpoint> = {
+        id: 'checkpoint-current-session',
+        commitHash: 'bbb222',
+        messageNumber: 2,
+        description: 'Current session',
+        filesChanged: 4,
+        createdAt: new Date('2026-03-09T16:00:00Z'),
+      };
+
+      sessionService.getSessionById.mockResolvedValue(mockSession as any);
+      gitCheckpointService.getProjectTimeline.mockResolvedValue([
+        older,
+        newer,
+      ] as GitCheckpoint[]);
+
+      const result = await service.listCheckpoints(sessionId);
+
+      expect(gitCheckpointService.getProjectTimeline).toHaveBeenCalledWith(
+        'project-1',
+        'owner-1',
+      );
+      expect(gitCheckpointService.getSessionTimeline).not.toHaveBeenCalled();
+      expect(result).toEqual([
+        {
+          id: 'checkpoint-current-session',
+          commitHash: 'bbb222',
+          messageNumber: 2,
+          description: 'Current session',
+          filesChanged: 4,
+          createdAt: '2026-03-09T16:00:00.000Z',
+        },
+        {
+          id: 'checkpoint-earlier-session',
+          commitHash: 'aaa111',
+          messageNumber: 1,
+          description: 'Earlier session',
+          filesChanged: 1,
+          createdAt: '2026-03-09T14:00:00.000Z',
+        },
+      ]);
+    });
+
+    it('lists only the current session when the session has no project', async () => {
+      const sessionId = 'session-123';
+      const mockSession = {
+        id: sessionId,
+        userId: 'user-456',
+        projectId: null,
+      };
+      const mockCheckpoints: Partial<GitCheckpoint>[] = [
+        {
+          id: 'checkpoint-1',
+          commitHash: 'abc123',
+          messageNumber: 1,
+          description: 'First commit',
+          filesChanged: 2,
+          createdAt: new Date('2026-03-09T14:00:00Z'),
+        },
+        {
+          id: 'checkpoint-2',
+          commitHash: 'def456',
+          messageNumber: 2,
+          description: 'Second commit',
+          filesChanged: 3,
+          createdAt: new Date('2026-03-09T15:00:00Z'),
+        },
+      ];
+
+      sessionService.getSessionById.mockResolvedValue(mockSession as any);
+      gitCheckpointService.getSessionTimeline.mockResolvedValue(
+        mockCheckpoints as GitCheckpoint[],
+      );
+
+      const result = await service.listCheckpoints(sessionId);
+
+      expect(gitCheckpointService.getSessionTimeline).toHaveBeenCalledWith(sessionId);
+      expect(gitCheckpointService.getProjectTimeline).not.toHaveBeenCalled();
+      expect(result.map((checkpoint) => checkpoint.id)).toEqual([
+        'checkpoint-2',
+        'checkpoint-1',
+      ]);
     });
 
     it('should throw NotFoundException if session does not exist', async () => {
@@ -172,6 +272,69 @@ describe('CheckpointsService (PHASE-68B)', () => {
         service.getCheckpointDiff(sessionId, commitHash),
       ).rejects.toThrow(NotFoundException);
     });
+
+    it('accepts a same-project checkpoint from an earlier session', async () => {
+      const sessionId = 'session-new';
+      const commitHash = 'abc123def456789012345678901234567890abcd';
+      const mockSession = {
+        id: sessionId,
+        userId: 'user-1',
+        projectId: 'project-1',
+      };
+      const earlierCheckpoint: Partial<GitCheckpoint> = {
+        id: 'checkpoint-old',
+        sessionId: 'session-old',
+        commitHash,
+        messageNumber: 4,
+        description: 'Earlier session',
+        filesChanged: 2,
+      };
+      const mockDiff = {
+        commitHash,
+        parentHash: null,
+        files: [],
+      };
+
+      sessionService.getSessionById.mockResolvedValue(mockSession as any);
+      gitCheckpointService.findCheckpointForSession.mockResolvedValue(
+        earlierCheckpoint as GitCheckpoint,
+      );
+      containerManagerClient.getGitDiff.mockResolvedValue(mockDiff);
+
+      const result = await service.getCheckpointDiff(sessionId, commitHash);
+
+      expect(result).toEqual(mockDiff);
+      expect(gitCheckpointService.findCheckpointForSession).toHaveBeenCalledWith(
+        commitHash,
+        mockSession,
+      );
+      expect(gitCheckpointService.getCheckpointByHash).not.toHaveBeenCalled();
+      expect(containerManagerClient.getGitDiff).toHaveBeenCalledWith(
+        sessionId,
+        commitHash,
+      );
+    });
+
+    it.each(['another project', 'another user'])(
+      'refuses a diff for a checkpoint from %s',
+      async () => {
+        const sessionId = 'session-new';
+        const commitHash = 'abc123def456789012345678901234567890abcd';
+        const mockSession = {
+          id: sessionId,
+          userId: 'user-1',
+          projectId: 'project-1',
+        };
+
+        sessionService.getSessionById.mockResolvedValue(mockSession as any);
+        gitCheckpointService.findCheckpointForSession.mockResolvedValue(null);
+
+        await expect(service.getCheckpointDiff(sessionId, commitHash)).rejects.toThrow(
+          `Checkpoint with hash ${commitHash} not found`,
+        );
+        expect(containerManagerClient.getGitDiff).not.toHaveBeenCalled();
+      },
+    );
   });
 
   describe('revertToCheckpoint', () => {
@@ -272,6 +435,81 @@ describe('CheckpointsService (PHASE-68B)', () => {
         service.revertToCheckpoint(sessionId, commitHash, 'user-456'),
       ).rejects.toThrow(NotFoundException);
     });
+
+    it('accepts a same-project checkpoint from an earlier session', async () => {
+      const sessionId = 'session-new';
+      const commitHash = 'abc123def456789012345678901234567890abcd';
+      const mockSession = {
+        id: sessionId,
+        userId: 'user-1',
+        projectId: 'project-1',
+        terminatedAt: null,
+      };
+      const earlierCheckpoint: Partial<GitCheckpoint> = {
+        id: 'checkpoint-old',
+        sessionId: 'session-old',
+        commitHash,
+        description: 'Earlier session',
+      };
+      const mockRevertResult = {
+        message: 'Reverted to commit successfully',
+        commitHash: 'new123def456789012345678901234567890abcd',
+      };
+      const mockNewCheckpoint: Partial<GitCheckpoint> = {
+        id: 'new-checkpoint-id',
+        commitHash: mockRevertResult.commitHash,
+        description: 'Reverted to abc123',
+      };
+
+      sessionService.getSessionById.mockResolvedValue(mockSession as any);
+      gitCheckpointService.findCheckpointForSession.mockResolvedValue(
+        earlierCheckpoint as GitCheckpoint,
+      );
+      gitCheckpointService.getCheckpointByHash.mockResolvedValue(
+        mockNewCheckpoint as GitCheckpoint,
+      );
+      containerManagerClient.revertToCheckpoint.mockResolvedValue(mockRevertResult);
+
+      const result = await service.revertToCheckpoint(sessionId, commitHash, 'user-1');
+
+      expect(result.message).toBe('Reverted successfully');
+      expect(result.newCheckpoint.id).toBe('new-checkpoint-id');
+      expect(gitCheckpointService.findCheckpointForSession).toHaveBeenCalledWith(
+        commitHash,
+        mockSession,
+      );
+      expect(containerManagerClient.revertToCheckpoint).toHaveBeenCalledWith(
+        sessionId,
+        commitHash,
+        'user-1',
+      );
+      expect(gitCheckpointService.getCheckpointByHash).toHaveBeenCalledTimes(1);
+      expect(gitCheckpointService.getCheckpointByHash).toHaveBeenCalledWith(
+        mockRevertResult.commitHash,
+      );
+    });
+
+    it.each(['another project', 'another user'])(
+      'refuses a revert for a checkpoint from %s',
+      async () => {
+        const sessionId = 'session-new';
+        const commitHash = 'abc123def456789012345678901234567890abcd';
+        const mockSession = {
+          id: sessionId,
+          userId: 'user-1',
+          projectId: 'project-1',
+          terminatedAt: null,
+        };
+
+        sessionService.getSessionById.mockResolvedValue(mockSession as any);
+        gitCheckpointService.findCheckpointForSession.mockResolvedValue(null);
+
+        await expect(
+          service.revertToCheckpoint(sessionId, commitHash, 'user-1'),
+        ).rejects.toThrow(`Checkpoint with hash ${commitHash} not found`);
+        expect(containerManagerClient.revertToCheckpoint).not.toHaveBeenCalled();
+      },
+    );
   });
 
   describe('createManualCheckpoint', () => {
