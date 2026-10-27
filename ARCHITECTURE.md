@@ -422,6 +422,8 @@ No resurrection.
 
 Idle timeout is enforced by container-manager on **request-driven** session access (see §5). Preview does not participate in the idle check.
 
+**Lost container (PLANNED — SESSION-STALE-01, stage-start 2026-10-27, docs/SESSION-STALE-01-STAGE-START.md):** when a session operation fails and the session container is missing or not running, container-manager ends the session with `termination_reason = container_lost` and returns 410; the gateway reconciles it from the 410 as for the other reasons, and the frontend retries a project open once in a fresh session. Not implemented yet: today such a session stays active and every operation fails with 500 until it expires.
+
 ---
 
 ## 5. Governance Model
