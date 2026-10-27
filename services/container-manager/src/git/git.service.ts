@@ -1,11 +1,32 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { simpleGit, SimpleGit } from 'simple-git';
 import { SessionsService } from '../sessions/sessions.service';
 import { ApiGatewayHttpClient } from '../clients/api-gateway-http.client';
 import Database from 'better-sqlite3';
+import { randomBytes } from 'crypto';
+import * as fs from 'fs/promises';
 import * as path from 'path';
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const CONTAINER_HISTORY_BUNDLE = '/workspace/.git/aisb-history.bundle';
+const CONTAINER_RESTORE_BUNDLE = '/workspace/.aisb-history-restore.bundle';
+
+export function isUuid(value: unknown): value is string {
+  return typeof value === 'string' && UUID_PATTERN.test(value);
+}
+
+export type CheckpointHistorySaveResult =
+  | { status: 'saved'; bytes: number }
+  | { status: 'skipped' };
+
+export type CheckpointHistoryRestoreResult =
+  | { status: 'restored'; head: string }
+  | { status: 'none' };
+
+type ExecResult = { exitCode: number; stdout: string; stderr: string };
 
 @Injectable()
 export class GitService {
@@ -309,6 +330,23 @@ export class GitService {
     description: string,
     filesChanged: number = 0
   ) {
+    try {
+      const refResult = await this.sessionsService.execInContainer(
+        sessionId,
+        ['sh', '-lc', 'git update-ref "refs/checkpoints/$COMMIT_HASH" "$COMMIT_HASH"'],
+        '/workspace',
+        { COMMIT_HASH: commitHash },
+      );
+      if (refResult.exitCode !== 0) {
+        console.error(
+          'Failed to create checkpoint ref:',
+          refResult.stderr || 'git update-ref failed',
+        );
+      }
+    } catch (error) {
+      console.error('Failed to create checkpoint ref:', error.message);
+    }
+
     // Record checkpoint in api-gateway via HTTP
     try {
       await this.apiGatewayClient.recordGitCheckpoint({
@@ -345,6 +383,274 @@ export class GitService {
       files_changed: filesChanged,
       created_at: new Date().toISOString(),
     });
+  }
+
+  async saveProjectHistory(
+    sessionId: string,
+    projectId: string,
+  ): Promise<CheckpointHistorySaveResult> {
+    this.assertHistoryIds(sessionId, projectId);
+
+    const repo = await this.execWorkspace(sessionId, 'git rev-parse --is-inside-work-tree');
+    if (!this.isInsideWorkTree(repo)) {
+      if (this.isMissingRepository(repo)) {
+        return { status: 'skipped' };
+      }
+      throw new Error(repo.stderr || 'Failed to inspect git repository');
+    }
+
+    const head = await this.execWorkspace(sessionId, 'git rev-parse --verify HEAD');
+    if (head.exitCode !== 0) {
+      if (this.isMissingCommit(head.stderr)) {
+        return { status: 'skipped' };
+      }
+      throw new Error(head.stderr || 'Failed to resolve HEAD');
+    }
+
+    const hostBundlePath = path.join(
+      this.sessionsService.getWorkspacePath(sessionId),
+      '.git',
+      'aisb-history.bundle',
+    );
+    const historyDir = this.checkpointHistoryDir();
+    const finalPath = this.historyBundlePath(projectId);
+    const tempPath = path.join(historyDir, `${projectId}.${randomBytes(8).toString('hex')}.tmp`);
+    let removeContainerBundle = false;
+    let removeTemp = false;
+
+    try {
+      removeContainerBundle = true;
+      const created = await this.execWorkspace(
+        sessionId,
+        `git bundle create ${CONTAINER_HISTORY_BUNDLE} --all`,
+      );
+      if (created.exitCode !== 0) {
+        throw new Error(created.stderr || 'Failed to create history bundle');
+      }
+
+      await fs.mkdir(historyDir, { recursive: true });
+      await fs.copyFile(hostBundlePath, tempPath);
+      removeTemp = true;
+      const stat = await fs.stat(tempPath);
+      await fs.rename(tempPath, finalPath);
+      removeTemp = false;
+      return { status: 'saved', bytes: stat.size };
+    } finally {
+      if (removeContainerBundle) {
+        await this.removeContainerFile(sessionId, CONTAINER_HISTORY_BUNDLE);
+      }
+      if (removeTemp) {
+        await this.removeHostFile(tempPath);
+      }
+    }
+  }
+
+  async restoreProjectHistory(
+    sessionId: string,
+    projectId: string,
+  ): Promise<CheckpointHistoryRestoreResult> {
+    this.assertHistoryIds(sessionId, projectId);
+
+    if (!(await this.storedBundleExists(projectId))) {
+      return { status: 'none' };
+    }
+
+    const hostRestorePath = path.join(
+      this.sessionsService.getWorkspacePath(sessionId),
+      '.aisb-history-restore.bundle',
+    );
+
+    try {
+      await fs.copyFile(this.historyBundlePath(projectId), hostRestorePath);
+      await this.ensureGitInitializedInContainer(sessionId);
+
+      const listed = await this.execWorkspace(
+        sessionId,
+        `git bundle list-heads ${CONTAINER_RESTORE_BUNDLE}`,
+      );
+      if (listed.exitCode !== 0) {
+        throw new Error(listed.stderr || 'Failed to list bundle heads');
+      }
+      const head = this.resolveBundleHead(listed.stdout);
+
+      const fetched = await this.execWorkspace(
+        sessionId,
+        `git fetch --update-head-ok ${CONTAINER_RESTORE_BUNDLE} "+refs/*:refs/*"`,
+      );
+      if (fetched.exitCode !== 0) {
+        throw new Error(fetched.stderr || 'Failed to fetch history bundle');
+      }
+
+      if (head.branch) {
+        const pointed = await this.execWorkspace(
+          sessionId,
+          'git symbolic-ref HEAD "$BRANCH_REF"',
+          { BRANCH_REF: head.branch },
+        );
+        if (pointed.exitCode !== 0) {
+          throw new Error(pointed.stderr || 'Failed to point HEAD at branch');
+        }
+      } else {
+        const pointed = await this.execWorkspace(
+          sessionId,
+          'git update-ref --no-deref HEAD "$COMMIT_HASH"',
+          { COMMIT_HASH: head.hash },
+        );
+        if (pointed.exitCode !== 0) {
+          throw new Error(pointed.stderr || 'Failed to point HEAD at commit');
+        }
+      }
+
+      const reset = await this.execWorkspace(sessionId, 'git reset -q');
+      if (reset.exitCode !== 0) {
+        throw new Error(reset.stderr || 'Failed to reset index');
+      }
+
+      return { status: 'restored', head: head.hash };
+    } finally {
+      await this.removeHostFile(hostRestorePath);
+      await this.removeContainerFile(sessionId, CONTAINER_RESTORE_BUNDLE);
+    }
+  }
+
+  private assertHistoryIds(sessionId: string, projectId: string): void {
+    if (!isUuid(sessionId) || !isUuid(projectId)) {
+      throw new BadRequestException('Invalid id');
+    }
+  }
+
+  private projectsRoot(): string {
+    return path.join(__dirname, '../../../..', 'projects');
+  }
+
+  private checkpointHistoryDir(): string {
+    return path.join(this.projectsRoot(), '_checkpoint-history');
+  }
+
+  private historyBundlePath(projectId: string): string {
+    const historyDir = this.checkpointHistoryDir();
+    const bundlePath = path.resolve(historyDir, `${projectId}.bundle`);
+    const relative = path.relative(historyDir, bundlePath);
+    if (relative.startsWith('..') || path.isAbsolute(relative)) {
+      throw new BadRequestException('Invalid id');
+    }
+    return bundlePath;
+  }
+
+  private async storedBundleExists(projectId: string): Promise<boolean> {
+    try {
+      const stat = await fs.stat(this.historyBundlePath(projectId));
+      return stat.isFile();
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        return false;
+      }
+      throw error;
+    }
+  }
+
+  private isInsideWorkTree(result: ExecResult): boolean {
+    return result.exitCode === 0 && result.stdout.trim() === 'true';
+  }
+
+  private isMissingRepository(result: ExecResult): boolean {
+    if (result.exitCode === 0) {
+      return result.stdout.trim() !== 'true';
+    }
+    return result.stderr.toLowerCase().includes('not a git repository');
+  }
+
+  private isMissingCommit(stderr: string): boolean {
+    const text = stderr.toLowerCase();
+    return (
+      text.includes('needed a single revision') ||
+      text.includes('unknown revision') ||
+      text.includes('ambiguous argument') ||
+      text.includes('bad revision') ||
+      text.includes('not a valid object name')
+    );
+  }
+
+  private resolveBundleHead(output: string): { hash: string; branch: string | null } {
+    const branches: Array<{ ref: string; hash: string }> = [];
+    let headHash: string | null = null;
+
+    for (const line of output.split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (!trimmed) {
+        continue;
+      }
+      const match = /^([0-9a-f]{40}|[0-9a-f]{64})\s+(\S+)$/i.exec(trimmed);
+      if (!match) {
+        continue;
+      }
+      const hash = match[1].toLowerCase();
+      const ref = match[2];
+      if (ref === 'HEAD') {
+        headHash = hash;
+      } else if (ref.startsWith('refs/heads/') && this.isSafeBranchRef(ref)) {
+        branches.push({ ref, hash });
+      }
+    }
+
+    if (!headHash) {
+      throw new Error('Bundle has no HEAD');
+    }
+
+    const matches = branches.filter((branch) => branch.hash === headHash);
+    if (matches.length === 0) {
+      return { hash: headHash, branch: null };
+    }
+    if (matches.length === 1) {
+      return { hash: headHash, branch: matches[0].ref };
+    }
+
+    const preferred =
+      matches.find((branch) => branch.ref === 'refs/heads/main') ??
+      matches.find((branch) => branch.ref === 'refs/heads/master') ??
+      matches[0];
+    return { hash: headHash, branch: preferred.ref };
+  }
+
+  private isSafeBranchRef(ref: string): boolean {
+    return /^refs\/heads\/[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(ref) && !ref.includes('..');
+  }
+
+  private async execWorkspace(
+    sessionId: string,
+    command: string,
+    env?: Record<string, string>,
+  ): Promise<ExecResult> {
+    if (env) {
+      return this.sessionsService.execInContainer(
+        sessionId,
+        ['sh', '-lc', command],
+        '/workspace',
+        env,
+      );
+    }
+    return this.sessionsService.execInContainer(sessionId, ['sh', '-lc', command], '/workspace');
+  }
+
+  private async removeHostFile(filePath: string): Promise<void> {
+    try {
+      await fs.unlink(filePath);
+    } catch (error) {
+      if (error.code !== 'ENOENT') {
+        console.error('Failed to remove temporary bundle:', error.message);
+      }
+    }
+  }
+
+  private async removeContainerFile(sessionId: string, containerPath: string): Promise<void> {
+    try {
+      const result = await this.execWorkspace(sessionId, `rm -f ${containerPath}`);
+      if (result.exitCode !== 0) {
+        console.error('Failed to remove temporary bundle:', result.stderr || containerPath);
+      }
+    } catch (error) {
+      console.error('Failed to remove temporary bundle:', error.message);
+    }
   }
 
   private generateId(): string {
