@@ -10,17 +10,20 @@
   },
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "CLEAN-BASELINE-DEPLOY-01",
+      "mutexes": ["STAGING", "ENV"],
+      "writePaths": [
+        "ops/clean-baseline/caddy/Caddyfile",
+        "ops/clean-baseline/tests/static/t-caddy-site.sh"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "STAGING-RUNTIME",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
-      "runtimeNeeds": []
+      "runtimeNeeds": ["STAGING"]
     },
     "lane2": {
       "state": "EMPTY",
@@ -1076,8 +1079,8 @@
       "taskId": "CLEAN-BASELINE-DEPLOY-01",
       "nature": "IMPLEMENTATION",
       "lifecycle": "4-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "OPTIONAL",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
@@ -1237,7 +1240,7 @@
   ],
   "runtimeAuthorization": {
     "localRuntimeAuthorized": true,
-    "stagingAuthorized": false,
+    "stagingAuthorized": true,
     "providerLiveAuthorized": false,
     "creditAuthorized": false
   }
