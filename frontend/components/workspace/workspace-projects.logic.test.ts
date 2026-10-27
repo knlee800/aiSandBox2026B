@@ -9,6 +9,7 @@ import {
   loadWorkspaceProjects,
   moveWorkspaceProject,
   openWorkspaceProject,
+  ProjectOpenError,
   updateWorkspaceProjectVisibility,
 } from './workspace-projects.logic';
 
@@ -194,6 +195,55 @@ describe('workspace-projects.logic', () => {
 
     assert.equal(calls[0].url, '/api/projects/project-1/open');
     assert.equal(result.restoredSnapshotId, 'snapshot-1');
+  });
+
+  test('openWorkspaceProject throws ProjectOpenError with status 410 and the response message', async () => {
+    const fetchImpl = async (): Promise<Response> =>
+      new Response(
+        JSON.stringify({
+          message: '  Session session-1 has been terminated (reason: container_lost)  ',
+        }),
+        { status: 410 },
+      );
+
+    await assert.rejects(
+      () =>
+        openWorkspaceProject({
+          projectId: 'project-1',
+          sessionId: 'session-1',
+          snapshotId: 'snapshot-1',
+          fetchImpl: fetchImpl as typeof fetch,
+        }),
+      (error: unknown) => {
+        assert.ok(error instanceof ProjectOpenError);
+        assert.equal(error.status, 410);
+        assert.equal(
+          error.message,
+          'Session session-1 has been terminated (reason: container_lost)',
+        );
+        return true;
+      },
+    );
+  });
+
+  test('openWorkspaceProject throws ProjectOpenError with status 500 and the response message', async () => {
+    const fetchImpl = async (): Promise<Response> =>
+      new Response(JSON.stringify({ message: 'Internal server error' }), { status: 500 });
+
+    await assert.rejects(
+      () =>
+        openWorkspaceProject({
+          projectId: 'project-1',
+          sessionId: 'session-1',
+          fetchImpl: fetchImpl as typeof fetch,
+        }),
+      (error: unknown) => {
+        assert.ok(error instanceof ProjectOpenError);
+        assert.equal(error.status, 500);
+        assert.equal(error.message, 'Internal server error');
+        return true;
+      },
+    );
   });
 
   test('associateWorkspaceProjectSession binds selected session without restore', async () => {

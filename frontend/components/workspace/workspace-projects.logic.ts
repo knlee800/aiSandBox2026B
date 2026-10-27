@@ -222,6 +222,16 @@ export async function forkPublicWorkspaceProject(
   return (await response.json()) as WorkspaceForkedProjectSummary;
 }
 
+export class ProjectOpenError extends Error {
+  readonly status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'ProjectOpenError';
+    this.status = status;
+  }
+}
+
 export async function openWorkspaceProject(
   args: OpenProjectArgs,
 ): Promise<{ projectId: string; sessionId: string; restoredSnapshotId: string | null }> {
@@ -240,7 +250,10 @@ export async function openWorkspaceProject(
     const payload = (await response.json().catch(() => null)) as
       | { message?: string }
       | null;
-    throw new Error(trimMessage(payload?.message, 'Failed to open project.'));
+    throw new ProjectOpenError(
+      trimMessage(payload?.message, 'Failed to open project.'),
+      response.status,
+    );
   }
 
   return (await response.json()) as {

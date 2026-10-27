@@ -1,6 +1,7 @@
 import {
   associateWorkspaceProjectSession,
   openWorkspaceProject,
+  ProjectOpenError,
 } from '../components/workspace/workspace-projects.logic';
 import {
   isUsableSession,
@@ -89,9 +90,28 @@ export async function openProjectInFreshSession(
       ).id;
 
   if (snapshotIdToOpen) {
+    try {
+      return await openWorkspaceProject({
+        projectId,
+        sessionId,
+        snapshotId: snapshotIdToOpen,
+        fetchImpl: args.fetchImpl,
+      });
+    } catch (error) {
+      if (!(reusableSession && error instanceof ProjectOpenError && error.status === 410)) {
+        throw error;
+      }
+    }
+
+    const freshSessionId = (
+      await createWorkspaceSession({
+        fetchImpl: args.fetchImpl,
+      })
+    ).id;
+
     return await openWorkspaceProject({
       projectId,
-      sessionId,
+      sessionId: freshSessionId,
       snapshotId: snapshotIdToOpen,
       fetchImpl: args.fetchImpl,
     });

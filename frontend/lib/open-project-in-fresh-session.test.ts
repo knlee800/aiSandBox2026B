@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 
+import { ProjectOpenError } from '../components/workspace/workspace-projects.logic';
 import { openProjectInFreshSession } from './open-project-in-fresh-session';
 
 function createDeferredResponse(): {
@@ -422,5 +423,160 @@ describe('open-project-in-fresh-session', () => {
       snapshotId: 'snapshot-explicit',
     });
     assert.equal(result.restoredSnapshotId, 'snapshot-explicit');
+  });
+
+  test('retries open once in a fresh session when a reused session returns 410', async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    let openCount = 0;
+    const fetchImpl = async (url: string, init?: RequestInit): Promise<Response> => {
+      calls.push({ url, init });
+
+      if (url === '/api/projects/project-1/open') {
+        openCount += 1;
+        if (openCount === 1) {
+          return new Response(
+            JSON.stringify({
+              message: 'Session session-existing-1 has been terminated (reason: container_lost)',
+            }),
+            { status: 410 },
+          );
+        }
+
+        return new Response(
+          JSON.stringify({
+            projectId: 'project-1',
+            sessionId: 'session-fresh-retry',
+            restoredSnapshotId: 'snapshot-explicit',
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url === '/api/sessions' && init?.method === 'POST') {
+        return new Response(JSON.stringify({ id: 'session-fresh-retry' }), { status: 201 });
+      }
+
+      throw new Error(`Unexpected url: ${url}`);
+    };
+
+    const result = await openProjectInFreshSession({
+      projectId: 'project-1',
+      snapshotId: 'snapshot-explicit',
+      existingSessions: [
+        {
+          id: 'session-existing-1',
+          projectId: 'project-1',
+          status: 'active',
+          expiresAt: '2999-04-09T12:00:00.000Z',
+          terminatedAt: null,
+          terminationReason: null,
+        },
+      ],
+      fetchImpl: fetchImpl as typeof fetch,
+    });
+
+    assert.deepEqual(
+      calls.map((call) => call.url),
+      ['/api/projects/project-1/open', '/api/sessions', '/api/projects/project-1/open'],
+    );
+    assert.equal(calls[1].init?.method, 'POST');
+    assert.deepEqual(JSON.parse(String(calls[0].init?.body)), {
+      sessionId: 'session-existing-1',
+      snapshotId: 'snapshot-explicit',
+    });
+    assert.deepEqual(JSON.parse(String(calls[2].init?.body)), {
+      sessionId: 'session-fresh-retry',
+      snapshotId: 'snapshot-explicit',
+    });
+    assert.deepEqual(result, {
+      projectId: 'project-1',
+      sessionId: 'session-fresh-retry',
+      restoredSnapshotId: 'snapshot-explicit',
+    });
+  });
+
+  test('rejects a 410 from a freshly created session without creating a second session', async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const fetchImpl = async (url: string, init?: RequestInit): Promise<Response> => {
+      calls.push({ url, init });
+
+      if (url === '/api/sessions') {
+        return new Response(JSON.stringify({ id: 'session-fresh-410' }), { status: 201 });
+      }
+
+      if (url === '/api/projects/project-1/open') {
+        return new Response(
+          JSON.stringify({
+            message: 'Session session-fresh-410 has been terminated (reason: container_lost)',
+          }),
+          { status: 410 },
+        );
+      }
+
+      throw new Error(`Unexpected url: ${url}`);
+    };
+
+    await assert.rejects(
+      () =>
+        openProjectInFreshSession({
+          projectId: 'project-1',
+          snapshotId: 'snapshot-explicit',
+          fetchImpl: fetchImpl as typeof fetch,
+        }),
+      (error: unknown) => {
+        assert.ok(error instanceof ProjectOpenError);
+        assert.equal(error.status, 410);
+        assert.equal(
+          error.message,
+          'Session session-fresh-410 has been terminated (reason: container_lost)',
+        );
+        return true;
+      },
+    );
+
+    assert.deepEqual(
+      calls.map((call) => call.url),
+      ['/api/sessions', '/api/projects/project-1/open'],
+    );
+  });
+
+  test('rejects a 500 from a reused session without creating a new session', async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const fetchImpl = async (url: string, init?: RequestInit): Promise<Response> => {
+      calls.push({ url, init });
+
+      if (url === '/api/projects/project-1/open') {
+        return new Response(JSON.stringify({ message: 'open failed for test' }), { status: 500 });
+      }
+
+      throw new Error(`Unexpected url: ${url}`);
+    };
+
+    await assert.rejects(
+      () =>
+        openProjectInFreshSession({
+          projectId: 'project-1',
+          snapshotId: 'snapshot-explicit',
+          existingSessions: [
+            {
+              id: 'session-existing-1',
+              projectId: 'project-1',
+              status: 'active',
+              expiresAt: '2999-04-09T12:00:00.000Z',
+              terminatedAt: null,
+              terminationReason: null,
+            },
+          ],
+          fetchImpl: fetchImpl as typeof fetch,
+        }),
+      (error: unknown) => {
+        assert.ok(error instanceof ProjectOpenError);
+        assert.equal(error.status, 500);
+        assert.equal(error.message, 'open failed for test');
+        return true;
+      },
+    );
+
+    assert.deepEqual(calls.map((call) => call.url), ['/api/projects/project-1/open']);
   });
 });
