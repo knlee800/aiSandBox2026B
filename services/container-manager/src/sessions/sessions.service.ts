@@ -442,7 +442,7 @@ export class SessionsService {
    */
   private scheduleContainerCleanup(
     sessionId: string,
-    logContext: 'expired' | 'lifetime-expired',
+    logContext: 'expired' | 'lifetime-expired' | 'container-lost',
   ): void {
     if (this.scheduledContainerCleanups.has(sessionId)) {
       return;
@@ -489,6 +489,61 @@ export class SessionsService {
           );
         });
     });
+  }
+
+  /**
+   * SESSION-STALE-01: When a session operation fails, end the session if its
+   * container is stopped or missing. Returns without changes when the
+   * container is running or the Docker state check fails, so the caller
+   * rethrows the original error. No gateway notification: the stop body
+   * accepts only idle_timeout and max_lifetime.
+   */
+  private async terminateIfContainerLost(sessionId: string): Promise<void> {
+    let state: 'running' | 'stopped' | 'missing';
+    try {
+      state = await this.dockerRuntimeService.getSessionContainerState(sessionId);
+    } catch {
+      return;
+    }
+
+    if (state !== 'stopped' && state !== 'missing') {
+      return;
+    }
+
+    // Same guarded write as checkAndEnforceIdleTimeout. The WHERE clause
+    // leaves an already-terminated row unchanged.
+    const session = this.db
+      .prepare('SELECT user_id FROM sessions WHERE id = ?')
+      .get(sessionId) as { user_id: string } | undefined;
+
+    this.db
+      .prepare(`
+        UPDATE sessions
+        SET terminated_at = datetime('now'), termination_reason = ?
+        WHERE id = ? AND terminated_at IS NULL
+      `)
+      .run('container_lost', sessionId);
+
+    this.governanceEventsService.logTerminationEvent(
+      sessionId,
+      session?.user_id ?? null,
+      'container_lost',
+      new Date().toISOString(),
+    );
+
+    // Schedule before clearing lastActivity, matching idle timeout, so a
+    // concurrent request cannot treat the missing map entry as a fresh start.
+    // A missing container has nothing to stop or remove.
+    if (state === 'stopped') {
+      this.scheduleContainerCleanup(sessionId, 'container-lost');
+    }
+
+    this.lastActivity.delete(sessionId);
+    this.activeExecs.delete(sessionId);
+
+    throw new GoneException(
+      `Session ${sessionId} has been terminated (reason: container_lost)`,
+    );
   }
 
   /**
@@ -558,6 +613,9 @@ export class SessionsService {
       this.updateLastActivity(sessionId);
 
       return result;
+    } catch (error) {
+      await this.terminateIfContainerLost(sessionId);
+      throw error;
     } finally {
       // Always decrement counter (even on error/timeout)
       const activeCount = this.activeExecs.get(sessionId) || 0;
@@ -604,15 +662,20 @@ export class SessionsService {
     // Task 9.5A: Check quota limits FOURTH (request-time blocking)
     await this.checkAndEnforceQuota(sessionId);
 
-    const result = await this.dockerRuntimeService.readFileFromContainer(
-      sessionId,
-      filePath,
-    );
+    try {
+      const result = await this.dockerRuntimeService.readFileFromContainer(
+        sessionId,
+        filePath,
+      );
 
-    // Task 8.3A: Update activity after success
-    this.updateLastActivity(sessionId);
+      // Task 8.3A: Update activity after success
+      this.updateLastActivity(sessionId);
 
-    return result;
+      return result;
+    } catch (error) {
+      await this.terminateIfContainerLost(sessionId);
+      throw error;
+    }
   }
 
   /**
@@ -648,14 +711,19 @@ export class SessionsService {
     // Task 9.5A: Check quota limits FOURTH (request-time blocking)
     await this.checkAndEnforceQuota(sessionId);
 
-    await this.dockerRuntimeService.writeFileToContainer(
-      sessionId,
-      filePath,
-      content,
-    );
+    try {
+      await this.dockerRuntimeService.writeFileToContainer(
+        sessionId,
+        filePath,
+        content,
+      );
 
-    // Task 8.3A: Update activity after success
-    this.updateLastActivity(sessionId);
+      // Task 8.3A: Update activity after success
+      this.updateLastActivity(sessionId);
+    } catch (error) {
+      await this.terminateIfContainerLost(sessionId);
+      throw error;
+    }
   }
 
   /**
@@ -678,9 +746,14 @@ export class SessionsService {
     await this.checkAndEnforceIdleTimeout(sessionId);
     await this.checkAndEnforceQuota(sessionId);
 
-    await this.dockerRuntimeService.deleteFileFromContainer(sessionId, filePath);
+    try {
+      await this.dockerRuntimeService.deleteFileFromContainer(sessionId, filePath);
 
-    this.updateLastActivity(sessionId);
+      this.updateLastActivity(sessionId);
+    } catch (error) {
+      await this.terminateIfContainerLost(sessionId);
+      throw error;
+    }
   }
 
   /**
@@ -708,13 +781,18 @@ export class SessionsService {
     await this.checkAndEnforceIdleTimeout(sessionId);
     await this.checkAndEnforceQuota(sessionId);
 
-    const result = await this.dockerRuntimeService.searchFilesInContainer(
-      sessionId,
-      query,
-    );
+    try {
+      const result = await this.dockerRuntimeService.searchFilesInContainer(
+        sessionId,
+        query,
+      );
 
-    this.updateLastActivity(sessionId);
-    return result;
+      this.updateLastActivity(sessionId);
+      return result;
+    } catch (error) {
+      await this.terminateIfContainerLost(sessionId);
+      throw error;
+    }
   }
 
   /**
@@ -751,15 +829,20 @@ export class SessionsService {
     // Task 9.5A: Check quota limits FOURTH (request-time blocking)
     await this.checkAndEnforceQuota(sessionId);
 
-    const result = await this.dockerRuntimeService.listDirectoryInContainer(
-      sessionId,
-      dirPath,
-    );
+    try {
+      const result = await this.dockerRuntimeService.listDirectoryInContainer(
+        sessionId,
+        dirPath,
+      );
 
-    // Task 8.3A: Update activity after success
-    this.updateLastActivity(sessionId);
+      // Task 8.3A: Update activity after success
+      this.updateLastActivity(sessionId);
 
-    return result;
+      return result;
+    } catch (error) {
+      await this.terminateIfContainerLost(sessionId);
+      throw error;
+    }
   }
 
   /**
@@ -800,15 +883,20 @@ export class SessionsService {
     // Task 9.5A: Check quota limits FOURTH (request-time blocking)
     await this.checkAndEnforceQuota(sessionId);
 
-    const result = await this.dockerRuntimeService.statPathInContainer(
-      sessionId,
-      filePath,
-    );
+    try {
+      const result = await this.dockerRuntimeService.statPathInContainer(
+        sessionId,
+        filePath,
+      );
 
-    // Task 8.3A: Update activity after success
-    this.updateLastActivity(sessionId);
+      // Task 8.3A: Update activity after success
+      this.updateLastActivity(sessionId);
 
-    return result;
+      return result;
+    } catch (error) {
+      await this.terminateIfContainerLost(sessionId);
+      throw error;
+    }
   }
 
   /**

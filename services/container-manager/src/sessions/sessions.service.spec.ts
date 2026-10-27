@@ -865,3 +865,461 @@ describe('SessionsService cross-store lifecycle notification (PRIVATE-BETA-BLOCK
     }
   });
 });
+
+describe('SessionsService container-lost termination (SESSION-STALE-01)', () => {
+  const idleTimeoutMs = 30 * 60 * 1000;
+  const maxLifetimeMs = 60 * 60 * 1000;
+  const allOperations = [
+    'execInContainer',
+    'readFileFromContainer',
+    'writeFileToContainer',
+    'deleteFileFromContainer',
+    'searchFilesInContainer',
+    'listDirectoryInContainer',
+    'statPathInContainer',
+  ] as const;
+  const coveredOperations = [
+    'execInContainer',
+    'writeFileToContainer',
+    'listDirectoryInContainer',
+  ] as const;
+
+  type OperationName = (typeof allOperations)[number];
+
+  let service: SessionsService;
+  let mockExecInContainerBySessionId: jest.Mock<any>;
+  let mockReadFileFromContainer: jest.Mock<any>;
+  let mockWriteFileToContainer: jest.Mock<any>;
+  let mockDeleteFileFromContainer: jest.Mock<any>;
+  let mockSearchFilesInContainer: jest.Mock<any>;
+  let mockListDirectoryInContainer: jest.Mock<any>;
+  let mockStatPathInContainer: jest.Mock<any>;
+  let mockGetSessionContainerState: jest.Mock<any>;
+  let mockFindContainerBySessionId: jest.Mock<any>;
+  let mockStopContainer: jest.Mock<any>;
+  let mockRemoveContainer: jest.Mock<any>;
+  let mockTerminateSessionRun: jest.Mock<any>;
+  let mockAssertSessionGet: jest.Mock<any>;
+  let mockLifetimeSessionGet: jest.Mock<any>;
+  let mockQuotaSessionGet: jest.Mock<any>;
+  let mockLogTerminationEvent: jest.Mock<any>;
+  let mockNotifySessionStopped: jest.Mock<any>;
+  let consoleErrorSpy: ReturnType<typeof jest.spyOn>;
+
+  function tracking(): {
+    lastActivity: Map<string, number>;
+    activeExecs: Map<string, number>;
+    scheduledContainerCleanups: Set<string>;
+  } {
+    return service as unknown as {
+      lastActivity: Map<string, number>;
+      activeExecs: Map<string, number>;
+      scheduledContainerCleanups: Set<string>;
+    };
+  }
+
+  function dockerMock(name: OperationName): jest.Mock<any> {
+    switch (name) {
+      case 'execInContainer':
+        return mockExecInContainerBySessionId;
+      case 'readFileFromContainer':
+        return mockReadFileFromContainer;
+      case 'writeFileToContainer':
+        return mockWriteFileToContainer;
+      case 'deleteFileFromContainer':
+        return mockDeleteFileFromContainer;
+      case 'searchFilesInContainer':
+        return mockSearchFilesInContainer;
+      case 'listDirectoryInContainer':
+        return mockListDirectoryInContainer;
+      case 'statPathInContainer':
+        return mockStatPathInContainer;
+      default: {
+        const exhaustive: never = name;
+        throw new Error(`unexpected operation ${exhaustive}`);
+      }
+    }
+  }
+
+  function runOperation(name: OperationName, sessionId: string): Promise<unknown> {
+    switch (name) {
+      case 'execInContainer':
+        return service.execInContainer(sessionId, ['echo', 'hi']);
+      case 'readFileFromContainer':
+        return service.readFileFromContainer(sessionId, 'README.md');
+      case 'writeFileToContainer':
+        return service.writeFileToContainer(sessionId, 'README.md', 'hello');
+      case 'deleteFileFromContainer':
+        return service.deleteFileFromContainer(sessionId, 'README.md');
+      case 'searchFilesInContainer':
+        return service.searchFilesInContainer(sessionId, 'hello');
+      case 'listDirectoryInContainer':
+        return service.listDirectoryInContainer(sessionId, 'src');
+      case 'statPathInContainer':
+        return service.statPathInContainer(sessionId, 'README.md');
+      default: {
+        const exhaustive: never = name;
+        throw new Error(`unexpected operation ${exhaustive}`);
+      }
+    }
+  }
+
+  async function flushScheduledCleanup(): Promise<void> {
+    await new Promise<void>((resolve) => setImmediate(resolve));
+    await Promise.resolve();
+    await Promise.resolve();
+  }
+
+  function expectContainerLost(error: unknown, sessionId: string): void {
+    expect(error).toBeInstanceOf(GoneException);
+    const gone = error as GoneException;
+    expect(gone.getStatus()).toBe(410);
+    expect(gone.getResponse()).toEqual({
+      statusCode: 410,
+      message: `Session ${sessionId} has been terminated (reason: container_lost)`,
+      error: 'Gone',
+    });
+    expect(mockTerminateSessionRun).toHaveBeenCalledTimes(1);
+    expect(mockTerminateSessionRun).toHaveBeenCalledWith('container_lost', sessionId);
+    expect(mockLogTerminationEvent).toHaveBeenCalledTimes(1);
+    expect(mockLogTerminationEvent).toHaveBeenCalledWith(
+      sessionId,
+      'user-1',
+      'container_lost',
+      expect.any(String),
+    );
+    expect(mockNotifySessionStopped).not.toHaveBeenCalled();
+    expect(tracking().lastActivity.has(sessionId)).toBe(false);
+    expect(tracking().activeExecs.has(sessionId)).toBe(false);
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    mockExecInContainerBySessionId = jest.fn<any>().mockResolvedValue({
+      exitCode: 0,
+      stdout: 'ok',
+      stderr: '',
+    });
+    mockReadFileFromContainer = jest.fn<any>().mockResolvedValue('file-content');
+    mockWriteFileToContainer = jest.fn<any>().mockResolvedValue(undefined);
+    mockDeleteFileFromContainer = jest.fn<any>().mockResolvedValue(undefined);
+    mockSearchFilesInContainer = jest.fn<any>().mockResolvedValue({
+      query: 'hello',
+      results: [],
+      truncated: false,
+    });
+    mockListDirectoryInContainer = jest.fn<any>().mockResolvedValue([]);
+    mockStatPathInContainer = jest.fn<any>().mockResolvedValue({
+      path: 'README.md',
+      exists: true,
+    });
+    mockGetSessionContainerState = jest.fn<any>();
+    mockStopContainer = jest.fn<any>().mockResolvedValue(undefined);
+    mockRemoveContainer = jest.fn<any>().mockResolvedValue(undefined);
+    mockFindContainerBySessionId = jest.fn<any>().mockResolvedValue({
+      id: 'container-stopped',
+      inspect: jest.fn<any>().mockResolvedValue({ State: { Running: false } }),
+    });
+    mockTerminateSessionRun = jest.fn<any>().mockReturnValue({ changes: 1 });
+    mockAssertSessionGet = jest.fn<any>().mockReturnValue({
+      terminated_at: null,
+      termination_reason: null,
+    });
+    mockLifetimeSessionGet = jest.fn<any>().mockReturnValue({
+      created_at: new Date().toISOString(),
+      terminated_at: null,
+      user_id: 'user-1',
+    });
+    mockQuotaSessionGet = jest.fn<any>().mockReturnValue({
+      user_id: 'user-1',
+    });
+    mockLogTerminationEvent = jest.fn<any>();
+    mockNotifySessionStopped = jest.fn<any>().mockResolvedValue(undefined);
+
+    mockPrepare.mockImplementation((sql: string) => {
+      if (sql.includes('SELECT terminated_at, termination_reason FROM sessions WHERE id = ?')) {
+        return {
+          get: mockAssertSessionGet,
+          run: jest.fn(),
+          all: jest.fn().mockReturnValue([]),
+        };
+      }
+
+      if (sql.includes('SELECT created_at, terminated_at, user_id FROM sessions WHERE id = ?')) {
+        return {
+          get: mockLifetimeSessionGet,
+          run: jest.fn(),
+          all: jest.fn().mockReturnValue([]),
+        };
+      }
+
+      if (sql.includes('SET terminated_at') && sql.includes('terminated_at IS NULL')) {
+        return {
+          get: jest.fn(),
+          run: mockTerminateSessionRun,
+          all: jest.fn().mockReturnValue([]),
+        };
+      }
+
+      if (sql.includes('SELECT user_id FROM sessions WHERE id = ?')) {
+        return {
+          get: mockQuotaSessionGet,
+          run: jest.fn(),
+          all: jest.fn().mockReturnValue([]),
+        };
+      }
+
+      return {
+        get: jest.fn(),
+        run: jest.fn(),
+        all: jest.fn().mockReturnValue([]),
+      };
+    });
+
+    service = new SessionsService(
+      {} as any,
+      {
+        notifySessionStarted: jest.fn<any>(),
+        notifySessionStopped: mockNotifySessionStopped,
+      } as any,
+      {
+        execInContainerBySessionId: mockExecInContainerBySessionId,
+        readFileFromContainer: mockReadFileFromContainer,
+        writeFileToContainer: mockWriteFileToContainer,
+        deleteFileFromContainer: mockDeleteFileFromContainer,
+        searchFilesInContainer: mockSearchFilesInContainer,
+        listDirectoryInContainer: mockListDirectoryInContainer,
+        statPathInContainer: mockStatPathInContainer,
+        getSessionContainerState: mockGetSessionContainerState,
+        findContainerBySessionId: mockFindContainerBySessionId,
+        stopContainer: mockStopContainer,
+        removeContainer: mockRemoveContainer,
+      } as any,
+      {
+        sessionMaxLifetimeMs: maxLifetimeMs,
+        sessionIdleTimeoutMs: idleTimeoutMs,
+        maxConcurrentExecsPerSession: 3,
+      } as any,
+      {} as any,
+      { logTerminationEvent: mockLogTerminationEvent } as any,
+      { hasUserExceededQuota: jest.fn<any>().mockReturnValue(false) } as any,
+    );
+
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+  });
+
+  afterEach(async () => {
+    await flushScheduledCleanup();
+    await flushScheduledCleanup();
+    consoleErrorSpy.mockRestore();
+  });
+
+  it.each(allOperations)(
+    'ends a missing container with container_lost from %s',
+    async (name) => {
+      const sessionId = `sess-missing-${name}`;
+      dockerMock(name).mockRejectedValue(new Error(`${name} failed`));
+      mockGetSessionContainerState.mockResolvedValue('missing');
+      if (name === 'execInContainer') {
+        tracking().activeExecs.set(sessionId, 1);
+      }
+
+      let caught: unknown;
+      try {
+        await runOperation(name, sessionId);
+      } catch (error) {
+        caught = error;
+      }
+
+      expectContainerLost(caught, sessionId);
+      expect(mockGetSessionContainerState).toHaveBeenCalledTimes(1);
+      expect(mockGetSessionContainerState).toHaveBeenCalledWith(sessionId);
+      expect(tracking().scheduledContainerCleanups.has(sessionId)).toBe(false);
+
+      await flushScheduledCleanup();
+      await flushScheduledCleanup();
+
+      expect(mockFindContainerBySessionId).not.toHaveBeenCalled();
+      expect(mockStopContainer).not.toHaveBeenCalled();
+      expect(mockRemoveContainer).not.toHaveBeenCalled();
+      expect(mockNotifySessionStopped).not.toHaveBeenCalled();
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(coveredOperations)(
+    'ends a stopped container with container_lost and schedules cleanup from %s',
+    async (name) => {
+      const sessionId = `sess-stopped-${name}`;
+      dockerMock(name).mockRejectedValue(new Error(`${name} failed`));
+      mockGetSessionContainerState.mockResolvedValue('stopped');
+      if (name === 'execInContainer') {
+        tracking().activeExecs.set(sessionId, 1);
+      }
+
+      let caught: unknown;
+      try {
+        await runOperation(name, sessionId);
+      } catch (error) {
+        caught = error;
+      }
+
+      expectContainerLost(caught, sessionId);
+      expect(mockGetSessionContainerState).toHaveBeenCalledTimes(1);
+      expect(mockGetSessionContainerState).toHaveBeenCalledWith(sessionId);
+      expect(tracking().scheduledContainerCleanups.has(sessionId)).toBe(true);
+      expect(mockFindContainerBySessionId).not.toHaveBeenCalled();
+      expect(mockStopContainer).not.toHaveBeenCalled();
+      expect(mockRemoveContainer).not.toHaveBeenCalled();
+
+      await flushScheduledCleanup();
+      await flushScheduledCleanup();
+
+      expect(mockFindContainerBySessionId).toHaveBeenCalledTimes(1);
+      expect(mockFindContainerBySessionId).toHaveBeenCalledWith(sessionId);
+      expect(mockStopContainer).not.toHaveBeenCalled();
+      expect(mockRemoveContainer).toHaveBeenCalledTimes(1);
+      expect(mockRemoveContainer).toHaveBeenCalledWith('container-stopped');
+      expect(mockNotifySessionStopped).not.toHaveBeenCalled();
+    },
+  );
+
+  it('logs container-lost when scheduled cleanup of a stopped container fails', async () => {
+    const sessionId = 'sess-cleanup-log';
+    const original = new Error('exec failed');
+    mockExecInContainerBySessionId.mockRejectedValue(original);
+    mockGetSessionContainerState.mockResolvedValue('stopped');
+    mockFindContainerBySessionId.mockRejectedValue(
+      new Error(`Failed to find container for session ${sessionId}`),
+    );
+
+    let caught: unknown;
+    try {
+      await service.execInContainer(sessionId, ['echo', 'hi']);
+    } catch (error) {
+      caught = error;
+    }
+
+    expectContainerLost(caught, sessionId);
+    expect(mockFindContainerBySessionId).not.toHaveBeenCalled();
+
+    await flushScheduledCleanup();
+    await flushScheduledCleanup();
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      `Failed to stop container for container-lost session ${sessionId}:`,
+      `Failed to find container for session ${sessionId}`,
+    );
+    expect(mockStopContainer).not.toHaveBeenCalled();
+    expect(mockRemoveContainer).not.toHaveBeenCalled();
+    expect(mockNotifySessionStopped).not.toHaveBeenCalled();
+  });
+
+  it.each(coveredOperations)(
+    'rethrows the original error when the container is still running from %s',
+    async (name) => {
+      const sessionId = `sess-running-${name}`;
+      const original = new Error(`${name} failed while running`);
+      dockerMock(name).mockRejectedValue(original);
+      mockGetSessionContainerState.mockResolvedValue('running');
+      if (name === 'execInContainer') {
+        tracking().activeExecs.set(sessionId, 1);
+      }
+
+      await expect(runOperation(name, sessionId)).rejects.toBe(original);
+
+      expect(mockGetSessionContainerState).toHaveBeenCalledTimes(1);
+      expect(mockGetSessionContainerState).toHaveBeenCalledWith(sessionId);
+      expect(mockTerminateSessionRun).not.toHaveBeenCalled();
+      expect(mockLogTerminationEvent).not.toHaveBeenCalled();
+      expect(mockNotifySessionStopped).not.toHaveBeenCalled();
+      expect(tracking().scheduledContainerCleanups.has(sessionId)).toBe(false);
+      expect(tracking().lastActivity.has(sessionId)).toBe(true);
+      if (name === 'execInContainer') {
+        expect(tracking().activeExecs.get(sessionId)).toBe(1);
+      } else {
+        expect(tracking().activeExecs.has(sessionId)).toBe(false);
+      }
+    },
+  );
+
+  it.each(coveredOperations)(
+    'rethrows the original error when getSessionContainerState fails from %s',
+    async (name) => {
+      const sessionId = `sess-state-error-${name}`;
+      const original = new Error(`${name} failed`);
+      const stateError = new Error('docker daemon unavailable');
+      dockerMock(name).mockRejectedValue(original);
+      mockGetSessionContainerState.mockRejectedValue(stateError);
+      if (name === 'execInContainer') {
+        tracking().activeExecs.set(sessionId, 1);
+      }
+
+      await expect(runOperation(name, sessionId)).rejects.toBe(original);
+
+      expect(mockGetSessionContainerState).toHaveBeenCalledTimes(1);
+      expect(mockTerminateSessionRun).not.toHaveBeenCalled();
+      expect(mockLogTerminationEvent).not.toHaveBeenCalled();
+      expect(mockNotifySessionStopped).not.toHaveBeenCalled();
+      expect(tracking().scheduledContainerCleanups.has(sessionId)).toBe(false);
+      expect(tracking().lastActivity.has(sessionId)).toBe(true);
+      if (name === 'execInContainer') {
+        expect(tracking().activeExecs.get(sessionId)).toBe(1);
+      }
+    },
+  );
+
+  it.each(allOperations)(
+    'keeps the existing 410 from assertSessionUsableOrThrow when already terminated from %s',
+    async (name) => {
+      const sessionId = `sess-already-${name}`;
+      mockAssertSessionGet.mockReturnValue({
+        terminated_at: '2026-10-27 00:00:00',
+        termination_reason: 'max_lifetime',
+      });
+
+      let caught: unknown;
+      try {
+        await runOperation(name, sessionId);
+      } catch (error) {
+        caught = error;
+      }
+
+      expect(caught).toBeInstanceOf(GoneException);
+      const gone = caught as GoneException;
+      expect(gone.getStatus()).toBe(410);
+      expect(gone.getResponse()).toEqual({
+        statusCode: 410,
+        message: `Session ${sessionId} has been terminated (reason: max_lifetime)`,
+        error: 'Gone',
+      });
+      expect(dockerMock(name)).not.toHaveBeenCalled();
+      expect(mockGetSessionContainerState).not.toHaveBeenCalled();
+      expect(mockTerminateSessionRun).not.toHaveBeenCalled();
+      expect(mockLogTerminationEvent).not.toHaveBeenCalled();
+      expect(mockNotifySessionStopped).not.toHaveBeenCalled();
+      expect(tracking().scheduledContainerCleanups.has(sessionId)).toBe(false);
+    },
+  );
+
+  it.each(allOperations)(
+    'does not call getSessionContainerState when %s succeeds',
+    async (name) => {
+      const sessionId = `sess-success-${name}`;
+
+      await runOperation(name, sessionId);
+
+      expect(dockerMock(name)).toHaveBeenCalled();
+      expect(mockGetSessionContainerState).not.toHaveBeenCalled();
+      expect(mockTerminateSessionRun).not.toHaveBeenCalled();
+      expect(mockLogTerminationEvent).not.toHaveBeenCalled();
+      expect(mockFindContainerBySessionId).not.toHaveBeenCalled();
+      expect(mockNotifySessionStopped).not.toHaveBeenCalled();
+      expect(tracking().lastActivity.has(sessionId)).toBe(true);
+      if (name === 'execInContainer') {
+        expect(tracking().activeExecs.has(sessionId)).toBe(false);
+      }
+    },
+  );
+});

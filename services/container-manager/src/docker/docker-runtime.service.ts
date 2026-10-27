@@ -290,6 +290,31 @@ export class DockerRuntimeService implements OnModuleInit {
   }
 
   /**
+   * SESSION-STALE-01: Report whether the session container is running,
+   * stopped, or absent. Uses the same sandbox-session-{sessionId} lookup
+   * as findContainerBySessionId. A missing container is a state, not an
+   * error. listContainers and inspect failures propagate unchanged.
+   */
+  async getSessionContainerState(
+    sessionId: string,
+  ): Promise<'running' | 'stopped' | 'missing'> {
+    const containerName = `sandbox-session-${sessionId}`;
+    const containers = await this.docker.listContainers({ all: true });
+
+    const containerInfo = containers.find((c) =>
+      c.Names.includes(`/${containerName}`),
+    );
+
+    if (!containerInfo) {
+      return 'missing';
+    }
+
+    const container = this.docker.getContainer(containerInfo.Id);
+    const inspect = await container.inspect();
+    return inspect.State.Running ? 'running' : 'stopped';
+  }
+
+  /**
    * Execute a command inside a container by session ID
    * Task 7.1A: Internal Container Exec Primitive
    * Task 7.1B: Exec Parity & Hardening

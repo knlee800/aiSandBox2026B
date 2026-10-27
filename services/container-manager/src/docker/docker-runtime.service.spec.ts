@@ -420,3 +420,82 @@ describe('DockerRuntimeService createContainer browser-capable path', () => {
     expect(args.HostConfig.AutoRemove).toBe(false);
   });
 });
+
+describe('DockerRuntimeService.getSessionContainerState (SESSION-STALE-01)', () => {
+  let service: DockerRuntimeService;
+
+  beforeEach(() => {
+    service = new DockerRuntimeService({ ...DEFAULT_GOVERNANCE_MOCK } as any);
+  });
+
+  it('returns running when the session container is running', async () => {
+    const inspect = jest.fn<any>().mockResolvedValue({ State: { Running: true } });
+    const getContainer = jest.fn<any>().mockReturnValue({ inspect });
+    const listContainers = jest.fn<any>().mockResolvedValue([
+      { Id: 'other', Names: ['/sandbox-session-other'] },
+      { Id: 'abc', Names: ['/sandbox-session-sess-run'] },
+    ]);
+    (service as any).docker = { listContainers, getContainer };
+
+    await expect(service.getSessionContainerState('sess-run')).resolves.toBe('running');
+
+    expect(listContainers).toHaveBeenCalledTimes(1);
+    expect(listContainers).toHaveBeenCalledWith({ all: true });
+    expect(getContainer).toHaveBeenCalledTimes(1);
+    expect(getContainer).toHaveBeenCalledWith('abc');
+    expect(inspect).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns stopped when the session container exists but is not running', async () => {
+    const inspect = jest.fn<any>().mockResolvedValue({ State: { Running: false } });
+    const getContainer = jest.fn<any>().mockReturnValue({ inspect });
+    const listContainers = jest.fn<any>().mockResolvedValue([
+      { Id: 'stopped-id', Names: ['/sandbox-session-sess-stopped'] },
+    ]);
+    (service as any).docker = { listContainers, getContainer };
+
+    await expect(service.getSessionContainerState('sess-stopped')).resolves.toBe('stopped');
+
+    expect(listContainers).toHaveBeenCalledWith({ all: true });
+    expect(getContainer).toHaveBeenCalledWith('stopped-id');
+    expect(inspect).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns missing when no container matches the session name', async () => {
+    const getContainer = jest.fn<any>();
+    const listContainers = jest.fn<any>().mockResolvedValue([
+      { Id: 'other', Names: ['/sandbox-session-other'] },
+      { Id: 'plain', Names: ['/not-a-session'] },
+    ]);
+    (service as any).docker = { listContainers, getContainer };
+
+    await expect(service.getSessionContainerState('sess-missing')).resolves.toBe('missing');
+
+    expect(listContainers).toHaveBeenCalledWith({ all: true });
+    expect(getContainer).not.toHaveBeenCalled();
+  });
+
+  it('rethrows a Docker listContainers error', async () => {
+    const dockerError = new Error('connect ENOENT //./pipe/docker_engine');
+    const getContainer = jest.fn<any>();
+    const listContainers = jest.fn<any>().mockRejectedValue(dockerError);
+    (service as any).docker = { listContainers, getContainer };
+
+    await expect(service.getSessionContainerState('sess-1')).rejects.toBe(dockerError);
+    expect(getContainer).not.toHaveBeenCalled();
+  });
+
+  it('rethrows a Docker inspect error', async () => {
+    const dockerError = new Error('inspect failed');
+    const inspect = jest.fn<any>().mockRejectedValue(dockerError);
+    const getContainer = jest.fn<any>().mockReturnValue({ inspect });
+    const listContainers = jest.fn<any>().mockResolvedValue([
+      { Id: 'abc', Names: ['/sandbox-session-sess-1'] },
+    ]);
+    (service as any).docker = { listContainers, getContainer };
+
+    await expect(service.getSessionContainerState('sess-1')).rejects.toBe(dockerError);
+    expect(listContainers).toHaveBeenCalledWith({ all: true });
+    expect(getContainer).toHaveBeenCalledWith('abc');
+  });
+});
