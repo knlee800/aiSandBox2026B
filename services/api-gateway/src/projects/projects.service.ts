@@ -2,10 +2,12 @@ import {
   ForbiddenException,
   GoneException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
 import { Project, type ProjectVisibility } from '../entities/project.entity';
 import { Session } from '../entities/session.entity';
 import { SessionService } from '../sessions/session.service';
@@ -15,6 +17,7 @@ import { WorkspacesService } from '../workspaces/workspaces.service';
 @Injectable()
 export class ProjectsService {
   private static readonly MAX_SLUG_LENGTH = 120;
+  private readonly logger = new Logger(ProjectsService.name);
 
   constructor(
     @InjectRepository(Project)
@@ -24,6 +27,7 @@ export class ProjectsService {
     private readonly workspacesService: WorkspacesService,
     private readonly sessionService: SessionService,
     private readonly snapshotPersistenceService: SnapshotPersistenceService,
+    private readonly containerManagerHttpClient: ContainerManagerHttpClient,
   ) {}
 
   private buildBaseSlug(name: string): string {
@@ -215,6 +219,18 @@ export class ProjectsService {
         sessionId: args.sessionId,
         snapshotId: snapshotIdToRestore,
       });
+    }
+
+    try {
+      await this.containerManagerHttpClient.restoreCheckpointHistory(
+        args.sessionId,
+        args.projectId,
+      );
+    } catch (error: unknown) {
+      const detail = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `Failed to restore checkpoint history for session ${args.sessionId}: ${detail}`,
+      );
     }
 
     return {
