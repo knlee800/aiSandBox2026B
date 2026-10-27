@@ -82092,29 +82092,29 @@ taskId=CHECKPOINT-PERSIST-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY / NOT ADMITTED — 2026-10-27. Step 2 (stage-start) not started; write scope PROVISIONAL.
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-27. Step 2 stage-start complete (docs/CHECKPOINT-PERSIST-02-STAGE-START.md); Step 3 (implementation) not started. mutexes=CONTAINER-MANAGER, GATEWAY. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY / NOT ADMITTED — 2026-10-27. Step 2 (stage-start) not started; write scope PROVISIONAL.
 **Task ID:** CHECKPOINT-PERSIST-02
 **Title:** Keep checkpoint history across sessions of a project
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP. Step 1 is this registration (2026-10-27); Step 2 a stage-start record that chooses how checkpoint history is kept for each project and restored into a new session, updates ARCHITECTURE.md section 11.5, and freezes the exact write scope, mutexes and evidence class; Step 3 implementation; Step 4 consolidation, checkpoint and LOCK by the control plane.
-**Start condition (human):** NOT READY until the Step 2 stage-start record.
-**Start condition (machine):** `NOT_READY`; `status=READY`; `admissionUncertain=true` and `writeSetPrecision=PROVISIONAL` until the stage-start.
+**Start condition (human):** READY — Keith approved the option 1 design and this stage-start on 2026-10-27. Previous: **Start condition (human):** NOT READY until the Step 2 stage-start record.
+**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE (2026-10-27). Previous: **Start condition (machine):** `NOT_READY`; `status=READY`; `admissionUncertain=true` and `writeSetPrecision=PROVISIONAL` until the stage-start.
 **Depends on (human):** satisfied 2026-10-27 (CHECKPOINT-PERSIST-01 COMPLETE AND LOCKED). Previous: **Depends on (human):** CHECKPOINT-PERSIST-01 LOCKED (both write the frontend).
 **Depends on (machine `dependsOn`):** `["CHECKPOINT-PERSIST-01"]`
-**Primary write scope:** PROVISIONAL — `services/container-manager/`, `services/api-gateway/`, `frontend/`, including a migration if the ledger needs one; the stage-start freezes the exact list.
-**Mutexes / resources:** PROVISIONAL — CONTAINER-MANAGER, GATEWAY, FRONTEND, I18N, MIGRATION; the stage-start freezes the exact set. Not acquired.
-**Hot-file leases:** none (provisional)
-**Shared contracts:** none known; the stage-start names any it freezes.
-**Evidence class:** LOCAL-TESTS (provisional).
-**Revert isolation:** to be fixed at the stage-start.
+**Primary write scope:** exactly `services/container-manager/src/git/git.service.ts`, `services/container-manager/src/git/git.service.spec.ts`, `services/container-manager/src/git/git.module.ts`, `services/container-manager/src/git/internal-checkpoint-history.controller.ts`, `services/container-manager/src/git/internal-checkpoint-history.controller.spec.ts`, `services/api-gateway/src/clients/container-manager-http.client.ts`, `services/api-gateway/src/clients/container-manager-http.client.spec.ts`, `services/api-gateway/src/git-checkpoints/git-checkpoint.module.ts`, `services/api-gateway/src/git-checkpoints/git-checkpoint.service.ts`, `services/api-gateway/src/git-checkpoints/git-checkpoint.service.spec.ts`, `services/api-gateway/src/git-checkpoints/internal-git-checkpoint.controller.ts`, `services/api-gateway/src/git-checkpoints/internal-git-checkpoint.controller.spec.ts`, `services/api-gateway/src/checkpoints/checkpoints.service.ts`, `services/api-gateway/src/checkpoints/checkpoints.service.spec.ts`, `services/api-gateway/src/sessions/session.controller.ts`, `services/api-gateway/src/sessions/session.controller.spec.ts`. Anything else is out of scope. Previous: **Primary write scope:** PROVISIONAL — `services/container-manager/`, `services/api-gateway/`, `frontend/`, including a migration if the ledger needs one; the stage-start freezes the exact list.
+**Mutexes / resources:** CONTAINER-MANAGER and GATEWAY (Lane 1, 2026-10-27). No FRONTEND, I18N, MIGRATION, PACKAGE, COMPOSE, ENV, LOCAL-RUNTIME, STAGING, PROVIDER-LIVE or CREDIT. Previous: **Mutexes / resources:** PROVISIONAL — CONTAINER-MANAGER, GATEWAY, FRONTEND, I18N, MIGRATION; the stage-start freezes the exact set. Not acquired.
+**Hot-file leases:** none. Previous: **Hot-file leases:** none (provisional)
+**Shared contracts:** the internal container-manager contract POST /api/internal/checkpoint-history/:sessionId/save and /restore, frozen in the stage-start document (single lane). Previous: **Shared contracts:** none known; the stage-start names any it freezes.
+**Evidence class:** LOCAL-TESTS: npm test and npm run build in services/container-manager and services/api-gateway. The staging proof is the later CLEAN-BASELINE-DEPLOY-01 C1 repeat. Previous: **Evidence class:** LOCAL-TESTS (provisional).
+**Revert isolation:** acceptable (backend only; reverting it leaves CHECKPOINT-PERSIST-01 intact). Previous: **Revert isolation:** to be fixed at the stage-start.
 **saturationClass:** FORCING (CLEAN-BASELINE-DEPLOY-01 waits for it)
 **productClass:** CURRENT
 **futureAuthorization:** NONE
-**writeSetPrecision:** PROVISIONAL
-**admissionUncertain:** true
+**writeSetPrecision:** EXACT (2026-10-27). Previous: **writeSetPrecision:** PROVISIONAL
+**admissionUncertain:** false (2026-10-27). Previous: **admissionUncertain:** true
 **exclusiveCapacity:** false
-**runtimeNeeds:** none (provisional)
+**runtimeNeeds:** none. Previous: **runtimeNeeds:** none (provisional)
 
 **Problem:** checkpoints are per session (ARCHITECTURE.md section 11.5): git runs inside the session container, the git_checkpoints ledger and the checkpoint API are keyed by session, and project snapshots exclude .git by design (PROJ-02-03). A new session of the same project therefore starts with no checkpoint history, while PRD.md section 3.A lists checkpoints surviving session end as a CURRENT project capability. Source: the CLEAN-BASELINE-DEPLOY-01 C1 check 9 failure (repository commit 136bf6da5a6fd3503ed56e255e7d75aa21f56ebf) and the registration record in docs/CLEAN-BASELINE-GOV-01-DECISION.md, section CHECKPOINT-PERSIST-01 and CHECKPOINT-PERSIST-02 registration for the C1 check 9 defect (2026-10-27).
 **Goal:** after a project is reopened in a new session, its earlier checkpoints are listed and a revert to one of them works; the existing per-session flows keep working.
