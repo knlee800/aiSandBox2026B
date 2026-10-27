@@ -869,6 +869,8 @@ This is technical HOW for the current apply pipeline. It is not a product-copy p
 | Revert | Implemented; restores workspace files; frontend refreshes tree/editor/preview/list |
 | Automatic rollback | **NOT IMPLEMENTED** |
 | Harness pre-apply checkpoint | CURRENT on the **gated** harness path only (`enablePreApplyCheckpoint`) |
+| Project autosave after revert | CURRENT — CHECKPOINT-PERSIST-01 (LOCKED 2026-10-27): after a successful revert the frontend saves a `revert` project snapshot, not subject to the 60-second autosave limit; an autosave skipped by that limit gets one trailing save |
+| Checkpoint history across sessions | **PLANNED** — CHECKPOINT-PERSIST-02 (stage-start 2026-10-27, docs/CHECKPOINT-PERSIST-02-STAGE-START.md). Not implemented: a new session of a project starts with no checkpoint history. Design: the container-manager keeps a git bundle per project, saved after each recorded checkpoint and restored into a new session after its files are restored; the gateway lists and reverts checkpoints across the project's sessions |
 
 ---
 
