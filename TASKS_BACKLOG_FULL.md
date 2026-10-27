@@ -82092,14 +82092,14 @@ taskId=CHECKPOINT-PERSIST-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-27. Step 2 stage-start complete (docs/CHECKPOINT-PERSIST-02-STAGE-START.md); Step 3 (implementation) not started. mutexes=CONTAINER-MANAGER, GATEWAY. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY / NOT ADMITTED — 2026-10-27. Step 2 (stage-start) not started; write scope PROVISIONAL.
+**Status:** COMPLETE AND LOCKED — 2026-10-27. LANE-DONE and LOCK recorded by the control plane; Lane 1, CONTAINER-MANAGER and GATEWAY released. Checkpoint: docs/CHECKPOINT-PERSIST-02-CHECKPOINT.md. Implementation commits fb060d1247c28d85a6e2d5b4d0deb9fc591aabc5 and 70ea8b069d7d94657cd40431853d13c9f51fbbd3. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-27. Step 2 stage-start complete (docs/CHECKPOINT-PERSIST-02-STAGE-START.md); Step 3 (implementation) not started. mutexes=CONTAINER-MANAGER, GATEWAY. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY / NOT ADMITTED — 2026-10-27. Step 2 (stage-start) not started; write scope PROVISIONAL.
 **Task ID:** CHECKPOINT-PERSIST-02
 **Title:** Keep checkpoint history across sessions of a project
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP. Step 1 is this registration (2026-10-27); Step 2 a stage-start record that chooses how checkpoint history is kept for each project and restored into a new session, updates ARCHITECTURE.md section 11.5, and freezes the exact write scope, mutexes and evidence class; Step 3 implementation; Step 4 consolidation, checkpoint and LOCK by the control plane.
 **Start condition (human):** READY — Keith approved the option 1 design and this stage-start on 2026-10-27. Previous: **Start condition (human):** NOT READY until the Step 2 stage-start record.
-**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE (2026-10-27). Previous: **Start condition (machine):** `NOT_READY`; `status=READY`; `admissionUncertain=true` and `writeSetPrecision=PROVISIONAL` until the stage-start.
+**Start condition (machine):** `READY`; `status=LOCKED` (2026-10-27). Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE (2026-10-27). Previous: **Start condition (machine):** `NOT_READY`; `status=READY`; `admissionUncertain=true` and `writeSetPrecision=PROVISIONAL` until the stage-start.
 **Depends on (human):** satisfied 2026-10-27 (CHECKPOINT-PERSIST-01 COMPLETE AND LOCKED). Previous: **Depends on (human):** CHECKPOINT-PERSIST-01 LOCKED (both write the frontend).
 **Depends on (machine `dependsOn`):** `["CHECKPOINT-PERSIST-01"]`
 **Primary write scope:** exactly `services/container-manager/src/git/git.service.ts`, `services/container-manager/src/git/git.service.spec.ts`, `services/container-manager/src/git/git.module.ts`, `services/container-manager/src/git/internal-checkpoint-history.controller.ts`, `services/container-manager/src/git/internal-checkpoint-history.controller.spec.ts`, `services/api-gateway/src/clients/container-manager-http.client.ts`, `services/api-gateway/src/clients/container-manager-http.client.spec.ts`, `services/api-gateway/src/git-checkpoints/git-checkpoint.module.ts`, `services/api-gateway/src/git-checkpoints/git-checkpoint.service.ts`, `services/api-gateway/src/git-checkpoints/git-checkpoint.service.spec.ts`, `services/api-gateway/src/git-checkpoints/internal-git-checkpoint.controller.ts`, `services/api-gateway/src/git-checkpoints/internal-git-checkpoint.controller.spec.ts`, `services/api-gateway/src/checkpoints/checkpoints.service.ts`, `services/api-gateway/src/checkpoints/checkpoints.service.spec.ts`, `services/api-gateway/src/sessions/session.controller.ts`, `services/api-gateway/src/sessions/session.controller.spec.ts`. Anything else is out of scope. Previous: **Primary write scope:** PROVISIONAL — `services/container-manager/`, `services/api-gateway/`, `frontend/`, including a migration if the ledger needs one; the stage-start freezes the exact list.
@@ -82123,11 +82123,11 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Stage-start record written: design chosen, ARCHITECTURE.md section 11.5 updated, exact write scope, mutexes, evidence class and shared contracts frozen
-- [ ] After a reopen in a new session, the earlier checkpoints are listed and a revert to one of them restores the files and refreshes the editor, file tree, preview and checkpoint list
-- [ ] Existing checkpoint creation and revert within a session are unchanged
-- [ ] Tests cover the cross-session history, and the gates named at the stage-start pass
-- [ ] Not LOCKED by an implementer
+- [x] Stage-start record written: design chosen, ARCHITECTURE.md section 11.5 updated, exact write scope, mutexes, evidence class and shared contracts frozen
+- [x] After a reopen in a new session, the earlier checkpoints are listed and a revert to one of them restores the files and refreshes the editor, file tree, preview and checkpoint list (met at the API level by the tests; the live end-to-end proof is the CLEAN-BASELINE-DEPLOY-01 C1 repeat)
+- [x] Existing checkpoint creation and revert within a session are unchanged
+- [x] Tests cover the cross-session history, and the gates named at the stage-start pass
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
