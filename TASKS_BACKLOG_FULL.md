@@ -82047,14 +82047,14 @@ taskId=CHECKPOINT-PERSIST-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-27. Registered and admitted; Step 2 (implementation) not started. mutexes=FRONTEND, I18N. evidenceClass=LOCAL-TESTS. runtimeNeeds=none.
+**Status:** COMPLETE AND LOCKED — 2026-10-27. LANE-DONE and LOCK recorded by the control plane; Lane 1, FRONTEND and I18N released. Checkpoint: docs/CHECKPOINT-PERSIST-01-CHECKPOINT.md. Implementation commit 8897d6f9c25cd00d00f7f1ad1f95695dfb8ec076. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-27. Registered and admitted; Step 2 (implementation) not started. mutexes=FRONTEND, I18N. evidenceClass=LOCAL-TESTS. runtimeNeeds=none.
 **Task ID:** CHECKPOINT-PERSIST-01
 **Title:** Keep the newest workspace state in the project copy after a revert or a skipped autosave
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP. Step 1 is this registration and admission (2026-10-27); Step 2 implementation; Step 3 consolidation, checkpoint and LOCK by the control plane.
 **Start condition (human):** READY — Keith approved this task and its scope on 2026-10-27.
-**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Start condition (machine):** `READY`; `status=LOCKED` (2026-10-27). Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
 **Depends on (human):** none.
 **Depends on (machine `dependsOn`):** `[]`
 **Primary write scope:** exactly `frontend/app/[locale]/app/page.tsx`, `frontend/lib/project-autosave.ts`, `frontend/lib/project-autosave.test.ts`, `frontend/components/workspace/workspace-snapshots.logic.ts`, `frontend/components/workspace/workspace-snapshots.logic.test.ts`, `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`. The machine writePaths list the other seven files, because the validator cannot encode the brackets in frontend/app/[locale]/app/page.tsx; that file is covered by FRONTEND, as for BUILDER-CREDIT-UX-01. Anything else is out of scope.
@@ -82077,14 +82077,14 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] A successful revert saves exactly one project autosave snapshot with source `revert`, even within 60 seconds of the previous autosave
-- [ ] An autosave skipped by the limit is followed by exactly one trailing autosave of the newest state after the interval; a newer request replaces it; a session or project change cancels it
-- [ ] The `revert` label exists in en.json, zh-TW.json and zh-CN.json and is used for the new snapshots; the failure warning is translated in all three
-- [ ] Existing autosave sources, checkpoint creation, the revert flow and the snapshot label format are otherwise unchanged
-- [ ] New tests cover the post-revert save, the rate-limit bypass and the trailing save, including replacement and cancellation
-- [ ] In frontend: npx tsc --noEmit, npm test and npm run build pass; frontend/tsconfig.tsbuildinfo is restored if the build changes it
-- [ ] Only the files in the primary write scope change
-- [ ] Not LOCKED by an implementer
+- [x] A successful revert saves exactly one project autosave snapshot with source `revert`, even within 60 seconds of the previous autosave
+- [x] An autosave skipped by the limit is followed by exactly one trailing autosave of the newest state after the interval; a newer request replaces it; a session or project change cancels it
+- [x] The `revert` label exists in en.json, zh-TW.json and zh-CN.json and is used for the new snapshots; the failure warning is translated in all three
+- [x] Existing autosave sources, checkpoint creation, the revert flow and the snapshot label format are otherwise unchanged
+- [x] New tests cover the post-revert save, the rate-limit bypass and the trailing save, including replacement and cancellation
+- [x] In frontend: npx tsc --noEmit, npm test and npm run build pass; frontend/tsconfig.tsbuildinfo is restored if the build changes it
+- [x] Only the files in the primary write scope change
+- [x] Not LOCKED by an implementer
 
 ### CHECKPOINT-PERSIST-02 — Keep checkpoint history across sessions of a project
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -82100,7 +82100,7 @@ nature=IMPLEMENTATION
 **Lifecycle:** 4-STEP. Step 1 is this registration (2026-10-27); Step 2 a stage-start record that chooses how checkpoint history is kept for each project and restored into a new session, updates ARCHITECTURE.md section 11.5, and freezes the exact write scope, mutexes and evidence class; Step 3 implementation; Step 4 consolidation, checkpoint and LOCK by the control plane.
 **Start condition (human):** NOT READY until the Step 2 stage-start record.
 **Start condition (machine):** `NOT_READY`; `status=READY`; `admissionUncertain=true` and `writeSetPrecision=PROVISIONAL` until the stage-start.
-**Depends on (human):** CHECKPOINT-PERSIST-01 LOCKED (both write the frontend).
+**Depends on (human):** satisfied 2026-10-27 (CHECKPOINT-PERSIST-01 COMPLETE AND LOCKED). Previous: **Depends on (human):** CHECKPOINT-PERSIST-01 LOCKED (both write the frontend).
 **Depends on (machine `dependsOn`):** `["CHECKPOINT-PERSIST-01"]`
 **Primary write scope:** PROVISIONAL — `services/container-manager/`, `services/api-gateway/`, `frontend/`, including a migration if the ledger needs one; the stage-start freezes the exact list.
 **Mutexes / resources:** PROVISIONAL — CONTAINER-MANAGER, GATEWAY, FRONTEND, I18N, MIGRATION; the stage-start freezes the exact set. Not acquired.
