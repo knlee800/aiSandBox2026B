@@ -82137,14 +82137,14 @@ taskId=CHECKPOINT-PERSIST-03
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-27. Registered and admitted; Step 2 (implementation) not started. mutexes=GATEWAY. evidenceClass=LOCAL-TESTS. runtimeNeeds=none.
+**Status:** COMPLETE AND LOCKED — 2026-10-27. LANE-DONE and LOCK recorded by the control plane; Lane 1 and GATEWAY released. Checkpoint: docs/CHECKPOINT-PERSIST-03-CHECKPOINT.md. Implementation commit 5d1e470d0c697fec0498d596dcd23047d8ad549c. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-27. Registered and admitted; Step 2 (implementation) not started. mutexes=GATEWAY. evidenceClass=LOCAL-TESTS. runtimeNeeds=none.
 **Task ID:** CHECKPOINT-PERSIST-03
 **Title:** Restore a project's checkpoint history when the project is opened
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP. Step 1 is this registration and admission (2026-10-27); Step 2 implementation; Step 3 consolidation, checkpoint and LOCK by the control plane.
 **Start condition (human):** READY — Keith approved this task and its scope on 2026-10-27.
-**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Start condition (machine):** `READY`; `status=LOCKED` (2026-10-27). Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
 **Depends on (human):** CHECKPOINT-PERSIST-02, COMPLETE AND LOCKED 2026-10-27 (its history restore endpoint and gateway client are reused).
 **Depends on (machine `dependsOn`):** `[]`
 **Primary write scope:** exactly `services/api-gateway/src/projects/projects.service.ts`, `services/api-gateway/src/projects/projects.service.spec.ts`. The module needs no change: ProjectsModule imports SessionModule, which exports ContainerManagerHttpClient. Anything else is out of scope.
@@ -82167,13 +82167,13 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Opening a project restores its checkpoint history into the session after the snapshot restore, with the session and project ids
-- [ ] A history restore failure is logged and the open still succeeds with an unchanged response
-- [ ] Existing open behaviour (association, snapshot choice and restore, response) is otherwise unchanged
-- [ ] Tests in projects.service.spec.ts cover the call order, the arguments and the failure case
-- [ ] In services/api-gateway: npx jest --maxWorkers=2 passes apart from the known smoke.integration.spec.ts runtime failures, and npm run build passes
-- [ ] Only the files in the primary write scope change
-- [ ] Not LOCKED by an implementer
+- [x] Opening a project restores its checkpoint history into the session after the snapshot restore, with the session and project ids
+- [x] A history restore failure is logged and the open still succeeds with an unchanged response
+- [x] Existing open behaviour (association, snapshot choice and restore, response) is otherwise unchanged
+- [x] Tests in projects.service.spec.ts cover the call order, the arguments and the failure case
+- [x] In services/api-gateway: npx jest --maxWorkers=2 passes apart from the known smoke.integration.spec.ts runtime failures, and npm run build passes
+- [x] Only the files in the primary write scope change
+- [x] Not LOCKED by an implementer
 
 ### SESSION-STALE-01 — Do not reuse a session whose container is gone
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
