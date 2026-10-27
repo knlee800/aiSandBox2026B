@@ -184,8 +184,10 @@
         "file-save": "File saved",
         "preview": "Preview built",
         "expiry": "Session ending",
-        "initial": "Project created"
+        "initial": "Project created",
+        "revert": "Checkpoint restored"
       },
+      "revertNotSavedToProject": "The workspace was reverted, but this version is not saved to the project yet. Save a file to keep it if the session ends.",
       "versionsEntryPoint": "Versions",
       "lastProtected": "Last protected",
       "noProjectHistoryYet": "No history yet for this project.",

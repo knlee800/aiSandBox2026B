@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { attemptProjectAutosave } from './project-autosave';
+import { attemptProjectAutosave, createTrailingAutosaveScheduler } from './project-autosave';
 
 async function withPatchedConsoleError<T>(run: () => Promise<T>): Promise<T> {
   const originalConsoleError = console.error;
@@ -165,4 +165,137 @@ test('allows autosave when lastAutosaveAt is null', async () => {
 
   assert.equal(result.status, 'saved');
   assert.equal(callCount, 1);
+});
+
+test('saves when minIntervalMs is 0 even if the last autosave was one second ago', async () => {
+  let callCount = 0;
+  const fetchImpl = async (): Promise<Response> => {
+    callCount += 1;
+    return createSnapshotResponse();
+  };
+
+  const now = 1_000;
+  const result = await attemptProjectAutosave({
+    token: 'token-1',
+    sessionId: 'session-1',
+    projectId: 'project-1',
+    source: 'revert',
+    now,
+    lastAutosaveAt: now - 1_000,
+    minIntervalMs: 0,
+    fetchImpl: fetchImpl as typeof fetch,
+  });
+
+  assert.equal(result.status, 'saved');
+  assert.equal(callCount, 1);
+  assert.equal(result.status === 'saved' && result.savedSnapshot.id, 'snapshot-1');
+});
+
+type FakeTimerEntry = {
+  id: number;
+  at: number;
+  callback: () => void;
+  cleared: boolean;
+};
+
+function createFakeTimers() {
+  let now = 0;
+  let nextId = 1;
+  const entries: FakeTimerEntry[] = [];
+
+  return {
+    setTimeoutImpl(callback: () => void, delayMs: number) {
+      const entry: FakeTimerEntry = {
+        id: nextId,
+        at: now + delayMs,
+        callback,
+        cleared: false,
+      };
+      nextId += 1;
+      entries.push(entry);
+      return entry.id;
+    },
+    clearTimeoutImpl(handle: unknown) {
+      const entry = entries.find((candidate) => candidate.id === handle);
+      if (entry) {
+        entry.cleared = true;
+      }
+    },
+    advance(ms: number) {
+      now += ms;
+      const due = entries
+        .filter((entry) => !entry.cleared && entry.at <= now)
+        .sort((left, right) => left.at - right.at || left.id - right.id);
+      for (const entry of due) {
+        if (entry.cleared) {
+          continue;
+        }
+        entry.cleared = true;
+        entry.callback();
+      }
+    },
+  };
+}
+
+test('trailing scheduler runs the callback once after its delay', () => {
+  const timers = createFakeTimers();
+  const scheduler = createTrailingAutosaveScheduler({
+    setTimeoutImpl: timers.setTimeoutImpl,
+    clearTimeoutImpl: timers.clearTimeoutImpl,
+  });
+  const runs: string[] = [];
+
+  scheduler.schedule(1_000, () => {
+    runs.push('run');
+  });
+
+  assert.equal(scheduler.isPending(), true);
+  timers.advance(999);
+  assert.deepEqual(runs, []);
+  timers.advance(1);
+  assert.deepEqual(runs, ['run']);
+  assert.equal(scheduler.isPending(), false);
+  timers.advance(5_000);
+  assert.deepEqual(runs, ['run']);
+});
+
+test('trailing scheduler replaces a pending run so only the latest runs', () => {
+  const timers = createFakeTimers();
+  const scheduler = createTrailingAutosaveScheduler({
+    setTimeoutImpl: timers.setTimeoutImpl,
+    clearTimeoutImpl: timers.clearTimeoutImpl,
+  });
+  const runs: string[] = [];
+
+  scheduler.schedule(1_000, () => {
+    runs.push('first');
+  });
+  scheduler.schedule(1_000, () => {
+    runs.push('second');
+  });
+
+  assert.equal(scheduler.isPending(), true);
+  timers.advance(1_000);
+  assert.deepEqual(runs, ['second']);
+  timers.advance(1_000);
+  assert.deepEqual(runs, ['second']);
+  assert.equal(scheduler.isPending(), false);
+});
+
+test('trailing scheduler cancel prevents the pending run', () => {
+  const timers = createFakeTimers();
+  const scheduler = createTrailingAutosaveScheduler({
+    setTimeoutImpl: timers.setTimeoutImpl,
+    clearTimeoutImpl: timers.clearTimeoutImpl,
+  });
+  let runs = 0;
+
+  scheduler.schedule(1_000, () => {
+    runs += 1;
+  });
+  scheduler.cancel();
+
+  assert.equal(scheduler.isPending(), false);
+  timers.advance(1_000);
+  assert.equal(runs, 0);
 });

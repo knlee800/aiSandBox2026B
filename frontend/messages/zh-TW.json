@@ -184,8 +184,10 @@
         "file-save": "檔案已儲存",
         "preview": "預覽已建置",
         "expiry": "工作階段即將結束",
-        "initial": "專案已建立"
+        "initial": "專案已建立",
+        "revert": "檢查點已還原"
       },
+      "revertNotSavedToProject": "工作區已還原，但此版本尚未儲存到專案。若要在工作階段結束後保留，請儲存一個檔案。",
       "versionsEntryPoint": "版本",
       "lastProtected": "最近保護時間",
       "noProjectHistoryYet": "此專案尚無歷史紀錄。",

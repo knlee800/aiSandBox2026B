@@ -203,6 +203,18 @@ describe('workspace-snapshots.logic', () => {
     assert.equal(parseProjectScopedSnapshotSource(null), null);
   });
 
+  test('revert source round-trips through build and parse with and without a hint', () => {
+    const withoutHint = buildProjectScopedSnapshotLabel('project-123', 'revert');
+    assert.equal(withoutHint, '[project-id:project-123:source:revert]');
+    assert.equal(parseProjectScopedSnapshotSource(withoutHint), 'revert');
+
+    const withHint = buildProjectScopedSnapshotLabel('project-123', 'revert', 'main.tsx');
+    assert.equal(withHint, '[project-id:project-123:source:revert:hint:main.tsx]');
+    assert.equal(parseProjectScopedSnapshotSource(withHint), 'revert');
+
+    assert.equal(parseProjectScopedSnapshotSource('[project-id:project-123:source:unknown]'), null);
+  });
+
   test('parseProjectScopedSnapshotHint returns the sanitized hint only for source-plus-hint labels', () => {
     assert.equal(
       parseProjectScopedSnapshotHint('[project-id:project-123:source:preview:hint:index.html]'),

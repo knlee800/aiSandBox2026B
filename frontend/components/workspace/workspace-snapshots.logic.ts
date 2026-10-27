@@ -50,7 +50,8 @@ export type ProjectScopedSnapshotSource =
   | 'file-save'
   | 'preview'
   | 'expiry'
-  | 'initial';
+  | 'initial'
+  | 'revert';
 
 function trimMessage(raw: unknown, fallback: string): string {
   if (typeof raw === 'string' && raw.trim().length > 0) {
@@ -73,6 +74,8 @@ function normalizeProjectScopedSnapshotSource(
       return 'expiry';
     case 'initial':
       return 'initial';
+    case 'revert':
+      return 'revert';
     default:
       return null;
   }

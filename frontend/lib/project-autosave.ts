@@ -44,3 +44,63 @@ export async function attemptProjectAutosave(args: {
     return { status: 'failed' };
   }
 }
+
+export type TrailingAutosaveScheduler = {
+  schedule: (delayMs: number, run: () => void | Promise<void>) => void;
+  cancel: () => void;
+  isPending: () => boolean;
+};
+
+export function createTrailingAutosaveScheduler(args?: {
+  setTimeoutImpl?: (callback: () => void, delayMs: number) => unknown;
+  clearTimeoutImpl?: (handle: unknown) => void;
+}): TrailingAutosaveScheduler {
+  const setTimeoutImpl =
+    args?.setTimeoutImpl ??
+    ((callback: () => void, delayMs: number) => setTimeout(callback, delayMs));
+  const clearTimeoutImpl =
+    args?.clearTimeoutImpl ??
+    ((handle: unknown) => {
+      clearTimeout(handle as ReturnType<typeof setTimeout>);
+    });
+
+  let generation = 0;
+  let pendingHandle: unknown = null;
+
+  return {
+    schedule(delayMs, run) {
+      generation += 1;
+      const scheduledGeneration = generation;
+      if (pendingHandle !== null) {
+        const handleToClear = pendingHandle;
+        pendingHandle = null;
+        clearTimeoutImpl(handleToClear);
+      }
+
+      let hasStarted = false;
+      const handle = setTimeoutImpl(() => {
+        if (hasStarted || scheduledGeneration !== generation) {
+          return;
+        }
+        hasStarted = true;
+        pendingHandle = null;
+        void run();
+      }, delayMs);
+
+      if (scheduledGeneration === generation && !hasStarted) {
+        pendingHandle = handle;
+      }
+    },
+    cancel() {
+      generation += 1;
+      if (pendingHandle !== null) {
+        const handleToClear = pendingHandle;
+        pendingHandle = null;
+        clearTimeoutImpl(handleToClear);
+      }
+    },
+    isPending() {
+      return pendingHandle !== null;
+    },
+  };
+}

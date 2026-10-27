@@ -184,8 +184,10 @@
         "file-save": "文件已保存",
         "preview": "预览已构建",
         "expiry": "会话即将结束",
-        "initial": "项目已创建"
+        "initial": "项目已创建",
+        "revert": "检查点已恢复"
       },
+      "revertNotSavedToProject": "工作区已恢复，但此版本尚未保存到项目。若要在会话结束后保留，请保存一个文件。",
       "versionsEntryPoint": "版本",
       "lastProtected": "最近保护时间",
       "noProjectHistoryYet": "该项目尚无历史记录。",

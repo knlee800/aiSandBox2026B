@@ -4,9 +4,10 @@ import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter, useParams } from 'next/navigation';
 import WorkspaceShell from '@/components/workspace/workspace-shell';
 import { openProjectInFreshSession } from '@/lib/open-project-in-fresh-session';
-import { attemptProjectAutosave } from '@/lib/project-autosave';
+import { AUTOSAVE_MIN_INTERVAL_MS } from '@/lib/autosave-rate-limit';
+import { attemptProjectAutosave, createTrailingAutosaveScheduler } from '@/lib/project-autosave';
 import { attemptNamedProjectSave } from '@/lib/project-named-save';
-import { recoveryCopy } from '@/lib/recovery-copy';
+import { getRecoveryCopy, recoveryCopy } from '@/lib/recovery-copy';
 import type {
   WorkspaceCheckpoint,
   WorkspaceQuotaSummary,
@@ -1033,6 +1034,7 @@ export default function AppPage() {
   const [autoSendFromHomeTick, setAutoSendFromHomeTick] = useState(0);
   const [previewFixAutoSendTick, setPreviewFixAutoSendTick] = useState(0);
   const selectedSessionIdRef = useRef<string | null>(null);
+  const selectedProjectIdRef = useRef<string | null>(null);
   const selectedFilePathRef = useRef<string | null>(null);
   const skipNextSessionEffectFileReloadRef = useRef(false);
   const projectOpenInProgressRef = useRef(false);
@@ -1047,6 +1049,12 @@ export default function AppPage() {
     content: string;
   } | null>(null);
   const lastProjectAutosaveAtRef = useRef<number | null>(null);
+  const trailingAutosaveSchedulerRef = useRef<ReturnType<typeof createTrailingAutosaveScheduler> | null>(
+    null,
+  );
+  if (trailingAutosaveSchedulerRef.current === null) {
+    trailingAutosaveSchedulerRef.current = createTrailingAutosaveScheduler();
+  }
   const sessionsRef = useRef<WorkspaceShellSession[]>([]);
   const executionSessionIdByExecutionIdRef = useRef<Record<string, string>>({});
   const executionAssistantMessageIdByExecutionIdRef = useRef<Record<string, string>>({});
@@ -1356,6 +1364,16 @@ export default function AppPage() {
   useEffect(() => {
     selectedSessionIdRef.current = selectedSessionId;
   }, [selectedSessionId]);
+
+  useEffect(() => {
+    selectedProjectIdRef.current = selectedProjectId;
+  }, [selectedProjectId]);
+
+  useEffect(() => {
+    return () => {
+      trailingAutosaveSchedulerRef.current?.cancel();
+    };
+  }, [selectedSessionId, selectedProjectId]);
 
   useEffect(() => {
     previewErrorRetryCountRef.current = 0;
@@ -3153,6 +3171,46 @@ export default function AppPage() {
     setCheckpointRevertState('idle');
   }
 
+  const TRAILING_AUTOSAVE_MARGIN_MS = 1000;
+
+  function scheduleTrailingProjectAutosave(args: {
+    sessionId: string;
+    projectId: string;
+    source: 'ai' | 'file-save' | 'preview';
+    hint?: string;
+    lastAutosaveAt: number;
+  }): void {
+    const delayMs =
+      Math.max(0, args.lastAutosaveAt + AUTOSAVE_MIN_INTERVAL_MS - Date.now()) +
+      TRAILING_AUTOSAVE_MARGIN_MS;
+    trailingAutosaveSchedulerRef.current?.schedule(delayMs, async () => {
+      const currentSessionId = selectedSessionIdRef.current;
+      const currentProjectId = selectedProjectIdRef.current;
+      if (
+        currentSessionId !== args.sessionId ||
+        currentProjectId !== args.projectId ||
+        projectOpenInProgressRef.current
+      ) {
+        return;
+      }
+
+      const autosaveAttemptedAt = Date.now();
+      const autosaveResult = await attemptProjectAutosave({
+        sessionId: currentSessionId,
+        projectId: currentProjectId,
+        source: args.source,
+        hint: args.hint,
+        now: autosaveAttemptedAt,
+        lastAutosaveAt: lastProjectAutosaveAtRef.current,
+      });
+      if (autosaveResult.status !== 'saved') {
+        return;
+      }
+      lastProjectAutosaveAtRef.current = autosaveAttemptedAt;
+      void loadWorkspaceSnapshotsForUser();
+    });
+  }
+
   async function handleConfirmCheckpointRevert(): Promise<void> {
     if (!userId) {
       return;
@@ -3212,6 +3270,34 @@ export default function AppPage() {
       }
 
       await refreshPreviewForSession(sessionId);
+      if (checkpointRevertRequestIdRef.current !== requestId) {
+        return;
+      }
+
+      if (selectedProjectId && !projectOpenInProgressRef.current) {
+        const autosaveAttemptedAt = Date.now();
+        const autosaveResult = await attemptProjectAutosave({
+          sessionId,
+          projectId: selectedProjectId,
+          source: 'revert',
+          minIntervalMs: 0,
+          now: autosaveAttemptedAt,
+          lastAutosaveAt: lastProjectAutosaveAtRef.current,
+        });
+        if (checkpointRevertRequestIdRef.current !== requestId) {
+          return;
+        }
+        if (autosaveResult.status === 'saved') {
+          lastProjectAutosaveAtRef.current = autosaveAttemptedAt;
+          void loadWorkspaceSnapshotsForUser();
+          trailingAutosaveSchedulerRef.current?.cancel();
+        } else if (autosaveResult.status === 'failed') {
+          setProjectActionMessage(null);
+          setProjectActionState('error');
+          setProjectActionError(getRecoveryCopy(locale).workspace.revertNotSavedToProject);
+        }
+      }
+
       if (checkpointRevertRequestIdRef.current !== requestId) {
         return;
       }
@@ -5015,21 +5101,31 @@ export default function AppPage() {
       return;
     }
 
+    const autosaveHint =
+      buildAutosaveHintFromFileActions(
+        executionFileActionsByExecutionIdRef.current[executionId] ?? [],
+      ) ?? undefined;
+    const lastAutosaveAt = lastProjectAutosaveAtRef.current;
     const autosaveAttemptedAt = Date.now();
     const autosaveResult = await attemptProjectAutosave({
       sessionId: selectedSessionIdAtAutosave,
       projectId: selectedProjectId,
       source: 'ai',
-      hint:
-        buildAutosaveHintFromFileActions(
-          executionFileActionsByExecutionIdRef.current[executionId] ?? [],
-        ) ?? undefined,
+      hint: autosaveHint,
       now: autosaveAttemptedAt,
-      lastAutosaveAt: lastProjectAutosaveAtRef.current,
+      lastAutosaveAt,
     });
     if (autosaveResult.status === 'saved') {
       lastProjectAutosaveAtRef.current = autosaveAttemptedAt;
       void loadWorkspaceSnapshotsForUser();
+    } else if (autosaveResult.status === 'skipped-rate-limited' && lastAutosaveAt !== null) {
+      scheduleTrailingProjectAutosave({
+        sessionId: selectedSessionIdAtAutosave,
+        projectId: selectedProjectId,
+        source: 'ai',
+        hint: autosaveHint,
+        lastAutosaveAt,
+      });
     }
   }
 
@@ -5527,18 +5623,28 @@ export default function AppPage() {
       sessionStorage.removeItem(TAB_EDITOR_DRAFT_STORAGE_KEY);
 
       if (selectedProjectId && !projectOpenInProgressRef.current) {
+        const autosaveHint = getWorkspacePathBasename(selectedFilePath) ?? undefined;
+        const lastAutosaveAt = lastProjectAutosaveAtRef.current;
         const autosaveAttemptedAt = Date.now();
         const autosaveResult = await attemptProjectAutosave({
           sessionId: selectedSessionId,
           projectId: selectedProjectId,
           source: 'file-save',
-          hint: getWorkspacePathBasename(selectedFilePath) ?? undefined,
+          hint: autosaveHint,
           now: autosaveAttemptedAt,
-          lastAutosaveAt: lastProjectAutosaveAtRef.current,
+          lastAutosaveAt,
         });
         if (autosaveResult.status === 'saved') {
           lastProjectAutosaveAtRef.current = autosaveAttemptedAt;
           void loadWorkspaceSnapshotsForUser();
+        } else if (autosaveResult.status === 'skipped-rate-limited' && lastAutosaveAt !== null) {
+          scheduleTrailingProjectAutosave({
+            sessionId: selectedSessionId,
+            projectId: selectedProjectId,
+            source: 'file-save',
+            hint: autosaveHint,
+            lastAutosaveAt,
+          });
         }
       }
     } catch (error) {
@@ -5744,18 +5850,28 @@ export default function AppPage() {
       }
 
       if (selectedProjectId && selectedSessionId && !projectOpenInProgressRef.current) {
+        const autosaveHint = getWorkspacePathBasename(selectedFilePath) ?? undefined;
+        const lastAutosaveAt = lastProjectAutosaveAtRef.current;
         const autosaveAttemptedAt = Date.now();
         const autosaveResult = await attemptProjectAutosave({
           sessionId: selectedSessionId,
           projectId: selectedProjectId,
           source: 'preview',
-          hint: getWorkspacePathBasename(selectedFilePath) ?? undefined,
+          hint: autosaveHint,
           now: autosaveAttemptedAt,
-          lastAutosaveAt: lastProjectAutosaveAtRef.current,
+          lastAutosaveAt,
         });
         if (autosaveResult.status === 'saved') {
           lastProjectAutosaveAtRef.current = autosaveAttemptedAt;
           void loadWorkspaceSnapshotsForUser();
+        } else if (autosaveResult.status === 'skipped-rate-limited' && lastAutosaveAt !== null) {
+          scheduleTrailingProjectAutosave({
+            sessionId: selectedSessionId,
+            projectId: selectedProjectId,
+            source: 'preview',
+            hint: autosaveHint,
+            lastAutosaveAt,
+          });
         }
       }
     } catch (error) {
