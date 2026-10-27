@@ -82181,29 +82181,29 @@ taskId=SESSION-STALE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY / NOT ADMITTED — 2026-10-27. Step 2 (stage-start) not started; write scope PROVISIONAL.
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-27. Step 2 stage-start complete (docs/SESSION-STALE-01-STAGE-START.md); Step 3 (implementation) not started. mutexes=CONTAINER-MANAGER, FRONTEND. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY / NOT ADMITTED — 2026-10-27. Step 2 (stage-start) not started; write scope PROVISIONAL.
 **Task ID:** SESSION-STALE-01
 **Title:** Do not reuse a session whose container is gone
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP. Step 1 is this registration (2026-10-27); Step 2 a stage-start record that chooses where a session whose container is gone is detected and ended or replaced (for example the container manager marking such sessions stopped at startup, or the open path checking the container before it reuses a session), and freezes the exact write scope, mutexes, shared contracts and evidence class; Step 3 implementation; Step 4 consolidation, checkpoint and LOCK by the control plane.
-**Start condition (human):** NOT READY until the Step 2 stage-start record.
-**Start condition (machine):** `NOT_READY`; `status=READY`; `admissionUncertain=true` and `writeSetPrecision=PROVISIONAL` until the stage-start.
+**Start condition (human):** READY — Keith approved the option 2 design and this stage-start on 2026-10-27. Previous: **Start condition (human):** NOT READY until the Step 2 stage-start record.
+**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE (2026-10-27). Previous: **Start condition (machine):** `NOT_READY`; `status=READY`; `admissionUncertain=true` and `writeSetPrecision=PROVISIONAL` until the stage-start.
 **Depends on (human):** none.
 **Depends on (machine `dependsOn`):** `[]`
-**Primary write scope:** PROVISIONAL — `services/container-manager/`, `services/api-gateway/`, `frontend/`; the stage-start freezes the exact list.
-**Mutexes / resources:** PROVISIONAL — CONTAINER-MANAGER, GATEWAY, FRONTEND, I18N; the stage-start freezes the exact set. Not acquired.
-**Hot-file leases:** none (provisional)
-**Shared contracts:** none known; the stage-start names any it freezes (the internal session lifecycle endpoints are candidates).
-**Evidence class:** LOCAL-TESTS (provisional).
-**Revert isolation:** to be fixed at the stage-start.
+**Primary write scope:** exactly `services/container-manager/src/sessions/sessions.service.ts`, `services/container-manager/src/sessions/sessions.service.spec.ts`, `services/container-manager/src/docker/docker-runtime.service.ts`, `services/container-manager/src/docker/docker-runtime.service.spec.ts`, `frontend/lib/open-project-in-fresh-session.ts`, `frontend/lib/open-project-in-fresh-session.test.ts`, `frontend/components/workspace/workspace-projects.logic.ts`, `frontend/components/workspace/workspace-projects.logic.test.ts`. Anything else is out of scope. Previous: **Primary write scope:** PROVISIONAL — `services/container-manager/`, `services/api-gateway/`, `frontend/`; the stage-start freezes the exact list.
+**Mutexes / resources:** CONTAINER-MANAGER and FRONTEND (Lane 1, 2026-10-27). No GATEWAY, I18N, MIGRATION, PACKAGE, COMPOSE, ENV, LOCAL-RUNTIME, STAGING, PROVIDER-LIVE or CREDIT. Previous: **Mutexes / resources:** PROVISIONAL — CONTAINER-MANAGER, GATEWAY, FRONTEND, I18N; the stage-start freezes the exact set. Not acquired.
+**Hot-file leases:** none. Previous: **Hot-file leases:** none (provisional)
+**Shared contracts:** none changed; the new termination reason container_lost travels on the existing 410 semantics and the gateway reconciliation (stage-start document). Previous: **Shared contracts:** none known; the stage-start names any it freezes (the internal session lifecycle endpoints are candidates).
+**Evidence class:** LOCAL-TESTS: npm test and npm run build in services/container-manager; npx tsc --noEmit, npm test and npm run build in frontend. The staging proof is the later CLEAN-BASELINE-DEPLOY-01 checks 4 and 9 repeat. Previous: **Evidence class:** LOCAL-TESTS (provisional).
+**Revert isolation:** acceptable (container manager and frontend only; reverting it leaves CHECKPOINT-PERSIST-01 to 03 intact). Previous: **Revert isolation:** to be fixed at the stage-start.
 **saturationClass:** FORCING (CLEAN-BASELINE-DEPLOY-01 waits for it)
 **productClass:** CURRENT
 **futureAuthorization:** NONE
-**writeSetPrecision:** PROVISIONAL
-**admissionUncertain:** true
+**writeSetPrecision:** EXACT (2026-10-27). Previous: **writeSetPrecision:** PROVISIONAL
+**admissionUncertain:** false (2026-10-27). Previous: **admissionUncertain:** true
 **exclusiveCapacity:** false
-**runtimeNeeds:** none (provisional)
+**runtimeNeeds:** none. Previous: **runtimeNeeds:** none (provisional)
 
 **Problem:** after a host reboot, a session whose container exited stays active and unexpired in the gateway until its expiry, up to an hour later. Opening its project reuses it, because the frontend reuses any session of the project that is neither terminated nor expired, and every open fails in the container manager because the container is not running, shown as Internal server error. Source: the CLEAN-BASELINE-DEPLOY-01 C1 repeat check 9 failure and its record in docs/CLEAN-BASELINE-GOV-01-DECISION.md, section DEPLOY-01 C1 repeat result, return to READY, and CHECKPOINT-PERSIST-03 and SESSION-STALE-01 registration (2026-10-27).
 **Goal:** opening a project after the container of its session is gone opens it in a working session, with no error and no wait for expiry; sessions with a running container are reused as now.
@@ -82213,7 +82213,7 @@ nature=IMPLEMENTATION
 
 - [ ] Stage-start record written: design chosen, exact write scope, mutexes, evidence class and shared contracts frozen
 - [ ] Opening a project whose reusable session has no running container opens it in a working session without an error
-- [ ] Sessions with a running container are reused and behave as now; session quota counts are not inflated by dead sessions
+- [ ] Sessions with a running container are reused and behave as now; a dead session is ended the first time it is used, and a dead session nobody touches still counts until it expires (revised with the design at the stage-start, 2026-10-27; was: session quota counts are not inflated by dead sessions)
 - [ ] Tests cover the dead-container case, and the gates named at the stage-start pass
 - [ ] Not LOCKED by an implementer
 
