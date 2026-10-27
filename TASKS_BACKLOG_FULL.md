@@ -82041,6 +82041,91 @@ nature=IMPLEMENTATION
 - [ ] Old host is not described as clean and is not retired by this task's registration
 - [ ] Not LOCKED by an implementer
 
+### CHECKPOINT-PERSIST-01 — Keep the newest workspace state in the project copy after a revert or a skipped autosave
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHECKPOINT-PERSIST-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-27. Registered and admitted; Step 2 (implementation) not started. mutexes=FRONTEND, I18N. evidenceClass=LOCAL-TESTS. runtimeNeeds=none.
+**Task ID:** CHECKPOINT-PERSIST-01
+**Title:** Keep the newest workspace state in the project copy after a revert or a skipped autosave
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Step 1 is this registration and admission (2026-10-27); Step 2 implementation; Step 3 consolidation, checkpoint and LOCK by the control plane.
+**Start condition (human):** READY — Keith approved this task and its scope on 2026-10-27.
+**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Depends on (human):** none.
+**Depends on (machine `dependsOn`):** `[]`
+**Primary write scope:** exactly `frontend/app/[locale]/app/page.tsx`, `frontend/lib/project-autosave.ts`, `frontend/lib/project-autosave.test.ts`, `frontend/components/workspace/workspace-snapshots.logic.ts`, `frontend/components/workspace/workspace-snapshots.logic.test.ts`, `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`. The machine writePaths list the other seven files, because the validator cannot encode the brackets in frontend/app/[locale]/app/page.tsx; that file is covered by FRONTEND, as for BUILDER-CREDIT-UX-01. Anything else is out of scope.
+**Mutexes / resources:** FRONTEND and I18N (Lane 1, 2026-10-27). No LOCAL-RUNTIME, STAGING, ENV, PACKAGE, PROVIDER-LIVE or CREDIT.
+**Hot-file leases:** none
+**Shared contracts:** none
+**Evidence class:** LOCAL-TESTS. The staging proof is the later CLEAN-BASELINE-DEPLOY-01 C1 repeat, which is DEPLOY-01 evidence.
+**Revert isolation:** acceptable (frontend only; no data, API or contract change).
+**saturationClass:** FORCING (CLEAN-BASELINE-DEPLOY-01 waits for it)
+**productClass:** CURRENT
+**futureAuthorization:** NONE
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** none
+
+**Problem:** project autosave misses two kinds of change. A successful checkpoint revert saves no project version (handleConfirmCheckpointRevert reloads the checkpoint list, files and preview, and its preview refresh returns before autosave when the preview is running), and an autosave skipped by the 60-second limit (AUTOSAVE_MIN_INTERVAL_MS) is dropped. Opening a project after its container is gone restores the latest project snapshot, so either change is lost without warning. Source: the CLEAN-BASELINE-DEPLOY-01 C1 check 9 failure (repository commit 136bf6da5a6fd3503ed56e255e7d75aa21f56ebf) and the registration record in docs/CLEAN-BASELINE-GOV-01-DECISION.md, section CHECKPOINT-PERSIST-01 and CHECKPOINT-PERSIST-02 registration for the C1 check 9 defect (2026-10-27).
+**Scope:** after a successful revert, save a project autosave snapshot at once with a new source `revert`, not subject to the 60-second limit; when a file-save, preview or AI autosave is skipped by the limit, schedule one trailing autosave of the then-current workspace when the interval has passed, replaced by any newer request and cancelled when the selected session or project changes; add the `revert` source to the snapshot label handling and its label to the three message files; show a translated warning when a post-revert autosave fails. Not in scope: backend or container-manager code, the checkpoint and revert APIs, the snapshot format, the rate-limit value, any other UI change.
+
+#### Acceptance criteria
+
+- [ ] A successful revert saves exactly one project autosave snapshot with source `revert`, even within 60 seconds of the previous autosave
+- [ ] An autosave skipped by the limit is followed by exactly one trailing autosave of the newest state after the interval; a newer request replaces it; a session or project change cancels it
+- [ ] The `revert` label exists in en.json, zh-TW.json and zh-CN.json and is used for the new snapshots; the failure warning is translated in all three
+- [ ] Existing autosave sources, checkpoint creation, the revert flow and the snapshot label format are otherwise unchanged
+- [ ] New tests cover the post-revert save, the rate-limit bypass and the trailing save, including replacement and cancellation
+- [ ] In frontend: npx tsc --noEmit, npm test and npm run build pass; frontend/tsconfig.tsbuildinfo is restored if the build changes it
+- [ ] Only the files in the primary write scope change
+- [ ] Not LOCKED by an implementer
+
+### CHECKPOINT-PERSIST-02 — Keep checkpoint history across sessions of a project
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHECKPOINT-PERSIST-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-10-27. Step 2 (stage-start) not started; write scope PROVISIONAL.
+**Task ID:** CHECKPOINT-PERSIST-02
+**Title:** Keep checkpoint history across sessions of a project
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP. Step 1 is this registration (2026-10-27); Step 2 a stage-start record that chooses how checkpoint history is kept for each project and restored into a new session, updates ARCHITECTURE.md section 11.5, and freezes the exact write scope, mutexes and evidence class; Step 3 implementation; Step 4 consolidation, checkpoint and LOCK by the control plane.
+**Start condition (human):** NOT READY until the Step 2 stage-start record.
+**Start condition (machine):** `NOT_READY`; `status=READY`; `admissionUncertain=true` and `writeSetPrecision=PROVISIONAL` until the stage-start.
+**Depends on (human):** CHECKPOINT-PERSIST-01 LOCKED (both write the frontend).
+**Depends on (machine `dependsOn`):** `["CHECKPOINT-PERSIST-01"]`
+**Primary write scope:** PROVISIONAL — `services/container-manager/`, `services/api-gateway/`, `frontend/`, including a migration if the ledger needs one; the stage-start freezes the exact list.
+**Mutexes / resources:** PROVISIONAL — CONTAINER-MANAGER, GATEWAY, FRONTEND, I18N, MIGRATION; the stage-start freezes the exact set. Not acquired.
+**Hot-file leases:** none (provisional)
+**Shared contracts:** none known; the stage-start names any it freezes.
+**Evidence class:** LOCAL-TESTS (provisional).
+**Revert isolation:** to be fixed at the stage-start.
+**saturationClass:** FORCING (CLEAN-BASELINE-DEPLOY-01 waits for it)
+**productClass:** CURRENT
+**futureAuthorization:** NONE
+**writeSetPrecision:** PROVISIONAL
+**admissionUncertain:** true
+**exclusiveCapacity:** false
+**runtimeNeeds:** none (provisional)
+
+**Problem:** checkpoints are per session (ARCHITECTURE.md section 11.5): git runs inside the session container, the git_checkpoints ledger and the checkpoint API are keyed by session, and project snapshots exclude .git by design (PROJ-02-03). A new session of the same project therefore starts with no checkpoint history, while PRD.md section 3.A lists checkpoints surviving session end as a CURRENT project capability. Source: the CLEAN-BASELINE-DEPLOY-01 C1 check 9 failure (repository commit 136bf6da5a6fd3503ed56e255e7d75aa21f56ebf) and the registration record in docs/CLEAN-BASELINE-GOV-01-DECISION.md, section CHECKPOINT-PERSIST-01 and CHECKPOINT-PERSIST-02 registration for the C1 check 9 defect (2026-10-27).
+**Goal:** after a project is reopened in a new session, its earlier checkpoints are listed and a revert to one of them works; the existing per-session flows keep working.
+
+#### Acceptance criteria
+
+- [ ] Stage-start record written: design chosen, ARCHITECTURE.md section 11.5 updated, exact write scope, mutexes, evidence class and shared contracts frozen
+- [ ] After a reopen in a new session, the earlier checkpoints are listed and a revert to one of them restores the files and refreshes the editor, file tree, preview and checkpoint list
+- [ ] Existing checkpoint creation and revert within a session are unchanged
+- [ ] Tests cover the cross-session history, and the gates named at the stage-start pass
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
