@@ -795,6 +795,8 @@ Worker finalize-accounting (`triggerDeductionForExecution`) inspects the **persi
 
 Zero-token completed Ask still writes a 0-credit audit deduction attempt.
 
+Model-token credits (CURRENT — CREDIT-UNIT-01, LOCKED 2026-10-28, docs/CREDIT-UNIT-01-CHECKPOINT.md): the deduction line item is `model_tokens` with unit `1K_tokens` and `unitCount = ceil(tokensUsed / 1000)` (0 for zero or missing tokens), so at the rate of 1 credit per `1K_tokens` each started 1,000 tokens costs one credit; the raw token count is kept in the deduction event metadata as `tokensUsed`.
+
 Those two defaulting rules are **not** the same:
 
 - Request omit → stored as `workspace_mutation` (delayed Build path if apply later qualifies)

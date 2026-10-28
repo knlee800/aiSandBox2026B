@@ -82230,14 +82230,14 @@ taskId=CREDIT-UNIT-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-28. Registered and admitted; Step 2 (implementation) not started. mutexes=GATEWAY. evidenceClass=LOCAL-TESTS. runtimeNeeds=none.
+**Status:** COMPLETE AND LOCKED — 2026-10-28. LANE-DONE and LOCK recorded by the control plane; Lane 1 and GATEWAY released. Checkpoint: docs/CREDIT-UNIT-01-CHECKPOINT.md. Implementation commit 78b5df1774fd1bb79fafd2c214827de6014e9d0d. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-28. Registered and admitted; Step 2 (implementation) not started. mutexes=GATEWAY. evidenceClass=LOCAL-TESTS. runtimeNeeds=none.
 **Task ID:** CREDIT-UNIT-01
 **Title:** Charge model tokens per started 1,000 tokens, as the credit rate defines
 **Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP. Step 1 is this registration and admission (2026-10-28); Step 2 implementation; Step 3 consolidation, checkpoint, the ARCHITECTURE.md section 11.3 rounding note and LOCK by the control plane.
 **Start condition (human):** READY — Keith approved this task, its scope and the rounding rule on 2026-10-28.
-**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Start condition (machine):** `READY`; `status=LOCKED` (2026-10-28). Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
 **Depends on (human):** none.
 **Depends on (machine `dependsOn`):** `[]`
 **Primary write scope:** exactly `services/api-gateway/src/usage-ledger/usage-ledger.service.ts`, `services/api-gateway/src/usage-ledger/__tests__/usage-ledger.service.spec.ts`. Anything else is out of scope.
@@ -82260,14 +82260,14 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Ask and Build deductions send unit 1K_tokens and unitCount Math.ceil(tokensUsed / 1000)
-- [ ] 0 or missing tokens give unitCount 0; 1 and 1000 tokens give 1; 1001 and 1023 tokens give 2
-- [ ] The raw token count is kept in the deduction event metadata as tokensUsed
-- [ ] Idempotency by executionId and every other deduction behaviour are unchanged
-- [ ] Tests cover the conversion boundaries for both the Ask and the Build path; updated tests no longer expect raw counts
-- [ ] In services/api-gateway: npx jest --maxWorkers=2 passes apart from the known smoke.integration.spec.ts runtime failures, and npm run build passes
-- [ ] Only the files in the primary write scope change
-- [ ] Not LOCKED by an implementer
+- [x] Ask and Build deductions send unit 1K_tokens and unitCount Math.ceil(tokensUsed / 1000)
+- [x] 0 or missing tokens give unitCount 0; 1 and 1000 tokens give 1; 1001 and 1023 tokens give 2
+- [x] The raw token count is kept in the deduction event metadata as tokensUsed
+- [x] Idempotency by executionId and every other deduction behaviour are unchanged
+- [x] Tests cover the conversion boundaries for both the Ask and the Build path; updated tests no longer expect raw counts
+- [x] In services/api-gateway: npx jest --maxWorkers=2 passes apart from the known smoke.integration.spec.ts runtime failures, and npm run build passes
+- [x] Only the files in the primary write scope change
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
