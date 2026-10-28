@@ -11,19 +11,19 @@
   "occupancy": {
     "lane1": {
       "state": "ACTIVE",
-      "taskId": "CLEAN-BASELINE-DEPLOY-01",
-      "mutexes": ["STAGING", "ENV", "PROVIDER-LIVE", "CREDIT"],
+      "taskId": "CREDIT-UNIT-01",
+      "mutexes": ["GATEWAY"],
       "writePaths": [
-        "ops/clean-baseline/caddy/Caddyfile",
-        "ops/clean-baseline/tests/static/t-caddy-site.sh"
+        "services/api-gateway/src/usage-ledger/usage-ledger.service.ts",
+        "services/api-gateway/src/usage-ledger/__tests__/usage-ledger.service.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "PROVIDER-LIVE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
-      "runtimeNeeds": ["STAGING", "PROVIDER-LIVE", "CREDIT"]
+      "runtimeNeeds": []
     },
     "lane2": {
       "state": "EMPTY",
@@ -1079,13 +1079,13 @@
       "taskId": "CLEAN-BASELINE-DEPLOY-01",
       "nature": "IMPLEMENTATION",
       "lifecycle": "4-STEP",
-      "status": "ADMITTED",
-      "startCondition": "READY",
+      "status": "READY",
+      "startCondition": "NOT_READY",
       "saturationClass": "OPTIONAL",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
       "dependsOn": ["CLEAN-BASELINE-RUNTIME-01", "CLEAN-BASELINE-OPS-01"],
-      "mutexes": ["STAGING", "ENV", "PROVIDER-LIVE", "CREDIT"],
+      "mutexes": ["STAGING", "ENV"],
       "writePaths": [
         "ops/clean-baseline/caddy/Caddyfile",
         "ops/clean-baseline/tests/static/t-caddy-site.sh"
@@ -1094,9 +1094,9 @@
       "i18n": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
-      "evidenceClass": "PROVIDER-LIVE",
+      "evidenceClass": "STAGING-RUNTIME",
       "exclusiveCapacity": false,
-      "runtimeNeeds": ["STAGING", "PROVIDER-LIVE", "CREDIT"],
+      "runtimeNeeds": ["STAGING"],
       "admissionUncertain": false,
       "writeSetPrecision": "EXACT"
     },
@@ -1224,6 +1224,31 @@
       "runtimeNeeds": [],
       "admissionUncertain": false,
       "writeSetPrecision": "EXACT"
+    },
+    {
+      "taskId": "CREDIT-UNIT-01",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "3-STEP",
+      "status": "ADMITTED",
+      "startCondition": "READY",
+      "saturationClass": "FORCING",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": [],
+      "mutexes": ["GATEWAY"],
+      "writePaths": [
+        "services/api-gateway/src/usage-ledger/usage-ledger.service.ts",
+        "services/api-gateway/src/usage-ledger/__tests__/usage-ledger.service.spec.ts"
+      ],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "LOCAL-TESTS",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": [],
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
     }
   ],
   "lockedTaskIds": ["GOV-OS-03", "GOV-OS-03R1", "AGENT-PLATFORM-CREATE-01F", "I18N-SHELL-07", "AGENT-PLATFORM-EXEC-01A", "AGENT-PLATFORM-EXEC-01B", "GOV-AUTH-03", "AGENT-PLATFORM-EXEC-01C1", "AGENT-PLATFORM-EXEC-01C2", "AGENT-PLATFORM-EXEC-01C3", "AGENT-PLATFORM-EXEC-01C4", "AGENT-PLATFORM-EXEC-01C4B", "AGENT-PLATFORM-EXEC-01C5", "AGENT-PLATFORM-EXEC-01C5R1", "AGENT-PLATFORM-EXEC-01C5B1", "AGENT-PLATFORM-EXEC-01C5B2", "AGENT-PLATFORM-EXEC-01C5B", "AGENT-PLATFORM-EXEC-01C-KEY-REVOKE-01", "AGENT-PLATFORM-EXEC-01C-SCHEMA-01", "AGENT-PLATFORM-EXEC-01C-IDENTITY-01", "AGENT-PLATFORM-ORCH-ARCH-01", "AGENT-PLATFORM-ORCH-PERSIST-01", "PREVIEW-NODE-01", "PREVIEW-NODE-STAGING-01", "PREVIEW-NODE-STAGING-APPLY-01", "BUILDER-CREDIT-UX-01", "PREVIEW-STOP-01", "PREVIEW-STOP-PUBLIC-ROUTE-01", "PREVIEW-STOP-PUBLIC-ROUTE-STAGING-01", "PREVIEW-STOP-UI-01", "PREVIEW-STOP-UI-STAGING-01", "PM2-OVERLAY-UNKNOWN-01", "PM2-RECOVERY-VERIFY-01", "PM2-RECOVERY-CAPTURE-01", "CLEAN-BASELINE-GOV-01", "CLEAN-BASELINE-RUNTIME-01", "CLEAN-BASELINE-OPS-01", "CHECKPOINT-PERSIST-01", "CHECKPOINT-PERSIST-02", "CHECKPOINT-PERSIST-03", "SESSION-STALE-01"],
@@ -1240,8 +1265,8 @@
   ],
   "runtimeAuthorization": {
     "localRuntimeAuthorized": true,
-    "stagingAuthorized": true,
-    "providerLiveAuthorized": true,
-    "creditAuthorized": true
+    "stagingAuthorized": false,
+    "providerLiveAuthorized": false,
+    "creditAuthorized": false
   }
 }
