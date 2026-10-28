@@ -733,7 +733,8 @@ describe('UsageLedgerService', () => {
       expect(event.ownerId).toBe('user-123');
       expect(event.lineItems).toHaveLength(1);
       expect(event.lineItems[0].category).toBe('model_tokens');
-      expect(event.lineItems[0].unitCount).toBe(500);
+      expect(event.lineItems[0].unit).toBe('1K_tokens');
+      expect(event.lineItems[0].unitCount).toBe(1);
       expect(event.lineItems[0].creditsRequested).toBe(0);
     });
 
@@ -1059,7 +1060,8 @@ describe('UsageLedgerService', () => {
       const event = mockGateway.applyDeduction.mock.calls[0][0];
       expect(event.sourceEventId).toBe('exec-trigger-1');
       expect(event.ownerId).toBe('user-trigger-1');
-      expect(event.lineItems[0].unitCount).toBe(500);
+      expect(event.lineItems[0].unit).toBe('1K_tokens');
+      expect(event.lineItems[0].unitCount).toBe(1);
     });
 
     it('should trigger deduction for completed zero-token execution', async () => {
@@ -1875,7 +1877,8 @@ describe('UsageLedgerService', () => {
       const event = mockGateway.applyDeduction.mock.calls[0][0];
       expect(event.sourceEventId).toBe(HARNESS_EXECUTION_ID);
       expect(event.lineItems).toHaveLength(1);
-      expect(event.lineItems[0].unitCount).toBe(CUMULATIVE_TOKENS_USED);
+      expect(event.lineItems[0].unit).toBe('1K_tokens');
+      expect(event.lineItems[0].unitCount).toBe(2);
       expect(event.lineItems[0].category).toBe('model_tokens');
     });
 
@@ -2041,6 +2044,157 @@ describe('UsageLedgerService', () => {
       expect(mockGateway.applyDeduction.mock.calls[0][0].sourceEventId).toBe(
         'exec-01c5-build',
       );
+    });
+  });
+
+  describe('CREDIT-UNIT-01: model token unit conversion', () => {
+    let serviceWithGateway: UsageLedgerService;
+    let gatewayRepo: jest.Mocked<Repository<UsageRecord>>;
+    let mockGateway: { applyDeduction: jest.Mock };
+
+    const askExecutionId = 'exec-credit-unit-ask';
+    const buildExecutionId = 'exec-credit-unit-build';
+    const buildFileActions = [{ action: 'write', path: 'src/a.ts', content: 'a' }];
+    const qualifyingConfirmation = {
+      applyStatus: 'applied',
+      totalActions: 1,
+      successCount: 1,
+    };
+
+    function askRecord(tokensUsed: number) {
+      return {
+        executionId: askExecutionId,
+        userId: 'user-credit-unit',
+        apiKeyId: 'key-credit-unit',
+        sessionId: 'sess-credit-unit',
+        model: 'grok-4.5',
+        tokensUsed,
+        executionDurationMs: 1500,
+        executionStatus: 'completed',
+        metadata: {
+          aiExecutionResult: {
+            output: 'ask',
+            tokensUsed,
+            model: 'grok-4.5',
+            fileActions: [],
+            executionIntent: 'conversation',
+          },
+        },
+      };
+    }
+
+    function buildRecord(tokensUsed: number) {
+      return {
+        executionId: buildExecutionId,
+        userId: 'user-credit-unit-build',
+        apiKeyId: 'key-credit-unit-build',
+        sessionId: 'sess-credit-unit-build',
+        model: 'grok-4.5',
+        tokensUsed,
+        executionDurationMs: 2200,
+        executionStatus: 'completed',
+        metadata: {
+          aiExecutionResult: {
+            output: 'build',
+            tokensUsed,
+            model: 'grok-4.5',
+            fileActions: buildFileActions,
+            executionIntent: 'workspace_mutation',
+          },
+        },
+      };
+    }
+
+    beforeEach(async () => {
+      mockGateway = {
+        applyDeduction: jest.fn().mockResolvedValue({
+          source: 'usage_ledger',
+          sourceEventId: askExecutionId,
+          ownerId: 'user-credit-unit',
+          occurredAt: new Date(),
+          totalCreditsRequested: 0,
+          totalCreditsApplied: 0,
+          totalCreditsOverflow: 0,
+          lineItems: [],
+        }),
+      };
+
+      const gatewayMockRepo = {
+        create: jest.fn(),
+        save: jest.fn(),
+        findOne: jest.fn(),
+        find: jest.fn(),
+        update: jest.fn(),
+        createQueryBuilder: jest.fn(),
+      };
+
+      const module: TestingModule = await Test.createTestingModule({
+        providers: [
+          UsageLedgerService,
+          {
+            provide: getRepositoryToken(UsageRecord),
+            useValue: gatewayMockRepo,
+          },
+          {
+            provide: CreditDeductionGateway,
+            useValue: mockGateway,
+          },
+        ],
+      }).compile();
+
+      serviceWithGateway = module.get<UsageLedgerService>(UsageLedgerService);
+      gatewayRepo = module.get(getRepositoryToken(UsageRecord));
+    });
+
+    it.each([
+      [0, 0],
+      [1, 1],
+      [1000, 1],
+      [1001, 2],
+      [1023, 2],
+    ])(
+      'Ask path converts %i tokens to unitCount %i of 1K_tokens',
+      async (tokensUsed, unitCount) => {
+        gatewayRepo.findOne.mockResolvedValue(askRecord(tokensUsed) as any);
+
+        const result = await serviceWithGateway.triggerDeductionForExecution(askExecutionId);
+
+        expect(result).toEqual({ triggered: true, reason: 'completed' });
+        const lineItem = mockGateway.applyDeduction.mock.calls[0][0].lineItems[0];
+        expect(lineItem.category).toBe('model_tokens');
+        expect(lineItem.unit).toBe('1K_tokens');
+        expect(lineItem.unitCount).toBe(unitCount);
+        expect(lineItem.creditsRequested).toBe(0);
+      },
+    );
+
+    it('Build path converts 1023 tokens to unitCount 2 of 1K_tokens', async () => {
+      gatewayRepo.findOne.mockResolvedValue(buildRecord(1023) as any);
+
+      const result = await serviceWithGateway.triggerBuildApplyDeduction(
+        buildExecutionId,
+        qualifyingConfirmation,
+      );
+
+      expect(result).toEqual({ triggered: true, reason: 'completed' });
+      const lineItem = mockGateway.applyDeduction.mock.calls[0][0].lineItems[0];
+      expect(lineItem.category).toBe('model_tokens');
+      expect(lineItem.unit).toBe('1K_tokens');
+      expect(lineItem.unitCount).toBe(2);
+      expect(lineItem.creditsRequested).toBe(0);
+    });
+
+    it('keeps the raw token count on deduction metadata as tokensUsed', async () => {
+      gatewayRepo.findOne.mockResolvedValue(askRecord(1023) as any);
+
+      await serviceWithGateway.triggerDeductionForExecution(askExecutionId);
+
+      expect(mockGateway.applyDeduction.mock.calls[0][0].metadata).toEqual({
+        model: 'grok-4.5',
+        executionDurationMs: 1500,
+        sessionId: 'sess-credit-unit',
+        tokensUsed: 1023,
+      });
     });
   });
 });

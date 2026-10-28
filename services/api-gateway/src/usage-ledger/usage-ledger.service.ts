@@ -87,6 +87,18 @@ export interface BuildApplyConfirmation {
 }
 
 /**
+ * CREDIT-UNIT-01: started 1,000-token blocks for the model_tokens rate
+ * (1 credit per 1K_tokens). Zero, missing, negative, and non-finite
+ * counts are 0 so a zero-token Ask still writes its audit deduction.
+ */
+function modelTokenBlockCount(tokensUsed: number | null | undefined): number {
+  if (typeof tokensUsed !== 'number' || !Number.isFinite(tokensUsed) || tokensUsed <= 0) {
+    return 0;
+  }
+  return Math.ceil(tokensUsed / 1000);
+}
+
+/**
  * UsageLedgerService
  *
  * Phase 22B: Usage Ledger Write Service
@@ -998,8 +1010,8 @@ export class UsageLedgerService {
         lineItems: [
           {
             category: 'model_tokens',
-            unit: 'token',
-            unitCount: record.tokensUsed ?? 0,
+            unit: '1K_tokens',
+            unitCount: modelTokenBlockCount(record.tokensUsed),
             creditsRequested: 0,
           },
         ],
@@ -1007,6 +1019,7 @@ export class UsageLedgerService {
           model: record.model,
           executionDurationMs: record.executionDurationMs,
           sessionId: record.sessionId,
+          tokensUsed: record.tokensUsed ?? 0,
         },
       };
 
