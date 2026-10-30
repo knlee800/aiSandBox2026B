@@ -141,14 +141,14 @@ HISTORICAL: process-scoped Harness canaries used `PORT=4099` to avoid listen con
 
 | Topology | What it runs | Status |
 |----------|----------------|--------|
-| Current staging | Caddy + PM2 host processes: Gateway `:4000`, AI Service `:4001`, container-manager `:4002`, Frontend `:3002` | **CURRENT** public/private-beta topology |
-| Replacement staging (PLANNED) | Caddy + native systemd units aisandbox-gateway :4000, aisandbox-ai :4001, aisandbox-cm :4002, aisandbox-frontend :3002; local PostgreSQL 15 / Redis 7; Docker workspaces (node:24-alpine) | **PLANNED** — CLEAN-BASELINE-DEPLOY-01. Not deployed. Not accepted. Does not replace the CURRENT row. |
+| Previous staging (HISTORICAL) | Caddy + PM2 host processes on aisandbox-staging: Gateway `:4000`, AI Service `:4001`, container-manager `:4002`, Frontend `:3002` | **HISTORICAL** — replaced by ainow-staging-01 at the CLEAN-BASELINE-DEPLOY-01 C4 LOCK (2026-10-30); the old instance is stopped and unproven, not described as clean. |
+| Current staging | Caddy + native systemd units aisandbox-gateway :4000, aisandbox-ai :4001, aisandbox-cm :4002, aisandbox-frontend :3002; local PostgreSQL 15 / Redis 7; Docker workspaces (node:24-alpine); host ainow-staging-01 | **CURRENT** — CLEAN-BASELINE-DEPLOY-01 accepted and LOCKED 2026-10-30 (docs/CLEAN-BASELINE-DEPLOY-01-CHECKPOINT.md); operator-only behind basic_auth, execution off, nightly encrypted backup. Acceptance claims no safety or scaling property and grants no invitations, harness activation or public launch. |
 | `docker-compose.yml` | PostgreSQL, Redis, Prometheus, Grafana **only** | **CURRENT local infrastructure.** Does not run application processes. |
 | `docker-compose.prod.yml` | Infra **plus** gateway / ai-service / container-manager / frontend images | **Alternate / future** image topology. **Not** current staging HOW. |
 
 Do not describe `docker-compose.yml` as the current staging application-process topology.
 
-Frontend listens on **3002** (`next dev -p 3002` / staging PM2). Local Grafana compose uses `:3000` (local infra only).
+Frontend listens on **3002** (`next dev -p 3002` / staging systemd `next start -p 3002`). Local Grafana compose uses `:3000` (local infra only).
 
 ### Transport Summary
 
@@ -259,7 +259,7 @@ services/container-manager/
 
 ### AI Service / WorkerProcessor
 
-Listens on **port 4001** (`process.env.PORT || 4001`). Staging PM2 binds `PORT=4001`.
+Listens on **port 4001** (`process.env.PORT || 4001`). Staging systemd env sets `PORT=4001`.
 
 Owns:
 
@@ -382,8 +382,8 @@ LIVE-11 proved a qualifying credit deduction with Stripe charging disabled.
 | `GET /api/health/db` | Gateway | CURRENT |
 | AI Service `/metrics` | AI Service | CURRENT scrape target in **local compose** Prometheus config |
 | Worker stuck-execution watchdog | AI Service WorkerProcessor | CURRENT in-process recovery for stuck `running` executions. **Not** a session idle reaper. **Not** the independent ops watchdog. |
-| `aisandbox-ops-watchdog` | Independent Node.js process (`monitoring/watchdog/ops-watchdog.js`); PM2-managed on staging | CURRENT small-private-beta operational monitoring. **Not** the Worker stuck-execution watchdog. **Not** a production-grade dashboard. |
-| Prometheus / Grafana | `docker-compose.yml` | CURRENT **local infrastructure**. Staging scrape of PM2 processes is unverified. |
+| `aisandbox-ops-watchdog` | Independent Node.js process (`monitoring/watchdog/ops-watchdog.js`); optional systemd unit on staging, disabled unless separately authorized | CURRENT small-private-beta operational monitoring. **Not** the Worker stuck-execution watchdog. **Not** a production-grade dashboard. |
+| Prometheus / Grafana | `docker-compose.yml` | CURRENT **local infrastructure**. Staging scrape unverified. |
 
 `aisandbox-ops-watchdog` is a standalone Node.js operations watchdog. It does not share the API Gateway process failure domain. Locked OPS-01 evidence establishes a five-probe set:
 
@@ -1097,13 +1097,13 @@ All intentional for current scope.
 
 The WorkerProcessor stuck-execution watchdog is **not** a contradiction of “no idle reaper.” It recovers stuck AI executions; it does not scan session idle.
 
-`aisandbox-ops-watchdog` is an independent PM2-managed operations probe. It is not a session-idle reaper and is not the Worker stuck-execution watchdog.
+`aisandbox-ops-watchdog` is an independent operations probe, an optional systemd unit disabled unless separately authorized. It is not a session-idle reaper and is not the Worker stuck-execution watchdog.
 
 ---
 
 ## 16. Summary
 
-CURRENT architecture is a **Builder-first**, mixed-transport platform: Caddy + PM2 (staging) or local host processes plus compose infrastructure (Postgres, Redis, local Prometheus/Grafana); Gateway enqueue; BullMQ Worker on **:4001**; container-manager Docker + bind-mounted `/workspace` + SQLite; delayed Build credit deduction after qualifying confirm-build-apply; session checkpoints under `/api/sessions/:id/...`; gated Harness off by default.
+CURRENT architecture is a **Builder-first**, mixed-transport platform: Caddy + systemd (staging) or local host processes plus compose infrastructure (Postgres, Redis, local Prometheus/Grafana); Gateway enqueue; BullMQ Worker on **:4001**; container-manager Docker + bind-mounted `/workspace` + SQLite; delayed Build credit deduction after qualifying confirm-build-apply; session checkpoints under `/api/sessions/:id/...`; gated Harness off by default.
 
 Not operational as product runtime: specialist agents, the advanced/full executable-agent platform (dedicated runtime, Harness/tool loop, tools/knowledge/skills, per-agent models, autonomous multi-turn execution), multi-Builder collaboration, durable orchestration, knowledge retrieval, Harness-as-default, Stripe charging, Google OAuth activation, gVisor, automatic rollback, `search_workspace`. Bounded persisted user-agent Ask and Build on the existing Builder runtime are CURRENT.
 
