@@ -82451,6 +82451,45 @@ nature=IMPLEMENTATION
 - [x] Only the files in the primary write scope change, and page.tsx is the only file changed under frontend/app/
 - [x] Not LOCKED by an implementer
 
+### STAGING-DEPLOY-02 — Deploy the four locked follow-up tasks to ainow-staging-01
+
+**Status:** REGISTERED / READY — 2026-10-30. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Task ID:** STAGING-DEPLOY-02
+**Title:** Deploy the four locked follow-up tasks to ainow-staging-01
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Step 1 registration and admission (this control-plane record, 2026-10-30); Step 2 one deploy block, Keith's browser check and one read-only check block; Step 3 consolidation, checkpoint and LOCK by the control plane.
+**Start condition (human):** READY — Keith approved the deploy plan on 2026-10-30 ("Yes, register it"). That approval authorizes one deploy block and one read-only check block on ainow-staging-01 and nothing else: no rollback or other recovery, no configuration change, no provider execution and no credit change.
+**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Depends on (human):** DEBUG-INGEST-01, CM-QUOTA-DEAD-01, USAGE-MODEL-01, SAVEPOINT-I18N-01 (all COMPLETE AND LOCKED).
+**Depends on (machine `dependsOn`):** `[DEBUG-INGEST-01, CM-QUOTA-DEAD-01, USAGE-MODEL-01, SAVEPOINT-I18N-01]`
+**Primary write scope:** no repository source. Host state on ainow-staging-01 only, through /usr/local/sbin/aisandbox-deploy; evidence under C:/Users/knlee/aisb-preflight/STAGING-DEPLOY-02/. Anything else is out of scope.
+**Mutexes / resources:** STAGING (Lane 1, 2026-10-30; stagingAuthorized=true while admitted). No ENV, PROVIDER-LIVE, CREDIT, MIGRATION, LOCAL-RUNTIME, GATEWAY, AI-SERVICE, CONTAINER-MANAGER, FRONTEND, I18N or PACKAGE.
+**Hot-file leases:** none
+**Shared contracts:** none consumed or mutated (`sharedContractIds=[]`; `mutatesSharedContractIds=[]`).
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** acceptable (no schema change; returning to the previous commit would be a separately authorized aisandbox-deploy 7317749c5b05a633bafa34552ebea90c3e07cb67).
+**saturationClass:** OPTIONAL (staging only; no user depends on these changes yet)
+**productClass:** CURRENT
+**futureAuthorization:** NONE
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** STAGING
+
+**Problem:** DEBUG-INGEST-01, CM-QUOTA-DEAD-01, USAGE-MODEL-01 and SAVEPOINT-I18N-01 are COMPLETE AND LOCKED, but ainow-staging-01 still runs 7317749c5b05a633bafa34552ebea90c3e07cb67, so their deploy-time evidence cannot be collected.
+**Scope:** deploy 1b5892e7e9306c522b68e5e80b08673888ef98a4 with aisandbox-deploy, using the same guards as the C2 repeat deploy of 2026-10-29: machine id, HEAD and DEPLOYED at the previous commit, no maintenance marker, clean tracked tree, configuration hashes and off flags unchanged, then units active, no-login probes 401 and health probes 200. Between 7317749c5b05a633bafa34552ebea90c3e07cb67 and the target, 13 application files change and no migration, package, compose, environment or ops file changes; the migration hash stays a9fc22c7ba5a92b080eea0cb9b88d3f7631127a5b1fefa20618ca05c7a1bfe49. After the deploy Keith logs in himself and reads the Save Point panel in zh-TW and zh-CN, and one read-only block checks the logs and built code. Host blocks run in Cursor desktop with Keith's VPN off. Not in scope: rollback or other recovery, provider execution, flag or configuration changes, the USAGE-MODEL-01 provider criterion (stays open until a real provider run), the weekly backup copy and D (AUTH-9).
+
+#### Acceptance criteria
+
+- [ ] ainow-staging-01 HEAD and DEPLOYED are 1b5892e7e9306c522b68e5e80b08673888ef98a4, the tracked tree is clean, no maintenance marker remains, and the migration hash is unchanged
+- [ ] Configuration hashes and flags are unchanged: execution off, AI and email providers stub, basic_auth on
+- [ ] All units are active, no-login probes return 401, and gateway and frontend health probes return 200
+- [ ] After workspace use, the container-manager log since the deploy has no no such table lines (closes the CM-QUOTA-DEAD-01 criterion)
+- [ ] The built code on the host has no reference to 127.0.0.1:7870 (DEBUG-INGEST-01)
+- [ ] Keith reads the Save Point panel in zh-TW and zh-CN in a browser and accepts or corrects the wording (SAVEPOINT-I18N-01)
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
