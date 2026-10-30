@@ -82364,6 +82364,45 @@ nature=IMPLEMENTATION
 - [x] Not LOCKED by an implementer
 - [ ] After the next authorized deploy, the container-manager log shows no no such table lines (deploy-time evidence, not a lock gate)
 
+### USAGE-MODEL-01 — Write the model into usage_records when the AI-service worker finalizes an execution
+
+**Status:** REGISTERED / READY — 2026-10-30. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Task ID:** USAGE-MODEL-01
+**Title:** Write the model into usage_records when the AI-service worker finalizes an execution
+**Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP. Registration and admission is this control-plane record (2026-10-30); Step 1 implementation; Step 2 consolidation, checkpoint and LOCK by the control plane.
+**Start condition (human):** READY — Keith approved registration as proposed on 2026-10-30 ("Yes, register it", in the investigation session), including saturationClass OPTIONAL.
+**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Depends on (human):** none (CM-QUOTA-DEAD-01 and DEBUG-INGEST-01 are LOCKED; no shared output).
+**Depends on (machine `dependsOn`):** `[]`
+**Primary write scope:** exactly `services/ai-service/src/worker/worker.processor.ts`, `services/ai-service/src/worker/worker.processor.spec.ts`. Anything else is out of scope.
+**Mutexes / resources:** AI-SERVICE (Lane 1, 2026-10-30). No GATEWAY, CONTAINER-MANAGER, FRONTEND, MIGRATION, STAGING, ENV, I18N, PACKAGE, LOCAL-RUNTIME, PROVIDER-LIVE or CREDIT.
+**Hot-file leases:** none
+**Shared contracts:** none consumed or mutated (`sharedContractIds=[]`; `mutatesSharedContractIds=[]`). HARNESS_ENTITLEMENT_PROOF_V1 lists worker.processor.ts among its paths and stays FROZEN; this task does not touch the entitlement proof, its payload or its checks.
+**Evidence class:** LOCAL-TESTS. Deploy-time ledger evidence comes with a later, separately authorized deploy.
+**Revert isolation:** acceptable (two ai-service files; reverting restores only the missing column write).
+**saturationClass:** OPTIONAL (data quality and audit only; credit amounts do not depend on the model)
+**productClass:** CURRENT
+**futureAuthorization:** NONE
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** none
+
+**Problem:** On ainow-staging-01 the gateway PostgreSQL usage_records rows for the two C2 provider runs (xai, grok-4.5, one Ask and one Build, 2026-10-29) have model NULL (C:/Users/knlee/aisb-preflight/CLEAN-BASELINE-EVIDENCE-20261028/C2R/c2r5-evidence.out lines 11-12). The gateway writes the pending intent without a model (services/api-gateway/src/usage-ledger/usage-ledger.service.ts:171-183) and passes the resolved model only in the queue payload (services/api-gateway/src/ai/ai-execution.controller.ts:808). The AI-service worker finalizes the row, but its completed UPDATE (services/ai-service/src/worker/worker.processor.ts:1628-1637) and contract-failure UPDATE (:1580-1589) set only execution_status, tokens_used and metadata; the model lands only in metadata.aiExecutionResult.model (:1532-1541). The gateway method that would set the column, updateExecutionResult (usage-ledger.service.ts:283), has no caller. The column is nullable (services/api-gateway/src/migrations/1740355300000-AddExecutionStatusToUsageRecords.ts:34-37), so no migration is needed. Impact today: credit_deduction_records.metadata.model is null and per-model reporting cannot work; credit amounts are model-independent, so no money is affected. Source: the read-only investigation of 2026-10-30.
+**Scope:** in worker.processor.ts, add model to the completed and contract-failure usage_records UPDATEs as a new fourth parameter: aiResult.model when it is a non-empty string, otherwise job.data.model when it is a non-empty string, otherwise NULL, cut to 100 characters to fit the varchar(100) column; leave parameters $1 to $3, every other column, status and metadata value, and the timeout, cancel and other failure paths unchanged; add tests in worker.processor.spec.ts. Not in scope: execution_duration_ms (same gap, a possible follow-up), the gateway (ledger service, deduction, readers, pricing tables), any schema change, backfilling existing rows, and deploying.
+
+#### Acceptance criteria
+
+- [ ] The worker's completed and contract-failure usage_records UPDATEs set model to aiResult.model, else job.data.model, else NULL (empty strings count as missing; values cut to 100 characters)
+- [ ] Parameters $1 to $3 and the execution_status, tokens_used and metadata values are unchanged, model is the new $4, and the timeout, cancel and other failure UPDATEs are unchanged
+- [ ] New tests in worker.processor.spec.ts show grok-4.5 from the AI result written on completion, the job-payload model used when the AI result has none, NULL when neither has one, and the model on the contract-failure UPDATE
+- [ ] services/ai-service: npm test and npm run build pass on Node v22.14.0 with no new failures against the pre-change baseline
+- [ ] Only the files in the primary write scope change; no migration
+- [ ] Not LOCKED by an implementer
+- [ ] After the next authorized deploy, the next real provider execution on ainow-staging-01 has a non-empty usage_records.model (deploy-time evidence, not a lock gate)
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
