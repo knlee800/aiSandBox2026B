@@ -82275,6 +82275,46 @@ nature=IMPLEMENTATION
 - [x] Only the files in the primary write scope change
 - [x] Not LOCKED by an implementer
 
+### DEBUG-INGEST-01 — Remove the leftover debug ingest calls to 127.0.0.1:7870
+
+**Status:** REGISTERED / READY — 2026-10-30. Registered by Keith's instruction; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Task ID:** DEBUG-INGEST-01
+**Title:** Remove the leftover debug ingest calls to 127.0.0.1:7870
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Step 1 is this registration and admission (2026-10-30); Step 2 implementation; Step 3 consolidation, checkpoint and LOCK by the control plane.
+**Start condition (human):** READY — Keith instructed on 2026-10-29 that the follow-up items that must be done anyway be done now, one bounded task at a time, and on 2026-10-30, after the CLEAN-BASELINE-DEPLOY-01 lock, to register this first one.
+**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Depends on (human):** none.
+**Depends on (machine `dependsOn`):** `[]`
+**Primary write scope:** exactly `services/api-gateway/src/clients/container-manager-http.client.ts`, `services/container-manager/src/sessions/sessions.service.ts`, `frontend/app/[locale]/app/page.tsx`, `frontend/components/workspace/workspace-checkpoint-create.logic.ts`. Anything else is out of scope.
+**Machine write scope:** `services/api-gateway/src/clients/container-manager-http.client.ts`, `services/container-manager/src/sessions/sessions.service.ts`, `frontend/app/`, `frontend/components/workspace/workspace-checkpoint-create.logic.ts`. The validator refuses `[` and `]` in write paths, so the sidecar lists the directory `frontend/app/` for `frontend/app/[locale]/app/page.tsx`; the change in that directory is limited to page.tsx, and FRONTEND already gives exclusive frontend ownership.
+**Mutexes / resources:** GATEWAY, CONTAINER-MANAGER, FRONTEND (Lane 1, 2026-10-30). No STAGING, ENV, I18N, MIGRATION, PACKAGE, LOCAL-RUNTIME, PROVIDER-LIVE or CREDIT.
+**Hot-file leases:** none (frontend/app/[locale]/app/page.tsx is covered by FRONTEND)
+**Shared contracts:** none changed.
+**Evidence class:** LOCAL-TESTS. Deploying the change to ainow-staging-01 is later work under its own authorization.
+**Revert isolation:** acceptable (deletions of debug-only blocks; no behaviour, data, migration or contract change; independent of the DEPLOY-01 evidence).
+**saturationClass:** FORCING (required before real-user invitations; plan risk register R15)
+**productClass:** CURRENT
+**futureAuthorization:** NONE
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** none
+
+**Problem:** five leftover agent-debug blocks (marked `// #region agent log`) post JSON with session and user details to `http://127.0.0.1:7870/ingest/eba94f28-6765-4a01-9905-123e592de80f`: two in `services/api-gateway/src/clients/container-manager-http.client.ts` (execInSession, before the request and in its catch), one in `services/container-manager/src/sessions/sessions.service.ts` (the only content of an `if (userId)` block), one in `frontend/app/[locale]/app/page.tsx` (the manual checkpoint error path, which runs in the user's browser) and one in `frontend/components/workspace/workspace-checkpoint-create.logic.ts`. Anything listening on that port receives the IDs. Source: plan risk register R15 and the follow-up candidates in docs/CLEAN-BASELINE-GOV-01-DECISION.md (C2 and C3 result sections). Phase 74 removed three earlier calls of the same kind from execInSession in container-manager.
+**Scope:** delete those five blocks with their region comments; in sessions.service.ts also delete the `if (userId)` wrapper whose only content is the call. No other change. Not in scope: any other logging or console output, deploying the change, and the other follow-up candidates.
+
+#### Acceptance criteria
+
+- [ ] No `127.0.0.1:7870` or `/ingest/eba94f28` string remains in source under services/ and frontend/ (excluding node_modules and build output)
+- [ ] Exactly the five blocks (and the emptied `if (userId)` wrapper) are removed; no other code changes
+- [ ] services/api-gateway: npx jest --maxWorkers=2 passes apart from the known smoke.integration.spec.ts runtime failures, and npm run build passes
+- [ ] services/container-manager: npm test and npm run build pass
+- [ ] frontend: npx tsc --noEmit, npm test and npm run build pass; frontend/tsconfig.tsbuildinfo restored
+- [ ] Only the files in the primary write scope change
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
