@@ -215,6 +215,12 @@ function getAiMessages(locale: string): typeof enMessages.ai {
   return enMessages.ai;
 }
 
+function getWorkspaceMessages(locale: string): typeof enMessages.workspace {
+  if (locale === 'zh-TW') return zhTwMessages.workspace;
+  if (locale === 'zh-CN') return zhCnMessages.workspace;
+  return enMessages.workspace;
+}
+
 type WorkspaceChatMessageKind = 'ai' | 'system';
 type WorkspaceChatThreadUiMessage = WorkspaceChatThreadMessage & {
   messageKind?: WorkspaceChatMessageKind;
@@ -880,6 +886,7 @@ export default function AppPage() {
   const locale = params.locale as string;
   const authModuleMessages = getAuthModuleMessages(locale);
   const aiMessages = getAiMessages(locale);
+  const workspaceMessages = getWorkspaceMessages(locale);
   const [authLoading, setAuthLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -2912,14 +2919,14 @@ export default function AppPage() {
 
     if (!selectedSessionId || !userId) {
       setCheckpointCreateState('create-error');
-      setCheckpointCreateError('Cannot create a save point without an active session.');
+      setCheckpointCreateError(workspaceMessages.savePointNoActiveSession);
       return;
     }
 
     const selectedSession = sessions.find((session) => session.id === selectedSessionId);
     if (!selectedSession || selectedSession.terminatedAt) {
       setCheckpointCreateState('create-error');
-      setCheckpointCreateError('Cannot create a save point for a terminated session.');
+      setCheckpointCreateError(workspaceMessages.savePointSessionTerminated);
       return;
     }
 
@@ -2941,7 +2948,7 @@ export default function AppPage() {
 
       if (!createResult.commitHash) {
         setCheckpointCreateState('create-error');
-        setCheckpointCreateError('No file changes detected. Save point was not created.');
+        setCheckpointCreateError(workspaceMessages.savePointNoFileChanges);
         return;
       }
       const createdCommitHash = createResult.commitHash;
@@ -2973,7 +2980,7 @@ export default function AppPage() {
       setCheckpointCreateError(
         error instanceof Error && error.message.trim()
           ? error.message
-          : 'Failed to create save point.',
+          : workspaceMessages.savePointCreateFailed,
       );
     }
   }

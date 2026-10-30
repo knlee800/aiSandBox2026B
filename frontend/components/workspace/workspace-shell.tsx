@@ -143,6 +143,7 @@ function getStateMessageMessages(locale: string): typeof enMessages.stateMessage
 }
 
 let stateMessageCopy = getStateMessageMessages('en');
+let workspaceCopy = getWorkspaceMessages('en');
 
 export const PROJECT_AI_INSTRUCTIONS_MAX_LENGTH = 4000;
 export const REPO_DOC_PATH_MAX_LENGTH = 500;
@@ -834,6 +835,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   recoveryCopy = recoveryMessages;
   const stateMessageMessages = React.useMemo(() => getStateMessageMessages(locale), [locale]);
   stateMessageCopy = stateMessageMessages;
+  workspaceCopy = workspaceMessages;
   const comingSoonLabel = React.useMemo(() => getTabMessages(locale).comingSoon, [locale]);
   const activeTabLabel = React.useMemo(
     () => tabBarTabs.find((tab) => tab.id === activeTabId)?.label ?? activeTabId,
@@ -5476,14 +5478,14 @@ function HistoryCreateCheckpointPanel(props: {
 
   return (
     <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-create-checkpoint">
-      <p className="text-[11px] font-semibold text-gray-700">Save Point</p>
+      <p className="text-[11px] font-semibold text-gray-700">{workspaceCopy.savePoint}</p>
       <div className="mt-2 flex gap-2">
         <input
           type="text"
           data-testid="history-checkpoint-description-input"
           value={props.descriptionValue}
           onChange={(event) => props.onDescriptionChange(event.target.value)}
-          placeholder="Optional short description"
+          placeholder={workspaceCopy.savePointDescriptionPlaceholder}
           maxLength={120}
           disabled={isCreating || !props.selectedSessionId}
           className="flex-1 rounded border border-gray-300 px-2 py-1 text-xs disabled:bg-gray-100 disabled:text-gray-500"
@@ -5495,7 +5497,7 @@ function HistoryCreateCheckpointPanel(props: {
           onClick={() => void props.onCreateCheckpoint()}
           className="rounded bg-blue-600 px-3 py-1 text-xs text-white disabled:bg-blue-300"
         >
-          {isCreating ? 'Creating...' : 'Save Point'}
+          {isCreating ? workspaceCopy.savePointCreating : workspaceCopy.savePoint}
         </button>
       </div>
       <div className="mt-2">
@@ -5523,7 +5525,7 @@ function HistoryCreateStateMessage(props: {
         heading={stateMessageCopy.heading.savePointIdle}
         body={
           props.hasSelectedSession
-            ? 'Create a manual save point for the current workspace.'
+            ? workspaceCopy.savePointIdleBody
             : recoveryCopy.workspace.openProjectToCreateSavePoint
         }
         action={stateMessageCopy.action.optionallyAddAShortDescriptionThenChooseSavePoint}
@@ -5557,7 +5559,7 @@ function HistoryCreateStateMessage(props: {
     <StateMessage
       tone="error"
       heading={stateMessageCopy.heading.savePointFailed}
-      body={props.errorMessage ?? 'Manual checkpoint creation failed.'}
+      body={props.errorMessage ?? workspaceCopy.savePointFallbackError}
       action={stateMessageCopy.action.retrySavePointForTheCurrentWorkspace}
     />
   );

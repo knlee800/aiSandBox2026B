@@ -145,7 +145,16 @@
     "creditBalanceValue": "{count}",
     "creditBalanceHint": "與 token 及工作階段配額不同",
     "creditBalanceLoading": "正在載入信用餘額...",
-    "creditBalanceLoadError": "無法載入信用餘額"
+    "creditBalanceLoadError": "無法載入信用餘額",
+    "savePoint": "儲存點",
+    "savePointCreating": "建立中...",
+    "savePointDescriptionPlaceholder": "簡短說明（選填）",
+    "savePointIdleBody": "為目前工作區建立手動儲存點。",
+    "savePointFallbackError": "手動檢查點建立失敗。",
+    "savePointNoActiveSession": "沒有作用中的工作階段，無法建立儲存點。",
+    "savePointSessionTerminated": "工作階段已終止，無法建立儲存點。",
+    "savePointNoFileChanges": "未偵測到檔案變更，未建立儲存點。",
+    "savePointCreateFailed": "無法建立儲存點。"
   },
   "recovery": {
     "actions": {

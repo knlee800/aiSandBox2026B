@@ -145,7 +145,16 @@
     "creditBalanceValue": "{count}",
     "creditBalanceHint": "与 token 及会话配额不同",
     "creditBalanceLoading": "正在加载信用余额...",
-    "creditBalanceLoadError": "无法加载信用余额"
+    "creditBalanceLoadError": "无法加载信用余额",
+    "savePoint": "保存点",
+    "savePointCreating": "创建中...",
+    "savePointDescriptionPlaceholder": "简短说明（可选）",
+    "savePointIdleBody": "为当前工作区创建手动保存点。",
+    "savePointFallbackError": "手动检查点创建失败。",
+    "savePointNoActiveSession": "没有活动会话，无法创建保存点。",
+    "savePointSessionTerminated": "会话已终止，无法创建保存点。",
+    "savePointNoFileChanges": "未检测到文件更改，未创建保存点。",
+    "savePointCreateFailed": "无法创建保存点。"
   },
   "recovery": {
     "actions": {

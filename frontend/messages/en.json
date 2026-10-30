@@ -145,7 +145,16 @@
     "creditBalanceValue": "{count}",
     "creditBalanceHint": "Separate from token and session quota",
     "creditBalanceLoading": "Loading credit balance...",
-    "creditBalanceLoadError": "Credit balance unavailable"
+    "creditBalanceLoadError": "Credit balance unavailable",
+    "savePoint": "Save Point",
+    "savePointCreating": "Creating...",
+    "savePointDescriptionPlaceholder": "Optional short description",
+    "savePointIdleBody": "Create a manual save point for the current workspace.",
+    "savePointFallbackError": "Manual checkpoint creation failed.",
+    "savePointNoActiveSession": "Cannot create a save point without an active session.",
+    "savePointSessionTerminated": "Cannot create a save point for a terminated session.",
+    "savePointNoFileChanges": "No file changes detected. Save point was not created.",
+    "savePointCreateFailed": "Failed to create save point."
   },
   "recovery": {
     "actions": {

@@ -8289,6 +8289,70 @@ describe('workspace session and preview controls i18n wiring — I18N-SHELL-03',
       /\{props\.previewState === 'loading'\s*\?\s*props\.commonMessages\.refreshing\s*:\s*props\.commonMessages\.refresh\}/,
     );
   });
+
+  test('locale files define save point workspace keys in en, zh-TW, and zh-CN', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+    const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
+    const zhCn = JSON.parse(readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'));
+    const requiredWorkspaceKeys = [
+      'savePoint',
+      'savePointCreating',
+      'savePointDescriptionPlaceholder',
+      'savePointIdleBody',
+      'savePointFallbackError',
+      'savePointNoActiveSession',
+      'savePointSessionTerminated',
+      'savePointNoFileChanges',
+      'savePointCreateFailed',
+    ] as const;
+
+    for (const key of requiredWorkspaceKeys) {
+      assert.ok(typeof en.workspace?.[key] === 'string' && en.workspace[key].length > 0);
+      assert.ok(typeof zhTw.workspace?.[key] === 'string' && zhTw.workspace[key].length > 0);
+      assert.ok(typeof zhCn.workspace?.[key] === 'string' && zhCn.workspace[key].length > 0);
+    }
+  });
+
+  test('english save point workspace keys match the original literals', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+
+    assert.equal(en.workspace.savePoint, 'Save Point');
+    assert.equal(en.workspace.savePointCreating, 'Creating...');
+    assert.equal(en.workspace.savePointDescriptionPlaceholder, 'Optional short description');
+    assert.equal(
+      en.workspace.savePointIdleBody,
+      'Create a manual save point for the current workspace.',
+    );
+    assert.equal(en.workspace.savePointFallbackError, 'Manual checkpoint creation failed.');
+    assert.equal(
+      en.workspace.savePointNoActiveSession,
+      'Cannot create a save point without an active session.',
+    );
+    assert.equal(
+      en.workspace.savePointSessionTerminated,
+      'Cannot create a save point for a terminated session.',
+    );
+    assert.equal(
+      en.workspace.savePointNoFileChanges,
+      'No file changes detected. Save point was not created.',
+    );
+    assert.equal(en.workspace.savePointCreateFailed, 'Failed to create save point.');
+  });
+
+  test('workspace shell and page source remove hardcoded save point English literals', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+
+    assert.doesNotMatch(shellSource, />Save Point</);
+    assert.doesNotMatch(shellSource, /'Creating\.\.\.' : 'Save Point'/);
+    assert.doesNotMatch(shellSource, /placeholder="Optional short description"/);
+    assert.doesNotMatch(shellSource, /'Create a manual save point for the current workspace\.'/);
+    assert.doesNotMatch(shellSource, /'Manual checkpoint creation failed\.'/);
+    assert.doesNotMatch(pageSource, /Cannot create a save point without an active session\./);
+    assert.doesNotMatch(pageSource, /Cannot create a save point for a terminated session\./);
+    assert.doesNotMatch(pageSource, /No file changes detected\. Save point was not created\./);
+    assert.doesNotMatch(pageSource, /Failed to create save point\./);
+  });
 });
 
 describe('workspace preview stop caller — PREVIEW-STOP-UI-01', () => {
