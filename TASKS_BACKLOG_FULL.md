@@ -82409,8 +82409,12 @@ nature=IMPLEMENTATION
 - [ ] After the next authorized deploy, the next real provider execution on ainow-staging-01 has a non-empty usage_records.model (deploy-time evidence, not a lock gate)
 
 ### SAVEPOINT-I18N-01 — Translate the hardcoded Save Point text in the workspace History panel
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=SAVEPOINT-I18N-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY — 2026-10-30. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-30. Registered and admitted to Lane 1; Step 1 (implementation) not started. mutexes=FRONTEND, I18N. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-10-30. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
 **Task ID:** SAVEPOINT-I18N-01
 **Title:** Translate the hardcoded Save Point text in the workspace History panel
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
