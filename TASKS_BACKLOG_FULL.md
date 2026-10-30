@@ -82414,14 +82414,14 @@ taskId=SAVEPOINT-I18N-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-30. Registered and admitted to Lane 1; Step 1 (implementation) not started. mutexes=FRONTEND, I18N. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-10-30. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Status:** COMPLETE AND LOCKED — 2026-10-30. LANE-DONE and LOCK recorded by the control plane; Lane 1, FRONTEND and I18N released. Checkpoint: docs/SAVEPOINT-I18N-01-CHECKPOINT.md. Implementation commit 1d54724507e11eefe24eb11789e2209fd7d5156b. Not yet deployed to ainow-staging-01. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-30. Registered and admitted to Lane 1; Step 1 (implementation) not started. mutexes=FRONTEND, I18N. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-10-30. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
 **Task ID:** SAVEPOINT-I18N-01
 **Title:** Translate the hardcoded Save Point text in the workspace History panel
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 2-STEP. Registration and admission is this control-plane record (2026-10-30); Step 1 implementation; Step 2 consolidation, checkpoint and LOCK by the control plane.
 **Start condition (human):** READY — Keith approved registration as proposed on 2026-10-30 ("Yes, register it"), including saturationClass OPTIONAL.
-**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Start condition (machine):** `READY`; `status=LOCKED` (2026-10-30). Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
 **Depends on (human):** none (USAGE-MODEL-01 is LOCKED; no shared output).
 **Depends on (machine `dependsOn`):** `[]`
 **Primary write scope:** exactly `frontend/components/workspace/workspace-shell.tsx`, `frontend/components/workspace/workspace-shell.test.tsx`, `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`, and under `frontend/app/` only `frontend/app/[locale]/app/page.tsx` (the machine write path is the directory `frontend/app/` because the validator refuses square brackets). Anything else is out of scope.
@@ -82440,15 +82440,16 @@ nature=IMPLEMENTATION
 
 **Problem:** the Save Point panel in the workspace History tab shows English to zh-TW and zh-CN users, against the CLAUDE.md multilingual-first rule. Hardcoded literals, 10 occurrences of 9 distinct texts: frontend/components/workspace/workspace-shell.tsx:5479 and :5498 (Save Point), :5498 (Creating...), :5486 (Optional short description), :5526 (Create a manual save point for the current workspace.), :5560 (Manual checkpoint creation failed.); frontend/app/[locale]/app/page.tsx:2915 (Cannot create a save point without an active session.), :2922 (Cannot create a save point for a terminated session.), :2944 (No file changes detected. Save point was not created.), :2976 (Failed to create save point.). The other messages of that panel are already translated. Source: follow-up candidate in docs/CLEAN-BASELINE-DEPLOY-01-CHECKPOINT.md and the read-only investigation of 2026-10-30.
 **Scope:** add 9 keys under the workspace namespace of the three message files, using the existing terms (zh-TW 儲存點, zh-CN 保存点); not under stateMessage, whose key sets workspace-shell.test.tsx freezes. Replace the 10 literals with those keys, following the existing locale-getter pattern in each file. English text stays exactly as it is. Not in scope: the raw HTTP detail from workspace-checkpoint-create.logic.ts:54 that the panel shows when a request fails, other hardcoded History labels such as Controls and Checkpoint Browser, routing, styling and test IDs.
+**Step 1 complete; Step 2 consolidation and LOCK - 2026-10-30.** Implementation commit 1d54724507e11eefe24eb11789e2209fd7d5156b (Cursor CLI, grok-4.7-high, session 2f7e51ce-9967-4360-8f2c-54fd1b60fc03, one run) changes exactly the six write-scope files: the 10 literal occurrences in workspace-shell.tsx and frontend/app/[locale]/app/page.tsx now read 9 new flat keys in the workspace namespace of en.json, zh-TW.json and zh-CN.json; workspace-shell.tsx adds a module-level workspaceCopy beside stateMessageCopy; page.tsx adds getWorkspaceMessages and keeps error.message ahead of its fallback; workspace-shell.test.tsx adds three tests (keys in all locales, exact English values, old literals gone from both sources). English text is unchanged. Reviewer gates on Node v22.14.0: frontend npx tsc --noEmit exit 0, npm test 789/789 (baseline 786/786), npm run build exit 0. Evidence class is LOCAL-TESTS, so no browser check was run; the zh-TW and zh-CN wording was written by the control plane from existing terms and has not been seen in a browser. Not yet deployed to ainow-staging-01.
 
 #### Acceptance criteria
 
-- [ ] All 10 occurrences come from translation keys, and the 9 keys exist as non-empty strings in en, zh-TW and zh-CN
-- [ ] The English text is byte-for-byte what it was, including Creating...
-- [ ] New tests check the keys in all three locales and that the old literals are gone from both source files
-- [ ] frontend: npx tsc --noEmit, npm test and npm run build pass on Node v22.14.0 with no new failures against the pre-change baseline
-- [ ] Only the files in the primary write scope change, and page.tsx is the only file changed under frontend/app/
-- [ ] Not LOCKED by an implementer
+- [x] All 10 occurrences come from translation keys, and the 9 keys exist as non-empty strings in en, zh-TW and zh-CN
+- [x] The English text is byte-for-byte what it was, including Creating...
+- [x] New tests check the keys in all three locales and that the old literals are gone from both source files
+- [x] frontend: npx tsc --noEmit, npm test and npm run build pass on Node v22.14.0 with no new failures against the pre-change baseline
+- [x] Only the files in the primary write scope change, and page.tsx is the only file changed under frontend/app/
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
