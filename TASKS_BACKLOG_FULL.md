@@ -82452,8 +82452,12 @@ nature=IMPLEMENTATION
 - [x] Not LOCKED by an implementer
 
 ### STAGING-DEPLOY-02 — Deploy the four locked follow-up tasks to ainow-staging-01
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY — 2026-10-30. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-30. Registered and admitted to Lane 1; Step 2 (deploy) not started. mutexes=STAGING. evidenceClass=STAGING-RUNTIME. runtimeNeeds=STAGING. stagingAuthorized=true. Previous: **Status:** REGISTERED / READY — 2026-10-30. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
 **Task ID:** STAGING-DEPLOY-02
 **Title:** Deploy the four locked follow-up tasks to ainow-staging-01
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
