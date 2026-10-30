@@ -28,7 +28,6 @@ describe('SessionsService.startSessionContainer (AGENT-HARNESS-05B5A)', () => {
   let mockStartContainer: jest.Mock<any>;
   let mockReadFileFromContainer: jest.Mock<any>;
   let mockNotifySessionStarted: jest.Mock<any>;
-  let mockHasUserExceededQuota: jest.Mock<any>;
   let mockSelectSessionGet: jest.Mock<any>;
   let mockInsertSessionRun: jest.Mock<any>;
   let mockAssertSessionGet: jest.Mock<any>;
@@ -44,7 +43,6 @@ describe('SessionsService.startSessionContainer (AGENT-HARNESS-05B5A)', () => {
     mockStartContainer = jest.fn<any>().mockResolvedValue(undefined);
     mockReadFileFromContainer = jest.fn<any>().mockResolvedValue('file-content');
     mockNotifySessionStarted = jest.fn<any>().mockResolvedValue(undefined);
-    mockHasUserExceededQuota = jest.fn<any>().mockReturnValue(false);
     mockSelectSessionGet = jest.fn<any>().mockReturnValue(undefined);
     mockInsertSessionRun = jest.fn<any>().mockReturnValue(undefined);
     mockAssertSessionGet = jest.fn<any>().mockReturnValue({
@@ -128,10 +126,6 @@ describe('SessionsService.startSessionContainer (AGENT-HARNESS-05B5A)', () => {
       logTerminationEvent: jest.fn<any>(),
     };
 
-    const quotaEvaluationService = {
-      hasUserExceededQuota: mockHasUserExceededQuota,
-    };
-
     service = new SessionsService(
       {} as any,
       apiGatewayClient as any,
@@ -139,7 +133,6 @@ describe('SessionsService.startSessionContainer (AGENT-HARNESS-05B5A)', () => {
       governanceConfig as any,
       {} as any,
       governanceEventsService as any,
-      quotaEvaluationService as any,
     );
   });
 
@@ -381,7 +374,6 @@ describe('SessionsService idle-timeout response semantics (PRIVATE-BETA-BLOCKER-
       } as any,
       {} as any,
       { logTerminationEvent: mockLogTerminationEvent } as any,
-      { hasUserExceededQuota: jest.fn<any>().mockReturnValue(false) } as any,
     );
 
     consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
@@ -717,7 +709,6 @@ describe('SessionsService cross-store lifecycle notification (PRIVATE-BETA-BLOCK
       } as any,
       {} as any,
       { logTerminationEvent: jest.fn<any>() } as any,
-      { hasUserExceededQuota: jest.fn<any>().mockReturnValue(false) } as any,
     );
 
     consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
@@ -1103,7 +1094,6 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
       } as any,
       {} as any,
       { logTerminationEvent: mockLogTerminationEvent } as any,
-      { hasUserExceededQuota: jest.fn<any>().mockReturnValue(false) } as any,
     );
 
     consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
@@ -1322,4 +1312,23 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
       }
     },
   );
+
+  it('returns the container result when exec succeeds for a usable session', async () => {
+    const sessionId = 'sess-exec-ok';
+
+    const result = await service.execInContainer(sessionId, ['echo', 'hi']);
+
+    expect(result).toEqual({
+      exitCode: 0,
+      stdout: 'ok',
+      stderr: '',
+    });
+    expect(mockExecInContainerBySessionId).toHaveBeenCalledWith(
+      sessionId,
+      ['echo', 'hi'],
+      undefined,
+      undefined,
+      undefined,
+    );
+  });
 });

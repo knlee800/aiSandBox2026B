@@ -26,11 +26,9 @@ export class PreviewService {
   /**
    * Register a preview port for a session container
    * Task 8.4A: Enforce Session Termination (HTTP 410)
-   * Task 9.5A: Enforce Quota Limits (HTTP 429)
    *
    * Validations:
    * - Session must not be terminated (410 if terminated)
-   * - Quota must not be exceeded (429 if exceeded)
    * - Port must be between 1024 and 65535
    * - Session must exist
    * - Container must be running
@@ -40,7 +38,6 @@ export class PreviewService {
    * @returns Registration confirmation
    * @throws NotFoundException if session does not exist
    * @throws GoneException if session is terminated
-   * @throws TooManyRequestsException if quota exceeded
    * @throws BadRequestException if port is invalid
    * @throws InternalServerErrorException if container validation fails
    */
@@ -50,9 +47,6 @@ export class PreviewService {
   ): Promise<{ sessionId: string; port: number; registered: true }> {
     // Task 8.4A: Check session termination FIRST (DB-backed via SessionsService)
     this.sessionsService.assertSessionUsable(sessionId);
-
-    // Task 9.5A: Check quota limits SECOND (request-time blocking)
-    await this.sessionsService.checkQuota(sessionId);
 
     // Validate port range
     if (!Number.isInteger(port) || port < 1024 || port > 65535) {

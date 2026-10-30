@@ -20,7 +20,6 @@ import { DockerRuntimeService } from '../docker/docker-runtime.service';
 import { GovernanceConfig } from '../config/governance.config';
 import { ProjectsService } from '../projects/projects.service';
 import { GovernanceEventsService } from '../governance/governance-events.service';
-import { QuotaEvaluationService } from '../usage/quota-evaluation.service';
 
 const execAsync = promisify(exec);
 
@@ -55,7 +54,6 @@ export class SessionsService {
     private governanceConfig: GovernanceConfig,
     private projectsService: ProjectsService,
     private governanceEventsService: GovernanceEventsService,
-    private quotaEvaluationService: QuotaEvaluationService,
   ) {
     const dbPath = path.join(__dirname, '../../../..', 'database', 'aisandbox.db');
     const dbDir = path.dirname(dbPath);
@@ -547,7 +545,6 @@ export class SessionsService {
    * Task 8.3A: Enforce Session Idle Timeout
    * Task 8.3B: Enforce Session Max Lifetime
    * Task 8.4A: Enforce Session Termination (HTTP 410)
-   * Task 9.5A: Enforce Quota Limits (HTTP 429)
    *
    * @param sessionId - Session UUID
    * @param cmd - Command array
@@ -557,7 +554,7 @@ export class SessionsService {
    * @returns Object with exitCode, stdout, stderr
    * @throws NotFoundException if session does not exist
    * @throws GoneException if session is terminated, max lifetime exceeded, or idle timeout exceeded
-   * @throws TooManyRequestsException if concurrent exec limit exceeded or quota exceeded
+   * @throws TooManyRequestsException if concurrent exec limit exceeded
    * @throws Error if container not found, not running, or exec fails
    */
   async execInContainer(
@@ -575,9 +572,6 @@ export class SessionsService {
 
     // Task 8.3A: Check idle timeout THIRD
     await this.checkAndEnforceIdleTimeout(sessionId);
-
-    // Task 9.5A: Check quota limits FOURTH (request-time blocking)
-    await this.checkAndEnforceQuota(sessionId);
 
     // Task 8.2A: Check concurrent exec limit
     const currentActive = this.activeExecs.get(sessionId) || 0;
@@ -630,14 +624,12 @@ export class SessionsService {
    * Task 8.3A: Enforce Session Idle Timeout
    * Task 8.3B: Enforce Session Max Lifetime
    * Task 8.4A: Enforce Session Termination (HTTP 410)
-   * Task 9.5A: Enforce Quota Limits (HTTP 429)
    *
    * @param sessionId - Session UUID
    * @param filePath - Relative path from /workspace
    * @returns File content as UTF-8 string
    * @throws NotFoundException if session does not exist
    * @throws GoneException if session is terminated, max lifetime exceeded, or idle timeout exceeded
-   * @throws TooManyRequestsException if quota exceeded
    * @throws Error if container not found, not running, path invalid, or file read fails
    */
   async readFileFromContainer(
@@ -652,9 +644,6 @@ export class SessionsService {
 
     // Task 8.3A: Check idle timeout THIRD
     await this.checkAndEnforceIdleTimeout(sessionId);
-
-    // Task 9.5A: Check quota limits FOURTH (request-time blocking)
-    await this.checkAndEnforceQuota(sessionId);
 
     try {
       const result = await this.dockerRuntimeService.readFileFromContainer(
@@ -678,14 +667,12 @@ export class SessionsService {
    * Task 8.3A: Enforce Session Idle Timeout
    * Task 8.3B: Enforce Session Max Lifetime
    * Task 8.4A: Enforce Session Termination (HTTP 410)
-   * Task 9.5A: Enforce Quota Limits (HTTP 429)
    *
    * @param sessionId - Session UUID
    * @param filePath - Relative path from /workspace
    * @param content - File content as UTF-8 string
    * @throws NotFoundException if session does not exist
    * @throws GoneException if session is terminated, max lifetime exceeded, or idle timeout exceeded
-   * @throws TooManyRequestsException if quota exceeded
    * @throws Error if container not found, not running, path invalid, or file write fails
    */
   async writeFileToContainer(
@@ -701,9 +688,6 @@ export class SessionsService {
 
     // Task 8.3A: Check idle timeout THIRD
     await this.checkAndEnforceIdleTimeout(sessionId);
-
-    // Task 9.5A: Check quota limits FOURTH (request-time blocking)
-    await this.checkAndEnforceQuota(sessionId);
 
     try {
       await this.dockerRuntimeService.writeFileToContainer(
@@ -728,7 +712,6 @@ export class SessionsService {
    * @param filePath - Relative path from /workspace
    * @throws NotFoundException if session does not exist or file is missing
    * @throws GoneException if session is terminated, max lifetime exceeded, or idle timeout exceeded
-   * @throws TooManyRequestsException if quota exceeded
    * @throws Error if container not found, not running, path invalid, or delete fails
    */
   async deleteFileFromContainer(
@@ -738,7 +721,6 @@ export class SessionsService {
     this.assertSessionUsableOrThrow(sessionId);
     await this.checkAndEnforceMaxLifetime(sessionId);
     await this.checkAndEnforceIdleTimeout(sessionId);
-    await this.checkAndEnforceQuota(sessionId);
 
     try {
       await this.dockerRuntimeService.deleteFileFromContainer(sessionId, filePath);
@@ -759,7 +741,6 @@ export class SessionsService {
    * @returns Structured bounded search results
    * @throws NotFoundException if session does not exist
    * @throws GoneException if session is terminated, max lifetime exceeded, or idle timeout exceeded
-   * @throws TooManyRequestsException if quota exceeded
    * @throws Error if container not found, not running, query invalid, or search fails
    */
   async searchFilesInContainer(
@@ -773,7 +754,6 @@ export class SessionsService {
     this.assertSessionUsableOrThrow(sessionId);
     await this.checkAndEnforceMaxLifetime(sessionId);
     await this.checkAndEnforceIdleTimeout(sessionId);
-    await this.checkAndEnforceQuota(sessionId);
 
     try {
       const result = await this.dockerRuntimeService.searchFilesInContainer(
@@ -795,14 +775,12 @@ export class SessionsService {
    * Task 8.3A: Enforce Session Idle Timeout
    * Task 8.3B: Enforce Session Max Lifetime
    * Task 8.4A: Enforce Session Termination (HTTP 410)
-   * Task 9.5A: Enforce Quota Limits (HTTP 429)
    *
    * @param sessionId - Session UUID
    * @param dirPath - Relative path from /workspace (empty or "/" means root)
    * @returns Array of directory entries
    * @throws NotFoundException if session does not exist
    * @throws GoneException if session is terminated, max lifetime exceeded, or idle timeout exceeded
-   * @throws TooManyRequestsException if quota exceeded
    * @throws Error if container not found, not running, path invalid, or listing fails
    */
   async listDirectoryInContainer(
@@ -819,9 +797,6 @@ export class SessionsService {
 
     // Task 8.3A: Check idle timeout THIRD
     await this.checkAndEnforceIdleTimeout(sessionId);
-
-    // Task 9.5A: Check quota limits FOURTH (request-time blocking)
-    await this.checkAndEnforceQuota(sessionId);
 
     try {
       const result = await this.dockerRuntimeService.listDirectoryInContainer(
@@ -845,14 +820,12 @@ export class SessionsService {
    * Task 8.3A: Enforce Session Idle Timeout
    * Task 8.3B: Enforce Session Max Lifetime
    * Task 8.4A: Enforce Session Termination (HTTP 410)
-   * Task 9.5A: Enforce Quota Limits (HTTP 429)
    *
    * @param sessionId - Session UUID
    * @param filePath - Relative path from /workspace
    * @returns Object with path, exists, and metadata if exists
    * @throws NotFoundException if session does not exist
    * @throws GoneException if session is terminated, max lifetime exceeded, or idle timeout exceeded
-   * @throws TooManyRequestsException if quota exceeded
    * @throws Error if container not found, not running, path invalid, or stat fails
    */
   async statPathInContainer(
@@ -873,9 +846,6 @@ export class SessionsService {
 
     // Task 8.3A: Check idle timeout THIRD
     await this.checkAndEnforceIdleTimeout(sessionId);
-
-    // Task 9.5A: Check quota limits FOURTH (request-time blocking)
-    await this.checkAndEnforceQuota(sessionId);
 
     try {
       const result = await this.dockerRuntimeService.statPathInContainer(
@@ -903,17 +873,6 @@ export class SessionsService {
    */
   public assertSessionUsable(sessionId: string): void {
     this.assertSessionUsableOrThrow(sessionId);
-  }
-
-  /**
-   * Task 9.5A: Public wrapper for quota check (for use by other services)
-   * Delegates to private helper - no logic duplication
-   *
-   * @param sessionId - Session UUID
-   * @throws TooManyRequestsException (HTTP 429) if quota exceeded
-   */
-  public async checkQuota(sessionId: string): Promise<void> {
-    await this.checkAndEnforceQuota(sessionId);
   }
 
   /**
@@ -1088,74 +1047,6 @@ export class SessionsService {
    */
   private updateLastActivity(sessionId: string): void {
     this.lastActivity.set(sessionId, Date.now());
-  }
-
-  /**
-   * Task 9.5A: Check and enforce quota limits for a session
-   * Request-time quota enforcement (blocks only on EXCEEDED status)
-   * Fail-open: if quota evaluation fails, allow request
-   *
-   * @param sessionId - Session UUID
-   * @throws TooManyRequestsException (HTTP 429) if quota exceeded
-   */
-  private async checkAndEnforceQuota(sessionId: string): Promise<void> {
-    try {
-      // Read session to get user_id
-      const session = this.db
-        .prepare('SELECT user_id FROM sessions WHERE id = ?')
-        .get(sessionId) as { user_id: string } | undefined;
-
-      if (!session) {
-        // Session not found - already handled by assertSessionUsableOrThrow
-        // Fail-open: allow request
-        return;
-      }
-
-      // Get current month date range
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = now.getMonth();
-      const startDate = new Date(Date.UTC(year, month, 1, 0, 0, 0, 0)).toISOString();
-      const endDate = new Date(Date.UTC(year, month + 1, 0, 23, 59, 59, 999)).toISOString();
-
-      // Check if user has exceeded quota
-      const exceeded = this.quotaEvaluationService.hasUserExceededQuota(
-        session.user_id,
-        startDate,
-        endDate,
-      );
-
-      if (exceeded) {
-        // Reject request with HTTP 429
-        throw new HttpException(
-          {
-            statusCode: 429,
-            error: 'Too Many Requests',
-            message: 'Quota exceeded',
-            details: {
-              userId: session.user_id,
-              periodStart: startDate,
-              periodEnd: endDate,
-            },
-          },
-          HttpStatus.TOO_MANY_REQUESTS,
-        );
-      }
-
-      // Quota OK - allow request
-    } catch (error) {
-      // If error is HttpException with 429 status, re-throw it
-      if (error instanceof HttpException && error.getStatus() === HttpStatus.TOO_MANY_REQUESTS) {
-        throw error;
-      }
-
-      // Otherwise, fail-open (allow request despite evaluation failure)
-      console.error(
-        `[Task 9.5A] Quota evaluation failed for session ${sessionId}, failing open:`,
-        error.message,
-      );
-      // Do not throw - allow request to proceed
-    }
   }
 
   /**
