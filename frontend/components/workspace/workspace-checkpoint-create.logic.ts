@@ -50,9 +50,6 @@ export async function createWorkspaceCheckpoint(
     } catch {
       responseText = '';
     }
-    // #region agent log
-    fetch('http://127.0.0.1:7870/ingest/eba94f28-6765-4a01-9905-123e592de80f',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'8262b1'},body:JSON.stringify({sessionId:'8262b1',runId:'save-point-pre-fix',hypothesisId:'SP1,SP2,SP3',location:'workspace-checkpoint-create.logic.ts:createWorkspaceCheckpoint',message:'checkpoint create request failed',data:{sessionId:args.sessionId,status:response.status,statusText:response.statusText,bodySnippet:responseText.slice(0,300)},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     const detail = responseText.trim();
     throw new Error(
       detail

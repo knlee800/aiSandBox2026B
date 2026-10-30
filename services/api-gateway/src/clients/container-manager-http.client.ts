@@ -297,10 +297,6 @@ export class ContainerManagerHttpClient implements OnModuleInit {
     env?: Record<string, string>,
     timeoutMs: number = 30000,
   ): Promise<ExecResult> {
-    // #region agent log
-    fetch('http://127.0.0.1:7870/ingest/eba94f28-6765-4a01-9905-123e592de80f',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'8262b1'},body:JSON.stringify({sessionId:'8262b1',location:'container-manager-http.client.ts:execInSession:entry',message:'execInSession client called',data:{sessionId,cmd,cwd,isDisabled:this.isDisabled,baseUrl:this.baseUrl,hasServiceKey:!!this.internalServiceKey},timestamp:Date.now(),hypothesisId:'H2,H3'})}).catch(()=>{});
-    // #endregion
-
     if (this.isDisabled) {
       throw new ServiceUnavailableException(
         'ContainerManager exec is unavailable (INTERNAL_SERVICE_KEY not configured in api-gateway)',
@@ -320,9 +316,6 @@ export class ContainerManagerHttpClient implements OnModuleInit {
       );
       return response.data;
     } catch (error) {
-      // #region agent log
-      fetch('http://127.0.0.1:7870/ingest/eba94f28-6765-4a01-9905-123e592de80f',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'8262b1'},body:JSON.stringify({sessionId:'8262b1',location:'container-manager-http.client.ts:execInSession:catch',message:'axios call failed',data:{isAxiosError:axios.isAxiosError(error),responseStatus:(error as any)?.response?.status,responseData:(error as any)?.response?.data,errorCode:(error as any)?.code,errorMessage:(error as any)?.message},timestamp:Date.now(),hypothesisId:'H3,H5'})}).catch(()=>{});
-      // #endregion
 
       await this.throwContainerManagerError(
         error,

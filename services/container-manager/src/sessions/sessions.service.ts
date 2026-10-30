@@ -368,12 +368,6 @@ export class SessionsService {
       }
     }
 
-    if (userId) {
-      // #region agent log
-      fetch('http://127.0.0.1:7870/ingest/eba94f28-6765-4a01-9905-123e592de80f',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'8262b1'},body:JSON.stringify({sessionId:'8262b1',location:'sessions.service.ts:startSessionContainer',message:'session record ensured in SQLite',data:{sessionId,userId,existed:!!existing},timestamp:Date.now(),runId:'post-fix'})}).catch(()=>{});
-      // #endregion
-    }
-
     const workspacePath = this.getWorkspacePath(sessionId);
 
     if (!fsSync.existsSync(workspacePath)) {

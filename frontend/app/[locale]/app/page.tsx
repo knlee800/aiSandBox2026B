@@ -2966,9 +2966,6 @@ export default function AppPage() {
       });
     } catch (error) {
       console.error('Failed to create manual checkpoint:', error);
-      // #region agent log
-      fetch('http://127.0.0.1:7870/ingest/eba94f28-6765-4a01-9905-123e592de80f',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'8262b1'},body:JSON.stringify({sessionId:'8262b1',runId:'save-point-pre-fix',hypothesisId:'SP4',location:'frontend/app/[locale]/app/page.tsx:handleCreateManualCheckpoint',message:'manual checkpoint catch path hit',data:{errorMessage:error instanceof Error ? error.message : String(error),selectedSessionId},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
       if (checkpointCreateRequestIdRef.current !== requestId) {
         return;
       }
