@@ -10,13 +10,16 @@
   },
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "USAGE-MODEL-01",
+      "mutexes": ["AI-SERVICE"],
+      "writePaths": [
+        "services/ai-service/src/worker/worker.processor.ts",
+        "services/ai-service/src/worker/worker.processor.spec.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -1289,6 +1292,31 @@
         "services/container-manager/src/sessions/sessions.service.ts",
         "services/container-manager/src/previews/preview.service.ts",
         "services/container-manager/src/sessions/sessions.service.spec.ts"
+      ],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "LOCAL-TESTS",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": [],
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
+    },
+    {
+      "taskId": "USAGE-MODEL-01",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "2-STEP",
+      "status": "ADMITTED",
+      "startCondition": "READY",
+      "saturationClass": "OPTIONAL",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": [],
+      "mutexes": ["AI-SERVICE"],
+      "writePaths": [
+        "services/ai-service/src/worker/worker.processor.ts",
+        "services/ai-service/src/worker/worker.processor.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
