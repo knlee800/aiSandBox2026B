@@ -14,6 +14,7 @@ import {
   requireNonEmptyAdvertisedHarnessTools,
   resolveBullMqLockDurationMs,
   resolveHarnessRouting,
+  resolveLedgerModel,
   resolveStuckWatchdogThresholdSeconds,
   sortKeysRecursive,
   verifyHarnessEntitlementProof,
@@ -1823,6 +1824,42 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed advertised tool orchestration', (
   });
 });
 
+describe('resolveLedgerModel', () => {
+  it('prefers a non-blank result model over the job model', () => {
+    expect(resolveLedgerModel('grok-4.5', 'grok-test-job-model')).toBe('grok-4.5');
+    expect(resolveLedgerModel('  grok-4.5  ', 'grok-test-job-model')).toBe('grok-4.5');
+  });
+
+  it('uses the job model when the result model is undefined, empty, or whitespace', () => {
+    expect(resolveLedgerModel(undefined, 'grok-test-job-model')).toBe(
+      'grok-test-job-model',
+    );
+    expect(resolveLedgerModel('', '  grok-test-job-model  ')).toBe(
+      'grok-test-job-model',
+    );
+    expect(resolveLedgerModel('   ', 'grok-test-job-model')).toBe(
+      'grok-test-job-model',
+    );
+  });
+
+  it('returns null when neither model is usable', () => {
+    expect(resolveLedgerModel(undefined, undefined)).toBeNull();
+    expect(resolveLedgerModel('', '   ')).toBeNull();
+    expect(resolveLedgerModel(null, null)).toBeNull();
+  });
+
+  it('cuts a value longer than 100 characters to its first 100 characters', () => {
+    expect(resolveLedgerModel('m'.repeat(150), 'job-model')).toBe('m'.repeat(100));
+    expect(resolveLedgerModel('', `  ${'n'.repeat(150)}`)).toBe('n'.repeat(100));
+  });
+
+  it('ignores non-string values', () => {
+    expect(resolveLedgerModel(42, 'grok-test-job-model')).toBe('grok-test-job-model');
+    expect(resolveLedgerModel({ model: 'grok-4.5' }, 7)).toBeNull();
+    expect(resolveLedgerModel(true, false)).toBeNull();
+  });
+});
+
 describe('AGENT-PLATFORM-EXEC-01C4B: persisted agent identity in worker logs and final metadata', () => {
   const CANONICAL_EXECUTION_ID = 'exec-canonical-01C4B';
   const DISTINCT_SESSION_ID = 'sess-workspace-01C4B';
@@ -2176,6 +2213,130 @@ describe('AGENT-PLATFORM-EXEC-01C4B: persisted agent identity in worker logs and
     const metadata = parseMetadataParam(ledger.completedUpdates[0]);
     expect(metadata).not.toHaveProperty('agentId');
     expect(metadata.keepMe).toBe('unrelated-value');
+    await worker.onModuleDestroy();
+  });
+
+  it('writes the AI result model on completed finalization', async () => {
+    const ledger = createLedgerMock();
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn().mockResolvedValue({
+        output: 'ok',
+        tokensUsed: 3,
+        model: 'grok-4.5',
+      }),
+      publisher: {
+        publishCompletion: jest.fn(),
+        publishToken: jest.fn(),
+        publishFileActions: jest.fn(),
+      },
+      apiGateway: { notifyExecutionComplete: jest.fn().mockResolvedValue(undefined) },
+    });
+
+    await processJob(createPlainJob());
+    expect(ledger.status.value).toBe('completed');
+    const params = ledger.completedUpdates[0];
+    expect(params[0]).toBe(CANONICAL_EXECUTION_ID);
+    expect(params[1]).toBe(3);
+    const metadata = parseMetadataParam(params);
+    expect(metadata.aiExecutionResult).toEqual(
+      expect.objectContaining({ model: 'grok-4.5' }),
+    );
+    expect(params[3]).toBe('grok-4.5');
+    await worker.onModuleDestroy();
+  });
+
+  it('writes the job model on completed finalization when the AI result has no model', async () => {
+    for (const resultModel of [undefined, ''] as const) {
+      const ledger = createLedgerMock();
+      const { worker, processJob } = await startWorker({
+        query: ledger.query,
+        execute: jest.fn().mockResolvedValue({
+          output: 'ok',
+          tokensUsed: 3,
+          model: resultModel,
+        }),
+        publisher: {
+          publishCompletion: jest.fn(),
+          publishToken: jest.fn(),
+          publishFileActions: jest.fn(),
+        },
+        apiGateway: { notifyExecutionComplete: jest.fn().mockResolvedValue(undefined) },
+      });
+
+      await processJob(createPlainJob({ model: 'grok-test-job-model' }));
+      expect(ledger.status.value).toBe('completed');
+      const params = ledger.completedUpdates[0];
+      expect(params[0]).toBe(CANONICAL_EXECUTION_ID);
+      expect(params[1]).toBe(3);
+      expect(typeof params[2]).toBe('string');
+      expect(params[3]).toBe('grok-test-job-model');
+      await worker.onModuleDestroy();
+    }
+  });
+
+  it('writes null model on completed finalization when neither result nor job has a model', async () => {
+    const ledger = createLedgerMock();
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn().mockResolvedValue({
+        output: 'ok',
+        tokensUsed: 3,
+      }),
+      publisher: {
+        publishCompletion: jest.fn(),
+        publishToken: jest.fn(),
+        publishFileActions: jest.fn(),
+      },
+      apiGateway: { notifyExecutionComplete: jest.fn().mockResolvedValue(undefined) },
+    });
+
+    await processJob(createPlainJob({ model: undefined }));
+    expect(ledger.status.value).toBe('completed');
+    const params = ledger.completedUpdates[0];
+    expect(params[0]).toBe(CANONICAL_EXECUTION_ID);
+    expect(params[1]).toBe(3);
+    expect(typeof params[2]).toBe('string');
+    expect(params[3]).toBeNull();
+    await worker.onModuleDestroy();
+  });
+
+  it('writes the resolved model on the contract-failure finalization that carries metadata', async () => {
+    const ledger = createLedgerMock({ keepMe: 'unrelated-value' });
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn().mockResolvedValue({
+        output: 'ok',
+        tokensUsed: 3,
+        model: 'grok-4.5',
+        fileActions: [],
+      }),
+      publisher: {
+        publishCompletion: jest.fn(),
+        publishToken: jest.fn(),
+        publishFileActions: jest.fn(),
+      },
+      apiGateway: { notifyExecutionComplete: jest.fn().mockResolvedValue(undefined) },
+    });
+
+    await processJob(
+      createPlainJob({
+        executionIntent: 'workspace_mutation',
+      }),
+    );
+    expect(ledger.status.value).toBe('failed');
+    const metadataUpdate = ledger.failedUpdates.find(
+      (params) => params.length >= 3 && typeof params[2] === 'string',
+    );
+    expect(metadataUpdate?.[0]).toBe(CANONICAL_EXECUTION_ID);
+    expect(metadataUpdate?.[1]).toBe(3);
+    const metadata = parseMetadataParam(metadataUpdate);
+    expect(metadata.executionError).toEqual(
+      expect.objectContaining({
+        code: expect.any(String),
+      }),
+    );
+    expect(metadataUpdate?.[3]).toBe('grok-4.5');
     await worker.onModuleDestroy();
   });
 });

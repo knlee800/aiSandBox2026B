@@ -145,6 +145,23 @@ export function resolveEffectiveFileActionsForExecutionIntent<T>(input: {
   };
 }
 
+export function resolveLedgerModel(
+  resultModel: unknown,
+  jobModel: unknown,
+): string | null {
+  for (const candidate of [resultModel, jobModel]) {
+    if (typeof candidate !== 'string') {
+      continue;
+    }
+    const trimmed = candidate.trim();
+    if (trimmed.length === 0) {
+      continue;
+    }
+    return trimmed.length > 100 ? trimmed.slice(0, 100) : trimmed;
+  }
+  return null;
+}
+
 export type HarnessRoutingFailReason =
   | 'tool_loop_disabled'
   | 'adapter_lacks_tool_use'
@@ -1582,10 +1599,16 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
               UPDATE usage_records
               SET execution_status = 'failed',
                   tokens_used = $2,
-                  metadata = $3::jsonb
+                  metadata = $3::jsonb,
+                  model = $4
               WHERE execution_id = $1
               `,
-              [executionId, aiResult.tokensUsed ?? 0, JSON.stringify(nextMetadata)],
+              [
+                executionId,
+                aiResult.tokensUsed ?? 0,
+                JSON.stringify(nextMetadata),
+                resolveLedgerModel(aiResult.model, job.data.model),
+              ],
             );
 
             this.executionStreamPublisher.publishCompletion(executionId);
@@ -1630,10 +1653,16 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
             UPDATE usage_records
             SET execution_status = 'completed',
                 tokens_used = $2,
-                metadata = $3::jsonb
+                metadata = $3::jsonb,
+                model = $4
             WHERE execution_id = $1
             `,
-            [executionId, aiResult.tokensUsed ?? 0, JSON.stringify(nextMetadata)],
+            [
+              executionId,
+              aiResult.tokensUsed ?? 0,
+              JSON.stringify(nextMetadata),
+              resolveLedgerModel(aiResult.model, job.data.model),
+            ],
           );
 
           this.executionStreamPublisher.publishCompletion(executionId);
