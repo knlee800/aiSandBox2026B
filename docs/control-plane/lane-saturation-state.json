@@ -10,13 +10,18 @@
   },
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "DEBUG-INGEST-01",
+      "mutexes": ["GATEWAY", "CONTAINER-MANAGER", "FRONTEND"],
+      "writePaths": [
+        "services/api-gateway/src/clients/container-manager-http.client.ts",
+        "services/container-manager/src/sessions/sessions.service.ts",
+        "frontend/app/",
+        "frontend/components/workspace/workspace-checkpoint-create.logic.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -1236,6 +1241,33 @@
       "writePaths": [
         "services/api-gateway/src/usage-ledger/usage-ledger.service.ts",
         "services/api-gateway/src/usage-ledger/__tests__/usage-ledger.service.spec.ts"
+      ],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "LOCAL-TESTS",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": [],
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
+    },
+    {
+      "taskId": "DEBUG-INGEST-01",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "3-STEP",
+      "status": "ADMITTED",
+      "startCondition": "READY",
+      "saturationClass": "FORCING",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": [],
+      "mutexes": ["GATEWAY", "CONTAINER-MANAGER", "FRONTEND"],
+      "writePaths": [
+        "services/api-gateway/src/clients/container-manager-http.client.ts",
+        "services/container-manager/src/sessions/sessions.service.ts",
+        "frontend/app/",
+        "frontend/components/workspace/workspace-checkpoint-create.logic.ts"
       ],
       "hotfiles": [],
       "i18n": false,

@@ -82276,8 +82276,12 @@ nature=IMPLEMENTATION
 - [x] Not LOCKED by an implementer
 
 ### DEBUG-INGEST-01 — Remove the leftover debug ingest calls to 127.0.0.1:7870
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=DEBUG-INGEST-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY — 2026-10-30. Registered by Keith's instruction; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-30. Registered and admitted to Lane 1; Step 2 (implementation) not started. mutexes=GATEWAY, CONTAINER-MANAGER, FRONTEND. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-10-30. Registered by Keith's instruction; the machine registration, candidate record and Lane 1 admission follow in Part 2.
 **Task ID:** DEBUG-INGEST-01
 **Title:** Remove the leftover debug ingest calls to 127.0.0.1:7870
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
