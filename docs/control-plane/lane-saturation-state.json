@@ -10,13 +10,17 @@
   },
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "CM-QUOTA-DEAD-01",
+      "mutexes": ["CONTAINER-MANAGER"],
+      "writePaths": [
+        "services/container-manager/src/sessions/sessions.service.ts",
+        "services/container-manager/src/previews/preview.service.ts",
+        "services/container-manager/src/sessions/sessions.service.spec.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -1263,6 +1267,32 @@
         "services/container-manager/src/sessions/sessions.service.ts",
         "frontend/app/",
         "frontend/components/workspace/workspace-checkpoint-create.logic.ts"
+      ],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "LOCAL-TESTS",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": [],
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
+    },
+    {
+      "taskId": "CM-QUOTA-DEAD-01",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "2-STEP",
+      "status": "ADMITTED",
+      "startCondition": "READY",
+      "saturationClass": "OPTIONAL",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": [],
+      "mutexes": ["CONTAINER-MANAGER"],
+      "writePaths": [
+        "services/container-manager/src/sessions/sessions.service.ts",
+        "services/container-manager/src/previews/preview.service.ts",
+        "services/container-manager/src/sessions/sessions.service.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,

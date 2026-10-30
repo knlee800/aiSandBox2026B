@@ -82321,8 +82321,12 @@ nature=IMPLEMENTATION
 - [x] Not LOCKED by an implementer
 
 ### CM-QUOTA-DEAD-01 — Remove the dead container-manager Task 9.5A request-time quota check
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CM-QUOTA-DEAD-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY — 2026-10-30. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-30. Registered and admitted to Lane 1; Step 1 (implementation) not started. mutexes=CONTAINER-MANAGER. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-10-30. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
 **Task ID:** CM-QUOTA-DEAD-01
 **Title:** Remove the dead container-manager Task 9.5A request-time quota check
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
