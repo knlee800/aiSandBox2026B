@@ -82408,6 +82408,44 @@ nature=IMPLEMENTATION
 - [x] Not LOCKED by an implementer
 - [ ] After the next authorized deploy, the next real provider execution on ainow-staging-01 has a non-empty usage_records.model (deploy-time evidence, not a lock gate)
 
+### SAVEPOINT-I18N-01 — Translate the hardcoded Save Point text in the workspace History panel
+
+**Status:** REGISTERED / READY — 2026-10-30. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Task ID:** SAVEPOINT-I18N-01
+**Title:** Translate the hardcoded Save Point text in the workspace History panel
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP. Registration and admission is this control-plane record (2026-10-30); Step 1 implementation; Step 2 consolidation, checkpoint and LOCK by the control plane.
+**Start condition (human):** READY — Keith approved registration as proposed on 2026-10-30 ("Yes, register it"), including saturationClass OPTIONAL.
+**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Depends on (human):** none (USAGE-MODEL-01 is LOCKED; no shared output).
+**Depends on (machine `dependsOn`):** `[]`
+**Primary write scope:** exactly `frontend/components/workspace/workspace-shell.tsx`, `frontend/components/workspace/workspace-shell.test.tsx`, `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`, and under `frontend/app/` only `frontend/app/[locale]/app/page.tsx` (the machine write path is the directory `frontend/app/` because the validator refuses square brackets). Anything else is out of scope.
+**Mutexes / resources:** FRONTEND and I18N (Lane 1, 2026-10-30). No GATEWAY, AI-SERVICE, CONTAINER-MANAGER, MIGRATION, STAGING, ENV, PACKAGE, LOCAL-RUNTIME, PROVIDER-LIVE or CREDIT.
+**Hot-file leases:** none
+**Shared contracts:** none consumed or mutated (`sharedContractIds=[]`; `mutatesSharedContractIds=[]`).
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** acceptable (frontend copy only; reverting restores the English literals).
+**saturationClass:** OPTIONAL (display text only; English behaviour is unchanged)
+**productClass:** CURRENT
+**futureAuthorization:** NONE
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** none
+
+**Problem:** the Save Point panel in the workspace History tab shows English to zh-TW and zh-CN users, against the CLAUDE.md multilingual-first rule. Hardcoded literals, 10 occurrences of 9 distinct texts: frontend/components/workspace/workspace-shell.tsx:5479 and :5498 (Save Point), :5498 (Creating...), :5486 (Optional short description), :5526 (Create a manual save point for the current workspace.), :5560 (Manual checkpoint creation failed.); frontend/app/[locale]/app/page.tsx:2915 (Cannot create a save point without an active session.), :2922 (Cannot create a save point for a terminated session.), :2944 (No file changes detected. Save point was not created.), :2976 (Failed to create save point.). The other messages of that panel are already translated. Source: follow-up candidate in docs/CLEAN-BASELINE-DEPLOY-01-CHECKPOINT.md and the read-only investigation of 2026-10-30.
+**Scope:** add 9 keys under the workspace namespace of the three message files, using the existing terms (zh-TW 儲存點, zh-CN 保存点); not under stateMessage, whose key sets workspace-shell.test.tsx freezes. Replace the 10 literals with those keys, following the existing locale-getter pattern in each file. English text stays exactly as it is. Not in scope: the raw HTTP detail from workspace-checkpoint-create.logic.ts:54 that the panel shows when a request fails, other hardcoded History labels such as Controls and Checkpoint Browser, routing, styling and test IDs.
+
+#### Acceptance criteria
+
+- [ ] All 10 occurrences come from translation keys, and the 9 keys exist as non-empty strings in en, zh-TW and zh-CN
+- [ ] The English text is byte-for-byte what it was, including Creating...
+- [ ] New tests check the keys in all three locales and that the old literals are gone from both source files
+- [ ] frontend: npx tsc --noEmit, npm test and npm run build pass on Node v22.14.0 with no new failures against the pre-change baseline
+- [ ] Only the files in the primary write scope change, and page.tsx is the only file changed under frontend/app/
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
