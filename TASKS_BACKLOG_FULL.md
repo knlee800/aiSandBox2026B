@@ -82326,14 +82326,14 @@ taskId=CM-QUOTA-DEAD-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-30. Registered and admitted to Lane 1; Step 1 (implementation) not started. mutexes=CONTAINER-MANAGER. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-10-30. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Status:** COMPLETE AND LOCKED — 2026-10-30. LANE-DONE and LOCK recorded by the control plane; Lane 1 and CONTAINER-MANAGER released. Checkpoint: docs/CM-QUOTA-DEAD-01-CHECKPOINT.md. Implementation commit 2c1eb7b558a4c2f9cfdb33ae9033b6d8102bdc78. Not yet deployed to ainow-staging-01. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-30. Registered and admitted to Lane 1; Step 1 (implementation) not started. mutexes=CONTAINER-MANAGER. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-10-30. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
 **Task ID:** CM-QUOTA-DEAD-01
 **Title:** Remove the dead container-manager Task 9.5A request-time quota check
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 2-STEP. Registration and admission is this control-plane record (2026-10-30); Step 1 implementation; Step 2 consolidation, checkpoint and LOCK by the control plane.
 **Start condition (human):** READY — Keith approved registration on 2026-10-30 ("Yes, register it", in the investigation session) and chose saturationClass OPTIONAL and this window for the record.
-**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Start condition (machine):** `READY`; `status=LOCKED` (2026-10-30). Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
 **Depends on (human):** none (DEBUG-INGEST-01 is LOCKED; no shared output).
 **Depends on (machine `dependsOn`):** `[]`
 **Primary write scope:** exactly `services/container-manager/src/sessions/sessions.service.ts`, `services/container-manager/src/previews/preview.service.ts`, `services/container-manager/src/sessions/sessions.service.spec.ts`. Anything else is out of scope.
@@ -82352,15 +82352,16 @@ nature=IMPLEMENTATION
 
 **Problem:** SessionsService.checkAndEnforceQuota (services/container-manager/src/sessions/sessions.service.ts:1101-1159), called before every workspace exec, read, write, delete, search, list and stat (:580, :657, :706, :741, :776, :824, :878) and, through the public checkQuota wrapper (:909-917), before preview start (services/container-manager/src/previews/preview.service.ts:55), evaluates quota from the container-manager SQLite tables users and token_usage. Those tables exist only in database/schema-sqlite.sql, loaded by the dev script database/test-sqlite.js; container-manager creates only sessions, governance_events and checkpoints, and nothing writes token_usage to SQLite. On ainow-staging-01 every call logs no such table and fails open. ARCHITECTURE.md places users and AI usage in the gateway PostgreSQL, where CreditBalanceGuard, QuotaGuard, TokenQuotaGuard, RateLimitGuard and SessionQuotaGuard enforce the real limits. Hazard if the tables were ever created: every user falls back to FREE and platform-imposed terminations count toward its 20-per-month limit, so all workspace operations would start returning 429. Source: the read-only investigation of 2026-10-30 (session "Investigate container-manager quota check failing open").
 **Scope:** remove checkAndEnforceQuota, the checkQuota wrapper and all eight call sites in sessions.service.ts plus the call in preview.service.ts; remove the QuotaEvaluationService import and constructor injection from SessionsService (its only use is the check); update the JSDoc lines that name Task 9.5A quota enforcement or HTTP 429 for quota, keeping the concurrent-exec 429; update sessions.service.spec.ts (the four constructor calls and the hasUserExceededQuota mocks) and add a test that exec succeeds with no quota evaluation. Not in scope: QuotaEvaluationService, UsageAggregationService, PlanQuotaConfig, the internal quota, usage and billing-export controllers, the gateway admin quota-visibility and billing reconciliation that read the same data (a possible separate follow-up), any schema change, and deploying.
+**Step 1 complete; Step 2 consolidation and LOCK - 2026-10-30.** Implementation commit 2c1eb7b558a4c2f9cfdb33ae9033b6d8102bdc78 (Cursor CLI, grok-4.7-high, session 41b96dd9-7f5c-4a05-b2c4-f803eefa70cb, one run) changes exactly the three write-scope files (20 lines added, 126 removed): sessions.service.ts loses checkAndEnforceQuota, the checkQuota wrapper, the seven call sites with their comments, the QuotaEvaluationService import and constructor parameter and the Task 9.5A JSDoc lines (the exec doc keeps the concurrent-exec 429); preview.service.ts loses the preview-start quota call and its JSDoc lines; sessions.service.spec.ts drops the quota mock from the four constructions and adds a test that exec returns the container result with no quota service. The termination (410), max-lifetime, idle-timeout and concurrent-exec (429) checks are untouched and in the same order; HttpException and HttpStatus stay for the concurrent-exec 429. No checkAndEnforceQuota, checkQuota or Task 9.5A remains in container-manager source. Reviewer gates on Node v22.14.0: container-manager npm test 193/193 (baseline 192/192 plus the new test) and npm run build pass. sessions.module.ts still imports UsageModule (out of scope, harmless). Not deployed: the deploy-time criterion stays open until ainow-staging-01 runs this commit.
 
 #### Acceptance criteria
 
-- [ ] No checkAndEnforceQuota, checkQuota or "[Task 9.5A]" remains in services/container-manager/src
-- [ ] Workspace operations and preview start still enforce termination (410), max lifetime, idle timeout and the concurrent-exec limit (429)
-- [ ] sessions.service.spec.ts no longer mocks hasUserExceededQuota, and a new test shows exec succeeds without any quota evaluation
-- [ ] services/container-manager: npm test and npm run build pass on Node v22.14.0
-- [ ] Only the files in the primary write scope change
-- [ ] Not LOCKED by an implementer
+- [x] No checkAndEnforceQuota, checkQuota or "[Task 9.5A]" remains in services/container-manager/src
+- [x] Workspace operations and preview start still enforce termination (410), max lifetime, idle timeout and the concurrent-exec limit (429)
+- [x] sessions.service.spec.ts no longer mocks hasUserExceededQuota, and a new test shows exec succeeds without any quota evaluation
+- [x] services/container-manager: npm test and npm run build pass on Node v22.14.0
+- [x] Only the files in the primary write scope change
+- [x] Not LOCKED by an implementer
 - [ ] After the next authorized deploy, the container-manager log shows no no such table lines (deploy-time evidence, not a lock gate)
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
