@@ -82281,14 +82281,14 @@ taskId=DEBUG-INGEST-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-30. Registered and admitted to Lane 1; Step 2 (implementation) not started. mutexes=GATEWAY, CONTAINER-MANAGER, FRONTEND. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-10-30. Registered by Keith's instruction; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Status:** COMPLETE AND LOCKED — 2026-10-30. LANE-DONE and LOCK recorded by the control plane; Lane 1, GATEWAY, CONTAINER-MANAGER and FRONTEND released. Checkpoint: docs/DEBUG-INGEST-01-CHECKPOINT.md. Implementation commit d09423d7e6ddc3f91ce769bde458235e4092384e. Not yet deployed to ainow-staging-01. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-30. Registered and admitted to Lane 1; Step 2 (implementation) not started. mutexes=GATEWAY, CONTAINER-MANAGER, FRONTEND. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-10-30. Registered by Keith's instruction; the machine registration, candidate record and Lane 1 admission follow in Part 2.
 **Task ID:** DEBUG-INGEST-01
 **Title:** Remove the leftover debug ingest calls to 127.0.0.1:7870
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP. Step 1 is this registration and admission (2026-10-30); Step 2 implementation; Step 3 consolidation, checkpoint and LOCK by the control plane.
 **Start condition (human):** READY — Keith instructed on 2026-10-29 that the follow-up items that must be done anyway be done now, one bounded task at a time, and on 2026-10-30, after the CLEAN-BASELINE-DEPLOY-01 lock, to register this first one.
-**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Start condition (machine):** `READY`; `status=LOCKED` (2026-10-30). Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
 **Depends on (human):** none.
 **Depends on (machine `dependsOn`):** `[]`
 **Primary write scope:** exactly `services/api-gateway/src/clients/container-manager-http.client.ts`, `services/container-manager/src/sessions/sessions.service.ts`, `frontend/app/[locale]/app/page.tsx`, `frontend/components/workspace/workspace-checkpoint-create.logic.ts`. Anything else is out of scope.
@@ -82308,16 +82308,17 @@ nature=IMPLEMENTATION
 
 **Problem:** five leftover agent-debug blocks (marked `// #region agent log`) post JSON with session and user details to `http://127.0.0.1:7870/ingest/eba94f28-6765-4a01-9905-123e592de80f`: two in `services/api-gateway/src/clients/container-manager-http.client.ts` (execInSession, before the request and in its catch), one in `services/container-manager/src/sessions/sessions.service.ts` (the only content of an `if (userId)` block), one in `frontend/app/[locale]/app/page.tsx` (the manual checkpoint error path, which runs in the user's browser) and one in `frontend/components/workspace/workspace-checkpoint-create.logic.ts`. Anything listening on that port receives the IDs. Source: plan risk register R15 and the follow-up candidates in docs/CLEAN-BASELINE-GOV-01-DECISION.md (C2 and C3 result sections). Phase 74 removed three earlier calls of the same kind from execInSession in container-manager.
 **Scope:** delete those five blocks with their region comments; in sessions.service.ts also delete the `if (userId)` wrapper whose only content is the call. No other change. Not in scope: any other logging or console output, deploying the change, and the other follow-up candidates.
+**Step 2 complete; Step 3 consolidation and LOCK - 2026-10-30.** Implementation commit d09423d7e6ddc3f91ce769bde458235e4092384e (Cursor CLI, grok-4.7-high, session 49bf1532-8b27-4df6-b4c4-dda84b4fe558, one run) deletes 19 lines and adds none: two blocks in container-manager-http.client.ts (7 lines including one blank), the if (userId) wrapper with its block in sessions.service.ts (6 lines including one blank), and one block each in page.tsx and workspace-checkpoint-create.logic.ts (3 lines each). No 127.0.0.1:7870 or ingest/eba94f28 string remains in source under services/ and frontend/. Reviewer gates on Node v22.14.0: gateway jest 2320 passed with the same 14 runtime-only smoke.integration.spec.ts failures as the CREDIT-UNIT-01 baseline, gateway build passes; container-manager 192/192 tests and build pass (baseline 192/192); frontend tsc clean, 786/786 tests (baseline 786/786) and build pass; frontend/tsconfig.tsbuildinfo restored. Not deployed: ainow-staging-01 still runs 7317749 until a separately authorized deploy.
 
 #### Acceptance criteria
 
-- [ ] No `127.0.0.1:7870` or `/ingest/eba94f28` string remains in source under services/ and frontend/ (excluding node_modules and build output)
-- [ ] Exactly the five blocks (and the emptied `if (userId)` wrapper) are removed; no other code changes
-- [ ] services/api-gateway: npx jest --maxWorkers=2 passes apart from the known smoke.integration.spec.ts runtime failures, and npm run build passes
-- [ ] services/container-manager: npm test and npm run build pass
-- [ ] frontend: npx tsc --noEmit, npm test and npm run build pass; frontend/tsconfig.tsbuildinfo restored
-- [ ] Only the files in the primary write scope change
-- [ ] Not LOCKED by an implementer
+- [x] No `127.0.0.1:7870` or `/ingest/eba94f28` string remains in source under services/ and frontend/ (excluding node_modules and build output)
+- [x] Exactly the five blocks (and the emptied `if (userId)` wrapper) are removed; no other code changes
+- [x] services/api-gateway: npx jest --maxWorkers=2 passes apart from the known smoke.integration.spec.ts runtime failures, and npm run build passes
+- [x] services/container-manager: npm test and npm run build pass
+- [x] frontend: npx tsc --noEmit, npm test and npm run build pass; frontend/tsconfig.tsbuildinfo restored
+- [x] Only the files in the primary write scope change
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
