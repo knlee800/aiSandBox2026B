@@ -82496,8 +82496,12 @@ nature=IMPLEMENTATION
 - [x] Not LOCKED by an implementer
 
 ### SIGNUP-ALLOWLIST-01 — Limit email registration to an environment allowlist, closed by default
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=SIGNUP-ALLOWLIST-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY — 2026-10-31. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-31. Registered and admitted to Lane 1; Step 2 (stage-start) not started. mutexes=GATEWAY, ENV. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-10-31. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
 **Task ID:** SIGNUP-ALLOWLIST-01
 **Title:** Limit email registration to an environment allowlist, closed by default
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)

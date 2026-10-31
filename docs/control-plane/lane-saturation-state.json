@@ -10,13 +10,20 @@
   },
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "SIGNUP-ALLOWLIST-01",
+      "mutexes": ["GATEWAY", "ENV"],
+      "writePaths": [
+        "services/api-gateway/src/auth/auth.service.ts",
+        "services/api-gateway/src/auth/auth.service.spec.ts",
+        "services/api-gateway/locales/en.json",
+        "services/api-gateway/locales/zh-TW.json",
+        "services/api-gateway/locales/zh-CN.json",
+        "services/api-gateway/.env.example"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -1373,6 +1380,35 @@
       "evidenceClass": "STAGING-RUNTIME",
       "exclusiveCapacity": false,
       "runtimeNeeds": ["STAGING"],
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
+    },
+    {
+      "taskId": "SIGNUP-ALLOWLIST-01",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "4-STEP",
+      "status": "ADMITTED",
+      "startCondition": "READY",
+      "saturationClass": "OPTIONAL",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": [],
+      "mutexes": ["GATEWAY", "ENV"],
+      "writePaths": [
+        "services/api-gateway/src/auth/auth.service.ts",
+        "services/api-gateway/src/auth/auth.service.spec.ts",
+        "services/api-gateway/locales/en.json",
+        "services/api-gateway/locales/zh-TW.json",
+        "services/api-gateway/locales/zh-CN.json",
+        "services/api-gateway/.env.example"
+      ],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "LOCAL-TESTS",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": [],
       "admissionUncertain": false,
       "writeSetPrecision": "EXACT"
     }
