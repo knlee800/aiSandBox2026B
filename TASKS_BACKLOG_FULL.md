@@ -82540,6 +82540,29 @@ nature=IMPLEMENTATION
 - [ ] Only the files in the primary write scope change
 - [ ] Not LOCKED by an implementer
 
+### GOV-RPG-UI-COMPAT-01 — Record future office UI compatibility findings and constraints
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-RPG-UI-COMPAT-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / DOCUMENTATION WRITTEN — 2026-10-31. Governance-only record; not an implementation lane. GOVERNANCE acquired for this record only and released UNOWNED. Not yet committed; not LOCKED.
+**Task ID:** GOV-RPG-UI-COMPAT-01
+**Title:** Record future office UI compatibility findings and constraints
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE — does NOT consume Lane 1 or Lane 2 — no implementation candidate — no saturationClass
+**Lifecycle:** documentation only. Authorized by Keith on 2026-10-31: no source, tests, dependencies, migrations, configuration, flags or runtime changes.
+**Start condition:** READY — Keith's request of 2026-10-31.
+**Depends on:** none.
+**Primary write scope:** `docs/GOV-RPG-UI-COMPAT-01-REVIEW-RECORD.md`, `ARCHITECTURE.md` section 13.4, `PRD.md` section 11, and the required `TASKS.md` and `TASKS_BACKLOG_FULL.md` records. Frozen historical documents are not edited: `docs/AGENT-PLATFORM-00-AINOW-MULTI-AGENT-PLAN.md`, `docs/AGENT-PLATFORM-RPG-MVP-RESET-PLAN.md`, `docs/AINOW-EXECUTION-ROADMAP.md`.
+**Mutexes / resources:** GOVERNANCE transiently for this record only.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS (document checks only; no build, test or runtime).
+**Revert isolation:** acceptable (documentation only).
+**saturationClass:** not applicable (GOVERNANCE; no sidecar candidate).
+**Record:** docs/GOV-RPG-UI-COMPAT-01-REVIEW-RECORD.md summarizes a separate external source-only review of `main` at ebed96b5522e9a06a5d88d61441b9973be2378e8 and its corrections. It is not a fresh audit. Its existing-app concerns are follow-up candidates, not registered, not scheduled and not activated; this task authorizes no remediation, investigation or activation. Deeper RPG / simulation stays approved FUTURE and the current development plan is unchanged.
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01

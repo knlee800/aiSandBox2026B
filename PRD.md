@@ -605,6 +605,8 @@ GATED means implemented for controlled activation. It does **not** mean currentl
 | Deeper RPG / simulation (not current; not the next committed product) |
 | Public agent ecosystem |
 
+**Future office UI note (approved FUTURE; not current; not scheduled).** Keith's preferred graphics and UI reference for a future RPG-style agent office is https://github.com/W17ant/Claude-Office. We will build our own interface; the preference selects no code, assets, architecture or renderer. A separate source-only review reported no fundamental architectural obstacle, and live office integration is not implemented or production-verified. To revisit at UI planning: owner-scoped active and recent run retrieval with agent and session attribution; refresh, reconnect and navigation recovery; distinguishing execution completion, saved output, pending approval, application in progress and application outcome; what selecting an agent's character opens; preserving authorization checks for all UI actions; and keeping decorative animation separate from authoritative work status. This note does not change the MVP or private-beta scope. Review record: `docs/GOV-RPG-UI-COMPAT-01-REVIEW-RECORD.md`.
+
 ---
 
 ## 12. Terminology Reference

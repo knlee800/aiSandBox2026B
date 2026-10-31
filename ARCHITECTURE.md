@@ -1037,6 +1037,12 @@ Do not describe the following as current:
 - Original RPG simulation / game engine
 - gVisor sandboxing
 
+### 13.4 Future Visual Office Compatibility (PLANNED constraint)
+
+A future RPG-style office is **not implemented** and not scheduled. Product status belongs to `PRD.md`. If it is built, this forward-looking constraint applies: the office and a conventional dashboard use shared agent capabilities, and agent identity, authoritative run state and authorization do not depend on any particular visual screen. Decorative animation stays separate from authoritative work status.
+
+This does not state that existing page coupling has been removed, and it authorizes no refactor. No renderer, storage schema or recovery behaviour is selected. Evidence: `docs/GOV-RPG-UI-COMPAT-01-REVIEW-RECORD.md` (external source-only review; not runtime-tested).
+
 ---
 
 ## 14. Communication Mechanism Summary
