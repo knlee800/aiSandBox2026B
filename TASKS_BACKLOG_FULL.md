@@ -82457,14 +82457,14 @@ taskId=STAGING-DEPLOY-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-30. Registered and admitted to Lane 1; Step 2 (deploy) not started. mutexes=STAGING. evidenceClass=STAGING-RUNTIME. runtimeNeeds=STAGING. stagingAuthorized=true. Previous: **Status:** REGISTERED / READY — 2026-10-30. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Status:** COMPLETE AND LOCKED — 2026-10-31. LANE-DONE and LOCK recorded by the control plane; Lane 1 and STAGING released; stagingAuthorized=false. Checkpoint: docs/STAGING-DEPLOY-02-CHECKPOINT.md. ainow-staging-01 runs 1b5892e7e9306c522b68e5e80b08673888ef98a4. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-10-30. Registered and admitted to Lane 1; Step 2 (deploy) not started. mutexes=STAGING. evidenceClass=STAGING-RUNTIME. runtimeNeeds=STAGING. stagingAuthorized=true. Previous: **Status:** REGISTERED / READY — 2026-10-30. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
 **Task ID:** STAGING-DEPLOY-02
 **Title:** Deploy the four locked follow-up tasks to ainow-staging-01
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP. Step 1 registration and admission (this control-plane record, 2026-10-30); Step 2 one deploy block, Keith's browser check and one read-only check block; Step 3 consolidation, checkpoint and LOCK by the control plane.
 **Start condition (human):** READY — Keith approved the deploy plan on 2026-10-30 ("Yes, register it"). That approval authorizes one deploy block and one read-only check block on ainow-staging-01 and nothing else: no rollback or other recovery, no configuration change, no provider execution and no credit change.
-**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Start condition (machine):** `READY`; `status=LOCKED` (2026-10-31). Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
 **Depends on (human):** DEBUG-INGEST-01, CM-QUOTA-DEAD-01, USAGE-MODEL-01, SAVEPOINT-I18N-01 (all COMPLETE AND LOCKED).
 **Depends on (machine `dependsOn`):** `[DEBUG-INGEST-01, CM-QUOTA-DEAD-01, USAGE-MODEL-01, SAVEPOINT-I18N-01]`
 **Primary write scope:** no repository source. Host state on ainow-staging-01 only, through /usr/local/sbin/aisandbox-deploy; evidence under C:/Users/knlee/aisb-preflight/STAGING-DEPLOY-02/. Anything else is out of scope.
@@ -82483,16 +82483,17 @@ nature=IMPLEMENTATION
 
 **Problem:** DEBUG-INGEST-01, CM-QUOTA-DEAD-01, USAGE-MODEL-01 and SAVEPOINT-I18N-01 are COMPLETE AND LOCKED, but ainow-staging-01 still runs 7317749c5b05a633bafa34552ebea90c3e07cb67, so their deploy-time evidence cannot be collected.
 **Scope:** deploy 1b5892e7e9306c522b68e5e80b08673888ef98a4 with aisandbox-deploy, using the same guards as the C2 repeat deploy of 2026-10-29: machine id, HEAD and DEPLOYED at the previous commit, no maintenance marker, clean tracked tree, configuration hashes and off flags unchanged, then units active, no-login probes 401 and health probes 200. Between 7317749c5b05a633bafa34552ebea90c3e07cb67 and the target, 13 application files change and no migration, package, compose, environment or ops file changes; the migration hash stays a9fc22c7ba5a92b080eea0cb9b88d3f7631127a5b1fefa20618ca05c7a1bfe49. After the deploy Keith logs in himself and reads the Save Point panel in zh-TW and zh-CN, and one read-only block checks the logs and built code. Host blocks run in Cursor desktop with Keith's VPN off. Not in scope: rollback or other recovery, provider execution, flag or configuration changes, the USAGE-MODEL-01 provider criterion (stays open until a real provider run), the weekly backup copy and D (AUTH-9).
+**Step 2 complete; Step 3 consolidation and LOCK - 2026-10-31.** Keith ran both host blocks in Cursor desktop with his VPN off. Deploy block (sd02-deploy.sh, SHA-256 413bc2154481d9d86823cd53b1c2a86a509df27263c2a623986567b9d7d19d2e) ran once, 2026-10-31 07:41:51Z to 07:46:33Z: exit 0, ainow-staging-01 HEAD and DEPLOYED 1b5892e7e9306c522b68e5e80b08673888ef98a4, migration hash unchanged, configuration unchanged, 8 units active, no-login probes 401, gateway health and frontend 200. Cursor stopped that window with an agent-looping warning after the block had finished and wrote no report, so the reviewer read the saved evidence; there was no retry. Keith then opened project C1 repeat and file ACCEPT.md and read the Save Point panel in zh-TW and zh-CN, and accepted the wording, before the read-only block. Read-only block (sd02-check.sh, SHA-256 97c7fc30e1a78c79cd3835119f1fed76a9bfedba98a3e3ad20df2e6f26dcf867) ran once: no such table 0 and Task 9.5A 0 in the container-manager log since the deploy, 127.0.0.1:7870 and checkAndEnforceQuota in 0 built files, resolveLedgerModel present in the built worker, 9 units active, execution off, AI and email providers stub, xAI off. No recovery, configuration change, provider execution or credit change. Locked task bodies are not edited; this record closes the deploy-time criterion of CM-QUOTA-DEAD-01 and the browser item of SAVEPOINT-I18N-01. The USAGE-MODEL-01 criterion stays open until a real provider run.
 
 #### Acceptance criteria
 
-- [ ] ainow-staging-01 HEAD and DEPLOYED are 1b5892e7e9306c522b68e5e80b08673888ef98a4, the tracked tree is clean, no maintenance marker remains, and the migration hash is unchanged
-- [ ] Configuration hashes and flags are unchanged: execution off, AI and email providers stub, basic_auth on
-- [ ] All units are active, no-login probes return 401, and gateway and frontend health probes return 200
-- [ ] After workspace use, the container-manager log since the deploy has no no such table lines (closes the CM-QUOTA-DEAD-01 criterion)
-- [ ] The built code on the host has no reference to 127.0.0.1:7870 (DEBUG-INGEST-01)
-- [ ] Keith reads the Save Point panel in zh-TW and zh-CN in a browser and accepts or corrects the wording (SAVEPOINT-I18N-01)
-- [ ] Not LOCKED by an implementer
+- [x] ainow-staging-01 HEAD and DEPLOYED are 1b5892e7e9306c522b68e5e80b08673888ef98a4, the tracked tree is clean, no maintenance marker remains, and the migration hash is unchanged
+- [x] Configuration hashes and flags are unchanged: execution off, AI and email providers stub, basic_auth on
+- [x] All units are active, no-login probes return 401, and gateway and frontend health probes return 200
+- [x] After workspace use, the container-manager log since the deploy has no no such table lines (closes the CM-QUOTA-DEAD-01 criterion)
+- [x] The built code on the host has no reference to 127.0.0.1:7870 (DEBUG-INGEST-01)
+- [x] Keith reads the Save Point panel in zh-TW and zh-CN in a browser and accepts or corrects the wording (SAVEPOINT-I18N-01)
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
