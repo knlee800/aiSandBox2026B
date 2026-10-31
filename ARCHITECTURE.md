@@ -901,6 +901,8 @@ Current private beta does **not** enable Harness. Default `AGENT_HARNESS_ENABLE_
 
 Do not describe Harness as the current Builder execution default. Harness-as-default autonomous execution remains **FUTURE**.
 
+**Direction (GOV-HARNESS-RESET-01, 2026-10-31):** Harness is now active development toward xAI, OpenAI, Anthropic and DeepSeek. It stays gated until proven; the private beta is deferred. CURRENT adapter tool use exists only for OpenAI and Anthropic. Direct harness writes with a pre-apply checkpoint are explicitly approved on staging only for now. The PM2-overlay canary path (EXEC-01C6A) is closed, not the route forward. Record: `docs/GOV-HARNESS-RESET-01-DECISION.md`.
+
 ### 12.1 Current / Gated / Not-Implemented Table
 
 | Capability | Status | Notes |

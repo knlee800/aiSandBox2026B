@@ -82563,6 +82563,25 @@ nature=GOVERNANCE
 **saturationClass:** not applicable (GOVERNANCE; no sidecar candidate).
 **Record:** docs/GOV-RPG-UI-COMPAT-01-REVIEW-RECORD.md summarizes a separate external source-only review of `main` at ebed96b5522e9a06a5d88d61441b9973be2378e8 and its corrections. It is not a fresh audit. Its existing-app concerns are follow-up candidates, not registered, not scheduled and not activated; this task authorizes no remediation, investigation or activation. Deeper RPG / simulation stays approved FUTURE and the current development plan is unchanged.
 
+### GOV-HARNESS-RESET-01 — Reset the harness direction and defer the private beta
+
+**Status:** REGISTERED / READY — 2026-10-31. Decision record, PRD and architecture edits written; machine registration, board and HARNESS-LIVE-01 follow in Part 2.
+**Task ID:** GOV-HARNESS-RESET-01
+**Title:** Reset the harness direction and defer the private beta
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE — does NOT consume Lane 1 or Lane 2 — no implementation candidate — no saturationClass
+**Lifecycle:** two-part governance record. Keith approved the draft on 2026-10-31.
+**Start condition:** READY — Keith's approval of 2026-10-31.
+**Depends on:** none. Reads, and does not reopen: HARNESS-RESTART-GOV-01 and AGENT-PLATFORM-EXEC-01C6A-PM2-FENCE-01.
+**Primary write scope:** `docs/GOV-HARNESS-RESET-01-DECISION.md`, `PRD.md`, `ARCHITECTURE.md` section 12, and the required `TASKS.md`, `TASKS_BACKLOG_FULL.md` and control-plane records.
+**Mutexes / resources:** GOVERNANCE transiently for these records only.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS (document checks only).
+**Revert isolation:** acceptable (documentation only).
+**saturationClass:** not applicable (GOVERNANCE; no sidecar candidate).
+**Record:** docs/GOV-HARNESS-RESET-01-DECISION.md. Authorizes no staging, provider, credit or environment action.
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01

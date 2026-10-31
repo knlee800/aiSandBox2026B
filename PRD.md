@@ -22,6 +22,7 @@ Product identity at a glance:
 - **PARTIAL / visible but not functional** — specialist coming-soon placeholders
 - **CURRENT bounded user-agent Ask and Build** — persisted user-created agents can be bound in the existing workspace and use Ask (`conversation`) and Build (`workspace_mutation`) against the authenticated user's currently selected existing project/session on the existing Builder runtime; stored agent identity shapes that execution; not a complete executable-agent product
 - **NOT current user experience** — functional specialist agents; fully executable user-created agents; knowledge runtime; collaboration/referrals/work objects; product-visible multi-Builder; Harness as the Builder experience
+- **ACTIVE DEVELOPMENT** — Agent Harness is being built now; it is not current user capability (see section 11). The private beta in section 10 is deferred.
 - **Approved FUTURE** — the NOT-current capabilities above, plus Legal Advisor Agent, deeper RPG/simulation, OAuth activation, Stripe/payment activation, and later external knowledge-source integrations
 
 The platform prioritizes safety, determinism, reversibility, and clear failure semantics while enabling a productive AI-assisted development workflow.
@@ -180,6 +181,7 @@ An enhanced multi-turn / tool-using Builder capability (Agent Harness) is implem
 - The current beta promise is single-shot Builder (Ask and Build)
 - Making Harness the default Builder experience is approved FUTURE direction
 - Harness activation is an operational decision, not a user-facing beta promise
+- Harness is now ACTIVE DEVELOPMENT (section 11); it remains gated until proven on staging
 
 ---
 
@@ -508,6 +510,8 @@ Limited private-beta rollout constraints are defined in §10. They are separate 
 
 ## 10. Limited Private-Beta Scope
 
+**Status: DEFERRED by Keith on 2026-10-31**, possibly until the planned features are done. Staging stays private behind basic_auth. The scope below stays as reference for a later rollout. Record: `docs/GOV-HARNESS-RESET-01-DECISION.md`.
+
 The current rollout is a **limited Builder-first private beta**. This section states rollout scope. It is not a substitute for the CURRENT capability inventory.
 
 **In scope**
@@ -580,6 +584,14 @@ Coming-soon labels do not mean those agents ship in this beta. Invitation operat
 | Harness file, validation, and browser tools | Same as Harness: not currently user-accessible in private beta |
 
 GATED means implemented for controlled activation. It does **not** mean currently available to private-beta users. Harness is not part of the current beta promise.
+
+### ACTIVE DEVELOPMENT (being built now; not current)
+
+| Capability | Condition |
+|------------|-----------|
+| Agent Harness (multi-turn, tool-using Builder) on xAI, OpenAI, Anthropic and DeepSeek | Stays gated and not user-accessible until proven on staging |
+
+A capability moves to CURRENT only when proven on staging. Other planned capabilities stay in the list below until they are started. Record: `docs/GOV-HARNESS-RESET-01-DECISION.md`.
 
 ### PLANNED / APPROVED FUTURE / NOT CURRENT
 
