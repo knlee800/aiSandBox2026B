@@ -82495,6 +82495,46 @@ nature=IMPLEMENTATION
 - [x] Keith reads the Save Point panel in zh-TW and zh-CN in a browser and accepts or corrects the wording (SAVEPOINT-I18N-01)
 - [x] Not LOCKED by an implementer
 
+### SIGNUP-ALLOWLIST-01 — Limit email registration to an environment allowlist, closed by default
+
+**Status:** REGISTERED / READY — 2026-10-31. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Task ID:** SIGNUP-ALLOWLIST-01
+**Title:** Limit email registration to an environment allowlist, closed by default
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP (auth is security-sensitive under CLAUDE.md). Step 1 registration and admission (this control-plane record, 2026-10-31); Step 2 stage-start; Step 3 implementation; Step 4 consolidation, checkpoint and LOCK by the control plane.
+**Start condition (human):** READY — Keith approved registration as proposed on 2026-10-31 ("Yes, register it"), including saturationClass OPTIONAL. This authorizes the auth change in the write scope only; it grants no deploy, invitation, host or environment change.
+**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Depends on (human):** none (STAGING-DEPLOY-02 is LOCKED; no shared output).
+**Depends on (machine `dependsOn`):** `[]`
+**Primary write scope:** exactly `services/api-gateway/src/auth/auth.service.ts`, `services/api-gateway/src/auth/auth.service.spec.ts`, `services/api-gateway/locales/en.json`, `services/api-gateway/locales/zh-TW.json`, `services/api-gateway/locales/zh-CN.json`, `services/api-gateway/.env.example`. Anything else is out of scope unless the stage-start records a control-plane scope change.
+**Mutexes / resources:** GATEWAY and ENV (Lane 1, 2026-10-31; ENV is the matcher for .env.example, not permission to edit any host environment). No FRONTEND, I18N, MIGRATION, STAGING, PACKAGE, LOCAL-RUNTIME, PROVIDER-LIVE or CREDIT.
+**Hot-file leases:** none
+**Shared contracts:** none consumed or mutated (`sharedContractIds=[]`; `mutatesSharedContractIds=[]`).
+**Evidence class:** LOCAL-TESTS. Staging behaviour comes with a later, separately authorized deploy.
+**Revert isolation:** acceptable (self-contained in the gateway auth service; reverting restores open registration).
+**saturationClass:** OPTIONAL (basic_auth still guards staging; needed before invitations, not before then)
+**productClass:** CURRENT
+**futureAuthorization:** NONE
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** none
+
+**Problem:** POST /auth/register (services/api-gateway/src/auth/auth.controller.ts:149) has only a rate limit, and AuthService.register (services/api-gateway/src/auth/auth.service.ts:632) creates an active user with a free-plan credit row for any email address. On staging the only outer limit is the shared basic_auth credential. The PRD limited private beta is a small trusted cohort, and docs/LIMITED-PRIVATE-BETA-HANDOFF-CHECKLIST.md sections 12 and 13 ask for no public sign-ups and no public invite link. docs/CLEAN-BASELINE-DEPLOY-01-CHECKPOINT.md lists sign-up control as required before real-user invitations. Source: the read-only investigation of 2026-10-31.
+**Scope:** AuthService.register refuses any address not on a new environment allowlist before creating anything; matching trims and ignores case; a missing or empty list refuses all registration. The refusal uses a translated message from the gateway locales. .env.example documents the variable. Stage-start settles the variable name, how local development and tests that register users keep working, and the HTTP status. Not in scope: email verification enforcement, real email provider setup, spend caps, the Google and Apple account-creation paths (not activated; recorded as a condition for activating them), frontend changes, invitations, deploying, and any host environment change.
+
+#### Acceptance criteria
+
+- [ ] Registration succeeds only for a listed address, matched after trimming and ignoring case
+- [ ] A missing or empty list refuses all registration
+- [ ] A refused attempt creates no user, credit row or verification token and sends no email
+- [ ] The refusal message is translated in en, zh-TW and zh-CN
+- [ ] Existing accounts can still log in
+- [ ] services/api-gateway: npm test and npm run build match the pre-change baseline on Node v22.14.0, apart from the new tests
+- [ ] Only the files in the primary write scope change
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
