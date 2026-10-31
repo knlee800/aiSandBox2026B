@@ -82546,7 +82546,7 @@ taskId=GOV-RPG-UI-COMPAT-01
 nature=GOVERNANCE
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / DOCUMENTATION WRITTEN — 2026-10-31. Governance-only record; not an implementation lane. GOVERNANCE acquired for this record only and released UNOWNED. Not yet committed; not LOCKED.
+**Status:** COMPLETE AND LOCKED — 2026-10-31. Governance-only; no lane. Review record: docs/GOV-RPG-UI-COMPAT-01-REVIEW-RECORD.md (repository commit 7772f8174d5b86539c68b29b4ba8ced7f71d1a6a). Locked by GOV-HARNESS-RESET-01. Its separate concerns stay follow-up candidates, not registered. Previous: **Status:** REGISTERED / DOCUMENTATION WRITTEN — 2026-10-31. Governance-only record; not an implementation lane. GOVERNANCE acquired for this record only and released UNOWNED. Not yet committed; not LOCKED.
 **Task ID:** GOV-RPG-UI-COMPAT-01
 **Title:** Record future office UI compatibility findings and constraints
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
@@ -82564,8 +82564,12 @@ nature=GOVERNANCE
 **Record:** docs/GOV-RPG-UI-COMPAT-01-REVIEW-RECORD.md summarizes a separate external source-only review of `main` at ebed96b5522e9a06a5d88d61441b9973be2378e8 and its corrections. It is not a fresh audit. Its existing-app concerns are follow-up candidates, not registered, not scheduled and not activated; this task authorizes no remediation, investigation or activation. Deeper RPG / simulation stays approved FUTURE and the current development plan is unchanged.
 
 ### GOV-HARNESS-RESET-01 — Reset the harness direction and defer the private beta
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-HARNESS-RESET-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY — 2026-10-31. Decision record, PRD and architecture edits written; machine registration, board and HARNESS-LIVE-01 follow in Part 2.
+**Status:** COMPLETE AND LOCKED — 2026-10-31. Governance-only; no lane. Decision record: docs/GOV-HARNESS-RESET-01-DECISION.md (repository commit 99f17fc7e2f8d4df0d65709c54e1098d9725cda8). HARNESS-LIVE-01 registered, not admitted. GOVERNANCE released UNOWNED. Previous: **Status:** REGISTERED / READY — 2026-10-31. Decision record, PRD and architecture edits written; machine registration, board and HARNESS-LIVE-01 follow in Part 2.
 **Task ID:** GOV-HARNESS-RESET-01
 **Title:** Reset the harness direction and defer the private beta
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
@@ -82581,6 +82585,50 @@ nature=GOVERNANCE
 **Revert isolation:** acceptable (documentation only).
 **saturationClass:** not applicable (GOVERNANCE; no sidecar candidate).
 **Record:** docs/GOV-HARNESS-RESET-01-DECISION.md. Authorizes no staging, provider, credit or environment action.
+
+### HARNESS-LIVE-01 — Prove the harness with a real model, read-only, on ainow-staging-01
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=HARNESS-LIVE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-10-31. Registered by GOV-HARNESS-RESET-01; `startCondition=NOT_READY` until the stage-start and Keith's authorization.
+**Task ID:** HARNESS-LIVE-01
+**Title:** Prove the harness with a real model, read-only, on ainow-staging-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (operational run; no product activation)
+**Lifecycle:** 4-STEP. Step 1 registration (this record); Step 2 stage-start; Step 3 runs under Keith's authorization; Step 4 consolidation, checkpoint and LOCK by the control plane.
+**Start condition (human):** NOT READY — needs the stage-start, then Keith's explicit STAGING, PROVIDER-LIVE, CREDIT and environment authorization.
+**Start condition (machine):** `NOT_READY`; `status=READY`.
+**Depends on (human):** GOV-HARNESS-RESET-01 (LOCKED by the same record).
+**Depends on (machine `dependsOn`):** `[]`
+**Primary write scope:** none yet. Host state on ainow-staging-01 and off-repo evidence only; the stage-start names any script and write path.
+**Mutexes / resources:** STAGING, PROVIDER-LIVE and CREDIT, declared and not acquired. The stage-start settles how the temporary host environment change is recorded under ENV.
+**Hot-file leases:** none
+**Shared contracts:** consumes HARNESS_ENTITLEMENT_PROOF_V1 without changing it (`sharedContractIds=[HARNESS_ENTITLEMENT_PROOF_V1]`; `mutatesSharedContractIds=[]`).
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** acceptable (flags back off and the key removed afterwards; no schema change).
+**saturationClass:** OPTIONAL
+**productClass:** CURRENT (work on the existing gated harness; no product activation; PRD ACTIVE DEVELOPMENT)
+**futureAuthorization:** NONE
+**writeSetPrecision:** PROVISIONAL
+**admissionUncertain:** true
+**exclusiveCapacity:** false
+**runtimeNeeds:** STAGING, PROVIDER-LIVE, CREDIT
+
+**Problem:** `ARCHITECTURE.md` section 12 records the real-provider harness loop as unproven: its end-to-end canaries used a test stub. Keith needs real evidence of how good the harness is before later work builds on it. Record: docs/GOV-HARNESS-RESET-01-DECISION.md.
+**Scope:** on ainow-staging-01, behind basic_auth, with one test account and one small throwaway project: one stub run to prove the wiring, then up to 3 read-only runs on Anthropic. Spend caps $1 soft and $2 hard, 16,000 tokens per execution and 2 executions per minute, as in C2. Keith types the provider key at a hidden prompt; it is removed afterwards and the flags go back off. Write, validation and browser tools stay off. Stage-start settles: how the run is submitted, whether the host has the harness signing secret, which Anthropic model (with current prices), the exact flags, and transcript redaction. Not in scope: writes, other providers, raising the step limit, any UI, and product activation.
+
+#### Acceptance criteria
+
+- [ ] The stub run completes through the staging worker with no provider spend
+- [ ] A real run calls list_files and read_file across several steps and answers correctly from the file contents
+- [ ] No workspace file changes in any run
+- [ ] Credits and usage are recorded correctly, and usage_records.model is non-empty (closes the USAGE-MODEL-01 criterion)
+- [ ] Spend stays within the caps
+- [ ] Afterwards the flags are off, the key is removed, and the configuration hashes match the recorded state
+- [ ] Keith reads the transcripts and records his judgement
+- [ ] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
