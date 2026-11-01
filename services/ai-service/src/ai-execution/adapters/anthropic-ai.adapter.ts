@@ -211,6 +211,58 @@ export class AnthropicAdapter implements AIAdapter {
   }
 
   /**
+   * Refusal is HTTP 200 with stop_reason "refusal" (optional stop_details.category).
+   * The installed SDK types may omit both fields, so they are read as plain values.
+   * Logs the refusal and category only; never explanation, prompt, content, or headers.
+   */
+  private throwIfRefusalOrMissingContent(
+    response: Anthropic.Message,
+    missingContentLogMessage: string,
+  ): void {
+    const raw = response as unknown as {
+      stop_reason?: unknown;
+      stop_details?: unknown;
+    };
+    const stopReason =
+      typeof raw.stop_reason === 'string' ? raw.stop_reason : undefined;
+
+    if (stopReason === 'refusal') {
+      let category: string | undefined;
+      const details = raw.stop_details;
+      if (details !== null && typeof details === 'object') {
+        const rawCategory = (details as { category?: unknown }).category;
+        if (typeof rawCategory === 'string' && rawCategory.length > 0) {
+          category = rawCategory;
+        }
+      }
+      if (category) {
+        this.logger.error(
+          `Anthropic declined the request (stop_reason=refusal, category=${category})`,
+        );
+      } else {
+        this.logger.error(
+          'Anthropic declined the request (stop_reason=refusal)',
+        );
+      }
+      throw new InternalServerErrorException(
+        `Anthropic declined the request (stop_reason=refusal, category=${category ?? 'unknown'})`,
+      );
+    }
+
+    if (!response.content || response.content.length === 0) {
+      this.logger.error(missingContentLogMessage);
+      if (stopReason && stopReason.length > 0) {
+        throw new InternalServerErrorException(
+          `Malformed Anthropic response: missing content (stop_reason=${stopReason})`,
+        );
+      }
+      throw new InternalServerErrorException(
+        'Malformed Anthropic response: missing content',
+      );
+    }
+  }
+
+  /**
    * Transform Anthropic response to AIExecutionResult
    *
    * Extracts:
@@ -226,13 +278,11 @@ export class AnthropicAdapter implements AIAdapter {
     response: Anthropic.Message,
     fallbackModel: string,
   ): AIExecutionResult {
-    // Validate response structure
-    if (!response.content || response.content.length === 0) {
-      this.logger.error('Anthropic response missing content field');
-      throw new InternalServerErrorException(
-        'Malformed Anthropic response: missing content',
-      );
-    }
+    // Validate response structure. Refusal is decided before content is read.
+    this.throwIfRefusalOrMissingContent(
+      response,
+      'Anthropic response missing content field',
+    );
 
     if (!response.usage) {
       this.logger.error('Anthropic response missing usage field');
@@ -294,12 +344,10 @@ export class AnthropicAdapter implements AIAdapter {
     response: Anthropic.Message,
     fallbackModel: string,
   ): AIAdapterToolUseResult {
-    if (!response.content || response.content.length === 0) {
-      this.logger.error('Anthropic tool-use response missing content field');
-      throw new InternalServerErrorException(
-        'Malformed Anthropic response: missing content',
-      );
-    }
+    this.throwIfRefusalOrMissingContent(
+      response,
+      'Anthropic tool-use response missing content field',
+    );
 
     if (!response.usage) {
       this.logger.error('Anthropic tool-use response missing usage field');

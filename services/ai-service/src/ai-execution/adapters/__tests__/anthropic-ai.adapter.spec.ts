@@ -7,6 +7,7 @@ import {
   BadRequestException,
   ServiceUnavailableException,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import { AGENT_HARNESS_TOOL_DEFINITIONS_V1 } from '../../../agent-harness/tools/tool-registry';
 import type { AIAdapterCanonicalTranscriptTurn } from '../adapter-tool-use.contracts';
@@ -1155,6 +1156,285 @@ describe('AnthropicAdapter', () => {
       expect(result.output).toBe('No tools this turn.');
       expect(result.toolCalls).toEqual([]);
       expect(result).not.toHaveProperty('providerState');
+    });
+  });
+
+  describe('Anthropic refusal and empty-content stop_reason', () => {
+    const explanationSentinel = 'do-not-log-refusal-explanation';
+    const partialTextSentinel = 'partial refusal text that must not be logged';
+
+    function baseMessage(
+      overrides: Record<string, unknown>,
+    ): Record<string, unknown> {
+      return {
+        id: 'msg_refusal',
+        type: 'message',
+        role: 'assistant',
+        model: 'claude-3-5-sonnet-20241022',
+        usage: { input_tokens: 10, output_tokens: 0 },
+        ...overrides,
+      };
+    }
+
+    async function expectExactMessage(
+      run: () => Promise<unknown>,
+      message: string,
+    ): Promise<void> {
+      await expect(run()).rejects.toThrow(InternalServerErrorException);
+      await expect(run()).rejects.toThrow(message);
+      await expect(run()).rejects.toMatchObject({ message });
+    }
+
+    function loggedErrorText(spy: jest.SpyInstance): string {
+      return spy.mock.calls.map((call) => call.map(String).join(' ')).join('\n');
+    }
+
+    describe('execute()', () => {
+      it('should throw the refusal message when content is empty and category is present', async () => {
+        const loggerError = jest
+          .spyOn(Logger.prototype, 'error')
+          .mockImplementation(() => undefined);
+        mockMessagesCreate.mockResolvedValue(
+          baseMessage({
+            content: [],
+            stop_reason: 'refusal',
+            stop_details: {
+              category: 'safety',
+              explanation: explanationSentinel,
+            },
+          }),
+        );
+
+        try {
+          await expectExactMessage(
+            () => adapter.execute(mockRequest),
+            'Anthropic declined the request (stop_reason=refusal, category=safety)',
+          );
+          const logged = loggedErrorText(loggerError);
+          expect(logged).toContain(
+            'Anthropic declined the request (stop_reason=refusal, category=safety)',
+          );
+          expect(logged).not.toContain(explanationSentinel);
+          expect(logged).not.toContain(mockRequest.prompt);
+        } finally {
+          loggerError.mockRestore();
+        }
+      });
+
+      it('should throw the refusal message when content is empty and category is null', async () => {
+        const loggerError = jest
+          .spyOn(Logger.prototype, 'error')
+          .mockImplementation(() => undefined);
+        mockMessagesCreate.mockResolvedValue(
+          baseMessage({
+            content: [],
+            stop_reason: 'refusal',
+            stop_details: {
+              category: null,
+              explanation: explanationSentinel,
+            },
+          }),
+        );
+
+        try {
+          await expectExactMessage(
+            () => adapter.execute(mockRequest),
+            'Anthropic declined the request (stop_reason=refusal, category=unknown)',
+          );
+          const logged = loggedErrorText(loggerError);
+          expect(logged).toContain(
+            'Anthropic declined the request (stop_reason=refusal)',
+          );
+          expect(logged).not.toContain('category=');
+          expect(logged).not.toContain(explanationSentinel);
+          expect(logged).not.toContain(mockRequest.prompt);
+        } finally {
+          loggerError.mockRestore();
+        }
+      });
+
+      it('should throw the refusal message when content has partial text', async () => {
+        const loggerError = jest
+          .spyOn(Logger.prototype, 'error')
+          .mockImplementation(() => undefined);
+        mockMessagesCreate.mockResolvedValue(
+          baseMessage({
+            content: [{ type: 'text', text: partialTextSentinel }],
+            stop_reason: 'refusal',
+            stop_details: {
+              category: 'safety',
+              explanation: explanationSentinel,
+            },
+          }),
+        );
+
+        try {
+          await expectExactMessage(
+            () => adapter.execute(mockRequest),
+            'Anthropic declined the request (stop_reason=refusal, category=safety)',
+          );
+          const logged = loggedErrorText(loggerError);
+          expect(logged).toContain('category=safety');
+          expect(logged).not.toContain(partialTextSentinel);
+          expect(logged).not.toContain(explanationSentinel);
+          expect(logged).not.toContain(mockRequest.prompt);
+        } finally {
+          loggerError.mockRestore();
+        }
+      });
+
+      it('should name stop_reason when content is empty and stop_reason is not refusal', async () => {
+        mockMessagesCreate.mockResolvedValue(
+          baseMessage({
+            content: [],
+            stop_reason: 'end_turn',
+          }),
+        );
+
+        await expectExactMessage(
+          () => adapter.execute(mockRequest),
+          'Malformed Anthropic response: missing content (stop_reason=end_turn)',
+        );
+      });
+
+      it('should keep the missing-content message when content is empty and stop_reason is absent', async () => {
+        mockMessagesCreate.mockResolvedValue(
+          baseMessage({
+            content: [],
+          }),
+        );
+
+        await expect(adapter.execute(mockRequest)).rejects.toThrow(
+          InternalServerErrorException,
+        );
+        await expect(adapter.execute(mockRequest)).rejects.toThrow(
+          /^Malformed Anthropic response: missing content$/,
+        );
+      });
+    });
+
+    describe('executeWithTools()', () => {
+      it('should throw the refusal message when content is empty and category is present', async () => {
+        const loggerError = jest
+          .spyOn(Logger.prototype, 'error')
+          .mockImplementation(() => undefined);
+        mockMessagesCreate.mockResolvedValue(
+          baseMessage({
+            content: [],
+            stop_reason: 'refusal',
+            stop_details: {
+              category: 'safety',
+              explanation: explanationSentinel,
+            },
+          }),
+        );
+
+        try {
+          await expectExactMessage(
+            () => adapter.executeWithTools(mockRequest),
+            'Anthropic declined the request (stop_reason=refusal, category=safety)',
+          );
+          const logged = loggedErrorText(loggerError);
+          expect(logged).toContain(
+            'Anthropic declined the request (stop_reason=refusal, category=safety)',
+          );
+          expect(logged).not.toContain(explanationSentinel);
+          expect(logged).not.toContain(mockRequest.prompt);
+        } finally {
+          loggerError.mockRestore();
+        }
+      });
+
+      it('should throw the refusal message when content is empty and category is null', async () => {
+        const loggerError = jest
+          .spyOn(Logger.prototype, 'error')
+          .mockImplementation(() => undefined);
+        mockMessagesCreate.mockResolvedValue(
+          baseMessage({
+            content: [],
+            stop_reason: 'refusal',
+            stop_details: {
+              category: null,
+              explanation: explanationSentinel,
+            },
+          }),
+        );
+
+        try {
+          await expectExactMessage(
+            () => adapter.executeWithTools(mockRequest),
+            'Anthropic declined the request (stop_reason=refusal, category=unknown)',
+          );
+          const logged = loggedErrorText(loggerError);
+          expect(logged).toContain(
+            'Anthropic declined the request (stop_reason=refusal)',
+          );
+          expect(logged).not.toContain('category=');
+          expect(logged).not.toContain(explanationSentinel);
+          expect(logged).not.toContain(mockRequest.prompt);
+        } finally {
+          loggerError.mockRestore();
+        }
+      });
+
+      it('should throw the refusal message when content has partial text', async () => {
+        const loggerError = jest
+          .spyOn(Logger.prototype, 'error')
+          .mockImplementation(() => undefined);
+        mockMessagesCreate.mockResolvedValue(
+          baseMessage({
+            content: [{ type: 'text', text: partialTextSentinel }],
+            stop_reason: 'refusal',
+            stop_details: {
+              category: 'safety',
+              explanation: explanationSentinel,
+            },
+          }),
+        );
+
+        try {
+          await expectExactMessage(
+            () => adapter.executeWithTools(mockRequest),
+            'Anthropic declined the request (stop_reason=refusal, category=safety)',
+          );
+          const logged = loggedErrorText(loggerError);
+          expect(logged).toContain('category=safety');
+          expect(logged).not.toContain(partialTextSentinel);
+          expect(logged).not.toContain(explanationSentinel);
+          expect(logged).not.toContain(mockRequest.prompt);
+        } finally {
+          loggerError.mockRestore();
+        }
+      });
+
+      it('should name stop_reason when content is empty and stop_reason is not refusal', async () => {
+        mockMessagesCreate.mockResolvedValue(
+          baseMessage({
+            content: [],
+            stop_reason: 'end_turn',
+          }),
+        );
+
+        await expectExactMessage(
+          () => adapter.executeWithTools(mockRequest),
+          'Malformed Anthropic response: missing content (stop_reason=end_turn)',
+        );
+      });
+
+      it('should keep the missing-content message when content is empty and stop_reason is absent', async () => {
+        mockMessagesCreate.mockResolvedValue(
+          baseMessage({
+            content: [],
+          }),
+        );
+
+        await expect(adapter.executeWithTools(mockRequest)).rejects.toThrow(
+          InternalServerErrorException,
+        );
+        await expect(adapter.executeWithTools(mockRequest)).rejects.toThrow(
+          /^Malformed Anthropic response: missing content$/,
+        );
+      });
     });
   });
 });
