@@ -82728,14 +82728,14 @@ taskId=HARNESS-REFUSAL-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-01. Registered and admitted to Lane 1; Step 2 (implementation) not started. mutexes=AI-SERVICE. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-01. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Status:** COMPLETE AND LOCKED — 2026-11-01. LANE-DONE and LOCKED by the control plane; Lane 1 and AI-SERVICE released. Checkpoint: docs/HARNESS-REFUSAL-01-CHECKPOINT.md. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-01. Registered and admitted to Lane 1; Step 2 (implementation) not started. mutexes=AI-SERVICE. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-01. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
 **Task ID:** HARNESS-REFUSAL-01
 **Title:** Report an Anthropic refusal as a refusal
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP. Step 1 is this registration and admission (2026-11-01); Step 2 implementation; Step 3 consolidation, checkpoint and LOCK by the control plane.
 **Start condition (human):** READY — Keith approved this task on 2026-11-01, after HARNESS-LIVE-01 run 5.
-**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Start condition (machine):** `READY`; `status=LOCKED`. Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
 **Depends on (human):** none.
 **Depends on (machine `dependsOn`):** `[]`
 **Primary write scope:** exactly `services/ai-service/src/ai-execution/adapters/anthropic-ai.adapter.ts`, `services/ai-service/src/ai-execution/adapters/__tests__/anthropic-ai.adapter.spec.ts`. Anything else is out of scope.
@@ -82754,16 +82754,17 @@ nature=IMPLEMENTATION
 
 **Problem:** in HARNESS-LIVE-01, execution 07036191-577f-4b04-bcd3-a59f9ace8eee failed with `Malformed Anthropic response: missing content`. The adapter throws on empty content before reading `stop_reason`, so the reason was not recorded. Anthropic documents a safety refusal before any output as HTTP 200 with `stop_reason: refusal` and empty content, which is the most likely cause but is not confirmed. A refusal with partial text is not treated as a failure at all today: it maps to finish reason `unknown`.
 **Scope:** in the Anthropic adapter only, on both the single-call and harness response paths: (1) check `stop_reason` before reading content; (2) on `refusal`, with or without partial text, log the `stop_details` category when present and fail with a clear message that Anthropic declined the request; (3) on empty content with any other `stop_reason`, keep the failure and name that reason in the message. Not in scope: automatic fallback to another model, retries, the step limit, charging (failed runs stay uncharged), other providers, any UI, and deploying the change.
+**Result (2026-11-01):** implemented in c1060a44c19da779f6878c845570097312cd545e by Cursor CLI, reviewed and re-validated by the control plane: ai-service npm test 38/38 suites, 984 passed, 1 skipped; npm run build exit 0. Checkpoint: docs/HARNESS-REFUSAL-01-CHECKPOINT.md. Mocked responses only; not deployed.
 
 #### Acceptance criteria
 
-- [ ] A mocked refusal with empty content fails with the new message on both paths
-- [ ] A mocked refusal with partial text fails with the new message on both paths
-- [ ] Empty content with another `stop_reason` fails and names that reason on both paths
-- [ ] Normal text and tool responses behave as before
-- [ ] services/ai-service: npm test and npm run build pass
-- [ ] No key or secret appears in any log, and only the files in the primary write scope change
-- [ ] Not LOCKED by an implementer
+- [x] A mocked refusal with empty content fails with the new message on both paths
+- [x] A mocked refusal with partial text fails with the new message on both paths
+- [x] Empty content with another `stop_reason` fails and names that reason on both paths
+- [x] Normal text and tool responses behave as before
+- [x] services/ai-service: npm test and npm run build pass
+- [x] No key or secret appears in any log, and only the files in the primary write scope change
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
