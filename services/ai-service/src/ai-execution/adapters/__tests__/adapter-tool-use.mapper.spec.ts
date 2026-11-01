@@ -1,3 +1,4 @@
+import { InternalServerErrorException } from '@nestjs/common';
 import {
   AGENT_HARNESS_TOOL_DEFINITIONS_V1,
   getAgentHarnessToolDefinition,
@@ -5,11 +6,15 @@ import {
 } from '../../../agent-harness/tools/tool-registry';
 import {
   FIRST_READ_ONLY_HARNESS_ADVERTISED_TOOL_IDS,
+  RESPONSES_CONTINUATION_MISSING_RESPONSE_ID_MESSAGE,
+  buildResponsesToolRequest,
   mapAgentHarnessToolDefinitionsToAdapterToolDeclarations,
   mapAgentHarnessToolDefinitionsToAnthropicTools,
   mapAgentHarnessToolDefinitionsToOpenAITools,
+  mapAgentHarnessToolDefinitionsToResponsesTools,
   mapCanonicalTranscriptToAnthropicMessages,
   mapCanonicalTranscriptToOpenAIMessages,
+  parseResponsesToolUseResponse,
   parseToolArgumentsToObject,
   selectAdvertisedAgentHarnessTools,
   tryParseToolArgumentsToObject,
@@ -654,6 +659,458 @@ describe('AGENT-PLATFORM-EXEC-01C3 canonical transcript contracts and mapper', (
     expect(messages).toEqual(mapCanonicalTranscriptToOpenAIMessages(withoutState));
     expect(JSON.stringify(messages)).not.toContain('secret-thinking-not-for-openai');
     expect(JSON.stringify(messages)).not.toContain('anthropic-content');
+  });
+});
+
+describe('Responses API tool helpers', () => {
+  const readFile = AGENT_HARNESS_TOOL_DEFINITIONS_V1[1];
+  const listFiles = AGENT_HARNESS_TOOL_DEFINITIONS_V1[0];
+
+  it('maps harness tools to Responses function tools with strict false', () => {
+    expect(
+      mapAgentHarnessToolDefinitionsToResponsesTools([listFiles, readFile]),
+    ).toEqual([
+      {
+        type: 'function',
+        name: listFiles.name,
+        description: listFiles.description,
+        parameters: listFiles.inputSchema.schema,
+        strict: false,
+      },
+      {
+        type: 'function',
+        name: readFile.name,
+        description: readFile.description,
+        parameters: readFile.inputSchema.schema,
+        strict: false,
+      },
+    ]);
+    expect(mapAgentHarnessToolDefinitionsToResponsesTools()).toEqual([]);
+    expect(mapAgentHarnessToolDefinitionsToResponsesTools([])).toEqual([]);
+  });
+
+  it('builds a first-step user message and puts the system prompt in instructions', () => {
+    expect(
+      buildResponsesToolRequest({
+        prompt: 'List then read README.md',
+        systemPrompt: '  Follow platform contract.  ',
+        transcript: [],
+      }),
+    ).toEqual({
+      input: [{ role: 'user', content: 'List then read README.md' }],
+      instructions: 'Follow platform contract.',
+    });
+  });
+
+  it('builds a first-step user message without instructions when no system prompt is present', () => {
+    expect(
+      buildResponsesToolRequest({
+        prompt: 'List then read README.md',
+      }),
+    ).toEqual({
+      input: [{ role: 'user', content: 'List then read README.md' }],
+    });
+    expect(
+      buildResponsesToolRequest({
+        prompt: 'List then read README.md',
+        systemPrompt: '   ',
+        transcript: [],
+      }),
+    ).toEqual({
+      input: [{ role: 'user', content: 'List then read README.md' }],
+    });
+  });
+
+  it('continues from the last response id and sends only the latest tool results', () => {
+    const request = buildResponsesToolRequest({
+      prompt: 'List then read README.md',
+      systemPrompt: 'Follow platform contract.',
+      transcript: [
+        {
+          kind: 'assistant_tool_turn',
+          content: 'Earlier.',
+          toolCalls: [],
+          providerState: { kind: 'responses', responseId: 'resp_old' },
+        },
+        {
+          kind: 'tool_result_turn',
+          results: [
+            {
+              callId: 'call_old',
+              toolName: 'list_files',
+              success: true,
+              content: { entries: ['stale.txt'] },
+            },
+          ],
+        },
+        {
+          kind: 'assistant_tool_turn',
+          content: 'I will look those up.',
+          toolCalls: [],
+          providerState: { kind: 'responses', responseId: '  resp_latest  ' },
+        },
+        {
+          kind: 'tool_result_turn',
+          results: [
+            {
+              callId: 'call_aaa',
+              toolName: 'list_files',
+              success: true,
+              content: { entries: ['README.md'] },
+            },
+            {
+              callId: 'call_bbb',
+              toolName: 'read_file',
+              success: true,
+              content: { content: '# Title' },
+            },
+            {
+              callId: 'call_ccc',
+              toolName: 'read_file',
+              success: false,
+              errorMessage: 'read failed',
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(request).toEqual({
+      previous_response_id: 'resp_latest',
+      instructions: 'Follow platform contract.',
+      input: [
+        {
+          type: 'function_call_output',
+          call_id: 'call_aaa',
+          output: JSON.stringify({ entries: ['README.md'] }),
+        },
+        {
+          type: 'function_call_output',
+          call_id: 'call_bbb',
+          output: JSON.stringify({ content: '# Title' }),
+        },
+        {
+          type: 'function_call_output',
+          call_id: 'call_ccc',
+          output: 'read failed',
+        },
+      ],
+    });
+    expect(JSON.stringify(request)).not.toContain('resp_old');
+    expect(JSON.stringify(request)).not.toContain('call_old');
+    expect(JSON.stringify(request)).not.toContain('stale.txt');
+    expect(JSON.stringify(request)).not.toContain('List then read README.md');
+  });
+
+  it('throws when a later step has no usable response id', () => {
+    const latestResults: AIAdapterCanonicalTranscriptTurn = {
+      kind: 'tool_result_turn',
+      results: [
+        {
+          callId: 'call_aaa',
+          toolName: 'list_files',
+          success: true,
+          content: { entries: ['README.md'] },
+        },
+      ],
+    };
+    const cases: readonly AIAdapterCanonicalTranscriptTurn[][] = [
+      [
+        { kind: 'assistant_tool_turn', content: '', toolCalls: [] },
+        latestResults,
+      ],
+      [
+        {
+          kind: 'assistant_tool_turn',
+          content: '',
+          toolCalls: [],
+          providerState: { kind: 'anthropic-content', content: [] },
+        },
+        latestResults,
+      ],
+      [
+        {
+          kind: 'assistant_tool_turn',
+          content: '',
+          toolCalls: [],
+          providerState: { kind: 'responses', responseId: '   ' },
+        },
+        latestResults,
+      ],
+      [latestResults],
+    ];
+
+    for (const transcript of cases) {
+      expect(() =>
+        buildResponsesToolRequest({
+          prompt: 'continue',
+          transcript,
+        }),
+      ).toThrow(InternalServerErrorException);
+      expect(() =>
+        buildResponsesToolRequest({
+          prompt: 'continue',
+          transcript,
+        }),
+      ).toThrow(RESPONSES_CONTINUATION_MISSING_RESPONSE_ID_MESSAGE);
+    }
+  });
+
+  it('parses text-only Responses output and joins output_text parts', () => {
+    const result = parseResponsesToolUseResponse(
+      {
+        id: 'resp_text',
+        status: 'completed',
+        model: 'gpt-4o-2024-11-20',
+        output: [
+          {
+            type: 'message',
+            content: [
+              { type: 'output_text', text: 'Hello' },
+              { type: 'output_text', text: ' world' },
+            ],
+          },
+        ],
+        usage: { total_tokens: 11 },
+      },
+      'gpt-4o',
+    );
+
+    expect(result).toEqual({
+      output: 'Hello world',
+      tokensUsed: 11,
+      model: 'gpt-4o-2024-11-20',
+      finishReason: 'completed',
+      toolCalls: [],
+      canonicalToolCalls: [],
+    });
+    expect(result).not.toHaveProperty('providerState');
+  });
+
+  it('falls back to the requested model when the response model is empty', () => {
+    const result = parseResponsesToolUseResponse(
+      {
+        id: 'resp_text',
+        status: 'completed',
+        model: '',
+        output: [
+          {
+            type: 'message',
+            content: [{ type: 'output_text', text: 'ok' }],
+          },
+        ],
+        usage: { total_tokens: 2 },
+      },
+      'gpt-4o',
+    );
+
+    expect(result.model).toBe('gpt-4o');
+  });
+
+  it('parses function calls into canonical tool calls and providerState', () => {
+    const result = parseResponsesToolUseResponse(
+      {
+        id: 'resp_calls',
+        status: 'completed',
+        model: 'gpt-4o',
+        output: [
+          {
+            type: 'message',
+            content: [{ type: 'output_text', text: 'Reading.' }],
+          },
+          {
+            type: 'function_call',
+            call_id: 'call_123',
+            name: 'read_file',
+            arguments: '{"path":"README.md"}',
+          },
+        ],
+        usage: { total_tokens: 20 },
+      },
+      'gpt-4o',
+    );
+
+    expect(result.finishReason).toBe('tool_calls');
+    expect(result.output).toBe('Reading.');
+    expect(result.toolCalls).toEqual([
+      {
+        callId: 'call_123',
+        toolName: 'read_file',
+        arguments: { path: 'README.md' },
+        providerKind: 'openai-function_call',
+      },
+    ]);
+    expect(result.canonicalToolCalls).toEqual([
+      {
+        status: 'valid',
+        callId: 'call_123',
+        toolName: 'read_file',
+        arguments: { path: 'README.md' },
+        rawArguments: '{"path":"README.md"}',
+        providerKind: 'openai-function_call',
+      },
+    ]);
+    expect(result.providerState).toEqual({
+      kind: 'responses',
+      responseId: 'resp_calls',
+    });
+  });
+
+  it('reports malformed arguments and a missing call id without inventing ids', () => {
+    const result = parseResponsesToolUseResponse(
+      {
+        id: 'resp_bad',
+        status: 'completed',
+        output: [
+          {
+            type: 'function_call',
+            call_id: 'call_bad_json',
+            name: 'read_file',
+            arguments: '{not-json',
+          },
+          {
+            type: 'function_call',
+            call_id: '   ',
+            name: 'list_files',
+            arguments: '{"path":"."}',
+          },
+        ],
+        usage: { total_tokens: 8 },
+      },
+      'gpt-4o',
+    );
+
+    expect(result.toolCalls).toEqual([]);
+    expect(result.canonicalToolCalls).toEqual([
+      {
+        status: 'malformed_arguments',
+        callId: 'call_bad_json',
+        toolName: 'read_file',
+        rawArguments: '{not-json',
+        providerKind: 'openai-function_call',
+        errorMessage: expect.stringContaining('MALFORMED_TOOL_ARGUMENTS'),
+      },
+      {
+        status: 'missing_id',
+        toolName: 'list_files',
+        rawArguments: '{"path":"."}',
+        providerKind: 'openai-function_call',
+      },
+    ]);
+    expect(result.finishReason).toBe('tool_calls');
+    expect(JSON.stringify(result)).not.toContain('openai-function-call-');
+    expect(result.canonicalToolCalls?.[0]).not.toEqual(
+      expect.objectContaining({ arguments: {} }),
+    );
+    expect(result.providerState).toEqual({
+      kind: 'responses',
+      responseId: 'resp_bad',
+    });
+  });
+
+  it('maps incomplete max_output_tokens to max_tokens when there are no tool calls', () => {
+    const result = parseResponsesToolUseResponse(
+      {
+        id: 'resp_incomplete',
+        status: 'incomplete',
+        incomplete_details: { reason: 'max_output_tokens' },
+        output: [
+          {
+            type: 'message',
+            content: [{ type: 'output_text', text: 'partial' }],
+          },
+        ],
+        usage: { total_tokens: 16000 },
+      },
+      'gpt-4o',
+    );
+
+    expect(result.finishReason).toBe('max_tokens');
+    expect(result.output).toBe('partial');
+    expect(result.toolCalls).toEqual([]);
+    expect(result).not.toHaveProperty('providerState');
+  });
+
+  it('prefers tool_calls when a function call is also truncated', () => {
+    const result = parseResponsesToolUseResponse(
+      {
+        id: 'resp_both',
+        status: 'incomplete',
+        incomplete_details: { reason: 'max_output_tokens' },
+        output: [
+          {
+            type: 'function_call',
+            call_id: 'call_1',
+            name: 'read_file',
+            arguments: '{"path":"README.md"}',
+          },
+        ],
+        usage: { total_tokens: 9 },
+      },
+      'gpt-4o',
+    );
+
+    expect(result.finishReason).toBe('tool_calls');
+  });
+
+  it('rejects malformed usage the same way as the chat path', () => {
+    const textOutput = [
+      {
+        type: 'message',
+        content: [{ type: 'output_text', text: 'ok' }],
+      },
+    ];
+
+    expect(() =>
+      parseResponsesToolUseResponse(
+        { id: 'resp', status: 'completed', output: textOutput },
+        'gpt-4o',
+      ),
+    ).toThrow('Malformed OpenAI response: missing usage');
+    expect(() =>
+      parseResponsesToolUseResponse(
+        {
+          id: 'resp',
+          status: 'completed',
+          output: textOutput,
+          usage: { total_tokens: null },
+        },
+        'gpt-4o',
+      ),
+    ).toThrow('Malformed OpenAI response: missing usage');
+    expect(() =>
+      parseResponsesToolUseResponse(
+        {
+          id: 'resp',
+          status: 'completed',
+          output: textOutput,
+          usage: { total_tokens: '100' },
+        },
+        'gpt-4o',
+      ),
+    ).toThrow('Malformed OpenAI response: missing usage');
+    expect(() =>
+      parseResponsesToolUseResponse(
+        {
+          id: 'resp',
+          status: 'completed',
+          output: textOutput,
+          usage: { total_tokens: -10 },
+        },
+        'gpt-4o',
+      ),
+    ).toThrow('Malformed OpenAI response: invalid token count');
+    expect(() =>
+      parseResponsesToolUseResponse(
+        {
+          id: 'resp',
+          status: 'completed',
+          output: [],
+          usage: { total_tokens: 4 },
+        },
+        'gpt-4o',
+      ),
+    ).toThrow('Malformed OpenAI response: missing content');
   });
 });
 

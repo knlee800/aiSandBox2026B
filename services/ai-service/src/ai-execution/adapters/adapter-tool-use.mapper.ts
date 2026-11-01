@@ -1,10 +1,14 @@
+import { InternalServerErrorException } from '@nestjs/common';
 import { AGENT_HARNESS_TOOL_DEFINITIONS_V1 } from '../../agent-harness/tools/tool-registry';
 import type { AgentHarnessToolRegistryDefinitionV1 } from '../../agent-harness/tools/tool-registry.contracts';
 import type {
   AIAdapterCanonicalToolCall,
   AIAdapterCanonicalTranscriptTurn,
+  AIAdapterToolCallMetadata,
   AIAdapterToolDeclaration,
   AIAdapterToolResultPayload,
+  AIAdapterToolUseFinishReason,
+  AIAdapterToolUseResult,
 } from './adapter-tool-use.contracts';
 import { MALFORMED_TOOL_ARGUMENTS_ERROR_CODE } from './adapter-tool-use.contracts';
 
@@ -188,6 +192,38 @@ export function mapAgentHarnessToolDefinitionsToOpenAITools(
   );
 }
 
+export interface ResponsesAdapterFunctionTool {
+  readonly type: 'function';
+  readonly name: string;
+  readonly description: string;
+  readonly parameters: Readonly<Record<string, unknown>>;
+  readonly strict: false;
+}
+
+export function mapAdapterToolDeclarationsToResponsesTools(
+  declarations?: readonly AIAdapterToolDeclaration[],
+): readonly ResponsesAdapterFunctionTool[] {
+  if (!declarations || declarations.length === 0) {
+    return [];
+  }
+
+  return declarations.map((tool) => ({
+    type: 'function',
+    name: tool.name,
+    description: tool.description,
+    parameters: tool.inputSchema,
+    strict: false,
+  }));
+}
+
+export function mapAgentHarnessToolDefinitionsToResponsesTools(
+  definitions?: readonly AgentHarnessToolRegistryDefinitionV1[],
+): readonly ResponsesAdapterFunctionTool[] {
+  return mapAdapterToolDeclarationsToResponsesTools(
+    mapAgentHarnessToolDefinitionsToAdapterToolDeclarations(definitions),
+  );
+}
+
 export type ToolArgumentParseResult =
   | { readonly ok: true; readonly value: Readonly<Record<string, unknown>> }
   | { readonly ok: false; readonly errorMessage: string };
@@ -356,6 +392,258 @@ export function mapCanonicalTranscriptToOpenAIMessages(
   }
 
   return messages;
+}
+
+export const RESPONSES_CONTINUATION_MISSING_RESPONSE_ID_MESSAGE =
+  'Responses tool continuation requires providerState { kind: "responses", responseId } from the last assistant turn';
+
+export interface ResponsesUserMessageInput {
+  readonly role: 'user';
+  readonly content: string;
+}
+
+export interface ResponsesFunctionCallOutputInput {
+  readonly type: 'function_call_output';
+  readonly call_id: string;
+  readonly output: string;
+}
+
+export type ResponsesToolInputItem =
+  | ResponsesUserMessageInput
+  | ResponsesFunctionCallOutputInput;
+
+export interface ResponsesToolRequest {
+  readonly input: readonly ResponsesToolInputItem[];
+  readonly instructions?: string;
+  readonly previous_response_id?: string;
+}
+
+export interface ResponsesToolRequestSource {
+  readonly prompt: string;
+  readonly systemPrompt?: string;
+  readonly transcript?: readonly AIAdapterCanonicalTranscriptTurn[];
+}
+
+export interface ResponsesToolUseResponseSource {
+  readonly id?: unknown;
+  readonly model?: unknown;
+  readonly status?: unknown;
+  readonly output?: readonly unknown[] | null;
+  readonly usage?: { readonly total_tokens?: unknown } | null;
+  readonly incomplete_details?: { readonly reason?: unknown } | null;
+}
+
+export function buildResponsesToolRequest(
+  source: ResponsesToolRequestSource,
+): ResponsesToolRequest {
+  const normalizedSystemPrompt =
+    typeof source.systemPrompt === 'string' ? source.systemPrompt.trim() : '';
+  const transcript = source.transcript ?? [];
+  const instructions =
+    normalizedSystemPrompt.length > 0 ? normalizedSystemPrompt : undefined;
+
+  if (transcript.length === 0) {
+    return {
+      input: [{ role: 'user', content: source.prompt }],
+      ...(instructions !== undefined ? { instructions } : {}),
+    };
+  }
+
+  const responseId = readLastResponsesResponseId(transcript);
+  if (responseId === undefined) {
+    throw new InternalServerErrorException(
+      RESPONSES_CONTINUATION_MISSING_RESPONSE_ID_MESSAGE,
+    );
+  }
+
+  return {
+    previous_response_id: responseId,
+    input: latestToolResults(transcript).map((result) => ({
+      type: 'function_call_output',
+      call_id: result.callId,
+      output: serializeToolResultContent(result),
+    })),
+    ...(instructions !== undefined ? { instructions } : {}),
+  };
+}
+
+export function parseResponsesToolUseResponse(
+  response: ResponsesToolUseResponseSource,
+  fallbackModel: string,
+): AIAdapterToolUseResult {
+  if (!response.usage || typeof response.usage.total_tokens !== 'number') {
+    throw new InternalServerErrorException(
+      'Malformed OpenAI response: missing usage',
+    );
+  }
+  if (response.usage.total_tokens < 0) {
+    throw new InternalServerErrorException(
+      'Malformed OpenAI response: invalid token count',
+    );
+  }
+
+  const textParts: string[] = [];
+  const canonicalToolCalls: AIAdapterCanonicalToolCall[] = [];
+  const toolCalls: AIAdapterToolCallMetadata[] = [];
+  const outputItems = Array.isArray(response.output) ? response.output : [];
+
+  for (const item of outputItems) {
+    if (!isRecord(item)) {
+      continue;
+    }
+    if (item.type === 'message' && Array.isArray(item.content)) {
+      for (const part of item.content) {
+        if (
+          isRecord(part) &&
+          part.type === 'output_text' &&
+          typeof part.text === 'string'
+        ) {
+          textParts.push(part.text);
+        }
+      }
+      continue;
+    }
+    if (item.type === 'function_call') {
+      appendResponsesFunctionCall(item, canonicalToolCalls, toolCalls);
+    }
+  }
+
+  const output = textParts.join('');
+  if (output.trim().length === 0 && canonicalToolCalls.length === 0) {
+    throw new InternalServerErrorException(
+      'Malformed OpenAI response: missing content',
+    );
+  }
+
+  const model =
+    typeof response.model === 'string' && response.model.length > 0
+      ? response.model
+      : fallbackModel;
+  const finishReason = mapResponsesFinishReason(response, canonicalToolCalls);
+
+  return {
+    output,
+    tokensUsed: response.usage.total_tokens,
+    model,
+    finishReason,
+    toolCalls,
+    canonicalToolCalls,
+    ...(canonicalToolCalls.length > 0
+      ? {
+          providerState: {
+            kind: 'responses',
+            responseId: typeof response.id === 'string' ? response.id : '',
+          },
+        }
+      : {}),
+  };
+}
+
+function readLastResponsesResponseId(
+  transcript: readonly AIAdapterCanonicalTranscriptTurn[],
+): string | undefined {
+  for (let index = transcript.length - 1; index >= 0; index -= 1) {
+    const turn = transcript[index];
+    if (turn.kind !== 'assistant_tool_turn') {
+      continue;
+    }
+    return readResponsesResponseId(turn.providerState);
+  }
+  return undefined;
+}
+
+function readResponsesResponseId(providerState: unknown): string | undefined {
+  if (!isRecord(providerState) || providerState.kind !== 'responses') {
+    return undefined;
+  }
+  if (typeof providerState.responseId !== 'string') {
+    return undefined;
+  }
+  const responseId = providerState.responseId.trim();
+  return responseId.length > 0 ? responseId : undefined;
+}
+
+function latestToolResults(
+  transcript: readonly AIAdapterCanonicalTranscriptTurn[],
+): readonly AIAdapterToolResultPayload[] {
+  for (let index = transcript.length - 1; index >= 0; index -= 1) {
+    const turn = transcript[index];
+    if (turn.kind === 'tool_result_turn') {
+      return turn.results;
+    }
+  }
+  return [];
+}
+
+function appendResponsesFunctionCall(
+  item: Record<string, unknown>,
+  canonicalToolCalls: AIAdapterCanonicalToolCall[],
+  toolCalls: AIAdapterToolCallMetadata[],
+): void {
+  const rawArguments = item.arguments;
+  const parsed = parseToolArgumentsToObject(rawArguments);
+  const toolName = typeof item.name === 'string' ? item.name : '';
+  const usableCallId =
+    typeof item.call_id === 'string' && item.call_id.trim().length > 0
+      ? item.call_id
+      : undefined;
+  const providerKind = 'openai-function_call' as const;
+
+  if (!usableCallId) {
+    canonicalToolCalls.push({
+      status: 'missing_id',
+      toolName,
+      rawArguments,
+      providerKind,
+    });
+    return;
+  }
+
+  if (parsed.ok === false) {
+    canonicalToolCalls.push({
+      status: 'malformed_arguments',
+      callId: usableCallId,
+      toolName,
+      rawArguments,
+      providerKind,
+      errorMessage: parsed.errorMessage,
+    });
+    return;
+  }
+
+  canonicalToolCalls.push({
+    status: 'valid',
+    callId: usableCallId,
+    toolName,
+    arguments: parsed.value,
+    rawArguments,
+    providerKind,
+  });
+  toolCalls.push({
+    callId: usableCallId,
+    toolName,
+    arguments: parsed.value,
+    providerKind,
+  });
+}
+
+function mapResponsesFinishReason(
+  response: ResponsesToolUseResponseSource,
+  toolCalls: readonly AIAdapterCanonicalToolCall[],
+): AIAdapterToolUseFinishReason {
+  if (toolCalls.length > 0) {
+    return 'tool_calls';
+  }
+  if (
+    isRecord(response.incomplete_details) &&
+    response.incomplete_details.reason === 'max_output_tokens'
+  ) {
+    return 'max_tokens';
+  }
+  if (response.status === 'completed') {
+    return 'completed';
+  }
+  return 'unknown';
 }
 
 function anthropicOpaqueAssistantContent(

@@ -10,15 +10,12 @@ import OpenAI from 'openai';
 import { AIAdapter } from './ai-adapter.interface';
 import { AIExecutionRequest, AIExecutionResult } from '../types';
 import {
+  buildResponsesToolRequest,
+  mapAdapterToolDeclarationsToResponsesTools,
   mapAgentHarnessToolDefinitionsToAdapterToolDeclarations,
-  mapAdapterToolDeclarationsToOpenAITools,
-  mapCanonicalTranscriptToOpenAIMessages,
-  parseToolArgumentsToObject,
+  parseResponsesToolUseResponse,
 } from './adapter-tool-use.mapper';
 import type {
-  AIAdapterCanonicalToolCall,
-  AIAdapterToolCallMetadata,
-  AIAdapterToolUseFinishReason,
   AIAdapterToolUseRequestOptions,
   AIAdapterToolUseResult,
 } from './adapter-tool-use.contracts';
@@ -140,13 +137,21 @@ export class OpenAIAdapter implements AIAdapter {
               },
             ];
 
-      // Transform AIExecutionRequest to OpenAI Chat Completions API format
-      const openaiRequest: OpenAI.Chat.ChatCompletionCreateParams = {
-        model: executionModel,
-        max_tokens: this.defaultMaxTokens,
-        temperature: this.defaultTemperature,
-        messages,
-      };
+      // Transform AIExecutionRequest to OpenAI Chat Completions API format.
+      // GPT-6 models reject max_tokens and temperature on this endpoint.
+      const openaiRequest: OpenAI.Chat.ChatCompletionCreateParams =
+        executionModel.startsWith('gpt-6')
+          ? {
+              model: executionModel,
+              max_completion_tokens: this.defaultMaxTokens,
+              messages,
+            }
+          : {
+              model: executionModel,
+              max_tokens: this.defaultMaxTokens,
+              temperature: this.defaultTemperature,
+              messages,
+            };
 
       // Execute request via OpenAI SDK (Phase 47.4: forward signal for abort)
       const createOptions = request.signal ? { signal: request.signal } : {};
@@ -176,68 +181,70 @@ export class OpenAIAdapter implements AIAdapter {
         typeof request.model === 'string' && request.model.trim().length > 0
           ? request.model.trim()
           : this.model;
-      const normalizedSystemPrompt =
-        typeof request.systemPrompt === 'string'
-          ? request.systemPrompt.trim()
-          : '';
-      const initialMessages: OpenAI.Chat.ChatCompletionCreateParams['messages'] =
-        normalizedSystemPrompt.length > 0
-          ? [
-              {
-                role: 'system',
-                content: normalizedSystemPrompt,
-              },
-              {
-                role: 'user',
-                content: request.prompt,
-              },
-            ]
-          : [
-              {
-                role: 'user',
-                content: request.prompt,
-              },
-            ];
-      const transcriptMessages = mapCanonicalTranscriptToOpenAIMessages(
-        options?.transcript,
+      const responsesRequest = this.toResponsesCreateParams(
+        executionModel,
+        request,
+        options,
       );
-      const messages: OpenAI.Chat.ChatCompletionCreateParams['messages'] = [
-        ...initialMessages,
-        ...(transcriptMessages as OpenAI.Chat.ChatCompletionCreateParams['messages']),
-      ];
-      const adapterTools = mapAgentHarnessToolDefinitionsToAdapterToolDeclarations(
-        options?.tools,
-      );
-      const openaiTools = mapAdapterToolDeclarationsToOpenAITools(adapterTools);
-
-      const openaiRequest: OpenAI.Chat.ChatCompletionCreateParams = {
-        model: executionModel,
-        max_tokens: this.defaultMaxTokens,
-        temperature: this.defaultTemperature,
-        messages,
-      };
-      if (openaiTools.length > 0) {
-        openaiRequest.tools = openaiTools.map((tool) => ({
-          type: 'function' as const,
-          function: {
-            name: tool.function.name,
-            description: tool.function.description,
-            parameters: { ...tool.function.parameters },
-          },
-        }));
-        openaiRequest.tool_choice = 'auto';
-      }
 
       const createOptions = request.signal ? { signal: request.signal } : {};
-      const response = await this.client.chat.completions.create(
-        openaiRequest,
+      const response = await this.client.responses.create(
+        responsesRequest,
         createOptions,
       );
 
-      return this.transformToolUseResponse(response, executionModel);
+      return parseResponsesToolUseResponse(response, executionModel);
     } catch (error) {
       this.handleError(error, request);
     }
+  }
+
+  private toResponsesCreateParams(
+    model: string,
+    request: AIExecutionRequest,
+    options?: AIAdapterToolUseRequestOptions,
+  ): OpenAI.Responses.ResponseCreateParamsNonStreaming {
+    const built = buildResponsesToolRequest({
+      prompt: request.prompt,
+      systemPrompt: request.systemPrompt,
+      transcript: options?.transcript,
+    });
+    const responsesTools = mapAdapterToolDeclarationsToResponsesTools(
+      mapAgentHarnessToolDefinitionsToAdapterToolDeclarations(options?.tools),
+    );
+    const responsesRequest: OpenAI.Responses.ResponseCreateParamsNonStreaming = {
+      model,
+      max_output_tokens: 16000,
+      store: true,
+      input: built.input.map((item) =>
+        'type' in item
+          ? {
+              type: 'function_call_output' as const,
+              call_id: item.call_id,
+              output: item.output,
+            }
+          : {
+              role: 'user' as const,
+              content: item.content,
+            },
+      ),
+    };
+    if (built.instructions !== undefined) {
+      responsesRequest.instructions = built.instructions;
+    }
+    if (built.previous_response_id !== undefined) {
+      responsesRequest.previous_response_id = built.previous_response_id;
+    }
+    if (responsesTools.length > 0) {
+      responsesRequest.tools = responsesTools.map((tool) => ({
+        type: 'function' as const,
+        name: tool.name,
+        description: tool.description,
+        parameters: { ...tool.parameters },
+        strict: false,
+      }));
+    }
+    return responsesRequest;
   }
 
   /**
@@ -303,157 +310,6 @@ export class OpenAIAdapter implements AIAdapter {
       tokensUsed,
       model,
     };
-  }
-
-  private transformToolUseResponse(
-    response: OpenAI.Chat.ChatCompletion,
-    fallbackModel: string,
-  ): AIAdapterToolUseResult {
-    if (!response.choices || response.choices.length === 0) {
-      this.logger.error('OpenAI response missing choices field');
-      throw new InternalServerErrorException(
-        'Malformed OpenAI response: missing choices',
-      );
-    }
-
-    if (!response.usage || typeof response.usage.total_tokens !== 'number') {
-      this.logger.error('OpenAI response missing usage field');
-      throw new InternalServerErrorException(
-        'Malformed OpenAI response: missing usage',
-      );
-    }
-    if (response.usage.total_tokens < 0) {
-      this.logger.error('Invalid token count in OpenAI response', {
-        total_tokens: response.usage.total_tokens,
-      });
-      throw new InternalServerErrorException(
-        'Malformed OpenAI response: invalid token count',
-      );
-    }
-
-    const firstChoice = response.choices[0];
-    const message = firstChoice.message;
-    const { toolCalls, canonicalToolCalls } = this.extractToolCalls(message);
-    const output = typeof message.content === 'string' ? message.content : '';
-    if (output.trim().length === 0 && canonicalToolCalls.length === 0) {
-      this.logger.error('OpenAI tool-use response missing content and tool_calls');
-      throw new InternalServerErrorException(
-        'Malformed OpenAI response: missing content',
-      );
-    }
-
-    const finishReason = this.mapFinishReason(
-      firstChoice.finish_reason,
-      canonicalToolCalls,
-    );
-    const model = response.model || fallbackModel;
-
-    return {
-      output,
-      tokensUsed: response.usage.total_tokens,
-      model,
-      finishReason,
-      toolCalls,
-      canonicalToolCalls,
-    };
-  }
-
-  private extractToolCalls(
-    message: OpenAI.Chat.ChatCompletionMessage,
-  ): {
-    readonly toolCalls: readonly AIAdapterToolCallMetadata[];
-    readonly canonicalToolCalls: readonly AIAdapterCanonicalToolCall[];
-  } {
-    const canonicalToolCalls: AIAdapterCanonicalToolCall[] = [];
-    const toolCalls: AIAdapterToolCallMetadata[] = [];
-
-    if (Array.isArray(message.tool_calls) && message.tool_calls.length > 0) {
-      for (const call of message.tool_calls) {
-        if (call.type !== 'function') {
-          continue;
-        }
-        const rawArguments = call.function.arguments;
-        const parsed = parseToolArgumentsToObject(rawArguments);
-        const usableCallId =
-          typeof call.id === 'string' && call.id.trim().length > 0
-            ? call.id
-            : undefined;
-        if (!usableCallId) {
-          canonicalToolCalls.push({
-            status: 'missing_id',
-            toolName: call.function.name,
-            rawArguments,
-            providerKind: 'openai-tool_calls',
-          });
-          continue;
-        }
-        if (parsed.ok === false) {
-          canonicalToolCalls.push({
-            status: 'malformed_arguments',
-            callId: usableCallId,
-            toolName: call.function.name,
-            rawArguments,
-            providerKind: 'openai-tool_calls',
-            errorMessage: parsed.errorMessage,
-          });
-          continue;
-        }
-        const validCall: AIAdapterCanonicalToolCall = {
-          status: 'valid',
-          callId: usableCallId,
-          toolName: call.function.name,
-          arguments: parsed.value,
-          rawArguments,
-          providerKind: 'openai-tool_calls',
-        };
-        canonicalToolCalls.push(validCall);
-        toolCalls.push({
-          callId: usableCallId,
-          toolName: call.function.name,
-          arguments: parsed.value,
-          providerKind: 'openai-tool_calls',
-        });
-      }
-    }
-
-    if (
-      canonicalToolCalls.length === 0 &&
-      message.function_call &&
-      typeof message.function_call.name === 'string'
-    ) {
-      canonicalToolCalls.push({
-        status: 'missing_id',
-        toolName: message.function_call.name,
-        rawArguments: message.function_call.arguments,
-        providerKind: 'openai-function_call',
-      });
-    }
-
-    return { toolCalls, canonicalToolCalls };
-  }
-
-  private mapFinishReason(
-    finishReason: string | null | undefined,
-    toolCalls: readonly { readonly status?: string }[] | readonly AIAdapterToolCallMetadata[],
-  ): AIAdapterToolUseFinishReason {
-    if (
-      toolCalls.length > 0 ||
-      finishReason === 'tool_calls' ||
-      finishReason === 'function_call'
-    ) {
-      return 'tool_calls';
-    }
-    if (finishReason === 'stop') {
-      return 'completed';
-    }
-    if (finishReason === 'length') {
-      return 'max_tokens';
-    }
-    if (finishReason === 'content_filter') {
-      return 'stop';
-    }
-
-    return 'unknown';
   }
 
   /**

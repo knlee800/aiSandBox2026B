@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { XAIAdapter } from '../xai-ai.adapter';
 import { AIExecutionRequest } from '../../types';
+import { AGENT_HARNESS_TOOL_DEFINITIONS_V1 } from '../../../agent-harness/tools/tool-registry';
+import type { AIAdapterCanonicalTranscriptTurn } from '../adapter-tool-use.contracts';
 
 describe('XAIAdapter', () => {
   describe('constructor', () => {
@@ -36,6 +38,12 @@ describe('XAIAdapter', () => {
     it('should use default model when not specified', () => {
       const adapter = new XAIAdapter('xai-test-key-123');
       expect(adapter.model).toBe('grok-4.5');
+    });
+
+    it('supports tool use', () => {
+      const adapter = new XAIAdapter('xai-test-key-123');
+      expect(adapter.supportsToolUse).toBe(true);
+      expect(typeof adapter.executeWithTools).toBe('function');
     });
 
     it('should use custom model when specified', () => {
@@ -78,6 +86,9 @@ describe('XAIAdapter', () => {
           completions: {
             create: jest.fn(),
           },
+        },
+        responses: {
+          create: jest.fn(),
         },
       };
       (adapter as any).client = mockClient;
@@ -228,6 +239,7 @@ describe('XAIAdapter', () => {
         expect(call.function_call).toBeUndefined();
         expect(call.functions).toBeUndefined();
         expect(mockClient.chat.completions.create).toHaveBeenCalledTimes(1);
+        expect(mockClient.responses.create).not.toHaveBeenCalled();
       });
 
       it('should extract text content from response.choices[0].message.content', async () => {
@@ -651,6 +663,200 @@ describe('XAIAdapter', () => {
         await expect(adapter.execute(request)).rejects.toThrow(
           'Unexpected error during xAI API call',
         );
+      });
+    });
+
+    describe('executeWithTools()', () => {
+      const responsesText = (text: string, totalTokens = 10) => ({
+        id: 'resp_text',
+        status: 'completed',
+        output: [
+          {
+            type: 'message',
+            content: [{ type: 'output_text', text }],
+          },
+        ],
+        usage: { total_tokens: totalTokens },
+        model: 'grok-4.5',
+      });
+
+      it('calls responses.create on the xAI client without response_format or temperature', async () => {
+        const toolDefinition = AGENT_HARNESS_TOOL_DEFINITIONS_V1[1];
+        mockClient.responses.create.mockResolvedValue(responsesText('ok'));
+
+        await adapter.executeWithTools(
+          {
+            sessionId: 'session-1',
+            conversationId: 'conv-1',
+            userId: 'user-1',
+            prompt: 'Read README.md',
+            systemPrompt: '  Follow platform contract.  ',
+            provider: 'xai',
+            model: 'grok-4.5',
+          },
+          { tools: [toolDefinition] },
+        );
+
+        expect(mockClient.chat.completions.create).not.toHaveBeenCalled();
+        expect(mockClient.responses.create).toHaveBeenCalledWith(
+          {
+            model: 'grok-4.5',
+            max_output_tokens: 16000,
+            store: true,
+            instructions: 'Follow platform contract.',
+            input: [{ role: 'user', content: 'Read README.md' }],
+            tools: [
+              {
+                type: 'function',
+                name: toolDefinition.name,
+                description: toolDefinition.description,
+                parameters: toolDefinition.inputSchema.schema,
+                strict: false,
+              },
+            ],
+          },
+          {},
+        );
+        const recordedBody = mockClient.responses.create.mock.calls[0][0];
+        expect(recordedBody).not.toHaveProperty('response_format');
+        expect(recordedBody).not.toHaveProperty('temperature');
+        expect(recordedBody.instructions).not.toContain('assistantText');
+        expect(recordedBody.instructions).not.toContain('fileActions');
+      });
+
+      it('passes the first response id into the second step', async () => {
+        const tools = [
+          AGENT_HARNESS_TOOL_DEFINITIONS_V1[0],
+          AGENT_HARNESS_TOOL_DEFINITIONS_V1[1],
+        ];
+        mockClient.responses.create
+          .mockResolvedValueOnce({
+            id: 'resp_xai_1',
+            status: 'completed',
+            output: [
+              {
+                type: 'function_call',
+                call_id: 'call_aaa',
+                name: 'list_files',
+                arguments: '{"path":"."}',
+              },
+              {
+                type: 'function_call',
+                call_id: 'call_bbb',
+                name: 'read_file',
+                arguments: '{"path":"README.md"}',
+              },
+            ],
+            usage: { total_tokens: 15 },
+            model: 'grok-4.5',
+          })
+          .mockResolvedValueOnce(responsesText('done', 9));
+        const request: AIExecutionRequest = {
+          sessionId: 'session-1',
+          conversationId: 'conv-1',
+          userId: 'user-1',
+          prompt: 'List then read README.md',
+          provider: 'xai',
+          model: 'grok-4.5',
+        };
+
+        const first = await adapter.executeWithTools(request, { tools });
+        const transcript: AIAdapterCanonicalTranscriptTurn[] = [
+          {
+            kind: 'assistant_tool_turn',
+            content: first.output,
+            toolCalls: first.canonicalToolCalls ?? [],
+            providerState: first.providerState,
+          },
+          {
+            kind: 'tool_result_turn',
+            results: [
+              {
+                callId: 'call_old',
+                toolName: 'list_files',
+                success: true,
+                content: { entries: ['stale.txt'] },
+              },
+            ],
+          },
+          {
+            kind: 'assistant_tool_turn',
+            content: first.output,
+            toolCalls: first.canonicalToolCalls ?? [],
+            providerState: first.providerState,
+          },
+          {
+            kind: 'tool_result_turn',
+            results: [
+              {
+                callId: 'call_aaa',
+                toolName: 'list_files',
+                success: true,
+                content: { entries: ['README.md'] },
+              },
+              {
+                callId: 'call_bbb',
+                toolName: 'read_file',
+                success: true,
+                content: { content: '# Title' },
+              },
+            ],
+          },
+        ];
+        await adapter.executeWithTools(request, { tools, transcript });
+
+        expect(first.providerState).toEqual({
+          kind: 'responses',
+          responseId: 'resp_xai_1',
+        });
+        const secondBody = mockClient.responses.create.mock.calls[1][0];
+        expect(secondBody.previous_response_id).toBe('resp_xai_1');
+        expect(secondBody.input).toEqual([
+          {
+            type: 'function_call_output',
+            call_id: 'call_aaa',
+            output: JSON.stringify({ entries: ['README.md'] }),
+          },
+          {
+            type: 'function_call_output',
+            call_id: 'call_bbb',
+            output: JSON.stringify({ content: '# Title' }),
+          },
+        ]);
+        expect(secondBody).not.toHaveProperty('response_format');
+        expect(secondBody).not.toHaveProperty('temperature');
+        expect(JSON.stringify(secondBody.input)).not.toContain('call_old');
+        expect(mockClient.chat.completions.create).not.toHaveBeenCalled();
+      });
+
+      it('forwards the abort signal and keeps xAI error handling', async () => {
+        const signal = new AbortController().signal;
+        mockClient.responses.create.mockResolvedValueOnce(responsesText('ok'));
+
+        await adapter.executeWithTools({
+          sessionId: 'session-1',
+          conversationId: 'conv-1',
+          userId: 'user-1',
+          prompt: 'Read README.md',
+          provider: 'xai',
+          signal,
+        });
+
+        expect(mockClient.responses.create.mock.calls[0][1]).toEqual({ signal });
+
+        mockClient.responses.create.mockRejectedValue({
+          status: 401,
+          message: 'Invalid API key',
+        });
+        await expect(
+          adapter.executeWithTools({
+            sessionId: 'session-1',
+            conversationId: 'conv-1',
+            userId: 'user-1',
+            prompt: 'Read README.md',
+            provider: 'xai',
+          }),
+        ).rejects.toThrow('Invalid xAI API key');
       });
     });
   });

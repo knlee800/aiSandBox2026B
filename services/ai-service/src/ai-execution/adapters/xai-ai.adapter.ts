@@ -10,6 +10,16 @@ import OpenAI from 'openai';
 import { AIAdapter } from './ai-adapter.interface';
 import { AIExecutionRequest, AIExecutionResult } from '../types';
 import { getStaticDefaultModel } from '../provider-model.catalogue';
+import {
+  buildResponsesToolRequest,
+  mapAdapterToolDeclarationsToResponsesTools,
+  mapAgentHarnessToolDefinitionsToAdapterToolDeclarations,
+  parseResponsesToolUseResponse,
+} from './adapter-tool-use.mapper';
+import type {
+  AIAdapterToolUseRequestOptions,
+  AIAdapterToolUseResult,
+} from './adapter-tool-use.contracts';
 
 const XAI_STRUCTURED_JSON_OUTPUT_CONTRACT = `IMPORTANT: Your entire response MUST be a single valid JSON object with these fields:
 - "assistantText": (string) Your conversational response to show the user.
@@ -54,6 +64,7 @@ export class XAIAdapter implements AIAdapter {
   private readonly defaultBaseURL = 'https://api.x.ai/v1';
 
   readonly model: string;
+  readonly supportsToolUse = true;
 
   /**
    * Construct XAIAdapter
@@ -155,6 +166,85 @@ export class XAIAdapter implements AIAdapter {
       // Transform SDK errors to NestJS exceptions
       this.handleError(error, request);
     }
+  }
+
+  async executeWithTools(
+    request: AIExecutionRequest,
+    options?: AIAdapterToolUseRequestOptions,
+  ): Promise<AIAdapterToolUseResult> {
+    this.logger.debug(
+      `Executing xAI tool-use request for session=${request.sessionId}, conversation=${request.conversationId}`,
+    );
+
+    try {
+      const executionModel =
+        typeof request.model === 'string' && request.model.trim().length > 0
+          ? request.model.trim()
+          : this.model;
+      const responsesRequest = this.toResponsesCreateParams(
+        executionModel,
+        request,
+        options,
+      );
+
+      const createOptions = request.signal ? { signal: request.signal } : {};
+      const response = await this.client.responses.create(
+        responsesRequest,
+        createOptions,
+      );
+
+      return parseResponsesToolUseResponse(response, executionModel);
+    } catch (error) {
+      this.handleError(error, request);
+    }
+  }
+
+  private toResponsesCreateParams(
+    model: string,
+    request: AIExecutionRequest,
+    options?: AIAdapterToolUseRequestOptions,
+  ): OpenAI.Responses.ResponseCreateParamsNonStreaming {
+    const built = buildResponsesToolRequest({
+      prompt: request.prompt,
+      systemPrompt: request.systemPrompt,
+      transcript: options?.transcript,
+    });
+    const responsesTools = mapAdapterToolDeclarationsToResponsesTools(
+      mapAgentHarnessToolDefinitionsToAdapterToolDeclarations(options?.tools),
+    );
+    const responsesRequest: OpenAI.Responses.ResponseCreateParamsNonStreaming = {
+      model,
+      max_output_tokens: 16000,
+      store: true,
+      input: built.input.map((item) =>
+        'type' in item
+          ? {
+              type: 'function_call_output' as const,
+              call_id: item.call_id,
+              output: item.output,
+            }
+          : {
+              role: 'user' as const,
+              content: item.content,
+            },
+      ),
+    };
+    if (built.instructions !== undefined) {
+      responsesRequest.instructions = built.instructions;
+    }
+    if (built.previous_response_id !== undefined) {
+      responsesRequest.previous_response_id = built.previous_response_id;
+    }
+    if (responsesTools.length > 0) {
+      responsesRequest.tools = responsesTools.map((tool) => ({
+        type: 'function' as const,
+        name: tool.name,
+        description: tool.description,
+        parameters: { ...tool.parameters },
+        strict: false,
+      }));
+    }
+    return responsesRequest;
   }
 
   /**
