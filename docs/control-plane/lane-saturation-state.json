@@ -11,16 +11,21 @@
   "occupancy": {
     "lane1": {
       "state": "ACTIVE",
-      "taskId": "HARNESS-LIVE-02",
-      "mutexes": ["STAGING", "PROVIDER-LIVE", "CREDIT", "ENV"],
-      "writePaths": [],
+      "taskId": "HARNESS-WRITE-TOOLS-01",
+      "mutexes": ["AI-SERVICE"],
+      "writePaths": [
+        "services/ai-service/src/ai-execution/adapters/adapter-tool-use.mapper.ts",
+        "services/ai-service/src/ai-execution/adapters/__tests__/adapter-tool-use.mapper.spec.ts",
+        "services/ai-service/src/worker/worker.processor.ts",
+        "services/ai-service/src/worker/worker.processor.spec.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "PROVIDER-LIVE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
-      "sharedContractIds": ["HARNESS_ENTITLEMENT_PROOF_V1"],
+      "sharedContractIds": [],
       "mutatesSharedContractIds": [],
-      "runtimeNeeds": ["STAGING", "PROVIDER-LIVE", "CREDIT"]
+      "runtimeNeeds": []
     },
     "lane2": {
       "state": "EMPTY",
@@ -1526,12 +1531,12 @@
       "taskId": "HARNESS-LIVE-02",
       "nature": "IMPLEMENTATION",
       "lifecycle": "4-STEP",
-      "status": "ADMITTED",
-      "startCondition": "READY",
+      "status": "READY",
+      "startCondition": "NOT_READY",
       "saturationClass": "OPTIONAL",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
-      "dependsOn": ["HARNESS-LIVE-01", "HARNESS-REFUSAL-01"],
+      "dependsOn": ["HARNESS-LIVE-01", "HARNESS-REFUSAL-01", "HARNESS-WRITE-TOOLS-01"],
       "mutexes": ["STAGING", "PROVIDER-LIVE", "CREDIT", "ENV"],
       "writePaths": [],
       "hotfiles": [],
@@ -1541,6 +1546,33 @@
       "evidenceClass": "PROVIDER-LIVE",
       "exclusiveCapacity": false,
       "runtimeNeeds": ["STAGING", "PROVIDER-LIVE", "CREDIT"],
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
+    },
+    {
+      "taskId": "HARNESS-WRITE-TOOLS-01",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "3-STEP",
+      "status": "ADMITTED",
+      "startCondition": "READY",
+      "saturationClass": "OPTIONAL",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": [],
+      "mutexes": ["AI-SERVICE"],
+      "writePaths": [
+        "services/ai-service/src/ai-execution/adapters/adapter-tool-use.mapper.ts",
+        "services/ai-service/src/ai-execution/adapters/__tests__/adapter-tool-use.mapper.spec.ts",
+        "services/ai-service/src/worker/worker.processor.ts",
+        "services/ai-service/src/worker/worker.processor.spec.ts"
+      ],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "LOCAL-TESTS",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": [],
       "admissionUncertain": false,
       "writeSetPrecision": "EXACT"
     }
@@ -1559,8 +1591,8 @@
   ],
   "runtimeAuthorization": {
     "localRuntimeAuthorized": true,
-    "stagingAuthorized": true,
-    "providerLiveAuthorized": true,
-    "creditAuthorized": true
+    "stagingAuthorized": false,
+    "providerLiveAuthorized": false,
+    "creditAuthorized": false
   }
 }
