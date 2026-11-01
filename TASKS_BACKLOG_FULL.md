@@ -82766,6 +82766,46 @@ nature=IMPLEMENTATION
 - [x] No key or secret appears in any log, and only the files in the primary write scope change
 - [x] Not LOCKED by an implementer
 
+### HARNESS-LIVE-02 — Prove harness writes and validation with a real model on ainow-staging-01
+
+**Status:** REGISTERED / READY — 2026-11-01. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
+**Task ID:** HARNESS-LIVE-02
+**Title:** Prove harness writes and validation with a real model on ainow-staging-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (operational run; no product activation)
+**Lifecycle:** 4-STEP. Step 1 registration; Step 2 stage-start; Step 3 runs under Keith's authorization; Step 4 consolidation, checkpoint and LOCK by the control plane.
+**Start condition (human):** READY — Keith approved the plan on 2026-11-01 ("Approve the plan").
+**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Depends on (human):** HARNESS-LIVE-01 and HARNESS-REFUSAL-01, both COMPLETE AND LOCKED.
+**Depends on (machine `dependsOn`):** `[HARNESS-LIVE-01, HARNESS-REFUSAL-01]`
+**Primary write scope:** none. Host state on ainow-staging-01, the test project's workspace and off-repo evidence only.
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV (Lane 1, 2026-11-01). ENV covers host environment files for the window only.
+**Hot-file leases:** none
+**Shared contracts:** consumes HARNESS_ENTITLEMENT_PROOF_V1 without changing it (`sharedContractIds=[HARNESS_ENTITLEMENT_PROOF_V1]`; `mutatesSharedContractIds=[]`).
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** acceptable (flags back off and the key removed afterwards; no schema change).
+**saturationClass:** OPTIONAL
+**productClass:** CURRENT (work on the existing gated harness; no product activation; PRD ACTIVE DEVELOPMENT)
+**futureAuthorization:** NONE
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** STAGING, PROVIDER-LIVE, CREDIT
+
+**Problem:** HARNESS-LIVE-01 proved read-only tools with a real model. Real writes, validation and the pre-apply save point have only run against a test stub. Keith approved direct harness writes with a save point, on staging only: docs/GOV-HARNESS-RESET-01-DECISION.md.
+**Scope:** on ainow-staging-01, behind basic_auth, in project C1 repeat: up to 3 runs on Anthropic with write and validation tools on, and one revert to a save point by Keith in the browser. Same caps as HARNESS-LIVE-01. Keith types the provider key at a hidden prompt; it is removed afterwards and the flags go back off. Browser tools stay off. Not in scope: raising the step limit, other providers, any UI, product activation, and making harness writes CURRENT.
+
+#### Acceptance criteria
+
+- [ ] A real run writes a file correctly through write_file, with a save point created first
+- [ ] A real run writes a file and runs npm test through run_validation, and reports the result correctly
+- [ ] Reverting to a save point restores the workspace files
+- [ ] Credits and usage are recorded correctly, and usage_records.model is non-empty
+- [ ] Spend stays within the caps
+- [ ] Afterwards the flags are off, the key is removed, and the configuration hashes match the recorded state
+- [ ] Keith reads the transcripts and records his judgement
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
