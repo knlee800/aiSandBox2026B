@@ -82639,18 +82639,18 @@ taskId=HARNESS-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY / NOT ADMITTED — 2026-10-31. Registered by GOV-HARNESS-RESET-01; `startCondition=NOT_READY` until the stage-start and Keith's authorization.
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-01. Step 2 stage-start complete: docs/HARNESS-LIVE-01-STAGE-START.md. Keith approved the deploy, up to 3 read-only runs and flags off. Step 3 not started. mutexes=STAGING, PROVIDER-LIVE, CREDIT, ENV. stagingAuthorized, providerLiveAuthorized and creditAuthorized true. Previous: **Status:** REGISTERED / READY / NOT ADMITTED — 2026-10-31. Registered by GOV-HARNESS-RESET-01; `startCondition=NOT_READY` until the stage-start and Keith's authorization.
 **Task ID:** HARNESS-LIVE-01
 **Title:** Prove the harness with a real model, read-only, on ainow-staging-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION (operational run; no product activation)
 **Lifecycle:** 4-STEP. Step 1 registration (this record); Step 2 stage-start; Step 3 runs under Keith's authorization; Step 4 consolidation, checkpoint and LOCK by the control plane.
-**Start condition (human):** NOT READY — needs the stage-start, then Keith's explicit STAGING, PROVIDER-LIVE, CREDIT and environment authorization.
-**Start condition (machine):** `NOT_READY`; `status=READY`.
+**Start condition (human):** READY — Keith approved the stage-start plan on 2026-11-01 ("Approve the plan"). Previous: **Start condition (human):** NOT READY — needs the stage-start, then Keith's explicit STAGING, PROVIDER-LIVE, CREDIT and environment authorization.
+**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE. Previous: **Start condition (machine):** `NOT_READY`; `status=READY`.
 **Depends on (human):** GOV-HARNESS-RESET-01 (LOCKED) and HARNESS-PROVIDERS-01 COMPLETE AND LOCKED and deployed. Correction 2026-11-01: the stage-start found the harness cannot run yet.
 **Depends on (machine `dependsOn`):** `[HARNESS-PROVIDERS-01]`
-**Primary write scope:** none yet. Host state on ainow-staging-01 and off-repo evidence only; the stage-start names any script and write path.
-**Mutexes / resources:** STAGING, PROVIDER-LIVE and CREDIT, declared and not acquired. The stage-start settles how the temporary host environment change is recorded under ENV.
+**Primary write scope:** none. Host state on ainow-staging-01 and off-repo evidence only. Previous: **Primary write scope:** none yet. Host state on ainow-staging-01 and off-repo evidence only; the stage-start names any script and write path.
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV (Lane 1, 2026-11-01). ENV covers host environment files for the window only. Previous: **Mutexes / resources:** STAGING, PROVIDER-LIVE and CREDIT, declared and not acquired. The stage-start settles how the temporary host environment change is recorded under ENV.
 **Hot-file leases:** none
 **Shared contracts:** consumes HARNESS_ENTITLEMENT_PROOF_V1 without changing it (`sharedContractIds=[HARNESS_ENTITLEMENT_PROOF_V1]`; `mutatesSharedContractIds=[]`).
 **Evidence class:** PROVIDER-LIVE.
@@ -82658,8 +82658,8 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL
 **productClass:** CURRENT (work on the existing gated harness; no product activation; PRD ACTIVE DEVELOPMENT)
 **futureAuthorization:** NONE
-**writeSetPrecision:** PROVISIONAL
-**admissionUncertain:** true
+**writeSetPrecision:** EXACT Previous: **writeSetPrecision:** PROVISIONAL
+**admissionUncertain:** false Previous: **admissionUncertain:** true
 **exclusiveCapacity:** false
 **runtimeNeeds:** STAGING, PROVIDER-LIVE, CREDIT
 
