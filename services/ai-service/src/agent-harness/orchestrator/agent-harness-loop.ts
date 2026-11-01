@@ -399,6 +399,9 @@ export async function executeAgentHarnessLoop(
       kind: 'assistant_tool_turn',
       content: adapterResult.output ?? '',
       toolCalls: extractedCalls,
+      ...(adapterResult.providerState !== undefined
+        ? { providerState: adapterResult.providerState }
+        : {}),
     };
     transcript.push(assistantTurn);
 

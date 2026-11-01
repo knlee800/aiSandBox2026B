@@ -512,5 +512,148 @@ describe('AGENT-PLATFORM-EXEC-01C3 canonical transcript contracts and mapper', (
     expect(JSON.stringify(original)).toBe(snapshot);
     expect(original).toHaveLength(2);
   });
+
+  it('replays anthropic providerState content byte-identical and in the original order', () => {
+    const thinkingBlock = {
+      type: 'thinking',
+      thinking: 'Check the workspace before answering.',
+      signature: 'sig_original_order',
+    };
+    const redactedThinkingBlock = {
+      type: 'redacted_thinking',
+      data: 'redacted-bytes-original',
+    };
+    const toolUseBlock = {
+      type: 'tool_use',
+      id: 'toolu_1',
+      name: 'list_files',
+      input: { path: '.' },
+    };
+    const content = [thinkingBlock, redactedThinkingBlock, toolUseBlock];
+    const transcript: readonly AIAdapterCanonicalTranscriptTurn[] = [
+      {
+        kind: 'assistant_tool_turn',
+        content: 'Checking files.',
+        toolCalls: [
+          {
+            status: 'valid',
+            callId: 'toolu_1',
+            toolName: 'list_files',
+            arguments: { path: '.' },
+            rawArguments: { path: '.' },
+            providerKind: 'anthropic-tool_use',
+          },
+        ],
+        providerState: {
+          kind: 'anthropic-content',
+          content,
+        },
+      },
+    ];
+
+    const messages = mapCanonicalTranscriptToAnthropicMessages(transcript);
+    const assistantMessage = messages[0];
+
+    expect(messages).toHaveLength(1);
+    expect(assistantMessage).toEqual({
+      role: 'assistant',
+      content,
+    });
+    if (assistantMessage.role !== 'assistant') {
+      throw new Error('expected an assistant message');
+    }
+    expect(assistantMessage.content).toBe(content);
+    expect(JSON.stringify(assistantMessage.content)).toBe(JSON.stringify(content));
+    expect(assistantMessage.content.map((block) => (block as { type: string }).type)).toEqual([
+      'thinking',
+      'redacted_thinking',
+      'tool_use',
+    ]);
+  });
+
+  it('rebuilds Anthropic assistant content when the turn has no providerState', () => {
+    const transcript: readonly AIAdapterCanonicalTranscriptTurn[] = [
+      {
+        kind: 'assistant_tool_turn',
+        content: 'Checking files.',
+        toolCalls: [
+          {
+            status: 'valid',
+            callId: 'toolu_1',
+            toolName: 'list_files',
+            arguments: { path: '.' },
+            rawArguments: { path: '.' },
+            providerKind: 'anthropic-tool_use',
+          },
+        ],
+      },
+    ];
+
+    expect(mapCanonicalTranscriptToAnthropicMessages(transcript)).toEqual([
+      {
+        role: 'assistant',
+        content: [
+          { type: 'text', text: 'Checking files.' },
+          {
+            type: 'tool_use',
+            id: 'toolu_1',
+            name: 'list_files',
+            input: { path: '.' },
+          },
+        ],
+      },
+    ]);
+  });
+
+  it('ignores providerState when mapping a transcript to OpenAI messages', () => {
+    const withoutState: readonly AIAdapterCanonicalTranscriptTurn[] = [
+      {
+        kind: 'assistant_tool_turn',
+        content: 'Checking files.',
+        toolCalls: [
+          {
+            status: 'valid',
+            callId: 'call_aaa',
+            toolName: 'list_files',
+            arguments: { path: '.' },
+            rawArguments: '{"path":"."}',
+            providerKind: 'openai-tool_calls',
+          },
+        ],
+      },
+    ];
+    const withState: readonly AIAdapterCanonicalTranscriptTurn[] = [
+      {
+        kind: 'assistant_tool_turn',
+        content: 'Checking files.',
+        toolCalls: [
+          {
+            status: 'valid',
+            callId: 'call_aaa',
+            toolName: 'list_files',
+            arguments: { path: '.' },
+            rawArguments: '{"path":"."}',
+            providerKind: 'openai-tool_calls',
+          },
+        ],
+        providerState: {
+          kind: 'anthropic-content',
+          content: [
+            {
+              type: 'thinking',
+              thinking: 'secret-thinking-not-for-openai',
+              signature: 'sig_ignored',
+            },
+          ],
+        },
+      },
+    ];
+
+    const messages = mapCanonicalTranscriptToOpenAIMessages(withState);
+
+    expect(messages).toEqual(mapCanonicalTranscriptToOpenAIMessages(withoutState));
+    expect(JSON.stringify(messages)).not.toContain('secret-thinking-not-for-openai');
+    expect(JSON.stringify(messages)).not.toContain('anthropic-content');
+  });
 });
 

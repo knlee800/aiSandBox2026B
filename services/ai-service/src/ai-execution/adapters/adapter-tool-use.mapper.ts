@@ -276,7 +276,7 @@ export interface AnthropicNativeToolResultBlock {
 
 export interface AnthropicNativeAssistantTranscriptMessage {
   readonly role: 'assistant';
-  readonly content: readonly (AnthropicNativeTextBlock | AnthropicNativeToolUseBlock)[];
+  readonly content: readonly unknown[];
 }
 
 export interface AnthropicNativeUserToolResultMessage {
@@ -358,6 +358,21 @@ export function mapCanonicalTranscriptToOpenAIMessages(
   return messages;
 }
 
+function anthropicOpaqueAssistantContent(
+  providerState: unknown,
+): readonly unknown[] | undefined {
+  if (!isRecord(providerState)) {
+    return undefined;
+  }
+  if (
+    providerState.kind !== 'anthropic-content' ||
+    !Array.isArray(providerState.content)
+  ) {
+    return undefined;
+  }
+  return providerState.content;
+}
+
 export function mapCanonicalTranscriptToAnthropicMessages(
   transcript: readonly AIAdapterCanonicalTranscriptTurn[] = [],
 ): readonly AnthropicNativeTranscriptMessage[] {
@@ -365,6 +380,15 @@ export function mapCanonicalTranscriptToAnthropicMessages(
 
   for (const turn of transcript) {
     if (turn.kind === 'assistant_tool_turn') {
+      const opaqueContent = anthropicOpaqueAssistantContent(turn.providerState);
+      if (opaqueContent !== undefined) {
+        messages.push({
+          role: 'assistant',
+          content: opaqueContent,
+        });
+        continue;
+      }
+
       const content: Array<AnthropicNativeTextBlock | AnthropicNativeToolUseBlock> = [];
       if (turn.content.trim().length > 0) {
         content.push({ type: 'text', text: turn.content });

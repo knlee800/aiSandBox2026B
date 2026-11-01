@@ -1667,6 +1667,86 @@ describe('AGENT-PLATFORM-EXEC-01C3 loop-owned canonical transcript', () => {
     expect(JSON.stringify(thirdOpts?.transcript ?? [])).not.toContain('injected');
     expect(executeFn).toHaveBeenCalledTimes(3);
   });
+
+  it('carries providerState unchanged onto the next step transcript', async () => {
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async () => ({ content: 'ok' }));
+    const providerState = {
+      kind: 'anthropic-content',
+      content: [
+        {
+          type: 'thinking',
+          thinking: 'Read the file first.',
+          signature: 'sig_loop_unchanged',
+        },
+        {
+          type: 'redacted_thinking',
+          data: 'redacted-loop-bytes',
+        },
+        {
+          type: 'tool_use',
+          id: 'call-1',
+          name: 'read_file',
+          input: { path: 'README.md' },
+        },
+      ],
+    };
+    const providerStateSnapshot = JSON.stringify(providerState);
+    const executeFn = jest.fn<
+      Promise<AIAdapterToolUseResult>,
+      [AIExecutionRequest, AIAdapterToolUseRequestOptions?]
+    >()
+      .mockResolvedValueOnce(makeToolCallResult({ providerState }))
+      .mockResolvedValueOnce(makeCompletedResult({ output: 'Done after the tool.' }));
+
+    const loopResult = await executeAgentHarnessLoop(
+      makeOptions(executeFn, { dispatcher }),
+    );
+
+    expect(loopResult.terminationReason).toBe('completed');
+    expect(executeFn).toHaveBeenCalledTimes(2);
+    expect(executeFn.mock.calls[0][1]).toBeUndefined();
+
+    const secondTranscript = executeFn.mock.calls[1][1]?.transcript;
+    const assistantTurn = secondTranscript?.[0];
+    expect(assistantTurn?.kind).toBe('assistant_tool_turn');
+    if (assistantTurn?.kind !== 'assistant_tool_turn') {
+      throw new Error('expected an assistant tool turn');
+    }
+    expect(assistantTurn.providerState).toBe(providerState);
+    expect(JSON.stringify(assistantTurn.providerState)).toBe(providerStateSnapshot);
+    expect(JSON.stringify(providerState)).toBe(providerStateSnapshot);
+  });
+
+  it('omits providerState when the adapter does not return it', async () => {
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async () => ({ content: 'ok' }));
+    const executeFn = jest.fn<
+      Promise<AIAdapterToolUseResult>,
+      [AIExecutionRequest, AIAdapterToolUseRequestOptions?]
+    >()
+      .mockResolvedValueOnce(makeToolCallResult())
+      .mockResolvedValueOnce(makeCompletedResult());
+
+    await executeAgentHarnessLoop(makeOptions(executeFn, { dispatcher }));
+
+    const assistantTurn = executeFn.mock.calls[1][1]?.transcript?.[0];
+    expect(assistantTurn).toEqual({
+      kind: 'assistant_tool_turn',
+      content: 'I want to use a tool.',
+      toolCalls: [
+        {
+          status: 'valid',
+          callId: 'call-1',
+          toolName: 'read_file',
+          arguments: { path: 'README.md' },
+          rawArguments: { path: 'README.md' },
+          providerKind: 'stub',
+        },
+      ],
+    });
+    expect(assistantTurn).not.toHaveProperty('providerState');
+  });
 });
 
 describe('AGENT-PLATFORM-EXEC-01C3 malformed and missing-ID fail-closed dispatch', () => {

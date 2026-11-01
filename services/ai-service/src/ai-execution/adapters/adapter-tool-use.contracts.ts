@@ -78,6 +78,8 @@ export interface AIAdapterCanonicalAssistantToolTurn {
   readonly kind: 'assistant_tool_turn';
   readonly content: string;
   readonly toolCalls: readonly AIAdapterCanonicalToolCall[];
+  /** Opaque, adapter-owned data the loop must carry unchanged between steps. */
+  readonly providerState?: unknown;
 }
 
 export interface AIAdapterCanonicalToolResultTurn {
@@ -99,5 +101,7 @@ export interface AIAdapterToolUseResult extends AIExecutionResult {
   readonly finishReason: AIAdapterToolUseFinishReason;
   readonly toolCalls: readonly AIAdapterToolCallMetadata[];
   readonly canonicalToolCalls?: readonly AIAdapterCanonicalToolCall[];
+  /** Opaque, adapter-owned data the loop must carry unchanged between steps. */
+  readonly providerState?: unknown;
 }
 

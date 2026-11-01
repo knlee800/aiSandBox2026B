@@ -175,8 +175,7 @@ describe('AnthropicAdapter', () => {
       expect(mockMessagesCreate).toHaveBeenCalledWith(
         {
           model: configuredModel,
-          max_tokens: 4096,
-          temperature: 1.0,
+          max_tokens: 16000,
           messages: [
             {
               role: 'user',
@@ -1065,6 +1064,97 @@ describe('AnthropicAdapter', () => {
       expect(result.canonicalToolCalls?.[1]).not.toEqual(
         expect.objectContaining({ arguments: {} }),
       );
+    });
+
+    it('sends max_tokens 16000 and omits temperature', async () => {
+      mockMessagesCreate.mockResolvedValue({
+        id: 'msg_limits',
+        type: 'message',
+        role: 'assistant',
+        content: [{ type: 'text', text: 'ok' }],
+        model: configuredModel,
+        usage: { input_tokens: 2, output_tokens: 2 },
+        stop_reason: 'end_turn',
+      });
+
+      await adapter.executeWithTools(mockRequest, {
+        tools: [AGENT_HARNESS_TOOL_DEFINITIONS_V1[0]],
+      });
+
+      const recordedBody = mockMessagesCreate.mock.calls[0][0];
+      expect(recordedBody.max_tokens).toBe(16000);
+      expect(recordedBody).not.toHaveProperty('temperature');
+    });
+
+    it('returns providerState with the original thinking and tool_use blocks', async () => {
+      const thinkingBlock = {
+        type: 'thinking',
+        thinking: 'Look up the file before answering.',
+        signature: 'sig_thinking_exact',
+      };
+      const redactedThinkingBlock = {
+        type: 'redacted_thinking',
+        data: 'redacted-bytes-exact',
+      };
+      const toolUseBlock = {
+        type: 'tool_use',
+        id: 'toolu_think_1',
+        name: 'read_file',
+        input: { path: '/workspace/README.md' },
+      };
+      const content = [thinkingBlock, redactedThinkingBlock, toolUseBlock];
+      mockMessagesCreate.mockResolvedValue({
+        id: 'msg_thinking',
+        type: 'message',
+        role: 'assistant',
+        content,
+        model: configuredModel,
+        usage: { input_tokens: 20, output_tokens: 10 },
+        stop_reason: 'tool_use',
+      });
+
+      const result = await adapter.executeWithTools(mockRequest, {
+        tools: [AGENT_HARNESS_TOOL_DEFINITIONS_V1[1]],
+      });
+
+      expect(result.providerState).toEqual({
+        kind: 'anthropic-content',
+        content,
+      });
+      const providerState = result.providerState as {
+        kind: string;
+        content: readonly unknown[];
+      };
+      expect(providerState.content).toBe(content);
+      expect(providerState.content[0]).toBe(thinkingBlock);
+      expect(providerState.content[1]).toBe(redactedThinkingBlock);
+      expect(providerState.content[2]).toBe(toolUseBlock);
+      expect(result.toolCalls).toEqual([
+        {
+          callId: 'toolu_think_1',
+          toolName: 'read_file',
+          arguments: { path: '/workspace/README.md' },
+          providerKind: 'anthropic-tool_use',
+        },
+      ]);
+    });
+
+    it('omits providerState when the response has only text and no tool calls', async () => {
+      mockMessagesCreate.mockResolvedValue({
+        id: 'msg_text_only',
+        type: 'message',
+        role: 'assistant',
+        content: [{ type: 'text', text: 'No tools this turn.' }],
+        model: configuredModel,
+        usage: { input_tokens: 4, output_tokens: 3 },
+        stop_reason: 'end_turn',
+      });
+
+      const result = await adapter.executeWithTools(mockRequest);
+
+      expect(result.output).toBe('No tools this turn.');
+      expect(result.toolCalls).toEqual([]);
+      expect(result).not.toHaveProperty('providerState');
     });
   });
 });

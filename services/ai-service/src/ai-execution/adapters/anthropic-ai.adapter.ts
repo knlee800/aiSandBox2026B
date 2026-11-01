@@ -52,8 +52,7 @@ import {
 export class AnthropicAdapter implements AIAdapter {
   private readonly logger = new Logger(AnthropicAdapter.name);
   private readonly client: Anthropic;
-  private readonly defaultMaxTokens = 4096;
-  private readonly defaultTemperature = 1.0;
+  private readonly defaultMaxTokens = 16000;
 
   readonly model: string;
   readonly supportsToolUse = true;
@@ -70,7 +69,6 @@ export class AnthropicAdapter implements AIAdapter {
     options?: {
       model?: string;
       maxTokens?: number;
-      temperature?: number;
       timeout?: number;
       baseURL?: string;
     },
@@ -125,7 +123,6 @@ export class AnthropicAdapter implements AIAdapter {
       const anthropicRequest: Anthropic.MessageCreateParams = {
         model: executionModel,
         max_tokens: this.defaultMaxTokens,
-        temperature: this.defaultTemperature,
         messages: [
           {
             role: 'user',
@@ -182,7 +179,6 @@ export class AnthropicAdapter implements AIAdapter {
       const anthropicRequest: Anthropic.MessageCreateParams = {
         model: executionModel,
         max_tokens: this.defaultMaxTokens,
-        temperature: this.defaultTemperature,
         messages: [
           {
             role: 'user',
@@ -354,6 +350,14 @@ export class AnthropicAdapter implements AIAdapter {
       finishReason,
       toolCalls,
       canonicalToolCalls,
+      ...(canonicalToolCalls.length > 0
+        ? {
+            providerState: {
+              kind: 'anthropic-content',
+              content: response.content,
+            },
+          }
+        : {}),
     };
   }
 
