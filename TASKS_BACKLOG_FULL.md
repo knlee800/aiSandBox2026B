@@ -82856,6 +82856,45 @@ nature=IMPLEMENTATION
 - [x] Only the files in the primary write scope change
 - [x] Not LOCKED by an implementer
 
+### HARNESS-STEP-LIMIT-01 — Raise the harness step limit, add a run token budget, and ask for an answer on the last call
+
+**Status:** REGISTERED / READY — 2026-11-01. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Task ID:** HARNESS-STEP-LIMIT-01
+**Title:** Raise the harness step limit, add a run token budget, and ask for an answer on the last call
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Step 1 is this registration and admission (2026-11-01); Step 2 implementation; Step 3 consolidation, checkpoint and LOCK by the control plane.
+**Start condition (human):** READY — Keith approved the corrected draft on 2026-11-01.
+**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Depends on (human):** none.
+**Depends on (machine `dependsOn`):** `[]`
+**Primary write scope:** exactly `services/ai-service/src/agent-harness/contracts/agent-harness.contracts.ts`, `services/ai-service/src/agent-harness/config/agent-harness.config.ts`, `services/ai-service/src/agent-harness/config/agent-harness.config.spec.ts`, `services/ai-service/src/agent-harness/orchestrator/agent-harness-loop.ts`, `services/ai-service/src/agent-harness/orchestrator/agent-harness-loop.spec.ts`, `services/ai-service/src/worker/worker.processor.ts`, `services/ai-service/src/worker/worker.processor.spec.ts`, `services/ai-service/src/worker/__tests__/worker.processor.builder-config.spec.ts`. Anything else is out of scope.
+**Mutexes / resources:** AI-SERVICE (Lane 1, 2026-11-01). No STAGING, ENV, MIGRATION, PACKAGE, LOCAL-RUNTIME, PROVIDER-LIVE or CREDIT.
+**Hot-file leases:** none
+**Shared contracts:** none changed.
+**Evidence class:** LOCAL-TESTS. Whether the model obeys the notice is only proven in a later live window.
+**Revert isolation:** acceptable (gated harness path only; no schema, migration or contract change).
+**saturationClass:** OPTIONAL
+**productClass:** CURRENT
+**futureAuthorization:** NONE
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** none
+
+**Problem:** in HARNESS-LIVE-02, run dedbc9b8-3cfc-4986-8edf-f07a104c4e2a fixed a bug on its third and last model call, then failed with no answer. The limit of 3 cannot fit read, fix, test and answer. MAX_TOKENS_PER_EXECUTION only rejects a single oversized request, and each call may use 16,000 output tokens, so raising the limit needs a cap across the run. Anthropic rejects or invalidates a rebuilt `system` or `tools` between requests on Opus 5.5, so the last call cannot drop tools.
+**Scope:** (1) raise maxToolIterations from 3 to 8; (2) add an optional maxRunTokens setting, default 60,000, counted across a run; (3) when the next model call is the last allowed one, or the budget is reached, add a notice to the newest tool result telling the model to stop using tools and report what it did and what is unfinished; (4) if the model still calls tools on that call, do not run them and end as a limit failure with steps and tokens recorded; (5) one added line in the harness output contract. Not in scope: charging for failed runs, tool results in the journal, the validation timeout, per-profile override of the budget, forcing tool_choice, rebuilding the system prompt or tool list, other providers' behaviour, and deploying the change.
+
+#### Acceptance criteria
+
+- [ ] The default limit is 8 and the default run budget is 60,000 tokens
+- [ ] The notice is added exactly once, on the newest tool result, before the last allowed call and when the budget is reached, and the same result goes into the transcript
+- [ ] A model that answers on that call completes normally
+- [ ] A model that still calls tools on that call has them not run, and the run fails as a limit failure with tokens and steps recorded
+- [ ] With no budget set, and on runs that finish early, behaviour is unchanged apart from the limit, and system and tools are unchanged between calls
+- [ ] services/ai-service: npm test and npm run build pass, and only the files in the primary write scope change
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
