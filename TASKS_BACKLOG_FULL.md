@@ -82767,8 +82767,12 @@ nature=IMPLEMENTATION
 - [x] Not LOCKED by an implementer
 
 ### HARNESS-LIVE-02 — Prove harness writes and validation with a real model on ainow-staging-01
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=HARNESS-LIVE-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY — 2026-11-01. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-01. Registered and admitted to Lane 1; stage-start: docs/HARNESS-LIVE-02-STAGE-START.md. Authorized: one deploy of c1060a4, flags on, up to 3 runs with write and validation tools, one revert by Keith, read-only evidence, flags off. Not started. mutexes=STAGING, PROVIDER-LIVE, CREDIT, ENV. stagingAuthorized, providerLiveAuthorized and creditAuthorized true. Previous: **Status:** REGISTERED / READY — 2026-11-01. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
 **Task ID:** HARNESS-LIVE-02
 **Title:** Prove harness writes and validation with a real model on ainow-staging-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
