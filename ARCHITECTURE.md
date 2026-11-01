@@ -915,7 +915,7 @@ Do not describe Harness as the current Builder execution default. Harness-as-def
 | `delete_file` handler | CURRENT (GATED) | Covered by write-canary tests; same gate |
 | `run_validation` handler | CURRENT (GATED) | Requires `AGENT_HARNESS_ENABLE_VALIDATION_TOOLS=true` |
 | `browser_smoke` handler | CURRENT (GATED) | Playwright Chromium; requires `AGENT_HARNESS_ENABLE_BROWSER_SMOKE=true` |
-| Multi-turn bounded loop (`executeAgentHarnessLoop`) | CURRENT (GATED) | Max 3 iterations; requires `AGENT_HARNESS_ENABLE_TOOL_LOOP=true` |
+| Multi-turn bounded loop (`executeAgentHarnessLoop`) | CURRENT (GATED) | Max 8 model calls and a 60,000-token run budget, with a last-call notice in the newest tool result; requires `AGENT_HARNESS_ENABLE_TOOL_LOOP=true` |
 | Provider tool-use bridge (`executeWithTools`) | CURRENT (GATED) | Activated with harness path |
 | Per-builder harness config | CURRENT | AGENT-HARNESS-07 |
 | Pre-apply checkpoint gate | CURRENT (gated path) | `enablePreApplyCheckpoint=true`; created before first write mutation |
@@ -923,7 +923,7 @@ Do not describe Harness as the current Builder execution default. Harness-as-def
 | `search_workspace` | **NOT IMPLEMENTED** (schema only) | Registered in tool-registry.ts (`enabled: false`); no handler in ToolDispatcher |
 | Automatic rollback after partial failure | **NOT IMPLEMENTED** | Pre-apply checkpoint exists on gated path; rollback is manual via checkpoint/revert |
 | Semantic / vector search | NOT IMPLEMENTED (PLANNED) | `enableSemanticSearch=false` |
-| Real-provider autonomous harness loop | PROVEN ON STAGING (gated) | HARNESS-LIVE-01 and HARNESS-LIVE-02, 2026-11-01: real Anthropic runs on staging read and wrote files, ran npm test through run_validation, and a save-point revert restored a file. One provider and one small test project only. A run can finish its work on the third model call and still fail on the limit, with no answer |
+| Real-provider autonomous harness loop | PROVEN ON STAGING (gated) | HARNESS-LIVE-01 and HARNESS-LIVE-02, 2026-11-01: real Anthropic runs on staging read and wrote files, ran npm test through run_validation, and a save-point revert restored a file. One provider and one small test project only. The last-call notice (HARNESS-STEP-LIMIT-01) is not yet proven on a real model |
 
 ### 12.2 Harness Execution Path (GATED — not private-beta default)
 
