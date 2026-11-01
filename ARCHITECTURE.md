@@ -923,7 +923,7 @@ Do not describe Harness as the current Builder execution default. Harness-as-def
 | `search_workspace` | **NOT IMPLEMENTED** (schema only) | Registered in tool-registry.ts (`enabled: false`); no handler in ToolDispatcher |
 | Automatic rollback after partial failure | **NOT IMPLEMENTED** | Pre-apply checkpoint exists on gated path; rollback is manual via checkpoint/revert |
 | Semantic / vector search | NOT IMPLEMENTED (PLANNED) | `enableSemanticSearch=false` |
-| Real-provider autonomous harness loop | UNPROVEN | All E2E canaries used test-harness-stub provider |
+| Real-provider autonomous harness loop | PROVEN READ-ONLY (gated) | HARNESS-LIVE-01, 2026-11-01: one real Anthropic run on staging used list_files then read_file across 3 model calls and answered correctly. An empty provider response failed another run, cause unconfirmed. Real writes and validation are unproven |
 
 ### 12.2 Harness Execution Path (GATED — not private-beta default)
 
