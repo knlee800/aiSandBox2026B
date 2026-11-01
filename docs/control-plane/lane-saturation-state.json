@@ -12,7 +12,7 @@
     "lane1": {
       "state": "ACTIVE",
       "taskId": "HARNESS-PROVIDERS-01",
-      "mutexes": ["AI-SERVICE", "GATEWAY", "FRONTEND", "PACKAGE"],
+      "mutexes": ["AI-SERVICE", "GATEWAY", "FRONTEND", "PACKAGE", "I18N"],
       "writePaths": [
         "services/ai-service/src/ai-execution/adapters/anthropic-ai.adapter.ts",
         "services/ai-service/src/ai-execution/adapters/xai-ai.adapter.ts",
@@ -31,10 +31,13 @@
         "services/api-gateway/src/ai/provider-model.catalogue.ts",
         "services/api-gateway/src/ai/provider-model.catalogue.spec.ts",
         "frontend/lib/ai/provider-model.catalogue.ts",
-        "frontend/lib/ai/provider-model.catalogue.test.ts"
+        "frontend/lib/ai/provider-model.catalogue.test.ts",
+        "frontend/messages/en.json",
+        "frontend/messages/zh-TW.json",
+        "frontend/messages/zh-CN.json"
       ],
       "hotfiles": [],
-      "i18n": false,
+      "i18n": true,
       "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
@@ -1456,7 +1459,7 @@
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
       "dependsOn": [],
-      "mutexes": ["AI-SERVICE", "GATEWAY", "FRONTEND", "PACKAGE"],
+      "mutexes": ["AI-SERVICE", "GATEWAY", "FRONTEND", "PACKAGE", "I18N"],
       "writePaths": [
         "services/ai-service/src/ai-execution/adapters/anthropic-ai.adapter.ts",
         "services/ai-service/src/ai-execution/adapters/xai-ai.adapter.ts",
@@ -1475,10 +1478,13 @@
         "services/api-gateway/src/ai/provider-model.catalogue.ts",
         "services/api-gateway/src/ai/provider-model.catalogue.spec.ts",
         "frontend/lib/ai/provider-model.catalogue.ts",
-        "frontend/lib/ai/provider-model.catalogue.test.ts"
+        "frontend/lib/ai/provider-model.catalogue.test.ts",
+        "frontend/messages/en.json",
+        "frontend/messages/zh-TW.json",
+        "frontend/messages/zh-CN.json"
       ],
       "hotfiles": [],
-      "i18n": false,
+      "i18n": true,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
       "evidenceClass": "LOCAL-TESTS",
