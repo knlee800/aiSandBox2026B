@@ -82676,6 +82676,45 @@ nature=IMPLEMENTATION
 - [ ] Keith reads the transcripts and records his judgement
 - [ ] Not LOCKED by an implementer
 
+### HARNESS-FAIL-RECORD-01 — Keep the steps, tokens and model of a failed harness run
+
+**Status:** REGISTERED / READY — 2026-11-01. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Task ID:** HARNESS-FAIL-RECORD-01
+**Title:** Keep the steps, tokens and model of a failed harness run
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Step 1 is this registration and admission (2026-11-01); Step 2 implementation; Step 3 consolidation, checkpoint and LOCK by the control plane.
+**Start condition (human):** READY — Keith approved this task on 2026-11-01, after the first HARNESS-LIVE-01 window.
+**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Depends on (human):** none.
+**Depends on (machine `dependsOn`):** `[]`
+**Primary write scope:** exactly `services/ai-service/src/worker/worker.processor.ts`, `services/ai-service/src/worker/worker.processor.spec.ts`. Anything else is out of scope.
+**Mutexes / resources:** AI-SERVICE (Lane 1, 2026-11-01). No STAGING, ENV, MIGRATION, PACKAGE, LOCAL-RUNTIME, PROVIDER-LIVE or CREDIT.
+**Hot-file leases:** none
+**Shared contracts:** none changed.
+**Evidence class:** LOCAL-TESTS. Proof on ainow-staging-01 comes from the second HARNESS-LIVE-01 window.
+**Revert isolation:** acceptable (worker logging and the failed-path ledger update only; no schema, migration or contract change).
+**saturationClass:** OPTIONAL
+**productClass:** CURRENT
+**futureAuthorization:** NONE
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** none
+
+**Problem:** in the first HARNESS-LIVE-01 window, execution 4a73f68e-ed6a-4d52-8194-1b12aad0b433 hit the 3-step limit and failed. The worker logs harness audit events only after the loop returns (`worker.processor.ts`, after `executeAgentHarnessLoop`), so that run left no record of its steps. The failed path updates only `execution_status`, so its usage row has no model and no tokens, although `HarnessMaxIterationsError` carries `tokensUsed` and the provider charged for the run.
+**Scope:** (1) log the audit events when the harness loop throws as well as when it returns; (2) on the failed path, write `usage_records.model` using `resolveLedgerModel`; (3) when the error is a `HarnessMaxIterationsError`, also write its `tokensUsed` to `tokens_used` and use it in the completion log. Not in scope: charging credits for failed runs (they stay uncharged), the step limit, returning a partial answer, token counts for other failures, the harness loop itself, and deploying the change.
+
+#### Acceptance criteria
+
+- [ ] A step-limit failure logs the audit events recorded up to that point, including `harness.loop_max_turns`
+- [ ] A step-limit failure writes `tokens_used` from the error and a non-empty `model` to its usage row, and sends no accounting notification
+- [ ] Any other failed run writes a non-empty `model` and leaves `tokens_used` unchanged
+- [ ] Abort, timeout and success paths behave as before, and audit events are not logged twice
+- [ ] services/ai-service: npm test and npm run build pass
+- [ ] Only the files in the primary write scope change
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
