@@ -34,7 +34,8 @@
         "frontend/lib/ai/provider-model.catalogue.test.ts",
         "frontend/messages/en.json",
         "frontend/messages/zh-TW.json",
-        "frontend/messages/zh-CN.json"
+        "frontend/messages/zh-CN.json",
+        "services/ai-service/src/ai-execution/__tests__/ai-execution.phase30c.spec.ts"
       ],
       "hotfiles": [],
       "i18n": true,
@@ -1481,7 +1482,8 @@
         "frontend/lib/ai/provider-model.catalogue.test.ts",
         "frontend/messages/en.json",
         "frontend/messages/zh-TW.json",
-        "frontend/messages/zh-CN.json"
+        "frontend/messages/zh-CN.json",
+        "services/ai-service/src/ai-execution/__tests__/ai-execution.phase30c.spec.ts"
       ],
       "hotfiles": [],
       "i18n": true,
