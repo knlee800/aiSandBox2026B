@@ -82772,18 +82772,18 @@ taskId=HARNESS-LIVE-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-01. Second window admitted; stage-start amended: docs/HARNESS-LIVE-02-STAGE-START.md. Authorized: one deploy of 320cd84, flags on, up to 3 runs with write and validation tools, one revert by Keith, read-only evidence, flags off. Not started. mutexes=STAGING, PROVIDER-LIVE, CREDIT, ENV. stagingAuthorized, providerLiveAuthorized and creditAuthorized true. Previous: **Status:** READY / NOT ADMITTED — 2026-11-01. Returned to READY on Keith's decision; not LOCKED. First window 2026-11-01 (execution ids 858853d1, b47e14c9, d11beaf1): all completed, using only list_files and read_file. The model was never offered write_file or run_validation because of a hard-coded read-only list, so no harness write, validation or save point happened and the revert was not run. Credits 490 to 482. Flags off at 13:53:48 UTC with the saved environment files restored and their hashes checked; Keith deleted the key. Evidence is off-repo in C:/Users/knlee/aisb-preflight/HARNESS-LIVE-02/. Keith approved a fix (HARNESS-WRITE-TOOLS-01) and a second window. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-01. Registered and admitted to Lane 1; stage-start: docs/HARNESS-LIVE-02-STAGE-START.md. Authorized: one deploy of c1060a4, flags on, up to 3 runs with write and validation tools, one revert by Keith, read-only evidence, flags off. Not started. mutexes=STAGING, PROVIDER-LIVE, CREDIT, ENV. stagingAuthorized, providerLiveAuthorized and creditAuthorized true. Previous: **Status:** REGISTERED / READY — 2026-11-01. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
+**Status:** COMPLETE AND LOCKED — 2026-11-01. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING, PROVIDER-LIVE, CREDIT and ENV released; stagingAuthorized, providerLiveAuthorized and creditAuthorized false. Checkpoint: docs/HARNESS-LIVE-02-CHECKPOINT.md. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-01. Second window admitted; stage-start amended: docs/HARNESS-LIVE-02-STAGE-START.md. Authorized: one deploy of 320cd84, flags on, up to 3 runs with write and validation tools, one revert by Keith, read-only evidence, flags off. Not started. mutexes=STAGING, PROVIDER-LIVE, CREDIT, ENV. stagingAuthorized, providerLiveAuthorized and creditAuthorized true. Previous: **Status:** READY / NOT ADMITTED — 2026-11-01. Returned to READY on Keith's decision; not LOCKED. First window 2026-11-01 (execution ids 858853d1, b47e14c9, d11beaf1): all completed, using only list_files and read_file. The model was never offered write_file or run_validation because of a hard-coded read-only list, so no harness write, validation or save point happened and the revert was not run. Credits 490 to 482. Flags off at 13:53:48 UTC with the saved environment files restored and their hashes checked; Keith deleted the key. Evidence is off-repo in C:/Users/knlee/aisb-preflight/HARNESS-LIVE-02/. Keith approved a fix (HARNESS-WRITE-TOOLS-01) and a second window. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-01. Registered and admitted to Lane 1; stage-start: docs/HARNESS-LIVE-02-STAGE-START.md. Authorized: one deploy of c1060a4, flags on, up to 3 runs with write and validation tools, one revert by Keith, read-only evidence, flags off. Not started. mutexes=STAGING, PROVIDER-LIVE, CREDIT, ENV. stagingAuthorized, providerLiveAuthorized and creditAuthorized true. Previous: **Status:** REGISTERED / READY — 2026-11-01. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
 **Task ID:** HARNESS-LIVE-02
 **Title:** Prove harness writes and validation with a real model on ainow-staging-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION (operational run; no product activation)
 **Lifecycle:** 4-STEP. Step 1 registration; Step 2 stage-start; Step 3 runs under Keith's authorization; Step 4 consolidation, checkpoint and LOCK by the control plane.
 **Start condition (human):** READY — HARNESS-WRITE-TOOLS-01 is locked and Keith approved the second window on 2026-11-01. Previous: **Start condition (human):** NOT READY — needs HARNESS-WRITE-TOOLS-01 locked and deployed, then re-admission. Previous: **Start condition (human):** READY — Keith approved the plan on 2026-11-01 ("Approve the plan").
-**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE. Previous: **Start condition (machine):** `NOT_READY`; `status=READY`. Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Start condition (machine):** `READY`; `status=LOCKED`. Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE. Previous: **Start condition (machine):** `NOT_READY`; `status=READY`. Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
 **Depends on (human):** HARNESS-LIVE-01 and HARNESS-REFUSAL-01, both COMPLETE AND LOCKED.
 **Depends on (machine `dependsOn`):** `[HARNESS-LIVE-01, HARNESS-REFUSAL-01, HARNESS-WRITE-TOOLS-01]` Previous: **Depends on (machine `dependsOn`):** `[HARNESS-LIVE-01, HARNESS-REFUSAL-01]`
 **Primary write scope:** none. Host state on ainow-staging-01, the test project's workspace and off-repo evidence only.
-**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV (Lane 1, second window, 2026-11-01). ENV covers host environment files for the window only. Previous: **Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV, declared and released at the return to READY 2026-11-01. Previous: **Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV (Lane 1, 2026-11-01). ENV covers host environment files for the window only.
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV, released at COMPLETE AND LOCKED 2026-11-01. Previous: **Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV (Lane 1, second window, 2026-11-01). ENV covers host environment files for the window only. Previous: **Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV, declared and released at the return to READY 2026-11-01. Previous: **Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV (Lane 1, 2026-11-01). ENV covers host environment files for the window only.
 **Hot-file leases:** none
 **Shared contracts:** consumes HARNESS_ENTITLEMENT_PROOF_V1 without changing it (`sharedContractIds=[HARNESS_ENTITLEMENT_PROOF_V1]`; `mutatesSharedContractIds=[]`).
 **Evidence class:** PROVIDER-LIVE.
@@ -82799,17 +82799,18 @@ nature=IMPLEMENTATION
 **Problem:** HARNESS-LIVE-01 proved read-only tools with a real model. Real writes, validation and the pre-apply save point have only run against a test stub. Keith approved direct harness writes with a save point, on staging only: docs/GOV-HARNESS-RESET-01-DECISION.md.
 **Scope:** on ainow-staging-01, behind basic_auth, in project C1 repeat: up to 3 runs on Anthropic with write and validation tools on, and one revert to a save point by Keith in the browser. Same caps as HARNESS-LIVE-01. Keith types the provider key at a hidden prompt; it is removed afterwards and the flags go back off. Browser tools stay off. Not in scope: raising the step limit, other providers, any UI, product activation, and making harness writes CURRENT.
 **Scope amendment (2026-11-01):** Keith approved a second window after the first: the same 3 runs and the revert, with a new key and the same caps, carrying HARNESS-WRITE-TOOLS-01. Everything else in the scope stands.
+**Result (2026-11-01):** two windows, 6 real runs on claude-opus-5-5. Second window: run 1 (b2e0bc7e-d2b7-4624-a6ff-f7f73d7394d8) wrote a file; run 2 (eaf03d13-a34c-461d-9abf-ceedfc9beef3) wrote a file and ran npm test, which passed; run 3 (dedbc9b8-3cfc-4986-8edf-f07a104c4e2a) fixed a bug and failed on the 3-call limit before answering. Keith reverted to the newest save point and the file came back byte-identical. Keith read the run transcripts and accepted them as proof. Checkpoint: docs/HARNESS-LIVE-02-CHECKPOINT.md.
 
 #### Acceptance criteria
 
-- [ ] A real run writes a file correctly through write_file, with a save point created first
-- [ ] A real run writes a file and runs npm test through run_validation, and reports the result correctly
-- [ ] Reverting to a save point restores the workspace files
-- [ ] Credits and usage are recorded correctly, and usage_records.model is non-empty
-- [ ] Spend stays within the caps
-- [ ] Afterwards the flags are off, the key is removed, and the configuration hashes match the recorded state
-- [ ] Keith reads the transcripts and records his judgement
-- [ ] Not LOCKED by an implementer
+- [x] A real run writes a file correctly through write_file, with a save point created first
+- [x] A real run writes a file and runs npm test through run_validation, and reports the result correctly
+- [x] Reverting to a save point restores the workspace files
+- [x] Credits and usage are recorded correctly, and usage_records.model is non-empty
+- [x] Spend stays within the caps
+- [x] Afterwards the flags are off, the key is removed, and the configuration hashes match the recorded state
+- [x] Keith reads the transcripts and records his judgement
+- [x] Not LOCKED by an implementer
 
 ### HARNESS-WRITE-TOOLS-01 — Offer write and validation tools to the model, and use a tool-based prompt on the harness path
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
