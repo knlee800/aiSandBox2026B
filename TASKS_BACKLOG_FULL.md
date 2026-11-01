@@ -82810,6 +82810,45 @@ nature=IMPLEMENTATION
 - [ ] Keith reads the transcripts and records his judgement
 - [ ] Not LOCKED by an implementer
 
+### HARNESS-WRITE-TOOLS-01 — Offer write and validation tools to the model, and use a tool-based prompt on the harness path
+
+**Status:** REGISTERED / READY — 2026-11-01. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Task ID:** HARNESS-WRITE-TOOLS-01
+**Title:** Offer write and validation tools to the model, and use a tool-based prompt on the harness path
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Step 1 is this registration and admission (2026-11-01); Step 2 implementation; Step 3 consolidation, checkpoint and LOCK by the control plane.
+**Start condition (human):** READY — Keith approved this task on 2026-11-01, after the first HARNESS-LIVE-02 window.
+**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Depends on (human):** none.
+**Depends on (machine `dependsOn`):** `[]`
+**Primary write scope:** exactly `services/ai-service/src/ai-execution/adapters/adapter-tool-use.mapper.ts`, `services/ai-service/src/ai-execution/adapters/__tests__/adapter-tool-use.mapper.spec.ts`, `services/ai-service/src/worker/worker.processor.ts`, `services/ai-service/src/worker/worker.processor.spec.ts`. Anything else is out of scope.
+**Mutexes / resources:** AI-SERVICE (Lane 1, 2026-11-01). No STAGING, ENV, MIGRATION, PACKAGE, LOCAL-RUNTIME, PROVIDER-LIVE or CREDIT.
+**Hot-file leases:** none
+**Shared contracts:** none changed.
+**Evidence class:** LOCAL-TESTS. Proof on ainow-staging-01 comes from the second HARNESS-LIVE-02 window.
+**Revert isolation:** acceptable (gated harness path only; no schema, migration or contract change).
+**saturationClass:** OPTIONAL
+**productClass:** CURRENT
+**futureAuthorization:** NONE
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** none
+
+**Problem:** in the first HARNESS-LIVE-02 window the model was offered only list_files and read_file although the write and validation flags were on: `isAgentHarnessToolEligibleForAdvertisement` filters on a hard-coded read-only list. The harness path also inherits the single-shot prompt rule to emit `file-actions` blocks, which it does not apply, so the model claimed a file change that did not happen.
+**Scope:** (1) offer write_file and run_validation when their flags are on, alongside list_files and read_file; (2) on the harness path only, replace the file-action output contract with a tool-based one: change files only through tools, do not emit `file-actions`, do not claim a change unless the tool succeeded, and say so plainly when no such tool is available. Not in scope: offering delete_file or browser_smoke, enforcing `requiresApproval`, the step limit, the tool timeout, charging, the single-shot Builder prompt, and deploying the change.
+
+#### Acceptance criteria
+
+- [ ] With both flags on, the model is offered list_files, read_file, write_file and run_validation; with both off, only list_files and read_file
+- [ ] Each flag controls only its own tool, and delete_file and browser_smoke are never offered
+- [ ] The harness-path prompt carries the tool-based contract and no file-action contract
+- [ ] The single-shot prompt is unchanged
+- [ ] services/ai-service: npm test and npm run build pass
+- [ ] Only the files in the primary write scope change
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
