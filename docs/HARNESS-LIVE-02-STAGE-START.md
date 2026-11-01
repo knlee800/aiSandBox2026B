@@ -41,3 +41,13 @@ Off-repo in `C:/Users/knlee/aisb-preflight/HARNESS-LIVE-02/`. No key or secret v
 ## If it fails
 
 On a failed block: stop, flags off, and bring the result to Keith. A fix is a new bounded step. There is no retrying beyond the 3 runs.
+
+## Second window (added 2026-11-01)
+
+**Why:** in the first window all three runs completed, but a hard-coded read-only list meant the model was never offered write_file or run_validation, so no write, validation or save point happened. HARNESS-WRITE-TOOLS-01 fixes that and gives the harness path a tool-based prompt, and is locked.
+
+**Authorization, and no more:** one deploy of 320cd84de52d81e57d55b70d0da5981588914119 to ainow-staging-01; one flags-on block with a new key; up to 3 runs with write and validation tools; one revert to a save point by Keith in the browser; one read-only evidence block; one flags-off block. Any failed block stops; no rollback or other recovery runs without separate approval. Sequence, runs, settings, spending and the failure rule are as above. Evidence files are named hl04-*.
+
+**Correction to this stage-start:** it said the worker registers write tools from the flag alone. That was true of the handlers, but a later filter limited what the model was offered, which the stage-start missed.
+
+**Not yet exercised on the real path:** run_validation through the gateway and container-manager. If it fails, that is a result to bring to Keith.
