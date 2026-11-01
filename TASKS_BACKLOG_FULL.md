@@ -82900,6 +82900,46 @@ nature=IMPLEMENTATION
 - [x] services/ai-service: npm test and npm run build pass, and only the files in the primary write scope change
 - [x] Not LOCKED by an implementer
 
+### HARNESS-LIVE-03 — Prove the raised step limit and last-call notice with a real model on ainow-staging-01
+
+**Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
+**Task ID:** HARNESS-LIVE-03
+**Title:** Prove the raised step limit and last-call notice with a real model on ainow-staging-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (operational run; no product activation)
+**Lifecycle:** 4-STEP. Step 1 registration; Step 2 stage-start; Step 3 runs under Keith's authorization; Step 4 consolidation, checkpoint and LOCK by the control plane.
+**Start condition (human):** READY — Keith approved on 2026-11-02 ("Live window for this").
+**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Depends on (human):** HARNESS-LIVE-02 and HARNESS-STEP-LIMIT-01, both COMPLETE AND LOCKED.
+**Depends on (machine `dependsOn`):** `[HARNESS-LIVE-02, HARNESS-STEP-LIMIT-01]`
+**Primary write scope:** none. Host state on ainow-staging-01, the test project's workspace and off-repo evidence only.
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV (Lane 1, 2026-11-02). ENV covers host environment files for the window only.
+**Hot-file leases:** none
+**Shared contracts:** consumes HARNESS_ENTITLEMENT_PROOF_V1 without changing it (`sharedContractIds=[HARNESS_ENTITLEMENT_PROOF_V1]`; `mutatesSharedContractIds=[]`).
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** acceptable (flags back off and the key removed afterwards; no schema change).
+**saturationClass:** OPTIONAL
+**productClass:** CURRENT (work on the existing gated harness; no product activation; PRD ACTIVE DEVELOPMENT)
+**futureAuthorization:** NONE
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** STAGING, PROVIDER-LIVE, CREDIT
+
+**Problem:** HARNESS-STEP-LIMIT-01 raised the limit to 8 model calls, added a 60,000-token run budget and a last-call notice, with mocks only. Whether a real model obeys the notice, and whether those sizes fit, is unproven.
+**Scope:** on ainow-staging-01, behind basic_auth, in project C1 repeat: up to 3 runs on Anthropic with write and validation tools on. Same caps as HARNESS-LIVE-02. Keith types the provider key at a hidden prompt; it is removed afterwards and the flags go back off. Browser tools stay off. Not in scope: changing the limit or budget, other providers, any UI, product activation, and making harness writes CURRENT.
+
+#### Acceptance criteria
+
+- [ ] A real run that could not fit before completes with a correct answer within the limit
+- [ ] A bigger real run shows the calls and tokens it uses, within the budget or stopped by it
+- [ ] A real run that reaches the last-call notice answers with what is done and unfinished, and no tool runs after the notice
+- [ ] Credits and usage are recorded correctly, and usage_records.model is non-empty
+- [ ] Spend stays within the caps
+- [ ] Afterwards the flags are off, the key is removed, and the configuration hashes match the recorded state
+- [ ] Keith reads the transcripts and records his judgement
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
