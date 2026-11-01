@@ -12,13 +12,15 @@ import type {
 } from './adapter-tool-use.contracts';
 import { MALFORMED_TOOL_ARGUMENTS_ERROR_CODE } from './adapter-tool-use.contracts';
 
-export const FIRST_READ_ONLY_HARNESS_ADVERTISED_TOOL_IDS = Object.freeze([
+export const HARNESS_ADVERTISABLE_TOOL_IDS = Object.freeze([
   'list_files',
   'read_file',
+  'write_file',
+  'run_validation',
 ] as const);
 
-export type FirstReadOnlyHarnessAdvertisedToolId =
-  (typeof FIRST_READ_ONLY_HARNESS_ADVERTISED_TOOL_IDS)[number];
+export type HarnessAdvertisableToolId =
+  (typeof HARNESS_ADVERTISABLE_TOOL_IDS)[number];
 
 export interface AgentHarnessToolAdvertisementFilterInput {
   readonly registeredHandlerNames: Iterable<string>;
@@ -32,10 +34,8 @@ function toHandlerNameSet(names: Iterable<string>): ReadonlySet<string> {
   return names instanceof Set ? names : new Set(names);
 }
 
-function isPermittedByFirstReadOnlyHarnessSlice(toolId: string): boolean {
-  return (FIRST_READ_ONLY_HARNESS_ADVERTISED_TOOL_IDS as readonly string[]).includes(
-    toolId,
-  );
+function isPermittedByHarnessAdvertisableToolIds(toolId: string): boolean {
+  return (HARNESS_ADVERTISABLE_TOOL_IDS as readonly string[]).includes(toolId);
 }
 
 function passesFirstSliceRuntimeGate(
@@ -83,7 +83,7 @@ export function isAgentHarnessToolEligibleForAdvertisement(
   ) {
     return false;
   }
-  if (!isPermittedByFirstReadOnlyHarnessSlice(definition.id)) {
+  if (!isPermittedByHarnessAdvertisableToolIds(definition.id)) {
     return false;
   }
   return passesFirstSliceRuntimeGate(definition, input);

@@ -537,6 +537,47 @@ Project policy`);
     expect(promptParts.system).not.toContain('Repo doc content:');
     expect(promptParts.system).not.toContain('User request:');
   });
+
+  it('uses the harness tool contract and omits the file-action contract when useHarness is true', () => {
+    const promptParts = buildExecutionPromptParts(
+      'Create hello.txt',
+      undefined,
+      'Be concise',
+      undefined,
+      { useHarness: true },
+    );
+
+    expect(promptParts.system).toBe(`Execution output contract:
+- You work through the tools you are given. Files change only when a write tool call succeeds.
+- Do not emit \`file-actions\` blocks; they are not applied here.
+- Do not claim that a file was created, changed or deleted, or that a command ran, unless the matching tool call succeeded.
+- If the request needs a tool you do not have, say so plainly and do not claim the result.
+- When the work is done, answer in plain text.
+
+Global AI Instructions:
+Be concise`);
+    expect(promptParts.system).not.toContain(
+      'you MUST emit a fenced code block tagged `file-actions`',
+    );
+    expect(promptParts.system).not.toContain(
+      'The `file-actions` block content MUST be valid JSON containing an array of actions.',
+    );
+    expect(promptParts.user).toBe(`User request:
+Create hello.txt`);
+  });
+
+  it('keeps the file-action contract when no harness option is passed', () => {
+    const promptParts = buildExecutionPromptParts('List files');
+
+    expect(promptParts.system).toBe(`Execution output contract:
+- If the user request requires creating, modifying, or deleting files, you MUST emit a fenced code block tagged \`file-actions\`.
+- The \`file-actions\` block content MUST be valid JSON containing an array of actions.
+- Each action MUST use action value "create", "write", "update", or "delete".
+- "create", "write", and "update" actions MUST include string fields: "path" and "content".
+- "delete" actions MUST include string field "path" and MUST NOT include or require "content".
+- Do not claim that files were created, changed, or deleted unless matching \`file-actions\` entries are present.
+- If the user request does not require file creation, modification, or deletion, respond normally in plain conversational text and do not emit \`file-actions\` blocks.`);
+  });
 });
 
 describe('Agent Harness empty-dispatcher wiring', () => {
@@ -1649,9 +1690,11 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed advertised tool orchestration', (
     );
   }
 
-  it('passes the filtered first-slice definitions on every native tool-use call', async () => {
+  it('passes the filtered advertised definitions on every native tool-use call', async () => {
     const listFiles = getAgentHarnessToolDefinition('list_files')!;
     const readFile = getAgentHarnessToolDefinition('read_file')!;
+    const writeFile = getAgentHarnessToolDefinition('write_file')!;
+    const runValidation = getAgentHarnessToolDefinition('run_validation')!;
     const advertised = selectAdvertisedAgentHarnessTools({
       registeredHandlerNames: AGENT_HARNESS_TOOL_DEFINITIONS_V1.map(
         (tool) => tool.name,
@@ -1663,8 +1706,10 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed advertised tool orchestration', (
     expect(advertised.map((tool) => tool.name)).toEqual([
       'list_files',
       'read_file',
+      'write_file',
+      'run_validation',
     ]);
-    expect(advertised).toEqual([listFiles, readFile]);
+    expect(advertised).toEqual([listFiles, readFile, writeFile, runValidation]);
 
     const executeWithTools = jest.fn().mockResolvedValue({
       output: 'ok',
@@ -1793,7 +1838,7 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed advertised tool orchestration', (
     expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop).toBe(false);
   });
 
-  it('does not let resolved builder configuration advertise mutation tools or bypass the global gate', () => {
+  it('does not let resolved builder configuration bypass the global gate or advertise delete_file or browser_smoke', () => {
     const workerSource = getWorkerSource();
     const routingCallMatch = workerSource.match(
       /const routing = resolveHarnessRouting\(\{[\s\S]*?\}\);/,
@@ -1820,7 +1865,11 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed advertised tool orchestration', (
     expect(advertised.map((tool) => tool.name)).toEqual([
       'list_files',
       'read_file',
+      'write_file',
+      'run_validation',
     ]);
+    expect(advertised.map((tool) => tool.name)).not.toContain('delete_file');
+    expect(advertised.map((tool) => tool.name)).not.toContain('browser_smoke');
   });
 });
 

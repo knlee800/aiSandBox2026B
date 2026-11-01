@@ -83,6 +83,13 @@ const FILE_ACTION_OUTPUT_CONTRACT = `Execution output contract:
 - Do not claim that files were created, changed, or deleted unless matching \`file-actions\` entries are present.
 - If the user request does not require file creation, modification, or deletion, respond normally in plain conversational text and do not emit \`file-actions\` blocks.`;
 
+const HARNESS_TOOL_OUTPUT_CONTRACT = `Execution output contract:
+- You work through the tools you are given. Files change only when a write tool call succeeds.
+- Do not emit \`file-actions\` blocks; they are not applied here.
+- Do not claim that a file was created, changed or deleted, or that a command ran, unless the matching tool call succeeded.
+- If the request needs a tool you do not have, say so plainly and do not claim the result.
+- When the work is done, answer in plain text.`;
+
 export const FILE_ACTION_CONTRACT_FAILURE_CODE = 'file_action_contract_failure';
 export const FILE_ACTION_CONTRACT_FAILURE_MESSAGE =
   'Builder execution produced no valid file actions';
@@ -721,13 +728,18 @@ export function buildExecutionPromptParts(
   workspaceContext?: WorkspaceContext,
   globalInstructions?: string | null,
   projectInstructions?: string | null,
+  options?: { useHarness?: boolean },
 ): { system: string; user: string } {
   const normalizedPrompt = typeof userPrompt === 'string' ? userPrompt : '';
   const globalInstructionsBlock = buildGlobalInstructionsBlock(globalInstructions);
   const projectInstructionsBlock =
     buildProjectInstructionsBlock(projectInstructions);
   const workspaceContextBlock = buildWorkspaceContextBlock(workspaceContext);
-  const systemSections: string[] = [FILE_ACTION_OUTPUT_CONTRACT];
+  const outputContract =
+    options?.useHarness === true
+      ? HARNESS_TOOL_OUTPUT_CONTRACT
+      : FILE_ACTION_OUTPUT_CONTRACT;
+  const systemSections: string[] = [outputContract];
   if (globalInstructionsBlock) {
     systemSections.push(globalInstructionsBlock);
   }
@@ -1245,6 +1257,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                 job.data.workspaceContext,
                 job.data.globalInstructions,
                 job.data.projectInstructions,
+                { useHarness },
               );
               const executionRequest = buildAIExecutionRequest(
                 job.data,

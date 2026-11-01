@@ -324,7 +324,7 @@ describe('AGENT-PLATFORM-EXEC-01C2 advertisement uses registered handlers fail-c
     expect(dispatcher.hasHandler('search_workspace')).toBe(false);
   });
 
-  it('still excludes mutation, validation, browser, search, and handlerless tools when those handlers exist', () => {
+  it('offers write_file and run_validation when their flags and handlers are on, and still excludes delete, browser, search, and handlerless tools', () => {
     const dispatcher = new ToolDispatcher();
     const client = createMockClient();
     registerToolsWithConfig(dispatcher, { enableWriteTools: true });
@@ -356,10 +356,13 @@ describe('AGENT-PLATFORM-EXEC-01C2 advertisement uses registered handlers fail-c
     });
     const names = advertised.map((tool) => tool.name);
 
-    expect(names).toEqual(['list_files', 'read_file']);
-    expect(names).not.toContain('write_file');
+    expect(names).toEqual([
+      'list_files',
+      'read_file',
+      'write_file',
+      'run_validation',
+    ]);
     expect(names).not.toContain('delete_file');
-    expect(names).not.toContain('run_validation');
     expect(names).not.toContain('browser_smoke');
     expect(names).not.toContain('search_workspace');
     expect(names).not.toContain('start_preview');
