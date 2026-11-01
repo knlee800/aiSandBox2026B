@@ -48,3 +48,19 @@ This is the first real-model run ever, so failure is possible. On a failed run: 
 ## Scope correction
 
 The primary write scope is none: host state and off-repo evidence only. ENV is added because this task changes host environment files for the window. The deploy runs inside this task because a separate deploy task adds records without adding safety; this meets the dependency recorded in the task body.
+
+## Second window (added 2026-11-01)
+
+**Why:** in the first window, runs 1 and 2 completed with correct answers using one tool each. Run 3 failed on the 3-step limit, which its three-file clue could not fit, and left no steps, tokens or model. The multi-step criterion is not proven. Keith kept this task open and approved a fix and a second window. HARNESS-FAIL-RECORD-01 is locked.
+
+**Authorization, and no more:** one deploy of 4e69b66a4c4528fa8c928d84c276c1dfc47235c5 to ainow-staging-01; one flags-on block with a new key; 3 more read-only runs; one read-only evidence block; one flags-off block. Any failed block stops; no rollback or other recovery runs without separate approval. Settings, caps, spending and evidence rules are as above. Evidence files are named hl02-*.
+
+| Run | Prompt | Expected |
+|---|---|---|
+| 4 | List the files, then read the one with "final" in its name and give the launch day | list_files then read_file, answer Tuesday |
+| 5 | Read ht-clue.txt, follow it, and give the code name and files read | two reads, answer BLUE HERON, within the limit |
+| 6 | The same prompt as run 3 | fails on the limit, now with steps, tokens and model recorded |
+
+If run 4 or 5 fails: stop, flags off, and bring the result to Keith.
+
+**Correction to the first window's flags-off output:** the line "expected 0" for KEY LINES and ALLOWLIST LINES was wrong. The baseline gateway.env holds one placeholder key line and one empty allowlist line, so gateway=1 ai=0 and gateway=1 are correct; the restored file's hash matches the pre-key baseline. The second window's block prints the corrected expectation.
