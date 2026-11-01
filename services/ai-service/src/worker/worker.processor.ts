@@ -25,7 +25,10 @@ import type { AIExecutionRequest } from '../ai-execution/types';
 import type { WorkspaceContext } from '../queue/job.types';
 import { DEFAULT_AGENT_HARNESS_CONFIG_V1 } from '../agent-harness/config/agent-harness.config';
 import { resolveBuilderHarnessConfig } from '../agent-harness/builder-profiles';
-import { executeAgentHarnessLoop } from '../agent-harness/orchestrator/agent-harness-loop';
+import {
+  executeAgentHarnessLoop,
+  HarnessMaxIterationsError,
+} from '../agent-harness/orchestrator/agent-harness-loop';
 import { ToolDispatcher } from '../agent-harness/tools/tool-dispatcher';
 import { InMemoryHarnessAuditRecorder } from '../agent-harness/audit';
 import {
@@ -1386,15 +1389,17 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                     };
                   }
 
-                  const loopResult = await executeAgentHarnessLoop(loopOptions);
-                  aiResult = loopResult.result;
-                  if (loopResult.preApplyCheckpointHash) {
-                    harnessPreApplyCheckpointHash = loopResult.preApplyCheckpointHash;
-                  }
-
-                  if (auditRecorder) {
-                    for (const event of auditRecorder.getEvents()) {
-                      this.logger.log(JSON.stringify(event));
+                  try {
+                    const loopResult = await executeAgentHarnessLoop(loopOptions);
+                    aiResult = loopResult.result;
+                    if (loopResult.preApplyCheckpointHash) {
+                      harnessPreApplyCheckpointHash = loopResult.preApplyCheckpointHash;
+                    }
+                  } finally {
+                    if (auditRecorder) {
+                      for (const event of auditRecorder.getEvents()) {
+                        this.logger.log(JSON.stringify(event));
+                      }
                     }
                   }
               } else {
@@ -1747,6 +1752,8 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
           this.metrics.execution_failed_total++;
           const durationMs = Math.round(performance.now() - executionStartTime);
           observeExecutionLatency(durationMs / 1000);
+          const failedLedgerTokens =
+            error instanceof HarnessMaxIterationsError ? error.tokensUsed : null;
           this.logExecutionCompletion({
             event: 'execution_completed',
             executionId,
@@ -1754,7 +1761,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
             workerId: this.workerId,
             ...(queueWaitMs != null && { queue_wait_ms: queueWaitMs }),
             duration_ms: durationMs,
-            tokens: 0,
+            tokens: failedLedgerTokens ?? 0,
             execution_status: 'failed',
             metrics: { ...this.metrics },
           });
@@ -1766,10 +1773,16 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
           await this.dataSource.query(
             `
             UPDATE usage_records
-            SET execution_status = 'failed'
+            SET execution_status = 'failed',
+                model = $2,
+                tokens_used = COALESCE($3, tokens_used)
             WHERE execution_id = $1
             `,
-            [executionId],
+            [
+              executionId,
+              resolveLedgerModel(undefined, job.data.model),
+              failedLedgerTokens,
+            ],
           );
 
           throw error;

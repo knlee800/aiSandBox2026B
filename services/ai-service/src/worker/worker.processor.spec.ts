@@ -3564,3 +3564,401 @@ describe('AGENT-PLATFORM-EXEC-01C5B2 Cycle D — compatibility', () => {
     });
   });
 });
+
+describe('HARNESS-FAIL-RECORD-01: failed harness run keeps audit events, tokens, and model', () => {
+  const HARNESS_SECRET = 'test-hmac-secret-harness-fail-record-01';
+  const JOB_MODEL = 'grok-fail-record-job';
+  const originalRedisUrl = process.env.REDIS_URL;
+  const originalStuckScan = process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+  const originalSecret = process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+  const harnessConfigModule = require('../agent-harness/config/agent-harness.config') as {
+    DEFAULT_AGENT_HARNESS_CONFIG_V1: typeof DEFAULT_AGENT_HARNESS_CONFIG_V1;
+  };
+  const originalHarnessConfig = harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1;
+
+  function withHarnessProof(
+    data: Record<string, unknown>,
+  ): Record<string, unknown> {
+    const payloadDigest = computeJobPayloadDigest(data).payloadDigest;
+    const issuedAt = '2026-11-01T08:00:00.000Z';
+    const executionId = String(data.executionId);
+    const userId = String(data.userId);
+    const apiKeyId = String(data.apiKeyId);
+    const claim = `v=1|executionId=${executionId}|userId=${userId}|apiKeyId=${apiKeyId}|harnessVersion=v1|issuedAt=${issuedAt}|payloadDigest=${payloadDigest}`;
+    const signature = createHmac('sha256', HARNESS_SECRET)
+      .update(claim, 'utf8')
+      .digest('hex');
+    return {
+      ...data,
+      harnessEntitlementProof: {
+        version: 1,
+        executionId,
+        userId,
+        apiKeyId,
+        harnessVersion: 'v1',
+        issuedAt,
+        payloadDigest,
+        signature,
+      },
+    };
+  }
+
+  function createLedgerMock() {
+    const status = { value: 'pending' };
+    const completedUpdates: Array<{ sql: string; params: unknown[] }> = [];
+    const failedUpdates: Array<{ sql: string; params: unknown[] }> = [];
+    const query = jest.fn(async (sql: string, params: unknown[] = []) => {
+      if (
+        sql.includes("SET execution_status = 'running'") &&
+        sql.includes('RETURNING')
+      ) {
+        if (status.value === 'pending') {
+          status.value = 'running';
+          return [{ execution_id: params[0] }];
+        }
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'completed'")) {
+        completedUpdates.push({ sql, params });
+        status.value = 'completed';
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'failed'")) {
+        failedUpdates.push({ sql, params });
+        if (sql.includes('RETURNING') && status.value === 'running') {
+          status.value = 'failed';
+          return [{ execution_id: params[0] }];
+        }
+        status.value = 'failed';
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'cancelled'")) {
+        status.value = 'cancelled';
+        return [];
+      }
+      if (sql.includes('SELECT execution_status, created_at')) {
+        return [
+          {
+            execution_status: status.value,
+            created_at: new Date().toISOString(),
+          },
+        ];
+      }
+      if (sql.includes('SELECT execution_id, timestamp')) {
+        return [];
+      }
+      if (sql.includes('SELECT metadata')) {
+        return [{ metadata: {} }];
+      }
+      if (sql.includes('SELECT execution_status')) {
+        return [{ execution_status: status.value }];
+      }
+      return [];
+    });
+    return { query, status, completedUpdates, failedUpdates };
+  }
+
+  function parseLoggedPayloads(
+    logSpy: jest.SpyInstance,
+  ): Array<Record<string, unknown>> {
+    return logSpy.mock.calls
+      .map((args) => args[0])
+      .filter((message): message is string => typeof message === 'string')
+      .map((message) => {
+        try {
+          return JSON.parse(message) as Record<string, unknown>;
+        } catch {
+          return null;
+        }
+      })
+      .filter((payload): payload is Record<string, unknown> => payload !== null);
+  }
+
+  function countEventType(logSpy: jest.SpyInstance, eventType: string): number {
+    return parseLoggedPayloads(logSpy).filter(
+      (payload) => payload.eventType === eventType,
+    ).length;
+  }
+
+  async function startWorker(deps: {
+    query: jest.Mock;
+    execute: jest.Mock;
+    getAdapter: jest.Mock;
+    notifyExecutionComplete: jest.Mock;
+  }) {
+    const worker = new WorkerProcessor(
+      { query: deps.query } as never,
+      { execute: deps.execute, getAdapter: deps.getAdapter } as never,
+      {
+        publishCompletion: jest.fn(),
+        publishToken: jest.fn(),
+        publishFileActions: jest.fn(),
+      } as never,
+      {
+        notifyExecutionComplete: deps.notifyExecutionComplete,
+        createWorkspaceCheckpoint: jest.fn(),
+      } as never,
+    );
+    await worker.onModuleInit();
+    if (!capturedWorker.processor) {
+      throw new Error('BullMQ worker processor was not captured');
+    }
+    return { worker, processJob: capturedWorker.processor };
+  }
+
+  function harnessJob(executionId: string): Record<string, unknown> {
+    return withHarnessProof({
+      executionId,
+      userId: 'user-fail-record',
+      apiKeyId: 'apikey-fail-record',
+      sessionId: 'session-fail-record',
+      conversationId: 'conv-fail-record',
+      provider: 'openai',
+      adapter: 'openai',
+      prompt: 'Use a tool until the step limit.',
+      model: JOB_MODEL,
+      harnessVersion: 'v1',
+      executionIntent: 'conversation',
+      submittedAt: '2026-11-01T08:00:00.000Z',
+    });
+  }
+
+  function toolCallAdapter(executeWithTools: jest.Mock) {
+    return {
+      supportsToolUse: true,
+      executeWithTools,
+    };
+  }
+
+  let logSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    process.env.REDIS_URL = 'redis://127.0.0.1:6379';
+    process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = '600000';
+    process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = HARNESS_SECRET;
+    capturedWorker.processor = null;
+    capturedWorker.opts = null;
+    harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1 = {
+      ...originalHarnessConfig,
+      enableToolLoop: true,
+    };
+    logSpy = jest.spyOn(Logger.prototype, 'log');
+  });
+
+  afterEach(() => {
+    harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1 = originalHarnessConfig;
+    logSpy.mockRestore();
+    jest.useRealTimers();
+    if (originalRedisUrl === undefined) {
+      delete process.env.REDIS_URL;
+    } else {
+      process.env.REDIS_URL = originalRedisUrl;
+    }
+    if (originalStuckScan === undefined) {
+      delete process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+    } else {
+      process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = originalStuckScan;
+    }
+    if (originalSecret === undefined) {
+      delete process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+    } else {
+      process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = originalSecret;
+    }
+  });
+
+  it('logs recorded audit events, including harness.loop_max_turns, exactly once when the step limit fails', async () => {
+    const ledger = createLedgerMock();
+    const executeWithTools = jest.fn().mockResolvedValue({
+      output: 'calling a tool',
+      tokensUsed: 7,
+      model: 'provider-model-ignored',
+      finishReason: 'tool_calls',
+      toolCalls: [
+        {
+          callId: 'call-1',
+          toolName: 'search_workspace',
+          arguments: { query: 'notes' },
+          providerKind: 'stub',
+        },
+      ],
+    });
+    const notifyExecutionComplete = jest.fn().mockResolvedValue(undefined);
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn(),
+      getAdapter: jest.fn().mockReturnValue(toolCallAdapter(executeWithTools)),
+      notifyExecutionComplete,
+    });
+
+    await expect(
+      processJob({
+        id: 'job-step-limit-audit',
+        data: harnessJob('exec-step-limit-audit'),
+      }),
+    ).rejects.toBeInstanceOf(agentHarnessLoop.HarnessMaxIterationsError);
+
+    expect(countEventType(logSpy, 'harness.loop_started')).toBe(1);
+    expect(countEventType(logSpy, 'harness.loop_max_turns')).toBe(1);
+    expect(countEventType(logSpy, 'harness.model_invocation_started')).toBe(
+      originalHarnessConfig.maxToolIterations,
+    );
+    expect(notifyExecutionComplete).not.toHaveBeenCalled();
+    await worker.onModuleDestroy();
+  });
+
+  it('writes tokens_used from a step-limit error and a non-empty model without an accounting notification', async () => {
+    const ledger = createLedgerMock();
+    const executeWithTools = jest.fn().mockResolvedValue({
+      output: 'calling a tool',
+      tokensUsed: 7,
+      model: 'provider-model-ignored',
+      finishReason: 'tool_calls',
+      toolCalls: [
+        {
+          callId: 'call-1',
+          toolName: 'search_workspace',
+          arguments: { query: 'notes' },
+          providerKind: 'stub',
+        },
+      ],
+    });
+    const notifyExecutionComplete = jest.fn().mockResolvedValue(undefined);
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn(),
+      getAdapter: jest.fn().mockReturnValue(toolCallAdapter(executeWithTools)),
+      notifyExecutionComplete,
+    });
+
+    let caught: unknown;
+    try {
+      await processJob({
+        id: 'job-step-limit-ledger',
+        data: harnessJob('exec-step-limit-ledger'),
+      });
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(caught).toBeInstanceOf(agentHarnessLoop.HarnessMaxIterationsError);
+    const tokensUsed = (caught as agentHarnessLoop.HarnessMaxIterationsError)
+      .tokensUsed;
+    expect(tokensUsed).toBeGreaterThan(0);
+    const failed = ledger.failedUpdates.find(
+      (update) => !update.sql.includes('RETURNING'),
+    );
+    expect(failed?.sql).toContain("SET execution_status = 'failed'");
+    expect(failed?.params[1]).toBe(JOB_MODEL);
+    expect(String(failed?.params[1]).length).toBeGreaterThan(0);
+    expect(failed?.params[2]).toBe(tokensUsed);
+    const completion = parseLoggedPayloads(logSpy).filter(
+      (payload) => payload.event === 'execution_completed',
+    );
+    expect(completion).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          execution_status: 'failed',
+          tokens: tokensUsed,
+        }),
+      ]),
+    );
+    expect(notifyExecutionComplete).not.toHaveBeenCalled();
+    await worker.onModuleDestroy();
+  });
+
+  it('writes a non-empty model and does not set a token value when another failure occurs', async () => {
+    const ledger = createLedgerMock();
+    const notifyExecutionComplete = jest.fn().mockResolvedValue(undefined);
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute: jest
+        .fn()
+        .mockRejectedValue(new Error('provider rejected the request')),
+      getAdapter: jest.fn(),
+      notifyExecutionComplete,
+    });
+
+    await expect(
+      processJob({
+        id: 'job-other-failure',
+        data: {
+          executionId: 'exec-other-failure',
+          provider: 'xai',
+          adapter: 'xai',
+          sessionId: 'session-1',
+          conversationId: 'conv-1',
+          userId: 'user-1',
+          apiKeyId: 'apikey-1',
+          prompt: 'Hello ordinary failure',
+          model: JOB_MODEL,
+          executionIntent: 'conversation',
+        },
+      }),
+    ).rejects.toThrow('provider rejected the request');
+
+    const failed = ledger.failedUpdates.find(
+      (update) => !update.sql.includes('RETURNING'),
+    );
+    expect(failed?.sql).toContain("SET execution_status = 'failed'");
+    expect(failed?.sql).toContain('COALESCE($3, tokens_used)');
+    expect(failed?.params[1]).toBe(JOB_MODEL);
+    expect(String(failed?.params[1]).length).toBeGreaterThan(0);
+    expect(failed?.params[2]).toBeNull();
+    expect(failed?.params.some((param) => typeof param === 'number')).toBe(
+      false,
+    );
+    const completion = parseLoggedPayloads(logSpy).filter(
+      (payload) => payload.event === 'execution_completed',
+    );
+    expect(completion).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          execution_status: 'failed',
+          tokens: 0,
+        }),
+      ]),
+    );
+    expect(notifyExecutionComplete).not.toHaveBeenCalled();
+    await worker.onModuleDestroy();
+  });
+
+  it('logs audit events once and writes the usual ledger row when the harness succeeds', async () => {
+    const ledger = createLedgerMock();
+    const resultModel = 'stub-success-model';
+    const executeWithTools = jest.fn().mockResolvedValue({
+      output: 'finished',
+      tokensUsed: 42,
+      model: resultModel,
+      finishReason: 'completed',
+      toolCalls: [],
+    });
+    const notifyExecutionComplete = jest.fn().mockResolvedValue(undefined);
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn(),
+      getAdapter: jest.fn().mockReturnValue(toolCallAdapter(executeWithTools)),
+      notifyExecutionComplete,
+    });
+
+    await processJob({
+      id: 'job-harness-success',
+      data: harnessJob('exec-harness-success'),
+    });
+
+    expect(countEventType(logSpy, 'harness.loop_started')).toBe(1);
+    expect(countEventType(logSpy, 'harness.loop_completed')).toBe(1);
+    expect(countEventType(logSpy, 'harness.model_invocation_completed')).toBe(1);
+    expect(countEventType(logSpy, 'harness.loop_max_turns')).toBe(0);
+    expect(ledger.completedUpdates).toHaveLength(1);
+    expect(ledger.completedUpdates[0].sql).toContain(
+      "SET execution_status = 'completed'",
+    );
+    expect(ledger.completedUpdates[0].params[0]).toBe('exec-harness-success');
+    expect(ledger.completedUpdates[0].params[1]).toBe(42);
+    expect(ledger.completedUpdates[0].params[3]).toBe(resultModel);
+    expect(ledger.failedUpdates).toHaveLength(0);
+    expect(notifyExecutionComplete).toHaveBeenCalledTimes(1);
+    await worker.onModuleDestroy();
+  });
+});
