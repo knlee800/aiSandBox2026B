@@ -82639,18 +82639,18 @@ taskId=HARNESS-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-01. Step 2 stage-start complete: docs/HARNESS-LIVE-01-STAGE-START.md. Keith approved the deploy, up to 3 read-only runs and flags off. Step 3 not started. mutexes=STAGING, PROVIDER-LIVE, CREDIT, ENV. stagingAuthorized, providerLiveAuthorized and creditAuthorized true. Previous: **Status:** REGISTERED / READY / NOT ADMITTED — 2026-10-31. Registered by GOV-HARNESS-RESET-01; `startCondition=NOT_READY` until the stage-start and Keith's authorization.
+**Status:** READY / NOT ADMITTED — 2026-11-01. Returned to READY on Keith's decision; not LOCKED. First window 2026-11-01 (execution ids a95fbe66, cc4807d7, 4a73f68e): runs 1 and 2 completed with correct answers using one tool each; run 3 failed on the 3-step limit, which that test could not fit, and left no steps, tokens or model. No workspace file changed. Flags off at 07:43 UTC with the saved environment files restored and their hashes matched. Evidence is off-repo in C:/Users/knlee/aisb-preflight/HARNESS-LIVE-01/. The multi-step criterion is not proven. Keith decided to keep this task open and fix first. Keith approved a second window after HARNESS-FAIL-RECORD-01 is locked and deployed: 3 more read-only runs with a new key, under a new admission record and stage-start amendment. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-01. Step 2 stage-start complete: docs/HARNESS-LIVE-01-STAGE-START.md. Keith approved the deploy, up to 3 read-only runs and flags off. Step 3 not started. mutexes=STAGING, PROVIDER-LIVE, CREDIT, ENV. stagingAuthorized, providerLiveAuthorized and creditAuthorized true. Previous: **Status:** REGISTERED / READY / NOT ADMITTED — 2026-10-31. Registered by GOV-HARNESS-RESET-01; `startCondition=NOT_READY` until the stage-start and Keith's authorization.
 **Task ID:** HARNESS-LIVE-01
 **Title:** Prove the harness with a real model, read-only, on ainow-staging-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION (operational run; no product activation)
 **Lifecycle:** 4-STEP. Step 1 registration (this record); Step 2 stage-start; Step 3 runs under Keith's authorization; Step 4 consolidation, checkpoint and LOCK by the control plane.
-**Start condition (human):** READY — Keith approved the stage-start plan on 2026-11-01 ("Approve the plan"). Previous: **Start condition (human):** NOT READY — needs the stage-start, then Keith's explicit STAGING, PROVIDER-LIVE, CREDIT and environment authorization.
-**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE. Previous: **Start condition (machine):** `NOT_READY`; `status=READY`.
+**Start condition (human):** NOT READY — needs HARNESS-FAIL-RECORD-01 locked and deployed, then re-admission. Previous: **Start condition (human):** READY — Keith approved the stage-start plan on 2026-11-01 ("Approve the plan"). Previous: **Start condition (human):** NOT READY — needs the stage-start, then Keith's explicit STAGING, PROVIDER-LIVE, CREDIT and environment authorization.
+**Start condition (machine):** `NOT_READY`; `status=READY`. Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE. Previous: **Start condition (machine):** `NOT_READY`; `status=READY`.
 **Depends on (human):** GOV-HARNESS-RESET-01 (LOCKED) and HARNESS-PROVIDERS-01 COMPLETE AND LOCKED and deployed. Correction 2026-11-01: the stage-start found the harness cannot run yet.
-**Depends on (machine `dependsOn`):** `[HARNESS-PROVIDERS-01]`
+**Depends on (machine `dependsOn`):** `[HARNESS-PROVIDERS-01, HARNESS-FAIL-RECORD-01]` Previous: **Depends on (machine `dependsOn`):** `[HARNESS-PROVIDERS-01]`
 **Primary write scope:** none. Host state on ainow-staging-01 and off-repo evidence only. Previous: **Primary write scope:** none yet. Host state on ainow-staging-01 and off-repo evidence only; the stage-start names any script and write path.
-**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV (Lane 1, 2026-11-01). ENV covers host environment files for the window only. Previous: **Mutexes / resources:** STAGING, PROVIDER-LIVE and CREDIT, declared and not acquired. The stage-start settles how the temporary host environment change is recorded under ENV.
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV, declared and released at the return to READY 2026-11-01. Previous: **Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV (Lane 1, 2026-11-01). ENV covers host environment files for the window only. Previous: **Mutexes / resources:** STAGING, PROVIDER-LIVE and CREDIT, declared and not acquired. The stage-start settles how the temporary host environment change is recorded under ENV.
 **Hot-file leases:** none
 **Shared contracts:** consumes HARNESS_ENTITLEMENT_PROOF_V1 without changing it (`sharedContractIds=[HARNESS_ENTITLEMENT_PROOF_V1]`; `mutatesSharedContractIds=[]`).
 **Evidence class:** PROVIDER-LIVE.
@@ -82677,8 +82677,12 @@ nature=IMPLEMENTATION
 - [ ] Not LOCKED by an implementer
 
 ### HARNESS-FAIL-RECORD-01 — Keep the steps, tokens and model of a failed harness run
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=HARNESS-FAIL-RECORD-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY — 2026-11-01. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-01. Registered and admitted to Lane 1; Step 2 (implementation) not started. mutexes=AI-SERVICE. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-01. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
 **Task ID:** HARNESS-FAIL-RECORD-01
 **Title:** Keep the steps, tokens and model of a failed harness run
 **Workstream:** AGENT (taxonomy only; zero admission weight)
