@@ -82586,6 +82586,46 @@ nature=GOVERNANCE
 **saturationClass:** not applicable (GOVERNANCE; no sidecar candidate).
 **Record:** docs/GOV-HARNESS-RESET-01-DECISION.md. Authorizes no staging, provider, credit or environment action.
 
+### HARNESS-PROVIDERS-01 — Bring xAI, OpenAI, Anthropic and DeepSeek to current models and working harness tool use
+
+**Status:** REGISTERED / READY — 2026-11-01. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Task ID:** HARNESS-PROVIDERS-01
+**Title:** Bring xAI, OpenAI, Anthropic and DeepSeek to current models and working harness tool use
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP. Step 1 registration and admission (this control-plane record); Step 2 stage-start; Step 3 implementation in bounded slices, each reviewed; Step 4 consolidation, checkpoint and LOCK by the control plane.
+**Start condition (human):** READY — Keith chose providers first on 2026-11-01 ("providers first") and on 2026-10-31 approved all four providers. This changes the order in docs/GOV-HARNESS-RESET-01-DECISION.md: this task now runs before HARNESS-LIVE-01.
+**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Depends on (human):** GOV-HARNESS-RESET-01 (LOCKED).
+**Depends on (machine `dependsOn`):** `[]`
+**Primary write scope:** exactly `services/ai-service/src/ai-execution/adapters/anthropic-ai.adapter.ts`, `services/ai-service/src/ai-execution/adapters/xai-ai.adapter.ts`, `services/ai-service/src/ai-execution/adapters/deepseek-ai.adapter.ts`, `services/ai-service/src/ai-execution/adapters/openai-ai.adapter.ts`, `services/ai-service/src/ai-execution/adapters/adapter-tool-use.mapper.ts`, `services/ai-service/src/ai-execution/adapters/adapter-tool-use.contracts.ts`, `services/ai-service/src/ai-execution/adapters/__tests__/`, `services/ai-service/src/ai-execution/provider-model.catalogue.ts`, `services/ai-service/src/ai-execution/__tests__/provider-model.catalogue.spec.ts`, `services/ai-service/src/ai-execution/__tests__/ai-execution.provider-model-validation.spec.ts`, `services/ai-service/src/agent-harness/orchestrator/agent-harness-loop.ts`, `services/ai-service/src/agent-harness/orchestrator/agent-harness-loop.spec.ts`, `services/ai-service/package.json`, `package-lock.json`, `services/api-gateway/src/ai/provider-model.catalogue.ts`, `services/api-gateway/src/ai/provider-model.catalogue.spec.ts`, `frontend/lib/ai/provider-model.catalogue.ts`, `frontend/lib/ai/provider-model.catalogue.test.ts`. Anything else needs a control-plane scope change.
+**Mutexes / resources:** AI-SERVICE, GATEWAY, FRONTEND and PACKAGE (Lane 1). No STAGING, PROVIDER-LIVE, CREDIT, ENV, MIGRATION, I18N or LOCAL-RUNTIME.
+**Hot-file leases:** none
+**Shared contracts:** none consumed or mutated (`sharedContractIds=[]`; `mutatesSharedContractIds=[]`). HARNESS_ENTITLEMENT_PROOF_V1 stays FROZEN; `services/ai-service/src/worker/worker.processor.ts` and the gateway controller are not in scope.
+**Evidence class:** LOCAL-TESTS. No real provider call. Provider behaviour is proven later by HARNESS-LIVE-01.
+**Revert isolation:** acceptable (adapters and catalogues; the single-shot Builder must keep working).
+**saturationClass:** OPTIONAL
+**productClass:** CURRENT
+**futureAuthorization:** NONE
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** none
+
+**Problem:** the HARNESS-LIVE-01 stage-start found the harness cannot run on current models. The Anthropic adapter drops thinking blocks, which Anthropic requires back unchanged when tool results are returned, and its output limit is 4096 tokens while thinking counts toward that limit. The xAI and DeepSeek adapters have no tool use. The OpenAI adapter uses Chat Completions while the provider documentation lists its current models under the Responses API. The model lists are out of date in three copies. Provider facts were read from provider documentation on 2026-10-31 and are confirmed again at stage-start.
+**Scope:** update the allowed models in all three catalogues: xAI add grok-4.7; OpenAI add gpt-6.1-sol, gpt-6-astra, gpt-6.1-terra and gpt-6-luna; DeepSeek replace deepseek-v4-flash with deepseek-flash and keep deepseek-v4-pro; keep gpt-4o and grok-4.5. Anthropic: preserve thinking blocks through the tool loop, raise the output limit, remove temperature, and update the SDK if needed. xAI and DeepSeek: add tool use. OpenAI: settle Chat Completions versus Responses and implement what the current models need. Not in scope: real provider calls, raising the harness step limit, search_workspace, any UI beyond the catalogues, model-based credit pricing, execution timeout defaults, and deploying.
+
+#### Acceptance criteria
+
+- [ ] All three catalogues list the same models, including the additions and the DeepSeek rename, with `supportsToolUse` true for all four providers
+- [ ] Anthropic: mocked tool-loop tests show thinking blocks returned complete and unchanged with tool results, a higher output limit, and no temperature in requests
+- [ ] xAI and DeepSeek: adapters declare and implement tool use, with mocked tests of a tool call and its result
+- [ ] OpenAI: the stage-start records the API decision with its source, and mocked tests cover a tool loop on the chosen API
+- [ ] The plain single-shot path keeps working for every provider, shown by the existing tests
+- [ ] ai-service, gateway and frontend tests and builds match their pre-change baselines on Node v22.14.0, apart from the new tests
+- [ ] Only the files in the primary write scope change
+- [ ] Not LOCKED by an implementer
+
 ### HARNESS-LIVE-01 — Prove the harness with a real model, read-only, on ainow-staging-01
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=HARNESS-LIVE-01
@@ -82600,8 +82640,8 @@ nature=IMPLEMENTATION
 **Lifecycle:** 4-STEP. Step 1 registration (this record); Step 2 stage-start; Step 3 runs under Keith's authorization; Step 4 consolidation, checkpoint and LOCK by the control plane.
 **Start condition (human):** NOT READY — needs the stage-start, then Keith's explicit STAGING, PROVIDER-LIVE, CREDIT and environment authorization.
 **Start condition (machine):** `NOT_READY`; `status=READY`.
-**Depends on (human):** GOV-HARNESS-RESET-01 (LOCKED by the same record).
-**Depends on (machine `dependsOn`):** `[]`
+**Depends on (human):** GOV-HARNESS-RESET-01 (LOCKED) and HARNESS-PROVIDERS-01 COMPLETE AND LOCKED and deployed. Correction 2026-11-01: the stage-start found the harness cannot run yet.
+**Depends on (machine `dependsOn`):** `[HARNESS-PROVIDERS-01]`
 **Primary write scope:** none yet. Host state on ainow-staging-01 and off-repo evidence only; the stage-start names any script and write path.
 **Mutexes / resources:** STAGING, PROVIDER-LIVE and CREDIT, declared and not acquired. The stage-start settles how the temporary host environment change is recorded under ENV.
 **Hot-file leases:** none
@@ -82617,11 +82657,10 @@ nature=IMPLEMENTATION
 **runtimeNeeds:** STAGING, PROVIDER-LIVE, CREDIT
 
 **Problem:** `ARCHITECTURE.md` section 12 records the real-provider harness loop as unproven: its end-to-end canaries used a test stub. Keith needs real evidence of how good the harness is before later work builds on it. Record: docs/GOV-HARNESS-RESET-01-DECISION.md.
-**Scope:** on ainow-staging-01, behind basic_auth, with one test account and one small throwaway project: one stub run to prove the wiring, then up to 3 read-only runs on Anthropic. Spend caps $1 soft and $2 hard, 16,000 tokens per execution and 2 executions per minute, as in C2. Keith types the provider key at a hidden prompt; it is removed afterwards and the flags go back off. Write, validation and browser tools stay off. Stage-start settles: how the run is submitted, whether the host has the harness signing secret, which Anthropic model (with current prices), the exact flags, and transcript redaction. Not in scope: writes, other providers, raising the step limit, any UI, and product activation.
+**Scope:** on ainow-staging-01, behind basic_auth, with one test account and one small throwaway project: up to 3 read-only runs on Anthropic, with `EXECUTION_TIMEOUT_MS` raised for the window because the 20-second default aborts multi-step runs. Correction 2026-11-01: the stub run is removed, because the gateway has no stub route; earlier canaries wrote directly to the queue. Spend caps $1 soft and $2 hard, 16,000 tokens per execution and 2 executions per minute, as in C2. Keith types the provider key at a hidden prompt; it is removed afterwards and the flags go back off. Write, validation and browser tools stay off. Stage-start settles: how the run is submitted, whether the host has the harness signing secret, which Anthropic model (with current prices), the exact flags, and transcript redaction. Not in scope: writes, other providers, raising the step limit, any UI, and product activation.
 
 #### Acceptance criteria
 
-- [ ] The stub run completes through the staging worker with no provider spend
 - [ ] A real run calls list_files and read_file across several steps and answers correctly from the file contents
 - [ ] No workspace file changes in any run
 - [ ] Credits and usage are recorded correctly, and usage_records.model is non-empty (closes the USAGE-MODEL-01 criterion)
