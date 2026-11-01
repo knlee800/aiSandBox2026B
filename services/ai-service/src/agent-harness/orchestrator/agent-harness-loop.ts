@@ -29,7 +29,10 @@ export type AgentHarnessLoopTerminationReason =
 export interface AgentHarnessLoopOptions {
   readonly executeFn: AgentHarnessExecuteWithToolsFn;
   readonly request: AIExecutionRequest;
-  readonly config: Pick<AgentHarnessConfigV1, 'maxToolIterations' | 'maxToolResultBytes'>;
+  readonly config: Pick<
+    AgentHarnessConfigV1,
+    'maxToolIterations' | 'maxToolResultBytes' | 'maxRunTokens'
+  >;
   readonly toolTimeoutMs?: number;
   readonly signal?: AbortSignal;
   readonly dispatcher?: ToolDispatcher;
@@ -69,6 +72,27 @@ export const HARNESS_MAX_ITERATIONS_ERROR_NAME = 'HarnessMaxIterationsError';
 
 export const HARNESS_MAX_ITERATIONS_ERROR_MESSAGE =
   '[Agent Harness] Maximum tool iterations reached without completion.';
+
+export const HARNESS_FINAL_MODEL_CALL_NOTICE =
+  'This is your final model call for this run. Do not call any tools. Reply now in plain text: say what you did and what is unfinished.';
+
+function withFinalModelCallNotice(
+  result: AIAdapterToolResultPayload,
+): AIAdapterToolResultPayload {
+  if (result.success) {
+    return {
+      ...result,
+      content: {
+        ...(result.content ?? {}),
+        harnessNotice: HARNESS_FINAL_MODEL_CALL_NOTICE,
+      },
+    };
+  }
+  return {
+    ...result,
+    errorMessage: `${result.errorMessage ?? ''} ${HARNESS_FINAL_MODEL_CALL_NOTICE}`,
+  };
+}
 
 export class HarnessMaxIterationsError extends Error {
   readonly terminationReason = 'max_iterations' as const;
@@ -185,11 +209,17 @@ function buildExecuteOptions(
  *   dispatches each valid tool call, records typed errors for malformed
  *   calls with usable IDs, skips missing-ID calls, accumulates execution-
  *   scoped canonical transcript turns, and repeats until the model
- *   finishes or maxToolIterations is reached.
+ *   finishes, maxToolIterations is reached, or the run token budget is
+ *   reached and the model keeps calling tools.
+ * - Before the last allowed model call, or once maxRunTokens is reached,
+ *   one notice is added to the newest tool result. Tool calls on the call
+ *   after that notice are not dispatched and throw HarnessMaxIterationsError.
  * - Reaching maxToolIterations throws HarnessMaxIterationsError.
  *
  * Safety invariants:
  * - maxToolIterations is a hard ceiling.
+ * - The request, its system prompt, and the tool list are not rebuilt
+ *   between calls. The loop does not set tool_choice.
  * - AbortSignal is checked before each iteration.
  * - Dispatcher errors are wrapped into typed results, not exceptions.
  * - Transcript state is local to one executeAgentHarnessLoop invocation.
@@ -220,6 +250,7 @@ export async function executeAgentHarnessLoop(
   let cumulativeTokensUsed = 0;
   let cumulativeToolResultBytes = 0;
   let priorToolResults: AIAdapterToolResultPayload[] | undefined;
+  let finalModelCallNoticeGiven = false;
   let preApplyCheckpointHash: string | undefined;
   let checkpointCreated = false;
   const transcript: AIAdapterCanonicalTranscriptTurn[] = [];
@@ -277,6 +308,53 @@ export async function executeAgentHarnessLoop(
     };
     cumulativeToolResultBytes += toSerializedBytes(replacement);
     return replacement;
+  };
+
+  const rememberToolResults = (
+    builtResults: readonly AIAdapterToolResultPayload[],
+    iteration: number,
+  ): void => {
+    const budgeted = builtResults.map((result) =>
+      enforceAggregateToolResultBudget(result, iteration),
+    );
+    const nextCall = iteration + 1;
+    const runBudgetReached =
+      config.maxRunTokens !== undefined &&
+      cumulativeTokensUsed >= config.maxRunTokens;
+    if (
+      nextCall < maxIterations &&
+      !finalModelCallNoticeGiven &&
+      budgeted.length > 0 &&
+      (nextCall === maxIterations - 1 || runBudgetReached)
+    ) {
+      const newestIndex = budgeted.length - 1;
+      budgeted[newestIndex] = withFinalModelCallNotice(budgeted[newestIndex]);
+      finalModelCallNoticeGiven = true;
+    }
+    priorToolResults = budgeted;
+    transcript.push({
+      kind: 'tool_result_turn',
+      results: priorToolResults,
+    });
+  };
+
+  const failForMaxIterations = (iterationsUsed: number): never => {
+    recorder?.record({
+      ...baseEvent(),
+      eventType: 'harness.loop_max_turns' as const,
+      iteration: iterationsUsed,
+      maxToolIterations: maxIterations,
+      totalToolCalls: totalToolCallsReceived,
+      cumulativeTokensUsed,
+      terminationReason: 'max_iterations' as const,
+      durationMs: Math.max(0, Date.now() - loopStartTime),
+    });
+    throw new HarnessMaxIterationsError({
+      iterationsUsed,
+      toolCallsReceived: totalToolCallsReceived,
+      tokensUsed: cumulativeTokensUsed,
+      preApplyCheckpointHash,
+    });
   };
 
   for (let iteration = 0; iteration < maxIterations; iteration++) {
@@ -368,6 +446,10 @@ export async function executeAgentHarnessLoop(
       };
     }
 
+    if (finalModelCallNoticeGiven) {
+      failForMaxIterations(iteration + 1);
+    }
+
     if (!dispatcher) {
       recorder?.record({
         ...baseEvent(),
@@ -437,13 +519,7 @@ export async function executeAgentHarnessLoop(
             ];
           },
         );
-        priorToolResults = results.map((r) =>
-          enforceAggregateToolResultBudget(r, iteration),
-        );
-        transcript.push({
-          kind: 'tool_result_turn',
-          results: priorToolResults,
-        });
+        rememberToolResults(results, iteration);
         continue;
       }
     }
@@ -508,30 +584,8 @@ export async function executeAgentHarnessLoop(
         errorMessage: dispatchResult.errorMessage,
       });
     }
-    priorToolResults = results.map((r) =>
-      enforceAggregateToolResultBudget(r, iteration),
-    );
-    transcript.push({
-      kind: 'tool_result_turn',
-      results: priorToolResults,
-    });
+    rememberToolResults(results, iteration);
   }
 
-  recorder?.record({
-    ...baseEvent(),
-    eventType: 'harness.loop_max_turns' as const,
-    iteration: maxIterations,
-    maxToolIterations: maxIterations,
-    totalToolCalls: totalToolCallsReceived,
-    cumulativeTokensUsed,
-    terminationReason: 'max_iterations' as const,
-    durationMs: Math.max(0, Date.now() - loopStartTime),
-  });
-
-  throw new HarnessMaxIterationsError({
-    iterationsUsed: maxIterations,
-    toolCallsReceived: totalToolCallsReceived,
-    tokensUsed: cumulativeTokensUsed,
-    preApplyCheckpointHash,
-  });
+  failForMaxIterations(maxIterations);
 }

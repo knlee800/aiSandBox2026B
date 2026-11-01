@@ -494,6 +494,49 @@ describe('AGENT-HARNESS-07B: WorkerProcessor resolvedConfig wiring', () => {
     expect(workerSource).toContain('toolTimeoutMs: resolvedConfig.toolTimeoutMs');
   });
 
+  it('passes maxRunTokens from the resolved config and does not take it from builder-profile overrides', () => {
+    expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.maxToolIterations).toBe(8);
+    expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.maxRunTokens).toBe(60_000);
+    const { config, metadata } = resolveBuilderHarnessConfig(
+      { builderProfileId: 'builder-default', agentRole: 'builder' },
+      DEFAULT_AGENT_HARNESS_CONFIG_V1,
+    );
+    expect(config.maxToolIterations).toBe(8);
+    expect(config.maxRunTokens).toBe(60_000);
+    expect(metadata.fieldsOverridden).not.toContain('maxRunTokens');
+
+    const workerSource = getWorkerSource();
+    expect(workerSource).toContain('maxRunTokens: resolvedConfig.maxRunTokens');
+    expect(workerSource).toContain(
+      'maxRunTokens: resolvedConfig.maxRunTokens ?? DEFAULT_AGENT_HARNESS_CONFIG_V1.maxRunTokens',
+    );
+
+    const adapterSource = fs.readFileSync(
+      path.join(
+        __dirname,
+        '..',
+        '..',
+        'agent-harness',
+        'builder-profiles',
+        'builder-harness-config-adapter.ts',
+      ),
+      'utf-8',
+    );
+    const profileSource = fs.readFileSync(
+      path.join(
+        __dirname,
+        '..',
+        '..',
+        'agent-harness',
+        'builder-profiles',
+        'builder-profile.contracts.ts',
+      ),
+      'utf-8',
+    );
+    expect(adapterSource).not.toContain('maxRunTokens');
+    expect(profileSource).not.toContain('maxRunTokens');
+  });
+
   it('auditRecorder gated by resolvedConfig.auditEventsEnabled', () => {
     const workerSource = getWorkerSource();
     expect(workerSource).toContain('resolvedConfig.auditEventsEnabled');

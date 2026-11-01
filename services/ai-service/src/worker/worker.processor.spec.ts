@@ -552,6 +552,7 @@ Project policy`);
 - Do not emit \`file-actions\` blocks; they are not applied here.
 - Do not claim that a file was created, changed or deleted, or that a command ran, unless the matching tool call succeeded.
 - If the request needs a tool you do not have, say so plainly and do not claim the result.
+- If a tool result carries a harnessNotice, follow it.
 - When the work is done, answer in plain text.
 
 Global AI Instructions:
@@ -642,6 +643,11 @@ describe('Agent Harness double-gate config', () => {
   it('maxToolIterations defaults to a small positive number', () => {
     expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.maxToolIterations).toBeGreaterThan(0);
     expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.maxToolIterations).toBeLessThanOrEqual(25);
+  });
+
+  it('defaults maxToolIterations to 8 and maxRunTokens to 60000', () => {
+    expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.maxToolIterations).toBe(8);
+    expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.maxRunTokens).toBe(60_000);
   });
 
   it('WorkerProcessor does not hardcode tool definitions from the registry', () => {

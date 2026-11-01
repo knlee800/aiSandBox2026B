@@ -65,7 +65,8 @@ export function createAgentHarnessConfigV1(
 
   const config: AgentHarnessRuntimeConfigV1 = {
     contractVersion: AGENT_HARNESS_CONTRACT_VERSION_V1,
-    maxToolIterations: 3,
+    maxToolIterations: 8,
+    maxRunTokens: 60_000,
     maxFileReadBytes: 262_144,
     maxFileWriteBytes: 131_072,
     maxToolResultBytes: 262_144,

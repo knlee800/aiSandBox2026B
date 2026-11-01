@@ -162,4 +162,12 @@ describe('DEFAULT_AGENT_HARNESS_CONFIG_V1', () => {
   it('is frozen', () => {
     expect(Object.isFrozen(DEFAULT_AGENT_HARNESS_CONFIG_V1)).toBe(true);
   });
+
+  it('defaults maxToolIterations to 8 and maxRunTokens to 60000', () => {
+    const config = createAgentHarnessConfigV1({});
+    expect(config.maxToolIterations).toBe(8);
+    expect(config.maxRunTokens).toBe(60_000);
+    expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.maxToolIterations).toBe(8);
+    expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.maxRunTokens).toBe(60_000);
+  });
 });

@@ -88,6 +88,7 @@ const HARNESS_TOOL_OUTPUT_CONTRACT = `Execution output contract:
 - Do not emit \`file-actions\` blocks; they are not applied here.
 - Do not claim that a file was created, changed or deleted, or that a command ran, unless the matching tool call succeeded.
 - If the request needs a tool you do not have, say so plainly and do not claim the result.
+- If a tool result carries a harnessNotice, follow it.
 - When the work is done, answer in plain text.`;
 
 export const FILE_ACTION_CONTRACT_FAILURE_CODE = 'file_action_contract_failure';
@@ -1382,6 +1383,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                     config: {
                       maxToolIterations: resolvedConfig.maxToolIterations,
                       maxToolResultBytes: resolvedConfig.maxToolResultBytes,
+                      maxRunTokens: resolvedConfig.maxRunTokens ?? DEFAULT_AGENT_HARNESS_CONFIG_V1.maxRunTokens,
                     },
                     signal: abortController.signal,
                     dispatcher,

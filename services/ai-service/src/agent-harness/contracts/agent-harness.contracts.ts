@@ -77,6 +77,7 @@ export interface AgentHarnessPolicyV1 {
 export interface AgentHarnessConfigV1 extends AgentHarnessPolicyV1 {
   readonly contractVersion: AgentHarnessContractVersionV1;
   readonly maxToolIterations: number;
+  readonly maxRunTokens?: number;
   readonly maxFileReadBytes: number;
   readonly maxFileWriteBytes: number;
   readonly maxToolResultBytes: number;
