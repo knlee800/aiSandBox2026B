@@ -82723,8 +82723,12 @@ nature=IMPLEMENTATION
 - [x] Not LOCKED by an implementer
 
 ### HARNESS-REFUSAL-01 — Report an Anthropic refusal as a refusal
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=HARNESS-REFUSAL-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY — 2026-11-01. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-01. Registered and admitted to Lane 1; Step 2 (implementation) not started. mutexes=AI-SERVICE. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-01. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
 **Task ID:** HARNESS-REFUSAL-01
 **Title:** Report an Anthropic refusal as a refusal
 **Workstream:** AGENT (taxonomy only; zero admission weight)

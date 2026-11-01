@@ -10,13 +10,16 @@
   },
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "HARNESS-REFUSAL-01",
+      "mutexes": ["AI-SERVICE"],
+      "writePaths": [
+        "services/ai-service/src/ai-execution/adapters/anthropic-ai.adapter.ts",
+        "services/ai-service/src/ai-execution/adapters/__tests__/anthropic-ai.adapter.spec.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -1486,6 +1489,31 @@
       "writePaths": [
         "services/ai-service/src/worker/worker.processor.ts",
         "services/ai-service/src/worker/worker.processor.spec.ts"
+      ],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "LOCAL-TESTS",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": [],
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
+    },
+    {
+      "taskId": "HARNESS-REFUSAL-01",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "3-STEP",
+      "status": "ADMITTED",
+      "startCondition": "READY",
+      "saturationClass": "OPTIONAL",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": [],
+      "mutexes": ["AI-SERVICE"],
+      "writePaths": [
+        "services/ai-service/src/ai-execution/adapters/anthropic-ai.adapter.ts",
+        "services/ai-service/src/ai-execution/adapters/__tests__/anthropic-ai.adapter.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
