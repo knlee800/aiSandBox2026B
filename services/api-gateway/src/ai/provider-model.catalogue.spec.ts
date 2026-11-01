@@ -15,13 +15,19 @@ describe('Gateway provider/model catalogue', () => {
     expect(selection.model).toBe('grok-4.5');
   });
 
-  it('accepts xAI grok-4.5 and rejects grok-4.20 for new execution', () => {
+  it('accepts xAI grok-4.5 and grok-4.7 and rejects grok-4.20 for new execution', () => {
     const modelA = resolveGatewayProviderModelSelection({
       provider: 'xai',
       model: 'grok-4.5',
     });
+    const modelB = resolveGatewayProviderModelSelection({
+      provider: 'xai',
+      model: 'grok-4.7',
+    });
 
     expect(modelA.model).toBe('grok-4.5');
+    expect(modelB.model).toBe('grok-4.7');
+    expect(XAI_RECOGNIZED_MODELS).toContain('grok-4.7');
     expect(XAI_RECOGNIZED_MODELS).toContain('grok-4.20');
     expect(() =>
       resolveGatewayProviderModelSelection({
@@ -82,7 +88,37 @@ describe('Gateway provider/model catalogue', () => {
     });
 
     expect(groqSelection.model).toBe('openai/gpt-oss-120b');
-    expect(deepseekSelection.model).toBe('deepseek-v4-flash');
+    expect(deepseekSelection.model).toBe('deepseek-flash');
+  });
+
+  it('accepts deepseek-flash, deepseek-v4-pro and deepseek-v4-flash', () => {
+    expect(
+      resolveGatewayProviderModelSelection({
+        provider: 'deepseek',
+        model: 'deepseek-flash',
+      }).model,
+    ).toBe('deepseek-flash');
+    expect(
+      resolveGatewayProviderModelSelection({
+        provider: 'deepseek',
+        model: 'deepseek-v4-pro',
+      }).model,
+    ).toBe('deepseek-v4-pro');
+    expect(
+      resolveGatewayProviderModelSelection({
+        provider: 'deepseek',
+        model: 'deepseek-v4-flash',
+      }).model,
+    ).toBe('deepseek-v4-flash');
+  });
+
+  it('rejects an unknown DeepSeek model', () => {
+    expect(() =>
+      resolveGatewayProviderModelSelection({
+        provider: 'deepseek',
+        model: 'unknown-model',
+      }),
+    ).toThrow(GatewayProviderModelValidationError);
   });
 
   it('rejects removed Groq and DeepSeek models', () => {
@@ -106,13 +142,34 @@ describe('Gateway provider/model catalogue', () => {
     ).toThrow(GatewayProviderModelValidationError);
   });
 
-  it('retains OpenAI gpt-4o as the only allowed default', () => {
+  it('retains OpenAI gpt-4o as the source default', () => {
     const selection = resolveGatewayProviderModelSelection({
       provider: 'openai',
       model: undefined,
     });
 
     expect(selection.model).toBe('gpt-4o');
+  });
+
+  it.each(['gpt-6.1-sol', 'gpt-6-astra', 'gpt-6.1-terra', 'gpt-6-luna'])(
+    'accepts OpenAI model %s',
+    (model) => {
+      const selection = resolveGatewayProviderModelSelection({
+        provider: 'openai',
+        model,
+      });
+
+      expect(selection.model).toBe(model);
+    },
+  );
+
+  it('rejects an unknown OpenAI model', () => {
+    expect(() =>
+      resolveGatewayProviderModelSelection({
+        provider: 'openai',
+        model: 'unknown-model',
+      }),
+    ).toThrow(GatewayProviderModelValidationError);
   });
 
   it('resolves Anthropic model from trimmed ANTHROPIC_MODEL value', () => {
@@ -123,14 +180,70 @@ describe('Gateway provider/model catalogue', () => {
     });
 
     expect(selection.model).toBe('claude-configured');
+    expect(selection.defaultModelSource).toBe('environment');
   });
 
-  it('rejects Anthropic request model that differs from configured ANTHROPIC_MODEL', () => {
-    expect(() =>
+  it.each([
+    'claude-opus-5-5',
+    'claude-sonnet-5-5',
+    'claude-fable-5-1',
+    'claude-haiku-5-5',
+  ])('accepts listed Anthropic model %s without ANTHROPIC_MODEL', (model) => {
+    const selection = resolveGatewayProviderModelSelection({
+      provider: 'anthropic',
+      model,
+      anthropicModel: undefined,
+    });
+
+    expect(selection.model).toBe(model);
+    expect(selection.defaultModelSource).toBe('source');
+  });
+
+  it('reports source when a requested listed Anthropic model equals ANTHROPIC_MODEL', () => {
+    const selection = resolveGatewayProviderModelSelection({
+      provider: 'anthropic',
+      model: 'claude-sonnet-5-5',
+      anthropicModel: 'claude-sonnet-5-5',
+    });
+
+    expect(selection.model).toBe('claude-sonnet-5-5');
+    expect(selection.defaultModelSource).toBe('source');
+  });
+
+  it('accepts an Anthropic model equal to ANTHROPIC_MODEL when it is not on the list', () => {
+    const selection = resolveGatewayProviderModelSelection({
+      provider: 'anthropic',
+      model: 'claude-env-only',
+      anthropicModel: 'claude-env-only',
+    });
+
+    expect(selection.model).toBe('claude-env-only');
+    expect(selection.defaultModelSource).toBe('environment');
+  });
+
+  it('rejects an unlisted Anthropic model that does not equal ANTHROPIC_MODEL', () => {
+    try {
       resolveGatewayProviderModelSelection({
         provider: 'anthropic',
         model: 'claude-other',
         anthropicModel: 'claude-configured',
+      });
+      fail('expected an unlisted Anthropic model to be rejected');
+    } catch (error) {
+      expect(error).toBeInstanceOf(GatewayProviderModelValidationError);
+      expect((error as GatewayProviderModelValidationError).code).toBe(
+        'invalid_model',
+      );
+      expect((error as GatewayProviderModelValidationError).model).toBe(
+        'claude-other',
+      );
+    }
+
+    expect(() =>
+      resolveGatewayProviderModelSelection({
+        provider: 'anthropic',
+        model: 'claude-other',
+        anthropicModel: undefined,
       }),
     ).toThrow(GatewayProviderModelValidationError);
   });

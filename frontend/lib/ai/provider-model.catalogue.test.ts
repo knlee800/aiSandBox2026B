@@ -18,15 +18,27 @@ function catalogueModelIds(providerId: string): string[] {
 }
 
 describe('frontend provider/model catalogue hardening', () => {
-  test('contains the approved Step 2a provider/model options', () => {
+  test('contains the current selectable provider and model options', () => {
     const selectableProviders = getSelectableFrontendProviderEntries().map(
       (provider) => provider.providerId,
     );
-    assert.deepEqual(selectableProviders, ['xai', 'groq', 'deepseek', 'openai']);
-    assert.deepEqual(catalogueModelIds('xai'), ['grok-4.5']);
+    assert.deepEqual(selectableProviders, ['xai', 'groq', 'deepseek', 'openai', 'anthropic']);
+    assert.deepEqual(catalogueModelIds('xai'), ['grok-4.5', 'grok-4.7']);
     assert.deepEqual(catalogueModelIds('groq'), ['openai/gpt-oss-120b', 'openai/gpt-oss-20b']);
-    assert.deepEqual(catalogueModelIds('deepseek'), ['deepseek-v4-flash', 'deepseek-v4-pro']);
-    assert.deepEqual(catalogueModelIds('openai'), ['gpt-4o']);
+    assert.deepEqual(catalogueModelIds('deepseek'), ['deepseek-flash', 'deepseek-v4-pro']);
+    assert.deepEqual(catalogueModelIds('openai'), [
+      'gpt-4o',
+      'gpt-6.1-sol',
+      'gpt-6-astra',
+      'gpt-6.1-terra',
+      'gpt-6-luna',
+    ]);
+    assert.deepEqual(catalogueModelIds('anthropic'), [
+      'claude-opus-5-5',
+      'claude-sonnet-5-5',
+      'claude-fable-5-1',
+      'claude-haiku-5-5',
+    ]);
   });
 
   test('uses xai:grok-4.5 as the private-beta default selection', () => {
@@ -52,7 +64,7 @@ describe('frontend provider/model catalogue hardening', () => {
   });
 
   test('selecting xAI exposes only selectable xAI models', () => {
-    assert.deepEqual(catalogueModelIds('xai'), ['grok-4.5']);
+    assert.deepEqual(catalogueModelIds('xai'), ['grok-4.5', 'grok-4.7']);
     assert.equal(catalogueModelIds('xai').includes('grok-4.20'), false);
   });
 
@@ -60,12 +72,19 @@ describe('frontend provider/model catalogue hardening', () => {
     assert.deepEqual(catalogueModelIds('groq'), ['openai/gpt-oss-120b', 'openai/gpt-oss-20b']);
   });
 
-  test('selecting DeepSeek exposes only DeepSeek models', () => {
-    assert.deepEqual(catalogueModelIds('deepseek'), ['deepseek-v4-flash', 'deepseek-v4-pro']);
+  test('selecting DeepSeek exposes only selectable DeepSeek models', () => {
+    assert.deepEqual(catalogueModelIds('deepseek'), ['deepseek-flash', 'deepseek-v4-pro']);
+    assert.equal(catalogueModelIds('deepseek').includes('deepseek-v4-flash'), false);
   });
 
-  test('selecting OpenAI exposes gpt-4o', () => {
-    assert.deepEqual(catalogueModelIds('openai'), ['gpt-4o']);
+  test('selecting OpenAI exposes the current OpenAI models', () => {
+    assert.deepEqual(catalogueModelIds('openai'), [
+      'gpt-4o',
+      'gpt-6.1-sol',
+      'gpt-6-astra',
+      'gpt-6.1-terra',
+      'gpt-6-luna',
+    ]);
   });
 
   test('provider change migrates to provider default model', () => {
@@ -110,7 +129,7 @@ describe('frontend provider/model catalogue hardening', () => {
       modelId: 'openai/gpt-oss-20b',
     });
     assert.equal(migrated.providerId, 'deepseek');
-    assert.equal(migrated.modelId, 'deepseek-v4-flash');
+    assert.equal(migrated.modelId, 'deepseek-flash');
   });
 
   test('migrates invalid provider ids to xai:grok-4.5', () => {
@@ -155,18 +174,80 @@ describe('frontend provider/model catalogue hardening', () => {
     });
   });
 
-  test('anthropic stays backend-supported but hidden from frontend selection', () => {
+  test('Anthropic is selectable and defaults to claude-sonnet-5-5', () => {
     const selectableProviderIds = getSelectableFrontendProviderEntries().map(
       (provider) => provider.providerId,
     );
-    assert.equal(selectableProviderIds.includes('anthropic'), false);
+    assert.equal(selectableProviderIds.includes('anthropic'), true);
+    assert.deepEqual(catalogueModelIds('anthropic'), [
+      'claude-opus-5-5',
+      'claude-sonnet-5-5',
+      'claude-fable-5-1',
+      'claude-haiku-5-5',
+    ]);
 
     const anthropicSelection = resolveFrontendProviderModelSelection({
       providerId: 'anthropic',
       modelId: 'any-anthropic-model',
     });
-    assert.equal(anthropicSelection.providerId, 'xai');
-    assert.equal(anthropicSelection.modelId, 'grok-4.5');
+    assert.equal(anthropicSelection.providerId, 'anthropic');
+    assert.equal(anthropicSelection.modelId, 'claude-sonnet-5-5');
+    assert.equal(anthropicSelection.optionValue, 'anthropic:claude-sonnet-5-5');
+  });
+
+  test('hides deepseek-v4-flash and moves a saved selection to deepseek-flash', () => {
+    assert.equal(catalogueModelIds('deepseek').includes('deepseek-v4-flash'), false);
+
+    const deepseek = FRONTEND_PROVIDER_MODEL_CATALOGUE_ENTRIES.find(
+      (entry) => entry.providerId === 'deepseek',
+    );
+    const hidden = deepseek?.models.find((model) => model.modelId === 'deepseek-v4-flash');
+    assert.ok(hidden);
+    assert.equal(hidden.enabled, true);
+    assert.equal(hidden.selectable, false);
+    assert.equal(deepseek?.defaultModelId, 'deepseek-flash');
+
+    const migrated = resolveFrontendProviderModelSelection({
+      providerId: 'deepseek',
+      modelId: 'deepseek-v4-flash',
+    });
+    assert.equal(migrated.providerId, 'deepseek');
+    assert.equal(migrated.modelId, 'deepseek-flash');
+    assert.equal(migrated.optionValue, 'deepseek:deepseek-flash');
+
+    const fromSavedOption = resolveFrontendProviderModelSelection({
+      optionValue: 'deepseek:deepseek-v4-flash',
+    });
+    assert.equal(fromSavedOption.providerId, 'deepseek');
+    assert.equal(fromSavedOption.modelId, 'deepseek-flash');
+  });
+
+  test('all three message files label every frontend model id', () => {
+    const localeLabels = [enMessages.ai, zhTwMessages.ai, zhCnMessages.ai].map(
+      (aiMessages) => aiMessages.modelOptionLabels as Record<string, Record<string, string>>,
+    );
+
+    function labelKeys(labels: Record<string, Record<string, string>>): string[] {
+      return Object.keys(labels)
+        .sort()
+        .flatMap((providerId) =>
+          Object.keys(labels[providerId] ?? {})
+            .sort()
+            .map((modelId) => `${providerId}:${modelId}`),
+        );
+    }
+
+    assert.deepEqual(labelKeys(localeLabels[1]), labelKeys(localeLabels[0]));
+    assert.deepEqual(labelKeys(localeLabels[2]), labelKeys(localeLabels[0]));
+
+    for (const provider of FRONTEND_PROVIDER_MODEL_CATALOGUE_ENTRIES) {
+      for (const model of provider.models) {
+        assert.equal(model.labelKey, model.modelId);
+        for (const labels of localeLabels) {
+          assert.equal(labels[provider.providerId]?.[model.modelId], model.modelId);
+        }
+      }
+    }
   });
 
   test('translation keys stay in parity across en, zh-TW, and zh-CN', () => {

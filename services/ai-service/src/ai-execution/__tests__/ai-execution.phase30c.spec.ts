@@ -330,7 +330,7 @@ describe('AIExecutionService Phase 30C Multi-Provider Neutrality', () => {
       // Verify DeepSeek adapter was selected
       expect(getAdapterSpy).toHaveBeenCalledWith(
         'deepseek',
-        'deepseek-v4-flash',
+        'deepseek-flash',
       );
       const adapter = getAdapterSpy.mock.results[0].value;
       expect(adapter.constructor.name).toBe('DeepSeekAdapter');

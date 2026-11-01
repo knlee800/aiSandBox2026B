@@ -48,6 +48,13 @@ const FRONTEND_PROVIDER_MODEL_CATALOGUE: readonly FrontendProviderModelCatalogue
         selectable: true,
       },
       {
+        providerId: 'xai',
+        modelId: 'grok-4.7',
+        labelKey: 'grok-4.7',
+        enabled: true,
+        selectable: true,
+      },
+      {
         // PRIVATE-BETA-BLOCKER-03C: retain the identifier for historical
         // execution metadata; hide it from new private-beta Builder selection.
         providerId: 'xai',
@@ -84,14 +91,14 @@ const FRONTEND_PROVIDER_MODEL_CATALOGUE: readonly FrontendProviderModelCatalogue
   {
     providerId: 'deepseek',
     labelKey: 'deepseek',
-    defaultModelId: 'deepseek-v4-flash',
+    defaultModelId: 'deepseek-flash',
     enabled: true,
     selectable: true,
     models: [
       {
         providerId: 'deepseek',
-        modelId: 'deepseek-v4-flash',
-        labelKey: 'deepseek-v4-flash',
+        modelId: 'deepseek-flash',
+        labelKey: 'deepseek-flash',
         enabled: true,
         selectable: true,
       },
@@ -101,6 +108,15 @@ const FRONTEND_PROVIDER_MODEL_CATALOGUE: readonly FrontendProviderModelCatalogue
         labelKey: 'deepseek-v4-pro',
         enabled: true,
         selectable: true,
+      },
+      {
+        // HARNESS-PROVIDERS-01: retain the identifier for historical
+        // execution metadata; hide it from new private-beta Builder selection.
+        providerId: 'deepseek',
+        modelId: 'deepseek-v4-flash',
+        labelKey: 'deepseek-v4-flash',
+        enabled: true,
+        selectable: false,
       },
     ],
   },
@@ -118,16 +134,72 @@ const FRONTEND_PROVIDER_MODEL_CATALOGUE: readonly FrontendProviderModelCatalogue
         enabled: true,
         selectable: true,
       },
+      {
+        providerId: 'openai',
+        modelId: 'gpt-6.1-sol',
+        labelKey: 'gpt-6.1-sol',
+        enabled: true,
+        selectable: true,
+      },
+      {
+        providerId: 'openai',
+        modelId: 'gpt-6-astra',
+        labelKey: 'gpt-6-astra',
+        enabled: true,
+        selectable: true,
+      },
+      {
+        providerId: 'openai',
+        modelId: 'gpt-6.1-terra',
+        labelKey: 'gpt-6.1-terra',
+        enabled: true,
+        selectable: true,
+      },
+      {
+        providerId: 'openai',
+        modelId: 'gpt-6-luna',
+        labelKey: 'gpt-6-luna',
+        enabled: true,
+        selectable: true,
+      },
     ],
   },
   {
-    // Anthropic remains backend-supported but is hidden in the selector until a safe configured model id is exposed.
     providerId: 'anthropic',
     labelKey: 'anthropic',
-    defaultModelId: null,
+    defaultModelId: 'claude-sonnet-5-5',
     enabled: true,
-    selectable: false,
-    models: [],
+    selectable: true,
+    models: [
+      {
+        providerId: 'anthropic',
+        modelId: 'claude-opus-5-5',
+        labelKey: 'claude-opus-5-5',
+        enabled: true,
+        selectable: true,
+      },
+      {
+        providerId: 'anthropic',
+        modelId: 'claude-sonnet-5-5',
+        labelKey: 'claude-sonnet-5-5',
+        enabled: true,
+        selectable: true,
+      },
+      {
+        providerId: 'anthropic',
+        modelId: 'claude-fable-5-1',
+        labelKey: 'claude-fable-5-1',
+        enabled: true,
+        selectable: true,
+      },
+      {
+        providerId: 'anthropic',
+        modelId: 'claude-haiku-5-5',
+        labelKey: 'claude-haiku-5-5',
+        enabled: true,
+        selectable: true,
+      },
+    ],
   },
   {
     // Preserve internal stub behavior without showing it as a normal private-beta user choice.

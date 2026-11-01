@@ -17,13 +17,19 @@ describe('ProviderModelCatalogue (AI Service)', () => {
       expect(selection.model).toBe('grok-4.5');
     });
 
-    it('accepts grok-4.5 and rejects grok-4.20 for new execution', () => {
+    it('accepts grok-4.5 and grok-4.7 and rejects grok-4.20 for new execution', () => {
       const modelA = resolveProviderModelSelection({
         provider: 'xai',
         model: 'grok-4.5',
       });
+      const modelB = resolveProviderModelSelection({
+        provider: 'xai',
+        model: 'grok-4.7',
+      });
 
       expect(modelA.model).toBe('grok-4.5');
+      expect(modelB.model).toBe('grok-4.7');
+      expect(XAI_RECOGNIZED_MODELS).toContain('grok-4.7');
       expect(XAI_RECOGNIZED_MODELS).toContain('grok-4.20');
       expect(() =>
         resolveProviderModelSelection({
@@ -103,18 +109,38 @@ describe('ProviderModelCatalogue (AI Service)', () => {
   });
 
   describe('DeepSeek', () => {
-    it('uses deepseek-v4-flash as default and accepts deepseek-v4-pro', () => {
+    it('uses deepseek-flash as default and still accepts deepseek-v4-flash and deepseek-v4-pro', () => {
       const defaultSelection = resolveProviderModelSelection({
         provider: 'deepseek',
         model: undefined,
+      });
+      const flashSelection = resolveProviderModelSelection({
+        provider: 'deepseek',
+        model: 'deepseek-flash',
+      });
+      const legacyFlashSelection = resolveProviderModelSelection({
+        provider: 'deepseek',
+        model: 'deepseek-v4-flash',
       });
       const proSelection = resolveProviderModelSelection({
         provider: 'deepseek',
         model: 'deepseek-v4-pro',
       });
 
-      expect(defaultSelection.model).toBe('deepseek-v4-flash');
+      expect(getStaticDefaultModel('deepseek')).toBe('deepseek-flash');
+      expect(defaultSelection.model).toBe('deepseek-flash');
+      expect(flashSelection.model).toBe('deepseek-flash');
+      expect(legacyFlashSelection.model).toBe('deepseek-v4-flash');
       expect(proSelection.model).toBe('deepseek-v4-pro');
+    });
+
+    it('rejects an unknown DeepSeek model', () => {
+      expect(() =>
+        resolveProviderModelSelection({
+          provider: 'deepseek',
+          model: 'unknown-model',
+        }),
+      ).toThrow(ProviderModelValidationError);
     });
 
     it('rejects removed deepseek-chat and deepseek-reasoner', () => {
@@ -143,6 +169,27 @@ describe('ProviderModelCatalogue (AI Service)', () => {
       expect(getStaticDefaultModel('openai')).toBe('gpt-4o');
       expect(selection.model).toBe('gpt-4o');
     });
+
+    it.each(['gpt-6.1-sol', 'gpt-6-astra', 'gpt-6.1-terra', 'gpt-6-luna'])(
+      'accepts %s',
+      (model) => {
+        const selection = resolveProviderModelSelection({
+          provider: 'openai',
+          model,
+        });
+
+        expect(selection.model).toBe(model);
+      },
+    );
+
+    it('rejects an unknown OpenAI model', () => {
+      expect(() =>
+        resolveProviderModelSelection({
+          provider: 'openai',
+          model: 'unknown-model',
+        }),
+      ).toThrow(ProviderModelValidationError);
+    });
   });
 
   describe('Anthropic (FR-04A compatibility)', () => {
@@ -154,9 +201,49 @@ describe('ProviderModelCatalogue (AI Service)', () => {
       });
 
       expect(selection.model).toBe('claude-test-model');
+      expect(selection.defaultModelSource).toBe('environment');
     });
 
-    it('rejects request model that differs from configured ANTHROPIC_MODEL', () => {
+    it.each([
+      'claude-opus-5-5',
+      'claude-sonnet-5-5',
+      'claude-fable-5-1',
+      'claude-haiku-5-5',
+    ])('accepts listed model %s without ANTHROPIC_MODEL', (model) => {
+      const selection = resolveProviderModelSelection({
+        provider: 'anthropic',
+        model,
+        anthropicModel: undefined,
+      });
+
+      expect(selection.model).toBe(model);
+      expect(selection.defaultModelSource).toBe('source');
+      expect(selection.supportsToolUse).toBe(true);
+    });
+
+    it('reports source when a requested listed model equals ANTHROPIC_MODEL', () => {
+      const selection = resolveProviderModelSelection({
+        provider: 'anthropic',
+        model: 'claude-sonnet-5-5',
+        anthropicModel: 'claude-sonnet-5-5',
+      });
+
+      expect(selection.model).toBe('claude-sonnet-5-5');
+      expect(selection.defaultModelSource).toBe('source');
+    });
+
+    it('accepts a model equal to ANTHROPIC_MODEL when it is not on the list', () => {
+      const selection = resolveProviderModelSelection({
+        provider: 'anthropic',
+        model: 'claude-env-only',
+        anthropicModel: 'claude-env-only',
+      });
+
+      expect(selection.model).toBe('claude-env-only');
+      expect(selection.defaultModelSource).toBe('environment');
+    });
+
+    it('rejects an unlisted model that does not equal ANTHROPIC_MODEL', () => {
       expect(() =>
         resolveProviderModelSelection({
           provider: 'anthropic',
@@ -164,6 +251,19 @@ describe('ProviderModelCatalogue (AI Service)', () => {
           anthropicModel: 'claude-configured',
         }),
       ).toThrow(ProviderModelValidationError);
+
+      try {
+        resolveProviderModelSelection({
+          provider: 'anthropic',
+          model: 'claude-other',
+          anthropicModel: undefined,
+        });
+        fail('expected an unlisted Anthropic model to be rejected');
+      } catch (error) {
+        expect(error).toBeInstanceOf(ProviderModelValidationError);
+        expect((error as ProviderModelValidationError).code).toBe('invalid_model');
+        expect((error as ProviderModelValidationError).model).toBe('claude-other');
+      }
     });
 
     it('fails when ANTHROPIC_MODEL configuration is missing/empty', () => {
@@ -205,6 +305,33 @@ describe('ProviderModelCatalogue (AI Service)', () => {
           model: undefined,
         }),
       ).toThrow(ProviderModelValidationError);
+    });
+  });
+
+  describe('supportsToolUse', () => {
+    it('is true for xai, deepseek, openai and anthropic, and false for groq', () => {
+      expect(
+        resolveProviderModelSelection({ provider: 'xai', model: undefined })
+          .supportsToolUse,
+      ).toBe(true);
+      expect(
+        resolveProviderModelSelection({ provider: 'deepseek', model: undefined })
+          .supportsToolUse,
+      ).toBe(true);
+      expect(
+        resolveProviderModelSelection({ provider: 'openai', model: undefined })
+          .supportsToolUse,
+      ).toBe(true);
+      expect(
+        resolveProviderModelSelection({
+          provider: 'anthropic',
+          model: 'claude-haiku-5-5',
+        }).supportsToolUse,
+      ).toBe(true);
+      expect(
+        resolveProviderModelSelection({ provider: 'groq', model: undefined })
+          .supportsToolUse,
+      ).toBe(false);
     });
   });
 

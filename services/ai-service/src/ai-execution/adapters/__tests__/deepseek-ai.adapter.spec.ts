@@ -14,7 +14,7 @@ describe('DeepSeekAdapter', () => {
     it('should instantiate with valid API key', () => {
       const adapter = new DeepSeekAdapter('sk-test-key-123');
       expect(adapter).toBeInstanceOf(DeepSeekAdapter);
-      expect(adapter.model).toBe('deepseek-v4-flash');
+      expect(adapter.model).toBe('deepseek-flash');
     });
 
     it('should throw error when API key is undefined', () => {
@@ -37,7 +37,7 @@ describe('DeepSeekAdapter', () => {
 
     it('should use default model when not specified', () => {
       const adapter = new DeepSeekAdapter('sk-test-key-123');
-      expect(adapter.model).toBe('deepseek-v4-flash');
+      expect(adapter.model).toBe('deepseek-flash');
     });
 
     it('should use custom model when specified', () => {
@@ -106,7 +106,7 @@ describe('DeepSeekAdapter', () => {
 
         expect(mockClient.chat.completions.create).toHaveBeenCalledWith(
           {
-            model: 'deepseek-v4-flash',
+            model: 'deepseek-flash',
             max_tokens: 4096,
             temperature: 1.0,
             messages: [
@@ -141,7 +141,7 @@ describe('DeepSeekAdapter', () => {
 
         expect(mockClient.chat.completions.create).toHaveBeenCalledWith(
           {
-            model: 'deepseek-v4-flash',
+            model: 'deepseek-flash',
             max_tokens: 4096,
             temperature: 1.0,
             messages: [
@@ -265,7 +265,7 @@ describe('DeepSeekAdapter', () => {
 
         const result = await adapter.execute(request);
 
-        expect(result.model).toBe('deepseek-v4-flash');
+        expect(result.model).toBe('deepseek-flash');
       });
     });
 
@@ -718,7 +718,7 @@ describe('DeepSeekAdapter', () => {
         expect(second).not.toHaveProperty('providerState');
         const secondBody = mockClient.chat.completions.create.mock.calls[1][0];
         expect(secondBody).toEqual({
-          model: 'deepseek-v4-flash',
+          model: 'deepseek-flash',
           max_tokens: 16000,
           tool_choice: 'auto',
           tools: openAITools,
@@ -1028,7 +1028,7 @@ describe('DeepSeekAdapter', () => {
 
         expect(mockClient.chat.completions.create).toHaveBeenCalledWith(
           {
-            model: 'deepseek-v4-flash',
+            model: 'deepseek-flash',
             max_tokens: 4096,
             temperature: 1.0,
             messages: [

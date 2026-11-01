@@ -377,6 +377,7 @@
     "modelOptionLabels": {
       "xai": {
         "grok-4.5": "grok-4.5",
+        "grok-4.7": "grok-4.7",
         "grok-4.20": "grok-4.20"
       },
       "groq": {
@@ -384,13 +385,23 @@
         "openai/gpt-oss-20b": "openai/gpt-oss-20b"
       },
       "deepseek": {
+        "deepseek-flash": "deepseek-flash",
         "deepseek-v4-flash": "deepseek-v4-flash",
         "deepseek-v4-pro": "deepseek-v4-pro"
       },
       "openai": {
-        "gpt-4o": "gpt-4o"
+        "gpt-4o": "gpt-4o",
+        "gpt-6.1-sol": "gpt-6.1-sol",
+        "gpt-6-astra": "gpt-6-astra",
+        "gpt-6.1-terra": "gpt-6.1-terra",
+        "gpt-6-luna": "gpt-6-luna"
       },
-      "anthropic": {},
+      "anthropic": {
+        "claude-opus-5-5": "claude-opus-5-5",
+        "claude-sonnet-5-5": "claude-sonnet-5-5",
+        "claude-fable-5-1": "claude-fable-5-1",
+        "claude-haiku-5-5": "claude-haiku-5-5"
+      },
       "stub": {
         "stub": "stub"
       }

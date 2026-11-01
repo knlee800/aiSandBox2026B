@@ -22,6 +22,7 @@ interface AnthropicProviderModelCatalogueEntry {
   provider: 'anthropic';
   defaultModelSource: 'environment';
   environmentVariable: 'ANTHROPIC_MODEL';
+  allowedModels: readonly string[];
   supportsToolUse: boolean;
 }
 
@@ -47,11 +48,17 @@ export class ProviderModelValidationError extends Error {
   }
 }
 
-export const XAI_RECOGNIZED_MODELS = ['grok-4.5', 'grok-4.20'] as const;
-const XAI_ALLOWED_MODELS = ['grok-4.5'] as const;
+export const XAI_RECOGNIZED_MODELS = ['grok-4.5', 'grok-4.20', 'grok-4.7'] as const;
+const XAI_ALLOWED_MODELS = ['grok-4.5', 'grok-4.7'] as const;
 const GROQ_ALLOWED_MODELS = ['openai/gpt-oss-120b', 'openai/gpt-oss-20b'] as const;
-const DEEPSEEK_ALLOWED_MODELS = ['deepseek-v4-flash', 'deepseek-v4-pro'] as const;
-const OPENAI_ALLOWED_MODELS = ['gpt-4o'] as const;
+const DEEPSEEK_ALLOWED_MODELS = ['deepseek-flash', 'deepseek-v4-pro', 'deepseek-v4-flash'] as const;
+const OPENAI_ALLOWED_MODELS = ['gpt-4o', 'gpt-6.1-sol', 'gpt-6-astra', 'gpt-6.1-terra', 'gpt-6-luna'] as const;
+const ANTHROPIC_ALLOWED_MODELS = [
+  'claude-opus-5-5',
+  'claude-sonnet-5-5',
+  'claude-fable-5-1',
+  'claude-haiku-5-5',
+] as const;
 const STUB_ALLOWED_MODELS = ['stub'] as const;
 const TEST_HARNESS_STUB_ALLOWED_MODELS = ['test-harness-stub'] as const;
 
@@ -68,6 +75,7 @@ const CATALOGUE_ENTRIES: readonly ProviderModelCatalogueEntry[] = [
     provider: 'anthropic',
     defaultModelSource: 'environment',
     environmentVariable: 'ANTHROPIC_MODEL',
+    allowedModels: ANTHROPIC_ALLOWED_MODELS,
     supportsToolUse: true,
   },
   {
@@ -91,7 +99,7 @@ const CATALOGUE_ENTRIES: readonly ProviderModelCatalogueEntry[] = [
     defaultModelSource: 'source',
     defaultModel: XAI_ALLOWED_MODELS[0],
     allowedModels: XAI_ALLOWED_MODELS,
-    supportsToolUse: false,
+    supportsToolUse: true,
     enforceAllowedModels: true,
   },
   {
@@ -99,7 +107,7 @@ const CATALOGUE_ENTRIES: readonly ProviderModelCatalogueEntry[] = [
     defaultModelSource: 'source',
     defaultModel: DEEPSEEK_ALLOWED_MODELS[0],
     allowedModels: DEEPSEEK_ALLOWED_MODELS,
-    supportsToolUse: false,
+    supportsToolUse: true,
     enforceAllowedModels: true,
   },
   {
@@ -172,23 +180,39 @@ export function resolveProviderModelSelection(input: {
 
   if (entry.defaultModelSource === 'environment') {
     const configuredAnthropicModel = normalizeModelInput(input.anthropicModel);
-    if (!configuredAnthropicModel) {
-      throw new ProviderModelValidationError(
-        'missing_required_configuration',
-        'ANTHROPIC_MODEL environment variable is required when provider is "anthropic"',
-        providerToUse,
-      );
-    }
 
-    if (
-      normalizedModelInput &&
-      normalizedModelInput !== configuredAnthropicModel
-    ) {
+    if (normalizedModelInput) {
+      if (entry.allowedModels.includes(normalizedModelInput)) {
+        return {
+          provider: providerToUse,
+          model: normalizedModelInput,
+          supportsToolUse: entry.supportsToolUse,
+          defaultModelSource: 'source',
+        };
+      }
+
+      if (normalizedModelInput === configuredAnthropicModel) {
+        return {
+          provider: providerToUse,
+          model: configuredAnthropicModel,
+          supportsToolUse: entry.supportsToolUse,
+          defaultModelSource: 'environment',
+        };
+      }
+
       throw new ProviderModelValidationError(
         'invalid_model',
         `Model "${normalizedModelInput}" is not valid for provider "${providerToUse}".`,
         providerToUse,
         normalizedModelInput,
+      );
+    }
+
+    if (!configuredAnthropicModel) {
+      throw new ProviderModelValidationError(
+        'missing_required_configuration',
+        'ANTHROPIC_MODEL environment variable is required when provider is "anthropic"',
+        providerToUse,
       );
     }
 

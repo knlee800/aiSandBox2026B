@@ -5,6 +5,8 @@ import { AIExecutionService } from '../ai-execution.service';
 import { AIExecutionRequest, AIExecutionResult } from '../types';
 import { XAIAdapter } from '../adapters/xai-ai.adapter';
 import { AnthropicAdapter } from '../adapters/anthropic-ai.adapter';
+import { OpenAIAdapter } from '../adapters/openai-ai.adapter';
+import { DeepSeekAdapter } from '../adapters/deepseek-ai.adapter';
 
 describe('AIExecutionService provider/model validation', () => {
   let service: AIExecutionService;
@@ -133,6 +135,188 @@ describe('AIExecutionService provider/model validation', () => {
     );
 
     expect(executeSpy).not.toHaveBeenCalled();
+  });
+
+  it('accepts each newly allowed model and passes it to the adapter', async () => {
+    process.env.XAI_API_KEY = 'xai-test-key';
+    process.env.OPENAI_API_KEY = 'openai-test-key';
+    process.env.DEEPSEEK_API_KEY = 'deepseek-test-key';
+    process.env.ANTHROPIC_API_KEY = 'anthropic-test-key';
+
+    const adapterResult: AIExecutionResult = {
+      output: 'ok',
+      tokensUsed: 1,
+      model: 'accepted',
+    };
+    const xaiExecute = jest
+      .spyOn(XAIAdapter.prototype, 'execute')
+      .mockResolvedValue(adapterResult);
+    const openaiExecute = jest
+      .spyOn(OpenAIAdapter.prototype, 'execute')
+      .mockResolvedValue(adapterResult);
+    const deepseekExecute = jest
+      .spyOn(DeepSeekAdapter.prototype, 'execute')
+      .mockResolvedValue(adapterResult);
+    const anthropicExecute = jest
+      .spyOn(AnthropicAdapter.prototype, 'execute')
+      .mockResolvedValue(adapterResult);
+
+    const accepted: Array<[AIExecutionRequest['provider'], string]> = [
+      ['xai', 'grok-4.7'],
+      ['openai', 'gpt-6.1-sol'],
+      ['openai', 'gpt-6-astra'],
+      ['openai', 'gpt-6.1-terra'],
+      ['openai', 'gpt-6-luna'],
+      ['deepseek', 'deepseek-flash'],
+      ['deepseek', 'deepseek-v4-pro'],
+      ['deepseek', 'deepseek-v4-flash'],
+      ['anthropic', 'claude-opus-5-5'],
+      ['anthropic', 'claude-sonnet-5-5'],
+      ['anthropic', 'claude-fable-5-1'],
+      ['anthropic', 'claude-haiku-5-5'],
+    ];
+
+    for (const [provider, model] of accepted) {
+      await service.execute({
+        ...baseRequest,
+        provider,
+        model,
+      });
+    }
+
+    expect(xaiExecute).toHaveBeenCalledWith(
+      expect.objectContaining({ provider: 'xai', model: 'grok-4.7' }),
+    );
+    for (const model of ['gpt-6.1-sol', 'gpt-6-astra', 'gpt-6.1-terra', 'gpt-6-luna']) {
+      expect(openaiExecute).toHaveBeenCalledWith(
+        expect.objectContaining({ provider: 'openai', model }),
+      );
+    }
+    for (const model of ['deepseek-flash', 'deepseek-v4-pro', 'deepseek-v4-flash']) {
+      expect(deepseekExecute).toHaveBeenCalledWith(
+        expect.objectContaining({ provider: 'deepseek', model }),
+      );
+    }
+    for (const model of [
+      'claude-opus-5-5',
+      'claude-sonnet-5-5',
+      'claude-fable-5-1',
+      'claude-haiku-5-5',
+    ]) {
+      expect(anthropicExecute).toHaveBeenCalledWith(
+        expect.objectContaining({ provider: 'anthropic', model }),
+      );
+    }
+  });
+
+  it('resolves omitted DeepSeek model to deepseek-flash and still accepts deepseek-v4-flash', async () => {
+    process.env.DEEPSEEK_API_KEY = 'deepseek-test-key';
+    const adapterResult: AIExecutionResult = {
+      output: 'ok',
+      tokensUsed: 1,
+      model: 'deepseek-flash',
+    };
+    const executeSpy = jest
+      .spyOn(DeepSeekAdapter.prototype, 'execute')
+      .mockResolvedValue(adapterResult);
+
+    await service.execute({
+      ...baseRequest,
+      provider: 'deepseek',
+      model: undefined,
+    });
+    await service.execute({
+      ...baseRequest,
+      provider: 'deepseek',
+      model: 'deepseek-v4-flash',
+    });
+
+    expect(executeSpy).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ provider: 'deepseek', model: 'deepseek-flash' }),
+    );
+    expect(executeSpy).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        provider: 'deepseek',
+        model: 'deepseek-v4-flash',
+      }),
+    );
+  });
+
+  it('accepts a listed Anthropic model without ANTHROPIC_MODEL', async () => {
+    process.env.ANTHROPIC_API_KEY = 'anthropic-test-key';
+    const adapterResult: AIExecutionResult = {
+      output: 'ok',
+      tokensUsed: 1,
+      model: 'claude-sonnet-5-5',
+    };
+    const executeSpy = jest
+      .spyOn(AnthropicAdapter.prototype, 'execute')
+      .mockResolvedValue(adapterResult);
+
+    await service.execute({
+      ...baseRequest,
+      provider: 'anthropic',
+      model: 'claude-sonnet-5-5',
+    });
+
+    expect(executeSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        provider: 'anthropic',
+        model: 'claude-sonnet-5-5',
+      }),
+    );
+  });
+
+  it('accepts an Anthropic model equal to ANTHROPIC_MODEL when it is not on the list', async () => {
+    process.env.ANTHROPIC_API_KEY = 'anthropic-test-key';
+    process.env.ANTHROPIC_MODEL = 'claude-env-only';
+    const adapterResult: AIExecutionResult = {
+      output: 'ok',
+      tokensUsed: 1,
+      model: 'claude-env-only',
+    };
+    const executeSpy = jest
+      .spyOn(AnthropicAdapter.prototype, 'execute')
+      .mockResolvedValue(adapterResult);
+
+    await service.execute({
+      ...baseRequest,
+      provider: 'anthropic',
+      model: 'claude-env-only',
+    });
+
+    expect(executeSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        provider: 'anthropic',
+        model: 'claude-env-only',
+      }),
+    );
+  });
+
+  it('rejects an unlisted Anthropic model and an unknown model before adapter execution', async () => {
+    const anthropicExecute = jest.spyOn(AnthropicAdapter.prototype, 'execute');
+    const openaiExecute = jest.spyOn(OpenAIAdapter.prototype, 'execute');
+
+    await expect(
+      service.execute({
+        ...baseRequest,
+        provider: 'anthropic',
+        model: 'claude-other',
+      }),
+    ).rejects.toThrow('Model "claude-other" is not valid for provider "anthropic".');
+
+    await expect(
+      service.execute({
+        ...baseRequest,
+        provider: 'openai',
+        model: 'unknown-model',
+      }),
+    ).rejects.toThrow('Model "unknown-model" is not valid for provider "openai".');
+
+    expect(anthropicExecute).not.toHaveBeenCalled();
+    expect(openaiExecute).not.toHaveBeenCalled();
   });
 
   it('rejects cross-provider model mismatch before adapter execution', async () => {
