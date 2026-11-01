@@ -82592,7 +82592,7 @@ taskId=HARNESS-PROVIDERS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-01. Registered and admitted to Lane 1; Step 2 (stage-start) not started. mutexes=AI-SERVICE, GATEWAY, FRONTEND, PACKAGE. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-01. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-01. Step 2 stage-start complete: docs/HARNESS-PROVIDERS-01-STAGE-START.md. Step 3 (implementation, four slices) not started. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-01. Registered and admitted to Lane 1; Step 2 (stage-start) not started. mutexes=AI-SERVICE, GATEWAY, FRONTEND, PACKAGE. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-01. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
 **Task ID:** HARNESS-PROVIDERS-01
 **Title:** Bring xAI, OpenAI, Anthropic and DeepSeek to current models and working harness tool use
 **Workstream:** AGENT (taxonomy only; zero admission weight)
