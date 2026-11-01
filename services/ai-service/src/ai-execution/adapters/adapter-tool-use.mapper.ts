@@ -279,6 +279,7 @@ export interface OpenAINativeAssistantTranscriptMessage {
   readonly role: 'assistant';
   readonly content: string | null;
   readonly tool_calls?: readonly OpenAINativeTranscriptToolCall[];
+  readonly reasoning_content?: string;
 }
 
 export interface OpenAINativeToolTranscriptMessage {
@@ -357,6 +358,16 @@ function correlatableToolCalls(
   );
 }
 
+function openAIDeepSeekReasoningContent(providerState: unknown): string | undefined {
+  if (!isRecord(providerState) || providerState.kind !== 'deepseek-reasoning') {
+    return undefined;
+  }
+  if (typeof providerState.reasoningContent !== 'string') {
+    return undefined;
+  }
+  return providerState.reasoningContent;
+}
+
 export function mapCanonicalTranscriptToOpenAIMessages(
   transcript: readonly AIAdapterCanonicalTranscriptTurn[] = [],
 ): readonly OpenAINativeTranscriptMessage[] {
@@ -374,10 +385,15 @@ export function mapCanonicalTranscriptToOpenAIMessages(
       }));
       const content =
         turn.content.trim().length > 0 ? turn.content : toolCalls.length > 0 ? null : '';
+      const reasoningContent = openAIDeepSeekReasoningContent(turn.providerState);
+      const reasoningField =
+        reasoningContent !== undefined
+          ? { reasoning_content: reasoningContent }
+          : {};
       messages.push(
         toolCalls.length > 0
-          ? { role: 'assistant', content, tool_calls: toolCalls }
-          : { role: 'assistant', content: turn.content },
+          ? { role: 'assistant', content, tool_calls: toolCalls, ...reasoningField }
+          : { role: 'assistant', content: turn.content, ...reasoningField },
       );
       continue;
     }

@@ -10,6 +10,33 @@ import OpenAI from 'openai';
 import { AIAdapter } from './ai-adapter.interface';
 import { AIExecutionRequest, AIExecutionResult } from '../types';
 import { getStaticDefaultModel } from '../provider-model.catalogue';
+import type {
+  AIAdapterCanonicalToolCall,
+  AIAdapterToolCallMetadata,
+  AIAdapterToolUseFinishReason,
+  AIAdapterToolUseRequestOptions,
+  AIAdapterToolUseResult,
+} from './adapter-tool-use.contracts';
+import {
+  mapAdapterToolDeclarationsToOpenAITools,
+  mapAgentHarnessToolDefinitionsToAdapterToolDeclarations,
+  mapCanonicalTranscriptToOpenAIMessages,
+  parseToolArgumentsToObject,
+} from './adapter-tool-use.mapper';
+
+interface DeepSeekChatToolCall {
+  readonly id?: unknown;
+  readonly function?: {
+    readonly name?: unknown;
+    readonly arguments?: unknown;
+  };
+}
+
+interface DeepSeekChatCompletionMessage {
+  readonly content?: unknown;
+  readonly tool_calls?: readonly DeepSeekChatToolCall[];
+  readonly reasoning_content?: unknown;
+}
 
 /**
  * DeepSeekAdapter
@@ -47,6 +74,7 @@ export class DeepSeekAdapter implements AIAdapter {
   private readonly defaultBaseURL = 'https://api.deepseek.com';
 
   readonly model: string;
+  readonly supportsToolUse = true;
 
   /**
    * Construct DeepSeekAdapter
@@ -149,6 +177,77 @@ export class DeepSeekAdapter implements AIAdapter {
     }
   }
 
+  async executeWithTools(
+    request: AIExecutionRequest,
+    options?: AIAdapterToolUseRequestOptions,
+  ): Promise<AIAdapterToolUseResult> {
+    this.logger.debug(
+      `Executing DeepSeek tool-use request for session=${request.sessionId}, conversation=${request.conversationId}`,
+    );
+
+    try {
+      const executionModel =
+        typeof request.model === 'string' && request.model.trim().length > 0
+          ? request.model.trim()
+          : this.model;
+      const normalizedSystemPrompt =
+        typeof request.systemPrompt === 'string'
+          ? request.systemPrompt.trim()
+          : '';
+      const transcriptMessages = mapCanonicalTranscriptToOpenAIMessages(
+        options?.transcript,
+      );
+      // ChatCompletionMessageParam has no reasoning_content. This assertion
+      // only satisfies the SDK; the assistant objects still carry that field.
+      const messages = [
+        ...(normalizedSystemPrompt.length > 0
+          ? [
+              {
+                role: 'system' as const,
+                content: normalizedSystemPrompt,
+              },
+            ]
+          : []),
+        {
+          role: 'user' as const,
+          content: request.prompt,
+        },
+        ...transcriptMessages,
+      ] as OpenAI.Chat.ChatCompletionCreateParams['messages'];
+      const openaiTools = mapAdapterToolDeclarationsToOpenAITools(
+        mapAgentHarnessToolDefinitionsToAdapterToolDeclarations(options?.tools),
+      );
+
+      // Thinking stays at the provider default: do not send a `thinking` parameter.
+      const deepseekRequest: OpenAI.Chat.ChatCompletionCreateParams = {
+        model: executionModel,
+        max_tokens: 16000,
+        messages,
+      };
+      if (openaiTools.length > 0) {
+        deepseekRequest.tools = openaiTools.map((tool) => ({
+          type: 'function' as const,
+          function: {
+            name: tool.function.name,
+            description: tool.function.description,
+            parameters: { ...tool.function.parameters },
+          },
+        }));
+        deepseekRequest.tool_choice = 'auto';
+      }
+
+      const createOptions = request.signal ? { signal: request.signal } : {};
+      const response = await this.client.chat.completions.create(
+        deepseekRequest,
+        createOptions,
+      );
+
+      return this.transformToolUseResponse(response, executionModel);
+    } catch (error) {
+      this.handleError(error, request);
+    }
+  }
+
   /**
    * Transform DeepSeek response to AIExecutionResult
    *
@@ -212,6 +311,161 @@ export class DeepSeekAdapter implements AIAdapter {
       tokensUsed,
       model,
     };
+  }
+
+  private transformToolUseResponse(
+    response: OpenAI.Chat.ChatCompletion,
+    fallbackModel: string,
+  ): AIAdapterToolUseResult {
+    if (!response.choices || response.choices.length === 0) {
+      this.logger.error('DeepSeek response missing choices field');
+      throw new InternalServerErrorException(
+        'Malformed DeepSeek response: missing choices',
+      );
+    }
+
+    const message = response.choices[0]
+      .message as DeepSeekChatCompletionMessage;
+    const output = typeof message.content === 'string' ? message.content : '';
+    const { toolCalls, canonicalToolCalls } = this.extractToolCalls(
+      message.tool_calls,
+    );
+
+    if (output.trim().length === 0 && canonicalToolCalls.length === 0) {
+      this.logger.error('DeepSeek response missing or empty content');
+      throw new InternalServerErrorException(
+        'Malformed DeepSeek response: missing content',
+      );
+    }
+
+    if (!response.usage || typeof response.usage.total_tokens !== 'number') {
+      this.logger.error('DeepSeek response missing usage field');
+      throw new InternalServerErrorException(
+        'Malformed DeepSeek response: missing usage',
+      );
+    }
+
+    if (response.usage.total_tokens < 0) {
+      this.logger.error('Invalid token count in DeepSeek response', {
+        total_tokens: response.usage.total_tokens,
+      });
+      throw new InternalServerErrorException(
+        'Malformed DeepSeek response: invalid token count',
+      );
+    }
+
+    const tokensUsed = response.usage.total_tokens;
+    const model = response.model || fallbackModel;
+    const finishReason = this.mapToolUseFinishReason(
+      response.choices[0].finish_reason,
+      canonicalToolCalls,
+    );
+    const reasoningContent =
+      typeof message.reasoning_content === 'string'
+        ? message.reasoning_content
+        : undefined;
+
+    this.logger.debug(
+      `DeepSeek tool-use response: output=${output.length} chars, tokens=${tokensUsed}, model=${model}`,
+    );
+
+    return {
+      output,
+      tokensUsed,
+      model,
+      finishReason,
+      toolCalls,
+      canonicalToolCalls,
+      ...(canonicalToolCalls.length > 0 && reasoningContent !== undefined
+        ? {
+            providerState: {
+              kind: 'deepseek-reasoning',
+              reasoningContent,
+            },
+          }
+        : {}),
+    };
+  }
+
+  private extractToolCalls(toolCalls: readonly DeepSeekChatToolCall[] | undefined): {
+    readonly toolCalls: readonly AIAdapterToolCallMetadata[];
+    readonly canonicalToolCalls: readonly AIAdapterCanonicalToolCall[];
+  } {
+    const canonicalToolCalls: AIAdapterCanonicalToolCall[] = [];
+    const metadata: AIAdapterToolCallMetadata[] = [];
+    if (!Array.isArray(toolCalls)) {
+      return { toolCalls: metadata, canonicalToolCalls };
+    }
+
+    for (const call of toolCalls) {
+      if (!call || typeof call !== 'object') {
+        continue;
+      }
+      const rawArguments = call.function?.arguments;
+      const parsed = parseToolArgumentsToObject(rawArguments);
+      const toolName =
+        typeof call.function?.name === 'string' ? call.function.name : '';
+      const usableCallId =
+        typeof call.id === 'string' && call.id.trim().length > 0
+          ? call.id
+          : undefined;
+      const providerKind = 'openai-tool_calls' as const;
+
+      if (!usableCallId) {
+        canonicalToolCalls.push({
+          status: 'missing_id',
+          toolName,
+          rawArguments,
+          providerKind,
+        });
+        continue;
+      }
+
+      if (parsed.ok === false) {
+        canonicalToolCalls.push({
+          status: 'malformed_arguments',
+          callId: usableCallId,
+          toolName,
+          rawArguments,
+          providerKind,
+          errorMessage: parsed.errorMessage,
+        });
+        continue;
+      }
+
+      canonicalToolCalls.push({
+        status: 'valid',
+        callId: usableCallId,
+        toolName,
+        arguments: parsed.value,
+        rawArguments,
+        providerKind,
+      });
+      metadata.push({
+        callId: usableCallId,
+        toolName,
+        arguments: parsed.value,
+        providerKind,
+      });
+    }
+
+    return { toolCalls: metadata, canonicalToolCalls };
+  }
+
+  private mapToolUseFinishReason(
+    finishReason: string | null | undefined,
+    toolCalls: readonly AIAdapterCanonicalToolCall[],
+  ): AIAdapterToolUseFinishReason {
+    if (toolCalls.length > 0 || finishReason === 'tool_calls') {
+      return 'tool_calls';
+    }
+    if (finishReason === 'stop') {
+      return 'stop';
+    }
+    if (finishReason === 'length') {
+      return 'max_tokens';
+    }
+    return 'unknown';
   }
 
   /**

@@ -660,6 +660,205 @@ describe('AGENT-PLATFORM-EXEC-01C3 canonical transcript contracts and mapper', (
     expect(JSON.stringify(messages)).not.toContain('secret-thinking-not-for-openai');
     expect(JSON.stringify(messages)).not.toContain('anthropic-content');
   });
+
+  it('adds deepseek reasoning_content unchanged on the matching assistant message', () => {
+    const firstReasoning = '  think before list_files\nwith "quotes"  ';
+    const laterReasoning = 'second-step reasoning\tunchanged';
+    const listCall: AIAdapterCanonicalTranscriptTurn = {
+      kind: 'assistant_tool_turn',
+      content: 'I will look those up.',
+      toolCalls: [
+        {
+          status: 'valid',
+          callId: 'call_aaa',
+          toolName: 'list_files',
+          arguments: { path: '.' },
+          rawArguments: '{"path":"."}',
+          providerKind: 'openai-tool_calls',
+        },
+      ],
+    };
+    const readCall: AIAdapterCanonicalTranscriptTurn = {
+      kind: 'assistant_tool_turn',
+      content: 'Reading the file.',
+      toolCalls: [
+        {
+          status: 'valid',
+          callId: 'call_bbb',
+          toolName: 'read_file',
+          arguments: { path: 'README.md' },
+          rawArguments: '{"path":"README.md"}',
+          providerKind: 'openai-tool_calls',
+        },
+      ],
+    };
+    const closingCall: AIAdapterCanonicalTranscriptTurn = {
+      kind: 'assistant_tool_turn',
+      content: 'Done looking.',
+      toolCalls: [],
+    };
+    const listResult: AIAdapterCanonicalTranscriptTurn = {
+      kind: 'tool_result_turn',
+      results: [
+        {
+          callId: 'call_aaa',
+          toolName: 'list_files',
+          success: true,
+          content: { entries: ['README.md'] },
+        },
+      ],
+    };
+    const readResult: AIAdapterCanonicalTranscriptTurn = {
+      kind: 'tool_result_turn',
+      results: [
+        {
+          callId: 'call_bbb',
+          toolName: 'read_file',
+          success: true,
+          content: { content: '# Title' },
+        },
+      ],
+    };
+    const withoutState: readonly AIAdapterCanonicalTranscriptTurn[] = [
+      listCall,
+      listResult,
+      readCall,
+      readResult,
+      closingCall,
+    ];
+    const withReasoning: readonly AIAdapterCanonicalTranscriptTurn[] = [
+      {
+        ...listCall,
+        providerState: {
+          kind: 'deepseek-reasoning',
+          reasoningContent: firstReasoning,
+        },
+      },
+      listResult,
+      readCall,
+      readResult,
+      {
+        ...closingCall,
+        providerState: {
+          kind: 'deepseek-reasoning',
+          reasoningContent: laterReasoning,
+        },
+      },
+    ];
+
+    const today = mapCanonicalTranscriptToOpenAIMessages(withoutState);
+    const messages = mapCanonicalTranscriptToOpenAIMessages(withReasoning);
+
+    expect(today).toEqual([
+      {
+        role: 'assistant',
+        content: 'I will look those up.',
+        tool_calls: [
+          {
+            id: 'call_aaa',
+            type: 'function',
+            function: { name: 'list_files', arguments: '{"path":"."}' },
+          },
+        ],
+      },
+      {
+        role: 'tool',
+        tool_call_id: 'call_aaa',
+        content: JSON.stringify({ entries: ['README.md'] }),
+      },
+      {
+        role: 'assistant',
+        content: 'Reading the file.',
+        tool_calls: [
+          {
+            id: 'call_bbb',
+            type: 'function',
+            function: { name: 'read_file', arguments: '{"path":"README.md"}' },
+          },
+        ],
+      },
+      {
+        role: 'tool',
+        tool_call_id: 'call_bbb',
+        content: JSON.stringify({ content: '# Title' }),
+      },
+      {
+        role: 'assistant',
+        content: 'Done looking.',
+      },
+    ]);
+    expect(messages[0]).toEqual({
+      ...today[0],
+      reasoning_content: firstReasoning,
+    });
+    expect(messages[1]).toEqual(today[1]);
+    expect(messages[2]).toEqual(today[2]);
+    expect(messages[2]).not.toHaveProperty('reasoning_content');
+    expect(messages[3]).toEqual(today[3]);
+    expect(messages[4]).toEqual({
+      ...today[4],
+      reasoning_content: laterReasoning,
+    });
+    expect(JSON.stringify(messages[1])).not.toContain(firstReasoning);
+    expect(JSON.stringify(messages[2])).not.toContain(firstReasoning);
+    expect(JSON.stringify(messages[3])).not.toContain(laterReasoning);
+  });
+
+  it('leaves OpenAI messages unchanged when deepseek reasoning text is absent', () => {
+    const base: AIAdapterCanonicalTranscriptTurn = {
+      kind: 'assistant_tool_turn',
+      content: 'Checking files.',
+      toolCalls: [
+        {
+          status: 'valid',
+          callId: 'call_aaa',
+          toolName: 'list_files',
+          arguments: { path: '.' },
+          rawArguments: '{"path":"."}',
+          providerKind: 'openai-tool_calls',
+        },
+      ],
+    };
+    const today = mapCanonicalTranscriptToOpenAIMessages([base]);
+
+    expect(
+      mapCanonicalTranscriptToOpenAIMessages([
+        {
+          ...base,
+          providerState: { kind: 'deepseek-reasoning', reasoningContent: 12 },
+        },
+      ]),
+    ).toEqual(today);
+    expect(
+      mapCanonicalTranscriptToOpenAIMessages([
+        {
+          ...base,
+          providerState: { kind: 'deepseek-reasoning' },
+        },
+      ]),
+    ).toEqual(today);
+    expect(
+      mapCanonicalTranscriptToOpenAIMessages([
+        {
+          ...base,
+          providerState: {
+            kind: 'responses',
+            responseId: 'resp_1',
+            reasoningContent: 'not-deepseek',
+          },
+        },
+      ]),
+    ).toEqual(today);
+    expect(today[0]).not.toHaveProperty('reasoning_content');
+    expect(
+      mapCanonicalTranscriptToOpenAIMessages([
+        {
+          ...base,
+          providerState: { kind: 'deepseek-reasoning', reasoningContent: '' },
+        },
+      ]),
+    ).toEqual([{ ...today[0], reasoning_content: '' }]);
+  });
 });
 
 describe('Responses API tool helpers', () => {
