@@ -83257,8 +83257,12 @@ nature=IMPLEMENTATION
 - [x] Not LOCKED by an implementer
 
 ### RUN-STATUS-01 — Owner-scoped list of active and recent runs
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=RUN-STATUS-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; Step 2 (implementation) not started. mutexes=GATEWAY. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
 **Task ID:** RUN-STATUS-01
 **Title:** Owner-scoped list of active and recent runs
 **Workstream:** AGENT (taxonomy only; zero admission weight)

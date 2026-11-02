@@ -10,13 +10,20 @@
   },
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "RUN-STATUS-01",
+      "mutexes": ["GATEWAY"],
+      "writePaths": [
+        "services/api-gateway/src/ai/ai-execution.controller.ts",
+        "services/api-gateway/src/ai/ai-execution.controller.spec.ts",
+        "services/api-gateway/src/ai/execution-result.service.ts",
+        "services/api-gateway/src/ai/__tests__/ai-execution.controller.integration.spec.ts",
+        "services/api-gateway/src/ai/__tests__/ai-execution.run-status.http.spec.ts",
+        "services/api-gateway/src/ai/__tests__/execution-result.list-runs.spec.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -1827,6 +1834,35 @@
       "evidenceClass": "PROVIDER-LIVE",
       "exclusiveCapacity": false,
       "runtimeNeeds": ["STAGING", "PROVIDER-LIVE", "CREDIT"],
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
+    },
+    {
+      "taskId": "RUN-STATUS-01",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "3-STEP",
+      "status": "ADMITTED",
+      "startCondition": "READY",
+      "saturationClass": "OPTIONAL",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": [],
+      "mutexes": ["GATEWAY"],
+      "writePaths": [
+        "services/api-gateway/src/ai/ai-execution.controller.ts",
+        "services/api-gateway/src/ai/ai-execution.controller.spec.ts",
+        "services/api-gateway/src/ai/execution-result.service.ts",
+        "services/api-gateway/src/ai/__tests__/ai-execution.controller.integration.spec.ts",
+        "services/api-gateway/src/ai/__tests__/ai-execution.run-status.http.spec.ts",
+        "services/api-gateway/src/ai/__tests__/execution-result.list-runs.spec.ts"
+      ],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "LOCAL-TESTS",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": [],
       "admissionUncertain": false,
       "writeSetPrecision": "EXACT"
     }
