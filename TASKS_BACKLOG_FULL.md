@@ -83390,6 +83390,42 @@ nature=IMPLEMENTATION
 - [ ] Keith reads the transcripts and records his judgement
 - [ ] Not LOCKED by an implementer
 
+### HARNESS-QUOTA-01 — Make the rolling 24-hour token limit a setting, with a default of 1,000,000
+
+**Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's instruction; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Task ID:** HARNESS-QUOTA-01
+**Title:** Make the rolling 24-hour token limit a setting, with a default of 1,000,000
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP. Step 1 implementation; Step 2 consolidation, checkpoint and LOCK by the control plane.
+**Start condition (human):** READY — Keith instructed this on 2026-11-02, after the limit stopped HARNESS-LIVE-06.
+**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Depends on (human):** none.
+**Depends on (machine `dependsOn`):** `[]`
+**Primary write scope:** exactly `services/api-gateway/src/quota/quota.config.ts`, `services/api-gateway/src/quota/__tests__/quota.config.spec.ts`, `services/api-gateway/src/quota/__tests__/token-quota.guard.spec.ts`, `services/api-gateway/src/admin/admin-dashboard.service.spec.ts`, `services/api-gateway/src/admin/admin-operational.controller.spec.ts`. Anything else is out of scope.
+**Mutexes / resources:** GATEWAY (Lane 1, 2026-11-02). No STAGING, ENV, MIGRATION, PACKAGE, LOCAL-RUNTIME, PROVIDER-LIVE or CREDIT.
+**Hot-file leases:** none
+**Shared contracts:** none changed.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** acceptable (one setting; no schema, migration or contract change).
+**saturationClass:** OPTIONAL
+**productClass:** CURRENT
+**futureAuthorization:** NONE
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** none
+
+**Problem:** MAX_TOKENS_PER_24H has been fixed at 100,000 in quota.config.ts since 2026-02-23, while the session limits beside it read from the environment. It stopped HARNESS-LIVE-06 after a day of testing.
+**Scope:** read MAX_TOKENS_PER_24H with the existing resolveIntEnv, default 1,000,000. Not in scope: per-plan limits, charging, env file changes, the daily spend caps, deploying.
+
+#### Acceptance criteria
+
+- [ ] With no setting the limit is 1,000,000; a valid MAX_TOKENS_PER_24H overrides it; an invalid value falls back to the default
+- [ ] The guard still refuses over the limit with the same 429 response
+- [ ] services/api-gateway: npm test and npm run build pass, apart from the known smoke failures, and only the files in the primary write scope change
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
