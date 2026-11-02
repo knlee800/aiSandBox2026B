@@ -83305,14 +83305,14 @@ taskId=RUN-RECOVER-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; stage-start: docs/RUN-RECOVER-01-STAGE-START.md. Step 3 (implementation) not started. mutexes=FRONTEND, I18N. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
+**Status:** COMPLETE AND LOCKED — 2026-11-02. LANE-DONE and LOCKED by the control plane; Lane 1, FRONTEND and I18N released. Checkpoint: docs/RUN-RECOVER-01-CHECKPOINT.md. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; stage-start: docs/RUN-RECOVER-01-STAGE-START.md. Step 3 (implementation) not started. mutexes=FRONTEND, I18N. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
 **Task ID:** RUN-RECOVER-01
 **Title:** Reconnect the Builder chat to a run after a refresh
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP. Step 1 registration; Step 2 stage-start and admission; Step 3 implementation; Step 4 consolidation, checkpoint and LOCK by the control plane.
 **Start condition (human):** READY — Keith approved the draft on 2026-11-02.
-**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Start condition (machine):** `READY`; `status=LOCKED`. Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
 **Depends on (human):** RUN-STATUS-01, COMPLETE AND LOCKED.
 **Depends on (machine `dependsOn`):** `[]`
 **Primary write scope:** exactly `frontend/app/`, `frontend/components/workspace/workspace-run-recovery.logic.ts`, `frontend/components/workspace/workspace-run-recovery.logic.test.ts`, `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`; under frontend/app/ only the Builder page `frontend/app/[locale]/app/page.tsx`. Anything else is out of scope.
@@ -83331,17 +83331,18 @@ nature=IMPLEMENTATION
 
 **Problem:** a refresh during a run loses it on screen, and the browser saves the assistant message, so the answer is lost from the chat too. An Agent run may have changed files by then.
 **Scope:** when a session opens, reconnect to its active run or to a run this browser started that has since ended: show status, resume polling and the stream, show the final answer and save it once; refresh the workspace after an Agent run. A recovered Build run shows its status and answer only and never applies file changes, and says so. Text in all three locales. Not in scope: the gateway, a run list screen, stored step history, a cancel control, deploying.
+**Result (2026-11-02):** implemented in a481b9d05322d34707fcdb99f7458ac1ed2e08d0 by Cursor CLI, reviewed and re-validated by the control plane: frontend tsc exit 0, npm test 819 passed, build exit 0. Checkpoint: docs/RUN-RECOVER-01-CHECKPOINT.md. Not run in a browser; not deployed.
 
 #### Acceptance criteria
 
-- [ ] Reopening a session with an active run shows it running and shows the final answer when it ends
-- [ ] A run that ended while the page was closed shows its answer, and the answer is saved to the chat only once
-- [ ] A recovered Agent run refreshes the file tree, open file, preview and checkpoints
-- [ ] A recovered Build or unknown-mode run never applies file actions, and says the changes were not applied
-- [ ] An active run older than 15 minutes is not reconnected; a session with no run behaves as today; a normal run with no refresh behaves as today
-- [ ] All new visible text is in en, zh-TW and zh-CN
-- [ ] frontend tsc, npm test and npm run build pass, and only the files in the primary write scope change
-- [ ] Not LOCKED by an implementer
+- [x] Reopening a session with an active run shows it running and shows the final answer when it ends
+- [x] A run that ended while the page was closed shows its answer, and the answer is saved to the chat only once
+- [x] A recovered Agent run refreshes the file tree, open file, preview and checkpoints
+- [x] A recovered Build or unknown-mode run never applies file actions, and says the changes were not applied
+- [x] An active run older than 15 minutes is not reconnected; a session with no run behaves as today; a normal run with no refresh behaves as today
+- [x] All new visible text is in en, zh-TW and zh-CN
+- [x] frontend tsc, npm test and npm run build pass, and only the files in the primary write scope change
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
