@@ -920,10 +920,10 @@ Do not describe Harness as the current Builder execution default. Harness-as-def
 | Per-builder harness config | CURRENT | AGENT-HARNESS-07 |
 | Pre-apply checkpoint gate | CURRENT (gated path) | `enablePreApplyCheckpoint=true`; created before first write mutation |
 | Audit events (`InMemoryHarnessAuditRecorder`) | CURRENT | In-memory only; not persisted to DB |
-| `search_workspace` handler | CURRENT (GATED) | Read-only plain-text search through the existing container search (AI-WS-06); offered on the harness path with no flag of its own; mock-tested only, not yet proven on a real model |
+| `search_workspace` handler | CURRENT (GATED) | Read-only plain-text search through the existing container search (AI-WS-06); offered on the harness path with no flag of its own; proven with one provider on staging (HARNESS-LIVE-04, 2026-11-02) |
 | Automatic rollback after partial failure | **NOT IMPLEMENTED** | Pre-apply checkpoint exists on gated path; rollback is manual via checkpoint/revert |
 | Semantic / vector search | NOT IMPLEMENTED (PLANNED) | `enableSemanticSearch=false` |
-| Real-provider autonomous harness loop | PROVEN ON STAGING (gated) | HARNESS-LIVE-01 and HARNESS-LIVE-02, 2026-11-01: real Anthropic runs on staging read and wrote files, ran npm test through run_validation, and a save-point revert restored a file. One provider and one small test project only. HARNESS-LIVE-03, 2026-11-02: at the raised limit, a real run that reached the last-call notice stopped calling tools and reported what was done and unfinished. The run token budget and the block on tools after the notice have mock-test proof only |
+| Real-provider autonomous harness loop | PROVEN ON STAGING (gated) | HARNESS-LIVE-01 and HARNESS-LIVE-02, 2026-11-01: real Anthropic runs on staging read and wrote files, ran npm test through run_validation, and a save-point revert restored a file. One provider and one small test project only. HARNESS-LIVE-03, 2026-11-02: at the raised limit, a real run that reached the last-call notice stopped calling tools and reported what was done and unfinished. The run token budget and the block on tools after the notice have mock-test proof only. HARNESS-LIVE-04, 2026-11-02: a real run chose search_workspace unprompted and answered correctly |
 
 ### 12.2 Harness Execution Path (GATED — not private-beta default)
 

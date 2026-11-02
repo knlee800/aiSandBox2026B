@@ -83080,18 +83080,18 @@ taskId=HARNESS-LIVE-04
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; stage-start: docs/HARNESS-LIVE-04-STAGE-START.md. Authorized: one deploy of 8fb5b63 with guard checks, flags on, up to 2 runs, read-only evidence, flags off. Not started. mutexes=STAGING, PROVIDER-LIVE, CREDIT, ENV. stagingAuthorized, providerLiveAuthorized and creditAuthorized true. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
+**Status:** COMPLETE AND LOCKED — 2026-11-02. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING, PROVIDER-LIVE, CREDIT and ENV released; stagingAuthorized, providerLiveAuthorized and creditAuthorized false. Checkpoint: docs/HARNESS-LIVE-04-CHECKPOINT.md. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; stage-start: docs/HARNESS-LIVE-04-STAGE-START.md. Authorized: one deploy of 8fb5b63 with guard checks, flags on, up to 2 runs, read-only evidence, flags off. Not started. mutexes=STAGING, PROVIDER-LIVE, CREDIT, ENV. stagingAuthorized, providerLiveAuthorized and creditAuthorized true. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
 **Task ID:** HARNESS-LIVE-04
 **Title:** Deploy search and the authorization fixes, and prove them on ainow-staging-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION (operational run; no product activation)
 **Lifecycle:** 4-STEP. Step 1 registration; Step 2 stage-start; Step 3 runs under Keith's authorization; Step 4 consolidation, checkpoint and LOCK by the control plane.
 **Start condition (human):** READY — Keith approved on 2026-11-02 (draft approved).
-**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Start condition (machine):** `READY`; `status=LOCKED`. Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
 **Depends on (human):** HARNESS-SEARCH-01, AUTH-GUARD-01 and AUTH-OWNER-01, all COMPLETE AND LOCKED.
 **Depends on (machine `dependsOn`):** `[HARNESS-SEARCH-01, AUTH-GUARD-01, AUTH-OWNER-01]`
 **Primary write scope:** none. Host state on ainow-staging-01, the test project's workspace and off-repo evidence only.
-**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV (Lane 1, 2026-11-02). ENV covers host environment files for the window only.
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV, released at COMPLETE AND LOCKED 2026-11-02. Previous: **Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV (Lane 1, 2026-11-02). ENV covers host environment files for the window only.
 **Hot-file leases:** none
 **Shared contracts:** consumes HARNESS_ENTITLEMENT_PROOF_V1 without changing it (`sharedContractIds=[HARNESS_ENTITLEMENT_PROOF_V1]`; `mutatesSharedContractIds=[]`).
 **Evidence class:** PROVIDER-LIVE.
@@ -83106,19 +83106,20 @@ nature=IMPLEMENTATION
 
 **Problem:** HARNESS-SEARCH-01, AUTH-GUARD-01 and AUTH-OWNER-01 are mock-tested and not deployed. ainow-staging-01 still has the guard bypass and the missing owner checks behind basic_auth, and search has not run with a real model or through the real route to a container.
 **Scope:** on ainow-staging-01, behind basic_auth, in project C1 repeat: one deploy of 8fb5b630d6278717f195f6c194e59524905d95ec; requests with no key on the server to confirm the guard refuses them; up to 2 runs on Anthropic, same caps as HARNESS-LIVE-03; two stream viewers on one run over real Redis, and stream and cancel for an unknown execution ID. Keith types the provider key at a hidden prompt; it is removed afterwards and the flags go back off. Browser tools stay off. Not in scope: Socket.IO, the host firewall, a second user account, other providers, any UI, product activation, and making search CURRENT.
+**Result (2026-11-02):** one window on 8fb5b63: 8 guard requests with no key returned 401 on the server. Run 7c93af8d-54e7-4fc5-8495-c773d2fe6de9 chose search_workspace unprompted and answered correctly in 2 model calls. Run dc009ebd-48e7-4c94-bfe7-a3e96ac93e2c reported no match honestly. The open stream viewer received the final answer after the other closed; stream and cancel for an unknown ID returned 404. Keith read the transcripts and accepted them as proof. Checkpoint: docs/HARNESS-LIVE-04-CHECKPOINT.md.
 
 #### Acceptance criteria
 
-- [ ] After the deploy, changed-case internal paths and the chat-messages, token-usage and runtime routes return 401 on the server with no key, and the gateway is ready
-- [ ] A real run finds text across nested files and answers correctly, and the journal shows whether it used search_workspace
-- [ ] A real search with no match is reported honestly
-- [ ] Of two stream viewers on one run, the one left open receives the final answer after the other closes, over real Redis; stream and cancel for an unknown execution return 404
-- [ ] The AI service's own calls still succeed with the key, with no guard refusals in the gateway journal during the runs
-- [ ] Credits and usage are recorded correctly, and usage_records.model is non-empty
-- [ ] Spend stays within the caps
-- [ ] Afterwards the flags are off, the key is removed, and the configuration hashes match the recorded state
-- [ ] Keith reads the transcripts and records his judgement
-- [ ] Not LOCKED by an implementer
+- [x] After the deploy, changed-case internal paths and the chat-messages, token-usage and runtime routes return 401 on the server with no key, and the gateway is ready
+- [x] A real run finds text across nested files and answers correctly, and the journal shows whether it used search_workspace
+- [x] A real search with no match is reported honestly
+- [x] Of two stream viewers on one run, the one left open receives the final answer after the other closes, over real Redis; stream and cancel for an unknown execution return 404
+- [x] The AI service's own calls still succeed with the key, with no guard refusals in the gateway journal during the runs
+- [x] Credits and usage are recorded correctly, and usage_records.model is non-empty
+- [x] Spend stays within the caps
+- [x] Afterwards the flags are off, the key is removed, and the configuration hashes match the recorded state
+- [x] Keith reads the transcripts and records his judgement
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
