@@ -83620,7 +83620,7 @@ taskId=COLLAB-CHOOSE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02.
+**Status:** COMPLETE AND LOCKED — 2026-11-02. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY released. Checkpoint: docs/COLLAB-CHOOSE-01-CHECKPOINT.md.
 **Task ID:** COLLAB-CHOOSE-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -83636,13 +83636,13 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] A valid request at the end of an answer creates exactly one waiting hand-off, even when read back repeatedly, with no job and no ledger row
-- [ ] Malformed requests create nothing; a name not on the list, an over-long task, a loop and the limits create no job and are recorded
-- [ ] The next job receives the task and the previous answer, without the request text
-- [ ] An answer with no request ends that branch and the run finishes
-- [ ] The sweep closes finished runs and expires hand-offs waiting over 24 hours, and it never approves anything
-- [ ] Ask, Build and the execute route are unchanged
-- [ ] Not LOCKED by an implementer
+- [x] A valid request at the end of an answer creates exactly one waiting hand-off, even when read back repeatedly, with no job and no ledger row
+- [x] Malformed requests create nothing; a name not on the list, an over-long task, a loop and the limits create no job and are recorded
+- [x] The next job receives the task and the previous answer, without the request text
+- [x] An answer with no request ends that branch and the run finishes
+- [x] The sweep closes finished runs and expires hand-offs waiting over 24 hours, and it never approves anything
+- [x] Ask, Build and the execute route are unchanged
+- [x] Not LOCKED by an implementer
 
 ### COLLAB-LIVE-03 — Agent-chosen hand-offs on staging
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

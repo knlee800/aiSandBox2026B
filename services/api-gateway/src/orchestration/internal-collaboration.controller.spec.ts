@@ -18,6 +18,15 @@ import { CollaborationReferralEntity } from './collaboration-referral.entity';
 import { CollaborationRunEntity } from './collaboration-run.entity';
 import { InternalCollaborationController } from './internal-collaboration.controller';
 import {
+  COLLABORATION_WAITING_MAX_AGE_MS,
+  HANDOFF_WAIT_TIMEOUT_REASON,
+} from './collaboration-sweep.constants';
+import {
+  MAX_HANDOFF_TASK_CHARS,
+  answerHandoffIdempotencyKey,
+} from './handoff-request';
+import {
+  DEFAULT_MAX_AGENTS_PER_COLLABORATION,
   DEFAULT_MAX_REFERRAL_DEPTH,
   MAX_HANDOFFS_PER_RUN,
 } from './orchestration.contracts';
@@ -820,5 +829,524 @@ describe('InternalCollaborationController', () => {
     }).expect(400);
     expect(blocked.body.message).toContain('Max agents');
     expect(queue.enqueueExecution).not.toHaveBeenCalled();
+  });
+
+  const listedAgents = [
+    { name: 'lead', instructions: 'Break the work into steps.' },
+    { name: 'writer', instructions: 'Write the code.' },
+  ];
+
+  function leadInstructions(agentName: string, own: string, otherName: string, other: string): string {
+    return [
+      'Be concise.',
+      '',
+      `You are ${agentName}.`,
+      own,
+      '',
+      'Other agents:',
+      `- ${otherName}: ${other}`,
+      '',
+      'Ask another agent only when you genuinely need them. At most one request, alone at the very end of the answer, exactly <handoff to="name">task</handoff>. Otherwise no request.',
+    ].join('\n');
+  }
+
+  function completedExecution(output: string) {
+    return {
+      execution_status: 'completed',
+      metadata: { aiExecutionResult: { output } },
+    };
+  }
+
+  it.each([
+    [
+      'too many',
+      Array.from({ length: DEFAULT_MAX_AGENTS_PER_COLLABORATION + 1 }, (_, index) => ({
+        name: `agent-${index}`,
+        instructions: 'Work.',
+      })),
+      'at most',
+    ],
+    ['a bad name', [{ name: 'Lead', instructions: 'Work.' }], 'name is invalid'],
+    [
+      'a duplicate name',
+      [
+        { name: 'lead', instructions: 'Work.' },
+        { name: 'lead', instructions: 'Again.' },
+      ],
+      'duplicated',
+    ],
+    [
+      'instructions that are too long',
+      [{ name: 'lead', instructions: 'x'.repeat(4001) }],
+      'at most 4000',
+    ],
+    ['not an array', 'lead', 'must be an array'],
+    ['empty', [], 'at most'],
+  ])('rejects an agent list with %s and stores nothing', async (_label, agents, message) => {
+    const runId = await createRun();
+    const response = await postReferral(runId, {
+      idempotencyKey: `bad-agents-${_label}`,
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'lead' },
+      agents,
+    }).expect(400);
+
+    expect(response.body.message).toContain(message);
+    await expectNoJob(runId);
+  });
+
+  it('rejects a target that is not on the list, including a later hand-off', async () => {
+    const runId = await createRun();
+    const missing = await postReferral(runId, {
+      idempotencyKey: 'missing-target',
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'reviewer' },
+      agents: listedAgents,
+    }).expect(400);
+    expect(missing.body.message).toContain('not on the agent list');
+    await expectNoJob(runId);
+
+    const root = await postReferral(runId, {
+      idempotencyKey: 'listed-root',
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'lead' },
+      agents: listedAgents,
+    }).expect(201);
+    const carried = await postReferral(runId, {
+      idempotencyKey: 'listed-child',
+      sourceBuilder: { agentRole: 'builder', builderProfileId: 'lead' },
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'reviewer' },
+      parentReferralTraceId: root.body.referral.referralTraceId,
+    }).expect(400);
+    expect(carried.body.message).toContain('not on the agent list');
+
+    const detail = await http().get(`/api/internal/collaboration/runs/${runId}`).expect(200);
+    expect(detail.body.referrals).toHaveLength(1);
+    expect(queue.enqueueExecution).not.toHaveBeenCalled();
+  });
+
+  it('rejects an agent list on a hand-off that already has a parent', async () => {
+    const runId = await createRun();
+    const root = await postReferral(runId, {
+      idempotencyKey: 'agents-root',
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'lead' },
+      agents: listedAgents,
+    }).expect(201);
+
+    const child = await postReferral(runId, {
+      idempotencyKey: 'agents-child',
+      sourceBuilder: { agentRole: 'builder', builderProfileId: 'lead' },
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'writer' },
+      parentReferralTraceId: root.body.referral.referralTraceId,
+      agents: listedAgents,
+    }).expect(400);
+
+    expect(child.body.message).toContain('only accepted on the first hand-off');
+    const detail = await http().get(`/api/internal/collaboration/runs/${runId}`).expect(200);
+    expect(detail.body.referrals).toHaveLength(1);
+  });
+
+  it('tells the job its role and the other agents, then creates one waiting hand-off from the answer', async () => {
+    const runId = await createRun();
+    const waiting = await postReferral(runId, {
+      idempotencyKey: 'choose-root',
+      sourceBuilder: { agentRole: 'builder', builderProfileId: 'builder-a' },
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'lead' },
+      projectInstructions: 'Be concise.',
+      agents: listedAgents,
+    }).expect(201);
+    const parentId = waiting.body.referral.referralId as string;
+    await approve(runId, parentId).expect(200);
+
+    const payload = queue.enqueueExecution.mock.calls[0][0];
+    expect(payload.projectInstructions).toBe(
+      leadInstructions('lead', 'Break the work into steps.', 'writer', 'Write the code.'),
+    );
+    expect(payload.executionIntent).toBe('conversation');
+
+    const answer = 'The draft is ready.\n\n<handoff to="writer">Tighten the opening.</handoff>';
+    executionResults.getExecution.mockResolvedValue(completedExecution(answer));
+
+    const first = await http().get(`/api/internal/collaboration/runs/${runId}`).expect(200);
+    const second = await http().get(`/api/internal/collaboration/runs/${runId}`).expect(200);
+    await app.get(OrchestrationService).sweepCollaborations(new Date());
+    const third = await http().get(`/api/internal/collaboration/runs/${runId}`).expect(200);
+
+    for (const detail of [first, second, third]) {
+      expect(detail.body.run.status).toBe('active');
+      expect(detail.body.referrals).toHaveLength(2);
+      const parent = detail.body.referrals.find(
+        (referral: { referralId: string }) => referral.referralId === parentId,
+      );
+      const child = detail.body.referrals.find(
+        (referral: { referralId: string }) => referral.referralId !== parentId,
+      );
+      expect(parent.status).toBe('completed');
+      expect(parent.result.summary).toBe(answer);
+      expect(parent.handoffNote).toBeNull();
+      expect(child.status).toBe('pending_approval');
+      expect(child.decidedBy).toBeNull();
+      expect(child.prompt).toBe('Tighten the opening.\n\nThe draft is ready.');
+      expect(child.prompt).not.toContain('<handoff');
+      expect(child.sourceBuilder).toEqual({ agentRole: 'builder', builderProfileId: 'lead' });
+      expect(child.targetBuilder).toEqual({ agentRole: 'builder', builderProfileId: 'writer' });
+      expect(child.parentReferralTraceId).toBe(waiting.body.referral.referralTraceId);
+      expect(child.idempotencyKey).toBe(answerHandoffIdempotencyKey(parentId));
+      expect(child.referralId).toBe(first.body.referrals[1].referralId);
+    }
+
+    const storedChild = referrals.get(first.body.referrals[1].referralId as string);
+    expect(storedChild?.executionId ?? null).toBeNull();
+    expect(storedChild?.pendingJob?.provider).toBe('stub');
+    expect(storedChild?.pendingJob?.adapter).toBe('stub');
+    expect(storedChild?.pendingJob?.model).toBe('test-model');
+    expect(storedChild?.pendingJob?.sessionId).toBe(sessionId);
+    expect(storedChild?.pendingJob?.conversationId).toBe(conversationId);
+    expect(storedChild?.pendingJob?.agents).toEqual(listedAgents);
+    expect(storedChild?.pendingJob?.projectInstructions).toBe(
+      leadInstructions('writer', 'Write the code.', 'lead', 'Break the work into steps.'),
+    );
+    expect(queue.enqueueExecution).toHaveBeenCalledTimes(1);
+    expect(ledger.writeExecutionIntent).toHaveBeenCalledTimes(1);
+
+    const otherRun = await createRun();
+    const other = await postReferral(otherRun, {
+      idempotencyKey: 'choose-sweep-first',
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'lead' },
+      projectInstructions: 'Be concise.',
+      agents: listedAgents,
+    }).expect(201);
+    await approve(otherRun, other.body.referral.referralId).expect(200);
+    const service = app.get(OrchestrationService);
+    await service.sweepCollaborations(new Date());
+    await service.sweepCollaborations(new Date());
+    const swept = await http().get(`/api/internal/collaboration/runs/${otherRun}`).expect(200);
+    expect(swept.body.run.status).toBe('active');
+    expect(swept.body.referrals).toHaveLength(2);
+    expect(swept.body.referrals.map((referral: { status: string }) => referral.status).sort()).toEqual([
+      'completed',
+      'pending_approval',
+    ]);
+    expect(queue.enqueueExecution).toHaveBeenCalledTimes(2);
+    expect(ledger.writeExecutionIntent).toHaveBeenCalledTimes(2);
+  });
+
+  it('ends a branch that does not ask, and ignores a request when the run has no agent list', async () => {
+    const plainRun = await createRun();
+    const plain = await postReferral(plainRun, {
+      idempotencyKey: 'no-request',
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'lead' },
+      agents: listedAgents,
+    }).expect(201);
+    await approve(plainRun, plain.body.referral.referralId).expect(200);
+    executionResults.getExecution.mockResolvedValue(completedExecution('All done.'));
+    const finished = await http().get(`/api/internal/collaboration/runs/${plainRun}`).expect(200);
+    expect(finished.body.run.status).toBe('completed');
+    expect(finished.body.referrals).toHaveLength(1);
+    expect(finished.body.referrals[0].status).toBe('completed');
+    expect(finished.body.referrals[0].handoffNote).toBeNull();
+    expect(finished.body.referrals[0].result.summary).toBe('All done.');
+
+    const unlisted = await createRun();
+    const referral = await postReferral(unlisted, { idempotencyKey: 'no-list' }).expect(201);
+    await approve(unlisted, referral.body.referral.referralId).expect(200);
+    const tagged = 'Done\n<handoff to="writer">Tighten the opening.</handoff>';
+    executionResults.getExecution.mockResolvedValue(completedExecution(tagged));
+    const detail = await http().get(`/api/internal/collaboration/runs/${unlisted}`).expect(200);
+    expect(detail.body.run.status).toBe('completed');
+    expect(detail.body.referrals).toHaveLength(1);
+    expect(detail.body.referrals[0].status).toBe('completed');
+    expect(detail.body.referrals[0].handoffNote).toBeNull();
+    expect(detail.body.referrals[0].result.summary).toBe(tagged);
+    expect(queue.enqueueExecution).toHaveBeenCalledTimes(2);
+    expect(ledger.writeExecutionIntent).toHaveBeenCalledTimes(2);
+  });
+
+  it('records a malformed request, keeps the full answer, and does not create a hand-off', async () => {
+    const runId = await createRun();
+    const waiting = await postReferral(runId, {
+      idempotencyKey: 'malformed-request',
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'lead' },
+      agents: listedAgents,
+    }).expect(201);
+    await approve(runId, waiting.body.referral.referralId).expect(200);
+    const answer = 'See <handoff to="writer">Tighten the opening.</handoff> above';
+    executionResults.getExecution.mockResolvedValue(completedExecution(answer));
+
+    const detail = await http().get(`/api/internal/collaboration/runs/${runId}`).expect(200);
+
+    expect(detail.body.run.status).toBe('completed');
+    expect(detail.body.referrals).toHaveLength(1);
+    expect(detail.body.referrals[0].status).toBe('completed');
+    expect(detail.body.referrals[0].result.summary).toBe(answer);
+    expect(detail.body.referrals[0].handoffNote).toBe('malformed: not_at_end');
+    expect(queue.enqueueExecution).toHaveBeenCalledTimes(1);
+    expect(ledger.writeExecutionIntent).toHaveBeenCalledTimes(1);
+  });
+
+  it('records a name that is not on the list and a task that is too long without a job', async () => {
+    const service = app.get(OrchestrationService);
+    const runId = await createRun();
+    const unknown = await postReferral(runId, {
+      idempotencyKey: 'unknown-name',
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'lead' },
+      agents: listedAgents,
+    }).expect(201);
+    await approve(runId, unknown.body.referral.referralId).expect(200);
+    executionResults.getExecution.mockResolvedValue(
+      completedExecution('Ready.\n<handoff to="reviewer">Look again.</handoff>'),
+    );
+    service.clearAuditEvents();
+    const unknownDetail = await http().get(`/api/internal/collaboration/runs/${runId}`).expect(200);
+    expect(unknownDetail.body.referrals).toHaveLength(1);
+    expect(unknownDetail.body.referrals[0].status).toBe('completed');
+    expect(unknownDetail.body.referrals[0].handoffNote).toBe('refused: agent_not_on_list');
+    expect(unknownDetail.body.run.status).toBe('completed');
+    expect(
+      service.getAuditEvents().some(
+        (event) =>
+          event.eventType === 'orchestration.safety_limit_breached' &&
+          event.payload.reason === 'agent_not_on_list',
+      ),
+    ).toBe(true);
+
+    const longRun = await createRun();
+    const long = await postReferral(longRun, {
+      idempotencyKey: 'long-task',
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'lead' },
+      agents: listedAgents,
+    }).expect(201);
+    await approve(longRun, long.body.referral.referralId).expect(200);
+    const task = 'b'.repeat(MAX_HANDOFF_TASK_CHARS + 1);
+    const longAnswer = `Ready.\n<handoff to="writer">${task}</handoff>`;
+    executionResults.getExecution.mockResolvedValue(completedExecution(longAnswer));
+    service.clearAuditEvents();
+    const longDetail = await http().get(`/api/internal/collaboration/runs/${longRun}`).expect(200);
+    expect(longDetail.body.referrals).toHaveLength(1);
+    expect(longDetail.body.referrals[0].status).toBe('completed');
+    expect(longDetail.body.referrals[0].result.summary).toBe(longAnswer);
+    expect(longDetail.body.referrals[0].handoffNote).toBe('refused: task_too_long');
+    expect(
+      service.getAuditEvents().some(
+        (event) =>
+          event.eventType === 'orchestration.safety_limit_breached' &&
+          event.payload.reason === 'task_too_long',
+      ),
+    ).toBe(true);
+    expect(queue.enqueueExecution).toHaveBeenCalledTimes(2);
+    expect(ledger.writeExecutionIntent).toHaveBeenCalledTimes(2);
+  });
+
+  it('records a loop, a depth limit, an agent limit, and the eight-hand-off limit without failing the parent', async () => {
+    const service = app.get(OrchestrationService);
+
+    const loopRun = await createRun();
+    const loop = await postReferral(loopRun, {
+      idempotencyKey: 'loop-root',
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'lead' },
+      agents: listedAgents,
+    }).expect(201);
+    await approve(loopRun, loop.body.referral.referralId).expect(200);
+    executionResults.getExecution.mockResolvedValue(
+      completedExecution('Ready.\n<handoff to="lead">Again.</handoff>'),
+    );
+    const loopDetail = await http().get(`/api/internal/collaboration/runs/${loopRun}`).expect(200);
+    expect(loopDetail.body.referrals).toHaveLength(1);
+    expect(loopDetail.body.referrals[0].status).toBe('completed');
+    expect(loopDetail.body.referrals[0].handoffNote).toBe('refused: loop');
+    expect(
+      service.getAuditEvents().some((event) => event.payload.limitType === 'loop'),
+    ).toBe(true);
+
+    const depthAgents = [
+      { name: 'writer', instructions: 'Write.' },
+      { name: 'editor', instructions: 'Edit.' },
+      { name: 'extra', instructions: 'Extra.' },
+      { name: 'fifth', instructions: 'Fifth.' },
+    ];
+    const depthRun = await createRun();
+    const depthNames = ['writer', 'editor', 'extra'];
+    let parentTrace: string | undefined;
+    let depthParentId = '';
+    for (let hop = 0; hop < depthNames.length; hop += 1) {
+      const created = await postReferral(depthRun, {
+        idempotencyKey: `depth-${hop}`,
+        sourceBuilder: {
+          agentRole: 'builder',
+          builderProfileId: hop === 0 ? 'builder-a' : depthNames[hop - 1],
+        },
+        targetBuilder: { agentRole: 'builder', builderProfileId: depthNames[hop] },
+        ...(hop === 0 ? { agents: depthAgents } : { parentReferralTraceId: parentTrace }),
+      }).expect(201);
+      parentTrace = created.body.referral.referralTraceId as string;
+      depthParentId = created.body.referral.referralId as string;
+    }
+    await approve(depthRun, depthParentId).expect(200);
+    executionResults.getExecution.mockResolvedValue(
+      completedExecution('Ready.\n<handoff to="fifth">Continue.</handoff>'),
+    );
+    const depthDetail = await http().get(`/api/internal/collaboration/runs/${depthRun}`).expect(200);
+    expect(depthDetail.body.referrals).toHaveLength(3);
+    expect(depthDetail.body.run.status).toBe('active');
+    const depthParent = depthDetail.body.referrals.find(
+      (referral: { referralId: string }) => referral.referralId === depthParentId,
+    );
+    expect(depthParent.status).toBe('completed');
+    expect(depthParent.handoffNote).toBe('refused: depth');
+    expect(
+      service.getAuditEvents().some((event) => event.payload.limitType === 'depth'),
+    ).toBe(true);
+
+    const limitAgents = [
+      { name: 'a1', instructions: 'One.' },
+      { name: 'a2', instructions: 'Two.' },
+      { name: 'a3', instructions: 'Three.' },
+      { name: 'a4', instructions: 'Four.' },
+    ];
+    const agentRun = await createRun();
+    let answeringId = '';
+    for (let index = 1; index <= 3; index += 1) {
+      const created = await postReferral(agentRun, {
+        idempotencyKey: `agent-${index}`,
+        targetBuilder: { agentRole: 'builder', builderProfileId: `a${index}` },
+        ...(index === 1 ? { agents: limitAgents } : {}),
+      }).expect(201);
+      if (index === 1) {
+        answeringId = created.body.referral.referralId as string;
+      }
+    }
+    await approve(agentRun, answeringId).expect(200);
+    executionResults.getExecution.mockResolvedValue(
+      completedExecution('Ready.\n<handoff to="a4">Next.</handoff>'),
+    );
+    const agentDetail = await http().get(`/api/internal/collaboration/runs/${agentRun}`).expect(200);
+    expect(agentDetail.body.referrals).toHaveLength(3);
+    expect(agentDetail.body.run.status).toBe('active');
+    expect(
+      agentDetail.body.referrals.find(
+        (referral: { referralId: string }) => referral.referralId === answeringId,
+      ).handoffNote,
+    ).toBe('refused: agent_limit');
+    expect(
+      service.getAuditEvents().some((event) => event.payload.limitType === 'agent_limit'),
+    ).toBe(true);
+
+    const capRun = await createRun();
+    let cappedId = '';
+    for (let index = 0; index < MAX_HANDOFFS_PER_RUN; index += 1) {
+      const created = await postReferral(capRun, {
+        idempotencyKey: `cap-${index}`,
+        ...(index === 0
+          ? {
+              targetBuilder: { agentRole: 'builder', builderProfileId: 'lead' },
+              agents: listedAgents,
+            }
+          : {}),
+      }).expect(201);
+      if (index === 0) {
+        cappedId = created.body.referral.referralId as string;
+      }
+    }
+    await approve(capRun, cappedId).expect(200);
+    executionResults.getExecution.mockResolvedValue(
+      completedExecution('Ready.\n<handoff to="writer">Next.</handoff>'),
+    );
+    const calls = {
+      queue: queue.enqueueExecution.mock.calls.length,
+      ledger: ledger.writeExecutionIntent.mock.calls.length,
+    };
+    const capDetail = await http().get(`/api/internal/collaboration/runs/${capRun}`).expect(200);
+    expect(capDetail.body.referrals).toHaveLength(MAX_HANDOFFS_PER_RUN);
+    expect(capDetail.body.run.status).toBe('active');
+    expect(
+      capDetail.body.referrals.find(
+        (referral: { referralId: string }) => referral.referralId === cappedId,
+      ).handoffNote,
+    ).toBe('refused: handoff_limit');
+    expect(
+      capDetail.body.referrals.find(
+        (referral: { referralId: string }) => referral.referralId === cappedId,
+      ).status,
+    ).toBe('completed');
+    expect(
+      service.getAuditEvents().some((event) => event.payload.limitType === 'handoff'),
+    ).toBe(true);
+    expect(queue.enqueueExecution).toHaveBeenCalledTimes(calls.queue);
+    expect(ledger.writeExecutionIntent).toHaveBeenCalledTimes(calls.ledger);
+  });
+
+  it('expires a hand-off at 24 hours, finishes settled runs, and never approves', async () => {
+    const now = new Date('2026-11-02T12:00:00.000Z');
+    const service = app.get(OrchestrationService);
+
+    const oldRun = await createRun();
+    const oldWaiting = await postReferral(oldRun, { idempotencyKey: 'old-wait' }).expect(201);
+    referrals.get(oldWaiting.body.referral.referralId as string)!.createdAt = new Date(
+      now.getTime() - COLLABORATION_WAITING_MAX_AGE_MS,
+    );
+
+    const youngRun = await createRun();
+    const youngWaiting = await postReferral(youngRun, { idempotencyKey: 'young-wait' }).expect(201);
+    referrals.get(youngWaiting.body.referral.referralId as string)!.createdAt = new Date(
+      now.getTime() - COLLABORATION_WAITING_MAX_AGE_MS + 1,
+    );
+
+    const agedOpen = await createRun();
+    runs.get(agedOpen)!.createdAt = new Date(now.getTime() - COLLABORATION_WAITING_MAX_AGE_MS - 1000);
+    const held = await postReferral(agedOpen, { idempotencyKey: 'held-open' }).expect(201);
+    referrals.get(held.body.referral.referralId as string)!.createdAt = new Date(now.getTime() - 1000);
+
+    const finishedRun = await createRun();
+    const done = await postReferral(finishedRun, { idempotencyKey: 'sweep-finished' }).expect(201);
+    await approve(finishedRun, done.body.referral.referralId).expect(200);
+    executionResults.getExecution.mockResolvedValue(completedExecution('done'));
+
+    const emptyOld = await createRun();
+    runs.get(emptyOld)!.createdAt = new Date(now.getTime() - COLLABORATION_WAITING_MAX_AGE_MS);
+    const emptyYoung = await createRun();
+    runs.get(emptyYoung)!.createdAt = new Date(now.getTime() - COLLABORATION_WAITING_MAX_AGE_MS + 1);
+
+    const approvedBefore = service
+      .getAuditEvents()
+      .filter((event) => event.eventType === 'orchestration.referral_approved').length;
+    const queueBefore = queue.enqueueExecution.mock.calls.length;
+    const ledgerBefore = ledger.writeExecutionIntent.mock.calls.length;
+
+    await service.sweepCollaborations(now);
+
+    const oldDetail = await http().get(`/api/internal/collaboration/runs/${oldRun}`).expect(200);
+    expect(oldDetail.body.referrals[0].status).toBe('timed_out');
+    expect(oldDetail.body.referrals[0].result.summary).toBe(HANDOFF_WAIT_TIMEOUT_REASON);
+    expect(oldDetail.body.run.status).toBe('failed');
+
+    const youngDetail = await http().get(`/api/internal/collaboration/runs/${youngRun}`).expect(200);
+    expect(youngDetail.body.referrals[0].status).toBe('pending_approval');
+    expect(youngDetail.body.referrals[0].decidedBy).toBeNull();
+    expect(youngDetail.body.run.status).toBe('active');
+
+    const heldDetail = await http().get(`/api/internal/collaboration/runs/${agedOpen}`).expect(200);
+    expect(heldDetail.body.referrals[0].status).toBe('pending_approval');
+    expect(heldDetail.body.run.status).toBe('active');
+
+    const finishedDetail = await http()
+      .get(`/api/internal/collaboration/runs/${finishedRun}`)
+      .expect(200);
+    expect(finishedDetail.body.run.status).toBe('completed');
+    expect(finishedDetail.body.referrals).toHaveLength(1);
+    expect(finishedDetail.body.referrals[0].status).toBe('completed');
+
+    expect((await http().get(`/api/internal/collaboration/runs/${emptyOld}`)).body.run.status).toBe(
+      'failed',
+    );
+    expect((await http().get(`/api/internal/collaboration/runs/${emptyYoung}`)).body.run.status).toBe(
+      'active',
+    );
+
+    expect(queue.enqueueExecution).toHaveBeenCalledTimes(queueBefore);
+    expect(ledger.writeExecutionIntent).toHaveBeenCalledTimes(ledgerBefore);
+    expect(
+      service.getAuditEvents().filter((event) => event.eventType === 'orchestration.referral_approved'),
+    ).toHaveLength(approvedBefore);
+    for (const referral of referrals.values()) {
+      expect(referral.status).not.toBe('approved');
+    }
+    expect(COLLABORATION_WAITING_MAX_AGE_MS).toBe(24 * 60 * 60 * 1000);
   });
 });

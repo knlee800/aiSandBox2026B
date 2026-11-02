@@ -152,7 +152,13 @@ export interface CollaborationReferral {
   readonly cancelReason: string | null;
   readonly prompt: string | null;
   readonly decidedBy: string | null;
+  readonly handoffNote: string | null;
   readonly result: ReferralResult | null;
+}
+
+export interface CollaborationListedAgent {
+  readonly name: string;
+  readonly instructions: string;
 }
 
 export interface ReferralPendingJob {
@@ -169,6 +175,9 @@ export interface ReferralPendingJob {
   readonly orchestrationPriority: number | null;
   readonly decidedBy: string | null;
   readonly decisionReason: string | null;
+  readonly agents?: readonly CollaborationListedAgent[] | null;
+  readonly callerProjectInstructions?: string | null;
+  readonly handoffNote?: string | null;
 }
 
 export interface ReferralResult {

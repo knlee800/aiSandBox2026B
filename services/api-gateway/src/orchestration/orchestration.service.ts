@@ -3,6 +3,7 @@ import {
   ConflictException,
   ExecutionContext,
   Injectable,
+  Logger,
   Optional,
   ServiceUnavailableException,
 } from '@nestjs/common';
@@ -47,9 +48,21 @@ import {
   type TargetBuilderIdentity,
   type UserId,
   type ProjectId,
+  type CollaborationListedAgent,
   type ReferralConstraints,
   type ReferralPendingJob,
 } from './orchestration.contracts';
+import {
+  COLLABORATION_WAITING_MAX_AGE_MS,
+  HANDOFF_WAIT_TIMEOUT_REASON,
+} from './collaboration-sweep.constants';
+import {
+  answerHandoffIdempotencyKey,
+  buildCollaborationProjectInstructions,
+  buildRequestedHandoffPrompt,
+  parseHandoffRequest,
+  readCollaborationAgents,
+} from './handoff-request';
 
 const DEFAULT_REFERRAL_TIMEOUT_MS = 300_000;
 const LEDGER_INTENT_FAILURE = 'Failed to write execution intent';
@@ -166,6 +179,7 @@ export interface CreatePendingReferralInput {
   readonly workspaceContext?: unknown;
   readonly globalInstructions?: string;
   readonly projectInstructions?: string;
+  readonly agents?: unknown;
   readonly constraints?: Partial<ReferralConstraints>;
   readonly parentReferralTraceId?: ReferralTraceId | null;
   readonly timeoutMs?: number;
@@ -233,6 +247,7 @@ export interface CancelCollaborationInput {
 
 @Injectable()
 export class OrchestrationService {
+  private readonly logger = new Logger(OrchestrationService.name);
   private readonly auditRecorder: OrchestrationAuditRecorder;
 
   constructor(
@@ -346,9 +361,22 @@ export class OrchestrationService {
       return null;
     }
 
-    const referrals: CollaborationReferral[] = [];
     for (const referralId of run.referralIds) {
-      referrals.push(await this.syncReferralFromExecution(referralId));
+      await this.syncReferralFromExecution(referralId);
+    }
+
+    const refreshed = await this.runRepo.findOne({
+      where: { collaborationRunId },
+    });
+    if (!refreshed) {
+      return null;
+    }
+    const referrals: CollaborationReferral[] = [];
+    for (const referralId of refreshed.referralIds ?? []) {
+      const referral = await this.getReferral(referralId);
+      if (referral) {
+        referrals.push(referral);
+      }
     }
 
     const settled = await this.settleCollaborationRun(collaborationRunId, referrals);
@@ -836,6 +864,7 @@ export class OrchestrationService {
   async createPendingReferral(
     input: CreatePendingReferralInput,
   ): Promise<StartedCollaborationReferral> {
+    const prepared = await this.preparePendingReferral(input);
     const graph = await this.deriveServerGraph({
       collaborationRunId: input.collaborationRunId,
       parentReferralTraceId: input.parentReferralTraceId,
@@ -862,10 +891,13 @@ export class OrchestrationService {
         model: input.model ?? null,
         workspaceContext: input.workspaceContext ?? null,
         globalInstructions: input.globalInstructions ?? null,
-        projectInstructions: input.projectInstructions ?? null,
+        projectInstructions: prepared.projectInstructions,
         orchestrationPriority: input.orchestrationPriority ?? null,
         decidedBy: null,
         decisionReason: null,
+        agents: prepared.agents,
+        callerProjectInstructions: prepared.callerProjectInstructions,
+        handoffNote: null,
       },
     });
     const stored = await this.referralRepo.findOne({
@@ -1798,6 +1830,7 @@ export class OrchestrationService {
       cancelReason: entity.cancelReason,
       prompt: entity.pendingJob?.prompt ?? null,
       decidedBy: entity.pendingJob?.decidedBy ?? null,
+      handoffNote: entity.pendingJob?.handoffNote ?? null,
       result: entity.resultStatus
         ? {
             referralId: entity.referralId,
@@ -2011,10 +2044,16 @@ export class OrchestrationService {
     const execution = await this.executionResultService.getExecution(entity.executionId);
     const outcome = this.classifyStoredExecution(execution);
     if (outcome.kind === 'succeeded') {
-      return this.completeReferral({
+      await this.completeReferral({
         referralId,
         summary: outcome.summary,
       });
+      await this.maybeRequestHandoff(referralId, outcome.summary);
+      const updated = await this.getReferral(referralId);
+      if (!updated) {
+        throw new Error(`Referral ${referralId} not found`);
+      }
+      return updated;
     }
     if (outcome.kind === 'failed') {
       return this.failReferral({
@@ -2078,5 +2117,376 @@ export class OrchestrationService {
 
   private now(): string {
     return new Date().toISOString();
+  }
+
+  async sweepCollaborations(now: Date = new Date()): Promise<void> {
+    const inProgress = await this.referralRepo.find({
+      where: { status: 'in_progress' },
+    });
+    for (const referral of inProgress) {
+      try {
+        await this.syncReferralFromExecution(referral.referralId);
+      } catch (error) {
+        this.logWithoutContents('collaboration.sweep_item_failed', error);
+      }
+    }
+
+    const waiting = await this.referralRepo.find({
+      where: { status: 'pending_approval' },
+    });
+    for (const referral of waiting) {
+      if (!this.isAtLeastAge(referral.createdAt, now, COLLABORATION_WAITING_MAX_AGE_MS)) {
+        continue;
+      }
+      try {
+        await this.timeoutWaitingHandoff(referral.referralId, now);
+      } catch (error) {
+        this.logWithoutContents('collaboration.sweep_item_failed', error);
+      }
+    }
+
+    const activeRuns = await this.runRepo.find({
+      where: { status: 'active' },
+    });
+    for (const run of activeRuns) {
+      try {
+        await this.finishOrFailRun(run.collaborationRunId, now);
+      } catch (error) {
+        this.logWithoutContents('collaboration.sweep_item_failed', error);
+      }
+    }
+  }
+
+  private async preparePendingReferral(input: CreatePendingReferralInput): Promise<{
+    agents: CollaborationListedAgent[] | null;
+    callerProjectInstructions: string | null;
+    projectInstructions: string | null;
+  }> {
+    const parentId = input.parentReferralTraceId?.trim() || null;
+    if (input.agents !== undefined && parentId) {
+      throw new BadRequestException('agents are only accepted on the first hand-off');
+    }
+
+    let parent: CollaborationReferralEntity | null = null;
+    if (parentId) {
+      parent = await this.referralRepo.findOne({
+        where: {
+          collaborationRunId: input.collaborationRunId,
+          referralTraceId: parentId,
+        },
+      });
+      if (!parent) {
+        throw new Error(`Parent referral trace ${parentId} is not in this run`);
+      }
+    }
+
+    let agents: CollaborationListedAgent[] | null = null;
+    if (!parent) {
+      if (input.agents !== undefined) {
+        const read = readCollaborationAgents(input.agents);
+        if ('message' in read) {
+          throw new BadRequestException(read.message);
+        }
+        agents = read.agents;
+      }
+    } else {
+      agents = this.copyStoredAgents(parent.pendingJob?.agents);
+    }
+
+    if (
+      agents &&
+      !agents.some((agent) => agent.name === input.targetBuilder.builderProfileId)
+    ) {
+      throw new BadRequestException(
+        `Target ${input.targetBuilder.builderProfileId} is not on the agent list`,
+      );
+    }
+
+    const callerProjectInstructions =
+      input.projectInstructions !== undefined
+        ? input.projectInstructions
+        : (parent?.pendingJob?.callerProjectInstructions ?? null);
+    const projectInstructions = agents
+      ? buildCollaborationProjectInstructions({
+          callerInstructions: callerProjectInstructions,
+          agents,
+          agentName: input.targetBuilder.builderProfileId,
+        })
+      : callerProjectInstructions;
+
+    return { agents, callerProjectInstructions, projectInstructions };
+  }
+
+  private copyStoredAgents(
+    value: readonly CollaborationListedAgent[] | null | undefined,
+  ): CollaborationListedAgent[] | null {
+    if (!Array.isArray(value) || value.length === 0) {
+      return null;
+    }
+    return value.map((agent) => ({
+      name: agent.name,
+      instructions: agent.instructions,
+    }));
+  }
+
+  private async maybeRequestHandoff(referralId: ReferralId, answer: string): Promise<void> {
+    try {
+      await this.requestHandoffFromAnswer(referralId, answer);
+    } catch (error) {
+      this.logWithoutContents('collaboration.answer_handoff_failed', error);
+      try {
+        await this.rememberHandoffNote(referralId, 'refused: refused');
+      } catch (noteError) {
+        this.logWithoutContents('collaboration.answer_handoff_note_failed', noteError);
+      }
+    }
+  }
+
+  private async requestHandoffFromAnswer(
+    referralId: ReferralId,
+    answer: string,
+  ): Promise<void> {
+    const entity = await this.referralRepo.findOne({
+      where: { referralId },
+    });
+    if (!entity?.pendingJob) {
+      return;
+    }
+    const agents = this.copyStoredAgents(entity.pendingJob.agents);
+    if (!agents || entity.pendingJob.handoffNote) {
+      return;
+    }
+
+    const idempotencyKey = answerHandoffIdempotencyKey(referralId);
+    const existing = await this.findActiveIdempotentReferral(
+      this.referralRepo,
+      entity.collaborationRunId,
+      idempotencyKey,
+    );
+    if (existing) {
+      return;
+    }
+
+    const parsed = parseHandoffRequest(answer);
+    if (parsed.kind === 'none') {
+      return;
+    }
+    if (parsed.kind === 'malformed') {
+      await this.rememberHandoffNote(referralId, `malformed: ${parsed.reason}`);
+      return;
+    }
+    if (parsed.kind === 'too_long') {
+      this.auditAnswerRefusal(entity, parsed.to, 'task_too_long');
+      await this.rememberHandoffNote(referralId, 'refused: task_too_long');
+      return;
+    }
+    if (!agents.some((agent) => agent.name === parsed.to)) {
+      this.auditAnswerRefusal(entity, parsed.to, 'agent_not_on_list');
+      await this.rememberHandoffNote(referralId, 'refused: agent_not_on_list');
+      return;
+    }
+
+    const job = entity.pendingJob;
+    try {
+      await this.createPendingReferral({
+        collaborationRunId: entity.collaborationRunId,
+        sourceBuilder: {
+          agentRole: entity.targetAgentRole,
+          builderProfileId: entity.targetBuilderProfileId,
+        },
+        targetBuilder: {
+          agentRole: 'builder',
+          builderProfileId: parsed.to,
+        },
+        idempotencyKey,
+        sessionId: job.sessionId,
+        conversationId: job.conversationId,
+        apiKeyId: job.apiKeyId,
+        prompt: buildRequestedHandoffPrompt(parsed.task, parsed.answerWithoutRequest),
+        provider: job.provider,
+        adapter: job.adapter,
+        model: job.model ?? undefined,
+        workspaceContext: job.workspaceContext ?? undefined,
+        globalInstructions: job.globalInstructions ?? undefined,
+        parentReferralTraceId: entity.referralTraceId,
+        timeoutMs: entity.timeoutMs,
+        orchestrationPriority: job.orchestrationPriority ?? undefined,
+        constraints: {
+          timeoutMs: entity.constraintTimeoutMs,
+          maxDepth: entity.constraintMaxDepth,
+          maxAgentsPerCollaboration: entity.constraintMaxAgentsPerCollaboration,
+          readOnly: entity.constraintReadOnly,
+          allowWriteTools: entity.constraintAllowWriteTools,
+          allowedTools: [...(entity.constraintAllowedTools ?? [])],
+        },
+      });
+    } catch (error) {
+      const reason = this.classifyRefusal(error);
+      await this.rememberHandoffNote(referralId, `refused: ${reason}`);
+      if (reason === 'refused') {
+        this.logWithoutContents('collaboration.answer_handoff_failed', error);
+      }
+    }
+  }
+
+  private auditAnswerRefusal(
+    entity: CollaborationReferralEntity,
+    targetName: string,
+    reason: 'task_too_long' | 'agent_not_on_list',
+  ): void {
+    this.emitAuditEvent({
+      eventType: 'orchestration.safety_limit_breached',
+      collaborationRunId: entity.collaborationRunId,
+      referralTraceId: entity.referralTraceId,
+      sourceBuilder: {
+        agentRole: entity.targetAgentRole,
+        builderProfileId: entity.targetBuilderProfileId,
+      },
+      targetBuilder: {
+        agentRole: 'builder',
+        builderProfileId: targetName,
+      },
+      payload: {
+        lifecycleEvent: 'answer_handoff_refused',
+        reason,
+        limitType: reason,
+        referralId: entity.referralId,
+        targetBuilderProfileId: targetName,
+      },
+    });
+  }
+
+  private classifyRefusal(error: unknown): string {
+    const message = error instanceof Error ? error.message : '';
+    if (message.includes('loop detected')) {
+      return 'loop';
+    }
+    if (message.includes('exceeds max depth')) {
+      return 'depth';
+    }
+    if (message.includes('Max agents')) {
+      return 'agent_limit';
+    }
+    if (message.includes('Handoff limit')) {
+      return 'handoff_limit';
+    }
+    if (message.includes('not on the agent list')) {
+      return 'agent_not_on_list';
+    }
+    return 'refused';
+  }
+
+  private async rememberHandoffNote(referralId: ReferralId, note: string): Promise<void> {
+    const entity = await this.referralRepo.findOne({
+      where: { referralId },
+    });
+    if (!entity?.pendingJob || entity.pendingJob.handoffNote) {
+      return;
+    }
+    entity.pendingJob = {
+      ...entity.pendingJob,
+      handoffNote: note,
+    };
+    entity.updatedAt = new Date();
+    await this.referralRepo.save(entity);
+  }
+
+  private async timeoutWaitingHandoff(referralId: ReferralId, now: Date): Promise<void> {
+    const existing = await this.referralRepo.findOne({
+      where: { referralId },
+    });
+    if (
+      !existing ||
+      existing.status !== 'pending_approval' ||
+      !this.isAtLeastAge(existing.createdAt, now, COLLABORATION_WAITING_MAX_AGE_MS)
+    ) {
+      return;
+    }
+
+    const updated = await this.referralRepo.update(
+      { referralId, status: 'pending_approval' },
+      {
+        status: 'timed_out',
+        timedOutAt: now,
+        updatedAt: now,
+        resultStatus: 'failed',
+        resultSummary: HANDOFF_WAIT_TIMEOUT_REASON,
+      },
+    );
+    if ((updated.affected ?? 0) < 1) {
+      return;
+    }
+
+    const entity = await this.referralRepo.findOne({
+      where: { referralId },
+    });
+    if (!entity) {
+      return;
+    }
+    const run = await this.runRepo.findOne({
+      where: { collaborationRunId: entity.collaborationRunId },
+    });
+    this.emitAuditEvent({
+      eventType: 'orchestration.referral_timed_out',
+      collaborationRunId: entity.collaborationRunId,
+      referralTraceId: entity.referralTraceId,
+      sourceBuilder: {
+        agentRole: entity.sourceAgentRole,
+        builderProfileId: entity.sourceBuilderProfileId,
+      },
+      targetBuilder: {
+        agentRole: entity.targetAgentRole,
+        builderProfileId: entity.targetBuilderProfileId,
+      },
+      payload: {
+        lifecycleEvent: 'referral_timed_out',
+        status: 'timed_out',
+        reason: HANDOFF_WAIT_TIMEOUT_REASON,
+        referralId: entity.referralId,
+        userId: run?.userId ?? null,
+        projectId: run?.projectId ?? null,
+      },
+    });
+  }
+
+  private async finishOrFailRun(
+    collaborationRunId: CollaborationRunId,
+    now: Date,
+  ): Promise<void> {
+    const entity = await this.runRepo.findOne({
+      where: { collaborationRunId },
+    });
+    if (!entity || entity.status !== 'active') {
+      return;
+    }
+    const rows = await this.referralRepo.find({
+      where: { collaborationRunId },
+    });
+    if (rows.length === 0) {
+      if (this.isAtLeastAge(entity.createdAt, now, COLLABORATION_WAITING_MAX_AGE_MS)) {
+        entity.status = 'failed';
+        entity.failedAt = now;
+        entity.updatedAt = now;
+        await this.runRepo.save(entity);
+      }
+      return;
+    }
+    await this.settleCollaborationRun(
+      collaborationRunId,
+      rows.map((row) => this.toReferral(row)),
+    );
+  }
+
+  private isAtLeastAge(createdAt: Date, now: Date, maxAgeMs: number): boolean {
+    const createdMs = new Date(createdAt).getTime();
+    if (!Number.isFinite(createdMs)) {
+      return false;
+    }
+    return now.getTime() - createdMs >= maxAgeMs;
+  }
+
+  private logWithoutContents(event: string, error: unknown): void {
+    const errorName = error instanceof Error ? error.name : 'Error';
+    this.logger.error(JSON.stringify({ event, errorName }));
   }
 }

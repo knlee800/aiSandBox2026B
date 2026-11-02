@@ -183,6 +183,7 @@ export class InternalCollaborationController {
         record.projectInstructions,
         'projectInstructions',
       ),
+      agents: record.agents,
       constraints: this.readConstraints(record.constraints),
       parentReferralTraceId: this.readOptionalNullableString(
         record.parentReferralTraceId,
