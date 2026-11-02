@@ -83730,6 +83730,64 @@ nature=IMPLEMENTATION
 - [x] Keith judgement recorded
 - [x] Not LOCKED by an implementer
 
+### COLLAB-SCREEN-01 — A page to start, follow, approve and reject collaboration runs
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-SCREEN-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-03.
+**Task ID:** COLLAB-SCREEN-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Registration and admission here; implementation; code and LOCK in one commit after control-plane review.
+**Start condition (human):** READY — Keith approved the draft on 2026-11-03.
+**Depends on:** COLLAB-LIVE-04, LOCKED.
+**Primary write scope:** `services/api-gateway/src/orchestration/`, `services/api-gateway/src/guards/internal-service-auth.guard.http.spec.ts`, `frontend/app/`, `frontend/components/collaboration/`, `frontend/components/workspace/workspace-shell.tsx`, `frontend/lib/collaboration/`, and the three frontend/messages files under I18N. Under frontend/app/ only the new collaboration route folder is written.
+**Mutexes / resources:** GATEWAY, FRONTEND, I18N. **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (new page and routes; no migration).
+**saturationClass:** OPTIONAL. Collaboration stays FUTURE in PRD.md; allow-listed users only.
+
+**Problem:** collaboration only runs through internal routes and scripts, so Keith cannot use it himself.
+**Scope:** a Team link in the workspace for allow-listed users; a separate page with a task box, the fixed Lead, Writer and Reviewer team with file access on, the chain with prompts, status and answers shown as plain text, approve and reject, plain-word refusals and a list of past runs for the project; login-based routes under /api/collaboration with owner checks; decidedBy from the login; provider, model and team from the server; a readable failure reason on failed hand-offs. No back-and-forth, writes or team editing.
+
+#### Acceptance criteria
+
+- [ ] Another user cannot read or act on a run, and a session that is not yours is refused
+- [ ] Users not on the allow-list see no link and are refused by the routes
+- [ ] decidedBy is the login; the browser cannot set provider, model, team or decidedBy
+- [ ] Answers render as text, not HTML
+- [ ] All visible text is in en, zh-TW and zh-CN, with Heroicons for icons
+- [ ] A failed hand-off shows a readable reason
+- [ ] Ask, Build, Agent mode and the workspace otherwise unchanged
+- [ ] Not LOCKED by an implementer
+
+### COLLAB-LIVE-05 — Keith uses the collaboration screen on staging
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-LIVE-05
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-11-03.
+**Task ID:** COLLAB-LIVE-05
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Start condition NOT_READY until COLLAB-SCREEN-01 is LOCKED and deployed.
+**Depends on:** COLLAB-SCREEN-01.
+**Primary write scope:** none in the repository beyond records.
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT, ENV. **Evidence class:** PROVIDER-LIVE. **Revert isolation:** acceptable (no code).
+**saturationClass:** OPTIONAL
+
+**Scope:** on ainow-staging-01 with the stored test key: Keith opens C1 repeat, clicks Team, gives a real task, approves and rejects steps and checks one Chinese language. The control plane checks another account cannot see the run. Under 50 credits.
+
+#### Acceptance criteria
+
+- [ ] Keith completed a run from the page
+- [ ] Reject worked from the page
+- [ ] Another account refused
+- [ ] Nothing left open, harness write flags stayed off
+- [ ] Keith judgement recorded on the screen and the agents
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
