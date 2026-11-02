@@ -13,7 +13,7 @@ import { AuthService } from './auth.service';
 const BROWSER_SESSION_HARNESS_ALLOW_LIST_KEY =
   'AGENT_HARNESS_BROWSER_SESSION_USER_IDS';
 
-function isBrowserSessionHarnessEntitled(authenticatedUserId: string): boolean {
+export function isBrowserSessionHarnessEntitled(authenticatedUserId: string): boolean {
   const raw = process.env[BROWSER_SESSION_HARNESS_ALLOW_LIST_KEY];
   if (raw === undefined) {
     return false;

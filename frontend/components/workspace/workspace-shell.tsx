@@ -72,6 +72,7 @@ import zhCnMessages from '@/messages/zh-CN.json';
 import WorkspaceTabBar from './workspace-tab-bar';
 import type { WorkspaceTabBarTab } from './workspace-tab-bar';
 import type { WorkspaceExecutionIntent } from './workspace-execution-intent.logic';
+import { toolLabelKey, type HarnessProgressItem } from './workspace-agent-mode.logic';
 import {
   TAB_REGISTRY,
   DEFAULT_ACTIVE_TAB_ID,
@@ -602,6 +603,10 @@ interface WorkspaceShellProps {
   onChatPromptInputChange?: (value: string) => void;
   executionIntent?: WorkspaceExecutionIntent;
   onExecutionIntentChange?: (value: WorkspaceExecutionIntent) => void;
+  harnessEntitled?: boolean;
+  agentMode?: boolean;
+  onAgentModeChange?: (enabled: boolean) => void;
+  harnessProgress?: HarnessProgressItem[];
   boundUserAgentId?: string | null;
   onDismissBoundUserAgentAsk?: () => void;
   onCreateProjectFromPrompt?: (prompt: string) => Promise<void>;
@@ -1669,6 +1674,10 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
             onPromptInputChange={props.onChatPromptInputChange}
             executionIntent={props.executionIntent ?? 'workspace_mutation'}
             onExecutionIntentChange={props.onExecutionIntentChange}
+            harnessEntitled={props.harnessEntitled === true}
+            agentMode={props.agentMode === true}
+            onAgentModeChange={props.onAgentModeChange}
+            harnessProgress={props.harnessProgress ?? []}
             boundUserAgentId={props.boundUserAgentId ?? null}
             onDismissBoundUserAgentAsk={props.onDismissBoundUserAgentAsk}
             selectedModelProvider={props.selectedModelProvider ?? ''}
@@ -3870,6 +3879,10 @@ function WorkspaceChatPanel(props: {
   onPromptInputChange?: (value: string) => void;
   executionIntent: WorkspaceExecutionIntent;
   onExecutionIntentChange?: (value: WorkspaceExecutionIntent) => void;
+  harnessEntitled?: boolean;
+  agentMode?: boolean;
+  onAgentModeChange?: (enabled: boolean) => void;
+  harnessProgress?: HarnessProgressItem[];
   boundUserAgentId?: string | null;
   onDismissBoundUserAgentAsk?: () => void;
   selectedModelProvider: string;
@@ -3931,6 +3944,10 @@ function WorkspaceChatPanel(props: {
     props.requestState === 'submitting' ||
     props.requestState === 'queued' ||
     props.requestState === 'running';
+  const agentModeSelected = props.agentMode === true;
+  const askSelected = !agentModeSelected && props.executionIntent === 'conversation';
+  const buildSelected = !agentModeSelected && props.executionIntent === 'workspace_mutation';
+  const harnessProgress = props.harnessProgress ?? [];
   const isUserAgentAskBound = Boolean(props.boundUserAgentId);
   const promptInputRef = React.useRef<HTMLTextAreaElement | null>(null);
   const prevIsSendingRef = React.useRef(false);
@@ -4141,6 +4158,23 @@ function WorkspaceChatPanel(props: {
             {props.errorMessage}
           </p>
         ) : null}
+        {harnessProgress.length > 0 ? (
+          <div className="mt-2 min-w-0 max-w-full" data-testid="workspace-chat-agent-progress">
+            <p className="text-xs font-medium text-gray-700">{props.aiMessages.harnessProgressHeading}</p>
+            <ol className="mt-1 list-decimal space-y-1 pl-4 text-xs text-gray-600">
+              {harnessProgress.map((item) => (
+                <li
+                  key={item.step}
+                  className="min-w-0 break-all"
+                  data-testid={`workspace-chat-agent-progress-step-${item.step}`}
+                >
+                  {props.aiMessages[toolLabelKey(item.tool)]}
+                  {item.target ? <> {item.target}</> : null}
+                </li>
+              ))}
+            </ol>
+          </div>
+        ) : null}
       </div>
 
       <div className="flex-shrink-0 border-t border-gray-200 bg-white px-3 py-2">
@@ -4200,11 +4234,14 @@ function WorkspaceChatPanel(props: {
                 type="button"
                 data-testid="workspace-chat-intent-ask"
                 title={props.aiMessages.intentAskTooltip}
-                aria-pressed={props.executionIntent === 'conversation'}
+                aria-pressed={askSelected}
                 disabled={!props.onExecutionIntentChange || isSending}
-                onClick={() => props.onExecutionIntentChange?.('conversation')}
+                onClick={() => {
+                  props.onAgentModeChange?.(false);
+                  props.onExecutionIntentChange?.('conversation');
+                }}
                 className={`rounded-md px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 ${
-                  props.executionIntent === 'conversation'
+                  askSelected
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'bg-transparent text-gray-600 hover:text-gray-900'
                 }`}
@@ -4215,17 +4252,37 @@ function WorkspaceChatPanel(props: {
                 type="button"
                 data-testid="workspace-chat-intent-build"
                 title={props.aiMessages.intentBuildTooltip}
-                aria-pressed={props.executionIntent === 'workspace_mutation'}
+                aria-pressed={buildSelected}
                 disabled={!props.onExecutionIntentChange || isSending}
-                onClick={() => props.onExecutionIntentChange?.('workspace_mutation')}
+                onClick={() => {
+                  props.onAgentModeChange?.(false);
+                  props.onExecutionIntentChange?.('workspace_mutation');
+                }}
                 className={`rounded-md px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 ${
-                  props.executionIntent === 'workspace_mutation'
+                  buildSelected
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'bg-transparent text-gray-600 hover:text-gray-900'
                 }`}
               >
                 {props.aiMessages.intentBuild}
               </button>
+              {props.harnessEntitled ? (
+                <button
+                  type="button"
+                  data-testid="workspace-chat-intent-agent"
+                  title={props.aiMessages.intentAgentTooltip}
+                  aria-pressed={agentModeSelected}
+                  disabled={!props.onAgentModeChange || isSending}
+                  onClick={() => props.onAgentModeChange?.(true)}
+                  className={`rounded-md px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 ${
+                    agentModeSelected
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'bg-transparent text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  {props.aiMessages.intentAgent}
+                </button>
+              ) : null}
             </div>
           </div>
           <div className="flex min-w-0 max-w-full items-end gap-2" data-testid="workspace-chat-composer-row">

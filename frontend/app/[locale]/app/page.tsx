@@ -81,6 +81,14 @@ import {
   runAiActionCoherence,
 } from '@/components/workspace/workspace-ai-coherence.logic';
 import {
+  appendHarnessProgress,
+  buildAgentModeRequestFields,
+  harnessProgressShowsWrite,
+  parseHarnessEntitled,
+  parseHarnessProgressMessage,
+  type HarnessProgressItem,
+} from '@/components/workspace/workspace-agent-mode.logic';
+import {
   parseStoredChatThreadMessages,
   type WorkspaceChatThreadMessage,
 } from '@/components/workspace/workspace-chat-thread.logic';
@@ -1025,6 +1033,10 @@ export default function AppPage() {
   const [chatExecutionIntent, setChatExecutionIntent] = useState<WorkspaceExecutionIntent>(
     DEFAULT_WORKSPACE_EXECUTION_INTENT,
   );
+  const [harnessEntitled, setHarnessEntitled] = useState(false);
+  const [agentMode, setAgentMode] = useState(false);
+  const [harnessProgress, setHarnessProgress] = useState<HarnessProgressItem[]>([]);
+  const harnessEntitledRef = useRef(false);
   const [boundUserAgentId, setBoundUserAgentId] = useState<string | null>(null);
   const [chatThreadMessages, setChatThreadMessages] = useState<WorkspaceChatThreadUiMessage[]>([]);
   const [chatExecutionFileActionStates, setChatExecutionFileActionStates] = useState<
@@ -1068,6 +1080,9 @@ export default function AppPage() {
   const executionIntentByExecutionIdRef = useRef<
     Record<string, WorkspaceExecutionIntent>
   >({});
+  const agentExecutionIdsRef = useRef<Set<string>>(new Set());
+  const harnessProgressByExecutionIdRef = useRef<Record<string, HarnessProgressItem[]>>({});
+  const activeHarnessProgressExecutionIdRef = useRef<string | null>(null);
 
   const resolvedChatModelSelection = resolveFrontendProviderModelSelection({
     providerId: selectedChatProviderId,
@@ -1112,6 +1127,14 @@ export default function AppPage() {
     setBoundUserAgentId(parsed);
     setChatExecutionIntent('conversation');
   }, []);
+
+  function setAgentModeFromUser(next: boolean): void {
+    if (next && !harnessEntitledRef.current) {
+      setAgentMode(false);
+      return;
+    }
+    setAgentMode(next);
+  }
 
   function handleSelectedChatProviderOptionChange(nextProviderId: string): void {
     const resolvedSelection = resolveFrontendProviderModelSelection({
@@ -1301,6 +1324,12 @@ export default function AppPage() {
         }
         setUserId(me.id);
         setUserRole(typeof me.role === 'string' ? me.role : null);
+        const entitled = parseHarnessEntitled(me);
+        harnessEntitledRef.current = entitled;
+        setHarnessEntitled(entitled);
+        if (!entitled) {
+          setAgentMode(false);
+        }
         setAuthLoading(false);
         void loadSessions();
         void loadDashboardSlice();
@@ -1703,6 +1732,10 @@ export default function AppPage() {
     authModuleExecutionIdsRef.current = new Set<string>();
     visualEditCheckpointByExecutionIdRef.current = {};
     coheredExecutionIdsRef.current = new Set<string>();
+    agentExecutionIdsRef.current = new Set<string>();
+    harnessProgressByExecutionIdRef.current = {};
+    activeHarnessProgressExecutionIdRef.current = null;
+    setHarnessProgress([]);
     skipNextChatThreadPersistRef.current = true;
 
     if (!selectedSessionId) {
@@ -3993,6 +4026,7 @@ export default function AppPage() {
         if (shouldRefreshDashboardForChatStatus(nextStatus)) {
           await loadDashboardSlice();
         }
+        await maybeRefreshAfterAgentExecution(executionId);
         return;
       }
 
@@ -4039,6 +4073,7 @@ export default function AppPage() {
         if (shouldRefreshDashboardForChatStatus(nextStatus)) {
           await loadDashboardSlice();
         }
+        await maybeRefreshAfterAgentExecution(executionId);
         return;
       }
 
@@ -4427,11 +4462,14 @@ export default function AppPage() {
       executionIntent: chatExecutionIntent,
     });
     const isVisualEditPrompt = selectedPreviewElement !== null;
+    const submitAsAgent = agentMode && harnessEntitled;
 
     setChatRequestState('submitting');
     setChatPromptInput('');
     chatStreamRef.current?.close();
     chatStreamRef.current = null;
+    activeHarnessProgressExecutionIdRef.current = null;
+    setHarnessProgress([]);
     chatResponseTextRef.current = '';
     setChatResponseText('');
     setChatExecutionId(null);
@@ -4443,7 +4481,8 @@ export default function AppPage() {
     });
     const userMessageId = crypto.randomUUID();
     const assistantMessageId = crypto.randomUUID();
-    pendingAssistantMessageIdRef.current = isChatOrchestrationEnabled ? null : assistantMessageId;
+    pendingAssistantMessageIdRef.current =
+      isChatOrchestrationEnabled && !submitAsAgent ? null : assistantMessageId;
     setChatThreadMessages((currentMessages) => [
       ...currentMessages,
       {
@@ -4469,7 +4508,7 @@ export default function AppPage() {
       });
     }
 
-    if (isChatOrchestrationEnabled) {
+    if (isChatOrchestrationEnabled && !submitAsAgent) {
       await submitOrchestratedChatPrompt({
         prompt: promptWithSelectedPreviewElement,
         selectedSessionId,
@@ -4512,11 +4551,15 @@ export default function AppPage() {
           model: chosenModel.model,
           sessionId: selectedSessionId ?? crypto.randomUUID(),
           conversationId: selectedSessionId ?? crypto.randomUUID(),
-          ...buildExecutionIntentRequestPayload(requestExecutionIntent),
-          ...buildPersistedUserAgentAskRequestFields({
-            agentId: boundUserAgentId,
-            executionIntent: requestExecutionIntent,
-          }),
+          ...(submitAsAgent
+            ? buildAgentModeRequestFields()
+            : {
+                ...buildExecutionIntentRequestPayload(requestExecutionIntent),
+                ...buildPersistedUserAgentAskRequestFields({
+                  agentId: boundUserAgentId,
+                  executionIntent: requestExecutionIntent,
+                }),
+              }),
           ...(workspaceContext ? { workspaceContext } : {}),
         }),
       });
@@ -4572,7 +4615,14 @@ export default function AppPage() {
 
       setChatExecutionId(nextExecutionId);
       if (nextExecutionId) {
-        executionIntentByExecutionIdRef.current[nextExecutionId] = requestExecutionIntent;
+        executionIntentByExecutionIdRef.current[nextExecutionId] = submitAsAgent
+          ? 'conversation'
+          : requestExecutionIntent;
+        if (submitAsAgent) {
+          agentExecutionIdsRef.current.add(nextExecutionId);
+          activeHarnessProgressExecutionIdRef.current = nextExecutionId;
+          harnessProgressByExecutionIdRef.current[nextExecutionId] = [];
+        }
       }
       if (nextExecutionId && executionSessionId) {
         executionSessionIdByExecutionIdRef.current[nextExecutionId] = executionSessionId;
@@ -4629,6 +4679,19 @@ export default function AppPage() {
             if (parsed.type === 'file_actions') {
               const streamFileActions = normalizeWorkspaceFileActions(parsed.actions);
               consumeExecutionFileActions(nextExecutionId, 'stream', streamFileActions);
+              return;
+            }
+            if (parsed.type === 'harness_progress') {
+              const progressItem = parseHarnessProgressMessage(parsed);
+              if (progressItem && agentExecutionIdsRef.current.has(nextExecutionId)) {
+                const currentProgress =
+                  harnessProgressByExecutionIdRef.current[nextExecutionId] ?? [];
+                const nextProgress = appendHarnessProgress(currentProgress, progressItem);
+                harnessProgressByExecutionIdRef.current[nextExecutionId] = nextProgress;
+                if (activeHarnessProgressExecutionIdRef.current === nextExecutionId) {
+                  setHarnessProgress(nextProgress);
+                }
+              }
               return;
             }
             if (parsed.type === 'complete') {
@@ -4689,6 +4752,9 @@ export default function AppPage() {
         if (shouldRefreshDashboardForChatStatus(nextStatus)) {
           await loadDashboardSlice();
         }
+        if (nextExecutionId) {
+          await maybeRefreshAfterAgentExecution(nextExecutionId);
+        }
         return;
       }
 
@@ -4729,6 +4795,9 @@ export default function AppPage() {
         }
         if (shouldRefreshDashboardForChatStatus(nextStatus)) {
           await loadDashboardSlice();
+        }
+        if (nextExecutionId) {
+          await maybeRefreshAfterAgentExecution(nextExecutionId);
         }
         return;
       }
@@ -5024,6 +5093,108 @@ export default function AppPage() {
     setFileSurfaceState('ready');
   }
 
+  async function runProjectAutosaveAfterCoherence(executionId: string): Promise<void> {
+    const selectedSessionIdAtAutosave = selectedSessionIdRef.current;
+    if (
+      !selectedProjectId ||
+      !selectedSessionIdAtAutosave ||
+      projectOpenInProgressRef.current
+    ) {
+      return;
+    }
+
+    const autosaveHint =
+      buildAutosaveHintFromFileActions(
+        executionFileActionsByExecutionIdRef.current[executionId] ?? [],
+      ) ?? undefined;
+    const lastAutosaveAt = lastProjectAutosaveAtRef.current;
+    const autosaveAttemptedAt = Date.now();
+    const autosaveResult = await attemptProjectAutosave({
+      sessionId: selectedSessionIdAtAutosave,
+      projectId: selectedProjectId,
+      source: 'ai',
+      hint: autosaveHint,
+      now: autosaveAttemptedAt,
+      lastAutosaveAt,
+    });
+    if (autosaveResult.status === 'saved') {
+      lastProjectAutosaveAtRef.current = autosaveAttemptedAt;
+      void loadWorkspaceSnapshotsForUser();
+    } else if (autosaveResult.status === 'skipped-rate-limited' && lastAutosaveAt !== null) {
+      scheduleTrailingProjectAutosave({
+        sessionId: selectedSessionIdAtAutosave,
+        projectId: selectedProjectId,
+        source: 'ai',
+        hint: autosaveHint,
+        lastAutosaveAt,
+      });
+    }
+  }
+
+  async function maybeRefreshAfterAgentExecution(executionId: string): Promise<void> {
+    if (!agentExecutionIdsRef.current.has(executionId)) {
+      return;
+    }
+    if (!acquireExecutionCoherenceGuard(executionId, coheredExecutionIdsRef.current)) {
+      return;
+    }
+
+    const progress = harnessProgressByExecutionIdRef.current[executionId] ?? [];
+    const wroteFiles = harnessProgressShowsWrite(progress);
+    const executionSessionId = executionSessionIdByExecutionIdRef.current[executionId] ?? null;
+    if (!executionSessionId || selectedSessionIdRef.current !== executionSessionId) {
+      return;
+    }
+
+    const openFilePath = selectedFilePathRef.current;
+    const runStep = async (step: () => Promise<unknown>): Promise<void> => {
+      try {
+        await step();
+      } catch {
+        // A refresh failure must not change the run result already shown.
+      }
+    };
+
+    try {
+      await runStep(() => loadWorkspaceFilesForSession(executionSessionId));
+      if (selectedSessionIdRef.current !== executionSessionId) {
+        return;
+      }
+      if (openFilePath) {
+        await runStep(() => loadWorkspaceFileContent(executionSessionId, openFilePath));
+      }
+      if (selectedSessionIdRef.current !== executionSessionId) {
+        return;
+      }
+      await runStep(() => refreshPreviewForSession(executionSessionId, true));
+      if (selectedSessionIdRef.current !== executionSessionId) {
+        return;
+      }
+      if (wroteFiles) {
+        if (userId) {
+          const checkpointUserId = userId;
+          await runStep(() =>
+            createWorkspaceCheckpoint({
+              sessionId: executionSessionId,
+              userId: checkpointUserId,
+              description: AI_AUTO_CHECKPOINT_DESCRIPTION,
+            }),
+          );
+          if (selectedSessionIdRef.current !== executionSessionId) {
+            return;
+          }
+        }
+        await runStep(() => runProjectAutosaveAfterCoherence(executionId));
+      }
+      if (selectedSessionIdRef.current !== executionSessionId) {
+        return;
+      }
+      await runStep(() => loadCheckpoints(executionSessionId));
+    } catch {
+      // A refresh failure must not change the run result already shown.
+    }
+  }
+
   async function maybeRunExecutionCoherence(executionId: string): Promise<void> {
     const fileActionState = chatExecutionFileActionStates[executionId];
     if (!fileActionState || fileActionState.applyStatus !== 'applied') {
@@ -5096,41 +5267,7 @@ export default function AppPage() {
       return;
     }
 
-    const selectedSessionIdAtAutosave = selectedSessionIdRef.current;
-    if (
-      !selectedProjectId ||
-      !selectedSessionIdAtAutosave ||
-      projectOpenInProgressRef.current
-    ) {
-      return;
-    }
-
-    const autosaveHint =
-      buildAutosaveHintFromFileActions(
-        executionFileActionsByExecutionIdRef.current[executionId] ?? [],
-      ) ?? undefined;
-    const lastAutosaveAt = lastProjectAutosaveAtRef.current;
-    const autosaveAttemptedAt = Date.now();
-    const autosaveResult = await attemptProjectAutosave({
-      sessionId: selectedSessionIdAtAutosave,
-      projectId: selectedProjectId,
-      source: 'ai',
-      hint: autosaveHint,
-      now: autosaveAttemptedAt,
-      lastAutosaveAt,
-    });
-    if (autosaveResult.status === 'saved') {
-      lastProjectAutosaveAtRef.current = autosaveAttemptedAt;
-      void loadWorkspaceSnapshotsForUser();
-    } else if (autosaveResult.status === 'skipped-rate-limited' && lastAutosaveAt !== null) {
-      scheduleTrailingProjectAutosave({
-        sessionId: selectedSessionIdAtAutosave,
-        projectId: selectedProjectId,
-        source: 'ai',
-        hint: autosaveHint,
-        lastAutosaveAt,
-      });
-    }
+    await runProjectAutosaveAfterCoherence(executionId);
   }
 
   function attachExecutionFileActionStateToAssistantMessage(
@@ -6079,11 +6216,16 @@ export default function AppPage() {
       chatPromptInput={chatPromptInput}
       onChatPromptInputChange={setChatPromptInput}
       executionIntent={chatExecutionIntent}
+      harnessEntitled={harnessEntitled}
+      agentMode={agentMode}
+      onAgentModeChange={setAgentModeFromUser}
+      harnessProgress={harnessProgress}
       boundUserAgentId={boundUserAgentId}
       onDismissBoundUserAgentAsk={() => {
         setBoundUserAgentId(null);
       }}
       onExecutionIntentChange={(nextIntent) => {
+        setAgentMode(false);
         setChatExecutionIntent((currentIntent) =>
           resolveExecutionIntentSelection({
             currentIntent,

@@ -23,6 +23,7 @@ import {
   ResendVerificationDto,
 } from './dto/auth.dto';
 import { SessionCookieGuard } from './session-cookie.guard';
+import { isBrowserSessionHarnessEntitled } from './session-or-api-key.guard';
 import { CsrfGuard } from './csrf.guard';
 import { EmailThrottlerGuard } from './email-throttler.guard';
 import * as acceptLanguageParser from 'accept-language-parser';
@@ -371,7 +372,11 @@ export class AuthController {
   @UseGuards(SessionCookieGuard)
   @Get('me')
   async getProfile(@Request() req) {
-    return this.authService.getUserById(req.user.userId);
+    const profile = await this.authService.getUserById(req.user.userId);
+    return {
+      ...profile,
+      harnessEntitled: isBrowserSessionHarnessEntitled(req.user.userId),
+    };
   }
 
   @UseGuards(SessionCookieGuard, CsrfGuard)

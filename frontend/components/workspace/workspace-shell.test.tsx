@@ -10161,3 +10161,200 @@ describe('persisted user-agent Ask UX — AGENT-PLATFORM-CREATE-01E', () => {
     assert.doesNotMatch(shellSource, /lucide|font-awesome|@mui\/icons/i);
   });
 });
+
+describe('workspace agent mode — HARNESS-UI-01', () => {
+  const agentProgress = [
+    { step: 1, tool: 'read_file', target: 'src/app.ts' },
+    { step: 2, tool: 'write_file', target: 'src/components/VeryLongFileNameThatMustWrapOnAPhone.tsx' },
+    { step: 3, tool: 'custom_tool' },
+  ];
+
+  test('Agent button is shown only when the user is harness entitled', () => {
+    const hidden = renderWorkspaceShell({
+      workspaceView: 'project',
+      selectedProjectId: 'project-1',
+    });
+    assert.match(hidden, /workspace-chat-intent-ask/);
+    assert.match(hidden, /workspace-chat-intent-build/);
+    assert.doesNotMatch(hidden, /workspace-chat-intent-agent/);
+
+    const shown = renderWorkspaceShell({
+      workspaceView: 'project',
+      selectedProjectId: 'project-1',
+      harnessEntitled: true,
+      onAgentModeChange: () => {},
+      onExecutionIntentChange: () => {},
+    });
+    assert.match(shown, /data-testid="workspace-chat-intent-agent"/);
+    assert.match(shown, new RegExp(enMessages.ai.intentAgent));
+    assert.match(shown, new RegExp(enMessages.ai.intentAgentTooltip));
+  });
+
+  test('Agent pressed state leaves Ask and Build unpressed', () => {
+    const agentButton = renderWorkspaceShellElementByTestId('workspace-chat-intent-agent', {
+      workspaceView: 'project',
+      selectedProjectId: 'project-1',
+      harnessEntitled: true,
+      agentMode: true,
+      executionIntent: 'conversation',
+      onAgentModeChange: () => {},
+      onExecutionIntentChange: () => {},
+    });
+    const askButton = renderWorkspaceShellElementByTestId('workspace-chat-intent-ask', {
+      workspaceView: 'project',
+      selectedProjectId: 'project-1',
+      harnessEntitled: true,
+      agentMode: true,
+      executionIntent: 'conversation',
+      onAgentModeChange: () => {},
+      onExecutionIntentChange: () => {},
+    });
+    const buildButton = renderWorkspaceShellElementByTestId('workspace-chat-intent-build', {
+      workspaceView: 'project',
+      selectedProjectId: 'project-1',
+      harnessEntitled: true,
+      agentMode: true,
+      executionIntent: 'workspace_mutation',
+      onAgentModeChange: () => {},
+      onExecutionIntentChange: () => {},
+    });
+
+    assert.ok(agentButton);
+    assert.equal(agentButton.props['aria-pressed'], true);
+    assert.equal(agentButton.props.title, enMessages.ai.intentAgentTooltip);
+    assert.ok(askButton);
+    assert.equal(askButton.props['aria-pressed'], false);
+    assert.ok(buildButton);
+    assert.equal(buildButton.props['aria-pressed'], false);
+  });
+
+  test('Ask and Build keep their pressed state while Agent is off', () => {
+    const askButton = renderWorkspaceShellElementByTestId('workspace-chat-intent-ask', {
+      workspaceView: 'project',
+      selectedProjectId: 'project-1',
+      harnessEntitled: true,
+      agentMode: false,
+      executionIntent: 'conversation',
+      onExecutionIntentChange: () => {},
+    });
+    const buildButton = renderWorkspaceShellElementByTestId('workspace-chat-intent-build', {
+      workspaceView: 'project',
+      selectedProjectId: 'project-1',
+      harnessEntitled: true,
+      agentMode: false,
+      executionIntent: 'workspace_mutation',
+      onExecutionIntentChange: () => {},
+    });
+    const agentButton = renderWorkspaceShellElementByTestId('workspace-chat-intent-agent', {
+      workspaceView: 'project',
+      selectedProjectId: 'project-1',
+      harnessEntitled: true,
+      agentMode: false,
+      onAgentModeChange: () => {},
+      onExecutionIntentChange: () => {},
+    });
+
+    assert.ok(askButton);
+    assert.equal(askButton.props['aria-pressed'], true);
+    assert.ok(buildButton);
+    assert.equal(buildButton.props['aria-pressed'], true);
+    assert.ok(agentButton);
+    assert.equal(agentButton.props['aria-pressed'], false);
+  });
+
+  test('choosing Ask or Build turns Agent off', () => {
+    const agentChanges: boolean[] = [];
+    const intents: string[] = [];
+    const askButton = renderWorkspaceShellElementByTestId('workspace-chat-intent-ask', {
+      workspaceView: 'project',
+      selectedProjectId: 'project-1',
+      harnessEntitled: true,
+      agentMode: true,
+      onAgentModeChange: (enabled) => {
+        agentChanges.push(enabled);
+      },
+      onExecutionIntentChange: (intent) => {
+        intents.push(intent);
+      },
+    });
+    askButton?.props.onClick?.();
+    assert.deepEqual(agentChanges, [false]);
+    assert.deepEqual(intents, ['conversation']);
+
+    agentChanges.length = 0;
+    intents.length = 0;
+    const buildButton = renderWorkspaceShellElementByTestId('workspace-chat-intent-build', {
+      workspaceView: 'project',
+      selectedProjectId: 'project-1',
+      harnessEntitled: true,
+      agentMode: true,
+      onAgentModeChange: (enabled) => {
+        agentChanges.push(enabled);
+      },
+      onExecutionIntentChange: (intent) => {
+        intents.push(intent);
+      },
+    });
+    buildButton?.props.onClick?.();
+    assert.deepEqual(agentChanges, [false]);
+    assert.deepEqual(intents, ['workspace_mutation']);
+  });
+
+  test('step list renders tool labels and targets, and hides when empty', () => {
+    const empty = renderWorkspaceShell({
+      workspaceView: 'project',
+      selectedProjectId: 'project-1',
+      harnessEntitled: true,
+      harnessProgress: [],
+    });
+    assert.doesNotMatch(empty, /workspace-chat-agent-progress/);
+
+    const omitted = renderWorkspaceShell({
+      workspaceView: 'project',
+      selectedProjectId: 'project-1',
+      harnessEntitled: true,
+    });
+    assert.doesNotMatch(omitted, /workspace-chat-agent-progress/);
+
+    const shown = renderWorkspaceShell({
+      workspaceView: 'project',
+      selectedProjectId: 'project-1',
+      harnessProgress: agentProgress,
+    });
+    assert.match(shown, /data-testid="workspace-chat-agent-progress"/);
+    assert.match(shown, new RegExp(enMessages.ai.harnessProgressHeading));
+    assert.match(shown, new RegExp(enMessages.ai.harnessToolReadFile));
+    assert.match(shown, /src\/app\.ts/);
+    assert.match(shown, new RegExp(enMessages.ai.harnessToolWriteFile));
+    assert.match(shown, /src\/components\/VeryLongFileNameThatMustWrapOnAPhone\.tsx/);
+    assert.match(shown, /break-all/);
+    assert.match(shown, new RegExp(enMessages.ai.harnessToolGeneric));
+    assert.doesNotMatch(shown, /custom_tool/);
+  });
+
+  test('agent locale keys exist and are non-empty in en, zh-TW, and zh-CN', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+    const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
+    const zhCn = JSON.parse(readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'));
+    const requiredAiKeys = [
+      'intentAgent',
+      'intentAgentTooltip',
+      'harnessProgressHeading',
+      'harnessToolListFiles',
+      'harnessToolReadFile',
+      'harnessToolSearchWorkspace',
+      'harnessToolWriteFile',
+      'harnessToolDeleteFile',
+      'harnessToolRunValidation',
+      'harnessToolBrowserSmoke',
+      'harnessToolGeneric',
+    ] as const;
+
+    for (const localePack of [en, zhTw, zhCn]) {
+      for (const key of requiredAiKeys) {
+        assert.equal(typeof localePack.ai[key], 'string');
+        assert.equal(localePack.ai[key].trim().length > 0, true);
+      }
+    }
+  });
+});

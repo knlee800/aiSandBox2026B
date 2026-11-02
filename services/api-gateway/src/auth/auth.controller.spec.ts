@@ -149,3 +149,66 @@ describe('AuthController email verification routes', () => {
     );
   });
 });
+
+describe('AuthController getProfile harness entitlement', () => {
+  const allowListKey = 'AGENT_HARNESS_BROWSER_SESSION_USER_IDS';
+  const allowedUserId = '11111111-1111-4111-8111-111111111111';
+  const otherUserId = '22222222-2222-4222-8222-222222222222';
+  const profile = {
+    id: allowedUserId,
+    email: 'profile@example.com',
+    role: 'user',
+    plan_type: 'free',
+    emailVerified: true,
+  };
+
+  let originalAllowList: string | undefined;
+  const mockAuthService = {
+    getUserById: jest.fn(),
+  };
+  let controller: AuthController;
+
+  beforeEach(() => {
+    originalAllowList = process.env[allowListKey];
+    jest.clearAllMocks();
+    mockAuthService.getUserById.mockResolvedValue({ ...profile });
+    controller = new AuthController(mockAuthService as any);
+  });
+
+  afterEach(() => {
+    if (originalAllowList === undefined) {
+      delete process.env[allowListKey];
+    } else {
+      process.env[allowListKey] = originalAllowList;
+    }
+  });
+
+  it('returns harnessEntitled true and keeps the existing profile fields', async () => {
+    process.env[allowListKey] = allowedUserId;
+
+    const result = await controller.getProfile({ user: { userId: allowedUserId } });
+
+    expect(mockAuthService.getUserById).toHaveBeenCalledWith(allowedUserId);
+    expect(result).toEqual({
+      ...profile,
+      harnessEntitled: true,
+    });
+  });
+
+  it('returns harnessEntitled false and keeps the existing profile fields', async () => {
+    process.env[allowListKey] = allowedUserId;
+    const otherProfile = {
+      ...profile,
+      id: otherUserId,
+    };
+    mockAuthService.getUserById.mockResolvedValue(otherProfile);
+
+    const result = await controller.getProfile({ user: { userId: otherUserId } });
+
+    expect(mockAuthService.getUserById).toHaveBeenCalledWith(otherUserId);
+    expect(result).toEqual({
+      ...otherProfile,
+      harnessEntitled: false,
+    });
+  });
+});
