@@ -3380,3 +3380,187 @@ describe('AIExecutionController — AGENT-PLATFORM-EXEC-01C5B1 proof production'
     }
   });
 });
+
+describe('AIExecutionController — RUN-STATUS-01 ledger runMode', () => {
+  let controller: AIExecutionController;
+  let mockUsageLedgerService: Record<string, jest.Mock>;
+  let mockQueueService: Record<string, jest.Mock>;
+
+  const sessionId = '11111111-1111-4111-a111-111111111111';
+  const identity: ApiKeyIdentity = {
+    userId: 'user-run-status',
+    apiKeyId: 'key-run-status',
+    scopes: ['ai:execute'],
+    harnessEntitled: true,
+  };
+
+  const runModeCases: Array<{
+    name: 'ask' | 'build' | 'agent';
+    overrides: Partial<AIExecutionRequest>;
+  }> = [
+    { name: 'ask', overrides: { executionIntent: 'conversation' } },
+    { name: 'build', overrides: { executionIntent: 'workspace_mutation' } },
+    {
+      name: 'agent',
+      overrides: { executionIntent: 'conversation', harnessVersion: 'v1' },
+    },
+  ];
+
+  function makeRequest(overrides?: Partial<AIExecutionRequest>): AIExecutionRequest {
+    return {
+      sessionId,
+      conversationId: 'conv-run-status',
+      userId: 'untrusted-user',
+      prompt: 'Record the run mode.',
+      provider: 'stub',
+      ...overrides,
+    };
+  }
+
+  beforeEach(async () => {
+    mockUsageLedgerService = {
+      findByRequestId: jest.fn().mockResolvedValue(null),
+      reuseExecutionIntent: jest.fn().mockResolvedValue('exec-reuse-run-status'),
+      writeExecutionIntent: jest.fn().mockResolvedValue(undefined),
+      updateExecutionResult: jest.fn().mockResolvedValue(undefined),
+    };
+    mockQueueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+
+    const mockGuard = { canActivate: jest.fn(() => true) };
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [AIExecutionController],
+      providers: [
+        { provide: UsageLedgerService, useValue: mockUsageLedgerService },
+        {
+          provide: GlobalSafetyLimitService,
+          useValue: { checkAndRecord: jest.fn(), recordExecutionCost: jest.fn() },
+        },
+        { provide: QueueService, useValue: mockQueueService },
+        {
+          provide: ExecutionResultService,
+          useValue: { getExecution: jest.fn(), requestCancel: jest.fn() },
+        },
+        {
+          provide: ExecutionStreamService,
+          useValue: { subscribe: jest.fn(), unsubscribe: jest.fn() },
+        },
+        {
+          provide: UserAiInstructionsService,
+          useValue: { getByUserId: jest.fn().mockResolvedValue(null) },
+        },
+        {
+          provide: ProjectAiContextService,
+          useValue: { getByProjectId: jest.fn().mockResolvedValue(null) },
+        },
+        {
+          provide: SessionService,
+          useValue: {
+            getSessionById: jest.fn().mockResolvedValue({
+              userId: identity.userId,
+              projectId: null,
+            }),
+          },
+        },
+      ],
+    })
+      .overrideGuard(SessionOrApiKeyAuthGuard)
+      .useValue(mockGuard)
+      .overrideGuard(AuthorizationGuard)
+      .useValue(mockGuard)
+      .overrideGuard(QuotaGuard)
+      .useValue(mockGuard)
+      .overrideGuard(TokenQuotaGuard)
+      .useValue(mockGuard)
+      .overrideGuard(CreditBalanceGuard)
+      .useValue(mockGuard)
+      .compile();
+
+    controller = module.get<AIExecutionController>(AIExecutionController);
+  });
+
+  for (const runCase of runModeCases) {
+    it(`records runMode ${runCase.name} on the normal path`, async () => {
+      await controller.execute(makeRequest(runCase.overrides), identity);
+
+      expect(mockUsageLedgerService.reuseExecutionIntent).not.toHaveBeenCalled();
+      expect(mockUsageLedgerService.writeExecutionIntent).toHaveBeenCalledTimes(1);
+      const metadata = mockUsageLedgerService.writeExecutionIntent.mock.calls[0][0].metadata;
+      expect(metadata.runMode).toBe(runCase.name);
+      expect(metadata.apiKeyId).toBe(identity.apiKeyId);
+      expect(mockUsageLedgerService.writeExecutionIntent.mock.calls[0][0].requestId).toBeUndefined();
+      const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+      expect(payload).not.toHaveProperty('runMode');
+      if (runCase.name === 'agent') {
+        expect(payload.harnessVersion).toBe('v1');
+      }
+    });
+
+    it(`records runMode ${runCase.name} on the idempotent new-intent path`, async () => {
+      await controller.execute(makeRequest(runCase.overrides), identity, 'idem-run-status');
+
+      expect(mockUsageLedgerService.findByRequestId).toHaveBeenCalledWith(
+        identity.userId,
+        'idem-run-status',
+      );
+      expect(mockUsageLedgerService.reuseExecutionIntent).not.toHaveBeenCalled();
+      expect(mockUsageLedgerService.writeExecutionIntent).toHaveBeenCalledTimes(1);
+      const intent = mockUsageLedgerService.writeExecutionIntent.mock.calls[0][0];
+      expect(intent.requestId).toBe('idem-run-status');
+      expect(intent.metadata.runMode).toBe(runCase.name);
+      expect(intent.metadata.apiKeyId).toBe(identity.apiKeyId);
+    });
+
+    it(`records runMode ${runCase.name} on the reuse path`, async () => {
+      mockUsageLedgerService.findByRequestId.mockResolvedValue({
+        executionStatus: runCase.name === 'build' ? 'failed' : 'timeout',
+      });
+
+      await controller.execute(makeRequest(runCase.overrides), identity, 'idem-reuse');
+
+      expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+      expect(mockUsageLedgerService.reuseExecutionIntent).toHaveBeenCalledTimes(1);
+      expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+      const reuse = mockUsageLedgerService.reuseExecutionIntent.mock.calls[0][0];
+      expect(reuse.requestId).toBe('idem-reuse');
+      expect(reuse.metadata.runMode).toBe(runCase.name);
+      expect(reuse.metadata.apiKeyId).toBe(identity.apiKeyId);
+      expect(mockQueueService.enqueueExecution.mock.calls[0][0]).not.toHaveProperty('runMode');
+    });
+  }
+
+  it('records build when executionIntent is omitted', async () => {
+    await controller.execute(makeRequest(), identity);
+
+    expect(mockUsageLedgerService.writeExecutionIntent.mock.calls[0][0].metadata.runMode).toBe(
+      'build',
+    );
+  });
+
+  it('records agent when harnessVersion is v1 and the intent would otherwise be build', async () => {
+    await controller.execute(
+      makeRequest({ harnessVersion: 'v1', executionIntent: 'workspace_mutation' }),
+      identity,
+    );
+
+    expect(mockUsageLedgerService.writeExecutionIntent.mock.calls[0][0].metadata.runMode).toBe(
+      'agent',
+    );
+  });
+
+  it('overwrites a client-supplied metadata.runMode', async () => {
+    await controller.execute(
+      makeRequest({
+        executionIntent: 'conversation',
+        metadata: { runMode: 'agent', source: 'client' },
+      }),
+      identity,
+    );
+
+    const metadata = mockUsageLedgerService.writeExecutionIntent.mock.calls[0][0].metadata;
+    expect(metadata.runMode).toBe('ask');
+    expect(metadata.source).toBe('client');
+    expect(metadata.apiKeyId).toBe(identity.apiKeyId);
+  });
+});

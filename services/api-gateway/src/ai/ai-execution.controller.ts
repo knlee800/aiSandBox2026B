@@ -12,6 +12,7 @@ import {
   Optional,
   Get,
   Param,
+  Query,
   NotFoundException,
   ConflictException,
   ForbiddenException,
@@ -44,7 +45,10 @@ import { IdempotencyGuard } from './idempotency.guard';
 import { CreditBalanceGuard } from '../billing/credit-balance.guard';
 import { QueueService } from '../queue/queue.service';
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
-import { ExecutionResultService } from './execution-result.service';
+import {
+  ExecutionResultService,
+  ListedRunRow,
+} from './execution-result.service';
 import { UserAiInstructionsService } from '../user-ai-instructions/user-ai-instructions.service';
 import { ProjectAiContextService } from '../project-ai-context/project-ai-context.service';
 import { SessionService } from '../sessions/session.service';
@@ -163,6 +167,22 @@ const MAX_REPO_DOC_CHARS = 8000;
 const REPO_DOC_TRUNCATION_SUFFIX = '[...truncated at 8000 characters]';
 type ExecutionIntent = 'conversation' | 'workspace_mutation';
 const DEFAULT_EXECUTION_INTENT: ExecutionIntent = 'workspace_mutation';
+type ListedRunMode = 'ask' | 'build' | 'agent' | 'unknown';
+const DEFAULT_RUN_LIST_LIMIT = 20;
+const MAX_RUN_LIST_LIMIT = 50;
+
+interface ListedRunDto {
+  executionId: string | null;
+  status: ExecutionResultDto['status'];
+  sessionId: string | null;
+  provider: string | null;
+  model: string | null;
+  tokensUsed: number | null;
+  startedAt: string | null;
+  durationMs: number | null;
+  mode: ListedRunMode;
+  agentId: string | null;
+}
 
 /**
  * AIExecutionController
@@ -474,6 +494,132 @@ export class AIExecutionController {
     );
   }
 
+  private resolveLedgerRunMode(
+    harnessVersion: 'v1' | undefined,
+    executionIntent: ExecutionIntent,
+  ): 'agent' | 'ask' | 'build' {
+    if (harnessVersion === 'v1') {
+      return 'agent';
+    }
+    if (executionIntent === 'conversation') {
+      return 'ask';
+    }
+    return 'build';
+  }
+
+  private mapPublicExecutionStatus(executionStatus: unknown): ExecutionResultDto['status'] {
+    switch (executionStatus) {
+      case 'pending':
+        return 'queued';
+      case 'running':
+        return 'running';
+      case 'completed':
+        return 'completed';
+      case 'failed':
+        return 'failed';
+      case 'cancel_requested':
+      case 'cancelled':
+        return 'cancelled';
+      case 'timeout':
+        return 'timeout';
+      default:
+        return 'queued';
+    }
+  }
+
+  private parseListState(state: unknown): 'active' | 'recent' {
+    if (state === 'active' || state === 'recent') {
+      return state;
+    }
+    throw new BadRequestException("state must be 'active' or 'recent'");
+  }
+
+  private parseOptionalSessionId(sessionId: unknown): string | undefined {
+    if (sessionId === undefined) {
+      return undefined;
+    }
+    if (typeof sessionId !== 'string' || !uuidValidate(sessionId)) {
+      throw new BadRequestException('sessionId must be a valid UUID');
+    }
+    return sessionId;
+  }
+
+  private parseListLimit(limit: unknown): number {
+    if (limit === undefined) {
+      return DEFAULT_RUN_LIST_LIMIT;
+    }
+    if (typeof limit !== 'string' || !/^[1-9]\d*$/.test(limit)) {
+      throw new BadRequestException('limit must be a whole number from 1 upward');
+    }
+    const parsed = Number(limit);
+    if (!Number.isSafeInteger(parsed)) {
+      throw new BadRequestException('limit must be a whole number from 1 upward');
+    }
+    return Math.min(parsed, MAX_RUN_LIST_LIMIT);
+  }
+
+  private mapListedRunMode(value: unknown): ListedRunMode {
+    if (value === 'ask' || value === 'build' || value === 'agent') {
+      return value;
+    }
+    return 'unknown';
+  }
+
+  private nullableText(value: unknown): string | null {
+    if (typeof value === 'string') {
+      return value;
+    }
+    return null;
+  }
+
+  private nullableCount(value: unknown): number | null {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
+    if (typeof value === 'string' && /^-?(?:0|[1-9]\d*)$/.test(value)) {
+      const parsed = Number(value);
+      if (Number.isSafeInteger(parsed)) {
+        return parsed;
+      }
+    }
+    return null;
+  }
+
+  private toStartedAtIso(value: unknown): string | null {
+    if (value === null || value === undefined) {
+      return null;
+    }
+    if (value instanceof Date) {
+      return Number.isNaN(value.getTime()) ? null : value.toISOString();
+    }
+    if (typeof value !== 'string' || value.trim().length === 0) {
+      return null;
+    }
+    const trimmed = value.trim();
+    const hasZone = /(?:Z|[+-]\d{2}(?::?\d{2})?)$/.test(trimmed);
+    const normalized = hasZone ? trimmed.replace(' ', 'T') : `${trimmed.replace(' ', 'T')}Z`;
+    const parsed = new Date(normalized);
+    if (Number.isNaN(parsed.getTime())) {
+      return null;
+    }
+    return parsed.toISOString();
+  }
+
+  private mapListedRun(row: ListedRunRow): ListedRunDto {
+    return {
+      executionId: this.nullableText(row.execution_id),
+      status: this.mapPublicExecutionStatus(row.execution_status),
+      sessionId: this.nullableText(row.session_id),
+      provider: this.nullableText(row.provider),
+      model: this.nullableText(row.model),
+      tokensUsed: this.nullableCount(row.tokens_used),
+      startedAt: this.toStartedAtIso(row.timestamp),
+      durationMs: this.nullableCount(row.execution_duration_ms),
+      mode: this.mapListedRunMode(row.runMode),
+      agentId: this.nullableText(row.agentId),
+    };
+  }
+
   /**
    * Authorize optional persisted user-agent identity on supported execution
    * intents (conversation and workspace_mutation). Absent agentId → skip.
@@ -714,6 +860,7 @@ export class AIExecutionController {
           adapter: provider,
           metadata: {
             ...request.metadata,
+            runMode: this.resolveLedgerRunMode(request.harnessVersion, executionIntent),
             apiKeyId: identity.apiKeyId, // INJECTED for audit
             requestedProvider: provider,
             requestedModel: requestedModel ?? null,
@@ -739,6 +886,7 @@ export class AIExecutionController {
           requestId,
           metadata: {
             ...request.metadata,
+            runMode: this.resolveLedgerRunMode(request.harnessVersion, executionIntent),
             apiKeyId: identity.apiKeyId, // INJECTED for audit
             requestedProvider: provider,
             requestedModel: requestedModel ?? null,
@@ -765,6 +913,7 @@ export class AIExecutionController {
         requestId,
         metadata: {
           ...request.metadata,
+          runMode: this.resolveLedgerRunMode(request.harnessVersion, executionIntent),
           apiKeyId: identity.apiKeyId, // INJECTED for audit
           requestedProvider: provider,
           requestedModel: requestedModel ?? null,
@@ -892,6 +1041,42 @@ export class AIExecutionController {
   }
 
   /**
+   * List the caller's active or recent runs.
+   *
+   * GET /api/ai/executions?state=active|recent
+   *
+   * Declared before executions/:executionId so the collection route stays distinct.
+   * Returns run identity fields only. A missing caller is 404, matching getExecution.
+   */
+  @Get('executions')
+  @UseGuards(SessionOrApiKeyAuthGuard)
+  async listExecutions(
+    @AuthenticatedUser() identity: ApiKeyIdentity,
+    @Query('state') state?: unknown,
+    @Query('sessionId') sessionId?: unknown,
+    @Query('limit') limit?: unknown,
+  ): Promise<{ runs: ListedRunDto[] }> {
+    if (!identity?.userId) {
+      throw new NotFoundException('Execution not found');
+    }
+
+    const parsedState = this.parseListState(state);
+    const parsedSessionId = this.parseOptionalSessionId(sessionId);
+    const parsedLimit = this.parseListLimit(limit);
+
+    const rows = await this.executionResultService.listRunsForUser({
+      userId: identity.userId,
+      state: parsedState,
+      ...(parsedSessionId !== undefined ? { sessionId: parsedSessionId } : {}),
+      limit: parsedLimit,
+    });
+
+    return {
+      runs: rows.map((row) => this.mapListedRun(row)),
+    };
+  }
+
+  /**
    * Get execution status
    *
    * GET /api/ai/executions/:executionId
@@ -918,31 +1103,7 @@ export class AIExecutionController {
       throw new NotFoundException('Execution not found');
     }
 
-    let status: ExecutionResultDto['status'];
-
-    switch (execution.execution_status) {
-      case 'pending':
-        status = 'queued';
-        break;
-      case 'running':
-        status = 'running';
-        break;
-      case 'completed':
-        status = 'completed';
-        break;
-      case 'failed':
-        status = 'failed';
-        break;
-      case 'cancel_requested':
-      case 'cancelled':
-        status = 'cancelled';
-        break;
-      case 'timeout':
-        status = 'timeout';
-        break;
-      default:
-        status = 'queued';
-    }
+    const status = this.mapPublicExecutionStatus(execution.execution_status);
 
     const response: ExecutionResultDto = {
       executionId: execution.execution_id,
