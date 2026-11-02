@@ -83170,14 +83170,14 @@ taskId=HARNESS-UI-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; stage-start: docs/HARNESS-UI-01-STAGE-START.md. Step 3 (implementation) not started. mutexes=FRONTEND, I18N, GATEWAY. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
+**Status:** COMPLETE AND LOCKED — 2026-11-02. LANE-DONE and LOCKED by the control plane; Lane 1, FRONTEND, I18N and GATEWAY released. Checkpoint: docs/HARNESS-UI-01-CHECKPOINT.md. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; stage-start: docs/HARNESS-UI-01-STAGE-START.md. Step 3 (implementation) not started. mutexes=FRONTEND, I18N, GATEWAY. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
 **Task ID:** HARNESS-UI-01
 **Title:** Agent mode in the Builder chat, for allowlisted users, with progress and post-run refresh
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP. Step 1 registration; Step 2 stage-start and admission; Step 3 implementation; Step 4 consolidation, checkpoint and LOCK by the control plane.
 **Start condition (human):** READY — Keith approved the draft on 2026-11-02.
-**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Start condition (machine):** `READY`; `status=LOCKED`. Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
 **Depends on (human):** none.
 **Depends on (machine `dependsOn`):** `[]`
 **Primary write scope:** exactly `frontend/app/`, `frontend/components/workspace/workspace-agent-mode.logic.ts`, `frontend/components/workspace/workspace-agent-mode.logic.test.ts`, `frontend/components/workspace/workspace-shell.tsx`, `frontend/components/workspace/workspace-shell.test.tsx`, `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`, `services/api-gateway/src/auth/session-or-api-key.guard.ts`, `services/api-gateway/src/auth/auth.controller.ts`, `services/api-gateway/src/auth/auth.controller.spec.ts`; under frontend/app/ only the Builder page `frontend/app/[locale]/app/page.tsx`. Anything else is out of scope.
@@ -83196,17 +83196,18 @@ nature=IMPLEMENTATION
 
 **Problem:** the frontend never sends harnessVersion, so only console snippets can start a harness run, and files changed by a run do not appear on screen until something else refreshes them.
 **Scope:** (1) GET /api/auth/me adds harnessEntitled for allowlisted users; (2) a third Agent mode beside Ask and Build, shown only when harnessEntitled, sending executionIntent conversation with harnessVersion v1; (3) a step list from harness_progress during the run; (4) after a run ends, refresh the file tree, open file, preview and checkpoints, and after a run that wrote files, create the usual AI checkpoint and project autosave; (5) text in all three locales; tests. Keith approved direct harness writes with a save point in docs/GOV-HARNESS-RESET-01-DECISION.md. Not in scope: making Agent the default, showing it to anyone else, a cancel control, charging changes, Ask or Build behaviour, deploying.
+**Result (2026-11-02):** implemented in 0838a5f47947ddc4ff884f66d999489501ea1294 by Cursor CLI, reviewed and re-validated by the control plane: frontend tsc exit 0, npm test 805 passed, build exit 0; api-gateway 2403 passed, with only the 14 known smoke.integration failures; build exit 0. Checkpoint: docs/HARNESS-UI-01-CHECKPOINT.md. Not run in a browser; not deployed.
 
 #### Acceptance criteria
 
-- [ ] Non-allowlisted users see only Ask and Build, and those modes send exactly what they send today
-- [ ] Allowlisted users can pick Agent; the request carries harnessVersion v1 and executionIntent conversation
-- [ ] harness_progress messages show as a step list for the current run, with localized text and no file contents
-- [ ] After an Agent run ends, including a failed one, the file tree, open file, preview and checkpoints refresh once
-- [ ] After an Agent run that wrote files, the AI checkpoint and project autosave run
-- [ ] All new visible text is in en, zh-TW and zh-CN
-- [ ] frontend tsc, npm test and npm run build pass, api-gateway tests pass apart from the known smoke failures, and only the files in the primary write scope change
-- [ ] Not LOCKED by an implementer
+- [x] Non-allowlisted users see only Ask and Build, and those modes send exactly what they send today
+- [x] Allowlisted users can pick Agent; the request carries harnessVersion v1 and executionIntent conversation
+- [x] harness_progress messages show as a step list for the current run, with localized text and no file contents
+- [x] After an Agent run ends, including a failed one, the file tree, open file, preview and checkpoints refresh once
+- [x] After an Agent run that wrote files, the AI checkpoint and project autosave run
+- [x] All new visible text is in en, zh-TW and zh-CN
+- [x] frontend tsc, npm test and npm run build pass, api-gateway tests pass apart from the known smoke failures, and only the files in the primary write scope change
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
