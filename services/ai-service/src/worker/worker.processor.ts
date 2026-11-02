@@ -1188,6 +1188,16 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
         pollCancel();
 
         try {
+          if (
+            job.data.harnessReadOnly === true &&
+            job.data.harnessVersion !== 'v1'
+          ) {
+            throw harnessEntitlementFailure(
+              job.data.harnessEntitlementProof == null
+                ? HARNESS_ENTITLEMENT_PROOF_MISSING
+                : HARNESS_ENTITLEMENT_PROOF_MALFORMED,
+            );
+          }
           if (job.data.harnessVersion === 'v1') {
             try {
               verifyHarnessEntitlementProof(job.data);
@@ -1355,67 +1365,80 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                     ),
                   );
                   registeredHandlerNames.push('search_workspace');
+                  const harnessReadOnly = job.data.harnessReadOnly === true;
                   if (resolvedConfig.enableWriteTools) {
-                    dispatcher.registerHandler(
-                      'write_file',
-                      wrapHarnessTool(
+                    if (!harnessReadOnly) {
+                      dispatcher.registerHandler(
                         'write_file',
-                        createWriteFileHandler({
-                          client: this.apiGatewayHttpClient,
-                          sessionId: job.data.sessionId,
-                          maxFileWriteBytes: resolvedConfig.maxFileWriteBytes,
-                        }),
-                      ),
-                    );
-                    registeredHandlerNames.push('write_file');
-                    dispatcher.registerHandler(
-                      'delete_file',
-                      wrapHarnessTool(
+                        wrapHarnessTool(
+                          'write_file',
+                          createWriteFileHandler({
+                            client: this.apiGatewayHttpClient,
+                            sessionId: job.data.sessionId,
+                            maxFileWriteBytes: resolvedConfig.maxFileWriteBytes,
+                          }),
+                        ),
+                      );
+                      registeredHandlerNames.push('write_file');
+                      dispatcher.registerHandler(
                         'delete_file',
-                        createDeleteFileHandler({
-                          client: this.apiGatewayHttpClient,
-                          sessionId: job.data.sessionId,
-                        }),
-                      ),
-                    );
-                    registeredHandlerNames.push('delete_file');
+                        wrapHarnessTool(
+                          'delete_file',
+                          createDeleteFileHandler({
+                            client: this.apiGatewayHttpClient,
+                            sessionId: job.data.sessionId,
+                          }),
+                        ),
+                      );
+                      registeredHandlerNames.push('delete_file');
+                    }
                   }
                   if (resolvedConfig.enableValidationTools) {
-                    dispatcher.registerHandler(
-                      'run_validation',
-                      wrapHarnessTool(
+                    if (!harnessReadOnly) {
+                      dispatcher.registerHandler(
                         'run_validation',
-                        createRunValidationHandler({
-                          client: this.apiGatewayHttpClient,
-                          sessionId: job.data.sessionId,
-                          allowedValidationCommands: resolvedConfig.allowedValidationCommands,
-                          validationTimeoutMs: resolvedConfig.validationTimeoutMs,
-                          maxValidationOutputBytes: resolvedConfig.maxValidationOutputBytes,
-                        }),
-                      ),
-                    );
-                    registeredHandlerNames.push('run_validation');
+                        wrapHarnessTool(
+                          'run_validation',
+                          createRunValidationHandler({
+                            client: this.apiGatewayHttpClient,
+                            sessionId: job.data.sessionId,
+                            allowedValidationCommands: resolvedConfig.allowedValidationCommands,
+                            validationTimeoutMs: resolvedConfig.validationTimeoutMs,
+                            maxValidationOutputBytes: resolvedConfig.maxValidationOutputBytes,
+                          }),
+                        ),
+                      );
+                      registeredHandlerNames.push('run_validation');
+                    }
                   }
                   if (resolvedConfig.enableBrowserSmoke) {
-                    dispatcher.registerHandler(
-                      'browser_smoke',
-                      wrapHarnessTool(
+                    if (!harnessReadOnly) {
+                      dispatcher.registerHandler(
                         'browser_smoke',
-                        createBrowserSmokeHandler({
-                          client: this.apiGatewayHttpClient,
-                          sessionId: job.data.sessionId,
-                          browserSmokeTimeoutMs: resolvedConfig.browserSmokeTimeoutMs,
-                        }),
-                      ),
-                    );
-                    registeredHandlerNames.push('browser_smoke');
+                        wrapHarnessTool(
+                          'browser_smoke',
+                          createBrowserSmokeHandler({
+                            client: this.apiGatewayHttpClient,
+                            sessionId: job.data.sessionId,
+                            browserSmokeTimeoutMs: resolvedConfig.browserSmokeTimeoutMs,
+                          }),
+                        ),
+                      );
+                      registeredHandlerNames.push('browser_smoke');
+                    }
                   }
                   const advertisedTools = requireNonEmptyAdvertisedHarnessTools(
                     selectAdvertisedAgentHarnessTools({
                       registeredHandlerNames,
-                      enableWriteTools: resolvedConfig.enableWriteTools,
-                      enableValidationTools: resolvedConfig.enableValidationTools,
-                      enableBrowserSmoke: resolvedConfig.enableBrowserSmoke,
+                      enableWriteTools: harnessReadOnly
+                        ? false
+                        : resolvedConfig.enableWriteTools,
+                      enableValidationTools: harnessReadOnly
+                        ? false
+                        : resolvedConfig.enableValidationTools,
+                      enableBrowserSmoke: harnessReadOnly
+                        ? false
+                        : resolvedConfig.enableBrowserSmoke,
                     }),
                   );
                   const auditRecorder = resolvedConfig.auditEventsEnabled
@@ -1437,16 +1460,18 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                   };
 
                   if (resolvedConfig.enablePreApplyCheckpoint) {
-                    loopOptions = {
-                      ...loopOptions,
-                      createCheckpointFn: (checkpointSignal) =>
-                        this.apiGatewayHttpClient.createWorkspaceCheckpoint(
-                          job.data.sessionId,
-                          'Pre-apply checkpoint (Agent Harness)',
-                          checkpointSignal,
-                        ),
-                      mutatingToolNames: new Set(['write_file', 'delete_file']),
-                    };
+                    if (!harnessReadOnly) {
+                      loopOptions = {
+                        ...loopOptions,
+                        createCheckpointFn: (checkpointSignal) =>
+                          this.apiGatewayHttpClient.createWorkspaceCheckpoint(
+                            job.data.sessionId,
+                            'Pre-apply checkpoint (Agent Harness)',
+                            checkpointSignal,
+                          ),
+                        mutatingToolNames: new Set(['write_file', 'delete_file']),
+                      };
+                    }
                   }
 
                   try {
@@ -1461,7 +1486,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                         this.logger.log(JSON.stringify(event));
                       }
                     }
-                    if (harnessWriteOrDeleteAttempted) {
+                    if (harnessWriteOrDeleteAttempted && !harnessReadOnly) {
                       try {
                         await this.apiGatewayHttpClient.saveProjectSnapshot(
                           job.data.sessionId,
@@ -1559,7 +1584,10 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
               safeFileActions,
             },
           );
-          const effectiveFileActions = fileActionResolution.effectiveFileActions;
+          const effectiveFileActions =
+            job.data.harnessReadOnly === true
+              ? []
+              : fileActionResolution.effectiveFileActions;
           const parseMethod = aiResult.parseMethod ?? 'none';
           const workspaceMutationAttempted =
             typeof aiResult.workspaceMutationAttempted === 'boolean'

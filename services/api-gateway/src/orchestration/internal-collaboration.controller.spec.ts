@@ -2,6 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import request from 'supertest';
+import { createHarnessEntitlementProof } from '../ai/ai-execution.controller';
 import { ExecutionResultService } from '../ai/execution-result.service';
 import { AbortConfig } from '../abort/abort.config';
 import { AbortGuard } from '../abort/abort.guard';
@@ -1348,5 +1349,208 @@ describe('InternalCollaborationController', () => {
       expect(referral.status).not.toBe('approved');
     }
     expect(COLLABORATION_WAITING_MAX_AGE_MS).toBe(24 * 60 * 60 * 1000);
+  });
+
+  describe('COLLAB-FILES-01 file access', () => {
+    const HARNESS_SECRET = 'test-hmac-secret-collab-files-01';
+    const originalSecret = process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+
+    afterEach(() => {
+      if (originalSecret === undefined) {
+        delete process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+      } else {
+        process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = originalSecret;
+      }
+    });
+
+    function expectSignedReadOnlyJob(payload: Record<string, unknown>): void {
+      expect(payload.harnessVersion).toBe('v1');
+      expect(payload.harnessReadOnly).toBe(true);
+      expect(payload.executionIntent).toBe('conversation');
+      expect(payload).not.toHaveProperty('fileAccess');
+      const { harnessEntitlementProof, ...signed } = payload;
+      const expected = createHarnessEntitlementProof({
+        executionId: String(signed.executionId),
+        userId: String(signed.userId),
+        apiKeyId: String(signed.apiKeyId),
+        issuedAt: String(signed.submittedAt),
+        payloadWithoutProof: signed,
+        secret: HARNESS_SECRET,
+      });
+      expect(harnessEntitlementProof).toEqual(expected);
+      const tampered = createHarnessEntitlementProof({
+        executionId: String(signed.executionId),
+        userId: String(signed.userId),
+        apiKeyId: String(signed.apiKeyId),
+        issuedAt: String(signed.submittedAt),
+        payloadWithoutProof: { ...signed, harnessReadOnly: false },
+        secret: HARNESS_SECRET,
+      });
+      expect(tampered.payloadDigest).not.toBe(expected.payloadDigest);
+      expect(tampered.signature).not.toBe(expected.signature);
+    }
+
+    it('enqueues a signed read-only harness job and ignores caller harness fields', async () => {
+      process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = HARNESS_SECRET;
+      const runId = await createRun();
+      const waiting = await postReferral(runId, {
+        idempotencyKey: 'file-access-root',
+        fileAccess: true,
+        harnessVersion: 'v2',
+        harnessReadOnly: false,
+        harnessEntitlementProof: { token: 'caller' },
+      }).expect(201);
+
+      expect(waiting.body.referral.status).toBe('pending_approval');
+      expect(queue.enqueueExecution).not.toHaveBeenCalled();
+      const stored = referrals.get(waiting.body.referral.referralId as string);
+      expect(stored?.pendingJob?.fileAccess).toBe(true);
+      expect(stored?.pendingJob).not.toHaveProperty('harnessVersion');
+      expect(stored?.pendingJob).not.toHaveProperty('harnessReadOnly');
+
+      const response = await approve(runId, waiting.body.referral.referralId).expect(200);
+      expect(response.body.referral.status).toBe('in_progress');
+      expect(queue.enqueueExecution).toHaveBeenCalledTimes(1);
+      const payload = queue.enqueueExecution.mock.calls[0][0] as Record<string, unknown>;
+      expectSignedReadOnlyJob(payload);
+      expect(payload.harnessVersion).not.toBe('v2');
+      expect(payload.harnessReadOnly).not.toBe(false);
+
+      const intent = ledger.writeExecutionIntent.mock.calls[0][0];
+      expect(intent.metadata).toEqual({
+        runMode: 'ask',
+        apiKeyId: 'apikey-01',
+        requestedProvider: 'stub',
+        requestedModel: 'test-model',
+      });
+      expect(intent.metadata).not.toHaveProperty('harnessVersion');
+    });
+
+    it('keeps a hand-off plain when file access is omitted or false, even if the caller sends harness fields', async () => {
+      process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = HARNESS_SECRET;
+      const runId = await createRun();
+      const omitted = await postReferral(runId, {
+        idempotencyKey: 'plain-omitted',
+        harnessVersion: 'v1',
+        harnessReadOnly: true,
+      }).expect(201);
+      await approve(runId, omitted.body.referral.referralId).expect(200);
+
+      const falsyRun = await createRun();
+      const falsy = await postReferral(falsyRun, {
+        idempotencyKey: 'plain-false',
+        fileAccess: false,
+        harnessVersion: 'v1',
+        harnessReadOnly: true,
+      }).expect(201);
+      expect(
+        referrals.get(falsy.body.referral.referralId as string)?.pendingJob?.fileAccess,
+      ).not.toBe(true);
+      await approve(falsyRun, falsy.body.referral.referralId).expect(200);
+
+      expect(queue.enqueueExecution).toHaveBeenCalledTimes(2);
+      for (const call of queue.enqueueExecution.mock.calls) {
+        const payload = call[0] as Record<string, unknown>;
+        expect(payload).not.toHaveProperty('harnessVersion');
+        expect(payload).not.toHaveProperty('harnessReadOnly');
+        expect(payload).not.toHaveProperty('harnessEntitlementProof');
+        expect(payload.executionIntent).toBe('conversation');
+        expect(JSON.stringify(payload)).not.toContain('harnessVersion');
+        expect(JSON.stringify(payload)).not.toContain('harnessReadOnly');
+      }
+      for (const call of ledger.writeExecutionIntent.mock.calls) {
+        expect(call[0].metadata.runMode).toBe('ask');
+      }
+    });
+
+    it('carries file access to a direct child and to a child created from the answer', async () => {
+      process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = HARNESS_SECRET;
+      const runId = await createRun();
+      const root = await postReferral(runId, {
+        idempotencyKey: 'file-root',
+        targetBuilder: { agentRole: 'builder', builderProfileId: 'lead' },
+        agents: listedAgents,
+        projectInstructions: 'Be concise.',
+        fileAccess: true,
+      }).expect(201);
+
+      const direct = await postReferral(runId, {
+        idempotencyKey: 'file-direct-child',
+        sourceBuilder: { agentRole: 'builder', builderProfileId: 'lead' },
+        targetBuilder: { agentRole: 'builder', builderProfileId: 'writer' },
+        parentReferralTraceId: root.body.referral.referralTraceId,
+      }).expect(201);
+      expect(
+        referrals.get(direct.body.referral.referralId as string)?.pendingJob?.fileAccess,
+      ).toBe(true);
+      expect(
+        referrals.get(direct.body.referral.referralId as string)?.pendingJob?.agents,
+      ).toEqual(listedAgents);
+
+      const rejected = await postReferral(runId, {
+        idempotencyKey: 'file-child-override',
+        sourceBuilder: { agentRole: 'builder', builderProfileId: 'lead' },
+        targetBuilder: { agentRole: 'builder', builderProfileId: 'writer' },
+        parentReferralTraceId: root.body.referral.referralTraceId,
+        fileAccess: true,
+      }).expect(400);
+      expect(rejected.body.message).toContain('only accepted on the first hand-off');
+
+      await approve(runId, root.body.referral.referralId).expect(200);
+      const answer =
+        'The draft is ready.\n\n<handoff to="writer">Tighten the opening.</handoff>';
+      executionResults.getExecution.mockResolvedValue(completedExecution(answer));
+      const detail = await http().get(`/api/internal/collaboration/runs/${runId}`).expect(200);
+      const answerChild = detail.body.referrals.find(
+        (referral: { referralId: string }) =>
+          referral.referralId !== root.body.referral.referralId &&
+          referral.referralId !== direct.body.referral.referralId,
+      );
+      expect(answerChild.status).toBe('pending_approval');
+      expect(
+        referrals.get(answerChild.referralId as string)?.pendingJob?.fileAccess,
+      ).toBe(true);
+
+      await approve(runId, direct.body.referral.referralId).expect(200);
+      await approve(runId, answerChild.referralId).expect(200);
+
+      expect(queue.enqueueExecution).toHaveBeenCalledTimes(3);
+      for (const call of queue.enqueueExecution.mock.calls) {
+        expectSignedReadOnlyJob(call[0] as Record<string, unknown>);
+      }
+    });
+
+    it('refuses approval and leaves the hand-off waiting when the signing secret is missing', async () => {
+      const runId = await createRun();
+      const waiting = await postReferral(runId, {
+        idempotencyKey: 'file-no-secret',
+        fileAccess: true,
+      }).expect(201);
+
+      process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = '   ';
+      const blank = await approve(runId, waiting.body.referral.referralId).expect(500);
+      expect(blank.body.message).toBe('Harness entitlement proof could not be produced');
+      await expectStillWaiting(runId);
+
+      delete process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+      const missing = await approve(runId, waiting.body.referral.referralId).expect(500);
+      expect(missing.body.message).toBe('Harness entitlement proof could not be produced');
+      await expectStillWaiting(runId);
+
+      process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = HARNESS_SECRET;
+      const started = await approve(runId, waiting.body.referral.referralId).expect(200);
+      expect(started.body.referral.status).toBe('in_progress');
+      expectSignedReadOnlyJob(queue.enqueueExecution.mock.calls[0][0]);
+    });
+
+    it('rejects a non-boolean fileAccess before creating a referral', async () => {
+      const runId = await createRun();
+      const response = await postReferral(runId, {
+        idempotencyKey: 'file-bad-type',
+        fileAccess: 'true',
+      }).expect(400);
+      expect(response.body.message).toContain('fileAccess must be a boolean');
+      await expectNoJob(runId);
+    });
   });
 });

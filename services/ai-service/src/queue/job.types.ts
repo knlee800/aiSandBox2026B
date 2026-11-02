@@ -64,6 +64,12 @@ export interface AiExecutionJob {
   /** Agent Harness version gate. When set to 'v1', enables the harness execution path. */
   harnessVersion?: string;
 
+  /**
+   * Per-job read-only harness. When true, only read tools are registered.
+   * The field is part of the signed entitlement payload.
+   */
+  harnessReadOnly?: boolean;
+
   /** HMAC entitlement proof required when harnessVersion === 'v1'. Absent on ordinary jobs. */
   harnessEntitlementProof?: HarnessEntitlementProof;
 

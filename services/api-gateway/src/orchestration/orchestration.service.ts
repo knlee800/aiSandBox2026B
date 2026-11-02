@@ -3,6 +3,7 @@ import {
   ConflictException,
   ExecutionContext,
   Injectable,
+  InternalServerErrorException,
   Logger,
   Optional,
   ServiceUnavailableException,
@@ -10,6 +11,10 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'crypto';
 import { Repository } from 'typeorm';
+import {
+  createHarnessEntitlementProof,
+  readValidatedHarnessEntitlementHmacSecret,
+} from '../ai/ai-execution.controller';
 import { QueueService } from '../queue/queue.service';
 import { ExecutionResultService } from '../ai/execution-result.service';
 import { UsageLedgerService } from '../usage-ledger/usage-ledger.service';
@@ -66,6 +71,7 @@ import {
 
 const DEFAULT_REFERRAL_TIMEOUT_MS = 300_000;
 const LEDGER_INTENT_FAILURE = 'Failed to write execution intent';
+const HARNESS_PROOF_UNAVAILABLE = 'Harness entitlement proof could not be produced';
 const FINISHED_FAILURE_EXECUTION_STATUSES: readonly string[] = [
   'failed',
   'cancelled',
@@ -180,6 +186,7 @@ export interface CreatePendingReferralInput {
   readonly globalInstructions?: string;
   readonly projectInstructions?: string;
   readonly agents?: unknown;
+  readonly fileAccess?: boolean;
   readonly constraints?: Partial<ReferralConstraints>;
   readonly parentReferralTraceId?: ReferralTraceId | null;
   readonly timeoutMs?: number;
@@ -685,6 +692,7 @@ export class OrchestrationService {
         this.assertReadOnlyConstraints(referral);
 
         const now = new Date();
+        const fileAccess = referralEntity.pendingJob?.fileAccess === true;
         const payload = {
           executionId: input.executionId,
           userId: input.userId,
@@ -699,7 +707,10 @@ export class OrchestrationService {
           projectInstructions: input.projectInstructions,
           model: input.model,
           submittedAt: input.submittedAt,
-          executionIntent: 'conversation',
+          executionIntent: 'conversation' as const,
+          ...(fileAccess
+            ? { harnessVersion: 'v1' as const, harnessReadOnly: true as const }
+            : {}),
           agentRole: referral.targetBuilder.agentRole,
           builderProfileId: referral.targetBuilder.builderProfileId,
           collaborationRunId: referral.collaborationRunId,
@@ -720,7 +731,9 @@ export class OrchestrationService {
       },
     );
 
-    await this.queueService.enqueueExecution(jobPayload);
+    await this.queueService.enqueueExecution(
+      this.withHarnessEntitlementProof(jobPayload),
+    );
     const updatedEntity = await this.referralRepo.findOne({
       where: { referralId: input.referralId },
     });
@@ -898,6 +911,7 @@ export class OrchestrationService {
         agents: prepared.agents,
         callerProjectInstructions: prepared.callerProjectInstructions,
         handoffNote: null,
+        ...(prepared.fileAccess ? { fileAccess: true } : {}),
       },
     });
     const stored = await this.referralRepo.findOne({
@@ -927,6 +941,12 @@ export class OrchestrationService {
       );
     }
     const job = loaded.entity.pendingJob;
+    if (
+      job.fileAccess === true &&
+      readValidatedHarnessEntitlementHmacSecret() === undefined
+    ) {
+      throw new InternalServerErrorException(HARNESS_PROOF_UNAVAILABLE);
+    }
     await this.assertHandoffAllowed(loaded.run.userId, job);
 
     const now = new Date();
@@ -2161,10 +2181,14 @@ export class OrchestrationService {
     agents: CollaborationListedAgent[] | null;
     callerProjectInstructions: string | null;
     projectInstructions: string | null;
+    fileAccess: boolean;
   }> {
     const parentId = input.parentReferralTraceId?.trim() || null;
     if (input.agents !== undefined && parentId) {
       throw new BadRequestException('agents are only accepted on the first hand-off');
+    }
+    if (input.fileAccess !== undefined && parentId) {
+      throw new BadRequestException('fileAccess is only accepted on the first hand-off');
     }
 
     let parent: CollaborationReferralEntity | null = null;
@@ -2213,8 +2237,49 @@ export class OrchestrationService {
           agentName: input.targetBuilder.builderProfileId,
         })
       : callerProjectInstructions;
+    const fileAccess = parent
+      ? parent.pendingJob?.fileAccess === true
+      : input.fileAccess === true;
 
-    return { agents, callerProjectInstructions, projectInstructions };
+    return { agents, callerProjectInstructions, projectInstructions, fileAccess };
+  }
+
+  private withHarnessEntitlementProof<
+    T extends {
+      executionId: string;
+      userId: string;
+      apiKeyId: string;
+      submittedAt: string;
+      harnessVersion?: string;
+    },
+  >(
+    payload: T,
+  ): T & {
+    harnessEntitlementProof?: ReturnType<typeof createHarnessEntitlementProof>;
+  } {
+    if (payload.harnessVersion !== 'v1') {
+      return payload;
+    }
+    const secret = readValidatedHarnessEntitlementHmacSecret();
+    if (secret === undefined) {
+      throw new InternalServerErrorException(HARNESS_PROOF_UNAVAILABLE);
+    }
+    try {
+      const harnessEntitlementProof = createHarnessEntitlementProof({
+        executionId: payload.executionId,
+        userId: payload.userId,
+        apiKeyId: payload.apiKeyId,
+        issuedAt: payload.submittedAt,
+        payloadWithoutProof: payload as unknown as Record<string, unknown>,
+        secret,
+      });
+      return { ...payload, harnessEntitlementProof };
+    } catch (error) {
+      if (error instanceof InternalServerErrorException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(HARNESS_PROOF_UNAVAILABLE);
+    }
   }
 
   private copyStoredAgents(

@@ -184,6 +184,7 @@ export class InternalCollaborationController {
         'projectInstructions',
       ),
       agents: record.agents,
+      fileAccess: this.readOptionalBoolean(record.fileAccess, 'fileAccess'),
       constraints: this.readConstraints(record.constraints),
       parentReferralTraceId: this.readOptionalNullableString(
         record.parentReferralTraceId,
@@ -287,6 +288,16 @@ export class InternalCollaborationController {
     }
     if (maxLength !== undefined && value.length > maxLength) {
       throw new BadRequestException(`${field} must be at most ${maxLength} characters`);
+    }
+    return value;
+  }
+
+  private readOptionalBoolean(value: unknown, field: string): boolean | undefined {
+    if (value === undefined) {
+      return undefined;
+    }
+    if (typeof value !== 'boolean') {
+      throw new BadRequestException(`${field} must be a boolean`);
     }
     return value;
   }

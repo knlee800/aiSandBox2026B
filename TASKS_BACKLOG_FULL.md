@@ -83677,7 +83677,7 @@ taskId=COLLAB-FILES-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02.
+**Status:** COMPLETE AND LOCKED — 2026-11-02. LANE-DONE and LOCKED by the control plane; Lane 1, GATEWAY and AI-SERVICE released. Checkpoint: docs/COLLAB-FILES-01-CHECKPOINT.md.
 **Task ID:** COLLAB-FILES-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -83694,13 +83694,13 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] A read-only job has only the three read tools, including when the write, validation and browser flags are on
-- [ ] The read-only setting cannot be removed or added in the queue without failing the proof
-- [ ] Tool loop off or a bad proof fails the hand-off with a reason; no plain fallback
-- [ ] Runs that do not ask for file access stay plain Ask jobs with no harnessVersion
-- [ ] Agent mode runs keep their tools, and their proofs still verify
-- [ ] Hand-off requests still work from a Harness answer
-- [ ] Not LOCKED by an implementer
+- [x] A read-only job has only the three read tools, including when the write, validation and browser flags are on
+- [x] The read-only setting cannot be removed or added in the queue without failing the proof
+- [x] Tool loop off or a bad proof fails the hand-off with a reason; no plain fallback
+- [x] Runs that do not ask for file access stay plain Ask jobs with no harnessVersion
+- [x] Agent mode runs keep their tools, and their proofs still verify
+- [x] Hand-off requests still work from a Harness answer
+- [x] Not LOCKED by an implementer
 
 ### COLLAB-LIVE-04 — Agents read real project files on staging
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

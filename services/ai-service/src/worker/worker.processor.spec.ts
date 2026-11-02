@@ -6,6 +6,9 @@ import {
   computeJobPayloadDigest,
   computePayloadDigest,
   DEFAULT_EXECUTION_TIMEOUT_MS,
+  HARNESS_ENTITLEMENT_PROOF_MALFORMED,
+  HARNESS_ENTITLEMENT_PROOF_MISSING,
+  HARNESS_ENTITLEMENT_PROOF_PAYLOAD_INTEGRITY_MISMATCH,
   HarnessEmptyAdvertisedToolSetError,
   HarnessEntitlementError,
   HarnessRoutingError,
@@ -4784,5 +4787,479 @@ describe('HARNESS-SAVE-01: save a project snapshot when a harness run writes or 
     expect(ledger.order).toEqual(['save', 'finalize']);
     expect(ledger.completedUpdates).toHaveLength(1);
     await worker.onModuleDestroy();
+  });
+});
+
+describe('COLLAB-FILES-01 read-only harness jobs', () => {
+  const HARNESS_SECRET = 'test-hmac-secret-collab-files-01';
+  const originalRedisUrl = process.env.REDIS_URL;
+  const originalStuckScan = process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+  const originalSecret = process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+  const harnessConfigModule = require('../agent-harness/config/agent-harness.config') as {
+    DEFAULT_AGENT_HARNESS_CONFIG_V1: typeof DEFAULT_AGENT_HARNESS_CONFIG_V1;
+  };
+  const originalHarnessConfig = harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1;
+
+  function withHarnessProof(
+    data: Record<string, unknown>,
+  ): Record<string, unknown> {
+    const payloadDigest = computeJobPayloadDigest(data).payloadDigest;
+    const issuedAt = '2026-11-02T12:00:00.000Z';
+    const executionId = String(data.executionId);
+    const userId = String(data.userId);
+    const apiKeyId = String(data.apiKeyId);
+    const claim = `v=1|executionId=${executionId}|userId=${userId}|apiKeyId=${apiKeyId}|harnessVersion=v1|issuedAt=${issuedAt}|payloadDigest=${payloadDigest}`;
+    const signature = createHmac('sha256', HARNESS_SECRET)
+      .update(claim, 'utf8')
+      .digest('hex');
+    return {
+      ...data,
+      harnessEntitlementProof: {
+        version: 1,
+        executionId,
+        userId,
+        apiKeyId,
+        harnessVersion: 'v1',
+        issuedAt,
+        payloadDigest,
+        signature,
+      },
+    };
+  }
+
+  function baseJob(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+    return {
+      executionId: 'exec-collab-files',
+      userId: 'user-collab-files',
+      apiKeyId: 'apikey-collab-files',
+      sessionId: 'session-collab-files',
+      conversationId: 'conv-collab-files',
+      provider: 'openai',
+      adapter: 'openai',
+      prompt: 'Read the project.',
+      model: 'gpt-test',
+      harnessVersion: 'v1',
+      executionIntent: 'conversation',
+      submittedAt: '2026-11-02T12:00:00.000Z',
+      ...overrides,
+    };
+  }
+
+  function createLedgerMock() {
+    const status = { value: 'pending' };
+    const completedUpdates: Array<{ sql: string; params: unknown[] }> = [];
+    const query = jest.fn(async (sql: string, params: unknown[] = []) => {
+      if (
+        sql.includes("SET execution_status = 'running'") &&
+        sql.includes('RETURNING')
+      ) {
+        if (status.value === 'pending') {
+          status.value = 'running';
+          return [{ execution_id: params[0] }];
+        }
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'completed'")) {
+        completedUpdates.push({ sql, params });
+        status.value = 'completed';
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'failed'")) {
+        status.value = 'failed';
+        return [];
+      }
+      if (sql.includes('SELECT execution_status, created_at')) {
+        return [
+          {
+            execution_status: status.value,
+            created_at: new Date().toISOString(),
+          },
+        ];
+      }
+      if (sql.includes('SELECT execution_id, timestamp')) {
+        return [];
+      }
+      if (sql.includes('SELECT metadata')) {
+        return [{ metadata: {} }];
+      }
+      if (sql.includes('SELECT execution_status')) {
+        return [{ execution_status: status.value }];
+      }
+      return [];
+    });
+    return { query, status, completedUpdates };
+  }
+
+  function toolCall(
+    callId: string,
+    toolName: string,
+    args: Record<string, unknown>,
+  ) {
+    return {
+      callId,
+      toolName,
+      arguments: args,
+      providerKind: 'stub',
+    };
+  }
+
+  async function startWorker(deps: {
+    query: jest.Mock;
+    execute: jest.Mock;
+    getAdapter: jest.Mock;
+    apiGateway: Record<string, jest.Mock>;
+    publisher?: Record<string, jest.Mock>;
+  }) {
+    const publisher = {
+      publishCompletion: jest.fn(),
+      publishToken: jest.fn(),
+      publishFileActions: jest.fn(),
+      publishHarnessProgress: jest.fn(),
+      ...deps.publisher,
+    };
+    const worker = new WorkerProcessor(
+      { query: deps.query } as never,
+      { execute: deps.execute, getAdapter: deps.getAdapter } as never,
+      publisher as never,
+      deps.apiGateway as never,
+    );
+    await worker.onModuleInit();
+    if (!capturedWorker.processor) {
+      throw new Error('BullMQ worker processor was not captured');
+    }
+    return { worker, processJob: capturedWorker.processor, publisher };
+  }
+
+  function enableAllToolFlags(enableToolLoop: boolean): void {
+    harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1 = {
+      ...originalHarnessConfig,
+      enableToolLoop,
+      enableWriteTools: true,
+      enableValidationTools: true,
+      enableBrowserSmoke: true,
+      enablePreApplyCheckpoint: true,
+    };
+  }
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    process.env.REDIS_URL = 'redis://127.0.0.1:6379';
+    process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = '600000';
+    process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = HARNESS_SECRET;
+    capturedWorker.processor = null;
+    capturedWorker.opts = null;
+    enableAllToolFlags(true);
+  });
+
+  afterEach(() => {
+    harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1 = originalHarnessConfig;
+    jest.useRealTimers();
+    if (originalRedisUrl === undefined) {
+      delete process.env.REDIS_URL;
+    } else {
+      process.env.REDIS_URL = originalRedisUrl;
+    }
+    if (originalStuckScan === undefined) {
+      delete process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+    } else {
+      process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = originalStuckScan;
+    }
+    if (originalSecret === undefined) {
+      delete process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+    } else {
+      process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = originalSecret;
+    }
+  });
+
+  it('registers only read tools and advertises the same set when write flags are on', async () => {
+    const ledger = createLedgerMock();
+    const finalText =
+      'Checked slug.js.\n\n<handoff to="writer">Look at the bug.</handoff>';
+    const executeWithTools = jest
+      .fn()
+      .mockResolvedValueOnce({
+        output: 'reading',
+        tokensUsed: 2,
+        model: 'stub-read-model',
+        finishReason: 'tool_calls',
+        toolCalls: [
+          toolCall('call-read', 'read_file', { path: 'slug.js' }),
+          toolCall('call-write', 'write_file', { path: 'slug.js', content: 'nope' }),
+          toolCall('call-delete', 'delete_file', { path: 'slug.js' }),
+          toolCall('call-validate', 'run_validation', { command: 'npm test' }),
+          toolCall('call-browser', 'browser_smoke', { url: '/' }),
+        ],
+      })
+      .mockResolvedValueOnce({
+        output: finalText,
+        tokensUsed: 3,
+        model: 'stub-read-model',
+        finishReason: 'completed',
+        toolCalls: [],
+        fileActions: [{ action: 'write', path: 'slug.js', content: 'nope' }],
+      });
+    const execute = jest.fn();
+    const readWorkspaceFile = jest.fn().mockResolvedValue({
+      path: 'slug.js',
+      content: 'existing',
+    });
+    const writeWorkspaceFile = jest.fn().mockResolvedValue(undefined);
+    const deleteWorkspaceFile = jest.fn().mockResolvedValue(undefined);
+    const runWorkspaceValidation = jest.fn().mockResolvedValue({
+      exitCode: 0,
+      stdout: '',
+      stderr: '',
+    });
+    const runBrowserSmoke = jest.fn().mockResolvedValue({ ok: true });
+    const createWorkspaceCheckpoint = jest.fn().mockResolvedValue({
+      commitHash: 'abc',
+      filesChanged: 1,
+    });
+    const saveProjectSnapshot = jest.fn().mockResolvedValue({ saved: true });
+    const notifyExecutionComplete = jest.fn().mockResolvedValue(undefined);
+    const { worker, processJob, publisher } = await startWorker({
+      query: ledger.query,
+      execute,
+      getAdapter: jest.fn().mockReturnValue({
+        supportsToolUse: true,
+        executeWithTools,
+      }),
+      apiGateway: {
+        notifyExecutionComplete,
+        readWorkspaceFile,
+        writeWorkspaceFile,
+        deleteWorkspaceFile,
+        runWorkspaceValidation,
+        runBrowserSmoke,
+        createWorkspaceCheckpoint,
+        saveProjectSnapshot,
+        listWorkspaceDirectory: jest.fn(),
+        searchWorkspace: jest.fn(),
+      },
+    });
+
+    await processJob({
+      id: 'job-read-only-tools',
+      data: withHarnessProof(baseJob({
+        executionId: 'exec-read-only-tools',
+        harnessReadOnly: true,
+      })),
+    });
+
+    const advertised = executeWithTools.mock.calls[0][1].tools.map(
+      (tool: { name: string }) => tool.name,
+    );
+    expect(advertised).toEqual(['list_files', 'read_file', 'search_workspace']);
+    expect(executeWithTools.mock.calls[1][1].tools.map(
+      (tool: { name: string }) => tool.name,
+    )).toEqual(advertised);
+    expect(readWorkspaceFile).toHaveBeenCalledTimes(1);
+    expect(writeWorkspaceFile).not.toHaveBeenCalled();
+    expect(deleteWorkspaceFile).not.toHaveBeenCalled();
+    expect(runWorkspaceValidation).not.toHaveBeenCalled();
+    expect(runBrowserSmoke).not.toHaveBeenCalled();
+    expect(createWorkspaceCheckpoint).not.toHaveBeenCalled();
+    expect(saveProjectSnapshot).not.toHaveBeenCalled();
+    expect(execute).not.toHaveBeenCalled();
+    expect(notifyExecutionComplete).toHaveBeenCalledTimes(1);
+    expect(publisher.publishFileActions).toHaveBeenCalledWith(
+      'exec-read-only-tools',
+      [],
+    );
+    const metadata = JSON.parse(String(ledger.completedUpdates[0].params[2])) as {
+      aiExecutionResult: { output: string; executionIntent: string; fileActions: unknown[] };
+    };
+    expect(metadata.aiExecutionResult.output).toBe(finalText);
+    expect(metadata.aiExecutionResult.executionIntent).toBe('conversation');
+    expect(metadata.aiExecutionResult.fileActions).toEqual([]);
+    await worker.onModuleDestroy();
+  });
+
+  it('keeps write tools on an ordinary harness job and still verifies its proof', async () => {
+    const ledger = createLedgerMock();
+    const executeWithTools = jest
+      .fn()
+      .mockResolvedValueOnce({
+        output: 'writing',
+        tokensUsed: 2,
+        model: 'stub-write-model',
+        finishReason: 'tool_calls',
+        toolCalls: [
+          toolCall('call-write', 'write_file', { path: 'slug.js', content: 'ok' }),
+          toolCall('call-browser', 'browser_smoke', { url: '/' }),
+        ],
+      })
+      .mockResolvedValueOnce({
+        output: 'Wrote it.',
+        tokensUsed: 2,
+        model: 'stub-write-model',
+        finishReason: 'completed',
+        toolCalls: [],
+      });
+    const writeWorkspaceFile = jest.fn().mockResolvedValue(undefined);
+    const runBrowserSmoke = jest.fn().mockResolvedValue({ ok: true });
+    const saveProjectSnapshot = jest.fn().mockResolvedValue({ saved: true });
+    const job = withHarnessProof(baseJob({
+      executionId: 'exec-ordinary-agent',
+    }));
+    expect(() => verifyHarnessEntitlementProof(job)).not.toThrow();
+
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn(),
+      getAdapter: jest.fn().mockReturnValue({
+        supportsToolUse: true,
+        executeWithTools,
+      }),
+      apiGateway: {
+        notifyExecutionComplete: jest.fn().mockResolvedValue(undefined),
+        writeWorkspaceFile,
+        runBrowserSmoke,
+        createWorkspaceCheckpoint: jest.fn().mockResolvedValue({
+          commitHash: 'abc',
+          filesChanged: 1,
+        }),
+        saveProjectSnapshot,
+      },
+    });
+
+    await processJob({ id: 'job-ordinary-agent', data: job });
+
+    expect(executeWithTools.mock.calls[0][1].tools.map(
+      (tool: { name: string }) => tool.name,
+    )).toEqual([
+      'list_files',
+      'read_file',
+      'write_file',
+      'run_validation',
+      'search_workspace',
+    ]);
+    expect(writeWorkspaceFile).toHaveBeenCalledTimes(1);
+    expect(runBrowserSmoke).toHaveBeenCalledTimes(1);
+    expect(saveProjectSnapshot).toHaveBeenCalledTimes(1);
+    expect(ledger.status.value).toBe('completed');
+    await worker.onModuleDestroy();
+  });
+
+  it('fails the proof when harnessReadOnly is added or removed', () => {
+    const signedReadOnly = withHarnessProof(baseJob({
+      executionId: 'exec-tamper-remove',
+      harnessReadOnly: true,
+    }));
+    expect(() => verifyHarnessEntitlementProof(signedReadOnly)).not.toThrow();
+    const removed = { ...signedReadOnly, harnessReadOnly: false };
+    expect(() => verifyHarnessEntitlementProof(removed)).toThrow(HarnessEntitlementError);
+    try {
+      verifyHarnessEntitlementProof(removed);
+    } catch (error) {
+      expect(error).toBeInstanceOf(HarnessEntitlementError);
+      expect((error as HarnessEntitlementError).code).toBe(
+        HARNESS_ENTITLEMENT_PROOF_PAYLOAD_INTEGRITY_MISMATCH,
+      );
+    }
+
+    const signedOrdinary = withHarnessProof(baseJob({
+      executionId: 'exec-tamper-add',
+    }));
+    const added = { ...signedOrdinary, harnessReadOnly: true };
+    expect(() => verifyHarnessEntitlementProof(added)).toThrow(HarnessEntitlementError);
+    try {
+      verifyHarnessEntitlementProof(added);
+    } catch (error) {
+      expect((error as HarnessEntitlementError).code).toBe(
+        HARNESS_ENTITLEMENT_PROOF_PAYLOAD_INTEGRITY_MISMATCH,
+      );
+    }
+  });
+
+  it('fails closed with no plain fallback when the proof is missing or the tool loop is off', async () => {
+    const ledger = createLedgerMock();
+    const execute = jest.fn().mockResolvedValue({
+      output: 'plain fallback',
+      tokensUsed: 1,
+      model: 'should-not-run',
+    });
+    const executeWithTools = jest.fn();
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute,
+      getAdapter: jest.fn().mockReturnValue({
+        supportsToolUse: true,
+        executeWithTools,
+      }),
+      apiGateway: {
+        notifyExecutionComplete: jest.fn().mockResolvedValue(undefined),
+      },
+    });
+
+    const missingProof = baseJob({
+      executionId: 'exec-missing-proof',
+      harnessReadOnly: true,
+    });
+    await expect(processJob({
+      id: 'job-missing-proof',
+      data: missingProof,
+    })).rejects.toMatchObject({ code: HARNESS_ENTITLEMENT_PROOF_MISSING });
+    ledger.status.value = 'pending';
+
+    const notHarness = baseJob({
+      executionId: 'exec-not-harness',
+      harnessReadOnly: true,
+      harnessVersion: undefined,
+    });
+    delete notHarness.harnessVersion;
+    await expect(processJob({
+      id: 'job-not-harness',
+      data: notHarness,
+    })).rejects.toMatchObject({ code: HARNESS_ENTITLEMENT_PROOF_MISSING });
+    ledger.status.value = 'pending';
+
+    const malformed = baseJob({
+      executionId: 'exec-malformed-readonly',
+      harnessReadOnly: true,
+      harnessVersion: undefined,
+      harnessEntitlementProof: { version: 1 },
+    });
+    delete malformed.harnessVersion;
+    await expect(processJob({
+      id: 'job-malformed-readonly',
+      data: malformed,
+    })).rejects.toMatchObject({ code: HARNESS_ENTITLEMENT_PROOF_MALFORMED });
+
+    expect(execute).not.toHaveBeenCalled();
+    expect(executeWithTools).not.toHaveBeenCalled();
+    expect(ledger.status.value).toBe('failed');
+    await worker.onModuleDestroy();
+
+    enableAllToolFlags(false);
+    const loopOffLedger = createLedgerMock();
+    const loopOffExecute = jest.fn().mockResolvedValue({
+      output: 'plain fallback',
+      tokensUsed: 1,
+      model: 'should-not-run',
+    });
+    const loopOffTools = jest.fn();
+    const loopOff = await startWorker({
+      query: loopOffLedger.query,
+      execute: loopOffExecute,
+      getAdapter: jest.fn().mockReturnValue({
+        supportsToolUse: true,
+        executeWithTools: loopOffTools,
+      }),
+      apiGateway: {
+        notifyExecutionComplete: jest.fn().mockResolvedValue(undefined),
+      },
+    });
+    await expect(loopOff.processJob({
+      id: 'job-loop-off',
+      data: withHarnessProof(baseJob({
+        executionId: 'exec-loop-off',
+        harnessReadOnly: true,
+      })),
+    })).rejects.toMatchObject({ reason: 'tool_loop_disabled' });
+    expect(loopOffExecute).not.toHaveBeenCalled();
+    expect(loopOffTools).not.toHaveBeenCalled();
+    expect(loopOffLedger.status.value).toBe('failed');
+    await loopOff.worker.onModuleDestroy();
   });
 });

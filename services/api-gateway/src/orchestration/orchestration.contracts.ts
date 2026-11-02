@@ -178,6 +178,8 @@ export interface ReferralPendingJob {
   readonly agents?: readonly CollaborationListedAgent[] | null;
   readonly callerProjectInstructions?: string | null;
   readonly handoffNote?: string | null;
+  /** First hand-off opt-in. Children inherit it. Only true requests a read-only harness job. */
+  readonly fileAccess?: boolean;
 }
 
 export interface ReferralResult {
