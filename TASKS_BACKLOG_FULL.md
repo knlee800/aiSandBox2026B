@@ -83344,6 +83344,48 @@ nature=IMPLEMENTATION
 - [x] frontend tsc, npm test and npm run build pass, and only the files in the primary write scope change
 - [x] Not LOCKED by an implementer
 
+### HARNESS-LIVE-06 — Prove run status and reconnect after a refresh on ainow-staging-01
+
+**Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
+**Task ID:** HARNESS-LIVE-06
+**Title:** Prove run status and reconnect after a refresh on ainow-staging-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (operational run; no product activation)
+**Lifecycle:** 4-STEP. Step 1 registration; Step 2 stage-start; Step 3 runs under Keith's authorization; Step 4 consolidation, checkpoint and LOCK by the control plane.
+**Start condition (human):** READY — Keith approved on 2026-11-02 (draft approved).
+**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Depends on (human):** RUN-STATUS-01 and RUN-RECOVER-01, both COMPLETE AND LOCKED.
+**Depends on (machine `dependsOn`):** `[RUN-STATUS-01, RUN-RECOVER-01]`
+**Primary write scope:** none. Host state on ainow-staging-01, the test project's workspace and off-repo evidence only.
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV (Lane 1, 2026-11-02). ENV covers host environment files for the window only.
+**Hot-file leases:** none
+**Shared contracts:** consumes HARNESS_ENTITLEMENT_PROOF_V1 without changing it (`sharedContractIds=[HARNESS_ENTITLEMENT_PROOF_V1]`; `mutatesSharedContractIds=[]`).
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** acceptable (flags back off and the key removed afterwards; no schema change).
+**saturationClass:** OPTIONAL
+**productClass:** CURRENT (work on the existing gated harness; no product activation; PRD ACTIVE DEVELOPMENT)
+**futureAuthorization:** NONE
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** STAGING, PROVIDER-LIVE, CREDIT
+
+**Problem:** the run list and reconnect are mock-tested. The run list SQL has not run on real PostgreSQL, and the reconnect has no direct unit test.
+**Scope:** on ainow-staging-01, behind basic_auth, in project C1 repeat: one deploy of a481b9d05322d34707fcdb99f7458ac1ed2e08d0; up to 3 runs Keith starts in the real screen, refreshing or closing the page during them. Same caps as HARNESS-LIVE-05. Keith types the provider key at a hidden prompt; it is removed afterwards and the flags go back off. Not in scope: other providers, showing Agent to anyone else, a run list screen, and making any of this CURRENT.
+
+#### Acceptance criteria
+
+- [ ] The run list answers on real PostgreSQL with Keith's runs and their modes, and holds no prompts or answers
+- [ ] Refreshing during an Agent run reconnects, and the answer shows once when it ends
+- [ ] An Agent run that ends while the page is closed shows its answer on reopening, once, and the workspace updates
+- [ ] A Build run interrupted the same way shows its answer and the not-applied notice, and applies no files
+- [ ] The guard still refuses requests with no key after the deploy, and a normal run with no refresh still works
+- [ ] Credits and usage are recorded correctly, and usage_records.model is non-empty
+- [ ] Spend stays within the caps
+- [ ] Afterwards the flags are off, the key is removed, and the configuration hashes match the recorded state
+- [ ] Keith reads the transcripts and records his judgement
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
