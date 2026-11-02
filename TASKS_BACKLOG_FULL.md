@@ -83650,7 +83650,7 @@ taskId=COLLAB-LIVE-03
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Keith approved the window in the draft on 2026-11-02. COLLAB-CHOOSE-01 LOCKED at e85cbc13a5c06588750703fe672c8ae497f22186.
+**Status:** COMPLETE AND LOCKED — 2026-11-02. Keith: judgement ok. Lane 1, STAGING, PROVIDER-LIVE, CREDIT and ENV released. Checkpoint: docs/COLLAB-LIVE-03-CHECKPOINT.md.
 **Task ID:** COLLAB-LIVE-03
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -83664,12 +83664,12 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Each case observed, and every hand-off in the chain came from an agent answer
-- [ ] Bad name and expired hand-off ran no job
-- [ ] Nothing left open after the window
-- [ ] Harness flags stayed off
-- [ ] Keith judgement recorded
-- [ ] Not LOCKED by an implementer
+- [x] Each case observed, and every hand-off in the chain came from an agent answer. The model declined the bad-name request, so that refusal is unit-tested only; see the checkpoint
+- [x] Bad name and expired hand-off ran no job. The model declined the bad-name request, so that refusal is unit-tested only; see the checkpoint
+- [x] Nothing left open after the window
+- [x] Harness flags stayed off
+- [x] Keith judgement recorded
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
