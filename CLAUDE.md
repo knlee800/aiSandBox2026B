@@ -433,6 +433,19 @@ Normally: a concise evidence-grounded recommendation, OR a bounded choice for Ke
 
 Not normally: another broad strategic audit, another reconciliation task, or another roadmap/source-map document.
 
+### Record economy (GOV-OS-04)
+
+This section changes how many records are made, not what they must prove.
+
+- Registration and admission of one task are one record and one commit when the task is admitted at once.
+- A task with evidence class LOCAL-TESTS: code and LOCK may be one commit, after the control plane has read the diff and rerun the gates. Tasks with any other evidence class keep a separate LOCK record.
+- A live task that needs a fix pauses instead of returning to READY. The control plane sets `stagingAuthorized`, `providerLiveAuthorized` and `creditAuthorized` false and `runtimeAuthorization.liveWindowPaused` true in the sidecar. A LOCAL-TESTS task may then run in the other lane. The validator allows only that pair, and only while the marker is true and all three are false. LOCAL-RUNTIME beside a live lane stays refused. Mutex, write-scope and shared-contract checks still apply.
+- A live lane with its flags off and no marker is not paused and does not make a LOCAL-TESTS candidate admissible. The marker comes off before any of the three goes back to true, which requires the other lane to be released first.
+- Board lines state the current state only. They replace the old text and do not chain it. History lives in the backlog body, checkpoints and Git.
+- The control plane may land its own records directly.
+
+Unchanged: two implementation lanes, mutexes, the scheduler, admission rules, the validator at machine-relevant transitions, a checkpoint for every task, approval of drafts, Keith's live judgement, verification before commit.
+
 ---
 
 ## Project Governance Loop

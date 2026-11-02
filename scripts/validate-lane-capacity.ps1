@@ -1057,7 +1057,17 @@ function Get-Conflict {
     if (Test-SharedContractPair $A $B) { return 'SHARED_CONTRACT_UNFROZEN' }
     $evA = [string]$A['evidenceClass']
     $evB = [string]$B['evidenceClass']
-    if (Get-EvidenceDeny $evA $evB) { return 'EVIDENCE_INCOMPATIBLE' }
+    if (Get-EvidenceDeny $evA $evB) {
+        $skipDeny = $false
+        if ($null -ne $script:RuntimeAuth) {
+            $rtAuth = $script:RuntimeAuth
+            $paused = $rtAuth.ContainsKey('liveWindowPaused') -and ($rtAuth['liveWindowPaused'] -is [bool]) -and ($rtAuth['liveWindowPaused'] -eq $true)
+            $flagsOff = ($rtAuth['stagingAuthorized'] -eq $false) -and ($rtAuth['providerLiveAuthorized'] -eq $false) -and ($rtAuth['creditAuthorized'] -eq $false)
+            $testsLive = (($evA -ceq 'LOCAL-TESTS') -and (($evB -ceq 'STAGING-RUNTIME') -or ($evB -ceq 'PROVIDER-LIVE'))) -or (($evB -ceq 'LOCAL-TESTS') -and (($evA -ceq 'STAGING-RUNTIME') -or ($evA -ceq 'PROVIDER-LIVE')))
+            if ($paused -and $flagsOff -and $testsLive) { $skipDeny = $true }
+        }
+        if (-not $skipDeny) { return 'EVIDENCE_INCOMPATIBLE' }
+    }
     return 'OK'
 }
 
@@ -1601,11 +1611,12 @@ try {
 
     $rt = $state['runtimeAuthorization']
     if (-not (Test-IsMap $rt)) { throw 'MALFORMED' }
-    Assert-ClosedKeys $rt @('localRuntimeAuthorized', 'stagingAuthorized', 'providerLiveAuthorized', 'creditAuthorized')
+    Assert-ClosedKeys $rt @('localRuntimeAuthorized', 'stagingAuthorized', 'providerLiveAuthorized', 'creditAuthorized', 'liveWindowPaused')
     Assert-RequiredKeys $rt @('localRuntimeAuthorized', 'stagingAuthorized', 'providerLiveAuthorized', 'creditAuthorized')
     foreach ($rk in @('localRuntimeAuthorized', 'stagingAuthorized', 'providerLiveAuthorized', 'creditAuthorized')) {
         if ($rt[$rk] -isnot [bool]) { throw 'MALFORMED' }
     }
+    if ($rt.ContainsKey('liveWindowPaused') -and ($rt['liveWindowPaused'] -isnot [bool])) { throw 'MALFORMED' }
     $script:RuntimeAuth = $rt
 
     $occ = $state['occupancy']

@@ -83484,7 +83484,7 @@ taskId=GOV-OS-04
 nature=GOVERNANCE
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ACTIVE — 2026-11-02. Governance; no lane. GOVERNANCE held; Development OS mutation begun with both lanes empty.
+**Status:** COMPLETE AND LOCKED — 2026-11-02. Governance; no lane. Development OS mutation ended; GOVERNANCE released. Checkpoint: docs/GOV-OS-04-CHECKPOINT.md.
 **Task ID:** GOV-OS-04
 **Nature:** GOVERNANCE. **Lifecycle:** 2-STEP: this record begins the mutation; the closing record ends it.
 **Start condition:** Keith approved the draft on 2026-11-02.
@@ -83496,11 +83496,11 @@ nature=GOVERNANCE
 
 #### Acceptance criteria
 
-- [ ] A LOCAL-TESTS lane beside a PROVIDER-LIVE or STAGING-RUNTIME lane passes only when staging, provider-live and credit authorization are all false; LOCAL-RUNTIME beside them stays refused
-- [ ] Every existing validator fixture keeps its result, and new fixtures cover both sides of the change
-- [ ] CLAUDE.md states the new rules and no other OS semantics change
-- [ ] The board is compacted, with occupancy and the validator unaffected
-- [ ] Not LOCKED by an implementer
+- [x] A LOCAL-TESTS lane beside a PROVIDER-LIVE or STAGING-RUNTIME lane passes only when staging, provider-live and credit authorization are all false; LOCAL-RUNTIME beside them stays refused. The pair also needs the explicit runtimeAuthorization.liveWindowPaused marker, so fixtures 29 and 30 keep their results; see the checkpoint
+- [x] Every existing validator fixture keeps its result, and new fixtures cover both sides of the change
+- [x] CLAUDE.md states the new rules and no other OS semantics change
+- [x] The board is compacted, with occupancy and the validator unaffected
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
