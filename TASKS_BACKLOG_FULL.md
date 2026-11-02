@@ -82951,14 +82951,14 @@ taskId=HARNESS-SEARCH-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; Step 2 (implementation) not started. mutexes=GATEWAY, AI-SERVICE. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Status:** COMPLETE AND LOCKED — 2026-11-02. LANE-DONE and LOCKED by the control plane; Lane 1, GATEWAY and AI-SERVICE released. Checkpoint: docs/HARNESS-SEARCH-01-CHECKPOINT.md. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; Step 2 (implementation) not started. mutexes=GATEWAY, AI-SERVICE. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
 **Task ID:** HARNESS-SEARCH-01
 **Title:** Offer the existing workspace search to the harness as a read-only tool
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP. Step 1 is this registration and admission (2026-11-02); Step 2 implementation; Step 3 consolidation, checkpoint and LOCK by the control plane.
 **Start condition (human):** READY — Keith approved the draft on 2026-11-02.
-**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Start condition (machine):** `READY`; `status=LOCKED`. Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
 **Depends on (human):** none.
 **Depends on (machine `dependsOn`):** `[]`
 **Primary write scope:** exactly `services/api-gateway/src/sessions/internal-workspace-files.controller.ts`, `services/api-gateway/src/sessions/internal-workspace-files.controller.spec.ts`, `services/ai-service/src/clients/api-gateway-http.client.ts`, `services/ai-service/src/clients/api-gateway-http.client.spec.ts`, `services/ai-service/src/agent-harness/tools/tool-registry.ts`, `services/ai-service/src/agent-harness/tools/tool-registry.spec.ts`, `services/ai-service/src/agent-harness/tools/handlers/file-tool-handlers.ts`, `services/ai-service/src/agent-harness/tools/handlers/file-tool-handlers.spec.ts`, `services/ai-service/src/agent-harness/tools/__tests__/tool-registration-gates.spec.ts`, `services/ai-service/src/agent-harness/orchestrator/agent-harness-loop.spec.ts`, `services/ai-service/src/ai-execution/adapters/adapter-tool-use.mapper.ts`, `services/ai-service/src/ai-execution/adapters/__tests__/adapter-tool-use.mapper.spec.ts`, `services/ai-service/src/worker/worker.processor.ts`, `services/ai-service/src/worker/worker.processor.spec.ts`. Anything else is out of scope.
@@ -82977,15 +82977,16 @@ nature=IMPLEMENTATION
 
 **Problem:** the harness can only find text by listing and reading files, which uses up model calls. A bounded workspace search already exists for the session files API (AI-WS-06), but search_workspace in the harness is a disabled placeholder with no handler.
 **Scope:** (1) add the internal gateway route POST /api/internal/workspace/:sessionId/search, under the existing internal-key guard, calling the existing search; (2) add the AI service client call and a search_workspace handler, registered with list_files and read_file; (3) mark the tool definition implemented and enabled, state that it is plain-text and case-insensitive, and remove its path input and semantic-search wording; (4) add it to the tools offered to the model, with no new flag; (5) update the tests. Not in scope: the container manager, regex, file-name search, limiting search to a folder, semantic search, a script failure being reported as no matches, the orchestration read-only tool list, deploying the change, and making search CURRENT.
+**Result (2026-11-02):** implemented in 002e46ada9d994f12e5b28e4e56b0f61b555ae91 by Cursor CLI, reviewed and re-validated by the control plane: ai-service npm test 38/38 suites, 1007 passed, 1 skipped; api-gateway 2338 passed, with only the 14 known smoke.integration failures; both builds exit 0. Checkpoint: docs/HARNESS-SEARCH-01-CHECKPOINT.md. Mocked only; not deployed.
 
 #### Acceptance criteria
 
-- [ ] The internal route delegates to the existing search, rejects an empty query, and has the same guard as the read and list routes
-- [ ] The handler rejects a non-string or empty query and returns results and the truncated flag
-- [ ] search_workspace is offered on the harness path with the write and validation flags off, and its schema has only query
-- [ ] delete_file, browser_smoke and start_preview are still never offered
-- [ ] services/ai-service and services/api-gateway: npm test and npm run build pass, apart from the known gateway smoke failures, and only the files in the primary write scope change
-- [ ] Not LOCKED by an implementer
+- [x] The internal route delegates to the existing search, rejects an empty query, and has the same guard as the read and list routes
+- [x] The handler rejects a non-string or empty query and returns results and the truncated flag
+- [x] search_workspace is offered on the harness path with the write and validation flags off, and its schema has only query
+- [x] delete_file, browser_smoke and start_preview are still never offered
+- [x] services/ai-service and services/api-gateway: npm test and npm run build pass, apart from the known gateway smoke failures, and only the files in the primary write scope change
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
