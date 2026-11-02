@@ -7,16 +7,31 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 
+const PROTECTED_PATH_PREFIXES = [
+  '/api/internal/',
+  '/api/events/',
+  '/api/chat-messages/',
+  '/api/token-usage/',
+  '/api/runtime/',
+] as const;
+
 /**
  * InternalServiceAuthGuard
- * Protects /api/internal/* routes with shared secret authentication
+ * Protects internal service routes with shared secret authentication.
  * Task 5.2A: Internal Service Authentication
+ *
+ * Protected prefixes (matching ignores letter case):
+ * - /api/internal/
+ * - /api/events/
+ * - /api/chat-messages/
+ * - /api/token-usage/
+ * - /api/runtime/
  *
  * Design:
  * - Checks X-Internal-Service-Key header
  * - Compares to INTERNAL_SERVICE_KEY env variable
  * - Returns 401 Unauthorized if missing/invalid (no detailed leak)
- * - Only applies to routes matching /api/internal/*
+ * - Applies only to the prefixes above; matching ignores letter case
  * - All other routes bypass this guard
  */
 @Injectable()
@@ -38,10 +53,10 @@ export class InternalServiceAuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<Request>();
     const path = request.path;
 
-    // Only apply to protected internal service routes
-    const isInternalRoute = path.startsWith('/api/internal/');
-    const isEventsRoute = path.startsWith('/api/events/');
-    if (!isInternalRoute && !isEventsRoute) {
+    const isProtectedRoute = PROTECTED_PATH_PREFIXES.some((prefix) =>
+      path.toLowerCase().startsWith(prefix),
+    );
+    if (!isProtectedRoute) {
       return true; // Bypass guard for public routes
     }
 
