@@ -4048,3 +4048,265 @@ describe('HARNESS-FAIL-RECORD-01: failed harness run keeps audit events, tokens,
     await worker.onModuleDestroy();
   });
 });
+
+describe('HARNESS-PROGRESS-01: harness tool progress on the execution stream', () => {
+  const HARNESS_SECRET = 'test-hmac-secret-harness-progress-01';
+  const originalRedisUrl = process.env.REDIS_URL;
+  const originalStuckScan = process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+  const originalSecret = process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+  const harnessConfigModule = require('../agent-harness/config/agent-harness.config') as {
+    DEFAULT_AGENT_HARNESS_CONFIG_V1: typeof DEFAULT_AGENT_HARNESS_CONFIG_V1;
+  };
+  const originalHarnessConfig = harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1;
+
+  function withHarnessProof(
+    data: Record<string, unknown>,
+  ): Record<string, unknown> {
+    const payloadDigest = computeJobPayloadDigest(data).payloadDigest;
+    const issuedAt = '2026-11-02T00:00:00.000Z';
+    const executionId = String(data.executionId);
+    const userId = String(data.userId);
+    const apiKeyId = String(data.apiKeyId);
+    const claim = `v=1|executionId=${executionId}|userId=${userId}|apiKeyId=${apiKeyId}|harnessVersion=v1|issuedAt=${issuedAt}|payloadDigest=${payloadDigest}`;
+    const signature = createHmac('sha256', HARNESS_SECRET)
+      .update(claim, 'utf8')
+      .digest('hex');
+    return {
+      ...data,
+      harnessEntitlementProof: {
+        version: 1,
+        executionId,
+        userId,
+        apiKeyId,
+        harnessVersion: 'v1',
+        issuedAt,
+        payloadDigest,
+        signature,
+      },
+    };
+  }
+
+  function createLedgerMock() {
+    const status = { value: 'pending' };
+    const query = jest.fn(async (sql: string, params: unknown[] = []) => {
+      if (
+        sql.includes("SET execution_status = 'running'") &&
+        sql.includes('RETURNING')
+      ) {
+        if (status.value === 'pending') {
+          status.value = 'running';
+          return [{ execution_id: params[0] }];
+        }
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'completed'")) {
+        status.value = 'completed';
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'failed'")) {
+        status.value = 'failed';
+        return [];
+      }
+      if (sql.includes('SELECT execution_status, created_at')) {
+        return [
+          {
+            execution_status: status.value,
+            created_at: new Date().toISOString(),
+          },
+        ];
+      }
+      if (sql.includes('SELECT execution_id, timestamp')) {
+        return [];
+      }
+      if (sql.includes('SELECT metadata')) {
+        return [{ metadata: {} }];
+      }
+      if (sql.includes('SELECT execution_status')) {
+        return [{ execution_status: status.value }];
+      }
+      return [];
+    });
+    return { query, status };
+  }
+
+  function harnessJob(executionId: string): Record<string, unknown> {
+    return withHarnessProof({
+      executionId,
+      userId: 'user-progress',
+      apiKeyId: 'apikey-progress',
+      sessionId: 'session-progress',
+      conversationId: 'conv-progress',
+      provider: 'openai',
+      adapter: 'openai',
+      prompt: 'List the workspace.',
+      model: 'stub-progress-model',
+      harnessVersion: 'v1',
+      executionIntent: 'conversation',
+      submittedAt: '2026-11-02T00:00:00.000Z',
+    });
+  }
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    process.env.REDIS_URL = 'redis://127.0.0.1:6379';
+    process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = '600000';
+    process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = HARNESS_SECRET;
+    capturedWorker.processor = null;
+    capturedWorker.opts = null;
+    harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1 = {
+      ...originalHarnessConfig,
+      enableToolLoop: true,
+    };
+  });
+
+  afterEach(() => {
+    harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1 = originalHarnessConfig;
+    jest.useRealTimers();
+    if (originalRedisUrl === undefined) {
+      delete process.env.REDIS_URL;
+    } else {
+      process.env.REDIS_URL = originalRedisUrl;
+    }
+    if (originalStuckScan === undefined) {
+      delete process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+    } else {
+      process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = originalStuckScan;
+    }
+    if (originalSecret === undefined) {
+      delete process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+    } else {
+      process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = originalSecret;
+    }
+  });
+
+  it('publishes harness progress before the tool handler runs', async () => {
+    const order: string[] = [];
+    const publishHarnessProgress = jest.fn(() => {
+      order.push('publish');
+      return Promise.resolve(1);
+    });
+    const listWorkspaceDirectory = jest.fn(async () => {
+      order.push('handler');
+      return {
+        path: 'src',
+        entries: [
+          {
+            name: 'app.ts',
+            type: 'file' as const,
+            size: 1,
+            modifiedAt: '2026-11-02T00:00:00.000Z',
+          },
+        ],
+      };
+    });
+    const executeWithTools = jest
+      .fn()
+      .mockResolvedValueOnce({
+        output: 'listing',
+        tokensUsed: 3,
+        model: 'stub-progress-model',
+        finishReason: 'tool_calls',
+        toolCalls: [
+          {
+            callId: 'call-list-1',
+            toolName: 'list_files',
+            arguments: { path: 'src' },
+            providerKind: 'stub',
+          },
+        ],
+      })
+      .mockResolvedValueOnce({
+        output: 'done',
+        tokensUsed: 2,
+        model: 'stub-progress-model',
+        finishReason: 'completed',
+        toolCalls: [],
+      });
+    const worker = new WorkerProcessor(
+      { query: createLedgerMock().query } as never,
+      {
+        execute: jest.fn(),
+        getAdapter: jest.fn().mockReturnValue({
+          supportsToolUse: true,
+          executeWithTools,
+        }),
+      } as never,
+      {
+        publishCompletion: jest.fn(),
+        publishToken: jest.fn(),
+        publishFileActions: jest.fn(),
+        publishHarnessProgress,
+      } as never,
+      {
+        notifyExecutionComplete: jest.fn().mockResolvedValue(undefined),
+        createWorkspaceCheckpoint: jest.fn(),
+        listWorkspaceDirectory,
+      } as never,
+    );
+    await worker.onModuleInit();
+    if (!capturedWorker.processor) {
+      throw new Error('BullMQ worker processor was not captured');
+    }
+
+    await capturedWorker.processor({
+      id: 'job-harness-progress',
+      data: harnessJob('exec-harness-progress'),
+    });
+
+    expect(order).toEqual(['publish', 'handler']);
+    expect(publishHarnessProgress).toHaveBeenCalledTimes(1);
+    expect(publishHarnessProgress).toHaveBeenCalledWith('exec-harness-progress', {
+      step: 1,
+      tool: 'list_files',
+      target: 'src',
+    });
+    expect(listWorkspaceDirectory).toHaveBeenCalledTimes(1);
+    await worker.onModuleDestroy();
+  });
+
+  it('publishes no harness progress on the single-shot path', async () => {
+    const publishHarnessProgress = jest.fn();
+    const execute = jest.fn().mockResolvedValue({
+      output: 'ok',
+      tokensUsed: 3,
+      model: 'grok-4.5',
+    });
+    const worker = new WorkerProcessor(
+      { query: createLedgerMock().query } as never,
+      { execute, getAdapter: jest.fn() } as never,
+      {
+        publishCompletion: jest.fn(),
+        publishToken: jest.fn(),
+        publishFileActions: jest.fn(),
+        publishHarnessProgress,
+      } as never,
+      {
+        notifyExecutionComplete: jest.fn().mockResolvedValue(undefined),
+      } as never,
+    );
+    await worker.onModuleInit();
+    if (!capturedWorker.processor) {
+      throw new Error('BullMQ worker processor was not captured');
+    }
+
+    await capturedWorker.processor({
+      id: 'job-single-shot-progress',
+      data: {
+        executionId: 'exec-single-shot-progress',
+        provider: 'xai',
+        adapter: 'xai',
+        sessionId: 'session-1',
+        conversationId: 'conv-1',
+        userId: 'user-1',
+        apiKeyId: 'apikey-1',
+        prompt: 'Hello ordinary job',
+        model: 'grok-4.5',
+        executionIntent: 'conversation',
+      },
+    });
+
+    expect(execute).toHaveBeenCalledTimes(1);
+    expect(publishHarnessProgress).not.toHaveBeenCalled();
+    await worker.onModuleDestroy();
+  });
+});

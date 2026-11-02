@@ -46,6 +46,20 @@ export class ExecutionStreamPublisher implements OnModuleDestroy {
     return this.redis.publish(channel, payload);
   }
 
+  publishHarnessProgress(
+    executionId: string,
+    progress: { step: number; tool: string; target?: string },
+  ) {
+    const channel = `ai-execution-stream:${executionId}`;
+    const payload = JSON.stringify({
+      type: 'harness_progress',
+      step: progress.step,
+      tool: progress.tool,
+      target: progress.target,
+    });
+    return this.redis.publish(channel, payload);
+  }
+
   async onModuleDestroy() {
     await this.redis.quit();
   }

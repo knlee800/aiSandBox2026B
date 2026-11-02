@@ -30,6 +30,7 @@ import {
   HarnessMaxIterationsError,
 } from '../agent-harness/orchestrator/agent-harness-loop';
 import { ToolDispatcher } from '../agent-harness/tools/tool-dispatcher';
+import { createToolProgressWrapper } from '../agent-harness/tools/tool-progress';
 import { InMemoryHarnessAuditRecorder } from '../agent-harness/audit';
 import {
   createReadFileHandler,
@@ -1305,72 +1306,99 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                     toolTimeoutMs: resolvedConfig.toolTimeoutMs,
                     maxToolResultBytes: resolvedConfig.maxToolResultBytes,
                   });
+                  const wrapHarnessTool = createToolProgressWrapper((progress) =>
+                    this.executionStreamPublisher.publishHarnessProgress(
+                      executionId,
+                      progress,
+                    ),
+                  );
                   const registeredHandlerNames: string[] = [];
                   dispatcher.registerHandler(
                     'read_file',
-                    createReadFileHandler({
-                      client: this.apiGatewayHttpClient,
-                      sessionId: job.data.sessionId,
-                      maxFileReadBytes: resolvedConfig.maxFileReadBytes,
-                    }),
+                    wrapHarnessTool(
+                      'read_file',
+                      createReadFileHandler({
+                        client: this.apiGatewayHttpClient,
+                        sessionId: job.data.sessionId,
+                        maxFileReadBytes: resolvedConfig.maxFileReadBytes,
+                      }),
+                    ),
                   );
                   registeredHandlerNames.push('read_file');
                   dispatcher.registerHandler(
                     'list_files',
-                    createListFilesHandler({
-                      client: this.apiGatewayHttpClient,
-                      sessionId: job.data.sessionId,
-                    }),
+                    wrapHarnessTool(
+                      'list_files',
+                      createListFilesHandler({
+                        client: this.apiGatewayHttpClient,
+                        sessionId: job.data.sessionId,
+                      }),
+                    ),
                   );
                   registeredHandlerNames.push('list_files');
                   dispatcher.registerHandler(
                     'search_workspace',
-                    createSearchWorkspaceHandler({
-                      client: this.apiGatewayHttpClient,
-                      sessionId: job.data.sessionId,
-                    }),
+                    wrapHarnessTool(
+                      'search_workspace',
+                      createSearchWorkspaceHandler({
+                        client: this.apiGatewayHttpClient,
+                        sessionId: job.data.sessionId,
+                      }),
+                    ),
                   );
                   registeredHandlerNames.push('search_workspace');
                   if (resolvedConfig.enableWriteTools) {
                     dispatcher.registerHandler(
                       'write_file',
-                      createWriteFileHandler({
-                        client: this.apiGatewayHttpClient,
-                        sessionId: job.data.sessionId,
-                        maxFileWriteBytes: resolvedConfig.maxFileWriteBytes,
-                      }),
+                      wrapHarnessTool(
+                        'write_file',
+                        createWriteFileHandler({
+                          client: this.apiGatewayHttpClient,
+                          sessionId: job.data.sessionId,
+                          maxFileWriteBytes: resolvedConfig.maxFileWriteBytes,
+                        }),
+                      ),
                     );
                     registeredHandlerNames.push('write_file');
                     dispatcher.registerHandler(
                       'delete_file',
-                      createDeleteFileHandler({
-                        client: this.apiGatewayHttpClient,
-                        sessionId: job.data.sessionId,
-                      }),
+                      wrapHarnessTool(
+                        'delete_file',
+                        createDeleteFileHandler({
+                          client: this.apiGatewayHttpClient,
+                          sessionId: job.data.sessionId,
+                        }),
+                      ),
                     );
                     registeredHandlerNames.push('delete_file');
                   }
                   if (resolvedConfig.enableValidationTools) {
                     dispatcher.registerHandler(
                       'run_validation',
-                      createRunValidationHandler({
-                        client: this.apiGatewayHttpClient,
-                        sessionId: job.data.sessionId,
-                        allowedValidationCommands: resolvedConfig.allowedValidationCommands,
-                        validationTimeoutMs: resolvedConfig.validationTimeoutMs,
-                        maxValidationOutputBytes: resolvedConfig.maxValidationOutputBytes,
-                      }),
+                      wrapHarnessTool(
+                        'run_validation',
+                        createRunValidationHandler({
+                          client: this.apiGatewayHttpClient,
+                          sessionId: job.data.sessionId,
+                          allowedValidationCommands: resolvedConfig.allowedValidationCommands,
+                          validationTimeoutMs: resolvedConfig.validationTimeoutMs,
+                          maxValidationOutputBytes: resolvedConfig.maxValidationOutputBytes,
+                        }),
+                      ),
                     );
                     registeredHandlerNames.push('run_validation');
                   }
                   if (resolvedConfig.enableBrowserSmoke) {
                     dispatcher.registerHandler(
                       'browser_smoke',
-                      createBrowserSmokeHandler({
-                        client: this.apiGatewayHttpClient,
-                        sessionId: job.data.sessionId,
-                        browserSmokeTimeoutMs: resolvedConfig.browserSmokeTimeoutMs,
-                      }),
+                      wrapHarnessTool(
+                        'browser_smoke',
+                        createBrowserSmokeHandler({
+                          client: this.apiGatewayHttpClient,
+                          sessionId: job.data.sessionId,
+                          browserSmokeTimeoutMs: resolvedConfig.browserSmokeTimeoutMs,
+                        }),
+                      ),
                     );
                     registeredHandlerNames.push('browser_smoke');
                   }

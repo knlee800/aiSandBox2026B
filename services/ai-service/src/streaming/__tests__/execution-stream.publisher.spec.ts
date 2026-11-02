@@ -37,4 +37,33 @@ describe('ExecutionStreamPublisher', () => {
       JSON.stringify({ type: 'complete' }),
     );
   });
+
+  it('publishes a harness_progress message on the execution stream channel', async () => {
+    process.env.REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
+    const publisher = new ExecutionStreamPublisher();
+    const results = (Redis as unknown as jest.Mock).mock.results;
+    const redisInstance = results[results.length - 1].value as {
+      publish: jest.Mock;
+    };
+    const published = Promise.resolve(1);
+    redisInstance.publish.mockReturnValueOnce(published);
+
+    const pending = publisher.publishHarnessProgress('exec-456', {
+      step: 2,
+      tool: 'read_file',
+      target: 'src/app.ts',
+    });
+
+    expect(pending).toBe(published);
+    await pending;
+    expect(redisInstance.publish).toHaveBeenCalledWith(
+      'ai-execution-stream:exec-456',
+      JSON.stringify({
+        type: 'harness_progress',
+        step: 2,
+        tool: 'read_file',
+        target: 'src/app.ts',
+      }),
+    );
+  });
 });
