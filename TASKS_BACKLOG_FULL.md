@@ -83508,14 +83508,14 @@ taskId=COLLAB-INTERNAL-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02.
+**Status:** COMPLETE AND LOCKED — 2026-11-02. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY released. Checkpoint: docs/COLLAB-INTERNAL-01-CHECKPOINT.md.
 **Task ID:** COLLAB-INTERNAL-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP. Registration and admission here; implementation; code and LOCK in one commit after control-plane review.
 **Start condition (human):** READY — Keith approved the draft on 2026-11-02.
 **Depends on:** none. AGENT-PLATFORM-ORCH-PERSIST-01 is LOCKED.
-**Primary write scope:** exactly `services/api-gateway/src/orchestration/internal-collaboration.controller.ts`, `services/api-gateway/src/orchestration/internal-collaboration.controller.spec.ts`, `services/api-gateway/src/orchestration/orchestration.module.ts`, `services/api-gateway/src/orchestration/orchestration.service.ts`, `services/api-gateway/src/orchestration/__tests__/orchestration.service.spec.ts`, `services/api-gateway/src/guards/internal-service-auth.guard.http.spec.ts`.
+**Primary write scope:** exactly `services/api-gateway/src/orchestration/internal-collaboration.controller.ts`, `services/api-gateway/src/orchestration/internal-collaboration.controller.spec.ts`, `services/api-gateway/src/orchestration/orchestration.module.ts`, `services/api-gateway/src/orchestration/orchestration.service.ts`, `services/api-gateway/src/orchestration/__tests__/orchestration.service.spec.ts`, `services/api-gateway/src/guards/internal-service-auth.guard.http.spec.ts`, and, added by the control plane during review, `services/api-gateway/src/orchestration/__tests__/orchestration.persistence.spec.ts`.
 **Mutexes / resources:** GATEWAY. **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (internal routes only; no migration, no UI, no change to Ask or Build).
 **saturationClass:** OPTIONAL. Collaboration stays FUTURE in PRD.md; this adds no product capability.
 
@@ -83524,12 +83524,12 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] The routes refuse a request without the internal key, in any letter case
-- [ ] A started referral has a ledger row and its job has no harnessVersion
-- [ ] Reading a run marks a finished referral completed with the result text, or failed, and an unfinished one stays in_progress
-- [ ] Loop, depth and agent limits and the read-only policy are refused through the routes
-- [ ] Ask, Build and the execute route are unchanged
-- [ ] Not LOCKED by an implementer
+- [x] The routes refuse a request without the internal key, in any letter case
+- [x] A started referral has a ledger row and its job has no harnessVersion
+- [x] Reading a run marks a finished referral completed with the result text, or failed, and an unfinished one stays in_progress
+- [x] Loop, depth and agent limits and the read-only policy are refused through the routes
+- [x] Ask, Build and the execute route are unchanged
+- [x] Not LOCKED by an implementer
 
 ### COLLAB-LIVE-01 — Collaboration internal test on staging
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

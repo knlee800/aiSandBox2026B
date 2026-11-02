@@ -974,7 +974,7 @@ The original walking-character / town **simulation** is **not implemented**. CUR
 | DB-backed user-created agent records (`user_agents`, `POST/GET /api/agents`) | CURRENT (**persistence/API**; not a dedicated runtime) |
 | Optional persisted user-agent identity (`agentId` on `POST /api/ai/execute`) | CURRENT (`conversation` and `workspace_mutation`; owner-scoped; existing Builder path; product-facing bind via `userAgentId` sends `agentId` for both intents) |
 | Platform RPG command-center shell | CURRENT (layout/shell; no game engine) |
-| OrchestrationService | CURRENT precursor: **in-memory, instantiated, no HTTP, not product-reachable**. Can enqueue if called in-process. **Not** the future durable multi-Builder runtime. |
+| OrchestrationService | CURRENT precursor: **PostgreSQL-backed, internal-key HTTP only under `/api/internal/collaboration` (COLLAB-INTERNAL-01), not product-reachable**. Referral jobs are read-only Ask jobs. **Not** the future durable multi-Builder runtime. |
 | Builder Agent AI execution (single-shot) | CURRENT |
 | Optional execute identity fields (`agentRole`, `builderProfileId`, `collaborationRunId`, `referralTraceId`) | CURRENT plumbing; frontend does not send them |
 | Optional persisted user-agent identity (`agentId`) | CURRENT on Gateway `POST /api/ai/execute` for `conversation` and `workspace_mutation`; distinct from `agentRole` / `builderProfileId`; frontend sends `agentId` when a persisted user-created agent is bound via `/app?userAgentId=` for both intents |

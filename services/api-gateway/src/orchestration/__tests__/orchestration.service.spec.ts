@@ -14,6 +14,7 @@ import {
 } from '../orchestration.contracts';
 import { QueueService } from '../../queue/queue.service';
 import { ExecutionResultService } from '../../ai/execution-result.service';
+import { UsageLedgerService } from '../../usage-ledger/usage-ledger.service';
 import { InMemoryOrchestrationAuditRecorder } from '../orchestration-audit.recorder';
 
 function cloneRow<T>(row: T): T {
@@ -687,6 +688,7 @@ describe('AGENT-PLATFORM-07C2: startReferralExecution', () => {
     expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
     const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
     expect(payload).not.toHaveProperty('harnessVersion');
+    expect(payload.executionIntent).toBe('conversation');
     expect(payload.executionId).toBe('exec-001');
     expect(payload.referralId).toBe(referral.referralId);
     expect(payload.isReferralExecution).toBe(true);
@@ -704,6 +706,7 @@ describe('AGENT-PLATFORM-07C2: startReferralExecution', () => {
     expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
     const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
     expect(payload).not.toHaveProperty('harnessVersion');
+    expect(payload.executionIntent).toBe('conversation');
     expect(payload.executionId).toBe('exec-001');
     expect(payload.userId).toBe('user-01');
     expect(payload.apiKeyId).toBe('apikey-01');
@@ -1380,5 +1383,267 @@ describe('AGENT-PLATFORM-07D: OrchestrationService audit emission', () => {
     expect(run.status).toBe('active');
     expect(referral.status).toBe('pending_approval');
     expect(localService.getAuditEvents().length).toBeGreaterThan(0);
+  });
+});
+
+describe('COLLAB-INTERNAL-01: referral read-back and ledger intent', () => {
+  const sessionId = '11111111-1111-4111-8111-111111111111';
+  const conversationId = '22222222-2222-4222-8222-222222222222';
+
+  let service: OrchestrationService;
+  let runRepo: ReturnType<typeof createOrchestrationRepoFakes>['runRepo'];
+  let mockQueueService: { enqueueExecution: jest.Mock };
+  let mockExecutionResultService: { requestCancel: jest.Mock; getExecution: jest.Mock };
+  let mockUsageLedgerService: { writeExecutionIntent: jest.Mock };
+
+  beforeEach(async () => {
+    const fakes = createOrchestrationRepoFakes();
+    runRepo = fakes.runRepo;
+    mockQueueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+    mockExecutionResultService = {
+      requestCancel: jest.fn().mockResolvedValue(true),
+      getExecution: jest.fn().mockResolvedValue(null),
+    };
+    mockUsageLedgerService = {
+      writeExecutionIntent: jest.fn().mockResolvedValue(undefined),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        OrchestrationService,
+        ...orchestrationRepositoryProviders(fakes),
+        { provide: QueueService, useValue: mockQueueService },
+        { provide: ExecutionResultService, useValue: mockExecutionResultService },
+        { provide: UsageLedgerService, useValue: mockUsageLedgerService },
+      ],
+    }).compile();
+
+    service = module.get(OrchestrationService);
+  });
+
+  async function startInProgress(executionId = 'exec-read-01') {
+    await service.createCollaborationRun({
+      collaborationRunId: 'collab-read',
+      userId: 'user-01',
+      projectId: 'project-01',
+      initiatorAgent: { agentRole: 'builder', builderProfileId: 'builder-a' },
+    });
+    const referral = await service.createReferral({
+      referralId: 'ref-read',
+      referralTraceId: 'trace-read',
+      collaborationRunId: 'collab-read',
+      sourceBuilder: { agentRole: 'builder', builderProfileId: 'builder-a' },
+      targetBuilder: { agentRole: 'chief-of-staff', builderProfileId: 'builder-b' },
+      idempotencyKey: 'key-read',
+    });
+    await service.startReferralExecution({
+      referralId: referral.referralId,
+      executionId,
+      sessionId,
+      conversationId,
+      userId: 'user-01',
+      apiKeyId: 'apikey-01',
+      prompt: 'Review the plan',
+      provider: 'stub',
+      adapter: 'stub',
+      submittedAt: '2026-11-02T00:00:00.000Z',
+    });
+    return referral;
+  }
+
+  function executionResult(status: string, output?: string) {
+    return {
+      execution_status: status,
+      metadata:
+        output === undefined
+          ? {}
+          : { aiExecutionResult: { output } },
+    };
+  }
+
+  it('completes an in-progress referral with the answer text and ignores a later result', async () => {
+    await startInProgress();
+    mockExecutionResultService.getExecution
+      .mockResolvedValueOnce(executionResult('completed', 'the answer'))
+      .mockResolvedValueOnce(executionResult('completed', 'a different answer'));
+
+    const first = await service.getCollaborationRunWithReferrals('collab-read');
+    const second = await service.getCollaborationRunWithReferrals('collab-read');
+
+    expect(first?.referrals).toHaveLength(1);
+    expect(first?.referrals[0].status).toBe('completed');
+    expect(first?.referrals[0].result?.status).toBe('success');
+    expect(first?.referrals[0].result?.summary).toBe('the answer');
+    expect(second?.referrals[0].status).toBe('completed');
+    expect(second?.referrals[0].result?.summary).toBe('the answer');
+    expect(mockExecutionResultService.getExecution).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns the collaboration run read after referral sync', async () => {
+    await startInProgress('exec-fresh-run');
+    mockExecutionResultService.getExecution.mockImplementation(async () => {
+      const stored = await runRepo.findOne({
+        where: { collaborationRunId: 'collab-read' },
+      });
+      if (!stored) {
+        throw new Error('run missing during sync');
+      }
+      stored.cancelReason = 'updated-during-sync';
+      await runRepo.save(stored);
+      return executionResult('completed', 'the answer');
+    });
+
+    const detail = await service.getCollaborationRunWithReferrals('collab-read');
+
+    expect(detail?.run.cancelReason).toBe('updated-during-sync');
+    expect(detail?.referrals[0].status).toBe('completed');
+    expect(detail?.referrals[0].result?.summary).toBe('the answer');
+  });
+
+  it.each(['failed', 'cancelled', 'timeout'])(
+    'fails an in-progress referral when the execution is %s and a repeat read leaves it',
+    async (status) => {
+      await startInProgress(`exec-${status}`);
+      mockExecutionResultService.getExecution
+        .mockResolvedValueOnce(executionResult(status))
+        .mockResolvedValueOnce(executionResult('completed', 'too late'));
+
+      const first = await service.getCollaborationRunWithReferrals('collab-read');
+      const second = await service.getCollaborationRunWithReferrals('collab-read');
+
+      expect(first?.referrals[0].status).toBe('failed');
+      expect(first?.referrals[0].result?.summary).toBe(`Execution ${status}`);
+      expect(second?.referrals[0].status).toBe('failed');
+      expect(second?.referrals[0].result?.summary).toBe(`Execution ${status}`);
+      expect(mockExecutionResultService.getExecution).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it('keeps the stored answer when a failed execution still has output', async () => {
+    await startInProgress('exec-failed-text');
+    mockExecutionResultService.getExecution.mockResolvedValue(
+      executionResult('failed', 'the model text'),
+    );
+
+    const detail = await service.getCollaborationRunWithReferrals('collab-read');
+
+    expect(detail?.referrals[0].status).toBe('failed');
+    expect(detail?.referrals[0].result?.summary).toBe('the model text');
+  });
+
+  it.each(['running', 'pending', 'cancel_requested'])(
+    'leaves an in-progress referral unchanged when the execution is %s',
+    async (status) => {
+      await startInProgress(`exec-${status}`);
+      mockExecutionResultService.getExecution.mockResolvedValue(executionResult(status));
+
+      const detail = await service.getCollaborationRunWithReferrals('collab-read');
+
+      expect(detail?.referrals[0].status).toBe('in_progress');
+      expect(detail?.referrals[0].result).toBeNull();
+    },
+  );
+
+  it('leaves an in-progress referral unchanged when the execution row is missing', async () => {
+    await startInProgress('exec-missing');
+    mockExecutionResultService.getExecution.mockResolvedValue(null);
+
+    const detail = await service.getCollaborationRunWithReferrals('collab-read');
+
+    expect(detail?.referrals[0].status).toBe('in_progress');
+    expect(detail?.referrals[0].result).toBeNull();
+  });
+
+  it('writes the ledger intent before enqueue and omits harnessVersion', async () => {
+    const order: string[] = [];
+    mockUsageLedgerService.writeExecutionIntent.mockImplementation(async () => {
+      order.push('ledger');
+    });
+    mockQueueService.enqueueExecution.mockImplementation(async () => {
+      order.push('enqueue');
+    });
+
+    await service.createCollaborationRun({
+      collaborationRunId: 'collab-ledger',
+      userId: 'user-01',
+      projectId: 'project-01',
+      initiatorAgent: { agentRole: 'builder', builderProfileId: 'builder-a' },
+    });
+
+    const started = await service.createAndStartReferral({
+      collaborationRunId: 'collab-ledger',
+      sourceBuilder: { agentRole: 'builder', builderProfileId: 'builder-a' },
+      targetBuilder: { agentRole: 'chief-of-staff', builderProfileId: 'builder-b' },
+      idempotencyKey: 'key-ledger',
+      sessionId,
+      conversationId,
+      apiKeyId: 'apikey-01',
+      prompt: 'Review the plan',
+      provider: 'stub',
+      adapter: 'stub',
+      model: 'test-model',
+    });
+
+    expect(order).toEqual(['ledger', 'enqueue']);
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload).not.toHaveProperty('harnessVersion');
+    expect(payload.executionIntent).toBe('conversation');
+    expect(payload.executionId).toBe(started.executionId);
+    expect(payload.isReferralExecution).toBe(true);
+    expect(started.referral.status).toBe('in_progress');
+
+    const intent = mockUsageLedgerService.writeExecutionIntent.mock.calls[0][0];
+    expect(intent.executionId).toBe(started.executionId);
+    expect(intent.userId).toBe('user-01');
+    expect(intent.apiKeyId).toBe('apikey-01');
+    expect(intent.sessionId).toBe(sessionId);
+    expect(intent.conversationId).toBe(conversationId);
+    expect(intent.provider).toBe('stub');
+    expect(intent.adapter).toBe('stub');
+    expect(intent.agentRole).toBe('chief-of-staff');
+    expect(intent.builderProfileId).toBe('builder-b');
+    expect(intent.collaborationRunId).toBe('collab-ledger');
+    expect(intent.metadata).toEqual({
+      runMode: 'ask',
+      apiKeyId: 'apikey-01',
+      requestedProvider: 'stub',
+      requestedModel: 'test-model',
+    });
+    expect(intent.metadata).not.toHaveProperty('harnessVersion');
+  });
+
+  it('does not enqueue when the ledger write fails and leaves the referral failed', async () => {
+    mockUsageLedgerService.writeExecutionIntent.mockRejectedValue(new Error('connection refused'));
+
+    await service.createCollaborationRun({
+      collaborationRunId: 'collab-ledger-fail',
+      userId: 'user-01',
+      projectId: 'project-01',
+      initiatorAgent: { agentRole: 'builder', builderProfileId: 'builder-a' },
+    });
+
+    await expect(
+      service.createAndStartReferral({
+        collaborationRunId: 'collab-ledger-fail',
+        sourceBuilder: { agentRole: 'builder', builderProfileId: 'builder-a' },
+        targetBuilder: { agentRole: 'chief-of-staff', builderProfileId: 'builder-b' },
+        idempotencyKey: 'key-ledger-fail',
+        sessionId,
+        conversationId,
+        apiKeyId: 'apikey-01',
+        prompt: 'Review the plan',
+        provider: 'stub',
+        adapter: 'stub',
+      }),
+    ).rejects.toThrow('Failed to write execution intent');
+
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+    const detail = await service.getCollaborationRunWithReferrals('collab-ledger-fail');
+    expect(detail?.referrals).toHaveLength(1);
+    expect(detail?.referrals[0].status).toBe('failed');
+    expect(detail?.referrals[0].result?.summary).toBe('Failed to write execution intent');
   });
 });

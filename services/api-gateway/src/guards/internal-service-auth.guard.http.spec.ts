@@ -6,6 +6,8 @@ import { ContainerManagerHttpClient } from '../clients/container-manager-http.cl
 import { ChatMessageController } from '../chat-messages/chat-message.controller';
 import { ChatMessageService } from '../chat-messages/chat-message.service';
 import { ChatMessageRole } from '../entities/chat-message-role.enum';
+import { InternalCollaborationController } from '../orchestration/internal-collaboration.controller';
+import { OrchestrationService } from '../orchestration/orchestration.service';
 import { InternalWorkspaceFilesController } from '../sessions/internal-workspace-files.controller';
 import { SessionService } from '../sessions/session.service';
 import { SnapshotPersistenceService } from '../snapshots/snapshot-persistence.service';
@@ -23,6 +25,11 @@ describe('InternalServiceAuthGuard HTTP prefix protection (AUTH-GUARD-01)', () =
   let chatMessageService: { addMessageBySession: jest.Mock };
   let tokenUsageService: { recordTokenUsage: jest.Mock };
   let runtimeService: { getMetrics: jest.Mock };
+  let orchestrationService: {
+    createCollaborationRun: jest.Mock;
+    createAndStartReferral: jest.Mock;
+    getCollaborationRunWithReferrals: jest.Mock;
+  };
 
   const originalInternalServiceKey = process.env.INTERNAL_SERVICE_KEY;
   const internalKey = 'auth-guard-01-test-key';
@@ -71,10 +78,16 @@ describe('InternalServiceAuthGuard HTTP prefix protection (AUTH-GUARD-01)', () =
     runtimeService = {
       getMetrics: jest.fn().mockResolvedValue(metricsBody),
     };
+    orchestrationService = {
+      createCollaborationRun: jest.fn(),
+      createAndStartReferral: jest.fn(),
+      getCollaborationRunWithReferrals: jest.fn(),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [
         InternalWorkspaceFilesController,
+        InternalCollaborationController,
         ChatMessageController,
         TokenUsageController,
         RuntimeController,
@@ -87,6 +100,7 @@ describe('InternalServiceAuthGuard HTTP prefix protection (AUTH-GUARD-01)', () =
         { provide: ChatMessageService, useValue: chatMessageService },
         { provide: TokenUsageService, useValue: tokenUsageService },
         { provide: RuntimeService, useValue: runtimeService },
+        { provide: OrchestrationService, useValue: orchestrationService },
       ],
     }).compile();
 
@@ -142,6 +156,27 @@ describe('InternalServiceAuthGuard HTTP prefix protection (AUTH-GUARD-01)', () =
     }
 
     expect(containerManager.readSessionFile).not.toHaveBeenCalled();
+  });
+
+  it('refuses collaboration routes with no key for any letter case and does not call the coordinator', async () => {
+    const paths = [
+      '/api/internal/collaboration/runs',
+      '/API/INTERNAL/collaboration/runs',
+      '/api/Internal/collaboration/runs',
+    ];
+
+    for (const path of paths) {
+      await send('post', path, { userId: 'user-01' }).expect(401);
+    }
+
+    await send('get', '/API/INTERNAL/collaboration/runs/run-1').expect(401);
+    await send('post', '/api/Internal/collaboration/runs/run-1/referrals', {
+      prompt: 'review',
+    }).expect(401);
+
+    expect(orchestrationService.createCollaborationRun).not.toHaveBeenCalled();
+    expect(orchestrationService.createAndStartReferral).not.toHaveBeenCalled();
+    expect(orchestrationService.getCollaborationRunWithReferrals).not.toHaveBeenCalled();
   });
 
   it('refuses save-project-snapshot with no key and does not save', async () => {

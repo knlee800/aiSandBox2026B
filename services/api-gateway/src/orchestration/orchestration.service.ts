@@ -4,6 +4,7 @@ import { randomUUID } from 'crypto';
 import { Repository } from 'typeorm';
 import { QueueService } from '../queue/queue.service';
 import { ExecutionResultService } from '../ai/execution-result.service';
+import { UsageLedgerService } from '../usage-ledger/usage-ledger.service';
 import {
   InMemoryOrchestrationAuditRecorder,
   type OrchestrationAuditRecorder,
@@ -37,6 +38,13 @@ import {
 } from './orchestration.contracts';
 
 const DEFAULT_REFERRAL_TIMEOUT_MS = 300_000;
+const LEDGER_INTENT_FAILURE = 'Failed to write execution intent';
+const FINISHED_FAILURE_EXECUTION_STATUSES: readonly string[] = [
+  'failed',
+  'cancelled',
+  'timeout',
+  'timed_out',
+];
 const IDEMPOTENCY_REPLAY_STATUSES: readonly ReferralStatus[] = [
   'failed',
   'cancelled',
@@ -128,6 +136,46 @@ export interface StartReferralExecutionInput {
   readonly orchestrationPriority?: number;
 }
 
+export interface CreateAndStartReferralInput {
+  readonly collaborationRunId: CollaborationRunId;
+  readonly sourceBuilder: SourceBuilderIdentity;
+  readonly targetBuilder: TargetBuilderIdentity;
+  readonly idempotencyKey: IdempotencyKey;
+  readonly sessionId: string;
+  readonly conversationId: string;
+  readonly apiKeyId: string;
+  readonly prompt: string;
+  readonly provider: string;
+  readonly adapter: string;
+  readonly model?: string;
+  readonly workspaceContext?: unknown;
+  readonly globalInstructions?: string;
+  readonly projectInstructions?: string;
+  readonly constraints?: Partial<ReferralConstraints>;
+  readonly referralChain?: readonly BuilderProfileId[];
+  readonly depth?: number;
+  readonly maxDepth?: number;
+  readonly visitedBuilderProfileIds?: readonly BuilderProfileId[];
+  readonly parentReferralTraceId?: ReferralTraceId | null;
+  readonly timeoutMs?: number;
+  readonly orchestrationPriority?: number;
+}
+
+export interface StartedCollaborationReferral {
+  readonly referral: CollaborationReferral;
+  readonly executionId: string | null;
+}
+
+type StoredExecution = {
+  execution_status?: string | null;
+  metadata?: unknown;
+} | null;
+
+type ExecutionReadBack =
+  | { readonly kind: 'unfinished' }
+  | { readonly kind: 'succeeded'; readonly summary: string }
+  | { readonly kind: 'failed'; readonly summary: string };
+
 export interface CancelReferralInput {
   readonly referralId: ReferralId;
   readonly cancelledByUserId: UserId;
@@ -152,6 +200,7 @@ export class OrchestrationService {
     @Optional() private readonly queueService?: QueueService,
     @Optional() private readonly executionResultService?: ExecutionResultService,
     @Optional() auditRecorder?: InMemoryOrchestrationAuditRecorder,
+    @Optional() private readonly usageLedgerService?: UsageLedgerService,
   ) {
     this.auditRecorder = auditRecorder ?? new InMemoryOrchestrationAuditRecorder();
   }
@@ -240,6 +289,27 @@ export class OrchestrationService {
     }
 
     return this.toCollaborationRun(entity);
+  }
+
+  async getCollaborationRunWithReferrals(
+    collaborationRunId: CollaborationRunId,
+  ): Promise<{ run: CollaborationRun; referrals: CollaborationReferral[] } | null> {
+    const run = await this.getCollaborationRun(collaborationRunId);
+    if (!run) {
+      return null;
+    }
+
+    const referrals: CollaborationReferral[] = [];
+    for (const referralId of run.referralIds) {
+      referrals.push(await this.syncReferralFromExecution(referralId));
+    }
+
+    const syncedRun = await this.getCollaborationRun(collaborationRunId);
+    if (!syncedRun) {
+      return null;
+    }
+
+    return { run: syncedRun, referrals };
   }
 
   async createReferral(input: CreateReferralInput): Promise<CollaborationReferral> {
@@ -528,6 +598,7 @@ export class OrchestrationService {
           projectInstructions: input.projectInstructions,
           model: input.model,
           submittedAt: input.submittedAt,
+          executionIntent: 'conversation',
           agentRole: referral.targetBuilder.agentRole,
           builderProfileId: referral.targetBuilder.builderProfileId,
           collaborationRunId: referral.collaborationRunId,
@@ -585,6 +656,108 @@ export class OrchestrationService {
     });
 
     return { executionId: input.executionId };
+  }
+
+  async createAndStartReferral(
+    input: CreateAndStartReferralInput,
+  ): Promise<StartedCollaborationReferral> {
+    const referral = await this.createReferral({
+      collaborationRunId: input.collaborationRunId,
+      parentReferralTraceId: input.parentReferralTraceId,
+      sourceBuilder: input.sourceBuilder,
+      targetBuilder: input.targetBuilder,
+      idempotencyKey: input.idempotencyKey,
+      constraints: input.constraints,
+      referralChain: input.referralChain,
+      depth: input.depth,
+      maxDepth: input.maxDepth,
+      visitedBuilderProfileIds: input.visitedBuilderProfileIds,
+      timeoutMs: input.timeoutMs,
+    });
+
+    if (referral.status !== 'pending_approval' && referral.status !== 'approved') {
+      const existing = await this.referralRepo.findOne({
+        where: { referralId: referral.referralId },
+      });
+      return {
+        referral,
+        executionId: existing?.executionId ?? null,
+      };
+    }
+
+    const run = await this.getCollaborationRun(referral.collaborationRunId);
+    if (!run) {
+      throw new Error(`Collaboration run ${referral.collaborationRunId} not found`);
+    }
+
+    const executionId = randomUUID();
+    const submittedAt = this.now();
+    let intentWritten = false;
+    try {
+      if (!this.usageLedgerService) {
+        throw new Error('UsageLedgerService is required for referral execution');
+      }
+      await this.usageLedgerService.writeExecutionIntent({
+        executionId,
+        apiKeyId: input.apiKeyId,
+        userId: run.userId,
+        sessionId: input.sessionId,
+        conversationId: input.conversationId,
+        provider: input.provider,
+        adapter: input.adapter,
+        metadata: {
+          runMode: 'ask',
+          apiKeyId: input.apiKeyId,
+          requestedProvider: input.provider,
+          requestedModel: input.model ?? null,
+        },
+        agentRole: referral.targetBuilder.agentRole,
+        builderProfileId: referral.targetBuilder.builderProfileId,
+        collaborationRunId: referral.collaborationRunId,
+        referralTraceId: referral.referralTraceId,
+      });
+      intentWritten = true;
+    } catch {
+      intentWritten = false;
+    }
+
+    if (!intentWritten) {
+      await this.failReferralQuietly(referral.referralId, LEDGER_INTENT_FAILURE);
+      throw new Error(LEDGER_INTENT_FAILURE);
+    }
+
+    try {
+      await this.startReferralExecution({
+        referralId: referral.referralId,
+        executionId,
+        sessionId: input.sessionId,
+        conversationId: input.conversationId,
+        userId: run.userId,
+        apiKeyId: input.apiKeyId,
+        prompt: input.prompt,
+        workspaceContext: input.workspaceContext,
+        provider: input.provider,
+        adapter: input.adapter,
+        model: input.model,
+        globalInstructions: input.globalInstructions,
+        projectInstructions: input.projectInstructions,
+        submittedAt,
+        orchestrationPriority: input.orchestrationPriority,
+      });
+    } catch (error) {
+      await this.failReferralQuietly(
+        referral.referralId,
+        'Failed to enqueue referral execution',
+      );
+      throw error;
+    }
+
+    const started = await this.getReferral(referral.referralId);
+    if (!started) {
+      throw new Error(`Referral ${referral.referralId} not found`);
+    }
+
+    return { referral: started, executionId };
   }
 
   async cancelReferral(input: CancelReferralInput): Promise<CollaborationReferral> {
@@ -1249,6 +1422,79 @@ export class OrchestrationService {
       },
     };
     this.auditRecorder.record(event);
+  }
+
+  private async syncReferralFromExecution(
+    referralId: ReferralId,
+  ): Promise<CollaborationReferral> {
+    const entity = await this.referralRepo.findOne({
+      where: { referralId },
+    });
+    if (!entity) {
+      throw new Error(`Referral ${referralId} not found`);
+    }
+    if (entity.status !== 'in_progress' || !entity.executionId || !this.executionResultService) {
+      return this.toReferral(entity);
+    }
+
+    const execution = await this.executionResultService.getExecution(entity.executionId);
+    const outcome = this.classifyStoredExecution(execution);
+    if (outcome.kind === 'succeeded') {
+      return this.completeReferral({
+        referralId,
+        summary: outcome.summary,
+      });
+    }
+    if (outcome.kind === 'failed') {
+      return this.failReferral({
+        referralId,
+        summary: outcome.summary,
+      });
+    }
+
+    return this.toReferral(entity);
+  }
+
+  private classifyStoredExecution(execution: StoredExecution): ExecutionReadBack {
+    const status = execution?.execution_status;
+    if (status === 'completed') {
+      return {
+        kind: 'succeeded',
+        summary: this.readAnswerText(execution?.metadata),
+      };
+    }
+    if (status && FINISHED_FAILURE_EXECUTION_STATUSES.includes(status)) {
+      const answer = this.readAnswerText(execution?.metadata);
+      return {
+        kind: 'failed',
+        summary: answer.length > 0 ? answer : `Execution ${status}`,
+      };
+    }
+
+    return { kind: 'unfinished' };
+  }
+
+  private readAnswerText(metadata: unknown): string {
+    if (!this.isRecord(metadata)) {
+      return '';
+    }
+    const result = metadata.aiExecutionResult;
+    if (!this.isRecord(result)) {
+      return '';
+    }
+    return typeof result.output === 'string' ? result.output : '';
+  }
+
+  private isRecord(value: unknown): value is Record<string, unknown> {
+    return !!value && typeof value === 'object' && !Array.isArray(value);
+  }
+
+  private async failReferralQuietly(referralId: ReferralId, summary: string): Promise<void> {
+    try {
+      await this.failReferral({ referralId, summary });
+    } catch {
+      // A referral that is already terminal cannot be failed again.
+    }
   }
 
   private generateId(prefix: string): string {
