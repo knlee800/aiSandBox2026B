@@ -83557,6 +83557,63 @@ nature=IMPLEMENTATION
 - [x] Keith judgement recorded
 - [x] Not LOCKED by an implementer
 
+### COLLAB-GATE-01 — Approval gate, loop prevention and safety checks for collaboration hand-offs
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-GATE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02.
+**Task ID:** COLLAB-GATE-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Registration and admission here; implementation; code and LOCK in one commit after control-plane review.
+**Start condition (human):** READY — Keith approved the draft on 2026-11-02.
+**Depends on:** COLLAB-LIVE-01, LOCKED.
+**Primary write scope:** `services/api-gateway/src/orchestration/`, `services/api-gateway/src/migrations/1798000000000-AddCollaborationReferralPendingJob.ts`, `services/api-gateway/src/migrations/__tests__/1798000000000-AddCollaborationReferralPendingJob.spec.ts`, `services/api-gateway/src/guards/internal-service-auth.guard.http.spec.ts`.
+**Mutexes / resources:** GATEWAY, MIGRATION. **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (one nullable column; internal routes only).
+**saturationClass:** OPTIONAL. Collaboration stays FUTURE in PRD.md.
+
+**Problem:** found in COLLAB-LIVE-01 and its review: the internal route skips the off switch, spending limits and token limit of the execute route; loop and depth limits use values from the caller; hand-offs per run have no limit; pending_approval does not wait; a run never finishes.
+**Scope:** (1) the same off-switch, spend and token checks as the execute route; (2) depth, chain and visited computed by the server from the parent hand-off, caller values ignored; (3) at most 8 hand-offs per run; (4) a hand-off is saved with its job and waits with no job and no cost, approve starts it, reject ends it; every hand-off needs approval for now, by Keith's choice; (5) a run ends completed or failed when all hand-offs have finished; (6) one nullable column for the waiting job. No UI, no agent-chosen hand-offs, no stored limit events, no write tools.
+
+#### Acceptance criteria
+
+- [ ] A hand-off is refused with a reason when the off switch, spending limit or token limit would refuse a normal run, and no job is created
+- [ ] A to B to A is refused when the caller sends no depth or visited values; values sent by the caller cannot weaken it
+- [ ] The ninth hand-off in a run is refused
+- [ ] A waiting hand-off has no job and no ledger row; reject never runs it; approve runs it once, and a repeat approve does not run it again
+- [ ] A run ends completed when all hand-offs completed and failed when any failed, and not while one waits or runs
+- [ ] The migration adds only one nullable column and reverses cleanly
+- [ ] Ask, Build and the execute route are unchanged
+- [ ] Not LOCKED by an implementer
+
+### COLLAB-LIVE-02 — Approval gate and loop prevention on staging
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-LIVE-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-11-02.
+**Task ID:** COLLAB-LIVE-02
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Start condition NOT_READY until COLLAB-GATE-01 is LOCKED and deployed.
+**Depends on:** COLLAB-GATE-01.
+**Primary write scope:** none in the repository beyond records.
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT, ENV. **Evidence class:** PROVIDER-LIVE. **Revert isolation:** acceptable (no code).
+**saturationClass:** OPTIONAL
+
+**Scope:** on ainow-staging-01 with the stored test key: A to B to A refused with no caller values; a waiting hand-off costs nothing; a rejected one never runs; an approved one runs and returns a real answer; the off switch refuses a hand-off; the run finishes completed. Keith reads the answer.
+
+#### Acceptance criteria
+
+- [ ] Migration applied on staging, each case above observed
+- [ ] No job and no ledger row for waiting, rejected and refused hand-offs
+- [ ] Harness flags stayed off
+- [ ] Keith judgement recorded
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
