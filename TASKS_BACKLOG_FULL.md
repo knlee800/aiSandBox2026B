@@ -83074,6 +83074,48 @@ nature=IMPLEMENTATION
 - [x] services/api-gateway: npm test and npm run build pass, apart from the known smoke failures, and only the files in the primary write scope change
 - [x] Not LOCKED by an implementer
 
+### HARNESS-LIVE-04 — Deploy search and the authorization fixes, and prove them on ainow-staging-01
+
+**Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
+**Task ID:** HARNESS-LIVE-04
+**Title:** Deploy search and the authorization fixes, and prove them on ainow-staging-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (operational run; no product activation)
+**Lifecycle:** 4-STEP. Step 1 registration; Step 2 stage-start; Step 3 runs under Keith's authorization; Step 4 consolidation, checkpoint and LOCK by the control plane.
+**Start condition (human):** READY — Keith approved on 2026-11-02 (draft approved).
+**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Depends on (human):** HARNESS-SEARCH-01, AUTH-GUARD-01 and AUTH-OWNER-01, all COMPLETE AND LOCKED.
+**Depends on (machine `dependsOn`):** `[HARNESS-SEARCH-01, AUTH-GUARD-01, AUTH-OWNER-01]`
+**Primary write scope:** none. Host state on ainow-staging-01, the test project's workspace and off-repo evidence only.
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV (Lane 1, 2026-11-02). ENV covers host environment files for the window only.
+**Hot-file leases:** none
+**Shared contracts:** consumes HARNESS_ENTITLEMENT_PROOF_V1 without changing it (`sharedContractIds=[HARNESS_ENTITLEMENT_PROOF_V1]`; `mutatesSharedContractIds=[]`).
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** acceptable (flags back off and the key removed afterwards; no schema change).
+**saturationClass:** OPTIONAL
+**productClass:** CURRENT (work on the existing gated harness; no product activation; PRD ACTIVE DEVELOPMENT)
+**futureAuthorization:** NONE
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** STAGING, PROVIDER-LIVE, CREDIT
+
+**Problem:** HARNESS-SEARCH-01, AUTH-GUARD-01 and AUTH-OWNER-01 are mock-tested and not deployed. ainow-staging-01 still has the guard bypass and the missing owner checks behind basic_auth, and search has not run with a real model or through the real route to a container.
+**Scope:** on ainow-staging-01, behind basic_auth, in project C1 repeat: one deploy of 8fb5b630d6278717f195f6c194e59524905d95ec; requests with no key on the server to confirm the guard refuses them; up to 2 runs on Anthropic, same caps as HARNESS-LIVE-03; two stream viewers on one run over real Redis, and stream and cancel for an unknown execution ID. Keith types the provider key at a hidden prompt; it is removed afterwards and the flags go back off. Browser tools stay off. Not in scope: Socket.IO, the host firewall, a second user account, other providers, any UI, product activation, and making search CURRENT.
+
+#### Acceptance criteria
+
+- [ ] After the deploy, changed-case internal paths and the chat-messages, token-usage and runtime routes return 401 on the server with no key, and the gateway is ready
+- [ ] A real run finds text across nested files and answers correctly, and the journal shows whether it used search_workspace
+- [ ] A real search with no match is reported honestly
+- [ ] Of two stream viewers on one run, the one left open receives the final answer after the other closes, over real Redis; stream and cancel for an unknown execution return 404
+- [ ] The AI service's own calls still succeed with the key, with no guard refusals in the gateway journal during the runs
+- [ ] Credits and usage are recorded correctly, and usage_records.model is non-empty
+- [ ] Spend stays within the caps
+- [ ] Afterwards the flags are off, the key is removed, and the configuration hashes match the recorded state
+- [ ] Keith reads the transcripts and records his judgement
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
