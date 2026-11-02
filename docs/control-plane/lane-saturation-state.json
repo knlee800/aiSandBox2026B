@@ -10,13 +10,21 @@
   },
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "HARNESS-PROGRESS-01",
+      "mutexes": ["AI-SERVICE"],
+      "writePaths": [
+        "services/ai-service/src/agent-harness/tools/tool-progress.ts",
+        "services/ai-service/src/agent-harness/tools/tool-progress.spec.ts",
+        "services/ai-service/src/streaming/execution-stream.publisher.ts",
+        "services/ai-service/src/streaming/__tests__/execution-stream.publisher.spec.ts",
+        "services/ai-service/src/worker/worker.processor.ts",
+        "services/ai-service/src/worker/worker.processor.spec.ts",
+        "services/ai-service/src/worker/__tests__/worker.processor.builder-config.spec.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -1741,6 +1749,36 @@
       "evidenceClass": "PROVIDER-LIVE",
       "exclusiveCapacity": false,
       "runtimeNeeds": ["STAGING", "PROVIDER-LIVE", "CREDIT"],
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
+    },
+    {
+      "taskId": "HARNESS-PROGRESS-01",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "3-STEP",
+      "status": "ADMITTED",
+      "startCondition": "READY",
+      "saturationClass": "OPTIONAL",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": [],
+      "mutexes": ["AI-SERVICE"],
+      "writePaths": [
+        "services/ai-service/src/agent-harness/tools/tool-progress.ts",
+        "services/ai-service/src/agent-harness/tools/tool-progress.spec.ts",
+        "services/ai-service/src/streaming/execution-stream.publisher.ts",
+        "services/ai-service/src/streaming/__tests__/execution-stream.publisher.spec.ts",
+        "services/ai-service/src/worker/worker.processor.ts",
+        "services/ai-service/src/worker/worker.processor.spec.ts",
+        "services/ai-service/src/worker/__tests__/worker.processor.builder-config.spec.ts"
+      ],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "LOCAL-TESTS",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": [],
       "admissionUncertain": false,
       "writeSetPrecision": "EXACT"
     }
