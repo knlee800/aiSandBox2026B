@@ -82989,8 +82989,12 @@ nature=IMPLEMENTATION
 - [x] Not LOCKED by an implementer
 
 ### AUTH-GUARD-01 — Close the internal-service guard bypass: letter case and routes outside /api/internal
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=AUTH-GUARD-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; stage-start: docs/AUTH-GUARD-01-STAGE-START.md. Step 3 (implementation) not started. mutexes=GATEWAY. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
 **Task ID:** AUTH-GUARD-01
 **Title:** Close the internal-service guard bypass: letter case and routes outside /api/internal
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)

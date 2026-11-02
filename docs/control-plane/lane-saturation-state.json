@@ -10,13 +10,18 @@
   },
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "AUTH-GUARD-01",
+      "mutexes": ["GATEWAY"],
+      "writePaths": [
+        "services/api-gateway/src/guards/internal-service-auth.guard.ts",
+        "services/api-gateway/src/guards/internal-service-auth.guard.spec.ts",
+        "services/api-gateway/src/guards/internal-service-auth.guard.http.spec.ts",
+        "services/api-gateway/src/websocket/__tests__/events.controller.guard.spec.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -1651,6 +1656,33 @@
         "services/ai-service/src/ai-execution/adapters/__tests__/adapter-tool-use.mapper.spec.ts",
         "services/ai-service/src/worker/worker.processor.ts",
         "services/ai-service/src/worker/worker.processor.spec.ts"
+      ],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "LOCAL-TESTS",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": [],
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
+    },
+    {
+      "taskId": "AUTH-GUARD-01",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "4-STEP",
+      "status": "ADMITTED",
+      "startCondition": "READY",
+      "saturationClass": "OPTIONAL",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": [],
+      "mutexes": ["GATEWAY"],
+      "writePaths": [
+        "services/api-gateway/src/guards/internal-service-auth.guard.ts",
+        "services/api-gateway/src/guards/internal-service-auth.guard.spec.ts",
+        "services/api-gateway/src/guards/internal-service-auth.guard.http.spec.ts",
+        "services/api-gateway/src/websocket/__tests__/events.controller.guard.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
