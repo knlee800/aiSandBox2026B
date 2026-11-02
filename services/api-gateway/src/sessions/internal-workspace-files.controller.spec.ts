@@ -1,11 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { InternalWorkspaceFilesController } from './internal-workspace-files.controller';
 import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
+import { SessionService } from './session.service';
+import { SnapshotPersistenceService } from '../snapshots/snapshot-persistence.service';
 
 describe('InternalWorkspaceFilesController', () => {
   let controller: InternalWorkspaceFilesController;
   let mockClient: jest.Mocked<Pick<ContainerManagerHttpClient, 'readSessionFile' | 'listSessionDirectory' | 'searchSessionFiles' | 'writeSessionFile' | 'deleteSessionFile' | 'createManualCheckpoint' | 'execInSession'>>;
+  let mockSessionService: { getSessionById: jest.Mock };
+  let mockSnapshotPersistence: { saveSnapshot: jest.Mock };
 
   beforeEach(async () => {
     mockClient = {
@@ -17,6 +21,12 @@ describe('InternalWorkspaceFilesController', () => {
       createManualCheckpoint: jest.fn(),
       execInSession: jest.fn(),
     };
+    mockSessionService = {
+      getSessionById: jest.fn(),
+    };
+    mockSnapshotPersistence = {
+      saveSnapshot: jest.fn(),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [InternalWorkspaceFilesController],
@@ -24,6 +34,14 @@ describe('InternalWorkspaceFilesController', () => {
         {
           provide: ContainerManagerHttpClient,
           useValue: mockClient,
+        },
+        {
+          provide: SessionService,
+          useValue: mockSessionService,
+        },
+        {
+          provide: SnapshotPersistenceService,
+          useValue: mockSnapshotPersistence,
         },
       ],
     }).compile();
@@ -359,6 +377,70 @@ describe('InternalWorkspaceFilesController', () => {
       await expect(
         controller.createCheckpoint('session-1', 'test'),
       ).rejects.toThrow('Container not running');
+    });
+  });
+
+  describe('saveProjectSnapshot', () => {
+    it('saves with the project-scoped ai label and returns the snapshot id', async () => {
+      mockSessionService.getSessionById.mockResolvedValue({
+        userId: 'user-1',
+        projectId: 'project-1',
+        terminatedAt: null,
+      });
+      mockSnapshotPersistence.saveSnapshot.mockResolvedValue({
+        id: 'snap-1',
+        userId: 'user-1',
+        label: '[project-id:project-1:source:ai]',
+        createdAt: '2026-11-02T00:00:00.000Z',
+        fileCount: 1,
+      });
+
+      const result = await controller.saveProjectSnapshot('session-1');
+
+      expect(mockSnapshotPersistence.saveSnapshot).toHaveBeenCalledTimes(1);
+      expect(mockSnapshotPersistence.saveSnapshot).toHaveBeenCalledWith({
+        userId: 'user-1',
+        sessionId: 'session-1',
+        label: '[project-id:project-1:source:ai]',
+      });
+      expect(result).toEqual({ saved: true, snapshotId: 'snap-1' });
+    });
+
+    it('returns saved false without saving when the session has no project', async () => {
+      mockSessionService.getSessionById.mockResolvedValue({
+        userId: 'user-1',
+        projectId: null,
+        terminatedAt: null,
+      });
+
+      const result = await controller.saveProjectSnapshot('session-1');
+
+      expect(result).toEqual({ saved: false });
+      expect(mockSnapshotPersistence.saveSnapshot).not.toHaveBeenCalled();
+    });
+
+    it('returns saved false without saving when the session has ended', async () => {
+      mockSessionService.getSessionById.mockResolvedValue({
+        userId: 'user-1',
+        projectId: 'project-1',
+        terminatedAt: new Date('2026-11-02T00:00:00.000Z'),
+      });
+
+      const result = await controller.saveProjectSnapshot('session-1');
+
+      expect(result).toEqual({ saved: false });
+      expect(mockSnapshotPersistence.saveSnapshot).not.toHaveBeenCalled();
+    });
+
+    it('returns saved false without saving when the session is missing', async () => {
+      mockSessionService.getSessionById.mockRejectedValue(
+        new NotFoundException('Session with ID session-missing not found'),
+      );
+
+      const result = await controller.saveProjectSnapshot('session-missing');
+
+      expect(result).toEqual({ saved: false });
+      expect(mockSnapshotPersistence.saveSnapshot).not.toHaveBeenCalled();
     });
   });
 });

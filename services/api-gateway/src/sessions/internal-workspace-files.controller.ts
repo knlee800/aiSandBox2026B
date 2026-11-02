@@ -9,8 +9,22 @@ import {
   HttpCode,
   HttpStatus,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { ContainerManagerHttpClient, BrowserSmokeResult } from '../clients/container-manager-http.client';
+import { SessionService } from './session.service';
+import { SnapshotPersistenceService } from '../snapshots/snapshot-persistence.service';
+
+/**
+ * Same string as frontend buildProjectScopedSnapshotLabel(projectId, 'ai')
+ * with no hint: `[project-id:<projectId>:source:ai]`.
+ * listSnapshots returns newest createdAt first, and
+ * resolveProjectScopedLatestSnapshotId uses the first label whose parsed
+ * project id matches, so this label is the one that lookup finds.
+ */
+function buildAiProjectSnapshotLabel(projectId: string): string {
+  return `[project-id:${projectId.trim()}:source:ai]`;
+}
 
 /**
  * Internal Workspace Files Controller
@@ -25,6 +39,7 @@ import { ContainerManagerHttpClient, BrowserSmokeResult } from '../clients/conta
  * - POST /api/internal/workspace/:sessionId/write  { path, content }
  * - DELETE /api/internal/workspace/:sessionId/delete  { path }
  * - POST /api/internal/workspace/:sessionId/checkpoint  { description? }
+ * - POST /api/internal/workspace/:sessionId/save-project-snapshot
  * - POST /api/internal/workspace/:sessionId/validate  { command, timeoutMs? }
  *
  * Protected by global InternalServiceAuthGuard (X-Internal-Service-Key).
@@ -34,6 +49,8 @@ import { ContainerManagerHttpClient, BrowserSmokeResult } from '../clients/conta
 export class InternalWorkspaceFilesController {
   constructor(
     private readonly containerManagerHttpClient: ContainerManagerHttpClient,
+    private readonly sessionService: SessionService,
+    private readonly snapshotPersistenceService: SnapshotPersistenceService,
   ) {}
 
   @Get(':sessionId/read')
@@ -170,6 +187,40 @@ export class InternalWorkspaceFilesController {
       commitHash: result.commitHash,
       filesChanged: result.filesChanged,
     };
+  }
+
+  /**
+   * POST /api/internal/workspace/:sessionId/save-project-snapshot
+   * HARNESS-SAVE-01: Persist a project-scoped snapshot after a harness write or delete.
+   * A missing session, an ended session, or a session with no project saves nothing.
+   */
+  @Post(':sessionId/save-project-snapshot')
+  @HttpCode(HttpStatus.OK)
+  async saveProjectSnapshot(
+    @Param('sessionId') sessionId: string,
+  ): Promise<{ saved: false } | { saved: true; snapshotId: string }> {
+    let session: Awaited<ReturnType<SessionService['getSessionById']>>;
+    try {
+      session = await this.sessionService.getSessionById(sessionId);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return { saved: false };
+      }
+      throw error;
+    }
+
+    const projectId = session.projectId?.trim() ?? '';
+    if (session.terminatedAt !== null || projectId.length === 0) {
+      return { saved: false };
+    }
+
+    const snapshot = await this.snapshotPersistenceService.saveSnapshot({
+      userId: session.userId,
+      sessionId,
+      label: buildAiProjectSnapshotLabel(projectId),
+    });
+
+    return { saved: true, snapshotId: snapshot.id };
   }
 
   /**

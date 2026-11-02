@@ -1253,6 +1253,8 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
 
           let aiResult: Awaited<ReturnType<AIExecutionService['execute']>>;
           let harnessPreApplyCheckpointHash: string | undefined;
+          // Lives across provider retries. A write on an earlier attempt must still save.
+          let harnessWriteOrDeleteAttempted = false;
           for (let attempt = 0; attempt < EXECUTION_PROVIDER_RETRY_ATTEMPTS; attempt++) {
             try {
               const promptParts = buildExecutionPromptParts(
@@ -1306,12 +1308,18 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                     toolTimeoutMs: resolvedConfig.toolTimeoutMs,
                     maxToolResultBytes: resolvedConfig.maxToolResultBytes,
                   });
-                  const wrapHarnessTool = createToolProgressWrapper((progress) =>
-                    this.executionStreamPublisher.publishHarnessProgress(
+                  const wrapHarnessTool = createToolProgressWrapper((progress) => {
+                    if (
+                      progress.tool === 'write_file' ||
+                      progress.tool === 'delete_file'
+                    ) {
+                      harnessWriteOrDeleteAttempted = true;
+                    }
+                    return this.executionStreamPublisher.publishHarnessProgress(
                       executionId,
                       progress,
-                    ),
-                  );
+                    );
+                  });
                   const registeredHandlerNames: string[] = [];
                   dispatcher.registerHandler(
                     'read_file',
@@ -1451,6 +1459,21 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                     if (auditRecorder) {
                       for (const event of auditRecorder.getEvents()) {
                         this.logger.log(JSON.stringify(event));
+                      }
+                    }
+                    if (harnessWriteOrDeleteAttempted) {
+                      try {
+                        await this.apiGatewayHttpClient.saveProjectSnapshot(
+                          job.data.sessionId,
+                        );
+                      } catch (saveError: unknown) {
+                        const errorMessage =
+                          saveError instanceof Error
+                            ? saveError.message
+                            : String(saveError);
+                        this.logger.warn(
+                          `Project snapshot save failed executionId=${executionId}: ${errorMessage}`,
+                        );
                       }
                     }
                   }

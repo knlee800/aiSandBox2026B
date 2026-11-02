@@ -7,6 +7,8 @@ import { ChatMessageController } from '../chat-messages/chat-message.controller'
 import { ChatMessageService } from '../chat-messages/chat-message.service';
 import { ChatMessageRole } from '../entities/chat-message-role.enum';
 import { InternalWorkspaceFilesController } from '../sessions/internal-workspace-files.controller';
+import { SessionService } from '../sessions/session.service';
+import { SnapshotPersistenceService } from '../snapshots/snapshot-persistence.service';
 import { RuntimeController } from '../runtime/runtime.controller';
 import { RuntimeService } from '../runtime/runtime.service';
 import { TokenUsageController } from '../token-usage/token-usage.controller';
@@ -16,6 +18,8 @@ import { InternalServiceAuthGuard } from './internal-service-auth.guard';
 describe('InternalServiceAuthGuard HTTP prefix protection (AUTH-GUARD-01)', () => {
   let app: INestApplication;
   let containerManager: { readSessionFile: jest.Mock };
+  let sessionService: { getSessionById: jest.Mock };
+  let snapshotPersistence: { saveSnapshot: jest.Mock };
   let chatMessageService: { addMessageBySession: jest.Mock };
   let tokenUsageService: { recordTokenUsage: jest.Mock };
   let runtimeService: { getMetrics: jest.Mock };
@@ -52,6 +56,12 @@ describe('InternalServiceAuthGuard HTTP prefix protection (AUTH-GUARD-01)', () =
     containerManager = {
       readSessionFile: jest.fn().mockResolvedValue({ path: 'a', content: 'ok' }),
     };
+    sessionService = {
+      getSessionById: jest.fn(),
+    };
+    snapshotPersistence = {
+      saveSnapshot: jest.fn(),
+    };
     chatMessageService = {
       addMessageBySession: jest.fn().mockResolvedValue({ id: 'message-1' }),
     };
@@ -72,6 +82,8 @@ describe('InternalServiceAuthGuard HTTP prefix protection (AUTH-GUARD-01)', () =
       providers: [
         { provide: APP_GUARD, useClass: InternalServiceAuthGuard },
         { provide: ContainerManagerHttpClient, useValue: containerManager },
+        { provide: SessionService, useValue: sessionService },
+        { provide: SnapshotPersistenceService, useValue: snapshotPersistence },
         { provide: ChatMessageService, useValue: chatMessageService },
         { provide: TokenUsageService, useValue: tokenUsageService },
         { provide: RuntimeService, useValue: runtimeService },
@@ -130,6 +142,13 @@ describe('InternalServiceAuthGuard HTTP prefix protection (AUTH-GUARD-01)', () =
     }
 
     expect(containerManager.readSessionFile).not.toHaveBeenCalled();
+  });
+
+  it('refuses save-project-snapshot with no key and does not save', async () => {
+    await send('post', '/api/internal/workspace/s1/save-project-snapshot').expect(401);
+
+    expect(snapshotPersistence.saveSnapshot).not.toHaveBeenCalled();
+    expect(sessionService.getSessionById).not.toHaveBeenCalled();
   });
 
   it('allows the lowercase workspace read with the correct key', async () => {

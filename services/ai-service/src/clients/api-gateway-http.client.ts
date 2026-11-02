@@ -338,6 +338,35 @@ export class ApiGatewayHttpClient {
   }
 
   /**
+   * Save a project-scoped workspace snapshot via API Gateway.
+   * HARNESS-SAVE-01: called when a harness run that wrote or deleted files ends.
+   * @param sessionId - Session UUID
+   * @param signal - Optional abort signal. The worker omits it so a failed or
+   * aborted run can still persist the snapshot.
+   * @returns Gateway result `{ saved, snapshotId? }`
+   * @throws Error if the HTTP request fails
+   */
+  async saveProjectSnapshot(
+    sessionId: string,
+    signal?: AbortSignal,
+  ): Promise<{ saved: boolean; snapshotId?: string }> {
+    const response = await firstValueFrom(
+      this.httpService.post(
+        `${this.apiGatewayUrl}/api/internal/workspace/${sessionId}/save-project-snapshot`,
+        {},
+        {
+          signal,
+          headers: {
+            'X-Internal-Service-Key': this.internalServiceKey,
+          },
+        },
+      ),
+    );
+
+    return response.data;
+  }
+
+  /**
    * Run browser smoke check in a session workspace via API Gateway.
    * AGENT-HARNESS-05B2: ai-service → API Gateway → container-manager boundary.
    * @param sessionId - Session UUID

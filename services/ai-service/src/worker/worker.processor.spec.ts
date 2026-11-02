@@ -4310,3 +4310,479 @@ describe('HARNESS-PROGRESS-01: harness tool progress on the execution stream', (
     await worker.onModuleDestroy();
   });
 });
+
+describe('HARNESS-SAVE-01: save a project snapshot when a harness run writes or deletes', () => {
+  const HARNESS_SECRET = 'test-hmac-secret-harness-save-01';
+  const FILE_BODY = 'slug-js-body-not-for-logs';
+  const originalRedisUrl = process.env.REDIS_URL;
+  const originalStuckScan = process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+  const originalSecret = process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+  const harnessConfigModule = require('../agent-harness/config/agent-harness.config') as {
+    DEFAULT_AGENT_HARNESS_CONFIG_V1: typeof DEFAULT_AGENT_HARNESS_CONFIG_V1;
+  };
+  const originalHarnessConfig = harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1;
+
+  function withHarnessProof(
+    data: Record<string, unknown>,
+  ): Record<string, unknown> {
+    const payloadDigest = computeJobPayloadDigest(data).payloadDigest;
+    const issuedAt = '2026-11-02T09:00:00.000Z';
+    const executionId = String(data.executionId);
+    const userId = String(data.userId);
+    const apiKeyId = String(data.apiKeyId);
+    const claim = `v=1|executionId=${executionId}|userId=${userId}|apiKeyId=${apiKeyId}|harnessVersion=v1|issuedAt=${issuedAt}|payloadDigest=${payloadDigest}`;
+    const signature = createHmac('sha256', HARNESS_SECRET)
+      .update(claim, 'utf8')
+      .digest('hex');
+    return {
+      ...data,
+      harnessEntitlementProof: {
+        version: 1,
+        executionId,
+        userId,
+        apiKeyId,
+        harnessVersion: 'v1',
+        issuedAt,
+        payloadDigest,
+        signature,
+      },
+    };
+  }
+
+  function harnessJob(
+    executionId: string,
+    sessionId: string,
+  ): Record<string, unknown> {
+    return withHarnessProof({
+      executionId,
+      userId: 'user-save',
+      apiKeyId: 'apikey-save',
+      sessionId,
+      conversationId: 'conv-save',
+      provider: 'openai',
+      adapter: 'openai',
+      prompt: 'Update the workspace.',
+      model: 'stub-save-model',
+      harnessVersion: 'v1',
+      executionIntent: 'conversation',
+      submittedAt: '2026-11-02T09:00:00.000Z',
+    });
+  }
+
+  function createLedgerMock() {
+    const status = { value: 'pending' };
+    const order: string[] = [];
+    const completedUpdates: Array<{ sql: string; params: unknown[] }> = [];
+    const failedUpdates: Array<{ sql: string; params: unknown[] }> = [];
+    const query = jest.fn(async (sql: string, params: unknown[] = []) => {
+      if (
+        sql.includes("SET execution_status = 'running'") &&
+        sql.includes('RETURNING')
+      ) {
+        if (status.value === 'pending') {
+          status.value = 'running';
+          return [{ execution_id: params[0] }];
+        }
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'completed'")) {
+        order.push('finalize');
+        completedUpdates.push({ sql, params });
+        status.value = 'completed';
+        return [];
+      }
+      if (
+        sql.includes("SET execution_status = 'failed'") &&
+        !sql.includes('RETURNING')
+      ) {
+        order.push('finalize');
+        failedUpdates.push({ sql, params });
+        status.value = 'failed';
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'failed'")) {
+        status.value = 'failed';
+        return [];
+      }
+      if (sql.includes('SELECT execution_status, created_at')) {
+        return [
+          {
+            execution_status: status.value,
+            created_at: new Date().toISOString(),
+          },
+        ];
+      }
+      if (sql.includes('SELECT execution_id, timestamp')) {
+        return [];
+      }
+      if (sql.includes('SELECT metadata')) {
+        return [{ metadata: {} }];
+      }
+      if (sql.includes('SELECT execution_status')) {
+        return [{ execution_status: status.value }];
+      }
+      return [];
+    });
+    return { query, status, order, completedUpdates, failedUpdates };
+  }
+
+  function writeThenFinish(output: string) {
+    return jest
+      .fn()
+      .mockResolvedValueOnce({
+        output: 'writing',
+        tokensUsed: 4,
+        model: 'stub-save-model',
+        finishReason: 'tool_calls',
+        toolCalls: [
+          {
+            callId: 'call-write-1',
+            toolName: 'write_file',
+            arguments: { path: 'slug.js', content: FILE_BODY },
+            providerKind: 'stub',
+          },
+        ],
+      })
+      .mockResolvedValueOnce({
+        output,
+        tokensUsed: 6,
+        model: 'stub-save-model',
+        finishReason: 'completed',
+        toolCalls: [],
+      });
+  }
+
+  async function startWorker(deps: {
+    query: jest.Mock;
+    execute: jest.Mock;
+    getAdapter: jest.Mock;
+    apiGateway: Record<string, jest.Mock>;
+  }) {
+    const worker = new WorkerProcessor(
+      { query: deps.query } as never,
+      { execute: deps.execute, getAdapter: deps.getAdapter } as never,
+      {
+        publishCompletion: jest.fn(),
+        publishToken: jest.fn(),
+        publishFileActions: jest.fn(),
+        publishHarnessProgress: jest.fn(),
+      } as never,
+      deps.apiGateway as never,
+    );
+    await worker.onModuleInit();
+    if (!capturedWorker.processor) {
+      throw new Error('BullMQ worker processor was not captured');
+    }
+    return { worker, processJob: capturedWorker.processor };
+  }
+
+  let warnSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    process.env.REDIS_URL = 'redis://127.0.0.1:6379';
+    process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = '600000';
+    process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = HARNESS_SECRET;
+    capturedWorker.processor = null;
+    capturedWorker.opts = null;
+    harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1 = {
+      ...originalHarnessConfig,
+      enableToolLoop: true,
+      enableWriteTools: true,
+    };
+    warnSpy = jest.spyOn(Logger.prototype, 'warn');
+  });
+
+  afterEach(() => {
+    harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1 = originalHarnessConfig;
+    warnSpy.mockRestore();
+    jest.useRealTimers();
+    if (originalRedisUrl === undefined) {
+      delete process.env.REDIS_URL;
+    } else {
+      process.env.REDIS_URL = originalRedisUrl;
+    }
+    if (originalStuckScan === undefined) {
+      delete process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+    } else {
+      process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = originalStuckScan;
+    }
+    if (originalSecret === undefined) {
+      delete process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+    } else {
+      process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = originalSecret;
+    }
+  });
+
+  it('saves a project snapshot after a harness run that called write_file', async () => {
+    const ledger = createLedgerMock();
+    const saveProjectSnapshot = jest.fn(async () => {
+      ledger.order.push('save');
+      return { saved: true, snapshotId: 'snap-write' };
+    });
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn(),
+      getAdapter: jest.fn().mockReturnValue({
+        supportsToolUse: true,
+        executeWithTools: writeThenFinish('wrote slug.js'),
+      }),
+      apiGateway: {
+        notifyExecutionComplete: jest.fn().mockResolvedValue(undefined),
+        createWorkspaceCheckpoint: jest
+          .fn()
+          .mockResolvedValue({ commitHash: 'abc', filesChanged: 1 }),
+        writeWorkspaceFile: jest.fn().mockResolvedValue(undefined),
+        saveProjectSnapshot,
+      },
+    });
+
+    await processJob({
+      id: 'job-save-write',
+      data: harnessJob('exec-save-write', 'session-save-write'),
+    });
+
+    expect(saveProjectSnapshot).toHaveBeenCalledTimes(1);
+    expect(saveProjectSnapshot.mock.calls[0]).toEqual(['session-save-write']);
+    await worker.onModuleDestroy();
+  });
+
+  it('saves a project snapshot after a failing harness run that called write_file', async () => {
+    const ledger = createLedgerMock();
+    const saveProjectSnapshot = jest.fn(async () => {
+      ledger.order.push('save');
+      return { saved: true, snapshotId: 'snap-fail' };
+    });
+    const executeWithTools = jest
+      .fn()
+      .mockResolvedValueOnce({
+        output: 'writing',
+        tokensUsed: 4,
+        model: 'stub-save-model',
+        finishReason: 'tool_calls',
+        toolCalls: [
+          {
+            callId: 'call-write-fail',
+            toolName: 'write_file',
+            arguments: { path: 'slug.js', content: FILE_BODY },
+            providerKind: 'stub',
+          },
+        ],
+      })
+      .mockRejectedValueOnce(new Error('provider rejected the request'));
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn(),
+      getAdapter: jest.fn().mockReturnValue({
+        supportsToolUse: true,
+        executeWithTools,
+      }),
+      apiGateway: {
+        notifyExecutionComplete: jest.fn().mockResolvedValue(undefined),
+        createWorkspaceCheckpoint: jest
+          .fn()
+          .mockResolvedValue({ commitHash: 'abc', filesChanged: 1 }),
+        writeWorkspaceFile: jest.fn().mockResolvedValue(undefined),
+        saveProjectSnapshot,
+      },
+    });
+
+    await expect(
+      processJob({
+        id: 'job-save-fail',
+        data: harnessJob('exec-save-fail', 'session-save-fail'),
+      }),
+    ).rejects.toThrow('provider rejected the request');
+
+    expect(saveProjectSnapshot).toHaveBeenCalledTimes(1);
+    expect(saveProjectSnapshot.mock.calls[0]).toEqual(['session-save-fail']);
+    expect(ledger.failedUpdates).toHaveLength(1);
+    expect(ledger.failedUpdates[0].sql).toContain(
+      "SET execution_status = 'failed'",
+    );
+    expect(ledger.order).toEqual(['save', 'finalize']);
+    await worker.onModuleDestroy();
+  });
+
+  it('does not save a project snapshot after a read-only harness run', async () => {
+    const ledger = createLedgerMock();
+    const saveProjectSnapshot = jest.fn().mockResolvedValue({
+      saved: true,
+      snapshotId: 'snap-read',
+    });
+    const executeWithTools = jest
+      .fn()
+      .mockResolvedValueOnce({
+        output: 'reading',
+        tokensUsed: 2,
+        model: 'stub-save-model',
+        finishReason: 'tool_calls',
+        toolCalls: [
+          {
+            callId: 'call-read-1',
+            toolName: 'read_file',
+            arguments: { path: 'slug.js' },
+            providerKind: 'stub',
+          },
+        ],
+      })
+      .mockResolvedValueOnce({
+        output: 'read only',
+        tokensUsed: 1,
+        model: 'stub-save-model',
+        finishReason: 'completed',
+        toolCalls: [],
+      });
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn(),
+      getAdapter: jest.fn().mockReturnValue({
+        supportsToolUse: true,
+        executeWithTools,
+      }),
+      apiGateway: {
+        notifyExecutionComplete: jest.fn().mockResolvedValue(undefined),
+        createWorkspaceCheckpoint: jest.fn(),
+        readWorkspaceFile: jest.fn().mockResolvedValue({
+          path: 'slug.js',
+          content: 'existing',
+        }),
+        saveProjectSnapshot,
+      },
+    });
+
+    await processJob({
+      id: 'job-save-read',
+      data: harnessJob('exec-save-read', 'session-save-read'),
+    });
+
+    expect(saveProjectSnapshot).not.toHaveBeenCalled();
+    expect(ledger.completedUpdates).toHaveLength(1);
+    await worker.onModuleDestroy();
+  });
+
+  it('does not save a project snapshot on the single-shot path', async () => {
+    const ledger = createLedgerMock();
+    const saveProjectSnapshot = jest.fn().mockResolvedValue({
+      saved: true,
+      snapshotId: 'snap-single',
+    });
+    const execute = jest.fn().mockResolvedValue({
+      output: 'plain answer',
+      tokensUsed: 3,
+      model: 'grok-4.5',
+    });
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute,
+      getAdapter: jest.fn(),
+      apiGateway: {
+        notifyExecutionComplete: jest.fn().mockResolvedValue(undefined),
+        saveProjectSnapshot,
+      },
+    });
+
+    await processJob({
+      id: 'job-save-single',
+      data: {
+        executionId: 'exec-save-single',
+        provider: 'xai',
+        adapter: 'xai',
+        sessionId: 'session-save-single',
+        conversationId: 'conv-save-single',
+        userId: 'user-save',
+        apiKeyId: 'apikey-save',
+        prompt: 'Hello ordinary job',
+        model: 'grok-4.5',
+        executionIntent: 'conversation',
+      },
+    });
+
+    expect(execute).toHaveBeenCalledTimes(1);
+    expect(saveProjectSnapshot).not.toHaveBeenCalled();
+    expect(ledger.completedUpdates).toHaveLength(1);
+    await worker.onModuleDestroy();
+  });
+
+  it('leaves the run result unchanged when the project snapshot save is rejected', async () => {
+    const ledger = createLedgerMock();
+    const saveProjectSnapshot = jest.fn(async () => {
+      ledger.order.push('save');
+      throw new Error('snapshot store unavailable');
+    });
+    const notifyExecutionComplete = jest.fn().mockResolvedValue(undefined);
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn(),
+      getAdapter: jest.fn().mockReturnValue({
+        supportsToolUse: true,
+        executeWithTools: writeThenFinish('wrote slug.js'),
+      }),
+      apiGateway: {
+        notifyExecutionComplete,
+        createWorkspaceCheckpoint: jest
+          .fn()
+          .mockResolvedValue({ commitHash: 'abc', filesChanged: 1 }),
+        writeWorkspaceFile: jest.fn().mockResolvedValue(undefined),
+        saveProjectSnapshot,
+      },
+    });
+
+    await processJob({
+      id: 'job-save-rejected',
+      data: harnessJob('exec-save-rejected', 'session-save-rejected'),
+    });
+
+    expect(ledger.status.value).toBe('completed');
+    expect(ledger.failedUpdates).toHaveLength(0);
+    expect(ledger.completedUpdates).toHaveLength(1);
+    expect(ledger.completedUpdates[0].params[0]).toBe('exec-save-rejected');
+    expect(ledger.completedUpdates[0].params[1]).toBe(10);
+    expect(String(ledger.completedUpdates[0].params[2])).toContain(
+      'wrote slug.js',
+    );
+    expect(ledger.completedUpdates[0].params[3]).toBe('stub-save-model');
+    expect(notifyExecutionComplete).toHaveBeenCalledTimes(1);
+    const saveWarnings = warnSpy.mock.calls
+      .map((args) => String(args[0]))
+      .filter((message) => message.includes('exec-save-rejected'));
+    expect(saveWarnings).toEqual([
+      'Project snapshot save failed executionId=exec-save-rejected: snapshot store unavailable',
+    ]);
+    expect(saveWarnings.join('\n')).not.toContain(FILE_BODY);
+    await worker.onModuleDestroy();
+  });
+
+  it('saves the project snapshot before the run is finalized', async () => {
+    const ledger = createLedgerMock();
+    const saveProjectSnapshot = jest.fn(async () => {
+      ledger.order.push('save');
+      return { saved: true, snapshotId: 'snap-order' };
+    });
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn(),
+      getAdapter: jest.fn().mockReturnValue({
+        supportsToolUse: true,
+        executeWithTools: writeThenFinish('wrote slug.js'),
+      }),
+      apiGateway: {
+        notifyExecutionComplete: jest.fn().mockResolvedValue(undefined),
+        createWorkspaceCheckpoint: jest
+          .fn()
+          .mockResolvedValue({ commitHash: 'abc', filesChanged: 1 }),
+        writeWorkspaceFile: jest.fn().mockResolvedValue(undefined),
+        saveProjectSnapshot,
+      },
+    });
+
+    await processJob({
+      id: 'job-save-order',
+      data: harnessJob('exec-save-order', 'session-save-order'),
+    });
+
+    expect(ledger.order).toEqual(['save', 'finalize']);
+    expect(ledger.completedUpdates).toHaveLength(1);
+    await worker.onModuleDestroy();
+  });
+});

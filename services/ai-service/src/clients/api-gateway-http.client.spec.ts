@@ -404,6 +404,26 @@ describe('ApiGatewayHttpClient - workspace file methods', () => {
     });
   });
 
+  describe('saveProjectSnapshot', () => {
+    it('posts to the internal save-project-snapshot route with the internal service key', async () => {
+      httpService.post.mockReturnValue(
+        of(makeAxiosResponse({ saved: true, snapshotId: 'snap-1' })),
+      );
+
+      const result = await client.saveProjectSnapshot('session-1');
+
+      expect(httpService.post).toHaveBeenCalledWith(
+        'http://localhost:4000/api/internal/workspace/session-1/save-project-snapshot',
+        {},
+        {
+          signal: undefined,
+          headers: { 'X-Internal-Service-Key': 'test-key-123' },
+        },
+      );
+      expect(result).toEqual({ saved: true, snapshotId: 'snap-1' });
+    });
+  });
+
   describe('notifyExecutionComplete', () => {
     it('posts to /api/internal/executions/:executionId/finalize-accounting with internal service key', async () => {
       httpService.post.mockReturnValue(
