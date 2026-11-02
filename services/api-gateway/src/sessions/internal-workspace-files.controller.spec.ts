@@ -5,12 +5,13 @@ import { ContainerManagerHttpClient } from '../clients/container-manager-http.cl
 
 describe('InternalWorkspaceFilesController', () => {
   let controller: InternalWorkspaceFilesController;
-  let mockClient: jest.Mocked<Pick<ContainerManagerHttpClient, 'readSessionFile' | 'listSessionDirectory' | 'writeSessionFile' | 'deleteSessionFile' | 'createManualCheckpoint' | 'execInSession'>>;
+  let mockClient: jest.Mocked<Pick<ContainerManagerHttpClient, 'readSessionFile' | 'listSessionDirectory' | 'searchSessionFiles' | 'writeSessionFile' | 'deleteSessionFile' | 'createManualCheckpoint' | 'execInSession'>>;
 
   beforeEach(async () => {
     mockClient = {
       readSessionFile: jest.fn(),
       listSessionDirectory: jest.fn(),
+      searchSessionFiles: jest.fn(),
       writeSessionFile: jest.fn(),
       deleteSessionFile: jest.fn(),
       createManualCheckpoint: jest.fn(),
@@ -106,6 +107,53 @@ describe('InternalWorkspaceFilesController', () => {
         'session-1',
         '/',
       );
+    });
+  });
+
+  describe('searchFiles', () => {
+    it('delegates to ContainerManagerHttpClient.searchSessionFiles', async () => {
+      const payload = {
+        query: 'login',
+        results: [{ path: 'src/app.ts', line: 4, preview: 'function login()' }],
+        truncated: false,
+      };
+      mockClient.searchSessionFiles.mockResolvedValue(payload);
+
+      const result = await controller.searchFiles('session-1', 'login');
+
+      expect(mockClient.searchSessionFiles).toHaveBeenCalledWith(
+        'session-1',
+        'login',
+      );
+      expect(result).toEqual(payload);
+    });
+
+    it('throws BadRequestException when query is missing', async () => {
+      await expect(controller.searchFiles('session-1', undefined)).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(mockClient.searchSessionFiles).not.toHaveBeenCalled();
+    });
+
+    it('throws BadRequestException when query is empty', async () => {
+      await expect(controller.searchFiles('session-1', '')).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(mockClient.searchSessionFiles).not.toHaveBeenCalled();
+    });
+
+    it('throws BadRequestException when query is blank', async () => {
+      await expect(controller.searchFiles('session-1', '   ')).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(mockClient.searchSessionFiles).not.toHaveBeenCalled();
+    });
+
+    it('throws BadRequestException when query is not a string', async () => {
+      await expect(controller.searchFiles('session-1', 12)).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(mockClient.searchSessionFiles).not.toHaveBeenCalled();
     });
   });
 

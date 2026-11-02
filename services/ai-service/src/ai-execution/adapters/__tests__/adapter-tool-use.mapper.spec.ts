@@ -133,26 +133,31 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
       'read_file',
       'write_file',
       'run_validation',
+      'search_workspace',
     ]);
     expect(advertisedNames(advertised)).toEqual([
       'list_files',
       'read_file',
       'write_file',
       'run_validation',
+      'search_workspace',
     ]);
 
     const listFiles = getAgentHarnessToolDefinition('list_files');
     const readFile = getAgentHarnessToolDefinition('read_file');
     const writeFile = getAgentHarnessToolDefinition('write_file');
     const runValidation = getAgentHarnessToolDefinition('run_validation');
+    const searchWorkspace = getAgentHarnessToolDefinition('search_workspace');
     expect(listFiles).toBeDefined();
     expect(readFile).toBeDefined();
     expect(writeFile).toBeDefined();
     expect(runValidation).toBeDefined();
+    expect(searchWorkspace).toBeDefined();
     expect(advertised[0]).toBe(listFiles);
     expect(advertised[1]).toBe(readFile);
     expect(advertised[2]).toBe(writeFile);
     expect(advertised[3]).toBe(runValidation);
+    expect(advertised[4]).toBe(searchWorkspace);
     expect(advertised[0].description).toBe(listFiles!.description);
     expect(advertised[0].inputSchema).toBe(listFiles!.inputSchema);
     expect(advertised[1].description).toBe(readFile!.description);
@@ -161,6 +166,8 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
     expect(advertised[2].inputSchema).toBe(writeFile!.inputSchema);
     expect(advertised[3].description).toBe(runValidation!.description);
     expect(advertised[3].inputSchema).toBe(runValidation!.inputSchema);
+    expect(advertised[4].description).toBe(searchWorkspace!.description);
+    expect(advertised[4].inputSchema).toBe(searchWorkspace!.inputSchema);
 
     const declarations =
       mapAgentHarnessToolDefinitionsToAdapterToolDeclarations(advertised);
@@ -169,14 +176,16 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
       'read_file',
       'write_file',
       'run_validation',
+      'search_workspace',
     ]);
     expect(declarations[0].inputSchema).toBe(listFiles!.inputSchema.schema);
     expect(declarations[1].inputSchema).toBe(readFile!.inputSchema.schema);
     expect(declarations[2].inputSchema).toBe(writeFile!.inputSchema.schema);
     expect(declarations[3].inputSchema).toBe(runValidation!.inputSchema.schema);
+    expect(declarations[4].inputSchema).toBe(searchWorkspace!.inputSchema.schema);
   });
 
-  it('advertises only list_files and read_file when both flags are off', () => {
+  it('offers list_files, read_file, and search_workspace when write and validation flags are off', () => {
     const advertised = selectAdvertisedAgentHarnessTools({
       registeredHandlerNames: ALL_REGISTRY_HANDLER_NAMES,
       enableWriteTools: false,
@@ -184,7 +193,11 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
       enableBrowserSmoke: true,
     });
 
-    expect(advertisedNames(advertised)).toEqual(['list_files', 'read_file']);
+    expect(advertisedNames(advertised)).toEqual([
+      'list_files',
+      'read_file',
+      'search_workspace',
+    ]);
   });
 
   it('lets enableWriteTools control only write_file', () => {
@@ -199,6 +212,7 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
       'list_files',
       'read_file',
       'write_file',
+      'search_workspace',
     ]);
   });
 
@@ -214,10 +228,11 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
       'list_files',
       'read_file',
       'run_validation',
+      'search_workspace',
     ]);
   });
 
-  it('excludes disabled, planned, handlerless, delete, browser, and search tools when write and validation flags are on', () => {
+  it('excludes disabled, planned, handlerless, delete, browser, and preview tools when write and validation flags are on', () => {
     const advertised = selectAdvertisedAgentHarnessTools({
       registeredHandlerNames: ALL_REGISTRY_HANDLER_NAMES,
       enableWriteTools: true,
@@ -231,8 +246,8 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
       'read_file',
       'write_file',
       'run_validation',
+      'search_workspace',
     ]);
-    expect(names).not.toContain('search_workspace');
     expect(names).not.toContain('delete_file');
     expect(names).not.toContain('browser_smoke');
     expect(names).not.toContain('start_preview');
@@ -247,6 +262,7 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
         'write_file',
         'delete_file',
         'run_validation',
+        'search_workspace',
       ]),
     );
     expect(names).not.toEqual(enabledIds);
@@ -286,22 +302,27 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
     ).toEqual(['read_file']);
   });
 
-  it('never advertises search_workspace even when a handler is claimed', () => {
+  it('offers search_workspace with write and validation flags off when a handler is claimed', () => {
     const searchWorkspace = getAgentHarnessToolDefinition('search_workspace')!;
     const advertised = selectAdvertisedAgentHarnessTools({
       registeredHandlerNames: ['search_workspace', 'list_files', 'read_file'],
+      enableWriteTools: false,
+      enableValidationTools: false,
       definitions: [
-        { ...searchWorkspace, enabled: true, implementationStatus: 'implemented' },
+        searchWorkspace,
         getAgentHarnessToolDefinition('list_files')!,
         getAgentHarnessToolDefinition('read_file')!,
       ],
     });
 
-    expect(advertisedNames(advertised)).toEqual(['list_files', 'read_file']);
-    expect(advertisedNames(advertised)).not.toContain('search_workspace');
+    expect(advertisedNames(advertised)).toEqual([
+      'search_workspace',
+      'list_files',
+      'read_file',
+    ]);
   });
 
-  it('never offers delete_file, browser_smoke, or search_workspace even with handlers and flags on', () => {
+  it('never offers delete_file, browser_smoke, or start_preview even with handlers and flags on', () => {
     const forceOffered = (toolId: string) => {
       const definition = getAgentHarnessToolDefinition(toolId)!;
       return {
@@ -319,6 +340,7 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
         'run_validation',
         'browser_smoke',
         'search_workspace',
+        'start_preview',
       ],
       enableWriteTools: true,
       enableValidationTools: true,
@@ -330,7 +352,8 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
         forceOffered('delete_file'),
         getAgentHarnessToolDefinition('run_validation')!,
         forceOffered('browser_smoke'),
-        forceOffered('search_workspace'),
+        getAgentHarnessToolDefinition('search_workspace')!,
+        forceOffered('start_preview'),
       ],
     });
 
@@ -339,10 +362,11 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
       'read_file',
       'write_file',
       'run_validation',
+      'search_workspace',
     ]);
     expect(advertisedNames(advertised)).not.toContain('delete_file');
     expect(advertisedNames(advertised)).not.toContain('browser_smoke');
-    expect(advertisedNames(advertised)).not.toContain('search_workspace');
+    expect(advertisedNames(advertised)).not.toContain('start_preview');
   });
 
   it('returns an empty advertised set when no eligible handler is registered', () => {
@@ -353,14 +377,17 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
     ).toEqual([]);
   });
 
-  it('advertises write_file when its handler and flag are on and still excludes search_workspace', () => {
+  it('advertises write_file and search_workspace when the write flag is on and still excludes start_preview', () => {
     const advertised = selectAdvertisedAgentHarnessTools({
-      registeredHandlerNames: ['write_file', 'search_workspace'],
+      registeredHandlerNames: ['write_file', 'search_workspace', 'start_preview'],
       enableWriteTools: true,
     });
 
-    expect(advertisedNames(advertised)).toEqual(['write_file']);
-    expect(advertisedNames(advertised)).not.toContain('search_workspace');
+    expect(advertisedNames(advertised)).toEqual([
+      'write_file',
+      'search_workspace',
+    ]);
+    expect(advertisedNames(advertised)).not.toContain('start_preview');
   });
 });
 

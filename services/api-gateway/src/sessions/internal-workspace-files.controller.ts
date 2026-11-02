@@ -21,6 +21,7 @@ import { ContainerManagerHttpClient, BrowserSmokeResult } from '../clients/conta
  * Routes:
  * - GET  /api/internal/workspace/:sessionId/read?path=...
  * - GET  /api/internal/workspace/:sessionId/list?path=...
+ * - POST /api/internal/workspace/:sessionId/search  { query }
  * - POST /api/internal/workspace/:sessionId/write  { path, content }
  * - DELETE /api/internal/workspace/:sessionId/delete  { path }
  * - POST /api/internal/workspace/:sessionId/checkpoint  { description? }
@@ -67,6 +68,23 @@ export class InternalWorkspaceFilesController {
       sessionId,
       normalizedPath,
     );
+  }
+
+  @Post(':sessionId/search')
+  @HttpCode(HttpStatus.OK)
+  async searchFiles(
+    @Param('sessionId') sessionId: string,
+    @Body('query') query?: unknown,
+  ): Promise<{
+    query: string;
+    results: Array<{ path: string; line: number; preview: string }>;
+    truncated: boolean;
+  }> {
+    if (typeof query !== 'string' || query.trim().length === 0) {
+      throw new BadRequestException('Body field "query" is required');
+    }
+
+    return this.containerManagerHttpClient.searchSessionFiles(sessionId, query);
   }
 
   @Post(':sessionId/write')

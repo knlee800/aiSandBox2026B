@@ -164,6 +164,30 @@ describe('ApiGatewayHttpClient - workspace file methods', () => {
     });
   });
 
+  describe('searchWorkspace', () => {
+    it('posts the query to the internal workspace search endpoint with the key header and signal', async () => {
+      const signal = new AbortController().signal;
+      const payload = {
+        query: 'login',
+        results: [{ path: 'src/app.ts', line: 4, preview: 'function login()' }],
+        truncated: true,
+      };
+      httpService.post.mockReturnValue(of(makeAxiosResponse(payload)));
+
+      const result = await client.searchWorkspace('session-1', 'login', signal);
+
+      expect(httpService.post).toHaveBeenCalledWith(
+        'http://localhost:4000/api/internal/workspace/session-1/search',
+        { query: 'login' },
+        {
+          signal,
+          headers: { 'X-Internal-Service-Key': 'test-key-123' },
+        },
+      );
+      expect(result).toEqual(payload);
+    });
+  });
+
   describe('writeWorkspaceFile', () => {
     it('calls API Gateway internal workspace write endpoint with correct body', async () => {
       httpService.post.mockReturnValue(

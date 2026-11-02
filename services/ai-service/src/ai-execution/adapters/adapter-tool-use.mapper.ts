@@ -17,6 +17,7 @@ export const HARNESS_ADVERTISABLE_TOOL_IDS = Object.freeze([
   'read_file',
   'write_file',
   'run_validation',
+  'search_workspace',
 ] as const);
 
 export type HarnessAdvertisableToolId =
@@ -49,6 +50,7 @@ function passesFirstSliceRuntimeGate(
   switch (definition.id) {
     case 'list_files':
     case 'read_file':
+    case 'search_workspace':
       return true;
     case 'write_file':
     case 'delete_file':

@@ -166,3 +166,35 @@ export function createDeleteFileHandler(deps: DeleteToolHandlerDeps): ToolHandle
     return { ok: true, path: normalizedPath };
   };
 }
+
+export interface SearchToolHandlerDeps {
+  readonly client: ApiGatewayHttpClient;
+  readonly sessionId: string;
+}
+
+/**
+ * Creates a search_workspace tool handler.
+ * Searches workspace text through the API Gateway boundary.
+ * Rejects a missing, non-string, or blank query before the HTTP call.
+ */
+export function createSearchWorkspaceHandler(
+  deps: SearchToolHandlerDeps,
+): ToolHandler {
+  return async (args: Readonly<Record<string, unknown>>, signal?: AbortSignal) => {
+    if (typeof args.query !== 'string' || args.query.trim().length === 0) {
+      throw new Error('query is required and must be a non-empty string');
+    }
+
+    const result = await deps.client.searchWorkspace(
+      deps.sessionId,
+      args.query,
+      signal,
+    );
+
+    return {
+      query: result.query,
+      results: result.results,
+      truncated: result.truncated,
+    };
+  };
+}

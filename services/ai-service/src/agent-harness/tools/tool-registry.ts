@@ -300,7 +300,7 @@ export const AGENT_HARNESS_TOOL_DEFINITIONS_V1: readonly AgentHarnessToolRegistr
       name: 'search_workspace',
       displayName: 'Search Workspace',
       description:
-        'Search workspace content (lexical/semantic placeholder) without implying semantic search runtime is enabled.',
+        'Search text files in the workspace for a plain-text, case-insensitive query. Returns up to 20 matches with path, line and a preview, and a truncated flag. Skips dependency and build folders, lockfiles, binaries and secret-like files.',
       category: 'search',
       inputSchema: {
         schemaType: 'json-schema',
@@ -310,21 +310,20 @@ export const AGENT_HARNESS_TOOL_DEFINITIONS_V1: readonly AgentHarnessToolRegistr
           required: ['query'],
           properties: {
             query: { type: 'string' },
-            path: { type: 'string' },
           },
         },
       },
       riskLevel: 'low',
       requiresApproval: false,
-      enabled: false,
+      enabled: true,
       timeoutMs: DEFAULT_TOOL_TIMEOUT_MS,
       maxInputBytes: DEFAULT_MAX_INPUT_BYTES,
       maxOutputBytes: DEFAULT_MAX_OUTPUT_BYTES,
       allowedModes: ['execute', 'review'],
       allowedScopes: ['workspace', 'repository'],
       auditEventTypes: ['tool-called', 'tool-completed'],
-      tags: ['planned', 'metadata-only', 'search', 'semantic-disabled-by-default'],
-      implementationStatus: 'planned',
+      tags: ['search', 'read-only'],
+      implementationStatus: 'implemented',
     },
   ]);
 

@@ -1881,7 +1881,7 @@ describe('AGENT-PLATFORM-EXEC-01C3 malformed and missing-ID fail-closed dispatch
             toolCalls: [
               {
                 callId: 'call_unknown',
-                toolName: 'search_workspace',
+                toolName: 'start_preview',
                 arguments: { query: 'secret' },
                 providerKind: 'openai-tool_calls',
               },
@@ -1896,13 +1896,13 @@ describe('AGENT-PLATFORM-EXEC-01C3 malformed and missing-ID fail-closed dispatch
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     expect(dispatchSpy.mock.calls[0][0].callId).toBe('call_unknown');
-    expect(dispatchSpy.mock.calls[0][0].toolName).toBe('search_workspace');
+    expect(dispatchSpy.mock.calls[0][0].toolName).toBe('start_preview');
     const secondOpts = executeFn.mock.calls[1][1];
     expect(secondOpts?.toolResults).toHaveLength(1);
     expect(secondOpts?.toolResults?.[0].callId).toBe('call_unknown');
     expect(secondOpts?.toolResults?.[0].success).toBe(false);
-    expect(secondOpts?.toolResults?.[0].errorMessage).toContain('search_workspace');
-    expect(dispatcher.hasHandler('search_workspace')).toBe(false);
+    expect(secondOpts?.toolResults?.[0].errorMessage).toContain('start_preview');
+    expect(dispatcher.hasHandler('start_preview')).toBe(false);
   });
 });
 

@@ -910,13 +910,36 @@ describe('Agent Harness 03A: read_file/list_files handler registration', () => {
     expect(config.enableValidationTools).toBe(true);
   });
 
-  it('WorkerProcessor does not register preview or search tools', () => {
+  it('WorkerProcessor registers search_workspace beside list_files and does not register start_preview', () => {
     const workerSource = require('fs').readFileSync(
       require('path').join(__dirname, 'worker.processor.ts'),
       'utf-8',
     );
+    const searchRegistrations = (
+      workerSource.match(/registerHandler\(\s*['"]search_workspace['"]/g) || []
+    ).length;
+    const listFilesRegIndex = workerSource.indexOf("'list_files'");
+    const searchRegIndex = workerSource.indexOf("'search_workspace'");
+    const writeGateIndex = workerSource.indexOf(
+      'if (resolvedConfig.enableWriteTools)',
+    );
+    expect(searchRegistrations).toBe(1);
+    expect(workerSource).toContain('createSearchWorkspaceHandler');
+    expect(workerSource).toContain("registeredHandlerNames.push('search_workspace')");
+    expect(searchRegIndex).toBeGreaterThan(listFilesRegIndex);
+    expect(writeGateIndex).toBeGreaterThan(searchRegIndex);
     expect(workerSource).not.toContain("registerHandler('start_preview'");
-    expect(workerSource).not.toContain("registerHandler('search_workspace'");
+
+    const advertised = selectAdvertisedAgentHarnessTools({
+      registeredHandlerNames: ['list_files', 'read_file', 'search_workspace'],
+      enableWriteTools: false,
+      enableValidationTools: false,
+    });
+    expect(advertised.map((tool) => tool.name)).toEqual([
+      'list_files',
+      'read_file',
+      'search_workspace',
+    ]);
   });
 
   it('WorkerProcessor registers browser_smoke only when enableBrowserSmoke is true', () => {
@@ -1701,6 +1724,7 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed advertised tool orchestration', (
     const readFile = getAgentHarnessToolDefinition('read_file')!;
     const writeFile = getAgentHarnessToolDefinition('write_file')!;
     const runValidation = getAgentHarnessToolDefinition('run_validation')!;
+    const searchWorkspace = getAgentHarnessToolDefinition('search_workspace')!;
     const advertised = selectAdvertisedAgentHarnessTools({
       registeredHandlerNames: AGENT_HARNESS_TOOL_DEFINITIONS_V1.map(
         (tool) => tool.name,
@@ -1714,8 +1738,15 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed advertised tool orchestration', (
       'read_file',
       'write_file',
       'run_validation',
+      'search_workspace',
     ]);
-    expect(advertised).toEqual([listFiles, readFile, writeFile, runValidation]);
+    expect(advertised).toEqual([
+      listFiles,
+      readFile,
+      writeFile,
+      runValidation,
+      searchWorkspace,
+    ]);
 
     const executeWithTools = jest.fn().mockResolvedValue({
       output: 'ok',
@@ -3832,7 +3863,7 @@ describe('HARNESS-FAIL-RECORD-01: failed harness run keeps audit events, tokens,
       toolCalls: [
         {
           callId: 'call-1',
-          toolName: 'search_workspace',
+          toolName: 'start_preview',
           arguments: { query: 'notes' },
           providerKind: 'stub',
         },
@@ -3872,7 +3903,7 @@ describe('HARNESS-FAIL-RECORD-01: failed harness run keeps audit events, tokens,
       toolCalls: [
         {
           callId: 'call-1',
-          toolName: 'search_workspace',
+          toolName: 'start_preview',
           arguments: { query: 'notes' },
           providerKind: 'stub',
         },

@@ -191,6 +191,39 @@ export class ApiGatewayHttpClient {
   }
 
   /**
+   * Search text files in a session workspace via API Gateway.
+   * HARNESS-SEARCH-01: ai-service → API Gateway → container-manager boundary.
+   * @param sessionId - Session UUID
+   * @param query - Plain-text query
+   * @returns Query, matches, and whether the result set was truncated
+   * @throws Error if HTTP request fails
+   */
+  async searchWorkspace(
+    sessionId: string,
+    query: string,
+    signal?: AbortSignal,
+  ): Promise<{
+    query: string;
+    results: Array<{ path: string; line: number; preview: string }>;
+    truncated: boolean;
+  }> {
+    const response = await firstValueFrom(
+      this.httpService.post(
+        `${this.apiGatewayUrl}/api/internal/workspace/${sessionId}/search`,
+        { query },
+        {
+          signal,
+          headers: {
+            'X-Internal-Service-Key': this.internalServiceKey,
+          },
+        },
+      ),
+    );
+
+    return response.data;
+  }
+
+  /**
    * Write file content to a session workspace via API Gateway.
    * AGENT-HARNESS-03B: ai-service → API Gateway → container-manager boundary.
    * @param sessionId - Session UUID

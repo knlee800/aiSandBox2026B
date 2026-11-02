@@ -3,6 +3,7 @@ import {
   createListFilesHandler,
   createWriteFileHandler,
   createDeleteFileHandler,
+  createSearchWorkspaceHandler,
   validateAndNormalizePath,
 } from './file-tool-handlers';
 
@@ -637,5 +638,68 @@ describe('createDeleteFileHandler', () => {
     await expect(handler({ path: 'src\\..\\..\\etc\\passwd' })).rejects.toThrow(
       'unsafe traversal',
     );
+  });
+});
+
+describe('createSearchWorkspaceHandler', () => {
+  const mockClient = {
+    searchWorkspace: jest.fn(),
+  } as any;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('returns query, results, and truncated from the client', async () => {
+    const payload = {
+      query: 'login',
+      results: [{ path: 'src/app.ts', line: 4, preview: 'function login()' }],
+      truncated: true,
+    };
+    mockClient.searchWorkspace.mockResolvedValue(payload);
+
+    const handler = createSearchWorkspaceHandler({
+      client: mockClient,
+      sessionId: 'sess-1',
+    });
+
+    const result = await handler({ query: 'login' });
+
+    expect(mockClient.searchWorkspace).toHaveBeenCalledWith(
+      'sess-1',
+      'login',
+      undefined,
+    );
+    expect(result).toEqual(payload);
+  });
+
+  it('rejects a non-string query without calling the client', async () => {
+    const handler = createSearchWorkspaceHandler({
+      client: mockClient,
+      sessionId: 'sess-1',
+    });
+
+    await expect(handler({ query: 12 })).rejects.toThrow(
+      'query is required and must be a non-empty string',
+    );
+    await expect(handler({})).rejects.toThrow(
+      'query is required and must be a non-empty string',
+    );
+    expect(mockClient.searchWorkspace).not.toHaveBeenCalled();
+  });
+
+  it('rejects a blank query without calling the client', async () => {
+    const handler = createSearchWorkspaceHandler({
+      client: mockClient,
+      sessionId: 'sess-1',
+    });
+
+    await expect(handler({ query: '' })).rejects.toThrow(
+      'query is required and must be a non-empty string',
+    );
+    await expect(handler({ query: '   ' })).rejects.toThrow(
+      'query is required and must be a non-empty string',
+    );
+    expect(mockClient.searchWorkspace).not.toHaveBeenCalled();
   });
 });

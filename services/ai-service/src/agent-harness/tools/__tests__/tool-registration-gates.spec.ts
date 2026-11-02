@@ -321,10 +321,10 @@ describe('AGENT-PLATFORM-EXEC-01C2 advertisement uses registered handlers fail-c
       'read_file',
     ]);
     expect(dispatcher.hasHandler('write_file')).toBe(false);
-    expect(dispatcher.hasHandler('search_workspace')).toBe(false);
+    expect(dispatcher.hasHandler('start_preview')).toBe(false);
   });
 
-  it('offers write_file and run_validation when their flags and handlers are on, and still excludes delete, browser, search, and handlerless tools', () => {
+  it('offers write_file and run_validation when their flags and handlers are on, and still excludes delete, browser, and start_preview', () => {
     const dispatcher = new ToolDispatcher();
     const client = createMockClient();
     registerToolsWithConfig(dispatcher, { enableWriteTools: true });
@@ -346,7 +346,7 @@ describe('AGENT-PLATFORM-EXEC-01C2 advertisement uses registered handlers fail-c
         browserSmokeTimeoutMs: 5_000,
       }),
     );
-    dispatcher.registerHandler('search_workspace', async () => ({ hits: [] }));
+    dispatcher.registerHandler('start_preview', async () => ({ hits: [] }));
 
     const advertised = selectAdvertisedAgentHarnessTools({
       registeredHandlerNames: registeredNames(dispatcher),
@@ -364,9 +364,8 @@ describe('AGENT-PLATFORM-EXEC-01C2 advertisement uses registered handlers fail-c
     ]);
     expect(names).not.toContain('delete_file');
     expect(names).not.toContain('browser_smoke');
-    expect(names).not.toContain('search_workspace');
     expect(names).not.toContain('start_preview');
-    expect(dispatcher.hasHandler('start_preview')).toBe(false);
+    expect(dispatcher.hasHandler('start_preview')).toBe(true);
 
     const enabledIds = listEnabledAgentHarnessToolDefinitions().map(
       (tool) => tool.id,

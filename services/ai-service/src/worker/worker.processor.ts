@@ -36,6 +36,7 @@ import {
   createListFilesHandler,
   createWriteFileHandler,
   createDeleteFileHandler,
+  createSearchWorkspaceHandler,
 } from '../agent-harness/tools/handlers/file-tool-handlers';
 import { createRunValidationHandler } from '../agent-harness/tools/handlers/validation-tool-handlers';
 import { createBrowserSmokeHandler } from '../agent-harness/tools/handlers/browser-smoke-tool-handlers';
@@ -1322,6 +1323,14 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                     }),
                   );
                   registeredHandlerNames.push('list_files');
+                  dispatcher.registerHandler(
+                    'search_workspace',
+                    createSearchWorkspaceHandler({
+                      client: this.apiGatewayHttpClient,
+                      sessionId: job.data.sessionId,
+                    }),
+                  );
+                  registeredHandlerNames.push('search_workspace');
                   if (resolvedConfig.enableWriteTools) {
                     dispatcher.registerHandler(
                       'write_file',

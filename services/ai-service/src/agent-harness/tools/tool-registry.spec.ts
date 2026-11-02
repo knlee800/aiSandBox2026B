@@ -125,7 +125,7 @@ describe('Agent Harness tool registry (v1)', () => {
 
     expect(allTools).toBe(AGENT_HARNESS_TOOL_DEFINITIONS_V1);
     expect(enabledTools).toEqual(expectedEnabledTools);
-    expect(enabledTools).toHaveLength(5);
+    expect(enabledTools).toHaveLength(6);
 
     const enabledIds = enabledTools.map((t) => t.id);
     expect(enabledIds).toContain('read_file');
@@ -133,7 +133,9 @@ describe('Agent Harness tool registry (v1)', () => {
     expect(enabledIds).toContain('write_file');
     expect(enabledIds).toContain('delete_file');
     expect(enabledIds).toContain('run_validation');
+    expect(enabledIds).toContain('search_workspace');
     expect(enabledIds).not.toContain('browser_smoke');
+    expect(enabledIds).not.toContain('start_preview');
 
     for (const tool of enabledTools) {
       expect(isAgentHarnessToolEnabled(tool.id)).toBe(true);
@@ -170,18 +172,26 @@ describe('Agent Harness tool registry (v1)', () => {
     expect(tool?.requiresApproval).toBe(false);
   });
 
-  it('keeps preview/search tools disabled and not implemented', () => {
-    const disabledToolIds = [
-      'start_preview',
-      'search_workspace',
-    ];
+  it('keeps start_preview disabled and not implemented', () => {
+    const tool = getAgentHarnessToolDefinition('start_preview');
 
-    for (const toolId of disabledToolIds) {
-      const tool = getAgentHarnessToolDefinition(toolId);
-      expect(tool).toBeDefined();
-      expect(tool?.enabled).toBe(false);
-      expect(tool?.implementationStatus).not.toBe('implemented');
-    }
+    expect(tool).toBeDefined();
+    expect(tool?.enabled).toBe(false);
+    expect(tool?.implementationStatus).not.toBe('implemented');
+  });
+
+  it('marks search_workspace as enabled and implemented with only a query input', () => {
+    const tool = getAgentHarnessToolDefinition('search_workspace');
+    const schema = tool?.inputSchema.schema as {
+      required?: string[];
+      properties?: Record<string, unknown>;
+    };
+
+    expect(tool).toBeDefined();
+    expect(tool?.enabled).toBe(true);
+    expect(tool?.implementationStatus).toBe('implemented');
+    expect(schema.required).toEqual(['query']);
+    expect(Object.keys(schema.properties ?? {})).toEqual(['query']);
   });
 
   it('marks browser_smoke as disabled-by-default metadata while remaining implemented', () => {
