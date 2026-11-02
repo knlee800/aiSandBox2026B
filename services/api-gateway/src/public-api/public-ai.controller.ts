@@ -12,7 +12,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
 import { Request } from 'express';
 import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
 import { AuthorizationGuard } from '../auth/authorization.guard';
@@ -29,6 +29,7 @@ import { type ApiKeyIdentity } from '../auth/api-key.config';
 import { UsageLedgerService } from '../usage-ledger/usage-ledger.service';
 import { QueueService } from '../queue/queue.service';
 import { ExecutionResultService } from '../ai/execution-result.service';
+import { SessionService } from '../sessions/session.service';
 import {
   PublicApiRateLimit,
   PublicApiRateLimitGuard,
@@ -48,6 +49,7 @@ export class PublicAIController {
     private readonly usageLedgerService: UsageLedgerService,
     private readonly queueService: QueueService,
     private readonly executionResultService: ExecutionResultService,
+    private readonly sessionService: SessionService,
   ) {}
 
   private resolveProviderAndModel(
@@ -107,6 +109,18 @@ export class PublicAIController {
     }
     if (!request.conversationId || request.conversationId.trim().length === 0) {
       throw new BadRequestException('conversationId is required');
+    }
+
+    // AUTH-OWNER-01: UUID and session ownership before ledger write or enqueue.
+    if (!uuidValidate(request.sessionId)) {
+      throw new BadRequestException('sessionId must be a valid UUID');
+    }
+
+    const session = await this.sessionService.getSessionById(request.sessionId);
+    if (session.userId !== identity.userId) {
+      throw new NotFoundException(
+        `Session with ID ${request.sessionId} not found`,
+      );
     }
 
     let requestId: string | undefined;

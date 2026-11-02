@@ -1,7 +1,9 @@
 import { PublicAIController } from './public-ai.controller';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('PublicAIController', () => {
+  const ownedSessionId = '6f1e6c5a-1b2a-4c3d-8e4f-112233445566';
+
   const buildController = () => {
     const usageLedgerService = {
       writeExecutionIntent: jest.fn().mockResolvedValue(undefined),
@@ -12,26 +14,34 @@ describe('PublicAIController', () => {
     const executionResultService = {
       getExecution: jest.fn(),
     };
+    const sessionService = {
+      getSessionById: jest.fn().mockImplementation(async (sessionId: string) => ({
+        id: sessionId,
+        userId: 'user-1',
+      })),
+    };
 
     return {
       controller: new PublicAIController(
         usageLedgerService as any,
         queueService as any,
         executionResultService as any,
+        sessionService as any,
       ),
       usageLedgerService,
       queueService,
       executionResultService,
+      sessionService,
     };
   };
 
   it('queues execution through dedicated public controller path', async () => {
-    const { controller, usageLedgerService, queueService } = buildController();
+    const { controller, usageLedgerService, queueService, sessionService } = buildController();
     const identity = { userId: 'user-1', apiKeyId: 'key-1', scopes: ['ai:execute'] };
 
     const result = await controller.execute(
       {
-        sessionId: 'session-1',
+        sessionId: ownedSessionId,
         conversationId: 'conv-1',
         prompt: 'Build a todo app',
         provider: 'openai',
@@ -42,10 +52,12 @@ describe('PublicAIController', () => {
 
     expect(result.status).toBe('queued');
     expect(result.executionId).toBeDefined();
+    expect(sessionService.getSessionById).toHaveBeenCalledWith(ownedSessionId);
     expect(usageLedgerService.writeExecutionIntent).toHaveBeenCalledWith(
       expect.objectContaining({
         userId: 'user-1',
         apiKeyId: 'key-1',
+        sessionId: ownedSessionId,
         provider: 'openai',
         adapter: 'openai',
       }),
@@ -57,6 +69,78 @@ describe('PublicAIController', () => {
         model: 'gpt-4o',
       }),
     );
+  });
+
+  it('returns 404 for another user session and does not write or enqueue', async () => {
+    const { controller, usageLedgerService, queueService, sessionService } = buildController();
+    sessionService.getSessionById.mockResolvedValue({
+      id: ownedSessionId,
+      userId: 'other-user',
+    });
+
+    const error = await controller
+      .execute(
+        {
+          sessionId: ownedSessionId,
+          conversationId: 'conv-1',
+          prompt: 'Build a todo app',
+        } as any,
+        { userId: 'user-1', apiKeyId: 'key-1', scopes: ['ai:execute'] } as any,
+      )
+      .catch((caught) => caught);
+
+    expect(error).toBeInstanceOf(NotFoundException);
+    expect(error.getStatus()).toBe(404);
+    expect(error.message).toBe(`Session with ID ${ownedSessionId} not found`);
+    expect(usageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(queueService.enqueueExecution).not.toHaveBeenCalled();
+  });
+
+  it('returns 400 for a non-UUID sessionId and does not write or enqueue', async () => {
+    const { controller, usageLedgerService, queueService, sessionService } = buildController();
+
+    const error = await controller
+      .execute(
+        {
+          sessionId: 'session-1',
+          conversationId: 'conv-1',
+          prompt: 'Build a todo app',
+        } as any,
+        { userId: 'user-1', apiKeyId: 'key-1', scopes: ['ai:execute'] } as any,
+      )
+      .catch((caught) => caught);
+
+    expect(error).toBeInstanceOf(BadRequestException);
+    expect(error.getStatus()).toBe(400);
+    expect(error.message).toBe('sessionId must be a valid UUID');
+    expect(sessionService.getSessionById).not.toHaveBeenCalled();
+    expect(usageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(queueService.enqueueExecution).not.toHaveBeenCalled();
+  });
+
+  it('returns 404 when the session is missing and does not write or enqueue', async () => {
+    const { controller, usageLedgerService, queueService, sessionService } = buildController();
+    sessionService.getSessionById.mockRejectedValue(
+      new NotFoundException(`Session with ID ${ownedSessionId} not found`),
+    );
+
+    const error = await controller
+      .execute(
+        {
+          sessionId: ownedSessionId,
+          conversationId: 'conv-1',
+          prompt: 'Build a todo app',
+        } as any,
+        { userId: 'user-1', apiKeyId: 'key-1', scopes: ['ai:execute'] } as any,
+      )
+      .catch((caught) => caught);
+
+    expect(error).toBeInstanceOf(NotFoundException);
+    expect(error.getStatus()).toBe(404);
+    expect(error.message).toBe(`Session with ID ${ownedSessionId} not found`);
+    expect(sessionService.getSessionById).toHaveBeenCalledWith(ownedSessionId);
+    expect(usageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(queueService.enqueueExecution).not.toHaveBeenCalled();
   });
 
   it('returns deterministic execution contract for owned execution', async () => {
@@ -116,7 +200,7 @@ describe('PublicAIController', () => {
 
     await controller.execute(
       {
-        sessionId: 'session-1',
+        sessionId: ownedSessionId,
         conversationId: 'conv-1',
         prompt: 'Build a todo app',
         provider: 'xai',
@@ -139,7 +223,7 @@ describe('PublicAIController', () => {
     await expect(
       controller.execute(
         {
-          sessionId: 'session-1',
+          sessionId: ownedSessionId,
           conversationId: 'conv-1',
           prompt: 'Build a todo app',
           provider: 'xai',

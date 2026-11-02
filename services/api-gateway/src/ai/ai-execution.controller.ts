@@ -860,13 +860,25 @@ export class AIExecutionController {
    * POST /api/ai/executions/:executionId/cancel
    *
    * Updates ledger to cancel_requested when execution is running.
+   * Ownership matches getExecution: a missing execution or a different user is 404.
    * Returns 409 Conflict if execution cannot be cancelled.
    */
   @Post('executions/:executionId/cancel')
   @UseGuards(SessionOrApiKeyAuthGuard)
   async cancelExecution(
     @Param('executionId') executionId: string,
+    @AuthenticatedUser() identity: ApiKeyIdentity,
   ): Promise<{ executionId: string; status: string }> {
+    const execution = await this.executionResultService.getExecution(executionId);
+
+    if (!execution) {
+      throw new NotFoundException('Execution not found');
+    }
+
+    if (!identity?.userId || execution.user_id !== identity.userId) {
+      throw new NotFoundException('Execution not found');
+    }
+
     const result = await this.executionResultService.requestCancel(executionId);
 
     if (!result) {
@@ -1017,24 +1029,38 @@ export class AIExecutionController {
    * Subscribes to Redis channel ai-execution-stream:{executionId}
    * and forwards incoming tokens to client via Server-Sent Events.
    *
+   * Ownership matches getExecution and is checked before the stream opens,
+   * so a refusal is a plain 404 rather than an event on an open stream.
+   *
    * Non-blocking. If no client connects, execution completes normally.
    */
   @Sse('executions/:executionId/stream')
   @UseGuards(SessionOrApiKeyAuthGuard)
-  streamExecution(
+  async streamExecution(
     @Param('executionId') executionId: string,
-  ): Observable<MessageEvent> {
-    return new Observable((observer) => {
+    @AuthenticatedUser() identity: ApiKeyIdentity,
+  ): Promise<Observable<MessageEvent>> {
+    const execution = await this.executionResultService.getExecution(executionId);
 
-      this.executionStreamService.subscribe(
-        executionId,
-        (token: string) => {
-          observer.next({ data: token });
-        }
-      );
+    if (!execution) {
+      throw new NotFoundException('Execution not found');
+    }
+
+    if (!identity?.userId || execution.user_id !== identity.userId) {
+      throw new NotFoundException('Execution not found');
+    }
+
+    return new Observable((observer) => {
+      const onMessage = (token: string) => {
+        observer.next({ data: token });
+      };
+
+      void this.executionStreamService.subscribe(executionId, onMessage).catch((error: unknown) => {
+        observer.error(error);
+      });
 
       return () => {
-        this.executionStreamService.unsubscribe(executionId);
+        void this.executionStreamService.unsubscribe(executionId, onMessage);
       };
     });
   }
