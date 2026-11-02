@@ -83209,6 +83209,48 @@ nature=IMPLEMENTATION
 - [x] frontend tsc, npm test and npm run build pass, api-gateway tests pass apart from the known smoke failures, and only the files in the primary write scope change
 - [x] Not LOCKED by an implementer
 
+### HARNESS-LIVE-05 — Use Agent mode in the real Builder screen on ainow-staging-01
+
+**Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
+**Task ID:** HARNESS-LIVE-05
+**Title:** Use Agent mode in the real Builder screen on ainow-staging-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (operational run; no product activation)
+**Lifecycle:** 4-STEP. Step 1 registration; Step 2 stage-start; Step 3 runs under Keith's authorization; Step 4 consolidation, checkpoint and LOCK by the control plane.
+**Start condition (human):** READY — Keith approved on 2026-11-02 (draft approved).
+**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Depends on (human):** HARNESS-PROGRESS-01 and HARNESS-UI-01, both COMPLETE AND LOCKED.
+**Depends on (machine `dependsOn`):** `[HARNESS-PROGRESS-01, HARNESS-UI-01]`
+**Primary write scope:** none. Host state on ainow-staging-01, the test project's workspace and off-repo evidence only.
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV (Lane 1, 2026-11-02). ENV covers host environment files for the window only.
+**Hot-file leases:** none
+**Shared contracts:** consumes HARNESS_ENTITLEMENT_PROOF_V1 without changing it (`sharedContractIds=[HARNESS_ENTITLEMENT_PROOF_V1]`; `mutatesSharedContractIds=[]`).
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** acceptable (flags back off and the key removed afterwards; no schema change).
+**saturationClass:** OPTIONAL
+**productClass:** CURRENT (work on the existing gated harness; no product activation; PRD ACTIVE DEVELOPMENT)
+**futureAuthorization:** NONE
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** STAGING, PROVIDER-LIVE, CREDIT
+
+**Problem:** Agent mode and harness progress are mock-tested and have never run in a browser. No one has used the harness from the real screen.
+**Scope:** on ainow-staging-01, behind basic_auth, in project C1 repeat: one deploy of 0838a5f47947ddc4ff884f66d999489501ea1294; up to 3 Agent runs that Keith starts in the real screen; one revert from the screen. Same caps as HARNESS-LIVE-04. Keith types the provider key at a hidden prompt; it is removed afterwards and the flags go back off. Browser tools stay off. Not in scope: showing Agent to anyone else, making it the default, charging, other providers, and making Agent CURRENT.
+
+#### Acceptance criteria
+
+- [ ] The Agent button shows for Keith, and steps appear on screen while a real run works
+- [ ] A read-only question gets a correct answer in Agent mode
+- [ ] A change with a test run works: the answer is honest, and the file tree, open file, preview and checkpoints update without a manual refresh
+- [ ] Reverting from the screen restores the files
+- [ ] The guard still refuses requests with no key after the deploy, and Ask and Build still work
+- [ ] Credits and usage are recorded correctly, and usage_records.model is non-empty
+- [ ] Spend stays within the caps
+- [ ] Afterwards the flags are off, the key is removed, and the configuration hashes match the recorded state
+- [ ] Keith reads the transcripts and records his judgement
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
