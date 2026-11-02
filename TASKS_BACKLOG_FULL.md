@@ -83477,6 +83477,31 @@ nature=IMPLEMENTATION
 - [x] services/ai-service and services/api-gateway: npm test and npm run build pass, apart from the known smoke failures, and only the files in the primary write scope change
 - [x] Not LOCKED by an implementer
 
+### GOV-OS-04 — Cut control-plane record overhead
+
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-OS-04
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ACTIVE — 2026-11-02. Governance; no lane. GOVERNANCE held; Development OS mutation begun with both lanes empty.
+**Task ID:** GOV-OS-04
+**Nature:** GOVERNANCE. **Lifecycle:** 2-STEP: this record begins the mutation; the closing record ends it.
+**Start condition:** Keith approved the draft on 2026-11-02.
+**Primary write scope:** CLAUDE.md, scripts/validate-lane-capacity.ps1, scripts/validate-lane-capacity.tests.ps1, new docs/control-plane/fixtures entries, TASKS.md, TASKS_BACKLOG_FULL.md, the sidecar, the proof, the checkpoint.
+**Mutexes / resources:** GOVERNANCE.
+
+**Problem:** of 48 commits after b522502, 39 were records and 9 were code. Returning a live window to READY for each fix and re-admitting it cost about 12 commits. Board lines carry long Previous chains, about 1.3 MB in 16 lines.
+**Scope:** (1) registration and admission in one commit; (2) code and lock in one commit for tests-only tasks, after control-plane review; (3) a live task pauses by setting staging, provider-live and credit authorization false, and a LOCAL-TESTS fix may then run beside it, with one validator change and fixtures; (4) board lines replace rather than chain Previous, with one compaction; (5) the control plane may land records directly. Keith's 2026-10-22 choice to keep two parts for decision records is reversed by his approval of this draft. Not in scope: lane count, mutexes, the scheduler, admission rules, verification before commit, approvals of drafts and live judgements.
+
+#### Acceptance criteria
+
+- [ ] A LOCAL-TESTS lane beside a PROVIDER-LIVE or STAGING-RUNTIME lane passes only when staging, provider-live and credit authorization are all false; LOCAL-RUNTIME beside them stays refused
+- [ ] Every existing validator fixture keeps its result, and new fixtures cover both sides of the change
+- [ ] CLAUDE.md states the new rules and no other OS semantics change
+- [ ] The board is compacted, with occupancy and the validator unaffected
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
