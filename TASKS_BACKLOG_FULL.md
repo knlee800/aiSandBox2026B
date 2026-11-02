@@ -83164,6 +83164,46 @@ nature=IMPLEMENTATION
 - [x] services/ai-service: npm test and npm run build pass, and only the files in the primary write scope change
 - [x] Not LOCKED by an implementer
 
+### HARNESS-UI-01 — Agent mode in the Builder chat, for allowlisted users, with progress and post-run refresh
+
+**Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
+**Task ID:** HARNESS-UI-01
+**Title:** Agent mode in the Builder chat, for allowlisted users, with progress and post-run refresh
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP. Step 1 registration; Step 2 stage-start and admission; Step 3 implementation; Step 4 consolidation, checkpoint and LOCK by the control plane.
+**Start condition (human):** READY — Keith approved the draft on 2026-11-02.
+**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Depends on (human):** none.
+**Depends on (machine `dependsOn`):** `[]`
+**Primary write scope:** exactly `frontend/app/`, `frontend/components/workspace/workspace-agent-mode.logic.ts`, `frontend/components/workspace/workspace-agent-mode.logic.test.ts`, `frontend/components/workspace/workspace-shell.tsx`, `frontend/components/workspace/workspace-shell.test.tsx`, `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`, `services/api-gateway/src/auth/session-or-api-key.guard.ts`, `services/api-gateway/src/auth/auth.controller.ts`, `services/api-gateway/src/auth/auth.controller.spec.ts`; under frontend/app/ only the Builder page `frontend/app/[locale]/app/page.tsx`. Anything else is out of scope.
+**Mutexes / resources:** FRONTEND, I18N and GATEWAY (Lane 1, 2026-11-02). No STAGING, ENV, MIGRATION, PACKAGE, LOCAL-RUNTIME, PROVIDER-LIVE or CREDIT.
+**Hot-file leases:** none
+**Shared contracts:** consumes the harness_progress stream message. GET /api/auth/me gains one field; existing fields do not change.
+**Evidence class:** LOCAL-TESTS. Real use in the browser is HARNESS-LIVE-05.
+**Revert isolation:** acceptable (additive UI behind the allowlist; no schema, migration or contract change).
+**saturationClass:** OPTIONAL
+**productClass:** CURRENT
+**futureAuthorization:** NONE
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** none
+
+**Problem:** the frontend never sends harnessVersion, so only console snippets can start a harness run, and files changed by a run do not appear on screen until something else refreshes them.
+**Scope:** (1) GET /api/auth/me adds harnessEntitled for allowlisted users; (2) a third Agent mode beside Ask and Build, shown only when harnessEntitled, sending executionIntent conversation with harnessVersion v1; (3) a step list from harness_progress during the run; (4) after a run ends, refresh the file tree, open file, preview and checkpoints, and after a run that wrote files, create the usual AI checkpoint and project autosave; (5) text in all three locales; tests. Keith approved direct harness writes with a save point in docs/GOV-HARNESS-RESET-01-DECISION.md. Not in scope: making Agent the default, showing it to anyone else, a cancel control, charging changes, Ask or Build behaviour, deploying.
+
+#### Acceptance criteria
+
+- [ ] Non-allowlisted users see only Ask and Build, and those modes send exactly what they send today
+- [ ] Allowlisted users can pick Agent; the request carries harnessVersion v1 and executionIntent conversation
+- [ ] harness_progress messages show as a step list for the current run, with localized text and no file contents
+- [ ] After an Agent run ends, including a failed one, the file tree, open file, preview and checkpoints refresh once
+- [ ] After an Agent run that wrote files, the AI checkpoint and project autosave run
+- [ ] All new visible text is in en, zh-TW and zh-CN
+- [ ] frontend tsc, npm test and npm run build pass, api-gateway tests pass apart from the known smoke failures, and only the files in the primary write scope change
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
