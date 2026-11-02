@@ -83215,18 +83215,18 @@ taskId=HARNESS-LIVE-05
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; stage-start: docs/HARNESS-LIVE-05-STAGE-START.md. Authorized: one deploy of 0838a5f with guard checks, flags on, up to 3 Agent runs in the browser, one revert, read-only evidence, flags off. Not started. mutexes=STAGING, PROVIDER-LIVE, CREDIT, ENV. stagingAuthorized, providerLiveAuthorized and creditAuthorized true. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
+**Status:** COMPLETE AND LOCKED — 2026-11-02. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING, PROVIDER-LIVE, CREDIT and ENV released; stagingAuthorized, providerLiveAuthorized and creditAuthorized false. Checkpoint: docs/HARNESS-LIVE-05-CHECKPOINT.md. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; stage-start: docs/HARNESS-LIVE-05-STAGE-START.md. Authorized: one deploy of 0838a5f with guard checks, flags on, up to 3 Agent runs in the browser, one revert, read-only evidence, flags off. Not started. mutexes=STAGING, PROVIDER-LIVE, CREDIT, ENV. stagingAuthorized, providerLiveAuthorized and creditAuthorized true. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
 **Task ID:** HARNESS-LIVE-05
 **Title:** Use Agent mode in the real Builder screen on ainow-staging-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION (operational run; no product activation)
 **Lifecycle:** 4-STEP. Step 1 registration; Step 2 stage-start; Step 3 runs under Keith's authorization; Step 4 consolidation, checkpoint and LOCK by the control plane.
 **Start condition (human):** READY — Keith approved on 2026-11-02 (draft approved).
-**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Start condition (machine):** `READY`; `status=LOCKED`. Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
 **Depends on (human):** HARNESS-PROGRESS-01 and HARNESS-UI-01, both COMPLETE AND LOCKED.
 **Depends on (machine `dependsOn`):** `[HARNESS-PROGRESS-01, HARNESS-UI-01]`
 **Primary write scope:** none. Host state on ainow-staging-01, the test project's workspace and off-repo evidence only.
-**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV (Lane 1, 2026-11-02). ENV covers host environment files for the window only.
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV, released at COMPLETE AND LOCKED 2026-11-02. Previous: **Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV (Lane 1, 2026-11-02). ENV covers host environment files for the window only.
 **Hot-file leases:** none
 **Shared contracts:** consumes HARNESS_ENTITLEMENT_PROOF_V1 without changing it (`sharedContractIds=[HARNESS_ENTITLEMENT_PROOF_V1]`; `mutatesSharedContractIds=[]`).
 **Evidence class:** PROVIDER-LIVE.
@@ -83241,19 +83241,20 @@ nature=IMPLEMENTATION
 
 **Problem:** Agent mode and harness progress are mock-tested and have never run in a browser. No one has used the harness from the real screen.
 **Scope:** on ainow-staging-01, behind basic_auth, in project C1 repeat: one deploy of 0838a5f47947ddc4ff884f66d999489501ea1294; up to 3 Agent runs that Keith starts in the real screen; one revert from the screen. Same caps as HARNESS-LIVE-04. Keith types the provider key at a hidden prompt; it is removed afterwards and the flags go back off. Browser tools stay off. Not in scope: showing Agent to anyone else, making it the default, charging, other providers, and making Agent CURRENT.
+**Result (2026-11-02):** one window on 0838a5f: Keith used Agent mode in the real Builder screen. A question (5fddc78d-dddd-4606-bf7c-465cbe9ee222) and a change with a test run (ad23b1f3-d9b1-4959-8155-93a555b1a077) worked, steps showed on screen, the workspace updated without a manual refresh, and a revert from the screen restored the files. Ask and Build still work. Keith recorded judgement ok. Checkpoint: docs/HARNESS-LIVE-05-CHECKPOINT.md.
 
 #### Acceptance criteria
 
-- [ ] The Agent button shows for Keith, and steps appear on screen while a real run works
-- [ ] A read-only question gets a correct answer in Agent mode
-- [ ] A change with a test run works: the answer is honest, and the file tree, open file, preview and checkpoints update without a manual refresh
-- [ ] Reverting from the screen restores the files
-- [ ] The guard still refuses requests with no key after the deploy, and Ask and Build still work
-- [ ] Credits and usage are recorded correctly, and usage_records.model is non-empty
-- [ ] Spend stays within the caps
-- [ ] Afterwards the flags are off, the key is removed, and the configuration hashes match the recorded state
-- [ ] Keith reads the transcripts and records his judgement
-- [ ] Not LOCKED by an implementer
+- [x] The Agent button shows for Keith, and steps appear on screen while a real run works
+- [x] A read-only question gets a correct answer in Agent mode
+- [x] A change with a test run works: the answer is honest, and the file tree, open file, preview and checkpoints update without a manual refresh
+- [x] Reverting from the screen restores the files
+- [x] The guard still refuses requests with no key after the deploy, and Ask and Build still work
+- [x] Credits and usage are recorded correctly, and usage_records.model is non-empty
+- [x] Spend stays within the caps
+- [x] Afterwards the flags are off, the key is removed, and the configuration hashes match the recorded state
+- [x] Keith reads the transcripts and records his judgement
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
