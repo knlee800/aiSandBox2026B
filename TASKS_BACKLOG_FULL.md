@@ -83432,6 +83432,44 @@ nature=IMPLEMENTATION
 - [x] services/api-gateway: npm test and npm run build pass, apart from the known smoke failures, and only the files in the primary write scope change
 - [x] Not LOCKED by an implementer
 
+### HARNESS-SAVE-01 — Save the project on the server when an Agent run that wrote files ends
+
+**Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Task ID:** HARNESS-SAVE-01
+**Title:** Save the project on the server when an Agent run that wrote files ends
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Step 1 is this registration and admission (2026-11-02); Step 2 implementation; Step 3 consolidation, checkpoint and LOCK by the control plane.
+**Start condition (human):** READY — Keith approved on 2026-11-02, after HARNESS-LIVE-06 found the defect.
+**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Depends on (human):** none.
+**Depends on (machine `dependsOn`):** `[]`
+**Primary write scope:** exactly `services/api-gateway/src/sessions/internal-workspace-files.controller.ts`, `services/api-gateway/src/sessions/internal-workspace-files.controller.spec.ts`, `services/api-gateway/src/guards/internal-service-auth.guard.http.spec.ts`, `services/ai-service/src/clients/api-gateway-http.client.ts`, `services/ai-service/src/clients/api-gateway-http.client.spec.ts`, `services/ai-service/src/worker/worker.processor.ts`, `services/ai-service/src/worker/worker.processor.spec.ts`. Anything else is out of scope.
+**Mutexes / resources:** GATEWAY and AI-SERVICE (Lane 1, 2026-11-02). No FRONTEND, STAGING, ENV, MIGRATION, PACKAGE, LOCAL-RUNTIME, PROVIDER-LIVE or CREDIT.
+**Hot-file leases:** none
+**Shared contracts:** none changed. A new internal route uses the existing project-scoped snapshot label.
+**Evidence class:** LOCAL-TESTS. Real proof is the HARNESS-LIVE-06 close-the-page case.
+**Revert isolation:** acceptable (one internal route and one worker call; no schema, migration or contract change).
+**saturationClass:** OPTIONAL
+**productClass:** CURRENT
+**futureAuthorization:** NONE
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** none
+
+**Problem:** in HARNESS-LIVE-06, Agent run 8f8b4985-4a95-4206-afeb-cf86abcd76dc wrote slug.js at 09:13:46 UTC with the tab closed. Reopening the project restored the latest project snapshot over the live workspace at 09:15:14, because only the browser saves after a run. The answer said the file was added, and the file was gone.
+**Scope:** (1) POST /api/internal/workspace/:sessionId/save-project-snapshot saves a snapshot with the project-scoped label for the session's project, and does nothing when the session has no project or has ended; (2) the worker calls it when a harness run that attempted a write or delete ends, including a failed run; a failed save is logged and never changes the run result. Not in scope: the frontend, the restore on project open, a reopen during a running Agent run, charging, deploying.
+
+#### Acceptance criteria
+
+- [ ] A harness run that wrote files saves a snapshot, under the label that latest-project lookup finds, before the run is finalized, including when the run fails after writing
+- [ ] A run with no write or delete, and every single-shot run, saves nothing
+- [ ] A failed save does not change the run result, and is logged without file contents
+- [ ] A session with no project or an ended session saves nothing and does not fail; the route is under the internal key
+- [ ] services/ai-service and services/api-gateway: npm test and npm run build pass, apart from the known smoke failures, and only the files in the primary write scope change
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
