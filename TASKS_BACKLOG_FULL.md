@@ -83594,7 +83594,7 @@ taskId=COLLAB-LIVE-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Keith approved the window in the draft on 2026-11-02. COLLAB-GATE-01 LOCKED at c55c13d7ee81bfabd45c391b3d435a732e836c84.
+**Status:** COMPLETE AND LOCKED — 2026-11-02. Keith: judgement ok. Lane 1, STAGING, PROVIDER-LIVE, CREDIT and ENV released. Checkpoint: docs/COLLAB-LIVE-02-CHECKPOINT.md.
 **Task ID:** COLLAB-LIVE-02
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -83608,11 +83608,11 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Migration applied on staging, each case above observed
-- [ ] No job and no ledger row for waiting, rejected and refused hand-offs
-- [ ] Harness flags stayed off
-- [ ] Keith judgement recorded
-- [ ] Not LOCKED by an implementer
+- [x] Migration applied on staging, each case above observed
+- [x] No job and no ledger row for waiting, rejected and refused hand-offs
+- [x] Harness flags stayed off
+- [x] Keith judgement recorded
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
