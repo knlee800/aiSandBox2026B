@@ -83300,8 +83300,12 @@ nature=IMPLEMENTATION
 - [x] Not LOCKED by an implementer
 
 ### RUN-RECOVER-01 — Reconnect the Builder chat to a run after a refresh
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=RUN-RECOVER-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; stage-start: docs/RUN-RECOVER-01-STAGE-START.md. Step 3 (implementation) not started. mutexes=FRONTEND, I18N. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
 **Task ID:** RUN-RECOVER-01
 **Title:** Reconnect the Builder chat to a run after a refresh
 **Workstream:** AGENT (taxonomy only; zero admission weight)
