@@ -83671,6 +83671,65 @@ nature=IMPLEMENTATION
 - [x] Keith judgement recorded
 - [x] Not LOCKED by an implementer
 
+### COLLAB-FILES-01 — Read-only project file access for collaboration hand-offs through Harness
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-FILES-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02.
+**Task ID:** COLLAB-FILES-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Registration and admission here; implementation; code and LOCK in one commit after control-plane review.
+**Start condition (human):** READY — Keith approved the draft on 2026-11-02, including the architecture change.
+**Depends on:** COLLAB-LIVE-03, LOCKED.
+**Primary write scope:** `services/api-gateway/src/orchestration/`, `services/ai-service/src/worker/`, `services/ai-service/src/queue/job.types.ts`, `services/api-gateway/src/guards/internal-service-auth.guard.http.spec.ts`.
+**Mutexes / resources:** GATEWAY, AI-SERVICE. **Hot-file leases:** none. **Shared contracts:** none frozen; the new job field is inside the existing signed payload. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (no migration; runs that do not ask for file access stay plain).
+**saturationClass:** OPTIONAL. Collaboration stays FUTURE in PRD.md.
+**Architecture decision:** Keith approved reversing the AGENT-PLATFORM-ORCH-ARCH-01 rule that hand-off jobs omit harnessVersion, for hand-offs that ask for file access only. The locked record is not edited; ARCHITECTURE.md is updated at this task's lock.
+
+**Problem:** agents pass text and cannot see the project, so they cannot collaborate on real work.
+**Scope:** a run can ask for file access; its hand-offs run through Harness with a per-job read-only setting covered by the signed proof; the worker then registers only read_file, list_files and search_workspace for that job regardless of global flags; tool loop off or a bad proof fails the hand-off with a reason and never falls back to a plain answer. Approval, limits, agent-chosen hand-offs, the sweep and Agent mode are unchanged. No writes, no UI.
+
+#### Acceptance criteria
+
+- [ ] A read-only job has only the three read tools, including when the write, validation and browser flags are on
+- [ ] The read-only setting cannot be removed or added in the queue without failing the proof
+- [ ] Tool loop off or a bad proof fails the hand-off with a reason; no plain fallback
+- [ ] Runs that do not ask for file access stay plain Ask jobs with no harnessVersion
+- [ ] Agent mode runs keep their tools, and their proofs still verify
+- [ ] Hand-off requests still work from a Harness answer
+- [ ] Not LOCKED by an implementer
+
+### COLLAB-LIVE-04 — Agents read real project files on staging
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-LIVE-04
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-11-02.
+**Task ID:** COLLAB-LIVE-04
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Start condition NOT_READY until COLLAB-FILES-01 is LOCKED and deployed.
+**Depends on:** COLLAB-FILES-01.
+**Primary write scope:** none in the repository beyond records.
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT, ENV. **Evidence class:** PROVIDER-LIVE. **Revert isolation:** acceptable (no code).
+**saturationClass:** OPTIONAL
+
+**Scope:** on ainow-staging-01 with the stored test key and the project C1 repeat open: a planted script with a known bug, reviewed by Lead, Writer and Reviewer who read the file themselves; a job told to write a file; tool loop off; the planted script removed and file hashes matched afterwards. Under 50 credits. Keith opens the project and judges the chain.
+
+#### Acceptance criteria
+
+- [ ] Agents read the real file through tools
+- [ ] Whether the Reviewer named the planted bug is recorded either way
+- [ ] A job told to write changed no file
+- [ ] Tool loop off failed the hand-off with a reason
+- [ ] Workspace hashes match after removal, nothing left open
+- [ ] Keith judgement recorded
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01

@@ -3,15 +3,15 @@
 schemaVersion=1
 maxImplementationLanes=2
 lane3=DISABLED
-lane1.state=EMPTY
-lane1.taskId=NONE
+lane1.state=ACTIVE
+lane1.taskId=COLLAB-FILES-01
 lane2.state=EMPTY
 lane2.taskId=NONE
 governance.owner=NONE
 governance.state=UNOWNED
 saturationSuspended=false
 suspensionReason=NONE
-occupancyHash=sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d
+occupancyHash=sha256:9abbf4d83f8918ecceabd96c63a00e115d78e124fa40de6810b317de14929923
 <!-- AISB_OCCUPANCY_V1_END -->
 
 **Parallel Development Architecture:** v1
@@ -207,8 +207,16 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-02. Lane 1 released EMPTY. Staging runs e85cbc1 with flags off. Checkpoint: docs/COLLAB-LIVE-03-CHECKPOINT.md.
 
+## COLLAB-FILES-01 — ADMITTED / Lane 1 ACTIVE — 2026-11-02
+
+**Current status:** ADMITTED, Lane 1, GATEWAY and AI-SERVICE held. Keith approved the draft on 2026-11-02. Scope in TASKS_BACKLOG_FULL.md.
+
+## COLLAB-LIVE-04 — READY / NOT ADMITTED — 2026-11-02
+
+**Current status:** registered; start condition NOT_READY until COLLAB-FILES-01 is LOCKED and deployed.
+
 ## Lane 1
-EMPTY — Lane 1 released at COLLAB-LIVE-03 COMPLETE AND LOCKED — 2026-11-02.
+ACTIVE — COLLAB-FILES-01 — 2026-11-02.
 
 ## Lane 2
 EMPTY — occupancy EMPTY — 2026-11-02.
@@ -219,11 +227,11 @@ DISABLED
 ## Governance owner / state
 UNOWNED — GOV-OS-04 COMPLETE AND LOCKED — 2026-11-02.
 
-Both implementation lanes are EMPTY. COLLAB-LIVE-03 is COMPLETE AND LOCKED. SIGNUP-ALLOWLIST-01 is READY and not admitted.
+Lane 1 ACTIVE: COLLAB-FILES-01. Lane 2 EMPTY. COLLAB-LIVE-04 is registered, NOT_READY. SIGNUP-ALLOWLIST-01 is READY and not admitted.
 
 ## Active mutex / resource ownership
 - GOVERNANCE: UNOWNED — GOV-OS-04 lock 2026-11-02.
-- GATEWAY: UNOWNED — released at COLLAB-CHOOSE-01 COMPLETE AND LOCKED 2026-11-02.
+- GATEWAY: OWNED by COLLAB-FILES-01 (2026-11-02).
 - MIGRATION: UNOWNED — released at COLLAB-GATE-01 COMPLETE AND LOCKED 2026-11-02.
 - FRONTEND: UNOWNED — released at RUN-RECOVER-01 COMPLETE AND LOCKED 2026-11-02.
 - I18N: UNOWNED — released at RUN-RECOVER-01 COMPLETE AND LOCKED 2026-11-02.
@@ -245,7 +253,7 @@ Both implementation lanes are EMPTY. COLLAB-LIVE-03 is COMPLETE AND LOCKED. SIGN
 - HOTFILE:e2e/builder-golden-path/tests/network.spec.ts: UNOWNED
 - PACKAGE: UNOWNED — released at HARNESS-PROVIDERS-01 COMPLETE AND LOCKED 2026-11-01.
 - LOCAL-RUNTIME: UNOWNED — released at CLEAN-BASELINE-RUNTIME-01 lock 2026-10-07.
-- AI-SERVICE: UNOWNED — released at HARNESS-SAVE-01 COMPLETE AND LOCKED 2026-11-02.
+- AI-SERVICE: OWNED by COLLAB-FILES-01 (2026-11-02).
 - CONTAINER-MANAGER: UNOWNED — released at CM-QUOTA-DEAD-01 COMPLETE AND LOCKED 2026-10-30.
 - All other resources: UNOWNED
 - Remaining HOTFILE leases: UNOWNED
