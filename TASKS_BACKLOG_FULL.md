@@ -83037,14 +83037,14 @@ taskId=AUTH-OWNER-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; stage-start: docs/AUTH-OWNER-01-STAGE-START.md. Step 3 (implementation) not started. mutexes=GATEWAY. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
+**Status:** COMPLETE AND LOCKED — 2026-11-02. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY released. Checkpoint: docs/AUTH-OWNER-01-CHECKPOINT.md. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; stage-start: docs/AUTH-OWNER-01-STAGE-START.md. Step 3 (implementation) not started. mutexes=GATEWAY. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
 **Task ID:** AUTH-OWNER-01
 **Title:** Owner checks on execution cancel, stream and public execute, and stream subscription cleanup
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP (security-sensitive). Step 1 registration; Step 2 stage-start and admission; Step 3 implementation; Step 4 consolidation, checkpoint and LOCK by the control plane.
 **Start condition (human):** READY — Keith approved the draft on 2026-11-02.
-**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Start condition (machine):** `READY`; `status=LOCKED`. Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
 **Depends on (human):** none.
 **Depends on (machine `dependsOn`):** `[]`
 **Primary write scope:** exactly `services/api-gateway/src/ai/ai-execution.controller.ts`, `services/api-gateway/src/ai/ai-execution.controller.spec.ts`, `services/api-gateway/src/ai/__tests__/ai-execution-guards.integration.spec.ts`, `services/api-gateway/src/ai/__tests__/ai-execution.ownership.http.spec.ts`, `services/api-gateway/src/streaming/execution-stream.service.ts`, `services/api-gateway/src/streaming/execution-stream.service.spec.ts`, `services/api-gateway/src/public-api/public-ai.controller.ts`, `services/api-gateway/src/public-api/public-ai.controller.spec.ts`, `services/api-gateway/src/public-api/public-api.contract.spec.ts`, `services/api-gateway/src/billing/__tests__/credit-balance-guard-execution-start.integration.spec.ts`. Anything else is out of scope.
@@ -83063,15 +83063,16 @@ nature=IMPLEMENTATION
 
 **Problem:** POST /api/ai/executions/:id/cancel and GET /api/ai/executions/:id/stream check that a caller is logged in but not that the caller owns the execution, so any logged-in user with the ID can cancel a run or read its output. POST /api/v1/ai/execute takes a sessionId and never checks who owns that session; its guards only check scopes, credits and limits. ExecutionStreamService adds a message listener per viewer and never removes it, and one viewer leaving unsubscribes the Redis channel for the others. Source: docs/GOV-RPG-UI-COMPAT-01-REVIEW-RECORD.md, deferred concerns.
 **Scope:** (1) owner check on cancel and stream, with the same not-found response as the status route; (2) UUID and owner check on sessionId in public execute, before any ledger write or enqueue, as the browser execute route does; (3) stream cleanup: one Redis listener, per-viewer callbacks, and the channel unsubscribed only when its last viewer leaves; (4) tests. Not in scope: Socket.IO, other public routes, the status route, deploying the change.
+**Result (2026-11-02):** implemented in 8fb5b630d6278717f195f6c194e59524905d95ec by Cursor CLI, reviewed and re-validated by the control plane: api-gateway 2401 passed, with only the 14 known smoke.integration failures; build exit 0. Checkpoint: docs/AUTH-OWNER-01-CHECKPOINT.md. Mocked Redis and services only; not deployed.
 
 #### Acceptance criteria
 
-- [ ] Cancelling another user's execution or an unknown one returns 404 and does not request a cancel; the owner's cancel works as before, including the 409
-- [ ] Streaming another user's execution or an unknown one returns 404 over HTTP with no subscription; the owner's stream receives tokens
-- [ ] Public execute refuses another user's session with 404 and a non-UUID session with 400, with no ledger write and no enqueue; the owner's request works as before
-- [ ] Two viewers of one execution both receive tokens, one leaving does not stop the other, and no listeners are left after the last leaves
-- [ ] services/api-gateway: npm test and npm run build pass, apart from the known smoke failures, and only the files in the primary write scope change
-- [ ] Not LOCKED by an implementer
+- [x] Cancelling another user's execution or an unknown one returns 404 and does not request a cancel; the owner's cancel works as before, including the 409
+- [x] Streaming another user's execution or an unknown one returns 404 over HTTP with no subscription; the owner's stream receives tokens
+- [x] Public execute refuses another user's session with 404 and a non-UUID session with 400, with no ledger write and no enqueue; the owner's request works as before
+- [x] Two viewers of one execution both receive tokens, one leaving does not stop the other, and no listeners are left after the last leaves
+- [x] services/api-gateway: npm test and npm run build pass, apart from the known smoke failures, and only the files in the primary write scope change
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
