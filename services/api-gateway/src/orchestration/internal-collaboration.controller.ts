@@ -32,10 +32,12 @@ const AGENT_ROLES: readonly CollaborationAgentRole[] = [
 ];
 
 /**
- * Internal collaboration routes for COLLAB-INTERNAL-01.
+ * Internal collaboration routes.
  *
  * POST /api/internal/collaboration/runs
  * POST /api/internal/collaboration/runs/:id/referrals
+ * POST /api/internal/collaboration/runs/:id/referrals/:referralId/approve
+ * POST /api/internal/collaboration/runs/:id/referrals/:referralId/reject
  * GET  /api/internal/collaboration/runs/:id
  *
  * Protected by the global InternalServiceAuthGuard (X-Internal-Service-Key).
@@ -51,21 +53,60 @@ export class InternalCollaborationController {
     try {
       return await this.orchestrationService.createCollaborationRun(input);
     } catch (error) {
-      throw this.toHttpException(error);
+      this.raise(error);
     }
   }
 
   @Post('runs/:id/referrals')
   @HttpCode(HttpStatus.CREATED)
-  async startReferral(
+  async createReferral(
     @Param('id') collaborationRunId: string,
     @Body() body: unknown,
   ): Promise<StartedCollaborationReferral> {
     const input = this.readStartReferralBody(collaborationRunId, body);
     try {
-      return await this.orchestrationService.createAndStartReferral(input);
+      return await this.orchestrationService.createPendingReferral(input);
     } catch (error) {
-      throw this.toHttpException(error);
+      this.raise(error);
+    }
+  }
+
+  @Post('runs/:id/referrals/:referralId/approve')
+  @HttpCode(HttpStatus.OK)
+  async approveReferral(
+    @Param('id') collaborationRunId: string,
+    @Param('referralId') referralId: string,
+    @Body() body: unknown,
+  ): Promise<StartedCollaborationReferral> {
+    const decision = this.readDecision(body, false);
+    try {
+      return await this.orchestrationService.approveReferral({
+        collaborationRunId,
+        referralId,
+        decidedBy: decision.decidedBy,
+      });
+    } catch (error) {
+      this.raise(error);
+    }
+  }
+
+  @Post('runs/:id/referrals/:referralId/reject')
+  @HttpCode(HttpStatus.OK)
+  async rejectReferral(
+    @Param('id') collaborationRunId: string,
+    @Param('referralId') referralId: string,
+    @Body() body: unknown,
+  ): Promise<CollaborationReferral> {
+    const decision = this.readDecision(body, true);
+    try {
+      return await this.orchestrationService.rejectReferral({
+        collaborationRunId,
+        referralId,
+        decidedBy: decision.decidedBy,
+        reason: decision.reason,
+      });
+    } catch (error) {
+      this.raise(error);
     }
   }
 
@@ -82,10 +123,7 @@ export class InternalCollaborationController {
       }
       return detail;
     } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      throw this.toHttpException(error);
+      this.raise(error);
     }
   }
 
@@ -115,14 +153,6 @@ export class InternalCollaborationController {
       record.adapter === undefined
         ? provider
         : this.readRequiredString(record.adapter, 'adapter', 50);
-    const depth =
-      record.depth === undefined
-        ? undefined
-        : this.readNonNegativeInt(record.depth, 'depth');
-    const maxDepth =
-      record.maxDepth === undefined
-        ? undefined
-        : this.readNonNegativeInt(record.maxDepth, 'maxDepth');
     const timeoutMs =
       record.timeoutMs === undefined
         ? undefined
@@ -154,13 +184,6 @@ export class InternalCollaborationController {
         'projectInstructions',
       ),
       constraints: this.readConstraints(record.constraints),
-      referralChain: this.readOptionalStringArray(record.referralChain, 'referralChain'),
-      depth,
-      maxDepth,
-      visitedBuilderProfileIds: this.readOptionalStringArray(
-        record.visitedBuilderProfileIds,
-        'visitedBuilderProfileIds',
-      ),
       parentReferralTraceId: this.readOptionalNullableString(
         record.parentReferralTraceId,
         'parentReferralTraceId',
@@ -168,6 +191,19 @@ export class InternalCollaborationController {
       timeoutMs,
       orchestrationPriority,
     };
+  }
+
+  private readDecision(
+    body: unknown,
+    requireReason: boolean,
+  ): { decidedBy: string; reason?: string } {
+    const record = this.asRecord(body, 'body');
+    const decidedBy = this.readRequiredString(record.decidedBy, 'decidedBy').trim();
+    if (!requireReason) {
+      return { decidedBy };
+    }
+    const reason = this.readRequiredString(record.reason, 'reason').trim();
+    return { decidedBy, reason };
   }
 
   private readConstraints(value: unknown): Partial<ReferralConstraints> | undefined {
@@ -309,6 +345,13 @@ export class InternalCollaborationController {
     return [...value];
   }
 
+  private raise(error: unknown): never {
+    if (error instanceof HttpException) {
+      throw error;
+    }
+    throw this.toHttpException(error);
+  }
+
   private toHttpException(error: unknown): HttpException {
     const message = error instanceof Error ? error.message : 'Collaboration request failed';
     if (message.includes('not found')) {
@@ -322,7 +365,9 @@ export class InternalCollaborationController {
       message.includes('loop detected') ||
       message.includes('Max agents') ||
       message.includes('read-only') ||
-      message.includes('blocked write-capable')
+      message.includes('blocked write-capable') ||
+      message.includes('Handoff limit') ||
+      message.includes('not in this run')
     ) {
       return new BadRequestException(message);
     }

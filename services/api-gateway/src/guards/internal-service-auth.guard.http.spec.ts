@@ -27,7 +27,10 @@ describe('InternalServiceAuthGuard HTTP prefix protection (AUTH-GUARD-01)', () =
   let runtimeService: { getMetrics: jest.Mock };
   let orchestrationService: {
     createCollaborationRun: jest.Mock;
+    createPendingReferral: jest.Mock;
     createAndStartReferral: jest.Mock;
+    approveReferral: jest.Mock;
+    rejectReferral: jest.Mock;
     getCollaborationRunWithReferrals: jest.Mock;
   };
 
@@ -80,7 +83,10 @@ describe('InternalServiceAuthGuard HTTP prefix protection (AUTH-GUARD-01)', () =
     };
     orchestrationService = {
       createCollaborationRun: jest.fn(),
+      createPendingReferral: jest.fn(),
       createAndStartReferral: jest.fn(),
+      approveReferral: jest.fn(),
+      rejectReferral: jest.fn(),
       getCollaborationRunWithReferrals: jest.fn(),
     };
 
@@ -173,9 +179,27 @@ describe('InternalServiceAuthGuard HTTP prefix protection (AUTH-GUARD-01)', () =
     await send('post', '/api/Internal/collaboration/runs/run-1/referrals', {
       prompt: 'review',
     }).expect(401);
+    await send(
+      'post',
+      '/api/Internal/collaboration/runs/run-1/referrals/ref-1/approve',
+      { decidedBy: 'keith' },
+    ).expect(401);
+    await send(
+      'post',
+      '/API/INTERNAL/collaboration/runs/run-1/referrals/ref-1/reject',
+      { decidedBy: 'keith', reason: 'no' },
+    ).expect(401);
+    await send(
+      'post',
+      '/api/INTERNAL/collaboration/runs/RUN-1/referrals/REF-1/approve',
+      { decidedBy: 'keith' },
+    ).expect(401);
 
     expect(orchestrationService.createCollaborationRun).not.toHaveBeenCalled();
+    expect(orchestrationService.createPendingReferral).not.toHaveBeenCalled();
     expect(orchestrationService.createAndStartReferral).not.toHaveBeenCalled();
+    expect(orchestrationService.approveReferral).not.toHaveBeenCalled();
+    expect(orchestrationService.rejectReferral).not.toHaveBeenCalled();
     expect(orchestrationService.getCollaborationRunWithReferrals).not.toHaveBeenCalled();
   });
 

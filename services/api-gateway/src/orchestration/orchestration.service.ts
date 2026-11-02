@@ -1,10 +1,22 @@
-import { Injectable, Optional } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ExecutionContext,
+  Injectable,
+  Optional,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'crypto';
 import { Repository } from 'typeorm';
 import { QueueService } from '../queue/queue.service';
 import { ExecutionResultService } from '../ai/execution-result.service';
 import { UsageLedgerService } from '../usage-ledger/usage-ledger.service';
+import { ExecutionSafetyGuard } from '../safety/execution-safety.guard';
+import { KillSwitchConfig } from '../safety/kill-switch.config';
+import { AbortGuard } from '../abort/abort.guard';
+import { CreditBalanceGuard } from '../billing/credit-balance.guard';
+import { TokenQuotaGuard } from '../quota/token-quota.guard';
 import {
   InMemoryOrchestrationAuditRecorder,
   type OrchestrationAuditRecorder,
@@ -21,6 +33,7 @@ import {
   type CollaborationRunId,
   DEFAULT_MAX_AGENTS_PER_COLLABORATION,
   DEFAULT_MAX_REFERRAL_DEPTH,
+  MAX_HANDOFFS_PER_RUN,
   type IdempotencyKey,
   NO_WRITE_TOOLS_INDICATOR,
   type ReferralId,
@@ -35,6 +48,7 @@ import {
   type UserId,
   type ProjectId,
   type ReferralConstraints,
+  type ReferralPendingJob,
 } from './orchestration.contracts';
 
 const DEFAULT_REFERRAL_TIMEOUT_MS = 300_000;
@@ -82,6 +96,7 @@ export interface CreateReferralInput {
   readonly maxDepth?: number;
   readonly visitedBuilderProfileIds?: readonly BuilderProfileId[];
   readonly timeoutMs?: number;
+  readonly pendingJob?: ReferralPendingJob | null;
 }
 
 export interface CompleteReferralInput {
@@ -134,6 +149,34 @@ export interface StartReferralExecutionInput {
   readonly projectInstructions?: string;
   readonly submittedAt: string;
   readonly orchestrationPriority?: number;
+}
+
+export interface CreatePendingReferralInput {
+  readonly collaborationRunId: CollaborationRunId;
+  readonly sourceBuilder: SourceBuilderIdentity;
+  readonly targetBuilder: TargetBuilderIdentity;
+  readonly idempotencyKey: IdempotencyKey;
+  readonly sessionId: string;
+  readonly conversationId: string;
+  readonly apiKeyId: string;
+  readonly prompt: string;
+  readonly provider: string;
+  readonly adapter: string;
+  readonly model?: string;
+  readonly workspaceContext?: unknown;
+  readonly globalInstructions?: string;
+  readonly projectInstructions?: string;
+  readonly constraints?: Partial<ReferralConstraints>;
+  readonly parentReferralTraceId?: ReferralTraceId | null;
+  readonly timeoutMs?: number;
+  readonly orchestrationPriority?: number;
+}
+
+export interface DecideReferralInput {
+  readonly collaborationRunId: CollaborationRunId;
+  readonly referralId: ReferralId;
+  readonly decidedBy: string;
+  readonly reason?: string;
 }
 
 export interface CreateAndStartReferralInput {
@@ -201,6 +244,10 @@ export class OrchestrationService {
     @Optional() private readonly executionResultService?: ExecutionResultService,
     @Optional() auditRecorder?: InMemoryOrchestrationAuditRecorder,
     @Optional() private readonly usageLedgerService?: UsageLedgerService,
+    @Optional() private readonly executionSafetyGuard?: ExecutionSafetyGuard,
+    @Optional() private readonly abortGuard?: AbortGuard,
+    @Optional() private readonly creditBalanceGuard?: CreditBalanceGuard,
+    @Optional() private readonly tokenQuotaGuard?: TokenQuotaGuard,
   ) {
     this.auditRecorder = auditRecorder ?? new InMemoryOrchestrationAuditRecorder();
   }
@@ -304,12 +351,12 @@ export class OrchestrationService {
       referrals.push(await this.syncReferralFromExecution(referralId));
     }
 
-    const syncedRun = await this.getCollaborationRun(collaborationRunId);
-    if (!syncedRun) {
+    const settled = await this.settleCollaborationRun(collaborationRunId, referrals);
+    if (!settled) {
       return null;
     }
 
-    return { run: syncedRun, referrals };
+    return { run: settled, referrals };
   }
 
   async createReferral(input: CreateReferralInput): Promise<CollaborationReferral> {
@@ -365,6 +412,32 @@ export class OrchestrationService {
         input.collaborationRunId,
       );
       const run = this.toCollaborationRun(runEntity);
+      const existingHandoffs = await referralRepo.find({
+        where: { collaborationRunId: input.collaborationRunId },
+      });
+      if (existingHandoffs.length >= MAX_HANDOFFS_PER_RUN) {
+        this.emitAuditEvent({
+          eventType: 'orchestration.safety_limit_breached',
+          collaborationRunId: input.collaborationRunId,
+          referralTraceId: null,
+          sourceBuilder: input.sourceBuilder,
+          targetBuilder: input.targetBuilder,
+          payload: {
+            lifecycleEvent: 'referral_handoff_limit_blocked',
+            limitType: 'handoff',
+            currentValue: existingHandoffs.length + 1,
+            maxValue: MAX_HANDOFFS_PER_RUN,
+            reason: 'max_handoffs_exceeded',
+            userId: run.userId,
+            projectId: run.projectId,
+            sourceBuilderProfileId: input.sourceBuilder.builderProfileId,
+            targetBuilderProfileId: input.targetBuilder.builderProfileId,
+          },
+        });
+        throw new Error(
+          `Handoff limit ${MAX_HANDOFFS_PER_RUN} exceeded for collaboration ${input.collaborationRunId}`,
+        );
+      }
       const resolvedConstraints = this.resolveConstraints(input.constraints);
       const depth = input.depth ?? 0;
 
@@ -760,6 +833,191 @@ export class OrchestrationService {
     return { referral: started, executionId };
   }
 
+  async createPendingReferral(
+    input: CreatePendingReferralInput,
+  ): Promise<StartedCollaborationReferral> {
+    const graph = await this.deriveServerGraph({
+      collaborationRunId: input.collaborationRunId,
+      parentReferralTraceId: input.parentReferralTraceId,
+      sourceBuilderProfileId: input.sourceBuilder.builderProfileId,
+    });
+    const referral = await this.createReferral({
+      collaborationRunId: input.collaborationRunId,
+      parentReferralTraceId: graph.parentReferralTraceId,
+      sourceBuilder: input.sourceBuilder,
+      targetBuilder: input.targetBuilder,
+      idempotencyKey: input.idempotencyKey,
+      constraints: this.clampConstraints(input.constraints),
+      referralChain: graph.referralChain,
+      depth: graph.depth,
+      visitedBuilderProfileIds: graph.visitedBuilderProfileIds,
+      timeoutMs: this.clampTimeout(input.timeoutMs),
+      pendingJob: {
+        sessionId: input.sessionId,
+        conversationId: input.conversationId,
+        apiKeyId: input.apiKeyId,
+        prompt: input.prompt,
+        provider: input.provider,
+        adapter: input.adapter,
+        model: input.model ?? null,
+        workspaceContext: input.workspaceContext ?? null,
+        globalInstructions: input.globalInstructions ?? null,
+        projectInstructions: input.projectInstructions ?? null,
+        orchestrationPriority: input.orchestrationPriority ?? null,
+        decidedBy: null,
+        decisionReason: null,
+      },
+    });
+    const stored = await this.referralRepo.findOne({
+      where: { referralId: referral.referralId },
+    });
+    return {
+      referral,
+      executionId: stored?.executionId ?? null,
+    };
+  }
+
+  async approveReferral(
+    input: DecideReferralInput,
+  ): Promise<StartedCollaborationReferral> {
+    const loaded = await this.loadReferralInRun(
+      input.collaborationRunId,
+      input.referralId,
+    );
+    if (loaded.entity.status !== 'pending_approval') {
+      throw new ConflictException(
+        `Referral ${input.referralId} cannot be approved from status ${loaded.entity.status}`,
+      );
+    }
+    if (!loaded.entity.pendingJob?.prompt) {
+      throw new ConflictException(
+        `Referral ${input.referralId} has no waiting job`,
+      );
+    }
+    const job = loaded.entity.pendingJob;
+    await this.assertHandoffAllowed(loaded.run.userId, job);
+
+    const now = new Date();
+    const claimed = await this.referralRepo.update(
+      {
+        referralId: input.referralId,
+        collaborationRunId: input.collaborationRunId,
+        status: 'pending_approval',
+      },
+      {
+        status: 'approved',
+        pendingJob: {
+          ...job,
+          decidedBy: input.decidedBy,
+        },
+        updatedAt: now,
+      },
+    );
+    if ((claimed.affected ?? 0) < 1) {
+      throw new ConflictException(
+        `Referral ${input.referralId} cannot be approved`,
+      );
+    }
+
+    const referral = this.toReferral(loaded.entity);
+    this.emitAuditEvent({
+      eventType: 'orchestration.referral_approved',
+      collaborationRunId: input.collaborationRunId,
+      referralTraceId: referral.referralTraceId,
+      sourceBuilder: referral.sourceBuilder,
+      targetBuilder: referral.targetBuilder,
+      payload: {
+        lifecycleEvent: 'referral_approved',
+        decidedBy: input.decidedBy,
+        referralId: input.referralId,
+        status: 'approved',
+        userId: loaded.run.userId,
+        projectId: loaded.run.projectId,
+      },
+    });
+
+    const executionId = await this.enqueueApprovedReferral(
+      input.referralId,
+      { ...job, decidedBy: input.decidedBy },
+      loaded.run.userId,
+    );
+    const started = await this.getReferral(input.referralId);
+    if (!started) {
+      throw new Error(`Referral ${input.referralId} not found`);
+    }
+    return { referral: started, executionId };
+  }
+
+  async rejectReferral(input: DecideReferralInput): Promise<CollaborationReferral> {
+    const reason = input.reason?.trim() ?? '';
+    if (reason.length === 0) {
+      throw new BadRequestException(
+        `Referral ${input.referralId} cannot be rejected without a reason`,
+      );
+    }
+    const loaded = await this.loadReferralInRun(
+      input.collaborationRunId,
+      input.referralId,
+    );
+    if (loaded.entity.status !== 'pending_approval') {
+      throw new ConflictException(
+        `Referral ${input.referralId} cannot be rejected from status ${loaded.entity.status}`,
+      );
+    }
+    const now = new Date();
+    const job = loaded.entity.pendingJob
+      ? {
+          ...loaded.entity.pendingJob,
+          decidedBy: input.decidedBy,
+          decisionReason: reason,
+        }
+      : null;
+    const rejected = await this.referralRepo.update(
+      {
+        referralId: input.referralId,
+        collaborationRunId: input.collaborationRunId,
+        status: 'pending_approval',
+      },
+      {
+        status: 'rejected',
+        cancelStatus: 'rejected',
+        cancelledByUserId: input.decidedBy,
+        cancelReason: reason,
+        pendingJob: job,
+        updatedAt: now,
+      },
+    );
+    if ((rejected.affected ?? 0) < 1) {
+      throw new ConflictException(
+        `Referral ${input.referralId} cannot be rejected`,
+      );
+    }
+    const stored = await this.referralRepo.findOne({
+      where: { referralId: input.referralId },
+    });
+    if (!stored) {
+      throw new Error(`Referral ${input.referralId} not found`);
+    }
+    const referral = this.toReferral(stored);
+    this.emitAuditEvent({
+      eventType: 'orchestration.referral_rejected',
+      collaborationRunId: referral.collaborationRunId,
+      referralTraceId: referral.referralTraceId,
+      sourceBuilder: referral.sourceBuilder,
+      targetBuilder: referral.targetBuilder,
+      payload: {
+        lifecycleEvent: 'referral_rejected',
+        decidedBy: input.decidedBy,
+        reason,
+        referralId: referral.referralId,
+        status: referral.status,
+        userId: loaded.run.userId,
+        projectId: loaded.run.projectId,
+      },
+    });
+    return referral;
+  }
+
   async cancelReferral(input: CancelReferralInput): Promise<CollaborationReferral> {
     return this.runInTransaction(async (runRepo, referralRepo) => {
       const referralEntity = await this.requireReferralEntity(
@@ -1064,6 +1322,316 @@ export class OrchestrationService {
     }
   }
 
+  private async deriveServerGraph(input: {
+    collaborationRunId: CollaborationRunId;
+    parentReferralTraceId?: ReferralTraceId | null;
+    sourceBuilderProfileId: BuilderProfileId;
+  }): Promise<{
+    depth: number;
+    referralChain: BuilderProfileId[];
+    visitedBuilderProfileIds: BuilderProfileId[];
+    parentReferralTraceId: ReferralTraceId | null;
+  }> {
+    const parentId = input.parentReferralTraceId?.trim() || null;
+    if (!parentId) {
+      return {
+        depth: 0,
+        referralChain: [input.sourceBuilderProfileId],
+        visitedBuilderProfileIds: [input.sourceBuilderProfileId],
+        parentReferralTraceId: null,
+      };
+    }
+
+    const parent = await this.referralRepo.findOne({
+      where: {
+        collaborationRunId: input.collaborationRunId,
+        referralTraceId: parentId,
+      },
+    });
+    if (!parent) {
+      throw new Error(
+        `Parent referral trace ${parentId} is not in this run`,
+      );
+    }
+
+    const referralChain = [...(parent.referralChain ?? [])];
+    if (!referralChain.includes(input.sourceBuilderProfileId)) {
+      referralChain.push(input.sourceBuilderProfileId);
+    }
+    return {
+      depth: parent.depth + 1,
+      referralChain,
+      visitedBuilderProfileIds: this.uniqueBuilderIds([
+        ...(parent.visitedBuilderProfileIds ?? []),
+        ...referralChain,
+        input.sourceBuilderProfileId,
+      ]),
+      parentReferralTraceId: parent.referralTraceId,
+    };
+  }
+
+  private clampTimeout(timeoutMs: number | undefined): number | undefined {
+    if (timeoutMs === undefined) {
+      return undefined;
+    }
+    return Math.min(timeoutMs, this.getDefaultReferralConstraints().timeoutMs);
+  }
+
+  private clampConstraints(
+    constraints?: Partial<ReferralConstraints>,
+  ): Partial<ReferralConstraints> | undefined {
+    if (!constraints) {
+      return undefined;
+    }
+    const defaults = this.getDefaultReferralConstraints();
+    const clamped: {
+      timeoutMs?: number;
+      maxDepth?: number;
+      maxAgentsPerCollaboration?: number;
+      readOnly?: boolean;
+      allowWriteTools?: boolean;
+      allowedTools?: string[];
+    } = {
+      ...constraints,
+      allowedTools: constraints.allowedTools
+        ? [...constraints.allowedTools]
+        : undefined,
+    };
+    if (clamped.timeoutMs !== undefined) {
+      clamped.timeoutMs = Math.min(clamped.timeoutMs, defaults.timeoutMs);
+    }
+    if (clamped.maxDepth !== undefined) {
+      clamped.maxDepth = Math.min(clamped.maxDepth, defaults.maxDepth);
+    }
+    if (clamped.maxAgentsPerCollaboration !== undefined) {
+      clamped.maxAgentsPerCollaboration = Math.min(
+        clamped.maxAgentsPerCollaboration,
+        defaults.maxAgentsPerCollaboration,
+      );
+    }
+    if (clamped.allowedTools !== undefined) {
+      const hasBlockedTool = clamped.allowedTools.some((toolId) =>
+        (READ_ONLY_BLOCKED_TOOL_IDS as readonly string[]).includes(toolId),
+      );
+      if (!hasBlockedTool) {
+        const allowed = new Set<string>(defaults.allowedTools);
+        clamped.allowedTools = clamped.allowedTools.filter((toolId) =>
+          allowed.has(toolId),
+        );
+      }
+    }
+    return clamped;
+  }
+
+  private async loadReferralInRun(
+    collaborationRunId: CollaborationRunId,
+    referralId: ReferralId,
+  ): Promise<{ run: CollaborationRun; entity: CollaborationReferralEntity }> {
+    const runEntity = await this.runRepo.findOne({
+      where: { collaborationRunId },
+    });
+    if (!runEntity) {
+      throw new Error(`Collaboration run ${collaborationRunId} not found`);
+    }
+    const entity = await this.referralRepo.findOne({
+      where: { referralId },
+    });
+    if (!entity) {
+      throw new Error(`Referral ${referralId} not found`);
+    }
+    if (entity.collaborationRunId !== collaborationRunId) {
+      throw new Error(`Referral ${referralId} is not in this run`);
+    }
+    return { run: this.toCollaborationRun(runEntity), entity };
+  }
+
+  private async assertHandoffAllowed(
+    userId: string,
+    job: ReferralPendingJob,
+  ): Promise<void> {
+    if (
+      !this.executionSafetyGuard ||
+      !this.abortGuard ||
+      !this.creditBalanceGuard ||
+      !this.tokenQuotaGuard
+    ) {
+      throw new ServiceUnavailableException(
+        'Collaboration safety checks are unavailable',
+      );
+    }
+
+    const request = {
+      body: {
+        prompt: job.prompt,
+        provider: job.provider,
+      },
+      apiKeyIdentity: {
+        userId,
+        apiKeyId: job.apiKeyId,
+      },
+    };
+    const context = {
+      switchToHttp: () => ({
+        getRequest: () => request,
+      }),
+    } as ExecutionContext;
+
+    if (!KillSwitchConfig.isProviderEnabled(job.provider)) {
+      throw new ServiceUnavailableException(
+        `Provider ${job.provider} temporarily unavailable`,
+      );
+    }
+
+    const safetyAllowed = await this.executionSafetyGuard.canActivate(context);
+    if (!safetyAllowed) {
+      throw new ServiceUnavailableException(
+        'AI execution temporarily disabled for maintenance',
+      );
+    }
+    const abortAllowed = await this.abortGuard.canActivate(context);
+    if (!abortAllowed) {
+      throw new ServiceUnavailableException(
+        'AI execution temporarily unavailable due to system maintenance. Please try again later.',
+      );
+    }
+    const creditAllowed = await this.creditBalanceGuard.canActivate(context);
+    if (!creditAllowed) {
+      throw new ServiceUnavailableException('Insufficient credit balance');
+    }
+    const tokenAllowed = await this.tokenQuotaGuard.canActivate(context);
+    if (!tokenAllowed) {
+      throw new ServiceUnavailableException('Token quota exceeded');
+    }
+  }
+
+  private async enqueueApprovedReferral(
+    referralId: ReferralId,
+    job: ReferralPendingJob,
+    userId: string,
+  ): Promise<string> {
+    if (!this.usageLedgerService) {
+      throw new Error('UsageLedgerService is required for referral execution');
+    }
+    const referralEntity = await this.referralRepo.findOne({
+      where: { referralId },
+    });
+    if (!referralEntity) {
+      throw new Error(`Referral ${referralId} not found`);
+    }
+    const referral = this.toReferral(referralEntity);
+    const executionId = randomUUID();
+    const submittedAt = this.now();
+    let intentWritten = false;
+    try {
+      await this.usageLedgerService.writeExecutionIntent({
+        executionId,
+        apiKeyId: job.apiKeyId,
+        userId,
+        sessionId: job.sessionId,
+        conversationId: job.conversationId,
+        provider: job.provider,
+        adapter: job.adapter,
+        metadata: {
+          runMode: 'ask',
+          apiKeyId: job.apiKeyId,
+          requestedProvider: job.provider,
+          requestedModel: job.model,
+        },
+        agentRole: referral.targetBuilder.agentRole,
+        builderProfileId: referral.targetBuilder.builderProfileId,
+        collaborationRunId: referral.collaborationRunId,
+        referralTraceId: referral.referralTraceId,
+      });
+      intentWritten = true;
+    } catch {
+      intentWritten = false;
+    }
+
+    if (!intentWritten) {
+      await this.failReferralQuietly(referralId, LEDGER_INTENT_FAILURE);
+      throw new Error(LEDGER_INTENT_FAILURE);
+    }
+
+    try {
+      await this.startReferralExecution({
+        referralId,
+        executionId,
+        sessionId: job.sessionId,
+        conversationId: job.conversationId,
+        userId,
+        apiKeyId: job.apiKeyId,
+        prompt: job.prompt,
+        workspaceContext: job.workspaceContext ?? undefined,
+        provider: job.provider,
+        adapter: job.adapter,
+        model: job.model ?? undefined,
+        globalInstructions: job.globalInstructions ?? undefined,
+        projectInstructions: job.projectInstructions ?? undefined,
+        submittedAt,
+        orchestrationPriority: job.orchestrationPriority ?? undefined,
+      });
+    } catch (error) {
+      await this.failReferralQuietly(
+        referralId,
+        'Failed to enqueue referral execution',
+      );
+      throw error;
+    }
+
+    return executionId;
+  }
+
+  private async settleCollaborationRun(
+    collaborationRunId: CollaborationRunId,
+    referrals: readonly CollaborationReferral[],
+  ): Promise<CollaborationRun | null> {
+    const entity = await this.runRepo.findOne({
+      where: { collaborationRunId },
+    });
+    if (!entity) {
+      return null;
+    }
+    if (entity.status !== 'active' || referrals.length === 0) {
+      return this.toCollaborationRun(entity);
+    }
+
+    const openStatuses: readonly ReferralStatus[] = [
+      'pending_approval',
+      'approved',
+      'in_progress',
+    ];
+    if (referrals.some((referral) => openStatuses.includes(referral.status))) {
+      return this.toCollaborationRun(entity);
+    }
+
+    const anyFailed = referrals.some(
+      (referral) =>
+        referral.status === 'failed' || referral.status === 'timed_out',
+    );
+    const approvedOnes = referrals.filter(
+      (referral) => referral.status !== 'rejected',
+    );
+    const everyApprovedCompleted =
+      approvedOnes.length > 0 &&
+      approvedOnes.every((referral) => referral.status === 'completed');
+    const onlyRejected = approvedOnes.length === 0;
+    const now = new Date();
+
+    if (anyFailed || onlyRejected) {
+      entity.status = 'failed';
+      entity.failedAt = now;
+      entity.updatedAt = now;
+      return this.toCollaborationRun(await this.runRepo.save(entity));
+    }
+    if (everyApprovedCompleted) {
+      entity.status = 'completed';
+      entity.completedAt = now;
+      entity.updatedAt = now;
+      return this.toCollaborationRun(await this.runRepo.save(entity));
+    }
+    return this.toCollaborationRun(entity);
+  }
+
   private resolveConstraints(
     constraints?: Partial<ReferralConstraints>,
   ): ReferralConstraints {
@@ -1228,6 +1796,8 @@ export class OrchestrationService {
       cancelRequestedAt: this.toIso(entity.cancelRequestedAt),
       cancelledByUserId: entity.cancelledByUserId,
       cancelReason: entity.cancelReason,
+      prompt: entity.pendingJob?.prompt ?? null,
+      decidedBy: entity.pendingJob?.decidedBy ?? null,
       result: entity.resultStatus
         ? {
             referralId: entity.referralId,
@@ -1308,6 +1878,7 @@ export class OrchestrationService {
     entity.constraintAllowWriteTools = details.resolvedConstraints.allowWriteTools;
     entity.constraintAllowedTools = [...details.resolvedConstraints.allowedTools];
     entity.executionId = null;
+    entity.pendingJob = input.pendingJob ?? null;
     entity.resultStatus = null;
     entity.resultSummary = null;
     entity.resultOutputFiles = null;

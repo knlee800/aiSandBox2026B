@@ -83563,7 +83563,7 @@ taskId=COLLAB-GATE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02.
+**Status:** COMPLETE AND LOCKED — 2026-11-02. LANE-DONE and LOCKED by the control plane; Lane 1, GATEWAY and MIGRATION released. Checkpoint: docs/COLLAB-GATE-01-CHECKPOINT.md.
 **Task ID:** COLLAB-GATE-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -83579,14 +83579,14 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] A hand-off is refused with a reason when the off switch, spending limit or token limit would refuse a normal run, and no job is created
-- [ ] A to B to A is refused when the caller sends no depth or visited values; values sent by the caller cannot weaken it
-- [ ] The ninth hand-off in a run is refused
-- [ ] A waiting hand-off has no job and no ledger row; reject never runs it; approve runs it once, and a repeat approve does not run it again
-- [ ] A run ends completed when all hand-offs completed and failed when any failed, and not while one waits or runs
-- [ ] The migration adds only one nullable column and reverses cleanly
-- [ ] Ask, Build and the execute route are unchanged
-- [ ] Not LOCKED by an implementer
+- [x] A hand-off is refused with a reason when the off switch, spending limit or token limit would refuse a normal run, and no job is created
+- [x] A to B to A is refused when the caller sends no depth or visited values; values sent by the caller cannot weaken it
+- [x] The ninth hand-off in a run is refused
+- [x] A waiting hand-off has no job and no ledger row; reject never runs it; approve runs it once, and a repeat approve does not run it again
+- [x] A run ends completed when all hand-offs completed and failed when any failed, and not while one waits or runs
+- [x] The migration adds only one nullable column and reverses cleanly
+- [x] Ask, Build and the execute route are unchanged
+- [x] Not LOCKED by an implementer
 
 ### COLLAB-LIVE-02 — Approval gate and loop prevention on staging
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

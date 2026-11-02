@@ -11,6 +11,7 @@ import { CollaborationRunEntity } from './collaboration-run.entity';
 import type {
   CollaborationAgentRole,
   ReferralCancelStatus,
+  ReferralPendingJob,
   ReferralResultStatus,
   ReferralStatus,
 } from './orchestration.contracts';
@@ -112,6 +113,9 @@ export class CollaborationReferralEntity {
 
   @Column({ type: 'text', name: 'execution_id', nullable: true })
   executionId: string | null;
+
+  @Column({ type: 'jsonb', name: 'pending_job', nullable: true })
+  pendingJob: ReferralPendingJob | null;
 
   @Column({ type: 'text', name: 'result_status', nullable: true })
   resultStatus: ReferralResultStatus | null;

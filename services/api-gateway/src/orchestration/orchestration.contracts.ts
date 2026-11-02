@@ -86,6 +86,7 @@ export type OrchestrationMode = (typeof ORCHESTRATION_MODES)[number];
 
 export const DEFAULT_MAX_REFERRAL_DEPTH = 3;
 export const DEFAULT_MAX_AGENTS_PER_COLLABORATION = 4;
+export const MAX_HANDOFFS_PER_RUN = 8;
 export const READ_ONLY_MODE_INDICATOR: OrchestrationMode = 'read_only';
 export const NO_WRITE_TOOLS_INDICATOR = 'no_write_tools' as const;
 
@@ -149,7 +150,25 @@ export interface CollaborationReferral {
   readonly cancelRequestedAt: IsoTimestamp | null;
   readonly cancelledByUserId: UserId | null;
   readonly cancelReason: string | null;
+  readonly prompt: string | null;
+  readonly decidedBy: string | null;
   readonly result: ReferralResult | null;
+}
+
+export interface ReferralPendingJob {
+  readonly sessionId: string;
+  readonly conversationId: string;
+  readonly apiKeyId: string;
+  readonly prompt: string;
+  readonly provider: string;
+  readonly adapter: string;
+  readonly model: string | null;
+  readonly workspaceContext: unknown;
+  readonly globalInstructions: string | null;
+  readonly projectInstructions: string | null;
+  readonly orchestrationPriority: number | null;
+  readonly decidedBy: string | null;
+  readonly decisionReason: string | null;
 }
 
 export interface ReferralResult {
