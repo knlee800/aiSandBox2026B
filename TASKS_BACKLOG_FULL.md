@@ -82994,14 +82994,14 @@ taskId=AUTH-GUARD-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; stage-start: docs/AUTH-GUARD-01-STAGE-START.md. Step 3 (implementation) not started. mutexes=GATEWAY. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
+**Status:** COMPLETE AND LOCKED — 2026-11-02. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY released. Checkpoint: docs/AUTH-GUARD-01-CHECKPOINT.md. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; stage-start: docs/AUTH-GUARD-01-STAGE-START.md. Step 3 (implementation) not started. mutexes=GATEWAY. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
 **Task ID:** AUTH-GUARD-01
 **Title:** Close the internal-service guard bypass: letter case and routes outside /api/internal
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP (security-sensitive). Step 1 registration; Step 2 stage-start and admission; Step 3 implementation; Step 4 consolidation, checkpoint and LOCK by the control plane.
 **Start condition (human):** READY — Keith approved the draft on 2026-11-02.
-**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Start condition (machine):** `READY`; `status=LOCKED`. Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
 **Depends on (human):** none.
 **Depends on (machine `dependsOn`):** `[]`
 **Primary write scope:** exactly `services/api-gateway/src/guards/internal-service-auth.guard.ts`, `services/api-gateway/src/guards/internal-service-auth.guard.spec.ts`, `services/api-gateway/src/guards/internal-service-auth.guard.http.spec.ts`, `services/api-gateway/src/websocket/__tests__/events.controller.guard.spec.ts`. Anything else is out of scope.
@@ -83020,15 +83020,16 @@ nature=IMPLEMENTATION
 
 **Problem:** InternalServiceAuthGuard only asks for the key when the path starts with lowercase /api/internal/ or /api/events/. Express routes ignore letter case, so /api/INTERNAL/... reaches internal routes with no key. A local test on 2026-11-02 with the compiled guard and stub routes showed 401 for the lowercase path and 200 for the changed-case path. The guard also returns true for every other path, so the chat-messages, token-usage and runtime controllers that use it are not protected: add-by-session returned 201 with no key. Staging's basic_auth limits who can reach this. Not tested on staging. Source: docs/GOV-RPG-UI-COMPAT-01-REVIEW-RECORD.md, deferred concerns.
 **Scope:** (1) compare the request path case-insensitively; (2) also require the key on /api/chat-messages/, /api/token-usage/ and /api/runtime/; (3) add tests, including over HTTP with real routes. Not in scope: execution ownership and stream cleanup (AUTH-OWNER-01), Socket.IO, comparing the key in constant time, the container manager guard, deploying the change.
+**Result (2026-11-02):** implemented in 0498cbe4fbaad87751cdc8fe9b1abe53458fade1 by Cursor CLI, reviewed and re-validated by the control plane: api-gateway 2385 passed, with only the 14 known smoke.integration failures; build exit 0; the local bypass test now returns 401 on all four requests. Checkpoint: docs/AUTH-GUARD-01-CHECKPOINT.md. Not deployed.
 
 #### Acceptance criteria
 
-- [ ] Changed-case internal and events paths are refused without the key, over HTTP on a real internal route
-- [ ] chat-messages, token-usage and runtime routes are refused without the key, including changed-case paths
-- [ ] Those routes work with the correct key, and are refused with a wrong key
-- [ ] Public routes still pass without a key
-- [ ] services/api-gateway: npm test and npm run build pass, apart from the known smoke failures, and only the files in the primary write scope change
-- [ ] Not LOCKED by an implementer
+- [x] Changed-case internal and events paths are refused without the key, over HTTP on a real internal route
+- [x] chat-messages, token-usage and runtime routes are refused without the key, including changed-case paths
+- [x] Those routes work with the correct key, and are refused with a wrong key
+- [x] Public routes still pass without a key
+- [x] services/api-gateway: npm test and npm run build pass, apart from the known smoke failures, and only the files in the primary write scope change
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
