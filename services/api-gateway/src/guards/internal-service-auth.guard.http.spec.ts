@@ -256,6 +256,17 @@ describe('InternalServiceAuthGuard HTTP prefix protection (AUTH-GUARD-01)', () =
     }
   });
 
+  it('does not treat /api/collaboration as an internal route', async () => {
+    const response = await send('post', '/api/collaboration/runs', {
+      sessionId: 'session-1',
+      task: 'look at the project',
+    });
+
+    expect(response.status).not.toBe(401);
+    expect(orchestrationService.createCollaborationRun).not.toHaveBeenCalled();
+    expect(orchestrationService.createPendingReferral).not.toHaveBeenCalled();
+  });
+
   it('reaches chat, token-usage, and runtime handlers with the correct key', async () => {
     const chatResponse = await send('post', chatPath, chatBody, internalKey).expect(201);
     expect(chatResponse.body).toEqual({ id: 'message-1' });

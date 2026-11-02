@@ -73,6 +73,7 @@ import WorkspaceTabBar from './workspace-tab-bar';
 import type { WorkspaceTabBarTab } from './workspace-tab-bar';
 import type { WorkspaceExecutionIntent } from './workspace-execution-intent.logic';
 import { toolLabelKey, type HarnessProgressItem } from './workspace-agent-mode.logic';
+import { collaborationTeamHref } from '@/lib/collaboration/logic';
 import {
   TAB_REGISTRY,
   DEFAULT_ACTIVE_TAB_ID,
@@ -90,6 +91,7 @@ import {
   DocumentTextIcon,
   FolderIcon,
   FolderOpenIcon,
+  UserGroupIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 
@@ -135,6 +137,12 @@ function getAiMessages(locale: string): typeof enMessages.ai {
   if (locale === 'zh-TW') return zhTwMessages.ai;
   if (locale === 'zh-CN') return zhCnMessages.ai;
   return enMessages.ai;
+}
+
+function getCollaborationMessages(locale: string): typeof enMessages.collaboration {
+  if (locale === 'zh-TW') return zhTwMessages.collaboration;
+  if (locale === 'zh-CN') return zhCnMessages.collaboration;
+  return enMessages.collaboration;
 }
 
 function getStateMessageMessages(locale: string): typeof enMessages.stateMessage {
@@ -836,6 +844,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const workspaceMessages = React.useMemo(() => getWorkspaceMessages(locale), [locale]);
   const previewMessages = React.useMemo(() => getPreviewMessages(locale), [locale]);
   const aiMessages = React.useMemo(() => getAiMessages(locale), [locale]);
+  const collaborationMessages = React.useMemo(() => getCollaborationMessages(locale), [locale]);
   const recoveryMessages = React.useMemo(() => getRecoveryCopy(locale), [locale]);
   recoveryCopy = recoveryMessages;
   const stateMessageMessages = React.useMemo(() => getStateMessageMessages(locale), [locale]);
@@ -1646,11 +1655,25 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
       data-testid="chat-panel-shell"
     >
       <div className="flex flex-col flex-1 min-h-0" data-testid="workspace-chat-ai-panel">
-        <div className="flex items-center justify-end px-3 pt-2">
+        <div className="flex min-w-0 items-center justify-end gap-2 px-3 pt-2">
+          {props.harnessEntitled === true && props.selectedSessionId ? (
+            <Link
+              href={collaborationTeamHref(
+                locale,
+                props.selectedSessionId,
+                selectedSessionProjectId ?? selectedProjectIdForContext,
+              )}
+              data-testid="workspace-collaboration-team-link"
+              className="inline-flex min-w-0 items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            >
+              <UserGroupIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span className="truncate">{collaborationMessages.teamLink}</span>
+            </Link>
+          ) : null}
           <button
             type="button"
             onClick={toggleHistoryPanel}
-            className="rounded p-1.5 text-gray-600 hover:bg-gray-100"
+            className="shrink-0 rounded p-1.5 text-gray-600 hover:bg-gray-100"
             data-testid="workspace-history-drawer-toggle"
             aria-label={historyToggleLabel}
             title={historyToggleLabel}

@@ -4,6 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { OrchestrationService } from '../orchestration.service';
 import { OrchestrationModule } from '../orchestration.module';
 import { InternalCollaborationController } from '../internal-collaboration.controller';
+import { CollaborationController } from '../collaboration.controller';
 import { CollaborationRunEntity } from '../collaboration-run.entity';
 import { CollaborationReferralEntity } from '../collaboration-referral.entity';
 import {
@@ -439,10 +440,13 @@ describe('AGENT-PLATFORM-ORCH-PERSIST-01: durable orchestration persistence', ()
     expect(payload.isReferralExecution).toBe(true);
   });
 
-  it('registers only InternalCollaborationController on OrchestrationModule', () => {
+  it('registers the internal and login collaboration controllers on OrchestrationModule', () => {
     const controllers =
       Reflect.getMetadata('controllers', OrchestrationModule) ?? [];
-    expect(controllers).toEqual([InternalCollaborationController]);
+    expect(controllers).toEqual([
+      InternalCollaborationController,
+      CollaborationController,
+    ]);
   });
 
   it('wires repository tokens through the Nest testing module', async () => {

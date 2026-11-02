@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OrchestrationService } from './orchestration.service';
 import { InternalCollaborationController } from './internal-collaboration.controller';
+import { CollaborationController } from './collaboration.controller';
 import { CollaborationSweepWorker } from './collaboration-sweep.worker';
 import { QueueModule } from '../queue/queue.module';
 import { UsageLedgerModule } from '../usage-ledger/usage-ledger.module';
@@ -12,9 +13,15 @@ import { SafetyModule } from '../safety/safety.module';
 import { AbortModule } from '../abort/abort.module';
 import { QuotaModule } from '../quota/quota.module';
 import { CreditBalanceGuardModule } from '../billing/credit-balance-guard.module';
+import { AuthModule } from '../auth/auth.module';
+import { SessionModule } from '../sessions/session.module';
+import { ConversationModule } from '../conversations/conversation.module';
 
 @Module({
   imports: [
+    AuthModule,
+    SessionModule,
+    ConversationModule,
     QueueModule,
     UsageLedgerModule,
     SafetyModule,
@@ -26,7 +33,7 @@ import { CreditBalanceGuardModule } from '../billing/credit-balance-guard.module
       CollaborationReferralEntity,
     ]),
   ],
-  controllers: [InternalCollaborationController],
+  controllers: [InternalCollaborationController, CollaborationController],
   providers: [OrchestrationService, ExecutionResultService, CollaborationSweepWorker],
   exports: [OrchestrationService],
 })

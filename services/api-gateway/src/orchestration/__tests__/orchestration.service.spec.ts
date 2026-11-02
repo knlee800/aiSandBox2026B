@@ -1533,6 +1533,69 @@ describe('COLLAB-INTERNAL-01: referral read-back and ledger intent', () => {
     expect(detail?.referrals[0].result?.summary).toBe('the model text');
   });
 
+  it('keeps a stored execution failure reason instead of Execution failed', async () => {
+    await startInProgress('exec-failed-reason');
+    mockExecutionResultService.getExecution.mockResolvedValue({
+      execution_status: 'failed',
+      metadata: {
+        executionError: {
+          code: 'provider_unavailable',
+          message: 'The provider declined the request',
+        },
+      },
+    });
+
+    const detail = await service.getCollaborationRunWithReferrals('collab-read');
+
+    expect(detail?.referrals[0].status).toBe('failed');
+    expect(detail?.referrals[0].result?.summary).toBe('The provider declined the request');
+  });
+
+  it('keeps the answer when a failed execution has both output and a stored reason', async () => {
+    await startInProgress('exec-failed-both');
+    mockExecutionResultService.getExecution.mockResolvedValue({
+      execution_status: 'failed',
+      metadata: {
+        aiExecutionResult: { output: 'the model text' },
+        executionError: { message: 'The provider declined the request' },
+      },
+    });
+
+    const detail = await service.getCollaborationRunWithReferrals('collab-read');
+
+    expect(detail?.referrals[0].result?.summary).toBe('the model text');
+  });
+
+  it('drops a stored reason that is a stack or a secret and keeps Execution failed', async () => {
+    await startInProgress('exec-failed-secret');
+    mockExecutionResultService.getExecution.mockResolvedValue({
+      execution_status: 'failed',
+      metadata: {
+        executionError: {
+          message: 'api_key=super-secret-value\n    at Worker.run (/srv/app/worker.js:10:5)',
+        },
+      },
+    });
+
+    const detail = await service.getCollaborationRunWithReferrals('collab-read');
+
+    expect(detail?.referrals[0].result?.summary).toBe('Execution failed');
+  });
+
+  it('uses the stored failure code when the execution has no message', async () => {
+    await startInProgress('exec-failed-code');
+    mockExecutionResultService.getExecution.mockResolvedValue({
+      execution_status: 'failed',
+      metadata: {
+        executionError: { code: 'harness_tool_loop_disabled' },
+      },
+    });
+
+    const detail = await service.getCollaborationRunWithReferrals('collab-read');
+
+    expect(detail?.referrals[0].result?.summary).toBe('harness_tool_loop_disabled');
+  });
+
   it.each(['running', 'pending', 'cancel_requested'])(
     'leaves an in-progress referral unchanged when the execution is %s',
     async (status) => {

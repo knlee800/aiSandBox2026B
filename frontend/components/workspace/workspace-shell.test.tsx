@@ -10358,3 +10358,47 @@ describe('workspace agent mode — HARNESS-UI-01', () => {
     }
   });
 });
+
+describe('workspace team link — COLLAB-SCREEN-01', () => {
+  test('Team link is hidden when the user is not harness entitled', () => {
+    const hidden = renderWorkspaceShell({
+      workspaceView: 'project',
+      selectedProjectId: 'project-1',
+      harnessEntitled: false,
+      sessions: [{ ...session, projectId: 'project-1' }],
+      selectedSessionId: session.id,
+    });
+    assert.doesNotMatch(hidden, /workspace-collaboration-team-link/);
+    assert.match(hidden, /workspace-chat-intent-ask/);
+    assert.match(hidden, /workspace-chat-intent-build/);
+  });
+
+  test('Team link is hidden when there is no session', () => {
+    const hidden = renderWorkspaceShell({
+      workspaceView: 'project',
+      selectedProjectId: 'project-1',
+      harnessEntitled: true,
+      selectedSessionId: null,
+      sessions: [],
+    });
+    assert.doesNotMatch(hidden, /workspace-collaboration-team-link/);
+  });
+
+  test('Team link points at the current session and project when entitled', () => {
+    const shown = renderWorkspaceShell({
+      workspaceView: 'project',
+      selectedProjectId: 'project-1',
+      harnessEntitled: true,
+      sessions: [{ ...session, projectId: 'project-1' }],
+      selectedSessionId: session.id,
+    });
+    assert.match(shown, /data-testid="workspace-collaboration-team-link"/);
+    assert.match(shown, new RegExp(enMessages.collaboration.teamLink));
+    assert.match(
+      shown,
+      /href="\/en\/collaboration\?sessionId=12345678-test-session&amp;projectId=project-1"/,
+    );
+    assert.match(shown, /workspace-chat-intent-ask/);
+    assert.match(shown, /workspace-chat-intent-build/);
+  });
+});

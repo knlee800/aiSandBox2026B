@@ -83736,7 +83736,7 @@ taskId=COLLAB-SCREEN-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-03.
+**Status:** COMPLETE AND LOCKED — 2026-11-03. LANE-DONE and LOCKED by the control plane; Lane 1, GATEWAY, FRONTEND and I18N released. Checkpoint: docs/COLLAB-SCREEN-01-CHECKPOINT.md.
 **Task ID:** COLLAB-SCREEN-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -83752,14 +83752,14 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Another user cannot read or act on a run, and a session that is not yours is refused
-- [ ] Users not on the allow-list see no link and are refused by the routes
-- [ ] decidedBy is the login; the browser cannot set provider, model, team or decidedBy
-- [ ] Answers render as text, not HTML
-- [ ] All visible text is in en, zh-TW and zh-CN, with Heroicons for icons
-- [ ] A failed hand-off shows a readable reason
-- [ ] Ask, Build, Agent mode and the workspace otherwise unchanged
-- [ ] Not LOCKED by an implementer
+- [x] Another user cannot read or act on a run, and a session that is not yours is refused
+- [x] Users not on the allow-list see no link and are refused by the routes
+- [x] decidedBy is the login; the browser cannot set provider, model, team or decidedBy
+- [x] Answers render as text, not HTML
+- [x] All visible text is in en, zh-TW and zh-CN, with Heroicons for icons
+- [x] A failed hand-off shows a readable reason. Partial: thrown worker errors still show Execution failed; see the checkpoint
+- [x] Ask, Build, Agent mode and the workspace otherwise unchanged
+- [x] Not LOCKED by an implementer
 
 ### COLLAB-LIVE-05 — Keith uses the collaboration screen on staging
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

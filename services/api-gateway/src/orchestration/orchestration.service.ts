@@ -61,6 +61,7 @@ import {
   COLLABORATION_WAITING_MAX_AGE_MS,
   HANDOFF_WAIT_TIMEOUT_REASON,
 } from './collaboration-sweep.constants';
+import { readStoredExecutionFailureReason } from './collaboration-failure-reason';
 import {
   answerHandoffIdempotencyKey,
   buildCollaborationProjectInstructions,
@@ -68,6 +69,11 @@ import {
   parseHandoffRequest,
   readCollaborationAgents,
 } from './handoff-request';
+
+function createdAtMs(value: Date): number {
+  const time = value instanceof Date ? value.getTime() : Date.parse(String(value));
+  return Number.isFinite(time) ? time : 0;
+}
 
 const DEFAULT_REFERRAL_TIMEOUT_MS = 300_000;
 const LEDGER_INTENT_FAILURE = 'Failed to write execution intent';
@@ -358,6 +364,22 @@ export class OrchestrationService {
     }
 
     return this.toCollaborationRun(entity);
+  }
+
+  async listCollaborationRunsForOwner(input: {
+    userId: string;
+    projectId: string;
+    limit: number;
+  }): Promise<CollaborationRun[]> {
+    const rows = await this.runRepo.find({
+      where: { userId: input.userId, projectId: input.projectId },
+    });
+    const newestFirst = [...rows].sort(
+      (left, right) => createdAtMs(right.createdAt) - createdAtMs(left.createdAt),
+    );
+    return newestFirst
+      .slice(0, input.limit)
+      .map((row) => this.toCollaborationRun(row));
   }
 
   async getCollaborationRunWithReferrals(
@@ -2095,9 +2117,18 @@ export class OrchestrationService {
     }
     if (status && FINISHED_FAILURE_EXECUTION_STATUSES.includes(status)) {
       const answer = this.readAnswerText(execution?.metadata);
+      let summary = `Execution ${status}`;
+      if (answer.length > 0) {
+        summary = answer;
+      } else {
+        const storedReason = readStoredExecutionFailureReason(execution?.metadata);
+        if (storedReason.length > 0) {
+          summary = storedReason;
+        }
+      }
       return {
         kind: 'failed',
-        summary: answer.length > 0 ? answer : `Execution ${status}`,
+        summary,
       };
     }
 
