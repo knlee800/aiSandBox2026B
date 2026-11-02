@@ -83350,18 +83350,18 @@ taskId=HARNESS-LIVE-06
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; stage-start: docs/HARNESS-LIVE-06-STAGE-START.md. Authorized: one deploy of a481b9d with guard checks, flags on, up to 3 runs in the browser, read-only evidence, flags off. Not started. mutexes=STAGING, PROVIDER-LIVE, CREDIT, ENV. stagingAuthorized, providerLiveAuthorized and creditAuthorized true. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
+**Status:** READY / NOT ADMITTED — 2026-11-02. Returned to READY on Keith's instruction; not LOCKED. Window 2026-11-02: execution 21623ded-c88a-489e-bb8e-ea785c7d587d worked, reconnecting after a refresh, and the run list answered on real PostgreSQL with modes and no prompts or answers. The next run was refused by the 100,000-token rolling limit, so the close-the-page and Build cases did not run. Flags off at 08:23:11 UTC with the saved environment files restored and their hashes checked. Evidence is off-repo in C:/Users/knlee/aisb-preflight/HARNESS-LIVE-06/. Keith instructed HARNESS-QUOTA-01; the window resumes after it. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; stage-start: docs/HARNESS-LIVE-06-STAGE-START.md. Authorized: one deploy of a481b9d with guard checks, flags on, up to 3 runs in the browser, read-only evidence, flags off. Not started. mutexes=STAGING, PROVIDER-LIVE, CREDIT, ENV. stagingAuthorized, providerLiveAuthorized and creditAuthorized true. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
 **Task ID:** HARNESS-LIVE-06
 **Title:** Prove run status and reconnect after a refresh on ainow-staging-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION (operational run; no product activation)
 **Lifecycle:** 4-STEP. Step 1 registration; Step 2 stage-start; Step 3 runs under Keith's authorization; Step 4 consolidation, checkpoint and LOCK by the control plane.
-**Start condition (human):** READY — Keith approved on 2026-11-02 (draft approved).
-**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Start condition (human):** NOT READY — needs HARNESS-QUOTA-01 locked and deployed, then re-admission. Previous: **Start condition (human):** READY — Keith approved on 2026-11-02 (draft approved).
+**Start condition (machine):** `NOT_READY`; `status=READY`. Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
 **Depends on (human):** RUN-STATUS-01 and RUN-RECOVER-01, both COMPLETE AND LOCKED.
-**Depends on (machine `dependsOn`):** `[RUN-STATUS-01, RUN-RECOVER-01]`
+**Depends on (machine `dependsOn`):** `[RUN-STATUS-01, RUN-RECOVER-01, HARNESS-QUOTA-01]` Previous: **Depends on (machine `dependsOn`):** `[RUN-STATUS-01, RUN-RECOVER-01]`
 **Primary write scope:** none. Host state on ainow-staging-01, the test project's workspace and off-repo evidence only.
-**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV (Lane 1, 2026-11-02). ENV covers host environment files for the window only.
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV, declared and released at the return to READY 2026-11-02. Previous: **Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV (Lane 1, 2026-11-02). ENV covers host environment files for the window only.
 **Hot-file leases:** none
 **Shared contracts:** consumes HARNESS_ENTITLEMENT_PROOF_V1 without changing it (`sharedContractIds=[HARNESS_ENTITLEMENT_PROOF_V1]`; `mutatesSharedContractIds=[]`).
 **Evidence class:** PROVIDER-LIVE.
@@ -83391,8 +83391,12 @@ nature=IMPLEMENTATION
 - [ ] Not LOCKED by an implementer
 
 ### HARNESS-QUOTA-01 — Make the rolling 24-hour token limit a setting, with a default of 1,000,000
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=HARNESS-QUOTA-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's instruction; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; Step 1 (implementation) not started. mutexes=GATEWAY. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's instruction; the machine registration, candidate record and Lane 1 admission follow in Part 2.
 **Task ID:** HARNESS-QUOTA-01
 **Title:** Make the rolling 24-hour token limit a setting, with a default of 1,000,000
 **Workstream:** AGENT (taxonomy only; zero admission weight)

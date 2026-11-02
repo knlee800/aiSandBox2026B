@@ -11,16 +11,22 @@
   "occupancy": {
     "lane1": {
       "state": "ACTIVE",
-      "taskId": "HARNESS-LIVE-06",
-      "mutexes": ["STAGING", "PROVIDER-LIVE", "CREDIT", "ENV"],
-      "writePaths": [],
+      "taskId": "HARNESS-QUOTA-01",
+      "mutexes": ["GATEWAY"],
+      "writePaths": [
+        "services/api-gateway/src/quota/quota.config.ts",
+        "services/api-gateway/src/quota/__tests__/quota.config.spec.ts",
+        "services/api-gateway/src/quota/__tests__/token-quota.guard.spec.ts",
+        "services/api-gateway/src/admin/admin-dashboard.service.spec.ts",
+        "services/api-gateway/src/admin/admin-operational.controller.spec.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "PROVIDER-LIVE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
-      "sharedContractIds": ["HARNESS_ENTITLEMENT_PROOF_V1"],
+      "sharedContractIds": [],
       "mutatesSharedContractIds": [],
-      "runtimeNeeds": ["STAGING", "PROVIDER-LIVE", "CREDIT"]
+      "runtimeNeeds": []
     },
     "lane2": {
       "state": "EMPTY",
@@ -1892,12 +1898,12 @@
       "taskId": "HARNESS-LIVE-06",
       "nature": "IMPLEMENTATION",
       "lifecycle": "4-STEP",
-      "status": "ADMITTED",
-      "startCondition": "READY",
+      "status": "READY",
+      "startCondition": "NOT_READY",
       "saturationClass": "OPTIONAL",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
-      "dependsOn": ["RUN-STATUS-01", "RUN-RECOVER-01"],
+      "dependsOn": ["HARNESS-LIVE-01", "HARNESS-REFUSAL-01", "HARNESS-QUOTA-01"],
       "mutexes": ["STAGING", "PROVIDER-LIVE", "CREDIT", "ENV"],
       "writePaths": [],
       "hotfiles": [],
@@ -1907,6 +1913,34 @@
       "evidenceClass": "PROVIDER-LIVE",
       "exclusiveCapacity": false,
       "runtimeNeeds": ["STAGING", "PROVIDER-LIVE", "CREDIT"],
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
+    },
+    {
+      "taskId": "HARNESS-QUOTA-01",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "2-STEP",
+      "status": "ADMITTED",
+      "startCondition": "READY",
+      "saturationClass": "OPTIONAL",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": [],
+      "mutexes": ["GATEWAY"],
+      "writePaths": [
+        "services/api-gateway/src/quota/quota.config.ts",
+        "services/api-gateway/src/quota/__tests__/quota.config.spec.ts",
+        "services/api-gateway/src/quota/__tests__/token-quota.guard.spec.ts",
+        "services/api-gateway/src/admin/admin-dashboard.service.spec.ts",
+        "services/api-gateway/src/admin/admin-operational.controller.spec.ts"
+      ],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "LOCAL-TESTS",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": [],
       "admissionUncertain": false,
       "writeSetPrecision": "EXACT"
     }
@@ -1925,8 +1959,8 @@
   ],
   "runtimeAuthorization": {
     "localRuntimeAuthorized": true,
-    "stagingAuthorized": true,
-    "providerLiveAuthorized": true,
-    "creditAuthorized": true
+    "stagingAuthorized": false,
+    "providerLiveAuthorized": false,
+    "creditAuthorized": false
   }
 }
