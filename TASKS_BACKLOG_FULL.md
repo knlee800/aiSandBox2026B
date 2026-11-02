@@ -83299,6 +83299,46 @@ nature=IMPLEMENTATION
 - [x] services/api-gateway: npm test and npm run build pass, apart from the known smoke failures, and only the files in the primary write scope change
 - [x] Not LOCKED by an implementer
 
+### RUN-RECOVER-01 — Reconnect the Builder chat to a run after a refresh
+
+**Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
+**Task ID:** RUN-RECOVER-01
+**Title:** Reconnect the Builder chat to a run after a refresh
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP. Step 1 registration; Step 2 stage-start and admission; Step 3 implementation; Step 4 consolidation, checkpoint and LOCK by the control plane.
+**Start condition (human):** READY — Keith approved the draft on 2026-11-02.
+**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Depends on (human):** RUN-STATUS-01, COMPLETE AND LOCKED.
+**Depends on (machine `dependsOn`):** `[]`
+**Primary write scope:** exactly `frontend/app/`, `frontend/components/workspace/workspace-run-recovery.logic.ts`, `frontend/components/workspace/workspace-run-recovery.logic.test.ts`, `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`; under frontend/app/ only the Builder page `frontend/app/[locale]/app/page.tsx`. Anything else is out of scope.
+**Mutexes / resources:** FRONTEND and I18N (Lane 1, 2026-11-02). No GATEWAY, STAGING, ENV, MIGRATION, PACKAGE, LOCAL-RUNTIME, PROVIDER-LIVE or CREDIT.
+**Hot-file leases:** none
+**Shared contracts:** consumes GET /api/ai/executions without changing it.
+**Evidence class:** LOCAL-TESTS. Real recovery is proven in the live check that follows.
+**Revert isolation:** acceptable (frontend only; no schema, migration or contract change).
+**saturationClass:** OPTIONAL
+**productClass:** CURRENT
+**futureAuthorization:** NONE
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** none
+
+**Problem:** a refresh during a run loses it on screen, and the browser saves the assistant message, so the answer is lost from the chat too. An Agent run may have changed files by then.
+**Scope:** when a session opens, reconnect to its active run or to a run this browser started that has since ended: show status, resume polling and the stream, show the final answer and save it once; refresh the workspace after an Agent run. A recovered Build run shows its status and answer only and never applies file changes, and says so. Text in all three locales. Not in scope: the gateway, a run list screen, stored step history, a cancel control, deploying.
+
+#### Acceptance criteria
+
+- [ ] Reopening a session with an active run shows it running and shows the final answer when it ends
+- [ ] A run that ended while the page was closed shows its answer, and the answer is saved to the chat only once
+- [ ] A recovered Agent run refreshes the file tree, open file, preview and checkpoints
+- [ ] A recovered Build or unknown-mode run never applies file actions, and says the changes were not applied
+- [ ] An active run older than 15 minutes is not reconnected; a session with no run behaves as today; a normal run with no refresh behaves as today
+- [ ] All new visible text is in en, zh-TW and zh-CN
+- [ ] frontend tsc, npm test and npm run build pass, and only the files in the primary write scope change
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
