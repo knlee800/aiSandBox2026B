@@ -920,6 +920,7 @@ Do not describe Harness as the current Builder execution default. Harness-as-def
 | Per-builder harness config | CURRENT | AGENT-HARNESS-07 |
 | Pre-apply checkpoint gate | CURRENT (gated path) | `enablePreApplyCheckpoint=true`; created before first write mutation |
 | Audit events (`InMemoryHarnessAuditRecorder`) | CURRENT | In-memory only; not persisted to DB |
+| Rolling 24-hour token limit | CURRENT | Setting `MAX_TOKENS_PER_24H`, default 1,000,000 per user (was fixed at 100,000 until HARNESS-QUOTA-01) |
 | Run list (`GET /api/ai/executions`) | CURRENT (mock-tested; not deployed) | The caller's active or recent runs: identity fields and mode only, never prompts or answers. New runs record `runMode` in metadata; older rows report unknown |
 | Run recovery in the Builder chat | CURRENT (mock-tested; not deployed) | On session open, reconnects to an active run under 15 minutes old or a run this browser started. Recovered runs never apply file actions |
 | Harness progress messages (`harness_progress`) | CURRENT (GATED) | One stream message per tool call: step, tool and target (path, query, command or URL), never file contents or tool output; seen working in a browser on staging (HARNESS-LIVE-05, 2026-11-02) |

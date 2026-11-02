@@ -83396,14 +83396,14 @@ taskId=HARNESS-QUOTA-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; Step 1 (implementation) not started. mutexes=GATEWAY. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's instruction; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Status:** COMPLETE AND LOCKED — 2026-11-02. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY released. Checkpoint: docs/HARNESS-QUOTA-01-CHECKPOINT.md. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; Step 1 (implementation) not started. mutexes=GATEWAY. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's instruction; the machine registration, candidate record and Lane 1 admission follow in Part 2.
 **Task ID:** HARNESS-QUOTA-01
 **Title:** Make the rolling 24-hour token limit a setting, with a default of 1,000,000
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 2-STEP. Step 1 implementation; Step 2 consolidation, checkpoint and LOCK by the control plane.
 **Start condition (human):** READY — Keith instructed this on 2026-11-02, after the limit stopped HARNESS-LIVE-06.
-**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Start condition (machine):** `READY`; `status=LOCKED`. Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
 **Depends on (human):** none.
 **Depends on (machine `dependsOn`):** `[]`
 **Primary write scope:** exactly `services/api-gateway/src/quota/quota.config.ts`, `services/api-gateway/src/quota/__tests__/quota.config.spec.ts`, `services/api-gateway/src/quota/__tests__/token-quota.guard.spec.ts`, `services/api-gateway/src/admin/admin-dashboard.service.spec.ts`, `services/api-gateway/src/admin/admin-operational.controller.spec.ts`. Anything else is out of scope.
@@ -83422,13 +83422,14 @@ nature=IMPLEMENTATION
 
 **Problem:** MAX_TOKENS_PER_24H has been fixed at 100,000 in quota.config.ts since 2026-02-23, while the session limits beside it read from the environment. It stopped HARNESS-LIVE-06 after a day of testing.
 **Scope:** read MAX_TOKENS_PER_24H with the existing resolveIntEnv, default 1,000,000. Not in scope: per-plan limits, charging, env file changes, the daily spend caps, deploying.
+**Result (2026-11-02):** implemented in 67c054a4ffe183f6f4e96c2550350a48863a39a2 by Cursor CLI, reviewed and re-validated by the control plane: api-gateway 2441 passed, with the 14 known smoke.integration failures and one suite lost to a Jest worker running out of memory, which passes alone; build exit 0. Checkpoint: docs/HARNESS-QUOTA-01-CHECKPOINT.md. Not deployed.
 
 #### Acceptance criteria
 
-- [ ] With no setting the limit is 1,000,000; a valid MAX_TOKENS_PER_24H overrides it; an invalid value falls back to the default
-- [ ] The guard still refuses over the limit with the same 429 response
-- [ ] services/api-gateway: npm test and npm run build pass, apart from the known smoke failures, and only the files in the primary write scope change
-- [ ] Not LOCKED by an implementer
+- [x] With no setting the limit is 1,000,000; a valid MAX_TOKENS_PER_24H overrides it; an invalid value falls back to the default
+- [x] The guard still refuses over the limit with the same 429 response
+- [x] services/api-gateway: npm test and npm run build pass, apart from the known smoke failures, and only the files in the primary write scope change
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
