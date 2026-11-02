@@ -24,6 +24,10 @@ describe('TokenQuotaGuard (PHASE-42B-2)', () => {
 
   const testUserId = 'test-user-001';
   const testApiKeyId = 'test-key-001';
+  // Same distance under the cap that 95000 and 93000 had under the old 100000 limit.
+  // The 8000-token estimate still pushes both over QuotaConfig.MAX_TOKENS_PER_24H.
+  const usageOverTokenQuota = QuotaConfig.MAX_TOKENS_PER_24H - 5000;
+  const usageUnderUntilEstimate = QuotaConfig.MAX_TOKENS_PER_24H - 7000;
 
   beforeEach(() => {
     // Mock QueryRunner
@@ -107,7 +111,7 @@ describe('TokenQuotaGuard (PHASE-42B-2)', () => {
 
   describe('Quota Enforcement', () => {
     it('should allow request when quota is available', async () => {
-      // Mock: 50K tokens used (under 100K limit)
+      // Mock: 50K tokens used (under the configured 24h limit)
       mockQueryRunner.query
         .mockResolvedValueOnce(undefined) // pg_advisory_xact_lock
         .mockResolvedValueOnce([{ total: 50000 }]); // SUM(tokens_used)
@@ -120,10 +124,10 @@ describe('TokenQuotaGuard (PHASE-42B-2)', () => {
     });
 
     it('should deny request when quota would be exceeded', async () => {
-      // Mock: 95K tokens used (estimated 8K would exceed 100K limit)
+      // Usage is under the cap until the 8000-token estimate is included.
       mockQueryRunner.query
         .mockResolvedValueOnce(undefined) // pg_advisory_xact_lock
-        .mockResolvedValueOnce([{ total: 95000 }]) // SUM(tokens_used)
+        .mockResolvedValueOnce([{ total: usageOverTokenQuota }]) // SUM(tokens_used)
         .mockResolvedValueOnce([
           { timestamp: new Date('2026-02-23T12:00:00Z') },
         ]); // oldest usage
@@ -152,10 +156,10 @@ describe('TokenQuotaGuard (PHASE-42B-2)', () => {
     });
 
     it('should include estimated tokens in quota check', async () => {
-      // Mock: 93K tokens used (estimated 8K would reach 101K > 100K limit)
+      // Usage alone is under the cap; adding the 8000-token estimate exceeds it.
       mockQueryRunner.query
         .mockResolvedValueOnce(undefined) // pg_advisory_xact_lock
-        .mockResolvedValueOnce([{ total: 93000 }]) // SUM(tokens_used)
+        .mockResolvedValueOnce([{ total: usageUnderUntilEstimate }]) // SUM(tokens_used)
         .mockResolvedValueOnce([
           { timestamp: new Date('2026-02-23T12:00:00Z') },
         ]); // oldest usage
@@ -164,7 +168,7 @@ describe('TokenQuotaGuard (PHASE-42B-2)', () => {
         HttpException,
       );
 
-      // Quota check should consider: 93K + 8K (estimated) = 101K > 100K
+      // Quota check should consider usage + the 8000-token estimate, which exceeds the cap.
       expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
     });
   });
@@ -173,7 +177,7 @@ describe('TokenQuotaGuard (PHASE-42B-2)', () => {
     it('should return HTTP 429 (not 403) when quota exceeded', async () => {
       mockQueryRunner.query
         .mockResolvedValueOnce(undefined) // pg_advisory_xact_lock
-        .mockResolvedValueOnce([{ total: 95000 }]) // SUM(tokens_used)
+        .mockResolvedValueOnce([{ total: usageOverTokenQuota }]) // SUM(tokens_used)
         .mockResolvedValueOnce([
           { timestamp: new Date('2026-02-23T12:00:00Z') },
         ]); // oldest usage
@@ -190,7 +194,7 @@ describe('TokenQuotaGuard (PHASE-42B-2)', () => {
     it('should return quota 429 with details.quota_type field', async () => {
       mockQueryRunner.query
         .mockResolvedValueOnce(undefined) // pg_advisory_xact_lock
-        .mockResolvedValueOnce([{ total: 95000 }]) // SUM(tokens_used)
+        .mockResolvedValueOnce([{ total: usageOverTokenQuota }]) // SUM(tokens_used)
         .mockResolvedValueOnce([
           { timestamp: new Date('2026-02-23T12:00:00Z') },
         ]); // oldest usage
@@ -210,7 +214,7 @@ describe('TokenQuotaGuard (PHASE-42B-2)', () => {
         expect(response.details).toBeDefined();
         expect(response.details.quota_type).toBe('max_tokens_per_24h');
         expect(response.details.limit).toBe(QuotaConfig.MAX_TOKENS_PER_24H);
-        expect(response.details.used).toBe(95000);
+        expect(response.details.used).toBe(usageOverTokenQuota);
         expect(response.details.estimated_tokens).toBeGreaterThan(0);
         expect(response.details.reset_at).toBeDefined();
       }
@@ -224,7 +228,7 @@ describe('TokenQuotaGuard (PHASE-42B-2)', () => {
 
       mockQueryRunner.query
         .mockResolvedValueOnce(undefined) // pg_advisory_xact_lock
-        .mockResolvedValueOnce([{ total: 95000 }]) // SUM(tokens_used)
+        .mockResolvedValueOnce([{ total: usageOverTokenQuota }]) // SUM(tokens_used)
         .mockResolvedValueOnce([{ timestamp: oldestTimestamp }]); // oldest usage
 
       try {
@@ -254,7 +258,7 @@ describe('TokenQuotaGuard (PHASE-42B-2)', () => {
     it('should rollback transaction when quota exceeded', async () => {
       mockQueryRunner.query
         .mockResolvedValueOnce(undefined) // pg_advisory_xact_lock
-        .mockResolvedValueOnce([{ total: 95000 }]) // SUM(tokens_used)
+        .mockResolvedValueOnce([{ total: usageOverTokenQuota }]) // SUM(tokens_used)
         .mockResolvedValueOnce([
           { timestamp: new Date('2026-02-23T12:00:00Z') },
         ]); // oldest usage
@@ -314,7 +318,7 @@ describe('TokenQuotaGuard (PHASE-42B-2)', () => {
       // Mock quota exceeded scenario
       mockQueryRunner.query
         .mockResolvedValueOnce(undefined) // pg_advisory_xact_lock
-        .mockResolvedValueOnce([{ total: 95000 }]) // SUM(tokens_used)
+        .mockResolvedValueOnce([{ total: usageOverTokenQuota }]) // SUM(tokens_used)
         .mockResolvedValueOnce([
           { timestamp: new Date('2026-02-23T12:00:00Z') },
         ]); // oldest usage

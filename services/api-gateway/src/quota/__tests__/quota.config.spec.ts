@@ -73,4 +73,41 @@ describe('QuotaConfig', () => {
       expect(QuotaConfig.DEFAULT_QUOTA.tokensPerDay).toBeGreaterThanOrEqual(1000);
     });
   });
+
+  describe('MAX_TOKENS_PER_24H', () => {
+    const originalMaxTokensPer24h = process.env.MAX_TOKENS_PER_24H;
+
+    afterEach(() => {
+      if (originalMaxTokensPer24h === undefined) {
+        delete process.env.MAX_TOKENS_PER_24H;
+      } else {
+        process.env.MAX_TOKENS_PER_24H = originalMaxTokensPer24h;
+      }
+    });
+
+    function loadMaxTokensPer24h(): number {
+      let limit = 0;
+      jest.isolateModules(() => {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { QuotaConfig: IsolatedQuotaConfig } = require('../quota.config');
+        limit = IsolatedQuotaConfig.MAX_TOKENS_PER_24H;
+      });
+      return limit;
+    }
+
+    it('defaults to 1000000 when MAX_TOKENS_PER_24H is unset', () => {
+      delete process.env.MAX_TOKENS_PER_24H;
+      expect(loadMaxTokensPer24h()).toBe(1000000);
+    });
+
+    it('uses a valid MAX_TOKENS_PER_24H override', () => {
+      process.env.MAX_TOKENS_PER_24H = '2500000';
+      expect(loadMaxTokensPer24h()).toBe(2500000);
+    });
+
+    it('falls back to 1000000 when MAX_TOKENS_PER_24H is invalid', () => {
+      process.env.MAX_TOKENS_PER_24H = 'not-a-number';
+      expect(loadMaxTokensPer24h()).toBe(1000000);
+    });
+  });
 });
