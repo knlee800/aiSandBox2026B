@@ -83210,8 +83210,12 @@ nature=IMPLEMENTATION
 - [x] Not LOCKED by an implementer
 
 ### HARNESS-LIVE-05 — Use Agent mode in the real Builder screen on ainow-staging-01
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=HARNESS-LIVE-05
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; stage-start: docs/HARNESS-LIVE-05-STAGE-START.md. Authorized: one deploy of 0838a5f with guard checks, flags on, up to 3 Agent runs in the browser, one revert, read-only evidence, flags off. Not started. mutexes=STAGING, PROVIDER-LIVE, CREDIT, ENV. stagingAuthorized, providerLiveAuthorized and creditAuthorized true. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
 **Task ID:** HARNESS-LIVE-05
 **Title:** Use Agent mode in the real Builder screen on ainow-staging-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
