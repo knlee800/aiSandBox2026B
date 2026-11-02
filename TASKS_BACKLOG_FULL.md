@@ -83502,6 +83502,61 @@ nature=GOVERNANCE
 - [x] The board is compacted, with occupancy and the validator unaffected
 - [x] Not LOCKED by an implementer
 
+### COLLAB-INTERNAL-01 — Internal routes and result read-back for the collaboration coordinator
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-INTERNAL-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02.
+**Task ID:** COLLAB-INTERNAL-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Registration and admission here; implementation; code and LOCK in one commit after control-plane review.
+**Start condition (human):** READY — Keith approved the draft on 2026-11-02.
+**Depends on:** none. AGENT-PLATFORM-ORCH-PERSIST-01 is LOCKED.
+**Primary write scope:** exactly `services/api-gateway/src/orchestration/internal-collaboration.controller.ts`, `services/api-gateway/src/orchestration/internal-collaboration.controller.spec.ts`, `services/api-gateway/src/orchestration/orchestration.module.ts`, `services/api-gateway/src/orchestration/orchestration.service.ts`, `services/api-gateway/src/orchestration/__tests__/orchestration.service.spec.ts`, `services/api-gateway/src/guards/internal-service-auth.guard.http.spec.ts`.
+**Mutexes / resources:** GATEWAY. **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (internal routes only; no migration, no UI, no change to Ask or Build).
+**saturationClass:** OPTIONAL. Collaboration stays FUTURE in PRD.md; this adds no product capability.
+
+**Problem:** the coordinator has no way in and no way back: no HTTP route, and nothing outside the service calls completeReferral or failReferral, so a referral would stay in_progress. startReferralExecution also enqueues without the ledger row the execute path writes first.
+**Scope:** internal-key routes under /api/internal/collaboration to create a run, create and start a referral, and read a run with its referrals; a read-back that marks a referral completed or failed from the stored execution result; the ledger row before enqueue. Leaf jobs stay plain Builder jobs with no harnessVersion (AGENT-PLATFORM-ORCH-ARCH-01).
+
+#### Acceptance criteria
+
+- [ ] The routes refuse a request without the internal key, in any letter case
+- [ ] A started referral has a ledger row and its job has no harnessVersion
+- [ ] Reading a run marks a finished referral completed with the result text, or failed, and an unfinished one stays in_progress
+- [ ] Loop, depth and agent limits and the read-only policy are refused through the routes
+- [ ] Ask, Build and the execute route are unchanged
+- [ ] Not LOCKED by an implementer
+
+### COLLAB-LIVE-01 — Collaboration internal test on staging
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-LIVE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-11-02.
+**Task ID:** COLLAB-LIVE-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Start condition NOT_READY until COLLAB-INTERNAL-01 is LOCKED and deployed.
+**Depends on:** COLLAB-INTERNAL-01.
+**Primary write scope:** none in the repository beyond records.
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT, ENV. **Evidence class:** PROVIDER-LIVE. **Revert isolation:** acceptable (no code).
+**saturationClass:** OPTIONAL
+
+**Scope:** on ainow-staging-01 with the stored test key: Agent A answers, the answer is handed to Agent B who reviews it, and the review returns to the run. A loop and a too-deep referral are refused. Keith reads both answers and judges them. Harness flags stay off.
+
+#### Acceptance criteria
+
+- [ ] Tables present, one run with two real answers stored, both ledger rows finished
+- [ ] Loop and depth refused, with audit events
+- [ ] Jobs had no harnessVersion and no workspace file changed
+- [ ] Keith judgement recorded
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
