@@ -453,7 +453,9 @@
     "userAgentAskSessionNotFound": "This workspace session is no longer available. Create or select a session, then try again.",
     "creditBalanceExhausted": "Ask/Build is blocked because your credit balance is {count}. Credit balance is separate from token and session quota.",
     "creditBalanceNotProvisioned": "Ask/Build is blocked because a credit balance has not been provisioned for this account. Credit balance is separate from token and session quota.",
-    "creditBalancePaymentRequired": "Ask/Build is blocked because credit is required. Credit balance is separate from token and session quota."
+    "creditBalancePaymentRequired": "Ask/Build is blocked because credit is required. Credit balance is separate from token and session quota.",
+    "runRecovering": "Reconnected to your run...",
+    "runRecoveredBuildNotApplied": "This run finished while the page was closed, so its file changes were not applied. Ask again to apply them."
   },
   "authModule": {
     "installing": "Installing auth module — preparing your workspace...",

@@ -453,7 +453,9 @@
     "userAgentAskSessionNotFound": "此工作區工作階段已無法使用。請建立或選擇工作階段後再試。",
     "creditBalanceExhausted": "Ask/Build 已停用，因為你的信用餘額為 {count}。信用餘額與 token 及工作階段配額不同。",
     "creditBalanceNotProvisioned": "Ask/Build 已停用，因為此帳戶尚未配置信用餘額。信用餘額與 token 及工作階段配額不同。",
-    "creditBalancePaymentRequired": "Ask/Build 已停用，因為需要信用餘額。信用餘額與 token 及工作階段配額不同。"
+    "creditBalancePaymentRequired": "Ask/Build 已停用，因為需要信用餘額。信用餘額與 token 及工作階段配額不同。",
+    "runRecovering": "已重新連線到你的這次執行...",
+    "runRecoveredBuildNotApplied": "這次執行在頁面關閉時已完成，所以檔案變更沒有套用。若要套用，請再問一次。"
   },
   "authModule": {
     "installing": "正在安裝驗證模組 — 正在準備你的工作區...",

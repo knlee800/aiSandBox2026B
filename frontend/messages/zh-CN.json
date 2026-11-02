@@ -453,7 +453,9 @@
     "userAgentAskSessionNotFound": "此工作区会话已不可用。请创建或选择会话后再试。",
     "creditBalanceExhausted": "Ask/Build 已停用，因为你的信用余额为 {count}。信用余额与 token 及会话配额不同。",
     "creditBalanceNotProvisioned": "Ask/Build 已停用，因为此账户尚未配置信用余额。信用余额与 token 及会话配额不同。",
-    "creditBalancePaymentRequired": "Ask/Build 已停用，因为需要信用余额。信用余额与 token 及会话配额不同。"
+    "creditBalancePaymentRequired": "Ask/Build 已停用，因为需要信用余额。信用余额与 token 及会话配额不同。",
+    "runRecovering": "已重新连接到你的这次运行...",
+    "runRecoveredBuildNotApplied": "这次运行在页面关闭时已完成，所以文件更改没有应用。若要应用，请再问一次。"
   },
   "authModule": {
     "installing": "正在安装认证模块 — 正在准备你的工作区...",

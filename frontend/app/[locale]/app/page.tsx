@@ -103,6 +103,18 @@ import {
   persistSessionChatMessageToBackend,
 } from '@/components/workspace/workspace-chat-persistence.logic';
 import {
+  appendRecoveredRunNotice,
+  parsePendingRun,
+  parseRunListResponse,
+  pendingRunStorageKey,
+  recoveredRunNeedsNotAppliedNotice,
+  selectRecoverableRun,
+  serializePendingRun,
+  type ActiveRunRow,
+  type PendingRunRecord,
+  type RecoveredRunMode,
+} from '@/components/workspace/workspace-run-recovery.logic';
+import {
   shouldRefreshDashboardForChatStatus,
   toQuotaRateLimitGuidance,
 } from '@/components/workspace/workspace-quota-usage.logic';
@@ -868,6 +880,52 @@ function getChatThreadStorageKey(sessionId: string): string {
   return `${CHAT_THREAD_STORAGE_KEY_PREFIX}_${sessionId}`;
 }
 
+function isFinishedChatExecutionStatus(status: string | null): boolean {
+  return (
+    status === 'completed' ||
+    status === 'failed' ||
+    status === 'cancelled' ||
+    status === 'timeout'
+  );
+}
+
+function pendingRunModeForSend(
+  submitAsAgent: boolean,
+  executionIntent: WorkspaceExecutionIntent,
+): RecoveredRunMode {
+  if (submitAsAgent) {
+    return 'agent';
+  }
+  if (executionIntent === 'conversation') {
+    return 'ask';
+  }
+  return 'build';
+}
+
+function readStoredPendingRun(sessionId: string): PendingRunRecord | null {
+  try {
+    return parsePendingRun(localStorage.getItem(pendingRunStorageKey(sessionId)));
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredPendingRun(sessionId: string, run: PendingRunRecord): void {
+  try {
+    localStorage.setItem(pendingRunStorageKey(sessionId), serializePendingRun(run));
+  } catch {
+    // The open page still follows the run when storage is unavailable.
+  }
+}
+
+function clearStoredPendingRun(sessionId: string): void {
+  try {
+    localStorage.removeItem(pendingRunStorageKey(sessionId));
+  } catch {
+    // Leaving a stale record is harmless when storage cannot be updated.
+  }
+}
+
 export default function AppPage() {
   type WorkspaceCheckpointCompareState =
     | 'idle'
@@ -1043,6 +1101,10 @@ export default function AppPage() {
     Record<string, WorkspaceExecutionFileActionState>
   >({});
   const chatStreamRef = useRef<EventSource | null>(null);
+  const chatRequestStateRef = useRef(chatRequestState);
+  chatRequestStateRef.current = chatRequestState;
+  const sessionRestoreGenerationRef = useRef(0);
+  const recoveredExecutionModesRef = useRef<Map<string, RecoveredRunMode>>(new Map());
   const chatResponseTextRef = useRef('');
   const skipNextChatThreadPersistRef = useRef(false);
   const pendingAssistantMessageIdRef = useRef<string | null>(null);
@@ -1711,6 +1773,7 @@ export default function AppPage() {
     setChatPromptInput('');
     pendingPreviewFixPromptRef.current = null;
     previewFixSubmitInFlightRef.current = false;
+    const generation = ++sessionRestoreGenerationRef.current;
     chatStreamRef.current?.close();
     chatStreamRef.current = null;
     pendingAssistantMessageIdRef.current = null;
@@ -1720,6 +1783,7 @@ export default function AppPage() {
     setChatStatusMessage(null);
     setChatError(null);
     setChatRequestState('idle');
+    chatRequestStateRef.current = 'idle';
     setChatExecutionFileActionStates({});
     executionSessionIdByExecutionIdRef.current = {};
     executionAssistantMessageIdByExecutionIdRef.current = {};
@@ -1750,19 +1814,31 @@ export default function AppPage() {
       return;
     }
     void (async () => {
+      let threadMessages: WorkspaceChatThreadUiMessage[] = restoredMessages;
       try {
         const backendMessages = await loadSessionChatMessagesFromBackend({
           sessionId: selectedSessionId,
         });
-        if (selectedSessionIdRef.current !== selectedSessionId) {
+        if (
+          generation !== sessionRestoreGenerationRef.current ||
+          selectedSessionIdRef.current !== selectedSessionId
+        ) {
           return;
         }
         if (backendMessages.length > 0 || restoredMessages.length === 0) {
           setChatThreadMessages(backendMessages);
+          threadMessages = backendMessages;
         }
       } catch {
         // Keep localStorage-backed thread as fallback when backend load fails.
       }
+      if (
+        generation !== sessionRestoreGenerationRef.current ||
+        selectedSessionIdRef.current !== selectedSessionId
+      ) {
+        return;
+      }
+      await recoverSessionRun(selectedSessionId, threadMessages, generation);
     })();
   }, [selectedSessionId, userId]);
 
@@ -3947,6 +4023,177 @@ export default function AppPage() {
     await loadDashboardSlice();
   }
 
+  function isChatRunInProgress(): boolean {
+    const state = chatRequestStateRef.current;
+    return state === 'submitting' || state === 'queued' || state === 'running';
+  }
+
+  function clearPendingRunForExecution(executionId: string): void {
+    const sessionId =
+      executionSessionIdByExecutionIdRef.current[executionId] ?? selectedSessionIdRef.current;
+    if (!sessionId) {
+      return;
+    }
+    clearStoredPendingRun(sessionId);
+  }
+
+  function openChatExecutionStream(executionId: string): void {
+    const stream = new EventSource(
+      `/api/ai/executions/${encodeURIComponent(executionId)}/stream`,
+    );
+    chatStreamRef.current = stream;
+    stream.onmessage = (event) => {
+      const rawData = typeof event.data === 'string' ? event.data : '';
+      if (!rawData) {
+        return;
+      }
+      try {
+        const parsed = JSON.parse(rawData) as {
+          type?: string;
+          content?: string;
+          actions?: unknown;
+        };
+        if (parsed.type === 'token' && typeof parsed.content === 'string') {
+          if (chatResponseTextRef.current === parsed.content) {
+            return;
+          }
+          chatResponseTextRef.current = parsed.content;
+          setChatResponseText(parsed.content);
+          const pendingAssistantId = pendingAssistantMessageIdRef.current;
+          if (pendingAssistantId) {
+            setChatThreadMessages((currentMessages) =>
+              currentMessages.map((message) =>
+                message.id === pendingAssistantId
+                  ? message.content === parsed.content
+                    ? message
+                    : { ...message, content: parsed.content ?? '' }
+                  : message,
+              ),
+            );
+          }
+          return;
+        }
+        if (parsed.type === 'file_actions') {
+          const streamFileActions = normalizeWorkspaceFileActions(parsed.actions);
+          consumeExecutionFileActions(executionId, 'stream', streamFileActions);
+          return;
+        }
+        if (parsed.type === 'harness_progress') {
+          const progressItem = parseHarnessProgressMessage(parsed);
+          if (progressItem && agentExecutionIdsRef.current.has(executionId)) {
+            const currentProgress =
+              harnessProgressByExecutionIdRef.current[executionId] ?? [];
+            const nextProgress = appendHarnessProgress(currentProgress, progressItem);
+            harnessProgressByExecutionIdRef.current[executionId] = nextProgress;
+            if (activeHarnessProgressExecutionIdRef.current === executionId) {
+              setHarnessProgress(nextProgress);
+            }
+          }
+          return;
+        }
+        if (parsed.type === 'complete') {
+          chatStreamRef.current?.close();
+          chatStreamRef.current = null;
+        }
+      } catch {
+        if (chatResponseTextRef.current === rawData) {
+          return;
+        }
+        chatResponseTextRef.current = rawData;
+        setChatResponseText(rawData);
+      }
+    };
+    stream.onerror = () => {
+      chatStreamRef.current?.close();
+      chatStreamRef.current = null;
+    };
+  }
+
+  async function recoverSessionRun(
+    sessionId: string,
+    threadMessages: readonly WorkspaceChatThreadUiMessage[],
+    generation: number,
+  ): Promise<void> {
+    const stillCurrent = (): boolean =>
+      generation === sessionRestoreGenerationRef.current &&
+      selectedSessionIdRef.current === sessionId &&
+      !isChatRunInProgress();
+    if (!stillCurrent()) {
+      return;
+    }
+
+    let activeRuns: ActiveRunRow[] = [];
+    try {
+      const response = await fetch(
+        `/api/ai/executions?state=active&sessionId=${encodeURIComponent(sessionId)}&limit=5`,
+        { method: 'GET' },
+      );
+      if (response.ok) {
+        activeRuns = parseRunListResponse(await response.json());
+      }
+    } catch {
+      activeRuns = [];
+    }
+
+    if (!stillCurrent()) {
+      return;
+    }
+    const recoverable = selectRecoverableRun({
+      activeRuns,
+      pendingRun: readStoredPendingRun(sessionId),
+      now: Date.now(),
+    });
+    if (!recoverable || !stillCurrent()) {
+      return;
+    }
+
+    const assistantsForRun = threadMessages.filter(
+      (message) => message.role === 'assistant' && message.executionId === recoverable.executionId,
+    );
+    if (assistantsForRun.some((message) => message.content.length > 0)) {
+      clearStoredPendingRun(sessionId);
+      return;
+    }
+    if (!stillCurrent()) {
+      return;
+    }
+
+    const existingAssistant = assistantsForRun[0] ?? null;
+    const assistantMessageId = existingAssistant?.id ?? crypto.randomUUID();
+    executionSessionIdByExecutionIdRef.current[recoverable.executionId] = sessionId;
+    executionAssistantMessageIdByExecutionIdRef.current[recoverable.executionId] =
+      assistantMessageId;
+    executionIntentByExecutionIdRef.current[recoverable.executionId] = 'conversation';
+    if (recoverable.mode === 'agent') {
+      agentExecutionIdsRef.current.add(recoverable.executionId);
+      activeHarnessProgressExecutionIdRef.current = recoverable.executionId;
+      harnessProgressByExecutionIdRef.current[recoverable.executionId] = [];
+    }
+    recoveredExecutionModesRef.current.set(recoverable.executionId, recoverable.mode);
+
+    if (!existingAssistant) {
+      setChatThreadMessages((currentMessages) => [
+        ...currentMessages,
+        {
+          id: assistantMessageId,
+          role: 'assistant',
+          content: '',
+          executionId: recoverable.executionId,
+        },
+      ]);
+    }
+    pendingAssistantMessageIdRef.current = assistantMessageId;
+    chatResponseTextRef.current = '';
+    setChatResponseText('');
+    setChatExecutionId(recoverable.executionId);
+    setChatRequestState('running');
+    chatRequestStateRef.current = 'running';
+    setChatStatusMessage(aiMessages.runRecovering);
+    setChatError(null);
+    openChatExecutionStream(recoverable.executionId);
+    await refreshChatExecutionStatus(recoverable.executionId);
+  }
+
   async function refreshChatExecutionStatus(executionId: string): Promise<void> {
     if (!userId) {
       return;
@@ -3995,6 +4242,15 @@ export default function AppPage() {
             : nextOutput || 'Execution completed with no response text.';
         chatResponseTextRef.current = resolvedResponse;
         setChatResponseText(resolvedResponse);
+        const recoveredMode = recoveredExecutionModesRef.current.get(executionId);
+        const assistantAnswer =
+          recoveredMode && recoveredRunNeedsNotAppliedNotice(recoveredMode)
+            ? appendRecoveredRunNotice(
+                resolvedResponse,
+                recoveredMode,
+                aiMessages.runRecoveredBuildNotApplied,
+              )
+            : resolvedResponse;
         const pendingAssistantId = pendingAssistantMessageIdRef.current;
         if (pendingAssistantId) {
           setChatThreadMessages((currentMessages) =>
@@ -4002,7 +4258,7 @@ export default function AppPage() {
               message.id === pendingAssistantId
                 ? {
                     ...message,
-                    content: resolvedResponse,
+                    content: assistantAnswer,
                     provider: nextProvider ?? message.provider,
                     model: nextModel ?? message.model,
                   }
@@ -4014,13 +4270,14 @@ export default function AppPage() {
             void persistSessionChatMessageToBackend({
               sessionId: executionSessionId,
               role: 'assistant',
-              content: resolvedResponse,
+              content: assistantAnswer,
             }).catch(() => {
               // Keep local thread persistence as compatibility fallback.
             });
           }
           pendingAssistantMessageIdRef.current = null;
         }
+        clearPendingRunForExecution(executionId);
         setChatStatusMessage('Assistant response received.');
         setChatError(null);
         if (shouldRefreshDashboardForChatStatus(nextStatus)) {
@@ -4034,6 +4291,7 @@ export default function AppPage() {
         chatStreamRef.current?.close();
         chatStreamRef.current = null;
         setChatRequestState('failed');
+        clearPendingRunForExecution(executionId);
         setChatStatusMessage(null);
         const failureMessage = toChatAssistantFailureMessage(
           {
@@ -4465,6 +4723,7 @@ export default function AppPage() {
     const submitAsAgent = agentMode && harnessEntitled;
 
     setChatRequestState('submitting');
+    chatRequestStateRef.current = 'submitting';
     setChatPromptInput('');
     chatStreamRef.current?.close();
     chatStreamRef.current = null;
@@ -4639,82 +4898,22 @@ export default function AppPage() {
               : message,
           ),
         );
+        if (!isFinishedChatExecutionStatus(nextStatus)) {
+          writeStoredPendingRun(executionSessionId, {
+            executionId: nextExecutionId,
+            mode: pendingRunModeForSend(submitAsAgent, requestExecutionIntent),
+            startedAt: new Date().toISOString(),
+          });
+        }
       }
       if (nextExecutionId) {
-        const stream = new EventSource(
-          `/api/ai/executions/${encodeURIComponent(nextExecutionId)}/stream`,
-        );
-        chatStreamRef.current = stream;
-        stream.onmessage = (event) => {
-          const rawData = typeof event.data === 'string' ? event.data : '';
-          if (!rawData) {
-            return;
-          }
-          try {
-            const parsed = JSON.parse(rawData) as {
-              type?: string;
-              content?: string;
-              actions?: unknown;
-            };
-            if (parsed.type === 'token' && typeof parsed.content === 'string') {
-              if (chatResponseTextRef.current === parsed.content) {
-                return;
-              }
-              chatResponseTextRef.current = parsed.content;
-              setChatResponseText(parsed.content);
-              const pendingAssistantId = pendingAssistantMessageIdRef.current;
-              if (pendingAssistantId) {
-                setChatThreadMessages((currentMessages) =>
-                  currentMessages.map((message) =>
-                    message.id === pendingAssistantId
-                      ? message.content === parsed.content
-                        ? message
-                        : { ...message, content: parsed.content ?? '' }
-                      : message,
-                  ),
-                );
-              }
-              return;
-            }
-            if (parsed.type === 'file_actions') {
-              const streamFileActions = normalizeWorkspaceFileActions(parsed.actions);
-              consumeExecutionFileActions(nextExecutionId, 'stream', streamFileActions);
-              return;
-            }
-            if (parsed.type === 'harness_progress') {
-              const progressItem = parseHarnessProgressMessage(parsed);
-              if (progressItem && agentExecutionIdsRef.current.has(nextExecutionId)) {
-                const currentProgress =
-                  harnessProgressByExecutionIdRef.current[nextExecutionId] ?? [];
-                const nextProgress = appendHarnessProgress(currentProgress, progressItem);
-                harnessProgressByExecutionIdRef.current[nextExecutionId] = nextProgress;
-                if (activeHarnessProgressExecutionIdRef.current === nextExecutionId) {
-                  setHarnessProgress(nextProgress);
-                }
-              }
-              return;
-            }
-            if (parsed.type === 'complete') {
-              chatStreamRef.current?.close();
-              chatStreamRef.current = null;
-            }
-          } catch {
-            if (chatResponseTextRef.current === rawData) {
-              return;
-            }
-            chatResponseTextRef.current = rawData;
-            setChatResponseText(rawData);
-          }
-        };
-        stream.onerror = () => {
-          chatStreamRef.current?.close();
-          chatStreamRef.current = null;
-        };
+        openChatExecutionStream(nextExecutionId);
       }
 
       if (nextStatus === 'completed') {
         if (nextExecutionId) {
           consumeExecutionFileActions(nextExecutionId, 'status', nextFileActions);
+          clearPendingRunForExecution(nextExecutionId);
         }
         setChatRequestState('completed');
         const completedResponse =
@@ -4760,6 +4959,9 @@ export default function AppPage() {
 
       if (nextStatus === 'failed' || nextStatus === 'cancelled' || nextStatus === 'timeout') {
         setChatRequestState('failed');
+        if (nextExecutionId) {
+          clearPendingRunForExecution(nextExecutionId);
+        }
         setChatStatusMessage(null);
         const failureMessage = toChatAssistantFailureMessage({
           rawMessage: nextOutput,
