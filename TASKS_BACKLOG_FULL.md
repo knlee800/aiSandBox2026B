@@ -82906,18 +82906,18 @@ taskId=HARNESS-LIVE-03
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; stage-start: docs/HARNESS-LIVE-03-STAGE-START.md. Authorized: one deploy of 4c6d606, flags on, up to 3 runs with write and validation tools, read-only evidence, flags off. Not started. mutexes=STAGING, PROVIDER-LIVE, CREDIT, ENV. stagingAuthorized, providerLiveAuthorized and creditAuthorized true. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
+**Status:** COMPLETE AND LOCKED — 2026-11-02. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING, PROVIDER-LIVE, CREDIT and ENV released; stagingAuthorized, providerLiveAuthorized and creditAuthorized false. Checkpoint: docs/HARNESS-LIVE-03-CHECKPOINT.md. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; stage-start: docs/HARNESS-LIVE-03-STAGE-START.md. Authorized: one deploy of 4c6d606, flags on, up to 3 runs with write and validation tools, read-only evidence, flags off. Not started. mutexes=STAGING, PROVIDER-LIVE, CREDIT, ENV. stagingAuthorized, providerLiveAuthorized and creditAuthorized true. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
 **Task ID:** HARNESS-LIVE-03
 **Title:** Prove the raised step limit and last-call notice with a real model on ainow-staging-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION (operational run; no product activation)
 **Lifecycle:** 4-STEP. Step 1 registration; Step 2 stage-start; Step 3 runs under Keith's authorization; Step 4 consolidation, checkpoint and LOCK by the control plane.
 **Start condition (human):** READY — Keith approved on 2026-11-02 ("Live window for this").
-**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Start condition (machine):** `READY`; `status=LOCKED`. Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
 **Depends on (human):** HARNESS-LIVE-02 and HARNESS-STEP-LIMIT-01, both COMPLETE AND LOCKED.
 **Depends on (machine `dependsOn`):** `[HARNESS-LIVE-02, HARNESS-STEP-LIMIT-01]`
 **Primary write scope:** none. Host state on ainow-staging-01, the test project's workspace and off-repo evidence only.
-**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV (Lane 1, 2026-11-02). ENV covers host environment files for the window only.
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV, released at COMPLETE AND LOCKED 2026-11-02. Previous: **Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT and ENV (Lane 1, 2026-11-02). ENV covers host environment files for the window only.
 **Hot-file leases:** none
 **Shared contracts:** consumes HARNESS_ENTITLEMENT_PROOF_V1 without changing it (`sharedContractIds=[HARNESS_ENTITLEMENT_PROOF_V1]`; `mutatesSharedContractIds=[]`).
 **Evidence class:** PROVIDER-LIVE.
@@ -82932,17 +82932,18 @@ nature=IMPLEMENTATION
 
 **Problem:** HARNESS-STEP-LIMIT-01 raised the limit to 8 model calls, added a 60,000-token run budget and a last-call notice, with mocks only. Whether a real model obeys the notice, and whether those sizes fit, is unproven.
 **Scope:** on ainow-staging-01, behind basic_auth, in project C1 repeat: up to 3 runs on Anthropic with write and validation tools on. Same caps as HARNESS-LIVE-02. Keith types the provider key at a hidden prompt; it is removed afterwards and the flags go back off. Browser tools stay off. Not in scope: changing the limit or budget, other providers, any UI, product activation, and making harness writes CURRENT.
+**Result (2026-11-02):** one window, 3 real runs on claude-opus-5-5, all completed. Run 1 (04f38899-07bb-40c1-b0b9-a2a113695027), the bug fix that could not fit the old limit of 3, used 6 model calls. Run 2 (58e20f36-c944-4487-885c-111b410625ac), a bigger task, used 5 model calls and 14,871 tokens. Run 3 (f9f66af0-49f6-4a81-9dea-47000ce60da8) reached the last-call notice, called no tool on call 8, and listed the 7 files written and 3 not written. Keith read the run transcripts and accepted them as proof. Checkpoint: docs/HARNESS-LIVE-03-CHECKPOINT.md.
 
 #### Acceptance criteria
 
-- [ ] A real run that could not fit before completes with a correct answer within the limit
-- [ ] A bigger real run shows the calls and tokens it uses, within the budget or stopped by it
-- [ ] A real run that reaches the last-call notice answers with what is done and unfinished, and no tool runs after the notice
-- [ ] Credits and usage are recorded correctly, and usage_records.model is non-empty
-- [ ] Spend stays within the caps
-- [ ] Afterwards the flags are off, the key is removed, and the configuration hashes match the recorded state
-- [ ] Keith reads the transcripts and records his judgement
-- [ ] Not LOCKED by an implementer
+- [x] A real run that could not fit before completes with a correct answer within the limit
+- [x] A bigger real run shows the calls and tokens it uses, within the budget or stopped by it
+- [x] A real run that reaches the last-call notice answers with what is done and unfinished, and no tool runs after the notice
+- [x] Credits and usage are recorded correctly, and usage_records.model is non-empty
+- [x] Spend stays within the caps
+- [x] Afterwards the flags are off, the key is removed, and the configuration hashes match the recorded state
+- [x] Keith reads the transcripts and records his judgement
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

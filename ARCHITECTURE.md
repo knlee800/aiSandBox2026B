@@ -923,7 +923,7 @@ Do not describe Harness as the current Builder execution default. Harness-as-def
 | `search_workspace` | **NOT IMPLEMENTED** (schema only) | Registered in tool-registry.ts (`enabled: false`); no handler in ToolDispatcher |
 | Automatic rollback after partial failure | **NOT IMPLEMENTED** | Pre-apply checkpoint exists on gated path; rollback is manual via checkpoint/revert |
 | Semantic / vector search | NOT IMPLEMENTED (PLANNED) | `enableSemanticSearch=false` |
-| Real-provider autonomous harness loop | PROVEN ON STAGING (gated) | HARNESS-LIVE-01 and HARNESS-LIVE-02, 2026-11-01: real Anthropic runs on staging read and wrote files, ran npm test through run_validation, and a save-point revert restored a file. One provider and one small test project only. The last-call notice (HARNESS-STEP-LIMIT-01) is not yet proven on a real model |
+| Real-provider autonomous harness loop | PROVEN ON STAGING (gated) | HARNESS-LIVE-01 and HARNESS-LIVE-02, 2026-11-01: real Anthropic runs on staging read and wrote files, ran npm test through run_validation, and a save-point revert restored a file. One provider and one small test project only. HARNESS-LIVE-03, 2026-11-02: at the raised limit, a real run that reached the last-call notice stopped calling tools and reported what was done and unfinished. The run token budget and the block on tools after the notice have mock-test proof only |
 
 ### 12.2 Harness Execution Path (GATED — not private-beta default)
 
