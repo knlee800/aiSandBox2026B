@@ -83262,14 +83262,14 @@ taskId=RUN-STATUS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; Step 2 (implementation) not started. mutexes=GATEWAY. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Status:** COMPLETE AND LOCKED — 2026-11-02. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY released. Checkpoint: docs/RUN-STATUS-01-CHECKPOINT.md. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; Step 2 (implementation) not started. mutexes=GATEWAY. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
 **Task ID:** RUN-STATUS-01
 **Title:** Owner-scoped list of active and recent runs
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP. Step 1 is this registration and admission (2026-11-02); Step 2 implementation; Step 3 consolidation, checkpoint and LOCK by the control plane.
 **Start condition (human):** READY — Keith approved the draft on 2026-11-02.
-**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Start condition (machine):** `READY`; `status=LOCKED`. Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
 **Depends on (human):** none.
 **Depends on (machine `dependsOn`):** `[]`
 **Primary write scope:** exactly `services/api-gateway/src/ai/ai-execution.controller.ts`, `services/api-gateway/src/ai/ai-execution.controller.spec.ts`, `services/api-gateway/src/ai/execution-result.service.ts`, `services/api-gateway/src/ai/__tests__/ai-execution.controller.integration.spec.ts`, `services/api-gateway/src/ai/__tests__/ai-execution.run-status.http.spec.ts`, `services/api-gateway/src/ai/__tests__/execution-result.list-runs.spec.ts`. Anything else is out of scope.
@@ -83288,15 +83288,16 @@ nature=IMPLEMENTATION
 
 **Problem:** execution results stay on the server, but nothing can find a user's runs after a refresh. docs/GOV-RPG-UI-COMPAT-01-REVIEW-RECORD.md lists owner-scoped run retrieval as a question for later work, and docs/GOV-HARNESS-RESET-01-DECISION.md puts shared run status next. The start record does not store whether a run is Ask, Build or Agent.
 **Scope:** (1) GET /api/ai/executions with state=active or recent, optional sessionId and limit, returning only the caller's runs: execution ID, status, session, provider, model, tokens, start time, duration, mode and agent ID; never prompts or answers; (2) record runMode in the metadata when a run starts; older rows report unknown. Not in scope: any UI, public v1 routes, a schema change, step history, deploying.
+**Result (2026-11-02):** implemented in 996f2ff989cd5ca3a06fc7f4df246d201de4b5be by Cursor CLI, reviewed and re-validated by the control plane: api-gateway 2441 passed, with only the 14 known smoke.integration failures; build exit 0. Checkpoint: docs/RUN-STATUS-01-CHECKPOINT.md. Mocked only; not deployed.
 
 #### Acceptance criteria
 
-- [ ] Only the caller's runs are returned, and another user's run never appears, including with that user's sessionId
-- [ ] state=active returns queued and running runs; state=recent returns runs newest first; an invalid state, sessionId or limit returns 400; limit is capped
-- [ ] No row holds a prompt, an answer, or any metadata beyond the listed fields
-- [ ] New runs record runMode ask, build or agent; older rows report unknown; execute behaviour is otherwise unchanged
-- [ ] services/api-gateway: npm test and npm run build pass, apart from the known smoke failures, and only the files in the primary write scope change
-- [ ] Not LOCKED by an implementer
+- [x] Only the caller's runs are returned, and another user's run never appears, including with that user's sessionId
+- [x] state=active returns queued and running runs; state=recent returns runs newest first; an invalid state, sessionId or limit returns 400; limit is capped
+- [x] No row holds a prompt, an answer, or any metadata beyond the listed fields
+- [x] New runs record runMode ask, build or agent; older rows report unknown; execute behaviour is otherwise unchanged
+- [x] services/api-gateway: npm test and npm run build pass, apart from the known smoke failures, and only the files in the primary write scope change
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

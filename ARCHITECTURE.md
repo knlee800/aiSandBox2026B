@@ -920,6 +920,7 @@ Do not describe Harness as the current Builder execution default. Harness-as-def
 | Per-builder harness config | CURRENT | AGENT-HARNESS-07 |
 | Pre-apply checkpoint gate | CURRENT (gated path) | `enablePreApplyCheckpoint=true`; created before first write mutation |
 | Audit events (`InMemoryHarnessAuditRecorder`) | CURRENT | In-memory only; not persisted to DB |
+| Run list (`GET /api/ai/executions`) | CURRENT (mock-tested; not deployed) | The caller's active or recent runs: identity fields and mode only, never prompts or answers. New runs record `runMode` in metadata; older rows report unknown |
 | Harness progress messages (`harness_progress`) | CURRENT (GATED) | One stream message per tool call: step, tool and target (path, query, command or URL), never file contents or tool output; seen working in a browser on staging (HARNESS-LIVE-05, 2026-11-02) |
 | Agent mode in the Builder chat | CURRENT (GATED) | Third mode beside Ask and Build, shown only when `GET /api/auth/me` returns `harnessEntitled`; sends `executionIntent: conversation` and `harnessVersion: v1`; shows steps and refreshes the workspace after a run; used by Keith on staging with one provider (HARNESS-LIVE-05, 2026-11-02) |
 | `search_workspace` handler | CURRENT (GATED) | Read-only plain-text search through the existing container search (AI-WS-06); offered on the harness path with no flag of its own; proven with one provider on staging (HARNESS-LIVE-04, 2026-11-02) |
