@@ -82988,6 +82988,44 @@ nature=IMPLEMENTATION
 - [x] services/ai-service and services/api-gateway: npm test and npm run build pass, apart from the known gateway smoke failures, and only the files in the primary write scope change
 - [x] Not LOCKED by an implementer
 
+### AUTH-GUARD-01 — Close the internal-service guard bypass: letter case and routes outside /api/internal
+
+**Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record, stage-start and Lane 1 admission follow in Part 2.
+**Task ID:** AUTH-GUARD-01
+**Title:** Close the internal-service guard bypass: letter case and routes outside /api/internal
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP (security-sensitive). Step 1 registration; Step 2 stage-start and admission; Step 3 implementation; Step 4 consolidation, checkpoint and LOCK by the control plane.
+**Start condition (human):** READY — Keith approved the draft on 2026-11-02.
+**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Depends on (human):** none.
+**Depends on (machine `dependsOn`):** `[]`
+**Primary write scope:** exactly `services/api-gateway/src/guards/internal-service-auth.guard.ts`, `services/api-gateway/src/guards/internal-service-auth.guard.spec.ts`, `services/api-gateway/src/guards/internal-service-auth.guard.http.spec.ts`, `services/api-gateway/src/websocket/__tests__/events.controller.guard.spec.ts`. Anything else is out of scope.
+**Mutexes / resources:** GATEWAY (Lane 1, 2026-11-02). No STAGING, ENV, MIGRATION, PACKAGE, LOCAL-RUNTIME, PROVIDER-LIVE or CREDIT.
+**Hot-file leases:** none
+**Shared contracts:** none changed. X-Internal-Service-Key stays as it is.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** acceptable (one guard; no schema, migration or contract change).
+**saturationClass:** OPTIONAL
+**productClass:** CURRENT
+**futureAuthorization:** NONE
+**writeSetPrecision:** EXACT
+**admissionUncertain:** false
+**exclusiveCapacity:** false
+**runtimeNeeds:** none
+
+**Problem:** InternalServiceAuthGuard only asks for the key when the path starts with lowercase /api/internal/ or /api/events/. Express routes ignore letter case, so /api/INTERNAL/... reaches internal routes with no key. A local test on 2026-11-02 with the compiled guard and stub routes showed 401 for the lowercase path and 200 for the changed-case path. The guard also returns true for every other path, so the chat-messages, token-usage and runtime controllers that use it are not protected: add-by-session returned 201 with no key. Staging's basic_auth limits who can reach this. Not tested on staging. Source: docs/GOV-RPG-UI-COMPAT-01-REVIEW-RECORD.md, deferred concerns.
+**Scope:** (1) compare the request path case-insensitively; (2) also require the key on /api/chat-messages/, /api/token-usage/ and /api/runtime/; (3) add tests, including over HTTP with real routes. Not in scope: execution ownership and stream cleanup (AUTH-OWNER-01), Socket.IO, comparing the key in constant time, the container manager guard, deploying the change.
+
+#### Acceptance criteria
+
+- [ ] Changed-case internal and events paths are refused without the key, over HTTP on a real internal route
+- [ ] chat-messages, token-usage and runtime routes are refused without the key, including changed-case paths
+- [ ] Those routes work with the correct key, and are refused with a wrong key
+- [ ] Public routes still pass without a key
+- [ ] services/api-gateway: npm test and npm run build pass, apart from the known smoke failures, and only the files in the primary write scope change
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
