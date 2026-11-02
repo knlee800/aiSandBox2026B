@@ -83127,14 +83127,14 @@ taskId=HARNESS-PROGRESS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; Step 2 (implementation) not started. mutexes=AI-SERVICE. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
+**Status:** COMPLETE AND LOCKED — 2026-11-02. LANE-DONE and LOCKED by the control plane; Lane 1 and AI-SERVICE released. Checkpoint: docs/HARNESS-PROGRESS-01-CHECKPOINT.md. Previous: **Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Registered and admitted to Lane 1; Step 2 (implementation) not started. mutexes=AI-SERVICE. evidenceClass=LOCAL-TESTS. runtimeNeeds=none. Previous: **Status:** REGISTERED / READY — 2026-11-02. Registered on Keith's approval; the machine registration, candidate record and Lane 1 admission follow in Part 2.
 **Task ID:** HARNESS-PROGRESS-01
 **Title:** Publish each harness tool call to the execution stream while the run works
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP. Step 1 is this registration and admission (2026-11-02); Step 2 implementation; Step 3 consolidation, checkpoint and LOCK by the control plane.
 **Start condition (human):** READY — Keith approved the draft on 2026-11-02.
-**Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
+**Start condition (machine):** `READY`; `status=LOCKED`. Previous: **Start condition (machine):** `READY`; `status=ADMITTED` while Lane 1 is ACTIVE.
 **Depends on (human):** none.
 **Depends on (machine `dependsOn`):** `[]`
 **Primary write scope:** exactly `services/ai-service/src/agent-harness/tools/tool-progress.ts`, `services/ai-service/src/agent-harness/tools/tool-progress.spec.ts`, `services/ai-service/src/streaming/execution-stream.publisher.ts`, `services/ai-service/src/streaming/__tests__/execution-stream.publisher.spec.ts`, `services/ai-service/src/worker/worker.processor.ts`, `services/ai-service/src/worker/worker.processor.spec.ts`, `services/ai-service/src/worker/__tests__/worker.processor.builder-config.spec.ts`. Anything else is out of scope.
@@ -83153,15 +83153,16 @@ nature=IMPLEMENTATION
 
 **Problem:** HARNESS-LIVE-04 confirmed the worker publishes the finished answer as one stream message, so a viewer sees nothing while a run works. Audit events are only logged after the loop and carry no tool arguments.
 **Scope:** (1) a publisher method for a harness_progress message holding step number, tool name and a target; (2) a wrapper around each harness tool handler, in the worker, that publishes before the handler runs; the target is the path, query, command or URL, cut to 200 characters; (3) a failed publish never affects the tool. Never file contents or tool output. Not in scope: the loop, the audit recorder, any UI, token-by-token text, persistence, deploying.
+**Result (2026-11-02):** implemented in 8cec36159e28f58d7c16d2a4bd00ee44f162115c by Cursor CLI, reviewed and re-validated by the control plane: ai-service npm test 39/39 suites, 1018 passed, 1 skipped; build exit 0. Checkpoint: docs/HARNESS-PROGRESS-01-CHECKPOINT.md. Mocked only; not deployed.
 
 #### Acceptance criteria
 
-- [ ] Each tool call on the harness path publishes one harness_progress message before its handler runs, with step, tool and target
-- [ ] write_file publishes its path only; no message holds file content or tool output
-- [ ] A publish that throws or rejects does not affect the tool or the run
-- [ ] Single-shot runs publish no progress, and existing stream messages are unchanged
-- [ ] services/ai-service: npm test and npm run build pass, and only the files in the primary write scope change
-- [ ] Not LOCKED by an implementer
+- [x] Each tool call on the harness path publishes one harness_progress message before its handler runs, with step, tool and target
+- [x] write_file publishes its path only; no message holds file content or tool output
+- [x] A publish that throws or rejects does not affect the tool or the run
+- [x] Single-shot runs publish no progress, and existing stream messages are unchanged
+- [x] services/ai-service: npm test and npm run build pass, and only the files in the primary write scope change
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

@@ -920,6 +920,7 @@ Do not describe Harness as the current Builder execution default. Harness-as-def
 | Per-builder harness config | CURRENT | AGENT-HARNESS-07 |
 | Pre-apply checkpoint gate | CURRENT (gated path) | `enablePreApplyCheckpoint=true`; created before first write mutation |
 | Audit events (`InMemoryHarnessAuditRecorder`) | CURRENT | In-memory only; not persisted to DB |
+| Harness progress messages (`harness_progress`) | CURRENT (GATED) | One stream message per tool call: step, tool and target (path, query, command or URL), never file contents or tool output; mock-tested only |
 | `search_workspace` handler | CURRENT (GATED) | Read-only plain-text search through the existing container search (AI-WS-06); offered on the harness path with no flag of its own; proven with one provider on staging (HARNESS-LIVE-04, 2026-11-02) |
 | Automatic rollback after partial failure | **NOT IMPLEMENTED** | Pre-apply checkpoint exists on gated path; rollback is manual via checkpoint/revert |
 | Semantic / vector search | NOT IMPLEMENTED (PLANNED) | `enableSemanticSearch=false` |
