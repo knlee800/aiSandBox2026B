@@ -83650,7 +83650,7 @@ taskId=COLLAB-LIVE-03
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY / NOT ADMITTED — 2026-11-02.
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02. Keith approved the window in the draft on 2026-11-02. COLLAB-CHOOSE-01 LOCKED at e85cbc13a5c06588750703fe672c8ae497f22186.
 **Task ID:** COLLAB-LIVE-03
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
