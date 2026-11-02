@@ -83614,6 +83614,63 @@ nature=IMPLEMENTATION
 - [x] Keith judgement recorded
 - [x] Not LOCKED by an implementer
 
+### COLLAB-CHOOSE-01 — Agents request hand-offs in their answers; cleanup of finished and waiting hand-offs
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-CHOOSE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-02.
+**Task ID:** COLLAB-CHOOSE-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Registration and admission here; implementation; code and LOCK in one commit after control-plane review.
+**Start condition (human):** READY — Keith approved the draft on 2026-11-02.
+**Depends on:** COLLAB-LIVE-02, LOCKED.
+**Primary write scope:** `services/api-gateway/src/orchestration/`, `services/api-gateway/src/guards/internal-service-auth.guard.http.spec.ts`.
+**Mutexes / resources:** GATEWAY. **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (internal routes only; no migration).
+**saturationClass:** OPTIONAL. Collaboration stays FUTURE in PRD.md.
+
+**Problem:** scripts make every hand-off, so no agent has chosen one; and a waiting hand-off or an unread finished run blocks every deploy.
+**Scope:** (1) a run carries a list of agents with names and instructions, at most the existing limit of 4, and each job is told its role and who it can ask; (2) an answer may end with one handoff request; malformed requests are ignored and noted; a name not on the list or a task that is too long is refused and recorded; (3) the next agent receives the task and the previous answer; the request becomes a waiting hand-off under the existing approval and limits; (4) a sweep every few minutes reads finished hand-offs back, closes finished runs and expires hand-offs waiting more than 24 hours. Leaf jobs stay plain Ask jobs. No UI, file access, back-and-forth or auto-approval.
+
+#### Acceptance criteria
+
+- [ ] A valid request at the end of an answer creates exactly one waiting hand-off, even when read back repeatedly, with no job and no ledger row
+- [ ] Malformed requests create nothing; a name not on the list, an over-long task, a loop and the limits create no job and are recorded
+- [ ] The next job receives the task and the previous answer, without the request text
+- [ ] An answer with no request ends that branch and the run finishes
+- [ ] The sweep closes finished runs and expires hand-offs waiting over 24 hours, and it never approves anything
+- [ ] Ask, Build and the execute route are unchanged
+- [ ] Not LOCKED by an implementer
+
+### COLLAB-LIVE-03 — Agent-chosen hand-offs on staging
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-LIVE-03
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-11-02.
+**Task ID:** COLLAB-LIVE-03
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Start condition NOT_READY until COLLAB-CHOOSE-01 is LOCKED and deployed.
+**Depends on:** COLLAB-CHOOSE-01.
+**Primary write scope:** none in the repository beyond records.
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT, ENV. **Evidence class:** PROVIDER-LIVE. **Revert isolation:** acceptable (no code).
+**saturationClass:** OPTIONAL
+
+**Scope:** on ainow-staging-01 with the stored test key: Lead, Writer and Reviewer on a small coding task, with the agents choosing the hand-offs and each one approved by the control plane; a question that needs no help; a forced bad name and an expired hand-off. Under 20 credits. Keith reads the chain and judges whether the choices were sensible.
+
+#### Acceptance criteria
+
+- [ ] Each case observed, and every hand-off in the chain came from an agent answer
+- [ ] Bad name and expired hand-off ran no job
+- [ ] Nothing left open after the window
+- [ ] Harness flags stayed off
+- [ ] Keith judgement recorded
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
