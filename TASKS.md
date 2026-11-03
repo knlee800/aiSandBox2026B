@@ -5,13 +5,13 @@ maxImplementationLanes=2
 lane3=DISABLED
 lane1.state=ACTIVE
 lane1.taskId=COLLAB-LIVE-05
-lane2.state=EMPTY
-lane2.taskId=NONE
+lane2.state=ACTIVE
+lane2.taskId=COLLAB-SCREEN-02
 governance.owner=NONE
 governance.state=UNOWNED
 saturationSuspended=false
 suspensionReason=NONE
-occupancyHash=sha256:2d5363b162ea966217ecc7617950d9219103857d8f03f29f310698d037df6dfd
+occupancyHash=sha256:12ff6247ec82aa517029bded627b1638bf2420143dd482a03016f7aa59eb87e2
 <!-- AISB_OCCUPANCY_V1_END -->
 
 **Parallel Development Architecture:** v1
@@ -221,13 +221,17 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 ## COLLAB-LIVE-05 — ADMITTED / Lane 1 ACTIVE — 2026-11-03
 
-**Current status:** ADMITTED, Lane 1, with STAGING, PROVIDER-LIVE, CREDIT and ENV. Keith approved the window on 2026-11-03.
+**Current status:** ADMITTED, Lane 1, PAUSED 2026-11-03 for COLLAB-SCREEN-02; flags off; staging, provider-live and credit authorization false.
+
+## COLLAB-SCREEN-02 — ADMITTED / Lane 2 ACTIVE — 2026-11-03
+
+**Current status:** ADMITTED, Lane 2, FRONTEND held, beside the paused COLLAB-LIVE-05. Scope in TASKS_BACKLOG_FULL.md.
 
 ## Lane 1
 ACTIVE — COLLAB-LIVE-05 — 2026-11-03.
 
 ## Lane 2
-EMPTY — occupancy EMPTY — 2026-11-02.
+ACTIVE — COLLAB-SCREEN-02 — 2026-11-03.
 
 ## Lane 3
 DISABLED
@@ -235,13 +239,13 @@ DISABLED
 ## Governance owner / state
 UNOWNED — GOV-OS-04 COMPLETE AND LOCKED — 2026-11-02.
 
-Lane 1 ACTIVE: COLLAB-LIVE-05. Lane 2 EMPTY. SIGNUP-ALLOWLIST-01 is READY and not admitted.
+Lane 1 ACTIVE, PAUSED: COLLAB-LIVE-05. Lane 2 ACTIVE: COLLAB-SCREEN-02. SIGNUP-ALLOWLIST-01 is READY and not admitted.
 
 ## Active mutex / resource ownership
 - GOVERNANCE: UNOWNED — GOV-OS-04 lock 2026-11-02.
 - GATEWAY: UNOWNED — released at COLLAB-SCREEN-01 COMPLETE AND LOCKED 2026-11-03.
 - MIGRATION: UNOWNED — released at COLLAB-GATE-01 COMPLETE AND LOCKED 2026-11-02.
-- FRONTEND: UNOWNED — released at COLLAB-SCREEN-01 COMPLETE AND LOCKED 2026-11-03.
+- FRONTEND: OWNED by COLLAB-SCREEN-02 (2026-11-03).
 - I18N: UNOWNED — released at COLLAB-SCREEN-01 COMPLETE AND LOCKED 2026-11-03.
 - STAGING: OWNED by COLLAB-LIVE-05 (2026-11-03) (stagingAuthorized=true).
 - PROVIDER-LIVE: OWNED by COLLAB-LIVE-05 (2026-11-03) (providerLiveAuthorized=true).

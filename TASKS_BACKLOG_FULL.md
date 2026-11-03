@@ -83767,7 +83767,7 @@ taskId=COLLAB-LIVE-05
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-03. Keith approved the window in the draft on 2026-11-03. COLLAB-SCREEN-01 LOCKED at 9ec5c80ce0b6f49f0f75744ebce0cb3bc277bb44.
+**Status:** ADMITTED / Lane 1, PAUSED — 2026-11-03. Flags off; staging, provider-live and credit authorization false; COLLAB-SCREEN-02 fixes the page refresh loop Keith hit.
 **Task ID:** COLLAB-LIVE-05
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -83786,6 +83786,33 @@ nature=IMPLEMENTATION
 - [ ] Another account refused
 - [ ] Nothing left open, harness write flags stayed off
 - [ ] Keith judgement recorded on the screen and the agents
+- [ ] Not LOCKED by an implementer
+
+### COLLAB-SCREEN-02 — Stop the collaboration page refresh loop
+
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-SCREEN-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED / Lane 2 ACTIVE — 2026-11-03. COLLAB-LIVE-05 paused in Lane 1 under the GOV-OS-04 rule.
+**Task ID:** COLLAB-SCREEN-02
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP. Implementation, then code and LOCK in one commit after control-plane review.
+**Start condition (human):** READY — defect found in COLLAB-LIVE-05 on 2026-11-03; a fix inside the scope Keith approved for COLLAB-SCREEN-01.
+**Depends on:** COLLAB-SCREEN-01, LOCKED.
+**Primary write scope:** `frontend/components/collaboration/`, `frontend/lib/collaboration/`, `frontend/lib/collaboration.test.ts`.
+**Mutexes / resources:** FRONTEND. **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (page code only).
+**saturationClass:** OPTIONAL
+
+**Problem:** Keith saw the collaboration page flicker and show the generic error. frontend/hooks/useTranslations.ts returns a new t function on every render; the page lists t in useCallback and useEffect dependencies, so every render reloads the list and the run and sets state again, an endless request loop. The run itself completed.
+**Scope:** make the page's loading and refresh effects independent of the t identity, so each loads once and then only on the 5-second timer while active; a test that renders with a new t each time and counts requests. The shared hook is not changed.
+
+#### Acceptance criteria
+
+- [ ] Re-rendering with a new t does not fetch again
+- [ ] Polling still runs every 5 seconds while active and stops when finished
 - [ ] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
