@@ -83851,7 +83851,7 @@ taskId=COLLAB-LIVE-06
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-03. Keith approved the window in the draft on 2026-11-03. COLLAB-WRITE-01 LOCKED at adb0b92905490b74890fcadcc58ed8388aeac27b.
+**Status:** COMPLETE AND LOCKED — 2026-11-03. Keith: done, all worked. Lane 1, STAGING, PROVIDER-LIVE, CREDIT and ENV released. Checkpoint: docs/COLLAB-LIVE-06-CHECKPOINT.md.
 **Task ID:** COLLAB-LIVE-06
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -83865,12 +83865,12 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] The writer changed files only after approval, with a save point first
-- [ ] The reviewer ran a test command
-- [ ] Keith reverted the change from the workspace
-- [ ] Nothing left open, flags off after
-- [ ] Keith judgement recorded
-- [ ] Not LOCKED by an implementer
+- [x] The writer changed files only after approval, with a save point first
+- [x] The reviewer ran a test command
+- [x] Keith reverted the change from the workspace
+- [x] Nothing left open, flags off after
+- [x] Keith judgement recorded
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
