@@ -83815,6 +83815,63 @@ nature=IMPLEMENTATION
 - [x] Polling still runs every 5 seconds while active and stops when finished
 - [x] Not LOCKED by an implementer
 
+### COLLAB-WRITE-01 — The Writer applies fixes after approval; the Reviewer runs tests
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-WRITE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-03. Step 2 stage-start docs/COLLAB-WRITE-01-STAGE-START.md written; implementation waits for Keith's approval of it.
+**Task ID:** COLLAB-WRITE-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP: registration and admission; stage-start for Keith's approval; implementation; code and LOCK in one commit after control-plane review.
+**Start condition (human):** READY — Keith approved the draft on 2026-11-03. Authority for writes: GOV-HARNESS-RESET-01 decision 4.
+**Depends on:** COLLAB-LIVE-05, LOCKED.
+**Primary write scope:** `services/api-gateway/src/orchestration/`, `services/ai-service/src/worker/`, `services/ai-service/src/queue/job.types.ts`, `frontend/components/collaboration/`, `frontend/lib/collaboration/`, `frontend/lib/collaboration.test.ts`, and the three frontend/messages files under I18N.
+**Mutexes / resources:** GATEWAY, AI-SERVICE, FRONTEND, I18N. **Hot-file leases:** none. **Shared contracts:** none frozen; the new job field is inside the signed payload. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (no migration; checkpoint behaviour unchanged).
+**saturationClass:** OPTIONAL. Collaboration stays FUTURE in PRD.md; allow-listed on staging.
+
+**Problem:** every chain ends with a proposed change as text, and the Reviewer approves without running anything.
+**Scope:** per the stage-start: lead reads; writer reads, writes and runs allowed test commands; reviewer reads and runs them; no delete; signed per-job tool profile; global flags still gate and fail closed; existing pre-apply checkpoint and server save; changed paths and test results on the page; a clear warning before approving a writer step.
+
+#### Acceptance criteria
+
+- [ ] Each role has exactly its tools with every global flag on; no role can delete
+- [ ] The profile cannot be altered in the queue without failing the proof; a gate off fails with a readable reason
+- [ ] The writer takes the existing checkpoint before its first write and the project is saved after
+- [ ] Changed paths, the save point and test results appear on the page; the writer warning shows before approve
+- [ ] Checkpoint creation, listing and revert unchanged; Agent mode and runs without file access unchanged
+- [ ] All new text in en, zh-TW and zh-CN
+- [ ] Not LOCKED by an implementer
+
+### COLLAB-LIVE-06 — Keith has the Writer apply a fix on staging and reverts it
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-LIVE-06
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-11-03.
+**Task ID:** COLLAB-LIVE-06
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Start condition NOT_READY until COLLAB-WRITE-01 is LOCKED and deployed.
+**Depends on:** COLLAB-WRITE-01.
+**Primary write scope:** none in the repository beyond records.
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT, ENV. **Evidence class:** PROVIDER-LIVE. **Revert isolation:** acceptable (no code).
+**saturationClass:** OPTIONAL
+
+**Scope:** write and validation flags on; Keith gives the team a real fix in C1 repeat, approves the writer, checks the change in the workspace and reverts it from the checkpoint list.
+
+#### Acceptance criteria
+
+- [ ] The writer changed files only after approval, with a save point first
+- [ ] The reviewer ran a test command
+- [ ] Keith reverted the change from the workspace
+- [ ] Nothing left open, flags off after
+- [ ] Keith judgement recorded
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
