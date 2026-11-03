@@ -83872,6 +83872,61 @@ nature=IMPLEMENTATION
 - [x] Keith judgement recorded
 - [x] Not LOCKED by an implementer
 
+### COLLAB-ROUNDS-01 — Reviewer can send work back to the Writer, and sees the diff
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-ROUNDS-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-03.
+**Task ID:** COLLAB-ROUNDS-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Registration and admission here; implementation; code and LOCK in one commit after control-plane review.
+**Start condition (human):** READY — Keith approved the draft on 2026-11-03.
+**Depends on:** COLLAB-LIVE-06, LOCKED.
+**Primary write scope:** `services/api-gateway/src/orchestration/`, `services/api-gateway/src/clients/container-manager-http.client.ts`, `services/api-gateway/src/clients/container-manager-http.client.spec.ts`, `services/container-manager/src/git/`, `frontend/components/collaboration/`, `frontend/lib/collaboration/`, `frontend/lib/collaboration.test.ts`, and the three frontend/messages files under I18N.
+**Mutexes / resources:** GATEWAY, CONTAINER-MANAGER, FRONTEND, I18N. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (no migration; existing checkpoint and diff routes unchanged).
+**saturationClass:** OPTIONAL. Collaboration stays FUTURE in PRD.md; allow-listed on staging.
+
+**Problem:** a Reviewer that finds a bug cannot return the work, because A to B to A is refused; and it sees only the final files, not what the Writer changed.
+**Scope:** one extra path, reviewer to writer, allowed as a send-back round, then writer only back to reviewer; at most 2 rounds per run, with the 8 hand-off limit kept and depth not ending the run on those two paths; every round approved and labelled on the page; each writer round gets its own save point; the reviewer prompt and the writer card show the diff between the save point and the current files, through a read-only container-manager addition if needed. Every other loop stays refused.
+
+#### Acceptance criteria
+
+- [ ] Reviewer to writer and writer to reviewer are allowed for at most 2 rounds; a third round, and every other loop, are refused
+- [ ] Each round needs approval and is labelled; each writer round takes its own save point
+- [ ] The reviewer prompt holds the diff between the save point and the current files; the writer card shows it
+- [ ] The diff route is read-only, owner-safe, size-capped and leaves the existing checkpoint and diff routes unchanged
+- [ ] Runs without file access and Agent mode unchanged; all new text in en, zh-TW and zh-CN
+- [ ] Not LOCKED by an implementer
+
+### COLLAB-LIVE-07 — Keith tries send-back rounds on staging
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-LIVE-07
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-11-03.
+**Task ID:** COLLAB-LIVE-07
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Start condition NOT_READY until COLLAB-ROUNDS-01 is LOCKED and deployed.
+**Depends on:** COLLAB-ROUNDS-01.
+**Primary write scope:** none in the repository beyond records.
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT, ENV. **Evidence class:** PROVIDER-LIVE. **Revert isolation:** acceptable (no code).
+**saturationClass:** OPTIONAL
+
+**Scope:** write and validation flags on; Keith gives a task with a catch, approves a send-back round if the reviewer chooses one, and checks the diff on the page. Under 60 credits.
+
+#### Acceptance criteria
+
+- [ ] The reviewer saw the diff
+- [ ] A send-back round happened, or a second task was tried
+- [ ] Nothing left open, flags off after
+- [ ] Keith judgement recorded
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
