@@ -83767,7 +83767,7 @@ taskId=COLLAB-LIVE-05
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-03. Resumed after COLLAB-SCREEN-02 fixed the page refresh loop.
+**Status:** COMPLETE AND LOCKED — 2026-11-03. Keith: all worked. Lane 1, STAGING, PROVIDER-LIVE, CREDIT and ENV released. Checkpoint: docs/COLLAB-LIVE-05-CHECKPOINT.md.
 **Task ID:** COLLAB-LIVE-05
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -83781,12 +83781,12 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Keith completed a run from the page
-- [ ] Reject worked from the page
-- [ ] Another account refused
-- [ ] Nothing left open, harness write flags stayed off
-- [ ] Keith judgement recorded on the screen and the agents
-- [ ] Not LOCKED by an implementer
+- [x] Keith completed a run from the page
+- [x] Reject worked from the page
+- [x] Another account refused. Unit-tested only: staging has one user account; see the checkpoint
+- [x] Nothing left open, harness write flags stayed off
+- [x] Keith judgement recorded on the screen and the agents
+- [x] Not LOCKED by an implementer
 
 ### COLLAB-SCREEN-02 — Stop the collaboration page refresh loop
 
