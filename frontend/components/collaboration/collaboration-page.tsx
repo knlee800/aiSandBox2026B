@@ -46,13 +46,17 @@ export function CollaborationLoading() {
   );
 }
 
-export default function CollaborationPageClient() {
-  const t = useTranslations('collaboration');
-  const params = useParams<{ locale: string }>();
-  const searchParams = useSearchParams();
-  const locale = typeof params?.locale === 'string' ? params.locale : 'en';
-  const sessionId = searchParams.get('sessionId')?.trim() || '';
-  const queryProjectId = searchParams.get('projectId')?.trim() || '';
+export function useCollaborationScreen(input: {
+  t: (key: string) => string;
+  locale: string;
+  sessionId: string;
+  queryProjectId: string;
+}) {
+  const { t, locale, sessionId, queryProjectId } = input;
+  // useTranslations returns a new function every render. Reading it through a ref
+  // keeps the latest copy without reloading when that identity changes.
+  const tRef = useRef(t);
+  tRef.current = t;
 
   const [task, setTask] = useState('');
   const [notice, setNotice] = useState<string | null>(null);
@@ -71,13 +75,10 @@ export default function CollaborationPageClient() {
   listProjectRef.current = listProjectId;
   selectedRef.current = selectedRunId;
 
-  const showRefusal = useCallback(
-    async (response: Response) => {
-      const refusal = await readCollaborationFailure(response);
-      setNotice(t(collaborationRefusalMessageKey(refusal)));
-    },
-    [t],
-  );
+  const showRefusal = useCallback(async (response: Response) => {
+    const refusal = await readCollaborationFailure(response);
+    setNotice(tRef.current(collaborationRefusalMessageKey(refusal)));
+  }, []);
 
   const loadList = useCallback(
     async (projectId: string) => {
@@ -121,6 +122,13 @@ export default function CollaborationPageClient() {
     }
   }, [loadDetail, loadList]);
 
+  const loadListRef = useRef(loadList);
+  const loadDetailRef = useRef(loadDetail);
+  const refreshRef = useRef(refresh);
+  loadListRef.current = loadList;
+  loadDetailRef.current = loadDetail;
+  refreshRef.current = refresh;
+
   useEffect(() => {
     setListProjectId(queryProjectId);
   }, [queryProjectId]);
@@ -132,10 +140,10 @@ export default function CollaborationPageClient() {
     }
     let cancelled = false;
     setLoading(true);
-    loadList(queryProjectId)
+    loadListRef.current(queryProjectId)
       .catch(() => {
         if (!cancelled) {
-          setNotice(t('refusalGeneric'));
+          setNotice(tRef.current('refusalGeneric'));
         }
       })
       .finally(() => {
@@ -146,7 +154,7 @@ export default function CollaborationPageClient() {
     return () => {
       cancelled = true;
     };
-  }, [loadList, queryProjectId, t]);
+  }, [queryProjectId]);
 
   useEffect(() => {
     if (!selectedRunId) {
@@ -154,15 +162,15 @@ export default function CollaborationPageClient() {
       return;
     }
     let cancelled = false;
-    loadDetail(selectedRunId).catch(() => {
+    loadDetailRef.current(selectedRunId).catch(() => {
       if (!cancelled) {
-        setNotice(t('refusalGeneric'));
+        setNotice(tRef.current('refusalGeneric'));
       }
     });
     return () => {
       cancelled = true;
     };
-  }, [loadDetail, selectedRunId, t]);
+  }, [selectedRunId]);
 
   useEffect(() => {
     if (
@@ -186,7 +194,7 @@ export default function CollaborationPageClient() {
         if (document.visibilityState === 'hidden') {
           return;
         }
-        void refresh();
+        void refreshRef.current();
       }, COLLABORATION_POLL_MS);
     };
     const onVisibility = () => {
@@ -194,7 +202,7 @@ export default function CollaborationPageClient() {
         stop();
         return;
       }
-      void refresh();
+      void refreshRef.current();
       start();
     };
     if (document.visibilityState !== 'hidden') {
@@ -205,7 +213,7 @@ export default function CollaborationPageClient() {
       stop();
       document.removeEventListener('visibilitychange', onVisibility);
     };
-  }, [detail?.run.status, refresh]);
+  }, [detail?.run.status]);
 
   async function runDecision(action: () => Promise<void>) {
     if (!flight.current.tryBegin()) {
@@ -216,7 +224,7 @@ export default function CollaborationPageClient() {
     try {
       await action();
     } catch {
-      setNotice(t('refusalGeneric'));
+      setNotice(tRef.current('refusalGeneric'));
     } finally {
       flight.current.end();
       setDeciding(false);
@@ -301,107 +309,121 @@ export default function CollaborationPageClient() {
     }),
   );
 
-  return (
-    <CollaborationView
-      labels={labels}
-      backHref={`/${locale}/app`}
-      sessionReady={sessionId.length > 0}
-      projectReady={listProjectId.length > 0}
-      loading={loading}
-      notice={notice}
-      conversationCreated={conversationCreated}
-      task={task}
-      deciding={deciding}
-      team={team}
-      handoffs={handoffs}
-      runs={runs.map((run) => ({
-        id: run.collaborationRunId,
-        statusLabel: statusLabel(run.status),
-        when: formatWhen(run.createdAt, locale),
-        selected: run.collaborationRunId === selectedRunId,
-      }))}
-      rejectReferralId={rejectReferralId}
-      rejectReason={rejectReason}
-      onTaskChange={setTask}
-      onStart={() => {
-        void runDecision(async () => {
-          const response = await collaborationFetch('/api/collaboration/runs', {
+  return {
+    labels,
+    backHref: `/${locale}/app`,
+    sessionReady: sessionId.length > 0,
+    projectReady: listProjectId.length > 0,
+    loading,
+    notice,
+    conversationCreated,
+    task,
+    deciding,
+    team,
+    handoffs,
+    runs: runs.map((run) => ({
+      id: run.collaborationRunId,
+      statusLabel: statusLabel(run.status),
+      when: formatWhen(run.createdAt, locale),
+      selected: run.collaborationRunId === selectedRunId,
+    })),
+    rejectReferralId,
+    rejectReason,
+    onTaskChange: setTask,
+    onStart: () => {
+      void runDecision(async () => {
+        const response = await collaborationFetch('/api/collaboration/runs', {
+          method: 'POST',
+          body: JSON.stringify({ sessionId, task: task.trim() }),
+        });
+        if (!response.ok) {
+          await showRefusal(response);
+          return;
+        }
+        const started = (await response.json()) as CollaborationStartResult;
+        setConversationCreated(started.conversationCreated === true);
+        setSelectedRunId(started.collaborationRunId);
+        setRejectReferralId(null);
+        setRejectReason('');
+        if (started.projectId) {
+          setListProjectId(started.projectId);
+          listProjectRef.current = started.projectId;
+        }
+        selectedRef.current = started.collaborationRunId;
+        await refresh();
+      });
+    },
+    onOpenRun: (runId: string) => {
+      setSelectedRunId(runId);
+      setRejectReferralId(null);
+      setRejectReason('');
+    },
+    onApprove: (referralId: string) => {
+      if (!selectedRunId) {
+        return;
+      }
+      const runId = selectedRunId;
+      void runDecision(async () => {
+        const response = await collaborationFetch(
+          `/api/collaboration/runs/${encodeURIComponent(runId)}/referrals/${encodeURIComponent(referralId)}/approve`,
+          { method: 'POST', body: JSON.stringify({}) },
+        );
+        if (!response.ok) {
+          await showRefusal(response);
+          return;
+        }
+        await refresh();
+      });
+    },
+    onBeginReject: (referralId: string) => {
+      setRejectReferralId(referralId);
+      setRejectReason('');
+    },
+    onCancelReject: () => {
+      setRejectReferralId(null);
+      setRejectReason('');
+    },
+    onRejectReasonChange: setRejectReason,
+    onConfirmReject: (referralId: string) => {
+      if (!selectedRunId) {
+        return;
+      }
+      const runId = selectedRunId;
+      const reason = rejectReason.trim();
+      void runDecision(async () => {
+        const response = await collaborationFetch(
+          `/api/collaboration/runs/${encodeURIComponent(runId)}/referrals/${encodeURIComponent(referralId)}/reject`,
+          {
             method: 'POST',
-            body: JSON.stringify({ sessionId, task: task.trim() }),
-          });
-          if (!response.ok) {
-            await showRefusal(response);
-            return;
-          }
-          const started = (await response.json()) as CollaborationStartResult;
-          setConversationCreated(started.conversationCreated === true);
-          setSelectedRunId(started.collaborationRunId);
-          setRejectReferralId(null);
-          setRejectReason('');
-          if (started.projectId) {
-            setListProjectId(started.projectId);
-            listProjectRef.current = started.projectId;
-          }
-          selectedRef.current = started.collaborationRunId;
-          await refresh();
-        });
-      }}
-      onOpenRun={(runId) => {
-        setSelectedRunId(runId);
-        setRejectReferralId(null);
-        setRejectReason('');
-      }}
-      onApprove={(referralId) => {
-        if (!selectedRunId) {
+            body: JSON.stringify(reason.length > 0 ? { reason } : {}),
+          },
+        );
+        if (!response.ok) {
+          await showRefusal(response);
           return;
         }
-        const runId = selectedRunId;
-        void runDecision(async () => {
-          const response = await collaborationFetch(
-            `/api/collaboration/runs/${encodeURIComponent(runId)}/referrals/${encodeURIComponent(referralId)}/approve`,
-            { method: 'POST', body: JSON.stringify({}) },
-          );
-          if (!response.ok) {
-            await showRefusal(response);
-            return;
-          }
-          await refresh();
-        });
-      }}
-      onBeginReject={(referralId) => {
-        setRejectReferralId(referralId);
-        setRejectReason('');
-      }}
-      onCancelReject={() => {
         setRejectReferralId(null);
         setRejectReason('');
-      }}
-      onRejectReasonChange={setRejectReason}
-      onConfirmReject={(referralId) => {
-        if (!selectedRunId) {
-          return;
-        }
-        const runId = selectedRunId;
-        const reason = rejectReason.trim();
-        void runDecision(async () => {
-          const response = await collaborationFetch(
-            `/api/collaboration/runs/${encodeURIComponent(runId)}/referrals/${encodeURIComponent(referralId)}/reject`,
-            {
-              method: 'POST',
-              body: JSON.stringify(reason.length > 0 ? { reason } : {}),
-            },
-          );
-          if (!response.ok) {
-            await showRefusal(response);
-            return;
-          }
-          setRejectReferralId(null);
-          setRejectReason('');
-          await refresh();
-        });
-      }}
-    />
-  );
+        await refresh();
+      });
+    },
+  };
+}
+
+export default function CollaborationPageClient() {
+  const t = useTranslations('collaboration');
+  const params = useParams<{ locale: string }>();
+  const searchParams = useSearchParams();
+  const locale = typeof params?.locale === 'string' ? params.locale : 'en';
+  const sessionId = searchParams.get('sessionId')?.trim() || '';
+  const queryProjectId = searchParams.get('projectId')?.trim() || '';
+  const viewProps = useCollaborationScreen({
+    t,
+    locale,
+    sessionId,
+    queryProjectId,
+  });
+  return <CollaborationView {...viewProps} />;
 }
 
 function formatWhen(value: string, locale: string): string {

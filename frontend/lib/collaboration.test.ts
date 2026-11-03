@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { describe, test } from 'node:test';
-import React from 'react';
+import { after, afterEach, before, beforeEach, describe, test } from 'node:test';
+import React, { act, createElement } from 'react';
+import type { Root } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { useCollaborationScreen } from '../components/collaboration/collaboration-page';
 import CollaborationView, {
   type CollaborationViewLabels,
 } from '../components/collaboration/collaboration-view';
@@ -10,6 +12,7 @@ import enMessages from '../messages/en.json';
 import zhCnMessages from '../messages/zh-CN.json';
 import zhTwMessages from '../messages/zh-TW.json';
 import {
+  COLLABORATION_POLL_MS,
   collaborationRefusal,
   collaborationRefusalMessageKey,
   createSingleFlight,
@@ -200,5 +203,316 @@ describe('collaboration page', () => {
     assert.equal(collaborationRefusal(404, 'Collaboration run not found'), 'notFound');
     assert.equal(collaborationRefusal(409, 'Session is not usable'), 'session');
     assert.equal(collaborationRefusal(409, 'Referral is not pending approval'), 'generic');
+  });
+});
+
+type ScheduledPoll = { fn: () => void; delay: number };
+
+const fetchCalls: string[] = [];
+const intervals = new Map<number, ScheduledPoll>();
+let nextIntervalId = 1;
+let scheduleCount = 0;
+let runStatus = 'active';
+let root: Root | null = null;
+let latest: {
+  notice: string | null;
+  loading: boolean;
+  onOpenRun: (runId: string) => void;
+} | null = null;
+let createRoot: (typeof import('react-dom/client'))['createRoot'];
+let originalFetch: typeof fetch;
+let originalSetInterval: typeof setInterval;
+let originalClearInterval: typeof clearInterval;
+let originalDocument: Document | undefined;
+
+function createDomNode(tag = 'div') {
+  const node: Record<string, unknown> = {
+    nodeType: 1,
+    nodeName: tag.toUpperCase(),
+    tagName: tag.toUpperCase(),
+    namespaceURI: 'http://www.w3.org/1999/xhtml',
+    style: {},
+    attributes: {},
+    childNodes: [],
+    parentNode: null,
+    ownerDocument: null,
+    textContent: '',
+    setAttribute(this: Record<string, unknown>, key: string, value: string) {
+      (this.attributes as Record<string, string>)[key] = value;
+    },
+    getAttribute(this: Record<string, unknown>, key: string) {
+      return (this.attributes as Record<string, string>)[key] ?? null;
+    },
+    removeAttribute(this: Record<string, unknown>, key: string) {
+      delete (this.attributes as Record<string, string>)[key];
+    },
+    hasAttribute(this: Record<string, unknown>, key: string) {
+      return key in (this.attributes as Record<string, string>);
+    },
+    appendChild(this: Record<string, unknown>, child: Record<string, unknown>) {
+      (this.childNodes as unknown[]).push(child);
+      child.parentNode = this;
+      return child;
+    },
+    removeChild(this: Record<string, unknown>, child: Record<string, unknown>) {
+      this.childNodes = (this.childNodes as unknown[]).filter((item) => item !== child);
+      return child;
+    },
+    insertBefore(this: Record<string, unknown>, child: Record<string, unknown>) {
+      return (this.appendChild as (next: Record<string, unknown>) => unknown)(child);
+    },
+    addEventListener() {},
+    removeEventListener() {},
+  };
+  return node;
+}
+
+function installScreenDom() {
+  const doc: Record<string, unknown> = {
+    nodeType: 9,
+    visibilityState: 'visible',
+    createElement(tag: string) {
+      const node = createDomNode(tag);
+      node.ownerDocument = doc;
+      return node;
+    },
+    createElementNS(_ns: string, tag: string) {
+      const node = createDomNode(tag);
+      node.ownerDocument = doc;
+      return node;
+    },
+    createTextNode(text: string) {
+      return { nodeType: 3, nodeName: '#text', textContent: text, parentNode: null, ownerDocument: doc };
+    },
+    createComment(text: string) {
+      return { nodeType: 8, nodeName: '#comment', textContent: text, ownerDocument: doc };
+    },
+    createDocumentFragment() {
+      const node = createDomNode('#fragment');
+      node.ownerDocument = doc;
+      return node;
+    },
+    addEventListener() {},
+    removeEventListener() {},
+  };
+  const body = createDomNode('body');
+  body.ownerDocument = doc;
+  doc.body = body;
+  doc.documentElement = createDomNode('html');
+  doc.head = createDomNode('head');
+  doc.activeElement = body;
+  doc.defaultView = globalThis;
+  const globalObject = globalThis as Record<string, unknown>;
+  globalObject.document = doc;
+  globalObject.HTMLIFrameElement = function HTMLIFrameElement() {};
+  globalObject.HTMLElement = function HTMLElement() {};
+  globalObject.Element = function Element() {};
+  globalObject.Node = function Node() {};
+  globalObject.IS_REACT_ACT_ENVIRONMENT = true;
+  globalObject.addEventListener = () => {};
+  globalObject.removeEventListener = () => {};
+  globalObject.dispatchEvent = () => true;
+  globalObject.window = globalThis;
+}
+
+function jsonResponse(status: number, body: unknown): Response {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    json: async () => body,
+    headers: new Headers(),
+    text: async () => JSON.stringify(body),
+  } as Response;
+}
+
+function runPayload(status: string) {
+  return {
+    collaborationRunId: 'run-1',
+    projectId: 'proj-1',
+    status,
+    createdAt: '2026-11-03T00:00:00.000Z',
+    updatedAt: '2026-11-03T00:00:00.000Z',
+    completedAt: null,
+    failedAt: null,
+  };
+}
+
+function installFetch() {
+  globalThis.fetch = (async (input: RequestInfo | URL) => {
+    const url = String(input);
+    fetchCalls.push(url);
+    if (url.startsWith('/api/collaboration/runs?')) {
+      return jsonResponse(200, { runs: [runPayload(runStatus)] });
+    }
+    if (url === '/api/collaboration/runs/run-1') {
+      return jsonResponse(200, {
+        run: runPayload(runStatus),
+        team: ['lead', 'writer', 'reviewer'],
+        handoffs: [],
+      });
+    }
+    return jsonResponse(404, { message: 'missing' });
+  }) as typeof fetch;
+}
+
+function installIntervals() {
+  globalThis.setInterval = ((fn: () => void, delay?: number) => {
+    const id = nextIntervalId;
+    nextIntervalId += 1;
+    scheduleCount += 1;
+    intervals.set(id, { fn, delay: delay ?? 0 });
+    return id as unknown as ReturnType<typeof setInterval>;
+  }) as typeof setInterval;
+  globalThis.clearInterval = ((id?: ReturnType<typeof setInterval>) => {
+    if (typeof id === 'number') {
+      intervals.delete(id);
+    }
+  }) as typeof clearInterval;
+}
+
+function Probe(props: { generation: number; projectId: string }) {
+  const catalog = enMessages.collaboration as Record<string, string>;
+  const generation = props.generation;
+  const t = (key: string) => `${generation}:${catalog[key] ?? key}`;
+  latest = useCollaborationScreen({
+    t,
+    locale: 'en',
+    sessionId: 'session-1',
+    queryProjectId: props.projectId,
+  });
+  return createElement('div');
+}
+
+async function renderScreen(generation: number, projectId: string) {
+  await act(async () => {
+    root!.render(createElement(Probe, { generation, projectId }));
+  });
+}
+
+async function firePoll() {
+  assert.equal(intervals.size, 1);
+  const scheduled = [...intervals.values()][0];
+  assert.ok(scheduled);
+  assert.equal(scheduled.delay, COLLABORATION_POLL_MS);
+  await act(async () => {
+    scheduled.fn();
+    for (let step = 0; step < 30; step += 1) {
+      await Promise.resolve();
+    }
+  });
+}
+
+describe('collaboration screen reload', () => {
+  before(async () => {
+    originalDocument = globalThis.document;
+    installScreenDom();
+    ({ createRoot } = await import('react-dom/client'));
+  });
+
+  after(() => {
+    if (originalDocument === undefined) {
+      delete (globalThis as { document?: Document }).document;
+    } else {
+      globalThis.document = originalDocument;
+    }
+  });
+
+  beforeEach(() => {
+    fetchCalls.length = 0;
+    intervals.clear();
+    nextIntervalId = 1;
+    scheduleCount = 0;
+    runStatus = 'active';
+    latest = null;
+    originalFetch = globalThis.fetch;
+    originalSetInterval = globalThis.setInterval;
+    originalClearInterval = globalThis.clearInterval;
+    installFetch();
+    installIntervals();
+    const container = (globalThis.document as { createElement: (tag: string) => unknown }).createElement('div');
+    root = createRoot(container as unknown as Element);
+  });
+
+  afterEach(async () => {
+    if (root) {
+      await act(async () => {
+        root!.unmount();
+      });
+      root = null;
+    }
+    latest = null;
+    globalThis.fetch = originalFetch;
+    globalThis.setInterval = originalSetInterval;
+    globalThis.clearInterval = originalClearInterval;
+    fetchCalls.length = 0;
+    intervals.clear();
+  });
+
+  test('a new t on each render does not fetch again', async () => {
+    await renderScreen(0, '');
+    assert.deepEqual(fetchCalls, []);
+    await renderScreen(1, '');
+    assert.deepEqual(fetchCalls, []);
+
+    await renderScreen(2, 'proj-1');
+    assert.deepEqual(fetchCalls, ['/api/collaboration/runs?projectId=proj-1']);
+    assert.equal(latest?.loading, false);
+    assert.equal(latest?.notice, null);
+
+    for (const generation of [3, 4, 5, 6]) {
+      await renderScreen(generation, 'proj-1');
+    }
+    assert.deepEqual(fetchCalls, ['/api/collaboration/runs?projectId=proj-1']);
+
+    await renderScreen(7, 'proj-2');
+    assert.deepEqual(fetchCalls, [
+      '/api/collaboration/runs?projectId=proj-1',
+      '/api/collaboration/runs?projectId=proj-2',
+    ]);
+    for (const generation of [8, 9, 10]) {
+      await renderScreen(generation, 'proj-2');
+    }
+    assert.equal(fetchCalls.length, 2);
+    assert.equal(latest?.notice, null);
+  });
+
+  test('polling fires every 5 seconds while active and stops when finished', async () => {
+    await renderScreen(1, 'proj-1');
+    assert.deepEqual(fetchCalls, ['/api/collaboration/runs?projectId=proj-1']);
+    assert.equal(scheduleCount, 0);
+
+    await act(async () => {
+      latest!.onOpenRun('run-1');
+    });
+    assert.deepEqual(fetchCalls, [
+      '/api/collaboration/runs?projectId=proj-1',
+      '/api/collaboration/runs/run-1',
+    ]);
+    assert.equal(scheduleCount, 1);
+    assert.equal(latest?.notice, null);
+
+    await renderScreen(2, 'proj-1');
+    await renderScreen(3, 'proj-1');
+    assert.equal(fetchCalls.length, 2);
+    assert.equal(scheduleCount, 1);
+
+    await firePoll();
+    assert.equal(fetchCalls.length, 4);
+    assert.equal(scheduleCount, 1);
+    await firePoll();
+    assert.equal(fetchCalls.length, 6);
+    assert.equal(scheduleCount, 1);
+
+    runStatus = 'completed';
+    await firePoll();
+    assert.equal(fetchCalls.length, 8);
+    assert.equal(intervals.size, 0);
+    assert.equal(scheduleCount, 1);
+    assert.equal(latest?.notice, null);
+
+    const stopped = fetchCalls.length;
+    await renderScreen(4, 'proj-1');
+    assert.equal(fetchCalls.length, stopped);
+    assert.equal(intervals.size, 0);
   });
 });

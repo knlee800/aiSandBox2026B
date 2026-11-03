@@ -83767,7 +83767,7 @@ taskId=COLLAB-LIVE-05
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1, PAUSED — 2026-11-03. Flags off; staging, provider-live and credit authorization false; COLLAB-SCREEN-02 fixes the page refresh loop Keith hit.
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-03. Resumed after COLLAB-SCREEN-02 fixed the page refresh loop.
 **Task ID:** COLLAB-LIVE-05
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -83795,7 +83795,7 @@ taskId=COLLAB-SCREEN-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 2 ACTIVE — 2026-11-03. COLLAB-LIVE-05 paused in Lane 1 under the GOV-OS-04 rule.
+**Status:** COMPLETE AND LOCKED — 2026-11-03. LANE-DONE and LOCKED by the control plane; Lane 2 and FRONTEND released; COLLAB-LIVE-05 resumed. Checkpoint: docs/COLLAB-SCREEN-02-CHECKPOINT.md.
 **Task ID:** COLLAB-SCREEN-02
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -83811,9 +83811,9 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Re-rendering with a new t does not fetch again
-- [ ] Polling still runs every 5 seconds while active and stops when finished
-- [ ] Not LOCKED by an implementer
+- [x] Re-rendering with a new t does not fetch again
+- [x] Polling still runs every 5 seconds while active and stops when finished
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
