@@ -65,10 +65,17 @@ export interface AiExecutionJob {
   harnessVersion?: string;
 
   /**
-   * Per-job read-only harness. When true, only read tools are registered.
-   * The field is part of the signed entitlement payload.
+   * Per-job read-only harness. When true and no tool profile is set, only
+   * read tools are registered. When a tool profile is also set, true means
+   * read; any other profile fails closed. Part of the signed payload.
    */
   harnessReadOnly?: boolean;
+
+  /**
+   * Signed collaboration tool profile. The gateway sets it from the target
+   * role. Absent on agent-mode jobs. Part of the signed entitlement payload.
+   */
+  harnessToolProfile?: 'read' | 'review' | 'write';
 
   /** HMAC entitlement proof required when harnessVersion === 'v1'. Absent on ordinary jobs. */
   harnessEntitlementProof?: HarnessEntitlementProof;

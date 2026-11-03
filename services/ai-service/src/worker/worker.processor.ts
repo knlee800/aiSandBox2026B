@@ -495,6 +495,93 @@ export function resolveHarnessRouting(input: {
   return { selectedPath: 'harness' };
 }
 
+export const HARNESS_TOOL_PROFILE_CONFLICT = 'harness_tool_profile_conflict';
+export const HARNESS_TOOL_PROFILE_INVALID = 'harness_tool_profile_invalid';
+export const HARNESS_WRITE_TOOLS_DISABLED = 'harness_write_tools_disabled';
+export const HARNESS_VALIDATION_TOOLS_DISABLED =
+  'harness_validation_tools_disabled';
+
+export const HARNESS_TOOL_PROFILE_CONFLICT_MESSAGE =
+  'The tool profile does not match the read-only flag, so this step was stopped.';
+export const HARNESS_TOOL_PROFILE_INVALID_MESSAGE =
+  'The tool profile is not read, review, or write, so this step was stopped.';
+export const HARNESS_TOOL_PROFILE_REQUIRES_HARNESS_MESSAGE =
+  'A tool profile was set without harness v1, so this step was stopped.';
+export const HARNESS_WRITE_TOOLS_DISABLED_MESSAGE =
+  'File changes are turned off, so this writer step cannot run.';
+export const HARNESS_VALIDATION_TOOLS_DISABLED_MESSAGE =
+  'Test commands are turned off, so this step cannot run.';
+
+export type HarnessToolProfileName = 'read' | 'review' | 'write';
+
+export type HarnessToolProfileResolution = {
+  readonly ok: boolean;
+  readonly profile: HarnessToolProfileName | null;
+  readonly code: string;
+  readonly message: string;
+};
+
+export function resolveHarnessToolProfile(job: {
+  readonly harnessToolProfile?: unknown;
+  readonly harnessReadOnly?: unknown;
+  readonly harnessVersion?: unknown;
+}): HarnessToolProfileResolution {
+  if (job.harnessToolProfile === undefined) {
+    return { ok: true, profile: null, code: '', message: '' };
+  }
+  if (job.harnessVersion !== 'v1') {
+    return {
+      ok: false,
+      profile: null,
+      code: HARNESS_TOOL_PROFILE_INVALID,
+      message: HARNESS_TOOL_PROFILE_REQUIRES_HARNESS_MESSAGE,
+    };
+  }
+  if (
+    job.harnessToolProfile !== 'read' &&
+    job.harnessToolProfile !== 'review' &&
+    job.harnessToolProfile !== 'write'
+  ) {
+    return {
+      ok: false,
+      profile: null,
+      code: HARNESS_TOOL_PROFILE_INVALID,
+      message: HARNESS_TOOL_PROFILE_INVALID_MESSAGE,
+    };
+  }
+  if (job.harnessReadOnly === true && job.harnessToolProfile !== 'read') {
+    return {
+      ok: false,
+      profile: null,
+      code: HARNESS_TOOL_PROFILE_CONFLICT,
+      message: HARNESS_TOOL_PROFILE_CONFLICT_MESSAGE,
+    };
+  }
+  return {
+    ok: true,
+    profile: job.harnessToolProfile,
+    code: '',
+    message: '',
+  };
+}
+
+function readStoredUsageMetadata(value: unknown): Record<string, unknown> {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return { ...(value as Record<string, unknown>) };
+  }
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value) as unknown;
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return { ...(parsed as Record<string, unknown>) };
+      }
+    } catch {
+      return {};
+    }
+  }
+  return {};
+}
+
 interface FileActionContractValidationResult {
   isContractFailure: boolean;
   finalContractResult: 'passed' | 'failed';
@@ -947,6 +1034,49 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  private async persistStoredExecutionFailure(input: {
+    executionId: string;
+    model: string | undefined;
+    code: string;
+    message: string;
+  }): Promise<void> {
+    const metadataRows = await this.dataSource.query(
+      `
+      SELECT metadata
+      FROM usage_records
+      WHERE execution_id = $1
+      `,
+      [input.executionId],
+    );
+    const nextMetadata: Record<string, unknown> = {
+      ...readStoredUsageMetadata(metadataRows[0]?.metadata),
+      executionError: {
+        code: input.code,
+        message: input.message,
+      },
+    };
+    await this.dataSource.query(
+      `
+      UPDATE usage_records
+      SET execution_status = 'failed',
+          metadata = $2::jsonb,
+          model = $3
+      WHERE execution_id = $1
+      `,
+      [
+        input.executionId,
+        JSON.stringify(nextMetadata),
+        resolveLedgerModel(undefined, input.model),
+      ],
+    );
+    this.executionStreamPublisher.publishCompletion(input.executionId);
+    incExecutionFailed();
+    this.metrics.execution_failed_total++;
+    this.logger.warn(
+      `Harness tool profile rejected executionId=${input.executionId} code=${input.code}`,
+    );
+  }
+
   async onModuleInit(): Promise<void> {
     const redisUrl = process.env.REDIS_URL;
 
@@ -1230,6 +1360,19 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
               );
             }
           }
+          const profileResolution = resolveHarnessToolProfile(job.data);
+          if (profileResolution.ok === false) {
+            cancelled = true;
+            clearTimeoutWatchdog();
+            await this.persistStoredExecutionFailure({
+              executionId,
+              model: job.data.model,
+              code: profileResolution.code,
+              message: profileResolution.message,
+            });
+            return;
+          }
+          const signedToolProfile = profileResolution.profile;
           const harnessRequested = job.data.harnessVersion === 'v1';
           let routedAdapter: ReturnType<AIExecutionService['getAdapter']> | undefined;
           if (harnessRequested && DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop) {
@@ -1265,6 +1408,9 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
           let harnessPreApplyCheckpointHash: string | undefined;
           // Lives across provider retries. A write on an earlier attempt must still save.
           let harnessWriteOrDeleteAttempted = false;
+          const harnessChangedPaths: string[] = [];
+          const harnessValidationRuns: Array<{ command: string; passed: boolean }> =
+            [];
           for (let attempt = 0; attempt < EXECUTION_PROVIDER_RETRY_ATTEMPTS; attempt++) {
             try {
               const promptParts = buildExecutionPromptParts(
@@ -1300,6 +1446,36 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                   fieldsOverridden: configResolutionMetadata.fieldsOverridden,
                   warnings: configResolutionMetadata.warnings,
                 }));
+
+                if (
+                  signedToolProfile === 'write' &&
+                  !resolvedConfig.enableWriteTools
+                ) {
+                  cancelled = true;
+                  clearTimeoutWatchdog();
+                  await this.persistStoredExecutionFailure({
+                    executionId,
+                    model: job.data.model,
+                    code: HARNESS_WRITE_TOOLS_DISABLED,
+                    message: HARNESS_WRITE_TOOLS_DISABLED_MESSAGE,
+                  });
+                  return;
+                }
+                if (
+                  (signedToolProfile === 'review' ||
+                    signedToolProfile === 'write') &&
+                  !resolvedConfig.enableValidationTools
+                ) {
+                  cancelled = true;
+                  clearTimeoutWatchdog();
+                  await this.persistStoredExecutionFailure({
+                    executionId,
+                    model: job.data.model,
+                    code: HARNESS_VALIDATION_TOOLS_DISABLED,
+                    message: HARNESS_VALIDATION_TOOLS_DISABLED_MESSAGE,
+                  });
+                  return;
+                }
 
                 const adapter =
                   routedAdapter ??
@@ -1366,53 +1542,86 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                   );
                   registeredHandlerNames.push('search_workspace');
                   const harnessReadOnly = job.data.harnessReadOnly === true;
+                  const allowHarnessMutation =
+                    signedToolProfile === 'write' ||
+                    (signedToolProfile === null && !harnessReadOnly);
                   if (resolvedConfig.enableWriteTools) {
-                    if (!harnessReadOnly) {
+                    if (
+                      !harnessReadOnly &&
+                      signedToolProfile !== 'read' &&
+                      signedToolProfile !== 'review'
+                    ) {
                       dispatcher.registerHandler(
                         'write_file',
                         wrapHarnessTool(
                           'write_file',
-                          createWriteFileHandler({
-                            client: this.apiGatewayHttpClient,
-                            sessionId: job.data.sessionId,
-                            maxFileWriteBytes: resolvedConfig.maxFileWriteBytes,
-                          }),
+                          async (args, signal) => {
+                            const result = await createWriteFileHandler({
+                              client: this.apiGatewayHttpClient,
+                              sessionId: job.data.sessionId,
+                              maxFileWriteBytes: resolvedConfig.maxFileWriteBytes,
+                            })(args, signal);
+                            if (
+                              signedToolProfile === 'write' &&
+                              typeof result.path === 'string' &&
+                              result.path.length > 0
+                            ) {
+                              harnessChangedPaths.push(result.path);
+                            }
+                            return result;
+                          },
                         ),
                       );
                       registeredHandlerNames.push('write_file');
-                      dispatcher.registerHandler(
-                        'delete_file',
-                        wrapHarnessTool(
+                      if (signedToolProfile !== 'write') {
+                        dispatcher.registerHandler(
                           'delete_file',
-                          createDeleteFileHandler({
-                            client: this.apiGatewayHttpClient,
-                            sessionId: job.data.sessionId,
-                          }),
-                        ),
-                      );
-                      registeredHandlerNames.push('delete_file');
+                          wrapHarnessTool(
+                            'delete_file',
+                            createDeleteFileHandler({
+                              client: this.apiGatewayHttpClient,
+                              sessionId: job.data.sessionId,
+                            }),
+                          ),
+                        );
+                        registeredHandlerNames.push('delete_file');
+                      }
                     }
                   }
                   if (resolvedConfig.enableValidationTools) {
-                    if (!harnessReadOnly) {
+                    if (!harnessReadOnly && signedToolProfile !== 'read') {
                       dispatcher.registerHandler(
                         'run_validation',
                         wrapHarnessTool(
                           'run_validation',
-                          createRunValidationHandler({
-                            client: this.apiGatewayHttpClient,
-                            sessionId: job.data.sessionId,
-                            allowedValidationCommands: resolvedConfig.allowedValidationCommands,
-                            validationTimeoutMs: resolvedConfig.validationTimeoutMs,
-                            maxValidationOutputBytes: resolvedConfig.maxValidationOutputBytes,
-                          }),
+                          async (args, signal) => {
+                            const result = await createRunValidationHandler({
+                              client: this.apiGatewayHttpClient,
+                              sessionId: job.data.sessionId,
+                              allowedValidationCommands: resolvedConfig.allowedValidationCommands,
+                              validationTimeoutMs: resolvedConfig.validationTimeoutMs,
+                              maxValidationOutputBytes: resolvedConfig.maxValidationOutputBytes,
+                            })(args, signal);
+                            if (
+                              (signedToolProfile === 'review' ||
+                                signedToolProfile === 'write') &&
+                              typeof result.command === 'string' &&
+                              result.command.length > 0
+                            ) {
+                              harnessValidationRuns.push({
+                                command: result.command,
+                                passed: result.success === true,
+                              });
+                            }
+                            return result;
+                          },
                         ),
                       );
                       registeredHandlerNames.push('run_validation');
                     }
                   }
                   if (resolvedConfig.enableBrowserSmoke) {
-                    if (!harnessReadOnly) {
+                    if (!harnessReadOnly && signedToolProfile === null) {
                       dispatcher.registerHandler(
                         'browser_smoke',
                         wrapHarnessTool(
@@ -1430,15 +1639,25 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                   const advertisedTools = requireNonEmptyAdvertisedHarnessTools(
                     selectAdvertisedAgentHarnessTools({
                       registeredHandlerNames,
-                      enableWriteTools: harnessReadOnly
-                        ? false
-                        : resolvedConfig.enableWriteTools,
-                      enableValidationTools: harnessReadOnly
-                        ? false
-                        : resolvedConfig.enableValidationTools,
-                      enableBrowserSmoke: harnessReadOnly
-                        ? false
-                        : resolvedConfig.enableBrowserSmoke,
+                      enableWriteTools:
+                        signedToolProfile === null
+                          ? harnessReadOnly
+                            ? false
+                            : resolvedConfig.enableWriteTools
+                          : signedToolProfile === 'write',
+                      enableValidationTools:
+                        signedToolProfile === null
+                          ? harnessReadOnly
+                            ? false
+                            : resolvedConfig.enableValidationTools
+                          : signedToolProfile === 'review' ||
+                            signedToolProfile === 'write',
+                      enableBrowserSmoke:
+                        signedToolProfile === null
+                          ? harnessReadOnly
+                            ? false
+                            : resolvedConfig.enableBrowserSmoke
+                          : false,
                     }),
                   );
                   const auditRecorder = resolvedConfig.auditEventsEnabled
@@ -1460,7 +1679,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                   };
 
                   if (resolvedConfig.enablePreApplyCheckpoint) {
-                    if (!harnessReadOnly) {
+                    if (allowHarnessMutation) {
                       loopOptions = {
                         ...loopOptions,
                         createCheckpointFn: (checkpointSignal) =>
@@ -1486,7 +1705,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                         this.logger.log(JSON.stringify(event));
                       }
                     }
-                    if (harnessWriteOrDeleteAttempted && !harnessReadOnly) {
+                    if (harnessWriteOrDeleteAttempted && allowHarnessMutation) {
                       try {
                         await this.apiGatewayHttpClient.saveProjectSnapshot(
                           job.data.sessionId,
@@ -1585,7 +1804,8 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
             },
           );
           const effectiveFileActions =
-            job.data.harnessReadOnly === true
+            job.data.harnessReadOnly === true ||
+            (signedToolProfile !== null && signedToolProfile !== 'write')
               ? []
               : fileActionResolution.effectiveFileActions;
           const parseMethod = aiResult.parseMethod ?? 'none';
@@ -1682,6 +1902,10 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
 
           if (harnessPreApplyCheckpointHash) {
             nextMetadata.preApplyCheckpointHash = harnessPreApplyCheckpointHash;
+          }
+          if (signedToolProfile !== null) {
+            nextMetadata.harnessChangedPaths = harnessChangedPaths;
+            nextMetadata.harnessValidationRuns = harnessValidationRuns;
           }
 
           if (aiResult.output) {

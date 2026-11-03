@@ -1,5 +1,11 @@
 import React from 'react';
-import { CheckIcon, UserGroupIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import {
+  ArrowUturnLeftIcon,
+  CheckIcon,
+  ExclamationTriangleIcon,
+  UserGroupIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/outline';
 
 export interface CollaborationViewLabels {
   title: string;
@@ -38,6 +44,14 @@ export interface CollaborationViewLabels {
   noAnswerYet: string;
   conversationCreated: string;
   loading: string;
+  writerWarning: string;
+  changedFiles: string;
+  noChangedFiles: string;
+  savePoint: string;
+  testsHeading: string;
+  testPassed: string;
+  testFailed: string;
+  reviewOrRevert: string;
 }
 
 export interface CollaborationTeamMemberView {
@@ -56,6 +70,10 @@ export interface CollaborationHandoffViewModel {
   decidedBy: string | null;
   rejectReason: string | null;
   waiting: boolean;
+  canChangeFiles: boolean;
+  changedPaths: string[];
+  savePoint: string | null;
+  tests: Array<{ command: string; passed: boolean }>;
 }
 
 export interface CollaborationPastRunView {
@@ -184,6 +202,12 @@ export default function CollaborationView(props: {
           <ol className="mt-2 space-y-3">
             {props.handoffs.map((handoff) => {
               const rejecting = props.rejectReferralId === handoff.referralId;
+              const showWork =
+                !handoff.waiting &&
+                (handoff.canChangeFiles ||
+                  handoff.changedPaths.length > 0 ||
+                  handoff.savePoint !== null ||
+                  handoff.tests.length > 0);
               return (
                 <li
                   key={handoff.referralId}
@@ -237,9 +261,87 @@ export default function CollaborationView(props: {
                       {handoff.handoffNote}
                     </p>
                   ) : null}
+                  {showWork ? (
+                    <div
+                      className="mt-3 min-w-0 max-w-full space-y-2"
+                      data-testid={`collaboration-work-${handoff.referralId}`}
+                    >
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                          {labels.changedFiles}
+                        </p>
+                        {handoff.changedPaths.length === 0 ? (
+                          <p className="mt-1 text-sm text-gray-600">{labels.noChangedFiles}</p>
+                        ) : (
+                          <ul className="mt-1 space-y-1">
+                            {handoff.changedPaths.map((path, index) => (
+                              <li
+                                key={`${handoff.referralId}-path-${index}`}
+                                className="break-all text-sm text-gray-800"
+                                data-testid={`collaboration-changed-${handoff.referralId}-${index}`}
+                              >
+                                {path}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                      {handoff.savePoint ? (
+                        <p
+                          className="break-all text-sm text-gray-800"
+                          data-testid={`collaboration-save-point-${handoff.referralId}`}
+                        >
+                          <span className="font-medium text-gray-600">{labels.savePoint}: </span>
+                          {handoff.savePoint}
+                        </p>
+                      ) : null}
+                      {handoff.tests.length > 0 ? (
+                        <div className="min-w-0">
+                          <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                            {labels.testsHeading}
+                          </p>
+                          <ul className="mt-1 space-y-1">
+                            {handoff.tests.map((test, index) => (
+                              <li
+                                key={`${handoff.referralId}-test-${index}`}
+                                className="break-words text-sm text-gray-800"
+                                data-testid={`collaboration-test-${handoff.referralId}-${index}`}
+                              >
+                                {test.command} {test.passed ? labels.testPassed : labels.testFailed}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : null}
+                      <a
+                        href={props.backHref}
+                        className="inline-flex max-w-full items-center break-words text-sm font-medium text-indigo-700 hover:underline"
+                        data-testid={`collaboration-workspace-${handoff.referralId}`}
+                      >
+                        <ArrowUturnLeftIcon
+                          className="mr-1 h-4 w-4 shrink-0"
+                          aria-hidden="true"
+                        />
+                        {labels.reviewOrRevert}
+                      </a>
+                    </div>
+                  ) : null}
                   {handoff.decidedBy ? (
                     <p className="mt-2 break-all text-xs text-gray-500">
                       {labels.decidedBy}: {handoff.decidedBy}
+                    </p>
+                  ) : null}
+                  {handoff.waiting && handoff.canChangeFiles ? (
+                    <p
+                      className="mt-3 flex min-w-0 max-w-full items-start gap-2 break-words rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+                      data-testid={`collaboration-write-warning-${handoff.referralId}`}
+                      role="alert"
+                    >
+                      <ExclamationTriangleIcon
+                        className="mt-0.5 h-4 w-4 shrink-0"
+                        aria-hidden="true"
+                      />
+                      <span>{labels.writerWarning}</span>
                     </p>
                   ) : null}
                   {handoff.waiting ? (

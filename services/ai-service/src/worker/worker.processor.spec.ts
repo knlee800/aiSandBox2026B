@@ -9,6 +9,13 @@ import {
   HARNESS_ENTITLEMENT_PROOF_MALFORMED,
   HARNESS_ENTITLEMENT_PROOF_MISSING,
   HARNESS_ENTITLEMENT_PROOF_PAYLOAD_INTEGRITY_MISMATCH,
+  HARNESS_TOOL_PROFILE_CONFLICT,
+  HARNESS_TOOL_PROFILE_CONFLICT_MESSAGE,
+  HARNESS_VALIDATION_TOOLS_DISABLED,
+  HARNESS_VALIDATION_TOOLS_DISABLED_MESSAGE,
+  HARNESS_WRITE_TOOLS_DISABLED,
+  HARNESS_WRITE_TOOLS_DISABLED_MESSAGE,
+  resolveHarnessToolProfile,
   HarnessEmptyAdvertisedToolSetError,
   HarnessEntitlementError,
   HarnessRoutingError,
@@ -4848,6 +4855,7 @@ describe('COLLAB-FILES-01 read-only harness jobs', () => {
   function createLedgerMock() {
     const status = { value: 'pending' };
     const completedUpdates: Array<{ sql: string; params: unknown[] }> = [];
+    const failedUpdates: Array<{ sql: string; params: unknown[] }> = [];
     const query = jest.fn(async (sql: string, params: unknown[] = []) => {
       if (
         sql.includes("SET execution_status = 'running'") &&
@@ -4865,6 +4873,7 @@ describe('COLLAB-FILES-01 read-only harness jobs', () => {
         return [];
       }
       if (sql.includes("SET execution_status = 'failed'")) {
+        failedUpdates.push({ sql, params });
         status.value = 'failed';
         return [];
       }
@@ -4887,7 +4896,7 @@ describe('COLLAB-FILES-01 read-only harness jobs', () => {
       }
       return [];
     });
-    return { query, status, completedUpdates };
+    return { query, status, completedUpdates, failedUpdates };
   }
 
   function toolCall(
@@ -4907,7 +4916,7 @@ describe('COLLAB-FILES-01 read-only harness jobs', () => {
     query: jest.Mock;
     execute: jest.Mock;
     getAdapter: jest.Mock;
-    apiGateway: Record<string, jest.Mock>;
+    apiGateway: object;
     publisher?: Record<string, jest.Mock>;
   }) {
     const publisher = {
@@ -5261,5 +5270,482 @@ describe('COLLAB-FILES-01 read-only harness jobs', () => {
     expect(loopOffTools).not.toHaveBeenCalled();
     expect(loopOffLedger.status.value).toBe('failed');
     await loopOff.worker.onModuleDestroy();
+  });
+
+  function profileGateway(overrides: Record<string, jest.Mock> = {}) {
+    return {
+      notifyExecutionComplete: jest.fn().mockResolvedValue(undefined),
+      readWorkspaceFile: jest.fn().mockResolvedValue({
+        path: 'slug.js',
+        content: 'existing',
+      }),
+      listWorkspaceDirectory: jest.fn().mockResolvedValue({ entries: [] }),
+      searchWorkspace: jest.fn().mockResolvedValue({
+        query: 'slug',
+        results: [],
+        truncated: false,
+      }),
+      writeWorkspaceFile: jest.fn().mockResolvedValue(undefined),
+      deleteWorkspaceFile: jest.fn().mockResolvedValue(undefined),
+      runWorkspaceValidation: jest.fn(async (_sessionId: string, command: string) => ({
+        exitCode: command === 'npm run build' ? 1 : 0,
+        stdout: '',
+        stderr: '',
+      })),
+      runBrowserSmoke: jest.fn().mockResolvedValue({ ok: true }),
+      createWorkspaceCheckpoint: jest.fn().mockResolvedValue({
+        commitHash: 'abc123save',
+        filesChanged: 1,
+      }),
+      saveProjectSnapshot: jest.fn().mockResolvedValue({ saved: true }),
+      ...overrides,
+    };
+  }
+
+  function advertisedNames(executeWithTools: jest.Mock): string[] {
+    return executeWithTools.mock.calls[0][1].tools.map(
+      (tool: { name: string }) => tool.name,
+    );
+  }
+
+  function toolResult(
+    executeWithTools: jest.Mock,
+    toolName: string,
+  ): { success: boolean; errorMessage?: string } | undefined {
+    const results = executeWithTools.mock.calls[1][1].toolResults as Array<{
+      toolName: string;
+      success: boolean;
+      errorMessage?: string;
+    }>;
+    return results.find((result) => result.toolName === toolName);
+  }
+
+  function completedMetadata(ledger: {
+    completedUpdates: Array<{ params: unknown[] }>;
+  }): Record<string, unknown> {
+    return JSON.parse(String(ledger.completedUpdates[0].params[2])) as Record<
+      string,
+      unknown
+    >;
+  }
+
+  function storedFailure(ledger: {
+    failedUpdates: Array<{ params: unknown[] }>;
+  }): { code: string; message: string } {
+    const update = ledger.failedUpdates.find((entry) =>
+      String(entry.params[1] ?? '').includes('executionError'),
+    );
+    expect(update).toBeDefined();
+    const metadata = JSON.parse(String(update?.params[1])) as {
+      executionError: { code: string; message: string };
+    };
+    return metadata.executionError;
+  }
+
+  async function runProfile(input: {
+    executionId: string;
+    profile: 'read' | 'review' | 'write';
+    harnessReadOnly?: boolean;
+    toolCalls: ReturnType<typeof toolCall>[];
+    gateway?: ReturnType<typeof profileGateway>;
+  }) {
+    const ledger = createLedgerMock();
+    const execute = jest.fn();
+    const executeWithTools = jest
+      .fn()
+      .mockResolvedValueOnce({
+        output: 'using tools',
+        tokensUsed: 2,
+        model: 'stub-profile',
+        finishReason: 'tool_calls',
+        toolCalls: input.toolCalls,
+      })
+      .mockResolvedValueOnce({
+        output: 'Finished the step.',
+        tokensUsed: 1,
+        model: 'stub-profile',
+        finishReason: 'completed',
+        toolCalls: [],
+      });
+    const gateway = input.gateway ?? profileGateway();
+    const job = withHarnessProof(baseJob({
+      executionId: input.executionId,
+      harnessToolProfile: input.profile,
+      ...(input.harnessReadOnly === undefined
+        ? {}
+        : { harnessReadOnly: input.harnessReadOnly }),
+    }));
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute,
+      getAdapter: jest.fn().mockReturnValue({
+        supportsToolUse: true,
+        executeWithTools,
+      }),
+      apiGateway: gateway,
+    });
+    await processJob({ id: `job-${input.executionId}`, data: job });
+    return { ledger, execute, executeWithTools, gateway, worker };
+  }
+
+  it('COLLAB-WRITE-01 gives each profile exactly its tools and never delete', async () => {
+    const readTools = [
+      toolCall('call-read', 'read_file', { path: 'slug.js' }),
+      toolCall('call-list', 'list_files', { path: 'src' }),
+      toolCall('call-search', 'search_workspace', { query: 'slug' }),
+      toolCall('call-write', 'write_file', { path: 'slug.js', content: 'nope' }),
+      toolCall('call-delete', 'delete_file', { path: 'slug.js' }),
+      toolCall('call-validate', 'run_validation', { command: 'npm test' }),
+      toolCall('call-browser', 'browser_smoke', { url: '/' }),
+    ];
+    const read = await runProfile({
+      executionId: 'exec-profile-read',
+      profile: 'read',
+      harnessReadOnly: true,
+      toolCalls: readTools,
+    });
+    expect(advertisedNames(read.executeWithTools)).toEqual([
+      'list_files',
+      'read_file',
+      'search_workspace',
+    ]);
+    expect(read.gateway.readWorkspaceFile).toHaveBeenCalledTimes(1);
+    expect(read.gateway.listWorkspaceDirectory).toHaveBeenCalledTimes(1);
+    expect(read.gateway.searchWorkspace).toHaveBeenCalledTimes(1);
+    expect(read.gateway.writeWorkspaceFile).not.toHaveBeenCalled();
+    expect(read.gateway.deleteWorkspaceFile).not.toHaveBeenCalled();
+    expect(read.gateway.runWorkspaceValidation).not.toHaveBeenCalled();
+    expect(read.gateway.runBrowserSmoke).not.toHaveBeenCalled();
+    expect(read.gateway.createWorkspaceCheckpoint).not.toHaveBeenCalled();
+    expect(read.gateway.saveProjectSnapshot).not.toHaveBeenCalled();
+    expect(toolResult(read.executeWithTools, 'write_file')?.errorMessage).toBe(
+      'No handler registered for tool: write_file',
+    );
+    expect(toolResult(read.executeWithTools, 'delete_file')?.errorMessage).toBe(
+      'No handler registered for tool: delete_file',
+    );
+    expect(read.execute).not.toHaveBeenCalled();
+    const readMetadata = completedMetadata(read.ledger);
+    expect(readMetadata.harnessChangedPaths).toEqual([]);
+    expect(readMetadata.harnessValidationRuns).toEqual([]);
+    expect(readMetadata.preApplyCheckpointHash).toBeUndefined();
+    await read.worker.onModuleDestroy();
+
+    const review = await runProfile({
+      executionId: 'exec-profile-review',
+      profile: 'review',
+      toolCalls: [
+        toolCall('call-read', 'read_file', { path: 'slug.js' }),
+        toolCall('call-validate', 'run_validation', { command: 'npm test' }),
+        toolCall('call-validate-fail', 'run_validation', { command: 'npm run build' }),
+        toolCall('call-write', 'write_file', { path: 'slug.js', content: 'nope' }),
+        toolCall('call-delete', 'delete_file', { path: 'slug.js' }),
+      ],
+    });
+    expect(advertisedNames(review.executeWithTools)).toEqual([
+      'list_files',
+      'read_file',
+      'run_validation',
+      'search_workspace',
+    ]);
+    expect(review.gateway.runWorkspaceValidation).toHaveBeenCalledTimes(2);
+    expect(review.gateway.writeWorkspaceFile).not.toHaveBeenCalled();
+    expect(review.gateway.deleteWorkspaceFile).not.toHaveBeenCalled();
+    expect(review.gateway.createWorkspaceCheckpoint).not.toHaveBeenCalled();
+    expect(review.gateway.saveProjectSnapshot).not.toHaveBeenCalled();
+    expect(toolResult(review.executeWithTools, 'write_file')?.errorMessage).toBe(
+      'No handler registered for tool: write_file',
+    );
+    expect(toolResult(review.executeWithTools, 'delete_file')?.success).toBe(false);
+    const reviewMetadata = completedMetadata(review.ledger);
+    expect(reviewMetadata.harnessChangedPaths).toEqual([]);
+    expect(reviewMetadata.harnessValidationRuns).toEqual([
+      { command: 'npm test', passed: true },
+      { command: 'npm run build', passed: false },
+    ]);
+    expect(reviewMetadata.preApplyCheckpointHash).toBeUndefined();
+    await review.worker.onModuleDestroy();
+
+    const order: string[] = [];
+    const writeGateway = profileGateway({
+      createWorkspaceCheckpoint: jest.fn(async () => {
+        order.push('checkpoint');
+        return { commitHash: 'abc123save', filesChanged: 1 };
+      }),
+      writeWorkspaceFile: jest.fn(async () => {
+        order.push('write');
+      }),
+      saveProjectSnapshot: jest.fn(async () => {
+        order.push('save');
+        return { saved: true };
+      }),
+    });
+    const write = await runProfile({
+      executionId: 'exec-profile-write',
+      profile: 'write',
+      gateway: writeGateway,
+      toolCalls: [
+        toolCall('call-write', 'write_file', { path: 'slug.js', content: 'ok' }),
+        toolCall('call-validate', 'run_validation', { command: 'npm test' }),
+        toolCall('call-delete', 'delete_file', { path: 'slug.js' }),
+        toolCall('call-browser', 'browser_smoke', { url: '/' }),
+      ],
+    });
+    expect(advertisedNames(write.executeWithTools)).toEqual([
+      'list_files',
+      'read_file',
+      'write_file',
+      'run_validation',
+      'search_workspace',
+    ]);
+    expect(advertisedNames(write.executeWithTools)).not.toContain('delete_file');
+    expect(writeGateway.deleteWorkspaceFile).not.toHaveBeenCalled();
+    expect(writeGateway.runBrowserSmoke).not.toHaveBeenCalled();
+    expect(toolResult(write.executeWithTools, 'delete_file')?.errorMessage).toBe(
+      'No handler registered for tool: delete_file',
+    );
+    expect(order).toEqual(['checkpoint', 'write', 'save']);
+    expect(writeGateway.createWorkspaceCheckpoint).toHaveBeenCalledTimes(1);
+    expect(writeGateway.createWorkspaceCheckpoint.mock.invocationCallOrder[0]).toBeLessThan(
+      writeGateway.writeWorkspaceFile.mock.invocationCallOrder[0],
+    );
+    const writeMetadata = completedMetadata(write.ledger);
+    expect(writeMetadata.harnessChangedPaths).toEqual(['slug.js']);
+    expect(writeMetadata.preApplyCheckpointHash).toBe('abc123save');
+    expect(writeMetadata.harnessValidationRuns).toEqual([
+      { command: 'npm test', passed: true },
+    ]);
+    await write.worker.onModuleDestroy();
+  });
+
+  it('COLLAB-WRITE-01 fails the proof when the profile is changed and fails closed when read-only disagrees', async () => {
+    const signed = withHarnessProof(baseJob({
+      executionId: 'exec-profile-tamper',
+      harnessToolProfile: 'review',
+    }));
+    expect(() => verifyHarnessEntitlementProof(signed)).not.toThrow();
+    const tampered = { ...signed, harnessToolProfile: 'write' };
+    expect(() => verifyHarnessEntitlementProof(tampered)).toThrow(HarnessEntitlementError);
+    try {
+      verifyHarnessEntitlementProof(tampered);
+    } catch (error) {
+      expect((error as HarnessEntitlementError).code).toBe(
+        HARNESS_ENTITLEMENT_PROOF_PAYLOAD_INTEGRITY_MISMATCH,
+      );
+    }
+    expect(resolveHarnessToolProfile({
+      harnessVersion: 'v1',
+      harnessReadOnly: true,
+      harnessToolProfile: 'write',
+    })).toEqual({
+      ok: false,
+      profile: null,
+      code: HARNESS_TOOL_PROFILE_CONFLICT,
+      message: HARNESS_TOOL_PROFILE_CONFLICT_MESSAGE,
+    });
+
+    const tamperLedger = createLedgerMock();
+    const tamperExecute = jest.fn();
+    const tamperTools = jest.fn();
+    const tamperRun = await startWorker({
+      query: tamperLedger.query,
+      execute: tamperExecute,
+      getAdapter: jest.fn().mockReturnValue({
+        supportsToolUse: true,
+        executeWithTools: tamperTools,
+      }),
+      apiGateway: profileGateway(),
+    });
+    await expect(tamperRun.processJob({
+      id: 'job-profile-tamper',
+      data: tampered,
+    })).rejects.toMatchObject({
+      code: HARNESS_ENTITLEMENT_PROOF_PAYLOAD_INTEGRITY_MISMATCH,
+    });
+    expect(tamperExecute).not.toHaveBeenCalled();
+    expect(tamperTools).not.toHaveBeenCalled();
+    await tamperRun.worker.onModuleDestroy();
+
+    const disagree = withHarnessProof(baseJob({
+      executionId: 'exec-profile-disagree',
+      harnessReadOnly: true,
+      harnessToolProfile: 'write',
+    }));
+    expect(() => verifyHarnessEntitlementProof(disagree)).not.toThrow();
+    const disagreeLedger = createLedgerMock();
+    const disagreeExecute = jest.fn();
+    const disagreeTools = jest.fn();
+    const disagreeRun = await startWorker({
+      query: disagreeLedger.query,
+      execute: disagreeExecute,
+      getAdapter: jest.fn().mockReturnValue({
+        supportsToolUse: true,
+        executeWithTools: disagreeTools,
+      }),
+      apiGateway: profileGateway(),
+    });
+    await disagreeRun.processJob({ id: 'job-profile-disagree', data: disagree });
+    expect(disagreeExecute).not.toHaveBeenCalled();
+    expect(disagreeTools).not.toHaveBeenCalled();
+    expect(storedFailure(disagreeLedger)).toEqual({
+      code: HARNESS_TOOL_PROFILE_CONFLICT,
+      message: HARNESS_TOOL_PROFILE_CONFLICT_MESSAGE,
+    });
+    expect(disagreeLedger.status.value).toBe('failed');
+    await disagreeRun.worker.onModuleDestroy();
+  });
+
+  it('COLLAB-WRITE-01 fails a profile job with a readable reason when its gate is off', async () => {
+    async function expectGate(input: {
+      executionId: string;
+      profile: 'review' | 'write';
+      writeTools: boolean;
+      validationTools: boolean;
+      code: string;
+      message: string;
+    }) {
+      harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1 = {
+        ...harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1,
+        enableToolLoop: true,
+        enableWriteTools: input.writeTools,
+        enableValidationTools: input.validationTools,
+        enablePreApplyCheckpoint: true,
+      };
+      const ledger = createLedgerMock();
+      const execute = jest.fn();
+      const executeWithTools = jest.fn();
+      const gateway = profileGateway();
+      const { worker, processJob } = await startWorker({
+        query: ledger.query,
+        execute,
+        getAdapter: jest.fn().mockReturnValue({
+          supportsToolUse: true,
+          executeWithTools,
+        }),
+        apiGateway: gateway,
+      });
+      await processJob({
+        id: `job-${input.executionId}`,
+        data: withHarnessProof(baseJob({
+          executionId: input.executionId,
+          harnessToolProfile: input.profile,
+        })),
+      });
+      expect(execute).not.toHaveBeenCalled();
+      expect(executeWithTools).not.toHaveBeenCalled();
+      expect(gateway.writeWorkspaceFile).not.toHaveBeenCalled();
+      expect(gateway.runWorkspaceValidation).not.toHaveBeenCalled();
+      expect(gateway.createWorkspaceCheckpoint).not.toHaveBeenCalled();
+      expect(gateway.saveProjectSnapshot).not.toHaveBeenCalled();
+      expect(storedFailure(ledger)).toEqual({
+        code: input.code,
+        message: input.message,
+      });
+      await worker.onModuleDestroy();
+    }
+
+    await expectGate({
+      executionId: 'exec-write-gate',
+      profile: 'write',
+      writeTools: false,
+      validationTools: true,
+      code: HARNESS_WRITE_TOOLS_DISABLED,
+      message: HARNESS_WRITE_TOOLS_DISABLED_MESSAGE,
+    });
+    await expectGate({
+      executionId: 'exec-review-validation-gate',
+      profile: 'review',
+      writeTools: true,
+      validationTools: false,
+      code: HARNESS_VALIDATION_TOOLS_DISABLED,
+      message: HARNESS_VALIDATION_TOOLS_DISABLED_MESSAGE,
+    });
+    await expectGate({
+      executionId: 'exec-write-validation-gate',
+      profile: 'write',
+      writeTools: true,
+      validationTools: false,
+      code: HARNESS_VALIDATION_TOOLS_DISABLED,
+      message: HARNESS_VALIDATION_TOOLS_DISABLED_MESSAGE,
+    });
+
+    harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1 = {
+      ...harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1,
+      enableToolLoop: true,
+      enableWriteTools: false,
+      enableValidationTools: false,
+      enableBrowserSmoke: false,
+      enablePreApplyCheckpoint: true,
+    };
+    const read = await runProfile({
+      executionId: 'exec-read-flags-off',
+      profile: 'read',
+      harnessReadOnly: true,
+      toolCalls: [toolCall('call-read', 'read_file', { path: 'slug.js' })],
+    });
+    expect(advertisedNames(read.executeWithTools)).toEqual([
+      'list_files',
+      'read_file',
+      'search_workspace',
+    ]);
+    expect(read.ledger.status.value).toBe('completed');
+    expect(read.gateway.createWorkspaceCheckpoint).not.toHaveBeenCalled();
+    expect(read.gateway.saveProjectSnapshot).not.toHaveBeenCalled();
+    await read.worker.onModuleDestroy();
+  });
+
+  it('COLLAB-WRITE-01 keeps delete, browser smoke and the proof on an agent-mode job', async () => {
+    const ledger = createLedgerMock();
+    const executeWithTools = jest
+      .fn()
+      .mockResolvedValueOnce({
+        output: 'deleting',
+        tokensUsed: 2,
+        model: 'stub-agent',
+        finishReason: 'tool_calls',
+        toolCalls: [
+          toolCall('call-delete', 'delete_file', { path: 'slug.js' }),
+          toolCall('call-browser', 'browser_smoke', { url: '/' }),
+        ],
+      })
+      .mockResolvedValueOnce({
+        output: 'Agent finished.',
+        tokensUsed: 1,
+        model: 'stub-agent',
+        finishReason: 'completed',
+        toolCalls: [],
+      });
+    const gateway = profileGateway();
+    const job = withHarnessProof(baseJob({
+      executionId: 'exec-agent-tools',
+    }));
+    expect(job).not.toHaveProperty('harnessToolProfile');
+    expect(() => verifyHarnessEntitlementProof(job)).not.toThrow();
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn(),
+      getAdapter: jest.fn().mockReturnValue({
+        supportsToolUse: true,
+        executeWithTools,
+      }),
+      apiGateway: gateway,
+    });
+    await processJob({ id: 'job-agent-tools', data: job });
+    expect(advertisedNames(executeWithTools)).toEqual([
+      'list_files',
+      'read_file',
+      'write_file',
+      'run_validation',
+      'search_workspace',
+    ]);
+    expect(gateway.deleteWorkspaceFile).toHaveBeenCalledTimes(1);
+    expect(gateway.runBrowserSmoke).toHaveBeenCalledTimes(1);
+    expect(gateway.createWorkspaceCheckpoint).toHaveBeenCalledTimes(1);
+    expect(gateway.saveProjectSnapshot).toHaveBeenCalledTimes(1);
+    const metadata = completedMetadata(ledger);
+    expect(metadata).not.toHaveProperty('harnessChangedPaths');
+    expect(metadata).not.toHaveProperty('harnessValidationRuns');
+    expect(ledger.status.value).toBe('completed');
+    await worker.onModuleDestroy();
   });
 });

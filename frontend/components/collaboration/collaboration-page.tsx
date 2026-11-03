@@ -19,6 +19,8 @@ import {
   COLLABORATION_POLL_MS,
   collaborationMemberLabel,
   collaborationRefusalMessageKey,
+  readHandoffTests,
+  readStringList,
   createSingleFlight,
   fillTemplate,
   handoffIsWaiting,
@@ -268,6 +270,14 @@ export function useCollaborationScreen(input: {
     noAnswerYet: t('noAnswerYet'),
     conversationCreated: t('conversationCreated'),
     loading: t('loading'),
+    writerWarning: t('writerWarning'),
+    changedFiles: t('changedFiles'),
+    noChangedFiles: t('noChangedFiles'),
+    savePoint: t('savePoint'),
+    testsHeading: t('testsHeading'),
+    testPassed: t('testPassed'),
+    testFailed: t('testFailed'),
+    reviewOrRevert: t('reviewOrRevert'),
   };
 
   const memberLabels = useMemo(
@@ -306,6 +316,13 @@ export function useCollaborationScreen(input: {
       decidedBy: handoff.decidedBy,
       rejectReason: handoff.rejectReason,
       waiting: handoffIsWaiting(handoff.status),
+      canChangeFiles: handoff.canChangeFiles === true,
+      changedPaths: readStringList(handoff.changedPaths),
+      savePoint:
+        typeof handoff.savePoint === 'string' && handoff.savePoint.trim().length > 0
+          ? handoff.savePoint
+          : null,
+      tests: readHandoffTests(handoff.tests),
     }),
   );
 

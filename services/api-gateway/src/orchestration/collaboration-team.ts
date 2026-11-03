@@ -15,17 +15,17 @@ export const COLLABORATION_TEAM: readonly CollaborationListedAgent[] = [
   {
     name: COLLABORATION_LEAD_PROFILE_ID,
     instructions:
-      'Read the project with your tools and decide what is needed. When the code looks wrong or a change is needed, ask writer to propose a fix. You cannot change files.',
+      'Read the project with your tools and decide what is needed. When the code looks wrong or a change is needed, ask writer to apply a fix. You cannot change files.',
   },
   {
     name: COLLABORATION_WRITER_PROFILE_ID,
     instructions:
-      'Read the files you need. Propose changes as text. You cannot change files. Then ask reviewer.',
+      'Read the files you need. Apply the fix with write_file. You may run npm test, npm run build, or npx tsc --noEmit. Do not delete files. Then ask reviewer.',
   },
   {
     name: COLLABORATION_REVIEWER_PROFILE_ID,
     instructions:
-      'Read the real files and check the proposal. Name each real bug with an input that shows it. Give a clear verdict and finish. You cannot change files.',
+      'Read the real files. Run npm test, npm run build, or npx tsc --noEmit when that checks the change. Name each real bug with an input that shows it. Give a clear verdict and finish. You cannot change files.',
   },
 ];
 

@@ -532,6 +532,115 @@ describe('CollaborationController login routes', () => {
     expect(JSON.stringify(detail.body)).not.toContain('Execution failed');
     expect(detail.body.team).toEqual(['lead', 'writer', 'reviewer']);
   });
+
+  it('shows whether a step can change files, then the paths, save point and tests', async () => {
+    const started = await startRun();
+    const waiting = await http()
+      .get(`/api/collaboration/runs/${started.collaborationRunId}`)
+      .expect(200);
+    expect(waiting.body.handoffs[0]).toMatchObject({
+      target: 'lead',
+      status: 'pending_approval',
+      canChangeFiles: false,
+      changedPaths: [],
+      savePoint: null,
+      tests: [],
+    });
+
+    await http()
+      .post(
+        `/api/collaboration/runs/${started.collaborationRunId}/referrals/${started.referralId}/approve`,
+      )
+      .send({})
+      .expect(200);
+    const leadPayload = queue.enqueueExecution.mock.calls[0][0] as Record<string, unknown>;
+    expect(leadPayload.harnessToolProfile).toBe('read');
+    expect(leadPayload.harnessReadOnly).toBe(true);
+    const leadExecutionId = referrals.get(started.referralId)?.executionId;
+    expect(leadExecutionId).toEqual(expect.any(String));
+
+    executionResults.getExecution.mockImplementation(async (executionId: string) => {
+      if (executionId === leadExecutionId) {
+        return {
+          execution_status: 'completed',
+          metadata: {
+            aiExecutionResult: {
+              output: 'Ready.\n<handoff to="writer">Fix the form.</handoff>',
+            },
+          },
+        };
+      }
+      const writer = [...referrals.values()].find(
+        (referral) =>
+          referral.executionId === executionId &&
+          referral.targetBuilderProfileId === 'writer',
+      );
+      if (writer) {
+        return {
+          execution_status: 'completed',
+          metadata: {
+            aiExecutionResult: { output: 'Updated the form.' },
+            harnessChangedPaths: ['src/form.ts', '', 4],
+            preApplyCheckpointHash: 'abc123save',
+            harnessValidationRuns: [
+              { command: 'npm test', passed: true },
+              { command: 'npm run build', passed: false },
+              { command: 5, passed: true },
+            ],
+          },
+        };
+      }
+      return null;
+    });
+
+    const afterLead = await http()
+      .get(`/api/collaboration/runs/${started.collaborationRunId}`)
+      .expect(200);
+    const writerHandoff = afterLead.body.handoffs.find(
+      (handoff: { target: string }) => handoff.target === 'writer',
+    );
+    expect(writerHandoff.status).toBe('pending_approval');
+    expect(writerHandoff.canChangeFiles).toBe(true);
+    expect(writerHandoff.changedPaths).toEqual([]);
+    expect(writerHandoff.savePoint).toBeNull();
+    expect(afterLead.body.handoffs[0].target).toBe('lead');
+    expect(afterLead.body.handoffs[0].changedPaths).toEqual([]);
+
+    await http()
+      .post(
+        `/api/collaboration/runs/${started.collaborationRunId}/referrals/${writerHandoff.referralId}/approve`,
+      )
+      .send({ harnessToolProfile: 'read' })
+      .expect(200);
+    const writerPayload = queue.enqueueExecution.mock.calls.at(-1)?.[0] as Record<
+      string,
+      unknown
+    >;
+    expect(writerPayload.harnessToolProfile).toBe('write');
+    expect(writerPayload).not.toHaveProperty('harnessReadOnly');
+    expect(writerPayload.builderProfileId).toBe('writer');
+
+    const finished = await http()
+      .get(`/api/collaboration/runs/${started.collaborationRunId}`)
+      .expect(200);
+    const doneWriter = finished.body.handoffs.find(
+      (handoff: { referralId: string }) => handoff.referralId === writerHandoff.referralId,
+    );
+    expect(doneWriter.status).toBe('completed');
+    expect(doneWriter.answer).toBe('Updated the form.');
+    expect(doneWriter.canChangeFiles).toBe(true);
+    expect(doneWriter.changedPaths).toEqual(['src/form.ts']);
+    expect(doneWriter.savePoint).toBe('abc123save');
+    expect(doneWriter.tests).toEqual([
+      { command: 'npm test', passed: true },
+      { command: 'npm run build', passed: false },
+    ]);
+    const doneLead = finished.body.handoffs.find(
+      (handoff: { referralId: string }) => handoff.referralId === started.referralId,
+    );
+    expect(doneLead.canChangeFiles).toBe(false);
+    expect(doneLead.changedPaths).toEqual([]);
+  });
 });
 
 function restoreEnv(name: string, value: string | undefined): void {

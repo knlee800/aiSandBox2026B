@@ -77,6 +77,34 @@ export function handoffIsWaiting(status: string): boolean {
   return status === 'pending_approval';
 }
 
+export function readStringList(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.filter((entry): entry is string => typeof entry === 'string' && entry.length > 0);
+}
+
+export function readHandoffTests(
+  value: unknown,
+): Array<{ command: string; passed: boolean }> {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  const tests: Array<{ command: string; passed: boolean }> = [];
+  for (const entry of value) {
+    if (!entry || typeof entry !== 'object') {
+      continue;
+    }
+    const command = (entry as { command?: unknown }).command;
+    const passed = (entry as { passed?: unknown }).passed;
+    if (typeof command !== 'string' || command.length === 0 || typeof passed !== 'boolean') {
+      continue;
+    }
+    tests.push({ command, passed });
+  }
+  return tests;
+}
+
 export function collaborationTeamHref(
   locale: string,
   sessionId: string,

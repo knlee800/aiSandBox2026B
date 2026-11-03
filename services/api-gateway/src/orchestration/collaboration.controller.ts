@@ -37,6 +37,7 @@ import {
   COLLABORATION_USER_TASK_MAX_CHARS,
 } from './collaboration-team';
 import type { CollaborationReferral, CollaborationRun } from './orchestration.contracts';
+import type { CollaborationHandoffFact } from './collaboration-tool-profile';
 import { OrchestrationService } from './orchestration.service';
 
 const USABLE_SESSION_STATUSES: readonly SessionStatus[] = [
@@ -63,6 +64,10 @@ export interface CollaborationHandoffView {
   failureReason: string | null;
   decidedBy: string | null;
   rejectReason: string | null;
+  canChangeFiles: boolean;
+  changedPaths: string[];
+  savePoint: string | null;
+  tests: Array<{ command: string; passed: boolean }>;
 }
 
 export interface CollaborationRunDetail {
@@ -208,7 +213,10 @@ export class CollaborationController {
       if (!detail || detail.run.userId !== caller.userId) {
         throw new NotFoundException('Collaboration run not found');
       }
-      return this.toDetail(detail.run, detail.referrals);
+      const facts = await this.orchestrationService.readCollaborationHandoffFacts(
+        collaborationRunId,
+      );
+      return this.toDetail(detail.run, detail.referrals, facts);
     } catch (error) {
       this.raise(error);
     }
@@ -229,7 +237,10 @@ export class CollaborationController {
         referralId,
         decidedBy: caller.userId,
       });
-      return this.toHandoff(started.referral);
+      const facts = await this.orchestrationService.readCollaborationHandoffFacts(
+        collaborationRunId,
+      );
+      return this.toHandoff(started.referral, facts.get(started.referral.referralId));
     } catch (error) {
       this.raise(error);
     }
@@ -253,7 +264,10 @@ export class CollaborationController {
         decidedBy: caller.userId,
         reason,
       });
-      return this.toHandoff(referral);
+      const facts = await this.orchestrationService.readCollaborationHandoffFacts(
+        collaborationRunId,
+      );
+      return this.toHandoff(referral, facts.get(referral.referralId));
     } catch (error) {
       this.raise(error);
     }
@@ -434,6 +448,7 @@ export class CollaborationController {
   private toDetail(
     run: CollaborationRun,
     referrals: readonly CollaborationReferral[],
+    facts: ReadonlyMap<string, CollaborationHandoffFact>,
   ): CollaborationRunDetail {
     return {
       run: {
@@ -446,16 +461,27 @@ export class CollaborationController {
         failedAt: run.failedAt,
       },
       team: COLLABORATION_TEAM.map((agent) => agent.name),
-      handoffs: referrals.map((referral) => this.toHandoff(referral)),
+      handoffs: referrals.map((referral) =>
+        this.toHandoff(referral, facts.get(referral.referralId)),
+      ),
     };
   }
 
-  private toHandoff(referral: CollaborationReferral): CollaborationHandoffView {
+  private toHandoff(
+    referral: CollaborationReferral,
+    fact?: CollaborationHandoffFact,
+  ): CollaborationHandoffView {
     const failed =
       referral.status === 'failed' ||
       referral.status === 'timed_out' ||
       referral.status === 'cancelled';
     const summary = referral.result?.summary ?? '';
+    const work = fact ?? {
+      canChangeFiles: false,
+      changedPaths: [],
+      savePoint: null,
+      tests: [],
+    };
     const rejectReason =
       referral.status === 'rejected' &&
       referral.cancelReason &&
@@ -473,6 +499,13 @@ export class CollaborationController {
       failureReason: failed && summary.length > 0 ? summary : null,
       decidedBy: referral.decidedBy,
       rejectReason,
+      canChangeFiles: work.canChangeFiles,
+      changedPaths: [...work.changedPaths],
+      savePoint: work.savePoint,
+      tests: work.tests.map((test) => ({
+        command: test.command,
+        passed: test.passed,
+      })),
     };
   }
 

@@ -83821,7 +83821,7 @@ taskId=COLLAB-WRITE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-03. Step 2 stage-start docs/COLLAB-WRITE-01-STAGE-START.md written; implementation waits for Keith's approval of it.
+**Status:** COMPLETE AND LOCKED — 2026-11-03. LANE-DONE and LOCKED by the control plane; Lane 1, GATEWAY, AI-SERVICE, FRONTEND and I18N released. Checkpoint: docs/COLLAB-WRITE-01-CHECKPOINT.md.
 **Task ID:** COLLAB-WRITE-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -83837,13 +83837,13 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Each role has exactly its tools with every global flag on; no role can delete
-- [ ] The profile cannot be altered in the queue without failing the proof; a gate off fails with a readable reason
-- [ ] The writer takes the existing checkpoint before its first write and the project is saved after
-- [ ] Changed paths, the save point and test results appear on the page; the writer warning shows before approve
-- [ ] Checkpoint creation, listing and revert unchanged; Agent mode and runs without file access unchanged
-- [ ] All new text in en, zh-TW and zh-CN
-- [ ] Not LOCKED by an implementer
+- [x] Each role has exactly its tools with every global flag on; no role can delete
+- [x] The profile cannot be altered in the queue without failing the proof; a gate off fails with a readable reason
+- [x] The writer takes the existing checkpoint before its first write and the project is saved after
+- [x] Changed paths, the save point and test results appear on the page; the writer warning shows before approve
+- [x] Checkpoint creation, listing and revert unchanged; Agent mode and runs without file access unchanged
+- [x] All new text in en, zh-TW and zh-CN
+- [x] Not LOCKED by an implementer
 
 ### COLLAB-LIVE-06 — Keith has the Writer apply a fix on staging and reverts it
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

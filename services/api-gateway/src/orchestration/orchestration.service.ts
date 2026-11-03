@@ -63,6 +63,12 @@ import {
 } from './collaboration-sweep.constants';
 import { readStoredExecutionFailureReason } from './collaboration-failure-reason';
 import {
+  collaborationHarnessJobFields,
+  readCollaborationHandoffWork,
+  targetStepCanChangeFiles,
+  type CollaborationHandoffFact,
+} from './collaboration-tool-profile';
+import {
   answerHandoffIdempotencyKey,
   buildCollaborationProjectInstructions,
   buildRequestedHandoffPrompt,
@@ -416,6 +422,40 @@ export class OrchestrationService {
     return { run: settled, referrals };
   }
 
+  async readCollaborationHandoffFacts(
+    collaborationRunId: CollaborationRunId,
+  ): Promise<Map<string, CollaborationHandoffFact>> {
+    const entities = await this.referralRepo.find({
+      where: { collaborationRunId },
+    });
+    const facts = new Map<string, CollaborationHandoffFact>();
+    for (const entity of entities) {
+      let changedPaths: string[] = [];
+      let savePoint: string | null = null;
+      let tests: CollaborationHandoffFact['tests'][number][] = [];
+      if (entity.executionId && this.executionResultService) {
+        const execution = await this.executionResultService.getExecution(entity.executionId);
+        const work = readCollaborationHandoffWork(execution?.metadata);
+        changedPaths = [...work.changedPaths];
+        savePoint = work.savePoint;
+        tests = work.tests.map((test) => ({
+          command: test.command,
+          passed: test.passed,
+        }));
+      }
+      facts.set(entity.referralId, {
+        canChangeFiles: targetStepCanChangeFiles(
+          entity.targetBuilderProfileId,
+          entity.pendingJob?.fileAccess === true,
+        ),
+        changedPaths,
+        savePoint,
+        tests,
+      });
+    }
+    return facts;
+  }
+
   async createReferral(input: CreateReferralInput): Promise<CollaborationReferral> {
     return this.runInTransaction(async (runRepo, referralRepo) => {
       const validation = await this.validateReferralWithRepos(
@@ -731,7 +771,7 @@ export class OrchestrationService {
           submittedAt: input.submittedAt,
           executionIntent: 'conversation' as const,
           ...(fileAccess
-            ? { harnessVersion: 'v1' as const, harnessReadOnly: true as const }
+            ? collaborationHarnessJobFields(referral.targetBuilder.builderProfileId)
             : {}),
           agentRole: referral.targetBuilder.agentRole,
           builderProfileId: referral.targetBuilder.builderProfileId,

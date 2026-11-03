@@ -3,15 +3,15 @@
 schemaVersion=1
 maxImplementationLanes=2
 lane3=DISABLED
-lane1.state=ACTIVE
-lane1.taskId=COLLAB-WRITE-01
+lane1.state=EMPTY
+lane1.taskId=NONE
 lane2.state=EMPTY
 lane2.taskId=NONE
 governance.owner=NONE
 governance.state=UNOWNED
 saturationSuspended=false
 suspensionReason=NONE
-occupancyHash=sha256:4cfc786fda7c4518d6fd74c1740d1397315f9fa0ef59ba063ca2d5ca7a975d6d
+occupancyHash=sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d
 <!-- AISB_OCCUPANCY_V1_END -->
 
 **Parallel Development Architecture:** v1
@@ -227,16 +227,16 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-03. Lane 2 released EMPTY. FRONTEND released UNOWNED. Checkpoint: docs/COLLAB-SCREEN-02-CHECKPOINT.md.
 
-## COLLAB-WRITE-01 — ADMITTED / Lane 1 ACTIVE — 2026-11-03
+## COLLAB-WRITE-01 — COMPLETE AND LOCKED / Lane 1 RELEASED — 2026-11-03
 
-**Current status:** ADMITTED, Lane 1, GATEWAY, AI-SERVICE, FRONTEND and I18N held. Stage-start docs/COLLAB-WRITE-01-STAGE-START.md waits for Keith's approval before implementation.
+**Current status:** COMPLETE AND LOCKED - 2026-11-03. Lane 1 released EMPTY. GATEWAY, AI-SERVICE, FRONTEND and I18N released UNOWNED. Checkpoint: docs/COLLAB-WRITE-01-CHECKPOINT.md. Code and lock in one commit. Not deployed.
 
 ## COLLAB-LIVE-06 — READY / NOT ADMITTED — 2026-11-03
 
 **Current status:** registered; start condition NOT_READY until COLLAB-WRITE-01 is LOCKED and deployed.
 
 ## Lane 1
-ACTIVE — COLLAB-WRITE-01 — 2026-11-03.
+EMPTY — Lane 1 released at COLLAB-WRITE-01 COMPLETE AND LOCKED — 2026-11-03.
 
 ## Lane 2
 EMPTY — Lane 2 released at COLLAB-SCREEN-02 COMPLETE AND LOCKED — 2026-11-03.
@@ -247,14 +247,14 @@ DISABLED
 ## Governance owner / state
 UNOWNED — GOV-OS-04 COMPLETE AND LOCKED — 2026-11-02.
 
-Lane 1 ACTIVE: COLLAB-WRITE-01. Lane 2 EMPTY. COLLAB-LIVE-06 is registered, NOT_READY. SIGNUP-ALLOWLIST-01 is READY and not admitted.
+Both implementation lanes are EMPTY. COLLAB-WRITE-01 is COMPLETE AND LOCKED. COLLAB-LIVE-06 is registered, NOT_READY until deployed. SIGNUP-ALLOWLIST-01 is READY and not admitted.
 
 ## Active mutex / resource ownership
 - GOVERNANCE: UNOWNED — GOV-OS-04 lock 2026-11-02.
-- GATEWAY: OWNED by COLLAB-WRITE-01 (2026-11-03).
+- GATEWAY: UNOWNED — released at COLLAB-WRITE-01 COMPLETE AND LOCKED 2026-11-03.
 - MIGRATION: UNOWNED — released at COLLAB-GATE-01 COMPLETE AND LOCKED 2026-11-02.
-- FRONTEND: OWNED by COLLAB-WRITE-01 (2026-11-03).
-- I18N: OWNED by COLLAB-WRITE-01 (2026-11-03).
+- FRONTEND: UNOWNED — released at COLLAB-WRITE-01 COMPLETE AND LOCKED 2026-11-03.
+- I18N: UNOWNED — released at COLLAB-WRITE-01 COMPLETE AND LOCKED 2026-11-03.
 - STAGING: UNOWNED — released at COLLAB-LIVE-05 COMPLETE AND LOCKED 2026-11-03 (stagingAuthorized=false).
 - PROVIDER-LIVE: UNOWNED — released at COLLAB-LIVE-05 COMPLETE AND LOCKED 2026-11-03 (providerLiveAuthorized=false).
 - CREDIT: UNOWNED — released at COLLAB-LIVE-05 COMPLETE AND LOCKED 2026-11-03 (creditAuthorized=false).
@@ -273,7 +273,7 @@ Lane 1 ACTIVE: COLLAB-WRITE-01. Lane 2 EMPTY. COLLAB-LIVE-06 is registered, NOT_
 - HOTFILE:e2e/builder-golden-path/tests/network.spec.ts: UNOWNED
 - PACKAGE: UNOWNED — released at HARNESS-PROVIDERS-01 COMPLETE AND LOCKED 2026-11-01.
 - LOCAL-RUNTIME: UNOWNED — released at CLEAN-BASELINE-RUNTIME-01 lock 2026-10-07.
-- AI-SERVICE: OWNED by COLLAB-WRITE-01 (2026-11-03).
+- AI-SERVICE: UNOWNED — released at COLLAB-WRITE-01 COMPLETE AND LOCKED 2026-11-03.
 - CONTAINER-MANAGER: UNOWNED — released at CM-QUOTA-DEAD-01 COMPLETE AND LOCKED 2026-10-30.
 - All other resources: UNOWNED
 - Remaining HOTFILE leases: UNOWNED

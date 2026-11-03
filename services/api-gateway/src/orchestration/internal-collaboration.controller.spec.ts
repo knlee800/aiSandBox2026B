@@ -1363,9 +1363,17 @@ describe('InternalCollaborationController', () => {
       }
     });
 
-    function expectSignedReadOnlyJob(payload: Record<string, unknown>): void {
+    function expectSignedToolProfile(
+      payload: Record<string, unknown>,
+      profile: 'read' | 'review' | 'write',
+    ): void {
       expect(payload.harnessVersion).toBe('v1');
-      expect(payload.harnessReadOnly).toBe(true);
+      expect(payload.harnessToolProfile).toBe(profile);
+      if (profile === 'read') {
+        expect(payload.harnessReadOnly).toBe(true);
+      } else {
+        expect(payload).not.toHaveProperty('harnessReadOnly');
+      }
       expect(payload.executionIntent).toBe('conversation');
       expect(payload).not.toHaveProperty('fileAccess');
       const { harnessEntitlementProof, ...signed } = payload;
@@ -1383,11 +1391,18 @@ describe('InternalCollaborationController', () => {
         userId: String(signed.userId),
         apiKeyId: String(signed.apiKeyId),
         issuedAt: String(signed.submittedAt),
-        payloadWithoutProof: { ...signed, harnessReadOnly: false },
+        payloadWithoutProof: {
+          ...signed,
+          harnessToolProfile: profile === 'write' ? 'read' : 'write',
+        },
         secret: HARNESS_SECRET,
       });
       expect(tampered.payloadDigest).not.toBe(expected.payloadDigest);
       expect(tampered.signature).not.toBe(expected.signature);
+    }
+
+    function expectSignedReadOnlyJob(payload: Record<string, unknown>): void {
+      expectSignedToolProfile(payload, 'read');
     }
 
     it('enqueues a signed read-only harness job and ignores caller harness fields', async () => {
@@ -1453,10 +1468,12 @@ describe('InternalCollaborationController', () => {
         const payload = call[0] as Record<string, unknown>;
         expect(payload).not.toHaveProperty('harnessVersion');
         expect(payload).not.toHaveProperty('harnessReadOnly');
+        expect(payload).not.toHaveProperty('harnessToolProfile');
         expect(payload).not.toHaveProperty('harnessEntitlementProof');
         expect(payload.executionIntent).toBe('conversation');
         expect(JSON.stringify(payload)).not.toContain('harnessVersion');
         expect(JSON.stringify(payload)).not.toContain('harnessReadOnly');
+        expect(JSON.stringify(payload)).not.toContain('harnessToolProfile');
       }
       for (const call of ledger.writeExecutionIntent.mock.calls) {
         expect(call[0].metadata.runMode).toBe('ask');
@@ -1516,8 +1533,46 @@ describe('InternalCollaborationController', () => {
 
       expect(queue.enqueueExecution).toHaveBeenCalledTimes(3);
       for (const call of queue.enqueueExecution.mock.calls) {
-        expectSignedReadOnlyJob(call[0] as Record<string, unknown>);
+        const payload = call[0] as Record<string, unknown>;
+        if (payload.builderProfileId === 'writer') {
+          expectSignedToolProfile(payload, 'write');
+        } else {
+          expectSignedReadOnlyJob(payload);
+        }
       }
+    });
+
+    it('sets the tool profile from the target role and ignores a caller profile', async () => {
+      process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = HARNESS_SECRET;
+      const writerRun = await createRun();
+      const writer = await postReferral(writerRun, {
+        idempotencyKey: 'profile-writer',
+        targetBuilder: { agentRole: 'builder', builderProfileId: 'writer' },
+        fileAccess: true,
+        harnessToolProfile: 'read',
+        harnessReadOnly: true,
+      }).expect(201);
+      expect(
+        referrals.get(writer.body.referral.referralId as string)?.pendingJob,
+      ).not.toHaveProperty('harnessToolProfile');
+      await approve(writerRun, writer.body.referral.referralId).expect(200);
+      expectSignedToolProfile(
+        queue.enqueueExecution.mock.calls[0][0] as Record<string, unknown>,
+        'write',
+      );
+
+      const reviewRun = await createRun();
+      const reviewer = await postReferral(reviewRun, {
+        idempotencyKey: 'profile-reviewer',
+        targetBuilder: { agentRole: 'builder', builderProfileId: 'reviewer' },
+        fileAccess: true,
+        harnessToolProfile: 'write',
+      }).expect(201);
+      await approve(reviewRun, reviewer.body.referral.referralId).expect(200);
+      expectSignedToolProfile(
+        queue.enqueueExecution.mock.calls[1][0] as Record<string, unknown>,
+        'review',
+      );
     });
 
     it('refuses approval and leaves the hand-off waiting when the signing secret is missing', async () => {

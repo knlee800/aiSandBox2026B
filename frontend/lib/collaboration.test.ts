@@ -27,6 +27,10 @@ function renderChain(handoffs: Array<{
   waiting: boolean;
   answer: string | null;
   prompt: string | null;
+  canChangeFiles?: boolean;
+  changedPaths?: string[];
+  savePoint?: string | null;
+  tests?: Array<{ command: string; passed: boolean }>;
 }>) {
   return renderToStaticMarkup(
     React.createElement(CollaborationView, {
@@ -55,6 +59,10 @@ function renderChain(handoffs: Array<{
         decidedBy: null,
         rejectReason: null,
         waiting: handoff.waiting,
+        canChangeFiles: handoff.canChangeFiles === true,
+        changedPaths: handoff.changedPaths ?? [],
+        savePoint: handoff.savePoint ?? null,
+        tests: handoff.tests ?? [],
       })),
       runs: [],
       rejectReferralId: null,
@@ -130,6 +138,65 @@ describe('collaboration page', () => {
     assert.equal(zhTwMessages.collaboration.refusalCredits, '點數不足。');
     assert.match(markup, /data-testid="collaboration-notice"/);
     assert.match(markup, /點數不足。/);
+  });
+
+  test('a waiting writer step warns before approve, and a finished step shows the work', () => {
+    const markup = renderChain([
+      {
+        referralId: 'writer-wait',
+        statusLabel: enMessages.collaboration.statusPendingApproval,
+        waiting: true,
+        answer: null,
+        prompt: 'Fix the form.',
+        canChangeFiles: true,
+      },
+      {
+        referralId: 'lead-wait',
+        statusLabel: enMessages.collaboration.statusPendingApproval,
+        waiting: true,
+        answer: null,
+        prompt: 'Look first.',
+        canChangeFiles: false,
+      },
+      {
+        referralId: 'writer-done',
+        statusLabel: enMessages.collaboration.statusCompleted,
+        waiting: false,
+        answer: 'Updated the form.',
+        prompt: 'Fix the form.',
+        canChangeFiles: true,
+        changedPaths: ['src/form.ts'],
+        savePoint: 'abc123save',
+        tests: [
+          { command: 'npm test', passed: true },
+          { command: 'npm run build', passed: false },
+        ],
+      },
+    ]);
+
+    const warningAt = markup.indexOf('data-testid="collaboration-write-warning-writer-wait"');
+    const approveAt = markup.indexOf('data-testid="collaboration-approve-writer-wait"');
+    assert.ok(warningAt >= 0 && approveAt > warningAt);
+    assert.match(markup, new RegExp(enMessages.collaboration.writerWarning));
+    assert.doesNotMatch(markup, /data-testid="collaboration-write-warning-lead-wait"/);
+    assert.match(markup, /data-testid="collaboration-changed-writer-done-0"/);
+    assert.match(markup, /src\/form\.ts/);
+    assert.match(markup, /data-testid="collaboration-save-point-writer-done"/);
+    assert.match(markup, /abc123save/);
+    assert.match(markup, /npm test Passed/);
+    assert.match(markup, /npm run build Failed/);
+    assert.match(markup, /data-testid="collaboration-workspace-writer-done"/);
+    assert.match(markup, /href="\/en\/app"/);
+    assert.match(markup, new RegExp(enMessages.collaboration.reviewOrRevert));
+    assert.equal(
+      zhTwMessages.collaboration.writerWarning,
+      '核准這一步後，撰寫者可以修改檔案。',
+    );
+    assert.equal(
+      zhCnMessages.collaboration.writerWarning,
+      '批准这一步后，撰写者可以修改文件。',
+    );
+    assert.doesNotMatch(markup, /data-testid="collaboration-work-writer-wait"/);
   });
 
   test('an answer containing a script tag renders as text', () => {

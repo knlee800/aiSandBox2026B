@@ -23,6 +23,10 @@ export interface CollaborationHandoff {
   failureReason: string | null;
   decidedBy: string | null;
   rejectReason: string | null;
+  canChangeFiles?: boolean;
+  changedPaths?: string[];
+  savePoint?: string | null;
+  tests?: Array<{ command: string; passed: boolean }>;
 }
 
 export interface CollaborationRunDetail {
