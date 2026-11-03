@@ -77,6 +77,20 @@ export function handoffIsWaiting(status: string): boolean {
   return status === 'pending_approval';
 }
 
+/** Round number for each reviewer-to-writer step, in chain order. Other steps are null. */
+export function sendBackRoundNumbers(
+  handoffs: readonly { source: string; target: string }[],
+): Array<number | null> {
+  let round = 0;
+  return handoffs.map((handoff) => {
+    if (handoff.source === 'reviewer' && handoff.target === 'writer') {
+      round += 1;
+      return round;
+    }
+    return null;
+  });
+}
+
 export function readStringList(value: unknown): string[] {
   if (!Array.isArray(value)) {
     return [];

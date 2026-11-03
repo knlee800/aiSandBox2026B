@@ -11,8 +11,33 @@ import * as path from 'path';
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const COMMIT_HASH_PATTERN = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/i;
 const CONTAINER_HISTORY_BUNDLE = '/workspace/.git/aisb-history.bundle';
 const CONTAINER_RESTORE_BUNDLE = '/workspace/.aisb-history-restore.bundle';
+
+export const WORKTREE_DIFF_MAX_CHARS = 65536;
+export const WORKTREE_DIFF_TRUNCATED_MARKER = '\n[diff truncated]\n';
+
+export interface WorkingTreeDiffResult {
+  commitHash: string;
+  diff: string;
+  truncated: boolean;
+}
+
+export function isFullCommitHash(value: string): boolean {
+  return COMMIT_HASH_PATTERN.test(value);
+}
+
+export function capWorktreeDiff(diff: string): { text: string; truncated: boolean } {
+  if (diff.length <= WORKTREE_DIFF_MAX_CHARS) {
+    return { text: diff, truncated: false };
+  }
+  const keep = Math.max(0, WORKTREE_DIFF_MAX_CHARS - WORKTREE_DIFF_TRUNCATED_MARKER.length);
+  return {
+    text: diff.slice(0, keep) + WORKTREE_DIFF_TRUNCATED_MARKER,
+    truncated: true,
+  };
+}
 
 export function isUuid(value: unknown): value is string {
   return typeof value === 'string' && UUID_PATTERN.test(value);
@@ -266,6 +291,46 @@ export class GitService {
       console.error(`Failed to get diff for commit ${commitHash}:`, error);
       throw error;
     }
+  }
+
+  /**
+   * Unified diff of the session working tree against one commit.
+   * Read-only: verifies the commit, then git diff. Does not stage or commit.
+   */
+  async getWorkingTreeDiff(
+    sessionId: string,
+    commitHash: string,
+  ): Promise<WorkingTreeDiffResult> {
+    if (!isFullCommitHash(commitHash)) {
+      throw new BadRequestException('Invalid commit');
+    }
+    await this.sessionsService.getSession(sessionId);
+
+    const verified = await this.execWorkspace(
+      sessionId,
+      'git rev-parse --verify --quiet "$COMMIT_HASH^{commit}"',
+      { COMMIT_HASH: commitHash },
+    );
+    const verifiedHash = verified.stdout.trim().split(/\s+/)[0] ?? '';
+    if (verified.exitCode !== 0 || !isFullCommitHash(verifiedHash)) {
+      throw new BadRequestException('Invalid commit');
+    }
+
+    const diff = await this.execWorkspace(
+      sessionId,
+      'git --no-pager diff --no-color --no-ext-diff "$COMMIT_HASH"',
+      { COMMIT_HASH: commitHash },
+    );
+    if (diff.exitCode !== 0) {
+      throw new BadRequestException('Invalid commit');
+    }
+
+    const capped = capWorktreeDiff(diff.stdout);
+    return {
+      commitHash: verifiedHash,
+      diff: capped.text,
+      truncated: capped.truncated,
+    };
   }
 
   private parseDiffOutput(diffOutput: string): Array<{

@@ -87,6 +87,8 @@ export type OrchestrationMode = (typeof ORCHESTRATION_MODES)[number];
 export const DEFAULT_MAX_REFERRAL_DEPTH = 3;
 export const DEFAULT_MAX_AGENTS_PER_COLLABORATION = 4;
 export const MAX_HANDOFFS_PER_RUN = 8;
+/** Reviewer to writer, then writer back to reviewer. Depth does not apply to those two edges. */
+export const MAX_SEND_BACK_ROUNDS = 2;
 export const READ_ONLY_MODE_INDICATOR: OrchestrationMode = 'read_only';
 export const NO_WRITE_TOOLS_INDICATOR = 'no_write_tools' as const;
 
@@ -180,6 +182,11 @@ export interface ReferralPendingJob {
   readonly handoffNote?: string | null;
   /** First hand-off opt-in. Children inherit it. True requests a signed harness job. */
   readonly fileAccess?: boolean;
+  /** Working-tree diff captured when a writer step finishes. Stored for the page and the reviewer. */
+  readonly workDiff?: {
+    readonly text: string;
+    readonly unavailable: boolean;
+  } | null;
 }
 
 export interface ReferralResult {

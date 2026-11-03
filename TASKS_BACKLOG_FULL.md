@@ -83878,7 +83878,7 @@ taskId=COLLAB-ROUNDS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-03.
+**Status:** COMPLETE AND LOCKED — 2026-11-03. LANE-DONE and LOCKED by the control plane; Lane 1, GATEWAY, CONTAINER-MANAGER, FRONTEND and I18N released. Checkpoint: docs/COLLAB-ROUNDS-01-CHECKPOINT.md.
 **Task ID:** COLLAB-ROUNDS-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -83894,12 +83894,12 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Reviewer to writer and writer to reviewer are allowed for at most 2 rounds; a third round, and every other loop, are refused
-- [ ] Each round needs approval and is labelled; each writer round takes its own save point
-- [ ] The reviewer prompt holds the diff between the save point and the current files; the writer card shows it
-- [ ] The diff route is read-only, owner-safe, size-capped and leaves the existing checkpoint and diff routes unchanged
-- [ ] Runs without file access and Agent mode unchanged; all new text in en, zh-TW and zh-CN
-- [ ] Not LOCKED by an implementer
+- [x] Reviewer to writer and writer to reviewer are allowed for at most 2 rounds; a third round, and every other loop, are refused
+- [x] Each round needs approval and is labelled; each writer round takes its own save point
+- [x] The reviewer prompt holds the diff between the save point and the current files; the writer card shows it
+- [x] The diff route is read-only, owner-safe, size-capped and leaves the existing checkpoint and diff routes unchanged
+- [x] Runs without file access and Agent mode unchanged; all new text in en, zh-TW and zh-CN
+- [x] Not LOCKED by an implementer
 
 ### COLLAB-LIVE-07 — Keith tries send-back rounds on staging
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

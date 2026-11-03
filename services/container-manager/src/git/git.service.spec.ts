@@ -1,8 +1,12 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { GitService } from './git.service';
+import {
+  GitService,
+  WORKTREE_DIFF_MAX_CHARS,
+  WORKTREE_DIFF_TRUNCATED_MARKER,
+} from './git.service';
 
 jest.mock('fs/promises', () => {
   const actual = jest.requireActual('fs/promises') as typeof import('fs/promises');
@@ -952,6 +956,133 @@ function assertIndexOnlyReset(execInContainer: jest.Mock) {
   }
   expect(execInContainer).toHaveBeenCalledWith(SESSION_ID, ['sh', '-lc', 'git reset -q'], '/workspace');
 }
+
+const WORKTREE_SESSION = '33333333-3333-4333-8333-333333333333';
+const WORKTREE_HASH = 'abc123abc123abc123abc123abc123abc123abcd';
+
+describe('GitService.getWorkingTreeDiff', () => {
+  interface WorktreeDiffService {
+    getWorkingTreeDiff: (
+      sessionId: string,
+      commitHash: string,
+    ) => Promise<{ commitHash: string; diff: string; truncated: boolean }>;
+    createCheckpoint: jest.Mock;
+  }
+
+  function serviceWith(execInContainer: jest.Mock, getSession: jest.Mock): WorktreeDiffService {
+    const serviceLike = Object.create(GitService.prototype);
+    serviceLike.sessionsService = { execInContainer, getSession };
+    serviceLike.createCheckpoint = jest.fn();
+    return serviceLike as WorktreeDiffService;
+  }
+
+  it('returns the working-tree diff and does not change the repository', async () => {
+    const execInContainer = jest.fn(async (_sessionId: string, cmd: string[]) => {
+      const command = cmd[2];
+      if (command.includes('rev-parse')) {
+        return { exitCode: 0, stdout: `${WORKTREE_HASH}\n`, stderr: '' };
+      }
+      if (command.includes('git --no-pager diff')) {
+        return { exitCode: 0, stdout: 'diff --git a/src/form.ts b/src/form.ts\n+fixed\n', stderr: '' };
+      }
+      throw new Error(`unexpected command ${command}`);
+    });
+    const getSession = jest.fn(async () => ({ id: WORKTREE_SESSION }));
+    const serviceLike = serviceWith(execInContainer, getSession);
+
+    const result = await serviceLike.getWorkingTreeDiff(WORKTREE_SESSION, WORKTREE_HASH);
+
+    expect(result).toEqual({
+      commitHash: WORKTREE_HASH,
+      diff: 'diff --git a/src/form.ts b/src/form.ts\n+fixed\n',
+      truncated: false,
+    });
+    expect(getSession).toHaveBeenCalledWith(WORKTREE_SESSION);
+    expect(execInContainer).toHaveBeenCalledTimes(2);
+    const commands = execInContainer.mock.calls.map((call) => String(call[1][2]));
+    expect(commands).toEqual([
+      'git rev-parse --verify --quiet "$COMMIT_HASH^{commit}"',
+      'git --no-pager diff --no-color --no-ext-diff "$COMMIT_HASH"',
+    ]);
+    for (const command of commands) {
+      expect(command).not.toMatch(/git add|git commit|git reset|git checkout|update-index|update-ref/);
+    }
+    expect(serviceLike.createCheckpoint).not.toHaveBeenCalled();
+    expect(execInContainer).toHaveBeenNthCalledWith(
+      1,
+      WORKTREE_SESSION,
+      ['sh', '-lc', 'git rev-parse --verify --quiet "$COMMIT_HASH^{commit}"'],
+      '/workspace',
+      { COMMIT_HASH: WORKTREE_HASH },
+    );
+  });
+
+  it('caps a long diff and marks it truncated', async () => {
+    const huge = `${'x'.repeat(WORKTREE_DIFF_MAX_CHARS + 20)}`;
+    const execInContainer = jest.fn(async (_sessionId: string, cmd: string[]) => {
+      const command = cmd[2];
+      if (command.includes('rev-parse')) {
+        return { exitCode: 0, stdout: `${WORKTREE_HASH}\n`, stderr: '' };
+      }
+      return { exitCode: 0, stdout: huge, stderr: '' };
+    });
+    const result = await serviceWith(
+      execInContainer,
+      jest.fn(async () => ({ id: WORKTREE_SESSION })),
+    ).getWorkingTreeDiff(WORKTREE_SESSION, WORKTREE_HASH);
+
+    expect(result.truncated).toBe(true);
+    expect(result.diff.endsWith(WORKTREE_DIFF_TRUNCATED_MARKER)).toBe(true);
+    expect(result.diff.length).toBeLessThanOrEqual(WORKTREE_DIFF_MAX_CHARS);
+    expect(result.diff.length).toBeGreaterThan(WORKTREE_DIFF_TRUNCATED_MARKER.length);
+  });
+
+  it('refuses an invalid hash before any session or git call', async () => {
+    const execInContainer = jest.fn();
+    const getSession = jest.fn();
+    const serviceLike = serviceWith(execInContainer, getSession);
+
+    await expect(
+      serviceLike.getWorkingTreeDiff(WORKTREE_SESSION, 'abc123save'),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(
+      serviceLike.getWorkingTreeDiff(WORKTREE_SESSION, '$(git commit -am hijack)'),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(getSession).not.toHaveBeenCalled();
+    expect(execInContainer).not.toHaveBeenCalled();
+    expect(serviceLike.createCheckpoint).not.toHaveBeenCalled();
+  });
+
+  it('refuses an unknown session and a hash git does not know', async () => {
+    const execInContainer = jest.fn(async (_sessionId: string, _cmd: string[]) => ({
+      exitCode: 1,
+      stdout: '',
+      stderr: 'fatal: bad revision',
+    }));
+    const missing = serviceWith(
+      execInContainer,
+      jest.fn(async () => {
+        throw new NotFoundException('Session not found');
+      }),
+    );
+    await expect(missing.getWorkingTreeDiff(WORKTREE_SESSION, WORKTREE_HASH)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    expect(execInContainer).not.toHaveBeenCalled();
+
+    const unknownHash = serviceWith(
+      execInContainer,
+      jest.fn(async () => ({ id: WORKTREE_SESSION })),
+    );
+    await expect(
+      unknownHash.getWorkingTreeDiff(WORKTREE_SESSION, WORKTREE_HASH),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(execInContainer).toHaveBeenCalledTimes(1);
+    const commands = execInContainer.mock.calls.map((call) => String(call[1][2]));
+    expect(commands).toEqual(['git rev-parse --verify --quiet "$COMMIT_HASH^{commit}"']);
+    expect(unknownHash.createCheckpoint).not.toHaveBeenCalled();
+  });
+});
 
 function assertRestoreBundlesRemoved(execInContainer: jest.Mock) {
   const hostRestore = path.join(workspaceFor(SESSION_ID), '.aisb-history-restore.bundle');

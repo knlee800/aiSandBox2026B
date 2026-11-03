@@ -1,7 +1,9 @@
 import React from 'react';
 import {
+  ArrowPathIcon,
   ArrowUturnLeftIcon,
   CheckIcon,
+  CodeBracketIcon,
   ExclamationTriangleIcon,
   UserGroupIcon,
   XMarkIcon,
@@ -52,6 +54,10 @@ export interface CollaborationViewLabels {
   testPassed: string;
   testFailed: string;
   reviewOrRevert: string;
+  sendBackRound: string;
+  diff: string;
+  diffUnavailable: string;
+  diffEmpty: string;
 }
 
 export interface CollaborationTeamMemberView {
@@ -74,6 +80,9 @@ export interface CollaborationHandoffViewModel {
   changedPaths: string[];
   savePoint: string | null;
   tests: Array<{ command: string; passed: boolean }>;
+  roundLabel: string | null;
+  diff: string | null;
+  diffUnavailable: boolean;
 }
 
 export interface CollaborationPastRunView {
@@ -220,6 +229,36 @@ export default function CollaborationView(props: {
                     </p>
                     <p className="text-xs font-medium text-gray-500">{handoff.statusLabel}</p>
                   </div>
+                  {handoff.roundLabel ? (
+                    <p
+                      className="mt-1 flex min-w-0 items-center gap-1 text-sm font-medium text-indigo-800"
+                      data-testid={`collaboration-round-${handoff.referralId}`}
+                    >
+                      <ArrowPathIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      <span className="break-words">{handoff.roundLabel}</span>
+                    </p>
+                  ) : null}
+                  {handoff.diff !== null || handoff.diffUnavailable ? (
+                    <details
+                      className="mt-2 min-w-0 max-w-full"
+                      data-testid={`collaboration-diff-${handoff.referralId}`}
+                    >
+                      <summary className="flex min-w-0 cursor-pointer items-center gap-1 text-sm text-gray-600">
+                        <CodeBracketIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                        <span className="break-words">{labels.diff}</span>
+                      </summary>
+                      <pre
+                        className="mt-1 max-h-60 w-full max-w-full overflow-auto whitespace-pre rounded-lg bg-gray-50 p-2 font-mono text-xs text-gray-800"
+                        data-testid={`collaboration-diff-text-${handoff.referralId}`}
+                      >
+                        {handoff.diffUnavailable || handoff.diff === null
+                          ? labels.diffUnavailable
+                          : handoff.diff.length === 0
+                            ? labels.diffEmpty
+                            : handoff.diff}
+                      </pre>
+                    </details>
+                  ) : null}
                   {handoff.prompt !== null ? (
                     <details className="mt-2 min-w-0">
                       <summary className="cursor-pointer text-sm text-gray-600">{labels.prompt}</summary>

@@ -17,6 +17,10 @@ import { GlobalSafetyLimits } from '../safety/global-safety-limits.config';
 import { UsageLedgerService } from '../usage-ledger/usage-ledger.service';
 import { CollaborationReferralEntity } from './collaboration-referral.entity';
 import { CollaborationRunEntity } from './collaboration-run.entity';
+import {
+  COLLABORATION_SEND_BACK_WRITER_INSTRUCTION,
+  COLLABORATION_TEAM,
+} from './collaboration-team';
 import { InternalCollaborationController } from './internal-collaboration.controller';
 import {
   COLLABORATION_WAITING_MAX_AGE_MS,
@@ -1607,5 +1611,178 @@ describe('InternalCollaborationController', () => {
       expect(response.body.message).toContain('fileAccess must be a boolean');
       await expectNoJob(runId);
     });
+  });
+
+  it('allows two send-back rounds past max depth and refuses the third as a loop', async () => {
+    const service = app.get(OrchestrationService);
+    const runId = await createRun();
+    const root = await postReferral(runId, {
+      idempotencyKey: 'rounds-root',
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'lead' },
+      agents: COLLABORATION_TEAM.map((agent) => ({
+        name: agent.name,
+        instructions: agent.instructions,
+      })),
+      projectInstructions: 'Be concise.',
+    }).expect(201);
+
+    const steps = ['writer', 'reviewer', 'writer', 'reviewer', 'writer', 'reviewer'];
+    let currentId = root.body.referral.referralId as string;
+    const seen = new Set<string>([currentId]);
+    for (const target of steps) {
+      await approve(runId, currentId).expect(200);
+      executionResults.getExecution.mockResolvedValue(
+        completedExecution(`Done.\n<handoff to="${target}">Next.</handoff>`),
+      );
+      const detail = await http().get(`/api/internal/collaboration/runs/${runId}`).expect(200);
+      const created = detail.body.referrals.find(
+        (referral: { referralId: string }) => !seen.has(referral.referralId),
+      );
+      const parent = detail.body.referrals.find(
+        (referral: { referralId: string }) => referral.referralId === currentId,
+      );
+      expect(parent.status).toBe('completed');
+      expect(parent.handoffNote).toBeNull();
+      expect(created.status).toBe('pending_approval');
+      expect(created.targetBuilder.builderProfileId).toBe(target);
+      seen.add(created.referralId);
+      currentId = created.referralId;
+    }
+
+    const rows = [...referrals.values()].filter((row) => row.collaborationRunId === runId);
+    const sendBacks = rows.filter(
+      (row) =>
+        row.sourceBuilderProfileId === 'reviewer' && row.targetBuilderProfileId === 'writer',
+    );
+    expect(sendBacks).toHaveLength(2);
+    expect(sendBacks.map((row) => row.depth).sort()).toEqual([
+      DEFAULT_MAX_REFERRAL_DEPTH,
+      DEFAULT_MAX_REFERRAL_DEPTH + 2,
+    ]);
+    expect(sendBacks.every((row) => row.status === 'pending_approval' || row.status === 'completed')).toBe(
+      true,
+    );
+    const firstWriter = rows.find(
+      (row) => row.sourceBuilderProfileId === 'lead' && row.targetBuilderProfileId === 'writer',
+    );
+    expect(firstWriter?.pendingJob?.projectInstructions ?? '').not.toContain(
+      'Fix only the listed items',
+    );
+    expect(sendBacks[0].pendingJob?.projectInstructions).toContain(
+      COLLABORATION_SEND_BACK_WRITER_INSTRUCTION,
+    );
+    const reviewerJob = rows.find((row) => row.targetBuilderProfileId === 'reviewer');
+    expect(reviewerJob?.pendingJob?.projectInstructions).toContain(
+      'send the work back to writer with a specific list of what to fix',
+    );
+    expect(reviewerJob?.pendingJob?.projectInstructions).toContain(
+      'Otherwise give the verdict and finish.',
+    );
+
+    service.clearAuditEvents();
+    const queued = queue.enqueueExecution.mock.calls.length;
+    await approve(runId, currentId).expect(200);
+    executionResults.getExecution.mockResolvedValue(
+      completedExecution('Done.\n<handoff to="writer">A third time.</handoff>'),
+    );
+    const refused = await http().get(`/api/internal/collaboration/runs/${runId}`).expect(200);
+    expect(refused.body.referrals).toHaveLength(steps.length + 1);
+    const parent = refused.body.referrals.find(
+      (referral: { referralId: string }) => referral.referralId === currentId,
+    );
+    expect(parent.status).toBe('completed');
+    expect(parent.handoffNote).toBe('refused: loop');
+    expect(service.getAuditEvents().some((event) => event.payload.limitType === 'loop')).toBe(true);
+    expect(service.getAuditEvents().some((event) => event.payload.limitType === 'depth')).toBe(false);
+    expect(queue.enqueueExecution).toHaveBeenCalledTimes(queued + 1);
+    expect(refused.body.run.status).toBe('completed');
+    expect(refused.body.run.failedAt).toBeNull();
+  });
+
+  it('refuses reviewer-to-lead and writer-to-lead loops', async () => {
+    const service = app.get(OrchestrationService);
+    const runId = await createRun();
+    const root = await postReferral(runId, {
+      idempotencyKey: 'loop-root',
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'lead' },
+      agents: COLLABORATION_TEAM.map((agent) => ({
+        name: agent.name,
+        instructions: agent.instructions,
+      })),
+    }).expect(201);
+
+    await approve(runId, root.body.referral.referralId).expect(200);
+    executionResults.getExecution.mockResolvedValue(
+      completedExecution('Done.\n<handoff to="writer">Fix it.</handoff>'),
+    );
+    const afterLead = await http().get(`/api/internal/collaboration/runs/${runId}`).expect(200);
+    const writer = afterLead.body.referrals.find(
+      (referral: { targetBuilder: { builderProfileId: string } }) =>
+        referral.targetBuilder.builderProfileId === 'writer',
+    );
+    service.clearAuditEvents();
+    await approve(runId, writer.referralId).expect(200);
+    executionResults.getExecution.mockResolvedValue(
+      completedExecution('Done.\n<handoff to="lead">Back to you.</handoff>'),
+    );
+    const writerLoop = await http().get(`/api/internal/collaboration/runs/${runId}`).expect(200);
+    expect(writerLoop.body.referrals).toHaveLength(2);
+    expect(
+      writerLoop.body.referrals.find(
+        (referral: { referralId: string }) => referral.referralId === writer.referralId,
+      ).handoffNote,
+    ).toBe('refused: loop');
+    expect(service.getAuditEvents().some((event) => event.payload.limitType === 'loop')).toBe(true);
+
+    const reviewRun = await createRun();
+    const reviewRoot = await postReferral(reviewRun, {
+      idempotencyKey: 'review-loop-root',
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'lead' },
+      agents: COLLABORATION_TEAM.map((agent) => ({
+        name: agent.name,
+        instructions: agent.instructions,
+      })),
+    }).expect(201);
+    await approve(reviewRun, reviewRoot.body.referral.referralId).expect(200);
+    executionResults.getExecution.mockResolvedValue(
+      completedExecution('Done.\n<handoff to="reviewer">Look.</handoff>'),
+    );
+    const afterReviewLead = await http().get(`/api/internal/collaboration/runs/${reviewRun}`).expect(200);
+    const reviewer = afterReviewLead.body.referrals.find(
+      (referral: { targetBuilder: { builderProfileId: string } }) =>
+        referral.targetBuilder.builderProfileId === 'reviewer',
+    );
+    service.clearAuditEvents();
+    await approve(reviewRun, reviewer.referralId).expect(200);
+    executionResults.getExecution.mockResolvedValue(
+      completedExecution('Done.\n<handoff to="lead">Back to lead.</handoff>'),
+    );
+    const leadLoop = await http().get(`/api/internal/collaboration/runs/${reviewRun}`).expect(200);
+    expect(leadLoop.body.referrals).toHaveLength(2);
+    expect(
+      leadLoop.body.referrals.find(
+        (referral: { referralId: string }) => referral.referralId === reviewer.referralId,
+      ).handoffNote,
+    ).toBe('refused: loop');
+    expect(service.getAuditEvents().some((event) => event.payload.limitType === 'loop')).toBe(true);
+    expect(service.getAuditEvents().some((event) => event.payload.limitType === 'depth')).toBe(false);
+  });
+
+  it('still refuses the ninth hand-off when the next edge is a send-back', async () => {
+    const runId = await createRun();
+    for (let index = 0; index < MAX_HANDOFFS_PER_RUN; index += 1) {
+      await postReferral(runId, { idempotencyKey: `cap-send-${index}` }).expect(201);
+    }
+    const service = app.get(OrchestrationService);
+    service.clearAuditEvents();
+    const blocked = await postReferral(runId, {
+      idempotencyKey: 'cap-send-ninth',
+      sourceBuilder: { agentRole: 'builder', builderProfileId: 'reviewer' },
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'writer' },
+    }).expect(400);
+    expect(blocked.body.message).toContain('Handoff limit');
+    expect(service.getAuditEvents()[0]?.payload.limitType).toBe('handoff');
+    const detail = await http().get(`/api/internal/collaboration/runs/${runId}`).expect(200);
+    expect(detail.body.referrals).toHaveLength(MAX_HANDOFFS_PER_RUN);
   });
 });

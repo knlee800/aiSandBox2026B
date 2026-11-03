@@ -68,6 +68,8 @@ export interface CollaborationHandoffView {
   changedPaths: string[];
   savePoint: string | null;
   tests: Array<{ command: string; passed: boolean }>;
+  diff: string | null;
+  diffUnavailable: boolean;
 }
 
 export interface CollaborationRunDetail {
@@ -481,6 +483,8 @@ export class CollaborationController {
       changedPaths: [],
       savePoint: null,
       tests: [],
+      diff: null,
+      diffUnavailable: false,
     };
     const rejectReason =
       referral.status === 'rejected' &&
@@ -506,6 +510,8 @@ export class CollaborationController {
         command: test.command,
         passed: test.passed,
       })),
+      diff: work.diff,
+      diffUnavailable: work.diffUnavailable,
     };
   }
 

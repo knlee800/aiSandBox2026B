@@ -22,6 +22,8 @@ export interface CollaborationHandoffWork {
 
 export interface CollaborationHandoffFact extends CollaborationHandoffWork {
   readonly canChangeFiles: boolean;
+  readonly diff: string | null;
+  readonly diffUnavailable: boolean;
 }
 
 /** Execution metadata key. The worker writes the paths a profile job wrote. */

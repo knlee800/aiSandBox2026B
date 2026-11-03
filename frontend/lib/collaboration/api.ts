@@ -27,6 +27,8 @@ export interface CollaborationHandoff {
   changedPaths?: string[];
   savePoint?: string | null;
   tests?: Array<{ command: string; passed: boolean }>;
+  diff?: string | null;
+  diffUnavailable?: boolean;
 }
 
 export interface CollaborationRunDetail {

@@ -328,3 +328,56 @@ describe('ContainerManagerHttpClient checkpoint history (CHECKPOINT-PERSIST-02)'
     }
   });
 });
+
+describe('ContainerManagerHttpClient working tree diff', () => {
+  const sessionId = '11111111-1111-4111-8111-111111111111';
+  const commitHash = 'abc123abc123abc123abc123abc123abc123abcd';
+  let client: ContainerManagerHttpClient;
+  let mockAxiosInstance: { get: jest.Mock };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.INTERNAL_SERVICE_KEY = 'test-internal-key';
+    mockAxiosInstance = { get: jest.fn() };
+    mockedAxios.create.mockReturnValue(mockAxiosInstance as never);
+    (mockedAxios.isAxiosError as unknown as jest.Mock) = jest.fn((error: unknown) =>
+      Boolean((error as { isAxiosError?: boolean })?.isAxiosError),
+    );
+    client = new ContainerManagerHttpClient();
+    client.onModuleInit();
+  });
+
+  afterEach(() => {
+    delete process.env.INTERNAL_SERVICE_KEY;
+  });
+
+  it('calls the internal working-tree diff route with the service key', async () => {
+    const body = {
+      commitHash,
+      diff: 'diff --git a/src/form.ts b/src/form.ts\n+fixed\n',
+      truncated: false,
+    };
+    mockAxiosInstance.get.mockResolvedValue({ data: body });
+
+    await expect(client.getWorkingTreeDiff(sessionId, commitHash)).resolves.toEqual(body);
+    expect(mockAxiosInstance.get).toHaveBeenCalledWith(
+      `/api/internal/git/${sessionId}/worktree-diff/${commitHash}`,
+      {
+        headers: {
+          'X-Internal-Service-Key': 'test-internal-key',
+        },
+      },
+    );
+  });
+
+  it('wraps an HTTP failure and does not throw the raw axios error', async () => {
+    const axiosError: any = new Error('Request failed');
+    axiosError.isAxiosError = true;
+    axiosError.response = { status: 400, data: { message: 'Invalid commit' } };
+    mockAxiosInstance.get.mockRejectedValue(axiosError);
+
+    await expect(client.getWorkingTreeDiff(sessionId, commitHash)).rejects.toThrow(
+      `Failed to get working tree diff for session ${sessionId}, commit ${commitHash}: HTTP 400 - Invalid commit`,
+    );
+  });
+});

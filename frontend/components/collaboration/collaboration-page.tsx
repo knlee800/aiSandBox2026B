@@ -24,6 +24,7 @@ import {
   createSingleFlight,
   fillTemplate,
   handoffIsWaiting,
+  sendBackRoundNumbers,
   shouldPollCollaboration,
 } from '@/lib/collaboration/logic';
 
@@ -278,6 +279,10 @@ export function useCollaborationScreen(input: {
     testPassed: t('testPassed'),
     testFailed: t('testFailed'),
     reviewOrRevert: t('reviewOrRevert'),
+    sendBackRound: t('sendBackRound'),
+    diff: t('diff'),
+    diffUnavailable: t('diffUnavailable'),
+    diffEmpty: t('diffEmpty'),
   };
 
   const memberLabels = useMemo(
@@ -301,8 +306,10 @@ export function useCollaborationScreen(input: {
     { name: labels.reviewer, summary: labels.reviewerSummary },
   ];
 
-  const handoffs: CollaborationHandoffViewModel[] = (detail?.handoffs ?? []).map(
-    (handoff: CollaborationHandoff) => ({
+  const sourceHandoffs = detail?.handoffs ?? [];
+  const roundNumbers = sendBackRoundNumbers(sourceHandoffs);
+  const handoffs: CollaborationHandoffViewModel[] = sourceHandoffs.map(
+    (handoff: CollaborationHandoff, index) => ({
       referralId: handoff.referralId,
       statusLabel: statusLabel(handoff.status),
       asked: fillTemplate(t('asked'), {
@@ -323,6 +330,12 @@ export function useCollaborationScreen(input: {
           ? handoff.savePoint
           : null,
       tests: readHandoffTests(handoff.tests),
+      roundLabel:
+        typeof roundNumbers[index] === 'number'
+          ? fillTemplate(t('sendBackRound'), { round: String(roundNumbers[index]) })
+          : null,
+      diff: typeof handoff.diff === 'string' ? handoff.diff : null,
+      diffUnavailable: handoff.diffUnavailable === true,
     }),
   );
 

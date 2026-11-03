@@ -16,6 +16,7 @@ import {
   collaborationRefusal,
   collaborationRefusalMessageKey,
   createSingleFlight,
+  sendBackRoundNumbers,
   shouldPollCollaboration,
 } from './collaboration/logic';
 
@@ -31,6 +32,9 @@ function renderChain(handoffs: Array<{
   changedPaths?: string[];
   savePoint?: string | null;
   tests?: Array<{ command: string; passed: boolean }>;
+  roundLabel?: string | null;
+  diff?: string | null;
+  diffUnavailable?: boolean;
 }>) {
   return renderToStaticMarkup(
     React.createElement(CollaborationView, {
@@ -63,6 +67,9 @@ function renderChain(handoffs: Array<{
         changedPaths: handoff.changedPaths ?? [],
         savePoint: handoff.savePoint ?? null,
         tests: handoff.tests ?? [],
+        roundLabel: handoff.roundLabel ?? null,
+        diff: handoff.diff === undefined ? null : handoff.diff,
+        diffUnavailable: handoff.diffUnavailable === true,
       })),
       runs: [],
       rejectReferralId: null,
@@ -197,6 +204,66 @@ describe('collaboration page', () => {
       '批准这一步后，撰写者可以修改文件。',
     );
     assert.doesNotMatch(markup, /data-testid="collaboration-work-writer-wait"/);
+  });
+
+  test('labels send-back rounds and shows the writer diff as text', () => {
+    const diff = 'diff --git a/src/form.ts b/src/form.ts\n+fixed\n<script>alert(1)</script>';
+    const markup = renderChain([
+      {
+        referralId: 'writer-diff',
+        statusLabel: enMessages.collaboration.statusCompleted,
+        waiting: false,
+        answer: 'Updated the form.',
+        prompt: 'Fix the form.',
+        canChangeFiles: true,
+        diff,
+      },
+      {
+        referralId: 'round-1',
+        statusLabel: enMessages.collaboration.statusPendingApproval,
+        waiting: true,
+        answer: null,
+        prompt: 'Fix the listed items.',
+        roundLabel: 'Round 1',
+      },
+      {
+        referralId: 'round-2',
+        statusLabel: enMessages.collaboration.statusPendingApproval,
+        waiting: true,
+        answer: null,
+        prompt: 'Fix the remaining items.',
+        roundLabel: 'Round 2',
+        diffUnavailable: true,
+      },
+    ]);
+
+    assert.match(markup, /data-testid="collaboration-round-round-1"/);
+    assert.match(markup, /Round 1/);
+    assert.match(markup, /data-testid="collaboration-round-round-2"/);
+    assert.match(markup, /Round 2/);
+    assert.match(markup, /data-testid="collaboration-diff-text-writer-diff"/);
+    assert.match(markup, /diff --git a\/src\/form\.ts/);
+    assert.match(markup, /font-mono/);
+    assert.match(markup, /overflow-auto/);
+    assert.match(markup, /max-w-full/);
+    assert.match(markup, /whitespace-pre/);
+    assert.doesNotMatch(markup, /<details[^>]*\sopen/);
+    assert.match(markup, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
+    assert.doesNotMatch(markup, /<script/);
+    assert.match(markup, new RegExp(enMessages.collaboration.diffUnavailable));
+    assert.deepStrictEqual(sendBackRoundNumbers([
+      { source: 'lead', target: 'writer' },
+      { source: 'writer', target: 'reviewer' },
+      { source: 'reviewer', target: 'writer' },
+      { source: 'writer', target: 'reviewer' },
+      { source: 'reviewer', target: 'writer' },
+    ]), [null, null, 1, null, 2]);
+    assert.equal(zhTwMessages.collaboration.sendBackRound, '第 {round} 輪');
+    assert.equal(zhCnMessages.collaboration.sendBackRound, '第 {round} 轮');
+    assert.equal(zhTwMessages.collaboration.diff, '差異');
+    assert.equal(zhCnMessages.collaboration.diff, '差异');
+    assert.notEqual(zhTwMessages.collaboration.diffUnavailable, enMessages.collaboration.diffUnavailable);
+    assert.notEqual(zhCnMessages.collaboration.diffEmpty, enMessages.collaboration.diffEmpty);
   });
 
   test('an answer containing a script tag renders as text', () => {

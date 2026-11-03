@@ -15,6 +15,7 @@ import {
   createHarnessEntitlementProof,
   readValidatedHarnessEntitlementHmacSecret,
 } from '../ai/ai-execution.controller';
+import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
 import { QueueService } from '../queue/queue.service';
 import { ExecutionResultService } from '../ai/execution-result.service';
 import { UsageLedgerService } from '../usage-ledger/usage-ledger.service';
@@ -63,11 +64,18 @@ import {
 } from './collaboration-sweep.constants';
 import { readStoredExecutionFailureReason } from './collaboration-failure-reason';
 import {
+  COLLABORATION_REVIEWER_PROFILE_ID,
+  COLLABORATION_SEND_BACK_WRITER_INSTRUCTION,
+  COLLABORATION_WRITER_PROFILE_ID,
+} from './collaboration-team';
+import { classifySendBackEdge } from './collaboration-send-back';
+import {
   collaborationHarnessJobFields,
   readCollaborationHandoffWork,
   targetStepCanChangeFiles,
   type CollaborationHandoffFact,
 } from './collaboration-tool-profile';
+import { appendSavePointDiff } from './collaboration-work-diff';
 import {
   answerHandoffIdempotencyKey,
   buildCollaborationProjectInstructions,
@@ -282,6 +290,7 @@ export class OrchestrationService {
     @Optional() private readonly abortGuard?: AbortGuard,
     @Optional() private readonly creditBalanceGuard?: CreditBalanceGuard,
     @Optional() private readonly tokenQuotaGuard?: TokenQuotaGuard,
+    @Optional() private readonly containerManagerClient?: ContainerManagerHttpClient,
   ) {
     this.auditRecorder = auditRecorder ?? new InMemoryOrchestrationAuditRecorder();
   }
@@ -443,6 +452,8 @@ export class OrchestrationService {
           passed: test.passed,
         }));
       }
+      const storedDiff = entity.pendingJob?.workDiff;
+      const diffUnavailable = storedDiff?.unavailable === true;
       facts.set(entity.referralId, {
         canChangeFiles: targetStepCanChangeFiles(
           entity.targetBuilderProfileId,
@@ -451,6 +462,11 @@ export class OrchestrationService {
         changedPaths,
         savePoint,
         tests,
+        diff:
+          storedDiff && !diffUnavailable && typeof storedDiff.text === 'string'
+            ? storedDiff.text
+            : null,
+        diffUnavailable,
       });
     }
     return facts;
@@ -1292,8 +1308,37 @@ export class OrchestrationService {
     const resolvedConstraints = this.resolveConstraints(input.constraints);
     const maxDepth = input.maxDepth ?? resolvedConstraints.maxDepth;
     const depth = input.depth ?? 0;
+    const existingEdges = await referralRepo.find({
+      where: { collaborationRunId: input.collaborationRunId },
+    });
+    const sendBackEdge = classifySendBackEdge(
+      input.sourceBuilderProfileId,
+      input.targetBuilderProfileId,
+      existingEdges.map((edge) => ({
+        sourceProfileId: edge.sourceBuilderProfileId,
+        targetProfileId: edge.targetBuilderProfileId,
+        createdAtMs:
+          edge.createdAt instanceof Date
+            ? edge.createdAt.getTime()
+            : Date.parse(String(edge.createdAt)),
+      })),
+    );
+    if (sendBackEdge !== 'ordinary') {
+      const existingSendBack = await this.findActiveIdempotentReferral(
+        referralRepo,
+        input.collaborationRunId,
+        input.idempotencyKey,
+      );
+      if (existingSendBack) {
+        return {
+          outcome: 'duplicate',
+          referral: this.toReferral(existingSendBack),
+        };
+      }
+    }
 
-    if (depth >= maxDepth) {
+    const visitedBuilderProfileIds = new Set(input.visitedBuilderProfileIds ?? []);
+    if (sendBackEdge === 'ordinary' && depth >= maxDepth) {
       const sourceBuilder = await this.resolveBuilderIdentity(
         referralRepo,
         run,
@@ -1327,8 +1372,11 @@ export class OrchestrationService {
       );
     }
 
-    const visitedBuilderProfileIds = new Set(input.visitedBuilderProfileIds ?? []);
-    if (visitedBuilderProfileIds.has(input.targetBuilderProfileId)) {
+    if (
+      sendBackEdge === 'capped' ||
+      (sendBackEdge === 'ordinary' &&
+        visitedBuilderProfileIds.has(input.targetBuilderProfileId))
+    ) {
       const sourceBuilder = await this.resolveBuilderIdentity(
         referralRepo,
         run,
@@ -2301,13 +2349,20 @@ export class OrchestrationService {
       input.projectInstructions !== undefined
         ? input.projectInstructions
         : (parent?.pendingJob?.callerProjectInstructions ?? null);
-    const projectInstructions = agents
+    let projectInstructions = agents
       ? buildCollaborationProjectInstructions({
           callerInstructions: callerProjectInstructions,
           agents,
           agentName: input.targetBuilder.builderProfileId,
         })
       : callerProjectInstructions;
+    if (
+      projectInstructions &&
+      input.targetBuilder.builderProfileId === COLLABORATION_WRITER_PROFILE_ID &&
+      input.sourceBuilder.builderProfileId === COLLABORATION_REVIEWER_PROFILE_ID
+    ) {
+      projectInstructions = `${projectInstructions}\n\n${COLLABORATION_SEND_BACK_WRITER_INSTRUCTION}`;
+    }
     const fileAccess = parent
       ? parent.pendingJob?.fileAccess === true
       : input.fileAccess === true;
@@ -2382,6 +2437,7 @@ export class OrchestrationService {
     referralId: ReferralId,
     answer: string,
   ): Promise<void> {
+    await this.captureWriterWorkDiff(referralId);
     const entity = await this.referralRepo.findOne({
       where: { referralId },
     });
@@ -2423,6 +2479,15 @@ export class OrchestrationService {
     }
 
     const job = entity.pendingJob;
+    let prompt = buildRequestedHandoffPrompt(parsed.task, parsed.answerWithoutRequest);
+    const storedDiff = job.workDiff;
+    if (
+      storedDiff &&
+      entity.targetBuilderProfileId === COLLABORATION_WRITER_PROFILE_ID &&
+      parsed.to === COLLABORATION_REVIEWER_PROFILE_ID
+    ) {
+      prompt = appendSavePointDiff(prompt, storedDiff.text, storedDiff.unavailable);
+    }
     try {
       await this.createPendingReferral({
         collaborationRunId: entity.collaborationRunId,
@@ -2438,7 +2503,7 @@ export class OrchestrationService {
         sessionId: job.sessionId,
         conversationId: job.conversationId,
         apiKeyId: job.apiKeyId,
-        prompt: buildRequestedHandoffPrompt(parsed.task, parsed.answerWithoutRequest),
+        prompt,
         provider: job.provider,
         adapter: job.adapter,
         model: job.model ?? undefined,
@@ -2510,6 +2575,61 @@ export class OrchestrationService {
       return 'agent_not_on_list';
     }
     return 'refused';
+  }
+
+  private async captureWriterWorkDiff(referralId: ReferralId): Promise<void> {
+    try {
+      const entity = await this.referralRepo.findOne({ where: { referralId } });
+      if (
+        !entity?.pendingJob ||
+        entity.pendingJob.workDiff ||
+        entity.targetBuilderProfileId !== COLLABORATION_WRITER_PROFILE_ID
+      ) {
+        return;
+      }
+      if (!entity.executionId || !this.executionResultService) {
+        return;
+      }
+      const execution = await this.executionResultService.getExecution(entity.executionId);
+      const savePoint = readCollaborationHandoffWork(execution?.metadata).savePoint;
+      if (!savePoint) {
+        return;
+      }
+      const sessionId = entity.pendingJob.sessionId;
+      if (!this.containerManagerClient || sessionId.trim().length === 0) {
+        await this.rememberWorkDiff(referralId, { text: '', unavailable: true });
+        return;
+      }
+      const result = await this.containerManagerClient.getWorkingTreeDiff(sessionId, savePoint);
+      if (!result || typeof result.diff !== 'string') {
+        await this.rememberWorkDiff(referralId, { text: '', unavailable: true });
+        return;
+      }
+      await this.rememberWorkDiff(referralId, { text: result.diff, unavailable: false });
+    } catch (error) {
+      this.logWithoutContents('collaboration.work_diff_failed', error);
+      try {
+        await this.rememberWorkDiff(referralId, { text: '', unavailable: true });
+      } catch (noteError) {
+        this.logWithoutContents('collaboration.work_diff_note_failed', noteError);
+      }
+    }
+  }
+
+  private async rememberWorkDiff(
+    referralId: ReferralId,
+    workDiff: { text: string; unavailable: boolean },
+  ): Promise<void> {
+    const entity = await this.referralRepo.findOne({ where: { referralId } });
+    if (!entity?.pendingJob || entity.pendingJob.workDiff) {
+      return;
+    }
+    entity.pendingJob = {
+      ...entity.pendingJob,
+      workDiff,
+    };
+    entity.updatedAt = new Date();
+    await this.referralRepo.save(entity);
   }
 
   private async rememberHandoffNote(referralId: ReferralId, note: string): Promise<void> {

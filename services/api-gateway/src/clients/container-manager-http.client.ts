@@ -620,6 +620,44 @@ export class ContainerManagerHttpClient implements OnModuleInit {
   }
 
   /**
+   * Working-tree diff against a commit. Read-only container-manager route.
+   * Calls GET /api/internal/git/:sessionId/worktree-diff/:commitHash
+   */
+  async getWorkingTreeDiff(
+    sessionId: string,
+    commitHash: string,
+  ): Promise<WorkingTreeDiffResult> {
+    if (this.isDisabled) {
+      throw new Error(
+        'ContainerManagerHttpClient is disabled (development mode, no INTERNAL_SERVICE_KEY)',
+      );
+    }
+
+    try {
+      const response = await this.axiosInstance.get(
+        `/api/internal/git/${encodeURIComponent(sessionId)}/worktree-diff/${encodeURIComponent(commitHash)}`,
+        {
+          headers: {
+            'X-Internal-Service-Key': this.internalServiceKey,
+          },
+        },
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status || 'unknown';
+        const message = error.response?.data?.message || error.message;
+        throw new Error(
+          `Failed to get working tree diff for session ${sessionId}, commit ${commitHash}: HTTP ${status} - ${message}`,
+        );
+      }
+      throw new Error(
+        `Failed to get working tree diff for session ${sessionId}, commit ${commitHash}: ${error}`,
+      );
+    }
+  }
+
+  /**
    * Revert session to a checkpoint in container-manager
    * PHASE-68B: Call git revert endpoint
    * Calls POST /api/git/:sessionId/revert
@@ -877,6 +915,12 @@ export interface GitDiffResult {
     status: 'added' | 'modified' | 'deleted';
     diff: string;
   }>;
+}
+
+export interface WorkingTreeDiffResult {
+  commitHash: string;
+  diff: string;
+  truncated: boolean;
 }
 
 /**

@@ -25,9 +25,13 @@ export const COLLABORATION_TEAM: readonly CollaborationListedAgent[] = [
   {
     name: COLLABORATION_REVIEWER_PROFILE_ID,
     instructions:
-      'Read the real files. Run npm test, npm run build, or npx tsc --noEmit when that checks the change. Name each real bug with an input that shows it. Give a clear verdict and finish. You cannot change files.',
+      'Read the real files. Run npm test, npm run build, or npx tsc --noEmit when that checks the change. Name each real bug with an input that shows it. If you find a real bug, send the work back to writer with a specific list of what to fix. Otherwise give the verdict and finish. You cannot change files.',
   },
 ];
+
+/** Added to the writer job only when the reviewer sent the work back. */
+export const COLLABORATION_SEND_BACK_WRITER_INSTRUCTION =
+  'This work was sent back. Fix only the listed items, then hand it to reviewer.';
 
 export const COLLABORATION_PAGE_AGENT_ROLE = 'builder' as const;
 

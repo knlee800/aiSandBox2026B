@@ -7,6 +7,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import request from 'supertest';
 import { ExecutionResultService } from '../ai/execution-result.service';
+import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
 import { AbortConfig } from '../abort/abort.config';
 import { AbortGuard } from '../abort/abort.guard';
 import { CreditBalanceGuard } from '../billing/credit-balance.guard';
@@ -24,6 +25,10 @@ import { COLLABORATION_TEAM } from './collaboration-team';
 import { CollaborationReferralEntity } from './collaboration-referral.entity';
 import { CollaborationRunEntity } from './collaboration-run.entity';
 import { OrchestrationService } from './orchestration.service';
+import {
+  WORK_DIFF_PROMPT_HEADING,
+  WORK_DIFF_PROMPT_UNAVAILABLE,
+} from './collaboration-work-diff';
 
 const OWNER_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const OTHER_ID = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
@@ -166,6 +171,7 @@ describe('CollaborationController login routes', () => {
   let sessions: Map<string, FakeSession>;
   let conversations: Map<string, { id: string; sessionId: string }>;
   let sessionReads: jest.Mock;
+  let workTree: { getWorkingTreeDiff: jest.Mock };
 
   beforeEach(async () => {
     process.env.GLOBAL_EXECUTION_ENABLED = 'true';
@@ -185,6 +191,13 @@ describe('CollaborationController login routes', () => {
     executionResults = {
       requestCancel: jest.fn().mockResolvedValue(true),
       getExecution: jest.fn().mockResolvedValue(null),
+    };
+    workTree = {
+      getWorkingTreeDiff: jest.fn().mockResolvedValue({
+        commitHash: 'abc123abc123abc123abc123abc123abc123abcd',
+        diff: '',
+        truncated: false,
+      }),
     };
     sessionReads = jest.fn(async (sessionId: string) => {
       const session = sessions.get(sessionId);
@@ -232,6 +245,7 @@ describe('CollaborationController login routes', () => {
         },
         { provide: QueueService, useValue: queue },
         { provide: ExecutionResultService, useValue: executionResults },
+        { provide: ContainerManagerHttpClient, useValue: workTree },
         { provide: UsageLedgerService, useValue: { writeExecutionIntent: jest.fn() } },
         { provide: SessionService, useValue: { getSessionById: sessionReads } },
         {
@@ -640,6 +654,161 @@ describe('CollaborationController login routes', () => {
     );
     expect(doneLead.canChangeFiles).toBe(false);
     expect(doneLead.changedPaths).toEqual([]);
+  });
+
+  it('puts the writer diff in the reviewer prompt and on GET runs/:id', async () => {
+    const savePoint = 'abc123abc123abc123abc123abc123abc123abcd';
+    const diff = 'diff --git a/src/form.ts b/src/form.ts\n+fixed\n[diff truncated]\n';
+    workTree.getWorkingTreeDiff.mockResolvedValue({
+      commitHash: savePoint,
+      diff,
+      truncated: true,
+    });
+
+    const started = await startRun();
+    await http()
+      .post(
+        `/api/collaboration/runs/${started.collaborationRunId}/referrals/${started.referralId}/approve`,
+      )
+      .send({})
+      .expect(200);
+    const leadExecutionId = referrals.get(started.referralId)?.executionId;
+
+    executionResults.getExecution.mockImplementation(async (executionId: string) => {
+      if (executionId === leadExecutionId) {
+        return {
+          execution_status: 'completed',
+          metadata: {
+            aiExecutionResult: {
+              output: 'Ready.\n<handoff to="writer">Fix the form.</handoff>',
+            },
+          },
+        };
+      }
+      const writer = [...referrals.values()].find(
+        (referral) =>
+          referral.executionId === executionId && referral.targetBuilderProfileId === 'writer',
+      );
+      if (writer) {
+        return {
+          execution_status: 'completed',
+          metadata: {
+            aiExecutionResult: {
+              output: 'Updated the form.\n<handoff to="reviewer">Look again.</handoff>',
+            },
+            preApplyCheckpointHash: savePoint,
+          },
+        };
+      }
+      return null;
+    });
+
+    const afterLead = await http()
+      .get(`/api/collaboration/runs/${started.collaborationRunId}`)
+      .expect(200);
+    const writerHandoff = afterLead.body.handoffs.find(
+      (handoff: { target: string }) => handoff.target === 'writer',
+    );
+    await http()
+      .post(
+        `/api/collaboration/runs/${started.collaborationRunId}/referrals/${writerHandoff.referralId}/approve`,
+      )
+      .send({})
+      .expect(200);
+
+    const finished = await http()
+      .get(`/api/collaboration/runs/${started.collaborationRunId}`)
+      .expect(200);
+    const doneWriter = finished.body.handoffs.find(
+      (handoff: { referralId: string }) => handoff.referralId === writerHandoff.referralId,
+    );
+    const reviewer = finished.body.handoffs.find(
+      (handoff: { target: string }) => handoff.target === 'reviewer',
+    );
+    expect(doneWriter.status).toBe('completed');
+    expect(doneWriter.diff).toBe(diff);
+    expect(doneWriter.diffUnavailable).toBe(false);
+    expect(reviewer.status).toBe('pending_approval');
+    expect(reviewer.prompt.indexOf('Look again.')).toBeLessThan(
+      reviewer.prompt.indexOf(WORK_DIFF_PROMPT_HEADING),
+    );
+    expect(reviewer.prompt).toContain(diff);
+    expect(reviewer.prompt).toContain('[diff truncated]');
+    expect(workTree.getWorkingTreeDiff).toHaveBeenCalledWith(SESSION_ID, savePoint);
+    expect(finished.body.run.status).toBe('active');
+  });
+
+  it('leaves a note and does not fail when the writer diff cannot be fetched', async () => {
+    workTree.getWorkingTreeDiff.mockRejectedValue(new Error('container down'));
+    const started = await startRun();
+    await http()
+      .post(
+        `/api/collaboration/runs/${started.collaborationRunId}/referrals/${started.referralId}/approve`,
+      )
+      .send({})
+      .expect(200);
+    const leadExecutionId = referrals.get(started.referralId)?.executionId;
+    executionResults.getExecution.mockImplementation(async (executionId: string) => {
+      if (executionId === leadExecutionId) {
+        return {
+          execution_status: 'completed',
+          metadata: {
+            aiExecutionResult: {
+              output: 'Ready.\n<handoff to="writer">Fix the form.</handoff>',
+            },
+          },
+        };
+      }
+      const writer = [...referrals.values()].find(
+        (referral) =>
+          referral.executionId === executionId && referral.targetBuilderProfileId === 'writer',
+      );
+      if (writer) {
+        return {
+          execution_status: 'completed',
+          metadata: {
+            aiExecutionResult: {
+              output: 'Updated the form.\n<handoff to="reviewer">Look again.</handoff>',
+            },
+            preApplyCheckpointHash: 'abc123abc123abc123abc123abc123abc123abcd',
+          },
+        };
+      }
+      return null;
+    });
+
+    const afterLead = await http()
+      .get(`/api/collaboration/runs/${started.collaborationRunId}`)
+      .expect(200);
+    const writerHandoff = afterLead.body.handoffs.find(
+      (handoff: { target: string }) => handoff.target === 'writer',
+    );
+    const queued = queue.enqueueExecution.mock.calls.length;
+    await http()
+      .post(
+        `/api/collaboration/runs/${started.collaborationRunId}/referrals/${writerHandoff.referralId}/approve`,
+      )
+      .send({})
+      .expect(200);
+    const finished = await http()
+      .get(`/api/collaboration/runs/${started.collaborationRunId}`)
+      .expect(200);
+    const doneWriter = finished.body.handoffs.find(
+      (handoff: { referralId: string }) => handoff.referralId === writerHandoff.referralId,
+    );
+    const reviewer = finished.body.handoffs.find(
+      (handoff: { target: string }) => handoff.target === 'reviewer',
+    );
+    expect(finished.body.run.status).toBe('active');
+    expect(doneWriter.status).toBe('completed');
+    expect(doneWriter.diff).toBeNull();
+    expect(doneWriter.diffUnavailable).toBe(true);
+    expect(reviewer.status).toBe('pending_approval');
+    expect(reviewer.prompt).toContain(WORK_DIFF_PROMPT_UNAVAILABLE);
+    expect(reviewer.prompt.indexOf('Look again.')).toBeLessThan(
+      reviewer.prompt.indexOf(WORK_DIFF_PROMPT_UNAVAILABLE),
+    );
+    expect(queue.enqueueExecution).toHaveBeenCalledTimes(queued + 1);
   });
 });
 
