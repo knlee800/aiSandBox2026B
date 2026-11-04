@@ -84420,7 +84420,7 @@ taskId=HARNESS-REOPEN-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-05. Lane 1, GATEWAY.
+**Status:** COMPLETE AND LOCKED — 2026-11-05. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY released. Open restores nothing while the caller has an active run in the session. Checkpoint: docs/HARNESS-REOPEN-01-CHECKPOINT.md.
 **Task ID:** HARNESS-REOPEN-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -84439,12 +84439,12 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] With an active run of that user in that session, opening the project restores neither the snapshot nor the checkpoint history and returns restoredSnapshotId null
-- [ ] With no active run, behaviour is unchanged
-- [ ] Another user's runs never count; the query is bound to user and session
-- [ ] Unit tests cover these cases; gateway npm test at baseline apart from new tests and npm run build exit 0
-- [ ] Only files in the write scope change
-- [ ] Not LOCKED by an implementer
+- [x] With an active run of that user in that session, opening the project restores neither the snapshot nor the checkpoint history and returns restoredSnapshotId null
+- [x] With no active run, behaviour is unchanged
+- [x] Another user's runs never count; the query is bound to user and session
+- [x] Unit tests cover these cases; gateway npm test at baseline apart from new tests and npm run build exit 0
+- [x] Only files in the write scope change
+- [x] Not LOCKED by an implementer
 
 ### GOV-RPG-OFFICE-PLAN-01 — Plan the RPG office
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

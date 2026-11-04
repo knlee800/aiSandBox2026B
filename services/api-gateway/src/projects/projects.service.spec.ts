@@ -1,9 +1,11 @@
 import { GoneException, Logger, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { In } from 'typeorm';
 import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
 import { Project } from '../entities/project.entity';
 import { Session } from '../entities/session.entity';
+import { UsageRecord } from '../entities/usage-record.entity';
 import { SessionService } from '../sessions/session.service';
 import { SnapshotPersistenceService } from '../snapshots/snapshot-persistence.service';
 import { WorkspacesService } from '../workspaces/workspaces.service';
@@ -19,6 +21,9 @@ describe('ProjectsService (PR-03-01)', () => {
   };
   let sessionRepository: {
     update: jest.Mock;
+  };
+  let usageRecordRepository: {
+    findOne: jest.Mock;
   };
   let sessionService: {
     getSessionById: jest.Mock;
@@ -45,6 +50,9 @@ describe('ProjectsService (PR-03-01)', () => {
     };
     sessionRepository = {
       update: jest.fn(),
+    };
+    usageRecordRepository = {
+      findOne: jest.fn().mockResolvedValue(null),
     };
     sessionService = {
       getSessionById: jest.fn(),
@@ -75,6 +83,10 @@ describe('ProjectsService (PR-03-01)', () => {
         {
           provide: getRepositoryToken(Session),
           useValue: sessionRepository,
+        },
+        {
+          provide: getRepositoryToken(UsageRecord),
+          useValue: usageRecordRepository,
         },
         {
           provide: SessionService,
@@ -747,5 +759,95 @@ describe('ProjectsService (PR-03-01)', () => {
       }),
     ).rejects.toThrow('restore failed');
     expect(containerManagerHttpClient.restoreCheckpointHistory).not.toHaveBeenCalled();
+  });
+
+  it.each(['pending', 'running', 'cancel_requested'] as const)(
+    'skips snapshot and checkpoint restore when the caller has an active %s run in the session',
+    async (executionStatus) => {
+      const logSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
+      mockOpenableSession();
+      usageRecordRepository.findOne.mockResolvedValue({
+        executionId: 'exec-1',
+        userId: 'user-1',
+        sessionId: 'session-1',
+        executionStatus,
+      });
+
+      try {
+        const result = await service.openProjectIntoSession({
+          userId: 'user-1',
+          projectId: 'project-1',
+          sessionId: 'session-1',
+          snapshotId: 'snapshot-1',
+        });
+
+        expect(result).toEqual({
+          projectId: 'project-1',
+          sessionId: 'session-1',
+          restoredSnapshotId: null,
+        });
+        expect(sessionRepository.update).toHaveBeenCalledWith(
+          { id: 'session-1' },
+          { projectId: 'project-1' },
+        );
+        expect(sessionRepository.update.mock.invocationCallOrder[0]).toBeLessThan(
+          usageRecordRepository.findOne.mock.invocationCallOrder[0],
+        );
+        expect(snapshotPersistenceService.restoreSnapshot).not.toHaveBeenCalled();
+        expect(containerManagerHttpClient.restoreCheckpointHistory).not.toHaveBeenCalled();
+        expect(logSpy).toHaveBeenCalledTimes(1);
+        expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('session-1'));
+        expect(usageRecordRepository.findOne).toHaveBeenCalledWith({
+          where: {
+            userId: 'user-1',
+            sessionId: 'session-1',
+            executionStatus: In(['pending', 'running', 'cancel_requested']),
+          },
+        });
+      } finally {
+        logSpy.mockRestore();
+      }
+    },
+  );
+
+  it('restores the snapshot and checkpoint history when the caller has no active run in the session', async () => {
+    mockOpenableSession();
+    usageRecordRepository.findOne.mockResolvedValue(null);
+    snapshotPersistenceService.restoreSnapshot.mockResolvedValue({
+      id: 'snapshot-1',
+      userId: 'user-1',
+      label: null,
+      createdAt: '2026-04-04T00:00:00.000Z',
+      fileCount: 1,
+    });
+
+    const result = await service.openProjectIntoSession({
+      userId: 'user-1',
+      projectId: 'project-1',
+      sessionId: 'session-1',
+      snapshotId: 'snapshot-1',
+    });
+
+    expect(usageRecordRepository.findOne).toHaveBeenCalledWith({
+      where: {
+        userId: 'user-1',
+        sessionId: 'session-1',
+        executionStatus: In(['pending', 'running', 'cancel_requested']),
+      },
+    });
+    expect(snapshotPersistenceService.restoreSnapshot).toHaveBeenCalledWith({
+      userId: 'user-1',
+      sessionId: 'session-1',
+      snapshotId: 'snapshot-1',
+    });
+    expect(containerManagerHttpClient.restoreCheckpointHistory).toHaveBeenCalledWith(
+      'session-1',
+      'project-1',
+    );
+    expect(result).toEqual({
+      projectId: 'project-1',
+      sessionId: 'session-1',
+      restoredSnapshotId: 'snapshot-1',
+    });
   });
 });

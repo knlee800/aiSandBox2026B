@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Project } from '../entities/project.entity';
 import { Session } from '../entities/session.entity';
+import { UsageRecord } from '../entities/usage-record.entity';
 import { ProjectsController } from './projects.controller';
 import { PublicProjectsController } from './public-projects.controller';
 import { ProjectsService } from './projects.service';
@@ -12,7 +13,7 @@ import { WorkspacesModule } from '../workspaces/workspaces.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Project, Session]),
+    TypeOrmModule.forFeature([Project, Session, UsageRecord]),
     AuthModule,
     SessionModule,
     SnapshotsModule,

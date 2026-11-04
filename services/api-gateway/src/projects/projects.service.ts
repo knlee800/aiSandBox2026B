@@ -6,10 +6,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
 import { Project, type ProjectVisibility } from '../entities/project.entity';
 import { Session } from '../entities/session.entity';
+import { UsageRecord } from '../entities/usage-record.entity';
 import { SessionService } from '../sessions/session.service';
 import { SnapshotPersistenceService } from '../snapshots/snapshot-persistence.service';
 import { WorkspacesService } from '../workspaces/workspaces.service';
@@ -24,6 +25,8 @@ export class ProjectsService {
     private readonly projectRepository: Repository<Project>,
     @InjectRepository(Session)
     private readonly sessionRepository: Repository<Session>,
+    @InjectRepository(UsageRecord)
+    private readonly usageRecordRepository: Repository<UsageRecord>,
     private readonly workspacesService: WorkspacesService,
     private readonly sessionService: SessionService,
     private readonly snapshotPersistenceService: SnapshotPersistenceService,
@@ -212,6 +215,24 @@ export class ProjectsService {
       projectId: args.projectId,
       sessionId: args.sessionId,
     });
+
+    const activeRun = await this.usageRecordRepository.findOne({
+      where: {
+        userId: args.userId,
+        sessionId: args.sessionId,
+        executionStatus: In(['pending', 'running', 'cancel_requested']),
+      },
+    });
+    if (activeRun) {
+      this.logger.log(
+        `Active run in session ${args.sessionId}; skipping snapshot and checkpoint restore`,
+      );
+      return {
+        projectId: args.projectId,
+        sessionId: args.sessionId,
+        restoredSnapshotId: null,
+      };
+    }
 
     if (snapshotIdToRestore) {
       await this.snapshotPersistenceService.restoreSnapshot({
