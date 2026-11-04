@@ -84106,20 +84106,22 @@ taskId=HARNESS-EVAL-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / NOT_READY / NOT ADMITTED — 2026-11-04.
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-04. Stage-start approved by Keith on 2026-11-04.
 **Task ID:** HARNESS-EVAL-LIVE-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP. Registration here; stage-start decides how the suite reaches a real workspace on staging and its write scope; window; checkpoint and LOCK. Start condition NOT_READY until HARNESS-EVAL-01 is LOCKED.
-**Start condition (human):** NOT_READY — Keith approved the draft on 2026-11-04.
+**Start condition (human):** READY — HARNESS-EVAL-01 LOCKED; Keith approved the stage-start plan on 2026-11-04.
 **Depends on:** HARNESS-EVAL-01, LOCKED.
-**Primary write scope:** set at stage-start; records only until then.
-**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT, ENV. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** PROVIDER-LIVE. **Revert isolation:** acceptable (evidence only unless the stage-start adds a runner live mode).
+**Primary write scope:** `services/ai-service/src/agent-harness/eval/` (live runner), plus evidence in the checkpoint.
+**Mutexes / resources:** AI-SERVICE, STAGING, PROVIDER-LIVE (CREDIT and ENV dropped at stage-start: no user credits or settings change). **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** PROVIDER-LIVE. **Revert isolation:** acceptable (new runner under eval/ only; deploy is the normal path).
 **saturationClass:** OPTIONAL
 
 **Problem:** HARNESS-EVAL-01 proves the measuring tool with scripted answers only; real quality numbers need a real model run.
 
 **Scope:** run all ten seed tasks once each on claude-opus-5-5 on staging, repeating only tasks with an unclear result, within a cap of 300 credits and 300k tokens; flags off afterwards; save the first baseline results file and record it in the checkpoint. AI-SERVICE is added at stage-start only if the runner needs a live mode.
+
+**Stage-start (2026-11-04):** real model, in-memory workspace. A live runner under eval/ builds the model call the way the worker does for Agent mode (claude-opus-5-5 through executeWithTools, the same system prompt, advertised tools and step limit, using the exported worker helpers) and runs the ten tasks against the HARNESS-EVAL-01 in-memory workspace. It bypasses the worker, so the Agent execution flags stay off, no user credits are charged and no project, session or run is created. It reads the stored test key on the host without printing it, stops the whole run once 300,000 tokens are used, reports credits at the platform rate of 1 credit per 1K tokens, and writes the results JSON. Runner tests use a mocked model. Order: runner and tests (control-plane review and gates), deploy to staging with the usual block, one window run by the control plane, results copied back, checkpoint with the baseline table and Keith judgement, then LOCK. Not measured: real container files and real npm test; validation uses the suite rule.
 
 #### Acceptance criteria
 

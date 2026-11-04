@@ -7,17 +7,19 @@
   "governance": {"owner": "NONE", "state": "UNOWNED"},
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "HARNESS-EVAL-LIVE-01",
+      "mutexes": ["AI-SERVICE", "STAGING", "PROVIDER-LIVE"],
+      "writePaths": [
+        "services/ai-service/src/agent-harness/eval/"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "PROVIDER-LIVE",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
-      "runtimeNeeds": []
+      "runtimeNeeds": ["STAGING", "PROVIDER-LIVE"]
     },
     "lane2": {
       "state": "EMPTY",
@@ -2494,21 +2496,23 @@
       "taskId": "HARNESS-EVAL-LIVE-01",
       "nature": "IMPLEMENTATION",
       "lifecycle": "4-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "OPTIONAL",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
       "dependsOn": ["HARNESS-EVAL-01"],
-      "mutexes": ["STAGING", "PROVIDER-LIVE", "CREDIT", "ENV"],
-      "writePaths": [],
+      "mutexes": ["AI-SERVICE", "STAGING", "PROVIDER-LIVE"],
+      "writePaths": [
+        "services/ai-service/src/agent-harness/eval/"
+      ],
       "hotfiles": [],
       "i18n": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
       "evidenceClass": "PROVIDER-LIVE",
       "exclusiveCapacity": false,
-      "runtimeNeeds": ["STAGING", "PROVIDER-LIVE", "CREDIT"],
+      "runtimeNeeds": ["STAGING", "PROVIDER-LIVE"],
       "admissionUncertain": false,
       "writeSetPrecision": "EXACT"
     }
@@ -2527,8 +2531,8 @@
   ],
   "runtimeAuthorization": {
     "localRuntimeAuthorized": true,
-    "stagingAuthorized": false,
-    "providerLiveAuthorized": false,
+    "stagingAuthorized": true,
+    "providerLiveAuthorized": true,
     "creditAuthorized": false
   }
 }
