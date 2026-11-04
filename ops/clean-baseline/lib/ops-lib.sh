@@ -1592,7 +1592,7 @@ quiesce_sample() {
 }
 
 append_ids_only() {
-  run_bounded runuser -u postgres -- psql -d aisandbox -Atc "SELECT id FROM usage_records WHERE execution_status IN ('pending','running','cancel_requested') UNION ALL SELECT id FROM collaboration_runs WHERE status='active' UNION ALL SELECT id FROM collaboration_referrals WHERE status IN ('pending_approval','approved','in_progress')" || true
+  run_bounded runuser -u postgres -- psql -d aisandbox -Atc "SELECT execution_id::text FROM usage_records WHERE execution_status IN ('pending','running','cancel_requested') UNION ALL SELECT collaboration_run_id FROM collaboration_runs WHERE status='active' UNION ALL SELECT referral_id FROM collaboration_referrals WHERE status IN ('pending_approval','approved','in_progress')" || true
 }
 
 execution_disabled() {

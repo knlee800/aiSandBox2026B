@@ -4,14 +4,14 @@ schemaVersion=1
 maxImplementationLanes=2
 lane3=DISABLED
 lane1.state=ACTIVE
-lane1.taskId=OPS-APPEND-IDS-01
+lane1.taskId=STAGING-DEPLOY-03
 lane2.state=EMPTY
 lane2.taskId=NONE
 governance.owner=NONE
 governance.state=UNOWNED
 saturationSuspended=false
 suspensionReason=NONE
-occupancyHash=sha256:f4f7214e3e16bde65ceceace49f68630f9bf9bde3d5870295517ae1f01bcdc64
+occupancyHash=sha256:bb8dc483f00c9e8565c410e7507873e97e55d0365f0a827ac13aabb3141d8769
 <!-- AISB_OCCUPANCY_V1_END -->
 
 **Parallel Development Architecture:** v1
@@ -255,16 +255,16 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-04. Lane 1 released. GATEWAY released UNOWNED. Checkpoint: docs/COLLAB-HANDOFF-RECOVER-01-CHECKPOINT.md. Code and lock in one commit. Not deployed.
 
-## OPS-APPEND-IDS-01 — ADMITTED / Lane 1 ACTIVE — 2026-11-04
+## OPS-APPEND-IDS-01 — COMPLETE AND LOCKED / Lane 1 RELEASED — 2026-11-04
 
-**Current status:** ADMITTED, Lane 1, hot-file leases held. Keith approved the draft on 2026-11-04. Scope in TASKS_BACKLOG_FULL.md.
+**Current status:** COMPLETE AND LOCKED - 2026-11-04. Lane 1 released. Hot-file leases released UNOWNED. Checkpoint: docs/OPS-APPEND-IDS-01-CHECKPOINT.md. Code and lock in one commit. Not deployed.
 
-## STAGING-DEPLOY-03 — REGISTERED / NOT_READY / NOT ADMITTED — 2026-11-04
+## STAGING-DEPLOY-03 — ADMITTED / Lane 1 ACTIVE — 2026-11-04
 
-**Current status:** registered; start condition NOT_READY until COLLAB-DIFF-NEW-01, RUN-ERROR-01, COLLAB-HANDOFF-RECOVER-01, OPS-APPEND-IDS-01 are LOCKED.
+**Current status:** ADMITTED, Lane 1, with STAGING, PROVIDER-LIVE, CREDIT and ENV. Keith approved the window on 2026-11-04.
 
 ## Lane 1
-ACTIVE — OPS-APPEND-IDS-01 — 2026-11-04.
+ACTIVE — STAGING-DEPLOY-03 — 2026-11-04.
 
 ## Lane 2
 EMPTY — Lane 2 released at COLLAB-SCREEN-02 COMPLETE AND LOCKED — 2026-11-03.
@@ -275,7 +275,7 @@ DISABLED
 ## Governance owner / state
 UNOWNED — GOV-OS-04 COMPLETE AND LOCKED — 2026-11-02.
 
-Lane 1 ACTIVE: OPS-APPEND-IDS-01. Lane 2 EMPTY. COLLAB-HANDOFF-RECOVER-01 is COMPLETE AND LOCKED. STAGING-DEPLOY-03 is NOT_READY. SIGNUP-ALLOWLIST-01 is READY and not admitted.
+Lane 1 ACTIVE: STAGING-DEPLOY-03. Lane 2 EMPTY. OPS-APPEND-IDS-01 is COMPLETE AND LOCKED. SIGNUP-ALLOWLIST-01 is READY and not admitted.
 
 ## Active mutex / resource ownership
 - GOVERNANCE: UNOWNED — GOV-OS-04 lock 2026-11-02.
@@ -283,10 +283,10 @@ Lane 1 ACTIVE: OPS-APPEND-IDS-01. Lane 2 EMPTY. COLLAB-HANDOFF-RECOVER-01 is COM
 - MIGRATION: UNOWNED — released at COLLAB-GATE-01 COMPLETE AND LOCKED 2026-11-02.
 - FRONTEND: UNOWNED — released at COLLAB-ROUNDS-01 COMPLETE AND LOCKED 2026-11-03.
 - I18N: UNOWNED — released at COLLAB-ROUNDS-01 COMPLETE AND LOCKED 2026-11-03.
-- STAGING: UNOWNED — released at COLLAB-LIVE-07 COMPLETE AND LOCKED 2026-11-04 (stagingAuthorized=false).
-- PROVIDER-LIVE: UNOWNED — released at COLLAB-LIVE-07 COMPLETE AND LOCKED 2026-11-04 (providerLiveAuthorized=false).
-- CREDIT: UNOWNED — released at COLLAB-LIVE-07 COMPLETE AND LOCKED 2026-11-04 (creditAuthorized=false).
-- ENV: UNOWNED — released at COLLAB-LIVE-07 COMPLETE AND LOCKED 2026-11-04.
+- STAGING: OWNED by STAGING-DEPLOY-03 (2026-11-04) (stagingAuthorized=true).
+- PROVIDER-LIVE: OWNED by STAGING-DEPLOY-03 (2026-11-04) (providerLiveAuthorized=true).
+- CREDIT: OWNED by STAGING-DEPLOY-03 (2026-11-04) (creditAuthorized=true).
+- ENV: OWNED by STAGING-DEPLOY-03 (2026-11-04).
 - HOTFILE:e2e/builder-golden-path/lib/staging.ts: UNOWNED
 - HOTFILE:e2e/builder-golden-path/lib/constants.ts: UNOWNED
 - HOTFILE:e2e/builder-golden-path/tests/evidence.spec.ts: UNOWNED
@@ -304,8 +304,8 @@ Lane 1 ACTIVE: OPS-APPEND-IDS-01. Lane 2 EMPTY. COLLAB-HANDOFF-RECOVER-01 is COM
 - AI-SERVICE: UNOWNED — released at RUN-ERROR-01 COMPLETE AND LOCKED 2026-11-04.
 - CONTAINER-MANAGER: UNOWNED — released at COLLAB-DIFF-NEW-01 COMPLETE AND LOCKED 2026-11-04.
 - All other resources: UNOWNED
-- HOTFILE:ops/clean-baseline/lib/ops-lib.sh: OWNED by OPS-APPEND-IDS-01 (2026-11-04).
-- HOTFILE:ops/clean-baseline/tests/regression/append-ids-only.sh: OWNED by OPS-APPEND-IDS-01 (2026-11-04).
+- HOTFILE:ops/clean-baseline/lib/ops-lib.sh: UNOWNED — released at OPS-APPEND-IDS-01 COMPLETE AND LOCKED 2026-11-04.
+- HOTFILE:ops/clean-baseline/tests/regression/append-ids-only.sh: UNOWNED — released at OPS-APPEND-IDS-01 COMPLETE AND LOCKED 2026-11-04.
 - Remaining HOTFILE leases: UNOWNED
 
 PRIVATE-BETA-E2E-LIVE-11 COMPLETE AND LOCKED — PASS — 2026-08-23 — HIGH-RISK 3-step provider-bearing LIVE after AUTO-01K — NOT a LIVE-10 rerun — GOVERNANCE acquired transiently for this Step 3 checkpoint/board/registry lock then released UNOWNED — STAGING / PROVIDER-LIVE / CREDIT / ENV / PACKAGE UNOWNED — all HOTFILE UNOWNED — all runtime authorization flags remain NO — AUTHORIZED_LOCAL_HEAD `e5e41aa9c3237cafdb241ba9c5bb732c675d0632` — ONE `npm run e2e:builder:live` — NPM_EXIT=0 — formatted verdict PASS — evidence: `docs/PRIVATE-BETA-E2E-LIVE-11-EXECUTION.md` — checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-11-CHECKPOINT.md` — LIVE_STAGING_VALIDATED=YES — BUILDER_PRIVATE_BETA_READINESS=NO_GO — do not rerun LIVE-11. PRIVATE-BETA-E2E-AUTO-01K COMPLETE AND LOCKED — PASS — 2026-08-22 — Lane 1 released EMPTY at AUTO-01K lock then re-admitted to LIVE-11 — Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01K-DIAGNOSIS.md` — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01K-CHECKPOINT.md` — CLASSIFICATION=AUTOMATION_ADAPTER_FIX — GOVERNANCE acquired transiently for this Step 3 checkpoint/board/registry lock then released UNOWNED — STAGING / PROVIDER-LIVE / CREDIT / ENV were reserved to LIVE-11 through Step 2 and are now UNOWNED after confirmed-safe cleanup and this lock — HOTFILE:e2e/builder-golden-path/lib/staging.ts and HOTFILE:e2e/builder-golden-path/tests/live-adapters.spec.ts remain UNOWNED — all runtime authorization flags remain NO — no LIVE / SSH / staging / provider / credit / product / Git mutation in Step 3. PRIVATE-BETA-E2E-LIVE-10 COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — DEDUCTION — 2026-08-22 — not rewritten — evidence: `docs/PRIVATE-BETA-E2E-LIVE-10-EXECUTION.md` — checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-10-CHECKPOINT.md` — AUTHORIZED_LOCAL_HEAD `c78dbad609677b7da86e3043629e042bcbcb8e9d` — not a LIVE-09 rerun — do not rerun LIVE-10 — do not convert LIVE-10 to PASS — do not register PRIVATE-BETA-INVITE-01. PRIVATE-BETA-E2E-AUTO-01J COMPLETE AND LOCKED — PASS — 2026-08-22 — Diagnosis: `docs/PRIVATE-BETA-E2E-AUTO-01J-DIAGNOSIS.md` — Checkpoint: `docs/PRIVATE-BETA-E2E-AUTO-01J-CHECKPOINT.md` — CLASSIFICATION=AUTOMATION_ADAPTER_FIX — CHECKPOINT-observation HOTFILE leases remain UNOWNED — LIVE-10 CHECKPOINT PASS HELD — fresh Step 3 CONTRACT 109 passed / 0 failed (9.1s) — TypeScript PASS — no LIVE in AUTO-01J. PRIVATE-BETA-E2E-LIVE-09 COMPLETE AND LOCKED — FAIL/BLOCKED — AUTOMATION_ADAPTER_FAILURE — CHECKPOINT — 2026-08-22 — not rewritten; not converted to PASS; not rerun — AUTHORIZED_LOCAL_HEAD `14130f6db70b08ff116d8a51ef5c96657c5c21f2` — evidence: `docs/PRIVATE-BETA-E2E-LIVE-09-EXECUTION.md` — checkpoint: `docs/PRIVATE-BETA-E2E-LIVE-09-CHECKPOINT.md` — frozen artifact `index.html` / marker `PRIVATE-BETA-E2E-AUTO` — not a LIVE-08 rerun — permanently consumed. PRIVATE-BETA-BLOCKER-03L COMPLETE AND LOCKED — PASS — 2026-08-22 — Diagnosis: `docs/PRIVATE-BETA-BLOCKER-03L-DIAGNOSIS.md` — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-03L-CHECKPOINT.md` — CLASSIFICATION=RUNNER_FIXTURE_FIX — `FROZEN_ARTIFACT_PATH='index.html'` — unique marker `PRIVATE-BETA-E2E-AUTO` — LIVE-10 PREVIEW PASS held. LIVE-08 COMPLETE AND LOCKED — FAIL/BLOCKED — PRODUCT_FAILURE — PREVIEW — 2026-08-22 — not rewritten; not converted to PASS; not rerun. LIVE-07 COMPLETE AND LOCKED — FAIL/BLOCKED — ENVIRONMENT/PARITY_FAILURE — SAFETY — 2026-08-21. AUTO-01I COMPLETE AND LOCKED — PASS — 2026-08-22 — LIVE-10 validation HELD. AUTO-01H COMPLETE AND LOCKED — PASS — 2026-08-21 — LIVE-10 validation HELD. AUTO-01G COMPLETE AND LOCKED — PASS — 2026-08-21 — LIVE-10 validation HELD. PACKAGE / LOCAL-RUNTIME / FRONTEND / GATEWAY / AI-SERVICE / CONTAINER-MANAGER remain UNOWNED. Do not rerun LIVE-10. Do not rerun LIVE-09. Do not rerun LIVE-08. Do not rerun LIVE-07. Do not convert LIVE-07 or LIVE-08 or LIVE-09 or LIVE-10 to PASS. Do not reopen AUTO-01G / AUTO-01H / AUTO-01I / 03L / AUTO-01J. Do not weaken runner SAFETY. Do not register PRIVATE-BETA-INVITE-01.

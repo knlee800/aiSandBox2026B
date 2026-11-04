@@ -84020,7 +84020,7 @@ taskId=OPS-APPEND-IDS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-04.
+**Status:** COMPLETE AND LOCKED — 2026-11-04. LANE-DONE and LOCKED by the control plane; Lane 1 and the hot-file leases released. Checkpoint: docs/OPS-APPEND-IDS-01-CHECKPOINT.md.
 **Task ID:** OPS-APPEND-IDS-01
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -84037,10 +84037,10 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] The query uses columns that exist; a refused deploy prints the open IDs
-- [ ] A regression test covers the query and its output; existing ops regression tests pass
-- [ ] No other ops-lib.sh behaviour changes
-- [ ] Not LOCKED by an implementer
+- [x] The query uses columns that exist; a refused deploy prints the open IDs
+- [x] A regression test covers the query and its output; existing ops regression tests pass
+- [x] No other ops-lib.sh behaviour changes
+- [x] Not LOCKED by an implementer
 
 ### STAGING-DEPLOY-03 — Deploy the small fixes and check the diff for a new file
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -84048,7 +84048,7 @@ taskId=STAGING-DEPLOY-03
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / NOT_READY / NOT ADMITTED — 2026-11-04.
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-04. Keith approved the window in the draft on 2026-11-04. All four fixes LOCKED.
 **Task ID:** STAGING-DEPLOY-03
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
