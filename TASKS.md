@@ -3,15 +3,15 @@
 schemaVersion=1
 maxImplementationLanes=2
 lane3=DISABLED
-lane1.state=EMPTY
-lane1.taskId=NONE
+lane1.state=ACTIVE
+lane1.taskId=HARNESS-DELETE-01
 lane2.state=EMPTY
 lane2.taskId=NONE
 governance.owner=NONE
 governance.state=UNOWNED
 saturationSuspended=false
 suspensionReason=NONE
-occupancyHash=sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d
+occupancyHash=sha256:3d8cba63c446a04f34417afc2e44f2f1c884b70bc3a60605da4d60a15fd76fd5
 <!-- AISB_OCCUPANCY_V1_END -->
 
 **Parallel Development Architecture:** v1
@@ -271,8 +271,12 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-04. Lane 1 released. AI-SERVICE, STAGING and PROVIDER-LIVE released UNOWNED (stagingAuthorized and providerLiveAuthorized false). Baseline 9 of 10 on claude-opus-5-5, 38,016 tokens. Staging runs b7a9df8. Checkpoint: docs/HARNESS-EVAL-LIVE-01-CHECKPOINT.md.
 
+## HARNESS-DELETE-01 — ADMITTED / Lane 1 ACTIVE — 2026-11-04
+
+**Current status:** ADMITTED, Lane 1, with AI-SERVICE, STAGING and PROVIDER-LIVE. Keith approved the draft on 2026-11-04. Scope in TASKS_BACKLOG_FULL.md.
+
 ## Lane 1
-EMPTY — Lane 1 released at HARNESS-EVAL-LIVE-01 COMPLETE AND LOCKED — 2026-11-04.
+ACTIVE — HARNESS-DELETE-01 — 2026-11-04.
 
 ## Lane 2
 EMPTY — Lane 2 released at COLLAB-SCREEN-02 COMPLETE AND LOCKED — 2026-11-03.
@@ -283,7 +287,7 @@ DISABLED
 ## Governance owner / state
 UNOWNED — GOV-OS-04 COMPLETE AND LOCKED — 2026-11-02.
 
-Both implementation lanes are EMPTY. HARNESS-EVAL-01 and HARNESS-EVAL-LIVE-01 are COMPLETE AND LOCKED. SIGNUP-ALLOWLIST-01 is READY and not admitted.
+Lane 1 ACTIVE: HARNESS-DELETE-01. Lane 2 EMPTY. HARNESS-EVAL-01 and HARNESS-EVAL-LIVE-01 are COMPLETE AND LOCKED. SIGNUP-ALLOWLIST-01 is READY and not admitted.
 
 ## Active mutex / resource ownership
 - GOVERNANCE: UNOWNED — GOV-OS-04 lock 2026-11-02.
@@ -291,8 +295,8 @@ Both implementation lanes are EMPTY. HARNESS-EVAL-01 and HARNESS-EVAL-LIVE-01 ar
 - MIGRATION: UNOWNED — released at COLLAB-GATE-01 COMPLETE AND LOCKED 2026-11-02.
 - FRONTEND: UNOWNED — released at COLLAB-ROUNDS-01 COMPLETE AND LOCKED 2026-11-03.
 - I18N: UNOWNED — released at COLLAB-ROUNDS-01 COMPLETE AND LOCKED 2026-11-03.
-- STAGING: UNOWNED — released at HARNESS-EVAL-LIVE-01 COMPLETE AND LOCKED 2026-11-04 (stagingAuthorized=false).
-- PROVIDER-LIVE: UNOWNED — released at HARNESS-EVAL-LIVE-01 COMPLETE AND LOCKED 2026-11-04 (providerLiveAuthorized=false).
+- STAGING: OWNED by HARNESS-DELETE-01 (2026-11-04) (stagingAuthorized=true).
+- PROVIDER-LIVE: OWNED by HARNESS-DELETE-01 (2026-11-04) (providerLiveAuthorized=true).
 - CREDIT: UNOWNED — released at STAGING-DEPLOY-03 COMPLETE AND LOCKED 2026-11-04 (creditAuthorized=false).
 - ENV: UNOWNED — released at STAGING-DEPLOY-03 COMPLETE AND LOCKED 2026-11-04.
 - HOTFILE:e2e/builder-golden-path/lib/staging.ts: UNOWNED
@@ -309,7 +313,7 @@ Both implementation lanes are EMPTY. HARNESS-EVAL-01 and HARNESS-EVAL-LIVE-01 ar
 - HOTFILE:e2e/builder-golden-path/tests/network.spec.ts: UNOWNED
 - PACKAGE: UNOWNED — released at HARNESS-PROVIDERS-01 COMPLETE AND LOCKED 2026-11-01.
 - LOCAL-RUNTIME: UNOWNED — released at CLEAN-BASELINE-RUNTIME-01 lock 2026-10-07.
-- AI-SERVICE: UNOWNED — released at HARNESS-EVAL-LIVE-01 COMPLETE AND LOCKED 2026-11-04.
+- AI-SERVICE: OWNED by HARNESS-DELETE-01 (2026-11-04).
 - CONTAINER-MANAGER: UNOWNED — released at COLLAB-DIFF-NEW-01 COMPLETE AND LOCKED 2026-11-04.
 - All other resources: UNOWNED
 - HOTFILE:ops/clean-baseline/lib/ops-lib.sh: UNOWNED — released at OPS-APPEND-IDS-01 COMPLETE AND LOCKED 2026-11-04.
