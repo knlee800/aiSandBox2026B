@@ -84048,7 +84048,7 @@ taskId=STAGING-DEPLOY-03
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-04. Keith approved the window in the draft on 2026-11-04. All four fixes LOCKED.
+**Status:** COMPLETE AND LOCKED — 2026-11-04. Keith: done, it worked. Lane 1, STAGING, PROVIDER-LIVE, CREDIT and ENV released. Checkpoint: docs/STAGING-DEPLOY-03-CHECKPOINT.md.
 **Task ID:** STAGING-DEPLOY-03
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -84065,11 +84065,11 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Staging runs the new commit, health checks pass, and ops-lib.sh on the host matches the repository
-- [ ] A file the Writer created shows in the diff the Reviewer received
-- [ ] Nothing left open, flags off after
-- [ ] Keith judgement recorded
-- [ ] Not LOCKED by an implementer
+- [x] Staging runs the new commit, health checks pass, and ops-lib.sh on the host matches the repository
+- [x] A file the Writer created shows in the diff the Reviewer received
+- [x] Nothing left open, flags off after
+- [x] Keith judgement recorded
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
