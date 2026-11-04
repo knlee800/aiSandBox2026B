@@ -84106,7 +84106,7 @@ taskId=HARNESS-EVAL-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-04. Stage-start approved by Keith on 2026-11-04.
+**Status:** COMPLETE AND LOCKED — 2026-11-04. LANE-DONE and LOCKED by the control plane; Lane 1, AI-SERVICE, STAGING and PROVIDER-LIVE released. Baseline 9 of 10 on claude-opus-5-5. Checkpoint: docs/HARNESS-EVAL-LIVE-01-CHECKPOINT.md.
 **Task ID:** HARNESS-EVAL-LIVE-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -84125,10 +84125,10 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] All ten tasks ran on a real model within the cap; baseline results file saved and recorded
-- [ ] Flags off after; nothing left open
-- [ ] Keith judgement recorded
-- [ ] Not LOCKED by an implementer
+- [x] All ten tasks ran on a real model within the cap; baseline results file saved and recorded
+- [x] Flags off after; nothing left open
+- [x] Keith judgement recorded
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
