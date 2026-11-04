@@ -83991,7 +83991,7 @@ taskId=COLLAB-HANDOFF-RECOVER-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-04.
+**Status:** COMPLETE AND LOCKED — 2026-11-04. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY released. Checkpoint: docs/COLLAB-HANDOFF-RECOVER-01-CHECKPOINT.md.
 **Task ID:** COLLAB-HANDOFF-RECOVER-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -84008,11 +84008,11 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] A completed step whose hand-off was never processed gets it created by the sweep, waiting for approval as usual
-- [ ] Running the sweep twice, or alongside the normal path, never creates a duplicate
-- [ ] Steps with no request, refused or malformed requests, and finished or expired runs are left alone
-- [ ] Gateway orchestration tests pass; no migration
-- [ ] Not LOCKED by an implementer
+- [x] A completed step whose hand-off was never processed gets it created by the sweep, waiting for approval as usual
+- [x] Running the sweep twice, or alongside the normal path, never creates a duplicate
+- [x] Steps with no request, refused or malformed requests, and finished or expired runs are left alone
+- [x] Gateway orchestration tests pass; no migration
+- [x] Not LOCKED by an implementer
 
 ### OPS-APPEND-IDS-01 — A refused deploy lists what is still open
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -84020,7 +84020,7 @@ taskId=OPS-APPEND-IDS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY / NOT ADMITTED — 2026-11-04.
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-04.
 **Task ID:** OPS-APPEND-IDS-01
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION

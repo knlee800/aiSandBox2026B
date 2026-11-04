@@ -180,6 +180,8 @@ export interface ReferralPendingJob {
   readonly agents?: readonly CollaborationListedAgent[] | null;
   readonly callerProjectInstructions?: string | null;
   readonly handoffNote?: string | null;
+  /** Set once the answer has been decided for a hand-off. The page does not read this field. */
+  readonly handoffChecked?: boolean;
   /** First hand-off opt-in. Children inherit it. True requests a signed harness job. */
   readonly fileAccess?: boolean;
   /** Working-tree diff captured when a writer step finishes. Stored for the page and the reviewer. */

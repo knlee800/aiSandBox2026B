@@ -409,6 +409,8 @@ export class OrchestrationService {
       await this.syncReferralFromExecution(referralId);
     }
 
+    await this.recoverMissedAnswerHandoffs(collaborationRunId);
+
     const refreshed = await this.runRepo.findOne({
       where: { collaborationRunId },
     });
@@ -1766,6 +1768,17 @@ export class OrchestrationService {
       return this.toCollaborationRun(entity);
     }
 
+    const stored = await this.referralRepo.find({
+      where: { collaborationRunId },
+    });
+    if (
+      stored.some(
+        (row) => row.status === 'completed' && !this.isAnswerHandoffProcessed(row, stored),
+      )
+    ) {
+      return this.toCollaborationRun(entity);
+    }
+
     const anyFailed = referrals.some(
       (referral) =>
         referral.status === 'failed' || referral.status === 'timed_out',
@@ -2289,11 +2302,59 @@ export class OrchestrationService {
     });
     for (const run of activeRuns) {
       try {
+        await this.recoverMissedAnswerHandoffs(run.collaborationRunId);
+      } catch (error) {
+        this.logWithoutContents('collaboration.sweep_item_failed', error);
+      }
+    }
+    for (const run of activeRuns) {
+      try {
         await this.finishOrFailRun(run.collaborationRunId, now);
       } catch (error) {
         this.logWithoutContents('collaboration.sweep_item_failed', error);
       }
     }
+  }
+
+  private async recoverMissedAnswerHandoffs(
+    collaborationRunId: CollaborationRunId,
+  ): Promise<void> {
+    const run = await this.runRepo.findOne({
+      where: { collaborationRunId },
+    });
+    if (!run || run.status !== 'active') {
+      return;
+    }
+    const rows = await this.referralRepo.find({
+      where: { collaborationRunId },
+    });
+    for (const referral of rows) {
+      if (referral.status !== 'completed' || this.isAnswerHandoffProcessed(referral, rows)) {
+        continue;
+      }
+      const summary = typeof referral.resultSummary === 'string' ? referral.resultSummary : '';
+      try {
+        await this.maybeRequestHandoff(referral.referralId, summary);
+      } catch (error) {
+        this.logWithoutContents('collaboration.sweep_item_failed', error);
+      }
+    }
+  }
+
+  private isAnswerHandoffProcessed(
+    referral: CollaborationReferralEntity,
+    rows: readonly CollaborationReferralEntity[],
+  ): boolean {
+    if (!referral.pendingJob) {
+      return true;
+    }
+    if (referral.pendingJob.handoffChecked === true || referral.pendingJob.handoffNote) {
+      return true;
+    }
+    const idempotencyKey = answerHandoffIdempotencyKey(referral.referralId);
+    return rows.some(
+      (row) => row.referralId !== referral.referralId && row.idempotencyKey === idempotencyKey,
+    );
   }
 
   private async preparePendingReferral(input: CreatePendingReferralInput): Promise<{
@@ -2444,8 +2505,12 @@ export class OrchestrationService {
     if (!entity?.pendingJob) {
       return;
     }
+    if (entity.pendingJob.handoffChecked || entity.pendingJob.handoffNote) {
+      return;
+    }
     const agents = this.copyStoredAgents(entity.pendingJob.agents);
-    if (!agents || entity.pendingJob.handoffNote) {
+    if (!agents) {
+      await this.rememberHandoffChecked(referralId);
       return;
     }
 
@@ -2456,11 +2521,13 @@ export class OrchestrationService {
       idempotencyKey,
     );
     if (existing) {
+      await this.rememberHandoffChecked(referralId);
       return;
     }
 
     const parsed = parseHandoffRequest(answer);
     if (parsed.kind === 'none') {
+      await this.rememberHandoffChecked(referralId);
       return;
     }
     if (parsed.kind === 'malformed') {
@@ -2521,7 +2588,12 @@ export class OrchestrationService {
           allowedTools: [...(entity.constraintAllowedTools ?? [])],
         },
       });
+      await this.rememberHandoffChecked(referralId);
     } catch (error) {
+      if (this.isIdempotencyUniqueViolation(error)) {
+        await this.rememberHandoffChecked(referralId);
+        return;
+      }
       const reason = this.classifyRefusal(error);
       await this.rememberHandoffNote(referralId, `refused: ${reason}`);
       if (reason === 'refused') {
@@ -2555,6 +2627,25 @@ export class OrchestrationService {
         targetBuilderProfileId: targetName,
       },
     });
+  }
+
+  private isIdempotencyUniqueViolation(error: unknown): boolean {
+    if (!error || typeof error !== 'object') {
+      return false;
+    }
+    const candidate = error as {
+      code?: unknown;
+      driverError?: { code?: unknown; constraint?: unknown };
+    };
+    const code = candidate.code ?? candidate.driverError?.code;
+    if (code !== '23505') {
+      return false;
+    }
+    if (candidate.driverError?.constraint === 'uq_collaboration_referrals_idempotency_active') {
+      return true;
+    }
+    const message = error instanceof Error ? error.message : '';
+    return message.includes('uq_collaboration_referrals_idempotency_active');
   }
 
   private classifyRefusal(error: unknown): string {
@@ -2642,6 +2733,22 @@ export class OrchestrationService {
     entity.pendingJob = {
       ...entity.pendingJob,
       handoffNote: note,
+      handoffChecked: true,
+    };
+    entity.updatedAt = new Date();
+    await this.referralRepo.save(entity);
+  }
+
+  private async rememberHandoffChecked(referralId: ReferralId): Promise<void> {
+    const entity = await this.referralRepo.findOne({
+      where: { referralId },
+    });
+    if (!entity?.pendingJob || entity.pendingJob.handoffChecked) {
+      return;
+    }
+    entity.pendingJob = {
+      ...entity.pendingJob,
+      handoffChecked: true,
     };
     entity.updatedAt = new Date();
     await this.referralRepo.save(entity);

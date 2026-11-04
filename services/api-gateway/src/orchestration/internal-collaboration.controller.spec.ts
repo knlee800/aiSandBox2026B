@@ -1355,6 +1355,501 @@ describe('InternalCollaborationController', () => {
     expect(COLLABORATION_WAITING_MAX_AGE_MS).toBe(24 * 60 * 60 * 1000);
   });
 
+  describe('COLLAB-HANDOFF-RECOVER-01 hand-off recovery', () => {
+    const requestedAnswer =
+      'The draft is ready.\n\n<handoff to="writer">Tighten the opening.</handoff>';
+    let recoverSequence = 0;
+
+    function referralsIn(runId: string): CollaborationReferralEntity[] {
+      return [...referrals.values()].filter((row) => row.collaborationRunId === runId);
+    }
+
+    async function stageAnswer(input: {
+      summary: string;
+      completedAt: Date;
+      handoffNote?: string;
+      runStatus?: 'completed' | 'failed' | 'cancelled' | 'timed_out';
+      referralStatus?: 'completed' | 'failed' | 'rejected' | 'timed_out';
+    }): Promise<{ runId: string; referralId: string }> {
+      recoverSequence += 1;
+      const runId = await createRun();
+      const created = await postReferral(runId, {
+        idempotencyKey: `recover-${recoverSequence}`,
+        targetBuilder: { agentRole: 'builder', builderProfileId: 'lead' },
+        projectInstructions: 'Be concise.',
+        agents: listedAgents,
+      }).expect(201);
+      const referralId = created.body.referral.referralId as string;
+      await approve(runId, referralId).expect(200);
+      const row = referrals.get(referralId);
+      if (!row?.pendingJob) {
+        throw new Error('staged referral has no pending job');
+      }
+      row.status = input.referralStatus ?? 'completed';
+      row.resultStatus = row.status === 'completed' ? 'success' : 'failed';
+      row.resultSummary = input.summary;
+      row.resultOutputFiles = [];
+      row.resultDurationMs = 1;
+      row.completedAt = input.completedAt;
+      row.updatedAt = input.completedAt;
+      if (input.handoffNote) {
+        row.pendingJob = { ...row.pendingJob, handoffNote: input.handoffNote };
+      }
+      if (input.runStatus) {
+        const run = runs.get(runId);
+        if (!run) {
+          throw new Error('staged run missing');
+        }
+        run.status = input.runStatus;
+      }
+      return { runId, referralId };
+    }
+
+    async function holdRunOpen(runId: string): Promise<void> {
+      await postReferral(runId, {
+        idempotencyKey: `hold-${runId}`,
+        targetBuilder: { agentRole: 'builder', builderProfileId: 'lead' },
+        agents: listedAgents,
+      }).expect(201);
+    }
+
+    it('creates the waiting hand-off and does not finish the run before it exists', async () => {
+      const now = new Date();
+      const staged = await stageAnswer({
+        summary: requestedAnswer,
+        completedAt: new Date(),
+      });
+      const queued = queue.enqueueExecution.mock.calls.length;
+      const ledgerWrites = ledger.writeExecutionIntent.mock.calls.length;
+
+      await app.get(OrchestrationService).sweepCollaborations(now);
+
+      expect(queue.enqueueExecution).toHaveBeenCalledTimes(queued);
+      expect(ledger.writeExecutionIntent).toHaveBeenCalledTimes(ledgerWrites);
+      const detail = await http().get(`/api/internal/collaboration/runs/${staged.runId}`).expect(200);
+      expect(detail.body.run.status).toBe('active');
+      expect(detail.body.referrals).toHaveLength(2);
+      const parent = detail.body.referrals.find(
+        (referral: { referralId: string }) => referral.referralId === staged.referralId,
+      );
+      const child = detail.body.referrals.find(
+        (referral: { referralId: string }) => referral.referralId !== staged.referralId,
+      );
+      expect(parent.status).toBe('completed');
+      expect(parent.handoffNote).toBeNull();
+      expect(child.status).toBe('pending_approval');
+      expect(child.decidedBy).toBeNull();
+      expect(child.prompt).toBe('Tighten the opening.\n\nThe draft is ready.');
+      expect(child.idempotencyKey).toBe(answerHandoffIdempotencyKey(staged.referralId));
+      expect(child.parentReferralTraceId).toBe(referrals.get(staged.referralId)?.referralTraceId);
+    });
+
+    it('creates the lost hand-off when the run is read, before the run is settled', async () => {
+      const staged = await stageAnswer({
+        summary: requestedAnswer,
+        completedAt: new Date(),
+      });
+
+      const detail = await http().get(`/api/internal/collaboration/runs/${staged.runId}`).expect(200);
+
+      expect(detail.body.run.status).toBe('active');
+      expect(detail.body.referrals).toHaveLength(2);
+      const parent = detail.body.referrals.find(
+        (referral: { referralId: string }) => referral.referralId === staged.referralId,
+      );
+      const child = detail.body.referrals.find(
+        (referral: { referralId: string }) => referral.referralId !== staged.referralId,
+      );
+      expect(parent.handoffNote).toBeNull();
+      expect(parent).not.toHaveProperty('handoffChecked');
+      expect(child.status).toBe('pending_approval');
+      expect(child.idempotencyKey).toBe(answerHandoffIdempotencyKey(staged.referralId));
+      expect(referrals.get(staged.referralId)?.pendingJob?.handoffChecked).toBe(true);
+    });
+
+    it('does not hold the run open for a completed step with no pending job', async () => {
+      const staged = await stageAnswer({
+        summary: requestedAnswer,
+        completedAt: new Date(),
+      });
+      const row = referrals.get(staged.referralId);
+      if (!row) {
+        throw new Error('staged referral missing');
+      }
+      row.pendingJob = null;
+
+      const detail = await http().get(`/api/internal/collaboration/runs/${staged.runId}`).expect(200);
+
+      expect(detail.body.run.status).toBe('completed');
+      expect(detail.body.referrals).toHaveLength(1);
+      expect(detail.body.referrals[0].handoffNote).toBeNull();
+    });
+
+    it('skips a step whose follow-up exists in any status', async () => {
+      const now = new Date();
+      const completedAt = new Date();
+      const statuses = [
+        'pending_approval',
+        'approved',
+        'in_progress',
+        'completed',
+        'failed',
+        'cancelled',
+        'timed_out',
+        'rejected',
+      ] as const;
+      for (const status of statuses) {
+        const staged = await stageAnswer({ summary: requestedAnswer, completedAt });
+        const followUp = await postReferral(staged.runId, {
+          idempotencyKey: answerHandoffIdempotencyKey(staged.referralId),
+          sourceBuilder: { agentRole: 'builder', builderProfileId: 'lead' },
+          targetBuilder: { agentRole: 'builder', builderProfileId: 'writer' },
+          parentReferralTraceId: referrals.get(staged.referralId)?.referralTraceId,
+        }).expect(201);
+        const followUpId = followUp.body.referral.referralId as string;
+        const followUpRow = referrals.get(followUpId);
+        if (!followUpRow) {
+          throw new Error('missing follow-up');
+        }
+        followUpRow.status = status;
+        const before = referrals.size;
+
+        await app.get(OrchestrationService).sweepCollaborations(now);
+
+        expect(referrals.size).toBe(before);
+        expect(
+          [...referrals.values()].filter(
+            (row) => row.idempotencyKey === answerHandoffIdempotencyKey(staged.referralId),
+          ),
+        ).toHaveLength(1);
+        expect(referrals.get(followUpId)?.status).toBe(status);
+      }
+    });
+
+    it('creates one follow-up when the sweep runs twice', async () => {
+      const now = new Date();
+      const staged = await stageAnswer({
+        summary: requestedAnswer,
+        completedAt: new Date(),
+      });
+      const service = app.get(OrchestrationService);
+
+      await service.sweepCollaborations(now);
+      await service.sweepCollaborations(now);
+
+      const matches = referralsIn(staged.runId).filter(
+        (row) => row.idempotencyKey === answerHandoffIdempotencyKey(staged.referralId),
+      );
+      expect(matches).toHaveLength(1);
+      expect(matches[0].status).toBe('pending_approval');
+      expect(referralsIn(staged.runId)).toHaveLength(2);
+      expect(runs.get(staged.runId)?.status).toBe('active');
+    });
+
+    it('records a step with no request once and skips it afterwards', async () => {
+      const now = new Date();
+      const staged = await stageAnswer({
+        summary: 'All done.',
+        completedAt: new Date(),
+      });
+      await holdRunOpen(staged.runId);
+      const service = app.get(OrchestrationService);
+
+      await service.sweepCollaborations(now);
+
+      expect(referrals.get(staged.referralId)?.pendingJob?.handoffChecked).toBe(true);
+      expect(referrals.get(staged.referralId)?.pendingJob?.handoffNote ?? null).toBeNull();
+      const count = referralsIn(staged.runId).length;
+      const stored = referrals.get(staged.referralId);
+      if (!stored) {
+        throw new Error('staged referral missing');
+      }
+      stored.resultSummary = requestedAnswer;
+
+      await service.sweepCollaborations(now);
+
+      expect(referrals.get(staged.referralId)?.pendingJob?.handoffChecked).toBe(true);
+      expect(referrals.get(staged.referralId)?.pendingJob?.handoffNote ?? null).toBeNull();
+      expect(referralsIn(staged.runId)).toHaveLength(count);
+      expect(
+        referralsIn(staged.runId).some(
+          (row) => row.idempotencyKey === answerHandoffIdempotencyKey(staged.referralId),
+        ),
+      ).toBe(false);
+    });
+
+    it('keeps refused and malformed notes', async () => {
+      const now = new Date();
+      const completedAt = new Date();
+      const service = app.get(OrchestrationService);
+
+      const malformed = await stageAnswer({
+        summary: 'See <handoff to="writer">Tighten the opening.</handoff> above',
+        completedAt,
+      });
+      await holdRunOpen(malformed.runId);
+      await service.sweepCollaborations(now);
+      expect(referrals.get(malformed.referralId)?.pendingJob?.handoffNote).toBe(
+        'malformed: not_at_end',
+      );
+      const malformedCount = referralsIn(malformed.runId).length;
+      const malformedRow = referrals.get(malformed.referralId);
+      if (!malformedRow) {
+        throw new Error('malformed referral missing');
+      }
+      malformedRow.resultSummary = requestedAnswer;
+      await service.sweepCollaborations(now);
+      expect(referrals.get(malformed.referralId)?.pendingJob?.handoffNote).toBe(
+        'malformed: not_at_end',
+      );
+      expect(referralsIn(malformed.runId)).toHaveLength(malformedCount);
+
+      const kept = await stageAnswer({
+        summary: requestedAnswer,
+        completedAt,
+        handoffNote: 'refused: loop',
+      });
+      await holdRunOpen(kept.runId);
+      await service.sweepCollaborations(now);
+      expect(referrals.get(kept.referralId)?.pendingJob?.handoffNote).toBe('refused: loop');
+      expect(
+        referralsIn(kept.runId).some(
+          (row) => row.idempotencyKey === answerHandoffIdempotencyKey(kept.referralId),
+        ),
+      ).toBe(false);
+
+      service.clearAuditEvents();
+      const unlisted = await stageAnswer({
+        summary: 'Ready.\n<handoff to="reviewer">Look again.</handoff>',
+        completedAt,
+      });
+      const looped = await stageAnswer({
+        summary: 'Ready.\n<handoff to="lead">Again.</handoff>',
+        completedAt,
+      });
+      await service.sweepCollaborations(now);
+      expect(referrals.get(unlisted.referralId)?.pendingJob?.handoffNote).toBe(
+        'refused: agent_not_on_list',
+      );
+      expect(referrals.get(looped.referralId)?.pendingJob?.handoffNote).toBe('refused: loop');
+      expect(referralsIn(unlisted.runId)).toHaveLength(1);
+      expect(referralsIn(looped.runId)).toHaveLength(1);
+      expect(
+        service.getAuditEvents().some(
+          (event) =>
+            event.eventType === 'orchestration.safety_limit_breached' &&
+            event.payload.reason === 'agent_not_on_list',
+        ),
+      ).toBe(true);
+      expect(
+        service.getAuditEvents().some((event) => event.payload.limitType === 'loop'),
+      ).toBe(true);
+    });
+
+    it('skips inactive runs and referrals that are not completed', async () => {
+      const now = new Date();
+      const completedAt = new Date();
+      const service = app.get(OrchestrationService);
+
+      for (const runStatus of ['completed', 'failed', 'cancelled', 'timed_out'] as const) {
+        const staged = await stageAnswer({
+          summary: requestedAnswer,
+          completedAt,
+          runStatus,
+        });
+        await service.sweepCollaborations(now);
+        expect(referralsIn(staged.runId)).toHaveLength(1);
+        expect(referrals.get(staged.referralId)?.pendingJob?.handoffNote ?? null).toBeNull();
+        expect(runs.get(staged.runId)?.status).toBe(runStatus);
+      }
+
+      for (const referralStatus of ['failed', 'rejected', 'timed_out'] as const) {
+        const staged = await stageAnswer({
+          summary: requestedAnswer,
+          completedAt,
+          referralStatus,
+        });
+        await service.sweepCollaborations(now);
+        expect(referralsIn(staged.runId)).toHaveLength(1);
+        expect(referrals.get(staged.referralId)?.status).toBe(referralStatus);
+        expect(referrals.get(staged.referralId)?.pendingJob?.handoffNote ?? null).toBeNull();
+      }
+
+      const undated = await stageAnswer({ summary: requestedAnswer, completedAt });
+      const undatedRow = referrals.get(undated.referralId);
+      if (!undatedRow) {
+        throw new Error('undated referral missing');
+      }
+      undatedRow.completedAt = null;
+      await service.sweepCollaborations(now);
+      expect(referralsIn(undated.runId)).toHaveLength(2);
+      expect(runs.get(undated.runId)?.status).toBe('active');
+      expect(undatedRow.pendingJob?.handoffNote ?? null).toBeNull();
+
+      const blank = await stageAnswer({ summary: '', completedAt });
+      await service.sweepCollaborations(now);
+      expect(referralsIn(blank.runId)).toHaveLength(1);
+      expect(referrals.get(blank.referralId)?.pendingJob?.handoffNote ?? null).toBeNull();
+      expect(referrals.get(blank.referralId)?.pendingJob?.handoffChecked).toBe(true);
+      expect(runs.get(blank.runId)?.status).toBe('completed');
+    });
+
+    it('treats an idempotency unique violation as already done', async () => {
+      const now = new Date();
+      const staged = await stageAnswer({
+        summary: requestedAnswer,
+        completedAt: new Date(),
+      });
+      type ReferralSave = (
+        entity: CollaborationReferralEntity,
+      ) => Promise<CollaborationReferralEntity>;
+      const repo = app.get(getRepositoryToken(CollaborationReferralEntity)) as {
+        save: ReferralSave;
+      };
+      const originalSave: ReferralSave = repo.save.bind(repo);
+      repo.save = async (entity) => {
+        const saved = await originalSave(entity);
+        if (entity.idempotencyKey.startsWith('answer-handoff:')) {
+          const error = new Error(
+            'duplicate key value violates unique constraint "uq_collaboration_referrals_idempotency_active"',
+          ) as Error & { code: string; driverError: { code: string; constraint: string } };
+          error.code = '23505';
+          error.driverError = {
+            code: '23505',
+            constraint: 'uq_collaboration_referrals_idempotency_active',
+          };
+          throw error;
+        }
+        return saved;
+      };
+      const service = app.get(OrchestrationService);
+      try {
+        await service.sweepCollaborations(now);
+      } finally {
+        repo.save = originalSave;
+      }
+
+      const followUps = referralsIn(staged.runId).filter(
+        (row) => row.idempotencyKey === answerHandoffIdempotencyKey(staged.referralId),
+      );
+      expect(followUps).toHaveLength(1);
+      expect(followUps[0].status).toBe('pending_approval');
+      expect(referrals.get(staged.referralId)?.pendingJob?.handoffNote ?? null).toBeNull();
+      expect(referrals.get(staged.referralId)?.pendingJob?.handoffChecked).toBe(true);
+      expect(runs.get(staged.runId)?.status).toBe('active');
+
+      await service.sweepCollaborations(now);
+
+      expect(
+        referralsIn(staged.runId).filter(
+          (row) => row.idempotencyKey === answerHandoffIdempotencyKey(staged.referralId),
+        ),
+      ).toHaveLength(1);
+      expect(referrals.get(staged.referralId)?.pendingJob?.handoffNote ?? null).toBeNull();
+    });
+
+    it('marks a lost step with an empty summary and settles the run', async () => {
+      for (const summary of ['', null]) {
+        const staged = await stageAnswer({
+          summary: summary ?? '',
+          completedAt: new Date(),
+        });
+        if (summary === null) {
+          const row = referrals.get(staged.referralId);
+          if (!row) {
+            throw new Error('staged referral missing');
+          }
+          row.resultSummary = null;
+        }
+
+        const detail = await http().get(`/api/internal/collaboration/runs/${staged.runId}`).expect(200);
+
+        expect(detail.body.run.status).toBe('completed');
+        expect(detail.body.referrals).toHaveLength(1);
+        expect(detail.body.referrals[0].handoffNote).toBeNull();
+        expect(referrals.get(staged.referralId)?.pendingJob?.handoffChecked).toBe(true);
+      }
+    });
+
+    it('marks a final step with no request and settles it in the same read', async () => {
+      const staged = await stageAnswer({
+        summary: 'All done.',
+        completedAt: new Date(),
+      });
+
+      const detail = await http().get(`/api/internal/collaboration/runs/${staged.runId}`).expect(200);
+
+      expect(detail.body.run.status).toBe('completed');
+      expect(detail.body.referrals).toHaveLength(1);
+      expect(detail.body.referrals[0].status).toBe('completed');
+      expect(detail.body.referrals[0].handoffNote).toBeNull();
+      expect(detail.body.referrals[0]).not.toHaveProperty('handoffChecked');
+      expect(referrals.get(staged.referralId)?.pendingJob?.handoffChecked).toBe(true);
+    });
+
+    it('shows no note for an ordinary final step', async () => {
+      const runId = await createRun();
+      const waiting = await postReferral(runId, {
+        idempotencyKey: 'ordinary-final',
+        targetBuilder: { agentRole: 'builder', builderProfileId: 'lead' },
+        projectInstructions: 'Be concise.',
+        agents: listedAgents,
+      }).expect(201);
+      const referralId = waiting.body.referral.referralId as string;
+      await approve(runId, referralId).expect(200);
+      executionResults.getExecution.mockResolvedValue(completedExecution('All done.'));
+
+      const detail = await http().get(`/api/internal/collaboration/runs/${runId}`).expect(200);
+
+      expect(detail.body.run.status).toBe('completed');
+      expect(detail.body.referrals).toHaveLength(1);
+      expect(detail.body.referrals[0].handoffNote).toBeNull();
+      expect(detail.body.referrals[0].result.summary).toBe('All done.');
+      expect(detail.body.referrals[0]).not.toHaveProperty('handoffChecked');
+      expect(referrals.get(referralId)?.pendingJob?.handoffChecked).toBe(true);
+      expect(referrals.get(referralId)?.pendingJob?.handoffNote ?? null).toBeNull();
+    });
+
+    it('records a different unique violation as a refusal', async () => {
+      const staged = await stageAnswer({
+        summary: requestedAnswer,
+        completedAt: new Date(),
+      });
+      type ReferralSave = (
+        entity: CollaborationReferralEntity,
+      ) => Promise<CollaborationReferralEntity>;
+      const repo = app.get(getRepositoryToken(CollaborationReferralEntity)) as {
+        save: ReferralSave;
+      };
+      const originalSave: ReferralSave = repo.save.bind(repo);
+      repo.save = async (entity) => {
+        if (entity.idempotencyKey.startsWith('answer-handoff:')) {
+          const error = new Error(
+            'duplicate key value violates unique constraint "uq_collaboration_referrals_trace_id"',
+          ) as Error & { code: string; driverError: { code: string; constraint: string } };
+          error.code = '23505';
+          error.driverError = {
+            code: '23505',
+            constraint: 'uq_collaboration_referrals_trace_id',
+          };
+          throw error;
+        }
+        return originalSave(entity);
+      };
+      try {
+        await app.get(OrchestrationService).sweepCollaborations(new Date());
+      } finally {
+        repo.save = originalSave;
+      }
+
+      expect(referrals.get(staged.referralId)?.pendingJob?.handoffNote).toBe('refused: refused');
+      expect(referrals.get(staged.referralId)?.pendingJob?.handoffChecked).toBe(true);
+      expect(
+        referralsIn(staged.runId).some((row) => row.idempotencyKey.startsWith('answer-handoff:')),
+      ).toBe(false);
+    });
+  });
+
   describe('COLLAB-FILES-01 file access', () => {
     const HARNESS_SECRET = 'test-hmac-secret-collab-files-01';
     const originalSecret = process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
