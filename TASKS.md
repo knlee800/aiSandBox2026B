@@ -4,14 +4,14 @@ schemaVersion=1
 maxImplementationLanes=2
 lane3=DISABLED
 lane1.state=ACTIVE
-lane1.taskId=COLLAB-DIFF-NEW-01
+lane1.taskId=RUN-ERROR-01
 lane2.state=EMPTY
 lane2.taskId=NONE
 governance.owner=NONE
 governance.state=UNOWNED
 saturationSuspended=false
 suspensionReason=NONE
-occupancyHash=sha256:7295a583b12e99415830f58f37931149142ed93838935c587c6059ab5ab6e3c1
+occupancyHash=sha256:6f5944939306aee5f52700a2a8508c34f3635e3c52ae20bdb788f9112724baae
 <!-- AISB_OCCUPANCY_V1_END -->
 
 **Parallel Development Architecture:** v1
@@ -243,13 +243,13 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-04. Lane 1 released EMPTY. Staging runs 089ab0f with flags off. Checkpoint: docs/COLLAB-LIVE-07-CHECKPOINT.md.
 
-## COLLAB-DIFF-NEW-01 — ADMITTED / Lane 1 ACTIVE — 2026-11-04
+## COLLAB-DIFF-NEW-01 — COMPLETE AND LOCKED / Lane 1 RELEASED — 2026-11-04
 
-**Current status:** ADMITTED, Lane 1, CONTAINER-MANAGER held. Keith approved the draft on 2026-11-04. Scope in TASKS_BACKLOG_FULL.md.
+**Current status:** COMPLETE AND LOCKED - 2026-11-04. Lane 1 released. CONTAINER-MANAGER released UNOWNED. Checkpoint: docs/COLLAB-DIFF-NEW-01-CHECKPOINT.md. Code and lock in one commit. Not deployed.
 
-## RUN-ERROR-01 — REGISTERED / READY / NOT ADMITTED — 2026-11-04
+## RUN-ERROR-01 — ADMITTED / Lane 1 ACTIVE — 2026-11-04
 
-**Current status:** registered; READY, not admitted.
+**Current status:** ADMITTED, Lane 1, AI-SERVICE held. Keith approved the draft on 2026-11-04. Scope in TASKS_BACKLOG_FULL.md.
 
 ## COLLAB-HANDOFF-RECOVER-01 — REGISTERED / READY / NOT ADMITTED — 2026-11-04
 
@@ -264,7 +264,7 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 **Current status:** registered; start condition NOT_READY until COLLAB-DIFF-NEW-01, RUN-ERROR-01, COLLAB-HANDOFF-RECOVER-01, OPS-APPEND-IDS-01 are LOCKED.
 
 ## Lane 1
-ACTIVE — COLLAB-DIFF-NEW-01 — 2026-11-04.
+ACTIVE — RUN-ERROR-01 — 2026-11-04.
 
 ## Lane 2
 EMPTY — Lane 2 released at COLLAB-SCREEN-02 COMPLETE AND LOCKED — 2026-11-03.
@@ -275,7 +275,7 @@ DISABLED
 ## Governance owner / state
 UNOWNED — GOV-OS-04 COMPLETE AND LOCKED — 2026-11-02.
 
-Lane 1 ACTIVE: COLLAB-DIFF-NEW-01. Lane 2 EMPTY. RUN-ERROR-01, COLLAB-HANDOFF-RECOVER-01 and OPS-APPEND-IDS-01 are READY and not admitted. STAGING-DEPLOY-03 is NOT_READY. SIGNUP-ALLOWLIST-01 is READY and not admitted.
+Lane 1 ACTIVE: RUN-ERROR-01. Lane 2 EMPTY. COLLAB-DIFF-NEW-01 is COMPLETE AND LOCKED. COLLAB-HANDOFF-RECOVER-01 and OPS-APPEND-IDS-01 are READY and not admitted. STAGING-DEPLOY-03 is NOT_READY. SIGNUP-ALLOWLIST-01 is READY and not admitted.
 
 ## Active mutex / resource ownership
 - GOVERNANCE: UNOWNED — GOV-OS-04 lock 2026-11-02.
@@ -301,8 +301,8 @@ Lane 1 ACTIVE: COLLAB-DIFF-NEW-01. Lane 2 EMPTY. RUN-ERROR-01, COLLAB-HANDOFF-RE
 - HOTFILE:e2e/builder-golden-path/tests/network.spec.ts: UNOWNED
 - PACKAGE: UNOWNED — released at HARNESS-PROVIDERS-01 COMPLETE AND LOCKED 2026-11-01.
 - LOCAL-RUNTIME: UNOWNED — released at CLEAN-BASELINE-RUNTIME-01 lock 2026-10-07.
-- AI-SERVICE: UNOWNED — released at COLLAB-WRITE-01 COMPLETE AND LOCKED 2026-11-03.
-- CONTAINER-MANAGER: OWNED by COLLAB-DIFF-NEW-01 (2026-11-04).
+- AI-SERVICE: OWNED by RUN-ERROR-01 (2026-11-04).
+- CONTAINER-MANAGER: UNOWNED — released at COLLAB-DIFF-NEW-01 COMPLETE AND LOCKED 2026-11-04.
 - All other resources: UNOWNED
 - Remaining HOTFILE leases: UNOWNED
 

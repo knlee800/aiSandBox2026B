@@ -83933,7 +83933,7 @@ taskId=COLLAB-DIFF-NEW-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-04.
+**Status:** COMPLETE AND LOCKED — 2026-11-04. LANE-DONE and LOCKED by the control plane; Lane 1 and CONTAINER-MANAGER released. Checkpoint: docs/COLLAB-DIFF-NEW-01-CHECKPOINT.md.
 **Task ID:** COLLAB-DIFF-NEW-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -83950,11 +83950,11 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] New untracked files appear in the worktree diff as added files; ignored files do not
-- [ ] The route stays read-only: no git add, no index or commit change
-- [ ] The size cap applies to the combined diff; binary files are named, not dumped
-- [ ] Existing checkpoint and diff routes unchanged; container-manager tests pass
-- [ ] Not LOCKED by an implementer
+- [x] New untracked files appear in the worktree diff as added files; ignored files do not
+- [x] The route stays read-only: no git add, no index or commit change
+- [x] The size cap applies to the combined diff; binary files are named, not dumped
+- [x] Existing checkpoint and diff routes unchanged; container-manager tests pass
+- [x] Not LOCKED by an implementer
 
 ### RUN-ERROR-01 — Show the real reason when a worker step fails
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -83962,7 +83962,7 @@ taskId=RUN-ERROR-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY / NOT ADMITTED — 2026-11-04.
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-04.
 **Task ID:** RUN-ERROR-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION

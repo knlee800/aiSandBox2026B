@@ -976,17 +976,44 @@ describe('GitService.getWorkingTreeDiff', () => {
     return serviceLike as WorktreeDiffService;
   }
 
-  it('returns the working-tree diff and does not change the repository', async () => {
-    const execInContainer = jest.fn(async (_sessionId: string, cmd: string[]) => {
-      const command = cmd[2];
+  function expectWorktreeDiffReadOnly(execInContainer: jest.Mock): void {
+    expect(execInContainer).toHaveBeenCalled();
+    for (const call of execInContainer.mock.calls) {
+      const command = String(call[1][2]);
+      expect(command).not.toMatch(
+        /git add|stash|git commit|git reset|git checkout|update-index|update-ref|intent-to-add/,
+      );
+    }
+  }
+
+  function mockWorktreeExec(options: {
+    tracked: string;
+    untrackedExit?: number;
+    untrackedStdout?: string;
+  }): jest.Mock {
+    return jest.fn(async (_sessionId: string, cmd: string[]) => {
+      const command = String(cmd[2]);
       if (command.includes('rev-parse')) {
         return { exitCode: 0, stdout: `${WORKTREE_HASH}\n`, stderr: '' };
       }
+      if (command.includes('git ls-files')) {
+        return {
+          exitCode: options.untrackedExit ?? 0,
+          stdout: options.untrackedStdout ?? '',
+          stderr: '',
+        };
+      }
       if (command.includes('git --no-pager diff')) {
-        return { exitCode: 0, stdout: 'diff --git a/src/form.ts b/src/form.ts\n+fixed\n', stderr: '' };
+        return { exitCode: 0, stdout: options.tracked, stderr: '' };
       }
       throw new Error(`unexpected command ${command}`);
     });
+  }
+
+  const TRACKED_DIFF = 'diff --git a/src/form.ts b/src/form.ts\n+fixed\n';
+
+  it('returns the working-tree diff and does not change the repository', async () => {
+    const execInContainer = mockWorktreeExec({ tracked: TRACKED_DIFF });
     const getSession = jest.fn(async () => ({ id: WORKTREE_SESSION }));
     const serviceLike = serviceWith(execInContainer, getSession);
 
@@ -994,19 +1021,18 @@ describe('GitService.getWorkingTreeDiff', () => {
 
     expect(result).toEqual({
       commitHash: WORKTREE_HASH,
-      diff: 'diff --git a/src/form.ts b/src/form.ts\n+fixed\n',
+      diff: TRACKED_DIFF,
       truncated: false,
     });
     expect(getSession).toHaveBeenCalledWith(WORKTREE_SESSION);
-    expect(execInContainer).toHaveBeenCalledTimes(2);
+    expect(execInContainer).toHaveBeenCalledTimes(3);
     const commands = execInContainer.mock.calls.map((call) => String(call[1][2]));
-    expect(commands).toEqual([
+    expect(commands.slice(0, 2)).toEqual([
       'git rev-parse --verify --quiet "$COMMIT_HASH^{commit}"',
       'git --no-pager diff --no-color --no-ext-diff "$COMMIT_HASH"',
     ]);
-    for (const command of commands) {
-      expect(command).not.toMatch(/git add|git commit|git reset|git checkout|update-index|update-ref/);
-    }
+    expect(commands[2]).toContain('git ls-files --others --exclude-standard -z');
+    expectWorktreeDiffReadOnly(execInContainer);
     expect(serviceLike.createCheckpoint).not.toHaveBeenCalled();
     expect(execInContainer).toHaveBeenNthCalledWith(
       1,
@@ -1024,6 +1050,9 @@ describe('GitService.getWorkingTreeDiff', () => {
       if (command.includes('rev-parse')) {
         return { exitCode: 0, stdout: `${WORKTREE_HASH}\n`, stderr: '' };
       }
+      if (command.includes('git ls-files')) {
+        throw new Error('untracked listing should not run when the tracked diff is already over the cap');
+      }
       return { exitCode: 0, stdout: huge, stderr: '' };
     });
     const result = await serviceWith(
@@ -1035,6 +1064,8 @@ describe('GitService.getWorkingTreeDiff', () => {
     expect(result.diff.endsWith(WORKTREE_DIFF_TRUNCATED_MARKER)).toBe(true);
     expect(result.diff.length).toBeLessThanOrEqual(WORKTREE_DIFF_MAX_CHARS);
     expect(result.diff.length).toBeGreaterThan(WORKTREE_DIFF_TRUNCATED_MARKER.length);
+    expect(execInContainer).toHaveBeenCalledTimes(2);
+    expectWorktreeDiffReadOnly(execInContainer);
   });
 
   it('refuses an invalid hash before any session or git call', async () => {
@@ -1081,6 +1112,136 @@ describe('GitService.getWorkingTreeDiff', () => {
     const commands = execInContainer.mock.calls.map((call) => String(call[1][2]));
     expect(commands).toEqual(['git rev-parse --verify --quiet "$COMMIT_HASH^{commit}"']);
     expect(unknownHash.createCheckpoint).not.toHaveBeenCalled();
+  });
+
+  it('appends an untracked file as an added-file diff after the tracked diff', async () => {
+    const added =
+      'diff --git a/dev/null b/created.ts\nnew file mode 100644\n--- /dev/null\n+++ b/created.ts\n+created\n';
+    const execInContainer = mockWorktreeExec({ tracked: TRACKED_DIFF, untrackedStdout: added });
+    const serviceLike = serviceWith(execInContainer, jest.fn(async () => ({ id: WORKTREE_SESSION })));
+
+    const result = await serviceLike.getWorkingTreeDiff(WORKTREE_SESSION, WORKTREE_HASH);
+
+    expect(result).toEqual({
+      commitHash: WORKTREE_HASH,
+      diff: TRACKED_DIFF + added,
+      truncated: false,
+    });
+    expect(execInContainer).toHaveBeenCalledTimes(3);
+    const script = String(execInContainer.mock.calls[2][1][2]);
+    expect(execInContainer.mock.calls[2][1][0]).toBe('sh');
+    expect(execInContainer.mock.calls[2][1][1]).toBe('-lc');
+    expect(execInContainer.mock.calls[2][2]).toBe('/workspace');
+    expect(script).toContain('git --no-pager diff --no-color --no-ext-diff --no-index -- /dev/null "./$path"');
+    expect(serviceLike.createCheckpoint).not.toHaveBeenCalled();
+    expectWorktreeDiffReadOnly(execInContainer);
+  });
+
+  it('asks git to skip ignored files and does not invent a diff for them', async () => {
+    const added = 'diff --git a/dev/null b/kept.ts\nnew file mode 100644\n--- /dev/null\n+++ b/kept.ts\n+k\n';
+    const execInContainer = mockWorktreeExec({ tracked: TRACKED_DIFF, untrackedStdout: added });
+    const result = await serviceWith(
+      execInContainer,
+      jest.fn(async () => ({ id: WORKTREE_SESSION })),
+    ).getWorkingTreeDiff(WORKTREE_SESSION, WORKTREE_HASH);
+
+    const script = String(execInContainer.mock.calls[2][1][2]);
+    const listings = script.split('\n').filter((line) => line.includes('git ls-files'));
+    expect(listings).toHaveLength(2);
+    for (const line of listings) {
+      expect(line).toContain('--others');
+      expect(line).toContain('--exclude-standard');
+      expect(line).toContain('-z');
+    }
+    expect(result.diff).toBe(TRACKED_DIFF + added);
+    expect(result.diff).not.toContain('secret.log');
+    expect(script).not.toContain('secret.log');
+    expectWorktreeDiffReadOnly(execInContainer);
+  });
+
+  it('passes names with a space or a leading dash through a quoted shell variable', async () => {
+    const added =
+      'diff --git a/dev/null b/my file.txt\nnew file mode 100644\n--- /dev/null\n+++ b/my file.txt\n+a\n' +
+      'diff --git a/dev/null b/-new.txt\nnew file mode 100644\n--- /dev/null\n+++ b/-new.txt\n+b\n';
+    const execInContainer = mockWorktreeExec({ tracked: TRACKED_DIFF, untrackedStdout: added });
+    const result = await serviceWith(
+      execInContainer,
+      jest.fn(async () => ({ id: WORKTREE_SESSION })),
+    ).getWorkingTreeDiff(WORKTREE_SESSION, WORKTREE_HASH);
+
+    const script = String(execInContainer.mock.calls[2][1][2]);
+    expect(result.diff).toBe(TRACKED_DIFF + added);
+    expect(result.diff.indexOf('my file.txt')).toBeGreaterThan(result.diff.indexOf('+fixed'));
+    expect(result.diff.indexOf('-new.txt')).toBeGreaterThan(result.diff.indexOf('my file.txt'));
+    expect(script).toContain("while IFS= read -r -d '' path");
+    expect(script).toContain('-- /dev/null "./$path"');
+    expect(script).not.toContain('my file.txt');
+    expect(script).not.toContain('-new.txt');
+    expect(execInContainer.mock.calls[2][3]).toEqual({
+      DIFF_BUDGET: String(WORKTREE_DIFF_MAX_CHARS - TRACKED_DIFF.length + 1),
+    });
+    expect(Object.keys(execInContainer.mock.calls[2][3] as object)).toEqual(['DIFF_BUDGET']);
+    expectWorktreeDiffReadOnly(execInContainer);
+  });
+
+  it('keeps a binary new file as the name git prints', async () => {
+    const binary = 'Binary files /dev/null and "b/pixel.bin" differ\n';
+    const execInContainer = mockWorktreeExec({ tracked: TRACKED_DIFF, untrackedStdout: binary });
+    const result = await serviceWith(
+      execInContainer,
+      jest.fn(async () => ({ id: WORKTREE_SESSION })),
+    ).getWorkingTreeDiff(WORKTREE_SESSION, WORKTREE_HASH);
+
+    const script = String(execInContainer.mock.calls[2][1][2]);
+    expect(result.diff).toBe(TRACKED_DIFF + binary);
+    expect(result.diff).not.toContain('\0');
+    expect(script).not.toContain('--text');
+    expect(script).not.toContain('--binary');
+    expect(script).not.toContain('cat "$path"');
+    expect(script).not.toContain('cat "./$path"');
+    expectWorktreeDiffReadOnly(execInContainer);
+  });
+
+  it('caps a large new file and marks the combined diff truncated', async () => {
+    const budget = WORKTREE_DIFF_MAX_CHARS - TRACKED_DIFF.length + 1;
+    const execInContainer = mockWorktreeExec({
+      tracked: TRACKED_DIFF,
+      untrackedStdout: 'y'.repeat(budget + 100),
+    });
+    const result = await serviceWith(
+      execInContainer,
+      jest.fn(async () => ({ id: WORKTREE_SESSION })),
+    ).getWorkingTreeDiff(WORKTREE_SESSION, WORKTREE_HASH);
+
+    const script = String(execInContainer.mock.calls[2][1][2]);
+    expect(result.truncated).toBe(true);
+    expect(result.diff.startsWith('diff --git a/src/form.ts')).toBe(true);
+    expect(result.diff.endsWith(WORKTREE_DIFF_TRUNCATED_MARKER)).toBe(true);
+    expect(result.diff.length).toBeLessThanOrEqual(WORKTREE_DIFF_MAX_CHARS);
+    expect(script).toContain('head -c "$remain"');
+    expect(script).toContain('if [ "$remain" -le 0 ]; then');
+    expect(script).not.toContain(String(budget));
+    expect(execInContainer.mock.calls[2][3]).toEqual({ DIFF_BUDGET: String(budget) });
+    expectWorktreeDiffReadOnly(execInContainer);
+  });
+
+  it('returns the tracked diff when the untracked listing fails', async () => {
+    const execInContainer = mockWorktreeExec({
+      tracked: TRACKED_DIFF,
+      untrackedExit: 2,
+      untrackedStdout: 'diff --git a/LEAK b/LEAK\n+nope\n',
+    });
+    const serviceLike = serviceWith(execInContainer, jest.fn(async () => ({ id: WORKTREE_SESSION })));
+
+    const result = await serviceLike.getWorkingTreeDiff(WORKTREE_SESSION, WORKTREE_HASH);
+
+    expect(result).toEqual({
+      commitHash: WORKTREE_HASH,
+      diff: TRACKED_DIFF,
+      truncated: false,
+    });
+    expect(serviceLike.createCheckpoint).not.toHaveBeenCalled();
+    expectWorktreeDiffReadOnly(execInContainer);
   });
 });
 

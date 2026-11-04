@@ -18,6 +18,43 @@ const CONTAINER_RESTORE_BUNDLE = '/workspace/.aisb-history-restore.bundle';
 export const WORKTREE_DIFF_MAX_CHARS = 65536;
 export const WORKTREE_DIFF_TRUNCATED_MARKER = '\n[diff truncated]\n';
 
+// One read-only exec: NUL-separated untracked paths (never interpolated into this
+// string) become --no-index diffs against /dev/null. head -c stops a single new
+// file from streaming without a bound. Exit 141 is SIGPIPE from that bound.
+// Exit 0 from the whole script means the listing worked; any other exit means
+// the caller keeps the tracked diff and does not fail the route.
+const WORKTREE_UNTRACKED_DIFF_SCRIPT = [
+  'set +e',
+  'set -f',
+  'if ! git ls-files --others --exclude-standard -z >/dev/null 2>&1; then',
+  '  exit 1',
+  'fi',
+  'case "$DIFF_BUDGET" in',
+  "  ''|*[!0-9]*) exit 1 ;;",
+  'esac',
+  'tmp=/tmp/aisb-wtd.$$',
+  "trap 'rm -f \"$tmp\"' EXIT",
+  'emitted=0',
+  "git ls-files --others --exclude-standard -z | while IFS= read -r -d '' path; do",
+  '  [ -n "$path" ] || continue',
+  '  remain=$((DIFF_BUDGET - emitted))',
+  '  if [ "$remain" -le 0 ]; then',
+  '    break',
+  '  fi',
+  '  set -o pipefail',
+  '  git --no-pager diff --no-color --no-ext-diff --no-index -- /dev/null "./$path" 2>/dev/null | head -c "$remain" >"$tmp"',
+  '  ec=$?',
+  '  set +o pipefail',
+  '  case "$ec" in',
+  '    0|1|141) ;;',
+  '    *) continue ;;',
+  '  esac',
+  '  cat "$tmp"',
+  '  emitted=$((emitted + $(wc -c <"$tmp")))',
+  'done',
+  'exit 0',
+].join('\n');
+
 export interface WorkingTreeDiffResult {
   commitHash: string;
   diff: string;
@@ -294,8 +331,8 @@ export class GitService {
   }
 
   /**
-   * Unified diff of the session working tree against one commit.
-   * Read-only: verifies the commit, then git diff. Does not stage or commit.
+   * Unified diff of the session working tree against one commit, including
+   * untracked non-ignored files as additions. Read-only: does not stage or commit.
    */
   async getWorkingTreeDiff(
     sessionId: string,
@@ -325,12 +362,29 @@ export class GitService {
       throw new BadRequestException('Invalid commit');
     }
 
-    const capped = capWorktreeDiff(diff.stdout);
+    const combined = await this.collectUntrackedAdditions(sessionId, diff.stdout);
+    const capped = capWorktreeDiff(combined);
     return {
       commitHash: verifiedHash,
       diff: capped.text,
       truncated: capped.truncated,
     };
+  }
+
+  private async collectUntrackedAdditions(sessionId: string, tracked: string): Promise<string> {
+    if (tracked.length > WORKTREE_DIFF_MAX_CHARS) {
+      return tracked;
+    }
+    const untracked = await this.execWorkspace(sessionId, WORKTREE_UNTRACKED_DIFF_SCRIPT, {
+      DIFF_BUDGET: String(WORKTREE_DIFF_MAX_CHARS - tracked.length + 1),
+    });
+    if (untracked.exitCode !== 0 || untracked.stdout.length === 0) {
+      return tracked;
+    }
+    if (tracked.length > 0 && !tracked.endsWith('\n')) {
+      return `${tracked}\n${untracked.stdout}`;
+    }
+    return tracked + untracked.stdout;
   }
 
   private parseDiffOutput(diffOutput: string): Array<{
