@@ -84077,7 +84077,7 @@ taskId=HARNESS-EVAL-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-04.
+**Status:** COMPLETE AND LOCKED — 2026-11-04. LANE-DONE and LOCKED by the control plane; Lane 1 and AI-SERVICE released. Checkpoint: docs/HARNESS-EVAL-01-CHECKPOINT.md.
 **Task ID:** HARNESS-EVAL-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -84094,11 +84094,11 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Task format and runner exist; a new task is a data file with no code change
-- [ ] Specs run all ten seed tasks with scripted answers; each scorer is shown passing and failing, including a safety violation that turns a pass into a fail
-- [ ] Results JSON holds the fields above; comparing two results files lists regressions and per-task changes in steps, tokens and credits
-- [ ] No change outside eval/; ai-service tests and build pass
-- [ ] Not LOCKED by an implementer
+- [x] Task format and runner exist; a new task is a data file with no code change
+- [x] Specs run all ten seed tasks with scripted answers; each scorer is shown passing and failing, including a safety violation that turns a pass into a fail
+- [x] Results JSON holds the fields above; comparing two results files lists regressions and per-task changes in steps, tokens and credits
+- [x] No change outside eval/; ai-service tests and build pass
+- [x] Not LOCKED by an implementer
 
 ### HARNESS-EVAL-LIVE-01 — First real run of the harness eval suite
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

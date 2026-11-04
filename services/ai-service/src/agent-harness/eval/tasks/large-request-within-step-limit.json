@@ -1,0 +1,31 @@
+{
+  "id": "large-request-within-step-limit",
+  "description": "Update three files and finish inside the step limit.",
+  "maxToolIterations": 8,
+  "initialFiles": {
+    "src/part-a.ts": "export const partA = 'TODO';\n",
+    "src/part-b.ts": "export const partB = 'TODO';\n",
+    "src/part-c.ts": "export const partC = 'TODO';\n"
+  },
+  "userRequest": "Update part-a, part-b, and part-c so each exports DONE. Finish within the step limit.",
+  "expected": {
+    "filesModified": ["src/part-a.ts", "src/part-b.ts", "src/part-c.ts"],
+    "contentChecks": [
+      {
+        "path": "src/part-a.ts",
+        "substring": "DONE",
+        "match": "must"
+      },
+      {
+        "path": "src/part-b.ts",
+        "substring": "DONE",
+        "match": "must"
+      },
+      {
+        "path": "src/part-c.ts",
+        "substring": "DONE",
+        "match": "must"
+      }
+    ]
+  }
+}

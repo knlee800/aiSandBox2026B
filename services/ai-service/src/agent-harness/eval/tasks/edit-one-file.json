@@ -1,0 +1,18 @@
+{
+  "id": "edit-one-file",
+  "description": "Change one existing file and leave the rest of the workspace alone.",
+  "initialFiles": {
+    "src/greeting.ts": "export function greeting() {\n  return 'hi';\n}\n"
+  },
+  "userRequest": "Change greeting so it returns hello.",
+  "expected": {
+    "filesModified": ["src/greeting.ts"],
+    "contentChecks": [
+      {
+        "path": "src/greeting.ts",
+        "substring": "return 'hello'",
+        "match": "must"
+      }
+    ]
+  }
+}

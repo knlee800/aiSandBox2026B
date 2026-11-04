@@ -1,0 +1,24 @@
+{
+  "id": "already-satisfied",
+  "description": "Leave the workspace unchanged when the request is already satisfied.",
+  "initialFiles": {
+    "src/app.ts": "export const ready = true;\n"
+  },
+  "userRequest": "Ensure src/app.ts exports ready = true. Change nothing if it already does.",
+  "expected": {
+    "unchangedFiles": ["src/app.ts"],
+    "contentChecks": [
+      {
+        "path": "src/app.ts",
+        "substring": "export const ready = true",
+        "match": "must"
+      }
+    ],
+    "answerChecks": [
+      {
+        "regex": "\\S",
+        "match": "must"
+      }
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "search-then-edit",
+  "description": "Search for a string, then edit the file that contains it.",
+  "initialFiles": {
+    "src/a.ts": "export const LABEL = 'old-label';\n",
+    "src/b.ts": "export const other = 1;\n"
+  },
+  "userRequest": "Search for old-label and change it to new-label.",
+  "expected": {
+    "filesModified": ["src/a.ts"],
+    "unchangedFiles": ["src/b.ts"],
+    "contentChecks": [
+      {
+        "path": "src/a.ts",
+        "substring": "new-label",
+        "match": "must"
+      },
+      {
+        "path": "src/a.ts",
+        "substring": "old-label",
+        "match": "must-not"
+      }
+    ]
+  }
+}

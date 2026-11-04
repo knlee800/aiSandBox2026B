@@ -1,0 +1,23 @@
+{
+  "id": "fix-failing-test",
+  "description": "Fix add so it adds, then validation must pass.",
+  "initialFiles": {
+    "src/math.ts": "export function add(a: number, b: number) {\n  return a - b;\n}\n"
+  },
+  "userRequest": "The add function fails because it subtracts. Make it add. Validation must pass.",
+  "validation": {
+    "command": "npm test",
+    "passWhen": "allContentChecks"
+  },
+  "expected": {
+    "filesModified": ["src/math.ts"],
+    "validationPasses": true,
+    "contentChecks": [
+      {
+        "path": "src/math.ts",
+        "substring": "return a + b",
+        "match": "must"
+      }
+    ]
+  }
+}

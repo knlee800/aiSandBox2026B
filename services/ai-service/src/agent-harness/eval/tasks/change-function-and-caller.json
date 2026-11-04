@@ -1,0 +1,29 @@
+{
+  "id": "change-function-and-caller",
+  "description": "Change a function and the caller that uses it.",
+  "initialFiles": {
+    "src/lib.ts": "export function title(name: string) {\n  return name;\n}\n",
+    "src/app.ts": "import { title } from './lib';\n\nexport function banner() {\n  return title('app');\n}\n"
+  },
+  "userRequest": "Change title so it prefixes Hello, and update banner to pass the name through.",
+  "expected": {
+    "filesModified": ["src/lib.ts", "src/app.ts"],
+    "contentChecks": [
+      {
+        "path": "src/lib.ts",
+        "substring": "Hello ",
+        "match": "must"
+      },
+      {
+        "path": "src/app.ts",
+        "substring": "title(name)",
+        "match": "must"
+      },
+      {
+        "path": "src/app.ts",
+        "substring": "title('app')",
+        "match": "must-not"
+      }
+    ]
+  }
+}

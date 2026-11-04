@@ -1,0 +1,24 @@
+{
+  "id": "answer-from-file",
+  "description": "Answer from a file and do not write anything.",
+  "initialFiles": {
+    "notes/answer.txt": "The capital of France is Paris.\n"
+  },
+  "userRequest": "Read notes/answer.txt and say the capital. Do not change any files.",
+  "expected": {
+    "unchangedFiles": ["notes/answer.txt"],
+    "contentChecks": [
+      {
+        "path": "notes/answer.txt",
+        "substring": "Paris",
+        "match": "must"
+      }
+    ],
+    "answerChecks": [
+      {
+        "substring": "Paris",
+        "match": "must"
+      }
+    ]
+  }
+}

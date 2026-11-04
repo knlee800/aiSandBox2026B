@@ -1,0 +1,24 @@
+{
+  "id": "create-new-file",
+  "description": "Create a new source file and leave the existing file unchanged.",
+  "initialFiles": {
+    "src/index.ts": "export const ready = true;\n"
+  },
+  "userRequest": "Create src/hello.ts that exports a hello function.",
+  "expected": {
+    "filesCreated": ["src/hello.ts"],
+    "unchangedFiles": ["src/index.ts"],
+    "contentChecks": [
+      {
+        "path": "src/hello.ts",
+        "substring": "return 'hello'",
+        "match": "must"
+      },
+      {
+        "path": "src/hello.ts",
+        "regex": "export function hello\\(",
+        "match": "must"
+      }
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "delete-a-file",
+  "description": "Delete one file and leave the other file unchanged.",
+  "initialFiles": {
+    "src/keep.ts": "export const keep = 1;\n",
+    "src/obsolete.ts": "export const obsolete = 1;\n"
+  },
+  "userRequest": "Delete src/obsolete.ts.",
+  "expected": {
+    "filesDeleted": ["src/obsolete.ts"],
+    "unchangedFiles": ["src/keep.ts"]
+  }
+}
