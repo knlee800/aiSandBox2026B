@@ -44,6 +44,8 @@ describe('AIExecutionController HTTP run status (RUN-STATUS-01)', () => {
   const executionId = 'exec-public-1';
   const listedFields = [
     'agentId',
+    'builderProfileId',
+    'collaborationRunId',
     'durationMs',
     'executionId',
     'mode',
@@ -161,6 +163,8 @@ describe('AIExecutionController HTTP run status (RUN-STATUS-01)', () => {
         timestamp: new Date('2026-11-02T07:01:02.000Z'),
         runMode: 'ask',
         agentId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+        collaborationRunId: 'collab-run-001',
+        builderProfileId: 'builder-reviewer',
       },
       {
         execution_id: 'exec-build',
@@ -197,6 +201,8 @@ describe('AIExecutionController HTTP run status (RUN-STATUS-01)', () => {
         timestamp: null,
         runMode: null,
         agentId: null,
+        collaborationRunId: null,
+        builderProfileId: null,
       },
       {
         execution_id: 'exec-failed',
@@ -271,6 +277,8 @@ describe('AIExecutionController HTTP run status (RUN-STATUS-01)', () => {
           durationMs: 340,
           mode: 'ask',
           agentId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+          collaborationRunId: 'collab-run-001',
+          builderProfileId: 'builder-reviewer',
         },
         {
           executionId: 'exec-build',
@@ -283,6 +291,8 @@ describe('AIExecutionController HTTP run status (RUN-STATUS-01)', () => {
           durationMs: 0,
           mode: 'build',
           agentId: '',
+          collaborationRunId: null,
+          builderProfileId: null,
         },
         {
           executionId: 'exec-agent',
@@ -295,6 +305,8 @@ describe('AIExecutionController HTTP run status (RUN-STATUS-01)', () => {
           durationMs: null,
           mode: 'agent',
           agentId: null,
+          collaborationRunId: null,
+          builderProfileId: null,
         },
         {
           executionId: 'exec-cancel',
@@ -307,6 +319,8 @@ describe('AIExecutionController HTTP run status (RUN-STATUS-01)', () => {
           durationMs: null,
           mode: 'unknown',
           agentId: null,
+          collaborationRunId: null,
+          builderProfileId: null,
         },
         {
           executionId: 'exec-failed',
@@ -319,6 +333,8 @@ describe('AIExecutionController HTTP run status (RUN-STATUS-01)', () => {
           durationMs: null,
           mode: 'unknown',
           agentId: null,
+          collaborationRunId: null,
+          builderProfileId: null,
         },
         {
           executionId: 'exec-timeout',
@@ -331,6 +347,8 @@ describe('AIExecutionController HTTP run status (RUN-STATUS-01)', () => {
           durationMs: null,
           mode: 'unknown',
           agentId: null,
+          collaborationRunId: null,
+          builderProfileId: null,
         },
         {
           executionId: 'exec-cancelled',
@@ -343,6 +361,8 @@ describe('AIExecutionController HTTP run status (RUN-STATUS-01)', () => {
           durationMs: null,
           mode: 'unknown',
           agentId: null,
+          collaborationRunId: null,
+          builderProfileId: null,
         },
         {
           executionId: 'exec-unknown-status',
@@ -355,6 +375,8 @@ describe('AIExecutionController HTTP run status (RUN-STATUS-01)', () => {
           durationMs: null,
           mode: 'unknown',
           agentId: null,
+          collaborationRunId: null,
+          builderProfileId: null,
         },
       ],
     });
@@ -415,6 +437,8 @@ describe('AIExecutionController HTTP run status (RUN-STATUS-01)', () => {
         durationMs: null,
         mode: 'ask',
         agentId: null,
+        collaborationRunId: null,
+        builderProfileId: null,
       },
     ]);
   });

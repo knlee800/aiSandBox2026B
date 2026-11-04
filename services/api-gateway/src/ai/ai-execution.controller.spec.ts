@@ -3564,3 +3564,136 @@ describe('AIExecutionController — RUN-STATUS-01 ledger runMode', () => {
     expect(metadata.apiKeyId).toBe(identity.apiKeyId);
   });
 });
+
+describe('AIExecutionController listExecutions collaboration fields (RUN-LIST-COLLAB-01)', () => {
+  it('returns collaborationRunId and builderProfileId when present and null when absent', async () => {
+    const listRunsForUser = jest.fn().mockResolvedValue([
+      {
+        execution_id: 'exec-collab',
+        session_id: null,
+        execution_status: 'running',
+        provider: 'stub',
+        model: 'stub-model',
+        tokens_used: 1,
+        execution_duration_ms: 10,
+        timestamp: null,
+        runMode: 'build',
+        agentId: null,
+        collaborationRunId: 'collab-run-001',
+        builderProfileId: 'builder-reviewer',
+      },
+      {
+        execution_id: 'exec-builder',
+        session_id: null,
+        execution_status: 'completed',
+        provider: null,
+        model: null,
+        tokens_used: null,
+        execution_duration_ms: null,
+        timestamp: null,
+        runMode: 'ask',
+        agentId: null,
+      },
+      {
+        execution_id: 'exec-null-keys',
+        session_id: null,
+        execution_status: 'failed',
+        provider: null,
+        model: null,
+        tokens_used: null,
+        execution_duration_ms: null,
+        timestamp: null,
+        runMode: null,
+        agentId: null,
+        collaborationRunId: null,
+        builderProfileId: null,
+      },
+    ]);
+
+    const mockGuard = { canActivate: jest.fn(() => true) };
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [AIExecutionController],
+      providers: [
+        { provide: UsageLedgerService, useValue: {} },
+        { provide: GlobalSafetyLimitService, useValue: {} },
+        { provide: QueueService, useValue: {} },
+        { provide: ExecutionResultService, useValue: { listRunsForUser } },
+        { provide: ExecutionStreamService, useValue: {} },
+        { provide: UserAiInstructionsService, useValue: {} },
+        { provide: ProjectAiContextService, useValue: {} },
+        { provide: SessionService, useValue: {} },
+      ],
+    })
+      .overrideGuard(SessionOrApiKeyAuthGuard)
+      .useValue(mockGuard)
+      .overrideGuard(AuthorizationGuard)
+      .useValue(mockGuard)
+      .overrideGuard(QuotaGuard)
+      .useValue(mockGuard)
+      .overrideGuard(TokenQuotaGuard)
+      .useValue(mockGuard)
+      .overrideGuard(CreditBalanceGuard)
+      .useValue(mockGuard)
+      .compile();
+
+    const controller = module.get(AIExecutionController);
+    const result = await controller.listExecutions(
+      {
+        userId: 'verified-user',
+        apiKeyId: 'key-123',
+        scopes: ['ai:execute'],
+      },
+      'recent',
+    );
+
+    expect(listRunsForUser).toHaveBeenCalledWith({
+      userId: 'verified-user',
+      state: 'recent',
+      limit: 20,
+    });
+    expect(result.runs).toEqual([
+      {
+        executionId: 'exec-collab',
+        status: 'running',
+        sessionId: null,
+        provider: 'stub',
+        model: 'stub-model',
+        tokensUsed: 1,
+        startedAt: null,
+        durationMs: 10,
+        mode: 'build',
+        agentId: null,
+        collaborationRunId: 'collab-run-001',
+        builderProfileId: 'builder-reviewer',
+      },
+      {
+        executionId: 'exec-builder',
+        status: 'completed',
+        sessionId: null,
+        provider: null,
+        model: null,
+        tokensUsed: null,
+        startedAt: null,
+        durationMs: null,
+        mode: 'ask',
+        agentId: null,
+        collaborationRunId: null,
+        builderProfileId: null,
+      },
+      {
+        executionId: 'exec-null-keys',
+        status: 'failed',
+        sessionId: null,
+        provider: null,
+        model: null,
+        tokensUsed: null,
+        startedAt: null,
+        durationMs: null,
+        mode: 'unknown',
+        agentId: null,
+        collaborationRunId: null,
+        builderProfileId: null,
+      },
+    ]);
+  });
+});

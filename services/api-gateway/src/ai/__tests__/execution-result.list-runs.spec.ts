@@ -7,7 +7,9 @@ function normalizeSql(sql: string): string {
 function assertNoSensitiveColumns(sql: string): void {
   const stripped = sql
     .replace(/metadata->>'runMode'/g, '')
-    .replace(/metadata->>'agentId'/g, '');
+    .replace(/metadata->>'agentId'/g, '')
+    .replace(/metadata->>'collaborationRunId'/g, '')
+    .replace(/metadata->>'builderProfileId'/g, '');
   expect(stripped.toLowerCase()).not.toContain('metadata');
   expect(stripped.toLowerCase()).not.toContain('prompt');
   expect(stripped.toLowerCase()).not.toContain('output');
@@ -24,6 +26,8 @@ const SELECT_LIST = [
   '"timestamp"',
   `metadata->>'runMode' AS "runMode"`,
   `metadata->>'agentId' AS "agentId"`,
+  `metadata->>'collaborationRunId' AS "collaborationRunId"`,
+  `metadata->>'builderProfileId' AS "builderProfileId"`,
 ].join(', ');
 
 const ACTIVE_STATUS =

@@ -12,6 +12,8 @@ export interface ListedRunRow {
   timestamp: Date | string | null;
   runMode: string | null;
   agentId: string | null;
+  collaborationRunId: string | null;
+  builderProfileId: string | null;
 }
 
 @Injectable()
@@ -86,7 +88,7 @@ export class ExecutionResultService {
   }
 
   /**
-   * Owner-scoped run list. Selects identity columns and two metadata keys only.
+   * Owner-scoped run list. Selects identity columns and four metadata keys only.
    * state 'active' keeps pending, running, and cancel_requested.
    * state 'recent' applies no status filter. Newest "timestamp" first.
    */
@@ -124,7 +126,9 @@ export class ExecutionResultService {
         execution_duration_ms,
         "timestamp",
         metadata->>'runMode' AS "runMode",
-        metadata->>'agentId' AS "agentId"
+        metadata->>'agentId' AS "agentId",
+        metadata->>'collaborationRunId' AS "collaborationRunId",
+        metadata->>'builderProfileId' AS "builderProfileId"
       FROM usage_records
       WHERE ${filters.join(' AND ')}
       ORDER BY "timestamp" DESC

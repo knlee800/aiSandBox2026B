@@ -182,6 +182,8 @@ interface ListedRunDto {
   durationMs: number | null;
   mode: ListedRunMode;
   agentId: string | null;
+  collaborationRunId: string | null;
+  builderProfileId: string | null;
 }
 
 /**
@@ -617,6 +619,8 @@ export class AIExecutionController {
       durationMs: this.nullableCount(row.execution_duration_ms),
       mode: this.mapListedRunMode(row.runMode),
       agentId: this.nullableText(row.agentId),
+      collaborationRunId: this.nullableText(row.collaborationRunId),
+      builderProfileId: this.nullableText(row.builderProfileId),
     };
   }
 

@@ -84507,7 +84507,7 @@ taskId=RUN-LIST-COLLAB-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-05. Lane 2, GATEWAY.
+**Status:** COMPLETE AND LOCKED — 2026-11-05. LANE-DONE and LOCKED by the control plane; Lane 2 and GATEWAY released. The run list returns collaborationRunId and builderProfileId. Checkpoint: docs/RUN-LIST-COLLAB-01-CHECKPOINT.md.
 **Task ID:** RUN-LIST-COLLAB-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -84524,11 +84524,11 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Each listed run has collaborationRunId and builderProfileId, null when the metadata keys are absent
-- [ ] The query still always filters by the caller and uses bound parameters; no other field or route changes
-- [ ] api-gateway npm test at baseline apart from new tests; npm run build exit 0
-- [ ] Only files in the write scope change
-- [ ] Not LOCKED by an implementer
+- [x] Each listed run has collaborationRunId and builderProfileId, null when the metadata keys are absent
+- [x] The query still always filters by the caller and uses bound parameters; no other field or route changes
+- [x] api-gateway npm test at baseline apart from new tests; npm run build exit 0
+- [x] Only files in the write scope change
+- [x] Not LOCKED by an implementer
 
 ### OFFICE-01 — Static office: your agents and their run status on one screen
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

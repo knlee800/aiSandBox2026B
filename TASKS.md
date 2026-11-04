@@ -5,13 +5,13 @@ maxImplementationLanes=2
 lane3=DISABLED
 lane1.state=ACTIVE
 lane1.taskId=USAGE-DURATION-01
-lane2.state=ACTIVE
-lane2.taskId=RUN-LIST-COLLAB-01
+lane2.state=EMPTY
+lane2.taskId=NONE
 governance.owner=NONE
 governance.state=UNOWNED
 saturationSuspended=false
 suspensionReason=NONE
-occupancyHash=sha256:1dc8ef0e93c86186ca6a683bb8c0b062a953b57045546fa134858da5cdbf4b04
+occupancyHash=sha256:2fb96b1766e6af78a3d9c72c5fcc347f8a5fed342e0d9d5b1bcfd03c43bcd0d1
 <!-- AISB_OCCUPANCY_V1_END -->
 
 **Parallel Development Architecture:** v1
@@ -291,9 +291,9 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 **Current status:** ADMITTED, Lane 1, with AI-SERVICE. Keith approved on 2026-11-05 with the RPG-OFFICE-01 plan. Scope in TASKS_BACKLOG_FULL.md.
 
-## RUN-LIST-COLLAB-01 — ADMITTED / Lane 2 ACTIVE — 2026-11-05
+## RUN-LIST-COLLAB-01 — COMPLETE AND LOCKED / Lane 2 RELEASED — 2026-11-05
 
-**Current status:** ADMITTED, Lane 2, with GATEWAY. Keith approved on 2026-11-05 with the RPG-OFFICE-01 plan. Scope in TASKS_BACKLOG_FULL.md.
+**Current status:** COMPLETE AND LOCKED - 2026-11-05. Lane 2 released. GATEWAY released UNOWNED. The run list returns collaborationRunId and builderProfileId. Checkpoint: docs/RUN-LIST-COLLAB-01-CHECKPOINT.md.
 
 ## OFFICE-01 — READY / NOT ADMITTED — 2026-11-05
 
@@ -307,7 +307,7 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 ACTIVE — USAGE-DURATION-01 — 2026-11-05.
 
 ## Lane 2
-ACTIVE — RUN-LIST-COLLAB-01 — 2026-11-05.
+EMPTY — Lane 2 released at RUN-LIST-COLLAB-01 COMPLETE AND LOCKED — 2026-11-05.
 
 ## Lane 3
 DISABLED
@@ -315,11 +315,11 @@ DISABLED
 ## Governance owner / state
 UNOWNED — GOV-OS-05 COMPLETE AND LOCKED — 2026-11-05.
 
-Lane 1 ACTIVE: USAGE-DURATION-01. Lane 2 ACTIVE: RUN-LIST-COLLAB-01. GOV-COLLAB-PLAN-01 is ACTIVE (governance, no lane). OFFICE-01 is READY with startCondition NOT_READY until both prerequisites are locked. SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted, registered by GOV-OS-05: AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01.
+Lane 1 ACTIVE: USAGE-DURATION-01. Lane 2 EMPTY. RUN-LIST-COLLAB-01 is COMPLETE AND LOCKED. GOV-COLLAB-PLAN-01 is ACTIVE (governance, no lane). OFFICE-01 is READY with startCondition NOT_READY until USAGE-DURATION-01 is locked. SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted, registered by GOV-OS-05: AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01.
 
 ## Active mutex / resource ownership
 - GOVERNANCE: UNOWNED — GOV-OS-05 lock 2026-11-05.
-- GATEWAY: OWNED by RUN-LIST-COLLAB-01 (2026-11-05).
+- GATEWAY: UNOWNED — released at RUN-LIST-COLLAB-01 COMPLETE AND LOCKED 2026-11-05.
 - MIGRATION: UNOWNED — released at COLLAB-GATE-01 COMPLETE AND LOCKED 2026-11-02.
 - FRONTEND: UNOWNED — released at COLLAB-ROUNDS-01 COMPLETE AND LOCKED 2026-11-03.
 - I18N: UNOWNED — released at COLLAB-ROUNDS-01 COMPLETE AND LOCKED 2026-11-03.
