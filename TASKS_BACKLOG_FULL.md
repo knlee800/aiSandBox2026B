@@ -84194,7 +84194,7 @@ taskId=GOV-COLLAB-PLAN-01
 nature=GOVERNANCE
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-OS-05 as a parked follow-up; not admitted.
+**Status:** ACTIVE — 2026-11-05. Started by Keith; governance, no lane; GOVERNANCE held only during record writes.
 **Task ID:** GOV-COLLAB-PLAN-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** GOVERNANCE
@@ -84282,6 +84282,7 @@ nature=IMPLEMENTATION
 
 **Holds:** Step 5 of the harness reset order: an RPG-style office where agents are shown working. Graphics and UI reference per the PRD future office UI note.
 **Named in:** docs/GOV-HARNESS-RESET-01-DECISION.md reset order step 5; PRD.md section 11 future office UI note.
+**Plan, 2026-11-05:** docs/RPG-OFFICE-01-PLAN.md, approved by Keith. First slice OFFICE-01 (registered; prerequisites USAGE-DURATION-01 and RUN-LIST-COLLAB-01). Items of this umbrella: OFFICE-02 push updates, OFFICE-03 characters, OFFICE-04 animation, OFFICE-05 collaboration in the office, OFFICE-06 run detail, OFFICE-07 cancel from the office, an optional agentId filter on the run list, the real art source (decided before OFFICE-03), "Open workspace" going to the run's session, and the deploy and Keith's browser check of OFFICE-01. The umbrella stays NOT_READY; each item is registered as its own task when chosen.
 
 #### Acceptance criteria
 
@@ -84382,6 +84383,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-05). **productClass:** CURRENT per PRD.md.
 
 **Holds:** (1) The worker never writes usage_records.execution_duration_ms: nothing calls updateExecutionResult, so completed rows show null duration. (2) The gateway admin quota-visibility and billing reconciliation, and the container-manager internal quota, usage and billing-export controllers, read SQLite tables that nothing writes on a deployed host.
+**Dispositions, 2026-11-05:** item 1 is superseded by USAGE-DURATION-01.
 **Named in:** USAGE-MODEL-01 checkpoint line 65; HARNESS-LIVE-06 checkpoint line 13; CM-QUOTA-DEAD-01 checkpoint line 62.
 
 #### Acceptance criteria
@@ -84452,7 +84454,7 @@ taskId=GOV-RPG-OFFICE-PLAN-01
 nature=GOVERNANCE
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ACTIVE — 2026-11-05. Governance; no lane. GOVERNANCE is held only during this task's record writes.
+**Status:** COMPLETE AND LOCKED — 2026-11-05. Governance; no lane. Plan approved by Keith: docs/RPG-OFFICE-01-PLAN.md. Checkpoint: docs/GOV-RPG-OFFICE-PLAN-01-CHECKPOINT.md.
 **Task ID:** GOV-RPG-OFFICE-PLAN-01
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** GOVERNANCE. **Lifecycle:** 2-STEP: this registration; the closing record with the approved plan.
@@ -84465,9 +84467,96 @@ nature=GOVERNANCE
 
 #### Acceptance criteria
 
-- [ ] docs/RPG-OFFICE-01-PLAN.md answers every point in Purpose and names the first slice with its write scope
-- [ ] Keith approves the plan
-- [ ] Every follow-up the plan names has a disposition
+- [x] docs/RPG-OFFICE-01-PLAN.md answers every point in Purpose and names the first slice with its write scope
+- [x] Keith approves the plan
+- [x] Every follow-up the plan names has a disposition
+- [x] Not LOCKED by an implementer
+
+### USAGE-DURATION-01 — Write the run duration into usage_records when the worker finalizes an execution
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=USAGE-DURATION-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED — 2026-11-05. Lane 1, AI-SERVICE.
+**Task ID:** USAGE-DURATION-01
+**Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP under the GOV-OS-04 record rules: registration and admission here; code and LOCK in one commit (LOCAL-TESTS).
+**Start condition (human):** READY — Keith approved the RPG-OFFICE-01 plan and this task on 2026-11-05.
+**Depends on:** none.
+**Primary write scope:** `services/ai-service/src/worker/worker.processor.ts`, `services/ai-service/src/worker/worker.processor.spec.ts`.
+**Mutexes / resources:** AI-SERVICE. **Hot-file leases:** none. **Shared contracts:** HARNESS_ENTITLEMENT_PROOF_V1 stays frozen; this task must not change it. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (one UPDATE gains one column; no migration).
+**saturationClass:** OPTIONAL
+
+**Problem:** usage_records.execution_duration_ms stays null for every worker-finalized run, so the run list returns durationMs null (USAGE-MODEL-01 checkpoint line 65; HARNESS-LIVE-06 checkpoint line 13). It is USAGE-DATA-01 item 1 and a prerequisite of OFFICE-01.
+
+**Scope:** on every path where the worker writes an execution's final status, it writes the measured wall-clock duration in whole milliseconds into execution_duration_ms in the same UPDATE that writes the status and model. Non-negative integer. Every other column, stream event, accounting call and the entitlement proof are unchanged. Existing rows are not backfilled. Spec tests for each terminal path.
+
+#### Acceptance criteria
+
+- [ ] Every path where the worker writes a final status also writes a non-negative integer execution_duration_ms in that UPDATE
+- [ ] No other column, parameter, stream, accounting or entitlement behaviour changes
+- [ ] ai-service npm test at baseline apart from new tests; npm run build exit 0
+- [ ] Only files in the write scope change
+- [ ] Not LOCKED by an implementer
+
+### RUN-LIST-COLLAB-01 — The run list returns the collaboration run and role of each run
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=RUN-LIST-COLLAB-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED — 2026-11-05. Lane 2, GATEWAY.
+**Task ID:** RUN-LIST-COLLAB-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP under the GOV-OS-04 record rules: registration and admission here; code and LOCK in one commit (LOCAL-TESTS).
+**Start condition (human):** READY — Keith approved the RPG-OFFICE-01 plan and this task on 2026-11-05.
+**Depends on:** none.
+**Primary write scope:** `services/api-gateway/src/ai/execution-result.service.ts`, `services/api-gateway/src/ai/ai-execution.controller.ts`, `services/api-gateway/src/ai/ai-execution.controller.spec.ts`, `services/api-gateway/src/ai/__tests__/execution-result.list-runs.spec.ts`, `services/api-gateway/src/ai/__tests__/ai-execution.run-status.http.spec.ts`.
+**Mutexes / resources:** GATEWAY. **Hot-file leases:** none. **Shared contracts:** HARNESS_ENTITLEMENT_PROOF_V1 stays frozen; this task must not change it. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (two selected metadata keys and two DTO fields; no migration).
+**saturationClass:** OPTIONAL
+
+**Problem:** collaboration member runs carry no agentId, so a run list consumer cannot tell them from Builder runs. The usage ledger already stores collaborationRunId and builderProfileId in usage_records.metadata (usage-ledger.service.ts lines 162-163). Prerequisite of OFFICE-01 (its Team desk).
+
+**Scope:** GET /api/ai/executions also returns collaborationRunId and builderProfileId for each run (null when absent), selected as metadata->>'collaborationRunId' and metadata->>'builderProfileId'. The user filter, bound parameters, limits, other fields and every other route are unchanged. Spec and HTTP tests for present and absent values.
+
+#### Acceptance criteria
+
+- [ ] Each listed run has collaborationRunId and builderProfileId, null when the metadata keys are absent
+- [ ] The query still always filters by the caller and uses bound parameters; no other field or route changes
+- [ ] api-gateway npm test at baseline apart from new tests; npm run build exit 0
+- [ ] Only files in the write scope change
+- [ ] Not LOCKED by an implementer
+
+### OFFICE-01 — Static office: your agents and their run status on one screen
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=OFFICE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. First slice of RPG-OFFICE-01; future work authorized by Keith with the plan.
+**Task ID:** OFFICE-01
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP: registration here; admission when the prerequisites are locked; code and LOCK (LOCAL-TESTS). The browser check on staging belongs to a later deploy (RPG-OFFICE-01 item).
+**Start condition (human):** NOT_READY. Ready when: USAGE-DURATION-01 and RUN-LIST-COLLAB-01 are COMPLETE AND LOCKED. Keith admits.
+**Depends on:** USAGE-DURATION-01, RUN-LIST-COLLAB-01.
+**Primary write scope:** `frontend/app/` (new office route under the locale segment), `frontend/components/office/`, `frontend/lib/office/`, `frontend/hooks/useOfficeRuns.ts`, `frontend/components/platform/platform-dashboard.tsx`, `frontend/components/platform/platform-dashboard.test.ts`, `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`.
+**Mutexes / resources:** FRONTEND, I18N. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (new route and components plus one header link; no backend).
+**saturationClass:** OPTIONAL. **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith, 2026-11-05).
+
+**Scope:** as docs/RPG-OFFICE-01-PLAN.md section 2 with the [CP edit] changes: a new office route, one desk per agent (Builder, the three coming-soon agents as vacant desks, the user's agents, a Team desk for runs with a collaborationRunId, a Former agents desk when needed), a desk panel with the current run and the last five runs, 5-second polling while a run is active and paused while hidden, server-known states only (never "applied"), simple geometric art as inline SVG, every string in en / zh-TW / zh-CN, Heroicons v2 Outline, and one header link from the platform screen. Read-only: no approve, reject, hand-off or cancel in the office.
+
+#### Acceptance criteria
+
+- [ ] The office shows each desk with the status model of the plan section 4, from GET /api/agents and GET /api/ai/executions only
+- [ ] Polling runs only while a desk is Queued, Working or Stopping and pauses while the tab is hidden
+- [ ] Collaboration runs appear on the Team desk with their role; agent runs on their agent's desk
+- [ ] No action control that changes work; every visible string from the three message files
+- [ ] frontend tests, tsc and build pass
+- [ ] Only files in the write scope change
 - [ ] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks

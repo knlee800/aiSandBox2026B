@@ -3,15 +3,15 @@
 schemaVersion=1
 maxImplementationLanes=2
 lane3=DISABLED
-lane1.state=EMPTY
-lane1.taskId=NONE
-lane2.state=EMPTY
-lane2.taskId=NONE
+lane1.state=ACTIVE
+lane1.taskId=USAGE-DURATION-01
+lane2.state=ACTIVE
+lane2.taskId=RUN-LIST-COLLAB-01
 governance.owner=NONE
 governance.state=UNOWNED
 saturationSuspended=false
 suspensionReason=NONE
-occupancyHash=sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d
+occupancyHash=sha256:1dc8ef0e93c86186ca6a683bb8c0b062a953b57045546fa134858da5cdbf4b04
 <!-- AISB_OCCUPANCY_V1_END -->
 
 **Parallel Development Architecture:** v1
@@ -283,15 +283,31 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-05. Lane 1 released. GATEWAY released UNOWNED. Opening a project restores nothing while the caller has an active run in that session. Live check is HARNESS-FIXES-01 item 12. Not deployed. Checkpoint: docs/HARNESS-REOPEN-01-CHECKPOINT.md.
 
-## GOV-RPG-OFFICE-PLAN-01 — ACTIVE / NOT AN IMPLEMENTATION LANE — 2026-11-05
+## GOV-RPG-OFFICE-PLAN-01 — COMPLETE AND LOCKED / NOT AN IMPLEMENTATION LANE — 2026-11-05
 
-**Current status:** ACTIVE - 2026-11-05. Plan for RPG-OFFICE-01 in progress; GOVERNANCE held only during record writes. Keith approved the draft on 2026-11-05. Scope in TASKS_BACKLOG_FULL.md.
+**Current status:** COMPLETE AND LOCKED - 2026-11-05. Plan approved by Keith: docs/RPG-OFFICE-01-PLAN.md. OFFICE-01 registered as the first slice. Checkpoint: docs/GOV-RPG-OFFICE-PLAN-01-CHECKPOINT.md.
+
+## USAGE-DURATION-01 — ADMITTED / Lane 1 ACTIVE — 2026-11-05
+
+**Current status:** ADMITTED, Lane 1, with AI-SERVICE. Keith approved on 2026-11-05 with the RPG-OFFICE-01 plan. Scope in TASKS_BACKLOG_FULL.md.
+
+## RUN-LIST-COLLAB-01 — ADMITTED / Lane 2 ACTIVE — 2026-11-05
+
+**Current status:** ADMITTED, Lane 2, with GATEWAY. Keith approved on 2026-11-05 with the RPG-OFFICE-01 plan. Scope in TASKS_BACKLOG_FULL.md.
+
+## OFFICE-01 — READY / NOT ADMITTED — 2026-11-05
+
+**Current status:** READY, startCondition NOT_READY until USAGE-DURATION-01 and RUN-LIST-COLLAB-01 are COMPLETE AND LOCKED. First slice of RPG-OFFICE-01; future work authorized by Keith on 2026-11-05. Scope in TASKS_BACKLOG_FULL.md.
+
+## GOV-COLLAB-PLAN-01 — ACTIVE / NOT AN IMPLEMENTATION LANE — 2026-11-05
+
+**Current status:** ACTIVE - 2026-11-05. Collaboration plan document started by Keith alongside office slice 1; GOVERNANCE held only during record writes. Scope in TASKS_BACKLOG_FULL.md.
 
 ## Lane 1
-EMPTY — Lane 1 released at HARNESS-REOPEN-01 COMPLETE AND LOCKED — 2026-11-05.
+ACTIVE — USAGE-DURATION-01 — 2026-11-05.
 
 ## Lane 2
-EMPTY — Lane 2 released at COLLAB-SCREEN-02 COMPLETE AND LOCKED — 2026-11-03.
+ACTIVE — RUN-LIST-COLLAB-01 — 2026-11-05.
 
 ## Lane 3
 DISABLED
@@ -299,11 +315,11 @@ DISABLED
 ## Governance owner / state
 UNOWNED — GOV-OS-05 COMPLETE AND LOCKED — 2026-11-05.
 
-Both implementation lanes are EMPTY. HARNESS-REOPEN-01 is COMPLETE AND LOCKED. GOV-RPG-OFFICE-PLAN-01 is ACTIVE (governance, no lane). SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted, registered by GOV-OS-05: GOV-COLLAB-PLAN-01, AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01.
+Lane 1 ACTIVE: USAGE-DURATION-01. Lane 2 ACTIVE: RUN-LIST-COLLAB-01. GOV-COLLAB-PLAN-01 is ACTIVE (governance, no lane). OFFICE-01 is READY with startCondition NOT_READY until both prerequisites are locked. SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted, registered by GOV-OS-05: AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01.
 
 ## Active mutex / resource ownership
 - GOVERNANCE: UNOWNED — GOV-OS-05 lock 2026-11-05.
-- GATEWAY: UNOWNED — released at HARNESS-REOPEN-01 COMPLETE AND LOCKED 2026-11-05.
+- GATEWAY: OWNED by RUN-LIST-COLLAB-01 (2026-11-05).
 - MIGRATION: UNOWNED — released at COLLAB-GATE-01 COMPLETE AND LOCKED 2026-11-02.
 - FRONTEND: UNOWNED — released at COLLAB-ROUNDS-01 COMPLETE AND LOCKED 2026-11-03.
 - I18N: UNOWNED — released at COLLAB-ROUNDS-01 COMPLETE AND LOCKED 2026-11-03.
@@ -325,7 +341,7 @@ Both implementation lanes are EMPTY. HARNESS-REOPEN-01 is COMPLETE AND LOCKED. G
 - HOTFILE:e2e/builder-golden-path/tests/network.spec.ts: UNOWNED
 - PACKAGE: UNOWNED — released at HARNESS-PROVIDERS-01 COMPLETE AND LOCKED 2026-11-01.
 - LOCAL-RUNTIME: UNOWNED — released at CLEAN-BASELINE-RUNTIME-01 lock 2026-10-07.
-- AI-SERVICE: UNOWNED — released at HARNESS-DELETE-01 COMPLETE AND LOCKED 2026-11-04.
+- AI-SERVICE: OWNED by USAGE-DURATION-01 (2026-11-05).
 - CONTAINER-MANAGER: UNOWNED — released at COLLAB-DIFF-NEW-01 COMPLETE AND LOCKED 2026-11-04.
 - All other resources: UNOWNED
 - HOTFILE:ops/clean-baseline/lib/ops-lib.sh: UNOWNED — released at OPS-APPEND-IDS-01 COMPLETE AND LOCKED 2026-11-04.
