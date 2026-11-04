@@ -46,5 +46,6 @@ Report results to the control plane. The control plane updates the board and reg
 ## Conservative default
 
 If unclear: do not start, do not invent work, do not expand scope.
-Keith/user owns Git. No commit, push, branch, or worktree unless explicitly requested.
+Keith/user owns Git. Implementation workers never commit, push, branch or create worktrees.
+The control plane commits and pushes only work Keith has authorized, after reading the diff and rerunning the gates.
 No subagents by default.

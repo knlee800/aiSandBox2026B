@@ -84169,7 +84169,7 @@ taskId=GOV-OS-05
 nature=GOVERNANCE
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ACTIVE — 2026-11-04. Governance; no lane. GOVERNANCE held; Development OS mutation begun with both lanes empty.
+**Status:** COMPLETE AND LOCKED — 2026-11-05. Governance; no lane. GOVERNANCE released UNOWNED; Development OS mutation ended. Checkpoint: docs/GOV-OS-05-CHECKPOINT.md.
 **Task ID:** GOV-OS-05
 **Nature:** GOVERNANCE. **Lifecycle:** 2-STEP: this record begins the mutation; the closing record ends it.
 **Start condition:** Keith approved the draft on 2026-11-04, after a read-only Cursor review (grok-4.7-xhigh) and a Fable 5.1 review.
@@ -84178,13 +84178,239 @@ nature=GOVERNANCE
 
 **Problem:** plans, decision records and checkpoints named follow-up work as "proposed, not registered" or "Not registered", plan tasks were told "Do not register X", locked tasks cannot be edited, and the Next-Work Selection Protocol sees only registered tasks. Named follow-ups therefore never surfaced when Keith asked what was next. Examples: AGENT-COLLAB-01 to 04 and AGENT-KNOWLEDGE-01 to 04 were never registered; the planned continuous-evals slice lost its ID AGENT-HARNESS-07 to other work until HARNESS-EVAL-01; about 20 checkpoint follow-ups and several items held only in session memory have no registry entry. Also: CLAUDE.md Model Routing names Grok 4.6 while practice is grok-4.7; the CLAUDE.md and AGENTS.md Git lines do not state who commits; the board sections "Frozen contracts" and "Current blockers" still state the deferred private-beta GO as current.
 **Scope:** (1) CLAUDE.md Project Governance Loop: every follow-up named in a plan, decision record, stage-start, checkpoint, review or live-run finding, or approved by Keith in chat, gets one disposition before the naming task's lifecycle ends (LOCK, REJECTED, RETURN-TO-READY or Keith's drop), or in the same control-plane record when no task names it: registered (status READY, startCondition NOT_READY, not admitted, with a readiness condition and decider, saturationClass named by Keith, productClass per PRD, PROVISIONAL write set with admissionUncertain true when undesigned), superseded by a named task and acceptance criterion with any remainder registered, or dropped by Keith in a one-line backlog list; "Not registered" is not a disposition; closing records carry a FOLLOWUPS line; locked documents are not edited. (2) "Do not register X" limits that task's own write step only, unless Keith recorded X as PARKED or PROHIBITED. (3) Next-Work Selection Protocol output lists READY tasks and NOT_READY tasks whose condition is met or is Keith's decision. (4) Git lines in CLAUDE.md and AGENTS.md: implementation workers never commit, push, branch or create worktrees; the control plane commits and pushes only work Keith has authorized, after reading the diff and rerunning the gates. (5) Model Routing to grok-4.7-high and grok-4.7-xhigh, passed explicitly. (6) Correct the stale private-beta GO lines in the board's current sections. (7) Apply Keith's per-item decisions on the orphaned follow-ups. Not in scope: lane count, mutexes, the scheduler, admission rules, the validator.
+**Close record, 2026-11-05:** CLAUDE.md and AGENTS.md carry the rules in scope items 1 to 5; the board's Frozen contracts and Current blockers lines no longer state the private-beta GO as current. Keith chose the dispositions on 2026-11-05. FOLLOWUPS: 30 registered / 7 superseded / 2 dropped / 0 undisposed. Registered NOT_READY: GOV-COLLAB-PLAN-01, AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01. Superseded items are listed in docs/GOV-OS-05-CHECKPOINT.md; dropped items are in the Dropped follow-ups list at the end of this file.
 
 #### Acceptance criteria
 
-- [ ] CLAUDE.md and AGENTS.md state the rules in scope items 1 to 5, and no other OS semantics change
-- [ ] Every orphaned follow-up in the checkpoint has a disposition Keith chose, and the closing record carries a FOLLOWUPS line with 0 undisposed
-- [ ] The board no longer states the private-beta GO as current
-- [ ] The validator passes at both records
+- [x] CLAUDE.md and AGENTS.md state the rules in scope items 1 to 5, and no other OS semantics change
+- [x] Every orphaned follow-up in the checkpoint has a disposition Keith chose, and the closing record carries a FOLLOWUPS line with 0 undisposed
+- [x] The board no longer states the private-beta GO as current
+- [x] The validator passes at both records
+- [x] Not LOCKED by an implementer
+
+### GOV-COLLAB-PLAN-01 — Update the AGENT-COLLAB-00 plan with what the COLLAB tasks built
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-COLLAB-PLAN-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-OS-05 as a parked follow-up; not admitted.
+**Task ID:** GOV-COLLAB-PLAN-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE
+**Lifecycle:** 2-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith chooses to review the plan. Keith decides.
+**Depends on:** none recorded; see the ready condition.
+**Primary write scope:** a new decision document under docs/ and TASKS_BACKLOG_FULL.md; set at admission.
+**Mutexes / resources:** GOVERNANCE.
+
+**Holds:** Record in a new decision document what COLLAB-INTERNAL-01 to COLLAB-LIVE-07 built (internal routes, approval gate, loop prevention, agent-chosen hand-offs, read-only file access, the collaboration page, Writer fixes with revert, send-back rounds with the diff) against what docs/AGENT-COLLAB-00-COLLABORATION-PROTOCOL-PLAN.md still wants, and have Keith decide which business-agent parts stay. The locked plan is not edited.
+**Named in:** docs/AGENT-COLLAB-00-COLLABORATION-PROTOCOL-PLAN.md (last changed 2026-07-06); the COLLAB-* checkpoints.
+
+#### Acceptance criteria
+
+- [ ] The decision document records what was built and what the plan still wants, and Keith's choice on each remaining part
+- [ ] Every follow-up it names has a disposition
+- [ ] Not LOCKED by an implementer
+
+### AGENT-COLLAB-BIZ-01 — Business-agent collaboration: work objects, Chief of Staff, approval categories
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=AGENT-COLLAB-BIZ-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-OS-05 as a parked follow-up; not admitted.
+**Task ID:** AGENT-COLLAB-BIZ-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition (human):** NOT_READY. Ready when: GOV-COLLAB-PLAN-01 is locked and Keith keeps these parts. Keith decides.
+**Depends on:** none recorded; see the ready condition.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-05). **productClass:** APPROVED_FUTURE per PRD.md.
+
+**Holds:** What is left of AGENT-COLLAB-01 to 04 after the COLLAB tasks: work objects (tickets, decisions, drafts, comments), a functional Chief of Staff and the contract scenario, approval categories, and modify / defer / escalate actions. Split into bounded slices at admission.
+**Named in:** AGENT-COLLAB-00 plan slices AGENT-COLLAB-01 to 04, never registered; PRD.md section 11 (approved FUTURE).
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set, split into bounded slices where needed, and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### AGENT-KNOWLEDGE-01 — Knowledge base: scope registry, markdown upload, summaries, source tracing
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=AGENT-KNOWLEDGE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-OS-05 as a parked follow-up; not admitted.
+**Task ID:** AGENT-KNOWLEDGE-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith chooses it. Keith decides.
+**Depends on:** none recorded; see the ready condition.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-05). **productClass:** APPROVED_FUTURE per PRD.md.
+
+**Holds:** The plan slices AGENT-KNOWLEDGE-01 to 04 of AGENT-KNOWLEDGE-00 as one parked umbrella: knowledge scope registry, markdown upload, summaries, and source tracing. Split into bounded slices at admission; this ID is the umbrella.
+**Named in:** AGENT-KNOWLEDGE-00 plan; PRD.md section 8 (shared and specialist knowledge runtime is approved FUTURE).
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set, split into bounded slices where needed, and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### RPG-OFFICE-01 — RPG-style agent office
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=RPG-OFFICE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-OS-05 as a parked follow-up; not admitted.
+**Task ID:** RPG-OFFICE-01
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith chooses it. Keith decides.
+**Depends on:** none recorded; see the ready condition.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-05). **productClass:** APPROVED_FUTURE per PRD.md.
+
+**Holds:** Step 5 of the harness reset order: an RPG-style office where agents are shown working. Graphics and UI reference per the PRD future office UI note.
+**Named in:** docs/GOV-HARNESS-RESET-01-DECISION.md reset order step 5; PRD.md section 11 future office UI note.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set, split into bounded slices where needed, and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### ACCESS-READY-01 — Ready for users other than Keith: charging, per-user limit, write flag, socket rooms, data retention
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=ACCESS-READY-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-OS-05 as a parked follow-up; not admitted.
+**Task ID:** ACCESS-READY-01
+**Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition (human):** NOT_READY. Ready when: Before anyone but Keith uses Agent mode or the collaboration page. Keith decides.
+**Depends on:** none recorded; see the ready condition.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-05). **productClass:** CURRENT per PRD.md.
+
+**Holds:** (1) Charge Agent runs and replace the global rolling token limit with a real per-user or per-plan limit. (2) Credits that vary by model, and limit which models the Builder offers. (3) Replace the one global write flag, so a write window for one feature does not open Agent writes. (4) Authenticate Socket.IO room joins: join-session joins any session's room. (5) Decide on previous_response_id, which keeps conversations stored at OpenAI and xAI. Split into bounded slices at admission.
+**Named in:** HARNESS-QUOTA-01 checkpoint line 42; HARNESS-PROVIDERS-01 checkpoint lines 73 and 74; COLLAB-LIVE-06 and COLLAB-LIVE-07 checkpoints; AUTH-OWNER-01 checkpoint line 53; HARNESS-LIVE-06 checkpoint line 46.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set, split into bounded slices where needed, and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### HARNESS-FIXES-01 — Harness fixes from the live runs and reviews
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=HARNESS-FIXES-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-OS-05 as a parked follow-up; not admitted.
+**Task ID:** HARNESS-FIXES-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith chooses it. Keith decides.
+**Depends on:** none recorded; see the ready condition.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-05). **productClass:** CURRENT per PRD.md.
+
+**Holds:** (1) npm test in frontend does not run frontend/lib/ai/*.test.ts. (2) xAI tool failures use the OpenAI wording of the shared mapper. (3) The plain output limit stays 4096 for OpenAI, xAI and DeepSeek. (4) A malformed tool call the loop does not answer may be rejected on the next step. (5) A failed workspace search returns no matches instead of an error. (6) The model selector can return to a provider with no key after a reload, and the only message is "Execution ended with status: failed". (7) The model offers to create .env; a prompt line could stop the offer. (8) requireApprovalForDelete is true but deletes run without an approval step. (9) xAI, OpenAI and DeepSeek are not proven live. (10) Reopening a project while an Agent run works restores the saved copy over files written so far. (11) An interrupted Build answer says "I've added" and the notice then says it was not applied. Split into bounded slices at admission.
+**Named in:** HARNESS-PROVIDERS-01 checkpoint line 75; HARNESS-LIVE-06 checkpoint lines 38 to 40; HARNESS-SAVE-01 checkpoint line 45; HARNESS-DELETE-01 checkpoint lines 52 and 53; container-manager docker-runtime.service.ts searchWorkspace.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set, split into bounded slices where needed, and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### BUILDER-POLISH-01 — Builder polish: History labels, error detail, preview and history behaviour
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=BUILDER-POLISH-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-OS-05 as a parked follow-up; not admitted.
+**Task ID:** BUILDER-POLISH-01
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith sends his UI list or chooses it. Keith decides.
+**Depends on:** none recorded; see the ready condition.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-05). **productClass:** CURRENT per PRD.md.
+
+**Holds:** (1) The raw HTTP detail shown when a request fails, and hardcoded History labels such as Controls and Checkpoint Browser. (2) "Model: ... unknown" in the chat is hardcoded English. (3) Preview start returning 400 while starting (check first: the frontend has tolerated a passing 400 since PREVIEW-AUTOSTART-01A). (4) Preview polling of a stopped session. (5) Checkpoint history bundle pruning. (6) Preview refresh UX, Next, CRA, Vue and Express previews, mobile polish, apex routing. (7) Keith's own UI list, such as overlapping buttons, when he sends it. Split into bounded slices at admission.
+**Named in:** SAVEPOINT-I18N-01 checkpoint line 59; CLEAN-BASELINE-DEPLOY-01 checkpoint line 67; HARNESS-LIVE-06 checkpoint line 41; frontend/components/workspace/workspace-shell.tsx.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set, split into bounded slices where needed, and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### USAGE-DATA-01 — Usage data: execution duration and the SQLite quota and billing readers
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=USAGE-DATA-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-OS-05 as a parked follow-up; not admitted.
+**Task ID:** USAGE-DATA-01
+**Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith chooses it. Keith decides.
+**Depends on:** none recorded; see the ready condition.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-05). **productClass:** CURRENT per PRD.md.
+
+**Holds:** (1) The worker never writes usage_records.execution_duration_ms: nothing calls updateExecutionResult, so completed rows show null duration. (2) The gateway admin quota-visibility and billing reconciliation, and the container-manager internal quota, usage and billing-export controllers, read SQLite tables that nothing writes on a deployed host.
+**Named in:** USAGE-MODEL-01 checkpoint line 65; HARNESS-LIVE-06 checkpoint line 13; CM-QUOTA-DEAD-01 checkpoint line 62.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set, split into bounded slices where needed, and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### FE-TEST-COVERAGE-01 — Frontend platform test coverage
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=FE-TEST-COVERAGE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-OS-05 as a parked follow-up; not admitted.
+**Task ID:** FE-TEST-COVERAGE-01
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith chooses it. Keith decides.
+**Depends on:** none recorded; see the ready condition.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-05). **productClass:** CURRENT per PRD.md.
+
+**Holds:** Close the frontend platform test coverage gaps found in the reviews. The missing frontend/lib/ai tests in npm test are item 1 of HARNESS-FIXES-01. Scope is set at admission.
+**Named in:** Keith-approved follow-up from the harness reviews.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set, split into bounded slices where needed, and approved by Keith before admission
 - [ ] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
@@ -84223,3 +84449,10 @@ nature=GOVERNANCE
 - [x] GOVERNANCE is never held at the same time as a CLEAN-BASELINE-OPS-01 record write
 - [x] Not LOCKED before Step 4 verification
 
+
+## Dropped follow-ups
+
+One line per follow-up Keith dropped: date, follow-up, where it was named, reason, deciding record.
+
+- 2026-11-05 — BETA-READY-SMOKE, the pre-beta full-stack live smoke (B3), named in docs/AGENT-PLATFORM-RPG-03B-CHECKPOINT.md — PRIVATE-BETA-E2E-LIVE-11 passed a full-stack live run on 2026-08-23 and the private beta is deferred (2026-10-31); a later rollout plans its own smoke — GOV-OS-05.
+- 2026-11-05 — live checks not exercised in STAGING-DEPLOY-03: a failed step's reason (RUN-ERROR-01), hand-off recovery after a Gateway restart (COLLAB-HANDOFF-RECOVER-01), a refused deploy (OPS-APPEND-IDS-01), named in docs/STAGING-DEPLOY-03-CHECKPOINT.md — unit-tested; the next staging window exercises them — GOV-OS-05.

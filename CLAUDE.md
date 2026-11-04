@@ -431,6 +431,8 @@ If current authorities and backlog still leave multiple genuinely valid frontier
 
 Normally: a concise evidence-grounded recommendation, OR a bounded choice for Keith when genuine ambiguity remains.
 
+List registered READY tasks, and NOT_READY tasks whose readiness condition is met or is Keith's decision. Plans and checkpoints are not sources: their follow-ups reach selection only through registration.
+
 Not normally: another broad strategic audit, another reconciliation task, or another roadmap/source-map document.
 
 ### Record economy (GOV-OS-04)
@@ -461,6 +463,13 @@ Rules:
 - No code may be written without an admitted task on the TASKS board.
 - No task may be completed without a checkpoint.
 - No checkpoint may exist without a source task.
+- Every follow-up named in a plan, decision record, stage-start, checkpoint, review or live-run finding, or approved by Keith in chat, gets exactly one disposition before the naming task's lifecycle ends (LOCK, REJECTED, RETURN-TO-READY or Keith's drop), or in the same control-plane record when no task names it:
+  1. **Registered** in `TASKS_BACKLOG_FULL.md` and, for implementation tasks, in the sidecar as status=READY, startCondition=NOT_READY, not admitted. The body states what makes it READY and who decides. Keith names its saturationClass. productClass follows PRD (APPROVED_FUTURE stays APPROVED_FUTURE). Undesigned work uses writeSetPrecision=PROVISIONAL with admissionUncertain=true.
+  2. **Superseded** by a named task and acceptance criterion, with any remainder registered.
+  3. **Dropped** by Keith: one line with date and reason in the backlog's Dropped follow-ups list.
+- "Not registered" is not a disposition. The closing record carries `FOLLOWUPS: n registered / n superseded / n dropped / 0 undisposed`.
+- Dispositions for follow-ups named in locked documents are recorded in the backlog and in the deciding checkpoint. The locked documents are not edited.
+- "Do not register X" in a task body limits that task's own write step only, unless Keith recorded X as PARKED or PROHIBITED.
 - The TASKS.md CURRENT EXECUTION BOARD is the only current scheduler.
 - `TASKS_BACKLOG_FULL.md` is the canonical task registry.
 - Control-plane end status is mirrored into board fields and the canonical backlog body. Do not full-body mirror. Do not append to Program Status.
@@ -531,18 +540,19 @@ Fresh windows must always follow the deterministic boot sequence: `AGENTS.md` â†
 
 ## Model Routing
 
-Last reviewed: 2026-08-18
+Last reviewed: 2026-11-04
 
-- **Implementation:** Grok 4.6 High
-- **Grok 4.6 XHigh** only for:
+- **Implementation:** grok-4.7-high
+- **grok-4.7-xhigh** only for:
   - hard / risky implementation
   - difficult debugging
   - unclear root cause
   - migration / data-integrity-sensitive work
   - architecture-heavy implementation
   - after High has failed or repeatedly made mistakes
-- **Registration / consolidation:** Grok 4.6 High OR Sonnet 4.6 depending on current Cursor usage / quota
+- **Registration / consolidation:** grok-4.7-high
 - **High-risk independent architecture / review:** Opus may be used when justified
+- Always pass the model explicitly. Never use Auto.
 
 Do not duplicate this table in `AGENTS.md`, the TASKS board, or every future task body.
 
@@ -553,10 +563,8 @@ Stay cost-aware. Do not use stronger models for routine bounded edits.
 ## Git / Operator Rules
 
 - Keith / user owns Git.
-- Do not commit.
-- Do not push.
-- Do not create branches.
-- Do not create worktrees unless explicitly requested / authorized by the active control-plane task.
+- Implementation workers never commit, push, create branches or create worktrees.
+- The control plane commits and pushes only work Keith has authorized, after reading the diff and rerunning the gates.
 - Do not include commit / push steps in routine prompts unless explicitly asked.
 
 ---
