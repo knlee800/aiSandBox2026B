@@ -87,6 +87,12 @@ jest.mock('ioredis', () =>
   })),
 );
 
+function expectDurationMs(value: unknown): void {
+  expect(typeof value).toBe('number');
+  expect(Number.isInteger(value)).toBe(true);
+  expect(value as number).toBeGreaterThanOrEqual(0);
+}
+
 describe('buildAIExecutionRequest', () => {
   it('passes requested model from job payload to AIExecutionService request', () => {
     const request = buildAIExecutionRequest(
@@ -1555,6 +1561,12 @@ describe('PRIVATE-BETA-BLOCKER-03C: worker abort timeout behavior', () => {
     expect(execute.mock.calls[0][0].signal.aborted).toBe(true);
     expect(execute).toHaveBeenCalledTimes(1);
     expect(ledger.timeoutUpdates).toHaveLength(1);
+    const timeoutCall = ledger.query.mock.calls.find(([sql]) =>
+      String(sql).includes("SET execution_status = 'timeout'"),
+    );
+    expect(String(timeoutCall?.[0])).toContain('execution_duration_ms = $2');
+    expect(timeoutCall?.[1]?.[0]).toBe('exec-grok-45-timeout-once');
+    expectDurationMs(timeoutCall?.[1]?.[1]);
     expect(ledger.status.value).toBe('timeout');
     expect(publisher.publishCompletion).toHaveBeenCalledTimes(1);
     expect(publisher.publishFileActions).not.toHaveBeenCalled();
@@ -2345,6 +2357,7 @@ describe('AGENT-PLATFORM-EXEC-01C4B: persisted agent identity in worker logs and
       expect.objectContaining({ model: 'grok-4.5' }),
     );
     expect(params[3]).toBe('grok-4.5');
+    expectDurationMs(params[4]);
     await worker.onModuleDestroy();
   });
 
@@ -2439,6 +2452,7 @@ describe('AGENT-PLATFORM-EXEC-01C4B: persisted agent identity in worker logs and
       }),
     );
     expect(metadataUpdate?.[3]).toBe('grok-4.5');
+    expectDurationMs(metadataUpdate?.[4]);
     await worker.onModuleDestroy();
   });
 });
@@ -3505,6 +3519,12 @@ describe('AGENT-PLATFORM-EXEC-01C5B2 Cycle C — worker integration', () => {
     });
 
     expect(ledger.status.value).toBe('cancelled');
+    expect(ledger.cancelledUpdates).toHaveLength(1);
+    const cancelSql = ledger.query.mock.calls.find(([sql]) =>
+      String(sql).includes("SET execution_status = 'cancelled'"),
+    );
+    expect(String(cancelSql?.[0])).toContain('execution_duration_ms = $2');
+    expectDurationMs(ledger.cancelledUpdates[0][1]);
     expect(execute).not.toHaveBeenCalled();
     expect(executeLoopSpy).not.toHaveBeenCalled();
     expect(
@@ -3954,6 +3974,8 @@ describe('HARNESS-FAIL-RECORD-01: failed harness run keeps audit events, tokens,
     expect(failed?.params[1]).toBe(JOB_MODEL);
     expect(String(failed?.params[1]).length).toBeGreaterThan(0);
     expect(failed?.params[2]).toBe(tokensUsed);
+    expect(failed?.sql).toContain('execution_duration_ms = $5');
+    expectDurationMs(failed?.params[4]);
     const completion = parseLoggedPayloads(logSpy).filter(
       (payload) => payload.event === 'execution_completed',
     );
@@ -4007,9 +4029,13 @@ describe('HARNESS-FAIL-RECORD-01: failed harness run keeps audit events, tokens,
     expect(failed?.params[1]).toBe(JOB_MODEL);
     expect(String(failed?.params[1]).length).toBeGreaterThan(0);
     expect(failed?.params[2]).toBeNull();
-    expect(failed?.params.some((param) => typeof param === 'number')).toBe(
-      false,
-    );
+    expect(failed?.sql).toContain('execution_duration_ms = $5');
+    expectDurationMs(failed?.params[4]);
+    expect(
+      failed?.params.some(
+        (param, index) => index !== 4 && typeof param === 'number',
+      ),
+    ).toBe(false);
     const completion = parseLoggedPayloads(logSpy).filter(
       (payload) => payload.event === 'execution_completed',
     );
@@ -4059,6 +4085,8 @@ describe('HARNESS-FAIL-RECORD-01: failed harness run keeps audit events, tokens,
     expect(ledger.completedUpdates[0].params[0]).toBe('exec-harness-success');
     expect(ledger.completedUpdates[0].params[1]).toBe(42);
     expect(ledger.completedUpdates[0].params[3]).toBe(resultModel);
+    expect(ledger.completedUpdates[0].sql).toContain('execution_duration_ms = $5');
+    expectDurationMs(ledger.completedUpdates[0].params[4]);
     expect(ledger.failedUpdates).toHaveLength(0);
     expect(notifyExecutionComplete).toHaveBeenCalledTimes(1);
     await worker.onModuleDestroy();
@@ -5337,12 +5365,14 @@ describe('COLLAB-FILES-01 read-only harness jobs', () => {
   }
 
   function storedFailure(ledger: {
-    failedUpdates: Array<{ params: unknown[] }>;
+    failedUpdates: Array<{ sql?: string; params: unknown[] }>;
   }): { code: string; message: string } {
     const update = ledger.failedUpdates.find((entry) =>
       String(entry.params[1] ?? '').includes('executionError'),
     );
     expect(update).toBeDefined();
+    expect(update?.sql).toContain('execution_duration_ms = $4');
+    expectDurationMs(update?.params[3]);
     const metadata = JSON.parse(String(update?.params[1])) as {
       executionError: { code: string; message: string };
     };
@@ -5921,9 +5951,11 @@ describe('RUN-ERROR-01: stored execution failure reason', () => {
     const update = generalFailure(ledger.queries);
     const stored = storedError(update);
     expect(update?.sql).toContain('metadata = $4::jsonb');
+    expect(update?.sql).toContain('execution_duration_ms = $5');
     expect(update?.params[0]).toBe('exec-coded-failure');
     expect(update?.params[1]).toBe('grok-4.5');
     expect(update?.params[2]).toBeNull();
+    expectDurationMs(update?.params[4]);
     expect(stored.code).toBe('provider_unavailable');
     expect(stored.message.length).toBe(300);
     expect(stored.message.startsWith('Provider declined the request.')).toBe(true);
@@ -6039,6 +6071,8 @@ describe('RUN-ERROR-01: stored execution failure reason', () => {
     const completed = ledger.queries.find((entry) =>
       entry.sql.includes("SET execution_status = 'completed'"),
     );
+    expect(completed?.sql).toContain('execution_duration_ms = $5');
+    expectDurationMs(completed?.params[4]);
     const metadata = JSON.parse(String(completed?.params[2])) as Record<string, unknown>;
     expect(metadata.keepMe).toBe('unrelated-value');
     expect(metadata.executionError).toBeUndefined();
@@ -6074,6 +6108,8 @@ describe('RUN-ERROR-01: stored execution failure reason', () => {
     );
     expect(contractUpdate).toBeDefined();
     expect(contractUpdate?.sql).not.toContain('COALESCE($3, tokens_used)');
+    expect(contractUpdate?.sql).toContain('execution_duration_ms = $5');
+    expectDurationMs(contractUpdate?.params[4]);
     const metadata = JSON.parse(String(contractUpdate?.params[2])) as {
       keepMe?: string;
       executionError?: { code: string; message: string };
@@ -6084,6 +6120,206 @@ describe('RUN-ERROR-01: stored execution failure reason', () => {
       message: FILE_ACTION_CONTRACT_FAILURE_MESSAGE,
     });
     expect(notifyExecutionComplete).not.toHaveBeenCalled();
+    await worker.onModuleDestroy();
+  });
+});
+
+describe('USAGE-DURATION-01: duration on final status updates', () => {
+  const originalRedisUrl = process.env.REDIS_URL;
+  const originalStuckScan = process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+
+  function createLedger(options?: {
+    initialStatus?: string;
+    metadataThrows?: boolean;
+  }) {
+    const status = { value: options?.initialStatus ?? 'pending' };
+    const updates: Array<{ sql: string; params: unknown[] }> = [];
+    const query = jest.fn(async (sql: string, params: unknown[] = []) => {
+      if (sql.includes('UPDATE')) {
+        updates.push({ sql, params });
+      }
+      if (options?.metadataThrows && sql.includes('SELECT metadata')) {
+        throw new Error('metadata unavailable');
+      }
+      if (
+        sql.includes("SET execution_status = 'running'") &&
+        sql.includes('RETURNING')
+      ) {
+        if (status.value === 'pending') {
+          status.value = 'running';
+          return [{ execution_id: params[0] }];
+        }
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'cancelled'")) {
+        status.value = 'cancelled';
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'failed'")) {
+        status.value = 'failed';
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'completed'")) {
+        status.value = 'completed';
+        return [];
+      }
+      if (sql.includes('SELECT execution_status, created_at')) {
+        return [
+          {
+            execution_status: status.value,
+            created_at: new Date().toISOString(),
+          },
+        ];
+      }
+      if (sql.includes('SELECT execution_id, timestamp')) {
+        return [];
+      }
+      if (sql.includes('SELECT metadata')) {
+        return [{ metadata: {} }];
+      }
+      if (sql.includes('SELECT execution_status')) {
+        return [{ execution_status: status.value }];
+      }
+      return [];
+    });
+    return { query, status, updates };
+  }
+
+  function plainJob(executionId: string) {
+    return {
+      id: `job-${executionId}`,
+      data: {
+        executionId,
+        provider: 'xai',
+        adapter: 'xai',
+        sessionId: 'session-1',
+        conversationId: 'conv-1',
+        userId: 'user-1',
+        prompt: 'Hello',
+        model: 'grok-4.5',
+        executionIntent: 'conversation',
+      },
+    };
+  }
+
+  async function startWorker(query: jest.Mock, execute: jest.Mock) {
+    const worker = new WorkerProcessor(
+      { query } as never,
+      { execute, getAdapter: jest.fn() } as never,
+      {
+        publishCompletion: jest.fn(),
+        publishToken: jest.fn(),
+        publishFileActions: jest.fn(),
+      } as never,
+      { notifyExecutionComplete: jest.fn() } as never,
+    );
+    await worker.onModuleInit();
+    if (!capturedWorker.processor) {
+      throw new Error('BullMQ worker processor was not captured');
+    }
+    return { worker, processJob: capturedWorker.processor };
+  }
+
+  function finalUpdate(
+    updates: Array<{ sql: string; params: unknown[] }>,
+    status: string,
+    extra?: string,
+  ) {
+    return updates.find(
+      (entry) =>
+        entry.sql.includes(`SET execution_status = '${status}'`) &&
+        (extra === undefined || entry.sql.includes(extra)),
+    );
+  }
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    process.env.REDIS_URL = 'redis://127.0.0.1:6379';
+    process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = '600000';
+    capturedWorker.processor = null;
+    capturedWorker.opts = null;
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    if (originalRedisUrl === undefined) {
+      delete process.env.REDIS_URL;
+    } else {
+      process.env.REDIS_URL = originalRedisUrl;
+    }
+    if (originalStuckScan === undefined) {
+      delete process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+    } else {
+      process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = originalStuckScan;
+    }
+  });
+
+  it('writes duration when the claim loses to an already requested cancel', async () => {
+    const ledger = createLedger({ initialStatus: 'cancel_requested' });
+    const execute = jest.fn();
+    const { worker, processJob } = await startWorker(ledger.query, execute);
+
+    await processJob(plainJob('exec-claim-cancel'));
+
+    expect(execute).not.toHaveBeenCalled();
+    expect(ledger.status.value).toBe('cancelled');
+    const update = finalUpdate(ledger.updates, 'cancelled');
+    expect(update?.sql).toContain('execution_duration_ms = $2');
+    expect(update?.params[0]).toBe('exec-claim-cancel');
+    expectDurationMs(update?.params[1]);
+    await worker.onModuleDestroy();
+  });
+
+  it('writes duration when the run is cancelled after the model returns', async () => {
+    const ledger = createLedger();
+    const execute = jest.fn(async () => {
+      ledger.status.value = 'cancel_requested';
+      return { output: 'ok', tokensUsed: 4, model: 'grok-4.5' };
+    });
+    const { worker, processJob } = await startWorker(ledger.query, execute);
+
+    await processJob(plainJob('exec-cancel-during'));
+
+    expect(ledger.status.value).toBe('cancelled');
+    const update = finalUpdate(ledger.updates, 'cancelled');
+    expect(update?.sql).toContain('execution_duration_ms = $2');
+    expect(update?.params[0]).toBe('exec-cancel-during');
+    expectDurationMs(update?.params[1]);
+    await worker.onModuleDestroy();
+  });
+
+  it('writes duration when the run is aborted before timeout', async () => {
+    const ledger = createLedger();
+    const error = new Error('Request was aborted.');
+    error.name = 'AbortError';
+    const execute = jest.fn().mockRejectedValue(error);
+    const { worker, processJob } = await startWorker(ledger.query, execute);
+
+    await processJob(plainJob('exec-aborted'));
+
+    expect(ledger.status.value).toBe('cancelled');
+    const update = finalUpdate(ledger.updates, 'cancelled');
+    expect(update?.sql).toContain('execution_duration_ms = $2');
+    expect(update?.params[0]).toBe('exec-aborted');
+    expectDurationMs(update?.params[1]);
+    await worker.onModuleDestroy();
+  });
+
+  it('writes duration on failure when stored metadata cannot be read', async () => {
+    const ledger = createLedger({ metadataThrows: true });
+    const error = new Error('provider rejected the request');
+    const execute = jest.fn().mockRejectedValue(error);
+    const { worker, processJob } = await startWorker(ledger.query, execute);
+
+    await expect(processJob(plainJob('exec-no-metadata'))).rejects.toBe(error);
+
+    const update = finalUpdate(ledger.updates, 'failed', 'execution_duration_ms = $4');
+    expect(update?.sql).toContain('COALESCE($3, tokens_used)');
+    expect(update?.sql).not.toContain('metadata');
+    expect(update?.params[0]).toBe('exec-no-metadata');
+    expect(update?.params[1]).toBe('grok-4.5');
+    expect(update?.params[2]).toBeNull();
+    expectDurationMs(update?.params[3]);
     await worker.onModuleDestroy();
   });
 });

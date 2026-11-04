@@ -84478,7 +84478,7 @@ taskId=USAGE-DURATION-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-05. Lane 1, AI-SERVICE.
+**Status:** COMPLETE AND LOCKED — 2026-11-05. LANE-DONE and LOCKED by the control plane; Lane 1 and AI-SERVICE released. The worker writes execution_duration_ms on every in-job final status. Checkpoint: docs/USAGE-DURATION-01-CHECKPOINT.md.
 **Task ID:** USAGE-DURATION-01
 **Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -84495,11 +84495,11 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Every path where the worker writes a final status also writes a non-negative integer execution_duration_ms in that UPDATE
-- [ ] No other column, parameter, stream, accounting or entitlement behaviour changes
-- [ ] ai-service npm test at baseline apart from new tests; npm run build exit 0
-- [ ] Only files in the write scope change
-- [ ] Not LOCKED by an implementer
+- [x] Every path where the worker writes a final status also writes a non-negative integer execution_duration_ms in that UPDATE
+- [x] No other column, parameter, stream, accounting or entitlement behaviour changes
+- [x] ai-service npm test at baseline apart from new tests; npm run build exit 0
+- [x] Only files in the write scope change
+- [x] Not LOCKED by an implementer
 
 ### RUN-LIST-COLLAB-01 — The run list returns the collaboration run and role of each run
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

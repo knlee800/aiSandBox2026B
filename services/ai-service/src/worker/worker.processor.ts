@@ -1227,6 +1227,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
     model: string | undefined;
     code: string;
     message: string;
+    executionStartTime: number;
   }): Promise<void> {
     const metadataRows = await this.dataSource.query(
       `
@@ -1243,18 +1244,23 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
         message: input.message,
       },
     };
+    const durationMs = Math.round(
+      performance.now() - input.executionStartTime,
+    );
     await this.dataSource.query(
       `
       UPDATE usage_records
       SET execution_status = 'failed',
           metadata = $2::jsonb,
-          model = $3
+          model = $3,
+          execution_duration_ms = $4
       WHERE execution_id = $1
       `,
       [
         input.executionId,
         JSON.stringify(nextMetadata),
         resolveLedgerModel(undefined, input.model),
+        durationMs,
       ],
     );
     this.executionStreamPublisher.publishCompletion(input.executionId);
@@ -1412,13 +1418,17 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
               );
             }
           } else if (currentStatus === 'cancel_requested') {
+            const durationMs = Math.round(
+              performance.now() - executionStartTime,
+            );
             await this.dataSource.query(
               `
               UPDATE usage_records
-              SET execution_status = 'cancelled'
+              SET execution_status = 'cancelled',
+                  execution_duration_ms = $2
               WHERE execution_id = $1
               `,
-              [executionId],
+              [executionId, durationMs],
             );
             this.executionStreamPublisher.publishCompletion(executionId);
             this.logger.warn(
@@ -1458,20 +1468,21 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
         }
 
         if (cancelCheck[0]?.execution_status === 'cancel_requested') {
+          const durationMs = Math.round(performance.now() - executionStartTime);
           await this.dataSource.query(
             `
             UPDATE usage_records
-            SET execution_status = 'cancelled'
+            SET execution_status = 'cancelled',
+                execution_duration_ms = $2
             WHERE execution_id = $1
             `,
-            [executionId],
+            [executionId, durationMs],
           );
 
           this.executionStreamPublisher.publishCompletion(executionId);
 
           incExecutionCancelled();
           this.metrics.execution_cancelled_total++;
-          const durationMs = Math.round(performance.now() - executionStartTime);
           this.logExecutionCompletion({
             event: 'execution_completed',
             executionId,
@@ -1508,22 +1519,23 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
           timedOut = true;
           abortController.abort();
 
+          const durationMs = Math.round(performance.now() - executionStartTime);
           const result = await this.dataSource.query(
             `
             UPDATE usage_records
-            SET execution_status = 'timeout'
+            SET execution_status = 'timeout',
+                execution_duration_ms = $2
             WHERE execution_id = $1
             AND execution_status = 'running'
             RETURNING execution_id
             `,
-            [executionId],
+            [executionId, durationMs],
           );
 
           if (result.length > 0) {
             incExecutionFailed();
             this.executionStreamPublisher.publishCompletion(executionId);
             this.metrics.execution_timeout_total++;
-            const durationMs = Math.round(performance.now() - executionStartTime);
             observeExecutionLatency(durationMs / 1000);
             this.logExecutionCompletion({
               event: 'execution_completed',
@@ -1612,6 +1624,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
               model: job.data.model,
               code: profileResolution.code,
               message: profileResolution.message,
+              executionStartTime,
             });
             return;
           }
@@ -1701,6 +1714,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                     model: job.data.model,
                     code: HARNESS_WRITE_TOOLS_DISABLED,
                     message: HARNESS_WRITE_TOOLS_DISABLED_MESSAGE,
+                    executionStartTime,
                   });
                   return;
                 }
@@ -1716,6 +1730,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                     model: job.data.model,
                     code: HARNESS_VALIDATION_TOOLS_DISABLED,
                     message: HARNESS_VALIDATION_TOOLS_DISABLED_MESSAGE,
+                    executionStartTime,
                   });
                   return;
                 }
@@ -2000,20 +2015,21 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
             abortController.abort();
             clearTimeoutWatchdog();
 
+            const durationMs = Math.round(performance.now() - executionStartTime);
             await this.dataSource.query(
               `
               UPDATE usage_records
-              SET execution_status = 'cancelled'
+              SET execution_status = 'cancelled',
+                  execution_duration_ms = $2
               WHERE execution_id = $1
               `,
-              [executionId],
+              [executionId, durationMs],
             );
 
             this.executionStreamPublisher.publishCompletion(executionId);
 
             incExecutionCancelled();
             this.metrics.execution_cancelled_total++;
-            const durationMs = Math.round(performance.now() - executionStartTime);
             observeExecutionLatency(durationMs / 1000);
             this.logExecutionCompletion({
               event: 'execution_completed',
@@ -2169,13 +2185,15 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
               message: contractValidation.errorMessage,
             };
 
+            const durationMs = Math.round(performance.now() - executionStartTime);
             await this.dataSource.query(
               `
               UPDATE usage_records
               SET execution_status = 'failed',
                   tokens_used = $2,
                   metadata = $3::jsonb,
-                  model = $4
+                  model = $4,
+                  execution_duration_ms = $5
               WHERE execution_id = $1
               `,
               [
@@ -2183,6 +2201,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                 aiResult.tokensUsed ?? 0,
                 JSON.stringify(nextMetadata),
                 resolveLedgerModel(aiResult.model, job.data.model),
+                durationMs,
               ],
             );
 
@@ -2190,7 +2209,6 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
 
             incExecutionFailed();
             this.metrics.execution_failed_total++;
-            const durationMs = Math.round(performance.now() - executionStartTime);
             observeExecutionLatency(durationMs / 1000);
             this.logExecutionCompletion({
               event: 'execution_completed',
@@ -2223,13 +2241,15 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
             return;
           }
 
+          const durationMs = Math.round(performance.now() - executionStartTime);
           await this.dataSource.query(
             `
             UPDATE usage_records
             SET execution_status = 'completed',
                 tokens_used = $2,
                 metadata = $3::jsonb,
-                model = $4
+                model = $4,
+                execution_duration_ms = $5
             WHERE execution_id = $1
             `,
             [
@@ -2237,6 +2257,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
               aiResult.tokensUsed ?? 0,
               JSON.stringify(nextMetadata),
               resolveLedgerModel(aiResult.model, job.data.model),
+              durationMs,
             ],
           );
 
@@ -2244,7 +2265,6 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
 
           incExecutionCompleted();
           this.metrics.execution_completed_total++;
-          const durationMs = Math.round(performance.now() - executionStartTime);
           observeExecutionLatency(durationMs / 1000);
           this.logExecutionCompletion({
             event: 'execution_completed',
@@ -2283,20 +2303,21 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
               return;
             }
             clearTimeoutWatchdog();
+            const durationMs = Math.round(performance.now() - executionStartTime);
             await this.dataSource.query(
               `
               UPDATE usage_records
-              SET execution_status = 'cancelled'
+              SET execution_status = 'cancelled',
+                  execution_duration_ms = $2
               WHERE execution_id = $1
               `,
-              [executionId],
+              [executionId, durationMs],
             );
 
             this.executionStreamPublisher.publishCompletion(executionId);
 
             incExecutionCancelled();
             this.metrics.execution_cancelled_total++;
-            const durationMs = Math.round(performance.now() - executionStartTime);
             observeExecutionLatency(durationMs / 1000);
             this.logExecutionCompletion({
               event: 'execution_completed',
@@ -2355,10 +2376,11 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
               UPDATE usage_records
               SET execution_status = 'failed',
                   model = $2,
-                  tokens_used = COALESCE($3, tokens_used)
+                  tokens_used = COALESCE($3, tokens_used),
+                  execution_duration_ms = $4
               WHERE execution_id = $1
               `,
-              [executionId, ledgerModel, failedLedgerTokens],
+              [executionId, ledgerModel, failedLedgerTokens, durationMs],
             );
           } else {
             await this.dataSource.query(
@@ -2367,10 +2389,11 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
               SET execution_status = 'failed',
                   model = $2,
                   tokens_used = COALESCE($3, tokens_used),
-                  metadata = $4::jsonb
+                  metadata = $4::jsonb,
+                  execution_duration_ms = $5
               WHERE execution_id = $1
               `,
-              [executionId, ledgerModel, failedLedgerTokens, metadataJson],
+              [executionId, ledgerModel, failedLedgerTokens, metadataJson, durationMs],
             );
           }
 
