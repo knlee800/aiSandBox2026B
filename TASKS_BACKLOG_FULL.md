@@ -84071,6 +84071,63 @@ nature=IMPLEMENTATION
 - [x] Keith judgement recorded
 - [x] Not LOCKED by an implementer
 
+### HARNESS-EVAL-01 — A repeatable eval suite for the Agent Harness
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=HARNESS-EVAL-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-04.
+**Task ID:** HARNESS-EVAL-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Registration here; implementation; code and LOCK in one commit after control-plane review.
+**Start condition (human):** READY — Keith approved the draft on 2026-11-04.
+**Depends on:** none.
+**Primary write scope:** `services/ai-service/src/agent-harness/eval/`.
+**Mutexes / resources:** AI-SERVICE. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (new folder only; no product code change; no migration).
+**saturationClass:** OPTIONAL
+
+**Problem:** master plan Part 7, continuous evals (planned as AGENT-HARNESS-07A in docs/AGENT-HARNESS-V1-MASTER-PLAN.md section 17), was never registered because the ID AGENT-HARNESS-07 went to the per-Builder config adapter. Harness quality is judged only by unit tests and watched live runs; nothing repeatable shows whether a harness, prompt or model change helps or hurts.
+
+**Scope:** a new folder services/ai-service/src/agent-harness/eval/ only. (1) Eval tasks are data files: inline starting files, user request, expected outcome (files created, modified or deleted, content checks, whether validation should pass). Adding a task needs no code change. (2) A runner calls the real executeAgentHarnessLoop with the real tool handlers over an in-memory workspace through their existing dependency interfaces; the model call is injected, so specs drive it with scripted answers. (3) Scores per task: pass or fail on the expected outcome; safety violations (blocked paths, writes outside the workspace), which must be 0 to pass; model calls and tool calls; tokens; how the run ended (answered, step limit, refusal, error). (4) Results JSON per run with date, model, harness version and per-task results. (5) Comparison with a previous results file: regressions (passed before, fail now) and changes in steps, tokens and credits per task. (6) Ten seed tasks: answer from a file with no writes; edit one file; create a new file; fix a failing test; search then edit; change a function and its caller; refuse to write .env or ../; request already satisfied, no change; delete a file; a large request that must end within the step limit. Not in scope: plan-quality and rollback scores, CI, dashboard, merge blocking, a package.json script, live provider calls. If the loop or the handlers need a change outside eval/, stop and report.
+
+#### Acceptance criteria
+
+- [ ] Task format and runner exist; a new task is a data file with no code change
+- [ ] Specs run all ten seed tasks with scripted answers; each scorer is shown passing and failing, including a safety violation that turns a pass into a fail
+- [ ] Results JSON holds the fields above; comparing two results files lists regressions and per-task changes in steps, tokens and credits
+- [ ] No change outside eval/; ai-service tests and build pass
+- [ ] Not LOCKED by an implementer
+
+### HARNESS-EVAL-LIVE-01 — First real run of the harness eval suite
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=HARNESS-EVAL-LIVE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / NOT_READY / NOT ADMITTED — 2026-11-04.
+**Task ID:** HARNESS-EVAL-LIVE-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP. Registration here; stage-start decides how the suite reaches a real workspace on staging and its write scope; window; checkpoint and LOCK. Start condition NOT_READY until HARNESS-EVAL-01 is LOCKED.
+**Start condition (human):** NOT_READY — Keith approved the draft on 2026-11-04.
+**Depends on:** HARNESS-EVAL-01, LOCKED.
+**Primary write scope:** set at stage-start; records only until then.
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT, ENV. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** PROVIDER-LIVE. **Revert isolation:** acceptable (evidence only unless the stage-start adds a runner live mode).
+**saturationClass:** OPTIONAL
+
+**Problem:** HARNESS-EVAL-01 proves the measuring tool with scripted answers only; real quality numbers need a real model run.
+
+**Scope:** run all ten seed tasks once each on claude-opus-5-5 on staging, repeating only tasks with an unclear result, within a cap of 300 credits and 300k tokens; flags off afterwards; save the first baseline results file and record it in the checkpoint. AI-SERVICE is added at stage-start only if the runner needs a live mode.
+
+#### Acceptance criteria
+
+- [ ] All ten tasks ran on a real model within the cap; baseline results file saved and recorded
+- [ ] Flags off after; nothing left open
+- [ ] Keith judgement recorded
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
