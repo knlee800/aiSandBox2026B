@@ -83927,6 +83927,150 @@ nature=IMPLEMENTATION
 - [x] Keith judgement recorded
 - [x] Not LOCKED by an implementer
 
+### COLLAB-DIFF-NEW-01 — The Reviewer diff includes files the Writer created
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-DIFF-NEW-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-04.
+**Task ID:** COLLAB-DIFF-NEW-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Registration here; implementation; code and LOCK in one commit after control-plane review.
+**Start condition (human):** READY — Keith approved the draft on 2026-11-04.
+**Depends on:** COLLAB-LIVE-07, LOCKED.
+**Primary write scope:** `services/container-manager/src/git/`.
+**Mutexes / resources:** CONTAINER-MANAGER. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (read-only route; no migration).
+**saturationClass:** OPTIONAL
+
+**Problem:** the worktree diff uses `git diff <commit>`, which leaves out untracked files, so a file the Writer creates does not appear in the diff the Reviewer gets.
+
+**Scope:** the read-only worktree-diff route also lists untracked, non-ignored files as additions against an empty file, without staging anything or changing the index; the same size cap applies to the whole diff; the existing checkpoint and diff routes stay unchanged.
+
+#### Acceptance criteria
+
+- [ ] New untracked files appear in the worktree diff as added files; ignored files do not
+- [ ] The route stays read-only: no git add, no index or commit change
+- [ ] The size cap applies to the combined diff; binary files are named, not dumped
+- [ ] Existing checkpoint and diff routes unchanged; container-manager tests pass
+- [ ] Not LOCKED by an implementer
+
+### RUN-ERROR-01 — Show the real reason when a worker step fails
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=RUN-ERROR-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-11-04.
+**Task ID:** RUN-ERROR-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Registration here; implementation; code and LOCK in one commit after control-plane review.
+**Start condition (human):** READY — Keith approved the draft on 2026-11-04.
+**Depends on:** none.
+**Primary write scope:** `services/ai-service/src/worker/`.
+**Mutexes / resources:** AI-SERVICE. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (worker failure path only; no migration).
+**saturationClass:** OPTIONAL
+
+**Problem:** thrown worker errors such as tool_loop_disabled are not stored as executionError, so the collaboration page and the ledger show only "Execution failed" while the reason is only in the log.
+
+**Scope:** when a job fails by a thrown error, the ai-service worker stores a short, safe reason (code and message, no secrets, stack or prompt text, length-capped) the same way the file-action path does, so existing readers show it. If an existing reader ignores it, stop and report rather than widen scope. Report, without fixing, any other page that puts the useTranslations function in effect dependencies.
+
+#### Acceptance criteria
+
+- [ ] A thrown worker error stores a short reason with its code; known harness codes keep their existing messages
+- [ ] Stored reasons never contain keys, tokens, stack traces or prompt text, and are length-capped
+- [ ] Successful jobs and the file-action failure path unchanged; ai-service tests pass
+- [ ] Report of the useTranslations pattern on other pages, no fix
+- [ ] Not LOCKED by an implementer
+
+### COLLAB-HANDOFF-RECOVER-01 — A finished step hand-off survives a Gateway restart
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-HANDOFF-RECOVER-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-11-04.
+**Task ID:** COLLAB-HANDOFF-RECOVER-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Registration here; implementation; code and LOCK in one commit after control-plane review.
+**Start condition (human):** READY — Keith approved the draft on 2026-11-04.
+**Depends on:** COLLAB-LIVE-07, LOCKED.
+**Primary write scope:** `services/api-gateway/src/orchestration/`.
+**Mutexes / resources:** GATEWAY. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (sweep only; no migration).
+**saturationClass:** OPTIONAL
+
+**Problem:** the hand-off a step asks for is created when the Gateway handles that step completion; if the Gateway stops between the job finishing and that handling, the request is never acted on and the run waits for the 24-hour expiry.
+
+**Scope:** the existing 5-minute sweep finds completed steps in active runs whose answer was never processed for a hand-off and runs the same idempotent hand-off step for them. Approval, guards, caps, rounds and idempotency stay unchanged. If a stored marker turns out to be needed, stop and report: no migration in this task.
+
+#### Acceptance criteria
+
+- [ ] A completed step whose hand-off was never processed gets it created by the sweep, waiting for approval as usual
+- [ ] Running the sweep twice, or alongside the normal path, never creates a duplicate
+- [ ] Steps with no request, refused or malformed requests, and finished or expired runs are left alone
+- [ ] Gateway orchestration tests pass; no migration
+- [ ] Not LOCKED by an implementer
+
+### OPS-APPEND-IDS-01 — A refused deploy lists what is still open
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=OPS-APPEND-IDS-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / READY / NOT ADMITTED — 2026-11-04.
+**Task ID:** OPS-APPEND-IDS-01
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Registration here; implementation; code and LOCK in one commit after control-plane review.
+**Start condition (human):** READY — Keith approved the draft on 2026-11-04.
+**Depends on:** none.
+**Primary write scope:** `ops/clean-baseline/lib/ops-lib.sh`, `ops/clean-baseline/tests/regression/append-ids-only.sh`.
+**Mutexes / resources:** none. **Hot-file leases:** `ops/clean-baseline/lib/ops-lib.sh`, `ops/clean-baseline/tests/regression/append-ids-only.sh`. **Shared contracts:** none frozen. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (one query; reaches the host only with STAGING-DEPLOY-03).
+**saturationClass:** OPTIONAL
+
+**Problem:** append_ids_only in ops/clean-baseline/lib/ops-lib.sh selects `id`, which usage_records, collaboration_runs and collaboration_referrals do not have, so a refused deploy prints no IDs. The refusal itself works.
+
+**Scope:** select usage_records.execution_id, collaboration_runs.collaboration_run_id and collaboration_referrals.referral_id, with a regression test that uses a fake psql. No other ops-lib.sh change.
+
+#### Acceptance criteria
+
+- [ ] The query uses columns that exist; a refused deploy prints the open IDs
+- [ ] A regression test covers the query and its output; existing ops regression tests pass
+- [ ] No other ops-lib.sh behaviour changes
+- [ ] Not LOCKED by an implementer
+
+### STAGING-DEPLOY-03 — Deploy the small fixes and check the diff for a new file
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-03
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** REGISTERED / NOT_READY / NOT ADMITTED — 2026-11-04.
+**Task ID:** STAGING-DEPLOY-03
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP. Start condition NOT_READY until the four fixes are LOCKED.
+**Start condition (human):** NOT_READY — Keith approved the draft on 2026-11-04.
+**Depends on:** COLLAB-DIFF-NEW-01, RUN-ERROR-01, COLLAB-HANDOFF-RECOVER-01, OPS-APPEND-IDS-01.
+**Primary write scope:** none in the repository beyond records.
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT, ENV. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** PROVIDER-LIVE. **Revert isolation:** acceptable (no code).
+**saturationClass:** OPTIONAL
+
+**Problem:** the four fixes reach staging only by a deploy, and the new-file diff needs a live check.
+
+**Scope:** deploy main with the four fixes; install the updated ops-lib.sh on the host with a hash check; one short window with write and validation flags on, where Keith has the Writer create a new file and checks that the Reviewer received it in the diff. Under 40 credits.
+
+#### Acceptance criteria
+
+- [ ] Staging runs the new commit, health checks pass, and ops-lib.sh on the host matches the repository
+- [ ] A file the Writer created shows in the diff the Reviewer received
+- [ ] Nothing left open, flags off after
+- [ ] Keith judgement recorded
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
