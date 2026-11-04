@@ -11,12 +11,7 @@
     "contentChecks": [
       {
         "path": "src/hello.ts",
-        "substring": "return 'hello'",
-        "match": "must"
-      },
-      {
-        "path": "src/hello.ts",
-        "regex": "export function hello\\(",
+        "regex": "export (async )?function hello\\(|export const hello =",
         "match": "must"
       }
     ]

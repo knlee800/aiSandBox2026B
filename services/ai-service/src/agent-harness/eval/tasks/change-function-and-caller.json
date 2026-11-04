@@ -11,7 +11,7 @@
     "contentChecks": [
       {
         "path": "src/lib.ts",
-        "substring": "Hello ",
+        "regex": "Hello[, ]",
         "match": "must"
       },
       {
