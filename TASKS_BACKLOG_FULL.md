@@ -84409,6 +84409,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-05). **productClass:** CURRENT per PRD.md.
 
 **Holds:** Close the frontend platform test coverage gaps found in the reviews. The missing frontend/lib/ai tests in npm test are item 1 of HARNESS-FIXES-01. Scope is set at admission.
+**Added 2026-11-05 (OFFICE-01):** frontend npm test lists fixed folders and does not run components/office, lib/office or components/platform tests; include them.
 **Named in:** Keith-approved follow-up from the harness reviews.
 
 #### Acceptance criteria
@@ -84536,7 +84537,7 @@ taskId=OFFICE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-05. Lane 1, FRONTEND and I18N. First slice of RPG-OFFICE-01; future work authorized by Keith.
+**Status:** COMPLETE AND LOCKED — 2026-11-05. LANE-DONE and LOCKED by the control plane; Lane 1 and FRONTEND and I18N released. The office screen shows the user's agents and their run status; not deployed. Checkpoint: docs/OFFICE-01-CHECKPOINT.md.
 **Task ID:** OFFICE-01
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -84551,13 +84552,13 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] The office shows each desk with the status model of the plan section 4, from GET /api/agents and GET /api/ai/executions only
-- [ ] Polling runs only while a desk is Queued, Working or Stopping and pauses while the tab is hidden
-- [ ] Collaboration runs appear on the Team desk with their role; agent runs on their agent's desk
-- [ ] No action control that changes work; every visible string from the three message files
-- [ ] frontend tests, tsc and build pass
-- [ ] Only files in the write scope change
-- [ ] Not LOCKED by an implementer
+- [x] The office shows each desk with the status model of the plan section 4, from GET /api/agents and GET /api/ai/executions only
+- [x] Polling runs only while a desk is Queued, Working or Stopping and pauses while the tab is hidden
+- [x] Collaboration runs appear on the Team desk with their role; agent runs on their agent's desk
+- [x] No action control that changes work; every visible string from the three message files
+- [x] frontend tests, tsc and build pass
+- [x] Only files in the write scope change
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

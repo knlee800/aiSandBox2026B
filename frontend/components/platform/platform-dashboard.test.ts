@@ -91,6 +91,7 @@ describe('platform dashboard data integration', () => {
       'platform.openAgentDetailActive',
       'platform.openAgentDetailComingSoon',
       'platform.backToWorkspace',
+      'platform.openOffice',
       'platform.comingSoonMessage',
     ];
 
@@ -117,6 +118,13 @@ describe('platform dashboard data integration', () => {
 
 describe('platform dashboard navigation integration', () => {
   const agents: readonly AgentManifest[] = listAgents();
+
+  test('command center header links to the office route', () => {
+    const dashboardSource = readFileSync(new URL('./platform-dashboard.tsx', import.meta.url), 'utf8');
+    assert.match(dashboardSource, /platform\.openOffice/);
+    assert.match(dashboardSource, /data-testid="platform-open-office"/);
+    assert.match(dashboardSource, /href=\{`\$\{localePrefix\}\/office`\}/);
+  });
 
   test('builder agent route matches the existing workspace route /app', () => {
     const builder = agents.find((a) => a.id === 'builder');

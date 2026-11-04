@@ -101,6 +101,7 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
   const title = resolveNestedMessage(messages, 'platform.title');
   const subtitle = resolveNestedMessage(messages, 'platform.subtitle');
   const backToWorkspace = resolveNestedMessage(messages, 'platform.backToWorkspace');
+  const openOffice = resolveNestedMessage(messages, 'platform.openOffice');
   const commandDeckLabel = resolveNestedMessage(messages, 'platform.commandDeckLabel');
   const commandDeckIntro = resolveNestedMessage(messages, 'platform.commandDeckIntro');
   const statusTitle = resolveNestedMessage(messages, 'platform.commandCenterStatusTitle');
@@ -347,14 +348,24 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
               <p className="text-sm text-slate-300">{subtitle}</p>
             </div>
           </div>
-          <Link
-            href={`${localePrefix}/app`}
-            className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
-            data-testid="platform-back-to-workspace"
-          >
-            <ArrowLeftIcon className="h-4 w-4" aria-hidden="true" />
-            {backToWorkspace}
-          </Link>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <Link
+              href={`${localePrefix}/office`}
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+              data-testid="platform-open-office"
+            >
+              <BuildingOffice2Icon className="h-4 w-4" aria-hidden="true" />
+              {openOffice}
+            </Link>
+            <Link
+              href={`${localePrefix}/app`}
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+              data-testid="platform-back-to-workspace"
+            >
+              <ArrowLeftIcon className="h-4 w-4" aria-hidden="true" />
+              {backToWorkspace}
+            </Link>
+          </div>
         </div>
       </header>
 
