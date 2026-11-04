@@ -57,6 +57,7 @@ const HANDLER_REFUSAL_PREFIXES = [
   'delete target is unsafe',
   'delete target must be a file',
   'delete target must not contain glob',
+  'refused: .env',
   'query is required',
   'command is required',
   'COMMAND_NOT_ALLOWED',

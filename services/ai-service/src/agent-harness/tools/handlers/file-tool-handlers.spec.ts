@@ -4,8 +4,12 @@ import {
   createWriteFileHandler,
   createDeleteFileHandler,
   createSearchWorkspaceHandler,
+  isEnvFilePath,
   validateAndNormalizePath,
 } from './file-tool-handlers';
+
+const ENV_FILE_MUTATION_REFUSAL =
+  'refused: .env files hold secrets and cannot be written or deleted by the agent; ask the user to edit it in the editor';
 
 describe('validateAndNormalizePath', () => {
   it('rejects undefined path', () => {
@@ -46,6 +50,23 @@ describe('validateAndNormalizePath', () => {
 
   it('trims whitespace', () => {
     expect(validateAndNormalizePath('  src/app.ts  ')).toBe('src/app.ts');
+  });
+});
+
+describe('isEnvFilePath', () => {
+  it('matches .env and .env.* by the last segment, ignoring case and separator', () => {
+    expect(isEnvFilePath('.env')).toBe(true);
+    expect(isEnvFilePath('.env.local')).toBe(true);
+    expect(isEnvFilePath('app/.env')).toBe(true);
+    expect(isEnvFilePath('APP/.ENV.production')).toBe(true);
+    expect(isEnvFilePath('APP\\.ENV.production')).toBe(true);
+  });
+
+  it('returns false for .envrc, env.ts, .environment, and src/env/.gitkeep', () => {
+    expect(isEnvFilePath('.envrc')).toBe(false);
+    expect(isEnvFilePath('env.ts')).toBe(false);
+    expect(isEnvFilePath('.environment')).toBe(false);
+    expect(isEnvFilePath('src/env/.gitkeep')).toBe(false);
   });
 });
 
@@ -468,6 +489,22 @@ describe('createWriteFileHandler', () => {
     );
     expect(result).toEqual({ ok: true, path: 'empty.txt', bytesWritten: 0 });
   });
+
+  it.each(['.env', '.env.local', 'app/.env', 'APP/.ENV.production'])(
+    'refuses to write %s and does not call the client',
+    async (filePath) => {
+      const handler = createWriteFileHandler({
+        client: mockClient,
+        sessionId: 'sess-1',
+        maxFileWriteBytes: 131072,
+      });
+
+      await expect(
+        handler({ path: filePath, content: 'TOKEN=secret' }),
+      ).rejects.toThrow(ENV_FILE_MUTATION_REFUSAL);
+      expect(mockClient.writeWorkspaceFile).not.toHaveBeenCalled();
+    },
+  );
 });
 
 describe('createDeleteFileHandler', () => {
@@ -639,6 +676,21 @@ describe('createDeleteFileHandler', () => {
       'unsafe traversal',
     );
   });
+
+  it.each(['.env', '.env.local', 'app/.env', 'APP/.ENV.production'])(
+    'refuses to delete %s and does not call the client',
+    async (filePath) => {
+      const handler = createDeleteFileHandler({
+        client: mockClient,
+        sessionId: 'sess-1',
+      });
+
+      await expect(handler({ path: filePath })).rejects.toThrow(
+        ENV_FILE_MUTATION_REFUSAL,
+      );
+      expect(mockClient.deleteWorkspaceFile).not.toHaveBeenCalled();
+    },
+  );
 });
 
 describe('createSearchWorkspaceHandler', () => {

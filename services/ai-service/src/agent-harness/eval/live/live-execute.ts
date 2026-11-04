@@ -59,7 +59,8 @@ export interface CreateLiveExecuteFnOptions {
 
 /**
  * Handlers the eval runner registers. delete_file is included because the
- * runner registers it. selectAdvertisedAgentHarnessTools does not offer it.
+ * runner registers it. selectAdvertisedAgentHarnessTools offers delete_file
+ * when write tools are on.
  */
 const EVAL_REGISTERED_TOOL_IDS = [
   'read_file',

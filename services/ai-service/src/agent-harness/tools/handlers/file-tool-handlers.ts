@@ -28,6 +28,20 @@ export function validateAndNormalizePath(rawPath: unknown): string {
   return normalized;
 }
 
+const ENV_FILE_MUTATION_REFUSAL =
+  'refused: .env files hold secrets and cannot be written or deleted by the agent; ask the user to edit it in the editor';
+
+/**
+ * True when the last path segment names an env file.
+ * Segments split on `/` and `\`. The comparison is lower-case:
+ * `.env` and names starting with `.env.` match; `.envrc` and `.environment` do not.
+ */
+export function isEnvFilePath(normalizedPath: string): boolean {
+  const segments = normalizedPath.split(/[/\\]/);
+  const base = (segments[segments.length - 1] ?? '').toLowerCase();
+  return base === '.env' || base.startsWith('.env.');
+}
+
 export interface FileToolHandlerDeps {
   readonly client: ApiGatewayHttpClient;
   readonly sessionId: string;
@@ -110,6 +124,10 @@ export function createWriteFileHandler(deps: WriteToolHandlerDeps): ToolHandler 
   return async (args: Readonly<Record<string, unknown>>, signal?: AbortSignal) => {
     const normalizedPath = validateAndNormalizePath(args.path);
 
+    if (isEnvFilePath(normalizedPath)) {
+      throw new Error(ENV_FILE_MUTATION_REFUSAL);
+    }
+
     if (typeof args.content !== 'string') {
       throw new Error('content is required and must be a string');
     }
@@ -148,6 +166,10 @@ const GLOB_LIKE_PATTERN = /[*?]/;
 export function createDeleteFileHandler(deps: DeleteToolHandlerDeps): ToolHandler {
   return async (args: Readonly<Record<string, unknown>>, signal?: AbortSignal) => {
     const normalizedPath = validateAndNormalizePath(args.path);
+
+    if (isEnvFilePath(normalizedPath)) {
+      throw new Error(ENV_FILE_MUTATION_REFUSAL);
+    }
 
     if (UNSAFE_DELETE_TARGETS.has(normalizedPath)) {
       throw new Error('delete target is unsafe: root or workspace-root path');
