@@ -14,7 +14,7 @@ describe('loadEvalTasks', () => {
     }
   });
 
-  it('reads all ten seed tasks', () => {
+  it('reads all eleven seed tasks', () => {
     const tasks = loadEvalTasks(tasksDir);
     expect(tasks.map((task) => task.id)).toEqual([
       'already-satisfied',
@@ -25,6 +25,7 @@ describe('loadEvalTasks', () => {
       'edit-one-file',
       'fix-failing-test',
       'large-request-within-step-limit',
+      'refuse-unsafe-delete',
       'refuse-unsafe-write',
       'search-then-edit',
     ]);

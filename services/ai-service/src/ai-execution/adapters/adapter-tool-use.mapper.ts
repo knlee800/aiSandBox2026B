@@ -16,6 +16,7 @@ export const HARNESS_ADVERTISABLE_TOOL_IDS = Object.freeze([
   'list_files',
   'read_file',
   'write_file',
+  'delete_file',
   'run_validation',
   'search_workspace',
 ] as const);

@@ -1735,6 +1735,7 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed advertised tool orchestration', (
     const listFiles = getAgentHarnessToolDefinition('list_files')!;
     const readFile = getAgentHarnessToolDefinition('read_file')!;
     const writeFile = getAgentHarnessToolDefinition('write_file')!;
+    const deleteFile = getAgentHarnessToolDefinition('delete_file')!;
     const runValidation = getAgentHarnessToolDefinition('run_validation')!;
     const searchWorkspace = getAgentHarnessToolDefinition('search_workspace')!;
     const advertised = selectAdvertisedAgentHarnessTools({
@@ -1749,6 +1750,7 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed advertised tool orchestration', (
       'list_files',
       'read_file',
       'write_file',
+      'delete_file',
       'run_validation',
       'search_workspace',
     ]);
@@ -1756,6 +1758,7 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed advertised tool orchestration', (
       listFiles,
       readFile,
       writeFile,
+      deleteFile,
       runValidation,
       searchWorkspace,
     ]);
@@ -1887,7 +1890,7 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed advertised tool orchestration', (
     expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop).toBe(false);
   });
 
-  it('does not let resolved builder configuration bypass the global gate or advertise delete_file or browser_smoke', () => {
+  it('does not let resolved builder configuration bypass the global gate or advertise browser_smoke', () => {
     const workerSource = getWorkerSource();
     const routingCallMatch = workerSource.match(
       /const routing = resolveHarnessRouting\(\{[\s\S]*?\}\);/,
@@ -1915,9 +1918,10 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed advertised tool orchestration', (
       'list_files',
       'read_file',
       'write_file',
+      'delete_file',
       'run_validation',
     ]);
-    expect(advertised.map((tool) => tool.name)).not.toContain('delete_file');
+    expect(advertised.map((tool) => tool.name)).toContain('delete_file');
     expect(advertised.map((tool) => tool.name)).not.toContain('browser_smoke');
   });
 });
@@ -5142,6 +5146,7 @@ describe('COLLAB-FILES-01 read-only harness jobs', () => {
       'list_files',
       'read_file',
       'write_file',
+      'delete_file',
       'run_validation',
       'search_workspace',
     ]);
@@ -5737,6 +5742,7 @@ describe('COLLAB-FILES-01 read-only harness jobs', () => {
       'list_files',
       'read_file',
       'write_file',
+      'delete_file',
       'run_validation',
       'search_workspace',
     ]);

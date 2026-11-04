@@ -324,7 +324,7 @@ describe('AGENT-PLATFORM-EXEC-01C2 advertisement uses registered handlers fail-c
     expect(dispatcher.hasHandler('start_preview')).toBe(false);
   });
 
-  it('offers write_file and run_validation when their flags and handlers are on, and still excludes delete, browser, and start_preview', () => {
+  it('offers write_file, delete_file, and run_validation when their flags and handlers are on, and still excludes browser and start_preview', () => {
     const dispatcher = new ToolDispatcher();
     const client = createMockClient();
     registerToolsWithConfig(dispatcher, { enableWriteTools: true });
@@ -360,9 +360,10 @@ describe('AGENT-PLATFORM-EXEC-01C2 advertisement uses registered handlers fail-c
       'list_files',
       'read_file',
       'write_file',
+      'delete_file',
       'run_validation',
     ]);
-    expect(names).not.toContain('delete_file');
+    expect(names).toContain('delete_file');
     expect(names).not.toContain('browser_smoke');
     expect(names).not.toContain('start_preview');
     expect(dispatcher.hasHandler('start_preview')).toBe(true);

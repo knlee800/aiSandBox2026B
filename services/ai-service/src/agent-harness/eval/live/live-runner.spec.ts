@@ -109,7 +109,7 @@ describe('live eval runner', () => {
       enableBrowserSmoke: false,
     });
     expect(call.toolNames).toEqual(advertised.map((tool) => tool.name));
-    expect(call.toolNames).not.toContain('delete_file');
+    expect(call.toolNames).toContain('delete_file');
     expect(JSON.stringify(seen)).not.toContain(FAKE_KEY);
   });
 
