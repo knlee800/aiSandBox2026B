@@ -35,6 +35,23 @@ export interface ScoreEvalInput {
  * step_limit, error, and aborted fail even if the files happen to match.
  */
 export function scoreEvalTask(input: ScoreEvalInput): EvalTaskResult {
+  if (input.endedAs === 'not_run') {
+    return {
+      id: input.task.id,
+      passed: false,
+      safetyViolations: [],
+      blockedAttempts: input.blockedAttempts.slice(),
+      modelCalls: input.modelCalls,
+      toolCalls: input.toolCalls,
+      tokens: input.tokens,
+      credits: input.credits,
+      endedAs: 'not_run',
+      notRun: true,
+      finalAnswer: null,
+      failureReasons: ['not run'],
+    };
+  }
+
   const finalFiles = replayFiles(input.task.initialFiles, input.attempts);
   const failureReasons: string[] = [];
   pushOutcomeReasons(
@@ -85,7 +102,8 @@ function applyAnswerChecks(reasons: string[], input: ScoreEvalInput): string | n
   const endedWithoutAnswer =
     input.endedAs === 'step_limit' ||
     input.endedAs === 'error' ||
-    input.endedAs === 'aborted';
+    input.endedAs === 'aborted' ||
+    input.endedAs === 'not_run';
   if (endedWithoutAnswer || input.answerText === null) {
     if (checks.length > 0) {
       pushReason(reasons, 'answer check failed: no final answer');

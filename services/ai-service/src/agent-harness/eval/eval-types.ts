@@ -96,7 +96,8 @@ export type EvalEndedAs =
   | 'step_limit'
   | 'refusal'
   | 'error'
-  | 'aborted';
+  | 'aborted'
+  | 'not_run';
 
 export interface EvalTaskResult {
   readonly id: string;
@@ -108,6 +109,11 @@ export interface EvalTaskResult {
   readonly tokens: number;
   readonly credits: number | null;
   readonly endedAs: EvalEndedAs;
+  /**
+   * True when a live run recorded the task without starting it.
+   * Absent on tasks that ran. A not-run task is never a pass.
+   */
+  readonly notRun?: boolean;
   /** Final answer text, whitespace kept, capped at 1000 characters. Null when the run has none. */
   readonly finalAnswer: string | null;
   readonly failureReasons: readonly string[];

@@ -13,6 +13,7 @@ const ENDED_AS: readonly EvalEndedAs[] = [
   'refusal',
   'error',
   'aborted',
+  'not_run',
 ];
 
 export function buildEvalResults(input: {
@@ -149,6 +150,10 @@ function readTaskResult(
   if (credits !== null && typeof credits !== 'number') {
     fail(`task ${id} credits must be a number or null`);
   }
+  if (record.notRun !== undefined && typeof record.notRun !== 'boolean') {
+    fail(`task ${id} notRun must be a boolean`);
+  }
+  const notRun = record.notRun === true;
   return {
     id,
     passed: record.passed,
@@ -159,6 +164,7 @@ function readTaskResult(
     tokens: readNumber(record.tokens, `${id}.tokens`, fail),
     credits: credits as number | null,
     endedAs: endedAs as EvalEndedAs,
+    ...(notRun ? { notRun: true } : {}),
     finalAnswer: readFinalAnswer(record.finalAnswer, id, fail),
     failureReasons: record.failureReasons as string[],
   };
