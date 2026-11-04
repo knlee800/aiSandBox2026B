@@ -84162,6 +84162,31 @@ nature=IMPLEMENTATION
 - [x] Keith judgement recorded
 - [x] Not LOCKED by an implementer
 
+### GOV-OS-05 — Every named follow-up gets a disposition; one-time orphan cleanup
+
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-OS-05
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ACTIVE — 2026-11-04. Governance; no lane. GOVERNANCE held; Development OS mutation begun with both lanes empty.
+**Task ID:** GOV-OS-05
+**Nature:** GOVERNANCE. **Lifecycle:** 2-STEP: this record begins the mutation; the closing record ends it.
+**Start condition:** Keith approved the draft on 2026-11-04, after a read-only Cursor review (grok-4.7-xhigh) and a Fable 5.1 review.
+**Primary write scope:** CLAUDE.md, AGENTS.md, TASKS.md, TASKS_BACKLOG_FULL.md, the sidecar, the proof, docs/GOV-OS-05-CHECKPOINT.md.
+**Mutexes / resources:** GOVERNANCE.
+
+**Problem:** plans, decision records and checkpoints named follow-up work as "proposed, not registered" or "Not registered", plan tasks were told "Do not register X", locked tasks cannot be edited, and the Next-Work Selection Protocol sees only registered tasks. Named follow-ups therefore never surfaced when Keith asked what was next. Examples: AGENT-COLLAB-01 to 04 and AGENT-KNOWLEDGE-01 to 04 were never registered; the planned continuous-evals slice lost its ID AGENT-HARNESS-07 to other work until HARNESS-EVAL-01; about 20 checkpoint follow-ups and several items held only in session memory have no registry entry. Also: CLAUDE.md Model Routing names Grok 4.6 while practice is grok-4.7; the CLAUDE.md and AGENTS.md Git lines do not state who commits; the board sections "Frozen contracts" and "Current blockers" still state the deferred private-beta GO as current.
+**Scope:** (1) CLAUDE.md Project Governance Loop: every follow-up named in a plan, decision record, stage-start, checkpoint, review or live-run finding, or approved by Keith in chat, gets one disposition before the naming task's lifecycle ends (LOCK, REJECTED, RETURN-TO-READY or Keith's drop), or in the same control-plane record when no task names it: registered (status READY, startCondition NOT_READY, not admitted, with a readiness condition and decider, saturationClass named by Keith, productClass per PRD, PROVISIONAL write set with admissionUncertain true when undesigned), superseded by a named task and acceptance criterion with any remainder registered, or dropped by Keith in a one-line backlog list; "Not registered" is not a disposition; closing records carry a FOLLOWUPS line; locked documents are not edited. (2) "Do not register X" limits that task's own write step only, unless Keith recorded X as PARKED or PROHIBITED. (3) Next-Work Selection Protocol output lists READY tasks and NOT_READY tasks whose condition is met or is Keith's decision. (4) Git lines in CLAUDE.md and AGENTS.md: implementation workers never commit, push, branch or create worktrees; the control plane commits and pushes only work Keith has authorized, after reading the diff and rerunning the gates. (5) Model Routing to grok-4.7-high and grok-4.7-xhigh, passed explicitly. (6) Correct the stale private-beta GO lines in the board's current sections. (7) Apply Keith's per-item decisions on the orphaned follow-ups. Not in scope: lane count, mutexes, the scheduler, admission rules, the validator.
+
+#### Acceptance criteria
+
+- [ ] CLAUDE.md and AGENTS.md state the rules in scope items 1 to 5, and no other OS semantics change
+- [ ] Every orphaned follow-up in the checkpoint has a disposition Keith chose, and the closing record carries a FOLLOWUPS line with 0 undisposed
+- [ ] The board no longer states the private-beta GO as current
+- [ ] The validator passes at both records
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
