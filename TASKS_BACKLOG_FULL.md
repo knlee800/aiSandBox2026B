@@ -84536,12 +84536,12 @@ taskId=OFFICE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. First slice of RPG-OFFICE-01; future work authorized by Keith with the plan.
+**Status:** ADMITTED — 2026-11-05. Lane 1, FRONTEND and I18N. First slice of RPG-OFFICE-01; future work authorized by Keith.
 **Task ID:** OFFICE-01
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP: registration here; admission when the prerequisites are locked; code and LOCK (LOCAL-TESTS). The browser check on staging belongs to a later deploy (RPG-OFFICE-01 item).
-**Start condition (human):** NOT_READY. Ready when: USAGE-DURATION-01 and RUN-LIST-COLLAB-01 are COMPLETE AND LOCKED. Keith admits.
+**Start condition (human):** READY — both prerequisites are COMPLETE AND LOCKED (RUN-LIST-COLLAB-01 53e1fae, USAGE-DURATION-01 6853fec); Keith admitted it on 2026-11-05.
 **Depends on:** USAGE-DURATION-01, RUN-LIST-COLLAB-01.
 **Primary write scope:** `frontend/app/` (new office route under the locale segment), `frontend/components/office/`, `frontend/lib/office/`, `frontend/hooks/useOfficeRuns.ts`, `frontend/components/platform/platform-dashboard.tsx`, `frontend/components/platform/platform-dashboard.test.ts`, `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`.
 **Mutexes / resources:** FRONTEND, I18N. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (new route and components plus one header link; no backend).
