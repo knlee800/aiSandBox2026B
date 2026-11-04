@@ -84331,6 +84331,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-05). **productClass:** CURRENT per PRD.md.
 
 **Holds:** (1) npm test in frontend does not run frontend/lib/ai/*.test.ts. (2) xAI tool failures use the OpenAI wording of the shared mapper. (3) The plain output limit stays 4096 for OpenAI, xAI and DeepSeek. (4) A malformed tool call the loop does not answer may be rejected on the next step. (5) A failed workspace search returns no matches instead of an error. (6) The model selector can return to a provider with no key after a reload, and the only message is "Execution ended with status: failed". (7) The model offers to create .env; a prompt line could stop the offer. (8) requireApprovalForDelete is true but deletes run without an approval step. (9) xAI, OpenAI and DeepSeek are not proven live. (10) Reopening a project while an Agent run works restores the saved copy over files written so far. (11) An interrupted Build answer says "I've added" and the notice then says it was not applied. Split into bounded slices at admission.
+**Dispositions, 2026-11-05:** item 10 is superseded by HARNESS-REOPEN-01. Item 12 added: live check of HARNESS-REOPEN-01 in the next staging window (close the page during an Agent run, reopen the project, the run's files are intact).
 **Named in:** HARNESS-PROVIDERS-01 checkpoint line 75; HARNESS-LIVE-06 checkpoint lines 38 to 40; HARNESS-SAVE-01 checkpoint line 45; HARNESS-DELETE-01 checkpoint lines 52 and 53; container-manager docker-runtime.service.ts searchWorkspace.
 
 #### Acceptance criteria
@@ -84411,6 +84412,62 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [ ] Scope, write set, mutexes and evidence class are set, split into bounded slices where needed, and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### HARNESS-REOPEN-01 — Opening a project does not overwrite a running Agent run
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=HARNESS-REOPEN-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED — 2026-11-05. Lane 1, GATEWAY.
+**Task ID:** HARNESS-REOPEN-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP under the GOV-OS-04 record rules: registration and admission here; code and LOCK in one commit (LOCAL-TESTS).
+**Start condition (human):** READY — Keith approved the draft on 2026-11-05.
+**Depends on:** none.
+**Primary write scope:** `services/api-gateway/src/projects/projects.service.ts`, `services/api-gateway/src/projects/projects.service.spec.ts`, `services/api-gateway/src/projects/projects.module.ts` (only if the usage-record repository must be registered).
+**Mutexes / resources:** GATEWAY. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (one service method and its spec; no migration, no frontend change).
+**saturationClass:** OPTIONAL
+
+**Problem:** reopening a project reuses its session, and ProjectsService.openProjectIntoSession always restores the latest snapshot and the checkpoint history into that session. If an Agent run is still writing there, the restore replaces the files written so far, and the run's end-of-run save then stores the reduced workspace. Seen live in HARNESS-LIVE-06 run 8f8b4985; left open by HARNESS-SAVE-01 (checkpoint, Open items).
+
+**Scope:** (1) Before restoring, openProjectIntoSession checks for an active run of the calling user in that session: a usage_records row with execution_status pending, running or cancel_requested, the same definition the run list uses. (2) With an active run it restores neither the snapshot nor the checkpoint history, still records the project and session association, and returns restoredSnapshotId null. (3) With no active run, behaviour is unchanged. (4) Unit tests for both cases and for another user's active run not counting. Known limit: a run stuck as pending blocks the restore until the existing stuck-run scan closes it. No frontend change and no new UI text: the frontend already handles a null restoredSnapshotId.
+
+**Follow-up dispositions:** HARNESS-FIXES-01 item 10 is superseded by this task; the live check (close the page during an Agent run, reopen, files intact) is registered as HARNESS-FIXES-01 item 12.
+
+#### Acceptance criteria
+
+- [ ] With an active run of that user in that session, opening the project restores neither the snapshot nor the checkpoint history and returns restoredSnapshotId null
+- [ ] With no active run, behaviour is unchanged
+- [ ] Another user's runs never count; the query is bound to user and session
+- [ ] Unit tests cover these cases; gateway npm test at baseline apart from new tests and npm run build exit 0
+- [ ] Only files in the write scope change
+- [ ] Not LOCKED by an implementer
+
+### GOV-RPG-OFFICE-PLAN-01 — Plan the RPG office
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-RPG-OFFICE-PLAN-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ACTIVE — 2026-11-05. Governance; no lane. GOVERNANCE is held only during this task's record writes.
+**Task ID:** GOV-RPG-OFFICE-PLAN-01
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE. **Lifecycle:** 2-STEP: this registration; the closing record with the approved plan.
+**Start condition (human):** READY — Keith approved the draft on 2026-11-05.
+**Primary write scope:** docs/RPG-OFFICE-01-PLAN.md, TASKS.md, TASKS_BACKLOG_FULL.md, the sidecar and the proof at the closing record.
+**Mutexes / resources:** GOVERNANCE, only during record writes.
+
+**Purpose:** plan RPG-OFFICE-01 before any code. The plan states: the first slice (a static office showing the user's agents and their current run status, no animation); answers to the PRD open questions (owner-scoped run data source, refresh and reconnect, status states, what selecting a character opens, authorization of every action, decoration kept apart from work status); the graphics source (our own art; Claude-Office is a look reference only); plain React or a rendering library (a new dependency needs Keith's approval); i18n in all three languages; later slices. An optional mockup page may accompany it. Drafted by Fable 5.1 (claude-fable-5-1-thinking-high) through Cursor in read-only mode; the control plane checks every claim about the code and writes the file.
+**Not in scope:** code, PRD.md and ARCHITECTURE.md changes. RPG-OFFICE-01 stays APPROVED_FUTURE and NOT_READY until Keith approves the plan; the first slice is then registered as a child with futureAuthorization AUTHORIZED.
+
+#### Acceptance criteria
+
+- [ ] docs/RPG-OFFICE-01-PLAN.md answers every point in Purpose and names the first slice with its write scope
+- [ ] Keith approves the plan
+- [ ] Every follow-up the plan names has a disposition
 - [ ] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
