@@ -6,6 +6,8 @@ import {
   computeJobPayloadDigest,
   computePayloadDigest,
   DEFAULT_EXECUTION_TIMEOUT_MS,
+  FILE_ACTION_CONTRACT_FAILURE_CODE,
+  FILE_ACTION_CONTRACT_FAILURE_MESSAGE,
   HARNESS_ENTITLEMENT_PROOF_MALFORMED,
   HARNESS_ENTITLEMENT_PROOF_MISSING,
   HARNESS_ENTITLEMENT_PROOF_PAYLOAD_INTEGRITY_MISMATCH,
@@ -5746,6 +5748,336 @@ describe('COLLAB-FILES-01 read-only harness jobs', () => {
     expect(metadata).not.toHaveProperty('harnessChangedPaths');
     expect(metadata).not.toHaveProperty('harnessValidationRuns');
     expect(ledger.status.value).toBe('completed');
+    await worker.onModuleDestroy();
+  });
+});
+
+describe('RUN-ERROR-01: stored execution failure reason', () => {
+  const originalRedisUrl = process.env.REDIS_URL;
+  const originalStuckScan = process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+
+  function createLedgerMock(existingMetadata: Record<string, unknown> = {}) {
+    const status = { value: 'pending' };
+    const queries: Array<{ sql: string; params: unknown[] }> = [];
+    const query = jest.fn(async (sql: string, params: unknown[] = []) => {
+      queries.push({ sql, params });
+      if (
+        sql.includes("SET execution_status = 'running'") &&
+        sql.includes('RETURNING')
+      ) {
+        if (status.value === 'pending') {
+          status.value = 'running';
+          return [{ execution_id: params[0] }];
+        }
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'completed'")) {
+        status.value = 'completed';
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'failed'")) {
+        status.value = 'failed';
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'cancelled'")) {
+        status.value = 'cancelled';
+        return [];
+      }
+      if (sql.includes('SELECT execution_status, created_at')) {
+        return [
+          {
+            execution_status: status.value,
+            created_at: new Date().toISOString(),
+          },
+        ];
+      }
+      if (sql.includes('SELECT execution_id, timestamp')) {
+        return [];
+      }
+      if (sql.includes('SELECT metadata')) {
+        return [{ metadata: existingMetadata }];
+      }
+      if (sql.includes('SELECT execution_status')) {
+        return [{ execution_status: status.value }];
+      }
+      return [];
+    });
+    return { query, status, queries };
+  }
+
+  async function startWorker(deps: {
+    query: jest.Mock;
+    execute: jest.Mock;
+    notifyExecutionComplete?: jest.Mock;
+  }) {
+    const worker = new WorkerProcessor(
+      { query: deps.query } as never,
+      { execute: deps.execute, getAdapter: jest.fn() } as never,
+      {
+        publishCompletion: jest.fn(),
+        publishToken: jest.fn(),
+        publishFileActions: jest.fn(),
+      } as never,
+      {
+        notifyExecutionComplete:
+          deps.notifyExecutionComplete ?? jest.fn().mockResolvedValue(undefined),
+        createWorkspaceCheckpoint: jest.fn(),
+      } as never,
+    );
+    await worker.onModuleInit();
+    if (!capturedWorker.processor) {
+      throw new Error('BullMQ worker processor was not captured');
+    }
+    return { worker, processJob: capturedWorker.processor };
+  }
+
+  function plainJob(
+    executionId: string,
+    overrides: Record<string, unknown> = {},
+  ) {
+    return {
+      id: `job-${executionId}`,
+      data: {
+        executionId,
+        provider: 'xai',
+        adapter: 'xai',
+        sessionId: 'session-1',
+        conversationId: 'conv-1',
+        userId: 'user-1',
+        prompt: 'Hello',
+        model: 'grok-4.5',
+        executionIntent: 'conversation',
+        ...overrides,
+      },
+    };
+  }
+
+  function generalFailure(queries: Array<{ sql: string; params: unknown[] }>) {
+    return queries.find(
+      (entry) =>
+        entry.sql.includes("SET execution_status = 'failed'") &&
+        entry.sql.includes('COALESCE($3, tokens_used)'),
+    );
+  }
+
+  function storedError(update: { params: unknown[] } | undefined): {
+    code: string;
+    message: string;
+    metadata: Record<string, unknown>;
+  } {
+    expect(update).toBeDefined();
+    expect(typeof update?.params[3]).toBe('string');
+    const metadata = JSON.parse(String(update?.params[3])) as Record<string, unknown>;
+    const executionError = metadata.executionError as { code: string; message: string };
+    return { ...executionError, metadata };
+  }
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    process.env.REDIS_URL = 'redis://127.0.0.1:6379';
+    process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = '600000';
+    capturedWorker.processor = null;
+    capturedWorker.opts = null;
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    if (originalRedisUrl === undefined) {
+      delete process.env.REDIS_URL;
+    } else {
+      process.env.REDIS_URL = originalRedisUrl;
+    }
+    if (originalStuckScan === undefined) {
+      delete process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+    } else {
+      process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = originalStuckScan;
+    }
+  });
+
+  it('stores a thrown error code and a capped message, and keeps existing metadata', async () => {
+    const ledger = createLedgerMock({
+      keepMe: 'unrelated-value',
+      agentId: 'agent-kept',
+    });
+    const error = new Error(`${'Provider declined the request. '.repeat(20)}\nsecond line`);
+    (error as Error & { code: string }).code = 'provider_unavailable';
+    const notifyExecutionComplete = jest.fn().mockResolvedValue(undefined);
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn().mockRejectedValue(error),
+      notifyExecutionComplete,
+    });
+
+    await expect(
+      processJob(plainJob('exec-coded-failure')),
+    ).rejects.toBe(error);
+
+    const update = generalFailure(ledger.queries);
+    const stored = storedError(update);
+    expect(update?.sql).toContain('metadata = $4::jsonb');
+    expect(update?.params[0]).toBe('exec-coded-failure');
+    expect(update?.params[1]).toBe('grok-4.5');
+    expect(update?.params[2]).toBeNull();
+    expect(stored.code).toBe('provider_unavailable');
+    expect(stored.message.length).toBe(300);
+    expect(stored.message.startsWith('Provider declined the request.')).toBe(true);
+    expect(stored.message).not.toContain('\n');
+    expect(stored.message).not.toContain('second line');
+    expect(stored.metadata.keepMe).toBe('unrelated-value');
+    expect(stored.metadata.agentId).toBe('agent-kept');
+    expect(notifyExecutionComplete).not.toHaveBeenCalled();
+    expect(ledger.status.value).toBe('failed');
+    await worker.onModuleDestroy();
+  });
+
+  it('stores execution_failed when the thrown error has no short code', async () => {
+    const ledger = createLedgerMock({ keepMe: 'unrelated-value' });
+    const error = new Error('The   provider\trejected the request');
+    (error as Error & { code: string }).code = 'not a code';
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn().mockRejectedValue(error),
+    });
+
+    await expect(processJob(plainJob('exec-plain-failure'))).rejects.toBe(error);
+
+    const stored = storedError(generalFailure(ledger.queries));
+    expect(stored.code).toBe('execution_failed');
+    expect(stored.message).toBe('The provider rejected the request');
+    expect(stored.metadata.keepMe).toBe('unrelated-value');
+    await worker.onModuleDestroy();
+  });
+
+  it('replaces a stack, a key, prompt text, or file content with a fixed sentence', async () => {
+    const cases: Array<{ id: string; message: string; prompt?: string; banned: string }> = [
+      {
+        id: 'exec-stack',
+        message:
+          'The provider declined the request\n    at Worker.process (worker.processor.ts:2100:15)',
+        banned: 'worker.processor.ts',
+      },
+      {
+        id: 'exec-key',
+        message: 'provider failed api_key=sk-abcdefghijklmnopqrstuvwxyz',
+        banned: 'sk-',
+      },
+      {
+        id: 'exec-prompt',
+        prompt: 'Please build a landing page with a green header and a footer.',
+        message: 'provider echoed Please build a landing page with a green header and a footer.',
+        banned: 'landing page',
+      },
+      {
+        id: 'exec-file',
+        message: 'wrote the file\n```\nconst secret = 1;\n```',
+        banned: 'const secret',
+      },
+    ];
+
+    for (const entry of cases) {
+      const ledger = createLedgerMock();
+      const { worker, processJob } = await startWorker({
+        query: ledger.query,
+        execute: jest.fn().mockRejectedValue(new Error(entry.message)),
+      });
+      await expect(
+        processJob(
+          plainJob(entry.id, entry.prompt ? { prompt: entry.prompt } : {}),
+        ),
+      ).rejects.toThrow(entry.message);
+      const stored = storedError(generalFailure(ledger.queries));
+      expect(stored.code).toBe('execution_failed');
+      expect(stored.message).toBe('This step failed.');
+      expect(JSON.stringify(stored.metadata)).not.toContain(entry.banned);
+      await worker.onModuleDestroy();
+    }
+  });
+
+  it('keeps the existing harness message when that error is thrown', async () => {
+    const ledger = createLedgerMock({ keepMe: 'unrelated-value' });
+    const error = new HarnessRoutingError('tool_loop_disabled');
+    error.message = `${error.message}\n    at Worker.process (worker.processor.ts:10:5)`;
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn().mockRejectedValue(error),
+    });
+
+    await expect(processJob(plainJob('exec-harness-message'))).rejects.toBe(error);
+
+    const stored = storedError(generalFailure(ledger.queries));
+    expect(stored.code).toBe('harness_tool_loop_disabled');
+    expect(stored.message).toBe(
+      'Requested Harness execution cannot proceed (tool_loop_disabled)',
+    );
+    expect(stored.message).not.toContain('worker.processor.ts');
+    expect(stored.metadata.keepMe).toBe('unrelated-value');
+    await worker.onModuleDestroy();
+  });
+
+  it('leaves a successful conversation job without an executionError', async () => {
+    const ledger = createLedgerMock({ keepMe: 'unrelated-value' });
+    const notifyExecutionComplete = jest.fn().mockResolvedValue(undefined);
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn().mockResolvedValue({
+        output: 'ok',
+        tokensUsed: 3,
+        model: 'grok-4.5',
+      }),
+      notifyExecutionComplete,
+    });
+
+    await processJob(plainJob('exec-success'));
+
+    expect(ledger.status.value).toBe('completed');
+    const completed = ledger.queries.find((entry) =>
+      entry.sql.includes("SET execution_status = 'completed'"),
+    );
+    const metadata = JSON.parse(String(completed?.params[2])) as Record<string, unknown>;
+    expect(metadata.keepMe).toBe('unrelated-value');
+    expect(metadata.executionError).toBeUndefined();
+    expect(generalFailure(ledger.queries)).toBeUndefined();
+    expect(notifyExecutionComplete).toHaveBeenCalledWith('exec-success');
+    await worker.onModuleDestroy();
+  });
+
+  it('leaves the file-action contract failure path unchanged', async () => {
+    const ledger = createLedgerMock({ keepMe: 'unrelated-value' });
+    const notifyExecutionComplete = jest.fn().mockResolvedValue(undefined);
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn().mockResolvedValue({
+        output: 'ok',
+        tokensUsed: 3,
+        model: 'grok-4.5',
+        fileActions: [],
+      }),
+      notifyExecutionComplete,
+    });
+
+    await processJob(
+      plainJob('exec-contract', { executionIntent: 'workspace_mutation' }),
+    );
+
+    expect(ledger.status.value).toBe('failed');
+    expect(generalFailure(ledger.queries)).toBeUndefined();
+    const contractUpdate = ledger.queries.find(
+      (entry) =>
+        entry.sql.includes("SET execution_status = 'failed'") &&
+        entry.sql.includes('tokens_used = $2'),
+    );
+    expect(contractUpdate).toBeDefined();
+    expect(contractUpdate?.sql).not.toContain('COALESCE($3, tokens_used)');
+    const metadata = JSON.parse(String(contractUpdate?.params[2])) as {
+      keepMe?: string;
+      executionError?: { code: string; message: string };
+    };
+    expect(metadata.keepMe).toBe('unrelated-value');
+    expect(metadata.executionError).toEqual({
+      code: FILE_ACTION_CONTRACT_FAILURE_CODE,
+      message: FILE_ACTION_CONTRACT_FAILURE_MESSAGE,
+    });
+    expect(notifyExecutionComplete).not.toHaveBeenCalled();
     await worker.onModuleDestroy();
   });
 });

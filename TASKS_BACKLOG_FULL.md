@@ -83962,7 +83962,7 @@ taskId=RUN-ERROR-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-04.
+**Status:** COMPLETE AND LOCKED — 2026-11-04. LANE-DONE and LOCKED by the control plane; Lane 1 and AI-SERVICE released. Checkpoint: docs/RUN-ERROR-01-CHECKPOINT.md.
 **Task ID:** RUN-ERROR-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -83979,11 +83979,11 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] A thrown worker error stores a short reason with its code; known harness codes keep their existing messages
-- [ ] Stored reasons never contain keys, tokens, stack traces or prompt text, and are length-capped
-- [ ] Successful jobs and the file-action failure path unchanged; ai-service tests pass
-- [ ] Report of the useTranslations pattern on other pages, no fix
-- [ ] Not LOCKED by an implementer
+- [x] A thrown worker error stores a short reason with its code; known harness codes keep their existing messages
+- [x] Stored reasons never contain keys, tokens, stack traces or prompt text, and are length-capped
+- [x] Successful jobs and the file-action failure path unchanged; ai-service tests pass
+- [x] Report of the useTranslations pattern on other pages, no fix
+- [x] Not LOCKED by an implementer
 
 ### COLLAB-HANDOFF-RECOVER-01 — A finished step hand-off survives a Gateway restart
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -83991,7 +83991,7 @@ taskId=COLLAB-HANDOFF-RECOVER-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** REGISTERED / READY / NOT ADMITTED — 2026-11-04.
+**Status:** ADMITTED / Lane 1 ACTIVE — 2026-11-04.
 **Task ID:** COLLAB-HANDOFF-RECOVER-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION

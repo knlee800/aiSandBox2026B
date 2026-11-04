@@ -188,6 +188,10 @@ export type HarnessRoutingDecision =
       readonly failReason: HarnessRoutingFailReason;
     };
 
+function harnessRoutingFailureMessage(reason: HarnessRoutingFailReason): string {
+  return `Requested Harness execution cannot proceed (${reason})`;
+}
+
 export class HarnessRoutingError extends Error {
   readonly code: 'harness_tool_loop_disabled' | 'harness_unsupported_adapter';
   readonly reason: HarnessRoutingFailReason;
@@ -197,7 +201,7 @@ export class HarnessRoutingError extends Error {
       reason === 'tool_loop_disabled'
         ? 'harness_tool_loop_disabled'
         : 'harness_unsupported_adapter';
-    super(`Requested Harness execution cannot proceed (${reason})`);
+    super(harnessRoutingFailureMessage(reason));
     this.name = 'HarnessRoutingError';
     this.code = code;
     this.reason = reason;
@@ -264,11 +268,14 @@ export function computeJobPayloadDigest(
   return computePayloadDigest(copyJobPayloadWithoutProof(job));
 }
 
+const HARNESS_EMPTY_ADVERTISED_TOOL_SET_MESSAGE =
+  'Requested Harness execution cannot proceed (empty_advertised_tool_set)';
+
 export class HarnessEmptyAdvertisedToolSetError extends Error {
   readonly code = 'harness_empty_advertised_tool_set' as const;
 
   constructor() {
-    super('Requested Harness execution cannot proceed (empty_advertised_tool_set)');
+    super(HARNESS_EMPTY_ADVERTISED_TOOL_SET_MESSAGE);
     this.name = 'HarnessEmptyAdvertisedToolSetError';
   }
 }
@@ -299,10 +306,14 @@ export class HarnessEntitlementError extends Error {
   }
 }
 
+function harnessEntitlementFailureMessage(code: string): string {
+  return `Harness entitlement proof verification failed (${code})`;
+}
+
 function harnessEntitlementFailure(code: string): HarnessEntitlementError {
   return new HarnessEntitlementError(
     code,
-    `Harness entitlement proof verification failed (${code})`,
+    harnessEntitlementFailureMessage(code),
   );
 }
 
@@ -580,6 +591,193 @@ function readStoredUsageMetadata(value: unknown): Record<string, unknown> {
     }
   }
   return {};
+}
+
+const STORED_EXECUTION_ERROR_CODE = 'execution_failed';
+const STORED_EXECUTION_ERROR_MESSAGE = 'This step failed.';
+const STORED_EXECUTION_ERROR_MESSAGE_MAX = 300;
+const SHORT_ERROR_CODE = /^[A-Za-z][A-Za-z0-9_-]{0,63}$/;
+const STUCK_RUNNING_FAILURE_MESSAGE =
+  'This step was stopped because it stayed running too long.';
+const STALLED_RUNNING_FAILURE_MESSAGE =
+  'This step was stopped because it was still marked running.';
+
+const HARNESS_ENTITLEMENT_FAILURE_CODES: readonly string[] = [
+  HARNESS_ENTITLEMENT_PROOF_MISSING,
+  HARNESS_ENTITLEMENT_PROOF_MALFORMED,
+  HARNESS_ENTITLEMENT_PROOF_UNSUPPORTED_VERSION,
+  HARNESS_ENTITLEMENT_PROOF_BINDING_MISMATCH,
+  HARNESS_ENTITLEMENT_PROOF_PAYLOAD_INTEGRITY_MISMATCH,
+  HARNESS_ENTITLEMENT_PROOF_INVALID_SIGNATURE,
+  HARNESS_ENTITLEMENT_PROOF_SECRET_NOT_CONFIGURED,
+];
+
+function knownHarnessMessages(code: string): readonly string[] {
+  switch (code) {
+    case 'harness_tool_loop_disabled':
+      return [harnessRoutingFailureMessage('tool_loop_disabled')];
+    case 'harness_unsupported_adapter':
+      return [
+        harnessRoutingFailureMessage('adapter_lacks_tool_use'),
+        harnessRoutingFailureMessage('adapter_lacks_execute_with_tools'),
+      ];
+    case 'harness_empty_advertised_tool_set':
+      return [HARNESS_EMPTY_ADVERTISED_TOOL_SET_MESSAGE];
+    case HARNESS_TOOL_PROFILE_CONFLICT:
+      return [HARNESS_TOOL_PROFILE_CONFLICT_MESSAGE];
+    case HARNESS_TOOL_PROFILE_INVALID:
+      return [
+        HARNESS_TOOL_PROFILE_INVALID_MESSAGE,
+        HARNESS_TOOL_PROFILE_REQUIRES_HARNESS_MESSAGE,
+      ];
+    case HARNESS_WRITE_TOOLS_DISABLED:
+      return [HARNESS_WRITE_TOOLS_DISABLED_MESSAGE];
+    case HARNESS_VALIDATION_TOOLS_DISABLED:
+      return [HARNESS_VALIDATION_TOOLS_DISABLED_MESSAGE];
+    default:
+      if (HARNESS_ENTITLEMENT_FAILURE_CODES.includes(code)) {
+        return [harnessEntitlementFailureMessage(code)];
+      }
+      return [];
+  }
+}
+
+function fixedSafeSentence(code: string): string {
+  const known = knownHarnessMessages(code);
+  if (known.length === 1) {
+    return known[0];
+  }
+  if (code === 'harness_unsupported_adapter') {
+    return 'Requested Harness execution cannot proceed (unsupported adapter)';
+  }
+  if (code === HARNESS_TOOL_PROFILE_INVALID) {
+    return HARNESS_TOOL_PROFILE_INVALID_MESSAGE;
+  }
+  return STORED_EXECUTION_ERROR_MESSAGE;
+}
+
+function readShortErrorCode(error: unknown): string {
+  if (!error || typeof error !== 'object') {
+    return STORED_EXECUTION_ERROR_CODE;
+  }
+  const code = (error as { code?: unknown }).code;
+  if (typeof code !== 'string') {
+    return STORED_EXECUTION_ERROR_CODE;
+  }
+  const trimmed = code.trim();
+  if (!SHORT_ERROR_CODE.test(trimmed)) {
+    return STORED_EXECUTION_ERROR_CODE;
+  }
+  return trimmed;
+}
+
+function readRawErrorMessage(error: unknown): string {
+  if (typeof error === 'string') {
+    return error;
+  }
+  if (error instanceof Error || (error && typeof error === 'object' && 'message' in error)) {
+    const message = (error as { message?: unknown }).message;
+    return typeof message === 'string' ? message : '';
+  }
+  return '';
+}
+
+function collapseFirstLine(value: string): string {
+  const firstLine = value.split(/\r?\n/, 1)[0] ?? '';
+  return firstLine.replace(/\s+/g, ' ').trim();
+}
+
+function looksLikeStackOrNumberedPath(value: string): boolean {
+  return (
+    value.includes('node_modules') ||
+    /\n\s*at\s+\S+/.test(value) ||
+    /\bat\s+\S+\s+\(/.test(value) ||
+    /[A-Za-z]:\\[^\r\n]{0,240}:\d+/.test(value) ||
+    /\b[\w.-]+\.[cm]?[jt]sx?:\d+/.test(value) ||
+    /\b[\w.-]+\.py:\d+/.test(value) ||
+    /(?:^|[\s'"(])\/[^\s:'"]+\.[A-Za-z0-9]+:\d+/.test(value)
+  );
+}
+
+function looksLikeCredential(value: string): boolean {
+  return (
+    /api[_ -]?key/i.test(value) ||
+    /\b(?:password|passwd|secret|bearer|token)\b/i.test(value) ||
+    /\bkey\b/i.test(value) ||
+    /\bsk-[A-Za-z0-9]{6,}/.test(value) ||
+    /\beyJ[A-Za-z0-9_-]{8,}/.test(value) ||
+    /-----BEGIN [A-Z ]*KEY-----/.test(value)
+  );
+}
+
+function looksLikePromptOrFileContent(value: string, prompt: string | undefined): boolean {
+  if (value.includes('```')) {
+    return true;
+  }
+  const codeLines = value.split(/\r?\n/).filter((line) =>
+    /^\s*(?:import |export |function |const |let |class |def |public |private |#include |package )/.test(
+      line,
+    ),
+  );
+  if (codeLines.length >= 3) {
+    return true;
+  }
+  if (typeof prompt !== 'string') {
+    return false;
+  }
+  const trimmed = prompt.trim();
+  if (trimmed.length < 40) {
+    return false;
+  }
+  const window = 40;
+  const step = 20;
+  const last = Math.min(trimmed.length - window, 400);
+  for (let index = 0; index <= last; index += step) {
+    if (value.includes(trimmed.slice(index, index + window))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function isUnsafeExecutionErrorText(value: string, prompt: string | undefined): boolean {
+  return (
+    looksLikeStackOrNumberedPath(value) ||
+    looksLikeCredential(value) ||
+    looksLikePromptOrFileContent(value, prompt)
+  );
+}
+
+function resolveStoredExecutionError(
+  error: unknown,
+  prompt?: string,
+): { code: string; message: string } {
+  const code = readShortErrorCode(error);
+  const raw = readRawErrorMessage(error);
+  const known = knownHarnessMessages(code);
+  const trimmed = raw.trim();
+  const exact = known.find((message) => message === trimmed);
+  if (exact) {
+    return { code, message: exact };
+  }
+  if (isUnsafeExecutionErrorText(raw, prompt)) {
+    const contained = known.find((message) => trimmed.includes(message));
+    return {
+      code,
+      message: contained ?? fixedSafeSentence(code),
+    };
+  }
+  const collapsed = collapseFirstLine(raw);
+  if (collapsed.length === 0) {
+    return { code, message: fixedSafeSentence(code) };
+  }
+  return {
+    code,
+    message:
+      collapsed.length > STORED_EXECUTION_ERROR_MESSAGE_MAX
+        ? collapsed.slice(0, STORED_EXECUTION_ERROR_MESSAGE_MAX)
+        : collapsed,
+  };
 }
 
 interface FileActionContractValidationResult {
@@ -944,15 +1142,11 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
         `QueueEvent: job failed executionId=${executionId ?? 'unknown'} workerId=${this.workerId} jobId=${jobId}`,
       );
       if (executionId) {
-        const result = await this.dataSource.query(
-          `
-          UPDATE usage_records
-          SET execution_status = 'failed'
-          WHERE execution_id = $1
-          AND execution_status = 'running'
-          RETURNING execution_id
-          `,
-          [executionId],
+        const result = await this.markRunningLedgerFailed(
+          executionId,
+          resolveStoredExecutionError({
+            message: typeof failedReason === 'string' ? failedReason : '',
+          }),
         );
         if (result.length > 0) {
           incExecutionFailed();
@@ -1009,16 +1203,10 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
 
     for (const row of rows) {
       const executionId = row.execution_id;
-      const result = await this.dataSource.query(
-        `
-        UPDATE usage_records
-        SET execution_status = 'failed'
-        WHERE execution_id = $1
-        AND execution_status = 'running'
-        RETURNING execution_id
-        `,
-        [executionId],
-      );
+      const result = await this.markRunningLedgerFailed(executionId, {
+        code: STORED_EXECUTION_ERROR_CODE,
+        message: STUCK_RUNNING_FAILURE_MESSAGE,
+      });
 
       if (result.length > 0) {
         incExecutionFailed();
@@ -1074,6 +1262,67 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
     this.metrics.execution_failed_total++;
     this.logger.warn(
       `Harness tool profile rejected executionId=${input.executionId} code=${input.code}`,
+    );
+  }
+
+  private async readMergedExecutionMetadata(
+    executionId: string,
+    executionError: { readonly code: string; readonly message: string },
+  ): Promise<string | null> {
+    try {
+      const metadataRows = await this.dataSource.query(
+        `
+        SELECT metadata
+        FROM usage_records
+        WHERE execution_id = $1
+        `,
+        [executionId],
+      );
+      return JSON.stringify({
+        ...readStoredUsageMetadata(metadataRows[0]?.metadata),
+        executionError: {
+          code: executionError.code,
+          message: executionError.message,
+        },
+      });
+    } catch {
+      this.logger.warn(
+        `Could not read usage metadata before storing executionError executionId=${executionId}`,
+      );
+      return null;
+    }
+  }
+
+  private async markRunningLedgerFailed(
+    executionId: string,
+    executionError: { readonly code: string; readonly message: string },
+  ): Promise<unknown[]> {
+    const metadataJson = await this.readMergedExecutionMetadata(
+      executionId,
+      executionError,
+    );
+    if (metadataJson === null) {
+      return this.dataSource.query(
+        `
+        UPDATE usage_records
+        SET execution_status = 'failed'
+        WHERE execution_id = $1
+        AND execution_status = 'running'
+        RETURNING execution_id
+        `,
+        [executionId],
+      );
+    }
+    return this.dataSource.query(
+      `
+      UPDATE usage_records
+      SET execution_status = 'failed',
+          metadata = $2::jsonb
+      WHERE execution_id = $1
+      AND execution_status = 'running'
+      RETURNING execution_id
+      `,
+      [executionId, metadataJson],
     );
   }
 
@@ -1150,16 +1399,10 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
           const currentStatus = statusCheck[0]?.execution_status;
 
           if (currentStatus === 'running') {
-            const stalledResult = await this.dataSource.query(
-              `
-              UPDATE usage_records
-              SET execution_status = 'failed'
-              WHERE execution_id = $1
-              AND execution_status = 'running'
-              RETURNING execution_id
-              `,
-              [executionId],
-            );
+            const stalledResult = await this.markRunningLedgerFailed(executionId, {
+              code: STORED_EXECUTION_ERROR_CODE,
+              message: STALLED_RUNNING_FAILURE_MESSAGE,
+            });
             if (stalledResult.length > 0) {
               incExecutionFailed();
               incrementStuckRecovered();
@@ -2097,20 +2340,39 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
             `AI execution failed executionId=${executionId}: ${error.message}`,
           );
 
-          await this.dataSource.query(
-            `
-            UPDATE usage_records
-            SET execution_status = 'failed',
-                model = $2,
-                tokens_used = COALESCE($3, tokens_used)
-            WHERE execution_id = $1
-            `,
-            [
-              executionId,
-              resolveLedgerModel(undefined, job.data.model),
-              failedLedgerTokens,
-            ],
+          const executionError = resolveStoredExecutionError(
+            error,
+            typeof job.data.prompt === 'string' ? job.data.prompt : undefined,
           );
+          const metadataJson = await this.readMergedExecutionMetadata(
+            executionId,
+            executionError,
+          );
+          const ledgerModel = resolveLedgerModel(undefined, job.data.model);
+          if (metadataJson === null) {
+            await this.dataSource.query(
+              `
+              UPDATE usage_records
+              SET execution_status = 'failed',
+                  model = $2,
+                  tokens_used = COALESCE($3, tokens_used)
+              WHERE execution_id = $1
+              `,
+              [executionId, ledgerModel, failedLedgerTokens],
+            );
+          } else {
+            await this.dataSource.query(
+              `
+              UPDATE usage_records
+              SET execution_status = 'failed',
+                  model = $2,
+                  tokens_used = COALESCE($3, tokens_used),
+                  metadata = $4::jsonb
+              WHERE execution_id = $1
+              `,
+              [executionId, ledgerModel, failedLedgerTokens, metadataJson],
+            );
+          }
 
           throw error;
         }
