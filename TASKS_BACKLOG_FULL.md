@@ -85496,6 +85496,37 @@ nature=IMPLEMENTATION
 - [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
 - [ ] Not LOCKED by an implementer
 
+### STAGING-DEPLOY-06 — Deploy the audit table and per-user access; make Keith admin and switch him on
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-06
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED — 2026-11-05. Lane 1, STAGING.
+**Task ID:** STAGING-DEPLOY-06
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (operational run; no code)
+**Lifecycle:** 3-STEP: registration and admission here; deploy, admin step, Keith's switch-on and checks; separate LOCK record (STAGING-RUNTIME).
+**Start condition (human):** READY — Keith approved the draft on 2026-11-05.
+**Depends on:** COLLAB-AUDIT-01, ACCESS-01B, both COMPLETE AND LOCKED.
+**Primary write scope:** none in the repository beyond records. Host state on ainow-staging-01 (release, two migrations, Keith's users.role, his user_entitlements row) and off-repo evidence only.
+**Mutexes / resources:** STAGING. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** STAGING-RUNTIME. **Revert isolation:** acceptable (no code; both migrations have down paths; the role change is one recorded row).
+**saturationClass:** OPTIONAL
+
+**Problem:** COLLAB-AUDIT-01 and ACCESS-01B reach staging only by a deploy. After ACCESS-01B nobody is entitled until an admin sets a row, and Keith's staging account has role user.
+
+**Scope:** (1) Read-only pre-check. (2) Deploy main at the record commit with the standard block, except that the migration hash is expected to change: CreateAuditEventsTable1800000000000 and CreateUserEntitlementsTable1801000000000 recorded; audit_events with its index, function and trigger; user_entitlements present; configuration files unchanged; units active; health 200; guard checks 401, including PATCH /api/admin/users/:userId/entitlements and GET /api/auth/me without login. (3) One SQL update sets Keith's users.role from user to admin (exactly one row). (4) Keith sets his own row with harnessEnabled true and a reason through the PATCH from the browser console. (5) Check: his row, one entitlement.updated audit row with him as actor, and the trigger refusing UPDATE and DELETE on that row inside a rolled-back transaction. (6) Keith opens Knowledge without a window. No provider, no credits; runs and provider flags stay off.
+
+#### Acceptance criteria
+
+- [ ] Staging runs the deployed commit; health and guard checks pass, including the admin entitlements route and /api/auth/me; configuration files unchanged
+- [ ] Both migrations are applied: audit_events with its index, function and trigger, and user_entitlements
+- [ ] Keith's staging role is admin (one row changed) and his entitlement row has harness access on, set by him through the PATCH with one audit row
+- [ ] The database refuses UPDATE and DELETE on that audit row (checked inside a rolled-back transaction)
+- [ ] Knowledge opens for Keith without a window; runs and provider flags stay off
+- [ ] Keith judgement recorded
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
