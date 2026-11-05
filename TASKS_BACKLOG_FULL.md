@@ -85548,15 +85548,15 @@ taskId=STATIC-KEYS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by ACCESS-01D (control-plane review finding); not admitted.
+**Status:** ADMITTED — 2026-11-05. Lane 1, GATEWAY. Keith approved the scope on 2026-11-05: static keys only when NODE_ENV is test or development.
 **Task ID:** STATIC-KEYS-01
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition (human):** NOT_READY. Ready when: Keith admits it. Keith decides.
+**Start condition (human):** READY — Keith admitted it on 2026-11-05.
 **Depends on:** none.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
-**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**Primary write scope:** services/api-gateway/src/auth/api-key-auth.guard.ts, services/api-gateway/src/auth/api-key.config.ts and their specs in services/api-gateway/src/auth/ and services/api-gateway/src/auth/__tests__/. Anything else is out of scope; if a test outside it breaks, the implementer stops.
+**Mutexes / resources:** GATEWAY. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** LOCAL-TESTS (ACCESS-LIVE-01 later confirms on staging that a static key is refused). **Revert isolation:** acceptable (auth fallback only; no migration).
 **saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md.
 
 **Holds:** services/api-gateway/src/auth/api-key-auth.guard.ts falls back to the fixed keys in services/api-gateway/src/auth/api-key.config.ts whenever the database has no matching key, in every environment; test-harness-api-key grants ai:harness, harnessEntitled and isInternal. On staging a Bearer key cannot pass Caddy's basic_auth, so it matters only if port 4000 is reachable or in production. Accept the static keys only in the test environment (for example NODE_ENV=test) and prove a static key is refused otherwise. Rough size S. ACCESS-LIVE-01 depends on it.
@@ -85564,7 +85564,12 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] The static keys are accepted only when NODE_ENV is test or development; with any other value or unset, a static key gets 403 Invalid API key, the same as an unknown key
+- [ ] Database keys work the same in every environment
+- [ ] No key value is logged
+- [ ] Tests cover each static key, including test-harness-api-key, refused under production and unset and accepted under test and development, and a database key accepted under production
+- [ ] Gateway npm test shows only the 14 known runtime-only smoke.integration failures; npm run build passes
 - [ ] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
