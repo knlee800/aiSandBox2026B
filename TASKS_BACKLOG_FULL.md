@@ -84320,6 +84320,7 @@ nature=IMPLEMENTATION
 **Added 2026-11-05 (Keith in chat, Agent Teams assessment and limits):** (8) a Limits page in the admin area: view and edit limits in the browser, applied without a restart, every change logged, later per plan or per user; needs a settings table and admin-only validation. Recommendation (control plane, 2026-11-05): recommended later, with charging, before anyone but Keith uses the platform.
 **Planning, 2026-11-05:** all eight items planned in GOV-ACCESS-PLAN-01.
 **Plan, 2026-11-05:** docs/ACCESS-READY-01-PLAN.md, approved by Keith with decisions D1 to D7. Registered children: ACCESS-01A (first) to ACCESS-01J, ACCESS-LIVE-01 and LIMITS-PER-USER-01. Second-user checklist: ACCESS-01A, 01B, 01C, 01D, 01F, ACCESS-LIVE-01 and COLLAB-AUDIT-01. The umbrella stays NOT_READY.
+**Added 2026-11-05 (ACCESS-01A):** (9) HTTP CORS in services/api-gateway/src/main.ts allows any origin (origin: true); restrict it to APP_BASE_URL before a second user.
 
 #### Acceptance criteria
 
@@ -85130,7 +85131,7 @@ taskId=ACCESS-01A
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-05. Lane 1, GATEWAY. First slice of ACCESS-READY-01.
+**Status:** COMPLETE AND LOCKED — 2026-11-05. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY released. Socket.IO connections need a valid session and room joins need ownership; not deployed. Checkpoint: docs/ACCESS-01A-CHECKPOINT.md.
 **Task ID:** ACCESS-01A
 **Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -85146,11 +85147,11 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] A Socket.IO connection without a valid session is refused, and join-session for a session the caller does not own is refused; the owner can join
-- [ ] CORS for the socket uses the configured origin, not any origin
-- [ ] A test proves POST /api/events/* stays behind the internal-service guard
-- [ ] Gateway tests and build pass; only files in the write scope change
-- [ ] Not LOCKED by an implementer
+- [x] A Socket.IO connection without a valid session is refused, and join-session for a session the caller does not own is refused; the owner can join
+- [x] CORS for the socket uses the configured origin, not any origin
+- [x] A test proves POST /api/events/* stays behind the internal-service guard
+- [x] Gateway tests and build pass; only files in the write scope change
+- [x] Not LOCKED by an implementer
 
 ### ACCESS-01B — Per-user entitlements table replacing the env allowlist
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

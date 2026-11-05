@@ -65,4 +65,43 @@ describe('InternalServiceAuthGuard events protection', () => {
 
     expect(guard.canActivate(context)).toBe(true);
   });
+
+  it.each(['/api/events/checkpoint-created', '/api/events/token-updated'])(
+    'rejects %s without X-Internal-Service-Key',
+    (path) => {
+      process.env.INTERNAL_SERVICE_KEY = 'test-key';
+      const guard = new InternalServiceAuthGuard();
+      const context = createMockContext({
+        path,
+        headers: {},
+      });
+
+      expect(() => guard.canActivate(context)).toThrow(UnauthorizedException);
+    },
+  );
+
+  it.each(['/api/events/checkpoint-created', '/api/events/token-updated'])(
+    'allows %s with valid X-Internal-Service-Key',
+    (path) => {
+      process.env.INTERNAL_SERVICE_KEY = 'test-key';
+      const guard = new InternalServiceAuthGuard();
+      const context = createMockContext({
+        path,
+        headers: { 'x-internal-service-key': 'test-key' },
+      });
+
+      expect(guard.canActivate(context)).toBe(true);
+    },
+  );
+
+  it('rejects /api/events/file-changed when the internal key does not match', () => {
+    process.env.INTERNAL_SERVICE_KEY = 'test-key';
+    const guard = new InternalServiceAuthGuard();
+    const context = createMockContext({
+      path: '/api/events/file-changed',
+      headers: { 'x-internal-service-key': 'wrong-key' },
+    });
+
+    expect(() => guard.canActivate(context)).toThrow(UnauthorizedException);
+  });
 });
