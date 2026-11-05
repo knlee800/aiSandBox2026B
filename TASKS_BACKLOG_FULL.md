@@ -85705,7 +85705,7 @@ taskId=STAGING-DEPLOY-08
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-05. Lane 1, STAGING.
+**Status:** COMPLETE AND LOCKED — 2026-11-05. LANE-DONE and LOCKED by the control plane; Lane 1 and STAGING released. Staging runs 3c584a9 with the real refusal messages; runs and provider off; stagingAuthorized false. Checkpoint: docs/STAGING-DEPLOY-08-CHECKPOINT.md.
 **Task ID:** STAGING-DEPLOY-08
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION (operational run; no code)
@@ -85722,10 +85722,10 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Staging runs the deployed commit; migration hash unchanged; health and guard checks pass; configuration files unchanged; static test key refused
-- [ ] The built frontend contains the new daily-credit message in en, zh-TW and zh-CN
-- [ ] Nothing queued or running before the deploy; runs and provider stay off; nothing left open
-- [ ] Not LOCKED by an implementer
+- [x] Staging runs the deployed commit; migration hash unchanged; health and guard checks pass; configuration files unchanged; static test key refused
+- [x] The built frontend contains the new daily-credit message in en, zh-TW and zh-CN
+- [x] Nothing queued or running before the deploy; runs and provider stay off; nothing left open
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
