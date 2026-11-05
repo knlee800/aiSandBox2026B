@@ -84262,6 +84262,7 @@ nature=IMPLEMENTATION
 **Named in:** AGENT-KNOWLEDGE-00 plan; PRD.md section 8 (shared and specialist knowledge runtime is approved FUTURE).
 **Planning, 2026-11-05:** planned together with AGENT-COLLAB-BIZ-01 in GOV-BIZ-KNOWLEDGE-PLAN-01.
 **Plan, 2026-11-05:** docs/AGENT-BIZ-KNOWLEDGE-PLAN.md, approved by Keith. Registered children: KNOW-01 (first), KNOW-02, KNOW-03, KNOW-04. Dropped for now: prompt-pack injection, key facts, chunking, vectors, connectors, scheduled refresh, sensitive-scope review, knowledge per project.
+**Added 2026-11-05 (KNOW-01):** (a) the account-usage check loads every document's content to sum sizes; sum byte_size in the query instead. (b) JSON uploads larger than the gateway's JSON parser limit fail before the knowledge handler; raise the limit for this route or keep multipart only.
 
 #### Acceptance criteria
 
@@ -84707,7 +84708,7 @@ taskId=KNOW-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-05. Lane 1, GATEWAY, MIGRATION, FRONTEND and I18N. First slice of AGENT-KNOWLEDGE-01; future work authorized by Keith with the plan.
+**Status:** COMPLETE AND LOCKED — 2026-11-05. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY, MIGRATION, FRONTEND and I18N released. Knowledge documents can be stored, listed, replaced and deleted per account and scope; not deployed. Checkpoint: docs/KNOW-01-CHECKPOINT.md.
 **Task ID:** KNOW-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -84723,12 +84724,12 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Owner-scoped knowledge documents can be listed, uploaded (paste, .md, .txt), replaced and deleted within the plan limits; only harness-entitled users reach the routes
-- [ ] A test proves the server scope IDs equal the frontend registry's
-- [ ] The Knowledge page and the platform link work in en, zh-TW and zh-CN
-- [ ] The migration runs up and down; gateway and frontend tests, tsc and builds pass
-- [ ] Only files in the write scope change
-- [ ] Not LOCKED by an implementer
+- [x] Owner-scoped knowledge documents can be listed, uploaded (paste, .md, .txt), replaced and deleted within the plan limits; only harness-entitled users reach the routes
+- [x] A test proves the server scope IDs equal the frontend registry's
+- [x] The Knowledge page and the platform link work in en, zh-TW and zh-CN
+- [x] The migration runs up and down; gateway and frontend tests, tsc and builds pass
+- [x] Only files in the write scope change
+- [x] Not LOCKED by an implementer
 
 ### KNOW-02 — Knowledge tools in the Harness
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

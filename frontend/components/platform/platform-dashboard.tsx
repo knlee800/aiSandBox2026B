@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   ArrowLeftIcon,
+  BookOpenIcon,
   BuildingOffice2Icon,
   ExclamationTriangleIcon,
   PlusIcon,
@@ -102,6 +103,7 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
   const subtitle = resolveNestedMessage(messages, 'platform.subtitle');
   const backToWorkspace = resolveNestedMessage(messages, 'platform.backToWorkspace');
   const openOffice = resolveNestedMessage(messages, 'platform.openOffice');
+  const openKnowledge = resolveNestedMessage(messages, 'platform.openKnowledge');
   const commandDeckLabel = resolveNestedMessage(messages, 'platform.commandDeckLabel');
   const commandDeckIntro = resolveNestedMessage(messages, 'platform.commandDeckIntro');
   const statusTitle = resolveNestedMessage(messages, 'platform.commandCenterStatusTitle');
@@ -356,6 +358,14 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
             >
               <BuildingOffice2Icon className="h-4 w-4" aria-hidden="true" />
               {openOffice}
+            </Link>
+            <Link
+              href={`${localePrefix}/knowledge`}
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+              data-testid="platform-open-knowledge"
+            >
+              <BookOpenIcon className="h-4 w-4" aria-hidden="true" />
+              {openKnowledge}
             </Link>
             <Link
               href={`${localePrefix}/app`}

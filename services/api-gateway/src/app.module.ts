@@ -34,6 +34,7 @@ import { ProjectAiContextModule } from './project-ai-context/project-ai-context.
 import { ProjectRepoDocsModule } from './project-repo-docs/project-repo-docs.module';
 import { OrchestrationModule } from './orchestration/orchestration.module';
 import { UserAgentModule } from './user-agent/user-agent.module';
+import { KnowledgeModule } from './knowledge/knowledge.module';
 import { databaseConfig } from './config/database.config';
 import { InternalServiceAuthGuard } from './guards/internal-service-auth.guard';
 import { IdempotentReplayExceptionFilter } from './filters/idempotent-replay-exception.filter';
@@ -86,6 +87,7 @@ import { IdempotentReplayExceptionFilter } from './filters/idempotent-replay-exc
     WebhookModule, // BILLING-READY-05D: Webhook event ingestion / idempotency
     BillingReadModule, // BILLING-READY-05F: Billing UI read endpoints (balance + subscription)
     UserAgentModule, // AGENT-PLATFORM-CREATE-01A: User-created agent persistence
+    KnowledgeModule, // KNOW-01: Owner-scoped knowledge documents
   ],
   controllers: [],
   providers: [

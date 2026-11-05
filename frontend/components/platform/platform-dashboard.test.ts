@@ -92,6 +92,7 @@ describe('platform dashboard data integration', () => {
       'platform.openAgentDetailComingSoon',
       'platform.backToWorkspace',
       'platform.openOffice',
+      'platform.openKnowledge',
       'platform.comingSoonMessage',
     ];
 
@@ -124,6 +125,13 @@ describe('platform dashboard navigation integration', () => {
     assert.match(dashboardSource, /platform\.openOffice/);
     assert.match(dashboardSource, /data-testid="platform-open-office"/);
     assert.match(dashboardSource, /href=\{`\$\{localePrefix\}\/office`\}/);
+  });
+
+  test('command center header links to the knowledge route', () => {
+    const dashboardSource = readFileSync(new URL('./platform-dashboard.tsx', import.meta.url), 'utf8');
+    assert.match(dashboardSource, /platform\.openKnowledge/);
+    assert.match(dashboardSource, /data-testid="platform-open-knowledge"/);
+    assert.match(dashboardSource, /href=\{`\$\{localePrefix\}\/knowledge`\}/);
   });
 
   test('builder agent route matches the existing workspace route /app', () => {
