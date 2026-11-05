@@ -84707,12 +84707,12 @@ taskId=KNOW-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-BIZ-KNOWLEDGE-PLAN-01; not admitted.
+**Status:** ADMITTED — 2026-11-05. Lane 1, GATEWAY, MIGRATION, FRONTEND and I18N. First slice of AGENT-KNOWLEDGE-01; future work authorized by Keith with the plan.
 **Task ID:** KNOW-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition (human):** NOT_READY. Ready when: Keith admits it (the plan is approved). Keith decides.
+**Start condition (human):** READY — Keith admitted it on 2026-11-05 after approving docs/AGENT-BIZ-KNOWLEDGE-PLAN.md.
 **Depends on:** none.
 **Primary write scope:** `services/api-gateway/src/knowledge/`, `services/api-gateway/src/entities/`, `services/api-gateway/src/migrations/`, `services/api-gateway/src/app.module.ts`, `frontend/app/`, `frontend/components/knowledge/`, `frontend/components/platform/`, `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`.
 **Mutexes / resources:** GATEWAY, MIGRATION, FRONTEND, I18N. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (new table, routes and page; revert by migration down).
