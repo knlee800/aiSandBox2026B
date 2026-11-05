@@ -85502,7 +85502,7 @@ taskId=STAGING-DEPLOY-06
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-05. Lane 1, STAGING.
+**Status:** COMPLETE AND LOCKED — 2026-11-05. LANE-DONE and LOCKED by the control plane; Lane 1 and STAGING released. Staging runs 4d08d26 with the audit table and per-user access; Keith admin with harness access on; runs and provider off; stagingAuthorized false. Checkpoint: docs/STAGING-DEPLOY-06-CHECKPOINT.md.
 **Task ID:** STAGING-DEPLOY-06
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION (operational run; no code)
@@ -85519,13 +85519,13 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Staging runs the deployed commit; health and guard checks pass, including the admin entitlements route and /api/auth/me; configuration files unchanged
-- [ ] Both migrations are applied: audit_events with its index, function and trigger, and user_entitlements
-- [ ] Keith's staging role is admin (one row changed) and his entitlement row has harness access on, set by him through the PATCH with one audit row
-- [ ] The database refuses UPDATE and DELETE on that audit row (checked inside a rolled-back transaction)
-- [ ] Knowledge opens for Keith without a window; runs and provider flags stay off
-- [ ] Keith judgement recorded
-- [ ] Not LOCKED by an implementer
+- [x] Staging runs the deployed commit; health and guard checks pass, including the admin entitlements route and /api/auth/me; configuration files unchanged
+- [x] Both migrations are applied: audit_events with its index, function and trigger, and user_entitlements
+- [x] Keith's staging role is admin (one row changed) and his entitlement row has harness access on, set by him through the PATCH with one audit row
+- [x] The database refuses UPDATE and DELETE on that audit row (checked inside a rolled-back transaction)
+- [x] Knowledge opens for Keith without a window; runs and provider flags stay off
+- [x] Keith judgement recorded
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
