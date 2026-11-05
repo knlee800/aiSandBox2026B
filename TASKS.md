@@ -3,15 +3,15 @@
 schemaVersion=1
 maxImplementationLanes=2
 lane3=DISABLED
-lane1.state=EMPTY
-lane1.taskId=NONE
+lane1.state=ACTIVE
+lane1.taskId=ACCESS-01D
 lane2.state=EMPTY
 lane2.taskId=NONE
 governance.owner=NONE
 governance.state=UNOWNED
 saturationSuspended=false
 suspensionReason=NONE
-occupancyHash=sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d
+occupancyHash=sha256:6c2e3b61c7156aaff1941e5f4b0f8c64464517a5975c8c66b91ae21b7a79035b
 <!-- AISB_OCCUPANCY_V1_END -->
 
 **Parallel Development Architecture:** v1
@@ -351,8 +351,12 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-05. Lane 1 released. GATEWAY released UNOWNED. Daily credit caps from the ledger (500 per user, 1,000 platform per UTC day); not deployed. Checkpoint: docs/ACCESS-01F-CHECKPOINT.md.
 
+## ACCESS-01D — ADMITTED / Lane 1 ACTIVE — 2026-11-05
+
+**Current status:** ADMITTED, Lane 1, with GATEWAY. Keith approved the scope and admitted it on 2026-11-05. Scope in TASKS_BACKLOG_FULL.md.
+
 ## Lane 1
-EMPTY — Lane 1 released at ACCESS-01F COMPLETE AND LOCKED — 2026-11-05.
+ACTIVE — ACCESS-01D — 2026-11-05.
 
 ## Lane 2
 EMPTY — Lane 2 released at RUN-LIST-COLLAB-01 COMPLETE AND LOCKED — 2026-11-05.
@@ -363,11 +367,11 @@ DISABLED
 ## Governance owner / state
 UNOWNED — GOV-OS-05 COMPLETE AND LOCKED — 2026-11-05.
 
-Both implementation lanes are EMPTY. ACCESS-01F is COMPLETE AND LOCKED (daily credit caps from the ledger; not deployed). Staging runs 4d08d26 with knowledge, citations, the validation gate, Socket.IO auth, the audit table and per-user access (Keith admin, harness access on); runs and provider off. SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted: ACCESS-01C to ACCESS-01E, ACCESS-01G to ACCESS-01J, ACCESS-LIVE-01, LIMITS-PER-USER-01 (registered by GOV-ACCESS-PLAN-01); COLLAB-EVAL-01, COLLAB-FANOUT-01, COLLAB-REVIEWERS-01, COLLAB-LIMITS-ENV-01 (registered 2026-11-05 from Keith's Agent Teams and limits decisions); KNOW-02, KNOW-04, BIZ-01, BIZ-LIVE-01, BIZ-02, BIZ-03, BIZ-NOPROJECT-01, GOV-ARCH-SYNC-01 (registered by GOV-BIZ-KNOWLEDGE-PLAN-01); COLLAB-EDIT-01, COLLAB-CANCEL-01 (registered by GOV-COLLAB-PLAN-01); AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01 (registered by GOV-OS-05); ADMIN-CSRF-01 (registered by ACCESS-01B).
+Lane 1 ACTIVE: ACCESS-01D. Lane 2 EMPTY. ACCESS-01F is COMPLETE AND LOCKED (daily credit caps from the ledger; not deployed). Staging runs 4d08d26 with knowledge, citations, the validation gate, Socket.IO auth, the audit table and per-user access (Keith admin, harness access on); runs and provider off. SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted: ACCESS-01C, ACCESS-01E, ACCESS-01G to ACCESS-01J, ACCESS-LIVE-01, LIMITS-PER-USER-01 (registered by GOV-ACCESS-PLAN-01); COLLAB-EVAL-01, COLLAB-FANOUT-01, COLLAB-REVIEWERS-01, COLLAB-LIMITS-ENV-01 (registered 2026-11-05 from Keith's Agent Teams and limits decisions); KNOW-02, KNOW-04, BIZ-01, BIZ-LIVE-01, BIZ-02, BIZ-03, BIZ-NOPROJECT-01, GOV-ARCH-SYNC-01 (registered by GOV-BIZ-KNOWLEDGE-PLAN-01); COLLAB-EDIT-01, COLLAB-CANCEL-01 (registered by GOV-COLLAB-PLAN-01); AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01 (registered by GOV-OS-05); ADMIN-CSRF-01 (registered by ACCESS-01B).
 
 ## Active mutex / resource ownership
 - GOVERNANCE: UNOWNED — GOV-OS-05 lock 2026-11-05.
-- GATEWAY: UNOWNED — released at ACCESS-01F COMPLETE AND LOCKED 2026-11-05.
+- GATEWAY: OWNED by ACCESS-01D (2026-11-05).
 - MIGRATION: UNOWNED — released at ACCESS-01B COMPLETE AND LOCKED 2026-11-05.
 - FRONTEND: UNOWNED — released at KNOW-03 COMPLETE AND LOCKED 2026-11-05.
 - I18N: UNOWNED — released at KNOW-03 COMPLETE AND LOCKED 2026-11-05.

@@ -7,13 +7,20 @@
   "governance": {"owner": "NONE", "state": "UNOWNED"},
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "ACCESS-01D",
+      "mutexes": ["GATEWAY"],
+      "writePaths": [
+        "services/api-gateway/src/quota/",
+        "services/api-gateway/src/billing/credit-balance.guard.ts",
+        "services/api-gateway/src/billing/__tests__/",
+        "services/api-gateway/src/credit-ledger/types/plan-definition.ts",
+        "services/api-gateway/src/credit-ledger/config/plan-definitions.config.ts",
+        "services/api-gateway/src/credit-ledger/__tests__/"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -3335,14 +3342,21 @@
       "taskId": "ACCESS-01D",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "OPTIONAL",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
       "dependsOn": ["ACCESS-01B"],
-      "mutexes": [],
-      "writePaths": [],
+      "mutexes": ["GATEWAY"],
+      "writePaths": [
+        "services/api-gateway/src/quota/",
+        "services/api-gateway/src/billing/credit-balance.guard.ts",
+        "services/api-gateway/src/billing/__tests__/",
+        "services/api-gateway/src/credit-ledger/types/plan-definition.ts",
+        "services/api-gateway/src/credit-ledger/config/plan-definitions.config.ts",
+        "services/api-gateway/src/credit-ledger/__tests__/"
+      ],
       "hotfiles": [],
       "i18n": false,
       "sharedContractIds": [],
@@ -3350,8 +3364,8 @@
       "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "runtimeNeeds": [],
-      "admissionUncertain": true,
-      "writeSetPrecision": "PROVISIONAL"
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
     },
     {
       "taskId": "ACCESS-01E",

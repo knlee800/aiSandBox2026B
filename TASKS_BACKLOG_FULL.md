@@ -85221,15 +85221,15 @@ taskId=ACCESS-01D
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-ACCESS-PLAN-01; not admitted.
+**Status:** ADMITTED — 2026-11-05. Lane 1, GATEWAY. Keith approved the scope and the daily token limits per plan (free 100,000; starter 500,000; pro 1,000,000; team 2,000,000) on 2026-11-05.
 **Task ID:** ACCESS-01D
 **Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition (human):** NOT_READY. Ready when: its dependencies are COMPLETE AND LOCKED and Keith admits it. Keith decides.
+**Start condition (human):** READY — Keith admitted it on 2026-11-05.
 **Depends on:** ACCESS-01B.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
-**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**Primary write scope:** services/api-gateway/src/quota/ (token guard, quota config, specs); services/api-gateway/src/billing/credit-balance.guard.ts and its specs in services/api-gateway/src/billing/__tests__/; services/api-gateway/src/credit-ledger/types/plan-definition.ts, services/api-gateway/src/credit-ledger/config/plan-definitions.config.ts and their specs in services/api-gateway/src/credit-ledger/__tests__/. Anything else is out of scope; if a test outside it breaks, the implementer stops.
+**Mutexes / resources:** GATEWAY. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (no migration; reads user_entitlements, credit_balances and users without writing). **Decision D2 (Keith, 2026-11-05):** daily token limit per plan with a per-user override: free 100,000; starter 500,000; pro 1,000,000; team 2,000,000.
 **saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (readiness of the gated features for a second user).
 
 **Holds:** Plan slice S4: dailyTokenLimit per plan with a per-user override; Agent runs estimated at the harness run budget; CreditBalanceGuard requires a balance that covers the estimate; TokenQuotaGuard gains the admin bypass.
@@ -85237,7 +85237,15 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Each plan has a dailyTokenLimit: free 100,000; starter 500,000; pro 1,000,000; team 2,000,000
+- [ ] TokenQuotaGuard uses user_entitlements.daily_token_limit_override when set, else the plan limit, with the plan from user_entitlements.plan_override when set, else credit_balances.plan_id; MAX_TOKENS_PER_24H remains only as the fallback when no plan resolves
+- [ ] Admins skip the token limit
+- [ ] Agent runs (harnessVersion present) are estimated at 60,000 tokens and other runs at 8,000
+- [ ] CreditBalanceGuard requires a balance of at least ceil(estimate / 1,000) credits; admins still skip it
+- [ ] The rolling 24-hour count, the advisory lock and the 429 and 402 response shapes are unchanged; the execute route and the collaboration approval path both get the new behaviour
+- [ ] Tests cover each plan, the plan override, the limit override, the admin skip, the Agent and normal estimates, and a balance just below and at the requirement
+- [ ] Gateway npm test shows only the 14 known runtime-only smoke.integration failures; npm run build passes
 - [ ] Not LOCKED by an implementer
 
 ### ACCESS-01E — Credits by model and an offered-models list
