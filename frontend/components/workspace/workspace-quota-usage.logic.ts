@@ -1,15 +1,25 @@
-interface QuotaRateLimitGuidanceInput {
+export interface QuotaRateLimitGuidanceCopies {
+  dailyCreditOwn: string;
+  dailyCreditPlatform: string;
+  dailyTokenWithTime: string;
+  dailyTokenTomorrow: string;
+  rateLimitWithSeconds: string;
+  rateLimitShortly: string;
+  quota: string;
+  accessRules: string;
+}
+
+export interface QuotaRateLimitGuidanceInput {
   rawMessage?: string;
   fallbackMessage: string;
   statusCode?: number;
   retryAfterHeader?: string | null;
+  payload?: unknown;
+  locale?: string;
+  copies: QuotaRateLimitGuidanceCopies;
 }
 
-const QUOTA_GUIDANCE_MESSAGE =
-  'Request blocked by quota limits. Review usage and try again after quota reset.';
-const RATE_LIMIT_GUIDANCE_MESSAGE = 'Request blocked by rate limits. Retry shortly.';
-const ACCESS_RULES_GUIDANCE_MESSAGE =
-  'Request blocked by access rules. Check your API key permissions or launch access.';
+const DAILY_TOKEN_QUOTA_TYPE = 'max_tokens_per_24h';
 
 function includesQuotaSignals(message: string): boolean {
   const normalizedMessage = message.toLowerCase();
@@ -46,6 +56,67 @@ function hasUsefulForbiddenMessage(message: string): boolean {
   );
 }
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null;
+  }
+  return value as Record<string, unknown>;
+}
+
+function readCreditCap(payload: unknown): 'user' | 'platform' | null {
+  const cap = asRecord(payload)?.cap;
+  if (cap === 'user' || cap === 'platform') {
+    return cap;
+  }
+  return null;
+}
+
+function readDetails(payload: unknown): Record<string, unknown> | null {
+  return asRecord(asRecord(payload)?.details);
+}
+
+function readQuotaType(payload: unknown): string | null {
+  const quotaType = readDetails(payload)?.quota_type;
+  if (typeof quotaType !== 'string') {
+    return null;
+  }
+  const trimmed = quotaType.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function readResetAt(payload: unknown): string | null {
+  const resetAt = readDetails(payload)?.reset_at;
+  if (typeof resetAt !== 'string') {
+    return null;
+  }
+  const trimmed = resetAt.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function formatResetTime(resetAt: string, locale?: string): string | null {
+  const parsed = Date.parse(resetAt);
+  if (Number.isNaN(parsed)) {
+    return null;
+  }
+  const localeTag = locale?.trim();
+  const formatted = new Date(parsed).toLocaleString(localeTag ? localeTag : undefined);
+  if (!formatted.trim() || formatted === 'Invalid Date') {
+    return null;
+  }
+  return formatted;
+}
+
+function fillToken(template: string, token: string, value: string): string {
+  return template.replace(token, value);
+}
+
+function rateLimitMessage(copies: QuotaRateLimitGuidanceCopies, retryAfterSeconds: number | null): string {
+  if (retryAfterSeconds) {
+    return fillToken(copies.rateLimitWithSeconds, '{seconds}', String(retryAfterSeconds));
+  }
+  return copies.rateLimitShortly;
+}
+
 export function parseRetryAfterSeconds(retryAfterHeader?: string | null): number | null {
   if (!retryAfterHeader) {
     return null;
@@ -74,29 +145,42 @@ export function toQuotaRateLimitGuidance(input: QuotaRateLimitGuidanceInput): st
   const trimmedRawMessage = (input.rawMessage ?? '').trim();
   const retryAfterSeconds = parseRetryAfterSeconds(input.retryAfterHeader);
   const statusCode = input.statusCode ?? null;
-  const hasQuotaSignals = includesQuotaSignals(trimmedRawMessage);
-  const hasRateLimitSignals = includesRateLimitSignals(trimmedRawMessage);
+  const copies = input.copies;
 
   if (statusCode === 429) {
-    if (retryAfterSeconds) {
-      return `Request rate-limited. Retry in about ${retryAfterSeconds}s.`;
+    const cap = readCreditCap(input.payload);
+    if (cap === 'user') {
+      return copies.dailyCreditOwn;
     }
-
-    return hasQuotaSignals ? QUOTA_GUIDANCE_MESSAGE : RATE_LIMIT_GUIDANCE_MESSAGE;
+    if (cap === 'platform') {
+      return copies.dailyCreditPlatform;
+    }
+    if (readQuotaType(input.payload) === DAILY_TOKEN_QUOTA_TYPE) {
+      const resetAt = readResetAt(input.payload);
+      const resetTime = resetAt ? formatResetTime(resetAt, input.locale) : null;
+      if (resetTime) {
+        return fillToken(copies.dailyTokenWithTime, '{time}', resetTime);
+      }
+      return copies.dailyTokenTomorrow;
+    }
+    if (includesQuotaSignals(trimmedRawMessage)) {
+      return copies.quota;
+    }
+    return rateLimitMessage(copies, retryAfterSeconds);
   }
 
-  if (hasQuotaSignals) {
-    return QUOTA_GUIDANCE_MESSAGE;
+  if (includesQuotaSignals(trimmedRawMessage)) {
+    return copies.quota;
   }
 
-  if (hasRateLimitSignals) {
-    return RATE_LIMIT_GUIDANCE_MESSAGE;
+  if (includesRateLimitSignals(trimmedRawMessage)) {
+    return copies.rateLimitShortly;
   }
 
   if (statusCode === 403) {
     return hasUsefulForbiddenMessage(trimmedRawMessage)
       ? trimmedRawMessage
-      : ACCESS_RULES_GUIDANCE_MESSAGE;
+      : copies.accessRules;
   }
 
   return trimmedRawMessage || input.fallbackMessage;

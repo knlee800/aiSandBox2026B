@@ -3,6 +3,7 @@ export const COLLABORATION_POLL_MS = 5000;
 export type CollaborationRefusal =
   | 'off'
   | 'credits'
+  | 'dailyCredits'
   | 'tokens'
   | 'rate'
   | 'notFound'
@@ -13,6 +14,7 @@ export type CollaborationRefusal =
 const REFUSAL_MESSAGE_KEYS: Record<CollaborationRefusal, string> = {
   off: 'refusalOff',
   credits: 'refusalCredits',
+  dailyCredits: 'refusalDailyCredits',
   tokens: 'refusalTokens',
   rate: 'refusalRate',
   notFound: 'refusalNotFound',
@@ -25,7 +27,22 @@ export function collaborationRefusalMessageKey(refusal: CollaborationRefusal): s
   return REFUSAL_MESSAGE_KEYS[refusal];
 }
 
-export function collaborationRefusal(status: number, message: string): CollaborationRefusal {
+function readCreditCap(body: unknown): 'user' | 'platform' | null {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return null;
+  }
+  const cap = (body as { cap?: unknown }).cap;
+  if (cap === 'user' || cap === 'platform') {
+    return cap;
+  }
+  return null;
+}
+
+export function collaborationRefusal(
+  status: number,
+  message: string,
+  body?: unknown,
+): CollaborationRefusal {
   const text = message.toLowerCase();
   if (status === 404) {
     return 'notFound';
@@ -37,6 +54,9 @@ export function collaborationRefusal(status: number, message: string): Collabora
     return 'credits';
   }
   if (status === 429) {
+    if (readCreditCap(body)) {
+      return 'dailyCredits';
+    }
     return text.includes('token') ? 'tokens' : 'rate';
   }
   if (status === 503) {

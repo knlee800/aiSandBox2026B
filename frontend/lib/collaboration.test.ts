@@ -614,6 +614,46 @@ describe('collaboration page', () => {
     assert.equal(collaborationRefusal(409, 'Session is not usable'), 'session');
     assert.equal(collaborationRefusal(409, 'Referral is not pending approval'), 'generic');
   });
+
+  test('a credit-cap 429 is the daily credit refusal', () => {
+    const userBody = {
+      statusCode: 429,
+      message: 'Daily credit limit reached',
+      error: 'Too Many Requests',
+      cap: 'user',
+    };
+    const platformBody = {
+      statusCode: 429,
+      message: 'Daily credit limit reached',
+      error: 'Too Many Requests',
+      cap: 'platform',
+    };
+    assert.equal(collaborationRefusal(429, 'Daily credit limit reached', userBody), 'dailyCredits');
+    assert.equal(
+      collaborationRefusal(429, 'Daily credit limit reached', platformBody),
+      'dailyCredits',
+    );
+    assert.equal(
+      collaborationRefusal(429, 'Token quota exceeded', { ...userBody, message: 'Token quota exceeded' }),
+      'dailyCredits',
+    );
+    assert.equal(
+      collaborationRefusal(429, 'Daily credit limit reached', {
+        statusCode: 429,
+        message: 'Daily credit limit reached',
+        error: 'Too Many Requests',
+      }),
+      'rate',
+    );
+    assert.equal(collaborationRefusal(429, 'Token quota exceeded', { cap: 'account' }), 'tokens');
+    assert.equal(collaborationRefusalMessageKey('dailyCredits'), 'refusalDailyCredits');
+    assert.equal(
+      enMessages.collaboration.refusalDailyCredits,
+      "You've used today's credit limit. Runs start again after midnight UTC.",
+    );
+    assert.equal(zhTwMessages.collaboration.refusalDailyCredits, '你已用完今天的點數上限。執行會在 UTC 午夜後重新開始。');
+    assert.equal(zhCnMessages.collaboration.refusalDailyCredits, '你已用完今天的点数上限。运行会在 UTC 午夜后重新开始。');
+  });
 });
 
 type ScheduledPoll = { fn: () => void; delay: number };

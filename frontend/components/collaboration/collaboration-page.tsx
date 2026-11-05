@@ -9,7 +9,6 @@ import CollaborationView, {
 import { useTranslations } from '@/hooks/useTranslations';
 import {
   collaborationFetch,
-  readCollaborationFailure,
   type CollaborationHandoff,
   type CollaborationRunDetail,
   type CollaborationRunListItem,
@@ -96,8 +95,19 @@ export function useCollaborationScreen(input: {
   selectedRef.current = selectedRunId;
 
   const showRefusal = useCallback(async (response: Response) => {
-    const refusal = await readCollaborationFailure(response);
-    setNotice(tRef.current(collaborationRefusalMessageKey(refusal)));
+    let body: unknown = null;
+    try {
+      body = await response.json();
+    } catch {
+      body = null;
+    }
+    setNotice(
+      tRef.current(
+        collaborationRefusalMessageKey(
+          collaborationRefusal(response.status, readErrorMessage(body), body),
+        ),
+      ),
+    );
   }, []);
 
   const loadList = useCallback(
@@ -463,7 +473,9 @@ export function useCollaborationScreen(input: {
           }
           setNotice(
             tRef.current(
-              collaborationRefusalMessageKey(collaborationRefusal(response.status, readErrorMessage(body))),
+              collaborationRefusalMessageKey(
+                collaborationRefusal(response.status, readErrorMessage(body), body),
+              ),
             ),
           );
           return;

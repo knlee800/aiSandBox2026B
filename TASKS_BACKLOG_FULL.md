@@ -85674,7 +85674,7 @@ taskId=LIMIT-MESSAGE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-05. Lane 1, FRONTEND and I18N. Keith approved the scope and the message table on 2026-11-05.
+**Status:** COMPLETE AND LOCKED — 2026-11-05. LANE-DONE and LOCKED by the control plane; Lane 1 and FRONTEND and I18N released. The workspace and collaboration page show the real refusal reason (daily credit limit, daily token limit, balance too low, per-minute limit) in en, zh-TW and zh-CN; not deployed. Checkpoint: docs/LIMIT-MESSAGE-01-CHECKPOINT.md.
 **Task ID:** LIMIT-MESSAGE-01
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -85691,13 +85691,13 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] The workspace shows the matching message for the daily credit cap (own and platform), the daily token limit (with or without reset_at), a balance too low for the run, and a real per-minute rate limit, chosen from the response body (cap, quota_type, reset_at, required_credits) rather than from words in the text
-- [ ] The collaboration page shows the daily credit message for a credit-cap 429
-- [ ] Every message comes from the message files in en, zh-TW and zh-CN; no hardcoded English remains in these paths
-- [ ] Other quota and access refusals keep working
-- [ ] Tests cover each case and each language key
-- [ ] Frontend tsc, npm test and npm run build pass; frontend/tsconfig.tsbuildinfo restored
-- [ ] Not LOCKED by an implementer
+- [x] The workspace shows the matching message for the daily credit cap (own and platform), the daily token limit (with or without reset_at), a balance too low for the run, and a real per-minute rate limit, chosen from the response body (cap, quota_type, reset_at, required_credits) rather than from words in the text
+- [x] The collaboration page shows the daily credit message for a credit-cap 429
+- [x] Every message comes from the message files in en, zh-TW and zh-CN; no hardcoded English remains in these paths
+- [x] Other quota and access refusals keep working
+- [x] Tests cover each case and each language key
+- [x] Frontend tsc, npm test and npm run build pass; frontend/tsconfig.tsbuildinfo restored
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

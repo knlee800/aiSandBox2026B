@@ -117,6 +117,7 @@ import {
 import {
   shouldRefreshDashboardForChatStatus,
   toQuotaRateLimitGuidance,
+  type QuotaRateLimitGuidanceCopies,
 } from '@/components/workspace/workspace-quota-usage.logic';
 import { toCreditBalanceGuidance } from '@/components/workspace/workspace-credit-error.logic';
 import { useCreditBalance } from '@/hooks/useCreditBalance';
@@ -837,6 +838,9 @@ function toChatAssistantFailureMessage(input: {
   fallbackMessage: string;
   statusCode?: number;
   retryAfterHeader?: string | null;
+  payload?: unknown;
+  locale?: string;
+  copies: QuotaRateLimitGuidanceCopies;
 }): string {
   return toQuotaRateLimitGuidance(input);
 }
@@ -1060,6 +1064,17 @@ export default function AppPage() {
     exhausted: aiMessages.creditBalanceExhausted,
     notProvisioned: aiMessages.creditBalanceNotProvisioned,
     paymentRequired: aiMessages.creditBalancePaymentRequired,
+    insufficientForRun: aiMessages.creditInsufficientForRun,
+  };
+  const quotaRateLimitCopies = {
+    dailyCreditOwn: aiMessages.dailyCreditLimitOwn,
+    dailyCreditPlatform: aiMessages.dailyCreditLimitPlatform,
+    dailyTokenWithTime: aiMessages.dailyTokenLimitWithTime,
+    dailyTokenTomorrow: aiMessages.dailyTokenLimitTomorrow,
+    rateLimitWithSeconds: aiMessages.rateLimitRetrySeconds,
+    rateLimitShortly: aiMessages.rateLimitRetryShortly,
+    quota: aiMessages.quotaLimitGuidance,
+    accessRules: aiMessages.accessRulesGuidance,
   };
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
   const [dashboardError, setDashboardError] = useState<string | null>(null);
@@ -4210,6 +4225,7 @@ export default function AppPage() {
           fallbackMessage: `Chat status check failed (${response.status}).`,
           statusCode: response.status,
           retryAfterHeader: response.headers.get('Retry-After'),
+          copies: quotaRateLimitCopies,
         });
         throw new Error(failureMessage);
       }
@@ -4297,6 +4313,7 @@ export default function AppPage() {
           {
             rawMessage: nextOutput,
             fallbackMessage: `Execution ended with status: ${nextStatus}.`,
+            copies: quotaRateLimitCopies,
           },
         );
         setChatError(failureMessage);
@@ -4349,6 +4366,7 @@ export default function AppPage() {
       const failureMessage = toChatAssistantFailureMessage({
         rawMessage: detail,
         fallbackMessage: 'Chat status check failed.',
+        copies: quotaRateLimitCopies,
       });
       setChatRequestState('failed');
       setChatStatusMessage(null);
@@ -4490,6 +4508,9 @@ export default function AppPage() {
           fallbackMessage: `Orchestration step ${index + 1} failed (${executeResponse.status}).`,
           statusCode: executeResponse.status,
           retryAfterHeader: executeResponse.headers.get('Retry-After'),
+          payload,
+          locale,
+          copies: quotaRateLimitCopies,
         });
         progress[index] = { ...progress[index], status: 'failed', summary: failureMessage };
         const finalFailureContent = formatWorkspaceChatOrchestrationProgress({
@@ -4560,6 +4581,7 @@ export default function AppPage() {
             fallbackMessage: `Orchestration step ${index + 1} status check failed (${statusResponse.status}).`,
             statusCode: statusResponse.status,
             retryAfterHeader: statusResponse.headers.get('Retry-After'),
+            copies: quotaRateLimitCopies,
           });
           progress[index] = { ...progress[index], status: 'failed', summary: failureMessage };
           const finalFailureContent = formatWorkspaceChatOrchestrationProgress({
@@ -4610,6 +4632,7 @@ export default function AppPage() {
         const failureMessage = toChatAssistantFailureMessage({
           rawMessage: terminalOutput,
           fallbackMessage: `Orchestration step ${index + 1} ended with status: ${terminalStatus}.`,
+          copies: quotaRateLimitCopies,
         });
         progress[index] = { ...progress[index], status: 'failed', summary: failureMessage };
         const finalFailureContent = formatWorkspaceChatOrchestrationProgress({
@@ -4848,6 +4871,9 @@ export default function AppPage() {
           fallbackMessage: `Chat execution failed (${response.status}).`,
           statusCode: response.status,
           retryAfterHeader: response.headers.get('Retry-After'),
+          payload,
+          locale,
+          copies: quotaRateLimitCopies,
         });
         throw new Error(failureMessage);
       }
@@ -4966,6 +4992,7 @@ export default function AppPage() {
         const failureMessage = toChatAssistantFailureMessage({
           rawMessage: nextOutput,
           fallbackMessage: `Execution ended with status: ${nextStatus}.`,
+          copies: quotaRateLimitCopies,
         });
         setChatError(failureMessage);
         const pendingAssistantId = pendingAssistantMessageIdRef.current;
@@ -5025,6 +5052,7 @@ export default function AppPage() {
       const failureMessage = toChatAssistantFailureMessage({
         rawMessage: detail,
         fallbackMessage: 'Chat execution failed.',
+        copies: quotaRateLimitCopies,
       });
       setChatRequestState('failed');
       setChatStatusMessage(null);

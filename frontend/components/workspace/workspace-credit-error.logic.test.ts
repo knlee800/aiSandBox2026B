@@ -11,6 +11,7 @@ const copies = {
     'Ask/Build is blocked because a credit balance has not been provisioned for this account. Credit balance is separate from token and session quota.',
   paymentRequired:
     'Ask/Build is blocked because credit is required. Credit balance is separate from token and session quota.',
+  insufficientForRun: 'This run needs {required} credits, and you have {count}.',
 };
 
 describe('workspace credit error logic', () => {
@@ -140,6 +141,114 @@ describe('workspace credit error logic', () => {
       }),
       null,
     );
+  });
+
+  test('maps 402 exhausted with required_credits to the run cost', () => {
+    const message = toCreditBalanceGuidance({
+      statusCode: 402,
+      payload: {
+        statusCode: 402,
+        message: 'Insufficient credit balance',
+        details: {
+          error_code: 'credit_balance_exhausted',
+          current_balance: 3,
+          required_credits: 8,
+        },
+      },
+      copies,
+    });
+    assert.equal(message, 'This run needs 8 credits, and you have 3.');
+  });
+
+  test('required_credits of 0 is present and uses the run cost', () => {
+    const message = toCreditBalanceGuidance({
+      statusCode: 402,
+      payload: {
+        details: {
+          error_code: 'credit_balance_exhausted',
+          current_balance: 0,
+          required_credits: 0,
+        },
+      },
+      copies,
+    });
+    assert.equal(message, 'This run needs 0 credits, and you have 0.');
+  });
+
+  test('missing current_balance with required_credits counts as 0', () => {
+    const message = toCreditBalanceGuidance({
+      statusCode: 402,
+      payload: {
+        details: {
+          error_code: 'credit_balance_exhausted',
+          required_credits: 8,
+        },
+      },
+      copies,
+    });
+    assert.equal(message, 'This run needs 8 credits, and you have 0.');
+  });
+
+  test('top-level required_credits uses the run cost', () => {
+    const message = toCreditBalanceGuidance({
+      statusCode: 402,
+      payload: {
+        error_code: 'credit_balance_exhausted',
+        current_balance: 3,
+        required_credits: 8,
+      },
+      copies,
+    });
+    assert.equal(message, 'This run needs 8 credits, and you have 3.');
+  });
+
+  test('details.required_credits wins over a different top-level value', () => {
+    const message = toCreditBalanceGuidance({
+      statusCode: 402,
+      payload: {
+        required_credits: 1,
+        current_balance: 9,
+        details: {
+          required_credits: 8,
+          current_balance: 3,
+        },
+      },
+      copies,
+    });
+    assert.equal(message, 'This run needs 8 credits, and you have 3.');
+  });
+
+  test('a non-numeric required_credits keeps the existing copy', () => {
+    const message = toCreditBalanceGuidance({
+      statusCode: 402,
+      payload: {
+        details: {
+          error_code: 'credit_balance_exhausted',
+          current_balance: 3,
+          required_credits: '8',
+        },
+      },
+      copies,
+    });
+    assert.equal(
+      message,
+      'Ask/Build is blocked because your credit balance is 3. Credit balance is separate from token and session quota.',
+    );
+  });
+
+  test('required_credits present without an exhausted code still uses the run cost', () => {
+    const message = toCreditBalanceGuidance({
+      statusCode: 402,
+      payload: {
+        details: {
+          error_code: 'credit_balance_not_provisioned',
+          current_balance: 3,
+          required_credits: 8,
+        },
+      },
+      copies,
+    });
+    assert.equal(message, 'This run needs 8 credits, and you have 3.');
   });
 
   test('non-402 English insufficient-credit message returns null', () => {

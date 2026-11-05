@@ -2,6 +2,7 @@ export interface CreditBalanceGuidanceCopies {
   exhausted: string;
   notProvisioned: string;
   paymentRequired: string;
+  insufficientForRun: string;
 }
 
 export interface CreditBalanceGuidanceInput {
@@ -64,9 +65,42 @@ function interpolateCount(template: string, count: number): string {
   return template.replace('{count}', String(count));
 }
 
+export function readCreditRequiredCredits(payload: unknown): number | null {
+  const root = asRecord(payload);
+  if (!root) {
+    return null;
+  }
+
+  const details = asRecord(root.details);
+  const nestedRequired = details?.required_credits;
+  if (typeof nestedRequired === 'number' && Number.isFinite(nestedRequired)) {
+    return nestedRequired;
+  }
+
+  const topLevelRequired = root.required_credits;
+  if (typeof topLevelRequired === 'number' && Number.isFinite(topLevelRequired)) {
+    return topLevelRequired;
+  }
+
+  return null;
+}
+
+function interpolateRunCost(template: string, required: number, count: number): string {
+  return template.replace('{required}', String(required)).replace('{count}', String(count));
+}
+
 export function toCreditBalanceGuidance(input: CreditBalanceGuidanceInput): string | null {
   if (input.statusCode !== 402) {
     return null;
+  }
+
+  const requiredCredits = readCreditRequiredCredits(input.payload);
+  if (requiredCredits !== null) {
+    return interpolateRunCost(
+      input.copies.insufficientForRun,
+      requiredCredits,
+      readCreditBalanceCurrentBalance(input.payload),
+    );
   }
 
   const errorCode = readCreditBalanceErrorCode(input.payload);
