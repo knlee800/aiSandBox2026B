@@ -3,15 +3,15 @@
 schemaVersion=1
 maxImplementationLanes=2
 lane3=DISABLED
-lane1.state=ACTIVE
-lane1.taskId=STAGING-DEPLOY-04
+lane1.state=EMPTY
+lane1.taskId=NONE
 lane2.state=EMPTY
 lane2.taskId=NONE
 governance.owner=NONE
 governance.state=UNOWNED
 saturationSuspended=false
 suspensionReason=NONE
-occupancyHash=sha256:30e963d1d047e443527dd06e8698b93a0520731e5c4b8b9db2ad47f5156e3540
+occupancyHash=sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d
 <!-- AISB_OCCUPANCY_V1_END -->
 
 **Parallel Development Architecture:** v1
@@ -303,12 +303,12 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-05. Keith chose Option A: the built coding team is the collaboration product; COLLAB-AUDIT-01, COLLAB-EDIT-01 and COLLAB-CANCEL-01 registered NOT_READY; business agents stay parked behind AGENT-KNOWLEDGE-01. Decision: docs/GOV-COLLAB-PLAN-01-DECISION.md. Checkpoint: docs/GOV-COLLAB-PLAN-01-CHECKPOINT.md.
 
-## STAGING-DEPLOY-04 — ADMITTED / Lane 1 ACTIVE — 2026-11-05
+## STAGING-DEPLOY-04 — COMPLETE AND LOCKED / Lane 1 RELEASED — 2026-11-05
 
-**Current status:** ADMITTED, Lane 1, with STAGING, PROVIDER-LIVE, CREDIT and ENV. Keith approved the draft on 2026-11-05. Scope in TASKS_BACKLOG_FULL.md.
+**Current status:** COMPLETE AND LOCKED - 2026-11-05. Lane 1 released. STAGING, PROVIDER-LIVE, CREDIT and ENV released UNOWNED. Staging runs 1aee7ed with the office; reopen fix proven live; flags off. Checkpoint: docs/STAGING-DEPLOY-04-CHECKPOINT.md.
 
 ## Lane 1
-ACTIVE — STAGING-DEPLOY-04 — 2026-11-05.
+EMPTY — Lane 1 released at STAGING-DEPLOY-04 COMPLETE AND LOCKED — 2026-11-05.
 
 ## Lane 2
 EMPTY — Lane 2 released at RUN-LIST-COLLAB-01 COMPLETE AND LOCKED — 2026-11-05.
@@ -319,7 +319,7 @@ DISABLED
 ## Governance owner / state
 UNOWNED — GOV-OS-05 COMPLETE AND LOCKED — 2026-11-05.
 
-Lane 1 ACTIVE: STAGING-DEPLOY-04. Lane 2 EMPTY. OFFICE-01, USAGE-DURATION-01, RUN-LIST-COLLAB-01 and HARNESS-REOPEN-01 are COMPLETE AND LOCKED and being deployed by STAGING-DEPLOY-04. SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted: COLLAB-AUDIT-01, COLLAB-EDIT-01, COLLAB-CANCEL-01 (registered by GOV-COLLAB-PLAN-01); AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01 (registered by GOV-OS-05).
+Both implementation lanes are EMPTY. STAGING-DEPLOY-04 is COMPLETE AND LOCKED; staging runs 1aee7ed with the office, the reopen fix, run durations and collaboration roles; flags off. SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted: COLLAB-AUDIT-01, COLLAB-EDIT-01, COLLAB-CANCEL-01 (registered by GOV-COLLAB-PLAN-01); AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01 (registered by GOV-OS-05).
 
 ## Active mutex / resource ownership
 - GOVERNANCE: UNOWNED — GOV-OS-05 lock 2026-11-05.
@@ -327,10 +327,10 @@ Lane 1 ACTIVE: STAGING-DEPLOY-04. Lane 2 EMPTY. OFFICE-01, USAGE-DURATION-01, RU
 - MIGRATION: UNOWNED — released at COLLAB-GATE-01 COMPLETE AND LOCKED 2026-11-02.
 - FRONTEND: UNOWNED — released at OFFICE-01 COMPLETE AND LOCKED 2026-11-05.
 - I18N: UNOWNED — released at OFFICE-01 COMPLETE AND LOCKED 2026-11-05.
-- STAGING: OWNED by STAGING-DEPLOY-04 (2026-11-05) (stagingAuthorized=true).
-- PROVIDER-LIVE: OWNED by STAGING-DEPLOY-04 (2026-11-05) (providerLiveAuthorized=true).
-- CREDIT: OWNED by STAGING-DEPLOY-04 (2026-11-05) (creditAuthorized=true).
-- ENV: OWNED by STAGING-DEPLOY-04 (2026-11-05).
+- STAGING: UNOWNED — released at STAGING-DEPLOY-04 COMPLETE AND LOCKED 2026-11-05 (stagingAuthorized=false).
+- PROVIDER-LIVE: UNOWNED — released at STAGING-DEPLOY-04 COMPLETE AND LOCKED 2026-11-05 (providerLiveAuthorized=false).
+- CREDIT: UNOWNED — released at STAGING-DEPLOY-04 COMPLETE AND LOCKED 2026-11-05 (creditAuthorized=false).
+- ENV: UNOWNED — released at STAGING-DEPLOY-04 COMPLETE AND LOCKED 2026-11-05.
 - HOTFILE:e2e/builder-golden-path/lib/staging.ts: UNOWNED
 - HOTFILE:e2e/builder-golden-path/lib/constants.ts: UNOWNED
 - HOTFILE:e2e/builder-golden-path/tests/evidence.spec.ts: UNOWNED

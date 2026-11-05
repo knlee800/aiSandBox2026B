@@ -84284,6 +84284,7 @@ nature=IMPLEMENTATION
 **Holds:** Step 5 of the harness reset order: an RPG-style office where agents are shown working. Graphics and UI reference per the PRD future office UI note.
 **Named in:** docs/GOV-HARNESS-RESET-01-DECISION.md reset order step 5; PRD.md section 11 future office UI note.
 **Plan, 2026-11-05:** docs/RPG-OFFICE-01-PLAN.md, approved by Keith. First slice OFFICE-01 (registered; prerequisites USAGE-DURATION-01 and RUN-LIST-COLLAB-01). Items of this umbrella: OFFICE-02 push updates, OFFICE-03 characters, OFFICE-04 animation, OFFICE-05 collaboration in the office, OFFICE-06 run detail, OFFICE-07 cancel from the office, an optional agentId filter on the run list, the real art source (decided before OFFICE-03), "Open workspace" going to the run's session, and the deploy and Keith's browser check of OFFICE-01. The umbrella stays NOT_READY; each item is registered as its own task when chosen.
+**Item done, 2026-11-05:** the deploy and Keith's browser check of OFFICE-01 are done by STAGING-DEPLOY-04 (staging at 1aee7ed).
 
 #### Acceptance criteria
 
@@ -84644,7 +84645,7 @@ taskId=STAGING-DEPLOY-04
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-05. Lane 1, STAGING, PROVIDER-LIVE, CREDIT and ENV.
+**Status:** COMPLETE AND LOCKED — 2026-11-05. LANE-DONE and LOCKED by the control plane; Lane 1 and STAGING, PROVIDER-LIVE, CREDIT and ENV released. Staging runs 1aee7ed with the office; reopen fix proven live; flags off. Checkpoint: docs/STAGING-DEPLOY-04-CHECKPOINT.md.
 **Task ID:** STAGING-DEPLOY-04
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION (operational run; no code)
@@ -84663,13 +84664,13 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Staging runs the deployed commit; health and guard checks pass; migration hash and configuration files unchanged
-- [ ] The office works in en, zh-TW and zh-CN (Keith)
-- [ ] Reopening the project during an Agent run leaves the run's files intact
-- [ ] The office shows the run as Working, then Done with a duration
-- [ ] Flags off and nothing left open after the window
-- [ ] Keith judgement recorded
-- [ ] Not LOCKED by an implementer
+- [x] Staging runs the deployed commit; health and guard checks pass; migration hash and configuration files unchanged
+- [x] The office works in en, zh-TW and zh-CN (Keith)
+- [x] Reopening the project during an Agent run leaves the run's files intact
+- [x] The office shows the run as Working, then Done with a duration
+- [x] Flags off and nothing left open after the window
+- [x] Keith judgement recorded
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
