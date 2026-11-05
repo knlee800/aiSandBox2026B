@@ -84318,6 +84318,7 @@ nature=IMPLEMENTATION
 **Added 2026-11-05 (GOV-COLLAB-PLAN-01):** (6) the daily spend counter is kept in memory and resets on a restart (COLLAB-GATE-01 checkpoint line 30); it must survive a restart.
 **Added 2026-11-05 (GOV-BIZ-KNOWLEDGE-PLAN-01):** (7) enforce the plan entitlements for knowledge items (maxKnowledgeItemsPerMonth) together with charging.
 **Added 2026-11-05 (Keith in chat, Agent Teams assessment and limits):** (8) a Limits page in the admin area: view and edit limits in the browser, applied without a restart, every change logged, later per plan or per user; needs a settings table and admin-only validation. Recommendation (control plane, 2026-11-05): recommended later, with charging, before anyone but Keith uses the platform.
+**Planning, 2026-11-05:** all eight items planned in GOV-ACCESS-PLAN-01.
 
 #### Acceptance criteria
 
@@ -85094,6 +85095,30 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### GOV-ACCESS-PLAN-01 — Plan ACCESS-READY-01: ready for users other than Keith
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-ACCESS-PLAN-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ACTIVE — 2026-11-05. Governance; no lane. GOVERNANCE is held only during this task's record writes.
+**Task ID:** GOV-ACCESS-PLAN-01
+**Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE. **Lifecycle:** 2-STEP: this registration; the closing record with the approved plan.
+**Start condition (human):** READY — Keith asked on 2026-11-05 to plan ACCESS-READY-01.
+**Primary write scope:** docs/ACCESS-READY-01-PLAN.md, TASKS.md, TASKS_BACKLOG_FULL.md, the sidecar and the proof at the closing record.
+**Mutexes / resources:** GOVERNANCE, only during record writes.
+
+**Purpose:** one plan for the eight items of ACCESS-READY-01: (1) charging for Agent runs and a real per-user or per-plan limit instead of the global rolling token limit; (2) credits that vary by model and which models the Builder offers; (3) replacing the one global write flag; (4) authenticated Socket.IO room joins; (5) provider data retention (previous_response_id at OpenAI and xAI); (6) a daily spend counter that survives a restart; (7) knowledge-item entitlements; (8) an admin Limits page. The plan states what exists today with citations, the design of each item, how they depend on each other, the order of small bounded slices with rough sizes, write scopes, mutexes and evidence class, the security review each needs, PRD and ARCHITECTURE questions for Keith, and a disposition for every follow-up it names. Drafted by Fable 5.1 through Cursor in read-only mode; the control plane checks every claim about the code and writes the file.
+**Not in scope:** code, PRD.md and ARCHITECTURE.md changes, and any private-beta decision (basic_auth stays on).
+
+#### Acceptance criteria
+
+- [ ] docs/ACCESS-READY-01-PLAN.md answers every point in Purpose and names the first slice with its write scope
+- [ ] Keith approves the plan
+- [ ] Every follow-up the plan names has a disposition
 - [ ] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
