@@ -3,15 +3,15 @@
 schemaVersion=1
 maxImplementationLanes=2
 lane3=DISABLED
-lane1.state=EMPTY
-lane1.taskId=NONE
+lane1.state=ACTIVE
+lane1.taskId=STAGING-DEPLOY-07
 lane2.state=EMPTY
 lane2.taskId=NONE
 governance.owner=NONE
 governance.state=UNOWNED
 saturationSuspended=false
 suspensionReason=NONE
-occupancyHash=sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d
+occupancyHash=sha256:96c2571476b6212a47af47f092885353d571599e51f4a815fa5efc50909f1319
 <!-- AISB_OCCUPANCY_V1_END -->
 
 **Parallel Development Architecture:** v1
@@ -363,8 +363,12 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-05. Lane 1 released. GATEWAY and AI-SERVICE released UNOWNED. Signed Agent tool profile (agent-write or read); the write flag is a kill switch; HARNESS_ENTITLEMENT_PROOF_V1 re-frozen; not deployed. Checkpoint: docs/ACCESS-01C-CHECKPOINT.md.
 
+## STAGING-DEPLOY-07 — ADMITTED / Lane 1 ACTIVE — 2026-11-05
+
+**Current status:** ADMITTED, Lane 1, with STAGING. Keith approved the draft on 2026-11-05 (no provider, no credits; static-key check and Keith switch-on of Agent write included). Scope in TASKS_BACKLOG_FULL.md.
+
 ## Lane 1
-EMPTY — Lane 1 released at ACCESS-01C COMPLETE AND LOCKED — 2026-11-05.
+ACTIVE — STAGING-DEPLOY-07 — 2026-11-05.
 
 ## Lane 2
 EMPTY — Lane 2 released at RUN-LIST-COLLAB-01 COMPLETE AND LOCKED — 2026-11-05.
@@ -375,7 +379,7 @@ DISABLED
 ## Governance owner / state
 UNOWNED — GOV-OS-05 COMPLETE AND LOCKED — 2026-11-05.
 
-Both implementation lanes are EMPTY. ACCESS-01F, ACCESS-01D, STATIC-KEYS-01 and ACCESS-01C are COMPLETE AND LOCKED (daily credit caps; per-plan token limits and balance check; static test keys only in test and development; signed Agent tool profile; not deployed). Staging runs 4d08d26 with knowledge, citations, the validation gate, Socket.IO auth, the audit table and per-user access (Keith admin, harness access on); runs and provider off. SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted: ACCESS-01E, ACCESS-01G to ACCESS-01J, ACCESS-LIVE-01, LIMITS-PER-USER-01 (registered by GOV-ACCESS-PLAN-01); COLLAB-EVAL-01, COLLAB-FANOUT-01, COLLAB-REVIEWERS-01, COLLAB-LIMITS-ENV-01 (registered 2026-11-05 from Keith's Agent Teams and limits decisions); KNOW-02, KNOW-04, BIZ-01, BIZ-LIVE-01, BIZ-02, BIZ-03, BIZ-NOPROJECT-01, GOV-ARCH-SYNC-01 (registered by GOV-BIZ-KNOWLEDGE-PLAN-01); COLLAB-EDIT-01, COLLAB-CANCEL-01 (registered by GOV-COLLAB-PLAN-01); AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01 (registered by GOV-OS-05); ADMIN-CSRF-01 (registered by ACCESS-01B); AGENT-WRITE-UI-01, HARNESS-WRITE-VETO-01 (registered by ACCESS-01C).
+Lane 1 ACTIVE: STAGING-DEPLOY-07. Lane 2 EMPTY. ACCESS-01F, ACCESS-01D, STATIC-KEYS-01 and ACCESS-01C are COMPLETE AND LOCKED and being deployed by STAGING-DEPLOY-07. Staging runs 4d08d26 with knowledge, citations, the validation gate, Socket.IO auth, the audit table and per-user access (Keith admin, harness access on); runs and provider off. SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted: ACCESS-01E, ACCESS-01G to ACCESS-01J, ACCESS-LIVE-01, LIMITS-PER-USER-01 (registered by GOV-ACCESS-PLAN-01); COLLAB-EVAL-01, COLLAB-FANOUT-01, COLLAB-REVIEWERS-01, COLLAB-LIMITS-ENV-01 (registered 2026-11-05 from Keith's Agent Teams and limits decisions); KNOW-02, KNOW-04, BIZ-01, BIZ-LIVE-01, BIZ-02, BIZ-03, BIZ-NOPROJECT-01, GOV-ARCH-SYNC-01 (registered by GOV-BIZ-KNOWLEDGE-PLAN-01); COLLAB-EDIT-01, COLLAB-CANCEL-01 (registered by GOV-COLLAB-PLAN-01); AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01 (registered by GOV-OS-05); ADMIN-CSRF-01 (registered by ACCESS-01B); AGENT-WRITE-UI-01, HARNESS-WRITE-VETO-01 (registered by ACCESS-01C).
 
 ## Active mutex / resource ownership
 - GOVERNANCE: UNOWNED — GOV-OS-05 lock 2026-11-05.
@@ -383,7 +387,7 @@ Both implementation lanes are EMPTY. ACCESS-01F, ACCESS-01D, STATIC-KEYS-01 and 
 - MIGRATION: UNOWNED — released at ACCESS-01B COMPLETE AND LOCKED 2026-11-05.
 - FRONTEND: UNOWNED — released at KNOW-03 COMPLETE AND LOCKED 2026-11-05.
 - I18N: UNOWNED — released at KNOW-03 COMPLETE AND LOCKED 2026-11-05.
-- STAGING: UNOWNED — released at STAGING-DEPLOY-06 COMPLETE AND LOCKED 2026-11-05 (stagingAuthorized=false).
+- STAGING: OWNED by STAGING-DEPLOY-07 (2026-11-05) (stagingAuthorized=true).
 - PROVIDER-LIVE: UNOWNED — released at STAGING-DEPLOY-04 COMPLETE AND LOCKED 2026-11-05 (providerLiveAuthorized=false).
 - CREDIT: UNOWNED — released at STAGING-DEPLOY-04 COMPLETE AND LOCKED 2026-11-05 (creditAuthorized=false).
 - ENV: UNOWNED — released at ACCESS-01B COMPLETE AND LOCKED 2026-11-05.

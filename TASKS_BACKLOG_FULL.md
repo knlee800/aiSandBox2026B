@@ -85628,6 +85628,37 @@ nature=IMPLEMENTATION
 - [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
 - [ ] Not LOCKED by an implementer
 
+### STAGING-DEPLOY-07 — Deploy the access limits, test-key lockdown and signed Agent tool profile; Keith switches on Agent write
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-07
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED — 2026-11-05. Lane 1, STAGING.
+**Task ID:** STAGING-DEPLOY-07
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (operational run; no code)
+**Lifecycle:** 3-STEP: registration and admission here; pre-check, deploy, Keith's switch-on and checks; separate LOCK record (STAGING-RUNTIME).
+**Start condition (human):** READY — Keith approved the draft on 2026-11-05.
+**Depends on:** ACCESS-01F, ACCESS-01D, STATIC-KEYS-01, ACCESS-01C, all COMPLETE AND LOCKED.
+**Primary write scope:** none in the repository beyond records. Host state on ainow-staging-01 (gateway and AI service release, Keith's user_entitlements row) and off-repo evidence only.
+**Mutexes / resources:** STAGING. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** STAGING-RUNTIME. **Revert isolation:** acceptable (no code; no migrations; rollback is a redeploy of 4d08d26).
+**saturationClass:** OPTIONAL
+
+**Problem:** four locked tasks reach staging only by a deploy. ACCESS-01C makes Agent mode read-only until Keith sets agentWriteEnabled on his row (its checkpoint hands that step to this deploy).
+
+**Scope:** (1) Read-only pre-check, including no queued or running executions (drained queue, ACCESS-01C decision 2) and NODE_ENV=production in gateway.env. (2) Deploy main at the record commit with the standard block; the migration hash is expected unchanged; configuration files unchanged; units active; health 200; guard checks 401; a request with the static key test-harness-api-key is refused with 403. (3) Keith sets agentWriteEnabled true with a reason through the admin PATCH from the browser console. (4) Check: his row, a second entitlement.updated audit row with him as actor, provider and runs off, nothing open. No provider, no credits.
+
+#### Acceptance criteria
+
+- [ ] Staging runs the deployed commit; migration hash unchanged; health and guard checks pass; configuration files unchanged
+- [ ] No queued or running executions before the deploy, and NODE_ENV is production
+- [ ] A static test key is refused with 403
+- [ ] Keith's row has agent_write_enabled and harness_enabled true, set by him through the PATCH with one more audit row
+- [ ] Provider and runs stay off; nothing left open
+- [ ] Keith judgement recorded
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
