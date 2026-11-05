@@ -85196,15 +85196,15 @@ taskId=ACCESS-01C
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-ACCESS-PLAN-01; not admitted.
+**Status:** ADMITTED — 2026-11-05. Lane 1, GATEWAY and AI-SERVICE; changes HARNESS_ENTITLEMENT_PROOF_V1 and runs alone. Keith approved the scope on 2026-11-05; stage-start next.
 **Task ID:** ACCESS-01C
 **Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP.
-**Start condition (human):** NOT_READY. Ready when: its dependencies are COMPLETE AND LOCKED and Keith admits it. Keith decides.
+**Start condition (human):** READY — Keith admitted it on 2026-11-05.
 **Depends on:** ACCESS-01B.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
-**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**Primary write scope:** services/api-gateway/src/ai/ai-execution.controller.ts and its specs (services/api-gateway/src/ai/ai-execution.controller.spec.ts, services/api-gateway/src/ai/__tests__/); services/api-gateway/src/auth/entitlement.service.ts and its spec (read agent_write_enabled); services/ai-service/src/worker/ (worker.processor.ts and specs), services/ai-service/src/queue/job.types.ts, services/ai-service/src/agent-harness/config/ and its specs; docs/ACCESS-01C-STAGE-START.md (control plane). The stage-start may narrow this; anything else is out of scope.
+**Mutexes / resources:** GATEWAY, AI-SERVICE. **Hot-file leases:** none. **Shared contracts:** mutates HARNESS_ENTITLEMENT_PROOF_V1 (contract-change protocol: runs alone with Lane 2 empty, never alongside KNOW-02, re-frozen at LOCK). **Evidence class:** LOCAL-TESTS (gateway and AI-service tests). **Revert isolation:** acceptable (gateway and worker change together; no migration; both services deploy together).
 **saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (readiness of the gated features for a second user).
 
 **Holds:** Plan slice S3: the gateway signs a tool profile for Agent runs and the worker registers write tools only when the signed profile allows and the process flag is on. Changes the frozen shared contract HARNESS_ENTITLEMENT_PROOF_V1: contract-change protocol, runs alone, never overlapping KNOW-02.
@@ -85212,7 +85212,13 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] The gateway gives every Agent run a signed tool profile: write only when the caller is harness-entitled and user_entitlements.agent_write_enabled is true, otherwise read; a changed profile fails the signature check
+- [ ] The worker gives an Agent run write tools only when the signed profile is write and AGENT_HARNESS_ENABLE_WRITE_TOOLS is on; the flag is a global off switch, not the grant
+- [ ] Collaboration runs keep their existing tool-profile behaviour
+- [ ] The HARNESS_ENTITLEMENT_PROOF_V1 change is written in the stage-start and the contract is re-frozen at LOCK
+- [ ] Tests cover the gateway's profile choice, the worker refusing a missing or changed profile, the flag off still refusing writes, and a read profile getting no write tools
+- [ ] Gateway and AI-service tests and builds pass against their baselines
 - [ ] Not LOCKED by an implementer
 
 ### ACCESS-01D — Per-plan daily token limit and a run-sized balance check
