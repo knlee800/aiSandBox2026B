@@ -84580,15 +84580,15 @@ taskId=COLLAB-AUDIT-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-COLLAB-PLAN-01 (Option A); not admitted.
+**Status:** ADMITTED — 2026-11-05. Lane 1, GATEWAY and MIGRATION. Keith approved the scope on 2026-11-05.
 **Task ID:** COLLAB-AUDIT-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition (human):** NOT_READY. Ready when: Keith chooses it, and before ACCESS-READY-01 is admitted. Keith decides.
+**Start condition (human):** READY — Keith admitted it on 2026-11-05.
 **Depends on:** none recorded; see the ready condition.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
-**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**Primary write scope:** services/api-gateway/src/orchestration/ (recorder, service, module, tests); services/api-gateway/src/entities/audit-event.entity.ts (new); services/api-gateway/src/migrations/1800000000000-CreateAuditEventsTable.ts and services/api-gateway/src/migrations/__tests__/1800000000000-CreateAuditEventsTable.spec.ts (new). Anything else is out of scope.
+**Mutexes / resources:** GATEWAY, MIGRATION. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (new table and recorder only; the down path drops them; event types and payloads unchanged).
 **saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (the built Team page is gated, active development).
 
 **Holds:** Orchestration audit events (hand-off created, approved, rejected, limit refusals) are kept only in memory and in the log: InMemoryOrchestrationAuditRecorder is the service fallback and no stored recorder is registered. Store them in a table with a migration, keep the event types, and keep them immutable. Rough size S. Nothing visible in the office.
@@ -84596,7 +84596,13 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] The migration creates audit_events (id, category, event_type, subject_type, subject_id, user_id nullable, payload jsonb, occurred_at, created_at) with an index on subject and time and a trigger that refuses UPDATE and DELETE; the down path removes trigger, function, index and table; a migration spec covers up and down
+- [ ] A stored recorder is registered in the orchestration module; it keeps the in-memory list and log line and inserts one row per event (category orchestration, subject collaboration_run, subject_id the run ID); a failed insert logs a warning and never fails the collaboration action
+- [ ] All 14 event types and their payloads are unchanged and the existing orchestration tests pass without edits
+- [ ] No update or delete method, no read route, no UI change
+- [ ] New tests cover the row shape, a failed insert not throwing, the module wiring and the migration
+- [ ] Gateway npm test shows only the 14 known runtime-only smoke.integration failures; npm run build passes
 - [ ] Not LOCKED by an implementer
 
 ### COLLAB-EDIT-01 — Edit a hand-off's task on the Team page before approving it
