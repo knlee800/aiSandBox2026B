@@ -84764,15 +84764,15 @@ taskId=KNOW-03
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-BIZ-KNOWLEDGE-PLAN-01; not admitted.
+**Status:** ADMITTED — 2026-11-05. Lane 1, GATEWAY, FRONTEND and I18N. Second slice of AGENT-KNOWLEDGE-01.
 **Task ID:** KNOW-03
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition (human):** NOT_READY. Ready when: KNOW-01 is COMPLETE AND LOCKED and Keith admits it. Keith decides.
+**Start condition (human):** READY — KNOW-01 is COMPLETE AND LOCKED (12a47c5); Keith admitted it on 2026-11-05.
 **Depends on:** KNOW-01.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
-**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**Primary write scope:** `services/api-gateway/src/orchestration/`, `services/api-gateway/src/knowledge/`, `frontend/components/collaboration/`, `frontend/lib/collaboration/`, `frontend/lib/collaboration.test.ts`, `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`. The plan's scope plus the knowledge module (to read the owner's documents) and the Team page's API client.
+**Mutexes / resources:** GATEWAY, FRONTEND, I18N. **Hot-file leases:** none. **Shared contracts:** none frozen; the job contract HARNESS_ENTITLEMENT_PROOF_V1 is not touched. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (result fields and page display; no migration).
 **saturationClass:** OPTIONAL. **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved the plan on 2026-11-05).
 
 **Holds:** Plan section 6 row KNOW-03: the source-marker grammar; verification against the run owner's allowed documents; sources and unsourced on the referral result; the Team page shows sources and an Unsourced label; en / zh-TW / zh-CN.
@@ -84781,6 +84781,10 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Source markers [source: <documentId>#<heading>] in an answer are parsed; only markers whose document is an active document of the run owner are kept; invalid markers are dropped and counted
+- [ ] The hand-off result stores sources (documentId, title, scopeId, heading) and unsourced; unsourced is shown only for roles in a server list of business roles (empty until BIZ-01)
+- [ ] The Team page shows the sources and the Unsourced label in en, zh-TW and zh-CN
+- [ ] Gateway and frontend tests and builds pass; only files in the write scope change
 - [ ] Not LOCKED by an implementer
 
 ### KNOW-04 — Knowledge summaries
