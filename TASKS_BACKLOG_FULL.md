@@ -85674,15 +85674,15 @@ taskId=LIMIT-MESSAGE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by ACCESS-LIVE-01 (live finding); not admitted.
+**Status:** ADMITTED — 2026-11-05. Lane 1, FRONTEND and I18N. Keith approved the scope and the message table on 2026-11-05.
 **Task ID:** LIMIT-MESSAGE-01
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition (human):** NOT_READY. Ready when: Keith admits it. Keith decides.
+**Start condition (human):** READY — Keith admitted it on 2026-11-05.
 **Depends on:** none.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
-**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**Primary write scope:** frontend/components/workspace/workspace-quota-usage.logic.ts and workspace-credit-error.logic.ts with their tests; frontend/app/[locale]/app/page.tsx (only where it passes the error body and the translated copies); frontend/lib/collaboration/logic.ts, frontend/lib/collaboration.test.ts and frontend/components/collaboration/collaboration-page.tsx (the refusal message); frontend/messages/en.json, zh-TW.json and zh-CN.json. No gateway change: the 429 and 402 bodies already carry cap, quota_type, reset_at and required_credits.
+**Mutexes / resources:** FRONTEND, I18N. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** LOCAL-TESTS (no browser check: these messages appear only in a live window; tests cover each body). **Revert isolation:** acceptable (frontend copy and mapping only). **Messages (Keith, 2026-11-05):** daily credit cap, own: You've used today's credit limit. Runs start again after midnight UTC. Platform: Runs are paused for today because the daily platform limit was reached. They start again after midnight UTC. Daily token limit: You've reached today's token limit. You can run again after {time} (without reset_at: try again tomorrow). Balance too low for this run: This run needs {required} credits, and you have {count}. Real per-minute rate limit: Too many requests. Try again in about {seconds} seconds (or shortly). Other quota and access refusals: the existing two messages, translated.
 **saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md.
 
 **Holds:** When the daily credit cap or the token limit refuses a run (429), the workspace shows only its generic text "Request blocked by rate limits. Retry shortly.", which misleads for a daily limit. Show the real reason (daily credit limit reached, daily token limit reached, balance too low for this run) in en, zh-TW and zh-CN from the 429 and 402 bodies. Frontend and the three message files; the gateway may need a reason code in the 429 bodies. Rough size S. Worth doing before a second person is invited.
@@ -85690,7 +85690,13 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] The workspace shows the matching message for the daily credit cap (own and platform), the daily token limit (with or without reset_at), a balance too low for the run, and a real per-minute rate limit, chosen from the response body (cap, quota_type, reset_at, required_credits) rather than from words in the text
+- [ ] The collaboration page shows the daily credit message for a credit-cap 429
+- [ ] Every message comes from the message files in en, zh-TW and zh-CN; no hardcoded English remains in these paths
+- [ ] Other quota and access refusals keep working
+- [ ] Tests cover each case and each language key
+- [ ] Frontend tsc, npm test and npm run build pass; frontend/tsconfig.tsbuildinfo restored
 - [ ] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
