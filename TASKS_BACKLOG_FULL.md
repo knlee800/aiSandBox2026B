@@ -84963,12 +84963,12 @@ taskId=COLLAB-GATE-TESTS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered from Keith in chat, Agent Teams assessment and limits; not admitted.
+**Status:** ADMITTED — 2026-11-05. Lane 1, GATEWAY, FRONTEND and I18N.
 **Task ID:** COLLAB-GATE-TESTS-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition (human):** NOT_READY. Ready when: Keith chooses it (recommended first of these). Keith decides.
+**Start condition (human):** READY — Keith admitted it on 2026-11-05.
 **Depends on:** none.
 **Primary write scope:** `services/api-gateway/src/orchestration/`, `frontend/components/collaboration/`, `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`.
 **Mutexes / resources:** GATEWAY, FRONTEND, I18N. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (one approval check and one page option; no migration).
