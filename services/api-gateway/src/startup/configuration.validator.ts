@@ -290,16 +290,16 @@ export class ConfigurationValidator {
         default: 10000,
       },
       {
-        name: 'MAX_DAILY_SPEND_SOFT_USD',
+        name: 'MAX_DAILY_CREDITS_PER_USER',
         min: 1,
-        max: 1000000,
-        default: 10000,
+        max: 10000000,
+        default: 500,
       },
       {
-        name: 'MAX_DAILY_SPEND_HARD_USD',
+        name: 'MAX_DAILY_CREDITS_PLATFORM',
         min: 1,
-        max: 1000000,
-        default: 20000,
+        max: 10000000,
+        default: 1000,
       },
       {
         name: 'MAX_REQUESTS_PER_MINUTE_OPENAI',
@@ -363,27 +363,6 @@ export class ConfigurationValidator {
           );
         }
       }
-    }
-
-    // Phase 27A Rule: Soft cap < Hard cap
-    const softCap = parseFloat(
-      process.env.MAX_DAILY_SPEND_SOFT_USD || '10000',
-    );
-    const hardCap = parseFloat(
-      process.env.MAX_DAILY_SPEND_HARD_USD || '20000',
-    );
-
-    if (softCap >= hardCap) {
-      throw new Error(
-        '[STARTUP FAILURE] Safety limit validation failed\n' +
-          'Reason: MAX_DAILY_SPEND_SOFT_USD ≥ MAX_DAILY_SPEND_HARD_USD\n' +
-          'Expected: Soft cap < Hard cap\n' +
-          `Actual: Soft=${softCap}, Hard=${hardCap}\n` +
-          'Remediation: Adjust environment variables\n' +
-          '  Example: MAX_DAILY_SPEND_SOFT_USD=10000 MAX_DAILY_SPEND_HARD_USD=20000\n' +
-          'Documentation: https://docs.aisandbox.dev/config/safety-limits\n' +
-          'Exit Code: 1',
-      );
     }
   }
 

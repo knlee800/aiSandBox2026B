@@ -85271,7 +85271,7 @@ taskId=ACCESS-01F
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-05. Lane 1, GATEWAY. Keith approved the scope and the default caps (500 credits per user, 1,000 platform per day) on 2026-11-05. Write scope expanded by Keith on 2026-11-05 (three files; the first run stopped before editing because removing the USD counter breaks one collaboration test).
+**Status:** COMPLETE AND LOCKED — 2026-11-05. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY released. Daily credit caps from the ledger (500 per user, 1,000 platform per UTC day); not deployed. Checkpoint: docs/ACCESS-01F-CHECKPOINT.md.
 **Task ID:** ACCESS-01F
 **Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -85288,14 +85288,14 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] Platform and per-user daily credit totals are summed from credit_deduction_records (requested_credits since UTC midnight); a run is refused with 429 when either cap is reached
-- [ ] Both caps come from MAX_DAILY_CREDITS_PER_USER and MAX_DAILY_CREDITS_PLATFORM with defaults 500 and 1,000; there is no unlimited setting
-- [ ] The in-memory USD counter, recordExecutionCost and the MAX_DAILY_SPEND_SOFT_USD and MAX_DAILY_SPEND_HARD_USD settings are removed; rate limits, max tokens and kill switches are unchanged
-- [ ] The execute route and the collaboration approval path both apply the caps using the identity already present
-- [ ] A database read error refuses the run (fail closed)
-- [ ] Tests cover under the cap, platform cap reached, user cap reached, the UTC day boundary, a read error and the collaboration path
-- [ ] Gateway npm test shows only the 14 known runtime-only smoke.integration failures; npm run build passes
-- [ ] Not LOCKED by an implementer
+- [x] Platform and per-user daily credit totals are summed from credit_deduction_records (requested_credits since UTC midnight); a run is refused with 429 when either cap is reached
+- [x] Both caps come from MAX_DAILY_CREDITS_PER_USER and MAX_DAILY_CREDITS_PLATFORM with defaults 500 and 1,000; there is no unlimited setting
+- [x] The in-memory USD counter, recordExecutionCost and the MAX_DAILY_SPEND_SOFT_USD and MAX_DAILY_SPEND_HARD_USD settings are removed; rate limits, max tokens and kill switches are unchanged
+- [x] The execute route and the collaboration approval path both apply the caps using the identity already present
+- [x] A database read error refuses the run (fail closed)
+- [x] Tests cover under the cap, platform cap reached, user cap reached, the UTC day boundary, a read error and the collaboration path
+- [x] Gateway npm test shows only the 14 known runtime-only smoke.integration failures; npm run build passes
+- [x] Not LOCKED by an implementer
 
 ### ACCESS-01G — Platform settings table and admin settings routes
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

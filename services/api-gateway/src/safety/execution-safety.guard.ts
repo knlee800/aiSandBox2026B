@@ -7,15 +7,18 @@ import {
   HttpException,
   HttpStatus,
   Logger,
+  Optional,
 } from '@nestjs/common';
 import { KillSwitchConfig } from './kill-switch.config';
 import { GlobalSafetyLimitService } from './global-safety-limit.service';
+import { DailyCreditCapService } from './daily-credit-cap.service';
 
 /**
  * Execution Safety Guard
  *
- * Enforces kill switches and global safety limits before execution.
- * Placed between AuthorizationGuard and QuotaGuard in guard stack.
+ * Enforces kill switches, the daily credit cap, and global safety limits
+ * before execution. Placed between AuthorizationGuard and QuotaGuard in the
+ * guard stack.
  *
  * Phase 26B: Production Readiness
  */
@@ -23,76 +26,111 @@ import { GlobalSafetyLimitService } from './global-safety-limit.service';
 @Injectable()
 export class ExecutionSafetyGuard implements CanActivate {
   private readonly logger = new Logger(ExecutionSafetyGuard.name);
+  private missingDailyCreditCapWarned = false;
 
   constructor(
     private readonly globalSafetyLimitService: GlobalSafetyLimitService,
+    @Optional()
+    private readonly dailyCreditCapService?: DailyCreditCapService,
   ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  /**
+   * Returns a boolean when the cap service is absent so callers that construct
+   * this guard with only GlobalSafetyLimitService keep synchronous checks.
+   * The cap path returns a Promise because it reads the credit ledger.
+   */
+  canActivate(context: ExecutionContext): boolean | Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-
-    // Extract provider and max_tokens from request body
-    const body = request.body || {};
+    const body = request?.body || {};
     const provider = (process.env.AI_PROVIDER || 'stub').toLowerCase();
     const maxTokens = body.max_tokens;
 
     try {
-      // Check 1: Global execution kill switch
       if (!KillSwitchConfig.GLOBAL_EXECUTION_ENABLED) {
         throw new ServiceUnavailableException(
           'AI execution temporarily disabled for maintenance',
         );
       }
 
-      // Check 2: Provider-specific kill switch
       if (!KillSwitchConfig.isProviderEnabled(provider)) {
         throw new ServiceUnavailableException(
           `Provider ${provider} temporarily unavailable`,
         );
       }
 
-      // Check 3: Global safety limits (throws on exceed)
-      this.globalSafetyLimitService.checkExecutionAllowed(provider, maxTokens);
+      if (!this.dailyCreditCapService) {
+        this.warnMissingDailyCreditCapOnce();
+        this.applyInMemoryLimits(provider, maxTokens);
+        return true;
+      }
 
-      // Check 4: Record execution attempt (increment counters)
-      this.globalSafetyLimitService.recordExecution(provider);
+      return this.applyDailyCreditCap(
+        this.dailyCreditCapService,
+        request,
+        provider,
+        maxTokens,
+      );
+    } catch (error) {
+      this.mapSafetyError(error);
+    }
+  }
 
-      // All checks passed
+  private warnMissingDailyCreditCapOnce(): void {
+    if (this.missingDailyCreditCapWarned) {
+      return;
+    }
+    this.missingDailyCreditCapWarned = true;
+    this.logger.warn(
+      'Daily credit cap service is unavailable; skipping the daily credit cap check',
+    );
+  }
+
+  private applyInMemoryLimits(
+    provider: string,
+    maxTokens: number | undefined,
+  ): void {
+    this.globalSafetyLimitService.checkExecutionAllowed(provider, maxTokens);
+    this.globalSafetyLimitService.recordExecution(provider);
+  }
+
+  private async applyDailyCreditCap(
+    dailyCreditCapService: DailyCreditCapService,
+    request: { apiKeyIdentity?: { userId?: unknown } },
+    provider: string,
+    maxTokens: number | undefined,
+  ): Promise<boolean> {
+    try {
+      await dailyCreditCapService.assertWithinDailyCap(
+        request?.apiKeyIdentity?.userId,
+      );
+      this.applyInMemoryLimits(provider, maxTokens);
       return true;
     } catch (error) {
-      // Map errors to appropriate HTTP status codes
+      this.mapSafetyError(error);
+    }
+  }
 
-      if (error instanceof HttpException) {
-        // Already an HTTP exception, rethrow
-        throw error;
-      }
+  private mapSafetyError(error: any): never {
+    if (error instanceof HttpException) {
+      throw error;
+    }
 
-      const errorMessage = error.message || 'Unknown error';
+    const errorMessage = error.message || 'Unknown error';
 
-      // Determine appropriate status code based on error message
-      if (errorMessage.includes('max_tokens') && errorMessage.includes('exceeds')) {
-        // Max tokens per execution exceeded
-        throw new BadRequestException(errorMessage);
-      } else if (errorMessage.includes('rate limit exceeded')) {
-        // Rate limit exceeded (global or provider)
-        throw new HttpException(
-          {
-            statusCode: 429,
-            message: errorMessage,
-            error: 'Too Many Requests',
-          },
-          HttpStatus.TOO_MANY_REQUESTS,
-        );
-      } else if (errorMessage.includes('daily spend limit')) {
-        // Daily spend hard cap reached
-        throw new ServiceUnavailableException(errorMessage);
-      } else {
-        // Unknown error, default to 503
-        this.logger.error('Execution safety check failed', error);
-        throw new ServiceUnavailableException(
-          'Execution safety check failed',
-        );
-      }
+    if (errorMessage.includes('max_tokens') && errorMessage.includes('exceeds')) {
+      throw new BadRequestException(errorMessage);
+    } else if (errorMessage.includes('rate limit exceeded')) {
+      throw new HttpException(
+        {
+          statusCode: 429,
+          message: errorMessage,
+          error: 'Too Many Requests',
+        },
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    } else {
+      this.logger.error('Execution safety check failed', error);
+      throw new ServiceUnavailableException('Execution safety check failed');
     }
   }
 }

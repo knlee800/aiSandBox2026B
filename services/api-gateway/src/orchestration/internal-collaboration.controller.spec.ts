@@ -11,9 +11,10 @@ import { UserRole } from '../entities/user-role.enum';
 import { QueueService } from '../queue/queue.service';
 import { QuotaConfig } from '../quota/quota.config';
 import { TokenQuotaGuard } from '../quota/token-quota.guard';
+import { CreditDeductionRecord } from '../entities/credit-deduction-record.entity';
 import { ExecutionSafetyGuard } from '../safety/execution-safety.guard';
+import { DailyCreditCapService } from '../safety/daily-credit-cap.service';
 import { GlobalSafetyLimitService } from '../safety/global-safety-limit.service';
-import { GlobalSafetyLimits } from '../safety/global-safety-limits.config';
 import { UsageLedgerService } from '../usage-ledger/usage-ledger.service';
 import { CollaborationReferralEntity } from './collaboration-referral.entity';
 import { CollaborationRunEntity } from './collaboration-run.entity';
@@ -169,6 +170,7 @@ describe('InternalCollaborationController', () => {
   let referrals: Map<string, CollaborationReferralEntity>;
   let tokenUsage = 0;
   let creditBalance: { balance: number } | null = { balance: 25 };
+  let dailyCreditTotal = '0';
 
   beforeEach(async () => {
     process.env.GLOBAL_EXECUTION_ENABLED = 'true';
@@ -177,6 +179,7 @@ describe('InternalCollaborationController', () => {
     AbortConfig.initialize();
     tokenUsage = 0;
     creditBalance = { balance: 25 };
+    dailyCreditTotal = '0';
 
     const fakes = createOrchestrationRepoFakes();
     runs = fakes.runs;
@@ -216,6 +219,21 @@ describe('InternalCollaborationController', () => {
         OrchestrationService,
         ExecutionSafetyGuard,
         GlobalSafetyLimitService,
+        DailyCreditCapService,
+        {
+          provide: getRepositoryToken(CreditDeductionRecord),
+          useValue: {
+            createQueryBuilder: () => {
+              const qb = {
+                select: () => qb,
+                where: () => qb,
+                andWhere: () => qb,
+                getRawOne: async () => ({ total: dailyCreditTotal }),
+              };
+              return qb;
+            },
+          },
+        },
         AbortGuard,
         { provide: CreditBalanceGuard, useValue: creditGuard },
         { provide: TokenQuotaGuard, useValue: tokenGuard },
@@ -690,16 +708,31 @@ describe('InternalCollaborationController', () => {
     await expectStillWaiting(runId);
   });
 
-  it('leaves the hand-off waiting when daily spend is over the hard cap', async () => {
-    const runId = await createRun();
-    const waiting = await postReferral(runId).expect(201);
-    app
-      .get(GlobalSafetyLimitService)
-      .recordExecutionCost(GlobalSafetyLimits.MAX_DAILY_SPEND_HARD_USD);
+  it('leaves the hand-off waiting when the daily credit cap is reached', async () => {
+    const savedPlatform = process.env.MAX_DAILY_CREDITS_PLATFORM;
+    const savedUser = process.env.MAX_DAILY_CREDITS_PER_USER;
+    process.env.MAX_DAILY_CREDITS_PLATFORM = '1000';
+    process.env.MAX_DAILY_CREDITS_PER_USER = '500';
+    try {
+      const runId = await createRun();
+      const waiting = await postReferral(runId).expect(201);
+      dailyCreditTotal = '1000';
 
-    const response = await approve(runId, waiting.body.referral.referralId).expect(503);
-    expect(response.body.message).toContain('daily spend');
-    await expectStillWaiting(runId);
+      const response = await approve(runId, waiting.body.referral.referralId).expect(429);
+      expect(response.body.message).toContain('Daily credit limit reached');
+      await expectStillWaiting(runId);
+    } finally {
+      if (savedPlatform === undefined) {
+        delete process.env.MAX_DAILY_CREDITS_PLATFORM;
+      } else {
+        process.env.MAX_DAILY_CREDITS_PLATFORM = savedPlatform;
+      }
+      if (savedUser === undefined) {
+        delete process.env.MAX_DAILY_CREDITS_PER_USER;
+      } else {
+        process.env.MAX_DAILY_CREDITS_PER_USER = savedUser;
+      }
+    }
   });
 
   it('leaves the hand-off waiting when abort mode blocks execution', async () => {

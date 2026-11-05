@@ -225,9 +225,8 @@ describe('ConfigurationValidator', () => {
       }).toThrow('out of bounds');
     });
 
-    it('should reject when soft cap >= hard cap', () => {
-      process.env.MAX_DAILY_SPEND_SOFT_USD = '20000';
-      process.env.MAX_DAILY_SPEND_HARD_USD = '20000';
+    it('should reject a daily credit cap above the maximum', () => {
+      process.env.MAX_DAILY_CREDITS_PLATFORM = '10000001';
 
       expect(() => {
         ConfigurationValidator.validateSafetyLimits();
@@ -235,12 +234,20 @@ describe('ConfigurationValidator', () => {
 
       expect(() => {
         ConfigurationValidator.validateSafetyLimits();
-      }).toThrow('MAX_DAILY_SPEND_SOFT_USD ≥ MAX_DAILY_SPEND_HARD_USD');
+      }).toThrow('MAX_DAILY_CREDITS_PLATFORM out of bounds');
     });
 
-    it('should accept when soft cap < hard cap', () => {
-      process.env.MAX_DAILY_SPEND_SOFT_USD = '10000';
-      process.env.MAX_DAILY_SPEND_HARD_USD = '20000';
+    it('should reject a non-positive daily credit cap', () => {
+      process.env.MAX_DAILY_CREDITS_PER_USER = '0';
+
+      expect(() => {
+        ConfigurationValidator.validateSafetyLimits();
+      }).toThrow('MAX_DAILY_CREDITS_PER_USER must be greater than zero');
+    });
+
+    it('should accept the default daily credit caps', () => {
+      process.env.MAX_DAILY_CREDITS_PER_USER = '500';
+      process.env.MAX_DAILY_CREDITS_PLATFORM = '1000';
 
       expect(() => {
         ConfigurationValidator.validateSafetyLimits();
@@ -256,8 +263,8 @@ describe('ConfigurationValidator', () => {
       process.env.OPENAI_API_KEY = 'sk-test';
       process.env.GLOBAL_EXECUTION_ENABLED = 'true';
       process.env.MAX_TOKENS_PER_EXECUTION = '100000';
-      process.env.MAX_DAILY_SPEND_SOFT_USD = '10000';
-      process.env.MAX_DAILY_SPEND_HARD_USD = '20000';
+      process.env.MAX_DAILY_CREDITS_PER_USER = '500';
+      process.env.MAX_DAILY_CREDITS_PLATFORM = '1000';
       process.env.LAUNCH_STATE = 'INTERNAL'; // Phase 32A: Required for validateAll
       process.env.ABORT_MODE = 'NONE'; // Phase 32A: Optional but good to set
 

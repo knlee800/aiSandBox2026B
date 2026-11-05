@@ -27,22 +27,6 @@ export class GlobalSafetyLimits {
   );
 
   /**
-   * Max daily spend (soft cap, warning only)
-   * Default: $10,000 USD per day
-   */
-  static readonly MAX_DAILY_SPEND_SOFT_USD = parseFloat(
-    process.env.MAX_DAILY_SPEND_SOFT_USD || '10000',
-  );
-
-  /**
-   * Max daily spend (hard cap, blocks execution)
-   * Default: $20,000 USD per day
-   */
-  static readonly MAX_DAILY_SPEND_HARD_USD = parseFloat(
-    process.env.MAX_DAILY_SPEND_HARD_USD || '20000',
-  );
-
-  /**
    * Provider-specific rate limits (requests per minute)
    */
   static readonly MAX_REQUESTS_PER_MINUTE_OPENAI = parseInt(
@@ -100,8 +84,6 @@ export class GlobalSafetyLimits {
     return {
       MAX_TOKENS_PER_EXECUTION: this.MAX_TOKENS_PER_EXECUTION,
       MAX_EXECUTIONS_PER_MINUTE_GLOBAL: this.MAX_EXECUTIONS_PER_MINUTE_GLOBAL,
-      MAX_DAILY_SPEND_SOFT_USD: this.MAX_DAILY_SPEND_SOFT_USD,
-      MAX_DAILY_SPEND_HARD_USD: this.MAX_DAILY_SPEND_HARD_USD,
       MAX_REQUESTS_PER_MINUTE_OPENAI: this.MAX_REQUESTS_PER_MINUTE_OPENAI,
       MAX_REQUESTS_PER_MINUTE_ANTHROPIC:
         this.MAX_REQUESTS_PER_MINUTE_ANTHROPIC,

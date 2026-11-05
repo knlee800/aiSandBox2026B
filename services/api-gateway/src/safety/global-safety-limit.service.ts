@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { GlobalSafetyLimits } from './global-safety-limits.config';
 
 /**
@@ -15,15 +15,8 @@ interface RateWindow {
   windowStart: number; // Unix timestamp (seconds)
 }
 
-interface DailySpendWindow {
-  totalUSD: number;
-  dayStart: string; // YYYY-MM-DD (UTC)
-}
-
 @Injectable()
 export class GlobalSafetyLimitService {
-  private readonly logger = new Logger(GlobalSafetyLimitService.name);
-
   // Global rate limit tracking (sliding 1-minute window)
   private globalExecutionWindow: RateWindow = {
     count: 0,
@@ -32,12 +25,6 @@ export class GlobalSafetyLimitService {
 
   // Provider-specific rate limit tracking (sliding 1-minute windows)
   private providerExecutionWindows: Map<string, RateWindow> = new Map();
-
-  // Daily spend tracking (UTC day boundary)
-  private dailySpendWindow: DailySpendWindow = {
-    totalUSD: 0,
-    dayStart: this.getCurrentDay(),
-  };
 
   /**
    * Check if execution is allowed (all limits)
@@ -62,9 +49,6 @@ export class GlobalSafetyLimitService {
     // Check 3: Provider-specific rate limit
     this.checkProviderRateLimit(provider);
 
-    // Check 4: Daily spend hard cap
-    this.checkDailySpendHardCap();
-
     // All checks passed
   }
 
@@ -77,48 +61,6 @@ export class GlobalSafetyLimitService {
 
     // Increment provider counter
     this.incrementProviderCounter(provider);
-  }
-
-  /**
-   * Record execution cost (for daily spend tracking)
-   */
-  recordExecutionCost(costUSD: number): void {
-    const currentDay = this.getCurrentDay();
-
-    // Reset window if day changed
-    if (this.dailySpendWindow.dayStart !== currentDay) {
-      this.dailySpendWindow = {
-        totalUSD: 0,
-        dayStart: currentDay,
-      };
-    }
-
-    // Add cost
-    this.dailySpendWindow.totalUSD += costUSD;
-
-    // Check soft cap (warning only)
-    if (
-      this.dailySpendWindow.totalUSD >=
-      GlobalSafetyLimits.MAX_DAILY_SPEND_SOFT_USD
-    ) {
-      this.logger.warn(
-        `Daily spend soft cap exceeded: $${this.dailySpendWindow.totalUSD.toFixed(2)} >= $${GlobalSafetyLimits.MAX_DAILY_SPEND_SOFT_USD.toFixed(2)}`,
-      );
-    }
-  }
-
-  /**
-   * Get current daily spend
-   */
-  getCurrentDailySpend(): number {
-    const currentDay = this.getCurrentDay();
-
-    // Reset if day changed
-    if (this.dailySpendWindow.dayStart !== currentDay) {
-      return 0;
-    }
-
-    return this.dailySpendWindow.totalUSD;
   }
 
   /**
@@ -203,28 +145,6 @@ export class GlobalSafetyLimitService {
     }
   }
 
-  private checkDailySpendHardCap(): void {
-    const currentDay = this.getCurrentDay();
-
-    // Reset window if day changed
-    if (this.dailySpendWindow.dayStart !== currentDay) {
-      this.dailySpendWindow = {
-        totalUSD: 0,
-        dayStart: currentDay,
-      };
-    }
-
-    // Check hard cap
-    if (
-      this.dailySpendWindow.totalUSD >=
-      GlobalSafetyLimits.MAX_DAILY_SPEND_HARD_USD
-    ) {
-      throw new Error(
-        `Platform daily spend limit reached ($${GlobalSafetyLimits.MAX_DAILY_SPEND_HARD_USD.toFixed(2)})`,
-      );
-    }
-  }
-
   private incrementGlobalCounter(): void {
     const currentMinute = this.getCurrentMinute();
 
@@ -261,11 +181,5 @@ export class GlobalSafetyLimitService {
   private getCurrentMinute(): number {
     // Unix timestamp truncated to minute boundary
     return Math.floor(Date.now() / 1000 / 60);
-  }
-
-  private getCurrentDay(): string {
-    // YYYY-MM-DD in UTC
-    const now = new Date();
-    return now.toISOString().split('T')[0];
   }
 }

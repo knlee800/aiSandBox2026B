@@ -1,9 +1,31 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ExecutionContext } from '@nestjs/common';
+import { ExecutionContext, HttpException } from '@nestjs/common';
 import { ExecutionSafetyGuard } from './execution-safety.guard';
 import { GlobalSafetyLimitService } from './global-safety-limit.service';
+import { DailyCreditCapService } from './daily-credit-cap.service';
 import { BadRequestException, ServiceUnavailableException } from '@nestjs/common';
 import { KillSwitchConfig } from './kill-switch.config';
+
+type CapQuery = {
+  select: () => CapQuery;
+  where: () => CapQuery;
+  andWhere: () => CapQuery;
+  getRawOne: () => Promise<{ total: string }>;
+};
+
+function ledgerReturning(total: string): { createQueryBuilder: () => CapQuery } {
+  return {
+    createQueryBuilder: () => {
+      const qb: CapQuery = {
+        select: () => qb,
+        where: () => qb,
+        andWhere: () => qb,
+        getRawOne: async () => ({ total }),
+      };
+      return qb;
+    },
+  };
+}
 
 describe('ExecutionSafetyGuard', () => {
   let guard: ExecutionSafetyGuard;
@@ -252,19 +274,6 @@ describe('ExecutionSafetyGuard', () => {
       }).toThrow('rate limit exceeded');
     });
 
-    it('should propagate daily spend limit errors as ServiceUnavailableException', () => {
-      // Hit hard daily spend limit
-      globalSafetyLimitService.recordExecutionCost(20000);
-
-      const context = createMockExecutionContext({
-        provider: 'anthropic',
-        max_tokens: 1000,
-      });
-
-      expect(() => {
-        guard.canActivate(context);
-      }).toThrow(ServiceUnavailableException);
-    });
   });
 
   describe('canActivate - recordExecution call', () => {
@@ -344,18 +353,6 @@ describe('ExecutionSafetyGuard', () => {
       }).toThrow('rate limit');
     });
 
-    it('should map daily spend error to ServiceUnavailableException', () => {
-      globalSafetyLimitService.recordExecutionCost(25000);
-
-      const context = createMockExecutionContext({
-        provider: 'anthropic',
-        max_tokens: 1000,
-      });
-
-      expect(() => {
-        guard.canActivate(context);
-      }).toThrow(ServiceUnavailableException);
-    });
   });
 
   describe('Integration with request body', () => {
@@ -606,6 +603,112 @@ describe('ExecutionSafetyGuard', () => {
       expect(() => {
         guard.canActivate(context);
       }).not.toThrow();
+    });
+  });
+
+  describe('daily credit cap', () => {
+    const originalPlatform = process.env.MAX_DAILY_CREDITS_PLATFORM;
+    const originalUser = process.env.MAX_DAILY_CREDITS_PER_USER;
+
+    beforeEach(() => {
+      process.env.MAX_DAILY_CREDITS_PLATFORM = '1000';
+      process.env.MAX_DAILY_CREDITS_PER_USER = '500';
+    });
+
+    afterEach(() => {
+      if (originalPlatform === undefined) {
+        delete process.env.MAX_DAILY_CREDITS_PLATFORM;
+      } else {
+        process.env.MAX_DAILY_CREDITS_PLATFORM = originalPlatform;
+      }
+      if (originalUser === undefined) {
+        delete process.env.MAX_DAILY_CREDITS_PER_USER;
+      } else {
+        process.env.MAX_DAILY_CREDITS_PER_USER = originalUser;
+      }
+    });
+
+    function collaborationContext(userId?: string): ExecutionContext {
+      const apiKeyIdentity: { apiKeyId: string; userId?: string } = {
+        apiKeyId: 'apikey-01',
+      };
+      if (userId !== undefined) {
+        apiKeyIdentity.userId = userId;
+      }
+      return {
+        switchToHttp: () => ({
+          getRequest: () => ({
+            body: {
+              prompt: 'Review the plan',
+              provider: 'stub',
+            },
+            apiKeyIdentity,
+          }),
+        }),
+      } as ExecutionContext;
+    }
+
+    it('allows a collaboration request identified only by apiKeyIdentity.userId', async () => {
+      const seenUserIds: Array<string | undefined> = [];
+      const repo = {
+        createQueryBuilder: () => {
+          let userId: string | undefined;
+          const qb: CapQuery = {
+            select: () => qb,
+            where: () => qb,
+            andWhere: (_clause?: string, params?: { userId: string }) => {
+              userId = params?.userId;
+              return qb;
+            },
+            getRawOne: async () => {
+              seenUserIds.push(userId);
+              return { total: '10' };
+            },
+          };
+          return qb;
+        },
+      };
+      const capped = new ExecutionSafetyGuard(
+        globalSafetyLimitService,
+        new DailyCreditCapService(repo as never),
+      );
+
+      await expect(
+        capped.canActivate(collaborationContext('user-01')),
+      ).resolves.toBe(true);
+      expect(seenUserIds).toContain('user-01');
+    });
+
+    it('refuses a request that has no user id', async () => {
+      const repo = ledgerReturning('0');
+      const queried = jest.spyOn(repo, 'createQueryBuilder');
+      const capped = new ExecutionSafetyGuard(
+        globalSafetyLimitService,
+        new DailyCreditCapService(repo as never),
+      );
+      const recordSpy = jest.spyOn(globalSafetyLimitService, 'recordExecution');
+
+      try {
+        await capped.canActivate(collaborationContext());
+        throw new Error('expected refusal');
+      } catch (error) {
+        expect(error).toBeInstanceOf(HttpException);
+        expect((error as HttpException).getStatus()).toBe(429);
+        expect((error as HttpException).message).toBe('Daily credit limit reached');
+      }
+      expect(queried).not.toHaveBeenCalled();
+      expect(recordSpy).not.toHaveBeenCalled();
+    });
+
+    it('logs one warning and skips the cap when the cap service is absent', () => {
+      const warnSpy = jest
+        .spyOn(guard['logger'], 'warn')
+        .mockImplementation(() => undefined);
+      const context = createMockExecutionContext({ max_tokens: 1000 });
+
+      expect(guard.canActivate(context)).toBe(true);
+      expect(guard.canActivate(context)).toBe(true);
+      expect(warnSpy).toHaveBeenCalledTimes(1);
     });
   });
 });

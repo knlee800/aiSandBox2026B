@@ -147,56 +147,6 @@ describe('GlobalSafetyLimitService', () => {
     });
   });
 
-  describe('checkExecutionAllowed - daily spend limits', () => {
-    it('should allow execution within soft daily spend limit', () => {
-      // Record $5,000 in costs (under $10,000 soft limit)
-      service.recordExecutionCost(5000);
-
-      expect(() => {
-        service.checkExecutionAllowed('anthropic', 1000);
-      }).not.toThrow();
-    });
-
-    it('should log warning at soft daily spend limit but not throw', () => {
-      // Spy on logger warn
-      const loggerWarnSpy = jest
-        .spyOn(service['logger'], 'warn')
-        .mockImplementation();
-
-      // Record $10,000 in costs (at soft limit)
-      service.recordExecutionCost(10000);
-
-      // Check should still pass (soft limit is warning only)
-      expect(() => {
-        service.checkExecutionAllowed('anthropic', 1000);
-      }).not.toThrow();
-
-      // Should have logged warning
-      expect(loggerWarnSpy).toHaveBeenCalled();
-      expect(loggerWarnSpy.mock.calls[0][0]).toContain('Daily spend soft cap');
-
-      loggerWarnSpy.mockRestore();
-    });
-
-    it('should throw error at hard daily spend limit', () => {
-      // Record $20,000 in costs (at hard limit)
-      service.recordExecutionCost(20000);
-
-      expect(() => {
-        service.checkExecutionAllowed('anthropic', 1000);
-      }).toThrow('Platform daily spend limit reached');
-    });
-
-    it('should block execution when exceeding hard daily spend limit', () => {
-      // Record $20,001 in costs (over hard limit)
-      service.recordExecutionCost(20001);
-
-      expect(() => {
-        service.checkExecutionAllowed('anthropic', 1000);
-      }).toThrow('Platform daily spend limit reached');
-    });
-  });
-
   describe('recordExecution', () => {
     it('should increment global execution count', () => {
       const initialRate = service.getCurrentGlobalRate();
@@ -234,30 +184,6 @@ describe('GlobalSafetyLimitService', () => {
     });
   });
 
-  describe('recordExecutionCost', () => {
-    it('should accumulate daily spend', () => {
-      const initialSpend = service.getCurrentDailySpend();
-
-      service.recordExecutionCost(10.5);
-      service.recordExecutionCost(5.25);
-
-      const finalSpend = service.getCurrentDailySpend();
-      expect(finalSpend).toBe(initialSpend + 15.75);
-    });
-
-    it('should handle zero cost', () => {
-      const initialSpend = service.getCurrentDailySpend();
-      service.recordExecutionCost(0);
-      expect(service.getCurrentDailySpend()).toBe(initialSpend);
-    });
-
-    it('should handle fractional cents', () => {
-      service.recordExecutionCost(0.001);
-      service.recordExecutionCost(0.002);
-      expect(service.getCurrentDailySpend()).toBe(0.003);
-    });
-  });
-
   describe('getCurrentGlobalRate', () => {
     it('should return 0 when no executions recorded', () => {
       expect(service.getCurrentGlobalRate()).toBe(0);
@@ -290,20 +216,6 @@ describe('GlobalSafetyLimitService', () => {
       service.recordExecution('anthropic');
       // Provider names should match exactly as recorded
       expect(service.getCurrentProviderRate('anthropic')).toBe(1);
-    });
-  });
-
-  describe('getCurrentDailySpend', () => {
-    it('should return 0 when no costs recorded', () => {
-      expect(service.getCurrentDailySpend()).toBe(0);
-    });
-
-    it('should return accumulated costs', () => {
-      service.recordExecutionCost(100);
-      service.recordExecutionCost(50);
-      service.recordExecutionCost(25.5);
-
-      expect(service.getCurrentDailySpend()).toBe(175.5);
     });
   });
 
@@ -382,16 +294,6 @@ describe('GlobalSafetyLimitService', () => {
         service.checkExecutionAllowed('anthropic', 1000000);
       }).toThrow('exceeds platform limit');
     });
-
-    it('should handle very small cost amounts', () => {
-      service.recordExecutionCost(0.0001);
-      expect(service.getCurrentDailySpend()).toBe(0.0001);
-    });
-
-    it('should handle very large cost amounts', () => {
-      service.recordExecutionCost(50000);
-      expect(service.getCurrentDailySpend()).toBe(50000);
-    });
   });
 
   describe('Multiple limit interactions', () => {
@@ -428,16 +330,6 @@ describe('GlobalSafetyLimitService', () => {
       expect(() => {
         service.checkExecutionAllowed('anthropic', 1000);
       }).toThrow('Provider anthropic rate limit exceeded');
-    });
-
-    it('should check daily spend after rate limits', () => {
-      // Hit hard daily spend limit
-      service.recordExecutionCost(20000);
-
-      // Should fail on daily spend, not rate limits
-      expect(() => {
-        service.checkExecutionAllowed('anthropic', 1000);
-      }).toThrow('Platform daily spend limit reached');
     });
   });
 });

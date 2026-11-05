@@ -1,10 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, HttpStatus } from '@nestjs/common';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import request from 'supertest';
+import { CreditDeductionRecord } from '../entities/credit-deduction-record.entity';
 import { AIExecutionController } from '../ai/ai-execution.controller';
 import { AIServiceHttpClient } from '../clients/ai-service-http.client';
 import { UsageLedgerService } from '../usage-ledger/usage-ledger.service';
 import { GlobalSafetyLimitService } from './global-safety-limit.service';
+import { DailyCreditCapService } from './daily-credit-cap.service';
 import { ExecutionSafetyGuard } from './execution-safety.guard';
 import { KillSwitchConfig } from './kill-switch.config';
 import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
@@ -41,7 +44,10 @@ describe('ExecutionSafetyGuard Integration Tests', () => {
   let usageLedgerService: UsageLedgerService;
   let globalSafetyLimitService: GlobalSafetyLimitService;
   let mockQueueService: { enqueueExecution: jest.Mock };
+  let ledgerTotal = '0';
   const savedGlobalExecutionEnabled = process.env.GLOBAL_EXECUTION_ENABLED;
+  const savedPlatformCap = process.env.MAX_DAILY_CREDITS_PLATFORM;
+  const savedUserCap = process.env.MAX_DAILY_CREDITS_PER_USER;
 
   // Mock AI service response
   const mockAIResponse = {
@@ -62,6 +68,9 @@ describe('ExecutionSafetyGuard Integration Tests', () => {
 
   beforeEach(async () => {
     process.env.GLOBAL_EXECUTION_ENABLED = 'true';
+    process.env.MAX_DAILY_CREDITS_PLATFORM = '1000';
+    process.env.MAX_DAILY_CREDITS_PER_USER = '500';
+    ledgerTotal = '0';
     mockQueueService = {
       enqueueExecution: jest.fn().mockResolvedValue(undefined),
     };
@@ -89,7 +98,22 @@ describe('ExecutionSafetyGuard Integration Tests', () => {
           },
         },
         GlobalSafetyLimitService,
+        DailyCreditCapService,
         ExecutionSafetyGuard,
+        {
+          provide: getRepositoryToken(CreditDeductionRecord),
+          useValue: {
+            createQueryBuilder: () => {
+              const qb = {
+                select: () => qb,
+                where: () => qb,
+                andWhere: () => qb,
+                getRawOne: async () => ({ total: ledgerTotal }),
+              };
+              return qb;
+            },
+          },
+        },
         {
           provide: QueueService,
           useValue: mockQueueService,
@@ -169,6 +193,16 @@ describe('ExecutionSafetyGuard Integration Tests', () => {
       delete process.env.GLOBAL_EXECUTION_ENABLED;
     } else {
       process.env.GLOBAL_EXECUTION_ENABLED = savedGlobalExecutionEnabled;
+    }
+    if (savedPlatformCap === undefined) {
+      delete process.env.MAX_DAILY_CREDITS_PLATFORM;
+    } else {
+      process.env.MAX_DAILY_CREDITS_PLATFORM = savedPlatformCap;
+    }
+    if (savedUserCap === undefined) {
+      delete process.env.MAX_DAILY_CREDITS_PER_USER;
+    } else {
+      process.env.MAX_DAILY_CREDITS_PER_USER = savedUserCap;
     }
     await app.close();
   });
@@ -485,10 +519,9 @@ describe('ExecutionSafetyGuard Integration Tests', () => {
     });
   });
 
-  describe('Daily spend limit enforcement', () => {
-    it('should return 503 when hard daily spend limit exceeded', async () => {
-      // Hit hard daily spend limit ($20,000)
-      globalSafetyLimitService.recordExecutionCost(20000);
+  describe('Daily credit cap enforcement', () => {
+    it('should return 429 when the daily credit cap is reached', async () => {
+      ledgerTotal = '1000';
 
       const response = await request(app.getHttpServer())
         .post('/ai/execute')
@@ -499,13 +532,13 @@ describe('ExecutionSafetyGuard Integration Tests', () => {
           max_tokens: 1000,
           messages: [{ role: 'user', content: 'Test' }],
         })
-        .expect(HttpStatus.SERVICE_UNAVAILABLE);
+        .expect(HttpStatus.TOO_MANY_REQUESTS);
 
-      expect(response.body.message).toContain('daily spend');
+      expect(response.body.message).toContain('Daily credit limit reached');
     });
 
-    it('should NOT invoke ai-service when daily spend limit exceeded', async () => {
-      globalSafetyLimitService.recordExecutionCost(20000);
+    it('should NOT invoke ai-service when the daily credit cap is reached', async () => {
+      ledgerTotal = '1000';
 
       await request(app.getHttpServer())
         .post('/ai/execute')
@@ -516,14 +549,13 @@ describe('ExecutionSafetyGuard Integration Tests', () => {
           max_tokens: 1000,
           messages: [{ role: 'user', content: 'Test' }],
         })
-        .expect(HttpStatus.SERVICE_UNAVAILABLE);
+        .expect(HttpStatus.TOO_MANY_REQUESTS);
 
       expect(mockExecute).not.toHaveBeenCalled();
     });
 
-    it('should allow execution within soft daily spend limit', async () => {
-      // Record $5,000 (under $10,000 soft limit)
-      globalSafetyLimitService.recordExecutionCost(5000);
+    it('should allow execution when daily credit usage is under the cap', async () => {
+      ledgerTotal = '499';
 
       await request(app.getHttpServer())
         .post('/ai/execute')
@@ -578,10 +610,10 @@ describe('ExecutionSafetyGuard Integration Tests', () => {
         .expect(HttpStatus.SERVICE_UNAVAILABLE);
     });
 
-    it('should return 503 for daily spend limit exceeded', async () => {
-      globalSafetyLimitService.recordExecutionCost(20000);
+    it('should return 429 when the daily credit cap is reached', async () => {
+      ledgerTotal = '1000';
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .post('/ai/execute')
         .set('Idempotency-Key', 'test-error-daily-1')
         .send({
@@ -589,7 +621,9 @@ describe('ExecutionSafetyGuard Integration Tests', () => {
           max_tokens: 1000,
           messages: [{ role: 'user', content: 'Test' }],
         })
-        .expect(HttpStatus.SERVICE_UNAVAILABLE);
+        .expect(HttpStatus.TOO_MANY_REQUESTS);
+
+      expect(response.body.message).toContain('Daily credit limit reached');
     });
   });
 
