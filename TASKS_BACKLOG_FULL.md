@@ -85634,7 +85634,7 @@ taskId=STAGING-DEPLOY-07
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-05. Lane 1, STAGING.
+**Status:** COMPLETE AND LOCKED — 2026-11-05. LANE-DONE and LOCKED by the control plane; Lane 1 and STAGING released. Staging runs abacbb3 with the access limits, test-key lockdown and signed Agent tool profile; Keith's Agent write on; runs and provider off; stagingAuthorized false. Checkpoint: docs/STAGING-DEPLOY-07-CHECKPOINT.md.
 **Task ID:** STAGING-DEPLOY-07
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION (operational run; no code)
@@ -85651,13 +85651,13 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Staging runs the deployed commit; migration hash unchanged; health and guard checks pass; configuration files unchanged
-- [ ] No queued or running executions before the deploy, and NODE_ENV is production
-- [ ] A static test key is refused with 403
-- [ ] Keith's row has agent_write_enabled and harness_enabled true, set by him through the PATCH with one more audit row
-- [ ] Provider and runs stay off; nothing left open
-- [ ] Keith judgement recorded
-- [ ] Not LOCKED by an implementer
+- [x] Staging runs the deployed commit; migration hash unchanged; health and guard checks pass; configuration files unchanged
+- [x] No queued or running executions before the deploy, and NODE_ENV is production
+- [x] A static test key is refused with 403
+- [x] Keith's row has agent_write_enabled and harness_enabled true, set by him through the PATCH with one more audit row
+- [x] Provider and runs stay off; nothing left open
+- [x] Keith judgement recorded
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
