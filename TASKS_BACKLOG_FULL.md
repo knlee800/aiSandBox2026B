@@ -85763,7 +85763,7 @@ taskId=STAGING-DEPLOY-09
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-06. Lane 1, STAGING.
+**Status:** COMPLETE AND LOCKED — 2026-11-06. LANE-DONE and LOCKED by the control plane; Lane 1 and STAGING released. Staging runs 951ee83 with HTTP CORS limited to the app's own origin; stagingAuthorized false. Checkpoint: docs/STAGING-DEPLOY-09-CHECKPOINT.md.
 **Task ID:** STAGING-DEPLOY-09
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION (operational run; no code)
@@ -85780,10 +85780,10 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Staging runs the deployed commit; migration hash unchanged; health and guard checks pass; configuration files unchanged; static test key refused
-- [ ] The three CORS checks pass from the host
-- [ ] Nothing queued or running before the deploy; runs and provider stay off; nothing left open
-- [ ] Not LOCKED by an implementer
+- [x] Staging runs the deployed commit; migration hash unchanged; health and guard checks pass; configuration files unchanged; static test key refused
+- [x] The three CORS checks pass from the host
+- [x] Nothing queued or running before the deploy; runs and provider stay off; nothing left open
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
