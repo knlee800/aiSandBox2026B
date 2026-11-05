@@ -85417,7 +85417,7 @@ taskId=ACCESS-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-05. Lane 1, STAGING, PROVIDER-LIVE, CREDIT and ENV. Keith approved the draft (scope) on 2026-11-05: second test account, short live window, two provider runs.
+**Status:** COMPLETE AND LOCKED — 2026-11-05. LANE-DONE and LOCKED by the control plane; Lane 1 and STAGING, PROVIDER-LIVE, CREDIT and ENV released. Second-user check passed on staging (token limit, read-only Agent, credit cap, Agent write, ownership, admin refusal, socket, port 4000); env restored; test2 access off. Checkpoint: docs/ACCESS-LIVE-01-CHECKPOINT.md.
 **Task ID:** ACCESS-LIVE-01
 **Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -85434,16 +85434,16 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] Keith creates test2 by signing up himself; the control plane marks only its email verified; test2 is role user on the free plan; Keith sets harness on and Agent write off through the admin PATCH, with audit rows
-- [ ] With dailyTokenLimitOverride 1, a test2 run is refused with 429 before any provider call; the override is cleared afterwards
-- [ ] A test2 Agent run asked to create a file completes with read tools only and writes no file
-- [ ] A second test2 run is refused with 429 Daily credit limit reached (window cap 10 credits per user)
-- [ ] A Keith Agent run in C1 repeat writes a file (agent-write works after ACCESS-01C)
-- [ ] test2 cannot read Keith's session, project or knowledge document, and the admin PATCH refuses it (404 or 403)
-- [ ] An unauthenticated Socket.IO client is disconnected, and port 4000 does not answer from outside
-- [ ] Window off: env files back to their baseline hashes, test2 harness access off, nothing left open, no key text in any output
-- [ ] Keith judgement recorded
-- [ ] Not LOCKED by an implementer
+- [x] Keith creates test2 by signing up himself; the control plane marks only its email verified; test2 is role user on the free plan; Keith sets harness on and Agent write off through the admin PATCH, with audit rows
+- [x] With dailyTokenLimitOverride 1, a test2 run is refused with 429 before any provider call; the override is cleared afterwards
+- [x] A test2 Agent run asked to create a file completes with read tools only and writes no file
+- [x] A second test2 run is refused with 429 Daily credit limit reached (window cap 10 credits per user)
+- [x] A Keith Agent run in C1 repeat writes a file (agent-write works after ACCESS-01C)
+- [x] test2 cannot read Keith's session, project or knowledge document, and the admin PATCH refuses it (404 or 403)
+- [x] An unauthenticated Socket.IO client is disconnected, and port 4000 does not answer from outside
+- [x] Window off: env files back to their baseline hashes, test2 harness access off, nothing left open, no key text in any output
+- [x] Keith judgement recorded
+- [x] Not LOCKED by an implementer
 
 ### LIMITS-PER-USER-01 — Per-user numeric limit overrides in the admin area
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -85667,6 +85667,31 @@ nature=IMPLEMENTATION
 - [x] Provider and runs stay off; nothing left open
 - [x] Keith judgement recorded
 - [x] Not LOCKED by an implementer
+
+### LIMIT-MESSAGE-01 — Show the real reason when a run is refused by a limit
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=LIMIT-MESSAGE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by ACCESS-LIVE-01 (live finding); not admitted.
+**Task ID:** LIMIT-MESSAGE-01
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith admits it. Keith decides.
+**Depends on:** none.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md.
+
+**Holds:** When the daily credit cap or the token limit refuses a run (429), the workspace shows only its generic text "Request blocked by rate limits. Retry shortly.", which misleads for a daily limit. Show the real reason (daily credit limit reached, daily token limit reached, balance too low for this run) in en, zh-TW and zh-CN from the 429 and 402 bodies. Frontend and the three message files; the gateway may need a reason code in the 429 bodies. Rough size S. Worth doing before a second person is invited.
+**Named in:** docs/ACCESS-LIVE-01-CHECKPOINT.md (check 3).
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
