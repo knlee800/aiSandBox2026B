@@ -7,13 +7,15 @@
   "governance": {"owner": "NONE", "state": "UNOWNED"},
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "ACCESS-01A",
+      "mutexes": ["GATEWAY"],
+      "writePaths": [
+        "services/api-gateway/src/websocket/"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -3252,8 +3254,8 @@
       "taskId": "ACCESS-01A",
       "nature": "IMPLEMENTATION",
       "lifecycle": "4-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "OPTIONAL",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",

@@ -85130,12 +85130,12 @@ taskId=ACCESS-01A
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-ACCESS-PLAN-01; not admitted.
+**Status:** ADMITTED — 2026-11-05. Lane 1, GATEWAY. First slice of ACCESS-READY-01.
 **Task ID:** ACCESS-01A
 **Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP.
-**Start condition (human):** NOT_READY. Ready when: Keith admits it (first slice; no decision needed). Keith decides.
+**Start condition (human):** READY — Keith admitted it on 2026-11-05.
 **Depends on:** none.
 **Primary write scope:** `services/api-gateway/src/websocket/` (reads services/api-gateway/src/auth/ and the session service without changing them).
 **Mutexes / resources:** GATEWAY. **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (one gateway module; no migration).
