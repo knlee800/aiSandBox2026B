@@ -85417,15 +85417,15 @@ taskId=ACCESS-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-ACCESS-PLAN-01; not admitted.
+**Status:** ADMITTED — 2026-11-05. Lane 1, STAGING, PROVIDER-LIVE, CREDIT and ENV. Keith approved the draft (scope) on 2026-11-05: second test account, short live window, two provider runs.
 **Task ID:** ACCESS-LIVE-01
 **Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 2-STEP.
-**Start condition (human):** NOT_READY. Ready when: its dependencies are COMPLETE AND LOCKED and Keith admits it. Keith decides.
+**Start condition (human):** READY — Keith admitted it on 2026-11-05.
 **Depends on:** ACCESS-01A, ACCESS-01B, ACCESS-01C, ACCESS-01D, ACCESS-01F, COLLAB-AUDIT-01, STATIC-KEYS-01 (added by Keith on 2026-11-05).
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
-**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**Primary write scope:** none in the repository beyond records. Host state on ainow-staging-01 (a second test account test2 and its email_verified flag, user_entitlements rows set through the admin PATCH, a temporary live window in gateway.env and ai.env restored afterwards, two provider runs) and off-repo evidence only.
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT, ENV. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** PROVIDER-LIVE (and STAGING-RUNTIME). **Revert isolation:** acceptable (no code; env files restored to their baseline hashes; test2 keeps its account with harness access switched off). **Spend:** two short provider runs on the stored test key (claude-opus-5-5), MAX_TOKENS_PER_EXECUTION 16,000, MAX_DAILY_CREDITS_PER_USER 10 for the window only.
 **saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (readiness of the gated features for a second user).
 
 **Holds:** Plan slice S11: a second test account on staging: Agent read-only works, Agent write refused, limit and cap refusals, foreign socket join refused, and whether port 4000 is reachable from outside.
@@ -85433,7 +85433,16 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Keith creates test2 by signing up himself; the control plane marks only its email verified; test2 is role user on the free plan; Keith sets harness on and Agent write off through the admin PATCH, with audit rows
+- [ ] With dailyTokenLimitOverride 1, a test2 run is refused with 429 before any provider call; the override is cleared afterwards
+- [ ] A test2 Agent run asked to create a file completes with read tools only and writes no file
+- [ ] A second test2 run is refused with 429 Daily credit limit reached (window cap 10 credits per user)
+- [ ] A Keith Agent run in C1 repeat writes a file (agent-write works after ACCESS-01C)
+- [ ] test2 cannot read Keith's session, project or knowledge document, and the admin PATCH refuses it (404 or 403)
+- [ ] An unauthenticated Socket.IO client is disconnected, and port 4000 does not answer from outside
+- [ ] Window off: env files back to their baseline hashes, test2 harness access off, nothing left open, no key text in any output
+- [ ] Keith judgement recorded
 - [ ] Not LOCKED by an implementer
 
 ### LIMITS-PER-USER-01 — Per-user numeric limit overrides in the admin area
