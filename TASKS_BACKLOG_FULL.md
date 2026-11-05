@@ -85699,6 +85699,34 @@ nature=IMPLEMENTATION
 - [x] Frontend tsc, npm test and npm run build pass; frontend/tsconfig.tsbuildinfo restored
 - [x] Not LOCKED by an implementer
 
+### STAGING-DEPLOY-08 — Deploy the real refusal messages (LIMIT-MESSAGE-01)
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-08
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED — 2026-11-05. Lane 1, STAGING.
+**Task ID:** STAGING-DEPLOY-08
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (operational run; no code)
+**Lifecycle:** 3-STEP: registration and admission here; pre-check and deploy run from the host by the control plane; separate LOCK record (STAGING-RUNTIME).
+**Start condition (human):** READY — Keith approved the draft on 2026-11-05.
+**Depends on:** LIMIT-MESSAGE-01, COMPLETE AND LOCKED.
+**Primary write scope:** none in the repository beyond records. Host state on ainow-staging-01 (frontend release) and off-repo evidence only.
+**Mutexes / resources:** STAGING. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** STAGING-RUNTIME. **Revert isolation:** acceptable (no code; no migrations; rollback is a redeploy of abacbb3).
+**saturationClass:** OPTIONAL
+
+**Problem:** LIMIT-MESSAGE-01 reaches staging only by a deploy.
+
+**Scope:** (1) Read-only pre-check. (2) Deploy main at the record commit with the standard block; migration hash unchanged; configuration files unchanged; units active; health 200; guard checks 401; static test key 403; the built frontend on the host contains the new message text in en, zh-TW and zh-CN. No browser steps, no live window, no provider, no credits; nothing needed from Keith after approval.
+
+#### Acceptance criteria
+
+- [ ] Staging runs the deployed commit; migration hash unchanged; health and guard checks pass; configuration files unchanged; static test key refused
+- [ ] The built frontend contains the new daily-credit message in en, zh-TW and zh-CN
+- [ ] Nothing queued or running before the deploy; runs and provider stay off; nothing left open
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
