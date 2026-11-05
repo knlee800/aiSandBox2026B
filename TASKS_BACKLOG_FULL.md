@@ -84335,6 +84335,7 @@ nature=IMPLEMENTATION
 
 **Holds:** (1) npm test in frontend does not run frontend/lib/ai/*.test.ts. (2) xAI tool failures use the OpenAI wording of the shared mapper. (3) The plain output limit stays 4096 for OpenAI, xAI and DeepSeek. (4) A malformed tool call the loop does not answer may be rejected on the next step. (5) A failed workspace search returns no matches instead of an error. (6) The model selector can return to a provider with no key after a reload, and the only message is "Execution ended with status: failed". (7) The model offers to create .env; a prompt line could stop the offer. (8) requireApprovalForDelete is true but deletes run without an approval step. (9) xAI, OpenAI and DeepSeek are not proven live. (10) Reopening a project while an Agent run works restores the saved copy over files written so far. (11) An interrupted Build answer says "I've added" and the notice then says it was not applied. Split into bounded slices at admission.
 **Dispositions, 2026-11-05:** item 10 is superseded by HARNESS-REOPEN-01. Item 12 added: live check of HARNESS-REOPEN-01 in the next staging window (close the page during an Agent run, reopen the project, the run's files are intact).
+**Dispositions, 2026-11-05 (2):** item 12 is superseded by STAGING-DEPLOY-04 (its reopen criterion).
 **Named in:** HARNESS-PROVIDERS-01 checkpoint line 75; HARNESS-LIVE-06 checkpoint lines 38 to 40; HARNESS-SAVE-01 checkpoint line 45; HARNESS-DELETE-01 checkpoint lines 52 and 53; container-manager docker-runtime.service.ts searchWorkspace.
 
 #### Acceptance criteria
@@ -84635,6 +84636,39 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### STAGING-DEPLOY-04 — Deploy the office and the reopen fix, with Keith's browser check
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-04
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED — 2026-11-05. Lane 1, STAGING, PROVIDER-LIVE, CREDIT and ENV.
+**Task ID:** STAGING-DEPLOY-04
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (operational run; no code)
+**Lifecycle:** 3-STEP: registration and admission here; deploy and live window; separate LOCK record (PROVIDER-LIVE).
+**Start condition (human):** READY — Keith approved the draft on 2026-11-05.
+**Depends on:** HARNESS-REOPEN-01, USAGE-DURATION-01, RUN-LIST-COLLAB-01, OFFICE-01, all COMPLETE AND LOCKED.
+**Primary write scope:** none in the repository beyond records. Host state on ainow-staging-01 and off-repo evidence only.
+**Mutexes / resources:** STAGING, PROVIDER-LIVE, CREDIT, ENV. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** PROVIDER-LIVE. **Revert isolation:** acceptable (no code).
+**saturationClass:** OPTIONAL
+
+**Problem:** the office and the three fixes reach staging only by a deploy; the office needs Keith's browser check and the reopen fix a live check (the RPG-OFFICE-01 item "deploy and Keith's browser check of OFFICE-01", and HARNESS-FIXES-01 item 12).
+
+**Scope:** (1) deploy main at the record commit to ainow-staging-01 with the standard block: no collaboration runs in flight, migration hash unchanged, configuration files unchanged, units active, health 200, guard checks 401; flags stay off. (2) Keith opens /en/office, /zh-TW/office and /zh-CN/office and checks the desks, past Builder and Team runs and the desk panel; no provider. (3) One short window with the stored test key, claude-opus-5-5, spend caps 1 and 2 USD, under 40 credits: in project "C1 repeat" Keith starts an Agent run that writes a file, closes the page during the run, reopens the project before it finishes, and checks the file is intact at the end; the office desk shows Working, then Done with a duration. Flags off right after.
+
+**Follow-up dispositions:** HARNESS-FIXES-01 item 12 is superseded by this task's reopen criterion.
+
+#### Acceptance criteria
+
+- [ ] Staging runs the deployed commit; health and guard checks pass; migration hash and configuration files unchanged
+- [ ] The office works in en, zh-TW and zh-CN (Keith)
+- [ ] Reopening the project during an Agent run leaves the run's files intact
+- [ ] The office shows the run as Working, then Done with a duration
+- [ ] Flags off and nothing left open after the window
+- [ ] Keith judgement recorded
 - [ ] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
