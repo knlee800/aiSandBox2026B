@@ -9,6 +9,11 @@ import { UsageLedgerModule } from '../usage-ledger/usage-ledger.module';
 import { ExecutionResultService } from '../ai/execution-result.service';
 import { CollaborationRunEntity } from './collaboration-run.entity';
 import { CollaborationReferralEntity } from './collaboration-referral.entity';
+import { AuditEventEntity } from '../entities/audit-event.entity';
+import {
+  InMemoryOrchestrationAuditRecorder,
+  StoredOrchestrationAuditRecorder,
+} from './orchestration-audit.recorder';
 import { SafetyModule } from '../safety/safety.module';
 import { AbortModule } from '../abort/abort.module';
 import { QuotaModule } from '../quota/quota.module';
@@ -33,10 +38,19 @@ import { KnowledgeModule } from '../knowledge/knowledge.module';
     TypeOrmModule.forFeature([
       CollaborationRunEntity,
       CollaborationReferralEntity,
+      AuditEventEntity,
     ]),
   ],
   controllers: [InternalCollaborationController, CollaborationController],
-  providers: [OrchestrationService, ExecutionResultService, CollaborationSweepWorker],
+  providers: [
+    OrchestrationService,
+    ExecutionResultService,
+    CollaborationSweepWorker,
+    {
+      provide: InMemoryOrchestrationAuditRecorder,
+      useClass: StoredOrchestrationAuditRecorder,
+    },
+  ],
   exports: [OrchestrationService],
 })
 export class OrchestrationModule {}
