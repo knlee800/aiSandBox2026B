@@ -85734,7 +85734,7 @@ taskId=ACCESS-CORS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-06. Lane 1, GATEWAY. Stage-start: docs/ACCESS-CORS-01-STAGE-START.md (design frozen in this record).
+**Status:** COMPLETE AND LOCKED — 2026-11-06. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY released. HTTP CORS allows only the APP_BASE_URL origin; not deployed (STAGING-DEPLOY-09 admitted). Checkpoint: docs/ACCESS-CORS-01-CHECKPOINT.md.
 **Task ID:** ACCESS-CORS-01
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -85750,11 +85750,39 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] HTTP CORS uses the rule of resolveSocketCorsOrigin: with APP_BASE_URL set, only that exact origin (scheme, host, port) is allowed and echoed; any other origin, a missing Origin, or APP_BASE_URL unset, blank or not a URL gets no CORS allow header; never origin true, never the request origin reflected; credentials true kept
-- [ ] main.ts no longer contains origin: true, checked by a source test
-- [ ] Unit tests cover the allowed origin, another origin, no origin, APP_BASE_URL unset and invalid, and a different port and scheme
-- [ ] Gateway npm test shows only the 14 known runtime-only smoke.integration failures; npm run build passes
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] HTTP CORS uses the rule of resolveSocketCorsOrigin: with APP_BASE_URL set, only that exact origin (scheme, host, port) is allowed and echoed; any other origin, a missing Origin, or APP_BASE_URL unset, blank or not a URL gets no CORS allow header; never origin true, never the request origin reflected; credentials true kept
+- [x] main.ts no longer contains origin: true, checked by a source test
+- [x] Unit tests cover the allowed origin, another origin, no origin, APP_BASE_URL unset and invalid, and a different port and scheme
+- [x] Gateway npm test shows only the 14 known runtime-only smoke.integration failures; npm run build passes
+- [x] Not LOCKED by an implementer
+
+### STAGING-DEPLOY-09 — Deploy HTTP CORS limited to the app's origin (ACCESS-CORS-01)
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-09
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED — 2026-11-06. Lane 1, STAGING.
+**Task ID:** STAGING-DEPLOY-09
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (operational run; no code)
+**Lifecycle:** 3-STEP: registration and admission in the ACCESS-CORS-01 LOCK record; pre-check and deploy run from the host by the control plane; separate LOCK record (STAGING-RUNTIME).
+**Start condition (human):** READY — Keith approved the draft on 2026-11-06.
+**Depends on:** ACCESS-CORS-01, COMPLETE AND LOCKED.
+**Primary write scope:** none in the repository beyond records. Host state on ainow-staging-01 (gateway release) and off-repo evidence only.
+**Mutexes / resources:** STAGING. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** STAGING-RUNTIME. **Revert isolation:** acceptable (no code; no migrations; rollback is a redeploy of 3c584a9).
+**saturationClass:** OPTIONAL
+
+**Problem:** ACCESS-CORS-01 reaches staging only by a deploy.
+
+**Scope:** (1) Read-only pre-check. (2) Deploy main at the record commit with the standard block, gateway only; migration hash unchanged; configuration files unchanged; units active; health 200; guard checks 401; static test key 403. (3) From the host, against the gateway on 127.0.0.1:4000: a request with Origin https://evil.example gets no Access-Control-Allow-Origin header; a request with the APP_BASE_URL origin gets that origin echoed; a request with no Origin works as before. No browser steps, no live window, no provider, no credits; nothing needed from Keith after approval.
+
+#### Acceptance criteria
+
+- [ ] Staging runs the deployed commit; migration hash unchanged; health and guard checks pass; configuration files unchanged; static test key refused
+- [ ] The three CORS checks pass from the host
+- [ ] Nothing queued or running before the deploy; runs and provider stay off; nothing left open
 - [ ] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks

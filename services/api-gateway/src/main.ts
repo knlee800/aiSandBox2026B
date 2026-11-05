@@ -10,6 +10,7 @@ import type {
   Response as ExpressResponse,
 } from 'express';
 import { AppModule } from './app.module';
+import { resolveHttpCorsOrigin } from './cors/http-cors-origin';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
 
 async function bootstrap() {
@@ -18,9 +19,9 @@ async function bootstrap() {
     rawBody: true,
   });
 
-  // Enable CORS for frontend
+  // Only APP_BASE_URL's origin is allowed.
   app.enableCors({
-    origin: true,
+    origin: resolveHttpCorsOrigin,
     credentials: true,
   });
 

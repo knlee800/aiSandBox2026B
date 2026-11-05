@@ -4,14 +4,14 @@ schemaVersion=1
 maxImplementationLanes=2
 lane3=DISABLED
 lane1.state=ACTIVE
-lane1.taskId=ACCESS-CORS-01
+lane1.taskId=STAGING-DEPLOY-09
 lane2.state=EMPTY
 lane2.taskId=NONE
 governance.owner=NONE
 governance.state=UNOWNED
 saturationSuspended=false
 suspensionReason=NONE
-occupancyHash=sha256:d89c688095a65c4e0e81dcf31582e74865951f6a9a143008ee877f8049acf40a
+occupancyHash=sha256:713a6cd853a82063b730ea00b94801cd4d1db1d4c2ac19806f1bfc3adddf8c5d
 <!-- AISB_OCCUPANCY_V1_END -->
 
 **Parallel Development Architecture:** v1
@@ -379,12 +379,16 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-05. Lane 1 released. STAGING released UNOWNED. Staging runs 3c584a9 with the real refusal messages; runs and provider off; stagingAuthorized false. Checkpoint: docs/STAGING-DEPLOY-08-CHECKPOINT.md.
 
-## ACCESS-CORS-01 — ADMITTED / Lane 1 ACTIVE — 2026-11-06
+## ACCESS-CORS-01 — COMPLETE AND LOCKED / Lane 1 RELEASED — 2026-11-06
 
-**Current status:** ADMITTED, Lane 1, with GATEWAY. Keith approved the draft and admitted it on 2026-11-06. Stage-start: docs/ACCESS-CORS-01-STAGE-START.md. Scope in TASKS_BACKLOG_FULL.md.
+**Current status:** COMPLETE AND LOCKED - 2026-11-06. Lane 1 released. GATEWAY released UNOWNED. HTTP CORS allows only the APP_BASE_URL origin; not deployed (STAGING-DEPLOY-09 admitted). Checkpoint: docs/ACCESS-CORS-01-CHECKPOINT.md.
+
+## STAGING-DEPLOY-09 — ADMITTED / Lane 1 ACTIVE — 2026-11-06
+
+**Current status:** ADMITTED, Lane 1, with STAGING. Keith approved the draft on 2026-11-06 (gateway only; no provider, no credits; run from the host with nothing needed from Keith). Scope in TASKS_BACKLOG_FULL.md.
 
 ## Lane 1
-ACTIVE — ACCESS-CORS-01 — 2026-11-06.
+ACTIVE — STAGING-DEPLOY-09 — 2026-11-06.
 
 ## Lane 2
 EMPTY — Lane 2 released at RUN-LIST-COLLAB-01 COMPLETE AND LOCKED — 2026-11-05.
@@ -395,15 +399,15 @@ DISABLED
 ## Governance owner / state
 UNOWNED — GOV-OS-05 COMPLETE AND LOCKED — 2026-11-05.
 
-Lane 1 ACTIVE: ACCESS-CORS-01 (HTTP CORS limited to the app's own origin; not deployed). Lane 2 EMPTY. ACCESS-LIVE-01 is COMPLETE AND LOCKED: the second-user check passed on staging. STAGING-DEPLOY-08 is COMPLETE AND LOCKED. Staging runs 3c584a9 with knowledge, citations, the validation gate, Socket.IO auth, the audit table, per-user access, daily credit caps, per-plan token limits, test-key lockdown, the signed Agent tool profile and the real refusal messages (Keith admin, harness access and Agent write on); runs and provider off. SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted: ACCESS-01E, ACCESS-01G to ACCESS-01J, LIMITS-PER-USER-01 (registered by GOV-ACCESS-PLAN-01); COLLAB-EVAL-01, COLLAB-FANOUT-01, COLLAB-REVIEWERS-01, COLLAB-LIMITS-ENV-01 (registered 2026-11-05 from Keith's Agent Teams and limits decisions); KNOW-02, KNOW-04, BIZ-01, BIZ-LIVE-01, BIZ-02, BIZ-03, BIZ-NOPROJECT-01, GOV-ARCH-SYNC-01 (registered by GOV-BIZ-KNOWLEDGE-PLAN-01); COLLAB-EDIT-01, COLLAB-CANCEL-01 (registered by GOV-COLLAB-PLAN-01); AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01 (registered by GOV-OS-05); ADMIN-CSRF-01 (registered by ACCESS-01B); AGENT-WRITE-UI-01, HARNESS-WRITE-VETO-01 (registered by ACCESS-01C).
+Lane 1 ACTIVE: STAGING-DEPLOY-09. Lane 2 EMPTY. ACCESS-CORS-01 is COMPLETE AND LOCKED (HTTP CORS limited to the app's own origin) and being deployed by STAGING-DEPLOY-09. ACCESS-LIVE-01 is COMPLETE AND LOCKED: the second-user check passed on staging. STAGING-DEPLOY-08 is COMPLETE AND LOCKED. Staging runs 3c584a9 with knowledge, citations, the validation gate, Socket.IO auth, the audit table, per-user access, daily credit caps, per-plan token limits, test-key lockdown, the signed Agent tool profile and the real refusal messages (Keith admin, harness access and Agent write on); runs and provider off. SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted: ACCESS-01E, ACCESS-01G to ACCESS-01J, LIMITS-PER-USER-01 (registered by GOV-ACCESS-PLAN-01); COLLAB-EVAL-01, COLLAB-FANOUT-01, COLLAB-REVIEWERS-01, COLLAB-LIMITS-ENV-01 (registered 2026-11-05 from Keith's Agent Teams and limits decisions); KNOW-02, KNOW-04, BIZ-01, BIZ-LIVE-01, BIZ-02, BIZ-03, BIZ-NOPROJECT-01, GOV-ARCH-SYNC-01 (registered by GOV-BIZ-KNOWLEDGE-PLAN-01); COLLAB-EDIT-01, COLLAB-CANCEL-01 (registered by GOV-COLLAB-PLAN-01); AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01 (registered by GOV-OS-05); ADMIN-CSRF-01 (registered by ACCESS-01B); AGENT-WRITE-UI-01, HARNESS-WRITE-VETO-01 (registered by ACCESS-01C).
 
 ## Active mutex / resource ownership
 - GOVERNANCE: UNOWNED — GOV-OS-05 lock 2026-11-05.
-- GATEWAY: OWNED by ACCESS-CORS-01 (2026-11-06).
+- GATEWAY: UNOWNED — released at ACCESS-CORS-01 COMPLETE AND LOCKED 2026-11-06.
 - MIGRATION: UNOWNED — released at ACCESS-01B COMPLETE AND LOCKED 2026-11-05.
 - FRONTEND: UNOWNED — released at LIMIT-MESSAGE-01 COMPLETE AND LOCKED 2026-11-05.
 - I18N: UNOWNED — released at LIMIT-MESSAGE-01 COMPLETE AND LOCKED 2026-11-05.
-- STAGING: UNOWNED — released at STAGING-DEPLOY-08 COMPLETE AND LOCKED 2026-11-05 (stagingAuthorized=false).
+- STAGING: OWNED by STAGING-DEPLOY-09 (2026-11-06) (stagingAuthorized=true).
 - PROVIDER-LIVE: UNOWNED — released at ACCESS-LIVE-01 COMPLETE AND LOCKED 2026-11-05 (providerLiveAuthorized=false).
 - CREDIT: UNOWNED — released at ACCESS-LIVE-01 COMPLETE AND LOCKED 2026-11-05 (creditAuthorized=false).
 - ENV: UNOWNED — released at ACCESS-LIVE-01 COMPLETE AND LOCKED 2026-11-05.
