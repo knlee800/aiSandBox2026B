@@ -84234,6 +84234,7 @@ nature=IMPLEMENTATION
 **Named in:** AGENT-COLLAB-00 plan slices AGENT-COLLAB-01 to 04, never registered; PRD.md section 11 (approved FUTURE).
 **Amended 2026-11-05 (GOV-COLLAB-PLAN-01, Option A):** ready only after AGENT-KNOWLEDGE-01 is COMPLETE AND LOCKED and Keith keeps business agents as a goal. "Modify" moved to COLLAB-EDIT-01; defer and escalate are dropped. First slice when chosen: a read-only Chief of Staff role that answers over a knowledge folder, without work objects.
 **Decision, 2026-11-05:** Keith keeps business agents as a goal. Planning with the knowledge base in GOV-BIZ-KNOWLEDGE-PLAN-01.
+**Plan, 2026-11-05:** docs/AGENT-BIZ-KNOWLEDGE-PLAN.md, approved by Keith. Registered children: BIZ-01 (first, after KNOW-02 and KNOW-03), BIZ-LIVE-01, BIZ-02, BIZ-03, BIZ-NOPROJECT-01. Still held here: the Legal Advisor (ready only after BIZ-03 and a PRD change Keith approves) and work objects, the contract scenario and approval categories (ready when Keith approves a first external action).
 
 #### Acceptance criteria
 
@@ -84260,6 +84261,7 @@ nature=IMPLEMENTATION
 **Holds:** The plan slices AGENT-KNOWLEDGE-01 to 04 of AGENT-KNOWLEDGE-00 as one parked umbrella: knowledge scope registry, markdown upload, summaries, and source tracing. Split into bounded slices at admission; this ID is the umbrella.
 **Named in:** AGENT-KNOWLEDGE-00 plan; PRD.md section 8 (shared and specialist knowledge runtime is approved FUTURE).
 **Planning, 2026-11-05:** planned together with AGENT-COLLAB-BIZ-01 in GOV-BIZ-KNOWLEDGE-PLAN-01.
+**Plan, 2026-11-05:** docs/AGENT-BIZ-KNOWLEDGE-PLAN.md, approved by Keith. Registered children: KNOW-01 (first), KNOW-02, KNOW-03, KNOW-04. Dropped for now: prompt-pack injection, key facts, chunking, vectors, connectors, scheduled refresh, sensitive-scope review, knowledge per project.
 
 #### Acceptance criteria
 
@@ -84313,6 +84315,7 @@ nature=IMPLEMENTATION
 **Holds:** (1) Charge Agent runs and replace the global rolling token limit with a real per-user or per-plan limit. (2) Credits that vary by model, and limit which models the Builder offers. (3) Replace the one global write flag, so a write window for one feature does not open Agent writes. (4) Authenticate Socket.IO room joins: join-session joins any session's room. (5) Decide on previous_response_id, which keeps conversations stored at OpenAI and xAI. Split into bounded slices at admission.
 **Named in:** HARNESS-QUOTA-01 checkpoint line 42; HARNESS-PROVIDERS-01 checkpoint lines 73 and 74; COLLAB-LIVE-06 and COLLAB-LIVE-07 checkpoints; AUTH-OWNER-01 checkpoint line 53; HARNESS-LIVE-06 checkpoint line 46.
 **Added 2026-11-05 (GOV-COLLAB-PLAN-01):** (6) the daily spend counter is kept in memory and resets on a restart (COLLAB-GATE-01 checkpoint line 30); it must survive a restart.
+**Added 2026-11-05 (GOV-BIZ-KNOWLEDGE-PLAN-01):** (7) enforce the plan entitlements for knowledge items (maxKnowledgeItemsPerMonth) together with charging.
 
 #### Acceptance criteria
 
@@ -84680,7 +84683,7 @@ taskId=GOV-BIZ-KNOWLEDGE-PLAN-01
 nature=GOVERNANCE
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ACTIVE — 2026-11-05. Governance; no lane. GOVERNANCE is held only during this task's record writes.
+**Status:** COMPLETE AND LOCKED — 2026-11-05. Governance; no lane. Plan approved by Keith: docs/AGENT-BIZ-KNOWLEDGE-PLAN.md. Checkpoint: docs/GOV-BIZ-KNOWLEDGE-PLAN-01-CHECKPOINT.md.
 **Task ID:** GOV-BIZ-KNOWLEDGE-PLAN-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** GOVERNANCE. **Lifecycle:** 2-STEP: this registration; the closing record with the approved plan.
@@ -84693,9 +84696,260 @@ nature=GOVERNANCE
 
 #### Acceptance criteria
 
-- [ ] docs/AGENT-BIZ-KNOWLEDGE-PLAN.md answers every point in Purpose and names the first knowledge slice and the first business-agent slice with their write scopes
-- [ ] Keith approves the plan
-- [ ] Every follow-up the plan names has a disposition
+- [x] docs/AGENT-BIZ-KNOWLEDGE-PLAN.md answers every point in Purpose and names the first knowledge slice and the first business-agent slice with their write scopes
+- [x] Keith approves the plan
+- [x] Every follow-up the plan names has a disposition
+- [x] Not LOCKED by an implementer
+
+### KNOW-01 — Knowledge store and page
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=KNOW-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-BIZ-KNOWLEDGE-PLAN-01; not admitted.
+**Task ID:** KNOW-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith admits it (the plan is approved). Keith decides.
+**Depends on:** none.
+**Primary write scope:** `services/api-gateway/src/knowledge/`, `services/api-gateway/src/entities/`, `services/api-gateway/src/migrations/`, `services/api-gateway/src/app.module.ts`, `frontend/app/`, `frontend/components/knowledge/`, `frontend/components/platform/`, `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`.
+**Mutexes / resources:** GATEWAY, MIGRATION, FRONTEND, I18N. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (new table, routes and page; revert by migration down).
+**saturationClass:** OPTIONAL. **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved the plan on 2026-11-05).
+
+**Holds:** Plan section 6 row KNOW-01: migration and entity knowledge_documents (owner, one scope, title, content, hash, size, soft delete); a server-side scope registry with the ten scope IDs of the frontend registry; login routes to list, upload (paste or .md / .txt), replace and delete with the plan limits, gated by harnessEntitled; a Knowledge page with a link from the platform header; en / zh-TW / zh-CN. Acceptance includes a test that the server scope IDs equal the frontend registry's.
+**Named in:** docs/AGENT-BIZ-KNOWLEDGE-PLAN.md section 6.
+
+#### Acceptance criteria
+
+- [ ] Owner-scoped knowledge documents can be listed, uploaded (paste, .md, .txt), replaced and deleted within the plan limits; only harness-entitled users reach the routes
+- [ ] A test proves the server scope IDs equal the frontend registry's
+- [ ] The Knowledge page and the platform link work in en, zh-TW and zh-CN
+- [ ] The migration runs up and down; gateway and frontend tests, tsc and builds pass
+- [ ] Only files in the write scope change
+- [ ] Not LOCKED by an implementer
+
+### KNOW-02 — Knowledge tools in the Harness
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=KNOW-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-BIZ-KNOWLEDGE-PLAN-01; not admitted.
+**Task ID:** KNOW-02
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition (human):** NOT_READY. Ready when: KNOW-01 is COMPLETE AND LOCKED and Keith admits it. Keith decides.
+**Depends on:** KNOW-01.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved the plan on 2026-11-05).
+
+**Holds:** Plan section 6 row KNOW-02: read-only tools search_knowledge and read_knowledge; worker registration for read-profile jobs carrying knowledgeScopes; internal routes checked against the job's user and scopes; the gateway sets knowledgeScopes from the scope registry. Changes the frozen shared contract HARNESS_ENTITLEMENT_PROOF_V1 (job.types.ts): follows the contract-change protocol, declares it in mutatesSharedContractIds, runs with no other lane depending on it, and re-freezes after.
+**Named in:** docs/AGENT-BIZ-KNOWLEDGE-PLAN.md section 6.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### KNOW-03 — Citations in business answers
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=KNOW-03
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-BIZ-KNOWLEDGE-PLAN-01; not admitted.
+**Task ID:** KNOW-03
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: KNOW-01 is COMPLETE AND LOCKED and Keith admits it. Keith decides.
+**Depends on:** KNOW-01.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved the plan on 2026-11-05).
+
+**Holds:** Plan section 6 row KNOW-03: the source-marker grammar; verification against the run owner's allowed documents; sources and unsourced on the referral result; the Team page shows sources and an Unsourced label; en / zh-TW / zh-CN.
+**Named in:** docs/AGENT-BIZ-KNOWLEDGE-PLAN.md section 6.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### KNOW-04 — Knowledge summaries
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=KNOW-04
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-BIZ-KNOWLEDGE-PLAN-01; not admitted.
+**Task ID:** KNOW-04
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: KNOW-01 is COMPLETE AND LOCKED and Keith decides charging (plan decision 5). Keith decides.
+**Depends on:** KNOW-01.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved the plan on 2026-11-05).
+
+**Holds:** Plan section 6 row KNOW-04: one model call per upload or replace; the summary stored, shown, and returned by search_knowledge; charged as knowledge_summarization.
+**Named in:** docs/AGENT-BIZ-KNOWLEDGE-PLAN.md section 6.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### BIZ-01 — Chief of Staff team
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=BIZ-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-BIZ-KNOWLEDGE-PLAN-01; not admitted.
+**Task ID:** BIZ-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: KNOW-02 and KNOW-03 are COMPLETE AND LOCKED and Keith admits it. Keith decides.
+**Depends on:** KNOW-02, KNOW-03.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved the plan on 2026-11-05).
+
+**Holds:** Plan section 6 row BIZ-01: a server-owned CHIEF_OF_STAFF_TEAM of one read-only role; a team field (coding or chief-of-staff) on the start route; knowledgeScopes on the job; a team picker on the Team page; en / zh-TW / zh-CN. Same approval gate; no hand-offs, external actions or work objects.
+**Named in:** docs/AGENT-BIZ-KNOWLEDGE-PLAN.md section 6.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### BIZ-LIVE-01 — Chief of Staff live check on staging
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=BIZ-LIVE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-BIZ-KNOWLEDGE-PLAN-01; not admitted.
+**Task ID:** BIZ-LIVE-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: BIZ-01 is COMPLETE AND LOCKED and Keith opens a staging window. Keith decides.
+**Depends on:** BIZ-01.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved the plan on 2026-11-05).
+
+**Holds:** Plan section 6 row BIZ-LIVE-01: deploy; Keith uploads three documents and asks the Chief of Staff; citations verified; one unsourced answer labelled; flags off after.
+**Named in:** docs/AGENT-BIZ-KNOWLEDGE-PLAN.md section 6.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### BIZ-02 — Chief of Staff desk in the office
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=BIZ-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-BIZ-KNOWLEDGE-PLAN-01; not admitted.
+**Task ID:** BIZ-02
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: BIZ-LIVE-01 has passed (OFFICE-05 preferred first). Keith decides.
+**Depends on:** BIZ-LIVE-01.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved the plan on 2026-11-05).
+
+**Holds:** Plan section 6 row BIZ-02: the Chief of Staff manifest set active with the PRD change made by the control plane; its runs attributed to its registry desk; a knowledge badge on the desk and panel; en / zh-TW / zh-CN; no approve, reject or upload action in the office.
+**Named in:** docs/AGENT-BIZ-KNOWLEDGE-PLAN.md section 6.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### BIZ-03 — Advisors team: Product Strategy and Technology Advisor
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=BIZ-03
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-BIZ-KNOWLEDGE-PLAN-01; not admitted.
+**Task ID:** BIZ-03
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: BIZ-02 is COMPLETE AND LOCKED and Keith has uploaded documents to the market-data and tech-landscape scopes. Keith decides.
+**Depends on:** BIZ-02.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved the plan on 2026-11-05).
+
+**Holds:** Plan section 6 row BIZ-03: two more read-only roles in an advisors team with the Chief of Staff (hand-offs through the existing tag and gate); registry entries active with the PRD change.
+**Named in:** docs/AGENT-BIZ-KNOWLEDGE-PLAN.md section 6.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### BIZ-NOPROJECT-01 — Business runs without an open project
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=BIZ-NOPROJECT-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-BIZ-KNOWLEDGE-PLAN-01; not admitted.
+**Task ID:** BIZ-NOPROJECT-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: only if BIZ-LIVE-01 finds the project requirement awkward. Keith decides.
+**Depends on:** none.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved the plan on 2026-11-05).
+
+**Holds:** Plan decision 6: a Chief of Staff run today needs an open project session; a project-less run is a larger orchestration change.
+**Named in:** docs/AGENT-BIZ-KNOWLEDGE-PLAN.md section 6.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### GOV-ARCH-SYNC-01 — Sync ARCHITECTURE.md with the built collaboration and office
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-ARCH-SYNC-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-BIZ-KNOWLEDGE-PLAN-01 (control-plane review).
+**Task ID:** GOV-ARCH-SYNC-01
+**Workstream:** CORE (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE. **Lifecycle:** 2-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith chooses it. Keith decides.
+**Primary write scope:** ARCHITECTURE.md, TASKS.md, TASKS_BACKLOG_FULL.md and a checkpoint.
+**Mutexes / resources:** GOVERNANCE.
+
+**Holds:** ARCHITECTURE.md near line 985 lists "Durable orchestration / persisted referrals / shared-project writes" as FUTURE, but COLLAB-INTERNAL-01 and later tasks built persisted collaboration runs and hand-offs; check the related rows and add the office and run-list changes. Documentation only.
+**Named in:** docs/AGENT-BIZ-KNOWLEDGE-PLAN.md reviewer notes.
+
+#### Acceptance criteria
+
+- [ ] ARCHITECTURE.md rows match what is built and locked, each change citing its task
 - [ ] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
@@ -84746,3 +85000,5 @@ One line per follow-up Keith dropped: date, follow-up, where it was named, reaso
 - 2026-11-05 — each agent re-reads files (about 19,000 tokens for one small file), named in the COLLAB-LIVE-04 checkpoint — accepted while only Keith uses it — GOV-COLLAB-PLAN-01.
 - 2026-11-05 — a rejected send-back counts as a round, named in COLLAB-ROUNDS-01 and COLLAB-HANDOFF-RECOVER-01 checkpoints — minor, no observed effect — GOV-COLLAB-PLAN-01.
 - 2026-11-05 — AGENT-COLLAB-00 plan parts: referral types, extra statuses, IdempotencyRecord, per-agent and per-trigger limits, pause and resume, defer, escalate, timeout allow, registry-driven referral and approval rules — replaced by the built design (docs/GOV-COLLAB-PLAN-01-DECISION.md section 3) — GOV-COLLAB-PLAN-01.
+- 2026-11-05 — knowledge plan parts not needed by a read-only Chief of Staff: prompt-pack injection, key facts, chunking, vectors, connectors, scheduled refresh, sensitive-scope review, named in docs/AGENT-BIZ-KNOWLEDGE-PLAN.md section 9 — not needed now; the locked AGENT-KNOWLEDGE-00 plan keeps them as reference; re-propose with evidence — GOV-BIZ-KNOWLEDGE-PLAN-01.
+- 2026-11-05 — knowledge per project, named in docs/AGENT-BIZ-KNOWLEDGE-PLAN.md decision 2 — company knowledge is per account; re-propose if a Technology Advisor needs project notes — GOV-BIZ-KNOWLEDGE-PLAN-01.

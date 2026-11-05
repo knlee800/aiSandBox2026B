@@ -307,9 +307,9 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-05. Lane 1 released. STAGING, PROVIDER-LIVE, CREDIT and ENV released UNOWNED. Staging runs 1aee7ed with the office; reopen fix proven live; flags off. Checkpoint: docs/STAGING-DEPLOY-04-CHECKPOINT.md.
 
-## GOV-BIZ-KNOWLEDGE-PLAN-01 — ACTIVE / NOT AN IMPLEMENTATION LANE — 2026-11-05
+## GOV-BIZ-KNOWLEDGE-PLAN-01 — COMPLETE AND LOCKED / NOT AN IMPLEMENTATION LANE — 2026-11-05
 
-**Current status:** ACTIVE - 2026-11-05. Plan for the knowledge base and the business agents in progress; GOVERNANCE held only during record writes. Keith decided business agents stay a goal. Scope in TASKS_BACKLOG_FULL.md.
+**Current status:** COMPLETE AND LOCKED - 2026-11-05. Plan approved by Keith: docs/AGENT-BIZ-KNOWLEDGE-PLAN.md. KNOW-01 to KNOW-04, BIZ-01, BIZ-LIVE-01, BIZ-02, BIZ-03, BIZ-NOPROJECT-01 and GOV-ARCH-SYNC-01 registered, not admitted. Checkpoint: docs/GOV-BIZ-KNOWLEDGE-PLAN-01-CHECKPOINT.md.
 
 ## Lane 1
 EMPTY — Lane 1 released at STAGING-DEPLOY-04 COMPLETE AND LOCKED — 2026-11-05.
@@ -323,7 +323,7 @@ DISABLED
 ## Governance owner / state
 UNOWNED — GOV-OS-05 COMPLETE AND LOCKED — 2026-11-05.
 
-Both implementation lanes are EMPTY. STAGING-DEPLOY-04 is COMPLETE AND LOCKED; staging runs 1aee7ed with the office, the reopen fix, run durations and collaboration roles; flags off. GOV-BIZ-KNOWLEDGE-PLAN-01 is ACTIVE (governance, no lane). SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted: COLLAB-AUDIT-01, COLLAB-EDIT-01, COLLAB-CANCEL-01 (registered by GOV-COLLAB-PLAN-01); AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01 (registered by GOV-OS-05).
+Both implementation lanes are EMPTY. Staging runs 1aee7ed with the office; flags off. SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted: KNOW-01 (first, Keith admits), KNOW-02, KNOW-03, KNOW-04, BIZ-01, BIZ-LIVE-01, BIZ-02, BIZ-03, BIZ-NOPROJECT-01, GOV-ARCH-SYNC-01 (registered by GOV-BIZ-KNOWLEDGE-PLAN-01); COLLAB-AUDIT-01, COLLAB-EDIT-01, COLLAB-CANCEL-01 (registered by GOV-COLLAB-PLAN-01); AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01 (registered by GOV-OS-05).
 
 ## Active mutex / resource ownership
 - GOVERNANCE: UNOWNED — GOV-OS-05 lock 2026-11-05.
