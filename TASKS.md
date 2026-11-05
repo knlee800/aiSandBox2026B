@@ -299,9 +299,9 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-05. Lane 1 released. FRONTEND and I18N released UNOWNED. The office screen shows the user's agents and their run status; not deployed. Checkpoint: docs/OFFICE-01-CHECKPOINT.md.
 
-## GOV-COLLAB-PLAN-01 — ACTIVE / NOT AN IMPLEMENTATION LANE — 2026-11-05
+## GOV-COLLAB-PLAN-01 — COMPLETE AND LOCKED / NOT AN IMPLEMENTATION LANE — 2026-11-05
 
-**Current status:** ACTIVE - 2026-11-05. Collaboration plan document started by Keith alongside office slice 1; GOVERNANCE held only during record writes. Scope in TASKS_BACKLOG_FULL.md.
+**Current status:** COMPLETE AND LOCKED - 2026-11-05. Keith chose Option A: the built coding team is the collaboration product; COLLAB-AUDIT-01, COLLAB-EDIT-01 and COLLAB-CANCEL-01 registered NOT_READY; business agents stay parked behind AGENT-KNOWLEDGE-01. Decision: docs/GOV-COLLAB-PLAN-01-DECISION.md. Checkpoint: docs/GOV-COLLAB-PLAN-01-CHECKPOINT.md.
 
 ## Lane 1
 EMPTY — Lane 1 released at OFFICE-01 COMPLETE AND LOCKED — 2026-11-05.
@@ -315,7 +315,7 @@ DISABLED
 ## Governance owner / state
 UNOWNED — GOV-OS-05 COMPLETE AND LOCKED — 2026-11-05.
 
-Both implementation lanes are EMPTY. OFFICE-01, USAGE-DURATION-01 and RUN-LIST-COLLAB-01 are COMPLETE AND LOCKED; OFFICE-01 is not deployed. GOV-COLLAB-PLAN-01 is ACTIVE (governance, no lane). SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted, registered by GOV-OS-05: AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01.
+Both implementation lanes are EMPTY. OFFICE-01, USAGE-DURATION-01 and RUN-LIST-COLLAB-01 are COMPLETE AND LOCKED; OFFICE-01 is not deployed. SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted: COLLAB-AUDIT-01, COLLAB-EDIT-01, COLLAB-CANCEL-01 (registered by GOV-COLLAB-PLAN-01); AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01 (registered by GOV-OS-05).
 
 ## Active mutex / resource ownership
 - GOVERNANCE: UNOWNED — GOV-OS-05 lock 2026-11-05.

@@ -84194,7 +84194,7 @@ taskId=GOV-COLLAB-PLAN-01
 nature=GOVERNANCE
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ACTIVE — 2026-11-05. Started by Keith; governance, no lane; GOVERNANCE held only during record writes.
+**Status:** COMPLETE AND LOCKED — 2026-11-05. Governance; no lane. Keith chose Option A: docs/GOV-COLLAB-PLAN-01-DECISION.md. Checkpoint: docs/GOV-COLLAB-PLAN-01-CHECKPOINT.md.
 **Task ID:** GOV-COLLAB-PLAN-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** GOVERNANCE
@@ -84209,9 +84209,9 @@ nature=GOVERNANCE
 
 #### Acceptance criteria
 
-- [ ] The decision document records what was built and what the plan still wants, and Keith's choice on each remaining part
-- [ ] Every follow-up it names has a disposition
-- [ ] Not LOCKED by an implementer
+- [x] The decision document records what was built and what the plan still wants, and Keith's choice on each remaining part
+- [x] Every follow-up it names has a disposition
+- [x] Not LOCKED by an implementer
 
 ### AGENT-COLLAB-BIZ-01 — Business-agent collaboration: work objects, Chief of Staff, approval categories
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -84232,6 +84232,7 @@ nature=IMPLEMENTATION
 
 **Holds:** What is left of AGENT-COLLAB-01 to 04 after the COLLAB tasks: work objects (tickets, decisions, drafts, comments), a functional Chief of Staff and the contract scenario, approval categories, and modify / defer / escalate actions. Split into bounded slices at admission.
 **Named in:** AGENT-COLLAB-00 plan slices AGENT-COLLAB-01 to 04, never registered; PRD.md section 11 (approved FUTURE).
+**Amended 2026-11-05 (GOV-COLLAB-PLAN-01, Option A):** ready only after AGENT-KNOWLEDGE-01 is COMPLETE AND LOCKED and Keith keeps business agents as a goal. "Modify" moved to COLLAB-EDIT-01; defer and escalate are dropped. First slice when chosen: a read-only Chief of Staff role that answers over a knowledge folder, without work objects.
 
 #### Acceptance criteria
 
@@ -84308,6 +84309,7 @@ nature=IMPLEMENTATION
 
 **Holds:** (1) Charge Agent runs and replace the global rolling token limit with a real per-user or per-plan limit. (2) Credits that vary by model, and limit which models the Builder offers. (3) Replace the one global write flag, so a write window for one feature does not open Agent writes. (4) Authenticate Socket.IO room joins: join-session joins any session's room. (5) Decide on previous_response_id, which keeps conversations stored at OpenAI and xAI. Split into bounded slices at admission.
 **Named in:** HARNESS-QUOTA-01 checkpoint line 42; HARNESS-PROVIDERS-01 checkpoint lines 73 and 74; COLLAB-LIVE-06 and COLLAB-LIVE-07 checkpoints; AUTH-OWNER-01 checkpoint line 53; HARNESS-LIVE-06 checkpoint line 46.
+**Added 2026-11-05 (GOV-COLLAB-PLAN-01):** (6) the daily spend counter is kept in memory and resets on a restart (COLLAB-GATE-01 checkpoint line 30); it must survive a restart.
 
 #### Acceptance criteria
 
@@ -84560,6 +84562,81 @@ nature=IMPLEMENTATION
 - [x] Only files in the write scope change
 - [x] Not LOCKED by an implementer
 
+### COLLAB-AUDIT-01 — Store collaboration audit and limit events
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-AUDIT-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-COLLAB-PLAN-01 (Option A); not admitted.
+**Task ID:** COLLAB-AUDIT-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith chooses it, and before ACCESS-READY-01 is admitted. Keith decides.
+**Depends on:** none recorded; see the ready condition.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (the built Team page is gated, active development).
+
+**Holds:** Orchestration audit events (hand-off created, approved, rejected, limit refusals) are kept only in memory and in the log: InMemoryOrchestrationAuditRecorder is the service fallback and no stored recorder is registered. Store them in a table with a migration, keep the event types, and keep them immutable. Rough size S. Nothing visible in the office.
+**Named in:** docs/GOV-COLLAB-PLAN-01-DECISION.md sections 3 and 4; COLLAB-LIVE-01 checkpoint (limit events logged only).
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### COLLAB-EDIT-01 — Edit a hand-off's task on the Team page before approving it
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-EDIT-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-COLLAB-PLAN-01 (Option A); not admitted.
+**Task ID:** COLLAB-EDIT-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith chooses it. Keith decides.
+**Depends on:** none recorded; see the ready condition.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (the built Team page is gated, active development).
+
+**Holds:** The plan's "modify" response: on the Team page the owner can change the task text of a hand-off waiting for approval; the change is stored as that hand-off's prompt, and approve then runs unchanged through the existing guarded route. en / zh-TW / zh-CN. Rough size S to M. In the office (OFFICE-05) the Team desk only links to the Team page, so there is one approval flow.
+**Named in:** docs/GOV-COLLAB-PLAN-01-DECISION.md section 5, Option A item 2; AGENT-COLLAB-00 plan section 23.4.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### COLLAB-CANCEL-01 — Cancel a collaboration run from the Team page
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-CANCEL-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-COLLAB-PLAN-01 (Option A); not admitted.
+**Task ID:** COLLAB-CANCEL-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith chooses it, or OFFICE-07 is chosen (OFFICE-07 then depends on it). Keith decides.
+**Depends on:** none recorded; see the ready condition.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (the built Team page is gated, active development).
+
+**Holds:** A login cancel route and a button on the Team page that call the existing cancelCollaboration in the orchestration service, owner-checked like approve and reject. en / zh-TW / zh-CN. Rough size S. OFFICE-07 later calls the same route.
+**Named in:** docs/GOV-COLLAB-PLAN-01-DECISION.md sections 3 and 5, Option A item 3; RPG-OFFICE-01 plan section 7 (OFFICE-07).
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
@@ -84603,3 +84680,8 @@ One line per follow-up Keith dropped: date, follow-up, where it was named, reaso
 
 - 2026-11-05 — BETA-READY-SMOKE, the pre-beta full-stack live smoke (B3), named in docs/AGENT-PLATFORM-RPG-03B-CHECKPOINT.md — PRIVATE-BETA-E2E-LIVE-11 passed a full-stack live run on 2026-08-23 and the private beta is deferred (2026-10-31); a later rollout plans its own smoke — GOV-OS-05.
 - 2026-11-05 — live checks not exercised in STAGING-DEPLOY-03: a failed step's reason (RUN-ERROR-01), hand-off recovery after a Gateway restart (COLLAB-HANDOFF-RECOVER-01), a refused deploy (OPS-APPEND-IDS-01), named in docs/STAGING-DEPLOY-03-CHECKPOINT.md — unit-tested; the next staging window exercises them — GOV-OS-05.
+- 2026-11-05 — internal collaboration routes trust the service key and take decidedBy from the caller, named in COLLAB-INTERNAL-01 and COLLAB-GATE-01 checkpoints — internal callers only; the login route checks ownership and sets decidedBy itself — GOV-COLLAB-PLAN-01.
+- 2026-11-05 — a repeatable collaboration eval, named in the COLLAB-LIVE checkpoints — one coding team and one user; revisit with ACCESS-READY-01 — GOV-COLLAB-PLAN-01.
+- 2026-11-05 — each agent re-reads files (about 19,000 tokens for one small file), named in the COLLAB-LIVE-04 checkpoint — accepted while only Keith uses it — GOV-COLLAB-PLAN-01.
+- 2026-11-05 — a rejected send-back counts as a round, named in COLLAB-ROUNDS-01 and COLLAB-HANDOFF-RECOVER-01 checkpoints — minor, no observed effect — GOV-COLLAB-PLAN-01.
+- 2026-11-05 — AGENT-COLLAB-00 plan parts: referral types, extra statuses, IdempotencyRecord, per-agent and per-trigger limits, pause and resume, defer, escalate, timeout allow, registry-driven referral and approval rules — replaced by the built design (docs/GOV-COLLAB-PLAN-01-DECISION.md section 3) — GOV-COLLAB-PLAN-01.
