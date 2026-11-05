@@ -11,7 +11,10 @@
       "taskId": "ACCESS-01F",
       "mutexes": ["GATEWAY"],
       "writePaths": [
-        "services/api-gateway/src/safety/"
+        "services/api-gateway/src/safety/",
+        "services/api-gateway/src/orchestration/internal-collaboration.controller.spec.ts",
+        "services/api-gateway/src/startup/configuration.validator.ts",
+        "services/api-gateway/src/startup/configuration.validator.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
@@ -3389,7 +3392,10 @@
       "dependsOn": [],
       "mutexes": ["GATEWAY"],
       "writePaths": [
-        "services/api-gateway/src/safety/"
+        "services/api-gateway/src/safety/",
+        "services/api-gateway/src/orchestration/internal-collaboration.controller.spec.ts",
+        "services/api-gateway/src/startup/configuration.validator.ts",
+        "services/api-gateway/src/startup/configuration.validator.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,

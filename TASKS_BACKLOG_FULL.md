@@ -85271,14 +85271,14 @@ taskId=ACCESS-01F
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-05. Lane 1, GATEWAY. Keith approved the scope and the default caps (500 credits per user, 1,000 platform per day) on 2026-11-05.
+**Status:** ADMITTED — 2026-11-05. Lane 1, GATEWAY. Keith approved the scope and the default caps (500 credits per user, 1,000 platform per day) on 2026-11-05. Write scope expanded by Keith on 2026-11-05 (three files; the first run stopped before editing because removing the USD counter breaks one collaboration test).
 **Task ID:** ACCESS-01F
 **Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
 **Start condition (human):** READY — Keith admitted it on 2026-11-05.
 **Depends on:** none.
-**Primary write scope:** services/api-gateway/src/safety/ (daily credit check, ExecutionSafetyGuard, global-safety-limit service and config, safety.module.ts, specs). Anything else is out of scope; the execute route and the collaboration approval path already pass the caller identity.
+**Primary write scope:** services/api-gateway/src/safety/ (daily credit check, ExecutionSafetyGuard, global-safety-limit service and config, safety.module.ts, specs); scope expanded by Keith on 2026-11-05: services/api-gateway/src/orchestration/internal-collaboration.controller.spec.ts (only the daily-spend test and the setup it needs), services/api-gateway/src/startup/configuration.validator.ts and services/api-gateway/src/startup/configuration.validator.spec.ts (the USD checks become checks of the two credit caps). Anything else is out of scope.
 **Mutexes / resources:** GATEWAY. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (safety module only; no migration; reads credit_deduction_records without writing). **Caps (Keith, 2026-11-05):** MAX_DAILY_CREDITS_PER_USER default 500 and MAX_DAILY_CREDITS_PLATFORM default 1,000 credits per UTC day; no unlimited setting; admin runs count.
 **saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (readiness of the gated features for a second user).
 
