@@ -85428,6 +85428,37 @@ nature=IMPLEMENTATION
 - [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
 - [ ] Not LOCKED by an implementer
 
+### STAGING-DEPLOY-05 — Deploy knowledge, citations, the validation gate and Socket.IO auth
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-05
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED — 2026-11-05. Lane 1, STAGING.
+**Task ID:** STAGING-DEPLOY-05
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (operational run; no code)
+**Lifecycle:** 3-STEP: registration and admission here; backup copy, deploy and Keith's check; separate LOCK record (STAGING-RUNTIME).
+**Start condition (human):** READY — Keith approved the draft (free option) on 2026-11-05.
+**Depends on:** KNOW-01, KNOW-03, COLLAB-GATE-TESTS-01, ACCESS-01A, all COMPLETE AND LOCKED.
+**Primary write scope:** none in the repository beyond records. Host state on ainow-staging-01, the weekly backup copy and off-repo evidence only.
+**Mutexes / resources:** STAGING. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** STAGING-RUNTIME. **Revert isolation:** acceptable (no code; the migration has a down path and a fresh backup).
+**saturationClass:** OPTIONAL
+
+**Problem:** four locked tasks reach staging only by a deploy, and KNOW-01 brings the first migration since the collaboration tables.
+
+**Scope:** (0) copy last night's encrypted backup to C:\Users\knlee\aisb-backups\ with a hash check (the weekly copy due 2026-11-05, and the restore point before the migration). (1) Deploy main at the record commit with the standard block, except that the migration hash is expected to change: CreateKnowledgeDocumentsTable1799000000000 recorded and knowledge_documents present with its two indexes; configuration files unchanged; units active; health 200; existing guard checks 401; /api/knowledge/documents refused without login; /en/knowledge, /zh-TW/knowledge and /zh-CN/knowledge 200; flags stay off. (2) Keith uploads, replaces and deletes a small .md document on the Knowledge page and looks at the Chinese pages. No provider, no credits.
+
+#### Acceptance criteria
+
+- [ ] The weekly backup copy is on Keith's PC and its hash matches the host
+- [ ] Staging runs the deployed commit; health and guard checks pass; configuration files unchanged
+- [ ] The knowledge migration is applied and knowledge_documents exists with its indexes
+- [ ] Keith's Knowledge page check passes in en, zh-TW and zh-CN
+- [ ] Flags off and nothing left open
+- [ ] Keith judgement recorded
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
