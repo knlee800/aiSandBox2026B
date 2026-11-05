@@ -84317,6 +84317,7 @@ nature=IMPLEMENTATION
 **Named in:** HARNESS-QUOTA-01 checkpoint line 42; HARNESS-PROVIDERS-01 checkpoint lines 73 and 74; COLLAB-LIVE-06 and COLLAB-LIVE-07 checkpoints; AUTH-OWNER-01 checkpoint line 53; HARNESS-LIVE-06 checkpoint line 46.
 **Added 2026-11-05 (GOV-COLLAB-PLAN-01):** (6) the daily spend counter is kept in memory and resets on a restart (COLLAB-GATE-01 checkpoint line 30); it must survive a restart.
 **Added 2026-11-05 (GOV-BIZ-KNOWLEDGE-PLAN-01):** (7) enforce the plan entitlements for knowledge items (maxKnowledgeItemsPerMonth) together with charging.
+**Added 2026-11-05 (Keith in chat, Agent Teams assessment and limits):** (8) a Limits page in the admin area: view and edit limits in the browser, applied without a restart, every change logged, later per plan or per user; needs a settings table and admin-only validation. Recommendation (control plane, 2026-11-05): recommended later, with charging, before anyone but Keith uses the platform.
 
 #### Acceptance criteria
 
@@ -84614,6 +84615,7 @@ nature=IMPLEMENTATION
 
 **Holds:** The plan's "modify" response: on the Team page the owner can change the task text of a hand-off waiting for approval; the change is stored as that hand-off's prompt, and approve then runs unchanged through the existing guarded route. en / zh-TW / zh-CN. Rough size S to M. In the office (OFFICE-05) the Team desk only links to the Team page, so there is one approval flow.
 **Named in:** docs/GOV-COLLAB-PLAN-01-DECISION.md section 5, Option A item 2; AGENT-COLLAB-00 plan section 23.4.
+**Widened 2026-11-05 (Keith in chat, Agent Teams assessment and limits):** the lead's hand-off to the writer must state a numbered, file-level plan, which the owner can edit before approving. This supersedes a separate plan-first writer. Recommendation (control plane, 2026-11-05): recommended with COLLAB-EDIT-01; almost no extra cost.
 
 #### Acceptance criteria
 
@@ -84825,6 +84827,7 @@ nature=IMPLEMENTATION
 
 **Holds:** Plan section 6 row BIZ-01: a server-owned CHIEF_OF_STAFF_TEAM of one read-only role; a team field (coding or chief-of-staff) on the start route; knowledgeScopes on the job; a team picker on the Team page; en / zh-TW / zh-CN. Same approval gate; no hand-offs, external actions or work objects.
 **Named in:** docs/AGENT-BIZ-KNOWLEDGE-PLAN.md section 6.
+**Widened 2026-11-05 (Keith in chat, Agent Teams assessment and limits):** build one server-side team registry (coding and chief-of-staff, each with roles, tool profile, model and instructions) instead of a second team constant. Recommendation (control plane, 2026-11-05): recommended; BIZ-01 needs a second team anyway.
 
 #### Acceptance criteria
 
@@ -84900,6 +84903,7 @@ nature=IMPLEMENTATION
 
 **Holds:** Plan section 6 row BIZ-03: two more read-only roles in an advisors team with the Chief of Staff (hand-offs through the existing tag and gate); registry entries active with the PRD change.
 **Named in:** docs/AGENT-BIZ-KNOWLEDGE-PLAN.md section 6.
+**Note 2026-11-05 (Keith in chat, Agent Teams assessment and limits):** ask the advisors in parallel and have the Chief of Staff combine the answers if COLLAB-FANOUT-01 exists; otherwise one at a time. Decided at its design step. Recommendation (control plane, 2026-11-05): parallel advisors only if COLLAB-FANOUT-01 is built.
 
 #### Acceptance criteria
 
@@ -84953,6 +84957,140 @@ nature=GOVERNANCE
 - [ ] ARCHITECTURE.md rows match what is built and locked, each change citing its task
 - [ ] Not LOCKED by an implementer
 
+### COLLAB-GATE-TESTS-01 — Validation gate: no writer-to-reviewer approval on failing or missing tests
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-GATE-TESTS-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered from Keith in chat, Agent Teams assessment and limits; not admitted.
+**Task ID:** COLLAB-GATE-TESTS-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith chooses it (recommended first of these). Keith decides.
+**Depends on:** none.
+**Primary write scope:** `services/api-gateway/src/orchestration/`, `frontend/components/collaboration/`, `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`.
+**Mutexes / resources:** GATEWAY, FRONTEND, I18N. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (one approval check and one page option; no migration).
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (the gated Team page, active development).
+
+**Holds:** The worker records each validation run as passed or failed (harnessValidationRuns), but the orchestration only displays them (orchestration.service.ts lines 446-455). Server-side: approving a writer-to-reviewer hand-off is refused when the writer changed files and its latest validation run failed or did not run, unless the owner ticks an explicit approve-anyway option. One approval flow; deterministic, not the model's word. Refusals become stored events once COLLAB-AUDIT-01 exists (not required). en / zh-TW / zh-CN.
+**Named in:** Keith in chat, Agent Teams assessment and limits.
+**Recommendation (control plane, 2026-11-05):** Recommended: build next. Closes a real gap: test results are shown but never checked. Small; no eval needed.
+
+#### Acceptance criteria
+
+- [ ] Approving a writer-to-reviewer hand-off is refused when the writer changed files and its latest validation run failed or did not run, unless the owner ticks approve-anyway
+- [ ] Writers that changed no files, passing runs and all other hand-offs are unchanged
+- [ ] The Team page shows why approval is blocked and the approve-anyway option in en, zh-TW and zh-CN
+- [ ] Gateway and frontend tests and builds pass
+- [ ] Only files in the write scope change
+- [ ] Not LOCKED by an implementer
+
+### COLLAB-EVAL-01 — A repeatable collaboration eval
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-EVAL-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered from Keith in chat, Agent Teams assessment and limits; not admitted.
+**Task ID:** COLLAB-EVAL-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition (human):** NOT_READY. Ready when: before COLLAB-FANOUT-01 or COLLAB-REVIEWERS-01 is chosen. Keith decides.
+**Depends on:** none.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (the gated Team page, active development).
+
+**Holds:** Planted-bug tasks for the coding team; measure what one reviewer catches and the cost per run, as a baseline for parallel reviewers and fan-out. Reverses the 2026-11-05 drop of the collaboration eval (Keith, 2026-11-05).
+**Named in:** Keith in chat, Agent Teams assessment and limits.
+**Recommendation (control plane, 2026-11-05):** Build only if parallel reviewers are wanted. It is the evidence step for COLLAB-FANOUT-01 and COLLAB-REVIEWERS-01.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### COLLAB-FANOUT-01 — Fan-out hand-offs with one approval and a combine step
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-FANOUT-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered from Keith in chat, Agent Teams assessment and limits; not admitted.
+**Task ID:** COLLAB-FANOUT-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition (human):** NOT_READY. Ready when: COLLAB-EVAL-01 shows a single reviewer misses bugs worth the cost. Keith decides.
+**Depends on:** COLLAB-EVAL-01.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (the gated Team page, active development).
+
+**Holds:** A group of read-only hand-offs approved once as a group, run in parallel, and combined by the lead or the server into one result for the writer or the owner. Shared by COLLAB-REVIEWERS-01 and a parallel BIZ-03. Within the 8-hand-off limit or a raised one.
+**Named in:** Keith in chat, Agent Teams assessment and limits.
+**Recommendation (control plane, 2026-11-05):** Not now. Parked behind COLLAB-EVAL-01; drop it if the eval shows one reviewer is enough.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### COLLAB-REVIEWERS-01 — Parallel read-only reviewers with separate lenses
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-REVIEWERS-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered from Keith in chat, Agent Teams assessment and limits; not admitted.
+**Task ID:** COLLAB-REVIEWERS-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: COLLAB-EVAL-01, COLLAB-FANOUT-01 and COLLAB-LIMITS-ENV-01 are COMPLETE AND LOCKED. Keith decides.
+**Depends on:** COLLAB-EVAL-01, COLLAB-FANOUT-01, COLLAB-LIMITS-ENV-01.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (the gated Team page, active development).
+
+**Holds:** Two or three reviewers (correctness, tests, security) on the same diff through COLLAB-FANOUT-01; five or more agents per run, so the agent limit is raised through COLLAB-LIMITS-ENV-01; about two to three times the review cost per run.
+**Named in:** Keith in chat, Agent Teams assessment and limits.
+**Recommendation (control plane, 2026-11-05):** Not now. Parked behind COLLAB-EVAL-01 and COLLAB-FANOUT-01; costs two to three times the review per run; drop it if the eval shows one reviewer is enough.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### COLLAB-LIMITS-ENV-01 — Collaboration limits as server settings
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-LIMITS-ENV-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered from Keith in chat, Agent Teams assessment and limits; not admitted.
+**Task ID:** COLLAB-LIMITS-ENV-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: COLLAB-REVIEWERS-01 needs more agents, or Keith asks. Keith decides.
+**Depends on:** none.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (the gated Team page, active development).
+
+**Holds:** Move DEFAULT_MAX_AGENTS_PER_COLLABORATION (4), DEFAULT_MAX_REFERRAL_DEPTH (3), MAX_HANDOFFS_PER_RUN (8) and MAX_SEND_BACK_ROUNDS (2) from constants in orchestration.contracts.ts to environment settings with today's values as defaults and a safe ceiling, the pattern HARNESS-QUOTA-01 used for MAX_TOKENS_PER_24H. A limit change then needs a settings edit and restart, not a release.
+**Named in:** Keith in chat, Agent Teams assessment and limits.
+**Recommendation (control plane, 2026-11-05):** Build only when needed: today's limits fit the current team. First trigger: COLLAB-REVIEWERS-01.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
@@ -85003,3 +85141,5 @@ One line per follow-up Keith dropped: date, follow-up, where it was named, reaso
 - 2026-11-05 — AGENT-COLLAB-00 plan parts: referral types, extra statuses, IdempotencyRecord, per-agent and per-trigger limits, pause and resume, defer, escalate, timeout allow, registry-driven referral and approval rules — replaced by the built design (docs/GOV-COLLAB-PLAN-01-DECISION.md section 3) — GOV-COLLAB-PLAN-01.
 - 2026-11-05 — knowledge plan parts not needed by a read-only Chief of Staff: prompt-pack injection, key facts, chunking, vectors, connectors, scheduled refresh, sensitive-scope review, named in docs/AGENT-BIZ-KNOWLEDGE-PLAN.md section 9 — not needed now; the locked AGENT-KNOWLEDGE-00 plan keeps them as reference; re-propose with evidence — GOV-BIZ-KNOWLEDGE-PLAN-01.
 - 2026-11-05 — knowledge per project, named in docs/AGENT-BIZ-KNOWLEDGE-PLAN.md decision 2 — company knowledge is per account; re-propose if a Technology Advisor needs project notes — GOV-BIZ-KNOWLEDGE-PLAN-01.
+- 2026-11-05 — reversal: the collaboration eval dropped above is re-registered as COLLAB-EVAL-01 (Keith, 2026-11-05); that drop line stays as history.
+- 2026-11-05 — Agent Teams ideas not adopted: free agent-to-agent messaging, agents claiming their own tasks, auto-approved plans, named in Keith's Agent Teams assessment request — each weakens the owner's approval as the single control point — Keith in chat.
