@@ -84321,6 +84321,7 @@ nature=IMPLEMENTATION
 **Planning, 2026-11-05:** all eight items planned in GOV-ACCESS-PLAN-01.
 **Plan, 2026-11-05:** docs/ACCESS-READY-01-PLAN.md, approved by Keith with decisions D1 to D7. Registered children: ACCESS-01A (first) to ACCESS-01J, ACCESS-LIVE-01 and LIMITS-PER-USER-01. Second-user checklist: ACCESS-01A, 01B, 01C, 01D, 01F, ACCESS-LIVE-01 and COLLAB-AUDIT-01. The umbrella stays NOT_READY.
 **Added 2026-11-05 (ACCESS-01A):** (9) HTTP CORS in services/api-gateway/src/main.ts allows any origin (origin: true); restrict it to APP_BASE_URL before a second user.
+**D3, 2026-11-06 (Keith):** OpenAI and xAI Agent runs are withheld from anyone other than Keith. No OpenAI or xAI key is added on staging while a second person has access, until ACCESS-01J (stateless continuation, plan S10 option A) is COMPLETE AND LOCKED. This replaces the disclosure recommended in docs/ACCESS-READY-01-PLAN.md; no disclosure text is built. On 2026-11-06 staging has no OpenAI or xAI key (OpenAI is the template placeholder, xAI is empty), so no code change is needed now. With D3 recorded, the second-user checklist in the plan is complete; inviting a person stays Keith's decision.
 
 #### Acceptance criteria
 
@@ -85403,7 +85404,7 @@ nature=IMPLEMENTATION
 **Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
 **saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (readiness of the gated features for a second user).
 
-**Holds:** Plan slice S10: tool-loop continuation with store false, replaying prior function calls and outputs instead of previous_response_id. Before a paid launch; until then the second user is told that OpenAI and xAI keep conversations (Keith's decision D3).
+**Holds:** Plan slice S10: tool-loop continuation with store false, replaying prior function calls and outputs instead of previous_response_id. Needed before anyone other than Keith runs OpenAI or xAI Agent runs, and before a paid launch (Keith's decision D3, 2026-11-06: withhold, not disclose).
 **Named in:** docs/ACCESS-READY-01-PLAN.md.
 
 #### Acceptance criteria
