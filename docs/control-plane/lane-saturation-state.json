@@ -7,13 +7,15 @@
   "governance": {"owner": "NONE", "state": "UNOWNED"},
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "ACCESS-01F",
+      "mutexes": ["GATEWAY"],
+      "writePaths": [
+        "services/api-gateway/src/safety/"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -3379,14 +3381,16 @@
       "taskId": "ACCESS-01F",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "OPTIONAL",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
       "dependsOn": [],
-      "mutexes": [],
-      "writePaths": [],
+      "mutexes": ["GATEWAY"],
+      "writePaths": [
+        "services/api-gateway/src/safety/"
+      ],
       "hotfiles": [],
       "i18n": false,
       "sharedContractIds": [],
@@ -3394,8 +3398,8 @@
       "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "runtimeNeeds": [],
-      "admissionUncertain": true,
-      "writeSetPrecision": "PROVISIONAL"
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
     },
     {
       "taskId": "ACCESS-01G",

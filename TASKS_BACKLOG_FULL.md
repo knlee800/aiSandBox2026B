@@ -85271,15 +85271,15 @@ taskId=ACCESS-01F
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-ACCESS-PLAN-01; not admitted.
+**Status:** ADMITTED — 2026-11-05. Lane 1, GATEWAY. Keith approved the scope and the default caps (500 credits per user, 1,000 platform per day) on 2026-11-05.
 **Task ID:** ACCESS-01F
 **Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition (human):** NOT_READY. Ready when: Keith admits it. Keith decides.
+**Start condition (human):** READY — Keith admitted it on 2026-11-05.
 **Depends on:** none.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
-**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**Primary write scope:** services/api-gateway/src/safety/ (daily credit check, ExecutionSafetyGuard, global-safety-limit service and config, safety.module.ts, specs). Anything else is out of scope; the execute route and the collaboration approval path already pass the caller identity.
+**Mutexes / resources:** GATEWAY. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (safety module only; no migration; reads credit_deduction_records without writing). **Caps (Keith, 2026-11-05):** MAX_DAILY_CREDITS_PER_USER default 500 and MAX_DAILY_CREDITS_PLATFORM default 1,000 credits per UTC day; no unlimited setting; admin runs count.
 **saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (readiness of the gated features for a second user).
 
 **Holds:** Plan slice S6: replace the in-memory counter, which nothing in production records into, with daily platform and per-user caps in credits summed from credit_deduction_records; survives restarts by construction.
@@ -85287,7 +85287,14 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Platform and per-user daily credit totals are summed from credit_deduction_records (requested_credits since UTC midnight); a run is refused with 429 when either cap is reached
+- [ ] Both caps come from MAX_DAILY_CREDITS_PER_USER and MAX_DAILY_CREDITS_PLATFORM with defaults 500 and 1,000; there is no unlimited setting
+- [ ] The in-memory USD counter, recordExecutionCost and the MAX_DAILY_SPEND_SOFT_USD and MAX_DAILY_SPEND_HARD_USD settings are removed; rate limits, max tokens and kill switches are unchanged
+- [ ] The execute route and the collaboration approval path both apply the caps using the identity already present
+- [ ] A database read error refuses the run (fail closed)
+- [ ] Tests cover under the cap, platform cap reached, user cap reached, the UTC day boundary, a read error and the collaboration path
+- [ ] Gateway npm test shows only the 14 known runtime-only smoke.integration failures; npm run build passes
 - [ ] Not LOCKED by an implementer
 
 ### ACCESS-01G — Platform settings table and admin settings routes
