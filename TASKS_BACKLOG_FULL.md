@@ -84319,6 +84319,7 @@ nature=IMPLEMENTATION
 **Added 2026-11-05 (GOV-BIZ-KNOWLEDGE-PLAN-01):** (7) enforce the plan entitlements for knowledge items (maxKnowledgeItemsPerMonth) together with charging.
 **Added 2026-11-05 (Keith in chat, Agent Teams assessment and limits):** (8) a Limits page in the admin area: view and edit limits in the browser, applied without a restart, every change logged, later per plan or per user; needs a settings table and admin-only validation. Recommendation (control plane, 2026-11-05): recommended later, with charging, before anyone but Keith uses the platform.
 **Planning, 2026-11-05:** all eight items planned in GOV-ACCESS-PLAN-01.
+**Plan, 2026-11-05:** docs/ACCESS-READY-01-PLAN.md, approved by Keith with decisions D1 to D7. Registered children: ACCESS-01A (first) to ACCESS-01J, ACCESS-LIVE-01 and LIMITS-PER-USER-01. Second-user checklist: ACCESS-01A, 01B, 01C, 01D, 01F, ACCESS-LIVE-01 and COLLAB-AUDIT-01. The umbrella stays NOT_READY.
 
 #### Acceptance criteria
 
@@ -84807,6 +84808,7 @@ nature=IMPLEMENTATION
 
 **Holds:** Plan section 6 row KNOW-04: one model call per upload or replace; the summary stored, shown, and returned by search_knowledge; charged as knowledge_summarization.
 **Named in:** docs/AGENT-BIZ-KNOWLEDGE-PLAN.md section 6.
+**Note 2026-11-05 (GOV-ACCESS-PLAN-01):** the knowledge charging path comes from ACCESS-01I; KNOW-04 reuses it.
 
 #### Acceptance criteria
 
@@ -85091,6 +85093,7 @@ nature=IMPLEMENTATION
 **Holds:** Move DEFAULT_MAX_AGENTS_PER_COLLABORATION (4), DEFAULT_MAX_REFERRAL_DEPTH (3), MAX_HANDOFFS_PER_RUN (8) and MAX_SEND_BACK_ROUNDS (2) from constants in orchestration.contracts.ts to environment settings with today's values as defaults and a safe ceiling, the pattern HARNESS-QUOTA-01 used for MAX_TOKENS_PER_24H. A limit change then needs a settings edit and restart, not a release.
 **Named in:** Keith in chat, Agent Teams assessment and limits.
 **Recommendation (control plane, 2026-11-05):** Build only when needed: today's limits fit the current team. First trigger: COLLAB-REVIEWERS-01.
+**Superseded 2026-11-05 (GOV-ACCESS-PLAN-01, Keith):** by ACCESS-01G, where the four limits become settings keys. Do not admit; it closes when ACCESS-01G locks.
 
 #### Acceptance criteria
 
@@ -85103,7 +85106,7 @@ taskId=GOV-ACCESS-PLAN-01
 nature=GOVERNANCE
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ACTIVE — 2026-11-05. Governance; no lane. GOVERNANCE is held only during this task's record writes.
+**Status:** COMPLETE AND LOCKED — 2026-11-05. Governance; no lane. Plan approved by Keith: docs/ACCESS-READY-01-PLAN.md. Checkpoint: docs/GOV-ACCESS-PLAN-01-CHECKPOINT.md.
 **Task ID:** GOV-ACCESS-PLAN-01
 **Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
 **Nature:** GOVERNANCE. **Lifecycle:** 2-STEP: this registration; the closing record with the approved plan.
@@ -85116,9 +85119,312 @@ nature=GOVERNANCE
 
 #### Acceptance criteria
 
-- [ ] docs/ACCESS-READY-01-PLAN.md answers every point in Purpose and names the first slice with its write scope
-- [ ] Keith approves the plan
-- [ ] Every follow-up the plan names has a disposition
+- [x] docs/ACCESS-READY-01-PLAN.md answers every point in Purpose and names the first slice with its write scope
+- [x] Keith approves the plan
+- [x] Every follow-up the plan names has a disposition
+- [x] Not LOCKED by an implementer
+
+### ACCESS-01A — Authenticate Socket.IO and owner-check room joins
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=ACCESS-01A
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-ACCESS-PLAN-01; not admitted.
+**Task ID:** ACCESS-01A
+**Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith admits it (first slice; no decision needed). Keith decides.
+**Depends on:** none.
+**Primary write scope:** `services/api-gateway/src/websocket/` (reads services/api-gateway/src/auth/ and the session service without changing them).
+**Mutexes / resources:** GATEWAY. **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (one gateway module; no migration).
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (readiness of the gated features for a second user).
+
+**Holds:** Plan slice S1 (first): authenticate the Socket.IO handshake from the session cookie, owner-check join-session against the session's owner, set CORS to the configured origin, and keep a test that /api/events/* stays behind the global internal-service guard. Closes an open cross-user leak; needs no decision.
+**Named in:** docs/ACCESS-READY-01-PLAN.md.
+
+#### Acceptance criteria
+
+- [ ] A Socket.IO connection without a valid session is refused, and join-session for a session the caller does not own is refused; the owner can join
+- [ ] CORS for the socket uses the configured origin, not any origin
+- [ ] A test proves POST /api/events/* stays behind the internal-service guard
+- [ ] Gateway tests and build pass; only files in the write scope change
+- [ ] Not LOCKED by an implementer
+
+### ACCESS-01B — Per-user entitlements table replacing the env allowlist
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=ACCESS-01B
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-ACCESS-PLAN-01; not admitted.
+**Task ID:** ACCESS-01B
+**Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith admits it. Keith decides.
+**Depends on:** none.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (readiness of the gated features for a second user).
+
+**Holds:** Plan slice S2: migration user_entitlements (harness_enabled, agent_write_enabled, plan_override, daily_token_limit_override, updated_by, updated_at); harnessEntitled read from the table; an admin-only set route; two-step cutover from AGENT_HARNESS_BROWSER_SESSION_USER_IDS (seed before removing); every change audited.
+**Named in:** docs/ACCESS-READY-01-PLAN.md.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### ACCESS-01C — Signed Agent tool profile; the write flag becomes a kill switch
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=ACCESS-01C
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-ACCESS-PLAN-01; not admitted.
+**Task ID:** ACCESS-01C
+**Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition (human):** NOT_READY. Ready when: its dependencies are COMPLETE AND LOCKED and Keith admits it. Keith decides.
+**Depends on:** ACCESS-01B.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (readiness of the gated features for a second user).
+
+**Holds:** Plan slice S3: the gateway signs a tool profile for Agent runs and the worker registers write tools only when the signed profile allows and the process flag is on. Changes the frozen shared contract HARNESS_ENTITLEMENT_PROOF_V1: contract-change protocol, runs alone, never overlapping KNOW-02.
+**Named in:** docs/ACCESS-READY-01-PLAN.md.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### ACCESS-01D — Per-plan daily token limit and a run-sized balance check
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=ACCESS-01D
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-ACCESS-PLAN-01; not admitted.
+**Task ID:** ACCESS-01D
+**Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: its dependencies are COMPLETE AND LOCKED and Keith admits it. Keith decides.
+**Depends on:** ACCESS-01B.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (readiness of the gated features for a second user).
+
+**Holds:** Plan slice S4: dailyTokenLimit per plan with a per-user override; Agent runs estimated at the harness run budget; CreditBalanceGuard requires a balance that covers the estimate; TokenQuotaGuard gains the admin bypass.
+**Named in:** docs/ACCESS-READY-01-PLAN.md.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### ACCESS-01E — Credits by model and an offered-models list
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=ACCESS-01E
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-ACCESS-PLAN-01; not admitted.
+**Task ID:** ACCESS-01E
+**Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith admits it. Keith decides.
+**Depends on:** none.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (readiness of the gated features for a second user).
+
+**Holds:** Plan slice S5: per-model credit multipliers on the 1-credit-per-1K base with a rate-version bump, a gateway list of models offered to the caller's plan, the frontend catalogue driven by it, and refusal of models not offered. Paid-launch item.
+**Named in:** docs/ACCESS-READY-01-PLAN.md.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### ACCESS-01F — Daily spend caps counted from the credit ledger
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=ACCESS-01F
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-ACCESS-PLAN-01; not admitted.
+**Task ID:** ACCESS-01F
+**Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith admits it. Keith decides.
+**Depends on:** none.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (readiness of the gated features for a second user).
+
+**Holds:** Plan slice S6: replace the in-memory counter, which nothing in production records into, with daily platform and per-user caps in credits summed from credit_deduction_records; survives restarts by construction.
+**Named in:** docs/ACCESS-READY-01-PLAN.md.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### ACCESS-01G — Platform settings table and admin settings routes
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=ACCESS-01G
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-ACCESS-PLAN-01; not admitted.
+**Task ID:** ACCESS-01G
+**Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith admits it. Keith decides.
+**Depends on:** none.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (readiness of the gated features for a second user).
+
+**Holds:** Plan slice S7: migrations platform_settings and an append-only audit; SettingsService with a short cache, a typed key list (per-plan token limits, daily caps, offered models, the four collaboration limits) and server-side ranges; admin-only GET/PUT routes. Supersedes COLLAB-LIMITS-ENV-01. The admin-assignment procedure is set at its design step. Paid-launch item.
+**Named in:** docs/ACCESS-READY-01-PLAN.md.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### ACCESS-01H — Admin Limits page
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=ACCESS-01H
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-ACCESS-PLAN-01; not admitted.
+**Task ID:** ACCESS-01H
+**Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: its dependencies are COMPLETE AND LOCKED and Keith admits it. Keith decides.
+**Depends on:** ACCESS-01G.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (readiness of the gated features for a second user).
+
+**Holds:** Plan slice S8: a Limits page in the admin area for the settings keys, en / zh-TW / zh-CN, then Keith's browser check. Paid-launch item.
+**Named in:** docs/ACCESS-READY-01-PLAN.md.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### ACCESS-01I — Knowledge entitlements and ingestion charge
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=ACCESS-01I
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-ACCESS-PLAN-01; not admitted.
+**Task ID:** ACCESS-01I
+**Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: its dependencies are COMPLETE AND LOCKED and Keith admits it. Keith decides.
+**Depends on:** ACCESS-01B.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (readiness of the gated features for a second user).
+
+**Holds:** Plan slice S9: an EntitlementService resolving plan and overrides; knowledge create and replace check ingestion and the monthly item limit; a changed document charges knowledge_ingestion idempotently. KNOW-04 reuses this path. Paid-launch item.
+**Named in:** docs/ACCESS-READY-01-PLAN.md.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### ACCESS-01J — Stateless OpenAI and xAI continuation
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=ACCESS-01J
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-ACCESS-PLAN-01; not admitted.
+**Task ID:** ACCESS-01J
+**Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith admits it. Keith decides.
+**Depends on:** none.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (readiness of the gated features for a second user).
+
+**Holds:** Plan slice S10: tool-loop continuation with store false, replaying prior function calls and outputs instead of previous_response_id. Before a paid launch; until then the second user is told that OpenAI and xAI keep conversations (Keith's decision D3).
+**Named in:** docs/ACCESS-READY-01-PLAN.md.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### ACCESS-LIVE-01 — Second-user check on staging
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=ACCESS-LIVE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-ACCESS-PLAN-01; not admitted.
+**Task ID:** ACCESS-LIVE-01
+**Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP.
+**Start condition (human):** NOT_READY. Ready when: its dependencies are COMPLETE AND LOCKED and Keith admits it. Keith decides.
+**Depends on:** ACCESS-01A, ACCESS-01B, ACCESS-01C, ACCESS-01D, ACCESS-01F, COLLAB-AUDIT-01.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (readiness of the gated features for a second user).
+
+**Holds:** Plan slice S11: a second test account on staging: Agent read-only works, Agent write refused, limit and cap refusals, foreign socket join refused, and whether port 4000 is reachable from outside.
+**Named in:** docs/ACCESS-READY-01-PLAN.md.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### LIMITS-PER-USER-01 — Per-user numeric limit overrides in the admin area
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=LIMITS-PER-USER-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-ACCESS-PLAN-01; not admitted.
+**Task ID:** LIMITS-PER-USER-01
+**Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: its dependencies are COMPLETE AND LOCKED and Keith admits it. Keith decides.
+**Depends on:** ACCESS-01G, ACCESS-01H.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (readiness of the gated features for a second user).
+
+**Holds:** Per-user overrides of numeric limits beyond the columns in ACCESS-01B, edited on the Limits page.
+**Named in:** docs/ACCESS-READY-01-PLAN.md.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
 - [ ] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
@@ -85173,3 +85479,4 @@ One line per follow-up Keith dropped: date, follow-up, where it was named, reaso
 - 2026-11-05 — knowledge per project, named in docs/AGENT-BIZ-KNOWLEDGE-PLAN.md decision 2 — company knowledge is per account; re-propose if a Technology Advisor needs project notes — GOV-BIZ-KNOWLEDGE-PLAN-01.
 - 2026-11-05 — reversal: the collaboration eval dropped above is re-registered as COLLAB-EVAL-01 (Keith, 2026-11-05); that drop line stays as history.
 - 2026-11-05 — Agent Teams ideas not adopted: free agent-to-agent messaging, agents claiming their own tasks, auto-approved plans, named in Keith's Agent Teams assessment request — each weakens the owner's approval as the single control point — Keith in chat.
+- 2026-11-05 — frontend/components/Timeline.tsx dead socket prop, named in docs/ACCESS-READY-01-PLAN.md section 9 — unused component; ACCESS-01A makes a stray socket harmless — GOV-ACCESS-PLAN-01.

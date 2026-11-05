@@ -323,9 +323,9 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-05. Lane 1 released. GATEWAY, FRONTEND and I18N released UNOWNED. The Team page shows verified knowledge sources for each answer; not deployed. Checkpoint: docs/KNOW-03-CHECKPOINT.md.
 
-## GOV-ACCESS-PLAN-01 — ACTIVE / NOT AN IMPLEMENTATION LANE — 2026-11-05
+## GOV-ACCESS-PLAN-01 — COMPLETE AND LOCKED / NOT AN IMPLEMENTATION LANE — 2026-11-05
 
-**Current status:** ACTIVE - 2026-11-05. Plan for ACCESS-READY-01 in progress; GOVERNANCE held only during record writes. Scope in TASKS_BACKLOG_FULL.md.
+**Current status:** COMPLETE AND LOCKED - 2026-11-05. Plan approved by Keith: docs/ACCESS-READY-01-PLAN.md. ACCESS-01A (first) to ACCESS-01J, ACCESS-LIVE-01 and LIMITS-PER-USER-01 registered, not admitted. Checkpoint: docs/GOV-ACCESS-PLAN-01-CHECKPOINT.md.
 
 ## Lane 1
 EMPTY — Lane 1 released at KNOW-03 COMPLETE AND LOCKED — 2026-11-05.
@@ -339,7 +339,7 @@ DISABLED
 ## Governance owner / state
 UNOWNED — GOV-OS-05 COMPLETE AND LOCKED — 2026-11-05.
 
-Both implementation lanes are EMPTY. GOV-ACCESS-PLAN-01 is ACTIVE (governance, no lane). KNOW-03, COLLAB-GATE-TESTS-01 and KNOW-01 are COMPLETE AND LOCKED, not deployed. Staging runs 1aee7ed with the office; flags off. SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted: COLLAB-EVAL-01, COLLAB-FANOUT-01, COLLAB-REVIEWERS-01, COLLAB-LIMITS-ENV-01 (registered 2026-11-05 from Keith's Agent Teams and limits decisions); KNOW-02, KNOW-04, BIZ-01, BIZ-LIVE-01, BIZ-02, BIZ-03, BIZ-NOPROJECT-01, GOV-ARCH-SYNC-01 (registered by GOV-BIZ-KNOWLEDGE-PLAN-01); COLLAB-AUDIT-01, COLLAB-EDIT-01, COLLAB-CANCEL-01 (registered by GOV-COLLAB-PLAN-01); AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01 (registered by GOV-OS-05).
+Both implementation lanes are EMPTY. KNOW-03, COLLAB-GATE-TESTS-01 and KNOW-01 are COMPLETE AND LOCKED, not deployed. Staging runs 1aee7ed with the office; flags off. SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted: ACCESS-01A (first of the second-user checklist) to ACCESS-01J, ACCESS-LIVE-01, LIMITS-PER-USER-01 (registered by GOV-ACCESS-PLAN-01); COLLAB-EVAL-01, COLLAB-FANOUT-01, COLLAB-REVIEWERS-01, COLLAB-LIMITS-ENV-01 (registered 2026-11-05 from Keith's Agent Teams and limits decisions); KNOW-02, KNOW-04, BIZ-01, BIZ-LIVE-01, BIZ-02, BIZ-03, BIZ-NOPROJECT-01, GOV-ARCH-SYNC-01 (registered by GOV-BIZ-KNOWLEDGE-PLAN-01); COLLAB-AUDIT-01, COLLAB-EDIT-01, COLLAB-CANCEL-01 (registered by GOV-COLLAB-PLAN-01); AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01 (registered by GOV-OS-05).
 
 ## Active mutex / resource ownership
 - GOVERNANCE: UNOWNED — GOV-OS-05 lock 2026-11-05.
