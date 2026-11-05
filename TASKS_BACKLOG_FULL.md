@@ -85548,7 +85548,7 @@ taskId=STATIC-KEYS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-05. Lane 1, GATEWAY. Keith approved the scope on 2026-11-05: static keys only when NODE_ENV is test or development.
+**Status:** COMPLETE AND LOCKED — 2026-11-05. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY released. Static test API keys accepted only when NODE_ENV is test or development; not deployed. Checkpoint: docs/STATIC-KEYS-01-CHECKPOINT.md.
 **Task ID:** STATIC-KEYS-01
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -85565,12 +85565,12 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] The static keys are accepted only when NODE_ENV is test or development; with any other value or unset, a static key gets 403 Invalid API key, the same as an unknown key
-- [ ] Database keys work the same in every environment
-- [ ] No key value is logged
-- [ ] Tests cover each static key, including test-harness-api-key, refused under production and unset and accepted under test and development, and a database key accepted under production
-- [ ] Gateway npm test shows only the 14 known runtime-only smoke.integration failures; npm run build passes
-- [ ] Not LOCKED by an implementer
+- [x] The static keys are accepted only when NODE_ENV is test or development; with any other value or unset, a static key gets 403 Invalid API key, the same as an unknown key
+- [x] Database keys work the same in every environment
+- [x] No key value is logged
+- [x] Tests cover each static key, including test-harness-api-key, refused under production and unset and accepted under test and development, and a database key accepted under production
+- [x] Gateway npm test shows only the 14 known runtime-only smoke.integration failures; npm run build passes
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

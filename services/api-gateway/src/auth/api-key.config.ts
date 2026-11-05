@@ -69,6 +69,15 @@ export class ApiKeyConfig {
   ]);
 
   /**
+   * Static keys are a fallback only when NODE_ENV is exactly "test" or "development".
+   * Read on every call so the decision is the request-time environment, not the value at import.
+   */
+  static staticKeysAllowed(): boolean {
+    const nodeEnv = process.env.NODE_ENV;
+    return nodeEnv === 'test' || nodeEnv === 'development';
+  }
+
+  /**
    * Validate API key and resolve identity
    *
    * @param apiKey - API key to validate

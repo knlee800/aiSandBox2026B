@@ -257,4 +257,168 @@ describe('ApiKeyAuthGuard', () => {
       expect(mockRequest.apiKeyIdentity.isInternal).toBe(false);
     });
   });
+
+  describe('static key environment gate', () => {
+    const originalNodeEnv = process.env.NODE_ENV;
+    let validateSpy: jest.SpyInstance;
+
+    const staticKeys = [
+      {
+        key: 'test-harness-api-key',
+        identity: {
+          userId: 'user-harness',
+          apiKeyId: 'key-harness',
+          scopes: ['ai:execute', 'ai:harness'],
+          isInternal: true,
+          harnessEntitled: true,
+        },
+      },
+      {
+        key: 'test-api-key-user-1',
+        identity: {
+          userId: 'user-1',
+          apiKeyId: 'key-1',
+          scopes: ['ai:execute'],
+          isInternal: true,
+        },
+      },
+      {
+        key: 'test-api-key-user-2',
+        identity: {
+          userId: 'user-2',
+          apiKeyId: 'key-2',
+          scopes: ['ai:execute'],
+          isEarlyAccess: true,
+        },
+      },
+      {
+        key: 'valid-api-key',
+        identity: {
+          userId: 'test-user',
+          apiKeyId: 'key-test',
+          scopes: ['ai:execute'],
+        },
+      },
+    ];
+
+    beforeEach(() => {
+      validateSpy = jest.spyOn(ApiKeyConfig, 'validateApiKey');
+    });
+
+    afterEach(() => {
+      validateSpy.mockRestore();
+      if (originalNodeEnv === undefined) {
+        delete process.env.NODE_ENV;
+      } else {
+        process.env.NODE_ENV = originalNodeEnv;
+      }
+    });
+
+    function useNodeEnv(nodeEnv: string | undefined): void {
+      if (nodeEnv === undefined) {
+        delete process.env.NODE_ENV;
+      } else {
+        process.env.NODE_ENV = nodeEnv;
+      }
+    }
+
+    async function expectStaticKeyRefused(key: string): Promise<void> {
+      mockApiKeyService.validateApiKey.mockResolvedValue(null);
+      const context = createMockExecutionContext(`Bearer ${key}`);
+
+      let thrown: unknown;
+      try {
+        await guard.canActivate(context);
+      } catch (error) {
+        thrown = error;
+      }
+
+      expect(thrown).toBeInstanceOf(ForbiddenException);
+      expect((thrown as ForbiddenException).message).toBe('Invalid API key');
+      expect((thrown as ForbiddenException).getStatus()).toBe(403);
+      expect(validateSpy).not.toHaveBeenCalled();
+    }
+
+    async function expectStaticKeyAccepted(
+      key: string,
+      identity: (typeof staticKeys)[number]['identity'],
+    ): Promise<void> {
+      mockApiKeyService.validateApiKey.mockResolvedValue(null);
+      const mockRequest: any = { headers: { authorization: `Bearer ${key}` } };
+      const context = {
+        switchToHttp: () => ({
+          getRequest: () => mockRequest,
+        }),
+      } as ExecutionContext;
+
+      const result = await guard.canActivate(context);
+
+      expect(result).toBe(true);
+      expect(mockRequest.apiKeyIdentity).toEqual(identity);
+      expect(validateSpy).toHaveBeenCalledTimes(1);
+      expect(validateSpy).toHaveBeenCalledWith(key);
+    }
+
+    it.each(staticKeys)(
+      'refuses $key when NODE_ENV is production',
+      async ({ key }) => {
+        useNodeEnv('production');
+        await expectStaticKeyRefused(key);
+      },
+    );
+
+    it.each(staticKeys)('refuses $key when NODE_ENV is unset', async ({ key }) => {
+      useNodeEnv(undefined);
+      await expectStaticKeyRefused(key);
+    });
+
+    it.each(staticKeys)('accepts $key when NODE_ENV is test', async ({ key, identity }) => {
+      useNodeEnv('test');
+      await expectStaticKeyAccepted(key, identity);
+    });
+
+    it.each(staticKeys)(
+      'accepts $key when NODE_ENV is development',
+      async ({ key, identity }) => {
+        useNodeEnv('development');
+        await expectStaticKeyAccepted(key, identity);
+      },
+    );
+
+    it('refuses valid-api-key when NODE_ENV is any other value', async () => {
+      useNodeEnv('staging');
+      await expectStaticKeyRefused('valid-api-key');
+    });
+
+    it('accepts a database key when NODE_ENV is production', async () => {
+      useNodeEnv('production');
+      const mockRequest: any = {
+        headers: { authorization: 'Bearer db-production-key' },
+      };
+      const context = {
+        switchToHttp: () => ({
+          getRequest: () => mockRequest,
+        }),
+      } as ExecutionContext;
+
+      mockApiKeyService.validateApiKey.mockResolvedValue({
+        userId: 'db-user',
+        apiKeyId: 'db-key-id',
+        scopes: ['ai:execute'],
+        isInternal: false,
+      });
+
+      const result = await guard.canActivate(context);
+
+      expect(result).toBe(true);
+      expect(mockRequest.apiKeyIdentity).toEqual({
+        userId: 'db-user',
+        apiKeyId: 'db-key-id',
+        scopes: ['ai:execute'],
+        isInternal: false,
+        harnessEntitled: false,
+      });
+      expect(validateSpy).not.toHaveBeenCalled();
+    });
+  });
 });

@@ -3,15 +3,15 @@
 schemaVersion=1
 maxImplementationLanes=2
 lane3=DISABLED
-lane1.state=ACTIVE
-lane1.taskId=STATIC-KEYS-01
+lane1.state=EMPTY
+lane1.taskId=NONE
 lane2.state=EMPTY
 lane2.taskId=NONE
 governance.owner=NONE
 governance.state=UNOWNED
 saturationSuspended=false
 suspensionReason=NONE
-occupancyHash=sha256:075dea4cce111ab319ce9a51b9db652d279c05d891e06f57d7729504f5c35686
+occupancyHash=sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d
 <!-- AISB_OCCUPANCY_V1_END -->
 
 **Parallel Development Architecture:** v1
@@ -355,12 +355,12 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-05. Lane 1 released. GATEWAY released UNOWNED. Per-plan daily token limits with per-user override, admin skip, Agent runs estimated at 60,000 and a balance that covers the estimate; not deployed. Checkpoint: docs/ACCESS-01D-CHECKPOINT.md.
 
-## STATIC-KEYS-01 — ADMITTED / Lane 1 ACTIVE — 2026-11-05
+## STATIC-KEYS-01 — COMPLETE AND LOCKED / Lane 1 RELEASED — 2026-11-05
 
-**Current status:** ADMITTED, Lane 1, with GATEWAY. Keith approved the scope and admitted it on 2026-11-05. Scope in TASKS_BACKLOG_FULL.md.
+**Current status:** COMPLETE AND LOCKED - 2026-11-05. Lane 1 released. GATEWAY released UNOWNED. Static test API keys accepted only when NODE_ENV is test or development; not deployed. Checkpoint: docs/STATIC-KEYS-01-CHECKPOINT.md.
 
 ## Lane 1
-ACTIVE — STATIC-KEYS-01 — 2026-11-05.
+EMPTY — Lane 1 released at STATIC-KEYS-01 COMPLETE AND LOCKED — 2026-11-05.
 
 ## Lane 2
 EMPTY — Lane 2 released at RUN-LIST-COLLAB-01 COMPLETE AND LOCKED — 2026-11-05.
@@ -371,11 +371,11 @@ DISABLED
 ## Governance owner / state
 UNOWNED — GOV-OS-05 COMPLETE AND LOCKED — 2026-11-05.
 
-Lane 1 ACTIVE: STATIC-KEYS-01. Lane 2 EMPTY. ACCESS-01F and ACCESS-01D are COMPLETE AND LOCKED (daily credit caps; per-plan daily token limits and balance check; not deployed). Staging runs 4d08d26 with knowledge, citations, the validation gate, Socket.IO auth, the audit table and per-user access (Keith admin, harness access on); runs and provider off. SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted: ACCESS-01C, ACCESS-01E, ACCESS-01G to ACCESS-01J, ACCESS-LIVE-01, LIMITS-PER-USER-01 (registered by GOV-ACCESS-PLAN-01); COLLAB-EVAL-01, COLLAB-FANOUT-01, COLLAB-REVIEWERS-01, COLLAB-LIMITS-ENV-01 (registered 2026-11-05 from Keith's Agent Teams and limits decisions); KNOW-02, KNOW-04, BIZ-01, BIZ-LIVE-01, BIZ-02, BIZ-03, BIZ-NOPROJECT-01, GOV-ARCH-SYNC-01 (registered by GOV-BIZ-KNOWLEDGE-PLAN-01); COLLAB-EDIT-01, COLLAB-CANCEL-01 (registered by GOV-COLLAB-PLAN-01); AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01 (registered by GOV-OS-05); ADMIN-CSRF-01 (registered by ACCESS-01B).
+Both implementation lanes are EMPTY. ACCESS-01F, ACCESS-01D and STATIC-KEYS-01 are COMPLETE AND LOCKED (daily credit caps; per-plan token limits and balance check; static test keys only in test and development; not deployed). Staging runs 4d08d26 with knowledge, citations, the validation gate, Socket.IO auth, the audit table and per-user access (Keith admin, harness access on); runs and provider off. SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted: ACCESS-01C, ACCESS-01E, ACCESS-01G to ACCESS-01J, ACCESS-LIVE-01, LIMITS-PER-USER-01 (registered by GOV-ACCESS-PLAN-01); COLLAB-EVAL-01, COLLAB-FANOUT-01, COLLAB-REVIEWERS-01, COLLAB-LIMITS-ENV-01 (registered 2026-11-05 from Keith's Agent Teams and limits decisions); KNOW-02, KNOW-04, BIZ-01, BIZ-LIVE-01, BIZ-02, BIZ-03, BIZ-NOPROJECT-01, GOV-ARCH-SYNC-01 (registered by GOV-BIZ-KNOWLEDGE-PLAN-01); COLLAB-EDIT-01, COLLAB-CANCEL-01 (registered by GOV-COLLAB-PLAN-01); AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01 (registered by GOV-OS-05); ADMIN-CSRF-01 (registered by ACCESS-01B).
 
 ## Active mutex / resource ownership
 - GOVERNANCE: UNOWNED — GOV-OS-05 lock 2026-11-05.
-- GATEWAY: OWNED by STATIC-KEYS-01 (2026-11-05).
+- GATEWAY: UNOWNED — released at STATIC-KEYS-01 COMPLETE AND LOCKED 2026-11-05.
 - MIGRATION: UNOWNED — released at ACCESS-01B COMPLETE AND LOCKED 2026-11-05.
 - FRONTEND: UNOWNED — released at KNOW-03 COMPLETE AND LOCKED 2026-11-05.
 - I18N: UNOWNED — released at KNOW-03 COMPLETE AND LOCKED 2026-11-05.

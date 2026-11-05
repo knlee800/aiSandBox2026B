@@ -85,12 +85,12 @@ export class ApiKeyAuthGuard implements CanActivate {
         };
       }
     } catch (error) {
-      // If database validation fails, fall through to static config
-      // This ensures test keys still work during development
+      // Database validation failed. Do not log the error or the key.
+      // Static fallback below applies only when staticKeysAllowed() is true.
     }
 
-    // Fallback to static configuration (for test/dev keys)
-    if (!identity) {
+    // Static test keys only for NODE_ENV test or development, read at request time.
+    if (!identity && ApiKeyConfig.staticKeysAllowed()) {
       identity = ApiKeyConfig.validateApiKey(apiKey);
     }
 

@@ -67,4 +67,49 @@ describe('ApiKeyConfig', () => {
       expect(result).toBe(true);
     });
   });
+
+  describe('staticKeysAllowed', () => {
+    const originalNodeEnv = process.env.NODE_ENV;
+
+    afterEach(() => {
+      if (originalNodeEnv === undefined) {
+        delete process.env.NODE_ENV;
+      } else {
+        process.env.NODE_ENV = originalNodeEnv;
+      }
+    });
+
+    it('returns true only when NODE_ENV is exactly test or development', () => {
+      process.env.NODE_ENV = 'test';
+      expect(ApiKeyConfig.staticKeysAllowed()).toBe(true);
+
+      process.env.NODE_ENV = 'development';
+      expect(ApiKeyConfig.staticKeysAllowed()).toBe(true);
+    });
+
+    it('returns false for production, any other value, and when NODE_ENV is unset', () => {
+      process.env.NODE_ENV = 'production';
+      expect(ApiKeyConfig.staticKeysAllowed()).toBe(false);
+
+      process.env.NODE_ENV = 'staging';
+      expect(ApiKeyConfig.staticKeysAllowed()).toBe(false);
+
+      process.env.NODE_ENV = 'Production';
+      expect(ApiKeyConfig.staticKeysAllowed()).toBe(false);
+
+      process.env.NODE_ENV = '';
+      expect(ApiKeyConfig.staticKeysAllowed()).toBe(false);
+
+      delete process.env.NODE_ENV;
+      expect(ApiKeyConfig.staticKeysAllowed()).toBe(false);
+    });
+
+    it('reads NODE_ENV on each call', () => {
+      process.env.NODE_ENV = 'production';
+      expect(ApiKeyConfig.staticKeysAllowed()).toBe(false);
+
+      process.env.NODE_ENV = 'test';
+      expect(ApiKeyConfig.staticKeysAllowed()).toBe(true);
+    });
+  });
 });
