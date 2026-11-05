@@ -85434,7 +85434,7 @@ taskId=STAGING-DEPLOY-05
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-05. Lane 1, STAGING.
+**Status:** COMPLETE AND LOCKED — 2026-11-05. LANE-DONE and LOCKED by the control plane; Lane 1 and STAGING released. Staging runs 4f2db62 with knowledge, citations, the validation gate and Socket.IO auth; flags off; stagingAuthorized false. Checkpoint: docs/STAGING-DEPLOY-05-CHECKPOINT.md.
 **Task ID:** STAGING-DEPLOY-05
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION (operational run; no code)
@@ -85451,13 +85451,13 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] The weekly backup copy is on Keith's PC and its hash matches the host
-- [ ] Staging runs the deployed commit; health and guard checks pass; configuration files unchanged
-- [ ] The knowledge migration is applied and knowledge_documents exists with its indexes
-- [ ] Keith's Knowledge page check passes in en, zh-TW and zh-CN
-- [ ] Flags off and nothing left open
-- [ ] Keith judgement recorded
-- [ ] Not LOCKED by an implementer
+- [x] The weekly backup copy is on Keith's PC and its hash matches the host
+- [x] Staging runs the deployed commit; health and guard checks pass; configuration files unchanged
+- [x] The knowledge migration is applied and knowledge_documents exists with its indexes
+- [x] Keith's Knowledge page check passes in en, zh-TW and zh-CN
+- [x] Flags off and nothing left open
+- [x] Keith judgement recorded
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
