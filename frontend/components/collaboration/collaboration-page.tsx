@@ -17,15 +17,23 @@ import {
 } from '@/lib/collaboration/api';
 import {
   COLLABORATION_POLL_MS,
+  approveRequestBody,
   collaborationMemberLabel,
+  collaborationRefusal,
   collaborationRefusalMessageKey,
+  readErrorMessage,
   readHandoffTests,
   readStringList,
+  readTestsBlockReason,
+  readTestsGate,
+  readTestsNotPassed,
   createSingleFlight,
   fillTemplate,
   handoffIsWaiting,
   sendBackRoundNumbers,
   shouldPollCollaboration,
+  type CollaborationTestsBlockReason,
+  type CollaborationTestsGate,
 } from '@/lib/collaboration/logic';
 
 const STATUS_KEYS: Record<string, string> = {
@@ -72,6 +80,10 @@ export function useCollaborationScreen(input: {
   const [listProjectId, setListProjectId] = useState(queryProjectId);
   const [rejectReferralId, setRejectReferralId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
+  const [approveWithoutTests, setApproveWithoutTests] = useState<Record<string, boolean>>({});
+  const [forcedTestsBlock, setForcedTestsBlock] = useState<
+    Record<string, CollaborationTestsBlockReason>
+  >({});
   const flight = useRef(createSingleFlight());
   const listProjectRef = useRef(listProjectId);
   const selectedRef = useRef(selectedRunId);
@@ -283,6 +295,9 @@ export function useCollaborationScreen(input: {
     diff: t('diff'),
     diffUnavailable: t('diffUnavailable'),
     diffEmpty: t('diffEmpty'),
+    testsFailedGate: t('testsFailedGate'),
+    testsMissingGate: t('testsMissingGate'),
+    approveWithoutPassingTests: t('approveWithoutPassingTests'),
   };
 
   const memberLabels = useMemo(
@@ -309,34 +324,45 @@ export function useCollaborationScreen(input: {
   const sourceHandoffs = detail?.handoffs ?? [];
   const roundNumbers = sendBackRoundNumbers(sourceHandoffs);
   const handoffs: CollaborationHandoffViewModel[] = sourceHandoffs.map(
-    (handoff: CollaborationHandoff, index) => ({
-      referralId: handoff.referralId,
-      statusLabel: statusLabel(handoff.status),
-      asked: fillTemplate(t('asked'), {
-        source: collaborationMemberLabel(handoff.source, memberLabels),
-        target: collaborationMemberLabel(handoff.target, memberLabels),
-      }),
-      prompt: handoff.prompt,
-      answer: handoff.answer,
-      handoffNote: handoff.handoffNote,
-      failureReason: handoff.failureReason,
-      decidedBy: handoff.decidedBy,
-      rejectReason: handoff.rejectReason,
-      waiting: handoffIsWaiting(handoff.status),
-      canChangeFiles: handoff.canChangeFiles === true,
-      changedPaths: readStringList(handoff.changedPaths),
-      savePoint:
-        typeof handoff.savePoint === 'string' && handoff.savePoint.trim().length > 0
-          ? handoff.savePoint
-          : null,
-      tests: readHandoffTests(handoff.tests),
-      roundLabel:
-        typeof roundNumbers[index] === 'number'
-          ? fillTemplate(t('sendBackRound'), { round: String(roundNumbers[index]) })
-          : null,
-      diff: typeof handoff.diff === 'string' ? handoff.diff : null,
-      diffUnavailable: handoff.diffUnavailable === true,
-    }),
+    (handoff: CollaborationHandoff, index) => {
+      const forced = forcedTestsBlock[handoff.referralId];
+      const testsGate: CollaborationTestsGate = forced ? 'blocked' : readTestsGate(handoff.testsGate);
+      const testsBlockReason =
+        testsGate === 'blocked'
+          ? (forced ?? readTestsBlockReason(handoff.testsBlockReason) ?? 'none')
+          : null;
+      return {
+        referralId: handoff.referralId,
+        statusLabel: statusLabel(handoff.status),
+        asked: fillTemplate(t('asked'), {
+          source: collaborationMemberLabel(handoff.source, memberLabels),
+          target: collaborationMemberLabel(handoff.target, memberLabels),
+        }),
+        prompt: handoff.prompt,
+        answer: handoff.answer,
+        handoffNote: handoff.handoffNote,
+        failureReason: handoff.failureReason,
+        decidedBy: handoff.decidedBy,
+        rejectReason: handoff.rejectReason,
+        waiting: handoffIsWaiting(handoff.status),
+        canChangeFiles: handoff.canChangeFiles === true,
+        changedPaths: readStringList(handoff.changedPaths),
+        savePoint:
+          typeof handoff.savePoint === 'string' && handoff.savePoint.trim().length > 0
+            ? handoff.savePoint
+            : null,
+        tests: readHandoffTests(handoff.tests),
+        roundLabel:
+          typeof roundNumbers[index] === 'number'
+            ? fillTemplate(t('sendBackRound'), { round: String(roundNumbers[index]) })
+            : null,
+        diff: typeof handoff.diff === 'string' ? handoff.diff : null,
+        diffUnavailable: handoff.diffUnavailable === true,
+        testsGate,
+        testsBlockReason,
+        approveWithoutTests: approveWithoutTests[handoff.referralId] === true,
+      };
+    },
   );
 
   return {
@@ -387,8 +413,13 @@ export function useCollaborationScreen(input: {
       setSelectedRunId(runId);
       setRejectReferralId(null);
       setRejectReason('');
+      setApproveWithoutTests({});
+      setForcedTestsBlock({});
     },
-    onApprove: (referralId: string) => {
+    onApproveWithoutTestsChange: (referralId: string, checked: boolean) => {
+      setApproveWithoutTests((prev) => ({ ...prev, [referralId]: checked }));
+    },
+    onApprove: (referralId: string, approveWithoutPassingTests = false) => {
       if (!selectedRunId) {
         return;
       }
@@ -396,12 +427,47 @@ export function useCollaborationScreen(input: {
       void runDecision(async () => {
         const response = await collaborationFetch(
           `/api/collaboration/runs/${encodeURIComponent(runId)}/referrals/${encodeURIComponent(referralId)}/approve`,
-          { method: 'POST', body: JSON.stringify({}) },
+          {
+            method: 'POST',
+            body: JSON.stringify(approveRequestBody(approveWithoutPassingTests === true)),
+          },
         );
         if (!response.ok) {
-          await showRefusal(response);
+          let body: unknown = null;
+          try {
+            body = await response.json();
+          } catch {
+            body = null;
+          }
+          const testsBlock = readTestsNotPassed(response.status, body);
+          if (testsBlock) {
+            setForcedTestsBlock((prev) => ({ ...prev, [referralId]: testsBlock }));
+            setApproveWithoutTests((prev) => ({ ...prev, [referralId]: false }));
+            return;
+          }
+          setNotice(
+            tRef.current(
+              collaborationRefusalMessageKey(collaborationRefusal(response.status, readErrorMessage(body))),
+            ),
+          );
           return;
         }
+        setForcedTestsBlock((prev) => {
+          if (!(referralId in prev)) {
+            return prev;
+          }
+          const next = { ...prev };
+          delete next[referralId];
+          return next;
+        });
+        setApproveWithoutTests((prev) => {
+          if (!(referralId in prev)) {
+            return prev;
+          }
+          const next = { ...prev };
+          delete next[referralId];
+          return next;
+        });
         await refresh();
       });
     },

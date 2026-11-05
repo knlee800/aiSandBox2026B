@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   ExecutionContext,
+  HttpStatus,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -75,6 +76,13 @@ import {
   targetStepCanChangeFiles,
   type CollaborationHandoffFact,
 } from './collaboration-tool-profile';
+import {
+  TESTS_NOT_PASSED_CODE,
+  TESTS_NOT_PASSED_MESSAGES,
+  testsGateForHandoff,
+  toTestsGateReferral,
+  type CollaborationTestsGateResult,
+} from './collaboration-tests-gate';
 import { appendSavePointDiff } from './collaboration-work-diff';
 import {
   answerHandoffIdempotencyKey,
@@ -218,6 +226,9 @@ export interface DecideReferralInput {
   readonly referralId: ReferralId;
   readonly decidedBy: string;
   readonly reason?: string;
+  /** Login approve only. Internal approve leaves this unset. */
+  readonly enforceTestsGate?: boolean;
+  readonly approveWithoutPassingTests?: boolean;
 }
 
 export interface CreateAndStartReferralInput {
@@ -472,6 +483,30 @@ export class OrchestrationService {
       });
     }
     return facts;
+  }
+
+  async readCollaborationTestsGate(
+    collaborationRunId: CollaborationRunId,
+    referralId: ReferralId,
+  ): Promise<CollaborationTestsGateResult> {
+    const entities = await this.referralRepo.find({
+      where: { collaborationRunId },
+    });
+    const referrals = entities.map((entity) => this.toReferral(entity));
+    const handoff = referrals.find((referral) => referral.referralId === referralId);
+    if (
+      !handoff ||
+      handoff.sourceBuilder.builderProfileId !== COLLABORATION_WRITER_PROFILE_ID ||
+      handoff.targetBuilder.builderProfileId !== COLLABORATION_REVIEWER_PROFILE_ID
+    ) {
+      return { testsGate: 'not_required', testsBlockReason: null };
+    }
+    const facts = await this.readCollaborationHandoffFacts(collaborationRunId);
+    return testsGateForHandoff(
+      toTestsGateReferral(handoff),
+      referrals.map((referral) => toTestsGateReferral(referral)),
+      (id) => facts.get(id),
+    );
   }
 
   async createReferral(input: CreateReferralInput): Promise<CollaborationReferral> {
@@ -1028,6 +1063,23 @@ export class OrchestrationService {
       throw new InternalServerErrorException(HARNESS_PROOF_UNAVAILABLE);
     }
     await this.assertHandoffAllowed(loaded.run.userId, job);
+
+    if (input.enforceTestsGate === true && input.approveWithoutPassingTests !== true) {
+      const gate = await this.readCollaborationTestsGate(
+        input.collaborationRunId,
+        input.referralId,
+      );
+      if (gate.testsGate === 'blocked') {
+        const testsBlockReason = gate.testsBlockReason ?? 'none';
+        throw new ConflictException({
+          statusCode: HttpStatus.CONFLICT,
+          message: TESTS_NOT_PASSED_MESSAGES[testsBlockReason],
+          error: 'Conflict',
+          code: TESTS_NOT_PASSED_CODE,
+          testsBlockReason,
+        });
+      }
+    }
 
     const now = new Date();
     const claimed = await this.referralRepo.update(

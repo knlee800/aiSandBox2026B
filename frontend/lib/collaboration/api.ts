@@ -29,6 +29,8 @@ export interface CollaborationHandoff {
   tests?: Array<{ command: string; passed: boolean }>;
   diff?: string | null;
   diffUnavailable?: boolean;
+  testsGate?: 'passed' | 'not_required' | 'blocked';
+  testsBlockReason?: 'failed' | 'none' | null;
 }
 
 export interface CollaborationRunDetail {

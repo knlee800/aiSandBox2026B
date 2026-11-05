@@ -13,14 +13,32 @@ import zhCnMessages from '../messages/zh-CN.json';
 import zhTwMessages from '../messages/zh-TW.json';
 import {
   COLLABORATION_POLL_MS,
+  approveRequestBody,
+  approveWithoutPassingTestsForClick,
   collaborationRefusal,
   collaborationRefusalMessageKey,
   createSingleFlight,
+  readTestsBlockReason,
+  readTestsGate,
+  readTestsNotPassed,
   sendBackRoundNumbers,
   shouldPollCollaboration,
 } from './collaboration/logic';
 
 const labels = enMessages.collaboration as CollaborationViewLabels;
+
+function openTag(markup: string, testId: string): string {
+  const marker = `data-testid="${testId}"`;
+  const at = markup.indexOf(marker);
+  assert.ok(at >= 0, marker);
+  const start = markup.lastIndexOf('<', at);
+  const end = markup.indexOf('>', at);
+  return markup.slice(start, end + 1);
+}
+
+function tagHasBooleanAttr(tag: string, name: string): boolean {
+  return new RegExp(`\\s${name}(?:=|\\s|>)`).test(tag);
+}
 
 function renderChain(handoffs: Array<{
   referralId: string;
@@ -35,6 +53,9 @@ function renderChain(handoffs: Array<{
   roundLabel?: string | null;
   diff?: string | null;
   diffUnavailable?: boolean;
+  testsGate?: 'passed' | 'not_required' | 'blocked';
+  testsBlockReason?: 'failed' | 'none' | null;
+  approveWithoutTests?: boolean;
 }>) {
   return renderToStaticMarkup(
     React.createElement(CollaborationView, {
@@ -70,6 +91,9 @@ function renderChain(handoffs: Array<{
         roundLabel: handoff.roundLabel ?? null,
         diff: handoff.diff === undefined ? null : handoff.diff,
         diffUnavailable: handoff.diffUnavailable === true,
+        testsGate: handoff.testsGate ?? 'not_required',
+        testsBlockReason: handoff.testsBlockReason ?? null,
+        approveWithoutTests: handoff.approveWithoutTests === true,
       })),
       runs: [],
       rejectReferralId: null,
@@ -78,6 +102,7 @@ function renderChain(handoffs: Array<{
       onStart: () => {},
       onOpenRun: () => {},
       onApprove: () => {},
+      onApproveWithoutTestsChange: () => {},
       onBeginReject: () => {},
       onCancelReject: () => {},
       onConfirmReject: () => {},
@@ -106,6 +131,8 @@ describe('collaboration page', () => {
     ]);
 
     assert.match(markup, /data-testid="collaboration-approve-waiting-1"/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-tests-gate-waiting-1"/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-approve-without-tests-waiting-1"/);
     assert.match(markup, /data-testid="collaboration-reject-waiting-1"/);
     assert.doesNotMatch(markup, /data-testid="collaboration-approve-done-1"/);
     assert.doesNotMatch(markup, /data-testid="collaboration-reject-done-1"/);
@@ -134,6 +161,7 @@ describe('collaboration page', () => {
         onStart: () => {},
         onOpenRun: () => {},
         onApprove: () => {},
+        onApproveWithoutTestsChange: () => {},
         onBeginReject: () => {},
         onCancelReject: () => {},
         onConfirmReject: () => {},
@@ -204,6 +232,108 @@ describe('collaboration page', () => {
       '批准这一步后，撰写者可以修改文件。',
     );
     assert.doesNotMatch(markup, /data-testid="collaboration-work-writer-wait"/);
+  });
+
+  test('a blocked writer-to-reviewer hand-off explains the tests and requires the checkbox', () => {
+    const blocked = renderChain([
+      {
+        referralId: 'rev-failed',
+        statusLabel: enMessages.collaboration.statusPendingApproval,
+        waiting: true,
+        answer: null,
+        prompt: 'Look again.',
+        testsGate: 'blocked',
+        testsBlockReason: 'failed',
+      },
+      {
+        referralId: 'rev-none',
+        statusLabel: enMessages.collaboration.statusPendingApproval,
+        waiting: true,
+        answer: null,
+        prompt: 'Look again.',
+        testsGate: 'blocked',
+        testsBlockReason: 'none',
+      },
+      {
+        referralId: 'rev-passed',
+        statusLabel: enMessages.collaboration.statusPendingApproval,
+        waiting: true,
+        answer: null,
+        prompt: 'Look again.',
+        testsGate: 'passed',
+      },
+    ]);
+
+    assert.match(blocked, /data-testid="collaboration-tests-gate-rev-failed"/);
+    assert.match(blocked, new RegExp(enMessages.collaboration.testsFailedGate));
+    assert.match(blocked, /data-testid="collaboration-approve-without-tests-rev-failed"/);
+    assert.match(blocked, new RegExp(enMessages.collaboration.approveWithoutPassingTests));
+    assert.equal(tagHasBooleanAttr(openTag(blocked, 'collaboration-approve-rev-failed'), 'disabled'), true);
+    assert.equal(
+      tagHasBooleanAttr(openTag(blocked, 'collaboration-approve-without-tests-rev-failed'), 'checked'),
+      false,
+    );
+    assert.match(blocked, new RegExp(enMessages.collaboration.testsMissingGate));
+    assert.equal(tagHasBooleanAttr(openTag(blocked, 'collaboration-approve-rev-none'), 'disabled'), true);
+    assert.doesNotMatch(blocked, /data-testid="collaboration-tests-gate-rev-passed"/);
+    assert.equal(tagHasBooleanAttr(openTag(blocked, 'collaboration-approve-rev-passed'), 'disabled'), false);
+
+    const ticked = renderChain([
+      {
+        referralId: 'rev-failed',
+        statusLabel: enMessages.collaboration.statusPendingApproval,
+        waiting: true,
+        answer: null,
+        prompt: 'Look again.',
+        testsGate: 'blocked',
+        testsBlockReason: 'failed',
+        approveWithoutTests: true,
+      },
+    ]);
+    assert.equal(
+      tagHasBooleanAttr(openTag(ticked, 'collaboration-approve-without-tests-rev-failed'), 'checked'),
+      true,
+    );
+    assert.equal(tagHasBooleanAttr(openTag(ticked, 'collaboration-approve-rev-failed'), 'disabled'), false);
+
+    assert.equal(enMessages.collaboration.approveWithoutPassingTests, 'Approve without passing tests');
+    assert.equal(enMessages.collaboration.testsFailedGate, 'The latest test did not pass.');
+    assert.equal(enMessages.collaboration.testsMissingGate, 'No tests ran.');
+    assert.equal(zhTwMessages.collaboration.testsFailedGate, '最近一次測試沒有通過。');
+    assert.equal(zhTwMessages.collaboration.testsMissingGate, '沒有執行測試。');
+    assert.equal(zhTwMessages.collaboration.approveWithoutPassingTests, '在測試未通過時仍核准');
+    assert.equal(zhCnMessages.collaboration.testsFailedGate, '最近一次测试没有通过。');
+    assert.equal(zhCnMessages.collaboration.testsMissingGate, '没有执行测试。');
+    assert.equal(zhCnMessages.collaboration.approveWithoutPassingTests, '在测试未通过时仍批准');
+    assert.equal(readTestsGate('blocked'), 'blocked');
+    assert.equal(readTestsGate('unexpected'), 'not_required');
+    assert.equal(readTestsBlockReason('failed'), 'failed');
+    assert.equal(readTestsBlockReason('none'), 'none');
+    assert.equal(readTestsBlockReason('later'), null);
+    assert.equal(
+      readTestsNotPassed(409, { code: 'TESTS_NOT_PASSED', testsBlockReason: 'failed' }),
+      'failed',
+    );
+    assert.equal(readTestsNotPassed(409, { code: 'TESTS_NOT_PASSED' }), 'none');
+    assert.equal(readTestsNotPassed(409, { message: 'Referral cannot be approved' }), null);
+    assert.deepEqual(approveRequestBody(false), {});
+    assert.deepEqual(approveRequestBody(true), { approveWithoutPassingTests: true });
+    assert.equal(
+      approveWithoutPassingTestsForClick({ testsGate: 'blocked', approveWithoutTests: false }),
+      false,
+    );
+    assert.equal(
+      approveWithoutPassingTestsForClick({ testsGate: 'blocked', approveWithoutTests: true }),
+      true,
+    );
+    assert.equal(
+      approveWithoutPassingTestsForClick({ testsGate: 'passed', approveWithoutTests: true }),
+      false,
+    );
+    assert.equal(
+      approveWithoutPassingTestsForClick({ testsGate: 'not_required', approveWithoutTests: true }),
+      false,
+    );
   });
 
   test('labels send-back rounds and shows the writer diff as text', () => {
@@ -352,6 +482,15 @@ let latest: {
   notice: string | null;
   loading: boolean;
   onOpenRun: (runId: string) => void;
+  handoffs: Array<{
+    referralId: string;
+    testsGate: string;
+    testsBlockReason: string | null;
+    approveWithoutTests: boolean;
+    waiting: boolean;
+  }>;
+  onApprove: (referralId: string, approveWithoutPassingTests?: boolean) => void;
+  onApproveWithoutTestsChange: (referralId: string, checked: boolean) => void;
 } | null = null;
 let createRoot: (typeof import('react-dom/client'))['createRoot'];
 let originalFetch: typeof fetch;
@@ -405,6 +544,7 @@ function installScreenDom() {
   const doc: Record<string, unknown> = {
     nodeType: 9,
     visibilityState: 'visible',
+    cookie: '',
     createElement(tag: string) {
       const node = createDomNode(tag);
       node.ownerDocument = doc;
@@ -648,5 +788,88 @@ describe('collaboration screen reload', () => {
     await renderScreen(4, 'proj-1');
     assert.equal(fetchCalls.length, stopped);
     assert.equal(intervals.size, 0);
+  });
+
+  test('a 409 TESTS_NOT_PASSED response blocks approval until the box is ticked', async () => {
+    const bodies: unknown[] = [];
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      fetchCalls.push(url);
+      if (url.startsWith('/api/collaboration/runs?')) {
+        return jsonResponse(200, { runs: [runPayload('active')] });
+      }
+      if (url === '/api/collaboration/runs/run-1') {
+        return jsonResponse(200, {
+          run: runPayload('active'),
+          team: ['lead', 'writer', 'reviewer'],
+          handoffs: [
+            {
+              referralId: 'rev-1',
+              status: 'pending_approval',
+              source: 'writer',
+              target: 'reviewer',
+              prompt: 'Look again.',
+              answer: null,
+              handoffNote: null,
+              failureReason: null,
+              decidedBy: null,
+              rejectReason: null,
+              testsGate: 'not_required',
+              testsBlockReason: null,
+            },
+          ],
+        });
+      }
+      if (url.includes('/approve')) {
+        const body = init?.body ? JSON.parse(String(init.body)) : null;
+        bodies.push(body);
+        if (body && body.approveWithoutPassingTests === true) {
+          return jsonResponse(200, { referralId: 'rev-1', status: 'approved' });
+        }
+        return jsonResponse(409, {
+          statusCode: 409,
+          message: 'The latest validation run did not pass.',
+          code: 'TESTS_NOT_PASSED',
+          testsBlockReason: 'failed',
+        });
+      }
+      return jsonResponse(404, { message: 'missing' });
+    }) as typeof fetch;
+
+    await renderScreen(1, 'proj-1');
+    await act(async () => {
+      latest!.onOpenRun('run-1');
+    });
+    await act(async () => {
+      for (let step = 0; step < 40; step += 1) {
+        await Promise.resolve();
+      }
+    });
+    assert.equal(latest?.handoffs[0]?.testsGate, 'not_required');
+    assert.equal(latest?.notice, null);
+
+    await act(async () => {
+      latest!.onApprove('rev-1', false);
+      for (let step = 0; step < 40; step += 1) {
+        await Promise.resolve();
+      }
+    });
+    assert.deepEqual(bodies[0], {});
+    assert.equal(latest?.handoffs[0]?.testsGate, 'blocked');
+    assert.equal(latest?.handoffs[0]?.testsBlockReason, 'failed');
+    assert.equal(latest?.handoffs[0]?.approveWithoutTests, false);
+    assert.equal(latest?.notice, null);
+
+    await act(async () => {
+      latest!.onApproveWithoutTestsChange('rev-1', true);
+    });
+    assert.equal(latest?.handoffs[0]?.approveWithoutTests, true);
+    await act(async () => {
+      latest!.onApprove('rev-1', latest!.handoffs[0]!.approveWithoutTests);
+      for (let step = 0; step < 40; step += 1) {
+        await Promise.resolve();
+      }
+    });
+    assert.deepEqual(bodies[1], { approveWithoutPassingTests: true });
   });
 });

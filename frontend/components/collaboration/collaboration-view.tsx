@@ -8,6 +8,7 @@ import {
   UserGroupIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
+import { approveWithoutPassingTestsForClick } from '@/lib/collaboration/logic';
 
 export interface CollaborationViewLabels {
   title: string;
@@ -58,6 +59,9 @@ export interface CollaborationViewLabels {
   diff: string;
   diffUnavailable: string;
   diffEmpty: string;
+  testsFailedGate: string;
+  testsMissingGate: string;
+  approveWithoutPassingTests: string;
 }
 
 export interface CollaborationTeamMemberView {
@@ -83,6 +87,9 @@ export interface CollaborationHandoffViewModel {
   roundLabel: string | null;
   diff: string | null;
   diffUnavailable: boolean;
+  testsGate: 'passed' | 'not_required' | 'blocked';
+  testsBlockReason: 'failed' | 'none' | null;
+  approveWithoutTests: boolean;
 }
 
 export interface CollaborationPastRunView {
@@ -110,7 +117,8 @@ export default function CollaborationView(props: {
   onTaskChange: (value: string) => void;
   onStart: () => void;
   onOpenRun: (runId: string) => void;
-  onApprove: (referralId: string) => void;
+  onApprove: (referralId: string, approveWithoutPassingTests?: boolean) => void;
+  onApproveWithoutTestsChange: (referralId: string, checked: boolean) => void;
   onBeginReject: (referralId: string) => void;
   onCancelReject: () => void;
   onConfirmReject: (referralId: string) => void;
@@ -383,13 +391,58 @@ export default function CollaborationView(props: {
                       <span>{labels.writerWarning}</span>
                     </p>
                   ) : null}
+                  {handoff.waiting && handoff.testsGate === 'blocked' ? (
+                    <div
+                      className="mt-3 min-w-0 max-w-full rounded-lg border border-amber-200 bg-amber-50 px-3 py-2"
+                      data-testid={`collaboration-tests-gate-${handoff.referralId}`}
+                      role="status"
+                    >
+                      <p className="flex min-w-0 items-start gap-2 break-words text-sm text-amber-950">
+                        <ExclamationTriangleIcon
+                          className="mt-0.5 h-4 w-4 shrink-0"
+                          aria-hidden="true"
+                        />
+                        <span>
+                          {handoff.testsBlockReason === 'failed'
+                            ? labels.testsFailedGate
+                            : labels.testsMissingGate}
+                        </span>
+                      </p>
+                      <label className="mt-2 flex min-w-0 items-start gap-2 text-sm text-amber-950">
+                        <input
+                          type="checkbox"
+                          className="mt-0.5"
+                          data-testid={`collaboration-approve-without-tests-${handoff.referralId}`}
+                          checked={handoff.approveWithoutTests}
+                          onChange={(event) =>
+                            props.onApproveWithoutTestsChange(
+                              handoff.referralId,
+                              event.target.checked,
+                            )
+                          }
+                        />
+                        <span>{labels.approveWithoutPassingTests}</span>
+                      </label>
+                    </div>
+                  ) : null}
                   {handoff.waiting ? (
                     <div className="mt-3 flex min-w-0 flex-wrap gap-2">
                       <button
                         type="button"
                         data-testid={`collaboration-approve-${handoff.referralId}`}
-                        disabled={props.deciding}
-                        onClick={() => props.onApprove(handoff.referralId)}
+                        disabled={
+                          props.deciding ||
+                          (handoff.testsGate === 'blocked' && !handoff.approveWithoutTests)
+                        }
+                        onClick={() =>
+                          props.onApprove(
+                            handoff.referralId,
+                            approveWithoutPassingTestsForClick({
+                              testsGate: handoff.testsGate,
+                              approveWithoutTests: handoff.approveWithoutTests,
+                            }),
+                          )
+                        }
                         className="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
                       >
                         <CheckIcon className="h-4 w-4" aria-hidden="true" />

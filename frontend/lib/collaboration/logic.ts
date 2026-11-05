@@ -77,6 +77,54 @@ export function handoffIsWaiting(status: string): boolean {
   return status === 'pending_approval';
 }
 
+export type CollaborationTestsGate = 'passed' | 'not_required' | 'blocked';
+
+export type CollaborationTestsBlockReason = 'failed' | 'none';
+
+export function readTestsGate(value: unknown): CollaborationTestsGate {
+  if (value === 'passed' || value === 'not_required' || value === 'blocked') {
+    return value;
+  }
+  return 'not_required';
+}
+
+export function readTestsBlockReason(value: unknown): CollaborationTestsBlockReason | null {
+  if (value === 'failed' || value === 'none') {
+    return value;
+  }
+  return null;
+}
+
+export function readTestsNotPassed(
+  status: number,
+  body: unknown,
+): CollaborationTestsBlockReason | null {
+  if (status !== 409 || !body || typeof body !== 'object') {
+    return null;
+  }
+  const record = body as { code?: unknown; testsBlockReason?: unknown };
+  if (record.code !== 'TESTS_NOT_PASSED') {
+    return null;
+  }
+  return record.testsBlockReason === 'failed' ? 'failed' : 'none';
+}
+
+export function approveRequestBody(
+  approveWithoutPassingTests: boolean,
+): { approveWithoutPassingTests: true } | Record<string, never> {
+  if (approveWithoutPassingTests) {
+    return { approveWithoutPassingTests: true };
+  }
+  return {};
+}
+
+export function approveWithoutPassingTestsForClick(input: {
+  testsGate: CollaborationTestsGate;
+  approveWithoutTests: boolean;
+}): boolean {
+  return input.testsGate === 'blocked' && input.approveWithoutTests;
+}
+
 /** Round number for each reviewer-to-writer step, in chain order. Other steps are null. */
 export function sendBackRoundNumbers(
   handoffs: readonly { source: string; target: string }[],

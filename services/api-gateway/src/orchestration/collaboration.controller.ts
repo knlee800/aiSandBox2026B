@@ -38,6 +38,13 @@ import {
 } from './collaboration-team';
 import type { CollaborationReferral, CollaborationRun } from './orchestration.contracts';
 import type { CollaborationHandoffFact } from './collaboration-tool-profile';
+import {
+  testsGateForHandoff,
+  toTestsGateReferral,
+  type CollaborationTestsGate,
+  type CollaborationTestsBlockReason,
+  type CollaborationTestsGateResult,
+} from './collaboration-tests-gate';
 import { OrchestrationService } from './orchestration.service';
 
 const USABLE_SESSION_STATUSES: readonly SessionStatus[] = [
@@ -70,6 +77,8 @@ export interface CollaborationHandoffView {
   tests: Array<{ command: string; passed: boolean }>;
   diff: string | null;
   diffUnavailable: boolean;
+  testsGate: CollaborationTestsGate;
+  testsBlockReason: CollaborationTestsBlockReason | null;
 }
 
 export interface CollaborationRunDetail {
@@ -230,19 +239,27 @@ export class CollaborationController {
     @AuthenticatedUser() identity: ApiKeyIdentity,
     @Param('id') collaborationRunId: string,
     @Param('referralId') referralId: string,
+    @Body() body: unknown,
   ): Promise<CollaborationHandoffView> {
     const caller = this.assertEntitled(identity);
     await this.requireOwnedRun(collaborationRunId, caller.userId);
+    const approveWithoutPassingTests = this.readApproveWithoutPassingTests(body);
     try {
       const started = await this.orchestrationService.approveReferral({
         collaborationRunId,
         referralId,
         decidedBy: caller.userId,
+        enforceTestsGate: true,
+        approveWithoutPassingTests,
       });
       const facts = await this.orchestrationService.readCollaborationHandoffFacts(
         collaborationRunId,
       );
-      return this.toHandoff(started.referral, facts.get(started.referral.referralId));
+      const gate = await this.orchestrationService.readCollaborationTestsGate(
+        collaborationRunId,
+        started.referral.referralId,
+      );
+      return this.toHandoff(started.referral, facts.get(started.referral.referralId), gate);
     } catch (error) {
       this.raise(error);
     }
@@ -269,7 +286,11 @@ export class CollaborationController {
       const facts = await this.orchestrationService.readCollaborationHandoffFacts(
         collaborationRunId,
       );
-      return this.toHandoff(referral, facts.get(referral.referralId));
+      const gate = await this.orchestrationService.readCollaborationTestsGate(
+        collaborationRunId,
+        referral.referralId,
+      );
+      return this.toHandoff(referral, facts.get(referral.referralId), gate);
     } catch (error) {
       this.raise(error);
     }
@@ -402,6 +423,13 @@ export class CollaborationController {
     return projectId;
   }
 
+  private readApproveWithoutPassingTests(body: unknown): boolean {
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return false;
+    }
+    return (body as Record<string, unknown>).approveWithoutPassingTests === true;
+  }
+
   private readOptionalReason(body: unknown): string | undefined {
     if (body === undefined || body === null) {
       return undefined;
@@ -464,14 +492,31 @@ export class CollaborationController {
       },
       team: COLLABORATION_TEAM.map((agent) => agent.name),
       handoffs: referrals.map((referral) =>
-        this.toHandoff(referral, facts.get(referral.referralId)),
+        this.toHandoff(
+          referral,
+          facts.get(referral.referralId),
+          this.testsGateFor(referral, referrals, facts),
+        ),
       ),
     };
   }
 
+  private testsGateFor(
+    referral: CollaborationReferral,
+    referrals: readonly CollaborationReferral[],
+    facts: ReadonlyMap<string, CollaborationHandoffFact>,
+  ): CollaborationTestsGateResult {
+    return testsGateForHandoff(
+      toTestsGateReferral(referral),
+      referrals.map((item) => toTestsGateReferral(item)),
+      (referralId) => facts.get(referralId),
+    );
+  }
+
   private toHandoff(
     referral: CollaborationReferral,
-    fact?: CollaborationHandoffFact,
+    fact: CollaborationHandoffFact | undefined,
+    gate: CollaborationTestsGateResult,
   ): CollaborationHandoffView {
     const failed =
       referral.status === 'failed' ||
@@ -512,6 +557,8 @@ export class CollaborationController {
       })),
       diff: work.diff,
       diffUnavailable: work.diffUnavailable,
+      testsGate: gate.testsGate,
+      testsBlockReason: gate.testsBlockReason,
     };
   }
 

@@ -84963,7 +84963,7 @@ taskId=COLLAB-GATE-TESTS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-05. Lane 1, GATEWAY, FRONTEND and I18N.
+**Status:** COMPLETE AND LOCKED — 2026-11-05. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY, FRONTEND and I18N released. The Team page refuses writer-to-reviewer approval on failing or missing tests unless the owner overrides; not deployed. Checkpoint: docs/COLLAB-GATE-TESTS-01-CHECKPOINT.md.
 **Task ID:** COLLAB-GATE-TESTS-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -84977,15 +84977,16 @@ nature=IMPLEMENTATION
 **Holds:** The worker records each validation run as passed or failed (harnessValidationRuns), but the orchestration only displays them (orchestration.service.ts lines 446-455). Server-side: approving a writer-to-reviewer hand-off is refused when the writer changed files and its latest validation run failed or did not run, unless the owner ticks an explicit approve-anyway option. One approval flow; deterministic, not the model's word. Refusals become stored events once COLLAB-AUDIT-01 exists (not required). en / zh-TW / zh-CN.
 **Named in:** Keith in chat, Agent Teams assessment and limits.
 **Recommendation (control plane, 2026-11-05):** Recommended: build next. Closes a real gap: test results are shown but never checked. Small; no eval needed.
+**Scope expansion and lock record, 2026-11-05:** the control plane added frontend/lib/collaboration/ and frontend/lib/collaboration.test.ts (the page's API client carries the override flag). The gate fails closed when the writer step or its record is missing. Checkpoint: docs/COLLAB-GATE-TESTS-01-CHECKPOINT.md.
 
 #### Acceptance criteria
 
-- [ ] Approving a writer-to-reviewer hand-off is refused when the writer changed files and its latest validation run failed or did not run, unless the owner ticks approve-anyway
-- [ ] Writers that changed no files, passing runs and all other hand-offs are unchanged
-- [ ] The Team page shows why approval is blocked and the approve-anyway option in en, zh-TW and zh-CN
-- [ ] Gateway and frontend tests and builds pass
-- [ ] Only files in the write scope change
-- [ ] Not LOCKED by an implementer
+- [x] Approving a writer-to-reviewer hand-off is refused when the writer changed files and its latest validation run failed or did not run, unless the owner ticks approve-anyway
+- [x] Writers that changed no files, passing runs and all other hand-offs are unchanged
+- [x] The Team page shows why approval is blocked and the approve-anyway option in en, zh-TW and zh-CN
+- [x] Gateway and frontend tests and builds pass
+- [x] Only files in the write scope change
+- [x] Not LOCKED by an implementer
 
 ### COLLAB-EVAL-01 — A repeatable collaboration eval
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

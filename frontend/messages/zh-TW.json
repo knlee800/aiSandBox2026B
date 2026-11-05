@@ -980,7 +980,10 @@
     "sendBackRound": "第 {round} 輪",
     "diff": "差異",
     "diffUnavailable": "無法載入差異。",
-    "diffEmpty": "自儲存點以來沒有檔案變更。"
+    "diffEmpty": "自儲存點以來沒有檔案變更。",
+    "testsFailedGate": "最近一次測試沒有通過。",
+    "testsMissingGate": "沒有執行測試。",
+    "approveWithoutPassingTests": "在測試未通過時仍核准"
   },
   "office": {
     "title": "辦公室",

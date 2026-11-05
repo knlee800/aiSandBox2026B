@@ -26,6 +26,10 @@ import { CollaborationReferralEntity } from './collaboration-referral.entity';
 import { CollaborationRunEntity } from './collaboration-run.entity';
 import { OrchestrationService } from './orchestration.service';
 import {
+  TESTS_NOT_PASSED_CODE,
+  TESTS_NOT_PASSED_MESSAGES,
+} from './collaboration-tests-gate';
+import {
   WORK_DIFF_PROMPT_HEADING,
   WORK_DIFF_PROMPT_UNAVAILABLE,
 } from './collaboration-work-diff';
@@ -809,6 +813,234 @@ describe('CollaborationController login routes', () => {
       reviewer.prompt.indexOf(WORK_DIFF_PROMPT_UNAVAILABLE),
     );
     expect(queue.enqueueExecution).toHaveBeenCalledTimes(queued + 1);
+  });
+
+  async function openReviewerHandoff(writerMetadata: Record<string, unknown>) {
+    const started = await startRun();
+    await http()
+      .post(
+        `/api/collaboration/runs/${started.collaborationRunId}/referrals/${started.referralId}/approve`,
+      )
+      .send({})
+      .expect(200);
+    const leadExecutionId = referrals.get(started.referralId)?.executionId;
+    executionResults.getExecution.mockImplementation(async (executionId: string) => {
+      if (executionId === leadExecutionId) {
+        return {
+          execution_status: 'completed',
+          metadata: {
+            aiExecutionResult: {
+              output: 'Ready.\n<handoff to="writer">Fix the form.</handoff>',
+            },
+          },
+        };
+      }
+      const writer = [...referrals.values()].find(
+        (referral) =>
+          referral.executionId === executionId && referral.targetBuilderProfileId === 'writer',
+      );
+      if (writer) {
+        return {
+          execution_status: 'completed',
+          metadata: {
+            aiExecutionResult: {
+              output: 'Updated the form.\n<handoff to="reviewer">Look again.</handoff>',
+            },
+            ...writerMetadata,
+          },
+        };
+      }
+      return null;
+    });
+
+    const afterLead = await http()
+      .get(`/api/collaboration/runs/${started.collaborationRunId}`)
+      .expect(200);
+    const writerHandoff = afterLead.body.handoffs.find(
+      (handoff: { target: string }) => handoff.target === 'writer',
+    );
+    expect(writerHandoff.testsGate).toBe('not_required');
+    expect(writerHandoff.testsBlockReason).toBeNull();
+    await http()
+      .post(
+        `/api/collaboration/runs/${started.collaborationRunId}/referrals/${writerHandoff.referralId}/approve`,
+      )
+      .send({})
+      .expect(200);
+
+    const finished = await http()
+      .get(`/api/collaboration/runs/${started.collaborationRunId}`)
+      .expect(200);
+    const reviewer = finished.body.handoffs.find(
+      (handoff: { target: string }) => handoff.target === 'reviewer',
+    );
+    expect(reviewer).toMatchObject({
+      source: 'writer',
+      target: 'reviewer',
+      status: 'pending_approval',
+      tests: [],
+    });
+    return {
+      runId: started.collaborationRunId as string,
+      leadReferralId: started.referralId as string,
+      writerReferralId: writerHandoff.referralId as string,
+      reviewer,
+      handoffs: finished.body.handoffs as Array<{
+        referralId: string;
+        source: string;
+        target: string;
+        testsGate: string;
+        testsBlockReason: string | null;
+        tests: unknown[];
+      }>,
+    };
+  }
+
+  function approvePath(runId: string, referralId: string): string {
+    return `/api/collaboration/runs/${runId}/referrals/${referralId}/approve`;
+  }
+
+  it('refuses writer-to-reviewer approval when the latest validation run failed', async () => {
+    const opened = await openReviewerHandoff({
+      harnessChangedPaths: ['src/form.ts'],
+      harnessValidationRuns: [
+        { command: 'npm test', passed: true },
+        { command: 'npm run build', passed: false },
+      ],
+    });
+    expect(opened.reviewer.testsGate).toBe('blocked');
+    expect(opened.reviewer.testsBlockReason).toBe('failed');
+    const writerDone = opened.handoffs.find(
+      (handoff) => handoff.referralId === opened.writerReferralId,
+    );
+    expect(writerDone?.testsGate).toBe('not_required');
+    expect(writerDone?.tests).toEqual([
+      { command: 'npm test', passed: true },
+      { command: 'npm run build', passed: false },
+    ]);
+
+    const queued = queue.enqueueExecution.mock.calls.length;
+    const refused = await http()
+      .post(approvePath(opened.runId, opened.reviewer.referralId))
+      .send({})
+      .expect(409);
+    expect(refused.body.code).toBe(TESTS_NOT_PASSED_CODE);
+    expect(refused.body.testsBlockReason).toBe('failed');
+    expect(refused.body.message).toBe(TESTS_NOT_PASSED_MESSAGES.failed);
+    expect(referrals.get(opened.reviewer.referralId)?.status).toBe('pending_approval');
+    expect(referrals.get(opened.reviewer.referralId)?.pendingJob?.decidedBy).toBeNull();
+    expect(queue.enqueueExecution).toHaveBeenCalledTimes(queued);
+
+    const ignoredFlag = await http()
+      .post(approvePath(opened.runId, opened.reviewer.referralId))
+      .send({ approveWithoutPassingTests: false, decidedBy: 'someone-else' })
+      .expect(409);
+    expect(ignoredFlag.body.code).toBe(TESTS_NOT_PASSED_CODE);
+    expect(queue.enqueueExecution).toHaveBeenCalledTimes(queued);
+
+    const approved = await http()
+      .post(approvePath(opened.runId, opened.reviewer.referralId))
+      .send({ approveWithoutPassingTests: true, decidedBy: 'someone-else' })
+      .expect(200);
+    expect(approved.body.decidedBy).toBe(OWNER_ID);
+    expect(approved.body.testsGate).toBe('blocked');
+    expect(approved.body.testsBlockReason).toBe('failed');
+    expect(approved.body.status).not.toBe('pending_approval');
+    expect(referrals.get(opened.reviewer.referralId)?.pendingJob?.decidedBy).toBe(OWNER_ID);
+    expect(queue.enqueueExecution).toHaveBeenCalledTimes(queued + 1);
+  });
+
+  it('refuses writer-to-reviewer approval when the writer changed files and no tests ran', async () => {
+    const opened = await openReviewerHandoff({
+      harnessChangedPaths: ['src/form.ts', '', 4],
+    });
+    expect(opened.reviewer.testsGate).toBe('blocked');
+    expect(opened.reviewer.testsBlockReason).toBe('none');
+
+    const queued = queue.enqueueExecution.mock.calls.length;
+    const refused = await http()
+      .post(approvePath(opened.runId, opened.reviewer.referralId))
+      .send({ approveWithoutPassingTests: 'true' })
+      .expect(409);
+    expect(refused.body.code).toBe(TESTS_NOT_PASSED_CODE);
+    expect(refused.body.testsBlockReason).toBe('none');
+    expect(refused.body.message).toBe(TESTS_NOT_PASSED_MESSAGES.none);
+    expect(queue.enqueueExecution).toHaveBeenCalledTimes(queued);
+    expect(referrals.get(opened.reviewer.referralId)?.status).toBe('pending_approval');
+
+    await http()
+      .post(approvePath(opened.runId, opened.reviewer.referralId))
+      .send({ approveWithoutPassingTests: true })
+      .expect(200);
+    expect(queue.enqueueExecution).toHaveBeenCalledTimes(queued + 1);
+  });
+
+  it('approves a writer-to-reviewer hand-off when the latest run passed or no files changed', async () => {
+    const passed = await openReviewerHandoff({
+      harnessChangedPaths: ['src/form.ts'],
+      harnessValidationRuns: [
+        { command: 'npm test', passed: false },
+        { command: 'npm test', passed: true },
+      ],
+    });
+    expect(passed.reviewer.testsGate).toBe('passed');
+    expect(passed.reviewer.testsBlockReason).toBeNull();
+    const passedQueued = queue.enqueueExecution.mock.calls.length;
+    const passedApprove = await http()
+      .post(approvePath(passed.runId, passed.reviewer.referralId))
+      .send({})
+      .expect(200);
+    expect(passedApprove.body.testsGate).toBe('passed');
+    expect(queue.enqueueExecution).toHaveBeenCalledTimes(passedQueued + 1);
+
+    const unchanged = await openReviewerHandoff({
+      harnessValidationRuns: [{ command: 'npm test', passed: false }],
+    });
+    expect(unchanged.reviewer.testsGate).toBe('not_required');
+    expect(unchanged.reviewer.testsBlockReason).toBeNull();
+    const unchangedQueued = queue.enqueueExecution.mock.calls.length;
+    await http()
+      .post(approvePath(unchanged.runId, unchanged.reviewer.referralId))
+      .send({})
+      .expect(200);
+    expect(queue.enqueueExecution).toHaveBeenCalledTimes(unchangedQueued + 1);
+  });
+
+  it('does not apply the tests gate to other hand-offs', async () => {
+    const started = await startRun();
+    const waiting = await http()
+      .get(`/api/collaboration/runs/${started.collaborationRunId}`)
+      .expect(200);
+    expect(waiting.body.handoffs[0]).toMatchObject({
+      source: 'user',
+      target: 'lead',
+      testsGate: 'not_required',
+      testsBlockReason: null,
+    });
+    await http()
+      .post(approvePath(started.collaborationRunId, started.referralId))
+      .send({ approveWithoutPassingTests: false })
+      .expect(200);
+
+    const opened = await openReviewerHandoff({
+      harnessChangedPaths: ['src/form.ts'],
+      harnessValidationRuns: [{ command: 'npm test', passed: false }],
+    });
+    for (const handoff of opened.handoffs) {
+      if (handoff.referralId === opened.reviewer.referralId) {
+        expect(handoff.testsGate).toBe('blocked');
+      } else {
+        expect(handoff.testsGate).toBe('not_required');
+      }
+    }
+    const leadAgain = await http()
+      .post(approvePath(opened.runId, opened.leadReferralId))
+      .send({})
+      .expect(409);
+    expect(leadAgain.body.code).toBeUndefined();
+    expect(leadAgain.body.message).not.toBe(TESTS_NOT_PASSED_MESSAGES.failed);
+    expect(leadAgain.body.message).not.toBe(TESTS_NOT_PASSED_MESSAGES.none);
+    expect(referrals.get(opened.reviewer.referralId)?.status).toBe('pending_approval');
   });
 });
 

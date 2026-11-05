@@ -980,7 +980,10 @@
     "sendBackRound": "Round {round}",
     "diff": "Diff",
     "diffUnavailable": "The diff could not be loaded.",
-    "diffEmpty": "No file changes since the save point."
+    "diffEmpty": "No file changes since the save point.",
+    "testsFailedGate": "The latest test did not pass.",
+    "testsMissingGate": "No tests ran.",
+    "approveWithoutPassingTests": "Approve without passing tests"
   },
   "office": {
     "title": "Office",
