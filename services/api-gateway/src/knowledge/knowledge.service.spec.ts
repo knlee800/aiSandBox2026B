@@ -2,6 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { createHash } from 'crypto';
+import { In } from 'typeorm';
 import { KnowledgeDocument } from '../entities/knowledge-document.entity';
 import {
   KNOWLEDGE_ERROR_CODES,
@@ -294,5 +295,33 @@ describe('KnowledgeService', () => {
     expect(documents.remove).not.toHaveBeenCalled();
 
     await expect(service.deleteOwned(ownerId, 'missing')).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('looks up active documents by id for the owner only', async () => {
+    const deletedId = '44444444-4444-4444-8444-444444444444';
+    const foreignId = '55555555-5555-4555-8555-555555555555';
+    const active = row();
+    const deleted = row({ id: deletedId, deletedAt: now });
+    const foreign = row({ id: foreignId, userId: otherId });
+    documents.find.mockResolvedValue([active, deleted, foreign, row({ id: '66666666-6666-4666-8666-666666666666' })]);
+
+    await expect(service.findActiveOwnedByIds(ownerId, [])).resolves.toEqual([]);
+    await expect(service.findActiveOwnedByIds(ownerId, ['not-a-uuid'])).resolves.toEqual([]);
+    expect(documents.find).not.toHaveBeenCalled();
+
+    const found = await service.findActiveOwnedByIds(ownerId, [
+      documentId.toUpperCase(),
+      deletedId,
+      foreignId,
+      'not-a-uuid',
+      documentId,
+    ]);
+
+    expect(found).toEqual([active]);
+    expect(documents.find).toHaveBeenCalledTimes(1);
+    const query = documents.find.mock.calls[0][0];
+    expect(query.where.userId).toBe(ownerId);
+    expect(query.where.id).toEqual(In([documentId, deletedId, foreignId]));
+    expect(query.withDeleted).toBeUndefined();
   });
 });

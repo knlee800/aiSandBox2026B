@@ -8,7 +8,11 @@ import {
   UserGroupIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
-import { approveWithoutPassingTestsForClick } from '@/lib/collaboration/logic';
+import {
+  approveWithoutPassingTestsForClick,
+  fillTemplate,
+  formatCollaborationSource,
+} from '@/lib/collaboration/logic';
 
 export interface CollaborationViewLabels {
   title: string;
@@ -62,6 +66,9 @@ export interface CollaborationViewLabels {
   testsFailedGate: string;
   testsMissingGate: string;
   approveWithoutPassingTests: string;
+  sources: string;
+  unsourced: string;
+  droppedSources: string;
 }
 
 export interface CollaborationTeamMemberView {
@@ -90,6 +97,14 @@ export interface CollaborationHandoffViewModel {
   testsGate: 'passed' | 'not_required' | 'blocked';
   testsBlockReason: 'failed' | 'none' | null;
   approveWithoutTests: boolean;
+  sources: Array<{
+    documentId: string;
+    title: string;
+    scopeLabel: string;
+    heading: string | null;
+  }>;
+  showUnsourced: boolean;
+  droppedSourceCount: number;
 }
 
 export interface CollaborationPastRunView {
@@ -289,6 +304,53 @@ export default function CollaborationView(props: {
                     </div>
                   ) : !handoff.waiting && !handoff.failureReason ? (
                     <p className="mt-2 text-sm text-gray-500">{labels.noAnswerYet}</p>
+                  ) : null}
+                  {!handoff.waiting &&
+                  handoff.answer !== null &&
+                  (handoff.sources.length > 0 ||
+                    handoff.showUnsourced ||
+                    handoff.droppedSourceCount > 0) ? (
+                    <div
+                      className="mt-2 min-w-0"
+                      data-testid={`collaboration-sources-${handoff.referralId}`}
+                    >
+                      {handoff.sources.length > 0 ? (
+                        <div className="min-w-0">
+                          <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                            {labels.sources}
+                          </p>
+                          <ul className="mt-1 space-y-1">
+                            {handoff.sources.map((source, index) => (
+                              <li
+                                key={`${handoff.referralId}-source-${index}`}
+                                className="break-words text-sm text-gray-800"
+                                data-testid={`collaboration-source-${handoff.referralId}-${index}`}
+                              >
+                                {formatCollaborationSource(source)}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : null}
+                      {handoff.showUnsourced ? (
+                        <p
+                          className="mt-1 text-sm font-medium text-amber-800"
+                          data-testid={`collaboration-unsourced-${handoff.referralId}`}
+                        >
+                          {labels.unsourced}
+                        </p>
+                      ) : null}
+                      {handoff.droppedSourceCount > 0 ? (
+                        <p
+                          className="mt-1 break-words text-sm text-gray-600"
+                          data-testid={`collaboration-dropped-sources-${handoff.referralId}`}
+                        >
+                          {fillTemplate(labels.droppedSources, {
+                            count: String(handoff.droppedSourceCount),
+                          })}
+                        </p>
+                      ) : null}
+                    </div>
                   ) : null}
                   {handoff.failureReason ? (
                     <p className="mt-2 break-words text-sm text-red-700">

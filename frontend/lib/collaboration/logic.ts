@@ -146,6 +146,71 @@ export function readStringList(value: unknown): string[] {
   return value.filter((entry): entry is string => typeof entry === 'string' && entry.length > 0);
 }
 
+export interface CollaborationSourceRead {
+  documentId: string;
+  title: string;
+  scopeId: string;
+  heading: string | null;
+}
+
+export function readCollaborationSources(value: unknown): CollaborationSourceRead[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  const sources: CollaborationSourceRead[] = [];
+  for (const entry of value) {
+    if (!entry || typeof entry !== 'object') {
+      continue;
+    }
+    const record = entry as Record<string, unknown>;
+    if (typeof record.documentId !== 'string' || record.documentId.length === 0) {
+      continue;
+    }
+    if (typeof record.title !== 'string' || record.title.length === 0) {
+      continue;
+    }
+    if (typeof record.scopeId !== 'string' || record.scopeId.length === 0) {
+      continue;
+    }
+    const heading = record.heading;
+    if (heading != null && typeof heading !== 'string') {
+      continue;
+    }
+    sources.push({
+      documentId: record.documentId,
+      title: record.title,
+      scopeId: record.scopeId,
+      heading: typeof heading === 'string' && heading.length > 0 ? heading : null,
+    });
+  }
+  return sources;
+}
+
+export function readDroppedSourceCount(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < 0) {
+    return 0;
+  }
+  return value;
+}
+
+export function collaborationScopeLabel(scopeId: string, translated: string): string {
+  if (translated === `knowledge.scopes.${scopeId}` || translated.trim().length === 0) {
+    return scopeId;
+  }
+  return translated;
+}
+
+export function formatCollaborationSource(source: {
+  title: string;
+  scopeLabel: string;
+  heading: string | null;
+}): string {
+  if (source.heading && source.heading.length > 0) {
+    return `${source.title} · ${source.scopeLabel} · ${source.heading}`;
+  }
+  return `${source.title} · ${source.scopeLabel}`;
+}
+
 export function readHandoffTests(
   value: unknown,
 ): Array<{ command: string; passed: boolean }> {

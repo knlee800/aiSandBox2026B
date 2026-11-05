@@ -983,7 +983,10 @@
     "diffEmpty": "No file changes since the save point.",
     "testsFailedGate": "The latest test did not pass.",
     "testsMissingGate": "No tests ran.",
-    "approveWithoutPassingTests": "Approve without passing tests"
+    "approveWithoutPassingTests": "Approve without passing tests",
+    "sources": "Sources",
+    "unsourced": "Unsourced",
+    "droppedSources": "{count} source markers were left out."
   },
   "office": {
     "title": "Office",

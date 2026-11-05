@@ -21,6 +21,10 @@ import {
   readTestsBlockReason,
   readTestsGate,
   readTestsNotPassed,
+  collaborationScopeLabel,
+  formatCollaborationSource,
+  readCollaborationSources,
+  readDroppedSourceCount,
   sendBackRoundNumbers,
   shouldPollCollaboration,
 } from './collaboration/logic';
@@ -56,6 +60,14 @@ function renderChain(handoffs: Array<{
   testsGate?: 'passed' | 'not_required' | 'blocked';
   testsBlockReason?: 'failed' | 'none' | null;
   approveWithoutTests?: boolean;
+  sources?: Array<{
+    documentId: string;
+    title: string;
+    scopeLabel: string;
+    heading: string | null;
+  }>;
+  showUnsourced?: boolean;
+  droppedSourceCount?: number;
 }>) {
   return renderToStaticMarkup(
     React.createElement(CollaborationView, {
@@ -94,6 +106,9 @@ function renderChain(handoffs: Array<{
         testsGate: handoff.testsGate ?? 'not_required',
         testsBlockReason: handoff.testsBlockReason ?? null,
         approveWithoutTests: handoff.approveWithoutTests === true,
+        sources: handoff.sources ?? [],
+        showUnsourced: handoff.showUnsourced === true,
+        droppedSourceCount: handoff.droppedSourceCount ?? 0,
       })),
       runs: [],
       rejectReferralId: null,
@@ -409,6 +424,137 @@ describe('collaboration page', () => {
     assert.match(markup, /data-testid="collaboration-answer-answer-1"/);
     assert.match(markup, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
     assert.doesNotMatch(markup, /<script/);
+  });
+
+  test('a finished hand-off lists sources, an unsourced label, and dropped markers', () => {
+    const documentId = '33333333-3333-4333-8333-333333333333';
+    const markup = renderChain([
+      {
+        referralId: 'cited',
+        statusLabel: enMessages.collaboration.statusCompleted,
+        waiting: false,
+        answer: 'Revenue rose.',
+        prompt: 'Look.',
+        sources: [
+          {
+            documentId,
+            title: '<script>alert(1)</script>',
+            scopeLabel: enMessages.knowledge.scopes.policies,
+            heading: 'Quarter',
+          },
+        ],
+        showUnsourced: false,
+        droppedSourceCount: 2,
+      },
+      {
+        referralId: 'bare',
+        statusLabel: enMessages.collaboration.statusCompleted,
+        waiting: false,
+        answer: 'No source marker in this answer.',
+        prompt: 'Look.',
+        showUnsourced: true,
+        droppedSourceCount: 0,
+      },
+      {
+        referralId: 'waiting-sources',
+        statusLabel: enMessages.collaboration.statusPendingApproval,
+        waiting: true,
+        answer: 'Not finished.',
+        prompt: 'Look.',
+        sources: [
+          {
+            documentId,
+            title: 'Handbook',
+            scopeLabel: 'Policies',
+            heading: 'Quarter',
+          },
+        ],
+        showUnsourced: true,
+        droppedSourceCount: 4,
+      },
+    ]);
+
+    assert.equal(
+      formatCollaborationSource({
+        title: 'Handbook',
+        scopeLabel: enMessages.knowledge.scopes.policies,
+        heading: 'Quarter',
+      }),
+      'Handbook · Policies · Quarter',
+    );
+    assert.equal(
+      formatCollaborationSource({
+        title: 'Handbook',
+        scopeLabel: 'Policies',
+        heading: null,
+      }),
+      'Handbook · Policies',
+    );
+    assert.equal(
+      collaborationScopeLabel('policies', enMessages.knowledge.scopes.policies),
+      'Policies',
+    );
+    assert.equal(
+      collaborationScopeLabel('policies', zhTwMessages.knowledge.scopes.policies),
+      '政策',
+    );
+    assert.equal(
+      collaborationScopeLabel('policies', zhCnMessages.knowledge.scopes.policies),
+      '政策',
+    );
+    assert.equal(collaborationScopeLabel('policies', 'knowledge.scopes.policies'), 'policies');
+    assert.deepEqual(
+      readCollaborationSources([
+        {
+          documentId,
+          title: 'Handbook',
+          scopeId: 'policies',
+          heading: 'Quarter',
+          content: 'SECRET BODY',
+        },
+      ]),
+      [{ documentId, title: 'Handbook', scopeId: 'policies', heading: 'Quarter' }],
+    );
+    assert.equal(readDroppedSourceCount(2), 2);
+    assert.equal(readDroppedSourceCount(-1), 0);
+
+    assert.match(markup, /data-testid="collaboration-sources-cited"/);
+    assert.match(markup, /data-testid="collaboration-source-cited-0"/);
+    assert.match(markup, new RegExp(enMessages.collaboration.sources));
+    assert.match(markup, /&lt;script&gt;alert\(1\)&lt;\/script&gt; · Policies · Quarter/);
+    assert.match(markup, /data-testid="collaboration-dropped-sources-cited"/);
+    assert.match(markup, /2 source markers were left out\./);
+    assert.doesNotMatch(markup, new RegExp(documentId));
+    assert.doesNotMatch(markup, /SECRET BODY/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-unsourced-cited"/);
+
+    assert.match(markup, /data-testid="collaboration-sources-bare"/);
+    assert.match(markup, /data-testid="collaboration-unsourced-bare"/);
+    assert.match(markup, new RegExp(enMessages.collaboration.unsourced));
+    assert.doesNotMatch(markup, /data-testid="collaboration-source-bare-/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-dropped-sources-bare"/);
+    assert.equal(markup.split(enMessages.collaboration.sources).length - 1, 1);
+    assert.equal(markup.split('Handbook').length - 1, 0);
+
+    assert.doesNotMatch(markup, /data-testid="collaboration-sources-waiting-sources"/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-unsourced-waiting-sources"/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-dropped-sources-waiting-sources"/);
+
+    assert.equal(enMessages.collaboration.sources, 'Sources');
+    assert.equal(enMessages.collaboration.unsourced, 'Unsourced');
+    assert.equal(enMessages.collaboration.droppedSources, '{count} source markers were left out.');
+    assert.equal(zhTwMessages.collaboration.sources, '來源');
+    assert.equal(zhTwMessages.collaboration.unsourced, '沒有來源');
+    assert.equal(zhTwMessages.collaboration.droppedSources, '已略過 {count} 個來源標記。');
+    assert.equal(zhCnMessages.collaboration.sources, '来源');
+    assert.equal(zhCnMessages.collaboration.unsourced, '没有来源');
+    assert.equal(zhCnMessages.collaboration.droppedSources, '已略过 {count} 个来源标记。');
+    const traditional = `${zhTwMessages.collaboration.sources}${zhTwMessages.collaboration.unsourced}${zhTwMessages.collaboration.droppedSources}`;
+    const simplified = `${zhCnMessages.collaboration.sources}${zhCnMessages.collaboration.unsourced}${zhCnMessages.collaboration.droppedSources}`;
+    assert.doesNotMatch(traditional, /agent/i);
+    assert.doesNotMatch(simplified, /agent/i);
+    assert.doesNotMatch(traditional, /代理人|智能体/);
+    assert.doesNotMatch(simplified, /代理人|智能体/);
   });
 
   test('collaboration sources do not render HTML or markdown', () => {

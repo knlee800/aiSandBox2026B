@@ -84765,7 +84765,7 @@ taskId=KNOW-03
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-05. Lane 1, GATEWAY, FRONTEND and I18N. Second slice of AGENT-KNOWLEDGE-01.
+**Status:** COMPLETE AND LOCKED — 2026-11-05. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY, FRONTEND and I18N released. The Team page shows verified knowledge sources for each answer; not deployed. Checkpoint: docs/KNOW-03-CHECKPOINT.md.
 **Task ID:** KNOW-03
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -84781,12 +84781,12 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] Source markers [source: <documentId>#<heading>] in an answer are parsed; only markers whose document is an active document of the run owner are kept; invalid markers are dropped and counted
-- [ ] The hand-off result stores sources (documentId, title, scopeId, heading) and unsourced; unsourced is shown only for roles in a server list of business roles (empty until BIZ-01)
-- [ ] The Team page shows the sources and the Unsourced label in en, zh-TW and zh-CN
-- [ ] Gateway and frontend tests and builds pass; only files in the write scope change
-- [ ] Not LOCKED by an implementer
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Source markers [source: <documentId>#<heading>] in an answer are parsed; only markers whose document is an active document of the run owner are kept; invalid markers are dropped and counted
+- [x] The hand-off result stores sources (documentId, title, scopeId, heading) and unsourced; unsourced is shown only for roles in a server list of business roles (empty until BIZ-01)
+- [x] The Team page shows the sources and the Unsourced label in en, zh-TW and zh-CN
+- [x] Gateway and frontend tests and builds pass; only files in the write scope change
+- [x] Not LOCKED by an implementer
 
 ### KNOW-04 — Knowledge summaries
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

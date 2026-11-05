@@ -983,7 +983,10 @@
     "diffEmpty": "自保存点以来没有文件变更。",
     "testsFailedGate": "最近一次测试没有通过。",
     "testsMissingGate": "没有执行测试。",
-    "approveWithoutPassingTests": "在测试未通过时仍批准"
+    "approveWithoutPassingTests": "在测试未通过时仍批准",
+    "sources": "来源",
+    "unsourced": "没有来源",
+    "droppedSources": "已略过 {count} 个来源标记。"
   },
   "office": {
     "title": "办公室",

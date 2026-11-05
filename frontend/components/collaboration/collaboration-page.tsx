@@ -23,6 +23,9 @@ import {
   collaborationRefusalMessageKey,
   readErrorMessage,
   readHandoffTests,
+  collaborationScopeLabel,
+  readCollaborationSources,
+  readDroppedSourceCount,
   readStringList,
   readTestsBlockReason,
   readTestsGate,
@@ -59,11 +62,13 @@ export function CollaborationLoading() {
 
 export function useCollaborationScreen(input: {
   t: (key: string) => string;
+  translateScope?: (scopeId: string) => string;
   locale: string;
   sessionId: string;
   queryProjectId: string;
 }) {
   const { t, locale, sessionId, queryProjectId } = input;
+  const translateScope = input.translateScope ?? ((scopeId: string) => scopeId);
   // useTranslations returns a new function every render. Reading it through a ref
   // keeps the latest copy without reloading when that identity changes.
   const tRef = useRef(t);
@@ -298,6 +303,9 @@ export function useCollaborationScreen(input: {
     testsFailedGate: t('testsFailedGate'),
     testsMissingGate: t('testsMissingGate'),
     approveWithoutPassingTests: t('approveWithoutPassingTests'),
+    sources: t('sources'),
+    unsourced: t('unsourced'),
+    droppedSources: t('droppedSources'),
   };
 
   const memberLabels = useMemo(
@@ -361,6 +369,14 @@ export function useCollaborationScreen(input: {
         testsGate,
         testsBlockReason,
         approveWithoutTests: approveWithoutTests[handoff.referralId] === true,
+        sources: readCollaborationSources(handoff.sources).map((source) => ({
+          documentId: source.documentId,
+          title: source.title,
+          scopeLabel: translateScope(source.scopeId),
+          heading: source.heading,
+        })),
+        showUnsourced: handoff.showUnsourced === true,
+        droppedSourceCount: readDroppedSourceCount(handoff.droppedSourceCount),
       };
     },
   );
@@ -508,6 +524,7 @@ export function useCollaborationScreen(input: {
 
 export default function CollaborationPageClient() {
   const t = useTranslations('collaboration');
+  const knowledgeT = useTranslations('knowledge');
   const params = useParams<{ locale: string }>();
   const searchParams = useSearchParams();
   const locale = typeof params?.locale === 'string' ? params.locale : 'en';
@@ -515,6 +532,8 @@ export default function CollaborationPageClient() {
   const queryProjectId = searchParams.get('projectId')?.trim() || '';
   const viewProps = useCollaborationScreen({
     t,
+    translateScope: (scopeId: string) =>
+      collaborationScopeLabel(scopeId, knowledgeT(`scopes.${scopeId}`)),
     locale,
     sessionId,
     queryProjectId,

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { FindOptionsWhere, In, Repository } from 'typeorm';
 import { KnowledgeDocument } from '../entities/knowledge-document.entity';
 import {
   KNOWLEDGE_ERROR_CODES,
@@ -49,6 +49,37 @@ export class KnowledgeService {
       return null;
     }
     return this.documents.findOne({ where: { id, userId } });
+  }
+
+  async findActiveOwnedByIds(
+    userId: string,
+    ids: readonly string[],
+  ): Promise<KnowledgeDocument[]> {
+    const unique: string[] = [];
+    const seen = new Set<string>();
+    for (const id of ids) {
+      if (!isKnowledgeDocumentId(id)) {
+        continue;
+      }
+      const key = id.toLowerCase();
+      if (seen.has(key)) {
+        continue;
+      }
+      seen.add(key);
+      unique.push(key);
+    }
+    if (unique.length === 0) {
+      return [];
+    }
+    const rows = await this.documents.find({
+      where: { userId, id: In(unique) },
+    });
+    return rows.filter(
+      (row) =>
+        row.deletedAt == null &&
+        row.userId === userId &&
+        seen.has(row.id.toLowerCase()),
+    );
   }
 
   async upsert(

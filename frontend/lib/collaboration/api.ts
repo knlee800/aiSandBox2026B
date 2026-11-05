@@ -12,6 +12,13 @@ export interface CollaborationRunListItem {
   updatedAt: string;
 }
 
+export interface CollaborationSource {
+  documentId: string;
+  title: string;
+  scopeId: string;
+  heading: string | null;
+}
+
 export interface CollaborationHandoff {
   referralId: string;
   status: string;
@@ -23,6 +30,10 @@ export interface CollaborationHandoff {
   failureReason: string | null;
   decidedBy: string | null;
   rejectReason: string | null;
+  sources?: CollaborationSource[];
+  droppedSourceCount?: number;
+  unsourced?: boolean;
+  showUnsourced?: boolean;
   canChangeFiles?: boolean;
   changedPaths?: string[];
   savePoint?: string | null;

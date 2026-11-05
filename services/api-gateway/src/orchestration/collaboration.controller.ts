@@ -45,6 +45,12 @@ import {
   type CollaborationTestsBlockReason,
   type CollaborationTestsGateResult,
 } from './collaboration-tests-gate';
+import { KnowledgeService } from '../knowledge/knowledge.service';
+import {
+  collaborationAnswerCitations,
+  parseCollaborationSourceMarkers,
+  type CitationDocument,
+} from './collaboration-citations';
 import { OrchestrationService } from './orchestration.service';
 
 const USABLE_SESSION_STATUSES: readonly SessionStatus[] = [
@@ -79,6 +85,15 @@ export interface CollaborationHandoffView {
   diffUnavailable: boolean;
   testsGate: CollaborationTestsGate;
   testsBlockReason: CollaborationTestsBlockReason | null;
+  sources: Array<{
+    documentId: string;
+    title: string;
+    scopeId: string;
+    heading: string | null;
+  }>;
+  droppedSourceCount: number;
+  unsourced: boolean;
+  showUnsourced: boolean;
 }
 
 export interface CollaborationRunDetail {
@@ -125,6 +140,7 @@ export class CollaborationController {
     private readonly orchestrationService: OrchestrationService,
     private readonly sessionService: SessionService,
     private readonly conversationService: ConversationService,
+    private readonly knowledgeService: KnowledgeService,
   ) {}
 
   @Post('runs')
@@ -227,7 +243,7 @@ export class CollaborationController {
       const facts = await this.orchestrationService.readCollaborationHandoffFacts(
         collaborationRunId,
       );
-      return this.toDetail(detail.run, detail.referrals, facts);
+      return await this.toDetail(detail.run, detail.referrals, facts);
     } catch (error) {
       this.raise(error);
     }
@@ -259,7 +275,14 @@ export class CollaborationController {
         collaborationRunId,
         started.referral.referralId,
       );
-      return this.toHandoff(started.referral, facts.get(started.referral.referralId), gate);
+      const documents = await this.citationDocuments(caller.userId, [started.referral]);
+      return this.toHandoff(
+        started.referral,
+        facts.get(started.referral.referralId),
+        gate,
+        caller.userId,
+        documents,
+      );
     } catch (error) {
       this.raise(error);
     }
@@ -290,7 +313,14 @@ export class CollaborationController {
         collaborationRunId,
         referral.referralId,
       );
-      return this.toHandoff(referral, facts.get(referral.referralId), gate);
+      const documents = await this.citationDocuments(caller.userId, [referral]);
+      return this.toHandoff(
+        referral,
+        facts.get(referral.referralId),
+        gate,
+        caller.userId,
+        documents,
+      );
     } catch (error) {
       this.raise(error);
     }
@@ -475,11 +505,12 @@ export class CollaborationController {
     };
   }
 
-  private toDetail(
+  private async toDetail(
     run: CollaborationRun,
     referrals: readonly CollaborationReferral[],
     facts: ReadonlyMap<string, CollaborationHandoffFact>,
-  ): CollaborationRunDetail {
+  ): Promise<CollaborationRunDetail> {
+    const documents = await this.citationDocuments(run.userId, referrals);
     return {
       run: {
         collaborationRunId: run.collaborationRunId,
@@ -496,9 +527,43 @@ export class CollaborationController {
           referral,
           facts.get(referral.referralId),
           this.testsGateFor(referral, referrals, facts),
+          run.userId,
+          documents,
         ),
       ),
     };
+  }
+
+  private async citationDocuments(
+    ownerId: string,
+    referrals: readonly CollaborationReferral[],
+  ): Promise<CitationDocument[]> {
+    const ids: string[] = [];
+    const seen = new Set<string>();
+    for (const referral of referrals) {
+      if (referral.status !== 'completed') {
+        continue;
+      }
+      const parsed = parseCollaborationSourceMarkers(referral.result?.summary ?? '');
+      for (const marker of parsed.markers) {
+        if (seen.has(marker.documentId)) {
+          continue;
+        }
+        seen.add(marker.documentId);
+        ids.push(marker.documentId);
+      }
+    }
+    if (ids.length === 0) {
+      return [];
+    }
+    const rows = await this.knowledgeService.findActiveOwnedByIds(ownerId, ids);
+    return rows.map((row) => ({
+      id: row.id,
+      userId: row.userId,
+      title: row.title,
+      scopeId: row.scopeId,
+      deletedAt: row.deletedAt,
+    }));
   }
 
   private testsGateFor(
@@ -517,12 +582,21 @@ export class CollaborationController {
     referral: CollaborationReferral,
     fact: CollaborationHandoffFact | undefined,
     gate: CollaborationTestsGateResult,
+    ownerId: string,
+    documents: readonly CitationDocument[],
   ): CollaborationHandoffView {
     const failed =
       referral.status === 'failed' ||
       referral.status === 'timed_out' ||
       referral.status === 'cancelled';
     const summary = referral.result?.summary ?? '';
+    const citations = collaborationAnswerCitations({
+      completed: referral.status === 'completed',
+      answer: summary,
+      targetProfileId: referral.targetBuilder.builderProfileId,
+      ownerId,
+      documents,
+    });
     const work = fact ?? {
       canChangeFiles: false,
       changedPaths: [],
@@ -559,6 +633,10 @@ export class CollaborationController {
       diffUnavailable: work.diffUnavailable,
       testsGate: gate.testsGate,
       testsBlockReason: gate.testsBlockReason,
+      sources: citations.sources,
+      droppedSourceCount: citations.droppedSourceCount,
+      unsourced: citations.unsourced,
+      showUnsourced: citations.showUnsourced,
     };
   }
 

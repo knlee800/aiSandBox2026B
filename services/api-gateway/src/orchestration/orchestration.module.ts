@@ -16,6 +16,7 @@ import { CreditBalanceGuardModule } from '../billing/credit-balance-guard.module
 import { AuthModule } from '../auth/auth.module';
 import { SessionModule } from '../sessions/session.module';
 import { ConversationModule } from '../conversations/conversation.module';
+import { KnowledgeModule } from '../knowledge/knowledge.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { ConversationModule } from '../conversations/conversation.module';
     AbortModule,
     QuotaModule,
     CreditBalanceGuardModule,
+    KnowledgeModule,
     TypeOrmModule.forFeature([
       CollaborationRunEntity,
       CollaborationReferralEntity,

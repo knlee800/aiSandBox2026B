@@ -19,6 +19,7 @@ import { GlobalSafetyLimitService } from '../safety/global-safety-limit.service'
 import { UsageLedgerService } from '../usage-ledger/usage-ledger.service';
 import { SessionOrApiKeyAuthGuard } from '../auth/session-or-api-key.guard';
 import { ConversationService } from '../conversations/conversation.service';
+import { KnowledgeService } from '../knowledge/knowledge.service';
 import { SessionService } from '../sessions/session.service';
 import { CollaborationController } from './collaboration.controller';
 import { COLLABORATION_TEAM } from './collaboration-team';
@@ -175,6 +176,7 @@ describe('CollaborationController login routes', () => {
   let sessions: Map<string, FakeSession>;
   let conversations: Map<string, { id: string; sessionId: string }>;
   let sessionReads: jest.Mock;
+  let findActiveOwnedByIds: jest.Mock;
   let workTree: { getWorkingTreeDiff: jest.Mock };
 
   beforeEach(async () => {
@@ -203,6 +205,7 @@ describe('CollaborationController login routes', () => {
         truncated: false,
       }),
     };
+    findActiveOwnedByIds = jest.fn(async () => []);
     sessionReads = jest.fn(async (sessionId: string) => {
       const session = sessions.get(sessionId);
       if (!session) {
@@ -252,6 +255,7 @@ describe('CollaborationController login routes', () => {
         { provide: ContainerManagerHttpClient, useValue: workTree },
         { provide: UsageLedgerService, useValue: { writeExecutionIntent: jest.fn() } },
         { provide: SessionService, useValue: { getSessionById: sessionReads } },
+        { provide: KnowledgeService, useValue: { findActiveOwnedByIds } },
         {
           provide: ConversationService,
           useValue: {
@@ -1041,6 +1045,109 @@ describe('CollaborationController login routes', () => {
     expect(leadAgain.body.message).not.toBe(TESTS_NOT_PASSED_MESSAGES.failed);
     expect(leadAgain.body.message).not.toBe(TESTS_NOT_PASSED_MESSAGES.none);
     expect(referrals.get(opened.reviewer.referralId)?.status).toBe('pending_approval');
+  });
+
+  it('derives sources from the stored answer and drops foreign or invalid markers', async () => {
+    const ownedId = '33333333-3333-4333-8333-333333333333';
+    const foreignId = '44444444-4444-4444-8444-444444444444';
+    const started = await startRun();
+    const waiting = await http()
+      .get(`/api/collaboration/runs/${started.collaborationRunId}`)
+      .expect(200);
+    expect(waiting.body.handoffs[0]).toMatchObject({
+      status: 'pending_approval',
+      sources: [],
+      droppedSourceCount: 0,
+      unsourced: false,
+      showUnsourced: false,
+    });
+
+    await http()
+      .post(
+        `/api/collaboration/runs/${started.collaborationRunId}/referrals/${started.referralId}/approve`,
+      )
+      .send({})
+      .expect(200);
+    const leadExecutionId = referrals.get(started.referralId)?.executionId;
+    const answer = [
+      `Revenue rose [source: ${ownedId}#Quarter]`,
+      `and again [source: ${ownedId.toUpperCase()}#Quarter].`,
+      'See [source: not-a-uuid]',
+      `and [source: ${foreignId}].`,
+    ].join(' ');
+    executionResults.getExecution.mockImplementation(async (executionId: string) => {
+      if (executionId === leadExecutionId) {
+        return {
+          execution_status: 'completed',
+          metadata: { aiExecutionResult: { output: answer } },
+        };
+      }
+      return null;
+    });
+    findActiveOwnedByIds.mockResolvedValue([
+      {
+        id: ownedId,
+        userId: OWNER_ID,
+        title: 'Handbook',
+        scopeId: 'policies',
+        content: 'SECRET BODY',
+        deletedAt: null,
+      },
+    ]);
+
+    const detail = await http()
+      .get(`/api/collaboration/runs/${started.collaborationRunId}`)
+      .expect(200);
+    const lead = detail.body.handoffs[0];
+    expect(lead.status).toBe('completed');
+    expect(lead.answer).toBe(answer);
+    expect(lead.sources).toEqual([
+      {
+        documentId: ownedId,
+        title: 'Handbook',
+        scopeId: 'policies',
+        heading: 'Quarter',
+      },
+    ]);
+    expect(lead.sources[0]).not.toHaveProperty('content');
+    expect(JSON.stringify(detail.body)).not.toContain('SECRET BODY');
+    expect(lead.droppedSourceCount).toBe(2);
+    expect(lead.unsourced).toBe(false);
+    expect(lead.showUnsourced).toBe(false);
+    expect(findActiveOwnedByIds).toHaveBeenCalledWith(OWNER_ID, [ownedId, foreignId]);
+  });
+
+  it('marks a finished answer with no valid source as unsourced and does not label it', async () => {
+    const started = await startRun();
+    await http()
+      .post(
+        `/api/collaboration/runs/${started.collaborationRunId}/referrals/${started.referralId}/approve`,
+      )
+      .send({})
+      .expect(200);
+    const leadExecutionId = referrals.get(started.referralId)?.executionId;
+    executionResults.getExecution.mockImplementation(async (executionId: string) => {
+      if (executionId === leadExecutionId) {
+        return {
+          execution_status: 'completed',
+          metadata: { aiExecutionResult: { output: 'Updated the form.' } },
+        };
+      }
+      return null;
+    });
+
+    const detail = await http()
+      .get(`/api/collaboration/runs/${started.collaborationRunId}`)
+      .expect(200);
+    expect(detail.body.handoffs[0]).toMatchObject({
+      status: 'completed',
+      answer: 'Updated the form.',
+      sources: [],
+      droppedSourceCount: 0,
+      unsourced: true,
+      showUnsourced: false,
+    });
+    expect(findActiveOwnedByIds).not.toHaveBeenCalled();
   });
 });
 
