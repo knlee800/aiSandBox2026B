@@ -84320,7 +84320,7 @@ nature=IMPLEMENTATION
 **Added 2026-11-05 (Keith in chat, Agent Teams assessment and limits):** (8) a Limits page in the admin area: view and edit limits in the browser, applied without a restart, every change logged, later per plan or per user; needs a settings table and admin-only validation. Recommendation (control plane, 2026-11-05): recommended later, with charging, before anyone but Keith uses the platform.
 **Planning, 2026-11-05:** all eight items planned in GOV-ACCESS-PLAN-01.
 **Plan, 2026-11-05:** docs/ACCESS-READY-01-PLAN.md, approved by Keith with decisions D1 to D7. Registered children: ACCESS-01A (first) to ACCESS-01J, ACCESS-LIVE-01 and LIMITS-PER-USER-01. Second-user checklist: ACCESS-01A, 01B, 01C, 01D, 01F, ACCESS-LIVE-01 and COLLAB-AUDIT-01. The umbrella stays NOT_READY.
-**Added 2026-11-05 (ACCESS-01A):** (9) HTTP CORS in services/api-gateway/src/main.ts allows any origin (origin: true); restrict it to APP_BASE_URL before a second user.
+**Added 2026-11-05 (ACCESS-01A):** (9) HTTP CORS in services/api-gateway/src/main.ts allows any origin (origin: true); restrict it to APP_BASE_URL before a second user. **Superseded 2026-11-06** by ACCESS-CORS-01 (acceptance criteria 2 to 4).
 **D3, 2026-11-06 (Keith):** OpenAI and xAI Agent runs are withheld from anyone other than Keith. No OpenAI or xAI key is added on staging while a second person has access, until ACCESS-01J (stateless continuation, plan S10 option A) is COMPLETE AND LOCKED. This replaces the disclosure recommended in docs/ACCESS-READY-01-PLAN.md; no disclosure text is built. On 2026-11-06 staging has no OpenAI or xAI key (OpenAI is the template placeholder, xAI is empty), so no code change is needed now. With D3 recorded, the second-user checklist in the plan is complete; inviting a person stays Keith's decision.
 
 #### Acceptance criteria
@@ -85727,6 +85727,35 @@ nature=IMPLEMENTATION
 - [x] The built frontend contains the new daily-credit message in en, zh-TW and zh-CN
 - [x] Nothing queued or running before the deploy; runs and provider stay off; nothing left open
 - [x] Not LOCKED by an implementer
+
+### ACCESS-CORS-01 — HTTP CORS allows only the app's own origin
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=ACCESS-CORS-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED — 2026-11-06. Lane 1, GATEWAY. Stage-start: docs/ACCESS-CORS-01-STAGE-START.md (design frozen in this record).
+**Task ID:** ACCESS-CORS-01
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP: registration, admission and the frozen stage-start in one record; implementation; consolidation and LOCK in the same commit as the code (LOCAL-TESTS).
+**Start condition (human):** READY — Keith approved the draft and admitted it on 2026-11-06.
+**Depends on:** none.
+**Primary write scope:** services/api-gateway/src/main.ts and the new folder services/api-gateway/src/cors/ (helper and its test). Reads services/api-gateway/src/websocket/websocket.gateway.ts without changing it. Anything else is out of scope.
+**Mutexes / resources:** GATEWAY. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** LOCAL-TESTS (STAGING-DEPLOY-09, registered at LOCK, checks it on staging from the host). **Revert isolation:** acceptable (one bootstrap option and one new folder; no migration).
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md.
+
+**Holds:** services/api-gateway/src/main.ts enables CORS with origin true and credentials true, so any website can send credentialed requests to the gateway and read the replies. The frontend does not depend on cross-origin calls: the browser calls /api on its own origin and Next forwards it (frontend/next.config.js). Item 9 of ACCESS-READY-01.
+**Named in:** ACCESS-READY-01 item 9 (added by ACCESS-01A).
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] HTTP CORS uses the rule of resolveSocketCorsOrigin: with APP_BASE_URL set, only that exact origin (scheme, host, port) is allowed and echoed; any other origin, a missing Origin, or APP_BASE_URL unset, blank or not a URL gets no CORS allow header; never origin true, never the request origin reflected; credentials true kept
+- [ ] main.ts no longer contains origin: true, checked by a source test
+- [ ] Unit tests cover the allowed origin, another origin, no origin, APP_BASE_URL unset and invalid, and a different port and scheme
+- [ ] Gateway npm test shows only the 14 known runtime-only smoke.integration failures; npm run build passes
+- [ ] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
