@@ -22,7 +22,7 @@ describe('AuthController Apple OAuth fallback', () => {
 
   it('redirects to login when Apple strategy is not registered for auth start', async () => {
     passportMock._strategy.mockReturnValue(undefined);
-    const controller = new AuthController(authService);
+    const controller = new AuthController(authService, {} as never);
     const request = {
       session: {},
     } as any;
@@ -39,7 +39,7 @@ describe('AuthController Apple OAuth fallback', () => {
 
   it('redirects to login when Apple strategy is not registered for callback', async () => {
     passportMock._strategy.mockReturnValue(undefined);
-    const controller = new AuthController(authService);
+    const controller = new AuthController(authService, {} as never);
     const request = {
       session: {
         oauthLocale: 'en',

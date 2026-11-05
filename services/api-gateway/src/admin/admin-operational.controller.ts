@@ -6,6 +6,8 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   Req,
@@ -23,12 +25,15 @@ import {
 } from './dto/admin-users-response.dto';
 import { AdminSessionsResponseDto } from './dto/admin-sessions-response.dto';
 import { SessionCookieGuard } from '../auth/session-cookie.guard';
+import { CsrfGuard } from '../auth/csrf.guard';
+import { EntitlementService } from '../auth/entitlement.service';
 import { AdminRoleGuard } from '../guards/admin-role.guard';
 import {
   AdminCreditGrantRequestDto,
   AdminCreditGrantResponseDto,
 } from './dto/admin-credit-grant.dto';
 import { AdminCreditGrantService } from './admin-credit-grant.service';
+import { AdminSetEntitlementsRequestDto } from './dto/admin-set-entitlements.dto';
 
 type AdminRequestContext = {
   user?: {
@@ -44,6 +49,7 @@ export class AdminOperationalController {
   constructor(
     private readonly adminDashboardService: AdminDashboardService,
     private readonly adminCreditGrantService: AdminCreditGrantService,
+    private readonly entitlements: EntitlementService,
   ) {}
 
   @Get('users')
@@ -75,6 +81,26 @@ export class AdminOperationalController {
     }
 
     return await this.adminCreditGrantService.grantCredits(
+      userId,
+      authenticatedAdminId,
+      dto,
+    );
+  }
+
+  @Patch('users/:userId/entitlements')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(CsrfGuard)
+  async setUserEntitlements(
+    @Param('userId', ParseUUIDPipe) userId: string,
+    @Body() dto: AdminSetEntitlementsRequestDto,
+    @Req() request: AdminRequestContext,
+  ) {
+    const authenticatedAdminId = request.user?.userId;
+    if (!authenticatedAdminId) {
+      throw new UnauthorizedException('Authentication required');
+    }
+
+    return await this.entitlements.setEntitlements(
       userId,
       authenticatedAdminId,
       dto,

@@ -16,7 +16,9 @@ describe('AuthController email verification routes', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    controller = new AuthController(mockAuthService as any);
+    controller = new AuthController(mockAuthService as any, {
+      resolveHarnessEntitled: jest.fn(),
+    } as any);
   });
 
   it('register passes locale into authService.register', async () => {
@@ -151,63 +153,51 @@ describe('AuthController email verification routes', () => {
 });
 
 describe('AuthController getProfile harness entitlement', () => {
-  const allowListKey = 'AGENT_HARNESS_BROWSER_SESSION_USER_IDS';
-  const allowedUserId = '11111111-1111-4111-8111-111111111111';
-  const otherUserId = '22222222-2222-4222-8222-222222222222';
+  const userId = '11111111-1111-4111-8111-111111111111';
   const profile = {
-    id: allowedUserId,
+    id: userId,
     email: 'profile@example.com',
     role: 'user',
     plan_type: 'free',
     emailVerified: true,
   };
 
-  let originalAllowList: string | undefined;
   const mockAuthService = {
     getUserById: jest.fn(),
+  };
+  const entitlements = {
+    resolveHarnessEntitled: jest.fn(),
   };
   let controller: AuthController;
 
   beforeEach(() => {
-    originalAllowList = process.env[allowListKey];
     jest.clearAllMocks();
     mockAuthService.getUserById.mockResolvedValue({ ...profile });
-    controller = new AuthController(mockAuthService as any);
+    controller = new AuthController(mockAuthService as any, entitlements as any);
   });
 
-  afterEach(() => {
-    if (originalAllowList === undefined) {
-      delete process.env[allowListKey];
-    } else {
-      process.env[allowListKey] = originalAllowList;
-    }
-  });
+  it('returns harnessEntitled true from the table read and keeps the existing profile fields', async () => {
+    entitlements.resolveHarnessEntitled.mockResolvedValue(true);
 
-  it('returns harnessEntitled true and keeps the existing profile fields', async () => {
-    process.env[allowListKey] = allowedUserId;
+    const result = await controller.getProfile({ user: { userId } });
 
-    const result = await controller.getProfile({ user: { userId: allowedUserId } });
-
-    expect(mockAuthService.getUserById).toHaveBeenCalledWith(allowedUserId);
+    expect(entitlements.resolveHarnessEntitled).toHaveBeenCalledWith(userId);
+    expect(mockAuthService.getUserById).toHaveBeenCalledWith(userId);
     expect(result).toEqual({
       ...profile,
       harnessEntitled: true,
     });
   });
 
-  it('returns harnessEntitled false and keeps the existing profile fields', async () => {
-    process.env[allowListKey] = allowedUserId;
-    const otherProfile = {
-      ...profile,
-      id: otherUserId,
-    };
-    mockAuthService.getUserById.mockResolvedValue(otherProfile);
+  it('returns harnessEntitled false from the table read and keeps the existing profile fields', async () => {
+    entitlements.resolveHarnessEntitled.mockResolvedValue(false);
 
-    const result = await controller.getProfile({ user: { userId: otherUserId } });
+    const result = await controller.getProfile({ user: { userId } });
 
-    expect(mockAuthService.getUserById).toHaveBeenCalledWith(otherUserId);
+    expect(entitlements.resolveHarnessEntitled).toHaveBeenCalledWith(userId);
+    expect(mockAuthService.getUserById).toHaveBeenCalledWith(userId);
     expect(result).toEqual({
-      ...otherProfile,
+      ...profile,
       harnessEntitled: false,
     });
   });

@@ -85165,7 +85165,7 @@ taskId=ACCESS-01B
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-05. Lane 1, GATEWAY, MIGRATION and ENV. Keith approved the scope on 2026-11-05; stage-start next.
+**Status:** COMPLETE AND LOCKED — 2026-11-05. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY, MIGRATION and ENV released. Per-user entitlements table, table-only access read and the audited admin PATCH; not deployed. Checkpoint: docs/ACCESS-01B-CHECKPOINT.md.
 **Task ID:** ACCESS-01B
 **Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -85182,13 +85182,13 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] The migration creates user_entitlements (user ID, harness enabled, Agent write enabled, plan override, daily token limit override, updated_by, updated_at); a spec covers up and down
-- [ ] harnessEntitled for browser sessions and /api/auth/me is read from the table; the cutover order seeds rows before the env allowlist is retired, so nobody loses access at any point
-- [ ] An admin-only route sets a user's entitlements; every change writes one audit_events row with the acting admin
-- [ ] Agent write, plan override and daily token limit override are stored but not read yet (ACCESS-01C and ACCESS-01D read them)
-- [ ] Tests cover the table read, non-admin refusal, one audit row per change and the cutover rule
-- [ ] Gateway npm test shows only the 14 known runtime-only smoke.integration failures; npm run build passes
-- [ ] Not LOCKED by an implementer
+- [x] The migration creates user_entitlements (user ID, harness enabled, Agent write enabled, plan override, daily token limit override, updated_by, updated_at); a spec covers up and down
+- [x] harnessEntitled for browser sessions and /api/auth/me is read from the table; the cutover order seeds rows before the env allowlist is retired, so nobody loses access at any point
+- [x] An admin-only route sets a user's entitlements; every change writes one audit_events row with the acting admin
+- [x] Agent write, plan override and daily token limit override are stored but not read yet (ACCESS-01C and ACCESS-01D read them)
+- [x] Tests cover the table read, non-admin refusal, one audit row per change and the cutover rule
+- [x] Gateway npm test shows only the 14 known runtime-only smoke.integration failures; npm run build passes
+- [x] Not LOCKED by an implementer
 
 ### ACCESS-01C — Signed Agent tool profile; the write flag becomes a kill switch
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -85471,6 +85471,31 @@ nature=IMPLEMENTATION
 - [x] Keith judgement recorded
 - [x] Not LOCKED by an implementer
 
+### ADMIN-CSRF-01 — CSRF check on the admin credit grant route
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=ADMIN-CSRF-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by ACCESS-01B (stage-start section 11); not admitted.
+**Task ID:** ADMIN-CSRF-01
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith admits it. Keith decides.
+**Depends on:** none.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md.
+
+**Holds:** POST /api/admin/users/:userId/credits (services/api-gateway/src/admin/admin-operational.controller.ts) is cookie-authenticated and has no CsrfGuard, unlike the ACCESS-01B entitlements PATCH. Add CsrfGuard and make any frontend caller send x-csrf-token. Rough size S.
+**Named in:** docs/ACCESS-01B-STAGE-START.md section 11 and its control-plane review.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
@@ -85524,3 +85549,4 @@ One line per follow-up Keith dropped: date, follow-up, where it was named, reaso
 - 2026-11-05 — reversal: the collaboration eval dropped above is re-registered as COLLAB-EVAL-01 (Keith, 2026-11-05); that drop line stays as history.
 - 2026-11-05 — Agent Teams ideas not adopted: free agent-to-agent messaging, agents claiming their own tasks, auto-approved plans, named in Keith's Agent Teams assessment request — each weakens the owner's approval as the single control point — Keith in chat.
 - 2026-11-05 — frontend/components/Timeline.tsx dead socket prop, named in docs/ACCESS-READY-01-PLAN.md section 9 — unused component; ACCESS-01A makes a stray socket harmless — GOV-ACCESS-PLAN-01.
+- 2026-11-05 — admin GET of a user's entitlements, named in docs/ACCESS-01B-STAGE-START.md section 11 — the PATCH response and audit_events show state until ACCESS-01G/01H — Keith, ACCESS-01B.

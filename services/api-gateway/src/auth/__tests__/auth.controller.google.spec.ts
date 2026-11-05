@@ -22,7 +22,7 @@ describe('AuthController Google OAuth fallback', () => {
 
   it('redirects to login when Google strategy is not registered for auth start', async () => {
     passportMock._strategy.mockReturnValue(undefined);
-    const controller = new AuthController(authService);
+    const controller = new AuthController(authService, {} as never);
     const request = {
       session: {},
     } as any;
@@ -39,7 +39,7 @@ describe('AuthController Google OAuth fallback', () => {
 
   it('redirects to login when Google strategy is not registered for callback', async () => {
     passportMock._strategy.mockReturnValue(undefined);
-    const controller = new AuthController(authService);
+    const controller = new AuthController(authService, {} as never);
     const request = {
       session: {
         oauthLocale: 'zh-TW',
@@ -59,7 +59,7 @@ describe('AuthController Google OAuth fallback', () => {
   it('calls passport.authenticate when Google strategy is registered', async () => {
     passportMock._strategy.mockReturnValue({});
     passportMock.authenticate.mockReturnValue(() => undefined);
-    const controller = new AuthController(authService);
+    const controller = new AuthController(authService, {} as never);
     const request = {
       session: {},
     } as any;

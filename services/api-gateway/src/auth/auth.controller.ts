@@ -23,7 +23,7 @@ import {
   ResendVerificationDto,
 } from './dto/auth.dto';
 import { SessionCookieGuard } from './session-cookie.guard';
-import { isBrowserSessionHarnessEntitled } from './session-or-api-key.guard';
+import { EntitlementService } from './entitlement.service';
 import { CsrfGuard } from './csrf.guard';
 import { EmailThrottlerGuard } from './email-throttler.guard';
 import * as acceptLanguageParser from 'accept-language-parser';
@@ -47,7 +47,10 @@ export class AuthController {
   private static readonly SUPPORTED_LOCALES = new Set(['en', 'zh-TW', 'zh-CN']);
   private static readonly ALLOWED_POST_OAUTH_REDIRECTS = new Set(['/app', '/login']);
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private entitlements: EntitlementService,
+  ) {}
 
   private getLanguageFromHeader(acceptLanguage: string | undefined): string {
     if (!acceptLanguage) return 'en';
@@ -375,7 +378,7 @@ export class AuthController {
     const profile = await this.authService.getUserById(req.user.userId);
     return {
       ...profile,
-      harnessEntitled: isBrowserSessionHarnessEntitled(req.user.userId),
+      harnessEntitled: await this.entitlements.resolveHarnessEntitled(req.user.userId),
     };
   }
 

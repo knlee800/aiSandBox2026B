@@ -17,6 +17,9 @@ import { User } from '../entities/user.entity';
 import { OauthAccount } from '../entities/oauth-account.entity';
 import { VerificationToken } from '../entities/verification-token.entity';
 import { AuthSession } from '../entities/auth-session.entity';
+import { UserEntitlementEntity } from '../entities/user-entitlement.entity';
+import { AuditEventEntity } from '../entities/audit-event.entity';
+import { EntitlementService } from './entitlement.service';
 import { SessionCookieGuard } from './session-cookie.guard';
 import { EmailThrottlerGuard } from './email-throttler.guard';
 import { EmailModule } from '../email/email.module';
@@ -55,11 +58,20 @@ export const appleStrategyProvider = {
       signOptions: { expiresIn: process.env.JWT_EXPIRES_IN || '15m' },
     }),
     EmailModule,
-    TypeOrmModule.forFeature([ApiKey, User, OauthAccount, VerificationToken, AuthSession]),
+    TypeOrmModule.forFeature([
+      ApiKey,
+      User,
+      OauthAccount,
+      VerificationToken,
+      AuthSession,
+      UserEntitlementEntity,
+      AuditEventEntity,
+    ]),
   ],
   controllers: [AuthController, ApiKeyController],
   providers: [
     AuthService,
+    EntitlementService,
     JwtStrategy,
     googleStrategyProvider,
     appleStrategyProvider,
@@ -72,6 +84,7 @@ export const appleStrategyProvider = {
   ],
   exports: [
     AuthService,
+    EntitlementService,
     SessionCookieGuard,
     ApiKeyAuthGuard,
     SessionOrApiKeyAuthGuard,

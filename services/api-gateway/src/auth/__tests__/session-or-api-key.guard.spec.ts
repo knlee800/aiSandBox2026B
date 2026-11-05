@@ -1,7 +1,8 @@
-import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { ExecutionContext, Logger, UnauthorizedException } from '@nestjs/common';
 import { SessionOrApiKeyAuthGuard } from '../session-or-api-key.guard';
 import { ApiKeyAuthGuard } from '../api-key-auth.guard';
 import { AuthService } from '../auth.service';
+import { EntitlementService } from '../entitlement.service';
 import { User } from '../../entities/user.entity';
 
 describe('SessionOrApiKeyAuthGuard', () => {
@@ -116,227 +117,128 @@ describe('SessionOrApiKeyAuthGuard', () => {
     await expect(guard.canActivate(context)).rejects.toThrow(UnauthorizedException);
   });
 
-  describe('AGENT-PLATFORM-EXEC-01C5 browser-session Harness entitlement', () => {
+  describe('browser-session harness entitlement from user_entitlements', () => {
     const ALLOW_LIST_KEY = 'AGENT_HARNESS_BROWSER_SESSION_USER_IDS';
-    const ALLOWED_USER_ID = '11111111-1111-4111-8111-111111111111';
-    const OTHER_USER_ID = '22222222-2222-4222-8222-222222222222';
+    const USER_ID = '11111111-1111-4111-8111-111111111111';
     const SESSION_COOKIE = 'valid-session-token';
-
+    let findOne: jest.Mock;
     let originalAllowList: string | undefined;
 
-    function restoreAllowListEnv(): void {
+    beforeEach(() => {
+      originalAllowList = process.env[ALLOW_LIST_KEY];
+      delete process.env[ALLOW_LIST_KEY];
+      findOne = jest.fn().mockResolvedValue(null);
+      const entitlements = new EntitlementService(
+        { findOne, manager: { transaction: jest.fn() } } as never,
+        { findOne: jest.fn() } as never,
+      );
+      guard = new SessionOrApiKeyAuthGuard(
+        mockApiKeyAuthGuard,
+        mockAuthService,
+        entitlements,
+      );
+    });
+
+    afterEach(() => {
       if (originalAllowList === undefined) {
         delete process.env[ALLOW_LIST_KEY];
       } else {
         process.env[ALLOW_LIST_KEY] = originalAllowList;
       }
-    }
+    });
 
-    async function authenticateBrowserUser(
-      userOverrides?: Partial<Pick<User, 'id' | 'email' | 'role' | 'planType'>>,
-    ) {
+    async function authenticate(id = USER_ID) {
       const { context, request } = createContext({
         cookies: { aisandbox_session: SESSION_COOKIE },
       });
       mockAuthService.validateSessionToken.mockResolvedValue({
-        id: ALLOWED_USER_ID,
+        id,
         email: 'user@example.com',
         role: 'user',
         planType: 'free',
-        ...userOverrides,
       } as User);
       const result = await guard.canActivate(context);
       return { result, request };
     }
 
-    beforeEach(() => {
-      originalAllowList = process.env[ALLOW_LIST_KEY];
-      delete process.env[ALLOW_LIST_KEY];
-    });
+    it('sets harnessEntitled when the row has harnessEnabled true and selects only that column', async () => {
+      findOne.mockResolvedValue({ harnessEnabled: true });
 
-    afterEach(() => {
-      restoreAllowListEnv();
-    });
-
-    it('grants harnessEntitled true to one valid configured authenticated user UUID', async () => {
-      process.env[ALLOW_LIST_KEY] = ALLOWED_USER_ID;
-
-      const { result, request } = await authenticateBrowserUser();
+      const { result, request } = await authenticate();
 
       expect(result).toBe(true);
-      expect(request.apiKeyIdentity.userId).toBe(ALLOWED_USER_ID);
-      expect(request.apiKeyIdentity.apiKeyId).toBe('browser-session');
-      expect(request.apiKeyIdentity.scopes).toEqual(['ai:execute']);
-      expect(request.apiKeyIdentity.isInternal).toBe(true);
-      expect(request.apiKeyIdentity.harnessEntitled).toBe(true);
-    });
-
-    it('does not grant entitlement to a different valid authenticated user UUID', async () => {
-      process.env[ALLOW_LIST_KEY] = ALLOWED_USER_ID;
-
-      const { result, request } = await authenticateBrowserUser({
-        id: OTHER_USER_ID,
+      expect(findOne).toHaveBeenCalledWith({
+        where: { userId: USER_ID },
+        select: ['harnessEnabled'],
       });
-
-      expect(result).toBe(true);
-      expect(request.apiKeyIdentity.userId).toBe(OTHER_USER_ID);
-      expect(request.apiKeyIdentity.isInternal).toBe(true);
-      expect(request.apiKeyIdentity).not.toHaveProperty('harnessEntitled');
-    });
-
-    it('missing configuration grants nobody', async () => {
-      delete process.env[ALLOW_LIST_KEY];
-
-      const { result, request } = await authenticateBrowserUser();
-
-      expect(result).toBe(true);
-      expect(request.apiKeyIdentity.userId).toBe(ALLOWED_USER_ID);
-      expect(request.apiKeyIdentity).not.toHaveProperty('harnessEntitled');
-    });
-
-    it('empty and whitespace-only configuration grants nobody', async () => {
-      process.env[ALLOW_LIST_KEY] = '';
-      const empty = await authenticateBrowserUser();
-      expect(empty.result).toBe(true);
-      expect(empty.request.apiKeyIdentity).not.toHaveProperty('harnessEntitled');
-
-      process.env[ALLOW_LIST_KEY] = '   \t\n  ';
-      const whitespace = await authenticateBrowserUser();
-      expect(whitespace.result).toBe(true);
-      expect(whitespace.request.apiKeyIdentity).not.toHaveProperty('harnessEntitled');
-    });
-
-    it('one malformed token invalidates the entire list even when the authenticated UUID is also present', async () => {
-      process.env[ALLOW_LIST_KEY] = `${ALLOWED_USER_ID},not-a-uuid`;
-
-      const { result, request } = await authenticateBrowserUser();
-
-      expect(result).toBe(true);
-      expect(request.apiKeyIdentity.userId).toBe(ALLOWED_USER_ID);
-      expect(request.apiKeyIdentity).not.toHaveProperty('harnessEntitled');
-    });
-
-    it('rejects an email address as an allow-list entry and grants nobody', async () => {
-      process.env[ALLOW_LIST_KEY] = 'user@example.com';
-
-      const { result, request } = await authenticateBrowserUser({
-        email: 'user@example.com',
+      expect(request.apiKeyIdentity).toEqual({
+        userId: USER_ID,
+        apiKeyId: 'browser-session',
+        scopes: ['ai:execute'],
+        isInternal: true,
+        harnessEntitled: true,
       });
+    });
+
+    it('leaves harnessEntitled unset when the row has harnessEnabled false even if the env lists the user', async () => {
+      process.env[ALLOW_LIST_KEY] = USER_ID;
+      findOne.mockResolvedValue({ harnessEnabled: false });
+
+      const { result, request } = await authenticate();
+
+      expect(result).toBe(true);
+      expect(request.apiKeyIdentity.userId).toBe(USER_ID);
+      expect(request.apiKeyIdentity).not.toHaveProperty('harnessEntitled');
+    });
+
+    it('leaves harnessEntitled unset when the user has no row', async () => {
+      findOne.mockResolvedValue(null);
+
+      const { result, request } = await authenticate();
 
       expect(result).toBe(true);
       expect(request.apiKeyIdentity).not.toHaveProperty('harnessEntitled');
     });
 
-    it('discards empty tokens inside a non-empty list because they are not malformed', async () => {
-      process.env[ALLOW_LIST_KEY] = `,${ALLOWED_USER_ID},,${OTHER_USER_ID},`;
+    it('a non-empty AGENT_HARNESS_BROWSER_SESSION_USER_IDS value grants nothing', async () => {
+      process.env[ALLOW_LIST_KEY] = `${USER_ID},22222222-2222-4222-8222-222222222222`;
+      findOne.mockResolvedValue(null);
 
-      const entitled = await authenticateBrowserUser();
-      expect(entitled.result).toBe(true);
-      expect(entitled.request.apiKeyIdentity.harnessEntitled).toBe(true);
-
-      const other = await authenticateBrowserUser({ id: OTHER_USER_ID });
-      expect(other.result).toBe(true);
-      expect(other.request.apiKeyIdentity.harnessEntitled).toBe(true);
-    });
-
-    it('treats duplicates as a set and does not change the membership result', async () => {
-      process.env[ALLOW_LIST_KEY] = `${ALLOWED_USER_ID},${ALLOWED_USER_ID},${ALLOWED_USER_ID}`;
-
-      const entitled = await authenticateBrowserUser();
-      expect(entitled.result).toBe(true);
-      expect(entitled.request.apiKeyIdentity.harnessEntitled).toBe(true);
-
-      const other = await authenticateBrowserUser({ id: OTHER_USER_ID });
-      expect(other.result).toBe(true);
-      expect(other.request.apiKeyIdentity).not.toHaveProperty('harnessEntitled');
-    });
-
-    it('trims surrounding whitespace on the raw value and each token, then matches case-insensitively', async () => {
-      process.env[ALLOW_LIST_KEY] = `  ${ALLOWED_USER_ID.toUpperCase()} , ${OTHER_USER_ID}  `;
-
-      const entitled = await authenticateBrowserUser({
-        id: ALLOWED_USER_ID.toLowerCase(),
-      });
-      expect(entitled.result).toBe(true);
-      expect(entitled.request.apiKeyIdentity.harnessEntitled).toBe(true);
-    });
-
-    it('matches only authenticated user.id, not email, role, plan, or request/body userId', async () => {
-      process.env[ALLOW_LIST_KEY] = ALLOWED_USER_ID;
-      const { context, request } = createContext({
-        cookies: { aisandbox_session: SESSION_COOKIE },
-      });
-      request.body = { userId: ALLOWED_USER_ID };
-      mockAuthService.validateSessionToken.mockResolvedValue({
-        id: OTHER_USER_ID,
-        email: ALLOWED_USER_ID,
-        role: ALLOWED_USER_ID,
-        planType: ALLOWED_USER_ID,
-      } as unknown as User);
-
-      const result = await guard.canActivate(context);
+      const { result, request } = await authenticate();
 
       expect(result).toBe(true);
-      expect(request.apiKeyIdentity.userId).toBe(OTHER_USER_ID);
-      expect(request.apiKeyIdentity).not.toHaveProperty('harnessEntitled');
-      expect(mockAuthService.validateSessionToken).toHaveBeenCalledWith(SESSION_COOKIE);
-    });
-
-    it('does not treat isInternal true as Harness entitlement', async () => {
-      delete process.env[ALLOW_LIST_KEY];
-
-      const { result, request } = await authenticateBrowserUser();
-
-      expect(result).toBe(true);
-      expect(request.apiKeyIdentity.isInternal).toBe(true);
+      expect(findOne).toHaveBeenCalledWith({
+        where: { userId: USER_ID },
+        select: ['harnessEnabled'],
+      });
       expect(request.apiKeyIdentity).not.toHaveProperty('harnessEntitled');
     });
 
-    it('keeps invalid/expired session behavior unchanged', async () => {
-      process.env[ALLOW_LIST_KEY] = ALLOWED_USER_ID;
-      const { context } = createContext({
-        cookies: { aisandbox_session: 'expired-token' },
-      });
-      mockAuthService.validateSessionToken.mockResolvedValue(null);
+    it('leaves harnessEntitled unset and warns with the userId when the read fails', async () => {
+      findOne.mockRejectedValue(new Error('secret sql'));
+      const warnSpy = jest
+        .spyOn(Logger.prototype, 'warn')
+        .mockImplementation(() => undefined);
 
-      await expect(guard.canActivate(context)).rejects.toThrow(UnauthorizedException);
-      await expect(guard.canActivate(context)).rejects.toThrow(
-        'Invalid or expired session',
-      );
+      try {
+        const { result, request } = await authenticate();
+
+        expect(result).toBe(true);
+        expect(request.apiKeyIdentity).not.toHaveProperty('harnessEntitled');
+        expect(warnSpy).toHaveBeenCalledWith(USER_ID);
+        expect(JSON.stringify(warnSpy.mock.calls)).not.toContain('secret sql');
+      } finally {
+        warnSpy.mockRestore();
+      }
     });
 
-    it('keeps missing-cookie behavior unchanged', async () => {
-      process.env[ALLOW_LIST_KEY] = ALLOWED_USER_ID;
-      const { context } = createContext({});
-
-      await expect(guard.canActivate(context)).rejects.toThrow(UnauthorizedException);
-      await expect(guard.canActivate(context)).rejects.toThrow(
-        'Missing authentication credentials',
-      );
-    });
-
-    it('keeps Bearer-header priority unchanged when a session cookie is also present', async () => {
-      process.env[ALLOW_LIST_KEY] = ALLOWED_USER_ID;
-      const { context } = createContext({
-        authHeader: 'Bearer my-api-key',
-        cookies: { aisandbox_session: SESSION_COOKIE },
-      });
-      mockApiKeyAuthGuard.canActivate.mockResolvedValue(true);
-
-      const result = await guard.canActivate(context);
-
-      expect(result).toBe(true);
-      expect(mockApiKeyAuthGuard.canActivate).toHaveBeenCalledWith(context);
-      expect(mockAuthService.validateSessionToken).not.toHaveBeenCalled();
-    });
-
-    it('does not apply the browser allow-list to the Bearer API-key identity', async () => {
-      process.env[ALLOW_LIST_KEY] = ALLOWED_USER_ID;
+    it('does not call the entitlement read on the Bearer path', async () => {
+      process.env[ALLOW_LIST_KEY] = USER_ID;
       const { context, request } = createContext({
         authHeader: 'Bearer test-api-key-user-1',
       });
       const apiKeyIdentity = {
-        userId: ALLOWED_USER_ID,
+        userId: USER_ID,
         apiKeyId: 'key-1',
         scopes: ['ai:execute'],
         isInternal: true,
@@ -349,9 +251,20 @@ describe('SessionOrApiKeyAuthGuard', () => {
       const result = await guard.canActivate(context);
 
       expect(result).toBe(true);
-      expect(mockApiKeyAuthGuard.canActivate).toHaveBeenCalledWith(context);
+      expect(findOne).not.toHaveBeenCalled();
       expect(mockAuthService.validateSessionToken).not.toHaveBeenCalled();
       expect(request.apiKeyIdentity).toEqual(apiKeyIdentity);
+      expect(request.apiKeyIdentity).not.toHaveProperty('harnessEntitled');
+    });
+
+    it('leaves harnessEntitled unset when EntitlementService is absent', async () => {
+      process.env[ALLOW_LIST_KEY] = USER_ID;
+      guard = new SessionOrApiKeyAuthGuard(mockApiKeyAuthGuard, mockAuthService);
+
+      const { result, request } = await authenticate();
+
+      expect(result).toBe(true);
+      expect(findOne).not.toHaveBeenCalled();
       expect(request.apiKeyIdentity).not.toHaveProperty('harnessEntitled');
     });
   });
