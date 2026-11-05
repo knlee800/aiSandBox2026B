@@ -57,6 +57,35 @@ describe('QuotaConfig', () => {
     });
   });
 
+  describe('estimatePreExecutionTokens', () => {
+    it('uses 60000 when harnessVersion is present', () => {
+      expect(QuotaConfig.AGENT_RUN_TOKEN_ESTIMATE).toBe(60000);
+      expect(
+        QuotaConfig.estimatePreExecutionTokens({
+          harnessVersion: 'v1',
+          prompt: 'a'.repeat(40000),
+        }),
+      ).toBe(60000);
+    });
+
+    it('keeps estimateTokens when harnessVersion is absent', () => {
+      expect(QuotaConfig.estimatePreExecutionTokens(undefined)).toBe(8000);
+      expect(QuotaConfig.estimatePreExecutionTokens({ prompt: 'short' })).toBe(8000);
+      expect(
+        QuotaConfig.estimatePreExecutionTokens({ prompt: 'a'.repeat(40000) }),
+      ).toBe(QuotaConfig.estimateTokens('a'.repeat(40000)));
+    });
+
+    it('ignores a null harnessVersion', () => {
+      expect(
+        QuotaConfig.estimatePreExecutionTokens({
+          harnessVersion: null,
+          prompt: 'short',
+        }),
+      ).toBe(8000);
+    });
+  });
+
   describe('DEFAULT_QUOTA', () => {
     it('should have reasonable default values', () => {
       expect(QuotaConfig.DEFAULT_QUOTA.requestsPerMinute).toBeGreaterThan(0);

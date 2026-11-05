@@ -30,5 +30,6 @@ export interface PlanDefinition {
   displayName: string;
   order: number;
   monthlyCredits: number;
+  dailyTokenLimit: number;
   includedEntitlements: IncludedEntitlement;
 }

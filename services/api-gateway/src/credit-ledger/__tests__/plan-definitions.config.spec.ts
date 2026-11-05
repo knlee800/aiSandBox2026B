@@ -39,6 +39,19 @@ describe('plan-definitions.config', () => {
     });
   });
 
+  it('sets a dailyTokenLimit on each plan', () => {
+    const limitByPlan = Object.fromEntries(
+      PLAN_DEFINITIONS.map((plan) => [plan.id, plan.dailyTokenLimit]),
+    );
+
+    expect(limitByPlan).toEqual({
+      free: 100000,
+      starter: 500000,
+      pro: 1000000,
+      team: 2000000,
+    });
+  });
+
   it('gives Free and Starter builder-only access', () => {
     const freePlan = PLAN_DEFINITIONS.find((plan) => plan.id === 'free');
     const starterPlan = PLAN_DEFINITIONS.find((plan) => plan.id === 'starter');

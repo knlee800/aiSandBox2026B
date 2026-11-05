@@ -6,7 +6,23 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { DataSource } from 'typeorm';
+import { UserRole } from '../entities/user-role.enum';
+import { PLAN_DEFINITIONS } from '../credit-ledger/config/plan-definitions.config';
 import { QuotaConfig } from './quota.config';
+
+type TokenAccessRow = {
+  role: string | null;
+  plan_override: string | null;
+  daily_token_limit_override: number | string | null;
+  plan_id: string | null;
+};
+
+const EMPTY_TOKEN_ACCESS: TokenAccessRow = {
+  role: null,
+  plan_override: null,
+  daily_token_limit_override: null,
+  plan_id: null,
+};
 
 /**
  * TokenQuotaGuard
@@ -19,13 +35,13 @@ import { QuotaConfig } from './quota.config';
  * Enforcement Logic:
  * 1. BEGIN transaction
  * 2. Acquire advisory lock: pg_advisory_xact_lock(hash('quota:token:' || userId))
- * 3. Query: SUM(tokens_used) WHERE user_id = ? AND timestamp > NOW() - 24h
- * 4. Estimate tokens for current request
- * 5. If currentUsage + estimatedTokens > MAX_TOKENS_PER_24H:
+ * 3. Read role, entitlement overrides, and credit_balances.plan_id
+ * 4. Admins commit and allow without the token sum
+ * 5. Query: SUM(tokens_used) WHERE user_id = ? AND timestamp > NOW() - 24h
+ * 6. If currentUsage + estimatedTokens > resolved daily limit:
  *      ROLLBACK (releases lock)
  *      Throw HTTP 429 Quota Exceeded
- * 6. COMMIT (releases lock)
- * 7. Allow AI execution (lock NOT held during execution)
+ * 7. COMMIT (releases lock) and allow AI execution
  *
  * Hard Stop Behavior:
  * - No partial execution
@@ -90,7 +106,33 @@ export class TokenQuotaGuard implements CanActivate {
         [`quota:token:${userId}`],
       );
 
-      // STEP 2: Query rolling 24h token usage (serialized per user)
+      // STEP 2: Role, entitlement overrides, and the balance plan.
+      // One row even when the user, entitlement, or balance row is absent.
+      // An empty result (no row) is treated as no admin and no plan.
+      const accessRows = await queryRunner.query(
+        `SELECT u.role AS role,
+                e.plan_override AS plan_override,
+                e.daily_token_limit_override AS daily_token_limit_override,
+                b.plan_id AS plan_id
+         FROM (SELECT 1) AS anchor
+         LEFT JOIN users u ON u.id::text = $1
+         LEFT JOIN user_entitlements e ON e.user_id::text = $1
+         LEFT JOIN credit_balances b
+           ON b.owner_id = $1
+          AND b.owner_type = 'user'`,
+        [userId],
+      );
+      const access: TokenAccessRow = accessRows?.[0] ?? EMPTY_TOKEN_ACCESS;
+
+      if (access.role === UserRole.ADMIN) {
+        await queryRunner.commitTransaction();
+        transactionStarted = false;
+        return true;
+      }
+
+      const tokenLimit = this.resolveDailyTokenLimit(access);
+
+      // STEP 3: Query rolling 24h token usage (serialized per user)
       const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
       const result = await queryRunner.query(
@@ -103,12 +145,13 @@ export class TokenQuotaGuard implements CanActivate {
 
       const currentUsage = result[0].total;
 
-      // STEP 3: Estimate tokens for current request
-      // Conservative estimate to prevent under-quota violations
-      const estimatedTokens = QuotaConfig.estimateTokens(request.body?.prompt);
+      // STEP 4: Estimate tokens for current request
+      const estimatedTokens = QuotaConfig.estimatePreExecutionTokens(
+        request.body,
+      );
 
-      // STEP 4: Enforce quota (including estimated tokens for this request)
-      if (currentUsage + estimatedTokens > QuotaConfig.MAX_TOKENS_PER_24H) {
+      // STEP 5: Enforce quota (including estimated tokens for this request)
+      if (currentUsage + estimatedTokens > tokenLimit) {
         // Get oldest usage record for reset_at calculation
         const oldestResult = await queryRunner.query(
           `SELECT timestamp FROM usage_records
@@ -136,7 +179,7 @@ export class TokenQuotaGuard implements CanActivate {
             message: 'Token quota exceeded',
             details: {
               quota_type: 'max_tokens_per_24h',
-              limit: QuotaConfig.MAX_TOKENS_PER_24H,
+              limit: tokenLimit,
               used: currentUsage,
               estimated_tokens: estimatedTokens,
               reset_at: resetAt,
@@ -163,5 +206,42 @@ export class TokenQuotaGuard implements CanActivate {
       // Always release query runner (safe even if already released)
       await queryRunner.release();
     }
+  }
+
+  private resolveDailyTokenLimit(row: TokenAccessRow): number {
+    if (row.daily_token_limit_override != null) {
+      const limit = Number(row.daily_token_limit_override);
+      if (!Number.isFinite(limit)) {
+        throw new HttpException(
+          'Token quota check failed: invalid daily token limit override',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+      return limit;
+    }
+
+    const fromOverride = this.limitForKnownPlan(row.plan_override);
+    if (fromOverride !== null) {
+      return fromOverride;
+    }
+
+    const fromPlan = this.limitForKnownPlan(row.plan_id);
+    if (fromPlan !== null) {
+      return fromPlan;
+    }
+
+    return QuotaConfig.MAX_TOKENS_PER_24H;
+  }
+
+  private limitForKnownPlan(planId: string | null | undefined): number | null {
+    if (typeof planId !== 'string' || planId.length === 0) {
+      return null;
+    }
+    for (const plan of PLAN_DEFINITIONS) {
+      if (plan.id === planId) {
+        return plan.dailyTokenLimit;
+      }
+    }
+    return null;
   }
 }

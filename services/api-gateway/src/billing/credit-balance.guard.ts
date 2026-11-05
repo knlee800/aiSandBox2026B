@@ -12,13 +12,14 @@ import { CreditBalanceRepository } from './credit-deduction/credit-balance.repos
 import { User } from '../entities/user.entity';
 import { UserRole } from '../entities/user-role.enum';
 import { ApiKeyIdentity } from '../auth/api-key.config';
+import { QuotaConfig } from '../quota/quota.config';
 
 /**
  * BILLING-READY-04A: Credit Balance Gate Guard
  *
  * Pre-execution guard that verifies the requesting user has a
- * provisioned credit balance with balance > 0 before allowing
- * AI execution to proceed.
+ * provisioned credit balance that covers the pre-execution estimate
+ * (ceil(estimate / 1000) credits) before allowing AI execution.
  *
  * Position in guard chain: after IdempotencyGuard, before QuotaGuard.
  *
@@ -76,9 +77,12 @@ export class CreditBalanceGuard implements CanActivate {
       );
     }
 
-    if (creditBalance.balance <= 0) {
+    const estimatedTokens = QuotaConfig.estimatePreExecutionTokens(request.body);
+    const requiredCredits = Math.ceil(estimatedTokens / 1000);
+
+    if (creditBalance.balance < requiredCredits) {
       this.logger.warn(
-        `Credit balance exhausted for user ${userId}: balance=${creditBalance.balance}`,
+        `Credit balance insufficient for user ${userId}: balance=${creditBalance.balance} required=${requiredCredits}`,
       );
       throw new HttpException(
         {
@@ -88,6 +92,7 @@ export class CreditBalanceGuard implements CanActivate {
           details: {
             error_code: 'credit_balance_exhausted',
             current_balance: creditBalance.balance,
+            required_credits: requiredCredits,
           },
         },
         HttpStatus.PAYMENT_REQUIRED,

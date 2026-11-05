@@ -15,6 +15,7 @@ export const PLAN_DEFINITIONS = [
     displayName: 'Free',
     order: 1,
     monthlyCredits: MONTHLY_CREDIT_ALLOCATIONS.free,
+    dailyTokenLimit: 100000,
     includedEntitlements: {
       agentAccess: {
         accessTier: 'builder_only',
@@ -42,6 +43,7 @@ export const PLAN_DEFINITIONS = [
     displayName: 'Starter',
     order: 2,
     monthlyCredits: MONTHLY_CREDIT_ALLOCATIONS.starter,
+    dailyTokenLimit: 500000,
     includedEntitlements: {
       agentAccess: {
         accessTier: 'builder_only',
@@ -69,6 +71,7 @@ export const PLAN_DEFINITIONS = [
     displayName: 'Pro',
     order: 3,
     monthlyCredits: MONTHLY_CREDIT_ALLOCATIONS.pro,
+    dailyTokenLimit: 1000000,
     includedEntitlements: {
       agentAccess: {
         accessTier: 'builder_plus_one_future_specialist',
@@ -96,6 +99,7 @@ export const PLAN_DEFINITIONS = [
     displayName: 'Team',
     order: 4,
     monthlyCredits: MONTHLY_CREDIT_ALLOCATIONS.team,
+    dailyTokenLimit: 2000000,
     includedEntitlements: {
       agentAccess: {
         accessTier: 'all_current_and_future',

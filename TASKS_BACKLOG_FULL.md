@@ -85221,7 +85221,7 @@ taskId=ACCESS-01D
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-05. Lane 1, GATEWAY. Keith approved the scope and the daily token limits per plan (free 100,000; starter 500,000; pro 1,000,000; team 2,000,000) on 2026-11-05.
+**Status:** COMPLETE AND LOCKED — 2026-11-05. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY released. Per-plan daily token limits with per-user override, admin skip, Agent runs estimated at 60,000 and a balance that covers the estimate; not deployed. Checkpoint: docs/ACCESS-01D-CHECKPOINT.md.
 **Task ID:** ACCESS-01D
 **Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -85238,15 +85238,15 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] Each plan has a dailyTokenLimit: free 100,000; starter 500,000; pro 1,000,000; team 2,000,000
-- [ ] TokenQuotaGuard uses user_entitlements.daily_token_limit_override when set, else the plan limit, with the plan from user_entitlements.plan_override when set, else credit_balances.plan_id; MAX_TOKENS_PER_24H remains only as the fallback when no plan resolves
-- [ ] Admins skip the token limit
-- [ ] Agent runs (harnessVersion present) are estimated at 60,000 tokens and other runs at 8,000
-- [ ] CreditBalanceGuard requires a balance of at least ceil(estimate / 1,000) credits; admins still skip it
-- [ ] The rolling 24-hour count, the advisory lock and the 429 and 402 response shapes are unchanged; the execute route and the collaboration approval path both get the new behaviour
-- [ ] Tests cover each plan, the plan override, the limit override, the admin skip, the Agent and normal estimates, and a balance just below and at the requirement
-- [ ] Gateway npm test shows only the 14 known runtime-only smoke.integration failures; npm run build passes
-- [ ] Not LOCKED by an implementer
+- [x] Each plan has a dailyTokenLimit: free 100,000; starter 500,000; pro 1,000,000; team 2,000,000
+- [x] TokenQuotaGuard uses user_entitlements.daily_token_limit_override when set, else the plan limit, with the plan from user_entitlements.plan_override when set, else credit_balances.plan_id; MAX_TOKENS_PER_24H remains only as the fallback when no plan resolves
+- [x] Admins skip the token limit
+- [x] Agent runs (harnessVersion present) are estimated at 60,000 tokens and other runs at 8,000
+- [x] CreditBalanceGuard requires a balance of at least ceil(estimate / 1,000) credits; admins still skip it
+- [x] The rolling 24-hour count, the advisory lock and the 429 and 402 response shapes are unchanged; the execute route and the collaboration approval path both get the new behaviour
+- [x] Tests cover each plan, the plan override, the limit override, the admin skip, the Agent and normal estimates, and a balance just below and at the requirement
+- [x] Gateway npm test shows only the 14 known runtime-only smoke.integration failures; npm run build passes
+- [x] Not LOCKED by an implementer
 
 ### ACCESS-01E — Credits by model and an offered-models list
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -85417,7 +85417,7 @@ nature=IMPLEMENTATION
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 2-STEP.
 **Start condition (human):** NOT_READY. Ready when: its dependencies are COMPLETE AND LOCKED and Keith admits it. Keith decides.
-**Depends on:** ACCESS-01A, ACCESS-01B, ACCESS-01C, ACCESS-01D, ACCESS-01F, COLLAB-AUDIT-01.
+**Depends on:** ACCESS-01A, ACCESS-01B, ACCESS-01C, ACCESS-01D, ACCESS-01F, COLLAB-AUDIT-01, STATIC-KEYS-01 (added by Keith on 2026-11-05).
 **Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
 **Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
 **saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (readiness of the gated features for a second user).
@@ -85541,6 +85541,31 @@ nature=IMPLEMENTATION
 - [x] Knowledge opens for Keith without a window; runs and provider flags stay off
 - [x] Keith judgement recorded
 - [x] Not LOCKED by an implementer
+
+### STATIC-KEYS-01 — Static test API keys accepted only in the test environment
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STATIC-KEYS-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by ACCESS-01D (control-plane review finding); not admitted.
+**Task ID:** STATIC-KEYS-01
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith admits it. Keith decides.
+**Depends on:** none.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md.
+
+**Holds:** services/api-gateway/src/auth/api-key-auth.guard.ts falls back to the fixed keys in services/api-gateway/src/auth/api-key.config.ts whenever the database has no matching key, in every environment; test-harness-api-key grants ai:harness, harnessEntitled and isInternal. On staging a Bearer key cannot pass Caddy's basic_auth, so it matters only if port 4000 is reachable or in production. Accept the static keys only in the test environment (for example NODE_ENV=test) and prove a static key is refused otherwise. Rough size S. ACCESS-LIVE-01 depends on it.
+**Named in:** docs/ACCESS-01D-CHECKPOINT.md (review finding).
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

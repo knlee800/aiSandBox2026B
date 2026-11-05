@@ -49,6 +49,12 @@ export class QuotaConfig {
     QuotaConfig.resolveIntEnv('MAX_TOKENS_PER_24H', 1000000);
 
   /**
+   * ACCESS-01D: pre-execution estimate for a request whose body has harnessVersion.
+   * Shared by TokenQuotaGuard and CreditBalanceGuard.
+   */
+  static readonly AGENT_RUN_TOKEN_ESTIMATE = 60000;
+
+  /**
    * Default quota limits applied to all API keys
    * unless overridden in API_KEY_QUOTAS
    */
@@ -151,5 +157,22 @@ export class QuotaConfig {
     }
 
     return baseEstimate;
+  }
+
+  /**
+   * Pre-execution estimate for quota and credit checks.
+   * A non-null harnessVersion selects AGENT_RUN_TOKEN_ESTIMATE.
+   * Otherwise the prompt goes through estimateTokens.
+   */
+  static estimatePreExecutionTokens(
+    body?: { harnessVersion?: unknown; prompt?: unknown } | null,
+  ): number {
+    if (body != null && typeof body === 'object' && body.harnessVersion != null) {
+      return QuotaConfig.AGENT_RUN_TOKEN_ESTIMATE;
+    }
+
+    const prompt =
+      body != null && typeof body.prompt === 'string' ? body.prompt : undefined;
+    return QuotaConfig.estimateTokens(prompt);
   }
 }

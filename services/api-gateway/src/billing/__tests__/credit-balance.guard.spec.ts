@@ -15,7 +15,7 @@ describe('CreditBalanceGuard (BILLING-READY-04A)', () => {
     findOne: jest.Mock;
   };
   let mockContext: ExecutionContext;
-  let mockRequest: { apiKeyIdentity?: ApiKeyIdentity };
+  let mockRequest: { apiKeyIdentity?: ApiKeyIdentity; body?: Record<string, unknown> };
 
   function makeIdentity(overrides?: Partial<ApiKeyIdentity>): ApiKeyIdentity {
     return {
@@ -90,13 +90,20 @@ describe('CreditBalanceGuard (BILLING-READY-04A)', () => {
       expect(result).toBe(true);
     });
 
-    it('should allow execution when balance is 1 (minimum positive)', async () => {
+    it('should reject when balance is below the normal estimate', async () => {
       mockUserRepository.findOne.mockResolvedValue(makeUser(UserRole.USER));
       mockCreditBalanceRepository.findByOwner.mockResolvedValue(makeBalance({ balance: 1 }));
 
-      const result = await guard.canActivate(mockContext);
-
-      expect(result).toBe(true);
+      try {
+        await guard.canActivate(mockContext);
+        fail('Should have thrown');
+      } catch (error: any) {
+        expect(error).toBeInstanceOf(HttpException);
+        expect(error.getStatus()).toBe(HttpStatus.PAYMENT_REQUIRED);
+        expect(error.getResponse().details.error_code).toBe('credit_balance_exhausted');
+        expect(error.getResponse().details.current_balance).toBe(1);
+        expect(error.getResponse().details.required_credits).toBe(8);
+      }
     });
   });
 
@@ -331,6 +338,7 @@ describe('CreditBalanceGuard (BILLING-READY-04A)', () => {
           details: {
             error_code: 'credit_balance_exhausted',
             current_balance: 0,
+            required_credits: 8,
           },
         });
       }
@@ -400,6 +408,61 @@ describe('CreditBalanceGuard (BILLING-READY-04A)', () => {
       expect(mockUserRepository.findOne).toHaveBeenCalledTimes(1);
       expect(mockCreditBalanceRepository.findByOwnerForUpdate).not.toHaveBeenCalled();
       expect(mockCreditBalanceRepository.deductBalance).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('estimate-sized balance', () => {
+    it('rejects a normal estimate one credit below the requirement and allows the exact requirement', async () => {
+      mockRequest.body = { prompt: 'Test prompt' };
+      mockUserRepository.findOne.mockResolvedValue(makeUser(UserRole.USER));
+      mockCreditBalanceRepository.findByOwner.mockResolvedValue(makeBalance({ balance: 7 }));
+
+      try {
+        await guard.canActivate(mockContext);
+        fail('Should have thrown');
+      } catch (error: any) {
+        expect(error.getStatus()).toBe(HttpStatus.PAYMENT_REQUIRED);
+        expect(error.getResponse()).toEqual({
+          statusCode: 402,
+          error: 'Payment Required',
+          message: 'Insufficient credit balance',
+          details: {
+            error_code: 'credit_balance_exhausted',
+            current_balance: 7,
+            required_credits: 8,
+          },
+        });
+      }
+
+      mockCreditBalanceRepository.findByOwner.mockResolvedValue(makeBalance({ balance: 8 }));
+      await expect(guard.canActivate(mockContext)).resolves.toBe(true);
+    });
+
+    it('rejects an Agent estimate one credit below the requirement and allows the exact requirement', async () => {
+      mockRequest.body = { harnessVersion: 'v1', prompt: 'Test prompt' };
+      mockUserRepository.findOne.mockResolvedValue(makeUser(UserRole.USER));
+      mockCreditBalanceRepository.findByOwner.mockResolvedValue(makeBalance({ balance: 59 }));
+
+      try {
+        await guard.canActivate(mockContext);
+        fail('Should have thrown');
+      } catch (error: any) {
+        expect(error.getStatus()).toBe(HttpStatus.PAYMENT_REQUIRED);
+        expect(error.getResponse().details.error_code).toBe('credit_balance_exhausted');
+        expect(error.getResponse().details.current_balance).toBe(59);
+        expect(error.getResponse().details.required_credits).toBe(60);
+      }
+
+      mockCreditBalanceRepository.findByOwner.mockResolvedValue(makeBalance({ balance: 60 }));
+      await expect(guard.canActivate(mockContext)).resolves.toBe(true);
+    });
+
+    it('still lets an admin bypass a balance below either estimate', async () => {
+      mockRequest.body = { harnessVersion: 'v1' };
+      mockUserRepository.findOne.mockResolvedValue(makeUser(UserRole.ADMIN));
+      mockCreditBalanceRepository.findByOwner.mockResolvedValue(makeBalance({ balance: 0 }));
+
+      await expect(guard.canActivate(mockContext)).resolves.toBe(true);
     });
   });
 });
