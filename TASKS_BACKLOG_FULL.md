@@ -84233,6 +84233,7 @@ nature=IMPLEMENTATION
 **Holds:** What is left of AGENT-COLLAB-01 to 04 after the COLLAB tasks: work objects (tickets, decisions, drafts, comments), a functional Chief of Staff and the contract scenario, approval categories, and modify / defer / escalate actions. Split into bounded slices at admission.
 **Named in:** AGENT-COLLAB-00 plan slices AGENT-COLLAB-01 to 04, never registered; PRD.md section 11 (approved FUTURE).
 **Amended 2026-11-05 (GOV-COLLAB-PLAN-01, Option A):** ready only after AGENT-KNOWLEDGE-01 is COMPLETE AND LOCKED and Keith keeps business agents as a goal. "Modify" moved to COLLAB-EDIT-01; defer and escalate are dropped. First slice when chosen: a read-only Chief of Staff role that answers over a knowledge folder, without work objects.
+**Decision, 2026-11-05:** Keith keeps business agents as a goal. Planning with the knowledge base in GOV-BIZ-KNOWLEDGE-PLAN-01.
 
 #### Acceptance criteria
 
@@ -84258,6 +84259,7 @@ nature=IMPLEMENTATION
 
 **Holds:** The plan slices AGENT-KNOWLEDGE-01 to 04 of AGENT-KNOWLEDGE-00 as one parked umbrella: knowledge scope registry, markdown upload, summaries, and source tracing. Split into bounded slices at admission; this ID is the umbrella.
 **Named in:** AGENT-KNOWLEDGE-00 plan; PRD.md section 8 (shared and specialist knowledge runtime is approved FUTURE).
+**Planning, 2026-11-05:** planned together with AGENT-COLLAB-BIZ-01 in GOV-BIZ-KNOWLEDGE-PLAN-01.
 
 #### Acceptance criteria
 
@@ -84671,6 +84673,30 @@ nature=IMPLEMENTATION
 - [x] Flags off and nothing left open after the window
 - [x] Keith judgement recorded
 - [x] Not LOCKED by an implementer
+
+### GOV-BIZ-KNOWLEDGE-PLAN-01 — Plan the knowledge base and the business agents together
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-BIZ-KNOWLEDGE-PLAN-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ACTIVE — 2026-11-05. Governance; no lane. GOVERNANCE is held only during this task's record writes.
+**Task ID:** GOV-BIZ-KNOWLEDGE-PLAN-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE. **Lifecycle:** 2-STEP: this registration; the closing record with the approved plan.
+**Start condition (human):** READY — Keith decided on 2026-11-05 that business agents stay a goal and asked to plan both.
+**Primary write scope:** docs/AGENT-BIZ-KNOWLEDGE-PLAN.md, TASKS.md, TASKS_BACKLOG_FULL.md, the sidecar and the proof at the closing record.
+**Mutexes / resources:** GOVERNANCE, only during record writes.
+
+**Purpose:** one plan for AGENT-KNOWLEDGE-01 and AGENT-COLLAB-BIZ-01, because the knowledge base comes first and the business agents decide what it must hold. The plan states: what the knowledge base stores and where (scopes, uploads, summaries, source citations, permissions), building on AGENT-KNOWLEDGE-00 and the code that exists; which business agents come first and what each does (starting with a read-only Chief of Staff over a knowledge folder), building on AGENT-COLLAB-00, docs/GOV-COLLAB-PLAN-01-DECISION.md and the built coding team; how they reuse the existing Harness, approval gate and Team page without a second approval flow; how they appear in the office (RPG-OFFICE-01 later slices); the order of small bounded slices with rough sizes, dependencies, mutexes and evidence class; PRD and ARCHITECTURE questions Keith must decide; and a disposition for every follow-up it names. Drafted by Fable 5.1 through Cursor in read-only mode; the control plane checks every claim about the code and writes the file.
+**Not in scope:** code, PRD.md and ARCHITECTURE.md changes. AGENT-KNOWLEDGE-01 and AGENT-COLLAB-BIZ-01 stay APPROVED_FUTURE and NOT_READY until Keith approves the plan; first slices are then registered as children with futureAuthorization AUTHORIZED.
+
+#### Acceptance criteria
+
+- [ ] docs/AGENT-BIZ-KNOWLEDGE-PLAN.md answers every point in Purpose and names the first knowledge slice and the first business-agent slice with their write scopes
+- [ ] Keith approves the plan
+- [ ] Every follow-up the plan names has a disposition
+- [ ] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
