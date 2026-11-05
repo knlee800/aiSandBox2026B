@@ -13,6 +13,11 @@ import {
   HARNESS_ENTITLEMENT_PROOF_PAYLOAD_INTEGRITY_MISMATCH,
   HARNESS_TOOL_PROFILE_CONFLICT,
   HARNESS_TOOL_PROFILE_CONFLICT_MESSAGE,
+  HARNESS_TOOL_PROFILE_INVALID,
+  HARNESS_TOOL_PROFILE_INVALID_MESSAGE,
+  HARNESS_TOOL_PROFILE_MISSING,
+  HARNESS_TOOL_PROFILE_MISSING_MESSAGE,
+  HARNESS_TOOL_PROFILE_REQUIRES_HARNESS_MESSAGE,
   HARNESS_VALIDATION_TOOLS_DISABLED,
   HARNESS_VALIDATION_TOOLS_DISABLED_MESSAGE,
   HARNESS_WRITE_TOOLS_DISABLED,
@@ -1685,6 +1690,7 @@ describe('PRIVATE-BETA-BLOCKER-03C: worker abort timeout behavior', () => {
       model: 'grok-4.5',
       executionIntent: 'workspace_mutation',
       harnessVersion: 'v1',
+      harnessToolProfile: 'agent-write',
     };
     const issuedAt = '2026-09-05T12:00:00.000Z';
     const { payloadDigest } = computeJobPayloadDigest(jobData);
@@ -3143,6 +3149,7 @@ describe('AGENT-PLATFORM-EXEC-01C5B2 Cycle C — worker integration', () => {
       prompt: 'Hello, world.',
       submittedAt: GOLDEN_ISSUED_AT,
       harnessVersion: 'v1',
+      harnessToolProfile: 'agent-write',
       ...overrides,
     };
     if (proofOverrides === null) {
@@ -3153,15 +3160,22 @@ describe('AGENT-PLATFORM-EXEC-01C5B2 Cycle C — worker integration', () => {
     ) {
       return data;
     }
+    const { payloadDigest } = computeJobPayloadDigest(data);
+    const executionId = String(data.executionId);
+    const userId = String(data.userId);
+    const apiKeyId = String(data.apiKeyId);
+    const claim = `v=1|executionId=${executionId}|userId=${userId}|apiKeyId=${apiKeyId}|harnessVersion=v1|issuedAt=${GOLDEN_ISSUED_AT}|payloadDigest=${payloadDigest}`;
     data.harnessEntitlementProof = {
       version: 1,
-      executionId: 'exec-golden-01',
-      userId: 'user-golden-01',
-      apiKeyId: 'apikey-golden-01',
+      executionId,
+      userId,
+      apiKeyId,
       harnessVersion: 'v1',
       issuedAt: GOLDEN_ISSUED_AT,
-      payloadDigest: GOLDEN_PAYLOAD_DIGEST,
-      signature: GOLDEN_SIGNATURE,
+      payloadDigest,
+      signature: createHmac('sha256', GOLDEN_SECRET)
+        .update(claim, 'utf8')
+        .digest('hex'),
       ...proofOverrides,
     };
     return data;
@@ -3840,6 +3854,7 @@ describe('HARNESS-FAIL-RECORD-01: failed harness run keeps audit events, tokens,
       prompt: 'Use a tool until the step limit.',
       model: JOB_MODEL,
       harnessVersion: 'v1',
+      harnessToolProfile: 'agent-write',
       executionIntent: 'conversation',
       submittedAt: '2026-11-01T08:00:00.000Z',
     });
@@ -3864,6 +3879,7 @@ describe('HARNESS-FAIL-RECORD-01: failed harness run keeps audit events, tokens,
     harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1 = {
       ...originalHarnessConfig,
       enableToolLoop: true,
+      enableWriteTools: true,
     };
     logSpy = jest.spyOn(Logger.prototype, 'log');
   });
@@ -4185,6 +4201,7 @@ describe('HARNESS-PROGRESS-01: harness tool progress on the execution stream', (
       prompt: 'List the workspace.',
       model: 'stub-progress-model',
       harnessVersion: 'v1',
+      harnessToolProfile: 'agent-write',
       executionIntent: 'conversation',
       submittedAt: '2026-11-02T00:00:00.000Z',
     });
@@ -4200,6 +4217,7 @@ describe('HARNESS-PROGRESS-01: harness tool progress on the execution stream', (
     harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1 = {
       ...originalHarnessConfig,
       enableToolLoop: true,
+      enableWriteTools: true,
     };
   });
 
@@ -4407,6 +4425,7 @@ describe('HARNESS-SAVE-01: save a project snapshot when a harness run writes or 
       adapter: 'openai',
       prompt: 'Update the workspace.',
       model: 'stub-save-model',
+      harnessToolProfile: 'agent-write',
       harnessVersion: 'v1',
       executionIntent: 'conversation',
       submittedAt: '2026-11-02T09:00:00.000Z',
@@ -5086,6 +5105,7 @@ describe('COLLAB-FILES-01 read-only harness jobs', () => {
       data: withHarnessProof(baseJob({
         executionId: 'exec-read-only-tools',
         harnessReadOnly: true,
+        harnessToolProfile: 'read',
       })),
     });
 
@@ -5144,6 +5164,7 @@ describe('COLLAB-FILES-01 read-only harness jobs', () => {
     const saveProjectSnapshot = jest.fn().mockResolvedValue({ saved: true });
     const job = withHarnessProof(baseJob({
       executionId: 'exec-ordinary-agent',
+      harnessToolProfile: 'agent-write',
     }));
     expect(() => verifyHarnessEntitlementProof(job)).not.toThrow();
 
@@ -5239,6 +5260,7 @@ describe('COLLAB-FILES-01 read-only harness jobs', () => {
     const missingProof = baseJob({
       executionId: 'exec-missing-proof',
       harnessReadOnly: true,
+      harnessToolProfile: 'read',
     });
     await expect(processJob({
       id: 'job-missing-proof',
@@ -5249,6 +5271,7 @@ describe('COLLAB-FILES-01 read-only harness jobs', () => {
     const notHarness = baseJob({
       executionId: 'exec-not-harness',
       harnessReadOnly: true,
+      harnessToolProfile: 'read',
       harnessVersion: undefined,
     });
     delete notHarness.harnessVersion;
@@ -5261,6 +5284,7 @@ describe('COLLAB-FILES-01 read-only harness jobs', () => {
     const malformed = baseJob({
       executionId: 'exec-malformed-readonly',
       harnessReadOnly: true,
+      harnessToolProfile: 'read',
       harnessVersion: undefined,
       harnessEntitlementProof: { version: 1 },
     });
@@ -5299,6 +5323,7 @@ describe('COLLAB-FILES-01 read-only harness jobs', () => {
       data: withHarnessProof(baseJob({
         executionId: 'exec-loop-off',
         harnessReadOnly: true,
+        harnessToolProfile: 'read',
       })),
     })).rejects.toMatchObject({ reason: 'tool_loop_disabled' });
     expect(loopOffExecute).not.toHaveBeenCalled();
@@ -5755,8 +5780,9 @@ describe('COLLAB-FILES-01 read-only harness jobs', () => {
     const gateway = profileGateway();
     const job = withHarnessProof(baseJob({
       executionId: 'exec-agent-tools',
+      harnessToolProfile: 'agent-write',
     }));
-    expect(job).not.toHaveProperty('harnessToolProfile');
+    expect(job.harnessToolProfile).toBe('agent-write');
     expect(() => verifyHarnessEntitlementProof(job)).not.toThrow();
     const { worker, processJob } = await startWorker({
       query: ledger.query,
@@ -5784,6 +5810,554 @@ describe('COLLAB-FILES-01 read-only harness jobs', () => {
     expect(metadata).not.toHaveProperty('harnessChangedPaths');
     expect(metadata).not.toHaveProperty('harnessValidationRuns');
     expect(ledger.status.value).toBe('completed');
+    await worker.onModuleDestroy();
+  });
+});
+
+describe('ACCESS-01C signed Agent tool profile', () => {
+  const HARNESS_SECRET = 'test-hmac-secret-access-01c';
+  const originalRedisUrl = process.env.REDIS_URL;
+  const originalStuckScan = process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+  const originalSecret = process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+  const harnessConfigModule = require('../agent-harness/config/agent-harness.config') as {
+    DEFAULT_AGENT_HARNESS_CONFIG_V1: typeof DEFAULT_AGENT_HARNESS_CONFIG_V1;
+  };
+  const originalHarnessConfig = harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1;
+
+  function withHarnessProof(
+    data: Record<string, unknown>,
+  ): Record<string, unknown> {
+    const payloadDigest = computeJobPayloadDigest(data).payloadDigest;
+    const issuedAt = '2026-11-05T12:00:00.000Z';
+    const executionId = String(data.executionId);
+    const userId = String(data.userId);
+    const apiKeyId = String(data.apiKeyId);
+    const claim = `v=1|executionId=${executionId}|userId=${userId}|apiKeyId=${apiKeyId}|harnessVersion=v1|issuedAt=${issuedAt}|payloadDigest=${payloadDigest}`;
+    const signature = createHmac('sha256', HARNESS_SECRET)
+      .update(claim, 'utf8')
+      .digest('hex');
+    return {
+      ...data,
+      harnessEntitlementProof: {
+        version: 1,
+        executionId,
+        userId,
+        apiKeyId,
+        harnessVersion: 'v1',
+        issuedAt,
+        payloadDigest,
+        signature,
+      },
+    };
+  }
+
+  function baseJob(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+    return {
+      executionId: 'exec-access-01c',
+      userId: 'user-access-01c',
+      apiKeyId: 'apikey-access-01c',
+      sessionId: 'session-access-01c',
+      conversationId: 'conv-access-01c',
+      provider: 'openai',
+      adapter: 'openai',
+      prompt: 'Work in the project.',
+      model: 'gpt-test',
+      harnessVersion: 'v1',
+      executionIntent: 'conversation',
+      submittedAt: '2026-11-05T12:00:00.000Z',
+      ...overrides,
+    };
+  }
+
+  function createLedgerMock() {
+    const status = { value: 'pending' };
+    const completedUpdates: Array<{ sql: string; params: unknown[] }> = [];
+    const failedUpdates: Array<{ sql: string; params: unknown[] }> = [];
+    const query = jest.fn(async (sql: string, params: unknown[] = []) => {
+      if (
+        sql.includes("SET execution_status = 'running'") &&
+        sql.includes('RETURNING')
+      ) {
+        if (status.value === 'pending') {
+          status.value = 'running';
+          return [{ execution_id: params[0] }];
+        }
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'completed'")) {
+        completedUpdates.push({ sql, params });
+        status.value = 'completed';
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'failed'")) {
+        failedUpdates.push({ sql, params });
+        status.value = 'failed';
+        return [];
+      }
+      if (sql.includes('SELECT execution_status, created_at')) {
+        return [
+          {
+            execution_status: status.value,
+            created_at: new Date().toISOString(),
+          },
+        ];
+      }
+      if (sql.includes('SELECT execution_id, timestamp')) {
+        return [];
+      }
+      if (sql.includes('SELECT metadata')) {
+        return [{ metadata: {} }];
+      }
+      if (sql.includes('SELECT execution_status')) {
+        return [{ execution_status: status.value }];
+      }
+      return [];
+    });
+    return { query, status, completedUpdates, failedUpdates };
+  }
+
+  function profileGateway(overrides: Record<string, jest.Mock> = {}) {
+    return {
+      notifyExecutionComplete: jest.fn().mockResolvedValue(undefined),
+      readWorkspaceFile: jest.fn().mockResolvedValue({
+        path: 'slug.js',
+        content: 'existing',
+      }),
+      listWorkspaceDirectory: jest.fn().mockResolvedValue({ entries: [] }),
+      searchWorkspace: jest.fn().mockResolvedValue({
+        query: 'slug',
+        results: [],
+        truncated: false,
+      }),
+      writeWorkspaceFile: jest.fn().mockResolvedValue(undefined),
+      deleteWorkspaceFile: jest.fn().mockResolvedValue(undefined),
+      runWorkspaceValidation: jest.fn().mockResolvedValue({
+        exitCode: 0,
+        stdout: '',
+        stderr: '',
+      }),
+      runBrowserSmoke: jest.fn().mockResolvedValue({ ok: true }),
+      createWorkspaceCheckpoint: jest.fn().mockResolvedValue({
+        commitHash: 'abc123save',
+        filesChanged: 1,
+      }),
+      saveProjectSnapshot: jest.fn().mockResolvedValue({ saved: true }),
+      ...overrides,
+    };
+  }
+
+  function toolCall(
+    callId: string,
+    toolName: string,
+    args: Record<string, unknown>,
+  ) {
+    return {
+      callId,
+      toolName,
+      arguments: args,
+      providerKind: 'stub',
+    };
+  }
+
+  async function startWorker(deps: {
+    query: jest.Mock;
+    execute: jest.Mock;
+    getAdapter: jest.Mock;
+    apiGateway: object;
+    publisher?: Record<string, jest.Mock>;
+  }) {
+    const publisher = {
+      publishCompletion: jest.fn(),
+      publishToken: jest.fn(),
+      publishFileActions: jest.fn(),
+      publishHarnessProgress: jest.fn(),
+      ...deps.publisher,
+    };
+    const worker = new WorkerProcessor(
+      { query: deps.query } as never,
+      { execute: deps.execute, getAdapter: deps.getAdapter } as never,
+      publisher as never,
+      deps.apiGateway as never,
+    );
+    await worker.onModuleInit();
+    if (!capturedWorker.processor) {
+      throw new Error('BullMQ worker processor was not captured');
+    }
+    return { worker, processJob: capturedWorker.processor, publisher };
+  }
+
+  function advertisedNames(executeWithTools: jest.Mock): string[] {
+    return executeWithTools.mock.calls[0][1].tools.map(
+      (tool: { name: string }) => tool.name,
+    );
+  }
+
+  function toolResult(
+    executeWithTools: jest.Mock,
+    toolName: string,
+  ): { success: boolean; errorMessage?: string } | undefined {
+    const results = executeWithTools.mock.calls[1][1].toolResults as Array<{
+      toolName: string;
+      success: boolean;
+      errorMessage?: string;
+    }>;
+    return results.find((result) => result.toolName === toolName);
+  }
+
+  function completedMetadata(ledger: {
+    completedUpdates: Array<{ params: unknown[] }>;
+  }): Record<string, unknown> {
+    return JSON.parse(String(ledger.completedUpdates[0].params[2])) as Record<
+      string,
+      unknown
+    >;
+  }
+
+  function storedFailure(ledger: {
+    failedUpdates: Array<{ sql?: string; params: unknown[] }>;
+  }): { code: string; message: string } {
+    const update = ledger.failedUpdates.find((entry) =>
+      String(entry.params[1] ?? '').includes('executionError'),
+    );
+    expect(update).toBeDefined();
+    expect(update?.sql).toContain('execution_duration_ms = $4');
+    expectDurationMs(update?.params[3]);
+    const metadata = JSON.parse(String(update?.params[1])) as {
+      executionError: { code: string; message: string };
+    };
+    return metadata.executionError;
+  }
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    process.env.REDIS_URL = 'redis://127.0.0.1:6379';
+    process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = '600000';
+    process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = HARNESS_SECRET;
+    capturedWorker.processor = null;
+    capturedWorker.opts = null;
+    harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1 = {
+      ...originalHarnessConfig,
+      enableToolLoop: true,
+      enableWriteTools: true,
+      enableValidationTools: true,
+      enableBrowserSmoke: true,
+      enablePreApplyCheckpoint: true,
+    };
+  });
+
+  afterEach(() => {
+    harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1 = originalHarnessConfig;
+    jest.useRealTimers();
+    if (originalRedisUrl === undefined) {
+      delete process.env.REDIS_URL;
+    } else {
+      process.env.REDIS_URL = originalRedisUrl;
+    }
+    if (originalStuckScan === undefined) {
+      delete process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+    } else {
+      process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = originalStuckScan;
+    }
+    if (originalSecret === undefined) {
+      delete process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+    } else {
+      process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = originalSecret;
+    }
+  });
+
+  it('refuses a v1 job with no profile and accepts only the four profile values', () => {
+    expect(resolveHarnessToolProfile({ harnessVersion: 'v1' })).toEqual({
+      ok: false,
+      profile: null,
+      code: HARNESS_TOOL_PROFILE_MISSING,
+      message: HARNESS_TOOL_PROFILE_MISSING_MESSAGE,
+    });
+    expect(resolveHarnessToolProfile({})).toEqual({
+      ok: true,
+      profile: null,
+      code: '',
+      message: '',
+    });
+    expect(
+      resolveHarnessToolProfile({
+        harnessVersion: 'v1',
+        harnessToolProfile: 'owner',
+      }),
+    ).toEqual({
+      ok: false,
+      profile: null,
+      code: HARNESS_TOOL_PROFILE_INVALID,
+      message: HARNESS_TOOL_PROFILE_INVALID_MESSAGE,
+    });
+    expect(HARNESS_TOOL_PROFILE_INVALID_MESSAGE).toContain('agent-write');
+  });
+
+  it('stores harness_tool_profile_missing and does not call the provider', async () => {
+    const ledger = createLedgerMock();
+    const execute = jest.fn();
+    const executeWithTools = jest.fn();
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute,
+      getAdapter: jest.fn().mockReturnValue({
+        supportsToolUse: true,
+        executeWithTools,
+      }),
+      apiGateway: profileGateway(),
+    });
+    await processJob({
+      id: 'job-acs-missing',
+      data: withHarnessProof(baseJob({ executionId: 'exec-acs-missing' })),
+    });
+    expect(execute).not.toHaveBeenCalled();
+    expect(executeWithTools).not.toHaveBeenCalled();
+    expect(storedFailure(ledger)).toEqual({
+      code: HARNESS_TOOL_PROFILE_MISSING,
+      message: HARNESS_TOOL_PROFILE_MISSING_MESSAGE,
+    });
+    expect(ledger.status.value).toBe('failed');
+    await worker.onModuleDestroy();
+  });
+
+  it('gives a read profile only read tools', async () => {
+    const ledger = createLedgerMock();
+    const execute = jest.fn();
+    const executeWithTools = jest
+      .fn()
+      .mockResolvedValueOnce({
+        output: 'reading',
+        tokensUsed: 2,
+        model: 'stub-read',
+        finishReason: 'tool_calls',
+        toolCalls: [
+          toolCall('call-read', 'read_file', { path: 'slug.js' }),
+          toolCall('call-write', 'write_file', { path: 'slug.js', content: 'nope' }),
+        ],
+      })
+      .mockResolvedValueOnce({
+        output: 'Read only.',
+        tokensUsed: 1,
+        model: 'stub-read',
+        finishReason: 'completed',
+        toolCalls: [],
+        fileActions: [{ action: 'write', path: 'slug.js', content: 'nope' }],
+      });
+    const gateway = profileGateway();
+    const { worker, processJob, publisher } = await startWorker({
+      query: ledger.query,
+      execute,
+      getAdapter: jest.fn().mockReturnValue({
+        supportsToolUse: true,
+        executeWithTools,
+      }),
+      apiGateway: gateway,
+    });
+    await processJob({
+      id: 'job-acs-read',
+      data: withHarnessProof(baseJob({
+        executionId: 'exec-acs-read',
+        harnessToolProfile: 'read',
+      })),
+    });
+    expect(advertisedNames(executeWithTools)).toEqual([
+      'list_files',
+      'read_file',
+      'search_workspace',
+    ]);
+    expect(toolResult(executeWithTools, 'write_file')?.errorMessage).toBe(
+      'No handler registered for tool: write_file',
+    );
+    expect(gateway.writeWorkspaceFile).not.toHaveBeenCalled();
+    expect(gateway.deleteWorkspaceFile).not.toHaveBeenCalled();
+    expect(execute).not.toHaveBeenCalled();
+    expect(publisher.publishFileActions).toHaveBeenCalledWith('exec-acs-read', []);
+    expect(ledger.status.value).toBe('completed');
+    await worker.onModuleDestroy();
+  });
+
+  it('gives agent-write the former agent tool set when the write flag is on', async () => {
+    const ledger = createLedgerMock();
+    const executeWithTools = jest
+      .fn()
+      .mockResolvedValueOnce({
+        output: 'deleting',
+        tokensUsed: 2,
+        model: 'stub-agent',
+        finishReason: 'tool_calls',
+        toolCalls: [
+          toolCall('call-delete', 'delete_file', { path: 'slug.js' }),
+          toolCall('call-browser', 'browser_smoke', { url: '/' }),
+        ],
+      })
+      .mockResolvedValueOnce({
+        output: 'Agent finished.',
+        tokensUsed: 1,
+        model: 'stub-agent',
+        finishReason: 'completed',
+        toolCalls: [],
+        fileActions: [{ action: 'delete', path: 'slug.js' }],
+      });
+    const gateway = profileGateway();
+    const { worker, processJob, publisher } = await startWorker({
+      query: ledger.query,
+      execute: jest.fn(),
+      getAdapter: jest.fn().mockReturnValue({
+        supportsToolUse: true,
+        executeWithTools,
+      }),
+      apiGateway: gateway,
+    });
+    await processJob({
+      id: 'job-acs-agent-write',
+      data: withHarnessProof(baseJob({
+        executionId: 'exec-acs-agent-write',
+        harnessToolProfile: 'agent-write',
+      })),
+    });
+    expect(advertisedNames(executeWithTools)).toEqual([
+      'list_files',
+      'read_file',
+      'write_file',
+      'delete_file',
+      'run_validation',
+      'search_workspace',
+    ]);
+    expect(gateway.deleteWorkspaceFile).toHaveBeenCalledTimes(1);
+    expect(gateway.runBrowserSmoke).toHaveBeenCalledTimes(1);
+    expect(gateway.createWorkspaceCheckpoint).toHaveBeenCalledTimes(1);
+    expect(gateway.saveProjectSnapshot).toHaveBeenCalledTimes(1);
+    expect(publisher.publishFileActions).toHaveBeenCalledWith(
+      'exec-acs-agent-write',
+      [{ action: 'delete', path: 'slug.js' }],
+    );
+    const metadata = completedMetadata(ledger);
+    expect(metadata).not.toHaveProperty('harnessChangedPaths');
+    expect(metadata).not.toHaveProperty('harnessValidationRuns');
+    expect(ledger.status.value).toBe('completed');
+    await worker.onModuleDestroy();
+  });
+
+  it('stores harness_write_tools_disabled for agent-write when the flag is off', async () => {
+    harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1 = {
+      ...harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1,
+      enableWriteTools: false,
+    };
+    const ledger = createLedgerMock();
+    const execute = jest.fn();
+    const executeWithTools = jest.fn();
+    const gateway = profileGateway();
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute,
+      getAdapter: jest.fn().mockReturnValue({
+        supportsToolUse: true,
+        executeWithTools,
+      }),
+      apiGateway: gateway,
+    });
+    await processJob({
+      id: 'job-acs-flag-off',
+      data: withHarnessProof(baseJob({
+        executionId: 'exec-acs-flag-off',
+        harnessToolProfile: 'agent-write',
+      })),
+    });
+    expect(execute).not.toHaveBeenCalled();
+    expect(executeWithTools).not.toHaveBeenCalled();
+    expect(gateway.writeWorkspaceFile).not.toHaveBeenCalled();
+    expect(gateway.deleteWorkspaceFile).not.toHaveBeenCalled();
+    expect(storedFailure(ledger)).toEqual({
+      code: HARNESS_WRITE_TOOLS_DISABLED,
+      message: HARNESS_WRITE_TOOLS_DISABLED_MESSAGE,
+    });
+    await worker.onModuleDestroy();
+  });
+
+  it('rejects a profile changed after signing before any provider call', async () => {
+    const signed = withHarnessProof(baseJob({
+      executionId: 'exec-acs-tamper',
+      harnessToolProfile: 'read',
+    }));
+    const tampered = { ...signed, harnessToolProfile: 'agent-write' };
+    const ledger = createLedgerMock();
+    const execute = jest.fn();
+    const executeWithTools = jest.fn();
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute,
+      getAdapter: jest.fn().mockReturnValue({
+        supportsToolUse: true,
+        executeWithTools,
+      }),
+      apiGateway: profileGateway(),
+    });
+    await expect(processJob({
+      id: 'job-acs-tamper',
+      data: tampered,
+    })).rejects.toMatchObject({
+      code: HARNESS_ENTITLEMENT_PROOF_PAYLOAD_INTEGRITY_MISMATCH,
+    });
+    expect(execute).not.toHaveBeenCalled();
+    expect(executeWithTools).not.toHaveBeenCalled();
+    await worker.onModuleDestroy();
+  });
+
+  it('stores a conflict when agent-write is also marked read-only', async () => {
+    const ledger = createLedgerMock();
+    const execute = jest.fn();
+    const executeWithTools = jest.fn();
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute,
+      getAdapter: jest.fn().mockReturnValue({
+        supportsToolUse: true,
+        executeWithTools,
+      }),
+      apiGateway: profileGateway(),
+    });
+    await processJob({
+      id: 'job-acs-conflict',
+      data: withHarnessProof(baseJob({
+        executionId: 'exec-acs-conflict',
+        harnessToolProfile: 'agent-write',
+        harnessReadOnly: true,
+      })),
+    });
+    expect(execute).not.toHaveBeenCalled();
+    expect(executeWithTools).not.toHaveBeenCalled();
+    expect(storedFailure(ledger)).toEqual({
+      code: HARNESS_TOOL_PROFILE_CONFLICT,
+      message: HARNESS_TOOL_PROFILE_CONFLICT_MESSAGE,
+    });
+    await worker.onModuleDestroy();
+  });
+
+  it('stores harness_tool_profile_invalid when agent-write is set without harness v1', async () => {
+    const ledger = createLedgerMock();
+    const execute = jest.fn();
+    const executeWithTools = jest.fn();
+    const job = baseJob({
+      executionId: 'exec-acs-non-v1',
+      harnessToolProfile: 'agent-write',
+      harnessVersion: undefined,
+    });
+    delete job.harnessVersion;
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute,
+      getAdapter: jest.fn().mockReturnValue({
+        supportsToolUse: true,
+        executeWithTools,
+      }),
+      apiGateway: profileGateway(),
+    });
+    await processJob({ id: 'job-acs-non-v1', data: job });
+    expect(execute).not.toHaveBeenCalled();
+    expect(executeWithTools).not.toHaveBeenCalled();
+    expect(storedFailure(ledger)).toEqual({
+      code: HARNESS_TOOL_PROFILE_INVALID,
+      message: HARNESS_TOOL_PROFILE_REQUIRES_HARNESS_MESSAGE,
+    });
     await worker.onModuleDestroy();
   });
 });

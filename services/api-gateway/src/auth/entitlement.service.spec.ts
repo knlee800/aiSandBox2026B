@@ -56,6 +56,54 @@ describe('EntitlementService resolveHarnessEntitled', () => {
   });
 });
 
+describe('EntitlementService resolveAgentWriteEnabled', () => {
+  function readService(findOne: jest.Mock): EntitlementService {
+    return new EntitlementService(
+      { findOne, manager: { transaction: jest.fn() } } as never,
+      { findOne: jest.fn() } as never,
+    );
+  }
+
+  it('selects only agentWriteEnabled and returns false when no row exists', async () => {
+    const findOne = jest.fn().mockResolvedValue(null);
+    const service = readService(findOne);
+
+    await expect(service.resolveAgentWriteEnabled(TARGET_ID)).resolves.toBe(false);
+    expect(findOne).toHaveBeenCalledWith({
+      where: { userId: TARGET_ID },
+      select: ['agentWriteEnabled'],
+    });
+  });
+
+  it('returns true only when the row agentWriteEnabled is true', async () => {
+    const findOne = jest
+      .fn()
+      .mockResolvedValueOnce({ agentWriteEnabled: true })
+      .mockResolvedValueOnce({ agentWriteEnabled: false });
+    const service = readService(findOne);
+
+    await expect(service.resolveAgentWriteEnabled(TARGET_ID)).resolves.toBe(true);
+    await expect(service.resolveAgentWriteEnabled(TARGET_ID)).resolves.toBe(false);
+  });
+
+  it('logs the userId only and returns false when the repository throws', async () => {
+    const findOne = jest.fn().mockRejectedValue(new Error('secret sql'));
+    const service = readService(findOne);
+    const warnSpy = jest
+      .spyOn(Logger.prototype, 'warn')
+      .mockImplementation(() => undefined);
+
+    try {
+      await expect(service.resolveAgentWriteEnabled(TARGET_ID)).resolves.toBe(false);
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(warnSpy).toHaveBeenCalledWith(TARGET_ID);
+      expect(JSON.stringify(warnSpy.mock.calls)).not.toContain('secret sql');
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+});
+
 describe('EntitlementService setEntitlements', () => {
   function existingRow(
     overrides: Partial<UserEntitlementEntity> = {},

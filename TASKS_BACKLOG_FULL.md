@@ -85196,7 +85196,7 @@ taskId=ACCESS-01C
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-05. Lane 1, GATEWAY and AI-SERVICE; changes HARNESS_ENTITLEMENT_PROOF_V1 and runs alone. Keith approved the scope on 2026-11-05; stage-start next.
+**Status:** COMPLETE AND LOCKED — 2026-11-05. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY and AI-SERVICE released. Signed Agent tool profile (agent-write or read); the write flag is a kill switch; HARNESS_ENTITLEMENT_PROOF_V1 re-frozen; not deployed. Checkpoint: docs/ACCESS-01C-CHECKPOINT.md.
 **Task ID:** ACCESS-01C
 **Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -85213,13 +85213,13 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] The gateway gives every Agent run a signed tool profile: write only when the caller is harness-entitled and user_entitlements.agent_write_enabled is true, otherwise read; a changed profile fails the signature check
-- [ ] The worker gives an Agent run write tools only when the signed profile is write and AGENT_HARNESS_ENABLE_WRITE_TOOLS is on; the flag is a global off switch, not the grant
-- [ ] Collaboration runs keep their existing tool-profile behaviour
-- [ ] The HARNESS_ENTITLEMENT_PROOF_V1 change is written in the stage-start and the contract is re-frozen at LOCK
-- [ ] Tests cover the gateway's profile choice, the worker refusing a missing or changed profile, the flag off still refusing writes, and a read profile getting no write tools
-- [ ] Gateway and AI-service tests and builds pass against their baselines
-- [ ] Not LOCKED by an implementer
+- [x] The gateway gives every Agent run a signed tool profile: write only when the caller is harness-entitled and user_entitlements.agent_write_enabled is true, otherwise read; a changed profile fails the signature check
+- [x] The worker gives an Agent run write tools only when the signed profile is write and AGENT_HARNESS_ENABLE_WRITE_TOOLS is on; the flag is a global off switch, not the grant
+- [x] Collaboration runs keep their existing tool-profile behaviour
+- [x] The HARNESS_ENTITLEMENT_PROOF_V1 change is written in the stage-start and the contract is re-frozen at LOCK
+- [x] Tests cover the gateway's profile choice, the worker refusing a missing or changed profile, the flag off still refusing writes, and a read profile getting no write tools
+- [x] Gateway and AI-service tests and builds pass against their baselines
+- [x] Not LOCKED by an implementer
 
 ### ACCESS-01D — Per-plan daily token limit and a run-sized balance check
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -85578,6 +85578,56 @@ nature=IMPLEMENTATION
 - [x] Gateway npm test shows only the 14 known runtime-only smoke.integration failures; npm run build passes
 - [x] Not LOCKED by an implementer
 
+### AGENT-WRITE-UI-01 — Show in Agent mode when file changes are off for the account
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=AGENT-WRITE-UI-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by ACCESS-01C (stage-start section 10); not admitted.
+**Task ID:** AGENT-WRITE-UI-01
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: ACCESS-01C is COMPLETE AND LOCKED and Keith admits it. Keith decides.
+**Depends on:** ACCESS-01C.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md.
+
+**Holds:** /api/auth/me returns agentWriteEnabled, and Agent mode tells the user, in en, zh-TW and zh-CN, that file changes are off for this account when the signed profile is read. Auth controller, frontend Agent mode and the three message files. Rough size S.
+**Named in:** docs/ACCESS-01C-STAGE-START.md section 10 and its control-plane review.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### HARNESS-WRITE-VETO-01 — Make the write-tools flag a veto over builder harness profiles
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=HARNESS-WRITE-VETO-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by ACCESS-01C (stage-start section 10); not admitted.
+**Task ID:** HARNESS-WRITE-VETO-01
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: a builder profile defines a harnessProfile, or Keith asks. Keith decides.
+**Depends on:** ACCESS-01C.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md.
+
+**Holds:** services/ai-service/src/agent-harness/builder-profiles/builder-harness-config-adapter.ts can merge enableWriteTools from a builder harness profile, so AGENT_HARNESS_ENABLE_WRITE_TOOLS is not a platform veto the way allowArbitraryShell is. No registered builder profile defines a harnessProfile today. Rough size S.
+**Named in:** docs/ACCESS-01C-STAGE-START.md section 10 and its control-plane review.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
@@ -85632,3 +85682,4 @@ One line per follow-up Keith dropped: date, follow-up, where it was named, reaso
 - 2026-11-05 — Agent Teams ideas not adopted: free agent-to-agent messaging, agents claiming their own tasks, auto-approved plans, named in Keith's Agent Teams assessment request — each weakens the owner's approval as the single control point — Keith in chat.
 - 2026-11-05 — frontend/components/Timeline.tsx dead socket prop, named in docs/ACCESS-READY-01-PLAN.md section 9 — unused component; ACCESS-01A makes a stray socket harmless — GOV-ACCESS-PLAN-01.
 - 2026-11-05 — admin GET of a user's entitlements, named in docs/ACCESS-01B-STAGE-START.md section 11 — the PATCH response and audit_events show state until ACCESS-01G/01H — Keith, ACCESS-01B.
+- 2026-11-05 — HARNESS_WRITE_TOOLS_DISABLED_MESSAGE says writer step for Agent runs, named in docs/ACCESS-01C-STAGE-START.md section 10 — internal stored failure text, not translated product copy — Keith, ACCESS-01C.

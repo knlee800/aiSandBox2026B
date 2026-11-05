@@ -508,6 +508,7 @@ export function resolveHarnessRouting(input: {
 
 export const HARNESS_TOOL_PROFILE_CONFLICT = 'harness_tool_profile_conflict';
 export const HARNESS_TOOL_PROFILE_INVALID = 'harness_tool_profile_invalid';
+export const HARNESS_TOOL_PROFILE_MISSING = 'harness_tool_profile_missing';
 export const HARNESS_WRITE_TOOLS_DISABLED = 'harness_write_tools_disabled';
 export const HARNESS_VALIDATION_TOOLS_DISABLED =
   'harness_validation_tools_disabled';
@@ -515,7 +516,9 @@ export const HARNESS_VALIDATION_TOOLS_DISABLED =
 export const HARNESS_TOOL_PROFILE_CONFLICT_MESSAGE =
   'The tool profile does not match the read-only flag, so this step was stopped.';
 export const HARNESS_TOOL_PROFILE_INVALID_MESSAGE =
-  'The tool profile is not read, review, or write, so this step was stopped.';
+  'The tool profile is not read, review, write, or agent-write, so this step was stopped.';
+export const HARNESS_TOOL_PROFILE_MISSING_MESSAGE =
+  'No tool profile was signed for this run, so it was stopped.';
 export const HARNESS_TOOL_PROFILE_REQUIRES_HARNESS_MESSAGE =
   'A tool profile was set without harness v1, so this step was stopped.';
 export const HARNESS_WRITE_TOOLS_DISABLED_MESSAGE =
@@ -523,7 +526,11 @@ export const HARNESS_WRITE_TOOLS_DISABLED_MESSAGE =
 export const HARNESS_VALIDATION_TOOLS_DISABLED_MESSAGE =
   'Test commands are turned off, so this step cannot run.';
 
-export type HarnessToolProfileName = 'read' | 'review' | 'write';
+export type HarnessToolProfileName =
+  | 'read'
+  | 'review'
+  | 'write'
+  | 'agent-write';
 
 export type HarnessToolProfileResolution = {
   readonly ok: boolean;
@@ -538,6 +545,14 @@ export function resolveHarnessToolProfile(job: {
   readonly harnessVersion?: unknown;
 }): HarnessToolProfileResolution {
   if (job.harnessToolProfile === undefined) {
+    if (job.harnessVersion === 'v1') {
+      return {
+        ok: false,
+        profile: null,
+        code: HARNESS_TOOL_PROFILE_MISSING,
+        message: HARNESS_TOOL_PROFILE_MISSING_MESSAGE,
+      };
+    }
     return { ok: true, profile: null, code: '', message: '' };
   }
   if (job.harnessVersion !== 'v1') {
@@ -551,7 +566,8 @@ export function resolveHarnessToolProfile(job: {
   if (
     job.harnessToolProfile !== 'read' &&
     job.harnessToolProfile !== 'review' &&
-    job.harnessToolProfile !== 'write'
+    job.harnessToolProfile !== 'write' &&
+    job.harnessToolProfile !== 'agent-write'
   ) {
     return {
       ok: false,
@@ -625,6 +641,8 @@ function knownHarnessMessages(code: string): readonly string[] {
       return [HARNESS_EMPTY_ADVERTISED_TOOL_SET_MESSAGE];
     case HARNESS_TOOL_PROFILE_CONFLICT:
       return [HARNESS_TOOL_PROFILE_CONFLICT_MESSAGE];
+    case HARNESS_TOOL_PROFILE_MISSING:
+      return [HARNESS_TOOL_PROFILE_MISSING_MESSAGE];
     case HARNESS_TOOL_PROFILE_INVALID:
       return [
         HARNESS_TOOL_PROFILE_INVALID_MESSAGE,
@@ -1704,7 +1722,8 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                 }));
 
                 if (
-                  signedToolProfile === 'write' &&
+                  (signedToolProfile === 'write' ||
+                    signedToolProfile === 'agent-write') &&
                   !resolvedConfig.enableWriteTools
                 ) {
                   cancelled = true;
@@ -1802,7 +1821,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                   const harnessReadOnly = job.data.harnessReadOnly === true;
                   const allowHarnessMutation =
                     signedToolProfile === 'write' ||
-                    (signedToolProfile === null && !harnessReadOnly);
+                    signedToolProfile === 'agent-write';
                   if (resolvedConfig.enableWriteTools) {
                     if (
                       !harnessReadOnly &&
@@ -1879,7 +1898,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                     }
                   }
                   if (resolvedConfig.enableBrowserSmoke) {
-                    if (!harnessReadOnly && signedToolProfile === null) {
+                    if (!harnessReadOnly && signedToolProfile === 'agent-write') {
                       dispatcher.registerHandler(
                         'browser_smoke',
                         wrapHarnessTool(
@@ -1898,24 +1917,30 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                     selectAdvertisedAgentHarnessTools({
                       registeredHandlerNames,
                       enableWriteTools:
-                        signedToolProfile === null
-                          ? harnessReadOnly
-                            ? false
-                            : resolvedConfig.enableWriteTools
-                          : signedToolProfile === 'write',
+                        signedToolProfile === 'agent-write'
+                          ? resolvedConfig.enableWriteTools
+                          : signedToolProfile === null
+                            ? harnessReadOnly
+                              ? false
+                              : resolvedConfig.enableWriteTools
+                            : signedToolProfile === 'write',
                       enableValidationTools:
-                        signedToolProfile === null
-                          ? harnessReadOnly
-                            ? false
-                            : resolvedConfig.enableValidationTools
-                          : signedToolProfile === 'review' ||
-                            signedToolProfile === 'write',
+                        signedToolProfile === 'agent-write'
+                          ? resolvedConfig.enableValidationTools
+                          : signedToolProfile === null
+                            ? harnessReadOnly
+                              ? false
+                              : resolvedConfig.enableValidationTools
+                            : signedToolProfile === 'review' ||
+                              signedToolProfile === 'write',
                       enableBrowserSmoke:
-                        signedToolProfile === null
-                          ? harnessReadOnly
-                            ? false
-                            : resolvedConfig.enableBrowserSmoke
-                          : false,
+                        signedToolProfile === 'agent-write'
+                          ? resolvedConfig.enableBrowserSmoke
+                          : signedToolProfile === null
+                            ? harnessReadOnly
+                              ? false
+                              : resolvedConfig.enableBrowserSmoke
+                            : false,
                     }),
                   );
                   const auditRecorder = resolvedConfig.auditEventsEnabled
@@ -2064,7 +2089,9 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
           );
           const effectiveFileActions =
             job.data.harnessReadOnly === true ||
-            (signedToolProfile !== null && signedToolProfile !== 'write')
+            (signedToolProfile !== null &&
+              signedToolProfile !== 'write' &&
+              signedToolProfile !== 'agent-write')
               ? []
               : fileActionResolution.effectiveFileActions;
           const parseMethod = aiResult.parseMethod ?? 'none';
@@ -2162,7 +2189,11 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
           if (harnessPreApplyCheckpointHash) {
             nextMetadata.preApplyCheckpointHash = harnessPreApplyCheckpointHash;
           }
-          if (signedToolProfile !== null) {
+          if (
+            signedToolProfile === 'read' ||
+            signedToolProfile === 'review' ||
+            signedToolProfile === 'write'
+          ) {
             nextMetadata.harnessChangedPaths = harnessChangedPaths;
             nextMetadata.harnessValidationRuns = harnessValidationRuns;
           }

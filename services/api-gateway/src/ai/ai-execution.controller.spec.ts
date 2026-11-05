@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
+  Provider,
 } from '@nestjs/common';
 import { createHash } from 'crypto';
 import {
@@ -13,7 +14,11 @@ import {
   computePayloadDigest,
   buildHarnessEntitlementClaimString,
   signHarnessEntitlementClaim,
+  createHarnessEntitlementProof,
 } from './ai-execution.controller';
+import { EntitlementService } from '../auth/entitlement.service';
+import { AuthModule } from '../auth/auth.module';
+import { AIModule } from './ai.module';
 import { AIExecutionRequest } from '../clients/ai-service-http.client';
 import { ApiKeyIdentity } from '../auth/api-key.config';
 import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
@@ -3695,5 +3700,238 @@ describe('AIExecutionController listExecutions collaboration fields (RUN-LIST-CO
         builderProfileId: null,
       },
     ]);
+  });
+});
+
+describe('ACCESS-01C signed Agent tool profile', () => {
+  const sessionId = '11111111-1111-4111-a111-111111111111';
+  const userId = 'user-access-01c';
+  const apiKeyId = 'key-access-01c';
+  const identity: ApiKeyIdentity = {
+    userId,
+    apiKeyId,
+    scopes: ['ai:execute'],
+    harnessEntitled: true,
+  };
+
+  function makeRequest(overrides?: Partial<AIExecutionRequest>): AIExecutionRequest {
+    return {
+      sessionId,
+      conversationId: 'conv-access-01c',
+      userId: 'untrusted-user',
+      prompt: 'Change the project.',
+      provider: 'stub',
+      ...overrides,
+    };
+  }
+
+  function entitlementFrom(findOne: jest.Mock): EntitlementService {
+    return new EntitlementService(
+      { findOne, manager: { transaction: jest.fn() } } as never,
+      { findOne: jest.fn() } as never,
+    );
+  }
+
+  async function makeController(entitlementService?: EntitlementService) {
+    const usageLedgerService = {
+      findByRequestId: jest.fn().mockResolvedValue(null),
+      reuseExecutionIntent: jest.fn(),
+      writeExecutionIntent: jest.fn().mockResolvedValue(undefined),
+      updateExecutionResult: jest.fn(),
+    };
+    const queueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+    const sessionService = {
+      getSessionById: jest.fn().mockResolvedValue({ userId, projectId: null }),
+    };
+    const providers: Provider[] = [
+      { provide: UsageLedgerService, useValue: usageLedgerService },
+      {
+        provide: GlobalSafetyLimitService,
+        useValue: { checkAndRecord: jest.fn(), recordExecutionCost: jest.fn() },
+      },
+      { provide: QueueService, useValue: queueService },
+      {
+        provide: ExecutionResultService,
+        useValue: { getExecution: jest.fn(), requestCancel: jest.fn() },
+      },
+      {
+        provide: ExecutionStreamService,
+        useValue: { subscribe: jest.fn(), unsubscribe: jest.fn() },
+      },
+      {
+        provide: UserAiInstructionsService,
+        useValue: { getByUserId: jest.fn().mockResolvedValue(null) },
+      },
+      {
+        provide: ProjectAiContextService,
+        useValue: { getByProjectId: jest.fn().mockResolvedValue(null) },
+      },
+      { provide: SessionService, useValue: sessionService },
+    ];
+    if (entitlementService) {
+      providers.push({ provide: EntitlementService, useValue: entitlementService });
+    }
+    const mockGuard = { canActivate: jest.fn(() => true) };
+    const moduleRef: TestingModule = await Test.createTestingModule({
+      controllers: [AIExecutionController],
+      providers,
+    })
+      .overrideGuard(SessionOrApiKeyAuthGuard)
+      .useValue(mockGuard)
+      .overrideGuard(AuthorizationGuard)
+      .useValue(mockGuard)
+      .overrideGuard(QuotaGuard)
+      .useValue(mockGuard)
+      .overrideGuard(TokenQuotaGuard)
+      .useValue(mockGuard)
+      .overrideGuard(CreditBalanceGuard)
+      .useValue(mockGuard)
+      .compile();
+    return {
+      controller: moduleRef.get(AIExecutionController),
+      usageLedgerService,
+      queueService,
+    };
+  }
+
+  async function queuedPayload(
+    entitlementService: EntitlementService | undefined,
+    request: AIExecutionRequest,
+  ) {
+    const harness = await makeController(entitlementService);
+    const result = await harness.controller.execute(request, identity);
+    expect(result.status).toBe('queued');
+    const payload = harness.queueService.enqueueExecution.mock.calls[0][0];
+    return { ...harness, payload };
+  }
+
+  it('signs agent-write only when agentWriteEnabled is true', async () => {
+    const findOne = jest.fn().mockResolvedValue({ agentWriteEnabled: true });
+    const { payload, usageLedgerService } = await queuedPayload(
+      entitlementFrom(findOne),
+      makeRequest({ harnessVersion: 'v1' }),
+    );
+    expect(findOne).toHaveBeenCalledWith({
+      where: { userId },
+      select: ['agentWriteEnabled'],
+    });
+    expect(findOne.mock.invocationCallOrder[0]).toBeLessThan(
+      usageLedgerService.writeExecutionIntent.mock.invocationCallOrder[0],
+    );
+    expect(payload.harnessToolProfile).toBe('agent-write');
+    expect(payload).not.toHaveProperty('harnessReadOnly');
+    const { harnessEntitlementProof, ...withoutProof } = payload;
+    const recomputed = createHarnessEntitlementProof({
+      executionId: withoutProof.executionId,
+      userId: withoutProof.userId,
+      apiKeyId: withoutProof.apiKeyId,
+      issuedAt: withoutProof.submittedAt,
+      payloadWithoutProof: withoutProof,
+      secret: EXEC_01C5B1_TEST_HMAC_SECRET,
+    });
+    expect(harnessEntitlementProof).toEqual(recomputed);
+    const flippedProof = createHarnessEntitlementProof({
+      executionId: withoutProof.executionId,
+      userId: withoutProof.userId,
+      apiKeyId: withoutProof.apiKeyId,
+      issuedAt: withoutProof.submittedAt,
+      payloadWithoutProof: { ...withoutProof, harnessToolProfile: 'read' },
+      secret: EXEC_01C5B1_TEST_HMAC_SECRET,
+    });
+    expect(flippedProof.payloadDigest).not.toBe(recomputed.payloadDigest);
+    expect(flippedProof.signature).not.toBe(recomputed.signature);
+  });
+
+  it('signs read when the row is false, missing, or the repository throws', async () => {
+    const falseRow = await queuedPayload(
+      entitlementFrom(jest.fn().mockResolvedValue({ agentWriteEnabled: false })),
+      makeRequest({ harnessVersion: 'v1' }),
+    );
+    expect(falseRow.payload.harnessToolProfile).toBe('read');
+
+    const noRow = await queuedPayload(
+      entitlementFrom(jest.fn().mockResolvedValue(null)),
+      makeRequest({ harnessVersion: 'v1' }),
+    );
+    expect(noRow.payload.harnessToolProfile).toBe('read');
+
+    const warnSpy = jest
+      .spyOn(Logger.prototype, 'warn')
+      .mockImplementation(() => undefined);
+    try {
+      const thrown = await queuedPayload(
+        entitlementFrom(jest.fn().mockRejectedValue(new Error('secret sql'))),
+        makeRequest({ harnessVersion: 'v1' }),
+      );
+      expect(thrown.payload.harnessToolProfile).toBe('read');
+      expect(warnSpy).toHaveBeenCalledWith(userId);
+      expect(JSON.stringify(warnSpy.mock.calls)).not.toContain('secret sql');
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
+  it('signs read when EntitlementService is absent', async () => {
+    const { payload } = await queuedPayload(
+      undefined,
+      makeRequest({ harnessVersion: 'v1' }),
+    );
+    expect(payload.harnessVersion).toBe('v1');
+    expect(payload.harnessToolProfile).toBe('read');
+    expect(payload).not.toHaveProperty('harnessReadOnly');
+  });
+
+  it('omits the profile when the run is not harness v1', async () => {
+    const findOne = jest.fn().mockResolvedValue({ agentWriteEnabled: true });
+    const { payload } = await queuedPayload(
+      entitlementFrom(findOne),
+      makeRequest(),
+    );
+    expect(findOne).not.toHaveBeenCalled();
+    expect(payload).not.toHaveProperty('harnessVersion');
+    expect(payload).not.toHaveProperty('harnessToolProfile');
+    expect(payload).not.toHaveProperty('harnessEntitlementProof');
+  });
+
+  it('ignores body harnessToolProfile and harnessReadOnly', async () => {
+    const request = {
+      ...makeRequest({ harnessVersion: 'v1' }),
+      harnessToolProfile: 'agent-write',
+      harnessReadOnly: true,
+    } as AIExecutionRequest;
+    const { payload } = await queuedPayload(
+      entitlementFrom(jest.fn().mockResolvedValue({ agentWriteEnabled: false })),
+      request,
+    );
+    expect(payload.harnessToolProfile).toBe('read');
+    expect(payload).not.toHaveProperty('harnessReadOnly');
+  });
+
+  it('does not read entitlements when the signing secret is missing', async () => {
+    delete process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+    const findOne = jest.fn().mockResolvedValue({ agentWriteEnabled: true });
+    const { controller, queueService, usageLedgerService } = await makeController(
+      entitlementFrom(findOne),
+    );
+    await expect(
+      controller.execute(makeRequest({ harnessVersion: 'v1' }), identity),
+    ).rejects.toBeInstanceOf(InternalServerErrorException);
+    expect(findOne).not.toHaveBeenCalled();
+    expect(usageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(queueService.enqueueExecution).not.toHaveBeenCalled();
+  });
+
+  it('resolves EntitlementService from AuthModule onto AIExecutionController', () => {
+    const imports = Reflect.getMetadata('imports', AIModule) as unknown[];
+    expect(imports).toContain(AuthModule);
+    const exported = Reflect.getMetadata('exports', AuthModule) as unknown[];
+    expect(exported).toContain(EntitlementService);
+    const paramtypes = Reflect.getMetadata(
+      'design:paramtypes',
+      AIExecutionController,
+    ) as unknown[];
+    expect(paramtypes[paramtypes.length - 1]).toBe(EntitlementService);
   });
 });

@@ -72,10 +72,11 @@ export interface AiExecutionJob {
   harnessReadOnly?: boolean;
 
   /**
-   * Signed collaboration tool profile. The gateway sets it from the target
-   * role. Absent on agent-mode jobs. Part of the signed entitlement payload.
+   * Signed tool profile. Required on every v1 job and covered by the
+   * entitlement digest. The gateway sets agent-write or read for Agent runs.
+   * Collaboration hand-offs set read, review, or write.
    */
-  harnessToolProfile?: 'read' | 'review' | 'write';
+  harnessToolProfile?: 'read' | 'review' | 'write' | 'agent-write';
 
   /** HMAC entitlement proof required when harnessVersion === 'v1'. Absent on ordinary jobs. */
   harnessEntitlementProof?: HarnessEntitlementProof;

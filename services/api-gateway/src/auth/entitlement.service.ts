@@ -42,8 +42,8 @@ export interface SetEntitlementsResult {
 /**
  * ACCESS-01B: table read for browser-session harness entitlement, and the
  * admin upsert that writes one audit_events row in the same transaction.
- * agent_write_enabled, plan_override and daily_token_limit_override are stored
- * and returned, and no gate in this task reads them.
+ * plan_override and daily_token_limit_override are stored and returned.
+ * ACCESS-01C reads agent_write_enabled for the signed Agent tool profile.
  */
 @Injectable()
 export class EntitlementService {
@@ -70,6 +70,26 @@ export class EntitlementService {
         return false;
       }
       return row.harnessEnabled === true;
+    } catch {
+      this.logger.warn(userId);
+      return false;
+    }
+  }
+
+  /**
+   * Table read only. No row, a false row, or a repository error is false.
+   * The warn line carries the userId and not the repository error.
+   */
+  async resolveAgentWriteEnabled(userId: string): Promise<boolean> {
+    try {
+      const row = await this.entitlements.findOne({
+        where: { userId },
+        select: ['agentWriteEnabled'],
+      });
+      if (!row) {
+        return false;
+      }
+      return row.agentWriteEnabled === true;
     } catch {
       this.logger.warn(userId);
       return false;

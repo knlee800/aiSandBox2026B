@@ -56,6 +56,7 @@ import { ProjectRepoDocsService } from '../project-repo-docs/project-repo-docs.s
 import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
 import { UserAgentService } from '../user-agent/user-agent.service';
 import { UserAgent } from '../entities/user-agent.entity';
+import { EntitlementService } from '../auth/entitlement.service';
 import {
   GatewayAIProvider,
   GatewayProviderModelValidationError,
@@ -238,6 +239,8 @@ export class AIExecutionController {
     private readonly containerManagerHttpClient?: ContainerManagerHttpClient,
     @Optional()
     private readonly userAgentService?: UserAgentService,
+    @Optional()
+    private readonly entitlementService?: EntitlementService,
   ) {}
 
   private normalizeGlobalInstructions(
@@ -759,6 +762,17 @@ export class AIExecutionController {
       }
     }
 
+    // ACCESS-01C: chosen after the secret is captured and before the ledger write.
+    // An absent service fails closed to read. Body profile fields are not read.
+    const harnessToolProfile =
+      request.harnessVersion === 'v1'
+        ? ((await this.entitlementService?.resolveAgentWriteEnabled(
+            identity.userId,
+          )) === true
+            ? 'agent-write'
+            : 'read')
+        : undefined;
+
     const executionIntent = this.normalizeExecutionIntent(request.executionIntent);
 
     const {
@@ -965,6 +979,7 @@ export class AIExecutionController {
       submittedAt,
       executionIntent,
       ...(request.harnessVersion !== undefined && { harnessVersion: request.harnessVersion }),
+      ...(harnessToolProfile !== undefined && { harnessToolProfile }),
       ...(request.agentRole !== undefined && { agentRole: request.agentRole }),
       ...(request.builderProfileId !== undefined && { builderProfileId: request.builderProfileId }),
       ...(request.collaborationRunId !== undefined && { collaborationRunId: request.collaborationRunId }),

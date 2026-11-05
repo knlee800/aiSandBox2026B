@@ -121,6 +121,23 @@ describe('AGENT-HARNESS-07B: AiExecutionJob identity fields', () => {
     expect(job.harnessEntitlementProof?.version).toBe(1);
     expect(job.harnessEntitlementProof?.harnessVersion).toBe('v1');
   });
+
+  it('AiExecutionJob accepts harnessToolProfile agent-write', () => {
+    const job: AiExecutionJob = {
+      executionId: 'e1',
+      userId: 'u1',
+      apiKeyId: 'k1',
+      sessionId: 's1',
+      conversationId: 'c1',
+      provider: 'stub',
+      adapter: 'stub',
+      prompt: 'test',
+      submittedAt: new Date().toISOString(),
+      harnessVersion: 'v1',
+      harnessToolProfile: 'agent-write',
+    };
+    expect(job.harnessToolProfile).toBe('agent-write');
+  });
 });
 
 describe('AGENT-PLATFORM-06: AiExecutionJob collaboration identity fields', () => {
