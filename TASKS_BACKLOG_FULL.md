@@ -85165,15 +85165,15 @@ taskId=ACCESS-01B
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-ACCESS-PLAN-01; not admitted.
+**Status:** ADMITTED — 2026-11-05. Lane 1, GATEWAY, MIGRATION and ENV. Keith approved the scope on 2026-11-05; stage-start next.
 **Task ID:** ACCESS-01B
 **Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP.
-**Start condition (human):** NOT_READY. Ready when: Keith admits it. Keith decides.
+**Start condition (human):** READY — Keith admitted it on 2026-11-05.
 **Depends on:** none.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
-**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**Primary write scope:** services/api-gateway/src/entities/user-entitlement.entity.ts (new); services/api-gateway/src/migrations/1801000000000-CreateUserEntitlementsTable.ts and its spec in services/api-gateway/src/migrations/__tests__/ (new); services/api-gateway/src/auth/ (guard, auth controller, specs); services/api-gateway/src/admin/ (set route); services/api-gateway/src/entitlements/ and services/api-gateway/src/app.module.ts only if the stage-start places the service in its own module; ops/clean-baseline/env/gateway.env.template; docs/ACCESS-01B-STAGE-START.md (control plane). The routes that read harnessEntitled (ai-execution, collaboration, knowledge) are out of scope.
+**Mutexes / resources:** GATEWAY, MIGRATION, ENV. **Hot-file leases:** none. **Shared contracts:** none frozen (the harnessEntitled shape is unchanged). **Evidence class:** LOCAL-TESTS; the staging cutover runs in the next staging deploy with Keith. **Revert isolation:** acceptable (new table, guard read path and admin route; the down path drops the table). **Admin (D4):** the existing users.role admin (Keith), set in the database; no admin-creation route.
 **saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (readiness of the gated features for a second user).
 
 **Holds:** Plan slice S2: migration user_entitlements (harness_enabled, agent_write_enabled, plan_override, daily_token_limit_override, updated_by, updated_at); harnessEntitled read from the table; an admin-only set route; two-step cutover from AGENT_HARNESS_BROWSER_SESSION_USER_IDS (seed before removing); every change audited.
@@ -85181,7 +85181,13 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] The migration creates user_entitlements (user ID, harness enabled, Agent write enabled, plan override, daily token limit override, updated_by, updated_at); a spec covers up and down
+- [ ] harnessEntitled for browser sessions and /api/auth/me is read from the table; the cutover order seeds rows before the env allowlist is retired, so nobody loses access at any point
+- [ ] An admin-only route sets a user's entitlements; every change writes one audit_events row with the acting admin
+- [ ] Agent write, plan override and daily token limit override are stored but not read yet (ACCESS-01C and ACCESS-01D read them)
+- [ ] Tests cover the table read, non-admin refusal, one audit row per change and the cutover rule
+- [ ] Gateway npm test shows only the 14 known runtime-only smoke.integration failures; npm run build passes
 - [ ] Not LOCKED by an implementer
 
 ### ACCESS-01C — Signed Agent tool profile; the write flag becomes a kill switch
