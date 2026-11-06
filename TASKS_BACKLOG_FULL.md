@@ -86015,15 +86015,15 @@ taskId=STAGING-DEPLOY-10
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-06. Registered by HARNESS-FIXES-01A; not admitted.
+**Status:** ADMITTED — 2026-11-06. Lane 1, STAGING. Keith said deploy now on 2026-11-06.
 **Task ID:** STAGING-DEPLOY-10
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION (operational run; no code)
 **Lifecycle:** 3-STEP: registration here; admission when Keith picks the time; pre-check and deploy from the host; separate LOCK record (STAGING-RUNTIME).
-**Start condition (human):** NOT_READY. Ready when: Keith approves the deploy and its timing (the tester window is open, so the restart interrupts his testing). Keith decides.
+**Start condition (human):** READY — HARNESS-FIXES-01A is COMPLETE AND LOCKED; Keith said deploy now on 2026-11-06, accepting the restart during his testing.
 **Depends on:** HARNESS-FIXES-01A.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Expected: none in the repository beyond records; host state on ainow-staging-01 (gateway, AI service, container manager and frontend release).
-**Mutexes / resources:** set at admission (expected STAGING). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS; expected STAGING-RUNTIME). **Revert isolation:** assessed at admission.
+**Primary write scope:** none in the repository beyond records. Host state on ainow-staging-01 (release of the HARNESS-FIXES-01A commit: gateway, AI service, container manager, frontend) and off-repo evidence.
+**Mutexes / resources:** STAGING. **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** STAGING-RUNTIME. **Revert isolation:** acceptable (no migration; rollback is a redeploy of 951ee83).
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 
 **Holds:** deploy the HARNESS-FIXES-01A commit with the DEPLOY checklist: env files checked against the tester-window hashes (gateway.env 5692ce35..., ai.env 132ebab3...), nothing running, Keith told before the restart, health, guard and page checks, the static key refused, and a host check that POST /api/sessions/:id/restore answers 409 for a session with an active run is not attempted live (no provider run during the deploy); the unit tests cover it.
@@ -86031,7 +86031,10 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Staging runs the deployed commit; migration hash unchanged; env files at the tester-window hashes before and after; other configuration files unchanged; units active; health, guard, page and CORS checks pass; the static key refused
+- [ ] Nothing queued or running before the deploy; Keith was told before the restart; the tester window stays open
+- [ ] The checkpoint carries the CHECKLIST line (EVERY, DEPLOY)
 - [ ] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
