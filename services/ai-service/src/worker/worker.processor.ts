@@ -39,6 +39,19 @@ import {
   createDeleteFileHandler,
   createSearchWorkspaceHandler,
 } from '../agent-harness/tools/handlers/file-tool-handlers';
+import {
+  createReadKnowledgeHandler,
+  createSearchKnowledgeHandler,
+} from '../agent-harness/tools/handlers/knowledge-tool-handlers';
+import {
+  KNOWLEDGE_SCOPES_INVALID,
+  KNOWLEDGE_SCOPES_INVALID_MESSAGE,
+  KNOWLEDGE_SCOPES_PROFILE_CONFLICT,
+  KNOWLEDGE_SCOPES_PROFILE_CONFLICT_MESSAGE,
+  KNOWLEDGE_SCOPES_REQUIRES_HARNESS,
+  KNOWLEDGE_SCOPES_REQUIRES_HARNESS_MESSAGE,
+  resolveKnowledgeScopes,
+} from './knowledge-scopes';
 import { createRunValidationHandler } from '../agent-harness/tools/handlers/validation-tool-handlers';
 import { createBrowserSmokeHandler } from '../agent-harness/tools/handlers/browser-smoke-tool-handlers';
 import { ApiGatewayHttpClient } from '../clients/api-gateway-http.client';
@@ -659,6 +672,12 @@ function knownHarnessMessages(code: string): readonly string[] {
       return [HARNESS_WRITE_TOOLS_DISABLED_MESSAGE];
     case HARNESS_VALIDATION_TOOLS_DISABLED:
       return [HARNESS_VALIDATION_TOOLS_DISABLED_MESSAGE];
+    case KNOWLEDGE_SCOPES_REQUIRES_HARNESS:
+      return [KNOWLEDGE_SCOPES_REQUIRES_HARNESS_MESSAGE];
+    case KNOWLEDGE_SCOPES_INVALID:
+      return [KNOWLEDGE_SCOPES_INVALID_MESSAGE];
+    case KNOWLEDGE_SCOPES_PROFILE_CONFLICT:
+      return [KNOWLEDGE_SCOPES_PROFILE_CONFLICT_MESSAGE];
     default:
       if (HARNESS_ENTITLEMENT_FAILURE_CODES.includes(code)) {
         return [harnessEntitlementFailureMessage(code)];
@@ -1659,6 +1678,23 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
             return;
           }
           const signedToolProfile = profileResolution.profile;
+          const knowledgeResolution = resolveKnowledgeScopes(
+            job.data,
+            signedToolProfile,
+          );
+          if (knowledgeResolution.ok === false) {
+            cancelled = true;
+            clearTimeoutWatchdog();
+            await this.persistStoredExecutionFailure({
+              executionId,
+              model: job.data.model,
+              code: knowledgeResolution.code,
+              message: knowledgeResolution.message,
+              executionStartTime,
+            });
+            return;
+          }
+          const knowledgeScopes = knowledgeResolution.scopes;
           const harnessRequested = job.data.harnessVersion === 'v1';
           let routedAdapter: ReturnType<AIExecutionService['getAdapter']> | undefined;
           if (harnessRequested && DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop) {
@@ -1835,6 +1871,30 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                     ),
                   );
                   registeredHandlerNames.push('search_workspace');
+                  if (signedToolProfile === 'read' && knowledgeScopes.length > 0) {
+                    const knowledgeDeps = {
+                      client: this.apiGatewayHttpClient,
+                      userId: job.data.userId,
+                      scopes: knowledgeScopes,
+                      maxToolResultBytes: resolvedConfig.maxToolResultBytes,
+                    };
+                    dispatcher.registerHandler(
+                      'search_knowledge',
+                      wrapHarnessTool(
+                        'search_knowledge',
+                        createSearchKnowledgeHandler(knowledgeDeps),
+                      ),
+                    );
+                    registeredHandlerNames.push('search_knowledge');
+                    dispatcher.registerHandler(
+                      'read_knowledge',
+                      wrapHarnessTool(
+                        'read_knowledge',
+                        createReadKnowledgeHandler(knowledgeDeps),
+                      ),
+                    );
+                    registeredHandlerNames.push('read_knowledge');
+                  }
                   const harnessReadOnly = job.data.harnessReadOnly === true;
                   const allowHarnessMutation =
                     signedToolProfile === 'write' ||

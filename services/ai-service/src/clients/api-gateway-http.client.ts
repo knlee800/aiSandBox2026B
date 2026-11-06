@@ -224,6 +224,89 @@ export class ApiGatewayHttpClient {
   }
 
   /**
+   * Search the caller's knowledge documents in the signed scopes.
+   * KNOW-02: ai-service → API Gateway. Failures throw; handlers replace the body.
+   */
+  async searchKnowledge(
+    input: {
+      userId: string;
+      scopes: readonly string[];
+      query: string;
+    },
+    signal?: AbortSignal,
+  ): Promise<{
+    query: string;
+    results: Array<{
+      documentId: string;
+      title: string;
+      scopeId: string;
+      heading: string | null;
+      preview: string;
+    }>;
+    truncated: boolean;
+  }> {
+    const response = await firstValueFrom(
+      this.httpService.post(
+        `${this.apiGatewayUrl}/api/internal/knowledge/search`,
+        {
+          userId: input.userId,
+          scopes: input.scopes,
+          query: input.query,
+        },
+        {
+          signal,
+          headers: {
+            'X-Internal-Service-Key': this.internalServiceKey,
+          },
+        },
+      ),
+    );
+
+    return response.data;
+  }
+
+  /**
+   * Read one owned knowledge document, or the section under one heading.
+   * KNOW-02: ai-service → API Gateway. Failures throw; handlers replace the body.
+   */
+  async readKnowledge(
+    input: {
+      userId: string;
+      scopes: readonly string[];
+      documentId: string;
+      heading?: string;
+    },
+    signal?: AbortSignal,
+  ): Promise<{
+    documentId: string;
+    title: string;
+    scopeId: string;
+    heading: string | null;
+    content: string;
+    truncated: boolean;
+  }> {
+    const response = await firstValueFrom(
+      this.httpService.post(
+        `${this.apiGatewayUrl}/api/internal/knowledge/read`,
+        {
+          userId: input.userId,
+          scopes: input.scopes,
+          documentId: input.documentId,
+          ...(input.heading !== undefined ? { heading: input.heading } : {}),
+        },
+        {
+          signal,
+          headers: {
+            'X-Internal-Service-Key': this.internalServiceKey,
+          },
+        },
+      ),
+    );
+
+    return response.data;
+  }
+
+  /**
    * Write file content to a session workspace via API Gateway.
    * AGENT-HARNESS-03B: ai-service → API Gateway → container-manager boundary.
    * @param sessionId - Session UUID

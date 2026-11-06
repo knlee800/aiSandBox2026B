@@ -82,6 +82,46 @@ export class KnowledgeService {
     );
   }
 
+  async findActiveForScopes(
+    userId: string,
+    scopes: readonly string[],
+  ): Promise<KnowledgeDocument[]> {
+    if (scopes.length === 0) {
+      return [];
+    }
+    const allowed = new Set(scopes);
+    const rows = await this.documents.find({
+      where: { userId, scopeId: In([...allowed]) },
+      order: { updatedAt: 'DESC' },
+    });
+    return rows.filter(
+      (row) =>
+        row.deletedAt == null &&
+        row.userId === userId &&
+        allowed.has(row.scopeId),
+    );
+  }
+
+  async findActiveOwnedInScopes(
+    userId: string,
+    documentId: string,
+    scopes: readonly string[],
+  ): Promise<KnowledgeDocument | null> {
+    if (!isKnowledgeDocumentId(documentId) || scopes.length === 0) {
+      return null;
+    }
+    const row = await this.documents.findOne({ where: { id: documentId, userId } });
+    if (
+      !row ||
+      row.deletedAt != null ||
+      row.userId !== userId ||
+      !scopes.includes(row.scopeId)
+    ) {
+      return null;
+    }
+    return row;
+  }
+
   async upsert(
     userId: string,
     input: { scopeId: unknown; title: unknown; content: unknown },

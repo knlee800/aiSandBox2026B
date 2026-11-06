@@ -3,6 +3,8 @@ import {
   COLLABORATION_WRITER_PROFILE_ID,
 } from './collaboration-team';
 
+export { knowledgeScopesJobFields } from '../knowledge/knowledge-scopes';
+
 /**
  * Signed job field. The gateway sets it from the target role.
  * Lead and any other target stay read. The browser cannot set it.

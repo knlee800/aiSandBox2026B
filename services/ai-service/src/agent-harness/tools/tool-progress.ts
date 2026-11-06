@@ -8,6 +8,8 @@ const TARGET_FIELDS: Readonly<Record<string, string>> = {
   write_file: 'path',
   delete_file: 'path',
   search_workspace: 'query',
+  search_knowledge: 'query',
+  read_knowledge: 'documentId',
   run_validation: 'command',
   browser_smoke: 'url',
 };

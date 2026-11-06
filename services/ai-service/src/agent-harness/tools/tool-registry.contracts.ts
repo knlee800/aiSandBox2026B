@@ -12,7 +12,9 @@ export type AgentHarnessToolIdV1 =
   | 'run_validation'
   | 'start_preview'
   | 'browser_smoke'
-  | 'search_workspace';
+  | 'search_workspace'
+  | 'search_knowledge'
+  | 'read_knowledge';
 
 export type AgentHarnessToolCategoryV1 =
   | 'workspace'

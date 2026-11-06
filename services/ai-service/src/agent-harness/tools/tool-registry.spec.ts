@@ -24,9 +24,11 @@ describe('Agent Harness tool registry (v1)', () => {
         'start_preview',
         'browser_smoke',
         'search_workspace',
+        'search_knowledge',
+        'read_knowledge',
       ]),
     );
-    expect(toolIds).toHaveLength(8);
+    expect(toolIds).toHaveLength(10);
   });
 
   it('ensures each tool has required contract fields', () => {
@@ -125,7 +127,7 @@ describe('Agent Harness tool registry (v1)', () => {
 
     expect(allTools).toBe(AGENT_HARNESS_TOOL_DEFINITIONS_V1);
     expect(enabledTools).toEqual(expectedEnabledTools);
-    expect(enabledTools).toHaveLength(6);
+    expect(enabledTools).toHaveLength(8);
 
     const enabledIds = enabledTools.map((t) => t.id);
     expect(enabledIds).toContain('read_file');
@@ -134,6 +136,8 @@ describe('Agent Harness tool registry (v1)', () => {
     expect(enabledIds).toContain('delete_file');
     expect(enabledIds).toContain('run_validation');
     expect(enabledIds).toContain('search_workspace');
+    expect(enabledIds).toContain('search_knowledge');
+    expect(enabledIds).toContain('read_knowledge');
     expect(enabledIds).not.toContain('browser_smoke');
     expect(enabledIds).not.toContain('start_preview');
 
@@ -192,6 +196,50 @@ describe('Agent Harness tool registry (v1)', () => {
     expect(tool?.implementationStatus).toBe('implemented');
     expect(schema.required).toEqual(['query']);
     expect(Object.keys(schema.properties ?? {})).toEqual(['query']);
+  });
+
+  it('marks search_knowledge and read_knowledge as read-only implemented tools', () => {
+    for (const toolId of ['search_knowledge', 'read_knowledge'] as const) {
+      const tool = getAgentHarnessToolDefinition(toolId);
+      const schema = tool?.inputSchema.schema as {
+        additionalProperties?: boolean;
+        properties?: Record<string, unknown>;
+      };
+
+      expect(tool).toBeDefined();
+      expect(tool?.enabled).toBe(true);
+      expect(tool?.implementationStatus).toBe('implemented');
+      expect(tool?.requiresApproval).toBe(false);
+      expect(tool?.riskLevel).toBe('low');
+      expect(tool?.category).toBe('search');
+      expect(tool?.allowedScopes).toEqual(['session']);
+      expect(tool?.outputSchema).toBeUndefined();
+      expect(schema.additionalProperties).toBe(false);
+      expect(schema.properties).not.toHaveProperty('content');
+      expect(schema.properties).not.toHaveProperty('path');
+      expect(tool?.tags).toContain('read-only');
+    }
+
+    const search = getAgentHarnessToolDefinition('search_knowledge');
+    const read = getAgentHarnessToolDefinition('read_knowledge');
+    const searchSchema = search?.inputSchema.schema as {
+      required?: string[];
+      properties?: Record<string, unknown>;
+    };
+    const readSchema = read?.inputSchema.schema as {
+      required?: string[];
+      properties?: Record<string, unknown>;
+    };
+    expect(searchSchema.required).toEqual(['query']);
+    expect(Object.keys(searchSchema.properties ?? {})).toEqual(['query']);
+    expect(readSchema.required).toEqual(['documentId']);
+    expect(Object.keys(readSchema.properties ?? {})).toEqual(['documentId', 'heading']);
+    expect(search?.timeoutMs).toBe(getAgentHarnessToolDefinition('search_workspace')?.timeoutMs);
+    expect(search?.maxOutputBytes).toBe(
+      getAgentHarnessToolDefinition('search_workspace')?.maxOutputBytes,
+    );
+    expect(read?.timeoutMs).toBe(search?.timeoutMs);
+    expect(read?.maxOutputBytes).toBe(search?.maxOutputBytes);
   });
 
   it('marks browser_smoke as disabled-by-default metadata while remaining implemented', () => {

@@ -84750,7 +84750,7 @@ taskId=KNOW-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-06. Lane 1, AI-SERVICE and GATEWAY; mutates HARNESS_ENTITLEMENT_PROOF_V1, so Lane 2 stays empty. Keith admitted it on 2026-11-06. Stage-start approved by Keith on 2026-11-06 (docs/KNOW-02-STAGE-START.md; the write set adds the tool allow-list file and its spec); implementation next.
+**Status:** COMPLETE AND LOCKED — 2026-11-06. LANE-DONE and LOCKED by the control plane; Lane 1 and AI-SERVICE and GATEWAY released. Read-only Knowledge tools for agents and internal knowledge routes; role-to-scope map empty until BIZ-01; not deployed. Checkpoint: docs/KNOW-02-CHECKPOINT.md.
 **Task ID:** KNOW-02
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -84768,12 +84768,12 @@ nature=IMPLEMENTATION
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
 - [x] The stage-start (docs/KNOW-02-STAGE-START.md) is frozen and approved by Keith before implementation
-- [ ] search_knowledge and read_knowledge are read-only and register only for jobs whose signed payload carries a non-empty knowledgeScopes list; results are capped in bytes and hits
-- [ ] The internal knowledge routes keep the internal-key guard, take the user id and scopes from the job (never from the model) and return only that owner's documents in those scopes
-- [ ] knowledgeScopes is set only by the gateway from the server scope registry; the browser cannot set it; the entitlement proof covers it; HARNESS_ENTITLEMENT_PROOF_V1 is re-frozen at LOCK
-- [ ] Tests cover each point above; ai-service and api-gateway tests and builds pass, compared with the known failures in their latest checkpoints
-- [ ] The checkpoint carries the CHECKLIST line (EVERY, BACKEND) and the FOLLOWUPS line
-- [ ] Not LOCKED by an implementer
+- [x] search_knowledge and read_knowledge are read-only and register only for jobs whose signed payload carries a non-empty knowledgeScopes list; results are capped in bytes and hits
+- [x] The internal knowledge routes keep the internal-key guard, take the user id and scopes from the job (never from the model) and return only that owner's documents in those scopes
+- [x] knowledgeScopes is set only by the gateway from the server scope registry; the browser cannot set it; the entitlement proof covers it; HARNESS_ENTITLEMENT_PROOF_V1 is re-frozen at LOCK
+- [x] Tests cover each point above; ai-service and api-gateway tests and builds pass, compared with the known failures in their latest checkpoints
+- [x] The checkpoint carries the CHECKLIST line (EVERY, BACKEND) and the FOLLOWUPS line
+- [x] Not LOCKED by an implementer
 
 ### KNOW-03 — Citations in business answers
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

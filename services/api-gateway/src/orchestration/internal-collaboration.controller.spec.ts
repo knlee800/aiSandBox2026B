@@ -1908,6 +1908,7 @@ describe('InternalCollaborationController', () => {
       }
       expect(payload.executionIntent).toBe('conversation');
       expect(payload).not.toHaveProperty('fileAccess');
+      expect(payload).not.toHaveProperty('knowledgeScopes');
       const { harnessEntitlementProof, ...signed } = payload;
       const expected = createHarnessEntitlementProof({
         executionId: String(signed.executionId),
@@ -1937,6 +1938,40 @@ describe('InternalCollaborationController', () => {
       expectSignedToolProfile(payload, 'read');
     }
 
+    it('covers knowledgeScopes in the entitlement digest', () => {
+      process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = HARNESS_SECRET;
+      const payloadWithoutProof = {
+        executionId: 'exec-know-scopes',
+        userId: 'user-know-scopes',
+        apiKeyId: 'apikey-know-scopes',
+        submittedAt: '2026-11-06T00:00:00.000Z',
+        harnessVersion: 'v1' as const,
+        harnessToolProfile: 'read' as const,
+        knowledgeScopes: ['policies'],
+      };
+      const signed = createHarnessEntitlementProof({
+        executionId: payloadWithoutProof.executionId,
+        userId: payloadWithoutProof.userId,
+        apiKeyId: payloadWithoutProof.apiKeyId,
+        issuedAt: payloadWithoutProof.submittedAt,
+        payloadWithoutProof,
+        secret: HARNESS_SECRET,
+      });
+      const flipped = createHarnessEntitlementProof({
+        executionId: payloadWithoutProof.executionId,
+        userId: payloadWithoutProof.userId,
+        apiKeyId: payloadWithoutProof.apiKeyId,
+        issuedAt: payloadWithoutProof.submittedAt,
+        payloadWithoutProof: {
+          ...payloadWithoutProof,
+          knowledgeScopes: ['market-data'],
+        },
+        secret: HARNESS_SECRET,
+      });
+      expect(flipped.payloadDigest).not.toBe(signed.payloadDigest);
+      expect(flipped.signature).not.toBe(signed.signature);
+    });
+
     it('enqueues a signed read-only harness job and ignores caller harness fields', async () => {
       process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = HARNESS_SECRET;
       const runId = await createRun();
@@ -1946,6 +1981,7 @@ describe('InternalCollaborationController', () => {
         harnessVersion: 'v2',
         harnessReadOnly: false,
         harnessEntitlementProof: { token: 'caller' },
+        knowledgeScopes: ['policies'],
       }).expect(201);
 
       expect(waiting.body.referral.status).toBe('pending_approval');
@@ -1954,6 +1990,7 @@ describe('InternalCollaborationController', () => {
       expect(stored?.pendingJob?.fileAccess).toBe(true);
       expect(stored?.pendingJob).not.toHaveProperty('harnessVersion');
       expect(stored?.pendingJob).not.toHaveProperty('harnessReadOnly');
+      expect(stored?.pendingJob).not.toHaveProperty('knowledgeScopes');
 
       const response = await approve(runId, waiting.body.referral.referralId).expect(200);
       expect(response.body.referral.status).toBe('in_progress');
@@ -2002,6 +2039,7 @@ describe('InternalCollaborationController', () => {
         expect(payload).not.toHaveProperty('harnessReadOnly');
         expect(payload).not.toHaveProperty('harnessToolProfile');
         expect(payload).not.toHaveProperty('harnessEntitlementProof');
+        expect(payload).not.toHaveProperty('knowledgeScopes');
         expect(payload.executionIntent).toBe('conversation');
         expect(JSON.stringify(payload)).not.toContain('harnessVersion');
         expect(JSON.stringify(payload)).not.toContain('harnessReadOnly');

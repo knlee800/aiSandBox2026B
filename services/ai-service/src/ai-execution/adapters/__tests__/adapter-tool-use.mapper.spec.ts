@@ -135,6 +135,8 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
       'delete_file',
       'run_validation',
       'search_workspace',
+      'search_knowledge',
+      'read_knowledge',
     ]);
     expect(advertisedNames(advertised)).toEqual([
       'list_files',
@@ -143,6 +145,8 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
       'delete_file',
       'run_validation',
       'search_workspace',
+      'search_knowledge',
+      'read_knowledge',
     ]);
 
     const listFiles = getAgentHarnessToolDefinition('list_files');
@@ -185,6 +189,8 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
       'delete_file',
       'run_validation',
       'search_workspace',
+      'search_knowledge',
+      'read_knowledge',
     ]);
     expect(declarations[0].inputSchema).toBe(listFiles!.inputSchema.schema);
     expect(declarations[1].inputSchema).toBe(readFile!.inputSchema.schema);
@@ -206,6 +212,8 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
       'list_files',
       'read_file',
       'search_workspace',
+      'search_knowledge',
+      'read_knowledge',
     ]);
     expect(advertisedNames(advertised)).not.toContain('delete_file');
   });
@@ -224,6 +232,8 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
       'write_file',
       'delete_file',
       'search_workspace',
+      'search_knowledge',
+      'read_knowledge',
     ]);
   });
 
@@ -295,6 +305,8 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
       'read_file',
       'run_validation',
       'search_workspace',
+      'search_knowledge',
+      'read_knowledge',
     ]);
   });
 
@@ -314,6 +326,8 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed tool advertisement filter', () =>
       'delete_file',
       'run_validation',
       'search_workspace',
+      'search_knowledge',
+      'read_knowledge',
     ]);
     expect(names).toContain('delete_file');
     expect(names).not.toContain('browser_smoke');

@@ -22,6 +22,11 @@ export const KNOWLEDGE_ERRORS = {
   accountTooLarge: 'Account knowledge limit is 4 MB.',
   wrongFileType: 'Only .md and .txt files are supported.',
   notFound: 'Knowledge document not found.',
+  userInvalid: 'The user id is not valid.',
+  scopesInvalid: 'The knowledge scope list is not valid.',
+  queryRequired: 'Search query is required.',
+  queryUnsupported: 'Search query contains unsupported control characters.',
+  queryTooLong: 'Search query must be at most 120 characters.',
 } as const;
 
 export const KNOWLEDGE_ERROR_CODES = {
@@ -35,6 +40,11 @@ export const KNOWLEDGE_ERROR_CODES = {
   accountTooLarge: 'ACCOUNT_TOO_LARGE',
   wrongFileType: 'WRONG_FILE_TYPE',
   notFound: 'NOT_FOUND',
+  userInvalid: 'USER_INVALID',
+  scopesInvalid: 'SCOPES_INVALID',
+  queryRequired: 'QUERY_REQUIRED',
+  queryUnsupported: 'QUERY_UNSUPPORTED',
+  queryTooLong: 'QUERY_TOO_LONG',
 } as const;
 
 export type KnowledgeErrorCode =

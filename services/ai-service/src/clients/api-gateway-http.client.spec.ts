@@ -188,6 +188,106 @@ describe('ApiGatewayHttpClient - workspace file methods', () => {
     });
   });
 
+  describe('searchKnowledge and readKnowledge', () => {
+    it('posts the signed user, scopes, and query with the key header and signal', async () => {
+      const signal = new AbortController().signal;
+      const payload = {
+        query: 'leave',
+        results: [
+          {
+            documentId: '33333333-3333-4333-8333-333333333333',
+            title: 'Handbook',
+            scopeId: 'policies',
+            heading: 'Leave',
+            preview: 'Employees may take leave.',
+          },
+        ],
+        truncated: false,
+      };
+      httpService.post.mockReturnValue(of(makeAxiosResponse(payload)));
+
+      const result = await client.searchKnowledge(
+        {
+          userId: '11111111-1111-4111-8111-111111111111',
+          scopes: ['policies'],
+          query: 'leave',
+        },
+        signal,
+      );
+
+      expect(httpService.post).toHaveBeenCalledWith(
+        'http://localhost:4000/api/internal/knowledge/search',
+        {
+          userId: '11111111-1111-4111-8111-111111111111',
+          scopes: ['policies'],
+          query: 'leave',
+        },
+        {
+          signal,
+          headers: { 'X-Internal-Service-Key': 'test-key-123' },
+        },
+      );
+      expect(result).toEqual(payload);
+    });
+
+    it('posts a knowledge read, including an optional heading', async () => {
+      const signal = new AbortController().signal;
+      const payload = {
+        documentId: '33333333-3333-4333-8333-333333333333',
+        title: 'Handbook',
+        scopeId: 'policies',
+        heading: 'Leave',
+        content: '## Leave\nEmployees may take leave.',
+        truncated: false,
+      };
+      httpService.post.mockReturnValue(of(makeAxiosResponse(payload)));
+
+      const result = await client.readKnowledge(
+        {
+          userId: '11111111-1111-4111-8111-111111111111',
+          scopes: ['policies'],
+          documentId: '33333333-3333-4333-8333-333333333333',
+          heading: 'Leave',
+        },
+        signal,
+      );
+
+      expect(httpService.post).toHaveBeenCalledWith(
+        'http://localhost:4000/api/internal/knowledge/read',
+        {
+          userId: '11111111-1111-4111-8111-111111111111',
+          scopes: ['policies'],
+          documentId: '33333333-3333-4333-8333-333333333333',
+          heading: 'Leave',
+        },
+        {
+          signal,
+          headers: { 'X-Internal-Service-Key': 'test-key-123' },
+        },
+      );
+      expect(result).toEqual(payload);
+    });
+
+    it('propagates upstream errors', async () => {
+      httpService.post.mockReturnValue(throwError(() => new Error('gateway body')));
+
+      await expect(
+        client.searchKnowledge({
+          userId: '11111111-1111-4111-8111-111111111111',
+          scopes: ['policies'],
+          query: 'leave',
+        }),
+      ).rejects.toThrow('gateway body');
+      await expect(
+        client.readKnowledge({
+          userId: '11111111-1111-4111-8111-111111111111',
+          scopes: ['policies'],
+          documentId: '33333333-3333-4333-8333-333333333333',
+        }),
+      ).rejects.toThrow('gateway body');
+    });
+  });
+
   describe('writeWorkspaceFile', () => {
     it('calls API Gateway internal workspace write endpoint with correct body', async () => {
       httpService.post.mockReturnValue(

@@ -325,6 +325,69 @@ export const AGENT_HARNESS_TOOL_DEFINITIONS_V1: readonly AgentHarnessToolRegistr
       tags: ['search', 'read-only'],
       implementationStatus: 'implemented',
     },
+    {
+      contractVersion: AGENT_HARNESS_CONTRACT_VERSION_V1,
+      id: 'search_knowledge',
+      name: 'search_knowledge',
+      displayName: 'Search Knowledge',
+      description:
+        'Search the owner\'s documents in the signed knowledge scopes with a plain-text, case-insensitive query. Returns up to 20 hits with document id, title, scope, heading, and a preview, and truncated when more documents match.',
+      category: 'search',
+      inputSchema: {
+        schemaType: 'json-schema',
+        schema: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['query'],
+          properties: {
+            query: { type: 'string' },
+          },
+        },
+      },
+      riskLevel: 'low',
+      requiresApproval: false,
+      enabled: true,
+      timeoutMs: DEFAULT_TOOL_TIMEOUT_MS,
+      maxInputBytes: DEFAULT_MAX_INPUT_BYTES,
+      maxOutputBytes: DEFAULT_MAX_OUTPUT_BYTES,
+      allowedModes: ['execute', 'review'],
+      allowedScopes: ['session'],
+      auditEventTypes: ['tool-called', 'tool-completed'],
+      tags: ['search', 'read-only'],
+      implementationStatus: 'implemented',
+    },
+    {
+      contractVersion: AGENT_HARNESS_CONTRACT_VERSION_V1,
+      id: 'read_knowledge',
+      name: 'read_knowledge',
+      displayName: 'Read Knowledge',
+      description:
+        'Read one document owned by the user in the signed knowledge scopes, or the section under one heading. The result can be truncated to the tool byte cap.',
+      category: 'search',
+      inputSchema: {
+        schemaType: 'json-schema',
+        schema: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['documentId'],
+          properties: {
+            documentId: { type: 'string' },
+            heading: { type: 'string' },
+          },
+        },
+      },
+      riskLevel: 'low',
+      requiresApproval: false,
+      enabled: true,
+      timeoutMs: DEFAULT_TOOL_TIMEOUT_MS,
+      maxInputBytes: DEFAULT_MAX_INPUT_BYTES,
+      maxOutputBytes: DEFAULT_MAX_OUTPUT_BYTES,
+      allowedModes: ['execute', 'review'],
+      allowedScopes: ['session'],
+      auditEventTypes: ['tool-called', 'tool-completed'],
+      tags: ['search', 'read-only'],
+      implementationStatus: 'implemented',
+    },
   ]);
 
 const definitionsById: Record<string, AgentHarnessToolRegistryDefinitionV1> = {};

@@ -24,6 +24,18 @@ describe('toolProgressTarget', () => {
     expect(toolProgressTarget('search_workspace', { query: 'token' })).toBe(
       'token',
     );
+    expect(toolProgressTarget('search_knowledge', { query: 'leave' })).toBe(
+      'leave',
+    );
+    expect(
+      toolProgressTarget('read_knowledge', {
+        documentId: 'doc-1',
+        heading: 'Leave',
+      }),
+    ).toBe('doc-1');
+    expect(
+      toolProgressTarget('search_knowledge', { query: 'q'.repeat(240) }),
+    ).toBe('q'.repeat(200));
     expect(toolProgressTarget('run_validation', { command: 'npm test' })).toBe(
       'npm test',
     );

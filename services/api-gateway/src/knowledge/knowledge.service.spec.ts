@@ -324,4 +324,52 @@ describe('KnowledgeService', () => {
     expect(query.where.id).toEqual(In([documentId, deletedId, foreignId]));
     expect(query.withDeleted).toBeUndefined();
   });
+
+  it('returns active in-scope rows and does not query an empty scope list', async () => {
+    const otherScopeId = '77777777-7777-4777-8777-777777777777';
+    const active = row({ content: 'leave' });
+    const deleted = row({
+      id: '44444444-4444-4444-8444-444444444444',
+      deletedAt: now,
+      content: 'leave',
+    });
+    const otherScope = row({
+      id: otherScopeId,
+      scopeId: 'market-data',
+      content: 'leave',
+    });
+    const foreign = row({
+      id: '55555555-5555-4555-8555-555555555555',
+      userId: otherId,
+      content: 'leave',
+    });
+    documents.find.mockResolvedValue([active, deleted, otherScope, foreign]);
+
+    await expect(service.findActiveForScopes(ownerId, [])).resolves.toEqual([]);
+    expect(documents.find).not.toHaveBeenCalled();
+
+    await expect(service.findActiveForScopes(ownerId, ['policies'])).resolves.toEqual([
+      active,
+    ]);
+    const query = documents.find.mock.calls[0][0];
+    expect(query.where.userId).toBe(ownerId);
+    expect(query.where.scopeId).toEqual(In(['policies']));
+    expect(query.order).toEqual({ updatedAt: 'DESC' });
+    expect(query.withDeleted).toBeUndefined();
+
+    documents.findOne.mockResolvedValue(deleted);
+    await expect(
+      service.findActiveOwnedInScopes(ownerId, deleted.id, ['policies']),
+    ).resolves.toBeNull();
+    documents.findOne.mockResolvedValue(otherScope);
+    await expect(
+      service.findActiveOwnedInScopes(ownerId, otherScopeId, ['policies']),
+    ).resolves.toBeNull();
+    documents.findOne.mockResolvedValue(foreign);
+    await expect(
+      service.findActiveOwnedInScopes(ownerId, foreign.id, ['policies']),
+    ).resolves.toBeNull();
+    await expect(service.findActiveOwnedInScopes(ownerId, documentId, [])).resolves.toBeNull();
+    expect(documents.findOne).toHaveBeenCalledTimes(3);
+  });
 });

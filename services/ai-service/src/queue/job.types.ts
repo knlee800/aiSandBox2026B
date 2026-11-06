@@ -78,6 +78,13 @@ export interface AiExecutionJob {
    */
   harnessToolProfile?: 'read' | 'review' | 'write' | 'agent-write';
 
+  /**
+   * Signed knowledge scope ids. The gateway sets this from the server-side
+   * role map. Missing or empty means the knowledge tools are not registered.
+   * Part of the entitlement digest.
+   */
+  knowledgeScopes?: readonly string[];
+
   /** HMAC entitlement proof required when harnessVersion === 'v1'. Absent on ordinary jobs. */
   harnessEntitlementProof?: HarnessEntitlementProof;
 

@@ -1,6 +1,12 @@
 import { existsSync, readFileSync } from 'fs';
 import { dirname, join } from 'path';
-import { KNOWLEDGE_SCOPES } from './knowledge-scopes';
+import {
+  KNOWLEDGE_ROLE_SCOPES,
+  KNOWLEDGE_SCOPES,
+  findKnowledgeScope,
+  knowledgeScopesForProfile,
+  knowledgeScopesJobFields,
+} from './knowledge-scopes';
 
 function registryPath(): string {
   let dir = __dirname;
@@ -66,5 +72,29 @@ describe('knowledge scope registry', () => {
   it('has no duplicate server scope ids', () => {
     const ids = KNOWLEDGE_SCOPES.map((scope) => scope.id);
     expect(new Set(ids).size).toBe(ids.length);
+  });
+});
+
+describe('knowledge role scopes', () => {
+  it('keeps the role map empty and returns no scopes for current profiles', () => {
+    expect(KNOWLEDGE_ROLE_SCOPES).toEqual({});
+    for (const profileId of ['lead', 'writer', 'reviewer', 'chief-of-staff', 'builder']) {
+      expect(knowledgeScopesForProfile(profileId)).toEqual([]);
+      expect(knowledgeScopesJobFields(profileId)).toEqual({});
+    }
+    for (const ids of Object.values(KNOWLEDGE_ROLE_SCOPES)) {
+      for (const id of ids) {
+        expect(findKnowledgeScope(id)).toBeDefined();
+      }
+    }
+  });
+
+  it('copies an explicit scope list and throws on an unknown or duplicate id', () => {
+    expect(knowledgeScopesJobFields(['policies'])).toEqual({
+      knowledgeScopes: ['policies'],
+    });
+    expect(knowledgeScopesJobFields([])).toEqual({});
+    expect(() => knowledgeScopesJobFields(['not-a-scope'])).toThrow();
+    expect(() => knowledgeScopesJobFields(['policies', 'policies'])).toThrow();
   });
 });

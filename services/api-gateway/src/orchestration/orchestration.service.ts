@@ -72,6 +72,7 @@ import {
 import { classifySendBackEdge } from './collaboration-send-back';
 import {
   collaborationHarnessJobFields,
+  knowledgeScopesJobFields,
   readCollaborationHandoffWork,
   targetStepCanChangeFiles,
   type CollaborationHandoffFact,
@@ -824,7 +825,10 @@ export class OrchestrationService {
           submittedAt: input.submittedAt,
           executionIntent: 'conversation' as const,
           ...(fileAccess
-            ? collaborationHarnessJobFields(referral.targetBuilder.builderProfileId)
+            ? {
+                ...collaborationHarnessJobFields(referral.targetBuilder.builderProfileId),
+                ...knowledgeScopesJobFields(referral.targetBuilder.builderProfileId),
+              }
             : {}),
           agentRole: referral.targetBuilder.agentRole,
           builderProfileId: referral.targetBuilder.builderProfileId,

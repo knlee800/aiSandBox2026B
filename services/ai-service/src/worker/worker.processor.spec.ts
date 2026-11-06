@@ -37,6 +37,15 @@ import {
   verifyHarnessEntitlementProof,
   WorkerProcessor,
 } from './worker.processor';
+import {
+  KNOWLEDGE_SCOPES_INVALID,
+  KNOWLEDGE_SCOPES_INVALID_MESSAGE,
+  KNOWLEDGE_SCOPES_PROFILE_CONFLICT,
+  KNOWLEDGE_SCOPES_PROFILE_CONFLICT_MESSAGE,
+  KNOWLEDGE_SCOPES_REQUIRES_HARNESS,
+  KNOWLEDGE_SCOPES_REQUIRES_HARNESS_MESSAGE,
+  resolveKnowledgeScopes,
+} from './knowledge-scopes';
 import { selectAdvertisedAgentHarnessTools } from '../ai-execution/adapters/adapter-tool-use.mapper';
 import * as agentHarnessLoop from '../agent-harness/orchestrator/agent-harness-loop';
 import {
@@ -1983,6 +1992,8 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed advertised tool orchestration', (
     const deleteFile = getAgentHarnessToolDefinition('delete_file')!;
     const runValidation = getAgentHarnessToolDefinition('run_validation')!;
     const searchWorkspace = getAgentHarnessToolDefinition('search_workspace')!;
+    const searchKnowledge = getAgentHarnessToolDefinition('search_knowledge')!;
+    const readKnowledge = getAgentHarnessToolDefinition('read_knowledge')!;
     const advertised = selectAdvertisedAgentHarnessTools({
       registeredHandlerNames: AGENT_HARNESS_TOOL_DEFINITIONS_V1.map(
         (tool) => tool.name,
@@ -1998,6 +2009,8 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed advertised tool orchestration', (
       'delete_file',
       'run_validation',
       'search_workspace',
+      'search_knowledge',
+      'read_knowledge',
     ]);
     expect(advertised).toEqual([
       listFiles,
@@ -2006,6 +2019,8 @@ describe('AGENT-PLATFORM-EXEC-01C2 fail-closed advertised tool orchestration', (
       deleteFile,
       runValidation,
       searchWorkspace,
+      searchKnowledge,
+      readKnowledge,
     ]);
 
     const executeWithTools = jest.fn().mockResolvedValue({
@@ -7122,5 +7137,456 @@ describe('USAGE-DURATION-01: duration on final status updates', () => {
     expect(update?.params[2]).toBeNull();
     expectDurationMs(update?.params[3]);
     await worker.onModuleDestroy();
+  });
+});
+
+describe('KNOW-02 knowledge tools', () => {
+  const HARNESS_SECRET = 'test-hmac-secret-know-02';
+  const originalRedisUrl = process.env.REDIS_URL;
+  const originalStuckScan = process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+  const originalSecret = process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+  const harnessConfigModule = require('../agent-harness/config/agent-harness.config') as {
+    DEFAULT_AGENT_HARNESS_CONFIG_V1: typeof DEFAULT_AGENT_HARNESS_CONFIG_V1;
+  };
+  const originalHarnessConfig = harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1;
+  const READ_TOOLS = ['list_files', 'read_file', 'search_workspace'];
+  const KNOWLEDGE_READ_TOOLS = [
+    ...READ_TOOLS,
+    'search_knowledge',
+    'read_knowledge',
+  ];
+
+  function withHarnessProof(data: Record<string, unknown>): Record<string, unknown> {
+    const payloadDigest = computeJobPayloadDigest(data).payloadDigest;
+    const issuedAt = '2026-11-06T12:00:00.000Z';
+    const executionId = String(data.executionId);
+    const userId = String(data.userId);
+    const apiKeyId = String(data.apiKeyId);
+    const claim = `v=1|executionId=${executionId}|userId=${userId}|apiKeyId=${apiKeyId}|harnessVersion=v1|issuedAt=${issuedAt}|payloadDigest=${payloadDigest}`;
+    const signature = createHmac('sha256', HARNESS_SECRET)
+      .update(claim, 'utf8')
+      .digest('hex');
+    return {
+      ...data,
+      harnessEntitlementProof: {
+        version: 1,
+        executionId,
+        userId,
+        apiKeyId,
+        harnessVersion: 'v1',
+        issuedAt,
+        payloadDigest,
+        signature,
+      },
+    };
+  }
+
+  function baseJob(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+    return {
+      executionId: 'exec-know-02',
+      userId: 'user-know-02',
+      apiKeyId: 'apikey-know-02',
+      sessionId: 'session-know-02',
+      conversationId: 'conv-know-02',
+      provider: 'openai',
+      adapter: 'openai',
+      prompt: 'Read the policies.',
+      model: 'gpt-test',
+      harnessVersion: 'v1',
+      executionIntent: 'conversation',
+      submittedAt: '2026-11-06T12:00:00.000Z',
+      ...overrides,
+    };
+  }
+
+  function createLedgerMock() {
+    const status = { value: 'pending' };
+    const completedUpdates: Array<{ sql: string; params: unknown[] }> = [];
+    const failedUpdates: Array<{ sql: string; params: unknown[] }> = [];
+    const query = jest.fn(async (sql: string, params: unknown[] = []) => {
+      if (sql.includes("SET execution_status = 'running'") && sql.includes('RETURNING')) {
+        if (status.value === 'pending') {
+          status.value = 'running';
+          return [{ execution_id: params[0] }];
+        }
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'completed'")) {
+        completedUpdates.push({ sql, params });
+        status.value = 'completed';
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'failed'")) {
+        failedUpdates.push({ sql, params });
+        status.value = 'failed';
+        return [];
+      }
+      if (sql.includes('SELECT execution_status, created_at')) {
+        return [{ execution_status: status.value, created_at: new Date().toISOString() }];
+      }
+      if (sql.includes('SELECT execution_id, timestamp')) {
+        return [];
+      }
+      if (sql.includes('SELECT metadata')) {
+        return [{ metadata: {} }];
+      }
+      if (sql.includes('SELECT execution_status')) {
+        return [{ execution_status: status.value }];
+      }
+      return [];
+    });
+    return { query, status, completedUpdates, failedUpdates };
+  }
+
+  function profileGateway() {
+    return {
+      notifyExecutionComplete: jest.fn().mockResolvedValue(undefined),
+      readWorkspaceFile: jest.fn().mockResolvedValue({ path: 'a.ts', content: 'x' }),
+      listWorkspaceDirectory: jest.fn().mockResolvedValue({ entries: [] }),
+      searchWorkspace: jest.fn().mockResolvedValue({
+        query: 'leave',
+        results: [],
+        truncated: false,
+      }),
+      searchKnowledge: jest.fn().mockResolvedValue({
+        query: 'leave',
+        results: [],
+        truncated: false,
+      }),
+      readKnowledge: jest.fn(),
+      writeWorkspaceFile: jest.fn().mockResolvedValue(undefined),
+      deleteWorkspaceFile: jest.fn().mockResolvedValue(undefined),
+      runWorkspaceValidation: jest.fn().mockResolvedValue({
+        exitCode: 0,
+        stdout: '',
+        stderr: '',
+      }),
+      runBrowserSmoke: jest.fn().mockResolvedValue({ ok: true }),
+      createWorkspaceCheckpoint: jest.fn().mockResolvedValue({
+        commitHash: 'abc',
+        filesChanged: 0,
+      }),
+      saveProjectSnapshot: jest.fn().mockResolvedValue({ saved: true }),
+    };
+  }
+
+  function toolCall(callId: string, toolName: string, args: Record<string, unknown>) {
+    return { callId, toolName, arguments: args, providerKind: 'stub' };
+  }
+
+  function advertisedNames(executeWithTools: jest.Mock): string[] {
+    return executeWithTools.mock.calls[0][1].tools.map(
+      (tool: { name: string }) => tool.name,
+    );
+  }
+
+  function storedFailure(ledger: {
+    failedUpdates: Array<{ sql?: string; params: unknown[] }>;
+  }): { code: string; message: string } {
+    const update = ledger.failedUpdates.find((entry) =>
+      String(entry.params[1] ?? '').includes('executionError'),
+    );
+    expect(update).toBeDefined();
+    expect(update?.sql).toContain('execution_duration_ms = $4');
+    expectDurationMs(update?.params[3]);
+    const metadata = JSON.parse(String(update?.params[1])) as {
+      executionError: { code: string; message: string };
+    };
+    return metadata.executionError;
+  }
+
+  async function startWorker(deps: {
+    query: jest.Mock;
+    execute: jest.Mock;
+    getAdapter: jest.Mock;
+    apiGateway: object;
+  }) {
+    const publisher = {
+      publishCompletion: jest.fn(),
+      publishToken: jest.fn(),
+      publishFileActions: jest.fn(),
+      publishHarnessProgress: jest.fn(),
+    };
+    const worker = new WorkerProcessor(
+      { query: deps.query } as never,
+      { execute: deps.execute, getAdapter: deps.getAdapter } as never,
+      publisher as never,
+      deps.apiGateway as never,
+    );
+    await worker.onModuleInit();
+    if (!capturedWorker.processor) {
+      throw new Error('BullMQ worker processor was not captured');
+    }
+    return { worker, processJob: capturedWorker.processor };
+  }
+
+  async function runSigned(input: {
+    executionId: string;
+    overrides: Record<string, unknown>;
+    toolCalls?: Array<ReturnType<typeof toolCall>>;
+    gateway?: ReturnType<typeof profileGateway>;
+  }) {
+    const ledger = createLedgerMock();
+    const execute = jest.fn();
+    const executeWithTools = jest.fn();
+    if (input.toolCalls && input.toolCalls.length > 0) {
+      executeWithTools
+        .mockResolvedValueOnce({
+          output: 'using tools',
+          tokensUsed: 2,
+          model: 'stub-know',
+          finishReason: 'tool_calls',
+          toolCalls: input.toolCalls,
+        })
+        .mockResolvedValueOnce({
+          output: 'Finished the step.',
+          tokensUsed: 1,
+          model: 'stub-know',
+          finishReason: 'completed',
+          toolCalls: [],
+        });
+    } else {
+      executeWithTools.mockResolvedValue({
+        output: 'Finished the step.',
+        tokensUsed: 1,
+        model: 'stub-know',
+        finishReason: 'completed',
+        toolCalls: [],
+      });
+    }
+    const gateway = input.gateway ?? profileGateway();
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute,
+      getAdapter: jest.fn().mockReturnValue({
+        supportsToolUse: true,
+        executeWithTools,
+      }),
+      apiGateway: gateway,
+    });
+    await processJob({
+      id: `job-${input.executionId}`,
+      data: withHarnessProof(baseJob({
+        executionId: input.executionId,
+        ...input.overrides,
+      })),
+    });
+    return { ledger, execute, executeWithTools, gateway, worker };
+  }
+
+  async function expectStoredStop(
+    executionId: string,
+    data: Record<string, unknown>,
+    expected: { code: string; message: string },
+  ) {
+    const ledger = createLedgerMock();
+    const execute = jest.fn();
+    const executeWithTools = jest.fn();
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute,
+      getAdapter: jest.fn().mockReturnValue({
+        supportsToolUse: true,
+        executeWithTools,
+      }),
+      apiGateway: profileGateway(),
+    });
+    try {
+      await processJob({ id: `job-${executionId}`, data });
+      expect(execute).not.toHaveBeenCalled();
+      expect(executeWithTools).not.toHaveBeenCalled();
+      expect(storedFailure(ledger)).toEqual(expected);
+    } finally {
+      await worker.onModuleDestroy();
+    }
+  }
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    process.env.REDIS_URL = 'redis://127.0.0.1:6379';
+    process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = '600000';
+    process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = HARNESS_SECRET;
+    capturedWorker.processor = null;
+    capturedWorker.opts = null;
+    harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1 = {
+      ...originalHarnessConfig,
+      enableToolLoop: true,
+      enableWriteTools: true,
+      enableValidationTools: true,
+      enableBrowserSmoke: true,
+      enablePreApplyCheckpoint: true,
+    };
+  });
+
+  afterEach(() => {
+    harnessConfigModule.DEFAULT_AGENT_HARNESS_CONFIG_V1 = originalHarnessConfig;
+    jest.useRealTimers();
+    if (originalRedisUrl === undefined) {
+      delete process.env.REDIS_URL;
+    } else {
+      process.env.REDIS_URL = originalRedisUrl;
+    }
+    if (originalStuckScan === undefined) {
+      delete process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+    } else {
+      process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = originalStuckScan;
+    }
+    if (originalSecret === undefined) {
+      delete process.env.HARNESS_ENTITLEMENT_HMAC_SECRET;
+    } else {
+      process.env.HARNESS_ENTITLEMENT_HMAC_SECRET = originalSecret;
+    }
+  });
+
+  it('registers both tools only for read with a non-empty signed list', async () => {
+    const missing = await runSigned({
+      executionId: 'exec-know-missing',
+      overrides: { harnessToolProfile: 'read', harnessReadOnly: true },
+    });
+    expect(advertisedNames(missing.executeWithTools)).toEqual(READ_TOOLS);
+    expect(missing.gateway.searchKnowledge).not.toHaveBeenCalled();
+    await missing.worker.onModuleDestroy();
+
+    const empty = await runSigned({
+      executionId: 'exec-know-empty',
+      overrides: {
+        harnessToolProfile: 'read',
+        harnessReadOnly: true,
+        knowledgeScopes: [],
+      },
+    });
+    expect(advertisedNames(empty.executeWithTools)).toEqual(READ_TOOLS);
+    await empty.worker.onModuleDestroy();
+
+    const scoped = await runSigned({
+      executionId: 'exec-know-scoped',
+      overrides: {
+        harnessToolProfile: 'read',
+        harnessReadOnly: true,
+        knowledgeScopes: ['policies'],
+      },
+      toolCalls: [
+        toolCall('call-search', 'search_knowledge', {
+          query: 'leave',
+          userId: 'user-attacker',
+          scopes: ['market-data'],
+        }),
+      ],
+    });
+    expect(advertisedNames(scoped.executeWithTools)).toEqual(KNOWLEDGE_READ_TOOLS);
+    expect(advertisedNames(scoped.executeWithTools)).not.toContain('write_file');
+    expect(scoped.gateway.searchKnowledge).toHaveBeenCalledWith(
+      {
+        userId: 'user-know-02',
+        scopes: ['policies'],
+        query: 'leave',
+      },
+      expect.anything(),
+    );
+    expect(scoped.execute).not.toHaveBeenCalled();
+    await scoped.worker.onModuleDestroy();
+  });
+
+  it('stores knowledge_scopes_profile_conflict and does not call the provider', async () => {
+    expect(
+      resolveKnowledgeScopes(
+        { harnessVersion: 'v1', knowledgeScopes: ['policies'] },
+        null,
+      ),
+    ).toEqual({
+      ok: false,
+      code: KNOWLEDGE_SCOPES_PROFILE_CONFLICT,
+      message: KNOWLEDGE_SCOPES_PROFILE_CONFLICT_MESSAGE,
+    });
+    for (const profile of ['review', 'write', 'agent-write'] as const) {
+      await expectStoredStop(
+        `exec-know-conflict-${profile}`,
+        withHarnessProof(baseJob({
+          executionId: `exec-know-conflict-${profile}`,
+          harnessToolProfile: profile,
+          knowledgeScopes: ['policies'],
+        })),
+        {
+          code: KNOWLEDGE_SCOPES_PROFILE_CONFLICT,
+          message: KNOWLEDGE_SCOPES_PROFILE_CONFLICT_MESSAGE,
+        },
+      );
+    }
+  });
+
+  it('stores knowledge_scopes_invalid and does not call the provider', async () => {
+    const cases: Array<{ executionId: string; knowledgeScopes: unknown }> = [
+      { executionId: 'exec-know-object', knowledgeScopes: { id: 'policies' } },
+      { executionId: 'exec-know-null', knowledgeScopes: null },
+      { executionId: 'exec-know-unknown', knowledgeScopes: ['not-a-scope'] },
+      { executionId: 'exec-know-blank', knowledgeScopes: [''] },
+      { executionId: 'exec-know-number', knowledgeScopes: [1] },
+      { executionId: 'exec-know-duplicate', knowledgeScopes: ['policies', 'policies'] },
+      {
+        executionId: 'exec-know-length',
+        knowledgeScopes: Array.from({ length: 10 }, () => 'policies'),
+      },
+    ];
+    for (const item of cases) {
+      await expectStoredStop(
+        item.executionId,
+        withHarnessProof(baseJob({
+          executionId: item.executionId,
+          harnessToolProfile: 'read',
+          harnessReadOnly: true,
+          knowledgeScopes: item.knowledgeScopes,
+        })),
+        {
+          code: KNOWLEDGE_SCOPES_INVALID,
+          message: KNOWLEDGE_SCOPES_INVALID_MESSAGE,
+        },
+      );
+    }
+  });
+
+  it('stores knowledge_scopes_requires_harness when the field is present without v1', async () => {
+    for (const knowledgeScopes of [[], ['policies']] as const) {
+      const executionId = `exec-know-plain-${knowledgeScopes.length}`;
+      const job = baseJob({ executionId, knowledgeScopes: [...knowledgeScopes] });
+      delete job.harnessVersion;
+      await expectStoredStop(executionId, job, {
+        code: KNOWLEDGE_SCOPES_REQUIRES_HARNESS,
+        message: KNOWLEDGE_SCOPES_REQUIRES_HARNESS_MESSAGE,
+      });
+    }
+  });
+
+  it('stores PAYLOAD_INTEGRITY_MISMATCH when a signed scope list is replaced', async () => {
+    const signed = withHarnessProof(baseJob({
+      executionId: 'exec-know-tamper',
+      harnessToolProfile: 'read',
+      harnessReadOnly: true,
+      knowledgeScopes: ['policies'],
+    }));
+    const flipped = { ...signed, knowledgeScopes: ['market-data'] };
+    const ledger = createLedgerMock();
+    const execute = jest.fn();
+    const executeWithTools = jest.fn();
+    const { worker, processJob } = await startWorker({
+      query: ledger.query,
+      execute,
+      getAdapter: jest.fn().mockReturnValue({
+        supportsToolUse: true,
+        executeWithTools,
+      }),
+      apiGateway: profileGateway(),
+    });
+    try {
+      await expect(processJob({ id: 'job-know-tamper', data: flipped })).rejects.toMatchObject({
+        code: HARNESS_ENTITLEMENT_PROOF_PAYLOAD_INTEGRITY_MISMATCH,
+      });
+      expect(execute).not.toHaveBeenCalled();
+      expect(executeWithTools).not.toHaveBeenCalled();
+      expect(JSON.stringify(ledger.failedUpdates)).toContain(
+        HARNESS_ENTITLEMENT_PROOF_PAYLOAD_INTEGRITY_MISMATCH,
+      );
+    } finally {
+      await worker.onModuleDestroy();
+    }
   });
 });
