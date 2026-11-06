@@ -85820,23 +85820,25 @@ taskId=TESTER-SETUP-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-06. Registered by GOV-OS-06; not admitted.
+**Status:** ADMITTED — 2026-11-06. Lane 1, STAGING and CREDIT. Keith approved the draft and admitted it on 2026-11-06.
 **Task ID:** TESTER-SETUP-01
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION (operational run on staging)
 **Lifecycle:** 3-STEP.
-**Start condition (human):** NOT_READY. Ready when: Keith names the tester. Keith decides.
+**Start condition (human):** READY — Keith named the tester (his own second account knlee802 at gmail.com, user ff99eb72-e344-447a-b36c-4138fcaf6478) and admitted it on 2026-11-06.
 **Depends on:** none.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Expected: host state on ainow-staging-01 only (Caddy basic_auth entry, the tester's entitlements and credit grant) and off-repo evidence.
-**Mutexes / resources:** set at admission (expected STAGING). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS; expected STAGING-RUNTIME). **Revert isolation:** assessed at admission.
+**Primary write scope:** none in the repository beyond records. Host state on ainow-staging-01 only: the users row and the user_entitlements row of ff99eb72-e344-447a-b36c-4138fcaf6478 and one audit_events row; off-repo evidence.
+**Mutexes / resources:** STAGING, CREDIT (the token limit governs spend; no credit rows are written). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** STAGING-RUNTIME. **Revert isolation:** acceptable (one account; the access row can be switched off through the admin route).
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 
-**Holds:** (1) the tester's own basic_auth entry in Caddy; Keith types the password at a hidden prompt on the host; (2) the tester signs up with their own email; (3) entitlements through the audited admin route: harness on, Agent write on, dailyTokenLimitOverride 500000; (4) a credit grant through the admin route. test2 stays the control plane's check account.
+**Holds:** Keith tests with his own second account knlee802@gmail.com (no second basic_auth login). From the host, one hash-checked script: (1) mark the account's email verified (staging sends no email), as done for test2; (2) create its user_entitlements row with harness on, Agent write on and dailyTokenLimitOverride 500000, with one audit_events row stating that a control-plane host script approved by Keith made the change; (3) keep the existing balance of 500, writing no credit rows (a top-up is a separate later step); (4) read back. Runs stay off until TESTER-WINDOW-01. test2 stays the control plane's check account.
 **Named in:** GOV-OS-06.
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] knlee802 (ff99eb72-e344-447a-b36c-4138fcaf6478) is email-verified and has harness on, Agent write on and dailyTokenLimitOverride 500000, with one audit row
+- [ ] No other account is touched; env files, runs and the provider are unchanged
 - [ ] Not LOCKED by an implementer
 
 ### TESTER-WINDOW-01 — Open the tester window on staging

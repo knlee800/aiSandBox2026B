@@ -3,15 +3,15 @@
 schemaVersion=1
 maxImplementationLanes=2
 lane3=DISABLED
-lane1.state=EMPTY
-lane1.taskId=NONE
+lane1.state=ACTIVE
+lane1.taskId=TESTER-SETUP-01
 lane2.state=EMPTY
 lane2.taskId=NONE
 governance.owner=NONE
 governance.state=UNOWNED
 saturationSuspended=false
 suspensionReason=NONE
-occupancyHash=sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d
+occupancyHash=sha256:bc48854d8cf979bb0e16413cc684bee445141f8d69d1d0d1aebbf83f3dfc54b9
 <!-- AISB_OCCUPANCY_V1_END -->
 
 **Parallel Development Architecture:** v1
@@ -391,8 +391,12 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-06. GOVERNANCE released UNOWNED; Development OS mutation ended. Tester window rule in CLAUDE.md; validator fixtures 77 to 85. TESTER-SETUP-01 and TESTER-WINDOW-01 registered NOT_READY. Checkpoint: docs/GOV-OS-06-CHECKPOINT.md.
 
+## TESTER-SETUP-01 — ADMITTED / Lane 1 ACTIVE — 2026-11-06
+
+**Current status:** ADMITTED, Lane 1, with STAGING and CREDIT. Keith approved the draft and admitted it on 2026-11-06 (host script only; runs stay off). Scope in TASKS_BACKLOG_FULL.md.
+
 ## Lane 1
-EMPTY — Lane 1 released at STAGING-DEPLOY-09 COMPLETE AND LOCKED — 2026-11-06.
+ACTIVE — TESTER-SETUP-01 — 2026-11-06.
 
 ## Lane 2
 EMPTY — Lane 2 released at RUN-LIST-COLLAB-01 COMPLETE AND LOCKED — 2026-11-05.
@@ -403,7 +407,7 @@ DISABLED
 ## Governance owner / state
 UNOWNED — GOV-OS-06 COMPLETE AND LOCKED — 2026-11-06.
 
-Both implementation lanes are EMPTY. ACCESS-CORS-01 and STAGING-DEPLOY-09 are COMPLETE AND LOCKED. ACCESS-LIVE-01 is COMPLETE AND LOCKED: the second-user check passed on staging. Staging runs 951ee83 with knowledge, citations, the validation gate, Socket.IO auth, the audit table, per-user access, daily credit caps, per-plan token limits, test-key lockdown, the signed Agent tool profile, the real refusal messages and HTTP CORS limited to the app's own origin (Keith admin, harness access and Agent write on); runs and provider off. SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted: ACCESS-01E, ACCESS-01G to ACCESS-01J, LIMITS-PER-USER-01 (registered by GOV-ACCESS-PLAN-01); COLLAB-EVAL-01, COLLAB-FANOUT-01, COLLAB-REVIEWERS-01, COLLAB-LIMITS-ENV-01 (registered 2026-11-05 from Keith's Agent Teams and limits decisions); KNOW-02, KNOW-04, BIZ-01, BIZ-LIVE-01, BIZ-02, BIZ-03, BIZ-NOPROJECT-01, GOV-ARCH-SYNC-01 (registered by GOV-BIZ-KNOWLEDGE-PLAN-01); COLLAB-EDIT-01, COLLAB-CANCEL-01 (registered by GOV-COLLAB-PLAN-01); AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01 (registered by GOV-OS-05); ADMIN-CSRF-01 (registered by ACCESS-01B); AGENT-WRITE-UI-01, HARNESS-WRITE-VETO-01 (registered by ACCESS-01C); TESTER-SETUP-01, TESTER-WINDOW-01 (registered by GOV-OS-06).
+Lane 1 ACTIVE: TESTER-SETUP-01 (access for Keith's second account knlee802). Lane 2 EMPTY. ACCESS-CORS-01 and STAGING-DEPLOY-09 are COMPLETE AND LOCKED. ACCESS-LIVE-01 is COMPLETE AND LOCKED: the second-user check passed on staging. Staging runs 951ee83 with knowledge, citations, the validation gate, Socket.IO auth, the audit table, per-user access, daily credit caps, per-plan token limits, test-key lockdown, the signed Agent tool profile, the real refusal messages and HTTP CORS limited to the app's own origin (Keith admin, harness access and Agent write on); runs and provider off. SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted: ACCESS-01E, ACCESS-01G to ACCESS-01J, LIMITS-PER-USER-01 (registered by GOV-ACCESS-PLAN-01); COLLAB-EVAL-01, COLLAB-FANOUT-01, COLLAB-REVIEWERS-01, COLLAB-LIMITS-ENV-01 (registered 2026-11-05 from Keith's Agent Teams and limits decisions); KNOW-02, KNOW-04, BIZ-01, BIZ-LIVE-01, BIZ-02, BIZ-03, BIZ-NOPROJECT-01, GOV-ARCH-SYNC-01 (registered by GOV-BIZ-KNOWLEDGE-PLAN-01); COLLAB-EDIT-01, COLLAB-CANCEL-01 (registered by GOV-COLLAB-PLAN-01); AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01 (registered by GOV-OS-05); ADMIN-CSRF-01 (registered by ACCESS-01B); AGENT-WRITE-UI-01, HARNESS-WRITE-VETO-01 (registered by ACCESS-01C); TESTER-WINDOW-01 (registered by GOV-OS-06).
 
 ## Tester window
 CLOSED — rule GOV-OS-06 in CLAUDE.md; runtimeAuthorization.testerWindowOpen absent.
@@ -414,9 +418,9 @@ CLOSED — rule GOV-OS-06 in CLAUDE.md; runtimeAuthorization.testerWindowOpen ab
 - MIGRATION: UNOWNED — released at ACCESS-01B COMPLETE AND LOCKED 2026-11-05.
 - FRONTEND: UNOWNED — released at LIMIT-MESSAGE-01 COMPLETE AND LOCKED 2026-11-05.
 - I18N: UNOWNED — released at LIMIT-MESSAGE-01 COMPLETE AND LOCKED 2026-11-05.
-- STAGING: UNOWNED — released at STAGING-DEPLOY-09 COMPLETE AND LOCKED 2026-11-06 (stagingAuthorized=false).
+- STAGING: OWNED by TESTER-SETUP-01 (2026-11-06) (stagingAuthorized=true).
 - PROVIDER-LIVE: UNOWNED — released at ACCESS-LIVE-01 COMPLETE AND LOCKED 2026-11-05 (providerLiveAuthorized=false).
-- CREDIT: UNOWNED — released at ACCESS-LIVE-01 COMPLETE AND LOCKED 2026-11-05 (creditAuthorized=false).
+- CREDIT: OWNED by TESTER-SETUP-01 (2026-11-06) (creditAuthorized=true).
 - ENV: UNOWNED — released at ACCESS-LIVE-01 COMPLETE AND LOCKED 2026-11-05.
 - HOTFILE:e2e/builder-golden-path/lib/staging.ts: UNOWNED
 - HOTFILE:e2e/builder-golden-path/lib/constants.ts: UNOWNED
