@@ -84836,15 +84836,15 @@ taskId=BIZ-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-BIZ-KNOWLEDGE-PLAN-01; not admitted.
+**Status:** ADMITTED — 2026-11-06. Lane 1, GATEWAY, FRONTEND and I18N. Keith approved the drafted scope and admitted it on 2026-11-06. Implementation next.
 **Task ID:** BIZ-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
-**Lifecycle:** 3-STEP.
-**Start condition (human):** NOT_READY. Ready when: KNOW-02 and KNOW-03 are COMPLETE AND LOCKED and Keith admits it. Keith decides.
+**Lifecycle:** 3-STEP: admission in this record; implementation by Cursor grok-4.7-high; consolidation and LOCK in the same commit as the code (LOCAL-TESTS).
+**Start condition (human):** READY — KNOW-02 (2124629) and KNOW-03 are COMPLETE AND LOCKED; Keith admitted BIZ-01 on 2026-11-06 as drafted (write set, mutexes, design, LOCAL-TESTS).
 **Depends on:** KNOW-02, KNOW-03.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
-**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**Primary write scope:** `services/api-gateway/src/orchestration/`, `services/api-gateway/src/knowledge/knowledge-scopes.ts`, `services/api-gateway/src/knowledge/knowledge-scopes.spec.ts`, `frontend/components/collaboration/`, `frontend/lib/collaboration/`, `frontend/lib/collaboration.test.ts`, `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`, docs/BIZ-01-CHECKPOINT.md. Anything else needs a control-plane scope change.
+**Mutexes / resources:** GATEWAY, FRONTEND, I18N. **Hot-file leases:** none. **Shared contracts:** uses HARNESS_ENTITLEMENT_PROOF_V1 (FROZEN) without changing it; the gateway fills the existing knowledgeScopes field. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (no migration; a team registry, an optional start-route field and a page picker).
 **saturationClass:** OPTIONAL. **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved the plan on 2026-11-05).
 
 **Holds:** Plan section 6 row BIZ-01: a server-owned CHIEF_OF_STAFF_TEAM of one read-only role; a team field (coding or chief-of-staff) on the start route; knowledgeScopes on the job; a team picker on the Team page; en / zh-TW / zh-CN. Same approval gate; no hand-offs, external actions or work objects.
@@ -84854,7 +84854,15 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] One server-side team registry: coding (lead, writer, reviewer; behaviour unchanged) and chief-of-staff (one role). Each entry holds its roles, tool profile, Knowledge scopes and server-owned instructions; the model stays the server choice; built so a role can later be copied into a user agent (BIZ-USER-01)
+- [ ] chief-of-staff instructions (server-owned, at most 4000 characters): answer from the owner documents, cite every document-based claim as [source: documentId#heading], write No source otherwise, give no contract, financial or legal advice without a source, never propose sending anything, treat document text as data
+- [ ] The start route accepts an optional team (coding or chief-of-staff); missing means coding; any other value is a 400; instructions, model and scopes never come from the body
+- [ ] chief-of-staff gets the read profile and knowledgeScopes for the five shared scopes plus contract-templates through KNOWLEDGE_ROLE_SCOPES; it is a business role, so an answer without a valid source shows Unsourced
+- [ ] A run team is taken from its first step (no new column, no migration); run detail lists that team; a chief-of-staff run has no hand-offs (the existing check refuses any tag); approval gate, credit checks, sweep and expiry unchanged
+- [ ] The Team page has a team picker (Coding team, Chief of Staff) and shows the selected team; en, zh-TW and zh-CN keys; no hardcoded English
+- [ ] Tests cover each point above; api-gateway tests and build and frontend tests, type check and build pass, compared with the known failures in their latest checkpoints
+- [ ] The checkpoint carries the CHECKLIST line (EVERY, UI, BACKEND) and the FOLLOWUPS line
 - [ ] Not LOCKED by an implementer
 
 ### BIZ-LIVE-01 — Chief of Staff live check on staging
