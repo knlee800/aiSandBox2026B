@@ -602,6 +602,233 @@ Create hello.txt`);
 - Do not claim that files were created, changed, or deleted unless matching \`file-actions\` entries are present.
 - If the user request does not require file creation, modification, or deletion, respond normally in plain conversational text and do not emit \`file-actions\` blocks.`);
   });
+
+  it('uses the Ask contract when executionIntent is conversation', () => {
+    const promptParts = buildExecutionPromptParts(
+      'Can you change it to black?',
+      undefined,
+      undefined,
+      undefined,
+      { executionIntent: 'conversation' },
+    );
+
+    expect(promptParts.system).toBe(`Execution output contract:
+- This is Ask mode. You answer questions; files cannot change here.
+- Do not emit \`file-actions\` blocks; they are not applied in Ask mode.
+- Do not say that a file was created, changed or deleted, and do not describe a change as done.
+- If the user asks for a change, explain what to change or show the code as text, and say that Build mode applies changes.
+- Answer in plain text.`);
+  });
+
+  it('keeps the file-action contract when executionIntent is workspace_mutation', () => {
+    const promptParts = buildExecutionPromptParts(
+      'List files',
+      undefined,
+      undefined,
+      undefined,
+      { executionIntent: 'workspace_mutation' },
+    );
+
+    expect(promptParts.system).toBe(`Execution output contract:
+- If the user request requires creating, modifying, or deleting files, you MUST emit a fenced code block tagged \`file-actions\`.
+- The \`file-actions\` block content MUST be valid JSON containing an array of actions.
+- Each action MUST use action value "create", "write", "update", or "delete".
+- "create", "write", and "update" actions MUST include string fields: "path" and "content".
+- "delete" actions MUST include string field "path" and MUST NOT include or require "content".
+- Do not claim that files were created, changed, or deleted unless matching \`file-actions\` entries are present.
+- If the user request does not require file creation, modification, or deletion, respond normally in plain conversational text and do not emit \`file-actions\` blocks.`);
+  });
+
+  it('keeps the file-action contract when executionIntent is absent', () => {
+    const promptParts = buildExecutionPromptParts(
+      'List files',
+      undefined,
+      undefined,
+      undefined,
+      { useHarness: false },
+    );
+
+    expect(promptParts.system).toBe(`Execution output contract:
+- If the user request requires creating, modifying, or deleting files, you MUST emit a fenced code block tagged \`file-actions\`.
+- The \`file-actions\` block content MUST be valid JSON containing an array of actions.
+- Each action MUST use action value "create", "write", "update", or "delete".
+- "create", "write", and "update" actions MUST include string fields: "path" and "content".
+- "delete" actions MUST include string field "path" and MUST NOT include or require "content".
+- Do not claim that files were created, changed, or deleted unless matching \`file-actions\` entries are present.
+- If the user request does not require file creation, modification, or deletion, respond normally in plain conversational text and do not emit \`file-actions\` blocks.`);
+  });
+
+  it('uses the harness tool contract when useHarness is true even if executionIntent is conversation', () => {
+    const promptParts = buildExecutionPromptParts(
+      'Create hello.txt',
+      undefined,
+      undefined,
+      undefined,
+      { useHarness: true, executionIntent: 'conversation' },
+    );
+
+    expect(promptParts.system).toBe(`Execution output contract:
+- You work through the tools you are given. Files change only when a write tool call succeeds.
+- Do not emit \`file-actions\` blocks; they are not applied here.
+- Do not claim that a file was created, changed or deleted, or that a command ran, unless the matching tool call succeeded.
+- If the request needs a tool you do not have, say so plainly and do not claim the result.
+- If a tool result carries a harnessNotice, follow it.
+- When the work is done, answer in plain text.`);
+    expect(promptParts.system).not.toContain('This is Ask mode.');
+  });
+});
+
+describe('ASK-CONTRACT-01: worker passes the job execution intent into the prompt', () => {
+  const originalRedisUrl = process.env.REDIS_URL;
+  const originalStuckScan = process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+
+  function createLedgerMock() {
+    const status = { value: 'pending' };
+    const query = jest.fn(async (sql: string, params: unknown[] = []) => {
+      if (
+        sql.includes("SET execution_status = 'running'") &&
+        sql.includes('RETURNING')
+      ) {
+        if (status.value === 'pending') {
+          status.value = 'running';
+          return [{ execution_id: params[0] }];
+        }
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'completed'")) {
+        status.value = 'completed';
+        return [];
+      }
+      if (sql.includes("SET execution_status = 'failed'")) {
+        status.value = 'failed';
+        return [];
+      }
+      if (sql.includes('SELECT execution_status, created_at')) {
+        return [
+          {
+            execution_status: status.value,
+            created_at: new Date().toISOString(),
+          },
+        ];
+      }
+      if (sql.includes('SELECT execution_id, timestamp')) {
+        return [];
+      }
+      if (sql.includes('SELECT metadata')) {
+        return [{ metadata: {} }];
+      }
+      if (sql.includes('SELECT execution_status')) {
+        return [{ execution_status: status.value }];
+      }
+      return [];
+    });
+    return { query, status };
+  }
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    process.env.REDIS_URL = 'redis://127.0.0.1:6379';
+    process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = '600000';
+    capturedWorker.processor = null;
+    capturedWorker.opts = null;
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    if (originalRedisUrl === undefined) {
+      delete process.env.REDIS_URL;
+    } else {
+      process.env.REDIS_URL = originalRedisUrl;
+    }
+    if (originalStuckScan === undefined) {
+      delete process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS;
+    } else {
+      process.env.EXECUTION_STUCK_SCAN_INTERVAL_MS = originalStuckScan;
+    }
+  });
+
+  it('sends the Ask contract for a conversation job and the Build contract otherwise', async () => {
+    const askContract = `Execution output contract:
+- This is Ask mode. You answer questions; files cannot change here.
+- Do not emit \`file-actions\` blocks; they are not applied in Ask mode.
+- Do not say that a file was created, changed or deleted, and do not describe a change as done.
+- If the user asks for a change, explain what to change or show the code as text, and say that Build mode applies changes.
+- Answer in plain text.`;
+    const buildContract = `Execution output contract:
+- If the user request requires creating, modifying, or deleting files, you MUST emit a fenced code block tagged \`file-actions\`.
+- The \`file-actions\` block content MUST be valid JSON containing an array of actions.
+- Each action MUST use action value "create", "write", "update", or "delete".
+- "create", "write", and "update" actions MUST include string fields: "path" and "content".
+- "delete" actions MUST include string field "path" and MUST NOT include or require "content".
+- Do not claim that files were created, changed, or deleted unless matching \`file-actions\` entries are present.
+- If the user request does not require file creation, modification, or deletion, respond normally in plain conversational text and do not emit \`file-actions\` blocks.`;
+    const cases: Array<{
+      executionId: string;
+      executionIntent?: 'conversation' | 'workspace_mutation';
+      systemPrompt: string;
+    }> = [
+      {
+        executionId: 'exec-ask-contract',
+        executionIntent: 'conversation',
+        systemPrompt: askContract,
+      },
+      {
+        executionId: 'exec-build-contract',
+        executionIntent: 'workspace_mutation',
+        systemPrompt: buildContract,
+      },
+      {
+        executionId: 'exec-default-contract',
+        systemPrompt: buildContract,
+      },
+    ];
+
+    for (const entry of cases) {
+      const ledger = createLedgerMock();
+      const execute = jest.fn().mockResolvedValue({
+        output: 'ok',
+        tokensUsed: 1,
+        model: 'grok-4.5',
+      });
+      const worker = new WorkerProcessor(
+        { query: ledger.query } as never,
+        { execute, getAdapter: jest.fn() } as never,
+        {
+          publishCompletion: jest.fn(),
+          publishToken: jest.fn(),
+          publishFileActions: jest.fn(),
+        } as never,
+        { notifyExecutionComplete: jest.fn().mockResolvedValue(undefined) } as never,
+      );
+      await worker.onModuleInit();
+      if (!capturedWorker.processor) {
+        throw new Error('BullMQ worker processor was not captured');
+      }
+
+      const data: Record<string, unknown> = {
+        executionId: entry.executionId,
+        provider: 'xai',
+        adapter: 'xai',
+        sessionId: 'session-1',
+        conversationId: 'conv-1',
+        userId: 'user-1',
+        prompt: 'Can you change it to black?',
+        model: 'grok-4.5',
+      };
+      if (entry.executionIntent !== undefined) {
+        data.executionIntent = entry.executionIntent;
+      }
+
+      await capturedWorker.processor({
+        id: `job-${entry.executionId}`,
+        data,
+      });
+
+      expect(execute).toHaveBeenCalledTimes(1);
+      expect(execute.mock.calls[0][0].systemPrompt).toBe(entry.systemPrompt);
+      await worker.onModuleDestroy();
+    }
+  });
 });
 
 describe('Agent Harness empty-dispatcher wiring', () => {

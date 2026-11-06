@@ -93,6 +93,13 @@ const HARNESS_TOOL_OUTPUT_CONTRACT = `Execution output contract:
 - If a tool result carries a harnessNotice, follow it.
 - When the work is done, answer in plain text.`;
 
+const ASK_OUTPUT_CONTRACT = `Execution output contract:
+- This is Ask mode. You answer questions; files cannot change here.
+- Do not emit \`file-actions\` blocks; they are not applied in Ask mode.
+- Do not say that a file was created, changed or deleted, and do not describe a change as done.
+- If the user asks for a change, explain what to change or show the code as text, and say that Build mode applies changes.
+- Answer in plain text.`;
+
 export const FILE_ACTION_CONTRACT_FAILURE_CODE = 'file_action_contract_failure';
 export const FILE_ACTION_CONTRACT_FAILURE_MESSAGE =
   'Builder execution produced no valid file actions';
@@ -1034,7 +1041,10 @@ export function buildExecutionPromptParts(
   workspaceContext?: WorkspaceContext,
   globalInstructions?: string | null,
   projectInstructions?: string | null,
-  options?: { useHarness?: boolean },
+  options?: {
+    useHarness?: boolean;
+    executionIntent?: BuilderExecutionIntent;
+  },
 ): { system: string; user: string } {
   const normalizedPrompt = typeof userPrompt === 'string' ? userPrompt : '';
   const globalInstructionsBlock = buildGlobalInstructionsBlock(globalInstructions);
@@ -1044,7 +1054,9 @@ export function buildExecutionPromptParts(
   const outputContract =
     options?.useHarness === true
       ? HARNESS_TOOL_OUTPUT_CONTRACT
-      : FILE_ACTION_OUTPUT_CONTRACT;
+      : options?.executionIntent === 'conversation'
+        ? ASK_OUTPUT_CONTRACT
+        : FILE_ACTION_OUTPUT_CONTRACT;
   const systemSections: string[] = [outputContract];
   if (globalInstructionsBlock) {
     systemSections.push(globalInstructionsBlock);
@@ -1692,7 +1704,12 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                 job.data.workspaceContext,
                 job.data.globalInstructions,
                 job.data.projectInstructions,
-                { useHarness },
+                {
+                  useHarness,
+                  executionIntent: resolveWorkerExecutionIntent(
+                    job.data.executionIntent,
+                  ),
+                },
               );
               const executionRequest = buildAIExecutionRequest(
                 job.data,

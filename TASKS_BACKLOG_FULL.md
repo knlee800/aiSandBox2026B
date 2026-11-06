@@ -86065,7 +86065,7 @@ taskId=ASK-CONTRACT-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-06. Lane 1, AI-SERVICE.
+**Status:** COMPLETE AND LOCKED — 2026-11-06. LANE-DONE and LOCKED by the control plane; Lane 1 and AI-SERVICE released. Ask runs get their own instructions and never claim a file change; not deployed (STAGING-DEPLOY-11 registered). Checkpoint: docs/ASK-CONTRACT-01-CHECKPOINT.md.
 **Task ID:** ASK-CONTRACT-01
 **Workstream:** CORE (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -86081,12 +86081,12 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] A non-Agent run with executionIntent conversation gets the Ask contract; Build (workspace_mutation or absent intent) and Agent runs get their existing contracts unchanged
-- [ ] The Ask contract says files cannot change in Ask mode, forbids file-actions blocks and claims of changed files, and tells the model to point to Build mode for changes
-- [ ] File-actions in an Ask run are still dropped and logged
-- [ ] Tests cover each mode's contract; ai-service npm test and npm run build pass
-- [ ] The checkpoint carries the CHECKLIST line (EVERY, BACKEND, FLOWS)
-- [ ] Not LOCKED by an implementer
+- [x] A non-Agent run with executionIntent conversation gets the Ask contract; Build (workspace_mutation or absent intent) and Agent runs get their existing contracts unchanged
+- [x] The Ask contract says files cannot change in Ask mode, forbids file-actions blocks and claims of changed files, and tells the model to point to Build mode for changes
+- [x] File-actions in an Ask run are still dropped and logged
+- [x] Tests cover each mode's contract; ai-service npm test and npm run build pass
+- [x] The checkpoint carries the CHECKLIST line (EVERY, BACKEND, FLOWS)
+- [x] Not LOCKED by an implementer
 
 ### RUN-STOP-01 — Stop button for a running chat run
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -86116,6 +86116,31 @@ nature=IMPLEMENTATION
 - [ ] Existing test IDs kept; tests cover the button states, the call, the stopped message and the 409 and failure paths
 - [ ] Frontend tsc, npm test and npm run build pass; frontend/tsconfig.tsbuildinfo restored
 - [ ] The checkpoint carries the CHECKLIST line (EVERY, UI)
+- [ ] Not LOCKED by an implementer
+
+### STAGING-DEPLOY-11 — Deploy the Ask contract (ASK-CONTRACT-01) and the Stop button (RUN-STOP-01) during the tester window
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-11
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-06. Registered by ASK-CONTRACT-01; not admitted.
+**Task ID:** STAGING-DEPLOY-11
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (operational run; no code)
+**Lifecycle:** 3-STEP: registration here; admission when Keith picks the time; pre-check and deploy from the host; separate LOCK record (STAGING-RUNTIME).
+**Start condition (human):** NOT_READY. Ready when: ASK-CONTRACT-01 and RUN-STOP-01 are COMPLETE AND LOCKED and Keith approves the deploy and its timing. Keith decides.
+**Depends on:** ASK-CONTRACT-01, RUN-STOP-01.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Expected: none in the repository beyond records; host state on ainow-staging-01 (AI service and frontend release).
+**Mutexes / resources:** set at admission (expected STAGING and ENV). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS; expected STAGING-RUNTIME). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+
+**Holds:** deploy the commit that holds both locked tasks with the DEPLOY checklist, including item 7 (the tester window is open: save the window gateway.env, runs off for the deploy only, restore it byte for byte, check the window hashes gateway.env 5692ce35... and ai.env 132ebab3... and that runs are back on), Keith told first, health, guard and page checks, the static key refused. No provider run during the deploy; Keith checks Ask and Stop in his own testing afterwards.
+**Named in:** docs/ASK-CONTRACT-01-CHECKPOINT.md.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
 - [ ] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
