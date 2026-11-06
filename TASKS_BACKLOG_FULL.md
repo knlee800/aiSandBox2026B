@@ -86015,7 +86015,7 @@ taskId=STAGING-DEPLOY-10
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-06. Lane 1, STAGING. Keith said deploy now on 2026-11-06.
+**Status:** ADMITTED — 2026-11-06. Lane 1, STAGING and ENV. Keith said deploy now on 2026-11-06.
 **Task ID:** STAGING-DEPLOY-10
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION (operational run; no code)
@@ -86023,7 +86023,7 @@ nature=IMPLEMENTATION
 **Start condition (human):** READY — HARNESS-FIXES-01A is COMPLETE AND LOCKED; Keith said deploy now on 2026-11-06, accepting the restart during his testing.
 **Depends on:** HARNESS-FIXES-01A.
 **Primary write scope:** none in the repository beyond records. Host state on ainow-staging-01 (release of the HARNESS-FIXES-01A commit: gateway, AI service, container manager, frontend) and off-repo evidence.
-**Mutexes / resources:** STAGING. **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** STAGING-RUNTIME. **Revert isolation:** acceptable (no migration; rollback is a redeploy of 951ee83).
+**Mutexes / resources:** STAGING, ENV (ENV added 2026-11-06: the host deploy tool refuses while GLOBAL_EXECUTION_ENABLED is not false, so the deploy block sets it false for the deploy and then restores the saved tester-window gateway.env byte for byte; Keith approved). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** STAGING-RUNTIME. **Revert isolation:** acceptable (no migration; rollback is a redeploy of 951ee83).
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 
 **Holds:** deploy the HARNESS-FIXES-01A commit with the DEPLOY checklist: env files checked against the tester-window hashes (gateway.env 5692ce35..., ai.env 132ebab3...), nothing running, Keith told before the restart, health, guard and page checks, the static key refused, and a host check that POST /api/sessions/:id/restore answers 409 for a session with an active run is not attempted live (no provider run during the deploy); the unit tests cover it.

@@ -9,7 +9,7 @@
     "lane1": {
       "state": "ACTIVE",
       "taskId": "STAGING-DEPLOY-10",
-      "mutexes": ["STAGING"],
+      "mutexes": ["STAGING", "ENV"],
       "writePaths": [],
       "hotfiles": [],
       "i18n": false,
@@ -3953,7 +3953,7 @@
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
       "dependsOn": [],
-      "mutexes": ["STAGING"],
+      "mutexes": ["STAGING", "ENV"],
       "writePaths": [],
       "hotfiles": [],
       "i18n": false,

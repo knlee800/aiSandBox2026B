@@ -413,7 +413,7 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 ## STAGING-DEPLOY-10 — ADMITTED / Lane 1 ACTIVE — 2026-11-06
 
-**Current status:** ADMITTED, Lane 1, with STAGING. Keith said deploy now on 2026-11-06 (run from the host during the tester window). Scope in TASKS_BACKLOG_FULL.md.
+**Current status:** ADMITTED, Lane 1, with STAGING and ENV. Keith said deploy now on 2026-11-06; the first attempt stopped at the host deploy tool's execution-off gate with nothing changed, and Keith approved switching runs off for the deploy. Scope in TASKS_BACKLOG_FULL.md.
 
 ## Lane 1
 ACTIVE — STAGING-DEPLOY-10 — 2026-11-06.
@@ -441,7 +441,7 @@ OPEN since 2026-11-06T04:12:41Z (opened by TESTER-WINDOW-01); runtimeAuthorizati
 - STAGING: OWNED by STAGING-DEPLOY-10 (2026-11-06) (stagingAuthorized=true).
 - PROVIDER-LIVE: UNOWNED — released at TESTER-WINDOW-01 COMPLETE AND LOCKED 2026-11-06 (providerLiveAuthorized=false).
 - CREDIT: UNOWNED — released at TESTER-WINDOW-01 COMPLETE AND LOCKED 2026-11-06 (creditAuthorized=false).
-- ENV: UNOWNED — released at TESTER-WINDOW-01 COMPLETE AND LOCKED 2026-11-06.
+- ENV: OWNED by STAGING-DEPLOY-10 (2026-11-06; runs switched off only for the deploy, then the tester-window gateway.env restored).
 - HOTFILE:e2e/builder-golden-path/lib/staging.ts: UNOWNED
 - HOTFILE:e2e/builder-golden-path/lib/constants.ts: UNOWNED
 - HOTFILE:e2e/builder-golden-path/tests/evidence.spec.ts: UNOWNED
