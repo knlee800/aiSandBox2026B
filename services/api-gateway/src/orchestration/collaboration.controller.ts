@@ -29,13 +29,19 @@ import { ConversationService } from '../conversations/conversation.service';
 import { SessionStatus } from '../entities/session-status.enum';
 import { SessionService } from '../sessions/session.service';
 import {
-  COLLABORATION_LEAD_ACTOR,
   COLLABORATION_OMITTED_REJECT_REASON,
+  COLLABORATION_PAGE_AGENT_ROLE,
   COLLABORATION_RUN_LIST_LIMIT,
-  COLLABORATION_TEAM,
   COLLABORATION_USER_ACTOR,
   COLLABORATION_USER_TASK_MAX_CHARS,
 } from './collaboration-team';
+import {
+  collaborationAgentsForTeam,
+  collaborationTeamById,
+  collaborationTeamForTarget,
+  readCollaborationStartTeam,
+  type CollaborationServerTeamId,
+} from './collaboration-teams';
 import type { CollaborationReferral, CollaborationRun } from './orchestration.contracts';
 import type { CollaborationHandoffFact } from './collaboration-tool-profile';
 import {
@@ -64,6 +70,7 @@ export interface CollaborationRunListItem {
   status: string;
   createdAt: string;
   updatedAt: string;
+  teamId: CollaborationServerTeamId;
 }
 
 export interface CollaborationHandoffView {
@@ -106,6 +113,7 @@ export interface CollaborationRunDetail {
     completedAt: string | null;
     failedAt: string | null;
   };
+  teamId: CollaborationServerTeamId;
   team: string[];
   handoffs: CollaborationHandoffView[];
 }
@@ -131,7 +139,8 @@ export interface CollaborationStartResponse {
  * POST /api/collaboration/runs/:id/referrals/:referralId/approve
  * POST /api/collaboration/runs/:id/referrals/:referralId/reject
  *
- * Provider, model, team and decidedBy are not taken from the body.
+ * team is optional and only coding or chief-of-staff. Missing means coding.
+ * Provider, model, instructions, scopes, tool profile, and decidedBy are not taken from the body.
  */
 @Controller('collaboration')
 @UseGuards(SessionOrApiKeyAuthGuard)
@@ -162,6 +171,11 @@ export class CollaborationController {
 
     const conversation = await this.reuseOrCreateConversation(session.id);
     const { provider, model } = this.resolveServerProviderModel();
+    const team = collaborationTeamById(input.teamId);
+    const firstRole = team.roles[0];
+    if (!firstRole) {
+      throw new BadRequestException('team must be coding or chief-of-staff');
+    }
     const run = await this.orchestrationService.createCollaborationRun({
       userId: caller.userId,
       projectId,
@@ -172,7 +186,10 @@ export class CollaborationController {
       const started = await this.orchestrationService.createPendingReferral({
         collaborationRunId: run.collaborationRunId,
         sourceBuilder: COLLABORATION_USER_ACTOR,
-        targetBuilder: COLLABORATION_LEAD_ACTOR,
+        targetBuilder: {
+          agentRole: COLLABORATION_PAGE_AGENT_ROLE,
+          builderProfileId: firstRole.name,
+        },
         idempotencyKey: `screen:${randomUUID()}`,
         sessionId: session.id,
         conversationId: conversation.conversation.id,
@@ -181,7 +198,7 @@ export class CollaborationController {
         provider,
         adapter: provider,
         model,
-        agents: COLLABORATION_TEAM.map((agent) => ({ ...agent })),
+        agents: collaborationAgentsForTeam(input.teamId).map((agent) => ({ ...agent })),
         fileAccess: true,
       });
       return {
@@ -221,9 +238,18 @@ export class CollaborationController {
       projectId: parsedProjectId,
       limit: COLLABORATION_RUN_LIST_LIMIT,
     });
-    return {
-      runs: runs.map((run) => this.toListItem(run)),
-    };
+    const items: CollaborationRunListItem[] = [];
+    for (const run of runs) {
+      const firstId = run.referralIds[0];
+      const first = firstId ? await this.orchestrationService.getReferral(firstId) : null;
+      items.push(
+        this.toListItem(
+          run,
+          collaborationTeamForTarget(first?.targetBuilder.builderProfileId).id,
+        ),
+      );
+    }
+    return { runs: items };
   }
 
   @Get('runs/:id')
@@ -418,11 +444,20 @@ export class CollaborationController {
     return run;
   }
 
-  private readStartBody(body: unknown): { sessionId: string; task: string } {
+  private readStartBody(body: unknown): {
+    sessionId: string;
+    task: string;
+    teamId: CollaborationServerTeamId;
+  } {
     const record = this.asRecord(body);
+    const teamId = readCollaborationStartTeam(record.team);
+    if (!teamId) {
+      throw new BadRequestException('team must be coding or chief-of-staff');
+    }
     return {
       sessionId: this.readUuid(record.sessionId, 'sessionId'),
       task: this.readTask(record.task),
+      teamId,
     };
   }
 
@@ -495,13 +530,17 @@ export class CollaborationController {
     return value;
   }
 
-  private toListItem(run: CollaborationRun): CollaborationRunListItem {
+  private toListItem(
+    run: CollaborationRun,
+    teamId: CollaborationServerTeamId,
+  ): CollaborationRunListItem {
     return {
       collaborationRunId: run.collaborationRunId,
       projectId: run.projectId,
       status: run.status,
       createdAt: run.createdAt,
       updatedAt: run.updatedAt,
+      teamId,
     };
   }
 
@@ -511,6 +550,7 @@ export class CollaborationController {
     facts: ReadonlyMap<string, CollaborationHandoffFact>,
   ): Promise<CollaborationRunDetail> {
     const documents = await this.citationDocuments(run.userId, referrals);
+    const team = collaborationTeamForTarget(referrals[0]?.targetBuilder.builderProfileId);
     return {
       run: {
         collaborationRunId: run.collaborationRunId,
@@ -521,7 +561,8 @@ export class CollaborationController {
         completedAt: run.completedAt,
         failedAt: run.failedAt,
       },
-      team: COLLABORATION_TEAM.map((agent) => agent.name),
+      teamId: team.id,
+      team: [...team.roleNames],
       handoffs: referrals.map((referral) =>
         this.toHandoff(
           referral,

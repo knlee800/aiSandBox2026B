@@ -1002,7 +1002,16 @@
     "approveWithoutPassingTests": "Approve without passing tests",
     "sources": "Sources",
     "unsourced": "Unsourced",
-    "droppedSources": "{count} source markers were left out."
+    "droppedSources": "{count} source markers were left out.",
+    "teamPickerLabel": "Start with",
+    "teamCoding": "Coding team",
+    "teamCodingHint": "Lead, Writer, and Reviewer read the project and wait for you before each step.",
+    "teamChiefOfStaff": "Chief of Staff",
+    "teamChiefOfStaffHint": "One read-only role answers from your Knowledge documents and does not hand off.",
+    "chiefOfStaff": "Chief of Staff",
+    "chiefOfStaffSummary": "Answers from your Knowledge documents, cites each claim, and writes No source when a claim has none. Cannot change files or hand off.",
+    "fileAccessReadOnly": "This role can only read. It cannot change files, hand off, or take an outside action.",
+    "chainEmptyChief": "No steps yet. Start a task to ask the Chief of Staff."
   },
   "office": {
     "title": "Office",

@@ -1002,7 +1002,16 @@
     "approveWithoutPassingTests": "在測試未通過時仍核准",
     "sources": "來源",
     "unsourced": "沒有來源",
-    "droppedSources": "已略過 {count} 個來源標記。"
+    "droppedSources": "已略過 {count} 個來源標記。",
+    "teamPickerLabel": "用這個團隊開始",
+    "teamCoding": "程式團隊",
+    "teamCodingHint": "負責人、撰寫者和審查者讀取專案，並在每一步開始前等你核准。",
+    "teamChiefOfStaff": "幕僚長",
+    "teamChiefOfStaffHint": "一個唯讀角色根據你的知識文件回答，而且不會交接。",
+    "chiefOfStaff": "幕僚長",
+    "chiefOfStaffSummary": "根據你的知識文件回答，為每個論點標出來源；沒有來源時寫明沒有來源。不能改檔案，也不能交接。",
+    "fileAccessReadOnly": "這個角色只能讀取。不能改檔案、交接，也不能採取外部行動。",
+    "chainEmptyChief": "還沒有步驟。開始一個任務，就會先問幕僚長。"
   },
   "office": {
     "title": "辦公室",

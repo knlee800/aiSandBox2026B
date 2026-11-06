@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'fs';
 import { dirname, join } from 'path';
+import { collaborationRoleKnowledgeScopes } from '../orchestration/collaboration-teams';
 import {
   KNOWLEDGE_ROLE_SCOPES,
   KNOWLEDGE_SCOPES,
@@ -76,9 +77,22 @@ describe('knowledge scope registry', () => {
 });
 
 describe('knowledge role scopes', () => {
-  it('keeps the role map empty and returns no scopes for current profiles', () => {
-    expect(KNOWLEDGE_ROLE_SCOPES).toEqual({});
-    for (const profileId of ['lead', 'writer', 'reviewer', 'chief-of-staff', 'builder']) {
+  it('gives chief-of-staff the five shared scopes plus contract-templates', () => {
+    const chiefScopes = [
+      'company-monthly-reports',
+      'three-year-goals',
+      'strategy-docs',
+      'policies',
+      'meeting-summaries',
+      'contract-templates',
+    ];
+    expect(KNOWLEDGE_ROLE_SCOPES).toEqual({ 'chief-of-staff': chiefScopes });
+    expect(collaborationRoleKnowledgeScopes()).toEqual(KNOWLEDGE_ROLE_SCOPES);
+    expect(knowledgeScopesForProfile('chief-of-staff')).toEqual(chiefScopes);
+    expect(knowledgeScopesJobFields('chief-of-staff')).toEqual({
+      knowledgeScopes: chiefScopes,
+    });
+    for (const profileId of ['lead', 'writer', 'reviewer', 'builder']) {
       expect(knowledgeScopesForProfile(profileId)).toEqual([]);
       expect(knowledgeScopesJobFields(profileId)).toEqual({});
     }

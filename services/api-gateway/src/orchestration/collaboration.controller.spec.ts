@@ -327,7 +327,6 @@ describe('CollaborationController login routes', () => {
       model: 'gpt-4o',
       decidedBy: 'someone-else',
       agents: [{ name: 'hacker', instructions: 'pwn' }],
-      team: ['hacker'],
       fileAccess: false,
       ...overrides,
     };
@@ -480,8 +479,11 @@ describe('CollaborationController login routes', () => {
       'createdAt',
       'projectId',
       'status',
+      'teamId',
       'updatedAt',
     ]);
+    expect(list.body.runs[0].teamId).toBe('coding');
+    expect(list.body.runs[1].teamId).toBe('coding');
     expect(JSON.stringify(list.body)).not.toContain(TASK);
     expect(JSON.stringify(list.body)).not.toContain('prompt');
     expect(JSON.stringify(list.body)).not.toContain('answer');
@@ -553,6 +555,7 @@ describe('CollaborationController login routes', () => {
     expect(detail.body.handoffs[0].answer).toBeNull();
     expect(JSON.stringify(detail.body)).not.toContain('Execution failed');
     expect(detail.body.team).toEqual(['lead', 'writer', 'reviewer']);
+    expect(detail.body.teamId).toBe('coding');
   });
 
   it('shows whether a step can change files, then the paths, save point and tests', async () => {
@@ -1148,6 +1151,121 @@ describe('CollaborationController login routes', () => {
       showUnsourced: false,
     });
     expect(findActiveOwnedByIds).not.toHaveBeenCalled();
+  });
+
+  describe('BIZ-01 start team', () => {
+    const chiefScopes = [
+      'company-monthly-reports',
+      'three-year-goals',
+      'strategy-docs',
+      'policies',
+      'meeting-summaries',
+      'contract-templates',
+    ];
+
+    it('rejects unknown and non-string team values', async () => {
+      for (const team of [null, 1, true, '', 'Coding', 'advisors', ['hacker'], { id: 'coding' }]) {
+        await http().post('/api/collaboration/runs').send(startBody({ team })).expect(400);
+      }
+      expect(runs.size).toBe(0);
+      expect(referrals.size).toBe(0);
+    });
+
+    it('runs the coding team when team is missing or coding', async () => {
+      const missing = await startRun();
+      expect(referrals.get(missing.referralId)?.targetBuilderProfileId).toBe('lead');
+      expect(referrals.get(missing.referralId)?.pendingJob?.agents).toEqual(
+        COLLABORATION_TEAM.map((agent) => ({ ...agent })),
+      );
+
+      const explicit = await http()
+        .post('/api/collaboration/runs')
+        .send(startBody({ team: 'coding', model: 'gpt-4o', provider: 'openai' }))
+        .expect(201);
+      expect(explicit.body.target).toBe('lead');
+      expect(referrals.get(explicit.body.referralId)?.pendingJob?.model).toBe('stub');
+      expect(JSON.stringify(explicit.body)).not.toContain('gpt-4o');
+    });
+
+    it('starts chief-of-staff on the read profile with the six scopes and no hand-off', async () => {
+      const started = await http()
+        .post('/api/collaboration/runs')
+        .send(
+          startBody({
+            team: 'chief-of-staff',
+            model: 'gpt-4o',
+            provider: 'openai',
+            agents: [{ name: 'hacker', instructions: 'pwn' }],
+          }),
+        )
+        .expect(201);
+
+      const stored = referrals.get(started.body.referralId);
+      expect(started.body.target).toBe('chief-of-staff');
+      expect(stored?.targetBuilderProfileId).toBe('chief-of-staff');
+      expect(stored?.pendingJob?.provider).toBe('stub');
+      expect(stored?.pendingJob?.model).toBe('stub');
+      expect(stored?.pendingJob?.fileAccess).toBe(true);
+      expect(stored?.pendingJob?.agents).toEqual([
+        {
+          name: 'chief-of-staff',
+          instructions: stored?.pendingJob?.agents?.[0]?.instructions,
+        },
+      ]);
+      expect(stored?.pendingJob?.agents?.[0]?.instructions).toContain('search_knowledge');
+      expect(stored?.pendingJob?.agents?.[0]?.instructions).not.toContain('pwn');
+      expect(stored?.pendingJob).not.toHaveProperty('knowledgeScopes');
+      expect(JSON.stringify(started.body)).not.toContain('gpt-4o');
+
+      await http()
+        .post(
+          `/api/collaboration/runs/${started.body.collaborationRunId}/referrals/${started.body.referralId}/approve`,
+        )
+        .send({ harnessToolProfile: 'write', knowledgeScopes: ['market-data'] })
+        .expect(200);
+      const payload = queue.enqueueExecution.mock.calls.at(-1)?.[0] as Record<string, unknown>;
+      expect(payload.builderProfileId).toBe('chief-of-staff');
+      expect(payload.harnessToolProfile).toBe('read');
+      expect(payload.harnessReadOnly).toBe(true);
+      expect(payload.knowledgeScopes).toEqual(chiefScopes);
+      expect(payload.model).toBe('stub');
+
+      const executionId = referrals.get(started.body.referralId)?.executionId;
+      executionResults.getExecution.mockImplementation(async (id: string) => {
+        if (id === executionId) {
+          return {
+            execution_status: 'completed',
+            metadata: {
+              aiExecutionResult: {
+                output: 'The goal is growth.\n<handoff to="writer">Write the plan.</handoff>',
+              },
+            },
+          };
+        }
+        return null;
+      });
+
+      const detail = await http()
+        .get(`/api/collaboration/runs/${started.body.collaborationRunId}`)
+        .expect(200);
+      expect(detail.body.teamId).toBe('chief-of-staff');
+      expect(detail.body.team).toEqual(['chief-of-staff']);
+      expect(detail.body.handoffs).toHaveLength(1);
+      expect(detail.body.handoffs[0]).toMatchObject({
+        target: 'chief-of-staff',
+        status: 'completed',
+        handoffNote: 'refused: agent_not_on_list',
+        showUnsourced: true,
+        unsourced: true,
+        sources: [],
+      });
+      expect(referrals.size).toBe(1);
+
+      const list = await http()
+        .get(`/api/collaboration/runs?projectId=${started.body.projectId}`)
+        .expect(200);
+      expect(list.body.runs[0].teamId).toBe('chief-of-staff');
+    });
   });
 });
 

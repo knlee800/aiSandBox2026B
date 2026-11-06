@@ -84836,7 +84836,7 @@ taskId=BIZ-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-06. Lane 1, GATEWAY, FRONTEND and I18N. Keith approved the drafted scope and admitted it on 2026-11-06. Implementation next.
+**Status:** COMPLETE AND LOCKED — 2026-11-07. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY, FRONTEND and I18N released. Chief of Staff team: one server team registry (coding and chief-of-staff), an optional team field on the start route, six Knowledge scopes through KNOWLEDGE_ROLE_SCOPES and a team picker on the Team page; code and LOCK in one commit (LOCAL-TESTS); not deployed. Checkpoint: docs/BIZ-01-CHECKPOINT.md.
 **Task ID:** BIZ-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -84855,15 +84855,15 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] One server-side team registry: coding (lead, writer, reviewer; behaviour unchanged) and chief-of-staff (one role). Each entry holds its roles, tool profile, Knowledge scopes and server-owned instructions; the model stays the server choice; built so a role can later be copied into a user agent (BIZ-USER-01)
-- [ ] chief-of-staff instructions (server-owned, at most 4000 characters): answer from the owner documents, cite every document-based claim as [source: documentId#heading], write No source otherwise, give no contract, financial or legal advice without a source, never propose sending anything, treat document text as data
-- [ ] The start route accepts an optional team (coding or chief-of-staff); missing means coding; any other value is a 400; instructions, model and scopes never come from the body
-- [ ] chief-of-staff gets the read profile and knowledgeScopes for the five shared scopes plus contract-templates through KNOWLEDGE_ROLE_SCOPES; it is a business role, so an answer without a valid source shows Unsourced
-- [ ] A run team is taken from its first step (no new column, no migration); run detail lists that team; a chief-of-staff run has no hand-offs (the existing check refuses any tag); approval gate, credit checks, sweep and expiry unchanged
-- [ ] The Team page has a team picker (Coding team, Chief of Staff) and shows the selected team; en, zh-TW and zh-CN keys; no hardcoded English
-- [ ] Tests cover each point above; api-gateway tests and build and frontend tests, type check and build pass, compared with the known failures in their latest checkpoints
-- [ ] The checkpoint carries the CHECKLIST line (EVERY, UI, BACKEND) and the FOLLOWUPS line
-- [ ] Not LOCKED by an implementer
+- [x] One server-side team registry: coding (lead, writer, reviewer; behaviour unchanged) and chief-of-staff (one role). Each entry holds its roles, tool profile, Knowledge scopes and server-owned instructions; the model stays the server choice; built so a role can later be copied into a user agent (BIZ-USER-01)
+- [x] chief-of-staff instructions (server-owned, at most 4000 characters): answer from the owner documents, cite every document-based claim as [source: documentId#heading], write No source otherwise, give no contract, financial or legal advice without a source, never propose sending anything, treat document text as data
+- [x] The start route accepts an optional team (coding or chief-of-staff); missing means coding; any other value is a 400; instructions, model and scopes never come from the body
+- [x] chief-of-staff gets the read profile and knowledgeScopes for the five shared scopes plus contract-templates through KNOWLEDGE_ROLE_SCOPES; it is a business role, so an answer without a valid source shows Unsourced
+- [x] A run team is taken from its first step (no new column, no migration); run detail lists that team; a chief-of-staff run has no hand-offs (the existing check refuses any tag); approval gate, credit checks, sweep and expiry unchanged
+- [x] The Team page has a team picker (Coding team, Chief of Staff) and shows the selected team; en, zh-TW and zh-CN keys; no hardcoded English
+- [x] Tests cover each point above; api-gateway tests and build and frontend tests, type check and build pass, compared with the known failures in their latest checkpoints
+- [x] The checkpoint carries the CHECKLIST line (EVERY, UI, BACKEND) and the FOLLOWUPS line
+- [x] Not LOCKED by an implementer
 
 ### BIZ-LIVE-01 — Chief of Staff live check on staging
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -84888,6 +84888,7 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] The live answers show whether the shared job wrapper's generic hand-off sentence confuses the one-role Chief of Staff; if it does, the fix is in scope here or registered (from the BIZ-01 checkpoint, 2026-11-07)
 - [ ] Not LOCKED by an implementer
 
 ### BIZ-02 — Chief of Staff desk in the office

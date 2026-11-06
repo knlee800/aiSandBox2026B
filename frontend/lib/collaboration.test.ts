@@ -21,9 +21,13 @@ import {
   readTestsBlockReason,
   readTestsGate,
   readTestsNotPassed,
+  collaborationRoster,
   collaborationScopeLabel,
+  collaborationStartRequestBody,
+  collaborationTeamFromDetail,
   formatCollaborationSource,
   readCollaborationSources,
+  readCollaborationTeamId,
   readDroppedSourceCount,
   sendBackRoundNumbers,
   shouldPollCollaboration,
@@ -677,6 +681,11 @@ let latest: {
   }>;
   onApprove: (referralId: string, approveWithoutPassingTests?: boolean) => void;
   onApproveWithoutTestsChange: (referralId: string, checked: boolean) => void;
+  onTeamChange: (teamId: 'coding' | 'chief-of-staff') => void;
+  onTaskChange: (value: string) => void;
+  onStart: () => void;
+  selectedTeam: 'coding' | 'chief-of-staff';
+  runTeam: { label: string; roles: string[] } | null;
 } | null = null;
 let createRoot: (typeof import('react-dom/client'))['createRoot'];
 let originalFetch: typeof fetch;
@@ -1057,5 +1066,246 @@ describe('collaboration screen reload', () => {
       }
     });
     assert.deepEqual(bodies[1], { approveWithoutPassingTests: true });
+  });
+
+  test('start sends the selected team', async () => {
+    const bodies: unknown[] = [];
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      fetchCalls.push(url);
+      if ((init?.method ?? 'GET').toUpperCase() === 'POST') {
+        bodies.push(JSON.parse(String(init?.body)));
+        return jsonResponse(201, {
+          collaborationRunId: 'run-9',
+          projectId: 'proj-1',
+          status: 'active',
+          referralId: 'ref-9',
+          handoffStatus: 'pending_approval',
+          source: 'user',
+          target: 'chief-of-staff',
+          conversationId: 'conv-1',
+          conversationCreated: false,
+        });
+      }
+      if (url.startsWith('/api/collaboration/runs?')) {
+        return jsonResponse(200, {
+          runs: [{ ...runPayload('active'), collaborationRunId: 'run-9', teamId: 'chief-of-staff' }],
+        });
+      }
+      if (url.includes('/api/collaboration/runs/run-9')) {
+        return jsonResponse(200, {
+          run: { ...runPayload('active'), collaborationRunId: 'run-9' },
+          teamId: 'chief-of-staff',
+          team: ['chief-of-staff'],
+          handoffs: [],
+        });
+      }
+      return jsonResponse(404, { message: 'missing' });
+    }) as typeof fetch;
+
+    await renderScreen(1, 'proj-1');
+    await act(async () => {
+      latest!.onTeamChange('chief-of-staff');
+      latest!.onTaskChange('What is our goal?');
+    });
+    await act(async () => {
+      latest!.onStart();
+      for (let step = 0; step < 40; step += 1) {
+        await Promise.resolve();
+      }
+    });
+
+    assert.deepEqual(bodies, [
+      {
+        sessionId: 'session-1',
+        task: 'What is our goal?',
+        team: 'chief-of-staff',
+      },
+    ]);
+    assert.equal(latest?.selectedTeam, 'chief-of-staff');
+    assert.equal(latest?.runTeam?.roles.length, 1);
+    assert.match(String(latest?.runTeam?.label), /幕僚|Chief of Staff/);
+  });
+});
+
+describe('BIZ-01 team picker', () => {
+  const rosterLabels = {
+    lead: enMessages.collaboration.lead,
+    writer: enMessages.collaboration.writer,
+    reviewer: enMessages.collaboration.reviewer,
+    chiefOfStaff: enMessages.collaboration.chiefOfStaff,
+    leadSummary: enMessages.collaboration.leadSummary,
+    writerSummary: enMessages.collaboration.writerSummary,
+    reviewerSummary: enMessages.collaboration.reviewerSummary,
+    chiefOfStaffSummary: enMessages.collaboration.chiefOfStaffSummary,
+  };
+
+  test('builds the start body and reads the run team', () => {
+    assert.deepEqual(
+      collaborationStartRequestBody({
+        sessionId: 'session-1',
+        task: '  What is the goal?  ',
+        team: 'coding',
+      }),
+      { sessionId: 'session-1', task: 'What is the goal?', team: 'coding' },
+    );
+    assert.deepEqual(
+      collaborationStartRequestBody({
+        sessionId: 'session-1',
+        task: 'Ask',
+        team: 'chief-of-staff',
+      }),
+      { sessionId: 'session-1', task: 'Ask', team: 'chief-of-staff' },
+    );
+    assert.equal(readCollaborationTeamId('coding'), 'coding');
+    assert.equal(readCollaborationTeamId('chief-of-staff'), 'chief-of-staff');
+    assert.equal(readCollaborationTeamId(undefined), null);
+    assert.equal(readCollaborationTeamId(null), null);
+    assert.equal(readCollaborationTeamId(1), null);
+    assert.equal(readCollaborationTeamId('advisors'), null);
+    assert.equal(
+      collaborationTeamFromDetail({ teamId: 'chief-of-staff', team: ['chief-of-staff'] }),
+      'chief-of-staff',
+    );
+    assert.equal(
+      collaborationTeamFromDetail({ team: ['chief-of-staff'] }),
+      'chief-of-staff',
+    );
+    assert.equal(
+      collaborationTeamFromDetail({ team: ['lead', 'writer', 'reviewer'] }),
+      'coding',
+    );
+    assert.equal(collaborationTeamFromDetail(null), null);
+    assert.deepEqual(
+      collaborationRoster('coding', rosterLabels).map((member) => member.name),
+      [
+        enMessages.collaboration.lead,
+        enMessages.collaboration.writer,
+        enMessages.collaboration.reviewer,
+      ],
+    );
+    assert.deepEqual(collaborationRoster('chief-of-staff', rosterLabels), [
+      {
+        name: enMessages.collaboration.chiefOfStaff,
+        summary: enMessages.collaboration.chiefOfStaffSummary,
+      },
+    ]);
+  });
+
+  test('renders the picker and the run team from translated labels', () => {
+    const markup = renderToStaticMarkup(
+      React.createElement(CollaborationView, {
+        labels: {
+          ...labels,
+          teamPickerLabel: zhTwMessages.collaboration.teamPickerLabel,
+        },
+        backHref: '/zh-TW/app',
+        sessionReady: true,
+        projectReady: true,
+        loading: false,
+        notice: null,
+        conversationCreated: false,
+        task: '問目標',
+        deciding: false,
+        team: collaborationRoster('chief-of-staff', {
+          ...rosterLabels,
+          chiefOfStaff: zhTwMessages.collaboration.chiefOfStaff,
+          chiefOfStaffSummary: zhTwMessages.collaboration.chiefOfStaffSummary,
+        }),
+        selectedTeam: 'chief-of-staff',
+        teamChoices: [
+          {
+            id: 'coding',
+            label: zhTwMessages.collaboration.teamCoding,
+            hint: zhTwMessages.collaboration.teamCodingHint,
+          },
+          {
+            id: 'chief-of-staff',
+            label: zhTwMessages.collaboration.teamChiefOfStaff,
+            hint: zhTwMessages.collaboration.teamChiefOfStaffHint,
+          },
+        ],
+        onTeamChange: () => {},
+        accessNote: zhTwMessages.collaboration.fileAccessReadOnly,
+        chainEmptyText: zhTwMessages.collaboration.chainEmptyChief,
+        runTeam: {
+          label: zhTwMessages.collaboration.teamChiefOfStaff,
+          roles: [zhTwMessages.collaboration.chiefOfStaff],
+        },
+        handoffs: [],
+        runs: [
+          {
+            id: 'run-cos',
+            statusLabel: zhTwMessages.collaboration.statusActive,
+            when: 'now',
+            selected: true,
+            teamLabel: zhTwMessages.collaboration.teamChiefOfStaff,
+          },
+        ],
+        rejectReferralId: null,
+        rejectReason: '',
+        onTaskChange: () => {},
+        onStart: () => {},
+        onOpenRun: () => {},
+        onApprove: () => {},
+        onApproveWithoutTestsChange: () => {},
+        onBeginReject: () => {},
+        onCancelReject: () => {},
+        onConfirmReject: () => {},
+        onRejectReasonChange: () => {},
+      }),
+    );
+
+    assert.match(markup, /data-testid="collaboration-team-picker"/);
+    assert.match(markup, /data-testid="collaboration-team-option-coding"/);
+    assert.match(markup, /data-testid="collaboration-team-option-chief-of-staff"/);
+    assert.match(markup, /data-testid="collaboration-start"/);
+    assert.match(markup, /data-testid="collaboration-run-team"/);
+    assert.match(markup, new RegExp(zhTwMessages.collaboration.teamPickerLabel));
+    assert.match(markup, new RegExp(zhTwMessages.collaboration.teamCoding));
+    assert.match(markup, new RegExp(zhTwMessages.collaboration.teamChiefOfStaff));
+    assert.match(markup, new RegExp(zhTwMessages.collaboration.fileAccessReadOnly));
+    assert.match(markup, new RegExp(zhTwMessages.collaboration.chainEmptyChief));
+    assert.match(openTag(markup, 'collaboration-team-option-chief-of-staff'), /border-indigo-300/);
+    assert.match(openTag(markup, 'collaboration-team-option-coding'), /border-gray-200/);
+    const codingAt = markup.indexOf('data-testid="collaboration-team-option-coding"');
+    const chiefAt = markup.indexOf('data-testid="collaboration-team-option-chief-of-staff"');
+    assert.ok(codingAt >= 0 && chiefAt > codingAt);
+    assert.doesNotMatch(markup.slice(codingAt, chiefAt), /checked/);
+    assert.match(markup.slice(chiefAt, chiefAt + 500), /checked/);
+    assert.doesNotMatch(markup, /Coding team/);
+    assert.doesNotMatch(markup, /Chief of Staff/);
+
+    const newKeys = [
+      'teamPickerLabel',
+      'teamCoding',
+      'teamCodingHint',
+      'teamChiefOfStaff',
+      'teamChiefOfStaffHint',
+      'chiefOfStaff',
+      'chiefOfStaffSummary',
+      'fileAccessReadOnly',
+      'chainEmptyChief',
+    ] as const;
+    for (const key of newKeys) {
+      const english = enMessages.collaboration[key];
+      const traditional = zhTwMessages.collaboration[key];
+      const simplified = zhCnMessages.collaboration[key];
+      assert.equal(typeof english, 'string');
+      assert.equal(english.trim().length > 0, true);
+      assert.notEqual(traditional, english);
+      assert.notEqual(simplified, english);
+      assert.notEqual(traditional, simplified);
+      assert.match(traditional, /\p{Script=Han}/u);
+      assert.match(simplified, /\p{Script=Han}/u);
+    }
+
+    for (const relativePath of [
+      '../components/collaboration/collaboration-view.tsx',
+      '../components/collaboration/collaboration-page.tsx',
+    ]) {
+      const source = readFileSync(new URL(relativePath, import.meta.url), 'utf8');
+      assert.doesNotMatch(source, /Coding team|Chief of Staff/);
+    }
   });
 });

@@ -10,6 +10,7 @@ export interface CollaborationRunListItem {
   status: string;
   createdAt: string;
   updatedAt: string;
+  teamId?: string;
 }
 
 export interface CollaborationSource {
@@ -54,6 +55,7 @@ export interface CollaborationRunDetail {
     completedAt: string | null;
     failedAt: string | null;
   };
+  teamId?: string;
   team: string[];
   handoffs: CollaborationHandoff[];
 }

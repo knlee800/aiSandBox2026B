@@ -1002,7 +1002,16 @@
     "approveWithoutPassingTests": "在测试未通过时仍批准",
     "sources": "来源",
     "unsourced": "没有来源",
-    "droppedSources": "已略过 {count} 个来源标记。"
+    "droppedSources": "已略过 {count} 个来源标记。",
+    "teamPickerLabel": "用这个团队开始",
+    "teamCoding": "编程团队",
+    "teamCodingHint": "负责人、撰写者和审查者读取项目，并在每一步开始前等你批准。",
+    "teamChiefOfStaff": "幕僚长",
+    "teamChiefOfStaffHint": "一个只读角色根据你的知识文档回答，而且不会交接。",
+    "chiefOfStaff": "幕僚长",
+    "chiefOfStaffSummary": "根据你的知识文档回答，为每个论点标出来源；没有来源时写明没有来源。不能改文件，也不能交接。",
+    "fileAccessReadOnly": "这个角色只能读取。不能改文件、交接，也不能采取外部行动。",
+    "chainEmptyChief": "还没有步骤。开始一个任务，就会先问幕僚长。"
   },
   "office": {
     "title": "办公室",

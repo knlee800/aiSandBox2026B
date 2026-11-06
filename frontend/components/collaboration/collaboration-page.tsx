@@ -20,12 +20,17 @@ import {
   collaborationMemberLabel,
   collaborationRefusal,
   collaborationRefusalMessageKey,
+  collaborationRoster,
+  collaborationStartRequestBody,
+  collaborationTeamFromDetail,
+  collaborationTeamTitle,
+  readCollaborationTeamId,
+  readStringList,
   readErrorMessage,
   readHandoffTests,
   collaborationScopeLabel,
   readCollaborationSources,
   readDroppedSourceCount,
-  readStringList,
   readTestsBlockReason,
   readTestsGate,
   readTestsNotPassed,
@@ -34,6 +39,7 @@ import {
   handoffIsWaiting,
   sendBackRoundNumbers,
   shouldPollCollaboration,
+  type CollaborationTeamId,
   type CollaborationTestsBlockReason,
   type CollaborationTestsGate,
 } from '@/lib/collaboration/logic';
@@ -74,6 +80,7 @@ export function useCollaborationScreen(input: {
   tRef.current = t;
 
   const [task, setTask] = useState('');
+  const [selectedTeam, setSelectedTeam] = useState<CollaborationTeamId>('coding');
   const [notice, setNotice] = useState<string | null>(null);
   const [conversationCreated, setConversationCreated] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -269,6 +276,7 @@ export function useCollaborationScreen(input: {
     start: t('start'),
     starting: t('starting'),
     teamHeading: t('teamHeading'),
+    teamPickerLabel: t('teamPickerLabel'),
     lead: t('lead'),
     writer: t('writer'),
     reviewer: t('reviewer'),
@@ -324,6 +332,7 @@ export function useCollaborationScreen(input: {
       lead: t('lead'),
       writer: t('writer'),
       reviewer: t('reviewer'),
+      chiefOfStaff: t('chiefOfStaff'),
     }),
     [t],
   );
@@ -333,11 +342,37 @@ export function useCollaborationScreen(input: {
     return key ? t(key) : status;
   }
 
-  const team = [
-    { name: labels.lead, summary: labels.leadSummary },
-    { name: labels.writer, summary: labels.writerSummary },
-    { name: labels.reviewer, summary: labels.reviewerSummary },
+  const team = collaborationRoster(selectedTeam, {
+    lead: labels.lead,
+    writer: labels.writer,
+    reviewer: labels.reviewer,
+    chiefOfStaff: t('chiefOfStaff'),
+    leadSummary: labels.leadSummary,
+    writerSummary: labels.writerSummary,
+    reviewerSummary: labels.reviewerSummary,
+    chiefOfStaffSummary: t('chiefOfStaffSummary'),
+  });
+  const runTeamId = collaborationTeamFromDetail(detail);
+  const chainTeamId = runTeamId ?? selectedTeam;
+  const teamChoices = [
+    { id: 'coding' as const, label: t('teamCoding'), hint: t('teamCodingHint') },
+    {
+      id: 'chief-of-staff' as const,
+      label: t('teamChiefOfStaff'),
+      hint: t('teamChiefOfStaffHint'),
+    },
   ];
+  const runTeam = runTeamId
+    ? {
+        label: collaborationTeamTitle(runTeamId, {
+          coding: t('teamCoding'),
+          chiefOfStaff: t('teamChiefOfStaff'),
+        }),
+        roles: readStringList(detail?.team).map((name) =>
+          collaborationMemberLabel(name, memberLabels),
+        ),
+      }
+    : null;
 
   const sourceHandoffs = detail?.handoffs ?? [];
   const roundNumbers = sendBackRoundNumbers(sourceHandoffs);
@@ -402,13 +437,30 @@ export function useCollaborationScreen(input: {
     task,
     deciding,
     team,
+    selectedTeam,
+    teamChoices,
+    onTeamChange: (teamId: CollaborationTeamId) => {
+      setSelectedTeam(teamId);
+    },
+    accessNote: selectedTeam === 'chief-of-staff' ? t('fileAccessReadOnly') : labels.fileAccessOn,
+    chainEmptyText: chainTeamId === 'chief-of-staff' ? t('chainEmptyChief') : labels.chainEmpty,
+    runTeam,
     handoffs,
-    runs: runs.map((run) => ({
-      id: run.collaborationRunId,
-      statusLabel: statusLabel(run.status),
-      when: formatWhen(run.createdAt, locale),
-      selected: run.collaborationRunId === selectedRunId,
-    })),
+    runs: runs.map((run) => {
+      const listedTeamId = readCollaborationTeamId(run.teamId);
+      return {
+        id: run.collaborationRunId,
+        statusLabel: statusLabel(run.status),
+        when: formatWhen(run.createdAt, locale),
+        selected: run.collaborationRunId === selectedRunId,
+        teamLabel: listedTeamId
+          ? collaborationTeamTitle(listedTeamId, {
+              coding: t('teamCoding'),
+              chiefOfStaff: t('teamChiefOfStaff'),
+            })
+          : undefined,
+      };
+    }),
     rejectReferralId,
     rejectReason,
     onTaskChange: setTask,
@@ -416,7 +468,13 @@ export function useCollaborationScreen(input: {
       void runDecision(async () => {
         const response = await collaborationFetch('/api/collaboration/runs', {
           method: 'POST',
-          body: JSON.stringify({ sessionId, task: task.trim() }),
+          body: JSON.stringify(
+            collaborationStartRequestBody({
+              sessionId,
+              task,
+              team: selectedTeam,
+            }),
+          ),
         });
         if (!response.ok) {
           await showRefusal(response);

@@ -12,6 +12,7 @@ import {
   approveWithoutPassingTestsForClick,
   fillTemplate,
   formatCollaborationSource,
+  type CollaborationTeamId,
 } from '@/lib/collaboration/logic';
 
 export interface CollaborationViewLabels {
@@ -22,6 +23,7 @@ export interface CollaborationViewLabels {
   start: string;
   starting: string;
   teamHeading: string;
+  teamPickerLabel: string;
   lead: string;
   writer: string;
   reviewer: string;
@@ -112,6 +114,18 @@ export interface CollaborationPastRunView {
   statusLabel: string;
   when: string;
   selected: boolean;
+  teamLabel?: string;
+}
+
+export interface CollaborationTeamChoice {
+  id: CollaborationTeamId;
+  label: string;
+  hint: string;
+}
+
+export interface CollaborationRunTeamView {
+  label: string;
+  roles: string[];
 }
 
 export default function CollaborationView(props: {
@@ -125,6 +139,12 @@ export default function CollaborationView(props: {
   task: string;
   deciding: boolean;
   team: CollaborationTeamMemberView[];
+  selectedTeam?: CollaborationTeamId;
+  teamChoices?: CollaborationTeamChoice[];
+  onTeamChange?: (teamId: CollaborationTeamId) => void;
+  accessNote?: string;
+  chainEmptyText?: string;
+  runTeam?: CollaborationRunTeamView | null;
   handoffs: CollaborationHandoffViewModel[];
   runs: CollaborationPastRunView[];
   rejectReferralId: string | null;
@@ -141,6 +161,8 @@ export default function CollaborationView(props: {
 }) {
   const { labels } = props;
   const canStart = props.sessionReady && props.task.trim().length > 0 && !props.deciding;
+  const teamChoices = props.teamChoices ?? [];
+  const selectedTeam = props.selectedTeam ?? 'coding';
 
   return (
     <main className="mx-auto w-full max-w-3xl overflow-x-hidden px-4 py-6 text-gray-900">
@@ -187,7 +209,44 @@ export default function CollaborationView(props: {
             }
           }}
         >
-          <label htmlFor="collaboration-task" className="text-sm font-medium text-gray-800">
+          {teamChoices.length > 0 ? (
+            <fieldset className="min-w-0" data-testid="collaboration-team-picker">
+              <legend className="text-sm font-medium text-gray-800">{labels.teamPickerLabel}</legend>
+              <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {teamChoices.map((choice) => {
+                  const selected = selectedTeam === choice.id;
+                  return (
+                    <label
+                      key={choice.id}
+                      data-testid={`collaboration-team-option-${choice.id}`}
+                      className={`flex min-w-0 cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 ${
+                        selected
+                          ? 'border-indigo-300 bg-indigo-50'
+                          : 'border-gray-200 bg-white'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="collaboration-team"
+                        value={choice.id}
+                        checked={selected}
+                        onChange={() => props.onTeamChange?.(choice.id)}
+                        className="mt-0.5 h-4 w-4 shrink-0 accent-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                      />
+                      <span className="min-w-0">
+                        <span className="block text-sm font-medium text-gray-900">{choice.label}</span>
+                        <span className="block break-words text-sm text-gray-600">{choice.hint}</span>
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </fieldset>
+          ) : null}
+          <label
+            htmlFor="collaboration-task"
+            className={`text-sm font-medium text-gray-800 ${teamChoices.length > 0 ? 'mt-4 block' : ''}`}
+          >
             {labels.taskLabel}
           </label>
           <textarea
@@ -212,7 +271,7 @@ export default function CollaborationView(props: {
 
       <section className="mt-6 min-w-0">
         <h2 className="text-sm font-semibold text-gray-800">{labels.teamHeading}</h2>
-        <p className="mt-1 text-sm text-gray-600">{labels.fileAccessOn}</p>
+        <p className="mt-1 text-sm text-gray-600">{props.accessNote ?? labels.fileAccessOn}</p>
         <ul className="mt-2 space-y-2">
           {props.team.map((member) => (
             <li
@@ -228,8 +287,16 @@ export default function CollaborationView(props: {
 
       <section className="mt-6 min-w-0" data-testid="collaboration-chain">
         <h2 className="text-sm font-semibold text-gray-800">{labels.chainHeading}</h2>
+        {props.runTeam ? (
+          <p className="mt-1 break-words text-sm text-gray-800" data-testid="collaboration-run-team">
+            <span className="font-medium">{props.runTeam.label}</span>
+            {props.runTeam.roles.length > 0 ? (
+              <span className="text-gray-600">{` · ${props.runTeam.roles.join(' · ')}`}</span>
+            ) : null}
+          </p>
+        ) : null}
         {props.handoffs.length === 0 ? (
-          <p className="mt-2 text-sm text-gray-500">{labels.chainEmpty}</p>
+          <p className="mt-2 text-sm text-gray-500">{props.chainEmptyText ?? labels.chainEmpty}</p>
         ) : (
           <ol className="mt-2 space-y-3">
             {props.handoffs.map((handoff) => {
@@ -591,6 +658,9 @@ export default function CollaborationView(props: {
                 >
                   <span className="font-medium text-gray-900">{labels.openRun}</span>
                   <span className="break-words text-gray-600">{run.statusLabel}</span>
+                  {run.teamLabel ? (
+                    <span className="w-full break-words text-xs text-gray-500">{run.teamLabel}</span>
+                  ) : null}
                   <span className="w-full break-words text-xs text-gray-500">{run.when}</span>
                 </button>
               </li>

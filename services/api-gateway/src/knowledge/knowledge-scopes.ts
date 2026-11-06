@@ -1,3 +1,5 @@
+import { collaborationRoleKnowledgeScopes } from '../orchestration/collaboration-teams';
+
 export const KNOWLEDGE_SCOPE_TYPES = ['shared', 'specialist'] as const;
 export type KnowledgeScopeType = (typeof KNOWLEDGE_SCOPE_TYPES)[number];
 
@@ -34,9 +36,11 @@ export function findKnowledgeScope(id: string): KnowledgeScope | undefined {
 }
 
 /**
- * Role id to signed scope list. Empty until BIZ-01. A bad id cannot be signed.
+ * Role id to signed scope list, taken from the team registry.
+ * A bad id cannot be signed.
  */
-export const KNOWLEDGE_ROLE_SCOPES: Readonly<Record<string, readonly string[]>> = {};
+export const KNOWLEDGE_ROLE_SCOPES: Readonly<Record<string, readonly string[]>> =
+  collaborationRoleKnowledgeScopes();
 
 function copyValidatedKnowledgeScopeIds(ids: readonly string[]): string[] {
   const copied: string[] = [];

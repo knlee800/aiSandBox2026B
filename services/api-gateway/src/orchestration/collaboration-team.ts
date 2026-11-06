@@ -1,33 +1,27 @@
 import type { CollaborationAgentIdentity, CollaborationListedAgent } from './orchestration.contracts';
+import {
+  COLLABORATION_LEAD_PROFILE_ID,
+  COLLABORATION_REVIEWER_PROFILE_ID,
+  COLLABORATION_WRITER_PROFILE_ID,
+  collaborationAgentsForTeam,
+} from './collaboration-teams';
+
+export {
+  COLLABORATION_LEAD_PROFILE_ID,
+  COLLABORATION_REVIEWER_PROFILE_ID,
+  COLLABORATION_WRITER_PROFILE_ID,
+};
 
 /** Profile id of the human who starts a run from the collaboration page. */
 export const COLLABORATION_USER_PROFILE_ID = 'user';
 
-export const COLLABORATION_LEAD_PROFILE_ID = 'lead';
-export const COLLABORATION_WRITER_PROFILE_ID = 'writer';
-export const COLLABORATION_REVIEWER_PROFILE_ID = 'reviewer';
-
 /**
- * Fixed team for the collaboration page.
+ * Coding team for the collaboration page.
  * Names are the hand-off targets. Instructions are server-owned.
+ * Equal to the coding roles in the team registry.
  */
-export const COLLABORATION_TEAM: readonly CollaborationListedAgent[] = [
-  {
-    name: COLLABORATION_LEAD_PROFILE_ID,
-    instructions:
-      'Read the project with your tools and decide what is needed. When the code looks wrong or a change is needed, ask writer to apply a fix. You cannot change files.',
-  },
-  {
-    name: COLLABORATION_WRITER_PROFILE_ID,
-    instructions:
-      'Read the files you need. Apply the fix with write_file. You may run npm test, npm run build, or npx tsc --noEmit. Do not delete files. Then ask reviewer.',
-  },
-  {
-    name: COLLABORATION_REVIEWER_PROFILE_ID,
-    instructions:
-      'Read the real files. Run npm test, npm run build, or npx tsc --noEmit when that checks the change. Name each real bug with an input that shows it. If you find a real bug, send the work back to writer with a specific list of what to fix. Otherwise give the verdict and finish. You cannot change files.',
-  },
-];
+export const COLLABORATION_TEAM: readonly CollaborationListedAgent[] =
+  collaborationAgentsForTeam('coding');
 
 /** Added to the writer job only when the reviewer sent the work back. */
 export const COLLABORATION_SEND_BACK_WRITER_INSTRUCTION =

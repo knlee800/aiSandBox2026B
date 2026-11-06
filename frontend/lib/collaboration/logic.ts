@@ -275,7 +275,13 @@ export function fillTemplate(template: string, values: Record<string, string>): 
 
 export function collaborationMemberLabel(
   name: string,
-  labels: { you: string; lead: string; writer: string; reviewer: string },
+  labels: {
+    you: string;
+    lead: string;
+    writer: string;
+    reviewer: string;
+    chiefOfStaff?: string;
+  },
 ): string {
   if (name === 'user') {
     return labels.you;
@@ -289,7 +295,84 @@ export function collaborationMemberLabel(
   if (name === 'reviewer') {
     return labels.reviewer;
   }
+  if (name === 'chief-of-staff') {
+    return labels.chiefOfStaff ?? name;
+  }
   return name;
+}
+
+export const COLLABORATION_TEAM_IDS = ['coding', 'chief-of-staff'] as const;
+export type CollaborationTeamId = (typeof COLLABORATION_TEAM_IDS)[number];
+
+export function readCollaborationTeamId(value: unknown): CollaborationTeamId | null {
+  if (value === 'coding' || value === 'chief-of-staff') {
+    return value;
+  }
+  return null;
+}
+
+export function collaborationStartRequestBody(input: {
+  sessionId: string;
+  task: string;
+  team: CollaborationTeamId;
+}): { sessionId: string; task: string; team: CollaborationTeamId } {
+  return {
+    sessionId: input.sessionId,
+    task: input.task.trim(),
+    team: input.team,
+  };
+}
+
+export function collaborationTeamFromDetail(
+  detail: { teamId?: unknown; team?: unknown } | null | undefined,
+): CollaborationTeamId | null {
+  if (!detail) {
+    return null;
+  }
+  const fromId = readCollaborationTeamId(detail.teamId);
+  if (fromId) {
+    return fromId;
+  }
+  const names = readStringList(detail.team);
+  if (names.length === 1 && names[0] === 'chief-of-staff') {
+    return 'chief-of-staff';
+  }
+  if (names[0] === 'lead') {
+    return 'coding';
+  }
+  return null;
+}
+
+export function collaborationTeamTitle(
+  teamId: CollaborationTeamId,
+  labels: { coding: string; chiefOfStaff: string },
+): string {
+  return teamId === 'chief-of-staff' ? labels.chiefOfStaff : labels.coding;
+}
+
+export interface CollaborationRosterLabels {
+  lead: string;
+  writer: string;
+  reviewer: string;
+  chiefOfStaff: string;
+  leadSummary: string;
+  writerSummary: string;
+  reviewerSummary: string;
+  chiefOfStaffSummary: string;
+}
+
+export function collaborationRoster(
+  teamId: CollaborationTeamId,
+  labels: CollaborationRosterLabels,
+): Array<{ name: string; summary: string }> {
+  if (teamId === 'chief-of-staff') {
+    return [{ name: labels.chiefOfStaff, summary: labels.chiefOfStaffSummary }];
+  }
+  return [
+    { name: labels.lead, summary: labels.leadSummary },
+    { name: labels.writer, summary: labels.writerSummary },
+    { name: labels.reviewer, summary: labels.reviewerSummary },
+  ];
 }
 
 export function createSingleFlight(): {

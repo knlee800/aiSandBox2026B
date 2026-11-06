@@ -1,3 +1,5 @@
+import { businessRoleProfileIds } from './collaboration-teams';
+
 /**
  * Citations are derived when a Team hand-off is read. The stored answer is not rewritten.
  *
@@ -12,8 +14,10 @@ const SOURCE_OPEN = '[source:';
 const DOCUMENT_ID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Business-role profile ids. Empty until BIZ-01 adds chief-of-staff. */
-export const BUSINESS_ROLE_PROFILE_IDS: readonly string[] = Object.freeze([]);
+/** Business-role profile ids. An answer with no valid source is labelled for these. */
+export const BUSINESS_ROLE_PROFILE_IDS: readonly string[] = Object.freeze([
+  ...businessRoleProfileIds(),
+]);
 
 export interface CollaborationSourceMarker {
   documentId: string;
