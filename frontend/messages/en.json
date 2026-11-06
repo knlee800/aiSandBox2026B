@@ -465,7 +465,12 @@
     "quotaLimitGuidance": "Request blocked by quota limits. Review usage and try again after quota reset.",
     "accessRulesGuidance": "Request blocked by access rules. Check your API key permissions or launch access.",
     "runRecovering": "Reconnected to your run...",
-    "runRecoveredBuildNotApplied": "This run finished while the page was closed, so its file changes were not applied. Ask again to apply them."
+    "runRecoveredBuildNotApplied": "This run finished while the page was closed, so its file changes were not applied. Ask again to apply them.",
+    "stopRun": "Stop",
+    "stoppingRun": "Stopping…",
+    "runStopped": "Run stopped.",
+    "stopRunAlreadyFinished": "The run had already finished.",
+    "stopRunFailed": "Couldn't stop the run. Try again."
   },
   "authModule": {
     "installing": "Installing auth module — preparing your workspace...",

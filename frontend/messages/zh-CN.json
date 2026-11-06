@@ -465,7 +465,12 @@
     "quotaLimitGuidance": "请求因配额限制而被阻止。请查看用量，并在配额重置后再试。",
     "accessRulesGuidance": "请求因访问规则而被阻止。请检查你的 API 密钥权限或启动访问。",
     "runRecovering": "已重新连接到你的这次运行...",
-    "runRecoveredBuildNotApplied": "这次运行在页面关闭时已完成，所以文件更改没有应用。若要应用，请再问一次。"
+    "runRecoveredBuildNotApplied": "这次运行在页面关闭时已完成，所以文件更改没有应用。若要应用，请再问一次。",
+    "stopRun": "停止",
+    "stoppingRun": "正在停止…",
+    "runStopped": "已停止本次运行。",
+    "stopRunAlreadyFinished": "本次运行已经完成。",
+    "stopRunFailed": "无法停止运行，请重试。"
   },
   "authModule": {
     "installing": "正在安装认证模块 — 正在准备你的工作区...",

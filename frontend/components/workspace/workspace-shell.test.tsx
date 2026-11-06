@@ -8100,6 +8100,117 @@ describe('workspace core chat panel i18n wiring — I18N-SHELL-02', () => {
     assert.match(html, /workspace-chat-submit[\s\S]*?Send</);
   });
 
+  test('shows Stop instead of Send only while a run is active with a known execution id', () => {
+    const onStopRun = () => {};
+    const executionId = '24de3965-ec05-454a-9dbe-62449b9bd16d';
+    const idleHtml = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      chatPromptInput: 'hello',
+      chatExecutionId: executionId,
+      onStopRun,
+    });
+    assert.match(idleHtml, /data-testid="workspace-chat-submit"/);
+    assert.match(idleHtml, /workspace-chat-submit[\s\S]*?Send</);
+    assert.doesNotMatch(idleHtml, /data-testid="workspace-chat-stop"/);
+
+    const submittingHtml = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      chatRequestState: 'submitting',
+      onStopRun,
+    });
+    assert.match(submittingHtml, /data-testid="workspace-chat-submit"/);
+    assert.match(submittingHtml, /Sending\.\.\./);
+    assert.doesNotMatch(submittingHtml, /data-testid="workspace-chat-stop"/);
+    const submittingButton = renderWorkspaceShellElementByTestId('workspace-chat-submit', {
+      selectedSessionId: session.id,
+      chatRequestState: 'submitting',
+      onStopRun,
+    });
+    assert.equal(submittingButton?.props.disabled, true);
+
+    for (const requestState of ['queued', 'running'] as const) {
+      const html = renderWorkspaceShell({
+        selectedSessionId: session.id,
+        chatRequestState: requestState,
+        chatExecutionId: executionId,
+        onStopRun,
+      });
+      assert.match(html, /data-testid="workspace-chat-stop"[\s\S]*?>Stop</);
+      assert.doesNotMatch(html, /data-testid="workspace-chat-submit"/);
+    }
+
+    const runningWithoutId = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      chatRequestState: 'running',
+      onStopRun,
+    });
+    assert.match(runningWithoutId, /data-testid="workspace-chat-submit"/);
+    assert.doesNotMatch(runningWithoutId, /data-testid="workspace-chat-stop"/);
+
+    const runningWithoutHandler = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      chatRequestState: 'running',
+      chatExecutionId: executionId,
+    });
+    assert.match(runningWithoutHandler, /data-testid="workspace-chat-submit"/);
+    assert.doesNotMatch(runningWithoutHandler, /data-testid="workspace-chat-stop"/);
+
+    for (const requestState of ['completed', 'failed'] as const) {
+      const html = renderWorkspaceShell({
+        selectedSessionId: session.id,
+        chatPromptInput: 'hello',
+        chatRequestState: requestState,
+        chatExecutionId: executionId,
+        onStopRun,
+      });
+      assert.match(html, /data-testid="workspace-chat-submit"/);
+      assert.doesNotMatch(html, /data-testid="workspace-chat-stop"/);
+    }
+  });
+
+  test('Stop calls onStopRun once and is disabled while stopping', () => {
+    const executionId = '24de3965-ec05-454a-9dbe-62449b9bd16d';
+    let calls = 0;
+    const stopButton = renderWorkspaceShellElementByTestId('workspace-chat-stop', {
+      selectedSessionId: session.id,
+      chatRequestState: 'running',
+      chatExecutionId: executionId,
+      onStopRun: () => {
+        calls += 1;
+      },
+    });
+    assert.ok(stopButton);
+    assert.equal(stopButton.props.type, 'button');
+    assert.equal(stopButton.props.disabled, false);
+    stopButton.props.onClick?.();
+    stopButton.props.onClick?.();
+    assert.equal(calls, 1);
+
+    let stoppingCalls = 0;
+    const stoppingButton = renderWorkspaceShellElementByTestId('workspace-chat-stop', {
+      selectedSessionId: session.id,
+      chatRequestState: 'running',
+      chatExecutionId: executionId,
+      isStoppingRun: true,
+      onStopRun: () => {
+        stoppingCalls += 1;
+      },
+    });
+    assert.ok(stoppingButton);
+    assert.equal(stoppingButton.props.disabled, true);
+    stoppingButton.props.onClick?.();
+    assert.equal(stoppingCalls, 0);
+    const stoppingHtml = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      chatRequestState: 'running',
+      chatExecutionId: executionId,
+      isStoppingRun: true,
+      onStopRun: () => {},
+    });
+    assert.match(stoppingHtml, /data-testid="workspace-chat-stop"[\s\S]*?>Stopping…</);
+    assert.doesNotMatch(stoppingHtml, /data-testid="workspace-chat-submit"/);
+  });
+
   test('composer row keeps prompt input and Send button together', () => {
     const html = renderWorkspaceShell({
       selectedSessionId: session.id,

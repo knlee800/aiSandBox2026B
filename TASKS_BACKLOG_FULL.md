@@ -86094,7 +86094,7 @@ taskId=RUN-STOP-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-06. Lane 2, FRONTEND and I18N.
+**Status:** COMPLETE AND LOCKED — 2026-11-06. LANE-DONE and LOCKED by the control plane; Lane 2 and FRONTEND and I18N released. Stop button for a running chat run; not deployed (STAGING-DEPLOY-11 deploys it with ASK-CONTRACT-01). Checkpoint: docs/RUN-STOP-01-CHECKPOINT.md.
 **Task ID:** RUN-STOP-01
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -86110,13 +86110,13 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] While a run is active with a known executionId, Send becomes Stop; Stop calls POST /api/ai/executions/:executionId/cancel once and is disabled while the request is in flight
-- [ ] A cancelled run shows a translated stopped message; a 409 or failed cancel shows a translated message and the run's result still shows
-- [ ] Every new string is in en, zh-TW and zh-CN through the existing message pattern; Heroicons v2 Outline if an icon is used; DESIGN.md and the two design skills applied
-- [ ] Existing test IDs kept; tests cover the button states, the call, the stopped message and the 409 and failure paths
-- [ ] Frontend tsc, npm test and npm run build pass; frontend/tsconfig.tsbuildinfo restored
-- [ ] The checkpoint carries the CHECKLIST line (EVERY, UI)
-- [ ] Not LOCKED by an implementer
+- [x] While a run is active with a known executionId, Send becomes Stop; Stop calls POST /api/ai/executions/:executionId/cancel once and is disabled while the request is in flight
+- [x] A cancelled run shows a translated stopped message; a 409 or failed cancel shows a translated message and the run's result still shows
+- [x] Every new string is in en, zh-TW and zh-CN through the existing message pattern; Heroicons v2 Outline if an icon is used; DESIGN.md and the two design skills applied
+- [x] Existing test IDs kept; tests cover the button states, the call, the stopped message and the 409 and failure paths
+- [x] Frontend tsc, npm test and npm run build pass; frontend/tsconfig.tsbuildinfo restored
+- [x] The checkpoint carries the CHECKLIST line (EVERY, UI)
+- [x] Not LOCKED by an implementer
 
 ### STAGING-DEPLOY-11 — Deploy the Ask contract (ASK-CONTRACT-01) and the Stop button (RUN-STOP-01) during the tester window
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

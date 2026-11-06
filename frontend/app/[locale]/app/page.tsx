@@ -115,6 +115,13 @@ import {
   type RecoveredRunMode,
 } from '@/components/workspace/workspace-run-recovery.logic';
 import {
+  chatTerminalFailureCopy,
+  requestRunCancel,
+  runCancelUserMessage,
+  shouldReleaseStopButton,
+  type RunCancelKind,
+} from '@/components/workspace/workspace-run-cancel.logic';
+import {
   shouldRefreshDashboardForChatStatus,
   toQuotaRateLimitGuidance,
   type QuotaRateLimitGuidanceCopies,
@@ -1094,6 +1101,8 @@ export default function AppPage() {
     'idle' | 'submitting' | 'queued' | 'running' | 'completed' | 'failed'
   >('idle');
   const [chatExecutionId, setChatExecutionId] = useState<string | null>(null);
+  const [isStoppingChatRun, setIsStoppingChatRun] = useState(false);
+  const isStoppingChatRunRef = useRef(false);
   const [chatStatusMessage, setChatStatusMessage] = useState<string | null>(null);
   const [chatError, setChatError] = useState<string | null>(null);
   const [selectedChatProviderId, setSelectedChatProviderId] = useState<string>(
@@ -1751,6 +1760,14 @@ export default function AppPage() {
       clearInterval(pollTimer);
     };
   }, [chatExecutionId, chatRequestState]);
+
+  useEffect(() => {
+    if (chatRequestState === 'queued' || chatRequestState === 'running') {
+      return;
+    }
+    isStoppingChatRunRef.current = false;
+    setIsStoppingChatRun(false);
+  }, [chatRequestState]);
 
   useEffect(() => {
     return () => {
@@ -4317,10 +4334,15 @@ export default function AppPage() {
         setChatRequestState('failed');
         clearPendingRunForExecution(executionId);
         setChatStatusMessage(null);
+        const terminalCopy = chatTerminalFailureCopy({
+          status: nextStatus,
+          output: nextOutput,
+          runStoppedMessage: aiMessages.runStopped,
+        });
         const failureMessage = toChatAssistantFailureMessage(
           {
-            rawMessage: nextOutput,
-            fallbackMessage: `Execution ended with status: ${nextStatus}.`,
+            rawMessage: terminalCopy.rawMessage,
+            fallbackMessage: terminalCopy.fallbackMessage,
             copies: quotaRateLimitCopies,
           },
         );
@@ -4708,6 +4730,38 @@ export default function AppPage() {
     await loadDashboardSlice();
   }
 
+  async function handleStopChatRun(): Promise<RunCancelKind> {
+    const executionId = chatExecutionId;
+    if (!executionId || isStoppingChatRunRef.current) {
+      return 'failed';
+    }
+
+    isStoppingChatRunRef.current = true;
+    setIsStoppingChatRun(true);
+    const result = await requestRunCancel({ executionId });
+    if (shouldReleaseStopButton(result.kind)) {
+      isStoppingChatRunRef.current = false;
+      setIsStoppingChatRun(false);
+    }
+    const notice = runCancelUserMessage({
+      kind: result.kind,
+      alreadyFinishedMessage: aiMessages.stopRunAlreadyFinished,
+      failedMessage: aiMessages.stopRunFailed,
+    });
+    if (notice) {
+      setChatThreadMessages((currentMessages) => [
+        ...currentMessages,
+        {
+          id: `stop-run-${crypto.randomUUID()}`,
+          role: 'assistant',
+          content: notice,
+          messageKind: 'system',
+        },
+      ]);
+    }
+    return result.kind;
+  }
+
   async function handleSubmitChatPrompt(): Promise<void> {
     if (!userId) {
       return;
@@ -4997,9 +5051,14 @@ export default function AppPage() {
           clearPendingRunForExecution(nextExecutionId);
         }
         setChatStatusMessage(null);
+        const terminalCopy = chatTerminalFailureCopy({
+          status: nextStatus,
+          output: nextOutput,
+          runStoppedMessage: aiMessages.runStopped,
+        });
         const failureMessage = toChatAssistantFailureMessage({
-          rawMessage: nextOutput,
-          fallbackMessage: `Execution ended with status: ${nextStatus}.`,
+          rawMessage: terminalCopy.rawMessage,
+          fallbackMessage: terminalCopy.fallbackMessage,
           copies: quotaRateLimitCopies,
         });
         setChatError(failureMessage);
@@ -6481,6 +6540,8 @@ export default function AppPage() {
       onOrchestrationEnabledChange={setIsChatOrchestrationEnabled}
       availableModelOptions={availableChatModelOptions}
       onSubmitChatPrompt={handleSubmitChatPrompt}
+      onStopRun={handleStopChatRun}
+      isStoppingRun={isStoppingChatRun}
       onInstallAuthModule={handleInstallAuthModule}
       onConfirmExecutionFileActions={(executionId) => {
         void handleConfirmExecutionFileActions(executionId);

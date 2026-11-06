@@ -91,9 +91,11 @@ import {
   DocumentTextIcon,
   FolderIcon,
   FolderOpenIcon,
+  StopIcon,
   UserGroupIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
+import { shouldShowChatStopButton } from './workspace-run-cancel.logic';
 
 let recoveryCopy = getRecoveryCopy('en');
 
@@ -633,6 +635,8 @@ interface WorkspaceShellProps {
   orchestrationEnabled?: boolean;
   onOrchestrationEnabledChange?: (enabled: boolean) => void;
   onSubmitChatPrompt?: () => Promise<void>;
+  onStopRun?: () => void | Promise<unknown>;
+  isStoppingRun?: boolean;
   onInstallAuthModule?: () => void | Promise<void>;
   onConfirmExecutionFileActions?: (executionId: string) => void | Promise<void>;
   onCancelExecutionFileActions?: (executionId: string) => void;
@@ -1712,6 +1716,8 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
             orchestrationEnabled={props.orchestrationEnabled ?? false}
             onOrchestrationEnabledChange={props.onOrchestrationEnabledChange}
             onSubmitPrompt={props.onSubmitChatPrompt}
+            onStopRun={props.onStopRun}
+            isStoppingRun={props.isStoppingRun === true}
             requestState={props.chatRequestState ?? 'idle'}
             executionId={props.chatExecutionId ?? null}
             statusMessage={props.chatStatusMessage ?? null}
@@ -3923,6 +3929,8 @@ function WorkspaceChatPanel(props: {
   orchestrationEnabled: boolean;
   onOrchestrationEnabledChange?: (enabled: boolean) => void;
   onSubmitPrompt?: () => Promise<void>;
+  onStopRun?: () => void | Promise<unknown>;
+  isStoppingRun?: boolean;
   requestState: 'idle' | 'submitting' | 'queued' | 'running' | 'completed' | 'failed';
   executionId: string | null;
   statusMessage: string | null;
@@ -3989,6 +3997,19 @@ function WorkspaceChatPanel(props: {
     Boolean(props.onPromptInputChange) &&
     props.promptInput.trim().length > 0 &&
     !isSending;
+  const showStopButton = shouldShowChatStopButton({
+    requestState: props.requestState,
+    executionId: props.executionId,
+    hasStopHandler: typeof props.onStopRun === 'function',
+  });
+  const stopClickGuard = { accepted: false };
+  const handleStopRunClick = () => {
+    if (stopClickGuard.accepted || props.isStoppingRun || !props.onStopRun) {
+      return;
+    }
+    stopClickGuard.accepted = true;
+    void props.onStopRun();
+  };
 
   const submitPromptAndRefocus = () => {
     if (!canSubmit || !props.onSubmitPrompt) {
@@ -4326,14 +4347,27 @@ function WorkspaceChatPanel(props: {
                 rows={3}
               />
             </div>
-            <button
-              type="submit"
-              data-testid="workspace-chat-submit"
-              disabled={!canSubmit}
-              className="shrink-0 rounded-lg bg-blue-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
-            >
-              {isSending ? props.aiMessages.sending : props.commonMessages.send}
-            </button>
+            {showStopButton ? (
+              <button
+                type="button"
+                data-testid="workspace-chat-stop"
+                disabled={props.isStoppingRun === true}
+                onClick={handleStopRunClick}
+                className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 disabled:cursor-not-allowed disabled:border-red-200 disabled:bg-white disabled:text-red-300"
+              >
+                <StopIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span>{props.isStoppingRun ? props.aiMessages.stoppingRun : props.aiMessages.stopRun}</span>
+              </button>
+            ) : (
+              <button
+                type="submit"
+                data-testid="workspace-chat-submit"
+                disabled={!canSubmit}
+                className="shrink-0 rounded-lg bg-blue-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+              >
+                {isSending ? props.aiMessages.sending : props.commonMessages.send}
+              </button>
+            )}
           </div>
           <div
             className="mt-2 flex min-w-0 max-w-full flex-wrap items-start gap-3"
