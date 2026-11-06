@@ -84850,6 +84850,7 @@ nature=IMPLEMENTATION
 **Holds:** Plan section 6 row BIZ-01: a server-owned CHIEF_OF_STAFF_TEAM of one read-only role; a team field (coding or chief-of-staff) on the start route; knowledgeScopes on the job; a team picker on the Team page; en / zh-TW / zh-CN. Same approval gate; no hand-offs, external actions or work objects.
 **Named in:** docs/AGENT-BIZ-KNOWLEDGE-PLAN.md section 6.
 **Widened 2026-11-05 (Keith in chat, Agent Teams assessment and limits):** build one server-side team registry (coding and chief-of-staff, each with roles, tool profile, model and instructions) instead of a second team constant. Recommendation (control plane, 2026-11-05): recommended; BIZ-01 needs a second team anyway.
+**Follow-up 2026-11-06 (Keith in chat):** BIZ-USER-01 registered (user-built business agents from the Chief of Staff template). Build the team registry so that a role can later be copied into a user's agent.
 
 #### Acceptance criteria
 
@@ -84951,6 +84952,32 @@ nature=IMPLEMENTATION
 
 **Holds:** Plan decision 6: a Chief of Staff run today needs an open project session; a project-less run is a larger orchestration change.
 **Named in:** docs/AGENT-BIZ-KNOWLEDGE-PLAN.md section 6.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### BIZ-USER-01 — User-built business agents from the Chief of Staff template
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=BIZ-USER-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-06. Registered from Keith's decision in chat (2026-11-06): test with the built-in Chief of Staff first, then let users build their own; not admitted.
+**Task ID:** BIZ-USER-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP (design step decides the stored fields and the overlap with AGENT-PLATFORM-EXEC-01C).
+**Start condition (human):** NOT_READY. Ready when: BIZ-LIVE-01 is COMPLETE AND LOCKED and showed useful, cited answers, and Keith has approved the PRD change that moves per-agent instructions and Knowledge folders for user-created agents from APPROVED FUTURE to GATED (PRD.md lines 303-305). Keith decides.
+**Depends on:** BIZ-01, BIZ-LIVE-01.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (Keith approved the draft on 2026-11-06). **productClass:** APPROVED_FUTURE, futureAuthorization NONE until the PRD change.
+
+**Holds:** a user copies the Chief of Staff into their own agent on the Create Agent page, edits its instructions and chooses which of their own Knowledge folders it may read. The gateway takes the folder list from the stored agent, never from the browser. The platform keeps the read-only tool profile, citation checks, the approval step and credit limits. en / zh-TW / zh-CN. Not included: write tools, external actions, model choice, other users' documents.
+**Related:** AGENT-PLATFORM-EXEC-01C (persisted user-agent tool-loop umbrella); the design step checks for overlap and reuses it where it fits.
+**Named in:** Keith in chat 2026-11-06 (after KNOW-02 LOCK).
 
 #### Acceptance criteria
 

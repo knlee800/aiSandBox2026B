@@ -3148,6 +3148,28 @@
       "writeSetPrecision": "PROVISIONAL"
     },
     {
+      "taskId": "BIZ-USER-01",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "4-STEP",
+      "status": "READY",
+      "startCondition": "NOT_READY",
+      "saturationClass": "OPTIONAL",
+      "productClass": "APPROVED_FUTURE",
+      "futureAuthorization": "NONE",
+      "dependsOn": ["BIZ-01", "BIZ-LIVE-01"],
+      "mutexes": [],
+      "writePaths": [],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "LOCAL-TESTS",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": [],
+      "admissionUncertain": true,
+      "writeSetPrecision": "PROVISIONAL"
+    },
+    {
       "taskId": "COLLAB-GATE-TESTS-01",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
