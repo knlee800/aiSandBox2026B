@@ -85870,6 +85870,33 @@ nature=IMPLEMENTATION
 - [x] The LOCK record leaves testerWindowOpen true, the three authorization flags false and the lane free
 - [x] Not LOCKED by an implementer
 
+### GOV-OS-07 — Rule checklists in briefs and checkpoints
+
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-OS-07
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ACTIVE — 2026-11-06. Governance; no lane. GOVERNANCE held; Development OS mutation begun with both lanes empty.
+**Task ID:** GOV-OS-07
+**Nature:** GOVERNANCE. **Lifecycle:** 2-STEP: this record begins the mutation; the closing record ends it. Fable 5.1 reviews the checklist file read-only before the closing record.
+**Start condition:** Keith approved the draft on 2026-11-06.
+**Primary write scope:** new docs/control-plane/task-checklists.md, CLAUDE.md, TASKS.md, TASKS_BACKLOG_FULL.md, the sidecar, the proof, docs/GOV-OS-07-CHECKPOINT.md.
+**Mutexes / resources:** GOVERNANCE.
+
+**Problem:** rules that a machine checks are followed (validator, hash-checked records, the FOLLOWUPS line); rules that live only as prose are missed. Examples on 2026-11-05 and 2026-11-06: the Impeccable and Emil design skills named in CLAUDE.md were not used in UI tasks after the UX-IA series; ACCESS-READY-01 item 9 (CORS before a second user) was not linked to the second-user checklist, so the checklist was reported complete too early. Cursor briefs are built from the previous brief, so an omitted rule stays omitted.
+**Scope:** (1) new docs/control-plane/task-checklists.md with short checklists by task type (UI, backend and gateway, migration, deploy, live run, readiness, every task), each item pointing to its CLAUDE.md section; (2) CLAUDE.md: briefs take the checklist for their task type from that file, never from the previous brief; every checkpoint carries a CHECKLIST line naming each list as met or not applicable with a reason; the authority table gains DESIGN.md (visual reference, advisory under the UX/UI rules) and PRODUCT.md (design context only; PRD.md stays the product authority); (3) follow-ups registered NOT_READY: DESIGN-DOC-01 (write DESIGN.md and PRODUCT.md from the current app) and CHECKLIST-LINT-01 (a script that refuses a checkpoint without the CHECKLIST line).
+**Not in scope:** product code, validator changes, DESIGN.md and PRODUCT.md themselves.
+
+#### Acceptance criteria
+
+- [ ] Scope approved by Keith before the start
+- [ ] docs/control-plane/task-checklists.md exists, every item points to a CLAUDE.md section, and a read-only Fable 5.1 review found no CLAUDE.md rule for those task types missing
+- [ ] CLAUDE.md states the brief and CHECKLIST-line rules and the two authority rows, and no other OS semantics change
+- [ ] DESIGN-DOC-01 and CHECKLIST-LINT-01 registered NOT_READY; the closing record carries FOLLOWUPS and CHECKLIST lines
+- [ ] The validator passes at both records
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
