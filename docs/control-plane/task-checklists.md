@@ -65,6 +65,7 @@ An item that does not apply counts as met only when the checkpoint says why. Rul
 4. Nothing queued or running before the deploy; after it, the deployed commit and the migration hash in the host DEPLOYED file are as expected, health and guard checks pass, and configuration files are unchanged unless the task changes them (GOV-OS-07).
 5. Host steps run from the staging host; no tests against servers from Keith's PC (GOV-OS-07).
 6. No secret is printed, recorded or asked for; outputs are checked for key text before they are saved (GOV-OS-07).
+7. While a tester window is open, the deploy also holds ENV and pauses runs only for the deploy: it saves the window gateway.env, switches GLOBAL_EXECUTION_ENABLED off once nothing is running, deploys, restores the saved file byte for byte, and checks the window hashes and that runs are back on (Tester window (GOV-OS-06); GOV-DEPLOY-WINDOW-01).
 
 ## LIVE — any run against a real provider
 

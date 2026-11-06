@@ -86043,7 +86043,7 @@ taskId=GOV-DEPLOY-WINDOW-01
 nature=GOVERNANCE
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT STARTED — 2026-11-06. Registered by STAGING-DEPLOY-10.
+**Status:** COMPLETE AND LOCKED — 2026-11-06. Governance; no lane. Keith approved the wording on 2026-11-06. Checkpoint: docs/GOV-DEPLOY-WINDOW-01-CHECKPOINT.md.
 **Task ID:** GOV-DEPLOY-WINDOW-01
 **Nature:** GOVERNANCE. **Lifecycle:** 1-STEP control-plane record (rule wording only; no Development OS semantics change).
 **Start condition:** Keith approves the wording. Keith decides.
@@ -86052,11 +86052,12 @@ nature=GOVERNANCE
 
 **Holds:** GOV-OS-06 says deploys during an open tester window check the window env hashes, but the host deploy tool (aisandbox-deploy) refuses while GLOBAL_EXECUTION_ENABLED is not false (found by STAGING-DEPLOY-10 on 2026-11-06; nothing changed on the first attempt). The rule and the DEPLOY checklist should say: a deploy during an open window also holds ENV; it saves the window gateway.env, switches GLOBAL_EXECUTION_ENABLED off only for the deploy after nothing is running, deploys, then restores the saved file byte for byte and checks the window hashes and that runs are back on; Keith is told runs pause for a few minutes.
 **Named in:** docs/STAGING-DEPLOY-10-CHECKPOINT.md.
+**Close record, 2026-11-06:** CLAUDE.md (Tester window section) and the DEPLOY checklist item 7 carry the rule. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. CHECKLIST: EVERY 11/11, GOVERNANCE 9/9.
 
 #### Acceptance criteria
 
-- [ ] Keith approves the wording
-- [ ] CLAUDE.md and the DEPLOY checklist carry it; no other rule changes
+- [x] Keith approves the wording
+- [x] CLAUDE.md and the DEPLOY checklist carry it; no other rule changes
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
