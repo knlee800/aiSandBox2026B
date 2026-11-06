@@ -78,6 +78,9 @@ Authority is domain-based. There is no global file-rank that overrides these dom
 | `C:\Users\knlee\aiSandBox2026B\AGENTS.md` | THIN BOOTSTRAP | Tells Cursor/agents where to obtain authoritative operating context. Must not duplicate this manual |
 | `C:\Users\knlee\aiSandBox2026B\TASKS.md` CURRENT EXECUTION BOARD | ONLY CURRENT SCHEDULER | Admitted lanes, mutex ownership, current gates/blockers, governance owner. Not the task-body registry |
 | `C:\Users\knlee\aiSandBox2026B\TASKS_BACKLOG_FULL.md` | CANONICAL TASK REGISTRY | ID, scope, AC, dependencies, history, checkpoint references, LOCKED state |
+| `C:\Users\knlee\aiSandBox2026B\docs\control-plane\task-checklists.md` | RULE CHECKLISTS | Short checklists by task type, taken from this file; briefs copy them and checkpoints report them (GOV-OS-07). CLAUDE.md wins on conflict |
+| `C:\Users\knlee\aiSandBox2026B\DESIGN.md` | VISUAL DESIGN REFERENCE | Colors, type, spacing, components and states as built; advisory under the UX/UI Work Rules; never overrides PRD.md, ARCHITECTURE.md, CLAUDE.md, admitted scope or tests |
+| `C:\Users\knlee\aiSandBox2026B\PRODUCT.md` | DESIGN CONTEXT | Users, tone and design principles read by the design skills; not product authority (PRD.md is) |
 | Locked checkpoint / stage-start documents under `C:\Users\knlee\aiSandBox2026B\docs\` | EVIDENCE | Named evidence for a specific task/step. Not a scheduler |
 | `C:\Users\knlee\aiSandBox2026B\docs\AINOW-EXECUTION-ROADMAP.md` | HISTORICAL / STRATEGIC REFERENCE | Not scheduler. Not current task authority |
 | `C:\Users\knlee\aiSandBox2026B\docs\AGENT-PLATFORM-00-AINOW-MULTI-AGENT-PLAN.md` | HISTORICAL / STRATEGIC VISION | Not current product authority. Not current technical architecture. Not scheduler |
@@ -459,6 +462,17 @@ A tester window lets a trusted person use staging with AI runs on while developm
 
 Unchanged: two implementation lanes, mutexes, the scheduler, admission rules, the existing pair rules, saturation, the GOV-OS-04 pause rule, and Keith's approval of every record.
 
+### Rule checklists (GOV-OS-07)
+
+Rules that a machine or a required line checks get followed; rules that live only as prose get missed. So:
+
+- `docs/control-plane/task-checklists.md` holds short checklists by task type (EVERY, UI, FLOWS, BACKEND, MIGRATION, DEPLOY, LIVE, READINESS, GOVERNANCE). Each item names its CLAUDE.md section or is marked GOV-OS-07; items marked GOV-OS-07 are rules of this section. If the file and CLAUDE.md differ, CLAUDE.md wins, and a CLAUDE.md change that affects a list updates the file in the same record.
+- A brief for Cursor or another worker copies the lists for its task type from that file, never from an earlier brief.
+- Every checkpoint carries one line `CHECKLIST: <list> <met>/<total>, ...` naming each list that applies. An item counted as not applicable states why. The control plane reads the line together with the diff before LOCK.
+- A condition that must hold before a named milestone (for example before a second user) is listed where that milestone's readiness is tracked, in the same record that names it.
+
+Unchanged: lanes, mutexes, the scheduler, admission rules, the validator, saturation, the record economy, the tester window, and Keith's approval of every record.
+
 ---
 
 ## Project Governance Loop
@@ -645,10 +659,12 @@ Normal UI icons: Heroicons v2 Outline.
 
 UX/UI work must be bounded and reversible.
 
-Use advisory skills when useful:
+UI briefs name both advisory skills, which live in `.agents/skills/impeccable` and `.agents/skills/emil-design-eng`. The worker reads them before changing UI, and the checkpoint says what was applied or why not:
 
 - Impeccable: broad UI/UX audit, visual hierarchy, spacing, anti-slop polish.
 - Emil Kowalski design engineering: component polish, interaction quality, motion restraint, empty/loading/error states.
+
+Once `DESIGN.md` exists, UI work follows it. Like the skills, it is advisory and never overrides the list below.
 
 These skills are advisory only and must never override:
 
