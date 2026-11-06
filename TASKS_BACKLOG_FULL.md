@@ -84750,15 +84750,15 @@ taskId=KNOW-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-BIZ-KNOWLEDGE-PLAN-01; not admitted.
+**Status:** ADMITTED — 2026-11-06. Lane 1, AI-SERVICE and GATEWAY; mutates HARNESS_ENTITLEMENT_PROOF_V1, so Lane 2 stays empty. Keith admitted it on 2026-11-06. Stage-start next.
 **Task ID:** KNOW-02
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
-**Lifecycle:** 4-STEP.
-**Start condition (human):** NOT_READY. Ready when: KNOW-01 is COMPLETE AND LOCKED and Keith admits it. Keith decides.
+**Lifecycle:** 4-STEP: admission in this record; stage-start drafted read-only by Cursor grok-4.7-xhigh, reviewed by the control plane and approved by Keith; implementation by Cursor grok-4.7-high; consolidation and LOCK in the same commit as the code (LOCAL-TESTS).
+**Start condition (human):** READY — KNOW-01 is COMPLETE AND LOCKED (12a47c5); Keith admitted KNOW-02 on 2026-11-06 as drafted (write set, mutexes, contract change, LOCAL-TESTS).
 **Depends on:** KNOW-01.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
-**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**Primary write scope:** `services/ai-service/src/agent-harness/tools/`, `services/ai-service/src/worker/`, `services/ai-service/src/queue/job.types.ts`, `services/ai-service/src/clients/`, `services/api-gateway/src/knowledge/`, `services/api-gateway/src/orchestration/`, `docs/KNOW-02-STAGE-START.md`. Gateway orchestration for the job field only; anything else needs a control-plane scope change recorded in the stage-start.
+**Mutexes / resources:** AI-SERVICE, GATEWAY. **Hot-file leases:** none. **Shared contracts:** mutates HARNESS_ENTITLEMENT_PROOF_V1 (one optional signed knowledgeScopes job field); runs alone; re-frozen at LOCK. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (no migration; new read-only tools, internal routes and one optional job field).
 **saturationClass:** OPTIONAL. **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved the plan on 2026-11-05).
 
 **Holds:** Plan section 6 row KNOW-02: read-only tools search_knowledge and read_knowledge; worker registration for read-profile jobs carrying knowledgeScopes; internal routes checked against the job's user and scopes; the gateway sets knowledgeScopes from the scope registry. Changes the frozen shared contract HARNESS_ENTITLEMENT_PROOF_V1 (job.types.ts): follows the contract-change protocol, declares it in mutatesSharedContractIds, runs with no other lane depending on it, and re-freezes after.
@@ -84766,7 +84766,13 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] The stage-start (docs/KNOW-02-STAGE-START.md) is frozen and approved by Keith before implementation
+- [ ] search_knowledge and read_knowledge are read-only and register only for jobs whose signed payload carries a non-empty knowledgeScopes list; results are capped in bytes and hits
+- [ ] The internal knowledge routes keep the internal-key guard, take the user id and scopes from the job (never from the model) and return only that owner's documents in those scopes
+- [ ] knowledgeScopes is set only by the gateway from the server scope registry; the browser cannot set it; the entitlement proof covers it; HARNESS_ENTITLEMENT_PROOF_V1 is re-frozen at LOCK
+- [ ] Tests cover each point above; ai-service and api-gateway tests and builds pass, compared with the known failures in their latest checkpoints
+- [ ] The checkpoint carries the CHECKLIST line (EVERY, BACKEND) and the FOLLOWUPS line
 - [ ] Not LOCKED by an implementer
 
 ### KNOW-03 — Citations in business answers
