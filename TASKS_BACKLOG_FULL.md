@@ -85847,7 +85847,7 @@ taskId=TESTER-WINDOW-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-06. Lane 1, STAGING, ENV, PROVIDER-LIVE and CREDIT. Keith approved the draft and admitted it on 2026-11-06.
+**Status:** COMPLETE AND LOCKED — 2026-11-06. LANE-DONE and LOCKED by the control plane; Lane 1 and STAGING, ENV, PROVIDER-LIVE and CREDIT released. Tester window OPEN: AI runs on with Anthropic under the default daily caps; testerWindowOpen true. Checkpoint: docs/TESTER-WINDOW-01-CHECKPOINT.md.
 **Task ID:** TESTER-WINDOW-01
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION (operational run on staging)
@@ -85864,11 +85864,11 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] Runs on: gateway ready and AI worker ready with the settings above; the window env hashes recorded
-- [ ] Keith's first chat and Agent run as knlee802 complete, with usage recorded
-- [ ] The key appears in no output
-- [ ] The LOCK record leaves testerWindowOpen true, the three authorization flags false and the lane free
-- [ ] Not LOCKED by an implementer
+- [x] Runs on: gateway ready and AI worker ready with the settings above; the window env hashes recorded
+- [x] Keith's first chat and Agent run as knlee802 complete, with usage recorded
+- [x] The key appears in no output
+- [x] The LOCK record leaves testerWindowOpen true, the three authorization flags false and the lane free
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
