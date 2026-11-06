@@ -85904,15 +85904,15 @@ taskId=DESIGN-DOC-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-06. Registered by GOV-OS-07; not admitted.
+**Status:** ADMITTED — 2026-11-06. Lane 1, no mutex (documentation only). Keith approved the draft and admitted it on 2026-11-06.
 **Task ID:** DESIGN-DOC-01
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION (documentation)
 **Lifecycle:** 3-STEP.
-**Start condition (human):** NOT_READY. Ready when: GOV-OS-07 is COMPLETE AND LOCKED; Keith approved the draft on 2026-11-06 and admits it.
+**Start condition (human):** READY — GOV-OS-07 is COMPLETE AND LOCKED; Keith approved the draft and admitted it on 2026-11-06.
 **Depends on:** GOV-OS-07.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Expected: DESIGN.md and PRODUCT.md at the repository root.
-**Mutexes / resources:** set at admission (expected none). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (expected LOCAL-TESTS: review against the code and by Keith). **Revert isolation:** assessed at admission.
+**Primary write scope:** DESIGN.md and PRODUCT.md at the repository root, new files. Reads frontend/ source, PRD.md and .agents/skills/impeccable without changing them. Anything else is out of scope.
+**Mutexes / resources:** none (two new documentation files; no source, i18n or package change). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** LOCAL-TESTS (the control plane checks every value against the code; Keith approves tone and principles). **Revert isolation:** acceptable (two new files).
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 
 **Holds:** DESIGN.md taken from the real frontend code (colors and Tailwind tokens, type, spacing, radius, the components in use, empty, loading and error patterns, Heroicons, the three languages, dark mode if present), in the format Impeccable reads; PRODUCT.md short (who uses the app, what it is for, tone and design principles) drawn from PRD.md and stating that PRD.md stays the product authority. Written with the Impeccable document and teach guides; every value checked against the code by the control plane; tone and principles approved by Keith.
@@ -85920,7 +85920,11 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] DESIGN.md exists at the root in the Impeccable DESIGN.md format; every color, type, spacing, radius, component and state pattern is taken from the frontend code with the file it comes from; nothing is invented, and gaps are listed as gaps
+- [ ] PRODUCT.md exists at the root, short, drawn from PRD.md, says that PRD.md stays the product authority, and lists the tone and design principles for Keith to confirm
+- [ ] Keith approved the tone and principles in PRODUCT.md
+- [ ] No other file changed; the checkpoint carries the CHECKLIST line
 - [ ] Not LOCKED by an implementer
 
 ### CHECKLIST-LINT-01 — Refuse a checkpoint without the CHECKLIST line
