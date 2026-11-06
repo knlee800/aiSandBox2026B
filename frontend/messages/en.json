@@ -201,6 +201,7 @@
       "lastProtected": "Last protected",
       "noProjectHistoryYet": "No history yet for this project.",
       "restoreSnapshotConfirm": "Restore this version? Your current workspace will be replaced.",
+      "restoreBlockedByActiveRun": "An Agent run is still working in this session. Restore after it finishes or is cancelled.",
       "saveNamedSnapshotPrompt": "Name this saved version:",
       "openProjectToStart": "Open a project to start using workspace tools.",
       "ready": "Your project workspace is ready.",

@@ -13,6 +13,7 @@ import {
   NotFoundException,
   GoneException,
   BadRequestException,
+  ConflictException,
   Logger,
   UploadedFile,
   UseInterceptors,
@@ -30,7 +31,10 @@ import { RestoreSnapshotDto } from '../snapshots/dto/restore-snapshot.dto';
 import { SnapshotPersistenceService } from '../snapshots/snapshot-persistence.service';
 import { WorkspaceArchiveService } from '../snapshots/workspace-archive.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
 import { Response } from 'express';
+import { UsageRecord } from '../entities/usage-record.entity';
 
 /**
  * SessionController
@@ -48,6 +52,8 @@ export class SessionController {
     private readonly containerManagerHttpClient: ContainerManagerHttpClient,
     private readonly snapshotPersistenceService: SnapshotPersistenceService,
     private readonly workspaceArchiveService: WorkspaceArchiveService,
+    @InjectRepository(UsageRecord)
+    private readonly usageRecordRepository: Repository<UsageRecord>,
   ) {}
 
   /**
@@ -378,6 +384,17 @@ export class SessionController {
     }
     if (session.terminatedAt !== null) {
       throw new GoneException(`Session ${id} is terminated`);
+    }
+
+    const activeRun = await this.usageRecordRepository.findOne({
+      where: {
+        userId,
+        sessionId: id,
+        executionStatus: In(['pending', 'running', 'cancel_requested']),
+      },
+    });
+    if (activeRun) {
+      throw new ConflictException({ code: 'run_active' });
     }
 
     const result = await this.snapshotPersistenceService.restoreSnapshot({

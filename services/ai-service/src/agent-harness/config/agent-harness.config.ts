@@ -76,7 +76,7 @@ export function createAgentHarnessConfigV1(
     browserSmokeTimeoutMs: 120_000,
     allowArbitraryShell: false,
     allowedValidationCommands: allowedValidationCommands as unknown as readonly string[],
-    requireApprovalForDelete: true,
+    requireApprovalForDelete: false,
     requireApprovalForPackageInstall: true,
     requireApprovalForEnvFileWrite: true,
     requireApprovalForLargeWrite: true,

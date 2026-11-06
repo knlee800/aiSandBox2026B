@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Logger, NotFoundException, GoneException, BadRequestException } from '@nestjs/common';
+import { Logger, NotFoundException, GoneException, BadRequestException, ConflictException } from '@nestjs/common';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { SessionController } from './session.controller';
 import { SessionService } from './session.service';
 import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
@@ -8,6 +9,7 @@ import { SessionQuotaGuard } from '../quota/session-quota.guard';
 import { RateLimitGuard } from '../guards/rate-limit.guard';
 import { SnapshotPersistenceService } from '../snapshots/snapshot-persistence.service';
 import { WorkspaceArchiveService } from '../snapshots/workspace-archive.service';
+import { UsageRecord } from '../entities/usage-record.entity';
 
 describe('SessionController (TASK-68B-2 query extension)', () => {
   let controller: SessionController;
@@ -54,6 +56,12 @@ describe('SessionController (TASK-68B-2 query extension)', () => {
           useValue: {
             exportWorkspaceArchive: jest.fn(),
             importWorkspaceArchive: jest.fn(),
+          },
+        },
+        {
+          provide: getRepositoryToken(UsageRecord),
+          useValue: {
+            findOne: jest.fn().mockResolvedValue(null),
           },
         },
       ],
@@ -176,6 +184,12 @@ describe('SessionController (PHASE-76F: ISSUE-76-002 DELETE termination fix)', (
           useValue: {
             exportWorkspaceArchive: jest.fn(),
             importWorkspaceArchive: jest.fn(),
+          },
+        },
+        {
+          provide: getRepositoryToken(UsageRecord),
+          useValue: {
+            findOne: jest.fn().mockResolvedValue(null),
           },
         },
       ],
@@ -334,6 +348,12 @@ describe('SessionController file delete route', () => {
           useValue: {
             exportWorkspaceArchive: jest.fn(),
             importWorkspaceArchive: jest.fn(),
+          },
+        },
+        {
+          provide: getRepositoryToken(UsageRecord),
+          useValue: {
+            findOne: jest.fn().mockResolvedValue(null),
           },
         },
       ],
@@ -527,6 +547,12 @@ describe('SessionController (PHASE-77A: ISSUE-76-005 exec route)', () => {
             importWorkspaceArchive: jest.fn(),
           },
         },
+        {
+          provide: getRepositoryToken(UsageRecord),
+          useValue: {
+            findOne: jest.fn().mockResolvedValue(null),
+          },
+        },
       ],
     })
       .overrideGuard(SessionCookieGuard)
@@ -664,6 +690,7 @@ describe('SessionController (PR-01-01 snapshots)', () => {
   let controller: SessionController;
   let sessionService: jest.Mocked<SessionService>;
   let snapshotService: jest.Mocked<SnapshotPersistenceService>;
+  let usageRecordRepository: { findOne: jest.Mock };
   let containerManagerClient: {
     restoreCheckpointHistory: jest.Mock;
   };
@@ -733,6 +760,12 @@ describe('SessionController (PR-01-01 snapshots)', () => {
             importWorkspaceArchive: jest.fn(),
           },
         },
+        {
+          provide: getRepositoryToken(UsageRecord),
+          useValue: {
+            findOne: jest.fn().mockResolvedValue(null),
+          },
+        },
       ],
     })
       .overrideGuard(SessionCookieGuard)
@@ -746,6 +779,7 @@ describe('SessionController (PR-01-01 snapshots)', () => {
     controller = module.get<SessionController>(SessionController);
     sessionService = module.get(SessionService);
     snapshotService = module.get(SnapshotPersistenceService);
+    usageRecordRepository = module.get(getRepositoryToken(UsageRecord));
   });
 
   it('POST /api/sessions/:id/snapshot enforces ownership and saves metadata', async () => {
@@ -806,6 +840,15 @@ describe('SessionController (PR-01-01 snapshots)', () => {
       snapshotId: 'snapshot-1',
     });
     expect(result.fileCount).toBe(3);
+    const query = usageRecordRepository.findOne.mock.calls[0][0];
+    expect(query.where.userId).toBe('user-1');
+    expect(query.where.sessionId).toBe('session-1');
+    expect(query.where.executionStatus.type).toBe('in');
+    expect(query.where.executionStatus.value).toEqual([
+      'pending',
+      'running',
+      'cancel_requested',
+    ]);
   });
 
   it('POST /api/sessions/:id/restore returns 404 for non-owned session', async () => {
@@ -818,6 +861,74 @@ describe('SessionController (PR-01-01 snapshots)', () => {
         { user: { userId: 'other-user' } },
       ),
     ).rejects.toThrow(NotFoundException);
+    expect(usageRecordRepository.findOne).not.toHaveBeenCalled();
+    expect(snapshotService.restoreSnapshot).not.toHaveBeenCalled();
+  });
+
+  it.each(['pending', 'running', 'cancel_requested'])(
+    'POST /api/sessions/:id/restore refuses a %s run with 409 and restores nothing',
+    async (executionStatus) => {
+      sessionService.getSessionById.mockResolvedValue({
+        ...mockActiveSession,
+        projectId: 'project-1',
+      });
+      usageRecordRepository.findOne.mockResolvedValue({
+        executionId: 'exec-1',
+        executionStatus,
+      });
+
+      const error = await controller
+        .restoreSessionSnapshot(
+          'session-1',
+          { snapshotId: 'snapshot-1' },
+          { user: { userId: 'user-1' } },
+        )
+        .catch((caught: unknown) => caught);
+
+      expect(error).toBeInstanceOf(ConflictException);
+      expect((error as ConflictException).getStatus()).toBe(409);
+      expect((error as ConflictException).getResponse()).toEqual({
+        code: 'run_active',
+      });
+      expect(snapshotService.restoreSnapshot).not.toHaveBeenCalled();
+      expect(containerManagerClient.restoreCheckpointHistory).not.toHaveBeenCalled();
+    },
+  );
+
+  it('POST /api/sessions/:id/restore ignores another user run in the same session', async () => {
+    sessionService.getSessionById.mockResolvedValue({
+      ...mockActiveSession,
+      projectId: 'project-1',
+    });
+    usageRecordRepository.findOne.mockImplementation(
+      async (query: { where: { userId: string } }) => {
+        if (query.where.userId !== 'user-1') {
+          return { executionId: 'other-run', executionStatus: 'running' };
+        }
+        return null;
+      },
+    );
+    snapshotService.restoreSnapshot.mockResolvedValue(restoredSnapshot);
+
+    const result = await controller.restoreSessionSnapshot(
+      'session-1',
+      { snapshotId: 'snapshot-1' },
+      { user: { userId: 'user-1' } },
+    );
+
+    expect(usageRecordRepository.findOne.mock.calls[0][0].where.userId).toBe(
+      'user-1',
+    );
+    expect(snapshotService.restoreSnapshot).toHaveBeenCalledWith({
+      userId: 'user-1',
+      sessionId: 'session-1',
+      snapshotId: 'snapshot-1',
+    });
+    expect(containerManagerClient.restoreCheckpointHistory).toHaveBeenCalledWith(
+      'session-1',
+      'project-1',
+    );
+    expect(result).toEqual(restoredSnapshot);
   });
 
   it('awaits checkpoint history restore after the snapshot restore when the session has a project', async () => {
@@ -953,6 +1064,12 @@ describe('SessionController (PR-02-01 import/export)', () => {
           useValue: {
             exportWorkspaceArchive: jest.fn(),
             importWorkspaceArchive: jest.fn(),
+          },
+        },
+        {
+          provide: getRepositoryToken(UsageRecord),
+          useValue: {
+            findOne: jest.fn().mockResolvedValue(null),
           },
         },
       ],

@@ -201,6 +201,7 @@
       "lastProtected": "最近保护时间",
       "noProjectHistoryYet": "该项目尚无历史记录。",
       "restoreSnapshotConfirm": "恢复此版本吗？当前工作区将被替换。",
+      "restoreBlockedByActiveRun": "这个会话仍有 Agent 正在工作。请等它完成或取消后再恢复。",
       "saveNamedSnapshotPrompt": "为此保存版本命名：",
       "openProjectToStart": "打开项目以开始使用工作区工具。",
       "ready": "你的项目工作区已就绪。",

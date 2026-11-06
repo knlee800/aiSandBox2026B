@@ -224,8 +224,7 @@ describe('DockerRuntimeService file operations', () => {
       });
     });
 
-    it('logs a warning when search exits non-zero with empty stdout and stderr', async () => {
-      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    it('rejects when search exits 127 with stderr', async () => {
       jest.spyOn(service, 'findContainerBySessionId').mockResolvedValue({
         inspect: jest.fn().mockImplementation(async () => ({ State: { Running: true } })),
       } as any);
@@ -237,13 +236,25 @@ describe('DockerRuntimeService file operations', () => {
 
       await expect(
         service.searchFilesInContainer('session-123', 'SPECIAL_TEST_KEYWORD'),
-      ).resolves.toEqual({
-        query: 'SPECIAL_TEST_KEYWORD',
-        results: [],
-        truncated: false,
+      ).rejects.toThrow(
+        'Failed to search files in container for session session-123',
+      );
+    });
+
+    it('rejects another non-zero search exit with empty stderr', async () => {
+      jest.spyOn(service, 'findContainerBySessionId').mockResolvedValue({
+        inspect: jest.fn().mockImplementation(async () => ({ State: { Running: true } })),
+      } as any);
+      jest.spyOn(service, 'execInContainerBySessionId').mockResolvedValue({
+        exitCode: 2,
+        stdout: '',
+        stderr: '',
       });
-      expect(warnSpy).toHaveBeenCalledWith(
-        '[AI-WS-06-hotfix2] Search script failed for session session-123: exitCode=127, stderr=find: not found',
+
+      await expect(
+        service.searchFilesInContainer('session-123', 'SPECIAL_TEST_KEYWORD'),
+      ).rejects.toThrow(
+        'Failed to search files in container for session session-123',
       );
     });
 

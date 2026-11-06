@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
+import enMessages from '@/messages/en.json';
+import zhTwMessages from '@/messages/zh-TW.json';
+import zhCnMessages from '@/messages/zh-CN.json';
 import {
   buildProjectScopedSnapshotLabel,
   buildProjectScopedSnapshotLabelWithName,
@@ -73,7 +76,7 @@ describe('workspace-snapshots.logic', () => {
       return new Response(null, { status: 200 });
     };
 
-    await restoreWorkspaceSnapshot({
+    const result = await restoreWorkspaceSnapshot({
       sessionId: 'session-1',
       snapshotId: 'snapshot-1',
       fetchImpl: fetchImpl as typeof fetch,
@@ -81,6 +84,53 @@ describe('workspace-snapshots.logic', () => {
 
     assert.equal(calls.length, 1);
     assert.equal(calls[0].url, '/api/sessions/session-1/restore');
+    assert.deepEqual(result, { kind: 'restored' });
+  });
+
+  test('restoreWorkspaceSnapshot maps 409 to run_active and still throws other errors', async () => {
+    const conflictFetch = async (): Promise<Response> =>
+      new Response(JSON.stringify({ code: 'run_active' }), { status: 409 });
+    const result = await restoreWorkspaceSnapshot({
+      sessionId: 'session-1',
+      snapshotId: 'snapshot-1',
+      fetchImpl: conflictFetch as typeof fetch,
+    });
+    assert.deepEqual(result, { kind: 'run_active' });
+
+    const missingFetch = async (): Promise<Response> =>
+      new Response(JSON.stringify({ message: 'Snapshot missing.' }), {
+        status: 404,
+      });
+    await assert.rejects(
+      () =>
+        restoreWorkspaceSnapshot({
+          sessionId: 'session-1',
+          snapshotId: 'snapshot-1',
+          fetchImpl: missingFetch as typeof fetch,
+        }),
+      /Snapshot missing\./,
+    );
+  });
+
+  test('restore blocked by an active run is translated in en, zh-TW, and zh-CN', () => {
+    const en = enMessages.recovery.workspace.restoreBlockedByActiveRun;
+    const zhTw = zhTwMessages.recovery.workspace.restoreBlockedByActiveRun;
+    const zhCn = zhCnMessages.recovery.workspace.restoreBlockedByActiveRun;
+    assert.equal(
+      en,
+      'An Agent run is still working in this session. Restore after it finishes or is cancelled.',
+    );
+    assert.equal(
+      zhTw,
+      '這個工作階段仍有 Agent 正在工作。請等它完成或取消後再還原。',
+    );
+    assert.equal(
+      zhCn,
+      '这个会话仍有 Agent 正在工作。请等它完成或取消后再恢复。',
+    );
+    assert.notEqual(zhTw, en);
+    assert.notEqual(zhCn, en);
+    assert.notEqual(zhTw, zhCn);
   });
 
   test('exportWorkspaceArchive fetches export endpoint and returns blob', async () => {

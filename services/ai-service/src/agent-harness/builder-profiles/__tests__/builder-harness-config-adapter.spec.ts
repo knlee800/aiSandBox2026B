@@ -32,6 +32,7 @@ function makeGlobalDefault(
       'npm run build',
       'npx tsc --noEmit',
     ]),
+    // Stays true so the floor tests keep a global true. The live default is false.
     requireApprovalForDelete: true,
     requireApprovalForPackageInstall: true,
     requireApprovalForEnvFileWrite: true,
@@ -289,6 +290,45 @@ describe('resolveBuilderHarnessConfig', () => {
       ).toBe(false);
 
       jest.restoreAllMocks();
+    });
+
+    it('keeps a profile delete flag when the global default is false', () => {
+      const globalFalse = makeGlobalDefault({
+        requireApprovalForDelete: false,
+      });
+      const cases = [
+        { id: 'builder-delete-off', value: false },
+        { id: 'builder-delete-on', value: true },
+      ] as const;
+
+      for (const item of cases) {
+        const profile = stubProfile({
+          builderProfileId: item.id,
+          harnessProfile: {
+            harnessProfileId: `harness-${item.id}`,
+            requireApprovalForDelete: item.value,
+          },
+        });
+        jest
+          .spyOn(registry, 'getBuilderProfile')
+          .mockImplementation((id: string) => {
+            if (id === item.id) return profile;
+            return registry.BUILDER_PROFILE_MAP_V1[id];
+          });
+
+        const result = resolveBuilderHarnessConfig(
+          { builderProfileId: item.id, agentRole: 'builder' },
+          globalFalse,
+        );
+
+        expect(result.config.requireApprovalForDelete).toBe(item.value);
+        expect(
+          result.metadata.warnings.some((w) =>
+            w.includes('requireApprovalForDelete'),
+          ),
+        ).toBe(false);
+        jest.restoreAllMocks();
+      }
     });
   });
 

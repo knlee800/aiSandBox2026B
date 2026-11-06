@@ -20,6 +20,10 @@ interface RestoreSnapshotArgs {
   fetchImpl?: typeof fetch;
 }
 
+export type RestoreWorkspaceSnapshotResult =
+  | { kind: 'restored' }
+  | { kind: 'run_active' };
+
 interface LoadSnapshotsArgs {
   token?: string;
   fetchImpl?: typeof fetch;
@@ -288,7 +292,7 @@ export async function loadWorkspaceSnapshots(
 
 export async function restoreWorkspaceSnapshot(
   args: RestoreSnapshotArgs,
-): Promise<void> {
+): Promise<RestoreWorkspaceSnapshotResult> {
   const response = await (args.fetchImpl ?? fetch)(
     `/api/sessions/${args.sessionId}/restore`,
     {
@@ -302,6 +306,10 @@ export async function restoreWorkspaceSnapshot(
     },
   );
 
+  if (response.status === 409) {
+    return { kind: 'run_active' };
+  }
+
   if (!response.ok) {
     const payload = (await response.json().catch(() => null)) as
       | { message?: string }
@@ -310,6 +318,8 @@ export async function restoreWorkspaceSnapshot(
       trimMessage(payload?.message, 'Failed to restore workspace snapshot.'),
     );
   }
+
+  return { kind: 'restored' };
 }
 
 export async function exportWorkspaceArchive(

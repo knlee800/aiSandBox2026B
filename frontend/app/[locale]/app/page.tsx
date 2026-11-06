@@ -3163,10 +3163,18 @@ export default function AppPage() {
     setSnapshotActionMessage(null);
     setSnapshotActionError(null);
     try {
-      await restoreWorkspaceSnapshot({
+      const restoreResult = await restoreWorkspaceSnapshot({
         sessionId: selectedSessionId,
         snapshotId: selectedSnapshotId,
       });
+      if (restoreResult.kind === 'run_active') {
+        setSnapshotActionState('error');
+        setSnapshotActionMessage(null);
+        setSnapshotActionError(
+          getRecoveryCopy(locale).workspace.restoreBlockedByActiveRun,
+        );
+        return;
+      }
       await loadWorkspaceFilesForSession(selectedSessionId);
       await refreshPreviewForSession(selectedSessionId);
       await loadCheckpoints(selectedSessionId);

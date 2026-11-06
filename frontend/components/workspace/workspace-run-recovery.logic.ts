@@ -126,7 +126,7 @@ export function appendRecoveredRunNotice(
   if (!recoveredRunNeedsNotAppliedNotice(mode)) {
     return answer;
   }
-  return `${answer}\n\n${notice}`;
+  return notice;
 }
 
 function parsePendingRunValue(value: unknown): PendingRunRecord | null {

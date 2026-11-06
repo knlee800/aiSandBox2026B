@@ -88,6 +88,14 @@ describe('createAgentHarnessConfigV1', () => {
     expect(config.enableValidationTools).toBe(false);
   });
 
+  it('defaults requireApprovalForDelete to false and leaves the other approval flags true', () => {
+    const config = createAgentHarnessConfigV1({});
+    expect(config.requireApprovalForDelete).toBe(false);
+    expect(config.requireApprovalForPackageInstall).toBe(true);
+    expect(config.requireApprovalForEnvFileWrite).toBe(true);
+    expect(config.requireApprovalForLargeWrite).toBe(true);
+  });
+
   it('returns enableToolLoop true when AGENT_HARNESS_ENABLE_TOOL_LOOP is "true"', () => {
     const config = createAgentHarnessConfigV1({
       AGENT_HARNESS_ENABLE_TOOL_LOOP: 'true',

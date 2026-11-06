@@ -278,18 +278,13 @@ describe('workspace run recovery logic', () => {
     assert.equal(older, null);
   });
 
-  test('appendRecoveredRunNotice adds the notice for build and unknown only', () => {
-    const answer = 'The files were updated.';
+  test('appendRecoveredRunNotice returns only the notice for build and unknown', () => {
+    const answer = 'I have added a button.';
     const notice = 'File changes were not applied.';
-    assert.equal(
-      appendRecoveredRunNotice(answer, 'build', notice),
-      `${answer}\n\n${notice}`,
-    );
-    assert.equal(
-      appendRecoveredRunNotice(answer, 'unknown', notice),
-      `${answer}\n\n${notice}`,
-    );
-    assert.equal(appendRecoveredRunNotice('', 'build', notice), `\n\n${notice}`);
+    assert.equal(appendRecoveredRunNotice(answer, 'build', notice), notice);
+    assert.equal(appendRecoveredRunNotice(answer, 'unknown', notice), notice);
+    assert.equal(appendRecoveredRunNotice('', 'build', notice), notice);
+    assert.equal(appendRecoveredRunNotice('', 'unknown', notice), notice);
     assert.equal(appendRecoveredRunNotice(answer, 'ask', notice), answer);
     assert.equal(appendRecoveredRunNotice(answer, 'agent', notice), answer);
   });

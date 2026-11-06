@@ -85984,7 +85984,7 @@ taskId=HARNESS-FIXES-01A
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-06. Lane 1, AI-SERVICE, CONTAINER-MANAGER, GATEWAY, FRONTEND and I18N. Stage-start: docs/HARNESS-FIXES-01A-STAGE-START.md (design frozen in this record).
+**Status:** COMPLETE AND LOCKED — 2026-11-06. LANE-DONE and LOCKED by the control plane; Lane 1 and AI-SERVICE, CONTAINER-MANAGER, GATEWAY, FRONTEND and I18N released. Agent safety fixes 8, 11, 5 and 10b; not deployed (STAGING-DEPLOY-10 registered). Checkpoint: docs/HARNESS-FIXES-01A-CHECKPOINT.md.
 **Task ID:** HARNESS-FIXES-01A
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -86001,12 +86001,37 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] Item 8: the harness default requireApprovalForDelete is false; the builder-profile floor still keeps a global true from being weakened; tests cover both
-- [ ] Item 11: a recovered Build or unknown run shows only the not-applied notice, never the model text claiming a change; Ask and Agent recovery and a watched Build are unchanged; tests cover each
-- [ ] Item 5: a search script failure (non-zero exit other than a clean grep no-match) is an error the Agent sees; exit 1 with empty stdout and stderr stays no matches; tests cover each
-- [ ] Item 10b: POST /api/sessions/:id/restore is refused with 409 while the caller has a pending, running or cancel_requested run in that session, and nothing is restored; the workspace shows a translated message in en, zh-TW and zh-CN; a restore with no active run is unchanged; tests cover each
-- [ ] ai-service, container-manager and gateway npm test (gateway only the 14 known runtime-only smoke.integration failures) and builds pass; frontend tsc, npm test and npm run build pass, frontend/tsconfig.tsbuildinfo restored
-- [ ] The checkpoint carries the CHECKLIST line (EVERY, BACKEND, FLOWS, UI)
+- [x] Item 8: the harness default requireApprovalForDelete is false; the builder-profile floor still keeps a global true from being weakened; tests cover both
+- [x] Item 11: a recovered Build or unknown run shows only the not-applied notice, never the model text claiming a change; Ask and Agent recovery and a watched Build are unchanged; tests cover each
+- [x] Item 5: a search script failure (non-zero exit other than a clean grep no-match) is an error the Agent sees; exit 1 with empty stdout and stderr stays no matches; tests cover each
+- [x] Item 10b: POST /api/sessions/:id/restore is refused with 409 while the caller has a pending, running or cancel_requested run in that session, and nothing is restored; the workspace shows a translated message in en, zh-TW and zh-CN; a restore with no active run is unchanged; tests cover each
+- [x] ai-service, container-manager and gateway npm test (gateway only the 14 known runtime-only smoke.integration failures) and builds pass; frontend tsc, npm test and npm run build pass, frontend/tsconfig.tsbuildinfo restored
+- [x] The checkpoint carries the CHECKLIST line (EVERY, BACKEND, FLOWS, UI)
+- [x] Not LOCKED by an implementer
+
+### STAGING-DEPLOY-10 — Deploy the Agent safety fixes (HARNESS-FIXES-01A) during the tester window
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-10
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-06. Registered by HARNESS-FIXES-01A; not admitted.
+**Task ID:** STAGING-DEPLOY-10
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (operational run; no code)
+**Lifecycle:** 3-STEP: registration here; admission when Keith picks the time; pre-check and deploy from the host; separate LOCK record (STAGING-RUNTIME).
+**Start condition (human):** NOT_READY. Ready when: Keith approves the deploy and its timing (the tester window is open, so the restart interrupts his testing). Keith decides.
+**Depends on:** HARNESS-FIXES-01A.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Expected: none in the repository beyond records; host state on ainow-staging-01 (gateway, AI service, container manager and frontend release).
+**Mutexes / resources:** set at admission (expected STAGING). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS; expected STAGING-RUNTIME). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+
+**Holds:** deploy the HARNESS-FIXES-01A commit with the DEPLOY checklist: env files checked against the tester-window hashes (gateway.env 5692ce35..., ai.env 132ebab3...), nothing running, Keith told before the restart, health, guard and page checks, the static key refused, and a host check that POST /api/sessions/:id/restore answers 409 for a session with an active run is not attempted live (no provider run during the deploy); the unit tests cover it.
+**Named in:** docs/HARNESS-FIXES-01A-CHECKPOINT.md.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
 - [ ] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks

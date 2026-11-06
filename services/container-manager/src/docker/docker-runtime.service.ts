@@ -747,18 +747,23 @@ export class DockerRuntimeService implements OnModuleInit {
         30000,
       );
 
-      if (result.exitCode !== 0 && `${result.stdout ?? ''}`.trim().length === 0) {
-        const stderr = `${result.stderr ?? ''}`.trim();
-        if (stderr.length > 0) {
-          console.warn(
-            `[AI-WS-06-hotfix2] Search script failed for session ${sessionId}: exitCode=${result.exitCode}, stderr=${stderr}`,
-          );
-        }
+      const stdoutText = `${result.stdout ?? ''}`;
+      const stderrText = `${result.stderr ?? ''}`.trim();
+      if (
+        result.exitCode === 1 &&
+        stdoutText.trim().length === 0 &&
+        stderrText.length === 0
+      ) {
         return {
           query: normalizedQuery,
           results: [],
           truncated: false,
         };
+      }
+      if (result.exitCode !== 0 && stdoutText.trim().length === 0) {
+        throw new Error(
+          `Search script failed with exitCode=${result.exitCode}`,
+        );
       }
       if (result.exitCode !== 0) {
         throw new Error(`Failed to search files for query: ${normalizedQuery}`);
