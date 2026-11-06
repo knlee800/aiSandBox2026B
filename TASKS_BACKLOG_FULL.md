@@ -86015,7 +86015,7 @@ taskId=STAGING-DEPLOY-10
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-06. Lane 1, STAGING and ENV. Keith said deploy now on 2026-11-06.
+**Status:** COMPLETE AND LOCKED — 2026-11-06. LANE-DONE and LOCKED by the control plane; Lane 1 and STAGING and ENV released. Staging runs 07c5d0b with the Agent safety fixes; tester window still open. Checkpoint: docs/STAGING-DEPLOY-10-CHECKPOINT.md.
 **Task ID:** STAGING-DEPLOY-10
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION (operational run; no code)
@@ -86032,10 +86032,31 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] Staging runs the deployed commit; migration hash unchanged; env files at the tester-window hashes before and after; other configuration files unchanged; units active; health, guard, page and CORS checks pass; the static key refused
-- [ ] Nothing queued or running before the deploy; Keith was told before the restart; the tester window stays open
-- [ ] The checkpoint carries the CHECKLIST line (EVERY, DEPLOY)
-- [ ] Not LOCKED by an implementer
+- [x] Staging runs the deployed commit; migration hash unchanged; env files at the tester-window hashes before and after; other configuration files unchanged; units active; health, guard, page and CORS checks pass; the static key refused
+- [x] Nothing queued or running before the deploy; Keith was told before the restart; the tester window stays open
+- [x] The checkpoint carries the CHECKLIST line (EVERY, DEPLOY)
+- [x] Not LOCKED by an implementer
+
+### GOV-DEPLOY-WINDOW-01 — Correct the deploy rule for an open tester window
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-DEPLOY-WINDOW-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT STARTED — 2026-11-06. Registered by STAGING-DEPLOY-10.
+**Task ID:** GOV-DEPLOY-WINDOW-01
+**Nature:** GOVERNANCE. **Lifecycle:** 1-STEP control-plane record (rule wording only; no Development OS semantics change).
+**Start condition:** Keith approves the wording. Keith decides.
+**Primary write scope:** CLAUDE.md (Tester window (GOV-OS-06) section), docs/control-plane/task-checklists.md (DEPLOY list), TASKS.md, TASKS_BACKLOG_FULL.md.
+**Mutexes / resources:** GOVERNANCE.
+
+**Holds:** GOV-OS-06 says deploys during an open tester window check the window env hashes, but the host deploy tool (aisandbox-deploy) refuses while GLOBAL_EXECUTION_ENABLED is not false (found by STAGING-DEPLOY-10 on 2026-11-06; nothing changed on the first attempt). The rule and the DEPLOY checklist should say: a deploy during an open window also holds ENV; it saves the window gateway.env, switches GLOBAL_EXECUTION_ENABLED off only for the deploy after nothing is running, deploys, then restores the saved file byte for byte and checks the window hashes and that runs are back on; Keith is told runs pause for a few minutes.
+**Named in:** docs/STAGING-DEPLOY-10-CHECKPOINT.md.
+
+#### Acceptance criteria
+
+- [ ] Keith approves the wording
+- [ ] CLAUDE.md and the DEPLOY checklist carry it; no other rule changes
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
