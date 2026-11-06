@@ -85847,23 +85847,27 @@ taskId=TESTER-WINDOW-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-06. Registered by GOV-OS-06; not admitted.
+**Status:** ADMITTED — 2026-11-06. Lane 1, STAGING, ENV, PROVIDER-LIVE and CREDIT. Keith approved the draft and admitted it on 2026-11-06.
 **Task ID:** TESTER-WINDOW-01
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION (operational run on staging)
 **Lifecycle:** 3-STEP.
-**Start condition (human):** NOT_READY. Ready when: TESTER-SETUP-01 is COMPLETE AND LOCKED and Keith says to open the window. Keith decides.
+**Start condition (human):** READY — TESTER-SETUP-01 is COMPLETE AND LOCKED; Keith approved the draft and admitted it on 2026-11-06.
 **Depends on:** TESTER-SETUP-01.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Expected: gateway.env and ai.env on ainow-staging-01 and off-repo evidence.
-**Mutexes / resources:** set at admission (expected STAGING, ENV, PROVIDER-LIVE, CREDIT, per the GOV-OS-06 rule in CLAUDE.md). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS; expected PROVIDER-LIVE). **Revert isolation:** assessed at admission.
+**Primary write scope:** none in the repository beyond records. Host state on ainow-staging-01 only: /etc/aisandbox/gateway.env and /etc/aisandbox/ai.env (saved copies kept on the host), a gateway and AI-service restart; off-repo evidence.
+**Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT (GOV-OS-06 rule). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** PROVIDER-LIVE. **Revert isolation:** acceptable (closing restores the saved env files).
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 
-**Holds:** switch AI runs on for the window (Anthropic provider, execution on, the stored key), record the window's env file hashes, and lock with runtimeAuthorization.testerWindowOpen true. The existing daily caps hold spend (500 credits per user, 1,000 platform). While the window is open the control plane checks usage, errors and spend from the host each day, read-only. Closing is a later registered task, when Keith says stop.
+**Holds:** open the tester window. From the host: (1) pre-check staging at 951ee83, env files at their baseline hashes (gateway bf6864f9..., ai 721f4772...), nothing running, knlee802 access row present; (2) save both env files, then write gateway.env AI_PROVIDER anthropic, ANTHROPIC_API_KEY from the stored key file (never printed), ANTHROPIC_MODEL claude-opus-5-5, PROVIDER_ANTHROPIC_ENABLED true, GLOBAL_EXECUTION_ENABLED true, MAX_EXECUTIONS_PER_MINUTE_GLOBAL 4, MAX_TOKENS_PER_EXECUTION 16000, and ai.env AI_PROVIDER anthropic, the key, ANTHROPIC_MODEL claude-opus-5-5, AGENT_HARNESS_ENABLE_TOOL_LOOP, AGENT_HARNESS_ENABLE_WRITE_TOOLS and AGENT_HARNESS_ENABLE_VALIDATION_TOOLS true, EXECUTION_TIMEOUT_MS 180000; daily credit caps stay at their defaults (500 per user, 1,000 platform); (3) restart the gateway and AI service; gateway ready and AI worker ready, otherwise restore the saved files and stop; (4) record the window env hashes; (5) Keith runs a chat and an Agent run as knlee802 and the control plane confirms from the host that they completed with usage recorded; (6) LOCK with runtimeAuthorization.testerWindowOpen true, staging, provider-live and credit authorization false, and the board line Tester window OPEN. The window stays open until Keith says stop; closing is a later registered task that restores the saved env files.
 **Named in:** GOV-OS-06.
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Runs on: gateway ready and AI worker ready with the settings above; the window env hashes recorded
+- [ ] Keith's first chat and Agent run as knlee802 complete, with usage recorded
+- [ ] The key appears in no output
+- [ ] The LOCK record leaves testerWindowOpen true, the three authorization flags false and the lane free
 - [ ] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
