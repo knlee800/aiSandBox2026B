@@ -84349,6 +84349,7 @@ nature=IMPLEMENTATION
 **Dispositions, 2026-11-05:** item 10 is superseded by HARNESS-REOPEN-01. Item 12 added: live check of HARNESS-REOPEN-01 in the next staging window (close the page during an Agent run, reopen the project, the run's files are intact).
 **Dispositions, 2026-11-05 (2):** item 12 is superseded by STAGING-DEPLOY-04 (its reopen criterion).
 **Named in:** HARNESS-PROVIDERS-01 checkpoint line 75; HARNESS-LIVE-06 checkpoint lines 38 to 40; HARNESS-SAVE-01 checkpoint line 45; HARNESS-DELETE-01 checkpoint lines 52 and 53; container-manager docker-runtime.service.ts searchWorkspace.
+**Sliced 2026-11-06:** items 5, 8 and 11 moved to HARNESS-FIXES-01A. Item 10 is superseded by HARNESS-REOPEN-01 (the active-run guard in projects.service.ts); its remaining manual-Restore case is HARNESS-FIXES-01A item 10b. The other items stay here.
 
 #### Acceptance criteria
 
@@ -85975,6 +85976,37 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### HARNESS-FIXES-01A — Agent safety fixes: honest delete flag, recovered Build notice, failed search, Restore during a run
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=HARNESS-FIXES-01A
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED — 2026-11-06. Lane 1, AI-SERVICE, CONTAINER-MANAGER, GATEWAY, FRONTEND and I18N. Stage-start: docs/HARNESS-FIXES-01A-STAGE-START.md (design frozen in this record).
+**Task ID:** HARNESS-FIXES-01A
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP: a read-only investigation (Cursor grok-4.7-xhigh, sessions 4786bad1-707d-4ee6-bae3-96a75358fd1f) found the root causes; registration, admission and the frozen stage-start in this record; implementation; consolidation and LOCK in the same commit as the code (LOCAL-TESTS); deploy as its own task.
+**Start condition (human):** READY — Keith approved the slice with option A for deletes and item 10b on 2026-11-06 and admitted it.
+**Depends on:** none.
+**Primary write scope:** see the stage-start; ai-service harness config and two specs; container-manager docker-runtime.service.ts and its spec; api-gateway session.controller.ts, session.module.ts and session.controller.spec.ts; frontend workspace-run-recovery.logic.ts, workspace-snapshots.logic.ts and their tests, frontend/app/ (the page call sites only), and the three message files.
+**Mutexes / resources:** AI-SERVICE, CONTAINER-MANAGER, GATEWAY, FRONTEND, I18N. **Hot-file leases:** none. **Shared contracts:** none changed (HarnessEntitlementProof untouched). **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (four independent small fixes; no migration).
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md.
+
+**Holds:** slice A of HARNESS-FIXES-01: item 8 (requireApprovalForDelete is true but nothing reads it; Keith chose option A: set it false so the setting matches the automatic, save-point-undoable deletes, which the run progress already shows with the path); item 11 (a recovered Build shows the model text "I have added ..." before the not-applied notice; show the notice alone); item 5 (container-manager turns a failed search into no matches; only a real grep no-match stays empty); item 10b (the manual Restore button replaces the workspace of a session whose Agent run is still active; refuse it while a run is active, with a translated message). Item 10 itself is already fixed by HARNESS-REOPEN-01.
+**Named in:** HARNESS-FIXES-01; the investigation report recorded in the stage-start.
+
+#### Acceptance criteria
+
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Item 8: the harness default requireApprovalForDelete is false; the builder-profile floor still keeps a global true from being weakened; tests cover both
+- [ ] Item 11: a recovered Build or unknown run shows only the not-applied notice, never the model text claiming a change; Ask and Agent recovery and a watched Build are unchanged; tests cover each
+- [ ] Item 5: a search script failure (non-zero exit other than a clean grep no-match) is an error the Agent sees; exit 1 with empty stdout and stderr stays no matches; tests cover each
+- [ ] Item 10b: POST /api/sessions/:id/restore is refused with 409 while the caller has a pending, running or cancel_requested run in that session, and nothing is restored; the workspace shows a translated message in en, zh-TW and zh-CN; a restore with no active run is unchanged; tests cover each
+- [ ] ai-service, container-manager and gateway npm test (gateway only the 14 known runtime-only smoke.integration failures) and builds pass; frontend tsc, npm test and npm run build pass, frontend/tsconfig.tsbuildinfo restored
+- [ ] The checkpoint carries the CHECKLIST line (EVERY, BACKEND, FLOWS, UI)
 - [ ] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
