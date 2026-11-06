@@ -86124,7 +86124,7 @@ taskId=STAGING-DEPLOY-11
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-06. Lane 1, STAGING and ENV. Keith said deploy now on 2026-11-06.
+**Status:** COMPLETE AND LOCKED — 2026-11-06. LANE-DONE and LOCKED by the control plane; Lane 1 and STAGING and ENV released. Staging runs 05539f7 with the Ask-mode instructions and the Stop button; tester window still open. Checkpoint: docs/STAGING-DEPLOY-11-CHECKPOINT.md.
 **Task ID:** STAGING-DEPLOY-11
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION (operational run; no code)
@@ -86141,10 +86141,10 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] Staging runs the deployed commit; migration hash unchanged; env files at the tester-window hashes before and after; other configuration files unchanged; units active; health, guard, page and CORS checks pass; the static key refused
-- [ ] Nothing queued or running before runs are switched off; Keith was told runs pause; the saved window gateway.env is restored byte for byte, runs are back on, and the tester window stays open
-- [ ] The checkpoint carries the CHECKLIST line (EVERY, DEPLOY)
-- [ ] Not LOCKED by an implementer
+- [x] Staging runs the deployed commit; migration hash unchanged; env files at the tester-window hashes before and after; other configuration files unchanged; units active; health, guard, page and CORS checks pass; the static key refused
+- [x] Nothing queued or running before runs are switched off; Keith was told runs pause; the saved window gateway.env is restored byte for byte, runs are back on, and the tester window stays open
+- [x] The checkpoint carries the CHECKLIST line (EVERY, DEPLOY)
+- [x] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
