@@ -84750,14 +84750,14 @@ taskId=KNOW-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-06. Lane 1, AI-SERVICE and GATEWAY; mutates HARNESS_ENTITLEMENT_PROOF_V1, so Lane 2 stays empty. Keith admitted it on 2026-11-06. Stage-start next.
+**Status:** ADMITTED — 2026-11-06. Lane 1, AI-SERVICE and GATEWAY; mutates HARNESS_ENTITLEMENT_PROOF_V1, so Lane 2 stays empty. Keith admitted it on 2026-11-06. Stage-start approved by Keith on 2026-11-06 (docs/KNOW-02-STAGE-START.md; the write set adds the tool allow-list file and its spec); implementation next.
 **Task ID:** KNOW-02
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP: admission in this record; stage-start drafted read-only by Cursor grok-4.7-xhigh, reviewed by the control plane and approved by Keith; implementation by Cursor grok-4.7-high; consolidation and LOCK in the same commit as the code (LOCAL-TESTS).
 **Start condition (human):** READY — KNOW-01 is COMPLETE AND LOCKED (12a47c5); Keith admitted KNOW-02 on 2026-11-06 as drafted (write set, mutexes, contract change, LOCAL-TESTS).
 **Depends on:** KNOW-01.
-**Primary write scope:** `services/ai-service/src/agent-harness/tools/`, `services/ai-service/src/worker/`, `services/ai-service/src/queue/job.types.ts`, `services/ai-service/src/clients/`, `services/api-gateway/src/knowledge/`, `services/api-gateway/src/orchestration/`, `docs/KNOW-02-STAGE-START.md`. Gateway orchestration for the job field only; anything else needs a control-plane scope change recorded in the stage-start.
+**Primary write scope:** `services/ai-service/src/agent-harness/tools/`, `services/ai-service/src/worker/`, `services/ai-service/src/queue/job.types.ts`, `services/ai-service/src/clients/`, `services/api-gateway/src/knowledge/`, `services/api-gateway/src/orchestration/`, `services/ai-service/src/ai-execution/adapters/adapter-tool-use.mapper.ts`, `services/ai-service/src/ai-execution/adapters/__tests__/adapter-tool-use.mapper.spec.ts` (both added at stage-start, Keith 2026-11-06), `docs/KNOW-02-STAGE-START.md`. Gateway orchestration for the job field only; anything else needs a control-plane scope change recorded in the stage-start.
 **Mutexes / resources:** AI-SERVICE, GATEWAY. **Hot-file leases:** none. **Shared contracts:** mutates HARNESS_ENTITLEMENT_PROOF_V1 (one optional signed knowledgeScopes job field); runs alone; re-frozen at LOCK. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (no migration; new read-only tools, internal routes and one optional job field).
 **saturationClass:** OPTIONAL. **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved the plan on 2026-11-05).
 
@@ -84767,7 +84767,7 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] The stage-start (docs/KNOW-02-STAGE-START.md) is frozen and approved by Keith before implementation
+- [x] The stage-start (docs/KNOW-02-STAGE-START.md) is frozen and approved by Keith before implementation
 - [ ] search_knowledge and read_knowledge are read-only and register only for jobs whose signed payload carries a non-empty knowledgeScopes list; results are capped in bytes and hits
 - [ ] The internal knowledge routes keep the internal-key guard, take the user id and scopes from the job (never from the model) and return only that owner's documents in those scopes
 - [ ] knowledgeScopes is set only by the gateway from the server scope registry; the browser cannot set it; the entitlement proof covers it; HARNESS_ENTITLEMENT_PROOF_V1 is re-frozen at LOCK
@@ -86207,3 +86207,6 @@ One line per follow-up Keith dropped: date, follow-up, where it was named, reaso
 - 2026-11-05 — frontend/components/Timeline.tsx dead socket prop, named in docs/ACCESS-READY-01-PLAN.md section 9 — unused component; ACCESS-01A makes a stray socket harmless — GOV-ACCESS-PLAN-01.
 - 2026-11-05 — admin GET of a user's entitlements, named in docs/ACCESS-01B-STAGE-START.md section 11 — the PATCH response and audit_events show state until ACCESS-01G/01H — Keith, ACCESS-01B.
 - 2026-11-05 — HARNESS_WRITE_TOOLS_DISABLED_MESSAGE says writer step for Agent runs, named in docs/ACCESS-01C-STAGE-START.md section 10 — internal stored failure text, not translated product copy — Keith, ACCESS-01C.
+- 2026-11-06 — knowledgeScopes on Agent-mode jobs (ai-execution.controller.ts), named in docs/KNOW-02-STAGE-START.md section 10 — coding runs are not knowledge readers; re-propose if the coding agent should search documents — Keith, KNOW-02 stage-start.
+- 2026-11-06 — knowledge tools for the review, write or agent-write profiles, named in docs/KNOW-02-STAGE-START.md section 10 — business roles are read-only; re-propose with a role that needs a mutating profile and knowledge together — Keith, KNOW-02 stage-start.
+- 2026-11-06 — SQL search or an index for knowledge documents, named in docs/KNOW-02-STAGE-START.md section 10 — the account cap is 50 documents and 4 MB, scanned in process — Keith, KNOW-02 stage-start.

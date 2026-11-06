@@ -429,7 +429,7 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 ## KNOW-02 — ADMITTED / Lane 1 ACTIVE — 2026-11-06
 
-**Current status:** ADMITTED, Lane 1, with AI-SERVICE and GATEWAY; mutates HARNESS_ENTITLEMENT_PROOF_V1, so Lane 2 stays empty. Keith admitted it on 2026-11-06. Stage-start next (Cursor grok-4.7-xhigh draft, Keith approves). Scope in TASKS_BACKLOG_FULL.md.
+**Current status:** ADMITTED, Lane 1, with AI-SERVICE and GATEWAY; mutates HARNESS_ENTITLEMENT_PROOF_V1, so Lane 2 stays empty. Keith admitted it on 2026-11-06; stage-start approved the same day (docs/KNOW-02-STAGE-START.md). Implementation next (Cursor grok-4.7-high). Scope in TASKS_BACKLOG_FULL.md.
 
 ## Lane 1
 ACTIVE — KNOW-02 — 2026-11-06.

@@ -17,6 +17,8 @@
         "services/ai-service/src/clients/",
         "services/api-gateway/src/knowledge/",
         "services/api-gateway/src/orchestration/",
+        "services/ai-service/src/ai-execution/adapters/adapter-tool-use.mapper.ts",
+        "services/ai-service/src/ai-execution/adapters/__tests__/adapter-tool-use.mapper.spec.ts",
         "docs/KNOW-02-STAGE-START.md"
       ],
       "hotfiles": [],
@@ -2978,6 +2980,8 @@
         "services/ai-service/src/clients/",
         "services/api-gateway/src/knowledge/",
         "services/api-gateway/src/orchestration/",
+        "services/ai-service/src/ai-execution/adapters/adapter-tool-use.mapper.ts",
+        "services/ai-service/src/ai-execution/adapters/__tests__/adapter-tool-use.mapper.spec.ts",
         "docs/KNOW-02-STAGE-START.md"
       ],
       "hotfiles": [],
