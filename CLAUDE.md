@@ -448,6 +448,17 @@ This section changes how many records are made, not what they must prove.
 
 Unchanged: two implementation lanes, mutexes, the scheduler, admission rules, the validator at machine-relevant transitions, a checkpoint for every task, approval of drafts, Keith's live judgement, verification before commit.
 
+### Tester window (GOV-OS-06)
+
+A tester window lets a trusted person use staging with AI runs on while development continues.
+
+- The window is a staging state, not a lane. The sidecar key `runtimeAuthorization.testerWindowOpen` is true while it is open; absent means false; any other value is MALFORMED. It holds no lane and no mutex. The board states it on one line.
+- A registered task opens it. That task holds STAGING, ENV, PROVIDER-LIVE and CREDIT while it switches runs on, records the window's env file hashes, and locks with the window left open. A registered task closes it, holding STAGING and ENV, and returns the env files to their baseline hashes. The validator runs at both.
+- While it is open, LOCAL-TESTS and LOCAL-RUNTIME tasks are admitted under the usual rules. STAGING-RUNTIME tasks (deploys) are admitted under the usual rules; they check the window's env hashes instead of the baselines, and their evidence says the tester may be active.
+- While it is open, a task whose evidence class is PROVIDER-LIVE, or whose mutexes or runtime needs include PROVIDER-LIVE or CREDIT, is refused with TESTER_WINDOW_OPEN, as a candidate and in a lane. Close the window first.
+
+Unchanged: two implementation lanes, mutexes, the scheduler, admission rules, the existing pair rules, saturation, the GOV-OS-04 pause rule, and Keith's approval of every record.
+
 ---
 
 ## Project Governance Loop

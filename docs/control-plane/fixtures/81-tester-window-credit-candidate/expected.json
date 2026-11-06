@@ -1,0 +1,1 @@
+{ "exitCode": 0, "result": "PASS", "idleCode": "NO_PAIRWISE_ADMISSIBLE_CANDIDATE", "admissibleForcingCandidates": [], "rejectedCandidates": [ { "taskId": "TASK-A", "code": "TESTER_WINDOW_OPEN" } ] }

@@ -1081,6 +1081,25 @@ function Get-OccupiedLanes {
     return $list
 }
 
+function Test-TesterWindowOpen {
+    if ($null -eq $script:RuntimeAuth) { return $false }
+    $rtAuth = $script:RuntimeAuth
+    return $rtAuth.ContainsKey('testerWindowOpen') -and ($rtAuth['testerWindowOpen'] -is [bool]) -and ($rtAuth['testerWindowOpen'] -eq $true)
+}
+
+function Test-TesterWindowBlocked {
+    param($Record)
+    if ([string]$Record['evidenceClass'] -ceq 'PROVIDER-LIVE') { return $true }
+    foreach ($id in (Get-CanonicalMutexIds $Record['mutexes'])) {
+        if ($id -ceq 'PROVIDER-LIVE' -or $id -ceq 'CREDIT') { return $true }
+    }
+    foreach ($need in (ConvertTo-ArrayList $Record['runtimeNeeds'])) {
+        $rid = [string]$need
+        if ($rid -ceq 'PROVIDER-LIVE' -or $rid -ceq 'CREDIT') { return $true }
+    }
+    return $false
+}
+
 function Test-Admissible {
     param($C, $Occ, $LockedSet)
     $occupiedIds = New-StringSet
@@ -1119,6 +1138,8 @@ function Test-Admissible {
         $code = Get-Conflict $C $ln
         if ($code -ne 'OK') { return $code }
     }
+
+    if ((Test-TesterWindowOpen) -and (Test-TesterWindowBlocked $C)) { return 'TESTER_WINDOW_OPEN' }
 
     $needs = Get-IdSetFromArray $C['runtimeNeeds']
     $rt = $script:RuntimeAuth
@@ -1611,12 +1632,13 @@ try {
 
     $rt = $state['runtimeAuthorization']
     if (-not (Test-IsMap $rt)) { throw 'MALFORMED' }
-    Assert-ClosedKeys $rt @('localRuntimeAuthorized', 'stagingAuthorized', 'providerLiveAuthorized', 'creditAuthorized', 'liveWindowPaused')
+    Assert-ClosedKeys $rt @('localRuntimeAuthorized', 'stagingAuthorized', 'providerLiveAuthorized', 'creditAuthorized', 'liveWindowPaused', 'testerWindowOpen')
     Assert-RequiredKeys $rt @('localRuntimeAuthorized', 'stagingAuthorized', 'providerLiveAuthorized', 'creditAuthorized')
     foreach ($rk in @('localRuntimeAuthorized', 'stagingAuthorized', 'providerLiveAuthorized', 'creditAuthorized')) {
         if ($rt[$rk] -isnot [bool]) { throw 'MALFORMED' }
     }
     if ($rt.ContainsKey('liveWindowPaused') -and ($rt['liveWindowPaused'] -isnot [bool])) { throw 'MALFORMED' }
+    if ($rt.ContainsKey('testerWindowOpen') -and ($rt['testerWindowOpen'] -isnot [bool])) { throw 'MALFORMED' }
     $script:RuntimeAuth = $rt
 
     $occ = $state['occupancy']
@@ -1756,6 +1778,18 @@ if ($occCount -eq 2) {
     if ($ex) { $pairCode = 'EXCLUSIVE_CAPACITY' }
     else { $pairCode = Get-Conflict $occ['lane1'] $occ['lane2'] }
     if ($pairCode -ne 'OK') {
+        $proof = New-Proof 'FAIL' 2 'NONE' $emptyS $emptyR $hSidecarFacts $sidecarHash $catalogHash $git['headSha'] $git['workingTreeDirty']
+        Save-Proof $proof $ProofPath 2
+    }
+}
+
+# tester window: an occupied PROVIDER-LIVE or CREDIT lane is not a valid end state
+if (Test-TesterWindowOpen) {
+    $testerBlocked = $false
+    foreach ($ln in (Get-OccupiedLanes $occ)) {
+        if (Test-TesterWindowBlocked $ln) { $testerBlocked = $true; break }
+    }
+    if ($testerBlocked) {
         $proof = New-Proof 'FAIL' 2 'NONE' $emptyS $emptyR $hSidecarFacts $sidecarHash $catalogHash $git['headSha'] $git['workingTreeDirty']
         Save-Proof $proof $ProofPath 2
     }

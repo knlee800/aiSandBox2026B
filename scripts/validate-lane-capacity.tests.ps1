@@ -80,6 +80,35 @@ function Get-ProofObject {
     }
 }
 
+function Get-RejectedPairList {
+    param($Value)
+    $pairs = New-Object System.Collections.Generic.List[string]
+    if ($null -eq $Value) { return $pairs }
+    $records = New-Object System.Collections.ArrayList
+    if (($Value -is [System.Collections.IDictionary]) -and $Value.ContainsKey('taskId')) {
+        [void]$records.Add($Value)
+    } elseif (($Value -is [System.Collections.IEnumerable]) -and ($Value -isnot [string])) {
+        foreach ($el in $Value) {
+            if ($null -ne $el) { [void]$records.Add($el) }
+        }
+    } else {
+        [void]$records.Add($Value)
+    }
+    foreach ($rc in $records) {
+        $tid = ''
+        $code = ''
+        if ($rc -is [System.Collections.IDictionary]) {
+            $tid = [string]$rc['taskId']
+            $code = [string]$rc['code']
+        } else {
+            $tid = [string]$rc.taskId
+            $code = [string]$rc.code
+        }
+        $pairs.Add($tid + '=' + $code)
+    }
+    return $pairs
+}
+
 foreach ($dir in $dirs) {
     $slug = $dir.Name
     $expectedPath = Join-Path $dir.FullName 'expected.json'
@@ -205,6 +234,16 @@ foreach ($dir in $dirs) {
                             $detail = "rejected $k expected=$want actual=$($actualMap[[string]$k])"
                             break
                         }
+                    }
+                }
+                if ($ok -and $expected.ContainsKey('rejectedCandidates')) {
+                    $expPairs = @(Get-RejectedPairList $expected['rejectedCandidates'] | Sort-Object)
+                    $actValue = $null
+                    if ($proof.ContainsKey('rejectedCandidates')) { $actValue = $proof['rejectedCandidates'] }
+                    $actPairs = @(Get-RejectedPairList $actValue | Sort-Object)
+                    if (($expPairs -join '|') -ne ($actPairs -join '|')) {
+                        $ok = $false
+                        $detail = "rejectedCandidates expected=[$($expPairs -join ',')] actual=[$($actPairs -join ',')]"
                     }
                 }
             }

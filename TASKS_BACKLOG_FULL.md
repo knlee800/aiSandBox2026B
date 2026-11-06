@@ -85792,7 +85792,7 @@ taskId=GOV-OS-06
 nature=GOVERNANCE
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ACTIVE — 2026-11-06. Governance; no lane. GOVERNANCE held; Development OS mutation begun with both lanes empty.
+**Status:** COMPLETE AND LOCKED — 2026-11-06. Governance; no lane. GOVERNANCE released UNOWNED; Development OS mutation ended. Checkpoint: docs/GOV-OS-06-CHECKPOINT.md.
 **Task ID:** GOV-OS-06
 **Nature:** GOVERNANCE. **Lifecycle:** 2-STEP: this record begins the mutation; the closing record ends it. Validator change implemented by Cursor (grok-4.7-xhigh) between the two records.
 **Start condition:** Keith approved the draft (option A) on 2026-11-06.
@@ -85802,15 +85802,66 @@ nature=GOVERNANCE
 **Problem:** Keith wants a trusted person to test on staging with AI runs on while development continues. Under the current rules a tester window would be a live lane: the validator refuses any lane beside a PROVIDER-LIVE or STAGING-RUNTIME lane unless the window is paused with all runtime flags off (GOV-OS-04), and the window would hold STAGING, so no coding work and no deploys could run while it is open.
 **Scope (frozen design, option A):** (1) The tester window is a staging state, not a lane: new optional sidecar key runtimeAuthorization.testerWindowOpen (boolean; absent means false; any other type MALFORMED). It holds no lane and no mutex. (2) Opening and closing are control-plane records with the validator: opening by a registered task that holds STAGING, ENV, PROVIDER-LIVE and CREDIT while it switches runs on, records the window's env file hashes and locks with the window left open; closing returns the env files to their baseline hashes. (3) While the window is open: LOCAL-TESTS and LOCAL-RUNTIME tasks are admitted under the existing rules; STAGING-RUNTIME tasks (deploys) are admitted under the existing rules, check the window's env hashes instead of the baselines, and their evidence states that the tester may be active; a candidate or an occupied lane whose evidence class is PROVIDER-LIVE, or whose mutexes or runtime needs include PROVIDER-LIVE or CREDIT, is refused with the new code TESTER_WINDOW_OPEN. (4) Unchanged: two lanes, Lane 3 disabled, mutexes, the scheduler, saturation, the GOV-OS-04 pause rule, the existing pair rules, Keith's approval of every record.
 **Not in scope:** deploy scripts and host steps (off-repo; TESTER-SETUP-01 and TESTER-WINDOW-01).
+**Close record, 2026-11-06:** CLAUDE.md carries the tester-window rule; the validator, its tests and fixtures 77 to 85 implement it; the board has a Tester window line (CLOSED). FOLLOWUPS: 2 registered / 0 superseded / 0 dropped / 0 undisposed. Registered NOT_READY: TESTER-SETUP-01, TESTER-WINDOW-01.
 
 #### Acceptance criteria
 
-- [ ] Scope approved by Keith before the start
-- [ ] New fixtures: window open with LOCAL-TESTS lanes passes; window open with a STAGING-RUNTIME lane passes; window open with a PROVIDER-LIVE candidate or lane refused TESTER_WINDOW_OPEN; window open with a CREDIT candidate or lane refused TESTER_WINDOW_OPEN; key absent behaves as today; a non-boolean value is MALFORMED
-- [ ] Every existing fixture keeps its result
-- [ ] CLAUDE.md states the rule, and no other OS semantics change
-- [ ] TESTER-SETUP-01 and TESTER-WINDOW-01 registered NOT_READY with Keith deciding readiness; the closing record carries a FOLLOWUPS line with 0 undisposed
-- [ ] The validator passes at both records
+- [x] Scope approved by Keith before the start
+- [x] New fixtures: window open with LOCAL-TESTS lanes passes; window open with a STAGING-RUNTIME lane passes; window open with a PROVIDER-LIVE candidate or lane refused TESTER_WINDOW_OPEN; window open with a CREDIT candidate or lane refused TESTER_WINDOW_OPEN; key absent behaves as today; a non-boolean value is MALFORMED
+- [x] Every existing fixture keeps its result
+- [x] CLAUDE.md states the rule, and no other OS semantics change
+- [x] TESTER-SETUP-01 and TESTER-WINDOW-01 registered NOT_READY with Keith deciding readiness; the closing record carries a FOLLOWUPS line with 0 undisposed
+- [x] The validator passes at both records
+- [x] Not LOCKED by an implementer
+
+### TESTER-SETUP-01 — Staging access for a named tester
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TESTER-SETUP-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-06. Registered by GOV-OS-06; not admitted.
+**Task ID:** TESTER-SETUP-01
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (operational run on staging)
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith names the tester. Keith decides.
+**Depends on:** none.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Expected: host state on ainow-staging-01 only (Caddy basic_auth entry, the tester's entitlements and credit grant) and off-repo evidence.
+**Mutexes / resources:** set at admission (expected STAGING). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS; expected STAGING-RUNTIME). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+
+**Holds:** (1) the tester's own basic_auth entry in Caddy; Keith types the password at a hidden prompt on the host; (2) the tester signs up with their own email; (3) entitlements through the audited admin route: harness on, Agent write on, dailyTokenLimitOverride 500000; (4) a credit grant through the admin route. test2 stays the control plane's check account.
+**Named in:** GOV-OS-06.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### TESTER-WINDOW-01 — Open the tester window on staging
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TESTER-WINDOW-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-06. Registered by GOV-OS-06; not admitted.
+**Task ID:** TESTER-WINDOW-01
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (operational run on staging)
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: TESTER-SETUP-01 is COMPLETE AND LOCKED and Keith says to open the window. Keith decides.
+**Depends on:** TESTER-SETUP-01.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Expected: gateway.env and ai.env on ainow-staging-01 and off-repo evidence.
+**Mutexes / resources:** set at admission (expected STAGING, ENV, PROVIDER-LIVE, CREDIT, per the GOV-OS-06 rule in CLAUDE.md). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS; expected PROVIDER-LIVE). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+
+**Holds:** switch AI runs on for the window (Anthropic provider, execution on, the stored key), record the window's env file hashes, and lock with runtimeAuthorization.testerWindowOpen true. The existing daily caps hold spend (500 credits per user, 1,000 platform). While the window is open the control plane checks usage, errors and spend from the host each day, read-only. Closing is a later registered task, when Keith says stop.
+**Named in:** GOV-OS-06.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
 - [ ] Not LOCKED by an implementer
 
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
