@@ -85904,7 +85904,7 @@ taskId=DESIGN-DOC-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-06. Lane 1, no mutex (documentation only). Keith approved the draft and admitted it on 2026-11-06.
+**Status:** COMPLETE AND LOCKED — 2026-11-06. LANE-DONE and LOCKED by the control plane; Lane 1 released. DESIGN.md and PRODUCT.md written from the current app; Keith confirmed the tone. Checkpoint: docs/DESIGN-DOC-01-CHECKPOINT.md.
 **Task ID:** DESIGN-DOC-01
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION (documentation)
@@ -85921,11 +85921,11 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] DESIGN.md exists at the root in the Impeccable DESIGN.md format; every color, type, spacing, radius, component and state pattern is taken from the frontend code with the file it comes from; nothing is invented, and gaps are listed as gaps
-- [ ] PRODUCT.md exists at the root, short, drawn from PRD.md, says that PRD.md stays the product authority, and lists the tone and design principles for Keith to confirm
-- [ ] Keith approved the tone and principles in PRODUCT.md
-- [ ] No other file changed; the checkpoint carries the CHECKLIST line
-- [ ] Not LOCKED by an implementer
+- [x] DESIGN.md exists at the root in the Impeccable DESIGN.md format; every color, type, spacing, radius, component and state pattern is taken from the frontend code with the file it comes from; nothing is invented, and gaps are listed as gaps
+- [x] PRODUCT.md exists at the root, short, drawn from PRD.md, says that PRD.md stays the product authority, and lists the tone and design principles for Keith to confirm
+- [x] Keith approved the tone and principles in PRODUCT.md
+- [x] No other file changed; the checkpoint carries the CHECKLIST line
+- [x] Not LOCKED by an implementer
 
 ### CHECKLIST-LINT-01 — Refuse a checkpoint without the CHECKLIST line
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -85946,6 +85946,31 @@ nature=IMPLEMENTATION
 
 **Holds:** a check, run at LOCK, that refuses a new checkpoint without a well-formed CHECKLIST line, as the FOLLOWUPS line is reviewed today.
 **Named in:** GOV-OS-07.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### DESIGN-GAPS-01 — Fix the design inconsistencies DESIGN.md lists
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=DESIGN-GAPS-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-06. Registered by DESIGN-DOC-01; not admitted.
+**Task ID:** DESIGN-GAPS-01
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith admits it, alone or in slices; UI batches may take single gaps as they touch those screens, each recorded here. Keith decides.
+**Depends on:** DESIGN-DOC-01.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Expected: frontend components and app files, the three message files, frontend/app/[locale]/layout.tsx, DESIGN.md.
+**Mutexes / resources:** set at admission (expected FRONTEND, I18N). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+
+**Holds:** the Known gaps in DESIGN.md (2026-11-06): one primary action color instead of bg-brand, bg-blue-600 and bg-indigo-500/600; one success color instead of emerald and green; one focus ring style; a shared loading spinner; a CJK font for zh-TW and zh-CN; a mono font family; one title weight; consistent auth cards; collaboration selection and primary button in one color; the custom mobile sidebar icon and the tab-orientation glyphs replaced by Heroicons; the readiness chip text moved into the three message files. DESIGN.md is updated to the chosen values. UI checklist and the design skills apply.
+**Named in:** DESIGN.md Known gaps; docs/DESIGN-DOC-01-CHECKPOINT.md.
 
 #### Acceptance criteria
 

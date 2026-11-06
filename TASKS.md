@@ -3,15 +3,15 @@
 schemaVersion=1
 maxImplementationLanes=2
 lane3=DISABLED
-lane1.state=ACTIVE
-lane1.taskId=DESIGN-DOC-01
+lane1.state=EMPTY
+lane1.taskId=NONE
 lane2.state=EMPTY
 lane2.taskId=NONE
 governance.owner=NONE
 governance.state=UNOWNED
 saturationSuspended=false
 suspensionReason=NONE
-occupancyHash=sha256:29f8faad5434eaadebc20d62a9cb2f8f9ec45021155c73478acf0f0b9a2b188d
+occupancyHash=sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d
 <!-- AISB_OCCUPANCY_V1_END -->
 
 **Parallel Development Architecture:** v1
@@ -403,12 +403,12 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-06. GOVERNANCE released UNOWNED; Development OS mutation ended. Rule checklists in docs/control-plane/task-checklists.md and CLAUDE.md. DESIGN-DOC-01 and CHECKLIST-LINT-01 registered NOT_READY. Checkpoint: docs/GOV-OS-07-CHECKPOINT.md.
 
-## DESIGN-DOC-01 — ADMITTED / Lane 1 ACTIVE — 2026-11-06
+## DESIGN-DOC-01 — COMPLETE AND LOCKED / Lane 1 RELEASED — 2026-11-06
 
-**Current status:** ADMITTED, Lane 1, no mutex (documentation only). Keith approved the draft and admitted it on 2026-11-06. Scope in TASKS_BACKLOG_FULL.md.
+**Current status:** COMPLETE AND LOCKED - 2026-11-06. Lane 1 released. DESIGN.md and PRODUCT.md written from the current app; Keith confirmed the tone. Checkpoint: docs/DESIGN-DOC-01-CHECKPOINT.md.
 
 ## Lane 1
-ACTIVE — DESIGN-DOC-01 — 2026-11-06.
+EMPTY — Lane 1 released at DESIGN-DOC-01 COMPLETE AND LOCKED — 2026-11-06.
 
 ## Lane 2
 EMPTY — Lane 2 released at RUN-LIST-COLLAB-01 COMPLETE AND LOCKED — 2026-11-05.
@@ -419,7 +419,7 @@ DISABLED
 ## Governance owner / state
 UNOWNED — GOV-OS-07 COMPLETE AND LOCKED — 2026-11-06.
 
-Lane 1 ACTIVE: DESIGN-DOC-01 (DESIGN.md and PRODUCT.md). Lane 2 EMPTY. Tester window OPEN since 2026-11-06 (TESTER-WINDOW-01 COMPLETE AND LOCKED): AI runs on with Anthropic under the default daily caps; Keith's second account knlee802 has harness, Agent write and a 500k daily token limit. PROVIDER-LIVE and CREDIT tasks wait until the window closes (GOV-OS-06). ACCESS-CORS-01 and STAGING-DEPLOY-09 are COMPLETE AND LOCKED. ACCESS-LIVE-01 is COMPLETE AND LOCKED: the second-user check passed on staging. Staging runs 951ee83 with knowledge, citations, the validation gate, Socket.IO auth, the audit table, per-user access, daily credit caps, per-plan token limits, test-key lockdown, the signed Agent tool profile, the real refusal messages and HTTP CORS limited to the app's own origin (Keith admin, harness access and Agent write on); runs and provider on during the tester window. SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted: ACCESS-01E, ACCESS-01G to ACCESS-01J, LIMITS-PER-USER-01 (registered by GOV-ACCESS-PLAN-01); COLLAB-EVAL-01, COLLAB-FANOUT-01, COLLAB-REVIEWERS-01, COLLAB-LIMITS-ENV-01 (registered 2026-11-05 from Keith's Agent Teams and limits decisions); KNOW-02, KNOW-04, BIZ-01, BIZ-LIVE-01, BIZ-02, BIZ-03, BIZ-NOPROJECT-01, GOV-ARCH-SYNC-01 (registered by GOV-BIZ-KNOWLEDGE-PLAN-01); COLLAB-EDIT-01, COLLAB-CANCEL-01 (registered by GOV-COLLAB-PLAN-01); AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01 (registered by GOV-OS-05); ADMIN-CSRF-01 (registered by ACCESS-01B); AGENT-WRITE-UI-01, HARNESS-WRITE-VETO-01 (registered by ACCESS-01C); CHECKLIST-LINT-01 (registered by GOV-OS-07).
+Both implementation lanes are EMPTY. DESIGN-DOC-01 is COMPLETE AND LOCKED (DESIGN.md and PRODUCT.md; rule checklists from GOV-OS-07 in use). Tester window OPEN since 2026-11-06 (TESTER-WINDOW-01 COMPLETE AND LOCKED): AI runs on with Anthropic under the default daily caps; Keith's second account knlee802 has harness, Agent write and a 500k daily token limit. PROVIDER-LIVE and CREDIT tasks wait until the window closes (GOV-OS-06). ACCESS-CORS-01 and STAGING-DEPLOY-09 are COMPLETE AND LOCKED. ACCESS-LIVE-01 is COMPLETE AND LOCKED: the second-user check passed on staging. Staging runs 951ee83 with knowledge, citations, the validation gate, Socket.IO auth, the audit table, per-user access, daily credit caps, per-plan token limits, test-key lockdown, the signed Agent tool profile, the real refusal messages and HTTP CORS limited to the app's own origin (Keith admin, harness access and Agent write on); runs and provider on during the tester window. SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted: ACCESS-01E, ACCESS-01G to ACCESS-01J, LIMITS-PER-USER-01 (registered by GOV-ACCESS-PLAN-01); COLLAB-EVAL-01, COLLAB-FANOUT-01, COLLAB-REVIEWERS-01, COLLAB-LIMITS-ENV-01 (registered 2026-11-05 from Keith's Agent Teams and limits decisions); KNOW-02, KNOW-04, BIZ-01, BIZ-LIVE-01, BIZ-02, BIZ-03, BIZ-NOPROJECT-01, GOV-ARCH-SYNC-01 (registered by GOV-BIZ-KNOWLEDGE-PLAN-01); COLLAB-EDIT-01, COLLAB-CANCEL-01 (registered by GOV-COLLAB-PLAN-01); AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01 (registered by GOV-OS-05); ADMIN-CSRF-01 (registered by ACCESS-01B); AGENT-WRITE-UI-01, HARNESS-WRITE-VETO-01 (registered by ACCESS-01C); CHECKLIST-LINT-01 (registered by GOV-OS-07); DESIGN-GAPS-01 (registered by DESIGN-DOC-01).
 
 ## Tester window
 OPEN since 2026-11-06T04:12:41Z (opened by TESTER-WINDOW-01); runtimeAuthorization.testerWindowOpen true; window env hashes gateway.env 5692ce351b06..., ai.env 132ebab3244d...; tester account knlee802; closing is a registered task when Keith says stop.
