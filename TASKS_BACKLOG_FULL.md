@@ -86059,6 +86059,65 @@ nature=GOVERNANCE
 - [x] Keith approves the wording
 - [x] CLAUDE.md and the DEPLOY checklist carry it; no other rule changes
 
+### ASK-CONTRACT-01 — Ask mode gets its own instructions and never claims a file change
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=ASK-CONTRACT-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED — 2026-11-06. Lane 1, AI-SERVICE.
+**Task ID:** ASK-CONTRACT-01
+**Workstream:** CORE (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP: registration and admission in this record; implementation; consolidation and LOCK in the same commit as the code (LOCAL-TESTS); deploy as its own task with RUN-STOP-01.
+**Start condition (human):** READY — Keith approved the fix and admitted it on 2026-11-06.
+**Depends on:** none.
+**Primary write scope:** `services/ai-service/src/worker/worker.processor.ts` and `services/ai-service/src/worker/worker.processor.spec.ts`.
+**Mutexes / resources:** AI-SERVICE. **Hot-file leases:** none. **Shared contracts:** none (the job payload and HarnessEntitlementProof are unchanged). **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (prompt text and one option; no migration).
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md.
+
+**Holds:** Keith's tester finding of 2026-11-06: in Ask mode he asked "can you change it to black?" and the answer said "I've switched the page to a black theme" although no file changed. Cause: buildExecutionPromptParts gives every non-Agent run the Build contract (FILE_ACTION_OUTPUT_CONTRACT), which tells the model to emit file-actions; for Ask (executionIntent conversation) the worker then drops them (resolveEffectiveFileActionsForExecutionIntent) and the reply still claims the change. Fix: a third contract for Ask runs (not Agent, executionIntent conversation): files cannot change in Ask mode; do not emit file-actions; do not say a file was created, changed or deleted; for a change request, explain it or show the code as text and say that Build mode applies changes. Build and Agent contracts stay byte for byte. The worker keeps dropping any file-actions in Ask as a backstop.
+
+#### Acceptance criteria
+
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] A non-Agent run with executionIntent conversation gets the Ask contract; Build (workspace_mutation or absent intent) and Agent runs get their existing contracts unchanged
+- [ ] The Ask contract says files cannot change in Ask mode, forbids file-actions blocks and claims of changed files, and tells the model to point to Build mode for changes
+- [ ] File-actions in an Ask run are still dropped and logged
+- [ ] Tests cover each mode's contract; ai-service npm test and npm run build pass
+- [ ] The checkpoint carries the CHECKLIST line (EVERY, BACKEND, FLOWS)
+- [ ] Not LOCKED by an implementer
+
+### RUN-STOP-01 — Stop button for a running chat run
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=RUN-STOP-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED — 2026-11-06. Lane 2, FRONTEND and I18N.
+**Task ID:** RUN-STOP-01
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP: registration and admission in this record; implementation; consolidation and LOCK in the same commit as the code (LOCAL-TESTS); deploy as its own task with ASK-CONTRACT-01.
+**Start condition (human):** READY — Keith approved the fix and admitted it on 2026-11-06.
+**Depends on:** none.
+**Primary write scope:** `frontend/components/workspace/workspace-shell.tsx`, `frontend/components/workspace/workspace-shell.test.tsx`, new `frontend/components/workspace/workspace-run-cancel.logic.ts` and `frontend/components/workspace/workspace-run-cancel.logic.test.ts`, `frontend/app/` (the workspace page only), `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`.
+**Mutexes / resources:** FRONTEND, I18N. **Hot-file leases:** none. **Shared contracts:** none (uses the existing POST /api/ai/executions/:executionId/cancel unchanged). **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (frontend only; no backend change).
+**saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md.
+
+**Holds:** Keith's tester finding of 2026-11-06: there is no way to stop a run after Send. The backend already supports it: POST /api/ai/executions/:executionId/cancel (owner only; 409 when the run cannot be cancelled) sets cancel_requested, and the worker checks every second and ends the run as cancelled. A Build run stopped before the model returns applies no file changes; in an Agent run, writes made before Stop stay and the save point still covers them. Nothing in the frontend calls the route. Fix: while a chat run is submitting, queued or running and its executionId is known, the Send button becomes a Stop button that calls the route once; the chat then shows a translated stopped message in place of "Execution ended with status: cancelled."; a 409 (the run already finished) or another failure shows a translated message and the run's normal result still arrives. Covers Ask, Build and Agent runs.
+
+#### Acceptance criteria
+
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] While a run is active with a known executionId, Send becomes Stop; Stop calls POST /api/ai/executions/:executionId/cancel once and is disabled while the request is in flight
+- [ ] A cancelled run shows a translated stopped message; a 409 or failed cancel shows a translated message and the run's result still shows
+- [ ] Every new string is in en, zh-TW and zh-CN through the existing message pattern; Heroicons v2 Outline if an icon is used; DESIGN.md and the two design skills applied
+- [ ] Existing test IDs kept; tests cover the button states, the call, the stopped message and the 409 and failure paths
+- [ ] Frontend tsc, npm test and npm run build pass; frontend/tsconfig.tsbuildinfo restored
+- [ ] The checkpoint carries the CHECKLIST line (EVERY, UI)
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
