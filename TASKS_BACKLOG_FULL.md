@@ -85785,6 +85785,34 @@ nature=IMPLEMENTATION
 - [x] Nothing queued or running before the deploy; runs and provider stay off; nothing left open
 - [x] Not LOCKED by an implementer
 
+### GOV-OS-06 — Tester window beside normal work
+
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-OS-06
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ACTIVE — 2026-11-06. Governance; no lane. GOVERNANCE held; Development OS mutation begun with both lanes empty.
+**Task ID:** GOV-OS-06
+**Nature:** GOVERNANCE. **Lifecycle:** 2-STEP: this record begins the mutation; the closing record ends it. Validator change implemented by Cursor (grok-4.7-xhigh) between the two records.
+**Start condition:** Keith approved the draft (option A) on 2026-11-06.
+**Primary write scope:** CLAUDE.md, scripts/validate-lane-capacity.ps1, scripts/validate-lane-capacity.tests.ps1, new fixture folders in docs/control-plane/fixtures/, TASKS.md, TASKS_BACKLOG_FULL.md, the sidecar, the proof, docs/GOV-OS-06-CHECKPOINT.md.
+**Mutexes / resources:** GOVERNANCE.
+
+**Problem:** Keith wants a trusted person to test on staging with AI runs on while development continues. Under the current rules a tester window would be a live lane: the validator refuses any lane beside a PROVIDER-LIVE or STAGING-RUNTIME lane unless the window is paused with all runtime flags off (GOV-OS-04), and the window would hold STAGING, so no coding work and no deploys could run while it is open.
+**Scope (frozen design, option A):** (1) The tester window is a staging state, not a lane: new optional sidecar key runtimeAuthorization.testerWindowOpen (boolean; absent means false; any other type MALFORMED). It holds no lane and no mutex. (2) Opening and closing are control-plane records with the validator: opening by a registered task that holds STAGING, ENV, PROVIDER-LIVE and CREDIT while it switches runs on, records the window's env file hashes and locks with the window left open; closing returns the env files to their baseline hashes. (3) While the window is open: LOCAL-TESTS and LOCAL-RUNTIME tasks are admitted under the existing rules; STAGING-RUNTIME tasks (deploys) are admitted under the existing rules, check the window's env hashes instead of the baselines, and their evidence states that the tester may be active; a candidate or an occupied lane whose evidence class is PROVIDER-LIVE, or whose mutexes or runtime needs include PROVIDER-LIVE or CREDIT, is refused with the new code TESTER_WINDOW_OPEN. (4) Unchanged: two lanes, Lane 3 disabled, mutexes, the scheduler, saturation, the GOV-OS-04 pause rule, the existing pair rules, Keith's approval of every record.
+**Not in scope:** deploy scripts and host steps (off-repo; TESTER-SETUP-01 and TESTER-WINDOW-01).
+
+#### Acceptance criteria
+
+- [ ] Scope approved by Keith before the start
+- [ ] New fixtures: window open with LOCAL-TESTS lanes passes; window open with a STAGING-RUNTIME lane passes; window open with a PROVIDER-LIVE candidate or lane refused TESTER_WINDOW_OPEN; window open with a CREDIT candidate or lane refused TESTER_WINDOW_OPEN; key absent behaves as today; a non-boolean value is MALFORMED
+- [ ] Every existing fixture keeps its result
+- [ ] CLAUDE.md states the rule, and no other OS semantics change
+- [ ] TESTER-SETUP-01 and TESTER-WINDOW-01 registered NOT_READY with Keith deciding readiness; the closing record carries a FOLLOWUPS line with 0 undisposed
+- [ ] The validator passes at both records
+- [ ] Not LOCKED by an implementer
+
 ### GOV-EOL-01 — Record the Cursor line-ending replay incident for four locked evidence tasks
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-EOL-01
