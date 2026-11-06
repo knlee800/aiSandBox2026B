@@ -85820,7 +85820,7 @@ taskId=TESTER-SETUP-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-06. Lane 1, STAGING and CREDIT. Keith approved the draft and admitted it on 2026-11-06.
+**Status:** COMPLETE AND LOCKED — 2026-11-06. LANE-DONE and LOCKED by the control plane; Lane 1 and STAGING and CREDIT released. Keith's second account knlee802 has harness, Agent write and a 500k daily token limit; runs still off. Checkpoint: docs/TESTER-SETUP-01-CHECKPOINT.md.
 **Task ID:** TESTER-SETUP-01
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION (operational run on staging)
@@ -85837,9 +85837,9 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] knlee802 (ff99eb72-e344-447a-b36c-4138fcaf6478) is email-verified and has harness on, Agent write on and dailyTokenLimitOverride 500000, with one audit row
-- [ ] No other account is touched; env files, runs and the provider are unchanged
-- [ ] Not LOCKED by an implementer
+- [x] knlee802 (ff99eb72-e344-447a-b36c-4138fcaf6478) is email-verified and has harness on, Agent write on and dailyTokenLimitOverride 500000, with one audit row
+- [x] No other account is touched; env files, runs and the provider are unchanged
+- [x] Not LOCKED by an implementer
 
 ### TESTER-WINDOW-01 — Open the tester window on staging
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
