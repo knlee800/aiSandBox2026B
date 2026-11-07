@@ -85346,15 +85346,15 @@ taskId=KNOW-SCOPE-UX-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-07. Registered at the BIZ-03 admission (Keith approved, OPTIONAL); not admitted.
+**Status:** ADMITTED — 2026-11-07. Lane 1, FRONTEND and I18N. Keith approved the drafted scope on 2026-11-07 and admitted it after COLLAB-START-ONCE-01. Implementation next.
 **Task ID:** KNOW-SCOPE-UX-01
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition (human):** NOT_READY. Ready when: FRONTEND is free (after BIZ-03) and Keith admits it. Keith decides.
+**Start condition (human):** READY — FRONTEND is free (COLLAB-START-ONCE-01 COMPLETE AND LOCKED); Keith approved both drafts on 2026-11-07 with COLLAB-START-ONCE-01 first.
 **Depends on:** none.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Scope drafted and approved by Keith on 2026-11-07, set at admission: frontend/components/knowledge/knowledge-screen.tsx with knowledge-screen.test.tsx and the three message files; the add form shows Adding to: <scope> with a scope picker that starts at the selected chip, the document saves to the scope picked in the form, replace keeps the document's own scope (shown, no picker); no gateway or API change.
-**Mutexes / resources:** set at admission (FRONTEND and I18N as approved). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** LOCAL-TESTS (as approved). **Revert isolation:** assessed at admission.
+**Primary write scope:** `frontend/components/knowledge/knowledge-screen.tsx`, `frontend/components/knowledge/knowledge-screen.test.tsx`, `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`, docs/KNOW-SCOPE-UX-01-CHECKPOINT.md. No gateway or API change; anything else needs a control-plane scope change.
+**Mutexes / resources:** FRONTEND, I18N. **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (the add form's scope line and picker, and message keys; no server or data change).
 **saturationClass:** OPTIONAL (Keith, 2026-11-07). **productClass:** CURRENT per PRD.md.
 
 **Holds:** On 2026-11-07 Keith's documents twice landed in Company monthly reports instead of the scope he meant: the Knowledge page saves a new document to the scope selected in the chip row at the top (the first scope by default), and the add form does not say which scope that is. The add form names its scope ("Adding to: <scope>") and lets the owner change it there; tests cover it; en, zh-TW and zh-CN.
@@ -85362,7 +85362,13 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] The add form shows Adding to: <scope> with a scope picker inside the form that starts at the scope selected in the chip row; the new document saves to the scope picked in the form, not silently to the chip row
+- [ ] Replace keeps the document's own scope: the form shows it and offers no picker
+- [ ] No gateway or API change: the upload still sends scopeId, title and file to POST /api/knowledge/documents
+- [ ] Every new text in en, zh-TW and zh-CN through the existing translation hook, no hardcoded English; existing data-testids kept
+- [ ] Tests cover each point above; frontend tests, the knowledge-screen test by name, type check and build pass
+- [ ] The checkpoint carries the CHECKLIST line (EVERY, UI) and the FOLLOWUPS line
 - [ ] Not LOCKED by an implementer
 
 ### STAGING-DEPLOY-16 — Deploy the one-start Team page (COLLAB-START-ONCE-01) during the tester window
