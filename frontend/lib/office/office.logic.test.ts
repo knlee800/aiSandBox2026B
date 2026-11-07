@@ -30,8 +30,8 @@ const NOW = Date.parse('2026-11-05T06:00:00.000Z');
 const registry = officeRegistryFromManifests([
   { id: 'builder', status: 'active' },
   { id: 'chief-of-staff', status: 'active' },
-  { id: 'product-strategy', status: 'coming_soon' },
-  { id: 'technology-advisor', status: 'coming_soon' },
+  { id: 'product-strategy', status: 'active' },
+  { id: 'technology-advisor', status: 'active' },
 ]);
 const activeRegistryIds = activeRegistryDeskIds(registry);
 
@@ -139,8 +139,50 @@ describe('office run attribution', () => {
     );
   });
 
+  test('product and technology collaboration runs go to their desks', () => {
+    for (const builderProfileId of ['product-strategy', 'technology-advisor']) {
+      assert.equal(
+        attribute(
+          { collaborationRunId: 'collab-1', agentId: null, builderProfileId },
+          userIds,
+        ),
+        `registry:${builderProfileId}`,
+      );
+    }
+  });
+
+  test('an advisors-lead run sits on the chief desk while that desk is active', () => {
+    assert.equal(
+      attribute(
+        {
+          collaborationRunId: 'collab-1',
+          agentId: null,
+          builderProfileId: 'advisors-lead',
+        },
+        userIds,
+      ),
+      'registry:chief-of-staff',
+    );
+  });
+
+  test('an advisors-lead run sits on the team desk when the chief desk is absent', () => {
+    const builderOnly = activeRegistryDeskIds([{ id: 'builder', status: 'active' }]);
+    assert.equal(
+      attributeDeskId(
+        {
+          collaborationRunId: 'collab-1',
+          agentId: null,
+          builderProfileId: 'advisors-lead',
+        },
+        userIds,
+        builderOnly,
+      ),
+      TEAM_DESK_ID,
+    );
+  });
+
   test('other collaboration runs stay on the team desk', () => {
-    for (const builderProfileId of ['lead', 'writer', 'builder', 'product-strategy', 'technology-advisor', '   ', null]) {
+    for (const builderProfileId of ['lead', 'writer', 'builder', '   ', null]) {
       assert.equal(
         attribute(
           { collaborationRunId: 'collab-1', agentId: 'ua-1', builderProfileId },
@@ -267,7 +309,7 @@ describe('office desk status', () => {
     assert.equal(builder.headlineRun?.executionId, 'newer');
   });
 
-  test('no rows leave the builder idle and coming-soon desks vacant', () => {
+  test('no rows leave the builder and the business desks idle and occupied', () => {
     const built = desksFor({});
     const builder = built.find((item) => item.id === BUILDER_DESK_ID);
     assert.ok(builder);
@@ -277,16 +319,21 @@ describe('office desk status', () => {
     assert.ok(chief);
     assert.equal(chief.vacant, false);
     assert.equal(chief.phase, 'idle');
-    const vacant = built.filter((item) => item.vacant);
-    assert.equal(vacant.length, 2);
-    assert.deepEqual(
-      vacant.map((item) => item.id),
-      ['registry:product-strategy', 'registry:technology-advisor'],
-    );
-    assert.deepEqual(
-      vacant.map((item) => item.phase),
-      ['vacant', 'vacant'],
-    );
+    for (const id of ['registry:product-strategy', 'registry:technology-advisor']) {
+      const deskItem = built.find((item) => item.id === id);
+      assert.ok(deskItem);
+      assert.equal(deskItem.vacant, false);
+      assert.equal(deskItem.phase, 'idle');
+    }
+    assert.equal(built.filter((item) => item.vacant).length, 0);
+    const reserved = buildOfficeDesks({
+      registry: officeRegistryFromManifests([{ id: 'future-advisor', status: 'coming_soon' }]),
+      userAgents: [],
+      activeRuns: [],
+      recentRuns: [],
+    });
+    assert.equal(reserved[0]?.vacant, true);
+    assert.equal(reserved[0]?.phase, 'vacant');
     assert.equal(built.some((item) => item.id === TEAM_DESK_ID), false);
     assert.equal(built.some((item) => item.id === FORMER_DESK_ID), false);
   });

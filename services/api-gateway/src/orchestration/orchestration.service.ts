@@ -2623,6 +2623,14 @@ export class OrchestrationService {
       await this.rememberHandoffNote(referralId, 'refused: agent_not_on_list');
       return;
     }
+    if (
+      agents.some((agent) => agent.name === 'advisors-lead') &&
+      (entity.targetBuilderProfileId === 'product-strategy' ||
+        entity.targetBuilderProfileId === 'technology-advisor')
+    ) {
+      await this.rememberHandoffNote(referralId, 'refused: advisors_reply');
+      return;
+    }
 
     const job = entity.pendingJob;
     let prompt = buildRequestedHandoffPrompt(parsed.task, parsed.answerWithoutRequest);

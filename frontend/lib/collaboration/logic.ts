@@ -310,6 +310,8 @@ export function collaborationMemberLabel(
     writer: string;
     reviewer: string;
     chiefOfStaff?: string;
+    productStrategy?: string;
+    technologyAdvisor?: string;
   },
 ): string {
   if (name === 'user') {
@@ -324,17 +326,23 @@ export function collaborationMemberLabel(
   if (name === 'reviewer') {
     return labels.reviewer;
   }
-  if (name === 'chief-of-staff') {
+  if (name === 'chief-of-staff' || name === 'advisors-lead') {
     return labels.chiefOfStaff ?? name;
+  }
+  if (name === 'product-strategy') {
+    return labels.productStrategy ?? name;
+  }
+  if (name === 'technology-advisor') {
+    return labels.technologyAdvisor ?? name;
   }
   return name;
 }
 
-export const COLLABORATION_TEAM_IDS = ['coding', 'chief-of-staff'] as const;
+export const COLLABORATION_TEAM_IDS = ['coding', 'chief-of-staff', 'advisors'] as const;
 export type CollaborationTeamId = (typeof COLLABORATION_TEAM_IDS)[number];
 
 export function readCollaborationTeamId(value: unknown): CollaborationTeamId | null {
-  if (value === 'coding' || value === 'chief-of-staff') {
+  if (value === 'coding' || value === 'chief-of-staff' || value === 'advisors') {
     return value;
   }
   return null;
@@ -366,6 +374,9 @@ export function collaborationTeamFromDetail(
   if (names.length === 1 && names[0] === 'chief-of-staff') {
     return 'chief-of-staff';
   }
+  if (names[0] === 'advisors-lead') {
+    return 'advisors';
+  }
   if (names[0] === 'lead') {
     return 'coding';
   }
@@ -374,9 +385,15 @@ export function collaborationTeamFromDetail(
 
 export function collaborationTeamTitle(
   teamId: CollaborationTeamId,
-  labels: { coding: string; chiefOfStaff: string },
+  labels: { coding: string; chiefOfStaff: string; advisors: string },
 ): string {
-  return teamId === 'chief-of-staff' ? labels.chiefOfStaff : labels.coding;
+  if (teamId === 'chief-of-staff') {
+    return labels.chiefOfStaff;
+  }
+  if (teamId === 'advisors') {
+    return labels.advisors;
+  }
+  return labels.coding;
 }
 
 export interface CollaborationRosterLabels {
@@ -384,10 +401,15 @@ export interface CollaborationRosterLabels {
   writer: string;
   reviewer: string;
   chiefOfStaff: string;
+  productStrategy: string;
+  technologyAdvisor: string;
   leadSummary: string;
   writerSummary: string;
   reviewerSummary: string;
   chiefOfStaffSummary: string;
+  advisorsLeadSummary: string;
+  productStrategySummary: string;
+  technologyAdvisorSummary: string;
 }
 
 export function collaborationRoster(
@@ -396,6 +418,13 @@ export function collaborationRoster(
 ): Array<{ name: string; summary: string }> {
   if (teamId === 'chief-of-staff') {
     return [{ name: labels.chiefOfStaff, summary: labels.chiefOfStaffSummary }];
+  }
+  if (teamId === 'advisors') {
+    return [
+      { name: labels.chiefOfStaff, summary: labels.advisorsLeadSummary },
+      { name: labels.productStrategy, summary: labels.productStrategySummary },
+      { name: labels.technologyAdvisor, summary: labels.technologyAdvisorSummary },
+    ];
   }
   return [
     { name: labels.lead, summary: labels.leadSummary },

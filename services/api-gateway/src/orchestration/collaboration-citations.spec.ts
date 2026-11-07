@@ -148,20 +148,27 @@ describe('collaborationAnswerCitations', () => {
     expect(result.showUnsourced).toBe(false);
   });
 
-  it('sets showUnsourced for a chief-of-staff answer with no valid marker', () => {
-    expect(BUSINESS_ROLE_PROFILE_IDS).toEqual(['chief-of-staff']);
+  it('sets showUnsourced for each business role answer with no valid marker', () => {
+    expect(BUSINESS_ROLE_PROFILE_IDS).toEqual([
+      'chief-of-staff',
+      'advisors-lead',
+      'product-strategy',
+      'technology-advisor',
+    ]);
 
-    const result = collaborationAnswerCitations({
-      completed: true,
-      answer: 'No marker here.',
-      targetProfileId: 'chief-of-staff',
-      ownerId: OWNER_ID,
-      documents,
-    });
+    for (const targetProfileId of BUSINESS_ROLE_PROFILE_IDS) {
+      const result = collaborationAnswerCitations({
+        completed: true,
+        answer: 'No marker here.',
+        targetProfileId,
+        ownerId: OWNER_ID,
+        documents,
+      });
 
-    expect(result.sources).toEqual([]);
-    expect(result.unsourced).toBe(true);
-    expect(result.showUnsourced).toBe(true);
+      expect(result.sources).toEqual([]);
+      expect(result.unsourced).toBe(true);
+      expect(result.showUnsourced).toBe(true);
+    }
   });
 
   it('sets showUnsourced only for a listed business role with no valid source', () => {
@@ -210,6 +217,11 @@ describe('collaborationAnswerCitations', () => {
       unsourced: false,
       showUnsourced: false,
     });
-    expect(BUSINESS_ROLE_PROFILE_IDS).toEqual(['chief-of-staff']);
+    expect(BUSINESS_ROLE_PROFILE_IDS).toEqual([
+      'chief-of-staff',
+      'advisors-lead',
+      'product-strategy',
+      'technology-advisor',
+    ]);
   });
 });

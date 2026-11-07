@@ -333,6 +333,8 @@ export function useCollaborationScreen(input: {
       writer: t('writer'),
       reviewer: t('reviewer'),
       chiefOfStaff: t('chiefOfStaff'),
+      productStrategy: t('productStrategy'),
+      technologyAdvisor: t('technologyAdvisor'),
     }),
     [t],
   );
@@ -347,10 +349,15 @@ export function useCollaborationScreen(input: {
     writer: labels.writer,
     reviewer: labels.reviewer,
     chiefOfStaff: t('chiefOfStaff'),
+    productStrategy: t('productStrategy'),
+    technologyAdvisor: t('technologyAdvisor'),
     leadSummary: labels.leadSummary,
     writerSummary: labels.writerSummary,
     reviewerSummary: labels.reviewerSummary,
     chiefOfStaffSummary: t('chiefOfStaffSummary'),
+    advisorsLeadSummary: t('advisorsLeadSummary'),
+    productStrategySummary: t('productStrategySummary'),
+    technologyAdvisorSummary: t('technologyAdvisorSummary'),
   });
   const runTeamId = collaborationTeamFromDetail(detail);
   const chainTeamId = runTeamId ?? selectedTeam;
@@ -361,12 +368,18 @@ export function useCollaborationScreen(input: {
       label: t('teamChiefOfStaff'),
       hint: t('teamChiefOfStaffHint'),
     },
+    {
+      id: 'advisors' as const,
+      label: t('teamAdvisors'),
+      hint: t('teamAdvisorsHint'),
+    },
   ];
   const runTeam = runTeamId
     ? {
         label: collaborationTeamTitle(runTeamId, {
           coding: t('teamCoding'),
           chiefOfStaff: t('teamChiefOfStaff'),
+          advisors: t('teamAdvisors'),
         }),
         roles: readStringList(detail?.team).map((name) =>
           collaborationMemberLabel(name, memberLabels),
@@ -442,8 +455,18 @@ export function useCollaborationScreen(input: {
     onTeamChange: (teamId: CollaborationTeamId) => {
       setSelectedTeam(teamId);
     },
-    accessNote: selectedTeam === 'chief-of-staff' ? t('fileAccessReadOnly') : labels.fileAccessOn,
-    chainEmptyText: chainTeamId === 'chief-of-staff' ? t('chainEmptyChief') : labels.chainEmpty,
+    accessNote:
+      selectedTeam === 'chief-of-staff'
+        ? t('fileAccessReadOnly')
+        : selectedTeam === 'advisors'
+          ? t('fileAccessAdvisors')
+          : labels.fileAccessOn,
+    chainEmptyText:
+      chainTeamId === 'chief-of-staff'
+        ? t('chainEmptyChief')
+        : chainTeamId === 'advisors'
+          ? t('chainEmptyAdvisors')
+          : labels.chainEmpty,
     runTeam,
     handoffs,
     runs: runs.map((run) => {
@@ -457,6 +480,7 @@ export function useCollaborationScreen(input: {
           ? collaborationTeamTitle(listedTeamId, {
               coding: t('teamCoding'),
               chiefOfStaff: t('teamChiefOfStaff'),
+              advisors: t('teamAdvisors'),
             })
           : undefined,
       };

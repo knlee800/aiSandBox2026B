@@ -1167,7 +1167,7 @@ describe('CollaborationController login routes', () => {
     ];
 
     it('rejects unknown and non-string team values', async () => {
-      for (const team of [null, 1, true, '', 'Coding', 'advisors', ['hacker'], { id: 'coding' }]) {
+      for (const team of [null, 1, true, '', 'Coding', ['hacker'], { id: 'coding' }]) {
         await http().post('/api/collaboration/runs').send(startBody({ team })).expect(400);
       }
       expect(runs.size).toBe(0);
@@ -1300,6 +1300,63 @@ describe('CollaborationController login routes', () => {
         .get(`/api/collaboration/runs?projectId=${started.body.projectId}`)
         .expect(200);
       expect(list.body.runs[0].teamId).toBe('chief-of-staff');
+    });
+
+    it('starts the advisors team on the lead with the read profile and the six scopes', async () => {
+      const started = await http()
+        .post('/api/collaboration/runs')
+        .send(
+          startBody({
+            team: 'advisors',
+            model: 'gpt-4o',
+            provider: 'openai',
+            agents: [{ name: 'hacker', instructions: 'pwn' }],
+          }),
+        )
+        .expect(201);
+
+      const stored = referrals.get(started.body.referralId);
+      expect(started.body.target).toBe('advisors-lead');
+      expect(stored?.targetBuilderProfileId).toBe('advisors-lead');
+      expect(stored?.pendingJob?.fileAccess).toBe(true);
+      expect(stored?.pendingJob?.agents?.map((agent) => agent.name)).toEqual([
+        'advisors-lead',
+        'product-strategy',
+        'technology-advisor',
+      ]);
+      expect(stored?.pendingJob?.agents?.[0]?.instructions).toContain('product-strategy');
+      expect(stored?.pendingJob?.agents?.[0]?.instructions).not.toContain('pwn');
+      expect(JSON.stringify(started.body)).not.toContain('gpt-4o');
+
+      await http()
+        .post(
+          `/api/collaboration/runs/${started.body.collaborationRunId}/referrals/${started.body.referralId}/approve`,
+        )
+        .send({ harnessToolProfile: 'write', knowledgeScopes: ['market-data'] })
+        .expect(200);
+      const payload = queue.enqueueExecution.mock.calls.at(-1)?.[0] as Record<string, unknown>;
+      expect(payload.builderProfileId).toBe('advisors-lead');
+      expect(payload.harnessToolProfile).toBe('read');
+      expect(payload.harnessReadOnly).toBe(true);
+      expect(payload.knowledgeScopes).toEqual(chiefScopes);
+      expect(ledger.writeExecutionIntent.mock.calls[0][0].metadata).toEqual({
+        runMode: 'ask',
+        apiKeyId: 'browser-session',
+        requestedProvider: 'stub',
+        requestedModel: 'stub',
+        agentDefinitionId: 'advisors-lead',
+        agentDefinitionVersion: systemAgentVersion('advisors-lead'),
+      });
+
+      const detail = await http()
+        .get(`/api/collaboration/runs/${started.body.collaborationRunId}`)
+        .expect(200);
+      expect(detail.body.teamId).toBe('advisors');
+      expect(detail.body.team).toEqual([
+        'advisors-lead',
+        'product-strategy',
+        'technology-advisor',
+      ]);
     });
   });
 });

@@ -19,11 +19,23 @@ import zhTwMessages from '@/messages/zh-TW.json';
 import zhCnMessages from '@/messages/zh-CN.json';
 
 const NOW = Date.parse('2026-11-05T06:00:00.000Z');
+const SHARED_SCOPE_IDS = [
+  'company-monthly-reports',
+  'three-year-goals',
+  'strategy-docs',
+  'policies',
+  'meeting-summaries',
+];
+
+function stationScopes(specialist: string) {
+  return [...SHARED_SCOPE_IDS, specialist].map((id) => ({ id }));
+}
+
 const STATION_FIXTURE = [
-  { id: 'builder', status: 'active', nameKey: 'agents.builder.name', roleKey: 'agents.builder.role' },
-  { id: 'chief-of-staff', status: 'active', nameKey: 'agents.chiefOfStaff.name', roleKey: 'agents.chiefOfStaff.role' },
-  { id: 'product-strategy', status: 'coming_soon', nameKey: 'agents.productStrategy.name', roleKey: 'agents.productStrategy.role' },
-  { id: 'technology-advisor', status: 'coming_soon', nameKey: 'agents.technologyAdvisor.name', roleKey: 'agents.technologyAdvisor.role' },
+  { id: 'builder', status: 'active', nameKey: 'agents.builder.name', roleKey: 'agents.builder.role', knowledgeScopes: stationScopes('codebase-context') },
+  { id: 'chief-of-staff', status: 'active', nameKey: 'agents.chiefOfStaff.name', roleKey: 'agents.chiefOfStaff.role', knowledgeScopes: stationScopes('contract-templates') },
+  { id: 'product-strategy', status: 'active', nameKey: 'agents.productStrategy.name', roleKey: 'agents.productStrategy.role', knowledgeScopes: stationScopes('market-data') },
+  { id: 'technology-advisor', status: 'active', nameKey: 'agents.technologyAdvisor.name', roleKey: 'agents.technologyAdvisor.role', knowledgeScopes: stationScopes('tech-landscape') },
 ];
 const registry = officeRegistryFromManifests(STATION_FIXTURE);
 
@@ -239,7 +251,7 @@ function renderOffice(
     updatedAt: null,
     nowMs: NOW,
     reducedMotion: false,
-    knowledgeDocumentCount: null,
+    knowledgeDocuments: null,
     onSelectDesk: () => undefined,
     onClosePanel: () => undefined,
     onRefresh: () => undefined,
@@ -294,7 +306,9 @@ describe('office screen states', () => {
     assert.match(html, /href="\/en\/platform"/);
     assert.match(html, /data-testid="office-desk-registry:builder"/);
     assert.match(html, />Idle</);
-    assert.equal((html.match(/data-kind="vacant"/g) ?? []).length, 2);
+    assert.equal((html.match(/data-kind="vacant"/g) ?? []).length, 0);
+    assert.match(html, /data-testid="office-desk-registry:product-strategy"[^>]*data-kind="occupied"|data-kind="occupied"[^>]*data-testid="office-desk-registry:product-strategy"/);
+    assert.match(html, /data-testid="office-desk-registry:technology-advisor"[^>]*data-kind="occupied"|data-kind="occupied"[^>]*data-testid="office-desk-registry:technology-advisor"/);
     assert.match(html, /data-testid="office-desk-registry:chief-of-staff"[^>]*data-kind="occupied"|data-kind="occupied"[^>]*data-testid="office-desk-registry:chief-of-staff"/);
     assert.doesNotMatch(html, /data-testid="office-knowledge-badge"/);
     assert.doesNotMatch(html, /data-testid="office-desk-team"/);
@@ -529,9 +543,28 @@ describe('office screen states', () => {
   });
 
   test('a vacant desk explains the reservation and has no workspace link', () => {
+    const vacantRegistry = officeRegistryFromManifests([
+      { id: 'builder', status: 'active' },
+      { id: 'future-advisor', status: 'coming_soon' },
+    ]);
     const html = renderOffice({
-      desks: floor({}),
-      selectedDeskId: 'registry:product-strategy',
+      desks: buildOfficeDesks({
+        registry: vacantRegistry,
+        userAgents: [],
+        activeRuns: [],
+        recentRuns: [],
+      }),
+      selectedDeskId: 'registry:future-advisor',
+      systemAgents: [
+        STATION_FIXTURE[0],
+        {
+          id: 'future-advisor',
+          status: 'coming_soon',
+          nameKey: 'agents.productStrategy.name',
+          roleKey: 'agents.productStrategy.role',
+          knowledgeScopes: [],
+        },
+      ],
     });
     assert.match(html, /This desk is reserved for a future agent\./);
     assert.match(html, /Vacant desk/);
@@ -542,15 +575,22 @@ describe('office screen states', () => {
   });
 
   test('the chief of staff desk shows the knowledge count and opens the team page', () => {
+    const chiefDocuments = [
+      { scopeId: 'contract-templates', status: 'active' },
+      { scopeId: 'contract-templates', status: 'active' },
+      { scopeId: 'contract-templates', status: 'active' },
+    ];
     const html = renderOffice({
       desks: floor({}),
       selectedDeskId: 'registry:chief-of-staff',
-      knowledgeDocumentCount: 3,
+      knowledgeDocuments: chiefDocuments,
     });
     assert.match(html, /data-kind="occupied"/);
-    assert.equal((html.match(/data-testid="office-knowledge-badge"/g) ?? []).length, 1);
+    assert.equal((html.match(/data-testid="office-knowledge-badge"/g) ?? []).length, 3);
     assert.equal((html.match(/data-testid="office-panel-knowledge-badge"/g) ?? []).length, 1);
     assert.equal((html.match(/3 documents/g) ?? []).length, 3);
+    assert.match(html, /Chief of Staff Agent\. 3 documents\./);
+    assert.match(html, /Product Strategy Agent\. 0 documents\./);
     assert.match(html, /href="\/en\/collaboration"/);
     assert.match(html, /data-testid="office-open-team"/);
     assert.match(html, />Open</);
@@ -561,7 +601,7 @@ describe('office screen states', () => {
     const none = renderOffice({
       desks: floor({}),
       selectedDeskId: 'registry:chief-of-staff',
-      knowledgeDocumentCount: null,
+      knowledgeDocuments: null,
     });
     assert.doesNotMatch(none, /data-testid="office-knowledge-badge"/);
     assert.doesNotMatch(none, /data-testid="office-panel-knowledge-badge"/);
@@ -570,14 +610,14 @@ describe('office screen states', () => {
     const zero = renderOffice({
       desks: floor({}),
       selectedDeskId: 'registry:chief-of-staff',
-      knowledgeDocumentCount: 0,
+      knowledgeDocuments: [],
     });
-    assert.equal((zero.match(/0 documents/g) ?? []).length, 3);
+    assert.equal((zero.match(/0 documents/g) ?? []).length, 7);
 
     const one = renderOffice({
       desks: floor({}),
       selectedDeskId: 'registry:chief-of-staff',
-      knowledgeDocumentCount: 1,
+      knowledgeDocuments: [{ scopeId: 'contract-templates', status: 'active' }],
     });
     assert.equal((one.match(/1 document/g) ?? []).length, 3);
     assert.doesNotMatch(one, /1 documents/);
@@ -587,13 +627,37 @@ describe('office screen states', () => {
         locale: 'zh-TW',
         desks: floor({}),
         selectedDeskId: 'registry:chief-of-staff',
-        knowledgeDocumentCount: 3,
+        knowledgeDocuments: chiefDocuments,
       },
       zhTwMessages as Record<string, unknown>,
     );
     assert.equal((traditional.match(/3 份文件/g) ?? []).length, 3);
     assert.match(traditional, /href="\/zh-TW\/collaboration"/);
     assert.match(traditional, />開啟</);
+
+    const product = renderOffice({
+      desks: floor({}),
+      selectedDeskId: 'registry:product-strategy',
+      knowledgeDocuments: [
+        { scopeId: 'market-data', status: 'active' },
+        { scopeId: 'market-data', status: 'active' },
+        { scopeId: 'policies', status: 'archived' },
+      ],
+    });
+    assert.match(product, /Product Strategy Agent\. 2 documents\./);
+    assert.match(product, /Chief of Staff Agent\. 0 documents\./);
+    assert.match(product, /data-testid="office-open-team"/);
+    assert.match(product, /href="\/en\/collaboration"/);
+    assert.doesNotMatch(product, /data-testid="office-open-workspace"/);
+
+    const failed = renderOffice({
+      desks: floor({}),
+      selectedDeskId: 'registry:product-strategy',
+      knowledgeDocuments: null,
+    });
+    assert.doesNotMatch(failed, /data-testid="office-knowledge-badge"/);
+    assert.doesNotMatch(failed, /data-testid="office-panel-knowledge-badge"/);
+    assert.match(failed, /data-testid="office-open-team"/);
   });
 
   test('the screen has no approve, reject, handoff, cancel, delete, or apply control', () => {
@@ -620,7 +684,7 @@ describe('office screen states', () => {
     assert.match(hook, /OFFICE_POLL_MS/);
     assert.match(screen, /knowledgeFetch\('\/api\/knowledge\/documents'\)/);
     assert.match(screen, /useSystemAgents\(/);
-    assert.match(screen, /\}, \[authReady, chiefScopeKey\]\)/);
+    assert.match(screen, /\}, \[authReady\]\)/);
     assert.doesNotMatch(screen, /listAgents\(/);
     assert.doesNotMatch(screen, /getAgentById\(/);
     assert.doesNotMatch(screen, /title: document|document\.title|content:/);

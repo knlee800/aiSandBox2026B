@@ -58,9 +58,18 @@ describe('knowledge role scopes', () => {
       'meeting-summaries',
       'contract-templates',
     ];
-    expect(KNOWLEDGE_ROLE_SCOPES).toEqual({ 'chief-of-staff': chiefScopes });
+    const shared = chiefScopes.slice(0, 5);
+    expect(KNOWLEDGE_ROLE_SCOPES).toEqual({
+      'chief-of-staff': chiefScopes,
+      'advisors-lead': chiefScopes,
+      'product-strategy': [...shared, 'market-data'],
+      'technology-advisor': [...shared, 'tech-landscape'],
+    });
     expect(collaborationRoleKnowledgeScopes()).toEqual(KNOWLEDGE_ROLE_SCOPES);
     expect(knowledgeScopesForProfile('chief-of-staff')).toEqual(chiefScopes);
+    expect(knowledgeScopesForProfile('advisors-lead')).toEqual(chiefScopes);
+    expect(knowledgeScopesForProfile('product-strategy')).toEqual([...shared, 'market-data']);
+    expect(knowledgeScopesForProfile('technology-advisor')).toEqual([...shared, 'tech-landscape']);
     expect(knowledgeScopesJobFields('chief-of-staff')).toEqual({
       knowledgeScopes: chiefScopes,
     });

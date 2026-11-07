@@ -65,7 +65,7 @@ const PUBLIC_STATIONS: readonly PublicSystemAgent[] = [
     nameKey: 'agents.productStrategy.name',
     roleKey: 'agents.productStrategy.role',
     descriptionKey: 'agents.productStrategy.description',
-    status: 'coming_soon',
+    status: 'active',
     enabled: false,
     knowledgeScopes: [],
     version: 'c'.repeat(64),
@@ -75,7 +75,7 @@ const PUBLIC_STATIONS: readonly PublicSystemAgent[] = [
     nameKey: 'agents.technologyAdvisor.name',
     roleKey: 'agents.technologyAdvisor.role',
     descriptionKey: 'agents.technologyAdvisor.description',
-    status: 'coming_soon',
+    status: 'active',
     enabled: false,
     knowledgeScopes: [],
     version: 'd'.repeat(64),
@@ -107,12 +107,12 @@ describe('platform dashboard data integration', () => {
     assert.equal(chief.enabled, false);
   });
 
-  test('placeholder agents render as coming_soon and disabled', () => {
-    const placeholders = agents.filter((a) => a.id !== 'builder' && a.id !== 'chief-of-staff');
-    assert.equal(placeholders.length, 2);
-    for (const agent of placeholders) {
-      assert.equal(agent.status, 'coming_soon', `${agent.id} should be coming_soon`);
-      assert.equal(agent.enabled, false, `${agent.id} should be disabled`);
+  test('product strategy and technology advisor are active and not builder-enabled', () => {
+    const advisors = agents.filter((a) => a.id === 'product-strategy' || a.id === 'technology-advisor');
+    assert.equal(advisors.length, 2);
+    for (const agent of advisors) {
+      assert.equal(agent.status, 'active', `${agent.id} should be active`);
+      assert.equal(agent.enabled, false, `${agent.id} should not take the builder path`);
     }
   });
 
@@ -202,12 +202,16 @@ describe('platform dashboard navigation integration', () => {
     assert.equal(enabledAgents[0].id, 'builder');
   });
 
-  test('coming-soon agents are not enabled', () => {
-    const comingSoonAgents = agents.filter((a) => a.status === 'coming_soon');
-    assert.equal(comingSoonAgents.length, 2);
-    for (const agent of comingSoonAgents) {
-      assert.equal(agent.enabled, false, `${agent.id} must not be enabled`);
-    }
+  test('the four stations include no coming-soon row', () => {
+    assert.equal(agents.filter((a) => a.status === 'coming_soon').length, 0);
+    const future = staticAgentProfileContent(
+      { id: 'future-station', enabled: false, status: 'coming_soon' },
+      (key) => key,
+    );
+    assert.equal(future.isComingSoon, true);
+    assert.equal(future.cardEnabled, false);
+    assert.equal(future.openPath, null);
+    assert.equal(future.intent, 'platform.detail.placeholderIntent');
   });
 
   test('platform detail panel translation keys exist in all locales', () => {
@@ -234,6 +238,14 @@ describe('platform dashboard navigation integration', () => {
       'platform.detail.chiefOfStaffCapabilityOne',
       'platform.detail.chiefOfStaffCapabilityTwo',
       'platform.detail.chiefOfStaffCapabilityThree',
+      'platform.detail.productStrategyIntent',
+      'platform.detail.productStrategyCapabilityOne',
+      'platform.detail.productStrategyCapabilityTwo',
+      'platform.detail.productStrategyCapabilityThree',
+      'platform.detail.technologyAdvisorIntent',
+      'platform.detail.technologyAdvisorCapabilityOne',
+      'platform.detail.technologyAdvisorCapabilityTwo',
+      'platform.detail.technologyAdvisorCapabilityThree',
     ];
 
     for (const { code, messages } of ALL_LOCALES) {
@@ -317,7 +329,7 @@ describe('platform system agent stations', () => {
     assert.equal(countStationsByStatus([PUBLIC_STATIONS[0]]).reserve, 0);
   });
 
-  test('the four stations keep chief active and not builder-enabled, and the two coming-soon rows', () => {
+  test('the four stations are active and the advisors are not builder-enabled', () => {
     const text = (key: string) => resolveNestedString(enMessages as LocaleMessages, key) ?? key;
     const chief = PUBLIC_STATIONS.find((agent) => agent.id === 'chief-of-staff');
     const product = PUBLIC_STATIONS.find((agent) => agent.id === 'product-strategy');
@@ -327,10 +339,14 @@ describe('platform system agent stations', () => {
     assert.equal(chief.status, 'active');
     assert.equal(staticAgentProfileContent(chief, text).cardEnabled, true);
     assert.equal(staticAgentProfileContent(chief, text).isComingSoon, false);
-    assert.equal(product.status, 'coming_soon');
-    assert.equal(staticAgentProfileContent(product, text).cardEnabled, false);
-    assert.equal(technology.status, 'coming_soon');
-    assert.equal(staticAgentProfileContent(technology, text).cardEnabled, false);
+    assert.equal(product.status, 'active');
+    assert.equal(product.enabled, false);
+    assert.equal(staticAgentProfileContent(product, text).cardEnabled, true);
+    assert.equal(staticAgentProfileContent(product, text).openPath, '/collaboration');
+    assert.equal(technology.status, 'active');
+    assert.equal(technology.enabled, false);
+    assert.equal(staticAgentProfileContent(technology, text).cardEnabled, true);
+    assert.equal(staticAgentProfileContent(technology, text).openPath, '/collaboration');
     const cardSource = readFileSync(new URL('./agent-station-card.tsx', import.meta.url), 'utf8');
     assert.match(cardSource, /data-testid=\{`agent-station-card-\$\{props\.id\}`\}/);
     assert.match(cardSource, /data-status=\{status\}/);
@@ -557,13 +573,13 @@ describe('platform Create Agent validation rules', () => {
 describe('chief of staff station profile', () => {
   const text = (messages: LocaleMessages) => (key: string) => resolveNestedString(messages, key) ?? key;
 
-  test('active stations count the chief of staff and the builder', () => {
+  test('active stations count builder, the chief, and both advisors', () => {
     const counts = countStationsByStatus(PUBLIC_STATIONS);
-    assert.equal(counts.active, 2);
-    assert.equal(counts.reserve, 2);
+    assert.equal(counts.active, 4);
+    assert.equal(counts.reserve, 0);
     assert.equal(stationCountsForLoad(true, null, PUBLIC_STATIONS), null);
     assert.equal(stationCountsForLoad(false, 'AUTH_EXPIRED', []), null);
-    assert.deepEqual(stationCountsForLoad(false, null, PUBLIC_STATIONS), { active: 2, reserve: 2 });
+    assert.deepEqual(stationCountsForLoad(false, null, PUBLIC_STATIONS), { active: 4, reserve: 0 });
     assert.deepEqual(
       stationCountsForLoad(false, 'FETCH_FAILED', [PUBLIC_STATIONS[0]]),
       { active: 1, reserve: 0 },
@@ -602,10 +618,14 @@ describe('chief of staff station profile', () => {
     assert.equal(builderProfile.openPath, null);
     assert.equal(builderProfile.cardEnabled, true);
     assert.equal(builderProfile.intent, 'Deliver production-ready software in an isolated workspace with checkpoints, previews, and guided file actions.');
-    assert.equal(productProfile.isComingSoon, true);
-    assert.equal(productProfile.cardEnabled, false);
-    assert.equal(productProfile.openPath, null);
-    assert.equal(productProfile.actionHint, 'Open station profile and view launch readiness');
+    assert.equal(productProfile.isComingSoon, false);
+    assert.equal(productProfile.cardEnabled, true);
+    assert.equal(productProfile.openPath, '/collaboration');
+    assert.equal(productProfile.actionHint, 'Open station profile and go to the Team page');
+    assert.equal(
+      productProfile.intent,
+      'Answer product and market questions from your Knowledge documents, with sources.',
+    );
     assert.equal(builderProfile.actionHint, 'Open station profile and continue to build');
 
     const traditional = staticAgentProfileContent(chief, text(zhTwMessages as LocaleMessages));
@@ -710,6 +730,40 @@ describe('chief of staff station profile', () => {
     assert.match(soonHtml, /This station is in preparation mode and cannot be launched yet\./);
     assert.doesNotMatch(soonHtml, /data-testid="agent-detail-open"/);
     assert.doesNotMatch(soonHtml, /data-testid="agent-detail-start-building"/);
+
+    const text = (key: string) => resolveNestedString(enMessages as LocaleMessages, key) ?? key;
+    for (const id of ['product-strategy', 'technology-advisor'] as const) {
+      const station = PUBLIC_STATIONS.find((agent) => agent.id === id);
+      assert.ok(station);
+      const profile = staticAgentProfileContent(station, text);
+      const html = renderToStaticMarkup(
+        React.createElement(AgentDetailPanel, {
+          agent: {
+            ...chiefModel,
+            id,
+            name: id,
+            intent: profile.intent,
+            capabilities: profile.capabilities,
+            isComingSoon: profile.isComingSoon,
+            openHref: `/en${profile.openPath}`,
+            openLabel: 'Open',
+            statusLabel: 'Active',
+          },
+          localePrefix: '/en',
+          ...labels,
+        }),
+      );
+      assert.match(html, /data-testid="agent-detail-open"/);
+      assert.match(html, /href="\/en\/collaboration"/);
+      assert.equal(
+        profile.intent,
+        id === 'product-strategy'
+          ? 'Answer product and market questions from your Knowledge documents, with sources.'
+          : "Answer technology questions from your Knowledge documents, and read this project's files, with sources.",
+      );
+      assert.ok(html.includes(profile.intent.split("'")[0]));
+      assert.doesNotMatch(html, /Coming Soon/);
+    }
   });
 });
 

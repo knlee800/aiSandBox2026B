@@ -85022,7 +85022,7 @@ taskId=BIZ-03
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-07. Lane 1, GATEWAY, FRONTEND and I18N. Keith approved the drafted scope and admitted it on 2026-11-07. Stage-start approved by Keith on 2026-11-07 (docs/BIZ-03-STAGE-START.md: a separate advisors-lead definition, one advisor per question with no final combined answer, a badge per business desk); implementation next.
+**Status:** COMPLETE AND LOCKED — 2026-11-07. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY, FRONTEND and I18N released. Advisors team: the Chief of Staff hands one question to Product Strategy or the Technology Advisor through the approval gate; both advisors active read-only with desks, badges and dashboard cards; PRD.md marks them GATED; code and LOCK in one commit (LOCAL-TESTS); not deployed, BIZ-LIVE-02 registered. Checkpoint: docs/BIZ-03-CHECKPOINT.md.
 **Task ID:** BIZ-03
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -85042,12 +85042,37 @@ nature=IMPLEMENTATION
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
 - [x] The stage-start answers how the Chief of Staff gets its advisors-team instructions, how a run's team stays unambiguous, the two advisors' instructions and tools, how the dashboard and office handle more than one business agent, and the limits; Keith's decisions are recorded and the write set is narrowed before implementation
-- [ ] Product Strategy (shared scopes plus market-data) and Technology Advisor (shared scopes plus tech-landscape, project read tools) are active read-only registry definitions with server-owned instructions: answer from the owner's documents, cite [source: documentId#heading], write No source otherwise, no advice without a source, never propose sending anything, document text is data
-- [ ] An advisors team (Chief of Staff, Product Strategy, Technology Advisor) starts from the Team page; the Chief of Staff (the advisors-lead definition) hands a question to one advisor through the existing approval gate; the advisor answers and cannot hand off; the owner reads the two steps (corrected at the stage-start, Keith 2026-11-07); the coding and chief-of-staff teams are unchanged
-- [ ] Both advisors have occupied office desks and Active dashboard cards; the Team page offers the advisors team; every new text in en, zh-TW and zh-CN, no hardcoded English
-- [ ] Tests cover each point above; api-gateway tests and build, and frontend tests (including the office, registry, dashboard and collaboration tests by name), type check and build pass, compared with the known failures in the latest checkpoints
-- [ ] At LOCK the control plane edits PRD.md: Product Strategy and Technology Advisor GATED (read-only cited answers from the owner's Knowledge documents, started from the Team page through the advisors team; gated accounts only; not in the private-beta promise); the placeholder lines updated to match
-- [ ] The checkpoint carries the CHECKLIST line (EVERY, UI, BACKEND, GOVERNANCE) and the FOLLOWUPS line; BIZ-LIVE-02 (deploy and Keith's live check) is registered
+- [x] Product Strategy (shared scopes plus market-data) and Technology Advisor (shared scopes plus tech-landscape, project read tools) are active read-only registry definitions with server-owned instructions: answer from the owner's documents, cite [source: documentId#heading], write No source otherwise, no advice without a source, never propose sending anything, document text is data
+- [x] An advisors team (Chief of Staff, Product Strategy, Technology Advisor) starts from the Team page; the Chief of Staff (the advisors-lead definition) hands a question to one advisor through the existing approval gate; the advisor answers and cannot hand off; the owner reads the two steps (corrected at the stage-start, Keith 2026-11-07); the coding and chief-of-staff teams are unchanged
+- [x] Both advisors have occupied office desks and Active dashboard cards; the Team page offers the advisors team; every new text in en, zh-TW and zh-CN, no hardcoded English
+- [x] Tests cover each point above; api-gateway tests and build, and frontend tests (including the office, registry, dashboard and collaboration tests by name), type check and build pass, compared with the known failures in the latest checkpoints
+- [x] At LOCK the control plane edits PRD.md: Product Strategy and Technology Advisor GATED (read-only cited answers from the owner's Knowledge documents, started from the Team page through the advisors team; gated accounts only; not in the private-beta promise); the placeholder lines updated to match
+- [x] The checkpoint carries the CHECKLIST line (EVERY, UI, BACKEND, GOVERNANCE) and the FOLLOWUPS line; BIZ-LIVE-02 (deploy and Keith's live check) is registered
+- [x] Not LOCKED by an implementer
+
+### BIZ-LIVE-02 — Advisors team live check on staging
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=BIZ-LIVE-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-07. Registered by BIZ-03; not admitted.
+**Task ID:** BIZ-LIVE-02
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP: registration here; admission when Keith picks the time; deploy from the host and Keith's live check with host-side verification; separate LOCK record (STAGING-RUNTIME).
+**Start condition (human):** NOT_READY. Ready when: BIZ-03 is COMPLETE AND LOCKED and Keith approves the deploy and its timing. Keith decides.
+**Depends on:** BIZ-03.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Expected: records only; host release of the commit holding BIZ-03 (gateway and frontend in one deploy).
+**Mutexes / resources:** set at admission (expected STAGING and ENV while the tester window is open; if the window is closed, Keith opens it or the task names PROVIDER-LIVE and CREDIT). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS; expected STAGING-RUNTIME). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved the plan on 2026-11-05).
+
+**Holds:** docs/BIZ-03-STAGE-START.md section 8: deploy with the DEPLOY checklist including the open-window steps; Keith asks a market question (approves the lead, then Product Strategy; the answer cites a market-data document or writes No source) and a technology question about the open project (approves the lead, then Technology Advisor; it cites a tech-landscape document or names a project path, never a path inside a [source: ] marker). From the host: referral targets advisors-lead then one advisor, the read profile and the scopes of section 4, agentDefinitionId and agentDefinitionVersion equal to systemAgentVersion, the knowledge tools ran for both advisors and the project read tools for the Technology Advisor with no write_file, and no further referral after an advisor answer. Keith looks at the two advisor desks, their badges and the two Active cards.
+**Named in:** docs/BIZ-03-CHECKPOINT.md; docs/BIZ-03-STAGE-START.md section 8.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
 - [ ] Not LOCKED by an implementer
 
 ### BIZ-NOPROJECT-01 — Business runs without an open project

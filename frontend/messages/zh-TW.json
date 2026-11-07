@@ -518,19 +518,19 @@
     "productStrategy": {
       "name": "Product Strategy Agent",
       "role": "產品策略助理",
-      "description": "即將推出的佔位代理，支援路線規劃、市場分析與策略決策。"
+      "description": "當幕僚長提問時，根據你的知識文件回答產品與市場問題，並附上來源。"
     },
     "technologyAdvisor": {
       "name": "Technology Advisor Agent",
       "role": "技術顧問",
-      "description": "即將推出的佔位代理，支援架構審查、技術選型與技術建議。"
+      "description": "當幕僚長提問時，根據你的知識文件回答技術問題，並可讀取這個專案的檔案，附上來源。"
     }
   },
   "platform": {
     "title": "指揮中心",
     "subtitle": "一覽您的 AI 代理團隊",
     "commandDeckLabel": "代理總部",
-    "commandDeckIntro": "在同一個指揮介面協調已啟用的 Builder 站點，並追蹤即將上線的專業站點。",
+    "commandDeckIntro": "在同一個指揮介面協調 Builder 與業務顧問。",
     "commandCenterStatusTitle": "指揮中心狀態",
     "commandCenterStatusBody": "選取任一站點即可查看其任務定位、交付範圍與目前就緒狀態。",
     "stationsTitle": "代理站點",
@@ -553,7 +553,7 @@
     "systemAgentsLoadError": "無法載入席位，目前只顯示 Builder。",
     "detail": {
       "title": "代理檔案",
-      "subtitle": "所有占位站點目前僅供預覽，尚未啟用。",
+      "subtitle": "開啟站點即可查看它做什麼，以及從哪裡開始。",
       "intentLabel": "任務意圖",
       "capabilitiesLabel": "能力範圍",
       "close": "關閉代理檔案",
@@ -573,7 +573,15 @@
       "chiefOfStaffIntent": "根據你的知識文件回答問題，並標出來源。",
       "chiefOfStaffCapabilityOne": "根據你的知識文件回答問題，並附上來源。",
       "chiefOfStaffCapabilityTwo": "文件沒有答案時，會寫明沒有來源。",
-      "chiefOfStaffCapabilityThree": "唯讀：不會送出任何內容，也不會在平台之外採取行動。"
+      "chiefOfStaffCapabilityThree": "唯讀：不會送出任何內容，也不會在平台之外採取行動。",
+      "productStrategyIntent": "根據你的知識文件回答產品與市場問題，並附上來源。",
+      "productStrategyCapabilityOne": "根據你的知識文件（含市場資料）回答，並附上來源。",
+      "productStrategyCapabilityTwo": "文件沒有答案時，會寫明沒有來源。",
+      "productStrategyCapabilityThree": "唯讀：不會送出任何內容，不會交接，也不會在平台之外採取行動。",
+      "technologyAdvisorIntent": "根據你的知識文件回答技術問題，可讀取這個專案的檔案，並附上來源。",
+      "technologyAdvisorCapabilityOne": "根據你的知識文件（含技術版圖）回答，並可讀取這個專案的檔案。",
+      "technologyAdvisorCapabilityTwo": "每項文件陳述都附上來源；沒有依據時會寫明沒有來源。",
+      "technologyAdvisorCapabilityThree": "唯讀：可讀取專案檔案，不會修改，也不會送出任何內容。"
     },
     "agentCreate": {
       "sectionTitle": "您的代理",
@@ -1020,7 +1028,16 @@
     "chiefOfStaff": "幕僚長",
     "chiefOfStaffSummary": "根據你的知識文件回答，為每個論點標出來源；沒有來源時寫明沒有來源。不能改檔案，也不能交接。",
     "fileAccessReadOnly": "這個角色只能讀取。不能改檔案、交接，也不能採取外部行動。",
-    "chainEmptyChief": "還沒有步驟。開始一個任務，就會先問幕僚長。"
+    "chainEmptyChief": "還沒有步驟。開始一個任務，就會先問幕僚長。",
+    "teamAdvisors": "顧問團隊",
+    "teamAdvisorsHint": "幕僚長閱讀你的知識文件，並可把一個問題交給產品策略或技術顧問。那一步要等你批准。他們不能改檔案，也不能對外送出任何東西。",
+    "productStrategy": "產品策略",
+    "technologyAdvisor": "技術顧問",
+    "advisorsLeadSummary": "閱讀你的知識文件，為每項陳述附上來源，並可把一個問題交給產品策略或技術顧問。不能改檔案，也不能對外送出任何東西。",
+    "productStrategySummary": "根據你的知識文件（含市場資料）回答幕僚長。每項陳述附上來源；沒有來源時寫明沒有來源。不能改檔案、交接或對外送出任何東西。",
+    "technologyAdvisorSummary": "根據你的知識文件（含技術版圖）回答幕僚長，並可讀取這個專案的檔案。文件陳述附上來源；沒有來源時寫明沒有來源。不能改檔案、交接或對外送出任何東西。",
+    "fileAccessAdvisors": "這些角色只能讀取。不能改檔案，也不能採取外部行動。幕僚長可把一個問題交給一位顧問，那一步會等你批准。",
+    "chainEmptyAdvisors": "還沒有步驟。開始一個任務，就會先問顧問團隊。"
   },
   "office": {
     "title": "辦公室",

@@ -83,6 +83,36 @@ export function stationCountsForLoad(
   return countStationsByStatus(agents);
 }
 
+const BUSINESS_STATION_COPY: Record<
+  string,
+  { intent: string; capabilities: readonly [string, string, string] }
+> = {
+  'chief-of-staff': {
+    intent: 'platform.detail.chiefOfStaffIntent',
+    capabilities: [
+      'platform.detail.chiefOfStaffCapabilityOne',
+      'platform.detail.chiefOfStaffCapabilityTwo',
+      'platform.detail.chiefOfStaffCapabilityThree',
+    ],
+  },
+  'product-strategy': {
+    intent: 'platform.detail.productStrategyIntent',
+    capabilities: [
+      'platform.detail.productStrategyCapabilityOne',
+      'platform.detail.productStrategyCapabilityTwo',
+      'platform.detail.productStrategyCapabilityThree',
+    ],
+  },
+  'technology-advisor': {
+    intent: 'platform.detail.technologyAdvisorIntent',
+    capabilities: [
+      'platform.detail.technologyAdvisorCapabilityOne',
+      'platform.detail.technologyAdvisorCapabilityTwo',
+      'platform.detail.technologyAdvisorCapabilityThree',
+    ],
+  },
+};
+
 export function staticAgentProfileContent(
   agent: { id: string; enabled: boolean; status: AgentStatus },
   text: (key: string) => string,
@@ -94,39 +124,41 @@ export function staticAgentProfileContent(
   cardEnabled: boolean;
   openPath: string | null;
 } {
-  const chiefOfStaff = agent.id === 'chief-of-staff';
-  const builderStyle = agent.enabled && !chiefOfStaff;
+  const business = BUSINESS_STATION_COPY[agent.id];
+  const builderStyle = agent.enabled && !business;
+  const isComingSoon = agent.status === 'coming_soon';
+  const cardEnabled = agent.status === 'active';
+  if (business) {
+    return {
+      intent: text(business.intent),
+      capabilities: business.capabilities.map((key) => text(key)),
+      isComingSoon,
+      actionHint: text('platform.openAgentDetailChiefOfStaff'),
+      cardEnabled,
+      openPath: '/collaboration',
+    };
+  }
   return {
-    intent: chiefOfStaff
-      ? text('platform.detail.chiefOfStaffIntent')
-      : builderStyle
-        ? text('platform.detail.builderIntent')
-        : text('platform.detail.placeholderIntent'),
-    capabilities: chiefOfStaff
+    intent: builderStyle
+      ? text('platform.detail.builderIntent')
+      : text('platform.detail.placeholderIntent'),
+    capabilities: builderStyle
       ? [
-          text('platform.detail.chiefOfStaffCapabilityOne'),
-          text('platform.detail.chiefOfStaffCapabilityTwo'),
-          text('platform.detail.chiefOfStaffCapabilityThree'),
+          text('platform.detail.builderCapabilityOne'),
+          text('platform.detail.builderCapabilityTwo'),
+          text('platform.detail.builderCapabilityThree'),
         ]
-      : builderStyle
-        ? [
-            text('platform.detail.builderCapabilityOne'),
-            text('platform.detail.builderCapabilityTwo'),
-            text('platform.detail.builderCapabilityThree'),
-          ]
-        : [
-            text('platform.detail.placeholderCapabilityOne'),
-            text('platform.detail.placeholderCapabilityTwo'),
-            text('platform.detail.placeholderCapabilityThree'),
-          ],
-    isComingSoon: agent.status === 'coming_soon',
-    actionHint: chiefOfStaff
-      ? text('platform.openAgentDetailChiefOfStaff')
-      : builderStyle
-        ? text('platform.openAgentDetailActive')
-        : text('platform.openAgentDetailComingSoon'),
-    cardEnabled: agent.status === 'active',
-    openPath: chiefOfStaff ? '/collaboration' : null,
+      : [
+          text('platform.detail.placeholderCapabilityOne'),
+          text('platform.detail.placeholderCapabilityTwo'),
+          text('platform.detail.placeholderCapabilityThree'),
+        ],
+    isComingSoon,
+    actionHint: builderStyle
+      ? text('platform.openAgentDetailActive')
+      : text('platform.openAgentDetailComingSoon'),
+    cardEnabled,
+    openPath: null,
   };
 }
 

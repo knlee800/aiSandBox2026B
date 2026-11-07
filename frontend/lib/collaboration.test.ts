@@ -24,6 +24,7 @@ import {
   readTestsBlockReason,
   readTestsGate,
   readTestsNotPassed,
+  collaborationMemberLabel,
   collaborationRoster,
   collaborationScopeLabel,
   collaborationStartRequestBody,
@@ -685,10 +686,10 @@ let latest: {
   }>;
   onApprove: (referralId: string, approveWithoutPassingTests?: boolean) => void;
   onApproveWithoutTestsChange: (referralId: string, checked: boolean) => void;
-  onTeamChange: (teamId: 'coding' | 'chief-of-staff') => void;
+  onTeamChange: (teamId: 'coding' | 'chief-of-staff' | 'advisors') => void;
   onTaskChange: (value: string) => void;
   onStart: () => void;
-  selectedTeam: 'coding' | 'chief-of-staff';
+  selectedTeam: 'coding' | 'chief-of-staff' | 'advisors';
   runTeam: { label: string; roles: string[] } | null;
 } | null = null;
 let createRoot: (typeof import('react-dom/client'))['createRoot'];
@@ -1138,10 +1139,15 @@ describe('BIZ-01 team picker', () => {
     writer: enMessages.collaboration.writer,
     reviewer: enMessages.collaboration.reviewer,
     chiefOfStaff: enMessages.collaboration.chiefOfStaff,
+    productStrategy: enMessages.collaboration.productStrategy,
+    technologyAdvisor: enMessages.collaboration.technologyAdvisor,
     leadSummary: enMessages.collaboration.leadSummary,
     writerSummary: enMessages.collaboration.writerSummary,
     reviewerSummary: enMessages.collaboration.reviewerSummary,
     chiefOfStaffSummary: enMessages.collaboration.chiefOfStaffSummary,
+    advisorsLeadSummary: enMessages.collaboration.advisorsLeadSummary,
+    productStrategySummary: enMessages.collaboration.productStrategySummary,
+    technologyAdvisorSummary: enMessages.collaboration.technologyAdvisorSummary,
   };
 
   test('builds the start body and reads the run team', () => {
@@ -1163,10 +1169,11 @@ describe('BIZ-01 team picker', () => {
     );
     assert.equal(readCollaborationTeamId('coding'), 'coding');
     assert.equal(readCollaborationTeamId('chief-of-staff'), 'chief-of-staff');
+    assert.equal(readCollaborationTeamId('advisors'), 'advisors');
     assert.equal(readCollaborationTeamId(undefined), null);
     assert.equal(readCollaborationTeamId(null), null);
     assert.equal(readCollaborationTeamId(1), null);
-    assert.equal(readCollaborationTeamId('advisors'), null);
+    assert.equal(readCollaborationTeamId('Advisors'), null);
     assert.equal(
       collaborationTeamFromDetail({ teamId: 'chief-of-staff', team: ['chief-of-staff'] }),
       'chief-of-staff',
@@ -1179,7 +1186,52 @@ describe('BIZ-01 team picker', () => {
       collaborationTeamFromDetail({ team: ['lead', 'writer', 'reviewer'] }),
       'coding',
     );
+    assert.equal(
+      collaborationTeamFromDetail({
+        teamId: 'advisors',
+        team: ['advisors-lead', 'product-strategy', 'technology-advisor'],
+      }),
+      'advisors',
+    );
+    assert.equal(
+      collaborationTeamFromDetail({
+        team: ['advisors-lead', 'product-strategy', 'technology-advisor'],
+      }),
+      'advisors',
+    );
     assert.equal(collaborationTeamFromDetail(null), null);
+    assert.deepEqual(
+      ['advisors-lead', 'product-strategy', 'technology-advisor'].map((name) =>
+        collaborationMemberLabel(name, {
+          you: enMessages.collaboration.you,
+          lead: enMessages.collaboration.lead,
+          writer: enMessages.collaboration.writer,
+          reviewer: enMessages.collaboration.reviewer,
+          chiefOfStaff: enMessages.collaboration.chiefOfStaff,
+          productStrategy: enMessages.collaboration.productStrategy,
+          technologyAdvisor: enMessages.collaboration.technologyAdvisor,
+        }),
+      ),
+      [
+        enMessages.collaboration.chiefOfStaff,
+        enMessages.collaboration.productStrategy,
+        enMessages.collaboration.technologyAdvisor,
+      ],
+    );
+    assert.deepEqual(collaborationRoster('advisors', rosterLabels), [
+      {
+        name: enMessages.collaboration.chiefOfStaff,
+        summary: enMessages.collaboration.advisorsLeadSummary,
+      },
+      {
+        name: enMessages.collaboration.productStrategy,
+        summary: enMessages.collaboration.productStrategySummary,
+      },
+      {
+        name: enMessages.collaboration.technologyAdvisor,
+        summary: enMessages.collaboration.technologyAdvisorSummary,
+      },
+    ]);
     assert.deepEqual(
       collaborationRoster('coding', rosterLabels).map((member) => member.name),
       [
@@ -1228,6 +1280,11 @@ describe('BIZ-01 team picker', () => {
             label: zhTwMessages.collaboration.teamChiefOfStaff,
             hint: zhTwMessages.collaboration.teamChiefOfStaffHint,
           },
+          {
+            id: 'advisors',
+            label: zhTwMessages.collaboration.teamAdvisors,
+            hint: zhTwMessages.collaboration.teamAdvisorsHint,
+          },
         ],
         onTeamChange: () => {},
         accessNote: zhTwMessages.collaboration.fileAccessReadOnly,
@@ -1263,6 +1320,8 @@ describe('BIZ-01 team picker', () => {
     assert.match(markup, /data-testid="collaboration-team-picker"/);
     assert.match(markup, /data-testid="collaboration-team-option-coding"/);
     assert.match(markup, /data-testid="collaboration-team-option-chief-of-staff"/);
+    assert.match(markup, /data-testid="collaboration-team-option-advisors"/);
+    assert.match(markup, /sm:grid-cols-3/);
     assert.match(markup, /data-testid="collaboration-start"/);
     assert.match(markup, /data-testid="collaboration-run-team"/);
     assert.match(markup, new RegExp(zhTwMessages.collaboration.teamPickerLabel));
@@ -1274,7 +1333,8 @@ describe('BIZ-01 team picker', () => {
     assert.match(openTag(markup, 'collaboration-team-option-coding'), /border-gray-200/);
     const codingAt = markup.indexOf('data-testid="collaboration-team-option-coding"');
     const chiefAt = markup.indexOf('data-testid="collaboration-team-option-chief-of-staff"');
-    assert.ok(codingAt >= 0 && chiefAt > codingAt);
+    const advisorsAt = markup.indexOf('data-testid="collaboration-team-option-advisors"');
+    assert.ok(codingAt >= 0 && chiefAt > codingAt && advisorsAt > chiefAt);
     assert.doesNotMatch(markup.slice(codingAt, chiefAt), /checked/);
     assert.match(markup.slice(chiefAt, chiefAt + 500), /checked/);
     assert.doesNotMatch(markup, /Coding team/);
@@ -1290,6 +1350,15 @@ describe('BIZ-01 team picker', () => {
       'chiefOfStaffSummary',
       'fileAccessReadOnly',
       'chainEmptyChief',
+      'teamAdvisors',
+      'teamAdvisorsHint',
+      'productStrategy',
+      'technologyAdvisor',
+      'advisorsLeadSummary',
+      'productStrategySummary',
+      'technologyAdvisorSummary',
+      'fileAccessAdvisors',
+      'chainEmptyAdvisors',
     ] as const;
     for (const key of newKeys) {
       const english = enMessages.collaboration[key];
@@ -1303,6 +1372,94 @@ describe('BIZ-01 team picker', () => {
       assert.match(traditional, /\p{Script=Han}/u);
       assert.match(simplified, /\p{Script=Han}/u);
     }
+
+    const catalogKeys = [
+      'agents.productStrategy.description',
+      'agents.technologyAdvisor.description',
+      'platform.commandDeckIntro',
+      'platform.detail.subtitle',
+      'platform.detail.productStrategyIntent',
+      'platform.detail.productStrategyCapabilityOne',
+      'platform.detail.productStrategyCapabilityTwo',
+      'platform.detail.productStrategyCapabilityThree',
+      'platform.detail.technologyAdvisorIntent',
+      'platform.detail.technologyAdvisorCapabilityOne',
+      'platform.detail.technologyAdvisorCapabilityTwo',
+      'platform.detail.technologyAdvisorCapabilityThree',
+    ];
+    const readCatalog = (source: object, path: string): string => {
+      let current: unknown = source;
+      for (const part of path.split('.')) {
+        if (!current || typeof current !== 'object' || !(part in current)) {
+          return '';
+        }
+        current = (current as Record<string, unknown>)[part];
+      }
+      return typeof current === 'string' ? current : '';
+    };
+    for (const key of catalogKeys) {
+      const english = readCatalog(enMessages, key);
+      const traditional = readCatalog(zhTwMessages, key);
+      const simplified = readCatalog(zhCnMessages, key);
+      assert.equal(english.trim().length > 0, true, key);
+      assert.notEqual(traditional, english, key);
+      assert.notEqual(simplified, english, key);
+      assert.notEqual(traditional, simplified, key);
+      assert.match(traditional, /\p{Script=Han}/u);
+      assert.match(simplified, /\p{Script=Han}/u);
+    }
+
+    const runLine = renderToStaticMarkup(
+      React.createElement(CollaborationView, {
+        labels,
+        backHref: '/en/app',
+        sessionReady: true,
+        projectReady: true,
+        loading: false,
+        notice: null,
+        conversationCreated: false,
+        task: 'Ask',
+        deciding: false,
+        team: collaborationRoster('advisors', rosterLabels),
+        selectedTeam: 'advisors',
+        teamChoices: [
+          {
+            id: 'advisors',
+            label: enMessages.collaboration.teamAdvisors,
+            hint: enMessages.collaboration.teamAdvisorsHint,
+          },
+        ],
+        onTeamChange: () => {},
+        accessNote: enMessages.collaboration.fileAccessAdvisors,
+        chainEmptyText: enMessages.collaboration.chainEmptyAdvisors,
+        runTeam: {
+          label: enMessages.collaboration.teamAdvisors,
+          roles: [
+            enMessages.collaboration.chiefOfStaff,
+            enMessages.collaboration.productStrategy,
+            enMessages.collaboration.technologyAdvisor,
+          ],
+        },
+        handoffs: [],
+        runs: [],
+        rejectReferralId: null,
+        rejectReason: '',
+        onTaskChange: () => {},
+        onStart: () => {},
+        onOpenRun: () => {},
+        onApprove: () => {},
+        onApproveWithoutTestsChange: () => {},
+        onBeginReject: () => {},
+        onCancelReject: () => {},
+        onConfirmReject: () => {},
+        onRejectReasonChange: () => {},
+      }),
+    );
+    assert.match(runLine, /data-testid="collaboration-run-team"/);
+    assert.ok(runLine.includes('Advisors'));
+    assert.ok(runLine.includes(' · Chief of Staff · Product Strategy · Technology Advisor'));
+    assert.ok(runLine.includes(enMessages.collaboration.fileAccessAdvisors));
+    assert.ok(runLine.includes(enMessages.collaboration.chainEmptyAdvisors));
 
     for (const relativePath of [
       '../components/collaboration/collaboration-view.tsx',

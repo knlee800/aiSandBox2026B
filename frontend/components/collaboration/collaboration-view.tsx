@@ -214,7 +214,7 @@ export default function CollaborationView(props: {
           {teamChoices.length > 0 ? (
             <fieldset className="min-w-0" data-testid="collaboration-team-picker">
               <legend className="text-sm font-medium text-gray-800">{labels.teamPickerLabel}</legend>
-              <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
                 {teamChoices.map((choice) => {
                   const selected = selectedTeam === choice.id;
                   return (

@@ -24,6 +24,7 @@ import {
   countActiveKnowledgeDocuments,
   knowledgeBadgeMessageKey,
   readKnowledgeBadgeDocuments,
+  type KnowledgeBadgeDocument,
 } from '@/lib/office/office-knowledge';
 import {
   buildOfficeDesks,
@@ -48,6 +49,12 @@ import {
   type OfficeRun,
   type OfficeUserAgentRef,
 } from '@/lib/office/office.logic';
+
+const BUSINESS_REGISTRY_IDS = new Set([
+  'chief-of-staff',
+  'product-strategy',
+  'technology-advisor',
+]);
 
 const PHASE_MESSAGE_KEY: Record<OfficeDeskPhase, string> = {
   vacant: 'status.vacant',
@@ -76,13 +83,18 @@ export interface OfficeScreenViewProps {
   updatedAt: number | null;
   nowMs: number;
   reducedMotion: boolean;
-  knowledgeDocumentCount: number | null;
+  knowledgeDocuments: readonly KnowledgeBadgeDocument[] | null;
+  systemAgents: readonly {
+    id: string;
+    nameKey: string;
+    roleKey: string;
+    knowledgeScopes?: readonly { id: string }[];
+  }[];
   onSelectDesk: (id: string) => void;
   onClosePanel: () => void;
   onRefresh: () => void;
   onRetryRuns: () => void;
   onRetryAgents: () => void;
-  systemAgents: readonly { id: string; nameKey: string; roleKey: string }[];
   systemAgentsError: boolean;
   onRetrySystemAgents: () => void;
 }
@@ -107,7 +119,7 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
     updatedAt,
     nowMs,
     reducedMotion,
-    knowledgeDocumentCount,
+    knowledgeDocuments,
     onSelectDesk,
     onClosePanel,
     onRefresh,
@@ -195,12 +207,30 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
     updatedAt == null ? null : Math.max(0, Math.floor((nowMs - updatedAt) / 1000));
 
   function knowledgeBadgeText(desk: OfficeDesk): string | null {
-    if (desk.registryId !== 'chief-of-staff' || desk.vacant || knowledgeDocumentCount == null) {
+    if (
+      desk.vacant ||
+      desk.registryId == null ||
+      !BUSINESS_REGISTRY_IDS.has(desk.registryId) ||
+      knowledgeDocuments == null
+    ) {
       return null;
     }
-    return fillOfficeTemplate(t(knowledgeBadgeMessageKey(knowledgeDocumentCount)), {
-      count: String(knowledgeDocumentCount),
+    const scopeIds =
+      systemAgents
+        .find((agent) => agent.id === desk.registryId)
+        ?.knowledgeScopes?.map((scope) => scope.id) ?? [];
+    const count = countActiveKnowledgeDocuments(knowledgeDocuments, scopeIds);
+    return fillOfficeTemplate(t(knowledgeBadgeMessageKey(count)), {
+      count: String(count),
     });
+  }
+
+  function opensTeam(desk: OfficeDesk): boolean {
+    return (
+      desk.registryId != null &&
+      BUSINESS_REGISTRY_IDS.has(desk.registryId) &&
+      !desk.vacant
+    );
   }
 
   return (
@@ -309,13 +339,10 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
                     showOutcome: deskShowsOutcome(selected),
                     knowledgeBadge: knowledgeBadgeText(selected),
                     workspaceHref:
-                      selected.vacant || selected.registryId === 'chief-of-staff'
+                      selected.vacant || opensTeam(selected)
                         ? null
                         : officeWorkspaceHref(locale, selected.userAgentId),
-                    openHref:
-                      selected.registryId === 'chief-of-staff' && !selected.vacant
-                        ? officeTeamHref(locale)
-                        : null,
+                    openHref: opensTeam(selected) ? officeTeamHref(locale) : null,
                     profileHref: officePlatformHref(locale),
                   }
                 : null
@@ -403,7 +430,9 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
   const [authReady, setAuthReady] = useState(false);
   const [selectedDeskId, setSelectedDeskId] = useState<string | null>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
-  const [knowledgeDocumentCount, setKnowledgeDocumentCount] = useState<number | null>(null);
+  const [knowledgeDocuments, setKnowledgeDocuments] = useState<KnowledgeBadgeDocument[] | null>(
+    null,
+  );
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [poll, setPoll] = useState(false);
   const {
@@ -420,11 +449,6 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
   } = useSystemAgents();
   const runs = useOfficeRuns(authReady, poll);
   const registry = useMemo(() => officeRegistryFromManifests(systemAgents), [systemAgents]);
-  const chiefScopeKey =
-    systemAgents
-      .find((agent) => agent.id === 'chief-of-staff')
-      ?.knowledgeScopes.map((scope) => scope.id)
-      .join('\n') ?? '';
   const userRefs = useMemo<OfficeUserAgentRef[]>(
     () =>
       userAgents.map((agent) => ({
@@ -476,11 +500,6 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
     if (!authReady) {
       return;
     }
-    if (!chiefScopeKey) {
-      setKnowledgeDocumentCount(null);
-      return;
-    }
-    const scopeIds = chiefScopeKey.split('\n');
     let active = true;
     void (async () => {
       try {
@@ -492,7 +511,7 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
         if (!documents || !active) {
           return;
         }
-        setKnowledgeDocumentCount(countActiveKnowledgeDocuments(documents, scopeIds));
+        setKnowledgeDocuments(documents);
       } catch {
         // A failed knowledge read leaves the badge off and shows no error.
       }
@@ -500,7 +519,7 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
     return () => {
       active = false;
     };
-  }, [authReady, chiefScopeKey]);
+  }, [authReady]);
 
   useEffect(() => {
     if (
@@ -567,7 +586,7 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
       updatedAt={runs.updatedAt}
       nowMs={nowMs}
       reducedMotion={reducedMotion}
-      knowledgeDocumentCount={knowledgeDocumentCount}
+      knowledgeDocuments={knowledgeDocuments}
       onSelectDesk={setSelectedDeskId}
       onClosePanel={() => setSelectedDeskId(null)}
       onRefresh={runs.refresh}

@@ -1,8 +1,12 @@
 import { createHash } from 'crypto';
+import { MAX_AGENT_INSTRUCTIONS_CHARS } from '../orchestration/handoff-request';
 import {
+  ADVISORS_LEAD_INSTRUCTIONS,
   CHIEF_OF_STAFF_INSTRUCTIONS,
   CHIEF_OF_STAFF_KNOWLEDGE_SCOPE_IDS,
+  PRODUCT_STRATEGY_INSTRUCTIONS,
   SYSTEM_AGENT_DEFINITIONS,
+  TECHNOLOGY_ADVISOR_INSTRUCTIONS,
   listPublicSystemAgents,
   systemAgentById,
   systemAgentVersion,
@@ -33,8 +37,9 @@ const PINNED_SYSTEM_AGENT_VERSIONS: Record<string, string> = {
   writer: 'a41b3b8d612a6605635a4e84d0b3614c35ea90c6c2dcd145c3ed34f6d8e01a32',
   reviewer: 'd3a33416bd82dd851679dec16bd149799121876e7b1fd80f76bf53dab9eac364',
   'chief-of-staff': '75d406a8be9ded67a3badb79eac210703175a71b44cf15d5eb3d299b0bc5250d',
-  'product-strategy': 'd6332d3d81bf1e0d8e47c956e041623dbb7e3610dfcf8a22bbaf630b97abef05',
-  'technology-advisor': '7e3615ccfb4fc0721c2ef1f5f22ccefc882d533669a425df464199ec95a51876',
+  'advisors-lead': 'df773717ce3f08031c9881791e7cec8496410ce7760828fc5eef6d0fac00e955',
+  'product-strategy': 'a53ef9dc2d27f2280bd5936560fc01efaf875b13d14484c10e3519964d1c1868',
+  'technology-advisor': '4a555fe5cd64fc727e209f940dc4352b4ff2e6cbf3b3c6957289cc0fefd0ae52',
 };
 
 function versionMaterial(definition: SystemAgentDefinition): string {
@@ -64,13 +69,14 @@ function definition(id: string): SystemAgentDefinition {
 }
 
 describe('system agent registry', () => {
-  it('lists the seven definitions in order', () => {
+  it('lists the eight definitions in order', () => {
     expect(SYSTEM_AGENT_DEFINITIONS.map((agent) => agent.id)).toEqual([
       'builder',
       'lead',
       'writer',
       'reviewer',
       'chief-of-staff',
+      'advisors-lead',
       'product-strategy',
       'technology-advisor',
     ]);
@@ -128,11 +134,26 @@ describe('system agent registry', () => {
       chief.knowledgeScopes.map((scope) => scope.id),
     );
 
-    expect(definition('product-strategy')).toMatchObject({
-      status: 'coming_soon',
+    const lead = definition('advisors-lead');
+    expect(lead).toMatchObject({
+      nameKey: null,
+      roleKey: null,
+      descriptionKey: null,
+      status: null,
       enabled: false,
-      toolProfile: null,
-      teamRole: null,
+      toolProfile: 'read',
+      teamRole: { teamId: 'advisors', roleName: 'advisors-lead' },
+    });
+    expect(lead.knowledgeScopes.map((scope) => scope.id)).toEqual([
+      ...SHARED_SCOPE_IDS,
+      'contract-templates',
+    ]);
+
+    expect(definition('product-strategy')).toMatchObject({
+      status: 'active',
+      enabled: false,
+      toolProfile: 'read',
+      teamRole: { teamId: 'advisors', roleName: 'product-strategy' },
       nameKey: 'agents.productStrategy.name',
     });
     expect(definition('product-strategy').knowledgeScopes.map((scope) => scope.id)).toEqual([
@@ -140,10 +161,10 @@ describe('system agent registry', () => {
       'market-data',
     ]);
     expect(definition('technology-advisor')).toMatchObject({
-      status: 'coming_soon',
+      status: 'active',
       enabled: false,
-      toolProfile: null,
-      teamRole: null,
+      toolProfile: 'read',
+      teamRole: { teamId: 'advisors', roleName: 'technology-advisor' },
       nameKey: 'agents.technologyAdvisor.name',
     });
     expect(definition('technology-advisor').knowledgeScopes.map((scope) => scope.id)).toEqual([
@@ -152,18 +173,43 @@ describe('system agent registry', () => {
     ]);
   });
 
-  it('pins the seven instruction strings', () => {
+  it('pins the eight instruction strings', () => {
     expect(definition('builder').instructions).toBe('');
     expect(definition('lead').instructions).toBe(CODING_LEAD_INSTRUCTIONS);
     expect(definition('writer').instructions).toBe(CODING_WRITER_INSTRUCTIONS);
     expect(definition('reviewer').instructions).toBe(CODING_REVIEWER_INSTRUCTIONS);
     expect(definition('chief-of-staff').instructions).toBe(CHIEF_OF_STAFF_INSTRUCTIONS);
-    expect(definition('product-strategy').instructions).toBe('');
-    expect(definition('technology-advisor').instructions).toBe('');
+    expect(definition('advisors-lead').instructions).toBe(ADVISORS_LEAD_INSTRUCTIONS);
+    expect(definition('product-strategy').instructions).toBe(PRODUCT_STRATEGY_INSTRUCTIONS);
+    expect(definition('technology-advisor').instructions).toBe(TECHNOLOGY_ADVISOR_INSTRUCTIONS);
     expect(CHIEF_OF_STAFF_INSTRUCTIONS).toContain('search_knowledge');
+    expect(CHIEF_OF_STAFF_INSTRUCTIONS).toContain('no teammates');
+    expect(CHIEF_OF_STAFF_INSTRUCTIONS).toContain('do not hand off');
   });
 
-  it('pins the seven version hashes', () => {
+  it('keeps the advisors prompts within the instruction cap and states the citation rules', () => {
+    for (const instructions of [
+      ADVISORS_LEAD_INSTRUCTIONS,
+      PRODUCT_STRATEGY_INSTRUCTIONS,
+      TECHNOLOGY_ADVISOR_INSTRUCTIONS,
+    ]) {
+      expect(instructions.length).toBeLessThanOrEqual(MAX_AGENT_INSTRUCTIONS_CHARS);
+      expect(instructions.length).toBeGreaterThan(0);
+      expect(instructions).toContain('[source:');
+      expect(instructions).toContain('No source');
+      expect(instructions).toContain('without a source');
+      expect(instructions).toContain('Never propose sending');
+      expect(instructions).toContain('Document text');
+      expect(instructions).toContain('Chief of Staff');
+    }
+    expect(ADVISORS_LEAD_INSTRUCTIONS).toContain('product-strategy');
+    expect(ADVISORS_LEAD_INSTRUCTIONS).toContain('technology-advisor');
+    expect(PRODUCT_STRATEGY_INSTRUCTIONS).toContain('You reply to the Chief of Staff');
+    expect(TECHNOLOGY_ADVISOR_INSTRUCTIONS).toContain('You reply to the Chief of Staff');
+    expect(TECHNOLOGY_ADVISOR_INSTRUCTIONS).toContain('Do not change files');
+  });
+
+  it('pins the eight version hashes', () => {
     const actual: Record<string, string> = {};
     for (const agent of SYSTEM_AGENT_DEFINITIONS) {
       const material = versionMaterial(agent);

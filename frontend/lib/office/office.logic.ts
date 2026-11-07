@@ -115,6 +115,12 @@ export function attributeDeskId(
 ): string {
   if (presentText(run.collaborationRunId)) {
     const profileId = presentText(run.builderProfileId);
+    if (profileId === 'advisors-lead') {
+      if (activeRegistryIds.has('chief-of-staff')) {
+        return 'registry:chief-of-staff';
+      }
+      return TEAM_DESK_ID;
+    }
     if (profileId && activeRegistryIds.has(profileId)) {
       return `registry:${profileId}`;
     }

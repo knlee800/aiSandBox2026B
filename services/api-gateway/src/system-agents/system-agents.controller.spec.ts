@@ -58,13 +58,16 @@ describe('SystemAgentsController', () => {
   it('returns the four public agents and a private no-store cache header', async () => {
     await boot(true);
     const response = await request(app!.getHttpServer()).get('/api/system-agents').expect(200);
-    const agents = response.body.agents as Array<{ id: string; version: string }>;
+    const agents = response.body.agents as Array<{ id: string; version: string; status: string }>;
     expect(agents.map((agent) => agent.id)).toEqual([
       'builder',
       'chief-of-staff',
       'product-strategy',
       'technology-advisor',
     ]);
+    expect(agents.find((agent) => agent.id === 'product-strategy')?.status).toBe('active');
+    expect(agents.find((agent) => agent.id === 'technology-advisor')?.status).toBe('active');
+    expect(agents.map((agent) => agent.id)).not.toContain('advisors-lead');
     for (const agent of agents) {
       expect(agent.version).toBe(systemAgentVersion(agent.id));
       expect(agent.version).toMatch(/^[0-9a-f]{64}$/);
@@ -82,6 +85,8 @@ describe('SystemAgentsController', () => {
       'ask writer',
       'write_file',
       'search_knowledge',
+      'You reply to the Chief of Staff',
+      'advisors-lead',
     ]) {
       expect(serialized).not.toContain(secret);
     }

@@ -518,19 +518,19 @@
     "productStrategy": {
       "name": "Product Strategy Agent",
       "role": "产品策略助手",
-      "description": "即将推出的占位代理，支持路线规划、市场分析与策略决策。"
+      "description": "当幕僚长提问时，根据你的知识文档回答产品与市场问题，并附上来源。"
     },
     "technologyAdvisor": {
       "name": "Technology Advisor Agent",
       "role": "技术顾问",
-      "description": "即将推出的占位代理，支持架构评审、技术选型与技术建议。"
+      "description": "当幕僚长提问时，根据你的知识文档回答技术问题，并可读取这个项目的文件，附上来源。"
     }
   },
   "platform": {
     "title": "指挥中心",
     "subtitle": "一览您的 AI 代理团队",
     "commandDeckLabel": "代理总部",
-    "commandDeckIntro": "在同一指挥界面协调已启用的 Builder 站点，并追踪即将上线的专业站点。",
+    "commandDeckIntro": "在同一指挥界面协调 Builder 与业务顾问。",
     "commandCenterStatusTitle": "指挥中心状态",
     "commandCenterStatusBody": "选择任一站点即可查看其任务定位、交付范围与当前就绪状态。",
     "stationsTitle": "代理站点",
@@ -553,7 +553,7 @@
     "systemAgentsLoadError": "无法加载席位，目前只显示 Builder。",
     "detail": {
       "title": "代理档案",
-      "subtitle": "所有占位站点当前仅供预览，尚未启用。",
+      "subtitle": "打开站点即可查看它做什么，以及从哪里开始。",
       "intentLabel": "任务意图",
       "capabilitiesLabel": "能力范围",
       "close": "关闭代理档案",
@@ -573,7 +573,15 @@
       "chiefOfStaffIntent": "根据你的知识文档回答问题，并标出来源。",
       "chiefOfStaffCapabilityOne": "根据你的知识文档回答问题，并附上来源。",
       "chiefOfStaffCapabilityTwo": "文档没有答案时，会写明没有来源。",
-      "chiefOfStaffCapabilityThree": "只读：不会送出任何内容，也不会在平台之外采取行动。"
+      "chiefOfStaffCapabilityThree": "只读：不会送出任何内容，也不会在平台之外采取行动。",
+      "productStrategyIntent": "根据你的知识文档回答产品与市场问题，并附上来源。",
+      "productStrategyCapabilityOne": "根据你的知识文档（含市场资料）回答，并附上来源。",
+      "productStrategyCapabilityTwo": "文档没有答案时，会写明没有来源。",
+      "productStrategyCapabilityThree": "只读：不会送出任何内容，不会交接，也不会在平台之外采取行动。",
+      "technologyAdvisorIntent": "根据你的知识文档回答技术问题，可读取这个项目的文件，并附上来源。",
+      "technologyAdvisorCapabilityOne": "根据你的知识文档（含技术版图）回答，并可读取这个项目的文件。",
+      "technologyAdvisorCapabilityTwo": "每项文档陈述都附上来源；没有依据时会写明没有来源。",
+      "technologyAdvisorCapabilityThree": "只读：可读取项目文件，不会修改，也不会送出任何内容。"
     },
     "agentCreate": {
       "sectionTitle": "您的代理",
@@ -1020,7 +1028,16 @@
     "chiefOfStaff": "幕僚长",
     "chiefOfStaffSummary": "根据你的知识文档回答，为每个论点标出来源；没有来源时写明没有来源。不能改文件，也不能交接。",
     "fileAccessReadOnly": "这个角色只能读取。不能改文件、交接，也不能采取外部行动。",
-    "chainEmptyChief": "还没有步骤。开始一个任务，就会先问幕僚长。"
+    "chainEmptyChief": "还没有步骤。开始一个任务，就会先问幕僚长。",
+    "teamAdvisors": "顾问团队",
+    "teamAdvisorsHint": "幕僚长阅读你的知识文档，并可把一个问题交给产品策略或技术顾问。那一步要等你批准。他们不能改文件，也不能对外发送任何东西。",
+    "productStrategy": "产品策略",
+    "technologyAdvisor": "技术顾问",
+    "advisorsLeadSummary": "阅读你的知识文档，为每项陈述附上来源，并可把一个问题交给产品策略或技术顾问。不能改文件，也不能对外发送任何东西。",
+    "productStrategySummary": "根据你的知识文档（含市场资料）回答幕僚长。每项陈述附上来源；没有来源时写明没有来源。不能改文件、交接或对外发送任何东西。",
+    "technologyAdvisorSummary": "根据你的知识文档（含技术版图）回答幕僚长，并可读取这个项目的文件。文档陈述附上来源；没有来源时写明没有来源。不能改文件、交接或对外发送任何东西。",
+    "fileAccessAdvisors": "这些角色只能读取。不能改文件，也不能采取外部行动。幕僚长可把一个问题交给一位顾问，那一步会等你批准。",
+    "chainEmptyAdvisors": "还没有步骤。开始一个任务，就会先问顾问团队。"
   },
   "office": {
     "title": "办公室",

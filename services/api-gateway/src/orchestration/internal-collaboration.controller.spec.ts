@@ -2355,4 +2355,77 @@ describe('InternalCollaborationController', () => {
     const detail = await http().get(`/api/internal/collaboration/runs/${runId}`).expect(200);
     expect(detail.body.referrals).toHaveLength(MAX_HANDOFFS_PER_RUN);
   });
+
+  it('lets the advisors lead ask one advisor and refuses the advisor reply', async () => {
+    const advisorAgents = [
+      { name: 'advisors-lead', instructions: 'Lead the advisors.' },
+      { name: 'product-strategy', instructions: 'Answer the market question.' },
+      { name: 'technology-advisor', instructions: 'Answer the technology question.' },
+    ];
+    const runId = await createRun();
+    const lead = await postReferral(runId, {
+      idempotencyKey: 'advisors-lead',
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'advisors-lead' },
+      agents: advisorAgents,
+    }).expect(201);
+    const leadId = lead.body.referral.referralId as string;
+    await approve(runId, leadId).expect(200);
+    executionResults.getExecution.mockResolvedValue(
+      completedExecution('The market question is next.\n<handoff to="product-strategy">What is the market?</handoff>'),
+    );
+    const asked = await http().get(`/api/internal/collaboration/runs/${runId}`).expect(200);
+    expect(asked.body.referrals).toHaveLength(2);
+    const child = asked.body.referrals.find(
+      (referral: { referralId: string }) => referral.referralId !== leadId,
+    );
+    expect(child.status).toBe('pending_approval');
+    expect(child.targetBuilder).toEqual({
+      agentRole: 'builder',
+      builderProfileId: 'product-strategy',
+    });
+    expect(
+      asked.body.referrals.find(
+        (referral: { referralId: string }) => referral.referralId === leadId,
+      ).handoffNote,
+    ).toBeNull();
+
+    const replyRun = await createRun();
+    const advisor = await postReferral(replyRun, {
+      idempotencyKey: 'advisor-reply',
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'product-strategy' },
+      agents: advisorAgents,
+    }).expect(201);
+    const advisorId = advisor.body.referral.referralId as string;
+    await approve(replyRun, advisorId).expect(200);
+    executionResults.getExecution.mockResolvedValue(
+      completedExecution('See the stack.\n<handoff to="technology-advisor">What is the stack?</handoff>'),
+    );
+    const refused = await http().get(`/api/internal/collaboration/runs/${replyRun}`).expect(200);
+    expect(refused.body.referrals).toHaveLength(1);
+    expect(refused.body.referrals[0].handoffNote).toBe('refused: advisors_reply');
+    expect(refused.body.referrals[0].status).toBe('completed');
+
+    const codingRun = await createRun();
+    const writer = await postReferral(codingRun, {
+      idempotencyKey: 'writer-to-reviewer',
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'writer' },
+      agents: [
+        { name: 'lead', instructions: 'Lead.' },
+        { name: 'writer', instructions: 'Write.' },
+        { name: 'reviewer', instructions: 'Review.' },
+      ],
+    }).expect(201);
+    await approve(codingRun, writer.body.referral.referralId).expect(200);
+    executionResults.getExecution.mockResolvedValue(
+      completedExecution('The draft is ready.\n<handoff to="reviewer">Look at the draft.</handoff>'),
+    );
+    const reviewed = await http().get(`/api/internal/collaboration/runs/${codingRun}`).expect(200);
+    expect(reviewed.body.referrals).toHaveLength(2);
+    expect(
+      reviewed.body.referrals.find(
+        (referral: { targetBuilder: { builderProfileId: string } }) =>
+          referral.targetBuilder.builderProfileId === 'reviewer',
+      ).status,
+    ).toBe('pending_approval');
+  });
 });

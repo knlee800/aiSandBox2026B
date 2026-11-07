@@ -139,7 +139,7 @@ export interface CollaborationStartResponse {
  * POST /api/collaboration/runs/:id/referrals/:referralId/approve
  * POST /api/collaboration/runs/:id/referrals/:referralId/reject
  *
- * team is optional and only coding or chief-of-staff. Missing means coding.
+ * team is optional and only coding, chief-of-staff, or advisors. Missing means coding.
  * Provider, model, instructions, scopes, tool profile, and decidedBy are not taken from the body.
  */
 @Controller('collaboration')
@@ -174,7 +174,7 @@ export class CollaborationController {
     const team = collaborationTeamById(input.teamId);
     const firstRole = team.roles[0];
     if (!firstRole) {
-      throw new BadRequestException('team must be coding or chief-of-staff');
+      throw new BadRequestException('team must be coding, chief-of-staff, or advisors');
     }
     const run = await this.orchestrationService.createCollaborationRun({
       userId: caller.userId,
@@ -452,7 +452,7 @@ export class CollaborationController {
     const record = this.asRecord(body);
     const teamId = readCollaborationStartTeam(record.team);
     if (!teamId) {
-      throw new BadRequestException('team must be coding or chief-of-staff');
+      throw new BadRequestException('team must be coding, chief-of-staff, or advisors');
     }
     return {
       sessionId: this.readUuid(record.sessionId, 'sessionId'),

@@ -518,19 +518,19 @@
     "productStrategy": {
       "name": "Product Strategy Agent",
       "role": "Product Strategy Assistant",
-      "description": "Coming soon placeholder for roadmap planning, market analysis, and strategic decisions."
+      "description": "Answers product and market questions from your Knowledge documents, with sources, when the Chief of Staff asks."
     },
     "technologyAdvisor": {
       "name": "Technology Advisor Agent",
       "role": "Technology Advisor",
-      "description": "Coming soon placeholder for architecture reviews, stack decisions, and technical guidance."
+      "description": "Answers technology questions from your Knowledge documents and can read this project's files, with sources, when the Chief of Staff asks."
     }
   },
   "platform": {
     "title": "Command Center",
     "subtitle": "Your AI agent team at a glance",
     "commandDeckLabel": "Agent Headquarters",
-    "commandDeckIntro": "Coordinate your active Builder station and track incoming specialist stations from one command surface.",
+    "commandDeckIntro": "Coordinate Builder and the business advisors from one command surface.",
     "commandCenterStatusTitle": "Command Center Status",
     "commandCenterStatusBody": "Select any station to review its mission profile, delivery scope, and current readiness.",
     "stationsTitle": "Agent Stations",
@@ -553,7 +553,7 @@
     "systemAgentsLoadError": "Stations could not be loaded. Only Builder is shown.",
     "detail": {
       "title": "Agent Profile",
-      "subtitle": "All placeholder stations are preview-only until activation.",
+      "subtitle": "Open a station to see what it does and where it starts.",
       "intentLabel": "Mission Intent",
       "capabilitiesLabel": "Capabilities",
       "close": "Close agent profile",
@@ -573,7 +573,15 @@
       "chiefOfStaffIntent": "Answer questions from your Knowledge documents and cite the source.",
       "chiefOfStaffCapabilityOne": "Answers questions from your Knowledge documents, with sources.",
       "chiefOfStaffCapabilityTwo": "Says No source when the documents do not answer.",
-      "chiefOfStaffCapabilityThree": "Read-only: never sends anything or acts outside the platform."
+      "chiefOfStaffCapabilityThree": "Read-only: never sends anything or acts outside the platform.",
+      "productStrategyIntent": "Answer product and market questions from your Knowledge documents, with sources.",
+      "productStrategyCapabilityOne": "Answers from your Knowledge documents, including market data, and cites the source.",
+      "productStrategyCapabilityTwo": "Says No source when the documents do not answer.",
+      "productStrategyCapabilityThree": "Read-only: never sends anything, never hands off, and never acts outside the platform.",
+      "technologyAdvisorIntent": "Answer technology questions from your Knowledge documents, and read this project's files, with sources.",
+      "technologyAdvisorCapabilityOne": "Answers from your Knowledge documents, including the technology landscape, and can read this project's files.",
+      "technologyAdvisorCapabilityTwo": "Cites each document and says No source when nothing supports the claim.",
+      "technologyAdvisorCapabilityThree": "Read-only: can read project files, never changes them, and never sends anything."
     },
     "agentCreate": {
       "sectionTitle": "Your Agents",
@@ -1020,7 +1028,16 @@
     "chiefOfStaff": "Chief of Staff",
     "chiefOfStaffSummary": "Answers from your Knowledge documents, cites each claim, and writes No source when a claim has none. Cannot change files or hand off.",
     "fileAccessReadOnly": "This role can only read. It cannot change files, hand off, or take an outside action.",
-    "chainEmptyChief": "No steps yet. Start a task to ask the Chief of Staff."
+    "chainEmptyChief": "No steps yet. Start a task to ask the Chief of Staff.",
+    "teamAdvisors": "Advisors",
+    "teamAdvisorsHint": "The Chief of Staff reads your Knowledge documents and may hand one question to Product Strategy or the Technology Advisor. You approve that step. They cannot change files or send anything.",
+    "productStrategy": "Product Strategy",
+    "technologyAdvisor": "Technology Advisor",
+    "advisorsLeadSummary": "Reads your Knowledge documents, cites each claim, and may hand one question to Product Strategy or the Technology Advisor. Cannot change files or send anything.",
+    "productStrategySummary": "Answers the Chief of Staff from your Knowledge documents, including market data. Cites each claim and writes No source when a claim has none. Cannot change files, hand off, or send anything.",
+    "technologyAdvisorSummary": "Answers the Chief of Staff from your Knowledge documents, including the technology landscape, and can read this project's files. Cites documents and writes No source when a claim has none. Cannot change files, hand off, or send anything.",
+    "fileAccessAdvisors": "These roles can only read. They cannot change files or take an outside action. The Chief of Staff may hand one question to one advisor, and that step waits for your approval.",
+    "chainEmptyAdvisors": "No steps yet. Start a task to ask the advisors."
   },
   "office": {
     "title": "Office",

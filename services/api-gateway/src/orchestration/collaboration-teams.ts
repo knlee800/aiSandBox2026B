@@ -16,7 +16,7 @@ export const COLLABORATION_WRITER_PROFILE_ID = 'writer';
 export const COLLABORATION_REVIEWER_PROFILE_ID = 'reviewer';
 export const COLLABORATION_CHIEF_OF_STAFF_PROFILE_ID = 'chief-of-staff';
 
-export const COLLABORATION_TEAM_IDS = ['coding', 'chief-of-staff'] as const;
+export const COLLABORATION_TEAM_IDS = ['coding', 'chief-of-staff', 'advisors'] as const;
 export type CollaborationServerTeamId = (typeof COLLABORATION_TEAM_IDS)[number];
 
 export type CollaborationTeamToolProfile = 'read' | 'review' | 'write';
@@ -66,6 +66,10 @@ export const COLLABORATION_TEAMS: readonly CollaborationTeamDefinition[] = [
     id: 'chief-of-staff',
     roles: rolesForTeam('chief-of-staff'),
   },
+  {
+    id: 'advisors',
+    roles: rolesForTeam('advisors'),
+  },
 ];
 
 export function collaborationTeamById(
@@ -92,7 +96,7 @@ export function readCollaborationStartTeam(value: unknown): CollaborationServerT
   if (value === undefined) {
     return 'coding';
   }
-  if (value === 'coding' || value === 'chief-of-staff') {
+  if (value === 'coding' || value === 'chief-of-staff' || value === 'advisors') {
     return value;
   }
   return null;

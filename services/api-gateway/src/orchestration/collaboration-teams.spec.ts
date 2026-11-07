@@ -61,8 +61,33 @@ describe('BIZ-01 team registry', () => {
       id: 'chief-of-staff',
       roleNames: ['chief-of-staff'],
     });
+    expect(collaborationTeamForTarget('advisors-lead')).toEqual({
+      id: 'advisors',
+      roleNames: ['advisors-lead', 'product-strategy', 'technology-advisor'],
+    });
     expect(collaborationTeamForTarget(null).id).toBe('coding');
     expect(collaborationTeamForTarget('writer').id).toBe('coding');
+  });
+
+  it('registers the advisors team as lead, product strategy, and technology advisor', () => {
+    expect(COLLABORATION_TEAMS.map((team) => team.id)).toEqual([
+      'coding',
+      'chief-of-staff',
+      'advisors',
+    ]);
+    const team = collaborationTeamById('advisors');
+    expect(team.roles.map((role) => role.name)).toEqual([
+      'advisors-lead',
+      'product-strategy',
+      'technology-advisor',
+    ]);
+    expect(team.roles.map((role) => role.toolProfile)).toEqual(['read', 'read', 'read']);
+    expect(team.roles[0]?.knowledgeScopeIds).toEqual(CHIEF_OF_STAFF_KNOWLEDGE_SCOPE_IDS);
+    expect(collaborationAgentsForTeam('advisors').map((agent) => agent.name)).toEqual([
+      'advisors-lead',
+      'product-strategy',
+      'technology-advisor',
+    ]);
   });
 });
 
@@ -91,12 +116,18 @@ describe('BIZ-01 start team parsing', () => {
     expect(readCollaborationStartTeam(undefined)).toBe('coding');
     expect(readCollaborationStartTeam('coding')).toBe('coding');
     expect(readCollaborationStartTeam('chief-of-staff')).toBe('chief-of-staff');
-    for (const value of [null, 1, true, '', 'Coding', 'advisors', ['hacker'], { team: 'coding' }]) {
+    expect(readCollaborationStartTeam('advisors')).toBe('advisors');
+    for (const value of [null, 1, true, '', 'Coding', ['hacker'], { team: 'coding' }]) {
       expect(readCollaborationStartTeam(value)).toBeNull();
     }
   });
 
-  it('lists chief-of-staff as the only business role', () => {
-    expect(businessRoleProfileIds()).toEqual(['chief-of-staff']);
+  it('lists the business roles in team order', () => {
+    expect(businessRoleProfileIds()).toEqual([
+      'chief-of-staff',
+      'advisors-lead',
+      'product-strategy',
+      'technology-advisor',
+    ]);
   });
 });
