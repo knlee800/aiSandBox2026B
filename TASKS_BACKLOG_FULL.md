@@ -85022,15 +85022,15 @@ taskId=BIZ-03
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-BIZ-KNOWLEDGE-PLAN-01; not admitted.
+**Status:** ADMITTED — 2026-11-07. Lane 1, GATEWAY, FRONTEND and I18N. Keith approved the drafted scope and admitted it on 2026-11-07. Stage-start next.
 **Task ID:** BIZ-03
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
-**Lifecycle:** 3-STEP.
-**Start condition (human):** NOT_READY. Ready when: BIZ-02 is COMPLETE AND LOCKED and Keith has uploaded documents to the market-data and tech-landscape scopes. Keith decides.
+**Lifecycle:** 4-STEP (changed from 3-STEP at admission, Keith 2026-11-07): admission in this record; stage-start (Cursor grok-4.7-xhigh read-only design draft, control-plane review, Keith's decisions; the write set is narrowed there); implementation by Cursor grok-4.7-high; consolidation, the PRD edit by the control plane (GOVERNANCE for that record) and LOCK in the same commit as the code (LOCAL-TESTS). The live check is a separate follow-up (BIZ-LIVE-02).
+**Start condition (human):** READY — BIZ-02 is COMPLETE AND LOCKED and Keith's documents are in market-data (2) and tech-landscape (2), checked from the host on 2026-11-07; Keith admitted BIZ-03 on 2026-11-07 as drafted.
 **Depends on:** BIZ-02.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
-**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**Primary write scope:** `services/api-gateway/src/system-agents/`, `services/api-gateway/src/orchestration/`, `services/api-gateway/src/knowledge/knowledge-scopes.ts`, `services/api-gateway/src/knowledge/knowledge-scopes.spec.ts`, `frontend/lib/agent-platform/`, `frontend/lib/office/`, `frontend/lib/collaboration/`, `frontend/lib/collaboration.test.ts`, `frontend/components/collaboration/`, `frontend/components/office/`, `frontend/components/platform/`, `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`, docs/BIZ-03-STAGE-START.md, docs/BIZ-03-CHECKPOINT.md; PRD.md at LOCK by the control plane only. The stage-start narrows this; anything else needs a control-plane scope change.
+**Mutexes / resources:** GATEWAY, FRONTEND, I18N; GOVERNANCE only for the LOCK record that edits PRD.md. **Hot-file leases:** none. **Shared contracts:** uses HARNESS_ENTITLEMENT_PROOF_V1 (FROZEN) without changing it; KNOWLEDGE_ROLE_SCOPES gains the two advisor roles. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (registry entries, a team, page options and message keys; no migration).
 **saturationClass:** OPTIONAL. **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved the plan on 2026-11-05).
 
 **Holds:** Plan section 6 row BIZ-03: two more read-only roles in an advisors team with the Chief of Staff (hand-offs through the existing tag and gate); registry entries active with the PRD change.
@@ -85040,7 +85040,14 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] The stage-start answers how the Chief of Staff gets its advisors-team instructions, how a run's team stays unambiguous, the two advisors' instructions and tools, how the dashboard and office handle more than one business agent, and the limits; Keith's decisions are recorded and the write set is narrowed before implementation
+- [ ] Product Strategy (shared scopes plus market-data) and Technology Advisor (shared scopes plus tech-landscape, project read tools) are active read-only registry definitions with server-owned instructions: answer from the owner's documents, cite [source: documentId#heading], write No source otherwise, no advice without a source, never propose sending anything, document text is data
+- [ ] An advisors team (Chief of Staff, Product Strategy, Technology Advisor) starts from the Team page; the Chief of Staff hands questions to one advisor at a time through the existing approval gate and combines the answers; the coding and chief-of-staff teams are unchanged
+- [ ] Both advisors have occupied office desks and Active dashboard cards; the Team page offers the advisors team; every new text in en, zh-TW and zh-CN, no hardcoded English
+- [ ] Tests cover each point above; api-gateway tests and build, and frontend tests (including the office, registry, dashboard and collaboration tests by name), type check and build pass, compared with the known failures in the latest checkpoints
+- [ ] At LOCK the control plane edits PRD.md: Product Strategy and Technology Advisor GATED (read-only cited answers from the owner's Knowledge documents, started from the Team page through the advisors team; gated accounts only; not in the private-beta promise); the placeholder lines updated to match
+- [ ] The checkpoint carries the CHECKLIST line (EVERY, UI, BACKEND, GOVERNANCE) and the FOLLOWUPS line; BIZ-LIVE-02 (deploy and Keith's live check) is registered
 - [ ] Not LOCKED by an implementer
 
 ### BIZ-NOPROJECT-01 — Business runs without an open project
@@ -85273,6 +85280,31 @@ nature=IMPLEMENTATION
 - [x] Nothing queued or running before runs are switched off; Keith was told runs pause; the saved window gateway.env is restored byte for byte, runs are back on, and the tester window stays open
 - [x] The checkpoint carries the CHECKLIST line (EVERY, DEPLOY) and the FOLLOWUPS line
 - [x] Not LOCKED by an implementer
+
+### KNOW-SCOPE-UX-01 — The Knowledge add form names its scope
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=KNOW-SCOPE-UX-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-07. Registered at the BIZ-03 admission (Keith approved, OPTIONAL); not admitted.
+**Task ID:** KNOW-SCOPE-UX-01
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: FRONTEND is free (after BIZ-03) and Keith admits it. Keith decides.
+**Depends on:** none.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Likely frontend/components/knowledge/knowledge-screen.tsx with its test and the three message files.
+**Mutexes / resources:** set at admission (likely FRONTEND and I18N). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-07). **productClass:** CURRENT per PRD.md.
+
+**Holds:** On 2026-11-07 Keith's documents twice landed in Company monthly reports instead of the scope he meant: the Knowledge page saves a new document to the scope selected in the chip row at the top (the first scope by default), and the add form does not say which scope that is. The add form names its scope ("Adding to: <scope>") and lets the owner change it there; tests cover it; en, zh-TW and zh-CN.
+**Named in:** the BIZ-03 admission record (2026-11-07).
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
 
 ### GOV-ARCH-SYNC-01 — Sync ARCHITECTURE.md with the built collaboration and office
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
