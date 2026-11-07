@@ -7,17 +7,17 @@
   "governance": {"owner": "NONE", "state": "UNOWNED"},
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
+      "state": "ACTIVE",
+      "taskId": "STAGING-DEPLOY-18",
+      "mutexes": ["STAGING", "ENV"],
       "writePaths": [],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "STAGING-RUNTIME",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
-      "runtimeNeeds": []
+      "runtimeNeeds": ["STAGING"]
     },
     "lane2": {
       "state": "EMPTY",
@@ -3387,23 +3387,23 @@
       "taskId": "STAGING-DEPLOY-18",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "OPTIONAL",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
       "dependsOn": ["COLLAB-REJECT-UX-01"],
-      "mutexes": [],
+      "mutexes": ["STAGING", "ENV"],
       "writePaths": [],
       "hotfiles": [],
       "i18n": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
-      "evidenceClass": "LOCAL-TESTS",
+      "evidenceClass": "STAGING-RUNTIME",
       "exclusiveCapacity": false,
-      "runtimeNeeds": [],
-      "admissionUncertain": true,
-      "writeSetPrecision": "PROVISIONAL"
+      "runtimeNeeds": ["STAGING"],
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
     },
     {
       "taskId": "BIZ-NOPROJECT-01",
@@ -4520,7 +4520,7 @@
   ],
   "runtimeAuthorization": {
     "localRuntimeAuthorized": true,
-    "stagingAuthorized": false,
+    "stagingAuthorized": true,
     "providerLiveAuthorized": false,
     "creditAuthorized": false,
     "testerWindowOpen": true
