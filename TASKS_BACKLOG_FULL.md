@@ -85399,6 +85399,31 @@ nature=IMPLEMENTATION
 - [x] The checkpoint carries the CHECKLIST line (EVERY, DEPLOY) and the FOLLOWUPS line
 - [x] Not LOCKED by an implementer
 
+### COLLAB-REJECT-UX-01 — The Team page Reject is clear and cannot be half-done
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-REJECT-UX-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-07. Registered from Keith's finding during STAGING-DEPLOY-16 (Keith approved, OPTIONAL); not admitted.
+**Task ID:** COLLAB-REJECT-UX-01
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith admits it. No dependency. Keith decides.
+**Depends on:** none.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Likely frontend/components/collaboration/collaboration-view.tsx and collaboration-page.tsx with frontend/lib/collaboration.test.ts and the three message files.
+**Mutexes / resources:** set at admission (likely FRONTEND and I18N). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-07). **productClass:** CURRENT per PRD.md.
+
+**Holds:** On 2026-11-07 Keith clicked Reject on two waiting hand-offs and reported that nothing happened: Reject only opens a Reason (optional) box, and the rejection is saved by a second button, Reject this step. The two runs stayed open and blocked STAGING-DEPLOY-16 until he clicked the second button. The Team page makes the second step obvious (or saves the rejection in one step with an optional reason), shows that the hand-off was rejected and the run ended, in en, zh-TW and zh-CN; tests cover it. Ending a run outright stays with COLLAB-CANCEL-01.
+**Named in:** docs/STAGING-DEPLOY-16-CHECKPOINT.md (the reject that did not save); Keith approved registering it in chat on 2026-11-07.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
 ### GOV-ARCH-SYNC-01 — Sync ARCHITECTURE.md with the built collaboration and office
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=GOV-ARCH-SYNC-01

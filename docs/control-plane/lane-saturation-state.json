@@ -3322,6 +3322,28 @@
       "writeSetPrecision": "EXACT"
     },
     {
+      "taskId": "COLLAB-REJECT-UX-01",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "3-STEP",
+      "status": "READY",
+      "startCondition": "NOT_READY",
+      "saturationClass": "OPTIONAL",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": [],
+      "mutexes": [],
+      "writePaths": [],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "LOCAL-TESTS",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": [],
+      "admissionUncertain": true,
+      "writeSetPrecision": "PROVISIONAL"
+    },
+    {
       "taskId": "BIZ-NOPROJECT-01",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
