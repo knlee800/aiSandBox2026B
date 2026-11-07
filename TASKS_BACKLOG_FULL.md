@@ -84931,15 +84931,15 @@ taskId=STAGING-DEPLOY-12
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-07. Registered by PROVIDER-LIMIT-MSG-01; not admitted.
+**Status:** ADMITTED — 2026-11-07. Lane 1, STAGING and ENV. Keith said deploy now on 2026-11-07.
 **Task ID:** STAGING-DEPLOY-12
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION (operational run; no code)
 **Lifecycle:** 3-STEP: registration here; admission when Keith picks the time; pre-check and deploy from the host; separate LOCK record (STAGING-RUNTIME).
-**Start condition (human):** NOT_READY. Ready when: PROVIDER-LIMIT-MSG-01 is COMPLETE AND LOCKED and Keith approves the deploy and its timing. Keith decides.
+**Start condition (human):** READY — PROVIDER-LIMIT-MSG-01 is COMPLETE AND LOCKED (1f7b220); Keith said deploy now on 2026-11-07, accepting that runs pause for a few minutes during the deploy.
 **Depends on:** PROVIDER-LIMIT-MSG-01.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Expected: none in the repository beyond records; host state on ainow-staging-01 (AI service and frontend release).
-**Mutexes / resources:** set at admission (expected STAGING and ENV). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS; expected STAGING-RUNTIME). **Revert isolation:** assessed at admission.
+**Primary write scope:** none in the repository beyond records. Host state on ainow-staging-01 (release of the commit holding PROVIDER-LIMIT-MSG-01: AI service and frontend change; all services restart) and off-repo evidence in C:/Users/knlee/aisb-preflight/STAGING-DEPLOY-12/.
+**Mutexes / resources:** STAGING, ENV (the host deploy tool refuses while GLOBAL_EXECUTION_ENABLED is not false: the deploy saves the tester-window gateway.env, switches runs off for the deploy only, then restores the file byte for byte; GOV-DEPLOY-WINDOW-01). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** STAGING-RUNTIME (the tester may be active). **Revert isolation:** acceptable (no migration; rollback is a redeploy of e5cc286).
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 
 **Holds:** deploy the commit that holds PROVIDER-LIMIT-MSG-01 with the DEPLOY checklist, including item 7 while the tester window is open (save the window gateway.env, runs off for the deploy only, restore it byte for byte, check the window hashes gateway.env 5692ce35... and ai.env 132ebab3... and that runs are back on), Keith told first, health, guard and page checks, the static key refused. No provider run is needed: the message only appears when the provider refuses.
@@ -84947,7 +84947,10 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Staging runs the deployed commit; migration hash unchanged; env files at the tester-window hashes before and after; other configuration files unchanged; units active; health, guard, page and CORS checks pass; the static key refused; the fixed sentence and the providerUsageLimit keys are in the new build
+- [ ] Nothing queued or running before runs are switched off; Keith was told runs pause; the saved window gateway.env is restored byte for byte, runs are back on, and the tester window stays open
+- [ ] The checkpoint carries the CHECKLIST line (EVERY, DEPLOY) and the FOLLOWUPS line
 - [ ] Not LOCKED by an implementer
 
 ### BIZ-02 — Chief of Staff desk in the office
