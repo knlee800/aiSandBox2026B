@@ -85153,14 +85153,14 @@ taskId=AGENT-DEFS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-07. Lane 1, GATEWAY, FRONTEND and I18N. Registered and admitted in one record (GOV-OS-04); Keith approved the draft and admitted it on 2026-11-07. Stage-start next.
+**Status:** ADMITTED — 2026-11-07. Lane 1, GATEWAY, FRONTEND and I18N. Registered and admitted in one record (GOV-OS-04); Keith approved the draft and admitted it on 2026-11-07. Stage-start approved by Keith on 2026-11-07 (docs/AGENT-DEFS-01-STAGE-START.md: Builder-only fallback, login-only route, the scope literal stays); implementation next.
 **Task ID:** AGENT-DEFS-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP: registration and admission in this record; stage-start (Cursor grok-4.7-xhigh read-only design draft, control-plane review, Keith's decisions; the write set is narrowed there); implementation by Cursor grok-4.7-high; consolidation and LOCK in the same commit as the code (LOCAL-TESTS). The deploy is a separate later step.
 **Start condition (human):** READY — Keith chose RSI-00 stage S2 and approved this draft on 2026-11-07.
 **Depends on:** RSI-00 (umbrella); BIZ-01 and BIZ-02 (COMPLETE AND LOCKED).
-**Primary write scope:** `services/api-gateway/src/orchestration/`, `services/api-gateway/src/knowledge/`, new `services/api-gateway/src/system-agents/`, `services/api-gateway/src/app.module.ts` (only to register the new module, if the stage-start chooses one), `frontend/lib/agent-platform/`, `frontend/lib/office/`, `frontend/components/office/`, `frontend/components/platform/`, `frontend/components/knowledge/` (only if the stage-start folds in the scope list), `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`, docs/AGENT-DEFS-01-STAGE-START.md, docs/AGENT-DEFS-01-CHECKPOINT.md. The stage-start narrows this; anything else needs a control-plane scope change.
+**Primary write scope:** narrowed at the stage-start (Keith 2026-11-07): `services/api-gateway/src/system-agents/`, `services/api-gateway/src/app.module.ts`, `services/api-gateway/src/orchestration/collaboration-teams.ts`, `services/api-gateway/src/orchestration/collaboration-teams.spec.ts`, `services/api-gateway/src/orchestration/collaboration-tool-profile.ts`, `services/api-gateway/src/knowledge/knowledge-scopes.ts`, `services/api-gateway/src/knowledge/knowledge-scopes.spec.ts`, `frontend/lib/agent-platform/`, `frontend/lib/office/office.logic.ts`, `frontend/lib/office/office.logic.test.ts`, `frontend/components/office/office-screen.tsx`, `frontend/components/office/office-screen.test.tsx`, `frontend/components/platform/platform-dashboard.tsx`, `frontend/components/platform/platform-dashboard.test.ts`, `frontend/components/knowledge/knowledge-screen.test.tsx`, `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`, docs/AGENT-DEFS-01-STAGE-START.md, docs/AGENT-DEFS-01-CHECKPOINT.md. Anything else needs a control-plane scope change.
 **Mutexes / resources:** GATEWAY, FRONTEND, I18N. **Hot-file leases:** none. **Shared contracts:** uses HARNESS_ENTITLEMENT_PROOF_V1 (FROZEN) without changing it; KNOWLEDGE_ROLE_SCOPES keeps the same values. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (no migration; a read-only route and a refactor of where definitions live).
 **saturationClass:** OPTIONAL (Keith approved the draft on 2026-11-07). **productClass:** CURRENT per PRD.md (no user-visible product change).
 
@@ -85173,7 +85173,7 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] The stage-start document answers the five questions; Keith's decisions are recorded and the write set is narrowed before implementation
+- [x] The stage-start document answers the five questions; Keith's decisions are recorded and the write set is narrowed before implementation
 - [ ] One gateway registry holds every system-agent definition; the team registry and KNOWLEDGE_ROLE_SCOPES read from it with unchanged values; each definition carries a content hash
 - [ ] A read-only route returns the public fields only (no instructions, no tool profile internals), owner login required; user-created agent routes unchanged
 - [ ] The dashboard, station cards and office read the list from that route with defined loading and failure states in en, zh-TW and zh-CN; screens show the same agents and statuses as before
@@ -86435,3 +86435,9 @@ One line per follow-up Keith dropped: date, follow-up, where it was named, reaso
 - 2026-11-06 — knowledgeScopes on Agent-mode jobs (ai-execution.controller.ts), named in docs/KNOW-02-STAGE-START.md section 10 — coding runs are not knowledge readers; re-propose if the coding agent should search documents — Keith, KNOW-02 stage-start.
 - 2026-11-06 — knowledge tools for the review, write or agent-write profiles, named in docs/KNOW-02-STAGE-START.md section 10 — business roles are read-only; re-propose with a role that needs a mutating profile and knowledge together — Keith, KNOW-02 stage-start.
 - 2026-11-06 — SQL search or an index for knowledge documents, named in docs/KNOW-02-STAGE-START.md section 10 — the account cap is 50 documents and 4 MB, scanned in process — Keith, KNOW-02 stage-start.
+- 2026-11-07 — copying the unused frontend model profiles and tool-permission objects onto the server, named in docs/AGENT-DEFS-01-STAGE-START.md section 10 — the start route does not read them and the screens do not render them — Keith, AGENT-DEFS-01 stage-start.
+- 2026-11-07 — pointing the Knowledge page at GET /api/system-agents, named in docs/AGENT-DEFS-01-STAGE-START.md section 10 — the page already loads GET /api/knowledge/scopes — Keith, AGENT-DEFS-01 stage-start.
+- 2026-11-07 — storing agent definition versions in a table, named in docs/AGENT-DEFS-01-STAGE-START.md section 10 — this task stores nothing; RSI-00 stage S1 decides storage — Keith, AGENT-DEFS-01 stage-start.
+- 2026-11-07 — giving a role a model other than the server selection, named in docs/AGENT-DEFS-01-STAGE-START.md section 10 — no role needs one; modelChoice stays server, so that change moves the hash — Keith, AGENT-DEFS-01 stage-start.
+- 2026-11-07 — changing the ai-service scope parser, named in docs/AGENT-DEFS-01-STAGE-START.md section 10 — Keith's decision 3: the KNOWLEDGE_SCOPES literal stays — Keith, AGENT-DEFS-01 stage-start.
+- 2026-11-07 — showing lead, writer and reviewer as stations, named in docs/AGENT-DEFS-01-STAGE-START.md section 10 — they are team roles; the public list stays the four current stations — Keith, AGENT-DEFS-01 stage-start.
