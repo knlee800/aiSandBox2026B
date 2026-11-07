@@ -85005,6 +85005,7 @@ nature=IMPLEMENTATION
 
 **Holds:** Plan section 6 row BIZ-03: two more read-only roles in an advisors team with the Chief of Staff (hand-offs through the existing tag and gate); registry entries active with the PRD change.
 **Named in:** docs/AGENT-BIZ-KNOWLEDGE-PLAN.md section 6.
+**RSI note 2026-11-07 (GOV-RSI-01):** decide one server-side agent definition source (ARCHITECTURE.md section 13.5, RSI-00 stage S2) before admission.
 **Note 2026-11-05 (Keith in chat, Agent Teams assessment and limits):** ask the advisors in parallel and have the Chief of Staff combine the answers if COLLAB-FANOUT-01 exists; otherwise one at a time. Decided at its design step. Recommendation (control plane, 2026-11-05): parallel advisors only if COLLAB-FANOUT-01 is built.
 
 #### Acceptance criteria
@@ -85057,10 +85058,62 @@ nature=IMPLEMENTATION
 **Holds:** a user copies the Chief of Staff into their own agent on the Create Agent page, edits its instructions and chooses which of their own Knowledge folders it may read. The gateway takes the folder list from the stored agent, never from the browser. The platform keeps the read-only tool profile, citation checks, the approval step and credit limits. en / zh-TW / zh-CN. Not included: write tools, external actions, model choice, other users' documents.
 **Related:** AGENT-PLATFORM-EXEC-01C (persisted user-agent tool-loop umbrella); the design step checks for overlap and reuses it where it fits.
 **Named in:** Keith in chat 2026-11-06 (after KNOW-02 LOCK).
+**RSI note 2026-11-07 (GOV-RSI-01):** decide one server-side agent definition source (ARCHITECTURE.md section 13.5, RSI-00 stage S2) before admission.
 
 #### Acceptance criteria
 
 - [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### GOV-RSI-01 — Record recursive self-improvement as long-term direction
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-RSI-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** COMPLETE AND LOCKED — 2026-11-07. Governance; no lane. Registered and locked in one record (GOV-OS-04). GOVERNANCE released UNOWNED. Checkpoint: docs/GOV-RSI-01-CHECKPOINT.md.
+**Task ID:** GOV-RSI-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE. **Lifecycle:** 1-RECORD: Keith's decisions, the readiness assessment and the approved wording in this record.
+**Start condition (human):** READY — Keith set the direction and approved the wording on 2026-11-07.
+**Primary write scope:** PRD.md (section 2 Planned Goals, section 8, section 11 table), ARCHITECTURE.md (header sync line, section 13.1 row, new section 13.5), TASKS.md, TASKS_BACKLOG_FULL.md, the sidecar, the proof, docs/GOV-RSI-01-CHECKPOINT.md.
+**Mutexes / resources:** GOVERNANCE, only during this record write. Not a Development OS mutation, so BIZ-02 stays active in Lane 1.
+
+**Keith's decisions (2026-11-07):** ambition is intelligence (individual agents, multi-agent collaboration, the whole platform); autonomy is human approval (agents may research, analyse, experiment and develop candidate improvements in controlled environments; every change to a production capability needs explicit human approval); scope is all, eventually including the RSI mechanisms themselves.
+**Not in scope:** code, implementation tasks, CLAUDE.md and checklist changes, locked documents, the GOV-ARCH-SYNC-01 sync.
+
+#### Acceptance criteria
+
+- [x] PRD.md carries RSI as a Planned Goal, an explicit non-goal for the current phase and an APPROVED FUTURE row
+- [x] ARCHITECTURE.md carries an RSI FUTURE row and the PLANNED constraint section 13.5 (versioned approved changes, protected set, direction for run provenance and one agent definition source)
+- [x] RSI-00 is registered NOT_READY with the stages from the assessment; no implementation task is admitted
+- [x] Every follow-up named by the assessment has a disposition
+- [x] Not LOCKED by an implementer
+
+### RSI-00 — Recursive self-improvement (umbrella)
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=RSI-00
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-07. Registered by GOV-RSI-01; not admitted.
+**Task ID:** RSI-00
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (umbrella; each stage is registered as its own task when Keith chooses it)
+**Lifecycle:** 4-STEP for each stage.
+**Start condition (human):** NOT_READY. Ready when: Keith chooses a stage. Keith decides.
+**Depends on:** none for S1 to S3; later stages as listed.
+**Primary write scope:** not set; PROVISIONAL until a stage is registered (sidecar write set empty, admissionUncertain true).
+**Mutexes / resources:** set per stage. **Hot-file leases:** none. **Shared contracts:** set per stage. **Evidence class:** set per stage (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed per stage.
+**saturationClass:** OPTIONAL (Keith approved the draft on 2026-11-07). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith set the direction on 2026-11-07).
+
+**Holds (stages, from the readiness assessment):** S1 run provenance (each run records the agent definition id, its version and the model; no migration); S2 one server-side agent definition source that the frontend registry reads (decide before BIZ-03 and BIZ-USER-01); S3 eval sets for the Chief of Staff and collaboration (overlaps COLLAB-EVAL-01, which is reused); S4 persisted harness traces and owner feedback on answers (needs a retention and privacy decision); S5 stage 1: agents propose instruction and skill changes, scored offline against evals, Keith approves (after S1 to S3); S6 an experiment environment separate from staging (needs a quota and cost decision; before platform-code proposals); S7 stage 2: agents propose platform code changes through the control plane (after S5 and S6, with a CLAUDE.md rule for agent-originated changes); S8 collective and meta-level improvement, RSI on RSI (last, when Keith opens that stage). Also held: every new agent ships with an eval case set (a checklist item when Keith wants it enforced), and the decision to relax the no-schedulers non-goal before continuous experiments.
+**Constraints:** ARCHITECTURE.md section 13.5 (versioned approved changes; protected set).
+**Named in:** docs/GOV-RSI-01-CHECKPOINT.md (readiness assessment).
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before each stage is admitted
 - [ ] Not LOCKED by an implementer
 
 ### GOV-ARCH-SYNC-01 — Sync ARCHITECTURE.md with the built collaboration and office

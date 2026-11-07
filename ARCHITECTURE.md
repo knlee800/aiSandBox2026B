@@ -13,7 +13,7 @@ All implementation must conform to this file and `CLAUDE.md`.
 
 If conflicts arise, these documents take precedence in their domains.
 
-Last reconciled: 2026-08-24 (GOV-ARCH-02 Step 3 — bounded current-state reconciliation). Bounded living-authority sync: 2026-08-28 (GOV-AUTH-01 — CREATE-01D Ask identity facts only; GOV-AUTH-02 — CREATE-01E product-facing single-shot Ask facts only; not GOV-ARCH-03). Bounded living-authority sync: 2026-08-31 (AGENT-PLATFORM-CREATE-01F — frontend Create Agent detail consumes existing `DELETE /api/agents/:id` for persisted user-created agents only; not GOV-ARCH-03). Bounded living-authority sync: 2026-08-31 (GOV-AUTH-03 — EXEC-01A/01B persisted user-agent Ask and Build on the existing Builder runtime only; not GOV-ARCH-03). Prior freeze: 2026-08-10 (GOV-ARCH-01).
+Last reconciled: 2026-08-24 (GOV-ARCH-02 Step 3 — bounded current-state reconciliation). Bounded living-authority sync: 2026-08-28 (GOV-AUTH-01 — CREATE-01D Ask identity facts only; GOV-AUTH-02 — CREATE-01E product-facing single-shot Ask facts only; not GOV-ARCH-03). Bounded living-authority sync: 2026-08-31 (AGENT-PLATFORM-CREATE-01F — frontend Create Agent detail consumes existing `DELETE /api/agents/:id` for persisted user-created agents only; not GOV-ARCH-03). Bounded living-authority sync: 2026-08-31 (GOV-AUTH-03 — EXEC-01A/01B persisted user-agent Ask and Build on the existing Builder runtime only; not GOV-ARCH-03). Bounded living-authority addition: 2026-11-07 (GOV-RSI-01 — section 13.1 RSI row and section 13.5 PLANNED constraint only; not GOV-ARCH-03). Prior freeze: 2026-08-10 (GOV-ARCH-01).
 
 ---
 
@@ -990,6 +990,7 @@ The original walking-character / town **simulation** is **not implemented**. CUR
 | Harness as default Builder experience | **FUTURE** |
 | Stripe charging | **FUTURE / deferred** |
 | Google OAuth login activation | **FUTURE / deferred** |
+| Recursive self-improvement (RSI) | **FUTURE / PLANNED** — constraints in section 13.5 |
 
 ### 13.2 Agent Registry and Create Agent
 
@@ -1051,6 +1052,16 @@ Do not describe the following as current:
 A future RPG-style office is **not implemented** and not scheduled. Product status belongs to `PRD.md`. If it is built, this forward-looking constraint applies: the office and a conventional dashboard use shared agent capabilities, and agent identity, authoritative run state and authorization do not depend on any particular visual screen. Decorative animation stays separate from authoritative work status.
 
 This does not state that existing page coupling has been removed, and it authorizes no refactor. No renderer, storage schema or recovery behaviour is selected. Evidence: `docs/GOV-RPG-UI-COMPAT-01-REVIEW-RECORD.md` (external source-only review; not runtime-tested).
+
+### 13.5 Recursive Self-Improvement Compatibility (PLANNED constraint)
+
+Recursive self-improvement (RSI) is **approved FUTURE** product direction (`PRD.md`): agents, their collaboration and the platform develop candidate improvements in controlled environments, and every change to a production capability needs explicit human approval. Nothing here is implemented or scheduled. If it is built, these forward-looking constraints apply:
+
+- **Versioned, approved changes.** Every change to an agent capability (instructions, skills, tool profile, knowledge scopes, model, platform code) is a versioned artifact with an approval record. RSI produces only candidates; a human approves each production change.
+- **Protected set.** RSI may never change authentication, guards, internal service keys, signing, credits and billing, the execution kill switch, governance files and the lane-capacity validator, the evaluations used to judge it, its own approval gate, or the RSI mechanisms themselves until Keith explicitly opens that stage.
+- **Direction, not current:** runs record the agent definition, its version and the model; agent definitions come from one server-side source.
+
+This authorizes no refactor and selects no storage, scheduler or experiment environment. It does not state that agent definitions are versioned today: they are code constants (`frontend/lib/agent-platform/agent-registry.ts`, `services/api-gateway/src/orchestration/collaboration-teams.ts`). Record and assessment: `docs/GOV-RSI-01-CHECKPOINT.md`.
 
 ---
 

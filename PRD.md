@@ -56,6 +56,7 @@ These are **approved FUTURE** product direction. They are not current capability
 - Make Agent Harness the default Builder experience (autonomous / multi-turn / tool-using)
 - Activate Google OAuth and Apple OAuth authentication (implementation exists; not activated in current beta)
 - Deliver shared and specialist knowledge as a product runtime, including later external knowledge-source integrations
+- Recursive self-improvement (RSI): ainow.biz agents, their collaboration and the platform itself measure their results and develop candidate improvements in controlled environments; every change to a production capability needs explicit human approval; eventually this includes the improvement mechanisms themselves (Keith, 2026-11-07)
 
 ---
 
@@ -482,6 +483,7 @@ The following are explicitly out of scope for the initial Builder private beta. 
 - **RPG walking-town / moving-character simulation**: The command-center shell has an RPG-inspired visual identity. Walking-town simulation is superseded as MVP and is not the current or next committed product. Deeper RPG/simulation remains long-term approved FUTURE.
 - **Broad external integrations**: No general third-party integration platform in current scope. Future external knowledge-source integrations are conceptual FUTURE, not named committed products.
 - **Public agent ecosystem**: No open marketplace or externally published agent registry in current scope
+- **Recursive self-improvement**: Approved FUTURE (ARCHITECTURE.md §13.5). Nothing in the current phase changes itself; every change is made and approved by people
 - **Google OAuth / Apple OAuth**: Not currently available
 - **Public launch / broader user rollout**: Out of scope for this limited private beta
 
@@ -616,6 +618,7 @@ A capability moves to CURRENT only when proven on staging. Other planned capabil
 | Live Stripe payment / subscription management |
 | Deeper RPG / simulation (not current; not the next committed product) |
 | Public agent ecosystem |
+| Recursive self-improvement of agents, collaboration and the platform (human approval for every production change) |
 
 **Future office UI note (approved FUTURE; not current; not scheduled).** Keith's preferred graphics and UI reference for a future RPG-style agent office is https://github.com/W17ant/Claude-Office. We will build our own interface; the preference selects no code, assets, architecture or renderer. A separate source-only review reported no fundamental architectural obstacle, and live office integration is not implemented or production-verified. To revisit at UI planning: owner-scoped active and recent run retrieval with agent and session attribution; refresh, reconnect and navigation recovery; distinguishing execution completion, saved output, pending approval, application in progress and application outcome; what selecting an agent's character opens; preserving authorization checks for all UI actions; and keeping decorative animation separate from authoritative work status. This note does not change the MVP or private-beta scope. Review record: `docs/GOV-RPG-UI-COMPAT-01-REVIEW-RECORD.md`.
 
