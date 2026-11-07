@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ArrowRightIcon,
   ClockIcon,
@@ -29,6 +29,8 @@ export interface AgentDetailViewModel {
   isBuilder: boolean;
   isComingSoon: boolean;
   isUserCreated?: boolean;
+  openHref?: string;
+  openLabel?: string;
 }
 
 export interface AgentDetailPanelProps {
@@ -245,6 +247,15 @@ export default function AgentDetailPanel(props: AgentDetailPanelProps) {
             </div>
           ) : null}
         </div>
+      ) : agent.openHref && agent.openLabel ? (
+        <Link
+          href={agent.openHref}
+          className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+          data-testid="agent-detail-open"
+        >
+          <span>{agent.openLabel}</span>
+          <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
+        </Link>
       ) : (
         <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
           <p className="inline-flex items-center gap-2 text-sm font-semibold text-amber-800">

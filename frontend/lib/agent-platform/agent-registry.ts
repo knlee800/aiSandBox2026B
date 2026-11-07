@@ -165,7 +165,8 @@ export const AGENT_MANIFESTS: readonly AgentManifest[] = [
     descriptionKey: 'agents.chiefOfStaff.description',
     route: '/agents/chief-of-staff',
     avatarRef: 'chief-of-staff',
-    status: 'coming_soon',
+    status: 'active',
+    // enabled means a Builder-style workspace agent. The Chief of Staff is not one.
     enabled: false,
     modelProfile: PLACEHOLDER_MODEL_PROFILE,
     toolPermissions: PLACEHOLDER_TOOL_PERMISSIONS,

@@ -10,7 +10,7 @@ This document is the authoritative **PRODUCT WHAT**. It distinguishes **CURRENT*
 
 **aiSandBox / Builder Agent** is the first functional agent/module on ainow.biz. Builder lets users Ask questions or Build software through natural language, inside isolated and governed project workspaces.
 
-Other system agents — **Chief of Staff Agent**, **Product Strategy Agent**, and **Technology Advisor Agent** — are visible in the platform registry as coming-soon placeholders. Coming soon is a UI label for a visible-but-not-functional agent. Those agents are not functional in the current product and are not part of the current private beta.
+The **Chief of Staff Agent** is GATED: for gated accounts it answers questions from the owner's Knowledge documents with citations, read-only, started from the Team page (proven on staging 2026-11-07, BIZ-LIVE-01); it is not part of the current private-beta promise. **Product Strategy Agent** and **Technology Advisor Agent** are visible in the platform registry as coming-soon placeholders. Coming soon is a UI label for a visible-but-not-functional agent. Those two agents are not functional in the current product and are not part of the current private beta.
 
 The broader ainow.biz multi-agent collaboration and general agent-platform capabilities remain **approved** planned post-beta direction. They are not current product capability.
 
@@ -282,7 +282,7 @@ Live commercial payment processing, Stripe checkout, and subscription management
 | Agent | Status |
 |-------|--------|
 | Builder Agent | CURRENT — functional AI coding agent |
-| Chief of Staff Agent | COMING SOON — visible placeholder; not functional in current product or current private beta |
+| Chief of Staff Agent | GATED — read-only answers with citations from the owner's Knowledge documents, started from the Team page; proven on staging 2026-11-07 (BIZ-LIVE-01); gated accounts only; not in the private-beta promise |
 | Product Strategy Agent | COMING SOON — visible placeholder; not functional in current product or current private beta |
 | Technology Advisor Agent | COMING SOON — visible placeholder; not functional in current product or current private beta |
 
@@ -474,10 +474,10 @@ The following are explicitly out of scope for the initial Builder private beta. 
 - **Automatic session resurrection**: TERMINATED is a final state; no auto-restart of terminated sessions
 - **WebSocket-based control APIs**: Preview may use realtime traffic; it is not a general control-plane transport
 - **Live commercial payment processing**: Stripe checkout, subscription management, and live payment collection are not active. Credits-first balance enforcement is current; commercial billing activation is approved FUTURE.
-- **Functional non-Builder system agents**: Chief of Staff Agent, Product Strategy Agent, and Technology Advisor Agent are platform placeholders; they are not functional AI agents in this phase. Legal Advisor Agent is approved FUTURE and is not currently in the registry.
+- **Functional non-Builder system agents**: Product Strategy Agent and Technology Advisor Agent are platform placeholders; they are not functional AI agents in this phase. The Chief of Staff Agent is GATED (section 11): read-only, cited answers from the owner's Knowledge documents for gated accounts; not in the private-beta promise. Legal Advisor Agent is approved FUTURE and is not currently in the registry.
 - **Advanced / full executable-agent platform**: Persisted user-created agents already support bounded Ask and Build on the existing Builder runtime (bind in the existing workspace; Ask and Build against the selected existing project/session; ownership-scoped `agentId` on `conversation` and `workspace_mutation`). The advanced/full executable-agent platform — dedicated runtime, Harness/tool loop, per-agent tools/knowledge/skills/model configuration, autonomous/multi-turn operation beyond the existing single-shot Builder lifecycle, and collaboration/referrals — remains out of scope for initial beta
 - **Multi-agent collaboration runtime**: Agent referrals, work handoff, tickets, decisions, comments, approval gates, and loop/referral limits are approved FUTURE; not current
-- **Shared and specialist knowledge runtime**: Shared/company knowledge, specialist/private knowledge, uploads, policies, goals, meeting information, refresh/update behavior, and traceability/permissions are approved FUTURE; not current
+- **Shared and specialist knowledge runtime**: Uploads of the owner's own documents into fixed scopes, read only by the Chief of Staff, are GATED (section 11). Shared company knowledge across users, specialist/private knowledge, refresh/update behavior and traceability/permissions beyond the owner's own documents remain approved FUTURE; not current
 - **Product-visible multi-Builder**: Multiple Builder agents/profiles, differentiated specialties, task routing, collaboration, attribution, and orchestration are approved FUTURE; not current
 - **Agent Harness as the Builder experience**: The current beta promise is single-shot Builder. Harness-as-default is approved FUTURE.
 - **RPG walking-town / moving-character simulation**: The command-center shell has an RPG-inspired visual identity. Walking-town simulation is superseded as MVP and is not the current or next committed product. Deeper RPG/simulation remains long-term approved FUTURE.
@@ -504,7 +504,7 @@ The current product delivers:
 - **Persistent user-created agent profiles** (create / list / view / delete) with bounded product-facing Ask and Build on the existing Builder runtime (existing workspace Chat; Ask and Build available while bound). The advanced/full executable-agent platform remains approved FUTURE
 - **Admin operational support** for the private beta
 
-Other system agents (Chief of Staff Agent, Product Strategy Agent, Technology Advisor Agent) are platform placeholders. The broader ainow.biz multi-agent collaboration, general agent-platform capabilities, and commercial payment lifecycle remain **approved** planned post-beta direction.
+Product Strategy Agent and Technology Advisor Agent are platform placeholders; the Chief of Staff Agent is GATED (section 11). The broader ainow.biz multi-agent collaboration, general agent-platform capabilities, and commercial payment lifecycle remain **approved** planned post-beta direction.
 
 Limited private-beta rollout constraints are defined in §10. They are separate from the CURRENT capability inventory.
 
@@ -575,7 +575,7 @@ Coming-soon labels do not mean those agents ship in this beta. Invitation operat
 | Persistent user-created agent profiles (create / list / view) |
 | Bounded product-facing Ask and Build for persisted user-created agents (Ask CTA → existing `/[locale]/app?userAgentId=<uuid>` → existing Workspace Chat → ownership-scoped `agentId` for Ask and Build on the existing Builder runtime) |
 | Bounded ownership-scoped persisted user-agent identity on the existing Builder path (`agentId` on POST `/api/ai/execute` for `conversation` and `workspace_mutation`; bound workspace UI supplies `agentId` for both intents) |
-| Static system-agent registry (Builder active; 3 coming-soon placeholders) |
+| Static system-agent registry (Builder active; Chief of Staff active for gated accounts; 2 coming-soon placeholders) |
 
 ### GATED (implemented; not currently offered in private beta)
 
@@ -584,6 +584,8 @@ Coming-soon labels do not mean those agents ship in this beta. Invitation operat
 | AI execution globally | Deliberate safety gate must be enabled |
 | Agent Harness multi-turn tool loop | Implemented for controlled activation; not currently user-accessible in private beta |
 | Harness file, validation, and browser tools | Same as Harness: not currently user-accessible in private beta |
+| Chief of Staff Agent: read-only answers with citations from the owner's Knowledge documents, started from the Team page | Gated per account; proven on staging 2026-11-07 (BIZ-LIVE-01); not in the private-beta promise |
+| Knowledge uploads of the owner's own documents into fixed scopes | Gated per account; read only by the Chief of Staff |
 
 GATED means implemented for controlled activation. It does **not** mean currently available to private-beta users. Harness is not part of the current beta promise.
 
@@ -599,14 +601,13 @@ A capability moves to CURRENT only when proven on staging. Other planned capabil
 
 | Capability |
 |------------|
-| Functional Chief of Staff Agent |
 | Functional Product Strategy Agent |
 | Functional Technology Advisor Agent |
 | Functional Legal Advisor Agent (not currently in registry; no timeline promise) |
 | Advanced/full executable-agent platform (dedicated runtime, Harness, tools, knowledge, skills, per-agent model configuration, autonomous multi-turn execution) |
 | Per-agent model / tool / skill / knowledge configuration |
 | Shared/company and specialist/private knowledge |
-| Knowledge uploads, policies, goals, meeting information, refresh/update, and traceability/permissions |
+| Knowledge beyond the owner's own uploads: shared company knowledge, policies, goals and meeting information across users, refresh/update, and traceability/permissions |
 | Future external knowledge-source integrations (conceptual; not named committed products) |
 | Work objects (tickets, decisions, referrals, comments) |
 | Agent-to-agent referral, handoff, and collaboration |

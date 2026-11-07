@@ -51,6 +51,8 @@ const OFFICE_COPY = {
     agentProfile: 'Agent profile',
     closePanel: 'Close',
     comingSoonBody: 'This desk is reserved for a future agent.',
+    knowledgeBadge: '{count} documents',
+    knowledgeBadgeOne: '{count} document',
     'status.queued': 'Queued',
     'status.working': 'Working',
     'status.stopping': 'Stopping',
@@ -93,6 +95,8 @@ const OFFICE_COPY = {
     agentProfile: '代理檔案',
     closePanel: '關閉',
     comingSoonBody: '此座位保留給未來的代理。',
+    knowledgeBadge: '{count} 份文件',
+    knowledgeBadgeOne: '{count} 份文件',
     'status.queued': '排隊中',
     'status.working': '工作中',
     'status.stopping': '停止中',
@@ -135,6 +139,8 @@ const OFFICE_COPY = {
     agentProfile: '代理档案',
     closePanel: '关闭',
     comingSoonBody: '此工位保留给未来的代理。',
+    knowledgeBadge: '{count} 份文档',
+    knowledgeBadgeOne: '{count} 份文档',
     'status.queued': '排队中',
     'status.working': '工作中',
     'status.stopping': '停止中',
@@ -225,6 +231,7 @@ function renderOffice(
     updatedAt: null,
     nowMs: NOW,
     reducedMotion: false,
+    knowledgeDocumentCount: null,
     onSelectDesk: () => undefined,
     onClosePanel: () => undefined,
     onRefresh: () => undefined,
@@ -276,7 +283,9 @@ describe('office screen states', () => {
     assert.match(html, /href="\/en\/platform"/);
     assert.match(html, /data-testid="office-desk-registry:builder"/);
     assert.match(html, />Idle</);
-    assert.equal((html.match(/data-kind="vacant"/g) ?? []).length, 3);
+    assert.equal((html.match(/data-kind="vacant"/g) ?? []).length, 2);
+    assert.match(html, /data-testid="office-desk-registry:chief-of-staff"[^>]*data-kind="occupied"|data-kind="occupied"[^>]*data-testid="office-desk-registry:chief-of-staff"/);
+    assert.doesNotMatch(html, /data-testid="office-knowledge-badge"/);
     assert.doesNotMatch(html, /data-testid="office-desk-team"/);
     assert.doesNotMatch(html, /data-testid="office-desk-former"/);
     assert.match(html, /data-testid="office-no-runs"|No runs yet|Open desk/);
@@ -466,13 +475,69 @@ describe('office screen states', () => {
   test('a vacant desk explains the reservation and has no workspace link', () => {
     const html = renderOffice({
       desks: floor({}),
-      selectedDeskId: 'registry:chief-of-staff',
+      selectedDeskId: 'registry:product-strategy',
     });
     assert.match(html, /This desk is reserved for a future agent\./);
     assert.match(html, /Vacant desk/);
     assert.doesNotMatch(html, /data-testid="office-open-workspace"/);
+    assert.doesNotMatch(html, /data-testid="office-open-team"/);
     assert.match(html, /data-testid="office-agent-profile"/);
     assert.match(html, /href="\/en\/platform"/);
+  });
+
+  test('the chief of staff desk shows the knowledge count and opens the team page', () => {
+    const html = renderOffice({
+      desks: floor({}),
+      selectedDeskId: 'registry:chief-of-staff',
+      knowledgeDocumentCount: 3,
+    });
+    assert.match(html, /data-kind="occupied"/);
+    assert.equal((html.match(/data-testid="office-knowledge-badge"/g) ?? []).length, 1);
+    assert.equal((html.match(/data-testid="office-panel-knowledge-badge"/g) ?? []).length, 1);
+    assert.equal((html.match(/3 documents/g) ?? []).length, 3);
+    assert.match(html, /href="\/en\/collaboration"/);
+    assert.match(html, /data-testid="office-open-team"/);
+    assert.match(html, />Open</);
+    assert.doesNotMatch(html, /data-testid="office-open-workspace"/);
+    assert.doesNotMatch(html, /Secret handbook|document title|upload/i);
+    assert.doesNotMatch(html, />\s*(Approve|Reject|Upload)\s*</);
+
+    const none = renderOffice({
+      desks: floor({}),
+      selectedDeskId: 'registry:chief-of-staff',
+      knowledgeDocumentCount: null,
+    });
+    assert.doesNotMatch(none, /data-testid="office-knowledge-badge"/);
+    assert.doesNotMatch(none, /data-testid="office-panel-knowledge-badge"/);
+    assert.match(none, /data-testid="office-open-team"/);
+
+    const zero = renderOffice({
+      desks: floor({}),
+      selectedDeskId: 'registry:chief-of-staff',
+      knowledgeDocumentCount: 0,
+    });
+    assert.equal((zero.match(/0 documents/g) ?? []).length, 3);
+
+    const one = renderOffice({
+      desks: floor({}),
+      selectedDeskId: 'registry:chief-of-staff',
+      knowledgeDocumentCount: 1,
+    });
+    assert.equal((one.match(/1 document/g) ?? []).length, 3);
+    assert.doesNotMatch(one, /1 documents/);
+
+    const traditional = renderOffice(
+      {
+        locale: 'zh-TW',
+        desks: floor({}),
+        selectedDeskId: 'registry:chief-of-staff',
+        knowledgeDocumentCount: 3,
+      },
+      zhTwMessages as Record<string, unknown>,
+    );
+    assert.equal((traditional.match(/3 份文件/g) ?? []).length, 3);
+    assert.match(traditional, /href="\/zh-TW\/collaboration"/);
+    assert.match(traditional, />開啟</);
   });
 
   test('the screen has no approve, reject, handoff, cancel, delete, or apply control', () => {
@@ -497,6 +562,9 @@ describe('office screen states', () => {
     assert.match(hook, /document\.hidden/);
     assert.match(hook, /visibilitychange/);
     assert.match(hook, /OFFICE_POLL_MS/);
+    assert.match(screen, /knowledgeFetch\('\/api\/knowledge\/documents'\)/);
+    assert.match(screen, /\}, \[authReady\]\)/);
+    assert.doesNotMatch(screen, /title: document|document\.title|content:/);
     assert.doesNotMatch(`${screen}\n${panel}\n${hook}`, /method:\s*'POST'|method:\s*'DELETE'|applied/i);
   });
 });

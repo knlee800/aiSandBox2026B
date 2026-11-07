@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import {
   ArrowRightIcon,
+  BookOpenIcon,
   ClockIcon,
   UserCircleIcon,
   XMarkIcon,
@@ -30,6 +31,7 @@ export interface OfficePanelLabels {
   tokens: string;
   outcomeUnknown: string;
   openWorkspace: string;
+  openTeam: string;
   agentProfile: string;
   comingSoonBody: string;
   deskHint: string;
@@ -46,7 +48,9 @@ export interface OfficeDeskPanelProps {
     current: OfficePanelRun | null;
     recent: OfficePanelRun[];
     showOutcome: boolean;
+    knowledgeBadge: string | null;
     workspaceHref: string | null;
+    openHref: string | null;
     profileHref: string;
   } | null;
   labels: OfficePanelLabels;
@@ -134,6 +138,16 @@ export default function OfficeDeskPanel({ desk, labels, onClose }: OfficeDeskPan
         {desk.statusText}
       </p>
 
+      {desk.knowledgeBadge ? (
+        <p
+          className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-slate-600 bg-slate-800 px-2.5 py-1 text-xs font-medium text-slate-200"
+          data-testid="office-panel-knowledge-badge"
+        >
+          <BookOpenIcon className="h-3.5 w-3.5" aria-hidden="true" />
+          {desk.knowledgeBadge}
+        </p>
+      ) : null}
+
       {desk.vacant ? (
         <p className="mt-4 text-sm leading-relaxed text-slate-300">{labels.comingSoonBody}</p>
       ) : (
@@ -182,6 +196,16 @@ export default function OfficeDeskPanel({ desk, labels, onClose }: OfficeDeskPan
       )}
 
       <div className="mt-6 flex flex-col gap-2">
+        {desk.openHref ? (
+          <Link
+            href={desk.openHref}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+            data-testid="office-open-team"
+          >
+            <span>{labels.openTeam}</span>
+            <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
+          </Link>
+        ) : null}
         {desk.workspaceHref ? (
           <Link
             href={desk.workspaceHref}

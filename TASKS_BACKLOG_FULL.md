@@ -84425,6 +84425,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-05). **productClass:** CURRENT per PRD.md.
 
 **Holds:** Close the frontend platform test coverage gaps found in the reviews. The missing frontend/lib/ai tests in npm test are item 1 of HARNESS-FIXES-01. Scope is set at admission.
+**Noted 2026-11-07 (BIZ-02 checkpoint):** the frontend npm test script runs only components/workspace, components/public, lib and lib/auth-module tests; lib/office, lib/agent-platform, components/office and components/platform tests run only when named. BIZ-02 ran them by name (105 passed).
 **Added 2026-11-05 (OFFICE-01):** frontend npm test lists fixed folders and does not run components/office, lib/office or components/platform tests; include them.
 **Named in:** Keith-approved follow-up from the harness reviews.
 
@@ -84959,7 +84960,7 @@ taskId=BIZ-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-07. Lane 1, FRONTEND and I18N. Keith approved the drafted scope and admitted it on 2026-11-07. Implementation next.
+**Status:** COMPLETE AND LOCKED — 2026-11-07. LANE-DONE and LOCKED by the control plane; Lane 1 and FRONTEND and I18N released. Chief of Staff desk in the office with a document badge; the dashboard card shows it Active and opens the Team page; PRD.md marks the Chief of Staff and the owner's document uploads GATED; code and LOCK in one commit (LOCAL-TESTS); not deployed, STAGING-DEPLOY-13 registered. Checkpoint: docs/BIZ-02-CHECKPOINT.md.
 **Task ID:** BIZ-02
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -84977,14 +84978,39 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] The Chief of Staff registry manifest is status active; enabled stays false (enabled means a Builder-style workspace agent); the other placeholders are unchanged
-- [ ] The office shows an occupied Chief of Staff desk; collaboration runs whose first step is chief-of-staff are attributed to registry:chief-of-staff; coding-team runs stay on the Team desk
-- [ ] The desk and its panel show a knowledge badge: the count of the owner's documents in the Chief of Staff's six scopes from GET /api/knowledge/documents; Open goes to the Team page; the office gains no approve, reject or upload action
-- [ ] The platform dashboard card for the Chief of Staff shows Active with its own description and capabilities, no Builder intent or capabilities, and Open goes to the Team page
-- [ ] en, zh-TW and zh-CN keys for every new text, real translations, no hardcoded English
-- [ ] Tests cover each point above; frontend tests, type check and build pass, compared with the known failures in the latest checkpoint
-- [ ] At LOCK the control plane edits PRD.md as approved: line 284 Chief of Staff GATED (read-only cited answers from the owner's Knowledge documents, started from the Team page, proven on staging 2026-11-07 by BIZ-LIVE-01, gated accounts only, not in the private-beta promise); section 8 lines 476 and 478; section 11 moves the Chief of Staff and the owner's document uploads from APPROVED FUTURE to GATED
-- [ ] The checkpoint carries the CHECKLIST line (EVERY, UI, GOVERNANCE) and the FOLLOWUPS line
+- [x] The Chief of Staff registry manifest is status active; enabled stays false (enabled means a Builder-style workspace agent); the other placeholders are unchanged
+- [x] The office shows an occupied Chief of Staff desk; collaboration runs whose first step is chief-of-staff are attributed to registry:chief-of-staff; coding-team runs stay on the Team desk
+- [x] The desk and its panel show a knowledge badge: the count of the owner's documents in the Chief of Staff's six scopes from GET /api/knowledge/documents; Open goes to the Team page; the office gains no approve, reject or upload action
+- [x] The platform dashboard card for the Chief of Staff shows Active with its own description and capabilities, no Builder intent or capabilities, and Open goes to the Team page
+- [x] en, zh-TW and zh-CN keys for every new text, real translations, no hardcoded English
+- [x] Tests cover each point above; frontend tests, type check and build pass, compared with the known failures in the latest checkpoint
+- [x] At LOCK the control plane edits PRD.md as approved: line 284 Chief of Staff GATED (read-only cited answers from the owner's Knowledge documents, started from the Team page, proven on staging 2026-11-07 by BIZ-LIVE-01, gated accounts only, not in the private-beta promise); section 8 lines 476 and 478; section 11 moves the Chief of Staff and the owner's document uploads from APPROVED FUTURE to GATED
+- [x] The checkpoint carries the CHECKLIST line (EVERY, UI, GOVERNANCE) and the FOLLOWUPS line
+- [x] Not LOCKED by an implementer
+
+### STAGING-DEPLOY-13 — Deploy the Chief of Staff office desk (BIZ-02) during the tester window
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-13
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-07. Registered by BIZ-02; not admitted.
+**Task ID:** STAGING-DEPLOY-13
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (operational run; no code)
+**Lifecycle:** 3-STEP: registration here; admission when Keith picks the time; pre-check and deploy from the host; separate LOCK record (STAGING-RUNTIME).
+**Start condition (human):** NOT_READY. Ready when: BIZ-02 is COMPLETE AND LOCKED and Keith approves the deploy and its timing. Keith decides.
+**Depends on:** BIZ-02.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Expected: none in the repository beyond records; host state on ainow-staging-01 (frontend release).
+**Mutexes / resources:** set at admission (expected STAGING and ENV). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS; expected STAGING-RUNTIME). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+
+**Holds:** deploy the commit that holds BIZ-02 with the DEPLOY checklist, including item 7 while the tester window is open (save the window gateway.env, runs off for the deploy only, restore it byte for byte, check the window hashes gateway.env 5692ce35... and ai.env 132ebab3... and that runs are back on), Keith told first, health, guard and page checks, the static key refused. Keith checks the office desk, its document badge and the dashboard card in his own testing afterwards.
+**Named in:** docs/BIZ-02-CHECKPOINT.md.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
 - [ ] Not LOCKED by an implementer
 
 ### BIZ-03 — Advisors team: Product Strategy and Technology Advisor

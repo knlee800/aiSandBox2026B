@@ -513,7 +513,7 @@
     "chiefOfStaff": {
       "name": "Chief of Staff Agent",
       "role": "Daily Operations Assistant",
-      "description": "Coming soon placeholder for operations workflows, coordination, and approvals."
+      "description": "Answers questions from your Knowledge documents, with sources, and says when the documents do not answer."
     },
     "productStrategy": {
       "name": "Product Strategy Agent",
@@ -544,6 +544,7 @@
     "noStationSelected": "None selected",
     "openAgentDetailActive": "Open station profile and continue to build",
     "openAgentDetailComingSoon": "Open station profile and view launch readiness",
+    "openAgentDetailChiefOfStaff": "Open station profile and go to the Team page",
     "backToWorkspace": "Back to Workspace",
     "openOffice": "Office",
     "openKnowledge": "Knowledge",
@@ -566,7 +567,11 @@
       "builderCapabilityThree": "Hand off implementation results through the existing workspace flow.",
       "placeholderCapabilityOne": "Mission profile is visible for planning and team alignment.",
       "placeholderCapabilityTwo": "Workflow authority and launch controls remain disabled.",
-      "placeholderCapabilityThree": "Activation path will be announced in a future platform slice."
+      "placeholderCapabilityThree": "Activation path will be announced in a future platform slice.",
+      "chiefOfStaffIntent": "Answer questions from your Knowledge documents and cite the source.",
+      "chiefOfStaffCapabilityOne": "Answers questions from your Knowledge documents, with sources.",
+      "chiefOfStaffCapabilityTwo": "Says No source when the documents do not answer.",
+      "chiefOfStaffCapabilityThree": "Read-only: never sends anything or acts outside the platform."
     },
     "agentCreate": {
       "sectionTitle": "Your Agents",
@@ -1059,7 +1064,9 @@
     "openWorkspace": "Open workspace",
     "agentProfile": "Agent profile",
     "closePanel": "Close",
-    "comingSoonBody": "This desk is reserved for a future agent."
+    "comingSoonBody": "This desk is reserved for a future agent.",
+    "knowledgeBadge": "{count} documents",
+    "knowledgeBadgeOne": "{count} document"
   },
   "knowledge": {
     "title": "Knowledge",

@@ -64,6 +64,61 @@ function getStatusLabel(
   return resolveNestedMessage(messages, 'platform.agentStationDisabled');
 }
 
+export function countStationsByStatus(agents: readonly { status: string }[]): {
+  active: number;
+  reserve: number;
+} {
+  const active = agents.filter((agent) => agent.status === 'active').length;
+  return { active, reserve: agents.length - active };
+}
+
+export function staticAgentProfileContent(
+  agent: { id: string; enabled: boolean; status: AgentStatus },
+  text: (key: string) => string,
+): {
+  intent: string;
+  capabilities: string[];
+  isComingSoon: boolean;
+  actionHint: string;
+  cardEnabled: boolean;
+  openPath: string | null;
+} {
+  const chiefOfStaff = agent.id === 'chief-of-staff';
+  const builderStyle = agent.enabled && !chiefOfStaff;
+  return {
+    intent: chiefOfStaff
+      ? text('platform.detail.chiefOfStaffIntent')
+      : builderStyle
+        ? text('platform.detail.builderIntent')
+        : text('platform.detail.placeholderIntent'),
+    capabilities: chiefOfStaff
+      ? [
+          text('platform.detail.chiefOfStaffCapabilityOne'),
+          text('platform.detail.chiefOfStaffCapabilityTwo'),
+          text('platform.detail.chiefOfStaffCapabilityThree'),
+        ]
+      : builderStyle
+        ? [
+            text('platform.detail.builderCapabilityOne'),
+            text('platform.detail.builderCapabilityTwo'),
+            text('platform.detail.builderCapabilityThree'),
+          ]
+        : [
+            text('platform.detail.placeholderCapabilityOne'),
+            text('platform.detail.placeholderCapabilityTwo'),
+            text('platform.detail.placeholderCapabilityThree'),
+          ],
+    isComingSoon: agent.status === 'coming_soon',
+    actionHint: chiefOfStaff
+      ? text('platform.openAgentDetailChiefOfStaff')
+      : builderStyle
+        ? text('platform.openAgentDetailActive')
+        : text('platform.openAgentDetailComingSoon'),
+    cardEnabled: agent.status === 'active',
+    openPath: chiefOfStaff ? '/collaboration' : null,
+  };
+}
+
 export interface PlatformDashboardProps {
   locale?: string;
 }
@@ -128,10 +183,8 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
   const detailDeleting = resolveNestedMessage(messages, 'common.deleting');
   const detailComingSoonTitle = resolveNestedMessage(messages, 'platform.detail.comingSoonTitle');
   const detailComingSoonBody = resolveNestedMessage(messages, 'platform.detail.comingSoonBody');
-  const builderIntent = resolveNestedMessage(messages, 'platform.detail.builderIntent');
-  const placeholderIntent = resolveNestedMessage(messages, 'platform.detail.placeholderIntent');
+  const openTeamLabel = resolveNestedMessage(messages, 'common.open');
   const openAgentDetailActive = resolveNestedMessage(messages, 'platform.openAgentDetailActive');
-  const openAgentDetailComingSoon = resolveNestedMessage(messages, 'platform.openAgentDetailComingSoon');
   const activeStationsLabel = resolveNestedMessage(messages, 'platform.activeStationsLabel');
   const reserveStationsLabel = resolveNestedMessage(messages, 'platform.reserveStationsLabel');
   const selectedStationLabel = resolveNestedMessage(messages, 'platform.selectedStationLabel');
@@ -204,8 +257,8 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
   }, [userAgentsError, resolvedLocale, router]);
 
   const localePrefix = locale ? `/${locale}` : '';
-  const activeAgents = staticAgents.filter((agent) => agent.enabled).length;
-  const reserveAgents = staticAgents.length - activeAgents;
+  const stationCounts = countStationsByStatus(staticAgents);
+  const profileText = (key: string) => resolveNestedMessage(messages, key);
 
   const selectedStaticAgent = selectedAgentId
     ? staticAgents.find((agent) => agent.id === selectedAgentId) ?? null
@@ -278,26 +331,19 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
   let detailPanelContent: AgentDetailViewModel | null = null;
 
   if (selectedStaticAgent) {
+    const profile = staticAgentProfileContent(selectedStaticAgent, profileText);
     detailPanelContent = {
       id: selectedStaticAgent.id,
       name: resolveNestedMessage(messages, selectedStaticAgent.nameKey),
       role: resolveNestedMessage(messages, selectedStaticAgent.roleKey),
       description: resolveNestedMessage(messages, selectedStaticAgent.descriptionKey),
       statusLabel: getStatusLabel(selectedStaticAgent.status, messages),
-      intent: selectedStaticAgent.enabled ? builderIntent : placeholderIntent,
-      capabilities: selectedStaticAgent.enabled
-        ? [
-            resolveNestedMessage(messages, 'platform.detail.builderCapabilityOne'),
-            resolveNestedMessage(messages, 'platform.detail.builderCapabilityTwo'),
-            resolveNestedMessage(messages, 'platform.detail.builderCapabilityThree'),
-          ]
-        : [
-            resolveNestedMessage(messages, 'platform.detail.placeholderCapabilityOne'),
-            resolveNestedMessage(messages, 'platform.detail.placeholderCapabilityTwo'),
-            resolveNestedMessage(messages, 'platform.detail.placeholderCapabilityThree'),
-          ],
+      intent: profile.intent,
+      capabilities: profile.capabilities,
       isBuilder: selectedStaticAgent.id === 'builder',
-      isComingSoon: selectedStaticAgent.status === 'coming_soon',
+      isComingSoon: profile.isComingSoon,
+      openHref: profile.openPath ? `${localePrefix}${profile.openPath}` : undefined,
+      openLabel: profile.openPath ? openTeamLabel : undefined,
     };
   } else if (selectedUserAgent) {
     detailPanelContent = {
@@ -394,11 +440,11 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div className="rounded-lg border border-slate-700 bg-slate-800/80 px-3 py-2">
                   <p className="text-xs uppercase tracking-wide text-slate-300">{activeStationsLabel}</p>
-                  <p className="mt-1 text-xl font-semibold text-white">{activeAgents}</p>
+                  <p className="mt-1 text-xl font-semibold text-white">{stationCounts.active}</p>
                 </div>
                 <div className="rounded-lg border border-slate-700 bg-slate-800/80 px-3 py-2">
                   <p className="text-xs uppercase tracking-wide text-slate-300">{reserveStationsLabel}</p>
-                  <p className="mt-1 text-xl font-semibold text-white">{reserveAgents}</p>
+                  <p className="mt-1 text-xl font-semibold text-white">{stationCounts.reserve}</p>
                 </div>
                 <div className="rounded-lg border border-slate-700 bg-slate-800/80 px-3 py-2">
                   <p className="text-xs uppercase tracking-wide text-slate-300">{selectedStationLabel}</p>
@@ -422,21 +468,24 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
                 </div>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {staticAgents.map((agent) => (
-                  <AgentStationCard
-                    key={agent.id}
-                    id={agent.id}
-                    name={resolveNestedMessage(messages, agent.nameKey)}
-                    role={resolveNestedMessage(messages, agent.roleKey)}
-                    description={resolveNestedMessage(messages, agent.descriptionKey)}
-                    status={agent.status}
-                    enabled={agent.enabled}
-                    statusLabel={getStatusLabel(agent.status, messages)}
-                    selected={selectedAgentId === agent.id}
-                    onSelect={handleSelectStaticAgent}
-                    actionHint={agent.enabled ? openAgentDetailActive : openAgentDetailComingSoon}
-                  />
-                ))}
+                {staticAgents.map((agent) => {
+                  const profile = staticAgentProfileContent(agent, profileText);
+                  return (
+                    <AgentStationCard
+                      key={agent.id}
+                      id={agent.id}
+                      name={resolveNestedMessage(messages, agent.nameKey)}
+                      role={resolveNestedMessage(messages, agent.roleKey)}
+                      description={resolveNestedMessage(messages, agent.descriptionKey)}
+                      status={agent.status}
+                      enabled={profile.cardEnabled}
+                      statusLabel={getStatusLabel(agent.status, messages)}
+                      selected={selectedAgentId === agent.id}
+                      onSelect={handleSelectStaticAgent}
+                      actionHint={profile.actionHint}
+                    />
+                  );
+                })}
               </div>
 
               <div className="mt-6 border-t border-slate-700 pt-5">

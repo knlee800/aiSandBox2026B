@@ -1,9 +1,17 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { readFileSync } from 'node:fs';
+import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 import { listAgents } from '@/lib/agent-platform/agent-registry';
 import type { AgentManifest } from '@/lib/agent-platform/agent-registry';
+import AgentDetailPanel from '@/components/platform/agent-detail-panel';
+import type { AgentDetailViewModel } from '@/components/platform/agent-detail-panel';
+import {
+  countStationsByStatus,
+  staticAgentProfileContent,
+} from '@/components/platform/platform-dashboard';
 import enMessages from '@/messages/en.json';
 import zhTwMessages from '@/messages/zh-TW.json';
 import zhCnMessages from '@/messages/zh-CN.json';
@@ -48,9 +56,16 @@ describe('platform dashboard data integration', () => {
     assert.equal(builder.enabled, true);
   });
 
+  test('chief of staff is active without builder-style capabilities', () => {
+    const chief = agents.find((a) => a.id === 'chief-of-staff');
+    assert.ok(chief);
+    assert.equal(chief.status, 'active');
+    assert.equal(chief.enabled, false);
+  });
+
   test('placeholder agents render as coming_soon and disabled', () => {
-    const placeholders = agents.filter((a) => a.id !== 'builder');
-    assert.equal(placeholders.length, 3);
+    const placeholders = agents.filter((a) => a.id !== 'builder' && a.id !== 'chief-of-staff');
+    assert.equal(placeholders.length, 2);
     for (const agent of placeholders) {
       assert.equal(agent.status, 'coming_soon', `${agent.id} should be coming_soon`);
       assert.equal(agent.enabled, false, `${agent.id} should be disabled`);
@@ -90,6 +105,7 @@ describe('platform dashboard data integration', () => {
       'platform.noStationSelected',
       'platform.openAgentDetailActive',
       'platform.openAgentDetailComingSoon',
+      'platform.openAgentDetailChiefOfStaff',
       'platform.backToWorkspace',
       'platform.openOffice',
       'platform.openKnowledge',
@@ -149,7 +165,7 @@ describe('platform dashboard navigation integration', () => {
 
   test('coming-soon agents have routes but are not enabled', () => {
     const comingSoonAgents = agents.filter((a) => a.status === 'coming_soon');
-    assert.equal(comingSoonAgents.length, 3);
+    assert.equal(comingSoonAgents.length, 2);
     for (const agent of comingSoonAgents) {
       assert.equal(agent.enabled, false, `${agent.id} must not be enabled`);
       assert.ok(agent.route.length > 0, `${agent.id} should have a route defined for future use`);
@@ -176,6 +192,10 @@ describe('platform dashboard navigation integration', () => {
       'platform.detail.placeholderCapabilityOne',
       'platform.detail.placeholderCapabilityTwo',
       'platform.detail.placeholderCapabilityThree',
+      'platform.detail.chiefOfStaffIntent',
+      'platform.detail.chiefOfStaffCapabilityOne',
+      'platform.detail.chiefOfStaffCapabilityTwo',
+      'platform.detail.chiefOfStaffCapabilityThree',
     ];
 
     for (const { code, messages } of ALL_LOCALES) {
@@ -408,6 +428,158 @@ describe('platform Create Agent validation rules', () => {
   test('description > 2000 chars triggers validation error', () => {
     const description = 'A'.repeat(2001);
     assert.ok(description.length > 2000, 'description > 2000 chars should trigger max-length error');
+  });
+});
+
+describe('chief of staff station profile', () => {
+  const text = (messages: LocaleMessages) => (key: string) => resolveNestedString(messages, key) ?? key;
+
+  test('active stations count the chief of staff and the builder', () => {
+    const counts = countStationsByStatus(listAgents());
+    assert.equal(counts.active, 2);
+    assert.equal(counts.reserve, 2);
+  });
+
+  test('the chief of staff profile is its own copy and opens the team page', () => {
+    const chief = listAgents().find((agent) => agent.id === 'chief-of-staff');
+    const builder = listAgents().find((agent) => agent.id === 'builder');
+    const product = listAgents().find((agent) => agent.id === 'product-strategy');
+    assert.ok(chief && builder && product);
+    const chiefProfile = staticAgentProfileContent(chief, text(enMessages as LocaleMessages));
+    const builderProfile = staticAgentProfileContent(builder, text(enMessages as LocaleMessages));
+    const productProfile = staticAgentProfileContent(product, text(enMessages as LocaleMessages));
+
+    assert.equal(chiefProfile.isComingSoon, false);
+    assert.equal(chiefProfile.cardEnabled, true);
+    assert.equal(chiefProfile.openPath, '/collaboration');
+    assert.equal(
+      chiefProfile.intent,
+      'Answer questions from your Knowledge documents and cite the source.',
+    );
+    assert.deepEqual(chiefProfile.capabilities, [
+      'Answers questions from your Knowledge documents, with sources.',
+      'Says No source when the documents do not answer.',
+      'Read-only: never sends anything or acts outside the platform.',
+    ]);
+    assert.equal(chiefProfile.actionHint, 'Open station profile and go to the Team page');
+    for (const capability of builderProfile.capabilities) {
+      assert.equal(chiefProfile.capabilities.includes(capability), false);
+    }
+    assert.notEqual(chiefProfile.intent, builderProfile.intent);
+    assert.notEqual(chiefProfile.intent, productProfile.intent);
+
+    assert.equal(builderProfile.isComingSoon, false);
+    assert.equal(builderProfile.openPath, null);
+    assert.equal(builderProfile.cardEnabled, true);
+    assert.equal(builderProfile.intent, 'Deliver production-ready software in an isolated workspace with checkpoints, previews, and guided file actions.');
+    assert.equal(productProfile.isComingSoon, true);
+    assert.equal(productProfile.cardEnabled, false);
+    assert.equal(productProfile.openPath, null);
+    assert.equal(productProfile.actionHint, 'Open station profile and view launch readiness');
+    assert.equal(builderProfile.actionHint, 'Open station profile and continue to build');
+
+    const traditional = staticAgentProfileContent(chief, text(zhTwMessages as LocaleMessages));
+    const simplified = staticAgentProfileContent(chief, text(zhCnMessages as LocaleMessages));
+    assert.equal(traditional.intent, '根據你的知識文件回答問題，並標出來源。');
+    assert.equal(traditional.capabilities[1], '文件沒有答案時，會寫明沒有來源。');
+    assert.equal(simplified.intent, '根据你的知识文档回答问题，并标出来源。');
+    assert.equal(simplified.capabilities[2], '只读：不会送出任何内容，也不会在平台之外采取行动。');
+    assert.notEqual(traditional.intent, chiefProfile.intent);
+    assert.notEqual(simplified.intent, chiefProfile.intent);
+    assert.equal(
+      resolveNestedString(enMessages as LocaleMessages, 'agents.chiefOfStaff.description'),
+      'Answers questions from your Knowledge documents, with sources, and says when the documents do not answer.',
+    );
+  });
+
+  test('the detail panel opens the team page for the chief of staff and keeps the other stations', () => {
+    const labels = {
+      title: 'Agent Profile',
+      subtitle: 'Preview',
+      intentLabel: 'Mission Intent',
+      capabilitiesLabel: 'Capabilities',
+      closeLabel: 'Close',
+      emptyTitle: 'Empty',
+      emptyBody: 'Pick one',
+      startBuildingLabel: 'Start Building',
+      askButtonLabel: 'Ask',
+      comingSoonLabel: 'Coming Soon',
+      comingSoonBody: 'This station is in preparation mode and cannot be launched yet.',
+      deleteButtonLabel: 'Delete',
+      deleteConfirmTitle: 'Delete?',
+      deleteConfirmBody: 'This removes the agent.',
+      deleteConfirmActionLabel: 'Delete',
+      deleteCancelLabel: 'Cancel',
+      deletingLabel: 'Deleting',
+      deleteErrorMessage: null,
+      deletePending: false,
+      onDelete: () => undefined,
+      onClose: () => undefined,
+    };
+    const chief = listAgents().find((agent) => agent.id === 'chief-of-staff');
+    assert.ok(chief);
+    const profile = staticAgentProfileContent(chief, (key) => resolveNestedString(enMessages as LocaleMessages, key) ?? key);
+    const chiefModel: AgentDetailViewModel = {
+      id: chief.id,
+      name: 'Chief of Staff Agent',
+      role: 'Daily Operations Assistant',
+      description: 'Answers questions from your Knowledge documents, with sources, and says when the documents do not answer.',
+      statusLabel: 'Active',
+      intent: profile.intent,
+      capabilities: profile.capabilities,
+      isBuilder: false,
+      isComingSoon: profile.isComingSoon,
+      openHref: `/en${profile.openPath}`,
+      openLabel: 'Open',
+    };
+    const chiefHtml = renderToStaticMarkup(
+      React.createElement(AgentDetailPanel, { agent: chiefModel, localePrefix: '/en', ...labels }),
+    );
+    assert.match(chiefHtml, /data-testid="agent-detail-panel-chief-of-staff"/);
+    assert.match(chiefHtml, /data-testid="agent-detail-open"/);
+    assert.match(chiefHtml, /href="\/en\/collaboration"/);
+    assert.match(chiefHtml, />Open</);
+    assert.match(chiefHtml, />Active</);
+    assert.match(chiefHtml, /Says No source when the documents do not answer\./);
+    assert.doesNotMatch(chiefHtml, /data-testid="agent-detail-start-building"/);
+    assert.doesNotMatch(chiefHtml, /data-testid="agent-detail-ask"/);
+    assert.doesNotMatch(chiefHtml, /Coming Soon/);
+    assert.doesNotMatch(chiefHtml, /Generate and refine project files/);
+
+    const builderModel: AgentDetailViewModel = {
+      ...chiefModel,
+      id: 'builder',
+      name: 'Builder Agent',
+      intent: 'Deliver production-ready software in an isolated workspace with checkpoints, previews, and guided file actions.',
+      capabilities: ['Generate and refine project files directly in the workspace.'],
+      isBuilder: true,
+      openHref: undefined,
+      openLabel: undefined,
+    };
+    const builderHtml = renderToStaticMarkup(
+      React.createElement(AgentDetailPanel, { agent: builderModel, localePrefix: '/en', ...labels }),
+    );
+    assert.match(builderHtml, /data-testid="agent-detail-start-building"/);
+    assert.match(builderHtml, /href="\/en\/app"/);
+    assert.doesNotMatch(builderHtml, /data-testid="agent-detail-open"/);
+    assert.doesNotMatch(builderHtml, /collaboration/);
+
+    const soonModel: AgentDetailViewModel = {
+      ...chiefModel,
+      id: 'product-strategy',
+      name: 'Product Strategy Agent',
+      statusLabel: 'Coming Soon',
+      isComingSoon: true,
+      openHref: undefined,
+      openLabel: undefined,
+    };
+    const soonHtml = renderToStaticMarkup(
+      React.createElement(AgentDetailPanel, { agent: soonModel, localePrefix: '/en', ...labels }),
+    );
+    assert.match(soonHtml, /Coming Soon/);
+    assert.match(soonHtml, /This station is in preparation mode and cannot be launched yet\./);
+    assert.doesNotMatch(soonHtml, /data-testid="agent-detail-open"/);
+    assert.doesNotMatch(soonHtml, /data-testid="agent-detail-start-building"/);
   });
 });
 

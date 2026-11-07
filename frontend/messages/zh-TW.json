@@ -513,7 +513,7 @@
     "chiefOfStaff": {
       "name": "Chief of Staff Agent",
       "role": "日常營運助理",
-      "description": "即將推出的佔位代理，支援日常營運流程、協調與審批。"
+      "description": "根據你的知識文件回答問題，附上來源；文件沒有答案時會寫明沒有來源。"
     },
     "productStrategy": {
       "name": "Product Strategy Agent",
@@ -544,6 +544,7 @@
     "noStationSelected": "尚未選取",
     "openAgentDetailActive": "開啟站點檔案並繼續建置",
     "openAgentDetailComingSoon": "開啟站點檔案並查看上線準備",
+    "openAgentDetailChiefOfStaff": "開啟站點檔案並前往團隊頁",
     "backToWorkspace": "返回工作區",
     "openOffice": "辦公室",
     "openKnowledge": "知識庫",
@@ -566,7 +567,11 @@
       "builderCapabilityThree": "可沿用既有工作區流程完成交付與銜接。",
       "placeholderCapabilityOne": "任務檔案已開放檢視，可用於規劃與團隊對齊。",
       "placeholderCapabilityTwo": "工作流權限與啟動控制目前仍為停用狀態。",
-      "placeholderCapabilityThree": "啟用時程將於後續平台切片中公告。"
+      "placeholderCapabilityThree": "啟用時程將於後續平台切片中公告。",
+      "chiefOfStaffIntent": "根據你的知識文件回答問題，並標出來源。",
+      "chiefOfStaffCapabilityOne": "根據你的知識文件回答問題，並附上來源。",
+      "chiefOfStaffCapabilityTwo": "文件沒有答案時，會寫明沒有來源。",
+      "chiefOfStaffCapabilityThree": "唯讀：不會送出任何內容，也不會在平台之外採取行動。"
     },
     "agentCreate": {
       "sectionTitle": "您的代理",
@@ -1059,7 +1064,9 @@
     "openWorkspace": "開啟工作區",
     "agentProfile": "代理檔案",
     "closePanel": "關閉",
-    "comingSoonBody": "此座位保留給未來的代理。"
+    "comingSoonBody": "此座位保留給未來的代理。",
+    "knowledgeBadge": "{count} 份文件",
+    "knowledgeBadgeOne": "{count} 份文件"
   },
   "knowledge": {
     "title": "知識庫",

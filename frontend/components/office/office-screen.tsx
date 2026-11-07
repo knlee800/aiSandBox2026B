@@ -9,7 +9,8 @@ import {
   BuildingOffice2Icon,
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
-import { listAgents, type AgentManifest } from '@/lib/agent-platform/agent-registry';
+import { getAgentById, listAgents, type AgentManifest } from '@/lib/agent-platform/agent-registry';
+import { knowledgeFetch } from '@/components/knowledge/knowledge-api';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useUserAgents } from '@/hooks/useUserAgents';
 import { useOfficeRuns } from '@/hooks/useOfficeRuns';
@@ -19,6 +20,11 @@ import OfficeDeskPanel, {
   type OfficePanelRun,
 } from '@/components/office/office-desk-panel';
 import { OFFICE_ART_MOTION_CSS } from '@/components/office/office-art';
+import {
+  countActiveKnowledgeDocuments,
+  knowledgeBadgeMessageKey,
+  readKnowledgeBadgeDocuments,
+} from '@/lib/office/office-knowledge';
 import {
   buildOfficeDesks,
   deskShowsOutcome,
@@ -32,6 +38,7 @@ import {
   officeProviderModel,
   officeRegistryFromManifests,
   officeStartedClock,
+  officeTeamHref,
   officeTokensText,
   officeWorkspaceHref,
   phaseForRun,
@@ -69,6 +76,7 @@ export interface OfficeScreenViewProps {
   updatedAt: number | null;
   nowMs: number;
   reducedMotion: boolean;
+  knowledgeDocumentCount: number | null;
   onSelectDesk: (id: string) => void;
   onClosePanel: () => void;
   onRefresh: () => void;
@@ -96,6 +104,7 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
     updatedAt,
     nowMs,
     reducedMotion,
+    knowledgeDocumentCount,
     onSelectDesk,
     onClosePanel,
     onRefresh,
@@ -171,12 +180,22 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
     tokens: t('tokens'),
     outcomeUnknown: t('outcomeUnknown'),
     openWorkspace: t('openWorkspace'),
+    openTeam: resolveText('common.open'),
     agentProfile: t('agentProfile'),
     comingSoonBody: t('comingSoonBody'),
     deskHint: t('deskHint'),
   };
   const updatedSeconds =
     updatedAt == null ? null : Math.max(0, Math.floor((nowMs - updatedAt) / 1000));
+
+  function knowledgeBadgeText(desk: OfficeDesk): string | null {
+    if (desk.registryId !== 'chief-of-staff' || desk.vacant || knowledgeDocumentCount == null) {
+      return null;
+    }
+    return fillOfficeTemplate(t(knowledgeBadgeMessageKey(knowledgeDocumentCount)), {
+      count: String(knowledgeDocumentCount),
+    });
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-950" data-testid="office-screen">
@@ -256,6 +275,7 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
                     muted={desk.vacant || desk.kind === 'former'}
                     vacant={desk.vacant}
                     hint={t('deskHint')}
+                    badge={knowledgeBadgeText(desk)}
                     reducedMotion={reducedMotion}
                     onSelect={onSelectDesk}
                   />
@@ -281,9 +301,15 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
                       : null,
                     recent: selected.recentRuns.map((run, index) => toPanelRun(run, 'recent', index)),
                     showOutcome: deskShowsOutcome(selected),
-                    workspaceHref: selected.vacant
-                      ? null
-                      : officeWorkspaceHref(locale, selected.userAgentId),
+                    knowledgeBadge: knowledgeBadgeText(selected),
+                    workspaceHref:
+                      selected.vacant || selected.registryId === 'chief-of-staff'
+                        ? null
+                        : officeWorkspaceHref(locale, selected.userAgentId),
+                    openHref:
+                      selected.registryId === 'chief-of-staff' && !selected.vacant
+                        ? officeTeamHref(locale)
+                        : null,
                     profileHref: officePlatformHref(locale),
                   }
                 : null
@@ -353,6 +379,7 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
   const [authReady, setAuthReady] = useState(false);
   const [selectedDeskId, setSelectedDeskId] = useState<string | null>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [knowledgeDocumentCount, setKnowledgeDocumentCount] = useState<number | null>(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [poll, setPoll] = useState(false);
   const {
@@ -411,6 +438,37 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
   }, [locale, router]);
 
   useEffect(() => {
+    if (!authReady) {
+      return;
+    }
+    let active = true;
+    void (async () => {
+      try {
+        const response = await knowledgeFetch('/api/knowledge/documents');
+        if (!response.ok || !active) {
+          return;
+        }
+        const documents = readKnowledgeBadgeDocuments(await response.json());
+        const chief = getAgentById('chief-of-staff');
+        if (!documents || !chief || !active) {
+          return;
+        }
+        setKnowledgeDocumentCount(
+          countActiveKnowledgeDocuments(
+            documents,
+            chief.knowledgeScopes.map((scope) => scope.id),
+          ),
+        );
+      } catch {
+        // A failed knowledge read leaves the badge off and shows no error.
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [authReady]);
+
+  useEffect(() => {
     if (userAgentsError === 'AUTH_EXPIRED' || runs.error === 'AUTH_EXPIRED') {
       router.replace(`/${locale}/login`);
     }
@@ -467,6 +525,7 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
       updatedAt={runs.updatedAt}
       nowMs={nowMs}
       reducedMotion={reducedMotion}
+      knowledgeDocumentCount={knowledgeDocumentCount}
       onSelectDesk={setSelectedDeskId}
       onClosePanel={() => setSelectedDeskId(null)}
       onRefresh={runs.refresh}

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { BookOpenIcon } from '@heroicons/react/24/outline';
 import OfficeDeskArt from '@/components/office/office-art';
 import type { OfficeDeskPhase } from '@/lib/office/office.logic';
 
@@ -16,6 +17,7 @@ export interface OfficeDeskProps {
   muted: boolean;
   vacant: boolean;
   hint: string;
+  badge: string | null;
   reducedMotion: boolean;
   onSelect: (id: string) => void;
 }
@@ -49,6 +51,7 @@ export default function OfficeDesk(props: OfficeDeskProps): React.ReactElement {
     muted,
     vacant,
     hint,
+    badge,
     reducedMotion,
     onSelect,
   } = props;
@@ -68,7 +71,7 @@ export default function OfficeDesk(props: OfficeDeskProps): React.ReactElement {
       data-kind={vacant ? 'vacant' : 'occupied'}
       data-muted={muted ? 'true' : 'false'}
       aria-pressed={selected}
-      aria-label={`${name}. ${hint}`}
+      aria-label={badge ? `${name}. ${badge}. ${hint}` : `${name}. ${hint}`}
       onClick={() => onSelect(id)}
     >
       <OfficeDeskArt phase={phase} reducedMotion={reducedMotion} />
@@ -85,6 +88,15 @@ export default function OfficeDesk(props: OfficeDeskProps): React.ReactElement {
         </div>
       </div>
       <p className={`mt-3 text-xs font-medium ${statusClass(phase)}`}>{statusText}</p>
+      {badge ? (
+        <p
+          className="mt-2 inline-flex w-fit items-center gap-1 rounded-full border border-slate-600 bg-slate-800 px-2 py-0.5 text-xs font-medium text-slate-200"
+          data-testid="office-knowledge-badge"
+        >
+          <BookOpenIcon className="h-3.5 w-3.5" aria-hidden="true" />
+          {badge}
+        </p>
+      ) : null}
       {timeText ? <p className="mt-1 text-xs text-slate-400">{timeText}</p> : null}
     </button>
   );

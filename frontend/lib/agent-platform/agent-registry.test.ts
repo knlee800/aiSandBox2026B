@@ -20,7 +20,6 @@ const EXPECTED_AGENT_IDS = [
 ] as const;
 
 const PLACEHOLDER_AGENT_IDS = [
-  'chief-of-staff',
   'product-strategy',
   'technology-advisor',
 ] as const;
@@ -59,6 +58,24 @@ describe('agent registry foundation', () => {
     assert.equal(builder.enabled, true);
   });
 
+  test('chief of staff is active and not a builder-style agent', () => {
+    const chief = getAgentById('chief-of-staff');
+    assert.ok(chief);
+    assert.equal(chief.status, 'active');
+    assert.equal(chief.enabled, false);
+    assert.deepEqual(
+      chief.knowledgeScopes.map((scope) => scope.id),
+      [
+        'company-monthly-reports',
+        'three-year-goals',
+        'strategy-docs',
+        'policies',
+        'meeting-summaries',
+        'contract-templates',
+      ],
+    );
+  });
+
   test('placeholder agents are coming_soon and disabled', () => {
     for (const id of PLACEHOLDER_AGENT_IDS) {
       const agent = getAgentById(id);
@@ -91,9 +108,12 @@ describe('agent registry foundation', () => {
     const comingSoonAgents = listAgentsByStatus('coming_soon');
     const disabledAgents = listAgentsByStatus('disabled');
 
-    assert.equal(activeAgents.length, 1);
-    assert.equal(activeAgents[0].id, 'builder');
-    assert.equal(comingSoonAgents.length, 3);
+    assert.equal(activeAgents.length, 2);
+    assert.deepEqual(
+      activeAgents.map((agent) => agent.id),
+      ['builder', 'chief-of-staff'],
+    );
+    assert.equal(comingSoonAgents.length, 2);
     assert.deepEqual(
       comingSoonAgents.map((agent) => agent.id),
       [...PLACEHOLDER_AGENT_IDS],
@@ -149,7 +169,10 @@ describe('agent registry foundation', () => {
         `Invalid knowledge scope id for ${manifest.id}`,
       );
 
-      if (manifest.status === 'active') {
+      if (manifest.id === 'chief-of-staff') {
+        assert.equal(manifest.status, 'active');
+        assert.equal(manifest.enabled, false, 'Chief of Staff is active without Builder capabilities');
+      } else if (manifest.status === 'active') {
         assert.equal(manifest.enabled, true, `Active agents must be enabled: ${manifest.id}`);
       } else {
         assert.equal(manifest.enabled, false, `Non-active agents must be disabled: ${manifest.id}`);

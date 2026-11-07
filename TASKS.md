@@ -3,15 +3,15 @@
 schemaVersion=1
 maxImplementationLanes=2
 lane3=DISABLED
-lane1.state=ACTIVE
-lane1.taskId=BIZ-02
+lane1.state=EMPTY
+lane1.taskId=NONE
 lane2.state=EMPTY
 lane2.taskId=NONE
 governance.owner=NONE
 governance.state=UNOWNED
 saturationSuspended=false
 suspensionReason=NONE
-occupancyHash=sha256:c772a266ec5afc492553e401ffe32d6bce23f4329f0f0633063b7967de4aab28
+occupancyHash=sha256:942ff6798903e6f79e92aca2e8641dfcf7d4e19903c94c3429b13f2c37e5ec3d
 <!-- AISB_OCCUPANCY_V1_END -->
 
 **Parallel Development Architecture:** v1
@@ -447,16 +447,16 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-07. Lane 1 released. STAGING and ENV released UNOWNED. Staging runs 41a752e with the provider usage-limit message (PROVIDER-LIMIT-MSG-01); runs off about three minutes for the deploy; the tester window stays open. Checkpoint: docs/STAGING-DEPLOY-12-CHECKPOINT.md.
 
-## BIZ-02 — ADMITTED / Lane 1 ACTIVE — 2026-11-07
+## BIZ-02 — COMPLETE AND LOCKED / Lane 1 RELEASED — 2026-11-07
 
-**Current status:** ADMITTED, Lane 1, with FRONTEND and I18N. Keith admitted it on 2026-11-07 as drafted. Implementation next (Cursor grok-4.7-high); the PRD edit at LOCK by the control plane. Scope in TASKS_BACKLOG_FULL.md.
+**Current status:** COMPLETE AND LOCKED - 2026-11-07. Lane 1 released. FRONTEND and I18N released UNOWNED. Chief of Staff desk in the office with a document badge; the dashboard card shows it Active and opens the Team page; PRD.md marks the Chief of Staff and the owner's document uploads GATED; code and LOCK in one commit (LOCAL-TESTS); not deployed, STAGING-DEPLOY-13 registered. Checkpoint: docs/BIZ-02-CHECKPOINT.md.
 
 ## GOV-RSI-01 — COMPLETE AND LOCKED / NOT AN IMPLEMENTATION LANE — 2026-11-07
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-07. Keith's RSI direction recorded: PRD.md Planned Goal, non-goal for the current phase and APPROVED FUTURE row; ARCHITECTURE.md section 13.1 row and section 13.5 PLANNED constraint. RSI-00 umbrella registered NOT_READY. Checkpoint: docs/GOV-RSI-01-CHECKPOINT.md.
 
 ## Lane 1
-ACTIVE — BIZ-02 — 2026-11-07.
+EMPTY — Lane 1 released at BIZ-02 COMPLETE AND LOCKED — 2026-11-07.
 
 ## Lane 2
 EMPTY — Lane 2 released at RUN-STOP-01 COMPLETE AND LOCKED — 2026-11-06.
@@ -467,7 +467,7 @@ DISABLED
 ## Governance owner / state
 UNOWNED — GOV-DEPLOY-WINDOW-01 COMPLETE AND LOCKED — 2026-11-06.
 
-Lane 1 ACTIVE: BIZ-02 (Chief of Staff desk in the office). Lane 2 EMPTY. GOV-RSI-01 is COMPLETE AND LOCKED (recursive self-improvement recorded as approved FUTURE in PRD.md and as a PLANNED constraint in ARCHITECTURE.md section 13.5: versioned approved changes and a protected set; umbrella RSI-00 registered NOT_READY). PROVIDER-LIMIT-MSG-01 and STAGING-DEPLOY-12 are COMPLETE AND LOCKED (when the AI provider's account limit refuses a run, the workspace chat and the Team page say so in en, zh-TW and zh-CN instead of Invalid request; live on staging). BIZ-LIVE-01 is COMPLETE AND LOCKED (KNOW-02 and BIZ-01 live on staging; Keith's Chief of Staff check passed: cited answers from his Knowledge documents, No source when the documents do not answer, no hand-offs). BIZ-01 is COMPLETE AND LOCKED (Chief of Staff team: one server team registry with the coding team and a read-only Chief of Staff, an optional team field on the start route, six Knowledge scopes for the Chief of Staff, a team picker on the Team page; live on staging). KNOW-02 is COMPLETE AND LOCKED (read-only Knowledge tools for agents and internal knowledge routes; live on staging). ASK-CONTRACT-01, RUN-STOP-01 and STAGING-DEPLOY-11 are COMPLETE AND LOCKED (Ask mode gets its own instructions and never claims a file change; Stop button for a running chat run; from Keith's tester findings of 2026-11-06; live on staging). HARNESS-FIXES-01A and STAGING-DEPLOY-10 are COMPLETE AND LOCKED (Agent safety fixes live on staging: delete flag, recovered Build notice, failed search, Restore refused during a run). DESIGN-DOC-01 is COMPLETE AND LOCKED (DESIGN.md and PRODUCT.md; rule checklists from GOV-OS-07 in use). Tester window OPEN since 2026-11-06 (TESTER-WINDOW-01 COMPLETE AND LOCKED): AI runs on with Anthropic under the default daily caps; Keith's second account knlee802 has harness, Agent write and a 500k daily token limit. PROVIDER-LIVE and CREDIT tasks wait until the window closes (GOV-OS-06). ACCESS-CORS-01 and STAGING-DEPLOY-09 are COMPLETE AND LOCKED. ACCESS-LIVE-01 is COMPLETE AND LOCKED: the second-user check passed on staging. Staging runs 41a752e with knowledge, citations, the validation gate, Socket.IO auth, the audit table, per-user access, daily credit caps, per-plan token limits, test-key lockdown, the signed Agent tool profile, the real refusal messages, HTTP CORS limited to the app's own origin, the Agent safety fixes, the Ask-mode instructions, the Stop button, the Knowledge tools for agents, the Chief of Staff team and the provider usage-limit message (Keith admin, harness access and Agent write on); runs and provider on during the tester window. SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted: ACCESS-01E, ACCESS-01G to ACCESS-01J, LIMITS-PER-USER-01 (registered by GOV-ACCESS-PLAN-01); COLLAB-EVAL-01, COLLAB-FANOUT-01, COLLAB-REVIEWERS-01, COLLAB-LIMITS-ENV-01 (registered 2026-11-05 from Keith's Agent Teams and limits decisions); KNOW-04, BIZ-03, BIZ-NOPROJECT-01, GOV-ARCH-SYNC-01 (registered by GOV-BIZ-KNOWLEDGE-PLAN-01); BIZ-USER-01 (registered 2026-11-06 from Keith's decision: users build their own business agents after the Chief of Staff passes BIZ-LIVE-01); RSI-00 (registered by GOV-RSI-01); COLLAB-EDIT-01, COLLAB-CANCEL-01 (registered by GOV-COLLAB-PLAN-01); AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01 (registered by GOV-OS-05); ADMIN-CSRF-01 (registered by ACCESS-01B); AGENT-WRITE-UI-01, HARNESS-WRITE-VETO-01 (registered by ACCESS-01C); CHECKLIST-LINT-01 (registered by GOV-OS-07); DESIGN-GAPS-01 (registered by DESIGN-DOC-01).
+Both implementation lanes are EMPTY. BIZ-02 is COMPLETE AND LOCKED (Chief of Staff desk in the office with a document badge; the dashboard card shows it Active and opens the Team page; PRD.md marks the Chief of Staff and the owner's document uploads GATED; not deployed, STAGING-DEPLOY-13 registered). GOV-RSI-01 is COMPLETE AND LOCKED (recursive self-improvement recorded as approved FUTURE in PRD.md and as a PLANNED constraint in ARCHITECTURE.md section 13.5: versioned approved changes and a protected set; umbrella RSI-00 registered NOT_READY). PROVIDER-LIMIT-MSG-01 and STAGING-DEPLOY-12 are COMPLETE AND LOCKED (when the AI provider's account limit refuses a run, the workspace chat and the Team page say so in en, zh-TW and zh-CN instead of Invalid request; live on staging). BIZ-LIVE-01 is COMPLETE AND LOCKED (KNOW-02 and BIZ-01 live on staging; Keith's Chief of Staff check passed: cited answers from his Knowledge documents, No source when the documents do not answer, no hand-offs). BIZ-01 is COMPLETE AND LOCKED (Chief of Staff team: one server team registry with the coding team and a read-only Chief of Staff, an optional team field on the start route, six Knowledge scopes for the Chief of Staff, a team picker on the Team page; live on staging). KNOW-02 is COMPLETE AND LOCKED (read-only Knowledge tools for agents and internal knowledge routes; live on staging). ASK-CONTRACT-01, RUN-STOP-01 and STAGING-DEPLOY-11 are COMPLETE AND LOCKED (Ask mode gets its own instructions and never claims a file change; Stop button for a running chat run; from Keith's tester findings of 2026-11-06; live on staging). HARNESS-FIXES-01A and STAGING-DEPLOY-10 are COMPLETE AND LOCKED (Agent safety fixes live on staging: delete flag, recovered Build notice, failed search, Restore refused during a run). DESIGN-DOC-01 is COMPLETE AND LOCKED (DESIGN.md and PRODUCT.md; rule checklists from GOV-OS-07 in use). Tester window OPEN since 2026-11-06 (TESTER-WINDOW-01 COMPLETE AND LOCKED): AI runs on with Anthropic under the default daily caps; Keith's second account knlee802 has harness, Agent write and a 500k daily token limit. PROVIDER-LIVE and CREDIT tasks wait until the window closes (GOV-OS-06). ACCESS-CORS-01 and STAGING-DEPLOY-09 are COMPLETE AND LOCKED. ACCESS-LIVE-01 is COMPLETE AND LOCKED: the second-user check passed on staging. Staging runs 41a752e with knowledge, citations, the validation gate, Socket.IO auth, the audit table, per-user access, daily credit caps, per-plan token limits, test-key lockdown, the signed Agent tool profile, the real refusal messages, HTTP CORS limited to the app's own origin, the Agent safety fixes, the Ask-mode instructions, the Stop button, the Knowledge tools for agents, the Chief of Staff team and the provider usage-limit message (Keith admin, harness access and Agent write on); runs and provider on during the tester window. SIGNUP-ALLOWLIST-01 is READY and not admitted. NOT_READY and not admitted: ACCESS-01E, ACCESS-01G to ACCESS-01J, LIMITS-PER-USER-01 (registered by GOV-ACCESS-PLAN-01); COLLAB-EVAL-01, COLLAB-FANOUT-01, COLLAB-REVIEWERS-01, COLLAB-LIMITS-ENV-01 (registered 2026-11-05 from Keith's Agent Teams and limits decisions); KNOW-04, BIZ-03, BIZ-NOPROJECT-01, GOV-ARCH-SYNC-01 (registered by GOV-BIZ-KNOWLEDGE-PLAN-01); BIZ-USER-01 (registered 2026-11-06 from Keith's decision: users build their own business agents after the Chief of Staff passes BIZ-LIVE-01); RSI-00 (registered by GOV-RSI-01); STAGING-DEPLOY-13 (registered by BIZ-02); COLLAB-EDIT-01, COLLAB-CANCEL-01 (registered by GOV-COLLAB-PLAN-01); AGENT-COLLAB-BIZ-01, AGENT-KNOWLEDGE-01, RPG-OFFICE-01, ACCESS-READY-01, HARNESS-FIXES-01, BUILDER-POLISH-01, USAGE-DATA-01, FE-TEST-COVERAGE-01 (registered by GOV-OS-05); ADMIN-CSRF-01 (registered by ACCESS-01B); AGENT-WRITE-UI-01, HARNESS-WRITE-VETO-01 (registered by ACCESS-01C); CHECKLIST-LINT-01 (registered by GOV-OS-07); DESIGN-GAPS-01 (registered by DESIGN-DOC-01).
 
 ## Tester window
 OPEN since 2026-11-06T04:12:41Z (opened by TESTER-WINDOW-01); runtimeAuthorization.testerWindowOpen true; window env hashes gateway.env 5692ce351b06..., ai.env 132ebab3244d...; tester account knlee802; closing is a registered task when Keith says stop.
@@ -476,8 +476,8 @@ OPEN since 2026-11-06T04:12:41Z (opened by TESTER-WINDOW-01); runtimeAuthorizati
 - GOVERNANCE: UNOWNED — GOV-RSI-01 lock 2026-11-07.
 - GATEWAY: UNOWNED — released at BIZ-01 COMPLETE AND LOCKED 2026-11-07.
 - MIGRATION: UNOWNED — released at ACCESS-01B COMPLETE AND LOCKED 2026-11-05.
-- FRONTEND: OWNED by BIZ-02 (2026-11-07).
-- I18N: OWNED by BIZ-02 (2026-11-07).
+- FRONTEND: UNOWNED — released at BIZ-02 COMPLETE AND LOCKED 2026-11-07.
+- I18N: UNOWNED — released at BIZ-02 COMPLETE AND LOCKED 2026-11-07.
 - STAGING: UNOWNED — released at STAGING-DEPLOY-12 COMPLETE AND LOCKED 2026-11-07 (stagingAuthorized=false).
 - PROVIDER-LIVE: UNOWNED — released at TESTER-WINDOW-01 COMPLETE AND LOCKED 2026-11-06 (providerLiveAuthorized=false).
 - CREDIT: UNOWNED — released at TESTER-WINDOW-01 COMPLETE AND LOCKED 2026-11-06 (creditAuthorized=false).

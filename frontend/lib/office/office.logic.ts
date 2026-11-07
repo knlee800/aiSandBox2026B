@@ -1,3 +1,5 @@
+import { listAgents } from '@/lib/agent-platform/agent-registry';
+
 export const OFFICE_POLL_MS = 5000;
 export const OFFICE_RECENT_LIMIT = 5;
 export const BUILDER_DESK_ID = 'registry:builder';
@@ -37,6 +39,7 @@ export type OfficeDeskKind = 'registry' | 'user' | 'team' | 'former';
 export interface OfficeRegistryAgent {
   id: string;
   comingSoon: boolean;
+  status: string;
 }
 
 export interface OfficeUserAgentRef {
@@ -80,8 +83,21 @@ export function officeRegistryFromManifests(
 ): OfficeRegistryAgent[] {
   return agents.map((agent) => ({
     id: agent.id,
+    status: agent.status,
     comingSoon: agent.status === 'coming_soon',
   }));
+}
+
+export function activeRegistryDeskIds(
+  agents: readonly { id: string; status: string }[],
+): ReadonlySet<string> {
+  const ids = new Set<string>();
+  for (const agent of agents) {
+    if (agent.status === 'active' && agent.id !== 'builder') {
+      ids.add(agent.id);
+    }
+  }
+  return ids;
 }
 
 export function presentText(value: string | null | undefined): string | null {
@@ -93,10 +109,17 @@ export function presentText(value: string | null | undefined): string | null {
 }
 
 export function attributeDeskId(
-  run: Pick<OfficeRun, 'collaborationRunId' | 'agentId'>,
+  run: Pick<OfficeRun, 'collaborationRunId' | 'agentId'> & {
+    builderProfileId?: string | null;
+  },
   userAgentIds: ReadonlySet<string>,
+  activeRegistryIds: ReadonlySet<string> = activeRegistryDeskIds(listAgents()),
 ): string {
   if (presentText(run.collaborationRunId)) {
+    const profileId = presentText(run.builderProfileId);
+    if (profileId && activeRegistryIds.has(profileId)) {
+      return `registry:${profileId}`;
+    }
     return TEAM_DESK_ID;
   }
   const agentId = presentText(run.agentId);
@@ -245,6 +268,10 @@ export function officeWorkspaceHref(locale: string, userAgentId: string | null):
 
 export function officePlatformHref(locale: string): string {
   return `/${locale}/platform`;
+}
+
+export function officeTeamHref(locale: string): string {
+  return `/${locale}/collaboration`;
 }
 
 export function officeTint(phase: OfficeDeskPhase): string {
@@ -441,6 +468,7 @@ export function buildOfficeDesks(input: {
   recentRuns: readonly OfficeRun[];
 }): OfficeDesk[] {
   const userAgentIds = new Set(input.userAgents.map((agent) => agent.id));
+  const activeRegistryIds = activeRegistryDeskIds(input.registry);
   const groups = new Map<string, { active: OfficeRun[]; recent: OfficeRun[] }>();
   const bucket = (id: string) => {
     const existing = groups.get(id);
@@ -453,10 +481,10 @@ export function buildOfficeDesks(input: {
   };
 
   for (const run of input.activeRuns) {
-    bucket(attributeDeskId(run, userAgentIds)).active.push(run);
+    bucket(attributeDeskId(run, userAgentIds, activeRegistryIds)).active.push(run);
   }
   for (const run of input.recentRuns) {
-    bucket(attributeDeskId(run, userAgentIds)).recent.push(run);
+    bucket(attributeDeskId(run, userAgentIds, activeRegistryIds)).recent.push(run);
   }
 
   const desks: OfficeDesk[] = [];

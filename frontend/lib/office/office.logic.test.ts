@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { listAgents } from '@/lib/agent-platform/agent-registry';
+import { getAgentById } from '@/lib/agent-platform/agent-registry';
+import {
+  countActiveKnowledgeDocuments,
+  knowledgeBadgeMessageKey,
+  readKnowledgeBadgeDocuments,
+} from '@/lib/office/office-knowledge';
 import {
   BUILDER_DESK_ID,
   FORMER_DESK_ID,
@@ -12,6 +18,7 @@ import {
   formatElapsedText,
   normalizeOfficeRuns,
   officeRegistryFromManifests,
+  officeTeamHref,
   phaseForRun,
   activeRunsEnded,
   shouldPollOffice,
@@ -77,6 +84,44 @@ describe('office run attribution', () => {
       ),
       TEAM_DESK_ID,
     );
+  });
+
+  test('a chief-of-staff collaboration run goes to that registry desk', () => {
+    assert.equal(
+      attributeDeskId(
+        {
+          collaborationRunId: 'collab-1',
+          agentId: 'ua-1',
+          builderProfileId: 'chief-of-staff',
+        },
+        userIds,
+      ),
+      'registry:chief-of-staff',
+    );
+    assert.equal(
+      attributeDeskId(
+        {
+          collaborationRunId: 'collab-1',
+          agentId: null,
+          builderProfileId: '  chief-of-staff  ',
+        },
+        userIds,
+      ),
+      'registry:chief-of-staff',
+    );
+  });
+
+  test('other collaboration runs stay on the team desk', () => {
+    for (const builderProfileId of ['lead', 'writer', 'builder', 'product-strategy', 'technology-advisor', '   ', null]) {
+      assert.equal(
+        attributeDeskId(
+          { collaborationRunId: 'collab-1', agentId: 'ua-1', builderProfileId },
+          userIds,
+        ),
+        TEAM_DESK_ID,
+        `profile ${String(builderProfileId)}`,
+      );
+    }
   });
 
   test('a blank collaboration id does not open the team desk', () => {
@@ -200,11 +245,19 @@ describe('office desk status', () => {
     assert.ok(builder);
     assert.equal(builder.phase, 'idle');
     assert.equal(builder.isLastRun, false);
+    const chief = built.find((item) => item.id === 'registry:chief-of-staff');
+    assert.ok(chief);
+    assert.equal(chief.vacant, false);
+    assert.equal(chief.phase, 'idle');
     const vacant = built.filter((item) => item.vacant);
-    assert.equal(vacant.length, 3);
+    assert.equal(vacant.length, 2);
+    assert.deepEqual(
+      vacant.map((item) => item.id),
+      ['registry:product-strategy', 'registry:technology-advisor'],
+    );
     assert.deepEqual(
       vacant.map((item) => item.phase),
-      ['vacant', 'vacant', 'vacant'],
+      ['vacant', 'vacant'],
     );
     assert.equal(built.some((item) => item.id === TEAM_DESK_ID), false);
     assert.equal(built.some((item) => item.id === FORMER_DESK_ID), false);
@@ -287,18 +340,84 @@ describe('office desk status', () => {
 });
 
 describe('office desk grouping', () => {
-  test('coming-soon desks stay vacant when their registry id appears on a run', () => {
+  test('a non-collaboration registry id stays on former agents', () => {
     const built = desksFor({
       activeRuns: [run({ executionId: 'stray', agentId: 'chief-of-staff', status: 'running' })],
     });
     const chief = built.find((item) => item.id === 'registry:chief-of-staff');
     const former = built.find((item) => item.id === FORMER_DESK_ID);
     assert.ok(chief);
-    assert.equal(chief.phase, 'vacant');
+    assert.equal(chief.vacant, false);
+    assert.equal(chief.phase, 'idle');
     assert.equal(chief.currentRun, null);
     assert.ok(former);
     assert.equal(former.phase, 'working');
     assert.equal(former.headlineRun?.executionId, 'stray');
+  });
+
+  test('only an active non-builder registry profile leaves the team desk', () => {
+    const custom = buildOfficeDesks({
+      registry: [
+        { id: 'builder', status: 'active', comingSoon: false },
+        { id: 'custom-advisor', status: 'active', comingSoon: false },
+        { id: 'retired', status: 'disabled', comingSoon: false },
+      ],
+      userAgents: [],
+      activeRuns: [
+        run({
+          executionId: 'custom-run',
+          collaborationRunId: 'collab-custom',
+          builderProfileId: 'custom-advisor',
+        }),
+        run({
+          executionId: 'retired-run',
+          collaborationRunId: 'collab-retired',
+          builderProfileId: 'retired',
+        }),
+      ],
+      recentRuns: [],
+    });
+    const advisor = custom.find((item) => item.id === 'registry:custom-advisor');
+    const retired = custom.find((item) => item.id === 'registry:retired');
+    const team = custom.find((item) => item.id === TEAM_DESK_ID);
+    assert.ok(advisor);
+    assert.equal(advisor.currentRun?.executionId, 'custom-run');
+    assert.ok(retired);
+    assert.equal(retired.currentRun, null);
+    assert.ok(team);
+    assert.equal(team.currentRun?.executionId, 'retired-run');
+    assert.equal(team.headlineRun?.executionId, 'retired-run');
+    assert.equal(
+      custom.some((item) => item.currentRun?.executionId === 'custom-run' && item.id === TEAM_DESK_ID),
+      false,
+    );
+  });
+
+  test('a chief-of-staff collaboration run occupies that desk and leaves the team desk', () => {
+    const built = desksFor({
+      activeRuns: [
+        run({
+          executionId: 'chief-run',
+          collaborationRunId: 'collab-chief',
+          builderProfileId: 'chief-of-staff',
+          status: 'running',
+        }),
+        run({
+          executionId: 'coding-run',
+          collaborationRunId: 'collab-coding',
+          builderProfileId: 'lead',
+          status: 'queued',
+        }),
+      ],
+    });
+    const chief = built.find((item) => item.id === 'registry:chief-of-staff');
+    const team = built.find((item) => item.id === TEAM_DESK_ID);
+    assert.ok(chief);
+    assert.equal(chief.vacant, false);
+    assert.equal(chief.currentRun?.executionId, 'chief-run');
+    assert.ok(team);
+    assert.equal(team.currentRun?.executionId, 'coding-run');
+    assert.equal(team.teamRole, 'lead');
   });
 
   test('team and former desks appear only when a run needs them', () => {
@@ -491,5 +610,66 @@ describe('office run payload', () => {
   test('a payload without a runs array is rejected', () => {
     assert.equal(normalizeOfficeRuns({}), null);
     assert.equal(normalizeOfficeRuns(null), null);
+  });
+});
+
+describe('chief of staff knowledge badge', () => {
+  const chiefScopes = [
+    'company-monthly-reports',
+    'three-year-goals',
+    'strategy-docs',
+    'policies',
+    'meeting-summaries',
+    'contract-templates',
+  ];
+
+  test('the count uses the chief of staff scopes and skips other or inactive documents', () => {
+    const chief = getAgentById('chief-of-staff');
+    assert.ok(chief);
+    assert.deepEqual(
+      chief.knowledgeScopes.map((scope) => scope.id),
+      chiefScopes,
+    );
+    assert.equal(
+      countActiveKnowledgeDocuments(
+        [
+          { scopeId: 'policies' },
+          { scopeId: 'contract-templates', status: 'active' },
+          { scopeId: 'policies', status: 'deleted' },
+          { scopeId: 'market-data', status: 'active' },
+          { scopeId: 'codebase-context' },
+          { scopeId: 'tech-landscape', status: null },
+        ],
+        chief.knowledgeScopes.map((scope) => scope.id),
+      ),
+      2,
+    );
+    assert.equal(countActiveKnowledgeDocuments([], chiefScopes), 0);
+    assert.equal(knowledgeBadgeMessageKey(0), 'knowledgeBadge');
+    assert.equal(knowledgeBadgeMessageKey(1), 'knowledgeBadgeOne');
+    assert.equal(knowledgeBadgeMessageKey(3), 'knowledgeBadge');
+  });
+
+  test('the reader keeps scope and status and drops titles', () => {
+    const documents = readKnowledgeBadgeDocuments({
+      documents: [
+        { id: 'doc-1', scopeId: 'policies', title: 'Secret handbook', status: 'active', content: 'hidden' },
+        { scopeId: 'contract-templates', title: 'Template' },
+      ],
+    });
+    assert.ok(documents);
+    assert.deepEqual(documents, [
+      { scopeId: 'policies', status: 'active' },
+      { scopeId: 'contract-templates', status: null },
+    ]);
+    assert.equal(documents.some((document) => 'title' in document || 'content' in document), false);
+    assert.equal(readKnowledgeBadgeDocuments({ documents: [{ title: 'No scope' }] }), null);
+    assert.equal(readKnowledgeBadgeDocuments({}), null);
+    assert.equal(readKnowledgeBadgeDocuments(null), null);
+  });
+
+  test('the team page href keeps the locale', () => {
+    assert.equal(officeTeamHref('en'), '/en/collaboration');
+    assert.equal(officeTeamHref('zh-TW'), '/zh-TW/collaboration');
   });
 });
