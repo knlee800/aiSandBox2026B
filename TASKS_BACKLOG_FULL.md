@@ -84640,15 +84640,15 @@ taskId=COLLAB-CANCEL-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-COLLAB-PLAN-01 (Option A); not admitted.
+**Status:** ADMITTED — 2026-11-07. Lane 1, GATEWAY, FRONTEND and I18N. Keith approved the drafted scope and admitted it on 2026-11-07. Implementation next.
 **Task ID:** COLLAB-CANCEL-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition (human):** NOT_READY. Ready when: Keith chooses it, or OFFICE-07 is chosen (OFFICE-07 then depends on it). Keith decides.
+**Start condition (human):** READY — Keith chose it on 2026-11-07 after two waiting runs blocked STAGING-DEPLOY-16, and admitted it as drafted.
 **Depends on:** none recorded; see the ready condition.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
-**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**Primary write scope:** `services/api-gateway/src/orchestration/collaboration.controller.ts`, `services/api-gateway/src/orchestration/collaboration.controller.spec.ts`, `frontend/components/collaboration/collaboration-page.tsx`, `frontend/components/collaboration/collaboration-view.tsx`, `frontend/lib/collaboration/logic.ts`, `frontend/lib/collaboration.test.ts`, `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json` (logic.ts only if needed), docs/COLLAB-CANCEL-01-CHECKPOINT.md. The orchestration service's cancel logic is not changed; anything else needs a control-plane scope change.
+**Mutexes / resources:** GATEWAY, FRONTEND, I18N. **Hot-file leases:** none. **Shared contracts:** none frozen; HARNESS_ENTITLEMENT_PROOF_V1 unchanged. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (one owner route, one button and message keys; no migration).
 **saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (the built Team page is gated, active development).
 
 **Holds:** A login cancel route and a button on the Team page that call the existing cancelCollaboration in the orchestration service, owner-checked like approve and reject. en / zh-TW / zh-CN. Rough size S. OFFICE-07 later calls the same route.
@@ -84656,7 +84656,13 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] POST /api/collaboration/runs/:id/cancel behind the same login guard and entitlement check as approve and reject: only the run's owner may cancel; it takes an optional reason, calls the existing cancelCollaboration, and refuses a run that is no longer active with 409; another user's run is refused as approve and reject refuse it
+- [ ] Every waiting, approved or running hand-off in the run is cancelled by the existing service and the run ends cancelled; the service's cancel logic is unchanged
+- [ ] The Team page shows Cancel run on an active run with one confirm step; after it the run shows Cancelled and the list refreshes; a refusal shows a translated message
+- [ ] Every new text in en, zh-TW and zh-CN through the existing translation hook, no hardcoded English; existing data-testids kept
+- [ ] Tests cover each point above; api-gateway tests and build, and frontend tests (the collaboration tests run in npm test), type check and build pass, compared with the known failures in the latest checkpoints
+- [ ] The checkpoint carries the CHECKLIST line (EVERY, UI, BACKEND) and the FOLLOWUPS line; the deploy is registered
 - [ ] Not LOCKED by an implementer
 
 ### STAGING-DEPLOY-04 — Deploy the office and the reopen fix, with Keith's browser check
