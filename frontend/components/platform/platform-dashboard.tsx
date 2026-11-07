@@ -14,8 +14,8 @@ import {
   UserCircleIcon,
   UserGroupIcon,
 } from '@heroicons/react/24/outline';
-import { listAgents } from '@/lib/agent-platform/agent-registry';
-import type { AgentStatus } from '@/lib/agent-platform/agent-registry';
+import type { AgentStatus, PublicSystemAgent } from '@/lib/agent-platform/agent-registry';
+import { useSystemAgents, type SystemAgentsError } from '@/lib/agent-platform/use-system-agents';
 import { useUserAgents } from '@/hooks/useUserAgents';
 import type { UserAgent } from '@/hooks/useUserAgents';
 import { nextSelectedUserAgentIdAfterDelete } from '@/hooks/useUserAgents';
@@ -72,6 +72,17 @@ export function countStationsByStatus(agents: readonly { status: string }[]): {
   return { active, reserve: agents.length - active };
 }
 
+export function stationCountsForLoad(
+  loading: boolean,
+  error: SystemAgentsError | null,
+  agents: readonly { status: string }[],
+): { active: number; reserve: number } | null {
+  if (loading || error === 'AUTH_EXPIRED') {
+    return null;
+  }
+  return countStationsByStatus(agents);
+}
+
 export function staticAgentProfileContent(
   agent: { id: string; enabled: boolean; status: AgentStatus },
   text: (key: string) => string,
@@ -119,6 +130,85 @@ export function staticAgentProfileContent(
   };
 }
 
+export function SystemAgentStationArea(props: {
+  agents: readonly PublicSystemAgent[];
+  loading: boolean;
+  error: SystemAgentsError | null;
+  loadingLabel: string;
+  errorLabel: string;
+  retryLabel: string;
+  text: (key: string) => string;
+  statusLabel: (status: AgentStatus) => string;
+  selectedAgentId: string | null;
+  onSelect: (id: string) => void;
+  onRetry: () => void;
+}): React.ReactElement {
+  if (props.loading) {
+    return (
+      <div
+        className="rounded-lg border border-slate-700 bg-slate-800/60 px-4 py-6 text-center"
+        data-testid="platform-system-agents-loading"
+      >
+        <p className="text-sm text-slate-400">{props.loadingLabel}</p>
+      </div>
+    );
+  }
+
+  if (props.error === 'AUTH_EXPIRED') {
+    return <></>;
+  }
+
+  const cards = (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      {props.agents.map((agent) => {
+        const profile = staticAgentProfileContent(agent, props.text);
+        return (
+          <AgentStationCard
+            key={agent.id}
+            id={agent.id}
+            name={props.text(agent.nameKey)}
+            role={props.text(agent.roleKey)}
+            description={props.text(agent.descriptionKey)}
+            status={agent.status}
+            enabled={profile.cardEnabled}
+            statusLabel={props.statusLabel(agent.status)}
+            selected={props.selectedAgentId === agent.id}
+            onSelect={props.onSelect}
+            actionHint={profile.actionHint}
+          />
+        );
+      })}
+    </div>
+  );
+
+  if (props.error !== 'FETCH_FAILED') {
+    return cards;
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div
+        className="rounded-lg border border-red-700/40 bg-red-950/30 px-4 py-4"
+        data-testid="platform-system-agents-error"
+      >
+        <div className="flex items-center gap-2">
+          <ExclamationTriangleIcon className="h-4 w-4 text-red-400" aria-hidden="true" />
+          <p className="text-sm text-red-300">{props.errorLabel}</p>
+        </div>
+        <button
+          type="button"
+          onClick={props.onRetry}
+          className="mt-2 text-sm font-medium text-indigo-300 hover:text-indigo-200"
+          data-testid="platform-system-agents-retry"
+        >
+          {props.retryLabel}
+        </button>
+      </div>
+      {cards}
+    </div>
+  );
+}
+
 export interface PlatformDashboardProps {
   locale?: string;
 }
@@ -135,7 +225,7 @@ function getUserAgentStatusLabel(
 export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
   const router = useRouter();
   const messages = getLocaleMessages(locale);
-  const staticAgents = listAgents();
+  const systemAgents = useSystemAgents();
   const [selectedAgentId, setSelectedAgentId] = React.useState<string | null>(null);
   const [selectedUserAgentId, setSelectedUserAgentId] = React.useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = React.useState(false);
@@ -198,6 +288,8 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
   const acEmptyBody = resolveNestedMessage(messages, 'platform.agentCreate.emptyBody');
   const acLoadError = resolveNestedMessage(messages, 'platform.agentCreate.loadError');
   const acRetry = resolveNestedMessage(messages, 'platform.agentCreate.retry');
+  const systemAgentsLoadingLabel = resolveNestedMessage(messages, 'platform.systemAgentsLoading');
+  const systemAgentsLoadError = resolveNestedMessage(messages, 'platform.systemAgentsLoadError');
 
   const formLabels: CreateAgentFormLabels = {
     formTitle: resolveNestedMessage(messages, 'platform.agentCreate.formTitle'),
@@ -251,17 +343,21 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
   }, [resolvedLocale, router]);
 
   React.useEffect(() => {
-    if (userAgentsError === 'AUTH_EXPIRED') {
+    if (userAgentsError === 'AUTH_EXPIRED' || systemAgents.error === 'AUTH_EXPIRED') {
       router.replace(`/${resolvedLocale}/login`);
     }
-  }, [userAgentsError, resolvedLocale, router]);
+  }, [userAgentsError, systemAgents.error, resolvedLocale, router]);
 
   const localePrefix = locale ? `/${locale}` : '';
-  const stationCounts = countStationsByStatus(staticAgents);
+  const stationCounts = stationCountsForLoad(
+    systemAgents.loading,
+    systemAgents.error,
+    systemAgents.agents,
+  );
   const profileText = (key: string) => resolveNestedMessage(messages, key);
 
   const selectedStaticAgent = selectedAgentId
-    ? staticAgents.find((agent) => agent.id === selectedAgentId) ?? null
+    ? systemAgents.agents.find((agent) => agent.id === selectedAgentId) ?? null
     : null;
 
   const selectedUserAgent: UserAgent | null = selectedUserAgentId
@@ -440,11 +536,11 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div className="rounded-lg border border-slate-700 bg-slate-800/80 px-3 py-2">
                   <p className="text-xs uppercase tracking-wide text-slate-300">{activeStationsLabel}</p>
-                  <p className="mt-1 text-xl font-semibold text-white">{stationCounts.active}</p>
+                  <p className="mt-1 text-xl font-semibold text-white">{stationCounts ? stationCounts.active : '\u00A0'}</p>
                 </div>
                 <div className="rounded-lg border border-slate-700 bg-slate-800/80 px-3 py-2">
                   <p className="text-xs uppercase tracking-wide text-slate-300">{reserveStationsLabel}</p>
-                  <p className="mt-1 text-xl font-semibold text-white">{stationCounts.reserve}</p>
+                  <p className="mt-1 text-xl font-semibold text-white">{stationCounts ? stationCounts.reserve : '\u00A0'}</p>
                 </div>
                 <div className="rounded-lg border border-slate-700 bg-slate-800/80 px-3 py-2">
                   <p className="text-xs uppercase tracking-wide text-slate-300">{selectedStationLabel}</p>
@@ -467,26 +563,21 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
                   <p className="mt-1 text-sm text-slate-400">{stationsSubtitle}</p>
                 </div>
               </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {staticAgents.map((agent) => {
-                  const profile = staticAgentProfileContent(agent, profileText);
-                  return (
-                    <AgentStationCard
-                      key={agent.id}
-                      id={agent.id}
-                      name={resolveNestedMessage(messages, agent.nameKey)}
-                      role={resolveNestedMessage(messages, agent.roleKey)}
-                      description={resolveNestedMessage(messages, agent.descriptionKey)}
-                      status={agent.status}
-                      enabled={profile.cardEnabled}
-                      statusLabel={getStatusLabel(agent.status, messages)}
-                      selected={selectedAgentId === agent.id}
-                      onSelect={handleSelectStaticAgent}
-                      actionHint={profile.actionHint}
-                    />
-                  );
-                })}
-              </div>
+              <SystemAgentStationArea
+                agents={systemAgents.agents}
+                loading={systemAgents.loading}
+                error={systemAgents.error}
+                loadingLabel={systemAgentsLoadingLabel}
+                errorLabel={systemAgentsLoadError}
+                retryLabel={acRetry}
+                text={profileText}
+                statusLabel={(status) => getStatusLabel(status, messages)}
+                selectedAgentId={selectedAgentId}
+                onSelect={handleSelectStaticAgent}
+                onRetry={() => {
+                  void systemAgents.refetch();
+                }}
+              />
 
               <div className="mt-6 border-t border-slate-700 pt-5">
                 <div className="mb-4 flex items-center justify-between">

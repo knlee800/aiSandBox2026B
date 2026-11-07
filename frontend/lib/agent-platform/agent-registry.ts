@@ -92,163 +92,125 @@ export interface AgentManifest {
   manifestVersion: number;
 }
 
-const BUILDER_MODEL_PROFILE: AgentModelProfile = {
-  defaultModelId: 'gpt-5.3-codex-high',
-  fallbackModelId: 'claude-4.6-sonnet-medium-thinking',
-  maxTokensPerTurn: 12_000,
-  maxTurnsPerSession: 12,
-  temperature: 0.2,
-  costTier: 'medium',
-};
-
-const PLACEHOLDER_MODEL_PROFILE: AgentModelProfile = {
-  defaultModelId: 'claude-4.6-sonnet-medium-thinking',
-  fallbackModelId: 'gpt-5.3-codex-high',
-  maxTokensPerTurn: 8_000,
-  maxTurnsPerSession: 8,
-  temperature: 0.2,
-  costTier: 'low',
-};
-
-const BUILDER_TOOL_PERMISSIONS: AgentToolPermissions = {
-  allowedTools: [
-    'workspace.files.read',
-    'workspace.files.write',
-    'workspace.preview.run',
-    'workspace.checkpoint.create',
-    'workspace.validation.run',
-  ],
-  blockedTools: [],
-  requireApprovalTools: ['workspace.files.delete', 'workspace.shell.exec'],
-  maxToolCallsPerTurn: 12,
-  maxToolCallsPerSession: 200,
-};
-
-const PLACEHOLDER_TOOL_PERMISSIONS: AgentToolPermissions = {
-  allowedTools: [],
-  blockedTools: ['*'],
-  requireApprovalTools: [],
-  maxToolCallsPerTurn: 1,
-  maxToolCallsPerSession: 1,
-};
-
-export const AGENT_MANIFESTS: readonly AgentManifest[] = [
-  {
-    id: 'builder',
-    nameKey: 'agents.builder.name',
-    roleKey: 'agents.builder.role',
-    descriptionKey: 'agents.builder.description',
-    route: '/app',
-    avatarRef: 'builder',
-    spriteRef: 'builder-idle',
-    status: 'active',
-    enabled: true,
-    modelProfile: BUILDER_MODEL_PROFILE,
-    toolPermissions: BUILDER_TOOL_PERMISSIONS,
-    knowledgeScopes: [
-      { id: 'company-monthly-reports', type: 'shared' },
-      { id: 'three-year-goals', type: 'shared' },
-      { id: 'strategy-docs', type: 'shared' },
-      { id: 'policies', type: 'shared' },
-      { id: 'meeting-summaries', type: 'shared' },
-      { id: 'codebase-context', type: 'specialist' },
-    ],
-    skills: [],
-    referralRules: [],
-    approvalRules: [],
-    manifestVersion: 1,
-  },
-  {
-    id: 'chief-of-staff',
-    nameKey: 'agents.chiefOfStaff.name',
-    roleKey: 'agents.chiefOfStaff.role',
-    descriptionKey: 'agents.chiefOfStaff.description',
-    route: '/agents/chief-of-staff',
-    avatarRef: 'chief-of-staff',
-    status: 'active',
-    // enabled means a Builder-style workspace agent. The Chief of Staff is not one.
-    enabled: false,
-    modelProfile: PLACEHOLDER_MODEL_PROFILE,
-    toolPermissions: PLACEHOLDER_TOOL_PERMISSIONS,
-    knowledgeScopes: [
-      { id: 'company-monthly-reports', type: 'shared' },
-      { id: 'three-year-goals', type: 'shared' },
-      { id: 'strategy-docs', type: 'shared' },
-      { id: 'policies', type: 'shared' },
-      { id: 'meeting-summaries', type: 'shared' },
-      { id: 'contract-templates', type: 'specialist' },
-    ],
-    skills: [],
-    referralRules: [],
-    approvalRules: [],
-    manifestVersion: 1,
-  },
-  {
-    id: 'product-strategy',
-    nameKey: 'agents.productStrategy.name',
-    roleKey: 'agents.productStrategy.role',
-    descriptionKey: 'agents.productStrategy.description',
-    route: '/agents/product-strategy',
-    avatarRef: 'product-strategy',
-    status: 'coming_soon',
-    enabled: false,
-    modelProfile: PLACEHOLDER_MODEL_PROFILE,
-    toolPermissions: PLACEHOLDER_TOOL_PERMISSIONS,
-    knowledgeScopes: [
-      { id: 'company-monthly-reports', type: 'shared' },
-      { id: 'three-year-goals', type: 'shared' },
-      { id: 'strategy-docs', type: 'shared' },
-      { id: 'policies', type: 'shared' },
-      { id: 'meeting-summaries', type: 'shared' },
-      { id: 'market-data', type: 'specialist' },
-    ],
-    skills: [],
-    referralRules: [],
-    approvalRules: [],
-    manifestVersion: 1,
-  },
-  {
-    id: 'technology-advisor',
-    nameKey: 'agents.technologyAdvisor.name',
-    roleKey: 'agents.technologyAdvisor.role',
-    descriptionKey: 'agents.technologyAdvisor.description',
-    route: '/agents/technology-advisor',
-    avatarRef: 'technology-advisor',
-    status: 'coming_soon',
-    enabled: false,
-    modelProfile: PLACEHOLDER_MODEL_PROFILE,
-    toolPermissions: PLACEHOLDER_TOOL_PERMISSIONS,
-    knowledgeScopes: [
-      { id: 'company-monthly-reports', type: 'shared' },
-      { id: 'three-year-goals', type: 'shared' },
-      { id: 'strategy-docs', type: 'shared' },
-      { id: 'policies', type: 'shared' },
-      { id: 'meeting-summaries', type: 'shared' },
-      { id: 'tech-landscape', type: 'specialist' },
-    ],
-    skills: [],
-    referralRules: [],
-    approvalRules: [],
-    manifestVersion: 1,
-  },
-] as const;
-
-const AGENT_MANIFEST_BY_ID: ReadonlyMap<AgentId, AgentManifest> = new Map(
-  AGENT_MANIFESTS.map((agent) => [agent.id, agent] as const),
-);
-
-export function listAgents(): readonly AgentManifest[] {
-  return AGENT_MANIFESTS;
+export interface PublicSystemAgent {
+  id: string;
+  nameKey: string;
+  roleKey: string;
+  descriptionKey: string;
+  status: AgentStatus;
+  enabled: boolean;
+  knowledgeScopes: readonly AgentKnowledgeScopeRef[];
+  version: string;
 }
 
-export function getAgentById(id: string): AgentManifest | undefined {
-  return AGENT_MANIFEST_BY_ID.get(id as AgentId);
+const VERSION_PATTERN = /^[0-9a-f]{64}$/;
+
+export const BUILDER_FALLBACK_AGENT: PublicSystemAgent = {
+  id: 'builder',
+  nameKey: 'agents.builder.name',
+  roleKey: 'agents.builder.role',
+  descriptionKey: 'agents.builder.description',
+  status: 'active',
+  enabled: true,
+  knowledgeScopes: [],
+  version: 'fallback',
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
 }
 
-export function listEnabledAgents(): readonly AgentManifest[] {
-  return AGENT_MANIFESTS.filter((agent) => agent.enabled);
+function isAgentStatus(value: unknown): value is AgentStatus {
+  return value === 'active' || value === 'coming_soon' || value === 'disabled';
 }
 
-export function listAgentsByStatus(status: AgentStatus): readonly AgentManifest[] {
-  return AGENT_MANIFESTS.filter((agent) => agent.status === status);
+function parseScope(value: unknown): AgentKnowledgeScopeRef | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+  if (typeof value.id !== 'string' || value.id.length === 0) {
+    return null;
+  }
+  if (value.type !== 'shared' && value.type !== 'specialist') {
+    return null;
+  }
+  return { id: value.id, type: value.type };
+}
+
+function parsePublicAgent(value: unknown): PublicSystemAgent | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+  if (typeof value.id !== 'string' || value.id.length === 0) {
+    return null;
+  }
+  if (typeof value.nameKey !== 'string' || value.nameKey.length === 0) {
+    return null;
+  }
+  if (typeof value.roleKey !== 'string' || value.roleKey.length === 0) {
+    return null;
+  }
+  if (typeof value.descriptionKey !== 'string' || value.descriptionKey.length === 0) {
+    return null;
+  }
+  if (!isAgentStatus(value.status) || typeof value.enabled !== 'boolean') {
+    return null;
+  }
+  if (!Array.isArray(value.knowledgeScopes)) {
+    return null;
+  }
+  const knowledgeScopes: AgentKnowledgeScopeRef[] = [];
+  for (const scope of value.knowledgeScopes) {
+    const parsed = parseScope(scope);
+    if (!parsed) {
+      return null;
+    }
+    knowledgeScopes.push(parsed);
+  }
+  if (typeof value.version !== 'string' || !VERSION_PATTERN.test(value.version)) {
+    return null;
+  }
+  return {
+    id: value.id,
+    nameKey: value.nameKey,
+    roleKey: value.roleKey,
+    descriptionKey: value.descriptionKey,
+    status: value.status,
+    enabled: value.enabled,
+    knowledgeScopes,
+    version: value.version,
+  };
+}
+
+export function parseSystemAgents(payload: unknown): PublicSystemAgent[] | null {
+  if (!isRecord(payload) || !Array.isArray(payload.agents) || payload.agents.length === 0) {
+    return null;
+  }
+  const agents: PublicSystemAgent[] = [];
+  for (const item of payload.agents) {
+    const parsed = parsePublicAgent(item);
+    if (!parsed) {
+      return null;
+    }
+    agents.push(parsed);
+  }
+  return agents;
+}
+
+export function getAgentById(
+  agents: readonly PublicSystemAgent[],
+  id: string,
+): PublicSystemAgent | undefined {
+  return agents.find((agent) => agent.id === id);
+}
+
+export function listEnabledAgents(agents: readonly PublicSystemAgent[]): PublicSystemAgent[] {
+  return agents.filter((agent) => agent.enabled);
+}
+
+export function listAgentsByStatus(
+  agents: readonly PublicSystemAgent[],
+  status: AgentStatus,
+): PublicSystemAgent[] {
+  return agents.filter((agent) => agent.status === status);
 }

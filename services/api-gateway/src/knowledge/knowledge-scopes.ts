@@ -9,9 +9,9 @@ export interface KnowledgeScope {
 }
 
 /**
- * Unique scope ids and types from frontend/lib/agent-platform/agent-registry.ts,
- * in first-seen order. knowledge-scopes.spec.ts fails if the two lists diverge.
- * legal-contracts is not in the registry, so it is not registered here.
+ * Scope catalogue. This array stays a literal, in first-seen order, so the
+ * worker can read the ids. knowledge-scopes.spec.ts checks it against the
+ * system-agent registry. legal-contracts is not registered.
  */
 export const KNOWLEDGE_SCOPES: readonly KnowledgeScope[] = [
   { id: 'company-monthly-reports', type: 'shared' },

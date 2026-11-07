@@ -5,7 +5,6 @@ import { describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { listAgents } from '@/lib/agent-platform/agent-registry';
 import {
   KNOWLEDGE_SERVER_ERROR_KEYS,
   parseKnowledgeDocuments,
@@ -233,14 +232,19 @@ describe('knowledge locale catalog', () => {
     }
   });
 
-  test('scope ids from the agent registry have labels and Chinese copy uses 代理', () => {
-    const scopeIds = new Set<string>();
-    for (const agent of listAgents()) {
-      for (const scope of agent.knowledgeScopes) {
-        scopeIds.add(scope.id);
-      }
-    }
-    assert.ok(scopeIds.size > 0);
+  test('the nine scope ids have labels and Chinese copy uses 代理', () => {
+    const scopeIds = [
+      'company-monthly-reports',
+      'three-year-goals',
+      'strategy-docs',
+      'policies',
+      'meeting-summaries',
+      'codebase-context',
+      'contract-templates',
+      'market-data',
+      'tech-landscape',
+    ];
+    assert.equal(scopeIds.length, 9);
     for (const { code, messages } of LOCALES) {
       for (const id of scopeIds) {
         const value = readMessage(messages, `knowledge.scopes.${id}`);

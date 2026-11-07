@@ -549,6 +549,8 @@
     "openOffice": "办公室",
     "openKnowledge": "知识库",
     "comingSoonMessage": "此代理即将推出，敬请期待！",
+    "systemAgentsLoading": "正在加载席位…",
+    "systemAgentsLoadError": "无法加载席位，目前只显示 Builder。",
     "detail": {
       "title": "代理档案",
       "subtitle": "所有占位站点当前仅供预览，尚未启用。",
@@ -1031,6 +1033,7 @@
     "emptyBody": "到指挥中心创建代理来填补座位。",
     "runsLoadError": "无法加载运行状态。",
     "agentsLoadError": "无法加载你的代理。",
+    "systemAgentsLoadError": "无法加载席位，目前只显示 Builder 的座位。",
     "retry": "重试",
     "deskHint": "打开工位",
     "formerAgents": "已离职代理",

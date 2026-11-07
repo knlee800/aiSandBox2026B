@@ -4,13 +4,14 @@ import { readFileSync } from 'node:fs';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import { listAgents } from '@/lib/agent-platform/agent-registry';
-import type { AgentManifest } from '@/lib/agent-platform/agent-registry';
+import type { PublicSystemAgent } from '@/lib/agent-platform/agent-registry';
 import AgentDetailPanel from '@/components/platform/agent-detail-panel';
 import type { AgentDetailViewModel } from '@/components/platform/agent-detail-panel';
 import {
   countStationsByStatus,
+  stationCountsForLoad,
   staticAgentProfileContent,
+  SystemAgentStationArea,
 } from '@/components/platform/platform-dashboard';
 import enMessages from '@/messages/en.json';
 import zhTwMessages from '@/messages/zh-TW.json';
@@ -38,10 +39,53 @@ function resolveNestedString(source: LocaleMessages, fullKey: string): string | 
   return typeof current === 'string' ? current : null;
 }
 
+const PUBLIC_STATIONS: readonly PublicSystemAgent[] = [
+  {
+    id: 'builder',
+    nameKey: 'agents.builder.name',
+    roleKey: 'agents.builder.role',
+    descriptionKey: 'agents.builder.description',
+    status: 'active',
+    enabled: true,
+    knowledgeScopes: [],
+    version: 'a'.repeat(64),
+  },
+  {
+    id: 'chief-of-staff',
+    nameKey: 'agents.chiefOfStaff.name',
+    roleKey: 'agents.chiefOfStaff.role',
+    descriptionKey: 'agents.chiefOfStaff.description',
+    status: 'active',
+    enabled: false,
+    knowledgeScopes: [],
+    version: 'b'.repeat(64),
+  },
+  {
+    id: 'product-strategy',
+    nameKey: 'agents.productStrategy.name',
+    roleKey: 'agents.productStrategy.role',
+    descriptionKey: 'agents.productStrategy.description',
+    status: 'coming_soon',
+    enabled: false,
+    knowledgeScopes: [],
+    version: 'c'.repeat(64),
+  },
+  {
+    id: 'technology-advisor',
+    nameKey: 'agents.technologyAdvisor.name',
+    roleKey: 'agents.technologyAdvisor.role',
+    descriptionKey: 'agents.technologyAdvisor.description',
+    status: 'coming_soon',
+    enabled: false,
+    knowledgeScopes: [],
+    version: 'd'.repeat(64),
+  },
+];
+
 const USER_AGENT_STATUSES = ['active', 'draft', 'disabled'] as const;
 
 describe('platform dashboard data integration', () => {
-  const agents: readonly AgentManifest[] = listAgents();
+  const agents = PUBLIC_STATIONS;
 
   test('registry exposes exactly four agents for the dashboard', () => {
     assert.equal(agents.length, 4);
@@ -110,6 +154,8 @@ describe('platform dashboard data integration', () => {
       'platform.openOffice',
       'platform.openKnowledge',
       'platform.comingSoonMessage',
+      'platform.systemAgentsLoading',
+      'platform.systemAgentsLoadError',
     ];
 
     for (const { code, messages } of ALL_LOCALES) {
@@ -123,18 +169,10 @@ describe('platform dashboard data integration', () => {
     }
   });
 
-  test('each agent has a non-empty avatarRef', () => {
-    for (const agent of agents) {
-      assert.ok(
-        agent.avatarRef && agent.avatarRef.trim().length > 0,
-        `Agent ${agent.id} must have an avatarRef`,
-      );
-    }
-  });
 });
 
 describe('platform dashboard navigation integration', () => {
-  const agents: readonly AgentManifest[] = listAgents();
+  const agents = PUBLIC_STATIONS;
 
   test('command center header links to the office route', () => {
     const dashboardSource = readFileSync(new URL('./platform-dashboard.tsx', import.meta.url), 'utf8');
@@ -150,25 +188,25 @@ describe('platform dashboard navigation integration', () => {
     assert.match(dashboardSource, /href=\{`\$\{localePrefix\}\/knowledge`\}/);
   });
 
-  test('builder agent route matches the existing workspace route /app', () => {
-    const builder = agents.find((a) => a.id === 'builder');
-    assert.ok(builder);
-    assert.equal(builder.route, '/app');
+  test('builder Start Building remains the hardcoded /app href', () => {
+    const panelSource = readFileSync(new URL('./agent-detail-panel.tsx', import.meta.url), 'utf8');
+    const builderBranchStart = panelSource.indexOf('{agent.isBuilder ?');
+    const userCreatedBranchStart = panelSource.indexOf(') : agent.isUserCreated ?');
+    const builderBranch = panelSource.slice(builderBranchStart, userCreatedBranchStart);
+    assert.match(builderBranch, /href=\{`\$\{localePrefix\}\/app`\}/);
   });
 
-  test('builder agent is the only enabled agent with a navigable route', () => {
+  test('builder agent is the only enabled agent', () => {
     const enabledAgents = agents.filter((a) => a.enabled);
     assert.equal(enabledAgents.length, 1);
     assert.equal(enabledAgents[0].id, 'builder');
-    assert.ok(enabledAgents[0].route.length > 0);
   });
 
-  test('coming-soon agents have routes but are not enabled', () => {
+  test('coming-soon agents are not enabled', () => {
     const comingSoonAgents = agents.filter((a) => a.status === 'coming_soon');
     assert.equal(comingSoonAgents.length, 2);
     for (const agent of comingSoonAgents) {
       assert.equal(agent.enabled, false, `${agent.id} must not be enabled`);
-      assert.ok(agent.route.length > 0, `${agent.id} should have a route defined for future use`);
     }
   });
 
@@ -209,13 +247,98 @@ describe('platform dashboard navigation integration', () => {
     }
   });
 
-  test('all agent routes are non-empty strings starting with /', () => {
-    for (const agent of agents) {
-      assert.ok(
-        typeof agent.route === 'string' && agent.route.startsWith('/'),
-        `Agent ${agent.id} route must start with /`,
-      );
-    }
+  test('the dashboard reads stations from the system-agent hook', () => {
+    const dashboardSource = readFileSync(new URL('./platform-dashboard.tsx', import.meta.url), 'utf8');
+    assert.match(dashboardSource, /useSystemAgents\(/);
+    assert.match(dashboardSource, /<SystemAgentStationArea/);
+    assert.match(dashboardSource, /stationCountsForLoad\(/);
+  });
+});
+
+describe('platform system agent stations', () => {
+  const text = (messages: LocaleMessages) => (key: string) =>
+    resolveNestedString(messages, key) ?? key;
+
+  function renderStations(
+    props: Partial<React.ComponentProps<typeof SystemAgentStationArea>>,
+    messages: LocaleMessages = enMessages as LocaleMessages,
+  ): string {
+    return renderToStaticMarkup(
+      React.createElement(SystemAgentStationArea, {
+        agents: PUBLIC_STATIONS,
+        loading: false,
+        error: null,
+        loadingLabel: text(messages)('platform.systemAgentsLoading'),
+        errorLabel: text(messages)('platform.systemAgentsLoadError'),
+        retryLabel: 'Retry',
+        text: text(messages),
+        statusLabel: (status) => status,
+        selectedAgentId: null,
+        onSelect: () => undefined,
+        onRetry: () => undefined,
+        ...props,
+      }),
+    );
+  }
+
+  test('loading shows the station loading copy and no cards', () => {
+    const html = renderStations({ loading: true, agents: [] });
+    assert.match(html, /data-testid="platform-system-agents-loading"/);
+    assert.match(html, /Loading stations…/);
+    assert.doesNotMatch(html, /data-testid="agent-station-card-/);
+    const traditional = renderStations(
+      { loading: true, agents: [] },
+      zhTwMessages as LocaleMessages,
+    );
+    assert.match(traditional, /正在載入席位…/);
+  });
+
+  test('failure shows the error and retry, and the station list stays under it', () => {
+    const html = renderStations({ error: 'FETCH_FAILED', agents: [] });
+    assert.match(html, /data-testid="platform-system-agents-error"/);
+    assert.match(html, /Stations could not be loaded\. Only Builder is shown\./);
+    assert.match(html, /data-testid="platform-system-agents-retry"/);
+    assert.doesNotMatch(html, /data-testid="agent-station-card-/);
+    const simplified = renderStations(
+      { error: 'FETCH_FAILED', agents: [] },
+      zhCnMessages as LocaleMessages,
+    );
+    assert.match(simplified, /无法加载席位，目前只显示 Builder。/);
+    const source = readFileSync(new URL('./platform-dashboard.tsx', import.meta.url), 'utf8');
+    const failureBranch = source.slice(source.indexOf('data-testid="platform-system-agents-error"'));
+    assert.match(failureBranch, /\{cards\}/);
+    assert.match(source, /<AgentStationCard/);
+    const builder = staticAgentProfileContent(PUBLIC_STATIONS[0], (key) => key);
+    assert.equal(builder.cardEnabled, true);
+    assert.equal(
+      countStationsByStatus([PUBLIC_STATIONS[0]]).active,
+      1,
+    );
+    assert.equal(countStationsByStatus([PUBLIC_STATIONS[0]]).reserve, 0);
+  });
+
+  test('the four stations keep chief active and not builder-enabled, and the two coming-soon rows', () => {
+    const text = (key: string) => resolveNestedString(enMessages as LocaleMessages, key) ?? key;
+    const chief = PUBLIC_STATIONS.find((agent) => agent.id === 'chief-of-staff');
+    const product = PUBLIC_STATIONS.find((agent) => agent.id === 'product-strategy');
+    const technology = PUBLIC_STATIONS.find((agent) => agent.id === 'technology-advisor');
+    assert.ok(chief && product && technology);
+    assert.equal(chief.enabled, false);
+    assert.equal(chief.status, 'active');
+    assert.equal(staticAgentProfileContent(chief, text).cardEnabled, true);
+    assert.equal(staticAgentProfileContent(chief, text).isComingSoon, false);
+    assert.equal(product.status, 'coming_soon');
+    assert.equal(staticAgentProfileContent(product, text).cardEnabled, false);
+    assert.equal(technology.status, 'coming_soon');
+    assert.equal(staticAgentProfileContent(technology, text).cardEnabled, false);
+    const cardSource = readFileSync(new URL('./agent-station-card.tsx', import.meta.url), 'utf8');
+    assert.match(cardSource, /data-testid=\{`agent-station-card-\$\{props\.id\}`\}/);
+    assert.match(cardSource, /data-status=\{status\}/);
+    assert.match(cardSource, /data-enabled=\{enabled\}/);
+    const dashboardSource = readFileSync(new URL('./platform-dashboard.tsx', import.meta.url), 'utf8');
+    assert.match(dashboardSource, /id=\{agent\.id\}/);
+    assert.match(dashboardSource, /status=\{agent\.status\}/);
+    assert.match(dashboardSource, /enabled=\{profile\.cardEnabled\}/);
   });
 });
 
@@ -350,9 +473,9 @@ describe('platform Create Agent API contract', () => {
 });
 
 describe('platform Create Agent static agents preservation', () => {
-  const agents: readonly AgentManifest[] = listAgents();
+  const agents = PUBLIC_STATIONS;
 
-  test('listAgents() still returns exactly 4 static agents after Create Agent additions', () => {
+  test('the station fixture still has the four static agents after Create Agent additions', () => {
     assert.equal(agents.length, 4);
     const ids = agents.map((a) => a.id);
     assert.deepEqual(ids, ['builder', 'chief-of-staff', 'product-strategy', 'technology-advisor']);
@@ -435,15 +558,22 @@ describe('chief of staff station profile', () => {
   const text = (messages: LocaleMessages) => (key: string) => resolveNestedString(messages, key) ?? key;
 
   test('active stations count the chief of staff and the builder', () => {
-    const counts = countStationsByStatus(listAgents());
+    const counts = countStationsByStatus(PUBLIC_STATIONS);
     assert.equal(counts.active, 2);
     assert.equal(counts.reserve, 2);
+    assert.equal(stationCountsForLoad(true, null, PUBLIC_STATIONS), null);
+    assert.equal(stationCountsForLoad(false, 'AUTH_EXPIRED', []), null);
+    assert.deepEqual(stationCountsForLoad(false, null, PUBLIC_STATIONS), { active: 2, reserve: 2 });
+    assert.deepEqual(
+      stationCountsForLoad(false, 'FETCH_FAILED', [PUBLIC_STATIONS[0]]),
+      { active: 1, reserve: 0 },
+    );
   });
 
   test('the chief of staff profile is its own copy and opens the team page', () => {
-    const chief = listAgents().find((agent) => agent.id === 'chief-of-staff');
-    const builder = listAgents().find((agent) => agent.id === 'builder');
-    const product = listAgents().find((agent) => agent.id === 'product-strategy');
+    const chief = PUBLIC_STATIONS.find((agent) => agent.id === 'chief-of-staff');
+    const builder = PUBLIC_STATIONS.find((agent) => agent.id === 'builder');
+    const product = PUBLIC_STATIONS.find((agent) => agent.id === 'product-strategy');
     assert.ok(chief && builder && product);
     const chiefProfile = staticAgentProfileContent(chief, text(enMessages as LocaleMessages));
     const builderProfile = staticAgentProfileContent(builder, text(enMessages as LocaleMessages));
@@ -516,7 +646,7 @@ describe('chief of staff station profile', () => {
       onDelete: () => undefined,
       onClose: () => undefined,
     };
-    const chief = listAgents().find((agent) => agent.id === 'chief-of-staff');
+    const chief = PUBLIC_STATIONS.find((agent) => agent.id === 'chief-of-staff');
     assert.ok(chief);
     const profile = staticAgentProfileContent(chief, (key) => resolveNestedString(enMessages as LocaleMessages, key) ?? key);
     const chiefModel: AgentDetailViewModel = {

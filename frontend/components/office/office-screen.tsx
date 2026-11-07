@@ -9,7 +9,7 @@ import {
   BuildingOffice2Icon,
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
-import { getAgentById, listAgents, type AgentManifest } from '@/lib/agent-platform/agent-registry';
+import { useSystemAgents } from '@/lib/agent-platform/use-system-agents';
 import { knowledgeFetch } from '@/components/knowledge/knowledge-api';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useUserAgents } from '@/hooks/useUserAgents';
@@ -82,6 +82,9 @@ export interface OfficeScreenViewProps {
   onRefresh: () => void;
   onRetryRuns: () => void;
   onRetryAgents: () => void;
+  systemAgents: readonly { id: string; nameKey: string; roleKey: string }[];
+  systemAgentsError: boolean;
+  onRetrySystemAgents: () => void;
 }
 
 function statusLabel(phase: OfficeDeskPhase, t: (key: string) => string): string {
@@ -110,6 +113,9 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
     onRefresh,
     onRetryRuns,
     onRetryAgents,
+    systemAgents,
+    systemAgentsError,
+    onRetrySystemAgents,
   } = props;
 
   if (loading) {
@@ -123,7 +129,7 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
     );
   }
 
-  const manifests = new Map<string, AgentManifest>(listAgents().map((agent) => [agent.id, agent]));
+  const manifests = new Map(systemAgents.map((agent) => [agent.id, agent]));
   const users = new Map(userAgents.map((agent) => [agent.id, agent]));
 
   function deskCopy(desk: OfficeDesk): { name: string; role: string } {
@@ -320,7 +326,7 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
         </div>
       </main>
 
-      {runsError || agentsError ? (
+      {runsError || agentsError || systemAgentsError ? (
         <div className="border-t border-slate-800 px-4 py-4 sm:px-6 lg:px-8">
           <div className="mx-auto flex max-w-6xl flex-col gap-3">
             {runsError ? (
@@ -361,6 +367,24 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
                 </button>
               </div>
             ) : null}
+            {systemAgentsError ? (
+              <div
+                role="alert"
+                className="flex flex-wrap items-center gap-3 rounded-lg border border-red-700/40 bg-red-950/30 px-4 py-3"
+                data-testid="office-system-agents-error"
+              >
+                <ExclamationTriangleIcon className="h-4 w-4 text-red-300" aria-hidden="true" />
+                <p className="text-sm text-red-200">{t('systemAgentsLoadError')}</p>
+                <button
+                  type="button"
+                  className="text-sm font-medium text-indigo-300 hover:text-indigo-200"
+                  onClick={onRetrySystemAgents}
+                  data-testid="office-system-agents-retry"
+                >
+                  {t('retry')}
+                </button>
+              </div>
+            ) : null}
           </div>
         </div>
       ) : null}
@@ -388,8 +412,19 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
     error: userAgentsError,
     refetch: refetchUserAgents,
   } = useUserAgents();
+  const {
+    agents: systemAgents,
+    loading: systemAgentsLoading,
+    error: systemAgentsLoadError,
+    refetch: refetchSystemAgents,
+  } = useSystemAgents();
   const runs = useOfficeRuns(authReady, poll);
-  const registry = useMemo(() => officeRegistryFromManifests(listAgents()), []);
+  const registry = useMemo(() => officeRegistryFromManifests(systemAgents), [systemAgents]);
+  const chiefScopeKey =
+    systemAgents
+      .find((agent) => agent.id === 'chief-of-staff')
+      ?.knowledgeScopes.map((scope) => scope.id)
+      .join('\n') ?? '';
   const userRefs = useMemo<OfficeUserAgentRef[]>(
     () =>
       userAgents.map((agent) => ({
@@ -441,6 +476,11 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
     if (!authReady) {
       return;
     }
+    if (!chiefScopeKey) {
+      setKnowledgeDocumentCount(null);
+      return;
+    }
+    const scopeIds = chiefScopeKey.split('\n');
     let active = true;
     void (async () => {
       try {
@@ -449,16 +489,10 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
           return;
         }
         const documents = readKnowledgeBadgeDocuments(await response.json());
-        const chief = getAgentById('chief-of-staff');
-        if (!documents || !chief || !active) {
+        if (!documents || !active) {
           return;
         }
-        setKnowledgeDocumentCount(
-          countActiveKnowledgeDocuments(
-            documents,
-            chief.knowledgeScopes.map((scope) => scope.id),
-          ),
-        );
+        setKnowledgeDocumentCount(countActiveKnowledgeDocuments(documents, scopeIds));
       } catch {
         // A failed knowledge read leaves the badge off and shows no error.
       }
@@ -466,13 +500,17 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
     return () => {
       active = false;
     };
-  }, [authReady]);
+  }, [authReady, chiefScopeKey]);
 
   useEffect(() => {
-    if (userAgentsError === 'AUTH_EXPIRED' || runs.error === 'AUTH_EXPIRED') {
+    if (
+      userAgentsError === 'AUTH_EXPIRED' ||
+      runs.error === 'AUTH_EXPIRED' ||
+      systemAgentsLoadError === 'AUTH_EXPIRED'
+    ) {
       router.replace(`/${locale}/login`);
     }
-  }, [userAgentsError, runs.error, locale, router]);
+  }, [userAgentsError, runs.error, systemAgentsLoadError, locale, router]);
 
   useEffect(() => {
     if (typeof window.matchMedia !== 'function') {
@@ -500,8 +538,12 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
     }
   }, [desks, selectedDeskId]);
 
-  const redirecting = runs.error === 'AUTH_EXPIRED' || userAgentsError === 'AUTH_EXPIRED';
-  const loading = !authReady || redirecting || !runs.settled || userAgentsLoading;
+  const redirecting =
+    runs.error === 'AUTH_EXPIRED' ||
+    userAgentsError === 'AUTH_EXPIRED' ||
+    systemAgentsLoadError === 'AUTH_EXPIRED';
+  const loading =
+    !authReady || redirecting || !runs.settled || userAgentsLoading || systemAgentsLoading;
   const showEmpty =
     !userAgentsError &&
     userRefs.length === 0 &&
@@ -532,6 +574,11 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
       onRetryRuns={runs.refresh}
       onRetryAgents={() => {
         void refetchUserAgents();
+      }}
+      systemAgents={systemAgents}
+      systemAgentsError={systemAgentsLoadError === 'FETCH_FAILED'}
+      onRetrySystemAgents={() => {
+        void refetchSystemAgents();
       }}
     />
   );

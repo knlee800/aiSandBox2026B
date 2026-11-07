@@ -48,6 +48,8 @@ describe('BIZ-01 team registry', () => {
       }
     }
     expect(collaborationHarnessToolProfile('chief-of-staff')).toBe('read');
+    expect(collaborationHarnessToolProfile('user')).toBe('read');
+    expect(collaborationHarnessToolProfile('unknown-role')).toBe('read');
   });
 
   it('resolves a run team from the first step target', () => {

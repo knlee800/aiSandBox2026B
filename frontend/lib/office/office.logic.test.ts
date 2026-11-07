@@ -1,7 +1,5 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { listAgents } from '@/lib/agent-platform/agent-registry';
-import { getAgentById } from '@/lib/agent-platform/agent-registry';
 import {
   countActiveKnowledgeDocuments,
   knowledgeBadgeMessageKey,
@@ -17,6 +15,7 @@ import {
   formatDurationText,
   formatElapsedText,
   normalizeOfficeRuns,
+  activeRegistryDeskIds,
   officeRegistryFromManifests,
   officeTeamHref,
   phaseForRun,
@@ -28,7 +27,20 @@ import {
 } from '@/lib/office/office.logic';
 
 const NOW = Date.parse('2026-11-05T06:00:00.000Z');
-const registry = officeRegistryFromManifests(listAgents());
+const registry = officeRegistryFromManifests([
+  { id: 'builder', status: 'active' },
+  { id: 'chief-of-staff', status: 'active' },
+  { id: 'product-strategy', status: 'coming_soon' },
+  { id: 'technology-advisor', status: 'coming_soon' },
+]);
+const activeRegistryIds = activeRegistryDeskIds(registry);
+
+function attribute(
+  run: Parameters<typeof attributeDeskId>[0],
+  userAgentIds: ReadonlySet<string>,
+): string {
+  return attributeDeskId(run, userAgentIds, activeRegistryIds);
+}
 const writer: OfficeUserAgentRef = {
   id: 'ua-1',
   name: 'Research Writer',
@@ -78,7 +90,7 @@ describe('office run attribution', () => {
 
   test('a collaboration run goes to the team desk even when it names a user agent', () => {
     assert.equal(
-      attributeDeskId(
+      attribute(
         { collaborationRunId: 'collab-1', agentId: 'ua-1' },
         userIds,
       ),
@@ -88,7 +100,7 @@ describe('office run attribution', () => {
 
   test('a chief-of-staff collaboration run goes to that registry desk', () => {
     assert.equal(
-      attributeDeskId(
+      attribute(
         {
           collaborationRunId: 'collab-1',
           agentId: 'ua-1',
@@ -99,7 +111,7 @@ describe('office run attribution', () => {
       'registry:chief-of-staff',
     );
     assert.equal(
-      attributeDeskId(
+      attribute(
         {
           collaborationRunId: 'collab-1',
           agentId: null,
@@ -111,10 +123,26 @@ describe('office run attribution', () => {
     );
   });
 
+  test('without the chief id a chief collaboration run falls through to the team desk', () => {
+    const builderOnly = activeRegistryDeskIds([{ id: 'builder', status: 'active' }]);
+    assert.equal(
+      attributeDeskId(
+        {
+          collaborationRunId: 'collab-1',
+          agentId: null,
+          builderProfileId: 'chief-of-staff',
+        },
+        userIds,
+        builderOnly,
+      ),
+      TEAM_DESK_ID,
+    );
+  });
+
   test('other collaboration runs stay on the team desk', () => {
     for (const builderProfileId of ['lead', 'writer', 'builder', 'product-strategy', 'technology-advisor', '   ', null]) {
       assert.equal(
-        attributeDeskId(
+        attribute(
           { collaborationRunId: 'collab-1', agentId: 'ua-1', builderProfileId },
           userIds,
         ),
@@ -126,40 +154,40 @@ describe('office run attribution', () => {
 
   test('a blank collaboration id does not open the team desk', () => {
     assert.equal(
-      attributeDeskId({ collaborationRunId: '   ', agentId: null }, userIds),
+      attribute({ collaborationRunId: '   ', agentId: null }, userIds),
       BUILDER_DESK_ID,
     );
   });
 
   test('a null agent id goes to the builder desk', () => {
     assert.equal(
-      attributeDeskId({ collaborationRunId: null, agentId: null }, userIds),
+      attribute({ collaborationRunId: null, agentId: null }, userIds),
       BUILDER_DESK_ID,
     );
     assert.equal(
-      attributeDeskId({ collaborationRunId: null, agentId: '  ' }, userIds),
+      attribute({ collaborationRunId: null, agentId: '  ' }, userIds),
       BUILDER_DESK_ID,
     );
   });
 
   test('a matching user agent id goes to that desk', () => {
     assert.equal(
-      attributeDeskId({ collaborationRunId: null, agentId: 'ua-1' }, userIds),
+      attribute({ collaborationRunId: null, agentId: 'ua-1' }, userIds),
       'user:ua-1',
     );
   });
 
   test('an unknown agent id, including a registry id, goes to former agents', () => {
     assert.equal(
-      attributeDeskId({ collaborationRunId: null, agentId: 'deleted-1' }, userIds),
+      attribute({ collaborationRunId: null, agentId: 'deleted-1' }, userIds),
       FORMER_DESK_ID,
     );
     assert.equal(
-      attributeDeskId({ collaborationRunId: null, agentId: 'builder' }, userIds),
+      attribute({ collaborationRunId: null, agentId: 'builder' }, userIds),
       FORMER_DESK_ID,
     );
     assert.equal(
-      attributeDeskId({ collaborationRunId: null, agentId: 'chief-of-staff' }, userIds),
+      attribute({ collaborationRunId: null, agentId: 'chief-of-staff' }, userIds),
       FORMER_DESK_ID,
     );
   });
@@ -623,13 +651,7 @@ describe('chief of staff knowledge badge', () => {
     'contract-templates',
   ];
 
-  test('the count uses the chief of staff scopes and skips other or inactive documents', () => {
-    const chief = getAgentById('chief-of-staff');
-    assert.ok(chief);
-    assert.deepEqual(
-      chief.knowledgeScopes.map((scope) => scope.id),
-      chiefScopes,
-    );
+  test('the count uses the chief of staff scope ids and skips other or inactive documents', () => {
     assert.equal(
       countActiveKnowledgeDocuments(
         [
@@ -640,7 +662,7 @@ describe('chief of staff knowledge badge', () => {
           { scopeId: 'codebase-context' },
           { scopeId: 'tech-landscape', status: null },
         ],
-        chief.knowledgeScopes.map((scope) => scope.id),
+        chiefScopes,
       ),
       2,
     );

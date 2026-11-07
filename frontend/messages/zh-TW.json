@@ -549,6 +549,8 @@
     "openOffice": "辦公室",
     "openKnowledge": "知識庫",
     "comingSoonMessage": "此代理即將推出，敬請期待！",
+    "systemAgentsLoading": "正在載入席位…",
+    "systemAgentsLoadError": "無法載入席位，目前只顯示 Builder。",
     "detail": {
       "title": "代理檔案",
       "subtitle": "所有占位站點目前僅供預覽，尚未啟用。",
@@ -1031,6 +1033,7 @@
     "emptyBody": "到指揮中心建立代理來填補座位。",
     "runsLoadError": "無法載入執行狀態。",
     "agentsLoadError": "無法載入你的代理。",
+    "systemAgentsLoadError": "無法載入席位，目前只顯示 Builder 的座位。",
     "retry": "再試一次",
     "deskHint": "開啟座位",
     "formerAgents": "已離職代理",

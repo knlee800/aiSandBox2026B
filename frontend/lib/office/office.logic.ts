@@ -1,5 +1,3 @@
-import { listAgents } from '@/lib/agent-platform/agent-registry';
-
 export const OFFICE_POLL_MS = 5000;
 export const OFFICE_RECENT_LIMIT = 5;
 export const BUILDER_DESK_ID = 'registry:builder';
@@ -113,7 +111,7 @@ export function attributeDeskId(
     builderProfileId?: string | null;
   },
   userAgentIds: ReadonlySet<string>,
-  activeRegistryIds: ReadonlySet<string> = activeRegistryDeskIds(listAgents()),
+  activeRegistryIds: ReadonlySet<string>,
 ): string {
   if (presentText(run.collaborationRunId)) {
     const profileId = presentText(run.builderProfileId);

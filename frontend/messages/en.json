@@ -549,6 +549,8 @@
     "openOffice": "Office",
     "openKnowledge": "Knowledge",
     "comingSoonMessage": "This agent is coming soon. Stay tuned!",
+    "systemAgentsLoading": "Loading stations…",
+    "systemAgentsLoadError": "Stations could not be loaded. Only Builder is shown.",
     "detail": {
       "title": "Agent Profile",
       "subtitle": "All placeholder stations are preview-only until activation.",
@@ -1031,6 +1033,7 @@
     "emptyBody": "Create an agent in the Command Center to fill a desk.",
     "runsLoadError": "Could not load run status.",
     "agentsLoadError": "Could not load your agents.",
+    "systemAgentsLoadError": "Stations could not be loaded. Only the Builder desk is shown.",
     "retry": "Try again",
     "deskHint": "Open desk",
     "formerAgents": "Former agents",

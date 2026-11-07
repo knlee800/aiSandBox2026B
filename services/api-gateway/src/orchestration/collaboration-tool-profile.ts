@@ -1,7 +1,4 @@
-import {
-  COLLABORATION_REVIEWER_PROFILE_ID,
-  COLLABORATION_WRITER_PROFILE_ID,
-} from './collaboration-team';
+import { systemAgentById } from '../system-agents/system-agent-registry';
 
 export { knowledgeScopesJobFields } from '../knowledge/knowledge-scopes';
 
@@ -46,11 +43,9 @@ const EMPTY_WORK: CollaborationHandoffWork = {
 export function collaborationHarnessToolProfile(
   targetProfileId: string,
 ): CollaborationHarnessToolProfile {
-  if (targetProfileId === COLLABORATION_WRITER_PROFILE_ID) {
-    return 'write';
-  }
-  if (targetProfileId === COLLABORATION_REVIEWER_PROFILE_ID) {
-    return 'review';
+  const toolProfile = systemAgentById(targetProfileId)?.toolProfile;
+  if (toolProfile === 'read' || toolProfile === 'review' || toolProfile === 'write') {
+    return toolProfile;
   }
   return 'read';
 }

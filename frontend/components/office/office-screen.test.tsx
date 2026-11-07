@@ -4,7 +4,6 @@ import { describe, test } from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { OfficeScreenView, type OfficeScreenViewProps } from '@/components/office/office-screen';
-import { listAgents } from '@/lib/agent-platform/agent-registry';
 import {
   BUILDER_DESK_ID,
   FORMER_DESK_ID,
@@ -20,7 +19,13 @@ import zhTwMessages from '@/messages/zh-TW.json';
 import zhCnMessages from '@/messages/zh-CN.json';
 
 const NOW = Date.parse('2026-11-05T06:00:00.000Z');
-const registry = officeRegistryFromManifests(listAgents());
+const STATION_FIXTURE = [
+  { id: 'builder', status: 'active', nameKey: 'agents.builder.name', roleKey: 'agents.builder.role' },
+  { id: 'chief-of-staff', status: 'active', nameKey: 'agents.chiefOfStaff.name', roleKey: 'agents.chiefOfStaff.role' },
+  { id: 'product-strategy', status: 'coming_soon', nameKey: 'agents.productStrategy.name', roleKey: 'agents.productStrategy.role' },
+  { id: 'technology-advisor', status: 'coming_soon', nameKey: 'agents.technologyAdvisor.name', roleKey: 'agents.technologyAdvisor.role' },
+];
+const registry = officeRegistryFromManifests(STATION_FIXTURE);
 
 const OFFICE_COPY = {
   en: {
@@ -34,6 +39,7 @@ const OFFICE_COPY = {
     emptyBody: 'Create an agent in the Command Center to fill a desk.',
     runsLoadError: 'Could not load run status.',
     agentsLoadError: 'Could not load your agents.',
+    systemAgentsLoadError: 'Stations could not be loaded. Only the Builder desk is shown.',
     retry: 'Try again',
     deskHint: 'Open desk',
     formerAgents: 'Former agents',
@@ -78,6 +84,7 @@ const OFFICE_COPY = {
     emptyBody: '到指揮中心建立代理來填補座位。',
     runsLoadError: '無法載入執行狀態。',
     agentsLoadError: '無法載入你的代理。',
+    systemAgentsLoadError: '無法載入席位，目前只顯示 Builder 的座位。',
     retry: '再試一次',
     deskHint: '開啟座位',
     formerAgents: '已離職代理',
@@ -122,6 +129,7 @@ const OFFICE_COPY = {
     emptyBody: '到指挥中心创建代理来填补座位。',
     runsLoadError: '无法加载运行状态。',
     agentsLoadError: '无法加载你的代理。',
+    systemAgentsLoadError: '无法加载席位，目前只显示 Builder 的座位。',
     retry: '重试',
     deskHint: '打开工位',
     formerAgents: '已离职代理',
@@ -237,6 +245,9 @@ function renderOffice(
     onRefresh: () => undefined,
     onRetryRuns: () => undefined,
     onRetryAgents: () => undefined,
+    systemAgents: STATION_FIXTURE,
+    systemAgentsError: false,
+    onRetrySystemAgents: () => undefined,
     ...overrides,
   };
   return renderToStaticMarkup(<OfficeScreenView {...props} />);
@@ -303,6 +314,51 @@ describe('office screen states', () => {
     assert.match(html, /Try again/);
     assert.match(html, /data-testid="office-desk-registry:builder"/);
     assert.doesNotMatch(html, /data-testid="office-stale"/);
+  });
+
+  test('a system-agent fetch error shows the builder desk and offers retry', () => {
+    const builderOnly = officeRegistryFromManifests([{ id: 'builder', status: 'active' }]);
+    const desks = buildOfficeDesks({
+      registry: builderOnly,
+      userAgents: [],
+      activeRuns: [],
+      recentRuns: [],
+    });
+    const html = renderOffice({
+      systemAgentsError: true,
+      systemAgents: [STATION_FIXTURE[0]],
+      desks,
+    });
+    assert.match(html, /data-testid="office-system-agents-error"/);
+    assert.match(html, /Stations could not be loaded\. Only the Builder desk is shown\./);
+    assert.match(html, /data-testid="office-system-agents-retry"/);
+    assert.match(html, /Try again/);
+    assert.match(html, /data-testid="office-desk-registry:builder"/);
+    assert.doesNotMatch(html, /data-testid="office-desk-registry:chief-of-staff"/);
+    const traditional = renderOffice(
+      {
+        systemAgentsError: true,
+        systemAgents: [STATION_FIXTURE[0]],
+        desks,
+      },
+      zhTwMessages as Record<string, unknown>,
+    );
+    assert.match(traditional, /無法載入席位，目前只顯示 Builder 的座位。/);
+  });
+
+  test('the four-agent fixture keeps a chief collaboration run on that desk', () => {
+    const desks = floor({
+      activeRuns: [
+        run({
+          collaborationRunId: 'collab-1',
+          builderProfileId: 'chief-of-staff',
+          agentId: null,
+        }),
+      ],
+    });
+    const html = renderOffice({ desks });
+    assert.ok(desks.some((desk) => desk.id === 'registry:chief-of-staff'));
+    assert.match(html, /data-testid="office-desk-registry:chief-of-staff"/);
   });
 
   test('an agent fetch error offers its own retry', () => {
@@ -563,7 +619,10 @@ describe('office screen states', () => {
     assert.match(hook, /visibilitychange/);
     assert.match(hook, /OFFICE_POLL_MS/);
     assert.match(screen, /knowledgeFetch\('\/api\/knowledge\/documents'\)/);
-    assert.match(screen, /\}, \[authReady\]\)/);
+    assert.match(screen, /useSystemAgents\(/);
+    assert.match(screen, /\}, \[authReady, chiefScopeKey\]\)/);
+    assert.doesNotMatch(screen, /listAgents\(/);
+    assert.doesNotMatch(screen, /getAgentById\(/);
     assert.doesNotMatch(screen, /title: document|document\.title|content:/);
     assert.doesNotMatch(`${screen}\n${panel}\n${hook}`, /method:\s*'POST'|method:\s*'DELETE'|applied/i);
   });

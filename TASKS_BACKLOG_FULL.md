@@ -85139,6 +85139,7 @@ nature=IMPLEMENTATION
 
 **Holds (stages, from the readiness assessment):** S1 run provenance (each run records the agent definition id, its version and the model; no migration); S2 one server-side agent definition source that the frontend registry reads (decide before BIZ-03 and BIZ-USER-01); S3 eval sets for the Chief of Staff and collaboration (overlaps COLLAB-EVAL-01, which is reused); S4 persisted harness traces and owner feedback on answers (needs a retention and privacy decision); S5 stage 1: agents propose instruction and skill changes, scored offline against evals, Keith approves (after S1 to S3); S6 an experiment environment separate from staging (needs a quota and cost decision; before platform-code proposals); S7 stage 2: agents propose platform code changes through the control plane (after S5 and S6, with a CLAUDE.md rule for agent-originated changes); S8 collective and meta-level improvement, RSI on RSI (last, when Keith opens that stage). Also held: every new agent ships with an eval case set (a checklist item when Keith wants it enforced), and the decision to relax the no-schedulers non-goal before continuous experiments.
 **Stage registered 2026-11-07:** S2 as AGENT-DEFS-01 (admitted to Lane 1 the same day).
+**Stage done 2026-11-07:** S2 (AGENT-DEFS-01) COMPLETE AND LOCKED: one gateway registry with a version hash per definition; S1 can record systemAgentVersion(id).
 **Constraints:** ARCHITECTURE.md section 13.5 (versioned approved changes; protected set).
 **Named in:** docs/GOV-RSI-01-CHECKPOINT.md (readiness assessment).
 
@@ -85153,7 +85154,7 @@ taskId=AGENT-DEFS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-07. Lane 1, GATEWAY, FRONTEND and I18N. Registered and admitted in one record (GOV-OS-04); Keith approved the draft and admitted it on 2026-11-07. Stage-start approved by Keith on 2026-11-07 (docs/AGENT-DEFS-01-STAGE-START.md: Builder-only fallback, login-only route, the scope literal stays); implementation next.
+**Status:** COMPLETE AND LOCKED — 2026-11-07. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY, FRONTEND and I18N released. RSI-00 stage S2: the gateway owns the system agent definitions (services/api-gateway/src/system-agents/) with a version hash each; the dashboard and office read GET /api/system-agents; code and LOCK in one commit (LOCAL-TESTS); not deployed, STAGING-DEPLOY-14 registered. Checkpoint: docs/AGENT-DEFS-01-CHECKPOINT.md.
 **Task ID:** AGENT-DEFS-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -85174,12 +85175,37 @@ nature=IMPLEMENTATION
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
 - [x] The stage-start document answers the five questions; Keith's decisions are recorded and the write set is narrowed before implementation
-- [ ] One gateway registry holds every system-agent definition; the team registry and KNOWLEDGE_ROLE_SCOPES read from it with unchanged values; each definition carries a content hash
-- [ ] A read-only route returns the public fields only (no instructions, no tool profile internals), owner login required; user-created agent routes unchanged
-- [ ] The dashboard, station cards and office read the list from that route with defined loading and failure states in en, zh-TW and zh-CN; screens show the same agents and statuses as before
-- [ ] The frontend registry constant no longer duplicates the server definitions
-- [ ] Tests cover each point above; api-gateway tests and build, and frontend tests (including the office, registry and dashboard tests by name), type check and build pass, compared with the known failures in their latest checkpoints
-- [ ] The checkpoint carries the CHECKLIST line (EVERY, UI, BACKEND) and the FOLLOWUPS line
+- [x] One gateway registry holds every system-agent definition; the team registry and KNOWLEDGE_ROLE_SCOPES read from it with unchanged values; each definition carries a content hash
+- [x] A read-only route returns the public fields only (no instructions, no tool profile internals), owner login required; user-created agent routes unchanged
+- [x] The dashboard, station cards and office read the list from that route with defined loading and failure states in en, zh-TW and zh-CN; screens show the same agents and statuses as before
+- [x] The frontend registry constant no longer duplicates the server definitions
+- [x] Tests cover each point above; api-gateway tests and build, and frontend tests (including the office, registry and dashboard tests by name), type check and build pass, compared with the known failures in their latest checkpoints
+- [x] The checkpoint carries the CHECKLIST line (EVERY, UI, BACKEND) and the FOLLOWUPS line
+- [x] Not LOCKED by an implementer
+
+### STAGING-DEPLOY-14 — Deploy the server-side agent definitions (AGENT-DEFS-01) during the tester window
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-14
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-07. Registered by AGENT-DEFS-01; not admitted.
+**Task ID:** STAGING-DEPLOY-14
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (operational run; no code)
+**Lifecycle:** 3-STEP: registration here; admission when Keith picks the time; pre-check and deploy from the host; separate LOCK record (STAGING-RUNTIME).
+**Start condition (human):** NOT_READY. Ready when: AGENT-DEFS-01 is COMPLETE AND LOCKED and Keith approves the deploy and its timing. Keith decides.
+**Depends on:** AGENT-DEFS-01.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Expected: none in the repository beyond records; host state on ainow-staging-01 (gateway and frontend release; the gateway must serve GET /api/system-agents when the new frontend starts).
+**Mutexes / resources:** set at admission (expected STAGING and ENV). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS; expected STAGING-RUNTIME). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+
+**Holds:** deploy the commit that holds AGENT-DEFS-01 with the DEPLOY checklist, including item 7 while the tester window is open (save the window gateway.env, runs off for the deploy only, restore it byte for byte, check the window hashes gateway.env 5692ce35... and ai.env 132ebab3... and that runs are back on), Keith told first, health, guard and page checks, the static key refused. After the deploy, GET /api/system-agents answers 401 without a session, and the dashboard and office show the same stations as before.
+**Named in:** docs/AGENT-DEFS-01-CHECKPOINT.md.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
 - [ ] Not LOCKED by an implementer
 
 ### GOV-ARCH-SYNC-01 — Sync ARCHITECTURE.md with the built collaboration and office
@@ -85197,6 +85223,7 @@ nature=GOVERNANCE
 **Mutexes / resources:** GOVERNANCE.
 
 **Holds:** ARCHITECTURE.md near line 985 lists "Durable orchestration / persisted referrals / shared-project writes" as FUTURE, but COLLAB-INTERNAL-01 and later tasks built persisted collaboration runs and hand-offs; check the related rows and add the office and run-list changes. Documentation only.
+**Noted 2026-11-07 (AGENT-DEFS-01 stage-start):** ARCHITECTURE.md sections 13.1, 13.2 and 13.5 still describe the system-agent registry as a static frontend constant; since AGENT-DEFS-01 the gateway owns it (services/api-gateway/src/system-agents/) and the frontend reads GET /api/system-agents.
 **Named in:** docs/AGENT-BIZ-KNOWLEDGE-PLAN.md reviewer notes.
 
 #### Acceptance criteria
