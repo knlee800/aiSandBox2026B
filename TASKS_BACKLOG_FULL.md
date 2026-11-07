@@ -85056,15 +85056,15 @@ taskId=BIZ-LIVE-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-07. Registered by BIZ-03; not admitted.
+**Status:** ADMITTED — 2026-11-07. Lane 1, STAGING and ENV. Keith said deploy now on 2026-11-07 (deploy during the open tester window, then his advisors check).
 **Task ID:** BIZ-LIVE-02
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP: registration here; admission when Keith picks the time; deploy from the host and Keith's live check with host-side verification; separate LOCK record (STAGING-RUNTIME).
-**Start condition (human):** NOT_READY. Ready when: BIZ-03 is COMPLETE AND LOCKED and Keith approves the deploy and its timing. Keith decides.
+**Start condition (human):** READY — BIZ-03 is COMPLETE AND LOCKED (bb48309); Keith said deploy now on 2026-11-07, accepting that runs pause for a few minutes during the deploy.
 **Depends on:** BIZ-03.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Expected: records only; host release of the commit holding BIZ-03 (gateway and frontend in one deploy).
-**Mutexes / resources:** set at admission (expected STAGING and ENV while the tester window is open; if the window is closed, Keith opens it or the task names PROVIDER-LIVE and CREDIT). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS; expected STAGING-RUNTIME). **Revert isolation:** assessed at admission.
+**Primary write scope:** none in the repository beyond records. Host state on ainow-staging-01 (release of the commit holding BIZ-03: gateway and frontend in one deploy; all services restart), Keith's two advisors runs, and off-repo evidence in C:/Users/knlee/aisb-preflight/BIZ-LIVE-02/.
+**Mutexes / resources:** STAGING, ENV (the host deploy tool refuses while GLOBAL_EXECUTION_ENABLED is not false: the deploy saves the tester-window gateway.env, switches runs off for the deploy only, then restores the file byte for byte; GOV-DEPLOY-WINDOW-01). Keith's two questions are ordinary use inside the open tester window under its daily caps; no PROVIDER-LIVE or CREDIT mutex. **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** STAGING-RUNTIME (the tester may be active). **Revert isolation:** acceptable (no migration; rollback is a redeploy of a690c21).
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved the plan on 2026-11-05).
 
 **Holds:** docs/BIZ-03-STAGE-START.md section 8: deploy with the DEPLOY checklist including the open-window steps; Keith asks a market question (approves the lead, then Product Strategy; the answer cites a market-data document or writes No source) and a technology question about the open project (approves the lead, then Technology Advisor; it cites a tech-landscape document or names a project path, never a path inside a [source: ] marker). From the host: referral targets advisors-lead then one advisor, the read profile and the scopes of section 4, agentDefinitionId and agentDefinitionVersion equal to systemAgentVersion, the knowledge tools ran for both advisors and the project read tools for the Technology Advisor with no write_file, and no further referral after an advisor answer. Keith looks at the two advisor desks, their badges and the two Active cards.
@@ -85072,7 +85072,11 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Staging runs the deployed commit; migration hash unchanged; env files at the tester-window hashes before and after; other configuration files unchanged; units active; health, guard, page and CORS checks pass; the static key refused; GET /api/system-agents still 401 without a session
+- [ ] Nothing queued or running before runs are switched off; Keith was told runs pause; the saved window gateway.env is restored byte for byte, runs are back on, and the tester window stays open
+- [ ] Keith asks a market question and a technology question about the open project on the advisors team; from the host: the referral targets are advisors-lead then one advisor, the read profile and the advisor's scopes, agentDefinitionId and agentDefinitionVersion equal to systemAgentVersion, search_knowledge and read_knowledge ran for both advisors and the project read tools for the Technology Advisor with no write_file, every [source: documentId#heading] names one of Keith's documents and a heading in it, and no further referral after an advisor answer
+- [ ] The checkpoint carries the CHECKLIST line (EVERY, DEPLOY, LIVE) and the FOLLOWUPS line
 - [ ] Not LOCKED by an implementer
 
 ### BIZ-NOPROJECT-01 — Business runs without an open project
