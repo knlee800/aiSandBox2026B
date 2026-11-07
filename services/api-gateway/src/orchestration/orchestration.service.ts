@@ -19,6 +19,7 @@ import {
 import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
 import { QueueService } from '../queue/queue.service';
 import { ExecutionResultService } from '../ai/execution-result.service';
+import { systemAgentVersion } from '../system-agents/system-agent-registry';
 import { UsageLedgerService } from '../usage-ledger/usage-ledger.service';
 import { ExecutionSafetyGuard } from '../safety/execution-safety.guard';
 import { KillSwitchConfig } from '../safety/kill-switch.config';
@@ -943,6 +944,9 @@ export class OrchestrationService {
           apiKeyId: input.apiKeyId,
           requestedProvider: input.provider,
           requestedModel: input.model ?? null,
+          ...this.referralAgentDefinitionMetadata(
+            referral.targetBuilder.builderProfileId,
+          ),
         },
         agentRole: referral.targetBuilder.agentRole,
         builderProfileId: referral.targetBuilder.builderProfileId,
@@ -1724,6 +1728,22 @@ export class OrchestrationService {
     }
   }
 
+  private referralAgentDefinitionMetadata(agentDefinitionId: string): {
+    agentDefinitionId: string;
+    agentDefinitionVersion?: string;
+  } {
+    let version: string | undefined;
+    try {
+      version = systemAgentVersion(agentDefinitionId);
+    } catch {
+      version = undefined;
+    }
+    if (typeof version !== 'string') {
+      return { agentDefinitionId };
+    }
+    return { agentDefinitionId, agentDefinitionVersion: version };
+  }
+
   private async enqueueApprovedReferral(
     referralId: ReferralId,
     job: ReferralPendingJob,
@@ -1756,6 +1776,9 @@ export class OrchestrationService {
           apiKeyId: job.apiKeyId,
           requestedProvider: job.provider,
           requestedModel: job.model,
+          ...this.referralAgentDefinitionMetadata(
+            referral.targetBuilder.builderProfileId,
+          ),
         },
         agentRole: referral.targetBuilder.agentRole,
         builderProfileId: referral.targetBuilder.builderProfileId,

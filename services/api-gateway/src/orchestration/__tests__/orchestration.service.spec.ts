@@ -1674,6 +1674,7 @@ describe('COLLAB-INTERNAL-01: referral read-back and ledger intent', () => {
       apiKeyId: 'apikey-01',
       requestedProvider: 'stub',
       requestedModel: 'test-model',
+      agentDefinitionId: 'builder-b',
     });
     expect(intent.metadata).not.toHaveProperty('harnessVersion');
   });

@@ -2001,13 +2001,17 @@ describe('InternalCollaborationController', () => {
       expect(payload.harnessReadOnly).not.toBe(false);
 
       const intent = ledger.writeExecutionIntent.mock.calls[0][0];
+      expect(intent.builderProfileId).toBe('builder-b');
       expect(intent.metadata).toEqual({
         runMode: 'ask',
         apiKeyId: 'apikey-01',
         requestedProvider: 'stub',
         requestedModel: 'test-model',
+        agentDefinitionId: 'builder-b',
       });
+      expect(intent.metadata).not.toHaveProperty('agentDefinitionVersion');
       expect(intent.metadata).not.toHaveProperty('harnessVersion');
+      expect(response.body.referral.status).toBe('in_progress');
     });
 
     it('keeps a hand-off plain when file access is omitted or false, even if the caller sends harness fields', async () => {

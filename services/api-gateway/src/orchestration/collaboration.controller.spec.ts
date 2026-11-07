@@ -16,6 +16,7 @@ import { QueueService } from '../queue/queue.service';
 import { TokenQuotaGuard } from '../quota/token-quota.guard';
 import { ExecutionSafetyGuard } from '../safety/execution-safety.guard';
 import { GlobalSafetyLimitService } from '../safety/global-safety-limit.service';
+import { systemAgentVersion } from '../system-agents/system-agent-registry';
 import { UsageLedgerService } from '../usage-ledger/usage-ledger.service';
 import { SessionOrApiKeyAuthGuard } from '../auth/session-or-api-key.guard';
 import { ConversationService } from '../conversations/conversation.service';
@@ -170,6 +171,7 @@ describe('CollaborationController login routes', () => {
 
   let app: INestApplication;
   let queue: { enqueueExecution: jest.Mock };
+  let ledger: { writeExecutionIntent: jest.Mock };
   let executionResults: { requestCancel: jest.Mock; getExecution: jest.Mock };
   let runs: Map<string, CollaborationRunEntity>;
   let referrals: Map<string, CollaborationReferralEntity>;
@@ -194,6 +196,7 @@ describe('CollaborationController login routes', () => {
       [SESSION_ID, { id: CONVERSATION_ID, sessionId: SESSION_ID }],
     ]);
     queue = { enqueueExecution: jest.fn().mockResolvedValue(undefined) };
+    ledger = { writeExecutionIntent: jest.fn().mockResolvedValue(undefined) };
     executionResults = {
       requestCancel: jest.fn().mockResolvedValue(true),
       getExecution: jest.fn().mockResolvedValue(null),
@@ -253,7 +256,7 @@ describe('CollaborationController login routes', () => {
         { provide: QueueService, useValue: queue },
         { provide: ExecutionResultService, useValue: executionResults },
         { provide: ContainerManagerHttpClient, useValue: workTree },
-        { provide: UsageLedgerService, useValue: { writeExecutionIntent: jest.fn() } },
+        { provide: UsageLedgerService, useValue: ledger },
         { provide: SessionService, useValue: { getSessionById: sessionReads } },
         { provide: KnowledgeService, useValue: { findActiveOwnedByIds } },
         {
@@ -1187,6 +1190,29 @@ describe('CollaborationController login routes', () => {
       expect(JSON.stringify(explicit.body)).not.toContain('gpt-4o');
     });
 
+    it('records the coding-team definition version on the lead hand-off', async () => {
+      const started = await startRun();
+      await http()
+        .post(
+          `/api/collaboration/runs/${started.collaborationRunId}/referrals/${started.referralId}/approve`,
+        )
+        .send({})
+        .expect(200);
+
+      expect(referrals.get(started.referralId)?.status).toBe('in_progress');
+      expect(ledger.writeExecutionIntent).toHaveBeenCalledTimes(1);
+      const intent = ledger.writeExecutionIntent.mock.calls[0][0];
+      expect(intent.builderProfileId).toBe('lead');
+      expect(intent.metadata).toEqual({
+        runMode: 'ask',
+        apiKeyId: 'browser-session',
+        requestedProvider: 'stub',
+        requestedModel: 'stub',
+        agentDefinitionId: 'lead',
+        agentDefinitionVersion: systemAgentVersion('lead'),
+      });
+    });
+
     it('starts chief-of-staff on the read profile with the six scopes and no hand-off', async () => {
       const started = await http()
         .post('/api/collaboration/runs')
@@ -1229,6 +1255,15 @@ describe('CollaborationController login routes', () => {
       expect(payload.harnessReadOnly).toBe(true);
       expect(payload.knowledgeScopes).toEqual(chiefScopes);
       expect(payload.model).toBe('stub');
+      expect(ledger.writeExecutionIntent).toHaveBeenCalledTimes(1);
+      expect(ledger.writeExecutionIntent.mock.calls[0][0].metadata).toEqual({
+        runMode: 'ask',
+        apiKeyId: 'browser-session',
+        requestedProvider: 'stub',
+        requestedModel: 'stub',
+        agentDefinitionId: 'chief-of-staff',
+        agentDefinitionVersion: systemAgentVersion('chief-of-staff'),
+      });
 
       const executionId = referrals.get(started.body.referralId)?.executionId;
       executionResults.getExecution.mockImplementation(async (id: string) => {

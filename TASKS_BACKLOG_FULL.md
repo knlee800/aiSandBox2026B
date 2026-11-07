@@ -85141,6 +85141,7 @@ nature=IMPLEMENTATION
 **Stage registered 2026-11-07:** S2 as AGENT-DEFS-01 (admitted to Lane 1 the same day).
 **Stage done 2026-11-07:** S2 (AGENT-DEFS-01) COMPLETE AND LOCKED: one gateway registry with a version hash per definition; S1 can record systemAgentVersion(id).
 **Stage registered 2026-11-07:** S1 as RUN-PROVENANCE-01 (admitted to Lane 1 the same day) for Team-page runs; held here: Builder and Agent-mode provenance, which needs a worker-prompt version in ai-service.
+**Stage done 2026-11-07:** S1 for Team-page runs (RUN-PROVENANCE-01) COMPLETE AND LOCKED: each hand-off run record carries agentDefinitionId and agentDefinitionVersion; Builder and Agent-mode provenance stays held here.
 **Constraints:** ARCHITECTURE.md section 13.5 (versioned approved changes; protected set).
 **Named in:** docs/GOV-RSI-01-CHECKPOINT.md (readiness assessment).
 
@@ -85218,7 +85219,7 @@ taskId=RUN-PROVENANCE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-07. Lane 1, GATEWAY. Registered and admitted in one record (GOV-OS-04); Keith approved the draft and admitted it on 2026-11-07. Implementation next.
+**Status:** COMPLETE AND LOCKED — 2026-11-07. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY released. RSI-00 stage S1: each Team-page hand-off run record carries agentDefinitionId and agentDefinitionVersion; Builder and Agent-mode provenance held on RSI-00; code and LOCK in one commit (LOCAL-TESTS); not deployed, STAGING-DEPLOY-15 registered. Checkpoint: docs/RUN-PROVENANCE-01-CHECKPOINT.md.
 **Task ID:** RUN-PROVENANCE-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -85238,11 +85239,36 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] Both referral writeExecutionIntent calls add agentDefinitionId and agentDefinitionVersion to the metadata; the version equals systemAgentVersion for the role; the other metadata keys and fields are unchanged
-- [ ] A role not in the registry records agentDefinitionId without a version and the hand-off still starts
-- [ ] Builder, Ask and Agent-mode runs are unchanged; no job payload or signed field changes
-- [ ] Tests cover each point above; api-gateway tests and build pass, compared with the known failures in the latest checkpoint
-- [ ] The checkpoint carries the CHECKLIST line (EVERY, BACKEND) and the FOLLOWUPS line
+- [x] Both referral writeExecutionIntent calls add agentDefinitionId and agentDefinitionVersion to the metadata; the version equals systemAgentVersion for the role; the other metadata keys and fields are unchanged
+- [x] A role not in the registry records agentDefinitionId without a version and the hand-off still starts
+- [x] Builder, Ask and Agent-mode runs are unchanged; no job payload or signed field changes
+- [x] Tests cover each point above; api-gateway tests and build pass, compared with the known failures in the latest checkpoint
+- [x] The checkpoint carries the CHECKLIST line (EVERY, BACKEND) and the FOLLOWUPS line
+- [x] Not LOCKED by an implementer
+
+### STAGING-DEPLOY-15 — Deploy run provenance (RUN-PROVENANCE-01) during the tester window
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-15
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-07. Registered by RUN-PROVENANCE-01; not admitted.
+**Task ID:** STAGING-DEPLOY-15
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (operational run; no code)
+**Lifecycle:** 3-STEP: registration here; admission when Keith picks the time; pre-check and deploy from the host; separate LOCK record (STAGING-RUNTIME).
+**Start condition (human):** NOT_READY. Ready when: RUN-PROVENANCE-01 is COMPLETE AND LOCKED and Keith approves the deploy and its timing. Keith decides.
+**Depends on:** RUN-PROVENANCE-01.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Expected: none in the repository beyond records; host state on ainow-staging-01 (gateway release).
+**Mutexes / resources:** set at admission (expected STAGING and ENV). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS; expected STAGING-RUNTIME). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+
+**Holds:** deploy the commit that holds RUN-PROVENANCE-01 with the DEPLOY checklist, including item 7 while the tester window is open (save the window gateway.env, runs off for the deploy only, restore it byte for byte, check the window hashes gateway.env 5692ce35... and ai.env 132ebab3... and that runs are back on), Keith told first, health, guard and page checks, the static key refused. After the deploy, the next Team-page hand-off run record carries agentDefinitionId and agentDefinitionVersion, read from the host.
+**Named in:** docs/RUN-PROVENANCE-01-CHECKPOINT.md.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
 - [ ] Not LOCKED by an implementer
 
 ### GOV-ARCH-SYNC-01 — Sync ARCHITECTURE.md with the built collaboration and office
