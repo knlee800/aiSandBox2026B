@@ -84959,15 +84959,15 @@ taskId=BIZ-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-BIZ-KNOWLEDGE-PLAN-01; not admitted.
+**Status:** ADMITTED — 2026-11-07. Lane 1, FRONTEND and I18N. Keith approved the drafted scope and admitted it on 2026-11-07. Implementation next.
 **Task ID:** BIZ-02
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
-**Lifecycle:** 3-STEP.
-**Start condition (human):** NOT_READY. Ready when: BIZ-LIVE-01 has passed (OFFICE-05 preferred first). Keith decides.
+**Lifecycle:** 3-STEP: admission in this record; implementation by Cursor grok-4.7-high; consolidation, the PRD edit by the control plane (GOVERNANCE for that record) and LOCK in the same commit as the code (LOCAL-TESTS). The deploy is a separate later step.
+**Start condition (human):** READY — BIZ-LIVE-01 is COMPLETE AND LOCKED (49f19fd); OFFICE-05 is not registered, so its preference does not block; Keith admitted BIZ-02 on 2026-11-07 as drafted (write set, mutexes, PRD wording, LOCAL-TESTS).
 **Depends on:** BIZ-LIVE-01.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
-**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**Primary write scope:** `frontend/lib/agent-platform/agent-registry.ts`, `frontend/lib/agent-platform/agent-registry.test.ts`, `frontend/lib/office/`, `frontend/components/office/`, `frontend/components/platform/platform-dashboard.tsx`, `frontend/components/platform/platform-dashboard.test.ts`, `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`, docs/BIZ-02-CHECKPOINT.md; PRD.md at LOCK by the control plane only. Anything else needs a control-plane scope change.
+**Mutexes / resources:** FRONTEND, I18N; GOVERNANCE only for the LOCK record that edits PRD.md. **Hot-file leases:** none. **Shared contracts:** none frozen; reads the existing GET /api/knowledge/documents and run-list fields. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (registry status, office attribution and badge, dashboard card, message keys; no migration, no backend change).
 **saturationClass:** OPTIONAL. **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved the plan on 2026-11-05).
 
 **Holds:** Plan section 6 row BIZ-02: the Chief of Staff manifest set active with the PRD change made by the control plane; its runs attributed to its registry desk; a knowledge badge on the desk and panel; en / zh-TW / zh-CN; no approve, reject or upload action in the office.
@@ -84975,7 +84975,15 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] The Chief of Staff registry manifest is status active; enabled stays false (enabled means a Builder-style workspace agent); the other placeholders are unchanged
+- [ ] The office shows an occupied Chief of Staff desk; collaboration runs whose first step is chief-of-staff are attributed to registry:chief-of-staff; coding-team runs stay on the Team desk
+- [ ] The desk and its panel show a knowledge badge: the count of the owner's documents in the Chief of Staff's six scopes from GET /api/knowledge/documents; Open goes to the Team page; the office gains no approve, reject or upload action
+- [ ] The platform dashboard card for the Chief of Staff shows Active with its own description and capabilities, no Builder intent or capabilities, and Open goes to the Team page
+- [ ] en, zh-TW and zh-CN keys for every new text, real translations, no hardcoded English
+- [ ] Tests cover each point above; frontend tests, type check and build pass, compared with the known failures in the latest checkpoint
+- [ ] At LOCK the control plane edits PRD.md as approved: line 284 Chief of Staff GATED (read-only cited answers from the owner's Knowledge documents, started from the Team page, proven on staging 2026-11-07 by BIZ-LIVE-01, gated accounts only, not in the private-beta promise); section 8 lines 476 and 478; section 11 moves the Chief of Staff and the owner's document uploads from APPROVED FUTURE to GATED
+- [ ] The checkpoint carries the CHECKLIST line (EVERY, UI, GOVERNANCE) and the FOLLOWUPS line
 - [ ] Not LOCKED by an implementer
 
 ### BIZ-03 — Advisors team: Product Strategy and Technology Advisor
