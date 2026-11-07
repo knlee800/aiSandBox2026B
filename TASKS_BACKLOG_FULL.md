@@ -84871,7 +84871,7 @@ taskId=BIZ-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-07. Lane 1, STAGING and ENV. Keith approved the drafted scope and admitted it on 2026-11-07 (deploy during the open tester window).
+**Status:** COMPLETE AND LOCKED — 2026-11-07. LANE-DONE and LOCKED by the control plane; Lane 1 and STAGING and ENV released. Staging runs e5cc286 (KNOW-02 and BIZ-01); the tester window stays open; Keith's Chief of Staff check passed: cited answers from his Knowledge documents, No source when they do not answer, no hand-offs. Checkpoint: docs/BIZ-LIVE-01-CHECKPOINT.md.
 **Task ID:** BIZ-LIVE-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -84883,16 +84883,42 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL. **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved the plan on 2026-11-05).
 
 **Holds:** Plan section 6 row BIZ-LIVE-01: deploy; Keith uploads three documents and asks the Chief of Staff; citations verified; one unsourced answer labelled; flags off after.
+**Follow-up 2026-11-07 (Keith in chat):** PROVIDER-LIMIT-MSG-01 registered, OPTIONAL (the provider account-limit refusal showed as the generic Invalid request to Anthropic API).
 **Named in:** docs/AGENT-BIZ-KNOWLEDGE-PLAN.md section 6.
 
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] Staging runs e5cc286; migration hash unchanged; env files at the tester-window hashes before and after; other configuration files unchanged; units active; health, guard, page and CORS checks pass; the static key refused
-- [ ] Nothing queued or running before runs are switched off; Keith was told runs pause; the saved window gateway.env is restored byte for byte, runs are back on, and the tester window stays open
-- [ ] Keith uploads three documents into Chief of Staff scopes and asks one question they answer and one they do not; from the host: the job carried the read profile and the six knowledgeScopes, search_knowledge and read_knowledge ran, every [source: documentId#heading] names one of his documents and a heading in it, the unanswerable question is labelled No source or Unsourced, no hand-off and no external action
-- [ ] The live answers show whether the shared job wrapper's generic hand-off sentence confuses the one-role Chief of Staff; if it does, the fix is in scope here or registered (from the BIZ-01 checkpoint, 2026-11-07)
-- [ ] The checkpoint carries the CHECKLIST line (EVERY, DEPLOY, LIVE) and the FOLLOWUPS line
+- [x] Staging runs e5cc286; migration hash unchanged; env files at the tester-window hashes before and after; other configuration files unchanged; units active; health, guard, page and CORS checks pass; the static key refused
+- [x] Nothing queued or running before runs are switched off; Keith was told runs pause; the saved window gateway.env is restored byte for byte, runs are back on, and the tester window stays open
+- [x] Keith uploads three documents into Chief of Staff scopes and asks one question they answer and one they do not; from the host: the job carried the read profile and the six knowledgeScopes, search_knowledge and read_knowledge ran, every [source: documentId#heading] names one of his documents and a heading in it, the unanswerable question is labelled No source or Unsourced, no hand-off and no external action
+- [x] The live answers show whether the shared job wrapper's generic hand-off sentence confuses the one-role Chief of Staff; if it does, the fix is in scope here or registered (from the BIZ-01 checkpoint, 2026-11-07)
+- [x] The checkpoint carries the CHECKLIST line (EVERY, DEPLOY, LIVE) and the FOLLOWUPS line
+- [x] Not LOCKED by an implementer
+
+### PROVIDER-LIMIT-MSG-01 — Say so when the AI provider's account limit refuses a run
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=PROVIDER-LIMIT-MSG-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-07. Registered by BIZ-LIVE-01 (Keith approved, OPTIONAL); not admitted.
+**Task ID:** PROVIDER-LIMIT-MSG-01
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith admits it. No dependency. Keith decides.
+**Depends on:** none.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Likely services/ai-service/src/ai-execution/adapters/anthropic-ai.adapter.ts with its spec, the stored failure message list, and the frontend message mapping with en / zh-TW / zh-CN.
+**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-07). **productClass:** CURRENT per PRD.md.
+
+**Holds:** On 2026-11-07 the Anthropic account reached its spend limit. Anthropic answered 400 invalid_request_error with the text that the usage limits are reached until a date, and the adapter turned it into the generic Invalid request to Anthropic API, so Keith and the tester saw a misleading reason. Recognise the provider's account-limit refusal (from the error type and body, not only the words) and store and show a clear translated message that the AI provider's usage limit is reached and runs resume when it is raised; keep other 400s as they are. No key, account or limit value is shown. Rough size S.
+**Named in:** docs/BIZ-LIVE-01-CHECKPOINT.md (first three runs, 01:59 to 02:02 UTC).
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
 - [ ] Not LOCKED by an implementer
 
 ### BIZ-02 — Chief of Staff desk in the office
