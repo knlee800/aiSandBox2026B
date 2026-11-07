@@ -96,6 +96,8 @@ export function useCollaborationScreen(input: {
     Record<string, CollaborationTestsBlockReason>
   >({});
   const flight = useRef(createSingleFlight());
+  // Takes effect in this turn, before deciding re-renders and disables Start.
+  const startInFlight = useRef(false);
   const listProjectRef = useRef(listProjectId);
   const selectedRef = useRef(selectedRunId);
   listProjectRef.current = listProjectId;
@@ -489,33 +491,44 @@ export function useCollaborationScreen(input: {
     rejectReason,
     onTaskChange: setTask,
     onStart: () => {
-      void runDecision(async () => {
-        const response = await collaborationFetch('/api/collaboration/runs', {
-          method: 'POST',
-          body: JSON.stringify(
-            collaborationStartRequestBody({
-              sessionId,
-              task,
-              team: selectedTeam,
-            }),
-          ),
-        });
-        if (!response.ok) {
-          await showRefusal(response);
-          return;
+      if (startInFlight.current) {
+        return;
+      }
+      startInFlight.current = true;
+      void (async () => {
+        try {
+          await runDecision(async () => {
+            const response = await collaborationFetch('/api/collaboration/runs', {
+              method: 'POST',
+              body: JSON.stringify(
+                collaborationStartRequestBody({
+                  sessionId,
+                  task,
+                  team: selectedTeam,
+                }),
+              ),
+            });
+            if (!response.ok) {
+              await showRefusal(response);
+              return;
+            }
+            const started = (await response.json()) as CollaborationStartResult;
+            setConversationCreated(started.conversationCreated === true);
+            setSelectedRunId(started.collaborationRunId);
+            setRejectReferralId(null);
+            setRejectReason('');
+            if (started.projectId) {
+              setListProjectId(started.projectId);
+              listProjectRef.current = started.projectId;
+            }
+            selectedRef.current = started.collaborationRunId;
+            setTask('');
+            await refresh();
+          });
+        } finally {
+          startInFlight.current = false;
         }
-        const started = (await response.json()) as CollaborationStartResult;
-        setConversationCreated(started.conversationCreated === true);
-        setSelectedRunId(started.collaborationRunId);
-        setRejectReferralId(null);
-        setRejectReason('');
-        if (started.projectId) {
-          setListProjectId(started.projectId);
-          listProjectRef.current = started.projectId;
-        }
-        selectedRef.current = started.collaborationRunId;
-        await refresh();
-      });
+      })();
     },
     onOpenRun: (runId: string) => {
       setSelectedRunId(runId);

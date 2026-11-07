@@ -85085,7 +85085,7 @@ taskId=COLLAB-START-ONCE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-07. Lane 1, FRONTEND. Keith approved the drafted scope and admitted it on 2026-11-07. Implementation next.
+**Status:** COMPLETE AND LOCKED — 2026-11-07. LANE-DONE and LOCKED by the control plane; Lane 1 and FRONTEND released. Start on the Team page starts one run per click: an immediate in-flight guard and the task box cleared after a successful start; frontend tests 880 passed; STAGING-DEPLOY-16 registered. Not deployed; staging runs 8a723bf. Checkpoint: docs/COLLAB-START-ONCE-01-CHECKPOINT.md.
 **Task ID:** COLLAB-START-ONCE-01
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -85102,12 +85102,12 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] Start on the Team page starts one run per click: a guard that takes effect at once (not only after a re-render) lets only one start request be in flight, so a second click or Enter while a start is in flight does nothing
-- [ ] After a successful start the task box is cleared, so Start stays disabled until a new task is typed; after a refused or failed start the task text stays so the owner can retry
-- [ ] Every team (coding, chief-of-staff, advisors) behaves the same; no gateway, API or message-file change and no new visible text
-- [ ] Tests cover each point above; frontend tests (including the collaboration component tests by name), type check and build pass
-- [ ] The checkpoint carries the CHECKLIST line (EVERY, UI) and the FOLLOWUPS line
-- [ ] Not LOCKED by an implementer
+- [x] Start on the Team page starts one run per click: a guard that takes effect at once (not only after a re-render) lets only one start request be in flight, so a second click or Enter while a start is in flight does nothing
+- [x] After a successful start the task box is cleared, so Start stays disabled until a new task is typed; after a refused or failed start the task text stays so the owner can retry
+- [x] Every team (coding, chief-of-staff, advisors) behaves the same; no gateway, API or message-file change and no new visible text
+- [x] Tests cover each point above; frontend tests (including the collaboration component tests by name), type check and build pass
+- [x] The checkpoint carries the CHECKLIST line (EVERY, UI) and the FOLLOWUPS line
+- [x] Not LOCKED by an implementer
 
 ### BIZ-NOPROJECT-01 — Business runs without an open project
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -85359,6 +85359,31 @@ nature=IMPLEMENTATION
 
 **Holds:** On 2026-11-07 Keith's documents twice landed in Company monthly reports instead of the scope he meant: the Knowledge page saves a new document to the scope selected in the chip row at the top (the first scope by default), and the add form does not say which scope that is. The add form names its scope ("Adding to: <scope>") and lets the owner change it there; tests cover it; en, zh-TW and zh-CN.
 **Named in:** the BIZ-03 admission record (2026-11-07).
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### STAGING-DEPLOY-16 — Deploy the one-start Team page (COLLAB-START-ONCE-01) during the tester window
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-16
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-07. Registered by COLLAB-START-ONCE-01; not admitted.
+**Task ID:** STAGING-DEPLOY-16
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (operational run; no code)
+**Lifecycle:** 3-STEP: registration here; admission when Keith picks the time; pre-check and deploy from the host; separate LOCK record (STAGING-RUNTIME).
+**Start condition (human):** NOT_READY. Ready when: COLLAB-START-ONCE-01 is COMPLETE AND LOCKED and Keith approves the deploy and its timing; if KNOW-SCOPE-UX-01 is COMPLETE AND LOCKED by then, the same deploy carries it. Keith decides.
+**Depends on:** COLLAB-START-ONCE-01.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Expected: none in the repository beyond records; host state on ainow-staging-01 (frontend release).
+**Mutexes / resources:** set at admission (expected STAGING and ENV). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS; expected STAGING-RUNTIME). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+
+**Holds:** deploy the commit that holds COLLAB-START-ONCE-01 with the DEPLOY checklist, including item 7 while the tester window is open (save the window gateway.env, runs off for the deploy only, restore it byte for byte, check the window env hashes and that runs are back on), Keith told first, health, guard and page checks, the static key refused. After the deploy, the served Team page bundle holds the one-start guard, read from the host.
+**Named in:** docs/COLLAB-START-ONCE-01-CHECKPOINT.md.
 
 #### Acceptance criteria
 

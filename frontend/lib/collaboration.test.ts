@@ -673,25 +673,7 @@ let nextIntervalId = 1;
 let scheduleCount = 0;
 let runStatus = 'active';
 let root: Root | null = null;
-let latest: {
-  notice: string | null;
-  loading: boolean;
-  onOpenRun: (runId: string) => void;
-  handoffs: Array<{
-    referralId: string;
-    testsGate: string;
-    testsBlockReason: string | null;
-    approveWithoutTests: boolean;
-    waiting: boolean;
-  }>;
-  onApprove: (referralId: string, approveWithoutPassingTests?: boolean) => void;
-  onApproveWithoutTestsChange: (referralId: string, checked: boolean) => void;
-  onTeamChange: (teamId: 'coding' | 'chief-of-staff' | 'advisors') => void;
-  onTaskChange: (value: string) => void;
-  onStart: () => void;
-  selectedTeam: 'coding' | 'chief-of-staff' | 'advisors';
-  runTeam: { label: string; roles: string[] } | null;
-} | null = null;
+let latest: ReturnType<typeof useCollaborationScreen> | null = null;
 let createRoot: (typeof import('react-dom/client'))['createRoot'];
 let originalFetch: typeof fetch;
 let originalSetInterval: typeof setInterval;
@@ -827,6 +809,46 @@ function installFetch() {
     }
     return jsonResponse(404, { message: 'missing' });
   }) as typeof fetch;
+}
+
+function startedRunResponse(): Response {
+  return jsonResponse(201, {
+    collaborationRunId: 'run-1',
+    projectId: 'proj-1',
+    status: 'active',
+    referralId: 'ref-1',
+    handoffStatus: 'pending_approval',
+    source: 'user',
+    target: 'lead',
+    conversationId: 'conv-1',
+    conversationCreated: false,
+  });
+}
+
+function installStartFetch(onPost: (body: unknown) => Response | Promise<Response>): unknown[] {
+  const posts: unknown[] = [];
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input);
+    const method = (init?.method ?? 'GET').toUpperCase();
+    fetchCalls.push(url);
+    if (method === 'POST' && url === '/api/collaboration/runs') {
+      const body = init?.body ? JSON.parse(String(init.body)) : null;
+      posts.push(body);
+      return await onPost(body);
+    }
+    if (url.startsWith('/api/collaboration/runs?')) {
+      return jsonResponse(200, { runs: [runPayload('active')] });
+    }
+    if (url === '/api/collaboration/runs/run-1') {
+      return jsonResponse(200, {
+        run: runPayload('active'),
+        team: ['lead', 'writer', 'reviewer'],
+        handoffs: [],
+      });
+    }
+    return jsonResponse(404, { message: 'missing' });
+  }) as typeof fetch;
+  return posts;
 }
 
 function installIntervals() {
@@ -1130,6 +1152,123 @@ describe('collaboration screen reload', () => {
     assert.equal(latest?.selectedTeam, 'chief-of-staff');
     assert.equal(latest?.runTeam?.roles.length, 1);
     assert.match(String(latest?.runTeam?.label), /幕僚|Chief of Staff/);
+  });
+
+  test('two onStart calls in the same tick send one collaboration run', async () => {
+    const posts = installStartFetch(() => startedRunResponse());
+    await renderScreen(1, 'proj-1');
+    await act(async () => {
+      latest!.onTaskChange('Build the login form');
+    });
+    await act(async () => {
+      latest!.onStart();
+      latest!.onStart();
+      for (let step = 0; step < 40; step += 1) {
+        await Promise.resolve();
+      }
+    });
+    assert.equal(posts.length, 1);
+    assert.deepEqual(posts[0], {
+      sessionId: 'session-1',
+      task: 'Build the login form',
+      team: 'coding',
+    });
+  });
+
+  test('a successful start clears the task and disables Start', async () => {
+    installStartFetch(() => startedRunResponse());
+    await renderScreen(1, 'proj-1');
+    await act(async () => {
+      latest!.onTeamChange('advisors');
+      latest!.onTaskChange('Ship the login form once');
+    });
+    assert.ok(latest);
+    const before = renderToStaticMarkup(createElement(CollaborationView, latest));
+    assert.equal(tagHasBooleanAttr(openTag(before, 'collaboration-start'), 'disabled'), false);
+
+    await act(async () => {
+      latest!.onStart();
+      for (let step = 0; step < 40; step += 1) {
+        await Promise.resolve();
+      }
+    });
+
+    assert.equal(latest?.task, '');
+    assert.equal(latest?.deciding, false);
+    assert.equal(latest?.selectedTeam, 'advisors');
+    assert.ok(latest);
+    const after = renderToStaticMarkup(createElement(CollaborationView, latest));
+    assert.equal(tagHasBooleanAttr(openTag(after, 'collaboration-start'), 'disabled'), true);
+    assert.doesNotMatch(after, /Ship the login form once/);
+    const advisorsAt = after.indexOf('data-testid="collaboration-team-option-advisors"');
+    assert.ok(advisorsAt >= 0);
+    assert.match(after.slice(advisorsAt, advisorsAt + 500), /checked/);
+  });
+
+  test('a refused start keeps the task and a later onStart sends again', async () => {
+    const posts = installStartFetch(() =>
+      jsonResponse(409, { message: 'Session is not usable' }),
+    );
+    await renderScreen(1, 'proj-1');
+    await act(async () => {
+      latest!.onTeamChange('chief-of-staff');
+      latest!.onTaskChange('Keep this question');
+    });
+    await act(async () => {
+      latest!.onStart();
+      for (let step = 0; step < 40; step += 1) {
+        await Promise.resolve();
+      }
+    });
+    assert.equal(posts.length, 1);
+    assert.equal(latest?.task, 'Keep this question');
+    assert.equal(latest?.selectedTeam, 'chief-of-staff');
+    assert.equal(latest?.deciding, false);
+
+    await act(async () => {
+      latest!.onStart();
+      for (let step = 0; step < 40; step += 1) {
+        await Promise.resolve();
+      }
+    });
+    assert.equal(posts.length, 2);
+    assert.deepEqual(posts[1], {
+      sessionId: 'session-1',
+      task: 'Keep this question',
+      team: 'chief-of-staff',
+    });
+    assert.equal(latest?.task, 'Keep this question');
+    assert.equal(latest?.selectedTeam, 'chief-of-staff');
+  });
+
+  test('a thrown start releases the guard and keeps the task', async () => {
+    const posts = installStartFetch(() => {
+      throw new Error('network down');
+    });
+    await renderScreen(1, 'proj-1');
+    await act(async () => {
+      latest!.onTaskChange('Retry after the network error');
+    });
+    await act(async () => {
+      latest!.onStart();
+      for (let step = 0; step < 40; step += 1) {
+        await Promise.resolve();
+      }
+    });
+    assert.equal(posts.length, 1);
+    assert.equal(latest?.task, 'Retry after the network error');
+    assert.equal(latest?.deciding, false);
+    assert.match(String(latest?.notice), /That did not work\. Try again\./);
+
+    await act(async () => {
+      latest!.onStart();
+      for (let step = 0; step < 40; step += 1) {
+        await Promise.resolve();
+      }
+    });
+    assert.equal(posts.length, 2);
+    assert.equal(latest?.task, 'Retry after the network error');
+    assert.equal(latest?.selectedTeam, 'coding');
   });
 });
 
