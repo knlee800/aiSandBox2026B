@@ -84871,15 +84871,15 @@ taskId=BIZ-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-BIZ-KNOWLEDGE-PLAN-01; not admitted.
+**Status:** ADMITTED — 2026-11-07. Lane 1, STAGING and ENV. Keith approved the drafted scope and admitted it on 2026-11-07 (deploy during the open tester window).
 **Task ID:** BIZ-LIVE-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
-**Lifecycle:** 3-STEP.
-**Start condition (human):** NOT_READY. Ready when: BIZ-01 is COMPLETE AND LOCKED and Keith opens a staging window. Keith decides.
+**Lifecycle:** 3-STEP: admission in this record; deploy from the host and Keith's live check with host-side verification; separate LOCK record (STAGING-RUNTIME).
+**Start condition (human):** READY — BIZ-01 is COMPLETE AND LOCKED (e5cc286); Keith chose on 2026-11-07 to deploy while the tester window stays open, accepting that runs pause for a few minutes during the deploy.
 **Depends on:** BIZ-01.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
-**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**Primary write scope:** none in the repository beyond records. Host state on ainow-staging-01 (release of e5cc286, which also carries KNOW-02, so the Knowledge tools in ai-service, the internal knowledge routes, BIZ-01 in api-gateway and the Team page picker in the frontend go live together; no migration; all services restart), Keith's three Knowledge documents and his Chief of Staff runs, and off-repo evidence in C:/Users/knlee/aisb-preflight/BIZ-LIVE-01/.
+**Mutexes / resources:** STAGING, ENV (the host deploy tool refuses while GLOBAL_EXECUTION_ENABLED is not false: the deploy saves the tester-window gateway.env, switches runs off for the deploy only, then restores the file byte for byte; GOV-DEPLOY-WINDOW-01). Keith's two questions are ordinary use inside the open tester window under its daily caps; no PROVIDER-LIVE or CREDIT mutex. **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** STAGING-RUNTIME (the tester may be active). **Revert isolation:** acceptable (no migration; rollback is a redeploy of 05539f7).
 **saturationClass:** OPTIONAL. **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved the plan on 2026-11-05).
 
 **Holds:** Plan section 6 row BIZ-LIVE-01: deploy; Keith uploads three documents and asks the Chief of Staff; citations verified; one unsourced answer labelled; flags off after.
@@ -84887,8 +84887,12 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Staging runs e5cc286; migration hash unchanged; env files at the tester-window hashes before and after; other configuration files unchanged; units active; health, guard, page and CORS checks pass; the static key refused
+- [ ] Nothing queued or running before runs are switched off; Keith was told runs pause; the saved window gateway.env is restored byte for byte, runs are back on, and the tester window stays open
+- [ ] Keith uploads three documents into Chief of Staff scopes and asks one question they answer and one they do not; from the host: the job carried the read profile and the six knowledgeScopes, search_knowledge and read_knowledge ran, every [source: documentId#heading] names one of his documents and a heading in it, the unanswerable question is labelled No source or Unsourced, no hand-off and no external action
 - [ ] The live answers show whether the shared job wrapper's generic hand-off sentence confuses the one-role Chief of Staff; if it does, the fix is in scope here or registered (from the BIZ-01 checkpoint, 2026-11-07)
+- [ ] The checkpoint carries the CHECKLIST line (EVERY, DEPLOY, LIVE) and the FOLLOWUPS line
 - [ ] Not LOCKED by an implementer
 
 ### BIZ-02 — Chief of Staff desk in the office
