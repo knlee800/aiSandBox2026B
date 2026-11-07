@@ -85411,15 +85411,15 @@ taskId=COLLAB-REJECT-UX-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-07. Registered from Keith's finding during STAGING-DEPLOY-16 (Keith approved, OPTIONAL); not admitted.
+**Status:** ADMITTED — 2026-11-08. Lane 1, FRONTEND and I18N. Keith approved the drafted scope and admitted it on 2026-11-08. Implementation next.
 **Task ID:** COLLAB-REJECT-UX-01
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition (human):** NOT_READY. Ready when: Keith admits it. No dependency. Keith decides.
+**Start condition (human):** READY — Keith chose it after Cancel run went live and admitted it as drafted on 2026-11-08.
 **Depends on:** none.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Likely frontend/components/collaboration/collaboration-view.tsx and collaboration-page.tsx with frontend/lib/collaboration.test.ts and the three message files.
-**Mutexes / resources:** set at admission (likely FRONTEND and I18N). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**Primary write scope:** `frontend/components/collaboration/collaboration-page.tsx`, `frontend/components/collaboration/collaboration-view.tsx`, `frontend/lib/collaboration/logic.ts`, `frontend/lib/collaboration.test.ts`, `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`, docs/COLLAB-REJECT-UX-01-CHECKPOINT.md. Frontend only: no gateway or API change; anything else needs a control-plane scope change.
+**Mutexes / resources:** FRONTEND, I18N. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (the Team page reject steps, one helper and message keys; no gateway change, no migration).
 **saturationClass:** OPTIONAL (Keith, 2026-11-07). **productClass:** CURRENT per PRD.md.
 
 **Holds:** On 2026-11-07 Keith clicked Reject on two waiting hand-offs and reported that nothing happened: Reject only opens a Reason (optional) box, and the rejection is saved by a second button, Reject this step. The two runs stayed open and blocked STAGING-DEPLOY-16 until he clicked the second button. The Team page makes the second step obvious (or saves the rejection in one step with an optional reason), shows that the hand-off was rejected and the run ended, in en, zh-TW and zh-CN; tests cover it. Ending a run outright stays with COLLAB-CANCEL-01.
@@ -85427,7 +85427,12 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Clicking Reject on a waiting hand-off hides Approve for that hand-off, shows the line Reject this step? Its work will not be used., moves focus to the Reason (optional) box, and Enter in that box confirms; the confirm button Reject this step is solid red; the back button reads Don't reject; the reject route and its request body are unchanged
+- [ ] After a reject saves, the hand-off shows Rejected; when the open run has status failed, at least one hand-off is rejected and none is failed or timed out, the page shows This run ended after a rejection. (a pure helper in frontend/lib/collaboration/logic.ts decides it)
+- [ ] New keys rejectPrompt and runEndedByReject and the changed cancelReject value in en, zh-TW and zh-CN through the existing translation hook, no hardcoded English; existing data-testids kept
+- [ ] Tests cover each point above; frontend tests (the collaboration tests run in npm test), type check and build pass, compared with the known results in the latest checkpoints
+- [ ] The checkpoint carries the CHECKLIST line (EVERY, UI, FLOWS) and the FOLLOWUPS line; the deploy is registered
 - [ ] Not LOCKED by an implementer
 
 ### STAGING-DEPLOY-17 — Deploy Cancel run (COLLAB-CANCEL-01) during the tester window
