@@ -13,7 +13,8 @@
       "writePaths": [
         "services/api-gateway/src/orchestration/orchestration.service.ts",
         "services/api-gateway/src/orchestration/collaboration.controller.spec.ts",
-        "services/api-gateway/src/orchestration/internal-collaboration.controller.spec.ts"
+        "services/api-gateway/src/orchestration/internal-collaboration.controller.spec.ts",
+        "services/api-gateway/src/orchestration/__tests__/orchestration.service.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
@@ -4265,7 +4266,8 @@
       "writePaths": [
         "services/api-gateway/src/orchestration/orchestration.service.ts",
         "services/api-gateway/src/orchestration/collaboration.controller.spec.ts",
-        "services/api-gateway/src/orchestration/internal-collaboration.controller.spec.ts"
+        "services/api-gateway/src/orchestration/internal-collaboration.controller.spec.ts",
+        "services/api-gateway/src/orchestration/__tests__/orchestration.service.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
