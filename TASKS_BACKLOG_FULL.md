@@ -84902,15 +84902,15 @@ taskId=PROVIDER-LIMIT-MSG-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-07. Registered by BIZ-LIVE-01 (Keith approved, OPTIONAL); not admitted.
+**Status:** ADMITTED — 2026-11-07. Lane 1, AI-SERVICE, FRONTEND and I18N. Keith approved the drafted scope and admitted it on 2026-11-07. Implementation next.
 **Task ID:** PROVIDER-LIMIT-MSG-01
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
-**Lifecycle:** 3-STEP.
-**Start condition (human):** NOT_READY. Ready when: Keith admits it. No dependency. Keith decides.
+**Lifecycle:** 3-STEP: admission in this record; implementation by Cursor grok-4.7-high; consolidation and LOCK in the same commit as the code (LOCAL-TESTS). The deploy is a separate later step.
+**Start condition (human):** READY — Keith admitted it on 2026-11-07 as drafted (write set, mutexes, wording, LOCAL-TESTS).
 **Depends on:** none.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Likely services/ai-service/src/ai-execution/adapters/anthropic-ai.adapter.ts with its spec, the stored failure message list, and the frontend message mapping with en / zh-TW / zh-CN.
-**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**Primary write scope:** `services/ai-service/src/ai-execution/adapters/anthropic-ai.adapter.ts`, `services/ai-service/src/ai-execution/adapters/__tests__/anthropic-ai.adapter.spec.ts`, `frontend/components/workspace/workspace-quota-usage.logic.ts`, `frontend/components/workspace/workspace-quota-usage.logic.test.ts`, `frontend/app/`, `frontend/lib/collaboration/logic.ts`, `frontend/lib/collaboration.test.ts`, `frontend/components/collaboration/collaboration-view.tsx`, `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json` (inside frontend/app/ only frontend/app/[locale]/app/page.tsx, and there only one new entry in quotaRateLimitCopies; the validator does not accept brackets in a path), docs/PROVIDER-LIMIT-MSG-01-CHECKPOINT.md. Anything else needs a control-plane scope change.
+**Mutexes / resources:** AI-SERVICE, FRONTEND, I18N. **Hot-file leases:** none (FRONTEND covers page.tsx). **Shared contracts:** none frozen; the fixed stored sentence AI provider usage limit reached is the new contract between ai-service and the frontend. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (adapter mapping, one copy entry, frontend mapping and message keys; no migration).
 **saturationClass:** OPTIONAL (Keith, 2026-11-07). **productClass:** CURRENT per PRD.md.
 
 **Holds:** On 2026-11-07 the Anthropic account reached its spend limit. Anthropic answered 400 invalid_request_error with the text that the usage limits are reached until a date, and the adapter turned it into the generic Invalid request to Anthropic API, so Keith and the tester saw a misleading reason. Recognise the provider's account-limit refusal (from the error type and body, not only the words) and store and show a clear translated message that the AI provider's usage limit is reached and runs resume when it is raised; keep other 400s as they are. No key, account or limit value is shown. Rough size S.
@@ -84918,7 +84918,11 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] A 400 from Anthropic whose error type is invalid_request_error and whose message says the usage limits are reached becomes the fixed stored sentence AI provider usage limit reached; every other 400 keeps Invalid request to Anthropic API; no key, limit value or reset date is stored or shown
+- [ ] The workspace chat (through toQuotaRateLimitGuidance and one new quotaRateLimitCopies entry) and the Team page failure line show the translated message; en: The AI provider's usage limit has been reached, so runs can't start. They start again once an admin raises the limit. zh-TW and zh-CN are real translations; no hardcoded English
+- [ ] Tests cover the limit 400, another 400 and each language key; ai-service tests and build and frontend tests, type check and build pass, compared with the known failures in their latest checkpoints
+- [ ] The checkpoint carries the CHECKLIST line (EVERY, UI, BACKEND) and the FOLLOWUPS line
 - [ ] Not LOCKED by an implementer
 
 ### BIZ-02 — Chief of Staff desk in the office
