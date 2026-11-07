@@ -84640,7 +84640,7 @@ taskId=COLLAB-CANCEL-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-07. Lane 1, GATEWAY, FRONTEND and I18N. Keith approved the drafted scope and admitted it on 2026-11-07. Implementation next.
+**Status:** COMPLETE AND LOCKED — 2026-11-07. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY, FRONTEND and I18N released. Owner-only POST /api/collaboration/runs/:id/cancel over the existing cancelCollaboration and a Cancel run button with one confirm step on the Team page; en, zh-TW and zh-CN; gateway 2800 passed with the 14 known smoke failures, frontend 884 passed; STAGING-DEPLOY-17 registered. Not deployed; staging runs 66efb5c. Checkpoint: docs/COLLAB-CANCEL-01-CHECKPOINT.md.
 **Task ID:** COLLAB-CANCEL-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -84657,13 +84657,13 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] POST /api/collaboration/runs/:id/cancel behind the same login guard and entitlement check as approve and reject: only the run's owner may cancel; it takes an optional reason, calls the existing cancelCollaboration, and refuses a run that is no longer active with 409; another user's run is refused as approve and reject refuse it
-- [ ] Every waiting, approved or running hand-off in the run is cancelled by the existing service and the run ends cancelled; the service's cancel logic is unchanged
-- [ ] The Team page shows Cancel run on an active run with one confirm step; after it the run shows Cancelled and the list refreshes; a refusal shows a translated message
-- [ ] Every new text in en, zh-TW and zh-CN through the existing translation hook, no hardcoded English; existing data-testids kept
-- [ ] Tests cover each point above; api-gateway tests and build, and frontend tests (the collaboration tests run in npm test), type check and build pass, compared with the known failures in the latest checkpoints
-- [ ] The checkpoint carries the CHECKLIST line (EVERY, UI, BACKEND) and the FOLLOWUPS line; the deploy is registered
-- [ ] Not LOCKED by an implementer
+- [x] POST /api/collaboration/runs/:id/cancel behind the same login guard and entitlement check as approve and reject: only the run's owner may cancel; it takes an optional reason, calls the existing cancelCollaboration, and refuses a run that is no longer active with 409; another user's run is refused as approve and reject refuse it
+- [x] Every waiting, approved or running hand-off in the run is cancelled by the existing service and the run ends cancelled; the service's cancel logic is unchanged
+- [x] The Team page shows Cancel run on an active run with one confirm step; after it the run shows Cancelled and the list refreshes; a refusal shows a translated message
+- [x] Every new text in en, zh-TW and zh-CN through the existing translation hook, no hardcoded English; existing data-testids kept
+- [x] Tests cover each point above; api-gateway tests and build, and frontend tests (the collaboration tests run in npm test), type check and build pass, compared with the known failures in the latest checkpoints
+- [x] The checkpoint carries the CHECKLIST line (EVERY, UI, BACKEND) and the FOLLOWUPS line; the deploy is registered
+- [x] Not LOCKED by an implementer
 
 ### STAGING-DEPLOY-04 — Deploy the office and the reopen fix, with Keith's browser check
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -85424,6 +85424,31 @@ nature=IMPLEMENTATION
 
 **Holds:** On 2026-11-07 Keith clicked Reject on two waiting hand-offs and reported that nothing happened: Reject only opens a Reason (optional) box, and the rejection is saved by a second button, Reject this step. The two runs stayed open and blocked STAGING-DEPLOY-16 until he clicked the second button. The Team page makes the second step obvious (or saves the rejection in one step with an optional reason), shows that the hand-off was rejected and the run ended, in en, zh-TW and zh-CN; tests cover it. Ending a run outright stays with COLLAB-CANCEL-01.
 **Named in:** docs/STAGING-DEPLOY-16-CHECKPOINT.md (the reject that did not save); Keith approved registering it in chat on 2026-11-07.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
+
+### STAGING-DEPLOY-17 — Deploy Cancel run (COLLAB-CANCEL-01) during the tester window
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-17
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-07. Registered by COLLAB-CANCEL-01; not admitted.
+**Task ID:** STAGING-DEPLOY-17
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (operational run; no code)
+**Lifecycle:** 3-STEP: registration here; admission when Keith picks the time; pre-check and deploy from the host; separate LOCK record (STAGING-RUNTIME).
+**Start condition (human):** NOT_READY. Ready when: COLLAB-CANCEL-01 is COMPLETE AND LOCKED and Keith approves the deploy and its timing; any other locked frontend or gateway change by then rides along. Keith decides.
+**Depends on:** COLLAB-CANCEL-01.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Expected: none in the repository beyond records; host state on ainow-staging-01 (gateway and frontend release).
+**Mutexes / resources:** set at admission (expected STAGING and ENV). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS; expected STAGING-RUNTIME). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+
+**Holds:** deploy the commit that holds COLLAB-CANCEL-01 with the DEPLOY checklist, including item 7 while the tester window is open (save the window gateway.env, runs off for the deploy only, restore it byte for byte, check the window env hashes and that runs are back on), Keith told first, health, guard and page checks, the static key refused. After the deploy, the cancel route answers 401 without a session and the served Team page holds Cancel run, read from the host.
+**Named in:** docs/COLLAB-CANCEL-01-CHECKPOINT.md.
 
 #### Acceptance criteria
 

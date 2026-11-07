@@ -6,6 +6,7 @@ import {
   CodeBracketIcon,
   ExclamationTriangleIcon,
   UserGroupIcon,
+  XCircleIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import {
@@ -46,6 +47,10 @@ export interface CollaborationViewLabels {
   rejectReasonLabel: string;
   rejectConfirm: string;
   cancelReject: string;
+  cancelRun: string;
+  cancelRunPrompt: string;
+  cancelRunConfirm: string;
+  cancelRunKeep: string;
   pastRuns: string;
   pastRunsEmpty: string;
   openRun: string;
@@ -160,6 +165,11 @@ export default function CollaborationView(props: {
   onCancelReject: () => void;
   onConfirmReject: (referralId: string) => void;
   onRejectReasonChange: (value: string) => void;
+  selectedRunActive: boolean;
+  confirmingCancel: boolean;
+  onBeginCancel: () => void;
+  onCancelCancel: () => void;
+  onConfirmCancel: () => void;
 }) {
   const { labels } = props;
   const canStart = props.sessionReady && props.task.trim().length > 0 && !props.deciding;
@@ -296,6 +306,47 @@ export default function CollaborationView(props: {
               <span className="text-gray-600">{` · ${props.runTeam.roles.join(' · ')}`}</span>
             ) : null}
           </p>
+        ) : null}
+        {props.selectedRunActive ? (
+          <div className="mt-3">
+            {props.confirmingCancel ? (
+              <div className="flex min-w-0 w-full flex-col gap-2">
+                <p className="text-sm text-gray-700">{labels.cancelRunPrompt}</p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    data-testid="collaboration-cancel-confirm"
+                    disabled={props.deciding}
+                    onClick={props.onConfirmCancel}
+                    className="inline-flex items-center gap-1 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
+                  >
+                    <XCircleIcon className="h-4 w-4" aria-hidden="true" />
+                    {labels.cancelRunConfirm}
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="collaboration-cancel-keep"
+                    disabled={props.deciding}
+                    onClick={props.onCancelCancel}
+                    className="rounded-lg px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+                  >
+                    {labels.cancelRunKeep}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                data-testid="collaboration-cancel-run"
+                disabled={props.deciding}
+                onClick={props.onBeginCancel}
+                className="inline-flex items-center gap-1 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
+              >
+                <XCircleIcon className="h-4 w-4" aria-hidden="true" />
+                {labels.cancelRun}
+              </button>
+            )}
+          </div>
         ) : null}
         {props.handoffs.length === 0 ? (
           <p className="mt-2 text-sm text-gray-500">{props.chainEmptyText ?? labels.chainEmpty}</p>

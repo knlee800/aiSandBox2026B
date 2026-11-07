@@ -39,6 +39,14 @@ import {
 
 const labels = enMessages.collaboration as CollaborationViewLabels;
 
+const idleCancel = {
+  selectedRunActive: false,
+  confirmingCancel: false,
+  onBeginCancel: () => {},
+  onCancelCancel: () => {},
+  onConfirmCancel: () => {},
+};
+
 function openTag(markup: string, testId: string): string {
   const marker = `data-testid="${testId}"`;
   const at = markup.indexOf(marker);
@@ -131,6 +139,7 @@ function renderChain(handoffs: Array<{
       onCancelReject: () => {},
       onConfirmReject: () => {},
       onRejectReasonChange: () => {},
+      ...idleCancel,
     }),
   );
 }
@@ -190,6 +199,7 @@ describe('collaboration page', () => {
         onCancelReject: () => {},
         onConfirmReject: () => {},
         onRejectReasonChange: () => {},
+        ...idleCancel,
       }),
     );
     assert.equal(collaborationRefusal(402, 'Insufficient credit balance'), 'credits');
@@ -662,6 +672,37 @@ describe('collaboration page', () => {
     );
     assert.equal(zhTwMessages.collaboration.refusalDailyCredits, '你已用完今天的點數上限。執行會在 UTC 午夜後重新開始。');
     assert.equal(zhCnMessages.collaboration.refusalDailyCredits, '你已用完今天的点数上限。运行会在 UTC 午夜后重新开始。');
+  });
+
+  test('cancel copy exists in en, zh-TW and zh-CN, and Cancelled is already labelled', () => {
+    const keys = ['cancelRun', 'cancelRunPrompt', 'cancelRunConfirm', 'cancelRunKeep'] as const;
+    for (const key of keys) {
+      const english = enMessages.collaboration[key];
+      const traditional = zhTwMessages.collaboration[key];
+      const simplified = zhCnMessages.collaboration[key];
+      assert.equal(typeof english, 'string');
+      assert.equal(english.trim().length > 0, true);
+      assert.notEqual(traditional, english);
+      assert.notEqual(simplified, english);
+      assert.notEqual(traditional, simplified);
+      assert.match(traditional, /\p{Script=Han}/u);
+      assert.match(simplified, /\p{Script=Han}/u);
+    }
+    assert.equal(enMessages.collaboration.statusCancelled, 'Cancelled');
+    assert.equal(zhTwMessages.collaboration.statusCancelled, '已取消');
+    assert.equal(zhCnMessages.collaboration.statusCancelled, '已取消');
+    assert.equal(enMessages.collaboration.cancelRun, 'Cancel run');
+    assert.equal(enMessages.collaboration.cancelRunPrompt, 'Cancel this run? Waiting and running steps stop.');
+    assert.equal(enMessages.collaboration.cancelRunConfirm, 'Confirm cancel');
+    assert.equal(enMessages.collaboration.cancelRunKeep, 'Keep run');
+    assert.equal(zhTwMessages.collaboration.cancelRun, '取消這次執行');
+    assert.equal(zhTwMessages.collaboration.cancelRunPrompt, '要取消這次執行嗎？等待中和進行中的步驟會停止。');
+    assert.equal(zhTwMessages.collaboration.cancelRunConfirm, '確認取消');
+    assert.equal(zhTwMessages.collaboration.cancelRunKeep, '保留這次執行');
+    assert.equal(zhCnMessages.collaboration.cancelRun, '取消这次运行');
+    assert.equal(zhCnMessages.collaboration.cancelRunPrompt, '要取消这次运行吗？等待中和进行中的步骤会停止。');
+    assert.equal(zhCnMessages.collaboration.cancelRunConfirm, '确认取消');
+    assert.equal(zhCnMessages.collaboration.cancelRunKeep, '保留这次运行');
   });
 });
 
@@ -1270,6 +1311,170 @@ describe('collaboration screen reload', () => {
     assert.equal(latest?.task, 'Retry after the network error');
     assert.equal(latest?.selectedTeam, 'coding');
   });
+
+  test('Cancel run shows only for an active run, and Keep run sends nothing', async () => {
+    await renderScreen(1, 'proj-1');
+    let markup = renderToStaticMarkup(createElement(CollaborationView, latest!));
+    assert.doesNotMatch(markup, /data-testid="collaboration-cancel-run"/);
+
+    await act(async () => {
+      latest!.onOpenRun('run-1');
+    });
+    markup = renderToStaticMarkup(createElement(CollaborationView, latest!));
+    assert.match(markup, /data-testid="collaboration-cancel-run"/);
+    assert.match(markup, /Cancel run/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-cancel-confirm"/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-cancel-keep"/);
+
+    const before = fetchCalls.length;
+    await act(async () => {
+      latest!.onBeginCancel();
+    });
+    assert.equal(fetchCalls.length, before);
+    markup = renderToStaticMarkup(createElement(CollaborationView, latest!));
+    assert.match(markup, /data-testid="collaboration-cancel-confirm"/);
+    assert.match(markup, /data-testid="collaboration-cancel-keep"/);
+    assert.match(markup, /Cancel this run\? Waiting and running steps stop\./);
+    assert.doesNotMatch(markup, /data-testid="collaboration-cancel-run"/);
+
+    await act(async () => {
+      latest!.onCancelCancel();
+    });
+    assert.equal(fetchCalls.length, before);
+    assert.equal(
+      fetchCalls.some((url) => url.includes('/cancel')),
+      false,
+    );
+    markup = renderToStaticMarkup(createElement(CollaborationView, latest!));
+    assert.match(markup, /data-testid="collaboration-cancel-run"/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-cancel-confirm"/);
+
+    runStatus = 'completed';
+    await firePoll();
+    markup = renderToStaticMarkup(createElement(CollaborationView, latest!));
+    assert.doesNotMatch(markup, /data-testid="collaboration-cancel-run"/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-cancel-confirm"/);
+    assert.equal(latest?.runs[0]?.statusLabel, `1:${enMessages.collaboration.statusCompleted}`);
+  });
+
+  test('confirm cancel posts once, disables the buttons while deciding, and refreshes', async () => {
+    const posts: string[] = [];
+    let detailStatus = 'active';
+    const gate: { resolve: (response: Response) => void } = {
+      resolve: () => {
+        throw new Error('cancel was not waiting');
+      },
+    };
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      const method = (init?.method ?? 'GET').toUpperCase();
+      fetchCalls.push(url);
+      if (method === 'POST' && url === '/api/collaboration/runs/run-1/cancel') {
+        posts.push(String(init?.body ?? ''));
+        return new Promise<Response>((resolve) => {
+          gate.resolve = (response) => resolve(response);
+        });
+      }
+      if (url.startsWith('/api/collaboration/runs?')) {
+        return jsonResponse(200, { runs: [{ ...runPayload(detailStatus), teamId: 'coding' }] });
+      }
+      if (url === '/api/collaboration/runs/run-1') {
+        return jsonResponse(200, {
+          run: runPayload(detailStatus),
+          teamId: 'coding',
+          team: ['lead', 'writer', 'reviewer'],
+          handoffs: [],
+        });
+      }
+      return jsonResponse(404, { message: 'missing' });
+    }) as typeof fetch;
+
+    await renderScreen(1, 'proj-1');
+    await act(async () => {
+      latest!.onOpenRun('run-1');
+    });
+    await act(async () => {
+      latest!.onBeginCancel();
+    });
+    await act(async () => {
+      latest!.onConfirmCancel();
+      latest!.onConfirmCancel();
+      await Promise.resolve();
+    });
+    assert.deepEqual(posts, ['{}']);
+    assert.equal(latest?.deciding, true);
+    let markup = renderToStaticMarkup(createElement(CollaborationView, latest!));
+    assert.equal(tagHasBooleanAttr(openTag(markup, 'collaboration-cancel-confirm'), 'disabled'), true);
+    assert.equal(tagHasBooleanAttr(openTag(markup, 'collaboration-cancel-keep'), 'disabled'), true);
+
+    detailStatus = 'cancelled';
+    await act(async () => {
+      gate.resolve(jsonResponse(200, { collaborationRunId: 'run-1', status: 'cancelled' }));
+      for (let step = 0; step < 40; step += 1) {
+        await Promise.resolve();
+      }
+    });
+    assert.deepEqual(posts, ['{}']);
+    assert.equal(latest?.deciding, false);
+    assert.equal(latest?.notice, null);
+    assert.equal(latest?.runs[0]?.statusLabel, `1:${enMessages.collaboration.statusCancelled}`);
+    assert.ok(fetchCalls.filter((url) => url.startsWith('/api/collaboration/runs?')).length >= 2);
+    assert.ok(fetchCalls.filter((url) => url === '/api/collaboration/runs/run-1').length >= 2);
+    markup = renderToStaticMarkup(createElement(CollaborationView, latest!));
+    assert.doesNotMatch(markup, /data-testid="collaboration-cancel-run"/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-cancel-confirm"/);
+    assert.match(markup, new RegExp(enMessages.collaboration.statusCancelled));
+  });
+
+  test('a refused cancel shows the refusal notice and does not refresh', async () => {
+    const posts: string[] = [];
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      const method = (init?.method ?? 'GET').toUpperCase();
+      fetchCalls.push(url);
+      if (method === 'POST' && url === '/api/collaboration/runs/run-1/cancel') {
+        posts.push(String(init?.body ?? ''));
+        return jsonResponse(409, {
+          statusCode: 409,
+          message: 'Collaboration run is not active',
+          error: 'Conflict',
+        });
+      }
+      if (url.startsWith('/api/collaboration/runs?')) {
+        return jsonResponse(200, { runs: [runPayload('active')] });
+      }
+      if (url === '/api/collaboration/runs/run-1') {
+        return jsonResponse(200, {
+          run: runPayload('active'),
+          team: ['lead', 'writer', 'reviewer'],
+          handoffs: [],
+        });
+      }
+      return jsonResponse(404, { message: 'missing' });
+    }) as typeof fetch;
+
+    await renderScreen(1, 'proj-1');
+    await act(async () => {
+      latest!.onOpenRun('run-1');
+    });
+    const before = fetchCalls.length;
+    await act(async () => {
+      latest!.onBeginCancel();
+    });
+    await act(async () => {
+      latest!.onConfirmCancel();
+      for (let step = 0; step < 40; step += 1) {
+        await Promise.resolve();
+      }
+    });
+    assert.deepEqual(posts, ['{}']);
+    assert.equal(fetchCalls.length, before + 1);
+    assert.match(String(latest?.notice), /That did not work\. Try again\./);
+    assert.equal(latest?.runs[0]?.statusLabel, `1:${enMessages.collaboration.statusActive}`);
+    const markup = renderToStaticMarkup(createElement(CollaborationView, latest!));
+    assert.match(markup, /data-testid="collaboration-notice"/);
+    assert.match(markup, /data-testid="collaboration-cancel-confirm"/);
+  });
 });
 
 describe('BIZ-01 team picker', () => {
@@ -1453,6 +1658,7 @@ describe('BIZ-01 team picker', () => {
         onCancelReject: () => {},
         onConfirmReject: () => {},
         onRejectReasonChange: () => {},
+        ...idleCancel,
       }),
     );
 
@@ -1592,6 +1798,7 @@ describe('BIZ-01 team picker', () => {
         onCancelReject: () => {},
         onConfirmReject: () => {},
         onRejectReasonChange: () => {},
+        ...idleCancel,
       }),
     );
     assert.match(runLine, /data-testid="collaboration-run-team"/);

@@ -21,6 +21,7 @@ import {
   collaborationRefusal,
   collaborationRefusalMessageKey,
   collaborationRoster,
+  collaborationRunIsActive,
   collaborationStartRequestBody,
   collaborationTeamFromDetail,
   collaborationTeamTitle,
@@ -91,6 +92,7 @@ export function useCollaborationScreen(input: {
   const [listProjectId, setListProjectId] = useState(queryProjectId);
   const [rejectReferralId, setRejectReferralId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
+  const [confirmingCancel, setConfirmingCancel] = useState(false);
   const [approveWithoutTests, setApproveWithoutTests] = useState<Record<string, boolean>>({});
   const [forcedTestsBlock, setForcedTestsBlock] = useState<
     Record<string, CollaborationTestsBlockReason>
@@ -299,6 +301,10 @@ export function useCollaborationScreen(input: {
     rejectReasonLabel: t('rejectReasonLabel'),
     rejectConfirm: t('rejectConfirm'),
     cancelReject: t('cancelReject'),
+    cancelRun: t('cancelRun'),
+    cancelRunPrompt: t('cancelRunPrompt'),
+    cancelRunConfirm: t('cancelRunConfirm'),
+    cancelRunKeep: t('cancelRunKeep'),
     pastRuns: t('pastRuns'),
     pastRunsEmpty: t('pastRunsEmpty'),
     openRun: t('openRun'),
@@ -489,6 +495,8 @@ export function useCollaborationScreen(input: {
     }),
     rejectReferralId,
     rejectReason,
+    selectedRunActive: collaborationRunIsActive(detail?.run.status),
+    confirmingCancel,
     onTaskChange: setTask,
     onStart: () => {
       if (startInFlight.current) {
@@ -517,6 +525,7 @@ export function useCollaborationScreen(input: {
             setSelectedRunId(started.collaborationRunId);
             setRejectReferralId(null);
             setRejectReason('');
+            setConfirmingCancel(false);
             if (started.projectId) {
               setListProjectId(started.projectId);
               listProjectRef.current = started.projectId;
@@ -534,6 +543,7 @@ export function useCollaborationScreen(input: {
       setSelectedRunId(runId);
       setRejectReferralId(null);
       setRejectReason('');
+      setConfirmingCancel(false);
       setApproveWithoutTests({});
       setForcedTestsBlock({});
     },
@@ -623,6 +633,33 @@ export function useCollaborationScreen(input: {
         }
         setRejectReferralId(null);
         setRejectReason('');
+        await refresh();
+      });
+    },
+    onBeginCancel: () => {
+      setConfirmingCancel(true);
+    },
+    onCancelCancel: () => {
+      setConfirmingCancel(false);
+    },
+    onConfirmCancel: () => {
+      if (!selectedRunId) {
+        return;
+      }
+      const runId = selectedRunId;
+      void runDecision(async () => {
+        const response = await collaborationFetch(
+          `/api/collaboration/runs/${encodeURIComponent(runId)}/cancel`,
+          {
+            method: 'POST',
+            body: JSON.stringify({}),
+          },
+        );
+        if (!response.ok) {
+          await showRefusal(response);
+          return;
+        }
+        setConfirmingCancel(false);
         await refresh();
       });
     },

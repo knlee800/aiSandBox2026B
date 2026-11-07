@@ -22,7 +22,10 @@ import { SessionOrApiKeyAuthGuard } from '../auth/session-or-api-key.guard';
 import { ConversationService } from '../conversations/conversation.service';
 import { KnowledgeService } from '../knowledge/knowledge.service';
 import { SessionService } from '../sessions/session.service';
-import { CollaborationController } from './collaboration.controller';
+import {
+  COLLABORATION_OMITTED_CANCEL_REASON,
+  CollaborationController,
+} from './collaboration.controller';
 import { COLLABORATION_TEAM } from './collaboration-team';
 import { CollaborationReferralEntity } from './collaboration-referral.entity';
 import { CollaborationRunEntity } from './collaboration-run.entity';
@@ -368,8 +371,13 @@ describe('CollaborationController login routes', () => {
       )
       .send({ decidedBy: OTHER_ID, reason: 'no' })
       .expect(403);
+    await denied
+      .post(`/api/collaboration/runs/${started.collaborationRunId}/cancel`)
+      .send({ reason: 'no' })
+      .expect(403);
 
     expect(referrals.get(started.referralId)?.status).toBe('pending_approval');
+    expect(runs.get(started.collaborationRunId)?.status).toBe('active');
     expect(queue.enqueueExecution).not.toHaveBeenCalled();
     expect(runs.size).toBe(1);
   });
@@ -440,7 +448,7 @@ describe('CollaborationController login routes', () => {
     );
   });
 
-  it('returns 404 for another user on get, approve and reject', async () => {
+  it('returns 404 for another user on get, approve, reject and cancel', async () => {
     const started = await startRun();
     const other = http(OTHER_ID);
 
@@ -457,9 +465,101 @@ describe('CollaborationController login routes', () => {
       )
       .send({ decidedBy: OTHER_ID, reason: 'no' })
       .expect(404);
+    await other
+      .post(`/api/collaboration/runs/${started.collaborationRunId}/cancel`)
+      .send({ reason: 'no' })
+      .expect(404);
 
     expect(referrals.get(started.referralId)?.status).toBe('pending_approval');
+    expect(runs.get(started.collaborationRunId)?.status).toBe('active');
     expect(queue.enqueueExecution).not.toHaveBeenCalled();
+  });
+
+  it('cancels an active run for the owner', async () => {
+    const started = await startRun();
+    const cancel = jest.spyOn(app.get(OrchestrationService), 'cancelCollaboration');
+
+    const response = await http()
+      .post(`/api/collaboration/runs/${started.collaborationRunId}/cancel`)
+      .send({ reason: 'stopping the wait' })
+      .expect(200);
+
+    expect(cancel).toHaveBeenCalledWith({
+      collaborationRunId: started.collaborationRunId,
+      cancelledByUserId: OWNER_ID,
+      cancelReason: 'stopping the wait',
+    });
+    expect(response.body).toEqual({
+      collaborationRunId: started.collaborationRunId,
+      status: 'cancelled',
+    });
+    expect(runs.get(started.collaborationRunId)?.status).toBe('cancelled');
+    expect(referrals.get(started.referralId)?.status).toBe('cancelled');
+  });
+
+  it('uses the default cancel reason when the body omits one', async () => {
+    const started = await startRun();
+    const cancel = jest.spyOn(app.get(OrchestrationService), 'cancelCollaboration');
+
+    const response = await http()
+      .post(`/api/collaboration/runs/${started.collaborationRunId}/cancel`)
+      .send({})
+      .expect(200);
+
+    expect(cancel).toHaveBeenCalledWith({
+      collaborationRunId: started.collaborationRunId,
+      cancelledByUserId: OWNER_ID,
+      cancelReason: COLLABORATION_OMITTED_CANCEL_REASON,
+    });
+    expect(response.body.status).toBe('cancelled');
+    expect(runs.get(started.collaborationRunId)?.cancelReason).toBe(
+      COLLABORATION_OMITTED_CANCEL_REASON,
+    );
+  });
+
+  it('returns 409 when the run is not active and does not call cancel', async () => {
+    const started = await startRun();
+    const stored = runs.get(started.collaborationRunId);
+    expect(stored).toBeDefined();
+    stored!.status = 'completed';
+    const cancel = jest.spyOn(app.get(OrchestrationService), 'cancelCollaboration');
+
+    await http()
+      .post(`/api/collaboration/runs/${started.collaborationRunId}/cancel`)
+      .send({ reason: 'too late' })
+      .expect(409);
+
+    expect(cancel).not.toHaveBeenCalled();
+    expect(runs.get(started.collaborationRunId)?.status).toBe('completed');
+    expect(referrals.get(started.referralId)?.status).toBe('pending_approval');
+  });
+
+  it('returns 404 when another user cancels and does not call cancel', async () => {
+    const started = await startRun();
+    const cancel = jest.spyOn(app.get(OrchestrationService), 'cancelCollaboration');
+
+    await http(OTHER_ID)
+      .post(`/api/collaboration/runs/${started.collaborationRunId}/cancel`)
+      .send({ reason: 'no' })
+      .expect(404);
+
+    expect(cancel).not.toHaveBeenCalled();
+    expect(runs.get(started.collaborationRunId)?.status).toBe('active');
+    expect(referrals.get(started.referralId)?.status).toBe('pending_approval');
+  });
+
+  it('refuses an unentitled caller on cancel the same way as reject', async () => {
+    const started = await startRun();
+    const cancel = jest.spyOn(app.get(OrchestrationService), 'cancelCollaboration');
+
+    await http(OWNER_ID, false)
+      .post(`/api/collaboration/runs/${started.collaborationRunId}/cancel`)
+      .send({ reason: 'no' })
+      .expect(403);
+
+    expect(cancel).not.toHaveBeenCalled();
+    expect(runs.get(started.collaborationRunId)?.status).toBe('active');
+    expect(referrals.get(started.referralId)?.status).toBe('pending_approval');
   });
 
   it('lists the caller runs newest first without prompts or answers', async () => {

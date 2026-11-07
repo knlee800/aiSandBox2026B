@@ -64,6 +64,9 @@ const USABLE_SESSION_STATUSES: readonly SessionStatus[] = [
   SessionStatus.PENDING,
 ];
 
+/** Stored when the owner cancels without typing a reason. Same token as an omitted reject. */
+export const COLLABORATION_OMITTED_CANCEL_REASON = 'omitted';
+
 export interface CollaborationRunListItem {
   collaborationRunId: string;
   projectId: string;
@@ -138,6 +141,7 @@ export interface CollaborationStartResponse {
  * GET  /api/collaboration/runs/:id
  * POST /api/collaboration/runs/:id/referrals/:referralId/approve
  * POST /api/collaboration/runs/:id/referrals/:referralId/reject
+ * POST /api/collaboration/runs/:id/cancel
  *
  * team is optional and only coding, chief-of-staff, or advisors. Missing means coding.
  * Provider, model, instructions, scopes, tool profile, and decidedBy are not taken from the body.
@@ -347,6 +351,34 @@ export class CollaborationController {
         caller.userId,
         documents,
       );
+    } catch (error) {
+      this.raise(error);
+    }
+  }
+
+  @Post('runs/:id/cancel')
+  @HttpCode(HttpStatus.OK)
+  async cancelRun(
+    @AuthenticatedUser() identity: ApiKeyIdentity,
+    @Param('id') collaborationRunId: string,
+    @Body() body: unknown,
+  ): Promise<{ collaborationRunId: string; status: string }> {
+    const caller = this.assertEntitled(identity);
+    const owned = await this.requireOwnedRun(collaborationRunId, caller.userId);
+    if (owned.status !== 'active') {
+      throw new ConflictException('Collaboration run is not active');
+    }
+    const cancelReason = this.readOptionalReason(body) ?? COLLABORATION_OMITTED_CANCEL_REASON;
+    try {
+      const cancelled = await this.orchestrationService.cancelCollaboration({
+        collaborationRunId,
+        cancelledByUserId: caller.userId,
+        cancelReason,
+      });
+      return {
+        collaborationRunId: cancelled.collaborationRunId,
+        status: cancelled.status,
+      };
     } catch (error) {
       this.raise(error);
     }
