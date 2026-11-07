@@ -38,12 +38,30 @@ export interface KnowledgeFormSubmission {
   file: File | null;
 }
 
+function knowledgeScopeOrNull(value: string | null): string | null {
+  return value && value.length > 0 ? value : null;
+}
+
+export function knowledgeSubmitScopeId(input: {
+  mode: 'add' | 'replace';
+  pickedScopeId: string | null;
+  chipScopeId: string | null;
+  documentScopeId: string | null;
+}): string | null {
+  if (input.mode === 'replace') {
+    return knowledgeScopeOrNull(input.documentScopeId);
+  }
+  return knowledgeScopeOrNull(input.pickedScopeId) ?? knowledgeScopeOrNull(input.chipScopeId);
+}
+
 export interface KnowledgeScreenViewProps {
   t: (key: string) => string;
   locale: string;
   phase: 'loading' | 'forbidden' | 'error' | 'ready';
   scopes: readonly KnowledgeScopeItem[];
   selectedScopeId: string | null;
+  formScopeId: string | null;
+  replaceScopeId: string | null;
   documents: readonly KnowledgeDocumentItem[];
   usage: { count: number; bytes: number };
   formMode: 'add' | 'replace' | null;
@@ -52,6 +70,7 @@ export interface KnowledgeScreenViewProps {
   actionErrorKey: string | null;
   busy: boolean;
   onSelectScope: (scopeId: string) => void;
+  onFormScopeChange: (scopeId: string) => void;
   onRetry: () => void;
   onRefresh: () => void;
   onStartAdd: () => void;
@@ -78,6 +97,8 @@ export function KnowledgeScreenView(props: KnowledgeScreenViewProps): React.Reac
     phase,
     scopes,
     selectedScopeId,
+    formScopeId,
+    replaceScopeId,
     documents,
     usage,
     formMode,
@@ -86,6 +107,7 @@ export function KnowledgeScreenView(props: KnowledgeScreenViewProps): React.Reac
     actionErrorKey,
     busy,
     onSelectScope,
+    onFormScopeChange,
     onRetry,
     onRefresh,
     onStartAdd,
@@ -118,6 +140,19 @@ export function KnowledgeScreenView(props: KnowledgeScreenViewProps): React.Reac
     maxDocumentKilobytes: formatKnowledgeKilobytes(KNOWLEDGE_MAX_DOCUMENT_BYTES),
   });
   const selectedScope = scopes.find((scope) => scope.id === selectedScopeId) ?? null;
+  const shownScopeId = formMode
+    ? knowledgeSubmitScopeId({
+        mode: formMode,
+        pickedScopeId: formScopeId,
+        chipScopeId: selectedScopeId,
+        documentScopeId: replaceScopeId,
+      })
+    : null;
+  const scopeLine = formMode
+    ? fillKnowledgeTemplate(formMode === 'replace' ? t('replacingIn') : t('addingTo'), {
+        scope: shownScopeId ? t(`scopes.${shownScopeId}`) : '',
+      })
+    : '';
   const submitIdle = formMode === 'replace' ? t('replaceSubmit') : t('submitAdd');
   const submitLabel = busy && formMode ? t('submitting') : submitIdle;
 
@@ -310,6 +345,38 @@ export function KnowledgeScreenView(props: KnowledgeScreenViewProps): React.Reac
                   <h3 className="text-sm font-semibold text-white">
                     {formMode === 'replace' ? t('replaceTitle') : t('addTitle')}
                   </h3>
+                  <p
+                    id="knowledge-form-scope"
+                    className="mt-2 text-sm font-medium text-white"
+                    data-testid="knowledge-form-scope"
+                  >
+                    {scopeLine}
+                  </p>
+                  {formMode === 'add' ? (
+                    <>
+                      <label
+                        className="mt-3 block text-sm text-slate-200"
+                        htmlFor="knowledge-form-scope-picker"
+                      >
+                        {t('formScopeLabel')}
+                      </label>
+                      <select
+                        id="knowledge-form-scope-picker"
+                        data-testid="knowledge-form-scope-picker"
+                        value={shownScopeId ?? ''}
+                        disabled={busy}
+                        onChange={(event) => onFormScopeChange(event.target.value)}
+                        aria-describedby="knowledge-form-scope"
+                        className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white disabled:opacity-60"
+                      >
+                        {scopes.map((scope) => (
+                          <option key={scope.id} value={scope.id}>
+                            {t(`scopes.${scope.id}`)}
+                          </option>
+                        ))}
+                      </select>
+                    </>
+                  ) : null}
                   <label className="mt-3 block text-sm text-slate-200" htmlFor="knowledge-title">
                     {t('titleLabel')}
                   </label>
@@ -445,6 +512,7 @@ export default function KnowledgeScreen({ locale }: KnowledgeScreenProps): React
   const [documents, setDocuments] = useState<KnowledgeDocumentItem[]>([]);
   const [selectedScopeId, setSelectedScopeId] = useState<string | null>(null);
   const [formMode, setFormMode] = useState<'add' | 'replace' | null>(null);
+  const [formScopeId, setFormScopeId] = useState<string | null>(null);
   const [replaceDocumentId, setReplaceDocumentId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<{ id: string; title: string } | null>(null);
   const [actionErrorKey, setActionErrorKey] = useState<string | null>(null);
@@ -531,14 +599,23 @@ export default function KnowledgeScreen({ locale }: KnowledgeScreenProps): React
   }, [authReady, reload]);
 
   const visibleDocuments = documents.filter((document) => document.scopeId === selectedScopeId);
-  const replaceTitle = documents.find((document) => document.id === replaceDocumentId)?.title ?? null;
+  const replaceDocument = documents.find((document) => document.id === replaceDocumentId) ?? null;
+  const replaceTitle = replaceDocument?.title ?? null;
+  const replaceScopeId = replaceDocument?.scopeId ?? null;
   const usage = {
     count: documents.length,
     bytes: documents.reduce((sum, document) => sum + document.byteSize, 0),
   };
 
   async function persist(input: KnowledgeFormSubmission): Promise<void> {
-    if (!selectedScopeId) {
+    const mode = formMode === 'replace' ? 'replace' : 'add';
+    const scopeId = knowledgeSubmitScopeId({
+      mode,
+      pickedScopeId: formScopeId,
+      chipScopeId: selectedScopeId,
+      documentScopeId: replaceScopeId,
+    });
+    if (!scopeId) {
       return;
     }
     const title = formMode === 'replace' && replaceTitle ? replaceTitle : input.title.trim();
@@ -577,7 +654,7 @@ export default function KnowledgeScreen({ locale }: KnowledgeScreenProps): React
     setActionErrorKey(null);
     try {
       const body = new FormData();
-      body.set('scopeId', selectedScopeId);
+      body.set('scopeId', scopeId);
       body.set('title', title);
       body.set('file', file, file.name);
       const response = await knowledgeFetch('/api/knowledge/documents', { method: 'POST', body });
@@ -594,8 +671,12 @@ export default function KnowledgeScreen({ locale }: KnowledgeScreenProps): React
         return;
       }
       setFormMode(null);
+      setFormScopeId(null);
       setReplaceDocumentId(null);
       setPendingDelete(null);
+      if (mode === 'add') {
+        setSelectedScopeId(scopeId);
+      }
       await reload();
     } catch {
       setActionErrorKey('saveError');
@@ -651,6 +732,8 @@ export default function KnowledgeScreen({ locale }: KnowledgeScreenProps): React
       documents={visibleDocuments}
       usage={usage}
       formMode={formMode}
+      formScopeId={formScopeId}
+      replaceScopeId={formMode === 'replace' ? replaceScopeId : null}
       replaceTitle={replaceTitle}
       pendingDelete={pendingDelete}
       actionErrorKey={actionErrorKey}
@@ -658,9 +741,13 @@ export default function KnowledgeScreen({ locale }: KnowledgeScreenProps): React
       onSelectScope={(scopeId) => {
         setSelectedScopeId(scopeId);
         setFormMode(null);
+        setFormScopeId(null);
         setReplaceDocumentId(null);
         setPendingDelete(null);
         setActionErrorKey(null);
+      }}
+      onFormScopeChange={(scopeId) => {
+        setFormScopeId(scopeId);
       }}
       onRetry={() => {
         void reload();
@@ -670,6 +757,7 @@ export default function KnowledgeScreen({ locale }: KnowledgeScreenProps): React
       }}
       onStartAdd={() => {
         setFormMode('add');
+        setFormScopeId(selectedScopeId);
         setReplaceDocumentId(null);
         setPendingDelete(null);
         setActionErrorKey(null);
@@ -680,6 +768,7 @@ export default function KnowledgeScreen({ locale }: KnowledgeScreenProps): React
           return;
         }
         setFormMode('replace');
+        setFormScopeId(null);
         setReplaceDocumentId(documentId);
         setPendingDelete(null);
         setActionErrorKey(null);
@@ -698,6 +787,7 @@ export default function KnowledgeScreen({ locale }: KnowledgeScreenProps): React
       }}
       onCancelForm={() => {
         setFormMode(null);
+        setFormScopeId(null);
         setReplaceDocumentId(null);
       }}
       onSubmit={(input) => {

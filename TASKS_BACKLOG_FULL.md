@@ -85346,7 +85346,7 @@ taskId=KNOW-SCOPE-UX-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-07. Lane 1, FRONTEND and I18N. Keith approved the drafted scope on 2026-11-07 and admitted it after COLLAB-START-ONCE-01. Implementation next.
+**Status:** COMPLETE AND LOCKED — 2026-11-07. LANE-DONE and LOCKED by the control plane; Lane 1 and FRONTEND and I18N released. The Knowledge add form says which scope a new document goes to and has a scope picker; replace shows the document's own scope; en, zh-TW and zh-CN; STAGING-DEPLOY-16 carries it. Not deployed; staging runs 8a723bf. Checkpoint: docs/KNOW-SCOPE-UX-01-CHECKPOINT.md.
 **Task ID:** KNOW-SCOPE-UX-01
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -85363,13 +85363,13 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] The add form shows Adding to: <scope> with a scope picker inside the form that starts at the scope selected in the chip row; the new document saves to the scope picked in the form, not silently to the chip row
-- [ ] Replace keeps the document's own scope: the form shows it and offers no picker
-- [ ] No gateway or API change: the upload still sends scopeId, title and file to POST /api/knowledge/documents
-- [ ] Every new text in en, zh-TW and zh-CN through the existing translation hook, no hardcoded English; existing data-testids kept
-- [ ] Tests cover each point above; frontend tests, the knowledge-screen test by name, type check and build pass
-- [ ] The checkpoint carries the CHECKLIST line (EVERY, UI) and the FOLLOWUPS line
-- [ ] Not LOCKED by an implementer
+- [x] The add form shows Adding to: <scope> with a scope picker inside the form that starts at the scope selected in the chip row; the new document saves to the scope picked in the form, not silently to the chip row
+- [x] Replace keeps the document's own scope: the form shows it and offers no picker
+- [x] No gateway or API change: the upload still sends scopeId, title and file to POST /api/knowledge/documents
+- [x] Every new text in en, zh-TW and zh-CN through the existing translation hook, no hardcoded English; existing data-testids kept
+- [x] Tests cover each point above; frontend tests, the knowledge-screen test by name, type check and build pass
+- [x] The checkpoint carries the CHECKLIST line (EVERY, UI) and the FOLLOWUPS line
+- [x] Not LOCKED by an implementer
 
 ### STAGING-DEPLOY-16 — Deploy the one-start Team page (COLLAB-START-ONCE-01) during the tester window
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -85383,7 +85383,7 @@ nature=IMPLEMENTATION
 **Nature:** IMPLEMENTATION (operational run; no code)
 **Lifecycle:** 3-STEP: registration here; admission when Keith picks the time; pre-check and deploy from the host; separate LOCK record (STAGING-RUNTIME).
 **Start condition (human):** NOT_READY. Ready when: COLLAB-START-ONCE-01 is COMPLETE AND LOCKED and Keith approves the deploy and its timing; if KNOW-SCOPE-UX-01 is COMPLETE AND LOCKED by then, the same deploy carries it. Keith decides.
-**Depends on:** COLLAB-START-ONCE-01.
+**Depends on:** COLLAB-START-ONCE-01, KNOW-SCOPE-UX-01 (both COMPLETE AND LOCKED 2026-11-07; the same deploy carries both).
 **Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Expected: none in the repository beyond records; host state on ainow-staging-01 (frontend release).
 **Mutexes / resources:** set at admission (expected STAGING and ENV). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS; expected STAGING-RUNTIME). **Revert isolation:** assessed at admission.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.

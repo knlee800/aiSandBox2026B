@@ -17,6 +17,7 @@ import {
 } from '@/components/knowledge/knowledge-limits';
 import {
   KnowledgeScreenView,
+  knowledgeSubmitScopeId,
   type KnowledgeScreenViewProps,
 } from '@/components/knowledge/knowledge-screen';
 import enMessages from '@/messages/en.json';
@@ -69,6 +70,8 @@ function renderKnowledge(
       { id: 'tech-landscape', type: 'specialist' },
     ],
     selectedScopeId: 'policies',
+    formScopeId: null,
+    replaceScopeId: null,
     documents: [],
     usage: { count: 0, bytes: 0 },
     formMode: null,
@@ -77,6 +80,7 @@ function renderKnowledge(
     actionErrorKey: null,
     busy: false,
     onSelectScope: () => undefined,
+    onFormScopeChange: () => undefined,
     onRetry: () => undefined,
     onRefresh: () => undefined,
     onStartAdd: () => undefined,
@@ -204,6 +208,46 @@ describe('knowledge screen states', () => {
     assert.equal(html.includes(message), true);
   });
 
+  test('the add form names the selected chip scope and starts the picker there', () => {
+    const messages = enMessages as Record<string, unknown>;
+    const html = renderKnowledge({
+      formMode: 'add',
+      selectedScopeId: 'tech-landscape',
+    });
+    const line = fillKnowledgeTemplate(readMessage(messages, 'knowledge.addingTo') ?? '', {
+      scope: readMessage(messages, 'knowledge.scopes.tech-landscape') ?? '',
+    });
+    const picker = pickerMarkup(html);
+    assert.equal(html.includes('data-testid="knowledge-form-scope"'), true);
+    assert.equal(html.includes(line), true);
+    assert.equal(line, 'Adding to: Technology landscape');
+    assert.equal(html.includes('for="knowledge-form-scope-picker"'), true);
+    assert.equal(html.includes(readMessage(messages, 'knowledge.formScopeLabel') ?? ''), true);
+    assert.equal(optionIsSelected(picker, 'tech-landscape'), true);
+    assert.equal(optionIsSelected(picker, 'policies'), false);
+    assert.equal(picker.includes('Policies'), true);
+    assert.equal(picker.includes('Technology landscape'), true);
+  });
+
+  test('the replace form names the document scope and has no picker', () => {
+    const messages = enMessages as Record<string, unknown>;
+    const html = renderKnowledge({
+      formMode: 'replace',
+      replaceTitle: 'Handbook',
+      selectedScopeId: 'policies',
+      replaceScopeId: 'tech-landscape',
+    });
+    const line = fillKnowledgeTemplate(readMessage(messages, 'knowledge.replacingIn') ?? '', {
+      scope: readMessage(messages, 'knowledge.scopes.tech-landscape') ?? '',
+    });
+    assert.equal(html.includes('data-testid="knowledge-form-scope"'), true);
+    assert.equal(html.includes(line), true);
+    assert.equal(line, 'Replacing in: Technology landscape');
+    assert.equal(html.includes('Adding to:'), false);
+    assert.equal(html.includes('data-testid="knowledge-form-scope-picker"'), false);
+    assert.equal(html.includes('value="Handbook"'), true);
+  });
+
   test('renders Traditional Chinese copy instead of the English title and add action', () => {
     const html = renderKnowledge({ phase: 'ready' }, zhTwMessages as Record<string, unknown>);
     assert.equal(html.includes('知識庫'), true);
@@ -273,6 +317,96 @@ describe('knowledge locale catalog', () => {
   });
 });
 
+describe('knowledge form scope', () => {
+  test('an add sends the scope picked in the form', () => {
+    assert.equal(
+      knowledgeSubmitScopeId({
+        mode: 'add',
+        pickedScopeId: 'market-data',
+        chipScopeId: 'company-monthly-reports',
+        documentScopeId: null,
+      }),
+      'market-data',
+    );
+    assert.equal(
+      knowledgeSubmitScopeId({
+        mode: 'add',
+        pickedScopeId: null,
+        chipScopeId: 'policies',
+        documentScopeId: 'tech-landscape',
+      }),
+      'policies',
+    );
+  });
+
+  test('a replace sends the document scope', () => {
+    assert.equal(
+      knowledgeSubmitScopeId({
+        mode: 'replace',
+        pickedScopeId: 'market-data',
+        chipScopeId: 'company-monthly-reports',
+        documentScopeId: 'policies',
+      }),
+      'policies',
+    );
+    assert.equal(
+      knowledgeSubmitScopeId({
+        mode: 'replace',
+        pickedScopeId: 'market-data',
+        chipScopeId: 'company-monthly-reports',
+        documentScopeId: null,
+      }),
+      null,
+    );
+  });
+
+  test('scope-line keys exist in en, zh-TW and zh-CN, and zh-TW renders Chinese', () => {
+    const keys = ['knowledge.addingTo', 'knowledge.replacingIn', 'knowledge.formScopeLabel'] as const;
+    for (const key of keys) {
+      const values = LOCALES.map(({ code, messages }) => {
+        const value = readMessage(messages, key);
+        assert.ok(value && value.trim().length > 0, `${key} missing in ${code}`);
+        return value;
+      });
+      assert.equal(new Set(values).size, 3, `${key} must differ in en, zh-TW and zh-CN`);
+    }
+    for (const code of ['zh-TW', 'zh-CN'] as const) {
+      const messages = LOCALES.find((locale) => locale.code === code)?.messages ?? {};
+      for (const key of keys) {
+        const value = readMessage(messages, key) ?? '';
+        assert.equal(/[\u4e00-\u9fff]/.test(value), true, `${key} in ${code} is not Chinese`);
+        assert.equal(value.includes('Adding to'), false);
+        assert.equal(value.includes('Replacing in'), false);
+      }
+    }
+    const traditional = zhTwMessages as Record<string, unknown>;
+    const line = fillKnowledgeTemplate(readMessage(traditional, 'knowledge.addingTo') ?? '', {
+      scope: readMessage(traditional, 'knowledge.scopes.policies') ?? '',
+    });
+    assert.equal(line, '新增至：政策');
+    const html = renderKnowledge({ formMode: 'add', selectedScopeId: 'policies' }, traditional);
+    assert.equal(html.includes(line), true);
+    assert.equal(html.includes('Adding to:'), false);
+  });
+});
+
+function pickerMarkup(html: string): string {
+  const marker = 'data-testid="knowledge-form-scope-picker"';
+  const markerAt = html.indexOf(marker);
+  assert.ok(markerAt >= 0);
+  const start = html.lastIndexOf('<select', markerAt);
+  const end = html.indexOf('</select>', markerAt);
+  assert.ok(start >= 0 && end > start);
+  return html.slice(start, end);
+}
+
+function optionIsSelected(selectHtml: string, value: string): boolean {
+  const tags = selectHtml.match(/<option\b[^>]*>/g) ?? [];
+  const tag = tags.find((item) => item.includes(`value="${value}"`));
+  assert.ok(tag, `missing option ${value}`);
+  return /\bselected\b/.test(tag);
+}
+
 describe('knowledge helpers', () => {
   test('formats kilobytes and accepts only markdown or text names', () => {
     assert.equal(formatKnowledgeKilobytes(0), '0');
@@ -318,5 +452,7 @@ describe('knowledge page wiring', () => {
     assert.match(screen, /\/\$\{locale\}\/login/);
     assert.doesNotMatch(screen, />Knowledge</);
     assert.doesNotMatch(screen, />Add document</);
+    assert.doesNotMatch(screen, /Adding to:/);
+    assert.doesNotMatch(screen, /Replacing in:/);
   });
 });
