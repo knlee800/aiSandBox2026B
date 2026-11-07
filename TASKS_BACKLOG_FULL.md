@@ -85140,6 +85140,7 @@ nature=IMPLEMENTATION
 **Holds (stages, from the readiness assessment):** S1 run provenance (each run records the agent definition id, its version and the model; no migration); S2 one server-side agent definition source that the frontend registry reads (decide before BIZ-03 and BIZ-USER-01); S3 eval sets for the Chief of Staff and collaboration (overlaps COLLAB-EVAL-01, which is reused); S4 persisted harness traces and owner feedback on answers (needs a retention and privacy decision); S5 stage 1: agents propose instruction and skill changes, scored offline against evals, Keith approves (after S1 to S3); S6 an experiment environment separate from staging (needs a quota and cost decision; before platform-code proposals); S7 stage 2: agents propose platform code changes through the control plane (after S5 and S6, with a CLAUDE.md rule for agent-originated changes); S8 collective and meta-level improvement, RSI on RSI (last, when Keith opens that stage). Also held: every new agent ships with an eval case set (a checklist item when Keith wants it enforced), and the decision to relax the no-schedulers non-goal before continuous experiments.
 **Stage registered 2026-11-07:** S2 as AGENT-DEFS-01 (admitted to Lane 1 the same day).
 **Stage done 2026-11-07:** S2 (AGENT-DEFS-01) COMPLETE AND LOCKED: one gateway registry with a version hash per definition; S1 can record systemAgentVersion(id).
+**Stage registered 2026-11-07:** S1 as RUN-PROVENANCE-01 (admitted to Lane 1 the same day) for Team-page runs; held here: Builder and Agent-mode provenance, which needs a worker-prompt version in ai-service.
 **Constraints:** ARCHITECTURE.md section 13.5 (versioned approved changes; protected set).
 **Named in:** docs/GOV-RSI-01-CHECKPOINT.md (readiness assessment).
 
@@ -85210,6 +85211,38 @@ nature=IMPLEMENTATION
 - [x] Nothing queued or running before runs are switched off; Keith was told runs pause; the saved window gateway.env is restored byte for byte, runs are back on, and the tester window stays open
 - [x] The checkpoint carries the CHECKLIST line (EVERY, DEPLOY) and the FOLLOWUPS line
 - [x] Not LOCKED by an implementer
+
+### RUN-PROVENANCE-01 — Record which agent definition produced each Team-page run (RSI-00 stage S1)
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=RUN-PROVENANCE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED — 2026-11-07. Lane 1, GATEWAY. Registered and admitted in one record (GOV-OS-04); Keith approved the draft and admitted it on 2026-11-07. Implementation next.
+**Task ID:** RUN-PROVENANCE-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP: registration and admission in this record; implementation by Cursor grok-4.7-high; consolidation and LOCK in the same commit as the code (LOCAL-TESTS). The deploy is a separate later step.
+**Start condition (human):** READY — AGENT-DEFS-01 is COMPLETE AND LOCKED (a68724f) and live on staging; Keith chose RSI-00 stage S1 and approved this draft on 2026-11-07.
+**Depends on:** AGENT-DEFS-01.
+**Primary write scope:** `services/api-gateway/src/orchestration/orchestration.service.ts`, `services/api-gateway/src/orchestration/collaboration.controller.spec.ts`, `services/api-gateway/src/orchestration/internal-collaboration.controller.spec.ts`, docs/RUN-PROVENANCE-01-CHECKPOINT.md. Anything else needs a control-plane scope change.
+**Mutexes / resources:** GATEWAY. **Hot-file leases:** none. **Shared contracts:** none frozen; HARNESS_ENTITLEMENT_PROOF_V1 unchanged (the job payload is not touched; only the usage-record metadata). **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (two extra metadata keys; no migration).
+**saturationClass:** OPTIONAL (Keith approved the draft on 2026-11-07). **productClass:** CURRENT per PRD.md (no user-visible change).
+
+**Problem:** a collaboration hand-off's run record (usage_records, written by orchestration.service.ts writeExecutionIntent at the two referral start paths) stores the role (builderProfileId), runMode and the requested provider and model, and the model that answered is filled in later; it does not record which definition and version of the role's instructions produced the answer. AGENT-DEFS-01 gives every definition a version (systemAgentVersion).
+**Goal:** at both writeExecutionIntent calls for referral executions, the metadata also carries agentDefinitionId (the target builderProfileId) and agentDefinitionVersion (systemAgentVersion of that id). A role that is not in the registry gets agentDefinitionId only and no version; nothing fails. Builder, Ask and Agent-mode runs (ai-execution.controller.ts) are not stamped: their prompts live in the ai-service worker, not in the registry.
+**Not in scope:** Builder and Agent-mode provenance (needs a worker-prompt version in ai-service; held on RSI-00), showing versions on any screen, comparing versions, any table or migration, the deploy.
+**Named in:** RSI-00 stage S1; docs/AGENT-DEFS-01-CHECKPOINT.md.
+
+#### Acceptance criteria
+
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Both referral writeExecutionIntent calls add agentDefinitionId and agentDefinitionVersion to the metadata; the version equals systemAgentVersion for the role; the other metadata keys and fields are unchanged
+- [ ] A role not in the registry records agentDefinitionId without a version and the hand-off still starts
+- [ ] Builder, Ask and Agent-mode runs are unchanged; no job payload or signed field changes
+- [ ] Tests cover each point above; api-gateway tests and build pass, compared with the known failures in the latest checkpoint
+- [ ] The checkpoint carries the CHECKLIST line (EVERY, BACKEND) and the FOLLOWUPS line
+- [ ] Not LOCKED by an implementer
 
 ### GOV-ARCH-SYNC-01 — Sync ARCHITECTURE.md with the built collaboration and office
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

@@ -7,13 +7,17 @@
   "governance": {"owner": "NONE", "state": "UNOWNED"},
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "RUN-PROVENANCE-01",
+      "mutexes": ["GATEWAY"],
+      "writePaths": [
+        "services/api-gateway/src/orchestration/orchestration.service.ts",
+        "services/api-gateway/src/orchestration/collaboration.controller.spec.ts",
+        "services/api-gateway/src/orchestration/internal-collaboration.controller.spec.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -4244,6 +4248,32 @@
       "evidenceClass": "STAGING-RUNTIME",
       "exclusiveCapacity": false,
       "runtimeNeeds": ["STAGING"],
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
+    },
+    {
+      "taskId": "RUN-PROVENANCE-01",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "3-STEP",
+      "status": "ADMITTED",
+      "startCondition": "READY",
+      "saturationClass": "OPTIONAL",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": ["AGENT-DEFS-01"],
+      "mutexes": ["GATEWAY"],
+      "writePaths": [
+        "services/api-gateway/src/orchestration/orchestration.service.ts",
+        "services/api-gateway/src/orchestration/collaboration.controller.spec.ts",
+        "services/api-gateway/src/orchestration/internal-collaboration.controller.spec.ts"
+      ],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "LOCAL-TESTS",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": [],
       "admissionUncertain": false,
       "writeSetPrecision": "EXACT"
     }
