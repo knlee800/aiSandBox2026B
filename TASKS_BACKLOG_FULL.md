@@ -85138,12 +85138,48 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith approved the draft on 2026-11-07). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith set the direction on 2026-11-07).
 
 **Holds (stages, from the readiness assessment):** S1 run provenance (each run records the agent definition id, its version and the model; no migration); S2 one server-side agent definition source that the frontend registry reads (decide before BIZ-03 and BIZ-USER-01); S3 eval sets for the Chief of Staff and collaboration (overlaps COLLAB-EVAL-01, which is reused); S4 persisted harness traces and owner feedback on answers (needs a retention and privacy decision); S5 stage 1: agents propose instruction and skill changes, scored offline against evals, Keith approves (after S1 to S3); S6 an experiment environment separate from staging (needs a quota and cost decision; before platform-code proposals); S7 stage 2: agents propose platform code changes through the control plane (after S5 and S6, with a CLAUDE.md rule for agent-originated changes); S8 collective and meta-level improvement, RSI on RSI (last, when Keith opens that stage). Also held: every new agent ships with an eval case set (a checklist item when Keith wants it enforced), and the decision to relax the no-schedulers non-goal before continuous experiments.
+**Stage registered 2026-11-07:** S2 as AGENT-DEFS-01 (admitted to Lane 1 the same day).
 **Constraints:** ARCHITECTURE.md section 13.5 (versioned approved changes; protected set).
 **Named in:** docs/GOV-RSI-01-CHECKPOINT.md (readiness assessment).
 
 #### Acceptance criteria
 
 - [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before each stage is admitted
+- [ ] Not LOCKED by an implementer
+
+### AGENT-DEFS-01 — One server-side source for system agent definitions (RSI-00 stage S2)
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=AGENT-DEFS-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED — 2026-11-07. Lane 1, GATEWAY, FRONTEND and I18N. Registered and admitted in one record (GOV-OS-04); Keith approved the draft and admitted it on 2026-11-07. Stage-start next.
+**Task ID:** AGENT-DEFS-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP: registration and admission in this record; stage-start (Cursor grok-4.7-xhigh read-only design draft, control-plane review, Keith's decisions; the write set is narrowed there); implementation by Cursor grok-4.7-high; consolidation and LOCK in the same commit as the code (LOCAL-TESTS). The deploy is a separate later step.
+**Start condition (human):** READY — Keith chose RSI-00 stage S2 and approved this draft on 2026-11-07.
+**Depends on:** RSI-00 (umbrella); BIZ-01 and BIZ-02 (COMPLETE AND LOCKED).
+**Primary write scope:** `services/api-gateway/src/orchestration/`, `services/api-gateway/src/knowledge/`, new `services/api-gateway/src/system-agents/`, `services/api-gateway/src/app.module.ts` (only to register the new module, if the stage-start chooses one), `frontend/lib/agent-platform/`, `frontend/lib/office/`, `frontend/components/office/`, `frontend/components/platform/`, `frontend/components/knowledge/` (only if the stage-start folds in the scope list), `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`, docs/AGENT-DEFS-01-STAGE-START.md, docs/AGENT-DEFS-01-CHECKPOINT.md. The stage-start narrows this; anything else needs a control-plane scope change.
+**Mutexes / resources:** GATEWAY, FRONTEND, I18N. **Hot-file leases:** none. **Shared contracts:** uses HARNESS_ENTITLEMENT_PROOF_V1 (FROZEN) without changing it; KNOWLEDGE_ROLE_SCOPES keeps the same values. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (no migration; a read-only route and a refactor of where definitions live).
+**saturationClass:** OPTIONAL (Keith approved the draft on 2026-11-07). **productClass:** CURRENT per PRD.md (no user-visible product change).
+
+**Problem:** system-agent definitions live in two places: the frontend registry (frontend/lib/agent-platform/agent-registry.ts, read by the dashboard, station cards, office screen and office logic) and the gateway team registry (services/api-gateway/src/orchestration/collaboration-teams.ts, read by knowledge-scopes.ts, collaboration-citations.ts, collaboration-team.ts and the collaboration controller). The Chief of Staff's identity, status and scopes are written in both. ARCHITECTURE.md section 13.5 sets the direction of one server-side source (RSI-00 stage S2).
+**Goal:** the gateway owns every system-agent definition (id, name keys, status, knowledge scopes, team roles, tool profile, instructions); the frontend reads only the public part through a read-only route; each definition carries a content hash that S1 (run provenance) can record. Behaviour and screens stay the same.
+**Stage-start questions:** (1) the route and its fields (proposed GET /api/system-agents, login required, public fields only; instructions and tool profiles never reach the browser; /api/agents stays for user-created agents); (2) how the dashboard and office load the list (fetch with loading and failure states; proposed minimal Builder-only fallback rather than a build-time copy); (3) where the registry lives so the team registry and the knowledge-scope map read from it; (4) what the version hash covers (instructions, tool profile, scopes, model choice); (5) whether the duplicated knowledge scope list (gateway and the frontend Knowledge page) is folded in now or later.
+**Not in scope:** run provenance (S1), BIZ-03, new agents, migrations, a version table, user-created agents.
+**Named in:** RSI-00 stage S2; docs/GOV-RSI-01-CHECKPOINT.md.
+
+#### Acceptance criteria
+
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] The stage-start document answers the five questions; Keith's decisions are recorded and the write set is narrowed before implementation
+- [ ] One gateway registry holds every system-agent definition; the team registry and KNOWLEDGE_ROLE_SCOPES read from it with unchanged values; each definition carries a content hash
+- [ ] A read-only route returns the public fields only (no instructions, no tool profile internals), owner login required; user-created agent routes unchanged
+- [ ] The dashboard, station cards and office read the list from that route with defined loading and failure states in en, zh-TW and zh-CN; screens show the same agents and statuses as before
+- [ ] The frontend registry constant no longer duplicates the server definitions
+- [ ] Tests cover each point above; api-gateway tests and build, and frontend tests (including the office, registry and dashboard tests by name), type check and build pass, compared with the known failures in their latest checkpoints
+- [ ] The checkpoint carries the CHECKLIST line (EVERY, UI, BACKEND) and the FOLLOWUPS line
 - [ ] Not LOCKED by an implementer
 
 ### GOV-ARCH-SYNC-01 — Sync ARCHITECTURE.md with the built collaboration and office
