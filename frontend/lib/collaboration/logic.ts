@@ -115,6 +115,25 @@ export function collaborationRunIsActive(status: string | null | undefined): boo
   return status === 'active';
 }
 
+export function collaborationRunEndedByReject(
+  runStatus: string | null | undefined,
+  handoffStatuses: readonly string[],
+): boolean {
+  if (runStatus !== 'failed') {
+    return false;
+  }
+  let rejected = false;
+  for (const status of handoffStatuses) {
+    if (status === 'failed' || status === 'timed_out') {
+      return false;
+    }
+    if (status === 'rejected') {
+      rejected = true;
+    }
+  }
+  return rejected;
+}
+
 export function shouldPollCollaboration(input: {
   runStatus: string | null | undefined;
   documentHidden: boolean;

@@ -45,8 +45,10 @@ export interface CollaborationViewLabels {
   approve: string;
   reject: string;
   rejectReasonLabel: string;
+  rejectPrompt: string;
   rejectConfirm: string;
   cancelReject: string;
+  runEndedByReject: string;
   cancelRun: string;
   cancelRunPrompt: string;
   cancelRunConfirm: string;
@@ -156,6 +158,7 @@ export default function CollaborationView(props: {
   runs: CollaborationPastRunView[];
   rejectReferralId: string | null;
   rejectReason: string;
+  runEndedByReject: boolean;
   onTaskChange: (value: string) => void;
   onStart: () => void;
   onOpenRun: (runId: string) => void;
@@ -305,6 +308,14 @@ export default function CollaborationView(props: {
             {props.runTeam.roles.length > 0 ? (
               <span className="text-gray-600">{` · ${props.runTeam.roles.join(' · ')}`}</span>
             ) : null}
+          </p>
+        ) : null}
+        {props.runEndedByReject ? (
+          <p
+            className="mt-2 text-sm text-gray-500"
+            data-testid="collaboration-run-ended-by-reject"
+          >
+            {labels.runEndedByReject}
           </p>
         ) : null}
         {props.selectedRunActive ? (
@@ -612,29 +623,9 @@ export default function CollaborationView(props: {
                   ) : null}
                   {handoff.waiting ? (
                     <div className="mt-3 flex min-w-0 flex-wrap gap-2">
-                      <button
-                        type="button"
-                        data-testid={`collaboration-approve-${handoff.referralId}`}
-                        disabled={
-                          props.deciding ||
-                          (handoff.testsGate === 'blocked' && !handoff.approveWithoutTests)
-                        }
-                        onClick={() =>
-                          props.onApprove(
-                            handoff.referralId,
-                            approveWithoutPassingTestsForClick({
-                              testsGate: handoff.testsGate,
-                              approveWithoutTests: handoff.approveWithoutTests,
-                            }),
-                          )
-                        }
-                        className="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
-                      >
-                        <CheckIcon className="h-4 w-4" aria-hidden="true" />
-                        {labels.approve}
-                      </button>
                       {rejecting ? (
                         <div className="flex min-w-0 w-full flex-col gap-2">
+                          <p className="text-sm text-gray-700">{labels.rejectPrompt}</p>
                           <label
                             htmlFor={`collaboration-reject-reason-${handoff.referralId}`}
                             className="text-sm text-gray-700"
@@ -645,7 +636,21 @@ export default function CollaborationView(props: {
                             id={`collaboration-reject-reason-${handoff.referralId}`}
                             data-testid={`collaboration-reject-reason-${handoff.referralId}`}
                             value={props.rejectReason}
+                            autoFocus
                             onChange={(event) => props.onRejectReasonChange(event.target.value)}
+                            onKeyDown={(event) => {
+                              const native = event.nativeEvent;
+                              if (
+                                event.key !== 'Enter' ||
+                                props.deciding ||
+                                native.isComposing ||
+                                native.keyCode === 229
+                              ) {
+                                return;
+                              }
+                              event.preventDefault();
+                              props.onConfirmReject(handoff.referralId);
+                            }}
                             className="w-full max-w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
                           />
                           <div className="flex flex-wrap gap-2">
@@ -654,7 +659,7 @@ export default function CollaborationView(props: {
                               data-testid={`collaboration-reject-confirm-${handoff.referralId}`}
                               disabled={props.deciding}
                               onClick={() => props.onConfirmReject(handoff.referralId)}
-                              className="inline-flex items-center gap-1 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
+                              className="inline-flex items-center gap-1 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
                             >
                               <XMarkIcon className="h-4 w-4" aria-hidden="true" />
                               {labels.rejectConfirm}
@@ -669,16 +674,39 @@ export default function CollaborationView(props: {
                           </div>
                         </div>
                       ) : (
-                        <button
-                          type="button"
-                          data-testid={`collaboration-reject-${handoff.referralId}`}
-                          disabled={props.deciding}
-                          onClick={() => props.onBeginReject(handoff.referralId)}
-                          className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-                        >
-                          <XMarkIcon className="h-4 w-4" aria-hidden="true" />
-                          {labels.reject}
-                        </button>
+                        <>
+                          <button
+                            type="button"
+                            data-testid={`collaboration-approve-${handoff.referralId}`}
+                            disabled={
+                              props.deciding ||
+                              (handoff.testsGate === 'blocked' && !handoff.approveWithoutTests)
+                            }
+                            onClick={() =>
+                              props.onApprove(
+                                handoff.referralId,
+                                approveWithoutPassingTestsForClick({
+                                  testsGate: handoff.testsGate,
+                                  approveWithoutTests: handoff.approveWithoutTests,
+                                }),
+                              )
+                            }
+                            className="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+                          >
+                            <CheckIcon className="h-4 w-4" aria-hidden="true" />
+                            {labels.approve}
+                          </button>
+                          <button
+                            type="button"
+                            data-testid={`collaboration-reject-${handoff.referralId}`}
+                            disabled={props.deciding}
+                            onClick={() => props.onBeginReject(handoff.referralId)}
+                            className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                          >
+                            <XMarkIcon className="h-4 w-4" aria-hidden="true" />
+                            {labels.reject}
+                          </button>
+                        </>
                       )}
                     </div>
                   ) : null}

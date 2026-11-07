@@ -26,6 +26,7 @@ import {
   readTestsNotPassed,
   collaborationMemberLabel,
   collaborationRoster,
+  collaborationRunEndedByReject,
   collaborationScopeLabel,
   collaborationStartRequestBody,
   collaborationTeamFromDetail,
@@ -128,6 +129,7 @@ function renderChain(handoffs: Array<{
         droppedSourceCount: handoff.droppedSourceCount ?? 0,
       })),
       runs: [],
+      runEndedByReject: false,
       rejectReferralId: null,
       rejectReason: '',
       onTaskChange: () => {},
@@ -188,6 +190,7 @@ describe('collaboration page', () => {
         team: [],
         handoffs: [],
         runs: [],
+        runEndedByReject: false,
         rejectReferralId: null,
         rejectReason: '',
         onTaskChange: () => {},
@@ -704,6 +707,44 @@ describe('collaboration page', () => {
     assert.equal(zhCnMessages.collaboration.cancelRunConfirm, '确认取消');
     assert.equal(zhCnMessages.collaboration.cancelRunKeep, '保留这次运行');
   });
+
+  test('collaborationRunEndedByReject is a failed run with a rejection and no failure or timeout', () => {
+    assert.equal(collaborationRunEndedByReject('failed', ['rejected']), true);
+    assert.equal(collaborationRunEndedByReject('failed', ['completed', 'rejected']), true);
+    assert.equal(collaborationRunEndedByReject('failed', ['rejected', 'failed']), false);
+    assert.equal(collaborationRunEndedByReject('failed', ['rejected', 'timed_out']), false);
+    assert.equal(collaborationRunEndedByReject('failed', ['timed_out']), false);
+    assert.equal(collaborationRunEndedByReject('active', ['rejected']), false);
+    assert.equal(collaborationRunEndedByReject('completed', ['rejected']), false);
+    assert.equal(collaborationRunEndedByReject('cancelled', ['rejected']), false);
+    assert.equal(collaborationRunEndedByReject('failed', ['completed', 'approved']), false);
+    assert.equal(collaborationRunEndedByReject('failed', []), false);
+    assert.equal(collaborationRunEndedByReject(null, ['rejected']), false);
+  });
+
+  test('reject prompt, ended line, and Don\'t reject exist in en, zh-TW and zh-CN', () => {
+    assert.equal(
+      enMessages.collaboration.rejectPrompt,
+      'Reject this step? Its work will not be used.',
+    );
+    assert.equal(
+      zhTwMessages.collaboration.rejectPrompt,
+      '要拒絕這一步嗎？這一步的結果不會被採用。',
+    );
+    assert.equal(
+      zhCnMessages.collaboration.rejectPrompt,
+      '要拒绝这一步吗？这一步的结果不会被采用。',
+    );
+    assert.equal(
+      enMessages.collaboration.runEndedByReject,
+      'This run ended after a rejection.',
+    );
+    assert.equal(zhTwMessages.collaboration.runEndedByReject, '這次執行在拒絕後結束了。');
+    assert.equal(zhCnMessages.collaboration.runEndedByReject, '这次运行在拒绝后结束了。');
+    assert.equal(enMessages.collaboration.cancelReject, "Don't reject");
+    assert.equal(zhTwMessages.collaboration.cancelReject, '不要拒絕');
+    assert.equal(zhCnMessages.collaboration.cancelReject, '不要拒绝');
+  });
 });
 
 type ScheduledPoll = { fn: () => void; delay: number };
@@ -735,6 +776,15 @@ function createDomNode(tag = 'div') {
     textContent: '',
     setAttribute(this: Record<string, unknown>, key: string, value: string) {
       (this.attributes as Record<string, string>)[key] = value;
+    },
+    setAttributeNS(this: Record<string, unknown>, _namespace: string, key: string, value: string) {
+      (this.attributes as Record<string, string>)[key] = value;
+    },
+    focus(this: Record<string, unknown>) {
+      const doc = this.ownerDocument as { activeElement?: unknown } | null;
+      if (doc) {
+        doc.activeElement = this;
+      }
     },
     getAttribute(this: Record<string, unknown>, key: string) {
       return (this.attributes as Record<string, string>)[key] ?? null;
@@ -937,6 +987,136 @@ async function firePoll() {
       await Promise.resolve();
     }
   });
+}
+
+function handoffRecord(referralId: string, status: string) {
+  return {
+    referralId,
+    status,
+    source: 'user',
+    target: 'lead',
+    prompt: 'Look at the form.',
+    answer: status === 'pending_approval' ? null : 'Noted.',
+    handoffNote: null,
+    failureReason: null,
+    decidedBy: status === 'pending_approval' ? null : 'user',
+    rejectReason: status === 'rejected' ? 'Not this' : null,
+  };
+}
+
+function visitHost(
+  node: Record<string, unknown>,
+  visit: (current: Record<string, unknown>) => void,
+) {
+  visit(node);
+  const children = node.childNodes;
+  if (!Array.isArray(children)) {
+    return;
+  }
+  for (const child of children) {
+    visitHost(child as Record<string, unknown>, visit);
+  }
+}
+
+function hostReactProps(node: Record<string, unknown>): Record<string, unknown> | null {
+  const key = Object.keys(node).find((name) => name.startsWith('__reactProps$'));
+  return key ? (node[key] as Record<string, unknown>) : null;
+}
+
+function findHostByTestId(rootNode: Record<string, unknown>, testId: string) {
+  let found: Record<string, unknown> | null = null;
+  visitHost(rootNode, (node) => {
+    if (found) {
+      return;
+    }
+    const attributes = node.attributes as Record<string, string> | undefined;
+    if (attributes && attributes['data-testid'] === testId) {
+      found = node;
+    }
+  });
+  return found;
+}
+
+function findHostByText(rootNode: Record<string, unknown>, text: string) {
+  let found: Record<string, unknown> | null = null;
+  visitHost(rootNode, (node) => {
+    if (found) {
+      return;
+    }
+    const props = hostReactProps(node);
+    if (typeof props?.children === 'string' && props.children.includes(text)) {
+      found = node;
+    }
+  });
+  return found;
+}
+
+function enterKey(composing = false) {
+  return {
+    key: 'Enter',
+    preventDefault() {},
+    nativeEvent: { isComposing: composing, keyCode: composing ? 229 : 13 },
+  };
+}
+
+async function flushCollaboration() {
+  await act(async () => {
+    for (let step = 0; step < 40; step += 1) {
+      await Promise.resolve();
+    }
+  });
+}
+
+async function mountLatestView() {
+  const container = (
+    globalThis.document as { createElement: (tag: string) => Record<string, unknown> }
+  ).createElement('div');
+  const viewRoot = createRoot(container as unknown as Element);
+  await act(async () => {
+    viewRoot.render(createElement(CollaborationView, latest!));
+  });
+  return { container, viewRoot };
+}
+
+function installRejectFetch(state: {
+  status: string;
+  handoffs: ReturnType<typeof handoffRecord>[];
+  onReject?: (body: unknown) => Response | Promise<Response>;
+}) {
+  const posts: string[] = [];
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input);
+    const method = (init?.method ?? 'GET').toUpperCase();
+    fetchCalls.push(url);
+    if (method === 'POST' && url.includes('/reject')) {
+      posts.push(String(init?.body ?? ''));
+      const body = init?.body ? JSON.parse(String(init.body)) : null;
+      if (state.onReject) {
+        return await state.onReject(body);
+      }
+      return jsonResponse(200, { ok: true });
+    }
+    if (url.startsWith('/api/collaboration/runs?')) {
+      return jsonResponse(200, { runs: [runPayload(state.status)] });
+    }
+    if (url === '/api/collaboration/runs/run-1') {
+      return jsonResponse(200, {
+        run: runPayload(state.status),
+        team: ['lead', 'writer', 'reviewer'],
+        handoffs: state.handoffs,
+      });
+    }
+    return jsonResponse(404, { message: 'missing' });
+  }) as typeof fetch;
+  return posts;
+}
+
+async function openCollaborationRun() {
+  await renderScreen(1, 'proj-1');
+  await act(async () => {
+    latest!.onOpenRun('run-1');
+  });
+  await flushCollaboration();
 }
 
 describe('collaboration screen reload', () => {
@@ -1475,6 +1655,220 @@ describe('collaboration screen reload', () => {
     assert.match(markup, /data-testid="collaboration-notice"/);
     assert.match(markup, /data-testid="collaboration-cancel-confirm"/);
   });
+
+  test('opening reject mode hides Approve, and Don\'t reject sends nothing', async () => {
+    installRejectFetch({
+      status: 'active',
+      handoffs: [
+        handoffRecord('ref-a', 'pending_approval'),
+        handoffRecord('ref-b', 'pending_approval'),
+      ],
+    });
+    await openCollaborationRun();
+    assert.equal(latest?.handoffs.length, 2);
+    assert.equal(latest?.runEndedByReject, false);
+
+    await act(async () => {
+      latest!.onBeginReject('ref-a');
+    });
+    let markup = renderToStaticMarkup(createElement(CollaborationView, latest!));
+    assert.doesNotMatch(markup, /data-testid="collaboration-approve-ref-a"/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-reject-ref-a"/);
+    assert.match(markup, /data-testid="collaboration-approve-ref-b"/);
+    assert.match(markup, /data-testid="collaboration-reject-ref-b"/);
+    assert.match(markup, /Reject this step\? Its work will not be used\./);
+    assert.match(markup, /data-testid="collaboration-reject-reason-ref-a"/);
+    assert.match(openTag(markup, 'collaboration-reject-reason-ref-a'), /autofocus/i);
+    const confirm = openTag(markup, 'collaboration-reject-confirm-ref-a');
+    assert.match(confirm, /bg-red-600/);
+    assert.match(confirm, /text-white/);
+    assert.match(confirm, /hover:bg-red-700/);
+    assert.match(confirm, /disabled:opacity-50/);
+    assert.match(markup, /Don(?:'|&#x27;)t reject/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-run-ended-by-reject"/);
+    const promptAt = markup.indexOf('Reject this step? Its work will not be used.');
+    const reasonAt = markup.indexOf('data-testid="collaboration-reject-reason-ref-a"');
+    assert.ok(promptAt >= 0 && reasonAt > promptAt);
+
+    const before = fetchCalls.length;
+    const mounted = await mountLatestView();
+    try {
+      const input = findHostByTestId(mounted.container, 'collaboration-reject-reason-ref-a');
+      assert.ok(input);
+      assert.equal(
+        (globalThis.document as { activeElement?: unknown }).activeElement,
+        input,
+      );
+      const back = findHostByText(mounted.container, "Don't reject");
+      assert.ok(back);
+      const onClick = hostReactProps(back)?.onClick as (() => void) | undefined;
+      assert.equal(typeof onClick, 'function');
+      await act(async () => {
+        onClick!();
+      });
+    } finally {
+      await act(async () => {
+        mounted.viewRoot.unmount();
+      });
+    }
+    assert.equal(fetchCalls.length, before);
+    assert.equal(
+      fetchCalls.some((url) => url.includes('/reject')),
+      false,
+    );
+    markup = renderToStaticMarkup(createElement(CollaborationView, latest!));
+    assert.match(markup, /data-testid="collaboration-approve-ref-a"/);
+    assert.match(markup, /data-testid="collaboration-reject-ref-a"/);
+    assert.doesNotMatch(markup, /Reject this step\? Its work will not be used/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-reject-reason-ref-a"/);
+  });
+
+  test('Enter in the reason box sends one reject with the reason and refreshes', async () => {
+    const state = {
+      status: 'active',
+      handoffs: [handoffRecord('ref-a', 'pending_approval')],
+    };
+    let release: (response: Response) => void = () => {
+      throw new Error('reject was not waiting');
+    };
+    const posts = installRejectFetch({
+      get status() {
+        return state.status;
+      },
+      get handoffs() {
+        return state.handoffs;
+      },
+      onReject: () =>
+        new Promise<Response>((resolve) => {
+          release = resolve;
+        }),
+    });
+    await openCollaborationRun();
+    await act(async () => {
+      latest!.onBeginReject('ref-a');
+      latest!.onRejectReasonChange('Not this step');
+    });
+    const listBefore = fetchCalls.filter((url) => url.startsWith('/api/collaboration/runs?')).length;
+    const detailBefore = fetchCalls.filter((url) => url === '/api/collaboration/runs/run-1').length;
+    const mounted = await mountLatestView();
+    try {
+      const input = findHostByTestId(mounted.container, 'collaboration-reject-reason-ref-a');
+      assert.ok(input);
+      const onKeyDown = hostReactProps(input)?.onKeyDown as
+        | ((event: ReturnType<typeof enterKey>) => void)
+        | undefined;
+      assert.equal(typeof onKeyDown, 'function');
+      await act(async () => {
+        onKeyDown!(enterKey(true));
+      });
+      assert.deepEqual(posts, []);
+      await act(async () => {
+        onKeyDown!(enterKey());
+        onKeyDown!(enterKey());
+        await Promise.resolve();
+      });
+      assert.deepEqual(
+        posts.map((body) => JSON.parse(body)),
+        [{ reason: 'Not this step' }],
+      );
+      assert.equal(latest?.deciding, true);
+      await act(async () => {
+        onKeyDown!(enterKey());
+      });
+      assert.deepEqual(posts, ['{"reason":"Not this step"}']);
+    } finally {
+      await act(async () => {
+        mounted.viewRoot.unmount();
+      });
+    }
+
+    state.status = 'failed';
+    state.handoffs = [handoffRecord('ref-a', 'rejected')];
+    await act(async () => {
+      release(jsonResponse(200, { referralId: 'ref-a', status: 'rejected' }));
+      for (let step = 0; step < 40; step += 1) {
+        await Promise.resolve();
+      }
+    });
+    assert.deepEqual(
+      posts.map((body) => JSON.parse(body)),
+      [{ reason: 'Not this step' }],
+    );
+    assert.equal(latest?.deciding, false);
+    assert.equal(latest?.rejectReferralId, null);
+    assert.equal(latest?.runEndedByReject, true);
+    assert.ok(fetchCalls.filter((url) => url.startsWith('/api/collaboration/runs?')).length > listBefore);
+    assert.ok(fetchCalls.filter((url) => url === '/api/collaboration/runs/run-1').length > detailBefore);
+    const markup = renderToStaticMarkup(createElement(CollaborationView, latest!));
+    assert.match(markup, /data-testid="collaboration-run-ended-by-reject"/);
+    assert.match(markup, /This run ended after a rejection\./);
+  });
+
+  test('Enter with an empty reason sends one reject body of {} and refreshes', async () => {
+    const posts = installRejectFetch({
+      status: 'active',
+      handoffs: [handoffRecord('ref-a', 'pending_approval')],
+    });
+    await openCollaborationRun();
+    await act(async () => {
+      latest!.onBeginReject('ref-a');
+    });
+    const listBefore = fetchCalls.filter((url) => url.startsWith('/api/collaboration/runs?')).length;
+    const detailBefore = fetchCalls.filter((url) => url === '/api/collaboration/runs/run-1').length;
+    const mounted = await mountLatestView();
+    try {
+      const input = findHostByTestId(mounted.container, 'collaboration-reject-reason-ref-a');
+      assert.ok(input);
+      const onKeyDown = hostReactProps(input)?.onKeyDown as
+        | ((event: ReturnType<typeof enterKey>) => void)
+        | undefined;
+      assert.equal(typeof onKeyDown, 'function');
+      await act(async () => {
+        onKeyDown!(enterKey());
+        for (let step = 0; step < 40; step += 1) {
+          await Promise.resolve();
+        }
+      });
+    } finally {
+      await act(async () => {
+        mounted.viewRoot.unmount();
+      });
+    }
+    assert.deepEqual(posts, ['{}']);
+    assert.equal(latest?.rejectReferralId, null);
+    assert.equal(latest?.deciding, false);
+    assert.ok(fetchCalls.filter((url) => url.startsWith('/api/collaboration/runs?')).length > listBefore);
+    assert.ok(fetchCalls.filter((url) => url === '/api/collaboration/runs/run-1').length > detailBefore);
+  });
+
+  test('the ended line shows when the open run ended by rejection', async () => {
+    installRejectFetch({
+      status: 'failed',
+      handoffs: [handoffRecord('ref-a', 'rejected'), handoffRecord('ref-b', 'completed')],
+    });
+    await openCollaborationRun();
+    assert.equal(
+      collaborationRunEndedByReject('failed', ['rejected', 'completed']),
+      true,
+    );
+    assert.equal(latest?.runEndedByReject, true);
+    const markup = renderToStaticMarkup(createElement(CollaborationView, latest!));
+    assert.match(markup, /data-testid="collaboration-run-ended-by-reject"/);
+    assert.match(markup, /This run ended after a rejection\./);
+  });
+
+  test('the ended line stays hidden when a rejection shares the run with a timeout', async () => {
+    installRejectFetch({
+      status: 'failed',
+      handoffs: [handoffRecord('ref-a', 'rejected'), handoffRecord('ref-b', 'timed_out')],
+    });
+    await openCollaborationRun();
+    assert.equal(collaborationRunEndedByReject('failed', ['rejected', 'timed_out']), false);
+    assert.equal(latest?.runEndedByReject, false);
+    const markup = renderToStaticMarkup(createElement(CollaborationView, latest!));
+    assert.doesNotMatch(markup, /data-testid="collaboration-run-ended-by-reject"/);
+    assert.doesNotMatch(markup, /This run ended after a rejection/);
+  });
 });
 
 describe('BIZ-01 team picker', () => {
@@ -1647,6 +2041,7 @@ describe('BIZ-01 team picker', () => {
             teamLabel: zhTwMessages.collaboration.teamChiefOfStaff,
           },
         ],
+        runEndedByReject: false,
         rejectReferralId: null,
         rejectReason: '',
         onTaskChange: () => {},
@@ -1787,6 +2182,7 @@ describe('BIZ-01 team picker', () => {
         },
         handoffs: [],
         runs: [],
+        runEndedByReject: false,
         rejectReferralId: null,
         rejectReason: '',
         onTaskChange: () => {},
