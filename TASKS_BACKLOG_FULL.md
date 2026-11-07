@@ -85056,7 +85056,7 @@ taskId=BIZ-LIVE-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-07. Lane 1, STAGING and ENV. Keith said deploy now on 2026-11-07 (deploy during the open tester window, then his advisors check).
+**Status:** COMPLETE AND LOCKED — 2026-11-07. LANE-DONE and LOCKED by the control plane; Lane 1 and STAGING and ENV released. Staging runs 8a723bf (BIZ-03); the tester window stays open; Keith's advisors check passed: cited answers from market-data and tech-landscape, read-only tools, the right version stamps, no further hand-offs; COLLAB-START-ONCE-01 registered. Checkpoint: docs/BIZ-LIVE-02-CHECKPOINT.md.
 **Task ID:** BIZ-LIVE-02
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -85073,10 +85073,35 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] Staging runs the deployed commit; migration hash unchanged; env files at the tester-window hashes before and after; other configuration files unchanged; units active; health, guard, page and CORS checks pass; the static key refused; GET /api/system-agents still 401 without a session
-- [ ] Nothing queued or running before runs are switched off; Keith was told runs pause; the saved window gateway.env is restored byte for byte, runs are back on, and the tester window stays open
-- [ ] Keith asks a market question and a technology question about the open project on the advisors team; from the host: the referral targets are advisors-lead then one advisor, the read profile and the advisor's scopes, agentDefinitionId and agentDefinitionVersion equal to systemAgentVersion, search_knowledge and read_knowledge ran for both advisors and the project read tools for the Technology Advisor with no write_file, every [source: documentId#heading] names one of Keith's documents and a heading in it, and no further referral after an advisor answer
-- [ ] The checkpoint carries the CHECKLIST line (EVERY, DEPLOY, LIVE) and the FOLLOWUPS line
+- [x] Staging runs the deployed commit; migration hash unchanged; env files at the tester-window hashes before and after; other configuration files unchanged; units active; health, guard, page and CORS checks pass; the static key refused; GET /api/system-agents still 401 without a session
+- [x] Nothing queued or running before runs are switched off; Keith was told runs pause; the saved window gateway.env is restored byte for byte, runs are back on, and the tester window stays open
+- [x] Keith asks a market question and a technology question about the open project on the advisors team; from the host: the referral targets are advisors-lead then one advisor, the read profile and the advisor's scopes, agentDefinitionId and agentDefinitionVersion equal to systemAgentVersion, search_knowledge and read_knowledge ran for both advisors and the project read tools for the Technology Advisor with no write_file, every [source: documentId#heading] names one of Keith's documents and a heading in it, and no further referral after an advisor answer
+- [x] The checkpoint carries the CHECKLIST line (EVERY, DEPLOY, LIVE) and the FOLLOWUPS line
+- [x] Not LOCKED by an implementer
+
+### COLLAB-START-ONCE-01 — Start a Team-page run once per click
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-START-ONCE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-07. Registered by BIZ-LIVE-02 (Keith approved, OPTIONAL); not admitted.
+**Task ID:** COLLAB-START-ONCE-01
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition (human):** NOT_READY. Ready when: Keith admits it. No dependency. Keith decides.
+**Depends on:** none.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Likely frontend/components/collaboration/ and frontend/lib/collaboration/ with tests; possibly a gateway guard in services/api-gateway/src/orchestration/collaboration.controller.ts.
+**Mutexes / resources:** set at admission (likely FRONTEND, possibly GATEWAY). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-07). **productClass:** CURRENT per PRD.md.
+
+**Holds:** Keith found on 2026-11-07 (BIZ-LIVE-02) that clicking Start on the Team page again while a start is in flight starts another run: two extra advisors runs (10:09:03 and 10:09:18 UTC) were left waiting for approval. The Start button is disabled while a start request is in flight and until the new run is shown; if needed, the gateway refuses a second identical start from the same owner within a short window. Applies to every team. Tests cover it.
+**Named in:** docs/BIZ-LIVE-02-CHECKPOINT.md.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
 - [ ] Not LOCKED by an implementer
 
 ### BIZ-NOPROJECT-01 — Business runs without an open project
