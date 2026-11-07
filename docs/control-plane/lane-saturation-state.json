@@ -7,13 +7,17 @@
   "governance": {"owner": "NONE", "state": "UNOWNED"},
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "COLLAB-START-ONCE-01",
+      "mutexes": ["FRONTEND"],
+      "writePaths": [
+        "frontend/components/collaboration/",
+        "frontend/lib/collaboration/",
+        "frontend/lib/collaboration.test.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -3277,14 +3281,18 @@
       "taskId": "COLLAB-START-ONCE-01",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "OPTIONAL",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
       "dependsOn": [],
-      "mutexes": [],
-      "writePaths": [],
+      "mutexes": ["FRONTEND"],
+      "writePaths": [
+        "frontend/components/collaboration/",
+        "frontend/lib/collaboration/",
+        "frontend/lib/collaboration.test.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
       "sharedContractIds": [],
@@ -3292,8 +3300,8 @@
       "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "runtimeNeeds": [],
-      "admissionUncertain": true,
-      "writeSetPrecision": "PROVISIONAL"
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
     },
     {
       "taskId": "BIZ-NOPROJECT-01",

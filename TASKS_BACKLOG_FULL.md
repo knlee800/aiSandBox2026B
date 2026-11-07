@@ -85085,15 +85085,15 @@ taskId=COLLAB-START-ONCE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-07. Registered by BIZ-LIVE-02 (Keith approved, OPTIONAL); not admitted.
+**Status:** ADMITTED — 2026-11-07. Lane 1, FRONTEND. Keith approved the drafted scope and admitted it on 2026-11-07. Implementation next.
 **Task ID:** COLLAB-START-ONCE-01
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition (human):** NOT_READY. Ready when: Keith admits it. No dependency. Keith decides.
+**Start condition (human):** READY — no dependency; Keith admitted it on 2026-11-07 as drafted.
 **Depends on:** none.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Likely frontend/components/collaboration/ and frontend/lib/collaboration/ with tests; possibly a gateway guard in services/api-gateway/src/orchestration/collaboration.controller.ts.
-**Mutexes / resources:** set at admission (likely FRONTEND, possibly GATEWAY). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**Primary write scope:** `frontend/components/collaboration/`, `frontend/lib/collaboration/`, `frontend/lib/collaboration.test.ts` (a new component test may go in frontend/components/collaboration/), docs/COLLAB-START-ONCE-01-CHECKPOINT.md. No gateway, API or message-file change; anything else needs a control-plane scope change.
+**Mutexes / resources:** FRONTEND. **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (Team-page start guard and task-box reset only; no server or data change).
 **saturationClass:** OPTIONAL (Keith, 2026-11-07). **productClass:** CURRENT per PRD.md.
 
 **Holds:** Keith found on 2026-11-07 (BIZ-LIVE-02) that clicking Start on the Team page again while a start is in flight starts another run: two extra advisors runs (10:09:03 and 10:09:18 UTC) were left waiting for approval. The Start button is disabled while a start request is in flight and until the new run is shown; if needed, the gateway refuses a second identical start from the same owner within a short window. Applies to every team. Tests cover it.
@@ -85101,7 +85101,12 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Start on the Team page starts one run per click: a guard that takes effect at once (not only after a re-render) lets only one start request be in flight, so a second click or Enter while a start is in flight does nothing
+- [ ] After a successful start the task box is cleared, so Start stays disabled until a new task is typed; after a refused or failed start the task text stays so the owner can retry
+- [ ] Every team (coding, chief-of-staff, advisors) behaves the same; no gateway, API or message-file change and no new visible text
+- [ ] Tests cover each point above; frontend tests (including the collaboration component tests by name), type check and build pass
+- [ ] The checkpoint carries the CHECKLIST line (EVERY, UI) and the FOLLOWUPS line
 - [ ] Not LOCKED by an implementer
 
 ### BIZ-NOPROJECT-01 — Business runs without an open project
@@ -85348,8 +85353,8 @@ nature=IMPLEMENTATION
 **Lifecycle:** 3-STEP.
 **Start condition (human):** NOT_READY. Ready when: FRONTEND is free (after BIZ-03) and Keith admits it. Keith decides.
 **Depends on:** none.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Likely frontend/components/knowledge/knowledge-screen.tsx with its test and the three message files.
-**Mutexes / resources:** set at admission (likely FRONTEND and I18N). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Scope drafted and approved by Keith on 2026-11-07, set at admission: frontend/components/knowledge/knowledge-screen.tsx with knowledge-screen.test.tsx and the three message files; the add form shows Adding to: <scope> with a scope picker that starts at the selected chip, the document saves to the scope picked in the form, replace keeps the document's own scope (shown, no picker); no gateway or API change.
+**Mutexes / resources:** set at admission (FRONTEND and I18N as approved). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** LOCAL-TESTS (as approved). **Revert isolation:** assessed at admission.
 **saturationClass:** OPTIONAL (Keith, 2026-11-07). **productClass:** CURRENT per PRD.md.
 
 **Holds:** On 2026-11-07 Keith's documents twice landed in Company monthly reports instead of the scope he meant: the Knowledge page saves a new document to the scope selected in the chip row at the top (the first scope by default), and the add form does not say which scope that is. The add form names its scope ("Adding to: <scope>") and lets the owner change it there; tests cover it; en, zh-TW and zh-CN.
