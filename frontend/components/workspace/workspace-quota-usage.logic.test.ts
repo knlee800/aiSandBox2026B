@@ -19,6 +19,7 @@ const copies: QuotaRateLimitGuidanceCopies = {
   rateLimitShortly: enMessages.ai.rateLimitRetryShortly,
   quota: enMessages.ai.quotaLimitGuidance,
   accessRules: enMessages.ai.accessRulesGuidance,
+  providerUsageLimit: enMessages.ai.providerUsageLimit,
 };
 
 const base = {
@@ -301,6 +302,36 @@ describe('workspace quota usage logic', () => {
     assert.equal(shouldRefreshDashboardForChatStatus('failed'), true);
     assert.equal(shouldRefreshDashboardForChatStatus('cancelled'), true);
     assert.equal(shouldRefreshDashboardForChatStatus('timeout'), true);
+  });
+
+  test('maps the provider usage-limit sentence before quota and rate-limit checks', () => {
+    const exact = toQuotaRateLimitGuidance({
+      ...base,
+      rawMessage: '  AI provider usage limit reached  ',
+      statusCode: 400,
+    });
+    assert.equal(exact, enMessages.ai.providerUsageLimit);
+    assert.notEqual(exact, copies.quota);
+    assert.notEqual(exact, copies.rateLimitShortly);
+
+    const duringRateLimit = toQuotaRateLimitGuidance({
+      ...base,
+      rawMessage: 'AI provider usage limit reached',
+      statusCode: 429,
+      retryAfterHeader: '45',
+    });
+    assert.equal(duringRateLimit, enMessages.ai.providerUsageLimit);
+    assert.notEqual(duringRateLimit, copies.quota);
+    assert.notEqual(duringRateLimit, 'Too many requests. Try again in about 45 seconds.');
+  });
+
+  test('leaves an unrelated message unchanged', () => {
+    const message = toQuotaRateLimitGuidance({
+      ...base,
+      rawMessage: 'The workspace is ready.',
+      statusCode: 500,
+    });
+    assert.equal(message, 'The workspace is ready.');
   });
 
   test('402 insufficient-credit raw message is not stolen as quota guidance', () => {

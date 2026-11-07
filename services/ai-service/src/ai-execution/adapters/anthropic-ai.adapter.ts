@@ -23,6 +23,36 @@ import {
   parseToolArgumentsToObject,
 } from './adapter-tool-use.mapper';
 
+/** Stored when Anthropic refuses a run because the account usage limit is reached. */
+export const AI_PROVIDER_USAGE_LIMIT_REACHED = 'AI provider usage limit reached';
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Account spend-limit refusals are HTTP 400 invalid_request_error, not 429.
+ * The installed SDK stores the response JSON on APIError.error.
+ */
+function isAnthropicAccountUsageLimit(
+  error: InstanceType<typeof Anthropic.APIError>,
+): boolean {
+  if (error.status !== 400) {
+    return false;
+  }
+  const body: unknown = error.error;
+  if (!isRecord(body)) {
+    return false;
+  }
+  const nested: unknown = body.error;
+  if (!isRecord(nested) || nested.type !== 'invalid_request_error') {
+    return false;
+  }
+  const providerMessage =
+    typeof nested.message === 'string' ? nested.message : error.message;
+  return /usage limit/i.test(providerMessage);
+}
+
 /**
  * AnthropicAdapter
  *
@@ -494,6 +524,7 @@ export class AnthropicAdapter implements AIAdapter {
    *
    * Error categories:
    * - 401 Unauthorized → UnauthorizedException
+   * - 400 account usage limit → BadRequestException (fixed sentence; no provider text)
    * - 400 Bad Request → BadRequestException
    * - 429 Rate Limit → ServiceUnavailableException
    * - 500 Server Error → InternalServerErrorException
@@ -515,10 +546,17 @@ export class AnthropicAdapter implements AIAdapter {
       throw error;
     }
 
+    const accountUsageLimit =
+      error instanceof Anthropic.APIError && isAnthropicAccountUsageLimit(error);
+
     this.logger.error('Anthropic API error', {
       sessionId: request.sessionId,
       conversationId: request.conversationId,
-      error: error instanceof Error ? error.message : String(error),
+      error: accountUsageLimit
+        ? AI_PROVIDER_USAGE_LIMIT_REACHED
+        : error instanceof Error
+          ? error.message
+          : String(error),
     });
 
     // Handle Anthropic SDK errors
@@ -534,6 +572,9 @@ export class AnthropicAdapter implements AIAdapter {
       }
 
       if (error.constructor.name === 'BadRequestError' || status === 400) {
+        if (accountUsageLimit) {
+          throw new BadRequestException(AI_PROVIDER_USAGE_LIMIT_REACHED);
+        }
         throw new BadRequestException(
           'Invalid request to Anthropic API',
           error.message,

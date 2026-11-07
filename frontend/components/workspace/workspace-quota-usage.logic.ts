@@ -7,6 +7,7 @@ export interface QuotaRateLimitGuidanceCopies {
   rateLimitShortly: string;
   quota: string;
   accessRules: string;
+  providerUsageLimit?: string;
 }
 
 export interface QuotaRateLimitGuidanceInput {
@@ -146,6 +147,10 @@ export function toQuotaRateLimitGuidance(input: QuotaRateLimitGuidanceInput): st
   const retryAfterSeconds = parseRetryAfterSeconds(input.retryAfterHeader);
   const statusCode = input.statusCode ?? null;
   const copies = input.copies;
+
+  if (trimmedRawMessage === 'AI provider usage limit reached') {
+    return copies.providerUsageLimit ?? trimmedRawMessage;
+  }
 
   if (statusCode === 429) {
     const cap = readCreditCap(input.payload);

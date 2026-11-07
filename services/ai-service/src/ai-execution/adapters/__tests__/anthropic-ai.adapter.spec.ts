@@ -1,6 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import Anthropic from '@anthropic-ai/sdk';
-import { AnthropicAdapter } from '../anthropic-ai.adapter';
+import {
+  AI_PROVIDER_USAGE_LIMIT_REACHED,
+  AnthropicAdapter,
+} from '../anthropic-ai.adapter';
 import { AIExecutionRequest } from '../../types';
 import {
   UnauthorizedException,
@@ -548,6 +551,92 @@ describe('AnthropicAdapter', () => {
       apiError.constructor = { name: 'APIError' };
       Object.setPrototypeOf(apiError, Anthropic.APIError.prototype);
 
+      mockMessagesCreate.mockRejectedValue(apiError);
+
+      await expect(adapter.execute(mockRequest)).rejects.toThrow(
+        BadRequestException,
+      );
+      await expect(adapter.execute(mockRequest)).rejects.toThrow(
+        'Invalid request to Anthropic API',
+      );
+    });
+
+    it('maps an account usage-limit 400 to the fixed sentence without provider text', async () => {
+      const providerMessage =
+        'You have reached your specified API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.';
+      const body = {
+        type: 'error',
+        error: {
+          type: 'invalid_request_error',
+          message: providerMessage,
+        },
+      };
+      const apiError = new Error(`400 ${JSON.stringify(body)}`) as any;
+      apiError.status = 400;
+      apiError.error = body;
+      apiError.constructor = { name: 'BadRequestError' };
+      Object.setPrototypeOf(apiError, Anthropic.APIError.prototype);
+      mockMessagesCreate.mockRejectedValue(apiError);
+      const errorSpy = jest.spyOn(Logger.prototype, 'error');
+
+      let caught: unknown;
+      try {
+        await adapter.execute(mockRequest);
+      } catch (error) {
+        caught = error;
+      }
+
+      expect(caught).toBeInstanceOf(BadRequestException);
+      const exception = caught as BadRequestException;
+      expect(exception.message).toBe(AI_PROVIDER_USAGE_LIMIT_REACHED);
+      expect(exception.message).toBe('AI provider usage limit reached');
+      const serialized = JSON.stringify(exception.getResponse());
+      expect(serialized).not.toContain(providerMessage);
+      expect(serialized).not.toContain('2026-12-01');
+      expect(serialized).not.toContain('00:00 UTC');
+      expect(serialized).not.toContain('You have reached');
+      expect(serialized).not.toMatch(/sk-ant|api[_-]?key/i);
+
+      expect(JSON.stringify(errorSpy.mock.calls)).not.toContain('2026-12-01');
+      expect(JSON.stringify(errorSpy.mock.calls)).not.toContain(providerMessage);
+      errorSpy.mockRestore();
+    });
+
+    it('keeps another invalid_request_error 400 on the generic message', async () => {
+      const providerMessage = 'max_tokens: must be greater than or equal to 1';
+      const body = {
+        type: 'error',
+        error: {
+          type: 'invalid_request_error',
+          message: providerMessage,
+        },
+      };
+      const apiError = new Error(providerMessage) as any;
+      apiError.status = 400;
+      apiError.error = body;
+      apiError.constructor = { name: 'BadRequestError' };
+      Object.setPrototypeOf(apiError, Anthropic.APIError.prototype);
+      mockMessagesCreate.mockRejectedValue(apiError);
+
+      let caught: unknown;
+      try {
+        await adapter.execute(mockRequest);
+      } catch (error) {
+        caught = error;
+      }
+
+      expect(caught).toBeInstanceOf(BadRequestException);
+      const exception = caught as BadRequestException;
+      expect(exception.message).toBe('Invalid request to Anthropic API');
+      expect(exception.message).not.toBe(AI_PROVIDER_USAGE_LIMIT_REACHED);
+      expect(JSON.stringify(exception.getResponse())).toContain(providerMessage);
+    });
+
+    it('keeps a 400 without a usage-limit message on the generic message', async () => {
+      const apiError = new Error('model is required') as any;
+      apiError.status = 400;
+      apiError.constructor = { name: 'BadRequestError' };
+      Object.setPrototypeOf(apiError, Anthropic.APIError.prototype);
       mockMessagesCreate.mockRejectedValue(apiError);
 
       await expect(adapter.execute(mockRequest)).rejects.toThrow(

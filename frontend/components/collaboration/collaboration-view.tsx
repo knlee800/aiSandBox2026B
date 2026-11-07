@@ -10,6 +10,8 @@ import {
 } from '@heroicons/react/24/outline';
 import {
   approveWithoutPassingTestsForClick,
+  collaborationFailureReason,
+  collaborationProviderUsageLimitCopy,
   fillTemplate,
   formatCollaborationSource,
   type CollaborationTeamId,
@@ -422,7 +424,10 @@ export default function CollaborationView(props: {
                   {handoff.failureReason ? (
                     <p className="mt-2 break-words text-sm text-red-700">
                       <span className="font-medium">{labels.failure}: </span>
-                      {handoff.failureReason}
+                      {collaborationFailureReason(
+                        handoff.failureReason,
+                        collaborationProviderUsageLimitCopy(props.backHref),
+                      )}
                     </p>
                   ) : null}
                   {handoff.rejectReason ? (

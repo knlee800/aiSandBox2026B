@@ -84902,7 +84902,7 @@ taskId=PROVIDER-LIMIT-MSG-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-07. Lane 1, AI-SERVICE, FRONTEND and I18N. Keith approved the drafted scope and admitted it on 2026-11-07. Implementation next.
+**Status:** COMPLETE AND LOCKED — 2026-11-07. LANE-DONE and LOCKED by the control plane; Lane 1 and AI-SERVICE, FRONTEND and I18N released. When the AI provider's account limit refuses a run, the workspace chat and the Team page say so in en, zh-TW and zh-CN; code and LOCK in one commit (LOCAL-TESTS); not deployed, STAGING-DEPLOY-12 registered. Checkpoint: docs/PROVIDER-LIMIT-MSG-01-CHECKPOINT.md.
 **Task ID:** PROVIDER-LIMIT-MSG-01
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -84919,10 +84919,35 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] A 400 from Anthropic whose error type is invalid_request_error and whose message says the usage limits are reached becomes the fixed stored sentence AI provider usage limit reached; every other 400 keeps Invalid request to Anthropic API; no key, limit value or reset date is stored or shown
-- [ ] The workspace chat (through toQuotaRateLimitGuidance and one new quotaRateLimitCopies entry) and the Team page failure line show the translated message; en: The AI provider's usage limit has been reached, so runs can't start. They start again once an admin raises the limit. zh-TW and zh-CN are real translations; no hardcoded English
-- [ ] Tests cover the limit 400, another 400 and each language key; ai-service tests and build and frontend tests, type check and build pass, compared with the known failures in their latest checkpoints
-- [ ] The checkpoint carries the CHECKLIST line (EVERY, UI, BACKEND) and the FOLLOWUPS line
+- [x] A 400 from Anthropic whose error type is invalid_request_error and whose message says the usage limits are reached becomes the fixed stored sentence AI provider usage limit reached; every other 400 keeps Invalid request to Anthropic API; no key, limit value or reset date is stored or shown
+- [x] The workspace chat (through toQuotaRateLimitGuidance and one new quotaRateLimitCopies entry) and the Team page failure line show the translated message; en: The AI provider's usage limit has been reached, so runs can't start. They start again once an admin raises the limit. zh-TW and zh-CN are real translations; no hardcoded English
+- [x] Tests cover the limit 400, another 400 and each language key; ai-service tests and build and frontend tests, type check and build pass, compared with the known failures in their latest checkpoints
+- [x] The checkpoint carries the CHECKLIST line (EVERY, UI, BACKEND) and the FOLLOWUPS line
+- [x] Not LOCKED by an implementer
+
+### STAGING-DEPLOY-12 — Deploy the provider usage-limit message (PROVIDER-LIMIT-MSG-01) during the tester window
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-12
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-07. Registered by PROVIDER-LIMIT-MSG-01; not admitted.
+**Task ID:** STAGING-DEPLOY-12
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (operational run; no code)
+**Lifecycle:** 3-STEP: registration here; admission when Keith picks the time; pre-check and deploy from the host; separate LOCK record (STAGING-RUNTIME).
+**Start condition (human):** NOT_READY. Ready when: PROVIDER-LIMIT-MSG-01 is COMPLETE AND LOCKED and Keith approves the deploy and its timing. Keith decides.
+**Depends on:** PROVIDER-LIMIT-MSG-01.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Expected: none in the repository beyond records; host state on ainow-staging-01 (AI service and frontend release).
+**Mutexes / resources:** set at admission (expected STAGING and ENV). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS; expected STAGING-RUNTIME). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+
+**Holds:** deploy the commit that holds PROVIDER-LIMIT-MSG-01 with the DEPLOY checklist, including item 7 while the tester window is open (save the window gateway.env, runs off for the deploy only, restore it byte for byte, check the window hashes gateway.env 5692ce35... and ai.env 132ebab3... and that runs are back on), Keith told first, health, guard and page checks, the static key refused. No provider run is needed: the message only appears when the provider refuses.
+**Named in:** docs/PROVIDER-LIMIT-MSG-01-CHECKPOINT.md.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
 - [ ] Not LOCKED by an implementer
 
 ### BIZ-02 — Chief of Staff desk in the office

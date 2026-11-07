@@ -1,3 +1,7 @@
+import enMessages from '../../messages/en.json';
+import zhCnMessages from '../../messages/zh-CN.json';
+import zhTwMessages from '../../messages/zh-TW.json';
+
 export const COLLABORATION_POLL_MS = 5000;
 
 export type CollaborationRefusal =
@@ -25,6 +29,31 @@ const REFUSAL_MESSAGE_KEYS: Record<CollaborationRefusal, string> = {
 
 export function collaborationRefusalMessageKey(refusal: CollaborationRefusal): string {
   return REFUSAL_MESSAGE_KEYS[refusal];
+}
+
+/** Must match AI_PROVIDER_USAGE_LIMIT_REACHED from the Anthropic adapter. */
+export const AI_PROVIDER_USAGE_LIMIT_REACHED = 'AI provider usage limit reached';
+
+export function collaborationFailureReason(
+  failureReason: string,
+  providerUsageLimitMessage: string,
+): string {
+  if (failureReason === AI_PROVIDER_USAGE_LIMIT_REACHED) {
+    return providerUsageLimitMessage;
+  }
+  return failureReason;
+}
+
+export function collaborationProviderUsageLimitCopy(localeOrHref: string): string {
+  const fromHref = /^\/(zh-TW|zh-CN|en)(?:\/|$)/.exec(localeOrHref)?.[1];
+  const locale = fromHref ?? localeOrHref;
+  if (locale === 'zh-TW') {
+    return zhTwMessages.collaboration.providerUsageLimit;
+  }
+  if (locale === 'zh-CN') {
+    return zhCnMessages.collaboration.providerUsageLimit;
+  }
+  return enMessages.collaboration.providerUsageLimit;
 }
 
 function readCreditCap(body: unknown): 'user' | 'platform' | null {

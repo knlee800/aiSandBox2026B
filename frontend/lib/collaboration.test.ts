@@ -12,9 +12,12 @@ import enMessages from '../messages/en.json';
 import zhCnMessages from '../messages/zh-CN.json';
 import zhTwMessages from '../messages/zh-TW.json';
 import {
+  AI_PROVIDER_USAGE_LIMIT_REACHED,
   COLLABORATION_POLL_MS,
   approveRequestBody,
   approveWithoutPassingTestsForClick,
+  collaborationFailureReason,
+  collaborationProviderUsageLimitCopy,
   collaborationRefusal,
   collaborationRefusalMessageKey,
   createSingleFlight,
@@ -72,11 +75,12 @@ function renderChain(handoffs: Array<{
   }>;
   showUnsourced?: boolean;
   droppedSourceCount?: number;
-}>) {
+  failureReason?: string | null;
+}>, backHref = '/en/app') {
   return renderToStaticMarkup(
     React.createElement(CollaborationView, {
       labels,
-      backHref: '/en/app',
+      backHref,
       sessionReady: true,
       projectReady: true,
       loading: false,
@@ -96,7 +100,7 @@ function renderChain(handoffs: Array<{
         prompt: handoff.prompt,
         answer: handoff.answer,
         handoffNote: null,
-        failureReason: null,
+        failureReason: handoff.failureReason ?? null,
         decidedBy: null,
         rejectReason: null,
         waiting: handoff.waiting,
@@ -1307,5 +1311,88 @@ describe('BIZ-01 team picker', () => {
       const source = readFileSync(new URL(relativePath, import.meta.url), 'utf8');
       assert.doesNotMatch(source, /Coding team|Chief of Staff/);
     }
+  });
+});
+
+describe('provider usage limit message', () => {
+  const english =
+    "The AI provider's usage limit has been reached, so runs can't start. They start again once an admin raises the limit.";
+
+  test('maps only the exact stored sentence', () => {
+    assert.equal(
+      collaborationFailureReason(
+        AI_PROVIDER_USAGE_LIMIT_REACHED,
+        enMessages.collaboration.providerUsageLimit,
+      ),
+      english,
+    );
+    assert.equal(
+      collaborationFailureReason('The writer stopped', enMessages.collaboration.providerUsageLimit),
+      'The writer stopped',
+    );
+    assert.equal(
+      collaborationFailureReason(
+        'AI provider usage limit reached.',
+        enMessages.collaboration.providerUsageLimit,
+      ),
+      'AI provider usage limit reached.',
+    );
+    assert.equal(collaborationProviderUsageLimitCopy('/en/app'), english);
+    assert.equal(collaborationProviderUsageLimitCopy('en'), english);
+    assert.equal(
+      collaborationProviderUsageLimitCopy('/zh-TW/app'),
+      zhTwMessages.collaboration.providerUsageLimit,
+    );
+    assert.equal(
+      collaborationProviderUsageLimitCopy('/zh-CN/app'),
+      zhCnMessages.collaboration.providerUsageLimit,
+    );
+  });
+
+  test('ai and collaboration keys exist in en, zh-TW, and zh-CN', () => {
+    assert.equal(enMessages.ai.providerUsageLimit, english);
+    assert.equal(enMessages.collaboration.providerUsageLimit, english);
+    const catalogs = [
+      { ai: zhTwMessages.ai.providerUsageLimit, collaboration: zhTwMessages.collaboration.providerUsageLimit },
+      { ai: zhCnMessages.ai.providerUsageLimit, collaboration: zhCnMessages.collaboration.providerUsageLimit },
+    ];
+    for (const catalog of catalogs) {
+      assert.notEqual(catalog.ai, english);
+      assert.notEqual(catalog.collaboration, english);
+      assert.match(catalog.ai, /\p{Script=Han}/u);
+      assert.match(catalog.collaboration, /\p{Script=Han}/u);
+      assert.equal(catalog.ai, catalog.collaboration);
+    }
+    assert.notEqual(zhTwMessages.ai.providerUsageLimit, zhCnMessages.ai.providerUsageLimit);
+    assert.notEqual(
+      zhTwMessages.collaboration.providerUsageLimit,
+      zhCnMessages.collaboration.providerUsageLimit,
+    );
+  });
+
+  test('the team failure line shows the translation and leaves other reasons unchanged', () => {
+    const handoff = {
+      referralId: 'failed-limit',
+      statusLabel: 'Failed',
+      waiting: false,
+      answer: null,
+      prompt: 'Do the task',
+      failureReason: AI_PROVIDER_USAGE_LIMIT_REACHED,
+    };
+    const escapedEnglish = english.replace(/'/g, '&#x27;');
+    const limited = renderChain([handoff]);
+    assert.ok(limited.includes(escapedEnglish));
+    assert.equal(limited.includes(AI_PROVIDER_USAGE_LIMIT_REACHED), false);
+    assert.match(limited, /data-testid="collaboration-back"/);
+
+    const traditional = renderChain([handoff], '/zh-TW/app');
+    assert.ok(traditional.includes(zhTwMessages.collaboration.providerUsageLimit));
+    assert.equal(traditional.includes(escapedEnglish), false);
+
+    const other = renderChain([
+      { ...handoff, referralId: 'failed-other', failureReason: 'The writer stopped' },
+    ]);
+    assert.ok(other.includes('The writer stopped'));
+    assert.ok(other.includes(enMessages.collaboration.failure));
   });
 });

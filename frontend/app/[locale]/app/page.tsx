@@ -1082,6 +1082,7 @@ export default function AppPage() {
     rateLimitShortly: aiMessages.rateLimitRetryShortly,
     quota: aiMessages.quotaLimitGuidance,
     accessRules: aiMessages.accessRulesGuidance,
+    providerUsageLimit: aiMessages.providerUsageLimit,
   };
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
   const [dashboardError, setDashboardError] = useState<string | null>(null);
