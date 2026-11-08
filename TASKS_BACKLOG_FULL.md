@@ -85652,14 +85652,14 @@ taskId=COLLAB-EVAL-MARKERS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-08. Lane 1, AI-SERVICE. Keith admitted it on 2026-11-08. Implementation next (Cursor grok-4.7-high).
+**Status:** COMPLETE AND LOCKED — 2026-11-08. LANE-DONE and LOCKED by the control plane; Lane 1 and AI-SERVICE released. test-asserts-nothing gains six markers; the saved live answer now scores as caught (5 of 5 on rescoring; the baseline file is unchanged); ai-service 1157 passed. Checkpoint: docs/COLLAB-EVAL-MARKERS-01-CHECKPOINT.md.
 **Task ID:** COLLAB-EVAL-MARKERS-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 2-STEP: implementation; checkpoint and LOCK.
 **Start condition (human):** READY — Keith admitted it on 2026-11-08.
 **Depends on:** COLLAB-EVAL-LIVE-01.
-**Primary write scope:** `services/ai-service/src/agent-harness/eval/review-tasks/test-asserts-nothing.json`, a spec under `services/ai-service/src/agent-harness/eval/` that rescores the saved answer, and docs/COLLAB-EVAL-MARKERS-01-CHECKPOINT.md.
+**Primary write scope:** `services/ai-service/src/agent-harness/eval/review-tasks/test-asserts-nothing.json`, a spec under `services/ai-service/src/agent-harness/eval/` that rescores the saved answer, and docs/COLLAB-EVAL-MARKERS-01-CHECKPOINT.md. Expanded by the control plane on 2026-11-08 to services/ai-service/src/agent-harness/eval/review-loader.spec.ts (its expected marker list only).
 **Mutexes / resources:** AI-SERVICE. **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (one task file and a spec).
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (the gated Team page, active development).
 
@@ -85669,11 +85669,11 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] test-asserts-nothing.json gains markers that a correct answer uses (such as "never checks", "can't fail", "cannot fail" and "toBe"); the loader's marker rules still hold
-- [ ] A spec scores the saved COLLAB-EVAL-LIVE-01 answer for test-asserts-nothing as caught, and a send-back that names only src/sum.ts as missed; nothing calls a provider
-- [ ] Nothing outside the task file and the spec changes; the reviewer baseline file is unchanged; ai-service tests and build pass compared with docs/COLLAB-EVAL-LIVE-01-CHECKPOINT.md
-- [ ] The checkpoint carries the CHECKLIST line (EVERY, BACKEND) and the FOLLOWUPS line
-- [ ] Not LOCKED by an implementer
+- [x] test-asserts-nothing.json gains markers that a correct answer uses (such as "never checks", "can't fail", "cannot fail" and "toBe"); the loader's marker rules still hold
+- [x] A spec scores the saved COLLAB-EVAL-LIVE-01 answer for test-asserts-nothing as caught, and a send-back that names only src/sum.ts as missed; nothing calls a provider
+- [x] Nothing outside the task file and the spec changes; the reviewer baseline file is unchanged; ai-service tests and build pass compared with docs/COLLAB-EVAL-LIVE-01-CHECKPOINT.md
+- [x] The checkpoint carries the CHECKLIST line (EVERY, BACKEND) and the FOLLOWUPS line
+- [x] Not LOCKED by an implementer
 
 ### COLLAB-FANOUT-01 — Fan-out hand-offs with one approval and a combine step
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

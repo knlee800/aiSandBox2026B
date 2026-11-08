@@ -65,7 +65,7 @@ describe('loadReviewTasks', () => {
         id: 'asserts-nothing',
         kind: 'test-asserts-nothing',
         file: 'src/sum.test.ts',
-        markers: ['asserts nothing', 'no assertion', 'adds the numbers', 'no expect'],
+        markers: ['asserts nothing', 'no assertion', 'adds the numbers', 'no expect', 'never checks', 'can\'t fail', 'can’t fail', 'cannot fail', 'never asserts', 'toBe'],
       },
     ]);
     expect(tasks.find((task) => task.id === 'security-slip')?.plantedBugs).toEqual([
