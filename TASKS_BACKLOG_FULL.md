@@ -85619,7 +85619,7 @@ taskId=COLLAB-EVAL-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-08. Lane 1, AI-SERVICE, STAGING and PROVIDER-LIVE. Keith approved the stage-start plan and the 150,000-token cap and admitted it on 2026-11-08, after TESTER-WINDOW-CLOSE-01 locked. Live runner next (Cursor grok-4.7-high).
+**Status:** COMPLETE AND LOCKED — 2026-11-08. LANE-DONE and LOCKED by the control plane; Lane 1 and AI-SERVICE, STAGING and PROVIDER-LIVE released. The reviewer sent back all five planted bugs (four by the scoring: test-asserts-nothing's markers missed a correct answer) and approved the clean change; 34,398 tokens, 37 credits, 0 safety violations; reviewer baseline saved; Keith accepted it. COLLAB-EVAL-MARKERS-01 registered. Checkpoint: docs/COLLAB-EVAL-LIVE-01-CHECKPOINT.md.
 **Task ID:** COLLAB-EVAL-LIVE-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -85637,13 +85637,38 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] A live reviewer runner under eval/live/ builds the reviewer model call as the worker does for a coding-team reviewer step (reviewerPrompt as projectInstructions, review-profile tools only, claude-opus-5-5, maxRunTokens 60000, step limit 8); the key is read only from the environment and appears in no output, results file or log
-- [ ] A whole-run cap of 150,000 tokens; tasks after the cap are recorded as not run
-- [ ] Mocked tests cover the request shape (projectInstructions, advertised tools without write or delete), the cap and key scrubbing; nothing in the repository calls a provider; ai-service tests and build pass compared with docs/COLLAB-EVAL-01-CHECKPOINT.md
-- [ ] Nothing outside eval/live/ and eval/baselines/ changes in ai-service
-- [ ] Deployed to staging with the standard checks; the six tasks ran on the host within the cap; the results file is saved in eval/baselines/ and recorded with bugs caught out of planted, the clean-task result, model calls, tokens and credits per review
-- [ ] Each reviewer answer is shown to Keith and his judgement is recorded in the checkpoint
-- [ ] The checkpoint carries the CHECKLIST line (EVERY, BACKEND, DEPLOY, LIVE) and the FOLLOWUPS line
+- [x] A live reviewer runner under eval/live/ builds the reviewer model call as the worker does for a coding-team reviewer step (reviewerPrompt as projectInstructions, review-profile tools only, claude-opus-5-5, maxRunTokens 60000, step limit 8); the key is read only from the environment and appears in no output, results file or log
+- [x] A whole-run cap of 150,000 tokens; tasks after the cap are recorded as not run
+- [x] Mocked tests cover the request shape (projectInstructions, advertised tools without write or delete), the cap and key scrubbing; nothing in the repository calls a provider; ai-service tests and build pass compared with docs/COLLAB-EVAL-01-CHECKPOINT.md
+- [x] Nothing outside eval/live/ and eval/baselines/ changes in ai-service
+- [x] Deployed to staging with the standard checks; the six tasks ran on the host within the cap; the results file is saved in eval/baselines/ and recorded with bugs caught out of planted, the clean-task result, model calls, tokens and credits per review
+- [x] Each reviewer answer is shown to Keith and his judgement is recorded in the checkpoint
+- [x] The checkpoint carries the CHECKLIST line (EVERY, BACKEND, DEPLOY, LIVE) and the FOLLOWUPS line
+- [x] Not LOCKED by an implementer
+
+### COLLAB-EVAL-MARKERS-01 — Wider markers for the test-asserts-nothing reviewer task
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-EVAL-MARKERS-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-08. Registered by COLLAB-EVAL-LIVE-01 from Keith's judgement; not admitted.
+**Task ID:** COLLAB-EVAL-MARKERS-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP: implementation; checkpoint and LOCK.
+**Start condition (human):** NOT_READY. Ready when Keith admits it. Keith decides.
+**Depends on:** COLLAB-EVAL-LIVE-01.
+**Primary write scope:** `services/ai-service/src/agent-harness/eval/review-tasks/test-asserts-nothing.json`, a spec under `services/ai-service/src/agent-harness/eval/` that rescores the saved answer, and docs/COLLAB-EVAL-MARKERS-01-CHECKPOINT.md.
+**Mutexes / resources:** AI-SERVICE. **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (one task file and a spec).
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (the gated Team page, active development).
+
+**Holds:** the live run's correct answer for test-asserts-nothing (sent back naming src/sum.test.ts: the test never checks what sum returns and cannot fail) scored as a miss because none of its markers matched. Add markers that a correct answer uses, such as "never checks", "can't fail", "cannot fail" and "toBe", keep the loader's marker rules, and add a spec that scores the saved COLLAB-EVAL-LIVE-01 answer as caught and a send-back that names only src/sum.ts as missed. No provider call; the reviewer baseline file is not changed.
+**Named in:** docs/COLLAB-EVAL-LIVE-01-CHECKPOINT.md.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
 - [ ] Not LOCKED by an implementer
 
 ### COLLAB-FANOUT-01 — Fan-out hand-offs with one approval and a combine step
