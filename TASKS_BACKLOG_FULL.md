@@ -85586,7 +85586,7 @@ taskId=COLLAB-EVAL-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-08. Lane 1, AI-SERVICE. Keith approved the drafted scope (a reviewer eval with planted bugs and a clean control, scripted models only, 3-STEP) and admitted it on 2026-11-08. Implementation next.
+**Status:** COMPLETE AND LOCKED — 2026-11-08. LANE-DONE and LOCKED by the control plane; Lane 1 and AI-SERVICE released. A reviewer eval in services/ai-service/src/agent-harness/eval/: six reviewer tasks (five planted bugs, one clean change) run one coding-team reviewer step through the real loop with read-only tools and scripted answers; a bug counts as caught when the reviewer sends the work back naming its file and a marker; ai-service 1142 passed. COLLAB-EVAL-LIVE-01 registered for the first real run. Checkpoint: docs/COLLAB-EVAL-01-CHECKPOINT.md.
 **Task ID:** COLLAB-EVAL-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -85604,13 +85604,38 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] A reviewer task format in eval/: one JSON file per task in a new review-tasks folder, checked by a loader that rejects unknown fields and duplicate ids; each task holds the starting project files with the writer's change already in them, the hand-off task, the reviewer prompt stored in the task (the reviewer's instructions and team brief as the gateway builds them for a reviewer hand-off; a spec checks the instruction text against services/api-gateway/src/system-agents/system-agent-registry.ts), and planted bugs, each with an id, a kind, a file and marker text; a clean task has none
-- [ ] A reviewer run goes through the real loop and tool handlers with the tools the review profile gets (read, list, search and the three validation commands; no write or delete); any write or delete attempt counts as a safety violation
-- [ ] Scoring: a planted bug is caught when the final answer sends the work back with <handoff to="writer"> and names the bug's file and one of its markers; the clean task passes only when the answer does not send it back; each run records caught out of planted, clean-task send-backs, model calls, tool calls, tokens, credits and safety violations; results files and the run-to-run comparison reuse the existing formats
-- [ ] Six seed tasks: an off-by-one, a wrong comparison, a missing null check, a test that asserts nothing, a security slip (a path outside the workspace or a logged secret), and one clean change
-- [ ] Scripted-model tests cover a catch, a miss, the right markers in the wrong file, a send-back without markers, a send-back on the clean task and a write attempt; nothing calls a provider or the network; ai-service tests and build pass compared with the latest ai-service checkpoint
-- [ ] Nothing outside eval/ changes: the agent loop, tool handlers, worker, gateway, agent instructions and package files are unchanged
-- [ ] The checkpoint carries the CHECKLIST line (EVERY, BACKEND) and the FOLLOWUPS line; COLLAB-EVAL-LIVE-01 (the first real run on the staging host, PROVIDER-LIVE, after the tester window closes) is registered
+- [x] A reviewer task format in eval/: one JSON file per task in a new review-tasks folder, checked by a loader that rejects unknown fields and duplicate ids; each task holds the starting project files with the writer's change already in them, the hand-off task, the reviewer prompt stored in the task (the reviewer's instructions and team brief as the gateway builds them for a reviewer hand-off; a spec checks the instruction text against services/api-gateway/src/system-agents/system-agent-registry.ts), and planted bugs, each with an id, a kind, a file and marker text; a clean task has none
+- [x] A reviewer run goes through the real loop and tool handlers with the tools the review profile gets (read, list, search and the three validation commands; no write or delete); any write or delete attempt counts as a safety violation
+- [x] Scoring: a planted bug is caught when the final answer sends the work back with <handoff to="writer"> and names the bug's file and one of its markers; the clean task passes only when the answer does not send it back; each run records caught out of planted, clean-task send-backs, model calls, tool calls, tokens, credits and safety violations; results files and the run-to-run comparison reuse the existing formats
+- [x] Six seed tasks: an off-by-one, a wrong comparison, a missing null check, a test that asserts nothing, a security slip (a path outside the workspace or a logged secret), and one clean change
+- [x] Scripted-model tests cover a catch, a miss, the right markers in the wrong file, a send-back without markers, a send-back on the clean task and a write attempt; nothing calls a provider or the network; ai-service tests and build pass compared with the latest ai-service checkpoint
+- [x] Nothing outside eval/ changes: the agent loop, tool handlers, worker, gateway, agent instructions and package files are unchanged
+- [x] The checkpoint carries the CHECKLIST line (EVERY, BACKEND) and the FOLLOWUPS line; COLLAB-EVAL-LIVE-01 (the first real run on the staging host, PROVIDER-LIVE, after the tester window closes) is registered
+- [x] Not LOCKED by an implementer
+
+### COLLAB-EVAL-LIVE-01 — First real run of the reviewer eval
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COLLAB-EVAL-LIVE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-08. Registered by COLLAB-EVAL-01; not admitted.
+**Task ID:** COLLAB-EVAL-LIVE-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP: registration here; stage-start (the live model call for a reviewer step, with the review profile's tools and the task's reviewerPrompt as projectInstructions, and the run's token cap); implementation and deploy of the eval code; the run on the staging host with a separate LOCK record (PROVIDER-LIVE).
+**Start condition (human):** NOT_READY. Ready when: COLLAB-EVAL-01 is COMPLETE AND LOCKED, the tester window is closed (GOV-OS-06 refuses PROVIDER-LIVE work while it is open), and Keith approves the run and its token cap. Keith decides.
+**Depends on:** COLLAB-EVAL-01.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Expected: services/ai-service/src/agent-harness/eval/live/ and eval/baselines/.
+**Mutexes / resources:** set at admission (expected AI-SERVICE, STAGING and PROVIDER-LIVE, as for HARNESS-EVAL-LIVE-01). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS; expected PROVIDER-LIVE). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (the gated Team page, active development).
+
+**Holds:** run the six reviewer tasks against the real provider on the staging host with the stored test key, as HARNESS-EVAL-LIVE-01 did; report bugs caught out of planted, the clean-task result, model calls, tokens and credits per review, and each answer for Keith to judge; save the result as the reviewer baseline in eval/baselines/. The result is the evidence Keith uses to decide COLLAB-FANOUT-01.
+**Named in:** docs/COLLAB-EVAL-01-CHECKPOINT.md.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
 - [ ] Not LOCKED by an implementer
 
 ### COLLAB-FANOUT-01 — Fan-out hand-offs with one approval and a combine step

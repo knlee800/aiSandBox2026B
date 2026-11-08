@@ -6,6 +6,11 @@ import type {
   EvalRunTotals,
   EvalTaskResult,
 } from './eval-types';
+import type {
+  ReviewRunResults,
+  ReviewRunTotals,
+  ReviewTaskResult,
+} from './review-types';
 
 const ENDED_AS: readonly EvalEndedAs[] = [
   'answered',
@@ -233,4 +238,205 @@ function readNumber(
     fail(`${field} must be a finite number`);
   }
   return value;
+}
+
+export function buildReviewResults(input: {
+  readonly runId: string;
+  readonly startedAt: string;
+  readonly model: string;
+  readonly harnessVersion: string;
+  readonly tasks: readonly ReviewTaskResult[];
+}): ReviewRunResults {
+  return {
+    runId: input.runId,
+    startedAt: input.startedAt,
+    model: input.model,
+    harnessVersion: input.harnessVersion,
+    tasks: input.tasks,
+    totals: reviewTotalsFor(input.tasks),
+  };
+}
+
+export function writeReviewResults(results: ReviewRunResults, dir: string): string {
+  const checked = assertReviewResults(results, dir);
+  fs.mkdirSync(dir, { recursive: true });
+  const filePath = path.join(dir, `review-results-${checked.runId}.json`);
+  fs.writeFileSync(filePath, `${JSON.stringify(checked, null, 2)}\n`, 'utf8');
+  return filePath;
+}
+
+export function readReviewResults(file: string): ReviewRunResults {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(`Invalid review results file ${file}: ${message}`);
+  }
+  return assertReviewResults(parsed, file);
+}
+
+function reviewTotalsFor(tasks: readonly ReviewTaskResult[]): ReviewRunTotals {
+  let passed = 0;
+  let bugsPlanted = 0;
+  let bugsCaught = 0;
+  let cleanSentBack = 0;
+  let modelCalls = 0;
+  let toolCalls = 0;
+  let tokens = 0;
+  let credits = 0;
+  let creditsKnown = true;
+  let safetyViolations = 0;
+  for (const task of tasks) {
+    if (task.passed) {
+      passed += 1;
+    }
+    bugsPlanted += task.bugsPlanted;
+    bugsCaught += task.bugsCaught.length;
+    if (task.bugsPlanted === 0 && task.sentBack) {
+      cleanSentBack += 1;
+    }
+    modelCalls += task.modelCalls;
+    toolCalls += task.toolCalls;
+    tokens += task.tokens;
+    safetyViolations += task.safetyViolations.length;
+    if (task.credits === null) {
+      creditsKnown = false;
+    } else {
+      credits += task.credits;
+    }
+  }
+  return {
+    tasks: tasks.length,
+    passed,
+    bugsPlanted,
+    bugsCaught,
+    cleanSentBack,
+    modelCalls,
+    toolCalls,
+    tokens,
+    credits: creditsKnown ? credits : null,
+    safetyViolations,
+  };
+}
+
+export function assertReviewResults(
+  value: unknown,
+  label: string,
+): ReviewRunResults {
+  const fail = (message: string): never => {
+    throw new Error(`Invalid review results file ${label}: ${message}`);
+  };
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    fail('results must be an object');
+  }
+  const record = value as Record<string, unknown>;
+  const runId = readString(record.runId, 'runId', fail);
+  const startedAt = readString(record.startedAt, 'startedAt', fail);
+  const model = readString(record.model, 'model', fail);
+  const harnessVersion = readString(record.harnessVersion, 'harnessVersion', fail);
+  const taskEntries = record.tasks;
+  if (!Array.isArray(taskEntries)) {
+    fail('tasks must be an array');
+  }
+  const seen = new Set<string>();
+  const tasks = (taskEntries as unknown[]).map((entry) => {
+    const task = readReviewTaskResult(entry, fail);
+    if (seen.has(task.id)) {
+      fail(`duplicate task id ${task.id}`);
+    }
+    seen.add(task.id);
+    return task;
+  });
+  if (record.totals === null || typeof record.totals !== 'object') {
+    fail('totals must be an object');
+  }
+  const totals = readReviewTotals(record.totals as Record<string, unknown>, fail);
+  return { runId, startedAt, model, harnessVersion, tasks, totals };
+}
+
+function readReviewTaskResult(
+  value: unknown,
+  fail: (message: string) => never,
+): ReviewTaskResult {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    fail('task result must be an object');
+  }
+  const record = value as Record<string, unknown>;
+  const id = readString(record.id, 'task.id', fail);
+  if (typeof record.passed !== 'boolean') {
+    fail(`task ${id} passed must be a boolean`);
+  }
+  if (typeof record.sentBack !== 'boolean') {
+    fail(`task ${id} sentBack must be a boolean`);
+  }
+  if (!Array.isArray(record.safetyViolations)) {
+    fail(`task ${id} safetyViolations must be an array`);
+  }
+  if (!Array.isArray(record.blockedAttempts)) {
+    fail(`task ${id} blockedAttempts must be an array`);
+  }
+  if (!Array.isArray(record.failureReasons)) {
+    fail(`task ${id} failureReasons must be an array`);
+  }
+  if (!Array.isArray(record.bugsCaught)) {
+    fail(`task ${id} bugsCaught must be an array`);
+  }
+  const bugsCaught: string[] = [];
+  for (const bugId of record.bugsCaught) {
+    if (typeof bugId !== 'string' || bugId.trim().length === 0) {
+      fail(`task ${id} bugsCaught must contain non-empty strings`);
+    }
+    bugsCaught.push(bugId);
+  }
+  const endedAs = record.endedAs;
+  if (typeof endedAs !== 'string' || !ENDED_AS.includes(endedAs as EvalEndedAs)) {
+    fail(`task ${id} endedAs is invalid`);
+  }
+  const credits = record.credits;
+  if (credits !== null && typeof credits !== 'number') {
+    fail(`task ${id} credits must be a number or null`);
+  }
+  return {
+    id,
+    bugsPlanted: readNumber(record.bugsPlanted, `${id}.bugsPlanted`, fail),
+    bugsCaught,
+    sentBack: record.sentBack,
+    passed: record.passed,
+    safetyViolations: record.safetyViolations as ReviewTaskResult['safetyViolations'],
+    blockedAttempts: record.blockedAttempts as ReviewTaskResult['blockedAttempts'],
+    modelCalls: readNumber(record.modelCalls, `${id}.modelCalls`, fail),
+    toolCalls: readNumber(record.toolCalls, `${id}.toolCalls`, fail),
+    tokens: readNumber(record.tokens, `${id}.tokens`, fail),
+    credits: credits as number | null,
+    endedAs: endedAs as EvalEndedAs,
+    failureReasons: record.failureReasons as string[],
+    finalAnswer: readFinalAnswer(record.finalAnswer, id, fail),
+  };
+}
+
+function readReviewTotals(
+  record: Record<string, unknown>,
+  fail: (message: string) => never,
+): ReviewRunTotals {
+  const credits = record.credits;
+  if (credits !== null && typeof credits !== 'number') {
+    fail('totals.credits must be a number or null');
+  }
+  return {
+    tasks: readNumber(record.tasks, 'totals.tasks', fail),
+    passed: readNumber(record.passed, 'totals.passed', fail),
+    bugsPlanted: readNumber(record.bugsPlanted, 'totals.bugsPlanted', fail),
+    bugsCaught: readNumber(record.bugsCaught, 'totals.bugsCaught', fail),
+    cleanSentBack: readNumber(record.cleanSentBack, 'totals.cleanSentBack', fail),
+    modelCalls: readNumber(record.modelCalls, 'totals.modelCalls', fail),
+    toolCalls: readNumber(record.toolCalls, 'totals.toolCalls', fail),
+    tokens: readNumber(record.tokens, 'totals.tokens', fail),
+    credits: credits as number | null,
+    safetyViolations: readNumber(
+      record.safetyViolations,
+      'totals.safetyViolations',
+      fail,
+    ),
+  };
 }

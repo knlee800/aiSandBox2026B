@@ -1,4 +1,20 @@
-import type { EvalRunResults, EvalTaskResult } from './eval-types';
+/**
+ * Fields shared by a harness task result and a reviewer task result.
+ * Comparison reads only these, so reviewer runs compare the same way
+ * as harness runs, and harness baselines keep their existing deltas.
+ */
+export interface EvalComparableTask {
+  readonly id: string;
+  readonly passed: boolean;
+  readonly modelCalls: number;
+  readonly toolCalls: number;
+  readonly tokens: number;
+  readonly credits: number | null;
+}
+
+export interface EvalComparableRun {
+  readonly tasks: readonly EvalComparableTask[];
+}
 
 export interface EvalTaskDelta {
   readonly id: string;
@@ -18,8 +34,8 @@ export interface EvalComparison {
 }
 
 export function compareResults(
-  previous: EvalRunResults,
-  current: EvalRunResults,
+  previous: EvalComparableRun,
+  current: EvalComparableRun,
 ): EvalComparison {
   const previousById = indexTasks(previous.tasks);
   const currentById = indexTasks(current.tasks);
@@ -31,8 +47,8 @@ export function compareResults(
   const deltas: EvalTaskDelta[] = [];
 
   for (const id of shared) {
-    const before = previousById.get(id) as EvalTaskResult;
-    const after = currentById.get(id) as EvalTaskResult;
+    const before = previousById.get(id) as EvalComparableTask;
+    const after = currentById.get(id) as EvalComparableTask;
     if (before.passed && !after.passed) {
       regressions.push(id);
     } else if (!before.passed && after.passed) {
@@ -114,8 +130,10 @@ function creditDelta(
   return current - previous;
 }
 
-function indexTasks(tasks: readonly EvalTaskResult[]): Map<string, EvalTaskResult> {
-  const map = new Map<string, EvalTaskResult>();
+function indexTasks(
+  tasks: readonly EvalComparableTask[],
+): Map<string, EvalComparableTask> {
+  const map = new Map<string, EvalComparableTask>();
   for (const task of tasks) {
     if (map.has(task.id)) {
       throw new Error(`duplicate eval task id ${task.id}`);

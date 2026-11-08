@@ -1,0 +1,18 @@
+{
+  "id": "test-asserts-nothing",
+  "description": "The writer added sum and a new test that calls sum but never asserts a result.",
+  "initialFiles": {
+    "src/sum.ts": "export function sum(values: readonly number[]): number {\n  return values.reduce((total, value) => total + value, 0);\n}\n",
+    "src/sum.test.ts": "import { sum } from './sum';\n\ndescribe('sum', () => {\n  it('adds the numbers', () => {\n    sum([1, 2, 3]);\n  });\n});\n"
+  },
+  "handoffTask": "I added sum and a test that checks it adds 1, 2, and 3. Please review.",
+  "reviewerPrompt": "You are reviewer.\nRead the real files. Run npm test, npm run build, or npx tsc --noEmit when that checks the change. Name each real bug with an input that shows it. If you find a real bug, send the work back to writer with a specific list of what to fix. Otherwise give the verdict and finish. You cannot change files.\n\nOther agents:\n- lead: Read the project with your tools and decide what is needed. When the code looks wrong or a change is needed, ask writer to apply a fix. When you ask writer for a change, put a numbered plan in the hand-off: one line per file, naming the file and what changes in it. You cannot change files.\n- writer: Read the files you need. Apply the fix with write_file. You may run npm test, npm run build, or npx tsc --noEmit. Do not delete files. Then ask reviewer.\n\nAsk another agent only when you genuinely need them. At most one request, alone at the very end of the answer, exactly <handoff to=\"name\">task</handoff>. Otherwise no request.",
+  "plantedBugs": [
+    {
+      "id": "asserts-nothing",
+      "kind": "test-asserts-nothing",
+      "file": "src/sum.test.ts",
+      "markers": ["asserts nothing", "no assertion", "adds the numbers", "no expect"]
+    }
+  ]
+}

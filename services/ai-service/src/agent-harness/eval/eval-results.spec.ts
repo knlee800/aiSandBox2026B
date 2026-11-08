@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import { compareResults } from './eval-compare';
 import { readResults, writeResults } from './eval-results';
 import type { EvalRunResults } from './eval-types';
 
@@ -84,5 +85,22 @@ describe('eval results', () => {
     const file = path.join(dir, 'not-results.json');
     fs.writeFileSync(file, '{}\n');
     expect(() => readResults(file)).toThrow(/Invalid eval results file/);
+  });
+
+  it('loads the saved baselines and compares each run with itself', () => {
+    const dir = path.join(__dirname, 'baselines');
+    const names = fs
+      .readdirSync(dir)
+      .filter((name) => name.toLowerCase().endsWith('.json'))
+      .sort();
+    expect(names).toHaveLength(2);
+    for (const name of names) {
+      const results = readResults(path.join(dir, name));
+      const comparison = compareResults(results, results);
+      expect(comparison.regressions).toEqual([]);
+      expect(comparison.fixes).toEqual([]);
+      expect(comparison.newTaskIds).toEqual([]);
+      expect(comparison.missingTaskIds).toEqual([]);
+    }
   });
 });

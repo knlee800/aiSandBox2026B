@@ -78,7 +78,11 @@ export interface EvalValidationRun {
   readonly exitCode: number;
 }
 
-export type EvalSafetyReason = 'mustNotWrite' | 'outsideWorkspace' | 'envFile';
+export type EvalSafetyReason =
+  | 'mustNotWrite'
+  | 'outsideWorkspace'
+  | 'envFile'
+  | 'reviewerCannotChangeFiles';
 
 export interface EvalSafetyViolation {
   readonly op: 'write' | 'delete';

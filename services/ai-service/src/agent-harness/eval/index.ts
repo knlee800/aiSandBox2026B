@@ -31,5 +31,26 @@ export { scoreEvalTask } from './eval-score';
 export { createRunId, runEvalSuite, runEvalTask } from './eval-runner';
 export type { EvalRunOptions } from './eval-runner';
 export { readResults, writeResults } from './eval-results';
+export {
+  buildReviewResults,
+  readReviewResults,
+  writeReviewResults,
+} from './eval-results';
 export { compareResults } from './eval-compare';
-export type { EvalComparison, EvalTaskDelta } from './eval-compare';
+export type {
+  EvalComparableRun,
+  EvalComparableTask,
+  EvalComparison,
+  EvalTaskDelta,
+} from './eval-compare';
+export { loadReviewTasks, parseReviewTask } from './review-loader';
+export { scoreReviewTask } from './review-score';
+export { runReviewSuite, runReviewTask } from './review-runner';
+export type { ReviewExecutionRequest, ReviewRunOptions } from './review-runner';
+export type {
+  ReviewPlantedBug,
+  ReviewRunResults,
+  ReviewRunTotals,
+  ReviewTask,
+  ReviewTaskResult,
+} from './review-types';
