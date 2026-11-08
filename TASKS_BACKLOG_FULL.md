@@ -84614,15 +84614,15 @@ taskId=COLLAB-EDIT-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-COLLAB-PLAN-01 (Option A); not admitted.
+**Status:** ADMITTED — 2026-11-08. Lane 1, GATEWAY, FRONTEND and I18N. Keith approved the drafted scope, including the numbered-plan rule for the lead, and admitted it on 2026-11-08. Implementation next.
 **Task ID:** COLLAB-EDIT-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition (human):** NOT_READY. Ready when: Keith chooses it. Keith decides.
+**Start condition (human):** READY — Keith chose it after the clear Reject went live and admitted it on 2026-11-08.
 **Depends on:** none recorded; see the ready condition.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
-**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**Primary write scope:** `services/api-gateway/src/orchestration/collaboration.controller.ts`, `services/api-gateway/src/orchestration/collaboration.controller.spec.ts`, `services/api-gateway/src/orchestration/orchestration.service.ts`, `services/api-gateway/src/orchestration/orchestration.contracts.ts`, `services/api-gateway/src/orchestration/collaboration-edit-prompt.spec.ts`, `services/api-gateway/src/orchestration/collaboration-teams.spec.ts`, `services/api-gateway/src/system-agents/system-agent-registry.ts`, `services/api-gateway/src/system-agents/system-agent-registry.spec.ts`, `frontend/components/collaboration/collaboration-page.tsx`, `frontend/components/collaboration/collaboration-view.tsx`, `frontend/lib/collaboration/logic.ts`, `frontend/lib/collaboration.test.ts`, `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`, docs/COLLAB-EDIT-01-CHECKPOINT.md. No migration, no change to the approve, reject or cancel routes; anything else needs a control-plane scope change.
+**Mutexes / resources:** GATEWAY, FRONTEND, I18N. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (one owner-only route and service method, one sentence in the coding lead's instructions, the Team page edit step and message keys; no migration).
 **saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (the built Team page is gated, active development).
 
 **Holds:** The plan's "modify" response: on the Team page the owner can change the task text of a hand-off waiting for approval; the change is stored as that hand-off's prompt, and approve then runs unchanged through the existing guarded route. en / zh-TW / zh-CN. Rough size S to M. In the office (OFFICE-05) the Team desk only links to the Team page, so there is one approval flow.
@@ -84631,7 +84631,14 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] POST /api/collaboration/runs/:id/referrals/:referralId/prompt with body {prompt} has the same guard, entitlement check and owner check as reject (another user's run answers 404, no entitlement is refused); it answers 409 unless the hand-off is pending_approval; the prompt is trimmed, must not be empty and is at most MAX_HANDOFF_TASK_CHARS characters
+- [ ] A new service method replaces only pendingJob.prompt (the rest of pendingJob kept) with a conditional update that only applies while the hand-off is pending_approval, and records an audit event without the prompt text; approve, reject and cancel are unchanged, and approve runs the edited prompt
+- [ ] The coding lead's instructions in system-agent-registry.ts add one sentence: when it asks writer for a change, it lists a numbered plan naming each file and what changes in it; the specs that check the exact text are updated; no other agent definition changes
+- [ ] On the Team page a waiting hand-off has Edit task, which opens a text box filled with the current task, with Save task and Keep as is; Approve and Reject are hidden while editing; saving refreshes the run; a refusal shows the existing notice; existing data-testids kept
+- [ ] New keys in en, zh-TW and zh-CN through the existing translation hook, no hardcoded English
+- [ ] Tests cover each point above; gateway tests and build, and frontend tests, type check and build, pass compared with the known results in the latest checkpoints
+- [ ] The checkpoint carries the CHECKLIST line (EVERY, UI, FLOWS, BACKEND) and the FOLLOWUPS line; the deploy is registered
 - [ ] Not LOCKED by an implementer
 
 ### COLLAB-CANCEL-01 — Cancel a collaboration run from the Team page
