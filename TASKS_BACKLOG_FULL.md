@@ -85652,12 +85652,12 @@ taskId=COLLAB-EVAL-MARKERS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-08. Registered by COLLAB-EVAL-LIVE-01 from Keith's judgement; not admitted.
+**Status:** ADMITTED — 2026-11-08. Lane 1, AI-SERVICE. Keith admitted it on 2026-11-08. Implementation next (Cursor grok-4.7-high).
 **Task ID:** COLLAB-EVAL-MARKERS-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 2-STEP: implementation; checkpoint and LOCK.
-**Start condition (human):** NOT_READY. Ready when Keith admits it. Keith decides.
+**Start condition (human):** READY — Keith admitted it on 2026-11-08.
 **Depends on:** COLLAB-EVAL-LIVE-01.
 **Primary write scope:** `services/ai-service/src/agent-harness/eval/review-tasks/test-asserts-nothing.json`, a spec under `services/ai-service/src/agent-harness/eval/` that rescores the saved answer, and docs/COLLAB-EVAL-MARKERS-01-CHECKPOINT.md.
 **Mutexes / resources:** AI-SERVICE. **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (one task file and a spec).
@@ -85668,7 +85668,11 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] test-asserts-nothing.json gains markers that a correct answer uses (such as "never checks", "can't fail", "cannot fail" and "toBe"); the loader's marker rules still hold
+- [ ] A spec scores the saved COLLAB-EVAL-LIVE-01 answer for test-asserts-nothing as caught, and a send-back that names only src/sum.ts as missed; nothing calls a provider
+- [ ] Nothing outside the task file and the spec changes; the reviewer baseline file is unchanged; ai-service tests and build pass compared with docs/COLLAB-EVAL-LIVE-01-CHECKPOINT.md
+- [ ] The checkpoint carries the CHECKLIST line (EVERY, BACKEND) and the FOLLOWUPS line
 - [ ] Not LOCKED by an implementer
 
 ### COLLAB-FANOUT-01 — Fan-out hand-offs with one approval and a combine step
