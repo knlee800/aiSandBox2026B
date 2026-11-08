@@ -86485,7 +86485,7 @@ taskId=TESTER-WINDOW-CLOSE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-08. Lane 1, STAGING and ENV. Registered and admitted in one record (GOV-OS-04): Keith said close the window so the reviewer eval can run live and approved the draft on 2026-11-08. Host step next.
+**Status:** COMPLETE AND LOCKED — 2026-11-08. LANE-DONE and LOCKED by the control plane; Lane 1 and STAGING and ENV released. Tester window CLOSED: runs off on staging, both env files at the baseline hashes; testerWindowOpen false. Checkpoint: docs/TESTER-WINDOW-CLOSE-01-CHECKPOINT.md.
 **Task ID:** TESTER-WINDOW-CLOSE-01
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION (operational run on staging)
@@ -86502,11 +86502,11 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] Runs off: gateway.env and ai.env at the baseline hashes, GLOBAL_EXECUTION_ENABLED false, gateway ready and AI worker ready
-- [ ] Nothing was running when the files changed; no other host state changed
-- [ ] The key appears in no output
-- [ ] The LOCK record leaves testerWindowOpen false, the three authorization flags false and the lane free
-- [ ] Not LOCKED by an implementer
+- [x] Runs off: gateway.env and ai.env at the baseline hashes, GLOBAL_EXECUTION_ENABLED false, gateway ready and AI worker ready
+- [x] Nothing was running when the files changed; no other host state changed
+- [x] The key appears in no output
+- [x] The LOCK record leaves testerWindowOpen false, the three authorization flags false and the lane free
+- [x] Not LOCKED by an implementer
 
 ### GOV-OS-07 — Rule checklists in briefs and checkpoints
 
