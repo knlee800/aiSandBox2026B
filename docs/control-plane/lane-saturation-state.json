@@ -7,17 +7,20 @@
   "governance": {"owner": "NONE", "state": "UNOWNED"},
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "COLLAB-EVAL-LIVE-01",
+      "mutexes": ["AI-SERVICE", "STAGING", "PROVIDER-LIVE"],
+      "writePaths": [
+        "services/ai-service/src/agent-harness/eval/live/",
+        "services/ai-service/src/agent-harness/eval/baselines/"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "PROVIDER-LIVE",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
-      "runtimeNeeds": []
+      "runtimeNeeds": ["STAGING", "PROVIDER-LIVE"]
     },
     "lane2": {
       "state": "EMPTY",
@@ -3543,23 +3546,26 @@
       "taskId": "COLLAB-EVAL-LIVE-01",
       "nature": "IMPLEMENTATION",
       "lifecycle": "4-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "OPTIONAL",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
       "dependsOn": ["COLLAB-EVAL-01"],
-      "mutexes": [],
-      "writePaths": [],
+      "mutexes": ["AI-SERVICE", "STAGING", "PROVIDER-LIVE"],
+      "writePaths": [
+        "services/ai-service/src/agent-harness/eval/live/",
+        "services/ai-service/src/agent-harness/eval/baselines/"
+      ],
       "hotfiles": [],
       "i18n": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
-      "evidenceClass": "LOCAL-TESTS",
+      "evidenceClass": "PROVIDER-LIVE",
       "exclusiveCapacity": false,
-      "runtimeNeeds": [],
-      "admissionUncertain": true,
-      "writeSetPrecision": "PROVISIONAL"
+      "runtimeNeeds": ["STAGING", "PROVIDER-LIVE"],
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
     },
     {
       "taskId": "COLLAB-FANOUT-01",
@@ -4604,8 +4610,8 @@
   ],
   "runtimeAuthorization": {
     "localRuntimeAuthorized": true,
-    "stagingAuthorized": false,
-    "providerLiveAuthorized": false,
+    "stagingAuthorized": true,
+    "providerLiveAuthorized": true,
     "creditAuthorized": false,
     "testerWindowOpen": false
   }

@@ -85619,23 +85619,31 @@ taskId=COLLAB-EVAL-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-08. Registered by COLLAB-EVAL-01; not admitted.
+**Status:** ADMITTED — 2026-11-08. Lane 1, AI-SERVICE, STAGING and PROVIDER-LIVE. Keith approved the stage-start plan and the 150,000-token cap and admitted it on 2026-11-08, after TESTER-WINDOW-CLOSE-01 locked. Live runner next (Cursor grok-4.7-high).
 **Task ID:** COLLAB-EVAL-LIVE-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP: registration here; stage-start (the live model call for a reviewer step, with the review profile's tools and the task's reviewerPrompt as projectInstructions, and the run's token cap); implementation and deploy of the eval code; the run on the staging host with a separate LOCK record (PROVIDER-LIVE).
-**Start condition (human):** NOT_READY. Ready when: COLLAB-EVAL-01 is COMPLETE AND LOCKED, the tester window is closed (GOV-OS-06 refuses PROVIDER-LIVE work while it is open), and Keith approves the run and its token cap. Keith decides.
+**Start condition (human):** READY — COLLAB-EVAL-01 is COMPLETE AND LOCKED, the tester window is closed (TESTER-WINDOW-CLOSE-01), and Keith approved the run and its 150,000-token cap on 2026-11-08.
 **Depends on:** COLLAB-EVAL-01.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Expected: services/ai-service/src/agent-harness/eval/live/ and eval/baselines/.
-**Mutexes / resources:** set at admission (expected AI-SERVICE, STAGING and PROVIDER-LIVE, as for HARNESS-EVAL-LIVE-01). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS; expected PROVIDER-LIVE). **Revert isolation:** assessed at admission.
+**Primary write scope:** `services/ai-service/src/agent-harness/eval/live/` (new reviewer live runner files and their spec; the harness live runner files may change only to share code with it, keeping their behavior and tests) and `services/ai-service/src/agent-harness/eval/baselines/` (the reviewer results file, added at LOCK), plus docs/COLLAB-EVAL-LIVE-01-CHECKPOINT.md. Nothing else in ai-service: no change to the agent loop, tool handlers, worker, review tasks, scoring or package files.
+**Mutexes / resources:** AI-SERVICE, STAGING, PROVIDER-LIVE (no ENV or CREDIT: the runner gets the stored test key only in its own environment on the host; no settings change and no user credits). **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** PROVIDER-LIVE. **Revert isolation:** acceptable (new runner under eval/live only; nothing at run time imports it; deploys use the standard block).
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (the gated Team page, active development).
 
 **Holds:** run the six reviewer tasks against the real provider on the staging host with the stored test key, as HARNESS-EVAL-LIVE-01 did; report bugs caught out of planted, the clean-task result, model calls, tokens and credits per review, and each answer for Keith to judge; save the result as the reviewer baseline in eval/baselines/. The result is the evidence Keith uses to decide COLLAB-FANOUT-01.
+**Stage-start (approved by Keith 2026-11-08):** the live reviewer runner builds each model call the way the worker builds a coding-team reviewer step: buildExecutionPromptParts with the task's hand-off task as the prompt, the workspace file list from the task's files, no global instructions, the task's reviewerPrompt as projectInstructions and useHarness true (execution intent as the worker resolves it for a team step); buildAIExecutionRequest with provider anthropic; the tools selectAdvertisedAgentHarnessTools gives the review profile (read_file, list_files, search_workspace, run_validation; no write or delete); the same AnthropicAdapter and key handling as the harness live runner (key from the environment only, never printed or written); model claude-opus-5-5, maxRunTokens 60000, step limit 8; a whole-run cap of 150,000 tokens, credits at 1 per 1K tokens, tasks after the cap recorded as not run; mocked tests only in the repository. Then deploy to staging with the standard block, run the six tasks once from the host as the service user with the stored test key, repeat only tasks with an unclear result within the cap, save the results under eval/baselines/, and LOCK in a separate record with Keith's judgement of each answer.
 **Named in:** docs/COLLAB-EVAL-01-CHECKPOINT.md.
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] A live reviewer runner under eval/live/ builds the reviewer model call as the worker does for a coding-team reviewer step (reviewerPrompt as projectInstructions, review-profile tools only, claude-opus-5-5, maxRunTokens 60000, step limit 8); the key is read only from the environment and appears in no output, results file or log
+- [ ] A whole-run cap of 150,000 tokens; tasks after the cap are recorded as not run
+- [ ] Mocked tests cover the request shape (projectInstructions, advertised tools without write or delete), the cap and key scrubbing; nothing in the repository calls a provider; ai-service tests and build pass compared with docs/COLLAB-EVAL-01-CHECKPOINT.md
+- [ ] Nothing outside eval/live/ and eval/baselines/ changes in ai-service
+- [ ] Deployed to staging with the standard checks; the six tasks ran on the host within the cap; the results file is saved in eval/baselines/ and recorded with bugs caught out of planted, the clean-task result, model calls, tokens and credits per review
+- [ ] Each reviewer answer is shown to Keith and his judgement is recorded in the checkpoint
+- [ ] The checkpoint carries the CHECKLIST line (EVERY, BACKEND, DEPLOY, LIVE) and the FOLLOWUPS line
 - [ ] Not LOCKED by an implementer
 
 ### COLLAB-FANOUT-01 — Fan-out hand-offs with one approval and a combine step
