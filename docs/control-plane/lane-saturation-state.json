@@ -7,13 +7,15 @@
   "governance": {"owner": "NONE", "state": "UNOWNED"},
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "COLLAB-EVAL-01",
+      "mutexes": ["AI-SERVICE"],
+      "writePaths": [
+        "services/ai-service/src/agent-harness/eval/"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -3518,15 +3520,17 @@
     {
       "taskId": "COLLAB-EVAL-01",
       "nature": "IMPLEMENTATION",
-      "lifecycle": "4-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "lifecycle": "3-STEP",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "OPTIONAL",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
       "dependsOn": [],
-      "mutexes": [],
-      "writePaths": [],
+      "mutexes": ["AI-SERVICE"],
+      "writePaths": [
+        "services/ai-service/src/agent-harness/eval/"
+      ],
       "hotfiles": [],
       "i18n": false,
       "sharedContractIds": [],
@@ -3534,8 +3538,8 @@
       "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "runtimeNeeds": [],
-      "admissionUncertain": true,
-      "writeSetPrecision": "PROVISIONAL"
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
     },
     {
       "taskId": "COLLAB-FANOUT-01",

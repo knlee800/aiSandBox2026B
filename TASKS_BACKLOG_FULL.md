@@ -85586,15 +85586,15 @@ taskId=COLLAB-EVAL-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered from Keith in chat, Agent Teams assessment and limits; not admitted.
+**Status:** ADMITTED — 2026-11-08. Lane 1, AI-SERVICE. Keith approved the drafted scope (a reviewer eval with planted bugs and a clean control, scripted models only, 3-STEP) and admitted it on 2026-11-08. Implementation next.
 **Task ID:** COLLAB-EVAL-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
-**Lifecycle:** 4-STEP.
-**Start condition (human):** NOT_READY. Ready when: before COLLAB-FANOUT-01 or COLLAB-REVIEWERS-01 is chosen. Keith decides.
+**Lifecycle:** 3-STEP (Keith approved the change from 4-STEP on 2026-11-08: eval tooling only, like HARNESS-EVAL-01).
+**Start condition (human):** READY — Keith chose it after Edit task went live and admitted it on 2026-11-08.
 **Depends on:** none.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
-**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**Primary write scope:** `services/ai-service/src/agent-harness/eval/` (new and changed files, including a new review-tasks folder), docs/COLLAB-EVAL-01-CHECKPOINT.md. Nothing outside eval/: no change to the agent loop, tool handlers, worker, gateway, agent instructions or package files; anything else needs a control-plane scope change.
+**Mutexes / resources:** AI-SERVICE. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** LOCAL-TESTS. **Revert isolation:** acceptable (eval tooling and task files under eval/ only; nothing at run time imports it).
 **saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md (the gated Team page, active development).
 
 **Holds:** Planted-bug tasks for the coding team; measure what one reviewer catches and the cost per run, as a baseline for parallel reviewers and fan-out. Reverses the 2026-11-05 drop of the collaboration eval (Keith, 2026-11-05).
@@ -85603,7 +85603,14 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] A reviewer task format in eval/: one JSON file per task in a new review-tasks folder, checked by a loader that rejects unknown fields and duplicate ids; each task holds the starting project files with the writer's change already in them, the hand-off task, the reviewer prompt stored in the task (the reviewer's instructions and team brief as the gateway builds them for a reviewer hand-off; a spec checks the instruction text against services/api-gateway/src/system-agents/system-agent-registry.ts), and planted bugs, each with an id, a kind, a file and marker text; a clean task has none
+- [ ] A reviewer run goes through the real loop and tool handlers with the tools the review profile gets (read, list, search and the three validation commands; no write or delete); any write or delete attempt counts as a safety violation
+- [ ] Scoring: a planted bug is caught when the final answer sends the work back with <handoff to="writer"> and names the bug's file and one of its markers; the clean task passes only when the answer does not send it back; each run records caught out of planted, clean-task send-backs, model calls, tool calls, tokens, credits and safety violations; results files and the run-to-run comparison reuse the existing formats
+- [ ] Six seed tasks: an off-by-one, a wrong comparison, a missing null check, a test that asserts nothing, a security slip (a path outside the workspace or a logged secret), and one clean change
+- [ ] Scripted-model tests cover a catch, a miss, the right markers in the wrong file, a send-back without markers, a send-back on the clean task and a write attempt; nothing calls a provider or the network; ai-service tests and build pass compared with the latest ai-service checkpoint
+- [ ] Nothing outside eval/ changes: the agent loop, tool handlers, worker, gateway, agent instructions and package files are unchanged
+- [ ] The checkpoint carries the CHECKLIST line (EVERY, BACKEND) and the FOLLOWUPS line; COLLAB-EVAL-LIVE-01 (the first real run on the staging host, PROVIDER-LIVE, after the tester window closes) is registered
 - [ ] Not LOCKED by an implementer
 
 ### COLLAB-FANOUT-01 — Fan-out hand-offs with one approval and a combine step
