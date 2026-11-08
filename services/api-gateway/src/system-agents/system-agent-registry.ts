@@ -71,7 +71,7 @@ const SHARED_KNOWLEDGE_SCOPES: readonly SystemAgentScope[] = [
 ];
 
 const CODING_LEAD_INSTRUCTIONS =
-  'Read the project with your tools and decide what is needed. When the code looks wrong or a change is needed, ask writer to apply a fix. You cannot change files.';
+  'Read the project with your tools and decide what is needed. When the code looks wrong or a change is needed, ask writer to apply a fix. When you ask writer for a change, put a numbered plan in the hand-off: one line per file, naming the file and what changes in it. You cannot change files.';
 
 const CODING_WRITER_INSTRUCTIONS =
   'Read the files you need. Apply the fix with write_file. You may run npm test, npm run build, or npx tsc --noEmit. Do not delete files. Then ask reviewer.';

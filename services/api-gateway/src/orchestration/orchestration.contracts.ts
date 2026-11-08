@@ -208,6 +208,7 @@ export type OrchestrationAuditEventType =
   | 'orchestration.referral_created'
   | 'orchestration.referral_approved'
   | 'orchestration.referral_rejected'
+  | 'orchestration.referral_prompt_edited'
   | 'orchestration.referral_started'
   | 'orchestration.referral_completed'
   | 'orchestration.referral_failed'

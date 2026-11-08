@@ -5,6 +5,7 @@ import {
   CheckIcon,
   CodeBracketIcon,
   ExclamationTriangleIcon,
+  PencilSquareIcon,
   UserGroupIcon,
   XCircleIcon,
   XMarkIcon,
@@ -48,6 +49,10 @@ export interface CollaborationViewLabels {
   rejectPrompt: string;
   rejectConfirm: string;
   cancelReject: string;
+  editTask: string;
+  editTaskLabel: string;
+  saveTask: string;
+  keepTask: string;
   runEndedByReject: string;
   cancelRun: string;
   cancelRunPrompt: string;
@@ -168,6 +173,12 @@ export default function CollaborationView(props: {
   onCancelReject: () => void;
   onConfirmReject: (referralId: string) => void;
   onRejectReasonChange: (value: string) => void;
+  editReferralId: string | null;
+  editPrompt: string;
+  onBeginEdit: (referralId: string, currentPrompt: string) => void;
+  onCancelEdit: () => void;
+  onEditPromptChange: (value: string) => void;
+  onConfirmEdit: (referralId: string) => void;
   selectedRunActive: boolean;
   confirmingCancel: boolean;
   onBeginCancel: () => void;
@@ -365,6 +376,8 @@ export default function CollaborationView(props: {
           <ol className="mt-2 space-y-3">
             {props.handoffs.map((handoff) => {
               const rejecting = props.rejectReferralId === handoff.referralId;
+              const editing = props.editReferralId === handoff.referralId;
+              const canEditTask = handoff.prompt !== null && handoff.prompt.length > 0;
               const showWork =
                 !handoff.waiting &&
                 (handoff.canChangeFiles ||
@@ -623,7 +636,44 @@ export default function CollaborationView(props: {
                   ) : null}
                   {handoff.waiting ? (
                     <div className="mt-3 flex min-w-0 flex-wrap gap-2">
-                      {rejecting ? (
+                      {editing ? (
+                        <div className="flex min-w-0 w-full flex-col gap-2">
+                          <label
+                            htmlFor={`collaboration-edit-task-input-${handoff.referralId}`}
+                            className="text-sm text-gray-700"
+                          >
+                            {labels.editTaskLabel}
+                          </label>
+                          <textarea
+                            id={`collaboration-edit-task-input-${handoff.referralId}`}
+                            data-testid="collaboration-edit-task-input"
+                            value={props.editPrompt}
+                            autoFocus
+                            rows={4}
+                            onChange={(event) => props.onEditPromptChange(event.target.value)}
+                            className="w-full max-w-full resize-y rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-blue-300 focus:bg-white focus:outline-none"
+                          />
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              data-testid="collaboration-edit-task-save"
+                              disabled={props.deciding || props.editPrompt.trim().length === 0}
+                              onClick={() => props.onConfirmEdit(handoff.referralId)}
+                              className="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+                            >
+                              {labels.saveTask}
+                            </button>
+                            <button
+                              type="button"
+                              data-testid="collaboration-edit-task-keep"
+                              onClick={props.onCancelEdit}
+                              className="rounded-lg px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100"
+                            >
+                              {labels.keepTask}
+                            </button>
+                          </div>
+                        </div>
+                      ) : rejecting ? (
                         <div className="flex min-w-0 w-full flex-col gap-2">
                           <p className="text-sm text-gray-700">{labels.rejectPrompt}</p>
                           <label
@@ -706,6 +756,20 @@ export default function CollaborationView(props: {
                             <XMarkIcon className="h-4 w-4" aria-hidden="true" />
                             {labels.reject}
                           </button>
+                          {canEditTask ? (
+                            <button
+                              type="button"
+                              data-testid="collaboration-edit-task"
+                              disabled={props.deciding}
+                              onClick={() =>
+                                props.onBeginEdit(handoff.referralId, handoff.prompt ?? '')
+                              }
+                              className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                            >
+                              <PencilSquareIcon className="h-4 w-4" aria-hidden="true" />
+                              {labels.editTask}
+                            </button>
+                          ) : null}
                         </>
                       )}
                     </div>

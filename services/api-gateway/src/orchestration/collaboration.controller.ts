@@ -57,6 +57,7 @@ import {
   parseCollaborationSourceMarkers,
   type CitationDocument,
 } from './collaboration-citations';
+import { MAX_HANDOFF_TASK_CHARS } from './handoff-request';
 import { OrchestrationService } from './orchestration.service';
 
 const USABLE_SESSION_STATUSES: readonly SessionStatus[] = [
@@ -141,6 +142,7 @@ export interface CollaborationStartResponse {
  * GET  /api/collaboration/runs/:id
  * POST /api/collaboration/runs/:id/referrals/:referralId/approve
  * POST /api/collaboration/runs/:id/referrals/:referralId/reject
+ * POST /api/collaboration/runs/:id/referrals/:referralId/prompt
  * POST /api/collaboration/runs/:id/cancel
  *
  * team is optional and only coding, chief-of-staff, or advisors. Missing means coding.
@@ -356,6 +358,44 @@ export class CollaborationController {
     }
   }
 
+  @Post('runs/:id/referrals/:referralId/prompt')
+  @HttpCode(HttpStatus.OK)
+  async updateReferralPrompt(
+    @AuthenticatedUser() identity: ApiKeyIdentity,
+    @Param('id') collaborationRunId: string,
+    @Param('referralId') referralId: string,
+    @Body() body: unknown,
+  ): Promise<CollaborationHandoffView> {
+    const caller = this.assertEntitled(identity);
+    await this.requireOwnedRun(collaborationRunId, caller.userId);
+    const prompt = this.readReferralPrompt(body);
+    try {
+      const referral = await this.orchestrationService.updatePendingReferralPrompt({
+        collaborationRunId,
+        referralId,
+        prompt,
+        editedBy: caller.userId,
+      });
+      const facts = await this.orchestrationService.readCollaborationHandoffFacts(
+        collaborationRunId,
+      );
+      const gate = await this.orchestrationService.readCollaborationTestsGate(
+        collaborationRunId,
+        referral.referralId,
+      );
+      const documents = await this.citationDocuments(caller.userId, [referral]);
+      return this.toHandoff(
+        referral,
+        facts.get(referral.referralId),
+        gate,
+        caller.userId,
+        documents,
+      );
+    } catch (error) {
+      this.raise(error);
+    }
+  }
+
   @Post('runs/:id/cancel')
   @HttpCode(HttpStatus.OK)
   async cancelRun(
@@ -546,6 +586,23 @@ export class CollaborationController {
       throw new BadRequestException('reason must be at most 2000 characters');
     }
     return reason;
+  }
+
+  private readReferralPrompt(body: unknown): string {
+    const record = this.asRecord(body);
+    if (typeof record.prompt !== 'string') {
+      throw new BadRequestException('prompt is required');
+    }
+    const prompt = record.prompt.trim();
+    if (prompt.length === 0) {
+      throw new BadRequestException('prompt is required');
+    }
+    if (prompt.length > MAX_HANDOFF_TASK_CHARS) {
+      throw new BadRequestException(
+        `prompt must be at most ${MAX_HANDOFF_TASK_CHARS} characters`,
+      );
+    }
+    return prompt;
   }
 
   private asRecord(value: unknown): Record<string, unknown> {

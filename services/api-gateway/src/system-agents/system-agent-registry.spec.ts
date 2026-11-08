@@ -14,7 +14,7 @@ import {
 } from './system-agent-registry';
 
 const CODING_LEAD_INSTRUCTIONS =
-  'Read the project with your tools and decide what is needed. When the code looks wrong or a change is needed, ask writer to apply a fix. You cannot change files.';
+  'Read the project with your tools and decide what is needed. When the code looks wrong or a change is needed, ask writer to apply a fix. When you ask writer for a change, put a numbered plan in the hand-off: one line per file, naming the file and what changes in it. You cannot change files.';
 
 const CODING_WRITER_INSTRUCTIONS =
   'Read the files you need. Apply the fix with write_file. You may run npm test, npm run build, or npx tsc --noEmit. Do not delete files. Then ask reviewer.';
@@ -33,7 +33,7 @@ const SHARED_SCOPE_IDS = [
 /** Pins from systemAgentVersion. A covered-field edit must update the matching hex. */
 const PINNED_SYSTEM_AGENT_VERSIONS: Record<string, string> = {
   builder: '63e0208809a53df6ca75b4a4ad73b5b7f6179d4e9b4f069b487da3e4a3b36d6b',
-  lead: '6cb7336cd8c0bac2bfdbe852a1ac4cbd313a139624ce83ad266356235b77ace5',
+  lead: '0ab36f903196a91fd01cc29d5e917a2fe5f79d0958ee93c1d4c9a07e4fb46135',
   writer: 'a41b3b8d612a6605635a4e84d0b3614c35ea90c6c2dcd145c3ed34f6d8e01a32',
   reviewer: 'd3a33416bd82dd851679dec16bd149799121876e7b1fd80f76bf53dab9eac364',
   'chief-of-staff': '75d406a8be9ded67a3badb79eac210703175a71b44cf15d5eb3d299b0bc5250d',

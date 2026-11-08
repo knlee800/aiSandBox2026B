@@ -1043,7 +1043,11 @@
     "productStrategySummary": "根据你的知识文档（含市场资料）回答幕僚长。每项陈述附上来源；没有来源时写明没有来源。不能改文件、交接或对外发送任何东西。",
     "technologyAdvisorSummary": "根据你的知识文档（含技术版图）回答幕僚长，并可读取这个项目的文件。文档陈述附上来源；没有来源时写明没有来源。不能改文件、交接或对外发送任何东西。",
     "fileAccessAdvisors": "这些角色只能读取。不能改文件，也不能采取外部行动。幕僚长可把一个问题交给一位顾问，那一步会等你批准。",
-    "chainEmptyAdvisors": "还没有步骤。开始一个任务，就会先问顾问团队。"
+    "chainEmptyAdvisors": "还没有步骤。开始一个任务，就会先问顾问团队。",
+    "editTask": "编辑任务",
+    "editTaskLabel": "这一步的任务",
+    "saveTask": "保存任务",
+    "keepTask": "保持不变"
   },
   "office": {
     "title": "办公室",

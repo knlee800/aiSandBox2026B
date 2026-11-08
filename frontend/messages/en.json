@@ -1043,7 +1043,11 @@
     "productStrategySummary": "Answers the Chief of Staff from your Knowledge documents, including market data. Cites each claim and writes No source when a claim has none. Cannot change files, hand off, or send anything.",
     "technologyAdvisorSummary": "Answers the Chief of Staff from your Knowledge documents, including the technology landscape, and can read this project's files. Cites documents and writes No source when a claim has none. Cannot change files, hand off, or send anything.",
     "fileAccessAdvisors": "These roles can only read. They cannot change files or take an outside action. The Chief of Staff may hand one question to one advisor, and that step waits for your approval.",
-    "chainEmptyAdvisors": "No steps yet. Start a task to ask the advisors."
+    "chainEmptyAdvisors": "No steps yet. Start a task to ask the advisors.",
+    "editTask": "Edit task",
+    "editTaskLabel": "Task for this step",
+    "saveTask": "Save task",
+    "keepTask": "Keep as is"
   },
   "office": {
     "title": "Office",

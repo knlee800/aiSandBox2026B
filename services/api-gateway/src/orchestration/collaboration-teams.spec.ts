@@ -19,7 +19,7 @@ describe('BIZ-01 team registry', () => {
     expect(coding.roles.map((role) => role.toolProfile)).toEqual(['read', 'write', 'review']);
     expect(coding.roles.every((role) => role.knowledgeScopeIds.length === 0)).toBe(true);
     expect(coding.roles.map((role) => role.instructions)).toEqual([
-      'Read the project with your tools and decide what is needed. When the code looks wrong or a change is needed, ask writer to apply a fix. You cannot change files.',
+      'Read the project with your tools and decide what is needed. When the code looks wrong or a change is needed, ask writer to apply a fix. When you ask writer for a change, put a numbered plan in the hand-off: one line per file, naming the file and what changes in it. You cannot change files.',
       'Read the files you need. Apply the fix with write_file. You may run npm test, npm run build, or npx tsc --noEmit. Do not delete files. Then ask reviewer.',
       'Read the real files. Run npm test, npm run build, or npx tsc --noEmit when that checks the change. Name each real bug with an input that shows it. If you find a real bug, send the work back to writer with a specific list of what to fix. Otherwise give the verdict and finish. You cannot change files.',
     ]);

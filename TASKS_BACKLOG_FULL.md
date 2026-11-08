@@ -84614,7 +84614,7 @@ taskId=COLLAB-EDIT-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — 2026-11-08. Lane 1, GATEWAY, FRONTEND and I18N. Keith approved the drafted scope, including the numbered-plan rule for the lead, and admitted it on 2026-11-08. Implementation next.
+**Status:** COMPLETE AND LOCKED — 2026-11-08. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY, FRONTEND and I18N released. Edit task on the Team page (an owner-only route edits a waiting hand-off's task, stored as its prompt; approve runs it unchanged) and the coding lead hands the writer a numbered file-level plan; gateway 2813 passed and frontend 898 passed. Not deployed; STAGING-DEPLOY-19 registered. Checkpoint: docs/COLLAB-EDIT-01-CHECKPOINT.md.
 **Task ID:** COLLAB-EDIT-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -84632,14 +84632,14 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] POST /api/collaboration/runs/:id/referrals/:referralId/prompt with body {prompt} has the same guard, entitlement check and owner check as reject (another user's run answers 404, no entitlement is refused); it answers 409 unless the hand-off is pending_approval; the prompt is trimmed, must not be empty and is at most MAX_HANDOFF_TASK_CHARS characters
-- [ ] A new service method replaces only pendingJob.prompt (the rest of pendingJob kept) with a conditional update that only applies while the hand-off is pending_approval, and records an audit event without the prompt text; approve, reject and cancel are unchanged, and approve runs the edited prompt
-- [ ] The coding lead's instructions in system-agent-registry.ts add one sentence: when it asks writer for a change, it lists a numbered plan naming each file and what changes in it; the specs that check the exact text are updated; no other agent definition changes
-- [ ] On the Team page a waiting hand-off has Edit task, which opens a text box filled with the current task, with Save task and Keep as is; Approve and Reject are hidden while editing; saving refreshes the run; a refusal shows the existing notice; existing data-testids kept
-- [ ] New keys in en, zh-TW and zh-CN through the existing translation hook, no hardcoded English
-- [ ] Tests cover each point above; gateway tests and build, and frontend tests, type check and build, pass compared with the known results in the latest checkpoints
-- [ ] The checkpoint carries the CHECKLIST line (EVERY, UI, FLOWS, BACKEND) and the FOLLOWUPS line; the deploy is registered
-- [ ] Not LOCKED by an implementer
+- [x] POST /api/collaboration/runs/:id/referrals/:referralId/prompt with body {prompt} has the same guard, entitlement check and owner check as reject (another user's run answers 404, no entitlement is refused); it answers 409 unless the hand-off is pending_approval; the prompt is trimmed, must not be empty and is at most MAX_HANDOFF_TASK_CHARS characters
+- [x] A new service method replaces only pendingJob.prompt (the rest of pendingJob kept) with a conditional update that only applies while the hand-off is pending_approval, and records an audit event without the prompt text; approve, reject and cancel are unchanged, and approve runs the edited prompt
+- [x] The coding lead's instructions in system-agent-registry.ts add one sentence: when it asks writer for a change, it lists a numbered plan naming each file and what changes in it; the specs that check the exact text are updated; no other agent definition changes
+- [x] On the Team page a waiting hand-off has Edit task, which opens a text box filled with the current task, with Save task and Keep as is; Approve and Reject are hidden while editing; saving refreshes the run; a refusal shows the existing notice; existing data-testids kept
+- [x] New keys in en, zh-TW and zh-CN through the existing translation hook, no hardcoded English
+- [x] Tests cover each point above; gateway tests and build, and frontend tests, type check and build, pass compared with the known results in the latest checkpoints
+- [x] The checkpoint carries the CHECKLIST line (EVERY, UI, FLOWS, BACKEND) and the FOLLOWUPS line; the deploy is registered
+- [x] Not LOCKED by an implementer
 
 ### COLLAB-CANCEL-01 — Cancel a collaboration run from the Team page
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -85497,6 +85497,31 @@ nature=IMPLEMENTATION
 - [x] Nothing active, queued or running before runs are switched off; Keith was told runs pause; the saved window gateway.env is restored byte for byte, runs are back on, and the tester window stays open
 - [x] The checkpoint carries the CHECKLIST line (EVERY, DEPLOY) and the FOLLOWUPS line
 - [x] Not LOCKED by an implementer
+
+### STAGING-DEPLOY-19 — Deploy Edit task (COLLAB-EDIT-01) during the tester window
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-19
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-08. Registered by COLLAB-EDIT-01; not admitted.
+**Task ID:** STAGING-DEPLOY-19
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (operational run; no code)
+**Lifecycle:** 3-STEP: registration here; admission when Keith picks the time; pre-check and deploy from the host; separate LOCK record (STAGING-RUNTIME).
+**Start condition (human):** NOT_READY. Ready when: COLLAB-EDIT-01 is COMPLETE AND LOCKED and Keith approves the deploy and its timing; any other locked frontend or gateway change by then rides along. Keith decides.
+**Depends on:** COLLAB-EDIT-01.
+**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Expected: none in the repository beyond records; host state on ainow-staging-01 (gateway and frontend release).
+**Mutexes / resources:** set at admission (expected STAGING and ENV). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS; expected STAGING-RUNTIME). **Revert isolation:** assessed at admission.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+
+**Holds:** deploy the commit that holds COLLAB-EDIT-01 with the DEPLOY checklist, including item 7 while the tester window is open (save the window gateway.env, runs off for the deploy only, restore it byte for byte, check the window env hashes and that runs are back on), Keith told first, health, guard and page checks, the static key refused. After the deploy, the new prompt route answers 401 without a session and the served Team page holds the edit text (editTask and saveTask), read from the host. The coding lead now asks for a numbered plan; Keith checks one waiting hand-off on the Team page.
+**Named in:** docs/COLLAB-EDIT-01-CHECKPOINT.md.
+
+#### Acceptance criteria
+
+- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Not LOCKED by an implementer
 
 ### GOV-ARCH-SYNC-01 — Sync ARCHITECTURE.md with the built collaboration and office
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

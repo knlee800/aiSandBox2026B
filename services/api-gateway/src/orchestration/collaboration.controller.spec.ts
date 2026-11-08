@@ -38,6 +38,7 @@ import {
   WORK_DIFF_PROMPT_HEADING,
   WORK_DIFF_PROMPT_UNAVAILABLE,
 } from './collaboration-work-diff';
+import { MAX_HANDOFF_TASK_CHARS } from './handoff-request';
 
 const OWNER_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const OTHER_ID = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
@@ -1254,6 +1255,118 @@ describe('CollaborationController login routes', () => {
       showUnsourced: false,
     });
     expect(findActiveOwnedByIds).not.toHaveBeenCalled();
+  });
+
+  describe('COLLAB-EDIT-01 edit a waiting hand-off prompt', () => {
+    function promptPath(started: { collaborationRunId: string; referralId: string }) {
+      return `/api/collaboration/runs/${started.collaborationRunId}/referrals/${started.referralId}/prompt`;
+    }
+
+    it('lets the owner replace a waiting hand-off with trimmed text', async () => {
+      const started = await startRun();
+      const edit = jest.spyOn(app.get(OrchestrationService), 'updatePendingReferralPrompt');
+
+      const response = await http()
+        .post(promptPath(started))
+        .send({ prompt: '  edited task  ', editedBy: 'someone-else' })
+        .expect(200);
+
+      expect(edit).toHaveBeenCalledWith({
+        collaborationRunId: started.collaborationRunId,
+        referralId: started.referralId,
+        prompt: 'edited task',
+        editedBy: OWNER_ID,
+      });
+      expect(response.body.prompt).toBe('edited task');
+      expect(response.body.status).toBe('pending_approval');
+      expect(response.body.referralId).toBe(started.referralId);
+      const stored = referrals.get(started.referralId);
+      expect(stored?.pendingJob?.prompt).toBe('edited task');
+      expect(stored?.pendingJob?.provider).toBe('stub');
+      expect(stored?.status).toBe('pending_approval');
+
+      const atLimit = 'p'.repeat(MAX_HANDOFF_TASK_CHARS);
+      const limited = await http()
+        .post(promptPath(started))
+        .send({ prompt: atLimit })
+        .expect(200);
+      expect(limited.body.prompt).toBe(atLimit);
+    });
+
+    it('returns 409 when the hand-off is not waiting', async () => {
+      const started = await startRun();
+      const stored = referrals.get(started.referralId);
+      expect(stored?.pendingJob?.prompt).toBe(TASK);
+      stored!.status = 'in_progress';
+
+      await http().post(promptPath(started)).send({ prompt: 'too late' }).expect(409);
+
+      expect(referrals.get(started.referralId)?.status).toBe('in_progress');
+      expect(referrals.get(started.referralId)?.pendingJob?.prompt).toBe(TASK);
+    });
+
+    it('returns 404 for another user and does not call the service', async () => {
+      const started = await startRun();
+      const edit = jest.spyOn(app.get(OrchestrationService), 'updatePendingReferralPrompt');
+
+      await http(OTHER_ID).post(promptPath(started)).send({ prompt: 'nope' }).expect(404);
+
+      expect(edit).not.toHaveBeenCalled();
+      expect(referrals.get(started.referralId)?.pendingJob?.prompt).toBe(TASK);
+      expect(referrals.get(started.referralId)?.status).toBe('pending_approval');
+    });
+
+    it('returns 400 for empty or whitespace text', async () => {
+      const started = await startRun();
+      const edit = jest.spyOn(app.get(OrchestrationService), 'updatePendingReferralPrompt');
+
+      await http().post(promptPath(started)).send({ prompt: '' }).expect(400);
+      await http().post(promptPath(started)).send({ prompt: ' \n\t ' }).expect(400);
+
+      expect(edit).not.toHaveBeenCalled();
+      expect(referrals.get(started.referralId)?.pendingJob?.prompt).toBe(TASK);
+    });
+
+    it('returns 400 when the text is longer than the hand-off limit', async () => {
+      const started = await startRun();
+      const edit = jest.spyOn(app.get(OrchestrationService), 'updatePendingReferralPrompt');
+
+      await http()
+        .post(promptPath(started))
+        .send({ prompt: 'x'.repeat(MAX_HANDOFF_TASK_CHARS + 1) })
+        .expect(400);
+
+      expect(edit).not.toHaveBeenCalled();
+      expect(referrals.get(started.referralId)?.pendingJob?.prompt).toBe(TASK);
+    });
+
+    it('returns 400 when prompt is missing or not a string', async () => {
+      const started = await startRun();
+      const edit = jest.spyOn(app.get(OrchestrationService), 'updatePendingReferralPrompt');
+
+      await http().post(promptPath(started)).send({}).expect(400);
+      await http().post(promptPath(started)).send({ prompt: 12 }).expect(400);
+      await http().post(promptPath(started)).send({ prompt: null }).expect(400);
+      await http().post(promptPath(started)).send({ prompt: { text: 'no' } }).expect(400);
+
+      expect(edit).not.toHaveBeenCalled();
+      expect(referrals.get(started.referralId)?.pendingJob?.prompt).toBe(TASK);
+    });
+
+    it('refuses an unentitled caller the same way as reject', async () => {
+      const started = await startRun();
+      const edit = jest.spyOn(app.get(OrchestrationService), 'updatePendingReferralPrompt');
+
+      await http(OWNER_ID, false)
+        .post(promptPath(started))
+        .send({ prompt: 'not allowed' })
+        .expect(403);
+
+      expect(edit).not.toHaveBeenCalled();
+      expect(referrals.get(started.referralId)?.status).toBe('pending_approval');
+      expect(referrals.get(started.referralId)?.pendingJob?.prompt).toBe(TASK);
+      expect(queue.enqueueExecution).not.toHaveBeenCalled();
+    });
   });
 
   describe('BIZ-01 start team', () => {

@@ -48,6 +48,15 @@ const idleCancel = {
   onConfirmCancel: () => {},
 };
 
+const idleEdit = {
+  editReferralId: null as string | null,
+  editPrompt: '',
+  onBeginEdit: () => {},
+  onCancelEdit: () => {},
+  onEditPromptChange: () => {},
+  onConfirmEdit: () => {},
+};
+
 function openTag(markup: string, testId: string): string {
   const marker = `data-testid="${testId}"`;
   const at = markup.indexOf(marker);
@@ -142,6 +151,7 @@ function renderChain(handoffs: Array<{
       onConfirmReject: () => {},
       onRejectReasonChange: () => {},
       ...idleCancel,
+      ...idleEdit,
     }),
   );
 }
@@ -203,6 +213,7 @@ describe('collaboration page', () => {
         onConfirmReject: () => {},
         onRejectReasonChange: () => {},
         ...idleCancel,
+      ...idleEdit,
       }),
     );
     assert.equal(collaborationRefusal(402, 'Insufficient credit balance'), 'credits');
@@ -745,6 +756,57 @@ describe('collaboration page', () => {
     assert.equal(zhTwMessages.collaboration.cancelReject, '不要拒絕');
     assert.equal(zhCnMessages.collaboration.cancelReject, '不要拒绝');
   });
+
+  test('Edit task shows only on a waiting hand-off that has a task', () => {
+    const markup = renderChain([
+      {
+        referralId: 'waiting-1',
+        statusLabel: enMessages.collaboration.statusPendingApproval,
+        waiting: true,
+        answer: null,
+        prompt: 'Please look at the form.',
+      },
+      {
+        referralId: 'waiting-empty',
+        statusLabel: enMessages.collaboration.statusPendingApproval,
+        waiting: true,
+        answer: null,
+        prompt: null,
+      },
+      {
+        referralId: 'done-1',
+        statusLabel: enMessages.collaboration.statusCompleted,
+        waiting: false,
+        answer: 'The form is fine.',
+        prompt: 'Checked.',
+      },
+    ]);
+    const waitingAt = markup.indexOf('data-testid="collaboration-handoff-waiting-1"');
+    const emptyAt = markup.indexOf('data-testid="collaboration-handoff-waiting-empty"');
+    const doneAt = markup.indexOf('data-testid="collaboration-handoff-done-1"');
+    assert.ok(waitingAt >= 0 && emptyAt > waitingAt && doneAt > emptyAt);
+    assert.match(markup.slice(waitingAt, emptyAt), /data-testid="collaboration-edit-task"/);
+    assert.match(markup.slice(waitingAt, emptyAt), /data-testid="collaboration-approve-waiting-1"/);
+    assert.doesNotMatch(markup.slice(emptyAt, doneAt), /data-testid="collaboration-edit-task"/);
+    assert.match(markup.slice(emptyAt, doneAt), /data-testid="collaboration-approve-waiting-empty"/);
+    assert.doesNotMatch(markup.slice(doneAt), /data-testid="collaboration-edit-task"/);
+    assert.doesNotMatch(markup.slice(doneAt), /data-testid="collaboration-approve-done-1"/);
+  });
+
+  test('edit task keys exist in en, zh-TW and zh-CN', () => {
+    assert.equal(enMessages.collaboration.editTask, 'Edit task');
+    assert.equal(zhTwMessages.collaboration.editTask, '編輯任務');
+    assert.equal(zhCnMessages.collaboration.editTask, '编辑任务');
+    assert.equal(enMessages.collaboration.editTaskLabel, 'Task for this step');
+    assert.equal(zhTwMessages.collaboration.editTaskLabel, '這一步的任務');
+    assert.equal(zhCnMessages.collaboration.editTaskLabel, '这一步的任务');
+    assert.equal(enMessages.collaboration.saveTask, 'Save task');
+    assert.equal(zhTwMessages.collaboration.saveTask, '儲存任務');
+    assert.equal(zhCnMessages.collaboration.saveTask, '保存任务');
+    assert.equal(enMessages.collaboration.keepTask, 'Keep as is');
+    assert.equal(zhTwMessages.collaboration.keepTask, '保持不變');
+    assert.equal(zhCnMessages.collaboration.keepTask, '保持不变');
+  });
 });
 
 type ScheduledPoll = { fn: () => void; delay: number };
@@ -1093,6 +1155,39 @@ function installRejectFetch(state: {
       const body = init?.body ? JSON.parse(String(init.body)) : null;
       if (state.onReject) {
         return await state.onReject(body);
+      }
+      return jsonResponse(200, { ok: true });
+    }
+    if (url.startsWith('/api/collaboration/runs?')) {
+      return jsonResponse(200, { runs: [runPayload(state.status)] });
+    }
+    if (url === '/api/collaboration/runs/run-1') {
+      return jsonResponse(200, {
+        run: runPayload(state.status),
+        team: ['lead', 'writer', 'reviewer'],
+        handoffs: state.handoffs,
+      });
+    }
+    return jsonResponse(404, { message: 'missing' });
+  }) as typeof fetch;
+  return posts;
+}
+
+function installPromptFetch(state: {
+  status: string;
+  handoffs: ReturnType<typeof handoffRecord>[];
+  onPrompt?: (body: unknown) => Response | Promise<Response>;
+}) {
+  const posts: string[] = [];
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input);
+    const method = (init?.method ?? 'GET').toUpperCase();
+    fetchCalls.push(url);
+    if (method === 'POST' && url.includes('/prompt')) {
+      posts.push(String(init?.body ?? ''));
+      const body = init?.body ? JSON.parse(String(init.body)) : null;
+      if (state.onPrompt) {
+        return await state.onPrompt(body);
       }
       return jsonResponse(200, { ok: true });
     }
@@ -1869,6 +1964,256 @@ describe('collaboration screen reload', () => {
     assert.doesNotMatch(markup, /data-testid="collaboration-run-ended-by-reject"/);
     assert.doesNotMatch(markup, /This run ended after a rejection/);
   });
+
+  test('edit mode hides Approve and Reject and fills the box with the current task', async () => {
+    installPromptFetch({
+      status: 'active',
+      handoffs: [
+        handoffRecord('ref-a', 'pending_approval'),
+        handoffRecord('ref-b', 'pending_approval'),
+        handoffRecord('ref-c', 'completed'),
+      ],
+    });
+    await openCollaborationRun();
+    let markup = renderToStaticMarkup(createElement(CollaborationView, latest!));
+    assert.match(markup, /data-testid="collaboration-edit-task"/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-edit-task-input"/);
+    const completedAt = markup.indexOf('data-testid="collaboration-handoff-ref-c"');
+    assert.ok(completedAt >= 0);
+    assert.doesNotMatch(markup.slice(completedAt), /data-testid="collaboration-edit-task"/);
+
+    await act(async () => {
+      latest!.onBeginReject('ref-a');
+    });
+    markup = renderToStaticMarkup(createElement(CollaborationView, latest!));
+    assert.match(markup, /data-testid="collaboration-reject-reason-ref-a"/);
+
+    const mounted = await mountLatestView();
+    try {
+      const button = findHostByTestId(mounted.container, 'collaboration-edit-task');
+      assert.ok(button);
+      const onClick = hostReactProps(button)?.onClick as (() => void) | undefined;
+      assert.equal(typeof onClick, 'function');
+      await act(async () => {
+        onClick!();
+      });
+    } finally {
+      await act(async () => {
+        mounted.viewRoot.unmount();
+      });
+    }
+
+    assert.equal(latest?.editReferralId, 'ref-b');
+    assert.equal(latest?.editPrompt, 'Look at the form.');
+    assert.equal(latest?.rejectReferralId, null);
+    markup = renderToStaticMarkup(createElement(CollaborationView, latest!));
+    assert.doesNotMatch(markup, /data-testid="collaboration-approve-ref-b"/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-reject-ref-b"/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-reject-reason-ref-a"/);
+    assert.match(markup, /data-testid="collaboration-approve-ref-a"/);
+    assert.match(markup, /data-testid="collaboration-reject-ref-a"/);
+    assert.match(markup, /Task for this step/);
+    assert.match(markup, /data-testid="collaboration-edit-task-input"/);
+    assert.match(openTag(markup, 'collaboration-edit-task-input'), /autofocus/i);
+
+    const filled = await mountLatestView();
+    try {
+      const input = findHostByTestId(filled.container, 'collaboration-edit-task-input');
+      assert.ok(input);
+      assert.equal(hostReactProps(input)?.value, 'Look at the form.');
+      assert.equal(
+        (globalThis.document as { activeElement?: unknown }).activeElement,
+        input,
+      );
+    } finally {
+      await act(async () => {
+        filled.viewRoot.unmount();
+      });
+    }
+
+    await act(async () => {
+      latest!.onBeginReject('ref-b');
+    });
+    assert.equal(latest?.editReferralId, null);
+    markup = renderToStaticMarkup(createElement(CollaborationView, latest!));
+    assert.match(markup, /data-testid="collaboration-reject-reason-ref-b"/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-edit-task-input"/);
+  });
+
+  test('Save task sends one POST to /prompt with the trimmed text and refreshes', async () => {
+    const state = {
+      status: 'active',
+      handoffs: [handoffRecord('ref-a', 'pending_approval')],
+    };
+    let release: (response: Response) => void = () => {
+      throw new Error('save was not waiting');
+    };
+    const posts = installPromptFetch({
+      get status() {
+        return state.status;
+      },
+      get handoffs() {
+        return state.handoffs;
+      },
+      onPrompt: () =>
+        new Promise<Response>((resolve) => {
+          release = resolve;
+        }),
+    });
+    await openCollaborationRun();
+    await act(async () => {
+      latest!.onBeginEdit('ref-a', 'Look at the form.');
+      latest!.onEditPromptChange('  Edited task  ');
+    });
+    const listBefore = fetchCalls.filter((url) => url.startsWith('/api/collaboration/runs?')).length;
+    const detailBefore = fetchCalls.filter((url) => url === '/api/collaboration/runs/run-1').length;
+    const mounted = await mountLatestView();
+    try {
+      const save = findHostByTestId(mounted.container, 'collaboration-edit-task-save');
+      assert.ok(save);
+      const onClick = hostReactProps(save)?.onClick as (() => void) | undefined;
+      assert.equal(typeof onClick, 'function');
+      await act(async () => {
+        onClick!();
+        onClick!();
+        await Promise.resolve();
+      });
+      assert.deepEqual(
+        posts.map((body) => JSON.parse(body)),
+        [{ prompt: 'Edited task' }],
+      );
+      assert.deepEqual(
+        fetchCalls.filter((url) => url.includes('/prompt')),
+        ['/api/collaboration/runs/run-1/referrals/ref-a/prompt'],
+      );
+      assert.equal(latest?.deciding, true);
+      assert.equal(latest?.editReferralId, 'ref-a');
+    } finally {
+      await act(async () => {
+        mounted.viewRoot.unmount();
+      });
+    }
+
+    state.handoffs = [{ ...handoffRecord('ref-a', 'pending_approval'), prompt: 'Edited task' }];
+    await act(async () => {
+      release(jsonResponse(200, { referralId: 'ref-a', status: 'pending_approval', prompt: 'Edited task' }));
+      for (let step = 0; step < 40; step += 1) {
+        await Promise.resolve();
+      }
+    });
+    assert.deepEqual(
+      posts.map((body) => JSON.parse(body)),
+      [{ prompt: 'Edited task' }],
+    );
+    assert.equal(latest?.deciding, false);
+    assert.equal(latest?.editReferralId, null);
+    assert.equal(latest?.notice, null);
+    assert.ok(fetchCalls.filter((url) => url.startsWith('/api/collaboration/runs?')).length > listBefore);
+    assert.ok(fetchCalls.filter((url) => url === '/api/collaboration/runs/run-1').length > detailBefore);
+    const markup = renderToStaticMarkup(createElement(CollaborationView, latest!));
+    assert.match(markup, /data-testid="collaboration-approve-ref-a"/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-edit-task-input"/);
+  });
+
+  test('a refused save shows the refusal notice and stays in edit mode', async () => {
+    const posts = installPromptFetch({
+      status: 'active',
+      handoffs: [handoffRecord('ref-a', 'pending_approval')],
+      onPrompt: () =>
+        jsonResponse(409, {
+          statusCode: 409,
+          message: 'Referral ref-a cannot be edited',
+          error: 'Conflict',
+        }),
+    });
+    await openCollaborationRun();
+    await act(async () => {
+      latest!.onBeginEdit('ref-a', 'Look at the form.');
+      latest!.onEditPromptChange('Changed task');
+    });
+    const before = fetchCalls.length;
+    await act(async () => {
+      latest!.onConfirmEdit('ref-a');
+      for (let step = 0; step < 40; step += 1) {
+        await Promise.resolve();
+      }
+    });
+    assert.deepEqual(
+      posts.map((body) => JSON.parse(body)),
+      [{ prompt: 'Changed task' }],
+    );
+    assert.equal(fetchCalls.length, before + 1);
+    assert.match(String(latest?.notice), /That did not work\. Try again\./);
+    assert.equal(latest?.editReferralId, 'ref-a');
+    assert.equal(latest?.editPrompt, 'Changed task');
+    const markup = renderToStaticMarkup(createElement(CollaborationView, latest!));
+    assert.match(markup, /data-testid="collaboration-notice"/);
+    assert.match(markup, /data-testid="collaboration-edit-task-input"/);
+    assert.match(markup, /data-testid="collaboration-edit-task-save"/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-approve-ref-a"/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-reject-ref-a"/);
+  });
+
+  test('Keep as is sends nothing and shows Approve again', async () => {
+    installPromptFetch({
+      status: 'active',
+      handoffs: [handoffRecord('ref-a', 'pending_approval')],
+    });
+    await openCollaborationRun();
+    await act(async () => {
+      latest!.onBeginEdit('ref-a', 'Look at the form.');
+      latest!.onEditPromptChange('Not saved');
+    });
+    const before = fetchCalls.length;
+    const mounted = await mountLatestView();
+    try {
+      const keep = findHostByText(mounted.container, 'Keep as is');
+      assert.ok(keep);
+      const onClick = hostReactProps(keep)?.onClick as (() => void) | undefined;
+      assert.equal(typeof onClick, 'function');
+      await act(async () => {
+        onClick!();
+      });
+    } finally {
+      await act(async () => {
+        mounted.viewRoot.unmount();
+      });
+    }
+    assert.equal(fetchCalls.length, before);
+    assert.equal(
+      fetchCalls.some((url) => url.includes('/prompt')),
+      false,
+    );
+    assert.equal(latest?.editReferralId, null);
+    const markup = renderToStaticMarkup(createElement(CollaborationView, latest!));
+    assert.match(markup, /data-testid="collaboration-approve-ref-a"/);
+    assert.match(markup, /data-testid="collaboration-reject-ref-a"/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-edit-task-input"/);
+  });
+
+  test('Save task is disabled for empty text', async () => {
+    installPromptFetch({
+      status: 'active',
+      handoffs: [handoffRecord('ref-a', 'pending_approval')],
+    });
+    await openCollaborationRun();
+    await act(async () => {
+      latest!.onBeginEdit('ref-a', 'Look at the form.');
+      latest!.onEditPromptChange('   ');
+    });
+    let markup = renderToStaticMarkup(createElement(CollaborationView, latest!));
+    assert.equal(tagHasBooleanAttr(openTag(markup, 'collaboration-edit-task-save'), 'disabled'), true);
+    await act(async () => {
+      latest!.onEditPromptChange('');
+    });
+    markup = renderToStaticMarkup(createElement(CollaborationView, latest!));
+    assert.equal(tagHasBooleanAttr(openTag(markup, 'collaboration-edit-task-save'), 'disabled'), true);
+    await act(async () => {
+      latest!.onEditPromptChange('  kept  ');
+    });
+    markup = renderToStaticMarkup(createElement(CollaborationView, latest!));
+    assert.equal(tagHasBooleanAttr(openTag(markup, 'collaboration-edit-task-save'), 'disabled'), false);
+  });
 });
 
 describe('BIZ-01 team picker', () => {
@@ -2054,6 +2399,7 @@ describe('BIZ-01 team picker', () => {
         onConfirmReject: () => {},
         onRejectReasonChange: () => {},
         ...idleCancel,
+      ...idleEdit,
       }),
     );
 
@@ -2195,6 +2541,7 @@ describe('BIZ-01 team picker', () => {
         onConfirmReject: () => {},
         onRejectReasonChange: () => {},
         ...idleCancel,
+      ...idleEdit,
       }),
     );
     assert.match(runLine, /data-testid="collaboration-run-team"/);

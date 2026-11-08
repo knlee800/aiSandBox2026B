@@ -1210,6 +1210,67 @@ export class OrchestrationService {
     return referral;
   }
 
+  async updatePendingReferralPrompt(input: {
+    collaborationRunId: CollaborationRunId;
+    referralId: ReferralId;
+    prompt: string;
+    editedBy: UserId;
+  }): Promise<CollaborationReferral> {
+    const loaded = await this.loadReferralInRun(
+      input.collaborationRunId,
+      input.referralId,
+    );
+    if (loaded.entity.status !== 'pending_approval' || !loaded.entity.pendingJob) {
+      throw new ConflictException(
+        `Referral ${input.referralId} cannot be edited from status ${loaded.entity.status}`,
+      );
+    }
+    const pendingJob = loaded.entity.pendingJob;
+    const updated = await this.referralRepo.update(
+      {
+        referralId: input.referralId,
+        collaborationRunId: input.collaborationRunId,
+        status: 'pending_approval',
+      },
+      {
+        pendingJob: {
+          ...pendingJob,
+          prompt: input.prompt,
+        },
+        updatedAt: new Date(),
+      },
+    );
+    if ((updated.affected ?? 0) < 1) {
+      throw new ConflictException(
+        `Referral ${input.referralId} cannot be edited`,
+      );
+    }
+    const stored = await this.referralRepo.findOne({
+      where: { referralId: input.referralId },
+    });
+    if (!stored) {
+      throw new Error(`Referral ${input.referralId} not found`);
+    }
+    const referral = this.toReferral(stored);
+    this.emitAuditEvent({
+      eventType: 'orchestration.referral_prompt_edited',
+      collaborationRunId: referral.collaborationRunId,
+      referralTraceId: referral.referralTraceId,
+      sourceBuilder: referral.sourceBuilder,
+      targetBuilder: referral.targetBuilder,
+      payload: {
+        lifecycleEvent: 'referral_prompt_edited',
+        editedBy: input.editedBy,
+        referralId: referral.referralId,
+        status: referral.status,
+        userId: loaded.run.userId,
+        projectId: loaded.run.projectId,
+        promptChars: input.prompt.length,
+      },
+    });
+    return referral;
+  }
+
   async cancelReferral(input: CancelReferralInput): Promise<CollaborationReferral> {
     return this.runInTransaction(async (runRepo, referralRepo) => {
       const referralEntity = await this.requireReferralEntity(

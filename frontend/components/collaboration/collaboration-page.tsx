@@ -93,6 +93,8 @@ export function useCollaborationScreen(input: {
   const [listProjectId, setListProjectId] = useState(queryProjectId);
   const [rejectReferralId, setRejectReferralId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
+  const [editReferralId, setEditReferralId] = useState<string | null>(null);
+  const [editPrompt, setEditPrompt] = useState('');
   const [confirmingCancel, setConfirmingCancel] = useState(false);
   const [approveWithoutTests, setApproveWithoutTests] = useState<Record<string, boolean>>({});
   const [forcedTestsBlock, setForcedTestsBlock] = useState<
@@ -303,6 +305,10 @@ export function useCollaborationScreen(input: {
     rejectPrompt: t('rejectPrompt'),
     rejectConfirm: t('rejectConfirm'),
     cancelReject: t('cancelReject'),
+    editTask: t('editTask'),
+    editTaskLabel: t('editTaskLabel'),
+    saveTask: t('saveTask'),
+    keepTask: t('keepTask'),
     runEndedByReject: t('runEndedByReject'),
     cancelRun: t('cancelRun'),
     cancelRunPrompt: t('cancelRunPrompt'),
@@ -498,6 +504,8 @@ export function useCollaborationScreen(input: {
     }),
     rejectReferralId,
     rejectReason,
+    editReferralId,
+    editPrompt,
     runEndedByReject: collaborationRunEndedByReject(
       detail?.run.status,
       sourceHandoffs.map((handoff) => handoff.status),
@@ -532,6 +540,8 @@ export function useCollaborationScreen(input: {
             setSelectedRunId(started.collaborationRunId);
             setRejectReferralId(null);
             setRejectReason('');
+            setEditReferralId(null);
+            setEditPrompt('');
             setConfirmingCancel(false);
             if (started.projectId) {
               setListProjectId(started.projectId);
@@ -550,6 +560,8 @@ export function useCollaborationScreen(input: {
       setSelectedRunId(runId);
       setRejectReferralId(null);
       setRejectReason('');
+      setEditReferralId(null);
+      setEditPrompt('');
       setConfirmingCancel(false);
       setApproveWithoutTests({});
       setForcedTestsBlock({});
@@ -612,6 +624,8 @@ export function useCollaborationScreen(input: {
       });
     },
     onBeginReject: (referralId: string) => {
+      setEditReferralId(null);
+      setEditPrompt('');
       setRejectReferralId(referralId);
       setRejectReason('');
     },
@@ -640,6 +654,40 @@ export function useCollaborationScreen(input: {
         }
         setRejectReferralId(null);
         setRejectReason('');
+        await refresh();
+      });
+    },
+    onBeginEdit: (referralId: string, currentPrompt: string) => {
+      setRejectReferralId(null);
+      setRejectReason('');
+      setEditReferralId(referralId);
+      setEditPrompt(currentPrompt);
+    },
+    onCancelEdit: () => {
+      setEditReferralId(null);
+      setEditPrompt('');
+    },
+    onEditPromptChange: setEditPrompt,
+    onConfirmEdit: (referralId: string) => {
+      if (!selectedRunId) {
+        return;
+      }
+      const runId = selectedRunId;
+      const prompt = editPrompt.trim();
+      void runDecision(async () => {
+        const response = await collaborationFetch(
+          `/api/collaboration/runs/${encodeURIComponent(runId)}/referrals/${encodeURIComponent(referralId)}/prompt`,
+          {
+            method: 'POST',
+            body: JSON.stringify({ prompt }),
+          },
+        );
+        if (!response.ok) {
+          await showRefusal(response);
+          return;
+        }
+        setEditReferralId(null);
+        setEditPrompt('');
         await refresh();
       });
     },

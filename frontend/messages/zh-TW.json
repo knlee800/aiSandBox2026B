@@ -1043,7 +1043,11 @@
     "productStrategySummary": "根據你的知識文件（含市場資料）回答幕僚長。每項陳述附上來源；沒有來源時寫明沒有來源。不能改檔案、交接或對外送出任何東西。",
     "technologyAdvisorSummary": "根據你的知識文件（含技術版圖）回答幕僚長，並可讀取這個專案的檔案。文件陳述附上來源；沒有來源時寫明沒有來源。不能改檔案、交接或對外送出任何東西。",
     "fileAccessAdvisors": "這些角色只能讀取。不能改檔案，也不能採取外部行動。幕僚長可把一個問題交給一位顧問，那一步會等你批准。",
-    "chainEmptyAdvisors": "還沒有步驟。開始一個任務，就會先問顧問團隊。"
+    "chainEmptyAdvisors": "還沒有步驟。開始一個任務，就會先問顧問團隊。",
+    "editTask": "編輯任務",
+    "editTaskLabel": "這一步的任務",
+    "saveTask": "儲存任務",
+    "keepTask": "保持不變"
   },
   "office": {
     "title": "辦公室",
