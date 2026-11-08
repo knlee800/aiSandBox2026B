@@ -85675,6 +85675,44 @@ nature=IMPLEMENTATION
 - [x] The checkpoint carries the CHECKLIST line (EVERY, BACKEND) and the FOLLOWUPS line
 - [x] Not LOCKED by an implementer
 
+### GOV-BIZ-AGENT-OPS-PLAN-01 — Plan MCP connectors, briefings, the agent spec, skills and hand-offs together
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-BIZ-AGENT-OPS-PLAN-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ACTIVE — 2026-11-08. Governance; no lane. Registered with Keith's approval of the draft; plan drafting next.
+**Task ID:** GOV-BIZ-AGENT-OPS-PLAN-01
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE. **Lifecycle:** 2-STEP: this registration; the closing record with the approved plan and its child registrations.
+**Start condition (human):** READY — on 2026-11-08 Keith asked for MCP, connectors to other apps, a scheduler, shared and agent-specific knowledge, a six-part agent spec (role and persona with reply language; what to read; procedure; output; hand-offs; hard limits) and agents working together. He asked for a design by two models: Fable 5.1 drafted it; Grok and the control plane (Opus 5.5) reviewed it. Keith approved this registration on 2026-11-08.
+**Primary write scope:** docs/AGENT-OPS-PLAN.md, TASKS.md, TASKS_BACKLOG_FULL.md, the sidecar and the proof at the closing record.
+**Mutexes / resources:** GOVERNANCE, only during record writes.
+
+**Decisions taken at registration (Keith, 2026-11-08):** (a) connectors go through MCP now, with an allowlist of servers the platform runs and pins; user-supplied servers stay refused; (b) Gmail and Google Calendar come first, read-only first, on a Google Workspace account Keith sets up, so the OAuth app is internal to that Workspace; (c) the platform writes its own MCP server in a new service folder (a structural change Keith approved; the plan fixes the folder name).
+
+**Purpose:** one plan that fixes:
+- the MCP layer: where it runs (the api-gateway broker; the ai-service worker reaches it only through internal routes), the platform-written server for Gmail and Calendar and its folder, the transport and the host process on staging, tool descriptions treated as untrusted, and how connector tools reach the Harness through a signed grant (a change to the frozen HARNESS_ENTITLEMENT_PROOF_V1 contract, in a slice of its own);
+- credentials: Google consent by Keith in his browser; the refresh token stored encrypted; Keith types the OAuth client secret and the encryption key at a hidden prompt; the worker and the model never see tokens; one audit row per connector call, with no content;
+- reading order and data: metadata (senders, subjects, today's event titles) before message bodies; an eval with injected instructions passes before a model sees a body; a statement that mail and calendar text sent to the model leaves the platform;
+- the briefing: a Chief of Staff procedure started by hand on the Team page, with its real cost measured before any cap is set;
+- the scheduler: manual Run only until a measured briefing exists; any later timer, its caps, kill switch and the wording change it would need;
+- hand-offs: Keith's choice between owner approval on every hand-off (the 2026-11-05 rule, which both reviewers recommend keeping) and an approval-by-rule class for internal work;
+- hard limits: which ones the tool set enforces (no send, accept-invite or calendar-write tools; drafts only, later) and which are prompt rules only (no invented figures, final decisions to Keith);
+- skills, the six-part spec fields, tickets and owner-defined knowledge: what each is, and why each waits until a slice needs it, reusing BIZ-USER-01, AGENT-COLLAB-BIZ-01, BIZ-NOPROJECT-01 and GOV-ARCH-SYNC-01 rather than duplicating them;
+- the order of bounded child slices, each with one evidence class, its mutexes and its write scope;
+- a disposition for every follow-up the plan names.
+
+**Not in scope:** code; admitting any child; CLAUDE.md; PRD.md and ARCHITECTURE.md changes (each lands with the slice that proves it, as BIZ-03 did; nothing is marked GATED at plan time). The dropped 2026-11-05 lines (connectors, scheduled refresh) are reopened on the evidence of Keith's request; the plan says so.
+
+#### Acceptance criteria
+
+- [ ] docs/AGENT-OPS-PLAN.md answers every point in Purpose and names the first MCP slice and the first briefing slice with their write scopes
+- [ ] Keith's decisions are recorded, including hand-offs and the data statement
+- [ ] Keith approves the plan
+- [ ] Every follow-up the plan names has a disposition; the closing record carries the FOLLOWUPS line
+- [ ] Not LOCKED by an implementer
+
 ### COLLAB-FANOUT-01 — Fan-out hand-offs with one approval and a combine step
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=COLLAB-FANOUT-01
