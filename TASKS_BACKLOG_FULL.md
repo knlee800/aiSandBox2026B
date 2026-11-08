@@ -86479,6 +86479,35 @@ nature=IMPLEMENTATION
 - [x] The LOCK record leaves testerWindowOpen true, the three authorization flags false and the lane free
 - [x] Not LOCKED by an implementer
 
+### TESTER-WINDOW-CLOSE-01 — Close the tester window on staging
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TESTER-WINDOW-CLOSE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED — 2026-11-08. Lane 1, STAGING and ENV. Registered and admitted in one record (GOV-OS-04): Keith said close the window so the reviewer eval can run live and approved the draft on 2026-11-08. Host step next.
+**Task ID:** TESTER-WINDOW-CLOSE-01
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION (operational run on staging)
+**Lifecycle:** 3-STEP: registration and admission here; the host script; LOCK.
+**Start condition (human):** READY — Keith said close the tester window and approved the draft on 2026-11-08.
+**Depends on:** TESTER-WINDOW-01.
+**Primary write scope:** none in the repository beyond records and docs/TESTER-WINDOW-CLOSE-01-CHECKPOINT.md. Host state on ainow-staging-01 only: /etc/aisandbox/gateway.env and /etc/aisandbox/ai.env put back from the copies saved when the window opened (/root/aisb-tw1), a gateway and AI-service restart; off-repo evidence.
+**Mutexes / resources:** STAGING, ENV (GOV-OS-06 rule for closing). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** STAGING-RUNTIME. **Revert isolation:** acceptable (the window env files stay saved on the host; reopening is a registered task).
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+
+**Holds:** close the tester window. From the host, one hash-checked script: (1) pre-check staging at bae24d9, gateway.env and ai.env at the window hashes (5692ce35..., 132ebab3...), the saved copies at the baseline hashes (bf6864f9..., 721f4772...), nothing running; otherwise STOP; (2) keep a copy of the window files, put both baseline files back with their owner and mode, restart the gateway and AI service; (3) gateway ready 200, AI worker ready, all units active, both files at the baseline hashes, GLOBAL_EXECUTION_ENABLED false; (4) no key text in any output. LOCK with runtimeAuthorization.testerWindowOpen false, the three authorization flags false and the board line Tester window CLOSED. The stored test key file stays on the host for COLLAB-EVAL-LIVE-01.
+**Named in:** docs/TESTER-WINDOW-01-CHECKPOINT.md (closing is a registered task when Keith says stop).
+
+#### Acceptance criteria
+
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] Runs off: gateway.env and ai.env at the baseline hashes, GLOBAL_EXECUTION_ENABLED false, gateway ready and AI worker ready
+- [ ] Nothing was running when the files changed; no other host state changed
+- [ ] The key appears in no output
+- [ ] The LOCK record leaves testerWindowOpen false, the three authorization flags false and the lane free
+- [ ] Not LOCKED by an implementer
+
 ### GOV-OS-07 — Rule checklists in briefs and checkpoints
 
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
