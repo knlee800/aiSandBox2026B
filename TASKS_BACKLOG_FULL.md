@@ -85964,7 +85964,7 @@ nature=IMPLEMENTATION
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP
-**Start condition:** NOT_READY. Ready when: subject and title cases pass; Keith schedules. Keith decides.
+**Start condition:** NOT_READY. Ready when: COS-EVAL-01 is LOCKED (its scripted cases pass; done 2026-11-09) and Keith schedules the deploy. Reworded 2026-11-09 (Keith): the real-model run of the eval, COS-EVAL-LIVE-01, needs this deploy to put the eval on the host, and it gates BIZ-LIVE-03 instead; AI runs stay off on staging through this deploy, so no briefing can run before the eval passes. Keith decides.
 **Depends on:** COS-EVAL-01.
 **Primary write scope:** records; host state.
 **Mutexes / resources:** STAGING, ENV.
