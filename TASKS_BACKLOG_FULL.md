@@ -84314,7 +84314,7 @@ nature=IMPLEMENTATION
 **Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
 **saturationClass:** OPTIONAL (Keith, 2026-11-05). **productClass:** CURRENT per PRD.md.
 
-**Holds:** (1) Charge Agent runs and replace the global rolling token limit with a real per-user or per-plan limit. (2) Credits that vary by model, and limit which models the Builder offers. (3) Replace the one global write flag, so a write window for one feature does not open Agent writes. (4) Authenticate Socket.IO room joins: join-session joins any session's room. (5) Decide on previous_response_id, which keeps conversations stored at OpenAI and xAI. Split into bounded slices at admission. Also (OFFICE-05, 2026-11-09): in the office, a user without collaboration access briefly sees role desks before the 403 folds them into one Team desk; fix before such users exist.
+**Holds:** (1) Charge Agent runs and replace the global rolling token limit with a real per-user or per-plan limit. (2) Credits that vary by model, and limit which models the Builder offers. (3) Replace the one global write flag, so a write window for one feature does not open Agent writes. (4) Authenticate Socket.IO room joins: join-session joins any session's room. (5) Decide on previous_response_id, which keeps conversations stored at OpenAI and xAI. Split into bounded slices at admission. Also (OFFICE-05, 2026-11-09): in the office, a user without collaboration access briefly sees role desks before the 403 folds them into one Team desk; fix before such users exist. Also (CONN-UI-01, 2026-11-09): the platform header shows the Connections link to every user; users without harness access land on a calm forbidden notice; hide the link for them before such users exist.
 **Named in:** HARNESS-QUOTA-01 checkpoint line 42; HARNESS-PROVIDERS-01 checkpoint lines 73 and 74; COLLAB-LIVE-06 and COLLAB-LIVE-07 checkpoints; AUTH-OWNER-01 checkpoint line 53; HARNESS-LIVE-06 checkpoint line 46.
 **Added 2026-11-05 (GOV-COLLAB-PLAN-01):** (6) the daily spend counter is kept in memory and resets on a restart (COLLAB-GATE-01 checkpoint line 30); it must survive a restart.
 **Added 2026-11-05 (GOV-BIZ-KNOWLEDGE-PLAN-01):** (7) enforce the plan entitlements for knowledge items (maxKnowledgeItemsPerMonth) together with charging.
@@ -84477,7 +84477,7 @@ nature=IMPLEMENTATION
 **Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
 **saturationClass:** OPTIONAL (Keith, 2026-11-05). **productClass:** CURRENT per PRD.md.
 
-**Holds:** Close the frontend platform test coverage gaps found in the reviews. The missing frontend/lib/ai tests in npm test are item 1 of HARNESS-FIXES-01. Scope is set at admission. Also (OFFICE-06, 2026-11-09): frontend npm test does not run components/office, lib/office or hooks tests; add them to the script.
+**Holds:** Close the frontend platform test coverage gaps found in the reviews. The missing frontend/lib/ai tests in npm test are item 1 of HARNESS-FIXES-01. Scope is set at admission. Also (OFFICE-06, 2026-11-09): frontend npm test does not run components/office, lib/office or hooks tests; add them to the script. Also (CONN-UI-01, 2026-11-09): npm test does not run components/connections, components/knowledge or the platform tests either.
 **Noted 2026-11-07 (BIZ-02 checkpoint):** the frontend npm test script runs only components/workspace, components/public, lib and lib/auth-module tests; lib/office, lib/agent-platform, components/office and components/platform tests run only when named. BIZ-02 ran them by name (105 passed).
 **Added 2026-11-05 (OFFICE-01):** frontend npm test lists fixed folders and does not run components/office, lib/office or components/platform tests; include them.
 **Named in:** Keith-approved follow-up from the harness reviews.
@@ -85854,7 +85854,7 @@ taskId=CONN-UI-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-09 — Keith admitted it; implementation by a Claude subagent on opus in worktree C:\Users\knlee\aisb-worktrees\CONN-UI-01 (branch lane/CONN-UI-01). Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
+**Status:** COMPLETE AND LOCKED — 2026-11-09. LANE-DONE and LOCKED by the control plane; Lane 1, FRONTEND and I18N released. Connections page built by a Claude subagent (opus) in worktree lane/CONN-UI-01, commit 87e6366 fast-forwarded into main; not deployed (live check in STAGING-DEPLOY-CONN-01). Checkpoint: docs/CONN-UI-01-CHECKPOINT.md. Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
 **Task ID:** CONN-UI-01
 **Title:** Connections page
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -85975,7 +85975,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
-**Scope:** Deploy that installs the connector library (C6). Keith types the credentials key and the gateway.env backup is checked. Also the OFFICE-06 live check (2026-11-09): on staging, Tab and Enter open a recent run's saved output with its line breaks; a run with no output, a run of another account (not found) and a failed request show their states; Back and Escape return focus to that run. And the OFFICE-05 live check: separate lead, writer and reviewer desks (and Chief of Staff and advisors desks) in all three languages; the waiting badge on the desks of a run whose hand-off waits for approval, including after the member finished; Open goes to the Team page; no approve, reject or edit control in the office. And the AGENT-WRITE-UI-01 live check: an account with harness access and Agent write off sees the amber file-changes-off notice under the mode control when Agent is selected, in its locale; Keith's account (write on) sees no notice.
+**Scope:** Deploy that installs the connector library (C6). Keith types the credentials key and the gateway.env backup is checked. Also the OFFICE-06 live check (2026-11-09): on staging, Tab and Enter open a recent run's saved output with its line breaks; a run with no output, a run of another account (not found) and a failed request show their states; Back and Escape return focus to that run. And the OFFICE-05 live check: separate lead, writer and reviewer desks (and Chief of Staff and advisors desks) in all three languages; the waiting badge on the desks of a run whose hand-off waits for approval, including after the member finished; Open goes to the Team page; no approve, reject or edit control in the office. And the AGENT-WRITE-UI-01 live check: an account with harness access and Agent write off sees the amber file-changes-off notice under the mode control when Agent is selected, in its locale; Keith's account (write on) sees no notice. And the CONN-UI-01 live check (2026-11-09): this deploy ships the connector routes and the Connections page together; /en/connections shows the data statement above both cards; with the key set a Gmail app password connects, Verify shows the checked time, a wrong password shows the mail-server failure, Disconnect asks first; without the key the calm not-available notice shows; an account without harness access sees the forbidden notice; zh-TW and zh-CN render; the header link sits beside Knowledge.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
 
 ### BIZ-LIVE-03 — First live briefing and its cost
@@ -86234,7 +86234,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
-**Scope:** Connect Google after verification (C17): the refresh token stays in the gateway and each call uses a short-lived access token.
+**Scope:** Connect Google after verification (C17): the refresh token stays in the gateway and each call uses a short-lived access token. Also (CONN-UI-01, 2026-11-09): while reworking the Connections page, add a replace-connection action (the backend already accepts a second connect for the same kind) and run Verify automatically after a connect.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
 
 ### CONN-03 — Mail body reads after the injection eval
