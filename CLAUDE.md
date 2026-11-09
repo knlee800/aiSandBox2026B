@@ -559,6 +559,8 @@ Also open a new window for:
 
 Same-window continuation is acceptable only for the exact same tiny follow-up within an already-started task where context remains small and unambiguous.
 
+These window rules apply to Cursor runs. Subagent runs happen inside the control-plane session.
+
 Fresh windows must always follow the deterministic boot sequence: `AGENTS.md` → `CLAUDE.md` → `TASKS.md` CURRENT EXECUTION BOARD → exact admitted TASK ID in `TASKS_BACKLOG_FULL.md`.
 
 ### Subagent implementers (GOV-OS-08)
@@ -592,12 +594,17 @@ Cursor runs:
 - **High-risk independent architecture / review:** Opus may be used when justified
 - Always pass the model explicitly. Never use Auto.
 
-Claude subagent runs (GOV-OS-08):
+Choosing the worker (GOV-ROUTING-01):
 
-- **Fable 5.1:** design and planning work, and hard implementation
-- **Opus 5.5:** risky or security-sensitive slices, and independent reviews
-- **Sonnet 5.5:** routine bounded slices
-- The brief names the model and the reason; the checkpoint reports the model used.
+- Default to a Claude subagent for tasks with evidence class LOCAL-TESTS.
+- Use a Cursor desktop prompt for anything that needs Keith's browser or console sign-in, and Cursor CLI when Keith asks for it or for a second opinion.
+
+Claude subagent model (GOV-ROUTING-01):
+
+- **sonnet (Sonnet 5.5):** 3-step slices in one service or in the frontend, with no migration, auth, security, frozen-contract or cross-service change (UI copy and layout, small bug fixes, tests only).
+- **opus (Opus 5.5):** 4-step tasks; anything touching auth, guards, CSRF, credentials, encryption, migrations, a frozen shared contract, internal routes, child processes or data deletion; cross-service changes; every independent review.
+- **fable (Fable 5.1):** design and planning documents and stage-start drafts; architecture-heavy slices; hard implementation, unclear root causes, or work where opus failed.
+- When unsure between two, take the stronger. The model is passed explicitly in the Agent call and never inherited. The brief names the model and the reason, Keith hears them in one line before the dispatch, and the checkpoint records the model used.
 
 Do not duplicate this table in `AGENTS.md`, the TASKS board, or every future task body.
 
@@ -611,6 +618,7 @@ Stay cost-aware. Do not use stronger models for routine bounded edits.
 - Implementation workers never push, never merge, never commit to `main` and never create, switch or delete branches or worktrees themselves.
 - Worktree isolation (GOV-OS-08): the control plane may give an admitted task its own git worktree on its own branch (`lane/<TASK-ID>`), created from the current `main`. The worker edits files only there. A Claude subagent worker may commit on that branch; a Cursor worker runs no git (at most `git status --short`), and the control plane commits on the branch for it.
 - Only the control plane brings a branch into `main`: it reads the diff, reruns the gates on the branch, then merges with `git merge --ff-only`; if `main` has moved since the branch was cut, it cherry-picks the branch's commits onto `main` instead (rebase stays denied). It then reruns the gates on `main` where the task's evidence needs it, and removes the worktree and the branch. No merge commits, no force push.
+- Worktree procedure (GOV-ROUTING-01): worktrees live in `C:\Users\knlee\aisb-worktrees\<TASK-ID>`. `node_modules` is linked from the main checkout (Windows junctions for the root and for each workspace that has its own) and unlinked before the worktree is removed, so removing the worktree never touches the main checkout's packages. An abandoned branch is deleted with `git branch -D lane/<TASK-ID>`.
 - Worktrees do not change admission: two lanes, the same mutexes, write-set and HOTFILE conflicts, PACKAGE and I18N leases all still apply, because conflicting branches would clash when merged.
 - The control plane commits and pushes only work Keith has authorized, after reading the diff and rerunning the gates.
 - Do not include commit / push steps in routine prompts unless explicitly asked.

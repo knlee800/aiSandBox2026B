@@ -88081,6 +88081,31 @@ nature=GOVERNANCE
 
 FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed
 
+### GOV-ROUTING-01 — Worker choice, subagent model routing and the worktree procedure
+
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-ROUTING-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** COMPLETE AND LOCKED — 2026-11-09. Governance; no lane. Registered and closed in one record after Keith approved the exact wording. CLAUDE.md Model Routing (choosing the worker; sonnet, opus and fable routing), New Window Rules (Cursor-only) and Git / Operator Rules (worktree procedure) updated; settings drafts given to Keith. GOVERNANCE released UNOWNED. Checkpoint: docs/GOV-ROUTING-01-CHECKPOINT.md.
+**Task ID:** GOV-ROUTING-01
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE. Not a Development OS mutation (Model Routing, window guidance and the worktree procedure are not OS semantics; worker permissions are GOV-OS-08's and unchanged). **Lifecycle:** 2-STEP in one record (GOV-OS-04).
+**Start condition:** Keith asked for a routing rule on 2026-11-09 and approved the wording ("Approve wording").
+**Primary write scope:** CLAUDE.md, TASKS.md, TASKS_BACKLOG_FULL.md, the proof, docs/GOV-ROUTING-01-CHECKPOINT.md.
+**Mutexes / resources:** GOVERNANCE.
+**Evidence:** a dry run on 2026-11-09 in the throwaway worktree lane/DRYRUN-01 (removed): a background sonnet subagent edited, committed and ran tests and typechecks there with no prompts in auto mode; a docs check confirmed CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1 and where the Desktop app shows background agents. Details in the checkpoint.
+
+#### Acceptance criteria
+
+- [x] Keith approved the wording before CLAUDE.md changed
+- [x] CLAUDE.md carries the worker choice, the subagent model routing, the Cursor-only window note and the worktree procedure
+- [x] The dry-run worktree and branch are removed
+- [x] Not LOCKED by an implementer
+
+FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed
+
 ### DESIGN-DOC-01 — Write DESIGN.md and PRODUCT.md from the current app
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=DESIGN-DOC-01
