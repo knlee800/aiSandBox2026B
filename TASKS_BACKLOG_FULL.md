@@ -85958,13 +85958,13 @@ taskId=STAGING-DEPLOY-CONN-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-09 — Keith admitted it; the deploy plan goes to Keith for approval before any host step. Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
 **Task ID:** STAGING-DEPLOY-CONN-01
 **Title:** Deploy the connector library
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP
-**Start condition:** NOT_READY. Ready when: COS-EVAL-01 is LOCKED (its scripted cases pass; done 2026-11-09) and Keith schedules the deploy. Reworded 2026-11-09 (Keith): the real-model run of the eval, COS-EVAL-LIVE-01, needs this deploy to put the eval on the host, and it gates BIZ-LIVE-03 instead; AI runs stay off on staging through this deploy, so no briefing can run before the eval passes. Keith decides.
+**Start condition:** READY (Keith scheduled it 2026-11-09). Was: Ready when: COS-EVAL-01 is LOCKED (its scripted cases pass; done 2026-11-09) and Keith schedules the deploy. Reworded 2026-11-09 (Keith): the real-model run of the eval, COS-EVAL-LIVE-01, needs this deploy to put the eval on the host, and it gates BIZ-LIVE-03 instead; AI runs stay off on staging through this deploy, so no briefing can run before the eval passes. Keith decides.
 **Depends on:** COS-EVAL-01.
 **Primary write scope:** records; host state.
 **Mutexes / resources:** STAGING, ENV.
