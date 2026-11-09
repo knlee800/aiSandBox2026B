@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "maxImplementationLanes": 2,
   "lane3": "DISABLED",
-  "saturationSuspended": true,
-  "suspensionReason": "OS_MUTATION",
-  "governance": {"owner": "GOV-OS-08", "state": "ACTIVE"},
+  "saturationSuspended": false,
+  "suspensionReason": "NONE",
+  "governance": {"owner": "NONE", "state": "UNOWNED"},
   "occupancy": {
     "lane1": {
       "state": "EMPTY",

@@ -88057,7 +88057,7 @@ taskId=GOV-OS-08
 nature=GOVERNANCE
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ACTIVE — 2026-11-09 — GOVERNANCE held; Development OS mutation begun with both implementation lanes empty (CONN-02B locked in 6547241); saturation suspended (OS_MUTATION). Rule edits next, then Keith's settings change, then the closing record.
+**Status:** COMPLETE AND LOCKED — 2026-11-09. Governance; no lane. CLAUDE.md (Subagent implementers, Model Routing, Git / Operator Rules), AGENTS.md and task-checklists.md EVERY 3, 4 and 10 updated; Keith changed .claude/settings.local.json as named; Development OS mutation ended; GOVERNANCE released UNOWNED. Checkpoint: docs/GOV-OS-08-CHECKPOINT.md.
 **Task ID:** GOV-OS-08
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** GOVERNANCE. **Lifecycle:** 2-STEP: the start record begins the mutation (saturation suspended, OS_MUTATION); the closing record ends it.
@@ -88074,10 +88074,12 @@ nature=GOVERNANCE
 
 - [x] Scope approved by Keith before the start (2026-11-09)
 - [x] The start record begins with zero ACTIVE or LANE-DONE implementation lanes (2026-11-09)
-- [ ] CLAUDE.md, AGENTS.md and task-checklists.md say the same thing; no other rule weakened
-- [ ] Keith's settings change is named exactly and confirmed by him
-- [ ] The closing record ends the mutation; the validator passes at both records
-- [ ] Not LOCKED by an implementer
+- [x] CLAUDE.md, AGENTS.md and task-checklists.md say the same thing; no other rule weakened
+- [x] Keith's settings change is named exactly and confirmed by him
+- [x] The closing record ends the mutation; the validator passes at both records
+- [x] Not LOCKED by an implementer
+
+FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed
 
 ### DESIGN-DOC-01 — Write DESIGN.md and PRODUCT.md from the current app
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

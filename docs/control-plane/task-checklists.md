@@ -12,14 +12,14 @@ An item that does not apply counts as met only when the checkpoint says why. Rul
 
 1. Admitted on the TASKS.md board before work starts; scope, write set, mutexes and evidence class approved by Keith (Project Governance Loop; Admission rules).
 2. The loop is named: 2-step, 3-step or 4-step; risky, security-sensitive, governance, migration or ambiguous work uses the 4-step loop with a stage-start (Task Workflow Rules).
-3. The model is passed explicitly, never Auto; grok-4.7-xhigh only for the cases Model Routing lists (Model Routing).
-4. A fresh worker session gets a self-contained brief and follows the boot sequence; no subagents by default (New Window Rules).
+3. The model is passed explicitly, never Auto; grok-4.7-xhigh only for the cases Model Routing lists; a Claude subagent uses Fable 5.1, Opus 5.5 or Sonnet 5.5 as Model Routing lists, and the brief says which and why (Model Routing).
+4. A fresh worker session, Cursor or Claude subagent, gets a self-contained brief and follows the boot sequence; a subagent is used only under the Subagent implementers rules and never spawns further subagents (New Window Rules; Subagent implementers (GOV-OS-08)).
 5. Only files in the declared write scope change; nothing unrelated is refactored; a new dependency is asked for first and takes the PACKAGE mutex (Source and Scope Rules; Resource / mutex model).
 6. Behavior changes have added or updated tests; the worker reports the exact files changed (Source and Scope Rules).
 7. The worker runs the gates for the changed areas and reports exact results; the control plane reruns them before commit; environmental failures are reported apart from code failures (Testing and Validation Rules; Common Validation Commands).
 8. Docker, PostgreSQL, Redis, migrations and servers are not started unless the task requires that runtime, and the requirement is stated first (Runtime / Live-Smoke Rules; Commands and Shell Rules).
 9. Validation artifacts changed by a build, such as frontend/tsconfig.tsbuildinfo, are restored (Common Validation Commands).
-10. Workers never commit, push, create branches or create worktrees; the control plane commits only work Keith authorized, after reading the diff and rerunning the gates (Git / Operator Rules).
+10. Workers never push, merge, commit to main, or create, switch or delete branches or worktrees; in a worktree the worker edits only there (a Cursor worker runs no git); only the control plane brings the branch into main, fast-forward or cherry-pick, after reading the diff and rerunning the gates, then removes the worktree and branch; the control plane commits only work Keith authorized (Git / Operator Rules).
 11. Every named follow-up gets a disposition; the closing record carries the FOLLOWUPS line (Project Governance Loop).
 
 ## UI — any change to visible frontend text, layout, components or interaction

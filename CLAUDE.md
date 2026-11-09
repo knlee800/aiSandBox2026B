@@ -559,13 +559,26 @@ Also open a new window for:
 
 Same-window continuation is acceptable only for the exact same tiny follow-up within an already-started task where context remains small and unambiguous.
 
-Fresh windows must always follow the deterministic boot sequence: `AGENTS.md` → `CLAUDE.md` → `TASKS.md` CURRENT EXECUTION BOARD → exact admitted TASK ID in `TASKS_BACKLOG_FULL.md`. Do not use subagents by default.
+Fresh windows must always follow the deterministic boot sequence: `AGENTS.md` → `CLAUDE.md` → `TASKS.md` CURRENT EXECUTION BOARD → exact admitted TASK ID in `TASKS_BACKLOG_FULL.md`.
+
+### Subagent implementers (GOV-OS-08)
+
+The control plane may run an admitted task's implementation as a Claude subagent instead of Cursor. A subagent implementer:
+
+- gets the same self-contained brief a Cursor run gets (boot sequence, write scope, checklists copied from `docs/control-plane/task-checklists.md`, gates, stop conditions, report contract);
+- works in its own git worktree (see Git / Operator Rules) unless the task changes only records;
+- is reviewed the same way: the control plane reads the diff, reruns the gates and never accepts the self-report;
+- has the same limits as any implementation worker: no records, board, registry, sidecar or governance files; no admission or mutexes; no push; it never spawns further subagents.
+
+A subagent is a worker, not a second control plane. Spawning one does not add a lane: each admitted lane still holds one task, and Lane 3 stays disabled.
 
 ---
 
 ## Model Routing
 
-Last reviewed: 2026-11-04
+Last reviewed: 2026-11-09
+
+Cursor runs:
 
 - **Implementation:** grok-4.7-high
 - **grok-4.7-xhigh** only for:
@@ -579,6 +592,13 @@ Last reviewed: 2026-11-04
 - **High-risk independent architecture / review:** Opus may be used when justified
 - Always pass the model explicitly. Never use Auto.
 
+Claude subagent runs (GOV-OS-08):
+
+- **Fable 5.1:** design and planning work, and hard implementation
+- **Opus 5.5:** risky or security-sensitive slices, and independent reviews
+- **Sonnet 5.5:** routine bounded slices
+- The brief names the model and the reason; the checkpoint reports the model used.
+
 Do not duplicate this table in `AGENTS.md`, the TASKS board, or every future task body.
 
 Stay cost-aware. Do not use stronger models for routine bounded edits.
@@ -588,7 +608,10 @@ Stay cost-aware. Do not use stronger models for routine bounded edits.
 ## Git / Operator Rules
 
 - Keith / user owns Git.
-- Implementation workers never commit, push, create branches or create worktrees.
+- Implementation workers never push, never merge, never commit to `main` and never create, switch or delete branches or worktrees themselves.
+- Worktree isolation (GOV-OS-08): the control plane may give an admitted task its own git worktree on its own branch (`lane/<TASK-ID>`), created from the current `main`. The worker edits files only there. A Claude subagent worker may commit on that branch; a Cursor worker runs no git (at most `git status --short`), and the control plane commits on the branch for it.
+- Only the control plane brings a branch into `main`: it reads the diff, reruns the gates on the branch, then merges with `git merge --ff-only`; if `main` has moved since the branch was cut, it cherry-picks the branch's commits onto `main` instead (rebase stays denied). It then reruns the gates on `main` where the task's evidence needs it, and removes the worktree and the branch. No merge commits, no force push.
+- Worktrees do not change admission: two lanes, the same mutexes, write-set and HOTFILE conflicts, PACKAGE and I18N leases all still apply, because conflicting branches would clash when merged.
 - The control plane commits and pushes only work Keith has authorized, after reading the diff and rerunning the gates.
 - Do not include commit / push steps in routine prompts unless explicitly asked.
 

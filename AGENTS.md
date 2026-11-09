@@ -46,6 +46,7 @@ Report results to the control plane. The control plane updates the board and reg
 ## Conservative default
 
 If unclear: do not start, do not invent work, do not expand scope.
-Keith/user owns Git. Implementation workers never commit, push, branch or create worktrees.
+Keith/user owns Git. Implementation workers never push, never merge, never commit to main, and never create, switch or delete branches or worktrees themselves.
+A worker may be given its own worktree and branch by the control plane and must edit files only there; a Cursor worker runs no git there (at most git status --short). CLAUDE.md "Git / Operator Rules" has the details.
 The control plane commits and pushes only work Keith has authorized, after reading the diff and rerunning the gates.
-No subagents by default.
+The control plane may run an implementer as a Claude subagent under the same rules as any worker (CLAUDE.md "Subagent implementers"). A subagent never spawns further subagents.
