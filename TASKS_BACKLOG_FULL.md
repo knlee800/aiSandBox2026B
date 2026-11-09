@@ -85984,13 +85984,13 @@ taskId=COS-EVAL-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by COS-EVAL-01 (Keith chose a task of its own) — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-09 — Keith admitted it ("Run the eval"). Registered 2026-11-09 by COS-EVAL-01.
 **Task ID:** COS-EVAL-LIVE-01
 **Title:** First real-model run of the briefing injection eval
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP: registration here; the run on the staging host and its result; consolidation with a separate LOCK record (PROVIDER-LIVE).
-**Start condition:** NOT_READY. Ready when: STAGING-DEPLOY-CONN-01 is LOCKED (the eval code is on the host) and Keith approves the run and its 150,000-token cap. Keith decides.
+**Start condition:** READY (STAGING-DEPLOY-CONN-01 LOCKED aa0a630; Keith approved the run and its cap 2026-11-09). Was: Ready when: STAGING-DEPLOY-CONN-01 is LOCKED (the eval code is on the host) and Keith approves the run and its 150,000-token cap. Keith decides.
 **Depends on:** COS-EVAL-01, STAGING-DEPLOY-CONN-01.
 **Primary write scope:** services/ai-service/src/agent-harness/eval/baselines/ (the briefing results file, added at LOCK), plus docs/COS-EVAL-LIVE-01-CHECKPOINT.md.
 **Mutexes / resources:** AI-SERVICE, STAGING, PROVIDER-LIVE (no ENV or CREDIT: the runner gets the stored test key only in its own environment on the host; no settings change and no user credits).

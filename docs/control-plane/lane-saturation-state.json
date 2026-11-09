@@ -7,17 +7,17 @@
   "governance": {"owner": "NONE", "state": "UNOWNED"},
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "COS-EVAL-LIVE-01",
+      "mutexes": ["AI-SERVICE", "STAGING", "PROVIDER-LIVE"],
+      "writePaths": ["services/ai-service/src/agent-harness/eval/baselines/"],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "PROVIDER-LIVE",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
-      "runtimeNeeds": []
+      "runtimeNeeds": ["STAGING", "PROVIDER-LIVE"]
     },
     "lane2": {
       "state": "EMPTY",
@@ -3759,8 +3759,8 @@
       "taskId": "COS-EVAL-LIVE-01",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "OPTIONAL",
       "productClass": "APPROVED_FUTURE",
       "futureAuthorization": "AUTHORIZED",
@@ -5918,8 +5918,8 @@
   ],
   "runtimeAuthorization": {
     "localRuntimeAuthorized": true,
-    "stagingAuthorized": false,
-    "providerLiveAuthorized": false,
+    "stagingAuthorized": true,
+    "providerLiveAuthorized": true,
     "creditAuthorized": false,
     "testerWindowOpen": false
   }
