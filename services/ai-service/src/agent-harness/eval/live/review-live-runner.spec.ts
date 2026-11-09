@@ -6,6 +6,14 @@ import type { AIAdapterToolUseResult } from '../../../ai-execution/adapters/adap
 import { selectAdvertisedAgentHarnessTools } from '../../../ai-execution/adapters/adapter-tool-use.mapper';
 import * as harnessLoop from '../../orchestrator/agent-harness-loop';
 import * as workerProcessor from '../../../worker/worker.processor';
+import {
+  HARNESS_CONNECTOR_DATA_INSTRUCTION,
+  withWorkerHarnessInstructions,
+} from '../../../worker/connector-grants';
+import {
+  appendHarnessEnvFileInstruction,
+  HARNESS_ENV_FILE_INSTRUCTION,
+} from '../../prompts/harness-instructions';
 import { EVAL_FINAL_ANSWER_CAP } from '../eval-types';
 import { readReviewResults } from '../eval-results';
 import type { ReviewTask } from '../review-types';
@@ -88,15 +96,22 @@ describe('review live runner', () => {
     );
     expect(seen).toHaveLength(1);
     const request = seen[0];
-    const expected = workerProcessor.buildExecutionPromptParts(
+    const base = workerProcessor.buildExecutionPromptParts(
       task.handoffTask,
       workspaceContextFromInitialFiles(task.initialFiles),
       undefined,
       task.reviewerPrompt,
       { useHarness: true, executionIntent: 'conversation' },
     );
+    const expected = withWorkerHarnessInstructions(base, { connectorTools: false });
     expect(request.provider).toBe('anthropic');
     expect(request.systemPrompt).toBe(expected.system);
+    expect(request.systemPrompt).toBe(`${base.system.trim()}\n${HARNESS_ENV_FILE_INSTRUCTION}`);
+    expect(request.systemPrompt).not.toContain(HARNESS_CONNECTOR_DATA_INSTRUCTION);
+    // COS-EVAL-01: the provider receives the same system text as before.
+    expect(appendHarnessEnvFileInstruction(request.systemPrompt)).toBe(
+      appendHarnessEnvFileInstruction(base.system),
+    );
     expect(request.prompt).toBe(expected.user);
     expect(request.systemPrompt).toContain(
       `Project AI Instructions:\n${task.reviewerPrompt}`,

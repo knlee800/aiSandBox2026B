@@ -7,6 +7,14 @@ import { selectAdvertisedAgentHarnessTools } from '../../../ai-execution/adapter
 import { AnthropicAdapter } from '../../../ai-execution/adapters/anthropic-ai.adapter';
 import * as harnessLoop from '../../orchestrator/agent-harness-loop';
 import { buildExecutionPromptParts } from '../../../worker/worker.processor';
+import {
+  HARNESS_CONNECTOR_DATA_INSTRUCTION,
+  withWorkerHarnessInstructions,
+} from '../../../worker/connector-grants';
+import {
+  appendHarnessEnvFileInstruction,
+  HARNESS_ENV_FILE_INSTRUCTION,
+} from '../../prompts/harness-instructions';
 import { readResults } from '../eval-results';
 import type { EvalTask } from '../eval-types';
 import {
@@ -75,17 +83,28 @@ describe('live eval runner', () => {
       { toolResults: [] },
     );
 
-    const expected = buildExecutionPromptParts(
+    const base = buildExecutionPromptParts(
       task.userRequest,
       workspaceContextFromInitialFiles(task.initialFiles),
       undefined,
       undefined,
       { useHarness: true },
     );
+    const expected = withWorkerHarnessInstructions(base, { connectorTools: false });
     expect(seen).toHaveLength(1);
     const call = seen[0];
     expect(call.request.provider).toBe('anthropic');
     expect(call.request.systemPrompt).toBe(expected.system);
+    expect(call.request.systemPrompt).toBe(
+      `${base.system.trim()}\n${HARNESS_ENV_FILE_INSTRUCTION}`,
+    );
+    expect(call.request.systemPrompt).not.toContain(HARNESS_CONNECTOR_DATA_INSTRUCTION);
+    // COS-EVAL-01: the provider receives the same system text as before the
+    // worker's harness lines were added here (the adapter appends the .env
+    // line once and skips it when present).
+    expect(appendHarnessEnvFileInstruction(call.request.systemPrompt)).toBe(
+      appendHarnessEnvFileInstruction(base.system),
+    );
     expect(call.request.prompt).toBe(expected.user);
     expect(call.request.systemPrompt).toContain(
       'You work through the tools you are given.',

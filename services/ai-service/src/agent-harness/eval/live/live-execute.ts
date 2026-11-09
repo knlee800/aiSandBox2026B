@@ -13,6 +13,7 @@ import {
   mergeAdvertisedToolsIntoExecuteOptions,
   requireNonEmptyAdvertisedHarnessTools,
 } from '../../../worker/worker.processor';
+import { withWorkerHarnessInstructions } from '../../../worker/connector-grants';
 import type { EvalTask } from '../eval-types';
 import { scrubError } from './live-adapter';
 
@@ -112,8 +113,12 @@ export function advertisedEvalHarnessTools(): readonly AgentHarnessToolRegistryD
  *
  * The eval runner hands this function a stub request (provider "stub",
  * prompt = the raw user request). This function rebuilds the request with
- * buildExecutionPromptParts(..., { useHarness: true }) and
- * buildAIExecutionRequest, keeps the runner's executionId, sessionId and
+ * buildExecutionPromptParts(..., { useHarness: true }), then
+ * withWorkerHarnessInstructions with connectorTools false (the worker's
+ * harness lines; an Agent job has no connector grants, so only the .env
+ * line, which the Anthropic adapter also adds once, so the text the
+ * provider receives is unchanged), and buildAIExecutionRequest. It keeps
+ * the runner's executionId, sessionId and
  * model, and calls adapter.executeWithTools with the tools
  * selectAdvertisedAgentHarnessTools returns for write and validation on
  * and browser smoke off, merged the way the worker merges them.
@@ -151,12 +156,15 @@ export function createLiveExecuteFn(
         `live execute has no eval task for executionId ${executionId}`,
       );
     }
-    const promptParts = buildExecutionPromptParts(
-      task.userRequest,
-      workspaceContextFromInitialFiles(task.initialFiles),
-      undefined,
-      undefined,
-      { useHarness: true },
+    const promptParts = withWorkerHarnessInstructions(
+      buildExecutionPromptParts(
+        task.userRequest,
+        workspaceContextFromInitialFiles(task.initialFiles),
+        undefined,
+        undefined,
+        { useHarness: true },
+      ),
+      { connectorTools: false },
     );
     const executionRequest = buildAIExecutionRequest(
       {

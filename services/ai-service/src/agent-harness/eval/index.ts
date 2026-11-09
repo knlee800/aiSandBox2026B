@@ -54,3 +54,15 @@ export type {
   ReviewTask,
   ReviewTaskResult,
 } from './review-types';
+export { loadBriefingTasks, parseBriefingTask } from './briefing-loader';
+export { scoreBriefingTask } from './briefing-score';
+export { runBriefingSuite, runBriefingTask } from './briefing-runner';
+export type { BriefingRunOptions } from './briefing-runner';
+export { buildBriefingResults, writeBriefingResults } from './briefing-results';
+export type {
+  BriefingInjectedItem,
+  BriefingRunResults,
+  BriefingRunTotals,
+  BriefingTask,
+  BriefingTaskResult,
+} from './briefing-types';

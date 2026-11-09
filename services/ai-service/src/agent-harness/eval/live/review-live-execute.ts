@@ -9,6 +9,7 @@ import {
   requireNonEmptyAdvertisedHarnessTools,
   resolveWorkerExecutionIntent,
 } from '../../../worker/worker.processor';
+import { withWorkerHarnessInstructions } from '../../../worker/connector-grants';
 import type { ReviewTask } from '../review-types';
 import { scrubError } from './live-adapter';
 import {
@@ -127,12 +128,17 @@ export function createReviewLiveExecuteFn(
         `review live execute has no review task for executionId ${executionId}`,
       );
     }
-    const promptParts = buildExecutionPromptParts(
-      task.handoffTask,
-      workspaceContextFromInitialFiles(task.initialFiles),
-      undefined,
-      task.reviewerPrompt,
-      { useHarness: true, executionIntent: REVIEW_LIVE_EXECUTION_INTENT },
+    // The worker's harness lines: a reviewer job has no connector grants,
+    // so only the .env line (the Anthropic adapter adds it once either way).
+    const promptParts = withWorkerHarnessInstructions(
+      buildExecutionPromptParts(
+        task.handoffTask,
+        workspaceContextFromInitialFiles(task.initialFiles),
+        undefined,
+        task.reviewerPrompt,
+        { useHarness: true, executionIntent: REVIEW_LIVE_EXECUTION_INTENT },
+      ),
+      { connectorTools: false },
     );
     const executionRequest = buildAIExecutionRequest(
       {
