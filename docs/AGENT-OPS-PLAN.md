@@ -18,7 +18,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 
 | # | Item | What it does | Lane |
 |---|---|---|---|
-| 11 | BIZ-LIVE-03 | First live briefing; cost measured | 1 |
+| 11 | BIZ-LIVE-03 | First live briefing; cost measured (admitted 2026-11-10) | 1 |
 | 12 | CONN-03 | Message bodies | 2 |
 
 **Stage 2, Lane 2 alongside — fixes and office**

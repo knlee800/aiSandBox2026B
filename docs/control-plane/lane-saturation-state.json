@@ -7,17 +7,17 @@
   "governance": {"owner": "NONE", "state": "UNOWNED"},
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
+      "state": "ACTIVE",
+      "taskId": "BIZ-LIVE-03",
+      "mutexes": ["STAGING", "ENV", "PROVIDER-LIVE", "CREDIT"],
       "writePaths": [],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "PROVIDER-LIVE",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
-      "runtimeNeeds": []
+      "runtimeNeeds": ["STAGING", "PROVIDER-LIVE", "CREDIT"]
     },
     "lane2": {
       "state": "EMPTY",
@@ -3825,8 +3825,8 @@
       "taskId": "BIZ-LIVE-03",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "OPTIONAL",
       "productClass": "APPROVED_FUTURE",
       "futureAuthorization": "AUTHORIZED",
@@ -5962,9 +5962,9 @@
   ],
   "runtimeAuthorization": {
     "localRuntimeAuthorized": true,
-    "stagingAuthorized": false,
-    "providerLiveAuthorized": false,
-    "creditAuthorized": false,
+    "stagingAuthorized": true,
+    "providerLiveAuthorized": true,
+    "creditAuthorized": true,
     "testerWindowOpen": false
   }
 }

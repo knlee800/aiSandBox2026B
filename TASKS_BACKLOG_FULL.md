@@ -86065,13 +86065,13 @@ taskId=BIZ-LIVE-03
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — Keith admitted it ("Start BIZ-LIVE-03"). Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
 **Task ID:** BIZ-LIVE-03
 **Title:** First live briefing and its cost
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP
-**Start condition:** NOT_READY. Ready when: Keith's account connected. Keith decides. (STAGING-DEPLOY-CONN-01 LOCKED aa0a630; COS-EVAL-LIVE-02 LOCKED 2026-11-10, the eval passed 9 of 9 on the real model; COS-EVAL-LIVE-01 did not pass.)
+**Start condition:** READY (Keith decided 2026-11-10; he connects his account as the first step of this task). Was: Ready when: Keith's account connected. Keith decides. (STAGING-DEPLOY-CONN-01 LOCKED aa0a630; COS-EVAL-LIVE-02 LOCKED 2026-11-10, the eval passed 9 of 9 on the real model; COS-EVAL-LIVE-01 did not pass.)
 **Depends on:** STAGING-DEPLOY-CONN-01, COS-EVAL-LIVE-02.
 **Primary write scope:** records; host state.
 **Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT.
