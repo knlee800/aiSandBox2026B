@@ -84289,6 +84289,7 @@ nature=IMPLEMENTATION
 **Holds:** Step 5 of the harness reset order: an RPG-style office where agents are shown working. Graphics and UI reference per the PRD future office UI note.
 **Named in:** docs/GOV-HARNESS-RESET-01-DECISION.md reset order step 5; PRD.md section 11 future office UI note.
 **Plan, 2026-11-05:** docs/RPG-OFFICE-01-PLAN.md, approved by Keith. First slice OFFICE-01 (registered; prerequisites USAGE-DURATION-01 and RUN-LIST-COLLAB-01). Items of this umbrella: OFFICE-02 push updates, OFFICE-03 characters, OFFICE-04 animation, OFFICE-05 collaboration in the office, OFFICE-06 run detail, OFFICE-07 cancel from the office, an optional agentId filter on the run list, the real art source (decided before OFFICE-03), "Open workspace" going to the run's session, and the deploy and Keith's browser check of OFFICE-01. The umbrella stays NOT_READY; each item is registered as its own task when chosen.
+**Slices registered 2026-11-09 (GOV-ONE-PLAN-01):** OFFICE-02 to OFFICE-07; the umbrella locks when the last slice it keeps locks.
 **Item done, 2026-11-05:** the deploy and Keith's browser check of OFFICE-01 are done by STAGING-DEPLOY-04 (staging at 1aee7ed).
 
 #### Acceptance criteria
@@ -86781,6 +86782,291 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** A wider briefing once the measured cost is known (G8). The first template stays Inbox-only until then.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.5
+
+### GOV-ONE-PLAN-01 — One plan of the project
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-ONE-PLAN-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** COMPLETE AND LOCKED — 2026-11-09 — docs/AGENT-OPS-PLAN.md is the project's only plan; section 0 lists every open item in order; 10 tasks registered; checkpoint docs/GOV-ONE-PLAN-01-CHECKPOINT.md. No implementation lane. GOVERNANCE released UNOWNED.
+**Task ID:** GOV-ONE-PLAN-01
+**Title:** One plan of the project
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE
+**Lifecycle:** 2-STEP
+**Start condition:** READY — Keith, 2026-11-09
+**Depends on:** none.
+**Primary write scope:** docs/AGENT-OPS-PLAN.md, docs/GOV-ONE-PLAN-01-CHECKPOINT.md, TASKS.md, TASKS_BACKLOG_FULL.md, docs/control-plane/lane-saturation-state.json, docs/control-plane/SATURATION_PROOF.json.
+**Mutexes / resources:** GOVERNANCE, only during record writes.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** records.
+**Revert isolation:** n/a.
+**Scope:** one plan, one ordered list, missing tasks registered, old tasks listed for Keith's decision.
+**Plan:** docs/AGENT-OPS-PLAN.md section 0
+
+FOLLOWUPS: 10 registered / 0 superseded / 0 dropped / 0 undisposed (registered: OFFICE-02, OFFICE-03, OFFICE-04, OFFICE-05, OFFICE-06, OFFICE-07, STAGING-DEPLOY-FD-01, FRONTDOOR-LIVE-01, STAGING-DEPLOY-CHAT-01, CHAT-LIVE-01, all OPTIONAL, Keith 2026-11-09; listed in section 0 for Keith's decision, not follow-ups of this task: the security concerns check, the PRD future items without tasks, the ops duties and the old tasks of stage 12).
+
+### OFFICE-02 — Push updates (SSE) replacing polling
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=OFFICE-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-ONE-PLAN-01 — not admitted.
+**Task ID:** OFFICE-02
+**Title:** Push updates (SSE) replacing polling
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP
+**Start condition:** NOT_READY. Ready when: polling proves costly. Keith decides.
+**Depends on:** OFFICE-01.
+**Primary write scope:** set at admission.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** set at admission.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/RPG-OFFICE-01-PLAN.md 2026-11-05 and the one plan 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Push updates (SSE) replacing polling.
+**Plan:** docs/AGENT-OPS-PLAN.md section 0 item 24
+
+### OFFICE-03 — Office characters (per-agent figures; user agents pick a look; appearance column)
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=OFFICE-03
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-ONE-PLAN-01 — not admitted.
+**Task ID:** OFFICE-03
+**Title:** Office characters (per-agent figures; user agents pick a look; appearance column)
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP
+**Start condition:** NOT_READY. Ready when: Keith decides the art source. Keith decides.
+**Depends on:** OFFICE-01.
+**Primary write scope:** set at admission.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** set at admission.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/RPG-OFFICE-01-PLAN.md 2026-11-05 and the one plan 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Office characters (per-agent figures; user agents pick a look; appearance column).
+**Plan:** docs/AGENT-OPS-PLAN.md section 0 item 21
+
+### OFFICE-04 — Office animation (typing and idle loops from the status; reduced motion honoured)
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=OFFICE-04
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-ONE-PLAN-01 — not admitted.
+**Task ID:** OFFICE-04
+**Title:** Office animation (typing and idle loops from the status; reduced motion honoured)
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP
+**Start condition:** NOT_READY. Ready when: OFFICE-03 LOCKED. Keith decides.
+**Depends on:** OFFICE-03.
+**Primary write scope:** set at admission.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** set at admission.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/RPG-OFFICE-01-PLAN.md 2026-11-05 and the one plan 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Office animation (typing and idle loops from the status; reduced motion honoured).
+**Plan:** docs/AGENT-OPS-PLAN.md section 0 item 22
+
+### OFFICE-05 — Collaboration in the office (team desks show hand-offs; collaborationRunId and builderProfileId on ListedRunDto or the collaboration runs route)
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=OFFICE-05
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-ONE-PLAN-01 — not admitted.
+**Task ID:** OFFICE-05
+**Title:** Collaboration in the office (team desks show hand-offs; collaborationRunId and builderProfileId on ListedRunDto or the collaboration runs route)
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP
+**Start condition:** NOT_READY. Ready when: Keith admits; not while a CONN gateway slice holds GATEWAY. Keith decides.
+**Depends on:** OFFICE-01.
+**Primary write scope:** set at admission.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** set at admission.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/RPG-OFFICE-01-PLAN.md 2026-11-05 and the one plan 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Collaboration in the office (team desks show hand-offs; collaborationRunId and builderProfileId on ListedRunDto or the collaboration runs route).
+**Plan:** docs/AGENT-OPS-PLAN.md section 0 item 13
+
+### OFFICE-06 — Run detail (a desk panel opens saved output through GET /api/ai/executions/:id)
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=OFFICE-06
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-ONE-PLAN-01 — not admitted.
+**Task ID:** OFFICE-06
+**Title:** Run detail (a desk panel opens saved output through GET /api/ai/executions/:id)
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP
+**Start condition:** NOT_READY. Ready when: Keith admits. Keith decides.
+**Depends on:** OFFICE-01.
+**Primary write scope:** set at admission.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** set at admission.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/RPG-OFFICE-01-PLAN.md 2026-11-05 and the one plan 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Run detail (a desk panel opens saved output through GET /api/ai/executions/:id).
+**Plan:** docs/AGENT-OPS-PLAN.md section 0 item 2
+
+### OFFICE-07 — Cancel from the office
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=OFFICE-07
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-ONE-PLAN-01 — not admitted.
+**Task ID:** OFFICE-07
+**Title:** Cancel from the office
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP
+**Start condition:** NOT_READY. Ready when: the cancellation-authorization concern is confirmed covered (item 26). Keith decides.
+**Depends on:** OFFICE-01, COLLAB-CANCEL-01.
+**Primary write scope:** set at admission.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** set at admission.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/RPG-OFFICE-01-PLAN.md 2026-11-05 and the one plan 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Cancel from the office.
+**Plan:** docs/AGENT-OPS-PLAN.md section 0 item 23
+
+### STAGING-DEPLOY-FD-01 — Deploy the front door (phase 2)
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-FD-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-ONE-PLAN-01 — not admitted.
+**Task ID:** STAGING-DEPLOY-FD-01
+**Title:** Deploy the front door (phase 2)
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP
+**Start condition:** NOT_READY. Ready when: COS-DRAFTS-01 LOCKED. Keith decides.
+**Depends on:** COS-DRAFTS-01.
+**Primary write scope:** records; host state.
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** redeploy.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy the front door (phase 2).
+**Plan:** docs/AGENT-OPS-PLAN.md section 0 item 38
+
+### FRONTDOOR-LIVE-01 — Live check: Keith gives the Chief of Staff a job; it passes work on and answers with the results
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=FRONTDOOR-LIVE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-ONE-PLAN-01 — not admitted.
+**Task ID:** FRONTDOOR-LIVE-01
+**Title:** Live check: Keith gives the Chief of Staff a job; it passes work on and answers with the results
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP
+**Start condition:** NOT_READY. Ready when: STAGING-DEPLOY-FD-01 LOCKED. Keith decides.
+**Depends on:** STAGING-DEPLOY-FD-01.
+**Primary write scope:** records; host state.
+**Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** runs off.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Live check: Keith gives the Chief of Staff a job; it passes work on and answers with the results.
+**Plan:** docs/AGENT-OPS-PLAN.md section 0 item 38
+
+### STAGING-DEPLOY-CHAT-01 — Deploy the Discord channel
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-CHAT-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-ONE-PLAN-01 — not admitted.
+**Task ID:** STAGING-DEPLOY-CHAT-01
+**Title:** Deploy the Discord channel
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP
+**Start condition:** NOT_READY. Ready when: CHAT-DISCORD-01 LOCKED. Keith decides.
+**Depends on:** CHAT-DISCORD-01.
+**Primary write scope:** records; host state.
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** redeploy.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy the Discord channel.
+**Plan:** docs/AGENT-OPS-PLAN.md section 0 item 40
+
+### CHAT-LIVE-01 — Live check in Discord: link the account by code, start a workflow, receive the result
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHAT-LIVE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-ONE-PLAN-01 — not admitted.
+**Task ID:** CHAT-LIVE-01
+**Title:** Live check in Discord: link the account by code, start a workflow, receive the result
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP
+**Start condition:** NOT_READY. Ready when: STAGING-DEPLOY-CHAT-01 LOCKED. Keith decides.
+**Depends on:** STAGING-DEPLOY-CHAT-01.
+**Primary write scope:** records; host state.
+**Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** runs off.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Live check in Discord: link the account by code, start a workflow, receive the result.
+**Plan:** docs/AGENT-OPS-PLAN.md section 0 item 40
 
 ### COLLAB-FANOUT-01 — Fan-out hand-offs with one approval and a combine step
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

@@ -1,7 +1,163 @@
-# GOV-BIZ-AGENT-OPS-PLAN-01 — User workflows: connectors, a built-in briefing template, the agent spec, the Chief of Staff front door, chat channels and triggers
+# aiSandBox — The plan
+**This is the project's only plan (GOV-ONE-PLAN-01, Keith 2026-11-09).** Section 0 lists every open item in the order we do them. Older plan files (docs/RPG-OFFICE-01-PLAN.md, docs/AGENT-BIZ-KNOWLEDGE-PLAN.md, the GOV-ACCESS-PLAN-01 and GOV-COLLAB-PLAN-01 records and others) are design notes for the tasks they name; nothing is planned outside this file. TASKS.md remains the only scheduler: this order admits nothing. Sections 1 to 8 are the user-workflows design (GOV-BIZ-AGENT-OPS-PLAN-01).
 
 **Status:** approved by Keith on 2026-11-09 (decisions A1-A11 below). Registrations in the closing record.
 **Task:** GOV-BIZ-AGENT-OPS-PLAN-01 (TASKS_BACKLOG_FULL.md:85678-85722). Design only; nothing here admits work. Nothing here implements RSI (ARCHITECTURE.md:1056-1064). No private beta; basic_auth stays; two lanes. Drafted read-only by Fable 5.1; reviewed by Grok and Opus 5.5.
+
+### 0. Every open item, in order
+
+Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No lane" is governance or ops. Every item is a registered task unless marked otherwise; the task body holds its ready condition.
+
+**Stage 1 — start now**
+
+| # | Item | What it does | Lane |
+|---|---|---|---|
+| 1 | CONN-01 | MCP server for mail headers and today's calendar; deploy build list | 1 |
+| 2 | OFFICE-06 | Click an office desk to see that agent's saved results | 2 |
+| 3 | GOV-GOOGLE-VERIFY-01 | Google verification of the platform's app (option A), when Keith is ready | No lane |
+
+**Stage 2 — connections and the briefing template (section 4, phase 1)**
+
+| # | Item | What it does | Lane |
+|---|---|---|---|
+| 4 | CONN-02A | Encrypted storage for the app password and calendar link | 1 |
+| 5 | CONN-02B | Gateway to MCP server: allowlist, internal-address guard, audit | 1 |
+| 6 | CONN-UI-01 | Connections page | 2 |
+| 7 | CONN-GRANT-01 | Agents may use the connector tools (frozen-contract change; alone) | 1 |
+| 8 | BIZ-BRIEF-01 | Morning briefing template | 1 |
+| 9 | COS-EVAL-01 | Injection eval | 1 |
+| 10 | STAGING-DEPLOY-CONN-01 | Deploy; Keith connects his mail and calendar | 1 |
+| 11 | BIZ-LIVE-03 | First live briefing; cost measured | 1 |
+| 12 | CONN-03 | Message bodies | 2 |
+
+**Stage 2, Lane 2 alongside — fixes and office**
+
+| # | Item | What it does |
+|---|---|---|
+| 13 | OFFICE-05 | Office shows team hand-offs (before or after the gateway slices, not during) |
+| 14 | AGENT-WRITE-UI-01 | Agent mode says when file changes are off for the account |
+| 15 | ADMIN-CSRF-01 | CSRF guard on the admin credits route |
+| 16 | HARNESS-FIXES-01 | Small harness fixes |
+| 17 | BUILDER-POLISH-01 | Builder polish and hardcoded English |
+| 18 | USAGE-DATA-01 | Run duration never saved; admin quota views |
+| 19 | FE-TEST-COVERAGE-01 | Frontend test gaps |
+| 20 | DESIGN-GAPS-01 | One primary and one success colour, focus ring, spinner, CJK font |
+| 21 | OFFICE-03 | Office characters; needs Keith's art-source decision |
+| 22 | OFFICE-04 | Office animation |
+| 23 | OFFICE-07 | Cancel a run from the office |
+| 24 | OFFICE-02 | Push updates, only if polling proves costly |
+| 25 | GOV-ARCH-SYNC-01 | ARCHITECTURE.md caught up with what is built |
+| 26 | Security concerns check (not a task) | Confirm the six concerns in docs/GOV-RPG-UI-COMPAT-01-REVIEW-RECORD.md (execution streaming and cancellation authorization, chat-messages add-by-session, Socket.IO rooms, stream cleanup, guard case-matching, public v1 execute ownership) are covered by AUTH-GUARD-01, AUTH-OWNER-01 and the Socket.IO auth now on staging; register a task for any that is not |
+
+**Stage 3 — user workflows (section 4, phase 1 continued)**
+
+| # | Item | What it does |
+|---|---|---|
+| 27 | AGENT-SPEC-01 | Workflow form as fields: tone, language, model |
+| 28 | BIZ-USER-01A | Save workflows: copy, blank, budget, access (BIZ-USER-01 is their umbrella) |
+| 29 | BIZ-USER-01B | Create Agent editor |
+| 30 | BIZ-USER-01C | Run a workflow, test run, budget check |
+| 31 | RESULTS-01 | Results list and run history |
+| 32 | STAGING-DEPLOY-WF-01, BIZ-LIVE-04 | Deploy; Keith runs his own workflow live |
+| 33 | CONN-OAUTH-01 | Connect Google, after verification |
+
+**Stage 4 — Chief of Staff front door (phase 2)**
+
+| # | Item | What it does |
+|---|---|---|
+| 34 | COS-FRONTDOOR-01 | Owner talks only to the Chief of Staff; results return to it |
+| 35 | USER-TEAMS-01 | User teams and who hands off to whom |
+| 36 | APPROVAL-SET-01 | Approval setting |
+| 37 | COS-DRAFTS-01 | Chief of Staff drafts agents and workflows for approval |
+| 38 | STAGING-DEPLOY-FD-01, FRONTDOOR-LIVE-01 | Deploy; live check of the front door |
+
+**Stage 5 — chat (phase 3)**
+
+| # | Item | What it does |
+|---|---|---|
+| 39 | CHAT-DISCORD-01 | Discord |
+| 40 | STAGING-DEPLOY-CHAT-01, CHAT-LIVE-01 | Deploy; live check in Discord |
+| 41 | CHAT-LINE-01, CHAT-WHATSAPP-01, CHAT-WECOM-01, CHAT-SLACK-01 | Later channels |
+
+**Stage 6 — triggers (phase 4)**
+
+| # | Item | What it does |
+|---|---|---|
+| 42 | TRIGGER-01, TRIGGER-UI-01, STAGING-DEPLOY-TRIG-01, TRIGGER-LIVE-01 | Schedules, page, deploy, live check |
+| 43 | TRIGGER-EVENT-01 | Before a meeting |
+| 44 | TRIGGER-MAIL-01 | New mail matching a filter |
+| 45 | TRIGGER-MORE-01 | After another workflow, webhook, new knowledge file |
+
+**Stage 7 — before anyone but Keith uses it**
+
+| # | Item | What it does |
+|---|---|---|
+| 46 | ACCESS-READY-01 | Charge Agent runs, real per-user limit, per-feature write switch |
+| 47 | SIGNUP-ALLOWLIST-01 | Sign-up allowlist (READY, parked) |
+| 48 | ACCESS-01E | Credits per model; models per plan |
+| 49 | ACCESS-01G | Admin settings store with audit |
+| 50 | ACCESS-01H | Limits page |
+| 51 | ACCESS-01I | Plan entitlements; knowledge upload charges |
+| 52 | ACCESS-01J | OpenAI and xAI tool-loop continuation fix |
+| 53 | LIMITS-PER-USER-01 | Per-user limit overrides |
+| 54 | KNOW-04 | Knowledge upload summaries; needs Keith's charging decision |
+
+**Stage 8 — later extras**
+
+| # | Item | What it does |
+|---|---|---|
+| 55 | SKILL-01 | Reusable steps |
+| 56 | BRIEF-WIDE-01 | Wider briefing |
+| 57 | CONN-DRAFT-01 | Drafts never sent |
+| 58 | ACTIONS-APPROVAL-01 | Sending behind approval |
+| 59 | RESULTS-MAIL-01 | Results by email |
+| 60 | CONN-OUTLOOK-01 | Outlook mail |
+| 61 | AGENT-COLLAB-BIZ-01 | Tickets, decisions, drafts as stored items |
+| 62 | BIZ-NOPROJECT-01 | Runs without a project |
+| 63 | RSI-00 stages S3 to S8 | S3 eval sets; S4 persisted traces and owner feedback; S5 agents propose instruction and skill changes; S6 experiment environment; S7 agents propose code through the control plane; S8 RSI on RSI (S1 and S2 done) |
+
+**Stage 9 — only if a condition is met**
+
+| # | Item | Condition |
+|---|---|---|
+| 64 | COLLAB-FANOUT-01 | Parked by Keith |
+| 65 | COLLAB-REVIEWERS-01 | After fan-out and the limits task |
+| 66 | COLLAB-LIMITS-ENV-01 | When more agents per run are needed |
+| 67 | HARNESS-WRITE-VETO-01 | If a builder profile defines harness settings |
+| 68 | CHECKLIST-LINT-01 | If checkpoints miss their CHECKLIST line |
+| 69 | AGENT-KNOWLEDGE-01 | Old knowledge umbrella, mostly built by KNOW-01 to 03 |
+
+**Stage 10 — approved future in PRD.md section 11 with no task yet (registered when Keith chooses)**
+
+| # | Item |
+|---|---|
+| 70 | Functional Legal Advisor agent |
+| 71 | Google sign-in (login) activation |
+| 72 | Apple sign-in activation |
+| 73 | Live Stripe payments and subscriptions |
+| 74 | Multi-Builder profiles, specialties, routing |
+| 75 | Agent Harness as the default Builder experience |
+| 76 | Deeper RPG / simulation |
+| 77 | Public agent ecosystem |
+| 78 | Shared company knowledge across users (PRD section 11 rows on shared knowledge) |
+
+**Stage 11 — ops duties and dated decisions (no lane)**
+
+| # | Item | When |
+|---|---|---|
+| 79 | Weekly encrypted backup copy off the staging host | Every week |
+| 80 | Old instance aisandbox-staging: delete it (AUTH-9) or a cost-approved extension; never start it | Review 2026-11-20, decision 2026-11-25 |
+
+**Stage 12 — old tasks from before the clean rebuild; Keith decides whether to drop each**
+
+| # | Item |
+|---|---|
+| 81 | AGENT-PLATFORM-EXEC-01C, AGENT-PLATFORM-EXEC-01C6, AGENT-PLATFORM-EXEC-01C6A (September harness plans for the old host) |
+| 82 | PREVIEW-STOP-STAGING-APPLY-01 (old PM2 staging) |
+| 83 | PM2-RECOVERY-P5-JOURNAL-01, PM2-RECOVERY-P5-INVENTORY-01, PM2-RECOVERY-P5-J2-SEARCH-01, PM2-RECOVERY-P5-J2-U1-PRIV-INSPECTION-01 (old-host recovery) |
+| 84 | PROJ-03-D0b (PLANNED), AGENT-HARNESS-05B6 (ACTIVE), PRIVATE-BETA-STAGING-EXECUTION-04I2A (FAILED) — statuses never closed |
+
+A new item enters this list in the record that registers it. A finished item leaves it in its LOCK record.
 
 ### 1. Goal and decisions (Keith, 2026-11-08 and 2026-11-09)
 
