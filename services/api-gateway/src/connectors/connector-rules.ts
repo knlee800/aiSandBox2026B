@@ -66,6 +66,16 @@ export function isConnectorHostName(hostname: string): boolean {
   return labels.every((label) => /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i.test(label));
 }
 
+export function isBlockedConnectorHostname(hostname: string): boolean {
+  const host = hostname.toLowerCase().replace(/\.+$/, '');
+  return (
+    host === 'localhost' ||
+    host.endsWith('.localhost') ||
+    host.endsWith('.local') ||
+    host.endsWith('.internal')
+  );
+}
+
 export function isConnectorIcalUrl(value: unknown): value is string {
   if (typeof value !== 'string') return false;
   if (value.length === 0 || value.length > ICAL_URL_MAX_LENGTH) return false;
@@ -78,7 +88,8 @@ export function isConnectorIcalUrl(value: unknown): value is string {
   }
   if (parsed.protocol !== 'https:') return false;
   if (parsed.username !== '' || parsed.password !== '') return false;
-  return isConnectorHostName(parsed.hostname);
+  if (!isConnectorHostName(parsed.hostname)) return false;
+  return !isBlockedConnectorHostname(parsed.hostname);
 }
 
 export function connectorBodyIsTooLarge(request: ConnectorHttpRequest): boolean {

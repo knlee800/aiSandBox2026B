@@ -1,4 +1,6 @@
 import {
+  BadGatewayException,
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -6,9 +8,11 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Param,
   Post,
   Req,
+  ServiceUnavailableException,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
@@ -16,8 +20,18 @@ import { Request } from 'express';
 import { AuthenticatedUser } from '../auth/authenticated-user.decorator';
 import { ApiKeyIdentity } from '../auth/api-key.config';
 import { SessionOrApiKeyAuthGuard } from '../auth/session-or-api-key.guard';
-import { assertConnectorCredentialsConfigured } from './connector-crypto';
-import { assertConnectorBodyLimit } from './connector-input';
+import { ConnectorBroker } from './connector-broker';
+import {
+  CONNECTOR_CREDENTIALS_UNAVAILABLE_MESSAGE,
+  assertConnectorCredentialsConfigured,
+} from './connector-crypto';
+import { assertConnectorBodyLimit, parseConnectorKind } from './connector-input';
+import {
+  CALENDAR_VERIFY_FAILED_MESSAGE,
+  MAIL_VERIFY_FAILED_MESSAGE,
+  toolForKind,
+  verifyArguments,
+} from './connector-servers';
 import {
   ConnectorConnectionPublic,
   ConnectorsService,
@@ -28,7 +42,10 @@ import {
 @Controller('connectors')
 @UseGuards(SessionOrApiKeyAuthGuard)
 export class ConnectorsController {
-  constructor(private readonly connectors: ConnectorsService) {}
+  constructor(
+    private readonly connectors: ConnectorsService,
+    private readonly broker: ConnectorBroker,
+  ) {}
 
   @Post('imap')
   @HttpCode(HttpStatus.OK)
@@ -59,6 +76,40 @@ export class ConnectorsController {
   ): Promise<{ connections: ConnectorConnectionPublic[] }> {
     const caller = this.assertReady(identity, request);
     return this.connectors.list(caller.userId);
+  }
+
+  @Post(':kind/verify')
+  @HttpCode(HttpStatus.OK)
+  async verify(
+    @AuthenticatedUser() identity: ApiKeyIdentity,
+    @Req() request: Request,
+    @Param('kind') kind: string,
+  ): Promise<{ ok: true; lastVerifiedAt: string }> {
+    const caller = this.assertReady(identity, request);
+    const parsedKind = parseConnectorKind(kind);
+    try {
+      await this.broker.callConnectorTool({
+        userId: caller.userId,
+        toolId: toolForKind(parsedKind).id,
+        args: verifyArguments(parsedKind),
+        action: 'connector_verify',
+      });
+    } catch (error) {
+      if (
+        error instanceof ServiceUnavailableException &&
+        error.message === CONNECTOR_CREDENTIALS_UNAVAILABLE_MESSAGE
+      ) {
+        throw error;
+      }
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadGatewayException(
+        parsedKind === 'imap' ? MAIL_VERIFY_FAILED_MESSAGE : CALENDAR_VERIFY_FAILED_MESSAGE,
+      );
+    }
+    const lastVerifiedAt = await this.connectors.markVerified(caller.userId, parsedKind);
+    return { ok: true, lastVerifiedAt };
   }
 
   @Delete(':kind')

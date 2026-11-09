@@ -18,6 +18,7 @@
     "migration:create": "typeorm migration:create"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
     "@nestjs/common": "^10.3.0",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^10.3.0",

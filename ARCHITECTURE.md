@@ -49,8 +49,11 @@ All paths are relative to root.
 services/api-gateway/
 services/ai-service/
 services/container-manager/
+services/connectors-mcp/
 frontend/
 ```
+
+`services/connectors-mcp/` (approved by Keith 2026-11-08, GOV-BIZ-AGENT-OPS-PLAN-01; built by CONN-01) is the platform-written MCP server for read-only mail headers and today's calendar. It is not a network service: the Gateway starts it as a stdio child process.
 
 Any change to this layout requires explicit approval.
 
@@ -647,7 +650,10 @@ POST /api/internal/sessions/:id/error
 POST /api/internal/git-checkpoints
 POST /api/internal/executions/:id/finalize-accounting
 POST /api/internal/executions/:id/confirm-build-apply
+POST /api/internal/connectors/call
 ```
+
+`POST /api/internal/connectors/call` (CONN-02B) runs one allowlisted connector tool for a user who has that connection; it is behind the global InternalServiceAuthGuard like the other `/api/internal/` routes. The per-job signed grant check is added by CONN-GRANT-01.
 
 Public confirm-build-apply does not replace the internal route. Staging browsers use the **public** Gateway route via Caddy.
 
@@ -983,6 +989,7 @@ The original walking-character / town **simulation** is **not implemented**. CUR
 | User-created agents as a fully executable runtime platform | **FUTURE** — NOT IMPLEMENTED (dedicated runtime, Harness/tool loop, tools/knowledge/skills, per-agent models, autonomous multi-turn execution). Bounded Ask and Build on the existing Builder runtime are CURRENT. |
 | Referral / agent collaboration **product** runtime | **FUTURE** — not the 07C in-memory precursor |
 | Durable orchestration / persisted referrals / shared-project writes | **FUTURE** |
+| Connector broker and platform-written MCP server (`services/api-gateway/src/connectors/`, `services/connectors-mcp/`) | IMPLEMENTED, not deployed (CONN-01, CONN-02A, CONN-02B, 2026-11-09): encrypted per-owner mail and calendar credentials, an allowlist of one platform-run server with the platform's own tool descriptions, a stdio child started by absolute path with only PATH and NODE_ENV, read-only IMAP headers and today's calendar, content-free audit rows. No agent can use it until CONN-GRANT-01; user-supplied servers are refused |
 | Knowledge base runtime | **FUTURE / PLANNED** |
 | Work objects (tickets, decisions, referrals) | **FUTURE / PLANNED** |
 | Multi-agent real-time collaboration | **FUTURE / PLANNED** |

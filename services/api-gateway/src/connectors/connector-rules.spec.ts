@@ -72,7 +72,7 @@ describe('connector input checks', () => {
     expect(isConnectorIcalUrl(`${fitted}a`)).toBe(false);
     expect(isConnectorIcalUrl('https://calendar.example.com/feeds/token')).toBe(true);
     expect(isConnectorIcalUrl('https://calendar.example.com:443/feeds/token')).toBe(true);
-    expect(isConnectorIcalUrl('https://localhost/feeds/token')).toBe(true);
+    expect(isConnectorIcalUrl('https://localhost/feeds/token')).toBe(false);
     expect(isConnectorIcalUrl('http://calendar.example.com/feeds/token')).toBe(false);
     expect(isConnectorIcalUrl('https://user:secret@calendar.example.com/feeds/token')).toBe(false);
     expect(isConnectorIcalUrl('https://user@calendar.example.com/feeds/token')).toBe(false);
@@ -85,6 +85,27 @@ describe('connector input checks', () => {
     await expectRejected(parseIcalConnection({ url: secretUrl }), ICAL_URL_MESSAGE, 'ical-secret-token');
     const parsed = await parseIcalConnection({ url: 'https://calendar.example.com/feeds/ical-secret-token' });
     expect(parsed.url).toBe('https://calendar.example.com/feeds/ical-secret-token');
+  });
+
+  it('refuses localhost and names ending in .localhost, .local or .internal', async () => {
+    const refused = [
+      'https://localhost/feeds/token',
+      'https://LOCALHOST/feeds/token',
+      'https://localhost:443/feeds/token',
+      'https://foo.localhost/feeds/token',
+      'https://printer.local/feeds/token',
+      'https://Foo.Local/feeds/token',
+      'https://host.internal/feeds/token',
+      'https://calendar.example.internal/feeds/token',
+    ];
+    for (const url of refused) {
+      expect(isConnectorIcalUrl(url)).toBe(false);
+      await expectRejected(parseIcalConnection({ url }), ICAL_URL_MESSAGE, 'token');
+    }
+    expect(isConnectorIcalUrl('https://calendar.example.com/feeds/token')).toBe(true);
+    expect(isConnectorIcalUrl('https://localhost.example.com/feeds/token')).toBe(true);
+    expect(isConnectorIcalUrl('https://internal.example.com/feeds/token')).toBe(true);
+    expect(isConnectorIcalUrl('https://notlocalhost.example.com/feeds/token')).toBe(true);
   });
 
   it('treats a request body over 4 KB as too large and a 4 KB body as allowed', () => {

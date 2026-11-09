@@ -132,6 +132,24 @@ export class ConnectorsService {
     }
   }
 
+  async markVerified(userId: string, kind: ConnectorKind): Promise<string> {
+    try {
+      const existing = await this.connections.findOne({ where: { userId, kind } });
+      if (!existing || existing.userId !== userId || existing.kind !== kind) {
+        throw new NotFoundException(CONNECTION_NOT_FOUND_MESSAGE);
+      }
+      const lastVerifiedAt = new Date();
+      existing.lastVerifiedAt = lastVerifiedAt;
+      const saved = await this.connections.save(existing);
+      const verified = saved.lastVerifiedAt instanceof Date ? saved.lastVerifiedAt : lastVerifiedAt;
+      return verified.toISOString();
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      this.logger.error('connector verify save failed');
+      throw new InternalServerErrorException(SAVE_FAILED_MESSAGE);
+    }
+  }
+
   private async writeConnection(input: {
     userId: string;
     kind: ConnectorKind;

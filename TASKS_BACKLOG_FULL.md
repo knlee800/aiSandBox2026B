@@ -85828,7 +85828,7 @@ taskId=CONN-02B
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — STAGE-START COMPLETE — 2026-11-09 — Keith approved the stage-start (docs/CONN-02B-STAGE-START.md); implementation next (Cursor grok-4.7-xhigh). Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
+**Status:** COMPLETE AND LOCKED — 2026-11-09. LANE-DONE and LOCKED by the control plane; Lane 1, GATEWAY and PACKAGE released. Connector broker, allowlist, stdio child with only PATH and NODE_ENV, internal call route, Verify, content-free audit, connect-time localhost refusal; ARCHITECTURE.md updated in this record; not deployed. Checkpoint: docs/CONN-02B-CHECKPOINT.md. Stage-start docs/CONN-02B-STAGE-START.md. Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
 **Task ID:** CONN-02B
 **Title:** Connector broker, allowlist, SSRF guard and audit
 **Workstream:** AGENT (taxonomy only; zero admission weight)

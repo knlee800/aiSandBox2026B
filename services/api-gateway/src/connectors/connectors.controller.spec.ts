@@ -6,7 +6,13 @@ import request from 'supertest';
 import { SessionOrApiKeyAuthGuard } from '../auth/session-or-api-key.guard';
 import { AuditEventEntity } from '../entities/audit-event.entity';
 import { ConnectorConnection } from '../entities/connector-connection.entity';
+import { ConnectorBroker } from './connector-broker';
+import { ConnectorMcpSession } from './connector-child';
 import { ConnectorDecryptError, decryptConnectorSecret } from './connector-crypto';
+import {
+  CALENDAR_VERIFY_FAILED_MESSAGE,
+  MAIL_VERIFY_FAILED_MESSAGE,
+} from './connector-servers';
 import { ConnectorsController } from './connectors.controller';
 import { ConnectorsService } from './connectors.service';
 import {
@@ -39,6 +45,7 @@ const KEY = randomBytes(32).toString('base64');
 describe('ConnectorsController', () => {
   let app: INestApplication;
   let repo: MemoryConnectionRepository;
+  let opener: jest.Mock;
   const logs: string[] = [];
   let restoreLogs: () => void = () => undefined;
   const originalKey = process.env.CONNECTOR_CREDENTIALS_KEY;
@@ -48,10 +55,15 @@ describe('ConnectorsController', () => {
     logs.length = 0;
     restoreLogs = watchLogs(logs);
     repo = new MemoryConnectionRepository();
+    opener = jest.fn(async () => {
+      throw new Error('connector opener was not stubbed');
+    });
+    const broker = new ConnectorBroker(repo as never, repo.audit as never, opener);
     const moduleRef = await Test.createTestingModule({
       controllers: [ConnectorsController],
       providers: [
         ConnectorsService,
+        { provide: ConnectorBroker, useValue: broker },
         { provide: getRepositoryToken(ConnectorConnection), useValue: repo },
       ],
     })
@@ -442,7 +454,159 @@ describe('ConnectorsController', () => {
     expectAbsent([PASSWORD, NEXT_PASSWORD, EMAIL, OTHER_EMAIL, ICAL, ICAL_TOKEN], JSON.stringify(repo.audit.rows));
     expect(repo.rows).toHaveLength(0);
   });
+
+  it('sets last_verified_at when verify succeeds and returns a fixed failure without provider text', async () => {
+    await authed()
+      .post('/api/connectors/imap')
+      .send({ preset: 'gmail', username: EMAIL, appPassword: PASSWORD })
+      .expect(200);
+    await authed().post('/api/connectors/ical').send({ url: ICAL }).expect(200);
+
+    const mailSession = scriptedSession({
+      content: [{ type: 'text', text: JSON.stringify({ messages: [{ subject: 'Secret-Subject-Token' }] }) }],
+    });
+    opener.mockImplementationOnce(async () => mailSession);
+    const verified = await authed().post('/api/connectors/imap/verify').expect(200);
+    expect(verified.body.ok).toBe(true);
+    expect(verified.body.lastVerifiedAt).toEqual(expect.any(String));
+    expect(new Date(verified.body.lastVerifiedAt).toISOString()).toBe(verified.body.lastVerifiedAt);
+    expect(Object.keys(verified.body).sort()).toEqual(['lastVerifiedAt', 'ok']);
+    expect(verified.text.includes('Secret-Subject-Token')).toBe(false);
+    expect(verified.text.includes('SERVER_MAIL_DO_NOT_PASS')).toBe(false);
+    expect(verified.text.includes(PASSWORD)).toBe(false);
+    mailSession.emitExit();
+    expect(mailSession.calls[0]).toEqual({
+      name: 'mail_list_unread_metadata',
+      args: { preset: 'gmail', username: EMAIL, appPassword: PASSWORD, limit: 1 },
+    });
+    expect(repo.rows.find((row) => row.kind === 'imap')?.lastVerifiedAt).toBeInstanceOf(Date);
+
+    const listed = await authed().get('/api/connectors').expect(200);
+    expect(listed.body.connections.find((row: { kind: string }) => row.kind === 'imap').lastVerifiedAt).toBe(
+      verified.body.lastVerifiedAt,
+    );
+
+    const mailAudit = repo.audit.rows.filter(
+      (row) => (row.payload as { action?: string }).action === 'connector_verify',
+    );
+    expect(mailAudit).toHaveLength(1);
+    expect(Object.keys(mailAudit[0].payload).sort()).toEqual([
+      'action',
+      'durationMs',
+      'itemCount',
+      'outcome',
+      'resultBytes',
+      'toolId',
+      'userId',
+    ]);
+    expect(mailAudit[0].payload).toMatchObject({
+      action: 'connector_verify',
+      toolId: 'mail_list_unread_metadata',
+      userId: OWNER,
+      itemCount: 1,
+      outcome: 'ok',
+    });
+
+    const failed = scriptedSession();
+    failed.error = new Error(`fetch failed ${ICAL}`);
+    opener.mockImplementationOnce(async () => failed);
+    const denied = await authed().post('/api/connectors/ical/verify').expect(502);
+    expect(denied.body.message).toBe(CALENDAR_VERIFY_FAILED_MESSAGE);
+    expect(denied.text.includes(ICAL)).toBe(false);
+    expect(denied.text.includes(ICAL_TOKEN)).toBe(false);
+    expect(denied.text.includes('fetch failed')).toBe(false);
+    expect(repo.rows.find((row) => row.kind === 'ical')?.lastVerifiedAt).toBeNull();
+    failed.emitExit();
+
+    const mailDown = scriptedSession();
+    mailDown.error = new Error(`login failed ${PASSWORD}`);
+    opener.mockImplementationOnce(async () => mailDown);
+    const mailFailed = await authed().post('/api/connectors/imap/verify').expect(502);
+    expect(mailFailed.body.message).toBe(MAIL_VERIFY_FAILED_MESSAGE);
+    expectAbsent([PASSWORD, EMAIL, 'login failed'], mailFailed.text);
+    expectAbsent([PASSWORD, ICAL, ICAL_TOKEN, EMAIL], logs.join('\n'));
+
+    const missing = await authed(OTHER).post('/api/connectors/imap/verify').expect(404);
+    expect(missing.body.message).toBe('Connection not found.');
+  });
+
+  it('returns 503 when the credentials key is missing on verify', async () => {
+    delete process.env.CONNECTOR_CREDENTIALS_KEY;
+    const response = await authed().post('/api/connectors/imap/verify').expect(503);
+    expect(response.body.message).toBe('connections are not configured');
+    expect(opener).not.toHaveBeenCalled();
+    expect(repo.audit.rows).toHaveLength(0);
+  });
+
+  it('uses the owner guard on verify', async () => {
+    await authed(OWNER, false).post('/api/connectors/imap/verify').expect(403);
+    const missing = await request(app.getHttpServer())
+      .post('/api/connectors/ical/verify')
+      .set('x-test-user', 'anonymous')
+      .expect(401);
+    expect(missing.body.message).toBe('Missing authentication credentials');
+    expect(opener).not.toHaveBeenCalled();
+  });
+
+  it('POST /api/connectors/ical refuses localhost and names ending in .localhost, .local or .internal', async () => {
+    const urls = [
+      'https://localhost/feeds/ical-secret-token',
+      'https://LOCALHOST/feeds/ical-secret-token',
+      'https://foo.localhost/feeds/ical-secret-token',
+      'https://printer.local/feeds/ical-secret-token',
+      'https://host.internal/feeds/ical-secret-token',
+    ];
+    for (const url of urls) {
+      const response = await authed().post('/api/connectors/ical').send({ url }).expect(400);
+      expect(response.body.message).toBe('Calendar link must be an https URL with a host name.');
+      expectAbsent([ICAL_TOKEN, url], response.text);
+    }
+    expect(repo.rows).toHaveLength(0);
+    expectAbsent([ICAL_TOKEN], logs.join('\n'));
+  });
 });
+
+function scriptedSession(result?: unknown): ConnectorMcpSession & {
+  calls: Array<{ name: string; args: Record<string, unknown> }>;
+  error: Error | null;
+  emitExit: () => void;
+} {
+  const listeners: Array<() => void> = [];
+  const session = {
+    calls: [] as Array<{ name: string; args: Record<string, unknown> }>,
+    error: null as Error | null,
+    async listTools() {
+      return {
+        tools: [
+          { name: 'mail_list_unread_metadata', description: 'SERVER_MAIL_DO_NOT_PASS' },
+          { name: 'calendar_list_today', description: 'SERVER_CAL_DO_NOT_PASS' },
+        ],
+      };
+    },
+    async callTool(name: string, args: Record<string, unknown>) {
+      session.calls.push({ name, args });
+      if (session.error) throw session.error;
+      return (
+        result ?? {
+          content: [{ type: 'text', text: JSON.stringify({ events: [] }) }],
+        }
+      );
+    },
+    async close() {
+      session.emitExit();
+    },
+    kill() {
+      session.emitExit();
+    },
+    onExit(listener: () => void) {
+      listeners.push(listener);
+    },
+    emitExit() {
+      for (const listener of listeners.splice(0)) listener();
+    },
+  };
+  return session;
+}
 
 function expectAbsent(secrets: string[], value: string): void {
   for (const secret of secrets) {
