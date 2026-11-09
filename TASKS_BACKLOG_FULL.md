@@ -86866,7 +86866,7 @@ taskId=OLD-HOST-RETIRE-01
 nature=GOVERNANCE
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 — not started. The console run waits for Keith's explicit AUTH-9 in chat.
+**Status:** AUTH-9 GRANTED — 2026-11-09 — Keith wrote "AUTH-9 yes" in chat for exactly the scope below, after the deletion list, the kept archival snapshots and the irreversibility were stated; the console run (Cursor desktop prompt Keith pastes) is next. Registered 2026-11-09.
 **Task ID:** OLD-HOST-RETIRE-01
 **Title:** Delete the stopped old staging instance and its historical snapshots
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -86882,7 +86882,7 @@ nature=GOVERNANCE
 
 #### Acceptance criteria
 
-- [ ] Keith grants AUTH-9 in chat for this exact scope
+- [x] Keith grants AUTH-9 in chat for this exact scope (2026-11-09)
 - [ ] Before-state confirmed in the console: aisandbox-staging Stopped with no static IP; ainow-staging-01 Running with 18.136.141.186; both archival snapshots listed
 - [ ] aisandbox-staging deleted; the 13 listed snapshots deleted; the two archival snapshots and everything of ainow-staging-01 unchanged
 - [ ] staging.ainow.biz still answers (checked from the host)
