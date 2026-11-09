@@ -85724,13 +85724,13 @@ taskId=CONN-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-09 — Keith admitted it; stage-start next (packages named for Keith's approval before any dependency is added). Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
 **Task ID:** CONN-01
 **Title:** Platform MCP server for mail headers and today's calendar
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP
-**Start condition:** NOT_READY. Ready when: Keith admits. Keith decides.
+**Start condition:** READY — Keith admitted it on 2026-11-09.
 **Depends on:** GOV-BIZ-AGENT-OPS-PLAN-01.
 **Primary write scope:** services/connectors-mcp/, package-lock.json, ops/clean-baseline/lib/ops-lib.sh, ops/clean-baseline/bin/aisandbox-prepare, ops/clean-baseline/tests/static/.
 **Mutexes / resources:** PACKAGE.
@@ -86918,24 +86918,24 @@ taskId=OFFICE-06
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-ONE-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-09 — Keith admitted it; implementation next. Registered 2026-11-09 by GOV-ONE-PLAN-01.
 **Task ID:** OFFICE-06
 **Title:** Run detail (a desk panel opens saved output through GET /api/ai/executions/:id)
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP
-**Start condition:** NOT_READY. Ready when: Keith admits. Keith decides.
+**Start condition:** READY — Keith admitted it on 2026-11-09.
 **Depends on:** OFFICE-01.
-**Primary write scope:** set at admission.
-**Mutexes / resources:** set at admission.
-**Hot-file leases:** set at admission.
-**Shared contracts:** set at admission.
+**Primary write scope:** frontend/components/office/, frontend/hooks/, frontend/lib/office/, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json. No backend change: GET /api/ai/executions/:executionId already returns the saved output and answers 404 unless the caller owns the run (services/api-gateway/src/ai/ai-execution.controller.ts:1109-1123).
+**Mutexes / resources:** FRONTEND, I18N.
+**Hot-file leases:** none.
+**Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
-**Revert isolation:** set at admission.
+**Revert isolation:** frontend files only; reverting removes the panel's output view.
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/RPG-OFFICE-01-PLAN.md 2026-11-05 and the one plan 2026-11-09).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
-**Scope:** Run detail (a desk panel opens saved output through GET /api/ai/executions/:id).
+**writeSetPrecision:** EXACT (set at admission 2026-11-09). **admissionUncertain:** false.
+**Scope:** Run detail (a desk panel opens saved output through GET /api/ai/executions/:id). Acceptance: selecting a recent run on a desk shows its saved output, with loading, empty and error states; a run the user does not own shows the not-found state; all new text in en, zh-TW and zh-CN; office tests cover these states.
 **Plan:** docs/AGENT-OPS-PLAN.md section 0 item 2
 
 ### OFFICE-07 — Cancel from the office
