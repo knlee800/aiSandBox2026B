@@ -88057,7 +88057,7 @@ taskId=GOV-OS-08
 nature=GOVERNANCE
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 — not started. A Development OS mutation (worker permissions and boot rules): it begins only with zero ACTIVE or LANE-DONE implementation lanes, which is right after CONN-02B locks.
+**Status:** ACTIVE — 2026-11-09 — GOVERNANCE held; Development OS mutation begun with both implementation lanes empty (CONN-02B locked in 6547241); saturation suspended (OS_MUTATION). Rule edits next, then Keith's settings change, then the closing record.
 **Task ID:** GOV-OS-08
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** GOVERNANCE. **Lifecycle:** 2-STEP: the start record begins the mutation (saturation suspended, OS_MUTATION); the closing record ends it.
@@ -88073,7 +88073,7 @@ nature=GOVERNANCE
 #### Acceptance criteria
 
 - [x] Scope approved by Keith before the start (2026-11-09)
-- [ ] The start record begins with zero ACTIVE or LANE-DONE implementation lanes
+- [x] The start record begins with zero ACTIVE or LANE-DONE implementation lanes (2026-11-09)
 - [ ] CLAUDE.md, AGENTS.md and task-checklists.md say the same thing; no other rule weakened
 - [ ] Keith's settings change is named exactly and confirmed by him
 - [ ] The closing record ends the mutation; the validator passes at both records
