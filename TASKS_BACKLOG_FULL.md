@@ -85906,15 +85906,15 @@ taskId=BIZ-BRIEF-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-09 — Keith admitted it; implementation by a Claude subagent on opus in worktree C:\Users\knlee\aisb-worktrees\BIZ-BRIEF-01 (branch lane/BIZ-BRIEF-01). Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
 **Task ID:** BIZ-BRIEF-01
 **Title:** Morning briefing template on the Chief of Staff
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP
-**Start condition:** NOT_READY. Ready when: both LOCKED. Keith decides.
+**Start condition:** READY — CONN-GRANT-01 (80b45a7) and CONN-UI-01 (b84aa56) are COMPLETE AND LOCKED; Keith admitted it on 2026-11-09.
 **Depends on:** CONN-GRANT-01, CONN-UI-01.
-**Primary write scope:** services/api-gateway/src/system-agents/, services/api-gateway/src/orchestration/collaboration-tool-profile.ts, frontend/components/collaboration/, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json.
+**Primary write scope:** services/api-gateway/src/system-agents/, services/api-gateway/src/orchestration/collaboration-tool-profile.ts, frontend/components/collaboration/, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json; widened at admission (2026-11-09) to the tests that pin today's behaviour: services/api-gateway/src/orchestration/collaboration-connector-grants.spec.ts, services/api-gateway/src/orchestration/collaboration-teams.spec.ts, frontend/lib/collaboration.test.ts.
 **Mutexes / resources:** GATEWAY, FRONTEND, I18N.
 **Hot-file leases:** none.
 **Shared contracts:** uses HARNESS_ENTITLEMENT_PROOF_V1.
