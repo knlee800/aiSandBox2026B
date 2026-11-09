@@ -33,7 +33,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 | # | Item | What it does |
 |---|---|---|
 | 15 | ADMIN-CSRF-01 | CSRF guard on the admin credits route |
-| 16 | HARNESS-FIXES-01 | Small harness fixes |
+| 16 | HARNESS-FIXES-01B (admitted 2026-11-09), HARNESS-FIXES-01C | Small harness fixes: ai-service items (01B), frontend test script and keyless provider (01C); live provider proofs stay in HARNESS-FIXES-01 |
 | 17 | BUILDER-POLISH-01 | Builder polish and hardcoded English |
 | 18 | USAGE-DATA-01 | Run duration never saved; admin quota views |
 | 19 | FE-TEST-COVERAGE-01 | Frontend test gaps |

@@ -84350,12 +84350,64 @@ nature=IMPLEMENTATION
 **Dispositions, 2026-11-05:** item 10 is superseded by HARNESS-REOPEN-01. Item 12 added: live check of HARNESS-REOPEN-01 in the next staging window (close the page during an Agent run, reopen the project, the run's files are intact).
 **Dispositions, 2026-11-05 (2):** item 12 is superseded by STAGING-DEPLOY-04 (its reopen criterion).
 **Named in:** HARNESS-PROVIDERS-01 checkpoint line 75; HARNESS-LIVE-06 checkpoint lines 38 to 40; HARNESS-SAVE-01 checkpoint line 45; HARNESS-DELETE-01 checkpoint lines 52 and 53; container-manager docker-runtime.service.ts searchWorkspace.
-**Sliced 2026-11-06:** items 5, 8 and 11 moved to HARNESS-FIXES-01A. Item 10 is superseded by HARNESS-REOPEN-01 (the active-run guard in projects.service.ts); its remaining manual-Restore case is HARNESS-FIXES-01A item 10b. The other items stay here.
+**Sliced 2026-11-09 (Keith):** items 2, 3, 4 and 7 moved to HARNESS-FIXES-01B (admitted to Lane 2); items 1 and 6 moved to HARNESS-FIXES-01C; item 9 (xAI, OpenAI and DeepSeek proven live) stays here and needs a live window. **Sliced 2026-11-06:** items 5, 8 and 11 moved to HARNESS-FIXES-01A. Item 10 is superseded by HARNESS-REOPEN-01 (the active-run guard in projects.service.ts); its remaining manual-Restore case is HARNESS-FIXES-01A item 10b. The other items stay here.
 
 #### Acceptance criteria
 
 - [ ] Scope, write set, mutexes and evidence class are set, split into bounded slices where needed, and approved by Keith before admission
 - [ ] Not LOCKED by an implementer
+
+### HARNESS-FIXES-01B — Harness fixes in ai-service: xAI wording, output limits, unanswered tool calls, .env offer
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=HARNESS-FIXES-01B
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED — Lane 2 — 2026-11-09 — registered and admitted in one record after Keith approved the split of HARNESS-FIXES-01; implementation next.
+**Task ID:** HARNESS-FIXES-01B
+**Title:** Harness fixes in ai-service: xAI wording, output limits, unanswered tool calls, .env offer
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** READY — Keith approved the split and admitted it on 2026-11-09.
+**Depends on:** HARNESS-FIXES-01 (umbrella).
+**Primary write scope:** services/ai-service/src/ai-execution/adapters/, services/ai-service/src/agent-harness/.
+**Mutexes / resources:** AI-SERVICE.
+**Hot-file leases:** none.
+**Shared contracts:** none; services/ai-service/src/worker/worker.processor.ts and services/ai-service/src/queue/job.types.ts (HARNESS_ENTITLEMENT_PROOF_V1) are not touched.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** each item is a small separate change with its own test.
+**saturationClass:** OPTIONAL (Keith, 2026-11-05, inherited from HARNESS-FIXES-01).
+**productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** HARNESS-FIXES-01 items 2, 3, 4 and 7. (2) xAI tool failures use xAI's own wording instead of the OpenAI wording of the shared mapper. (3) The plain output limit is no longer fixed at 4096 for OpenAI, xAI and DeepSeek: it follows the model profile. (4) A malformed tool call the loop does not answer gets an error tool result, so the next step is not rejected by the provider. (7) The harness prompt says not to offer to create or edit .env files (the write and delete tools already refuse .env). Acceptance: a test for each item; ai-service suite and build compared with 1157 passed.
+**Plan:** docs/AGENT-OPS-PLAN.md section 0 item 16
+
+### HARNESS-FIXES-01C — Frontend harness fixes: the test script and a keyless provider after reload
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=HARNESS-FIXES-01C
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by the HARNESS-FIXES-01 split — not admitted.
+**Task ID:** HARNESS-FIXES-01C
+**Title:** Frontend harness fixes: the test script and a keyless provider after reload
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith admits it (PACKAGE free). Keith decides.
+**Depends on:** HARNESS-FIXES-01 (umbrella).
+**Primary write scope:** frontend/package.json (test script only), the frontend model selector and its tests, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json; exact files set at admission.
+**Mutexes / resources:** FRONTEND, I18N, PACKAGE.
+**Hot-file leases:** none.
+**Shared contracts:** none; services/ai-service/src/worker/worker.processor.ts and services/ai-service/src/queue/job.types.ts (HARNESS_ENTITLEMENT_PROOF_V1) are not touched.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** each item is a small separate change with its own test.
+**saturationClass:** OPTIONAL (Keith, 2026-11-05, inherited from HARNESS-FIXES-01).
+**productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** HARNESS-FIXES-01 items 1 and 6. (1) frontend npm test also runs frontend/lib/ai/*.test.ts and the office, lib/office and hooks tests (FE-TEST-COVERAGE-01's OFFICE-06 note). (6) After a reload the model selector does not return to a provider with no key, and a run refused for a missing key says so in en, zh-TW and zh-CN instead of only 'Execution ended with status: failed'.
+**Plan:** docs/AGENT-OPS-PLAN.md section 0 item 16
 
 ### BUILDER-POLISH-01 — Builder polish: History labels, error detail, preview and history behaviour
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
