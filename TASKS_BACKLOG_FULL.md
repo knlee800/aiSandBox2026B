@@ -88113,7 +88113,7 @@ taskId=GOV-WORKTREE-EOL-01
 nature=GOVERNANCE
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by CONN-GRANT-01 — not started; Keith decides.
+**Status:** COMPLETE AND LOCKED — 2026-11-09. Keith chose to fix it before the next task and added the three allow rules; CLAUDE.md's worktree procedure now uses core.autocrlf=false for worktree add, merge --ff-only and cherry-pick; a throwaway worktree checked out LF and was removed. GOVERNANCE released UNOWNED. Checkpoint: docs/GOV-WORKTREE-EOL-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed.
 **Task ID:** GOV-WORKTREE-EOL-01
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** GOVERNANCE. Not a Development OS mutation (the worktree procedure, GOV-ROUTING-01).
