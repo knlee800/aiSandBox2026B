@@ -18,7 +18,6 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 
 | # | Item | What it does | Lane |
 |---|---|---|---|
-| 10 | STAGING-DEPLOY-CONN-01 | Deploy; Keith connects his mail and calendar (admitted 2026-11-09) | 1 |
 | 87 | COS-EVAL-LIVE-01 | Real-model run of the briefing injection eval; must pass before the first live briefing | 1 |
 | 11 | BIZ-LIVE-03 | First live briefing; cost measured | 1 |
 | 12 | CONN-03 | Message bodies | 2 |

@@ -85958,7 +85958,7 @@ taskId=STAGING-DEPLOY-CONN-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-09 — Keith admitted it; the deploy plan goes to Keith for approval before any host step. Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
+**Status:** COMPLETE AND LOCKED — 2026-11-09. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING and ENV released; stagingAuthorized false. Staging runs 13b2322 with the connector library, the connector_connections migration and the target's ops library; CONNECTOR_CREDENTIALS_KEY generated on the host (Keith asked that it not need him), age copy to his recipient; new gateway.env baseline 568af7100b1d...; host checks pass, including a real Gmail answer through the stored key and the connector server. Screen checks moved to BIZ-LIVE-03 (Keith). Checkpoint: docs/STAGING-DEPLOY-CONN-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 1 superseded / 0 dropped / 0 undisposed. Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
 **Task ID:** STAGING-DEPLOY-CONN-01
 **Title:** Deploy the connector library
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -86028,7 +86028,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
-**Scope:** First live briefing on Keith's account (C6). Runs are on only for that run. The cost is measured. No cap is set before it. Also (BIZ-BRIEF-01, 2026-11-09): every Chief of Staff run whose owner has connections carries both connector grants, plain Knowledge questions included; the cost measurement includes one plain Knowledge question with connections present.
+**Scope:** First live briefing on Keith's account (C6). Runs are on only for that run. The cost is measured. No cap is set before it. Also (BIZ-BRIEF-01, 2026-11-09): every Chief of Staff run whose owner has connections carries both connector grants, plain Knowledge questions included; the cost measurement includes one plain Knowledge question with connections present. Also (STAGING-DEPLOY-CONN-01, 2026-11-09, Keith moved them here): the screen checks on staging while Keith is in the app: on the Connections page the data statement above both cards, his Gmail app password connects and Verify shows the checked time, a wrong password shows the mail-server failure, Disconnect asks first, zh-TW and zh-CN render, the header link sits beside Knowledge; the Team page Morning briefing button and hint only with the Chief of Staff team, filling the task box without starting; the OFFICE-06 desk panel (Tab and Enter open a recent run's saved output with its line breaks, empty, not-found and failed states, Back and Escape return focus); the OFFICE-05 desks (separate lead, writer, reviewer, Chief of Staff and advisors desks in all three languages, the waiting badge, Open goes to the Team page, no approve, reject or edit control in the office); the AGENT-WRITE-UI-01 notice (Keith's account, write on, sees none; an account with harness access and Agent write off sees the amber notice, checked from the host or by Keith). Host-checked already in STAGING-DEPLOY-CONN-01: the routes, the refusals, a wrong password through the real mail server, the iCal link checks.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
 
 ### AGENT-SPEC-01 — Typed agent spec fields
