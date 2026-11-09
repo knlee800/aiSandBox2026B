@@ -85724,7 +85724,7 @@ taskId=CONN-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — STAGE-START COMPLETE — 2026-11-09 — Keith approved the stage-start (docs/CONN-01-STAGE-START.md): @modelcontextprotocol/sdk 1.32.2, imapflow 2.9.1, node-ical 0.27.3; implementation next. Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
+**Status:** COMPLETE AND LOCKED — 2026-11-09. LANE-DONE and LOCKED by the control plane; Lane 1, PACKAGE and the four HOTFILE leases released. services/connectors-mcp with the two tools, 52 tests, the deploy build list; Keith accepted three shared patch bumps (proxy-addr 2.0.8, side-channel 1.1.1, side-channel-list 1.0.1); not deployed. Checkpoint: docs/CONN-01-CHECKPOINT.md. Stage-start docs/CONN-01-STAGE-START.md. Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
 **Task ID:** CONN-01
 **Title:** Platform MCP server for mail headers and today's calendar
 **Workstream:** AGENT (taxonomy only; zero admission weight)

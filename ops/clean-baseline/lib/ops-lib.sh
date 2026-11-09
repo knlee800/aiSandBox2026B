@@ -2023,9 +2023,10 @@ checkout_and_build() {
   runuser -u aisandbox -- npm --prefix "$AISB_ROOT/services/api-gateway" run build
   runuser -u aisandbox -- npm --prefix "$AISB_ROOT/services/ai-service" run build
   runuser -u aisandbox -- npm --prefix "$AISB_ROOT/services/container-manager" run build
+  runuser -u aisandbox -- npm --prefix "$AISB_ROOT/services/connectors-mcp" run build
   systemd-run --wait --pipe --uid=aisandbox -p "EnvironmentFile=${AISB_ETC}/frontend.env" -p "WorkingDirectory=${AISB_ROOT}/frontend" /usr/bin/npm run build
   local rel
-  for rel in services/api-gateway/dist/src/main.js services/ai-service/dist/main.js services/container-manager/dist/main.js frontend/.next/BUILD_ID node_modules/next/dist/bin/next node_modules/typeorm/cli.js; do
+  for rel in services/api-gateway/dist/src/main.js services/ai-service/dist/main.js services/container-manager/dist/main.js services/connectors-mcp/dist/main.js frontend/.next/BUILD_ID node_modules/next/dist/bin/next node_modules/typeorm/cli.js; do
     [[ -e "$AISB_ROOT/$rel" ]] || {
       note "missing artifact ${rel}"
       return 30

@@ -498,7 +498,7 @@ caddy_assert_masked || exit $?
 } > "$AISB_PREPARED"
 (
   cd "$AISB_ROOT"
-  sha256sum -- services/api-gateway/dist/src/main.js services/ai-service/dist/main.js services/container-manager/dist/main.js frontend/.next/BUILD_ID > "$AISB_ETC/ARTIFACTS"
+  sha256sum -- services/api-gateway/dist/src/main.js services/ai-service/dist/main.js services/container-manager/dist/main.js services/connectors-mcp/dist/main.js frontend/.next/BUILD_ID > "$AISB_ETC/ARTIFACTS"
 )
 marker_set_phase prepared
 note "prepared ${sha}; no health check is required"
