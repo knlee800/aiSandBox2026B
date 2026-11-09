@@ -86892,24 +86892,24 @@ taskId=OFFICE-05
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-ONE-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-09 — Keith admitted it; implementation next. Registered 2026-11-09 by GOV-ONE-PLAN-01.
 **Task ID:** OFFICE-05
-**Title:** Collaboration in the office (team desks show hand-offs; collaborationRunId and builderProfileId on ListedRunDto or the collaboration runs route)
+**Title:** Collaboration in the office (team desks show hand-offs)
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP
-**Start condition:** NOT_READY. Ready when: Keith admits; not while a CONN gateway slice holds GATEWAY. Keith decides.
-**Depends on:** OFFICE-01.
-**Primary write scope:** set at admission.
-**Mutexes / resources:** set at admission.
-**Hot-file leases:** set at admission.
-**Shared contracts:** set at admission.
+**Start condition:** READY — Keith admitted it on 2026-11-09.
+**Depends on:** OFFICE-01, RUN-LIST-COLLAB-01.
+**Primary write scope:** frontend/components/office/, frontend/hooks/, frontend/lib/office/, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json. No gateway change: GET /api/ai/executions already returns collaborationRunId and builderProfileId for each run (RUN-LIST-COLLAB-01), and GET /api/collaboration/runs/:id returns the owner's run with its hand-offs (services/api-gateway/src/orchestration/collaboration.controller.ts:261-282, entitled owners only).
+**Mutexes / resources:** FRONTEND, I18N.
+**Hot-file leases:** none.
+**Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
-**Revert isolation:** set at admission.
+**Revert isolation:** frontend files only.
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/RPG-OFFICE-01-PLAN.md 2026-11-05 and the one plan 2026-11-09).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
-**Scope:** Collaboration in the office (team desks show hand-offs; collaborationRunId and builderProfileId on ListedRunDto or the collaboration runs route).
+**writeSetPrecision:** EXACT (set at admission 2026-11-09). **admissionUncertain:** false.
+**Scope:** docs/RPG-OFFICE-01-PLAN.md section 7, OFFICE-05 row. Team runs show one desk per team role (from builderProfileId: coding lead, writer, reviewer; Chief of Staff and advisors), each with that role's status; a hand-off waiting for the owner's approval shows a badge on the team's desks, read from GET /api/collaboration/runs/:id; the desk panel links to the Team page for approve, reject and edit (no approval action in the office: one approval flow). Users without collaboration access keep today's single Team desk with no error. Acceptance: role desks, waiting badge, Team page link, loading and failed states for the hand-off read, en, zh-TW and zh-CN, tests for each.
 **Plan:** docs/AGENT-OPS-PLAN.md section 0 item 13
 
 ### OFFICE-06 — Run detail (a desk panel opens saved output through GET /api/ai/executions/:id)
