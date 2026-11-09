@@ -13,12 +13,12 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 | # | Item | What it does | Lane |
 |---|---|---|---|
 | 3 | GOV-GOOGLE-VERIFY-01 | Google verification of the platform's app (option A), when Keith is ready | No lane |
+| 86 | GOV-WORKTREE-EOL-01 | Line endings in worktrees and merges (Git's core.autocrlf=true writes CRLF); Keith decides the fix | No lane |
 
 **Stage 2 — connections and the briefing template (section 4, phase 1)**
 
 | # | Item | What it does | Lane |
 |---|---|---|---|
-| 7 | CONN-GRANT-01 | Agents may use the connector tools (frozen-contract change; alone; admitted 2026-11-09) | 1 |
 | 8 | BIZ-BRIEF-01 | Morning briefing template | 1 |
 | 9 | COS-EVAL-01 | Injection eval | 1 |
 | 10 | STAGING-DEPLOY-CONN-01 | Deploy; Keith connects his mail and calendar | 1 |

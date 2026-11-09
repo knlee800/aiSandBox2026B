@@ -653,7 +653,7 @@ POST /api/internal/executions/:id/confirm-build-apply
 POST /api/internal/connectors/call
 ```
 
-`POST /api/internal/connectors/call` (CONN-02B) runs one allowlisted connector tool for a user who has that connection; it is behind the global InternalServiceAuthGuard like the other `/api/internal/` routes. The per-job signed grant check is added by CONN-GRANT-01.
+`POST /api/internal/connectors/call` (CONN-02B) runs one allowlisted connector tool for a user who has that connection; it is behind the global InternalServiceAuthGuard like the other `/api/internal/` routes, and since CONN-GRANT-01 it also requires `executionId` and a per-job `grantToken` minted by the Gateway (HMAC under a key derived from CONNECTOR_CREDENTIALS_KEY, bound to the execution, the user and the granted tools, 2-hour expiry); a missing or invalid token is refused with 403 before the broker runs.
 
 Public confirm-build-apply does not replace the internal route. Staging browsers use the **public** Gateway route via Caddy.
 
@@ -989,7 +989,7 @@ The original walking-character / town **simulation** is **not implemented**. CUR
 | User-created agents as a fully executable runtime platform | **FUTURE** — NOT IMPLEMENTED (dedicated runtime, Harness/tool loop, tools/knowledge/skills, per-agent models, autonomous multi-turn execution). Bounded Ask and Build on the existing Builder runtime are CURRENT. |
 | Referral / agent collaboration **product** runtime | **FUTURE** — not the 07C in-memory precursor |
 | Durable orchestration / persisted referrals / shared-project writes | **FUTURE** |
-| Connector broker and platform-written MCP server (`services/api-gateway/src/connectors/`, `services/connectors-mcp/`) | IMPLEMENTED, not deployed (CONN-01, CONN-02A, CONN-02B, 2026-11-09): encrypted per-owner mail and calendar credentials, an allowlist of one platform-run server with the platform's own tool descriptions, a stdio child started by absolute path with only PATH and NODE_ENV, read-only IMAP headers and today's calendar, content-free audit rows. No agent can use it until CONN-GRANT-01; user-supplied servers are refused |
+| Connector broker and platform-written MCP server (`services/api-gateway/src/connectors/`, `services/connectors-mcp/`) | IMPLEMENTED, not deployed (CONN-01, CONN-02A, CONN-02B, 2026-11-09): encrypted per-owner mail and calendar credentials, an allowlist of one platform-run server with the platform's own tool descriptions, a stdio child started by absolute path with only PATH and NODE_ENV, read-only IMAP headers and today's calendar, content-free audit rows. Agents get connector tools only through CONN-GRANT-01's signed grant: the Gateway adds `connectorGrants` and a grant token to a signed read-profile collaboration job when the role lists the tool and the owner has that connection (no role lists any yet; BIZ-BRIEF-01 lists them for the Chief of Staff), the worker registers them only after the harness entitlement proof verifies, and the internal route checks the token on every call; user-supplied servers are refused |
 | Knowledge base runtime | **FUTURE / PLANNED** |
 | Work objects (tickets, decisions, referrals) | **FUTURE / PLANNED** |
 | Multi-agent real-time collaboration | **FUTURE / PLANNED** |

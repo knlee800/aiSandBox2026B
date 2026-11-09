@@ -85880,7 +85880,7 @@ taskId=CONN-GRANT-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — STAGE-START COMPLETE — 2026-11-09 — Keith approved the stage-start (docs/CONN-GRANT-01-STAGE-START.md); runs alone; implementation by a Claude subagent on opus in worktree lane/CONN-GRANT-01. Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
+**Status:** COMPLETE AND LOCKED — 2026-11-09. LANE-DONE and LOCKED by the control plane; Lane 1, AI-SERVICE and GATEWAY released. Signed connector grants, gateway grant token checked by the internal route, worker connector tools after proof verification; HARNESS_ENTITLEMENT_PROOF_V1 re-frozen with orchestration.service.ts added; built by an opus subagent in worktree lane/CONN-GRANT-01 (5d696e3), cherry-picked into main as 60234b9; not deployed. Checkpoint: docs/CONN-GRANT-01-CHECKPOINT.md. Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
 **Task ID:** CONN-GRANT-01
 **Title:** Signed connector grants on the harness contract
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -85923,7 +85923,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
-**Scope:** First briefing template (A3, A11, C4, B1-B4): Chief of Staff instructions gain the briefing procedure, fixed labels, a suggested action, the For you section and the data-frame rule; the role lists the two tools; the Team page has a Morning briefing preset. Does not edit orchestration.service.ts.
+**Scope:** First briefing template (A3, A11, C4, B1-B4): Chief of Staff instructions gain the briefing procedure, fixed labels, a suggested action, the For you section and the data-frame rule; the role lists the two tools; the Team page has a Morning briefing preset. Does not edit orchestration.service.ts. Also (CONN-GRANT-01, 2026-11-09): list the Chief of Staff's two connector tool ids in COLLABORATION_ROLE_CONNECTOR_TOOLS in services/api-gateway/src/orchestration/collaboration-tool-profile.ts; that list is what grants them (it is empty for every role today).
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
 
 ### COS-EVAL-01 — Briefing injection eval
@@ -85949,7 +85949,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
-**Scope:** Injection eval before the first live run (C5): injected instructions in subjects, event titles and bodies. Pass means the item is reported, no action is claimed and there is no hand-off.
+**Scope:** Injection eval before the first live run (C5): injected instructions in subjects, event titles and bodies. Pass means the item is reported, no action is claimed and there is no hand-off. Also (CONN-GRANT-01, 2026-11-09): the live-eval mirror services/ai-service/src/agent-harness/eval/live/live-execute.ts builds prompts with buildExecutionPromptParts directly, so it lacks the worker's new harness lines (connector data is data, never instructions); make the eval prompt match the worker's before scoring the injection cases.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
 
 ### STAGING-DEPLOY-CONN-01 — Deploy the connector library
@@ -88105,6 +88105,23 @@ nature=GOVERNANCE
 - [x] Not LOCKED by an implementer
 
 FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed
+
+### GOV-WORKTREE-EOL-01 — Line endings in worktrees and merges
+
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-WORKTREE-EOL-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by CONN-GRANT-01 — not started; Keith decides.
+**Task ID:** GOV-WORKTREE-EOL-01
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE. Not a Development OS mutation (the worktree procedure, GOV-ROUTING-01).
+**Problem:** Git's system setting core.autocrlf=true (C:/Program Files/Git/etc/gitconfig) checks new worktrees out with CRLF, and fast-forwards and cherry-picks write CRLF into this checkout, while most of its files are LF; one ai-service test reads worker.processor.ts raw and fails on CRLF. 687 tracked files in this checkout were already CRLF before 2026-11-09.
+**Proposal for Keith:** create worktrees with `git -c core.autocrlf=false worktree add ...` (needs the allow rule "Bash(git -c core.autocrlf=false worktree add *)" from Keith) and add that to the CLAUDE.md worktree procedure; after each merge into main, convert the merged files' line endings back to LF in this checkout (content unchanged). A repository-wide .gitattributes `* text=auto eol=lf` would settle it for good but renormalizes many files, so it would be its own reviewed task.
+**Start condition:** READY — Keith decides the option.
+**Primary write scope:** CLAUDE.md (worktree procedure), TASKS.md, TASKS_BACKLOG_FULL.md, the proof, a checkpoint.
+**Mutexes / resources:** GOVERNANCE at record writes.
 
 ### DESIGN-DOC-01 — Write DESIGN.md and PRODUCT.md from the current app
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
