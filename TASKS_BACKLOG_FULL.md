@@ -85750,13 +85750,13 @@ taskId=CONN-02A
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-09 — Keith admitted it; stage-start next. Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
 **Task ID:** CONN-02A
 **Title:** Connector credentials, encryption and connect routes
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP
-**Start condition:** NOT_READY. Ready when: CONN-01 LOCKED. Keith decides.
+**Start condition:** READY — CONN-01 is COMPLETE AND LOCKED (515c430); Keith admitted it on 2026-11-09.
 **Depends on:** CONN-01.
 **Primary write scope:** services/api-gateway/src/connectors/, services/api-gateway/src/entities/connector-connection.entity.ts, services/api-gateway/src/migrations/, services/api-gateway/src/app.module.ts, ops/clean-baseline/env/gateway.env.template.
 **Mutexes / resources:** GATEWAY, MIGRATION, ENV.
