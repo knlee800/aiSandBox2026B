@@ -86866,7 +86866,7 @@ taskId=OLD-HOST-RETIRE-01
 nature=GOVERNANCE
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** AUTH-9 GRANTED — 2026-11-09 — Keith wrote "AUTH-9 yes" in chat for exactly the scope below, after the deletion list, the kept archival snapshots and the irreversibility were stated; the console run (Cursor desktop prompt Keith pastes) is next. Registered 2026-11-09.
+**Status:** COMPLETE AND LOCKED — 2026-11-09 — aisandbox-staging deleted (15:30-15:31 UTC+8) with its automatic snapshots, and the 13 historical manual snapshots deleted (15:35-15:39); the two archival snapshots kept; staging checked healthy from the host. Evidence C:\Users\knlee\aisb-preflight\OLD-HOST-RETIRE-01\; checkpoint docs/OLD-HOST-RETIRE-01-CHECKPOINT.md. GOVERNANCE released UNOWNED.
 **Task ID:** OLD-HOST-RETIRE-01
 **Title:** Delete the stopped old staging instance and its historical snapshots
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -86883,10 +86883,12 @@ nature=GOVERNANCE
 #### Acceptance criteria
 
 - [x] Keith grants AUTH-9 in chat for this exact scope (2026-11-09)
-- [ ] Before-state confirmed in the console: aisandbox-staging Stopped with no static IP; ainow-staging-01 Running with 18.136.141.186; both archival snapshots listed
-- [ ] aisandbox-staging deleted; the 13 listed snapshots deleted; the two archival snapshots and everything of ainow-staging-01 unchanged
-- [ ] staging.ainow.biz still answers (checked from the host)
-- [ ] Not LOCKED by an implementer
+- [x] Before-state confirmed in the console: aisandbox-staging Stopped with no static IP; ainow-staging-01 Running with 18.136.141.186; both archival snapshots listed
+- [x] aisandbox-staging deleted; the 13 listed snapshots deleted; the two archival snapshots and everything of ainow-staging-01 unchanged
+- [x] staging.ainow.biz still answers (checked from the host)
+- [x] Not LOCKED by an implementer
+
+FOLLOWUPS: 1 registered / 0 superseded / 0 dropped / 0 undisposed (review of the two archival snapshots on 2027-01-24, docs/AGENT-OPS-PLAN.md section 0)
 
 ### OFFICE-02 — Push updates (SSE) replacing polling
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

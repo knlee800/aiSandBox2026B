@@ -543,9 +543,9 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-09. docs/AGENT-OPS-PLAN.md is the project's only plan; its section 0 lists every open item in order (this board still admits). OFFICE-02 to OFFICE-07, STAGING-DEPLOY-FD-01, FRONTDOOR-LIVE-01, STAGING-DEPLOY-CHAT-01 and CHAT-LIVE-01 registered NOT_READY. Checkpoint: docs/GOV-ONE-PLAN-01-CHECKPOINT.md.
 
-## OLD-HOST-RETIRE-01 — AUTH-9 GRANTED / NOT AN IMPLEMENTATION LANE — 2026-11-09
+## OLD-HOST-RETIRE-01 — COMPLETE AND LOCKED / NOT AN IMPLEMENTATION LANE — 2026-11-09
 
-**Current status:** AUTH-9 GRANTED - 2026-11-09 (Keith in chat); console run next. Keith chose to delete the stopped old instance aisandbox-staging now instead of at the day-30 decision (2026-11-25): the instance, its automatic snapshots and 13 historical manual snapshots (those after 2026-07-26 hold the old host .env); the two archival snapshots stay. Governance and evidence only; no lane. Scope in TASKS_BACKLOG_FULL.md.
+**Current status:** COMPLETE AND LOCKED - 2026-11-09. Under Keith's AUTH-9 the old instance aisandbox-staging was deleted in the Lightsail console (with its automatic snapshots) and its 13 historical manual snapshots were deleted; the two archival snapshots stay (review 2027-01-24). Staging on ainow-staging-01 checked healthy from the host afterwards. Checkpoint: docs/OLD-HOST-RETIRE-01-CHECKPOINT.md.
 
 ## CONN-01 — COMPLETE AND LOCKED / Lane 1 RELEASED — 2026-11-09
 

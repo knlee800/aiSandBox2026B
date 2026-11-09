@@ -141,7 +141,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 | # | Item | When |
 |---|---|---|
 | 79 | Weekly encrypted backup copy off the staging host | Every week |
-| 80 | OLD-HOST-RETIRE-01: delete the stopped old instance aisandbox-staging and its 13 historical snapshots, keep the two archival ones (Keith chose early deletion 2026-11-09; needs his AUTH-9) | Now, instead of 2026-11-25 |
+| 80 | Review the two archival snapshots of the deleted old host (aisandbox-staging-archive-20261026 and aisandbox-staging-archive-stopped-20261026): keep or delete (plan S3; OLD-HOST-RETIRE-01 deleted the instance and the rest on 2026-11-09) | 2027-01-24 |
 
 **Stage 12 — old tasks from before the clean rebuild; Keith decides whether to drop each**
 
