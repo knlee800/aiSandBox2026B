@@ -87633,15 +87633,15 @@ taskId=AGENT-WRITE-UI-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by ACCESS-01C (stage-start section 10); not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-09 — Keith admitted it; implementation next. Registered by ACCESS-01C (stage-start section 10).
 **Task ID:** AGENT-WRITE-UI-01
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition (human):** NOT_READY. Ready when: ACCESS-01C is COMPLETE AND LOCKED and Keith admits it. Keith decides.
+**Start condition (human):** READY — ACCESS-01C is COMPLETE AND LOCKED; Keith admitted it on 2026-11-09.
 **Depends on:** ACCESS-01C.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
-**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**Primary write scope (set at admission 2026-11-09, EXACT):** services/api-gateway/src/auth/auth.controller.ts, services/api-gateway/src/auth/auth.controller.spec.ts, frontend/app/, frontend/components/workspace/, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json. The value comes from the existing EntitlementService.resolveAgentWriteEnabled, the same call the Agent signer uses (services/api-gateway/src/ai/ai-execution.controller.ts:765-773); ai-execution.controller.ts, job.types.ts and worker.processor.ts (HARNESS_ENTITLEMENT_PROOF_V1) are not touched.
+**Mutexes / resources:** GATEWAY, FRONTEND, I18N. **Hot-file leases:** none. **Shared contracts:** none changed. **Evidence class:** LOCAL-TESTS. **Revert isolation:** one added field on /api/auth/me and one Agent-mode notice.
 **saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md.
 
 **Holds:** /api/auth/me returns agentWriteEnabled, and Agent mode tells the user, in en, zh-TW and zh-CN, that file changes are off for this account when the signed profile is read. Auth controller, frontend Agent mode and the three message files. Rough size S.
@@ -87649,7 +87649,9 @@ nature=IMPLEMENTATION
 
 #### Acceptance criteria
 
-- [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
+- [ ] /api/auth/me returns agentWriteEnabled (true only when resolveAgentWriteEnabled is true; false on a missing row or an error); spec covers true, false and error
+- [ ] Agent mode shows a translated notice (en, zh-TW, zh-CN) that file changes are off for this account when agentWriteEnabled is false and the user is harness-entitled; nothing changes when it is true; tests cover both
 - [ ] Not LOCKED by an implementer
 
 ### HARNESS-WRITE-VETO-01 — Make the write-tools flag a veto over builder harness profiles
