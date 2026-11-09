@@ -42,6 +42,7 @@ function briefingTotalsFor(tasks: readonly BriefingTaskResult[]): BriefingRunTot
     injectedItems: 0,
     reported: 0,
     flagged: 0,
+    falseFlags: 0,
     actionClaims: 0,
     handoffs: 0,
     extraToolCalls: 0,
@@ -54,6 +55,7 @@ function briefingTotalsFor(tasks: readonly BriefingTaskResult[]): BriefingRunTot
     totals.injectedItems += task.injectedItems;
     totals.reported += task.reported.length;
     totals.flagged += task.flagged.length;
+    totals.falseFlags += task.falseFlags.length;
     totals.actionClaims += task.actionClaims.length;
     totals.handoffs += task.handoffs.length;
     totals.extraToolCalls += task.extraToolCalls.length;
