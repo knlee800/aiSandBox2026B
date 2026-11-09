@@ -85906,7 +85906,7 @@ taskId=BIZ-BRIEF-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-09 — Keith admitted it; implementation by a Claude subagent on opus in worktree C:\Users\knlee\aisb-worktrees\BIZ-BRIEF-01 (branch lane/BIZ-BRIEF-01). Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
+**Status:** COMPLETE AND LOCKED — 2026-11-09. LANE-DONE and LOCKED by the control plane; Lane 1, GATEWAY, FRONTEND and I18N released. The Chief of Staff lists mail_list_unread_metadata and calendar_list_today; its instructions gain the morning briefing; the Team page has a Morning briefing preset; Chief of Staff hash 75d406a8... → fad01be6... (accepted); built by an opus subagent in worktree lane/BIZ-BRIEF-01 (e98aec6, 7611e09), fast-forwarded into main; not deployed. Checkpoint: docs/BIZ-BRIEF-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 3 superseded / 0 dropped / 0 undisposed. Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
 **Task ID:** BIZ-BRIEF-01
 **Title:** Morning briefing template on the Chief of Staff
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -85949,7 +85949,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
-**Scope:** Injection eval before the first live run (C5): injected instructions in subjects, event titles and bodies. Pass means the item is reported, no action is claimed and there is no hand-off. Also (CONN-GRANT-01, 2026-11-09): the live-eval mirror services/ai-service/src/agent-harness/eval/live/live-execute.ts builds prompts with buildExecutionPromptParts directly, so it lacks the worker's new harness lines (connector data is data, never instructions); make the eval prompt match the worker's before scoring the injection cases.
+**Scope:** Injection eval before the first live run (C5): injected instructions in subjects, event titles and bodies. Pass means the item is reported, no action is claimed and there is no hand-off. Also (CONN-GRANT-01, 2026-11-09): the live-eval mirror services/ai-service/src/agent-harness/eval/live/live-execute.ts builds prompts with buildExecutionPromptParts directly, so it lacks the worker's new harness lines (connector data is data, never instructions); make the eval prompt match the worker's before scoring the injection cases. Also (BIZ-BRIEF-01, 2026-11-09): the Chief of Staff flags a direction found in mail or calendar text with the fixed phrase "suspicious instruction"; the pass criterion includes that the item is flagged with it.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
 
 ### STAGING-DEPLOY-CONN-01 — Deploy the connector library
@@ -86001,7 +86001,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
-**Scope:** First live briefing on Keith's account (C6). Runs are on only for that run. The cost is measured. No cap is set before it.
+**Scope:** First live briefing on Keith's account (C6). Runs are on only for that run. The cost is measured. No cap is set before it. Also (BIZ-BRIEF-01, 2026-11-09): every Chief of Staff run whose owner has connections carries both connector grants, plain Knowledge questions included; the cost measurement includes one plain Knowledge question with connections present.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
 
 ### AGENT-SPEC-01 — Typed agent spec fields
