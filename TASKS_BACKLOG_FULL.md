@@ -84425,7 +84425,7 @@ nature=IMPLEMENTATION
 **Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
 **saturationClass:** OPTIONAL (Keith, 2026-11-05). **productClass:** CURRENT per PRD.md.
 
-**Holds:** Close the frontend platform test coverage gaps found in the reviews. The missing frontend/lib/ai tests in npm test are item 1 of HARNESS-FIXES-01. Scope is set at admission.
+**Holds:** Close the frontend platform test coverage gaps found in the reviews. The missing frontend/lib/ai tests in npm test are item 1 of HARNESS-FIXES-01. Scope is set at admission. Also (OFFICE-06, 2026-11-09): frontend npm test does not run components/office, lib/office or hooks tests; add them to the script.
 **Noted 2026-11-07 (BIZ-02 checkpoint):** the frontend npm test script runs only components/workspace, components/public, lib and lib/auth-module tests; lib/office, lib/agent-platform, components/office and components/platform tests run only when named. BIZ-02 ran them by name (105 passed).
 **Added 2026-11-05 (OFFICE-01):** frontend npm test lists fixed folders and does not run components/office, lib/office or components/platform tests; include them.
 **Named in:** Keith-approved follow-up from the harness reviews.
@@ -85923,7 +85923,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
-**Scope:** Deploy that installs the connector library (C6). Keith types the credentials key and the gateway.env backup is checked.
+**Scope:** Deploy that installs the connector library (C6). Keith types the credentials key and the gateway.env backup is checked. Also the OFFICE-06 live check (2026-11-09): on staging, Tab and Enter open a recent run's saved output with its line breaks; a run with no output, a run of another account (not found) and a failed request show their states; Back and Escape return focus to that run.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
 
 ### BIZ-LIVE-03 — First live briefing and its cost
@@ -86831,7 +86831,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/RPG-OFFICE-01-PLAN.md 2026-11-05 and the one plan 2026-11-09).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
-**Scope:** Push updates (SSE) replacing polling.
+**Scope:** Push updates (SSE) replacing polling. Also (OFFICE-06, 2026-11-09): an open run detail refreshes when the run's output changes, and the desk's current-run block opens its output once it has one.
 **Plan:** docs/AGENT-OPS-PLAN.md section 0 item 24
 
 ### OFFICE-03 — Office characters (per-agent figures; user agents pick a look; appearance column)
@@ -86918,7 +86918,7 @@ taskId=OFFICE-06
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-09 — Keith admitted it; implementation next. Registered 2026-11-09 by GOV-ONE-PLAN-01.
+**Status:** COMPLETE AND LOCKED — 2026-11-09. LANE-DONE and LOCKED by the control plane; Lane 2, FRONTEND and I18N released. A recent run on an office desk opens its saved output; not deployed (live check in STAGING-DEPLOY-CONN-01). Checkpoint: docs/OFFICE-06-CHECKPOINT.md. Registered 2026-11-09 by GOV-ONE-PLAN-01.
 **Task ID:** OFFICE-06
 **Title:** Run detail (a desk panel opens saved output through GET /api/ai/executions/:id)
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)

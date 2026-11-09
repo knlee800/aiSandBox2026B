@@ -553,3 +553,70 @@ export function buildOfficeDesks(input: {
 
   return desks;
 }
+
+export type OfficeRunDetailPhase = 'loading' | 'output' | 'empty' | 'notFound' | 'error';
+
+export type OfficeRunDetailRequestError = 'AUTH_EXPIRED' | 'FETCH_FAILED';
+
+export type OfficeRunDetailFetchResult =
+  | { phase: 'output'; output: string; status: string }
+  | { phase: 'empty'; status: string }
+  | { phase: 'notFound' }
+  | { phase: 'error'; error: OfficeRunDetailRequestError };
+
+/**
+ * Saved model text is returned only for a completed run. Queued, running,
+ * and any completed run whose output is missing or blank are empty.
+ * The text is returned unchanged so the panel can show it as plain text.
+ */
+export function officeRunDetailFromResponse(
+  statusCode: number,
+  payload: unknown,
+): OfficeRunDetailFetchResult {
+  if (statusCode === 401) {
+    return { phase: 'error', error: 'AUTH_EXPIRED' };
+  }
+  if (statusCode === 404) {
+    return { phase: 'notFound' };
+  }
+  if (statusCode < 200 || statusCode >= 300) {
+    return { phase: 'error', error: 'FETCH_FAILED' };
+  }
+  if (!payload || typeof payload !== 'object') {
+    return { phase: 'error', error: 'FETCH_FAILED' };
+  }
+  const status = (payload as { status?: unknown }).status;
+  if (typeof status !== 'string' || status.trim().length === 0) {
+    return { phase: 'error', error: 'FETCH_FAILED' };
+  }
+  const output = (payload as { output?: unknown }).output;
+  if (status === 'completed' && typeof output === 'string' && output.trim().length > 0) {
+    return { phase: 'output', output, status };
+  }
+  return { phase: 'empty', status };
+}
+
+export function officeRunDetailKeyAction(
+  key: string,
+  detailOpen: boolean,
+): 'back' | 'none' {
+  if (detailOpen && key === 'Escape') {
+    return 'back';
+  }
+  return 'none';
+}
+
+/** Where focus goes when the run detail opens, updates, or closes. */
+export function officeRunDetailFocus(input: {
+  detailOpen: boolean;
+  sameRun: boolean;
+  focusLost: boolean;
+}): 'back' | 'run' | 'stay' {
+  if (!input.detailOpen) {
+    return 'run';
+  }
+  if (!input.sameRun || input.focusLost) {
+    return 'back';
+  }
+  return 'stay';
+}

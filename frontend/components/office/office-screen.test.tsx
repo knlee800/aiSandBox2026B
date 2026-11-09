@@ -68,6 +68,13 @@ const OFFICE_COPY = {
     openWorkspace: 'Open workspace',
     agentProfile: 'Agent profile',
     closePanel: 'Close',
+    openRun: 'Open saved output',
+    backToRuns: 'Back to runs',
+    savedOutput: 'Saved output',
+    runDetailLoading: 'Loading saved output…',
+    runDetailEmpty: 'This run has no saved output yet.',
+    runDetailNotFound: 'This run could not be found.',
+    runDetailError: 'Could not load this run.',
     comingSoonBody: 'This desk is reserved for a future agent.',
     knowledgeBadge: '{count} documents',
     knowledgeBadgeOne: '{count} document',
@@ -113,6 +120,13 @@ const OFFICE_COPY = {
     openWorkspace: '開啟工作區',
     agentProfile: '代理檔案',
     closePanel: '關閉',
+    openRun: '開啟已儲存的輸出',
+    backToRuns: '返回執行列表',
+    savedOutput: '已儲存的輸出',
+    runDetailLoading: '正在載入已儲存的輸出…',
+    runDetailEmpty: '這次執行還沒有已儲存的輸出。',
+    runDetailNotFound: '找不到這次執行。',
+    runDetailError: '無法載入這次執行。',
     comingSoonBody: '此座位保留給未來的代理。',
     knowledgeBadge: '{count} 份文件',
     knowledgeBadgeOne: '{count} 份文件',
@@ -158,6 +172,13 @@ const OFFICE_COPY = {
     openWorkspace: '打开工作区',
     agentProfile: '代理档案',
     closePanel: '关闭',
+    openRun: '打开已保存的输出',
+    backToRuns: '返回运行列表',
+    savedOutput: '已保存的输出',
+    runDetailLoading: '正在加载已保存的输出…',
+    runDetailEmpty: '这次运行还没有已保存的输出。',
+    runDetailNotFound: '找不到这次运行。',
+    runDetailError: '无法加载这次运行。',
     comingSoonBody: '此工位保留给未来的代理。',
     knowledgeBadge: '{count} 份文档',
     knowledgeBadgeOne: '{count} 份文档',
@@ -671,6 +692,7 @@ describe('office screen states', () => {
     const screen = readFileSync(new URL('./office-screen.tsx', import.meta.url), 'utf8');
     const panel = readFileSync(new URL('./office-desk-panel.tsx', import.meta.url), 'utf8');
     const hook = readFileSync(new URL('../../hooks/useOfficeRuns.ts', import.meta.url), 'utf8');
+    const detailHook = readFileSync(new URL('../../hooks/useOfficeRunDetail.ts', import.meta.url), 'utf8');
     assert.match(screen, /useTranslations\('office'\)/);
     assert.match(screen, /from '@\/hooks\/useTranslations'/);
     assert.match(screen, /fetch\('\/api\/auth\/me'\)/);
@@ -688,6 +710,177 @@ describe('office screen states', () => {
     assert.doesNotMatch(screen, /listAgents\(/);
     assert.doesNotMatch(screen, /getAgentById\(/);
     assert.doesNotMatch(screen, /title: document|document\.title|content:/);
-    assert.doesNotMatch(`${screen}\n${panel}\n${hook}`, /method:\s*'POST'|method:\s*'DELETE'|applied/i);
+    assert.match(detailHook, /\/api\/ai\/executions\/\$\{encodeURIComponent\(executionId\)\}/);
+    assert.match(detailHook, /credentials:\s*'include'/);
+    assert.match(detailHook, /method:\s*'GET'/);
+    assert.match(detailHook, /cache:\s*'no-store'/);
+    assert.doesNotMatch(panel, /dangerouslySetInnerHTML/);
+    assert.doesNotMatch(panel, /transition-|animate-|@keyframes/);
+    assert.match(panel, /officeRunDetailKeyAction/);
+    assert.match(panel, /officeRunDetailFocus/);
+    assert.match(panel, /@heroicons\/react\/24\/outline/);
+    assert.doesNotMatch(
+      `${screen}\n${panel}\n${hook}\n${detailHook}`,
+      /method:\s*'POST'|method:\s*'DELETE'|applied/i,
+    );
+  });
+});
+
+describe('office run detail', () => {
+  function savedDesks(): OfficeDesk[] {
+    return floor({
+      activeRuns: [run({ executionId: 'live', status: 'running' })],
+      recentRuns: [
+        run({
+          executionId: 'exec-saved',
+          status: 'completed',
+          mode: 'ask',
+          startedAt: '2026-11-05T04:00:00.000Z',
+          durationMs: 9000,
+          tokensUsed: 4,
+        }),
+      ],
+    });
+  }
+
+  function renderDetail(
+    code: 'en' | 'zh-TW' | 'zh-CN',
+    runDetail: OfficeScreenViewProps['runDetail'],
+    reducedMotion = false,
+  ): string {
+    const messages = LOCALES.find((locale) => locale.code === code)?.messages;
+    return renderOffice(
+      {
+        locale: code,
+        desks: savedDesks(),
+        selectedDeskId: BUILDER_DESK_ID,
+        reducedMotion,
+        runDetail,
+      },
+      messages as Record<string, unknown>,
+    );
+  }
+
+  test('a recent run is a button and the current run is not', () => {
+    for (const { code, messages } of LOCALES) {
+      const html = renderDetail(code, null);
+      const openRun = readMessage(messages as Record<string, unknown>, 'office.openRun');
+      assert.ok(openRun);
+      assert.equal(html.includes(openRun), true, openRun);
+      const button = html.match(/<button\b[^>]*data-testid="office-recent-run"[^>]*>/);
+      assert.ok(button, code);
+      assert.match(button[0], /type="button"/);
+      assert.match(button[0], /data-execution-id="exec-saved"/);
+      const currentAt = html.indexOf('data-testid="office-current-run"');
+      const currentEnd = html.indexOf('</section>', currentAt);
+      assert.ok(currentAt >= 0 && currentEnd > currentAt);
+      assert.doesNotMatch(html.slice(currentAt, currentEnd), /<button/);
+      assert.doesNotMatch(html, /data-testid="office-run-detail"/);
+    }
+  });
+
+  test('loading, empty, not found, and failed states use translated copy', () => {
+    const states = [
+      {
+        phase: 'loading' as const,
+        testId: 'office-run-detail-loading',
+        key: 'office.runDetailLoading',
+      },
+      {
+        phase: 'empty' as const,
+        testId: 'office-run-detail-empty',
+        key: 'office.runDetailEmpty',
+      },
+      {
+        phase: 'notFound' as const,
+        testId: 'office-run-detail-not-found',
+        key: 'office.runDetailNotFound',
+      },
+      {
+        phase: 'error' as const,
+        testId: 'office-run-detail-error',
+        key: 'office.runDetailError',
+      },
+    ];
+
+    for (const { code, messages } of LOCALES) {
+      const back = readMessage(messages as Record<string, unknown>, 'office.backToRuns');
+      const retry = readMessage(messages as Record<string, unknown>, 'office.retry');
+      assert.ok(back && retry);
+      for (const state of states) {
+        const html = renderDetail(code, {
+          executionId: 'exec-saved',
+          phase: state.phase,
+          output: state.phase === 'empty' ? 'hidden model text' : null,
+        });
+        const copy = readMessage(messages as Record<string, unknown>, state.key);
+        assert.ok(copy);
+        assert.equal(html.includes(copy), true, `${code} ${state.key}`);
+        assert.match(html, new RegExp(`data-testid="${state.testId}"`));
+        assert.match(html, /data-testid="office-run-detail-back"/);
+        assert.equal(html.includes(back), true, back);
+        assert.match(html, /data-testid="office-close-panel"/);
+        assert.doesNotMatch(html, /data-testid="office-recent-run"/);
+        assert.doesNotMatch(html, /data-testid="office-run-detail-output"/);
+        assert.doesNotMatch(html, /hidden model text/);
+        if (state.phase === 'error') {
+          assert.match(html, /data-testid="office-run-detail-retry"/);
+          assert.equal(html.includes(retry), true, retry);
+          assert.match(html, /role="alert"/);
+        } else {
+          assert.doesNotMatch(html, /data-testid="office-run-detail-retry"/);
+        }
+        if (state.phase === 'loading') {
+          assert.match(html, /aria-busy="true"/);
+          assert.match(html, /autofocus/i);
+        }
+      }
+    }
+  });
+
+  test('saved output is plain text, keeps line breaks, and scrolls inside the panel', () => {
+    const output = 'line one\nline two <script>alert(1)</script>';
+    for (const { code, messages } of LOCALES) {
+      const html = renderDetail(code, {
+        executionId: 'exec-saved',
+        phase: 'output',
+        output,
+      });
+      const saved = readMessage(messages as Record<string, unknown>, 'office.savedOutput');
+      const status = readMessage(messages as Record<string, unknown>, 'office.status.done');
+      const mode = readMessage(messages as Record<string, unknown>, 'office.mode.ask');
+      assert.ok(saved && status && mode);
+      assert.equal(html.includes(saved), true, saved);
+      const outputAt = html.indexOf('data-testid="office-run-detail-output"');
+      const preBody = html.slice(html.indexOf('>', outputAt) + 1, html.indexOf('</pre>'));
+      assert.equal(preBody.includes('line one\nline two '), true, code);
+      assert.equal(preBody.includes('&lt;script&gt;alert(1)&lt;/script&gt;'), true, code);
+      assert.doesNotMatch(preBody, /<script>/);
+      assert.doesNotMatch(html, /dangerouslySetInnerHTML/);
+      const pre = html.match(/<pre\b[^>]*data-testid="office-run-detail-output"[^>]*>/);
+      assert.ok(pre, code);
+      assert.match(pre[0], /tabindex="0"/);
+      assert.match(pre[0], /whitespace-pre-wrap/);
+      assert.match(pre[0], /overflow-y-auto/);
+      assert.match(pre[0], /max-h-72/);
+      const summary = html.match(/data-testid="office-run-detail-summary"[^>]*>([^<]*)</);
+      assert.ok(summary, code);
+      assert.equal(summary[1].includes(status), true, status);
+      assert.equal(summary[1].includes(mode), true, mode);
+      assert.doesNotMatch(html, /data-testid="office-recent-run"/);
+    }
+  });
+
+  test('the detail declares reduced motion and adds no motion of its own', () => {
+    const html = renderDetail(
+      'en',
+      { executionId: 'missing', phase: 'notFound', output: null },
+      true,
+    );
+    assert.match(html, /data-testid="office-run-detail"[^>]*data-reduced-motion="true"/);
+    assert.match(html, /This run could not be found\./);
+    assert.doesNotMatch(html, /data-testid="office-run-detail-summary"/);
+    const panel = readFileSync(new URL('./office-desk-panel.tsx', import.meta.url), 'utf8');
+    assert.doesNotMatch(panel, /transition-|animate-|@keyframes/);
   });
 });

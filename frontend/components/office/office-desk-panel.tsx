@@ -1,18 +1,26 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
+  ArrowLeftIcon,
   ArrowRightIcon,
   BookOpenIcon,
   ClockIcon,
+  ExclamationTriangleIcon,
   UserCircleIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
-import type { OfficeDeskPhase } from '@/lib/office/office.logic';
+import {
+  officeRunDetailFocus,
+  officeRunDetailKeyAction,
+  type OfficeDeskPhase,
+  type OfficeRunDetailPhase,
+} from '@/lib/office/office.logic';
 
 export interface OfficePanelRun {
   id: string;
+  executionId: string | null;
   statusText: string;
   modeText: string;
   providerModel: string;
@@ -35,6 +43,21 @@ export interface OfficePanelLabels {
   agentProfile: string;
   comingSoonBody: string;
   deskHint: string;
+  openRun: string;
+  backToRuns: string;
+  savedOutput: string;
+  runDetailLoading: string;
+  runDetailEmpty: string;
+  runDetailNotFound: string;
+  runDetailError: string;
+  retry: string;
+}
+
+export interface OfficeRunDetailState {
+  executionId: string;
+  phase: OfficeRunDetailPhase;
+  output: string | null;
+  summary: string | null;
 }
 
 export interface OfficeDeskPanelProps {
@@ -55,6 +78,11 @@ export interface OfficeDeskPanelProps {
   } | null;
   labels: OfficePanelLabels;
   onClose: () => void;
+  runDetail?: OfficeRunDetailState | null;
+  onOpenRun?: (executionId: string) => void;
+  onCloseRun?: () => void;
+  onRetryRun?: () => void;
+  reducedMotion?: boolean;
 }
 
 function statusClass(phase: OfficeDeskPhase): string {
@@ -97,11 +125,163 @@ function RunFacts(props: { run: OfficePanelRun; labels: OfficePanelLabels }) {
   );
 }
 
-export default function OfficeDeskPanel({ desk, labels, onClose }: OfficeDeskPanelProps): React.ReactElement {
+function RunDetail(props: {
+  detail: OfficeRunDetailState;
+  labels: OfficePanelLabels;
+  reducedMotion: boolean;
+  backRef: React.RefObject<HTMLButtonElement | null>;
+  detailRef: React.RefObject<HTMLElement | null>;
+  onCloseRun: () => void;
+  onRetryRun: () => void;
+}): React.ReactElement {
+  const { detail, labels, reducedMotion, backRef, detailRef, onCloseRun, onRetryRun } = props;
+  const output = detail.phase === 'output' ? detail.output : null;
+  const showOutput = typeof output === 'string' && output.trim().length > 0;
+
+  return (
+    <section
+      ref={detailRef}
+      className="mt-5 min-w-0"
+      data-testid="office-run-detail"
+      data-phase={detail.phase}
+      data-reduced-motion={reducedMotion ? 'true' : 'false'}
+      aria-busy={detail.phase === 'loading' ? true : undefined}
+    >
+      <button
+        ref={backRef}
+        type="button"
+        autoFocus
+        className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+        onClick={onCloseRun}
+        data-testid="office-run-detail-back"
+      >
+        <ArrowLeftIcon className="h-4 w-4" aria-hidden="true" />
+        {labels.backToRuns}
+      </button>
+
+      {detail.summary ? (
+        <p className="mt-4 text-sm text-slate-300" data-testid="office-run-detail-summary">
+          {detail.summary}
+        </p>
+      ) : null}
+
+      {detail.phase === 'loading' ? (
+        <p
+          className="mt-4 text-sm font-medium text-slate-200"
+          data-testid="office-run-detail-loading"
+          aria-live="polite"
+        >
+          {labels.runDetailLoading}
+        </p>
+      ) : null}
+
+      {showOutput ? (
+        <>
+          <h3
+            id="office-saved-output"
+            className="mt-4 text-xs font-semibold uppercase tracking-wide text-slate-400"
+          >
+            {labels.savedOutput}
+          </h3>
+          <pre
+            tabIndex={0}
+            data-testid="office-run-detail-output"
+            aria-labelledby="office-saved-output"
+            className="mt-2 max-h-72 max-w-full overflow-y-auto overscroll-contain whitespace-pre-wrap break-words rounded-lg border border-slate-800 bg-slate-950/60 p-3 font-sans text-sm leading-relaxed text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+          >
+            {output}
+          </pre>
+        </>
+      ) : null}
+
+      {detail.phase === 'empty' || (detail.phase === 'output' && !showOutput) ? (
+        <p
+          className="mt-4 text-sm leading-relaxed text-slate-300"
+          data-testid="office-run-detail-empty"
+          aria-live="polite"
+        >
+          {labels.runDetailEmpty}
+        </p>
+      ) : null}
+
+      {detail.phase === 'notFound' ? (
+        <p
+          className="mt-4 text-sm leading-relaxed text-slate-300"
+          data-testid="office-run-detail-not-found"
+          aria-live="polite"
+        >
+          {labels.runDetailNotFound}
+        </p>
+      ) : null}
+
+      {detail.phase === 'error' ? (
+        <div
+          role="alert"
+          className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-red-700/40 bg-red-950/30 px-4 py-3"
+          data-testid="office-run-detail-error"
+        >
+          <ExclamationTriangleIcon className="h-4 w-4 text-red-300" aria-hidden="true" />
+          <p className="text-sm text-red-200">{labels.runDetailError}</p>
+          <button
+            type="button"
+            className="rounded-md text-sm font-medium text-indigo-300 hover:text-indigo-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+            onClick={onRetryRun}
+            data-testid="office-run-detail-retry"
+          >
+            {labels.retry}
+          </button>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+export default function OfficeDeskPanel({
+  desk,
+  labels,
+  onClose,
+  runDetail = null,
+  onOpenRun,
+  onCloseRun,
+  onRetryRun,
+  reducedMotion = false,
+}: OfficeDeskPanelProps): React.ReactElement {
+  const backRef = useRef<HTMLButtonElement>(null);
+  const detailRef = useRef<HTMLElement>(null);
+  const seenRunId = useRef<string | null>(null);
+  const pendingReturnId = useRef<string | null>(null);
+
+  useEffect(() => {
+    const detailOpen = runDetail != null;
+    const sameRun = detailOpen && seenRunId.current === runDetail.executionId;
+    const focusLost =
+      typeof document === 'undefined' ||
+      document.activeElement == null ||
+      document.activeElement === document.body;
+    const action = officeRunDetailFocus({ detailOpen, sameRun, focusLost });
+    seenRunId.current = detailOpen ? runDetail.executionId : null;
+    if (action === 'stay') {
+      return;
+    }
+    if (action === 'back') {
+      backRef.current?.focus();
+      return;
+    }
+    const returnId = pendingReturnId.current;
+    pendingReturnId.current = null;
+    if (!returnId || typeof document === 'undefined') {
+      return;
+    }
+    const button = document.querySelector<HTMLElement>(
+      `[data-execution-id="${CSS.escape(returnId)}"]`,
+    );
+    button?.focus();
+  }, [runDetail?.executionId, runDetail?.phase]);
+
   if (!desk) {
     return (
       <aside
-        className="rounded-2xl border border-dashed border-slate-700 bg-slate-900/50 p-5"
+        className="min-w-0 rounded-2xl border border-dashed border-slate-700 bg-slate-900/50 p-5"
         data-testid="office-desk-panel-empty"
       >
         <p className="text-sm text-slate-400">{labels.deskHint}</p>
@@ -111,9 +291,16 @@ export default function OfficeDeskPanel({ desk, labels, onClose }: OfficeDeskPan
 
   return (
     <aside
-      className="rounded-2xl border border-slate-700 bg-slate-900 p-5"
+      className="min-w-0 rounded-2xl border border-slate-700 bg-slate-900 p-5"
       data-testid="office-desk-panel"
       data-desk-id={desk.id}
+      onKeyDown={(event) => {
+        if (officeRunDetailKeyAction(event.key, runDetail != null) !== 'back') {
+          return;
+        }
+        event.preventDefault();
+        onCloseRun?.();
+      }}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -150,6 +337,16 @@ export default function OfficeDeskPanel({ desk, labels, onClose }: OfficeDeskPan
 
       {desk.vacant ? (
         <p className="mt-4 text-sm leading-relaxed text-slate-300">{labels.comingSoonBody}</p>
+      ) : runDetail ? (
+        <RunDetail
+          detail={runDetail}
+          labels={labels}
+          reducedMotion={reducedMotion}
+          backRef={backRef}
+          detailRef={detailRef}
+          onCloseRun={() => onCloseRun?.()}
+          onRetryRun={() => onRetryRun?.()}
+        />
       ) : (
         <>
           {desk.current ? (
@@ -168,13 +365,31 @@ export default function OfficeDeskPanel({ desk, labels, onClose }: OfficeDeskPan
               </h3>
               <ul className="mt-2 space-y-3">
                 {desk.recent.map((run) => (
-                  <li
-                    key={run.id}
-                    className="rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2"
-                    data-testid="office-recent-run"
-                  >
-                    <p className="text-sm font-medium text-white">{run.statusText}</p>
-                    <RunFacts run={run} labels={labels} />
+                  <li key={run.id}>
+                    {run.executionId ? (
+                      <button
+                        type="button"
+                        className="w-full rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-left hover:border-indigo-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                        data-testid="office-recent-run"
+                        data-execution-id={run.executionId}
+                        onClick={() => {
+                          pendingReturnId.current = run.executionId;
+                          onOpenRun?.(run.executionId as string);
+                        }}
+                      >
+                        <p className="text-sm font-medium text-white">{run.statusText}</p>
+                        <RunFacts run={run} labels={labels} />
+                        <span className="sr-only">{labels.openRun}</span>
+                      </button>
+                    ) : (
+                      <div
+                        className="rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2"
+                        data-testid="office-recent-run"
+                      >
+                        <p className="text-sm font-medium text-white">{run.statusText}</p>
+                        <RunFacts run={run} labels={labels} />
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>

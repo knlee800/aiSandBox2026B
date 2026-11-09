@@ -14,6 +14,7 @@ import { knowledgeFetch } from '@/components/knowledge/knowledge-api';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useUserAgents } from '@/hooks/useUserAgents';
 import { useOfficeRuns } from '@/hooks/useOfficeRuns';
+import { useOfficeRunDetail } from '@/hooks/useOfficeRunDetail';
 import OfficeDeskCard from '@/components/office/office-desk';
 import OfficeDeskPanel, {
   type OfficePanelLabels,
@@ -47,6 +48,7 @@ import {
   type OfficeDesk,
   type OfficeDeskPhase,
   type OfficeRun,
+  type OfficeRunDetailPhase,
   type OfficeUserAgentRef,
 } from '@/lib/office/office.logic';
 
@@ -97,6 +99,14 @@ export interface OfficeScreenViewProps {
   onRetryAgents: () => void;
   systemAgentsError: boolean;
   onRetrySystemAgents: () => void;
+  runDetail?: {
+    executionId: string;
+    phase: OfficeRunDetailPhase;
+    output: string | null;
+  } | null;
+  onOpenRun?: (executionId: string) => void;
+  onCloseRun?: () => void;
+  onRetryRun?: () => void;
 }
 
 function statusLabel(phase: OfficeDeskPhase, t: (key: string) => string): string {
@@ -128,6 +138,10 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
     systemAgents,
     systemAgentsError,
     onRetrySystemAgents,
+    runDetail = null,
+    onOpenRun,
+    onCloseRun,
+    onRetryRun,
   } = props;
 
   if (loading) {
@@ -175,6 +189,7 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
     const elapsed = list === 'active';
     return {
       id: `${run.executionId ?? 'run'}-${index}`,
+      executionId: run.executionId,
       statusText: statusLabel(phaseForRun(run.status, list), t),
       modeText: t(`mode.${officeModeKey(run.mode)}`),
       providerModel: officeProviderModel(run),
@@ -202,6 +217,14 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
     agentProfile: t('agentProfile'),
     comingSoonBody: t('comingSoonBody'),
     deskHint: t('deskHint'),
+    openRun: t('openRun'),
+    backToRuns: t('backToRuns'),
+    savedOutput: t('savedOutput'),
+    runDetailLoading: t('runDetailLoading'),
+    runDetailEmpty: t('runDetailEmpty'),
+    runDetailNotFound: t('runDetailNotFound'),
+    runDetailError: t('runDetailError'),
+    retry: t('retry'),
   };
   const updatedSeconds =
     updatedAt == null ? null : Math.max(0, Math.floor((nowMs - updatedAt) / 1000));
@@ -223,6 +246,22 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
     return fillOfficeTemplate(t(knowledgeBadgeMessageKey(count)), {
       count: String(count),
     });
+  }
+
+  function detailSummary(executionId: string): string | null {
+    if (!selected) {
+      return null;
+    }
+    if (selected.currentRun?.executionId === executionId) {
+      const panelRun = toPanelRun(selected.currentRun, 'active', 0);
+      return `${panelRun.statusText} · ${panelRun.modeText} · ${panelRun.startedText}`;
+    }
+    const recentIndex = selected.recentRuns.findIndex((run) => run.executionId === executionId);
+    if (recentIndex < 0) {
+      return null;
+    }
+    const panelRun = toPanelRun(selected.recentRuns[recentIndex], 'recent', recentIndex);
+    return `${panelRun.statusText} · ${panelRun.modeText} · ${panelRun.startedText}`;
   }
 
   function opensTeam(desk: OfficeDesk): boolean {
@@ -349,6 +388,18 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
             }
             labels={panelLabels}
             onClose={onClosePanel}
+            reducedMotion={reducedMotion}
+            runDetail={
+              runDetail
+                ? {
+                    ...runDetail,
+                    summary: detailSummary(runDetail.executionId),
+                  }
+                : null
+            }
+            onOpenRun={onOpenRun}
+            onCloseRun={onCloseRun}
+            onRetryRun={onRetryRun}
           />
         </div>
       </main>
@@ -429,6 +480,7 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
   const router = useRouter();
   const [authReady, setAuthReady] = useState(false);
   const [selectedDeskId, setSelectedDeskId] = useState<string | null>(null);
+  const [openExecutionId, setOpenExecutionId] = useState<string | null>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [knowledgeDocuments, setKnowledgeDocuments] = useState<KnowledgeBadgeDocument[] | null>(
     null,
@@ -448,6 +500,7 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
     refetch: refetchSystemAgents,
   } = useSystemAgents();
   const runs = useOfficeRuns(authReady, poll);
+  const openedRun = useOfficeRunDetail(openExecutionId);
   const registry = useMemo(() => officeRegistryFromManifests(systemAgents), [systemAgents]);
   const userRefs = useMemo<OfficeUserAgentRef[]>(
     () =>
@@ -525,11 +578,12 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
     if (
       userAgentsError === 'AUTH_EXPIRED' ||
       runs.error === 'AUTH_EXPIRED' ||
-      systemAgentsLoadError === 'AUTH_EXPIRED'
+      systemAgentsLoadError === 'AUTH_EXPIRED' ||
+      openedRun.error === 'AUTH_EXPIRED'
     ) {
       router.replace(`/${locale}/login`);
     }
-  }, [userAgentsError, runs.error, systemAgentsLoadError, locale, router]);
+  }, [userAgentsError, runs.error, systemAgentsLoadError, openedRun.error, locale, router]);
 
   useEffect(() => {
     if (typeof window.matchMedia !== 'function') {
@@ -554,13 +608,23 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
   useEffect(() => {
     if (selectedDeskId && !desks.some((desk) => desk.id === selectedDeskId)) {
       setSelectedDeskId(null);
+      setOpenExecutionId(null);
     }
   }, [desks, selectedDeskId]);
 
   const redirecting =
     runs.error === 'AUTH_EXPIRED' ||
     userAgentsError === 'AUTH_EXPIRED' ||
-    systemAgentsLoadError === 'AUTH_EXPIRED';
+    systemAgentsLoadError === 'AUTH_EXPIRED' ||
+    openedRun.error === 'AUTH_EXPIRED';
+  const runDetail =
+    openExecutionId == null
+      ? null
+      : {
+          executionId: openExecutionId,
+          phase: openedRun.phase === 'idle' ? ('loading' as const) : openedRun.phase,
+          output: openedRun.output,
+        };
   const loading =
     !authReady || redirecting || !runs.settled || userAgentsLoading || systemAgentsLoading;
   const showEmpty =
@@ -587,8 +651,20 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
       nowMs={nowMs}
       reducedMotion={reducedMotion}
       knowledgeDocuments={knowledgeDocuments}
-      onSelectDesk={setSelectedDeskId}
-      onClosePanel={() => setSelectedDeskId(null)}
+      onSelectDesk={(id) => {
+        if (id !== selectedDeskId) {
+          setOpenExecutionId(null);
+        }
+        setSelectedDeskId(id);
+      }}
+      onClosePanel={() => {
+        setSelectedDeskId(null);
+        setOpenExecutionId(null);
+      }}
+      runDetail={runDetail}
+      onOpenRun={setOpenExecutionId}
+      onCloseRun={() => setOpenExecutionId(null)}
+      onRetryRun={openedRun.retry}
       onRefresh={runs.refresh}
       onRetryRuns={runs.refresh}
       onRetryAgents={() => {

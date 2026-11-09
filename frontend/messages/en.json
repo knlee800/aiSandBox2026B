@@ -1094,6 +1094,13 @@
     "openWorkspace": "Open workspace",
     "agentProfile": "Agent profile",
     "closePanel": "Close",
+    "openRun": "Open saved output",
+    "backToRuns": "Back to runs",
+    "savedOutput": "Saved output",
+    "runDetailLoading": "Loading saved output…",
+    "runDetailEmpty": "This run has no saved output yet.",
+    "runDetailNotFound": "This run could not be found.",
+    "runDetailError": "Could not load this run.",
     "comingSoonBody": "This desk is reserved for a future agent.",
     "knowledgeBadge": "{count} documents",
     "knowledgeBadgeOne": "{count} document"

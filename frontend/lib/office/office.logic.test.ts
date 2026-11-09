@@ -20,6 +20,9 @@ import {
   officeTeamHref,
   phaseForRun,
   activeRunsEnded,
+  officeRunDetailFocus,
+  officeRunDetailFromResponse,
+  officeRunDetailKeyAction,
   shouldPollOffice,
   showsOutcomeUnknown,
   type OfficeRun,
@@ -740,5 +743,97 @@ describe('chief of staff knowledge badge', () => {
   test('the team page href keeps the locale', () => {
     assert.equal(officeTeamHref('en'), '/en/collaboration');
     assert.equal(officeTeamHref('zh-TW'), '/zh-TW/collaboration');
+  });
+});
+
+describe('office run detail response', () => {
+  test('completed output is kept as plain text, including line breaks', () => {
+    const output = '  hello\n\n<script>alert(1)</script>  ';
+    const result = officeRunDetailFromResponse(200, {
+      executionId: 'exec-1',
+      status: 'completed',
+      output,
+      fileActions: [{ action: 'write', path: 'secret.txt' }],
+    });
+    assert.deepEqual(result, { phase: 'output', output, status: 'completed' });
+  });
+
+  test('a run with no saved output is empty', () => {
+    const cases: unknown[] = [
+      { status: 'completed', output: '' },
+      { status: 'completed', output: ' \n\t ' },
+      { status: 'completed' },
+      { status: 'completed', output: 12 },
+      { status: 'queued', output: 'not saved yet' },
+      { status: 'running', output: 'still going' },
+      { status: 'failed' },
+      { status: 'cancelled' },
+      { status: 'timeout' },
+    ];
+    for (const payload of cases) {
+      const result = officeRunDetailFromResponse(200, payload);
+      assert.equal(result.phase, 'empty', JSON.stringify(payload));
+    }
+  });
+
+  test('404 is not found, including a body that is not the caller’s run', () => {
+    assert.deepEqual(
+      officeRunDetailFromResponse(404, { status: 'completed', output: 'someone else' }),
+      { phase: 'notFound' },
+    );
+    assert.deepEqual(officeRunDetailFromResponse(404, null), { phase: 'notFound' });
+  });
+
+  test('401 and other failed requests stay errors', () => {
+    assert.deepEqual(officeRunDetailFromResponse(401, { output: 'hidden' }), {
+      phase: 'error',
+      error: 'AUTH_EXPIRED',
+    });
+    assert.deepEqual(officeRunDetailFromResponse(403, null), {
+      phase: 'error',
+      error: 'FETCH_FAILED',
+    });
+    assert.deepEqual(officeRunDetailFromResponse(500, { message: 'nope' }), {
+      phase: 'error',
+      error: 'FETCH_FAILED',
+    });
+    assert.deepEqual(officeRunDetailFromResponse(200, null), {
+      phase: 'error',
+      error: 'FETCH_FAILED',
+    });
+    assert.deepEqual(officeRunDetailFromResponse(200, {}), {
+      phase: 'error',
+      error: 'FETCH_FAILED',
+    });
+    assert.deepEqual(officeRunDetailFromResponse(200, { status: '   ' }), {
+      phase: 'error',
+      error: 'FETCH_FAILED',
+    });
+  });
+
+  test('escape leaves the detail and other keys do not', () => {
+    assert.equal(officeRunDetailKeyAction('Escape', true), 'back');
+    assert.equal(officeRunDetailKeyAction('Escape', false), 'none');
+    assert.equal(officeRunDetailKeyAction('Enter', true), 'none');
+    assert.equal(officeRunDetailKeyAction('Tab', true), 'none');
+  });
+
+  test('focus moves to the detail when it opens and back to the run when it closes', () => {
+    assert.equal(
+      officeRunDetailFocus({ detailOpen: true, sameRun: false, focusLost: true }),
+      'back',
+    );
+    assert.equal(
+      officeRunDetailFocus({ detailOpen: true, sameRun: true, focusLost: false }),
+      'stay',
+    );
+    assert.equal(
+      officeRunDetailFocus({ detailOpen: true, sameRun: true, focusLost: true }),
+      'back',
+    );
+    assert.equal(
+      officeRunDetailFocus({ detailOpen: false, sameRun: false, focusLost: true }),
+      'run',
+    );
   });
 });

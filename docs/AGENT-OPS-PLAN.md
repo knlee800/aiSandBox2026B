@@ -13,7 +13,6 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 | # | Item | What it does | Lane |
 |---|---|---|---|
 | 1 | CONN-01 | MCP server for mail headers and today's calendar; deploy build list (admitted 2026-11-09) | 1 |
-| 2 | OFFICE-06 | Click an office desk to see that agent's saved results (admitted 2026-11-09) | 2 |
 | 3 | GOV-GOOGLE-VERIFY-01 | Google verification of the platform's app (option A), when Keith is ready | No lane |
 
 **Stage 2 — connections and the briefing template (section 4, phase 1)**

@@ -1094,6 +1094,13 @@
     "openWorkspace": "打开工作区",
     "agentProfile": "代理档案",
     "closePanel": "关闭",
+    "openRun": "打开已保存的输出",
+    "backToRuns": "返回运行列表",
+    "savedOutput": "已保存的输出",
+    "runDetailLoading": "正在加载已保存的输出…",
+    "runDetailEmpty": "这次运行还没有已保存的输出。",
+    "runDetailNotFound": "找不到这次运行。",
+    "runDetailError": "无法加载这次运行。",
     "comingSoonBody": "此工位保留给未来的代理。",
     "knowledgeBadge": "{count} 份文档",
     "knowledgeBadgeOne": "{count} 份文档"

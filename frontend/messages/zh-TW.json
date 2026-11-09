@@ -1094,6 +1094,13 @@
     "openWorkspace": "開啟工作區",
     "agentProfile": "代理檔案",
     "closePanel": "關閉",
+    "openRun": "開啟已儲存的輸出",
+    "backToRuns": "返回執行列表",
+    "savedOutput": "已儲存的輸出",
+    "runDetailLoading": "正在載入已儲存的輸出…",
+    "runDetailEmpty": "這次執行還沒有已儲存的輸出。",
+    "runDetailNotFound": "找不到這次執行。",
+    "runDetailError": "無法載入這次執行。",
     "comingSoonBody": "此座位保留給未來的代理。",
     "knowledgeBadge": "{count} 份文件",
     "knowledgeBadgeOne": "{count} 份文件"
