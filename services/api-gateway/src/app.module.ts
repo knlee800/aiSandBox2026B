@@ -35,6 +35,7 @@ import { ProjectRepoDocsModule } from './project-repo-docs/project-repo-docs.mod
 import { OrchestrationModule } from './orchestration/orchestration.module';
 import { UserAgentModule } from './user-agent/user-agent.module';
 import { KnowledgeModule } from './knowledge/knowledge.module';
+import { ConnectorsModule } from './connectors/connectors.module';
 import { SystemAgentsModule } from './system-agents/system-agents.module';
 import { databaseConfig } from './config/database.config';
 import { InternalServiceAuthGuard } from './guards/internal-service-auth.guard';
@@ -89,6 +90,7 @@ import { IdempotentReplayExceptionFilter } from './filters/idempotent-replay-exc
     BillingReadModule, // BILLING-READY-05F: Billing UI read endpoints (balance + subscription)
     UserAgentModule, // AGENT-PLATFORM-CREATE-01A: User-created agent persistence
     KnowledgeModule, // KNOW-01: Owner-scoped knowledge documents
+    ConnectorsModule, // CONN-02A: Connector credentials
     SystemAgentsModule, // AGENT-DEFS-01: system agent definitions
   ],
   controllers: [],

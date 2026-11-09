@@ -85802,7 +85802,7 @@ taskId=CONN-02A
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — STAGE-START COMPLETE — 2026-11-09 — Keith approved the stage-start (docs/CONN-02A-STAGE-START.md); implementation next (Cursor grok-4.7-xhigh). Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
+**Status:** COMPLETE AND LOCKED — 2026-11-09. LANE-DONE and LOCKED by the control plane; Lane 1, GATEWAY, MIGRATION and ENV released. connector_connections table and migration, AES-256-GCM per owner and kind, connect, list and delete routes, env template line; not deployed. Checkpoint: docs/CONN-02A-CHECKPOINT.md. Stage-start docs/CONN-02A-STAGE-START.md. Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
 **Task ID:** CONN-02A
 **Title:** Connector credentials, encryption and connect routes
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -85845,7 +85845,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
-**Scope:** Broker (A1, C2): pinned MCP client, allowlist with platform descriptions, child spawned by absolute path with no secret keys in its env, SSRF guard, the internal call route and audit rows that carry no content. User-supplied servers stay refused.
+**Scope:** Broker (A1, C2): pinned MCP client, allowlist with platform descriptions, child spawned by absolute path with no secret keys in its env, SSRF guard, the internal call route and audit rows that carry no content. User-supplied servers stay refused. Also (CONN-02A, 2026-11-09): the connect-time iCal check accepts the host name localhost (IP literals are refused); also refuse localhost and names ending in .localhost, .local or .internal at connect, although the MCP server already refuses their addresses at fetch.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
 
 ### CONN-UI-01 — Connections page
