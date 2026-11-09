@@ -549,6 +549,7 @@
     "backToWorkspace": "Back to Workspace",
     "openOffice": "Office",
     "openKnowledge": "Knowledge",
+    "openConnections": "Connections",
     "comingSoonMessage": "This agent is coming soon. Stay tuned!",
     "systemAgentsLoading": "Loading stations…",
     "systemAgentsLoadError": "Stations could not be loaded. Only Builder is shown.",
@@ -1180,6 +1181,123 @@
     "byteSize": "{kilobytes} KB",
     "updated": "Updated {when}",
     "documentMeta": "{size} · {updated}"
+  },
+  "connections": {
+    "title": "Connections",
+    "subtitle": "Connect your mail and calendar so your agents can read them.",
+    "backToPlatform": "Back to platform",
+    "loading": "Loading connections…",
+    "loadError": "Could not load your connections. Check your network and try again.",
+    "retry": "Try again",
+    "forbiddenTitle": "Connections are not available for this account",
+    "forbiddenBody": "Your account does not have access to agent connections yet.",
+    "unavailableTitle": "Connections are not available yet",
+    "unavailableBody": "Mail and calendar connections are not set up on this site yet. Nothing was saved.",
+    "dataStatement": {
+      "title": "Before you connect",
+      "sentToProvider": "Mail and calendar text that an agent reads is sent to the AI model provider, so it leaves this platform.",
+      "headersOnly": "Only mail headers (sender, subject, date) and calendar event titles and times are read. Message bodies are not read yet.",
+      "noChanges": "Nothing is sent, deleted or changed in your mailbox or calendar.",
+      "stored": "Saved run results can include the text that was read. Your app password and calendar link are stored encrypted and never shown again."
+    },
+    "status": {
+      "connected": "Connected",
+      "notConnected": "Not connected"
+    },
+    "fields": {
+      "provider": "Provider",
+      "address": "Address",
+      "source": "Source",
+      "connectedAt": "Connected",
+      "lastChecked": "Last checked",
+      "notCheckedYet": "Not checked yet"
+    },
+    "presets": {
+      "gmail": "Gmail",
+      "yahoo": "Yahoo Mail",
+      "icloud": "iCloud Mail"
+    },
+    "steps": {
+      "gmail": {
+        "one": "Turn on 2-Step Verification for your Google Account (Google Account, then Security).",
+        "two": "Create an app password at myaccount.google.com/apppasswords. Any name works.",
+        "three": "Paste the 16-letter app password below with your Gmail address."
+      },
+      "yahoo": {
+        "one": "Turn on 2-step verification for your Yahoo account (Account info, then Account security).",
+        "two": "In Account security, choose Generate app password and create one.",
+        "three": "Paste the app password below with your Yahoo Mail address."
+      },
+      "icloud": {
+        "one": "Turn on two-factor authentication for your Apple Account.",
+        "two": "At account.apple.com, open Sign-In and Security, then App-Specific Passwords, and create one.",
+        "three": "Paste the app-specific password below with your iCloud Mail address."
+      }
+    },
+    "mail": {
+      "title": "Mail",
+      "intro": "Agents can list your unread mail headers. They cannot send, reply or change anything.",
+      "providerLabel": "Mail provider",
+      "stepsTitle": "Set up",
+      "noteAppPassword": "Use an app password, not your normal password. You can delete it at your provider at any time.",
+      "noteAdvancedProtection": "Google accounts with Advanced Protection, and some company or school Google accounts, block app passwords and cannot connect this way.",
+      "noteOutlook": "Outlook.com and Hotmail are not supported yet.",
+      "emailLabel": "Email address",
+      "emailPlaceholder": "you@example.com",
+      "appPasswordLabel": "App password",
+      "appPasswordHint": "It is cleared from this form when you press Connect and never shown again.",
+      "connect": "Connect mail",
+      "connecting": "Connecting…",
+      "disconnectTitle": "Disconnect mail?",
+      "disconnectBody": "The saved app password is deleted from this platform. Your mailbox is not changed. You can connect again at any time.",
+      "disconnected": "Mail disconnected. The saved app password was deleted."
+    },
+    "calendar": {
+      "title": "Calendar",
+      "intro": "Agents can read today's events from a private calendar link. They cannot accept invites or change events.",
+      "stepsTitle": "Set up with Google Calendar",
+      "stepOne": "Open Google Calendar on a computer and go to Settings.",
+      "stepTwo": "Under Settings for my calendars, pick your calendar, then open Integrate calendar.",
+      "stepThree": "Copy Secret address in iCal format (it starts with https://) and paste it below.",
+      "noteSecret": "Anyone with this link can read your calendar. Keep it private; you can reset it in Google Calendar settings.",
+      "noteAdmin": "On a company or school account, an admin can turn this link off. If you cannot find it, that is likely why.",
+      "noteOther": "Another calendar app works too if it gives you a private https iCal link.",
+      "linkLabel": "Private calendar link",
+      "linkPlaceholder": "https://",
+      "linkHint": "It is cleared from this form when you press Connect and never shown again.",
+      "source": "Private iCal link",
+      "connect": "Connect calendar",
+      "connecting": "Connecting…",
+      "disconnectTitle": "Disconnect calendar?",
+      "disconnectBody": "The saved calendar link is deleted from this platform. Your calendar is not changed. You can connect again at any time.",
+      "disconnected": "Calendar disconnected. The saved calendar link was deleted."
+    },
+    "actions": {
+      "verify": "Verify",
+      "verifying": "Checking…",
+      "verifyOk": "Working. Checked {when}.",
+      "disconnect": "Disconnect",
+      "disconnecting": "Disconnecting…",
+      "confirmDisconnect": "Disconnect",
+      "cancel": "Cancel"
+    },
+    "errors": {
+      "preset": "Preset must be gmail, yahoo, or icloud.",
+      "username": "Username must be an email address.",
+      "appPassword": "App password must be 8 to 64 characters.",
+      "icalUrl": "Calendar link must be an https URL with a host name.",
+      "invalid": "Connector request is invalid.",
+      "unknownConnector": "Unknown connector.",
+      "bodyTooLarge": "Request body is too large.",
+      "notFound": "Connection not found. Reload the page to see your current connections.",
+      "saveFailed": "Could not save the connection. Try again.",
+      "deleteFailed": "Could not delete the connection. Try again.",
+      "mailVerifyFailed": "Check failed: could not reach the mail server. Check the address and app password.",
+      "calendarVerifyFailed": "Check failed: the calendar link could not be read. Check that the link is still valid.",
+      "connectFailed": "Could not connect. Try again.",
+      "disconnectFailed": "Could not disconnect. Try again.",
+      "network": "Could not reach the server. Check your network and try again."
+    }
   },
   "languages": {
     "en": "English",

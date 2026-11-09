@@ -8,6 +8,7 @@ import {
   BookOpenIcon,
   BuildingOffice2Icon,
   ExclamationTriangleIcon,
+  LinkIcon,
   PlusIcon,
   SignalIcon,
   Squares2X2Icon,
@@ -281,6 +282,7 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
   const backToWorkspace = resolveNestedMessage(messages, 'platform.backToWorkspace');
   const openOffice = resolveNestedMessage(messages, 'platform.openOffice');
   const openKnowledge = resolveNestedMessage(messages, 'platform.openKnowledge');
+  const openConnections = resolveNestedMessage(messages, 'platform.openConnections');
   const commandDeckLabel = resolveNestedMessage(messages, 'platform.commandDeckLabel');
   const commandDeckIntro = resolveNestedMessage(messages, 'platform.commandDeckIntro');
   const statusTitle = resolveNestedMessage(messages, 'platform.commandCenterStatusTitle');
@@ -540,6 +542,14 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
             >
               <BookOpenIcon className="h-4 w-4" aria-hidden="true" />
               {openKnowledge}
+            </Link>
+            <Link
+              href={`${localePrefix}/connections`}
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+              data-testid="platform-open-connections"
+            >
+              <LinkIcon className="h-4 w-4" aria-hidden="true" />
+              {openConnections}
             </Link>
             <Link
               href={`${localePrefix}/app`}

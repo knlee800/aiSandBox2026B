@@ -549,6 +549,7 @@
     "backToWorkspace": "返回工作區",
     "openOffice": "辦公室",
     "openKnowledge": "知識庫",
+    "openConnections": "連線",
     "comingSoonMessage": "此代理即將推出，敬請期待！",
     "systemAgentsLoading": "正在載入席位…",
     "systemAgentsLoadError": "無法載入席位，目前只顯示 Builder。",
@@ -1180,6 +1181,123 @@
     "byteSize": "{kilobytes} KB",
     "updated": "更新於 {when}",
     "documentMeta": "{size} · {updated}"
+  },
+  "connections": {
+    "title": "連線",
+    "subtitle": "連接你的郵件與行事曆，讓你的代理可以讀取。",
+    "backToPlatform": "返回平台",
+    "loading": "正在載入連線…",
+    "loadError": "無法載入你的連線。請檢查網路後再試一次。",
+    "retry": "再試一次",
+    "forbiddenTitle": "此帳號無法使用連線",
+    "forbiddenBody": "你的帳號目前尚未開放代理連線功能。",
+    "unavailableTitle": "連線功能尚未開放",
+    "unavailableBody": "此網站尚未設定郵件與行事曆連線。沒有儲存任何資料。",
+    "dataStatement": {
+      "title": "連接之前請先了解",
+      "sentToProvider": "代理讀取的郵件與行事曆文字會傳送給 AI 模型供應商，因此會離開本平台。",
+      "headersOnly": "只會讀取郵件標頭（寄件者、主旨、日期）以及行事曆活動的標題與時間。目前不會讀取郵件內文。",
+      "noChanges": "不會在你的信箱或行事曆中寄出、刪除或變更任何內容。",
+      "stored": "已儲存的執行結果可能包含讀取到的文字。你的應用程式密碼與行事曆連結會加密儲存，且不會再次顯示。"
+    },
+    "status": {
+      "connected": "已連線",
+      "notConnected": "未連線"
+    },
+    "fields": {
+      "provider": "供應商",
+      "address": "地址",
+      "source": "來源",
+      "connectedAt": "連線時間",
+      "lastChecked": "上次檢查",
+      "notCheckedYet": "尚未檢查"
+    },
+    "presets": {
+      "gmail": "Gmail",
+      "yahoo": "Yahoo Mail",
+      "icloud": "iCloud Mail"
+    },
+    "steps": {
+      "gmail": {
+        "one": "為你的 Google 帳戶開啟兩步驟驗證（Google 帳戶 > 安全性）。",
+        "two": "前往 myaccount.google.com/apppasswords 建立應用程式密碼，名稱可以隨意填寫。",
+        "three": "將 16 個字母的應用程式密碼與你的 Gmail 地址貼到下方。"
+      },
+      "yahoo": {
+        "one": "為你的 Yahoo 帳號開啟兩步驟驗證（帳戶資訊 > 帳戶安全性）。",
+        "two": "在帳戶安全性中選擇「產生應用程式密碼」並建立一組。",
+        "three": "將應用程式密碼與你的 Yahoo Mail 地址貼到下方。"
+      },
+      "icloud": {
+        "one": "為你的 Apple 帳號開啟雙重認證。",
+        "two": "前往 account.apple.com，開啟「登入與安全性」>「App 專用密碼」，並建立一組。",
+        "three": "將 App 專用密碼與你的 iCloud Mail 地址貼到下方。"
+      }
+    },
+    "mail": {
+      "title": "郵件",
+      "intro": "代理可以列出你未讀郵件的標頭，無法寄信、回覆或變更任何內容。",
+      "providerLabel": "郵件供應商",
+      "stepsTitle": "設定步驟",
+      "noteAppPassword": "請使用應用程式密碼，而非你平常的密碼。你隨時可以在供應商那裡刪除它。",
+      "noteAdvancedProtection": "啟用進階保護計畫的 Google 帳戶，以及部分公司或學校的 Google 帳戶，會封鎖應用程式密碼，無法用這種方式連線。",
+      "noteOutlook": "目前尚不支援 Outlook.com 與 Hotmail。",
+      "emailLabel": "電子郵件地址",
+      "emailPlaceholder": "you@example.com",
+      "appPasswordLabel": "應用程式密碼",
+      "appPasswordHint": "按下連線後會從此表單清除，且不會再次顯示。",
+      "connect": "連接郵件",
+      "connecting": "連線中…",
+      "disconnectTitle": "要中斷郵件連線嗎？",
+      "disconnectBody": "已儲存的應用程式密碼會從本平台刪除，你的信箱不會有任何變更。你隨時可以重新連線。",
+      "disconnected": "郵件已中斷連線，已儲存的應用程式密碼已刪除。"
+    },
+    "calendar": {
+      "title": "行事曆",
+      "intro": "代理可以從私人行事曆連結讀取今天的活動，無法接受邀請或變更活動。",
+      "stepsTitle": "使用 Google 日曆設定",
+      "stepOne": "在電腦上開啟 Google 日曆，然後前往「設定」。",
+      "stepTwo": "在「我的日曆設定」下選擇你的日曆，然後開啟「整合日曆」。",
+      "stepThree": "複製「iCal 格式的私人網址」（以 https:// 開頭）並貼到下方。",
+      "noteSecret": "任何取得此連結的人都能讀取你的行事曆。請妥善保管；你可以在 Google 日曆設定中重設它。",
+      "noteAdmin": "公司或學校帳戶的管理員可以關閉此連結。如果你找不到它，很可能就是這個原因。",
+      "noteOther": "其他行事曆應用程式只要提供私人的 https iCal 連結，也可以使用。",
+      "linkLabel": "私人行事曆連結",
+      "linkPlaceholder": "https://",
+      "linkHint": "按下連線後會從此表單清除，且不會再次顯示。",
+      "source": "私人 iCal 連結",
+      "connect": "連接行事曆",
+      "connecting": "連線中…",
+      "disconnectTitle": "要中斷行事曆連線嗎？",
+      "disconnectBody": "已儲存的行事曆連結會從本平台刪除，你的行事曆不會有任何變更。你隨時可以重新連線。",
+      "disconnected": "行事曆已中斷連線，已儲存的行事曆連結已刪除。"
+    },
+    "actions": {
+      "verify": "驗證",
+      "verifying": "檢查中…",
+      "verifyOk": "運作正常。檢查時間：{when}。",
+      "disconnect": "中斷連線",
+      "disconnecting": "正在中斷連線…",
+      "confirmDisconnect": "中斷連線",
+      "cancel": "取消"
+    },
+    "errors": {
+      "preset": "供應商必須是 Gmail、Yahoo 或 iCloud。",
+      "username": "使用者名稱必須是電子郵件地址。",
+      "appPassword": "應用程式密碼必須為 8 到 64 個字元。",
+      "icalUrl": "行事曆連結必須是含有主機名稱的 https 網址。",
+      "invalid": "連線請求無效。",
+      "unknownConnector": "未知的連線類型。",
+      "bodyTooLarge": "請求內容過大。",
+      "notFound": "找不到此連線。請重新載入頁面以查看目前的連線。",
+      "saveFailed": "無法儲存連線，請再試一次。",
+      "deleteFailed": "無法刪除連線，請再試一次。",
+      "mailVerifyFailed": "檢查失敗：無法連上郵件伺服器。請確認地址與應用程式密碼。",
+      "calendarVerifyFailed": "檢查失敗：無法讀取行事曆連結。請確認連結仍然有效。",
+      "connectFailed": "無法連線，請再試一次。",
+      "disconnectFailed": "無法中斷連線，請再試一次。",
+      "network": "無法連上伺服器。請檢查網路後再試一次。"
+    }
   },
   "languages": {
     "en": "English",

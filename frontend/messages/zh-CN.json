@@ -549,6 +549,7 @@
     "backToWorkspace": "返回工作区",
     "openOffice": "办公室",
     "openKnowledge": "知识库",
+    "openConnections": "连接",
     "comingSoonMessage": "此代理即将推出，敬请期待！",
     "systemAgentsLoading": "正在加载席位…",
     "systemAgentsLoadError": "无法加载席位，目前只显示 Builder。",
@@ -1180,6 +1181,123 @@
     "byteSize": "{kilobytes} KB",
     "updated": "更新于 {when}",
     "documentMeta": "{size} · {updated}"
+  },
+  "connections": {
+    "title": "连接",
+    "subtitle": "连接你的邮件和日历，让你的代理可以读取。",
+    "backToPlatform": "返回平台",
+    "loading": "正在加载连接…",
+    "loadError": "无法加载你的连接。请检查网络后重试。",
+    "retry": "重试",
+    "forbiddenTitle": "此账号无法使用连接",
+    "forbiddenBody": "你的账号目前尚未开放代理连接功能。",
+    "unavailableTitle": "连接功能尚未开放",
+    "unavailableBody": "此网站尚未设置邮件和日历连接。没有保存任何数据。",
+    "dataStatement": {
+      "title": "连接之前请先了解",
+      "sentToProvider": "代理读取的邮件和日历文本会发送给 AI 模型提供商，因此会离开本平台。",
+      "headersOnly": "只会读取邮件标头（发件人、主题、日期）以及日历活动的标题和时间。目前不会读取邮件正文。",
+      "noChanges": "不会在你的邮箱或日历中发送、删除或更改任何内容。",
+      "stored": "已保存的运行结果可能包含读取到的文本。你的应用专用密码和日历链接会加密保存，且不会再次显示。"
+    },
+    "status": {
+      "connected": "已连接",
+      "notConnected": "未连接"
+    },
+    "fields": {
+      "provider": "提供商",
+      "address": "地址",
+      "source": "来源",
+      "connectedAt": "连接时间",
+      "lastChecked": "上次检查",
+      "notCheckedYet": "尚未检查"
+    },
+    "presets": {
+      "gmail": "Gmail",
+      "yahoo": "Yahoo Mail",
+      "icloud": "iCloud Mail"
+    },
+    "steps": {
+      "gmail": {
+        "one": "为你的 Google 账号开启两步验证（Google 账号 > 安全性）。",
+        "two": "前往 myaccount.google.com/apppasswords 创建应用专用密码，名称可以随意填写。",
+        "three": "将 16 个字母的应用专用密码和你的 Gmail 地址粘贴到下方。"
+      },
+      "yahoo": {
+        "one": "为你的 Yahoo 账号开启两步验证（账户信息 > 账户安全）。",
+        "two": "在账户安全中选择“生成应用密码”并创建一个。",
+        "three": "将应用密码和你的 Yahoo Mail 地址粘贴到下方。"
+      },
+      "icloud": {
+        "one": "为你的 Apple 账户开启双重认证。",
+        "two": "前往 account.apple.com，打开“登录与安全”>“App 专用密码”，并创建一个。",
+        "three": "将 App 专用密码和你的 iCloud Mail 地址粘贴到下方。"
+      }
+    },
+    "mail": {
+      "title": "邮件",
+      "intro": "代理可以列出你未读邮件的标头，无法发送、回复或更改任何内容。",
+      "providerLabel": "邮件提供商",
+      "stepsTitle": "设置步骤",
+      "noteAppPassword": "请使用应用专用密码，而不是你平时的密码。你随时可以在提供商那里删除它。",
+      "noteAdvancedProtection": "启用高级保护计划的 Google 账号，以及部分公司或学校的 Google 账号，会阻止应用专用密码，无法通过这种方式连接。",
+      "noteOutlook": "目前尚不支持 Outlook.com 和 Hotmail。",
+      "emailLabel": "电子邮件地址",
+      "emailPlaceholder": "you@example.com",
+      "appPasswordLabel": "应用专用密码",
+      "appPasswordHint": "点击连接后会从此表单清除，且不会再次显示。",
+      "connect": "连接邮件",
+      "connecting": "连接中…",
+      "disconnectTitle": "要断开邮件连接吗？",
+      "disconnectBody": "已保存的应用专用密码会从本平台删除，你的邮箱不会有任何更改。你随时可以重新连接。",
+      "disconnected": "邮件已断开连接，已保存的应用专用密码已删除。"
+    },
+    "calendar": {
+      "title": "日历",
+      "intro": "代理可以从私人日历链接读取今天的活动，无法接受邀请或更改活动。",
+      "stepsTitle": "使用 Google 日历设置",
+      "stepOne": "在电脑上打开 Google 日历，然后进入“设置”。",
+      "stepTwo": "在“我的日历的设置”下选择你的日历，然后打开“集成日历”。",
+      "stepThree": "复制“iCal 格式的私密地址”（以 https:// 开头）并粘贴到下方。",
+      "noteSecret": "任何拿到此链接的人都能读取你的日历。请妥善保管；你可以在 Google 日历设置中重置它。",
+      "noteAdmin": "公司或学校账号的管理员可以关闭此链接。如果你找不到它，很可能就是这个原因。",
+      "noteOther": "其他日历应用只要提供私密的 https iCal 链接，也可以使用。",
+      "linkLabel": "私人日历链接",
+      "linkPlaceholder": "https://",
+      "linkHint": "点击连接后会从此表单清除，且不会再次显示。",
+      "source": "私人 iCal 链接",
+      "connect": "连接日历",
+      "connecting": "连接中…",
+      "disconnectTitle": "要断开日历连接吗？",
+      "disconnectBody": "已保存的日历链接会从本平台删除，你的日历不会有任何更改。你随时可以重新连接。",
+      "disconnected": "日历已断开连接，已保存的日历链接已删除。"
+    },
+    "actions": {
+      "verify": "验证",
+      "verifying": "检查中…",
+      "verifyOk": "运行正常。检查时间：{when}。",
+      "disconnect": "断开连接",
+      "disconnecting": "正在断开连接…",
+      "confirmDisconnect": "断开连接",
+      "cancel": "取消"
+    },
+    "errors": {
+      "preset": "提供商必须是 Gmail、Yahoo 或 iCloud。",
+      "username": "用户名必须是电子邮件地址。",
+      "appPassword": "应用专用密码必须为 8 到 64 个字符。",
+      "icalUrl": "日历链接必须是包含主机名的 https 网址。",
+      "invalid": "连接请求无效。",
+      "unknownConnector": "未知的连接类型。",
+      "bodyTooLarge": "请求内容过大。",
+      "notFound": "找不到此连接。请重新加载页面以查看当前的连接。",
+      "saveFailed": "无法保存连接，请重试。",
+      "deleteFailed": "无法删除连接，请重试。",
+      "mailVerifyFailed": "检查失败：无法连接邮件服务器。请确认地址和应用专用密码。",
+      "calendarVerifyFailed": "检查失败：无法读取日历链接。请确认链接仍然有效。",
+      "connectFailed": "无法连接，请重试。",
+      "disconnectFailed": "无法断开连接，请重试。",
+      "network": "无法连接服务器。请检查网络后重试。"
+    }
   },
   "languages": {
     "en": "English",
