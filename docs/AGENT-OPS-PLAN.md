@@ -13,6 +13,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 | # | Item | What it does | Lane |
 |---|---|---|---|
 | 3 | GOV-GOOGLE-VERIFY-01 | Google verification of the platform's app (option A), when Keith is ready | No lane |
+| 85 | GOV-OS-08 | Rules updated for worktree isolation and subagent implementers (Fable 5.1, Opus 5.5, Sonnet 5.5); starts when both lanes are empty, right after CONN-02B locks | No lane |
 
 **Stage 2 — connections and the briefing template (section 4, phase 1)**
 

@@ -88050,6 +88050,35 @@ nature=GOVERNANCE
 - [x] The validator passes at both records
 - [x] Not LOCKED by an implementer
 
+### GOV-OS-08 — Worktree isolation and subagent implementers
+
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-OS-08
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 — not started. A Development OS mutation (worker permissions and boot rules): it begins only with zero ACTIVE or LANE-DONE implementation lanes, which is right after CONN-02B locks.
+**Task ID:** GOV-OS-08
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE. **Lifecycle:** 2-STEP: the start record begins the mutation (saturation suspended, OS_MUTATION); the closing record ends it.
+**Start condition:** Keith approved the scope on 2026-11-09 ("Register GOV-OS-08"). Starts when both implementation lanes are EMPTY (OS-mutation quiescence rule).
+**Primary write scope:** CLAUDE.md (Git / Operator Rules, New Window Rules, Model Routing), AGENTS.md, docs/control-plane/task-checklists.md (EVERY items 4 and 10, same record as GOV-OS-07 requires), TASKS.md, TASKS_BACKLOG_FULL.md, the sidecar, the proof, docs/GOV-OS-08-CHECKPOINT.md. Keith edits .claude/settings.local.json himself (it widens the control plane's own permissions); the record names the exact lines.
+**Mutexes / resources:** GOVERNANCE.
+
+**Problem:** the rules forbid what the project now wants. CLAUDE.md:591, AGENTS.md:49 and EVERY item 10 say workers never create branches or worktrees; CLAUDE.md:562, AGENTS.md:51 and EVERY item 4 say no subagents by default; .claude/settings.local.json denies git merge, checkout, switch, stash, reset, clean and rebase; Model Routing names Grok models only. Two lanes share one folder, so a package install in one lane can disturb builds and tests in the other, which forced waits on 2026-11-09.
+**Scope (Keith, 2026-11-09):** (1) Worktrees: a worker may run in its own git worktree on its own branch, created by the control plane. Workers still never push and never touch main. Only the control plane merges into main, fast-forward only, after reading the diff and rerunning the gates on the merged tree, then removes the worktree and branch. Cursor itself still runs no git: the control plane creates the worktree and commits in it. (2) Subagents: the control plane may run an implementer as a Claude subagent in its own worktree, with the same self-contained brief, the same checklists and the same review that never trusts the self-report. Subagent models: Fable 5.1 (design and planning, hard implementation), Opus 5.5 (risky or security-sensitive slices and reviews), Sonnet 5.5 (routine bounded slices), alongside the Grok routing for Cursor. (3) Unchanged: two implementation lanes, Lane 3 disabled, mutexes (PACKAGE and file conflicts still apply because merges would clash), the scheduler, admission rules, the validator, Keith's approval of records, Keith owning pushes as today. (4) Settings for Keith: remove "Bash(git merge *)" from deny and allow "Bash(git merge --ff-only *)"; allow "Bash(git worktree add *)", "Bash(git worktree remove *)" and "Bash(git worktree list *)"; keep reset, stash, clean, rebase, checkout and switch denied for the main checkout.
+**Not in scope:** validator or sidecar schema changes, lane capacity, product code.
+**Named in:** Keith in chat 2026-11-09 ("the rules in this repo seem outdated"; "we will allow subagent here now"; "fable 5.1 can also be a subagent too").
+
+#### Acceptance criteria
+
+- [x] Scope approved by Keith before the start (2026-11-09)
+- [ ] The start record begins with zero ACTIVE or LANE-DONE implementation lanes
+- [ ] CLAUDE.md, AGENTS.md and task-checklists.md say the same thing; no other rule weakened
+- [ ] Keith's settings change is named exactly and confirmed by him
+- [ ] The closing record ends the mutation; the validator passes at both records
+- [ ] Not LOCKED by an implementer
+
 ### DESIGN-DOC-01 — Write DESIGN.md and PRODUCT.md from the current app
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=DESIGN-DOC-01

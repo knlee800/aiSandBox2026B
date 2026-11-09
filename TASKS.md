@@ -547,6 +547,10 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-09. Under Keith's AUTH-9 the old instance aisandbox-staging was deleted in the Lightsail console (with its automatic snapshots) and its 13 historical manual snapshots were deleted; the two archival snapshots stay (review 2027-01-24). Staging on ainow-staging-01 checked healthy from the host afterwards. Checkpoint: docs/OLD-HOST-RETIRE-01-CHECKPOINT.md.
 
+## GOV-OS-08 — READY / NOT AN IMPLEMENTATION LANE — 2026-11-09
+
+**Current status:** READY - 2026-11-09. Registered with Keith's approval: rules updated so workers may run in their own worktree and branch (only the control plane merges into main, fast-forward only, after review and gates) and the control plane may use Claude subagent implementers (Fable 5.1, Opus 5.5, Sonnet 5.5). A Development OS mutation: it starts when both implementation lanes are empty, right after CONN-02B locks. Scope in TASKS_BACKLOG_FULL.md.
+
 ## CONN-01 — COMPLETE AND LOCKED / Lane 1 RELEASED — 2026-11-09
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-09. Lane 1 released. PACKAGE and the four HOTFILE leases released UNOWNED. services/connectors-mcp: a stdio MCP server with mail_list_unread_metadata (read-only IMAP to three preset hosts, decoded envelope headers) and calendar_list_today (guarded HTTPS fetch, recurrences for today); 52 tests; the deploy build and artifact lists name dist/main.js; three accepted shared patch bumps; gateway and ai-service suites unchanged. Not deployed and not used by anything yet (CONN-02B connects it). Checkpoint: docs/CONN-01-CHECKPOINT.md.
