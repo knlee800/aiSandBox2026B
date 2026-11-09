@@ -85932,13 +85932,13 @@ taskId=COS-EVAL-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-09 — Keith admitted it; implementation by a Claude subagent on opus in worktree C:\Users\knlee\aisb-worktrees\COS-EVAL-01 (branch lane/COS-EVAL-01). Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
 **Task ID:** COS-EVAL-01
 **Title:** Briefing injection eval
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP
-**Start condition:** NOT_READY. Ready when: BIZ-BRIEF-01 LOCKED. Keith decides.
+**Start condition:** READY — BIZ-BRIEF-01 is COMPLETE AND LOCKED (d7d089d); Keith admitted it on 2026-11-09.
 **Depends on:** BIZ-BRIEF-01.
 **Primary write scope:** services/ai-service/src/agent-harness/eval/.
 **Mutexes / resources:** AI-SERVICE.

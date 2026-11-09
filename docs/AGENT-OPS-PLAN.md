@@ -18,7 +18,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 
 | # | Item | What it does | Lane |
 |---|---|---|---|
-| 9 | COS-EVAL-01 | Injection eval | 1 |
+| 9 | COS-EVAL-01 | Injection eval (admitted 2026-11-09) | 1 |
 | 10 | STAGING-DEPLOY-CONN-01 | Deploy; Keith connects his mail and calendar | 1 |
 | 11 | BIZ-LIVE-03 | First live briefing; cost measured | 1 |
 | 12 | CONN-03 | Message bodies | 2 |
