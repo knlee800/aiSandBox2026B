@@ -84350,7 +84350,7 @@ nature=IMPLEMENTATION
 **Dispositions, 2026-11-05:** item 10 is superseded by HARNESS-REOPEN-01. Item 12 added: live check of HARNESS-REOPEN-01 in the next staging window (close the page during an Agent run, reopen the project, the run's files are intact).
 **Dispositions, 2026-11-05 (2):** item 12 is superseded by STAGING-DEPLOY-04 (its reopen criterion).
 **Named in:** HARNESS-PROVIDERS-01 checkpoint line 75; HARNESS-LIVE-06 checkpoint lines 38 to 40; HARNESS-SAVE-01 checkpoint line 45; HARNESS-DELETE-01 checkpoint lines 52 and 53; container-manager docker-runtime.service.ts searchWorkspace.
-**Sliced 2026-11-09 (Keith):** items 2, 3, 4 and 7 moved to HARNESS-FIXES-01B (admitted to Lane 2); items 1 and 6 moved to HARNESS-FIXES-01C; item 9 (xAI, OpenAI and DeepSeek proven live) stays here and needs a live window. **Sliced 2026-11-06:** items 5, 8 and 11 moved to HARNESS-FIXES-01A. Item 10 is superseded by HARNESS-REOPEN-01 (the active-run guard in projects.service.ts); its remaining manual-Restore case is HARNESS-FIXES-01A item 10b. The other items stay here.
+**Added 2026-11-09 (HARNESS-FIXES-01B LOCK):** item 13: record maxOutputTokens for the live catalogue models (gpt-6.1-sol, gpt-6-astra, gpt-6.1-terra, gpt-6-luna, grok-4.5, grok-4.7, deepseek-flash, deepseek-v4-pro, deepseek-v4-flash) from each provider's documented limit, proven in the item 9 live checks; until then their plain calls send 4096. Item 14: Groq's plain path still sends a fixed 4096. Item 15: a tool call with no id still gets no result on the next request (inventing an id stays forbidden). **Sliced 2026-11-09 (Keith):** items 2, 3, 4 and 7 moved to HARNESS-FIXES-01B (COMPLETE AND LOCKED); items 1 and 6 moved to HARNESS-FIXES-01C; item 9 (xAI, OpenAI and DeepSeek proven live) stays here and needs a live window. **Sliced 2026-11-06:** items 5, 8 and 11 moved to HARNESS-FIXES-01A. Item 10 is superseded by HARNESS-REOPEN-01 (the active-run guard in projects.service.ts); its remaining manual-Restore case is HARNESS-FIXES-01A item 10b. The other items stay here.
 
 #### Acceptance criteria
 
@@ -84363,7 +84363,7 @@ taskId=HARNESS-FIXES-01B
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-09 — registered and admitted in one record after Keith approved the split of HARNESS-FIXES-01; implementation next.
+**Status:** COMPLETE AND LOCKED — 2026-11-09. LANE-DONE and LOCKED by the control plane; Lane 2 and AI-SERVICE released. Items 2, 4 and 7 fixed; item 3's mechanism is in, and the live catalogue models keep 4096 until their limits are recorded (HARNESS-FIXES-01 item 13). Not deployed. Checkpoint: docs/HARNESS-FIXES-01B-CHECKPOINT.md. Registered and admitted 2026-11-09 after Keith approved the split.
 **Task ID:** HARNESS-FIXES-01B
 **Title:** Harness fixes in ai-service: xAI wording, output limits, unanswered tool calls, .env offer
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -85897,7 +85897,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
-**Scope:** Signed connectorGrants beside the knowledge scope fields (changes HARNESS_ENTITLEMENT_PROOF_V1; orchestration.service.ts is added to its paths; runs alone; re-frozen at LOCK). It also derives connectorGrants from the role's listed connector tools and the owner's active connection. The worker registers connector tools only for a signed read profile and never speaks MCP.
+**Scope:** Signed connectorGrants beside the knowledge scope fields (changes HARNESS_ENTITLEMENT_PROOF_V1; orchestration.service.ts is added to its paths; runs alone; re-frozen at LOCK). It also derives connectorGrants from the role's listed connector tools and the owner's active connection. The worker registers connector tools only for a signed read profile and never speaks MCP. Also (HARNESS-FIXES-01B, 2026-11-09): add the line "Do not offer to create or edit .env files, because the platform refuses them." to the worker's harness instruction text in worker.processor.ts, which this task already changes; today only the adapters append it to tool-use requests.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
 
 ### BIZ-BRIEF-01 — Morning briefing template on the Chief of Staff

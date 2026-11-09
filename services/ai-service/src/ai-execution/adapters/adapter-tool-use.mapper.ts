@@ -490,18 +490,28 @@ export function buildResponsesToolRequest(
   };
 }
 
+export type ResponsesToolFailureProviderName = 'OpenAI' | 'xAI';
+
+function malformedResponsesMessage(
+  providerName: ResponsesToolFailureProviderName,
+  detail: string,
+): string {
+  return `Malformed ${providerName} response: ${detail}`;
+}
+
 export function parseResponsesToolUseResponse(
   response: ResponsesToolUseResponseSource,
   fallbackModel: string,
+  providerName: ResponsesToolFailureProviderName = 'OpenAI',
 ): AIAdapterToolUseResult {
   if (!response.usage || typeof response.usage.total_tokens !== 'number') {
     throw new InternalServerErrorException(
-      'Malformed OpenAI response: missing usage',
+      malformedResponsesMessage(providerName, 'missing usage'),
     );
   }
   if (response.usage.total_tokens < 0) {
     throw new InternalServerErrorException(
-      'Malformed OpenAI response: invalid token count',
+      malformedResponsesMessage(providerName, 'invalid token count'),
     );
   }
 
@@ -534,7 +544,7 @@ export function parseResponsesToolUseResponse(
   const output = textParts.join('');
   if (output.trim().length === 0 && canonicalToolCalls.length === 0) {
     throw new InternalServerErrorException(
-      'Malformed OpenAI response: missing content',
+      malformedResponsesMessage(providerName, 'missing content'),
     );
   }
 

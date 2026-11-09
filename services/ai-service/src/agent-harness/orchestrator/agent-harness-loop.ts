@@ -127,24 +127,41 @@ function requireCanonicalExecutionId(executionId: unknown): string {
   return executionId;
 }
 
-function toCanonicalToolCalls(
-  adapterResult: AIAdapterToolUseResult,
-): readonly AIAdapterCanonicalToolCall[] {
-  if (
-    adapterResult.canonicalToolCalls &&
-    adapterResult.canonicalToolCalls.length > 0
-  ) {
-    return adapterResult.canonicalToolCalls;
-  }
-
-  return (adapterResult.toolCalls ?? []).map((toolCall) => ({
-    status: 'valid' as const,
+function metadataToValidCall(
+  toolCall: AIAdapterToolCallMetadata,
+): AIAdapterCanonicalToolCall {
+  return {
+    status: 'valid',
     callId: toolCall.callId,
     toolName: toolCall.toolName,
     arguments: toolCall.arguments,
     rawArguments: toolCall.arguments,
     providerKind: toolCall.providerKind,
-  }));
+  };
+}
+
+function toCanonicalToolCalls(
+  adapterResult: AIAdapterToolUseResult,
+): readonly AIAdapterCanonicalToolCall[] {
+  const canonical = adapterResult.canonicalToolCalls ?? [];
+  const metadata = adapterResult.toolCalls ?? [];
+  if (canonical.length === 0) {
+    return metadata.map(metadataToValidCall);
+  }
+
+  const answeredIds = new Set<string>();
+  for (const call of canonical) {
+    if (call.status !== 'missing_id') {
+      answeredIds.add(call.callId);
+    }
+  }
+  const extras = metadata
+    .filter((call) => !answeredIds.has(call.callId))
+    .map(metadataToValidCall);
+  if (extras.length === 0) {
+    return canonical;
+  }
+  return [...canonical, ...extras];
 }
 
 function isDispatchableToolCall(
@@ -207,7 +224,8 @@ function buildExecuteOptions(
  *   returns a safe fallback (no_dispatcher).
  * - If the adapter returns tool calls and a dispatcher is provided →
  *   dispatches each valid tool call, records typed errors for malformed
- *   calls with usable IDs, skips missing-ID calls, accumulates execution-
+ *   calls and unknown tools, answers every call that has an id (including
+ *   one listed only on toolCalls), skips missing-ID calls, accumulates execution-
  *   scoped canonical transcript turns, and repeats until the model
  *   finishes, maxToolIterations is reached, or the run token budget is
  *   reached and the model keeps calling tools.
@@ -549,7 +567,30 @@ export async function executeAgentHarnessLoop(
       });
 
       const dispatchStartTime = Date.now();
-      const dispatchResult = await dispatcher.dispatch(toolCall, signal);
+      let dispatchResult: Awaited<ReturnType<ToolDispatcher['dispatch']>>;
+      try {
+        dispatchResult = await dispatcher.dispatch(toolCall, signal);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        const dispatchDurationMs = Math.max(0, Date.now() - dispatchStartTime);
+        recorder?.record({
+          ...baseEvent(),
+          eventType: 'harness.tool_dispatch_failed' as const,
+          iteration,
+          callId: toolCall.callId,
+          toolName: toolCall.toolName,
+          durationMs: dispatchDurationMs,
+          errorCode: 'HANDLER_ERROR',
+          errorMessage,
+        });
+        results.push({
+          callId: toolCall.callId,
+          toolName: toolCall.toolName,
+          success: false,
+          errorMessage,
+        });
+        continue;
+      }
       const dispatchDurationMs = Math.max(0, Date.now() - dispatchStartTime);
 
       if (dispatchResult.success) {
@@ -582,6 +623,24 @@ export async function executeAgentHarnessLoop(
         success: dispatchResult.success,
         content: dispatchResult.content,
         errorMessage: dispatchResult.errorMessage,
+      });
+    }
+    const answeredCallIds = new Set(results.map((result) => result.callId));
+    for (const extractedCall of extractedCalls) {
+      if (extractedCall.status === 'missing_id') {
+        continue;
+      }
+      if (answeredCallIds.has(extractedCall.callId)) {
+        continue;
+      }
+      results.push({
+        callId: extractedCall.callId,
+        toolName: extractedCall.toolName,
+        success: false,
+        errorMessage:
+          extractedCall.status === 'malformed_arguments'
+            ? extractedCall.errorMessage
+            : `Unknown tool: ${extractedCall.toolName}`,
       });
     }
     rememberToolResults(results, iteration);

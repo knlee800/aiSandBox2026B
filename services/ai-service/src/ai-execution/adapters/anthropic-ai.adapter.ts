@@ -22,6 +22,7 @@ import {
   mapCanonicalTranscriptToAnthropicMessages,
   parseToolArgumentsToObject,
 } from './adapter-tool-use.mapper';
+import { appendHarnessEnvFileInstruction } from '../../agent-harness/prompts/harness-instructions';
 
 /** Stored when Anthropic refuses a run because the account usage limit is reached. */
 export const AI_PROVIDER_USAGE_LIMIT_REACHED = 'AI provider usage limit reached';
@@ -217,9 +218,9 @@ export class AnthropicAdapter implements AIAdapter {
           ...(transcriptMessages as Anthropic.MessageCreateParams['messages']),
         ],
       };
-      if (normalizedSystemPrompt.length > 0) {
-        anthropicRequest.system = normalizedSystemPrompt;
-      }
+      anthropicRequest.system = appendHarnessEnvFileInstruction(
+        normalizedSystemPrompt.length > 0 ? normalizedSystemPrompt : undefined,
+      );
       if (anthropicTools.length > 0) {
         anthropicRequest.tools = anthropicTools.map((tool) => ({
           name: tool.name,

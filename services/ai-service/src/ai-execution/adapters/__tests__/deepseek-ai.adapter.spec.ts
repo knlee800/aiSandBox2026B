@@ -5,6 +5,8 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { AGENT_HARNESS_TOOL_DEFINITIONS_V1 } from '../../../agent-harness/tools/tool-registry';
+import * as modelProfiles from '../../../agent-harness/model-profiles/model-profile.registry';
+import { HARNESS_ENV_FILE_INSTRUCTION } from '../../../agent-harness/prompts/harness-instructions';
 import { DeepSeekAdapter } from '../deepseek-ai.adapter';
 import type { AIAdapterCanonicalTranscriptTurn } from '../adapter-tool-use.contracts';
 import { AIExecutionRequest } from '../../types';
@@ -266,6 +268,32 @@ describe('DeepSeekAdapter', () => {
         const result = await adapter.execute(request);
 
         expect(result.model).toBe('deepseek-flash');
+      });
+
+      it('uses the model profile plain output limit instead of a fixed 4096', async () => {
+        const spy = jest
+          .spyOn(modelProfiles, 'resolvePlainOutputTokenLimit')
+          .mockReturnValue(8192);
+        try {
+          mockClient.chat.completions.create.mockResolvedValue({
+            choices: [{ message: { content: 'Test output' } }],
+            usage: { total_tokens: 100 },
+            model: 'deepseek-flash',
+          });
+          await adapter.execute({
+            sessionId: 'session-1',
+            conversationId: 'conv-1',
+            userId: 'user-1',
+            prompt: 'Test prompt',
+            provider: 'deepseek',
+            model: 'deepseek-flash',
+          });
+          expect(mockClient.chat.completions.create.mock.calls[0][0].max_tokens).toBe(
+            8192,
+          );
+        } finally {
+          spy.mockRestore();
+        }
       });
     });
 
@@ -565,7 +593,10 @@ describe('DeepSeekAdapter', () => {
             model: 'deepseek-v4-pro',
             max_tokens: 16000,
             messages: [
-              { role: 'system', content: 'Follow platform contract.' },
+              {
+                role: 'system',
+                content: `Follow platform contract.\n${HARNESS_ENV_FILE_INSTRUCTION}`,
+              },
               { role: 'user', content: 'List the workspace.' },
             ],
             tools: openAITools,
@@ -723,6 +754,7 @@ describe('DeepSeekAdapter', () => {
           tool_choice: 'auto',
           tools: openAITools,
           messages: [
+            { role: 'system', content: HARNESS_ENV_FILE_INSTRUCTION },
             { role: 'user', content: 'List the workspace.' },
             {
               role: 'assistant',
@@ -761,8 +793,8 @@ describe('DeepSeekAdapter', () => {
         });
         expect(secondBody).not.toHaveProperty('temperature');
         expect(secondBody).not.toHaveProperty('thinking');
-        expect(secondBody.messages[1]).not.toHaveProperty('reasoning_content');
-        expect(secondBody.messages[4].tool_call_id).toBe('call_aaa');
+        expect(secondBody.messages[2]).not.toHaveProperty('reasoning_content');
+        expect(secondBody.messages[5].tool_call_id).toBe('call_aaa');
       });
 
       it('omits providerState when reasoning_content is not a string or tool calls are absent', async () => {

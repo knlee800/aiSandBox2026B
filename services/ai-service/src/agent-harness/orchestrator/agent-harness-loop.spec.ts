@@ -1904,6 +1904,103 @@ describe('AGENT-PLATFORM-EXEC-01C3 malformed and missing-ID fail-closed dispatch
     expect(secondOpts?.toolResults?.[0].errorMessage).toContain('start_preview');
     expect(dispatcher.hasHandler('start_preview')).toBe(false);
   });
+
+  it('answers a malformed call and an unknown call the canonical list omitted', async () => {
+    const dispatcher = new ToolDispatcher();
+    const readHandler = jest.fn(async () => ({ content: 'should-not-run' }));
+    dispatcher.registerHandler('read_file', readHandler);
+    const dispatchSpy = jest.spyOn(dispatcher, 'dispatch');
+
+    let callCount = 0;
+    const executeFn = jest.fn<
+      Promise<AIAdapterToolUseResult>,
+      [AIExecutionRequest, AIAdapterToolUseRequestOptions?]
+    >(() => {
+      callCount++;
+      if (callCount === 1) {
+        return Promise.resolve(
+          makeToolCallResult({
+            toolCalls: [
+              {
+                callId: 'call_unknown',
+                toolName: 'not_a_real_tool',
+                arguments: { query: 'x' },
+                providerKind: 'openai-function_call',
+              },
+            ],
+            canonicalToolCalls: [
+              {
+                status: 'malformed_arguments',
+                callId: 'call_bad',
+                toolName: 'read_file',
+                rawArguments: '{not-json',
+                providerKind: 'openai-function_call',
+                errorMessage:
+                  'MALFORMED_TOOL_ARGUMENTS: arguments are not valid JSON object',
+              },
+            ],
+          }),
+        );
+      }
+      return Promise.resolve(makeCompletedResult({ output: 'noted' }));
+    });
+
+    const loopResult = await executeAgentHarnessLoop(
+      makeOptions(executeFn, { dispatcher }),
+    );
+
+    expect(loopResult.terminationReason).toBe('completed');
+    expect(readHandler).not.toHaveBeenCalled();
+    expect(dispatchSpy).toHaveBeenCalledTimes(1);
+    expect(dispatchSpy.mock.calls[0][0].callId).toBe('call_unknown');
+    const results = executeFn.mock.calls[1][1]?.toolResults ?? [];
+    expect(results.map((result) => result.callId)).toEqual([
+      'call_bad',
+      'call_unknown',
+    ]);
+    expect(results[0]).toEqual({
+      callId: 'call_bad',
+      toolName: 'read_file',
+      success: false,
+      errorMessage:
+        'MALFORMED_TOOL_ARGUMENTS: arguments are not valid JSON object',
+    });
+    expect(results[1].success).toBe(false);
+    expect(results[1].errorMessage).toContain('not_a_real_tool');
+  });
+
+  it('returns an error tool result when dispatch throws so the next request answers the call', async () => {
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async () => ({ content: 'ok' }));
+    jest.spyOn(dispatcher, 'dispatch').mockRejectedValue(new Error('dispatcher exploded'));
+
+    let callCount = 0;
+    const executeFn = jest.fn<
+      Promise<AIAdapterToolUseResult>,
+      [AIExecutionRequest, AIAdapterToolUseRequestOptions?]
+    >(() => {
+      callCount++;
+      if (callCount === 1) {
+        return Promise.resolve(makeToolCallResult());
+      }
+      return Promise.resolve(makeCompletedResult({ output: 'noted' }));
+    });
+
+    const loopResult = await executeAgentHarnessLoop(
+      makeOptions(executeFn, { dispatcher }),
+    );
+
+    expect(loopResult.terminationReason).toBe('completed');
+    expect(executeFn).toHaveBeenCalledTimes(2);
+    expect(executeFn.mock.calls[1][1]?.toolResults).toEqual([
+      {
+        callId: 'call-1',
+        toolName: 'read_file',
+        success: false,
+        errorMessage: 'dispatcher exploded',
+      },
+    ]);
+  });
 });
 
 describe('AGENT-PLATFORM-EXEC-01C3 max-iteration typed failure', () => {

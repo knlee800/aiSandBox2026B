@@ -10,6 +10,8 @@ import OpenAI from 'openai';
 import { AIAdapter } from './ai-adapter.interface';
 import { AIExecutionRequest, AIExecutionResult } from '../types';
 import { getStaticDefaultModel } from '../provider-model.catalogue';
+import { resolvePlainOutputTokenLimit } from '../../agent-harness/model-profiles/model-profile.registry';
+import { appendHarnessEnvFileInstruction } from '../../agent-harness/prompts/harness-instructions';
 import {
   buildResponsesToolRequest,
   mapAdapterToolDeclarationsToResponsesTools,
@@ -59,7 +61,6 @@ export class XAIAdapter implements AIAdapter {
   private readonly logger = new Logger(XAIAdapter.name);
   private readonly client: OpenAI;
   private readonly defaultModel = getStaticDefaultModel('xai');
-  private readonly defaultMaxTokens = 4096;
   private readonly defaultTemperature = 1.0;
   private readonly defaultBaseURL = 'https://api.x.ai/v1';
 
@@ -145,7 +146,7 @@ export class XAIAdapter implements AIAdapter {
       // TASK-56A: content must be string (xAI 422 if missing); coerce undefined/null to ''
       const xaiRequest: OpenAI.Chat.ChatCompletionCreateParams = {
         model: executionModel,
-        max_tokens: this.defaultMaxTokens,
+        max_tokens: resolvePlainOutputTokenLimit(executionModel),
         temperature: this.defaultTemperature,
         messages,
         response_format: {
@@ -193,7 +194,7 @@ export class XAIAdapter implements AIAdapter {
         createOptions,
       );
 
-      return parseResponsesToolUseResponse(response, executionModel);
+      return parseResponsesToolUseResponse(response, executionModel, 'xAI');
     } catch (error) {
       this.handleError(error, request);
     }
@@ -229,9 +230,9 @@ export class XAIAdapter implements AIAdapter {
             },
       ),
     };
-    if (built.instructions !== undefined) {
-      responsesRequest.instructions = built.instructions;
-    }
+    responsesRequest.instructions = appendHarnessEnvFileInstruction(
+      built.instructions,
+    );
     if (built.previous_response_id !== undefined) {
       responsesRequest.previous_response_id = built.previous_response_id;
     }

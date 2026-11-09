@@ -10,6 +10,8 @@ import OpenAI from 'openai';
 import { AIAdapter } from './ai-adapter.interface';
 import { AIExecutionRequest, AIExecutionResult } from '../types';
 import { getStaticDefaultModel } from '../provider-model.catalogue';
+import { resolvePlainOutputTokenLimit } from '../../agent-harness/model-profiles/model-profile.registry';
+import { appendHarnessEnvFileInstruction } from '../../agent-harness/prompts/harness-instructions';
 import type {
   AIAdapterCanonicalToolCall,
   AIAdapterToolCallMetadata,
@@ -69,7 +71,6 @@ export class DeepSeekAdapter implements AIAdapter {
   private readonly logger = new Logger(DeepSeekAdapter.name);
   private readonly client: OpenAI;
   private readonly defaultModel = getStaticDefaultModel('deepseek');
-  private readonly defaultMaxTokens = 4096;
   private readonly defaultTemperature = 1.0;
   private readonly defaultBaseURL = 'https://api.deepseek.com';
 
@@ -157,7 +158,7 @@ export class DeepSeekAdapter implements AIAdapter {
       // Transform AIExecutionRequest to DeepSeek Chat Completions API format
       const deepseekRequest: OpenAI.Chat.ChatCompletionCreateParams = {
         model: executionModel,
-        max_tokens: this.defaultMaxTokens,
+        max_tokens: resolvePlainOutputTokenLimit(executionModel),
         temperature: this.defaultTemperature,
         messages,
       };
@@ -200,14 +201,12 @@ export class DeepSeekAdapter implements AIAdapter {
       // ChatCompletionMessageParam has no reasoning_content. This assertion
       // only satisfies the SDK; the assistant objects still carry that field.
       const messages = [
-        ...(normalizedSystemPrompt.length > 0
-          ? [
-              {
-                role: 'system' as const,
-                content: normalizedSystemPrompt,
-              },
-            ]
-          : []),
+        {
+          role: 'system' as const,
+          content: appendHarnessEnvFileInstruction(
+            normalizedSystemPrompt.length > 0 ? normalizedSystemPrompt : undefined,
+          ),
+        },
         {
           role: 'user' as const,
           content: request.prompt,

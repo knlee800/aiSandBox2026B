@@ -7,6 +7,8 @@ import {
   isAgentHarnessModelProfileEnabled,
   listAgentHarnessModelProfiles,
   listEnabledAgentHarnessModelProfiles,
+  PLAIN_OUTPUT_TOKEN_LIMIT_DEFAULT,
+  resolvePlainOutputTokenLimit,
 } from '../index';
 
 describe('Agent Harness model profile registry (v1)', () => {
@@ -101,6 +103,32 @@ describe('Agent Harness model profile registry (v1)', () => {
     expect(Object.keys(AGENT_HARNESS_MODEL_PROFILE_MAP_V1).length).toBeGreaterThan(
       0,
     );
+  });
+
+  it('uses the profile maxOutputTokens and 4096 when the profile has none', () => {
+    expect(resolvePlainOutputTokenLimit('gpt-4o')).toBe(
+      getAgentHarnessModelProfile('openai.gpt-4o')?.maxOutputTokens,
+    );
+    expect(resolvePlainOutputTokenLimit('grok-3')).toBe(
+      getAgentHarnessModelProfile('xai.grok-3')?.maxOutputTokens,
+    );
+    expect(resolvePlainOutputTokenLimit('deepseek-chat')).toBe(
+      getAgentHarnessModelProfile('deepseek.deepseek-chat')?.maxOutputTokens,
+    );
+    expect(resolvePlainOutputTokenLimit('gpt-6.1-sol')).toBe(
+      PLAIN_OUTPUT_TOKEN_LIMIT_DEFAULT,
+    );
+    expect(resolvePlainOutputTokenLimit('grok-4.5')).toBe(
+      PLAIN_OUTPUT_TOKEN_LIMIT_DEFAULT,
+    );
+    expect(resolvePlainOutputTokenLimit('deepseek-flash')).toBe(
+      PLAIN_OUTPUT_TOKEN_LIMIT_DEFAULT,
+    );
+    expect(resolvePlainOutputTokenLimit(undefined)).toBe(
+      PLAIN_OUTPUT_TOKEN_LIMIT_DEFAULT,
+    );
+    expect(resolvePlainOutputTokenLimit('   ')).toBe(PLAIN_OUTPUT_TOKEN_LIMIT_DEFAULT);
+    expect(PLAIN_OUTPUT_TOKEN_LIMIT_DEFAULT).toBe(4096);
   });
 
   it('does not require runtime wiring imports yet', () => {

@@ -7,6 +7,8 @@ import {
 import { XAIAdapter } from '../xai-ai.adapter';
 import { AIExecutionRequest } from '../../types';
 import { AGENT_HARNESS_TOOL_DEFINITIONS_V1 } from '../../../agent-harness/tools/tool-registry';
+import * as modelProfiles from '../../../agent-harness/model-profiles/model-profile.registry';
+import { HARNESS_ENV_FILE_INSTRUCTION } from '../../../agent-harness/prompts/harness-instructions';
 import type { AIAdapterCanonicalTranscriptTurn } from '../adapter-tool-use.contracts';
 
 describe('XAIAdapter', () => {
@@ -349,6 +351,32 @@ describe('XAIAdapter', () => {
         const result = await adapter.execute(request);
 
         expect(result.model).toBe('grok-4.5');
+      });
+
+      it('uses the model profile plain output limit instead of a fixed 4096', async () => {
+        const spy = jest
+          .spyOn(modelProfiles, 'resolvePlainOutputTokenLimit')
+          .mockReturnValue(8192);
+        try {
+          mockClient.chat.completions.create.mockResolvedValue({
+            choices: [{ message: { content: 'Test output' } }],
+            usage: { total_tokens: 100 },
+            model: 'grok-4.5',
+          });
+          await adapter.execute({
+            sessionId: 'session-1',
+            conversationId: 'conv-1',
+            userId: 'user-1',
+            prompt: 'Test prompt',
+            provider: 'xai',
+            model: 'grok-4.5',
+          });
+          expect(mockClient.chat.completions.create.mock.calls[0][0].max_tokens).toBe(
+            8192,
+          );
+        } finally {
+          spy.mockRestore();
+        }
       });
     });
 
@@ -703,7 +731,7 @@ describe('XAIAdapter', () => {
             model: 'grok-4.5',
             max_output_tokens: 16000,
             store: true,
-            instructions: 'Follow platform contract.',
+            instructions: `Follow platform contract.\n${HARNESS_ENV_FILE_INSTRUCTION}`,
             input: [{ role: 'user', content: 'Read README.md' }],
             tools: [
               {
@@ -857,6 +885,49 @@ describe('XAIAdapter', () => {
             provider: 'xai',
           }),
         ).rejects.toThrow('Invalid xAI API key');
+      });
+
+      it('names xAI when a tool response is malformed', async () => {
+        const request = {
+          sessionId: 'session-1',
+          conversationId: 'conv-1',
+          userId: 'user-1',
+          prompt: 'Read README.md',
+          provider: 'xai' as const,
+        };
+        const text = {
+          type: 'message',
+          content: [{ type: 'output_text', text: 'ok' }],
+        };
+
+        mockClient.responses.create.mockResolvedValueOnce({
+          id: 'resp_bad',
+          status: 'completed',
+          output: [],
+          usage: { total_tokens: 4 },
+        });
+        await expect(adapter.executeWithTools(request)).rejects.toThrow(
+          'Malformed xAI response: missing content',
+        );
+
+        mockClient.responses.create.mockResolvedValueOnce({
+          id: 'resp_bad',
+          status: 'completed',
+          output: [text],
+        });
+        await expect(adapter.executeWithTools(request)).rejects.toThrow(
+          'Malformed xAI response: missing usage',
+        );
+
+        mockClient.responses.create.mockResolvedValueOnce({
+          id: 'resp_bad',
+          status: 'completed',
+          output: [text],
+          usage: { total_tokens: -1 },
+        });
+        await expect(adapter.executeWithTools(request)).rejects.toThrow(
+          'Malformed xAI response: invalid token count',
+        );
       });
     });
   });

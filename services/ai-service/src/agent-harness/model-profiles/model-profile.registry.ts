@@ -174,6 +174,28 @@ export function getAgentHarnessModelProfile(
   return AGENT_HARNESS_MODEL_PROFILE_MAP_V1[profileId];
 }
 
+/** Used when no profile matches the model, or the profile limit is unusable. */
+export const PLAIN_OUTPUT_TOKEN_LIMIT_DEFAULT = 4096;
+
+/**
+ * Plain (non-tool) output token limit for a model.
+ * Reads `maxOutputTokens` from the profile whose `model` matches.
+ */
+export function resolvePlainOutputTokenLimit(model: string | undefined): number {
+  const normalized = typeof model === 'string' ? model.trim() : '';
+  if (normalized.length === 0) {
+    return PLAIN_OUTPUT_TOKEN_LIMIT_DEFAULT;
+  }
+  const profile = AGENT_HARNESS_MODEL_PROFILES_V1.find(
+    (entry) => entry.model === normalized,
+  );
+  const limit = profile?.maxOutputTokens;
+  if (typeof limit === 'number' && Number.isFinite(limit) && limit > 0) {
+    return limit;
+  }
+  return PLAIN_OUTPUT_TOKEN_LIMIT_DEFAULT;
+}
+
 export function isAgentHarnessModelProfileEnabled(profileId: string): boolean {
   const profile = getAgentHarnessModelProfile(profileId);
   return profile?.enabled === true;

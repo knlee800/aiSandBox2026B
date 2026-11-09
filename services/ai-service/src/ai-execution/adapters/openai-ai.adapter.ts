@@ -20,6 +20,8 @@ import type {
   AIAdapterToolUseResult,
 } from './adapter-tool-use.contracts';
 import { getStaticDefaultModel } from '../provider-model.catalogue';
+import { resolvePlainOutputTokenLimit } from '../../agent-harness/model-profiles/model-profile.registry';
+import { appendHarnessEnvFileInstruction } from '../../agent-harness/prompts/harness-instructions';
 
 /**
  * OpenAIAdapter
@@ -51,7 +53,6 @@ export class OpenAIAdapter implements AIAdapter {
   private readonly logger = new Logger(OpenAIAdapter.name);
   private readonly client: OpenAI;
   private readonly defaultModel = getStaticDefaultModel('openai');
-  private readonly defaultMaxTokens = 4096;
   private readonly defaultTemperature = 1.0;
 
   readonly model: string;
@@ -139,16 +140,17 @@ export class OpenAIAdapter implements AIAdapter {
 
       // Transform AIExecutionRequest to OpenAI Chat Completions API format.
       // GPT-6 models: send max_completion_tokens and omit temperature. Provider docs do not state this; to confirm in HARNESS-LIVE-01.
+      const plainOutputTokenLimit = resolvePlainOutputTokenLimit(executionModel);
       const openaiRequest: OpenAI.Chat.ChatCompletionCreateParams =
         executionModel.startsWith('gpt-6')
           ? {
               model: executionModel,
-              max_completion_tokens: this.defaultMaxTokens,
+              max_completion_tokens: plainOutputTokenLimit,
               messages,
             }
           : {
               model: executionModel,
-              max_tokens: this.defaultMaxTokens,
+              max_tokens: plainOutputTokenLimit,
               temperature: this.defaultTemperature,
               messages,
             };
@@ -193,7 +195,7 @@ export class OpenAIAdapter implements AIAdapter {
         createOptions,
       );
 
-      return parseResponsesToolUseResponse(response, executionModel);
+      return parseResponsesToolUseResponse(response, executionModel, 'OpenAI');
     } catch (error) {
       this.handleError(error, request);
     }
@@ -229,9 +231,9 @@ export class OpenAIAdapter implements AIAdapter {
             },
       ),
     };
-    if (built.instructions !== undefined) {
-      responsesRequest.instructions = built.instructions;
-    }
+    responsesRequest.instructions = appendHarnessEnvFileInstruction(
+      built.instructions,
+    );
     if (built.previous_response_id !== undefined) {
       responsesRequest.previous_response_id = built.previous_response_id;
     }

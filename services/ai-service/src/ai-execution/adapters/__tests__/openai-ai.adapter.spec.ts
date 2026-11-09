@@ -7,6 +7,8 @@ import {
 import { OpenAIAdapter } from '../openai-ai.adapter';
 import { AIExecutionRequest } from '../../types';
 import { AGENT_HARNESS_TOOL_DEFINITIONS_V1 } from '../../../agent-harness/tools/tool-registry';
+import * as modelProfiles from '../../../agent-harness/model-profiles/model-profile.registry';
+import { HARNESS_ENV_FILE_INSTRUCTION } from '../../../agent-harness/prompts/harness-instructions';
 import type { AIAdapterCanonicalTranscriptTurn } from '../adapter-tool-use.contracts';
 
 describe('OpenAIAdapter', () => {
@@ -387,6 +389,45 @@ describe('OpenAIAdapter', () => {
         expect(body).not.toHaveProperty('max_tokens');
         expect(mockClient.responses.create).not.toHaveBeenCalled();
       });
+
+      it('uses the model profile plain output limit instead of a fixed 4096', async () => {
+        const spy = jest
+          .spyOn(modelProfiles, 'resolvePlainOutputTokenLimit')
+          .mockReturnValue(8192);
+        try {
+          mockClient.chat.completions.create.mockResolvedValue({
+            choices: [{ message: { content: 'Test output' } }],
+            usage: { total_tokens: 100 },
+            model: 'gpt-4o',
+          });
+          await adapter.execute({
+            sessionId: 'session-1',
+            conversationId: 'conv-1',
+            userId: 'user-1',
+            prompt: 'Test prompt',
+            provider: 'openai',
+            model: 'gpt-4o',
+          });
+          expect(mockClient.chat.completions.create.mock.calls[0][0].max_tokens).toBe(
+            8192,
+          );
+
+          mockClient.chat.completions.create.mockClear();
+          await adapter.execute({
+            sessionId: 'session-1',
+            conversationId: 'conv-1',
+            userId: 'user-1',
+            prompt: 'Test prompt',
+            provider: 'openai',
+            model: 'gpt-6.1-sol',
+          });
+          const gpt6Body = mockClient.chat.completions.create.mock.calls[0][0];
+          expect(gpt6Body.max_completion_tokens).toBe(8192);
+          expect(gpt6Body).not.toHaveProperty('max_tokens');
+        } finally {
+          spy.mockRestore();
+        }
+      });
     });
 
     describe('error cases', () => {
@@ -650,6 +691,7 @@ describe('OpenAIAdapter', () => {
             model: 'gpt-4o',
             max_output_tokens: 16000,
             store: true,
+            instructions: HARNESS_ENV_FILE_INSTRUCTION,
             input: [{ role: 'user', content: 'Test prompt' }],
             tools: [
               {
@@ -796,7 +838,9 @@ describe('OpenAIAdapter', () => {
         expect(mockClient.responses.create).toHaveBeenCalledTimes(1);
         expect(mockClient.chat.completions.create).not.toHaveBeenCalled();
         const recordedBody = mockClient.responses.create.mock.calls[0][0];
-        expect(recordedBody.instructions).toBe('You are a read-only assistant.');
+        expect(recordedBody.instructions).toBe(
+          `You are a read-only assistant.\n${HARNESS_ENV_FILE_INSTRUCTION}`,
+        );
         expect(recordedBody.input).toEqual([
           { role: 'user', content: 'List then read README.md' },
         ]);
@@ -906,7 +950,9 @@ describe('OpenAIAdapter', () => {
         expect(mockClient.chat.completions.create).not.toHaveBeenCalled();
         const recordedBody = mockClient.responses.create.mock.calls[0][0];
         expect(recordedBody.previous_response_id).toBe('resp_step_1');
-        expect(recordedBody.instructions).toBe('You are a read-only assistant.');
+        expect(recordedBody.instructions).toBe(
+          `You are a read-only assistant.\n${HARNESS_ENV_FILE_INSTRUCTION}`,
+        );
         expect(recordedBody.input).toEqual([
           {
             type: 'function_call_output',

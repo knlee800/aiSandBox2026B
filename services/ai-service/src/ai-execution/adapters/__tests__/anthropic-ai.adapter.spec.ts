@@ -13,6 +13,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { AGENT_HARNESS_TOOL_DEFINITIONS_V1 } from '../../../agent-harness/tools/tool-registry';
+import { HARNESS_ENV_FILE_INSTRUCTION } from '../../../agent-harness/prompts/harness-instructions';
 import type { AIAdapterCanonicalTranscriptTurn } from '../adapter-tool-use.contracts';
 
 // Mock the entire Anthropic SDK
@@ -896,7 +897,9 @@ describe('AnthropicAdapter', () => {
 
       expect(mockMessagesCreate).toHaveBeenCalledTimes(1);
       const recordedBody = mockMessagesCreate.mock.calls[0][0];
-      expect(recordedBody.system).toBe('You are a read-only assistant.');
+      expect(recordedBody.system).toBe(
+        `You are a read-only assistant.\n${HARNESS_ENV_FILE_INSTRUCTION}`,
+      );
       expect(recordedBody.messages).toEqual([
         { role: 'user', content: 'List then read README.md' },
       ]);
@@ -982,7 +985,9 @@ describe('AnthropicAdapter', () => {
 
       expect(mockMessagesCreate).toHaveBeenCalledTimes(1);
       const recordedBody = mockMessagesCreate.mock.calls[0][0];
-      expect(recordedBody.system).toBe('You are a read-only assistant.');
+      expect(recordedBody.system).toBe(
+        `You are a read-only assistant.\n${HARNESS_ENV_FILE_INSTRUCTION}`,
+      );
       expect(recordedBody.messages).toEqual([
         { role: 'user', content: 'List then read README.md' },
         {
@@ -1153,6 +1158,24 @@ describe('AnthropicAdapter', () => {
       expect(JSON.stringify(result)).not.toContain('anthropic-tool-use-');
       expect(result.canonicalToolCalls?.[1]).not.toEqual(
         expect.objectContaining({ arguments: {} }),
+      );
+    });
+
+    it('tells the model not to offer to create or edit .env files', async () => {
+      mockMessagesCreate.mockResolvedValue({
+        id: 'msg_env',
+        type: 'message',
+        role: 'assistant',
+        content: [{ type: 'text', text: 'ok' }],
+        model: configuredModel,
+        usage: { input_tokens: 2, output_tokens: 2 },
+        stop_reason: 'end_turn',
+      });
+
+      await adapter.executeWithTools(mockRequest);
+
+      expect(mockMessagesCreate.mock.calls[0][0].system).toBe(
+        HARNESS_ENV_FILE_INSTRUCTION,
       );
     });
 
