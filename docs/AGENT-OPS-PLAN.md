@@ -33,7 +33,6 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 
 | # | Item | What it does |
 |---|---|---|
-| 13 | OFFICE-05 | Office shows team hand-offs (admitted 2026-11-09; frontend only) |
 | 14 | AGENT-WRITE-UI-01 | Agent mode says when file changes are off for the account |
 | 15 | ADMIN-CSRF-01 | CSRF guard on the admin credits route |
 | 16 | HARNESS-FIXES-01 | Small harness fixes |

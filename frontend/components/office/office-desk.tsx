@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { BookOpenIcon } from '@heroicons/react/24/outline';
+import { BookOpenIcon, ClockIcon } from '@heroicons/react/24/outline';
 import OfficeDeskArt from '@/components/office/office-art';
 import type { OfficeDeskPhase } from '@/lib/office/office.logic';
 
@@ -18,6 +18,7 @@ export interface OfficeDeskProps {
   vacant: boolean;
   hint: string;
   badge: string | null;
+  handoffBadge: string | null;
   reducedMotion: boolean;
   onSelect: (id: string) => void;
 }
@@ -52,9 +53,14 @@ export default function OfficeDesk(props: OfficeDeskProps): React.ReactElement {
     vacant,
     hint,
     badge,
+    handoffBadge,
     reducedMotion,
     onSelect,
   } = props;
+
+  const spokenBadges = [badge, handoffBadge].filter((text): text is string => Boolean(text));
+  const accessibleName =
+    spokenBadges.length > 0 ? `${name}. ${spokenBadges.join('. ')}. ${hint}` : `${name}. ${hint}`;
 
   const selectedClass = selected
     ? 'border-indigo-400 bg-slate-900 ring-2 ring-indigo-400'
@@ -71,7 +77,7 @@ export default function OfficeDesk(props: OfficeDeskProps): React.ReactElement {
       data-kind={vacant ? 'vacant' : 'occupied'}
       data-muted={muted ? 'true' : 'false'}
       aria-pressed={selected}
-      aria-label={badge ? `${name}. ${badge}. ${hint}` : `${name}. ${hint}`}
+      aria-label={accessibleName}
       onClick={() => onSelect(id)}
     >
       <OfficeDeskArt phase={phase} reducedMotion={reducedMotion} />
@@ -95,6 +101,15 @@ export default function OfficeDesk(props: OfficeDeskProps): React.ReactElement {
         >
           <BookOpenIcon className="h-3.5 w-3.5" aria-hidden="true" />
           {badge}
+        </p>
+      ) : null}
+      {handoffBadge ? (
+        <p
+          className="mt-2 inline-flex w-fit max-w-full items-center gap-1 rounded-full border border-amber-400/40 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-200"
+          data-testid="office-handoff-badge"
+        >
+          <ClockIcon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          <span className="min-w-0 break-words">{handoffBadge}</span>
         </p>
       ) : null}
       {timeText ? <p className="mt-1 text-xs text-slate-400">{timeText}</p> : null}

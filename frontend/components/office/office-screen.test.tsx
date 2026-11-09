@@ -57,6 +57,8 @@ const OFFICE_COPY = {
     formerAgents: 'Former agents',
     teamDesk: 'Team',
     teamRole: 'Role: {role}',
+    handoffLoading: 'Checking for a step waiting on you…',
+    handoffLoadError: 'Could not check for a step waiting on you.',
     lastRun: 'Last run',
     currentRun: 'Current run',
     recentRuns: 'Recent runs',
@@ -109,6 +111,8 @@ const OFFICE_COPY = {
     formerAgents: '已離職代理',
     teamDesk: '團隊',
     teamRole: '角色：{role}',
+    handoffLoading: '正在查看有沒有等你決定的步驟…',
+    handoffLoadError: '無法查看有沒有等你決定的步驟。',
     lastRun: '上次執行',
     currentRun: '目前執行',
     recentRuns: '最近執行',
@@ -161,6 +165,8 @@ const OFFICE_COPY = {
     formerAgents: '已离职代理',
     teamDesk: '团队',
     teamRole: '角色：{role}',
+    handoffLoading: '正在查看有没有等你决定的步骤…',
+    handoffLoadError: '无法查看有没有等你决定的步骤。',
     lastRun: '上次运行',
     currentRun: '当前运行',
     recentRuns: '最近运行',
@@ -723,6 +729,225 @@ describe('office screen states', () => {
       `${screen}\n${panel}\n${hook}\n${detailHook}`,
       /method:\s*'POST'|method:\s*'DELETE'|applied/i,
     );
+  });
+});
+
+describe('office team hand-offs', () => {
+  function roleFloor(activeRuns: OfficeRun[]): OfficeDesk[] {
+    return buildOfficeDesks({
+      registry,
+      userAgents: [],
+      activeRuns,
+      recentRuns: [],
+      roleDesks: true,
+    });
+  }
+
+  const codingRuns = [
+    run({
+      executionId: 'lead-run',
+      collaborationRunId: 'collab-coding',
+      builderProfileId: 'lead',
+      status: 'running',
+    }),
+    run({
+      executionId: 'writer-run',
+      collaborationRunId: 'collab-coding',
+      builderProfileId: 'writer',
+      status: 'queued',
+    }),
+  ];
+
+  test('each role desk shows that role and links to the team page', () => {
+    const desks = roleFloor(codingRuns);
+    const html = renderOffice({
+      desks,
+      selectedDeskId: 'team:lead',
+      handoffNotice: 'none',
+    });
+    assert.match(html, /data-testid="office-desk-team:lead"/);
+    assert.match(html, /data-testid="office-desk-team:writer"/);
+    assert.match(html, />Lead</);
+    assert.match(html, />Writer</);
+    assert.match(html, />Coding team</);
+    assert.match(html, /data-phase="working"/);
+    assert.match(html, /data-phase="queued"/);
+    assert.doesNotMatch(html, /data-testid="office-desk-team"/);
+    assert.match(html, /data-testid="office-open-team"/);
+    assert.match(html, /href="\/en\/collaboration"/);
+    assert.doesNotMatch(html, />\s*(Approve|Reject|Edit task|Edit)\s*</);
+    assert.doesNotMatch(html, /data-testid="office-open-workspace"/);
+
+    const traditional = renderOffice(
+      {
+        locale: 'zh-TW',
+        desks,
+        selectedDeskId: 'team:writer',
+      },
+      zhTwMessages as Record<string, unknown>,
+    );
+    assert.match(traditional, />負責人</);
+    assert.match(traditional, />撰寫者</);
+    assert.match(traditional, />程式團隊</);
+    assert.match(traditional, /href="\/zh-TW\/collaboration"/);
+  });
+
+  test('a waiting hand-off badges that run’s desks and a quiet read does not', () => {
+    const desks = roleFloor(codingRuns);
+    const html = renderOffice({
+      desks,
+      handoffBadgeRunIds: new Set(['collab-coding']),
+      selectedDeskId: 'team:lead',
+    });
+    assert.equal((html.match(/data-testid="office-handoff-badge"/g) ?? []).length, 2);
+    assert.equal((html.match(/data-testid="office-panel-handoff-badge"/g) ?? []).length, 1);
+    assert.match(html, /Lead\. Waiting for you\. Open desk/);
+    assert.doesNotMatch(html, /data-testid="office-handoff-loading"/);
+    assert.doesNotMatch(html, /data-testid="office-handoff-error"/);
+
+    const quiet = renderOffice({
+      desks,
+      handoffBadgeRunIds: new Set(),
+      selectedDeskId: 'team:lead',
+    });
+    assert.doesNotMatch(quiet, /data-testid="office-handoff-badge"/);
+    assert.doesNotMatch(quiet, /data-testid="office-panel-handoff-badge"/);
+    assert.doesNotMatch(quiet, /Waiting for you/);
+
+    const traditional = renderOffice(
+      {
+        locale: 'zh-TW',
+        desks,
+        handoffBadgeRunIds: new Set(['collab-coding']),
+      },
+      zhTwMessages as Record<string, unknown>,
+    );
+    assert.match(traditional, /等你決定/);
+  });
+
+  test('the hand-off read loading state does not show the badge', () => {
+    const html = renderOffice({
+      desks: roleFloor(codingRuns),
+      handoffNotice: 'loading',
+      handoffBadgeRunIds: new Set(['collab-coding']),
+    });
+    assert.match(html, /data-testid="office-handoff-loading"/);
+    assert.match(html, /Checking for a step waiting on you…/);
+    assert.match(html, /aria-busy="true"/);
+    assert.doesNotMatch(html, /data-testid="office-handoff-badge"/);
+    assert.match(html, /data-testid="office-desk-team:lead"/);
+
+    const traditional = renderOffice(
+      {
+        desks: roleFloor(codingRuns),
+        handoffNotice: 'loading',
+      },
+      zhTwMessages as Record<string, unknown>,
+    );
+    assert.match(traditional, /正在查看有沒有等你決定的步驟…/);
+    assert.doesNotMatch(traditional, /data-testid="office-handoff-badge"/);
+  });
+
+  test('a forbidden collaboration read keeps the single team desk and shows no error', () => {
+    const desks = floor({
+      activeRuns: codingRuns,
+    });
+    const html = renderOffice({
+      desks,
+      handoffNotice: 'none',
+      selectedDeskId: TEAM_DESK_ID,
+    });
+    assert.match(html, /data-testid="office-desk-team"/);
+    assert.doesNotMatch(html, /data-testid="office-desk-team:lead"/);
+    assert.doesNotMatch(html, /data-testid="office-desk-team:writer"/);
+    assert.doesNotMatch(html, /data-testid="office-handoff-error"/);
+    assert.doesNotMatch(html, /data-testid="office-handoff-loading"/);
+    assert.doesNotMatch(html, /data-testid="office-handoff-badge"/);
+    assert.match(html, /Role: lead/);
+    assert.doesNotMatch(html, /Could not check for a step waiting on you/);
+  });
+
+  test('a failed hand-off read keeps the role desks and shows a notice', () => {
+    const desks = roleFloor(codingRuns);
+    const html = renderOffice({
+      desks,
+      handoffNotice: 'error',
+      handoffBadgeRunIds: new Set(['collab-coding']),
+      selectedDeskId: 'team:lead',
+    });
+    assert.match(html, /data-testid="office-desk-team:lead"/);
+    assert.match(html, /data-testid="office-desk-team:writer"/);
+    assert.match(html, /data-testid="office-handoff-error"/);
+    assert.match(html, /Could not check for a step waiting on you\./);
+    assert.match(html, /data-testid="office-handoff-retry"/);
+    assert.match(html, /Try again/);
+    assert.match(html, /data-testid="office-handoff-badge"/);
+    assert.match(html, /data-testid="office-open-team"/);
+
+    const simplified = renderOffice(
+      {
+        locale: 'zh-CN',
+        desks,
+        handoffNotice: 'error',
+      },
+      zhCnMessages as Record<string, unknown>,
+    );
+    assert.match(simplified, /无法查看有没有等你决定的步骤。/);
+    assert.match(simplified, /重试/);
+    assert.match(simplified, /data-testid="office-desk-team:lead"/);
+  });
+
+  test('a waiting hand-off on a recent run shows the badge', () => {
+    const desks = buildOfficeDesks({
+      registry,
+      userAgents: [],
+      activeRuns: [],
+      recentRuns: [
+        run({
+          executionId: 'lead-done',
+          status: 'completed',
+          collaborationRunId: 'collab-waiting',
+          builderProfileId: 'lead',
+          startedAt: '2026-11-05T04:00:00.000Z',
+          durationMs: 12_000,
+        }),
+      ],
+      roleDesks: true,
+    });
+    const html = renderOffice({
+      desks,
+      handoffBadgeRunIds: new Set(['collab-waiting']),
+      selectedDeskId: 'team:lead',
+    });
+    assert.match(html, /data-testid="office-desk-team:lead"/);
+    assert.doesNotMatch(html, /data-phase="working"/);
+    assert.match(html, /data-testid="office-handoff-badge"/);
+    assert.match(html, /data-testid="office-panel-handoff-badge"/);
+    assert.match(html, /Waiting for you/);
+    assert.match(html, /data-testid="office-open-team"/);
+  });
+
+  test('the hand-off read uses the office poll and does not approve from the office', () => {
+    const screen = readFileSync(new URL('./office-screen.tsx', import.meta.url), 'utf8');
+    const hook = readFileSync(new URL('../../hooks/useOfficeHandoffs.ts', import.meta.url), 'utf8');
+    const runsHook = readFileSync(new URL('../../hooks/useOfficeRuns.ts', import.meta.url), 'utf8');
+    assert.match(
+      screen,
+      /useOfficeHandoffs\(\s*authReady,\s*runs\.activeRuns,\s*runs\.recentRuns,\s*runs\.updatedAt,\s*\)/,
+    );
+    assert.match(screen, /roleDesks: handoffs\.roleDesks/);
+    assert.match(hook, /\/api\/collaboration\/runs\/\$\{encodeURIComponent\(collaborationRunId\)\}/);
+    assert.match(hook, /credentials:\s*'include'/);
+    assert.match(hook, /method:\s*'GET'/);
+    assert.match(hook, /cache:\s*'no-store'/);
+    assert.match(hook, /document\.hidden/);
+    assert.match(hook, /officeHandoffCollaborationRunIds/);
+    assert.match(hook, /updatedAt/);
+    assert.doesNotMatch(hook, /setInterval|setTimeout/);
+    assert.doesNotMatch(hook, /method:\s*'POST'|method:\s*'DELETE'|approve|reject/i);
+    assert.doesNotMatch(screen, /handoffs\.approve|onApprove|onReject/);
+    assert.match(runsHook, /void refreshAll\(\);\s*start\(\);/);
+    assert.match(runsHook, /const refresh = useCallback\(\(\) => \{\s*void refreshAll\(\);/);
   });
 });
 

@@ -72,6 +72,7 @@ export interface OfficeDeskPanelProps {
     recent: OfficePanelRun[];
     showOutcome: boolean;
     knowledgeBadge: string | null;
+    handoffBadge: string | null;
     workspaceHref: string | null;
     openHref: string | null;
     profileHref: string;
@@ -332,6 +333,16 @@ export default function OfficeDeskPanel({
         >
           <BookOpenIcon className="h-3.5 w-3.5" aria-hidden="true" />
           {desk.knowledgeBadge}
+        </p>
+      ) : null}
+
+      {desk.handoffBadge ? (
+        <p
+          className="mt-3 inline-flex w-fit max-w-full items-center gap-1.5 rounded-full border border-amber-400/40 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-200"
+          data-testid="office-panel-handoff-badge"
+        >
+          <ClockIcon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          <span className="min-w-0 break-words">{desk.handoffBadge}</span>
         </p>
       ) : null}
 

@@ -13,6 +13,7 @@ import { useSystemAgents } from '@/lib/agent-platform/use-system-agents';
 import { knowledgeFetch } from '@/components/knowledge/knowledge-api';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useUserAgents } from '@/hooks/useUserAgents';
+import { useOfficeHandoffs } from '@/hooks/useOfficeHandoffs';
 import { useOfficeRuns } from '@/hooks/useOfficeRuns';
 import { useOfficeRunDetail } from '@/hooks/useOfficeRunDetail';
 import OfficeDeskCard from '@/components/office/office-desk';
@@ -29,9 +30,11 @@ import {
 } from '@/lib/office/office-knowledge';
 import {
   buildOfficeDesks,
+  deskShowsHandoffBadge,
   deskShowsOutcome,
   deskTimeText,
   fillOfficeTemplate,
+  isOfficeTeamRole,
   formatDurationText,
   formatElapsedText,
   officeInitials,
@@ -40,6 +43,7 @@ import {
   officeProviderModel,
   officeRegistryFromManifests,
   officeStartedClock,
+  OFFICE_TEAM_ROLE_LABELS,
   officeTeamHref,
   officeTokensText,
   officeWorkspaceHref,
@@ -47,6 +51,7 @@ import {
   shouldPollOffice,
   type OfficeDesk,
   type OfficeDeskPhase,
+  type OfficeHandoffNotice,
   type OfficeRun,
   type OfficeRunDetailPhase,
   type OfficeUserAgentRef,
@@ -69,6 +74,8 @@ const PHASE_MESSAGE_KEY: Record<OfficeDeskPhase, string> = {
   stopped: 'status.stopped',
   timedOut: 'status.timedOut',
 };
+
+const EMPTY_HANDOFF_RUNS: ReadonlySet<string> = new Set();
 
 export interface OfficeScreenViewProps {
   t: (key: string) => string;
@@ -107,6 +114,9 @@ export interface OfficeScreenViewProps {
   onOpenRun?: (executionId: string) => void;
   onCloseRun?: () => void;
   onRetryRun?: () => void;
+  handoffNotice?: OfficeHandoffNotice;
+  handoffBadgeRunIds?: ReadonlySet<string>;
+  onRetryHandoffs?: () => void;
 }
 
 function statusLabel(phase: OfficeDeskPhase, t: (key: string) => string): string {
@@ -142,6 +152,9 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
     onOpenRun,
     onCloseRun,
     onRetryRun,
+    handoffNotice = 'none',
+    handoffBadgeRunIds = EMPTY_HANDOFF_RUNS,
+    onRetryHandoffs,
   } = props;
 
   if (loading) {
@@ -160,6 +173,13 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
 
   function deskCopy(desk: OfficeDesk): { name: string; role: string } {
     if (desk.kind === 'team') {
+      if (desk.id.startsWith('team:') && desk.teamRole && isOfficeTeamRole(desk.teamRole)) {
+        const labels = OFFICE_TEAM_ROLE_LABELS[desk.teamRole];
+        return {
+          name: resolveText(labels.nameKey),
+          role: resolveText(labels.teamKey),
+        };
+      }
       return {
         name: t('teamDesk'),
         role: desk.teamRole ? fillOfficeTemplate(t('teamRole'), { role: desk.teamRole }) : '',
@@ -264,7 +284,17 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
     return `${panelRun.statusText} · ${panelRun.modeText} · ${panelRun.startedText}`;
   }
 
+  function handoffBadgeText(desk: OfficeDesk): string | null {
+    if (handoffNotice === 'loading' || !deskShowsHandoffBadge(desk, handoffBadgeRunIds)) {
+      return null;
+    }
+    return resolveText('collaboration.statusPendingApproval');
+  }
+
   function opensTeam(desk: OfficeDesk): boolean {
+    if (desk.kind === 'team' && desk.id.startsWith('team:') && desk.teamRole) {
+      return true;
+    }
     return (
       desk.registryId != null &&
       BUSINESS_REGISTRY_IDS.has(desk.registryId) &&
@@ -332,6 +362,16 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
                 </Link>
               </div>
             ) : null}
+            {handoffNotice === 'loading' ? (
+              <p
+                className="mb-4 text-sm text-slate-400"
+                data-testid="office-handoff-loading"
+                aria-live="polite"
+                aria-busy="true"
+              >
+                {t('handoffLoading')}
+              </p>
+            ) : null}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {desks.map((desk) => {
                 const copy = deskCopy(desk);
@@ -351,6 +391,7 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
                     vacant={desk.vacant}
                     hint={t('deskHint')}
                     badge={knowledgeBadgeText(desk)}
+                    handoffBadge={handoffBadgeText(desk)}
                     reducedMotion={reducedMotion}
                     onSelect={onSelectDesk}
                   />
@@ -377,6 +418,7 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
                     recent: selected.recentRuns.map((run, index) => toPanelRun(run, 'recent', index)),
                     showOutcome: deskShowsOutcome(selected),
                     knowledgeBadge: knowledgeBadgeText(selected),
+                    handoffBadge: handoffBadgeText(selected),
                     workspaceHref:
                       selected.vacant || opensTeam(selected)
                         ? null
@@ -404,7 +446,7 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
         </div>
       </main>
 
-      {runsError || agentsError || systemAgentsError ? (
+      {runsError || agentsError || systemAgentsError || handoffNotice === 'error' ? (
         <div className="border-t border-slate-800 px-4 py-4 sm:px-6 lg:px-8">
           <div className="mx-auto flex max-w-6xl flex-col gap-3">
             {runsError ? (
@@ -440,6 +482,24 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
                   className="text-sm font-medium text-indigo-300 hover:text-indigo-200"
                   onClick={onRetryAgents}
                   data-testid="office-agents-retry"
+                >
+                  {t('retry')}
+                </button>
+              </div>
+            ) : null}
+            {handoffNotice === 'error' ? (
+              <div
+                role="alert"
+                className="flex flex-wrap items-center gap-3 rounded-lg border border-red-700/40 bg-red-950/30 px-4 py-3"
+                data-testid="office-handoff-error"
+              >
+                <ExclamationTriangleIcon className="h-4 w-4 shrink-0 text-red-300" aria-hidden="true" />
+                <p className="min-w-0 break-words text-sm text-red-200">{t('handoffLoadError')}</p>
+                <button
+                  type="button"
+                  className="text-sm font-medium text-indigo-300 hover:text-indigo-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+                  onClick={onRetryHandoffs}
+                  data-testid="office-handoff-retry"
                 >
                   {t('retry')}
                 </button>
@@ -500,6 +560,12 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
     refetch: refetchSystemAgents,
   } = useSystemAgents();
   const runs = useOfficeRuns(authReady, poll);
+  const handoffs = useOfficeHandoffs(
+    authReady,
+    runs.activeRuns,
+    runs.recentRuns,
+    runs.updatedAt,
+  );
   const openedRun = useOfficeRunDetail(openExecutionId);
   const registry = useMemo(() => officeRegistryFromManifests(systemAgents), [systemAgents]);
   const userRefs = useMemo<OfficeUserAgentRef[]>(
@@ -512,6 +578,10 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
       })),
     [userAgents],
   );
+  const handoffBadgeRunIds = useMemo(
+    () => new Set(handoffs.badgeRunIds),
+    [handoffs.badgeRunIds],
+  );
   const desks = useMemo(
     () =>
       buildOfficeDesks({
@@ -519,8 +589,9 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
         userAgents: userRefs,
         activeRuns: runs.activeRuns,
         recentRuns: runs.recentRuns,
+        roleDesks: handoffs.roleDesks,
       }),
-    [registry, userRefs, runs.activeRuns, runs.recentRuns],
+    [registry, userRefs, runs.activeRuns, runs.recentRuns, handoffs.roleDesks],
   );
 
   useEffect(() => {
@@ -579,11 +650,20 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
       userAgentsError === 'AUTH_EXPIRED' ||
       runs.error === 'AUTH_EXPIRED' ||
       systemAgentsLoadError === 'AUTH_EXPIRED' ||
-      openedRun.error === 'AUTH_EXPIRED'
+      openedRun.error === 'AUTH_EXPIRED' ||
+      handoffs.error === 'AUTH_EXPIRED'
     ) {
       router.replace(`/${locale}/login`);
     }
-  }, [userAgentsError, runs.error, systemAgentsLoadError, openedRun.error, locale, router]);
+  }, [
+    userAgentsError,
+    runs.error,
+    systemAgentsLoadError,
+    openedRun.error,
+    handoffs.error,
+    locale,
+    router,
+  ]);
 
   useEffect(() => {
     if (typeof window.matchMedia !== 'function') {
@@ -616,7 +696,8 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
     runs.error === 'AUTH_EXPIRED' ||
     userAgentsError === 'AUTH_EXPIRED' ||
     systemAgentsLoadError === 'AUTH_EXPIRED' ||
-    openedRun.error === 'AUTH_EXPIRED';
+    openedRun.error === 'AUTH_EXPIRED' ||
+    handoffs.error === 'AUTH_EXPIRED';
   const runDetail =
     openExecutionId == null
       ? null
@@ -665,6 +746,9 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
       onOpenRun={setOpenExecutionId}
       onCloseRun={() => setOpenExecutionId(null)}
       onRetryRun={openedRun.retry}
+      handoffNotice={handoffs.notice}
+      handoffBadgeRunIds={handoffBadgeRunIds}
+      onRetryHandoffs={handoffs.retry}
       onRefresh={runs.refresh}
       onRetryRuns={runs.refresh}
       onRetryAgents={() => {

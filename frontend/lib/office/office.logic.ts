@@ -1,8 +1,60 @@
 export const OFFICE_POLL_MS = 5000;
 export const OFFICE_RECENT_LIMIT = 5;
+/** Hand-offs expire after a day, and one office refresh reads at most this many runs. */
+export const OFFICE_HANDOFF_RECENT_WINDOW_MS = 24 * 60 * 60 * 1000;
+export const OFFICE_HANDOFF_MAX_RUNS = 5;
 export const BUILDER_DESK_ID = 'registry:builder';
 export const TEAM_DESK_ID = 'team';
 export const FORMER_DESK_ID = 'former';
+
+/** Coding, Chief of Staff, and advisors roles, in floor order. */
+export const OFFICE_TEAM_ROLE_ORDER = [
+  'lead',
+  'writer',
+  'reviewer',
+  'chief-of-staff',
+  'advisors-lead',
+  'product-strategy',
+  'technology-advisor',
+] as const;
+
+export type OfficeTeamRoleId = (typeof OFFICE_TEAM_ROLE_ORDER)[number];
+
+const OFFICE_TEAM_ROLE_SET: ReadonlySet<string> = new Set(OFFICE_TEAM_ROLE_ORDER);
+
+export function isOfficeTeamRole(profileId: string): profileId is OfficeTeamRoleId {
+  return OFFICE_TEAM_ROLE_SET.has(profileId);
+}
+
+export function officeTeamRoleDeskId(profileId: OfficeTeamRoleId): string {
+  return `team:${profileId}`;
+}
+
+/** Existing collaboration and agent name keys. advisors-lead uses the Chief of Staff name. */
+export const OFFICE_TEAM_ROLE_LABELS: Record<
+  OfficeTeamRoleId,
+  { nameKey: string; teamKey: string }
+> = {
+  lead: { nameKey: 'collaboration.lead', teamKey: 'collaboration.teamCoding' },
+  writer: { nameKey: 'collaboration.writer', teamKey: 'collaboration.teamCoding' },
+  reviewer: { nameKey: 'collaboration.reviewer', teamKey: 'collaboration.teamCoding' },
+  'chief-of-staff': {
+    nameKey: 'collaboration.chiefOfStaff',
+    teamKey: 'collaboration.teamChiefOfStaff',
+  },
+  'advisors-lead': {
+    nameKey: 'collaboration.chiefOfStaff',
+    teamKey: 'collaboration.teamAdvisors',
+  },
+  'product-strategy': {
+    nameKey: 'collaboration.productStrategy',
+    teamKey: 'collaboration.teamAdvisors',
+  },
+  'technology-advisor': {
+    nameKey: 'collaboration.technologyAdvisor',
+    teamKey: 'collaboration.teamAdvisors',
+  },
+};
 
 export type OfficeRunList = 'active' | 'recent';
 
@@ -112,9 +164,17 @@ export function attributeDeskId(
   },
   userAgentIds: ReadonlySet<string>,
   activeRegistryIds: ReadonlySet<string>,
+  roleDesks = false,
 ): string {
   if (presentText(run.collaborationRunId)) {
     const profileId = presentText(run.builderProfileId);
+    if (roleDesks && profileId && isOfficeTeamRole(profileId)) {
+      // Advisors-lead has no registry desk of its own. Other active stations keep theirs.
+      if (profileId !== 'advisors-lead' && activeRegistryIds.has(profileId)) {
+        return `registry:${profileId}`;
+      }
+      return officeTeamRoleDeskId(profileId);
+    }
     if (profileId === 'advisors-lead') {
       if (activeRegistryIds.has('chief-of-staff')) {
         return 'registry:chief-of-staff';
@@ -470,7 +530,9 @@ export function buildOfficeDesks(input: {
   userAgents: readonly OfficeUserAgentRef[];
   activeRuns: readonly OfficeRun[];
   recentRuns: readonly OfficeRun[];
+  roleDesks?: boolean;
 }): OfficeDesk[] {
+  const roleDesks = input.roleDesks === true;
   const userAgentIds = new Set(input.userAgents.map((agent) => agent.id));
   const activeRegistryIds = activeRegistryDeskIds(input.registry);
   const groups = new Map<string, { active: OfficeRun[]; recent: OfficeRun[] }>();
@@ -485,10 +547,10 @@ export function buildOfficeDesks(input: {
   };
 
   for (const run of input.activeRuns) {
-    bucket(attributeDeskId(run, userAgentIds, activeRegistryIds)).active.push(run);
+    bucket(attributeDeskId(run, userAgentIds, activeRegistryIds, roleDesks)).active.push(run);
   }
   for (const run of input.recentRuns) {
-    bucket(attributeDeskId(run, userAgentIds, activeRegistryIds)).recent.push(run);
+    bucket(attributeDeskId(run, userAgentIds, activeRegistryIds, roleDesks)).recent.push(run);
   }
 
   const desks: OfficeDesk[] = [];
@@ -524,6 +586,25 @@ export function buildOfficeDesks(input: {
     });
   }
 
+  if (roleDesks) {
+    for (const profileId of OFFICE_TEAM_ROLE_ORDER) {
+      const id = officeTeamRoleDeskId(profileId);
+      const group = groups.get(id);
+      if (!group || (group.active.length === 0 && group.recent.length === 0)) {
+        continue;
+      }
+      desks.push({
+        id,
+        kind: 'team',
+        registryId: null,
+        userAgentId: null,
+        vacant: false,
+        teamRole: profileId,
+        ...deriveDeskActivity(group.active, group.recent),
+      });
+    }
+  }
+
   const team = groups.get(TEAM_DESK_ID);
   if (team && (team.active.length > 0 || team.recent.length > 0)) {
     const activity = deriveDeskActivity(team.active, team.recent);
@@ -552,6 +633,311 @@ export function buildOfficeDesks(input: {
   }
 
   return desks;
+}
+
+/**
+ * Finish time is startedAt plus duration when duration is known.
+ * A recent row with no duration uses startedAt, which is the only timestamp the list has.
+ */
+export function officeRunFinishedAtMs(
+  run: Pick<OfficeRun, 'startedAt' | 'durationMs'>,
+): number | null {
+  const startedMs = parseStartedAt(run.startedAt);
+  if (startedMs === null) {
+    return null;
+  }
+  if (
+    typeof run.durationMs === 'number' &&
+    Number.isFinite(run.durationMs) &&
+    run.durationMs >= 0
+  ) {
+    return startedMs + run.durationMs;
+  }
+  return startedMs;
+}
+
+export function officeRecentRunWithinHandoffWindow(
+  run: Pick<OfficeRun, 'startedAt' | 'durationMs'>,
+  nowMs: number,
+): boolean {
+  if (!Number.isFinite(nowMs)) {
+    return false;
+  }
+  const finishedAt = officeRunFinishedAtMs(run);
+  if (finishedAt === null) {
+    return false;
+  }
+  return finishedAt >= nowMs - OFFICE_HANDOFF_RECENT_WINDOW_MS;
+}
+
+/**
+ * Distinct collaboration runs to read: every active run, plus recent runs that
+ * finished within the last 24 hours. Newest startedAt first, at most five.
+ */
+export function officeHandoffCollaborationRunIds(input: {
+  activeRuns: readonly OfficeRun[];
+  recentRuns: readonly OfficeRun[];
+  nowMs: number;
+}): string[] {
+  const newestStartedAt = new Map<string, number | null>();
+  const firstSeen: string[] = [];
+
+  const consider = (run: OfficeRun) => {
+    const id = presentText(run.collaborationRunId);
+    if (!id) {
+      return;
+    }
+    const startedAt = parseStartedAt(run.startedAt);
+    const known = newestStartedAt.get(id);
+    if (known === undefined) {
+      newestStartedAt.set(id, startedAt);
+      firstSeen.push(id);
+      return;
+    }
+    if (startedAt !== null && (known === null || startedAt > known)) {
+      newestStartedAt.set(id, startedAt);
+    }
+  };
+
+  for (const run of input.activeRuns) {
+    consider(run);
+  }
+  for (const run of input.recentRuns) {
+    if (!officeRecentRunWithinHandoffWindow(run, input.nowMs)) {
+      continue;
+    }
+    consider(run);
+  }
+
+  return firstSeen
+    .map((id, index) => ({ id, index, startedAt: newestStartedAt.get(id) ?? null }))
+    .sort((left, right) => {
+      if (
+        left.startedAt !== null &&
+        right.startedAt !== null &&
+        left.startedAt !== right.startedAt
+      ) {
+        return right.startedAt - left.startedAt;
+      }
+      if (left.startedAt !== null && right.startedAt === null) {
+        return -1;
+      }
+      if (left.startedAt === null && right.startedAt !== null) {
+        return 1;
+      }
+      return left.index - right.index;
+    })
+    .slice(0, OFFICE_HANDOFF_MAX_RUNS)
+    .map((entry) => entry.id);
+}
+
+function deskRuns(
+  desk: Pick<OfficeDesk, 'currentRun' | 'recentRuns' | 'headlineRun'>,
+): OfficeRun[] {
+  const runs: OfficeRun[] = [];
+  if (desk.currentRun) {
+    runs.push(desk.currentRun);
+  }
+  if (desk.headlineRun && desk.headlineRun !== desk.currentRun) {
+    runs.push(desk.headlineRun);
+  }
+  for (const run of desk.recentRuns) {
+    runs.push(run);
+  }
+  return runs;
+}
+
+/** A desk shows the badge when one of its runs is a collaboration run with a waiting hand-off. */
+export function deskShowsHandoffBadge(
+  desk: Pick<OfficeDesk, 'currentRun' | 'recentRuns' | 'headlineRun'>,
+  waitingRunIds: ReadonlySet<string>,
+): boolean {
+  if (waitingRunIds.size === 0) {
+    return false;
+  }
+  return deskRuns(desk).some((run) => {
+    const id = presentText(run.collaborationRunId);
+    return id !== null && waitingRunIds.has(id);
+  });
+}
+
+export type OfficeHandoffFetchResult =
+  | { kind: 'auth' }
+  | { kind: 'forbidden' }
+  | { kind: 'error' }
+  | { kind: 'ready'; waiting: boolean };
+
+/**
+ * GET /api/collaboration/runs/:id. pending_approval is the only waiting status.
+ * A 403 means the account cannot use collaboration. Any other failure keeps the desks.
+ */
+export function officeHandoffFromResponse(
+  statusCode: number,
+  payload: unknown,
+): OfficeHandoffFetchResult {
+  if (statusCode === 401) {
+    return { kind: 'auth' };
+  }
+  if (statusCode === 403) {
+    return { kind: 'forbidden' };
+  }
+  if (statusCode < 200 || statusCode >= 300) {
+    return { kind: 'error' };
+  }
+  if (!payload || typeof payload !== 'object') {
+    return { kind: 'error' };
+  }
+  const handoffs = (payload as { handoffs?: unknown }).handoffs;
+  if (!Array.isArray(handoffs)) {
+    return { kind: 'error' };
+  }
+  let waiting = false;
+  for (const entry of handoffs) {
+    if (!entry || typeof entry !== 'object') {
+      continue;
+    }
+    if ((entry as { status?: unknown }).status === 'pending_approval') {
+      waiting = true;
+    }
+  }
+  return { kind: 'ready', waiting };
+}
+
+export interface OfficeHandoffRead {
+  collaborationRunId: string;
+  result: OfficeHandoffFetchResult;
+}
+
+export type OfficeHandoffCombined =
+  | { type: 'auth' }
+  | { type: 'forbidden' }
+  | { type: 'error'; waitingRunIds: string[] }
+  | { type: 'ready'; waitingRunIds: string[] };
+
+export function combineOfficeHandoffReads(
+  reads: readonly OfficeHandoffRead[],
+): OfficeHandoffCombined {
+  if (reads.some((read) => read.result.kind === 'auth')) {
+    return { type: 'auth' };
+  }
+  if (reads.some((read) => read.result.kind === 'forbidden')) {
+    return { type: 'forbidden' };
+  }
+  const waitingRunIds: string[] = [];
+  let failed = false;
+  for (const read of reads) {
+    if (read.result.kind === 'error') {
+      failed = true;
+      continue;
+    }
+    if (read.result.kind === 'ready' && read.result.waiting) {
+      waitingRunIds.push(read.collaborationRunId);
+    }
+  }
+  if (failed) {
+    return { type: 'error', waitingRunIds };
+  }
+  return { type: 'ready', waitingRunIds };
+}
+
+export type OfficeHandoffNotice = 'none' | 'loading' | 'error';
+
+export interface OfficeHandoffViewState {
+  phase: 'idle' | 'loading' | 'ready' | 'forbidden' | 'error';
+  settled: boolean;
+  roleDesks: boolean;
+  notice: OfficeHandoffNotice;
+  badgeRunIds: readonly string[];
+}
+
+export const OFFICE_HANDOFF_INITIAL: OfficeHandoffViewState = {
+  phase: 'idle',
+  settled: false,
+  roleDesks: true,
+  notice: 'none',
+  badgeRunIds: [],
+};
+
+export type OfficeHandoffEvent =
+  | { type: 'fetch-start' }
+  | { type: 'forbidden' }
+  | { type: 'error'; waitingRunIds: readonly string[] }
+  | { type: 'ready'; waitingRunIds: readonly string[] }
+  | { type: 'cleared' };
+
+function uniqueIds(ids: readonly string[]): string[] {
+  const seen = new Set<string>();
+  const unique: string[] = [];
+  for (const id of ids) {
+    if (seen.has(id)) {
+      continue;
+    }
+    seen.add(id);
+    unique.push(id);
+  }
+  return unique;
+}
+
+/**
+ * The badge stays absent until the first successful read, and a later refresh
+ * does not clear it. A 403 drops the badge and returns to the single Team desk.
+ * A failed read keeps the role desks and any badge already shown.
+ */
+export function reduceOfficeHandoff(
+  state: OfficeHandoffViewState,
+  event: OfficeHandoffEvent,
+): OfficeHandoffViewState {
+  if (event.type === 'fetch-start') {
+    if (state.settled) {
+      return state;
+    }
+    return {
+      ...state,
+      phase: 'loading',
+      notice: 'loading',
+      badgeRunIds: [],
+    };
+  }
+  if (event.type === 'forbidden') {
+    return {
+      phase: 'forbidden',
+      settled: true,
+      roleDesks: false,
+      notice: 'none',
+      badgeRunIds: [],
+    };
+  }
+  if (event.type === 'error') {
+    if (state.phase === 'forbidden') {
+      return state;
+    }
+    return {
+      phase: 'error',
+      settled: true,
+      roleDesks: true,
+      notice: 'error',
+      badgeRunIds: uniqueIds([...state.badgeRunIds, ...event.waitingRunIds]),
+    };
+  }
+  if (event.type === 'ready') {
+    return {
+      phase: 'ready',
+      settled: true,
+      roleDesks: true,
+      notice: 'none',
+      badgeRunIds: uniqueIds(event.waitingRunIds),
+    };
+  }
+  if (state.phase === 'forbidden') {
+    return state;
+  }
+  return {
+    phase: 'idle',
+    settled: true,
+    roleDesks: true,
+    notice: 'none',
+    badgeRunIds: [],
+  };
 }
 
 export type OfficeRunDetailPhase = 'loading' | 'output' | 'empty' | 'notFound' | 'error';

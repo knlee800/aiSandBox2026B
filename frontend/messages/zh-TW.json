@@ -1066,6 +1066,8 @@
     "formerAgents": "已離職代理",
     "teamDesk": "團隊",
     "teamRole": "角色：{role}",
+    "handoffLoading": "正在查看有沒有等你決定的步驟…",
+    "handoffLoadError": "無法查看有沒有等你決定的步驟。",
     "status": {
       "queued": "排隊中",
       "working": "工作中",

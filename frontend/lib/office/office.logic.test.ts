@@ -20,9 +20,18 @@ import {
   officeTeamHref,
   phaseForRun,
   activeRunsEnded,
+  combineOfficeHandoffReads,
+  deskShowsHandoffBadge,
+  OFFICE_HANDOFF_INITIAL,
+  OFFICE_HANDOFF_MAX_RUNS,
+  OFFICE_HANDOFF_RECENT_WINDOW_MS,
+  officeHandoffCollaborationRunIds,
+  officeHandoffFromResponse,
   officeRunDetailFocus,
   officeRunDetailFromResponse,
   officeRunDetailKeyAction,
+  officeTeamRoleDeskId,
+  reduceOfficeHandoff,
   shouldPollOffice,
   showsOutcomeUnknown,
   type OfficeRun,
@@ -73,12 +82,14 @@ function desksFor(input: {
   userAgents?: OfficeUserAgentRef[];
   activeRuns?: OfficeRun[];
   recentRuns?: OfficeRun[];
+  roleDesks?: boolean;
 }) {
   return buildOfficeDesks({
     registry,
     userAgents: input.userAgents ?? [],
     activeRuns: input.activeRuns ?? [],
     recentRuns: input.recentRuns ?? [],
+    roleDesks: input.roleDesks,
   });
 }
 
@@ -835,5 +846,437 @@ describe('office run detail response', () => {
       officeRunDetailFocus({ detailOpen: false, sameRun: false, focusLost: true }),
       'run',
     );
+  });
+});
+
+describe('office team role desks', () => {
+  test('each coding role keeps its own status', () => {
+    const built = desksFor({
+      roleDesks: true,
+      activeRuns: [
+        run({
+          executionId: 'lead-run',
+          collaborationRunId: 'collab-coding',
+          builderProfileId: 'lead',
+          status: 'running',
+          startedAt: '2026-11-05T05:00:00.000Z',
+        }),
+        run({
+          executionId: 'writer-run',
+          collaborationRunId: 'collab-coding',
+          builderProfileId: 'writer',
+          status: 'queued',
+          startedAt: '2026-11-05T05:10:00.000Z',
+        }),
+      ],
+      recentRuns: [
+        run({
+          executionId: 'reviewer-run',
+          collaborationRunId: 'collab-coding',
+          builderProfileId: 'reviewer',
+          status: 'completed',
+          startedAt: '2026-11-05T04:00:00.000Z',
+          durationMs: 9000,
+        }),
+      ],
+    });
+    const lead = built.find((item) => item.id === officeTeamRoleDeskId('lead'));
+    const writerDesk = built.find((item) => item.id === officeTeamRoleDeskId('writer'));
+    const reviewer = built.find((item) => item.id === officeTeamRoleDeskId('reviewer'));
+    assert.ok(lead);
+    assert.equal(lead.kind, 'team');
+    assert.equal(lead.teamRole, 'lead');
+    assert.equal(lead.phase, 'working');
+    assert.equal(lead.currentRun?.executionId, 'lead-run');
+    assert.ok(writerDesk);
+    assert.equal(writerDesk.teamRole, 'writer');
+    assert.equal(writerDesk.phase, 'queued');
+    assert.ok(reviewer);
+    assert.equal(reviewer.teamRole, 'reviewer');
+    assert.equal(reviewer.phase, 'done');
+    assert.equal(reviewer.isLastRun, true);
+    assert.equal(built.some((item) => item.id === TEAM_DESK_ID), false);
+    const leadAt = built.findIndex((item) => item.id === officeTeamRoleDeskId('lead'));
+    const writerAt = built.findIndex((item) => item.id === officeTeamRoleDeskId('writer'));
+    const reviewerAt = built.findIndex((item) => item.id === officeTeamRoleDeskId('reviewer'));
+    assert.ok(leadAt < writerAt && writerAt < reviewerAt);
+  });
+
+  test('chief and advisor stations stay on their desks and advisors-lead gets its own', () => {
+    const built = desksFor({
+      roleDesks: true,
+      activeRuns: [
+        run({
+          executionId: 'chief-run',
+          collaborationRunId: 'collab-chief',
+          builderProfileId: 'chief-of-staff',
+          status: 'running',
+        }),
+        run({
+          executionId: 'advisors-run',
+          collaborationRunId: 'collab-advisors',
+          builderProfileId: 'advisors-lead',
+          status: 'queued',
+        }),
+        run({
+          executionId: 'product-run',
+          collaborationRunId: 'collab-advisors',
+          builderProfileId: 'product-strategy',
+          status: 'running',
+        }),
+        run({
+          executionId: 'tech-run',
+          collaborationRunId: 'collab-advisors',
+          builderProfileId: 'technology-advisor',
+          status: 'queued',
+        }),
+      ],
+    });
+    const chief = built.find((item) => item.id === 'registry:chief-of-staff');
+    const advisorsLead = built.find((item) => item.id === officeTeamRoleDeskId('advisors-lead'));
+    const product = built.find((item) => item.id === 'registry:product-strategy');
+    const technology = built.find((item) => item.id === 'registry:technology-advisor');
+    assert.ok(chief);
+    assert.equal(chief.currentRun?.executionId, 'chief-run');
+    assert.equal(chief.phase, 'working');
+    assert.ok(advisorsLead);
+    assert.equal(advisorsLead.teamRole, 'advisors-lead');
+    assert.equal(advisorsLead.currentRun?.executionId, 'advisors-run');
+    assert.equal(advisorsLead.phase, 'queued');
+    assert.notEqual(chief.currentRun?.executionId, 'advisors-run');
+    assert.ok(product);
+    assert.equal(product.currentRun?.executionId, 'product-run');
+    assert.ok(technology);
+    assert.equal(technology.currentRun?.executionId, 'tech-run');
+  });
+
+  test('a role without its station still gets a desk, and an unknown profile stays on the team desk', () => {
+    const builderOnly = officeRegistryFromManifests([{ id: 'builder', status: 'active' }]);
+    const built = buildOfficeDesks({
+      registry: builderOnly,
+      userAgents: [],
+      roleDesks: true,
+      activeRuns: [
+        run({
+          executionId: 'chief-run',
+          collaborationRunId: 'collab-chief',
+          builderProfileId: 'chief-of-staff',
+          status: 'running',
+        }),
+        run({
+          executionId: 'custom-run',
+          collaborationRunId: 'collab-custom',
+          builderProfileId: 'custom-advisor',
+          status: 'queued',
+        }),
+      ],
+      recentRuns: [],
+    });
+    const chief = built.find((item) => item.id === officeTeamRoleDeskId('chief-of-staff'));
+    const team = built.find((item) => item.id === TEAM_DESK_ID);
+    assert.ok(chief);
+    assert.equal(chief.phase, 'working');
+    assert.equal(chief.teamRole, 'chief-of-staff');
+    assert.ok(team);
+    assert.equal(team.currentRun?.executionId, 'custom-run');
+    assert.equal(team.teamRole, 'custom-advisor');
+  });
+
+  test('without role desks a 403 floor keeps the single team desk', () => {
+    const built = desksFor({
+      roleDesks: false,
+      activeRuns: [
+        run({
+          executionId: 'lead-run',
+          collaborationRunId: 'collab-coding',
+          builderProfileId: 'lead',
+          status: 'running',
+        }),
+        run({
+          executionId: 'writer-run',
+          collaborationRunId: 'collab-coding',
+          builderProfileId: 'writer',
+          status: 'queued',
+        }),
+      ],
+    });
+    assert.equal(built.some((item) => item.id === officeTeamRoleDeskId('lead')), false);
+    assert.equal(built.some((item) => item.id === officeTeamRoleDeskId('writer')), false);
+    const team = built.find((item) => item.id === TEAM_DESK_ID);
+    assert.ok(team);
+    assert.equal(team.phase, 'working');
+  });
+});
+
+describe('office hand-off read', () => {
+  const detail = (statuses: string[]) => ({
+    run: { collaborationRunId: 'collab-1' },
+    teamId: 'coding',
+    team: ['lead', 'writer', 'reviewer'],
+    handoffs: statuses.map((status, index) => ({
+      referralId: `ref-${index}`,
+      status,
+      source: 'lead',
+      target: 'writer',
+    })),
+  });
+
+  test('pending_approval is waiting and every other status is not', () => {
+    assert.deepEqual(officeHandoffFromResponse(200, detail(['pending_approval'])), {
+      kind: 'ready',
+      waiting: true,
+    });
+    assert.deepEqual(
+      officeHandoffFromResponse(200, detail(['approved', 'completed', 'rejected'])),
+      { kind: 'ready', waiting: false },
+    );
+    assert.deepEqual(officeHandoffFromResponse(200, detail([])), {
+      kind: 'ready',
+      waiting: false,
+    });
+    const mixed = officeHandoffFromResponse(200, detail(['completed', 'pending_approval']));
+    assert.equal(mixed.kind, 'ready');
+    assert.equal(mixed.kind === 'ready' && mixed.waiting, true);
+  });
+
+  test('403 is forbidden, 401 is signed out, and a bad read is an error', () => {
+    assert.deepEqual(officeHandoffFromResponse(403, { message: 'no' }), { kind: 'forbidden' });
+    assert.deepEqual(officeHandoffFromResponse(401, null), { kind: 'auth' });
+    assert.deepEqual(officeHandoffFromResponse(500, detail(['pending_approval'])), { kind: 'error' });
+    assert.deepEqual(officeHandoffFromResponse(200, null), { kind: 'error' });
+    assert.deepEqual(officeHandoffFromResponse(200, { teamId: 'coding' }), { kind: 'error' });
+  });
+
+  test('one forbidden read wins, and a failed read keeps the waiting ids that did arrive', () => {
+    assert.equal(
+      combineOfficeHandoffReads([
+        { collaborationRunId: 'collab-1', result: { kind: 'ready', waiting: true } },
+        { collaborationRunId: 'collab-2', result: { kind: 'forbidden' } },
+      ]).type,
+      'forbidden',
+    );
+    assert.deepEqual(
+      combineOfficeHandoffReads([
+        { collaborationRunId: 'collab-1', result: { kind: 'ready', waiting: true } },
+        { collaborationRunId: 'collab-2', result: { kind: 'error' } },
+      ]),
+      { type: 'error', waitingRunIds: ['collab-1'] },
+    );
+    assert.deepEqual(
+      combineOfficeHandoffReads([
+        { collaborationRunId: 'collab-1', result: { kind: 'ready', waiting: false } },
+        { collaborationRunId: 'collab-2', result: { kind: 'ready', waiting: true } },
+      ]),
+      { type: 'ready', waitingRunIds: ['collab-2'] },
+    );
+    assert.equal(
+      combineOfficeHandoffReads([
+        { collaborationRunId: 'collab-1', result: { kind: 'auth' } },
+        { collaborationRunId: 'collab-2', result: { kind: 'forbidden' } },
+      ]).type,
+      'auth',
+    );
+  });
+
+  test('a recent waiting run is read, a run older than 24 hours is not, and only five ids are kept', () => {
+    const hour = 60 * 60 * 1000;
+    assert.equal(OFFICE_HANDOFF_RECENT_WINDOW_MS, 24 * hour);
+    assert.equal(OFFICE_HANDOFF_MAX_RUNS, 5);
+    const recentWaiting = run({
+      executionId: 'recent-waiting',
+      status: 'completed',
+      collaborationRunId: 'collab-waiting',
+      builderProfileId: 'lead',
+      startedAt: new Date(NOW - 2 * hour).toISOString(),
+      durationMs: 12_000,
+    });
+    const ids = officeHandoffCollaborationRunIds({
+      activeRuns: [
+        run({
+          executionId: 'active-old',
+          collaborationRunId: '  collab-active  ',
+          startedAt: new Date(NOW - 30 * hour).toISOString(),
+        }),
+        run({ collaborationRunId: null }),
+        run({ collaborationRunId: '   ' }),
+      ],
+      recentRuns: [
+        recentWaiting,
+        run({
+          executionId: 'recent-old',
+          status: 'completed',
+          collaborationRunId: 'collab-old',
+          startedAt: new Date(NOW - 25 * hour).toISOString(),
+          durationMs: 1000,
+        }),
+        run({
+          executionId: 'recent-untimed',
+          status: 'completed',
+          collaborationRunId: 'collab-untimed',
+          startedAt: null,
+          durationMs: null,
+        }),
+      ],
+      nowMs: NOW,
+    });
+    assert.deepEqual(ids, ['collab-waiting', 'collab-active']);
+
+    const exactly = officeHandoffCollaborationRunIds({
+      activeRuns: [],
+      recentRuns: [
+        run({
+          collaborationRunId: 'collab-edge',
+          status: 'completed',
+          startedAt: new Date(NOW - OFFICE_HANDOFF_RECENT_WINDOW_MS).toISOString(),
+          durationMs: null,
+        }),
+      ],
+      nowMs: NOW,
+    });
+    assert.deepEqual(exactly, ['collab-edge']);
+    const justOver = officeHandoffCollaborationRunIds({
+      activeRuns: [],
+      recentRuns: [
+        run({
+          collaborationRunId: 'collab-over',
+          status: 'completed',
+          startedAt: new Date(NOW - OFFICE_HANDOFF_RECENT_WINDOW_MS - 1000).toISOString(),
+          durationMs: null,
+        }),
+        run({
+          collaborationRunId: 'collab-finished-inside',
+          status: 'completed',
+          startedAt: new Date(NOW - 25 * hour).toISOString(),
+          durationMs: 2 * hour,
+        }),
+      ],
+      nowMs: NOW,
+    });
+    assert.deepEqual(justOver, ['collab-finished-inside']);
+
+    const many = officeHandoffCollaborationRunIds({
+      activeRuns: [],
+      recentRuns: [1, 2, 3, 4, 5, 6].map((age) =>
+        run({
+          executionId: `recent-${age}`,
+          status: 'completed',
+          collaborationRunId: `collab-${age}`,
+          startedAt: new Date(NOW - age * hour).toISOString(),
+          durationMs: 1000,
+        }),
+      ),
+      nowMs: NOW,
+    });
+    assert.deepEqual(many, ['collab-1', 'collab-2', 'collab-3', 'collab-4', 'collab-5']);
+  });
+
+  test('loading shows no badge, a later refresh keeps it, 403 clears it, and a failure keeps the desks', () => {
+    const loading = reduceOfficeHandoff(OFFICE_HANDOFF_INITIAL, { type: 'fetch-start' });
+    assert.equal(loading.phase, 'loading');
+    assert.equal(loading.notice, 'loading');
+    assert.deepEqual(loading.badgeRunIds, []);
+    assert.equal(loading.roleDesks, true);
+
+    const ready = reduceOfficeHandoff(loading, {
+      type: 'ready',
+      waitingRunIds: ['collab-1'],
+    });
+    assert.equal(ready.notice, 'none');
+    assert.deepEqual(ready.badgeRunIds, ['collab-1']);
+    assert.equal(ready.roleDesks, true);
+
+    const refreshing = reduceOfficeHandoff(ready, { type: 'fetch-start' });
+    assert.equal(refreshing, ready);
+    assert.deepEqual(refreshing.badgeRunIds, ['collab-1']);
+
+    const cleared = reduceOfficeHandoff(ready, {
+      type: 'ready',
+      waitingRunIds: [],
+    });
+    assert.deepEqual(cleared.badgeRunIds, []);
+    assert.equal(cleared.notice, 'none');
+
+    const failed = reduceOfficeHandoff(ready, {
+      type: 'error',
+      waitingRunIds: [],
+    });
+    assert.equal(failed.notice, 'error');
+    assert.equal(failed.roleDesks, true);
+    assert.deepEqual(failed.badgeRunIds, ['collab-1']);
+
+    const denied = reduceOfficeHandoff(ready, { type: 'forbidden' });
+    assert.equal(denied.phase, 'forbidden');
+    assert.equal(denied.roleDesks, false);
+    assert.equal(denied.notice, 'none');
+    assert.deepEqual(denied.badgeRunIds, []);
+
+    const stillDenied = reduceOfficeHandoff(denied, { type: 'error', waitingRunIds: ['collab-1'] });
+    assert.equal(stillDenied, denied);
+    const deniedStays = reduceOfficeHandoff(denied, { type: 'cleared' });
+    assert.equal(deniedStays.roleDesks, false);
+  });
+
+  test('the badge is on every desk of the waiting collaboration run and not on another team', () => {
+    const built = desksFor({
+      roleDesks: true,
+      activeRuns: [
+        run({
+          executionId: 'lead-run',
+          collaborationRunId: 'collab-coding',
+          builderProfileId: 'lead',
+          status: 'running',
+        }),
+        run({
+          executionId: 'writer-run',
+          collaborationRunId: 'collab-coding',
+          builderProfileId: 'writer',
+          status: 'queued',
+        }),
+        run({
+          executionId: 'reviewer-run',
+          collaborationRunId: 'collab-other',
+          builderProfileId: 'reviewer',
+          status: 'running',
+        }),
+        run({
+          executionId: 'product-run',
+          collaborationRunId: 'collab-advisors',
+          builderProfileId: 'product-strategy',
+          status: 'running',
+        }),
+      ],
+    });
+    const waiting = new Set(['collab-coding']);
+    const lead = built.find((item) => item.id === officeTeamRoleDeskId('lead'));
+    const writerDesk = built.find((item) => item.id === officeTeamRoleDeskId('writer'));
+    const reviewer = built.find((item) => item.id === officeTeamRoleDeskId('reviewer'));
+    const product = built.find((item) => item.id === 'registry:product-strategy');
+    assert.ok(lead && writerDesk && reviewer && product);
+    assert.equal(deskShowsHandoffBadge(lead, waiting), true);
+    assert.equal(deskShowsHandoffBadge(writerDesk, waiting), true);
+    assert.equal(deskShowsHandoffBadge(reviewer, waiting), false);
+    assert.equal(deskShowsHandoffBadge(product, waiting), false);
+    assert.equal(deskShowsHandoffBadge(lead, new Set()), false);
+  });
+
+  test('a waiting hand-off that exists only as a recent run still badges that desk', () => {
+    const built = desksFor({
+      roleDesks: true,
+      recentRuns: [
+        run({
+          executionId: 'lead-done',
+          status: 'completed',
+          collaborationRunId: 'collab-waiting',
+          builderProfileId: 'lead',
+          startedAt: '2026-11-05T04:00:00.000Z',
+          durationMs: 12_000,
+        }),
+      ],
+    });
+    const lead = built.find((item) => item.id === officeTeamRoleDeskId('lead'));
+    assert.ok(lead);
+    assert.equal(lead.currentRun, null);
+    assert.equal(lead.phase, 'done');
+    assert.equal(deskShowsHandoffBadge(lead, new Set(['collab-waiting'])), true);
   });
 });

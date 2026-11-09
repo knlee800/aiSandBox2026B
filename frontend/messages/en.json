@@ -1066,6 +1066,8 @@
     "formerAgents": "Former agents",
     "teamDesk": "Team",
     "teamRole": "Role: {role}",
+    "handoffLoading": "Checking for a step waiting on you…",
+    "handoffLoadError": "Could not check for a step waiting on you.",
     "status": {
       "queued": "Queued",
       "working": "Working",

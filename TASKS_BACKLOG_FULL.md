@@ -84314,7 +84314,7 @@ nature=IMPLEMENTATION
 **Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
 **saturationClass:** OPTIONAL (Keith, 2026-11-05). **productClass:** CURRENT per PRD.md.
 
-**Holds:** (1) Charge Agent runs and replace the global rolling token limit with a real per-user or per-plan limit. (2) Credits that vary by model, and limit which models the Builder offers. (3) Replace the one global write flag, so a write window for one feature does not open Agent writes. (4) Authenticate Socket.IO room joins: join-session joins any session's room. (5) Decide on previous_response_id, which keeps conversations stored at OpenAI and xAI. Split into bounded slices at admission.
+**Holds:** (1) Charge Agent runs and replace the global rolling token limit with a real per-user or per-plan limit. (2) Credits that vary by model, and limit which models the Builder offers. (3) Replace the one global write flag, so a write window for one feature does not open Agent writes. (4) Authenticate Socket.IO room joins: join-session joins any session's room. (5) Decide on previous_response_id, which keeps conversations stored at OpenAI and xAI. Split into bounded slices at admission. Also (OFFICE-05, 2026-11-09): in the office, a user without collaboration access briefly sees role desks before the 403 folds them into one Team desk; fix before such users exist.
 **Named in:** HARNESS-QUOTA-01 checkpoint line 42; HARNESS-PROVIDERS-01 checkpoint lines 73 and 74; COLLAB-LIVE-06 and COLLAB-LIVE-07 checkpoints; AUTH-OWNER-01 checkpoint line 53; HARNESS-LIVE-06 checkpoint line 46.
 **Added 2026-11-05 (GOV-COLLAB-PLAN-01):** (6) the daily spend counter is kept in memory and resets on a restart (COLLAB-GATE-01 checkpoint line 30); it must survive a restart.
 **Added 2026-11-05 (GOV-BIZ-KNOWLEDGE-PLAN-01):** (7) enforce the plan entitlements for knowledge items (maxKnowledgeItemsPerMonth) together with charging.
@@ -85923,7 +85923,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
-**Scope:** Deploy that installs the connector library (C6). Keith types the credentials key and the gateway.env backup is checked. Also the OFFICE-06 live check (2026-11-09): on staging, Tab and Enter open a recent run's saved output with its line breaks; a run with no output, a run of another account (not found) and a failed request show their states; Back and Escape return focus to that run.
+**Scope:** Deploy that installs the connector library (C6). Keith types the credentials key and the gateway.env backup is checked. Also the OFFICE-06 live check (2026-11-09): on staging, Tab and Enter open a recent run's saved output with its line breaks; a run with no output, a run of another account (not found) and a failed request show their states; Back and Escape return focus to that run. And the OFFICE-05 live check: separate lead, writer and reviewer desks (and Chief of Staff and advisors desks) in all three languages; the waiting badge on the desks of a run whose hand-off waits for approval, including after the member finished; Open goes to the Team page; no approve, reject or edit control in the office.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
 
 ### BIZ-LIVE-03 — First live briefing and its cost
@@ -86831,7 +86831,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/RPG-OFFICE-01-PLAN.md 2026-11-05 and the one plan 2026-11-09).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
-**Scope:** Push updates (SSE) replacing polling. Also (OFFICE-06, 2026-11-09): an open run detail refreshes when the run's output changes, and the desk's current-run block opens its output once it has one.
+**Scope:** Push updates (SSE) replacing polling. Also (OFFICE-05, 2026-11-09): a new waiting hand-off appears while the office is idle, without Refresh or returning to the tab. Also (OFFICE-06, 2026-11-09): an open run detail refreshes when the run's output changes, and the desk's current-run block opens its output once it has one.
 **Plan:** docs/AGENT-OPS-PLAN.md section 0 item 24
 
 ### OFFICE-03 — Office characters (per-agent figures; user agents pick a look; appearance column)
@@ -86857,7 +86857,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/RPG-OFFICE-01-PLAN.md 2026-11-05 and the one plan 2026-11-09).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
-**Scope:** Office characters (per-agent figures; user agents pick a look; appearance column).
+**Scope:** Office characters (per-agent figures; user agents pick a look; appearance column). Also (OFFICE-05, 2026-11-09): the advisors-lead desk shows the Chief of Staff name; give it its own name and figure.
 **Plan:** docs/AGENT-OPS-PLAN.md section 0 item 21
 
 ### OFFICE-04 — Office animation (typing and idle loops from the status; reduced motion honoured)
@@ -86892,7 +86892,7 @@ taskId=OFFICE-05
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-09 — Keith admitted it; implementation next. Registered 2026-11-09 by GOV-ONE-PLAN-01.
+**Status:** COMPLETE AND LOCKED — 2026-11-09. LANE-DONE and LOCKED by the control plane; Lane 2, FRONTEND and I18N released. Team desks per role and a waiting badge in the office; not deployed (live check in STAGING-DEPLOY-CONN-01). Checkpoint: docs/OFFICE-05-CHECKPOINT.md. Registered 2026-11-09 by GOV-ONE-PLAN-01.
 **Task ID:** OFFICE-05
 **Title:** Collaboration in the office (team desks show hand-offs)
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
