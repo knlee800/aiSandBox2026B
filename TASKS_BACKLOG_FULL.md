@@ -85828,13 +85828,13 @@ taskId=CONN-02B
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-09 — Keith admitted it; stage-start next. Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
 **Task ID:** CONN-02B
 **Title:** Connector broker, allowlist, SSRF guard and audit
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP
-**Start condition:** NOT_READY. Ready when: CONN-02A LOCKED. Keith decides.
+**Start condition:** READY — CONN-02A is COMPLETE AND LOCKED (132ae6a); Keith admitted it on 2026-11-09.
 **Depends on:** CONN-02A.
 **Primary write scope:** services/api-gateway/src/connectors/, services/api-gateway/package.json, package-lock.json.
 **Mutexes / resources:** GATEWAY, PACKAGE.

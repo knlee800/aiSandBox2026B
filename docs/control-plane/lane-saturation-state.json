@@ -7,13 +7,17 @@
   "governance": {"owner": "NONE", "state": "UNOWNED"},
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "CONN-02B",
+      "mutexes": ["GATEWAY", "PACKAGE"],
+      "writePaths": [
+        "services/api-gateway/src/connectors/",
+        "services/api-gateway/package.json",
+        "package-lock.json"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -3599,8 +3603,8 @@
       "taskId": "CONN-02B",
       "nature": "IMPLEMENTATION",
       "lifecycle": "4-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "OPTIONAL",
       "productClass": "APPROVED_FUTURE",
       "futureAuthorization": "AUTHORIZED",

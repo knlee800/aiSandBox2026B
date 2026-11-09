@@ -18,7 +18,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 
 | # | Item | What it does | Lane |
 |---|---|---|---|
-| 5 | CONN-02B | Gateway to MCP server: allowlist, internal-address guard, audit | 1 |
+| 5 | CONN-02B | Gateway to MCP server: allowlist, internal-address guard, audit (admitted 2026-11-09) | 1 |
 | 6 | CONN-UI-01 | Connections page | 2 |
 | 7 | CONN-GRANT-01 | Agents may use the connector tools (frozen-contract change; alone) | 1 |
 | 8 | BIZ-BRIEF-01 | Morning briefing template | 1 |
