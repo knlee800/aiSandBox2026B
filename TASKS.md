@@ -551,10 +551,10 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-09. CLAUDE.md, AGENTS.md and the checklists now allow worker worktrees (branch lane/<TASK-ID>; only the control plane brings work into main, fast-forward or cherry-pick, after review and gates; Cursor still runs no git) and Claude subagent implementers (Fable 5.1, Opus 5.5, Sonnet 5.5) under the same brief and review rules; lanes, mutexes and the scheduler unchanged; Keith changed .claude/settings.local.json. Development OS mutation ended. Checkpoint: docs/GOV-OS-08-CHECKPOINT.md.
 
-
 ## GOV-ROUTING-01 — COMPLETE AND LOCKED / NOT AN IMPLEMENTATION LANE — 2026-11-09
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-09. CLAUDE.md now says how the worker is chosen (a Claude subagent by default for LOCAL-TESTS tasks; Cursor desktop for anything needing Keith's sign-in; Cursor CLI on request), which subagent model goes where (sonnet, opus, fable), that window rules apply to Cursor runs, and the worktree procedure (C:\Users\knlee\aisb-worktrees, node_modules junctions). A dry run in a throwaway worktree passed and was removed. Checkpoint: docs/GOV-ROUTING-01-CHECKPOINT.md.
+
 ## CONN-01 — COMPLETE AND LOCKED / Lane 1 RELEASED — 2026-11-09
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-09. Lane 1 released. PACKAGE and the four HOTFILE leases released UNOWNED. services/connectors-mcp: a stdio MCP server with mail_list_unread_metadata (read-only IMAP to three preset hosts, decoded envelope headers) and calendar_list_today (guarded HTTPS fetch, recurrences for today); 52 tests; the deploy build and artifact lists name dist/main.js; three accepted shared patch bumps; gateway and ai-service suites unchanged. Not deployed and not used by anything yet (CONN-02B connects it). Checkpoint: docs/CONN-01-CHECKPOINT.md.
