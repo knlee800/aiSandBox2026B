@@ -365,6 +365,7 @@
     "intentBuildTooltip": "创建或编辑工作区文件",
     "intentAgent": "智能体",
     "intentAgentTooltip": "在工作区完成这项工作，并显示每个步骤",
+    "agentWriteOffNotice": "此账户的文件更改已关闭，智能体可以读取并回答，但不会更改文件。",
     "harnessProgressHeading": "步骤",
     "harnessToolListFiles": "列出文件",
     "harnessToolReadFile": "读取文件",

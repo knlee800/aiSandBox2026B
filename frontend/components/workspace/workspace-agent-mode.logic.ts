@@ -89,6 +89,13 @@ export function parseHarnessEntitled(me: unknown): boolean {
   return (me as { harnessEntitled?: unknown }).harnessEntitled === true;
 }
 
+export function parseAgentWriteEnabled(me: unknown): boolean {
+  if (!me || typeof me !== 'object') {
+    return false;
+  }
+  return (me as { agentWriteEnabled?: unknown }).agentWriteEnabled === true;
+}
+
 export function toolLabelKey(tool: string): HarnessToolLabelKey {
   if (Object.prototype.hasOwnProperty.call(HARNESS_TOOL_LABEL_KEYS, tool)) {
     return HARNESS_TOOL_LABEL_KEYS[tool as keyof typeof HARNESS_TOOL_LABEL_KEYS];

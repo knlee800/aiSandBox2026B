@@ -375,10 +375,19 @@ export class AuthController {
   @UseGuards(SessionCookieGuard)
   @Get('me')
   async getProfile(@Request() req) {
-    const profile = await this.authService.getUserById(req.user.userId);
+    const userId = req.user.userId;
+    const profile = await this.authService.getUserById(userId);
+    let agentWriteEnabled = false;
+    try {
+      agentWriteEnabled =
+        (await this.entitlements.resolveAgentWriteEnabled(userId)) === true;
+    } catch {
+      agentWriteEnabled = false;
+    }
     return {
       ...profile,
-      harnessEntitled: await this.entitlements.resolveHarnessEntitled(req.user.userId),
+      harnessEntitled: await this.entitlements.resolveHarnessEntitled(userId),
+      agentWriteEnabled,
     };
   }
 

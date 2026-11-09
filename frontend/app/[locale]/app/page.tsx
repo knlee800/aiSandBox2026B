@@ -84,6 +84,7 @@ import {
   appendHarnessProgress,
   buildAgentModeRequestFields,
   harnessProgressShowsWrite,
+  parseAgentWriteEnabled,
   parseHarnessEntitled,
   parseHarnessProgressMessage,
   type HarnessProgressItem,
@@ -1117,6 +1118,7 @@ export default function AppPage() {
     DEFAULT_WORKSPACE_EXECUTION_INTENT,
   );
   const [harnessEntitled, setHarnessEntitled] = useState(false);
+  const [agentWriteEnabled, setAgentWriteEnabled] = useState(false);
   const [agentMode, setAgentMode] = useState(false);
   const [harnessProgress, setHarnessProgress] = useState<HarnessProgressItem[]>([]);
   const harnessEntitledRef = useRef(false);
@@ -1414,6 +1416,7 @@ export default function AppPage() {
         const entitled = parseHarnessEntitled(me);
         harnessEntitledRef.current = entitled;
         setHarnessEntitled(entitled);
+        setAgentWriteEnabled(parseAgentWriteEnabled(me));
         if (!entitled) {
           setAgentMode(false);
         }
@@ -6515,6 +6518,7 @@ export default function AppPage() {
       onChatPromptInputChange={setChatPromptInput}
       executionIntent={chatExecutionIntent}
       harnessEntitled={harnessEntitled}
+      agentWriteEnabled={agentWriteEnabled}
       agentMode={agentMode}
       onAgentModeChange={setAgentModeFromUser}
       harnessProgress={harnessProgress}

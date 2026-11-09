@@ -365,6 +365,7 @@
     "intentBuildTooltip": "Create or edit workspace files",
     "intentAgent": "Agent",
     "intentAgentTooltip": "Work through the task in the workspace and show each step",
+    "agentWriteOffNotice": "File changes are off for this account, so Agent can read and answer but will not change files.",
     "harnessProgressHeading": "Steps",
     "harnessToolListFiles": "List files",
     "harnessToolReadFile": "Read file",

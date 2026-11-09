@@ -85923,7 +85923,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
-**Scope:** Deploy that installs the connector library (C6). Keith types the credentials key and the gateway.env backup is checked. Also the OFFICE-06 live check (2026-11-09): on staging, Tab and Enter open a recent run's saved output with its line breaks; a run with no output, a run of another account (not found) and a failed request show their states; Back and Escape return focus to that run. And the OFFICE-05 live check: separate lead, writer and reviewer desks (and Chief of Staff and advisors desks) in all three languages; the waiting badge on the desks of a run whose hand-off waits for approval, including after the member finished; Open goes to the Team page; no approve, reject or edit control in the office.
+**Scope:** Deploy that installs the connector library (C6). Keith types the credentials key and the gateway.env backup is checked. Also the OFFICE-06 live check (2026-11-09): on staging, Tab and Enter open a recent run's saved output with its line breaks; a run with no output, a run of another account (not found) and a failed request show their states; Back and Escape return focus to that run. And the OFFICE-05 live check: separate lead, writer and reviewer desks (and Chief of Staff and advisors desks) in all three languages; the waiting badge on the desks of a run whose hand-off waits for approval, including after the member finished; Open goes to the Team page; no approve, reject or edit control in the office. And the AGENT-WRITE-UI-01 live check: an account with harness access and Agent write off sees the amber file-changes-off notice under the mode control when Agent is selected, in its locale; Keith's account (write on) sees no notice.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
 
 ### BIZ-LIVE-03 — First live briefing and its cost
@@ -87633,7 +87633,7 @@ taskId=AGENT-WRITE-UI-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-09 — Keith admitted it; implementation next. Registered by ACCESS-01C (stage-start section 10).
+**Status:** COMPLETE AND LOCKED — 2026-11-09. LANE-DONE and LOCKED by the control plane; Lane 2, GATEWAY, FRONTEND and I18N released. /api/auth/me returns agentWriteEnabled; Agent mode shows the file-changes-off notice; not deployed (live check in STAGING-DEPLOY-CONN-01). Checkpoint: docs/AGENT-WRITE-UI-01-CHECKPOINT.md. Registered by ACCESS-01C (stage-start section 10).
 **Task ID:** AGENT-WRITE-UI-01
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -87650,9 +87650,9 @@ nature=IMPLEMENTATION
 #### Acceptance criteria
 
 - [x] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
-- [ ] /api/auth/me returns agentWriteEnabled (true only when resolveAgentWriteEnabled is true; false on a missing row or an error); spec covers true, false and error
-- [ ] Agent mode shows a translated notice (en, zh-TW, zh-CN) that file changes are off for this account when agentWriteEnabled is false and the user is harness-entitled; nothing changes when it is true; tests cover both
-- [ ] Not LOCKED by an implementer
+- [x] /api/auth/me returns agentWriteEnabled (true only when resolveAgentWriteEnabled is true; false on a missing row or an error); spec covers true, false and error
+- [x] Agent mode shows a translated notice (en, zh-TW, zh-CN) that file changes are off for this account when agentWriteEnabled is false and the user is harness-entitled; nothing changes when it is true; tests cover both
+- [x] Not LOCKED by an implementer
 
 ### HARNESS-WRITE-VETO-01 — Make the write-tools flag a veto over builder harness profiles
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

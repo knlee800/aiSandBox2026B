@@ -365,6 +365,7 @@
     "intentBuildTooltip": "建立或編輯工作區檔案",
     "intentAgent": "代理人",
     "intentAgentTooltip": "在工作區完成這項工作，並顯示每個步驟",
+    "agentWriteOffNotice": "此帳戶的檔案變更已關閉，代理人可以讀取並回答，但不會變更檔案。",
     "harnessProgressHeading": "步驟",
     "harnessToolListFiles": "列出檔案",
     "harnessToolReadFile": "讀取檔案",

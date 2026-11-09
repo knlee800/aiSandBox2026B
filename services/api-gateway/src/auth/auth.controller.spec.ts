@@ -167,12 +167,14 @@ describe('AuthController getProfile harness entitlement', () => {
   };
   const entitlements = {
     resolveHarnessEntitled: jest.fn(),
+    resolveAgentWriteEnabled: jest.fn(),
   };
   let controller: AuthController;
 
   beforeEach(() => {
     jest.clearAllMocks();
     mockAuthService.getUserById.mockResolvedValue({ ...profile });
+    entitlements.resolveAgentWriteEnabled.mockResolvedValue(false);
     controller = new AuthController(mockAuthService as any, entitlements as any);
   });
 
@@ -186,6 +188,7 @@ describe('AuthController getProfile harness entitlement', () => {
     expect(result).toEqual({
       ...profile,
       harnessEntitled: true,
+      agentWriteEnabled: false,
     });
   });
 
@@ -199,6 +202,49 @@ describe('AuthController getProfile harness entitlement', () => {
     expect(result).toEqual({
       ...profile,
       harnessEntitled: false,
+      agentWriteEnabled: false,
+    });
+  });
+
+  it('returns agentWriteEnabled true when the lookup is true', async () => {
+    entitlements.resolveHarnessEntitled.mockResolvedValue(true);
+    entitlements.resolveAgentWriteEnabled.mockResolvedValue(true);
+
+    const result = await controller.getProfile({ user: { userId } });
+
+    expect(entitlements.resolveAgentWriteEnabled).toHaveBeenCalledWith(userId);
+    expect(result).toEqual({
+      ...profile,
+      harnessEntitled: true,
+      agentWriteEnabled: true,
+    });
+  });
+
+  it('returns agentWriteEnabled false when the lookup is false', async () => {
+    entitlements.resolveHarnessEntitled.mockResolvedValue(false);
+    entitlements.resolveAgentWriteEnabled.mockResolvedValue(false);
+
+    const result = await controller.getProfile({ user: { userId } });
+
+    expect(entitlements.resolveAgentWriteEnabled).toHaveBeenCalledWith(userId);
+    expect(result).toEqual({
+      ...profile,
+      harnessEntitled: false,
+      agentWriteEnabled: false,
+    });
+  });
+
+  it('returns agentWriteEnabled false when the lookup fails', async () => {
+    entitlements.resolveHarnessEntitled.mockResolvedValue(true);
+    entitlements.resolveAgentWriteEnabled.mockRejectedValue(new Error('lookup failed'));
+
+    const result = await controller.getProfile({ user: { userId } });
+
+    expect(entitlements.resolveAgentWriteEnabled).toHaveBeenCalledWith(userId);
+    expect(result).toEqual({
+      ...profile,
+      harnessEntitled: true,
+      agentWriteEnabled: false,
     });
   });
 });

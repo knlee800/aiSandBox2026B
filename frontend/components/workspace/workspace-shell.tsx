@@ -91,6 +91,7 @@ import {
   DocumentTextIcon,
   FolderIcon,
   FolderOpenIcon,
+  InformationCircleIcon,
   StopIcon,
   UserGroupIcon,
   XMarkIcon,
@@ -614,6 +615,7 @@ interface WorkspaceShellProps {
   executionIntent?: WorkspaceExecutionIntent;
   onExecutionIntentChange?: (value: WorkspaceExecutionIntent) => void;
   harnessEntitled?: boolean;
+  agentWriteEnabled?: boolean;
   agentMode?: boolean;
   onAgentModeChange?: (enabled: boolean) => void;
   harnessProgress?: HarnessProgressItem[];
@@ -1702,6 +1704,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
             executionIntent={props.executionIntent ?? 'workspace_mutation'}
             onExecutionIntentChange={props.onExecutionIntentChange}
             harnessEntitled={props.harnessEntitled === true}
+            agentWriteEnabled={props.agentWriteEnabled === true}
             agentMode={props.agentMode === true}
             onAgentModeChange={props.onAgentModeChange}
             harnessProgress={props.harnessProgress ?? []}
@@ -3909,6 +3912,7 @@ function WorkspaceChatPanel(props: {
   executionIntent: WorkspaceExecutionIntent;
   onExecutionIntentChange?: (value: WorkspaceExecutionIntent) => void;
   harnessEntitled?: boolean;
+  agentWriteEnabled?: boolean;
   agentMode?: boolean;
   onAgentModeChange?: (enabled: boolean) => void;
   harnessProgress?: HarnessProgressItem[];
@@ -3976,6 +3980,8 @@ function WorkspaceChatPanel(props: {
     props.requestState === 'queued' ||
     props.requestState === 'running';
   const agentModeSelected = props.agentMode === true;
+  const showAgentWriteOffNotice =
+    props.harnessEntitled === true && agentModeSelected && props.agentWriteEnabled !== true;
   const askSelected = !agentModeSelected && props.executionIntent === 'conversation';
   const buildSelected = !agentModeSelected && props.executionIntent === 'workspace_mutation';
   const harnessProgress = props.harnessProgress ?? [];
@@ -4329,6 +4335,16 @@ function WorkspaceChatPanel(props: {
               ) : null}
             </div>
           </div>
+          {showAgentWriteOffNotice ? (
+            <p
+              className="mb-2 flex min-w-0 items-start gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2 py-1.5 text-xs text-amber-900"
+              data-testid="workspace-chat-agent-write-off"
+              role="alert"
+            >
+              <InformationCircleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              <span className="min-w-0 break-words">{props.aiMessages.agentWriteOffNotice}</span>
+            </p>
+          ) : null}
           <div className="flex min-w-0 max-w-full items-end gap-2" data-testid="workspace-chat-composer-row">
             <div className="min-w-0 flex-1">
               <label htmlFor="workspace-chat-prompt" className="sr-only">

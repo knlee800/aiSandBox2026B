@@ -4,6 +4,7 @@ import {
   appendHarnessProgress,
   buildAgentModeRequestFields,
   harnessProgressShowsWrite,
+  parseAgentWriteEnabled,
   parseHarnessEntitled,
   parseHarnessProgressMessage,
   toolLabelKey,
@@ -162,6 +163,17 @@ describe('workspace agent mode logic', () => {
     assert.equal(parseHarnessEntitled(null), false);
     assert.equal(parseHarnessEntitled(undefined), false);
     assert.equal(parseHarnessEntitled('true'), false);
+  });
+
+  test('parseAgentWriteEnabled is true only for a boolean true field', () => {
+    assert.equal(parseAgentWriteEnabled({ agentWriteEnabled: true }), true);
+    assert.equal(parseAgentWriteEnabled({ agentWriteEnabled: false }), false);
+    assert.equal(parseAgentWriteEnabled({ agentWriteEnabled: 'true' }), false);
+    assert.equal(parseAgentWriteEnabled({ agentWriteEnabled: 1 }), false);
+    assert.equal(parseAgentWriteEnabled({}), false);
+    assert.equal(parseAgentWriteEnabled(null), false);
+    assert.equal(parseAgentWriteEnabled(undefined), false);
+    assert.equal(parseAgentWriteEnabled('true'), false);
   });
 
   test('toolLabelKey maps each harness tool and uses a generic key otherwise', () => {

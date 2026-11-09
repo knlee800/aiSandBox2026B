@@ -10459,6 +10459,7 @@ describe('workspace agent mode — HARNESS-UI-01', () => {
       'harnessToolRunValidation',
       'harnessToolBrowserSmoke',
       'harnessToolGeneric',
+      'agentWriteOffNotice',
     ] as const;
 
     for (const localePack of [en, zhTw, zhCn]) {
@@ -10467,6 +10468,63 @@ describe('workspace agent mode — HARNESS-UI-01', () => {
         assert.equal(localePack.ai[key].trim().length > 0, true);
       }
     }
+    assert.notEqual(zhTw.ai.agentWriteOffNotice, en.ai.agentWriteOffNotice);
+    assert.notEqual(zhCn.ai.agentWriteOffNotice, en.ai.agentWriteOffNotice);
+    assert.notEqual(zhTw.ai.agentWriteOffNotice, zhCn.ai.agentWriteOffNotice);
+  });
+
+  test('file-changes-off notice shows only when Agent is on, the user is entitled, and writes are off', () => {
+    const shown = renderWorkspaceShell({
+      workspaceView: 'project',
+      selectedProjectId: 'project-1',
+      harnessEntitled: true,
+      agentMode: true,
+      agentWriteEnabled: false,
+      onAgentModeChange: () => {},
+      onExecutionIntentChange: () => {},
+    });
+    assert.match(shown, /data-testid="workspace-chat-agent-write-off"/);
+    assert.match(shown, /role="alert"/);
+    assert.match(shown, new RegExp(enMessages.ai.agentWriteOffNotice));
+    assert.match(shown, /data-testid="workspace-chat-intent-agent"/);
+    assert.match(shown, /break-words/);
+
+    const writesOn = renderWorkspaceShell({
+      workspaceView: 'project',
+      selectedProjectId: 'project-1',
+      harnessEntitled: true,
+      agentMode: true,
+      agentWriteEnabled: true,
+      onAgentModeChange: () => {},
+      onExecutionIntentChange: () => {},
+    });
+    assert.doesNotMatch(writesOn, /workspace-chat-agent-write-off/);
+    assert.doesNotMatch(writesOn, new RegExp(enMessages.ai.agentWriteOffNotice));
+    assert.match(writesOn, /data-testid="workspace-chat-intent-agent"/);
+
+    const notEntitled = renderWorkspaceShell({
+      workspaceView: 'project',
+      selectedProjectId: 'project-1',
+      harnessEntitled: false,
+      agentMode: true,
+      agentWriteEnabled: false,
+      onAgentModeChange: () => {},
+      onExecutionIntentChange: () => {},
+    });
+    assert.doesNotMatch(notEntitled, /workspace-chat-agent-write-off/);
+    assert.doesNotMatch(notEntitled, /workspace-chat-intent-agent/);
+
+    const agentOff = renderWorkspaceShell({
+      workspaceView: 'project',
+      selectedProjectId: 'project-1',
+      harnessEntitled: true,
+      agentMode: false,
+      agentWriteEnabled: false,
+      onAgentModeChange: () => {},
+      onExecutionIntentChange: () => {},
+    });
+    assert.doesNotMatch(agentOff, /workspace-chat-agent-write-off/);
+    assert.match(agentOff, /data-testid="workspace-chat-intent-agent"/);
   });
 });
 
