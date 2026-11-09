@@ -85854,13 +85854,13 @@ taskId=CONN-UI-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-09 — Keith admitted it; implementation by a Claude subagent on opus in worktree C:\Users\knlee\aisb-worktrees\CONN-UI-01 (branch lane/CONN-UI-01). Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
 **Task ID:** CONN-UI-01
 **Title:** Connections page
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP
-**Start condition:** NOT_READY. Ready when: CONN-02B LOCKED. Keith decides.
+**Start condition:** READY — CONN-02B is COMPLETE AND LOCKED (6547241); Keith admitted it on 2026-11-09.
 **Depends on:** CONN-02B.
 **Primary write scope:** frontend/app/, frontend/components/connections/, frontend/components/platform/platform-dashboard.tsx, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json.
 **Mutexes / resources:** FRONTEND, I18N.
