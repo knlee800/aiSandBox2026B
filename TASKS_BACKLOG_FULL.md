@@ -85880,7 +85880,7 @@ taskId=CONN-GRANT-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-09 — Keith admitted it; runs alone (frozen-contract change); stage-start next. Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
+**Status:** ADMITTED — Lane 1 — STAGE-START COMPLETE — 2026-11-09 — Keith approved the stage-start (docs/CONN-GRANT-01-STAGE-START.md); runs alone; implementation by a Claude subagent on opus in worktree lane/CONN-GRANT-01. Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
 **Task ID:** CONN-GRANT-01
 **Title:** Signed connector grants on the harness contract
 **Workstream:** AGENT (taxonomy only; zero admission weight)
