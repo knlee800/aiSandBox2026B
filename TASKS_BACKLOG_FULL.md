@@ -85724,7 +85724,7 @@ taskId=CONN-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-09 — Keith admitted it; stage-start next (packages named for Keith's approval before any dependency is added). Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
+**Status:** ADMITTED — Lane 1 — STAGE-START COMPLETE — 2026-11-09 — Keith approved the stage-start (docs/CONN-01-STAGE-START.md): @modelcontextprotocol/sdk 1.32.2, imapflow 2.9.1, node-ical 0.27.3; implementation next. Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
 **Task ID:** CONN-01
 **Title:** Platform MCP server for mail headers and today's calendar
 **Workstream:** AGENT (taxonomy only; zero admission weight)
