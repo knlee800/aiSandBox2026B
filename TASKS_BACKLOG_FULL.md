@@ -86011,7 +86011,7 @@ taskId=BRIEF-FLAG-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — Keith approved it ("ok, go"). Registered 2026-11-10 by COS-EVAL-LIVE-01.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 1, GATEWAY and AI-SERVICE released. Flagged items end with the label "Flag: suspicious instruction", used nowhere else; [source: ...] and No source only on Knowledge answers; eval copy and version hash follow (fad01be6... → d34f3eb4..., accepted); 2,576 characters; gateway 2879 passed (known smoke suite only), ai-service 1229 passed, builds clean; built by an opus subagent in worktree lane/BRIEF-FLAG-01 (352d9e0), fast-forwarded into main; not deployed (COS-EVAL-LIVE-02). Checkpoint: docs/BRIEF-FLAG-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Registered 2026-11-10 by COS-EVAL-LIVE-01.
 **Task ID:** BRIEF-FLAG-01
 **Title:** Fixed flag label in the morning briefing
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -86038,13 +86038,13 @@ taskId=COS-EVAL-LIVE-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by COS-EVAL-LIVE-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — Keith approved the deploy, run and cap ("ok, go"). Registered 2026-11-10 by COS-EVAL-LIVE-01.
 **Task ID:** COS-EVAL-LIVE-02
 **Title:** Second real-model run of the briefing injection eval
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP: registration here; deploy and run from the staging host; consolidation with a separate LOCK record (PROVIDER-LIVE).
-**Start condition:** NOT_READY. Ready when: BRIEF-FLAG-01 is LOCKED. Keith approved the deploy, the run and its 150,000-token cap on 2026-11-10 ("ok, go").
+**Start condition:** READY (BRIEF-FLAG-01 LOCKED 2026-11-10). Was: Ready when: BRIEF-FLAG-01 is LOCKED. Keith approved the deploy, the run and its 150,000-token cap on 2026-11-10 ("ok, go").
 **Depends on:** BRIEF-FLAG-01, COS-EVAL-LIVE-01.
 **Primary write scope:** services/ai-service/src/agent-harness/eval/baselines/ (the briefing results file, added at LOCK), plus docs/COS-EVAL-LIVE-02-CHECKPOINT.md; host state (deploy).
 **Mutexes / resources:** AI-SERVICE, STAGING, PROVIDER-LIVE (no ENV or CREDIT: no env change, runs stay off, the runner gets the stored test key only in its own environment, no user credits).
