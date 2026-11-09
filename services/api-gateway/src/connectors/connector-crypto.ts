@@ -1,4 +1,4 @@
-import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
+import { createCipheriv, createDecipheriv, createHmac, randomBytes } from 'crypto';
 import { ServiceUnavailableException } from '@nestjs/common';
 import { ConnectorKind } from './connector-rules';
 
@@ -17,6 +17,19 @@ export class ConnectorDecryptError extends Error {
  */
 export function assertConnectorCredentialsConfigured(): void {
   readConnectorCredentialsKey();
+}
+
+/** CONN-GRANT-01: label for the grant-token key derived from CONNECTOR_CREDENTIALS_KEY. */
+export const CONNECTOR_GRANT_TOKEN_KEY_LABEL = 'connector-grant-token:v1';
+
+/**
+ * CONN-GRANT-01: HMAC-SHA256(credentials key bytes, "connector-grant-token:v1").
+ * Read at call time with the same checks and fixed 503 as the other helpers,
+ * so a missing or invalid key means no grant token can be minted or checked.
+ */
+export function connectorGrantTokenKey(): Buffer {
+  const key = readConnectorCredentialsKey();
+  return createHmac('sha256', key).update(CONNECTOR_GRANT_TOKEN_KEY_LABEL, 'utf8').digest();
 }
 
 export function encryptConnectorSecret(

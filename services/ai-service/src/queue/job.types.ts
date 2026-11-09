@@ -85,6 +85,22 @@ export interface AiExecutionJob {
    */
   knowledgeScopes?: readonly string[];
 
+  /**
+   * CONN-GRANT-01: signed connector tool ids. The gateway sets this only on a
+   * read-profile collaboration job whose role lists the tool and whose owner
+   * has that connection. Part of the entitlement digest. Only known tool ids
+   * count (worker/connector-grants.ts); the tools are registered only after the
+   * proof verifies and only for the read profile.
+   */
+  connectorGrants?: readonly string[];
+
+  /**
+   * CONN-GRANT-01: gateway-minted grant token for this execution, user and
+   * the granted tools. Opaque here (ai-service never holds its key); passed
+   * back on each connector call and never logged. Part of the entitlement digest.
+   */
+  connectorGrantToken?: string;
+
   /** HMAC entitlement proof required when harnessVersion === 'v1'. Absent on ordinary jobs. */
   harnessEntitlementProof?: HarnessEntitlementProof;
 

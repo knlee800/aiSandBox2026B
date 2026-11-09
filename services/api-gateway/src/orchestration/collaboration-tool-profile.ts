@@ -69,6 +69,22 @@ export function collaborationHarnessJobFields(targetProfileId: string): {
   };
 }
 
+/**
+ * CONN-GRANT-01: connector tool ids each role may be granted, by builder
+ * profile id. Empty for every role today; a role listed here still gets a
+ * grant only when the run owner has a connection of the tool's kind, and
+ * only on a signed read-profile job. Ids must be in the CONN-02B allowlist.
+ */
+export const COLLABORATION_ROLE_CONNECTOR_TOOLS: Readonly<Record<string, readonly string[]>> =
+  Object.freeze({});
+
+export function collaborationRoleConnectorToolIds(targetProfileId: string): readonly string[] {
+  if (!Object.prototype.hasOwnProperty.call(COLLABORATION_ROLE_CONNECTOR_TOOLS, targetProfileId)) {
+    return [];
+  }
+  return [...COLLABORATION_ROLE_CONNECTOR_TOOLS[targetProfileId]];
+}
+
 export function targetStepCanChangeFiles(
   targetProfileId: string,
   fileAccess: boolean,

@@ -307,6 +307,44 @@ export class ApiGatewayHttpClient {
   }
 
   /**
+   * Call one granted connector tool for the job owner.
+   * CONN-GRANT-01: ai-service → API Gateway POST /api/internal/connectors/call.
+   * The grant token is minted by the gateway and only passed back here; it is
+   * never logged. Failures throw; handlers replace the body.
+   */
+  async callConnectorTool(
+    input: {
+      userId: string;
+      toolId: string;
+      arguments: Record<string, unknown>;
+      executionId: string;
+      grantToken: string;
+    },
+    signal?: AbortSignal,
+  ): Promise<unknown> {
+    const response = await firstValueFrom(
+      this.httpService.post(
+        `${this.apiGatewayUrl}/api/internal/connectors/call`,
+        {
+          userId: input.userId,
+          toolId: input.toolId,
+          arguments: input.arguments,
+          executionId: input.executionId,
+          grantToken: input.grantToken,
+        },
+        {
+          signal,
+          headers: {
+            'X-Internal-Service-Key': this.internalServiceKey,
+          },
+        },
+      ),
+    );
+
+    return response.data;
+  }
+
+  /**
    * Write file content to a session workspace via API Gateway.
    * AGENT-HARNESS-03B: ai-service → API Gateway → container-manager boundary.
    * @param sessionId - Session UUID

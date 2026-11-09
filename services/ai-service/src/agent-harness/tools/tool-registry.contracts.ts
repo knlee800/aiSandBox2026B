@@ -14,14 +14,17 @@ export type AgentHarnessToolIdV1 =
   | 'browser_smoke'
   | 'search_workspace'
   | 'search_knowledge'
-  | 'read_knowledge';
+  | 'read_knowledge'
+  | 'mail_list_unread_metadata'
+  | 'calendar_list_today';
 
 export type AgentHarnessToolCategoryV1 =
   | 'workspace'
   | 'validation'
   | 'preview'
   | 'browser'
-  | 'search';
+  | 'search'
+  | 'connector';
 
 export type AgentHarnessToolRiskLevelV1 =
   | 'low'

@@ -32,6 +32,11 @@ import {
 } from './orchestration-audit.recorder';
 import { CollaborationRunEntity } from './collaboration-run.entity';
 import { CollaborationReferralEntity } from './collaboration-referral.entity';
+import { ConnectorConnection } from '../entities/connector-connection.entity';
+import {
+  resolveConnectorGrantJobFields,
+  type ConnectorGrantJobFields,
+} from './collaboration-connector-grants';
 import {
   type OrchestrationAuditEvent,
   type OrchestrationAuditEventType,
@@ -73,6 +78,7 @@ import {
 import { classifySendBackEdge } from './collaboration-send-back';
 import {
   collaborationHarnessJobFields,
+  collaborationRoleConnectorToolIds,
   knowledgeScopesJobFields,
   readCollaborationHandoffWork,
   targetStepCanChangeFiles,
@@ -304,6 +310,9 @@ export class OrchestrationService {
     @Optional() private readonly creditBalanceGuard?: CreditBalanceGuard,
     @Optional() private readonly tokenQuotaGuard?: TokenQuotaGuard,
     @Optional() private readonly containerManagerClient?: ContainerManagerHttpClient,
+    @Optional()
+    @InjectRepository(ConnectorConnection)
+    private readonly connectorConnections?: Repository<ConnectorConnection>,
   ) {
     this.auditRecorder = auditRecorder ?? new InMemoryOrchestrationAuditRecorder();
   }
@@ -851,8 +860,9 @@ export class OrchestrationService {
       },
     );
 
+    const connectorGrantFields = await this.connectorGrantJobFields(jobPayload);
     await this.queueService.enqueueExecution(
-      this.withHarnessEntitlementProof(jobPayload),
+      this.withHarnessEntitlementProof({ ...jobPayload, ...connectorGrantFields }),
     );
     const updatedEntity = await this.referralRepo.findOne({
       where: { referralId: input.referralId },
@@ -2569,6 +2579,40 @@ export class OrchestrationService {
       : input.fileAccess === true;
 
     return { agents, callerProjectInstructions, projectInstructions, fileAccess };
+  }
+
+  /**
+   * CONN-GRANT-01: connectorGrants and connectorGrantToken for a signed
+   * read-profile collaboration job whose role lists connector tools and whose
+   * owner has a connection of that tool's kind. {} otherwise, so the fields are
+   * omitted. Added before the proof is made, so the proof covers both fields.
+   */
+  private async connectorGrantJobFields(payload: {
+    executionId: string;
+    userId: string;
+    builderProfileId: string;
+    harnessVersion?: unknown;
+    harnessToolProfile?: unknown;
+  }): Promise<ConnectorGrantJobFields> {
+    const roleToolIds = collaborationRoleConnectorToolIds(payload.builderProfileId);
+    if (roleToolIds.length === 0) {
+      return {};
+    }
+    const { fields, outcome } = await resolveConnectorGrantJobFields({
+      executionId: payload.executionId,
+      userId: payload.userId,
+      harnessVersion: payload.harnessVersion,
+      harnessToolProfile: payload.harnessToolProfile,
+      roleToolIds,
+      connections: this.connectorConnections,
+      nowMs: Date.now(),
+    });
+    if (outcome === 'lookup_failed' || outcome === 'mint_failed') {
+      this.logger.warn(
+        `Connector grant skipped executionId=${payload.executionId} reason=${outcome}`,
+      );
+    }
+    return fields;
   }
 
   private withHarnessEntitlementProof<

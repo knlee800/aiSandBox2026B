@@ -52,6 +52,9 @@ import {
   KNOWLEDGE_SCOPES_REQUIRES_HARNESS_MESSAGE,
   resolveKnowledgeScopes,
 } from './knowledge-scopes';
+import { createConnectorToolHandler } from '../agent-harness/tools/handlers/connector-tool-handlers';
+import { getConnectorToolDefinition } from '../agent-harness/tools/connector-tool-definitions';
+import { resolveConnectorGrants, withWorkerHarnessInstructions } from './connector-grants';
 import { createRunValidationHandler } from '../agent-harness/tools/handlers/validation-tool-handlers';
 import { createBrowserSmokeHandler } from '../agent-harness/tools/handlers/browser-smoke-tool-handlers';
 import { ApiGatewayHttpClient } from '../clients/api-gateway-http.client';
@@ -1695,6 +1698,8 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
             return;
           }
           const knowledgeScopes = knowledgeResolution.scopes;
+          // CONN-GRANT-01: read after the entitlement proof verified above.
+          const connectorGrant = resolveConnectorGrants(job.data, signedToolProfile);
           const harnessRequested = job.data.harnessVersion === 'v1';
           let routedAdapter: ReturnType<AIExecutionService['getAdapter']> | undefined;
           if (harnessRequested && DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop) {
@@ -1735,7 +1740,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
             [];
           for (let attempt = 0; attempt < EXECUTION_PROVIDER_RETRY_ATTEMPTS; attempt++) {
             try {
-              const promptParts = buildExecutionPromptParts(
+              const basePromptParts = buildExecutionPromptParts(
                 job.data.prompt ?? '',
                 job.data.workspaceContext,
                 job.data.globalInstructions,
@@ -1747,6 +1752,11 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                   ),
                 },
               );
+              const promptParts = useHarness
+                ? withWorkerHarnessInstructions(basePromptParts, {
+                    connectorTools: connectorGrant.tools.length > 0,
+                  })
+                : basePromptParts;
               const executionRequest = buildAIExecutionRequest(
                 job.data,
                 promptParts,
@@ -1895,6 +1905,31 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                     );
                     registeredHandlerNames.push('read_knowledge');
                   }
+                  // CONN-GRANT-01: granted connector tools, signed read profile only.
+                  const connectorToolDefinitions: AgentHarnessToolRegistryDefinitionV1[] = [];
+                  if (
+                    signedToolProfile === 'read' &&
+                    connectorGrant.tools.length > 0 &&
+                    connectorGrant.grantToken !== null
+                  ) {
+                    for (const connectorToolId of connectorGrant.tools) {
+                      dispatcher.registerHandler(
+                        connectorToolId,
+                        wrapHarnessTool(
+                          connectorToolId,
+                          createConnectorToolHandler({
+                            client: this.apiGatewayHttpClient,
+                            toolId: connectorToolId,
+                            userId: job.data.userId,
+                            executionId: job.data.executionId,
+                            grantToken: connectorGrant.grantToken,
+                          }),
+                        ),
+                      );
+                      registeredHandlerNames.push(connectorToolId);
+                      connectorToolDefinitions.push(getConnectorToolDefinition(connectorToolId));
+                    }
+                  }
                   const harnessReadOnly = job.data.harnessReadOnly === true;
                   const allowHarnessMutation =
                     signedToolProfile === 'write' ||
@@ -1990,8 +2025,8 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                       registeredHandlerNames.push('browser_smoke');
                     }
                   }
-                  const advertisedTools = requireNonEmptyAdvertisedHarnessTools(
-                    selectAdvertisedAgentHarnessTools({
+                  const advertisedTools = requireNonEmptyAdvertisedHarnessTools([
+                    ...selectAdvertisedAgentHarnessTools({
                       registeredHandlerNames,
                       enableWriteTools:
                         signedToolProfile === 'agent-write'
@@ -2019,7 +2054,8 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                               : resolvedConfig.enableBrowserSmoke
                             : false,
                     }),
-                  );
+                    ...connectorToolDefinitions,
+                  ]);
                   const auditRecorder = resolvedConfig.auditEventsEnabled
                     ? new InMemoryHarnessAuditRecorder()
                     : undefined;

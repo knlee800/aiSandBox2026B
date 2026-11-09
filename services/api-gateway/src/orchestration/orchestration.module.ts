@@ -10,6 +10,7 @@ import { ExecutionResultService } from '../ai/execution-result.service';
 import { CollaborationRunEntity } from './collaboration-run.entity';
 import { CollaborationReferralEntity } from './collaboration-referral.entity';
 import { AuditEventEntity } from '../entities/audit-event.entity';
+import { ConnectorConnection } from '../entities/connector-connection.entity';
 import {
   InMemoryOrchestrationAuditRecorder,
   StoredOrchestrationAuditRecorder,
@@ -39,6 +40,7 @@ import { KnowledgeModule } from '../knowledge/knowledge.module';
       CollaborationRunEntity,
       CollaborationReferralEntity,
       AuditEventEntity,
+      ConnectorConnection,
     ]),
   ],
   controllers: [InternalCollaborationController, CollaborationController],
