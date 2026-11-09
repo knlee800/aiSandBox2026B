@@ -86860,6 +86860,34 @@ nature=GOVERNANCE
 
 FOLLOWUPS: 10 registered / 0 superseded / 0 dropped / 0 undisposed (registered: OFFICE-02, OFFICE-03, OFFICE-04, OFFICE-05, OFFICE-06, OFFICE-07, STAGING-DEPLOY-FD-01, FRONTDOOR-LIVE-01, STAGING-DEPLOY-CHAT-01, CHAT-LIVE-01, all OPTIONAL, Keith 2026-11-09; listed in section 0 for Keith's decision, not follow-ups of this task: the security concerns check, the PRD future items without tasks, the ops duties and the old tasks of stage 12).
 
+### OLD-HOST-RETIRE-01 — Delete the stopped old staging instance and its historical snapshots
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=OLD-HOST-RETIRE-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 — not started. The console run waits for Keith's explicit AUTH-9 in chat.
+**Task ID:** OLD-HOST-RETIRE-01
+**Title:** Delete the stopped old staging instance and its historical snapshots
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE / EVIDENCE — does NOT consume Lane 1 or Lane 2 — no implementation candidate — no saturationClass. The deletion is a console action in Keith's signed-in Lightsail account (his own hands or a Cursor desktop prompt he pastes); this task holds the authorization record and the evidence.
+**Lifecycle:** 2-STEP: this registration; the console run with its evidence and the LOCK.
+**Start condition (human):** READY — Keith chose on 2026-11-09 to delete early instead of waiting for the day-30 decision (2026-11-25), as docs/CLEAN-BASELINE-DEPLOY-01-CHECKPOINT.md:64 and the consolidated plan section 6.D-ret allow ("Earlier deletion needs the same prerequisites plus AUTH-9"). The run starts only after Keith grants AUTH-9 in chat for exactly the scope below.
+**Depends on:** CLEAN-BASELINE-DEPLOY-01 (COMPLETE AND LOCKED 2026-10-30).
+**Mutexes / resources:** GOVERNANCE at record writes only. Not STAGING: the current staging host ainow-staging-01 is not touched.
+**Deletion prerequisites (plan section 6.D-ret), from the records:** C4 LOCKED (2026-10-30); the static IP aisandbox-staging-ip (18.136.141.186) was detached from aisandbox-staging and attached to ainow-staging-01 at B5 on 2026-10-26, not released, so no DNS record depends on the old instance; every A3 credential row resolved and the only dedicated external key (xAI ainow-staging) revoked by Keith on 2026-10-26; no extraction pending (decision D8); the instance stopped at 2026-10-26 13:01:58 (UTC+8) and not started since. The console run confirms the instance is still Stopped with no static IP and both archival snapshots are listed before deleting anything.
+**Scope:** (1) Delete the Lightsail instance aisandbox-staging (account 002559670476, ap-southeast-1); its seven automatic snapshots (2026-10-19 to 2026-10-25) go with it. (2) Delete exactly these 13 historical manual snapshots, the ones after 2026-07-26 holding the old host .env: aisandbox-staging-pre-identity01-20260909, aisandbox-staging-pre-schema01-20260908, aisandbox-staging-after-private-beta-04-20260804, aisandbox-staging-premigration-2026-07-27, aisandbox-staging-prepm2-health-2026-07-26, aisandbox-staging-preinstall-build-postlockfile-2026-07-26, aisandbox-staging-preinstall-build-2026-07-26, aisandbox-staging-postclone-preenv-2026-07-26, aisandbox-staging-preclone-2026-07-25, aisandbox-staging-db-redis-2026-07-24, aisandbox-staging-runtime-2026-07-24B, aisandbox-staging-baseline-2026-07-24, aisandbox-staging-baseline-2026-07-23. (3) Keep the two archival snapshots aisandbox-staging-archive-20261026 and aisandbox-staging-archive-stopped-20261026 (plan S3: keep 90 days, review on 2027-01-24). Never touch ainow-staging-01, its snapshots or the static IP.
+**Evidence:** C:\Users\knlee\aisb-preflight\OLD-HOST-RETIRE-01\ (names only, screenshots of the instance list and the snapshot list before and after); then a read-only check from the staging host that staging.ainow.biz still answers.
+**Named in:** docs/CLEAN-BASELINE-DEPLOY-01-CHECKPOINT.md:64 (D); docs/AGENT-OPS-PLAN.md section 0 item 80.
+
+#### Acceptance criteria
+
+- [ ] Keith grants AUTH-9 in chat for this exact scope
+- [ ] Before-state confirmed in the console: aisandbox-staging Stopped with no static IP; ainow-staging-01 Running with 18.136.141.186; both archival snapshots listed
+- [ ] aisandbox-staging deleted; the 13 listed snapshots deleted; the two archival snapshots and everything of ainow-staging-01 unchanged
+- [ ] staging.ainow.biz still answers (checked from the host)
+- [ ] Not LOCKED by an implementer
+
 ### OFFICE-02 — Push updates (SSE) replacing polling
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=OFFICE-02

@@ -543,6 +543,10 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-09. docs/AGENT-OPS-PLAN.md is the project's only plan; its section 0 lists every open item in order (this board still admits). OFFICE-02 to OFFICE-07, STAGING-DEPLOY-FD-01, FRONTDOOR-LIVE-01, STAGING-DEPLOY-CHAT-01 and CHAT-LIVE-01 registered NOT_READY. Checkpoint: docs/GOV-ONE-PLAN-01-CHECKPOINT.md.
 
+## OLD-HOST-RETIRE-01 — READY / NOT AN IMPLEMENTATION LANE — 2026-11-09
+
+**Current status:** READY - 2026-11-09. Keith chose to delete the stopped old instance aisandbox-staging now instead of at the day-30 decision (2026-11-25): the instance, its automatic snapshots and 13 historical manual snapshots (those after 2026-07-26 hold the old host .env); the two archival snapshots stay. The console run waits for Keith's explicit AUTH-9. Governance and evidence only; no lane. Scope in TASKS_BACKLOG_FULL.md.
+
 ## CONN-01 — COMPLETE AND LOCKED / Lane 1 RELEASED — 2026-11-09
 
 **Current status:** COMPLETE AND LOCKED - 2026-11-09. Lane 1 released. PACKAGE and the four HOTFILE leases released UNOWNED. services/connectors-mcp: a stdio MCP server with mail_list_unread_metadata (read-only IMAP to three preset hosts, decoded envelope headers) and calendar_list_today (guarded HTTPS fetch, recurrences for today); 52 tests; the deploy build and artifact lists name dist/main.js; three accepted shared patch bumps; gateway and ai-service suites unchanged. Not deployed and not used by anything yet (CONN-02B connects it). Checkpoint: docs/CONN-01-CHECKPOINT.md.
