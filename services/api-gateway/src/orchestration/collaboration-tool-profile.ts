@@ -1,3 +1,4 @@
+import { CALENDAR_TOOL_ID, MAIL_TOOL_ID } from '../connectors/connector-servers';
 import { systemAgentById } from '../system-agents/system-agent-registry';
 
 export { knowledgeScopesJobFields } from '../knowledge/knowledge-scopes';
@@ -71,12 +72,17 @@ export function collaborationHarnessJobFields(targetProfileId: string): {
 
 /**
  * CONN-GRANT-01: connector tool ids each role may be granted, by builder
- * profile id. Empty for every role today; a role listed here still gets a
- * grant only when the run owner has a connection of the tool's kind, and
- * only on a signed read-profile job. Ids must be in the CONN-02B allowlist.
+ * profile id. A role listed here still gets a grant only when the run owner
+ * has a connection of the tool's kind, and only on a signed read-profile job.
+ * Ids must be in the CONN-02B allowlist.
+ *
+ * BIZ-BRIEF-01: only the Chief of Staff lists tools, for the morning briefing.
+ * No other role (advisors included) lists any.
  */
 export const COLLABORATION_ROLE_CONNECTOR_TOOLS: Readonly<Record<string, readonly string[]>> =
-  Object.freeze({});
+  Object.freeze({
+    'chief-of-staff': Object.freeze([MAIL_TOOL_ID, CALENDAR_TOOL_ID]),
+  });
 
 export function collaborationRoleConnectorToolIds(targetProfileId: string): readonly string[] {
   if (!Object.prototype.hasOwnProperty.call(COLLABORATION_ROLE_CONNECTOR_TOOLS, targetProfileId)) {

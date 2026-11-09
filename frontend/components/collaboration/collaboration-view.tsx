@@ -6,6 +6,7 @@ import {
   CodeBracketIcon,
   ExclamationTriangleIcon,
   PencilSquareIcon,
+  SunIcon,
   UserGroupIcon,
   XCircleIcon,
   XMarkIcon,
@@ -142,6 +143,12 @@ export interface CollaborationRunTeamView {
   roles: string[];
 }
 
+/** BIZ-BRIEF-01: a ready-made request that fills the task box. It never starts a run. */
+export interface CollaborationTaskPreset {
+  id: string;
+  label: string;
+}
+
 export default function CollaborationView(props: {
   labels: CollaborationViewLabels;
   backHref: string;
@@ -159,6 +166,9 @@ export default function CollaborationView(props: {
   accessNote?: string;
   chainEmptyText?: string;
   runTeam?: CollaborationRunTeamView | null;
+  taskPresets?: CollaborationTaskPreset[];
+  taskPresetHint?: string;
+  onTaskPreset?: (presetId: string) => void;
   handoffs: CollaborationHandoffViewModel[];
   runs: CollaborationPastRunView[];
   rejectReferralId: string | null;
@@ -189,6 +199,7 @@ export default function CollaborationView(props: {
   const canStart = props.sessionReady && props.task.trim().length > 0 && !props.deciding;
   const teamChoices = props.teamChoices ?? [];
   const selectedTeam = props.selectedTeam ?? 'coding';
+  const taskPresets = props.taskPresets ?? [];
 
   return (
     <main className="mx-auto w-full max-w-3xl overflow-x-hidden px-4 py-6 text-gray-900">
@@ -275,6 +286,36 @@ export default function CollaborationView(props: {
           >
             {labels.taskLabel}
           </label>
+          {taskPresets.length > 0 ? (
+            <div
+              className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1"
+              data-testid="collaboration-presets"
+            >
+              {taskPresets.map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  data-testid={`collaboration-preset-${preset.id}`}
+                  disabled={props.deciding}
+                  onClick={() => props.onTaskPreset?.(preset.id)}
+                  aria-describedby={props.taskPresetHint ? 'collaboration-preset-hint' : undefined}
+                  className="inline-flex min-w-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700 transition-transform duration-150 ease-out hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 motion-safe:active:scale-[0.97]"
+                >
+                  <SunIcon className="h-4 w-4 shrink-0 text-gray-500" aria-hidden="true" />
+                  <span className="break-words">{preset.label}</span>
+                </button>
+              ))}
+              {props.taskPresetHint ? (
+                <span
+                  id="collaboration-preset-hint"
+                  className="min-w-0 break-words text-xs text-gray-500"
+                  data-testid="collaboration-preset-hint"
+                >
+                  {props.taskPresetHint}
+                </span>
+              ) : null}
+            </div>
+          ) : null}
           <textarea
             id="collaboration-task"
             data-testid="collaboration-task"

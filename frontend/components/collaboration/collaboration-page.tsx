@@ -58,6 +58,33 @@ const STATUS_KEYS: Record<string, string> = {
   active: 'statusActive',
 };
 
+/** BIZ-BRIEF-01: the morning briefing preset, offered on the chief-of-staff team only. */
+export const MORNING_BRIEFING_PRESET_ID = 'morning-briefing';
+
+const IANA_TIME_ZONE = /^[A-Za-z][A-Za-z0-9_+-]*(?:\/[A-Za-z0-9_+-]+){0,2}$/;
+
+/**
+ * The time zone the briefing asks the calendar tool to use: the given value or
+ * the browser's own, when it looks like an IANA name. UTC otherwise.
+ */
+export function collaborationBriefingTimeZone(value?: string): string {
+  let zone = value;
+  if (zone === undefined) {
+    try {
+      zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } catch {
+      zone = undefined;
+    }
+  }
+  if (typeof zone !== 'string') {
+    return 'UTC';
+  }
+  const trimmed = zone.trim();
+  return trimmed.length > 0 && trimmed.length <= 64 && IANA_TIME_ZONE.test(trimmed)
+    ? trimmed
+    : 'UTC';
+}
+
 export function CollaborationLoading() {
   const t = useTranslations('collaboration');
   return (
@@ -73,6 +100,8 @@ export function useCollaborationScreen(input: {
   locale: string;
   sessionId: string;
   queryProjectId: string;
+  /** Overrides the browser time zone in the morning briefing request (tests). */
+  timeZone?: string;
 }) {
   const { t, locale, sessionId, queryProjectId } = input;
   const translateScope = input.translateScope ?? ((scopeId: string) => scopeId);
@@ -485,6 +514,21 @@ export function useCollaborationScreen(input: {
           ? t('chainEmptyAdvisors')
           : labels.chainEmpty,
     runTeam,
+    taskPresets:
+      selectedTeam === 'chief-of-staff'
+        ? [{ id: MORNING_BRIEFING_PRESET_ID, label: t('presetMorningBriefing') }]
+        : [],
+    taskPresetHint: selectedTeam === 'chief-of-staff' ? t('presetHint') : undefined,
+    onTaskPreset: (presetId: string) => {
+      if (presetId !== MORNING_BRIEFING_PRESET_ID) {
+        return;
+      }
+      setTask(
+        fillTemplate(tRef.current('presetMorningBriefingTask'), {
+          timeZone: collaborationBriefingTimeZone(input.timeZone),
+        }),
+      );
+    },
     handoffs,
     runs: runs.map((run) => {
       const listedTeamId = readCollaborationTeamId(run.teamId);

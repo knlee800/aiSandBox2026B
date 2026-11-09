@@ -7,6 +7,12 @@ import { join } from 'path';
 import { createHarnessEntitlementProof } from '../ai/ai-execution.controller';
 import { ExecutionResultService } from '../ai/execution-result.service';
 import { isConnectorCallGranted } from '../connectors/connector-grant-token';
+import {
+  CALENDAR_TOOL_ID,
+  MAIL_TOOL_ID,
+  findAllowlistedTool,
+} from '../connectors/connector-servers';
+import { SYSTEM_AGENT_DEFINITIONS } from '../system-agents/system-agent-registry';
 import { ConnectorConnection } from '../entities/connector-connection.entity';
 import { QueueService } from '../queue/queue.service';
 import { CollaborationReferralEntity } from './collaboration-referral.entity';
@@ -155,11 +161,36 @@ describe('CONN-GRANT-01 resolveConnectorGrantJobFields', () => {
     expect(unconfigured).toEqual({ fields: {}, outcome: 'not_configured' });
   });
 
-  it('lists no connector tools for any role today', () => {
-    expect(toolProfile.COLLABORATION_ROLE_CONNECTOR_TOOLS).toEqual({});
-    for (const id of ['lead', 'writer', 'reviewer', 'chief-of-staff', 'builder', 'constructor']) {
+  it('BIZ-BRIEF-01: lists exactly the two allowlisted tools for the chief of staff and none for any other role', () => {
+    expect(toolProfile.COLLABORATION_ROLE_CONNECTOR_TOOLS).toEqual({
+      'chief-of-staff': [MAIL_TOOL_ID, CALENDAR_TOOL_ID],
+    });
+    expect(toolProfile.collaborationRoleConnectorToolIds('chief-of-staff')).toEqual([
+      'mail_list_unread_metadata',
+      'calendar_list_today',
+    ]);
+    for (const id of toolProfile.collaborationRoleConnectorToolIds('chief-of-staff')) {
+      expect(findAllowlistedTool(id)).not.toBeNull();
+    }
+    const others = [
+      ...SYSTEM_AGENT_DEFINITIONS.map((agent) => agent.id).filter((id) => id !== 'chief-of-staff'),
+      'constructor',
+      'toString',
+      '__proto__',
+      'unknown-role',
+    ];
+    expect(others).toEqual(
+      expect.arrayContaining(['advisors-lead', 'product-strategy', 'technology-advisor', 'lead']),
+    );
+    for (const id of others) {
       expect(toolProfile.collaborationRoleConnectorToolIds(id)).toEqual([]);
     }
+    // The returned list is a copy; the frozen record cannot be changed through it.
+    const copy = toolProfile.collaborationRoleConnectorToolIds('chief-of-staff') as string[];
+    copy.push('not_a_tool');
+    expect(toolProfile.collaborationRoleConnectorToolIds('chief-of-staff')).toHaveLength(2);
+    expect(Object.isFrozen(toolProfile.COLLABORATION_ROLE_CONNECTOR_TOOLS)).toBe(true);
+    expect(Object.isFrozen(toolProfile.COLLABORATION_ROLE_CONNECTOR_TOOLS['chief-of-staff'])).toBe(true);
   });
 });
 
@@ -368,7 +399,51 @@ describe('CONN-GRANT-01 connector grants on collaboration jobs', () => {
     ).toBe(false);
   });
 
-  it('omits both fields when the role lists no connector tool, as for every role today', async () => {
+  it('BIZ-BRIEF-01: grants both tools to a chief-of-staff read job whose owner has both connections, from the real role list', async () => {
+    const payload = await startJob({ id: 'briefing', target: 'chief-of-staff', fileAccess: true });
+    expect(payload.harnessVersion).toBe('v1');
+    expect(payload.harnessToolProfile).toBe('read');
+    expect(payload.connectorGrants).toEqual(['calendar_list_today', 'mail_list_unread_metadata']);
+    expect(typeof payload.connectorGrantToken).toBe('string');
+    for (const toolId of ['calendar_list_today', 'mail_list_unread_metadata']) {
+      expect(
+        isConnectorCallGranted({
+          grantToken: payload.connectorGrantToken,
+          executionId: 'exec-briefing',
+          userId: OWNER,
+          toolId,
+          nowMs: Date.now(),
+        }),
+      ).toBe(true);
+    }
+    const { harnessEntitlementProof, ...signed } = payload;
+    expect(harnessEntitlementProof).toEqual(
+      createHarnessEntitlementProof({
+        executionId: String(signed.executionId),
+        userId: String(signed.userId),
+        apiKeyId: String(signed.apiKeyId),
+        issuedAt: String(signed.submittedAt),
+        payloadWithoutProof: signed,
+        secret: HARNESS_SECRET,
+      }),
+    );
+    expect(connections.find).toHaveBeenCalledWith({
+      where: { userId: OWNER },
+      select: ['userId', 'kind'],
+    });
+    expectNoSecrets(payload);
+  });
+
+  it('BIZ-BRIEF-01: gives no grant to the coding lead, a read role that lists no tools, from the real role list', async () => {
+    const payload = await startJob({ id: 'lead-unlisted', target: 'lead', fileAccess: true });
+    expect(payload.harnessToolProfile).toBe('read');
+    expect(payload).not.toHaveProperty('connectorGrants');
+    expect(payload).not.toHaveProperty('connectorGrantToken');
+    expect(connections.find).not.toHaveBeenCalled();
+  });
+
+  it('omits both fields when the role lists no connector tool', async () => {
+    listRoleTools({});
     const payload = await startJob({ id: 'unlisted', target: 'chief-of-staff', fileAccess: true });
     expect(payload.harnessVersion).toBe('v1');
     expect(payload).not.toHaveProperty('connectorGrants');
