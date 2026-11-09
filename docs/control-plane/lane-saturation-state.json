@@ -7,16 +7,23 @@
   "governance": {"owner": "NONE", "state": "UNOWNED"},
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "CONN-GRANT-01",
+      "mutexes": ["AI-SERVICE", "GATEWAY"],
+      "writePaths": [
+        "services/ai-service/src/agent-harness/tools/",
+        "services/ai-service/src/worker/",
+        "services/ai-service/src/queue/",
+        "services/ai-service/src/clients/",
+        "services/api-gateway/src/orchestration/",
+        "services/api-gateway/src/connectors/"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
-      "exclusiveCapacity": false,
+      "evidenceClass": "LOCAL-TESTS",
+      "exclusiveCapacity": true,
       "sharedContractIds": [],
-      "mutatesSharedContractIds": [],
+      "mutatesSharedContractIds": ["HARNESS_ENTITLEMENT_PROOF_V1"],
       "runtimeNeeds": []
     },
     "lane2": {
@@ -3654,8 +3661,8 @@
       "taskId": "CONN-GRANT-01",
       "nature": "IMPLEMENTATION",
       "lifecycle": "4-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "OPTIONAL",
       "productClass": "APPROVED_FUTURE",
       "futureAuthorization": "AUTHORIZED",
@@ -3663,11 +3670,11 @@
       "mutexes": ["AI-SERVICE", "GATEWAY"],
       "writePaths": [
         "services/ai-service/src/agent-harness/tools/",
-        "services/ai-service/src/worker/worker.processor.ts",
-        "services/ai-service/src/queue/job.types.ts",
-        "services/ai-service/src/clients/api-gateway-http.client.ts",
-        "services/api-gateway/src/orchestration/orchestration.service.ts",
-        "services/api-gateway/src/orchestration/collaboration-tool-profile.ts"
+        "services/ai-service/src/worker/",
+        "services/ai-service/src/queue/",
+        "services/ai-service/src/clients/",
+        "services/api-gateway/src/orchestration/",
+        "services/api-gateway/src/connectors/"
       ],
       "hotfiles": [],
       "i18n": false,

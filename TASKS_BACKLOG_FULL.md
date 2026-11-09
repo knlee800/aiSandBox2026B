@@ -85880,15 +85880,15 @@ taskId=CONN-GRANT-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-09 — Keith admitted it; runs alone (frozen-contract change); stage-start next. Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
 **Task ID:** CONN-GRANT-01
 **Title:** Signed connector grants on the harness contract
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP
-**Start condition:** NOT_READY. Ready when: CONN-02B LOCKED; no lane depends on the contract. Keith decides.
+**Start condition:** READY — CONN-02B is COMPLETE AND LOCKED (6547241); Keith admitted it on 2026-11-09.
 **Depends on:** CONN-02B.
-**Primary write scope:** services/ai-service/src/agent-harness/tools/, services/ai-service/src/worker/worker.processor.ts, services/ai-service/src/queue/job.types.ts, services/ai-service/src/clients/api-gateway-http.client.ts, services/api-gateway/src/orchestration/orchestration.service.ts, services/api-gateway/src/orchestration/collaboration-tool-profile.ts.
+**Primary write scope (widened at admission 2026-11-09 to include each area's tests and the gateway's connector grant check):** services/ai-service/src/agent-harness/tools/, services/ai-service/src/worker/, services/ai-service/src/queue/, services/ai-service/src/clients/, services/api-gateway/src/orchestration/, services/api-gateway/src/connectors/. services/api-gateway/src/ai/ai-execution.controller.ts (the Builder execute path) is not changed.
 **Mutexes / resources:** AI-SERVICE, GATEWAY.
 **Hot-file leases:** none.
 **Shared contracts:** mutates HARNESS_ENTITLEMENT_PROOF_V1; orchestration.service.ts added to its paths; re-frozen at LOCK.
