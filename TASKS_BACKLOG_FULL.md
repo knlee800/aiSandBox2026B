@@ -85157,16 +85157,18 @@ nature=IMPLEMENTATION
 **Task ID:** BIZ-USER-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
-**Lifecycle:** 4-STEP (design step decides the stored fields and the overlap with AGENT-PLATFORM-EXEC-01C).
-**Start condition (human):** NOT_READY. Ready when: BIZ-LIVE-01 is COMPLETE AND LOCKED and showed useful, cited answers, and Keith has approved the PRD change that moves per-agent instructions and Knowledge folders for user-created agents from APPROVED FUTURE to GATED (PRD.md lines 303-305). Keith decides.
-**Depends on:** BIZ-01, BIZ-LIVE-01.
+**Lifecycle:** 4-STEP; split at the design step into BIZ-USER-01A, 01B, 01C.
+**Start condition (human):** NOT_READY. Ready when: AGENT-SPEC-01 is COMPLETE AND LOCKED. Keith decides.
+**Depends on:** BIZ-01, BIZ-LIVE-01, BIZ-LIVE-03, AGENT-SPEC-01.
 **Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
 **Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** set at admission. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
-**saturationClass:** OPTIONAL (Keith approved the draft on 2026-11-06). **productClass:** APPROVED_FUTURE, futureAuthorization NONE until the PRD change.
+**saturationClass:** OPTIONAL (Keith approved the draft on 2026-11-06). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 
-**Holds:** a user copies the Chief of Staff into their own agent on the Create Agent page, edits its instructions and chooses which of their own Knowledge folders it may read. The gateway takes the folder list from the stored agent, never from the browser. The platform keeps the read-only tool profile, citation checks, the approval step and credit limits. en / zh-TW / zh-CN. Not included: write tools, external actions, model choice, other users' documents.
+**Holds:** a user copies the Chief of Staff into their own agent on the Create Agent page, edits its instructions and chooses which of their own Knowledge folders it may read. The gateway takes the folder list from the stored agent, never from the browser. The platform keeps the read-only tool profile, citation checks, the approval step and credit limits. en / zh-TW / zh-CN. Not included: write tools, external actions, other users' documents; model choice per agent is now in scope (C10, Keith 2026-11-09). A9 form parts 1-6 and 9; grants derived server-side from the stored spec ∩ platform allowlist; own knowledge folders chosen per workflow; six-part fields and grants stay off POST /api/ai/execute; the design step records the AGENT-PLATFORM-EXEC-01C overlap result.
 **Related:** AGENT-PLATFORM-EXEC-01C (persisted user-agent tool-loop umbrella); the design step checks for overlap and reuses it where it fits.
 **Named in:** Keith in chat 2026-11-06 (after KNOW-02 LOCK).
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+Implemented as BIZ-USER-01A, BIZ-USER-01B and BIZ-USER-01C; BIZ-USER-01 locks when BIZ-USER-01C locks.
 **RSI note 2026-11-07 (GOV-RSI-01):** decide one server-side agent definition source (ARCHITECTURE.md section 13.5, RSI-00 stage S2) before admission.
 
 #### Acceptance criteria
@@ -85681,7 +85683,7 @@ taskId=GOV-BIZ-AGENT-OPS-PLAN-01
 nature=GOVERNANCE
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ACTIVE — 2026-11-08. Governance; no lane. Registered with Keith's approval of the draft; plan drafting next.
+**Status:** COMPLETE AND LOCKED — 2026-11-09 — plan docs/AGENT-OPS-PLAN.md approved by Keith (decisions A1-A11, idea register of 46 items); 41 tasks registered NOT_READY (GOV-GOOGLE-VERIFY-01 READY, governance); BIZ-USER-01 changed; PRD.md section 11 APPROVED FUTURE paragraph added; Dropped follow-ups: three reversal lines and one drop; checkpoint docs/GOV-BIZ-AGENT-OPS-PLAN-01-CHECKPOINT.md. No implementation lane. GOVERNANCE released UNOWNED.
 **Task ID:** GOV-BIZ-AGENT-OPS-PLAN-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** GOVERNANCE. **Lifecycle:** 2-STEP: this registration; the closing record with the approved plan and its child registrations.
@@ -85689,7 +85691,7 @@ nature=GOVERNANCE
 **Primary write scope:** docs/AGENT-OPS-PLAN.md, TASKS.md, TASKS_BACKLOG_FULL.md, the sidecar and the proof at the closing record.
 **Mutexes / resources:** GOVERNANCE, only during record writes.
 
-**Decisions taken at registration (Keith, 2026-11-08):** (a) connectors go through MCP now, with an allowlist of servers the platform runs and pins; user-supplied servers stay refused; (b) Gmail and Google Calendar come first, read-only first, on a Google Workspace account Keith sets up, so the OAuth app is internal to that Workspace; (c) the platform writes its own MCP server in a new service folder (a structural change Keith approved; the plan fixes the folder name).
+**Decisions taken at registration (Keith, 2026-11-08):** (a) connectors go through MCP now, with an allowlist of servers the platform runs and pins; user-supplied servers stay refused; (b) mail and calendar come first, read-only first: mail by IMAP with an app password (Gmail, Yahoo and iCloud presets) and calendar by the private iCal link, with the platform's Google OAuth app verified in parallel so Connect Google becomes the one-click path later; the earlier choice of a Google Workspace account with an internal OAuth app is withdrawn on 2026-11-09 as not practical for normal users (superseded by option B and CONN-OAUTH-01); (c) the platform writes its own MCP server in a new service folder (a structural change Keith approved; the plan fixes the folder name).
 
 **Purpose:** one plan that fixes:
 - the MCP layer: where it runs (the api-gateway broker; the ai-service worker reaches it only through internal routes), the platform-written server for Gmail and Calendar and its folder, the transport and the host process on staging, tool descriptions treated as untrusted, and how connector tools reach the Harness through a signed grant (a change to the frozen HARNESS_ENTITLEMENT_PROOF_V1 contract, in a slice of its own);
@@ -85707,11 +85709,1078 @@ nature=GOVERNANCE
 
 #### Acceptance criteria
 
-- [ ] docs/AGENT-OPS-PLAN.md answers every point in Purpose and names the first MCP slice and the first briefing slice with their write scopes
-- [ ] Keith's decisions are recorded, including hand-offs and the data statement
-- [ ] Keith approves the plan
-- [ ] Every follow-up the plan names has a disposition; the closing record carries the FOLLOWUPS line
-- [ ] Not LOCKED by an implementer
+- [x] docs/AGENT-OPS-PLAN.md answers every point in Purpose and names the first MCP slice and the first briefing slice with their write scopes
+- [x] Keith's decisions are recorded, including hand-offs and the data statement
+- [x] Keith approves the plan
+- [x] Every follow-up the plan names has a disposition; the closing record carries the FOLLOWUPS line
+- [x] Not LOCKED by an implementer
+
+FOLLOWUPS: 41 registered / 4 superseded / 1 dropped / 0 undisposed (registered: CONN-01, CONN-02A, CONN-02B, CONN-UI-01, CONN-GRANT-01, BIZ-BRIEF-01, COS-EVAL-01, STAGING-DEPLOY-CONN-01, BIZ-LIVE-03, AGENT-SPEC-01, BIZ-USER-01A, BIZ-USER-01B, BIZ-USER-01C, RESULTS-01, STAGING-DEPLOY-WF-01, BIZ-LIVE-04, GOV-GOOGLE-VERIFY-01, CONN-OAUTH-01, CONN-03, COS-FRONTDOOR-01, USER-TEAMS-01, APPROVAL-SET-01, COS-DRAFTS-01, CHAT-DISCORD-01, CHAT-LINE-01, CHAT-WHATSAPP-01, CHAT-WECOM-01, CHAT-SLACK-01, TRIGGER-01, TRIGGER-UI-01, STAGING-DEPLOY-TRIG-01, TRIGGER-LIVE-01, TRIGGER-EVENT-01, TRIGGER-MAIL-01, TRIGGER-MORE-01, SKILL-01, CONN-DRAFT-01, ACTIONS-APPROVAL-01, RESULTS-MAIL-01, CONN-OUTLOOK-01, BRIEF-WIDE-01, all OPTIONAL, Keith 2026-11-09; superseded: the Workspace internal-app connection by option B and CONN-OAUTH-01, test run and budget enforcement by BIZ-USER-01C acceptance criteria, direct jobs stay by a COS-FRONTDOOR-01 acceptance criterion; dropped: a separate CONNECTORS mutex, Keith 2026-11-09; BIZ-USER-01 changed, not a new follow-up; reused unchanged: AGENT-COLLAB-BIZ-01, BIZ-NOPROJECT-01, ACCESS-READY-01, GOV-ARCH-SYNC-01).
+
+### CONN-01 — Platform MCP server for mail headers and today's calendar
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CONN-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** CONN-01
+**Title:** Platform MCP server for mail headers and today's calendar
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP
+**Start condition:** NOT_READY. Ready when: Keith admits. Keith decides.
+**Depends on:** GOV-BIZ-AGENT-OPS-PLAN-01.
+**Primary write scope:** services/connectors-mcp/, package-lock.json, ops/clean-baseline/lib/ops-lib.sh, ops/clean-baseline/bin/aisandbox-prepare, ops/clean-baseline/tests/static/.
+**Mutexes / resources:** PACKAGE.
+**Hot-file leases:** ops/clean-baseline/lib/ops-lib.sh, ops/clean-baseline/bin/aisandbox-prepare, services/connectors-mcp/package.json, services/connectors-mcp/src/server.ts.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** new folder, two ops lines.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Platform-written MCP server in services/connectors-mcp/ (A2, C1): tools mail_list_unread_metadata and calendar_list_today, stdio, fakes, and the ops build and artifact lists. Acceptance: the IMAP verb test (B1-B2) asserts no STORE, APPEND or EXPUNGE.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+
+### CONN-02A — Connector credentials, encryption and connect routes
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CONN-02A
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** CONN-02A
+**Title:** Connector credentials, encryption and connect routes
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP
+**Start condition:** NOT_READY. Ready when: CONN-01 LOCKED. Keith decides.
+**Depends on:** CONN-01.
+**Primary write scope:** services/api-gateway/src/connectors/, services/api-gateway/src/entities/connector-connection.entity.ts, services/api-gateway/src/migrations/, services/api-gateway/src/app.module.ts, ops/clean-baseline/env/gateway.env.template.
+**Mutexes / resources:** GATEWAY, MIGRATION, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** migration down; template line.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Credential store (C2): connector_connections, AES-256-GCM, connect, list and disconnect, the iCal URL stored only as ciphertext, and CONNECTOR_CREDENTIALS_KEY in gateway.env.template. A missing key fails connector calls only.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+
+### CONN-02B — Connector broker, allowlist, SSRF guard and audit
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CONN-02B
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** CONN-02B
+**Title:** Connector broker, allowlist, SSRF guard and audit
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP
+**Start condition:** NOT_READY. Ready when: CONN-02A LOCKED. Keith decides.
+**Depends on:** CONN-02A.
+**Primary write scope:** services/api-gateway/src/connectors/, services/api-gateway/package.json, package-lock.json.
+**Mutexes / resources:** GATEWAY, PACKAGE.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** new module, one dep.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Broker (A1, C2): pinned MCP client, allowlist with platform descriptions, child spawned by absolute path with no secret keys in its env, SSRF guard, the internal call route and audit rows that carry no content. User-supplied servers stay refused.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+
+### CONN-UI-01 — Connections page
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CONN-UI-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** CONN-UI-01
+**Title:** Connections page
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP
+**Start condition:** NOT_READY. Ready when: CONN-02B LOCKED. Keith decides.
+**Depends on:** CONN-02B.
+**Primary write scope:** frontend/app/, frontend/components/connections/, frontend/components/platform/platform-dashboard.tsx, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json.
+**Mutexes / resources:** FRONTEND, I18N.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** page and link.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Connections page (C3): presets and setup steps, the data statement before Connect, Verify and Disconnect, and a header link beside Knowledge, in en, zh-TW and zh-CN.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+
+### CONN-GRANT-01 — Signed connector grants on the harness contract
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CONN-GRANT-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** CONN-GRANT-01
+**Title:** Signed connector grants on the harness contract
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP
+**Start condition:** NOT_READY. Ready when: CONN-02B LOCKED; no lane depends on the contract. Keith decides.
+**Depends on:** CONN-02B.
+**Primary write scope:** services/ai-service/src/agent-harness/tools/, services/ai-service/src/worker/worker.processor.ts, services/ai-service/src/queue/job.types.ts, services/ai-service/src/clients/api-gateway-http.client.ts, services/api-gateway/src/orchestration/orchestration.service.ts, services/api-gateway/src/orchestration/collaboration-tool-profile.ts.
+**Mutexes / resources:** AI-SERVICE, GATEWAY.
+**Hot-file leases:** none.
+**Shared contracts:** mutates HARNESS_ENTITLEMENT_PROOF_V1; orchestration.service.ts added to its paths; re-frozen at LOCK.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** optional field, tools.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Signed connectorGrants beside the knowledge scope fields (changes HARNESS_ENTITLEMENT_PROOF_V1; orchestration.service.ts is added to its paths; runs alone; re-frozen at LOCK). It also derives connectorGrants from the role's listed connector tools and the owner's active connection. The worker registers connector tools only for a signed read profile and never speaks MCP.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+
+### BIZ-BRIEF-01 — Morning briefing template on the Chief of Staff
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=BIZ-BRIEF-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** BIZ-BRIEF-01
+**Title:** Morning briefing template on the Chief of Staff
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP
+**Start condition:** NOT_READY. Ready when: both LOCKED. Keith decides.
+**Depends on:** CONN-GRANT-01, CONN-UI-01.
+**Primary write scope:** services/api-gateway/src/system-agents/, services/api-gateway/src/orchestration/collaboration-tool-profile.ts, frontend/components/collaboration/, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json.
+**Mutexes / resources:** GATEWAY, FRONTEND, I18N.
+**Hot-file leases:** none.
+**Shared contracts:** uses HARNESS_ENTITLEMENT_PROOF_V1.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** instructions, preset.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** First briefing template (A3, A11, C4, B1-B4): Chief of Staff instructions gain the briefing procedure, fixed labels, a suggested action, the For you section and the data-frame rule; the role lists the two tools; the Team page has a Morning briefing preset. Does not edit orchestration.service.ts.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+
+### COS-EVAL-01 — Briefing injection eval
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COS-EVAL-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** COS-EVAL-01
+**Title:** Briefing injection eval
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP
+**Start condition:** NOT_READY. Ready when: BIZ-BRIEF-01 LOCKED. Keith decides.
+**Depends on:** BIZ-BRIEF-01.
+**Primary write scope:** services/ai-service/src/agent-harness/eval/.
+**Mutexes / resources:** AI-SERVICE.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** eval files.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Injection eval before the first live run (C5): injected instructions in subjects, event titles and bodies. Pass means the item is reported, no action is claimed and there is no hand-off.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+
+### STAGING-DEPLOY-CONN-01 — Deploy the connector library
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-CONN-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** STAGING-DEPLOY-CONN-01
+**Title:** Deploy the connector library
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP
+**Start condition:** NOT_READY. Ready when: subject and title cases pass; Keith schedules. Keith decides.
+**Depends on:** COS-EVAL-01.
+**Primary write scope:** records; host state.
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** redeploy previous commit.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy that installs the connector library (C6). Keith types the credentials key and the gateway.env backup is checked.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+
+### BIZ-LIVE-03 — First live briefing and its cost
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=BIZ-LIVE-03
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** BIZ-LIVE-03
+**Title:** First live briefing and its cost
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP
+**Start condition:** NOT_READY. Ready when: LOCKED; Keith's account connected. Keith decides.
+**Depends on:** STAGING-DEPLOY-CONN-01.
+**Primary write scope:** records; host state.
+**Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** runs off after.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** First live briefing on Keith's account (C6). Runs are on only for that run. The cost is measured. No cap is set before it.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+
+### AGENT-SPEC-01 — Typed agent spec fields
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=AGENT-SPEC-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** AGENT-SPEC-01
+**Title:** Typed agent spec fields
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP
+**Start condition:** NOT_READY. Ready when: LOCKED. Keith decides.
+**Depends on:** BIZ-LIVE-03.
+**Primary write scope:** services/api-gateway/src/system-agents/, services/api-gateway/src/orchestration/collaboration-teams.ts.
+**Mutexes / resources:** GATEWAY.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** fields, hash.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Typed fields on the system agent definition for A9 parts 1-4 and 6 (C7, C9, C10): tone, reply language, purpose, procedure, access, result, and model from a platform list with credit cost. The hash covers them. The never-do list is generated from access.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+
+### BIZ-USER-01A — Store user workflows, copy, blank, budget and grants
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=BIZ-USER-01A
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** BIZ-USER-01A
+**Title:** Store user workflows, copy, blank, budget and grants
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP
+**Start condition:** NOT_READY. Ready when: LOCKED; design step done. Keith decides.
+**Depends on:** AGENT-SPEC-01.
+**Primary write scope:** services/api-gateway/src/user-agent/, services/api-gateway/src/entities/user-agent.entity.ts, services/api-gateway/src/migrations/, services/api-gateway/src/connectors/, services/api-gateway/src/knowledge/.
+**Mutexes / resources:** GATEWAY, MIGRATION.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** migration down.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL until the design step. **admissionUncertain:** true.
+**Scope:** Implementation slice of BIZ-USER-01. It begins with BIZ-USER-01's design step, which records the AGENT-PLATFORM-EXEC-01C overlap. Stores the six-part columns, copy-from-template, blank create, budget per run and per day (C15, stored) and server-side grants, and the owner's own knowledge folders chosen per workflow (C8, C11). Depends on AGENT-SPEC-01, not on BIZ-USER-01.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+
+### BIZ-USER-01B — Create Agent editor for user workflows
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=BIZ-USER-01B
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** BIZ-USER-01B
+**Title:** Create Agent editor for user workflows
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP
+**Start condition:** NOT_READY. Ready when: 01A LOCKED. Keith decides.
+**Depends on:** BIZ-USER-01A.
+**Primary write scope:** frontend/components/platform/, frontend/hooks/useUserAgents.ts, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json.
+**Mutexes / resources:** FRONTEND, I18N.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** editor.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Implementation slice of BIZ-USER-01. Create Agent editor for basic and advanced fields, limits shown, model with its credit cost (C10), in en, zh-TW and zh-CN (C8).
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+
+### BIZ-USER-01C — Run a user workflow, with a test run and a budget check
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=BIZ-USER-01C
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** BIZ-USER-01C
+**Title:** Run a user workflow, with a test run and a budget check
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP
+**Start condition:** NOT_READY. Ready when: 01B LOCKED. Keith decides.
+**Depends on:** BIZ-USER-01B.
+**Primary write scope:** services/api-gateway/src/orchestration/, frontend/components/collaboration/, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json.
+**Mutexes / resources:** GATEWAY, FRONTEND, I18N.
+**Hot-file leases:** none.
+**Shared contracts:** uses HARNESS_ENTITLEMENT_PROOF_V1.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** start route branch.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Implementation slice of BIZ-USER-01. A user workflow runs from the Team page as a team of one. Acceptance: a test run before switching on (C13), the budget refused at start (C15), and the six-part fields and grants stay off POST /api/ai/execute.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+
+### RESULTS-01 — Results list, unread badge and run history
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=RESULTS-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** RESULTS-01
+**Title:** Results list, unread badge and run history
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP
+**Start condition:** NOT_READY. Ready when: 01C LOCKED. Keith decides.
+**Depends on:** BIZ-USER-01C.
+**Primary write scope:** services/api-gateway/src/orchestration/, frontend/app/, frontend/components/results/, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json.
+**Mutexes / resources:** GATEWAY, FRONTEND, I18N.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** page.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Results list with an unread badge (C12) and run history (C14).
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+
+### STAGING-DEPLOY-WF-01 — Deploy user workflows
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-WF-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** STAGING-DEPLOY-WF-01
+**Title:** Deploy user workflows
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP
+**Start condition:** NOT_READY. Ready when: LOCKED. Keith decides.
+**Depends on:** RESULTS-01.
+**Primary write scope:** records; host state.
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** redeploy.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy of the user-workflow slices so Keith can copy, edit and run a workflow.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+
+### BIZ-LIVE-04 — Live check of a user workflow
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=BIZ-LIVE-04
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** BIZ-LIVE-04
+**Title:** Live check of a user workflow
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP
+**Start condition:** NOT_READY. Ready when: LOCKED. Keith decides.
+**Depends on:** STAGING-DEPLOY-WF-01.
+**Primary write scope:** records; host state.
+**Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** runs off.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Keith copies a template, edits it and runs that workflow on staging. Runs are off after the check.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+
+### GOV-GOOGLE-VERIFY-01 — Google OAuth app verification
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-GOOGLE-VERIFY-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** GOV-GOOGLE-VERIFY-01
+**Title:** Google OAuth app verification
+**Workstream:** CORE (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE
+**Lifecycle:** 2-STEP
+**Start condition:** READY (Keith, 2026-11-09: option A runs in parallel). Not admitted; holds GOVERNANCE only at record writes.
+**Depends on:** none.
+**Primary write scope:** docs/GOV-GOOGLE-VERIFY-01-*.md, records.
+**Mutexes / resources:** GOVERNANCE, only during record writes.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** records.
+**Revert isolation:** n/a.
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Option A in parallel (A4, C17): verify the platform's Google OAuth app so Connect Google can become the one-click path later. Governance records only. Not admitted.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+
+### CONN-OAUTH-01 — Connect Google after verification
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CONN-OAUTH-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** CONN-OAUTH-01
+**Title:** Connect Google after verification
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP
+**Start condition:** NOT_READY. Ready when: verification done. Keith decides.
+**Depends on:** GOV-GOOGLE-VERIFY-01, CONN-02B.
+**Primary write scope:** set at admission.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** set at admission.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS (deploy its own record).
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Connect Google after verification (C17): the refresh token stays in the gateway and each call uses a short-lived access token.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+
+### CONN-03 — Mail body reads after the injection eval
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CONN-03
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** CONN-03
+**Title:** Mail body reads after the injection eval
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP
+**Start condition:** NOT_READY. Ready when: body cases pass. Keith decides.
+**Depends on:** COS-EVAL-01, BIZ-LIVE-03.
+**Primary write scope:** services/connectors-mcp/src/tools/mail-read.ts, services/connectors-mcp/src/clients/imap-client.ts, services/api-gateway/src/connectors/connector-servers.ts.
+**Mutexes / resources:** GATEWAY.
+**Hot-file leases:** services/connectors-mcp/src/tools/mail-read.ts, services/connectors-mcp/src/clients/imap-client.ts.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** one tool.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Mail bodies after the eval's body cases pass (C16). Bodies are stripped to text and byte-capped. Tool text is data, never instructions.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+
+### COS-FRONTDOOR-01 — Chief of Staff front door and report-back
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COS-FRONTDOOR-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** COS-FRONTDOOR-01
+**Title:** Chief of Staff front door and report-back
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP
+**Start condition:** NOT_READY. Ready when: Keith chooses Phase 2. Keith decides.
+**Depends on:** BIZ-LIVE-04.
+**Primary write scope:** set at admission.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** set at admission.
+**Shared contracts:** likely uses the contract (set at admission).
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** The owner talks to the Chief of Staff, which answers or passes work to a roster the owner picked and reports back (D1-D3). Acceptance: direct jobs to any agent stay (A8), on the Team page, in Agent mode and by @name in chat.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.2
+
+### USER-TEAMS-01 — User teams and who hands work to whom
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=USER-TEAMS-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** USER-TEAMS-01
+**Title:** User teams and who hands work to whom
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP
+**Start condition:** NOT_READY. Ready when: LOCKED. Keith decides.
+**Depends on:** COS-FRONTDOOR-01.
+**Primary write scope:** set at admission.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** set at admission.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** User teams and who may hand work to whom (D5, A9 part 7), with report-back.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.2
+
+### APPROVAL-SET-01 — Approval setting per team or workflow
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=APPROVAL-SET-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** APPROVAL-SET-01
+**Title:** Approval setting per team or workflow
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP
+**Start condition:** NOT_READY. Ready when: LOCKED. Keith decides.
+**Depends on:** USER-TEAMS-01.
+**Primary write scope:** set at admission (orchestration approve path, user_agents and teams columns, Team page).
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** set at admission.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** The approval setting per team or workflow (A5, D4, A9 part 8): every hand-off (default), only over a credit amount, or automatic for read-only agents. Nothing that writes, sends or deletes is ever automatic. Depth, agent and daily limits stay.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.2
+
+### COS-DRAFTS-01 — Chief of Staff drafts a workflow the owner approves
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COS-DRAFTS-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** COS-DRAFTS-01
+**Title:** Chief of Staff drafts a workflow the owner approves
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP
+**Start condition:** NOT_READY. Ready when: LOCKED. Keith decides.
+**Depends on:** APPROVAL-SET-01.
+**Primary write scope:** set at admission.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** set at admission.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** The Chief of Staff drafts an agent or workflow from a description; the owner approves it; it never saves or grants itself tools (D6).
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.2
+
+### CHAT-DISCORD-01 — Discord chat channel
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHAT-DISCORD-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** CHAT-DISCORD-01
+**Title:** Discord chat channel
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP
+**Start condition:** NOT_READY. Ready when: Keith chooses Phase 3. Keith decides.
+**Depends on:** COS-FRONTDOOR-01.
+**Primary write scope:** set at admission (new gateway module or services/chat-discord/).
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** set at admission.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Discord first (A7, E1-E3): an outbound bot gateway, two-way (start a workflow, receive results), account link by a one-time code, every message treated as untrusted data, and @name routes to an agent.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.3
+
+### CHAT-LINE-01 — LINE chat channel
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHAT-LINE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** CHAT-LINE-01
+**Title:** LINE chat channel
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP
+**Start condition:** NOT_READY. Ready when: Keith decides the public-endpoint and basic_auth question. Keith decides.
+**Depends on:** CHAT-DISCORD-01.
+**Primary write scope:** set at admission.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** set at admission.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** LINE after Discord (A7, E4). It needs a public endpoint and Keith's decision on basic_auth.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.3
+
+### CHAT-WHATSAPP-01 — WhatsApp chat channel
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHAT-WHATSAPP-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** CHAT-WHATSAPP-01
+**Title:** WhatsApp chat channel
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP
+**Start condition:** NOT_READY. Ready when: Keith decides the public-endpoint and basic_auth question. Keith decides.
+**Depends on:** CHAT-DISCORD-01.
+**Primary write scope:** set at admission.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** set at admission.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** WhatsApp after Discord (A7, E4). It needs a public endpoint and Keith's decision on basic_auth.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.3
+
+### CHAT-WECOM-01 — WeCom chat channel
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHAT-WECOM-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** CHAT-WECOM-01
+**Title:** WeCom chat channel
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP
+**Start condition:** NOT_READY. Ready when: Keith chooses. Keith decides.
+**Depends on:** CHAT-LINE-01.
+**Primary write scope:** set at admission.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** set at admission.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** WeChat via WeCom, last among the named channels (A7, E4).
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.3
+
+### CHAT-SLACK-01 — Slack chat channel
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHAT-SLACK-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** CHAT-SLACK-01
+**Title:** Slack chat channel
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP
+**Start condition:** NOT_READY. Ready when: Keith chooses. Keith decides.
+**Depends on:** CHAT-LINE-01.
+**Primary write scope:** set at admission.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** set at admission.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Slack as a later option (A7, E4).
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.3
+
+### TRIGGER-01 — Schedules that start a workflow
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TRIGGER-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** TRIGGER-01
+**Title:** Schedules that start a workflow
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP
+**Start condition:** NOT_READY. Ready when: Keith chooses Phase 4 and approves the wording. Keith decides.
+**Depends on:** BIZ-LIVE-04.
+**Primary write scope:** services/api-gateway/src/triggers/, services/api-gateway/src/entities/, services/api-gateway/src/migrations/, services/api-gateway/src/app.module.ts, ops/clean-baseline/env/gateway.env.template.
+**Mutexes / resources:** GATEWAY, MIGRATION, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** migration down; flag off.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** agent_schedules and an in-process gateway timer (F1, F4). SCHEDULES_ENABLED defaults false. One idempotency key per owner per local day, no retry, skipped when runs are off or a cap would be exceeded, never enabled by a tester window, with an audit row on every skip.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.4
+
+### TRIGGER-UI-01 — Schedules page
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TRIGGER-UI-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** TRIGGER-UI-01
+**Title:** Schedules page
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP
+**Start condition:** NOT_READY. Ready when: LOCKED. Keith decides.
+**Depends on:** TRIGGER-01.
+**Primary write scope:** frontend/app/, frontend/components/schedules/, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json.
+**Mutexes / resources:** FRONTEND, I18N.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** page.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Schedules page (F5, A9 part 5) where the owner sets when a workflow runs.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.4
+
+### STAGING-DEPLOY-TRIG-01 — Deploy triggers
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-TRIG-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** STAGING-DEPLOY-TRIG-01
+**Title:** Deploy triggers
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP
+**Start condition:** NOT_READY. Ready when: LOCKED. Keith decides.
+**Depends on:** TRIGGER-UI-01.
+**Primary write scope:** records; host state.
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** redeploy.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy of the schedule trigger. The flag stays off until the live check.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.4
+
+### TRIGGER-LIVE-01 — Live trigger check and the triggers architecture wording
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TRIGGER-LIVE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** TRIGGER-LIVE-01
+**Title:** Live trigger check and the triggers architecture wording
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP
+**Start condition:** NOT_READY. Ready when: LOCKED. Keith decides.
+**Depends on:** STAGING-DEPLOY-TRIG-01.
+**Primary write scope:** records; host state; ARCHITECTURE.md lines 177 and 1116 and new section 13.7 in the LOCK record (GOVERNANCE held then).
+**Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** flag off.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Live check of a schedule trigger. The LOCK record, holding GOVERNANCE, amends ARCHITECTURE.md lines 177 and 1116 and adds section 13.7. PRD.md line 472 is left alone. Not the RSI-00 hold.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.4
+
+### TRIGGER-EVENT-01 — Trigger before a calendar event
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TRIGGER-EVENT-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** TRIGGER-EVENT-01
+**Title:** Trigger before a calendar event
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP
+**Start condition:** NOT_READY. Ready when: Keith chooses; TRIGGER-MAIL-01 after cost measured. Keith decides.
+**Depends on:** TRIGGER-LIVE-01.
+**Primary write scope:** set at admission.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** set at admission.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Start a workflow before a calendar event (F2).
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.4
+
+### TRIGGER-MAIL-01 — Trigger on mail that matches a filter
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TRIGGER-MAIL-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** TRIGGER-MAIL-01
+**Title:** Trigger on mail that matches a filter
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP
+**Start condition:** NOT_READY. Ready when: Keith chooses; TRIGGER-MAIL-01 after cost measured. Keith decides.
+**Depends on:** TRIGGER-LIVE-01.
+**Primary write scope:** set at admission.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** set at admission.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Start a workflow when new mail matches a filter, after the briefing cost is measured (F3).
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.4
+
+### TRIGGER-MORE-01 — Later triggers
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TRIGGER-MORE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** TRIGGER-MORE-01
+**Title:** Later triggers
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP
+**Start condition:** NOT_READY. Ready when: Keith chooses; TRIGGER-MAIL-01 after cost measured. Keith decides.
+**Depends on:** TRIGGER-LIVE-01.
+**Primary write scope:** set at admission.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** set at admission.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Later triggers (F6): after another workflow, a webhook, or a new knowledge file.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.4
+
+### SKILL-01 — Reusable saved step
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=SKILL-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** SKILL-01
+**Title:** Reusable saved step
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP
+**Start condition:** NOT_READY. Ready when: two workflows share a step; Keith. Keith decides.
+**Depends on:** BIZ-LIVE-04.
+**Primary write scope:** set at admission.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** set at admission.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** A reusable saved step, when two workflows share a step (G1).
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.5
+
+### CONN-DRAFT-01 — Drafts that are never sent
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CONN-DRAFT-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** CONN-DRAFT-01
+**Title:** Drafts that are never sent
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP
+**Start condition:** NOT_READY. Ready when: Keith. Keith decides.
+**Depends on:** CONN-OAUTH-01, COS-EVAL-01.
+**Primary write scope:** set at admission.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** set at admission.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Drafts the owner can review and that are never sent (G3), after Connect Google.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.5
+
+### ACTIONS-APPROVAL-01 — Send and change only behind approval
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=ACTIONS-APPROVAL-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** ACTIONS-APPROVAL-01
+**Title:** Send and change only behind approval
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP
+**Start condition:** NOT_READY. Ready when: Keith. Keith decides.
+**Depends on:** APPROVAL-SET-01, CONN-DRAFT-01.
+**Primary write scope:** set at admission.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** set at admission.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Send and change actions only behind the owner's approval (G4). Nothing that writes, sends or deletes is automatic.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.5
+
+### RESULTS-MAIL-01 — Results by email
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=RESULTS-MAIL-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** RESULTS-MAIL-01
+**Title:** Results by email
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP
+**Start condition:** NOT_READY. Ready when: Keith. Keith decides.
+**Depends on:** RESULTS-01.
+**Primary write scope:** set at admission (gateway mailer, Results page).
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** set at admission.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Send a result by email through the platform mailer (G5).
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.5
+
+### CONN-OUTLOOK-01 — Outlook.com connection
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CONN-OUTLOOK-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** CONN-OUTLOOK-01
+**Title:** Outlook.com connection
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP
+**Start condition:** NOT_READY. Ready when: Keith; Microsoft app registration. Keith decides.
+**Depends on:** CONN-OAUTH-01.
+**Primary write scope:** set at admission.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** set at admission.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Outlook.com by Microsoft sign-in (G6), after the platform's Google app is verified and Connect Google exists.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.5
+
+### BRIEF-WIDE-01 — Wider briefing after the cost is known
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=BRIEF-WIDE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Task ID:** BRIEF-WIDE-01
+**Title:** Wider briefing after the cost is known
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP
+**Start condition:** NOT_READY. Ready when: cost known; Keith. Keith decides.
+**Depends on:** BIZ-LIVE-03.
+**Primary write scope:** services/api-gateway/src/system-agents/, services/connectors-mcp/src/tools/.
+**Mutexes / resources:** GATEWAY.
+**Hot-file leases:** tools files (names not set; no file list in the manifest).
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** instructions.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** A wider briefing once the measured cost is known (G8). The first template stays Inbox-only until then.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.5
 
 ### COLLAB-FANOUT-01 — Fan-out hand-offs with one approval and a combine step
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -86927,3 +87996,7 @@ One line per follow-up Keith dropped: date, follow-up, where it was named, reaso
 - 2026-11-07 — a fifth public Chief of Staff station for the advisors lead, named in docs/BIZ-03-STAGE-START.md section 10 — Keith's decision 1: advisors-lead runs show on the Chief of Staff desk — Keith, BIZ-03 stage-start.
 - 2026-11-07 — raising max depth, max agents or the hand-off cap, named in docs/BIZ-03-STAGE-START.md section 10 — the advisors team fits the current limits — Keith, BIZ-03 stage-start.
 - 2026-11-07 — translating raw hand-off notes such as refused: advisors_reply, named in docs/BIZ-03-STAGE-START.md section 10 — the coding team already shows those notes as server text — Keith, BIZ-03 stage-start.
+- 2026-11-09 — reversal: the auto-approved plans dropped at the 2026-11-05 "Agent Teams ideas not adopted" line above return as an owner-set approval setting per team or workflow ("every hand-off" default, "only over X credits", "automatic for read-only agents"; never automatic for anything that writes, sends or deletes; depth, agent and daily limits unchanged), planned in docs/AGENT-OPS-PLAN.md as APPROVAL-SET-01 (Keith, 2026-11-09); free agent-to-agent messaging and agents claiming their own tasks stay dropped; that drop line stays as history.
+- 2026-11-09 — reversal: connectors, dropped at the 2026-11-05 knowledge-plan line above with "re-propose with evidence", return on Keith's request as allowlisted, platform-run MCP connectors to the owner's own mail and calendar, planned in docs/AGENT-OPS-PLAN.md (CONN-01 onward) (Keith, 2026-11-09); scheduled refresh stays dropped; that drop line stays as history.
+- 2026-11-09 — a separate CONNECTORS mutex for services/connectors-mcp/, named in docs/AGENT-OPS-PLAN.md — HOTFILE leases on named files suffice while one lane touches the folder; re-propose if two slices need the folder at once — Keith, GOV-BIZ-AGENT-OPS-PLAN-01.
+- 2026-11-09 — reversal: the return hop dropped at the 2026-11-07 BIZ-03 stage-start line above returns as report-back hand-offs, so the Chief of Staff gives the final answer after the agents it used, planned in docs/AGENT-OPS-PLAN.md as COS-FRONTDOOR-01 (Keith, 2026-11-09); that drop line stays as history.
