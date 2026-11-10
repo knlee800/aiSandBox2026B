@@ -87630,7 +87630,7 @@ taskId=CM-CLEANUP-01B
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the CM-CLEANUP-01 split — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 2 and its mutexes released. Result: passed. New filterProxyResponseHeaders helper used by the preview catch-all: hop-by-hop headers and Connection-named headers dropped on both paths, content-length and content-encoding dropped only when Express re-serialises the body; request side, guards and the traversal allowlist unchanged; 16 new tests; sonnet subagent 32d7ced, fast-forwarded onto main; control-plane rerun: gateway 3344 passed, 7 skipped, only the 14 known smoke failures, build exit 0. Not deployed (STAGING-DEPLOY-WF-01 carries it). FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was admitted 2026-11-10. Checkpoint: docs/CM-CLEANUP-01B-CHECKPOINT.md.
 **Task ID:** CM-CLEANUP-01B
 **Title:** Gateway preview catch-all drops hop-by-hop headers
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
