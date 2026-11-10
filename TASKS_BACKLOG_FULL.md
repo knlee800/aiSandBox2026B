@@ -86387,7 +86387,7 @@ taskId=TEAM-NO-SESSION-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the TEAM-PRESELECT-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 1 and its mutexes released. Team page lists workflows without a session, runs stay off with a hint; sonnet subagent in worktree lane/TEAM-NO-SESSION-01, cherry-picked as ce832eb; frontend 1432 passed, tsc and build clean; not deployed. FOLLOWUPS: 0 registered / 1 superseded (TEAM-NO-SESSION-02) / 0 dropped / 0 undisposed. Checkpoint: docs/TEAM-NO-SESSION-01-CHECKPOINT.md.
 **Task ID:** TEAM-NO-SESSION-01
 **Title:** The Team page without a workspace session
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -86430,7 +86430,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith may change it).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
-**Scope:** A user workflow with the read-only profile (business workflows, which write no project files) starts from the Team page without a workspace session: the stage-start decides what replaces the session (a per-owner business session, as BIZ-NOPROJECT-01 explored, or none), keeps grants and budgets as BIZ-USER-01C built them, and keeps write-capable runs session-bound.
+**Scope:** A user workflow with the read-only profile (business workflows, which write no project files) starts from the Team page without a workspace session: the stage-start decides what replaces the session (a per-owner business session, as BIZ-NOPROJECT-01 explored, or none), keeps grants and budgets as BIZ-USER-01C built them, and keeps write-capable runs session-bound. Also (TEAM-NO-SESSION-01, 2026-11-10): the no-session view shows the selected workflow's start hint and today's spend line, which it leaves out today.
 
 ### RESULTS-01 — Results list, unread badge and run history
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
