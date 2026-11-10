@@ -86869,7 +86869,7 @@ taskId=COS-FRONTDOOR-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 1 and its mutexes released. Result: passed (slice 01A). Migration 1805 creates collaboration_rosters (user_id uuid PK references users on delete cascade, member_ids jsonb, updated_at), probe-guarded up and down; CollaborationRosterService with the member rule, 400 codes and membersForStart; GET and PUT /api/collaboration/roster behind the session guard and the entitlement rule, owner-scoped; 71 new tests; opus subagent 1314d47, fast-forwarded onto main; control-plane rerun: gateway 3475 passed, 7 skipped, only the 14 known smoke failures, build 0; ai-service 1296 passed; frozen-path diff empty. Not deployed. FOLLOWUPS: 0 registered / 2 superseded (the invalid reason text into COS-FRONTDOOR-01C, the system label location into COS-FRONTDOOR-01B) / 0 dropped / 0 undisposed. Was admitted 2026-11-10. Checkpoint: docs/COS-FRONTDOOR-01-CHECKPOINT.md.
 **Task ID:** COS-FRONTDOOR-01
 **Title:** Chief of Staff front door and report-back
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -86902,17 +86902,18 @@ nature=IMPLEMENTATION
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP (stage-start shared with COS-FRONTDOOR-01).
-**Start condition:** NOT_READY. Ready when: COS-FRONTDOOR-01 LOCKED; the control plane may start it under Keith's 2026-11-10 instruction (Stage 4 approved).
+**Start condition:** READY (COS-FRONTDOOR-01 LOCKED 2026-11-10; Stage 4 approved by Keith). Was: NOT_READY. Ready when: COS-FRONTDOOR-01 LOCKED.
 **Depends on:** COS-FRONTDOOR-01.
-**Primary write scope:** PROVISIONAL, set at admission from the stage-start (expected: orchestration.service.ts, collaboration-front-door.ts (new), orchestration.contracts.ts, handoff-request.ts, collaboration.controller.ts and their specs under services/api-gateway/src/orchestration/, system-agents/system-agent-registry.ts and its spec, services/ai-service/src/agent-harness/eval/briefing-instructions.ts).
-**Mutexes / resources:** set at admission (expected GATEWAY, AI-SERVICE).
+**Primary write scope:** set at admission 2026-11-10 from the stage-start (EXACT): services/api-gateway/src/orchestration/orchestration.service.ts, services/api-gateway/src/orchestration/collaboration-front-door.ts, services/api-gateway/src/orchestration/collaboration-front-door.spec.ts, services/api-gateway/src/orchestration/orchestration.contracts.ts, services/api-gateway/src/orchestration/handoff-request.ts, services/api-gateway/src/orchestration/handoff-request.spec.ts, services/api-gateway/src/orchestration/collaboration.controller.ts, services/api-gateway/src/orchestration/collaboration.controller.spec.ts, services/api-gateway/src/orchestration/internal-collaboration.controller.spec.ts, services/api-gateway/src/orchestration/__tests__/, services/api-gateway/src/orchestration/collaboration-roster.ts, services/api-gateway/src/orchestration/collaboration-roster.spec.ts, services/api-gateway/src/orchestration/collaboration-workflow.ts, services/api-gateway/src/system-agents/system-agent-registry.ts, services/api-gateway/src/system-agents/system-agent-registry.spec.ts, services/ai-service/src/agent-harness/eval/briefing-instructions.ts. Was expected: orchestration.service.ts, collaboration-front-door.ts (new), orchestration.contracts.ts, handoff-request.ts, collaboration.controller.ts and their specs under services/api-gateway/src/orchestration/, system-agents/system-agent-registry.ts and its spec, services/ai-service/src/agent-harness/eval/briefing-instructions.ts).
+**Mutexes / resources:** GATEWAY, AI-SERVICE.
 **Hot-file leases:** none.
-**Shared contracts:** set at admission.
+**Shared contracts:** HARNESS_ENTITLEMENT_PROOF_V1 read, not changed (no job key added or removed; withHarnessEntitlementProof, src/ai, job.types.ts and worker.processor.ts untouched).
 **Evidence class:** LOCAL-TESTS.
-**Revert isolation:** set at admission.
+**Revert isolation:** the front-door branch in orchestration; with no roster the old path runs; the hash pin reverts with the spec.
 **saturationClass:** OPTIONAL (as for COS-FRONTDOOR-01). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09 and Stage 4 on 2026-11-10).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-10).
 **Scope:** Stage-start docs/COS-FRONTDOOR-01-STAGE-START.md section 3.3 and 01B files: the chief-of-staff definition evolves (hash change, ai-service eval copy re-rendered); a Chief of Staff team start builds its agent list from the stored roster with labels, summaries and per-member workflow snapshots; workflow children carry their snapshot; server-created report-back hand-offs (agent to chief-of-staff, approval as today, idempotent, recovered by the sweep); report_back and dispatch edges exempt from the depth check like send-back edges, MAX_FRONT_DOOR_ROUNDS = 2; an unrunnable member is skipped and reported; session-less Chief of Staff start through the business session; run detail gains agents with labels. Frozen contract HARNESS_ENTITLEMENT_PROOF_V1 read, not changed (no job key added or removed). With an empty roster the run is today's run. Implementer: opus.
+**Also (added 2026-11-10 by the COS-FRONTDOOR-01 LOCK):** the system members' labels and summaries live in ROSTER_SYSTEM_MEMBER_TEXT (services/api-gateway/src/orchestration/collaboration-roster.ts); decide whether they move into the registry, which this slice already changes.
 
 ### COS-FRONTDOOR-01C — Front-door Team page
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -86937,6 +86938,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (as for COS-FRONTDOOR-01). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09 and Stage 4 on 2026-11-10).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** Stage-start docs/COS-FRONTDOOR-01-STAGE-START.md 01C files: a roster picker under the Team page's Chief of Staff option (loading, empty, failed with retry, loaded; a fourth tick refused with a hint; Save), the no-session Chief of Staff start, the skipped-member hint, member labels and the report-back step label, copy in three languages. Implementer: sonnet.
+**Also (added 2026-11-10 by the COS-FRONTDOOR-01 LOCK):** translated text for the seventh roster reason "invalid" (a stored workflow that no longer renders), beside draft, not_tested, off, missing and coming_soon.
 
 ### USER-TEAMS-01 — User teams and who hands work to whom
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

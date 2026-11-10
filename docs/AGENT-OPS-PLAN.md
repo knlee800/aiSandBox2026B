@@ -49,7 +49,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 
 | # | Item | What it does |
 |---|---|---|
-| 34 | COS-FRONTDOOR-01, COS-FRONTDOOR-01B, COS-FRONTDOOR-01C | Owner talks only to the Chief of Staff; results return to it (admitted 2026-11-10, Lane 1, slice 01A; Keith approved Stage 4 on 2026-11-10; the Team page's Chief of Staff option, roster of advisors and workflows up to 3; 01A roster store, 01B run and report-back, 01C Team page) |
+| 34 | COS-FRONTDOOR-01, COS-FRONTDOOR-01B, COS-FRONTDOOR-01C | Owner talks only to the Chief of Staff; results return to it (01A roster store done 2026-11-10; Keith approved Stage 4 on 2026-11-10; the Team page's Chief of Staff option, roster of advisors and workflows up to 3; 01A roster store, 01B run and report-back, 01C Team page) |
 | 35 | USER-TEAMS-01 | User teams and who hands off to whom |
 | 36 | APPROVAL-SET-01 | Approval setting |
 | 37 | COS-DRAFTS-01 | Chief of Staff drafts agents and workflows for approval |
