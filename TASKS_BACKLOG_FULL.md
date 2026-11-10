@@ -86438,7 +86438,7 @@ taskId=RESULTS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — stage-start approved 2026-11-10 (docs/RESULTS-01-STAGE-START.md) — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 1 and its mutexes released. Result: passed. Migration 1804000000000 (one nullable timestamptz column, probe-guarded up and down, reversible); entity field update: false; three owner-scoped routes under the existing session guard (401, 403, 404 for another owner, 400 on bad filters); Results page and header badge in three languages; opus subagent 7aa2adde (one STOP on a module pin inside the write set), cherry-picked as a44efe3; control-plane rerun on main: gateway 3328 passed, 7 skipped, only the 14 known smoke failures, build exit 0; ai-service 1296 passed, 1 skipped; frontend tsc 0, 1489 passed, build 0; frozen-path diff empty. Not deployed; SQL tested with mocks only. FOLLOWUPS: 2 registered (RESULTS-POLISH-01, RESULTS-COST-01) / 4 superseded (STAGING-DEPLOY-WF-01, BIZ-LIVE-04, TRIGGER-01, ADMIN-CSRF-01) / 0 dropped / 0 undisposed. Was admitted 2026-11-10. Checkpoint: docs/RESULTS-01-CHECKPOINT.md.
 **Task ID:** RESULTS-01
 **Title:** Results list, unread badge and run history
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -86457,6 +86457,54 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set at admission 2026-11-10).
 **Scope:** Results list with an unread badge (C12) and run history (C14).
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+
+### RESULTS-POLISH-01 — Results polish: a Team page link and a live header count
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=RESULTS-POLISH-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the RESULTS-01 LOCK — not admitted.
+**Task ID:** RESULTS-POLISH-01
+**Title:** Results polish: a Team page link and a live header count
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** RESULTS-01.
+**Primary write scope:** PROVISIONAL, set at admission.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From RESULTS-01: (1) the Team page's "Past runs" links to the Results page (stage-start follow-up 4); (2) the Command Center header's unread count is read once on load and does not refresh while the page stays open; refresh it (for example on focus or after a run finishes). Expected FRONTEND and I18N.
+
+### RESULTS-COST-01 — Cost of each run on its result
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=RESULTS-COST-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the RESULTS-01 LOCK — not admitted.
+**Task ID:** RESULTS-COST-01
+**Title:** Cost of each run on its result
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** RESULTS-01.
+**Primary write scope:** PROVISIONAL, set at admission.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE (not in the approved plan).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From RESULTS-01 stage-start follow-up 5: show the credits a run cost on its result, from CreditDeductionRecord by execution id (as BIZ-USER-01C D8 reads it). Not in the approved plan; Keith decides whether to do it. Expected GATEWAY, FRONTEND, I18N.
 
 ### STAGING-DEPLOY-WF-01 — Deploy user workflows
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -86484,6 +86532,7 @@ nature=IMPLEMENTATION
 **Scope:** Deploy of the user-workflow slices so Keith can copy, edit and run a workflow.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
 **Acceptance (added 2026-11-10 by the CM-PREFIX-01 LOCK):** the deploy carries CM-PREFIX-01; its host checks use /api/internal/billing-export/limits and /api/internal/quota-visibility/user/<id> (403 without the key, a real handler with it) and expect the old /api/api/internal/... paths to answer 404, replacing the STAGING-DEPLOY-CMAUTH-01 check of /api/api/internal/billing-export/limits. (Added 2026-11-10 by the CM-CLEANUP-01 LOCK) It also carries CM-CLEANUP-01: /api/executor/commands, GET /api/sessions, /api/previews/x/health and /api/internal-previews/proxy/x/ answer 404 with the key (proving no stale dist module loads), so the container-manager guard checks use other routes (for example /api/internal/stats and /api/files/x/list); a cross-origin preflight to 4002 gets no Access-Control-Allow-Origin; ai-service POST /api/messages/chat answers 404 with the key.
+**Acceptance (added 2026-11-10 by the RESULTS-01 LOCK):** the deploy is a migrating deploy: it carries RESULTS-01 migration 1804000000000-AddCollaborationRunResultSeenAt (one nullable column on collaboration_runs); the deploy tool takes a pre-migration backup, applies it and stores the new migration hash; the down path (drop the column, losing only seen marks) is stated in the deploy record; host checks: GET /api/results and /api/results/unread-count answer 401 without login through the gateway, and the Results page answers 200 in en, zh-TW and zh-CN.
 
 ### BIZ-LIVE-04 — Live check of a user workflow
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -86510,6 +86559,7 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** Keith copies a template, edits it and runs that workflow on staging. Runs are off after the check.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+**Acceptance (added 2026-11-10 by the RESULTS-01 LOCK):** in en, zh-TW and zh-CN: the header badge counts a finished run and opening the result clears it; filters (including local dates) and paging work; the list states (loading, empty, failed) and detail states (loading, not found, failed, answer) look right; a workflow test run shows the Test run badge; a user without harness access sees the calm notice and no pill.
 
 ### GOV-GOOGLE-VERIFY-01 — Google OAuth app verification
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -86898,6 +86948,7 @@ nature=IMPLEMENTATION
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** agent_schedules and an in-process gateway timer (F1, F4). SCHEDULES_ENABLED defaults false. One idempotency key per owner per local day, no retry, skipped when runs are off or a cap would be exceeded, never enabled by a tester window, with an audit row on every skip.
+**Note (added 2026-11-10 by the RESULTS-01 LOCK):** trigger-started runs appear in Results (RESULTS-01) with no change; this task's stage-start names the Results unread badge as the owner's notice of a finished scheduled run.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.4
 
 ### TRIGGER-UI-01 — Schedules page
@@ -88291,6 +88342,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL. **productClass:** CURRENT per PRD.md.
 
 **Holds:** POST /api/admin/users/:userId/credits (services/api-gateway/src/admin/admin-operational.controller.ts) is cookie-authenticated and has no CsrfGuard, unlike the ACCESS-01B entitlements PATCH. Add CsrfGuard and make any frontend caller send x-csrf-token. Rough size S.
+**Also (added 2026-11-10 by the RESULTS-01 LOCK):** the collaboration POSTs (services/api-gateway/src/orchestration/collaboration.controller.ts) and the new POST /api/results/:runId/seen are cookie-authenticated with no CsrfGuard; they rely on the session cookie's SameSite setting. Decide at admission whether CsrfGuard covers them too.
 **Named in:** docs/ACCESS-01B-STAGE-START.md section 11 and its control-plane review.
 
 #### Acceptance criteria

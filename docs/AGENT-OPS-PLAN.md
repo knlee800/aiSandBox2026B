@@ -41,7 +41,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 | 27 | MODEL-PRICE-01 | A credit price per model, when Keith sets prices (AGENT-SPEC-01 done 2026-11-10) |
 | 28 | KNOW-FOLDERS-01 | Owner-named knowledge folders (BIZ-USER-01A done 2026-11-10) |
 | 30 | TEAM-NO-SESSION-01, TEAM-NO-SESSION-02, RUN-CUTOFF-01 | The Team page lists workflows without a session (TEAM-NO-SESSION-01, admitted 2026-11-10, Lane 1); then running read-only workflows without a session (TEAM-NO-SESSION-02); TEAM-PRESELECT-01 done 2026-11-10); BIZ-USER-01D done 2026-11-10); a hard per-run credit cutoff when Keith wants it (BIZ-USER-01C done 2026-11-10) |
-| 31 | RESULTS-01 | Results list and run history (admitted 2026-11-10, Lane 1) |
+| 31 | RESULTS-01 | Results list and run history (done 2026-11-10; migration 1804, deploys with STAGING-DEPLOY-WF-01; RESULTS-POLISH-01 and RESULTS-COST-01 registered) |
 | 32 | STAGING-DEPLOY-WF-01, BIZ-LIVE-04 | Deploy; Keith runs his own workflow live |
 | 33 | CONN-OAUTH-01 | Connect Google, after verification |
 
