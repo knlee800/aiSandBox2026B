@@ -86483,6 +86483,7 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** Deploy of the user-workflow slices so Keith can copy, edit and run a workflow.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+**Acceptance (added 2026-11-10 by the CM-PREFIX-01 LOCK):** the deploy carries CM-PREFIX-01; its host checks use /api/internal/billing-export/limits and /api/internal/quota-visibility/user/<id> (403 without the key, a real handler with it) and expect the old /api/api/internal/... paths to answer 404, replacing the STAGING-DEPLOY-CMAUTH-01 check of /api/api/internal/billing-export/limits.
 
 ### BIZ-LIVE-04 — Live check of a user workflow
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -87528,7 +87529,7 @@ taskId=CM-PREFIX-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the CM-AUTH-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 2 and its mutexes released. Result: passed. Four controllers moved from api/internal/... to internal/... under the global prefix api; no guard or handler change; inventory still 63 guarded routes plus open /api/health; 10 paths resolve with the key and 403 without it; the old /api/api paths 404; sonnet subagent 99abf01, cherry-picked as ec1d8f3; control-plane rerun: container-manager 15 suites, 481 passed, build clean. Not deployed. FOLLOWUPS: 0 registered / 2 superseded (unused quota-evaluations and usage-aggregations routes by CM-CLEANUP-01; old-path host checks by STAGING-DEPLOY-WF-01) / 0 dropped / 0 undisposed. Registered 2026-11-10 by the CM-AUTH-01 LOCK. Checkpoint: docs/CM-PREFIX-01-CHECKPOINT.md.
 **Task ID:** CM-PREFIX-01
 **Title:** Container-manager internal routes served at /api/api/internal
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -87570,7 +87571,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it).
 **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
-**Scope:** From CM-AUTH-01: (F3) previews/* and internal-previews/proxy/* have no caller and their pathRewrite prefixes miss /api, and several executor, files, sessions and git routes have no caller; a new proxy is created per request (listener leak); remove or fix. (F4) ai-service's legacy chat path has no caller and its delete sends ?path= while container-manager reads the body; remove it. (F5) container-manager CORS allows any origin with credentials while no browser calls it; turn it off. (Latent) the gateway preview catch-all copies container-manager's transfer-encoding header and then calls res.send; drop hop-by-hop headers.
+**Scope:** From CM-AUTH-01: (F3) previews/* and internal-previews/proxy/* have no caller and their pathRewrite prefixes miss /api, and several executor, files, sessions and git routes have no caller; a new proxy is created per request (listener leak); remove or fix. (F4) ai-service's legacy chat path has no caller and its delete sends ?path= while container-manager reads the body; remove it. (F5) container-manager CORS allows any origin with credentials while no browser calls it; turn it off. (Latent) the gateway preview catch-all copies container-manager's transfer-encoding header and then calls res.send; drop hop-by-hop headers. (Added 2026-11-10 by the CM-PREFIX-01 LOCK) The quota-evaluations and usage-aggregations internal routes, now at /api/internal/..., have no gateway caller: keep them with a reason or remove them.
 
 ### DRIFT-FIX-01 — Briefing drift check follows the shared version hash
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
