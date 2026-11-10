@@ -84478,7 +84478,7 @@ nature=IMPLEMENTATION
 **Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
 **saturationClass:** OPTIONAL (Keith, 2026-11-05). **productClass:** CURRENT per PRD.md.
 
-**Holds:** (1) The worker never writes usage_records.execution_duration_ms: nothing calls updateExecutionResult, so completed rows show null duration. (2) The gateway admin quota-visibility and billing reconciliation, and the container-manager internal quota, usage and billing-export controllers, read SQLite tables that nothing writes on a deployed host.
+**Holds:** (1) The worker never writes usage_records.execution_duration_ms: nothing calls updateExecutionResult, so completed rows show null duration. (2) The gateway admin quota-visibility and billing reconciliation, and the container-manager internal quota, usage and billing-export controllers, read SQLite tables that nothing writes on a deployed host. Also (LOCAL-DEV-SYNC-01, 2026-11-10): ai-service's ConversationsService and MessagesService open SQLite at a fixed database/aisandbox.db path relative to __dirname; make the path configurable when deciding what those SQLite tables are for.
 **Dispositions, 2026-11-05:** item 1 is superseded by USAGE-DURATION-01.
 **Named in:** USAGE-MODEL-01 checkpoint line 65; HARNESS-LIVE-06 checkpoint line 13; CM-QUOTA-DEAD-01 checkpoint line 62.
 
@@ -87377,7 +87377,7 @@ taskId=LOCAL-DEV-SYNC-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the AI-SERVICE-AUTH-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 2 and its mutexes released. Prod compose LISTEN_HOST, start-all.sh poll fixed, no stray test database; sonnet subagent in worktree lane/LOCAL-DEV-SYNC-01, cherry-picked as ff28bf0; ai-service 1308 passed, build clean. FOLLOWUPS: 1 registered (COMPOSE-PROD-01) / 1 superseded (USAGE-DATA-01) / 0 dropped / 0 undisposed. Checkpoint: docs/LOCAL-DEV-SYNC-01-CHECKPOINT.md.
 **Task ID:** LOCAL-DEV-SYNC-01
 **Title:** Local and compose setups follow the loopback binds
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -87395,6 +87395,31 @@ nature=IMPLEMENTATION
 **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** Three small items found by AI-SERVICE-AUTH-01: docker-compose.prod.yml needs LISTEN_HOST=0.0.0.0 for the three services if that topology is used (services in separate containers must listen beyond loopback); scripts/start-all.sh:280 polls http://localhost:4001/health, a route ai-service never had (use /api/conversations or /metrics); an existing ai-service spec creates an empty database/aisandbox.db in the checkout during jest (point it at a temp path).
+
+### COMPOSE-PROD-01 — Production compose gaps
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COMPOSE-PROD-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the LOCAL-DEV-SYNC-01 LOCK — not admitted.
+**Task ID:** COMPOSE-PROD-01
+**Title:** Production compose gaps
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith wants the docker-compose.prod.yml topology used (ARCHITECTURE.md calls it alternate / future). Keith decides.
+**Depends on:** LOCAL-DEV-SYNC-01.
+**Primary write scope:** docker-compose.prod.yml.
+**Mutexes / resources:** COMPOSE.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** one file.
+**saturationClass:** OPTIONAL (Keith may change it).
+**productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** ai-service in docker-compose.prod.yml has no container_name and no healthcheck, unlike the other services (found by LOCAL-DEV-SYNC-01); add both, using GET /api/conversations (open, returns status ok) for the healthcheck.
 
 ### STAGING-DEPLOY-FD-01 — Deploy the front door (phase 2)
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
