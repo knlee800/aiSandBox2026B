@@ -86295,7 +86295,7 @@ nature=IMPLEMENTATION
 **Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: 01B LOCKED. Keith decides.
 **Depends on:** BIZ-USER-01B.
 **Primary write scope:** services/api-gateway/src/orchestration/, services/api-gateway/src/system-agents/system-agent-registry.ts (one export agentVersionFor, added at the stage-start 2026-11-10), frontend/components/collaboration/, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json.
-**Mutexes / resources:** GATEWAY, FRONTEND, I18N.
+**Mutexes / resources:** GATEWAY, FRONTEND, I18N, PACKAGE (PACKAGE and frontend/package.json added 2026-11-10 by the control plane: the test script gains components/collaboration/*.test.ts* for the Team page workflow tests).
 **Hot-file leases:** none.
 **Shared contracts:** uses HARNESS_ENTITLEMENT_PROOF_V1.
 **Evidence class:** LOCAL-TESTS.

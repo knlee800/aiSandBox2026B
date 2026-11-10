@@ -726,7 +726,7 @@ CLOSED since 2026-11-08T09:44:17Z (closed by TESTER-WINDOW-CLOSE-01; opened by T
 - HOTFILE:e2e/builder-golden-path/lib/local-fixture.ts: UNOWNED
 - HOTFILE:e2e/builder-golden-path/lib/evidence.ts: UNOWNED
 - HOTFILE:e2e/builder-golden-path/tests/network.spec.ts: UNOWNED
-- PACKAGE: UNOWNED — released at FE-TEST-GLOB-01 COMPLETE AND LOCKED 2026-11-10.
+- PACKAGE: OWNED by BIZ-USER-01C (2026-11-10).
 - COMPOSE: UNOWNED — released at LOCAL-DEV-SYNC-01 COMPLETE AND LOCKED 2026-11-10.
 - LOCAL-RUNTIME: UNOWNED — released at CLEAN-BASELINE-RUNTIME-01 lock 2026-10-07.
 - AI-SERVICE: UNOWNED — released at AI-SERVICE-AUTH-01 COMPLETE AND LOCKED 2026-11-10.

@@ -9,11 +9,12 @@
     "lane1": {
       "state": "ACTIVE",
       "taskId": "BIZ-USER-01C",
-      "mutexes": ["GATEWAY", "FRONTEND", "I18N"],
+      "mutexes": ["GATEWAY", "FRONTEND", "I18N", "PACKAGE"],
       "writePaths": [
         "services/api-gateway/src/orchestration/",
         "services/api-gateway/src/system-agents/system-agent-registry.ts",
         "frontend/components/collaboration/",
+        "frontend/package.json",
         "frontend/messages/en.json",
         "frontend/messages/zh-TW.json",
         "frontend/messages/zh-CN.json"
@@ -4044,11 +4045,12 @@
       "productClass": "APPROVED_FUTURE",
       "futureAuthorization": "AUTHORIZED",
       "dependsOn": ["BIZ-USER-01B"],
-      "mutexes": ["GATEWAY", "FRONTEND", "I18N"],
+      "mutexes": ["GATEWAY", "FRONTEND", "I18N", "PACKAGE"],
       "writePaths": [
         "services/api-gateway/src/orchestration/",
         "services/api-gateway/src/system-agents/system-agent-registry.ts",
         "frontend/components/collaboration/",
+        "frontend/package.json",
         "frontend/messages/en.json",
         "frontend/messages/zh-TW.json",
         "frontend/messages/zh-CN.json"
