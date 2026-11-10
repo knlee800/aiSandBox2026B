@@ -20,6 +20,7 @@ import { DockerRuntimeService } from '../docker/docker-runtime.service';
 import { GovernanceConfig } from '../config/governance.config';
 import { ProjectsService } from '../projects/projects.service';
 import { GovernanceEventsService } from '../governance/governance-events.service';
+import { isSinglePathSegment } from '../files/path-containment';
 
 const execAsync = promisify(exec);
 
@@ -286,6 +287,10 @@ export class SessionsService {
   }
 
   async deleteSession(sessionId: string) {
+    // CM-PATH-01: refuse an id that is not one path segment before anything
+    // is removed (the workspace delete below is recursive).
+    const workspacePath = this.getWorkspacePath(sessionId);
+
     // Task 40B-1: Remove container BEFORE deleting session data
     // Best-effort container cleanup (log errors but continue with deletion)
     try {
@@ -300,7 +305,6 @@ export class SessionsService {
 
     // Delete workspace directory (time-bounded best-effort)
     // Task 40B-3R: Prevent Windows workspace deletion from blocking HTTP response
-    const workspacePath = path.join(this.workspacesRoot, sessionId);
     try {
       const workspaceDeleteTimeout = 3000; // 3 seconds max
       await Promise.race([
@@ -332,7 +336,16 @@ export class SessionsService {
     return { message: 'Session deleted successfully' };
   }
 
+  /**
+   * CM-PATH-01: the session id must be one plain path segment, so the
+   * workspace is always a direct child of the workspaces root. An id such as
+   * `..` (sent as %2E%2E in a route parameter) would otherwise point at the
+   * workspaces root's parent.
+   */
   getWorkspacePath(sessionId: string): string {
+    if (!isSinglePathSegment(sessionId)) {
+      throw new BadRequestException('Invalid session id');
+    }
     return path.join(this.workspacesRoot, sessionId);
   }
 
@@ -347,6 +360,10 @@ export class SessionsService {
     userId?: string,
     options?: { browserCapable?: boolean },
   ): Promise<void> {
+    // CM-PATH-01: refuse an id that is not one path segment before a row is
+    // inserted for it or its workspace is created and mounted.
+    const workspacePath = this.getWorkspacePath(sessionId);
+
     const existing = this.db
       .prepare('SELECT id FROM sessions WHERE id = ?')
       .get(sessionId);
@@ -372,8 +389,6 @@ export class SessionsService {
         }
       }
     }
-
-    const workspacePath = this.getWorkspacePath(sessionId);
 
     if (!fsSync.existsSync(workspacePath)) {
       fsSync.mkdirSync(workspacePath, { recursive: true });

@@ -5,6 +5,7 @@ import * as fsSync from 'fs';
 import * as path from 'path';
 import { SessionsService } from '../sessions/sessions.service';
 import { ApiGatewayHttpClient } from '../clients/api-gateway-http.client';
+import { isPathInside } from './path-containment';
 
 const WORKSPACE_SEARCH_MAX_QUERY_LENGTH = 120;
 const WORKSPACE_SEARCH_MAX_FILES_SCANNED = 200;
@@ -420,11 +421,10 @@ export class FilesService {
   }
 
   private validatePath(workspacePath: string, fullPath: string) {
-    // Ensure the path is within the workspace (prevent directory traversal)
-    const resolvedPath = path.resolve(fullPath);
-    const resolvedWorkspace = path.resolve(workspacePath);
-
-    if (!resolvedPath.startsWith(resolvedWorkspace)) {
+    // Ensure the path is the workspace or inside it (prevent directory traversal).
+    // CM-PATH-01: a plain startsWith also accepted sibling workspaces such as
+    // <workspaces>/<sessionId>X, so compare with path.relative instead.
+    if (!isPathInside(workspacePath, fullPath)) {
       throw new BadRequestException('Invalid path: outside workspace');
     }
   }

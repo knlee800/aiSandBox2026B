@@ -77,3 +77,91 @@ describe('FilesService searchFiles', () => {
     );
   });
 });
+
+describe('FilesService workspace path containment (CM-PATH-01)', () => {
+  let parentPath: string;
+  let workspacePath: string;
+  let siblingPath: string;
+  let service: FilesService;
+
+  const sessionsService = {
+    getWorkspacePath: jest.fn(),
+    updateActivity: jest.fn(async () => undefined),
+  };
+
+  const apiGatewayClient = {
+    notifyFileChanged: jest.fn(async () => undefined),
+  };
+
+  beforeEach(async () => {
+    parentPath = await nodeFs.mkdtemp(path.join(os.tmpdir(), 'aisandbox-cm-path-'));
+    workspacePath = path.join(parentPath, 'abc');
+    siblingPath = path.join(parentPath, 'abcX');
+    await nodeFs.mkdir(path.join(workspacePath, 'src'), { recursive: true });
+    await nodeFs.writeFile(path.join(workspacePath, 'src', 'index.ts'), 'inside');
+    await nodeFs.mkdir(siblingPath, { recursive: true });
+    await nodeFs.writeFile(path.join(siblingPath, 'file.txt'), 'sibling secret');
+    await nodeFs.writeFile(path.join(parentPath, 'outside.txt'), 'outside secret');
+    sessionsService.getWorkspacePath.mockReturnValue(workspacePath);
+    service = new FilesService(sessionsService as any, {} as any, apiGatewayClient as any);
+  });
+
+  afterEach(async () => {
+    await nodeFs.rm(parentPath, { recursive: true, force: true });
+    jest.clearAllMocks();
+  });
+
+  it('refuses the sibling-prefix path ../abcX/file on every file route', async () => {
+    const sibling = '../abcX/file.txt';
+    await expect(service.readFile('abc', sibling)).rejects.toThrow('Invalid path: outside workspace');
+    await expect(service.writeFile('abc', sibling, 'x')).rejects.toThrow(BadRequestException);
+    await expect(service.deleteFile('abc', sibling)).rejects.toThrow(BadRequestException);
+    await expect(service.listFiles('abc', '../abcX')).rejects.toThrow(BadRequestException);
+    await expect(service.createDirectory('abc', '../abcX/new')).rejects.toThrow(BadRequestException);
+
+    expect(await nodeFs.readFile(path.join(siblingPath, 'file.txt'), 'utf-8')).toBe('sibling secret');
+    await expect(nodeFs.stat(path.join(siblingPath, 'new'))).rejects.toThrow();
+    expect(apiGatewayClient.notifyFileChanged).not.toHaveBeenCalled();
+  });
+
+  it('refuses .. escapes', async () => {
+    await expect(service.readFile('abc', '../outside.txt')).rejects.toThrow(BadRequestException);
+    await expect(service.readFile('abc', 'src/../../outside.txt')).rejects.toThrow(BadRequestException);
+    await expect(service.listFiles('abc', '..')).rejects.toThrow(BadRequestException);
+    await expect(service.writeFile('abc', '../../escape.txt', 'x')).rejects.toThrow(BadRequestException);
+  });
+
+  it('allows the workspace root and nested paths', async () => {
+    const rootEntries = await service.listFiles('abc', '/');
+    expect(rootEntries.map((entry) => entry.name)).toEqual(['src']);
+
+    const nested = await service.readFile('abc', 'src/index.ts');
+    expect(nested.content).toBe('inside');
+
+    const viaDotDot = await service.readFile('abc', 'src/../src/index.ts');
+    expect(viaDotDot.content).toBe('inside');
+
+    await service.writeFile('abc', 'src/nested/new.ts', 'new');
+    expect(await nodeFs.readFile(path.join(workspacePath, 'src', 'nested', 'new.ts'), 'utf-8')).toBe('new');
+
+    await service.createDirectory('abc', '..config');
+    expect((await nodeFs.stat(path.join(workspacePath, '..config'))).isDirectory()).toBe(true);
+  });
+
+  it('refuses an absolute path outside the workspace', () => {
+    const validatePath = (fullPath: string) =>
+      (service as any).validatePath(workspacePath, fullPath);
+
+    expect(() => validatePath(path.join(parentPath, 'outside.txt'))).toThrow(BadRequestException);
+    expect(() => validatePath(path.join(siblingPath, 'file.txt'))).toThrow(BadRequestException);
+    expect(() => validatePath(path.parse(workspacePath).root)).toThrow(BadRequestException);
+    expect(() => validatePath(workspacePath)).not.toThrow();
+    expect(() => validatePath(path.join(workspacePath, 'src', 'index.ts'))).not.toThrow();
+  });
+
+  it('keeps a leading-slash path inside the workspace', async () => {
+    const result = await service.readFile('abc', '/src/index.ts');
+    expect(result.content).toBe('inside');
+    await expect(service.readFile('abc', '/../abcX/file.txt')).rejects.toThrow(BadRequestException);
+  });
+});
