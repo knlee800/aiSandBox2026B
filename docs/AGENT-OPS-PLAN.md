@@ -32,7 +32,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 | 22 | OFFICE-04 | Office animation |
 | 24 | OFFICE-02 | Push updates, only if polling proves costly |
 | 25 | GOV-PRD-SYNC-01 | PRD office note and the no-scheduler principle, in Keith's words (GOV-ARCH-SYNC-01 done 2026-11-10) |
-| 26 | AI-SERVICE-AUTH-01 (admitted 2026-11-10, Lane 2) | Internal services on loopback and the internal key on ai-service (from the item 26 review 2026-11-10: all six concerns COVERED, docs/SECURITY-CHECK-26-REVIEW.md) |
+| 26 | STAGING-DEPLOY-SEC-01, CM-AUTH-01, LOCAL-DEV-SYNC-01 | Deploy the loopback binds and ai-service guard (first), then the internal key on container-manager routes and the local/compose sync (AI-SERVICE-AUTH-01 done 2026-11-10; review docs/SECURITY-CHECK-26-REVIEW.md) |
 
 **Stage 3 — user workflows (section 4, phase 1 continued)**
 

@@ -87302,7 +87302,7 @@ taskId=AI-SERVICE-AUTH-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the plan item 26 security review (docs/SECURITY-CHECK-26-REVIEW.md) — not admitted. Stage-start approved 2026-11-10: docs/AI-SERVICE-AUTH-01-STAGE-START.md (sandbox containers on the Docker bridge can reach 4000, 4001 and 4002 today; all three bind to 127.0.0.1 by default; ai-service routes need the internal key except metrics and health; constant-time compares in the gateway and container-manager).
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 2 and its mutexes released. Loopback binds in three services, ai-service guard (ten routes guarded, three open), constant-time compares, client sends the key; opus subagent in worktree lane/AI-SERVICE-AUTH-01, cherry-picked as a660062; ai-service 1308, container-manager 224, gateway 3024 passed (only the known smoke suite fails), builds clean; not deployed. FOLLOWUPS: 3 registered (STAGING-DEPLOY-SEC-01, CM-AUTH-01, LOCAL-DEV-SYNC-01) / 1 superseded (F5 fixed here) / 0 dropped / 0 undisposed. Checkpoint: docs/AI-SERVICE-AUTH-01-CHECKPOINT.md.
 **Task ID:** AI-SERVICE-AUTH-01
 **Title:** Internal services listen on loopback and check the internal key
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -87320,6 +87320,81 @@ nature=IMPLEMENTATION
 **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set at admission 2026-11-10).
 **Scope:** Found by the item 26 review and confirmed read-only on the staging host 2026-11-10 (C:/Users/knlee/aisb-preflight/SEC-26/sec26-ports.out): the gateway (4000), ai-service (4001) and container-manager (4002) listen on all interfaces, ufw is inactive and iptables INPUT is ACCEPT; only the Lightsail firewall (recorded as 80, 443 and SSH from Keith's home address) keeps them off the internet; Caddy proxies to 127.0.0.1. ai-service has no guard on any route (anyone reaching 4001 can add or read session messages, clear conversations and start provider runs). Wanted: ai-service and container-manager listen on 127.0.0.1 (after confirming every caller is on the host; sandbox containers included), the gateway too if Caddy is its only client; ai-service routes require the internal service key, which the gateway's ai-service client then sends; the gateway's internal-key compare becomes constant-time. Then a staging deploy that checks the listening addresses.
+
+### STAGING-DEPLOY-SEC-01 — Deploy the loopback binds and the ai-service guard to staging
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-SEC-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the AI-SERVICE-AUTH-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-SEC-01
+**Title:** Deploy the loopback binds and the ai-service guard to staging
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: AI-SERVICE-AUTH-01 LOCKED. Keith decides (host change).
+**Depends on:** AI-SERVICE-AUTH-01.
+**Primary write scope:** records; host state.
+**Mutexes / resources:** STAGING
+**Hot-file leases:** none.
+**Shared contracts:** the internal service key header (unchanged names).
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** redeploy the previous commit.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it).
+**productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy main to staging with runs off (aisandbox-deploy, the usual host checks). Then from the host: ss -ltnp shows 4000, 4001 and 4002 on 127.0.0.1 only (80 and 443 unchanged; no env file sets LISTEN_HOST); the health waits pass; INTERNAL_SERVICE_KEY is in ai.env by name and its hash matches gateway.env's (print match or differ only); 127.0.0.1:4001/api/internal/queue/stats is 401 without the key and 200 with it (key never printed); /metrics and GET /api/conversations are 200 without a key and POST /api/messages/health is 201; from a throwaway container on the default bridge, 172.17.0.1:4000, :4001 and :4002 all refuse the connection; an owner request through Caddy that reaches container-manager still works; the startup journal shows http://127.0.0.1:<port> for each service. Can carry BIZ-USER-01A's migration and the not-yet-deployed frontend work if Keith wants one deploy (then the migration backup path applies).
+
+### CM-AUTH-01 — Internal key on container-manager routes
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CM-AUTH-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the AI-SERVICE-AUTH-01 LOCK — not admitted.
+**Task ID:** CM-AUTH-01
+**Title:** Internal key on container-manager routes
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: AI-SERVICE-AUTH-01 LOCKED and a stage-start is approved. Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** AI-SERVICE-AUTH-01.
+**Primary write scope:** PROVISIONAL, set at the stage-start.
+**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER, GATEWAY, AI-SERVICE).
+**Hot-file leases:** none.
+**Shared contracts:** the internal service key header (unchanged names).
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per file.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it).
+**productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Container-manager's executor, files, git, sessions, preview, previews and internal-previews/proxy routes have no guard (docs/AI-SERVICE-AUTH-01-STAGE-START.md section 2): after the loopback bind only host processes can reach them, but any host process can read or write any session's files and run node in any container. Require X-Internal-Service-Key on them (constant-time compare from AI-SERVICE-AUTH-01), with the gateway's container-manager client (container-manager-http.client.ts) and ai-service's legacy chat path (messages.service.ts) sending it.
+
+### LOCAL-DEV-SYNC-01 — Local and compose setups follow the loopback binds
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=LOCAL-DEV-SYNC-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the AI-SERVICE-AUTH-01 LOCK — not admitted.
+**Task ID:** LOCAL-DEV-SYNC-01
+**Title:** Local and compose setups follow the loopback binds
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: AI-SERVICE-AUTH-01 LOCKED. Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** AI-SERVICE-AUTH-01.
+**Primary write scope:** docker-compose.prod.yml, scripts/start-all.sh, services/ai-service/src/
+**Mutexes / resources:** COMPOSE
+**Hot-file leases:** none.
+**Shared contracts:** the internal service key header (unchanged names).
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per file.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it).
+**productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Three small items found by AI-SERVICE-AUTH-01: docker-compose.prod.yml needs LISTEN_HOST=0.0.0.0 for the three services if that topology is used (services in separate containers must listen beyond loopback); scripts/start-all.sh:280 polls http://localhost:4001/health, a route ai-service never had (use /api/conversations or /metrics); an existing ai-service spec creates an empty database/aisandbox.db in the checkout during jest (point it at a temp path).
 
 ### STAGING-DEPLOY-FD-01 — Deploy the front door (phase 2)
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
