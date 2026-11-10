@@ -13,6 +13,7 @@
       "writePaths": [
         "services/api-gateway/src/system-agents/",
         "services/api-gateway/src/orchestration/collaboration-teams.ts",
+        "services/api-gateway/src/orchestration/collaboration-tool-profile.ts",
         "services/ai-service/src/agent-harness/eval/"
       ],
       "hotfiles": [],
@@ -3920,6 +3921,7 @@
       "writePaths": [
         "services/api-gateway/src/system-agents/",
         "services/api-gateway/src/orchestration/collaboration-teams.ts",
+        "services/api-gateway/src/orchestration/collaboration-tool-profile.ts",
         "services/ai-service/src/agent-harness/eval/"
       ],
       "hotfiles": [],

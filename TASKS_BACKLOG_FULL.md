@@ -86150,7 +86150,7 @@ nature=IMPLEMENTATION
 **Lifecycle:** 4-STEP
 **Start condition:** READY (BIZ-LIVE-03 LOCKED 2026-11-10; Keith's instruction the same day). Was: Ready when: LOCKED. Keith decides.
 **Depends on:** BIZ-LIVE-03.
-**Primary write scope:** services/api-gateway/src/system-agents/, services/api-gateway/src/orchestration/collaboration-teams.ts, services/ai-service/src/agent-harness/eval/ (added at admission 2026-11-10: the drift check and the eval's instruction copy).
+**Primary write scope:** services/api-gateway/src/system-agents/, services/api-gateway/src/orchestration/collaboration-teams.ts, services/ai-service/src/agent-harness/eval/ (added at admission 2026-11-10: the drift check and the eval's instruction copy), services/api-gateway/src/orchestration/collaboration-tool-profile.ts (added at the stage-start 2026-11-10: connector access built from the registry). Stage-start approved 2026-11-10: docs/AGENT-SPEC-01-STAGE-START.md (v1 platform model list = the four Anthropic ids).
 **Mutexes / resources:** GATEWAY, AI-SERVICE (AI-SERVICE added at admission 2026-11-10).
 **Hot-file leases:** none.
 **Shared contracts:** none.
