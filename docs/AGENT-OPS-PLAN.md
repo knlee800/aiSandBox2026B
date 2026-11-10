@@ -32,7 +32,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 | 22 | OFFICE-04 | Office animation |
 | 24 | OFFICE-02 | Push updates, only if polling proves costly |
 | 25 | GOV-PRD-SYNC-01 | PRD office note and the no-scheduler principle, in Keith's words (GOV-ARCH-SYNC-01 done 2026-11-10) |
-| 26 | CM-SYMLINK-01, CM-DEPS-01, BROWSER-SMOKE-01 | The host file routes following symlinks (CM-SYMLINK-01, security, admitted 2026-11-10, Lane 1; CM-PATH-01 done 2026-11-10, not deployed), the unused package and stale script (CM-DEPS-01), and browser smoke's empty preview registry (BROWSER-SMOKE-01) (CODE-TIDY-01 done 2026-11-10) (CM-CLEANUP-01 and CM-CLEANUP-01B done 2026-11-10; DRIFT-FIX-01, STAGING-DEPLOY-CMAUTH-01 and CM-PREFIX-01 done 2026-11-10; staging runs 2052c36; CM-PREFIX-01 deploys with STAGING-DEPLOY-WF-01) (CM-AUTH-01 done 2026-11-10) |
+| 26 | CM-GIT-HOST-01, CM-DEPS-01, BROWSER-SMOKE-01 | Host-side git in the sandbox-writable workspace (CM-GIT-HOST-01, security; CM-SYMLINK-01 done 2026-11-10, not deployed; CM-PATH-01 done 2026-11-10, not deployed), the unused package and stale script (CM-DEPS-01), and browser smoke's empty preview registry (BROWSER-SMOKE-01) (CODE-TIDY-01 done 2026-11-10) (CM-CLEANUP-01 and CM-CLEANUP-01B done 2026-11-10; DRIFT-FIX-01, STAGING-DEPLOY-CMAUTH-01 and CM-PREFIX-01 done 2026-11-10; staging runs 2052c36; CM-PREFIX-01 deploys with STAGING-DEPLOY-WF-01) (CM-AUTH-01 done 2026-11-10) |
 
 **Stage 3 — user workflows (section 4, phase 1 continued)**
 

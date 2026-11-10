@@ -87875,7 +87875,7 @@ taskId=CM-SYMLINK-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the CM-PATH-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 1 and its mutexes released. Result: passed. Removed: the six /api/files routes, FilesService, FilesModule, the DTO and notifyFileChanged (callers re-verified: none); SessionIdPipe on 30 routes (400 Invalid session id, after the guard); inventory 52 routes, 51 guarded plus /api/health; 26 tests removed, 109 added, with a mutation check; opus subagent b6f06c5, fast-forwarded onto main; control-plane rerun: container-manager 18 suites, 574 passed, build 0. Not deployed. FOLLOWUPS: 1 registered (CM-GIT-HOST-01) / 3 superseded (the gateway file-changed route, test-container.sh and the unused isPathInside, into CM-DEPS-01) / 0 dropped / 0 undisposed. Was admitted 2026-11-10. Checkpoint: docs/CM-SYMLINK-01-CHECKPOINT.md.
 **Task ID:** CM-SYMLINK-01
 **Title:** Container-manager host file routes follow symlinks
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -87892,6 +87892,30 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set at admission 2026-11-10).
 **Scope:** From the CM-PATH-01 worker, checked by the control plane: FilesService (the host-side /api/files/:sessionId/* routes) follows symlinks with readFile, writeFile, stat and mkdir; the workspace is bind-mounted into the sandbox, so code there could create a symlink to / and a key holder could then read or write host files through these routes. No gateway or ai-service code calls /api/files/* (the gateway uses the container-side /api/internal/sessions/:id/files), so only a direct key holder could reach it. Recommended: remove the uncalled host-side /api/files routes (and their inventory entries, with removed-route tests); otherwise check the realpath of the target and of the nearest existing parent against the workspace realpath. Also (superseded from CM-PATH-01): validate the :id session parameter at the controller layer for every session route.
+
+### CM-GIT-HOST-01 — Host-side git runs in the sandbox-writable workspace
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CM-GIT-HOST-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the CM-SYMLINK-01 LOCK — not admitted.
+**Task ID:** CM-GIT-HOST-01
+**Title:** Host-side git runs in the sandbox-writable workspace
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction); a security fix.
+**Depends on:** CM-SYMLINK-01.
+**Primary write scope:** PROVISIONAL: services/container-manager/src/ (git and sessions modules, tests).
+**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the CM-SYMLINK-01 worker, checked by the control plane: git.service.ts initializeGit (git init, add, commit) and getHistory (git log) run simple-git on the host in the bind-mounted workspace, where the sandbox can write .git/config (core.fsmonitor and similar) or .git/hooks, so a host-side git command could run sandbox-chosen commands on the host. Reached only by key holders: POST /api/git/:id/init, the container-manager self-call from POST /api/sessions create (sessions.service.ts:187, no other caller), and GET /api/git/:id/history (no caller). Commit, revert and diff already run in the container. Recommended: remove the uncalled host-side git routes and the create self-call path (re-verify callers first), or run them inside the container; tests that no host-side simple-git call remains on a sandbox-writable path.
 
 ### BROWSER-SMOKE-01 — Browser smoke never finds a preview target
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -87941,6 +87965,7 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From CM-CLEANUP-01: jsonwebtoken and @types/jsonwebtoken in services/container-manager/package.json are unused since PreviewsController was removed. Remove them and update the lockfile without touching an installed node_modules (for example npm install --package-lock-only in a checkout without junctions, run by the control plane), then rerun container-manager's gates.
 **Also (added 2026-11-10 by the CODE-TIDY-01 LOCK):** the root script test-preview-backend.sh calls container-manager without X-Internal-Service-Key, so every call is 403 since CM-AUTH-01; delete it or update it to read the key from the environment.
+**Also (added 2026-11-10 by the CM-SYMLINK-01 LOCK):** the stale services/container-manager/test-container.sh calls the removed /api/files routes on the wrong port without the key (delete or update it); isPathInside in services/container-manager/src/files/path-containment.ts has no production user (keep as a helper or remove with its spec); and the gateway POST /api/events/file-changed (services/api-gateway/src/websocket/events.controller.ts:8) has no container-manager caller since CM-SYMLINK-01 (remove it or record its other callers; that item needs GATEWAY).
 
 ### DRIFT-FIX-01 — Briefing drift check follows the shared version hash
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
