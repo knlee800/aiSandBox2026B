@@ -40,7 +40,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 | # | Item | What it does |
 |---|---|---|
 | 27 | MODEL-PRICE-01 | A credit price per model, when Keith sets prices (AGENT-SPEC-01 done 2026-11-10) |
-| 28 | BIZ-USER-01A, KNOW-FOLDERS-01 | Save workflows: copy, blank, budget, access (BIZ-USER-01 is their umbrella; 01A admitted 2026-11-10, Lane 1); owner-named knowledge folders (KNOW-FOLDERS-01, after 01A) |
+| 28 | KNOW-FOLDERS-01 | Owner-named knowledge folders (BIZ-USER-01A done 2026-11-10) |
 | 29 | BIZ-USER-01B | Create Agent editor |
 | 30 | BIZ-USER-01C | Run a workflow, test run, budget check |
 | 31 | RESULTS-01 | Results list and run history |

@@ -86193,7 +86193,7 @@ taskId=BIZ-USER-01A
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted. Design step and stage-start approved 2026-11-10: docs/BIZ-USER-01A-STAGE-START.md (Keith: "Yes, both" for the nine catalogue folders and Chief of Staff-only templates).
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 1 and its mutexes released. User workflows on user_agents (migration 1803000000000, reversible, not destructive), validation, grants intersect allowlist, blank and template create, PATCH and options routes; opus subagent in worktree lane/BIZ-USER-01A, cherry-picked as 1984673; gateway 3004 passed (only the known smoke suite fails), build clean; not deployed. FOLLOWUPS: 0 newly registered (KNOW-FOLDERS-01 at the stage-start) / 6 superseded / 0 dropped / 0 undisposed. Checkpoint: docs/BIZ-USER-01A-CHECKPOINT.md.
 **Task ID:** BIZ-USER-01A
 **Title:** Store user workflows, copy, blank, budget and grants
 **Workstream:** AGENT (taxonomy only; zero admission weight)
