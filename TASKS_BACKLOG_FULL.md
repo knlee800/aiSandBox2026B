@@ -87260,25 +87260,50 @@ taskId=OFFICE-07
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-ONE-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-09 by GOV-ONE-PLAN-01 — not admitted.
 **Task ID:** OFFICE-07
 **Title:** Cancel from the office
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP
-**Start condition:** NOT_READY. Ready when: the cancellation-authorization concern is confirmed covered (item 26). Keith decides.
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction). The cancellation-authorization concern was confirmed COVERED on 2026-11-10 (plan item 26 review, docs/SECURITY-CHECK-26-REVIEW.md: POST /api/collaboration/runs/:id/cancel is owner-checked in the controller, the service and per hand-off; another user gets 404).
 **Depends on:** OFFICE-01, COLLAB-CANCEL-01.
-**Primary write scope:** set at admission.
-**Mutexes / resources:** set at admission.
-**Hot-file leases:** set at admission.
-**Shared contracts:** set at admission.
+**Primary write scope:** frontend/components/office/, frontend/lib/office/, frontend/components/collaboration/ (only to share the existing cancel request), the three message files. Set 2026-11-10.
+**Mutexes / resources:** FRONTEND, I18N.
+**Hot-file leases:** none.
+**Shared contracts:** none (uses the existing cancel route unchanged).
 **Evidence class:** LOCAL-TESTS.
-**Revert isolation:** set at admission.
+**Revert isolation:** the office cancel control only.
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/RPG-OFFICE-01-PLAN.md 2026-11-05 and the one plan 2026-11-09).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
-**Scope:** Cancel from the office.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Cancel from the office. The office cancels Team runs through the existing POST /api/collaboration/runs/:id/cancel (owner-checked; the run and its hand-offs end together), with a confirm step, translated states (confirm, cancelling, cancelled, already finished 409, not found 404, failed), and no new backend route.
 **Plan:** docs/AGENT-OPS-PLAN.md section 0 item 23
+
+### AI-SERVICE-AUTH-01 — Internal services listen on loopback and check the internal key
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=AI-SERVICE-AUTH-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the plan item 26 security review (docs/SECURITY-CHECK-26-REVIEW.md) — not admitted.
+**Task ID:** AI-SERVICE-AUTH-01
+**Title:** Internal services listen on loopback and check the internal key
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP (security).
+**Start condition:** NOT_READY. Ready when: a stage-start is approved; GATEWAY free for the client half. Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** none.
+**Primary write scope:** PROVISIONAL: services/ai-service/src/main.ts and its controllers' guard, services/container-manager/src/main.ts, services/api-gateway/src (the ai-service client sends the internal key; a constant-time key compare), and the deploy unit or env if the bind address is configured there.
+**Mutexes / resources:** set at admission (expected AI-SERVICE, CONTAINER-MANAGER, GATEWAY; STAGING and ENV for the deploy).
+**Hot-file leases:** none known.
+**Shared contracts:** the internal service key header (checked at the stage-start).
+**Evidence class:** LOCAL-TESTS (then a deploy with host checks).
+**Revert isolation:** bind address and guard, per service.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it).
+**productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Found by the item 26 review and confirmed read-only on the staging host 2026-11-10 (C:/Users/knlee/aisb-preflight/SEC-26/sec26-ports.out): the gateway (4000), ai-service (4001) and container-manager (4002) listen on all interfaces, ufw is inactive and iptables INPUT is ACCEPT; only the Lightsail firewall (recorded as 80, 443 and SSH from Keith's home address) keeps them off the internet; Caddy proxies to 127.0.0.1. ai-service has no guard on any route (anyone reaching 4001 can add or read session messages, clear conversations and start provider runs). Wanted: ai-service and container-manager listen on 127.0.0.1 (after confirming every caller is on the host; sandbox containers included), the gateway too if Caddy is its only client; ai-service routes require the internal service key, which the gateway's ai-service client then sends; the gateway's internal-key compare becomes constant-time. Then a staging deploy that checks the listening addresses.
 
 ### STAGING-DEPLOY-FD-01 — Deploy the front door (phase 2)
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
