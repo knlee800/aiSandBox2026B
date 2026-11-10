@@ -87996,7 +87996,7 @@ taskId=CHECKPOINT-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — Keith started it ("i will do it now"). Was: READY — registered 2026-11-10 by the STAGING-DEPLOY-CMSEC-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. Result: passed. Lane 1 and STAGING released; stagingAuthorized false. Keith made the save point "smoke test" (13:40:33 UTC) and reopened the project in a new session (13:43:26); it was still listed. Host: bundle saved 13:40:35 (12,739 bytes, v2, checkpoint refs), new container 28 checkpoint refs and HEAD "smoke test", no leftover aisb-history or restore bundles, no history errors. Not exercised live: a bundle over 8 MiB and a planted link (covered by tests). Checkpoint: docs/CHECKPOINT-LIVE-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Registered 2026-11-10 by the STAGING-DEPLOY-CMSEC-01 LOCK.
 **Task ID:** CHECKPOINT-LIVE-01
 **Title:** Keith checkpoint save and restore smoke on staging
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
