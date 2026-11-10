@@ -87302,7 +87302,7 @@ taskId=AI-SERVICE-AUTH-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the plan item 26 security review (docs/SECURITY-CHECK-26-REVIEW.md) — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the plan item 26 security review (docs/SECURITY-CHECK-26-REVIEW.md) — not admitted. Stage-start approved 2026-11-10: docs/AI-SERVICE-AUTH-01-STAGE-START.md (sandbox containers on the Docker bridge can reach 4000, 4001 and 4002 today; all three bind to 127.0.0.1 by default; ai-service routes need the internal key except metrics and health; constant-time compares in the gateway and container-manager).
 **Task ID:** AI-SERVICE-AUTH-01
 **Title:** Internal services listen on loopback and check the internal key
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -87310,7 +87310,7 @@ nature=IMPLEMENTATION
 **Lifecycle:** 4-STEP (security).
 **Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: a stage-start is approved; GATEWAY free for the client half. Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** none.
-**Primary write scope:** set at admission 2026-11-10: services/ai-service/src/ (bind address and a guard on its routes), services/container-manager/src/main.ts (bind address), services/api-gateway/src/ (the ai-service client sends the internal key; constant-time key compare). The staging deploy and any unit or env change are a separate registered step after the code locks.
+**Primary write scope:** set at admission 2026-11-10: services/ai-service/src/ (bind address and a guard on its routes), services/container-manager/src/main.ts (bind address), services/container-manager/src/listen-host.ts and spec and services/container-manager/src/guards/ (constant-time compare; added at the stage-start 2026-11-10), services/api-gateway/src/ (the ai-service client sends the internal key; constant-time key compare). The staging deploy and any unit or env change are a separate registered step after the code locks.
 **Mutexes / resources:** GATEWAY, AI-SERVICE, CONTAINER-MANAGER.
 **Hot-file leases:** none known.
 **Shared contracts:** the internal service key header (checked at the stage-start).
