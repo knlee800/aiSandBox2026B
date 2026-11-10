@@ -86193,7 +86193,7 @@ taskId=BIZ-USER-01A
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted. Design step and stage-start approved 2026-11-10: docs/BIZ-USER-01A-STAGE-START.md (Keith: "Yes, both" for the nine catalogue folders and Chief of Staff-only templates).
 **Task ID:** BIZ-USER-01A
 **Title:** Store user workflows, copy, blank, budget and grants
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -86212,6 +86212,31 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL until the design step. **admissionUncertain:** true.
 **Scope:** Implementation slice of BIZ-USER-01. It begins with BIZ-USER-01's design step, which records the AGENT-PLATFORM-EXEC-01C overlap. Stores the six-part columns, copy-from-template, blank create, budget per run and per day (C15, stored) and server-side grants, and the owner's own knowledge folders chosen per workflow (C8, C11). Depends on AGENT-SPEC-01, not on BIZ-USER-01.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+
+### KNOW-FOLDERS-01 — Owner-named knowledge folders
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=KNOW-FOLDERS-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the BIZ-USER-01A stage-start (DECISION A, Keith "Yes, both") — not admitted.
+**Task ID:** KNOW-FOLDERS-01
+**Title:** Owner-named knowledge folders
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: BIZ-USER-01A LOCKED and a stage-start is approved. Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** BIZ-USER-01A.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/knowledge/, services/api-gateway/src/migrations/, services/ai-service/src/worker/knowledge-scopes.ts, frontend/components/knowledge/, the three message files.
+**Mutexes / resources:** set at admission (expected GATEWAY, AI-SERVICE, FRONTEND, I18N, MIGRATION).
+**Hot-file leases:** none.
+**Shared contracts:** the signed job's knowledge scope field (checked at the stage-start).
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** folders table and its scope ids.
+**saturationClass:** OPTIONAL (Keith may change it).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** The plan's owner-named knowledge folders (for example hr-payroll; docs/AGENT-OPS-PLAN.md:194): a per-owner folders table, the worker's scope check accepting the owner's own folder ids, the Knowledge page creating and naming folders, and workflows ticking them. v1 (BIZ-USER-01A) uses the nine fixed catalogue folders, which already hold only the owner's documents.
 
 ### BIZ-USER-01B — Create Agent editor for user workflows
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

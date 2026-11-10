@@ -3983,6 +3983,28 @@
       "writeSetPrecision": "PROVISIONAL"
     },
     {
+      "taskId": "KNOW-FOLDERS-01",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "4-STEP",
+      "status": "READY",
+      "startCondition": "NOT_READY",
+      "saturationClass": "OPTIONAL",
+      "productClass": "APPROVED_FUTURE",
+      "futureAuthorization": "AUTHORIZED",
+      "dependsOn": ["BIZ-USER-01A"],
+      "mutexes": [],
+      "writePaths": [],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "LOCAL-TESTS",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": [],
+      "admissionUncertain": true,
+      "writeSetPrecision": "PROVISIONAL"
+    },
+    {
       "taskId": "BIZ-USER-01B",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
