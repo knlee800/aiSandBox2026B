@@ -86642,22 +86642,22 @@ taskId=WORKFLOW-STATUS-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the WORKFLOW-CREATE-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the WORKFLOW-CREATE-01 LOCK — not admitted.
 **Task ID:** WORKFLOW-STATUS-02
 **Title:** Workflow switch-on checked by the server; a distinct Draft badge
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** WORKFLOW-CREATE-01.
-**Primary write scope:** PROVISIONAL, set at admission (expected services/api-gateway/src/user-agent/, frontend/components/platform/, frontend/lib/agent-platform/, the three message files).
-**Mutexes / resources:** set at admission (expected GATEWAY, FRONTEND, I18N).
+**Primary write scope:** services/api-gateway/src/user-agent/, frontend/components/platform/, frontend/lib/agent-platform/, the three message files (set at admission 2026-11-10).
+**Mutexes / resources:** GATEWAY, FRONTEND, I18N.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set at admission 2026-11-10).
 **Scope:** From the WORKFLOW-CREATE-01 worker: (1) PATCH /api/agents/:id accepts status active for a workflow with no passing test at its current version; only the client enforces switch-on-after-test (safe today: the start gate checks the tested versions); refuse it on the server with a clear code. (2) The dashboard card shows Draft with the disabled styling; give Draft its own badge, which needs the AgentStatus type in frontend/lib/agent-platform.
 
 ### GOV-GOOGLE-VERIFY-01 — Google OAuth app verification
