@@ -24,6 +24,7 @@ import { SessionModule } from '../sessions/session.module';
 import { ConversationModule } from '../conversations/conversation.module';
 import { KnowledgeModule } from '../knowledge/knowledge.module';
 import { UserAgentModule } from '../user-agent/user-agent.module';
+import { TestedWorkflowSwitchOnCheck } from '../user-agent/user-workflow-switch-on';
 import { CreditDeductionRecord } from '../entities/credit-deduction-record.entity';
 import { CollaborationWorkflowService } from './collaboration-workflow';
 import { CollaborationResultsService } from './collaboration-results';
@@ -66,6 +67,9 @@ import { Session } from '../entities/session.entity';
   providers: [
     OrchestrationService,
     CollaborationWorkflowService,
+    // WORKFLOW-STATUS-03: the switch-on check, injected with CollaborationWorkflowService;
+    // it binds itself to UserAgentModule's exported slot for USER_WORKFLOW_SWITCH_ON_CHECK.
+    TestedWorkflowSwitchOnCheck,
     CollaborationResultsService,
     CollaborationBusinessSessionService,
     ExecutionResultService,

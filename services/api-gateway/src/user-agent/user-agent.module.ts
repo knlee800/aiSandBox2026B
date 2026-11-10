@@ -5,8 +5,7 @@ import { UserAgent } from '../entities/user-agent.entity';
 import { ConnectorConnection } from '../entities/connector-connection.entity';
 import { UserAgentController } from './user-agent.controller';
 import { UserAgentService } from './user-agent.service';
-import { USER_WORKFLOW_SWITCH_ON_CHECK } from './user-workflow-switch-on.port';
-import { TestedWorkflowSwitchOnCheck } from './user-workflow-switch-on';
+import { USER_WORKFLOW_SWITCH_ON_CHECK, UserWorkflowSwitchOnSlot } from './user-workflow-switch-on.port';
 
 @Module({
   imports: [
@@ -18,8 +17,11 @@ import { TestedWorkflowSwitchOnCheck } from './user-workflow-switch-on';
   providers: [
     UserAgentService,
     // WORKFLOW-STATUS-02: switch-on needs a test run at the current version (the Team gate's rule).
-    { provide: USER_WORKFLOW_SWITCH_ON_CHECK, useClass: TestedWorkflowSwitchOnCheck },
+    // WORKFLOW-STATUS-03: the port is a slot that OrchestrationModule's check binds itself to;
+    // it refuses with 503 until then (fail closed).
+    UserWorkflowSwitchOnSlot,
+    { provide: USER_WORKFLOW_SWITCH_ON_CHECK, useExisting: UserWorkflowSwitchOnSlot },
   ],
-  exports: [UserAgentService],
+  exports: [UserAgentService, UserWorkflowSwitchOnSlot],
 })
 export class UserAgentModule {}

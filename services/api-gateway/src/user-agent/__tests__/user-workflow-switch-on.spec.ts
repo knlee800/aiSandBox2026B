@@ -1,5 +1,4 @@
 import { HttpException, Module, ServiceUnavailableException } from '@nestjs/common';
-import { ModuleRef } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UserAgent } from '../../entities/user-agent.entity';
@@ -11,9 +10,13 @@ import {
 } from '../../orchestration/collaboration-workflow';
 import { CollaborationRunEntity } from '../../orchestration/collaboration-run.entity';
 import { CollaborationReferralEntity } from '../../orchestration/collaboration-referral.entity';
+import { OrchestrationModule } from '../../orchestration/orchestration.module';
 import { UserAgentModule } from '../user-agent.module';
 import { UserAgentService } from '../user-agent.service';
-import { USER_WORKFLOW_SWITCH_ON_CHECK } from '../user-workflow-switch-on.port';
+import {
+  USER_WORKFLOW_SWITCH_ON_CHECK,
+  UserWorkflowSwitchOnSlot,
+} from '../user-workflow-switch-on.port';
 import {
   TestedWorkflowSwitchOnCheck,
   assertWorkflowCanSwitchOn,
@@ -103,41 +106,72 @@ describe('WORKFLOW-STATUS-02 user workflow switch-on check', () => {
     });
   });
 
-  describe('TestedWorkflowSwitchOnCheck', () => {
-    it('reads the tested versions from the application CollaborationWorkflowService, looked up once', async () => {
+  describe('TestedWorkflowSwitchOnCheck and the slot (WORKFLOW-STATUS-03)', () => {
+    it('reads the tested versions from the injected CollaborationWorkflowService once bound to the slot', async () => {
       const version = renderWorkflow(row())!.version;
       const workflows = {
         usageFor: jest.fn(async () => ({ testedVersions: new Set([version]) })),
       };
-      const moduleRef = { get: jest.fn(() => workflows) };
-      const check = new TestedWorkflowSwitchOnCheck(moduleRef as unknown as ModuleRef);
+      const slot = new UserWorkflowSwitchOnSlot();
+      const check = new TestedWorkflowSwitchOnCheck(
+        workflows as unknown as CollaborationWorkflowService,
+        slot,
+      );
+      check.onModuleInit();
 
-      await check.assertCanSwitchOn(ownerUserId, row());
-      await check.assertCanSwitchOn(ownerUserId, row());
+      await slot.assertCanSwitchOn(ownerUserId, row());
 
-      expect(moduleRef.get).toHaveBeenCalledTimes(1);
-      expect(moduleRef.get).toHaveBeenCalledWith(CollaborationWorkflowService, { strict: false });
       expect(workflows.usageFor).toHaveBeenCalledWith(ownerUserId, agentId);
     });
 
-    it.each([
-      ['throws', () => {
-        throw new Error('unknown element');
-      }],
-      ['returns nothing', () => undefined],
-    ])('fails closed with 503 when the lookup %s', async (_label, lookup) => {
-      const check = new TestedWorkflowSwitchOnCheck({ get: jest.fn(lookup) } as unknown as ModuleRef);
-      await expect(check.assertCanSwitchOn(ownerUserId, row())).rejects.toBeInstanceOf(
+    it('fails closed with 503 while no check is bound to the slot', async () => {
+      const slot = new UserWorkflowSwitchOnSlot();
+      await expect(slot.assertCanSwitchOn(ownerUserId, row())).rejects.toBeInstanceOf(
         ServiceUnavailableException,
       );
     });
 
-    it('is the binding UserAgentModule provides for the port', () => {
+    it('passes a refusal from the bound check through unchanged', async () => {
+      const slot = new UserWorkflowSwitchOnSlot();
+      const workflows = { usageFor: jest.fn(async () => ({ testedVersions: new Set<string>() })) };
+      new TestedWorkflowSwitchOnCheck(
+        workflows as unknown as CollaborationWorkflowService,
+        slot,
+      ).onModuleInit();
+      const refusal = await refusalOf(slot.assertCanSwitchOn(ownerUserId, row()));
+      expect(refusal.getStatus()).toBe(409);
+      expect(refusal.getResponse()).toMatchObject({ code: 'WORKFLOW_NOT_TESTED' });
+    });
+
+    it('refuses binding a second, different check; binding the same check again is harmless', () => {
+      const slot = new UserWorkflowSwitchOnSlot();
+      const first = { assertCanSwitchOn: jest.fn() };
+      slot.bind(first);
+      slot.bind(first);
+      expect(() => slot.bind({ assertCanSwitchOn: jest.fn() })).toThrow(/already bound/);
+    });
+
+    it('UserAgentModule provides the slot for the port and exports it, without importing OrchestrationModule', () => {
       const providers = Reflect.getMetadata('providers', UserAgentModule) as unknown[];
+      expect(providers).toContain(UserWorkflowSwitchOnSlot);
       expect(providers).toContainEqual({
         provide: USER_WORKFLOW_SWITCH_ON_CHECK,
-        useClass: TestedWorkflowSwitchOnCheck,
+        useExisting: UserWorkflowSwitchOnSlot,
       });
+      expect(providers).not.toContain(TestedWorkflowSwitchOnCheck);
+      const exportsList = Reflect.getMetadata('exports', UserAgentModule) as unknown[];
+      expect(exportsList).toEqual(expect.arrayContaining([UserAgentService, UserWorkflowSwitchOnSlot]));
+      const imports = Reflect.getMetadata('imports', UserAgentModule) as unknown[];
+      expect(imports).not.toContain(OrchestrationModule);
+    });
+
+    it('OrchestrationModule provides the check beside CollaborationWorkflowService and imports UserAgentModule', () => {
+      const providers = Reflect.getMetadata('providers', OrchestrationModule) as unknown[];
+      expect(providers).toEqual(
+        expect.arrayContaining([CollaborationWorkflowService, TestedWorkflowSwitchOnCheck]),
+      );
+      const imports = Reflect.getMetadata('imports', OrchestrationModule) as unknown[];
+      expect(imports).toContain(UserAgentModule);
     });
   });
 
@@ -157,22 +191,23 @@ describe('WORKFLOW-STATUS-02 user workflow switch-on check', () => {
       }),
     };
 
+    // UserAgentModule's own providers and exports, with the repositories stubbed.
     @Module({
       providers: [
-        UserAgentService,
-        { provide: USER_WORKFLOW_SWITCH_ON_CHECK, useClass: TestedWorkflowSwitchOnCheck },
+        ...(Reflect.getMetadata('providers', UserAgentModule) as never[]),
         { provide: getRepositoryToken(UserAgent), useValue: userAgentRepository },
         { provide: getRepositoryToken(ConnectorConnection), useValue: { find: async () => [] } },
       ],
-      exports: [UserAgentService],
+      exports: Reflect.getMetadata('exports', UserAgentModule) as never[],
     })
     class TestUserAgentModule {}
 
-    // CollaborationWorkflowService is provided here and not exported, like OrchestrationModule.
+    // CollaborationWorkflowService and the check are provided here and not exported, like OrchestrationModule.
     @Module({
       imports: [TestUserAgentModule],
       providers: [
         CollaborationWorkflowService,
+        TestedWorkflowSwitchOnCheck,
         {
           provide: getRepositoryToken(CollaborationRunEntity),
           useValue: {
@@ -189,10 +224,28 @@ describe('WORKFLOW-STATUS-02 user workflow switch-on check', () => {
     })
     class TestOrchestrationModule {}
 
+    it('without the orchestration side, a switch-on is refused with 503 and nothing is saved', async () => {
+      rows.set(agentId, row());
+      const app = await Test.createTestingModule({ imports: [TestUserAgentModule] }).compile();
+      await app.init();
+      const service = app.get(UserAgentService, { strict: false });
+
+      const refusal = await refusalOf(service.update(agentId, ownerUserId, { status: 'active' }));
+      expect(refusal.getStatus()).toBe(503);
+      expect(rows.get(agentId)!.status).toBe('draft');
+
+      await app.close();
+    });
+
     it('refuses an untested switch-on, then allows it after a completed test run at the version', async () => {
       rows.set(agentId, row());
       const app = await Test.createTestingModule({ imports: [TestOrchestrationModule] }).compile();
+      await app.init();
       const service = app.get(UserAgentService, { strict: false });
+      // UserAgentService's port is the slot, and the check OrchestrationModule built is bound to it.
+      expect(app.get(USER_WORKFLOW_SWITCH_ON_CHECK, { strict: false })).toBe(
+        app.get(UserWorkflowSwitchOnSlot, { strict: false }),
+      );
 
       const refusal = await refusalOf(service.update(agentId, ownerUserId, { status: 'active' }));
       expect(refusal.getStatus()).toBe(409);

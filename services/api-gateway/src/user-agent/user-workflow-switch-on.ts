@@ -1,5 +1,4 @@
-import { Injectable, ServiceUnavailableException } from '@nestjs/common';
-import { ModuleRef } from '@nestjs/core';
+import { Injectable, type OnModuleInit } from '@nestjs/common';
 import type { UserAgent } from '../entities/user-agent.entity';
 import {
   CollaborationWorkflowService,
@@ -9,7 +8,7 @@ import {
   workflowRefusal,
   type WorkflowUsage,
 } from '../orchestration/collaboration-workflow';
-import type { UserWorkflowSwitchOnCheck } from './user-workflow-switch-on.port';
+import { UserWorkflowSwitchOnSlot, type UserWorkflowSwitchOnCheck } from './user-workflow-switch-on.port';
 
 /** Reads the versions of a workflow that have a completed test run. */
 export type WorkflowTestedVersionsReader = (
@@ -39,41 +38,29 @@ export async function assertWorkflowCanSwitchOn(
 }
 
 /**
- * Binds the port to the CollaborationWorkflowService instance that the Team
- * page uses, so the tested versions come from the same `usageFor`.
+ * WORKFLOW-STATUS-03: the real check, provided by OrchestrationModule.
  *
- * OrchestrationModule imports UserAgentModule, so UserAgentModule cannot
- * import OrchestrationModule back. The service is looked up from the
- * application container at call time (`strict: false`) instead of being
- * injected, which needs no change under orchestration/. If it cannot be
- * found, the switch-on fails closed with 503.
+ * It is injected with the CollaborationWorkflowService instance that the Team
+ * page uses, so the tested versions come from the same `usageFor`, and with
+ * UserAgentModule's exported slot. When the module initialises it binds itself
+ * to the slot, which UserAgentService reaches through
+ * USER_WORKFLOW_SWITCH_ON_CHECK. Ordinary injection on both sides; no module
+ * cycle and no provider cycle (see UserWorkflowSwitchOnSlot).
  */
 @Injectable()
-export class TestedWorkflowSwitchOnCheck implements UserWorkflowSwitchOnCheck {
-  private workflows: CollaborationWorkflowService | null = null;
+export class TestedWorkflowSwitchOnCheck implements UserWorkflowSwitchOnCheck, OnModuleInit {
+  constructor(
+    private readonly workflows: CollaborationWorkflowService,
+    private readonly slot: UserWorkflowSwitchOnSlot,
+  ) {}
 
-  constructor(private readonly moduleRef: ModuleRef) {}
-
-  async assertCanSwitchOn(userId: string, row: UserAgent): Promise<void> {
-    const workflows = this.resolveWorkflows();
-    await assertWorkflowCanSwitchOn(userId, row, (owner, workflowId) =>
-      workflows.usageFor(owner, workflowId),
-    );
+  onModuleInit(): void {
+    this.slot.bind(this);
   }
 
-  private resolveWorkflows(): CollaborationWorkflowService {
-    if (!this.workflows) {
-      let found: CollaborationWorkflowService | undefined;
-      try {
-        found = this.moduleRef.get(CollaborationWorkflowService, { strict: false });
-      } catch {
-        found = undefined;
-      }
-      if (!found) {
-        throw new ServiceUnavailableException('Workflow test results are not available');
-      }
-      this.workflows = found;
-    }
-    return this.workflows;
+  async assertCanSwitchOn(userId: string, row: UserAgent): Promise<void> {
+    await assertWorkflowCanSwitchOn(userId, row, (owner, workflowId) =>
+      this.workflows.usageFor(owner, workflowId),
+    );
   }
 }

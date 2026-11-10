@@ -364,6 +364,20 @@ async function saveUserAgentRequest(
       return typeof parsed.code === 'string' ? { error: msg, code: parsed.code } : { error: msg };
     }
 
+    // WORKFLOW-STATUS-03: a 409 refusal (WORKFLOW_NOT_TESTED, WORKFLOW_INVALID) carries the
+    // server's code like a 400 does, so the panel can name the reason at once. A 409
+    // without a code stays the generic failure.
+    if (response.status === 409) {
+      const parsed = (await response.json()) as { message?: string | string[]; code?: unknown };
+      if (typeof parsed.code !== 'string') {
+        return { error: failure };
+      }
+      const msg = Array.isArray(parsed.message)
+        ? parsed.message.join('; ')
+        : (parsed.message ?? failure);
+      return { error: msg, code: parsed.code };
+    }
+
     if (response.status === 404) {
       return { error: 'NOT_FOUND' };
     }

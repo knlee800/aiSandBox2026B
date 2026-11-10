@@ -419,6 +419,42 @@ describe('useUserAgents workflow routes — BIZ-USER-01B', () => {
     assert.equal(result.error, 'name must be shorter; role is empty');
   });
 
+  test('WORKFLOW-STATUS-03: a 409 switch-on refusal with a code returns the code and message', async () => {
+    const { updateUserAgentRequest, userAgentSwitchBody } = await import('./useUserAgents');
+    installMockFetch(async () =>
+      mockResponse(409, {
+        statusCode: 409,
+        message: 'Run a test of this version first.',
+        error: 'Conflict',
+        code: 'WORKFLOW_NOT_TESTED',
+      }),
+    );
+
+    const result = await updateUserAgentRequest('agent-1', userAgentSwitchBody(true));
+
+    assert.equal(result.agent, undefined);
+    assert.equal(result.code, 'WORKFLOW_NOT_TESTED');
+    assert.equal(result.error, 'Run a test of this version first.');
+
+    installMockFetch(async () => mockResponse(409, { statusCode: 409, code: 'WORKFLOW_INVALID' }));
+    const invalid = await updateUserAgentRequest('agent-1', userAgentSwitchBody(true));
+    assert.equal(invalid.code, 'WORKFLOW_INVALID');
+    assert.equal(invalid.error, 'UPDATE_FAILED');
+  });
+
+  test('WORKFLOW-STATUS-03: a 409 without a code stays the generic failure', async () => {
+    const { updateUserAgentRequest, createUserAgentRequest } = await import('./useUserAgents');
+    installMockFetch(async () => mockResponse(409, { statusCode: 409, message: 'Conflict' }));
+
+    const update = await updateUserAgentRequest('agent-1', { status: 'active' });
+    assert.equal(update.code, undefined);
+    assert.equal(update.error, 'UPDATE_FAILED');
+
+    const create = await createUserAgentRequest({ name: 'n', role: 'r', description: 'd' });
+    assert.equal(create.code, undefined);
+    assert.equal(create.error, 'CREATE_FAILED');
+  });
+
   test('401, 404, 500 and a network error map to stable error values', async () => {
     const { updateUserAgentRequest, createUserAgentRequest } = await import('./useUserAgents');
 
