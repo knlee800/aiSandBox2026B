@@ -32,7 +32,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 | 22 | OFFICE-04 | Office animation |
 | 24 | OFFICE-02 | Push updates, only if polling proves costly |
 | 25 | GOV-PRD-SYNC-01 | PRD office note and the no-scheduler principle, in Keith's words (GOV-ARCH-SYNC-01 done 2026-11-10) |
-| 26 | CM-AUTH-01 | The internal key on container-manager routes (STAGING-DEPLOY-SEC-01 and LOCAL-DEV-SYNC-01 done 2026-11-10; staging runs 9d56779) (AI-SERVICE-AUTH-01 done 2026-11-10; review docs/SECURITY-CHECK-26-REVIEW.md) |
+| 26 | CM-AUTH-01 (admitted 2026-11-10, Lane 2) | The internal key on container-manager routes (STAGING-DEPLOY-SEC-01 and LOCAL-DEV-SYNC-01 done 2026-11-10; staging runs 9d56779) (AI-SERVICE-AUTH-01 done 2026-11-10; review docs/SECURITY-CHECK-26-REVIEW.md) |
 
 **Stage 3 — user workflows (section 4, phase 1 continued)**
 
@@ -40,7 +40,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 |---|---|---|
 | 27 | MODEL-PRICE-01 | A credit price per model, when Keith sets prices (AGENT-SPEC-01 done 2026-11-10) |
 | 28 | KNOW-FOLDERS-01 | Owner-named knowledge folders (BIZ-USER-01A done 2026-11-10) |
-| 30 | BIZ-USER-01D, RUN-CUTOFF-01 | Workflow summary and switch on or off on the agent panel (01D); a hard per-run credit cutoff when Keith wants it (BIZ-USER-01C done 2026-11-10) |
+| 30 | BIZ-USER-01D, RUN-CUTOFF-01 | Workflow summary and switch on or off on the agent panel (01D, admitted 2026-11-10, Lane 1); a hard per-run credit cutoff when Keith wants it (BIZ-USER-01C done 2026-11-10) |
 | 31 | RESULTS-01 | Results list and run history |
 | 32 | STAGING-DEPLOY-WF-01, BIZ-LIVE-04 | Deploy; Keith runs his own workflow live |
 | 33 | CONN-OAUTH-01 | Connect Google, after verification |

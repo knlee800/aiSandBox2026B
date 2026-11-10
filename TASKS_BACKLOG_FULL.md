@@ -86337,13 +86337,13 @@ taskId=BIZ-USER-01D
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the BIZ-USER-01C LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the BIZ-USER-01C LOCK — not admitted.
 **Task ID:** BIZ-USER-01D
 **Title:** Workflow summary, switch on or off, and Open on Team
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: BIZ-USER-01C LOCKED (done 2026-11-10). Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: BIZ-USER-01C LOCKED (done 2026-11-10). Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** BIZ-USER-01C.
 **Primary write scope:** frontend/components/platform/, frontend/hooks/useUserAgents.ts, frontend/hooks/useUserAgents.test.ts, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json
 **Mutexes / resources:** FRONTEND, I18N
@@ -87402,23 +87402,23 @@ taskId=CM-AUTH-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the AI-SERVICE-AUTH-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the AI-SERVICE-AUTH-01 LOCK — not admitted.
 **Task ID:** CM-AUTH-01
 **Title:** Internal key on container-manager routes
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP.
-**Start condition:** NOT_READY. Ready when: AI-SERVICE-AUTH-01 LOCKED and a stage-start is approved. Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: AI-SERVICE-AUTH-01 LOCKED and a stage-start is approved. Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** AI-SERVICE-AUTH-01.
-**Primary write scope:** PROVISIONAL, set at the stage-start.
-**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER, GATEWAY, AI-SERVICE).
+**Primary write scope:** set at admission 2026-11-10: services/container-manager/src/ (the guard on its routes), services/api-gateway/src/clients/ (container-manager-http.client.ts sends the key), services/api-gateway/src/admin/admin.service.ts and services/api-gateway/src/preview/ (their container-manager calls), services/ai-service/src/messages/ (the legacy chat path's container-manager calls).
+**Mutexes / resources:** CONTAINER-MANAGER, GATEWAY, AI-SERVICE.
 **Hot-file leases:** none.
 **Shared contracts:** the internal service key header (unchanged names).
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per file.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it).
 **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set at admission 2026-11-10).
 **Scope:** Container-manager's executor, files, git, sessions, preview, previews and internal-previews/proxy routes have no guard (docs/AI-SERVICE-AUTH-01-STAGE-START.md section 2): after the loopback bind only host processes can reach them, but any host process can read or write any session's files and run node in any container. Require X-Internal-Service-Key on them (constant-time compare from AI-SERVICE-AUTH-01), with the gateway's container-manager client (container-manager-http.client.ts) and ai-service's legacy chat path (messages.service.ts) sending it.
 
 ### LOCAL-DEV-SYNC-01 — Local and compose setups follow the loopback binds
