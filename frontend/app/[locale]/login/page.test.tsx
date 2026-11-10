@@ -61,6 +61,7 @@ function createPageHarness(options: PageHarnessOptions = {}) {
   let stateIndex = 0;
 
   globalThis.fetch = fetchImpl as unknown as typeof fetch;
+  (globalThis as typeof globalThis & { React?: unknown }).React = React;
 
   const fakeReact = {
     ...React,
