@@ -86193,13 +86193,13 @@ taskId=BIZ-USER-01A
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** BIZ-USER-01A
 **Title:** Store user workflows, copy, blank, budget and grants
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP
-**Start condition:** NOT_READY. Ready when: LOCKED; design step done. Keith decides.
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: LOCKED; design step done. Keith decides.
 **Depends on:** AGENT-SPEC-01.
 **Primary write scope:** services/api-gateway/src/user-agent/, services/api-gateway/src/entities/user-agent.entity.ts, services/api-gateway/src/migrations/, services/api-gateway/src/connectors/, services/api-gateway/src/knowledge/.
 **Mutexes / resources:** GATEWAY, MIGRATION.
