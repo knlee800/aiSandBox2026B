@@ -192,9 +192,11 @@ describe('connections screen states', () => {
     const mailConnect = html.indexOf('data-testid="connections-mail-connect"');
     const calendarConnect = html.indexOf('data-testid="connections-calendar-connect"');
     assert.ok(statement >= 0 && mailConnect > statement && calendarConnect > statement);
-    for (const key of ['sentToProvider', 'headersOnly', 'noChanges', 'stored']) {
+    for (const key of ['sentToProvider', 'mailAndCalendarRead', 'noChanges', 'stored']) {
       assert.equal(has(html, en(`dataStatement.${key}`)), true, key);
     }
+    assert.match(en('dataStatement.mailAndCalendarRead'), /excerpt/);
+    assert.match(en('mail.intro'), /excerpt/);
   });
 
   test('the three presets are offered and each has its own setup steps', () => {

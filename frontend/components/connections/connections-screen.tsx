@@ -393,7 +393,7 @@ export function ConnectionsScreenView(props: ConnectionsScreenViewProps): React.
                 </h2>
                 <ul className="mt-2 flex max-w-3xl list-disc flex-col gap-1 pl-5 text-sm text-slate-300">
                   <li>{t('dataStatement.sentToProvider')}</li>
-                  <li>{t('dataStatement.headersOnly')}</li>
+                  <li>{t('dataStatement.mailAndCalendarRead')}</li>
                   <li>{t('dataStatement.noChanges')}</li>
                   <li>{t('dataStatement.stored')}</li>
                 </ul>

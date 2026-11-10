@@ -1199,7 +1199,7 @@
     "dataStatement": {
       "title": "Before you connect",
       "sentToProvider": "Mail and calendar text that an agent reads is sent to the AI model provider, so it leaves this platform.",
-      "headersOnly": "Only mail headers (sender, subject, date) and calendar event titles and times are read. Message bodies are not read yet.",
+      "mailAndCalendarRead": "For unread mail, the sender, subject, date and a short excerpt of the message body are read. Mail is not marked as read. Calendar event titles and times are read.",
       "noChanges": "Nothing is sent, deleted or changed in your mailbox or calendar.",
       "stored": "Saved run results can include the text that was read. Your app password and calendar link are stored encrypted and never shown again."
     },
@@ -1239,7 +1239,7 @@
     },
     "mail": {
       "title": "Mail",
-      "intro": "Agents can list your unread mail headers. They cannot send, reply or change anything.",
+      "intro": "Agents can read the sender, subject, date and a short excerpt of each unread message. They do not mark mail as read, and they cannot send, reply or change anything.",
       "providerLabel": "Mail provider",
       "stepsTitle": "Set up",
       "noteAppPassword": "Use an app password, not your normal password. You can delete it at your provider at any time.",
