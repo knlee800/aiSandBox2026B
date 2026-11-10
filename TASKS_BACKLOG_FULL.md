@@ -87899,22 +87899,22 @@ taskId=CM-GIT-HOST-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the CM-SYMLINK-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the CM-SYMLINK-01 LOCK — not admitted.
 **Task ID:** CM-GIT-HOST-01
 **Title:** Host-side git runs in the sandbox-writable workspace
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction); a security fix.
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction); a security fix.
 **Depends on:** CM-SYMLINK-01.
-**Primary write scope:** PROVISIONAL: services/container-manager/src/ (git and sessions modules, tests).
-**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Primary write scope:** services/container-manager/src/ (set at admission 2026-11-10).
+**Mutexes / resources:** CONTAINER-MANAGER.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set at admission 2026-11-10).
 **Scope:** From the CM-SYMLINK-01 worker, checked by the control plane: git.service.ts initializeGit (git init, add, commit) and getHistory (git log) run simple-git on the host in the bind-mounted workspace, where the sandbox can write .git/config (core.fsmonitor and similar) or .git/hooks, so a host-side git command could run sandbox-chosen commands on the host. Reached only by key holders: POST /api/git/:id/init, the container-manager self-call from POST /api/sessions create (sessions.service.ts:187, no other caller), and GET /api/git/:id/history (no caller). Commit, revert and diff already run in the container. Recommended: remove the uncalled host-side git routes and the create self-call path (re-verify callers first), or run them inside the container; tests that no host-side simple-git call remains on a sandbox-writable path.
 
 ### BROWSER-SMOKE-01 — Browser smoke never finds a preview target
