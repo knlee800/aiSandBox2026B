@@ -58,7 +58,7 @@ describe('AddCollaborationRunResultSeenAt1804000000000 (RESULTS-01, mocked)', ()
     ]);
     expect(timestamp).toBeGreaterThan(1803000000000);
     expect(Math.max(...stamps.filter((stamp) => stamp < timestamp))).toBe(1803000000000);
-    expect(Math.max(...stamps)).toBe(timestamp);
+    expect(Math.max(...stamps.filter((stamp) => stamp <= 1804000000000))).toBe(timestamp);
   });
 
   it('the entity maps resultSeenAt to the same nullable timestamptz column', () => {

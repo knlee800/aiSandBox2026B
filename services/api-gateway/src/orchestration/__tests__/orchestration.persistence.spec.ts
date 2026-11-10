@@ -6,6 +6,7 @@ import { OrchestrationModule } from '../orchestration.module';
 import { InternalCollaborationController } from '../internal-collaboration.controller';
 import { CollaborationController } from '../collaboration.controller';
 import { CollaborationResultsController } from '../collaboration-results.controller';
+import { CollaborationRosterController } from '../collaboration-roster.controller';
 import { CollaborationRunEntity } from '../collaboration-run.entity';
 import { CollaborationReferralEntity } from '../collaboration-referral.entity';
 import {
@@ -448,6 +449,7 @@ describe('AGENT-PLATFORM-ORCH-PERSIST-01: durable orchestration persistence', ()
       InternalCollaborationController,
       CollaborationController,
       CollaborationResultsController,
+      CollaborationRosterController,
     ]);
   });
 

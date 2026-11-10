@@ -29,6 +29,9 @@ import { CreditDeductionRecord } from '../entities/credit-deduction-record.entit
 import { CollaborationWorkflowService } from './collaboration-workflow';
 import { CollaborationResultsService } from './collaboration-results';
 import { CollaborationResultsController } from './collaboration-results.controller';
+import { CollaborationRosterEntity } from './collaboration-roster.entity';
+import { CollaborationRosterService } from './collaboration-roster';
+import { CollaborationRosterController } from './collaboration-roster.controller';
 import { CollaborationBusinessSessionService } from './collaboration-business-session';
 import { Project } from '../entities/project.entity';
 import { Session } from '../entities/session.entity';
@@ -56,6 +59,8 @@ import { Session } from '../entities/session.entity';
       // TEAM-NO-SESSION-02 D4: the per-owner business project and session.
       Project,
       Session,
+      // COS-FRONTDOOR-01 D8: the owner's Chief of Staff roster.
+      CollaborationRosterEntity,
     ]),
   ],
   controllers: [
@@ -63,6 +68,8 @@ import { Session } from '../entities/session.entity';
     CollaborationController,
     // RESULTS-01 D7: owner-scoped results list, unread count and seen mark.
     CollaborationResultsController,
+    // COS-FRONTDOOR-01 D9: owner-scoped GET and PUT /api/collaboration/roster.
+    CollaborationRosterController,
   ],
   providers: [
     OrchestrationService,
@@ -71,6 +78,7 @@ import { Session } from '../entities/session.entity';
     // it binds itself to UserAgentModule's exported slot for USER_WORKFLOW_SWITCH_ON_CHECK.
     TestedWorkflowSwitchOnCheck,
     CollaborationResultsService,
+    CollaborationRosterService,
     CollaborationBusinessSessionService,
     ExecutionResultService,
     CollaborationSweepWorker,
