@@ -86589,13 +86589,13 @@ taskId=BIZ-LIVE-04
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — Keith admitted it ("Yes, start it"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** BIZ-LIVE-04
 **Title:** Live check of a user workflow
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP
-**Start condition:** NOT_READY. Ready when: LOCKED. Keith decides.
+**Start condition:** READY (STAGING-DEPLOY-WF-01 LOCKED; Keith decided 2026-11-10). Was: Ready when: LOCKED. Keith decides.
 **Depends on:** STAGING-DEPLOY-WF-01.
 **Primary write scope:** records; host state.
 **Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT.
