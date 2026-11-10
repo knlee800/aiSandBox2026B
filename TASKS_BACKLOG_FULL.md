@@ -87578,7 +87578,7 @@ taskId=DRIFT-FIX-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the CM-AUTH-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 2 and its mutexes released. Drift check pins the shared version material; eval copy and hash unchanged; sonnet subagent in worktree lane/DRIFT-FIX-01, cherry-picked as ed676f0; ai-service 1310 passed, 0 failed, build clean. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Checkpoint: docs/DRIFT-FIX-01-CHECKPOINT.md.
 **Task ID:** DRIFT-FIX-01
 **Title:** Briefing drift check follows the shared version hash
 **Workstream:** AGENT (taxonomy only; zero admission weight)
