@@ -8,6 +8,7 @@ import type { PublicSystemAgent } from '@/lib/agent-platform/agent-registry';
 import AgentDetailPanel from '@/components/platform/agent-detail-panel';
 import type { AgentDetailViewModel } from '@/components/platform/agent-detail-panel';
 import {
+  ResultsUnreadPill,
   countStationsByStatus,
   stationCountsForLoad,
   staticAgentProfileContent,
@@ -153,6 +154,8 @@ describe('platform dashboard data integration', () => {
       'platform.backToWorkspace',
       'platform.openOffice',
       'platform.openKnowledge',
+      'platform.openResults',
+      'platform.unreadResults',
       'platform.comingSoonMessage',
       'platform.systemAgentsLoading',
       'platform.systemAgentsLoadError',
@@ -186,6 +189,49 @@ describe('platform dashboard navigation integration', () => {
     assert.match(dashboardSource, /platform\.openKnowledge/);
     assert.match(dashboardSource, /data-testid="platform-open-knowledge"/);
     assert.match(dashboardSource, /href=\{`\$\{localePrefix\}\/knowledge`\}/);
+  });
+
+  test('command center header links to the results route beside Connections (RESULTS-01)', () => {
+    const dashboardSource = readFileSync(new URL('./platform-dashboard.tsx', import.meta.url), 'utf8');
+    assert.match(dashboardSource, /platform\.openResults/);
+    assert.match(dashboardSource, /data-testid="platform-open-results"/);
+    assert.match(dashboardSource, /href=\{`\$\{localePrefix\}\/results`\}/);
+    assert.match(dashboardSource, /<InboxIcon className="h-4 w-4" aria-hidden="true" \/>/);
+    const connections = dashboardSource.indexOf('data-testid="platform-open-connections"');
+    const results = dashboardSource.indexOf('data-testid="platform-open-results"');
+    const workspace = dashboardSource.indexOf('data-testid="platform-back-to-workspace"');
+    assert.ok(connections > 0 && results > connections && workspace > results);
+  });
+
+  test('the results count is read once after sign-in with the shared fetch, and any failure hides it', () => {
+    const dashboardSource = readFileSync(new URL('./platform-dashboard.tsx', import.meta.url), 'utf8');
+    assert.match(dashboardSource, /import \{ loadUnreadCount \} from '@\/components\/results\/results-api'/);
+    assert.equal((dashboardSource.match(/loadUnreadCount\(\)/g) ?? []).length, 1);
+    assert.match(dashboardSource, /\}, \[authReady\]\);/);
+    const api = readFileSync(new URL('../results/results-api.ts', import.meta.url), 'utf8');
+    assert.match(api, /if \(response\.status !== 200\) \{\n\s*return null;/);
+    assert.match(api, /collaborationFetch/);
+  });
+
+  test('the unread pill shows the count in badge-active tokens and nothing for 0 or unknown', () => {
+    for (const { code, messages } of ALL_LOCALES) {
+      const template = resolveNestedString(messages, 'platform.unreadResults');
+      assert.ok(template && template.includes('{count}'), code);
+      assert.equal(renderToStaticMarkup(React.createElement(ResultsUnreadPill, { count: null, template })), '');
+      assert.equal(renderToStaticMarkup(React.createElement(ResultsUnreadPill, { count: 0, template })), '');
+      const three = renderToStaticMarkup(React.createElement(ResultsUnreadPill, { count: 3, template }));
+      assert.match(three, /data-testid="platform-results-unread"/);
+      assert.match(three, /bg-emerald-100/);
+      assert.match(three, /text-emerald-800/);
+      assert.match(three, /rounded-full/);
+      assert.match(three, /px-2 py-0\.5/);
+      assert.match(three, /text-\[11px\]/);
+      assert.match(three, /<span aria-hidden="true">3<\/span>/);
+      assert.equal(three.includes(template.split('{count}').join('3')), true, code);
+      const many = renderToStaticMarkup(React.createElement(ResultsUnreadPill, { count: 120, template }));
+      assert.match(many, /<span aria-hidden="true">99\+<\/span>/);
+      assert.equal(many.includes(template.split('{count}').join('120')), true, code);
+    }
   });
 
   test('builder Start Building remains the hardcoded /app href', () => {

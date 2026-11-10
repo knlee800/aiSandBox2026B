@@ -87,7 +87,7 @@ describe('AddUserAgentWorkflowColumns1803000000000 (BIZ-USER-01A, mocked)', () =
     ]);
     expect(timestamp).toBeGreaterThan(1802000000000);
     expect(Math.max(...stamps.filter((stamp) => stamp < timestamp))).toBe(1802000000000);
-    expect(Math.max(...stamps)).toBe(timestamp);
+    expect(Math.max(...stamps.filter((stamp) => stamp <= 1803000000000))).toBe(timestamp);
   });
 
   describe('up()', () => {

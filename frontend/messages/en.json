@@ -636,6 +636,8 @@
     "openOffice": "Office",
     "openKnowledge": "Knowledge",
     "openConnections": "Connections",
+    "openResults": "Results",
+    "unreadResults": "{count} new",
     "comingSoonMessage": "This agent is coming soon. Stay tuned!",
     "systemAgentsLoading": "Loading stations…",
     "systemAgentsLoadError": "Stations could not be loaded. Only Builder is shown.",
@@ -1557,6 +1559,69 @@
       "connectFailed": "Could not connect. Try again.",
       "disconnectFailed": "Could not disconnect. Try again.",
       "network": "Could not reach the server. Check your network and try again."
+    }
+  },
+  "results": {
+    "title": "Results",
+    "subtitle": "Every finished Team and workflow run, with its final answer.",
+    "backToPlatform": "Command Center",
+    "loading": "Loading results…",
+    "loadError": "Results could not be loaded.",
+    "retry": "Try again",
+    "forbiddenTitle": "Results are not available",
+    "forbiddenBody": "Results appear here once Team runs are turned on for your account.",
+    "emptyTitle": "No results yet",
+    "emptyBody": "Start a run on the Team page. Its answer appears here when it finishes.",
+    "emptyFilteredTitle": "No runs match these filters",
+    "emptyFilteredBody": "Change or clear the filters to see more runs.",
+    "openTeam": "Open Team",
+    "filters": {
+      "label": "Filters",
+      "status": "Status",
+      "statusAll": "All statuses",
+      "workflow": "Workflow",
+      "workflowAll": "All runs",
+      "from": "From",
+      "to": "To",
+      "apply": "Apply filters",
+      "clear": "Clear filters",
+      "rangeError": "From must be on or before To."
+    },
+    "status": {
+      "completed": "Finished",
+      "failed": "Failed",
+      "timed_out": "Timed out",
+      "cancelled": "Cancelled",
+      "active": "In progress",
+      "unknown": "Unknown status"
+    },
+    "item": {
+      "new": "New",
+      "noAnswer": "No answer",
+      "started": "Started {time}",
+      "finished": "Ended {time}"
+    },
+    "pager": {
+      "label": "Result pages",
+      "summary": "Page {page} of {pages}, {total} runs",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "detail": {
+      "back": "Back to results",
+      "loading": "Loading the result…",
+      "notFound": "This result was not found. It may have been removed or belong to another account.",
+      "loadError": "This result could not be loaded.",
+      "started": "Started",
+      "finished": "Ended",
+      "notFinished": "Still running",
+      "task": "Task",
+      "answer": "Final answer",
+      "noAnswer": "This run ended without an answer.",
+      "sources": "Sources",
+      "unsourced": "Unsourced",
+      "droppedSources": "{count} source markers were left out.",
+      "failure": "Why it stopped"
     }
   },
   "languages": {

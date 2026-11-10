@@ -26,6 +26,8 @@ import { KnowledgeModule } from '../knowledge/knowledge.module';
 import { UserAgentModule } from '../user-agent/user-agent.module';
 import { CreditDeductionRecord } from '../entities/credit-deduction-record.entity';
 import { CollaborationWorkflowService } from './collaboration-workflow';
+import { CollaborationResultsService } from './collaboration-results';
+import { CollaborationResultsController } from './collaboration-results.controller';
 
 @Module({
   imports: [
@@ -49,10 +51,16 @@ import { CollaborationWorkflowService } from './collaboration-workflow';
       CreditDeductionRecord,
     ]),
   ],
-  controllers: [InternalCollaborationController, CollaborationController],
+  controllers: [
+    InternalCollaborationController,
+    CollaborationController,
+    // RESULTS-01 D7: owner-scoped results list, unread count and seen mark.
+    CollaborationResultsController,
+  ],
   providers: [
     OrchestrationService,
     CollaborationWorkflowService,
+    CollaborationResultsService,
     ExecutionResultService,
     CollaborationSweepWorker,
     {

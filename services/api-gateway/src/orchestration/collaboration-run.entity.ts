@@ -70,4 +70,13 @@ export class CollaborationRunEntity {
 
   @Column({ type: 'text', name: 'cancel_reason', nullable: true })
   cancelReason: string | null;
+
+  /**
+   * RESULTS-01 D4: when the owner first opened this run's result; null means unread.
+   * Written only by CollaborationResultsService.markSeen with one UPDATE that
+   * keeps the first value. update: false keeps an orchestration save of an
+   * entity loaded earlier from writing a stale null over the mark.
+   */
+  @Column({ type: 'timestamptz', name: 'result_seen_at', nullable: true, update: false })
+  resultSeenAt: Date | null;
 }

@@ -8,6 +8,7 @@ import {
   BookOpenIcon,
   BuildingOffice2Icon,
   ExclamationTriangleIcon,
+  InboxIcon,
   LinkIcon,
   PlusIcon,
   SignalIcon,
@@ -31,6 +32,8 @@ import AgentWorkflowSummary, { workflowTestedNote, workflowUsageLine } from './a
 import type { WorkflowUsageView } from './agent-workflow-fields';
 import type { AgentDetailViewModel } from './agent-detail-panel';
 import CreateAgentForm from './create-agent-form';
+import { loadUnreadCount } from '@/components/results/results-api';
+import { unreadBadgeText } from '@/components/results/results.logic';
 import type { CreateAgentFormLabels, WorkflowSaveRequest } from './create-agent-form';
 
 import enMessages from '@/messages/en.json';
@@ -262,6 +265,23 @@ function getUserAgentStatusLabel(
   return resolveNestedMessage(messages, 'platform.agentCreate.agentStatusDisabled');
 }
 
+/** RESULTS-01 D15: the header count pill in badge-active tokens; nothing when the count is 0 or unknown. */
+export function ResultsUnreadPill({ count, template }: { count: number | null; template: string }) {
+  const text = unreadBadgeText(count);
+  if (text === null || count === null) {
+    return null;
+  }
+  return (
+    <span
+      className="inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium tabular-nums text-emerald-800"
+      data-testid="platform-results-unread"
+    >
+      <span aria-hidden="true">{text}</span>
+      <span className="sr-only">{template.split('{count}').join(String(count))}</span>
+    </span>
+  );
+}
+
 export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
   const router = useRouter();
   const messages = getLocaleMessages(locale);
@@ -274,6 +294,7 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
   const [authReady, setAuthReady] = React.useState(false);
   const [deletePending, setDeletePending] = React.useState(false);
   const [deleteError, setDeleteError] = React.useState<string | null>(null);
+  const [unreadResults, setUnreadResults] = React.useState<number | null>(null);
   const deleteInFlightRef = React.useRef(false);
   const resolvedLocale = locale ?? 'en';
 
@@ -298,6 +319,8 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
   const openOffice = resolveNestedMessage(messages, 'platform.openOffice');
   const openKnowledge = resolveNestedMessage(messages, 'platform.openKnowledge');
   const openConnections = resolveNestedMessage(messages, 'platform.openConnections');
+  const openResults = resolveNestedMessage(messages, 'platform.openResults');
+  const unreadResultsTemplate = resolveNestedMessage(messages, 'platform.unreadResults');
   const commandDeckLabel = resolveNestedMessage(messages, 'platform.commandDeckLabel');
   const commandDeckIntro = resolveNestedMessage(messages, 'platform.commandDeckIntro');
   const statusTitle = resolveNestedMessage(messages, 'platform.commandCenterStatusTitle');
@@ -394,6 +417,22 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
       isMounted = false;
     };
   }, [resolvedLocale, router]);
+
+  // RESULTS-01 D15: the unread count, read once after sign-in. Any non-200 hides the pill.
+  React.useEffect(() => {
+    if (!authReady) {
+      return;
+    }
+    let isMounted = true;
+    void loadUnreadCount().then((count) => {
+      if (isMounted) {
+        setUnreadResults(count);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [authReady]);
 
   React.useEffect(() => {
     if (userAgentsError === 'AUTH_EXPIRED' || systemAgents.error === 'AUTH_EXPIRED') {
@@ -635,6 +674,15 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
             >
               <LinkIcon className="h-4 w-4" aria-hidden="true" />
               {openConnections}
+            </Link>
+            <Link
+              href={`${localePrefix}/results`}
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+              data-testid="platform-open-results"
+            >
+              <InboxIcon className="h-4 w-4" aria-hidden="true" />
+              {openResults}
+              <ResultsUnreadPill count={unreadResults} template={unreadResultsTemplate} />
             </Link>
             <Link
               href={`${localePrefix}/app`}
