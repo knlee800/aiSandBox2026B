@@ -86402,13 +86402,13 @@ taskId=BODIES-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the CONN-03 LOCK (named in docs/CONN-03-STAGE-START.md section 6, approved by Keith) — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — Keith admitted it ("Start BODIES-LIVE-01"). Registered 2026-11-10 by the CONN-03 LOCK.
 **Task ID:** BODIES-LIVE-01
 **Title:** Deploy mail bodies and one live briefing
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides. (CONN-03 and CONN-COPY-01 LOCKED 2026-11-10.)
+**Start condition:** READY (Keith decided 2026-11-10; CONN-03 and CONN-COPY-01 LOCKED). Was: Ready when: Keith decides.
 **Depends on:** CONN-03, CONN-COPY-01.
 **Primary write scope:** records; host state.
 **Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT.
@@ -86419,7 +86419,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (as for the plan's other tasks; Keith may change it).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
-**Scope:** Deploy main with CONN-03 and CONN-COPY-01 to staging (aisandbox-deploy, host checks as in COS-EVAL-LIVE-02), switch runs on only for the run as in BIZ-LIVE-03 (env files saved first, restored to the baseline hashes after), and run one morning briefing on Keith's account. From the host: the unread count in Keith's INBOX is the same before and after (nothing marked read), the mail tool result carries bodyText, the run's tokens against BIZ-LIVE-03's 10,372, and the mail connector call's duration. Superseding CONN-03's follow-up on slow body fetches: if the mail call takes more than 10 of its 20 seconds, register a separate body-phase time limit. Keith reads the briefing and the Connections page copy in en, zh-TW and zh-CN. Cost measured; no cap set before.
+**Scope:** Deploy main with CONN-03 and CONN-COPY-01 to staging (aisandbox-deploy, host checks as in COS-EVAL-LIVE-02), switch runs on only for the run as in BIZ-LIVE-03 (env files saved first, restored to the baseline hashes after), and run one morning briefing on Keith's account. From the host: the mail tool result is larger than the headers-only result (the content-free audit row's resultBytes and itemCount; no mail content is read by the control plane), the INBOX is opened read-only (EXAMINE, BODY.PEEK as tested in CONN-03), and Keith checks in Gmail that the mail in his briefing is still unread (refined at admission 2026-11-10: counting unread mail from the host would mean using Keith's app password outside the connector), the run's tokens against BIZ-LIVE-03's 10,372, and the mail connector call's duration. Superseding CONN-03's follow-up on slow body fetches: if the mail call takes more than 10 of its 20 seconds, register a separate body-phase time limit. Keith reads the briefing and the Connections page copy in en, zh-TW and zh-CN. Cost measured; no cap set before.
 **Plan:** docs/AGENT-OPS-PLAN.md section 0 item 12
 
 ### COS-FRONTDOOR-01 — Chief of Staff front door and report-back
