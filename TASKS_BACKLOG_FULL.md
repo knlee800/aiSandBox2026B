@@ -86350,7 +86350,7 @@ taskId=CONN-03
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — Keith approved the corrected record and admission ("yes"). Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01. Stage-start approved by Keith 2026-11-10 ("Yes, both"): docs/CONN-03-STAGE-START.md.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 1, GATEWAY, AI-SERVICE and the four HOTFILE leases released. bodyText excerpts (at most 800 characters) and bodyTruncated on mail_list_unread_metadata per the approved stage-start; opus subagent in worktree lane/CONN-03, cherry-picked as 89d6fff and 5453aa3; connectors-mcp 74 passed, gateway 2879 passed (only the known smoke suite fails), ai-service 1230 passed, builds clean. Not deployed. Checkpoint: docs/CONN-03-CHECKPOINT.md. FOLLOWUPS: 2 registered / 1 superseded / 0 dropped / 0 undisposed (CONN-COPY-01, BODIES-LIVE-01; the body-phase time limit superseded by BODIES-LIVE-01's timing criterion). Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
 **Task ID:** CONN-03
 **Title:** Mail body reads after the injection eval
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -86369,6 +86369,58 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** Mail bodies after the eval's body cases pass (C16). Bodies are stripped to text and byte-capped. Tool text is data, never instructions. Design (Keith, 2026-11-10): a bodyText field on each message from the existing mail_list_unread_metadata tool, the shape the passing eval case models; the tool id stays, so grants and the Chief of Staff version hash do not change. Read with BODY.PEEK so nothing is marked read; prefer the text/plain part, strip HTML to text; cap each body (about 2,000 bytes) and keep the whole result under the 64 KB connector cap; the forbidden IMAP verbs stay. No new dependency without asking. The three tool descriptions that say "Does not return bodies" change together. ARCHITECTURE.md's "read-only mail headers" lines are updated by the control plane at LOCK. The stage-start fixes the details and is approved by Keith before implementation.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+
+### CONN-COPY-01 — Connections page says a short body excerpt is read
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CONN-COPY-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the CONN-03 LOCK (named in docs/CONN-03-STAGE-START.md section 6, approved by Keith) — not admitted.
+**Task ID:** CONN-COPY-01
+**Title:** Connections page says a short body excerpt is read
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: CONN-03 LOCKED (done 2026-11-10). Keith decides.
+**Depends on:** CONN-03.
+**Primary write scope:** frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json, frontend/components/connections/ (tests that pin the copy).
+**Mutexes / resources:** FRONTEND, I18N.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** copy only.
+**saturationClass:** OPTIONAL (as for the plan's other tasks; Keith may change it).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** The Connections page copy that CONN-03 makes untrue: the data statement ("Only mail headers (sender, subject, date) and calendar event titles and times are read. Message bodies are not read yet.") and the mail card intro ("Agents can list your unread mail headers.") say instead that sender, subject, date and a short excerpt of each unread message's body are read, that nothing is marked read, and nothing is sent or changed; real zh-TW and zh-CN translations; the screen test checks the new keys. UI checklist; the Impeccable and Emil Kowalski skills. Must be deployed together with or before CONN-03 (BODIES-LIVE-01).
+**Plan:** docs/AGENT-OPS-PLAN.md section 0 item 12
+
+### BODIES-LIVE-01 — Deploy mail bodies and one live briefing
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=BODIES-LIVE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the CONN-03 LOCK (named in docs/CONN-03-STAGE-START.md section 6, approved by Keith) — not admitted.
+**Task ID:** BODIES-LIVE-01
+**Title:** Deploy mail bodies and one live briefing
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: CONN-03 and CONN-COPY-01 LOCKED. Keith decides.
+**Depends on:** CONN-03, CONN-COPY-01.
+**Primary write scope:** records; host state.
+**Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** runs off after; redeploy the previous commit if bodies misbehave.
+**saturationClass:** OPTIONAL (as for the plan's other tasks; Keith may change it).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy main with CONN-03 and CONN-COPY-01 to staging (aisandbox-deploy, host checks as in COS-EVAL-LIVE-02), switch runs on only for the run as in BIZ-LIVE-03 (env files saved first, restored to the baseline hashes after), and run one morning briefing on Keith's account. From the host: the unread count in Keith's INBOX is the same before and after (nothing marked read), the mail tool result carries bodyText, the run's tokens against BIZ-LIVE-03's 10,372, and the mail connector call's duration. Superseding CONN-03's follow-up on slow body fetches: if the mail call takes more than 10 of its 20 seconds, register a separate body-phase time limit. Keith reads the briefing and the Connections page copy. Cost measured; no cap set before.
+**Plan:** docs/AGENT-OPS-PLAN.md section 0 item 12
 
 ### COS-FRONTDOOR-01 — Chief of Staff front door and report-back
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

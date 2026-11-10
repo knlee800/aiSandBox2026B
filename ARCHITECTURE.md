@@ -53,7 +53,7 @@ services/connectors-mcp/
 frontend/
 ```
 
-`services/connectors-mcp/` (approved by Keith 2026-11-08, GOV-BIZ-AGENT-OPS-PLAN-01; built by CONN-01) is the platform-written MCP server for read-only mail headers and today's calendar. It is not a network service: the Gateway starts it as a stdio child process.
+`services/connectors-mcp/` (approved by Keith 2026-11-08, GOV-BIZ-AGENT-OPS-PLAN-01; built by CONN-01) is the platform-written MCP server for read-only mail headers with short plain-text body excerpts (CONN-03) and today's calendar. It is not a network service: the Gateway starts it as a stdio child process.
 
 Any change to this layout requires explicit approval.
 
@@ -989,7 +989,7 @@ The original walking-character / town **simulation** is **not implemented**. CUR
 | User-created agents as a fully executable runtime platform | **FUTURE** — NOT IMPLEMENTED (dedicated runtime, Harness/tool loop, tools/knowledge/skills, per-agent models, autonomous multi-turn execution). Bounded Ask and Build on the existing Builder runtime are CURRENT. |
 | Referral / agent collaboration **product** runtime | **FUTURE** — not the 07C in-memory precursor |
 | Durable orchestration / persisted referrals / shared-project writes | **FUTURE** |
-| Connector broker and platform-written MCP server (`services/api-gateway/src/connectors/`, `services/connectors-mcp/`) | IMPLEMENTED, not deployed (CONN-01, CONN-02A, CONN-02B, 2026-11-09): encrypted per-owner mail and calendar credentials, an allowlist of one platform-run server with the platform's own tool descriptions, a stdio child started by absolute path with only PATH and NODE_ENV, read-only IMAP headers and today's calendar, content-free audit rows. Agents get connector tools only through CONN-GRANT-01's signed grant: the Gateway adds `connectorGrants` and a grant token to a signed read-profile collaboration job when the role lists the tool and the owner has that connection (no role lists any yet; BIZ-BRIEF-01 lists them for the Chief of Staff), the worker registers them only after the harness entitlement proof verifies, and the internal route checks the token on every call; user-supplied servers are refused |
+| Connector broker and platform-written MCP server (`services/api-gateway/src/connectors/`, `services/connectors-mcp/`) | IMPLEMENTED, not deployed (CONN-01, CONN-02A, CONN-02B, 2026-11-09): encrypted per-owner mail and calendar credentials, an allowlist of one platform-run server with the platform's own tool descriptions, a stdio child started by absolute path with only PATH and NODE_ENV, read-only IMAP headers with plain-text body excerpts of at most 800 characters fetched with BODY.PEEK (CONN-03, 2026-11-10, not deployed) and today's calendar, content-free audit rows. Agents get connector tools only through CONN-GRANT-01's signed grant: the Gateway adds `connectorGrants` and a grant token to a signed read-profile collaboration job when the role lists the tool and the owner has that connection (no role lists any yet; BIZ-BRIEF-01 lists them for the Chief of Staff), the worker registers them only after the harness entitlement proof verifies, and the internal route checks the token on every call; user-supplied servers are refused |
 | Knowledge base runtime | **FUTURE / PLANNED** |
 | Work objects (tickets, decisions, referrals) | **FUTURE / PLANNED** |
 | Multi-agent real-time collaboration | **FUTURE / PLANNED** |
