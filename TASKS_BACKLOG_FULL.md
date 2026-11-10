@@ -86618,7 +86618,7 @@ taskId=WORKFLOW-CREATE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the BIZ-LIVE-04 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 1 and its mutexes released. Result: passed. NEW_USER_AGENT_STATUS draft on every create (three-field, blank workflow, template copy); client-sent status shape-checked and ignored; no migration, column default kept; every status reader checked (Team start and approve, Team list, dashboard card, panel switch; Ask, Office, Builder do not read it); Role and Description prefilled from the template's translated card text with a hint in three languages; correction recorded: Role and Description are left out of workflow runs but are in the Ask-with-agent prompt (ai-execution.controller.ts:684-685); opus subagent af13148, fast-forwarded onto main; control-plane rerun: gateway 3373 passed, 7 skipped, only the 14 known smoke failures; ai-service 1296 passed; frontend tsc 0, 1520 passed, build 0. Not deployed. FOLLOWUPS: 1 registered (WORKFLOW-STATUS-02) / 1 superseded (the Ask-mode use, by the hint wording and the recorded correction) / 0 dropped / 0 undisposed. Was admitted 2026-11-10. Checkpoint: docs/WORKFLOW-CREATE-01-CHECKPOINT.md.
 **Task ID:** WORKFLOW-CREATE-01
 **Title:** New workflows start off until tested; Role and Description explained
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -86635,6 +86635,30 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set at admission 2026-11-10).
 **Scope:** From Keith's live check (BIZ-LIVE-04): (1) a new or copied workflow is stored with status active (the column default) before any test, so the agent panel's "Available for runs" switch shows On from the start; store it off (or draft) on create and copy so it can only be switched on after a passing test, keeping existing rows unchanged; (2) creating an agent, a copy included, requires Role and Description, which are display-only (not in the run prompt: userWorkflowPromptSpec renders tone, reply language, purpose, procedure, result) and unexplained; prefill them from the template on a copy and add a hint that they are display-only, or make them optional. Copy in three languages.
+
+### WORKFLOW-STATUS-02 — Workflow switch-on checked by the server; a distinct Draft badge
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=WORKFLOW-STATUS-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the WORKFLOW-CREATE-01 LOCK — not admitted.
+**Task ID:** WORKFLOW-STATUS-02
+**Title:** Workflow switch-on checked by the server; a distinct Draft badge
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** WORKFLOW-CREATE-01.
+**Primary write scope:** PROVISIONAL, set at admission (expected services/api-gateway/src/user-agent/, frontend/components/platform/, frontend/lib/agent-platform/, the three message files).
+**Mutexes / resources:** set at admission (expected GATEWAY, FRONTEND, I18N).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the WORKFLOW-CREATE-01 worker: (1) PATCH /api/agents/:id accepts status active for a workflow with no passing test at its current version; only the client enforces switch-on-after-test (safe today: the start gate checks the tested versions); refuse it on the server with a clear code. (2) The dashboard card shows Draft with the disabled styling; give Draft its own badge, which needs the AgentStatus type in frontend/lib/agent-platform.
 
 ### GOV-GOOGLE-VERIFY-01 — Google OAuth app verification
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
