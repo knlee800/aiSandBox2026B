@@ -85673,6 +85673,7 @@ nature=GOVERNANCE
 **Primary write scope:** PRD.md, ARCHITECTURE.md, TASKS.md, TASKS_BACKLOG_FULL.md and a checkpoint.
 **Mutexes / resources:** GOVERNANCE.
 **Holds:** (1) PRD.md line 625's office note says "approved FUTURE; not current; not scheduled" while OFFICE-01, OFFICE-05, OFFICE-06 and OFFICE-07 are built and the first slices are live on staging: Keith decides how PRD.md classifies the office now. (2) ARCHITECTURE.md section 2 keeps the principle "no cron / no platform schedulers" while the gateway runs a 5-minute in-process CollaborationSweepWorker (stated in section 15) and TRIGGER-01 plans schedules: Keith decides whether the principle is reworded.
+**Also (added 2026-11-10, Keith, 2026-11-10, RPG office review window):** fold in the office decisions, in Keith's words: the office is an isometric 16-bit scene in our own art (the reference picture is mood only; no outside assets; AI exploration plus hand-redrawn final pieces with provenance notes); the characters walk, as decoration only, and agent status still comes from server data; the first release is one fixed room; a user-built office and selling paid pieces are later features (OFFICE-BUILD-01, OFFICE-SHOP-01). This means reclassifying PRD.md line 482 ("RPG walking-town / moving-character simulation ... not the current or next committed product"), which OFFICE-SCENE-01 waits for. PRD.md is not edited until this task runs.
 
 ### COLLAB-GATE-TESTS-01 — Validation gate: no writer-to-reviewer approval on failing or missing tests
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -87524,6 +87525,7 @@ nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
 **Status:** READY — registered 2026-11-09 by GOV-ONE-PLAN-01 — not admitted.
+**Superseded 2026-11-10:** re-scoped into OFFICE-SCENE-01 (Keith, 2026-11-10, RPG office review window): per-agent figures, the look a user agent picks, the appearance column and the advisors-lead desk name and figure move there. Not to be admitted on its own; it stays NOT_READY.
 **Task ID:** OFFICE-03
 **Title:** Office characters (per-agent figures; user agents pick a look; appearance column)
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
@@ -87550,6 +87552,7 @@ nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
 **Status:** READY — registered 2026-11-09 by GOV-ONE-PLAN-01 — not admitted.
+**Superseded 2026-11-10:** re-scoped into OFFICE-SCENE-01 (Keith, 2026-11-10, RPG office review window): the typing and idle loops from the status and reduced motion move there. Not to be admitted on its own; it stays NOT_READY.
 **Task ID:** OFFICE-04
 **Title:** Office animation (typing and idle loops from the status; reduced motion honoured)
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
@@ -87568,6 +87571,78 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** Office animation (typing and idle loops from the status; reduced motion honoured).
 **Plan:** docs/AGENT-OPS-PLAN.md section 0 item 22
+
+### OFFICE-SCENE-01 — Isometric 16-bit office: one fixed room with walking characters
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=OFFICE-SCENE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 from the RPG office review (Keith, 2026-11-10, RPG office review window) — not admitted.
+**Task ID:** OFFICE-SCENE-01
+**Title:** Isometric 16-bit office: one fixed room with walking characters
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: the art kit is ready (Keith prepares it outside the repository), the provisional points below are decided, GOV-PRD-SYNC-01 has reclassified the walking line in PRD.md (line 482 today says walking-town / moving-character simulation is not current or next), and Keith approves the drawing-layer dependency. Keith decides.
+**Depends on:** OFFICE-01, GOV-PRD-SYNC-01.
+**Primary write scope:** PROVISIONAL, set at admission (expected: frontend/components/office/, frontend/package.json and the lockfile for the drawing layer, art assets in the frontend, the three message files).
+**Mutexes / resources:** set at admission (expected FRONTEND, PACKAGE, I18N).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith to confirm). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith, 2026-11-10, RPG office review window).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** The office becomes an isometric scene in a 16-bit style, in our own art: the reference picture is mood only and no outside assets are used. The art is a mix of AI exploration and hand-redrawn final pieces, with a provenance note per piece. The first release is one fixed room, and the characters walk around it. Walking is decoration only: each agent's status still comes from server data, as the office shows it today. A drawing layer is a new dependency, so admission takes the PACKAGE mutex and needs Keith's approval of the package. Reduced motion is honoured (carried from OFFICE-04). This replaces the "no walking, no engine, no canvas" lines in docs/RPG-OFFICE-01-PLAN.md (line 12 and the Rendering paragraph), which is historical and not edited. **Re-scoped into this task:** OFFICE-03 (per-agent figures, user agents pick a look, an appearance column, and the advisors-lead desk getting its own name and figure) and OFFICE-04 (typing and idle loops from the status, reduced motion). **Provisional, still open with Keith:** how the characters move; how many desks the room holds; piece size and palette; who draws the first kit.
+
+### OFFICE-BUILD-01 — Users build their own office
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=OFFICE-BUILD-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 from the RPG office review (Keith, 2026-11-10, RPG office review window) — not admitted.
+**Task ID:** OFFICE-BUILD-01
+**Title:** Users build their own office
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: the fixed office (OFFICE-SCENE-01) has shipped. Keith decides.
+**Depends on:** OFFICE-SCENE-01.
+**Primary write scope:** PROVISIONAL, set at admission (expected: frontend/components/office/, services/api-gateway/src/ for the saved layout, a migration, the three message files).
+**Mutexes / resources:** set at admission (expected GATEWAY, MIGRATION, FRONTEND, I18N).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith to confirm). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith, 2026-11-10, RPG office review window).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Users build their own office: a layout editor, a saved layout per user, and walking routes that avoid placed furniture. Walking stays decoration; status still comes from the server.
+
+### OFFICE-SHOP-01 — Selling unique office pieces
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=OFFICE-SHOP-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 from the RPG office review (Keith, 2026-11-10, RPG office review window) — not admitted.
+**Task ID:** OFFICE-SHOP-01
+**Title:** Selling unique office pieces
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides to switch payments on and the art licences are confirmed. Keith decides.
+**Depends on:** OFFICE-BUILD-01.
+**Primary write scope:** PROVISIONAL, set at admission (expected: services/api-gateway/src/ for the catalog, ownership and purchase routes, migrations, frontend/components/office/, the three message files).
+**Mutexes / resources:** set at admission (expected GATEWAY, MIGRATION, FRONTEND, I18N, CREDIT).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (Keith to confirm). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith, 2026-11-10, RPG office review window).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Selling unique pieces: a piece catalog; per-user ownership that records the purchase event id; a purchase route; a server check that a user only places pieces they own; and refund handling. Stripe is not active today, and user_entitlements cannot hold item ownership, so ownership needs its own storage.
 
 ### OFFICE-05 — Collaboration in the office (team desks show hand-offs; collaborationRunId and builderProfileId on ListedRunDto or the collaboration runs route)
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
