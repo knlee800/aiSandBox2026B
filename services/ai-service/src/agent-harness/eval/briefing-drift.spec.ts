@@ -186,9 +186,49 @@ describe('COS-EVAL-01 drift check on the gateway Chief of Staff instructions', (
     expect(registry).toContain(
       "knowledgeScopes: scopes({ id: 'contract-templates', type: 'specialist' }),\n    ...CHIEF_OF_STAFF_SPEC,\n    toolProfile: 'read',\n    connectorToolIds: [MAIL_TOOL_ID, CALENDAR_TOOL_ID],\n    model: { choice: 'server' },\n    teamRole: { teamId: 'chief-of-staff', roleName: 'chief-of-staff' },",
     );
-    // The hash material's key order and the connector ids the copy hashes.
+    // The draft fields reach the shared hash function in this key order (BIZ-USER-01C: agentVersionFor).
     expect(registry).toContain(
-      '    id: draft.id,\n    tone: draft.tone,\n    replyLanguage: draft.replyLanguage,\n    purpose: draft.purpose,\n    procedure: draft.procedure,\n    result: draft.result,\n    rules: draft.rules,\n    instructions,\n    toolProfile: draft.toolProfile,\n    scopes: draft.knowledgeScopes.map((scope) => ({ id: scope.id, type: scope.type })),\n    connectorToolIds: [...draft.connectorToolIds],\n    model: modelMaterial(draft.model),\n    teamRole: draft.teamRole\n',
+      [
+        'function versionFor(draft: SystemAgentDraft, instructions: string): string {',
+        '  return agentVersionFor({',
+        '    id: draft.id,',
+        '    tone: draft.tone,',
+        '    replyLanguage: draft.replyLanguage,',
+        '    purpose: draft.purpose,',
+        '    procedure: draft.procedure,',
+        '    result: draft.result,',
+        '    rules: draft.rules,',
+        '    instructions,',
+        '    toolProfile: draft.toolProfile,',
+        '    scopes: draft.knowledgeScopes,',
+        '    connectorToolIds: draft.connectorToolIds,',
+        '    model: draft.model,',
+        '    teamRole: draft.teamRole,',
+        '  });',
+        '}',
+      ].join('\n'),
+    );
+    // The hash payload: key order, scope projection, connector ids copy, model and team role projection.
+    expect(registry).toContain(
+      [
+        '    id: material.id,',
+        '    tone: material.tone,',
+        '    replyLanguage: material.replyLanguage,',
+        '    purpose: material.purpose,',
+        '    procedure: material.procedure,',
+        '    result: material.result,',
+        '    rules: material.rules,',
+        '    instructions: material.instructions,',
+        '    toolProfile: material.toolProfile,',
+        '    scopes: material.scopes.map((scope) => ({ id: scope.id, type: scope.type })),',
+        '    connectorToolIds: [...material.connectorToolIds],',
+        '    model: modelMaterial(material.model),',
+        '    teamRole: material.teamRole',
+        '      ? { teamId: material.teamRole.teamId, roleName: material.teamRole.roleName }',
+        '      : null,',
+        '  };',
+        '  return JSON.stringify(payload);',
+      ].join('\n'),
     );
     const connectors = readRepoFile('services', 'api-gateway', 'src', 'connectors', 'connector-servers.ts');
     expect(connectors).toContain("export const MAIL_TOOL_ID = 'mail_list_unread_metadata';");
