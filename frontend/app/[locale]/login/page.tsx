@@ -118,7 +118,7 @@ export default function LoginPage() {
         <div className="rounded-xl border border-border bg-surface-base px-8 pb-8 pt-6 shadow-lg">
           <div className="mb-8 flex items-start justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-text-primary">{t('title')}</h1>
+              <h1 className="text-2xl font-semibold text-text-primary">{t('title')}</h1>
               <p className="mt-1 text-sm text-text-secondary">{t('subtitle')}</p>
             </div>
             <LanguageSwitcher />

@@ -31,10 +31,6 @@ typography:
     fontFamily: "var(--font-inter), Arial, Helvetica, sans-serif"
     fontSize: "text-sm"
     fontWeight: "normal"
-  title-bold:
-    fontFamily: "var(--font-inter), Arial, Helvetica, sans-serif"
-    fontSize: "text-2xl"
-    fontWeight: "bold"
   title-semibold:
     fontFamily: "var(--font-inter), Arial, Helvetica, sans-serif"
     fontSize: "text-2xl"
@@ -302,8 +298,7 @@ Sources: `frontend/app/globals.css`, `frontend/tailwind.config.js`, `frontend/ap
 
 ### Hierarchy
 
-- **Title, bold** (`font-bold`, `text-2xl`): auth and password headings.
-- **Title, semibold** (`font-semibold`, `text-2xl`): collaboration title; workspace template heading. Project names in the workspace header are `text-sm font-semibold` and `truncate`.
+- **Title, semibold** (`font-semibold`, `text-2xl`): auth and password headings; collaboration title; workspace template heading. Project names in the workspace header are `text-sm font-semibold` and `truncate`.
 - **Title** (`text-lg font-semibold`): agent detail name.
 - **Body** (`text-sm`): chat, forms, buttons, empty and error copy. Landing lede goes to `text-base` and `sm:text-lg`.
 - **Label** (`text-xs font-medium`): tabs, context chips, badges. One scaffold label adds `uppercase tracking-wide`.
@@ -320,7 +315,7 @@ Sources: `frontend/app/[locale]/layout.tsx`, `frontend/app/globals.css`, `fronte
 
 ## 4. Elevation
 
-Depth is a hybrid, and it is uneven. Most workspace rows are flat: a `border` utility plus a gray or white fill. Cards that lift use Tailwind `shadow-sm`. Selected agent cards add `shadow-md`. Auth cards use `shadow-lg` (login, register) or `shadow-md` (forgot and reset). The repo-docs modal uses `shadow-xl`. The system-readiness panel uses `shadow-2xl`; its collapsed chip uses `shadow-lg`. Platform panels are flat borders on slate, sometimes with a slash opacity (`bg-slate-900/80`), not a shadow.
+Depth is a hybrid, and it is uneven. Most workspace rows are flat: a `border` utility plus a gray or white fill. Cards that lift use Tailwind `shadow-sm`. Selected agent cards add `shadow-md`. Auth cards (login, register, forgot, reset) use `shadow-lg`. The repo-docs modal uses `shadow-xl`. The system-readiness panel uses `shadow-2xl`; its collapsed chip uses `shadow-lg`. Platform panels are flat borders on slate, sometimes with a slash opacity (`bg-slate-900/80`), not a shadow.
 
 The workspace mobile sidebar scrim is `bg-black/20`. Modal scrims are `bg-black bg-opacity-50`.
 
@@ -332,7 +327,7 @@ Sources: `frontend/tailwind.config.js`, `frontend/app/[locale]/login/page.tsx`, 
 
 ## 5. Components
 
-Icons are `@heroicons/react/24/outline`. Tests on the workspace shell and the platform dashboard reject the solid set. The workspace mobile menu is an inline 20×20 stroke SVG, not a Heroicon. The tab-orientation control is the glyphs `⇔` and `⇕`.
+Icons are `@heroicons/react/24/outline`. Tests on the workspace shell and the platform dashboard reject the solid set. The workspace mobile menu is `Bars3Icon` and the tab-orientation control is `ArrowsRightLeftIcon` / `ArrowsUpDownIcon`, both at `h-5 w-5` with `aria-hidden`.
 
 ### Buttons
 
@@ -416,12 +411,12 @@ Sources: `PRODUCT.md`, `frontend/app/[locale]/layout.tsx`, `frontend/components/
 2. Tailwind utilities (`bg-blue-600`, `bg-indigo-600`, `bg-slate-950`, `bg-gray-100`, emerald, amber, red, green) have no hex literal in this repo. `tailwind.config.js` does not override the default palette. Those frontmatter fields keep the class name.
 3. Radius, spacing steps, and shadows are Tailwind utilities. No px, rem, or `box-shadow` value is declared here, so none is written as a length.
 4. `font-mono` is used. No mono family is configured. No line-height token is set. `tracking-wide` appears on isolated labels only.
-5. Title weight is `font-bold` on auth and `font-semibold` on collaboration and template headings.
+5. Fixed (DESIGN-GAPS-01A): page titles are `font-semibold` on auth, collaboration and template headings.
 6. Dark mode rewrites CSS variables only. Workspace and collaboration stay light. Platform, knowledge, and office stay slate even in a light OS theme. Agent cards on the slate page are light.
 7. Success green is split: `emerald-*` on workspace banners and agent badges, `green-500` / `green-600` on the live dot and the readiness chip.
 8. Focus is split: `focus:ring-brand` on auth, `focus-visible:ring-indigo-400` or `ring-indigo-500` on platform and office, `focus-visible:ring-blue-400` on intent chips, and `focus:border-blue-300` with `outline-none` and no ring on the chat and collaboration textareas.
 9. Loading has no shared spinner. Some rows are a sentence; some pulse a gray dot.
 10. Inter is Latin-only. No CJK font is loaded. Chinese depends on fallback after `var(--font-inter)`.
-11. The mobile sidebar icon is a custom 20×20 SVG. Tab orientation uses `⇔` and `⇕`. The readiness chip hardcodes English ("System Ready", "Config").
-12. Auth card radius is `rounded-xl` on login and register, `rounded-lg` on forgot and reset. Auth shadow is `shadow-lg` on login and register, `shadow-md` on forgot and reset.
+11. Fixed (DESIGN-GAPS-01A): the mobile sidebar icon and tab orientation control are Heroicons v2 outline; the readiness chip and panel text come from the `systemReadiness` messages in en, zh-TW and zh-CN.
+12. Fixed (DESIGN-GAPS-01A): all four auth cards are `rounded-xl shadow-lg`.
 13. Collaboration selection is indigo (`border-indigo-300 bg-indigo-50`) while its primary button is `bg-blue-600`.

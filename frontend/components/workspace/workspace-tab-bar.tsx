@@ -1,5 +1,7 @@
 import React from 'react';
 import {
+  ArrowsRightLeftIcon,
+  ArrowsUpDownIcon,
   EyeIcon,
   CodeBracketIcon,
   WrenchScrewdriverIcon,
@@ -90,7 +92,11 @@ export default function WorkspaceTabBar(props: WorkspaceTabBarProps) {
         data-testid="workspace-tab-orientation-toggle"
         title={isVertical ? 'Horizontal tabs' : 'Vertical tabs'}
       >
-        {isVertical ? '⇔' : '⇕'}
+        {isVertical ? (
+          <ArrowsRightLeftIcon className="h-5 w-5" aria-hidden="true" />
+        ) : (
+          <ArrowsUpDownIcon className="h-5 w-5" aria-hidden="true" />
+        )}
       </button>
     </div>
   );

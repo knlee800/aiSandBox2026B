@@ -83,6 +83,7 @@ import {
   type TabOrientation,
 } from './workspace-tab-registry';
 import {
+  Bars3Icon,
   BuildingOffice2Icon,
   ChatBubbleLeftIcon,
   ChevronDownIcon,
@@ -2363,18 +2364,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           data-testid="workspace-sidebar-mobile-toggle"
           aria-label="Open sidebar"
         >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 20 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
-            <path d="M3 5H17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            <path d="M3 10H17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            <path d="M3 15H17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
+          <Bars3Icon className="h-5 w-5" aria-hidden="true" />
         </button>
       </div>
       <div className="flex-1 min-h-0 flex flex-col md:flex-row">

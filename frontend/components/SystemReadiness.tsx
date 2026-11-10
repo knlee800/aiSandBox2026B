@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useTranslations } from '../hooks/useTranslations';
 import ConfigurationControl from './ConfigurationControl';
 
 /**
@@ -27,7 +28,9 @@ import ConfigurationControl from './ConfigurationControl';
 
 interface HealthCheck {
   status: 'ok' | 'error' | 'checking';
+  /** systemReadiness message key, or raw server text when `messageIsRaw` is true. */
   message?: string;
+  messageIsRaw?: boolean;
   details?: any;
 }
 
@@ -46,6 +49,7 @@ function shouldRenderSystemReadiness(): boolean {
 }
 
 export default function SystemReadiness() {
+  const t = useTranslations('systemReadiness');
   const shouldRenderControls = shouldRenderSystemReadiness();
   const [status, setStatus] = useState<SystemStatus>({
     apiGateway: { status: 'checking' },
@@ -69,7 +73,7 @@ export default function SystemReadiness() {
           ...prev,
           apiGateway: {
             status: 'ok',
-            message: 'API Gateway is running',
+            message: 'apiGatewayRunning',
             details: healthResponse.data,
           },
         }));
@@ -84,17 +88,17 @@ export default function SystemReadiness() {
             setStatus({
               apiGateway: {
                 status: 'ok',
-                message: 'API Gateway is running',
+                message: 'apiGatewayRunning',
                 details: healthResponse.data,
               },
               database: {
                 status: 'ok',
-                message: 'Database connected',
+                message: 'databaseConnected',
                 details: readyResponse.data.checks,
               },
               environment: {
                 status: 'ok',
-                message: 'Environment validated',
+                message: 'environmentValidated',
                 details: readyResponse.data.environment,
               },
               overall: 'ready',
@@ -109,17 +113,18 @@ export default function SystemReadiness() {
           setStatus({
             apiGateway: {
               status: 'ok',
-              message: 'API Gateway is running',
+              message: 'apiGatewayRunning',
               details: healthResponse.data,
             },
             database: {
               status: 'error',
-              message: errorData?.error || 'Database connection failed',
+              message: errorData?.error || 'databaseFailed',
+              messageIsRaw: Boolean(errorData?.error),
               details: errorData,
             },
             environment: {
               status: 'error',
-              message: 'Environment validation failed',
+              message: 'environmentFailed',
               details: errorData,
             },
             overall: 'not_ready',
@@ -133,17 +138,17 @@ export default function SystemReadiness() {
         apiGateway: {
           status: 'error',
           message: error.code === 'ECONNREFUSED' 
-            ? 'API Gateway is not running'
-            : 'Failed to connect to API Gateway',
+            ? 'gatewayNotRunning'
+            : 'gatewayConnectFailed',
           details: { error: error.message, code: error.code },
         },
         database: {
           status: 'error',
-          message: 'Cannot check - API Gateway not reachable',
+          message: 'cannotCheck',
         },
         environment: {
           status: 'error',
-          message: 'Cannot check - API Gateway not reachable',
+          message: 'cannotCheck',
         },
         overall: 'not_ready',
       });
@@ -194,18 +199,18 @@ export default function SystemReadiness() {
           <button
             onClick={() => setShowConfiguration(true)}
             className="bg-blue-600 text-white px-3 py-2 rounded-lg shadow-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 text-sm"
-            title="View Configuration"
+            title={t('viewConfiguration')}
           >
             <span>⚙️</span>
-            <span>Config</span>
+            <span>{t('config')}</span>
           </button>
           <button
             onClick={() => setCollapsed(false)}
             className="bg-green-600 text-white px-3 py-2 rounded-lg shadow-lg hover:bg-green-700 transition-colors flex items-center space-x-2 text-sm"
-            title="System Ready - Click to expand"
+            title={t('readyExpandTitle')}
           >
             <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-            <span>System Ready</span>
+            <span>{t('statusReadyShort')}</span>
           </button>
         </div>
 
@@ -246,17 +251,17 @@ export default function SystemReadiness() {
             }`}></div>
             <h3 className="text-white font-semibold">
               {status.overall === 'ready' 
-                ? '✓ System Ready' 
+                ? `✓ ${t('statusReady')}` 
                 : status.overall === 'checking'
-                ? '⏳ Checking System...'
-                : '✗ System Not Ready'}
+                ? `⏳ ${t('statusChecking')}`
+                : `✗ ${t('statusNotReady')}`}
             </h3>
           </div>
           {status.overall === 'ready' && (
             <button
               onClick={() => setCollapsed(true)}
               className="text-white hover:text-gray-200 transition-colors"
-              title="Minimize"
+              title={t('minimize')}
             >
               ✕
             </button>
@@ -264,7 +269,7 @@ export default function SystemReadiness() {
         </div>
         {lastCheck && (
           <p className="text-white text-xs mt-1 opacity-90">
-            Last checked: {lastCheck.toLocaleTimeString()}
+            {t('lastChecked')} {lastCheck.toLocaleTimeString()}
           </p>
         )}
       </div>
@@ -273,18 +278,19 @@ export default function SystemReadiness() {
       <div className="p-4 space-y-3">
         {/* API Gateway Status */}
         <StatusItem
-          name="API Gateway"
+          name={t('apiGateway')}
           status={status.apiGateway.status}
           message={status.apiGateway.message}
+          messageIsRaw={status.apiGateway.messageIsRaw}
           remediation={
             status.apiGateway.status === 'error' ? (
               <div className="mt-2 p-3 bg-red-50 rounded text-xs">
-                <p className="font-semibold text-red-900 mb-1">How to Fix:</p>
+                <p className="font-semibold text-red-900 mb-1">{t('howToFix')}</p>
                 <ol className="list-decimal list-inside space-y-1 text-red-800">
-                  <li>Open a terminal in the project root</li>
-                  <li>Navigate to services/api-gateway</li>
-                  <li>Run: <code className="bg-red-100 px-1 py-0.5 rounded">npm run start:dev</code></li>
-                  <li>Wait for "Application is running" message</li>
+                  <li>{t('fixOpenTerminal')}</li>
+                  <li>{t('fixNavigateGateway')}</li>
+                  <li>{t('fixRun')} <code className="bg-red-100 px-1 py-0.5 rounded">npm run start:dev</code></li>
+                  <li>{t('fixWaitRunning')}</li>
                 </ol>
               </div>
             ) : null
@@ -293,24 +299,25 @@ export default function SystemReadiness() {
 
         {/* Database Status */}
         <StatusItem
-          name="Database"
+          name={t('database')}
           status={status.database.status}
           message={status.database.message}
+          messageIsRaw={status.database.messageIsRaw}
           remediation={
             status.database.status === 'error' && status.apiGateway.status === 'ok' ? (
               <div className="mt-2 p-3 bg-red-50 rounded text-xs">
-                <p className="font-semibold text-red-900 mb-1">How to Fix:</p>
+                <p className="font-semibold text-red-900 mb-1">{t('howToFix')}</p>
                 <ol className="list-decimal list-inside space-y-1 text-red-800">
-                  <li>Ensure PostgreSQL is installed</li>
-                  <li>Start PostgreSQL:
+                  <li>{t('fixPostgresInstalled')}</li>
+                  <li>{t('fixStartPostgres')}
                     <ul className="list-disc list-inside ml-4 mt-1">
-                      <li>macOS: <code className="bg-red-100 px-1 py-0.5 rounded">brew services start postgresql</code></li>
-                      <li>Windows: Start PostgreSQL service</li>
-                      <li>Linux: <code className="bg-red-100 px-1 py-0.5 rounded">sudo systemctl start postgresql</code></li>
+                      <li>{t('fixMacOs')} <code className="bg-red-100 px-1 py-0.5 rounded">brew services start postgresql</code></li>
+                      <li>{t('fixWindows')}</li>
+                      <li>{t('fixLinux')} <code className="bg-red-100 px-1 py-0.5 rounded">sudo systemctl start postgresql</code></li>
                     </ul>
                   </li>
-                  <li>Check DATABASE_URL in .env file</li>
-                  <li>Restart API Gateway</li>
+                  <li>{t('fixCheckDatabaseUrl')}</li>
+                  <li>{t('fixRestartGateway')}</li>
                 </ol>
               </div>
             ) : null
@@ -319,16 +326,17 @@ export default function SystemReadiness() {
 
         {/* Environment Status */}
         <StatusItem
-          name="Environment"
+          name={t('environment')}
           status={status.environment.status}
           message={status.environment.message}
+          messageIsRaw={status.environment.messageIsRaw}
           remediation={
             status.environment.status === 'error' && status.apiGateway.status === 'ok' ? (
               <div className="mt-2 p-3 bg-red-50 rounded text-xs">
-                <p className="font-semibold text-red-900 mb-1">How to Fix:</p>
+                <p className="font-semibold text-red-900 mb-1">{t('howToFix')}</p>
                 <ol className="list-decimal list-inside space-y-1 text-red-800">
-                  <li>Check .env file in services/api-gateway</li>
-                  <li>Ensure required variables are set:
+                  <li>{t('fixCheckEnvFile')}</li>
+                  <li>{t('fixEnsureVariables')}
                     <ul className="list-disc list-inside ml-4 mt-1">
                       <li>NODE_ENV (development/staging/production)</li>
                       <li>DATABASE_URL</li>
@@ -337,7 +345,7 @@ export default function SystemReadiness() {
                       <li>ABORT_MODE</li>
                     </ul>
                   </li>
-                  <li>Restart API Gateway</li>
+                  <li>{t('fixRestartGateway')}</li>
                 </ol>
               </div>
             ) : null
@@ -352,14 +360,14 @@ export default function SystemReadiness() {
           className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors text-sm font-medium flex items-center justify-center space-x-2"
         >
           <span>⚙️</span>
-          <span>View Configuration</span>
+          <span>{t('viewConfiguration')}</span>
         </button>
         <button
           onClick={checkSystemReadiness}
           disabled={status.overall === 'checking'}
           className="w-full bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700 disabled:bg-gray-300 transition-colors text-sm font-medium"
         >
-          {status.overall === 'checking' ? 'Checking...' : 'Recheck Now'}
+          {status.overall === 'checking' ? t('checking') : t('recheckNow')}
         </button>
       </div>
 
@@ -382,10 +390,12 @@ interface StatusItemProps {
   name: string;
   status: 'ok' | 'error' | 'checking';
   message?: string;
+  messageIsRaw?: boolean;
   remediation?: React.ReactNode;
 }
 
-function StatusItem({ name, status, message, remediation }: StatusItemProps) {
+function StatusItem({ name, status, message, messageIsRaw, remediation }: StatusItemProps) {
+  const t = useTranslations('systemReadiness');
   return (
     <div className="border border-gray-200 rounded p-3">
       <div className="flex items-start justify-between">
@@ -410,7 +420,7 @@ function StatusItem({ name, status, message, remediation }: StatusItemProps) {
                 ? 'text-yellow-700'
                 : 'text-red-700'
             }`}>
-              {message}
+              {messageIsRaw ? message : t(message)}
             </p>
           )}
         </div>

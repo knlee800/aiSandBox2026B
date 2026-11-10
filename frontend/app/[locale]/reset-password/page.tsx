@@ -140,8 +140,8 @@ export default function ResetPasswordPage() {
       <div className="absolute top-4 right-4">
         <LanguageSwitcher />
       </div>
-      <div className="w-96 rounded-lg border border-border bg-surface-base p-8 shadow-md">
-        <h1 className="mb-6 text-center text-2xl font-bold text-text-primary">{t('title')}</h1>
+      <div className="w-96 rounded-xl border border-border bg-surface-base p-8 shadow-lg">
+        <h1 className="mb-6 text-center text-2xl font-semibold text-text-primary">{t('title')}</h1>
         <Suspense fallback={null}>
           <ResetPasswordForm locale={locale} />
         </Suspense>
