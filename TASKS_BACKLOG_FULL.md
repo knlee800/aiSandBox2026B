@@ -86642,7 +86642,7 @@ taskId=WORKFLOW-STATUS-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the WORKFLOW-CREATE-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 1 and its mutexes released. Result: passed. Switch-on checked on PATCH to active from a non-active status (untested or older version or spec edit in the same PATCH: 409 WORKFLOW_NOT_TESTED; cannot render: 409 WORKFLOW_INVALID; off, draft, same, no status: unchecked); port USER_WORKFLOW_SWITCH_ON_CHECK bound in UserAgentModule to a check that finds CollaborationWorkflowService via ModuleRef (strict false), 503 when absent; Draft badge with DESIGN.md amber tokens and PencilSquareIcon; AgentStatus gains draft; opus subagent c97fbaa6, cherry-picked as a63be7d; control-plane rerun: gateway 3401 passed, 7 skipped, only the 14 known smoke failures; ai-service 1296 passed; frontend tsc 0, 1533 passed, build 0. Not deployed. FOLLOWUPS: 1 registered (WORKFLOW-STATUS-03) / 0 superseded / 0 dropped / 0 undisposed. Was admitted 2026-11-10. Checkpoint: docs/WORKFLOW-STATUS-02-CHECKPOINT.md.
 **Task ID:** WORKFLOW-STATUS-02
 **Title:** Workflow switch-on checked by the server; a distinct Draft badge
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -86659,6 +86659,30 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set at admission 2026-11-10).
 **Scope:** From the WORKFLOW-CREATE-01 worker: (1) PATCH /api/agents/:id accepts status active for a workflow with no passing test at its current version; only the client enforces switch-on-after-test (safe today: the start gate checks the tested versions); refuse it on the server with a clear code. (2) The dashboard card shows Draft with the disabled styling; give Draft its own badge, which needs the AgentStatus type in frontend/lib/agent-platform.
+
+### WORKFLOW-STATUS-03 — Workflow status follow-ups: the 409 code in the save hook, the port binding, the draft card body
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=WORKFLOW-STATUS-03
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the WORKFLOW-STATUS-02 LOCK — not admitted.
+**Task ID:** WORKFLOW-STATUS-03
+**Title:** Workflow status follow-ups: the 409 code in the save hook, the port binding, the draft card body
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** WORKFLOW-STATUS-02.
+**Primary write scope:** PROVISIONAL, set at admission (expected frontend/hooks/useUserAgents.ts; optionally services/api-gateway/src/orchestration/orchestration.module.ts and services/api-gateway/src/user-agent/; frontend/components/platform/ if Keith wants a different draft card body).
+**Mutexes / resources:** set at admission (expected FRONTEND; GATEWAY only for item 2).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the WORKFLOW-STATUS-02 worker: (1) frontend/hooks/useUserAgents.ts saveUserAgentRequest passes the server code only on a 400, so a 409 WORKFLOW_NOT_TESTED switch-on refusal shows the generic error until the summary reload; pass the code on a 409 too (one line, with a test). (2) Optional cleanup: OrchestrationModule binds the USER_WORKFLOW_SWITCH_ON_CHECK port as a provider instead of the ModuleRef lookup in user-workflow-switch-on.ts. (3) Design question for Keith: whether a draft card body should look different from an off card (only the badge differs today).
 
 ### GOV-GOOGLE-VERIFY-01 — Google OAuth app verification
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
