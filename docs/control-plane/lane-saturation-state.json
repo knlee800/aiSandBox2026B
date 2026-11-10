@@ -41,7 +41,13 @@
       "state": "ACTIVE",
       "taskId": "CM-CLEANUP-01",
       "mutexes": ["CONTAINER-MANAGER", "AI-SERVICE"],
-      "writePaths": ["services/container-manager/src/", "services/ai-service/src/messages/", "services/ai-service/src/app.module.ts"],
+      "writePaths": [
+        "services/container-manager/src/",
+        "services/ai-service/src/messages/",
+        "services/ai-service/src/app.module.ts",
+        "services/ai-service/src/__tests__/internal-key.http.spec.ts",
+        "services/ai-service/src/main.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
       "evidenceClass": "LOCAL-TESTS",
@@ -5161,7 +5167,13 @@
       "futureAuthorization": "NONE",
       "dependsOn": ["CM-AUTH-01"],
       "mutexes": ["CONTAINER-MANAGER", "AI-SERVICE"],
-      "writePaths": ["services/container-manager/src/", "services/ai-service/src/messages/", "services/ai-service/src/app.module.ts"],
+      "writePaths": [
+        "services/container-manager/src/",
+        "services/ai-service/src/messages/",
+        "services/ai-service/src/app.module.ts",
+        "services/ai-service/src/__tests__/internal-key.http.spec.ts",
+        "services/ai-service/src/main.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
       "sharedContractIds": [],

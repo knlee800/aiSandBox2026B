@@ -87562,7 +87562,7 @@ nature=IMPLEMENTATION
 **Lifecycle:** 3-STEP.
 **Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** CM-AUTH-01.
-**Primary write scope:** set 2026-11-10: services/container-manager/src/, services/ai-service/src/messages/, services/ai-service/src/app.module.ts.
+**Primary write scope:** set 2026-11-10: services/container-manager/src/, services/ai-service/src/messages/, services/ai-service/src/app.module.ts. Widened 2026-11-10 (the worker stopped on F4: the ai-service internal-key HTTP spec imports the legacy chat module, and main.ts logs its URL): services/ai-service/src/__tests__/internal-key.http.spec.ts and services/ai-service/src/main.ts.
 **Mutexes / resources:** CONTAINER-MANAGER, AI-SERVICE (GATEWAY moved to CM-CLEANUP-01B at the 2026-11-10 split).
 **Hot-file leases:** none.
 **Shared contracts:** none.
