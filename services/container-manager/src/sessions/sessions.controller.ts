@@ -39,13 +39,4 @@ export class SessionsController {
   async delete(@Param('id') id: string) {
     return this.sessionsService.deleteSession(id);
   }
-
-  @Get()
-  health() {
-    return {
-      status: 'ok',
-      service: 'container-manager',
-      timestamp: new Date().toISOString(),
-    };
-  }
 }

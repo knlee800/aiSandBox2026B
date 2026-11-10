@@ -1,11 +1,60 @@
 import { Controller, Post, Get, Delete, Param, Body, HttpCode, Res, Req } from '@nestjs/common';
 import { Response, Request } from 'express';
+import type { IncomingMessage } from 'http';
 import { PreviewService } from './preview.service';
-import { createProxyMiddleware } from 'http-proxy-middleware';
+import { createProxyMiddleware, RequestHandler } from 'http-proxy-middleware';
 import { stripInternalServiceKey } from '../guards/strip-internal-key';
+
+/** Per-request proxy context: which session, and where its preview runs. */
+type ProxyContext = { sessionId: string; target: string };
 
 @Controller('preview')
 export class PreviewController {
+  /**
+   * CM-CLEANUP-01: the request's session and target, set by proxyRequest just
+   * before it hands the request to the shared proxy.
+   */
+  private readonly proxyContexts = new WeakMap<IncomingMessage, ProxyContext>();
+
+  /**
+   * CM-CLEANUP-01: one proxy for the controller's lifetime. It used to be
+   * created per request, and each new one added a 'close' listener to the
+   * HTTP server that was never removed. The target is chosen per request by
+   * `router`, from the context proxyRequest stores.
+   */
+  private readonly proxy: RequestHandler<Request, Response> = createProxyMiddleware<Request, Response>({
+    router: (req) => this.proxyContexts.get(req)?.target,
+    changeOrigin: true,
+    // CM-AUTH-01 (D7): no `ws: true`. An upgrade listener on the server
+    // would proxy any upgrade on any path without passing a guard.
+    pathRewrite: (path, req) => {
+      const sessionId = this.proxyContexts.get(req)?.sessionId;
+      if (sessionId === undefined) {
+        return '/';
+      }
+      // Remove /api/preview/:sessionId/proxy from the path
+      return path.replace(`/api/preview/${sessionId}/proxy`, '') || '/';
+    },
+    on: {
+      // CM-AUTH-01 (D6): the internal key never reaches the container.
+      proxyReq: stripInternalServiceKey,
+      error: (err, req, res) => {
+        const sessionId = this.proxyContexts.get(req)?.sessionId;
+        console.error(`Proxy error for session ${sessionId}:`, err.message);
+        // Check if res is ServerResponse (not Socket)
+        if (res && 'writeHead' in res && 'headersSent' in res) {
+          if (!res.headersSent) {
+            res.writeHead(502, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+              error: 'Proxy error',
+              message: 'Failed to connect to preview server',
+            }));
+          }
+        }
+      },
+    },
+  });
+
   constructor(private previewService: PreviewService) {}
 
   @Post(':sessionId/start')
@@ -88,36 +137,7 @@ export class PreviewController {
 
     const target = await this.previewService.getProxyTargetUrl(sessionId);
 
-    // Create proxy middleware dynamically
-    const proxy = createProxyMiddleware({
-      target,
-      changeOrigin: true,
-      // CM-AUTH-01 (D7): no `ws: true`. An upgrade listener on the server
-      // would proxy any upgrade on any path without passing a guard.
-      pathRewrite: (path) => {
-        // Remove /api/preview/:sessionId/proxy from the path
-        return path.replace(`/api/preview/${sessionId}/proxy`, '') || '/';
-      },
-      on: {
-        // CM-AUTH-01 (D6): the internal key never reaches the container.
-        proxyReq: stripInternalServiceKey,
-        error: (err, req, res) => {
-          console.error(`Proxy error for session ${sessionId}:`, err.message);
-          // Check if res is ServerResponse (not Socket)
-          if (res && 'writeHead' in res && 'headersSent' in res) {
-            if (!res.headersSent) {
-              res.writeHead(502, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({
-                error: 'Proxy error',
-                message: 'Failed to connect to preview server',
-              }));
-            }
-          }
-        },
-      },
-    });
-
-    // Apply proxy
-    proxy(req, res);
+    this.proxyContexts.set(req, { sessionId, target });
+    return this.proxy(req, res);
   }
 }

@@ -123,7 +123,13 @@ function methodsFor(route: Route): string[] {
   return route.method === 'ALL' ? ['GET', 'POST'] : [route.method];
 }
 
-/** Every route in the service as it is served (method + full path). */
+/**
+ * Every route in the service as it is served (method + full path).
+ * CM-CLEANUP-01 removed six uncalled routes: ALL /api/previews/:sessionId/*,
+ * GET /api/previews/:sessionId/health, ALL /api/internal-previews/proxy/:sessionId/*,
+ * POST /api/executor/:sessionId/execute, GET /api/executor/commands and
+ * GET /api/sessions (a second health reply).
+ */
 const EXPECTED_INVENTORY = [
   'POST /api/sessions',
   'POST /api/sessions/:id/start',
@@ -131,7 +137,6 @@ const EXPECTED_INVENTORY = [
   'GET /api/sessions/user/:userId',
   'POST /api/sessions/:id/stop',
   'DELETE /api/sessions/:id',
-  'GET /api/sessions',
   'POST /api/internal/sessions/:id/start',
   'DELETE /api/internal/sessions/:id/container',
   'POST /api/internal/sessions/:id/exec',
@@ -143,9 +148,6 @@ const EXPECTED_INVENTORY = [
   'GET /api/internal/sessions/:id/stat',
   'POST /api/internal/sessions/:id/browser-smoke',
   'POST /api/internal/sessions/:id/previews',
-  'ALL /api/internal-previews/proxy/:sessionId/*',
-  'GET /api/previews/:sessionId/health',
-  'ALL /api/previews/:sessionId/*',
   'GET /api/files/:sessionId/list',
   'POST /api/files/:sessionId/read',
   'POST /api/files/:sessionId/write',
@@ -161,8 +163,6 @@ const EXPECTED_INVENTORY = [
   'POST /api/internal/checkpoint-history/:sessionId/save',
   'POST /api/internal/checkpoint-history/:sessionId/restore',
   'GET /api/internal/git/:sessionId/worktree-diff/:commitHash',
-  'POST /api/executor/:sessionId/execute',
-  'GET /api/executor/commands',
   'POST /api/preview/:sessionId/start',
   'POST /api/preview/:sessionId/stop',
   'DELETE /api/preview/:sessionId/stop',
@@ -204,13 +204,13 @@ describe('container-manager route inventory (CM-AUTH-01)', () => {
     expect(providers).toContainEqual({ provide: APP_GUARD, useClass: InternalServiceAuthGuard });
   });
 
-  it('serves exactly the expected 64 routes (63 guarded + GET /api/health)', () => {
+  it('serves exactly the expected 58 routes (57 guarded + GET /api/health)', () => {
     const actual = routes.map(routeKey);
     // One line per route, so the real serving paths (F2) show in the test log.
     console.info(`CM-AUTH-01 route inventory (${actual.length}):\n${actual.join('\n')}`);
     expect(actual.sort()).toEqual([...EXPECTED_INVENTORY].sort());
-    expect(routes).toHaveLength(64);
-    expect(guardedRoutes).toHaveLength(63);
+    expect(routes).toHaveLength(58);
+    expect(guardedRoutes).toHaveLength(57);
   });
 
   it('marks exactly one handler exempt: HealthController.getHealth', () => {
@@ -233,7 +233,6 @@ describe('container-manager route inventory (CM-AUTH-01)', () => {
 
 describe('container-manager internal key over HTTP (CM-AUTH-01)', () => {
   const originalKey = process.env.INTERNAL_SERVICE_KEY;
-  const originalAccessControl = process.env.ENABLE_PREVIEW_ACCESS_CONTROL;
   let app: INestApplication;
   let baseUrl: string;
 
@@ -303,7 +302,6 @@ describe('container-manager internal key over HTTP (CM-AUTH-01)', () => {
 
   beforeAll(async () => {
     process.env.INTERNAL_SERVICE_KEY = internalKey;
-    delete process.env.ENABLE_PREVIEW_ACCESS_CONTROL;
 
     const appModuleGuards = (
       (Reflect.getMetadata(MODULE_METADATA.PROVIDERS, AppModule) ?? []) as Provider[]
@@ -350,11 +348,6 @@ describe('container-manager internal key over HTTP (CM-AUTH-01)', () => {
     } else {
       process.env.INTERNAL_SERVICE_KEY = originalKey;
     }
-    if (originalAccessControl === undefined) {
-      delete process.env.ENABLE_PREVIEW_ACCESS_CONTROL;
-    } else {
-      process.env.ENABLE_PREVIEW_ACCESS_CONTROL = originalAccessControl;
-    }
   });
 
   beforeEach(() => {
@@ -365,8 +358,8 @@ describe('container-manager internal key over HTTP (CM-AUTH-01)', () => {
     }
   });
 
-  it('mounts every AppModule controller (17) with mocked services', () => {
-    expect(controllers).toHaveLength(17);
+  it('mounts every AppModule controller (14) with mocked services', () => {
+    expect(controllers).toHaveLength(14);
     expect(mocks.size).toBeGreaterThan(0);
   });
 
@@ -436,24 +429,39 @@ describe('container-manager internal key over HTTP (CM-AUTH-01)', () => {
   );
 
   it.each([
-    ['GET', '/API/EXECUTOR/COMMANDS'],
-    ['GET', '/Api/Executor/Commands'],
-    ['GET', '/api/executor/commands/'],
+    ['GET', '/API/GIT/p1/HISTORY'],
+    ['GET', '/Api/Git/p1/History'],
+    ['GET', '/api/git/p1/history/'],
     ['GET', '/api/files/p1/list/'],
     ['GET', '/API/FILES/p1/LIST'],
     ['GET', '/api/internal/stats/'],
     ['GET', '/API/INTERNAL/STATS'],
-    ['GET', '/api/sessions/'],
-    ['GET', '/API/SESSIONS'],
+    ['GET', '/api/sessions/p1/'],
+    ['GET', '/API/SESSIONS/p1'],
     ['GET', '/api/preview/p1/status/'],
     ['GET', '/API/PREVIEW/p1/PROXY'],
-    ['POST', '/API/EXECUTOR/p1/EXECUTE'],
+    ['POST', '/API/INTERNAL/SESSIONS/p1/EXEC'],
     ['POST', '/api/internal/sessions/p1/exec/'],
-    ['GET', '/api//executor/commands'],
-    ['GET', '/api/executor/%63ommands'],
+    ['GET', '/api//git/p1/history'],
+    ['GET', '/api/git/p1/%68istory'],
   ])('%s %s (case and slash variants) never reaches a handler without the key', async (method, path) => {
     const response = await send(method, path);
     expect([403, 404]).toContain(response.status);
+    expect(allCalls()).toBe(0);
+  });
+
+  it.each([
+    ['GET', '/api/previews/p1/health'],
+    ['GET', '/api/previews/p1/x'],
+    ['POST', '/api/previews/p1/x'],
+    ['GET', '/api/internal-previews/proxy/p1/x'],
+    ['POST', '/api/internal-previews/proxy/p1/x'],
+    ['POST', '/api/executor/p1/execute'],
+    ['GET', '/api/executor/commands'],
+    ['GET', '/api/sessions'],
+  ])('CM-CLEANUP-01: removed route %s %s is not found even with the key', async (method, path) => {
+    const response = await send(method, path, internalKey);
+    expect(isRouteNotFound(response)).toBe(true);
     expect(allCalls()).toBe(0);
   });
 

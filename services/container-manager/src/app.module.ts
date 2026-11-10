@@ -3,7 +3,6 @@ import { APP_GUARD } from '@nestjs/core';
 import { SessionsModule } from './sessions/sessions.module';
 import { FilesModule } from './files/files.module';
 import { GitModule } from './git/git.module';
-import { ExecutorModule } from './executor/executor.module';
 import { PreviewModule } from './preview/preview.module';
 import { UsageModule } from './usage/usage.module';
 import { BillingModule } from './billing/billing.module';
@@ -21,7 +20,6 @@ import { InternalServiceAuthGuard } from './guards/internal-service-auth.guard';
     SessionsModule,
     FilesModule,
     GitModule,
-    ExecutorModule,
     PreviewModule,
     UsageModule,
     BillingModule,

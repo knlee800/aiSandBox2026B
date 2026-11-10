@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { configureApp } from './app-setup';
 import { resolveListenHost } from './listen-host';
 
 async function bootstrap() {
@@ -9,22 +9,8 @@ async function bootstrap() {
     logger: ['log', 'error', 'warn', 'debug'],
   });
 
-  // Enable CORS
-  app.enableCors({
-    origin: true,
-    credentials: true,
-  });
-
-  // Enable validation
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      transform: true,
-    }),
-  );
-
-  // Set global prefix
-  app.setGlobalPrefix('api');
+  // Validation pipe and the 'api' prefix. CM-CLEANUP-01 (F5): no CORS.
+  configureApp(app);
 
   const port = process.env.PORT || 4002;
   // AI-SERVICE-AUTH-01: LISTEN_HOST, default 127.0.0.1 (host-local callers only)
