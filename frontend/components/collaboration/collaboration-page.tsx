@@ -5,7 +5,19 @@ import { useParams, useSearchParams } from 'next/navigation';
 import CollaborationView, {
   type CollaborationHandoffViewModel,
   type CollaborationViewLabels,
+  type CollaborationWorkflowPickerView,
+  type CollaborationWorkflowStartView,
 } from '@/components/collaboration/collaboration-view';
+import {
+  collaborationWorkflowActions,
+  collaborationWorkflowRefusal,
+  collaborationWorkflowSpentLine,
+  collaborationWorkflowStartBody,
+  collaborationWorkflowSummary,
+  readRunWorkflow,
+  useCollaborationWorkflowList,
+  type CollaborationWorkflowList,
+} from '@/components/collaboration/collaboration-workflows';
 import { useTranslations } from '@/hooks/useTranslations';
 import {
   collaborationFetch,
@@ -102,6 +114,8 @@ export function useCollaborationScreen(input: {
   queryProjectId: string;
   /** Overrides the browser time zone in the morning briefing request (tests). */
   timeZone?: string;
+  /** BIZ-USER-01C: the owner's workflows. Absent: the page offers the three teams only. */
+  workflows?: CollaborationWorkflowList;
 }) {
   const { t, locale, sessionId, queryProjectId } = input;
   const translateScope = input.translateScope ?? ((scopeId: string) => scopeId);
@@ -112,6 +126,7 @@ export function useCollaborationScreen(input: {
 
   const [task, setTask] = useState('');
   const [selectedTeam, setSelectedTeam] = useState<CollaborationTeamId>('coding');
+  const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [conversationCreated, setConversationCreated] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -137,6 +152,18 @@ export function useCollaborationScreen(input: {
   listProjectRef.current = listProjectId;
   selectedRef.current = selectedRunId;
 
+  const refusalText = useCallback((status: number, body: unknown): string => {
+    const workflowRefusal = collaborationWorkflowRefusal(body);
+    if (workflowRefusal) {
+      return fillTemplate(tRef.current(workflowRefusal.key), workflowRefusal.values);
+    }
+    return tRef.current(
+      collaborationRefusalMessageKey(
+        collaborationRefusal(status, readErrorMessage(body), body),
+      ),
+    );
+  }, []);
+
   const showRefusal = useCallback(async (response: Response) => {
     let body: unknown = null;
     try {
@@ -144,14 +171,8 @@ export function useCollaborationScreen(input: {
     } catch {
       body = null;
     }
-    setNotice(
-      tRef.current(
-        collaborationRefusalMessageKey(
-          collaborationRefusal(response.status, readErrorMessage(body), body),
-        ),
-      ),
-    );
-  }, []);
+    setNotice(refusalText(response.status, body));
+  }, [refusalText]);
 
   const loadList = useCallback(
     async (projectId: string) => {
@@ -244,6 +265,22 @@ export function useCollaborationScreen(input: {
       cancelled = true;
     };
   }, [selectedRunId]);
+
+  // BIZ-USER-01C: when an open workflow run ends, read the workflows again
+  // so the tested flag and today's spend are current.
+  const workflowsStaleRef = useRef(input.workflows?.onStale);
+  workflowsStaleRef.current = input.workflows?.onStale;
+  const previousRunStatus = useRef<string | undefined>(undefined);
+  const detailIsWorkflow =
+    readRunWorkflow((detail as { workflow?: unknown } | null)?.workflow) !== null;
+  useEffect(() => {
+    const status = detail?.run.status;
+    const previous = previousRunStatus.current;
+    previousRunStatus.current = status;
+    if (detailIsWorkflow && previous === 'active' && status !== undefined && status !== 'active') {
+      workflowsStaleRef.current?.();
+    }
+  }, [detail?.run.status, detailIsWorkflow]);
 
   useEffect(() => {
     if (
@@ -405,8 +442,82 @@ export function useCollaborationScreen(input: {
     productStrategySummary: t('productStrategySummary'),
     technologyAdvisorSummary: t('technologyAdvisorSummary'),
   });
+  // BIZ-USER-01C: the selected workflow, the run's workflow and their names.
+  const workflowItems = input.workflows?.items ?? [];
+  const selectedWorkflow =
+    selectedWorkflowId !== null
+      ? (workflowItems.find((item) => item.id === selectedWorkflowId) ?? null)
+      : null;
+  const detailWorkflow = readRunWorkflow((detail as { workflow?: unknown } | null)?.workflow);
+  const workflowNames = new Map<string, string>();
+  for (const item of workflowItems) {
+    workflowNames.set(item.id, item.name);
+  }
+  if (detailWorkflow) {
+    workflowNames.set(detailWorkflow.id, detailWorkflow.name);
+  }
+  const memberLabel = (name: string) =>
+    workflowNames.get(name) ?? collaborationMemberLabel(name, memberLabels);
+  const workflowRoster = selectedWorkflow
+    ? [
+        {
+          name: selectedWorkflow.name,
+          summary: collaborationWorkflowSummary(selectedWorkflow, {
+            folders: t('workflowFolders'),
+            modelServer: t('workflowModelServer'),
+            budgetPerRun: t('workflowBudgetPerRun'),
+            noBudget: t('workflowNoBudget'),
+          }),
+        },
+      ]
+    : null;
+  const workflowActions = selectedWorkflow ? collaborationWorkflowActions(selectedWorkflow) : null;
+  const workflowHintKeys = {
+    needsTest: 'workflowNeedsTest',
+    draft: 'workflowDraftHint',
+    off: 'workflowOffHint',
+  } as const;
+  const workflowStart: CollaborationWorkflowStartView | null =
+    selectedWorkflow && workflowActions
+      ? {
+          canTest: workflowActions.canTest,
+          canRun: workflowActions.canRun,
+          testLabel: t('startTestRun'),
+          hint: workflowActions.hint ? t(workflowHintKeys[workflowActions.hint]) : null,
+          spentLine: collaborationWorkflowSpentLine(selectedWorkflow, t('workflowSpentToday')),
+        }
+      : null;
+  const statusKeys = {
+    active: 'workflowStatusActive',
+    draft: 'workflowStatusDraft',
+    disabled: 'workflowStatusDisabled',
+  } as const;
+  const workflowPicker: CollaborationWorkflowPickerView | null = input.workflows
+    ? {
+        state: input.workflows.state,
+        labels: {
+          heading: t('workflowPickerLabel'),
+          loading: t('workflowsLoading'),
+          empty: t('workflowsEmpty'),
+          failed: t('workflowsFailed'),
+          retry: t('workflowsRetry'),
+        },
+        items: workflowItems.map((item) => ({
+          id: item.id,
+          name: item.name,
+          statusLabel: t(statusKeys[item.status]),
+          testedLabel: item.tested ? t('workflowTested') : t('workflowNotTested'),
+          selected: item.id === selectedWorkflow?.id,
+        })),
+        onSelect: (workflowId: string) => {
+          setSelectedWorkflowId(workflowId);
+        },
+        onRetry: input.workflows.onRetry,
+      }
+    : null;
   const runTeamId = collaborationTeamFromDetail(detail);
   const chainTeamId = runTeamId ?? selectedTeam;
+  const chainIsWorkflow = detailWorkflow !== null || (detail === null && selectedWorkflow !== null);
   const teamChoices = [
     { id: 'coding' as const, label: t('teamCoding'), hint: t('teamCodingHint') },
     {
@@ -420,16 +531,20 @@ export function useCollaborationScreen(input: {
       hint: t('teamAdvisorsHint'),
     },
   ];
-  const runTeam = runTeamId
+  const runTeam = detailWorkflow
+    ? {
+        label: detailWorkflow.name,
+        roles: [],
+        badge: detailWorkflow.testRun ? t('testRunBadge') : undefined,
+      }
+    : runTeamId
     ? {
         label: collaborationTeamTitle(runTeamId, {
           coding: t('teamCoding'),
           chiefOfStaff: t('teamChiefOfStaff'),
           advisors: t('teamAdvisors'),
         }),
-        roles: readStringList(detail?.team).map((name) =>
-          collaborationMemberLabel(name, memberLabels),
-        ),
+        roles: readStringList(detail?.team).map((name) => memberLabel(name)),
       }
     : null;
 
@@ -447,8 +562,8 @@ export function useCollaborationScreen(input: {
         referralId: handoff.referralId,
         statusLabel: statusLabel(handoff.status),
         asked: fillTemplate(t('asked'), {
-          source: collaborationMemberLabel(handoff.source, memberLabels),
-          target: collaborationMemberLabel(handoff.target, memberLabels),
+          source: memberLabel(handoff.source),
+          target: memberLabel(handoff.target),
         }),
         prompt: handoff.prompt,
         answer: handoff.answer,
@@ -485,6 +600,53 @@ export function useCollaborationScreen(input: {
     },
   );
 
+  function startRun(testRun: boolean) {
+    if (startInFlight.current) {
+      return;
+    }
+    startInFlight.current = true;
+    const workflowId = selectedWorkflow?.id ?? null;
+    void (async () => {
+      try {
+        await runDecision(async () => {
+          const response = await collaborationFetch('/api/collaboration/runs', {
+            method: 'POST',
+            body: JSON.stringify(
+              workflowId !== null
+                ? collaborationWorkflowStartBody({ sessionId, task, workflowId, testRun })
+                : collaborationStartRequestBody({
+                    sessionId,
+                    task,
+                    team: selectedTeam,
+                  }),
+            ),
+          });
+          if (!response.ok) {
+            await showRefusal(response);
+            return;
+          }
+          const started = (await response.json()) as CollaborationStartResult;
+          setConversationCreated(started.conversationCreated === true);
+          setSelectedRunId(started.collaborationRunId);
+          setRejectReferralId(null);
+          setRejectReason('');
+          setEditReferralId(null);
+          setEditPrompt('');
+          setConfirmingCancel(false);
+          if (started.projectId) {
+            setListProjectId(started.projectId);
+            listProjectRef.current = started.projectId;
+          }
+          selectedRef.current = started.collaborationRunId;
+          setTask('');
+          await refresh();
+        });
+      } finally {
+        startInFlight.current = false;
+      }
+    })();
+  }
+
   return {
     labels,
     backHref: `/${locale}/app`,
@@ -495,30 +657,35 @@ export function useCollaborationScreen(input: {
     conversationCreated,
     task,
     deciding,
-    team,
+    team: workflowRoster ?? team,
     selectedTeam,
     teamChoices,
     onTeamChange: (teamId: CollaborationTeamId) => {
       setSelectedTeam(teamId);
+      setSelectedWorkflowId(null);
     },
+    workflowPicker,
+    workflowStart,
     accessNote:
-      selectedTeam === 'chief-of-staff'
+      selectedWorkflow || selectedTeam === 'chief-of-staff'
         ? t('fileAccessReadOnly')
         : selectedTeam === 'advisors'
           ? t('fileAccessAdvisors')
           : labels.fileAccessOn,
-    chainEmptyText:
-      chainTeamId === 'chief-of-staff'
+    chainEmptyText: chainIsWorkflow
+      ? t('chainEmptyWorkflow')
+      : chainTeamId === 'chief-of-staff'
         ? t('chainEmptyChief')
         : chainTeamId === 'advisors'
           ? t('chainEmptyAdvisors')
           : labels.chainEmpty,
     runTeam,
     taskPresets:
-      selectedTeam === 'chief-of-staff'
+      !selectedWorkflow && selectedTeam === 'chief-of-staff'
         ? [{ id: MORNING_BRIEFING_PRESET_ID, label: t('presetMorningBriefing') }]
         : [],
-    taskPresetHint: selectedTeam === 'chief-of-staff' ? t('presetHint') : undefined,
+    taskPresetHint:
+      !selectedWorkflow && selectedTeam === 'chief-of-staff' ? t('presetHint') : undefined,
     onTaskPreset: (presetId: string) => {
       if (presetId !== MORNING_BRIEFING_PRESET_ID) {
         return;
@@ -532,18 +699,22 @@ export function useCollaborationScreen(input: {
     handoffs,
     runs: runs.map((run) => {
       const listedTeamId = readCollaborationTeamId(run.teamId);
+      const listedWorkflow = readRunWorkflow((run as { workflow?: unknown }).workflow);
       return {
         id: run.collaborationRunId,
         statusLabel: statusLabel(run.status),
         when: formatWhen(run.createdAt, locale),
         selected: run.collaborationRunId === selectedRunId,
-        teamLabel: listedTeamId
-          ? collaborationTeamTitle(listedTeamId, {
-              coding: t('teamCoding'),
-              chiefOfStaff: t('teamChiefOfStaff'),
-              advisors: t('teamAdvisors'),
-            })
-          : undefined,
+        teamLabel: listedWorkflow
+          ? listedWorkflow.name
+          : listedTeamId
+            ? collaborationTeamTitle(listedTeamId, {
+                coding: t('teamCoding'),
+                chiefOfStaff: t('teamChiefOfStaff'),
+                advisors: t('teamAdvisors'),
+              })
+            : undefined,
+        testRunLabel: listedWorkflow?.testRun ? t('testRunBadge') : undefined,
       };
     }),
     rejectReferralId,
@@ -557,49 +728,8 @@ export function useCollaborationScreen(input: {
     selectedRunActive: collaborationRunIsActive(detail?.run.status),
     confirmingCancel,
     onTaskChange: setTask,
-    onStart: () => {
-      if (startInFlight.current) {
-        return;
-      }
-      startInFlight.current = true;
-      void (async () => {
-        try {
-          await runDecision(async () => {
-            const response = await collaborationFetch('/api/collaboration/runs', {
-              method: 'POST',
-              body: JSON.stringify(
-                collaborationStartRequestBody({
-                  sessionId,
-                  task,
-                  team: selectedTeam,
-                }),
-              ),
-            });
-            if (!response.ok) {
-              await showRefusal(response);
-              return;
-            }
-            const started = (await response.json()) as CollaborationStartResult;
-            setConversationCreated(started.conversationCreated === true);
-            setSelectedRunId(started.collaborationRunId);
-            setRejectReferralId(null);
-            setRejectReason('');
-            setEditReferralId(null);
-            setEditPrompt('');
-            setConfirmingCancel(false);
-            if (started.projectId) {
-              setListProjectId(started.projectId);
-              listProjectRef.current = started.projectId;
-            }
-            selectedRef.current = started.collaborationRunId;
-            setTask('');
-            await refresh();
-          });
-        } finally {
-          startInFlight.current = false;
-        }
-      })();
-    },
+    onStartTest: () => startRun(true),
+    onStart: () => startRun(false),
     onOpenRun: (runId: string) => {
       setSelectedRunId(runId);
       setRejectReferralId(null);
@@ -639,13 +769,7 @@ export function useCollaborationScreen(input: {
             setApproveWithoutTests((prev) => ({ ...prev, [referralId]: false }));
             return;
           }
-          setNotice(
-            tRef.current(
-              collaborationRefusalMessageKey(
-                collaborationRefusal(response.status, readErrorMessage(body), body),
-              ),
-            ),
-          );
+          setNotice(refusalText(response.status, body));
           return;
         }
         setForcedTestsBlock((prev) => {
@@ -773,6 +897,7 @@ export default function CollaborationPageClient() {
   const locale = typeof params?.locale === 'string' ? params.locale : 'en';
   const sessionId = searchParams.get('sessionId')?.trim() || '';
   const queryProjectId = searchParams.get('projectId')?.trim() || '';
+  const workflows = useCollaborationWorkflowList(sessionId.length > 0);
   const viewProps = useCollaborationScreen({
     t,
     translateScope: (scopeId: string) =>
@@ -780,6 +905,7 @@ export default function CollaborationPageClient() {
     locale,
     sessionId,
     queryProjectId,
+    workflows,
   });
   return <CollaborationView {...viewProps} />;
 }

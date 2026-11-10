@@ -10,18 +10,16 @@ import {
   HttpStatus,
   InternalServerErrorException,
   NotFoundException,
+  Optional,
   Param,
   Post,
   Query,
+  ServiceUnavailableException,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { validate as uuidValidate } from 'uuid';
 import { randomUUID } from 'crypto';
-import {
-  GatewayProviderModelValidationError,
-  resolveGatewayProviderModelSelection,
-} from '../ai/provider-model.catalogue';
 import { AuthenticatedUser } from '../auth/authenticated-user.decorator';
 import type { ApiKeyIdentity } from '../auth/api-key.config';
 import { SessionOrApiKeyAuthGuard } from '../auth/session-or-api-key.guard';
@@ -36,13 +34,25 @@ import {
   COLLABORATION_USER_TASK_MAX_CHARS,
 } from './collaboration-team';
 import {
+  businessRoleProfileIds,
   collaborationAgentsForTeam,
   collaborationTeamById,
   collaborationTeamForTarget,
   readCollaborationStartTeam,
+  type CollaborationRunTeamId,
   type CollaborationServerTeamId,
 } from './collaboration-teams';
-import type { CollaborationReferral, CollaborationRun } from './orchestration.contracts';
+import {
+  CollaborationWorkflowService,
+  resolveServerProviderModel,
+  type CollaborationWorkflowListItem,
+  type PreparedWorkflowStart,
+} from './collaboration-workflow';
+import type {
+  CollaborationReferral,
+  CollaborationRun,
+  ReferralPendingWorkflow,
+} from './orchestration.contracts';
 import type { CollaborationHandoffFact } from './collaboration-tool-profile';
 import {
   testsGateForHandoff,
@@ -68,13 +78,21 @@ const USABLE_SESSION_STATUSES: readonly SessionStatus[] = [
 /** Stored when the owner cancels without typing a reason. Same token as an omitted reject. */
 export const COLLABORATION_OMITTED_CANCEL_REASON = 'omitted';
 
+/** BIZ-USER-01C D12: the workflow a run ran, as the page shows it. */
+export interface CollaborationRunWorkflowView {
+  id: string;
+  name: string;
+  testRun: boolean;
+}
+
 export interface CollaborationRunListItem {
   collaborationRunId: string;
   projectId: string;
   status: string;
   createdAt: string;
   updatedAt: string;
-  teamId: CollaborationServerTeamId;
+  teamId: CollaborationRunTeamId;
+  workflow: CollaborationRunWorkflowView | null;
 }
 
 export interface CollaborationHandoffView {
@@ -117,8 +135,9 @@ export interface CollaborationRunDetail {
     completedAt: string | null;
     failedAt: string | null;
   };
-  teamId: CollaborationServerTeamId;
+  teamId: CollaborationRunTeamId;
   team: string[];
+  workflow: CollaborationRunWorkflowView | null;
   handoffs: CollaborationHandoffView[];
 }
 
@@ -144,8 +163,12 @@ export interface CollaborationStartResponse {
  * POST /api/collaboration/runs/:id/referrals/:referralId/reject
  * POST /api/collaboration/runs/:id/referrals/:referralId/prompt
  * POST /api/collaboration/runs/:id/cancel
+ * GET  /api/collaboration/workflows
  *
  * team is optional and only coding, chief-of-staff, or advisors. Missing means coding.
+ * BIZ-USER-01C: workflowId (with optional testRun) runs the owner's workflow
+ * instead; team and workflowId together are refused. Everything a workflow
+ * run uses comes from the stored row.
  * Provider, model, instructions, scopes, tool profile, and decidedBy are not taken from the body.
  */
 @Controller('collaboration')
@@ -156,6 +179,7 @@ export class CollaborationController {
     private readonly sessionService: SessionService,
     private readonly conversationService: ConversationService,
     private readonly knowledgeService: KnowledgeService,
+    @Optional() private readonly workflowService?: CollaborationWorkflowService,
   ) {}
 
   @Post('runs')
@@ -175,13 +199,13 @@ export class CollaborationController {
       throw new ConflictException('Session has no project');
     }
 
+    // BIZ-USER-01C D2: every workflow refusal comes before the conversation and the run exist.
+    const workflowPlan =
+      'workflowId' in input
+        ? this.workflowStartPlan(await this.prepareWorkflow(input, caller.userId))
+        : null;
     const conversation = await this.reuseOrCreateConversation(session.id);
-    const { provider, model } = this.resolveServerProviderModel();
-    const team = collaborationTeamById(input.teamId);
-    const firstRole = team.roles[0];
-    if (!firstRole) {
-      throw new BadRequestException('team must be coding, chief-of-staff, or advisors');
-    }
+    const plan = workflowPlan ?? this.teamStartPlan(input as { teamId: CollaborationServerTeamId });
     const run = await this.orchestrationService.createCollaborationRun({
       userId: caller.userId,
       projectId,
@@ -194,18 +218,19 @@ export class CollaborationController {
         sourceBuilder: COLLABORATION_USER_ACTOR,
         targetBuilder: {
           agentRole: COLLABORATION_PAGE_AGENT_ROLE,
-          builderProfileId: firstRole.name,
+          builderProfileId: plan.builderProfileId,
         },
         idempotencyKey: `screen:${randomUUID()}`,
         sessionId: session.id,
         conversationId: conversation.conversation.id,
         apiKeyId: caller.apiKeyId,
         prompt: input.task,
-        provider,
-        adapter: provider,
-        model,
-        agents: collaborationAgentsForTeam(input.teamId).map((agent) => ({ ...agent })),
+        provider: plan.provider,
+        adapter: plan.adapter,
+        model: plan.model,
+        agents: plan.agents,
         fileAccess: true,
+        ...(plan.workflow ? { workflow: plan.workflow } : {}),
       });
       return {
         collaborationRunId: run.collaborationRunId,
@@ -232,6 +257,15 @@ export class CollaborationController {
     }
   }
 
+  @Get('workflows')
+  async listWorkflows(
+    @AuthenticatedUser() identity: ApiKeyIdentity,
+  ): Promise<{ workflows: CollaborationWorkflowListItem[] }> {
+    const caller = this.assertEntitled(identity);
+    const workflows = await this.requireWorkflowService().listForOwner(caller.userId);
+    return { workflows };
+  }
+
   @Get('runs')
   async listRuns(
     @AuthenticatedUser() identity: ApiKeyIdentity,
@@ -248,10 +282,14 @@ export class CollaborationController {
     for (const run of runs) {
       const firstId = run.referralIds[0];
       const first = firstId ? await this.orchestrationService.getReferral(firstId) : null;
+      const workflow = first
+        ? await this.orchestrationService.readReferralWorkflow(first.referralId)
+        : null;
       items.push(
         this.toListItem(
           run,
-          collaborationTeamForTarget(first?.targetBuilder.builderProfileId).id,
+          collaborationTeamForTarget(first?.targetBuilder.builderProfileId, workflow).id,
+          workflow,
         ),
       );
     }
@@ -314,6 +352,7 @@ export class CollaborationController {
         gate,
         caller.userId,
         documents,
+        await this.labelledProfileIds(started.referral),
       );
     } catch (error) {
       this.raise(error);
@@ -352,6 +391,7 @@ export class CollaborationController {
         gate,
         caller.userId,
         documents,
+        await this.labelledProfileIds(referral),
       );
     } catch (error) {
       this.raise(error);
@@ -390,6 +430,7 @@ export class CollaborationController {
         gate,
         caller.userId,
         documents,
+        await this.labelledProfileIds(referral),
       );
     } catch (error) {
       this.raise(error);
@@ -488,21 +529,72 @@ export class CollaborationController {
     }
   }
 
-  private resolveServerProviderModel(): { provider: string; model: string } {
-    try {
-      const selection = resolveGatewayProviderModelSelection({
-        provider: undefined,
-        model: undefined,
-        fallbackProviderEnv: process.env.AI_PROVIDER,
-        anthropicModel: process.env.ANTHROPIC_MODEL,
-      });
-      return { provider: selection.provider, model: selection.model };
-    } catch (error) {
-      if (error instanceof GatewayProviderModelValidationError) {
-        throw new BadRequestException(error.message);
-      }
-      throw error;
+  private requireWorkflowService(): CollaborationWorkflowService {
+    if (!this.workflowService) {
+      throw new ServiceUnavailableException('Workflows are unavailable');
     }
+    return this.workflowService;
+  }
+
+  private async prepareWorkflow(
+    input: { workflowId: string; testRun: boolean },
+    userId: string,
+  ): Promise<PreparedWorkflowStart> {
+    return this.requireWorkflowService().prepareStart({
+      userId,
+      workflowId: input.workflowId,
+      testRun: input.testRun,
+    });
+  }
+
+  private teamStartPlan(input: { teamId: CollaborationServerTeamId }): {
+    builderProfileId: string;
+    agents: Array<{ name: string; instructions: string }>;
+    provider: string;
+    adapter: string;
+    model: string;
+    workflow: null;
+  } {
+    const { provider, model } = resolveServerProviderModel();
+    const team = collaborationTeamById(input.teamId);
+    const firstRole = team.roles[0];
+    if (!firstRole) {
+      throw new BadRequestException('team must be coding, chief-of-staff, or advisors');
+    }
+    return {
+      builderProfileId: firstRole.name,
+      agents: collaborationAgentsForTeam(input.teamId).map((agent) => ({ ...agent })),
+      provider,
+      adapter: provider,
+      model,
+      workflow: null,
+    };
+  }
+
+  private workflowStartPlan(prepared: PreparedWorkflowStart): {
+    builderProfileId: string;
+    agents: Array<{ name: string; instructions: string }>;
+    provider: string;
+    adapter: string;
+    model: string;
+    workflow: ReferralPendingWorkflow;
+  } {
+    return {
+      builderProfileId: prepared.builderProfileId,
+      agents: prepared.agents.map((agent) => ({ ...agent })),
+      provider: prepared.provider,
+      adapter: prepared.adapter,
+      model: prepared.model,
+      workflow: prepared.workflow,
+    };
+  }
+
+  /** D12 (3): a workflow's own answers carry the unsourced label like business roles. */
+  private async labelledProfileIds(
+    referral: CollaborationReferral,
+  ): Promise<readonly string[] | undefined> {
+    const workflow = await this.orchestrationService.readReferralWorkflow(referral.referralId);
+    return workflow ? [...businessRoleProfileIds(), workflow.id] : undefined;
   }
 
   private async requireOwnedRun(
@@ -516,12 +608,27 @@ export class CollaborationController {
     return run;
   }
 
-  private readStartBody(body: unknown): {
-    sessionId: string;
-    task: string;
-    teamId: CollaborationServerTeamId;
-  } {
+  private readStartBody(body: unknown):
+    | { sessionId: string; task: string; teamId: CollaborationServerTeamId }
+    | { sessionId: string; task: string; workflowId: string; testRun: boolean } {
     const record = this.asRecord(body);
+    if (record.workflowId !== undefined) {
+      if (record.team !== undefined) {
+        throw new BadRequestException('team and workflowId cannot be sent together');
+      }
+      if (record.testRun !== undefined && typeof record.testRun !== 'boolean') {
+        throw new BadRequestException('testRun must be a boolean');
+      }
+      return {
+        sessionId: this.readUuid(record.sessionId, 'sessionId'),
+        task: this.readTask(record.task),
+        workflowId: this.readUuid(record.workflowId, 'workflowId').toLowerCase(),
+        testRun: record.testRun === true,
+      };
+    }
+    if (record.testRun !== undefined) {
+      throw new BadRequestException('testRun is only accepted with workflowId');
+    }
     const teamId = readCollaborationStartTeam(record.team);
     if (!teamId) {
       throw new BadRequestException('team must be coding, chief-of-staff, or advisors');
@@ -621,7 +728,8 @@ export class CollaborationController {
 
   private toListItem(
     run: CollaborationRun,
-    teamId: CollaborationServerTeamId,
+    teamId: CollaborationRunTeamId,
+    workflow: ReferralPendingWorkflow | null,
   ): CollaborationRunListItem {
     return {
       collaborationRunId: run.collaborationRunId,
@@ -630,7 +738,18 @@ export class CollaborationController {
       createdAt: run.createdAt,
       updatedAt: run.updatedAt,
       teamId,
+      workflow: this.toWorkflowView(teamId, workflow),
     };
+  }
+
+  private toWorkflowView(
+    teamId: CollaborationRunTeamId,
+    workflow: ReferralPendingWorkflow | null,
+  ): CollaborationRunWorkflowView | null {
+    if (teamId !== 'workflow' || !workflow) {
+      return null;
+    }
+    return { id: workflow.id, name: workflow.name, testRun: workflow.testRun === true };
   }
 
   private async toDetail(
@@ -639,7 +758,15 @@ export class CollaborationController {
     facts: ReadonlyMap<string, CollaborationHandoffFact>,
   ): Promise<CollaborationRunDetail> {
     const documents = await this.citationDocuments(run.userId, referrals);
-    const team = collaborationTeamForTarget(referrals[0]?.targetBuilder.builderProfileId);
+    const first = referrals[0];
+    const workflow = first
+      ? await this.orchestrationService.readReferralWorkflow(first.referralId)
+      : null;
+    const team = collaborationTeamForTarget(first?.targetBuilder.builderProfileId, workflow);
+    const labelled =
+      team.id === 'workflow' && workflow
+        ? [...businessRoleProfileIds(), workflow.id]
+        : undefined;
     return {
       run: {
         collaborationRunId: run.collaborationRunId,
@@ -652,6 +779,7 @@ export class CollaborationController {
       },
       teamId: team.id,
       team: [...team.roleNames],
+      workflow: this.toWorkflowView(team.id, workflow),
       handoffs: referrals.map((referral) =>
         this.toHandoff(
           referral,
@@ -659,6 +787,7 @@ export class CollaborationController {
           this.testsGateFor(referral, referrals, facts),
           run.userId,
           documents,
+          labelled,
         ),
       ),
     };
@@ -714,6 +843,7 @@ export class CollaborationController {
     gate: CollaborationTestsGateResult,
     ownerId: string,
     documents: readonly CitationDocument[],
+    businessRoleIds?: readonly string[],
   ): CollaborationHandoffView {
     const failed =
       referral.status === 'failed' ||
@@ -726,6 +856,7 @@ export class CollaborationController {
       targetProfileId: referral.targetBuilder.builderProfileId,
       ownerId,
       documents,
+      ...(businessRoleIds ? { businessRoleProfileIds: businessRoleIds } : {}),
     });
     const work = fact ?? {
       canChangeFiles: false,

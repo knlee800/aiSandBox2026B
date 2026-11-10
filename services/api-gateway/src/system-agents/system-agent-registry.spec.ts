@@ -11,6 +11,7 @@ import {
   SYSTEM_AGENT_REPLY_LANGUAGES,
   TECHNOLOGY_ADVISOR_INSTRUCTIONS,
   agentInstructionsWithinLimit,
+  agentVersionFor,
   isSystemAgentModel,
   listPublicSystemAgents,
   neverDoFor,
@@ -18,6 +19,7 @@ import {
   systemAgentById,
   systemAgentPromptSpecProblems,
   systemAgentVersion,
+  type AgentVersionMaterial,
   type SystemAgentDefinition,
   type SystemAgentPromptSpec,
 } from './system-agent-registry';
@@ -619,6 +621,73 @@ describe('system agent registry', () => {
       actual[agent.id] = agent.version;
     }
     expect(actual).toEqual(PINNED_SYSTEM_AGENT_VERSIONS);
+  });
+
+  it('agentVersionFor reproduces every pinned hash from the definition material', () => {
+    for (const agent of SYSTEM_AGENT_DEFINITIONS) {
+      const material: AgentVersionMaterial = {
+        id: agent.id,
+        tone: agent.tone,
+        replyLanguage: agent.replyLanguage,
+        purpose: agent.purpose,
+        procedure: agent.procedure,
+        result: agent.result,
+        rules: agent.rules,
+        instructions: agent.instructions,
+        toolProfile: agent.toolProfile,
+        scopes: agent.knowledgeScopes,
+        connectorToolIds: agent.connectorToolIds,
+        model: agent.model,
+        teamRole: agent.teamRole,
+      };
+      expect(agentVersionFor(material)).toBe(PINNED_SYSTEM_AGENT_VERSIONS[agent.id]);
+    }
+  });
+
+  it('agentVersionFor ignores the key order of its input and changes with any field', () => {
+    const cos = definition('chief-of-staff');
+    const base: AgentVersionMaterial = {
+      id: cos.id,
+      tone: cos.tone,
+      replyLanguage: cos.replyLanguage,
+      purpose: cos.purpose,
+      procedure: cos.procedure,
+      result: cos.result,
+      rules: cos.rules,
+      instructions: cos.instructions,
+      toolProfile: cos.toolProfile,
+      scopes: cos.knowledgeScopes,
+      connectorToolIds: cos.connectorToolIds,
+      model: cos.model,
+      teamRole: cos.teamRole,
+    };
+    const reordered = Object.fromEntries(
+      Object.entries(base).reverse(),
+    ) as unknown as AgentVersionMaterial;
+    expect(agentVersionFor(reordered)).toBe(agentVersionFor(base));
+    const hash = agentVersionFor(base);
+    const variants: AgentVersionMaterial[] = [
+      { ...base, id: 'other' },
+      { ...base, tone: 'Plain' },
+      { ...base, replyLanguage: 'en' },
+      { ...base, purpose: `${base.purpose} x` },
+      { ...base, procedure: `${base.procedure} x` },
+      { ...base, result: `${base.result} x` },
+      { ...base, rules: `${base.rules} x` },
+      { ...base, instructions: `${base.instructions} x` },
+      { ...base, toolProfile: 'review' },
+      { ...base, scopes: base.scopes.slice(1) },
+      { ...base, connectorToolIds: [] },
+      { ...base, model: { choice: 'platform', id: 'claude-haiku-5-5' } },
+      { ...base, teamRole: null },
+    ];
+    const seen = new Set<string>([hash]);
+    for (const variant of variants) {
+      const changed = agentVersionFor(variant);
+      expect(changed).not.toBe(hash);
+      seen.add(changed);
+    }
+    expect(seen.size).toBe(variants.length + 1);
   });
 
   it('publishes builder, chief of staff, product strategy, and technology advisor only', () => {

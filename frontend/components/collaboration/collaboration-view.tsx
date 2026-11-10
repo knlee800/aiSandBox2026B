@@ -2,9 +2,11 @@ import React from 'react';
 import {
   ArrowPathIcon,
   ArrowUturnLeftIcon,
+  BeakerIcon,
   CheckIcon,
   CodeBracketIcon,
   ExclamationTriangleIcon,
+  InformationCircleIcon,
   PencilSquareIcon,
   SunIcon,
   UserGroupIcon,
@@ -130,6 +132,8 @@ export interface CollaborationPastRunView {
   when: string;
   selected: boolean;
   teamLabel?: string;
+  /** BIZ-USER-01C: the translated Test run badge, on a workflow's test runs only. */
+  testRunLabel?: string;
 }
 
 export interface CollaborationTeamChoice {
@@ -141,6 +145,38 @@ export interface CollaborationTeamChoice {
 export interface CollaborationRunTeamView {
   label: string;
   roles: string[];
+  /** BIZ-USER-01C: the translated Test run badge for a workflow's test run. */
+  badge?: string;
+}
+
+/** BIZ-USER-01C D13: the "Your workflows" choices below the team picker. */
+export interface CollaborationWorkflowPickerView {
+  state: 'loading' | 'failed' | 'loaded';
+  labels: {
+    heading: string;
+    loading: string;
+    empty: string;
+    failed: string;
+    retry: string;
+  };
+  items: Array<{
+    id: string;
+    name: string;
+    statusLabel: string;
+    testedLabel: string;
+    selected: boolean;
+  }>;
+  onSelect: (workflowId: string) => void;
+  onRetry: () => void;
+}
+
+/** BIZ-USER-01C D13: the start controls while a workflow is selected. */
+export interface CollaborationWorkflowStartView {
+  canTest: boolean;
+  canRun: boolean;
+  testLabel: string;
+  hint: string | null;
+  spentLine: string | null;
 }
 
 /** BIZ-BRIEF-01: a ready-made request that fills the task box. It never starts a run. */
@@ -163,6 +199,9 @@ export default function CollaborationView(props: {
   selectedTeam?: CollaborationTeamId;
   teamChoices?: CollaborationTeamChoice[];
   onTeamChange?: (teamId: CollaborationTeamId) => void;
+  workflowPicker?: CollaborationWorkflowPickerView | null;
+  workflowStart?: CollaborationWorkflowStartView | null;
+  onStartTest?: () => void;
   accessNote?: string;
   chainEmptyText?: string;
   runTeam?: CollaborationRunTeamView | null;
@@ -200,6 +239,13 @@ export default function CollaborationView(props: {
   const teamChoices = props.teamChoices ?? [];
   const selectedTeam = props.selectedTeam ?? 'coding';
   const taskPresets = props.taskPresets ?? [];
+  const workflowPicker = props.workflowPicker ?? null;
+  const workflowStart = props.workflowStart ?? null;
+  const workflowSelected = workflowPicker?.items.some((item) => item.selected) === true;
+  // With a workflow selected, the form's submit runs a normal run only when allowed;
+  // otherwise it runs the test (the only primary action shown).
+  const submitStarts = workflowStart ? workflowStart.canRun : true;
+  const submitTests = workflowStart !== null && !workflowStart.canRun && workflowStart.canTest;
 
   return (
     <main className="mx-auto w-full max-w-3xl overflow-x-hidden px-4 py-6 text-gray-900">
@@ -241,8 +287,13 @@ export default function CollaborationView(props: {
           className="mt-4 min-w-0"
           onSubmit={(event) => {
             event.preventDefault();
-            if (canStart) {
+            if (!canStart) {
+              return;
+            }
+            if (submitStarts) {
               props.onStart();
+            } else if (submitTests) {
+              props.onStartTest?.();
             }
           }}
         >
@@ -251,7 +302,7 @@ export default function CollaborationView(props: {
               <legend className="text-sm font-medium text-gray-800">{labels.teamPickerLabel}</legend>
               <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
                 {teamChoices.map((choice) => {
-                  const selected = selectedTeam === choice.id;
+                  const selected = !workflowSelected && selectedTeam === choice.id;
                   return (
                     <label
                       key={choice.id}
@@ -278,6 +329,70 @@ export default function CollaborationView(props: {
                   );
                 })}
               </div>
+            </fieldset>
+          ) : null}
+          {workflowPicker ? (
+            <fieldset className="mt-4 min-w-0" data-testid="collaboration-workflow-picker">
+              <legend className="text-sm font-medium text-gray-800">
+                {workflowPicker.labels.heading}
+              </legend>
+              {workflowPicker.state === 'loading' ? (
+                <p className="mt-2 text-sm text-gray-500" data-testid="collaboration-workflows-loading">
+                  {workflowPicker.labels.loading}
+                </p>
+              ) : workflowPicker.state === 'failed' ? (
+                <div
+                  className="mt-2 flex min-w-0 flex-wrap items-center gap-2 text-sm text-gray-700"
+                  data-testid="collaboration-workflows-failed"
+                >
+                  <span className="min-w-0 break-words">{workflowPicker.labels.failed}</span>
+                  <button
+                    type="button"
+                    data-testid="collaboration-workflows-retry"
+                    onClick={workflowPicker.onRetry}
+                    className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 transition-transform duration-150 ease-out hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand motion-safe:active:scale-[0.97]"
+                  >
+                    <ArrowPathIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    {workflowPicker.labels.retry}
+                  </button>
+                </div>
+              ) : workflowPicker.items.length === 0 ? (
+                <p
+                  className="mt-2 rounded-lg border border-dashed border-gray-200 px-3 py-2 text-sm text-gray-500"
+                  data-testid="collaboration-workflows-empty"
+                >
+                  {workflowPicker.labels.empty}
+                </p>
+              ) : (
+                <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {workflowPicker.items.map((item) => (
+                    <label
+                      key={item.id}
+                      data-testid={`collaboration-workflow-option-${item.id}`}
+                      className={`flex min-w-0 cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 ${
+                        item.selected ? 'border-brand bg-indigo-50' : 'border-gray-200 bg-white'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="collaboration-team"
+                        value={item.id}
+                        checked={item.selected}
+                        onChange={() => workflowPicker.onSelect(item.id)}
+                        className="mt-0.5 h-4 w-4 shrink-0 accent-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                      />
+                      <span className="min-w-0">
+                        <span className="block break-words text-sm font-medium text-gray-900">
+                          {item.name}
+                        </span>
+                        <span className="block break-words text-xs text-gray-600">
+                          {`${item.statusLabel} · ${item.testedLabel}`}
+                        </span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              )}
             </fieldset>
           ) : null}
           <label
@@ -325,14 +440,59 @@ export default function CollaborationView(props: {
             rows={4}
             className="mt-1 w-full max-w-full resize-y rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-brand focus:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           />
-          <button
-            type="submit"
-            data-testid="collaboration-start"
-            disabled={!canStart}
-            className="mt-2 inline-flex items-center rounded-lg bg-brand px-4 py-1.5 text-sm font-medium text-white hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {props.deciding ? labels.starting : labels.start}
-          </button>
+          <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2">
+            {submitStarts ? (
+              <button
+                type="submit"
+                data-testid="collaboration-start"
+                disabled={!canStart}
+                className="inline-flex items-center rounded-lg bg-brand px-4 py-1.5 text-sm font-medium text-white hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {props.deciding ? labels.starting : labels.start}
+              </button>
+            ) : null}
+            {workflowStart?.canTest ? (
+              <button
+                type={submitTests ? 'submit' : 'button'}
+                data-testid="collaboration-start-test"
+                disabled={!canStart}
+                onClick={
+                  submitTests
+                    ? undefined
+                    : () => {
+                        if (canStart) {
+                          props.onStartTest?.();
+                        }
+                      }
+                }
+                className={
+                  submitTests
+                    ? 'inline-flex items-center gap-1 rounded-lg bg-brand px-4 py-1.5 text-sm font-medium text-white hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50'
+                    : 'inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-4 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-50'
+                }
+              >
+                <BeakerIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                {props.deciding ? labels.starting : workflowStart.testLabel}
+              </button>
+            ) : null}
+          </div>
+          {workflowStart?.hint ? (
+            <p
+              className="mt-2 flex min-w-0 items-start gap-1.5 break-words text-sm text-gray-600"
+              data-testid="collaboration-workflow-hint"
+            >
+              <InformationCircleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              <span className="min-w-0">{workflowStart.hint}</span>
+            </p>
+          ) : null}
+          {workflowStart?.spentLine ? (
+            <p
+              className="mt-1 break-words text-xs text-gray-500"
+              data-testid="collaboration-workflow-spent"
+            >
+              {workflowStart.spentLine}
+            </p>
+          ) : null}
         </form>
       )}
 
@@ -359,6 +519,14 @@ export default function CollaborationView(props: {
             <span className="font-medium">{props.runTeam.label}</span>
             {props.runTeam.roles.length > 0 ? (
               <span className="text-gray-600">{` · ${props.runTeam.roles.join(' · ')}`}</span>
+            ) : null}
+            {props.runTeam.badge ? (
+              <span
+                className="ml-2 inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600"
+                data-testid="collaboration-run-test-badge"
+              >
+                {props.runTeam.badge}
+              </span>
             ) : null}
           </p>
         ) : null}
@@ -848,7 +1016,17 @@ export default function CollaborationView(props: {
                   <span className="font-medium text-gray-900">{labels.openRun}</span>
                   <span className="break-words text-gray-600">{run.statusLabel}</span>
                   {run.teamLabel ? (
-                    <span className="w-full break-words text-xs text-gray-500">{run.teamLabel}</span>
+                    <span className="flex w-full min-w-0 flex-wrap items-center gap-2 text-xs text-gray-500">
+                      <span className="min-w-0 break-words">{run.teamLabel}</span>
+                      {run.testRunLabel ? (
+                        <span
+                          className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 font-medium text-gray-600"
+                          data-testid={`collaboration-run-test-badge-${run.id}`}
+                        >
+                          {run.testRunLabel}
+                        </span>
+                      ) : null}
+                    </span>
                   ) : null}
                   <span className="w-full break-words text-xs text-gray-500">{run.when}</span>
                 </button>

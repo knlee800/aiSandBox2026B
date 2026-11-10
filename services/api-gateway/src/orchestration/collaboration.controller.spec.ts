@@ -39,6 +39,12 @@ import {
   WORK_DIFF_PROMPT_UNAVAILABLE,
 } from './collaboration-work-diff';
 import { MAX_HANDOFF_TASK_CHARS } from './handoff-request';
+import { FindOperator } from 'typeorm';
+import { CreditDeductionRecord } from '../entities/credit-deduction-record.entity';
+import { KillSwitchConfig } from '../safety/kill-switch.config';
+import { systemAgentById } from '../system-agents/system-agent-registry';
+import { UserAgentService } from '../user-agent/user-agent.service';
+import { CollaborationWorkflowService, renderWorkflow } from './collaboration-workflow';
 
 const OWNER_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const OTHER_ID = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
@@ -184,6 +190,8 @@ describe('CollaborationController login routes', () => {
   let sessionReads: jest.Mock;
   let findActiveOwnedByIds: jest.Mock;
   let workTree: { getWorkingTreeDiff: jest.Mock };
+  let workflowRows: Map<string, Record<string, unknown>>;
+  let deductionRows: Array<Record<string, unknown>>;
 
   beforeEach(async () => {
     process.env.GLOBAL_EXECUTION_ENABLED = 'true';
@@ -213,6 +221,8 @@ describe('CollaborationController login routes', () => {
       }),
     };
     findActiveOwnedByIds = jest.fn(async () => []);
+    workflowRows = new Map();
+    deductionRows = [];
     sessionReads = jest.fn(async (sessionId: string) => {
       const session = sessions.get(sessionId);
       if (!session) {
@@ -263,6 +273,33 @@ describe('CollaborationController login routes', () => {
         { provide: UsageLedgerService, useValue: ledger },
         { provide: SessionService, useValue: { getSessionById: sessionReads } },
         { provide: KnowledgeService, useValue: { findActiveOwnedByIds } },
+        CollaborationWorkflowService,
+        {
+          provide: UserAgentService,
+          useValue: {
+            findOneByIdAndUserId: async (id: string, userId: string) => {
+              const row = workflowRows.get(id);
+              return row && row.userId === userId ? { ...row } : null;
+            },
+            listByUserId: async (userId: string) =>
+              [...workflowRows.values()]
+                .filter((row) => row.userId === userId)
+                .map((row) => ({ ...row })),
+          },
+        },
+        {
+          provide: getRepositoryToken(CreditDeductionRecord),
+          useValue: {
+            find: async (opts: { where: Record<string, unknown> }) =>
+              deductionRows.filter((row) =>
+                Object.entries(opts.where).every(([key, expected]) =>
+                  expected instanceof FindOperator
+                    ? (expected.value as unknown[]).includes(row[key])
+                    : row[key] === expected,
+                ),
+              ),
+          },
+        },
         {
           provide: ConversationService,
           useValue: {
@@ -585,9 +622,11 @@ describe('CollaborationController login routes', () => {
       'status',
       'teamId',
       'updatedAt',
+      'workflow',
     ]);
     expect(list.body.runs[0].teamId).toBe('coding');
     expect(list.body.runs[1].teamId).toBe('coding');
+    expect(list.body.runs[0].workflow).toBeNull();
     expect(JSON.stringify(list.body)).not.toContain(TASK);
     expect(JSON.stringify(list.body)).not.toContain('prompt');
     expect(JSON.stringify(list.body)).not.toContain('answer');
@@ -1570,6 +1609,423 @@ describe('CollaborationController login routes', () => {
         'product-strategy',
         'technology-advisor',
       ]);
+    });
+  });
+
+  describe('BIZ-USER-01C run a user workflow', () => {
+    const WORKFLOW_ID = 'f0f0f0f0-0000-4000-8000-000000000001';
+    const outputs = new Map<string, string>();
+
+    function cosRow(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+      const cos = systemAgentById('chief-of-staff');
+      if (!cos) {
+        throw new Error('missing chief-of-staff');
+      }
+      return {
+        id: WORKFLOW_ID,
+        userId: OWNER_ID,
+        name: 'Morning brief',
+        role: 'Assistant',
+        description: '',
+        status: 'active',
+        tone: cos.tone,
+        replyLanguage: cos.replyLanguage,
+        purpose: cos.purpose,
+        procedure: cos.procedure,
+        result: cos.result,
+        toolProfile: 'read',
+        knowledgeScopeIds: cos.knowledgeScopes.map((scope) => scope.id),
+        connectorToolIds: [...cos.connectorToolIds],
+        model: { choice: 'server' },
+        budgetPerRunCredits: null,
+        budgetPerDayCredits: null,
+        templateId: 'chief-of-staff',
+        ...overrides,
+      };
+    }
+
+    function currentVersion(): string {
+      const rendered = renderWorkflow(workflowRows.get(WORKFLOW_ID) as never);
+      if (!rendered) {
+        throw new Error('row does not render');
+      }
+      return rendered.version;
+    }
+
+    function workflowBody(overrides: Record<string, unknown> = {}) {
+      return {
+        sessionId: SESSION_ID,
+        task: TASK,
+        workflowId: WORKFLOW_ID,
+        provider: 'openai',
+        model: 'gpt-4o',
+        agents: [{ name: 'hacker', instructions: 'pwn' }],
+        knowledgeScopes: ['market-data'],
+        connectorToolIds: ['not_a_tool'],
+        budgetPerDayCredits: 100000,
+        ...overrides,
+      };
+    }
+
+    async function startWorkflow(overrides: Record<string, unknown> = {}, expected = 201) {
+      return http().post('/api/collaboration/runs').send(workflowBody(overrides)).expect(expected);
+    }
+
+    function approvePath(body: { collaborationRunId: string; referralId: string }) {
+      return `/api/collaboration/runs/${body.collaborationRunId}/referrals/${body.referralId}/approve`;
+    }
+
+    /** Approve, finish the execution with `output`, and read the run so it completes. */
+    async function completeRun(
+      body: { collaborationRunId: string; referralId: string },
+      output = 'Nothing new today.',
+    ): Promise<string> {
+      await http().post(approvePath(body)).send({}).expect(200);
+      const executionId = referrals.get(body.referralId)?.executionId;
+      if (!executionId) {
+        throw new Error('no execution');
+      }
+      outputs.set(executionId, output);
+      await http().get(`/api/collaboration/runs/${body.collaborationRunId}`).expect(200);
+      expect(referrals.get(body.referralId)?.status).toBe('completed');
+      return executionId;
+    }
+
+    beforeEach(() => {
+      outputs.clear();
+      workflowRows.set(WORKFLOW_ID, cosRow());
+      executionResults.getExecution.mockImplementation(async (executionId: string) =>
+        outputs.has(executionId)
+          ? {
+              execution_status: 'completed',
+              metadata: { aiExecutionResult: { output: outputs.get(executionId) } },
+            }
+          : null,
+      );
+    });
+
+    it('starts a test run as a team of one with the rendered prompt and the snapshot, ignoring body fields', async () => {
+      const response = await startWorkflow({ testRun: true });
+      const stored = referrals.get(response.body.referralId);
+      const row = workflowRows.get(WORKFLOW_ID);
+      const rendered = renderWorkflow(row as never)!;
+
+      expect(response.body.target).toBe(WORKFLOW_ID);
+      expect(response.body.handoffStatus).toBe('pending_approval');
+      expect(stored?.targetBuilderProfileId).toBe(WORKFLOW_ID);
+      expect(stored?.pendingJob?.fileAccess).toBe(true);
+      expect(stored?.pendingJob?.provider).toBe('stub');
+      expect(stored?.pendingJob?.model).toBe('stub');
+      expect(stored?.pendingJob?.agents).toEqual([
+        { name: WORKFLOW_ID, instructions: rendered.instructions },
+      ]);
+      expect(stored?.pendingJob?.projectInstructions).toContain(`You are ${WORKFLOW_ID}.`);
+      expect(stored?.pendingJob?.workflow).toEqual({
+        id: WORKFLOW_ID,
+        name: 'Morning brief',
+        version: rendered.version,
+        knowledgeScopeIds: rendered.knowledgeScopeIds,
+        connectorToolIds: rendered.connectorToolIds,
+        model: { choice: 'server' },
+        testRun: true,
+        budgetPerRunCredits: null,
+        budgetPerDayCredits: null,
+      });
+      const text = JSON.stringify(stored?.pendingJob);
+      for (const leaked of ['pwn', 'hacker', 'gpt-4o', 'market-data', 'not_a_tool', '100000']) {
+        expect(text).not.toContain(leaked);
+      }
+      expect(queue.enqueueExecution).not.toHaveBeenCalled();
+    });
+
+    it('refuses team with workflowId, a bad workflowId and a bad testRun with 400 and creates nothing', async () => {
+      await startWorkflow({ team: 'coding' }, 400);
+      await startWorkflow({ team: 'chief-of-staff', testRun: true }, 400);
+      await startWorkflow({ workflowId: 'not-a-uuid' }, 400);
+      await startWorkflow({ workflowId: null }, 400);
+      await startWorkflow({ testRun: 'yes' }, 400);
+      await http()
+        .post('/api/collaboration/runs')
+        .send(startBody({ team: 'coding', testRun: true }))
+        .expect(400);
+      expect(runs.size).toBe(0);
+      expect(referrals.size).toBe(0);
+    });
+
+    it("refuses another owner's workflow with 404 WORKFLOW_NOT_FOUND before any conversation or run", async () => {
+      conversations.delete(SESSION_ID);
+      workflowRows.set(WORKFLOW_ID, cosRow({ userId: OTHER_ID }));
+      const response = await startWorkflow({ testRun: true }, 404);
+      expect(response.body.code).toBe('WORKFLOW_NOT_FOUND');
+      expect(conversations.has(SESSION_ID)).toBe(false);
+      expect(runs.size).toBe(0);
+      expect(referrals.size).toBe(0);
+    });
+
+    it('refuses a disabled workflow, and a row that cannot run, with 409', async () => {
+      workflowRows.set(WORKFLOW_ID, cosRow({ status: 'disabled' }));
+      expect((await startWorkflow({ testRun: true }, 409)).body.code).toBe('WORKFLOW_DISABLED');
+      workflowRows.set(WORKFLOW_ID, cosRow({ model: { choice: 'platform', id: 'gpt-4o' } }));
+      expect((await startWorkflow({ testRun: true }, 409)).body.code).toBe('WORKFLOW_INVALID');
+      workflowRows.set(WORKFLOW_ID, cosRow({ purpose: 'x'.repeat(4001) }));
+      expect((await startWorkflow({ testRun: true }, 409)).body.code).toBe('WORKFLOW_INVALID');
+      expect(runs.size).toBe(0);
+    });
+
+    it('lets a draft test-run only, and an active workflow run normally only once tested at the current version', async () => {
+      workflowRows.set(WORKFLOW_ID, cosRow({ status: 'draft' }));
+      expect((await startWorkflow({}, 409)).body.code).toBe('WORKFLOW_NOT_TESTED');
+      const draftTest = await startWorkflow({ testRun: true });
+      await completeRun(draftTest.body);
+      expect((await startWorkflow({}, 409)).body.code).toBe('WORKFLOW_NOT_TESTED');
+
+      workflowRows.set(WORKFLOW_ID, cosRow({ status: 'active' }));
+      const normal = await startWorkflow({});
+      expect(referrals.get(normal.body.referralId)?.pendingJob?.workflow?.testRun).toBe(false);
+
+      // Editing the workflow changes its version: it must be tested again.
+      workflowRows.set(WORKFLOW_ID, cosRow({ purpose: 'Read my week and list what matters.' }));
+      expect((await startWorkflow({}, 409)).body.code).toBe('WORKFLOW_NOT_TESTED');
+    });
+
+    it('refuses an untested active workflow; a failed or unfinished test run does not count', async () => {
+      expect((await startWorkflow({}, 409)).body.code).toBe('WORKFLOW_NOT_TESTED');
+      const pending = await startWorkflow({ testRun: true });
+      await http().post(approvePath(pending.body)).send({}).expect(200);
+      expect((await startWorkflow({}, 409)).body.code).toBe('WORKFLOW_NOT_TESTED');
+    });
+
+    it('refuses the day budget with 429 and the run budget with 409, with the numbers', async () => {
+      const test = await startWorkflow({ testRun: true });
+      const executionId = await completeRun(test.body);
+      deductionRows.push({
+        ownerId: OWNER_ID,
+        sourceEventId: executionId,
+        requestedCredits: 12,
+        createdAt: new Date(),
+      });
+      // Another owner's and another execution's credits are not counted.
+      deductionRows.push({ ownerId: OTHER_ID, sourceEventId: executionId, requestedCredits: 50, createdAt: new Date() });
+      deductionRows.push({ ownerId: OWNER_ID, sourceEventId: 'other-exec', requestedCredits: 50, createdAt: new Date() });
+
+      // NULL budgets never refuse.
+      await startWorkflow({});
+
+      workflowRows.set(WORKFLOW_ID, cosRow({ budgetPerDayCredits: 12 }));
+      const day = await startWorkflow({}, 429);
+      expect(day.body).toMatchObject({ code: 'WORKFLOW_BUDGET_DAY', budget: 12, spent: 12 });
+      expect(day.body).not.toHaveProperty('cap');
+
+      workflowRows.set(WORKFLOW_ID, cosRow({ budgetPerRunCredits: 11, budgetPerDayCredits: 100 }));
+      const run = await startWorkflow({ testRun: true }, 409);
+      expect(run.body).toMatchObject({ code: 'WORKFLOW_BUDGET_RUN', budget: 11, lastRun: 12 });
+
+      workflowRows.set(WORKFLOW_ID, cosRow({ budgetPerRunCredits: 12, budgetPerDayCredits: 13 }));
+      await startWorkflow({});
+    });
+
+    it('applies a platform model on anthropic and keeps the env model for the server choice', async () => {
+      workflowRows.set(WORKFLOW_ID, cosRow({ model: { choice: 'platform', id: 'claude-haiku-5-5' } }));
+      const platform = await startWorkflow({ testRun: true });
+      const job = referrals.get(platform.body.referralId)?.pendingJob;
+      expect(job?.provider).toBe('anthropic');
+      expect(job?.adapter).toBe('anthropic');
+      expect(job?.model).toBe('claude-haiku-5-5');
+      expect(job?.workflow?.model).toEqual({ choice: 'platform', id: 'claude-haiku-5-5' });
+
+      const spy = jest.spyOn(KillSwitchConfig, 'isProviderEnabled').mockReturnValue(false);
+      try {
+        await startWorkflow({ testRun: true }, 503);
+      } finally {
+        spy.mockRestore();
+      }
+
+      workflowRows.set(WORKFLOW_ID, cosRow());
+      const server = await startWorkflow({ testRun: true });
+      expect(referrals.get(server.body.referralId)?.pendingJob?.provider).toBe('stub');
+      expect(referrals.get(server.body.referralId)?.pendingJob?.model).toBe('stub');
+    });
+
+    it('enqueues the snapshot, not a later edit, and records the workflow version in the ledger', async () => {
+      const started = await startWorkflow({ testRun: true });
+      const snapshot = referrals.get(started.body.referralId)?.pendingJob?.workflow;
+      workflowRows.set(
+        WORKFLOW_ID,
+        cosRow({ purpose: 'Edited while waiting.', knowledgeScopeIds: ['policies'] }),
+      );
+
+      await http().post(approvePath(started.body)).send({ harnessToolProfile: 'write' }).expect(200);
+      const payload = queue.enqueueExecution.mock.calls.at(-1)?.[0] as Record<string, unknown>;
+      expect(payload.builderProfileId).toBe(WORKFLOW_ID);
+      expect(payload.harnessVersion).toBe('v1');
+      expect(payload.harnessToolProfile).toBe('read');
+      expect(payload.harnessReadOnly).toBe(true);
+      expect(payload.knowledgeScopes).toEqual(snapshot?.knowledgeScopeIds);
+      expect(payload).not.toHaveProperty('agentId');
+      expect(payload).not.toHaveProperty('workflow');
+      expect(String(payload.projectInstructions)).not.toContain('Edited while waiting.');
+      expect(typeof payload.harnessEntitlementProof).toBe('object');
+
+      const intent = ledger.writeExecutionIntent.mock.calls.at(-1)?.[0];
+      expect(intent.builderProfileId).toBe(WORKFLOW_ID);
+      expect(intent.metadata).toEqual({
+        runMode: 'ask',
+        apiKeyId: 'browser-session',
+        requestedProvider: 'stub',
+        requestedModel: 'stub',
+        agentDefinitionId: WORKFLOW_ID,
+        agentDefinitionVersion: snapshot?.version,
+        workflowTestRun: true,
+      });
+    });
+
+    it('signs a workflow job with the key set of a chief-of-staff job on the same page', async () => {
+      const cos = await http()
+        .post('/api/collaboration/runs')
+        .send(startBody({ team: 'chief-of-staff' }))
+        .expect(201);
+      await http().post(approvePath(cos.body)).send({}).expect(200);
+      const cosJob = queue.enqueueExecution.mock.calls.at(-1)?.[0] as Record<string, unknown>;
+
+      const workflow = await startWorkflow({ testRun: true });
+      await http().post(approvePath(workflow.body)).send({}).expect(200);
+      const workflowJob = queue.enqueueExecution.mock.calls.at(-1)?.[0] as Record<string, unknown>;
+
+      expect(Object.keys(workflowJob).sort()).toEqual(Object.keys(cosJob).sort());
+      expect(workflowJob.knowledgeScopes).toEqual(cosJob.knowledgeScopes);
+    });
+
+    it('omits workflowTestRun on a normal run', async () => {
+      const test = await startWorkflow({ testRun: true });
+      await completeRun(test.body);
+      const normal = await startWorkflow({});
+      await http().post(approvePath(normal.body)).send({}).expect(200);
+      const intent = ledger.writeExecutionIntent.mock.calls.at(-1)?.[0];
+      expect(intent.metadata.agentDefinitionVersion).toBe(currentVersion());
+      expect(intent.metadata).not.toHaveProperty('workflowTestRun');
+    });
+
+    it('re-checks at approve: a removed row is refused and nothing is enqueued', async () => {
+      const started = await startWorkflow({ testRun: true });
+      workflowRows.delete(WORKFLOW_ID);
+      const response = await http().post(approvePath(started.body)).send({}).expect(409);
+      expect(response.body.code).toBe('WORKFLOW_DISABLED');
+      expect(queue.enqueueExecution).not.toHaveBeenCalled();
+      expect(referrals.get(started.body.referralId)?.status).toBe('pending_approval');
+    });
+
+    it('re-checks the day budget at approve when credits were spent during the wait', async () => {
+      workflowRows.set(WORKFLOW_ID, cosRow({ budgetPerDayCredits: 20 }));
+      const first = await startWorkflow({ testRun: true });
+      const waiting = await startWorkflow({ testRun: true });
+      const executionId = await completeRun(first.body);
+      deductionRows.push({
+        ownerId: OWNER_ID,
+        sourceEventId: executionId,
+        requestedCredits: 20,
+        createdAt: new Date(),
+      });
+      const calls = queue.enqueueExecution.mock.calls.length;
+      const response = await http().post(approvePath(waiting.body)).send({}).expect(429);
+      expect(response.body).toMatchObject({ code: 'WORKFLOW_BUDGET_DAY', budget: 20, spent: 20 });
+      expect(queue.enqueueExecution.mock.calls.length).toBe(calls);
+    });
+
+    it('shows the workflow on the run list and detail, labels an unsourced answer and refuses its hand-offs', async () => {
+      const started = await startWorkflow({ testRun: true });
+      await completeRun(
+        started.body,
+        `Today is quiet.\n<handoff to="writer">Write the plan.</handoff>`,
+      );
+      const detail = await http()
+        .get(`/api/collaboration/runs/${started.body.collaborationRunId}`)
+        .expect(200);
+      expect(detail.body.teamId).toBe('workflow');
+      expect(detail.body.team).toEqual([WORKFLOW_ID]);
+      expect(detail.body.workflow).toEqual({ id: WORKFLOW_ID, name: 'Morning brief', testRun: true });
+      expect(detail.body.handoffs).toHaveLength(1);
+      expect(detail.body.handoffs[0]).toMatchObject({
+        target: WORKFLOW_ID,
+        status: 'completed',
+        handoffNote: 'refused: agent_not_on_list',
+        unsourced: true,
+        showUnsourced: true,
+      });
+      expect(referrals.size).toBe(1);
+
+      const list = await http().get(`/api/collaboration/runs?projectId=${PROJECT_ID}`).expect(200);
+      expect(list.body.runs[0]).toMatchObject({
+        teamId: 'workflow',
+        workflow: { id: WORKFLOW_ID, name: 'Morning brief', testRun: true },
+      });
+      expect(JSON.stringify(list.body)).not.toContain(TASK);
+    });
+
+    it('refuses a hand-off from the workflow to itself', async () => {
+      const started = await startWorkflow({ testRun: true });
+      await completeRun(started.body, `Again.\n<handoff to="${WORKFLOW_ID}">Again.</handoff>`);
+      expect(referrals.size).toBe(1);
+      expect(String(referrals.get(started.body.referralId)?.pendingJob?.handoffNote)).toMatch(
+        /^refused: /,
+      );
+    });
+
+    it('lists the owner workflows without instructions, and refuses an unentitled caller', async () => {
+      workflowRows.set(
+        'f0f0f0f0-0000-4000-8000-000000000009',
+        cosRow({ id: 'f0f0f0f0-0000-4000-8000-000000000009', userId: OTHER_ID, name: 'Foreign' }),
+      );
+      const test = await startWorkflow({ testRun: true });
+      await completeRun(test.body);
+
+      const response = await http().get('/api/collaboration/workflows').expect(200);
+      expect(response.body.workflows).toHaveLength(1);
+      const item = response.body.workflows[0];
+      expect(Object.keys(item).sort()).toEqual([
+        'budgetPerDayCredits',
+        'budgetPerRunCredits',
+        'connectorToolIds',
+        'id',
+        'knowledgeScopeIds',
+        'lastRunCredits',
+        'lastTestRunAt',
+        'model',
+        'name',
+        'role',
+        'spentTodayCredits',
+        'status',
+        'tested',
+        'version',
+      ]);
+      expect(item).toMatchObject({
+        id: WORKFLOW_ID,
+        name: 'Morning brief',
+        status: 'active',
+        tested: true,
+        version: currentVersion(),
+      });
+      const text = JSON.stringify(response.body);
+      expect(text).not.toContain('Foreign');
+      expect(text).not.toContain(String(workflowRows.get(WORKFLOW_ID)?.purpose));
+
+      await http(OWNER_ID, false).get('/api/collaboration/workflows').expect(403);
+      const denied = await http(OWNER_ID, false)
+        .post('/api/collaboration/runs')
+        .send(workflowBody({ testRun: true }))
+        .expect(403);
+      expect(denied.body.code).toBeUndefined();
+    });
+
+    it('keeps the three-team start body working as before', async () => {
+      const started = await startRun();
+      expect(referrals.get(started.referralId)?.targetBuilderProfileId).toBe('lead');
+      expect(referrals.get(started.referralId)?.pendingJob).not.toHaveProperty('workflow');
+      const list = await http().get(`/api/collaboration/runs?projectId=${PROJECT_ID}`).expect(200);
+      expect(list.body.runs[0]).toMatchObject({ teamId: 'coding', workflow: null });
+      const detail = await http()
+        .get(`/api/collaboration/runs/${started.collaborationRunId}`)
+        .expect(200);
+      expect(detail.body.workflow).toBeNull();
     });
   });
 });

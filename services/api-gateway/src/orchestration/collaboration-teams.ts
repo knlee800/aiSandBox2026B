@@ -19,6 +19,16 @@ export const COLLABORATION_CHIEF_OF_STAFF_PROFILE_ID = 'chief-of-staff';
 export const COLLABORATION_TEAM_IDS = ['coding', 'chief-of-staff', 'advisors'] as const;
 export type CollaborationServerTeamId = (typeof COLLABORATION_TEAM_IDS)[number];
 
+/**
+ * BIZ-USER-01C D12: a run's team as the run list and detail report it. A run
+ * whose first hand-off carries a workflow snapshot is `workflow`. A start body
+ * can never name `workflow` (readCollaborationStartTeam refuses it).
+ */
+export const COLLABORATION_WORKFLOW_TEAM_ID = 'workflow';
+export type CollaborationRunTeamId =
+  | CollaborationServerTeamId
+  | typeof COLLABORATION_WORKFLOW_TEAM_ID;
+
 export type CollaborationTeamToolProfile = 'read' | 'review' | 'write';
 
 export interface CollaborationTeamRole {
@@ -104,12 +114,19 @@ export function readCollaborationStartTeam(value: unknown): CollaborationServerT
 
 /**
  * The run's team is the team whose first role is the first step's target.
- * A missing or unknown target stays the coding team.
+ * A missing or unknown target stays the coding team. A first step that
+ * carries a workflow snapshot for its own target is the workflow team of one.
  */
-export function collaborationTeamForTarget(targetProfileId: string | null | undefined): {
-  id: CollaborationServerTeamId;
+export function collaborationTeamForTarget(
+  targetProfileId: string | null | undefined,
+  workflow?: { readonly id: string } | null,
+): {
+  id: CollaborationRunTeamId;
   roleNames: readonly string[];
 } {
+  if (workflow && typeof targetProfileId === 'string' && workflow.id === targetProfileId) {
+    return { id: COLLABORATION_WORKFLOW_TEAM_ID, roleNames: [workflow.id] };
+  }
   const matched = COLLABORATION_TEAMS.find((team) => team.roles[0]?.name === targetProfileId);
   const team = matched ?? collaborationTeamById('coding');
   return {

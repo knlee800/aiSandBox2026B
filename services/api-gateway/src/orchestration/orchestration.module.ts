@@ -23,6 +23,9 @@ import { AuthModule } from '../auth/auth.module';
 import { SessionModule } from '../sessions/session.module';
 import { ConversationModule } from '../conversations/conversation.module';
 import { KnowledgeModule } from '../knowledge/knowledge.module';
+import { UserAgentModule } from '../user-agent/user-agent.module';
+import { CreditDeductionRecord } from '../entities/credit-deduction-record.entity';
+import { CollaborationWorkflowService } from './collaboration-workflow';
 
 @Module({
   imports: [
@@ -36,16 +39,20 @@ import { KnowledgeModule } from '../knowledge/knowledge.module';
     QuotaModule,
     CreditBalanceGuardModule,
     KnowledgeModule,
+    UserAgentModule,
     TypeOrmModule.forFeature([
       CollaborationRunEntity,
       CollaborationReferralEntity,
       AuditEventEntity,
       ConnectorConnection,
+      // BIZ-USER-01C D8: read only, for a workflow's own credit sums.
+      CreditDeductionRecord,
     ]),
   ],
   controllers: [InternalCollaborationController, CollaborationController],
   providers: [
     OrchestrationService,
+    CollaborationWorkflowService,
     ExecutionResultService,
     CollaborationSweepWorker,
     {

@@ -33,6 +33,8 @@ import {
 import { CollaborationRunEntity } from './collaboration-run.entity';
 import { CollaborationReferralEntity } from './collaboration-referral.entity';
 import { ConnectorConnection } from '../entities/connector-connection.entity';
+import { userWorkflowGrants } from '../user-agent/user-workflow-grants';
+import { CollaborationWorkflowService } from './collaboration-workflow';
 import {
   resolveConnectorGrantJobFields,
   type ConnectorGrantJobFields,
@@ -64,6 +66,7 @@ import {
   type CollaborationListedAgent,
   type ReferralConstraints,
   type ReferralPendingJob,
+  type ReferralPendingWorkflow,
 } from './orchestration.contracts';
 import {
   COLLABORATION_WAITING_MAX_AGE_MS,
@@ -223,6 +226,8 @@ export interface CreatePendingReferralInput {
   readonly projectInstructions?: string;
   readonly agents?: unknown;
   readonly fileAccess?: boolean;
+  /** BIZ-USER-01C D4: first hand-off of a user workflow run only. Built by CollaborationWorkflowService. */
+  readonly workflow?: ReferralPendingWorkflow;
   readonly constraints?: Partial<ReferralConstraints>;
   readonly parentReferralTraceId?: ReferralTraceId | null;
   readonly timeoutMs?: number;
@@ -313,6 +318,7 @@ export class OrchestrationService {
     @Optional()
     @InjectRepository(ConnectorConnection)
     private readonly connectorConnections?: Repository<ConnectorConnection>,
+    @Optional() private readonly workflowService?: CollaborationWorkflowService,
   ) {
     this.auditRecorder = auditRecorder ?? new InMemoryOrchestrationAuditRecorder();
   }
@@ -819,6 +825,14 @@ export class OrchestrationService {
 
         const now = new Date();
         const fileAccess = referralEntity.pendingJob?.fileAccess === true;
+        const workflow = fileAccess ? this.workflowOfEntity(referralEntity) : null;
+        const workflowAccess = workflow
+          ? await this.workflowJobAccess(
+              workflow,
+              input.userId,
+              referral.targetBuilder.builderProfileId,
+            )
+          : null;
         const payload = {
           executionId: input.executionId,
           userId: input.userId,
@@ -834,12 +848,14 @@ export class OrchestrationService {
           model: input.model,
           submittedAt: input.submittedAt,
           executionIntent: 'conversation' as const,
-          ...(fileAccess
-            ? {
-                ...collaborationHarnessJobFields(referral.targetBuilder.builderProfileId),
-                ...knowledgeScopesJobFields(referral.targetBuilder.builderProfileId),
-              }
-            : {}),
+          ...(workflowAccess
+            ? workflowAccess.jobFields
+            : fileAccess
+              ? {
+                  ...collaborationHarnessJobFields(referral.targetBuilder.builderProfileId),
+                  ...knowledgeScopesJobFields(referral.targetBuilder.builderProfileId),
+                }
+              : {}),
           agentRole: referral.targetBuilder.agentRole,
           builderProfileId: referral.targetBuilder.builderProfileId,
           collaborationRunId: referral.collaborationRunId,
@@ -856,13 +872,19 @@ export class OrchestrationService {
         referralEntity.updatedAt = now;
         await referralRepo.save(referralEntity);
 
-        return payload;
+        return {
+          payload,
+          workflowToolIds: workflowAccess ? workflowAccess.connectorToolIds : null,
+        };
       },
     );
 
-    const connectorGrantFields = await this.connectorGrantJobFields(jobPayload);
+    const connectorGrantFields = await this.connectorGrantJobFields(
+      jobPayload.payload,
+      jobPayload.workflowToolIds,
+    );
     await this.queueService.enqueueExecution(
-      this.withHarnessEntitlementProof({ ...jobPayload, ...connectorGrantFields }),
+      this.withHarnessEntitlementProof({ ...jobPayload.payload, ...connectorGrantFields }),
     );
     const updatedEntity = await this.referralRepo.findOne({
       where: { referralId: input.referralId },
@@ -1045,6 +1067,7 @@ export class OrchestrationService {
         callerProjectInstructions: prepared.callerProjectInstructions,
         handoffNote: null,
         ...(prepared.fileAccess ? { fileAccess: true } : {}),
+        ...(prepared.workflow ? { workflow: prepared.workflow } : {}),
       },
     });
     const stored = await this.referralRepo.findOne({
@@ -1079,6 +1102,13 @@ export class OrchestrationService {
       readValidatedHarnessEntitlementHmacSecret() === undefined
     ) {
       throw new InternalServerErrorException(HARNESS_PROOF_UNAVAILABLE);
+    }
+    const workflow = this.workflowOfEntity(loaded.entity);
+    if (workflow) {
+      if (!this.workflowService) {
+        throw new ServiceUnavailableException('Workflow checks are unavailable');
+      }
+      await this.workflowService.assertCanApprove(loaded.run.userId, workflow);
     }
     await this.assertHandoffAllowed(loaded.run.userId, job);
 
@@ -1799,10 +1829,21 @@ export class OrchestrationService {
     }
   }
 
-  private referralAgentDefinitionMetadata(agentDefinitionId: string): {
+  private referralAgentDefinitionMetadata(
+    agentDefinitionId: string,
+    workflow?: ReferralPendingWorkflow | null,
+  ): {
     agentDefinitionId: string;
     agentDefinitionVersion?: string;
+    workflowTestRun?: true;
   } {
+    if (workflow && workflow.id === agentDefinitionId) {
+      return {
+        agentDefinitionId: workflow.id,
+        agentDefinitionVersion: workflow.version,
+        ...(workflow.testRun === true ? { workflowTestRun: true as const } : {}),
+      };
+    }
     let version: string | undefined;
     try {
       version = systemAgentVersion(agentDefinitionId);
@@ -1849,6 +1890,7 @@ export class OrchestrationService {
           requestedModel: job.model,
           ...this.referralAgentDefinitionMetadata(
             referral.targetBuilder.builderProfileId,
+            this.workflowOfEntity(referralEntity),
           ),
         },
         agentRole: referral.targetBuilder.agentRole,
@@ -2512,10 +2554,21 @@ export class OrchestrationService {
     callerProjectInstructions: string | null;
     projectInstructions: string | null;
     fileAccess: boolean;
+    workflow: ReferralPendingWorkflow | null;
   }> {
     const parentId = input.parentReferralTraceId?.trim() || null;
     if (input.agents !== undefined && parentId) {
       throw new BadRequestException('agents are only accepted on the first hand-off');
+    }
+    if (input.workflow !== undefined && parentId) {
+      throw new BadRequestException('workflow is only accepted on the first hand-off');
+    }
+    const workflow = input.workflow ? this.copyWorkflowSnapshot(input.workflow) : null;
+    if (
+      workflow &&
+      (workflow.id !== input.targetBuilder.builderProfileId || input.fileAccess !== true)
+    ) {
+      throw new BadRequestException('workflow must be the first target with file access');
     }
     if (input.fileAccess !== undefined && parentId) {
       throw new BadRequestException('fileAccess is only accepted on the first hand-off');
@@ -2578,7 +2631,7 @@ export class OrchestrationService {
       ? parent.pendingJob?.fileAccess === true
       : input.fileAccess === true;
 
-    return { agents, callerProjectInstructions, projectInstructions, fileAccess };
+    return { agents, callerProjectInstructions, projectInstructions, fileAccess, workflow };
   }
 
   /**
@@ -2587,14 +2640,21 @@ export class OrchestrationService {
    * owner has a connection of that tool's kind. {} otherwise, so the fields are
    * omitted. Added before the proof is made, so the proof covers both fields.
    */
-  private async connectorGrantJobFields(payload: {
-    executionId: string;
-    userId: string;
-    builderProfileId: string;
-    harnessVersion?: unknown;
-    harnessToolProfile?: unknown;
-  }): Promise<ConnectorGrantJobFields> {
-    const roleToolIds = collaborationRoleConnectorToolIds(payload.builderProfileId);
+  private async connectorGrantJobFields(
+    payload: {
+      executionId: string;
+      userId: string;
+      builderProfileId: string;
+      harnessVersion?: unknown;
+      harnessToolProfile?: unknown;
+    },
+    workflowToolIds: readonly string[] | null = null,
+  ): Promise<ConnectorGrantJobFields> {
+    // BIZ-USER-01C D9: a workflow job grants userWorkflowGrants' tools, not a registry role's.
+    const roleToolIds =
+      workflowToolIds !== null
+        ? [...workflowToolIds]
+        : collaborationRoleConnectorToolIds(payload.builderProfileId);
     if (roleToolIds.length === 0) {
       return {};
     }
@@ -2613,6 +2673,89 @@ export class OrchestrationService {
       );
     }
     return fields;
+  }
+
+  /** BIZ-USER-01C: the snapshot on a referral, when it is a workflow's own hand-off. */
+  private workflowOfEntity(
+    entity: Pick<CollaborationReferralEntity, 'pendingJob' | 'targetBuilderProfileId'>,
+  ): ReferralPendingWorkflow | null {
+    const workflow = entity.pendingJob?.workflow;
+    if (!workflow || typeof workflow !== 'object') {
+      return null;
+    }
+    return workflow.id === entity.targetBuilderProfileId ? workflow : null;
+  }
+
+  private copyWorkflowSnapshot(workflow: ReferralPendingWorkflow): ReferralPendingWorkflow {
+    return {
+      id: workflow.id,
+      name: workflow.name,
+      version: workflow.version,
+      knowledgeScopeIds: [...workflow.knowledgeScopeIds],
+      connectorToolIds: [...workflow.connectorToolIds],
+      model:
+        workflow.model.choice === 'platform'
+          ? { choice: 'platform', id: workflow.model.id }
+          : { choice: 'server' },
+      testRun: workflow.testRun === true,
+      budgetPerRunCredits: workflow.budgetPerRunCredits ?? null,
+      budgetPerDayCredits: workflow.budgetPerDayCredits ?? null,
+    };
+  }
+
+  /**
+   * BIZ-USER-01C D9: a workflow job's harness, scope and tool values. Grants =
+   * the snapshot, intersected with the allowlist and the owner's connections
+   * now (userWorkflowGrants). The same job keys a Chief of Staff job has; only
+   * their values come from the snapshot. A lookup failure grants no tools.
+   */
+  private async workflowJobAccess(
+    workflow: ReferralPendingWorkflow,
+    userId: string,
+    targetProfileId: string,
+  ): Promise<{
+    jobFields: ReturnType<typeof collaborationHarnessJobFields> & {
+      knowledgeScopes?: readonly string[];
+    };
+    connectorToolIds: string[];
+  }> {
+    const harness = collaborationHarnessJobFields(targetProfileId);
+    if (harness.harnessToolProfile !== 'read' || harness.harnessReadOnly !== true) {
+      throw new Error('A workflow job must be read-only');
+    }
+    let kinds: string[] = [];
+    if (this.connectorConnections && workflow.connectorToolIds.length > 0) {
+      try {
+        const rows = await this.connectorConnections.find({
+          where: { userId },
+          select: ['userId', 'kind'],
+        });
+        kinds = rows.filter((row) => row.userId === userId).map((row) => row.kind);
+      } catch {
+        kinds = [];
+      }
+    }
+    const grants = userWorkflowGrants(
+      {
+        toolProfile: 'read',
+        knowledgeScopeIds: workflow.knowledgeScopeIds,
+        connectorToolIds: workflow.connectorToolIds,
+      },
+      kinds,
+    );
+    return {
+      jobFields: {
+        ...harness,
+        ...knowledgeScopesJobFields(grants.knowledgeScopeIds),
+      },
+      connectorToolIds: grants.connectorToolIds,
+    };
+  }
+
+  /** BIZ-USER-01C D12: the workflow snapshot of one referral, or null. */
+  async readReferralWorkflow(referralId: ReferralId): Promise<ReferralPendingWorkflow | null> {
+    const entity = await this.referralRepo.findOne({ where: { referralId } });
+    return entity ? this.workflowOfEntity(entity) : null;
   }
 
   private withHarnessEntitlementProof<

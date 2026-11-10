@@ -163,6 +163,29 @@ export interface CollaborationListedAgent {
   readonly instructions: string;
 }
 
+/**
+ * BIZ-USER-01C D4: a user workflow run's snapshot, written at start from the
+ * owner's stored row. The run's prompt, version and access are the row as it
+ * was at start. Orchestration-internal; not a job field and not signed.
+ */
+export interface ReferralPendingWorkflow {
+  readonly id: string;
+  /** Display only: the workflow's name at start. */
+  readonly name: string;
+  /** agentVersionFor over the row's material at start (D6). */
+  readonly version: string;
+  /** Catalogue scope ids at start, in catalogue order. */
+  readonly knowledgeScopeIds: readonly string[];
+  /** Allowlisted connector tool ids at start. Grants still need a connection at enqueue. */
+  readonly connectorToolIds: readonly string[];
+  readonly model:
+    | { readonly choice: 'server' }
+    | { readonly choice: 'platform'; readonly id: string };
+  readonly testRun: boolean;
+  readonly budgetPerRunCredits: number | null;
+  readonly budgetPerDayCredits: number | null;
+}
+
 export interface ReferralPendingJob {
   readonly sessionId: string;
   readonly conversationId: string;
@@ -189,6 +212,8 @@ export interface ReferralPendingJob {
     readonly text: string;
     readonly unavailable: boolean;
   } | null;
+  /** BIZ-USER-01C D4: set on the first hand-off of a user workflow run only. */
+  readonly workflow?: ReferralPendingWorkflow | null;
 }
 
 export interface ReferralResult {

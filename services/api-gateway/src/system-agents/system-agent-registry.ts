@@ -481,8 +481,55 @@ function modelMaterial(model: SystemAgentModel): SystemAgentModel {
     : { choice: model.choice };
 }
 
-function systemAgentVersionMaterial(draft: SystemAgentDraft, instructions: string): string {
+/**
+ * The material a version hash covers. System agents and user workflows
+ * (BIZ-USER-01C) hash the same way: these keys, in this order, as JSON,
+ * then sha256 hex.
+ */
+export interface AgentVersionMaterial {
+  readonly id: string;
+  readonly tone: string | null;
+  readonly replyLanguage: SystemAgentReplyLanguage | null;
+  readonly purpose: string;
+  readonly procedure: string;
+  readonly result: string;
+  readonly rules: string;
+  readonly instructions: string;
+  readonly toolProfile: SystemAgentToolProfile | null;
+  readonly scopes: readonly SystemAgentScope[];
+  readonly connectorToolIds: readonly string[];
+  readonly model: SystemAgentModel;
+  readonly teamRole: SystemAgentTeamRole | null;
+}
+
+function agentVersionPayload(material: AgentVersionMaterial): string {
   const payload = {
+    id: material.id,
+    tone: material.tone,
+    replyLanguage: material.replyLanguage,
+    purpose: material.purpose,
+    procedure: material.procedure,
+    result: material.result,
+    rules: material.rules,
+    instructions: material.instructions,
+    toolProfile: material.toolProfile,
+    scopes: material.scopes.map((scope) => ({ id: scope.id, type: scope.type })),
+    connectorToolIds: [...material.connectorToolIds],
+    model: modelMaterial(material.model),
+    teamRole: material.teamRole
+      ? { teamId: material.teamRole.teamId, roleName: material.teamRole.roleName }
+      : null,
+  };
+  return JSON.stringify(payload);
+}
+
+/** sha256 hex of the version material. The one hash function for agent versions. */
+export function agentVersionFor(material: AgentVersionMaterial): string {
+  return createHash('sha256').update(agentVersionPayload(material), 'utf8').digest('hex');
+}
+
+function versionFor(draft: SystemAgentDraft, instructions: string): string {
+  return agentVersionFor({
     id: draft.id,
     tone: draft.tone,
     replyLanguage: draft.replyLanguage,
@@ -492,20 +539,11 @@ function systemAgentVersionMaterial(draft: SystemAgentDraft, instructions: strin
     rules: draft.rules,
     instructions,
     toolProfile: draft.toolProfile,
-    scopes: draft.knowledgeScopes.map((scope) => ({ id: scope.id, type: scope.type })),
-    connectorToolIds: [...draft.connectorToolIds],
-    model: modelMaterial(draft.model),
-    teamRole: draft.teamRole
-      ? { teamId: draft.teamRole.teamId, roleName: draft.teamRole.roleName }
-      : null,
-  };
-  return JSON.stringify(payload);
-}
-
-function versionFor(draft: SystemAgentDraft, instructions: string): string {
-  return createHash('sha256')
-    .update(systemAgentVersionMaterial(draft, instructions), 'utf8')
-    .digest('hex');
+    scopes: draft.knowledgeScopes,
+    connectorToolIds: draft.connectorToolIds,
+    model: draft.model,
+    teamRole: draft.teamRole,
+  });
 }
 
 function definitionFor(draft: SystemAgentDraft): SystemAgentDefinition {
