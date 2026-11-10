@@ -1194,6 +1194,11 @@
     "runDetailEmpty": "This run has no saved output yet.",
     "runDetailNotFound": "This run could not be found.",
     "runDetailError": "Could not load this run.",
+    "cancelRunCancelling": "Cancelling…",
+    "cancelRunCancelled": "Run cancelled. Waiting and running steps have stopped.",
+    "cancelRunFinished": "This run has already finished.",
+    "cancelRunNotFound": "This run could not be found.",
+    "cancelRunFailed": "Could not cancel the run. Try again.",
     "comingSoonBody": "This desk is reserved for a future agent.",
     "knowledgeBadge": "{count} documents",
     "knowledgeBadgeOne": "{count} document"

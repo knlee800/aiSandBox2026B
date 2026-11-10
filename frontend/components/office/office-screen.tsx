@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -18,10 +18,17 @@ import { useOfficeRuns } from '@/hooks/useOfficeRuns';
 import { useOfficeRunDetail } from '@/hooks/useOfficeRunDetail';
 import OfficeDeskCard from '@/components/office/office-desk';
 import OfficeDeskPanel, {
+  type OfficePanelCancel,
   type OfficePanelLabels,
   type OfficePanelRun,
 } from '@/components/office/office-desk-panel';
 import { OFFICE_ART_MOTION_CSS } from '@/components/office/office-art';
+import {
+  cancelOfficeCollaborationRun,
+  officeCancellableRunId,
+  officeCancelResultKey,
+  type OfficeCancelState,
+} from '@/lib/office/office-cancel';
 import {
   countActiveKnowledgeDocuments,
   knowledgeBadgeMessageKey,
@@ -117,6 +124,11 @@ export interface OfficeScreenViewProps {
   handoffNotice?: OfficeHandoffNotice;
   handoffBadgeRunIds?: ReadonlySet<string>;
   onRetryHandoffs?: () => void;
+  cancel?: OfficeCancelState | null;
+  onBeginCancel?: (deskId: string, collaborationRunId: string) => void;
+  onKeepCancel?: () => void;
+  onConfirmCancel?: () => void;
+  onDismissCancel?: () => void;
 }
 
 function statusLabel(phase: OfficeDeskPhase, t: (key: string) => string): string {
@@ -155,6 +167,11 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
     handoffNotice = 'none',
     handoffBadgeRunIds = EMPTY_HANDOFF_RUNS,
     onRetryHandoffs,
+    cancel = null,
+    onBeginCancel,
+    onKeepCancel,
+    onConfirmCancel,
+    onDismissCancel,
   } = props;
 
   if (loading) {
@@ -245,7 +262,34 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
     runDetailNotFound: t('runDetailNotFound'),
     runDetailError: t('runDetailError'),
     retry: t('retry'),
+    cancelRun: resolveText('collaboration.cancelRun'),
+    cancelRunPrompt: resolveText('collaboration.cancelRunPrompt'),
+    cancelRunConfirm: resolveText('collaboration.cancelRunConfirm'),
+    cancelRunKeep: resolveText('collaboration.cancelRunKeep'),
+    cancelRunCancelling: t('cancelRunCancelling'),
+    cancelResults: {
+      cancelled: t(officeCancelResultKey('cancelled')),
+      finished: t(officeCancelResultKey('finished')),
+      notFound: t(officeCancelResultKey('notFound')),
+      failed: t(officeCancelResultKey('failed')),
+    },
   };
+  const cancellableRunId = selected && !selected.vacant ? officeCancellableRunId(selected) : null;
+  const panelCancel: OfficePanelCancel | null =
+    selected && !selected.vacant
+      ? {
+          runId: cancellableRunId,
+          phase: cancel && cancel.deskId === selected.id ? cancel.phase : null,
+          onBegin: () => {
+            if (cancellableRunId) {
+              onBeginCancel?.(selected.id, cancellableRunId);
+            }
+          },
+          onKeep: () => onKeepCancel?.(),
+          onConfirm: () => onConfirmCancel?.(),
+          onDismiss: () => onDismissCancel?.(),
+        }
+      : null;
   const updatedSeconds =
     updatedAt == null ? null : Math.max(0, Math.floor((nowMs - updatedAt) / 1000));
 
@@ -442,6 +486,7 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
             onOpenRun={onOpenRun}
             onCloseRun={onCloseRun}
             onRetryRun={onRetryRun}
+            cancel={panelCancel}
           />
         </div>
       </main>
@@ -567,6 +612,8 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
     runs.updatedAt,
   );
   const openedRun = useOfficeRunDetail(openExecutionId);
+  const [cancel, setCancel] = useState<OfficeCancelState | null>(null);
+  const cancelInFlight = useRef(false);
   const registry = useMemo(() => officeRegistryFromManifests(systemAgents), [systemAgents]);
   const userRefs = useMemo<OfficeUserAgentRef[]>(
     () =>
@@ -686,6 +733,40 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
   }, [desks]);
 
   useEffect(() => {
+    setCancel((current) => {
+      if (!current) {
+        return current;
+      }
+      const desk = desks.find((entry) => entry.id === current.deskId);
+      if (!desk) {
+        return null;
+      }
+      // A confirm step for a run that has since ended is stale. Answers stay until dismissed.
+      if (
+        current.phase === 'confirming' &&
+        officeCancellableRunId(desk) !== current.collaborationRunId
+      ) {
+        return null;
+      }
+      return current;
+    });
+  }, [desks]);
+
+  const confirmCancel = useCallback(async () => {
+    if (cancelInFlight.current || !cancel || cancel.phase !== 'confirming') {
+      return;
+    }
+    cancelInFlight.current = true;
+    const target = cancel;
+    setCancel({ ...target, phase: 'cancelling' });
+    const outcome = await cancelOfficeCollaborationRun(target.collaborationRunId);
+    cancelInFlight.current = false;
+    setCancel({ ...target, phase: outcome });
+    runs.refresh();
+    handoffs.retry();
+  }, [cancel, runs, handoffs]);
+
+  useEffect(() => {
     if (selectedDeskId && !desks.some((desk) => desk.id === selectedDeskId)) {
       setSelectedDeskId(null);
       setOpenExecutionId(null);
@@ -732,15 +813,30 @@ export default function OfficeScreen({ locale }: OfficeScreenProps): React.React
       nowMs={nowMs}
       reducedMotion={reducedMotion}
       knowledgeDocuments={knowledgeDocuments}
+      cancel={cancel}
+      onBeginCancel={(deskId, collaborationRunId) =>
+        setCancel({ deskId, collaborationRunId, phase: 'confirming' })
+      }
+      onKeepCancel={() => setCancel(null)}
+      onConfirmCancel={() => {
+        void confirmCancel();
+      }}
+      onDismissCancel={() => setCancel(null)}
       onSelectDesk={(id) => {
         if (id !== selectedDeskId) {
           setOpenExecutionId(null);
+          if (!cancelInFlight.current) {
+            setCancel(null);
+          }
         }
         setSelectedDeskId(id);
       }}
       onClosePanel={() => {
         setSelectedDeskId(null);
         setOpenExecutionId(null);
+        if (!cancelInFlight.current) {
+          setCancel(null);
+        }
       }}
       runDetail={runDetail}
       onOpenRun={setOpenExecutionId}

@@ -9,8 +9,11 @@ import {
   ClockIcon,
   ExclamationTriangleIcon,
   UserCircleIcon,
+  XCircleIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
+import Spinner from '@/components/ui/Spinner';
+import { officeCancelPhaseIsResult, type OfficeCancelPhase } from '@/lib/office/office-cancel';
 import {
   officeRunDetailFocus,
   officeRunDetailKeyAction,
@@ -51,6 +54,24 @@ export interface OfficePanelLabels {
   runDetailNotFound: string;
   runDetailError: string;
   retry: string;
+  cancelRun: string;
+  cancelRunPrompt: string;
+  cancelRunConfirm: string;
+  cancelRunKeep: string;
+  cancelRunCancelling: string;
+  /** Result text per finished attempt. */
+  cancelResults: Record<'cancelled' | 'finished' | 'notFound' | 'failed', string>;
+}
+
+/** The Team run cancel flow for the open desk. A null phase shows the Cancel run button. */
+export interface OfficePanelCancel {
+  /** Collaboration run the button cancels; null when the desk has no active Team run. */
+  runId: string | null;
+  phase: OfficeCancelPhase | null;
+  onBegin: () => void;
+  onKeep: () => void;
+  onConfirm: () => void;
+  onDismiss: () => void;
 }
 
 export interface OfficeRunDetailState {
@@ -84,6 +105,7 @@ export interface OfficeDeskPanelProps {
   onCloseRun?: () => void;
   onRetryRun?: () => void;
   reducedMotion?: boolean;
+  cancel?: OfficePanelCancel | null;
 }
 
 function statusClass(phase: OfficeDeskPhase): string {
@@ -237,6 +259,93 @@ function RunDetail(props: {
   );
 }
 
+function CancelResult(props: {
+  phase: 'cancelled' | 'finished' | 'notFound' | 'failed';
+  cancel: OfficePanelCancel;
+  labels: OfficePanelLabels;
+}): React.ReactElement {
+  const { phase, cancel, labels } = props;
+  const failed = phase === 'failed';
+  return (
+    <div
+      className={`mt-4 flex items-start gap-2 rounded-lg border px-3 py-2 ${
+        failed ? 'border-red-700/40 bg-red-950/30' : 'border-slate-700 bg-slate-950/60'
+      }`}
+      role={failed ? 'alert' : 'status'}
+      data-testid="office-cancel-result"
+      data-phase={phase}
+    >
+      {failed ? (
+        <ExclamationTriangleIcon className="mt-0.5 h-4 w-4 shrink-0 text-red-300" aria-hidden="true" />
+      ) : null}
+      <p className={`min-w-0 flex-1 break-words text-sm ${failed ? 'text-red-200' : 'text-slate-200'}`}>
+        {labels.cancelResults[phase]}
+      </p>
+      <button
+        type="button"
+        className="shrink-0 rounded-md p-0.5 text-slate-400 hover:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+        onClick={cancel.onDismiss}
+        aria-label={labels.close}
+        data-testid="office-cancel-dismiss"
+      >
+        <XMarkIcon className="h-4 w-4" aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
+
+function CancelRun(props: {
+  cancel: OfficePanelCancel;
+  labels: OfficePanelLabels;
+}): React.ReactElement {
+  const { cancel, labels } = props;
+  if (cancel.phase !== 'confirming' && cancel.phase !== 'cancelling') {
+    return (
+      <button
+        type="button"
+        className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-red-400/40 px-3 py-1.5 text-sm font-medium text-red-200 hover:bg-red-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+        onClick={cancel.onBegin}
+        data-testid="office-cancel-run"
+      >
+        <XCircleIcon className="h-4 w-4" aria-hidden="true" />
+        {labels.cancelRun}
+      </button>
+    );
+  }
+  const busy = cancel.phase === 'cancelling';
+  return (
+    <div
+      className="mt-4 flex min-w-0 flex-col gap-2"
+      data-testid="office-cancel-confirm-block"
+      data-phase={cancel.phase}
+    >
+      <p className="text-sm text-slate-200">{labels.cancelRunPrompt}</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 disabled:opacity-60"
+          onClick={cancel.onConfirm}
+          disabled={busy}
+          data-testid="office-cancel-confirm"
+        >
+          {busy ? <Spinner /> : <XCircleIcon className="h-4 w-4" aria-hidden="true" />}
+          {busy ? labels.cancelRunCancelling : labels.cancelRunConfirm}
+        </button>
+        <button
+          type="button"
+          autoFocus
+          className="rounded-lg border border-slate-600 px-3 py-1.5 text-sm font-medium text-slate-100 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 disabled:opacity-60"
+          onClick={cancel.onKeep}
+          disabled={busy}
+          data-testid="office-cancel-keep"
+        >
+          {labels.cancelRunKeep}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function OfficeDeskPanel({
   desk,
   labels,
@@ -246,6 +355,7 @@ export default function OfficeDeskPanel({
   onCloseRun,
   onRetryRun,
   reducedMotion = false,
+  cancel = null,
 }: OfficeDeskPanelProps): React.ReactElement {
   const backRef = useRef<HTMLButtonElement>(null);
   const detailRef = useRef<HTMLElement>(null);
@@ -366,7 +476,14 @@ export default function OfficeDeskPanel({
                 {labels.currentRun}
               </h3>
               <RunFacts run={desk.current} labels={labels} />
+              {cancel && cancel.runId != null && !officeCancelPhaseIsResult(cancel.phase) ? (
+                <CancelRun cancel={cancel} labels={labels} />
+              ) : null}
             </section>
+          ) : null}
+
+          {cancel && officeCancelPhaseIsResult(cancel.phase) ? (
+            <CancelResult phase={cancel.phase} cancel={cancel} labels={labels} />
           ) : null}
 
           {desk.recent.length > 0 ? (

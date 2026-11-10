@@ -1194,6 +1194,11 @@
     "runDetailEmpty": "這次執行還沒有已儲存的輸出。",
     "runDetailNotFound": "找不到這次執行。",
     "runDetailError": "無法載入這次執行。",
+    "cancelRunCancelling": "取消中…",
+    "cancelRunCancelled": "已取消這次執行。等待中和進行中的步驟已停止。",
+    "cancelRunFinished": "這次執行已經結束。",
+    "cancelRunNotFound": "找不到這次執行。",
+    "cancelRunFailed": "無法取消這次執行，請再試一次。",
     "comingSoonBody": "此座位保留給未來的代理。",
     "knowledgeBadge": "{count} 份文件",
     "knowledgeBadgeOne": "{count} 份文件"

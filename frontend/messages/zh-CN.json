@@ -1194,6 +1194,11 @@
     "runDetailEmpty": "这次运行还没有已保存的输出。",
     "runDetailNotFound": "找不到这次运行。",
     "runDetailError": "无法加载这次运行。",
+    "cancelRunCancelling": "取消中…",
+    "cancelRunCancelled": "已取消这次运行。等待中和进行中的步骤已停止。",
+    "cancelRunFinished": "这次运行已经结束。",
+    "cancelRunNotFound": "找不到这次运行。",
+    "cancelRunFailed": "无法取消这次运行，请重试。",
     "comingSoonBody": "此工位保留给未来的代理。",
     "knowledgeBadge": "{count} 份文档",
     "knowledgeBadgeOne": "{count} 份文档"
