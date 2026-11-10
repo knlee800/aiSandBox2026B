@@ -87996,13 +87996,13 @@ taskId=CHECKPOINT-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the STAGING-DEPLOY-CMSEC-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — Keith started it ("i will do it now"). Was: READY — registered 2026-11-10 by the STAGING-DEPLOY-CMSEC-01 LOCK — not admitted.
 **Task ID:** CHECKPOINT-LIVE-01
 **Title:** Keith checkpoint save and restore smoke on staging
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (he runs the browser steps).
+**Start condition:** READY (Keith decided 2026-11-10). Was: Ready when: Keith decides.
 **Depends on:** STAGING-DEPLOY-CMSEC-01.
 **Primary write scope:** records; host reads.
 **Mutexes / resources:** STAGING (read-only host checks).
