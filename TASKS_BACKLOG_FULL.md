@@ -87478,7 +87478,7 @@ taskId=CM-AUTH-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the AI-SERVICE-AUTH-01 LOCK — not admitted. Stage-start approved 2026-11-10: docs/CM-AUTH-01-STAGE-START.md (global guard, only GET /api/health open, 403 kept; the gateway preview proxy gets a strict path allowlist that closes an encoded-dot traversal to other sessions' files; ws proxying removed; the key stripped before preview traffic reaches a container; gateway client path parameters encoded).
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 2 and its mutexes released. Container-manager key guard on 63 of 64 routes, preview traversal closed by an allowlist, ws removed, key stripped to containers, client parameters encoded; opus subagent in worktree lane/CM-AUTH-01, cherry-picked as 72f0e2a; container-manager 481, gateway 3256 (only the known smoke suite fails), ai-service 1309 plus one pre-existing drift failure; builds clean; not deployed. FOLLOWUPS: 4 registered (STAGING-DEPLOY-CMAUTH-01, CM-PREFIX-01, CM-CLEANUP-01, DRIFT-FIX-01) / 1 superseded / 0 dropped / 0 undisposed. Checkpoint: docs/CM-AUTH-01-CHECKPOINT.md.
 **Task ID:** CM-AUTH-01
 **Title:** Internal key on container-manager routes
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -87496,6 +87496,106 @@ nature=IMPLEMENTATION
 **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set at admission 2026-11-10).
 **Scope:** Container-manager's executor, files, git, sessions, preview, previews and internal-previews/proxy routes have no guard (docs/AI-SERVICE-AUTH-01-STAGE-START.md section 2): after the loopback bind only host processes can reach them, but any host process can read or write any session's files and run node in any container. Require X-Internal-Service-Key on them (constant-time compare from AI-SERVICE-AUTH-01), with the gateway's container-manager client (container-manager-http.client.ts) and ai-service's legacy chat path (messages.service.ts) sending it.
+
+### STAGING-DEPLOY-CMAUTH-01 — Deploy the container-manager key guard and the preview traversal fix
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-CMAUTH-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the CM-AUTH-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-CMAUTH-01
+**Title:** Deploy the container-manager key guard and the preview traversal fix
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: CM-AUTH-01 and DRIFT-FIX-01 LOCKED. Keith decides (host change).
+**Depends on:** CM-AUTH-01.
+**Primary write scope:** records; host state.
+**Mutexes / resources:** STAGING
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** redeploy the previous commit.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it).
+**productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy main to staging with runs off and the tester window closed. From the host, with keys read from env files and never printed: before the deploy, cm.env INTERNAL_SERVICE_KEY is present and its hash equals gateway.env's and ai.env's (match or differ only; differ is a STOP, fixed by an ENV task); after it, container-manager starts cleanly with no key text in the journal; 127.0.0.1:4002/api/health 200 without a key; GET /api/executor/commands, /api/sessions, /api/files/x/list, /api/preview/x/status, /api/internal/stats and /api/api/internal/billing-export/limits answer 403 without and with a wrong key, and /api/executor/commands and /api/internal/stats 200 with the key; through Caddy with the stored test key on an owned session the workspace file list, read and write, preview start, status, stop and assets, checkpoint list, save, restore, revert and diff still work; /api/preview/<own>/%2e%2e/%2e%2e/executor/commands and /api/preview/<own>/%2e%2e/%2e%2e/files/<other>/list answer 404; a WebSocket upgrade to 4002 without the key is not upgraded.
+
+### CM-PREFIX-01 — Container-manager internal routes served at /api/api/internal
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CM-PREFIX-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the CM-AUTH-01 LOCK — not admitted.
+**Task ID:** CM-PREFIX-01
+**Title:** Container-manager internal routes served at /api/api/internal
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** CM-AUTH-01.
+**Primary write scope:** services/container-manager/src/
+**Mutexes / resources:** CONTAINER-MANAGER
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it).
+**productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Confirmed by CM-AUTH-01's route inventory: billing-export, quota-visibility, quota-evaluations and usage-aggregations declare api/internal/... under the global prefix api and serve at /api/api/internal/...; the gateway client and admin.service call /api/internal/... and get 404, so the admin ops summary and billing export do not work. Fix the controller prefixes so they serve at /api/internal/..., with a route test.
+
+### CM-CLEANUP-01 — Container-manager and preview proxy cleanups
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CM-CLEANUP-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the CM-AUTH-01 LOCK — not admitted.
+**Task ID:** CM-CLEANUP-01
+**Title:** Container-manager and preview proxy cleanups
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** CM-AUTH-01.
+**Primary write scope:** PROVISIONAL, set at admission.
+**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER, GATEWAY, AI-SERVICE).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it).
+**productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From CM-AUTH-01: (F3) previews/* and internal-previews/proxy/* have no caller and their pathRewrite prefixes miss /api, and several executor, files, sessions and git routes have no caller; a new proxy is created per request (listener leak); remove or fix. (F4) ai-service's legacy chat path has no caller and its delete sends ?path= while container-manager reads the body; remove it. (F5) container-manager CORS allows any origin with credentials while no browser calls it; turn it off. (Latent) the gateway preview catch-all copies container-manager's transfer-encoding header and then calls res.send; drop hop-by-hop headers.
+
+### DRIFT-FIX-01 — Briefing drift check follows the shared version hash
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=DRIFT-FIX-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the CM-AUTH-01 LOCK — not admitted.
+**Task ID:** DRIFT-FIX-01
+**Title:** Briefing drift check follows the shared version hash
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: CM-AUTH-01 LOCKED (AI-SERVICE free). Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** CM-AUTH-01.
+**Primary write scope:** services/ai-service/src/agent-harness/eval/
+**Mutexes / resources:** AI-SERVICE
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it).
+**productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** services/ai-service/src/agent-harness/eval/briefing-drift.spec.ts ('the hash material the copy uses matches the gateway draft for chief-of-staff') fails on main since BIZ-USER-01C (ccc25ab) changed the gateway's version material to scopes: draft.knowledgeScopes and model: draft.model through agentVersionFor, while the eval copy still expects .map(...) and modelMaterial(...). The BIZ-USER-01C lock reran only the gateway and frontend suites, so the failure was missed (control-plane miss). Update the eval copy and the drift check to the shared material so the check passes and still proves the copy matches; the pinned Chief of Staff hash must stay as the gateway computes it.
 
 ### LOCAL-DEV-SYNC-01 — Local and compose setups follow the loopback binds
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
