@@ -88425,7 +88425,7 @@ nature=IMPLEMENTATION
 **Lifecycle:** 3-STEP.
 **Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction). (DESIGN-GAPS-01 LOCKED 2026-11-10.)
 **Depends on:** DESIGN-GAPS-01.
-**Primary write scope:** frontend/app/, frontend/components/, the three message files (spinner label), DESIGN.md.
+**Primary write scope:** frontend/app/, frontend/components/, the three message files (spinner label), DESIGN.md; frontend/lib/collaboration.test.ts added 2026-11-10 by the control plane (one stale class assertion, border-indigo-300 to border-brand, test file only).
 **Mutexes / resources:** FRONTEND, I18N.
 **Hot-file leases:** none.
 **Shared contracts:** none.

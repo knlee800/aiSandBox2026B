@@ -30,6 +30,7 @@
       "taskId": "DESIGN-GAPS-01B",
       "mutexes": ["FRONTEND", "I18N"],
       "writePaths": [
+        "frontend/lib/collaboration.test.ts",
         "frontend/app/",
         "frontend/components/",
         "frontend/messages/en.json",
@@ -5834,6 +5835,7 @@
       "dependsOn": ["DESIGN-GAPS-01"],
       "mutexes": ["FRONTEND", "I18N"],
       "writePaths": [
+        "frontend/lib/collaboration.test.ts",
         "frontend/app/",
         "frontend/components/",
         "frontend/messages/en.json",
