@@ -86413,23 +86413,23 @@ taskId=TEAM-NO-SESSION-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 from Keith's decision ("Yes, list them") — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 from Keith's decision ("Yes, list them") — not admitted.
 **Task ID:** TEAM-NO-SESSION-02
 **Title:** Run business workflows without a project session
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP.
-**Start condition:** NOT_READY. Ready when: TEAM-NO-SESSION-01 LOCKED, GATEWAY free and a stage-start approved. Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (stage-start approved 2026-11-10; Keith chose DECISION A: "Yes, business project"). Was: NOT_READY. Ready when: TEAM-NO-SESSION-01 LOCKED, GATEWAY free and a stage-start approved. Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** TEAM-NO-SESSION-01.
-**Primary write scope:** PROVISIONAL: services/api-gateway/src/orchestration/ (the start route's session requirement for read-only workflows), frontend/components/collaboration/, the three message files.
-**Mutexes / resources:** set at admission (expected GATEWAY, FRONTEND, I18N).
+**Primary write scope:** set 2026-11-10 at stage-start approval (docs/TEAM-NO-SESSION-02-STAGE-START.md section 4): services/api-gateway/src/orchestration/collaboration-business-session.ts, services/api-gateway/src/orchestration/collaboration-business-session.spec.ts, services/api-gateway/src/orchestration/collaboration.controller.ts, services/api-gateway/src/orchestration/orchestration.module.ts, services/api-gateway/src/orchestration/collaboration.controller.spec.ts, frontend/components/collaboration/collaboration-page.tsx, frontend/components/collaboration/collaboration-view.tsx, frontend/components/collaboration/collaboration-workflows.ts, frontend/components/collaboration/collaboration-workflows.test.tsx, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json.
+**Mutexes / resources:** GATEWAY, FRONTEND, I18N (no MIGRATION, no PACKAGE).
 **Hot-file leases:** none.
 **Shared contracts:** HARNESS_ENTITLEMENT_PROOF_V1 read only (checked at the stage-start).
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** the no-session start branch.
 **saturationClass:** OPTIONAL (Keith may change it).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-10).
 **Scope:** A user workflow with the read-only profile (business workflows, which write no project files) starts from the Team page without a workspace session: the stage-start decides what replaces the session (a per-owner business session, as BIZ-NOPROJECT-01 explored, or none), keeps grants and budgets as BIZ-USER-01C built them, and keeps write-capable runs session-bound. Also (TEAM-NO-SESSION-01, 2026-11-10): the no-session view shows the selected workflow's start hint and today's spend line, which it leaves out today.
 
 ### RESULTS-01 — Results list, unread badge and run history
