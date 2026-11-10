@@ -88325,7 +88325,7 @@ taskId=STAGING-DEPLOY-FD-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-11 — Keith approved the deploy ("Yes, deploy it"). Was: READY — registered 2026-11-09 by GOV-ONE-PLAN-01 — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-11. Result: passed. Lane 1, STAGING and ENV released; stagingAuthorized false. f423859 -> 537ebfb (rc 0): COS-FRONTDOOR-01, -01B, -01C. Migration 1805000000000-CreateCollaborationRostersTable applied after the pre-migration backup /var/backups/aisandbox/20261110T164607Z (hash 976a9358 -> bf6d40ae; down drops collaboration_rosters, losing only saved rosters). Configuration unchanged; runs off; standard checks and 31 guard checks (roster GET and PUT 401 without login) pass; earlier route and security checks pass; front-door code in the gateway and frontend builds; no key text. Logged-in checks superseded by FRONTDOOR-LIVE-01. Checkpoint: docs/STAGING-DEPLOY-FD-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 1 superseded / 0 dropped / 0 undisposed. Registered 2026-11-09 by GOV-ONE-PLAN-01.
 **Task ID:** STAGING-DEPLOY-FD-01
 **Title:** Deploy the front door (phase 2)
 **Workstream:** AGENT (taxonomy only; zero admission weight)
