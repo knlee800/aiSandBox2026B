@@ -87875,22 +87875,22 @@ taskId=CM-SYMLINK-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the CM-PATH-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the CM-PATH-01 LOCK — not admitted.
 **Task ID:** CM-SYMLINK-01
 **Title:** Container-manager host file routes follow symlinks
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction); a security fix.
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction); a security fix.
 **Depends on:** CM-PATH-01.
-**Primary write scope:** PROVISIONAL: services/container-manager/src/ (files module, sessions controller, tests).
-**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Primary write scope:** services/container-manager/src/ (set at admission 2026-11-10).
+**Mutexes / resources:** CONTAINER-MANAGER.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set at admission 2026-11-10).
 **Scope:** From the CM-PATH-01 worker, checked by the control plane: FilesService (the host-side /api/files/:sessionId/* routes) follows symlinks with readFile, writeFile, stat and mkdir; the workspace is bind-mounted into the sandbox, so code there could create a symlink to / and a key holder could then read or write host files through these routes. No gateway or ai-service code calls /api/files/* (the gateway uses the container-side /api/internal/sessions/:id/files), so only a direct key holder could reach it. Recommended: remove the uncalled host-side /api/files routes (and their inventory entries, with removed-route tests); otherwise check the realpath of the target and of the nearest existing parent against the workspace realpath. Also (superseded from CM-PATH-01): validate the :id session parameter at the controller layer for every session route.
 
 ### BROWSER-SMOKE-01 — Browser smoke never finds a preview target
