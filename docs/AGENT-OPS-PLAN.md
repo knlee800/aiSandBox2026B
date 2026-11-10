@@ -40,7 +40,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 |---|---|---|
 | 27 | MODEL-PRICE-01 | A credit price per model, when Keith sets prices (AGENT-SPEC-01 done 2026-11-10) |
 | 28 | KNOW-FOLDERS-01 | Owner-named knowledge folders (BIZ-USER-01A done 2026-11-10) |
-| 30 | BIZ-USER-01C | Run a workflow, test run, budget check |
+| 30 | BIZ-USER-01C | Run a workflow, test run, budget check (admitted 2026-11-10, Lane 1) |
 | 31 | RESULTS-01 | Results list and run history |
 | 32 | STAGING-DEPLOY-WF-01, BIZ-LIVE-04 | Deploy; Keith runs his own workflow live |
 | 33 | CONN-OAUTH-01 | Connect Google, after verification |

@@ -86286,15 +86286,15 @@ taskId=BIZ-USER-01C
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted. Stage-start approved 2026-11-10: docs/BIZ-USER-01C-STAGE-START.md.
 **Task ID:** BIZ-USER-01C
 **Title:** Run a user workflow, with a test run and a budget check
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
-**Lifecycle:** 3-STEP
-**Start condition:** NOT_READY. Ready when: 01B LOCKED. Keith decides.
+**Lifecycle:** 4-STEP (corrected at admission 2026-11-10: it signs grants into run jobs and records the workflow version hash deferred from BIZ-USER-01A)
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: 01B LOCKED. Keith decides.
 **Depends on:** BIZ-USER-01B.
-**Primary write scope:** services/api-gateway/src/orchestration/, frontend/components/collaboration/, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json.
+**Primary write scope:** services/api-gateway/src/orchestration/, services/api-gateway/src/system-agents/system-agent-registry.ts (one export agentVersionFor, added at the stage-start 2026-11-10), frontend/components/collaboration/, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json.
 **Mutexes / resources:** GATEWAY, FRONTEND, I18N.
 **Hot-file leases:** none.
 **Shared contracts:** uses HARNESS_ENTITLEMENT_PROOF_V1.
@@ -87377,13 +87377,13 @@ taskId=LOCAL-DEV-SYNC-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the AI-SERVICE-AUTH-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the AI-SERVICE-AUTH-01 LOCK — not admitted.
 **Task ID:** LOCAL-DEV-SYNC-01
 **Title:** Local and compose setups follow the loopback binds
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: AI-SERVICE-AUTH-01 LOCKED. Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: AI-SERVICE-AUTH-01 LOCKED. Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** AI-SERVICE-AUTH-01.
 **Primary write scope:** docker-compose.prod.yml, scripts/start-all.sh, services/ai-service/src/
 **Mutexes / resources:** COMPOSE
