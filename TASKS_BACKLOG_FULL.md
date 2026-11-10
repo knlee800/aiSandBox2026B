@@ -86618,22 +86618,22 @@ taskId=WORKFLOW-CREATE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the BIZ-LIVE-04 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the BIZ-LIVE-04 LOCK — not admitted.
 **Task ID:** WORKFLOW-CREATE-01
 **Title:** New workflows start off until tested; Role and Description explained
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** BIZ-LIVE-04.
-**Primary write scope:** PROVISIONAL, set at admission (expected: services/api-gateway/src/user-agent/ for the stored status on create and copy; frontend/components/platform/ for the create form; the three message files).
-**Mutexes / resources:** set at admission (expected GATEWAY, FRONTEND, I18N).
+**Primary write scope:** services/api-gateway/src/user-agent/, frontend/components/platform/, the three message files (set at admission 2026-11-10).
+**Mutexes / resources:** GATEWAY, FRONTEND, I18N.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set at admission 2026-11-10).
 **Scope:** From Keith's live check (BIZ-LIVE-04): (1) a new or copied workflow is stored with status active (the column default) before any test, so the agent panel's "Available for runs" switch shows On from the start; store it off (or draft) on create and copy so it can only be switched on after a passing test, keeping existing rows unchanged; (2) creating an agent, a copy included, requires Role and Description, which are display-only (not in the run prompt: userWorkflowPromptSpec renders tone, reply language, purpose, procedure, result) and unexplained; prefill them from the template on a copy and add a hint that they are display-only, or make them optional. Copy in three languages.
 
 ### GOV-GOOGLE-VERIFY-01 — Google OAuth app verification
