@@ -86896,7 +86896,7 @@ taskId=COS-FRONTDOOR-01B
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the COS-FRONTDOOR-01 stage-start approval — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the COS-FRONTDOOR-01 stage-start approval — not admitted.
 **Task ID:** COS-FRONTDOOR-01B
 **Title:** Front-door run and report-back
 **Workstream:** AGENT (taxonomy only; zero admission weight)
