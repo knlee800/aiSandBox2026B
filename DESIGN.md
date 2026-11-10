@@ -16,8 +16,8 @@ colors:
   muted: "#9ca3af"
   background-dark: "#0a0a0a"
   foreground-dark: "#ededed"
-  brand-dark: "#818cf8"
-  brand-hover-dark: "#6366f1"
+  brand-dark: "#5b5ee8"
+  brand-hover-dark: "#4f46e5"
   surface-base-dark: "#0a0a0a"
   surface-raised-dark: "#111111"
   surface-overlay-dark: "#1a1a1a"
@@ -407,7 +407,7 @@ Sources: `PRODUCT.md`, `frontend/app/[locale]/layout.tsx`, `frontend/components/
 
 ## Known gaps
 
-1. Fixed (DESIGN-GAPS-01B): every primary action button is `bg-brand hover:bg-brand-hover` (disabled `opacity-50`). Open: in dark mode the brand (`#818cf8`) under white text is lower contrast; it only shows on surfaces that follow the variables.
+1. Fixed (DESIGN-GAPS-01B): every primary action button is `bg-brand hover:bg-brand-hover` (disabled `opacity-50`). Fixed (DESIGN-CONTRAST-01): the dark brand is `#5b5ee8` (white text 4.99:1) and its hover `#4f46e5` (6.29:1), both above WCAG AA 4.5:1. Dark `text-brand` links on `#0a0a0a` are about 4.0:1 (3.2:1 on hover).
 2. Tailwind utilities (`bg-slate-950`, `bg-gray-100`, emerald, amber, red) have no hex literal in this repo. `tailwind.config.js` does not override the default palette. Those frontmatter fields keep the class name.
 3. Radius, spacing steps, and shadows are Tailwind utilities. No px, rem, or `box-shadow` value is declared here, so none is written as a length.
 4. `font-mono` is used. No mono family is configured. No line-height token is set. `tracking-wide` appears on isolated labels only.
