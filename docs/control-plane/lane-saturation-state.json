@@ -4072,7 +4072,7 @@
       "hotfiles": [],
       "i18n": false,
       "sharedContractIds": ["HARNESS_ENTITLEMENT_PROOF_V1"],
-      "mutatesSharedContractIds": ["HARNESS_ENTITLEMENT_PROOF_V1"],
+      "mutatesSharedContractIds": [],
       "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "runtimeNeeds": [],

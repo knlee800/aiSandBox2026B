@@ -86323,7 +86323,7 @@ nature=IMPLEMENTATION
 **Primary write scope:** PROVISIONAL, set at the stage-start.
 **Mutexes / resources:** set at admission.
 **Hot-file leases:** none.
-**Shared contracts:** HARNESS_ENTITLEMENT_PROOF_V1 (changed under the protocol).
+**Shared contracts:** HARNESS_ENTITLEMENT_PROOF_V1 (read now; the change is declared at its stage-start under the shared-contract protocol).
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (Keith may change it).
