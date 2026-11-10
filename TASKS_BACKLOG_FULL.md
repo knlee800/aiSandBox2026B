@@ -84519,7 +84519,7 @@ taskId=FE-TEST-GLOB-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the FE-TEST-COVERAGE-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 2 and its mutexes released. npm test fails when a frontend test file matches no glob; found and added middleware.test.ts (*.test.ts); 1273 passed, 0 failed; sonnet subagent in worktree lane/FE-TEST-GLOB-01, cherry-picked as 20d3258; tsc and build clean. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Registered 2026-11-10 by the FE-TEST-COVERAGE-01 LOCK. Checkpoint: docs/FE-TEST-GLOB-01-CHECKPOINT.md.
 **Task ID:** FE-TEST-GLOB-01
 **Title:** Fail when a frontend test file is not in npm test
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
