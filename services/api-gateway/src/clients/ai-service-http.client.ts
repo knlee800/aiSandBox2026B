@@ -99,10 +99,18 @@ export class AIServiceHttpClient implements OnModuleInit {
   constructor() {
     this.baseUrl = process.env.AI_SERVICE_URL || 'http://localhost:4001';
 
+    // AI-SERVICE-AUTH-01 (D6): ai-service routes need the internal key.
+    // The header is left out when the key is unset (ai-service then refuses).
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    const internalServiceKey = process.env.INTERNAL_SERVICE_KEY;
+    if (internalServiceKey) {
+      headers['X-Internal-Service-Key'] = internalServiceKey;
+    }
+
     this.axiosInstance = axios.create({
       baseURL: this.baseUrl,
       timeout: 30000, // 30 second timeout for AI execution
-      headers: { 'Content-Type': 'application/json' },
+      headers,
     });
   }
 

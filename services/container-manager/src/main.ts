@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { resolveListenHost } from './listen-host';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -26,11 +27,13 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   const port = process.env.PORT || 4002;
-  await app.listen(port);
+  // AI-SERVICE-AUTH-01: LISTEN_HOST, default 127.0.0.1 (host-local callers only)
+  const host = resolveListenHost(process.env);
+  await app.listen(port, host);
 
   console.log('🐳 Container Manager started!');
-  console.log(`📡 Listening on: http://localhost:${port}`);
-  console.log(`💚 Health Check: http://localhost:${port}/api/health`);
+  console.log(`📡 Listening on: http://${host}:${port}`);
+  console.log(`💚 Health Check: http://${host}:${port}/api/health`);
   console.log(`📁 Workspaces: /home/vibecode/workspace/aiSandBox/workspaces`);
 }
 

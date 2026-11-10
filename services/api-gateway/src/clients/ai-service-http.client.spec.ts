@@ -9,10 +9,21 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 describe('AIServiceHttpClient (Phase 18A)', () => {
   let client: AIServiceHttpClient;
   let mockAxiosInstance: any;
+  const originalInternalServiceKey = process.env.INTERNAL_SERVICE_KEY;
+
+  afterAll(() => {
+    if (originalInternalServiceKey === undefined) {
+      delete process.env.INTERNAL_SERVICE_KEY;
+    } else {
+      process.env.INTERNAL_SERVICE_KEY = originalInternalServiceKey;
+    }
+  });
 
   beforeEach(async () => {
     // Reset mocks
     jest.clearAllMocks();
+    // AI-SERVICE-AUTH-01: the exact-config assertion below runs without a key.
+    delete process.env.INTERNAL_SERVICE_KEY;
 
     // Create mock axios instance
     mockAxiosInstance = {
@@ -38,6 +49,65 @@ describe('AIServiceHttpClient (Phase 18A)', () => {
       baseURL: 'http://localhost:4001',
       timeout: 30000,
       headers: { 'Content-Type': 'application/json' },
+    });
+  });
+
+  describe('internal service key (AI-SERVICE-AUTH-01 D6)', () => {
+    afterEach(() => {
+      delete process.env.INTERNAL_SERVICE_KEY;
+    });
+
+    it('sends X-Internal-Service-Key when INTERNAL_SERVICE_KEY is set', () => {
+      process.env.INTERNAL_SERVICE_KEY = 'ai-service-auth-01-client-key';
+      mockedAxios.create.mockClear();
+
+      new AIServiceHttpClient();
+
+      expect(mockedAxios.create).toHaveBeenCalledWith({
+        baseURL: 'http://localhost:4001',
+        timeout: 30000,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Internal-Service-Key': 'ai-service-auth-01-client-key',
+        },
+      });
+    });
+
+    it('leaves the header out when INTERNAL_SERVICE_KEY is unset or blank', () => {
+      for (const value of [undefined, '']) {
+        if (value === undefined) {
+          delete process.env.INTERNAL_SERVICE_KEY;
+        } else {
+          process.env.INTERNAL_SERVICE_KEY = value;
+        }
+        mockedAxios.create.mockClear();
+
+        new AIServiceHttpClient();
+
+        const config = mockedAxios.create.mock.calls[0][0] as { headers: Record<string, string> };
+        expect(config.headers).toEqual({ 'Content-Type': 'application/json' });
+        expect(Object.keys(config.headers).map((k) => k.toLowerCase())).not.toContain(
+          'x-internal-service-key',
+        );
+      }
+    });
+
+    it('posts to /api/execute with the keyed axios instance', async () => {
+      process.env.INTERNAL_SERVICE_KEY = 'ai-service-auth-01-client-key';
+      const keyed = { post: jest.fn().mockResolvedValue({ data: { output: 'ok' } }) };
+      mockedAxios.create.mockReturnValue(keyed as any);
+
+      const keyedClient = new AIServiceHttpClient();
+      await keyedClient.execute({
+        sessionId: 's',
+        conversationId: 'c',
+        userId: 'u',
+        prompt: 'p',
+      });
+
+      expect(keyed.post).toHaveBeenCalledWith('/api/execute', expect.any(Object));
+      const config = mockedAxios.create.mock.calls.at(-1)[0] as { headers: Record<string, string> };
+      expect(config.headers['X-Internal-Service-Key']).toBe('ai-service-auth-01-client-key');
     });
   });
 

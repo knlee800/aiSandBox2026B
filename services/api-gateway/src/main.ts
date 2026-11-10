@@ -12,6 +12,7 @@ import type {
 import { AppModule } from './app.module';
 import { resolveHttpCorsOrigin } from './cors/http-cors-origin';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
+import { resolveListenHost } from './startup/listen-host';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -72,12 +73,14 @@ async function bootstrap() {
 
   // Use PORT (required by startup guard), fallback to API_PORT for backward compatibility
   const port = process.env.PORT || process.env.API_PORT || 4000;
-  await app.listen(port);
+  // AI-SERVICE-AUTH-01: LISTEN_HOST, default 127.0.0.1 (host-local callers only)
+  const host = resolveListenHost(process.env);
+  await app.listen(port, host);
 
   console.log('🚀 API Gateway started!');
-  console.log(`📡 Listening on: http://localhost:${port}`);
-  console.log(`🔗 API Docs: http://localhost:${port}/api`);
-  console.log(`💚 Health Check: http://localhost:${port}/api/health`);
+  console.log(`📡 Listening on: http://${host}:${port}`);
+  console.log(`🔗 API Docs: http://${host}:${port}/api`);
+  console.log(`💚 Health Check: http://${host}:${port}/api/health`);
 }
 
 bootstrap();

@@ -6,6 +6,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request } from 'express';
+import { timingSafeEqual } from 'crypto';
 
 const PROTECTED_PATH_PREFIXES = [
   '/api/internal/',
@@ -14,6 +15,29 @@ const PROTECTED_PATH_PREFIXES = [
   '/api/token-usage/',
   '/api/runtime/',
 ] as const;
+
+/**
+ * AI-SERVICE-AUTH-01 (D5): constant-time compare of the internal service key.
+ * False unless both are non-empty strings; false when the UTF-8 lengths
+ * differ; otherwise crypto.timingSafeEqual. A header sent twice is never a
+ * match (Node joins it into one longer string; an array is refused).
+ * Accepts and refuses exactly what the old `!==` compare did for any key
+ * that can arrive in an HTTP header.
+ */
+export function internalKeyMatches(provided: unknown, expected: unknown): boolean {
+  if (typeof provided !== 'string' || typeof expected !== 'string') {
+    return false;
+  }
+  if (provided.length === 0 || expected.length === 0) {
+    return false;
+  }
+  const providedBytes = Buffer.from(provided, 'utf8');
+  const expectedBytes = Buffer.from(expected, 'utf8');
+  if (providedBytes.length !== expectedBytes.length) {
+    return false;
+  }
+  return timingSafeEqual(providedBytes, expectedBytes);
+}
 
 /**
  * InternalServiceAuthGuard
@@ -29,7 +53,8 @@ const PROTECTED_PATH_PREFIXES = [
  *
  * Design:
  * - Checks X-Internal-Service-Key header
- * - Compares to INTERNAL_SERVICE_KEY env variable
+ * - Compares to INTERNAL_SERVICE_KEY env variable in constant time
+ *   (internalKeyMatches, AI-SERVICE-AUTH-01)
  * - Returns 401 Unauthorized if missing/invalid (no detailed leak)
  * - Applies only to the prefixes above; matching ignores letter case
  * - All other routes bypass this guard
@@ -44,7 +69,7 @@ export class InternalServiceAuthGuard implements CanActivate {
 
     if (!this.internalServiceKey) {
       this.logger.warn(
-        '⚠️  INTERNAL_SERVICE_KEY not set. Internal API endpoints are UNPROTECTED.',
+        '⚠️  INTERNAL_SERVICE_KEY not set. Requests to internal API endpoints are refused.',
       );
     }
   }
@@ -76,7 +101,7 @@ export class InternalServiceAuthGuard implements CanActivate {
       throw new UnauthorizedException('Unauthorized');
     }
 
-    if (providedKey !== this.internalServiceKey) {
+    if (!internalKeyMatches(providedKey, this.internalServiceKey)) {
       this.logger.warn(`Internal route access denied: ${path} (invalid key)`);
       throw new UnauthorizedException('Unauthorized');
     }

@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Delete, Param, Query } from '@nestjs/common';
 import { ConversationsService } from './conversations.service';
 import { QuotaService } from '../quota/quota.service';
+import { InternalKeyExempt } from '../guards/internal-key-exempt.decorator';
 
 @Controller('conversations')
 export class ConversationsController {
@@ -45,6 +46,7 @@ export class ConversationsController {
   }
 
   @Get()
+  @InternalKeyExempt()
   health() {
     return {
       status: 'ok',

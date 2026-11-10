@@ -12,7 +12,7 @@ import { AIExecutionRequest } from '../ai-execution/types';
 @Injectable()
 export class MessagesService {
   private db: Database.Database;
-  private containerManagerUrl = process.env.CONTAINER_MANAGER_URL || 'http://localhost:4001';
+  private containerManagerUrl = process.env.CONTAINER_MANAGER_URL || 'http://localhost:4002';
 
   constructor(
     private aiExecutionService: AIExecutionService,

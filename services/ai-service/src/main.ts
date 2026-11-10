@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
+import { resolveListenHost } from './config/listen-host';
 
 /**
  * Phase 26-28: Deterministic startup with fail-fast validation
@@ -81,14 +82,17 @@ async function bootstrap() {
   app.setGlobalPrefix('api', { exclude: ['metrics'] });
 
   const port = process.env.PORT || 4001;
-  await app.listen(port);
+  // AI-SERVICE-AUTH-01: LISTEN_HOST, default 127.0.0.1 (host-local callers only)
+  const host = resolveListenHost(process.env);
+  await app.listen(port, host);
 
   const aiProvider = process.env.AI_PROVIDER || 'stub';
   console.log('🤖 AI Service started!');
-  console.log(`📡 Listening on: http://localhost:${port}`);
+  console.log(`📡 Listening on: http://${host}:${port}`);
   console.log(`🧠 AI Provider: ${aiProvider}`);
-  console.log(`💚 Health Check: http://localhost:${port}/api/health`);
-  console.log(`💬 Chat: http://localhost:${port}/api/chat`);
+  console.log(`💚 Health Check: http://${host}:${port}/api/conversations`);
+  console.log(`📈 Metrics: http://${host}:${port}/metrics`);
+  console.log(`💬 Chat: http://${host}:${port}/api/messages/chat (needs X-Internal-Service-Key)`);
 }
 
 bootstrap();

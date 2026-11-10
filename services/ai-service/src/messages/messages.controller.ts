@@ -1,6 +1,7 @@
 import { Controller, Post, Body, Sse, MessageEvent } from '@nestjs/common';
 import { MessagesService } from './messages.service';
 import { Observable, Subject } from 'rxjs';
+import { InternalKeyExempt } from '../guards/internal-key-exempt.decorator';
 
 @Controller('messages')
 export class MessagesController {
@@ -44,6 +45,7 @@ export class MessagesController {
   }
 
   @Post('health')
+  @InternalKeyExempt()
   health() {
     return {
       status: 'ok',
