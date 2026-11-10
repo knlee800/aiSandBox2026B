@@ -86438,23 +86438,23 @@ taskId=RESULTS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** RESULTS-01
 **Title:** Results list, unread badge and run history
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
-**Lifecycle:** 3-STEP
-**Start condition:** NOT_READY. Ready when: 01C LOCKED. Keith decides.
+**Lifecycle:** 4-STEP (corrected at admission 2026-11-10: the unread badge needs stored read state, likely a migration)
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: 01C LOCKED. Keith decides.
 **Depends on:** BIZ-USER-01C.
-**Primary write scope:** services/api-gateway/src/orchestration/, frontend/app/, frontend/components/results/, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json.
-**Mutexes / resources:** GATEWAY, FRONTEND, I18N.
+**Primary write scope:** services/api-gateway/src/orchestration/, services/api-gateway/src/migrations/ and services/api-gateway/src/entities/ (added at admission 2026-11-10 for stored read state), frontend/app/, frontend/components/results/, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json.
+**Mutexes / resources:** GATEWAY, FRONTEND, I18N, MIGRATION (MIGRATION added at admission 2026-11-10).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** page.
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set at admission 2026-11-10).
 **Scope:** Results list with an unread badge (C12) and run history (C14).
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
 
@@ -87528,13 +87528,13 @@ taskId=CM-PREFIX-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the CM-AUTH-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the CM-AUTH-01 LOCK — not admitted.
 **Task ID:** CM-PREFIX-01
 **Title:** Container-manager internal routes served at /api/api/internal
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** CM-AUTH-01.
 **Primary write scope:** services/container-manager/src/
 **Mutexes / resources:** CONTAINER-MANAGER
