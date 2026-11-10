@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UserAgent } from '../entities/user-agent.entity';
+import { UserAgent, type UserAgentStatus } from '../entities/user-agent.entity';
 import { ConnectorConnection } from '../entities/connector-connection.entity';
 import {
   agentInstructionsWithinLimit,
@@ -60,6 +60,14 @@ export function userWorkflowBadRequest(
 }
 
 const DEFAULT_MAX_DAILY_CREDITS_PER_USER = 500;
+
+/**
+ * WORKFLOW-CREATE-01: every new agent, blank or copied, is stored as a draft.
+ * A draft can only test-run; the owner switches it on after a passing test
+ * (BIZ-USER-01D). A status sent on create is ignored. Existing rows and the
+ * column default are unchanged.
+ */
+export const NEW_USER_AGENT_STATUS: UserAgentStatus = 'draft';
 
 /** The fields a workflow save writes, before validation. */
 interface WorkflowFields {
@@ -137,7 +145,8 @@ export class UserAgentService {
   /**
    * Blank or filled create. A body with only name, role and description
    * yields an empty spec, tool profile read, no access, the server model and
-   * no budget.
+   * no budget. The row is stored as a draft whatever status the body sends
+   * (WORKFLOW-CREATE-01).
    */
   async create(userId: string, dto: CreateAgentDto): Promise<UserAgent> {
     const initials = dto.initials ?? this.computeInitials(dto.name);
@@ -165,7 +174,7 @@ export class UserAgentService {
       name: dto.name,
       role: dto.role,
       description: dto.description,
-      status: dto.status ?? 'active',
+      status: NEW_USER_AGENT_STATUS,
       initials,
       ...fields,
       templateId: null,
@@ -178,7 +187,8 @@ export class UserAgentService {
    * Copy a system agent as a workflow. The spec, access and model come from
    * the registry definition, never from the body. The template's connector
    * tools are kept even when the owner has not connected them yet; grants
-   * still intersect with the owner's connections.
+   * still intersect with the owner's connections. The copy is stored as a
+   * draft until its owner tests it and switches it on (WORKFLOW-CREATE-01).
    */
   async createFromTemplate(
     userId: string,
@@ -218,7 +228,7 @@ export class UserAgentService {
       name: dto.name,
       role: dto.role,
       description: dto.description ?? '',
-      status: 'active',
+      status: NEW_USER_AGENT_STATUS,
       initials: this.computeInitials(dto.name),
       ...fields,
       templateId: template.id,

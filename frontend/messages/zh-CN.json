@@ -697,6 +697,8 @@
       "loadError": "加载代理列表失败。",
       "retry": "重试",
       "createSuccess": "代理创建成功！",
+      "roleHint": "显示在代理的卡片上，不属于工作流的指令。",
+      "descriptionHint": "显示在代理的卡片上，不属于工作流的指令。",
       "emptyTitle": "尚无代理",
       "emptyBody": "创建您的第一个代理以开始使用。",
       "agentStatusActive": "运行中",

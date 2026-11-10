@@ -21,9 +21,11 @@ import {
   mapRefusal,
   neverDoLines,
   parseBudgetInput,
+  templatePrefillPatch,
   visibleConnectorTools,
   workflowDraftFromAgent,
 } from '@/components/platform/agent-workflow-model';
+import { getUserAgentStatusLabel, templatePrefillFor } from '@/components/platform/platform-dashboard';
 import enMessages from '@/messages/en.json';
 import zhTwMessages from '@/messages/zh-TW.json';
 import zhCnMessages from '@/messages/zh-CN.json';
@@ -596,5 +598,169 @@ describe('workflow editor translations', () => {
         assert.ok(resolve(locale.messages, `knowledge.scopes.${scope.id}`), `${locale.code}: ${scope.id}`);
       }
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// WORKFLOW-CREATE-01: Role and Description prefilled from the template and explained
+// ---------------------------------------------------------------------------
+
+const chiefOfStaffAgent = {
+  id: 'chief-of-staff',
+  roleKey: 'agents.chiefOfStaff.role',
+  descriptionKey: 'agents.chiefOfStaff.description',
+};
+
+function localeText(messages: Messages): (key: string) => string {
+  return (key: string) => resolve(messages, key) ?? key;
+}
+
+function localeLabels(messages: Messages): CreateAgentFormLabels {
+  const text = (key: string) => resolve(messages, `platform.agentCreate.${key}`) ?? `MISSING:${key}`;
+  return {
+    ...labels,
+    roleLabel: text('roleLabel'),
+    descriptionLabel: text('descriptionLabel'),
+    roleHint: text('roleHint'),
+    descriptionHint: text('descriptionHint'),
+  };
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
+describe('WORKFLOW-CREATE-01 template prefill', () => {
+  const cos = { role: 'Daily Operations Assistant', description: 'Answers questions.' };
+
+  test('empty fields take the template text', () => {
+    assert.deepEqual(templatePrefillPatch({ role: '', description: '  ' }, null, cos), cos);
+  });
+
+  test('text the owner typed is kept', () => {
+    assert.deepEqual(templatePrefillPatch({ role: 'My role', description: 'Mine' }, null, cos), {
+      role: 'My role',
+      description: 'Mine',
+    });
+  });
+
+  test('going back to blank clears the untouched prefill but keeps an edit', () => {
+    assert.deepEqual(templatePrefillPatch({ role: cos.role, description: 'Edited by me' }, cos, null), {
+      role: '',
+      description: 'Edited by me',
+    });
+  });
+
+  test('the copy uses the template keys from the system agents list in every language', () => {
+    for (const locale of LOCALES) {
+      const text = localeText(locale.messages);
+      const prefill = templatePrefillFor('chief-of-staff', [chiefOfStaffAgent], text);
+      assert.deepEqual(
+        prefill,
+        {
+          role: resolve(locale.messages, 'agents.chiefOfStaff.role'),
+          description: resolve(locale.messages, 'agents.chiefOfStaff.description'),
+        },
+        locale.code,
+      );
+      assert.ok(prefill!.role.length > 0 && prefill!.description.length > 0, locale.code);
+    }
+  });
+
+  test('without the system agents list it falls back to the registry key names; unknown gives null', () => {
+    const text = localeText(enMessages as Messages);
+    assert.deepEqual(templatePrefillFor('chief-of-staff', [], text), {
+      role: resolve(enMessages as Messages, 'agents.chiefOfStaff.role'),
+      description: resolve(enMessages as Messages, 'agents.chiefOfStaff.description'),
+    });
+    assert.equal(templatePrefillFor('no-such-template', [], text), null);
+  });
+
+  test('the form opened on the template shows its role and description, still editable', () => {
+    for (const locale of LOCALES) {
+      const text = localeText(locale.messages);
+      const html = render(
+        config({
+          initialStart: 'chief-of-staff',
+          templatePrefill: (id) => templatePrefillFor(id, [chiefOfStaffAgent], text),
+        }),
+      );
+      const role = resolve(locale.messages, 'agents.chiefOfStaff.role')!;
+      const description = resolve(locale.messages, 'agents.chiefOfStaff.description')!;
+      const roleInput = /<input[^>]*data-testid="create-agent-role"[^>]*>/.exec(html)?.[0] ?? '';
+      assert.ok(roleInput.includes(`value="${escapeHtml(role)}"`), locale.code);
+      assert.ok(!roleInput.includes('disabled=""'), locale.code);
+      const area = /<textarea[^>]*data-testid="create-agent-description"[^>]*>([\s\S]*?)<\/textarea>/.exec(html);
+      assert.equal(area?.[1], escapeHtml(description), locale.code);
+      assert.match(html, /<input[^>]*data-testid="agent-workflow-start-chief-of-staff"[^>]*checked=""/);
+    }
+  });
+
+  test('a blank start leaves role and description empty', () => {
+    const html = render(config({ templatePrefill: () => cos }));
+    const roleInput = /<input[^>]*data-testid="create-agent-role"[^>]*>/.exec(html)?.[0] ?? '';
+    assert.ok(roleInput.includes('value=""'));
+  });
+});
+
+describe('WORKFLOW-CREATE-01 role and description hints', () => {
+  test('both hints render under their fields in all three languages', () => {
+    for (const locale of LOCALES) {
+      const own = localeLabels(locale.messages);
+      for (const workflow of [config(), config({ mode: 'edit', agent: savedAgent() }), undefined]) {
+        const html = renderToStaticMarkup(
+          <CreateAgentForm labels={own} onSubmit={async () => ({})} onCancel={() => {}} workflow={workflow} />,
+        );
+        assert.ok(html.includes(`data-testid="create-agent-role-hint">${escapeHtml(own.roleHint!)}<`), locale.code);
+        assert.ok(
+          html.includes(`data-testid="create-agent-description-hint">${escapeHtml(own.descriptionHint!)}<`),
+          locale.code,
+        );
+        assert.match(html, /<input[^>]*aria-describedby="agent-role-hint"[^>]*data-testid="create-agent-role"/);
+        assert.match(
+          html,
+          /<textarea[^>]*aria-describedby="agent-description-hint"[^>]*data-testid="create-agent-description"/,
+        );
+      }
+    }
+  });
+
+  test('the hints are real translations and say the text is not part of the instructions', () => {
+    const en = localeLabels(enMessages as Messages);
+    assert.match(en.roleHint!, /card/);
+    assert.match(en.roleHint!, /Not part of the workflow's instructions/);
+    assert.match(en.descriptionHint!, /Not part of the workflow's instructions/);
+    for (const code of ['zh-TW', 'zh-CN']) {
+      const own = localeLabels(LOCALES.find((locale) => locale.code === code)!.messages);
+      for (const hint of [own.roleHint!, own.descriptionHint!]) {
+        assert.notEqual(hint, en.roleHint);
+        assert.match(hint, /[一-鿿]/, code);
+        assert.match(hint, /卡片/, code);
+      }
+    }
+  });
+
+  test('without hint labels the fields render as before', () => {
+    const html = render(config());
+    assert.ok(!html.includes('create-agent-role-hint'));
+    assert.ok(!html.includes('aria-describedby="agent-role-hint"'));
+  });
+});
+
+describe('WORKFLOW-CREATE-01 draft badge', () => {
+  test('a draft reads Draft on its card in every language', () => {
+    for (const locale of LOCALES) {
+      assert.equal(
+        getUserAgentStatusLabel('draft', locale.messages),
+        resolve(locale.messages, 'platform.agentCreate.agentStatusDraft'),
+        locale.code,
+      );
+    }
+    assert.equal(getUserAgentStatusLabel('draft', enMessages as Messages), 'Draft');
   });
 });

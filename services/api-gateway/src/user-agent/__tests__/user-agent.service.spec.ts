@@ -15,6 +15,10 @@ import {
   userWorkflowPromptSpec,
 } from '../user-agent.service';
 import { USER_WORKFLOW_RULES } from '../user-workflow-rules';
+import {
+  CollaborationWorkflowService,
+  renderWorkflow,
+} from '../../orchestration/collaboration-workflow';
 
 describe('UserAgentService', () => {
   let service: UserAgentService;
@@ -171,6 +175,161 @@ describe('UserAgentService', () => {
   });
 
   // ---------------------------------------------------------------------------
+  // WORKFLOW-CREATE-01: a new agent is stored as a draft until tested
+  // ---------------------------------------------------------------------------
+
+  describe('WORKFLOW-CREATE-01 new agents start as drafts', () => {
+    const body = { name: 'Research Assistant', role: 'Researcher', description: 'Finds things.' };
+    let rows: Map<string, UserAgent>;
+    let nextId: number;
+
+    beforeEach(() => {
+      rows = new Map();
+      nextId = 1;
+      userAgentRepository.create.mockImplementation((value) => ({ ...value }));
+      userAgentRepository.save.mockImplementation(async (value) => {
+        const row = { ...value, id: value.id ?? `agent-${nextId++}` } as UserAgent;
+        rows.set(row.id, row);
+        return { ...row };
+      });
+      userAgentRepository.findOne.mockImplementation(
+        async ({ where }: { where: { id: string; userId: string } }) => {
+          const row = rows.get(where.id);
+          return row && row.userId === where.userId ? { ...row } : null;
+        },
+      );
+    });
+
+    it('stores the plain three-field create as a draft', async () => {
+      const saved = await service.create(ownerUserId, body);
+      expect(saved.status).toBe('draft');
+      expect(userAgentRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({ status: 'draft' }),
+      );
+    });
+
+    it('stores a filled blank workflow as a draft', async () => {
+      const saved = await service.create(ownerUserId, {
+        ...body,
+        purpose: 'Plan my day.',
+        knowledgeScopeIds: ['policies'],
+      });
+      expect(saved.status).toBe('draft');
+    });
+
+    it.each(['active', 'disabled', 'draft'])(
+      'ignores a client-sent status %s on create and stores a draft',
+      async (status) => {
+        const saved = await service.create(ownerUserId, { ...body, status });
+        expect(saved.status).toBe('draft');
+      },
+    );
+
+    it('stores a copy from the template as a draft, whatever the body says', async () => {
+      const saved = await service.createFromTemplate(ownerUserId, {
+        templateId: 'chief-of-staff',
+        name: 'My briefing',
+        role: 'Chief of Staff',
+        status: 'active',
+      } as never);
+      expect(saved.status).toBe('draft');
+      expect(saved.templateId).toBe('chief-of-staff');
+    });
+
+    it('leaves an existing active row active on an edit that sends no status', async () => {
+      rows.set(agentId, {
+        id: agentId,
+        userId: ownerUserId,
+        name: 'Old helper',
+        role: 'Helps',
+        description: 'Card text',
+        status: 'active',
+        initials: 'OH',
+        tone: null,
+        replyLanguage: null,
+        purpose: 'Help me.',
+        procedure: '',
+        result: '',
+        toolProfile: 'read',
+        knowledgeScopeIds: [],
+        connectorToolIds: [],
+        model: { choice: 'server' },
+        budgetPerRunCredits: null,
+        budgetPerDayCredits: null,
+        templateId: null,
+      } as unknown as UserAgent);
+
+      const saved = await service.update(agentId, ownerUserId, { name: 'Renamed', purpose: 'Help more.' });
+      expect(saved.status).toBe('active');
+      expect(rows.get(agentId)!.status).toBe('active');
+    });
+
+    it('a copied draft test-runs, cannot run normally even when tested, and runs once switched on', async () => {
+      const copy = await service.createFromTemplate(ownerUserId, {
+        templateId: 'chief-of-staff',
+        name: 'My briefing',
+        role: 'Chief of Staff',
+      });
+      expect(copy.status).toBe('draft');
+
+      const referrals: Record<string, unknown>[] = [];
+      const runs = new Map<string, Record<string, unknown>>();
+      const workflows = new CollaborationWorkflowService(
+        service,
+        {
+          findOne: async ({ where }: { where: { collaborationRunId: string } }) =>
+            runs.get(where.collaborationRunId) ?? null,
+        } as never,
+        { find: async () => referrals.map((row) => ({ ...row })) } as never,
+        { find: async () => [] } as never,
+      );
+      const start = (testRun: boolean) =>
+        workflows.prepareStart({ userId: ownerUserId, workflowId: copy.id, testRun });
+
+      await expect(start(true)).resolves.toMatchObject({ workflow: { testRun: true } });
+      await expect(start(false)).rejects.toMatchObject({
+        response: { code: 'WORKFLOW_NOT_TESTED' },
+      });
+
+      // A completed test run at the current version: the draft is tested but still test-only.
+      const version = renderWorkflow(copy)!.version;
+      runs.set('run-1', { collaborationRunId: 'run-1', userId: ownerUserId });
+      referrals.push({
+        referralId: 'ref-1',
+        collaborationRunId: 'run-1',
+        targetBuilderProfileId: copy.id,
+        status: 'completed',
+        executionId: null,
+        completedAt: '2026-11-10T01:00:00.000Z',
+        updatedAt: '2026-11-10T01:00:00.000Z',
+        pendingJob: { workflow: { id: copy.id, version, testRun: true } },
+      });
+      userAgentRepository.find.mockImplementation(
+        async ({ where }: { where: { userId: string } }) =>
+          [...rows.values()].filter((row) => row.userId === where.userId),
+      );
+      expect(await workflows.listForOwner(ownerUserId)).toEqual([
+        expect.objectContaining({ id: copy.id, status: 'draft', tested: true }),
+      ]);
+      await expect(start(false)).rejects.toMatchObject({
+        response: { code: 'WORKFLOW_NOT_TESTED' },
+      });
+      await expect(
+        workflows.assertCanApprove(ownerUserId, {
+          id: copy.id,
+          version,
+          testRun: false,
+        } as never),
+      ).rejects.toMatchObject({ response: { code: 'WORKFLOW_NOT_TESTED' } });
+
+      // The owner switches it on (BIZ-USER-01D's PATCH): now a normal run starts.
+      const switched = await service.update(copy.id, ownerUserId, { status: 'active' });
+      expect(switched.status).toBe('active');
+      await expect(start(false)).resolves.toMatchObject({ workflow: { testRun: false } });
+    });
+  });
+
+  // ---------------------------------------------------------------------------
   // BIZ-USER-01A: workflow saves
   // ---------------------------------------------------------------------------
 
@@ -233,7 +392,7 @@ describe('UserAgentService', () => {
         name: 'Research Assistant',
         role: 'Researcher',
         description: 'Finds things.',
-        status: 'active',
+        status: 'draft',
         initials: 'RA',
         tone: null,
         replyLanguage: null,
@@ -334,7 +493,7 @@ describe('UserAgentService', () => {
         name: 'My briefing',
         role: 'Chief of Staff',
         description: '',
-        status: 'active',
+        status: 'draft',
         initials: 'MB',
         tone: chiefOfStaff.tone,
         replyLanguage: chiefOfStaff.replyLanguage,

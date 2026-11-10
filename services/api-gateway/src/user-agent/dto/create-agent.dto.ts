@@ -57,6 +57,10 @@ export class CreateAgentDto {
   @MaxLength(2000)
   description: string;
 
+  /**
+   * Still shape-checked so an unknown value stays a 400, but ignored: a new
+   * agent is always stored as a draft (WORKFLOW-CREATE-01).
+   */
   @IsOptional()
   @IsIn([...USER_AGENT_STATUSES])
   status?: string;

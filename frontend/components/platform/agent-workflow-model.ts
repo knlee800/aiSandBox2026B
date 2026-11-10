@@ -66,6 +66,30 @@ export function emptyWorkflowDraft(): WorkflowDraft {
   };
 }
 
+/** WORKFLOW-CREATE-01: a template's card text, in the owner's language, used to prefill a copy. */
+export interface TemplatePrefill {
+  role: string;
+  description: string;
+}
+
+/**
+ * WORKFLOW-CREATE-01: Role and Description when the owner picks where to start.
+ * An empty field, or one still holding the previous template's text, takes the
+ * next template's text ('' when going back to blank). Text the owner typed stays.
+ */
+export function templatePrefillPatch(
+  draft: Pick<WorkflowDraft, 'role' | 'description'>,
+  previous: TemplatePrefill | null,
+  next: TemplatePrefill | null,
+): Pick<WorkflowDraft, 'role' | 'description'> {
+  const swap = (current: string, before: string | undefined, after: string | undefined): string =>
+    current.trim() === '' || (before !== undefined && current === before) ? (after ?? '') : current;
+  return {
+    role: swap(draft.role, previous?.role, next?.role),
+    description: swap(draft.description, previous?.description, next?.description),
+  };
+}
+
 export function workflowDraftFromAgent(agent: UserAgent): WorkflowDraft {
   return {
     name: agent.name,

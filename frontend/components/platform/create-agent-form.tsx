@@ -36,7 +36,9 @@ import {
   emptyWorkflowDraft,
   liveInstructionsCount,
   mapRefusal,
+  templatePrefillPatch,
   workflowDraftFromAgent,
+  type TemplatePrefill,
   type WorkflowDraft,
   type WorkflowErrors,
 } from './agent-workflow-model';
@@ -60,6 +62,10 @@ export interface CreateAgentFormLabels {
   descriptionTooLong: string;
   createError: string;
   createSuccess: string;
+  /** WORKFLOW-CREATE-01: one line under Role: shown on the card, not part of the instructions. */
+  roleHint?: string;
+  /** WORKFLOW-CREATE-01: one line under Description, saying the same. */
+  descriptionHint?: string;
 }
 
 
@@ -90,6 +96,13 @@ export interface AgentWorkflowConfig {
   onSave: (request: WorkflowSaveRequest) => Promise<UserAgentSaveResult>;
   /** Called after a successful save with the saved row and the kind of save. */
   onSaved?: (agent: UserAgent, kind: WorkflowSaveRequest['kind']) => void;
+  /**
+   * WORKFLOW-CREATE-01: a template's role and description in the owner's language,
+   * prefilled when the owner picks that template; null when unknown.
+   */
+  templatePrefill?: (templateId: string) => TemplatePrefill | null;
+  /** Test seam: open the create form with this start already picked. */
+  initialStart?: string;
 }
 
 export interface CreateAgentFormProps {
@@ -107,11 +120,16 @@ interface FieldErrors {
 
 export default function CreateAgentForm({ labels, onSubmit, onCancel, workflow }: CreateAgentFormProps) {
   const editing = workflow?.mode === 'edit';
-  const [draft, setDraft] = React.useState<WorkflowDraft>(() =>
-    editing && workflow?.agent ? workflowDraftFromAgent(workflow.agent) : emptyWorkflowDraft(),
-  );
+  const initialStart = !editing && workflow?.initialStart ? workflow.initialStart : 'blank';
+  const prefillFor = (startId: string): TemplatePrefill | null =>
+    startId === 'blank' ? null : (workflow?.templatePrefill?.(startId) ?? null);
+  const [draft, setDraft] = React.useState<WorkflowDraft>(() => {
+    if (editing && workflow?.agent) return workflowDraftFromAgent(workflow.agent);
+    const empty = emptyWorkflowDraft();
+    return { ...empty, ...templatePrefillPatch(empty, null, prefillFor(initialStart)) };
+  });
   const [saved, setSaved] = React.useState<UserAgent | null>(workflow?.agent ?? null);
-  const [start, setStart] = React.useState<string>('blank');
+  const [start, setStart] = React.useState<string>(initialStart);
   const [fieldErrors, setFieldErrors] = React.useState<FieldErrors>({});
   const [workflowErrors, setWorkflowErrors] = React.useState<WorkflowErrors>({});
   const [submitError, setSubmitError] = React.useState<string | null>(null);
@@ -135,6 +153,20 @@ export default function CreateAgentForm({ labels, onSubmit, onCancel, workflow }
     setDraft((current) => ({ ...current, ...patch }));
     setSubmitSuccess(false);
   }
+
+  function changeStart(value: string) {
+    const previous = prefillFor(start);
+    const next = prefillFor(value);
+    setStart(value);
+    setWorkflowErrors({});
+    setDraft((current) => ({ ...current, ...templatePrefillPatch(current, previous, next) }));
+    setSubmitSuccess(false);
+  }
+
+  const describedBy = (...ids: Array<string | false | undefined>): string | undefined => {
+    const list = ids.filter((id): id is string => typeof id === 'string' && id.length > 0);
+    return list.length > 0 ? list.join(' ') : undefined;
+  };
 
   function validate(): FieldErrors {
     const errors: FieldErrors = {};
@@ -224,6 +256,7 @@ export default function CreateAgentForm({ labels, onSubmit, onCancel, workflow }
     'block w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-50';
   const labelClasses = 'block text-sm font-medium text-slate-200';
   const errorClasses = 'mt-1 text-xs text-red-400';
+  const hintClasses = 'mt-1 text-xs text-slate-400';
 
   const title = editing && workflow ? t('editTitle') : labels.formTitle;
   const TitleIcon = editing ? PencilSquareIcon : PlusIcon;
@@ -281,10 +314,7 @@ export default function CreateAgentForm({ labels, onSubmit, onCancel, workflow }
           t={t}
           templates={options.templates}
           value={start}
-          onChange={(value) => {
-            setStart(value);
-            setWorkflowErrors({});
-          }}
+          onChange={changeStart}
           disabled={submitting}
           error={workflowErrors.start ? t(workflowErrors.start) : undefined}
         />
@@ -328,11 +358,19 @@ export default function CreateAgentForm({ labels, onSubmit, onCancel, workflow }
           maxLength={200}
           required
           aria-required="true"
-          aria-describedby={fieldErrors.role ? 'agent-role-error' : undefined}
+          aria-describedby={describedBy(
+            labels.roleHint && 'agent-role-hint',
+            fieldErrors.role && 'agent-role-error',
+          )}
           disabled={submitting}
           className={inputClasses}
           data-testid="create-agent-role"
         />
+        {labels.roleHint ? (
+          <p id="agent-role-hint" className={hintClasses} data-testid="create-agent-role-hint">
+            {labels.roleHint}
+          </p>
+        ) : null}
         {fieldErrors.role && (
           <p id="agent-role-error" className={errorClasses} role="alert">
             {fieldErrors.role}
@@ -353,11 +391,19 @@ export default function CreateAgentForm({ labels, onSubmit, onCancel, workflow }
           rows={4}
           required
           aria-required="true"
-          aria-describedby={fieldErrors.description ? 'agent-description-error' : undefined}
+          aria-describedby={describedBy(
+            labels.descriptionHint && 'agent-description-hint',
+            fieldErrors.description && 'agent-description-error',
+          )}
           disabled={submitting}
           className={inputClasses}
           data-testid="create-agent-description"
         />
+        {labels.descriptionHint ? (
+          <p id="agent-description-hint" className={hintClasses} data-testid="create-agent-description-hint">
+            {labels.descriptionHint}
+          </p>
+        ) : null}
         {fieldErrors.description && (
           <p id="agent-description-error" className={errorClasses} role="alert">
             {fieldErrors.description}

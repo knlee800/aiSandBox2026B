@@ -501,6 +501,23 @@ describe('UserAgentController', () => {
         .expect(400);
     });
 
+    it('POST /api/agents accepts a known status in the body (WORKFLOW-CREATE-01: the service ignores it)', async () => {
+      await buildApp();
+      service.create.mockResolvedValue(makeAgent({ status: 'draft' }));
+
+      const response = await request(app!.getHttpServer())
+        .post('/api/agents')
+        .send({
+          name: 'Test Agent',
+          role: 'Some role',
+          description: 'Some description',
+          status: 'active',
+        })
+        .expect(201);
+
+      expect(response.body.status).toBe('draft');
+    });
+
     it('POST /api/agents strips userId from body (whitelist)', async () => {
       await buildApp();
       service.create.mockResolvedValue(makeAgent());

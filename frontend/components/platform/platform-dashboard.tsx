@@ -35,6 +35,7 @@ import CreateAgentForm from './create-agent-form';
 import { loadUnreadCount } from '@/components/results/results-api';
 import { unreadBadgeText } from '@/components/results/results.logic';
 import type { CreateAgentFormLabels, WorkflowSaveRequest } from './create-agent-form';
+import type { TemplatePrefill } from './agent-workflow-model';
 
 import enMessages from '@/messages/en.json';
 import zhTwMessages from '@/messages/zh-TW.json';
@@ -252,11 +253,35 @@ export function SystemAgentStationArea(props: {
   );
 }
 
+/**
+ * WORKFLOW-CREATE-01: the role and description a copy of a template starts with,
+ * in the owner's language: the system agent's own keys from GET /api/system-agents,
+ * else the registry's naming (agents.<camelCaseId>.role). A key that does not
+ * resolve gives ''; nothing known gives null.
+ */
+export function templatePrefillFor(
+  templateId: string,
+  agents: readonly Pick<PublicSystemAgent, 'id' | 'roleKey' | 'descriptionKey'>[],
+  text: (key: string) => string,
+): TemplatePrefill | null {
+  const known = agents.find((agent) => agent.id === templateId);
+  const base = `agents.${templateId.replace(/-([a-z])/g, (_match, letter: string) => letter.toUpperCase())}`;
+  const roleKey = known?.roleKey ?? `${base}.role`;
+  const descriptionKey = known?.descriptionKey ?? `${base}.description`;
+  const read = (key: string): string => {
+    const value = text(key);
+    return value === key ? '' : value;
+  };
+  const prefill = { role: read(roleKey), description: read(descriptionKey) };
+  return prefill.role === '' && prefill.description === '' ? null : prefill;
+}
+
 export interface PlatformDashboardProps {
   locale?: string;
 }
 
-function getUserAgentStatusLabel(
+/** The badge text on a user agent's card and panel: Active, Draft or Disabled. */
+export function getUserAgentStatusLabel(
   status: string,
   messages: LocaleMessages,
 ): string {
@@ -382,6 +407,8 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
     descriptionTooLong: resolveNestedMessage(messages, 'platform.agentCreate.descriptionTooLong'),
     createError: resolveNestedMessage(messages, 'platform.agentCreate.createError'),
     createSuccess: resolveNestedMessage(messages, 'platform.agentCreate.createSuccess'),
+    roleHint: resolveNestedMessage(messages, 'platform.agentCreate.roleHint'),
+    descriptionHint: resolveNestedMessage(messages, 'platform.agentCreate.descriptionHint'),
   };
 
   const workflowT = (key: string) => resolveNestedMessage(messages, `platform.agentWorkflow.${key}`);
@@ -889,6 +916,8 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
                     onRetryOptions: agentOptions.retry,
                     onSave: handleSaveWorkflow,
                     onSaved: handleWorkflowSaved,
+                    templatePrefill: (templateId) =>
+                      templatePrefillFor(templateId, systemAgents.agents, profileText),
                   }}
                 />
               ) : (

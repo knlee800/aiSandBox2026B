@@ -697,6 +697,8 @@
       "loadError": "載入代理清單失敗。",
       "retry": "重試",
       "createSuccess": "代理建立成功！",
+      "roleHint": "顯示在代理的卡片上，不屬於工作流程的指示。",
+      "descriptionHint": "顯示在代理的卡片上，不屬於工作流程的指示。",
       "emptyTitle": "尚無代理",
       "emptyBody": "建立您的第一個代理以開始使用。",
       "agentStatusActive": "啟用中",

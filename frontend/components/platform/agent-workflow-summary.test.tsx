@@ -4,6 +4,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import type { UserAgentOptions, UserWorkflowSummaryItem } from '@/hooks/useUserAgents';
+import { userAgentSwitchBody } from '@/hooks/useUserAgents';
 import AgentStationCard from '@/components/platform/agent-station-card';
 import type { WorkflowUsageView } from '@/components/platform/agent-workflow-fields';
 import CreateAgentForm from '@/components/platform/create-agent-form';
@@ -503,5 +504,40 @@ describe('summary copy in three languages', () => {
       }
     }
     assert.equal(used.length, Object.keys(en).length);
+  });
+});
+
+describe('WORKFLOW-CREATE-01 a new workflow is a draft', () => {
+  test('an untested draft shows the switch Off, disabled, with "Run a test first"', () => {
+    const html = render({ status: 'draft', item: item({ status: 'draft', tested: false }) });
+    const button = /<button[^>]*role="switch"[^>]*>/.exec(html)?.[0] ?? '';
+    assert.ok(button.includes('aria-checked="false"'));
+    assert.ok(button.includes('disabled=""'));
+    assert.match(html, /data-testid="agent-switch-state">Off</);
+    assert.match(html, /data-testid="agent-switch-needs-test"/);
+  });
+
+  test('after a passing test the draft switch is still Off but can be switched on', () => {
+    const html = render({ status: 'draft', item: item({ status: 'draft', tested: true }) });
+    const button = /<button[^>]*role="switch"[^>]*>/.exec(html)?.[0] ?? '';
+    assert.ok(button.includes('aria-checked="false"'));
+    assert.ok(!button.includes('disabled=""'));
+    assert.ok(!html.includes('data-testid="agent-switch-needs-test"'));
+    assert.deepEqual(workflowSwitchGate('draft', true), { isOn: false, canSwitchOn: true, showNeedsTest: false });
+  });
+
+  test('switching on sends status active, and the row then reads On', () => {
+    assert.deepEqual(userAgentSwitchBody(true), { status: 'active' });
+    const html = render({ status: 'active', item: item({ status: 'active', tested: true }) });
+    assert.match(html, /data-testid="agent-switch-state">On</);
+  });
+
+  test('the Off state reads in Chinese for a draft', () => {
+    for (const messages of [zhTwMessages, zhCnMessages] as Messages[]) {
+      const t = (key: string) => resolve(messages, `platform.agentWorkflow.${key}`) ?? `MISSING:${key}`;
+      const html = render({ t, status: 'draft', item: item({ status: 'draft', tested: false }) });
+      assert.ok(html.includes(`data-testid="agent-switch-state">${t('summary.switchOff')}<`));
+      assert.match(t('summary.switchOff'), /[一-鿿]/);
+    }
   });
 });

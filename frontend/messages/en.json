@@ -697,6 +697,8 @@
       "loadError": "Failed to load your agents.",
       "retry": "Retry",
       "createSuccess": "Agent created successfully!",
+      "roleHint": "Shown on the agent's card. Not part of the workflow's instructions.",
+      "descriptionHint": "Shown on the agent's card. Not part of the workflow's instructions.",
       "emptyTitle": "No agents yet",
       "emptyBody": "Create your first agent to get started.",
       "agentStatusActive": "Active",
