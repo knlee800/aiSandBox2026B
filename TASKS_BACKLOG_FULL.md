@@ -87923,22 +87923,22 @@ taskId=CM-HISTORY-LINK-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the CM-GIT-HOST-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the CM-GIT-HOST-01 LOCK — not admitted.
 **Task ID:** CM-HISTORY-LINK-01
 **Title:** Checkpoint history copies follow symlinks in the workspace
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction); a security fix reachable from a user flow.
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction); a security fix reachable from a user flow.
 **Depends on:** CM-GIT-HOST-01.
-**Primary write scope:** PROVISIONAL: services/container-manager/src/git/ (with tests).
-**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Primary write scope:** services/container-manager/src/git/ (set at admission 2026-11-10).
+**Mutexes / resources:** CONTAINER-MANAGER.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set at admission 2026-11-10).
 **Scope:** From the CM-GIT-HOST-01 worker, checked by the control plane: GitService.restoreProjectHistory (git.service.ts:583) copies the stored history bundle with fs.copyFile to <workspace>/.aisb-history-restore.bundle, so a symlink the sandbox planted there can make container-manager overwrite a host file; GitService.saveProjectHistory (:551) copies <workspace>/.git/aisb-history.bundle out after git bundle create, so a symlink swapped in can read a host file into stored history, which a later restore hands to the sandbox. The gateway calls both (checkpoint-history save and restore), so a sandbox owner can reach them. Fix: refuse a symlink (lstat, O_NOFOLLOW or COPYFILE_EXCL on a freshly created path) or stream the bundle through docker exec instead of the host filesystem; tests with real symlinks; checkpoint save and restore behaviour otherwise unchanged (FLOWS list applies).
 
 ### STAGING-DEPLOY-CMSEC-01 — Deploy the container-manager security fixes
