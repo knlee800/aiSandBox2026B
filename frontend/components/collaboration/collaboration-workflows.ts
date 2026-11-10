@@ -232,7 +232,7 @@ export function collaborationWorkflowRefusal(
 }
 
 /**
- * Loads the owner's workflows once the page has a session. Kept out of
+ * Loads the owner's workflows; the route is owner-scoped and needs no session. Kept out of
  * useCollaborationScreen so the screen's own requests are unchanged.
  */
 /** TEAM-PRESELECT-01: the id to preselect, or null when the list has no such workflow. */

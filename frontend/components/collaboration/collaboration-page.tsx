@@ -410,6 +410,7 @@ export function useCollaborationScreen(input: {
     openRun: t('openRun'),
     backToWorkspace: t('backToWorkspace'),
     missingSession: t('missingSession'),
+    startTestRun: t('startTestRun'),
     missingProject: t('missingProject'),
     noAnswerYet: t('noAnswerYet'),
     conversationCreated: t('conversationCreated'),
@@ -923,7 +924,7 @@ export default function CollaborationPageClient() {
   const sessionId = searchParams.get('sessionId')?.trim() || '';
   const queryProjectId = searchParams.get('projectId')?.trim() || '';
   const queryWorkflowId = searchParams.get('workflowId')?.trim() || '';
-  const workflows = useCollaborationWorkflowList(sessionId.length > 0);
+  const workflows = useCollaborationWorkflowList(true);
   const viewProps = useCollaborationScreen({
     t,
     translateScope: (scopeId: string) =>

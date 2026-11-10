@@ -518,6 +518,55 @@ function jsonResponse(status: number, body: unknown): Response {
   } as Response;
 }
 
+describe('TEAM-NO-SESSION-01 Team page without a session', () => {
+  const items = [
+    { id: 'w1', name: 'Morning brief', statusLabel: 'On', testedLabel: 'Tested', selected: true },
+  ];
+
+  test('lists the workflows with its loading, empty and failed states, and no form', () => {
+    const loaded = render({ sessionReady: false, workflowPicker: picker('loaded', items) });
+    assert.match(loaded, /data-testid="collaboration-workflow-picker"/);
+    assert.match(loaded, /data-testid="collaboration-workflow-option-w1"/);
+    assert.doesNotMatch(loaded, /data-testid="collaboration-task"/);
+    assert.doesNotMatch(loaded, /data-testid="collaboration-team-picker"/);
+    assert.match(render({ sessionReady: false, workflowPicker: picker('loading') }), /collaboration-workflows-loading/);
+    assert.match(render({ sessionReady: false, workflowPicker: picker('loaded') }), /collaboration-workflows-empty/);
+    const failed = render({ sessionReady: false, workflowPicker: picker('failed') });
+    assert.match(failed, /collaboration-workflows-failed/);
+    assert.match(failed, /collaboration-workflows-retry/);
+  });
+
+  test('Start and Start test run are visible but disabled, with the translated hint', () => {
+    const markup = render({ sessionReady: false, workflowPicker: picker('loaded', items) });
+    assert.match(markup, /<button[^>]*data-testid="collaboration-start"[^>]*disabled=""/);
+    assert.match(markup, /<button[^>]*data-testid="collaboration-start-test"[^>]*disabled=""/);
+    assert.ok(markup.includes(labels.start));
+    assert.ok(markup.includes(labels.startTestRun));
+    assert.match(markup, /data-testid="collaboration-missing-session"/);
+    assert.ok(markup.includes(labels.missingSession));
+    for (const [locale, catalog] of CATALOGS) {
+      assert.ok(catalog.missingSession.length > 0, locale);
+    }
+    for (const [locale, catalog] of CATALOGS.slice(1)) {
+      assert.notEqual(catalog.missingSession, (enMessages.collaboration as Catalog).missingSession, locale);
+      assert.match(catalog.missingSession, /\p{Script=Han}/u, locale);
+    }
+  });
+
+  test('with a session the form is shown and there is no missing-session hint', () => {
+    const markup = render({ sessionReady: true, workflowPicker: picker('loaded', items) });
+    assert.match(markup, /data-testid="collaboration-task"/);
+    assert.doesNotMatch(markup, /collaboration-missing-session/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-no-session"/);
+  });
+
+  test('the page loads the workflow list whether or not there is a session', () => {
+    const source = readFileSync(join(process.cwd(), 'components', 'collaboration', 'collaboration-page.tsx'), 'utf8');
+    assert.match(source, /useCollaborationWorkflowList\(true\)/);
+    assert.doesNotMatch(source, /useCollaborationWorkflowList\(sessionId/);
+  });
+});
+
 describe('TEAM-PRESELECT-01 preselectWorkflowId and the query', () => {
   test('returns the id only when the list has that workflow', () => {
     const items = [item(), item({ id: 'other' })];
@@ -557,12 +606,13 @@ describe('BIZ-USER-01C Team page with workflows', () => {
 
   let probeWorkflows: CollaborationWorkflowList = workflows;
   let probeWorkflowId = '';
+  let probeSessionId = 'session-1';
 
   function Probe(props: { catalog: Catalog }) {
     latest = useCollaborationScreen({
       t: (key: string) => props.catalog[key] ?? key,
       locale: 'en',
-      sessionId: 'session-1',
+      sessionId: probeSessionId,
       queryProjectId: '',
       workflows: probeWorkflows,
       queryWorkflowId: probeWorkflowId,
@@ -604,6 +654,7 @@ describe('BIZ-USER-01C Team page with workflows', () => {
     latest = null;
     probeWorkflows = workflows;
     probeWorkflowId = '';
+    probeSessionId = 'session-1';
     originalFetch = globalThis.fetch;
     globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
@@ -648,6 +699,15 @@ describe('BIZ-USER-01C Team page with workflows', () => {
     probeWorkflows = { ...workflows, items: [...workflows.items] };
     await renderProbe();
     assert.equal(latest?.workflowPicker?.items.some((entry) => entry.selected), false);
+  });
+
+  test('TEAM-NO-SESSION-01: without a session the workflowId is still preselected and sessionReady is false', async () => {
+    probeSessionId = '';
+    probeWorkflowId = WORKFLOW_ID;
+    await renderProbe();
+    assert.equal(latest?.sessionReady, false);
+    assert.equal(latest?.workflowPicker?.items.find((entry) => entry.id === WORKFLOW_ID)?.selected, true);
+    assert.equal(latest?.workflowStart?.canRun, true);
   });
 
   test('TEAM-PRESELECT-01: waits for the list, then preselects', async () => {

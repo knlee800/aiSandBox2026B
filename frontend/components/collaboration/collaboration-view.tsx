@@ -66,6 +66,7 @@ export interface CollaborationViewLabels {
   openRun: string;
   backToWorkspace: string;
   missingSession: string;
+  startTestRun: string;
   missingProject: string;
   noAnswerYet: string;
   conversationCreated: string;
@@ -247,6 +248,71 @@ export default function CollaborationView(props: {
   const submitStarts = workflowStart ? workflowStart.canRun : true;
   const submitTests = workflowStart !== null && !workflowStart.canRun && workflowStart.canTest;
 
+  const pickerBlock = workflowPicker ? (
+    <fieldset className="mt-4 min-w-0" data-testid="collaboration-workflow-picker">
+      <legend className="text-sm font-medium text-gray-800">
+        {workflowPicker.labels.heading}
+      </legend>
+      {workflowPicker.state === 'loading' ? (
+        <p className="mt-2 text-sm text-gray-500" data-testid="collaboration-workflows-loading">
+          {workflowPicker.labels.loading}
+        </p>
+      ) : workflowPicker.state === 'failed' ? (
+        <div
+          className="mt-2 flex min-w-0 flex-wrap items-center gap-2 text-sm text-gray-700"
+          data-testid="collaboration-workflows-failed"
+        >
+          <span className="min-w-0 break-words">{workflowPicker.labels.failed}</span>
+          <button
+            type="button"
+            data-testid="collaboration-workflows-retry"
+            onClick={workflowPicker.onRetry}
+            className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 transition-transform duration-150 ease-out hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand motion-safe:active:scale-[0.97]"
+          >
+            <ArrowPathIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+            {workflowPicker.labels.retry}
+          </button>
+        </div>
+      ) : workflowPicker.items.length === 0 ? (
+        <p
+          className="mt-2 rounded-lg border border-dashed border-gray-200 px-3 py-2 text-sm text-gray-500"
+          data-testid="collaboration-workflows-empty"
+        >
+          {workflowPicker.labels.empty}
+        </p>
+      ) : (
+        <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {workflowPicker.items.map((item) => (
+            <label
+              key={item.id}
+              data-testid={`collaboration-workflow-option-${item.id}`}
+              className={`flex min-w-0 cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 ${
+                item.selected ? 'border-brand bg-indigo-50' : 'border-gray-200 bg-white'
+              }`}
+            >
+              <input
+                type="radio"
+                name="collaboration-team"
+                value={item.id}
+                checked={item.selected}
+                onChange={() => workflowPicker.onSelect(item.id)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+              />
+              <span className="min-w-0">
+                <span className="block break-words text-sm font-medium text-gray-900">
+                  {item.name}
+                </span>
+                <span className="block break-words text-xs text-gray-600">
+                  {`${item.statusLabel} · ${item.testedLabel}`}
+                </span>
+              </span>
+            </label>
+          ))}
+        </div>
+      )}
+    </fieldset>
+  ) : null;
+
   return (
     <main className="mx-auto w-full max-w-3xl overflow-x-hidden px-4 py-6 text-gray-900">
       <a
@@ -279,9 +345,35 @@ export default function CollaborationView(props: {
       {props.loading ? <p className="mt-4 text-sm text-gray-500">{labels.loading}</p> : null}
 
       {!props.sessionReady ? (
-        <p className="mt-4 text-sm text-gray-700" data-testid="collaboration-missing-session">
-          {labels.missingSession}
-        </p>
+        <div className="mt-4 min-w-0" data-testid="collaboration-no-session">
+          {pickerBlock}
+          <div className="mt-4 flex min-w-0 flex-wrap items-center gap-2">
+            <button
+              type="button"
+              data-testid="collaboration-start"
+              disabled
+              className="inline-flex items-center rounded-lg bg-brand px-4 py-1.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {labels.start}
+            </button>
+            <button
+              type="button"
+              data-testid="collaboration-start-test"
+              disabled
+              className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-4 py-1.5 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <BeakerIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+              {labels.startTestRun}
+            </button>
+          </div>
+          <p
+            className="mt-2 flex min-w-0 items-start gap-1.5 break-words text-sm text-gray-700"
+            data-testid="collaboration-missing-session"
+          >
+            <InformationCircleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            <span className="min-w-0">{labels.missingSession}</span>
+          </p>
+        </div>
       ) : (
         <form
           className="mt-4 min-w-0"
@@ -331,70 +423,7 @@ export default function CollaborationView(props: {
               </div>
             </fieldset>
           ) : null}
-          {workflowPicker ? (
-            <fieldset className="mt-4 min-w-0" data-testid="collaboration-workflow-picker">
-              <legend className="text-sm font-medium text-gray-800">
-                {workflowPicker.labels.heading}
-              </legend>
-              {workflowPicker.state === 'loading' ? (
-                <p className="mt-2 text-sm text-gray-500" data-testid="collaboration-workflows-loading">
-                  {workflowPicker.labels.loading}
-                </p>
-              ) : workflowPicker.state === 'failed' ? (
-                <div
-                  className="mt-2 flex min-w-0 flex-wrap items-center gap-2 text-sm text-gray-700"
-                  data-testid="collaboration-workflows-failed"
-                >
-                  <span className="min-w-0 break-words">{workflowPicker.labels.failed}</span>
-                  <button
-                    type="button"
-                    data-testid="collaboration-workflows-retry"
-                    onClick={workflowPicker.onRetry}
-                    className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 transition-transform duration-150 ease-out hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand motion-safe:active:scale-[0.97]"
-                  >
-                    <ArrowPathIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    {workflowPicker.labels.retry}
-                  </button>
-                </div>
-              ) : workflowPicker.items.length === 0 ? (
-                <p
-                  className="mt-2 rounded-lg border border-dashed border-gray-200 px-3 py-2 text-sm text-gray-500"
-                  data-testid="collaboration-workflows-empty"
-                >
-                  {workflowPicker.labels.empty}
-                </p>
-              ) : (
-                <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  {workflowPicker.items.map((item) => (
-                    <label
-                      key={item.id}
-                      data-testid={`collaboration-workflow-option-${item.id}`}
-                      className={`flex min-w-0 cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 ${
-                        item.selected ? 'border-brand bg-indigo-50' : 'border-gray-200 bg-white'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="collaboration-team"
-                        value={item.id}
-                        checked={item.selected}
-                        onChange={() => workflowPicker.onSelect(item.id)}
-                        className="mt-0.5 h-4 w-4 shrink-0 accent-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                      />
-                      <span className="min-w-0">
-                        <span className="block break-words text-sm font-medium text-gray-900">
-                          {item.name}
-                        </span>
-                        <span className="block break-words text-xs text-gray-600">
-                          {`${item.statusLabel} · ${item.testedLabel}`}
-                        </span>
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              )}
-            </fieldset>
-          ) : null}
+          {pickerBlock}
           <label
             htmlFor="collaboration-task"
             className={`text-sm font-medium text-gray-800 ${teamChoices.length > 0 ? 'mt-4 block' : ''}`}

@@ -1211,7 +1211,7 @@
     "pastRunsEmpty": "No past runs for this project.",
     "openRun": "Open",
     "backToWorkspace": "Back to workspace",
-    "missingSession": "Open Team from a workspace session.",
+    "missingSession": "Runs start from a workspace session. Open Team from a workspace to start one.",
     "missingProject": "This page needs a project. Open Team from the workspace.",
     "noAnswerYet": "No answer yet.",
     "conversationCreated": "A conversation was started for this session.",
