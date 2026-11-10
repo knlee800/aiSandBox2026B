@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { METHOD_METADATA, MODULE_METADATA, PATH_METADATA } from '@nestjs/common/constants';
 import { APP_GUARD, NestFactory } from '@nestjs/core';
+import { request as httpRequest } from 'http';
 import { AddressInfo } from 'net';
 
 // Services are never constructed here (every provider is a mock), but their
@@ -129,6 +130,8 @@ function methodsFor(route: Route): string[] {
  * GET /api/previews/:sessionId/health, ALL /api/internal-previews/proxy/:sessionId/*,
  * POST /api/executor/:sessionId/execute, GET /api/executor/commands and
  * GET /api/sessions (a second health reply).
+ * CM-SYMLINK-01 removed the six uncalled host-side /api/files/:sessionId/*
+ * routes (list, read, write, delete, mkdir, search), which followed symlinks.
  */
 const EXPECTED_INVENTORY = [
   'POST /api/sessions',
@@ -148,12 +151,6 @@ const EXPECTED_INVENTORY = [
   'GET /api/internal/sessions/:id/stat',
   'POST /api/internal/sessions/:id/browser-smoke',
   'POST /api/internal/sessions/:id/previews',
-  'GET /api/files/:sessionId/list',
-  'POST /api/files/:sessionId/read',
-  'POST /api/files/:sessionId/write',
-  'DELETE /api/files/:sessionId/delete',
-  'POST /api/files/:sessionId/mkdir',
-  'POST /api/files/:sessionId/search',
   'POST /api/git/:sessionId/init',
   'POST /api/git/:sessionId/commit',
   'GET /api/git/:sessionId/history',
@@ -204,13 +201,13 @@ describe('container-manager route inventory (CM-AUTH-01)', () => {
     expect(providers).toContainEqual({ provide: APP_GUARD, useClass: InternalServiceAuthGuard });
   });
 
-  it('serves exactly the expected 58 routes (57 guarded + GET /api/health)', () => {
+  it('serves exactly the expected 52 routes (51 guarded + GET /api/health)', () => {
     const actual = routes.map(routeKey);
     // One line per route, so the real serving paths (F2) show in the test log.
     console.info(`CM-AUTH-01 route inventory (${actual.length}):\n${actual.join('\n')}`);
     expect(actual.sort()).toEqual([...EXPECTED_INVENTORY].sort());
-    expect(routes).toHaveLength(58);
-    expect(guardedRoutes).toHaveLength(57);
+    expect(routes).toHaveLength(52);
+    expect(guardedRoutes).toHaveLength(51);
   });
 
   it('marks exactly one handler exempt: HealthController.getHealth', () => {
@@ -358,8 +355,8 @@ describe('container-manager internal key over HTTP (CM-AUTH-01)', () => {
     }
   });
 
-  it('mounts every AppModule controller (14) with mocked services', () => {
-    expect(controllers).toHaveLength(14);
+  it('mounts every AppModule controller (13) with mocked services', () => {
+    expect(controllers).toHaveLength(13);
     expect(mocks.size).toBeGreaterThan(0);
   });
 
@@ -463,6 +460,106 @@ describe('container-manager internal key over HTTP (CM-AUTH-01)', () => {
     const response = await send(method, path, internalKey);
     expect(isRouteNotFound(response)).toBe(true);
     expect(allCalls()).toBe(0);
+  });
+
+  it.each([
+    ['GET', '/api/files/p1/list', undefined],
+    ['POST', '/api/files/p1/read', { path: 'root/etc/passwd' }],
+    ['POST', '/api/files/p1/write', { path: 'root/tmp/x', content: 'x' }],
+    ['DELETE', '/api/files/p1/delete', { path: 'root/tmp/x' }],
+    ['POST', '/api/files/p1/mkdir', { path: 'root/tmp/d' }],
+    ['POST', '/api/files/p1/search', { query: 'x' }],
+  ])('CM-SYMLINK-01: removed host-side route %s %s is not found even with the key', async (method, path, body) => {
+    const response = await send(method, path, internalKey, body ?? {});
+    expect(isRouteNotFound(response)).toBe(true);
+    expect(allCalls()).toBe(0);
+  });
+
+  it('CM-SYMLINK-01: no remaining controller serves under /api/files', () => {
+    expect(routes.filter((route) => route.path.startsWith('/api/files'))).toEqual([]);
+  });
+
+  describe('CM-SYMLINK-01: session id checked at the controller layer', () => {
+    const SESSION_PARAM = /:(id|sessionId)(?=\/|\*|$)/;
+    const sessionRoutes = guardedRoutes.filter((route) => SESSION_PARAM.test(route.path));
+
+    /**
+     * Sent raw with node:http, not fetch: the WHATWG URL parser fetch uses
+     * would collapse a `%2E%2E` segment before it left the client.
+     * Express decodes each to `..`, `a/b`, `a\b` and `a<NUL>b`.
+     */
+    const BAD_IDS = ['%2E%2E', '..', 'a%2Fb', 'a%5Cb', 'a%00b'];
+
+    function pathWithSessionId(pattern: string, id: string): string {
+      return concretePath(pattern.replace(SESSION_PARAM, id));
+    }
+
+    async function sendRaw(method: string, path: string, key?: string): Promise<Reply> {
+      const url = new URL(baseUrl);
+      const headers: Record<string, string> = { 'content-type': 'application/json' };
+      if (key !== undefined) {
+        headers['x-internal-service-key'] = key;
+      }
+      const body = method === 'GET' || method === 'HEAD' ? undefined : '{}';
+      if (body !== undefined) {
+        // Node sends no length for a DELETE body unless told, and the server
+        // would then read the body as a second, malformed request.
+        headers['content-length'] = String(Buffer.byteLength(body));
+      }
+      return new Promise<Reply>((resolve, reject) => {
+        const req = httpRequest(
+          { host: url.hostname, port: url.port, method, path, headers, timeout: 5000 },
+          (res) => {
+            let text = '';
+            res.setEncoding('utf8');
+            res.on('data', (chunk: string) => (text += chunk));
+            res.on('end', () => resolve({ status: res.statusCode ?? 0, text }));
+          },
+        );
+        req.on('timeout', () => req.destroy(new Error('timeout')));
+        req.on('error', reject);
+        req.end(body);
+      });
+    }
+
+    it('covers every remaining route with a session id parameter (30)', () => {
+      expect(sessionRoutes.map(routeKey).sort()).toEqual(
+        EXPECTED_INVENTORY.filter((key) => SESSION_PARAM.test(key)).sort(),
+      );
+      expect(sessionRoutes).toHaveLength(30);
+    });
+
+    describe.each(sessionRoutes.map((route) => [routeKey(route), route] as const))('%s', (_name, route) => {
+      it.each(methodsFor(route))(
+        '%s refuses a session id that is not one path segment with 400 and calls no service',
+        async (method) => {
+          for (const id of BAD_IDS) {
+            const path = pathWithSessionId(route.path, id);
+            const reply = await sendRaw(method, path, internalKey);
+            expect({ path, status: reply.status }).toEqual({ path, status: 400 });
+            expect(JSON.parse(reply.text).message).toBe('Invalid session id');
+            expect(allCalls()).toBe(0);
+          }
+        },
+      );
+
+      it.each(methodsFor(route))('%s still answers 403 first for a bad id without the key', async (method) => {
+        const reply = await sendRaw(method, pathWithSessionId(route.path, '%2E%2E'), undefined);
+        expect(reply.status).toBe(403);
+        expect(allCalls()).toBe(0);
+      });
+
+      it.each(methodsFor(route))('%s accepts a UUID and a base36 id', async (method) => {
+        for (const id of ['3f2a8c1e-0b4d-4c5e-9f6a-7b8c9d0e1f2a', 'lq3k9z0abc123']) {
+          const reply = await sendRaw(method, pathWithSessionId(route.path, id), internalKey);
+          expect(reply.status).not.toBe(403);
+          expect(isRouteNotFound(reply)).toBe(false);
+          if (reply.status === 400) {
+            expect(reply.text).not.toContain('Invalid session id');
+          }
+        }
+      });
+    });
   });
 
   const GATEWAY_CALLED_PATHS = [

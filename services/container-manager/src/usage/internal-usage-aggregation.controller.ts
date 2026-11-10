@@ -6,6 +6,7 @@ import {
   UseGuards,
   BadRequestException,
 } from '@nestjs/common';
+import { SessionIdPipe } from '../pipes/session-id.pipe';
 import { UsageAggregationService } from './usage-aggregation.service';
 import { InternalServiceAuthGuard } from '../guards/internal-service-auth.guard';
 
@@ -34,7 +35,7 @@ export class InternalUsageAggregationController {
    * @returns Token usage summary
    */
   @Get('tokens/session/:sessionId')
-  getTokenUsageBySession(@Param('sessionId') sessionId: string) {
+  getTokenUsageBySession(@Param('sessionId', SessionIdPipe) sessionId: string) {
     return this.usageAggregationService.aggregateTokenUsageBySession(sessionId);
   }
 

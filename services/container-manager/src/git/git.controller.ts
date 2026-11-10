@@ -1,4 +1,5 @@
 import { Controller, Post, Get, Param, Body, Query } from '@nestjs/common';
+import { SessionIdPipe } from '../pipes/session-id.pipe';
 import { GitService } from './git.service';
 
 @Controller('git')
@@ -7,7 +8,7 @@ export class GitController {
 
   @Post(':sessionId/init')
   async init(
-    @Param('sessionId') sessionId: string,
+    @Param('sessionId', SessionIdPipe) sessionId: string,
     @Body('userId') userId: string
   ) {
     return this.gitService.initializeGit(sessionId, userId);
@@ -15,7 +16,7 @@ export class GitController {
 
   @Post(':sessionId/commit')
   async commit(
-    @Param('sessionId') sessionId: string,
+    @Param('sessionId', SessionIdPipe) sessionId: string,
     @Body('userId') userId: string,
     @Body('messageNumber') messageNumber: number,
     @Body('description') description?: string,
@@ -32,7 +33,7 @@ export class GitController {
 
   @Get(':sessionId/history')
   async history(
-    @Param('sessionId') sessionId: string,
+    @Param('sessionId', SessionIdPipe) sessionId: string,
     @Query('limit') limit?: number
   ) {
     return this.gitService.getHistory(sessionId, limit ? parseInt(limit.toString()) : 10);
@@ -40,7 +41,7 @@ export class GitController {
 
   @Post(':sessionId/revert')
   async revert(
-    @Param('sessionId') sessionId: string,
+    @Param('sessionId', SessionIdPipe) sessionId: string,
     @Body('userId') userId: string,
     @Body('commitHash') commitHash: string
   ) {
@@ -49,7 +50,7 @@ export class GitController {
 
   @Get(':sessionId/checkpoints')
   async checkpoints(
-    @Param('sessionId') sessionId: string,
+    @Param('sessionId', SessionIdPipe) sessionId: string,
     @Query('limit') limit?: number
   ) {
     return this.gitService.getCheckpoints(sessionId, limit ? parseInt(limit.toString()) : 10);
@@ -57,7 +58,7 @@ export class GitController {
 
   @Get(':sessionId/diff/:commitHash')
   async diff(
-    @Param('sessionId') sessionId: string,
+    @Param('sessionId', SessionIdPipe) sessionId: string,
     @Param('commitHash') commitHash: string
   ) {
     return this.gitService.getDiff(sessionId, commitHash);

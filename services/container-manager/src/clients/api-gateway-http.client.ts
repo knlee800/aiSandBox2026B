@@ -153,40 +153,6 @@ export class ApiGatewayHttpClient {
   }
 
   /**
-   * Notify api-gateway that a file changed in workspace
-   * Called by files service after file write/delete operations
-   * @param sessionId - Session UUID
-   * @param file - File change metadata
-   */
-  async notifyFileChanged(
-    sessionId: string,
-    file: { path: string; action: string; timestamp: string },
-  ): Promise<void> {
-    try {
-      await firstValueFrom(
-        this.httpService.post(
-          `${this.baseUrl}/api/events/file-changed`,
-          {
-            sessionId,
-            file,
-          },
-          {
-            headers: {
-              'X-Internal-Service-Key': this.internalServiceKey,
-            },
-          },
-        ),
-      );
-      this.logger.log(`File change notified: ${sessionId} (${file.path}, ${file.action})`);
-    } catch (error) {
-      this.logger.error(
-        `Failed to notify file change for ${sessionId} (${file.path}): ${error.message}`,
-      );
-      throw error; // Fail fast
-    }
-  }
-
-  /**
    * Notify api-gateway that a checkpoint was created
    * Called by git service after checkpoint persistence
    * @param sessionId - Session UUID

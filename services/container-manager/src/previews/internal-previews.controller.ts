@@ -8,6 +8,7 @@ import {
   HttpStatus,
   BadRequestException,
 } from '@nestjs/common';
+import { SessionIdPipe } from '../pipes/session-id.pipe';
 import { PreviewService } from './preview.service';
 import { InternalServiceAuthGuard } from '../guards/internal-service-auth.guard';
 
@@ -50,7 +51,7 @@ export class InternalPreviewsController {
   @Post(':id/previews')
   @HttpCode(HttpStatus.OK)
   async registerPreviewPort(
-    @Param('id') sessionId: string,
+    @Param('id', SessionIdPipe) sessionId: string,
     @Body('port') port?: number,
   ): Promise<{ sessionId: string; port: number; registered: true }> {
     // Validate port is provided

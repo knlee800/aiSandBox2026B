@@ -8,6 +8,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+import { SessionIdPipe } from '../pipes/session-id.pipe';
 import { InternalServiceAuthGuard } from '../guards/internal-service-auth.guard';
 import {
   CheckpointHistoryRestoreResult,
@@ -24,7 +25,7 @@ export class InternalCheckpointHistoryController {
   @Post(':sessionId/save')
   @HttpCode(HttpStatus.OK)
   async save(
-    @Param('sessionId') sessionId: string,
+    @Param('sessionId', SessionIdPipe) sessionId: string,
     @Body('projectId') projectId: string,
   ): Promise<CheckpointHistorySaveResult> {
     this.assertIds(sessionId, projectId);
@@ -34,7 +35,7 @@ export class InternalCheckpointHistoryController {
   @Post(':sessionId/restore')
   @HttpCode(HttpStatus.OK)
   async restore(
-    @Param('sessionId') sessionId: string,
+    @Param('sessionId', SessionIdPipe) sessionId: string,
     @Body('projectId') projectId: string,
   ): Promise<CheckpointHistoryRestoreResult> {
     this.assertIds(sessionId, projectId);

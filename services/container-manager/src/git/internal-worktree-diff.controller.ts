@@ -1,4 +1,5 @@
 import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { SessionIdPipe } from '../pipes/session-id.pipe';
 import { InternalServiceAuthGuard } from '../guards/internal-service-auth.guard';
 import { GitService, WorkingTreeDiffResult } from './git.service';
 
@@ -13,7 +14,7 @@ export class InternalWorktreeDiffController {
 
   @Get(':sessionId/worktree-diff/:commitHash')
   async worktreeDiff(
-    @Param('sessionId') sessionId: string,
+    @Param('sessionId', SessionIdPipe) sessionId: string,
     @Param('commitHash') commitHash: string,
   ): Promise<WorkingTreeDiffResult> {
     return this.gitService.getWorkingTreeDiff(sessionId, commitHash);

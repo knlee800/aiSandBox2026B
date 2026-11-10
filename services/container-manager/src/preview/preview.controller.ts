@@ -1,4 +1,5 @@
 import { Controller, Post, Get, Delete, Param, Body, HttpCode, Res, Req } from '@nestjs/common';
+import { SessionIdPipe } from '../pipes/session-id.pipe';
 import { Response, Request } from 'express';
 import type { IncomingMessage } from 'http';
 import { PreviewService } from './preview.service';
@@ -60,7 +61,7 @@ export class PreviewController {
   @Post(':sessionId/start')
   @HttpCode(200)
   async startPreview(
-    @Param('sessionId') sessionId: string,
+    @Param('sessionId', SessionIdPipe) sessionId: string,
     @Body('command') command?: string,
   ) {
     const result = await this.previewService.startPreview(sessionId, command);
@@ -73,7 +74,7 @@ export class PreviewController {
 
   @Post(':sessionId/stop')
   @HttpCode(200)
-  async stopPreview(@Param('sessionId') sessionId: string) {
+  async stopPreview(@Param('sessionId', SessionIdPipe) sessionId: string) {
     const result = await this.previewService.stopPreview(sessionId);
     return {
       success: true,
@@ -83,12 +84,12 @@ export class PreviewController {
 
   @Delete(':sessionId/stop')
   @HttpCode(200)
-  async stopPreviewByDelete(@Param('sessionId') sessionId: string) {
+  async stopPreviewByDelete(@Param('sessionId', SessionIdPipe) sessionId: string) {
     return this.stopPreview(sessionId);
   }
 
   @Get(':sessionId/status')
-  async getPreviewStatus(@Param('sessionId') sessionId: string) {
+  async getPreviewStatus(@Param('sessionId', SessionIdPipe) sessionId: string) {
     const status = this.previewService.getPreviewStatus(sessionId);
 
     if (!status) {
@@ -107,7 +108,7 @@ export class PreviewController {
 
   @Get(':sessionId/proxy*')
   async proxyRequest(
-    @Param('sessionId') sessionId: string,
+    @Param('sessionId', SessionIdPipe) sessionId: string,
     @Req() req: Request,
     @Res() res: Response,
   ) {

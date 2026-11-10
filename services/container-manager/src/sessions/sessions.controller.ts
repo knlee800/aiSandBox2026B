@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Delete, Param, Body, Query } from '@nestjs/common';
+import { SessionIdPipe } from '../pipes/session-id.pipe';
 import { SessionsService } from './sessions.service';
 import { CreateSessionDto } from './dto/session.dto';
 
@@ -15,13 +16,13 @@ export class SessionsController {
   }
 
   @Post(':id/start')
-  async start(@Param('id') id: string, @Body('userId') userId?: string) {
+  async start(@Param('id', SessionIdPipe) id: string, @Body('userId') userId?: string) {
     await this.sessionsService.startSessionContainer(id, userId);
     return { message: 'Session container started successfully' };
   }
 
   @Get(':id')
-  async get(@Param('id') id: string) {
+  async get(@Param('id', SessionIdPipe) id: string) {
     return this.sessionsService.getSession(id);
   }
 
@@ -31,12 +32,12 @@ export class SessionsController {
   }
 
   @Post(':id/stop')
-  async stop(@Param('id') id: string) {
+  async stop(@Param('id', SessionIdPipe) id: string) {
     return this.sessionsService.stopSession(id);
   }
 
   @Delete(':id')
-  async delete(@Param('id') id: string) {
+  async delete(@Param('id', SessionIdPipe) id: string) {
     return this.sessionsService.deleteSession(id);
   }
 }

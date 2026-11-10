@@ -11,6 +11,7 @@ import {
   HttpStatus,
   BadRequestException,
 } from '@nestjs/common';
+import { SessionIdPipe } from '../pipes/session-id.pipe';
 import { SessionsService } from './sessions.service';
 import { InternalServiceAuthGuard } from '../guards/internal-service-auth.guard';
 import { ExecCommandDto, ExecResultDto } from './dto/exec.dto';
@@ -51,7 +52,7 @@ export class InternalSessionsController {
   @Post(':id/start')
   @HttpCode(HttpStatus.OK)
   async startContainer(
-    @Param('id') sessionId: string,
+    @Param('id', SessionIdPipe) sessionId: string,
     @Body('userId') userId?: string,
     @Body('browserCapable') browserCapable?: boolean,
   ): Promise<{ message: string }> {
@@ -79,7 +80,7 @@ export class InternalSessionsController {
    */
   @Delete(':id/container')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async removeContainer(@Param('id') sessionId: string): Promise<void> {
+  async removeContainer(@Param('id', SessionIdPipe) sessionId: string): Promise<void> {
     await this.sessionsService.removeSessionContainer(sessionId);
   }
 
@@ -103,7 +104,7 @@ export class InternalSessionsController {
   @Post(':id/exec')
   @HttpCode(HttpStatus.OK)
   async execCommand(
-    @Param('id') sessionId: string,
+    @Param('id', SessionIdPipe) sessionId: string,
     @Body() execDto: ExecCommandDto,
   ): Promise<ExecResultDto> {
     const result = await this.sessionsService.execInContainer(
@@ -144,7 +145,7 @@ export class InternalSessionsController {
   @Get(':id/files')
   @HttpCode(HttpStatus.OK)
   async readFile(
-    @Param('id') sessionId: string,
+    @Param('id', SessionIdPipe) sessionId: string,
     @Query('path') filePath?: string,
   ): Promise<{ path: string; content: string }> {
     if (!filePath) {
@@ -187,7 +188,7 @@ export class InternalSessionsController {
   @Post(':id/files')
   @HttpCode(HttpStatus.NO_CONTENT)
   async writeFile(
-    @Param('id') sessionId: string,
+    @Param('id', SessionIdPipe) sessionId: string,
     @Body('path') filePath?: string,
     @Body('content') content?: string,
   ): Promise<void> {
@@ -217,7 +218,7 @@ export class InternalSessionsController {
   @Delete(':id/files')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteFile(
-    @Param('id') sessionId: string,
+    @Param('id', SessionIdPipe) sessionId: string,
     @Body('path') filePath?: string,
   ): Promise<void> {
     if (!filePath) {
@@ -238,7 +239,7 @@ export class InternalSessionsController {
   @Post(':id/files/search')
   @HttpCode(HttpStatus.OK)
   async searchFiles(
-    @Param('id') sessionId: string,
+    @Param('id', SessionIdPipe) sessionId: string,
     @Body('query') query?: string,
   ): Promise<{
     query: string;
@@ -280,7 +281,7 @@ export class InternalSessionsController {
   @Get(':id/dirs')
   @HttpCode(HttpStatus.OK)
   async listDirectory(
-    @Param('id') sessionId: string,
+    @Param('id', SessionIdPipe) sessionId: string,
     @Query('path') dirPath?: string,
   ): Promise<{
     path: string;
@@ -336,7 +337,7 @@ export class InternalSessionsController {
   @Get(':id/stat')
   @HttpCode(HttpStatus.OK)
   async statPath(
-    @Param('id') sessionId: string,
+    @Param('id', SessionIdPipe) sessionId: string,
     @Query('path') filePath?: string,
   ): Promise<{
     path: string;
@@ -366,7 +367,7 @@ export class InternalSessionsController {
   @Post(':id/browser-smoke')
   @HttpCode(HttpStatus.OK)
   async runBrowserSmoke(
-    @Param('id') sessionId: string,
+    @Param('id', SessionIdPipe) sessionId: string,
     @Body('url') url?: string,
     @Body('timeoutMs') timeoutMs?: number,
   ): Promise<BrowserSmokeResult> {
