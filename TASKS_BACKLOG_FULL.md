@@ -88466,7 +88466,7 @@ taskId=DESIGN-CONTRAST-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the DESIGN-GAPS-01B LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 2 and its mutexes released. Brand and hover pass 4.5:1 with white text in both modes; links on a new brand-text token passing on both backgrounds; contrast test; sonnet subagent in worktree lane/DESIGN-CONTRAST-01, two passes, cherry-picked as 833fece and ae6dfd3; frontend 1305 passed, tsc and build clean; not deployed. FOLLOWUPS: 0 registered / 1 superseded (live check at the next deploy) / 0 dropped / 0 undisposed. Checkpoint: docs/DESIGN-CONTRAST-01-CHECKPOINT.md.
 **Task ID:** DESIGN-CONTRAST-01
 **Title:** Readable text on the dark-mode brand color
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
