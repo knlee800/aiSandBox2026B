@@ -86362,7 +86362,7 @@ taskId=TEAM-PRESELECT-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the BIZ-USER-01D LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 1 and its mutexes released. Partial: workflowId query read and preselected when a session is in the URL; panel links pass it; the no-session case registered as TEAM-NO-SESSION-01 for Keith; sonnet subagent in worktree lane/TEAM-PRESELECT-01, cherry-picked as a093bed; frontend 1427 passed, tsc and build clean; not deployed. FOLLOWUPS: 1 registered (TEAM-NO-SESSION-01) / 0 superseded / 0 dropped / 0 undisposed. Checkpoint: docs/TEAM-PRESELECT-01-CHECKPOINT.md.
 **Task ID:** TEAM-PRESELECT-01
 **Title:** Open a workflow on the Team page preselected
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -86380,6 +86380,31 @@ nature=IMPLEMENTATION
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** The agent panel's Open on Team link opens /collaboration without a preselected workflow, because the Team page reads only sessionId and projectId (found by BIZ-USER-01D). The Team page reads a workflowId query parameter and preselects that workflow if the owner has it; the panel link passes it.
+
+### TEAM-NO-SESSION-01 — The Team page without a workspace session
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TEAM-NO-SESSION-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the TEAM-PRESELECT-01 LOCK — not admitted.
+**Task ID:** TEAM-NO-SESSION-01
+**Title:** The Team page without a workspace session
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides what the Team page offers without a session. Keith decides.
+**Depends on:** TEAM-PRESELECT-01.
+**Primary write scope:** PROVISIONAL: frontend/components/collaboration/, frontend/messages/ (I18N), possibly services/api-gateway/src/orchestration/ if workflow runs stop needing a project session.
+**Mutexes / resources:** set at admission (expected FRONTEND, I18N; GATEWAY if the start route changes).
+**Hot-file leases:** none.
+**Shared contracts:** none known.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** the no-session state.
+**saturationClass:** OPTIONAL (Keith may change it).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** The Team page takes its session only from the URL (collaboration-page.tsx:923) and, without one, shows only "Open Team from a workspace session." and never loads workflows (collaboration-page.tsx:926, collaboration-view.tsx:281-284), so the agent panel's Open on Team link (which has no session) cannot preselect a workflow. Keith decides: either the Team page lists the owner's workflows without a session (run buttons off until a session exists, or business workflows that run without a project session), or the panel link opens a session first. Found by TEAM-PRESELECT-01.
 
 ### RESULTS-01 — Results list, unread badge and run history
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
