@@ -86376,13 +86376,13 @@ taskId=CONN-COPY-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the CONN-03 LOCK (named in docs/CONN-03-STAGE-START.md section 6, approved by Keith) — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — Keith admitted it ("Start CONN-COPY-01"). Registered 2026-11-10 by the CONN-03 LOCK.
 **Task ID:** CONN-COPY-01
 **Title:** Connections page says a short body excerpt is read
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: CONN-03 LOCKED (done 2026-11-10). Keith decides.
+**Start condition:** READY (CONN-03 LOCKED; Keith decided 2026-11-10). Was: Ready when: CONN-03 LOCKED. Keith decides.
 **Depends on:** CONN-03.
 **Primary write scope:** frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json, frontend/components/connections/ (tests that pin the copy).
 **Mutexes / resources:** FRONTEND, I18N.
