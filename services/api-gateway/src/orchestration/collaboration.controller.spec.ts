@@ -52,6 +52,16 @@ import {
   COLLABORATION_BUSINESS_RUN_NOTE,
   CollaborationBusinessSessionService,
 } from './collaboration-business-session';
+import { CollaborationRosterService } from './collaboration-roster';
+import { CollaborationRosterEntity } from './collaboration-roster.entity';
+import {
+  FRONT_DOOR_LEAD_LABEL,
+  buildReportBackPrompt,
+  reportBackIdempotencyKey,
+} from './collaboration-front-door';
+import { finalAnswerOf } from './collaboration-results';
+import { buildCollaborationProjectInstructions } from './handoff-request';
+import { CHIEF_OF_STAFF_INSTRUCTIONS } from '../system-agents/system-agent-registry';
 
 const OWNER_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const OTHER_ID = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
@@ -247,6 +257,7 @@ describe('CollaborationController login routes', () => {
   let deductionRows: Array<Record<string, unknown>>;
   let projectRows: BusinessRow[];
   let businessSessionRows: BusinessRow[];
+  let rosterRows: Map<string, { userId: string; memberIds: unknown; updatedAt: Date }>;
 
   beforeEach(async () => {
     process.env.GLOBAL_EXECUTION_ENABLED = 'true';
@@ -280,6 +291,8 @@ describe('CollaborationController login routes', () => {
     deductionRows = [];
     projectRows = [];
     businessSessionRows = [];
+    // COS-FRONTDOOR-01B: the roster store; empty unless a test saves one.
+    rosterRows = new Map();
     sessionReads = jest.fn(async (sessionId: string) => {
       const session = sessions.get(sessionId);
       if (!session) {
@@ -332,6 +345,19 @@ describe('CollaborationController login routes', () => {
         { provide: KnowledgeService, useValue: { findActiveOwnedByIds } },
         CollaborationWorkflowService,
         CollaborationBusinessSessionService,
+        CollaborationRosterService,
+        {
+          provide: getRepositoryToken(CollaborationRosterEntity),
+          useValue: {
+            findOne: async (opts: { where: { userId: string } }) => {
+              const row = rosterRows.get(opts.where.userId);
+              return row ? { ...row } : null;
+            },
+            upsert: async (row: { userId: string; memberIds: unknown; updatedAt: Date }) => {
+              rosterRows.set(row.userId, { ...row });
+            },
+          },
+        },
         { provide: getRepositoryToken(Project), useValue: createBusinessRepo(projectRows) },
         { provide: getRepositoryToken(Session), useValue: createBusinessRepo(businessSessionRows) },
         {
@@ -2193,7 +2219,9 @@ describe('CollaborationController login routes', () => {
       });
 
       it('still refuses a team start without a session with 400 and creates nothing', async () => {
-        for (const team of [undefined, 'coding', 'chief-of-staff', 'advisors']) {
+        // COS-FRONTDOOR-01B D4: chief-of-staff left this list; it starts on the business
+        // session (its own describe block). Coding and advisors still need a session.
+        for (const team of [undefined, 'coding', 'advisors']) {
           const body: Record<string, unknown> = { task: TASK };
           if (team !== undefined) {
             body.team = team;
@@ -2203,7 +2231,16 @@ describe('CollaborationController login routes', () => {
         }
         await http()
           .post('/api/collaboration/runs')
-          .send(startBody({ sessionId: undefined, team: 'chief-of-staff' }))
+          .send(startBody({ sessionId: undefined, team: 'advisors' }))
+          .expect(400);
+        // A chief-of-staff body with a sessionId that is present but not a UUID is still 400.
+        await http()
+          .post('/api/collaboration/runs')
+          .send(startBody({ sessionId: 'not-a-uuid', team: 'chief-of-staff' }))
+          .expect(400);
+        await http()
+          .post('/api/collaboration/runs')
+          .send(startBody({ sessionId: null, team: 'chief-of-staff' }))
           .expect(400);
         // A sessionId that is present but not a UUID is still refused on a workflow body.
         await startSessionless({ testRun: true, sessionId: 'not-a-uuid' }, 400);
@@ -2380,6 +2417,604 @@ describe('CollaborationController login routes', () => {
         expect(businessSessionRows).toHaveLength(0);
         expect(runs.size).toBe(0);
       });
+    });
+  });
+
+  describe('COS-FRONTDOOR-01B front-door run and report-back', () => {
+    const WF = 'f0f0f0f0-0000-4000-8000-0000000000fd';
+    const DRAFT_WF = 'f0f0f0f0-0000-4000-8000-0000000000fe';
+    const OWNER_TASK = 'Plan my week around the market and my mail.';
+    const outputs = new Map<string, { status: string; output: string }>();
+
+    function memberRow(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+      return {
+        id: WF,
+        userId: OWNER_ID,
+        name: 'Mail digest',
+        role: 'Assistant',
+        description: 'Summarizes unread mail.',
+        status: 'active',
+        tone: null,
+        replyLanguage: null,
+        purpose: 'You summarize the owner\'s unread mail.',
+        procedure: 'Call mail_list_unread_metadata and list each message in one line.',
+        result: 'A short list.',
+        toolProfile: 'read',
+        knowledgeScopeIds: ['policies'],
+        connectorToolIds: ['mail_list_unread_metadata'],
+        model: { choice: 'server' },
+        budgetPerRunCredits: null,
+        budgetPerDayCredits: null,
+        templateId: null,
+        ...overrides,
+      };
+    }
+
+    function service(): OrchestrationService {
+      return app.get(OrchestrationService);
+    }
+
+    function steps(runId: string): CollaborationReferralEntity[] {
+      return (runs.get(runId)?.referralIds ?? []).map((id) => referrals.get(id)!);
+    }
+
+    function last(runId: string): CollaborationReferralEntity {
+      const all = steps(runId);
+      return all[all.length - 1];
+    }
+
+    function jobOf(referralId: string): Record<string, unknown> {
+      const executionId = referrals.get(referralId)?.executionId;
+      const call = queue.enqueueExecution.mock.calls.find(
+        (args) => (args[0] as { executionId: string }).executionId === executionId,
+      );
+      if (!call) {
+        throw new Error(`no job for ${referralId}`);
+      }
+      return call[0] as Record<string, unknown>;
+    }
+
+    async function approve(runId: string, referralId: string, expected = 200) {
+      return http()
+        .post(`/api/collaboration/runs/${runId}/referrals/${referralId}/approve`)
+        .send({})
+        .expect(expected);
+    }
+
+    function finish(referralId: string, output: string, status = 'completed'): void {
+      const executionId = referrals.get(referralId)?.executionId;
+      if (!executionId) {
+        throw new Error(`no execution for ${referralId}`);
+      }
+      outputs.set(executionId, { status, output });
+    }
+
+    async function readRun(runId: string) {
+      return (await http().get(`/api/collaboration/runs/${runId}`).expect(200)).body as {
+        run: { status: string };
+        teamId: string;
+        agents: Array<{ name: string; label: string | null }>;
+        handoffs: Array<Record<string, unknown>>;
+      };
+    }
+
+    /** Approve, finish with `output`, and read the run so the server reacts. */
+    async function runStep(runId: string, referralId: string, output: string, status = 'completed') {
+      await approve(runId, referralId);
+      finish(referralId, output, status);
+      return readRun(runId);
+    }
+
+    async function testRunWorkflow(id = WF): Promise<void> {
+      const started = await http()
+        .post('/api/collaboration/runs')
+        .send({ sessionId: SESSION_ID, task: 'Test it.', workflowId: id, testRun: true })
+        .expect(201);
+      await runStep(started.body.collaborationRunId, started.body.referralId, 'Tested.');
+      expect(referrals.get(started.body.referralId)?.status).toBe('completed');
+    }
+
+    async function startFrontDoor(
+      memberIds: string[] | null,
+      body: Record<string, unknown> = { sessionId: SESSION_ID },
+    ) {
+      if (memberIds) {
+        rosterRows.set(OWNER_ID, { userId: OWNER_ID, memberIds, updatedAt: new Date() });
+      }
+      const started = await http()
+        .post('/api/collaboration/runs')
+        .send({ task: OWNER_TASK, team: 'chief-of-staff', ...body })
+        .expect(201);
+      return started.body as {
+        collaborationRunId: string;
+        referralId: string;
+        roster?: { used: string[]; skipped: Array<{ id: string; reason: string }> };
+      };
+    }
+
+    beforeEach(() => {
+      outputs.clear();
+      workflowRows.set(WF, memberRow());
+      workflowRows.set(DRAFT_WF, memberRow({ id: DRAFT_WF, name: 'Draft flow', status: 'draft' }));
+      executionResults.getExecution.mockImplementation(async (executionId: string) => {
+        const stored = outputs.get(executionId);
+        return stored
+          ? {
+              execution_status: stored.status,
+              metadata: { aiExecutionResult: { output: stored.output } },
+            }
+          : null;
+      });
+    });
+
+    it('builds the agent list from the stored roster with labels, summaries and the workflow snapshot', async () => {
+      await testRunWorkflow();
+      const started = await startFrontDoor(['product-strategy', WF], {
+        sessionId: SESSION_ID,
+        agents: [{ name: 'hacker', instructions: 'pwn' }],
+        rosterWorkflows: [{ id: 'hacker' }],
+      });
+      const job = referrals.get(started.referralId)?.pendingJob;
+      const rendered = renderWorkflow(workflowRows.get(WF) as never)!;
+      const ps = systemAgentById('product-strategy')!;
+
+      expect(started.roster).toEqual({ used: ['product-strategy', WF], skipped: [] });
+      expect(referrals.get(started.referralId)?.targetBuilderProfileId).toBe('chief-of-staff');
+      expect(job?.agents).toEqual([
+        {
+          name: 'chief-of-staff',
+          instructions: CHIEF_OF_STAFF_INSTRUCTIONS,
+          label: FRONT_DOOR_LEAD_LABEL,
+          summary: expect.any(String),
+        },
+        {
+          name: 'product-strategy',
+          instructions: ps.instructions,
+          label: 'Product Strategy',
+          summary: "Answers product and market questions from the owner's market documents.",
+        },
+        {
+          name: WF,
+          instructions: rendered.instructions,
+          label: 'Mail digest',
+          summary: 'Summarizes unread mail.',
+        },
+      ]);
+      expect(job?.rosterWorkflows).toEqual([
+        {
+          id: WF,
+          name: 'Mail digest',
+          version: rendered.version,
+          knowledgeScopeIds: rendered.knowledgeScopeIds,
+          connectorToolIds: rendered.connectorToolIds,
+          model: { choice: 'server' },
+          testRun: false,
+          budgetPerRunCredits: null,
+          budgetPerDayCredits: null,
+        },
+      ]);
+      expect(job?.workflow).toBeUndefined();
+      const brief = String(job?.projectInstructions);
+      expect(brief).toContain(
+        "- product-strategy (Product Strategy): Answers product and market questions from the owner's market documents.",
+      );
+      expect(brief).toContain(`- ${WF} (Mail digest): Summarizes unread mail.`);
+      expect(brief).not.toContain(ps.instructions);
+      expect(JSON.stringify(job)).not.toContain('pwn');
+      expect(JSON.stringify(job)).not.toContain('hacker');
+    });
+
+    it('leaves out a draft, an untested and a missing member and reports them', async () => {
+      // WF is not tested yet, and the third id is no workflow of this owner.
+      const started = await startFrontDoor([
+        WF,
+        'f0f0f0f0-0000-4000-8000-00000000dead',
+        'technology-advisor',
+      ]);
+      expect(started.roster?.used).toEqual(['technology-advisor']);
+      expect(started.roster?.skipped).toEqual([
+        { id: WF, reason: 'not_tested' },
+        { id: 'f0f0f0f0-0000-4000-8000-00000000dead', reason: 'missing' },
+      ]);
+      const job = referrals.get(started.referralId)?.pendingJob;
+      expect(job?.agents?.map((agent) => agent.name)).toEqual(['chief-of-staff', 'technology-advisor']);
+      expect(job).not.toHaveProperty('rosterWorkflows');
+
+      const draft = await startFrontDoor([DRAFT_WF]);
+      expect(draft.roster).toEqual({ used: [], skipped: [{ id: DRAFT_WF, reason: 'draft' }] });
+      expect(referrals.get(draft.referralId)?.pendingJob?.agents).toEqual([
+        { name: 'chief-of-staff', instructions: CHIEF_OF_STAFF_INSTRUCTIONS },
+      ]);
+    });
+
+    it('with an empty roster is today\'s one-role run, byte for byte', async () => {
+      const none = await startFrontDoor(null);
+      const empty = await startFrontDoor([]);
+      const expectedBrief = buildCollaborationProjectInstructions({
+        agents: [{ name: 'chief-of-staff', instructions: CHIEF_OF_STAFF_INSTRUCTIONS }],
+        agentName: 'chief-of-staff',
+      });
+      expect(expectedBrief).toBe(
+        `You are chief-of-staff.\n${CHIEF_OF_STAFF_INSTRUCTIONS}\n\nOther agents:\nnone\n\n` +
+          'Ask another agent only when you genuinely need them. At most one request, alone at the very end of the answer, exactly <handoff to="name">task</handoff>. Otherwise no request.',
+      );
+      for (const started of [none, empty]) {
+        expect(started.roster).toEqual({ used: [], skipped: [] });
+        const job = referrals.get(started.referralId)?.pendingJob as unknown as Record<string, unknown>;
+        expect(Object.keys(job).sort()).toEqual(
+          [
+            'adapter',
+            'agents',
+            'apiKeyId',
+            'callerProjectInstructions',
+            'conversationId',
+            'decidedBy',
+            'decisionReason',
+            'fileAccess',
+            'globalInstructions',
+            'handoffNote',
+            'model',
+            'orchestrationPriority',
+            'projectInstructions',
+            'prompt',
+            'provider',
+            'sessionId',
+            'workspaceContext',
+          ].sort(),
+        );
+        expect(job.agents).toEqual([
+          { name: 'chief-of-staff', instructions: CHIEF_OF_STAFF_INSTRUCTIONS },
+        ]);
+        expect(Object.keys((job.agents as object[])[0])).toEqual(['name', 'instructions']);
+        expect(job.projectInstructions).toBe(expectedBrief);
+        expect(job.callerProjectInstructions).toBeNull();
+      }
+
+      // A tag is still refused, there is no report-back, and the run completes on its answer.
+      const detail = await runStep(
+        none.collaborationRunId,
+        none.referralId,
+        'Done.\n<handoff to="product-strategy">Ask.</handoff>',
+      );
+      expect(detail.handoffs).toHaveLength(1);
+      expect(detail.handoffs[0].handoffNote).toBe('refused: agent_not_on_list');
+      expect(detail.run.status).toBe('completed');
+      expect(detail.agents).toEqual([{ name: 'chief-of-staff', label: null }]);
+    });
+
+    it('starts without a session on the business rows with the caller note; coding and advisors still need one', async () => {
+      const started = await startFrontDoor(['product-strategy'], {});
+      expect(projectRows).toHaveLength(1);
+      expect(businessSessionRows).toHaveLength(1);
+      const job = referrals.get(started.referralId)?.pendingJob;
+      expect(job?.sessionId).toBe(businessSessionRows[0].id);
+      expect(job?.callerProjectInstructions).toBe(COLLABORATION_BUSINESS_RUN_NOTE);
+      expect(String(job?.projectInstructions).startsWith(`${COLLABORATION_BUSINESS_RUN_NOTE}\n\n`)).toBe(
+        true,
+      );
+      expect(runs.get(started.collaborationRunId)?.projectId).toBe(projectRows[0].id);
+
+      // The member's step and the report-back keep the business session and the note.
+      await runStep(
+        started.collaborationRunId,
+        started.referralId,
+        'Asking.\n<handoff to="product-strategy">Market size?</handoff>',
+      );
+      const child = last(started.collaborationRunId);
+      expect(child.pendingJob?.sessionId).toBe(businessSessionRows[0].id);
+      expect(String(child.pendingJob?.projectInstructions).startsWith(COLLABORATION_BUSINESS_RUN_NOTE)).toBe(
+        true,
+      );
+      await runStep(started.collaborationRunId, child.referralId, 'Large.');
+      const reportBack = last(started.collaborationRunId);
+      expect(reportBack.targetBuilderProfileId).toBe('chief-of-staff');
+      expect(reportBack.pendingJob?.sessionId).toBe(businessSessionRows[0].id);
+
+      for (const team of ['coding', 'advisors', undefined]) {
+        await http()
+          .post('/api/collaboration/runs')
+          .send({ task: OWNER_TASK, ...(team ? { team } : {}) })
+          .expect(400);
+      }
+      expect(projectRows).toHaveLength(1);
+    });
+
+    it('runs two rounds: dispatch, report-back, dispatch to a workflow, report-back, final answer', async () => {
+      await testRunWorkflow();
+      const started = await startFrontDoor(['product-strategy', WF]);
+      const runId = started.collaborationRunId;
+
+      await runStep(
+        runId,
+        started.referralId,
+        'I need market data.\n<handoff to="product-strategy">What is the market size?</handoff>',
+      );
+      const d1 = last(runId);
+      expect(d1).toMatchObject({
+        sourceBuilderProfileId: 'chief-of-staff',
+        targetBuilderProfileId: 'product-strategy',
+        status: 'pending_approval',
+        depth: 1,
+      });
+      expect(d1.pendingJob?.workflow ?? null).toBeNull();
+      expect(d1.pendingJob?.provider).toBe('stub');
+
+      const afterD1 = await runStep(runId, d1.referralId, 'The market is large.');
+      const rb1 = last(runId);
+      expect(rb1).toMatchObject({
+        sourceBuilderProfileId: 'product-strategy',
+        targetBuilderProfileId: 'chief-of-staff',
+        status: 'pending_approval',
+        idempotencyKey: reportBackIdempotencyKey(d1.referralId),
+        depth: 2,
+        parentReferralTraceId: d1.referralTraceId,
+      });
+      expect(rb1.pendingJob?.prompt).toBe(
+        buildReportBackPrompt({
+          ownerTask: OWNER_TASK,
+          label: 'Product Strategy',
+          answer: 'The market is large.',
+        }),
+      );
+      expect(rb1.pendingJob?.decidedBy).toBeNull();
+      expect(afterD1.run.status).toBe('active');
+      expect(referrals.get(d1.referralId)?.pendingJob?.reportBackChecked).toBe(true);
+      // Reading again (and the sweep) creates no second report-back.
+      await readRun(runId);
+      await service().sweepCollaborations();
+      expect(
+        steps(runId).filter((row) => row.idempotencyKey === reportBackIdempotencyKey(d1.referralId)),
+      ).toHaveLength(1);
+
+      await runStep(
+        runId,
+        rb1.referralId,
+        `Now the mail.\n<handoff to="${WF}">Summarize my unread mail.</handoff>`,
+      );
+      expect(referrals.get(rb1.referralId)?.pendingJob?.handoffNote ?? null).toBeNull();
+      const d2 = last(runId);
+      const snapshot = referrals.get(started.referralId)?.pendingJob?.rosterWorkflows?.[0];
+      expect(d2).toMatchObject({
+        sourceBuilderProfileId: 'chief-of-staff',
+        targetBuilderProfileId: WF,
+        status: 'pending_approval',
+        depth: 3,
+      });
+      expect(d2.pendingJob?.workflow).toEqual(snapshot);
+      expect(d2.pendingJob?.workflow?.testRun).toBe(false);
+
+      await approve(runId, d2.referralId);
+      const intent = ledger.writeExecutionIntent.mock.calls.at(-1)?.[0];
+      expect(intent.builderProfileId).toBe(WF);
+      expect(intent.metadata).toMatchObject({
+        agentDefinitionId: WF,
+        agentDefinitionVersion: snapshot?.version,
+      });
+      expect(intent.metadata).not.toHaveProperty('workflowTestRun');
+      finish(d2.referralId, 'Two unread mails.');
+      await readRun(runId);
+      const rb2 = last(runId);
+      expect(rb2).toMatchObject({
+        sourceBuilderProfileId: WF,
+        targetBuilderProfileId: 'chief-of-staff',
+        status: 'pending_approval',
+        depth: 4,
+      });
+      expect(rb2.pendingJob?.prompt).toContain('Mail digest answered:\nTwo unread mails.');
+      expect(rb2.pendingJob?.workflow ?? null).toBeNull();
+
+      const done = await runStep(runId, rb2.referralId, 'Here is your week.');
+      expect(done.run.status).toBe('completed');
+      expect(steps(runId)).toHaveLength(5);
+      expect(finalAnswerOf(steps(runId))).toBe('Here is your week.');
+      expect(done.agents).toEqual([
+        { name: 'chief-of-staff', label: 'Chief of Staff' },
+        { name: 'product-strategy', label: 'Product Strategy' },
+        { name: WF, label: 'Mail digest' },
+      ]);
+      expect(done.teamId).toBe('chief-of-staff');
+      for (const step of steps(runId)) {
+        expect(step.pendingJob?.decidedBy).toBe(OWNER_ID);
+      }
+
+      // HARNESS_ENTITLEMENT_PROOF_V1 used, not changed: every front-door job, including
+      // a report-back and a workflow member, is signed with the chief-of-staff key set.
+      const cosKeys = Object.keys(jobOf(started.referralId)).sort();
+      expect(cosKeys).toContain('harnessEntitlementProof');
+      for (const step of [d1, rb1, d2, rb2]) {
+        expect(Object.keys(jobOf(step.referralId)).sort()).toEqual(cosKeys);
+      }
+      expect(jobOf(d2.referralId).builderProfileId).toBe(WF);
+      expect(jobOf(rb1.referralId).builderProfileId).toBe('chief-of-staff');
+    });
+
+    it('refuses a third round and a second dispatch to the same member', async () => {
+      await testRunWorkflow();
+      const started = await startFrontDoor(['product-strategy', 'technology-advisor', WF]);
+      const runId = started.collaborationRunId;
+      await runStep(runId, started.referralId, 'Q.\n<handoff to="product-strategy">Market?</handoff>');
+      await runStep(runId, last(runId).referralId, 'Large.');
+      const rb1 = last(runId);
+      await runStep(runId, rb1.referralId, 'Q.\n<handoff to="technology-advisor">Stack?</handoff>');
+      await runStep(runId, last(runId).referralId, 'Modern.');
+      const rb2 = last(runId);
+      expect(rb2.targetBuilderProfileId).toBe('chief-of-staff');
+      service().clearAuditEvents();
+      const done = await runStep(runId, rb2.referralId, `Final.\n<handoff to="${WF}">Mail?</handoff>`);
+      expect(referrals.get(rb2.referralId)?.pendingJob?.handoffNote).toBe('refused: front_door_rounds');
+      expect(
+        service()
+          .getAuditEvents()
+          .some((event) => event.payload.lifecycleEvent === 'referral_front_door_rounds_blocked'),
+      ).toBe(true);
+      expect(steps(runId)).toHaveLength(5);
+      expect(done.run.status).toBe('completed');
+      expect(finalAnswerOf(steps(runId))).toBe('Final.\n<handoff to="' + WF + '">Mail?</handoff>');
+
+      const again = await startFrontDoor(['product-strategy', 'technology-advisor']);
+      await runStep(again.collaborationRunId, again.referralId, 'Q.\n<handoff to="product-strategy">A?</handoff>');
+      await runStep(again.collaborationRunId, last(again.collaborationRunId).referralId, 'B.');
+      const rb = last(again.collaborationRunId);
+      await runStep(again.collaborationRunId, rb.referralId, 'Q.\n<handoff to="product-strategy">Again?</handoff>');
+      expect(referrals.get(rb.referralId)?.pendingJob?.handoffNote).toBe('refused: loop');
+      expect(steps(again.collaborationRunId)).toHaveLength(3);
+    });
+
+    it("refuses a member's own tag as roster_reply and reports its answer back without the tag", async () => {
+      const started = await startFrontDoor(['product-strategy', 'technology-advisor']);
+      const runId = started.collaborationRunId;
+      await runStep(runId, started.referralId, 'Q.\n<handoff to="product-strategy">Market?</handoff>');
+      const d1 = last(runId);
+      await runStep(runId, d1.referralId, 'Large market.\n<handoff to="technology-advisor">Check the stack.</handoff>');
+      expect(referrals.get(d1.referralId)?.pendingJob?.handoffNote).toBe('refused: roster_reply');
+      const rb = last(runId);
+      expect(rb.targetBuilderProfileId).toBe('chief-of-staff');
+      expect(rb.pendingJob?.prompt).toContain('Product Strategy answered:\nLarge market.\n\n');
+      expect(rb.pendingJob?.prompt).not.toContain('<handoff');
+
+      const other = await startFrontDoor(['product-strategy']);
+      await runStep(other.collaborationRunId, other.referralId, 'Q.\n<handoff to="product-strategy">Market?</handoff>');
+      const child = last(other.collaborationRunId);
+      await runStep(other.collaborationRunId, child.referralId, 'A.\n<handoff to="chief-of-staff">Back.</handoff>');
+      expect(referrals.get(child.referralId)?.pendingJob?.handoffNote).toBe('refused: roster_reply');
+    });
+
+    it('refuses a Chief of Staff tag to an agent that is not on the roster', async () => {
+      const started = await startFrontDoor(['product-strategy']);
+      await runStep(
+        started.collaborationRunId,
+        started.referralId,
+        'Q.\n<handoff to="technology-advisor">Stack?</handoff>',
+      );
+      expect(referrals.get(started.referralId)?.pendingJob?.handoffNote).toBe(
+        'refused: agent_not_on_list',
+      );
+      expect(steps(started.collaborationRunId)).toHaveLength(1);
+    });
+
+    it("completes on the agent's answer when the owner rejects the report-back", async () => {
+      const started = await startFrontDoor(['product-strategy']);
+      const runId = started.collaborationRunId;
+      await runStep(runId, started.referralId, 'Q.\n<handoff to="product-strategy">Market?</handoff>');
+      await runStep(runId, last(runId).referralId, 'The agent answer.');
+      const rb = last(runId);
+      await http()
+        .post(`/api/collaboration/runs/${runId}/referrals/${rb.referralId}/reject`)
+        .send({ reason: 'enough' })
+        .expect(200);
+      const detail = await readRun(runId);
+      expect(detail.run.status).toBe('completed');
+      expect(finalAnswerOf(steps(runId))).toBe('The agent answer.');
+      expect(steps(runId)).toHaveLength(3);
+    });
+
+    it('fails the run with no report-back when the member fails', async () => {
+      const started = await startFrontDoor(['product-strategy']);
+      const runId = started.collaborationRunId;
+      await runStep(runId, started.referralId, 'Q.\n<handoff to="product-strategy">Market?</handoff>');
+      const d1 = last(runId);
+      const detail = await runStep(runId, d1.referralId, '', 'failed');
+      expect(referrals.get(d1.referralId)?.status).toBe('failed');
+      expect(steps(runId)).toHaveLength(2);
+      expect(detail.run.status).toBe('failed');
+      await service().sweepCollaborations();
+      expect(steps(runId)).toHaveLength(2);
+    });
+
+    it('waits to settle while a report-back is missing, and the sweep recovers it', async () => {
+      const started = await startFrontDoor(['product-strategy']);
+      const runId = started.collaborationRunId;
+      await runStep(runId, started.referralId, 'Q.\n<handoff to="product-strategy">Market?</handoff>');
+      const d1 = last(runId);
+      await runStep(runId, d1.referralId, 'Large.');
+      const rb = last(runId);
+      // Simulate a gateway stop between the member's completion and the report-back.
+      referrals.delete(rb.referralId);
+      const run = runs.get(runId)!;
+      run.referralIds = run.referralIds.filter((id) => id !== rb.referralId);
+      const member = referrals.get(d1.referralId)!;
+      member.pendingJob = { ...member.pendingJob!, reportBackChecked: undefined };
+      expect(steps(runId).every((row) => row.status === 'completed')).toBe(true);
+
+      const settle = (
+        service() as unknown as {
+          settleCollaborationRun: (id: string, rows: Array<{ status: string }>) => Promise<{ status: string }>;
+        }
+      ).settleCollaborationRun.bind(service());
+      const settled = await settle(runId, steps(runId).map((row) => ({ status: row.status })));
+      expect(settled.status).toBe('active');
+      expect(runs.get(runId)?.status).toBe('active');
+
+      await service().sweepCollaborations();
+      const recovered = steps(runId).filter(
+        (row) => row.idempotencyKey === reportBackIdempotencyKey(d1.referralId),
+      );
+      expect(recovered).toHaveLength(1);
+      expect(recovered[0].status).toBe('pending_approval');
+      expect(runs.get(runId)?.status).toBe('active');
+    });
+
+    it('re-checks a workflow member at approve and runs it on its own model', async () => {
+      workflowRows.set(WF, memberRow({ budgetPerDayCredits: 5 }));
+      await testRunWorkflow();
+      const started = await startFrontDoor([WF]);
+      const runId = started.collaborationRunId;
+      await runStep(runId, started.referralId, `Q.\n<handoff to="${WF}">Mail?</handoff>`);
+      const child = last(runId);
+      expect(child.pendingJob?.workflow?.budgetPerDayCredits).toBe(5);
+
+      const testExecution = [...referrals.values()].find(
+        (row) => row.targetBuilderProfileId === WF && row.pendingJob?.workflow?.testRun === true,
+      )?.executionId;
+      deductionRows.push({
+        ownerId: OWNER_ID,
+        sourceEventId: testExecution,
+        requestedCredits: 5,
+        createdAt: new Date(),
+      });
+      const calls = queue.enqueueExecution.mock.calls.length;
+      const overBudget = await approve(runId, child.referralId, 429);
+      expect(overBudget.body.code).toBe('WORKFLOW_BUDGET_DAY');
+      deductionRows.length = 0;
+      workflowRows.set(WF, memberRow({ budgetPerDayCredits: 5, status: 'disabled' }));
+      const off = await approve(runId, child.referralId, 409);
+      expect(off.body.code).toBe('WORKFLOW_DISABLED');
+      expect(queue.enqueueExecution.mock.calls.length).toBe(calls);
+      expect(referrals.get(child.referralId)?.status).toBe('pending_approval');
+
+      workflowRows.set(WF, memberRow({ model: { choice: 'platform', id: 'claude-haiku-5-5' } }));
+      await testRunWorkflow();
+      const platform = await startFrontDoor([WF]);
+      await runStep(platform.collaborationRunId, platform.referralId, `Q.\n<handoff to="${WF}">Mail?</handoff>`);
+      const platformChild = last(platform.collaborationRunId);
+      expect(platformChild.pendingJob).toMatchObject({
+        provider: 'anthropic',
+        adapter: 'anthropic',
+        model: 'claude-haiku-5-5',
+      });
+      await runStep(platform.collaborationRunId, platformChild.referralId, 'Mail.');
+      const reportBack = last(platform.collaborationRunId);
+      expect(reportBack.targetBuilderProfileId).toBe('chief-of-staff');
+      expect(reportBack.pendingJob).toMatchObject({ provider: 'stub', model: 'stub' });
+    });
+
+    it('signs a report-back job and a workflow member job with the chief-of-staff key set', async () => {
+      const plain = await startFrontDoor([]);
+      await approve(plain.collaborationRunId, plain.referralId);
+      const cosKeys = Object.keys(jobOf(plain.referralId)).sort();
+
+      await testRunWorkflow();
+      const started = await startFrontDoor([WF]);
+      const runId = started.collaborationRunId;
+      await runStep(runId, started.referralId, `Q.\n<handoff to="${WF}">Mail?</handoff>`);
+      const child = last(runId);
+      await runStep(runId, child.referralId, 'Mail.');
+      const rb = last(runId);
+      await approve(runId, rb.referralId);
+
+      expect(Object.keys(jobOf(started.referralId)).sort()).toEqual(cosKeys);
+      expect(Object.keys(jobOf(child.referralId)).sort()).toEqual(cosKeys);
+      expect(Object.keys(jobOf(rb.referralId)).sort()).toEqual(cosKeys);
     });
   });
 });

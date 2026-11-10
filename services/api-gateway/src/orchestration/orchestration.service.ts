@@ -19,7 +19,7 @@ import {
 import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
 import { QueueService } from '../queue/queue.service';
 import { ExecutionResultService } from '../ai/execution-result.service';
-import { systemAgentVersion } from '../system-agents/system-agent-registry';
+import { isSystemAgentModel, systemAgentVersion } from '../system-agents/system-agent-registry';
 import { UsageLedgerService } from '../usage-ledger/usage-ledger.service';
 import { ExecutionSafetyGuard } from '../safety/execution-safety.guard';
 import { KillSwitchConfig } from '../safety/kill-switch.config';
@@ -34,7 +34,17 @@ import { CollaborationRunEntity } from './collaboration-run.entity';
 import { CollaborationReferralEntity } from './collaboration-referral.entity';
 import { ConnectorConnection } from '../entities/connector-connection.entity';
 import { userWorkflowGrants } from '../user-agent/user-workflow-grants';
-import { CollaborationWorkflowService } from './collaboration-workflow';
+import {
+  CollaborationWorkflowService,
+  resolveWorkflowProviderModel,
+} from './collaboration-workflow';
+import {
+  FRONT_DOOR_LEAD_ID,
+  buildReportBackPrompt,
+  classifyFrontDoorEdge,
+  isFrontDoorRun,
+  reportBackIdempotencyKey,
+} from './collaboration-front-door';
 import {
   resolveConnectorGrantJobFields,
   type ConnectorGrantJobFields,
@@ -49,6 +59,7 @@ import {
   type CollaborationRunId,
   DEFAULT_MAX_AGENTS_PER_COLLABORATION,
   DEFAULT_MAX_REFERRAL_DEPTH,
+  MAX_FRONT_DOOR_ROUNDS,
   MAX_HANDOFFS_PER_RUN,
   type IdempotencyKey,
   NO_WRITE_TOOLS_INDICATOR,
@@ -228,6 +239,11 @@ export interface CreatePendingReferralInput {
   readonly fileAccess?: boolean;
   /** BIZ-USER-01C D4: first hand-off of a user workflow run only. Built by CollaborationWorkflowService. */
   readonly workflow?: ReferralPendingWorkflow;
+  /**
+   * COS-FRONTDOOR-01B D10: first hand-off of a front-door run only, built by
+   * CollaborationRosterService.membersForStart. Never read from a request body.
+   */
+  readonly rosterWorkflows?: readonly ReferralPendingWorkflow[];
   readonly constraints?: Partial<ReferralConstraints>;
   readonly parentReferralTraceId?: ReferralTraceId | null;
   readonly timeoutMs?: number;
@@ -1068,6 +1084,7 @@ export class OrchestrationService {
         handoffNote: null,
         ...(prepared.fileAccess ? { fileAccess: true } : {}),
         ...(prepared.workflow ? { workflow: prepared.workflow } : {}),
+        ...(prepared.rosterWorkflows ? { rosterWorkflows: prepared.rosterWorkflows } : {}),
       },
     });
     const stored = await this.referralRepo.findOne({
@@ -1474,19 +1491,33 @@ export class OrchestrationService {
     const existingEdges = await referralRepo.find({
       where: { collaborationRunId: input.collaborationRunId },
     });
+    const graphEdges = existingEdges.map((edge) => ({
+      sourceProfileId: edge.sourceBuilderProfileId,
+      targetProfileId: edge.targetBuilderProfileId,
+      createdAtMs:
+        edge.createdAt instanceof Date
+          ? edge.createdAt.getTime()
+          : Date.parse(String(edge.createdAt)),
+    }));
     const sendBackEdge = classifySendBackEdge(
       input.sourceBuilderProfileId,
       input.targetBuilderProfileId,
-      existingEdges.map((edge) => ({
-        sourceProfileId: edge.sourceBuilderProfileId,
-        targetProfileId: edge.targetBuilderProfileId,
-        createdAtMs:
-          edge.createdAt instanceof Date
-            ? edge.createdAt.getTime()
-            : Date.parse(String(edge.createdAt)),
-      })),
+      graphEdges,
     );
-    if (sendBackEdge !== 'ordinary') {
+    // COS-FRONTDOOR-01B D15/D16: the run's first step decides whether it is a front-door run.
+    const firstStepId = runEntity.referralIds?.[0];
+    const firstStep = firstStepId
+      ? existingEdges.find((edge) => edge.referralId === firstStepId)
+      : undefined;
+    const firstAgents = firstStep?.pendingJob?.agents;
+    const frontDoorEdge = classifyFrontDoorEdge(
+      input.sourceBuilderProfileId,
+      input.targetBuilderProfileId,
+      graphEdges,
+      firstStep?.targetBuilderProfileId,
+      Array.isArray(firstAgents) ? firstAgents.length : 0,
+    );
+    if (sendBackEdge !== 'ordinary' || frontDoorEdge !== 'ordinary') {
       const existingSendBack = await this.findActiveIdempotentReferral(
         referralRepo,
         input.collaborationRunId,
@@ -1501,7 +1532,7 @@ export class OrchestrationService {
     }
 
     const visitedBuilderProfileIds = new Set(input.visitedBuilderProfileIds ?? []);
-    if (sendBackEdge === 'ordinary' && depth >= maxDepth) {
+    if (sendBackEdge === 'ordinary' && frontDoorEdge === 'ordinary' && depth >= maxDepth) {
       const sourceBuilder = await this.resolveBuilderIdentity(
         referralRepo,
         run,
@@ -1535,9 +1566,44 @@ export class OrchestrationService {
       );
     }
 
+    if (frontDoorEdge === 'capped') {
+      const sourceBuilder = await this.resolveBuilderIdentity(
+        referralRepo,
+        run,
+        input.sourceBuilderProfileId,
+      );
+      const targetBuilder = await this.resolveBuilderIdentity(
+        referralRepo,
+        run,
+        input.targetBuilderProfileId,
+      );
+      this.emitAuditEvent({
+        eventType: 'orchestration.safety_limit_breached',
+        collaborationRunId: input.collaborationRunId,
+        referralTraceId: null,
+        sourceBuilder,
+        targetBuilder,
+        payload: {
+          lifecycleEvent: 'referral_front_door_rounds_blocked',
+          limitType: 'front_door_rounds',
+          currentValue: MAX_FRONT_DOOR_ROUNDS + 1,
+          maxValue: MAX_FRONT_DOOR_ROUNDS,
+          reason: 'max_front_door_rounds_exceeded',
+          userId: run.userId,
+          projectId: run.projectId,
+          sourceBuilderProfileId: input.sourceBuilderProfileId,
+          targetBuilderProfileId: input.targetBuilderProfileId,
+        },
+      });
+      throw new Error(
+        `Front-door round limit ${MAX_FRONT_DOOR_ROUNDS} exceeded for collaboration ${input.collaborationRunId}`,
+      );
+    }
+
     if (
       sendBackEdge === 'capped' ||
       (sendBackEdge === 'ordinary' &&
+        frontDoorEdge !== 'report_back' &&
         visitedBuilderProfileIds.has(input.targetBuilderProfileId))
     ) {
       const sourceBuilder = await this.resolveBuilderIdentity(
@@ -1965,7 +2031,9 @@ export class OrchestrationService {
     });
     if (
       stored.some(
-        (row) => row.status === 'completed' && !this.isAnswerHandoffProcessed(row, stored),
+        (row) =>
+          row.status === 'completed' &&
+          (!this.isAnswerHandoffProcessed(row, stored) || !this.isReportBackProcessed(row, stored)),
       )
     ) {
       return this.toCollaborationRun(entity);
@@ -2384,6 +2452,7 @@ export class OrchestrationService {
         summary: outcome.summary,
       });
       await this.maybeRequestHandoff(referralId, outcome.summary);
+      await this.maybeReportBack(referralId);
       const updated = await this.getReferral(referralId);
       if (!updated) {
         throw new Error(`Referral ${referralId} not found`);
@@ -2531,6 +2600,206 @@ export class OrchestrationService {
         this.logWithoutContents('collaboration.sweep_item_failed', error);
       }
     }
+    // COS-FRONTDOOR-01B D18: a report-back lost between completion and creation.
+    for (const referral of rows) {
+      if (referral.status !== 'completed' || this.isReportBackProcessed(referral, rows)) {
+        continue;
+      }
+      try {
+        await this.maybeReportBack(referral.referralId);
+      } catch (error) {
+        this.logWithoutContents('collaboration.sweep_item_failed', error);
+      }
+    }
+  }
+
+  /** D14: an agent step of a front-door run that the Chief of Staff dispatched to. */
+  private needsReportBack(referral: CollaborationReferralEntity): boolean {
+    return (
+      referral.status === 'completed' &&
+      !!referral.pendingJob &&
+      referral.sourceBuilderProfileId === FRONT_DOOR_LEAD_ID &&
+      referral.targetBuilderProfileId !== FRONT_DOOR_LEAD_ID &&
+      isFrontDoorRun(referral.pendingJob.agents)
+    );
+  }
+
+  /** D18: like isAnswerHandoffProcessed, for the report-back of one agent step. */
+  private isReportBackProcessed(
+    referral: CollaborationReferralEntity,
+    rows: readonly CollaborationReferralEntity[],
+  ): boolean {
+    if (!this.needsReportBack(referral)) {
+      return true;
+    }
+    if (referral.pendingJob?.reportBackChecked === true) {
+      return true;
+    }
+    const idempotencyKey = reportBackIdempotencyKey(referral.referralId);
+    return rows.some(
+      (row) => row.referralId !== referral.referralId && row.idempotencyKey === idempotencyKey,
+    );
+  }
+
+  private async maybeReportBack(referralId: ReferralId): Promise<void> {
+    try {
+      await this.reportBackFromAnswer(referralId);
+    } catch (error) {
+      this.logWithoutContents('collaboration.report_back_failed', error);
+      try {
+        await this.rememberReportBackChecked(referralId);
+      } catch (noteError) {
+        this.logWithoutContents('collaboration.report_back_note_failed', noteError);
+      }
+    }
+  }
+
+  /**
+   * COS-FRONTDOOR-01B D14: when a dispatched agent finishes, the server (never
+   * the agent) creates one waiting hand-off from that agent back to the Chief
+   * of Staff. It waits for the owner's approval like any hand-off, and its
+   * idempotency key makes a second call a no-op. A failed or timed-out agent
+   * step is never completed, so it gets no report-back (DECISION C).
+   */
+  private async reportBackFromAnswer(referralId: ReferralId): Promise<void> {
+    const entity = await this.referralRepo.findOne({ where: { referralId } });
+    if (!entity?.pendingJob || !this.needsReportBack(entity)) {
+      return;
+    }
+    if (entity.pendingJob.reportBackChecked === true) {
+      return;
+    }
+    const run = await this.runRepo.findOne({
+      where: { collaborationRunId: entity.collaborationRunId },
+    });
+    if (!run || run.status !== 'active') {
+      return;
+    }
+    const rows = await this.referralRepo.find({
+      where: { collaborationRunId: entity.collaborationRunId },
+    });
+    const idempotencyKey = reportBackIdempotencyKey(referralId);
+    if (rows.some((row) => row.referralId !== referralId && row.idempotencyKey === idempotencyKey)) {
+      await this.rememberReportBackChecked(referralId);
+      return;
+    }
+    const firstId = run.referralIds?.[0];
+    const first = firstId ? rows.find((row) => row.referralId === firstId) : undefined;
+    if (!first?.pendingJob || first.targetBuilderProfileId !== FRONT_DOOR_LEAD_ID) {
+      await this.rememberReportBackChecked(referralId);
+      return;
+    }
+
+    const job = entity.pendingJob;
+    const lead = first.pendingJob;
+    const agents = this.copyStoredAgents(job.agents) ?? [];
+    const member = agents.find((agent) => agent.name === entity.targetBuilderProfileId);
+    const label =
+      typeof member?.label === 'string' && member.label.trim().length > 0
+        ? member.label.trim()
+        : entity.targetBuilderProfileId;
+    const summary = typeof entity.resultSummary === 'string' ? entity.resultSummary : '';
+    const parsed = parseHandoffRequest(summary);
+    const answer = parsed.kind === 'request' ? parsed.answerWithoutRequest : summary.trim();
+    const prompt = buildReportBackPrompt({ ownerTask: lead.prompt, label, answer });
+
+    try {
+      await this.createPendingReferral({
+        collaborationRunId: entity.collaborationRunId,
+        sourceBuilder: {
+          agentRole: entity.targetAgentRole,
+          builderProfileId: entity.targetBuilderProfileId,
+        },
+        targetBuilder: {
+          agentRole: first.targetAgentRole,
+          builderProfileId: FRONT_DOOR_LEAD_ID,
+        },
+        idempotencyKey,
+        sessionId: job.sessionId,
+        conversationId: job.conversationId,
+        apiKeyId: job.apiKeyId,
+        prompt,
+        // The Chief of Staff's step runs on the Chief of Staff's provider and model.
+        provider: lead.provider,
+        adapter: lead.adapter,
+        model: lead.model ?? undefined,
+        workspaceContext: job.workspaceContext ?? undefined,
+        globalInstructions: job.globalInstructions ?? undefined,
+        parentReferralTraceId: entity.referralTraceId,
+        timeoutMs: entity.timeoutMs,
+        orchestrationPriority: job.orchestrationPriority ?? undefined,
+        constraints: {
+          timeoutMs: entity.constraintTimeoutMs,
+          maxDepth: entity.constraintMaxDepth,
+          maxAgentsPerCollaboration: entity.constraintMaxAgentsPerCollaboration,
+          readOnly: entity.constraintReadOnly,
+          allowWriteTools: entity.constraintAllowWriteTools,
+          allowedTools: [...(entity.constraintAllowedTools ?? [])],
+        },
+      });
+      await this.rememberReportBackChecked(referralId);
+    } catch (error) {
+      if (!this.isIdempotencyUniqueViolation(error)) {
+        this.logWithoutContents('collaboration.report_back_refused', error);
+      }
+      await this.rememberReportBackChecked(referralId);
+    }
+  }
+
+  private async rememberReportBackChecked(referralId: ReferralId): Promise<void> {
+    const entity = await this.referralRepo.findOne({ where: { referralId } });
+    if (!entity?.pendingJob || entity.pendingJob.reportBackChecked) {
+      return;
+    }
+    entity.pendingJob = {
+      ...entity.pendingJob,
+      reportBackChecked: true,
+    };
+    entity.updatedAt = new Date();
+    await this.referralRepo.save(entity);
+  }
+
+  /** D12: the roster snapshot of a workflow member, when the run is a front-door run. */
+  private async rosterWorkflowFor(
+    collaborationRunId: CollaborationRunId,
+    targetProfileId: string,
+    agents: readonly CollaborationListedAgent[] | null,
+  ): Promise<ReferralPendingWorkflow | null> {
+    if (!isFrontDoorRun(agents) || targetProfileId === FRONT_DOOR_LEAD_ID) {
+      return null;
+    }
+    const run = await this.runRepo.findOne({ where: { collaborationRunId } });
+    const firstId = run?.referralIds?.[0];
+    if (!firstId) {
+      return null;
+    }
+    const first = await this.referralRepo.findOne({ where: { referralId: firstId } });
+    if (!first || first.targetBuilderProfileId !== FRONT_DOOR_LEAD_ID) {
+      return null;
+    }
+    const snapshots = first.pendingJob?.rosterWorkflows;
+    if (!Array.isArray(snapshots)) {
+      return null;
+    }
+    const snapshot = snapshots.find(
+      (entry) => !!entry && typeof entry === 'object' && entry.id === targetProfileId,
+    );
+    return snapshot ? this.copyWorkflowSnapshot(snapshot) : null;
+  }
+
+  /**
+   * D21: the run's stored agent list, from its first step, with the labels
+   * the page shows. Never the instructions.
+   */
+  async readReferralAgents(
+    referralId: ReferralId,
+  ): Promise<Array<{ name: string; label: string | null }>> {
+    const entity = await this.referralRepo.findOne({ where: { referralId } });
+    const agents = this.copyStoredAgents(entity?.pendingJob?.agents) ?? [];
+    return agents.map((agent) => ({
+      name: agent.name,
+      label: typeof agent.label === 'string' && agent.label.length > 0 ? agent.label : null,
+    }));
   }
 
   private isAnswerHandoffProcessed(
@@ -2555,6 +2824,7 @@ export class OrchestrationService {
     projectInstructions: string | null;
     fileAccess: boolean;
     workflow: ReferralPendingWorkflow | null;
+    rosterWorkflows: ReferralPendingWorkflow[] | null;
   }> {
     const parentId = input.parentReferralTraceId?.trim() || null;
     if (input.agents !== undefined && parentId) {
@@ -2562,6 +2832,9 @@ export class OrchestrationService {
     }
     if (input.workflow !== undefined && parentId) {
       throw new BadRequestException('workflow is only accepted on the first hand-off');
+    }
+    if (input.rosterWorkflows !== undefined && parentId) {
+      throw new BadRequestException('rosterWorkflows are only accepted on the first hand-off');
     }
     const workflow = input.workflow ? this.copyWorkflowSnapshot(input.workflow) : null;
     if (
@@ -2631,7 +2904,57 @@ export class OrchestrationService {
       ? parent.pendingJob?.fileAccess === true
       : input.fileAccess === true;
 
-    return { agents, callerProjectInstructions, projectInstructions, fileAccess, workflow };
+    // COS-FRONTDOOR-01B D10: the members' snapshots, on a front-door start only.
+    let rosterWorkflows: ReferralPendingWorkflow[] | null = null;
+    if (!parent && input.rosterWorkflows !== undefined && input.rosterWorkflows.length > 0) {
+      if (
+        !isFrontDoorRun(agents) ||
+        input.targetBuilder.builderProfileId !== FRONT_DOOR_LEAD_ID ||
+        !fileAccess ||
+        workflow
+      ) {
+        throw new BadRequestException('rosterWorkflows need a Chief of Staff start with a roster');
+      }
+      rosterWorkflows = [];
+      for (const snapshot of input.rosterWorkflows) {
+        const copy = this.copyWorkflowSnapshot(snapshot);
+        if (
+          copy.id === FRONT_DOOR_LEAD_ID ||
+          copy.testRun ||
+          rosterWorkflows.some((entry) => entry.id === copy.id) ||
+          !agents?.some((agent) => agent.name === copy.id)
+        ) {
+          throw new BadRequestException('rosterWorkflows must match the listed members');
+        }
+        rosterWorkflows.push(copy);
+      }
+    }
+
+    // D12: a child whose target is a roster workflow carries that member's own
+    // snapshot, so its grants, budgets, tested state and version follow it.
+    let stepWorkflow = workflow;
+    if (parent) {
+      const snapshot = await this.rosterWorkflowFor(
+        input.collaborationRunId,
+        input.targetBuilder.builderProfileId,
+        agents,
+      );
+      if (snapshot) {
+        if (!fileAccess) {
+          throw new BadRequestException('A workflow member needs file access');
+        }
+        stepWorkflow = snapshot;
+      }
+    }
+
+    return {
+      agents,
+      callerProjectInstructions,
+      projectInstructions,
+      fileAccess,
+      workflow: stepWorkflow,
+      rosterWorkflows,
+    };
   }
 
   /**
@@ -2805,6 +3128,9 @@ export class OrchestrationService {
     return value.map((agent) => ({
       name: agent.name,
       instructions: agent.instructions,
+      // COS-FRONTDOOR-01B D13: children keep what the members read about each other.
+      ...(typeof agent.label === 'string' ? { label: agent.label } : {}),
+      ...(typeof agent.summary === 'string' ? { summary: agent.summary } : {}),
     }));
   }
 
@@ -2857,6 +3183,12 @@ export class OrchestrationService {
       await this.rememberHandoffChecked(referralId);
       return;
     }
+    // COS-FRONTDOOR-01B D11: in a front-door run only the Chief of Staff hands off.
+    // A member's answer goes back to it by the server's report-back instead.
+    if (isFrontDoorRun(agents) && entity.targetBuilderProfileId !== FRONT_DOOR_LEAD_ID) {
+      await this.rememberHandoffNote(referralId, 'refused: roster_reply');
+      return;
+    }
     if (parsed.kind === 'malformed') {
       await this.rememberHandoffNote(referralId, `malformed: ${parsed.reason}`);
       return;
@@ -2891,6 +3223,24 @@ export class OrchestrationService {
       prompt = appendSavePointDiff(prompt, storedDiff.text, storedDiff.unavailable);
     }
     try {
+      // COS-FRONTDOOR-01B D12: a workflow member runs on its own snapshot's model.
+      let provider = job.provider;
+      let adapter = job.adapter;
+      let model = job.model ?? undefined;
+      const memberWorkflow = await this.rosterWorkflowFor(
+        entity.collaborationRunId,
+        parsed.to,
+        agents,
+      );
+      if (memberWorkflow) {
+        if (!isSystemAgentModel(memberWorkflow.model)) {
+          throw new Error('Workflow member model is invalid');
+        }
+        const selection = resolveWorkflowProviderModel(memberWorkflow.model);
+        provider = selection.provider;
+        adapter = selection.provider;
+        model = selection.model;
+      }
       await this.createPendingReferral({
         collaborationRunId: entity.collaborationRunId,
         sourceBuilder: {
@@ -2906,9 +3256,9 @@ export class OrchestrationService {
         conversationId: job.conversationId,
         apiKeyId: job.apiKeyId,
         prompt,
-        provider: job.provider,
-        adapter: job.adapter,
-        model: job.model ?? undefined,
+        provider,
+        adapter,
+        model,
         workspaceContext: job.workspaceContext ?? undefined,
         globalInstructions: job.globalInstructions ?? undefined,
         parentReferralTraceId: entity.referralTraceId,
@@ -2999,6 +3349,9 @@ export class OrchestrationService {
     }
     if (message.includes('not on the agent list')) {
       return 'agent_not_on_list';
+    }
+    if (message.includes('Front-door round limit')) {
+      return 'front_door_rounds';
     }
     return 'refused';
   }

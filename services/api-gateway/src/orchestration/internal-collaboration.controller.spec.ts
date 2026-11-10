@@ -2428,4 +2428,46 @@ describe('InternalCollaborationController', () => {
       ).status,
     ).toBe('pending_approval');
   });
+
+  it('COS-FRONTDOOR-01B: never takes rosterWorkflows from a body, and a member reply is roster_reply', async () => {
+    const frontDoorAgents = [
+      { name: 'chief-of-staff', instructions: 'Lead.', label: 'Chief of Staff', summary: 'Leads.' },
+      { name: 'product-strategy', instructions: 'Market.', label: 'Product Strategy', summary: 'Market.' },
+    ];
+    const runId = await createRun();
+    const lead = await postReferral(runId, {
+      idempotencyKey: 'front-door-lead',
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'chief-of-staff' },
+      agents: frontDoorAgents,
+      rosterWorkflows: [
+        {
+          id: 'product-strategy',
+          name: 'x',
+          version: 'v',
+          knowledgeScopeIds: [],
+          connectorToolIds: [],
+          model: { choice: 'server' },
+          testRun: false,
+        },
+      ],
+    }).expect(201);
+    const leadId = lead.body.referral.referralId as string;
+    const row = referrals.get(leadId);
+    expect(row?.pendingJob).not.toHaveProperty('rosterWorkflows');
+    expect(row?.pendingJob?.agents).toEqual(frontDoorAgents);
+
+    const replyRun = await createRun();
+    const member = await postReferral(replyRun, {
+      idempotencyKey: 'front-door-member',
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'product-strategy' },
+      agents: frontDoorAgents,
+    }).expect(201);
+    await approve(replyRun, member.body.referral.referralId).expect(200);
+    executionResults.getExecution.mockResolvedValue(
+      completedExecution('Done.\n<handoff to="chief-of-staff">Back.</handoff>'),
+    );
+    const refused = await http().get(`/api/internal/collaboration/runs/${replyRun}`).expect(200);
+    expect(refused.body.referrals).toHaveLength(1);
+    expect(refused.body.referrals[0].handoffNote).toBe('refused: roster_reply');
+  });
 });

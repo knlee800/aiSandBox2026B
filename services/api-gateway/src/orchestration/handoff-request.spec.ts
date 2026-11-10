@@ -1,8 +1,11 @@
 import { DEFAULT_MAX_AGENTS_PER_COLLABORATION } from './orchestration.contracts';
 import {
   MAX_AGENT_INSTRUCTIONS_CHARS,
+  MAX_AGENT_LABEL_CHARS,
+  MAX_AGENT_SUMMARY_CHARS,
   MAX_HANDOFF_TASK_CHARS,
   buildCollaborationProjectInstructions,
+  listedAgentLine,
   parseHandoffRequest,
   readCollaborationAgents,
 } from './handoff-request';
@@ -197,5 +200,83 @@ describe('collaboration agent list and job instructions', () => {
       ]).ok,
     ).toBe(false);
     expect(readCollaborationAgents([{ name: 'lead' }]).ok).toBe(false);
+  });
+});
+
+describe('COS-FRONTDOOR-01B agent labels (D13)', () => {
+  it('keeps label and summary only when sent, and refuses bad ones', () => {
+    const plain = readCollaborationAgents([{ name: 'lead', instructions: 'Lead.' }]);
+    expect(plain).toEqual({ ok: true, agents: [{ name: 'lead', instructions: 'Lead.' }] });
+    if (plain.ok) {
+      expect(Object.keys(plain.agents[0])).toEqual(['name', 'instructions']);
+    }
+
+    expect(
+      readCollaborationAgents([
+        { name: 'chief-of-staff', instructions: 'Lead.', label: 'Chief of Staff', summary: 'Leads.' },
+        { name: 'product-strategy', instructions: 'PS.', label: 'Product Strategy' },
+      ]),
+    ).toEqual({
+      ok: true,
+      agents: [
+        { name: 'chief-of-staff', instructions: 'Lead.', label: 'Chief of Staff', summary: 'Leads.' },
+        { name: 'product-strategy', instructions: 'PS.', label: 'Product Strategy' },
+      ],
+    });
+
+    for (const bad of [
+      { label: 1 },
+      { label: 'x'.repeat(MAX_AGENT_LABEL_CHARS + 1) },
+      { summary: null },
+      { summary: 'x'.repeat(MAX_AGENT_SUMMARY_CHARS + 1) },
+    ]) {
+      expect(readCollaborationAgents([{ name: 'lead', instructions: 'Lead.', ...bad }]).ok).toBe(
+        false,
+      );
+    }
+  });
+
+  it('reads a labelled agent as name (label): summary, and an unlabelled one as before', () => {
+    expect(listedAgentLine({ name: 'writer', instructions: 'Apply\n the  fix.' })).toBe(
+      '- writer: Apply the fix.',
+    );
+    expect(
+      listedAgentLine({
+        name: 'product-strategy',
+        instructions: 'Long prompt.',
+        label: 'Product Strategy',
+        summary: 'Answers\nmarket questions.',
+      }),
+    ).toBe('- product-strategy (Product Strategy): Answers market questions.');
+    expect(
+      listedAgentLine({ name: 'wf-1', instructions: 'Long prompt.', label: 'Mail digest', summary: '' }),
+    ).toBe('- wf-1 (Mail digest)');
+    expect(listedAgentLine({ name: 'wf-1', instructions: 'Prompt.', label: ' ' })).toBe(
+      '- wf-1: Prompt.',
+    );
+  });
+
+  it('lists labelled members to the Chief of Staff and leaves an unlabelled brief byte-identical', () => {
+    const coding = buildCollaborationProjectInstructions({
+      agents: [
+        { name: 'lead', instructions: 'Lead.' },
+        { name: 'writer', instructions: 'Write.' },
+      ],
+      agentName: 'lead',
+    });
+    expect(coding).toBe(
+      'You are lead.\nLead.\n\nOther agents:\n- writer: Write.\n\n' +
+        'Ask another agent only when you genuinely need them. At most one request, alone at the very end of the answer, exactly <handoff to="name">task</handoff>. Otherwise no request.',
+    );
+
+    const brief = buildCollaborationProjectInstructions({
+      agents: [
+        { name: 'chief-of-staff', instructions: 'Lead.', label: 'Chief of Staff', summary: 'Leads.' },
+        { name: 'product-strategy', instructions: 'PS.', label: 'Product Strategy', summary: 'Market.' },
+      ],
+      agentName: 'chief-of-staff',
+    });
+    expect(brief).toContain('Other agents:\n- product-strategy (Product Strategy): Market.\n\n');
+    expect(brief).not.toContain('PS.');
   });
 });

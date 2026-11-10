@@ -38,10 +38,11 @@ const CODING_REVIEWER_INSTRUCTIONS =
   'Read the real files. Run npm test, npm run build, or npx tsc --noEmit when that checks the change. Name each real bug with an input that shows it. If you find a real bug, send the work back to writer with a specific list of what to fix. Otherwise give the verdict and finish. You cannot change files.';
 
 const PINNED_CHIEF_OF_STAFF_INSTRUCTIONS =
-  'You are the owner\'s Chief of Staff. You have no teammates and you do not hand off.\n\n' +
+  'You are the owner\'s Chief of Staff. Your teammates are the agents listed under Other agents. When none is listed, you have no teammates and you do not hand off.\n\n' +
   'Answer the owner\'s question from their Knowledge documents. Use search_knowledge to find documents, then read_knowledge before you rely on a document or a heading.\n\n' +
   'After each claim drawn from a document, write [source: <documentId>#<heading>]. documentId and heading come from the tool result. The marker is [source: then the id, #, and the heading, then ]. Example: [source: 11111111-1111-4111-8111-111111111111#Goals]. Do not invent a document id or a heading.\n\n' +
   'In a Knowledge answer, write No source on every claim that has no document. Give no contract, financial, or legal advice without a source. If the documents do not answer the question, say so and write No source.\n\n' +
+  'Hand-offs. Answer yourself when you can. Hand one bounded question to one listed agent only when its job fits the question. When an agent\'s answer comes back to you, write the final answer for the owner, keep the [source: ...] markers of the claims you use, and ask another listed agent only if the answer still needs it.\n\n' +
   'Morning briefing. When the owner asks for the morning briefing, call mail_list_unread_metadata and calendar_list_today. Pass calendar_list_today the IANA time zone the owner gives, for example Asia/Taipei. If none is given, pass UTC and say the times are UTC. Do not search Knowledge for the briefing. Briefing lines carry no [source: ...] marker and no No source; those are only for answers drawn from Knowledge.\n\n' +
   'If a tool is missing or returns an error, say that mail or calendar is not connected or could not be read, and that the owner can connect it on the Connections page. Never guess what it holds.\n\n' +
   'Write three sections in this order:\n' +
@@ -87,7 +88,7 @@ const PINNED_INSTRUCTION_LENGTHS: Record<string, number> = {
   lead: 290,
   writer: 153,
   reviewer: 300,
-  'chief-of-staff': 2576,
+  'chief-of-staff': 2977,
   'advisors-lead': 1164,
   'product-strategy': 832,
   'technology-advisor': 1159,
@@ -107,7 +108,7 @@ const PINNED_SYSTEM_AGENT_VERSIONS: Record<string, string> = {
   lead: '414da0a61df98c6b52c6451b8fb7a9d5fa7fb10d6070889274c5445fc6aacf91',
   writer: '8999461a18060b13e6098873e4a040374e864e9861f81b891767d8bba095bab7',
   reviewer: 'b72cc1a3f403e0716fbecb97e382f974f6c03ba34156ff9294fb738616ea9b7a',
-  'chief-of-staff': '7daa2a2e96304a0541abccd8d9197f8ff65a7618217de9dd88eb4b4915ebbfc3',
+  'chief-of-staff': '030b4efe773b7cd6dd8cdf2e4932280b7c8a0a646e1d19c5abb54f0f5837834b',
   'advisors-lead': '431b1412630dd9df7c482d310e6e3422e685702e62182fa3e2ebda128a1daa08',
   'product-strategy': 'dbeb5e59fefa42754b6de0a91898eb80978a5b920d2c3535dff12c7dbbd44f4e',
   'technology-advisor': 'a03783d9f164932f8c6795e1759d168f80b23bd79a50ddf8b09020233384ed2b',
@@ -298,9 +299,15 @@ describe('system agent registry', () => {
   it('AGENT-SPEC-01: splits each prompt into purpose, procedure, result and rules', () => {
     const chief = definition('chief-of-staff');
     expect(chief.purpose).toBe(
-      "You are the owner's Chief of Staff. You have no teammates and you do not hand off.",
+      "You are the owner's Chief of Staff. Your teammates are the agents listed under Other agents. When none is listed, you have no teammates and you do not hand off.",
     );
-    expect(chief.procedure.split('\n\n')).toHaveLength(5);
+    expect(chief.procedure.split('\n\n')).toHaveLength(6);
+    // COS-FRONTDOOR-01B (DECISION D): one hand-off and report-back paragraph, before the briefing.
+    expect(chief.procedure.split('\n\n')[3]).toBe(
+      "Hand-offs. Answer yourself when you can. Hand one bounded question to one listed agent only when its job fits the question. When an agent's answer comes back to you, write the final answer for the owner, keep the [source: ...] markers of the claims you use, and ask another listed agent only if the answer still needs it.",
+    );
+    expect(chief.procedure.split('\n\n')[4].startsWith('Morning briefing.')).toBe(true);
+    expect(CHIEF_OF_STAFF_INSTRUCTIONS).not.toContain('<handoff');
     expect(chief.procedure.startsWith("Answer the owner's question")).toBe(true);
     expect(chief.procedure.endsWith('Never guess what it holds.')).toBe(true);
     expect(chief.result.startsWith('Write three sections in this order:\n')).toBe(true);

@@ -89,6 +89,11 @@ export const DEFAULT_MAX_AGENTS_PER_COLLABORATION = 4;
 export const MAX_HANDOFFS_PER_RUN = 8;
 /** Reviewer to writer, then writer back to reviewer. Depth does not apply to those two edges. */
 export const MAX_SEND_BACK_ROUNDS = 2;
+/**
+ * COS-FRONTDOOR-01B D16: a front-door round is one dispatch from the Chief of
+ * Staff and the server's report-back. Depth does not apply to those two edges.
+ */
+export const MAX_FRONT_DOOR_ROUNDS = 2;
 export const READ_ONLY_MODE_INDICATOR: OrchestrationMode = 'read_only';
 export const NO_WRITE_TOOLS_INDICATOR = 'no_write_tools' as const;
 
@@ -161,6 +166,9 @@ export interface CollaborationReferral {
 export interface CollaborationListedAgent {
   readonly name: string;
   readonly instructions: string;
+  /** COS-FRONTDOOR-01B D13: what the other agents read about this one. Server-set only. */
+  readonly label?: string;
+  readonly summary?: string;
 }
 
 /**
@@ -214,6 +222,14 @@ export interface ReferralPendingJob {
   } | null;
   /** BIZ-USER-01C D4: set on the first hand-off of a user workflow run only. */
   readonly workflow?: ReferralPendingWorkflow | null;
+  /**
+   * COS-FRONTDOOR-01B D10: on the first hand-off of a front-door run only, one
+   * snapshot per usable workflow member. A child whose target is one of them
+   * copies its own snapshot into `workflow` (D12). Orchestration-internal.
+   */
+  readonly rosterWorkflows?: readonly ReferralPendingWorkflow[] | null;
+  /** COS-FRONTDOOR-01B D14: set once the report-back for this agent step was decided. */
+  readonly reportBackChecked?: boolean;
 }
 
 export interface ReferralResult {

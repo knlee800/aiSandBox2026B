@@ -55,7 +55,10 @@ import {
   CollaborationBusinessSessionService,
 } from './collaboration-business-session';
 import { collaborationHarnessToolProfile } from './collaboration-tool-profile';
+import { CollaborationRosterService, type RosterMemberReason } from './collaboration-roster';
+import { FRONT_DOOR_LEAD_ID, frontDoorAgentList } from './collaboration-front-door';
 import type {
+  CollaborationListedAgent,
   CollaborationReferral,
   CollaborationRun,
   ReferralPendingWorkflow,
@@ -145,6 +148,8 @@ export interface CollaborationRunDetail {
   teamId: CollaborationRunTeamId;
   team: string[];
   workflow: CollaborationRunWorkflowView | null;
+  /** COS-FRONTDOOR-01B D21: the run's stored agent list with labels; never instructions. */
+  agents: Array<{ name: string; label: string | null }>;
   handoffs: CollaborationHandoffView[];
 }
 
@@ -158,6 +163,25 @@ export interface CollaborationStartResponse {
   target: string;
   conversationId: string;
   conversationCreated: boolean;
+  /** COS-FRONTDOOR-01B D10: chief-of-staff starts only; the members used and the ones left out. */
+  roster?: CollaborationStartRoster;
+}
+
+export interface CollaborationStartRoster {
+  used: string[];
+  skipped: Array<{ id: string; reason: RosterMemberReason }>;
+}
+
+/** One start's plan: who runs first, the agent list and the server's provider and model. */
+interface CollaborationStartPlan {
+  builderProfileId: string;
+  agents: CollaborationListedAgent[];
+  provider: string;
+  adapter: string;
+  model: string;
+  workflow: ReferralPendingWorkflow | null;
+  rosterWorkflows: ReferralPendingWorkflow[];
+  roster: CollaborationStartRoster | null;
 }
 
 /**
@@ -178,7 +202,10 @@ export interface CollaborationStartResponse {
  * run uses comes from the stored row.
  * TEAM-NO-SESSION-02: with workflowId, sessionId is optional. Without it the
  * run uses the owner's business project and session (read profile only).
- * A team start still requires sessionId.
+ * A team start still requires sessionId, except (COS-FRONTDOOR-01B D4) the
+ * chief-of-staff team, which then also uses the business session.
+ * COS-FRONTDOOR-01B D10: a chief-of-staff start lists the owner's stored
+ * roster (usable members only) after the Chief of Staff.
  * Provider, model, instructions, scopes, tool profile, and decidedBy are not taken from the body.
  */
 @Controller('collaboration')
@@ -191,6 +218,7 @@ export class CollaborationController {
     private readonly knowledgeService: KnowledgeService,
     @Optional() private readonly workflowService?: CollaborationWorkflowService,
     @Optional() private readonly businessSessions?: CollaborationBusinessSessionService,
+    @Optional() private readonly rosterService?: CollaborationRosterService,
   ) {}
 
   @Post('runs')
@@ -211,12 +239,20 @@ export class CollaborationController {
       'workflowId' in input
         ? this.workflowStartPlan(await this.prepareWorkflow(input, caller.userId))
         : null;
-    // TEAM-NO-SESSION-02 D5, D6: only a read-profile workflow may start without a
-    // session; the business rows are created after every refusal above.
-    const anchor = workspace ?? (await this.businessAnchor(workflowPlan, caller.userId));
+    // TEAM-NO-SESSION-02 D5, D6: only a read-profile workflow (and, COS-FRONTDOOR-01B
+    // D4, the Chief of Staff) may start without a session; the business rows are
+    // created after every refusal above.
+    const sessionlessPlan =
+      workflowPlan ??
+      ('teamId' in input && input.teamId === 'chief-of-staff'
+        ? { builderProfileId: FRONT_DOOR_LEAD_ID }
+        : null);
+    const anchor = workspace ?? (await this.businessAnchor(sessionlessPlan, caller.userId));
     const projectId = anchor.projectId;
     const conversation = await this.reuseOrCreateConversation(anchor.sessionId);
-    const plan = workflowPlan ?? this.teamStartPlan(input as { teamId: CollaborationServerTeamId });
+    const plan: CollaborationStartPlan =
+      workflowPlan ??
+      (await this.teamStartPlan(input as { teamId: CollaborationServerTeamId }, caller.userId));
     const run = await this.orchestrationService.createCollaborationRun({
       userId: caller.userId,
       projectId,
@@ -242,6 +278,7 @@ export class CollaborationController {
         agents: plan.agents,
         fileAccess: true,
         ...(plan.workflow ? { workflow: plan.workflow } : {}),
+        ...(plan.rosterWorkflows.length > 0 ? { rosterWorkflows: plan.rosterWorkflows } : {}),
         // D7 (DECISION D): a run with no session has no files to read.
         ...(workspace ? {} : { projectInstructions: COLLABORATION_BUSINESS_RUN_NOTE }),
       });
@@ -255,6 +292,7 @@ export class CollaborationController {
         target: started.referral.targetBuilder.builderProfileId,
         conversationId: conversation.conversation.id,
         conversationCreated: conversation.created,
+        ...(plan.roster ? { roster: plan.roster } : {}),
       };
     } catch (error) {
       try {
@@ -512,17 +550,18 @@ export class CollaborationController {
 
   /**
    * TEAM-NO-SESSION-02 D5, D6: the business session for a start with no session.
-   * readStartBody lets only a workflow body omit sessionId; this refuses anything
-   * else, and any plan whose signed profile would not be read.
+   * readStartBody lets only a workflow body or (COS-FRONTDOOR-01B D4) a
+   * chief-of-staff team body omit sessionId; this refuses anything else, and any
+   * plan whose signed profile would not be read.
    */
   private async businessAnchor(
-    workflowPlan: { builderProfileId: string } | null,
+    sessionlessPlan: { builderProfileId: string } | null,
     userId: string,
   ): Promise<{ sessionId: string; projectId: string }> {
-    if (!workflowPlan) {
+    if (!sessionlessPlan) {
       throw new BadRequestException('sessionId must be a valid UUID');
     }
-    if (collaborationHarnessToolProfile(workflowPlan.builderProfileId) !== 'read') {
+    if (collaborationHarnessToolProfile(sessionlessPlan.builderProfileId) !== 'read') {
       throw workflowRefusal(WORKFLOW_REFUSAL_CODES.invalid);
     }
     if (!this.businessSessions) {
@@ -603,38 +642,54 @@ export class CollaborationController {
     });
   }
 
-  private teamStartPlan(input: { teamId: CollaborationServerTeamId }): {
-    builderProfileId: string;
-    agents: Array<{ name: string; instructions: string }>;
-    provider: string;
-    adapter: string;
-    model: string;
-    workflow: null;
-  } {
+  private async teamStartPlan(
+    input: { teamId: CollaborationServerTeamId },
+    userId: string,
+  ): Promise<CollaborationStartPlan> {
     const { provider, model } = resolveServerProviderModel();
     const team = collaborationTeamById(input.teamId);
     const firstRole = team.roles[0];
     if (!firstRole) {
       throw new BadRequestException('team must be coding, chief-of-staff, or advisors');
     }
+    const agents = collaborationAgentsForTeam(input.teamId).map((agent) => ({ ...agent }));
+    if (input.teamId !== 'chief-of-staff') {
+      return {
+        builderProfileId: firstRole.name,
+        agents,
+        provider,
+        adapter: provider,
+        model,
+        workflow: null,
+        rosterWorkflows: [],
+        roster: null,
+      };
+    }
+    // COS-FRONTDOOR-01B D5, D10: the owner's stored roster, re-checked now. The body
+    // never carries it. No roster (or no roster service) is today's one-role run.
+    const lead = agents.find((agent) => agent.name === FRONT_DOOR_LEAD_ID);
+    if (!lead || firstRole.name !== FRONT_DOOR_LEAD_ID) {
+      throw new BadRequestException('team must be coding, chief-of-staff, or advisors');
+    }
+    const members = this.rosterService
+      ? await this.rosterService.membersForStart(userId)
+      : { agents: [], rosterWorkflows: [], used: [], skipped: [] };
     return {
       builderProfileId: firstRole.name,
-      agents: collaborationAgentsForTeam(input.teamId).map((agent) => ({ ...agent })),
+      agents: frontDoorAgentList(lead.instructions, members.agents),
       provider,
       adapter: provider,
       model,
       workflow: null,
+      rosterWorkflows: members.rosterWorkflows.map((workflow) => ({ ...workflow })),
+      roster: {
+        used: [...members.used],
+        skipped: members.skipped.map((entry) => ({ id: entry.id, reason: entry.reason })),
+      },
     };
   }
 
-  private workflowStartPlan(prepared: PreparedWorkflowStart): {
-    builderProfileId: string;
-    agents: Array<{ name: string; instructions: string }>;
-    provider: string;
-    adapter: string;
-    model: string;
-    workflow: ReferralPendingWorkflow;
-  } {
+  private workflowStartPlan(prepared: PreparedWorkflowStart): CollaborationStartPlan {
     return {
       builderProfileId: prepared.builderProfileId,
       agents: prepared.agents.map((agent) => ({ ...agent })),
@@ -642,6 +697,8 @@ export class CollaborationController {
       adapter: prepared.adapter,
       model: prepared.model,
       workflow: prepared.workflow,
+      rosterWorkflows: [],
+      roster: null,
     };
   }
 
@@ -665,7 +722,7 @@ export class CollaborationController {
   }
 
   private readStartBody(body: unknown):
-    | { sessionId: string; task: string; teamId: CollaborationServerTeamId }
+    | { sessionId?: string; task: string; teamId: CollaborationServerTeamId }
     | { sessionId?: string; task: string; workflowId: string; testRun: boolean } {
     const record = this.asRecord(body);
     if (record.workflowId !== undefined) {
@@ -691,6 +748,11 @@ export class CollaborationController {
     const teamId = readCollaborationStartTeam(record.team);
     if (!teamId) {
       throw new BadRequestException('team must be coding, chief-of-staff, or advisors');
+    }
+    // COS-FRONTDOOR-01B D4: only the chief-of-staff team may omit sessionId; a
+    // present sessionId is checked as before, and coding and advisors still need one.
+    if (teamId === 'chief-of-staff' && record.sessionId === undefined) {
+      return { task: this.readTask(record.task), teamId };
     }
     return {
       sessionId: this.readUuid(record.sessionId, 'sessionId'),
@@ -822,10 +884,14 @@ export class CollaborationController {
       ? await this.orchestrationService.readReferralWorkflow(first.referralId)
       : null;
     const team = collaborationTeamForTarget(first?.targetBuilder.builderProfileId, workflow);
+    const agents = first ? await this.orchestrationService.readReferralAgents(first.referralId) : [];
+    // COS-FRONTDOOR-01B: a front-door run labels its workflow members' unsourced answers too.
     const labelled =
       team.id === 'workflow' && workflow
         ? [...businessRoleProfileIds(), workflow.id]
-        : undefined;
+        : team.id === FRONT_DOOR_LEAD_ID && agents.length > 1
+          ? [...businessRoleProfileIds(), ...agents.map((agent) => agent.name)]
+          : undefined;
     return {
       run: {
         collaborationRunId: run.collaborationRunId,
@@ -839,6 +905,7 @@ export class CollaborationController {
       teamId: team.id,
       team: [...team.roleNames],
       workflow: this.toWorkflowView(team.id, workflow),
+      agents,
       handoffs: referrals.map((referral) =>
         this.toHandoff(
           referral,

@@ -130,7 +130,7 @@ describe('COS-EVAL-01 drift check on the gateway Chief of Staff instructions', (
       rules: part('rules'),
     };
     const gateway = renderChiefOfStaffSpec(parts);
-    expect(gateway.length).toBe(2576);
+    expect(gateway.length).toBe(2977);
     expect(gateway.length).toBeLessThan(4000);
     expect(COS_EVAL_CHIEF_OF_STAFF_INSTRUCTIONS).toBe(gateway);
     // The copy splits back into the same parts the gateway spec holds.

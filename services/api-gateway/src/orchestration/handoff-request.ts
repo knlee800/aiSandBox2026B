@@ -6,6 +6,20 @@ import {
 export const MAX_HANDOFF_TASK_CHARS = 4000;
 export const MAX_AGENT_INSTRUCTIONS_CHARS = 4000;
 export const MAX_AGENT_NAME_CHARS = 40;
+/** COS-FRONTDOOR-01B D13: a workflow name is at most 100 characters, a description 200. */
+export const MAX_AGENT_LABEL_CHARS = 100;
+export const MAX_AGENT_SUMMARY_CHARS = 300;
+
+/** undefined when absent, the text when valid, false when present and invalid. */
+function readOptionalAgentText(value: unknown, max: number): string | undefined | false {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (typeof value !== 'string' || value.length > max) {
+    return false;
+  }
+  return value;
+}
 
 const OPEN_PREFIX = '<handoff to="';
 const CLOSE_TAG = '</handoff>';
@@ -85,8 +99,23 @@ export function readCollaborationAgents(
         message: `agents[${index}].instructions must be at most ${MAX_AGENT_INSTRUCTIONS_CHARS} characters`,
       };
     }
+    const label = readOptionalAgentText(record.label, MAX_AGENT_LABEL_CHARS);
+    if (label === false) {
+      return { ok: false, message: `agents[${index}].label is invalid` };
+    }
+    const summary = readOptionalAgentText(record.summary, MAX_AGENT_SUMMARY_CHARS);
+    if (summary === false) {
+      return { ok: false, message: `agents[${index}].summary is invalid` };
+    }
     seen.add(record.name);
-    agents.push({ name: record.name, instructions: record.instructions });
+    // COS-FRONTDOOR-01B D13: the optional fields are kept only when sent, so a
+    // list without them is stored exactly as before.
+    agents.push({
+      name: record.name,
+      instructions: record.instructions,
+      ...(label !== undefined ? { label } : {}),
+      ...(summary !== undefined ? { summary } : {}),
+    });
   }
 
   return { ok: true, agents };
@@ -109,6 +138,20 @@ export function oneLine(value: string): string {
   return out;
 }
 
+/**
+ * One "Other agents" line. COS-FRONTDOOR-01B D13: an agent with a label reads
+ * `- <name> (<label>): <summary>` (no summary: `- <name> (<label>)`); without
+ * a label the line is today's `- <name>: <one-line instructions>`.
+ */
+export function listedAgentLine(agent: CollaborationListedAgent): string {
+  const label = typeof agent.label === 'string' ? oneLine(agent.label) : '';
+  if (label.length === 0) {
+    return `- ${agent.name}: ${oneLine(agent.instructions)}`;
+  }
+  const summary = typeof agent.summary === 'string' ? oneLine(agent.summary) : '';
+  return summary.length > 0 ? `- ${agent.name} (${label}): ${summary}` : `- ${agent.name} (${label})`;
+}
+
 export function buildCollaborationProjectInstructions(input: {
   callerInstructions?: string | null;
   agents: readonly CollaborationListedAgent[];
@@ -127,7 +170,7 @@ export function buildCollaborationProjectInstructions(input: {
     lines.push('none');
   } else {
     for (const agent of others) {
-      lines.push(`- ${agent.name}: ${oneLine(agent.instructions)}`);
+      lines.push(listedAgentLine(agent));
     }
   }
   lines.push('');
