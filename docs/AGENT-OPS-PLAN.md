@@ -27,7 +27,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 | 16 | PROVIDER-KEY-01, HARNESS-FIXES-01 | Safe missing-key message and a working default provider (PROVIDER-KEY-01, after CONN-03 and 01C); live provider proofs and the live models' output limits stay in HARNESS-FIXES-01 (01B done 2026-11-09) |
 | 17 | BUILDER-POLISH-01 | Builder polish and hardcoded English |
 | 18 | USAGE-DATA-01 | Run duration never saved; admin quota views |
-| 19 | FE-TEST-GLOB-01 | Fail when a frontend test file is not in npm test (FE-TEST-COVERAGE-01 done 2026-11-10) |
+| 19 | FE-TEST-GLOB-01 | Fail when a frontend test file is not in npm test (FE-TEST-COVERAGE-01 done 2026-11-10; admitted 2026-11-10, Lane 2) |
 | 20 | DESIGN-GAPS-01 | One primary and one success colour, focus ring, spinner, CJK font |
 | 21 | OFFICE-03 | Office characters; needs Keith's art-source decision |
 | 22 | OFFICE-04 | Office animation |

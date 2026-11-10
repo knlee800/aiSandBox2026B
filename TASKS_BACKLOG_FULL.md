@@ -84519,13 +84519,13 @@ taskId=FE-TEST-GLOB-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the FE-TEST-COVERAGE-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the FE-TEST-COVERAGE-01 LOCK — not admitted.
 **Task ID:** FE-TEST-GLOB-01
 **Title:** Fail when a frontend test file is not in npm test
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction to keep starting the next tasks).
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction to keep starting the next tasks).
 **Depends on:** FE-TEST-COVERAGE-01.
 **Primary write scope:** frontend/lib/test-script-coverage.test.ts (new), frontend/package.json (only if the guard finds a gap).
 **Mutexes / resources:** FRONTEND, PACKAGE.

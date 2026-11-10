@@ -24,13 +24,16 @@
       "runtimeNeeds": []
     },
     "lane2": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "FE-TEST-GLOB-01",
+      "mutexes": ["FRONTEND", "PACKAGE"],
+      "writePaths": [
+        "frontend/lib/test-script-coverage.test.ts",
+        "frontend/package.json"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -2801,14 +2804,17 @@
       "taskId": "FE-TEST-GLOB-01",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "OPTIONAL",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
       "dependsOn": ["FE-TEST-COVERAGE-01"],
       "mutexes": ["FRONTEND", "PACKAGE"],
-      "writePaths": ["frontend/lib/test-script-coverage.test.ts", "frontend/package.json"],
+      "writePaths": [
+        "frontend/lib/test-script-coverage.test.ts",
+        "frontend/package.json"
+      ],
       "hotfiles": [],
       "i18n": false,
       "sharedContractIds": [],
