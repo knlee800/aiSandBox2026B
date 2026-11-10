@@ -87971,13 +87971,13 @@ taskId=STAGING-DEPLOY-CMSEC-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the CM-GIT-HOST-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — Keith approved the deploy ("Yes, deploy it"). Was: READY — registered 2026-11-10 by the CM-GIT-HOST-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-CMSEC-01
 **Title:** Deploy the container-manager security fixes
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: CM-PATH-01, CM-SYMLINK-01 and CM-GIT-HOST-01 LOCKED (done 2026-11-10) and Keith approves the deploy.
+**Start condition:** READY (CM-PATH-01, CM-SYMLINK-01, CM-GIT-HOST-01 and CM-HISTORY-LINK-01 LOCKED; Keith approved 2026-11-10). Was: Ready when the fixes are LOCKED and Keith approves.
 **Depends on:** CM-GIT-HOST-01.
 **Primary write scope:** records; host state.
 **Mutexes / resources:** STAGING, ENV (ENV held, not changed).
