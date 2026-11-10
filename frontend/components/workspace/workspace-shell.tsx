@@ -2654,6 +2654,8 @@ function HistoryProjectPanel(props: {
     | 'newProjectName'
     | 'createProject'
     | 'selectProject'
+    | 'loadingProjects'
+    | 'loadingPublicProjects'
     | 'openProject'
     | 'sharingVisibilityOptional'
     | 'view'
@@ -3589,7 +3591,7 @@ function HistoryProjectPanel(props: {
       {props.listState === 'loading' ? (
         <p className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-gray-500" data-testid="history-project-list-loading">
           <Spinner className="h-3 w-3 text-gray-400" />
-          <span>Loading projects...</span>
+          <span>{props.projectMessages.loadingProjects}</span>
         </p>
       ) : null}
       {props.listState === 'error' ? (
@@ -3613,7 +3615,7 @@ function HistoryProjectPanel(props: {
           data-testid="history-public-project-list-loading"
         >
           <Spinner className="h-3 w-3 text-gray-400" />
-          <span>Loading public projects...</span>
+          <span>{props.projectMessages.loadingPublicProjects}</span>
         </p>
       ) : null}
       {props.publicProjectListState === 'error' ? (
@@ -3638,7 +3640,7 @@ function HistoryProjectPanel(props: {
 function HistorySnapshotPanel(props: {
   projectMessages: Pick<
     typeof enMessages.project,
-    'saveSnapshot' | 'restoreSnapshot' | 'downloadProject' | 'importProject'
+    'saveSnapshot' | 'restoreSnapshot' | 'downloadProject' | 'importProject' | 'loadingSnapshots'
   >;
   commonMessages: Pick<typeof enMessages.common, 'saving' | 'restoring' | 'exporting' | 'importing'>;
   selectedSessionId: string | null;
@@ -3775,7 +3777,7 @@ function HistorySnapshotPanel(props: {
       {props.listState === 'loading' ? (
         <p className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-gray-500" data-testid="history-snapshot-list-loading">
           <Spinner className="h-3 w-3 text-gray-400" />
-          <span>Loading snapshots...</span>
+          <span>{props.projectMessages.loadingSnapshots}</span>
         </p>
       ) : null}
       {props.listState === 'error' ? (

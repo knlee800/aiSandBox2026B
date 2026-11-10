@@ -2495,7 +2495,7 @@ describe('BIZ-01 team picker', () => {
     assert.match(markup, new RegExp(zhTwMessages.collaboration.teamChiefOfStaff));
     assert.match(markup, new RegExp(zhTwMessages.collaboration.fileAccessReadOnly));
     assert.match(markup, new RegExp(zhTwMessages.collaboration.chainEmptyChief));
-    assert.match(openTag(markup, 'collaboration-team-option-chief-of-staff'), /border-indigo-300/);
+    assert.match(openTag(markup, 'collaboration-team-option-chief-of-staff'), /border-brand/);
     assert.match(openTag(markup, 'collaboration-team-option-coding'), /border-gray-200/);
     const codingAt = markup.indexOf('data-testid="collaboration-team-option-coding"');
     const chiefAt = markup.indexOf('data-testid="collaboration-team-option-chief-of-staff"');

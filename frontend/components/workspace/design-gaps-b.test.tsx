@@ -178,6 +178,16 @@ describe('DESIGN-GAPS-01B message keys', () => {
     }
   });
 
+  test('shell loading sentences come from project messages in all three locales', () => {
+    for (const key of ['loadingProjects', 'loadingPublicProjects', 'loadingSnapshots'] as const) {
+      assert.equal(typeof enMessages.project[key], 'string', key);
+      assert.notEqual(zhTwMessages.project[key], enMessages.project[key], key);
+      assert.notEqual(zhCnMessages.project[key], enMessages.project[key], key);
+      assert.match(read('./workspace-shell.tsx'), new RegExp(`props\\.projectMessages\\.${key}`), key);
+    }
+    assert.doesNotMatch(read('./workspace-shell.tsx'), /<span>Loading (public )?(projects|snapshots)\.\.\.<\/span>/);
+  });
+
   test('zh-TW and zh-CN are translated, not copies of English', () => {
     for (const messages of [zhTwMessages, zhCnMessages]) {
       assert.notEqual(messages.workspace.openSidebar, enMessages.workspace.openSidebar);
