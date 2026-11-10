@@ -88367,24 +88367,72 @@ taskId=DESIGN-GAPS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-06. Registered by DESIGN-DOC-01; not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-06. Registered by DESIGN-DOC-01; not admitted.
 **Task ID:** DESIGN-GAPS-01
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition (human):** NOT_READY. Ready when: Keith admits it, alone or in slices; UI batches may take single gaps as they touch those screens, each recorded here. Keith decides.
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: Keith admits it, alone or in slices; UI batches may take single gaps as they touch those screens, each recorded here. Keith decides.
 **Depends on:** DESIGN-DOC-01.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true). Expected: frontend components and app files, the three message files, frontend/app/[locale]/layout.tsx, DESIGN.md.
-**Mutexes / resources:** set at admission (expected FRONTEND, I18N). **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**Primary write scope:** set 2026-11-10 for slice A: frontend/app/ (the four auth pages), frontend/components/SystemReadiness.tsx, frontend/components/workspace/ (the mobile sidebar icon and the tab orientation glyphs, with their tests), the three message files, DESIGN.md (Known gaps 5, 11 and 12 marked fixed).
+**Mutexes / resources:** FRONTEND, I18N. **Hot-file leases:** none. **Shared contracts:** none. **Evidence class:** LOCAL-TESTS. **Revert isolation:** per item. **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 
-**Holds:** the Known gaps in DESIGN.md (2026-11-06): one primary action color instead of bg-brand, bg-blue-600 and bg-indigo-500/600; one success color instead of emerald and green; one focus ring style; a shared loading spinner; a CJK font for zh-TW and zh-CN; a mono font family; one title weight; consistent auth cards; collaboration selection and primary button in one color; the custom mobile sidebar icon and the tab-orientation glyphs replaced by Heroicons; the readiness chip text moved into the three message files. DESIGN.md is updated to the chosen values. UI checklist and the design skills apply.
+**Split 2026-11-10 (control plane, under Keith's instruction to keep starting the next tasks):** this task is slice A, DESIGN.md Known gaps 5, 11 and 12: one title weight (font-semibold) on the auth and collaboration headings; the four auth cards in one style (rounded-xl, shadow-lg, as login and register); the custom mobile sidebar SVG and the tab orientation glyphs replaced by Heroicons v2 Outline; the readiness chip's English ("System Ready", "Config") moved into the three message files. Colors, focus ring, spinner and the collaboration selection color are DESIGN-GAPS-01B; fonts are DESIGN-GAPS-01C. **Holds (original):** the Known gaps in DESIGN.md (2026-11-06): one primary action color instead of bg-brand, bg-blue-600 and bg-indigo-500/600; one success color instead of emerald and green; one focus ring style; a shared loading spinner; a CJK font for zh-TW and zh-CN; a mono font family; one title weight; consistent auth cards; collaboration selection and primary button in one color; the custom mobile sidebar icon and the tab-orientation glyphs replaced by Heroicons; the readiness chip text moved into the three message files. DESIGN.md is updated to the chosen values. UI checklist and the design skills apply.
 **Named in:** DESIGN.md Known gaps; docs/DESIGN-DOC-01-CHECKPOINT.md.
 
 #### Acceptance criteria
 
 - [ ] Scope, write set, mutexes and evidence class are set and approved by Keith before admission
 - [ ] Not LOCKED by an implementer
+
+### DESIGN-GAPS-01B — One primary color, one success color, one focus ring, one spinner
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=DESIGN-GAPS-01B
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the DESIGN-GAPS-01 split — not admitted.
+**Task ID:** DESIGN-GAPS-01B
+**Title:** One primary color, one success color, one focus ring, one spinner
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: DESIGN-GAPS-01 LOCKED. Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** DESIGN-GAPS-01.
+**Primary write scope:** frontend/app/, frontend/components/, the three message files (spinner label), DESIGN.md.
+**Mutexes / resources:** FRONTEND, I18N.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per item.
+**saturationClass:** OPTIONAL (as for DESIGN-GAPS-01). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** DESIGN.md Known gaps 1, 7, 8, 9 and 13, using the tokens DESIGN.md already declares: primary actions use bg-brand / hover:bg-brand-hover instead of bg-blue-600 and bg-indigo-500/600; success uses emerald instead of green-500/600; focus uses one focus-visible ring in the brand color, and textareas keep a visible ring; one shared loading spinner (Heroicons-compatible SVG, translated label); the collaboration selection and its primary button in the brand color. Existing test IDs kept; UI checklist and the design skills apply; Keith sees it at the next staging deploy.
+
+### DESIGN-GAPS-01C — Fonts: a CJK font for zh-TW and zh-CN, and a mono family
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=DESIGN-GAPS-01C
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the DESIGN-GAPS-01 split — not admitted.
+**Task ID:** DESIGN-GAPS-01C
+**Title:** Fonts: a CJK font for zh-TW and zh-CN, and a mono family
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith chooses the font source (next/font/google at build time, which needs network on the build host, or self-hosted font files in the repository, which adds several MB). Keith decides.
+**Depends on:** DESIGN-GAPS-01.
+**Primary write scope:** PROVISIONAL: frontend/app/[locale]/layout.tsx, frontend/tailwind.config.js, DESIGN.md, and font files if self-hosted.
+**Mutexes / resources:** set at admission (FRONTEND; PACKAGE if a package is added).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** layout and config only.
+**saturationClass:** OPTIONAL (as for DESIGN-GAPS-01). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** DESIGN.md Known gaps 4 and 10: a CJK font for zh-TW and zh-CN (Inter is Latin-only; Chinese falls back today) and a configured mono family; DESIGN.md updated.
 
 ### HARNESS-FIXES-01A — Agent safety fixes: honest delete flag, recovered Build notice, failed search, Restore during a run
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
