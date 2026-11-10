@@ -562,6 +562,7 @@ container-manager uses **local SQLite** for runtime session/container/git state.
 | Container / session runtime state | container-manager | **Local SQLite** + Docker daemon + in-memory `lastActivity` |
 | Git operations inside container | container-manager | Git in `/workspace` + CM SQLite; ledger is Gateway Postgres |
 | Collaboration runs and hand-offs | API Gateway | PostgreSQL (`collaboration_runs`, `collaboration_referrals`; COLLAB-INTERNAL-01) |
+| Business project and session (anchor of session-less workflow runs) | API Gateway | PostgreSQL (`projects` row named "Business workflows", slug `business-<userId>`, no workspace; `sessions` row stopped, expired at creation, no container); one per owner, created on first session-less workflow start by `CollaborationBusinessSessionService`; the ledger and conversation anchor for those runs (TEAM-NO-SESSION-02) |
 | Knowledge documents | API Gateway | PostgreSQL (`knowledge_documents`, per owner and scope, soft delete; KNOW-01) |
 | Audit events (orchestration, entitlement changes) | API Gateway | PostgreSQL (`audit_events`, append-only: a trigger refuses UPDATE and DELETE; COLLAB-AUDIT-01, ACCESS-01B) |
 | Per-user entitlements | API Gateway | PostgreSQL (`user_entitlements`; ACCESS-01B) |

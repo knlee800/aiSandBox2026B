@@ -85234,6 +85234,7 @@ nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
 **Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-BIZ-KNOWLEDGE-PLAN-01; not admitted.
+**Superseded 2026-11-10:** by TEAM-NO-SESSION-02 (COMPLETE AND LOCKED): a per-owner business project and session anchor session-less workflow runs, with no migration; no remainder. Checkpoint: docs/TEAM-NO-SESSION-02-CHECKPOINT.md.
 **Task ID:** BIZ-NOPROJECT-01
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -86413,7 +86414,7 @@ taskId=TEAM-NO-SESSION-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 from Keith's decision ("Yes, list them") — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 1 and its mutexes released. Result: passed. Session-less workflow start (sessionId optional only with workflowId; read-profile assertion; refusals before any row), per-owner business project (slug business-<userId>, no workspace) and stopped business session, caller note on projectInstructions only, business.projectId on the workflows list, Team page start and Past runs without a session in three languages; opus subagent e9d8128, fast-forwarded onto main; control-plane rerun: gateway 3364 passed, 7 skipped, only the 14 known smoke failures; ai-service 1296 passed, 1 skipped; frontend tsc 0, 1505 passed, build 0; frozen-path diff empty. Not deployed; rows tested with fake repositories only. ARCHITECTURE.md data-ownership row added. FOLLOWUPS: 2 registered (HARNESS-NOFILES-01, BIZ-ROWS-HIDE-01) / 4 superseded (BIZ-NOPROJECT-01, TRIGGER-01, BIZ-LIVE-04, RESULTS-POLISH-01) / 0 dropped / 0 undisposed. Was admitted 2026-11-10. Checkpoint: docs/TEAM-NO-SESSION-02-CHECKPOINT.md.
 **Task ID:** TEAM-NO-SESSION-02
 **Title:** Run business workflows without a project session
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -86431,6 +86432,54 @@ nature=IMPLEMENTATION
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-10).
 **Scope:** A user workflow with the read-only profile (business workflows, which write no project files) starts from the Team page without a workspace session: the stage-start decides what replaces the session (a per-owner business session, as BIZ-NOPROJECT-01 explored, or none), keeps grants and budgets as BIZ-USER-01C built them, and keeps write-capable runs session-bound. Also (TEAM-NO-SESSION-01, 2026-11-10): the no-session view shows the selected workflow's start hint and today's spend line, which it leaves out today.
+
+### HARNESS-NOFILES-01 — The worker does not advertise file tools to runs without a workspace
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=HARNESS-NOFILES-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the TEAM-NO-SESSION-02 LOCK — not admitted.
+**Task ID:** HARNESS-NOFILES-01
+**Title:** The worker does not advertise file tools to runs without a workspace
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** TEAM-NO-SESSION-02.
+**Primary write scope:** PROVISIONAL, set at admission.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** none.
+**Shared contracts:** HARNESS_ENTITLEMENT_PROOF_V1 (a change, declared at its stage-start).
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From TEAM-NO-SESSION-02 stage-start follow-up 2: the worker registers read_file, list_files and search_workspace for every harness job; for a business run (no container) they only answer tool errors. Stopping that needs a signed job field or a worker rule, a HARNESS_ENTITLEMENT_PROOF_V1 change that runs alone. The caller note already tells the model not to use them, so this is cosmetic. Keith decides.
+
+### BIZ-ROWS-HIDE-01 — Hide the business project and session from lists
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=BIZ-ROWS-HIDE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the TEAM-NO-SESSION-02 LOCK — not admitted.
+**Task ID:** BIZ-ROWS-HIDE-01
+**Title:** Hide the business project and session from lists
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** TEAM-NO-SESSION-02.
+**Primary write scope:** PROVISIONAL, set at admission.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From TEAM-NO-SESSION-02 (stage-start follow-up 5 and the worker): the per-owner "Business workflows" project (slug business-<userId>, no workspace) is listed by GET /api/projects without a workspace filter, its stopped session by the admin sessions view, and the projects routes can open, rename or delete it (a deleted or moved project only leads to new rows at the next start). Hide them from those lists and decide whether the projects routes refuse them. Needs projects/, sessions/ or admin/. Keith decides.
 
 ### RESULTS-01 — Results list, unread badge and run history
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -86480,7 +86529,7 @@ nature=IMPLEMENTATION
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
-**Scope:** From RESULTS-01: (1) the Team page's "Past runs" links to the Results page (stage-start follow-up 4); (2) the Command Center header's unread count is read once on load and does not refresh while the page stays open; refresh it (for example on focus or after a run finishes). Expected FRONTEND and I18N.
+**Scope:** From RESULTS-01: (1) the Team page's "Past runs" links to the Results page (stage-start follow-up 4); (2) the Command Center header's unread count is read once on load and does not refresh while the page stays open; refresh it (for example on focus or after a run finishes). Expected FRONTEND and I18N. (3, added 2026-11-10 by the TEAM-NO-SESSION-02 LOCK) After the first session-less start, the Team page learns the business project only on the next workflow-list read; refresh it after a start.
 
 ### RESULTS-COST-01 — Cost of each run on its result
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -86560,6 +86609,7 @@ nature=IMPLEMENTATION
 **Scope:** Keith copies a template, edits it and runs that workflow on staging. Runs are off after the check.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
 **Acceptance (added 2026-11-10 by the RESULTS-01 LOCK):** in en, zh-TW and zh-CN: the header badge counts a finished run and opening the result clears it; filters (including local dates) and paging work; the list states (loading, empty, failed) and detail states (loading, not found, failed, answer) look right; a workflow test run shows the Test run badge; a user without harness access sees the calm notice and no pill.
+**Acceptance (added 2026-11-10 by the TEAM-NO-SESSION-02 LOCK):** in en, zh-TW and zh-CN: open Team from the dashboard with no session, pick a workflow, run a test run, then Start; the spend line shows; "Past runs" lists the run; the business project is absent from the workspace project list; the admin sessions view shows one stopped session; the model does not use the file tools, or recovers when it tries; the two business rows insert on real Postgres.
 
 ### GOV-GOOGLE-VERIFY-01 — Google OAuth app verification
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -86949,6 +86999,7 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** agent_schedules and an in-process gateway timer (F1, F4). SCHEDULES_ENABLED defaults false. One idempotency key per owner per local day, no retry, skipped when runs are off or a cap would be exceeded, never enabled by a tester window, with an audit row on every skip.
 **Note (added 2026-11-10 by the RESULTS-01 LOCK):** trigger-started runs appear in Results (RESULTS-01) with no change; this task's stage-start names the Results unread badge as the owner's notice of a finished scheduled run.
+**Note (added 2026-11-10 by the TEAM-NO-SESSION-02 LOCK):** a trigger-started workflow run has no session; it reuses CollaborationBusinessSessionService.ensureForOwner (services/api-gateway/src/orchestration/collaboration-business-session.ts) for its project and session.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.4
 
 ### TRIGGER-UI-01 — Schedules page
