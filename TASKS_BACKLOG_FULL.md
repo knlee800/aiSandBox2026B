@@ -87899,7 +87899,7 @@ taskId=CM-GIT-HOST-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the CM-SYMLINK-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 1 and its mutexes released. Result: passed. Removed initializeGit, getHistory, createSession and its self-call, restoreWorkspaceFromProject, ProjectsService and ProjectsModule, CreateSessionDto, and their routes; no production simple-git or child_process import left; checkpoint paths pinned to docker exec by new tests; inventory 49 routes, 48 guarded plus /api/health; 18 tests removed, 15 added, with a mutation check; opus subagent 183d71b, fast-forwarded onto main; control-plane rerun: container-manager 18 suites, 571 passed, build 0. Not deployed. FOLLOWUPS: 2 registered (CM-HISTORY-LINK-01, STAGING-DEPLOY-CMSEC-01) / 2 superseded (unused simple-git and HttpService, into CM-DEPS-01) / 0 dropped / 0 undisposed. Was admitted 2026-11-10. Checkpoint: docs/CM-GIT-HOST-01-CHECKPOINT.md.
 **Task ID:** CM-GIT-HOST-01
 **Title:** Host-side git runs in the sandbox-writable workspace
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -87916,6 +87916,54 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set at admission 2026-11-10).
 **Scope:** From the CM-SYMLINK-01 worker, checked by the control plane: git.service.ts initializeGit (git init, add, commit) and getHistory (git log) run simple-git on the host in the bind-mounted workspace, where the sandbox can write .git/config (core.fsmonitor and similar) or .git/hooks, so a host-side git command could run sandbox-chosen commands on the host. Reached only by key holders: POST /api/git/:id/init, the container-manager self-call from POST /api/sessions create (sessions.service.ts:187, no other caller), and GET /api/git/:id/history (no caller). Commit, revert and diff already run in the container. Recommended: remove the uncalled host-side git routes and the create self-call path (re-verify callers first), or run them inside the container; tests that no host-side simple-git call remains on a sandbox-writable path.
+
+### CM-HISTORY-LINK-01 — Checkpoint history copies follow symlinks in the workspace
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CM-HISTORY-LINK-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the CM-GIT-HOST-01 LOCK — not admitted.
+**Task ID:** CM-HISTORY-LINK-01
+**Title:** Checkpoint history copies follow symlinks in the workspace
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction); a security fix reachable from a user flow.
+**Depends on:** CM-GIT-HOST-01.
+**Primary write scope:** PROVISIONAL: services/container-manager/src/git/ (with tests).
+**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the CM-GIT-HOST-01 worker, checked by the control plane: GitService.restoreProjectHistory (git.service.ts:583) copies the stored history bundle with fs.copyFile to <workspace>/.aisb-history-restore.bundle, so a symlink the sandbox planted there can make container-manager overwrite a host file; GitService.saveProjectHistory (:551) copies <workspace>/.git/aisb-history.bundle out after git bundle create, so a symlink swapped in can read a host file into stored history, which a later restore hands to the sandbox. The gateway calls both (checkpoint-history save and restore), so a sandbox owner can reach them. Fix: refuse a symlink (lstat, O_NOFOLLOW or COPYFILE_EXCL on a freshly created path) or stream the bundle through docker exec instead of the host filesystem; tests with real symlinks; checkpoint save and restore behaviour otherwise unchanged (FLOWS list applies).
+
+### STAGING-DEPLOY-CMSEC-01 — Deploy the container-manager security fixes
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-CMSEC-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the CM-GIT-HOST-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-CMSEC-01
+**Title:** Deploy the container-manager security fixes
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: CM-PATH-01, CM-SYMLINK-01 and CM-GIT-HOST-01 LOCKED (done 2026-11-10) and Keith approves the deploy.
+**Depends on:** CM-GIT-HOST-01.
+**Primary write scope:** records; host state.
+**Mutexes / resources:** STAGING, ENV (ENV held, not changed).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** redeploy 8e1f8d3.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy main to staging from the host with runs off (8e1f8d3 to the current main): CM-PATH-01, CM-SYMLINK-01, CM-GIT-HOST-01. No migration expected. Host checks: the standard set and the earlier route and security checks; with the key, POST /api/sessions, POST /api/git/x/init, GET /api/git/x/history and the six /api/files routes answer 404 (stale dist files not loaded); a %2E%2E session id answers 400; no simple-git in the compiled container-manager services; the gateway still starts sessions (a session start and stop through the gateway only if Keith wants a live check).
 
 ### BROWSER-SMOKE-01 — Browser smoke never finds a preview target
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -87966,6 +88014,7 @@ nature=IMPLEMENTATION
 **Scope:** From CM-CLEANUP-01: jsonwebtoken and @types/jsonwebtoken in services/container-manager/package.json are unused since PreviewsController was removed. Remove them and update the lockfile without touching an installed node_modules (for example npm install --package-lock-only in a checkout without junctions, run by the control plane), then rerun container-manager's gates.
 **Also (added 2026-11-10 by the CODE-TIDY-01 LOCK):** the root script test-preview-backend.sh calls container-manager without X-Internal-Service-Key, so every call is 403 since CM-AUTH-01; delete it or update it to read the key from the environment.
 **Also (added 2026-11-10 by the CM-SYMLINK-01 LOCK):** the stale services/container-manager/test-container.sh calls the removed /api/files routes on the wrong port without the key (delete or update it); isPathInside in services/container-manager/src/files/path-containment.ts has no production user (keep as a helper or remove with its spec); and the gateway POST /api/events/file-changed (services/api-gateway/src/websocket/events.controller.ts:8) has no container-manager caller since CM-SYMLINK-01 (remove it or record its other callers; that item needs GATEWAY).
+**Also (added 2026-11-10 by the CM-GIT-HOST-01 LOCK):** the simple-git dependency in services/container-manager/package.json is unused (no production import since CM-GIT-HOST-01); remove it with jsonwebtoken. GitService still injects an unused HttpService; drop it.
 
 ### DRIFT-FIX-01 — Briefing drift check follows the shared version hash
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
