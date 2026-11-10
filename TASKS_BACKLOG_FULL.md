@@ -86362,13 +86362,13 @@ taskId=TEAM-PRESELECT-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the BIZ-USER-01D LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the BIZ-USER-01D LOCK — not admitted.
 **Task ID:** TEAM-PRESELECT-01
 **Title:** Open a workflow on the Team page preselected
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** BIZ-USER-01D.
 **Primary write scope:** frontend/components/collaboration/, frontend/components/platform/ (the Open on Team link).
 **Mutexes / resources:** FRONTEND.
@@ -87427,7 +87427,7 @@ taskId=CM-AUTH-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the AI-SERVICE-AUTH-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the AI-SERVICE-AUTH-01 LOCK — not admitted. Stage-start approved 2026-11-10: docs/CM-AUTH-01-STAGE-START.md (global guard, only GET /api/health open, 403 kept; the gateway preview proxy gets a strict path allowlist that closes an encoded-dot traversal to other sessions' files; ws proxying removed; the key stripped before preview traffic reaches a container; gateway client path parameters encoded).
 **Task ID:** CM-AUTH-01
 **Title:** Internal key on container-manager routes
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
