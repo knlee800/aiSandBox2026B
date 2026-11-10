@@ -84455,6 +84455,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-05). **productClass:** CURRENT per PRD.md.
 
 **Holds:** (1) The raw HTTP detail shown when a request fails, and hardcoded History labels such as Controls and Checkpoint Browser. (2) "Model: ... unknown" in the chat is hardcoded English. (3) Preview start returning 400 while starting (check first: the frontend has tolerated a passing 400 since PREVIEW-AUTOSTART-01A). (4) Preview polling of a stopped session. (5) Checkpoint history bundle pruning. (6) Preview refresh UX, Next, CRA, Vue and Express previews, mobile polish, apex routing. (7) Keith's own UI list, such as overlapping buttons, when he sends it. Split into bounded slices at admission.
+**Also (added 2026-11-10 by the CODE-TIDY-01 LOCK):** hardcoded English in the workspace checkpoint panel: "Checkpoint Timeline" (frontend/components/workspace/workspace-shell.tsx:7944) and "Timeline focus: ..." (:8045); move them into the three message files.
 **Named in:** SAVEPOINT-I18N-01 checkpoint line 59; CLEAN-BASELINE-DEPLOY-01 checkpoint line 67; HARNESS-LIVE-06 checkpoint line 41; frontend/components/workspace/workspace-shell.tsx.
 
 #### Acceptance criteria
@@ -87826,7 +87827,7 @@ taskId=CODE-TIDY-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the CM-CLEANUP-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 1 and its mutexes released. Result: passed. Comment-only fix in services/ai-service/src/guards/internal-key-exempt.decorator.ts (two exempt handlers, checked against the handlers and the spec); frontend/components/Timeline.tsx deleted (no importer; it called non-existent /api/git routes); three uncalled container-manager routes kept with reasons, inventory unchanged; opus subagent daa12a1, fast-forwarded onto main; control-plane rerun: ai-service 1296 passed, container-manager 470 passed, frontend tsc 0, 1535 passed, all builds 0. Not deployed. FOLLOWUPS: 2 registered (CM-PATH-01, BROWSER-SMOKE-01) / 2 superseded (stale root script into CM-DEPS-01, hardcoded checkpoint panel English into BUILDER-POLISH-01) / 0 dropped / 0 undisposed. Was admitted 2026-11-10. Checkpoint: docs/CODE-TIDY-01-CHECKPOINT.md.
 **Task ID:** CODE-TIDY-01
 **Title:** Small dead-code removals left by CM-CLEANUP-01
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -87843,6 +87844,54 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set at admission 2026-11-10).
 **Scope:** From the CM-CLEANUP-01 worker: (1) the comment in ai-service guards/internal-key-exempt.decorator.ts still names the removed POST /api/messages/health; (2) container-manager's jsonwebtoken and @types/jsonwebtoken are unused since PreviewsController went; (3) frontend/components/Timeline.tsx is imported nowhere and calls a gateway route that does not exist (/api/git/:id/checkpoints); (4) review, keep or remove with a reason: POST /api/internal/sessions/:id/previews (no caller; feeds the browser-smoke proxy target) and container-manager files write and delete (no caller since F4). (Split at admission 2026-11-10) Items 1, 3 and 4 here; item 2, the unused jsonwebtoken and @types/jsonwebtoken in container-manager, is CM-DEPS-01: a worktree shares the main checkout's node_modules through a junction, so npm uninstall there would change the main checkout's packages.
+
+### CM-PATH-01 — Container-manager workspace path check accepts sibling workspaces
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CM-PATH-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the CODE-TIDY-01 LOCK — not admitted.
+**Task ID:** CM-PATH-01
+**Title:** Container-manager workspace path check accepts sibling workspaces
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** READY (registered 2026-11-10 by the CODE-TIDY-01 LOCK; a security fix the control plane may start under Keith's 2026-11-10 instruction). Ready when: CONTAINER-MANAGER is free.
+**Depends on:** CODE-TIDY-01.
+**Primary write scope:** PROVISIONAL: services/container-manager/src/ (files service and any other path checks, with tests).
+**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the CODE-TIDY-01 worker, confirmed by the control plane: FilesService.validatePath (services/container-manager/src/files/files.service.ts:427) checks resolvedPath.startsWith(resolvedWorkspace) with no separator, so a path such as ../<sessionId>X/file is accepted for a sibling workspace whose name starts with the same session id; all six /api/files routes use it (guarded by the internal key since CM-AUTH-01, so only a key holder could use it). Compare against the workspace plus path.sep (or use path.relative and refuse a leading ..), check every other path check in container-manager (git, preview, internal sessions files) for the same pattern, and add tests for the sibling-prefix case.
+
+### BROWSER-SMOKE-01 — Browser smoke never finds a preview target
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=BROWSER-SMOKE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the CODE-TIDY-01 LOCK — not admitted.
+**Task ID:** BROWSER-SMOKE-01
+**Title:** Browser smoke never finds a preview target
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** CODE-TIDY-01.
+**Primary write scope:** PROVISIONAL, set at admission.
+**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER; GATEWAY if a caller is added there).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the CODE-TIDY-01 worker: nothing calls POST /api/internal/sessions/:id/previews, so the previews PreviewService port registry stays empty and every browser-smoke run (ai-service api-gateway-http.client.ts:507, gateway container-manager-http.client.ts:516, container-manager BrowserSmokeService) answers "Preview target not available: No preview port registered". Either register the port when a preview starts, or have BrowserSmokeService resolve the port from the preview service in src/preview/. Tests for both paths.
 
 ### CM-DEPS-01 — Remove container-manager's unused jsonwebtoken packages
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -87867,6 +87916,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From CM-CLEANUP-01: jsonwebtoken and @types/jsonwebtoken in services/container-manager/package.json are unused since PreviewsController was removed. Remove them and update the lockfile without touching an installed node_modules (for example npm install --package-lock-only in a checkout without junctions, run by the control plane), then rerun container-manager's gates.
+**Also (added 2026-11-10 by the CODE-TIDY-01 LOCK):** the root script test-preview-backend.sh calls container-manager without X-Internal-Service-Key, so every call is 403 since CM-AUTH-01; delete it or update it to read the key from the environment.
 
 ### DRIFT-FIX-01 — Briefing drift check follows the shared version hash
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
