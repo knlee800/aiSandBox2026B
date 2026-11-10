@@ -39,7 +39,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 
 | # | Item | What it does |
 |---|---|---|
-| 27 | AGENT-SPEC-01 | Workflow form as fields: tone, language, model (admitted 2026-11-10, Lane 1) |
+| 27 | MODEL-PRICE-01 | A credit price per model, when Keith sets prices (AGENT-SPEC-01 done 2026-11-10) |
 | 28 | BIZ-USER-01A | Save workflows: copy, blank, budget, access (BIZ-USER-01 is their umbrella) |
 | 29 | BIZ-USER-01B | Create Agent editor |
 | 30 | BIZ-USER-01C | Run a workflow, test run, budget check |

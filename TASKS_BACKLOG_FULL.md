@@ -86142,7 +86142,7 @@ taskId=AGENT-SPEC-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! we need to keep going since we are months behind. keep looking for the next task to start"). Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 1 and its mutexes released. Typed spec fields, rendered prompts byte-identical for all eight agents, hash over the fields, never-do codes, platform-models.ts, connector access from the registry, drift check re-renders; opus subagent in worktree lane/AGENT-SPEC-01, cherry-picked as a1fc29c; gateway 2894 passed (only the known smoke suite fails), ai-service 1231 passed, builds clean; not deployed. FOLLOWUPS: 1 registered (MODEL-PRICE-01) / 2 superseded (BIZ-USER-01A/B, BIZ-USER-01C) / 0 dropped / 0 undisposed. Checkpoint: docs/AGENT-SPEC-01-CHECKPOINT.md.
 **Task ID:** AGENT-SPEC-01
 **Title:** Typed agent spec fields
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -86159,8 +86159,33 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
-**Scope:** Typed fields on the system agent definition for A9 parts 1-4 and 6 (C7, C9, C10): tone, reply language, purpose, procedure, access, result, and model from a platform list with credit cost. The hash covers them. The never-do list is generated from access. Also (COS-EVAL-01, 2026-11-09): a prompt rendered from the fields stays within MAX_AGENT_INSTRUCTIONS_CHARS (4000, services/api-gateway/src/orchestration/handoff-request.ts); the Chief of Staff text is 2296 characters today; COS-EVAL-01's drift check (eval/briefing-drift.spec.ts) parses CHIEF_OF_STAFF_INSTRUCTIONS as string literals joined with +, so a rendered prompt needs that check updated in the same task.
+**Scope:** Typed fields on the system agent definition for A9 parts 1-4 and 6 (C7, C9, C10): tone, reply language, purpose, procedure, access, result, and model from a platform list with credit cost. The hash covers them. The never-do list is generated from access. Also (COS-EVAL-01, 2026-11-09): a prompt rendered from the fields stays within MAX_AGENT_INSTRUCTIONS_CHARS (4000, services/api-gateway/src/orchestration/handoff-request.ts); the Chief of Staff text is 2576 characters (corrected at the AGENT-SPEC-01 LOCK, 2026-11-10; 2296 predated BRIEF-FLAG-01); COS-EVAL-01's drift check (eval/briefing-drift.spec.ts) parses CHIEF_OF_STAFF_INSTRUCTIONS as string literals joined with +, so a rendered prompt needs that check updated in the same task.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+
+### MODEL-PRICE-01 — A credit price per model
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=MODEL-PRICE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the AGENT-SPEC-01 LOCK (named in docs/AGENT-SPEC-01-STAGE-START.md section 6) — not admitted.
+**Task ID:** MODEL-PRICE-01
+**Title:** A credit price per model
+**Workstream:** COMMERCIAL (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides prices per model. Keith decides.
+**Depends on:** AGENT-SPEC-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/credit-ledger/config/, services/api-gateway/src/billing/credit-deduction/, services/api-gateway/src/system-agents/platform-models.ts.
+**Mutexes / resources:** set at admission (GATEWAY, CREDIT; ENV if rates move to env).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** rate table only.
+**saturationClass:** OPTIONAL (Keith may change it).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Every model costs the same 1 credit per 1K tokens today (credit-rates.config.ts model_tokens); the platform model list shows that flat rate. A different price per model (for example Opus above Sonnet and Haiku) is a pricing decision for Keith; this task applies it to the rate table, the deduction and the list.
 
 ### BIZ-USER-01A — Store user workflows, copy, blank, budget and grants
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

@@ -977,7 +977,7 @@ The original walking-character / town **simulation** is **not implemented**. CUR
 |-----------|--------|
 | ainow.biz platform identity and dashboard (`/[locale]/platform`) | CURRENT (shell) |
 | aiSandBox = Builder Agent module (`/[locale]/app`) | CURRENT |
-| Static TypeScript system-agent registry (`frontend/lib/agent-platform/agent-registry.ts`) | CURRENT (read-only) |
+| System-agent registry (`services/api-gateway/src/system-agents/system-agent-registry.ts`, moved from the frontend by AGENT-DEFS-01; typed spec fields, rendered prompts, generated never-do list and a platform model list since AGENT-SPEC-01, 2026-11-10); the frontend reads `GET /api/system-agents` (`frontend/lib/agent-platform/agent-registry.ts`) | CURRENT (read-only) |
 | DB-backed user-created agent records (`user_agents`, `POST/GET /api/agents`) | CURRENT (**persistence/API**; not a dedicated runtime) |
 | Optional persisted user-agent identity (`agentId` on `POST /api/ai/execute`) | CURRENT (`conversation` and `workspace_mutation`; owner-scoped; existing Builder path; product-facing bind via `userAgentId` sends `agentId` for both intents) |
 | Platform RPG command-center shell | CURRENT (layout/shell; no game engine) |
@@ -1001,7 +1001,7 @@ The original walking-character / town **simulation** is **not implemented**. CUR
 
 ### 13.2 Agent Registry and Create Agent
 
-The system-agent registry is a static TypeScript declaration (`agent-registry.ts`).
+The system-agent registry is a static TypeScript declaration in the Gateway (`services/api-gateway/src/system-agents/system-agent-registry.ts`). Since AGENT-SPEC-01 each definition holds typed spec fields (tone, reply language, purpose, procedure, result, rules, access as tool profile + knowledge scopes + connector tool ids, and a model choice); the prompt is rendered from them, the version hash covers them, and a never-do list is generated from access. Platform models: `system-agents/platform-models.ts` (the four Anthropic ids, one flat credit rate).
 It is read-only at runtime. Non-Builder agents are declared but not executable.
 
 User-created agents:
