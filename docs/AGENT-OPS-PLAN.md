@@ -30,7 +30,6 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 | 20 | DESIGN-GAPS-01, DESIGN-GAPS-01B, DESIGN-GAPS-01C | Title weight, auth cards, Heroicons and chip text (01 and 01B done 2026-11-10; dark-mode brand contrast is DESIGN-CONTRAST-01); CJK and mono fonts (01C, needs Keith's font-source choice) |
 | 21 | OFFICE-03 | Office characters; needs Keith's art-source decision |
 | 22 | OFFICE-04 | Office animation |
-| 23 | OFFICE-07 | Cancel a run from the office (admitted 2026-11-10, Lane 2) |
 | 24 | OFFICE-02 | Push updates, only if polling proves costly |
 | 25 | GOV-ARCH-SYNC-01 | ARCHITECTURE.md caught up with what is built |
 | 26 | AI-SERVICE-AUTH-01 | Internal services on loopback and the internal key on ai-service (from the item 26 review 2026-11-10: all six concerns COVERED, docs/SECURITY-CHECK-26-REVIEW.md) |

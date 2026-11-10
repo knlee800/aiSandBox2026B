@@ -84448,6 +84448,7 @@ nature=IMPLEMENTATION
 **Lifecycle:** 3-STEP.
 **Start condition (human):** NOT_READY. Ready when: Keith sends his UI list or chooses it. Keith decides.
 **Depends on:** none recorded; see the ready condition.
+**Also (OFFICE-07, 2026-11-10):** the Team page (frontend/components/collaboration/collaboration-page.tsx) still has its own inline cancel request; it can use frontend/lib/office/office-cancel.ts cancelOfficeCollaborationRun, with no behavior change.
 **Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
 **Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
 **saturationClass:** OPTIONAL (Keith, 2026-11-05). **productClass:** CURRENT per PRD.md.
@@ -87260,7 +87261,7 @@ taskId=OFFICE-07
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-09 by GOV-ONE-PLAN-01 — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 2 and its mutexes released. Cancel from the office desk panel through the existing owner-checked route, confirm step, translated states; sonnet subagent in worktree lane/OFFICE-07, cherry-picked as b571cbb; frontend 1319 passed, tsc and build clean; not deployed. FOLLOWUPS: 0 registered / 2 superseded (BUILDER-POLISH-01; live check) / 0 dropped / 0 undisposed. Checkpoint: docs/OFFICE-07-CHECKPOINT.md.
 **Task ID:** OFFICE-07
 **Title:** Cancel from the office
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
