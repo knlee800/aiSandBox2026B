@@ -84315,6 +84315,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-05). **productClass:** CURRENT per PRD.md.
 
 **Holds:** (1) Charge Agent runs and replace the global rolling token limit with a real per-user or per-plan limit. (2) Credits that vary by model, and limit which models the Builder offers. (3) Replace the one global write flag, so a write window for one feature does not open Agent writes. (4) Authenticate Socket.IO room joins: join-session joins any session's room. (5) Decide on previous_response_id, which keeps conversations stored at OpenAI and xAI. Split into bounded slices at admission. Also (OFFICE-05, 2026-11-09): in the office, a user without collaboration access briefly sees role desks before the 403 folds them into one Team desk; fix before such users exist. Also (CONN-UI-01, 2026-11-09): the platform header shows the Connections link to every user; users without harness access land on a calm forbidden notice; hide the link for them before such users exist.
+**Also (added 2026-11-10 by the BIZ-LIVE-04 LOCK):** with the second account, before a second user: the Results page shows the calm no-access notice and the header shows no unread pill for a user without harness access (unit-tested in RESULTS-01; not run live because both staging accounts have harness on).
 **Named in:** HARNESS-QUOTA-01 checkpoint line 42; HARNESS-PROVIDERS-01 checkpoint lines 73 and 74; COLLAB-LIVE-06 and COLLAB-LIVE-07 checkpoints; AUTH-OWNER-01 checkpoint line 53; HARNESS-LIVE-06 checkpoint line 46.
 **Added 2026-11-05 (GOV-COLLAB-PLAN-01):** (6) the daily spend counter is kept in memory and resets on a restart (COLLAB-GATE-01 checkpoint line 30); it must survive a restart.
 **Added 2026-11-05 (GOV-BIZ-KNOWLEDGE-PLAN-01):** (7) enforce the plan entitlements for knowledge items (maxKnowledgeItemsPerMonth) together with charging.
@@ -86589,7 +86590,7 @@ taskId=BIZ-LIVE-04
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — Keith admitted it ("Yes, start it"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. Result: passed, with two findings and one item not run. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING, ENV, PROVIDER-LIVE and CREDIT released; the three authorizations false. Window 08:25:06Z to 09:51:45Z on 324ccca: Keith copied the Chief of Staff template (CoSCopy) and ran a test run and a real run from the Team page without a session; 2 executions completed on claude-opus-5-5 (20,880 and 20,934 tokens, 26 and 27 s), 42 credits; both runs on the business project; the business project (no workspace) and session (stopped, no container, expired at creation) inserted on real Postgres and reused; 0 file-tool attempts; the real run's seen mark set when Keith opened it. Findings: Role and Description are required but display-only and unexplained; a new workflow is stored active before any test. The no-harness view was not run (no such account on staging). Runs off; env files at the baseline hashes. Checkpoint: docs/BIZ-LIVE-04-CHECKPOINT.md. FOLLOWUPS: 1 registered (WORKFLOW-CREATE-01) / 1 superseded (ACCESS-READY-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-10 — Keith admitted it ("Yes, start it"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** BIZ-LIVE-04
 **Title:** Live check of a user workflow
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -86610,6 +86611,30 @@ nature=IMPLEMENTATION
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
 **Acceptance (added 2026-11-10 by the RESULTS-01 LOCK):** in en, zh-TW and zh-CN: the header badge counts a finished run and opening the result clears it; filters (including local dates) and paging work; the list states (loading, empty, failed) and detail states (loading, not found, failed, answer) look right; a workflow test run shows the Test run badge; a user without harness access sees the calm notice and no pill.
 **Acceptance (added 2026-11-10 by the TEAM-NO-SESSION-02 LOCK):** in en, zh-TW and zh-CN: open Team from the dashboard with no session, pick a workflow, run a test run, then Start; the spend line shows; "Past runs" lists the run; the business project is absent from the workspace project list; the admin sessions view shows one stopped session; the model does not use the file tools, or recovers when it tries; the two business rows insert on real Postgres.
+
+### WORKFLOW-CREATE-01 — New workflows start off until tested; Role and Description explained
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=WORKFLOW-CREATE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the BIZ-LIVE-04 LOCK — not admitted.
+**Task ID:** WORKFLOW-CREATE-01
+**Title:** New workflows start off until tested; Role and Description explained
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** BIZ-LIVE-04.
+**Primary write scope:** PROVISIONAL, set at admission (expected: services/api-gateway/src/user-agent/ for the stored status on create and copy; frontend/components/platform/ for the create form; the three message files).
+**Mutexes / resources:** set at admission (expected GATEWAY, FRONTEND, I18N).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From Keith's live check (BIZ-LIVE-04): (1) a new or copied workflow is stored with status active (the column default) before any test, so the agent panel's "Available for runs" switch shows On from the start; store it off (or draft) on create and copy so it can only be switched on after a passing test, keeping existing rows unchanged; (2) creating an agent, a copy included, requires Role and Description, which are display-only (not in the run prompt: userWorkflowPromptSpec renders tone, reply language, purpose, procedure, result) and unexplained; prefill them from the template on a copy and add a hint that they are display-only, or make them optional. Copy in three languages.
 
 ### GOV-GOOGLE-VERIFY-01 — Google OAuth app verification
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
