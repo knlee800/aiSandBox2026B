@@ -84389,7 +84389,7 @@ taskId=HARNESS-FIXES-01C
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-10 — Keith admitted it ("yes"); narrowed to item 1 by Keith the same day ("Yes, both"), item 2 registered as PROVIDER-KEY-01. Registered 2026-11-09 by the HARNESS-FIXES-01 split.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 2, FRONTEND and PACKAGE released (I18N released at the narrowing). frontend npm test also runs lib/ai/*.test.ts, components/office/*.test.ts*, lib/office/*.test.ts and hooks/*.test.ts*: 1041 passed, 136 newly run, 0 failed; tsc and build clean. Worker commit (sonnet subagent, worktree lane/HARNESS-FIXES-01C) cherry-picked onto main as bc80a91. Item 6 superseded by PROVIDER-KEY-01. Checkpoint: docs/HARNESS-FIXES-01C-CHECKPOINT.md. FOLLOWUPS: 0 registered / 1 superseded / 0 dropped / 0 undisposed. Registered 2026-11-09 by the HARNESS-FIXES-01 split.
 **Task ID:** HARNESS-FIXES-01C
 **Title:** Frontend harness fixes: the test script (the keyless provider moved to PROVIDER-KEY-01)
 **Workstream:** AGENT (taxonomy only; zero admission weight)
