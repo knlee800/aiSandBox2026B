@@ -86923,22 +86923,22 @@ taskId=COS-FRONTDOOR-01C
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the COS-FRONTDOOR-01 stage-start approval — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the COS-FRONTDOOR-01 stage-start approval — not admitted.
 **Task ID:** COS-FRONTDOOR-01C
 **Title:** Front-door Team page
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP (stage-start shared with COS-FRONTDOOR-01).
-**Start condition:** NOT_READY. Ready when: COS-FRONTDOOR-01B LOCKED; the control plane may start it under Keith's 2026-11-10 instruction (Stage 4 approved).
+**Start condition:** READY (COS-FRONTDOOR-01B LOCKED 2026-11-10; Stage 4 approved by Keith). Was: NOT_READY.
 **Depends on:** COS-FRONTDOOR-01B.
-**Primary write scope:** PROVISIONAL, set at admission from the stage-start (expected: frontend/components/collaboration/ (collaboration-roster.ts new, page, view, workflows and tests), the three message files).
-**Mutexes / resources:** set at admission (expected FRONTEND, I18N).
+**Primary write scope:** set at admission 2026-11-10 (EXACT): frontend/components/collaboration/, frontend/lib/collaboration.test.ts, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json. Was expected: frontend/components/collaboration/ (collaboration-roster.ts new, page, view, workflows and tests), the three message files).
+**Mutexes / resources:** FRONTEND, I18N.
 **Hot-file leases:** none.
-**Shared contracts:** set at admission.
+**Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
-**Revert isolation:** set at admission.
+**Revert isolation:** the page; the roster routes stay callable.
 **saturationClass:** OPTIONAL (as for COS-FRONTDOOR-01). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09 and Stage 4 on 2026-11-10).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-10).
 **Scope:** Stage-start docs/COS-FRONTDOOR-01-STAGE-START.md 01C files: a roster picker under the Team page's Chief of Staff option (loading, empty, failed with retry, loaded; a fourth tick refused with a hint; Save), the no-session Chief of Staff start, the skipped-member hint, member labels and the report-back step label, copy in three languages. Implementer: sonnet.
 **Also (added 2026-11-10 by the COS-FRONTDOOR-01B LOCK):** a report-back prompt can exceed 4000 characters (owner task up to 8000 plus an answer up to 12000), while the edit-task route caps an edited prompt at 4000; decide how the page shows and edits a long report-back prompt.
 **Also (added 2026-11-10 by the COS-FRONTDOOR-01 LOCK):** translated text for the seventh roster reason "invalid" (a stored workflow that no longer renders), beside draft, not_tested, off, missing and coming_soon.
@@ -86955,7 +86955,7 @@ nature=IMPLEMENTATION
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides.
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: Keith decides.
 **Depends on:** COS-FRONTDOOR-01C.
 **Primary write scope:** PROVISIONAL, set at admission.
 **Mutexes / resources:** set at admission (expected GATEWAY (FRONTEND, I18N if a note is shown)).
