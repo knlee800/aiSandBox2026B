@@ -3,9 +3,14 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
+  Optional,
 } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { timingSafeEqual } from 'crypto';
+import { INTERNAL_KEY_EXEMPT } from './internal-key-exempt.decorator';
+
+export const INTERNAL_SERVICE_KEY_HEADER = 'x-internal-service-key';
 
 /**
  * AI-SERVICE-AUTH-01 (D5, SCOPE 2): constant-time compare of the internal
@@ -39,12 +44,21 @@ export function internalKeyMatches(provided: unknown, expected: unknown): boolea
  *   (internalKeyMatches, AI-SERVICE-AUTH-01)
  * - Returns 403 Forbidden if missing/invalid
  * - Application fails to start if INTERNAL_SERVICE_KEY not configured
+ *
+ * CM-AUTH-01 (D1): also the global APP_GUARD. A handler carrying
+ * @InternalKeyExempt() passes without the key (only GET /api/health).
+ * The decision is made per handler, never from the path text, so letter
+ * case, trailing slashes and new routes cannot open anything. The existing
+ * class-level @UseGuards on the internal controllers stays; running the
+ * check twice costs nothing.
  */
 @Injectable()
 export class InternalServiceAuthGuard implements CanActivate {
   private readonly internalServiceKey: string;
+  private readonly reflector: Reflector;
 
-  constructor() {
+  constructor(@Optional() reflector?: Reflector) {
+    this.reflector = reflector ?? new Reflector();
     const key = process.env.INTERNAL_SERVICE_KEY;
 
     if (!key) {
@@ -57,8 +71,15 @@ export class InternalServiceAuthGuard implements CanActivate {
   }
 
   canActivate(context: ExecutionContext): boolean {
+    // No handler (never the case for a real Nest context) means not exempt.
+    const handler = typeof context.getHandler === 'function' ? context.getHandler() : undefined;
+    const exempt = handler ? this.reflector.get<boolean>(INTERNAL_KEY_EXEMPT, handler) : undefined;
+    if (exempt === true) {
+      return true;
+    }
+
     const request = context.switchToHttp().getRequest<Request>();
-    const providedKey = request.headers['x-internal-service-key'];
+    const providedKey = request.headers[INTERNAL_SERVICE_KEY_HEADER];
 
     if (!providedKey || !internalKeyMatches(providedKey, this.internalServiceKey)) {
       throw new ForbiddenException('Forbidden');

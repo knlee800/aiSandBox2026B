@@ -2,6 +2,7 @@ import { Controller, Post, Get, Delete, Param, Body, HttpCode, Res, Req } from '
 import { Response, Request } from 'express';
 import { PreviewService } from './preview.service';
 import { createProxyMiddleware } from 'http-proxy-middleware';
+import { stripInternalServiceKey } from '../guards/strip-internal-key';
 
 @Controller('preview')
 export class PreviewController {
@@ -91,12 +92,15 @@ export class PreviewController {
     const proxy = createProxyMiddleware({
       target,
       changeOrigin: true,
-      ws: true, // Support WebSocket
+      // CM-AUTH-01 (D7): no `ws: true`. An upgrade listener on the server
+      // would proxy any upgrade on any path without passing a guard.
       pathRewrite: (path) => {
         // Remove /api/preview/:sessionId/proxy from the path
         return path.replace(`/api/preview/${sessionId}/proxy`, '') || '/';
       },
       on: {
+        // CM-AUTH-01 (D6): the internal key never reaches the container.
+        proxyReq: stripInternalServiceKey,
         error: (err, req, res) => {
           console.error(`Proxy error for session ${sessionId}:`, err.message);
           // Check if res is ServerResponse (not Socket)

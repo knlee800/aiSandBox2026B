@@ -13,8 +13,12 @@ jest.mock('axios');
 describe('PreviewController endpoint contract', () => {
   let app: INestApplication;
   const mockedAxios = axios as jest.MockedFunction<typeof axios>;
+  const originalKey = process.env.INTERNAL_SERVICE_KEY;
+  const contractKey = 'cm-auth-01-contract-key';
 
   beforeEach(async () => {
+    // CM-AUTH-01 (D4): read by PreviewController at construction.
+    process.env.INTERNAL_SERVICE_KEY = contractKey;
     mockedAxios.mockResolvedValue({
       status: 200,
       headers: {},
@@ -40,6 +44,11 @@ describe('PreviewController endpoint contract', () => {
   afterEach(async () => {
     await app.close();
     jest.clearAllMocks();
+    if (originalKey === undefined) {
+      delete process.env.INTERNAL_SERVICE_KEY;
+    } else {
+      process.env.INTERNAL_SERVICE_KEY = originalKey;
+    }
   });
 
   it('keeps @Controller("preview") + @All("*") contract', () => {
@@ -164,7 +173,8 @@ describe('PreviewController endpoint contract', () => {
     };
     expect(axiosConfig.responseType).not.toBe('stream');
     expect(axiosConfig.data).toBeUndefined();
-    expect(axiosConfig.headers).toBeUndefined();
+    // CM-AUTH-01 (D4): stop sends only the server-side internal key.
+    expect(axiosConfig.headers).toEqual({ 'X-Internal-Service-Key': contractKey });
   });
 
   it('returns HTTP 200 JSON for no active preview / idempotent CM success', async () => {

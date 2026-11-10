@@ -178,10 +178,17 @@ export class SessionsService {
     // Auto-initialize git via HTTP call to avoid circular dependency
     try {
       const localApiBaseUrl = `http://localhost:${process.env.PORT || 4002}`;
+      // CM-AUTH-01 (D3): the git routes need the internal key like every other
+      // container-manager route; it is never logged.
+      const internalServiceKey = process.env.INTERNAL_SERVICE_KEY;
       await firstValueFrom(
-        this.httpService.post(`${localApiBaseUrl}/api/git/${sessionId}/init`, {
-          userId,
-        }),
+        this.httpService.post(
+          `${localApiBaseUrl}/api/git/${sessionId}/init`,
+          { userId },
+          internalServiceKey
+            ? { headers: { 'X-Internal-Service-Key': internalServiceKey } }
+            : undefined,
+        ),
       );
       console.log(`Git initialized for session ${sessionId}`);
     } catch (error) {

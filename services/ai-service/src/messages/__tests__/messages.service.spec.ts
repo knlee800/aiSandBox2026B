@@ -6,6 +6,7 @@ import { QuotaService } from '../../quota/quota.service';
 import { ApiGatewayHttpClient } from '../../clients/api-gateway-http.client';
 import { AIExecutionService } from '../../ai-execution/ai-execution.service';
 import { AIExecutionResult } from '../../ai-execution/types';
+import { of } from 'rxjs';
 
 // MessagesService opens a SQLite file at a fixed repo path in its constructor.
 // Use an in-memory database so the spec leaves no database/aisandbox.db behind.
@@ -295,6 +296,68 @@ describe('MessagesService (Phase 27: ClaudeModule Removal)', () => {
           total_tokens: 200,
         },
       });
+    });
+  });
+
+  describe('container-manager calls carry the internal key (CM-AUTH-01 D8)', () => {
+    const originalKey = process.env.INTERNAL_SERVICE_KEY;
+    const key = 'cm-auth-01-ai-legacy-key';
+
+    beforeEach(() => {
+      mockHttpService.post.mockReturnValue(of({ data: {} }));
+      mockHttpService.delete.mockReturnValue(of({ data: {} }));
+      jest.spyOn(console, 'log').mockImplementation(() => undefined);
+      jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    });
+
+    afterEach(() => {
+      if (originalKey === undefined) {
+        delete process.env.INTERNAL_SERVICE_KEY;
+      } else {
+        process.env.INTERNAL_SERVICE_KEY = originalKey;
+      }
+      jest.restoreAllMocks();
+    });
+
+    async function runAllThree() {
+      const internals = service as unknown as {
+        executeFileOperations: (
+          sessionId: string,
+          operations: Array<{ type: string; path: string; content?: string }>,
+        ) => Promise<void>;
+        createGitCommit: (sessionId: string, userId: string, messageNumber: number) => Promise<void>;
+      };
+      await internals.executeFileOperations('s1', [
+        { type: 'write', path: 'src/a.ts', content: 'x' },
+        { type: 'delete', path: 'src/b.ts' },
+      ]);
+      await internals.createGitCommit('s1', 'u1', 3);
+    }
+
+    it('sends X-Internal-Service-Key on the write, delete and commit calls when the key is set', async () => {
+      process.env.INTERNAL_SERVICE_KEY = key;
+
+      await runAllThree();
+
+      const expected = { headers: { 'X-Internal-Service-Key': key } };
+      expect(mockHttpService.post).toHaveBeenCalledTimes(2);
+      expect(mockHttpService.post.mock.calls[0][0]).toMatch(/\/api\/files\/s1\/write$/);
+      expect(mockHttpService.post.mock.calls[0][2]).toEqual(expected);
+      expect(mockHttpService.post.mock.calls[1][0]).toMatch(/\/api\/git\/s1\/commit$/);
+      expect(mockHttpService.post.mock.calls[1][2]).toEqual(expected);
+      expect(mockHttpService.delete).toHaveBeenCalledTimes(1);
+      expect(mockHttpService.delete.mock.calls[0][0]).toMatch(/\/api\/files\/s1\/delete\?path=src%2Fb\.ts$/);
+      expect(mockHttpService.delete.mock.calls[0][1]).toEqual(expected);
+    });
+
+    it('leaves the header out when the key is unset', async () => {
+      delete process.env.INTERNAL_SERVICE_KEY;
+
+      await runAllThree();
+
+      expect(mockHttpService.post.mock.calls[0][2]).toBeUndefined();
+      expect(mockHttpService.post.mock.calls[1][2]).toBeUndefined();
+      expect(mockHttpService.delete.mock.calls[0][1]).toBeUndefined();
     });
   });
 });

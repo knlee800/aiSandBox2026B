@@ -2,6 +2,20 @@ import { HttpException, Injectable, OnModuleInit, Optional, ServiceUnavailableEx
 import axios, { AxiosInstance } from 'axios';
 import { SessionService } from '../sessions/session.service';
 
+/**
+ * CM-AUTH-01 (SCOPE 1): every value put into a container-manager path is one
+ * encoded segment, so a key-bearing call cannot be steered to another route.
+ * encodeURIComponent turns '/', '\', '?' and '#' into escapes; a value that
+ * is empty or is '.' or '..' (which URL parsing would collapse even when
+ * percent-encoded) is refused. Valid UUIDs and hex hashes are unchanged.
+ */
+export function encodePathParam(value: string): string {
+  if (typeof value !== 'string' || value.length === 0 || value === '.' || value === '..') {
+    throw new Error('Invalid container-manager path parameter');
+  }
+  return encodeURIComponent(value);
+}
+
 export interface WorkspaceSearchMatch {
   path: string;
   line: number;
@@ -86,7 +100,7 @@ export class ContainerManagerHttpClient implements OnModuleInit {
 
     try {
       await this.axiosInstance.post(
-        `/api/sessions/${sessionId}/start`,
+        `/api/sessions/${encodePathParam(sessionId)}/start`,
         userId ? { userId } : {},
         {
           headers: {
@@ -124,7 +138,7 @@ export class ContainerManagerHttpClient implements OnModuleInit {
 
     try {
       await this.axiosInstance.post(
-        `/api/sessions/${sessionId}/stop`,
+        `/api/sessions/${encodePathParam(sessionId)}/stop`,
         {}, // No request body required
         {
           // Session stop can include Docker stop/remove and may exceed default timeout on Windows.
@@ -168,7 +182,7 @@ export class ContainerManagerHttpClient implements OnModuleInit {
       // NOTE: Windows Docker stop/remove may exceed default 10s timeout.
       // DELETE uses 30s override to avoid false timeouts.
       await this.axiosInstance.delete(
-       `/api/sessions/${sessionId}`,
+       `/api/sessions/${encodePathParam(sessionId)}`,
        {
         timeout: 30000, // 30s override for Windows Docker cleanup latency
         headers: {
@@ -255,7 +269,7 @@ export class ContainerManagerHttpClient implements OnModuleInit {
 
     try {
       const response = await this.axiosInstance.get(
-        `/api/internal/billing-export/user/${userId}/usage`,
+        `/api/internal/billing-export/user/${encodePathParam(userId)}/usage`,
         {
           params: {
             startDate,
@@ -305,7 +319,7 @@ export class ContainerManagerHttpClient implements OnModuleInit {
 
     try {
       const response = await this.axiosInstance.post(
-        `/api/internal/sessions/${sessionId}/exec`,
+        `/api/internal/sessions/${encodePathParam(sessionId)}/exec`,
         { cmd, cwd, env, timeoutMs },
         {
           timeout: timeoutMs + 5000,
@@ -345,7 +359,7 @@ export class ContainerManagerHttpClient implements OnModuleInit {
 
     try {
       const response = await this.axiosInstance.get(
-        `/api/internal/sessions/${sessionId}/dirs`,
+        `/api/internal/sessions/${encodePathParam(sessionId)}/dirs`,
         {
           params: { path },
           headers: {
@@ -375,7 +389,7 @@ export class ContainerManagerHttpClient implements OnModuleInit {
 
     try {
       const response = await this.axiosInstance.get(
-        `/api/internal/sessions/${sessionId}/files`,
+        `/api/internal/sessions/${encodePathParam(sessionId)}/files`,
         {
           params: { path },
           headers: {
@@ -406,7 +420,7 @@ export class ContainerManagerHttpClient implements OnModuleInit {
 
     try {
       await this.axiosInstance.post(
-        `/api/internal/sessions/${sessionId}/files`,
+        `/api/internal/sessions/${encodePathParam(sessionId)}/files`,
         { path, content },
         {
           headers: {
@@ -431,7 +445,7 @@ export class ContainerManagerHttpClient implements OnModuleInit {
     }
 
     try {
-      await this.axiosInstance.delete(`/api/internal/sessions/${sessionId}/files`, {
+      await this.axiosInstance.delete(`/api/internal/sessions/${encodePathParam(sessionId)}/files`, {
         data: { path },
         headers: {
           'X-Internal-Service-Key': this.internalServiceKey,
@@ -458,7 +472,7 @@ export class ContainerManagerHttpClient implements OnModuleInit {
 
     try {
       const response = await this.axiosInstance.post(
-        `/api/internal/sessions/${sessionId}/files/search`,
+        `/api/internal/sessions/${encodePathParam(sessionId)}/files/search`,
         { query },
         {
           headers: {
@@ -499,7 +513,7 @@ export class ContainerManagerHttpClient implements OnModuleInit {
 
     try {
       const response = await this.axiosInstance.post(
-        `/api/internal/sessions/${sessionId}/browser-smoke`,
+        `/api/internal/sessions/${encodePathParam(sessionId)}/browser-smoke`,
         { url, timeoutMs },
         {
           timeout: (timeoutMs ?? 120_000) + 10_000,
@@ -597,7 +611,7 @@ export class ContainerManagerHttpClient implements OnModuleInit {
 
     try {
       const response = await this.axiosInstance.get(
-        `/api/git/${sessionId}/diff/${commitHash}`,
+        `/api/git/${encodePathParam(sessionId)}/diff/${encodePathParam(commitHash)}`,
         {
           headers: {
             'X-Internal-Service-Key': this.internalServiceKey,
@@ -635,7 +649,7 @@ export class ContainerManagerHttpClient implements OnModuleInit {
 
     try {
       const response = await this.axiosInstance.get(
-        `/api/internal/git/${encodeURIComponent(sessionId)}/worktree-diff/${encodeURIComponent(commitHash)}`,
+        `/api/internal/git/${encodePathParam(sessionId)}/worktree-diff/${encodePathParam(commitHash)}`,
         {
           headers: {
             'X-Internal-Service-Key': this.internalServiceKey,
@@ -680,7 +694,7 @@ export class ContainerManagerHttpClient implements OnModuleInit {
 
     try {
       const response = await this.axiosInstance.post(
-        `/api/git/${sessionId}/revert`,
+        `/api/git/${encodePathParam(sessionId)}/revert`,
         { commitHash, userId },
         {
           headers: {
@@ -738,7 +752,7 @@ export class ContainerManagerHttpClient implements OnModuleInit {
 
     try {
       const response = await this.axiosInstance.post(
-        `/api/git/${sessionId}/commit`,
+        `/api/git/${encodePathParam(sessionId)}/commit`,
         payload,
         {
           headers: {
@@ -777,7 +791,7 @@ export class ContainerManagerHttpClient implements OnModuleInit {
 
     try {
       const response = await this.axiosInstance.post(
-        `/api/internal/checkpoint-history/${sessionId}/save`,
+        `/api/internal/checkpoint-history/${encodePathParam(sessionId)}/save`,
         { projectId },
         {
           headers: {
@@ -816,7 +830,7 @@ export class ContainerManagerHttpClient implements OnModuleInit {
 
     try {
       const response = await this.axiosInstance.post(
-        `/api/internal/checkpoint-history/${sessionId}/restore`,
+        `/api/internal/checkpoint-history/${encodePathParam(sessionId)}/restore`,
         { projectId },
         {
           headers: {

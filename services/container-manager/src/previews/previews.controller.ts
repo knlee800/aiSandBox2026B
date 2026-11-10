@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
+import { stripInternalServiceKey } from '../guards/strip-internal-key';
 import * as jwt from 'jsonwebtoken';
 import axios from 'axios';
 import { PreviewProxyService } from './preview-proxy.service';
@@ -43,10 +44,11 @@ import { SessionsService } from '../sessions/sessions.service';
  * - GET /previews/:sessionId/health
  * - Returns preview service health status
  *
- * WebSocket Support (Task 7.4C):
- * - Proxies WebSocket upgrade requests
- * - Supports dev server HMR (Vite, Next.js, CRA)
- * - Preserves path rewriting for WebSocket connections
+ * WebSocket Support (Task 7.4C): REMOVED by CM-AUTH-01 (D7). Upgrade
+ * requests bypass every Nest guard, and no caller used them.
+ *
+ * CM-AUTH-01: guarded by the global InternalServiceAuthGuard (the key is
+ * required); the key is removed before the request reaches the container.
  */
 @Controller('previews')
 export class PreviewsController {
@@ -165,13 +167,7 @@ export class PreviewsController {
    * 3. Look up registered port for sessionId (validates registration)
    * 4. Get container IP from Docker (validates container is running)
    * 5. Proxy request to http://containerIP:port
-   * 6. Support WebSocket upgrades for dev servers (Vite, Next.js, etc.)
-   *
-   * WebSocket Support:
-   * - Detects Upgrade: websocket header
-   * - Proxies WebSocket traffic to same container IP + port
-   * - Preserves path rewriting for WebSocket connections
-   * - Works with Vite HMR, Next.js Fast Refresh, CRA dev server
+   * 6. (CM-AUTH-01 D7: WebSocket upgrades are no longer proxied.)
    *
    * Error handling:
    * - 404 Not Found: Session does not exist or no preview port registered
@@ -212,19 +208,17 @@ export class PreviewsController {
       const proxy = createProxyMiddleware({
         target,
         changeOrigin: true,
-        ws: true, // Enable WebSocket proxying (Task 7.4C)
+        // CM-AUTH-01 (D7): no `ws: true` (Task 7.4C removed). An upgrade
+        // listener on the server would proxy any upgrade on any path
+        // without passing a guard.
         pathRewrite: (path) => {
           // Remove /previews/:sessionId from the path
           const prefix = `/previews/${sessionId}`;
           return path.replace(prefix, '') || '/';
         },
         on: {
-          proxyReqWs: (proxyReq, req, socket) => {
-            // Log WebSocket upgrade requests
-            console.log(
-              `[Public Preview] WebSocket upgrade for session ${sessionId}`,
-            );
-          },
+          // CM-AUTH-01 (D6): the internal key never reaches the container.
+          proxyReq: stripInternalServiceKey,
           error: (err, req, res) => {
             console.error(
               `[Public Preview] Proxy error for session ${sessionId}:`,

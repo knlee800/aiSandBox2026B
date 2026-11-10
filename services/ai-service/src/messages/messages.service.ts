@@ -329,12 +329,14 @@ Focus on writing clean, maintainable code with good practices.
                 path: op.path,
                 content: op.content,
               },
+              this.containerManagerRequestConfig(),
             ),
           );
         } else if (op.type === 'delete') {
           await firstValueFrom(
             this.httpService.delete(
               `${this.containerManagerUrl}/api/files/${sessionId}/delete?path=${encodeURIComponent(op.path)}`,
+              this.containerManagerRequestConfig(),
             ),
           );
         }
@@ -364,12 +366,23 @@ Focus on writing clean, maintainable code with good practices.
             messageNumber,
             description: `Auto-commit: Message ${messageNumber}`,
           },
+          this.containerManagerRequestConfig(),
         ),
       );
       console.log(`Git commit created for session ${sessionId}, message ${messageNumber}`);
     } catch (error) {
       console.error(`Failed to create git commit for session ${sessionId}:`, error.message);
     }
+  }
+
+  /**
+   * CM-AUTH-01 (D8): container-manager requires X-Internal-Service-Key on
+   * every route except GET /api/health. The header is left out when the key
+   * is unset (container-manager then answers 403). Never logged.
+   */
+  private containerManagerRequestConfig(): { headers: Record<string, string> } | undefined {
+    const key = process.env.INTERNAL_SERVICE_KEY;
+    return key ? { headers: { 'X-Internal-Service-Key': key } } : undefined;
   }
 
   private generateId(): string {

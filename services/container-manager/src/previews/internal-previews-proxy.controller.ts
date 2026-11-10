@@ -1,6 +1,7 @@
 import { Controller, All, Param, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
+import { stripInternalServiceKey } from '../guards/strip-internal-key';
 import { PreviewProxyService } from './preview-proxy.service';
 
 /**
@@ -10,7 +11,8 @@ import { PreviewProxyService } from './preview-proxy.service';
  * Internal-only HTTP proxy for forwarding traffic to session containers.
  * Route: /internal-previews/proxy/:sessionId/*
  *
- * No authentication guard - this is internal traffic only.
+ * CM-AUTH-01: guarded by the global InternalServiceAuthGuard (the key is
+ * required); the key is removed before the request reaches the container.
  */
 @Controller('internal-previews/proxy')
 export class InternalPreviewsProxyController {
@@ -49,6 +51,8 @@ export class InternalPreviewsProxyController {
           return path.replace(prefix, '') || '/';
         },
         on: {
+          // CM-AUTH-01 (D6): the internal key never reaches the container.
+          proxyReq: stripInternalServiceKey,
           error: (err, req, res) => {
             console.error(
               `Proxy error for session ${sessionId}:`,
