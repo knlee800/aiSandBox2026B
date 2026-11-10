@@ -86376,7 +86376,7 @@ taskId=CONN-COPY-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — Keith admitted it ("Start CONN-COPY-01"). Registered 2026-11-10 by the CONN-03 LOCK.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 1, FRONTEND and I18N released. Data statement (key renamed dataStatement.mailAndCalendarRead) and mail.intro rewritten in en, zh-TW and zh-CN: sender, subject, date and a short excerpt of the body are read, mail is not marked as read; the screen test checks the new key and the word excerpt. Sonnet subagent in worktree lane/CONN-COPY-01, cherry-picked as 0cdf614; frontend 1041 passed, tsc and build clean. Not deployed. Checkpoint: docs/CONN-COPY-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 1 superseded / 0 dropped / 0 undisposed (Keith reads all three languages: in BODIES-LIVE-01's scope). Registered 2026-11-10 by the CONN-03 LOCK.
 **Task ID:** CONN-COPY-01
 **Title:** Connections page says a short body excerpt is read
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -86408,7 +86408,7 @@ nature=IMPLEMENTATION
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: CONN-03 and CONN-COPY-01 LOCKED. Keith decides.
+**Start condition:** NOT_READY. Ready when: Keith decides. (CONN-03 and CONN-COPY-01 LOCKED 2026-11-10.)
 **Depends on:** CONN-03, CONN-COPY-01.
 **Primary write scope:** records; host state.
 **Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT.
@@ -86419,7 +86419,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (as for the plan's other tasks; Keith may change it).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
-**Scope:** Deploy main with CONN-03 and CONN-COPY-01 to staging (aisandbox-deploy, host checks as in COS-EVAL-LIVE-02), switch runs on only for the run as in BIZ-LIVE-03 (env files saved first, restored to the baseline hashes after), and run one morning briefing on Keith's account. From the host: the unread count in Keith's INBOX is the same before and after (nothing marked read), the mail tool result carries bodyText, the run's tokens against BIZ-LIVE-03's 10,372, and the mail connector call's duration. Superseding CONN-03's follow-up on slow body fetches: if the mail call takes more than 10 of its 20 seconds, register a separate body-phase time limit. Keith reads the briefing and the Connections page copy. Cost measured; no cap set before.
+**Scope:** Deploy main with CONN-03 and CONN-COPY-01 to staging (aisandbox-deploy, host checks as in COS-EVAL-LIVE-02), switch runs on only for the run as in BIZ-LIVE-03 (env files saved first, restored to the baseline hashes after), and run one morning briefing on Keith's account. From the host: the unread count in Keith's INBOX is the same before and after (nothing marked read), the mail tool result carries bodyText, the run's tokens against BIZ-LIVE-03's 10,372, and the mail connector call's duration. Superseding CONN-03's follow-up on slow body fetches: if the mail call takes more than 10 of its 20 seconds, register a separate body-phase time limit. Keith reads the briefing and the Connections page copy in en, zh-TW and zh-CN. Cost measured; no cap set before.
 **Plan:** docs/AGENT-OPS-PLAN.md section 0 item 12
 
 ### COS-FRONTDOOR-01 — Chief of Staff front door and report-back
