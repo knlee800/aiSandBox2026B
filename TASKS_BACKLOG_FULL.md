@@ -87554,24 +87554,48 @@ taskId=CM-CLEANUP-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the CM-AUTH-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the CM-AUTH-01 LOCK — not admitted.
 **Task ID:** CM-CLEANUP-01
 **Title:** Container-manager and preview proxy cleanups
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** CM-AUTH-01.
-**Primary write scope:** PROVISIONAL, set at admission.
-**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER, GATEWAY, AI-SERVICE).
+**Primary write scope:** set 2026-11-10: services/container-manager/src/, services/ai-service/src/messages/, services/ai-service/src/app.module.ts.
+**Mutexes / resources:** CONTAINER-MANAGER, AI-SERVICE (GATEWAY moved to CM-CLEANUP-01B at the 2026-11-10 split).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it).
 **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-10).
+**Split 2026-11-10 (control plane, under Keith's instruction to keep starting the next tasks, so this part can run beside RESULTS-01, which holds GATEWAY):** this task keeps F3, F4, F5 and the unused usage routes; the gateway preview catch-all's hop-by-hop headers (the Latent item) is CM-CLEANUP-01B. **Scope (original):** From CM-AUTH-01: (F3) previews/* and internal-previews/proxy/* have no caller and their pathRewrite prefixes miss /api, and several executor, files, sessions and git routes have no caller; a new proxy is created per request (listener leak); remove or fix. (F4) ai-service's legacy chat path has no caller and its delete sends ?path= while container-manager reads the body; remove it. (F5) container-manager CORS allows any origin with credentials while no browser calls it; turn it off. (Latent) the gateway preview catch-all copies container-manager's transfer-encoding header and then calls res.send; drop hop-by-hop headers. (Added 2026-11-10 by the CM-PREFIX-01 LOCK) The quota-evaluations and usage-aggregations internal routes, now at /api/internal/..., have no gateway caller: keep them with a reason or remove them.
+
+### CM-CLEANUP-01B — Gateway preview catch-all drops hop-by-hop headers
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CM-CLEANUP-01B
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the CM-CLEANUP-01 split — not admitted.
+**Task ID:** CM-CLEANUP-01B
+**Title:** Gateway preview catch-all drops hop-by-hop headers
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: GATEWAY is free (after RESULTS-01). Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** CM-CLEANUP-01.
+**Primary write scope:** PROVISIONAL: the gateway preview catch-all and its tests (services/api-gateway/src/preview/; set at admission).
+**Mutexes / resources:** GATEWAY.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (as for CM-CLEANUP-01). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
-**Scope:** From CM-AUTH-01: (F3) previews/* and internal-previews/proxy/* have no caller and their pathRewrite prefixes miss /api, and several executor, files, sessions and git routes have no caller; a new proxy is created per request (listener leak); remove or fix. (F4) ai-service's legacy chat path has no caller and its delete sends ?path= while container-manager reads the body; remove it. (F5) container-manager CORS allows any origin with credentials while no browser calls it; turn it off. (Latent) the gateway preview catch-all copies container-manager's transfer-encoding header and then calls res.send; drop hop-by-hop headers. (Added 2026-11-10 by the CM-PREFIX-01 LOCK) The quota-evaluations and usage-aggregations internal routes, now at /api/internal/..., have no gateway caller: keep them with a reason or remove them.
+**Scope:** From CM-AUTH-01 (Latent): the gateway preview catch-all copies container-manager's transfer-encoding header and then calls res.send; drop hop-by-hop headers (connection, keep-alive, transfer-encoding, upgrade, and the rest of RFC 9110 section 7.6.1) before replying, with a test.
 
 ### DRIFT-FIX-01 — Briefing drift check follows the shared version hash
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
