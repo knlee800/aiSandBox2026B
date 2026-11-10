@@ -4,8 +4,9 @@ description: Command center and Builder workspace for durable AI-assisted projec
 colors:
   background: "#ffffff"
   foreground: "#171717"
-  brand: "#6366f1"
+  brand: "#5b5ee8"
   brand-hover: "#4f46e5"
+  brand-text: "#4f46e5"
   surface-base: "#ffffff"
   surface-raised: "#f9fafb"
   surface-overlay: "#f3f4f6"
@@ -18,6 +19,7 @@ colors:
   foreground-dark: "#ededed"
   brand-dark: "#5b5ee8"
   brand-hover-dark: "#4f46e5"
+  brand-text-dark: "#818cf8"
   surface-base-dark: "#0a0a0a"
   surface-raised-dark: "#111111"
   surface-overlay-dark: "#1a1a1a"
@@ -263,7 +265,7 @@ Two mechanisms are in the code. The hex list in the frontmatter is the CSS varia
 
 ### Primary
 
-- **Brand indigo** (`{colors.brand}`, hover `{colors.brand-hover}`): the one primary action color on every screen: auth, password, landing, the workspace chat send button, the collaboration buttons, the platform dashboard, office desk panel, create-agent form, agent detail, and knowledge (`bg-brand`, `hover:bg-brand-hover`, `text-brand`). Disabled is `disabled:opacity-50`. Fixed (DESIGN-GAPS-01B).
+- **Brand indigo** (`{colors.brand}`, hover `{colors.brand-hover}`): the one primary action color on every screen: auth, password, landing, the workspace chat send button, the collaboration buttons, the platform dashboard, office desk panel, create-agent form, agent detail, and knowledge (`bg-brand`, `hover:bg-brand-hover`; text links use `text-brand-text`). Disabled is `disabled:opacity-50`. Fixed (DESIGN-GAPS-01B).
 - **Workspace blue (not an action color):** user chat bubbles are `border-blue-200 bg-blue-50 text-blue-900`. Status text is `text-blue-600`. Intent chips and the platform header links focus with `focus-visible:ring-brand`.
 - **Indigo text and selection:** links and bound-agent labels in the workspace use `text-indigo-700`. The collaboration selected run is `border-brand bg-indigo-50`. The logo mark is `bg-indigo-500/90`.
 
@@ -407,7 +409,7 @@ Sources: `PRODUCT.md`, `frontend/app/[locale]/layout.tsx`, `frontend/components/
 
 ## Known gaps
 
-1. Fixed (DESIGN-GAPS-01B): every primary action button is `bg-brand hover:bg-brand-hover` (disabled `opacity-50`). Fixed (DESIGN-CONTRAST-01): the dark brand is `#5b5ee8` (white text 4.99:1) and its hover `#4f46e5` (6.29:1), both above WCAG AA 4.5:1. Dark `text-brand` links on `#0a0a0a` are about 4.0:1 (3.2:1 on hover).
+1. Fixed (DESIGN-GAPS-01B): every primary action button is `bg-brand hover:bg-brand-hover` (disabled `opacity-50`). Fixed (DESIGN-CONTRAST-01): the brand is `#5b5ee8` in both modes (white text 4.99:1) and its hover `#4f46e5` (6.29:1), both above WCAG AA 4.5:1. Text links use their own token, `text-brand-text` (`--color-brand-text`: `#4f46e5` on light, 6.29:1 on white; `#818cf8` on dark, 6.64:1 on `#0a0a0a`), hover is an underline. `text-brand` is kept for the spinner only.
 2. Tailwind utilities (`bg-slate-950`, `bg-gray-100`, emerald, amber, red) have no hex literal in this repo. `tailwind.config.js` does not override the default palette. Those frontmatter fields keep the class name.
 3. Radius, spacing steps, and shadows are Tailwind utilities. No px, rem, or `box-shadow` value is declared here, so none is written as a length.
 4. `font-mono` is used. No mono family is configured. No line-height token is set. `tracking-wide` appears on isolated labels only.

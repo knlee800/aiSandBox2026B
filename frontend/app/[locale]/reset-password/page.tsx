@@ -65,7 +65,7 @@ function ResetPasswordForm({ locale }: { locale: string }) {
         <p className="text-center text-sm text-text-secondary">
           <Link
             href={`/${locale}/forgot-password`}
-            className="font-medium text-brand hover:text-brand-hover hover:underline"
+            className="font-medium text-brand-text hover:underline"
           >
             {t('requestNew')}
           </Link>
@@ -79,7 +79,7 @@ function ResetPasswordForm({ locale }: { locale: string }) {
       <div className="space-y-4">
         <div className="p-3 bg-emerald-100 text-emerald-700 rounded-md text-sm">{t('successMessage')}</div>
         <p className="text-center text-sm text-text-secondary">
-          <Link href={`/${locale}/login`} className="font-medium text-brand hover:text-brand-hover hover:underline">
+          <Link href={`/${locale}/login`} className="font-medium text-brand-text hover:underline">
             {t('signIn')}
           </Link>
         </p>

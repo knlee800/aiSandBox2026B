@@ -12,13 +12,19 @@ function luminance(hex: string): number {
   return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
 }
 
+function contrastAgainst(hex: string, bg: string): number {
+  const a = luminance(hex);
+  const b = luminance(bg);
+  return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+}
+
 function contrastWithWhite(hex: string): number {
-  return 1.05 / (luminance(hex) + 0.05);
+  return contrastAgainst(hex, '#ffffff');
 }
 
 function brandValues(block: string): Record<string, string> {
   const out: Record<string, string> = {};
-  for (const m of block.matchAll(/--color-(brand(?:-hover)?):\s*(#[0-9a-fA-F]{6})\s*;/g)) out[m[1]] = m[2];
+  for (const m of block.matchAll(/--color-(brand(?:-hover|-text)?):\s*(#[0-9a-fA-F]{6})\s*;/g)) out[m[1]] = m[2];
   return out;
 }
 
@@ -29,16 +35,36 @@ const dark = brandValues(css.slice(darkStart));
 describe('brand contrast (WCAG AA, white text)', () => {
   for (const [mode, vals] of [['light', light], ['dark', dark]] as const) {
     for (const name of ['brand', 'brand-hover']) {
-      it(`${mode} ${name} meets its contrast floor against white (4.5:1; light brand 4.4:1)`, () => {
+      it(`${mode} ${name} is at least 4.5:1 against white`, () => {
         assert.ok(vals[name], `${mode} ${name} found in globals.css`);
         const ratio = contrastWithWhite(vals[name]);
-        // Light brand #6366f1 is 4.47:1 (unchanged by DESIGN-CONTRAST-01, reported as a follow-up).
-        const min = mode === 'light' && name === 'brand' ? 4.4 : 4.5;
-        assert.ok(ratio >= min, `${mode} ${name} ${vals[name]} is ${ratio.toFixed(2)}:1`);
+        assert.ok(ratio >= 4.5, `${mode} ${name} ${vals[name]} is ${ratio.toFixed(2)}:1`);
       });
     }
   }
   it('dark hover differs from dark brand', () => {
     assert.notEqual(dark.brand, dark['brand-hover']);
+  });
+  it('brand-text is at least 4.5:1 on the light and dark page backgrounds', () => {
+    assert.ok(light['brand-text'] && dark['brand-text'], 'brand-text defined in both modes');
+    assert.ok(contrastAgainst(light['brand-text'], '#ffffff') >= 4.5);
+    assert.ok(contrastAgainst(dark['brand-text'], '#0a0a0a') >= 4.5);
+  });
+  it('tailwind config exposes the brand-text utility', () => {
+    const cfg = readFileSync(join(__dirname, '..', 'tailwind.config.js'), 'utf8');
+    assert.match(cfg, /text:\s*'var\(--color-brand-text\)'/);
+  });
+  it('no text-brand link class is left on the auth pages or landing slice', () => {
+    const files = [
+      'app/[locale]/login/page.tsx',
+      'app/[locale]/register/page.tsx',
+      'app/[locale]/forgot-password/page.tsx',
+      'app/[locale]/reset-password/page.tsx',
+      'components/public/public-landing-slice.tsx',
+    ];
+    for (const f of files) {
+      const src = readFileSync(join(__dirname, '..', f), 'utf8');
+      assert.doesNotMatch(src, /text-brand(?![-\w])/, f);
+    }
   });
 });

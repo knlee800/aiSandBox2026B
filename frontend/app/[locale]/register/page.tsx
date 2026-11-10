@@ -190,7 +190,7 @@ export default function RegisterPage() {
                   type="button"
                   onClick={handleResendVerification}
                   disabled={resendStatus === 'sending'}
-                  className="mb-4 text-sm font-medium text-brand hover:text-brand-hover hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                  className="mb-4 text-sm font-medium text-brand-text hover:underline disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {resendStatus === 'sending' ? `${t('resendVerification')}...` : t('resendVerification')}
                 </button>
@@ -230,7 +230,7 @@ export default function RegisterPage() {
 
           <p className="mt-5 text-center text-sm text-text-secondary">
             {t('alreadyHaveAccount')}{' '}
-            <Link href={`/${locale}/login`} className="font-medium text-brand hover:text-brand-hover hover:underline">
+            <Link href={`/${locale}/login`} className="font-medium text-brand-text hover:underline">
               {t('loginHere')}
             </Link>
           </p>

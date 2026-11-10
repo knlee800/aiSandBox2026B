@@ -6,8 +6,9 @@
   --background: #ffffff;
   --foreground: #171717;
 
-  --color-brand: #6366f1;
+  --color-brand: #5b5ee8;
   --color-brand-hover: #4f46e5;
+  --color-brand-text: #4f46e5;
   --color-surface-base: #ffffff;
   --color-surface-raised: #f9fafb;
   --color-surface-overlay: #f3f4f6;
@@ -25,6 +26,7 @@
 
     --color-brand: #5b5ee8;
     --color-brand-hover: #4f46e5;
+    --color-brand-text: #818cf8;
     --color-surface-base: #0a0a0a;
     --color-surface-raised: #111111;
     --color-surface-overlay: #1a1a1a;

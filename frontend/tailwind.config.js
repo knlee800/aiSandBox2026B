@@ -11,6 +11,7 @@ module.exports = {
         brand: {
           DEFAULT: 'var(--color-brand)',
           hover: 'var(--color-brand-hover)',
+          text: 'var(--color-brand-text)',
         },
         surface: {
           base: 'var(--color-surface-base)',

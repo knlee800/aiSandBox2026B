@@ -55,7 +55,7 @@ export default function ForgotPasswordPage() {
             <p className="text-center text-sm text-text-secondary">
               <Link
                 href={`/${locale}/login`}
-                className="font-medium text-brand hover:text-brand-hover hover:underline"
+                className="font-medium text-brand-text hover:underline"
               >
                 {t('backToLogin')}
               </Link>
@@ -90,7 +90,7 @@ export default function ForgotPasswordPage() {
             <p className="mt-4 text-center text-sm text-text-secondary">
               <Link
                 href={`/${locale}/login`}
-                className="font-medium text-brand hover:text-brand-hover hover:underline"
+                className="font-medium text-brand-text hover:underline"
               >
                 {t('backToLogin')}
               </Link>

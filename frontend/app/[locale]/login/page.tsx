@@ -214,7 +214,7 @@ export default function LoginPage() {
               {t('needAccount')}{' '}
               <Link
                 href={`/${locale}/register`}
-                className="font-medium text-brand hover:text-brand-hover hover:underline"
+                className="font-medium text-brand-text hover:underline"
               >
                 {t('startHere')}
               </Link>

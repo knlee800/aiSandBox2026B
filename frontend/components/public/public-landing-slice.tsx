@@ -185,7 +185,7 @@ export function PublicLandingSliceView(props: PublicLandingSliceViewProps) {
                 {props.strings.needAccount}{' '}
                 <Link
                   href={`/${props.locale}/register`}
-                  className="font-medium text-brand transition-colors hover:text-brand-hover hover:underline"
+                  className="font-medium text-brand-text transition-colors hover:underline"
                 >
                   {props.strings.startHere}
                 </Link>
