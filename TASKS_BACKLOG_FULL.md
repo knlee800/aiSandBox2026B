@@ -86923,7 +86923,7 @@ taskId=COS-FRONTDOOR-01C
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the COS-FRONTDOOR-01 stage-start approval — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 1 and its mutexes released. Result: passed (slice 01C). Roster picker with loading, empty, failed, loaded and saved states, fourth-tick refusal, reasons in three languages, hidden for coding, advisors and workflows; session-less Chief of Staff start with no sessionId; skipped hint; labels from detail agents; report-back step label and no edit for report-back prompts; 35 new and 4 reworded keys; sonnet subagent 4f55044, fast-forwarded onto main; control-plane rerun: frontend tsc 0, 1573 passed, build 0. Not deployed. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was admitted 2026-11-10. Checkpoint: docs/COS-FRONTDOOR-01C-CHECKPOINT.md.
 **Task ID:** COS-FRONTDOOR-01C
 **Title:** Front-door Team page
 **Workstream:** AGENT (taxonomy only; zero admission weight)
