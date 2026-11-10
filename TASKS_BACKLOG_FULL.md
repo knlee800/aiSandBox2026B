@@ -88392,13 +88392,13 @@ taskId=DESIGN-GAPS-01B
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the DESIGN-GAPS-01 split — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the DESIGN-GAPS-01 split — not admitted.
 **Task ID:** DESIGN-GAPS-01B
 **Title:** One primary color, one success color, one focus ring, one spinner
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction). (DESIGN-GAPS-01 LOCKED 2026-11-10.)
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction). (DESIGN-GAPS-01 LOCKED 2026-11-10.)
 **Depends on:** DESIGN-GAPS-01.
 **Primary write scope:** frontend/app/, frontend/components/, the three message files (spinner label), DESIGN.md.
 **Mutexes / resources:** FRONTEND, I18N.
