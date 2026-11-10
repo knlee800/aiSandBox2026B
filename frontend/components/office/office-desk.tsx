@@ -71,7 +71,7 @@ export default function OfficeDesk(props: OfficeDeskProps): React.ReactElement {
   return (
     <button
       type="button"
-      className={`flex min-h-44 w-full flex-col rounded-xl border p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${selectedClass} ${mutedClass} ${vacantClass}`}
+      className={`flex min-h-44 w-full flex-col rounded-xl border p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${selectedClass} ${mutedClass} ${vacantClass}`}
       data-testid={`office-desk-${id}`}
       data-phase={phase}
       data-kind={vacant ? 'vacant' : 'occupied'}

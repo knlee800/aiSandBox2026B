@@ -30,9 +30,9 @@ function AuthStatusBanner() {
 
   if (verified === '1') {
     return (
-      <div className="mb-4 rounded-lg border border-green-200 bg-green-50 p-3 flex items-center gap-2">
-        <CheckCircleIcon className="h-5 w-5 text-green-600 flex-shrink-0" />
-        <p className="text-sm text-green-700">{tLogin('emailVerified')}</p>
+      <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 flex items-center gap-2">
+        <CheckCircleIcon className="h-5 w-5 text-emerald-600 flex-shrink-0" />
+        <p className="text-sm text-emerald-700">{tLogin('emailVerified')}</p>
       </div>
     );
   }
@@ -149,7 +149,7 @@ export default function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-md border border-border bg-surface-base py-2.5 pl-10 pr-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-brand"
+                  className="w-full rounded-md border border-border bg-surface-base py-2.5 pl-10 pr-3 text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                   required
                 />
               </div>
@@ -168,7 +168,7 @@ export default function LoginPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-md border border-border bg-surface-base py-2.5 pl-10 pr-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-brand"
+                  className="w-full rounded-md border border-border bg-surface-base py-2.5 pl-10 pr-3 text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                   required
                 />
               </div>

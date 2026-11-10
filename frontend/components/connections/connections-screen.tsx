@@ -68,11 +68,11 @@ export interface ConnectionsScreenViewProps {
 }
 
 const QUIET_BUTTON =
-  'inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:opacity-60';
+  'inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:opacity-60';
 const PRIMARY_BUTTON =
-  'inline-flex items-center gap-1.5 rounded-md bg-indigo-500 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-indigo-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:opacity-60';
+  'inline-flex items-center gap-1.5 rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:opacity-60';
 const FIELD =
-  'mt-1 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 disabled:opacity-60';
+  'mt-1 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-60';
 
 function clearField(form: HTMLFormElement, name: string): void {
   const field = form.elements.namedItem(name);
@@ -182,7 +182,7 @@ function ConnectedActions(props: {
               type="button"
               onClick={() => onCancelDisconnect(kind)}
               disabled={busy}
-              className="rounded-md border border-slate-600 px-3 py-1.5 text-sm text-slate-200 transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 disabled:opacity-60"
+              className="rounded-md border border-slate-600 px-3 py-1.5 text-sm text-slate-200 transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-60"
               data-testid={`connections-${prefix}-disconnect-cancel`}
             >
               {t('actions.cancel')}
@@ -329,7 +329,7 @@ export function ConnectionsScreenView(props: ConnectionsScreenViewProps): React.
           </div>
           <Link
             href={`/${locale}/platform`}
-            className="inline-flex items-center gap-1.5 self-start rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 sm:self-auto"
+            className="inline-flex items-center gap-1.5 self-start rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand sm:self-auto"
             data-testid="connections-back"
           >
             <ArrowLeftIcon className="h-4 w-4" aria-hidden="true" />
@@ -353,7 +353,7 @@ export function ConnectionsScreenView(props: ConnectionsScreenViewProps): React.
               <button
                 type="button"
                 onClick={onRetry}
-                className="mt-3 inline-flex rounded-md bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-950 transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+                className="mt-3 inline-flex rounded-md bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-950 transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 data-testid="connections-retry"
               >
                 {t('retry')}
@@ -476,7 +476,7 @@ export function ConnectionsScreenView(props: ConnectionsScreenViewProps): React.
                               return (
                                 <label
                                   key={preset}
-                                  className={`cursor-pointer rounded-full border px-3 py-1.5 text-sm transition-colors focus-within:ring-2 focus-within:ring-indigo-400 ${
+                                  className={`cursor-pointer rounded-full border px-3 py-1.5 text-sm transition-colors focus-within:ring-2 focus-within:ring-brand ${
                                     selected
                                       ? 'border-indigo-400 bg-indigo-500/20 text-white'
                                       : 'border-slate-700 text-slate-200 hover:bg-slate-800'

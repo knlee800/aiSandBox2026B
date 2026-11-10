@@ -87,7 +87,7 @@ export default function CreateAgentForm({ labels, onSubmit, onCancel }: CreateAg
   }
 
   const inputClasses =
-    'block w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50';
+    'block w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-50';
   const labelClasses = 'block text-sm font-medium text-slate-200';
   const errorClasses = 'mt-1 text-xs text-red-400';
 
@@ -108,7 +108,7 @@ export default function CreateAgentForm({ labels, onSubmit, onCancel }: CreateAg
         <button
           type="button"
           onClick={onCancel}
-          className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-600 text-slate-400 transition-colors hover:bg-slate-700 hover:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+          className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-600 text-slate-400 transition-colors hover:bg-slate-700 hover:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
           aria-label={labels.cancelButton}
           data-testid="create-agent-cancel"
         >
@@ -216,7 +216,7 @@ export default function CreateAgentForm({ labels, onSubmit, onCancel }: CreateAg
       <button
         type="submit"
         disabled={submitting}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 disabled:opacity-50"
+        className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 disabled:opacity-50"
         data-testid="create-agent-submit"
       >
         {submitting ? labels.submitting : labels.submitButton}

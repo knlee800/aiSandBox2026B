@@ -158,7 +158,7 @@ export function PublicLandingSliceView(props: PublicLandingSliceViewProps) {
                 value={props.prompt}
                 onChange={(event) => props.onPromptChange(event.target.value)}
                 placeholder={props.strings.promptPlaceholder}
-                className="min-h-32 w-full rounded-xl border border-border bg-surface-base px-4 py-3 text-base text-text-primary outline-none transition focus:border-brand focus:ring-2 focus:ring-brand"
+                className="min-h-32 w-full rounded-xl border border-border bg-surface-base px-4 py-3 text-base text-text-primary transition focus:border-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               />
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">

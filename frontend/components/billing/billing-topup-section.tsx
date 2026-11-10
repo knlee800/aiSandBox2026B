@@ -42,7 +42,7 @@ export default function BillingTopUpSection({
               type="button"
               onClick={() => onCheckout(pack.id)}
               disabled={disabled || checkoutLoading === pack.id}
-              className="mt-3 w-full rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
+              className="mt-3 w-full rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
             >
               {checkoutLoading === pack.id
                 ? '...'

@@ -135,7 +135,7 @@ export default function ErrorRemediation({ error, onDismiss, onRetry }: ErrorRem
                 onDismiss();
                 onRetry();
               }}
-              className="flex-1 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors text-sm font-medium"
+              className="flex-1 bg-brand text-white py-2 px-4 rounded hover:bg-brand-hover transition-colors text-sm font-medium"
             >
               Retry
             </button>
@@ -184,7 +184,7 @@ function RemediationStepItem({ step, index }: RemediationStepItemProps) {
       case 'info':
         return 'bg-yellow-50 border-yellow-200';
       case 'alternative':
-        return 'bg-green-50 border-green-200';
+        return 'bg-emerald-50 border-emerald-200';
       default:
         return 'bg-gray-50 border-gray-200';
     }
@@ -215,7 +215,7 @@ function RemediationStepItem({ step, index }: RemediationStepItemProps) {
           {step.action && (
             <button
               onClick={step.action}
-              className="mt-2 px-4 py-2 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition-colors font-medium"
+              className="mt-2 px-4 py-2 bg-brand text-white rounded text-xs hover:bg-brand-hover transition-colors font-medium"
             >
               Execute Action
             </button>

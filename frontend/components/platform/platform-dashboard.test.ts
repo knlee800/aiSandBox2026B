@@ -791,7 +791,7 @@ describe('platform persisted user-agent Ask CTA — AGENT-PLATFORM-CREATE-01E', 
     );
     assert.match(
       panelSource,
-      /inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600/,
+      /inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand/,
     );
     assert.match(panelSource, /from '@heroicons\/react\/24\/outline'/);
     assert.doesNotMatch(panelSource, /from '@heroicons\/react\/24\/solid'/);

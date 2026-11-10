@@ -176,9 +176,9 @@ export default function BillingPageClient() {
 
       {/* Checkout result banners */}
       {checkoutResult === 'success' && (
-        <div className="rounded-lg border border-green-200 bg-green-50 p-4 mb-6 flex items-center gap-2">
-          <CheckCircleIcon className="h-5 w-5 text-green-600 flex-shrink-0" />
-          <p className="text-sm text-green-700">{t('checkoutSuccess')}</p>
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 mb-6 flex items-center gap-2">
+          <CheckCircleIcon className="h-5 w-5 text-emerald-600 flex-shrink-0" />
+          <p className="text-sm text-emerald-700">{t('checkoutSuccess')}</p>
         </div>
       )}
       {checkoutResult === 'cancelled' && (

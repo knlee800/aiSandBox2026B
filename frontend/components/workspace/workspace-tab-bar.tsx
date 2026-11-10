@@ -30,6 +30,8 @@ export interface WorkspaceTabBarProps {
   orientation: TabOrientation;
   onTabChange: (tabId: string) => void;
   onOrientationToggle: () => void;
+  horizontalTabsLabel: string;
+  verticalTabsLabel: string;
 }
 
 const TAB_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -88,9 +90,10 @@ export default function WorkspaceTabBar(props: WorkspaceTabBarProps) {
       <button
         type="button"
         onClick={props.onOrientationToggle}
-        className="shrink-0 rounded p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 mx-1"
+        className="shrink-0 rounded p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 mx-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
         data-testid="workspace-tab-orientation-toggle"
-        title={isVertical ? 'Horizontal tabs' : 'Vertical tabs'}
+        title={isVertical ? props.horizontalTabsLabel : props.verticalTabsLabel}
+        aria-label={isVertical ? props.horizontalTabsLabel : props.verticalTabsLabel}
       >
         {isVertical ? (
           <ArrowsRightLeftIcon className="h-5 w-5" aria-hidden="true" />

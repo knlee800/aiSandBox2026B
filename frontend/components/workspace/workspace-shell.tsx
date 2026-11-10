@@ -70,6 +70,7 @@ import enMessages from '@/messages/en.json';
 import zhTwMessages from '@/messages/zh-TW.json';
 import zhCnMessages from '@/messages/zh-CN.json';
 import WorkspaceTabBar from './workspace-tab-bar';
+import Spinner from '../ui/Spinner';
 import type { WorkspaceTabBarTab } from './workspace-tab-bar';
 import type { WorkspaceExecutionIntent } from './workspace-execution-intent.logic';
 import { toolLabelKey, type HarnessProgressItem } from './workspace-agent-mode.logic';
@@ -857,7 +858,8 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const stateMessageMessages = React.useMemo(() => getStateMessageMessages(locale), [locale]);
   stateMessageCopy = stateMessageMessages;
   workspaceCopy = workspaceMessages;
-  const comingSoonLabel = React.useMemo(() => getTabMessages(locale).comingSoon, [locale]);
+  const tabMessages = React.useMemo(() => getTabMessages(locale), [locale]);
+  const comingSoonLabel = tabMessages.comingSoon;
   const activeTabLabel = React.useMemo(
     () => tabBarTabs.find((tab) => tab.id === activeTabId)?.label ?? activeTabId,
     [tabBarTabs, activeTabId],
@@ -1671,7 +1673,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 selectedSessionProjectId ?? selectedProjectIdForContext,
               )}
               data-testid="workspace-collaboration-team-link"
-              className="inline-flex min-w-0 items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              className="inline-flex min-w-0 items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             >
               <UserGroupIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
               <span className="truncate">{collaborationMessages.teamLink}</span>
@@ -2248,7 +2250,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           >
             <Link
               href={`/${locale}/platform`}
-              className="inline-flex items-center gap-2 rounded-md border border-indigo-300 bg-white px-3 py-1.5 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+              className="inline-flex items-center gap-2 rounded-md border border-indigo-300 bg-white px-3 py-1.5 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
               data-testid="workspace-home-command-center-link"
             >
               <BuildingOffice2Icon className="h-4 w-4" aria-hidden="true" />
@@ -2362,7 +2364,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           onClick={() => setIsSidebarOpen(true)}
           className="rounded p-1.5 text-gray-600 active:scale-[0.97] transition-transform duration-100"
           data-testid="workspace-sidebar-mobile-toggle"
-          aria-label="Open sidebar"
+          aria-label={workspaceMessages.openSidebar}
         >
           <Bars3Icon className="h-5 w-5" aria-hidden="true" />
         </button>
@@ -2491,6 +2493,8 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                     orientation={tabOrientation}
                     onTabChange={setActiveTabId}
                     onOrientationToggle={handleTabOrientationToggle}
+                    horizontalTabsLabel={tabMessages.horizontalTabs}
+                    verticalTabsLabel={tabMessages.verticalTabs}
                   />
                   <div className="flex-1 md:min-h-0 min-w-0 md:overflow-hidden flex flex-col" data-testid="workspace-tab-content">
                     {activeTabId === 'preview' ? (
@@ -3100,7 +3104,7 @@ function HistoryProjectPanel(props: {
             />
             <button
               type="button"
-              className="rounded bg-indigo-600 px-2 py-1 text-xs text-white disabled:bg-indigo-300"
+              className="rounded bg-brand px-2 py-1 text-xs text-white disabled:opacity-50"
               disabled={!canMutate || !props.selectedWorkspaceId || workspaceControlsDisabled}
               onClick={() => void props.onRenameWorkspace?.()}
               data-testid="history-workspace-rename-button"
@@ -3244,7 +3248,7 @@ function HistoryProjectPanel(props: {
           </select>
           <button
             type="button"
-            className="rounded bg-indigo-600 px-2 py-1 text-xs text-white disabled:bg-indigo-300"
+            className="rounded bg-brand px-2 py-1 text-xs text-white disabled:opacity-50"
             disabled={!props.selectedProjectId || hasProjectActionInFlight}
             onClick={() => void props.onUpdateProjectVisibility?.()}
             data-testid="history-project-visibility-update-button"
@@ -3584,7 +3588,7 @@ function HistoryProjectPanel(props: {
 
       {props.listState === 'loading' ? (
         <p className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-gray-500" data-testid="history-project-list-loading">
-          <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-gray-400 animate-pulse" />
+          <Spinner className="h-3 w-3 text-gray-400" />
           <span>Loading projects...</span>
         </p>
       ) : null}
@@ -3608,7 +3612,7 @@ function HistoryProjectPanel(props: {
           className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-gray-500"
           data-testid="history-public-project-list-loading"
         >
-          <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-gray-400 animate-pulse" />
+          <Spinner className="h-3 w-3 text-gray-400" />
           <span>Loading public projects...</span>
         </p>
       ) : null}
@@ -3679,7 +3683,7 @@ function HistorySnapshotPanel(props: {
       <div className="mt-2 flex gap-2">
         <button
           type="button"
-          className="rounded bg-indigo-600 px-2 py-1 text-xs text-white disabled:bg-indigo-300"
+          className="rounded bg-brand px-2 py-1 text-xs text-white disabled:opacity-50"
           disabled={!canMutate || props.actionState === 'saving' || props.actionState === 'restoring'}
           onClick={() => void props.onSaveSnapshot?.()}
           data-testid="history-snapshot-save-button"
@@ -3770,7 +3774,7 @@ function HistorySnapshotPanel(props: {
 
       {props.listState === 'loading' ? (
         <p className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-gray-500" data-testid="history-snapshot-list-loading">
-          <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-gray-400 animate-pulse" />
+          <Spinner className="h-3 w-3 text-gray-400" />
           <span>Loading snapshots...</span>
         </p>
       ) : null}
@@ -4252,7 +4256,7 @@ function WorkspaceChatPanel(props: {
                   {props.onDismissBoundUserAgentAsk ? (
                     <button
                       type="button"
-                      className="rounded px-1 text-[11px] font-medium text-indigo-700 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                      className="rounded px-1 text-[11px] font-medium text-indigo-700 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                       data-testid="workspace-user-agent-ask-dismiss"
                       aria-label={props.aiMessages.userAgentAskDismiss}
                       onClick={props.onDismissBoundUserAgentAsk}
@@ -4280,7 +4284,7 @@ function WorkspaceChatPanel(props: {
                   props.onAgentModeChange?.(false);
                   props.onExecutionIntentChange?.('conversation');
                 }}
-                className={`rounded-md px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 ${
+                className={`rounded-md px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-50 ${
                   askSelected
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'bg-transparent text-gray-600 hover:text-gray-900'
@@ -4298,7 +4302,7 @@ function WorkspaceChatPanel(props: {
                   props.onAgentModeChange?.(false);
                   props.onExecutionIntentChange?.('workspace_mutation');
                 }}
-                className={`rounded-md px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 ${
+                className={`rounded-md px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-50 ${
                   buildSelected
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'bg-transparent text-gray-600 hover:text-gray-900'
@@ -4314,7 +4318,7 @@ function WorkspaceChatPanel(props: {
                   aria-pressed={agentModeSelected}
                   disabled={!props.onAgentModeChange || isSending}
                   onClick={() => props.onAgentModeChange?.(true)}
-                  className={`rounded-md px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 ${
+                  className={`rounded-md px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-50 ${
                     agentModeSelected
                       ? 'bg-white text-gray-900 shadow-sm'
                       : 'bg-transparent text-gray-600 hover:text-gray-900'
@@ -4349,7 +4353,7 @@ function WorkspaceChatPanel(props: {
                 onKeyDown={handleKeyDown}
                 disabled={!props.selectedSessionId || !props.onPromptInputChange || isSending}
                 placeholder={props.aiMessages.chatInputPlaceholder}
-                className="w-full resize-none rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm placeholder:text-gray-400 focus:border-blue-300 focus:bg-white focus:outline-none disabled:bg-gray-100 disabled:text-gray-500"
+                className="w-full resize-none rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm placeholder:text-gray-400 focus:border-brand focus:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:bg-gray-100 disabled:text-gray-500"
                 rows={3}
               />
             </div>
@@ -4369,7 +4373,7 @@ function WorkspaceChatPanel(props: {
                 type="submit"
                 data-testid="workspace-chat-submit"
                 disabled={!canSubmit}
-                className="shrink-0 rounded-lg bg-blue-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+                className="shrink-0 rounded-lg bg-brand px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSending ? props.aiMessages.sending : props.commonMessages.send}
               </button>
@@ -4874,7 +4878,7 @@ function WorkspaceExecPanel(props: {
           data-testid="workspace-exec-submit"
           type="submit"
           disabled={!canSubmit}
-          className="rounded bg-blue-600 px-3 py-1 text-xs text-white disabled:bg-blue-300"
+          className="rounded bg-brand px-3 py-1 text-xs text-white disabled:opacity-50"
         >
           {isSending ? props.messages.commandRunning : props.messages.commandRun}
         </button>
@@ -5004,7 +5008,7 @@ function WorkspacePreviewPanel(props: {
               setPreviewStopFailed(false);
               void props.onRefreshPreview();
             }}
-            className="rounded bg-blue-600 px-3 py-1 text-xs text-white disabled:bg-blue-300"
+            className="rounded bg-brand px-3 py-1 text-xs text-white disabled:opacity-50"
           >
             {props.previewState === 'loading'
               ? props.commonMessages.refreshing
@@ -5130,7 +5134,7 @@ function WorkspaceEditorPanel(props: {
                 data-testid="workspace-save-file"
                 disabled={!canSave || props.saveState === 'saving'}
                 onClick={() => void props.onSaveFile()}
-                className="rounded bg-blue-600 px-3 py-1 text-xs text-white disabled:bg-blue-300"
+                className="rounded bg-brand px-3 py-1 text-xs text-white disabled:opacity-50"
               >
                 {props.saveState === 'saving' ? 'Saving...' : 'Save'}
               </button>
@@ -5435,8 +5439,8 @@ function ExecStateMessage(props: {
 
 function ExecResultOutput(props: { result: NonNullable<WorkspaceExecState['result']> }) {
   const isSuccess = props.result.exitCode === 0;
-  const borderTone = isSuccess ? 'border-green-200' : 'border-red-200';
-  const badgeTone = isSuccess ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+  const borderTone = isSuccess ? 'border-emerald-200' : 'border-red-200';
+  const badgeTone = isSuccess ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700';
 
   return (
     <div className={`mt-2 rounded border p-2 ${borderTone}`} data-testid="workspace-exec-output">
@@ -5615,7 +5619,7 @@ function HistoryCreateCheckpointPanel(props: {
           data-testid="history-create-checkpoint-button"
           disabled={!canCreate}
           onClick={() => void props.onCreateCheckpoint()}
-          className="rounded bg-blue-600 px-3 py-1 text-xs text-white disabled:bg-blue-300"
+          className="rounded bg-brand px-3 py-1 text-xs text-white disabled:opacity-50"
         >
           {isCreating ? workspaceCopy.savePointCreating : workspaceCopy.savePoint}
         </button>
@@ -7252,7 +7256,7 @@ function HistoryCheckpointList(props: {
               data-testid="history-compare-run"
               disabled={!canRunCompare}
               onClick={() => void props.onRunCompare()}
-              className="rounded bg-blue-600 px-3 py-1 text-xs text-white disabled:bg-blue-300"
+              className="rounded bg-brand px-3 py-1 text-xs text-white disabled:opacity-50"
             >
               {props.compareState === 'loading' ? 'Comparing...' : 'Run Compare'}
             </button>
@@ -7780,7 +7784,7 @@ function HistoryCheckpointList(props: {
                             <span
                               className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${
                                 file.status === 'added'
-                                  ? 'bg-green-100 text-green-700'
+                                  ? 'bg-emerald-100 text-emerald-700'
                                   : file.status === 'deleted'
                                     ? 'bg-red-100 text-red-700'
                                     : 'bg-blue-100 text-blue-700'
@@ -8721,7 +8725,7 @@ function HistoryCheckpointDiffViewer(props: {
             <span
               className={`rounded px-2 py-0.5 text-[10px] font-semibold ${
                 selectedFile.status === 'added'
-                  ? 'bg-green-100 text-green-700'
+                  ? 'bg-emerald-100 text-emerald-700'
                   : selectedFile.status === 'deleted'
                     ? 'bg-red-100 text-red-700'
                     : 'bg-blue-100 text-blue-700'
@@ -8745,7 +8749,7 @@ function HistoryCheckpointDiffViewer(props: {
                       line.type === 'hunk'
                         ? 'border border-amber-200 bg-amber-50 text-amber-800'
                         : line.type === 'added'
-                          ? 'border border-green-200 bg-green-50 text-green-800'
+                          ? 'border border-emerald-200 bg-emerald-50 text-emerald-800'
                           : line.type === 'removed'
                             ? 'border border-red-200 bg-red-50 text-red-800'
                             : 'text-gray-700'
@@ -9396,7 +9400,7 @@ function StateMessage(props: {
   const paletteByTone = {
     neutral: 'border-gray-200 bg-gray-50 text-gray-700',
     error: 'border-red-200 bg-red-50 text-red-700',
-    success: 'border-green-100 bg-green-50 text-green-700',
+    success: 'border-emerald-100 bg-emerald-50 text-emerald-700',
   } as const;
 
   const palette = paletteByTone[props.tone];
@@ -9408,7 +9412,7 @@ function StateMessage(props: {
     <div className={containerClassName}>
       {isSuccessTone ? (
         <div className="inline-flex items-center gap-1.5">
-          <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-green-500" />
+          <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
           <p className="font-medium opacity-90">{props.heading}</p>
         </div>
       ) : (
@@ -9423,7 +9427,7 @@ function StateMessage(props: {
           disabled={props.primaryActionDisabled ?? false}
           onClick={props.onPrimaryAction}
           data-testid={props.primaryActionTestId}
-          className={`${isSuccessTone ? 'mt-1.5' : 'mt-2'} rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white disabled:cursor-not-allowed disabled:bg-blue-300`}
+          className={`${isSuccessTone ? 'mt-1.5' : 'mt-2'} rounded bg-brand px-3 py-1 text-xs font-medium text-white disabled:cursor-not-allowed disabled:opacity-50`}
         >
           {props.primaryActionLabel}
         </button>

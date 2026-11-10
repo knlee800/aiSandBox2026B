@@ -3,7 +3,15 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useTranslations } from '../hooks/useTranslations';
+import {
+  CheckCircleIcon,
+  ClockIcon,
+  Cog6ToothIcon,
+  XCircleIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/outline';
 import ConfigurationControl from './ConfigurationControl';
+import Spinner from './ui/Spinner';
 
 /**
  * System Readiness Component
@@ -198,15 +206,15 @@ export default function SystemReadiness() {
         <div className="fixed top-16 right-4 z-50 flex space-x-2">
           <button
             onClick={() => setShowConfiguration(true)}
-            className="bg-blue-600 text-white px-3 py-2 rounded-lg shadow-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 text-sm"
+            className="bg-brand text-white px-3 py-2 rounded-lg shadow-lg hover:bg-brand-hover transition-colors flex items-center space-x-2 text-sm"
             title={t('viewConfiguration')}
           >
-            <span>⚙️</span>
+            <Cog6ToothIcon className="h-4 w-4" aria-hidden="true" />
             <span>{t('config')}</span>
           </button>
           <button
             onClick={() => setCollapsed(false)}
-            className="bg-green-600 text-white px-3 py-2 rounded-lg shadow-lg hover:bg-green-700 transition-colors flex items-center space-x-2 text-sm"
+            className="bg-emerald-600 text-white px-3 py-2 rounded-lg shadow-lg hover:bg-emerald-700 transition-colors flex items-center space-x-2 text-sm"
             title={t('readyExpandTitle')}
           >
             <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
@@ -235,26 +243,27 @@ export default function SystemReadiness() {
       {/* Header */}
       <div className={`p-4 rounded-t-lg ${
         status.overall === 'ready' 
-          ? 'bg-green-600' 
+          ? 'bg-emerald-600' 
           : status.overall === 'checking'
           ? 'bg-yellow-600'
           : 'bg-red-600'
       }`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className={`w-3 h-3 rounded-full ${
-              status.overall === 'ready'
-                ? 'bg-white'
+            <div className="w-3 h-3 rounded-full bg-white"></div>
+            <h3 className="text-white font-semibold inline-flex items-center gap-1.5">
+              {status.overall === 'ready' ? (
+                <CheckCircleIcon className="h-5 w-5" aria-hidden="true" />
+              ) : status.overall === 'checking' ? (
+                <Spinner className="h-5 w-5" />
+              ) : (
+                <XCircleIcon className="h-5 w-5" aria-hidden="true" />
+              )}
+              {status.overall === 'ready'
+                ? t('statusReady')
                 : status.overall === 'checking'
-                ? 'bg-white animate-pulse'
-                : 'bg-white'
-            }`}></div>
-            <h3 className="text-white font-semibold">
-              {status.overall === 'ready' 
-                ? `✓ ${t('statusReady')}` 
-                : status.overall === 'checking'
-                ? `⏳ ${t('statusChecking')}`
-                : `✗ ${t('statusNotReady')}`}
+                ? t('statusChecking')
+                : t('statusNotReady')}
             </h3>
           </div>
           {status.overall === 'ready' && (
@@ -262,8 +271,9 @@ export default function SystemReadiness() {
               onClick={() => setCollapsed(true)}
               className="text-white hover:text-gray-200 transition-colors"
               title={t('minimize')}
+              aria-label={t('minimize')}
             >
-              ✕
+              <XMarkIcon className="h-5 w-5" aria-hidden="true" />
             </button>
           )}
         </div>
@@ -357,9 +367,9 @@ export default function SystemReadiness() {
       <div className="p-4 border-t border-gray-200 bg-gray-50 rounded-b-lg space-y-2">
         <button
           onClick={() => setShowConfiguration(true)}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors text-sm font-medium flex items-center justify-center space-x-2"
+          className="w-full bg-brand text-white py-2 px-4 rounded hover:bg-brand-hover transition-colors text-sm font-medium flex items-center justify-center space-x-2"
         >
-          <span>⚙️</span>
+          <Cog6ToothIcon className="h-4 w-4" aria-hidden="true" />
           <span>{t('viewConfiguration')}</span>
         </button>
         <button
@@ -367,7 +377,14 @@ export default function SystemReadiness() {
           disabled={status.overall === 'checking'}
           className="w-full bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700 disabled:bg-gray-300 transition-colors text-sm font-medium"
         >
-          {status.overall === 'checking' ? t('checking') : t('recheckNow')}
+          {status.overall === 'checking' ? (
+            <span className="inline-flex items-center justify-center gap-2">
+              <Spinner className="h-4 w-4" />
+              {t('checking')}
+            </span>
+          ) : (
+            t('recheckNow')
+          )}
         </button>
       </div>
 
@@ -401,21 +418,29 @@ function StatusItem({ name, status, message, messageIsRaw, remediation }: Status
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center space-x-2">
-            <span className={`text-lg ${
-              status === 'ok' 
-                ? '✓ text-green-600' 
-                : status === 'checking'
-                ? '⏳ text-yellow-600'
-                : '✗ text-red-600'
-            }`}>
-              {status === 'ok' ? '✓' : status === 'checking' ? '⏳' : '✗'}
+            <span
+              className={`inline-flex ${
+                status === 'ok'
+                  ? 'text-emerald-600'
+                  : status === 'checking'
+                  ? 'text-yellow-600'
+                  : 'text-red-600'
+              }`}
+            >
+              {status === 'ok' ? (
+                <CheckCircleIcon className="h-5 w-5" aria-hidden="true" />
+              ) : status === 'checking' ? (
+                <ClockIcon className="h-5 w-5" aria-hidden="true" />
+              ) : (
+                <XCircleIcon className="h-5 w-5" aria-hidden="true" />
+              )}
             </span>
             <span className="font-medium text-sm text-gray-900">{name}</span>
           </div>
           {message && (
             <p className={`text-xs mt-1 ml-6 ${
               status === 'ok' 
-                ? 'text-green-700' 
+                ? 'text-emerald-700' 
                 : status === 'checking'
                 ? 'text-yellow-700'
                 : 'text-red-700'

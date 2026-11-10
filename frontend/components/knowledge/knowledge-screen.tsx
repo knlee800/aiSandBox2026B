@@ -187,7 +187,7 @@ export function KnowledgeScreenView(props: KnowledgeScreenViewProps): React.Reac
                 type="button"
                 onClick={onRefresh}
                 disabled={busy}
-                className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-60"
                 data-testid="knowledge-refresh"
               >
                 <ArrowPathIcon className="h-4 w-4" aria-hidden="true" />
@@ -196,7 +196,7 @@ export function KnowledgeScreenView(props: KnowledgeScreenViewProps): React.Reac
             ) : null}
             <Link
               href={`/${locale}/platform`}
-              className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               data-testid="knowledge-back"
             >
               <ArrowLeftIcon className="h-4 w-4" aria-hidden="true" />
@@ -327,7 +327,7 @@ export function KnowledgeScreenView(props: KnowledgeScreenViewProps): React.Reac
                   type="button"
                   onClick={onStartAdd}
                   disabled={busy || !selectedScopeId}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-indigo-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-400 disabled:opacity-60"
+                  className="inline-flex items-center gap-1.5 rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-60"
                   data-testid="knowledge-add"
                 >
                   <PlusIcon className="h-4 w-4" aria-hidden="true" />
@@ -418,7 +418,7 @@ export function KnowledgeScreenView(props: KnowledgeScreenViewProps): React.Reac
                     <button
                       type="submit"
                       disabled={busy}
-                      className="rounded-md bg-indigo-500 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-60"
+                      className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white disabled:opacity-60"
                       data-testid="knowledge-submit"
                     >
                       {submitLabel}

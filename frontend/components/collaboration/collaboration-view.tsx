@@ -258,7 +258,7 @@ export default function CollaborationView(props: {
                       data-testid={`collaboration-team-option-${choice.id}`}
                       className={`flex min-w-0 cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 ${
                         selected
-                          ? 'border-indigo-300 bg-indigo-50'
+                          ? 'border-brand bg-indigo-50'
                           : 'border-gray-200 bg-white'
                       }`}
                     >
@@ -299,7 +299,7 @@ export default function CollaborationView(props: {
                   disabled={props.deciding}
                   onClick={() => props.onTaskPreset?.(preset.id)}
                   aria-describedby={props.taskPresetHint ? 'collaboration-preset-hint' : undefined}
-                  className="inline-flex min-w-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700 transition-transform duration-150 ease-out hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 motion-safe:active:scale-[0.97]"
+                  className="inline-flex min-w-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700 transition-transform duration-150 ease-out hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-50 motion-safe:active:scale-[0.97]"
                 >
                   <SunIcon className="h-4 w-4 shrink-0 text-gray-500" aria-hidden="true" />
                   <span className="break-words">{preset.label}</span>
@@ -323,13 +323,13 @@ export default function CollaborationView(props: {
             onChange={(event) => props.onTaskChange(event.target.value)}
             placeholder={labels.taskPlaceholder}
             rows={4}
-            className="mt-1 w-full max-w-full resize-y rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-300 focus:bg-white focus:outline-none"
+            className="mt-1 w-full max-w-full resize-y rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-brand focus:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           />
           <button
             type="submit"
             data-testid="collaboration-start"
             disabled={!canStart}
-            className="mt-2 inline-flex items-center rounded-lg bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+            className="mt-2 inline-flex items-center rounded-lg bg-brand px-4 py-1.5 text-sm font-medium text-white hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
           >
             {props.deciding ? labels.starting : labels.start}
           </button>
@@ -692,7 +692,7 @@ export default function CollaborationView(props: {
                             autoFocus
                             rows={4}
                             onChange={(event) => props.onEditPromptChange(event.target.value)}
-                            className="w-full max-w-full resize-y rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-blue-300 focus:bg-white focus:outline-none"
+                            className="w-full max-w-full resize-y rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-brand focus:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                           />
                           <div className="flex flex-wrap gap-2">
                             <button
@@ -700,7 +700,7 @@ export default function CollaborationView(props: {
                               data-testid="collaboration-edit-task-save"
                               disabled={props.deciding || props.editPrompt.trim().length === 0}
                               onClick={() => props.onConfirmEdit(handoff.referralId)}
-                              className="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+                              className="inline-flex items-center gap-1 rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
                             >
                               {labels.saveTask}
                             </button>
@@ -782,7 +782,7 @@ export default function CollaborationView(props: {
                                 }),
                               )
                             }
-                            className="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+                            className="inline-flex items-center gap-1 rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
                           >
                             <CheckIcon className="h-4 w-4" aria-hidden="true" />
                             {labels.approve}
@@ -841,7 +841,7 @@ export default function CollaborationView(props: {
                   onClick={() => props.onOpenRun(run.id)}
                   className={`flex w-full min-w-0 flex-wrap items-baseline justify-between gap-2 rounded-lg border px-3 py-2 text-left text-sm ${
                     run.selected
-                      ? 'border-indigo-300 bg-indigo-50'
+                      ? 'border-brand bg-indigo-50'
                       : 'border-gray-200 bg-white hover:bg-gray-50'
                   }`}
                 >

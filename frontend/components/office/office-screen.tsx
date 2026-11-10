@@ -324,7 +324,7 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
             ) : null}
             <button
               type="button"
-              className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               onClick={onRefresh}
               data-testid="office-refresh"
             >
@@ -333,7 +333,7 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
             </button>
             <Link
               href={officePlatformHref(locale)}
-              className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               data-testid="office-back-to-platform"
             >
               <ArrowLeftIcon className="h-4 w-4" aria-hidden="true" />
@@ -497,7 +497,7 @@ export function OfficeScreenView(props: OfficeScreenViewProps): React.ReactEleme
                 <p className="min-w-0 break-words text-sm text-red-200">{t('handoffLoadError')}</p>
                 <button
                   type="button"
-                  className="text-sm font-medium text-indigo-300 hover:text-indigo-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+                  className="text-sm font-medium text-indigo-300 hover:text-indigo-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                   onClick={onRetryHandoffs}
                   data-testid="office-handoff-retry"
                 >

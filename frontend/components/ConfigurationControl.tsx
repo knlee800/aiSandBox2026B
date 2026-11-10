@@ -1,6 +1,17 @@
 'use client';
 
 import { useState, useEffect, ReactElement } from 'react';
+import {
+  ArrowPathIcon,
+  BookOpenIcon,
+  Cog6ToothIcon,
+  ExclamationTriangleIcon,
+  LightBulbIcon,
+  XCircleIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/outline';
+import { useTranslations } from '../hooks/useTranslations';
+import Spinner from './ui/Spinner';
 
 /**
  * Configuration Control Surface
@@ -58,6 +69,7 @@ interface ConfigurationControlProps {
 }
 
 export default function ConfigurationControl({ onClose }: ConfigurationControlProps) {
+  const t = useTranslations('configuration');
   const [config, setConfig] = useState<ConfigurationState>({
     items: [],
     lastUpdated: null,
@@ -111,8 +123,8 @@ export default function ConfigurationControl({ onClose }: ConfigurationControlPr
       // Provider selection happens at startup via AI_PROVIDER env var
       const providerValue = getProviderFromHealthCheck(data) || 'stub';
       const providerDescription = providerValue === 'stub' && !getProviderFromHealthCheck(data)
-        ? 'Active AI provider for chat execution (showing "stub" because backend does not expose this value in health check - check .env file to see actual provider)'
-        : 'Active AI provider for chat execution';
+        ? t('providerDescriptionStub')
+        : t('providerDescription');
       
       items.push({
         key: 'AI_PROVIDER',
@@ -130,7 +142,7 @@ export default function ConfigurationControl({ onClose }: ConfigurationControlPr
         value: data.launchState || 'UNKNOWN',
         source: 'env',
         mutability: 'restart-required',
-        description: 'Platform launch readiness state',
+        description: t('launchStateDescription'),
         allowedValues: ['CLOSED', 'INTERNAL', 'EARLY_ACCESS', 'PUBLIC'],
         requiresRestart: true,
       });
@@ -141,7 +153,7 @@ export default function ConfigurationControl({ onClose }: ConfigurationControlPr
         value: data.abortMode || 'NONE',
         source: 'env',
         mutability: 'restart-required',
-        description: 'Emergency shutdown mode',
+        description: t('abortModeDescription'),
         allowedValues: ['NONE', 'EXECUTION_BLOCKED', 'FULL_SHUTDOWN'],
         requiresRestart: true,
       });
@@ -152,7 +164,7 @@ export default function ConfigurationControl({ onClose }: ConfigurationControlPr
         value: data.environment || 'unknown',
         source: 'env',
         mutability: 'locked',
-        description: 'Node.js environment',
+        description: t('nodeEnvDescription'),
         requiresRestart: true,
       });
 
@@ -166,7 +178,7 @@ export default function ConfigurationControl({ onClose }: ConfigurationControlPr
         items: [],
         lastUpdated: null,
         status: 'error',
-        errorMessage: error.message || 'Failed to load configuration',
+        errorMessage: error.message || t('loadFailedMessage'),
       });
     }
   };
@@ -214,14 +226,14 @@ export default function ConfigurationControl({ onClose }: ConfigurationControlPr
     // Instead, we show the user what needs to be done.
 
     alert(
-      `Configuration Change Required\n\n` +
-      `To change ${item.key}:\n\n` +
-      `1. Update environment variable:\n` +
+      `${t('alertTitle')}\n\n` +
+      `${t('alertToChange').replace('{key}', item.key)}\n\n` +
+      `${t('alertStep1')}\n` +
       `   export ${item.key}="${editValue}"\n\n` +
-      `2. Restart the API Gateway:\n` +
+      `${t('alertStep2')}\n` +
       `   npm run restart:api-gateway\n\n` +
-      `3. Verify change in System Readiness panel\n\n` +
-      `Note: Configuration changes require service restart.`
+      `${t('alertStep3')}\n\n` +
+      `${t('alertNote')}`
     );
 
     handleCancelEdit();
@@ -231,20 +243,20 @@ export default function ConfigurationControl({ onClose }: ConfigurationControlPr
     switch (mutability) {
       case 'live':
         return (
-          <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded font-medium">
-            Live
+          <span className="px-2 py-1 bg-emerald-100 text-emerald-800 text-xs rounded font-medium">
+            {t('badgeLive')}
           </span>
         );
       case 'restart-required':
         return (
           <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded font-medium">
-            Restart Required
+            {t('badgeRestartRequired')}
           </span>
         );
       case 'locked':
         return (
           <span className="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded font-medium">
-            Locked
+            {t('badgeLocked')}
           </span>
         );
     }
@@ -255,19 +267,19 @@ export default function ConfigurationControl({ onClose }: ConfigurationControlPr
       case 'env':
         return (
           <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded font-medium">
-            Environment
+            {t('sourceEnvironment')}
           </span>
         );
       case 'runtime':
         return (
           <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded font-medium">
-            Runtime
+            {t('sourceRuntime')}
           </span>
         );
       case 'default':
         return (
           <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded font-medium">
-            Default
+            {t('sourceDefault')}
           </span>
         );
     }
@@ -279,16 +291,16 @@ export default function ConfigurationControl({ onClose }: ConfigurationControlPr
         {onClose && (
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors text-xl"
-            title="Close configuration"
-            aria-label="Close configuration"
+            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
+            title={t('close')}
+            aria-label={t('close')}
           >
-            ✕
+            <XMarkIcon className="h-5 w-5" aria-hidden="true" />
           </button>
         )}
         <div className="flex items-center justify-center space-x-2">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-          <span className="text-gray-600">Loading configuration...</span>
+          <Spinner className="h-6 w-6 text-brand" />
+          <span className="text-gray-600">{t('loading')}</span>
         </div>
       </div>
     );
@@ -300,24 +312,24 @@ export default function ConfigurationControl({ onClose }: ConfigurationControlPr
         {onClose && (
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors text-xl"
-            title="Close configuration"
-            aria-label="Close configuration"
+            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
+            title={t('close')}
+            aria-label={t('close')}
           >
-            ✕
+            <XMarkIcon className="h-5 w-5" aria-hidden="true" />
           </button>
         )}
         <div className="bg-red-50 border border-red-200 rounded p-4">
           <div className="flex items-start space-x-2">
-            <span className="text-red-600 text-xl">❌</span>
+            <XCircleIcon className="h-6 w-6 text-red-600" aria-hidden="true" />
             <div className="flex-1">
-              <h3 className="font-semibold text-red-900">Configuration Load Failed</h3>
+              <h3 className="font-semibold text-red-900">{t('loadFailedTitle')}</h3>
               <p className="text-sm text-red-700 mt-1">{config.errorMessage}</p>
               <button
                 onClick={loadConfiguration}
                 className="mt-3 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
               >
-                Retry
+                {t('retry')}
               </button>
             </div>
           </div>
@@ -332,31 +344,33 @@ export default function ConfigurationControl({ onClose }: ConfigurationControlPr
       <div className="bg-blue-600 text-white p-4 rounded-t-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <span className="text-2xl">⚙️</span>
-            <h2 className="text-xl font-semibold">Runtime Configuration</h2>
+            <Cog6ToothIcon className="h-6 w-6" aria-hidden="true" />
+            <h2 className="text-xl font-semibold">{t('title')}</h2>
           </div>
           <div className="flex items-center space-x-3">
             <button
               onClick={loadConfiguration}
-              className="text-white hover:text-blue-100 transition-colors text-sm font-medium"
-              title="Refresh configuration"
+              className="inline-flex items-center gap-1 text-white hover:text-blue-100 transition-colors text-sm font-medium"
+              title={t('refreshTitle')}
             >
-              🔄 Refresh
+              <ArrowPathIcon className="h-4 w-4" aria-hidden="true" />
+              {t('refresh')}
             </button>
             {onClose && (
               <button
                 onClick={onClose}
-                className="text-white hover:text-blue-100 transition-colors text-xl"
-                title="Close"
+                className="text-white hover:text-blue-100 transition-colors"
+                title={t('close')}
+                aria-label={t('close')}
               >
-                ✕
+                <XMarkIcon className="h-5 w-5" aria-hidden="true" />
               </button>
             )}
           </div>
         </div>
         {config.lastUpdated && (
           <p className="text-xs text-blue-100 mt-1">
-            Last updated: {config.lastUpdated.toLocaleTimeString()}
+            {t('lastUpdated')} {config.lastUpdated.toLocaleTimeString()}
           </p>
         )}
       </div>
@@ -384,14 +398,13 @@ export default function ConfigurationControl({ onClose }: ConfigurationControlPr
         {config.items.some((item) => item.requiresRestart) && (
           <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded">
             <div className="flex items-start space-x-2">
-              <span className="text-yellow-600 text-lg">⚠️</span>
+              <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600" aria-hidden="true" />
               <div className="flex-1">
                 <h3 className="font-semibold text-yellow-900 text-sm">
-                  Configuration Changes Require Restart
+                  {t('restartWarningTitle')}
                 </h3>
                 <p className="text-xs text-yellow-800 mt-1">
-                  Most configuration values are loaded at startup from environment variables.
-                  To change these values, update your .env file and restart the service.
+                  {t('restartWarningBody')}
                 </p>
               </div>
             </div>
@@ -401,22 +414,23 @@ export default function ConfigurationControl({ onClose }: ConfigurationControlPr
         {/* Documentation Link */}
         <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded">
           <div className="flex items-start space-x-2">
-            <span className="text-gray-600 text-lg">📖</span>
+            <BookOpenIcon className="h-5 w-5 text-gray-600" aria-hidden="true" />
             <div className="flex-1">
               <h3 className="font-semibold text-gray-900 text-sm">
-                Configuration Documentation
+                {t('docsTitle')}
               </h3>
               <p className="text-xs text-gray-700 mt-1">
-                For detailed configuration options and best practices, see these files in the repository root:
+                {t('docsIntro')}
               </p>
               <ul className="text-xs text-gray-700 mt-2 space-y-1 list-disc list-inside">
-                <li><code className="bg-white px-1 rounded">ARCHITECTURE.md</code> (Section 12) - Environment variable reference and configuration patterns</li>
-                <li><code className="bg-white px-1 rounded">docs/PHASE-32A-CHECKPOINT.md</code> - Startup validation rules and guardrails</li>
-                <li><code className="bg-white px-1 rounded">docs/PHASE-28B-1-FINAL-CHECKPOINT.md</code> - Launch state options (CLOSED, INTERNAL, EARLY_ACCESS, PUBLIC)</li>
-                <li><code className="bg-white px-1 rounded">docs/PHASE-28B-2-FINAL-CHECKPOINT.md</code> - Abort mode options (NONE, EXECUTION_BLOCKED, FULL_SHUTDOWN)</li>
+                <li><code className="bg-white px-1 rounded">ARCHITECTURE.md</code> {t('docsArchitecture')}</li>
+                <li><code className="bg-white px-1 rounded">docs/PHASE-32A-CHECKPOINT.md</code> {t('docsStartupValidation')}</li>
+                <li><code className="bg-white px-1 rounded">docs/PHASE-28B-1-FINAL-CHECKPOINT.md</code> {t('docsLaunchState')}</li>
+                <li><code className="bg-white px-1 rounded">docs/PHASE-28B-2-FINAL-CHECKPOINT.md</code> {t('docsAbortMode')}</li>
               </ul>
-              <p className="text-xs text-gray-600 mt-2 italic">
-                💡 Open these files in your code editor or text viewer to see full details and examples.
+              <p className="text-xs text-gray-600 mt-2 italic inline-flex items-center gap-1">
+                <LightBulbIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                {t('docsHint')}
               </p>
             </div>
           </div>
@@ -449,6 +463,7 @@ function ConfigurationItem({
   getMutabilityBadge,
   getSourceBadge,
 }: ConfigurationItemProps) {
+  const t = useTranslations('configuration');
   return (
     <div className="border border-gray-200 rounded p-4">
       <div className="flex items-start justify-between">
@@ -469,7 +484,7 @@ function ConfigurationItem({
                 <select
                   value={editValue}
                   onChange={(e) => onEditValueChange(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 >
                   {item.allowedValues.map((value) => (
                     <option key={value} value={value}>
@@ -482,21 +497,21 @@ function ConfigurationItem({
                   type="text"
                   value={editValue}
                   onChange={(e) => onEditValueChange(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 />
               )}
               <div className="flex space-x-2 mt-2">
                 <button
                   onClick={() => onSave(item)}
-                  className="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
+                  className="px-3 py-1 bg-brand text-white rounded text-xs hover:bg-brand-hover"
                 >
-                  Show Instructions
+                  {t('showInstructions')}
                 </button>
                 <button
                   onClick={onCancel}
                   className="px-3 py-1 bg-gray-200 text-gray-700 rounded text-xs hover:bg-gray-300"
                 >
-                  Cancel
+                  {t('cancel')}
                 </button>
               </div>
             </div>
@@ -510,7 +525,7 @@ function ConfigurationItem({
                   onClick={() => onEdit(item)}
                   className="px-3 py-1 bg-blue-50 text-blue-600 rounded text-xs hover:bg-blue-100 font-medium"
                 >
-                  Change
+                  {t('change')}
                 </button>
               )}
             </div>
@@ -520,7 +535,7 @@ function ConfigurationItem({
           {item.allowedValues && !isEditing && (
             <div className="mt-2">
               <p className="text-xs text-gray-500">
-                Allowed values: {item.allowedValues.join(', ')}
+                {t('allowedValues')} {item.allowedValues.join(', ')}
               </p>
             </div>
           )}
@@ -528,8 +543,8 @@ function ConfigurationItem({
           {/* Restart Warning */}
           {item.requiresRestart && (
             <div className="mt-2 flex items-center space-x-1 text-xs text-yellow-700">
-              <span>⚠️</span>
-              <span>Changing this value requires service restart</span>
+              <ExclamationTriangleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>{t('requiresRestartInline')}</span>
             </div>
           )}
         </div>

@@ -27,7 +27,7 @@ function getStatusBadgeClasses(status: AgentStatus): string {
 
 function getCardClasses(enabled: boolean, selected: boolean): string {
   const base =
-    'relative flex min-h-44 w-full flex-col rounded-xl border p-5 text-left shadow-sm transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2';
+    'relative flex min-h-44 w-full flex-col rounded-xl border p-5 text-left shadow-sm transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2';
 
   const selectedState = selected
     ? 'border-indigo-300 bg-indigo-50/70 shadow-md ring-1 ring-indigo-200'

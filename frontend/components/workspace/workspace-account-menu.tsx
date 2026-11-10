@@ -336,7 +336,7 @@ export default function WorkspaceAccountMenu(props: WorkspaceAccountMenuProps) {
                 setGlobalInstructionsSaved(false);
               }}
               placeholder={accountMessages.globalAiInstructionsPlaceholder}
-              className="mt-3 min-h-[120px] w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-gray-500"
+              className="mt-3 min-h-[120px] w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               maxLength={GLOBAL_AI_INSTRUCTIONS_MAX_LENGTH + 1}
               data-testid="workspace-global-ai-instructions-input"
             />

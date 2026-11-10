@@ -152,7 +152,7 @@ function RunDetail(props: {
         ref={backRef}
         type="button"
         autoFocus
-        className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+        className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
         onClick={onCloseRun}
         data-testid="office-run-detail-back"
       >
@@ -188,7 +188,7 @@ function RunDetail(props: {
             tabIndex={0}
             data-testid="office-run-detail-output"
             aria-labelledby="office-saved-output"
-            className="mt-2 max-h-72 max-w-full overflow-y-auto overscroll-contain whitespace-pre-wrap break-words rounded-lg border border-slate-800 bg-slate-950/60 p-3 font-sans text-sm leading-relaxed text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+            className="mt-2 max-h-72 max-w-full overflow-y-auto overscroll-contain whitespace-pre-wrap break-words rounded-lg border border-slate-800 bg-slate-950/60 p-3 font-sans text-sm leading-relaxed text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           >
             {output}
           </pre>
@@ -225,7 +225,7 @@ function RunDetail(props: {
           <p className="text-sm text-red-200">{labels.runDetailError}</p>
           <button
             type="button"
-            className="rounded-md text-sm font-medium text-indigo-300 hover:text-indigo-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+            className="rounded-md text-sm font-medium text-indigo-300 hover:text-indigo-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             onClick={onRetryRun}
             data-testid="office-run-detail-retry"
           >
@@ -310,7 +310,7 @@ export default function OfficeDeskPanel({
         </div>
         <button
           type="button"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-700 text-slate-300 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-700 text-slate-300 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           onClick={onClose}
           aria-label={labels.close}
           data-testid="office-close-panel"
@@ -380,7 +380,7 @@ export default function OfficeDeskPanel({
                     {run.executionId ? (
                       <button
                         type="button"
-                        className="w-full rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-left hover:border-indigo-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                        className="w-full rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-left hover:border-indigo-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
                         data-testid="office-recent-run"
                         data-execution-id={run.executionId}
                         onClick={() => {
@@ -425,7 +425,7 @@ export default function OfficeDeskPanel({
         {desk.openHref ? (
           <Link
             href={desk.openHref}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
             data-testid="office-open-team"
           >
             <span>{labels.openTeam}</span>
@@ -435,7 +435,7 @@ export default function OfficeDeskPanel({
         {desk.workspaceHref ? (
           <Link
             href={desk.workspaceHref}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
             data-testid="office-open-workspace"
           >
             <span>{labels.openWorkspace}</span>
@@ -444,7 +444,7 @@ export default function OfficeDeskPanel({
         ) : null}
         <Link
           href={desk.profileHref}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-600 px-4 py-2.5 text-sm font-semibold text-slate-100 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-600 px-4 py-2.5 text-sm font-semibold text-slate-100 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
           data-testid="office-agent-profile"
         >
           <UserCircleIcon className="h-4 w-4" aria-hidden="true" />

@@ -29,7 +29,7 @@ describe('DESIGN-GAPS-01 slice A', () => {
   test('mobile sidebar toggle uses a Heroicon, not an inline SVG', () => {
     const source = read('./workspace-shell.tsx');
     assert.match(source, /Bars3Icon/);
-    assert.match(source, /data-testid="workspace-sidebar-mobile-toggle"\s+aria-label="Open sidebar"\s*>\s*<Bars3Icon/);
+    assert.match(source, /data-testid="workspace-sidebar-mobile-toggle"\s+aria-label=\{workspaceMessages\.openSidebar\}\s*>\s*<Bars3Icon/);
     assert.doesNotMatch(source, /M3 5H17/);
   });
 

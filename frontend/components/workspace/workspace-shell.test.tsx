@@ -999,6 +999,8 @@ function buildWorkspaceTabBarProps(
     orientation: 'horizontal' as const,
     onTabChange: () => {},
     onOrientationToggle: () => {},
+    horizontalTabsLabel: 'Horizontal tabs',
+    verticalTabsLabel: 'Vertical tabs',
     ...overrides,
   };
 }
@@ -7404,7 +7406,7 @@ describe('preview failure ask AI fix prompt wiring — UX-PV-02B', () => {
     assert.match(shellSource, /primaryActionDisabled\?: boolean;/);
     assert.match(shellSource, /disabled=\{props\.primaryActionDisabled \?\? false\}/);
     assert.match(shellSource, /disabled:cursor-not-allowed/);
-    assert.match(shellSource, /disabled:bg-blue-300/);
+    assert.match(shellSource, /disabled:opacity-50/);
   });
 
   test('page source defines handleAskAiToFixPreview and improved structured preview-fix prompt', () => {
@@ -7610,7 +7612,7 @@ describe('workspace state-message/loading polish — UX-IA-20', () => {
     const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
     assert.match(shellSource, /const isSuccessTone = props\.tone === 'success';/);
     assert.match(shellSource, /const containerClassName = isSuccessTone[\s\S]*?px-2 py-1\.5 text-xs/);
-    assert.match(shellSource, /<span aria-hidden="true" className="h-1\.5 w-1\.5 rounded-full bg-green-500" \/>/);
+    assert.match(shellSource, /<span aria-hidden="true" className="h-1\.5 w-1\.5 rounded-full bg-emerald-500" \/>/);
     assert.match(shellSource, /\{!isSuccessTone \? <p className="mt-1 text-xs opacity-90">Action: \{props\.action\}<\/p> : null\}/);
   });
 
@@ -7634,7 +7636,7 @@ describe('workspace state-message/loading polish — UX-IA-20', () => {
     assert.match(html, /Action: Refresh this page to retry\./);
   });
 
-  test('loading list rows keep existing test ids and add pulse affordance', () => {
+  test('loading list rows keep existing test ids and show the shared spinner', () => {
     const html = renderWorkspaceShell({
       ...projectPanelRenderOverrides,
       projectListState: 'loading',
@@ -7648,14 +7650,14 @@ describe('workspace state-message/loading polish — UX-IA-20', () => {
     assert.match(html, /Loading projects\.\.\./);
     assert.match(html, /Loading public projects\.\.\./);
     assert.match(html, /Loading snapshots\.\.\./);
-    assert.match(html, /animate-pulse/);
+    assert.match(html, /animate-spin/);
   });
 
-  test('workspace shell source applies pulse indicator in targeted loading rows', () => {
+  test('workspace shell source applies the shared spinner in targeted loading rows', () => {
     const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
-    assert.match(shellSource, /data-testid="history-project-list-loading"[\s\S]*?animate-pulse/);
-    assert.match(shellSource, /data-testid="history-public-project-list-loading"[\s\S]*?animate-pulse/);
-    assert.match(shellSource, /data-testid="history-snapshot-list-loading"[\s\S]*?animate-pulse/);
+    assert.match(shellSource, /data-testid="history-project-list-loading"[\s\S]*?<Spinner/);
+    assert.match(shellSource, /data-testid="history-public-project-list-loading"[\s\S]*?<Spinner/);
+    assert.match(shellSource, /data-testid="history-snapshot-list-loading"[\s\S]*?<Spinner/);
   });
 });
 

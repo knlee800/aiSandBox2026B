@@ -77,7 +77,7 @@ function ResetPasswordForm({ locale }: { locale: string }) {
   if (success) {
     return (
       <div className="space-y-4">
-        <div className="p-3 bg-green-100 text-green-700 rounded-md text-sm">{t('successMessage')}</div>
+        <div className="p-3 bg-emerald-100 text-emerald-700 rounded-md text-sm">{t('successMessage')}</div>
         <p className="text-center text-sm text-text-secondary">
           <Link href={`/${locale}/login`} className="font-medium text-brand hover:text-brand-hover hover:underline">
             {t('signIn')}
@@ -98,7 +98,7 @@ function ResetPasswordForm({ locale }: { locale: string }) {
           type="password"
           value={newPassword}
           onChange={(event) => setNewPassword(event.target.value)}
-          className="w-full rounded-md border border-border bg-surface-base px-3 py-2 text-text-primary focus:outline-none focus:ring-2 focus:ring-brand"
+          className="w-full rounded-md border border-border bg-surface-base px-3 py-2 text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           required
         />
       </div>
@@ -112,7 +112,7 @@ function ResetPasswordForm({ locale }: { locale: string }) {
           type="password"
           value={confirmPassword}
           onChange={(event) => setConfirmPassword(event.target.value)}
-          className="w-full rounded-md border border-border bg-surface-base px-3 py-2 text-text-primary focus:outline-none focus:ring-2 focus:ring-brand"
+          className="w-full rounded-md border border-border bg-surface-base px-3 py-2 text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           required
         />
       </div>

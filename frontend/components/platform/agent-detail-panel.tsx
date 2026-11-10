@@ -133,7 +133,7 @@ export default function AgentDetailPanel(props: AgentDetailPanelProps) {
         </div>
         <button
           type="button"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
           onClick={onClose}
           aria-label={closeLabel}
           data-testid="agent-detail-close"
@@ -176,7 +176,7 @@ export default function AgentDetailPanel(props: AgentDetailPanelProps) {
       {agent.isBuilder ? (
         <Link
           href={`${localePrefix}/app`}
-          className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+          className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
           data-testid="agent-detail-start-building"
         >
           <span>{startBuildingLabel}</span>
@@ -186,7 +186,7 @@ export default function AgentDetailPanel(props: AgentDetailPanelProps) {
         <div data-testid="agent-detail-user-created">
           <Link
             href={`${localePrefix}/app?userAgentId=${encodeURIComponent(agent.id)}`}
-            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
             data-testid="agent-detail-ask"
           >
             <span>{askButtonLabel}</span>
@@ -229,7 +229,7 @@ export default function AgentDetailPanel(props: AgentDetailPanelProps) {
                     </button>
                     <button
                       type="button"
-                      className="inline-flex flex-1 items-center justify-center rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 transition-[transform,background-color] duration-150 ease-out hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 active:scale-[0.97] disabled:cursor-not-allowed disabled:text-gray-400"
+                      className="inline-flex flex-1 items-center justify-center rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 transition-[transform,background-color] duration-150 ease-out hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 active:scale-[0.97] disabled:cursor-not-allowed disabled:text-gray-400"
                       onClick={() => setDeletePhase((current) => nextUserAgentDeletePhase(current, 'cancel'))}
                       disabled={deletePending}
                       data-testid="agent-detail-delete-cancel"
@@ -250,7 +250,7 @@ export default function AgentDetailPanel(props: AgentDetailPanelProps) {
       ) : agent.openHref && agent.openLabel ? (
         <Link
           href={agent.openHref}
-          className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+          className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
           data-testid="agent-detail-open"
         >
           <span>{agent.openLabel}</span>

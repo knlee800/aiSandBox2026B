@@ -529,7 +529,7 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
           <div className="flex flex-wrap items-center justify-end gap-2">
             <Link
               href={`${localePrefix}/office`}
-              className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
               data-testid="platform-open-office"
             >
               <BuildingOffice2Icon className="h-4 w-4" aria-hidden="true" />
@@ -537,7 +537,7 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
             </Link>
             <Link
               href={`${localePrefix}/knowledge`}
-              className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
               data-testid="platform-open-knowledge"
             >
               <BookOpenIcon className="h-4 w-4" aria-hidden="true" />
@@ -545,7 +545,7 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
             </Link>
             <Link
               href={`${localePrefix}/connections`}
-              className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
               data-testid="platform-open-connections"
             >
               <LinkIcon className="h-4 w-4" aria-hidden="true" />
@@ -553,7 +553,7 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
             </Link>
             <Link
               href={`${localePrefix}/app`}
-              className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+              className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
               data-testid="platform-back-to-workspace"
             >
               <ArrowLeftIcon className="h-4 w-4" aria-hidden="true" />
@@ -636,7 +636,7 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
                     <button
                       type="button"
                       onClick={handleOpenCreateForm}
-                      className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                      className="inline-flex items-center gap-1.5 rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
                       data-testid="create-agent-cta"
                     >
                       <PlusIcon className="h-4 w-4" aria-hidden="true" />
@@ -676,7 +676,7 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
                     <button
                       type="button"
                       onClick={handleOpenCreateForm}
-                      className="mt-3 inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                      className="mt-3 inline-flex items-center gap-1.5 rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
                       data-testid="create-agent-empty-cta"
                     >
                       <PlusIcon className="h-4 w-4" aria-hidden="true" />

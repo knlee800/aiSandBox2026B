@@ -51,7 +51,7 @@ export default function ForgotPasswordPage() {
 
         {sent ? (
           <div className="space-y-4">
-            <div className="p-3 bg-green-100 text-green-700 rounded-md text-sm">{t('sentMessage')}</div>
+            <div className="p-3 bg-emerald-100 text-emerald-700 rounded-md text-sm">{t('sentMessage')}</div>
             <p className="text-center text-sm text-text-secondary">
               <Link
                 href={`/${locale}/login`}
@@ -72,7 +72,7 @@ export default function ForgotPasswordPage() {
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                className="w-full rounded-md border border-border bg-surface-base px-3 py-2 text-text-primary focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full rounded-md border border-border bg-surface-base px-3 py-2 text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 required
               />
             </div>
