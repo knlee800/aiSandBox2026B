@@ -277,7 +277,7 @@ else
     write_info "AI Service process started (PID: $ai_service_pid)"
     
     # Wait for AI Service to be ready
-    if ! wait_for_health_endpoint "http://localhost:4001/health" "AI Service" "$HEALTH_CHECK_TIMEOUT" "$HEALTH_CHECK_INTERVAL"; then
+    if ! wait_for_health_endpoint "http://localhost:4001/api/conversations" "AI Service" "$HEALTH_CHECK_TIMEOUT" "$HEALTH_CHECK_INTERVAL"; then
         write_failure "AI Service failed to start"
         write_info "Remediation:"
         write_info "  1. Check if port 4001 is available"

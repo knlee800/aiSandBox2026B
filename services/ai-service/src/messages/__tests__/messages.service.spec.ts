@@ -7,6 +7,15 @@ import { ApiGatewayHttpClient } from '../../clients/api-gateway-http.client';
 import { AIExecutionService } from '../../ai-execution/ai-execution.service';
 import { AIExecutionResult } from '../../ai-execution/types';
 
+// MessagesService opens a SQLite file at a fixed repo path in its constructor.
+// Use an in-memory database so the spec leaves no database/aisandbox.db behind.
+jest.mock('better-sqlite3', () => {
+  const RealDatabase = jest.requireActual('better-sqlite3');
+  return function InMemoryDatabase(_file: string, options?: object) {
+    return new RealDatabase(':memory:', options);
+  };
+});
+
 describe('MessagesService (Phase 27: ClaudeModule Removal)', () => {
   let service: MessagesService;
   let aiExecutionService: AIExecutionService;
