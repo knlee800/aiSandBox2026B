@@ -86286,7 +86286,7 @@ taskId=BIZ-USER-01C
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted. Stage-start approved 2026-11-10: docs/BIZ-USER-01C-STAGE-START.md.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 1 and its mutexes released. Workflows run from the Team page with test runs, budgets and run-time grants; frozen contract pinned; opus subagent in worktree lane/BIZ-USER-01C, cherry-picked as ccc25ab and fc0361e; gateway 3065 passed (only the known smoke suite fails), frontend 1384 passed, builds clean; not deployed. FOLLOWUPS: 2 registered (RUN-CUTOFF-01, BIZ-USER-01D) / 4 superseded / 0 dropped / 0 undisposed. Checkpoint: docs/BIZ-USER-01C-CHECKPOINT.md.
 **Task ID:** BIZ-USER-01C
 **Title:** Run a user workflow, with a test run and a budget check
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -86305,6 +86305,56 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** Implementation slice of BIZ-USER-01. A user workflow runs from the Team page as a team of one. Acceptance: a test run before switching on (C13), the budget refused at start (C15), and the six-part fields and grants stay off POST /api/ai/execute. Also (BIZ-USER-01B, 2026-11-10): the agent detail panel and dashboard card show a workflow summary (folders, model, budget) beside the test-run and status controls; decide whether a workflow may be asked through the existing Ask link before its test run.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
+
+### RUN-CUTOFF-01 — A hard per-run credit cutoff
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=RUN-CUTOFF-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the BIZ-USER-01C LOCK — not admitted.
+**Task ID:** RUN-CUTOFF-01
+**Title:** A hard per-run credit cutoff
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: Keith wants a hard cutoff. Keith decides.
+**Depends on:** BIZ-USER-01C.
+**Primary write scope:** PROVISIONAL, set at the stage-start.
+**Mutexes / resources:** set at admission.
+**Hot-file leases:** none.
+**Shared contracts:** HARNESS_ENTITLEMENT_PROOF_V1 (changed under the protocol).
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (Keith may change it).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** BIZ-USER-01C refuses a run at start when the workflow's last run cost more than its per-run budget (C15 at start). A hard stop during a run needs a signed maxCredits (or token) field on the job and a worker check that stops the run; that changes the frozen HARNESS_ENTITLEMENT_PROOF_V1, so it runs alone under the shared-contract change protocol.
+
+### BIZ-USER-01D — Workflow summary, switch on or off, and Open on Team
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=BIZ-USER-01D
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the BIZ-USER-01C LOCK — not admitted.
+**Task ID:** BIZ-USER-01D
+**Title:** Workflow summary, switch on or off, and Open on Team
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: BIZ-USER-01C LOCKED (done 2026-11-10). Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** BIZ-USER-01C.
+**Primary write scope:** frontend/components/platform/, frontend/hooks/useUserAgents.ts, frontend/hooks/useUserAgents.test.ts, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json
+**Mutexes / resources:** FRONTEND, I18N
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (Keith may change it).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** The agent detail panel and dashboard card show a workflow summary (folders, model, budgets) and its state (draft, active, disabled; tested at the current version or not), a switch on or off control over PATCH /api/agents/:id status, and an Open on Team link; the editor's budget fields show lastRunCredits and spentTodayCredits from GET /api/collaboration/workflows (BIZ-USER-01C stage-start follow-up 6). en, zh-TW and zh-CN.
 
 ### RESULTS-01 — Results list, unread badge and run history
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -86614,7 +86664,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
-**Scope:** The Chief of Staff drafts an agent or workflow from a description; the owner approves it; it never saves or grants itself tools (D6).
+**Scope:** The Chief of Staff drafts an agent or workflow from a description; the owner approves it; it never saves or grants itself tools (D6). Also (BIZ-USER-01C, 2026-11-10): a user workflow's project instructions read "You are <row id>." because the agent name is the row id; give workflows a display name in buildCollaborationProjectInstructions when drafting prompts here.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.2
 
 ### CHAT-DISCORD-01 — Discord chat channel
