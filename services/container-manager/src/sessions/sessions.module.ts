@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { HttpModule } from '@nestjs/axios';
 import { SessionsController } from './sessions.controller';
 import { InternalSessionsController } from './internal-sessions.controller';
 import { SessionsService } from './sessions.service';
@@ -8,13 +7,12 @@ import { DockerModule } from '../docker/docker.module';
 import { PreviewService } from '../previews/preview.service';
 import { PreviewProxyService } from '../previews/preview-proxy.service';
 import { InternalPreviewsController } from '../previews/internal-previews.controller';
-import { ProjectsModule } from '../projects/projects.module';
 import { GovernanceEventsService } from '../governance/governance-events.service';
 import { UsageModule } from '../usage/usage.module';
 import { BrowserSmokeService } from '../browser-smoke/browser-smoke.service';
 
 @Module({
-  imports: [HttpModule, ClientsModule, DockerModule, ProjectsModule, UsageModule],
+  imports: [ClientsModule, DockerModule, UsageModule],
   controllers: [
     SessionsController,
     InternalSessionsController,

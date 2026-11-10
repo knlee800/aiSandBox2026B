@@ -47,9 +47,7 @@ describe('SessionsService workspace path (CM-PATH-01)', () => {
     };
     service = new SessionsService(
       {} as any,
-      {} as any,
       dockerRuntimeService as any,
-      {} as any,
       {} as any,
       {} as any,
     );

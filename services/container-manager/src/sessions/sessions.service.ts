@@ -5,24 +5,16 @@ import {
   HttpStatus,
   GoneException,
   BadRequestException,
-  InternalServerErrorException,
 } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
 import Database from 'better-sqlite3';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import * as fsSync from 'fs';
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import { ApiGatewayHttpClient } from '../clients/api-gateway-http.client';
 import { DockerRuntimeService } from '../docker/docker-runtime.service';
 import { GovernanceConfig } from '../config/governance.config';
-import { ProjectsService } from '../projects/projects.service';
 import { GovernanceEventsService } from '../governance/governance-events.service';
 import { isSinglePathSegment } from '../files/path-containment';
-
-const execAsync = promisify(exec);
 
 @Injectable()
 export class SessionsService {
@@ -49,11 +41,9 @@ export class SessionsService {
   private scheduledContainerCleanups: Set<string> = new Set();
 
   constructor(
-    private httpService: HttpService,
     private apiGatewayClient: ApiGatewayHttpClient,
     private dockerRuntimeService: DockerRuntimeService,
     private governanceConfig: GovernanceConfig,
-    private projectsService: ProjectsService,
     private governanceEventsService: GovernanceEventsService,
   ) {
     const dbPath = path.join(__dirname, '../../../..', 'database', 'aisandbox.db');
@@ -101,121 +91,11 @@ export class SessionsService {
     }
   }
 
-  async createSession(userId: string, projectId?: string) {
-    // Task 9.1: Handle project creation or validation
-    let finalProjectId: string;
-    let shouldRestoreWorkspace = false;
-
-    if (projectId) {
-      // Validate that project exists
-      const projectExists = await this.projectsService.exists(projectId);
-      if (!projectExists) {
-        throw new BadRequestException(`Project ${projectId} not found`);
-      }
-      finalProjectId = projectId;
-      shouldRestoreWorkspace = true; // Task 9.2A: restore when projectId provided
-    } else {
-      // Create a new project
-      const project = await this.projectsService.createProject(
-        userId,
-        undefined, // Auto-generate name
-        undefined, // No description
-      );
-      finalProjectId = project.id;
-      shouldRestoreWorkspace = false; // No restore for new projects
-    }
-
-    // Generate session ID
-    const sessionId = this.generateId();
-
-    // Create workspace directory
-    const workspacePath = path.join(this.workspacesRoot, sessionId);
-    await fs.mkdir(workspacePath, { recursive: true });
-
-    // Task 9.2A: Restore workspace if project was provided
-    if (shouldRestoreWorkspace) {
-      try {
-        await this.restoreWorkspaceFromProject(finalProjectId, workspacePath);
-      } catch (error) {
-        // Cleanup: remove workspace directory on restore failure
-        console.error(`Restore failed for project ${finalProjectId}, cleaning up workspace`);
-        await fs.rm(workspacePath, { recursive: true, force: true });
-        throw new InternalServerErrorException(
-          `Failed to restore workspace from project ${finalProjectId}: ${error.message}`,
-        );
-      }
-    }
-
-    // Insert session into database
-    const insert = this.db.prepare(`
-      INSERT INTO sessions (
-        id, user_id, project_id, status, git_initialized,
-        created_at, expires_at, last_activity_at
-      )
-      VALUES (?, ?, ?, 'active', 0, datetime('now'), datetime('now', '+2 hours'), datetime('now'))
-    `);
-
-    insert.run(sessionId, userId, finalProjectId);
-
-    // Notify api-gateway that session has started
-    try {
-      await this.apiGatewayClient.notifySessionStarted(sessionId);
-    } catch (error) {
-      console.error(`Failed to notify api-gateway of session start ${sessionId}:`, error.message);
-      // Continue execution - notification failure should not block session creation
-    }
-
-    // Only initialize welcome file if NOT restoring (new project)
-    if (!shouldRestoreWorkspace) {
-      // Initialize with a welcome file
-      const welcomeFile = path.join(workspacePath, 'README.md');
-      await fs.writeFile(
-        welcomeFile,
-        '# Welcome to AI Sandbox!\n\nStart building your application here.\n',
-        'utf-8',
-      );
-    }
-
-    // Auto-initialize git via HTTP call to avoid circular dependency
-    try {
-      const localApiBaseUrl = `http://localhost:${process.env.PORT || 4002}`;
-      // CM-AUTH-01 (D3): the git routes need the internal key like every other
-      // container-manager route; it is never logged.
-      const internalServiceKey = process.env.INTERNAL_SERVICE_KEY;
-      await firstValueFrom(
-        this.httpService.post(
-          `${localApiBaseUrl}/api/git/${sessionId}/init`,
-          { userId },
-          internalServiceKey
-            ? { headers: { 'X-Internal-Service-Key': internalServiceKey } }
-            : undefined,
-        ),
-      );
-      console.log(`Git initialized for session ${sessionId}`);
-    } catch (error) {
-      console.error(`Failed to initialize git for session ${sessionId}:`, error.message);
-    }
-
-    // Task 9.1: Persist workspace snapshot to project (initial state)
-    // Only for new projects (not when restoring)
-    if (!shouldRestoreWorkspace) {
-      try {
-        await this.projectsService.persistWorkspaceSnapshot(finalProjectId, workspacePath);
-      } catch (error) {
-        console.error(`Failed to persist workspace snapshot for project ${finalProjectId}:`, error.message);
-        // Continue - snapshot failure should not block session creation
-      }
-    }
-
-    return {
-      sessionId,
-      projectId: finalProjectId,
-      workspacePath,
-      status: 'active',
-      createdAt: new Date().toISOString(),
-    };
-  }
-
+  // CM-GIT-HOST-01 removed createSession (POST /api/sessions), which had no
+  // caller outside container-manager. It called POST /api/git/:id/init, which ran
+  // simple-git on the host, and ran tar on the host to snapshot and restore
+  // project archives. Sessions are started by the gateway through
+  // startSessionContainer, and git runs inside the container.
   async getSession(sessionId: string) {
     const session = this.db
       .prepare('SELECT * FROM sessions WHERE id = ?')
@@ -1069,54 +949,6 @@ export class SessionsService {
    */
   private updateLastActivity(sessionId: string): void {
     this.lastActivity.set(sessionId, Date.now());
-  }
-
-  /**
-   * Task 9.2A: Restore workspace from project archive
-   * Extracts workspace.tar into session workspace directory
-   * Ensures clean workspace before extraction
-   *
-   * @param projectId - Project ID
-   * @param workspacePath - Session workspace path
-   * @throws Error if archive missing or extraction fails
-   */
-  private async restoreWorkspaceFromProject(
-    projectId: string,
-    workspacePath: string,
-  ): Promise<void> {
-    console.log(`[Task 9.2A] Restoring workspace for project ${projectId} into ${workspacePath}`);
-
-    const projectDir = this.projectsService.getProjectDirectory(projectId);
-    const workspaceTarPath = path.join(projectDir, 'workspace.tar');
-
-    // Verify archive exists
-    try {
-      await fs.access(workspaceTarPath);
-    } catch (error) {
-      throw new Error(`Workspace archive not found for project ${projectId}`);
-    }
-
-    // Ensure workspace directory is empty (clean restore)
-    const entries = await fs.readdir(workspacePath);
-    if (entries.length > 0) {
-      console.log(`[Task 9.2A] Cleaning non-empty workspace before restore: ${workspacePath}`);
-      // Delete all contents
-      for (const entry of entries) {
-        await fs.rm(path.join(workspacePath, entry), { recursive: true, force: true });
-      }
-    }
-
-    // Extract archive
-    try {
-      await execAsync(`tar -xf "${workspaceTarPath}" -C "${workspacePath}"`);
-      console.log(`[Task 9.2A] Workspace restored successfully for project ${projectId}`);
-    } catch (error) {
-      throw new Error(`Failed to extract workspace archive: ${error.message}`);
-    }
-  }
-
-  private generateId(): string {
-    return Date.now().toString(36) + Math.random().toString(36).substring(2);
   }
 
   private isSessionsUserIdNotNullError(error: unknown): boolean {

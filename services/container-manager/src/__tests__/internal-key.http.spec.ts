@@ -132,9 +132,10 @@ function methodsFor(route: Route): string[] {
  * GET /api/sessions (a second health reply).
  * CM-SYMLINK-01 removed the six uncalled host-side /api/files/:sessionId/*
  * routes (list, read, write, delete, mkdir, search), which followed symlinks.
+ * CM-GIT-HOST-01 removed POST /api/sessions (create), POST /api/git/:sessionId/init
+ * and GET /api/git/:sessionId/history: uncalled, and they ran git on the host.
  */
 const EXPECTED_INVENTORY = [
-  'POST /api/sessions',
   'POST /api/sessions/:id/start',
   'GET /api/sessions/:id',
   'GET /api/sessions/user/:userId',
@@ -151,9 +152,7 @@ const EXPECTED_INVENTORY = [
   'GET /api/internal/sessions/:id/stat',
   'POST /api/internal/sessions/:id/browser-smoke',
   'POST /api/internal/sessions/:id/previews',
-  'POST /api/git/:sessionId/init',
   'POST /api/git/:sessionId/commit',
-  'GET /api/git/:sessionId/history',
   'POST /api/git/:sessionId/revert',
   'GET /api/git/:sessionId/checkpoints',
   'GET /api/git/:sessionId/diff/:commitHash',
@@ -201,13 +200,13 @@ describe('container-manager route inventory (CM-AUTH-01)', () => {
     expect(providers).toContainEqual({ provide: APP_GUARD, useClass: InternalServiceAuthGuard });
   });
 
-  it('serves exactly the expected 52 routes (51 guarded + GET /api/health)', () => {
+  it('serves exactly the expected 49 routes (48 guarded + GET /api/health)', () => {
     const actual = routes.map(routeKey);
     // One line per route, so the real serving paths (F2) show in the test log.
     console.info(`CM-AUTH-01 route inventory (${actual.length}):\n${actual.join('\n')}`);
     expect(actual.sort()).toEqual([...EXPECTED_INVENTORY].sort());
-    expect(routes).toHaveLength(52);
-    expect(guardedRoutes).toHaveLength(51);
+    expect(routes).toHaveLength(49);
+    expect(guardedRoutes).toHaveLength(48);
   });
 
   it('marks exactly one handler exempt: HealthController.getHealth', () => {
@@ -426,9 +425,9 @@ describe('container-manager internal key over HTTP (CM-AUTH-01)', () => {
   );
 
   it.each([
-    ['GET', '/API/GIT/p1/HISTORY'],
-    ['GET', '/Api/Git/p1/History'],
-    ['GET', '/api/git/p1/history/'],
+    ['GET', '/API/GIT/p1/CHECKPOINTS'],
+    ['GET', '/Api/Git/p1/Checkpoints'],
+    ['GET', '/api/git/p1/checkpoints/'],
     ['GET', '/api/files/p1/list/'],
     ['GET', '/API/FILES/p1/LIST'],
     ['GET', '/api/internal/stats/'],
@@ -439,8 +438,8 @@ describe('container-manager internal key over HTTP (CM-AUTH-01)', () => {
     ['GET', '/API/PREVIEW/p1/PROXY'],
     ['POST', '/API/INTERNAL/SESSIONS/p1/EXEC'],
     ['POST', '/api/internal/sessions/p1/exec/'],
-    ['GET', '/api//git/p1/history'],
-    ['GET', '/api/git/p1/%68istory'],
+    ['GET', '/api//git/p1/checkpoints'],
+    ['GET', '/api/git/p1/%63heckpoints'],
   ])('%s %s (case and slash variants) never reaches a handler without the key', async (method, path) => {
     const response = await send(method, path);
     expect([403, 404]).toContain(response.status);
@@ -477,6 +476,23 @@ describe('container-manager internal key over HTTP (CM-AUTH-01)', () => {
 
   it('CM-SYMLINK-01: no remaining controller serves under /api/files', () => {
     expect(routes.filter((route) => route.path.startsWith('/api/files'))).toEqual([]);
+  });
+
+  it.each([
+    ['POST', '/api/sessions', { userId: 'u1' }],
+    ['POST', '/api/git/p1/init', { userId: 'u1' }],
+    ['GET', '/api/git/p1/history', undefined],
+    ['GET', '/api/git/p1/history?limit=5', undefined],
+  ])('CM-GIT-HOST-01: removed host-side git route %s %s is not found even with the key', async (method, path, body) => {
+    const response = await send(method, path, internalKey, body ?? {});
+    expect(isRouteNotFound(response)).toBe(true);
+    expect(allCalls()).toBe(0);
+  });
+
+  it('CM-GIT-HOST-01: no remaining route is a git init or history route, or a bare session create', () => {
+    const keys = routes.map(routeKey);
+    expect(keys.filter((key) => /^POST \/api\/sessions$/.test(key))).toEqual([]);
+    expect(keys.filter((key) => /\/git\/[^/]+\/(init|history)$/.test(key))).toEqual([]);
   });
 
   describe('CM-SYMLINK-01: session id checked at the controller layer', () => {
@@ -522,11 +538,11 @@ describe('container-manager internal key over HTTP (CM-AUTH-01)', () => {
       });
     }
 
-    it('covers every remaining route with a session id parameter (30)', () => {
+    it('covers every remaining route with a session id parameter (28)', () => {
       expect(sessionRoutes.map(routeKey).sort()).toEqual(
         EXPECTED_INVENTORY.filter((key) => SESSION_PARAM.test(key)).sort(),
       );
-      expect(sessionRoutes).toHaveLength(30);
+      expect(sessionRoutes).toHaveLength(28);
     });
 
     describe.each(sessionRoutes.map((route) => [routeKey(route), route] as const))('%s', (_name, route) => {

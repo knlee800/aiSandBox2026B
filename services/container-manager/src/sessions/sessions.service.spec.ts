@@ -127,11 +127,9 @@ describe('SessionsService.startSessionContainer (AGENT-HARNESS-05B5A)', () => {
     };
 
     service = new SessionsService(
-      {} as any,
       apiGatewayClient as any,
       dockerRuntimeService as any,
       governanceConfig as any,
-      {} as any,
       governanceEventsService as any,
     );
   });
@@ -361,7 +359,6 @@ describe('SessionsService idle-timeout response semantics (PRIVATE-BETA-BLOCKER-
     };
 
     service = new SessionsService(
-      {} as any,
       {
         notifySessionStarted: jest.fn<any>(),
         notifySessionStopped: mockNotifySessionStopped,
@@ -372,7 +369,6 @@ describe('SessionsService idle-timeout response semantics (PRIVATE-BETA-BLOCKER-
         sessionIdleTimeoutMs: idleTimeoutMs,
         maxConcurrentExecsPerSession: 3,
       } as any,
-      {} as any,
       { logTerminationEvent: mockLogTerminationEvent } as any,
     );
 
@@ -696,7 +692,6 @@ describe('SessionsService cross-store lifecycle notification (PRIVATE-BETA-BLOCK
     };
 
     service = new SessionsService(
-      {} as any,
       {
         notifySessionStarted: jest.fn<any>(),
         notifySessionStopped: mockNotifySessionStopped,
@@ -707,7 +702,6 @@ describe('SessionsService cross-store lifecycle notification (PRIVATE-BETA-BLOCK
         sessionIdleTimeoutMs: idleTimeoutMs,
         maxConcurrentExecsPerSession: 3,
       } as any,
-      {} as any,
       { logTerminationEvent: jest.fn<any>() } as any,
     );
 
@@ -1069,7 +1063,6 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
     });
 
     service = new SessionsService(
-      {} as any,
       {
         notifySessionStarted: jest.fn<any>(),
         notifySessionStopped: mockNotifySessionStopped,
@@ -1092,7 +1085,6 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
         sessionIdleTimeoutMs: idleTimeoutMs,
         maxConcurrentExecsPerSession: 3,
       } as any,
-      {} as any,
       { logTerminationEvent: mockLogTerminationEvent } as any,
     );
 

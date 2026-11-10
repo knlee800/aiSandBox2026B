@@ -2,17 +2,15 @@ import { Controller, Post, Get, Param, Body, Query } from '@nestjs/common';
 import { SessionIdPipe } from '../pipes/session-id.pipe';
 import { GitService } from './git.service';
 
+/**
+ * CM-GIT-HOST-01 removed POST /api/git/:sessionId/init and
+ * GET /api/git/:sessionId/history: both ran simple-git on the host in the
+ * sandbox-writable workspace, and neither had a caller outside container-manager.
+ * The remaining git routes run git inside the container.
+ */
 @Controller('git')
 export class GitController {
   constructor(private gitService: GitService) {}
-
-  @Post(':sessionId/init')
-  async init(
-    @Param('sessionId', SessionIdPipe) sessionId: string,
-    @Body('userId') userId: string
-  ) {
-    return this.gitService.initializeGit(sessionId, userId);
-  }
 
   @Post(':sessionId/commit')
   async commit(
@@ -29,14 +27,6 @@ export class GitController {
       description,
       allowEmpty,
     );
-  }
-
-  @Get(':sessionId/history')
-  async history(
-    @Param('sessionId', SessionIdPipe) sessionId: string,
-    @Query('limit') limit?: number
-  ) {
-    return this.gitService.getHistory(sessionId, limit ? parseInt(limit.toString()) : 10);
   }
 
   @Post(':sessionId/revert')

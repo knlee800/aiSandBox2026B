@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import { simpleGit, SimpleGit } from 'simple-git';
 import { SessionsService } from '../sessions/sessions.service';
 import { ApiGatewayHttpClient } from '../clients/api-gateway-http.client';
 import Database from 'better-sqlite3';
@@ -90,6 +89,13 @@ export type CheckpointHistoryRestoreResult =
 
 type ExecResult = { exitCode: number; stdout: string; stderr: string };
 
+/**
+ * CM-GIT-HOST-01: every git command runs inside the session container through
+ * docker exec, never on the host. The workspace is bind-mounted and the sandbox
+ * can write .git/config and .git/hooks, so a host-side git could run programs
+ * of the sandbox's choosing (core.fsmonitor, core.hooksPath, diff.external).
+ * The host-side simple-git initializeGit and getHistory are removed.
+ */
 @Injectable()
 export class GitService {
   private db: Database.Database;
@@ -115,34 +121,6 @@ export class GitService {
         is_deleted INTEGER NOT NULL DEFAULT 0
       );
     `);
-  }
-
-  async initializeGit(sessionId: string, userId: string) {
-    const workspacePath = this.sessionsService.getWorkspacePath(sessionId);
-    const git: SimpleGit = simpleGit(workspacePath);
-
-    // Initialize git
-    await git.init();
-    await git.addConfig('user.name', 'AI Sandbox');
-    await git.addConfig('user.email', 'sandbox@aisandbox.com');
-
-    // Create initial commit
-    await git.add('./*');
-    await git.commit('Initial commit');
-
-    // Update database
-    this.db
-      .prepare('UPDATE sessions SET git_initialized = 1 WHERE id = ?')
-      .run(sessionId);
-
-    // Create checkpoint
-    const commitHash = await git.revparse(['HEAD']);
-    await this.createCheckpoint(sessionId, userId, 0, commitHash, 'Initial commit');
-
-    return {
-      message: 'Git initialized successfully',
-      commitHash,
-    };
   }
 
   async commit(
@@ -243,23 +221,6 @@ export class GitService {
       commitHash,
       filesChanged,
     };
-  }
-
-  async getHistory(sessionId: string, limit: number = 10) {
-    const workspacePath = this.sessionsService.getWorkspacePath(sessionId);
-    const git: SimpleGit = simpleGit(workspacePath);
-
-    try {
-      const log = await git.log({ maxCount: limit });
-      return log.all.map(commit => ({
-        hash: commit.hash,
-        message: commit.message,
-        date: commit.date,
-        author: commit.author_name,
-      }));
-    } catch (error) {
-      return [];
-    }
   }
 
   async revert(sessionId: string, userId: string, commitHash: string) {

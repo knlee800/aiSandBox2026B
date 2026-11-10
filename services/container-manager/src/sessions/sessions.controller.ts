@@ -1,19 +1,12 @@
 import { Controller, Get, Post, Delete, Param, Body, Query } from '@nestjs/common';
 import { SessionIdPipe } from '../pipes/session-id.pipe';
 import { SessionsService } from './sessions.service';
-import { CreateSessionDto } from './dto/session.dto';
 
+// CM-GIT-HOST-01 removed POST /api/sessions (create): no caller outside
+// container-manager, and it reached host-side git through POST /api/git/:id/init.
 @Controller('sessions')
 export class SessionsController {
   constructor(private sessionsService: SessionsService) {}
-
-  @Post()
-  async create(@Body() createSessionDto: CreateSessionDto) {
-    return this.sessionsService.createSession(
-      createSessionDto.userId,
-      createSessionDto.projectId
-    );
-  }
 
   @Post(':id/start')
   async start(@Param('id', SessionIdPipe) id: string, @Body('userId') userId?: string) {
