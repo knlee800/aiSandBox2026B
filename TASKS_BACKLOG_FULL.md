@@ -87503,13 +87503,13 @@ taskId=STAGING-DEPLOY-CMAUTH-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the CM-AUTH-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — Keith approved the deploy ("Yes, deploy it"). Registered 2026-11-10 by the CM-AUTH-01 LOCK.
 **Task ID:** STAGING-DEPLOY-CMAUTH-01
 **Title:** Deploy the container-manager key guard and the preview traversal fix
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: CM-AUTH-01 and DRIFT-FIX-01 LOCKED. Keith decides (host change).
+**Start condition:** READY (CM-AUTH-01 and DRIFT-FIX-01 LOCKED; Keith approved 2026-11-10). Was: Ready when: CM-AUTH-01 and DRIFT-FIX-01 LOCKED. Keith decides (host change).
 **Depends on:** CM-AUTH-01.
 **Primary write scope:** records; host state.
 **Mutexes / resources:** STAGING
