@@ -87851,22 +87851,22 @@ taskId=CM-PATH-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the CODE-TIDY-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the CODE-TIDY-01 LOCK — not admitted.
 **Task ID:** CM-PATH-01
 **Title:** Container-manager workspace path check accepts sibling workspaces
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** READY (registered 2026-11-10 by the CODE-TIDY-01 LOCK; a security fix the control plane may start under Keith's 2026-11-10 instruction). Ready when: CONTAINER-MANAGER is free.
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: CONTAINER-MANAGER is free; a security fix the control plane may start under Keith's 2026-11-10 instruction.
 **Depends on:** CODE-TIDY-01.
-**Primary write scope:** PROVISIONAL: services/container-manager/src/ (files service and any other path checks, with tests).
-**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Primary write scope:** services/container-manager/src/ (set at admission 2026-11-10).
+**Mutexes / resources:** CONTAINER-MANAGER.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set at admission 2026-11-10).
 **Scope:** From the CODE-TIDY-01 worker, confirmed by the control plane: FilesService.validatePath (services/container-manager/src/files/files.service.ts:427) checks resolvedPath.startsWith(resolvedWorkspace) with no separator, so a path such as ../<sessionId>X/file is accepted for a sibling workspace whose name starts with the same session id; all six /api/files routes use it (guarded by the internal key since CM-AUTH-01, so only a key holder could use it). Compare against the workspace plus path.sep (or use path.relative and refuse a leading ..), check every other path check in container-manager (git, preview, internal sessions files) for the same pattern, and add tests for the sibling-prefix case.
 
 ### BROWSER-SMOKE-01 — Browser smoke never finds a preview target
