@@ -86666,7 +86666,7 @@ taskId=WORKFLOW-STATUS-03
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the WORKFLOW-STATUS-02 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 1 and its mutexes released. Result: passed. Item 1: saveUserAgentRequest returns { error, code } on a 409 with a code (generic without); the panel already maps WORKFLOW_NOT_TESTED to the alert. Item 2: UserWorkflowSwitchOnSlot provided and exported by UserAgentModule (port useExisting), refusing with 503 until bound and refusing a second different bind; TestedWorkflowSwitchOnCheck provided by OrchestrationModule and bound in onModuleInit; no cycle, no forwardRef; frozen-path diff empty. opus subagent d2e4da8, fast-forwarded onto main; control-plane rerun: gateway 3404 passed, 7 skipped, only the 14 known smoke failures; ai-service 1296 passed; frontend tsc 0, 1535 passed, build 0. Not deployed. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed (item 3 dropped by Keith at admission). Was admitted 2026-11-10. Checkpoint: docs/WORKFLOW-STATUS-03-CHECKPOINT.md.
 **Task ID:** WORKFLOW-STATUS-03
 **Title:** Workflow status follow-ups: the 409 code in the save hook, the port binding, the draft card body
 **Workstream:** AGENT (taxonomy only; zero admission weight)
