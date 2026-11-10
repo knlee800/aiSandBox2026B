@@ -11,10 +11,25 @@ import zhTwMessages from '../../messages/zh-TW.json';
 import { fillTemplate } from '../../lib/collaboration/logic';
 import { useCollaborationScreen } from './collaboration-page';
 import CollaborationView, {
+  type CollaborationRosterRowView,
+  type CollaborationRosterView,
   type CollaborationViewLabels,
   type CollaborationWorkflowPickerView,
   type CollaborationWorkflowStartView,
 } from './collaboration-view';
+import {
+  ROSTER_MAX_MEMBERS,
+  ROSTER_REASON_KEYS,
+  collaborationChiefStartBody,
+  isReportBackHandoff,
+  readRoster,
+  readRunAgents,
+  readStartSkipped,
+  rosterPickerRows,
+  rosterSaveBody,
+  rosterSaveErrorKey,
+  toggleRosterMember,
+} from './collaboration-roster';
 import {
   WORKFLOW_REFUSAL_MESSAGE_KEYS,
   collaborationWorkflowActions,
@@ -666,7 +681,7 @@ describe('TEAM-NO-SESSION-02 Team page view without a session', () => {
   test('the reworded hint says workflows run without a workspace and teams need one', () => {
     assert.equal(
       EN.missingSession,
-      'Your workflows run here without a workspace. The coding team starts from a workspace session: open Team from a workspace for that.',
+      'Your workflows and the Chief of Staff run here without a workspace. The coding team and the advisors start from a workspace session: open Team from a workspace for those.',
     );
     for (const [locale, catalog] of CATALOGS) {
       assert.doesNotMatch(catalog.missingSession, /\u2014/, locale);
@@ -717,7 +732,9 @@ describe('TEAM-PRESELECT-01 preselectWorkflowId and the query', () => {
   test('the page client reads workflowId from the query next to sessionId and projectId', () => {
     const source = readFileSync(join(process.cwd(), 'components', 'collaboration', 'collaboration-page.tsx'), 'utf8');
     assert.match(source, /searchParams\.get\('workflowId'\)/);
-    assert.match(source, /queryWorkflowId,\n  \}\);/);
+    assert.match(source, /queryWorkflowId,\n(?: {4}rosterEnabled: true,\n)?  \}\);/);
+    // COS-FRONTDOOR-01C: the page client turns the roster picker on.
+    assert.match(source, /rosterEnabled: true,/);
   });
 });
 
@@ -1027,12 +1044,14 @@ describe('BIZ-USER-01C Team page with workflows', () => {
     });
   }
 
-  test('TEAM-NO-SESSION-02: without a session a workflow starts with no sessionId and a team does not start', async () => {
+  test('TEAM-NO-SESSION-02: without a session a workflow starts with no sessionId, the Chief of Staff starts and coding does not', async () => {
     probeSessionId = '';
     onPost = () => startedBody();
     await renderProbe();
     assert.equal(latest?.sessionReady, false);
-    // No workflow selected: Start sends nothing.
+    // COS-FRONTDOOR-01C: no workflow selected means the Chief of Staff (the only team without a
+    // session); its body has no sessionId. The coding team is not offered and never posts.
+    assert.equal(latest?.selectedTeam, 'chief-of-staff');
     await act(async () => {
       latest!.onTaskChange('Fix it');
     });
@@ -1040,7 +1059,12 @@ describe('BIZ-USER-01C Team page with workflows', () => {
       latest!.onStart();
     });
     await flush();
-    assert.deepEqual(posts, []);
+    assert.deepEqual(posts, [{ task: 'Fix it', team: 'chief-of-staff' }]);
+    posts = [];
+    await act(async () => {
+      latest!.onTeamChange('coding');
+    });
+    assert.equal(latest?.selectedTeam, 'chief-of-staff');
 
     await act(async () => {
       latest!.workflowPicker!.onSelect(WORKFLOW_ID);
@@ -1205,5 +1229,1001 @@ describe('BIZ-USER-01C Team page with workflows', () => {
       }),
     );
     assert.ok(!String(latest?.handoffs[0]?.asked).includes(WORKFLOW_ID));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// COS-FRONTDOOR-01C: the Chief of Staff roster picker, the session-less start, the
+// skipped hint, member labels and the report-back step.
+// ---------------------------------------------------------------------------
+
+const ROSTER_KEYS = [
+  'rosterHeading',
+  'rosterIntro',
+  'rosterLoading',
+  'rosterEmpty',
+  'rosterFailed',
+  'rosterRetry',
+  'rosterSave',
+  'rosterSaving',
+  'rosterSaved',
+  'rosterCount',
+  'rosterLimit',
+  'rosterSaveFailed',
+  'rosterSaveMemberRefused',
+  'rosterKindSystem',
+  'rosterKindWorkflow',
+  'rosterMemberUnknown',
+  'rosterReasonDraft',
+  'rosterReasonNotTested',
+  'rosterReasonOff',
+  'rosterReasonMissing',
+  'rosterReasonComingSoon',
+  'rosterReasonInvalid',
+  'rosterSkippedHint',
+  'rosterSkippedItem',
+  'reportBackStep',
+  'reportBackNoEdit',
+  'teamChiefOfStaffHint',
+  'chiefOfStaffSummary',
+  'fileAccessReadOnly',
+  'missingSession',
+];
+
+function rosterRowView(
+  id: string,
+  overrides: Partial<CollaborationRosterRowView> = {},
+): CollaborationRosterRowView {
+  return {
+    id,
+    name: `Name ${id}`,
+    kindLabel: EN.rosterKindSystem,
+    checked: false,
+    canTick: true,
+    reasonLabel: null,
+    ...overrides,
+  };
+}
+
+function rosterView(overrides: Partial<CollaborationRosterView> = {}): CollaborationRosterView {
+  return {
+    state: 'loaded',
+    saveState: 'idle',
+    labels: {
+      heading: EN.rosterHeading,
+      intro: fillTemplate(EN.rosterIntro, { max: '3' }),
+      loading: EN.rosterLoading,
+      empty: EN.rosterEmpty,
+      failed: EN.rosterFailed,
+      retry: EN.rosterRetry,
+      save: EN.rosterSave,
+      saving: EN.rosterSaving,
+      saved: EN.rosterSaved,
+      count: fillTemplate(EN.rosterCount, { count: '1', max: '3' }),
+    },
+    rows: [rosterRowView('a', { checked: true }), rosterRowView('b')],
+    message: null,
+    dirty: false,
+    onToggle: () => {},
+    onSave: () => {},
+    onRetry: () => {},
+    ...overrides,
+  };
+}
+
+const THREE_TEAMS = [
+  { id: 'coding' as const, label: 'Coding team', hint: 'coding hint' },
+  { id: 'chief-of-staff' as const, label: 'Chief of Staff', hint: 'chief hint' },
+  { id: 'advisors' as const, label: 'Advisors', hint: 'advisors hint' },
+];
+
+describe('COS-FRONTDOOR-01C roster helpers', () => {
+  test('reads the roster body and leaves out malformed members', () => {
+    const view = readRoster({
+      members: [
+        { id: 'product-strategy', kind: 'system', name: 'Product Strategy', usable: true, reason: null },
+        { id: 'bad-kind', kind: 'robot', name: 'x', usable: true, reason: null },
+        { id: '', kind: 'system', name: 'x', usable: true, reason: null },
+      ],
+      choices: [
+        { id: 'w1', kind: 'workflow', name: 'Brief', usable: false, reason: 'draft' },
+        { id: 'w2', kind: 'workflow', name: '  ', usable: false, reason: 'surprise' },
+        { id: 'w1', kind: 'workflow', name: 'Duplicate', usable: true, reason: null },
+        'junk',
+      ],
+    });
+    assert.deepEqual(view?.members, [
+      { id: 'product-strategy', kind: 'system', name: 'Product Strategy', usable: true, reason: null },
+    ]);
+    assert.deepEqual(view?.choices, [
+      { id: 'w1', kind: 'workflow', name: 'Brief', usable: false, reason: 'draft' },
+      // An unknown reason on an unusable member reads as invalid; a blank name reads as none.
+      { id: 'w2', kind: 'workflow', name: null, usable: false, reason: 'invalid' },
+    ]);
+    assert.equal(readRoster(null), null);
+    assert.equal(readRoster({ members: [] }), null);
+  });
+
+  test('a fourth tick is refused and an untick always works', () => {
+    assert.deepEqual(toggleRosterMember([], 'a'), { selected: ['a'], limitHit: false });
+    assert.deepEqual(toggleRosterMember(['a', 'b'], 'c'), { selected: ['a', 'b', 'c'], limitHit: false });
+    assert.deepEqual(toggleRosterMember(['a', 'b', 'c'], 'd'), {
+      selected: ['a', 'b', 'c'],
+      limitHit: true,
+    });
+    assert.deepEqual(toggleRosterMember(['a', 'b', 'c'], 'b'), { selected: ['a', 'c'], limitHit: false });
+    assert.equal(ROSTER_MAX_MEMBERS, 3);
+  });
+
+  test('the save body holds the picked ids only, and failures map to translated message keys', () => {
+    assert.deepEqual(rosterSaveBody(['a', 'b']), { memberIds: ['a', 'b'] });
+    assert.equal(rosterSaveErrorKey(400, { code: 'ROSTER_TOO_MANY' }), 'rosterLimit');
+    for (const code of ['ROSTER_MEMBER_NOT_FOUND', 'ROSTER_MEMBER_NOT_ALLOWED', 'ROSTER_MEMBER_UNKNOWN']) {
+      assert.equal(rosterSaveErrorKey(400, { code }), 'rosterSaveMemberRefused', code);
+    }
+    for (const body of [{ code: 'ROSTER_DUPLICATE' }, { code: 'ROSTER_INVALID_BODY' }, null, {}]) {
+      assert.equal(rosterSaveErrorKey(500, body), 'rosterSaveFailed');
+    }
+  });
+
+  test('picker rows are the choices, then stored members that are no longer choices', () => {
+    const rows = rosterPickerRows({
+      choices: [{ id: 'a', kind: 'system', name: 'A', usable: true, reason: null }],
+      members: [
+        { id: 'a', kind: 'system', name: 'A', usable: true, reason: null },
+        { id: 'gone', kind: 'workflow', name: null, usable: false, reason: 'missing' },
+      ],
+    });
+    assert.deepEqual(
+      rows.map((row) => row.id),
+      ['a', 'gone'],
+    );
+  });
+
+  test('every roster reason has a translation key, including invalid', () => {
+    assert.deepEqual(
+      Object.keys(ROSTER_REASON_KEYS).sort(),
+      ['coming_soon', 'draft', 'invalid', 'missing', 'not_tested', 'off'],
+    );
+    for (const [locale, catalog] of CATALOGS) {
+      for (const key of Object.values(ROSTER_REASON_KEYS)) {
+        assert.equal(typeof catalog[key], 'string', `${locale} ${key}`);
+        assert.ok(catalog[key].length > 0, `${locale} ${key}`);
+      }
+    }
+  });
+
+  test('reads roster.skipped from a start response, and agents from a run detail', () => {
+    assert.deepEqual(
+      readStartSkipped({
+        roster: {
+          used: ['a'],
+          skipped: [{ id: 'w1', reason: 'draft' }, { id: 'w2', reason: 'zzz' }, { reason: 'off' }],
+        },
+      }),
+      [
+        { id: 'w1', reason: 'draft' },
+        { id: 'w2', reason: 'invalid' },
+      ],
+    );
+    assert.deepEqual(readStartSkipped({ collaborationRunId: 'run-1' }), []);
+    assert.deepEqual(readStartSkipped(null), []);
+    assert.deepEqual(
+      readRunAgents([{ name: 'w1', label: 'Tax helper' }, { name: 'w2', label: null }, { label: 'x' }]),
+      [
+        { name: 'w1', label: 'Tax helper' },
+        { name: 'w2', label: null },
+      ],
+    );
+    assert.deepEqual(readRunAgents(undefined), []);
+  });
+
+  test('a step from an agent back to the Chief of Staff is a report-back', () => {
+    assert.equal(isReportBackHandoff('product-strategy', 'chief-of-staff'), true);
+    assert.equal(isReportBackHandoff(WORKFLOW_ID, 'chief-of-staff'), true);
+    assert.equal(isReportBackHandoff('user', 'chief-of-staff'), false);
+    assert.equal(isReportBackHandoff('chief-of-staff', 'product-strategy'), false);
+    assert.equal(isReportBackHandoff('advisors-lead', 'chief-of-staff'), false);
+    assert.equal(isReportBackHandoff('lead', 'writer'), false);
+  });
+
+  test('the Chief of Staff start body has no sessionId without a session and no roster at any time', () => {
+    assert.deepEqual(collaborationChiefStartBody({ sessionId: '', task: '  Brief me  ' }), {
+      task: 'Brief me',
+      team: 'chief-of-staff',
+    });
+    assert.deepEqual(collaborationChiefStartBody({ task: 'Brief me' }), {
+      task: 'Brief me',
+      team: 'chief-of-staff',
+    });
+    assert.deepEqual(collaborationChiefStartBody({ sessionId: ' s-1 ', task: 'Brief me' }), {
+      sessionId: 's-1',
+      task: 'Brief me',
+      team: 'chief-of-staff',
+    });
+  });
+
+  test('the roster copy exists in en, zh-TW and zh-CN, translated, with the same placeholders', () => {
+    const SAME_IN_ALL = ['reportBackStep'];
+    for (const key of ROSTER_KEYS) {
+      const english = EN[key];
+      assert.equal(typeof english, 'string', key);
+      assert.ok(english.trim().length > 0, key);
+      const placeholders = (english.match(/\{[a-zA-Z]+\}/g) ?? []).sort();
+      for (const [locale, catalog] of CATALOGS.slice(1)) {
+        const value = catalog[key];
+        assert.equal(typeof value, 'string', `${locale} ${key}`);
+        if (!SAME_IN_ALL.includes(key)) {
+          assert.notEqual(value, english, `${locale} ${key}`);
+          assert.match(value, /\p{Script=Han}/u, `${locale} ${key}`);
+        }
+        assert.deepEqual((value.match(/\{[a-zA-Z]+\}/g) ?? []).sort(), placeholders, `${locale} ${key}`);
+      }
+    }
+  });
+
+  test('the three message files have the same collaboration keys', () => {
+    const keys = Object.keys(EN).sort();
+    assert.deepEqual(Object.keys(zhTwMessages.collaboration).sort(), keys);
+    assert.deepEqual(Object.keys(zhCnMessages.collaboration).sort(), keys);
+  });
+
+  test('the Chief of Staff wording no longer says it does not hand off', () => {
+    assert.doesNotMatch(EN.teamChiefOfStaffHint, /does not hand off/);
+    assert.doesNotMatch(EN.chiefOfStaffSummary, /hand off\./);
+    assert.doesNotMatch(EN.fileAccessReadOnly, /hand off/);
+    assert.ok(EN.teamChiefOfStaffHint.includes('roster'));
+  });
+});
+
+describe('COS-FRONTDOOR-01C roster picker view', () => {
+  function chief(overrides: Record<string, unknown> = {}): string {
+    return render({
+      teamChoices: THREE_TEAMS,
+      selectedTeam: 'chief-of-staff',
+      roster: rosterView(),
+      ...overrides,
+    });
+  }
+
+  test('loaded: a checkbox per member with the saved ones ticked, Save disabled until a change', () => {
+    const markup = chief();
+    assert.match(markup, /data-testid="collaboration-roster"/);
+    assert.ok(markup.includes(EN.rosterHeading));
+    assert.ok(markup.includes(fillTemplate(EN.rosterIntro, { max: '3' })));
+    assert.match(markup, /data-testid="collaboration-roster-option-a"/);
+    assert.match(markup, /data-testid="collaboration-roster-option-b"/);
+    assert.equal((markup.match(/<input type="checkbox"[^>]*checked=""/g) ?? []).length, 1);
+    assert.match(markup, /data-testid="collaboration-roster-save"[^>]*disabled=""/);
+    assert.ok(markup.includes(fillTemplate(EN.rosterCount, { count: '1', max: '3' })));
+    assert.doesNotMatch(markup, /collaboration-roster-saved/);
+    // The picker sits under the team options, before the workflow picker and the task box.
+    assert.ok(markup.indexOf('collaboration-roster"') > markup.indexOf('collaboration-team-option-advisors'));
+    assert.ok(markup.indexOf('collaboration-roster"') < markup.indexOf('data-testid="collaboration-task"'));
+  });
+
+  test('a change enables Save, and saving shows the saving text and disables it', () => {
+    assert.doesNotMatch(
+      chief({ roster: rosterView({ dirty: true }) }),
+      /data-testid="collaboration-roster-save"[^>]*disabled=""/,
+    );
+    const saving = chief({ roster: rosterView({ dirty: true, saveState: 'saving' }) });
+    assert.match(saving, /data-testid="collaboration-roster-save"[^>]*disabled=""/);
+    assert.ok(saving.includes(EN.rosterSaving));
+  });
+
+  test('saved: shows the saved line only while the list is unchanged', () => {
+    const saved = chief({ roster: rosterView({ saveState: 'saved', dirty: false }) });
+    assert.match(saved, /data-testid="collaboration-roster-saved"/);
+    assert.ok(saved.includes(EN.rosterSaved));
+    assert.doesNotMatch(
+      chief({ roster: rosterView({ saveState: 'saved', dirty: true }) }),
+      /collaboration-roster-saved/,
+    );
+  });
+
+  test('a message under Save shows the fourth-tick hint or a save failure', () => {
+    const limit = fillTemplate(EN.rosterLimit, { max: '3' });
+    const markup = chief({ roster: rosterView({ message: limit }) });
+    assert.match(markup, /data-testid="collaboration-roster-message"/);
+    assert.ok(markup.includes(limit));
+    assert.doesNotMatch(
+      chief({ roster: rosterView({ message: limit, saveState: 'saved' }) }),
+      /collaboration-roster-saved/,
+    );
+  });
+
+  test('loading, failed with retry, and empty each show their own text', () => {
+    const loading = chief({ roster: rosterView({ state: 'loading' }) });
+    assert.match(loading, /data-testid="collaboration-roster-loading"/);
+    assert.ok(loading.includes(EN.rosterLoading));
+    assert.doesNotMatch(loading, /collaboration-roster-save"/);
+
+    const failed = chief({ roster: rosterView({ state: 'failed' }) });
+    assert.match(failed, /data-testid="collaboration-roster-failed"/);
+    assert.match(failed, /data-testid="collaboration-roster-retry"/);
+    assert.ok(failed.includes(EN.rosterFailed));
+    assert.ok(failed.includes(EN.rosterRetry));
+
+    const empty = chief({ roster: rosterView({ rows: [] }) });
+    assert.match(empty, /data-testid="collaboration-roster-empty"/);
+    assert.ok(empty.includes(EN.rosterEmpty));
+  });
+
+  test('an unusable member shows its reason and cannot be newly ticked', () => {
+    const markup = chief({
+      roster: rosterView({
+        rows: [
+          rosterRowView('draft-1', { canTick: false, reasonLabel: EN.rosterReasonDraft }),
+          rosterRowView('gone', { checked: true, canTick: true, reasonLabel: EN.rosterReasonMissing }),
+        ],
+      }),
+    });
+    assert.match(markup, /data-testid="collaboration-roster-reason-draft-1"/);
+    assert.ok(markup.includes(EN.rosterReasonDraft));
+    assert.ok(markup.includes(EN.rosterReasonMissing));
+    const draftInput = markup.match(/<input type="checkbox"[^>]*value="draft-1"[/]>/)?.[0] ?? '';
+    const goneInput = markup.match(/<input type="checkbox"[^>]*value="gone"[/]>/)?.[0] ?? '';
+    assert.match(draftInput, /disabled=""/);
+    assert.ok(goneInput.length > 0);
+    assert.doesNotMatch(goneInput, /disabled=""/);
+  });
+
+  test('every reason renders in all three languages', () => {
+    for (const [locale, catalog] of CATALOGS) {
+      for (const key of Object.values(ROSTER_REASON_KEYS)) {
+        const markup = render({
+          labels: catalog as unknown as CollaborationViewLabels,
+          teamChoices: THREE_TEAMS,
+          selectedTeam: 'chief-of-staff',
+          roster: rosterView({ rows: [rosterRowView('x', { canTick: false, reasonLabel: catalog[key] })] }),
+        });
+        assert.ok(markup.includes(catalog[key]), `${locale} ${key}`);
+      }
+    }
+  });
+
+  test('the picker is hidden for coding, for advisors and when a workflow is selected', () => {
+    assert.doesNotMatch(chief({ selectedTeam: 'coding' }), /collaboration-roster"/);
+    assert.doesNotMatch(chief({ selectedTeam: 'advisors' }), /collaboration-roster"/);
+    assert.doesNotMatch(
+      chief({
+        workflowPicker: picker('loaded', [
+          { id: 'w1', name: 'Morning brief', statusLabel: 'On', testedLabel: 'Tested', selected: true },
+        ]),
+        workflowStart: startView({}),
+      }),
+      /collaboration-roster"/,
+    );
+    assert.doesNotMatch(chief({ roster: null }), /collaboration-roster"/);
+    assert.match(chief(), /collaboration-roster"/);
+  });
+
+  test('without a session the Chief of Staff option and the form show, and coding and advisors do not', () => {
+    const markup = render({
+      sessionReady: false,
+      chiefStartWithoutSession: true,
+      teamChoices: THREE_TEAMS,
+      selectedTeam: 'chief-of-staff',
+      roster: rosterView(),
+    });
+    assert.match(markup, /data-testid="collaboration-no-session"/);
+    assert.match(markup, /data-testid="collaboration-team-option-chief-of-staff"/);
+    assert.doesNotMatch(markup, /collaboration-team-option-coding/);
+    assert.doesNotMatch(markup, /collaboration-team-option-advisors/);
+    assert.match(markup, /data-testid="collaboration-task"/);
+    assert.match(markup, /<button[^>]*type="submit"[^>]*data-testid="collaboration-start"/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-start"[^>]*disabled=""/);
+    assert.match(markup, /data-testid="collaboration-roster"/);
+    assert.match(markup, /data-testid="collaboration-missing-session"/);
+    assert.ok(markup.includes(EN.missingSession));
+    // An empty task box still stops the start.
+    assert.match(
+      render({
+        sessionReady: false,
+        chiefStartWithoutSession: true,
+        task: ' ',
+        teamChoices: THREE_TEAMS,
+        selectedTeam: 'chief-of-staff',
+      }),
+      /data-testid="collaboration-start"[^>]*disabled=""/,
+    );
+  });
+
+  test('without a session and without the front door the old disabled view stays', () => {
+    const markup = render({ sessionReady: false, teamChoices: THREE_TEAMS });
+    assert.doesNotMatch(markup, /data-testid="collaboration-team-picker"/);
+    assert.match(markup, /<button[^>]*data-testid="collaboration-start"[^>]*disabled=""/);
+  });
+
+  test('the skipped hint shows under the form, naming the members', () => {
+    const hint = fillTemplate(EN.rosterSkippedHint, { members: 'Tax helper (still a draft, test it first)' });
+    const markup = chief({ rosterSkippedHint: hint });
+    assert.match(markup, /data-testid="collaboration-roster-skipped"/);
+    assert.ok(markup.includes(hint));
+    assert.doesNotMatch(chief(), /collaboration-roster-skipped/);
+  });
+
+  test('a waiting report-back step has no Edit task button and says why; other steps keep it', () => {
+    const base = {
+      statusLabel: 'Waiting for you',
+      asked: 'x',
+      prompt: 'The owner asked: ...',
+      answer: null,
+      handoffNote: null,
+      failureReason: null,
+      decidedBy: null,
+      rejectReason: null,
+      waiting: true,
+      canChangeFiles: false,
+      changedPaths: [],
+      savePoint: null,
+      tests: [],
+      roundLabel: null,
+      diff: null,
+      diffUnavailable: false,
+      testsGate: 'not_required' as const,
+      testsBlockReason: null,
+      approveWithoutTests: false,
+      sources: [],
+      showUnsourced: false,
+      droppedSourceCount: 0,
+    };
+    const markup = chief({
+      handoffs: [
+        { ...base, referralId: 'rb-1', reportBack: true },
+        { ...base, referralId: 'plain-1' },
+      ],
+    });
+    const rb = markup.slice(
+      markup.indexOf('collaboration-handoff-rb-1'),
+      markup.indexOf('collaboration-handoff-plain-1'),
+    );
+    const plain = markup.slice(markup.indexOf('collaboration-handoff-plain-1'));
+    assert.doesNotMatch(rb, /data-testid="collaboration-edit-task"/);
+    assert.match(rb, /data-testid="collaboration-report-back-note-rb-1"/);
+    assert.ok(rb.includes(labels.reportBackNoEdit));
+    assert.match(rb, /data-testid="collaboration-approve-rb-1"/);
+    assert.match(rb, /data-testid="collaboration-reject-rb-1"/);
+    assert.match(plain, /data-testid="collaboration-edit-task"/);
+    assert.doesNotMatch(plain, /collaboration-report-back-note/);
+  });
+});
+
+describe('COS-FRONTDOOR-01C Team page with the roster', () => {
+  let createRoot: (typeof import('react-dom/client'))['createRoot'];
+  let originalDocument: Document | undefined;
+  let originalFetch: typeof fetch;
+  let root: Root | null = null;
+  let latest: ReturnType<typeof useCollaborationScreen> | null = null;
+  let posts: unknown[] = [];
+  let puts: unknown[] = [];
+  let gets: string[] = [];
+  let detailBody: unknown = null;
+  let startBody: Record<string, unknown> = {};
+  let rosterStatus = 200;
+  let putStatus = 200;
+  let putErrorBody: unknown = null;
+  let rosterBody: unknown = null;
+  let probeSessionId = 'session-1';
+  const WF2 = 'f0f0f0f0-0000-4000-8000-000000000002';
+  const WF3 = 'f0f0f0f0-0000-4000-8000-000000000003';
+
+  function member(id: string, kind: 'system' | 'workflow', name: string | null, reason: string | null = null) {
+    return { id, kind, name, usable: reason === null, reason };
+  }
+
+  const defaultRoster = () => ({
+    members: [member('product-strategy', 'system', 'Product Strategy')],
+    choices: [
+      member('product-strategy', 'system', 'Product Strategy'),
+      member('technology-advisor', 'system', 'Technology Advisor'),
+      member(WORKFLOW_ID, 'workflow', 'Morning brief'),
+      member(WF2, 'workflow', 'Tax helper'),
+      member(WF3, 'workflow', 'Draft helper', 'draft'),
+    ],
+  });
+
+  function Probe() {
+    latest = useCollaborationScreen({
+      t: (key: string) => (enMessages.collaboration as Catalog)[key] ?? key,
+      locale: 'en',
+      sessionId: probeSessionId,
+      queryProjectId: '',
+      rosterEnabled: true,
+      workflows: {
+        state: 'loaded',
+        items: [item()],
+        onRetry: () => {},
+        onStale: () => {},
+      },
+    });
+    return createElement('div');
+  }
+
+  async function renderProbe() {
+    await act(async () => {
+      root!.render(createElement(Probe));
+    });
+  }
+
+  async function flush() {
+    await act(async () => {
+      for (let step = 0; step < 30; step += 1) {
+        await Promise.resolve();
+      }
+    });
+  }
+
+  before(async () => {
+    originalDocument = globalThis.document;
+    installDom();
+    ({ createRoot } = await import('react-dom/client'));
+  });
+
+  after(() => {
+    if (originalDocument === undefined) {
+      delete (globalThis as { document?: Document }).document;
+    } else {
+      globalThis.document = originalDocument;
+    }
+  });
+
+  beforeEach(() => {
+    posts = [];
+    puts = [];
+    gets = [];
+    detailBody = null;
+    latest = null;
+    rosterStatus = 200;
+    putStatus = 200;
+    putErrorBody = null;
+    rosterBody = defaultRoster();
+    probeSessionId = 'session-1';
+    startBody = {
+      collaborationRunId: 'run-1',
+      projectId: 'p-1',
+      status: 'active',
+      referralId: 'ref-1',
+      handoffStatus: 'pending_approval',
+      source: 'user',
+      target: 'chief-of-staff',
+      conversationId: 'c-1',
+      conversationCreated: false,
+    };
+    originalFetch = globalThis.fetch;
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      const method = (init?.method ?? 'GET').toUpperCase();
+      if (url === '/api/collaboration/roster') {
+        if (method === 'PUT') {
+          const body = init?.body ? JSON.parse(String(init.body)) : null;
+          puts.push(body);
+          if (putStatus !== 200) {
+            return jsonResponse(putStatus, putErrorBody ?? { message: 'no' });
+          }
+          const ids: string[] = body.memberIds;
+          const base = defaultRoster();
+          return jsonResponse(200, {
+            members: ids.map(
+              (id) => base.choices.find((choice) => choice.id === id) ?? member(id, 'system', id),
+            ),
+            choices: base.choices,
+          });
+        }
+        gets.push(url);
+        return rosterStatus === 200
+          ? jsonResponse(200, rosterBody)
+          : jsonResponse(rosterStatus, { message: 'no' });
+      }
+      if (method === 'POST' && url === '/api/collaboration/runs') {
+        const body = init?.body ? JSON.parse(String(init.body)) : null;
+        posts.push(body);
+        return jsonResponse(201, startBody);
+      }
+      if (url.startsWith('/api/collaboration/runs?')) {
+        return jsonResponse(200, { runs: [] });
+      }
+      if (url === '/api/collaboration/runs/run-1' && detailBody) {
+        return jsonResponse(200, detailBody);
+      }
+      return jsonResponse(404, { message: 'missing' });
+    }) as typeof fetch;
+    const container = (globalThis.document as { createElement: (tag: string) => unknown }).createElement('div');
+    root = createRoot(container as unknown as Element);
+  });
+
+  afterEach(async () => {
+    if (root) {
+      await act(async () => {
+        root!.unmount();
+      });
+      root = null;
+    }
+    globalThis.fetch = originalFetch;
+  });
+
+  async function openChief() {
+    await renderProbe();
+    await act(async () => {
+      latest!.onTeamChange('chief-of-staff');
+    });
+    await flush();
+  }
+
+  function viewMarkup(): string {
+    return renderToStaticMarkup(
+      React.createElement(CollaborationView, {
+        ...latest!,
+        task: '',
+      } as React.ComponentProps<typeof CollaborationView>),
+    );
+  }
+
+  test('the roster is not requested for coding, and loads once when the Chief of Staff is picked', async () => {
+    await renderProbe();
+    await flush();
+    assert.deepEqual(gets, []);
+    assert.equal(latest?.roster?.state, 'loading');
+    await act(async () => {
+      latest!.onTeamChange('chief-of-staff');
+    });
+    await flush();
+    assert.deepEqual(gets, ['/api/collaboration/roster']);
+    assert.equal(latest?.roster?.state, 'loaded');
+    // Going back and forth does not read it again.
+    await act(async () => {
+      latest!.onTeamChange('advisors');
+    });
+    await act(async () => {
+      latest!.onTeamChange('chief-of-staff');
+    });
+    await flush();
+    assert.deepEqual(gets, ['/api/collaboration/roster']);
+  });
+
+  test('loaded: rows from choices with the saved member ticked, names translated, unusable reasons shown', async () => {
+    await openChief();
+    const rows = latest!.roster!.rows;
+    assert.deepEqual(
+      rows.map((row) => [row.id, row.checked, row.canTick]),
+      [
+        ['product-strategy', true, true],
+        ['technology-advisor', false, true],
+        [WORKFLOW_ID, false, true],
+        [WF2, false, true],
+        [WF3, false, false],
+      ],
+    );
+    assert.equal(rows[0].name, EN.productStrategy);
+    assert.equal(rows[0].kindLabel, EN.rosterKindSystem);
+    assert.equal(rows[2].name, 'Morning brief');
+    assert.equal(rows[2].kindLabel, EN.rosterKindWorkflow);
+    assert.equal(rows[4].reasonLabel, EN.rosterReasonDraft);
+    assert.equal(rows[0].reasonLabel, null);
+    assert.equal(latest!.roster!.dirty, false);
+    assert.equal(latest!.roster!.labels.count, fillTemplate(EN.rosterCount, { count: '1', max: '3' }));
+    assert.equal(latest!.roster!.message, null);
+  });
+
+  test('a fourth tick is refused with a hint and the list stays; an untick clears the hint', async () => {
+    await openChief();
+    await act(async () => {
+      latest!.roster!.onToggle('technology-advisor');
+    });
+    await act(async () => {
+      latest!.roster!.onToggle(WORKFLOW_ID);
+    });
+    assert.deepEqual(
+      latest!.roster!.rows.filter((row) => row.checked).map((row) => row.id),
+      ['product-strategy', 'technology-advisor', WORKFLOW_ID],
+    );
+    assert.equal(latest!.roster!.message, null);
+    await act(async () => {
+      latest!.roster!.onToggle(WF2);
+    });
+    assert.deepEqual(
+      latest!.roster!.rows.filter((row) => row.checked).map((row) => row.id),
+      ['product-strategy', 'technology-advisor', WORKFLOW_ID],
+    );
+    assert.equal(latest!.roster!.message, fillTemplate(EN.rosterLimit, { max: '3' }));
+    await act(async () => {
+      latest!.roster!.onToggle(WORKFLOW_ID);
+    });
+    assert.equal(latest!.roster!.message, null);
+    assert.equal(latest!.roster!.dirty, true);
+  });
+
+  test('Save sends only memberIds in order, then shows saved and is no longer dirty', async () => {
+    await openChief();
+    await act(async () => {
+      latest!.roster!.onToggle(WF2);
+    });
+    await act(async () => {
+      latest!.roster!.onToggle('product-strategy');
+    });
+    assert.equal(latest!.roster!.dirty, true);
+    await act(async () => {
+      latest!.roster!.onSave();
+    });
+    await flush();
+    assert.deepEqual(puts, [{ memberIds: [WF2] }]);
+    assert.equal(latest!.roster!.saveState, 'saved');
+    assert.equal(latest!.roster!.dirty, false);
+    assert.equal(latest!.roster!.message, null);
+    assert.deepEqual(
+      latest!.roster!.rows.filter((row) => row.checked).map((row) => row.id),
+      [WF2],
+    );
+    // A further change takes the saved line away.
+    await act(async () => {
+      latest!.roster!.onToggle('product-strategy');
+    });
+    assert.equal(latest!.roster!.saveState, 'idle');
+  });
+
+  test('a refused save shows a translated message and keeps the ticks', async () => {
+    await openChief();
+    await act(async () => {
+      latest!.roster!.onToggle(WF2);
+    });
+    putStatus = 400;
+    putErrorBody = { code: 'ROSTER_MEMBER_NOT_FOUND' };
+    await act(async () => {
+      latest!.roster!.onSave();
+    });
+    await flush();
+    assert.equal(latest!.roster!.saveState, 'failed');
+    assert.equal(latest!.roster!.message, EN.rosterSaveMemberRefused);
+    assert.equal(latest!.roster!.dirty, true);
+    putStatus = 500;
+    putErrorBody = {};
+    await act(async () => {
+      latest!.roster!.onSave();
+    });
+    await flush();
+    assert.equal(latest!.roster!.message, EN.rosterSaveFailed);
+    putStatus = 400;
+    putErrorBody = { code: 'ROSTER_TOO_MANY' };
+    await act(async () => {
+      latest!.roster!.onSave();
+    });
+    await flush();
+    assert.equal(latest!.roster!.message, fillTemplate(EN.rosterLimit, { max: '3' }));
+  });
+
+  test('a failed load shows failed, and retry loads it', async () => {
+    rosterStatus = 500;
+    await openChief();
+    assert.equal(latest!.roster!.state, 'failed');
+    rosterStatus = 200;
+    await act(async () => {
+      latest!.roster!.onRetry();
+    });
+    await flush();
+    assert.equal(latest!.roster!.state, 'loaded');
+    assert.equal(gets.length, 2);
+  });
+
+  test('an empty roster list shows no rows', async () => {
+    rosterBody = { members: [], choices: [] };
+    await openChief();
+    assert.equal(latest!.roster!.state, 'loaded');
+    assert.deepEqual(latest!.roster!.rows, []);
+    assert.match(viewMarkup(), /data-testid="collaboration-roster-empty"/);
+  });
+
+  test('the picker shows for the Chief of Staff and not once a workflow is selected', async () => {
+    await renderProbe();
+    assert.equal(latest!.selectedTeam, 'coding');
+    assert.doesNotMatch(viewMarkup(), /data-testid="collaboration-roster"/);
+    await act(async () => {
+      latest!.onTeamChange('chief-of-staff');
+    });
+    await flush();
+    assert.match(viewMarkup(), /data-testid="collaboration-roster"/);
+    await act(async () => {
+      latest!.workflowPicker!.onSelect(WORKFLOW_ID);
+    });
+    assert.doesNotMatch(viewMarkup(), /data-testid="collaboration-roster"/);
+  });
+
+  test('without a session the Chief of Staff starts with a body that has no sessionId', async () => {
+    probeSessionId = '';
+    await renderProbe();
+    await flush();
+    assert.equal(latest!.sessionReady, false);
+    assert.equal(latest!.selectedTeam, 'chief-of-staff');
+    assert.equal(latest!.chiefStartWithoutSession, true);
+    // The roster loads at once: the Chief of Staff is the team.
+    assert.deepEqual(gets, ['/api/collaboration/roster']);
+    await act(async () => {
+      latest!.onTaskChange('  Brief me  ');
+    });
+    await act(async () => {
+      latest!.onStart();
+    });
+    await flush();
+    assert.deepEqual(posts, [{ task: 'Brief me', team: 'chief-of-staff' }]);
+    assert.equal('sessionId' in (posts[0] as object), false);
+    assert.equal(latest!.task, '');
+  });
+
+  test('with a session the Chief of Staff body keeps sessionId and sends no roster', async () => {
+    await openChief();
+    await act(async () => {
+      latest!.onTaskChange('Brief me');
+    });
+    await act(async () => {
+      latest!.onStart();
+    });
+    await flush();
+    assert.deepEqual(posts, [{ sessionId: 'session-1', task: 'Brief me', team: 'chief-of-staff' }]);
+  });
+
+  test('the coding team body is unchanged', async () => {
+    await renderProbe();
+    await act(async () => {
+      latest!.onTaskChange('Fix it');
+    });
+    await act(async () => {
+      latest!.onStart();
+    });
+    await flush();
+    assert.deepEqual(posts, [{ sessionId: 'session-1', task: 'Fix it', team: 'coding' }]);
+  });
+
+  test('roster.skipped in the start response becomes a hint naming each member and why', async () => {
+    startBody = {
+      ...startBody,
+      roster: {
+        used: ['technology-advisor'],
+        skipped: [
+          { id: WF3, reason: 'draft' },
+          { id: 'product-strategy', reason: 'off' },
+          { id: 'f0f0f0f0-0000-4000-8000-0000000000ff', reason: 'missing' },
+        ],
+      },
+    };
+    await openChief();
+    await act(async () => {
+      latest!.onTaskChange('Brief me');
+    });
+    await act(async () => {
+      latest!.onStart();
+    });
+    await flush();
+    assert.equal(
+      latest!.rosterSkippedHint,
+      fillTemplate(EN.rosterSkippedHint, {
+        members: [
+          `Draft helper (${EN.rosterReasonDraft})`,
+          `${EN.productStrategy} (${EN.rosterReasonOff})`,
+          `${EN.rosterMemberUnknown} (${EN.rosterReasonMissing})`,
+        ].join(' · '),
+      }),
+    );
+    assert.match(viewMarkup(), /data-testid="collaboration-roster-skipped"/);
+    // A start without skipped members clears it.
+    startBody = { ...startBody, roster: { used: [], skipped: [] } };
+    await act(async () => {
+      latest!.onTaskChange('Again');
+    });
+    await act(async () => {
+      latest!.onStart();
+    });
+    await flush();
+    assert.equal(latest!.rosterSkippedHint, null);
+  });
+
+  test('the skipped hint is cleared when a past run is opened', async () => {
+    startBody = {
+      ...startBody,
+      roster: { used: [], skipped: [{ id: 'product-strategy', reason: 'off' }] },
+    };
+    await openChief();
+    await act(async () => {
+      latest!.onTaskChange('Brief me');
+    });
+    await act(async () => {
+      latest!.onStart();
+    });
+    await flush();
+    assert.ok(latest!.rosterSkippedHint);
+    await act(async () => {
+      latest!.onOpenRun('run-1');
+    });
+    assert.equal(latest!.rosterSkippedHint, null);
+  });
+
+  function frontDoorDetail() {
+    const base = {
+      status: 'completed',
+      prompt: 'p',
+      handoffNote: null,
+      failureReason: null,
+      decidedBy: null,
+      rejectReason: null,
+    };
+    return {
+      run: {
+        collaborationRunId: 'run-1',
+        projectId: 'p-1',
+        status: 'active',
+        createdAt: '2026-11-10T00:00:00.000Z',
+        updatedAt: '2026-11-10T00:00:00.000Z',
+        completedAt: null,
+        failedAt: null,
+      },
+      teamId: 'chief-of-staff',
+      team: ['chief-of-staff', 'product-strategy', WF2],
+      workflow: null,
+      agents: [
+        { name: 'chief-of-staff', label: 'Chief of Staff' },
+        { name: 'product-strategy', label: 'Product Strategy' },
+        { name: WF2, label: 'Tax helper' },
+      ],
+      handoffs: [
+        { ...base, referralId: 'r1', source: 'user', target: 'chief-of-staff', answer: 'Ask tax.' },
+        { ...base, referralId: 'r2', source: 'chief-of-staff', target: WF2, answer: 'Due in April.' },
+        {
+          ...base,
+          referralId: 'r3',
+          status: 'pending_approval',
+          source: WF2,
+          target: 'chief-of-staff',
+          answer: null,
+          prompt: 'x'.repeat(5000),
+        },
+        { ...base, referralId: 'r4', source: 'chief-of-staff', target: 'product-strategy', answer: 'Yes.' },
+      ],
+    };
+  }
+
+  test('a step shows the member label from agents, and a report-back reads agent to Chief of Staff', async () => {
+    detailBody = frontDoorDetail();
+    await renderProbe();
+    await act(async () => {
+      latest!.onOpenRun('run-1');
+    });
+    await flush();
+    const handoffs = latest!.handoffs;
+    assert.equal(handoffs[0].asked, fillTemplate(EN.asked, { source: EN.you, target: EN.chiefOfStaff }));
+    // The workflow member is named by its stored label, not its id.
+    assert.equal(
+      handoffs[1].asked,
+      fillTemplate(EN.asked, { source: EN.chiefOfStaff, target: 'Tax helper' }),
+    );
+    assert.equal(
+      handoffs[2].asked,
+      fillTemplate(EN.reportBackStep, { source: 'Tax helper', target: EN.chiefOfStaff }),
+    );
+    assert.deepEqual(
+      handoffs.map((entry) => entry.reportBack),
+      [false, false, true, false],
+    );
+    // A system member keeps its translated label.
+    assert.equal(
+      handoffs[3].asked,
+      fillTemplate(EN.asked, { source: EN.chiefOfStaff, target: EN.productStrategy }),
+    );
+    assert.ok(!handoffs.some((entry) => entry.asked.includes(WF2)));
+    assert.deepEqual(latest!.runTeam?.roles, [EN.chiefOfStaff, EN.productStrategy, 'Tax helper']);
+  });
+
+  test('a long report-back prompt is shown in full and has no edit, so nothing fails silently', async () => {
+    detailBody = frontDoorDetail();
+    await renderProbe();
+    await act(async () => {
+      latest!.onOpenRun('run-1');
+    });
+    await flush();
+    const rb = latest!.handoffs[2];
+    assert.equal(rb.prompt?.length, 5000);
+    assert.equal(rb.waiting, true);
+    const markup = viewMarkup();
+    assert.match(markup, /data-testid="collaboration-report-back-note-r3"/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-edit-task"/);
+    assert.match(markup, /data-testid="collaboration-approve-r3"/);
   });
 });

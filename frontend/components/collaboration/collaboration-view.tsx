@@ -89,6 +89,8 @@ export interface CollaborationViewLabels {
   sources: string;
   unsourced: string;
   droppedSources: string;
+  /** COS-FRONTDOOR-01C: why a report-back step has no Edit task button. */
+  reportBackNoEdit: string;
 }
 
 export interface CollaborationTeamMemberView {
@@ -125,6 +127,8 @@ export interface CollaborationHandoffViewModel {
   }>;
   showUnsourced: boolean;
   droppedSourceCount: number;
+  /** COS-FRONTDOOR-01C: an agent's step back to the chief-of-staff; the server writes its prompt. */
+  reportBack?: boolean;
 }
 
 export interface CollaborationPastRunView {
@@ -180,6 +184,43 @@ export interface CollaborationWorkflowStartView {
   spentLine: string | null;
 }
 
+/** COS-FRONTDOOR-01C: one row of the chief-of-staff roster picker. */
+export interface CollaborationRosterRowView {
+  id: string;
+  name: string;
+  kindLabel: string;
+  checked: boolean;
+  /** False for an unusable member that is not ticked: it cannot be added. */
+  canTick: boolean;
+  /** The translated reason a member cannot run, or null. */
+  reasonLabel: string | null;
+}
+
+/** COS-FRONTDOOR-01C: the roster picker under the chief-of-staff option. */
+export interface CollaborationRosterView {
+  state: 'loading' | 'failed' | 'loaded';
+  saveState: 'idle' | 'saving' | 'saved' | 'failed';
+  labels: {
+    heading: string;
+    intro: string;
+    loading: string;
+    empty: string;
+    failed: string;
+    retry: string;
+    save: string;
+    saving: string;
+    saved: string;
+    count: string;
+  };
+  rows: CollaborationRosterRowView[];
+  /** A translated message under Save: the fourth-tick hint or a save failure. */
+  message: string | null;
+  dirty: boolean;
+  onToggle: (id: string) => void;
+  onSave: () => void;
+  onRetry: () => void;
+}
+
 /** BIZ-BRIEF-01: a ready-made request that fills the task box. It never starts a run. */
 export interface CollaborationTaskPreset {
   id: string;
@@ -202,6 +243,12 @@ export default function CollaborationView(props: {
   onTeamChange?: (teamId: CollaborationTeamId) => void;
   workflowPicker?: CollaborationWorkflowPickerView | null;
   workflowStart?: CollaborationWorkflowStartView | null;
+  /** COS-FRONTDOOR-01C: the roster picker; shown with the chief-of-staff option, never for a workflow. */
+  roster?: CollaborationRosterView | null;
+  /** COS-FRONTDOOR-01C: the members the server left out of the last start, as one sentence. */
+  rosterSkippedHint?: string | null;
+  /** COS-FRONTDOOR-01C: without a session the chief-of-staff option and the form still show. */
+  chiefStartWithoutSession?: boolean;
   onStartTest?: () => void;
   /** TEAM-NO-SESSION-02: a line under "Past runs" when the list is the business project's. */
   pastRunsNote?: string;
@@ -242,9 +289,17 @@ export default function CollaborationView(props: {
   const workflowStart = props.workflowStart ?? null;
   // TEAM-NO-SESSION-02 D11: without a session the form shows for a selected workflow only,
   // and the team picker stays hidden (teams start from a workspace session).
-  const formReady = props.sessionReady || workflowStart !== null;
+  // COS-FRONTDOOR-01C: the chief-of-staff also starts without a session.
+  const chiefWithoutSession = !props.sessionReady && props.chiefStartWithoutSession === true;
+  const formReady = props.sessionReady || workflowStart !== null || chiefWithoutSession;
   const canStart = formReady && props.task.trim().length > 0 && !props.deciding;
-  const teamChoices = props.sessionReady ? (props.teamChoices ?? []) : [];
+  // Without a session only the chief-of-staff option shows; coding and advisors start
+  // from a workspace session.
+  const teamChoices = props.sessionReady
+    ? (props.teamChoices ?? [])
+    : chiefWithoutSession
+      ? (props.teamChoices ?? []).filter((choice) => choice.id === 'chief-of-staff')
+      : [];
   const selectedTeam = props.selectedTeam ?? 'coding';
   const taskPresets = props.taskPresets ?? [];
   const workflowSelected = workflowPicker?.items.some((item) => item.selected) === true;
@@ -317,6 +372,117 @@ export default function CollaborationView(props: {
       )}
     </fieldset>
   ) : null;
+
+  const roster = props.roster ?? null;
+  const showRoster = roster !== null && selectedTeam === 'chief-of-staff' && !workflowSelected;
+  const rosterBlock =
+    roster && showRoster ? (
+      <fieldset className="mt-4 min-w-0" data-testid="collaboration-roster">
+        <legend className="text-sm font-medium text-gray-800">{roster.labels.heading}</legend>
+        <p className="mt-1 break-words text-sm text-gray-600">{roster.labels.intro}</p>
+        {roster.state === 'loading' ? (
+          <p className="mt-2 text-sm text-gray-500" data-testid="collaboration-roster-loading">
+            {roster.labels.loading}
+          </p>
+        ) : roster.state === 'failed' ? (
+          <div
+            className="mt-2 flex min-w-0 flex-wrap items-center gap-2 text-sm text-gray-700"
+            data-testid="collaboration-roster-failed"
+          >
+            <span className="min-w-0 break-words">{roster.labels.failed}</span>
+            <button
+              type="button"
+              data-testid="collaboration-roster-retry"
+              onClick={roster.onRetry}
+              className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 transition-transform duration-150 ease-out hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand motion-safe:active:scale-[0.97]"
+            >
+              <ArrowPathIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+              {roster.labels.retry}
+            </button>
+          </div>
+        ) : roster.rows.length === 0 ? (
+          <p
+            className="mt-2 rounded-lg border border-dashed border-gray-200 px-3 py-2 text-sm text-gray-500"
+            data-testid="collaboration-roster-empty"
+          >
+            {roster.labels.empty}
+          </p>
+        ) : (
+          <>
+            <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {roster.rows.map((row) => (
+                <label
+                  key={row.id}
+                  data-testid={`collaboration-roster-option-${row.id}`}
+                  className={`flex min-w-0 items-start gap-2 rounded-lg border px-3 py-2 ${
+                    row.checked ? 'border-brand bg-indigo-50' : 'border-gray-200 bg-white'
+                  } ${row.canTick ? 'cursor-pointer' : 'cursor-not-allowed opacity-70'}`}
+                >
+                  <input
+                    type="checkbox"
+                    value={row.id}
+                    checked={row.checked}
+                    disabled={!row.canTick || roster.saveState === 'saving'}
+                    onChange={() => roster.onToggle(row.id)}
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                  />
+                  <span className="min-w-0">
+                    <span className="block break-words text-sm font-medium text-gray-900">
+                      {row.name}
+                    </span>
+                    <span className="block break-words text-xs text-gray-600">{row.kindLabel}</span>
+                    {row.reasonLabel ? (
+                      <span
+                        className="block break-words text-xs text-amber-800 first-letter:uppercase"
+                        data-testid={`collaboration-roster-reason-${row.id}`}
+                      >
+                        {row.reasonLabel}
+                      </span>
+                    ) : null}
+                  </span>
+                </label>
+              ))}
+            </div>
+            <div className="mt-2 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
+              <button
+                type="button"
+                data-testid="collaboration-roster-save"
+                disabled={!roster.dirty || roster.saveState === 'saving'}
+                onClick={roster.onSave}
+                className="inline-flex items-center gap-1 rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white transition-transform duration-150 ease-out hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 motion-safe:active:scale-[0.97]"
+              >
+                {roster.saveState === 'saving' ? roster.labels.saving : roster.labels.save}
+              </button>
+              <span
+                className="text-xs text-gray-600"
+                data-testid="collaboration-roster-count"
+              >
+                {roster.labels.count}
+              </span>
+            </div>
+            <div aria-live="polite" className="min-w-0">
+              {roster.message ? (
+                <p
+                  className="mt-2 flex min-w-0 items-start gap-1.5 break-words text-sm text-amber-900"
+                  data-testid="collaboration-roster-message"
+                >
+                  <ExclamationTriangleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span className="min-w-0">{roster.message}</span>
+                </p>
+              ) : roster.saveState === 'saved' && !roster.dirty ? (
+                <p
+                  className="mt-2 flex min-w-0 items-start gap-1.5 break-words text-sm text-emerald-700"
+                  data-testid="collaboration-roster-saved"
+                >
+                  <CheckIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span className="min-w-0">{roster.labels.saved}</span>
+                </p>
+              ) : null}
+            </div>
+          </>
+        )}
+      </fieldset>
+    ) : null;
 
   return (
     <main className="mx-auto w-full max-w-3xl overflow-x-hidden px-4 py-6 text-gray-900">
@@ -429,6 +595,7 @@ export default function CollaborationView(props: {
               </div>
             </fieldset>
           ) : null}
+          {rosterBlock}
           {pickerBlock}
           <label
             htmlFor="collaboration-task"
@@ -528,8 +695,27 @@ export default function CollaborationView(props: {
               {workflowStart.spentLine}
             </p>
           ) : null}
+          {chiefWithoutSession ? (
+            <p
+              className="mt-2 flex min-w-0 items-start gap-1.5 break-words text-sm text-gray-700"
+              data-testid="collaboration-missing-session"
+            >
+              <InformationCircleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              <span className="min-w-0">{labels.missingSession}</span>
+            </p>
+          ) : null}
         </form>
       )}
+      {props.rosterSkippedHint ? (
+        <p
+          className="mt-3 flex min-w-0 items-start gap-1.5 break-words rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+          data-testid="collaboration-roster-skipped"
+          role="status"
+        >
+          <InformationCircleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          <span className="min-w-0">{props.rosterSkippedHint}</span>
+        </p>
+      ) : null}
 
       <section className="mt-6 min-w-0">
         <h2 className="text-sm font-semibold text-gray-800">{labels.teamHeading}</h2>
@@ -621,7 +807,12 @@ export default function CollaborationView(props: {
             {props.handoffs.map((handoff) => {
               const rejecting = props.rejectReferralId === handoff.referralId;
               const editing = props.editReferralId === handoff.referralId;
-              const canEditTask = handoff.prompt !== null && handoff.prompt.length > 0;
+              // COS-FRONTDOOR-01C: a report-back prompt is written by the server from the owner's
+              // task and the agent's answer, and can be longer than the 4000-character edit cap,
+              // so it is approved or rejected, not edited.
+              const reportBack = handoff.reportBack === true;
+              const canEditTask =
+                !reportBack && handoff.prompt !== null && handoff.prompt.length > 0;
               const showWork =
                 !handoff.waiting &&
                 (handoff.canChangeFiles ||
@@ -1013,6 +1204,18 @@ export default function CollaborationView(props: {
                               <PencilSquareIcon className="h-4 w-4" aria-hidden="true" />
                               {labels.editTask}
                             </button>
+                          ) : null}
+                          {reportBack ? (
+                            <p
+                              className="flex w-full min-w-0 items-start gap-1.5 break-words text-xs text-gray-600"
+                              data-testid={`collaboration-report-back-note-${handoff.referralId}`}
+                            >
+                              <InformationCircleIcon
+                                className="mt-0.5 h-4 w-4 shrink-0"
+                                aria-hidden="true"
+                              />
+                              <span className="min-w-0">{labels.reportBackNoEdit}</span>
+                            </p>
                           ) : null}
                         </>
                       )}

@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import CollaborationView, {
   type CollaborationHandoffViewModel,
   type CollaborationViewLabels,
+  type CollaborationRosterView,
   type CollaborationWorkflowPickerView,
   type CollaborationWorkflowStartView,
 } from '@/components/collaboration/collaboration-view';
@@ -19,6 +20,17 @@ import {
   useCollaborationWorkflowList,
   type CollaborationWorkflowList,
 } from '@/components/collaboration/collaboration-workflows';
+import {
+  ROSTER_MAX_MEMBERS,
+  ROSTER_REASON_KEYS,
+  collaborationChiefStartBody,
+  isReportBackHandoff,
+  readRunAgents,
+  readStartSkipped,
+  rosterPickerRows,
+  useCollaborationRoster,
+  type RosterSkipped,
+} from '@/components/collaboration/collaboration-roster';
 import { useTranslations } from '@/hooks/useTranslations';
 import {
   collaborationFetch,
@@ -119,6 +131,8 @@ export function useCollaborationScreen(input: {
   workflows?: CollaborationWorkflowList;
   /** TEAM-PRESELECT-01: the workflowId query parameter, if any. */
   queryWorkflowId?: string;
+  /** COS-FRONTDOOR-01C: load and show the chief-of-staff roster picker. Off: no picker, no request. */
+  rosterEnabled?: boolean;
 }) {
   const { t, locale, sessionId } = input;
   const queryWorkflowId = input.queryWorkflowId?.trim() || '';
@@ -134,7 +148,10 @@ export function useCollaborationScreen(input: {
   tRef.current = t;
 
   const [task, setTask] = useState('');
-  const [selectedTeam, setSelectedTeam] = useState<CollaborationTeamId>('coding');
+  const [pickedTeam, setSelectedTeam] = useState<CollaborationTeamId>('coding');
+  // COS-FRONTDOOR-01C: without a session only the chief-of-staff can start, so it is the team.
+  const selectedTeam: CollaborationTeamId = sessionId.length === 0 ? 'chief-of-staff' : pickedTeam;
+  const [rosterSkipped, setRosterSkipped] = useState<RosterSkipped[]>([]);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
   // TEAM-PRESELECT-01: apply ?workflowId once, when the list has loaded. A missing match or a
   // failed list preselects nothing and shows nothing; later refreshes never override the user.
@@ -438,6 +455,7 @@ export function useCollaborationScreen(input: {
     sources: t('sources'),
     unsourced: t('unsourced'),
     droppedSources: t('droppedSources'),
+    reportBackNoEdit: t('reportBackNoEdit'),
   };
 
   const memberLabels = useMemo(
@@ -487,8 +505,22 @@ export function useCollaborationScreen(input: {
   if (detailWorkflow) {
     workflowNames.set(detailWorkflow.id, detailWorkflow.name);
   }
-  const memberLabel = (name: string) =>
-    workflowNames.get(name) ?? collaborationMemberLabel(name, memberLabels);
+  // COS-FRONTDOOR-01C: the run's stored agent list names each member; a translated
+  // system label or a workflow's own name wins, the stored label comes next.
+  const agentLabels = new Map<string, string>();
+  for (const agent of readRunAgents((detail as { agents?: unknown } | null)?.agents)) {
+    if (agent.label !== null) {
+      agentLabels.set(agent.name, agent.label);
+    }
+  }
+  const memberLabel = (name: string) => {
+    const workflowName = workflowNames.get(name);
+    if (workflowName !== undefined) {
+      return workflowName;
+    }
+    const known = collaborationMemberLabel(name, memberLabels);
+    return known !== name ? known : (agentLabels.get(name) ?? name);
+  };
   const workflowRoster = selectedWorkflow
     ? [
         {
@@ -546,6 +578,90 @@ export function useCollaborationScreen(input: {
         onRetry: input.workflows.onRetry,
       }
     : null;
+  // COS-FRONTDOOR-01C: the chief-of-staff roster. It loads the first time the chief-of-staff
+  // option shows, and the picker is hidden for coding, advisors and a selected workflow.
+  const rosterState = useCollaborationRoster(
+    input.rosterEnabled === true && selectedTeam === 'chief-of-staff' && selectedWorkflow === null,
+  );
+  const rosterMax = String(ROSTER_MAX_MEMBERS);
+  const rosterMessage = rosterState.limitHit
+    ? fillTemplate(t('rosterLimit'), { max: rosterMax })
+    : rosterState.saveErrorKey
+      ? fillTemplate(t(rosterState.saveErrorKey), { max: rosterMax })
+      : null;
+  const rosterMemberName = (kind: 'system' | 'workflow', id: string, name: string | null) => {
+    if (kind === 'system') {
+      const known = collaborationMemberLabel(id, memberLabels);
+      if (known !== id) {
+        return known;
+      }
+    }
+    return name ?? t('rosterMemberUnknown');
+  };
+  const rosterView: CollaborationRosterView | null =
+    input.rosterEnabled === true
+      ? {
+          state: rosterState.state,
+          saveState: rosterState.saveState,
+          labels: {
+            heading: t('rosterHeading'),
+            intro: fillTemplate(t('rosterIntro'), { max: rosterMax }),
+            loading: t('rosterLoading'),
+            empty: t('rosterEmpty'),
+            failed: t('rosterFailed'),
+            retry: t('rosterRetry'),
+            save: t('rosterSave'),
+            saving: t('rosterSaving'),
+            saved: t('rosterSaved'),
+            count: fillTemplate(t('rosterCount'), {
+              count: String(rosterState.selectedIds.length),
+              max: rosterMax,
+            }),
+          },
+          rows: rosterPickerRows({
+            members: rosterState.members,
+            choices: rosterState.choices,
+          }).map((row) => {
+            const checked = rosterState.selectedIds.includes(row.id);
+            return {
+              id: row.id,
+              name: rosterMemberName(row.kind, row.id, row.name),
+              kindLabel: row.kind === 'workflow' ? t('rosterKindWorkflow') : t('rosterKindSystem'),
+              checked,
+              canTick: row.usable || checked,
+              reasonLabel: !row.usable && row.reason ? t(ROSTER_REASON_KEYS[row.reason]) : null,
+            };
+          }),
+          message: rosterMessage,
+          dirty: rosterState.dirty,
+          onToggle: rosterState.onToggle,
+          onSave: rosterState.onSave,
+          onRetry: rosterState.onRetry,
+        }
+      : null;
+  // COS-FRONTDOOR-01C D10: the members the server left out of the last start, by name.
+  const rosterKnown = new Map<string, { kind: 'system' | 'workflow'; name: string | null }>();
+  for (const entry of [...rosterState.choices, ...rosterState.members]) {
+    rosterKnown.set(entry.id, { kind: entry.kind, name: entry.name });
+  }
+  const rosterSkippedHint =
+    rosterSkipped.length > 0
+      ? fillTemplate(t('rosterSkippedHint'), {
+          members: rosterSkipped
+            .map((entry) => {
+              const known = rosterKnown.get(entry.id);
+              const workflowName = workflowNames.get(entry.id);
+              const name =
+                workflowName ??
+                rosterMemberName(known?.kind ?? 'system', entry.id, known?.name ?? null);
+              return fillTemplate(t('rosterSkippedItem'), {
+                name,
+                reason: t(ROSTER_REASON_KEYS[entry.reason]),
+              });
+            })
+            .join(' · '),
+        })
+      : null;
   const runTeamId = collaborationTeamFromDetail(detail);
   const chainTeamId = runTeamId ?? selectedTeam;
   const chainIsWorkflow = detailWorkflow !== null || (detail === null && selectedWorkflow !== null);
@@ -589,10 +705,12 @@ export function useCollaborationScreen(input: {
         testsGate === 'blocked'
           ? (forced ?? readTestsBlockReason(handoff.testsBlockReason) ?? 'none')
           : null;
+      const reportBack = isReportBackHandoff(handoff.source, handoff.target);
       return {
         referralId: handoff.referralId,
         statusLabel: statusLabel(handoff.status),
-        asked: fillTemplate(t('asked'), {
+        reportBack,
+        asked: fillTemplate(t(reportBack ? 'reportBackStep' : 'asked'), {
           source: memberLabel(handoff.source),
           target: memberLabel(handoff.target),
         }),
@@ -636,8 +754,9 @@ export function useCollaborationScreen(input: {
       return;
     }
     const workflowId = selectedWorkflow?.id ?? null;
-    // TEAM-NO-SESSION-02 D6: only a workflow starts without a session.
-    if (sessionId.length === 0 && workflowId === null) {
+    // TEAM-NO-SESSION-02 D6 and COS-FRONTDOOR-01C: only a workflow or the chief-of-staff
+    // starts without a session.
+    if (sessionId.length === 0 && workflowId === null && selectedTeam !== 'chief-of-staff') {
       return;
     }
     startInFlight.current = true;
@@ -649,11 +768,13 @@ export function useCollaborationScreen(input: {
             body: JSON.stringify(
               workflowId !== null
                 ? collaborationWorkflowStartBody({ sessionId, task, workflowId, testRun })
-                : collaborationStartRequestBody({
-                    sessionId,
-                    task,
-                    team: selectedTeam,
-                  }),
+                : selectedTeam === 'chief-of-staff'
+                  ? collaborationChiefStartBody({ sessionId, task })
+                  : collaborationStartRequestBody({
+                      sessionId,
+                      task,
+                      team: selectedTeam,
+                    }),
             ),
           });
           if (!response.ok) {
@@ -663,6 +784,7 @@ export function useCollaborationScreen(input: {
           const started = (await response.json()) as CollaborationStartResult;
           // The notice names the workspace session; a session-less run has none to name.
           setConversationCreated(started.conversationCreated === true && sessionId.length > 0);
+          setRosterSkipped(readStartSkipped(started));
           setSelectedRunId(started.collaborationRunId);
           setRejectReferralId(null);
           setRejectReason('');
@@ -704,6 +826,9 @@ export function useCollaborationScreen(input: {
     },
     workflowPicker,
     workflowStart,
+    roster: rosterView,
+    rosterSkippedHint,
+    chiefStartWithoutSession: true,
     accessNote:
       selectedWorkflow || selectedTeam === 'chief-of-staff'
         ? t('fileAccessReadOnly')
@@ -770,6 +895,7 @@ export function useCollaborationScreen(input: {
     onStart: () => startRun(false),
     onOpenRun: (runId: string) => {
       setSelectedRunId(runId);
+      setRosterSkipped([]);
       setRejectReferralId(null);
       setRejectReason('');
       setEditReferralId(null);
@@ -946,6 +1072,7 @@ export default function CollaborationPageClient() {
     queryProjectId,
     workflows,
     queryWorkflowId,
+    rosterEnabled: true,
   });
   return <CollaborationView {...viewProps} />;
 }
