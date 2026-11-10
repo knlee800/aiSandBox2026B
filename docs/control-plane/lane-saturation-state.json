@@ -20,13 +20,15 @@
       "runtimeNeeds": []
     },
     "lane2": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "DRIFT-FIX-01",
+      "mutexes": ["AI-SERVICE"],
+      "writePaths": [
+        "services/ai-service/src/agent-harness/eval/"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -5147,14 +5149,16 @@
       "taskId": "DRIFT-FIX-01",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "OPTIONAL",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
       "dependsOn": ["CM-AUTH-01"],
       "mutexes": ["AI-SERVICE"],
-      "writePaths": ["services/ai-service/src/agent-harness/eval/"],
+      "writePaths": [
+        "services/ai-service/src/agent-harness/eval/"
+      ],
       "hotfiles": [],
       "i18n": false,
       "sharedContractIds": [],

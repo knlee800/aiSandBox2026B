@@ -87578,13 +87578,13 @@ taskId=DRIFT-FIX-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the CM-AUTH-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the CM-AUTH-01 LOCK — not admitted.
 **Task ID:** DRIFT-FIX-01
 **Title:** Briefing drift check follows the shared version hash
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: CM-AUTH-01 LOCKED (AI-SERVICE free). Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: CM-AUTH-01 LOCKED (AI-SERVICE free). Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** CM-AUTH-01.
 **Primary write scope:** services/ai-service/src/agent-harness/eval/
 **Mutexes / resources:** AI-SERVICE
