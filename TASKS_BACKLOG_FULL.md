@@ -87377,7 +87377,7 @@ taskId=STAGING-DEPLOY-SEC-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — Keith approved the deploy ("Yes, deploy it"). Registered 2026-11-10 by the AI-SERVICE-AUTH-01 LOCK.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. Result: passed. Lane 1 and STAGING released; stagingAuthorized false. fbbf41d -> 9d56779 (rc 0; migration hash ece5f19b -> c4265632, 12 workflow columns, pre-migration backup 20261110T054442Z COMPLETE); configuration unchanged; standard host checks pass; 4000, 4001 and 4002 on 127.0.0.1 only; INTERNAL_SERVICE_KEY matches; ai-service guard 401/401/200; open routes 200/200/201; bridge container refused on all three ports. Checkpoint: docs/STAGING-DEPLOY-SEC-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 1 superseded (browser checks, by STAGING-DEPLOY-WF-01 / BIZ-LIVE-04) / 0 dropped / 0 undisposed. Registered 2026-11-10 by the AI-SERVICE-AUTH-01 LOCK.
 **Task ID:** STAGING-DEPLOY-SEC-01
 **Title:** Deploy the loopback binds and the ai-service guard to staging
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
