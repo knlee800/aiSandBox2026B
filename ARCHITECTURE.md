@@ -13,7 +13,7 @@ All implementation must conform to this file and `CLAUDE.md`.
 
 If conflicts arise, these documents take precedence in their domains.
 
-Last reconciled: 2026-08-24 (GOV-ARCH-02 Step 3 — bounded current-state reconciliation). Bounded living-authority sync: 2026-08-28 (GOV-AUTH-01 — CREATE-01D Ask identity facts only; GOV-AUTH-02 — CREATE-01E product-facing single-shot Ask facts only; not GOV-ARCH-03). Bounded living-authority sync: 2026-08-31 (AGENT-PLATFORM-CREATE-01F — frontend Create Agent detail consumes existing `DELETE /api/agents/:id` for persisted user-created agents only; not GOV-ARCH-03). Bounded living-authority sync: 2026-08-31 (GOV-AUTH-03 — EXEC-01A/01B persisted user-agent Ask and Build on the existing Builder runtime only; not GOV-ARCH-03). Bounded living-authority addition: 2026-11-07 (GOV-RSI-01 — section 13.1 RSI row and section 13.5 PLANNED constraint only; not GOV-ARCH-03). Prior freeze: 2026-08-10 (GOV-ARCH-01).
+Last reconciled: 2026-08-24 (GOV-ARCH-02 Step 3 — bounded current-state reconciliation). Bounded living-authority sync: 2026-08-28 (GOV-AUTH-01 — CREATE-01D Ask identity facts only; GOV-AUTH-02 — CREATE-01E product-facing single-shot Ask facts only; not GOV-ARCH-03). Bounded living-authority sync: 2026-08-31 (AGENT-PLATFORM-CREATE-01F — frontend Create Agent detail consumes existing `DELETE /api/agents/:id` for persisted user-created agents only; not GOV-ARCH-03). Bounded living-authority sync: 2026-08-31 (GOV-AUTH-03 — EXEC-01A/01B persisted user-agent Ask and Build on the existing Builder runtime only; not GOV-ARCH-03). Bounded living-authority addition: 2026-11-07 (GOV-RSI-01 — section 13.1 RSI row and section 13.5 PLANNED constraint only; not GOV-ARCH-03). Bounded living-authority sync: 2026-11-10 (GOV-ARCH-SYNC-01 — collaboration runs, the office, Knowledge, connectors, per-user access and the system-agent registry brought to the built and locked state, deployed-to-staging stated per row; not GOV-ARCH-03). Prior freeze: 2026-08-10 (GOV-ARCH-01).
 
 ---
 
@@ -26,8 +26,8 @@ Unlabeled statements in this document are **CURRENT** implemented architecture.
 Hard CURRENT constraints:
 
 - Private-beta AI execution is **Builder-first single-shot**. Harness is implemented but gated off (`AGENT_HARNESS_ENABLE_TOOL_LOOP=false`). Harness is not the beta default.
-- Multi-agent product runtime is **not** operational. Specialist agents are placeholders. User-created agents are persisted profiles. Frontend `/platform` Ask CTA navigates to existing `/[locale]/app?userAgentId=<uuid>` and binds persisted agent identity into the existing Workspace Chat / selected session. Gateway may resolve optional ownership-scoped `agentId` onto the existing Builder path for `conversation` and `workspace_mutation` (`findOneByIdAndUserId(agentId, identity.userId)`). `agentId` + `harnessVersion` remains rejected. There is no dedicated user-agent runtime and no Harness on that path. Bounded Ask and Build reuse the existing Builder runtime.
-- The in-memory orchestration coordinator is instantiated in API Gateway and is **not product-reachable** (no HTTP surface).
+- Agent collaboration is CURRENT but gated per user: sequential, owner-approved hand-offs on PostgreSQL-backed collaboration runs (§13.1 OrchestrationService; COLLAB-INTERNAL-01 to COLLAB-EDIT-01; live on staging). The Chief of Staff, Product Strategy and Technology Advisor system agents run read-only as collaboration team roles (BIZ-01, BIZ-03; live on staging), not as free-standing agents. Parallel fan-out is **not** built. User-created agents are persisted profiles. Frontend `/platform` Ask CTA navigates to existing `/[locale]/app?userAgentId=<uuid>` and binds persisted agent identity into the existing Workspace Chat / selected session. Gateway may resolve optional ownership-scoped `agentId` onto the existing Builder path for `conversation` and `workspace_mutation` (`findOneByIdAndUserId(agentId, identity.userId)`). `agentId` + `harnessVersion` remains rejected. There is no dedicated user-agent runtime and no Harness on that path. Bounded Ask and Build reuse the existing Builder runtime.
+- The orchestration coordinator (`OrchestrationService`) is PostgreSQL-backed (`collaboration_runs`, `collaboration_referrals`) and reachable through internal-key routes under `/api/internal/collaboration` and owner-scoped, entitlement-gated login routes under `/api/collaboration` behind the Team page (COLLAB-INTERNAL-01, COLLAB-SCREEN-01). It is no longer in-memory or unreachable.
 - Stripe charging is **not** CURRENT. Internal credit-ledger deduction is CURRENT and is independent of `BILLING_CHARGES_ENABLED`.
 - Google OAuth routes exist but are **not activated** (fail-closed when the Passport strategy is unregistered).
 
@@ -95,6 +95,10 @@ Caddy (staging / current public TLS terminator)
 Frontend (Next.js) — port 3002
   │  /[locale]/app      — workspace (Builder)
   │  /[locale]/platform — platform dashboard shell
+  │  /[locale]/collaboration — Team page (gated per user)
+  │  /[locale]/office — office: agents as desks with run state
+  │  /[locale]/knowledge — Knowledge documents
+  │  /[locale]/connections — mail and calendar connections
   │  iframe src=/api/preview/:sessionId/proxy
   │
   │  Local-dev without Caddy:
@@ -135,7 +139,9 @@ API Gateway (NestJS) — port 4000
          TypeORM — authoritative durable relational/business application state
          (sessions, users, projects, conversations, chat_messages,
           usage_records, credit_balances, credit_deduction_records,
-          git_checkpoints, user_agents, subscriptions, webhooks, etc.)
+          git_checkpoints, user_agents, subscriptions, webhooks,
+          collaboration_runs, collaboration_referrals, knowledge_documents,
+          audit_events, user_entitlements, connector_connections, etc.)
 ```
 
 HISTORICAL: process-scoped Harness canaries used `PORT=4099` to avoid listen conflicts. **4099 is not a current AI Service network layer.** Canonical listen port is **4001**.
@@ -217,7 +223,11 @@ Owns:
 - Preview proxy routing → container-manager
 - Internal service endpoint hosting
 - Health / readiness / db endpoints
-- Orchestration coordinator: **in-memory, instantiated at Gateway boot, no HTTP surface, not product-reachable**
+- Collaboration orchestration (`OrchestrationService`): PostgreSQL-backed runs and referrals, the owner approval gate, a 5-minute in-process sweep and the stored orchestration audit (`audit_events`); routes under `/api/collaboration` (gated per user) and `/api/internal/collaboration` (COLLAB-INTERNAL-01, COLLAB-CHOOSE-01, COLLAB-AUDIT-01)
+- System-agent definitions (`src/system-agents/`, `GET /api/system-agents`; AGENT-DEFS-01, AGENT-SPEC-01)
+- Knowledge store (`knowledge_documents`, `/api/knowledge`, internal knowledge routes; KNOW-01, KNOW-02)
+- Connector credentials and broker (`connector_connections`, `/api/connectors`, `POST /api/internal/connectors/call`; CONN-02A, CONN-02B)
+- Per-user entitlements (`user_entitlements`, audited admin PATCH; ACCESS-01B) and the append-only `audit_events` table
 
 Does NOT own:
 
@@ -270,6 +280,7 @@ Owns:
 - Provider adapter registry (Anthropic, OpenAI, Groq, xAI, DeepSeek, stub)
 - Plain single-shot execution path (AIExecutionService → adapter → provider API) — **CURRENT private-beta path**
 - Agent Harness multi-turn tool loop (**GATED — not private-beta default**; see §12)
+- Harness tools registered per signed job: the `read`, `review`, `write` and `agent-write` tool profiles (COLLAB-WRITE-01, ACCESS-01C); `search_knowledge` / `read_knowledge` only with signed `knowledgeScopes` (KNOW-02); connector tools only with signed `connectorGrants` (CONN-GRANT-01). The HARNESS_ENTITLEMENT_PROOF_V1 check runs before any tool registers
 - Redis Pub/Sub execution stream publishing
 - Per-builder harness config adapter
 - `usage_records` finalization (status, tokens, result metadata)
@@ -295,7 +306,7 @@ services/ai-service/
 
 Owns:
 
-- Locale UI at `/[locale]/app` (Builder workspace) and `/[locale]/platform` (dashboard shell)
+- Locale UI at `/[locale]/app` (Builder workspace), `/[locale]/platform` (dashboard shell), `/[locale]/collaboration` (Team page; COLLAB-SCREEN-01, COLLAB-SCREEN-02), `/[locale]/office` (OFFICE-01, OFFICE-05, OFFICE-06), `/[locale]/knowledge` (KNOW-01) and `/[locale]/connections` (CONN-UI-01)
 - File-action parse / risky-confirm / AUTO_APPLY / apply-once / sequential write / post-apply coherence
 - Preview iframe pointing at Gateway preview proxy
 - Local-dev App Router proxy for confirm-build-apply (retained; not staging public path)
@@ -351,6 +362,9 @@ Local/staging listen port: **3002**.
 - Cookies: `aisandbox_session` (session) and `aisandbox_csrf` (CSRF)
 - Execute / confirm-build-apply accept `SessionOrApiKeyAuthGuard`
 - Ownership: session / project / execution / agent rows scoped to `userId`; cross-user reads return not-found
+- Per-user gated access (ACCESS-01B, replacing the env allowlist): `user_entitlements` (`harness_enabled`, `agent_write_enabled`, `plan_override`, `daily_token_limit_override`) read fail-closed by `EntitlementService`; `GET /api/auth/me` returns `harnessEntitled` and `agentWriteEnabled` (AGENT-WRITE-UI-01); `harnessVersion` on `POST /api/ai/execute` and every `/api/collaboration` route are refused without `harnessEntitled`; admins change rows through `PATCH /api/admin/users/:userId/entitlements` (session, admin role, CSRF), each change written to the append-only `audit_events` table. Live on staging (STAGING-DEPLOY-06, STAGING-DEPLOY-CONN-01)
+- Daily limits (ACCESS-01D, ACCESS-01F; live on staging, STAGING-DEPLOY-07): per-plan daily token limits (free 100,000; starter 500,000; pro 1,000,000; team 2,000,000; per-user override; admins pass; an Agent run is estimated at 60,000 tokens and the balance must cover the estimate) and daily credit caps from the ledger (500 per user, 1,000 platform, per UTC day)
+- Socket.IO (`EventsGateway`, legacy `file-changed` session rooms; no current page mounts the client): the handshake must carry a valid `aisandbox_session` cookie and `join-session` is owner-checked (ACCESS-01A); HTTP CORS allows only the `APP_BASE_URL` origin (ACCESS-CORS-01)
 - Google and Apple OAuth **routes exist**. If the Passport strategy is not registered, redirect is `oauth_failed`. Google OAuth is **not activated**.
 - Generated-app auth templates **must not** reference `aisandbox_session`, `aisandbox_csrf`, `aisandbox_oauth_state`, `X-Internal-Service-Key`, or platform guards
 
@@ -542,12 +556,16 @@ container-manager uses **local SQLite** for runtime session/container/git state.
 | Credit balances | API Gateway | PostgreSQL (`credit_balances`) |
 | Credit deduction records | API Gateway | PostgreSQL (`credit_deduction_records`) |
 | Workspace snapshots | API Gateway | Host filesystem (`snapshot-store/`) |
-| User agents | API Gateway | PostgreSQL (`user_agents`) — persistence/API plus ownership-scoped identity binding for Ask and Build on the existing Builder path; not a dedicated execution runtime |
+| User agents | API Gateway | PostgreSQL (`user_agents`) — persistence/API plus ownership-scoped identity binding for Ask and Build on the existing Builder path; not a dedicated execution runtime. Since BIZ-USER-01A (2026-11-10, migration `AddUserAgentWorkflowColumns1803000000000`, not deployed) each row also stores a workflow: the six-part spec (tone, reply language, purpose, procedure, result, access as tool profile `read` + catalogue knowledge scopes + connector tool ids, model), budgets per run and per day, and a template id; saves are validated with the system-agent renderer and grants are the stored spec intersected with the platform allowlist. Routes: `GET /api/agents/options`, `POST /api/agents/from-template`, `PATCH /api/agents/:id` (session-guarded, owner-scoped). Running a workflow is BIZ-USER-01C. |
 | Stripe subscription rows | API Gateway | PostgreSQL (subscription tables) — schema CURRENT; live Stripe charging NOT CURRENT |
 | Docker workspace files | container-manager | Host workspace directory bind-mounted as `/workspace` |
 | Container / session runtime state | container-manager | **Local SQLite** + Docker daemon + in-memory `lastActivity` |
 | Git operations inside container | container-manager | Git in `/workspace` + CM SQLite; ledger is Gateway Postgres |
-| Orchestration coordinator state | API Gateway | In-memory only (no persistence; not product-reachable) |
+| Collaboration runs and hand-offs | API Gateway | PostgreSQL (`collaboration_runs`, `collaboration_referrals`; COLLAB-INTERNAL-01) |
+| Knowledge documents | API Gateway | PostgreSQL (`knowledge_documents`, per owner and scope, soft delete; KNOW-01) |
+| Audit events (orchestration, entitlement changes) | API Gateway | PostgreSQL (`audit_events`, append-only: a trigger refuses UPDATE and DELETE; COLLAB-AUDIT-01, ACCESS-01B) |
+| Per-user entitlements | API Gateway | PostgreSQL (`user_entitlements`; ACCESS-01B) |
+| Connector credentials | API Gateway | PostgreSQL (`connector_connections`, AES-256-GCM per owner and kind under `CONNECTOR_CREDENTIALS_KEY`; CONN-02A) |
 
 `user_agents` schema, entity, and migration exist in the repository. Locked staging evidence records that migration `CreateUserAgentsTable1772500000000` was applied. Live row contents were **not** probed by GOV-ARCH-02.
 
@@ -625,6 +643,33 @@ GET    /api/agents
 GET    /api/agents/:id
 
 GET    /api/preview/:sessionId/proxy
+
+GET    /api/ai/executions?state=active|recent      (run list; RUN-STATUS-01, RUN-LIST-COLLAB-01)
+POST   /api/ai/executions/:executionId/cancel
+
+GET    /api/system-agents                           (AGENT-DEFS-01)
+
+POST   /api/collaboration/runs                      (harnessEntitled only; optional team: coding | chief-of-staff | advisors)
+GET    /api/collaboration/runs
+GET    /api/collaboration/runs/:id
+POST   /api/collaboration/runs/:id/referrals/:referralId/approve
+POST   /api/collaboration/runs/:id/referrals/:referralId/reject
+POST   /api/collaboration/runs/:id/referrals/:referralId/prompt   (edit task; COLLAB-EDIT-01)
+POST   /api/collaboration/runs/:id/cancel           (COLLAB-CANCEL-01)
+
+GET    /api/knowledge/scopes                        (KNOW-01)
+GET    /api/knowledge/documents
+POST   /api/knowledge/documents
+GET    /api/knowledge/documents/:id
+DELETE /api/knowledge/documents/:id
+
+POST   /api/connectors/imap                         (CONN-02A)
+POST   /api/connectors/ical
+GET    /api/connectors
+POST   /api/connectors/:kind/verify                 (CONN-02B)
+DELETE /api/connectors/:kind
+
+PATCH  /api/admin/users/:userId/entitlements        (ACCESS-01B; admin)
 ```
 
 Session cookie (and CSRF where required). Execute / confirm-build-apply also accept API key via `SessionOrApiKeyAuthGuard`.
@@ -651,6 +696,13 @@ POST /api/internal/git-checkpoints
 POST /api/internal/executions/:id/finalize-accounting
 POST /api/internal/executions/:id/confirm-build-apply
 POST /api/internal/connectors/call
+POST /api/internal/collaboration/runs
+POST /api/internal/collaboration/runs/:id/referrals
+POST /api/internal/collaboration/runs/:id/referrals/:referralId/approve
+POST /api/internal/collaboration/runs/:id/referrals/:referralId/reject
+GET  /api/internal/collaboration/runs/:id
+POST /api/internal/knowledge/search
+POST /api/internal/knowledge/read
 ```
 
 `POST /api/internal/connectors/call` (CONN-02B) runs one allowlisted connector tool for a user who has that connection; it is behind the global InternalServiceAuthGuard like the other `/api/internal/` routes, and since CONN-GRANT-01 it also requires `executionId` and a per-job `grantToken` minted by the Gateway (HMAC under a key derived from CONNECTOR_CREDENTIALS_KEY, bound to the execution, the user and the granted tools, 2-hour expiry); a missing or invalid token is refused with 403 before the broker runs.
@@ -709,8 +761,9 @@ Harness is **not** this path. See §12.
      { sessionId, conversationId, prompt, executionIntent?, provider?, model?,
        workspaceContext?, agentRole?, builderProfileId?, collaborationRunId?,
        referralTraceId?, agentId? }
-     Optional identity fields are accepted plumbing. The frontend does not currently send
-     agentRole, builderProfileId, collaborationRunId, or referralTraceId.
+     Optional identity fields are accepted plumbing. The frontend does not send
+     agentRole, builderProfileId, collaborationRunId, or referralTraceId; the Gateway
+     OrchestrationService sets them on collaboration hand-off jobs (COLLAB-INTERNAL-01).
      When a persisted user-created agent is bound via `/[locale]/app?userAgentId=<uuid>`,
      the existing Workspace Chat payload sends ownership-scoped `agentId`
      through `buildPersistedUserAgentAskRequestFields` for both `conversation` and
@@ -770,7 +823,8 @@ Proven Builder provider path: adapter registry is CURRENT; locked LIVE-11 eviden
 |------|----------|---------|--------|
 | Execution kill-switch | `GLOBAL_EXECUTION_ENABLED` | `false` (opt-in) | When false, POST /api/ai/execute returns 503 before any logic runs |
 | Harness tool loop | `AGENT_HARNESS_ENABLE_TOOL_LOOP` | `false` | When false, falls through to plain single-shot path |
-| Write/delete tools | `AGENT_HARNESS_ENABLE_WRITE_TOOLS` | `false` | When false, write_file/delete_file not registered |
+| Write/delete tools | `AGENT_HARNESS_ENABLE_WRITE_TOOLS` | `false` | When false, write_file/delete_file not registered. Since ACCESS-01C a kill switch: per-user write access is `user_entitlements.agent_write_enabled`, signed onto the job as the `agent-write` tool profile; a v1 job without a signed profile is stored as `harness_tool_profile_missing` |
+| Harness per-user access | `user_entitlements.harness_enabled` (table, not env; ACCESS-01B) | no row = false | `harnessVersion` is refused for a user without it; the Gateway signs HARNESS_ENTITLEMENT_PROOF_V1 (tool profile, knowledge scopes, connector grants) onto the job and the worker verifies it before any tool registers |
 | Validation tool | `AGENT_HARNESS_ENABLE_VALIDATION_TOOLS` | `false` | When false, run_validation not registered |
 | Browser smoke tool | `AGENT_HARNESS_ENABLE_BROWSER_SMOKE` | `false` | When false, browser_smoke not registered |
 | Stripe charging | `BILLING_CHARGES_ENABLED` | `false` | When false, Stripe charging is blocked. **Credit-ledger deduction still runs.** |
@@ -892,10 +946,10 @@ This is technical HOW for the current apply pipeline. It is not a product-copy p
 | `projectId` | Project APIs / open-project | Session `project_id`; not required on execute body | CURRENT project identity |
 | `sessionId` | `POST /api/sessions` | Execute, files, preview, checkpoints, CM | Required CURRENT |
 | `containerId` | CM Docker create | CM SQLite / Docker; not a Builder HTTP field | CURRENT runtime |
-| `builderProfileId` | Optional execute body; harness `builder-default` if harness path | Job + usage metadata if provided | Optional CURRENT plumbing; **frontend does not send it** |
+| `builderProfileId` | Optional execute body; harness `builder-default` if harness path | Job + usage metadata if provided | Optional CURRENT plumbing; **frontend does not send it**; the Gateway sets it to the target role on collaboration hand-off jobs and `GET /api/ai/executions` returns it (RUN-LIST-COLLAB-01) |
 | `agentRole` | Optional execute body | Job + usage metadata if provided | Optional CURRENT plumbing; **frontend does not send it** |
-| `collaborationRunId` | Optional; in-memory coordinator if called | Job metadata if provided | FUTURE product; optional CURRENT field |
-| `referralTraceId` | Optional; in-memory coordinator if called | Job metadata if provided | FUTURE product; optional CURRENT field |
+| `collaborationRunId` | Gateway `OrchestrationService` on run creation (`collaboration_runs`) | Set on every hand-off job and kept in `usage_records` metadata; returned by `GET /api/ai/executions` (RUN-LIST-COLLAB-01) and used by the office to place team runs on desks | CURRENT (gated collaboration; COLLAB-INTERNAL-01) |
+| `referralTraceId` | Gateway `OrchestrationService` per hand-off (`collaboration_referrals`) | Hand-off job metadata and audit events | CURRENT (gated collaboration; COLLAB-INTERNAL-01) |
 
 ---
 
@@ -926,8 +980,9 @@ Do not describe Harness as the current Builder execution default. Harness-as-def
 | Per-builder harness config | CURRENT | AGENT-HARNESS-07 |
 | Pre-apply checkpoint gate | CURRENT (gated path) | `enablePreApplyCheckpoint=true`; created before first write mutation |
 | Audit events (`InMemoryHarnessAuditRecorder`) | CURRENT | In-memory only; not persisted to DB |
-| Rolling 24-hour token limit | CURRENT | Setting `MAX_TOKENS_PER_24H`, default 1,000,000 per user (was fixed at 100,000 until HARNESS-QUOTA-01) |
-| Run list (`GET /api/ai/executions`) | CURRENT (proven on staging, HARNESS-LIVE-06) | The caller's active or recent runs: identity fields and mode only, never prompts or answers. New runs record `runMode` in metadata; older rows report unknown |
+| Rolling 24-hour token limit | CURRENT | Since ACCESS-01D the limit is per user: `daily_token_limit_override`, else the plan's `dailyTokenLimit` (free 100,000; starter 500,000; pro 1,000,000; team 2,000,000), else `MAX_TOKENS_PER_24H` (default 1,000,000; HARNESS-QUOTA-01); admins pass. An Agent run is estimated at 60,000 tokens before execution |
+| Run list (`GET /api/ai/executions`) | CURRENT (proven on staging, HARNESS-LIVE-06) | The caller's active or recent runs: identity fields and mode only, never prompts or answers. New runs record `runMode` in metadata; older rows report unknown. RUN-LIST-COLLAB-01 (2026-11-05): also returns `collaborationRunId` and `builderProfileId` from the stored metadata; the office reads this list (OFFICE-01) |
+| Stop a running run (`POST /api/ai/executions/:id/cancel`) | CURRENT (live on staging, STAGING-DEPLOY-11) | Owner-scoped; 409 when the run cannot be cancelled. RUN-STOP-01 (2026-11-06): the workspace Send button becomes Stop while a run is queued or running (Ask, Build and Agent). Collaboration runs are cancelled through `POST /api/collaboration/runs/:id/cancel` (COLLAB-CANCEL-01) |
 | Run recovery in the Builder chat | CURRENT (GATED for Agent; proven on staging, HARNESS-LIVE-06) | On session open, reconnects to an active run under 15 minutes old or a run this browser started. Recovered runs never apply file actions |
 | Server-side project save after a harness run | CURRENT (GATED; proven on staging, HARNESS-LIVE-06) | The worker saves a project snapshot when a harness run that attempted a write or delete ends, so reopening a project keeps the run's work with the browser closed |
 | Harness progress messages (`harness_progress`) | CURRENT (GATED) | One stream message per tool call: step, tool and target (path, query, command or URL), never file contents or tool output; seen working in a browser on staging (HARNESS-LIVE-05, 2026-11-02) |
@@ -971,28 +1026,29 @@ rollback must be initiated manually through the existing checkpoint/revert path.
 
 ainow.biz is the umbrella platform identity. aiSandBox is the Builder Agent module within it.
 
-The original walking-character / town **simulation** is **not implemented**. CURRENT RPG-related architecture is the command-center **shell/layout** at `/[locale]/platform` only. Product positioning of that shell belongs to `PRD.md`.
+The original walking-character / town **simulation** is **not implemented**. CURRENT RPG-related architecture is the command-center **shell/layout** at `/[locale]/platform` and the desk-based office at `/[locale]/office` (OFFICE-01; no game engine). Product positioning of that shell belongs to `PRD.md`.
 
 | Component | Status |
 |-----------|--------|
 | ainow.biz platform identity and dashboard (`/[locale]/platform`) | CURRENT (shell) |
 | aiSandBox = Builder Agent module (`/[locale]/app`) | CURRENT |
-| System-agent registry (`services/api-gateway/src/system-agents/system-agent-registry.ts`, moved from the frontend by AGENT-DEFS-01; typed spec fields, rendered prompts, generated never-do list and a platform model list since AGENT-SPEC-01, 2026-11-10); the frontend reads `GET /api/system-agents` (`frontend/lib/agent-platform/agent-registry.ts`) | CURRENT (read-only) |
-| DB-backed user-created agent records (`user_agents`, `POST/GET /api/agents`) | CURRENT (**persistence/API**; not a dedicated runtime) |
+| System-agent registry (`services/api-gateway/src/system-agents/system-agent-registry.ts`, moved from the frontend by AGENT-DEFS-01; typed spec fields, rendered prompts, generated never-do list and a platform model list since AGENT-SPEC-01, 2026-11-10, not deployed); the frontend reads `GET /api/system-agents` (`frontend/lib/agent-platform/agent-registry.ts`) | CURRENT (read-only) |
+| DB-backed user-created agent records (`user_agents`, `POST/GET /api/agents`; workflow fields, template copy and `PATCH` since BIZ-USER-01A, not deployed) | CURRENT (**persistence/API**; not a dedicated runtime) |
 | Optional persisted user-agent identity (`agentId` on `POST /api/ai/execute`) | CURRENT (`conversation` and `workspace_mutation`; owner-scoped; existing Builder path; product-facing bind via `userAgentId` sends `agentId` for both intents) |
 | Platform RPG command-center shell | CURRENT (layout/shell; no game engine) |
-| OrchestrationService | CURRENT precursor: **PostgreSQL-backed, internal-key HTTP only under `/api/internal/collaboration` (COLLAB-INTERNAL-01), not product-reachable**. Referral jobs are read-only Ask jobs. Each hand-off waits for internal-route approval and passes the off-switch, spend, credit and token checks (COLLAB-GATE-01). Agents may request a hand-off at the end of an answer, and a Gateway sweep closes finished runs and expires waiting hand-offs (COLLAB-CHOOSE-01). A run may ask for file access: its hand-offs then run through Harness with only read tools, signed per job, which replaces for those hand-offs the AGENT-PLATFORM-ORCH-ARCH-01 rule that hand-off jobs omit harnessVersion (COLLAB-FILES-01). Allow-listed users drive runs through login-based routes under `/api/collaboration` with owner checks and a page at `/[locale]/collaboration` (COLLAB-SCREEN-01). A signed per-job tool profile gives the writer write_file and run_validation and the reviewer run_validation; no role can delete; the existing pre-apply checkpoint and project save apply to writer steps (COLLAB-WRITE-01). The reviewer may send work back to the writer for at most 2 rounds, and receives the diff against the save point from a read-only container-manager route (COLLAB-ROUNDS-01). **Not** the future durable multi-Builder runtime. |
+| Office (`/[locale]/office`) | CURRENT for signed-in users (no game engine, no moving-character simulation): one desk per system agent from `GET /api/system-agents` and per user agent; team runs on role desks from `builderProfileId`, with a badge when a hand-off waits for the owner; a desk panel with the current run, the last five and a run's saved output. Data: `GET /api/ai/executions?state=active|recent`, `GET /api/collaboration/runs/:id`, `GET /api/ai/executions/:id`, `GET /api/knowledge/documents`. The office owns no run: start, approve, reject, edit and cancel stay in the workspace and on the Team page. OFFICE-01 live on staging (STAGING-DEPLOY-04); Chief of Staff and advisors desks live (BIZ-02, BIZ-03); OFFICE-05 (role desks, waiting badge) and OFFICE-06 (saved output in the panel) live since STAGING-DEPLOY-CONN-01 |
+| OrchestrationService | CURRENT (gated per user): **PostgreSQL-backed (`collaboration_runs`, `collaboration_referrals`); internal-key HTTP under `/api/internal/collaboration` (COLLAB-INTERNAL-01) and owner-scoped login routes under `/api/collaboration` (below)**. Referral jobs are read-only Ask jobs. Each hand-off waits for internal-route approval and passes the off-switch, spend, credit and token checks (COLLAB-GATE-01). Agents may request a hand-off at the end of an answer, and a Gateway sweep closes finished runs and expires waiting hand-offs (COLLAB-CHOOSE-01). A run may ask for file access: its hand-offs then run through Harness with only read tools, signed per job, which replaces for those hand-offs the AGENT-PLATFORM-ORCH-ARCH-01 rule that hand-off jobs omit harnessVersion (COLLAB-FILES-01). Allow-listed users drive runs through login-based routes under `/api/collaboration` with owner checks and a page at `/[locale]/collaboration` (COLLAB-SCREEN-01). A signed per-job tool profile gives the writer write_file and run_validation and the reviewer run_validation; no role can delete; the existing pre-apply checkpoint and project save apply to writer steps (COLLAB-WRITE-01). The reviewer may send work back to the writer for at most 2 rounds, and receives the diff against the save point from a read-only container-manager route (COLLAB-ROUNDS-01; untracked files included since COLLAB-DIFF-NEW-01). Approval of a writer-to-reviewer hand-off is refused when the writer changed files and its latest validation run failed or did not run, unless the owner overrides (COLLAB-GATE-TESTS-01). Orchestration audit events are stored in the append-only `audit_events` table (COLLAB-AUDIT-01). The owner may cancel a run (COLLAB-CANCEL-01) and edit a waiting hand-off's task before approving it (COLLAB-EDIT-01); a hand-off requested just before a Gateway restart is recovered by the sweep and by the run read (COLLAB-HANDOFF-RECOVER-01). Teams come from one server registry (`collaboration-teams.ts`: coding; chief-of-staff; advisors — BIZ-01, BIZ-03); each hand-off run record carries `agentDefinitionId` and `agentDefinitionVersion` (RUN-PROVENANCE-01). Runs, referrals and the approval gate are durable in PostgreSQL. Live on staging (STAGING-DEPLOY-03 to -19; used by Keith in COLLAB-LIVE-01 to -07 and BIZ-LIVE-01 to -03). **Not** built: parallel fan-out or several reviewers (COLLAB-FANOUT-01, COLLAB-REVIEWERS-01 registered NOT_READY). |
 | Builder Agent AI execution (single-shot) | CURRENT |
-| Optional execute identity fields (`agentRole`, `builderProfileId`, `collaborationRunId`, `referralTraceId`) | CURRENT plumbing; frontend does not send them |
+| Optional execute identity fields (`agentRole`, `builderProfileId`, `collaborationRunId`, `referralTraceId`) | CURRENT: the frontend does not send them; the Gateway OrchestrationService sets them on collaboration hand-off jobs (COLLAB-INTERNAL-01) |
 | Optional persisted user-agent identity (`agentId`) | CURRENT on Gateway `POST /api/ai/execute` for `conversation` and `workspace_mutation`; distinct from `agentRole` / `builderProfileId`; frontend sends `agentId` when a persisted user-created agent is bound via `/app?userAgentId=` for both intents |
-| Non-Builder system agents (Chief of Staff, Product Strategy, Technology Advisor) | PLACEHOLDER — `status: 'coming_soon'`; **not executable** |
+| Non-Builder system agents (Chief of Staff, Product Strategy, Technology Advisor) | CURRENT (gated per user; GATED in `PRD.md`): `status: 'active'` in the gateway registry; they execute only as read-only collaboration team roles through the approval gate — the chief-of-staff team (BIZ-01) and the advisors team, whose `advisors-lead` definition hands one question to Product Strategy or the Technology Advisor (BIZ-03) — with `search_knowledge` / `read_knowledge` over the owner's documents (KNOW-02) and, for the Chief of Staff, the two connector tools and the morning briefing (BIZ-BRIEF-01). Live on staging (BIZ-LIVE-01, BIZ-LIVE-02, BIZ-LIVE-03). No free-standing Ask of these agents outside a collaboration run |
 | User-created agents as a fully executable runtime platform | **FUTURE** — NOT IMPLEMENTED (dedicated runtime, Harness/tool loop, tools/knowledge/skills, per-agent models, autonomous multi-turn execution). Bounded Ask and Build on the existing Builder runtime are CURRENT. |
-| Referral / agent collaboration **product** runtime | **FUTURE** — not the 07C in-memory precursor |
-| Durable orchestration / persisted referrals / shared-project writes | **FUTURE** |
-| Connector broker and platform-written MCP server (`services/api-gateway/src/connectors/`, `services/connectors-mcp/`) | IMPLEMENTED, not deployed (CONN-01, CONN-02A, CONN-02B, 2026-11-09): encrypted per-owner mail and calendar credentials, an allowlist of one platform-run server with the platform's own tool descriptions, a stdio child started by absolute path with only PATH and NODE_ENV, read-only IMAP headers with plain-text body excerpts of at most 800 characters fetched with BODY.PEEK (CONN-03, 2026-11-10; deployed to staging by BODIES-LIVE-01) and today's calendar, content-free audit rows. Agents get connector tools only through CONN-GRANT-01's signed grant: the Gateway adds `connectorGrants` and a grant token to a signed read-profile collaboration job when the role lists the tool and the owner has that connection (no role lists any yet; BIZ-BRIEF-01 lists them for the Chief of Staff), the worker registers them only after the harness entitlement proof verifies, and the internal route checks the token on every call; user-supplied servers are refused |
-| Knowledge base runtime | **FUTURE / PLANNED** |
+| Referral / agent collaboration **product** runtime | CURRENT (gated per user): the Team page at `/[locale]/collaboration` over `/api/collaboration` (start with an optional `team`, list, read, approve, reject, edit task, cancel; COLLAB-SCREEN-01, COLLAB-SCREEN-02, COLLAB-EDIT-01, COLLAB-CANCEL-01, COLLAB-START-ONCE-01, COLLAB-REJECT-UX-01); live on staging. Parallel fan-out and several reviewers remain **FUTURE** |
+| Durable orchestration / persisted referrals / shared-project writes | CURRENT: `collaboration_runs` and `collaboration_referrals` in PostgreSQL with a ledger row before each enqueue (COLLAB-INTERNAL-01); the writer role writes to the owner's project session through Harness behind the pre-apply checkpoint and project save, the reviewer runs validation, no role deletes (COLLAB-WRITE-01); send-back rounds with the diff (COLLAB-ROUNDS-01). Live on staging (STAGING-DEPLOY-03) |
+| Connector broker and platform-written MCP server (`services/api-gateway/src/connectors/`, `services/connectors-mcp/`) | CURRENT, live on staging since STAGING-DEPLOY-CONN-01 (13b2322, 2026-11-09; CONN-01, CONN-02A, CONN-02B; Connections page CONN-UI-01 at `/[locale]/connections`): encrypted per-owner mail and calendar credentials, an allowlist of one platform-run server with the platform's own tool descriptions, a stdio child started by absolute path with only PATH and NODE_ENV, read-only IMAP headers with plain-text body excerpts of at most 800 characters fetched with BODY.PEEK (CONN-03, 2026-11-10; deployed to staging by BODIES-LIVE-01) and today's calendar, content-free audit rows. Agents get connector tools only through CONN-GRANT-01's signed grant: the Gateway adds `connectorGrants` and a grant token to a signed read-profile collaboration job when the role lists the tool and the owner has that connection (the Chief of Staff lists both since BIZ-BRIEF-01; proven by Keith's live briefings in BIZ-LIVE-03 and BODIES-LIVE-01), the worker registers them only after the harness entitlement proof verifies, and the internal route checks the token on every call; user-supplied servers are refused |
+| Knowledge store and tools | CURRENT (gated per user): `knowledge_documents` per owner and scope, nine server-registered scopes, `/api/knowledge` routes and the Knowledge page (KNOW-01); read-only `search_knowledge` and `read_knowledge` Harness tools through `POST /api/internal/knowledge/search` and `/read`, registered only on signed read-profile jobs with signed `knowledgeScopes` (KNOW-02); verified `[source: documentId#heading]` citations on the Team page (KNOW-03). Plain-text search only: no ingestion pipeline, chunking, embeddings or vector retrieval. Live on staging (STAGING-DEPLOY-05, BIZ-LIVE-01) |
 | Work objects (tickets, decisions, referrals) | **FUTURE / PLANNED** |
-| Multi-agent real-time collaboration | **FUTURE / PLANNED** |
+| Multi-agent real-time collaboration (parallel agents, fan-out, several reviewers) | **FUTURE / PLANNED** — the CURRENT collaboration is sequential, owner-approved hand-offs (COLLAB-FANOUT-01, COLLAB-REVIEWERS-01 registered NOT_READY) |
 | Semantic / vector retrieval | **FUTURE / PLANNED** |
 | Harness as default Builder experience | **FUTURE** |
 | Stripe charging | **FUTURE / deferred** |
@@ -1002,7 +1058,7 @@ The original walking-character / town **simulation** is **not implemented**. CUR
 ### 13.2 Agent Registry and Create Agent
 
 The system-agent registry is a static TypeScript declaration in the Gateway (`services/api-gateway/src/system-agents/system-agent-registry.ts`). Since AGENT-SPEC-01 each definition holds typed spec fields (tone, reply language, purpose, procedure, result, rules, access as tool profile + knowledge scopes + connector tool ids, and a model choice); the prompt is rendered from them, the version hash covers them, and a never-do list is generated from access. Platform models: `system-agents/platform-models.ts` (the four Anthropic ids, one flat credit rate).
-It is read-only at runtime. Non-Builder agents are declared but not executable.
+It is read-only at runtime; the frontend fetches the four public stations through `GET /api/system-agents` (session cookie, `private, no-store`; never instructions) and `frontend/lib/agent-platform/agent-registry.ts` keeps only types, a parser and a Builder-only fallback (AGENT-DEFS-01). Eight definitions: builder, lead, writer, reviewer, chief-of-staff, advisors-lead, product-strategy, technology-advisor; each has a version hash (`systemAgentVersion`), recorded on Team-page hand-off runs as `agentDefinitionId` / `agentDefinitionVersion` (RUN-PROVENANCE-01). The non-Builder agents execute only as collaboration team roles (§13.1).
 
 User-created agents:
 
@@ -1038,25 +1094,22 @@ Do not claim a live `user_agents` row count. Persistence/profile UX plus bounded
 
 Do not describe the following as current:
 
-- Knowledge ingestion runtime
+- Knowledge ingestion pipeline (chunking, embeddings); the plain-text Knowledge store and tools are CURRENT (§13.1; KNOW-01 to KNOW-03)
 - Vector database / semantic retrieval
-- Real non-Builder agent execution
+- Non-Builder agents outside a collaboration run (they execute only as approved, read-only team roles; BIZ-01, BIZ-03)
 - Fully executable user-created-agent platform (dedicated runtime, Harness/tool loop, tools/knowledge/skills, per-agent models, autonomous multi-turn execution). Bounded Ask and Build on the existing Builder runtime are CURRENT.
 - Work-object runtime
-- Chief-of-Staff, Product Strategy, or Technology Advisor agent execution
-- Product-reachable multi-Builder / collaboration runtime
-- Durable orchestration (the in-memory coordinator is a precursor only)
+- Parallel fan-out or several reviewers in one collaboration run (COLLAB-FANOUT-01, COLLAB-REVIEWERS-01 are registered, not built)
 - Automatic Harness rollback
-- Harness `search_workspace` handler
 - Harness as private-beta default execution
 - Stripe live charging
 - Google OAuth as an available login
 - Original RPG simulation / game engine
 - gVisor sandboxing
 
-### 13.4 Future Visual Office Compatibility (PLANNED constraint)
+### 13.4 Visual Office Compatibility (CURRENT first slices; standing constraint)
 
-A future RPG-style office is **not implemented** and not scheduled. Product status belongs to `PRD.md`. If it is built, this forward-looking constraint applies: the office and a conventional dashboard use shared agent capabilities, and agent identity, authoritative run state and authorization do not depend on any particular visual screen. Decorative animation stays separate from authoritative work status.
+A first office is CURRENT at `/[locale]/office` (OFFICE-01, OFFICE-05, OFFICE-06; row in §13.1): the signed-in user's agents as desks with authoritative run state read from the run list and the collaboration routes; it owns no run and has no game engine or moving-character simulation. Product status belongs to `PRD.md`. The constraint applies to it and to every later office slice: the office and a conventional dashboard use shared agent capabilities, and agent identity, authoritative run state and authorization do not depend on any particular visual screen. Decorative animation stays separate from authoritative work status.
 
 This does not state that existing page coupling has been removed, and it authorizes no refactor. No renderer, storage schema or recovery behaviour is selected. Evidence: `docs/GOV-RPG-UI-COMPAT-01-REVIEW-RECORD.md` (external source-only review; not runtime-tested).
 
@@ -1066,9 +1119,9 @@ Recursive self-improvement (RSI) is **approved FUTURE** product direction (`PRD.
 
 - **Versioned, approved changes.** Every change to an agent capability (instructions, skills, tool profile, knowledge scopes, model, platform code) is a versioned artifact with an approval record. RSI produces only candidates; a human approves each production change.
 - **Protected set.** RSI may never change authentication, guards, internal service keys, signing, credits and billing, the execution kill switch, governance files and the lane-capacity validator, the evaluations used to judge it, its own approval gate, or the RSI mechanisms themselves until Keith explicitly opens that stage.
-- **Direction, not current:** runs record the agent definition, its version and the model; agent definitions come from one server-side source.
+- **Partly current:** agent definitions come from one server-side source with a version hash each (AGENT-DEFS-01, AGENT-SPEC-01), and Team-page hand-off runs record `agentDefinitionId`, `agentDefinitionVersion` and the model (RUN-PROVENANCE-01; live on staging). Builder and Agent-mode run provenance is still held on RSI-00.
 
-This authorizes no refactor and selects no storage, scheduler or experiment environment. It does not state that agent definitions are versioned today: they are code constants (`frontend/lib/agent-platform/agent-registry.ts`, `services/api-gateway/src/orchestration/collaboration-teams.ts`). Record and assessment: `docs/GOV-RSI-01-CHECKPOINT.md`.
+This authorizes no refactor and selects no storage, scheduler or experiment environment. Agent definitions are still code constants, now in one place with a version hash: `services/api-gateway/src/system-agents/system-agent-registry.ts` (team composition in `services/api-gateway/src/orchestration/collaboration-teams.ts`); there is no approval record or stored version history yet (AGENT-DEFS-01). Record and assessment: `docs/GOV-RSI-01-CHECKPOINT.md`.
 
 ---
 
@@ -1096,6 +1149,9 @@ The system uses mixed communication mechanisms. It is neither HTTP-only nor queu
 | Browser / Frontend | API Gateway | HTTP `POST /api/ai/executions/:id/confirm-build-apply` (staging via Caddy) |
 | container-manager | Docker engine | Docker SDK + bind-mount `${workspacePath}:/workspace:rw` |
 | container-manager | API Gateway | HTTP (session lifecycle + `POST /api/internal/git-checkpoints`) |
+| API Gateway | connectors-mcp | stdio child process (MCP over stdio, spawned by absolute path with only PATH and NODE_ENV; CONN-02B) |
+| AI Service Worker (Harness, gated) | API Gateway | HTTP (`POST /api/internal/knowledge/search` and `/read`, KNOW-02; `POST /api/internal/connectors/call` with the per-job grant token, CONN-GRANT-01) |
+| API Gateway (in-process) | PostgreSQL | `CollaborationSweepWorker` every 5 minutes: settles finished runs, expires hand-offs waiting more than 24 hours, recovers unprocessed hand-off requests (COLLAB-CHOOSE-01, COLLAB-HANDOFF-RECOVER-01) |
 
 **Transport types in use:**
 - **HTTP** — Browser↔Caddy↔API GW / Frontend, API GW↔CM, Worker↔API GW (Harness tools + finalize-accounting), Worker→Provider
@@ -1103,7 +1159,8 @@ The system uses mixed communication mechanisms. It is neither HTTP-only nor queu
 - **Redis Pub/Sub** — Worker→Redis (publish), API GW→Redis (subscribe for SSE forwarding)
 - **TypeORM / PostgreSQL** — API GW (relational / business application state), AI Worker (`usage_records`)
 - **SQLite** — container-manager local/runtime state
-- **WebSocket** — preview streaming only
+- **WebSocket** — preview streaming; the Socket.IO `EventsGateway` (legacy `file-changed` rooms; no current page mounts the client) is session-authenticated since ACCESS-01A
+- **stdio** — API GW↔connectors-mcp (MCP; CONN-02B)
 - **Docker SDK** — CM↔Docker engine
 
 Leftover AI Service `POST /api/execute` HTTP remains as a listen surface. It is **not** the current Builder execute transport.
@@ -1121,7 +1178,7 @@ Leftover AI Service `POST /api/execute` HTTP remains as a listen surface. It is 
 - No general-purpose event bus (Redis is used specifically for BullMQ queue transport and
   execution-stream Pub/Sub — not as a general event bus)
 - No cron
-- No platform schedulers for maintenance (the Worker stuck-execution watchdog is in-process execution recovery only)
+- No platform schedulers for maintenance (the Worker stuck-execution watchdog is in-process execution recovery only; the Gateway's in-process `CollaborationSweepWorker`, a 5-minute `setInterval` from COLLAB-CHOOSE-01, settles collaboration runs and expires waiting hand-offs — neither touches session idle)
 - No Kubernetes
 - No Kafka
 - No event-sourcing architecture
@@ -1138,7 +1195,7 @@ The WorkerProcessor stuck-execution watchdog is **not** a contradiction of “no
 
 CURRENT architecture is a **Builder-first**, mixed-transport platform: Caddy + systemd (staging) or local host processes plus compose infrastructure (Postgres, Redis, local Prometheus/Grafana); Gateway enqueue; BullMQ Worker on **:4001**; container-manager Docker + bind-mounted `/workspace` + SQLite; delayed Build credit deduction after qualifying confirm-build-apply; session checkpoints under `/api/sessions/:id/...`; gated Harness off by default.
 
-Not operational as product runtime: specialist agents, the advanced/full executable-agent platform (dedicated runtime, Harness/tool loop, tools/knowledge/skills, per-agent models, autonomous multi-turn execution), multi-Builder collaboration, durable orchestration, knowledge retrieval, Harness-as-default, Stripe charging, Google OAuth activation, gVisor, automatic rollback, `search_workspace`. Bounded persisted user-agent Ask and Build on the existing Builder runtime are CURRENT.
+Not operational as product runtime: the advanced/full executable-agent platform (dedicated runtime, Harness/tool loop, tools/knowledge/skills, per-agent models, autonomous multi-turn execution), parallel multi-agent fan-out, semantic knowledge retrieval, Harness-as-default, Stripe charging, Google OAuth activation, gVisor, automatic rollback. CURRENT, gated per user and live on staging: the coding, Chief of Staff and advisors collaboration teams on PostgreSQL-backed runs with owner approval (§13.1), the Knowledge store and tools, the mail and calendar connectors, the office, and `search_workspace` on the gated harness path. Bounded persisted user-agent Ask and Build on the existing Builder runtime are CURRENT.
 
 Trade-offs:
 

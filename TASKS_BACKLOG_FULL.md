@@ -85639,7 +85639,7 @@ taskId=GOV-ARCH-SYNC-01
 nature=GOVERNANCE
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-BIZ-KNOWLEDGE-PLAN-01 (control-plane review).
+**Status:** COMPLETE AND LOCKED — 2026-11-10. Governance record by the control plane under Keith's instruction to keep starting the next tasks: ARCHITECTURE.md synced with what is built and locked (47 edits, each citing its task; drafted read-only by a fable subagent, rechecked and applied by the control plane). Checkpoint: docs/GOV-ARCH-SYNC-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (GOV-PRD-SYNC-01) / 0 superseded / 0 dropped / 0 undisposed. Registered 2026-11-05 by GOV-BIZ-KNOWLEDGE-PLAN-01.
 **Task ID:** GOV-ARCH-SYNC-01
 **Workstream:** CORE (taxonomy only; zero admission weight)
 **Nature:** GOVERNANCE. **Lifecycle:** 2-STEP.
@@ -85655,6 +85655,21 @@ nature=GOVERNANCE
 
 - [ ] ARCHITECTURE.md rows match what is built and locked, each change citing its task
 - [ ] Not LOCKED by an implementer
+
+### GOV-PRD-SYNC-01 — PRD office note and the no-scheduler principle
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=GOV-PRD-SYNC-01
+nature=GOVERNANCE
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the GOV-ARCH-SYNC-01 LOCK — not admitted.
+**Task ID:** GOV-PRD-SYNC-01
+**Workstream:** CORE (taxonomy only; zero admission weight)
+**Nature:** GOVERNANCE. **Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides the wording. Keith decides.
+**Primary write scope:** PRD.md, ARCHITECTURE.md, TASKS.md, TASKS_BACKLOG_FULL.md and a checkpoint.
+**Mutexes / resources:** GOVERNANCE.
+**Holds:** (1) PRD.md line 625's office note says "approved FUTURE; not current; not scheduled" while OFFICE-01, OFFICE-05, OFFICE-06 and OFFICE-07 are built and the first slices are live on staging: Keith decides how PRD.md classifies the office now. (2) ARCHITECTURE.md section 2 keeps the principle "no cron / no platform schedulers" while the gateway runs a 5-minute in-process CollaborationSweepWorker (stated in section 15) and TRIGGER-01 plans schedules: Keith decides whether the principle is reworded.
 
 ### COLLAB-GATE-TESTS-01 — Validation gate: no writer-to-reviewer approval on failing or missing tests
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
