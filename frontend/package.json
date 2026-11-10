@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "tsx --test components/workspace/*.test.ts* components/public/*.test.ts* lib/*.test.ts lib/auth-module/*.test.ts lib/ai/*.test.ts components/office/*.test.ts* lib/office/*.test.ts hooks/*.test.ts* app/*/login/*.test.ts* components/admin/*.test.ts* components/billing/__tests__/*.test.ts* components/connections/*.test.ts* components/knowledge/*.test.ts* components/platform/*.test.ts* lib/agent-platform/*.test.ts* *.test.ts"
+    "test": "tsx --test components/workspace/*.test.ts* components/public/*.test.ts* lib/*.test.ts lib/auth-module/*.test.ts lib/ai/*.test.ts components/office/*.test.ts* lib/office/*.test.ts hooks/*.test.ts* app/*/login/*.test.ts* components/admin/*.test.ts* components/billing/__tests__/*.test.ts* components/connections/*.test.ts* components/knowledge/*.test.ts* components/platform/*.test.ts* lib/agent-platform/*.test.ts* *.test.ts components/collaboration/*.test.ts*"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
