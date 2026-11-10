@@ -9,7 +9,13 @@
     "lane1": {
       "state": "ACTIVE",
       "taskId": "RESULTS-01",
-      "mutexes": ["GATEWAY", "FRONTEND", "I18N", "MIGRATION"],
+      "mutexes": [
+        "GATEWAY",
+        "FRONTEND",
+        "I18N",
+        "MIGRATION",
+        "PACKAGE"
+      ],
       "writePaths": [
         "services/api-gateway/src/orchestration/",
         "services/api-gateway/src/migrations/",
@@ -18,7 +24,10 @@
         "frontend/components/results/",
         "frontend/messages/en.json",
         "frontend/messages/zh-TW.json",
-        "frontend/messages/zh-CN.json"
+        "frontend/messages/zh-CN.json",
+        "frontend/components/platform/platform-dashboard.tsx",
+        "frontend/components/platform/platform-dashboard.test.ts",
+        "frontend/package.json"
       ],
       "hotfiles": [],
       "i18n": true,
@@ -4198,7 +4207,13 @@
       "productClass": "APPROVED_FUTURE",
       "futureAuthorization": "AUTHORIZED",
       "dependsOn": ["BIZ-USER-01C"],
-      "mutexes": ["GATEWAY", "FRONTEND", "I18N", "MIGRATION"],
+      "mutexes": [
+        "GATEWAY",
+        "FRONTEND",
+        "I18N",
+        "MIGRATION",
+        "PACKAGE"
+      ],
       "writePaths": [
         "services/api-gateway/src/orchestration/",
         "services/api-gateway/src/migrations/",
@@ -4207,7 +4222,10 @@
         "frontend/components/results/",
         "frontend/messages/en.json",
         "frontend/messages/zh-TW.json",
-        "frontend/messages/zh-CN.json"
+        "frontend/messages/zh-CN.json",
+        "frontend/components/platform/platform-dashboard.tsx",
+        "frontend/components/platform/platform-dashboard.test.ts",
+        "frontend/package.json"
       ],
       "hotfiles": [],
       "i18n": true,

@@ -86438,7 +86438,7 @@ taskId=RESULTS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — stage-start approved 2026-11-10 (docs/RESULTS-01-STAGE-START.md) — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** RESULTS-01
 **Title:** Results list, unread badge and run history
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -86446,8 +86446,8 @@ nature=IMPLEMENTATION
 **Lifecycle:** 4-STEP (corrected at admission 2026-11-10: the unread badge needs stored read state, likely a migration)
 **Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: 01C LOCKED. Keith decides.
 **Depends on:** BIZ-USER-01C.
-**Primary write scope:** services/api-gateway/src/orchestration/, services/api-gateway/src/migrations/ and services/api-gateway/src/entities/ (added at admission 2026-11-10 for stored read state), frontend/app/, frontend/components/results/, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json.
-**Mutexes / resources:** GATEWAY, FRONTEND, I18N, MIGRATION (MIGRATION added at admission 2026-11-10).
+**Primary write scope:** services/api-gateway/src/orchestration/, services/api-gateway/src/migrations/ and services/api-gateway/src/entities/ (added at admission 2026-11-10 for stored read state), frontend/app/, frontend/components/results/, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json. Widened at stage-start approval 2026-11-10 (S1, S2): frontend/components/platform/platform-dashboard.tsx and its test, frontend/package.json (test script line only).
+**Mutexes / resources:** GATEWAY, FRONTEND, I18N, MIGRATION, PACKAGE (MIGRATION added at admission 2026-11-10; PACKAGE at stage-start approval 2026-11-10).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
