@@ -39,7 +39,7 @@ export const MAIL_TOOL: ConnectorToolDefinition = {
   id: MAIL_TOOL_ID,
   kind: 'imap',
   description:
-    'List unread Inbox metadata for the connected mailbox: message id, sender, recipient count, subject, and date. At most 25 messages. Does not return bodies and does not change the mailbox.',
+    'List unread Inbox messages for the connected mailbox: message id, sender, recipient count, subject, date, and a short plain-text excerpt of the body (at most 800 characters). At most 25 messages. Does not mark messages read and does not change the mailbox.',
   inputSchema: {
     type: 'object',
     additionalProperties: false,

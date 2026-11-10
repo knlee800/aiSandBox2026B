@@ -1,5 +1,5 @@
-import { ImapMailboxClient, type MailListInput, type MailboxClient, type UnreadMessage } from '../clients/imap-client';
-import { capJsonItems, errorText, mailLimit, mailPreset, redact, requiredString } from '../limits';
+import { ImapMailboxClient, shortenBody, type MailListInput, type MailboxClient, type UnreadMessage } from '../clients/imap-client';
+import { capJsonItemsBodyFirst, errorText, mailLimit, mailPreset, redact, requiredString } from '../limits';
 
 export interface MailListResult {
   messages: UnreadMessage[];
@@ -22,7 +22,8 @@ export async function mailListUnread(client: MailboxClient, raw: unknown): Promi
   try {
     const messages = await client.listUnread(args);
     return {
-      messages: capJsonItems(messages, (kept) => ({ messages: kept })),
+      // D7: bodies are shortened (800, 400, 200, 0) before any message is dropped.
+      messages: capJsonItemsBodyFirst(messages, (kept) => ({ messages: kept }), shortenBody),
     };
   } catch (error) {
     throw new Error(redact(errorText(error), [args.appPassword, args.username]));

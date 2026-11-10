@@ -15,7 +15,7 @@ export const MAIL_TOOL_NAME = 'mail_list_unread_metadata';
 export const CALENDAR_TOOL_NAME = 'calendar_list_today';
 
 export const MAIL_TOOL_DESCRIPTION =
-  'List unread Inbox message metadata: id, sender name and address, recipient count, subject, and date. At most 25 messages. Does not return bodies and does not change the mailbox.';
+  'List unread Inbox messages for the connected mailbox: message id, sender, recipient count, subject, date, and a short plain-text excerpt of the body (at most 800 characters). At most 25 messages. Does not mark messages read and does not change the mailbox.';
 
 export const CALENDAR_TOOL_DESCRIPTION =
   "List today's events from an iCalendar feed in an IANA time zone, with repeating events expanded: title, start, end, organizer, attendee count, and the owner's response status. Does not change the calendar.";
