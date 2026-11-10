@@ -88367,7 +88367,7 @@ taskId=DESIGN-GAPS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-06. Registered by DESIGN-DOC-01; not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 2 and its mutexes released. Slice A: auth titles font-semibold, forgot and reset cards rounded-xl shadow-lg, Bars3Icon and ArrowsRightLeft/UpDown icons, SystemReadiness translated (36 keys); sonnet subagent in worktree lane/DESIGN-GAPS-01, cherry-picked as 1367f47; frontend 1280 passed, tsc and build clean; not deployed. FOLLOWUPS: 0 registered / 4 superseded (by DESIGN-GAPS-01B) / 0 dropped / 0 undisposed. Checkpoint: docs/DESIGN-GAPS-01-CHECKPOINT.md.
 **Task ID:** DESIGN-GAPS-01
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -88398,7 +88398,7 @@ nature=IMPLEMENTATION
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: DESIGN-GAPS-01 LOCKED. Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction). (DESIGN-GAPS-01 LOCKED 2026-11-10.)
 **Depends on:** DESIGN-GAPS-01.
 **Primary write scope:** frontend/app/, frontend/components/, the three message files (spinner label), DESIGN.md.
 **Mutexes / resources:** FRONTEND, I18N.
@@ -88408,7 +88408,7 @@ nature=IMPLEMENTATION
 **Revert isolation:** per item.
 **saturationClass:** OPTIONAL (as for DESIGN-GAPS-01). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
-**Scope:** DESIGN.md Known gaps 1, 7, 8, 9 and 13, using the tokens DESIGN.md already declares: primary actions use bg-brand / hover:bg-brand-hover instead of bg-blue-600 and bg-indigo-500/600; success uses emerald instead of green-500/600; focus uses one focus-visible ring in the brand color, and textareas keep a visible ring; one shared loading spinner (Heroicons-compatible SVG, translated label); the collaboration selection and its primary button in the brand color. Existing test IDs kept; UI checklist and the design skills apply; Keith sees it at the next staging deploy.
+**Scope:** DESIGN.md Known gaps 1, 7, 8, 9 and 13, using the tokens DESIGN.md already declares: primary actions use bg-brand / hover:bg-brand-hover instead of bg-blue-600 and bg-indigo-500/600; success uses emerald instead of green-500/600; focus uses one focus-visible ring in the brand color, and textareas keep a visible ring; one shared loading spinner (Heroicons-compatible SVG, translated label); the collaboration selection and its primary button in the brand color. Also (DESIGN-GAPS-01 slice A, 2026-11-10): the readiness chip's emoji status glyphs become Heroicons and the stray '✓ text-green-600' class in StatusItem is fixed; the tab bar toggle's title ('Horizontal tabs' / 'Vertical tabs') and the 'Open sidebar' aria-label move into the three message files; ConfigurationControl.tsx's visible English moves into the three message files. Existing test IDs kept; UI checklist and the design skills apply. Live check at the next staging deploy, with slice A's items: the four auth cards and titles, the mobile Bars3 button, the tab orientation icons, and the readiness chip in zh-TW and zh-CN (dev tools on).
 
 ### DESIGN-GAPS-01C — Fonts: a CJK font for zh-TW and zh-CN, and a mono family
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
