@@ -29,7 +29,13 @@
       "state": "ACTIVE",
       "taskId": "DESIGN-CONTRAST-01",
       "mutexes": ["FRONTEND"],
-      "writePaths": ["frontend/app/globals.css", "frontend/components/", "DESIGN.md"],
+      "writePaths": [
+        "frontend/app/",
+        "frontend/components/",
+        "frontend/lib/brand-contrast.test.ts",
+        "frontend/tailwind.config.js",
+        "DESIGN.md"
+      ],
       "hotfiles": [],
       "i18n": false,
       "evidenceClass": "LOCAL-TESTS",
@@ -5878,7 +5884,7 @@
       "futureAuthorization": "NONE",
       "dependsOn": ["DESIGN-GAPS-01B"],
       "mutexes": ["FRONTEND"],
-      "writePaths": ["frontend/app/globals.css", "frontend/components/", "DESIGN.md"],
+      "writePaths": ["frontend/app/", "frontend/components/", "frontend/lib/brand-contrast.test.ts", "frontend/tailwind.config.js", "DESIGN.md"],
       "hotfiles": [],
       "i18n": false,
       "sharedContractIds": [],

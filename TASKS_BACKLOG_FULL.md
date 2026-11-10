@@ -88474,7 +88474,7 @@ nature=IMPLEMENTATION
 **Lifecycle:** 3-STEP.
 **Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction to keep starting the next tasks).
 **Depends on:** DESIGN-GAPS-01B.
-**Primary write scope:** frontend/app/globals.css (the dark brand variables), frontend/components/ (only if a button needs a text-color class), DESIGN.md.
+**Primary write scope:** frontend/app/ (globals.css and the auth page links), frontend/components/, frontend/lib/brand-contrast.test.ts, frontend/tailwind.config.js (a brand-text color), DESIGN.md. Widened 2026-11-10 by the control plane: the first pass made dark-mode links (text-brand) fall from about 7:1 to 4.0:1 and left the light brand at 4.47:1, so the light brand moves to a passing value and links get their own brand-text token.
 **Mutexes / resources:** FRONTEND.
 **Hot-file leases:** none.
 **Shared contracts:** none.
