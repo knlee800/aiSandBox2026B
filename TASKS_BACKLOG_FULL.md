@@ -86252,7 +86252,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith may change it).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
-**Scope:** The plan's owner-named knowledge folders (for example hr-payroll; docs/AGENT-OPS-PLAN.md:194): a per-owner folders table, the worker's scope check accepting the owner's own folder ids, the Knowledge page creating and naming folders, and workflows ticking them. v1 (BIZ-USER-01A) uses the nine fixed catalogue folders, which already hold only the owner's documents.
+**Scope:** The plan's owner-named knowledge folders (for example hr-payroll; docs/AGENT-OPS-PLAN.md:194): a per-owner folders table, the worker's scope check accepting the owner's own folder ids, the Knowledge page creating and naming folders, and workflows ticking them. v1 (BIZ-USER-01A) uses the nine fixed catalogue folders, which already hold only the owner's documents. Also (BIZ-USER-01B, 2026-11-10): the options route carries each folder's display name, since the editor shows folder names from the fixed knowledge.scopes.* keys today.
 
 ### BIZ-USER-01B — Create Agent editor for user workflows
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -86260,7 +86260,7 @@ taskId=BIZ-USER-01B
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 1 and its mutexes released. Create Agent editor over BIZ-USER-01A's routes, three languages; sonnet subagent in worktree lane/BIZ-USER-01B, cherry-picked as bcd2dba; frontend 1361 passed, tsc and build clean; not deployed. FOLLOWUPS: 0 registered / 4 superseded (BIZ-USER-01C, KNOW-FOLDERS-01) / 0 dropped / 0 undisposed. Checkpoint: docs/BIZ-USER-01B-CHECKPOINT.md.
 **Task ID:** BIZ-USER-01B
 **Title:** Create Agent editor for user workflows
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -86303,7 +86303,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
-**Scope:** Implementation slice of BIZ-USER-01. A user workflow runs from the Team page as a team of one. Acceptance: a test run before switching on (C13), the budget refused at start (C15), and the six-part fields and grants stay off POST /api/ai/execute.
+**Scope:** Implementation slice of BIZ-USER-01. A user workflow runs from the Team page as a team of one. Acceptance: a test run before switching on (C13), the budget refused at start (C15), and the six-part fields and grants stay off POST /api/ai/execute. Also (BIZ-USER-01B, 2026-11-10): the agent detail panel and dashboard card show a workflow summary (folders, model, budget) beside the test-run and status controls; decide whether a workflow may be asked through the existing Ask link before its test run.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
 
 ### RESULTS-01 — Results list, unread badge and run history
