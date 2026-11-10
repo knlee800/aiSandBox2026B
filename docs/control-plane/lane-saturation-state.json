@@ -7,13 +7,20 @@
   "governance": {"owner": "NONE", "state": "UNOWNED"},
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "WORKFLOW-STATUS-03",
+      "mutexes": ["GATEWAY", "FRONTEND"],
+      "writePaths": [
+        "frontend/hooks/useUserAgents.ts",
+        "frontend/hooks/useUserAgents.test.ts",
+        "frontend/components/platform/",
+        "services/api-gateway/src/orchestration/orchestration.module.ts",
+        "services/api-gateway/src/orchestration/__tests__/",
+        "services/api-gateway/src/user-agent/"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -4425,14 +4432,21 @@
       "taskId": "WORKFLOW-STATUS-03",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "OPTIONAL",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
       "dependsOn": ["WORKFLOW-STATUS-02"],
-      "mutexes": [],
-      "writePaths": [],
+      "mutexes": ["GATEWAY", "FRONTEND"],
+      "writePaths": [
+        "frontend/hooks/useUserAgents.ts",
+        "frontend/hooks/useUserAgents.test.ts",
+        "frontend/components/platform/",
+        "services/api-gateway/src/orchestration/orchestration.module.ts",
+        "services/api-gateway/src/orchestration/__tests__/",
+        "services/api-gateway/src/user-agent/"
+      ],
       "hotfiles": [],
       "i18n": false,
       "sharedContractIds": [],
@@ -4440,8 +4454,8 @@
       "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "runtimeNeeds": [],
-      "admissionUncertain": true,
-      "writeSetPrecision": "PROVISIONAL"
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
     },
     {
       "taskId": "STAGING-DEPLOY-WFC-01",

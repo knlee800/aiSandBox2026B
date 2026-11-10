@@ -86666,23 +86666,23 @@ taskId=WORKFLOW-STATUS-03
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the WORKFLOW-STATUS-02 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the WORKFLOW-STATUS-02 LOCK — not admitted.
 **Task ID:** WORKFLOW-STATUS-03
 **Title:** Workflow status follow-ups: the 409 code in the save hook, the port binding, the draft card body
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** WORKFLOW-STATUS-02.
-**Primary write scope:** PROVISIONAL, set at admission (expected frontend/hooks/useUserAgents.ts; optionally services/api-gateway/src/orchestration/orchestration.module.ts and services/api-gateway/src/user-agent/; frontend/components/platform/ if Keith wants a different draft card body).
-**Mutexes / resources:** set at admission (expected FRONTEND; GATEWAY only for item 2).
+**Primary write scope:** frontend/hooks/useUserAgents.ts, frontend/hooks/useUserAgents.test.ts, frontend/components/platform/, services/api-gateway/src/orchestration/orchestration.module.ts, services/api-gateway/src/orchestration/__tests__/, services/api-gateway/src/user-agent/ (set at admission 2026-11-10; item 3 dropped by Keith).
+**Mutexes / resources:** GATEWAY, FRONTEND (no I18N: no new copy).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
-**Scope:** From the WORKFLOW-STATUS-02 worker: (1) frontend/hooks/useUserAgents.ts saveUserAgentRequest passes the server code only on a 400, so a 409 WORKFLOW_NOT_TESTED switch-on refusal shows the generic error until the summary reload; pass the code on a 409 too (one line, with a test). (2) Optional cleanup: OrchestrationModule binds the USER_WORKFLOW_SWITCH_ON_CHECK port as a provider instead of the ModuleRef lookup in user-workflow-switch-on.ts. (3) Design question for Keith: whether a draft card body should look different from an off card (only the badge differs today).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set at admission 2026-11-10).
+**Scope:** From the WORKFLOW-STATUS-02 worker: (1) frontend/hooks/useUserAgents.ts saveUserAgentRequest passes the server code only on a 400, so a 409 WORKFLOW_NOT_TESTED switch-on refusal shows the generic error until the summary reload; pass the code on a 409 too (one line, with a test). (2) Optional cleanup: OrchestrationModule binds the USER_WORKFLOW_SWITCH_ON_CHECK port as a provider instead of the ModuleRef lookup in user-workflow-switch-on.ts. (3) Design question for Keith: whether a draft card body should look different from an off card (only the badge differs today). (Admission 2026-11-10) Items 1 and 2 only; item 3 dropped by Keith ("Keep as is").
 
 ### STAGING-DEPLOY-WFC-01 — Deploy the workflow draft and switch-on fixes
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -89366,3 +89366,4 @@ One line per follow-up Keith dropped: date, follow-up, where it was named, reaso
 - 2026-11-09 — reversal: connectors, dropped at the 2026-11-05 knowledge-plan line above with "re-propose with evidence", return on Keith's request as allowlisted, platform-run MCP connectors to the owner's own mail and calendar, planned in docs/AGENT-OPS-PLAN.md (CONN-01 onward) (Keith, 2026-11-09); scheduled refresh stays dropped; that drop line stays as history.
 - 2026-11-09 — a separate CONNECTORS mutex for services/connectors-mcp/, named in docs/AGENT-OPS-PLAN.md — HOTFILE leases on named files suffice while one lane touches the folder; re-propose if two slices need the folder at once — Keith, GOV-BIZ-AGENT-OPS-PLAN-01.
 - 2026-11-09 — reversal: the return hop dropped at the 2026-11-07 BIZ-03 stage-start line above returns as report-back hand-offs, so the Chief of Staff gives the final answer after the agents it used, planned in docs/AGENT-OPS-PLAN.md as COS-FRONTDOOR-01 (Keith, 2026-11-09); that drop line stays as history.
+- 2026-11-10 — a distinct body for a draft dashboard card (only the badge differs from an off card), named in docs/WORKFLOW-STATUS-02-CHECKPOINT.md and WORKFLOW-STATUS-03 item 3 — Keith: "Keep as is"; the amber Draft badge with its icon is enough — WORKFLOW-STATUS-03 admission record.
