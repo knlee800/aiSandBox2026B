@@ -87630,22 +87630,22 @@ taskId=CM-CLEANUP-01B
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the CM-CLEANUP-01 split — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the CM-CLEANUP-01 split — not admitted.
 **Task ID:** CM-CLEANUP-01B
 **Title:** Gateway preview catch-all drops hop-by-hop headers
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: GATEWAY is free (after RESULTS-01). Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (RESULTS-01 LOCKED and GATEWAY free 2026-11-10; Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: GATEWAY is free (after RESULTS-01). Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** CM-CLEANUP-01.
-**Primary write scope:** PROVISIONAL: the gateway preview catch-all and its tests (services/api-gateway/src/preview/; set at admission).
+**Primary write scope:** services/api-gateway/src/preview/ (set at admission 2026-11-10: the catch-all in preview.controller.ts and its tests).
 **Mutexes / resources:** GATEWAY.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (as for CM-CLEANUP-01). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set at admission 2026-11-10).
 **Scope:** From CM-AUTH-01 (Latent): the gateway preview catch-all copies container-manager's transfer-encoding header and then calls res.send; drop hop-by-hop headers (connection, keep-alive, transfer-encoding, upgrade, and the rest of RFC 9110 section 7.6.1) before replying, with a test.
 
 ### CODE-TIDY-01 — Small dead-code removals left by CM-CLEANUP-01
@@ -87660,7 +87660,7 @@ nature=IMPLEMENTATION
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction), once the mutexes it needs are free.
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction), once the mutexes it needs are free.
 **Depends on:** CM-CLEANUP-01.
 **Primary write scope:** PROVISIONAL, set at admission (expected: services/ai-service/src/guards/internal-key-exempt.decorator.ts; services/container-manager/package.json and the lockfile; frontend/components/Timeline.tsx; container-manager previews code if the review removes it).
 **Mutexes / resources:** set at admission (expected AI-SERVICE, CONTAINER-MANAGER, PACKAGE, FRONTEND; may be split by mutex).

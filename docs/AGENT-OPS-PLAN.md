@@ -32,7 +32,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 | 22 | OFFICE-04 | Office animation |
 | 24 | OFFICE-02 | Push updates, only if polling proves costly |
 | 25 | GOV-PRD-SYNC-01 | PRD office note and the no-scheduler principle, in Keith's words (GOV-ARCH-SYNC-01 done 2026-11-10) |
-| 26 | CM-CLEANUP-01B, CODE-TIDY-01 | The gateway preview hop-by-hop headers (01B, after RESULTS-01) and small dead-code removals (CODE-TIDY-01) (CM-CLEANUP-01 done 2026-11-10; DRIFT-FIX-01, STAGING-DEPLOY-CMAUTH-01 and CM-PREFIX-01 done 2026-11-10; staging runs 2052c36; CM-PREFIX-01 deploys with STAGING-DEPLOY-WF-01) (CM-AUTH-01 done 2026-11-10) |
+| 26 | CM-CLEANUP-01B, CODE-TIDY-01 | The gateway preview hop-by-hop headers (01B, admitted 2026-11-10, Lane 2) and small dead-code removals (CODE-TIDY-01) (CM-CLEANUP-01 done 2026-11-10; DRIFT-FIX-01, STAGING-DEPLOY-CMAUTH-01 and CM-PREFIX-01 done 2026-11-10; staging runs 2052c36; CM-PREFIX-01 deploys with STAGING-DEPLOY-WF-01) (CM-AUTH-01 done 2026-11-10) |
 
 **Stage 3 — user workflows (section 4, phase 1 continued)**
 
