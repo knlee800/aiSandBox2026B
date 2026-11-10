@@ -86402,7 +86402,7 @@ taskId=BODIES-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — Keith admitted it ("Start BODIES-LIVE-01"). Registered 2026-11-10 by the CONN-03 LOCK.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING, ENV, PROVIDER-LIVE and CREDIT released; stagingAuthorized, providerLiveAuthorized and creditAuthorized false. Staging 8e0bc55 to fbbf41d (aisandbox-deploy rc 0, no migration, configuration unchanged, all host checks pass, body excerpts and new copy in the build). Keith's briefing on claude-opus-5-5: 21,337 tokens (BIZ-LIVE-03 10,372), 27.3 s, 22 credits; mail call 25 messages, 25,564 bytes (4,533 headers only), 5.2 s of 20 (no body-phase limit needed); Keith read the copy in three languages and saw the briefed mail still unread. Runs off, env files at the baseline hashes. Checkpoint: docs/BODIES-LIVE-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Registered 2026-11-10 by the CONN-03 LOCK.
 **Task ID:** BODIES-LIVE-01
 **Title:** Deploy mail bodies and one live briefing
 **Workstream:** AGENT (taxonomy only; zero admission weight)

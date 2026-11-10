@@ -18,7 +18,6 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 
 | # | Item | What it does | Lane |
 |---|---|---|---|
-| 12 | BODIES-LIVE-01 | Deploy mail bodies (CONN-03) and the Connections page copy (CONN-COPY-01), both built 2026-11-10; one live briefing (admitted 2026-11-10) | 1 |
 
 **Stage 2, Lane 2 alongside — fixes and office**
 
