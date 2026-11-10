@@ -86483,7 +86483,7 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** Deploy of the user-workflow slices so Keith can copy, edit and run a workflow.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
-**Acceptance (added 2026-11-10 by the CM-PREFIX-01 LOCK):** the deploy carries CM-PREFIX-01; its host checks use /api/internal/billing-export/limits and /api/internal/quota-visibility/user/<id> (403 without the key, a real handler with it) and expect the old /api/api/internal/... paths to answer 404, replacing the STAGING-DEPLOY-CMAUTH-01 check of /api/api/internal/billing-export/limits.
+**Acceptance (added 2026-11-10 by the CM-PREFIX-01 LOCK):** the deploy carries CM-PREFIX-01; its host checks use /api/internal/billing-export/limits and /api/internal/quota-visibility/user/<id> (403 without the key, a real handler with it) and expect the old /api/api/internal/... paths to answer 404, replacing the STAGING-DEPLOY-CMAUTH-01 check of /api/api/internal/billing-export/limits. (Added 2026-11-10 by the CM-CLEANUP-01 LOCK) It also carries CM-CLEANUP-01: /api/executor/commands, GET /api/sessions, /api/previews/x/health and /api/internal-previews/proxy/x/ answer 404 with the key (proving no stale dist module loads), so the container-manager guard checks use other routes (for example /api/internal/stats and /api/files/x/list); a cross-origin preflight to 4002 gets no Access-Control-Allow-Origin; ai-service POST /api/messages/chat answers 404 with the key.
 
 ### BIZ-LIVE-04 — Live check of a user workflow
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -87554,7 +87554,7 @@ taskId=CM-CLEANUP-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the CM-AUTH-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 2 and its mutexes released. Result: passed. F3: orphaned proxies, executor routes and GET /api/sessions removed; one shared preview proxy (30 requests add at most one close listener; the old code added 37); remaining no-caller routes kept with reasons (guarded). F5: CORS off with a preflight test and a positive control. F4: ai-service messages module removed (write set widened at 828c98d after the worker stopped). opus subagent 86870859 and 0b7efc3b, cherry-picked as 5914d4a and 7f2be0d; control-plane rerun: container-manager 16 suites, 470 passed; ai-service 65 suites, 1296 passed, 1 skipped; builds exit 0 on main; every removed test accounted for. Not deployed. FOLLOWUPS: 1 registered (CODE-TIDY-01) / 1 superseded (old-path host checks and stale dist, by STAGING-DEPLOY-WF-01) / 0 dropped / 0 undisposed. Registered 2026-11-10 by the CM-AUTH-01 LOCK. Checkpoint: docs/CM-CLEANUP-01-CHECKPOINT.md.
 **Task ID:** CM-CLEANUP-01
 **Title:** Container-manager and preview proxy cleanups
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -87596,6 +87596,30 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (as for CM-CLEANUP-01). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From CM-AUTH-01 (Latent): the gateway preview catch-all copies container-manager's transfer-encoding header and then calls res.send; drop hop-by-hop headers (connection, keep-alive, transfer-encoding, upgrade, and the rest of RFC 9110 section 7.6.1) before replying, with a test.
+
+### CODE-TIDY-01 — Small dead-code removals left by CM-CLEANUP-01
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CODE-TIDY-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the CM-CLEANUP-01 LOCK — not admitted.
+**Task ID:** CODE-TIDY-01
+**Title:** Small dead-code removals left by CM-CLEANUP-01
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction), once the mutexes it needs are free.
+**Depends on:** CM-CLEANUP-01.
+**Primary write scope:** PROVISIONAL, set at admission (expected: services/ai-service/src/guards/internal-key-exempt.decorator.ts; services/container-manager/package.json and the lockfile; frontend/components/Timeline.tsx; container-manager previews code if the review removes it).
+**Mutexes / resources:** set at admission (expected AI-SERVICE, CONTAINER-MANAGER, PACKAGE, FRONTEND; may be split by mutex).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per item.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the CM-CLEANUP-01 worker: (1) the comment in ai-service guards/internal-key-exempt.decorator.ts still names the removed POST /api/messages/health; (2) container-manager's jsonwebtoken and @types/jsonwebtoken are unused since PreviewsController went; (3) frontend/components/Timeline.tsx is imported nowhere and calls a gateway route that does not exist (/api/git/:id/checkpoints); (4) review, keep or remove with a reason: POST /api/internal/sessions/:id/previews (no caller; feeds the browser-smoke proxy target) and container-manager files write and delete (no caller since F4).
 
 ### DRIFT-FIX-01 — Briefing drift check follows the shared version hash
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
