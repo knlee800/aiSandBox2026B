@@ -40,7 +40,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 |---|---|---|
 | 27 | MODEL-PRICE-01 | A credit price per model, when Keith sets prices (AGENT-SPEC-01 done 2026-11-10) |
 | 28 | KNOW-FOLDERS-01 | Owner-named knowledge folders (BIZ-USER-01A done 2026-11-10) |
-| 30 | BIZ-USER-01D, RUN-CUTOFF-01 | Workflow summary and switch on or off on the agent panel (01D, admitted 2026-11-10, Lane 1); a hard per-run credit cutoff when Keith wants it (BIZ-USER-01C done 2026-11-10) |
+| 30 | TEAM-PRESELECT-01, RUN-CUTOFF-01 | Open a workflow on the Team page preselected (TEAM-PRESELECT-01; BIZ-USER-01D done 2026-11-10); a hard per-run credit cutoff when Keith wants it (BIZ-USER-01C done 2026-11-10) |
 | 31 | RESULTS-01 | Results list and run history |
 | 32 | STAGING-DEPLOY-WF-01, BIZ-LIVE-04 | Deploy; Keith runs his own workflow live |
 | 33 | CONN-OAUTH-01 | Connect Google, after verification |

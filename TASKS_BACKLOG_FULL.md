@@ -86337,7 +86337,7 @@ taskId=BIZ-USER-01D
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the BIZ-USER-01C LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 1 and its mutexes released. Workflow summary, switch on or off and Open on Team on the agent panel, editor budget hint; sonnet subagent in worktree lane/BIZ-USER-01D, cherry-picked as a7bc4ad; frontend 1422 passed, tsc and build clean; not deployed. FOLLOWUPS: 1 registered (TEAM-PRESELECT-01) / 0 superseded / 0 dropped / 0 undisposed. Checkpoint: docs/BIZ-USER-01D-CHECKPOINT.md.
 **Task ID:** BIZ-USER-01D
 **Title:** Workflow summary, switch on or off, and Open on Team
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -86355,6 +86355,31 @@ nature=IMPLEMENTATION
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** The agent detail panel and dashboard card show a workflow summary (folders, model, budgets) and its state (draft, active, disabled; tested at the current version or not), a switch on or off control over PATCH /api/agents/:id status, and an Open on Team link; the editor's budget fields show lastRunCredits and spentTodayCredits from GET /api/collaboration/workflows (BIZ-USER-01C stage-start follow-up 6). en, zh-TW and zh-CN.
+
+### TEAM-PRESELECT-01 — Open a workflow on the Team page preselected
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TEAM-PRESELECT-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the BIZ-USER-01D LOCK — not admitted.
+**Task ID:** TEAM-PRESELECT-01
+**Title:** Open a workflow on the Team page preselected
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** BIZ-USER-01D.
+**Primary write scope:** frontend/components/collaboration/, frontend/components/platform/ (the Open on Team link).
+**Mutexes / resources:** FRONTEND.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** one query parameter.
+**saturationClass:** OPTIONAL (Keith may change it).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** The agent panel's Open on Team link opens /collaboration without a preselected workflow, because the Team page reads only sessionId and projectId (found by BIZ-USER-01D). The Team page reads a workflowId query parameter and preselects that workflow if the owner has it; the panel link passes it.
 
 ### RESULTS-01 — Results list, unread badge and run history
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
