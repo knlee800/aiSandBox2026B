@@ -25,7 +25,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 | # | Item | What it does |
 |---|---|---|
 | 15 | ADMIN-CSRF-01 | CSRF guard on the admin credits route |
-| 16 | HARNESS-FIXES-01C, HARNESS-FIXES-01 | Frontend test script and keyless provider (01C, admitted 2026-11-10, Lane 2); live provider proofs and the live models' output limits stay in HARNESS-FIXES-01 (01B done 2026-11-09) |
+| 16 | HARNESS-FIXES-01C, PROVIDER-KEY-01, HARNESS-FIXES-01 | Frontend test script (01C, admitted 2026-11-10, Lane 2); safe missing-key message and a working default provider (PROVIDER-KEY-01, after CONN-03 and 01C); live provider proofs and the live models' output limits stay in HARNESS-FIXES-01 (01B done 2026-11-09) |
 | 17 | BUILDER-POLISH-01 | Builder polish and hardcoded English |
 | 18 | USAGE-DATA-01 | Run duration never saved; admin quota views |
 | 19 | FE-TEST-COVERAGE-01 | Frontend test gaps |

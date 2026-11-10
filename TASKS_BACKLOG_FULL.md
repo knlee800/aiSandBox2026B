@@ -84389,16 +84389,16 @@ taskId=HARNESS-FIXES-01C
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-10 — Keith admitted it ("yes"). Registered 2026-11-09 by the HARNESS-FIXES-01 split.
+**Status:** ADMITTED — Lane 2 — 2026-11-10 — Keith admitted it ("yes"); narrowed to item 1 by Keith the same day ("Yes, both"), item 2 registered as PROVIDER-KEY-01. Registered 2026-11-09 by the HARNESS-FIXES-01 split.
 **Task ID:** HARNESS-FIXES-01C
-**Title:** Frontend harness fixes: the test script and a keyless provider after reload
+**Title:** Frontend harness fixes: the test script (the keyless provider moved to PROVIDER-KEY-01)
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
 **Start condition:** READY (Keith admitted it 2026-11-10; PACKAGE free). Was: Ready when: Keith admits it (PACKAGE free). Keith decides.
 **Depends on:** HARNESS-FIXES-01 (umbrella).
-**Primary write scope:** frontend/package.json (test script only), frontend/app/ (the workspace page that restores the model selection), frontend/components/workspace/ (the selector, the run-failure message and their tests), frontend/lib/ai/ (the provider and model catalogue and its tests), frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json. Set at admission 2026-11-10.
-**Mutexes / resources:** FRONTEND, I18N, PACKAGE.
+**Primary write scope:** frontend/package.json (test script only). Narrowed 2026-11-10; was frontend/app/, frontend/components/workspace/, frontend/lib/ai/ and the three message files as well.
+**Mutexes / resources:** FRONTEND, PACKAGE (I18N released when narrowed, 2026-11-10).
 **Hot-file leases:** none.
 **Shared contracts:** none; services/ai-service/src/worker/worker.processor.ts and services/ai-service/src/queue/job.types.ts (HARNESS_ENTITLEMENT_PROOF_V1) are not touched.
 **Evidence class:** LOCAL-TESTS.
@@ -84406,7 +84406,33 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-05, inherited from HARNESS-FIXES-01).
 **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set at admission 2026-11-10).
-**Scope:** HARNESS-FIXES-01 items 1 and 6. (1) frontend npm test also runs frontend/lib/ai/*.test.ts and the office, lib/office and hooks tests (FE-TEST-COVERAGE-01's OFFICE-06 note). (6) After a reload the model selector does not return to a provider with no key, and a run refused for a missing key says so in en, zh-TW and zh-CN instead of only 'Execution ended with status: failed'.
+**Scope:** HARNESS-FIXES-01 item 1 only since 2026-11-10; item 6 superseded by PROVIDER-KEY-01. Original text: HARNESS-FIXES-01 items 1 and 6. (1) frontend npm test also runs frontend/lib/ai/*.test.ts and the office, lib/office and hooks tests (FE-TEST-COVERAGE-01's OFFICE-06 note). (6) After a reload the model selector does not return to a provider with no key, and a run refused for a missing key says so in en, zh-TW and zh-CN instead of only 'Execution ended with status: failed'.
+**Plan:** docs/AGENT-OPS-PLAN.md section 0 item 16
+
+### PROVIDER-KEY-01 — Keyless provider: a safe missing-key message and a working default
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=PROVIDER-KEY-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the HARNESS-FIXES-01C narrowing (Keith, "Yes, both") — not admitted.
+**Task ID:** PROVIDER-KEY-01
+**Title:** Keyless provider: a safe missing-key message and a working default
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP (changes how the worker sanitises run errors).
+**Start condition:** NOT_READY. Ready when: CONN-03 and HARNESS-FIXES-01C are LOCKED (AI-SERVICE and FRONTEND free) and a stage-start is approved. Keith decides.
+**Depends on:** HARNESS-FIXES-01C.
+**Primary write scope:** PROVISIONAL, set at the stage-start: likely services/ai-service/src/ai-execution/, services/ai-service/src/worker/ (the error sanitiser), a read-only providers-available field or route in services/api-gateway/src/, frontend/app/, frontend/components/workspace/, frontend/lib/ai/ and the three message files.
+**Mutexes / resources:** set at admission; likely AI-SERVICE, GATEWAY, FRONTEND, I18N.
+**Hot-file leases:** none known.
+**Shared contracts:** none frozen; the run error code set is checked at the stage-start.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** the error code, the default choice and the message are separate changes.
+**saturationClass:** OPTIONAL (inherited from HARNESS-FIXES-01, as for HARNESS-FIXES-01C; Keith may change it).
+**productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** HARNESS-FIXES-01 item 6, moved here 2026-11-10. Found by the HARNESS-FIXES-01C worker and checked by the control plane: frontend/lib/ai/provider-model.catalogue.ts lists every provider as selectable and nothing tells the frontend which providers have a key; the selection is not stored, every load starts at FRONTEND_PRIVATE_BETA_DEFAULT_SELECTION (xai); a missing key throws a plain error in ai-execution.service.ts, and looksLikeCredential in worker.processor.ts turns any text with "key" into the generic "This step failed." with execution_failed, so the chat shows only "Execution ended with status: failed.". Wanted: a safe provider_key_missing code with a fixed safe sentence (like the provider usage limit message), shown translated in en, zh-TW and zh-CN; the default provider and model chosen from those that have a key; keyless providers not offered. The sanitiser keeps hiding real secrets.
 **Plan:** docs/AGENT-OPS-PLAN.md section 0 item 16
 
 ### BUILDER-POLISH-01 — Builder polish: History labels, error detail, preview and history behaviour
@@ -86324,7 +86350,7 @@ taskId=CONN-03
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — Keith approved the corrected record and admission ("yes"). Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — Keith approved the corrected record and admission ("yes"). Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01. Stage-start approved by Keith 2026-11-10 ("Yes, both"): docs/CONN-03-STAGE-START.md.
 **Task ID:** CONN-03
 **Title:** Mail body reads after the injection eval
 **Workstream:** AGENT (taxonomy only; zero admission weight)
