@@ -86690,7 +86690,7 @@ taskId=STAGING-DEPLOY-WS3-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — registered and admitted in one record; Keith approved the deploy ("Yes, deploy it").
+**Status:** COMPLETE AND LOCKED — 2026-11-10. Result: passed. Lane 1, STAGING and ENV released; stagingAuthorized false. 678d511 -> 8e1f8d3 (rc 0): WORKFLOW-STATUS-03; migration hash unchanged (976a9358); configuration unchanged; runs off; all standard and earlier route and security checks pass; the compiled switch-on check binds in onModuleInit (dist/src/user-agent), no strict:false lookup left, OrchestrationModule provides it; no binding error and no key text in the journals. Logged-in switch-on check superseded by the WORKFLOW-STATUS-03 live check. Checkpoint: docs/STAGING-DEPLOY-WS3-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 1 superseded / 0 dropped / 0 undisposed. Registered and admitted 2026-11-10 in one record.
 **Task ID:** STAGING-DEPLOY-WS3-01
 **Title:** Deploy the switch-on wiring and refusal message
 **Workstream:** AGENT (taxonomy only; zero admission weight)
