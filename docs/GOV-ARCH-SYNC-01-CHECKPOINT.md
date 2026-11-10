@@ -12,7 +12,7 @@
 | 1. Draft | A fable subagent drafted 45 exact old-to-new edits, read-only, each citing its task, checkpoint or code file:line (uniqueness checked by script) | scratchpad only |
 | 2. Apply and LOCK | The control plane rechecked every edit against main and applied them, added two rows for BIZ-USER-01A, and wrote this checkpoint and the records | this record |
 
-## What changed in ARCHITECTURE.md (47 edits, 1158 → 1217 lines)
+## What changed in ARCHITECTURE.md (47 edits, 1158 → 1214 lines)
 
 - **Authority notice:** a bounded-sync line for 2026-11-10.
 - **Hard constraints:** collaboration is CURRENT, gated per user and owner-approved. OrchestrationService is PostgreSQL-backed and reachable through `/api/internal/collaboration` and the gated `/api/collaboration`. It is no longer in-memory or unreachable.
