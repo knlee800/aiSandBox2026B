@@ -86245,15 +86245,15 @@ taskId=BIZ-USER-01B
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** BIZ-USER-01B
 **Title:** Create Agent editor for user workflows
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP
-**Start condition:** NOT_READY. Ready when: 01A LOCKED. Keith decides.
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: 01A LOCKED. Keith decides.
 **Depends on:** BIZ-USER-01A.
-**Primary write scope:** frontend/components/platform/, frontend/hooks/useUserAgents.ts, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json.
+**Primary write scope:** frontend/components/platform/, frontend/hooks/useUserAgents.ts, frontend/hooks/useUserAgents.test.ts (added at admission 2026-11-10), frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json.
 **Mutexes / resources:** FRONTEND, I18N.
 **Hot-file leases:** none.
 **Shared contracts:** none.
@@ -86261,7 +86261,7 @@ nature=IMPLEMENTATION
 **Revert isolation:** editor.
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set at admission 2026-11-10).
 **Scope:** Implementation slice of BIZ-USER-01. Create Agent editor for basic and advanced fields, limits shown, model with its credit cost (C10), in en, zh-TW and zh-CN (C8).
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
 
@@ -87287,23 +87287,23 @@ taskId=AI-SERVICE-AUTH-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the plan item 26 security review (docs/SECURITY-CHECK-26-REVIEW.md) — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the plan item 26 security review (docs/SECURITY-CHECK-26-REVIEW.md) — not admitted.
 **Task ID:** AI-SERVICE-AUTH-01
 **Title:** Internal services listen on loopback and check the internal key
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP (security).
-**Start condition:** NOT_READY. Ready when: a stage-start is approved; GATEWAY free for the client half. Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: a stage-start is approved; GATEWAY free for the client half. Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** none.
-**Primary write scope:** PROVISIONAL: services/ai-service/src/main.ts and its controllers' guard, services/container-manager/src/main.ts, services/api-gateway/src (the ai-service client sends the internal key; a constant-time key compare), and the deploy unit or env if the bind address is configured there.
-**Mutexes / resources:** set at admission (expected AI-SERVICE, CONTAINER-MANAGER, GATEWAY; STAGING and ENV for the deploy).
+**Primary write scope:** set at admission 2026-11-10: services/ai-service/src/ (bind address and a guard on its routes), services/container-manager/src/main.ts (bind address), services/api-gateway/src/ (the ai-service client sends the internal key; constant-time key compare). The staging deploy and any unit or env change are a separate registered step after the code locks.
+**Mutexes / resources:** GATEWAY, AI-SERVICE, CONTAINER-MANAGER.
 **Hot-file leases:** none known.
 **Shared contracts:** the internal service key header (checked at the stage-start).
 **Evidence class:** LOCAL-TESTS (then a deploy with host checks).
 **Revert isolation:** bind address and guard, per service.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it).
 **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set at admission 2026-11-10).
 **Scope:** Found by the item 26 review and confirmed read-only on the staging host 2026-11-10 (C:/Users/knlee/aisb-preflight/SEC-26/sec26-ports.out): the gateway (4000), ai-service (4001) and container-manager (4002) listen on all interfaces, ufw is inactive and iptables INPUT is ACCEPT; only the Lightsail firewall (recorded as 80, 443 and SSH from Keith's home address) keeps them off the internet; Caddy proxies to 127.0.0.1. ai-service has no guard on any route (anyone reaching 4001 can add or read session messages, clear conversations and start provider runs). Wanted: ai-service and container-manager listen on 127.0.0.1 (after confirming every caller is on the host; sandbox containers included), the gateway too if Caddy is its only client; ai-service routes require the internal service key, which the gateway's ai-service client then sends; the gateway's internal-key compare becomes constant-time. Then a staging deploy that checks the listening addresses.
 
 ### STAGING-DEPLOY-FD-01 — Deploy the front door (phase 2)

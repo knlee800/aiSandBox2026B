@@ -32,7 +32,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 | 22 | OFFICE-04 | Office animation |
 | 24 | OFFICE-02 | Push updates, only if polling proves costly |
 | 25 | GOV-ARCH-SYNC-01 | ARCHITECTURE.md caught up with what is built |
-| 26 | AI-SERVICE-AUTH-01 | Internal services on loopback and the internal key on ai-service (from the item 26 review 2026-11-10: all six concerns COVERED, docs/SECURITY-CHECK-26-REVIEW.md) |
+| 26 | AI-SERVICE-AUTH-01 (admitted 2026-11-10, Lane 2) | Internal services on loopback and the internal key on ai-service (from the item 26 review 2026-11-10: all six concerns COVERED, docs/SECURITY-CHECK-26-REVIEW.md) |
 
 **Stage 3 — user workflows (section 4, phase 1 continued)**
 
@@ -40,7 +40,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 |---|---|---|
 | 27 | MODEL-PRICE-01 | A credit price per model, when Keith sets prices (AGENT-SPEC-01 done 2026-11-10) |
 | 28 | KNOW-FOLDERS-01 | Owner-named knowledge folders (BIZ-USER-01A done 2026-11-10) |
-| 29 | BIZ-USER-01B | Create Agent editor |
+| 29 | BIZ-USER-01B | Create Agent editor (admitted 2026-11-10, Lane 1) |
 | 30 | BIZ-USER-01C | Run a workflow, test run, budget check |
 | 31 | RESULTS-01 | Results list and run history |
 | 32 | STAGING-DEPLOY-WF-01, BIZ-LIVE-04 | Deploy; Keith runs his own workflow live |
