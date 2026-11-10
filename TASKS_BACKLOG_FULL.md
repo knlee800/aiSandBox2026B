@@ -87971,7 +87971,7 @@ taskId=STAGING-DEPLOY-CMSEC-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — Keith approved the deploy ("Yes, deploy it"). Was: READY — registered 2026-11-10 by the CM-GIT-HOST-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. Result: passed (host checks). Lane 1, STAGING and ENV released; stagingAuthorized false. 8e1f8d3 -> f423859 (rc 0): CM-PATH-01, CM-SYMLINK-01, CM-GIT-HOST-01, CM-HISTORY-LINK-01; migration hash unchanged (976a9358); configuration unchanged; runs off; standard and earlier route and security checks pass; with the key the nine removed host-side routes (POST /api/sessions, git init and history, six /api/files routes) answer 404 and a dot-dot session id answers 400 (403 without the key); compiled container-manager has SessionIdPipe and the history fix (O_EXCL, base64 slices, no copyFile, no simple-git); no key text. Keith checkpoint live smoke registered as CHECKPOINT-LIVE-01. Checkpoint: docs/STAGING-DEPLOY-CMSEC-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (CHECKPOINT-LIVE-01) / 0 superseded / 0 dropped / 0 undisposed. Registered 2026-11-10 by the CM-GIT-HOST-01 LOCK.
 **Task ID:** STAGING-DEPLOY-CMSEC-01
 **Title:** Deploy the container-manager security fixes
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -87989,6 +87989,30 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** Deploy main to staging from the host with runs off (8e1f8d3 to the current main): CM-PATH-01, CM-SYMLINK-01, CM-GIT-HOST-01. No migration expected. Host checks: the standard set and the earlier route and security checks; with the key, POST /api/sessions, POST /api/git/x/init, GET /api/git/x/history and the six /api/files routes answer 404 (stale dist files not loaded); a %2E%2E session id answers 400; no simple-git in the compiled container-manager services; the gateway still starts sessions (a session start and stop through the gateway only if Keith wants a live check).
 **Acceptance (added 2026-11-10 by the CM-HISTORY-LINK-01 LOCK):** the deploy also carries CM-HISTORY-LINK-01 (checkpoint history streamed out of the container on save, exclusive no-follow staging on restore). Checkpoint live smoke (Keith in a workspace session, no AI runs needed): a checkpoint stores projects/_checkpoint-history/<projectId>.bundle and git bundle verify passes on it, with no aisb-history.bundle left in .git; reopening the project in a new session restores the same HEAD and checkpoint list with no .aisb-history-restore.bundle left; a bundle over 8 MiB still saves and restores; optionally a link planted at /workspace/.aisb-history-restore.bundle leaves its target unchanged. Ready when also CM-HISTORY-LINK-01 LOCKED.
+
+### CHECKPOINT-LIVE-01 — Keith checkpoint save and restore smoke on staging
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHECKPOINT-LIVE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the STAGING-DEPLOY-CMSEC-01 LOCK — not admitted.
+**Task ID:** CHECKPOINT-LIVE-01
+**Title:** Keith checkpoint save and restore smoke on staging
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (he runs the browser steps).
+**Depends on:** STAGING-DEPLOY-CMSEC-01.
+**Primary write scope:** records; host reads.
+**Mutexes / resources:** STAGING (read-only host checks).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** none needed (no change).
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** FLOWS 5 live smoke for CM-HISTORY-LINK-01 on staging f423859, no AI runs needed: Keith opens a workspace session, makes a checkpoint, then reopens the project in a new session and sees the same checkpoints and HEAD. The control plane then checks from the host: projects/_checkpoint-history/<projectId>.bundle exists and git bundle verify passes on it in a container; no aisb-history.bundle in .git and no .aisb-history-restore.bundle in the workspace; optionally a bundle over 8 MiB.
 
 ### BROWSER-SMOKE-01 — Browser smoke never finds a preview target
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
