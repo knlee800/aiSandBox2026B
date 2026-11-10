@@ -87851,7 +87851,7 @@ taskId=CM-PATH-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the CODE-TIDY-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 1 and its mutexes released. Result: passed. New files/path-containment.ts (isPathInside, isSinglePathSegment); FilesService.validatePath uses isPathInside; SessionsService.getWorkspacePath, deleteSession and startSessionContainer check the session id first; other containment checks reviewed and left with reasons; 21 new tests, with a mutation check; opus subagent ed662d1, fast-forwarded onto main; control-plane rerun: container-manager 18 suites, 491 passed, build 0. Not deployed. FOLLOWUPS: 1 registered (CM-SYMLINK-01) / 1 superseded (controller-layer id validation, into CM-SYMLINK-01) / 0 dropped / 0 undisposed. Was admitted 2026-11-10. Checkpoint: docs/CM-PATH-01-CHECKPOINT.md.
 **Task ID:** CM-PATH-01
 **Title:** Container-manager workspace path check accepts sibling workspaces
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -87868,6 +87868,30 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set at admission 2026-11-10).
 **Scope:** From the CODE-TIDY-01 worker, confirmed by the control plane: FilesService.validatePath (services/container-manager/src/files/files.service.ts:427) checks resolvedPath.startsWith(resolvedWorkspace) with no separator, so a path such as ../<sessionId>X/file is accepted for a sibling workspace whose name starts with the same session id; all six /api/files routes use it (guarded by the internal key since CM-AUTH-01, so only a key holder could use it). Compare against the workspace plus path.sep (or use path.relative and refuse a leading ..), check every other path check in container-manager (git, preview, internal sessions files) for the same pattern, and add tests for the sibling-prefix case.
+
+### CM-SYMLINK-01 — Container-manager host file routes follow symlinks
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CM-SYMLINK-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the CM-PATH-01 LOCK — not admitted.
+**Task ID:** CM-SYMLINK-01
+**Title:** Container-manager host file routes follow symlinks
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction); a security fix.
+**Depends on:** CM-PATH-01.
+**Primary write scope:** PROVISIONAL: services/container-manager/src/ (files module, sessions controller, tests).
+**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the CM-PATH-01 worker, checked by the control plane: FilesService (the host-side /api/files/:sessionId/* routes) follows symlinks with readFile, writeFile, stat and mkdir; the workspace is bind-mounted into the sandbox, so code there could create a symlink to / and a key holder could then read or write host files through these routes. No gateway or ai-service code calls /api/files/* (the gateway uses the container-side /api/internal/sessions/:id/files), so only a direct key holder could reach it. Recommended: remove the uncalled host-side /api/files routes (and their inventory entries, with removed-route tests); otherwise check the realpath of the target and of the nearest existing parent against the workspace realpath. Also (superseded from CM-PATH-01): validate the :id session parameter at the controller layer for every session route.
 
 ### BROWSER-SMOKE-01 — Browser smoke never finds a preview target
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
