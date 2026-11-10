@@ -1,5 +1,11 @@
 import { UserAgentController } from '../user-agent.controller';
-import { UserAgentService } from '../user-agent.service';
+import { UserAgentService, userWorkflowBadRequest } from '../user-agent.service';
+import { UserAgent } from '../../entities/user-agent.entity';
+import { USER_WORKFLOW_RULES } from '../user-workflow-rules';
+import { CALENDAR_TOOL_ID, MAIL_TOOL_ID } from '../../connectors/connector-servers';
+import { KNOWLEDGE_SCOPES } from '../../knowledge/knowledge-scopes';
+import { PLATFORM_MODELS } from '../../system-agents/platform-models';
+import { renderAgentInstructions } from '../../system-agents/system-agent-registry';
 import { SessionCookieGuard } from '../../auth/session-cookie.guard';
 import {
   INestApplication,
@@ -33,7 +39,7 @@ describe('UserAgentController', () => {
 
   const now = new Date('2026-07-20T10:00:00.000Z');
 
-  const makeAgent = (overrides: Record<string, any> = {}) => ({
+  const makeAgent = (overrides: Record<string, any> = {}): UserAgent => ({
     id: 'agent-uuid-001',
     userId: mockUserA.userId,
     name: 'Research Assistant',
@@ -41,12 +47,24 @@ describe('UserAgentController', () => {
     description: 'A specialized agent for research tasks.',
     status: 'active',
     initials: 'RA',
+    tone: null,
+    replyLanguage: null,
+    purpose: '',
+    procedure: '',
+    result: '',
+    toolProfile: 'read',
+    knowledgeScopeIds: [],
+    connectorToolIds: [],
+    model: { choice: 'server' },
+    budgetPerRunCredits: null,
+    budgetPerDayCredits: null,
+    templateId: null,
     createdAt: now,
     updatedAt: now,
     deletedAt: null,
     user: undefined as any,
     ...overrides,
-  });
+  }) as UserAgent;
 
   beforeEach(() => {
     service = {
@@ -54,6 +72,10 @@ describe('UserAgentController', () => {
       listByUserId: jest.fn(),
       findOneByIdAndUserId: jest.fn(),
       deleteByIdAndUserId: jest.fn(),
+      createFromTemplate: jest.fn(),
+      update: jest.fn(),
+      ownerConnectionKinds: jest.fn().mockResolvedValue(new Set<string>()),
+      platformDailyCreditsPerUser: jest.fn().mockReturnValue(500),
     } as any;
 
     controller = new UserAgentController(service);
@@ -110,7 +132,8 @@ describe('UserAgentController', () => {
         description: 'A specialized agent for research tasks.',
       });
 
-      expect(result).toEqual({
+      // BIZ-USER-01A: today's eight keys keep their values; the workflow keys are added.
+      expect(result).toMatchObject({
         id: 'agent-uuid-001',
         name: 'Research Assistant',
         role: 'Gathers and synthesizes information',
@@ -618,15 +641,32 @@ describe('UserAgentController', () => {
         })
         .expect(201);
 
+      // BIZ-USER-01A D9: today's eight keys plus the workflow keys, nothing else.
       const keys = Object.keys(response.body).sort();
       expect(keys).toEqual([
+        'budgetPerDayCredits',
+        'budgetPerRunCredits',
+        'connectorToolIds',
         'createdAt',
         'description',
+        'grants',
         'id',
         'initials',
+        'instructionsChars',
+        'knowledgeScopeIds',
+        'maxInstructionsChars',
+        'model',
         'name',
+        'neverDo',
+        'procedure',
+        'purpose',
+        'replyLanguage',
+        'result',
         'role',
         'status',
+        'templateId',
+        'tone',
+        'toolProfile',
         'updatedAt',
       ]);
     });
@@ -646,6 +686,318 @@ describe('UserAgentController', () => {
       expect(resultStr).not.toContain('knowledgeScopes');
       expect(resultStr).not.toContain('stripe');
       expect(resultStr).not.toContain('secret');
+    });
+
+    // -------------------------------------------------------------------------
+    // BIZ-USER-01A: workflow routes
+    // -------------------------------------------------------------------------
+
+    describe('BIZ-USER-01A workflow routes', () => {
+      const legacyEightKeys = {
+        id: 'agent-uuid-001',
+        name: 'Research Assistant',
+        role: 'Gathers and synthesizes information',
+        description: 'A specialized agent for research tasks.',
+        status: 'active',
+        initials: 'RA',
+        createdAt: '2026-07-20T10:00:00.000Z',
+        updatedAt: '2026-07-20T10:00:00.000Z',
+      };
+
+      it('POST /api/agents with the legacy three-field body returns 201 and the same eight values', async () => {
+        await buildApp();
+        service.create.mockResolvedValue(makeAgent());
+
+        const response = await request(app!.getHttpServer())
+          .post('/api/agents')
+          .send({
+            name: 'Research Assistant',
+            role: 'Gathers and synthesizes information',
+            description: 'A specialized agent for research tasks.',
+          })
+          .expect(201);
+
+        expect(service.create).toHaveBeenCalledWith(mockUserA.userId, {
+          name: 'Research Assistant',
+          role: 'Gathers and synthesizes information',
+          description: 'A specialized agent for research tasks.',
+        });
+        for (const [key, value] of Object.entries(legacyEightKeys)) {
+          expect(response.body[key]).toEqual(value);
+        }
+        expect(response.body).toMatchObject({
+          tone: null,
+          replyLanguage: null,
+          purpose: '',
+          procedure: '',
+          result: '',
+          toolProfile: 'read',
+          knowledgeScopeIds: [],
+          connectorToolIds: [],
+          model: { choice: 'server' },
+          budgetPerRunCredits: null,
+          budgetPerDayCredits: null,
+          templateId: null,
+          maxInstructionsChars: 4000,
+        });
+      });
+
+      it('the response carries neverDo, grants and instructionsChars, but not the prompt', async () => {
+        await buildApp();
+        service.ownerConnectionKinds.mockResolvedValue(new Set(['ical']));
+        service.findOneByIdAndUserId.mockResolvedValue(
+          makeAgent({
+            purpose: 'Plan my day.',
+            knowledgeScopeIds: ['policies', 'strategy-docs'],
+            connectorToolIds: [MAIL_TOOL_ID, CALENDAR_TOOL_ID],
+            templateId: 'chief-of-staff',
+          }),
+        );
+
+        const response = await request(app!.getHttpServer())
+          .get('/api/agents/agent-uuid-001')
+          .expect(200);
+
+        expect(service.ownerConnectionKinds).toHaveBeenCalledWith(mockUserA.userId);
+        expect(response.body.grants).toEqual({
+          toolProfile: 'read',
+          knowledgeScopeIds: ['strategy-docs', 'policies'],
+          connectorToolIds: [CALENDAR_TOOL_ID],
+          dropped: {
+            toolProfile: null,
+            knowledgeScopeIds: [],
+            connectorToolIds: [],
+            missingConnections: [{ toolId: MAIL_TOOL_ID, kind: 'imap' }],
+          },
+        });
+        expect(response.body.neverDo).toEqual([
+          { code: 'FILES_NO_CHANGE' },
+          { code: 'MAIL_READ_ONLY' },
+          { code: 'CALENDAR_READ_ONLY' },
+          { code: 'KNOWLEDGE_ONLY_SCOPES', scopeIds: ['strategy-docs', 'policies'] },
+          { code: 'EXTERNAL_ACTIONS_NONE' },
+          { code: 'DECISIONS_OWNER' },
+          { code: 'ACCESS_FIXED' },
+        ]);
+        expect(response.body.instructionsChars).toBe(
+          renderAgentInstructions({
+            tone: null,
+            replyLanguage: null,
+            purpose: 'Plan my day.',
+            procedure: '',
+            result: '',
+            rules: USER_WORKFLOW_RULES,
+          }).length,
+        );
+        expect(response.body).not.toHaveProperty('instructions');
+        expect(response.body).not.toHaveProperty('rules');
+        expect(JSON.stringify(response.body)).not.toContain('Suggest, never decide');
+      });
+
+      it('GET /api/agents/options returns the editor options and is not shadowed by :id', async () => {
+        await buildApp();
+        service.ownerConnectionKinds.mockResolvedValue(new Set(['ical', 'imap']));
+
+        const response = await request(app!.getHttpServer())
+          .get('/api/agents/options')
+          .expect(200);
+
+        expect(service.findOneByIdAndUserId).not.toHaveBeenCalled();
+        expect(service.ownerConnectionKinds).toHaveBeenCalledWith(mockUserA.userId);
+        expect(response.body).toEqual({
+          replyLanguages: ['owner', 'en', 'zh-TW', 'zh-CN'],
+          toolProfiles: ['read'],
+          knowledgeScopes: KNOWLEDGE_SCOPES.map((scope) => ({ id: scope.id, type: scope.type })),
+          connectorTools: [
+            { id: MAIL_TOOL_ID, kind: 'imap' },
+            { id: CALENDAR_TOOL_ID, kind: 'ical' },
+          ],
+          connectedKinds: ['ical', 'imap'],
+          models: PLATFORM_MODELS.map((model) => ({ ...model })),
+          templates: ['chief-of-staff'],
+          limits: {
+            maxInstructionsChars: 4000,
+            maxToneChars: 120,
+            maxKnowledgeScopes: 9,
+            maxBudgetCredits: 1000000,
+            platformDailyCreditsPerUser: 500,
+          },
+        });
+        expect(response.body.knowledgeScopes).toHaveLength(9);
+      });
+
+      it('POST /api/agents/from-template returns 201 with the copied workflow', async () => {
+        await buildApp();
+        service.createFromTemplate.mockResolvedValue(
+          makeAgent({ templateId: 'chief-of-staff', connectorToolIds: [MAIL_TOOL_ID, CALENDAR_TOOL_ID] }),
+        );
+
+        const response = await request(app!.getHttpServer())
+          .post('/api/agents/from-template')
+          .send({
+            templateId: 'chief-of-staff',
+            name: 'My briefing',
+            role: 'Chief of Staff',
+            purpose: 'smuggled',
+            rules: 'smuggled',
+            userId: 'attacker-id',
+          })
+          .expect(201);
+
+        expect(service.createFromTemplate).toHaveBeenCalledWith(mockUserA.userId, {
+          templateId: 'chief-of-staff',
+          name: 'My briefing',
+          role: 'Chief of Staff',
+        });
+        expect(service.create).not.toHaveBeenCalled();
+        expect(response.body.templateId).toBe('chief-of-staff');
+        expect(response.body.grants.connectorToolIds).toEqual([]);
+      });
+
+      it.each([
+        [{ templateId: 'product-strategy', name: 'A', role: 'B' }],
+        [{ templateId: 'chief-of-staff', role: 'B' }],
+        [{ name: 'A', role: 'B' }],
+      ])('POST /api/agents/from-template returns 400 for %j', async (body) => {
+        await buildApp();
+
+        await request(app!.getHttpServer())
+          .post('/api/agents/from-template')
+          .send(body)
+          .expect(400);
+
+        expect(service.createFromTemplate).not.toHaveBeenCalled();
+      });
+
+      it('POST /api/agents/from-template passes a service refusal code through', async () => {
+        await buildApp();
+        service.createFromTemplate.mockRejectedValue(
+          userWorkflowBadRequest('TEMPLATE_NOT_ALLOWED', 'This template cannot be copied.'),
+        );
+
+        const response = await request(app!.getHttpServer())
+          .post('/api/agents/from-template')
+          .send({ templateId: 'chief-of-staff', name: 'A', role: 'B' })
+          .expect(400);
+
+        expect(response.body.code).toBe('TEMPLATE_NOT_ALLOWED');
+      });
+
+      it('POST /api/agents passes the workflow fields to the service, minus rules', async () => {
+        await buildApp();
+        service.create.mockResolvedValue(makeAgent());
+
+        await request(app!.getHttpServer())
+          .post('/api/agents')
+          .send({
+            name: 'A',
+            role: 'B',
+            description: 'C',
+            purpose: 'Plan.',
+            knowledgeScopeIds: ['policies'],
+            connectorToolIds: [CALENDAR_TOOL_ID],
+            model: { choice: 'platform', id: 'claude-opus-5-5' },
+            budgetPerRunCredits: 5,
+            rules: 'smuggled',
+            templateId: 'chief-of-staff',
+          })
+          .expect(201);
+
+        const dto = service.create.mock.calls[0][1];
+        expect(dto).toEqual({
+          name: 'A',
+          role: 'B',
+          description: 'C',
+          purpose: 'Plan.',
+          knowledgeScopeIds: ['policies'],
+          connectorToolIds: [CALENDAR_TOOL_ID],
+          model: { choice: 'platform', id: 'claude-opus-5-5' },
+          budgetPerRunCredits: 5,
+        });
+      });
+
+      it.each([
+        [{ toolProfile: 'admin' }],
+        [{ replyLanguage: 'fr' }],
+        [{ knowledgeScopeIds: 'policies' }],
+        [{ connectorToolIds: ['a', 'b', 'c'] }],
+        [{ budgetPerRunCredits: 0 }],
+        [{ budgetPerDayCredits: 1000001 }],
+        [{ model: 'server' }],
+        [{ procedure: 'p'.repeat(4001) }],
+        [{ tone: 't'.repeat(121) }],
+      ])('POST /api/agents returns 400 for the shape %j', async (extra) => {
+        await buildApp();
+
+        await request(app!.getHttpServer())
+          .post('/api/agents')
+          .send({ name: 'A', role: 'B', description: 'C', ...extra })
+          .expect(400);
+
+        expect(service.create).not.toHaveBeenCalled();
+      });
+
+      it('PATCH /api/agents/:id returns 200 with the saved row', async () => {
+        await buildApp();
+        service.update.mockResolvedValue(makeAgent({ name: 'Renamed', procedure: 'Step one.' }));
+
+        const response = await request(app!.getHttpServer())
+          .patch('/api/agents/agent-uuid-001')
+          .send({ name: 'Renamed', procedure: 'Step one.', tone: null, rules: 'x', templateId: 'y' })
+          .expect(200);
+
+        expect(service.update).toHaveBeenCalledWith('agent-uuid-001', mockUserA.userId, {
+          name: 'Renamed',
+          procedure: 'Step one.',
+          tone: null,
+        });
+        expect(response.body.name).toBe('Renamed');
+        expect(response.body.procedure).toBe('Step one.');
+        expect(response.body).toHaveProperty('grants');
+      });
+
+      it('PATCH /api/agents/:id returns 404 for another owner', async () => {
+        await buildApp({ user: mockUserB });
+        service.update.mockRejectedValue(new NotFoundException());
+
+        const response = await request(app!.getHttpServer())
+          .patch('/api/agents/agent-uuid-001')
+          .send({ name: 'Taken' })
+          .expect(404);
+
+        expect(service.update).toHaveBeenCalledWith('agent-uuid-001', mockUserB.userId, {
+          name: 'Taken',
+        });
+        expect(response.status).not.toBe(403);
+      });
+
+      it.each([[{ name: null }], [{ purpose: null }], [{ toolProfile: null }], [{ status: 'gone' }]])(
+        'PATCH /api/agents/:id returns 400 for %j',
+        async (body) => {
+          await buildApp();
+
+          await request(app!.getHttpServer())
+            .patch('/api/agents/agent-uuid-001')
+            .send(body)
+            .expect(400);
+
+          expect(service.update).not.toHaveBeenCalled();
+        },
+      );
+
+      it.each([
+        ['get', '/api/agents/options'],
+        ['post', '/api/agents/from-template'],
+        ['patch', '/api/agents/agent-uuid-001'],
+      ] as const)('%s %s without a session returns 401', async (method, path) => {
+        await buildApp({ unauthenticated: true });
+
+        await request(app!.getHttpServer())[method](path).send({}).expect(401);
+
+        expect(service.ownerConnectionKinds).not.toHaveBeenCalled();
+        expect(service.createFromTemplate).not.toHaveBeenCalled();
+        expect(service.update).not.toHaveBeenCalled();
+      });
     });
   });
 
