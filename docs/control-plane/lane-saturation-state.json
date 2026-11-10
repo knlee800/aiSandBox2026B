@@ -7,17 +7,17 @@
   "governance": {"owner": "NONE", "state": "UNOWNED"},
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
+      "state": "ACTIVE",
+      "taskId": "STAGING-DEPLOY-WS3-01",
+      "mutexes": ["STAGING", "ENV"],
       "writePaths": [],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "STAGING-RUNTIME",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
-      "runtimeNeeds": []
+      "runtimeNeeds": ["STAGING"]
     },
     "lane2": {
       "state": "EMPTY",
@@ -4451,6 +4451,28 @@
       "writeSetPrecision": "EXACT"
     },
     {
+      "taskId": "STAGING-DEPLOY-WS3-01",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "3-STEP",
+      "status": "ADMITTED",
+      "startCondition": "READY",
+      "saturationClass": "OPTIONAL",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": ["WORKFLOW-STATUS-03"],
+      "mutexes": ["STAGING", "ENV"],
+      "writePaths": [],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "STAGING-RUNTIME",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": ["STAGING"],
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
+    },
+    {
       "taskId": "STAGING-DEPLOY-WFC-01",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
@@ -6804,7 +6826,7 @@
   ],
   "runtimeAuthorization": {
     "localRuntimeAuthorized": true,
-    "stagingAuthorized": false,
+    "stagingAuthorized": true,
     "providerLiveAuthorized": false,
     "creditAuthorized": false,
     "testerWindowOpen": false

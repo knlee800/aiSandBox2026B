@@ -86684,6 +86684,30 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set at admission 2026-11-10).
 **Scope:** From the WORKFLOW-STATUS-02 worker: (1) frontend/hooks/useUserAgents.ts saveUserAgentRequest passes the server code only on a 400, so a 409 WORKFLOW_NOT_TESTED switch-on refusal shows the generic error until the summary reload; pass the code on a 409 too (one line, with a test). (2) Optional cleanup: OrchestrationModule binds the USER_WORKFLOW_SWITCH_ON_CHECK port as a provider instead of the ModuleRef lookup in user-workflow-switch-on.ts. (3) Design question for Keith: whether a draft card body should look different from an off card (only the badge differs today). (Admission 2026-11-10) Items 1 and 2 only; item 3 dropped by Keith ("Keep as is").
 
+### STAGING-DEPLOY-WS3-01 — Deploy the switch-on wiring and refusal message
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-WS3-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — registered and admitted in one record; Keith approved the deploy ("Yes, deploy it").
+**Task ID:** STAGING-DEPLOY-WS3-01
+**Title:** Deploy the switch-on wiring and refusal message
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** READY (WORKFLOW-STATUS-03 LOCKED; Keith approved 2026-11-10).
+**Depends on:** WORKFLOW-STATUS-03.
+**Primary write scope:** records; host state.
+**Mutexes / resources:** STAGING, ENV (ENV held, not changed).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** redeploy 678d511.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy main to staging from the host with runs off (678d511 to the current main): WORKFLOW-STATUS-03. No migration expected (hash 976a9358 unchanged). Host checks: the standard set, the earlier route and security checks, UserWorkflowSwitchOnSlot and the bound check in the gateway build, and no binding error in the gateway journal. Keith's browser check (switch-on refused until tested, with Run a test first at once) when he next opens staging.
+
 ### STAGING-DEPLOY-WFC-01 — Deploy the workflow draft and switch-on fixes
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=STAGING-DEPLOY-WFC-01
