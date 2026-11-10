@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UserAgent } from '../../entities/user-agent.entity';
@@ -19,6 +19,8 @@ import {
   CollaborationWorkflowService,
   renderWorkflow,
 } from '../../orchestration/collaboration-workflow';
+import { USER_WORKFLOW_SWITCH_ON_CHECK } from '../user-workflow-switch-on.port';
+import { assertWorkflowCanSwitchOn } from '../user-workflow-switch-on';
 
 describe('UserAgentService', () => {
   let service: UserAgentService;
@@ -34,6 +36,7 @@ describe('UserAgentService', () => {
   };
 
   let connectionRepository: { find: jest.Mock };
+  let switchOnCheck: { assertCanSwitchOn: jest.Mock };
 
   const ownerUserId = 'user-a-uuid-111';
   const otherUserId = 'user-b-uuid-222';
@@ -51,6 +54,7 @@ describe('UserAgentService', () => {
       softRemove: jest.fn(),
     };
     connectionRepository = { find: jest.fn().mockResolvedValue([]) };
+    switchOnCheck = { assertCanSwitchOn: jest.fn().mockResolvedValue(undefined) };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -63,6 +67,7 @@ describe('UserAgentService', () => {
           provide: getRepositoryToken(ConnectorConnection),
           useValue: connectionRepository,
         },
+        { provide: USER_WORKFLOW_SWITCH_ON_CHECK, useValue: switchOnCheck },
       ],
     }).compile();
 
@@ -285,11 +290,22 @@ describe('UserAgentService', () => {
       );
       const start = (testRun: boolean) =>
         workflows.prepareStart({ userId: ownerUserId, workflowId: copy.id, testRun });
+      // WORKFLOW-STATUS-02: the server's switch-on check reads the same tested versions.
+      switchOnCheck.assertCanSwitchOn.mockImplementation((userId: string, row: UserAgent) =>
+        assertWorkflowCanSwitchOn(userId, row, (owner, id) => workflows.usageFor(owner, id)),
+      );
 
       await expect(start(true)).resolves.toMatchObject({ workflow: { testRun: true } });
       await expect(start(false)).rejects.toMatchObject({
         response: { code: 'WORKFLOW_NOT_TESTED' },
       });
+      // Before a test, switching on is refused and nothing is saved.
+      const savesBefore = userAgentRepository.save.mock.calls.length;
+      await expect(
+        service.update(copy.id, ownerUserId, { status: 'active' }),
+      ).rejects.toMatchObject({ status: 409, response: { code: 'WORKFLOW_NOT_TESTED' } });
+      expect(userAgentRepository.save.mock.calls.length).toBe(savesBefore);
+      expect(rows.get(copy.id)!.status).toBe('draft');
 
       // A completed test run at the current version: the draft is tested but still test-only.
       const version = renderWorkflow(copy)!.version;
@@ -690,6 +706,195 @@ describe('UserAgentService', () => {
         await expect(service.create(ownerUserId, legacyBody)).rejects.toThrow('db down');
         expect(userAgentRepository.save).not.toHaveBeenCalled();
       });
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // WORKFLOW-STATUS-02: switching on is checked by the server
+  // ---------------------------------------------------------------------------
+
+  describe('WORKFLOW-STATUS-02 switch-on checked by the server', () => {
+    let rows: Map<string, UserAgent>;
+    let tested: Set<string>;
+    let usageReads: number;
+
+    const row = (overrides: Record<string, unknown> = {}): UserAgent =>
+      ({
+        id: agentId,
+        userId: ownerUserId,
+        name: 'Morning helper',
+        role: 'Briefs me',
+        description: 'Card text',
+        status: 'draft',
+        initials: 'MH',
+        tone: null,
+        replyLanguage: null,
+        purpose: 'Help me.',
+        procedure: 'Read the folder.',
+        result: 'A short note.',
+        toolProfile: 'read',
+        knowledgeScopeIds: ['policies'],
+        connectorToolIds: [],
+        model: { choice: 'server' },
+        budgetPerRunCredits: null,
+        budgetPerDayCredits: null,
+        templateId: null,
+        ...overrides,
+      }) as unknown as UserAgent;
+
+    const versionOf = (value: UserAgent): string => renderWorkflow(value)!.version;
+
+    beforeEach(() => {
+      rows = new Map();
+      tested = new Set();
+      usageReads = 0;
+      userAgentRepository.save.mockImplementation(async (value) => {
+        rows.set(value.id, { ...value });
+        return { ...value };
+      });
+      userAgentRepository.findOne.mockImplementation(
+        async ({ where }: { where: { id: string; userId: string } }) => {
+          const stored = rows.get(where.id);
+          return stored && stored.userId === where.userId ? { ...stored } : null;
+        },
+      );
+      // The real rule, with the tested versions read from this set.
+      switchOnCheck.assertCanSwitchOn.mockImplementation((userId: string, value: UserAgent) =>
+        assertWorkflowCanSwitchOn(userId, value, async (owner, id) => {
+          usageReads += 1;
+          expect(owner).toBe(ownerUserId);
+          expect(id).toBe(agentId);
+          return { testedVersions: tested };
+        }),
+      );
+    });
+
+    it.each(['draft', 'disabled', 'unknown-status'])(
+      'refuses switching on an untested %s row with 409 WORKFLOW_NOT_TESTED and saves nothing',
+      async (status) => {
+        rows.set(agentId, row({ status }));
+        let caught: unknown;
+        try {
+          await service.update(agentId, ownerUserId, { status: 'active' });
+        } catch (error) {
+          caught = error;
+        }
+        expect(caught).toBeInstanceOf(HttpException);
+        const refusal = caught as HttpException;
+        expect(refusal.getStatus()).toBe(409);
+        expect(refusal.getResponse()).toMatchObject({
+          statusCode: 409,
+          code: 'WORKFLOW_NOT_TESTED',
+          error: 'Conflict',
+        });
+        expect(userAgentRepository.save).not.toHaveBeenCalled();
+        expect(rows.get(agentId)!.status).toBe(status);
+      },
+    );
+
+    it('switches a draft on when it has a completed test run at its current version', async () => {
+      const stored = row();
+      rows.set(agentId, stored);
+      tested.add(versionOf(stored));
+      const saved = await service.update(agentId, ownerUserId, { status: 'active' });
+      expect(saved.status).toBe('active');
+      expect(rows.get(agentId)!.status).toBe('active');
+      expect(usageReads).toBe(1);
+    });
+
+    it('refuses when only an older version was tested', async () => {
+      rows.set(agentId, row());
+      tested.add(versionOf(row({ procedure: 'An older procedure.' })));
+      await expect(
+        service.update(agentId, ownerUserId, { status: 'active' }),
+      ).rejects.toMatchObject({ status: 409, response: { code: 'WORKFLOW_NOT_TESTED' } });
+    });
+
+    it('checks the version as saved: an edit in the same PATCH needs its own test', async () => {
+      const stored = row();
+      rows.set(agentId, stored);
+      tested.add(versionOf(stored));
+      await expect(
+        service.update(agentId, ownerUserId, { status: 'active', procedure: 'A new procedure.' }),
+      ).rejects.toMatchObject({ status: 409, response: { code: 'WORKFLOW_NOT_TESTED' } });
+      expect(userAgentRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('allows a card edit with the switch-on when the tested version is unchanged', async () => {
+      const stored = row();
+      rows.set(agentId, stored);
+      tested.add(versionOf(stored));
+      const saved = await service.update(agentId, ownerUserId, {
+        status: 'active',
+        name: 'Renamed',
+        role: 'New role',
+        description: 'New card text',
+      });
+      expect(saved).toMatchObject({ status: 'active', name: 'Renamed' });
+    });
+
+    it.each([
+      ['active', 'disabled'],
+      ['draft', 'disabled'],
+      ['active', 'draft'],
+      ['disabled', 'draft'],
+      ['draft', 'draft'],
+      ['disabled', 'disabled'],
+    ])('allows %s to %s without the test check', async (from, to) => {
+      rows.set(agentId, row({ status: from }));
+      const saved = await service.update(agentId, ownerUserId, { status: to });
+      expect(saved.status).toBe(to);
+      expect(switchOnCheck.assertCanSwitchOn).not.toHaveBeenCalled();
+    });
+
+    it('allows a PATCH to active on a row already active, even with an untested edit', async () => {
+      rows.set(agentId, row({ status: 'active' }));
+      const saved = await service.update(agentId, ownerUserId, {
+        status: 'active',
+        procedure: 'Changed while on.',
+      });
+      expect(saved.status).toBe('active');
+      expect(switchOnCheck.assertCanSwitchOn).not.toHaveBeenCalled();
+    });
+
+    it('allows an edit that sends no status, keeping a draft a draft', async () => {
+      rows.set(agentId, row());
+      const saved = await service.update(agentId, ownerUserId, {
+        name: 'Renamed',
+        purpose: 'Help more.',
+      });
+      expect(saved.status).toBe('draft');
+      expect(switchOnCheck.assertCanSwitchOn).not.toHaveBeenCalled();
+    });
+
+    it('checks the fields first: an invalid field is still a 400, not a 409', async () => {
+      rows.set(agentId, row());
+      await expect(
+        service.update(agentId, ownerUserId, { status: 'active', toolProfile: 'write' }),
+      ).rejects.toMatchObject({
+        status: 400,
+        response: { code: USER_WORKFLOW_ERROR_CODES.toolProfileNotAllowed },
+      });
+      expect(switchOnCheck.assertCanSwitchOn).not.toHaveBeenCalled();
+    });
+
+    it('treats a plain three-field agent as a workflow: refused until its empty spec is tested', async () => {
+      const plain = row({ purpose: '', procedure: '', result: '', knowledgeScopeIds: [] });
+      rows.set(agentId, plain);
+      await expect(
+        service.update(agentId, ownerUserId, { status: 'active' }),
+      ).rejects.toMatchObject({ status: 409, response: { code: 'WORKFLOW_NOT_TESTED' } });
+      tested.add(versionOf(plain));
+      const saved = await service.update(agentId, ownerUserId, { status: 'active' });
+      expect(saved.status).toBe('active');
+    });
+
+    it('returns 404 for another owner before any test check', async () => {
+      rows.set(agentId, row());
+      await expect(
+        service.update(agentId, otherUserId, { status: 'active' }),
+      ).rejects.toBeInstanceOf(NotFoundException);
+      expect(switchOnCheck.assertCanSwitchOn).not.toHaveBeenCalled();
     });
   });
 });

@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   HttpStatus,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -28,6 +29,10 @@ import {
   userWorkflowGrants,
   type UserWorkflowToolProfile,
 } from './user-workflow-grants';
+import {
+  USER_WORKFLOW_SWITCH_ON_CHECK,
+  type UserWorkflowSwitchOnCheck,
+} from './user-workflow-switch-on.port';
 
 /** Stable refusal codes for saves (BIZ-USER-01A D5, D7, D8, D6b). The editor translates them. */
 export const USER_WORKFLOW_ERROR_CODES = {
@@ -140,6 +145,8 @@ export class UserAgentService {
     private readonly userAgentRepository: Repository<UserAgent>,
     @InjectRepository(ConnectorConnection)
     private readonly connectionRepository: Repository<ConnectorConnection>,
+    @Inject(USER_WORKFLOW_SWITCH_ON_CHECK)
+    private readonly switchOnCheck: UserWorkflowSwitchOnCheck,
   ) {}
 
   /**
@@ -241,6 +248,12 @@ export class UserAgentService {
    * Owner-scoped edit. Absent fields keep their stored value; the merged
    * workflow is validated like any save. Connector tools already stored stay
    * allowed without a connection; a newly added one needs it.
+   *
+   * WORKFLOW-STATUS-02: a PATCH that switches a row on (status `active` on a
+   * row not stored as active) is refused with 409 WORKFLOW_NOT_TESTED unless
+   * the row, as it will be saved, has a completed test run at its version.
+   * Switching off, to draft, an edit that keeps the status and a PATCH to
+   * active on an active row are not checked.
    */
   async update(id: string, userId: string, dto: UpdateAgentDto): Promise<UserAgent> {
     const agent = await this.findOneByIdAndUserId(id, userId);
@@ -272,12 +285,18 @@ export class UserAgentService {
       storedToolIds,
     );
 
+    const switchingOn = dto.status === 'active' && agent.status !== 'active';
+
     if (dto.name !== undefined) agent.name = dto.name;
     if (dto.role !== undefined) agent.role = dto.role;
     if (dto.description !== undefined) agent.description = dto.description;
     if (dto.status !== undefined) agent.status = dto.status;
     if (dto.initials !== undefined) agent.initials = dto.initials;
     Object.assign(agent, fields);
+
+    if (switchingOn) {
+      await this.switchOnCheck.assertCanSwitchOn(userId, agent);
+    }
 
     return this.userAgentRepository.save(agent);
   }

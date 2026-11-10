@@ -1,4 +1,9 @@
-export const AGENT_STATUSES = ['active', 'coming_soon', 'disabled'] as const;
+/**
+ * The badge states of a station card. `draft` is a user workflow saved but not
+ * yet switched on (WORKFLOW-STATUS-02); system agents are never drafts, so the
+ * system-agent payload parser below still accepts only the other three.
+ */
+export const AGENT_STATUSES = ['active', 'coming_soon', 'draft', 'disabled'] as const;
 export type AgentStatus = (typeof AGENT_STATUSES)[number];
 
 export const AGENT_IDS = [
@@ -120,6 +125,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object' && !Array.isArray(value);
 }
 
+/** A system agent's status from GET /api/system-agents: never `draft`. */
 function isAgentStatus(value: unknown): value is AgentStatus {
   return value === 'active' || value === 'coming_soon' || value === 'disabled';
 }

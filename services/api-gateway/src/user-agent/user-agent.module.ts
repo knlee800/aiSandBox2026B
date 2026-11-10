@@ -5,6 +5,8 @@ import { UserAgent } from '../entities/user-agent.entity';
 import { ConnectorConnection } from '../entities/connector-connection.entity';
 import { UserAgentController } from './user-agent.controller';
 import { UserAgentService } from './user-agent.service';
+import { USER_WORKFLOW_SWITCH_ON_CHECK } from './user-workflow-switch-on.port';
+import { TestedWorkflowSwitchOnCheck } from './user-workflow-switch-on';
 
 @Module({
   imports: [
@@ -13,7 +15,11 @@ import { UserAgentService } from './user-agent.service';
     AuthModule,
   ],
   controllers: [UserAgentController],
-  providers: [UserAgentService],
+  providers: [
+    UserAgentService,
+    // WORKFLOW-STATUS-02: switch-on needs a test run at the current version (the Team gate's rule).
+    { provide: USER_WORKFLOW_SWITCH_ON_CHECK, useClass: TestedWorkflowSwitchOnCheck },
+  ],
   exports: [UserAgentService],
 })
 export class UserAgentModule {}

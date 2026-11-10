@@ -73,6 +73,7 @@ function getStatusLabel(
 ): string {
   if (status === 'active') return resolveNestedMessage(messages, 'platform.agentStationActive');
   if (status === 'coming_soon') return resolveNestedMessage(messages, 'platform.agentStationComingSoon');
+  if (status === 'draft') return resolveNestedMessage(messages, 'platform.agentCreate.agentStatusDraft');
   return resolveNestedMessage(messages, 'platform.agentStationDisabled');
 }
 
@@ -278,6 +279,15 @@ export function templatePrefillFor(
 
 export interface PlatformDashboardProps {
   locale?: string;
+}
+
+/**
+ * WORKFLOW-STATUS-02: the badge state of a user agent's card. A draft gets its own
+ * badge; an unknown stored status reads as disabled, like the server does.
+ */
+export function userAgentCardStatus(status: string): AgentStatus {
+  if (status === 'active' || status === 'draft') return status;
+  return 'disabled';
 }
 
 /** The badge text on a user agent's card and panel: Active, Draft or Disabled. */
@@ -539,15 +549,21 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
     return result;
   }
 
-  async function handleSwitchWorkflow(agentId: string, on: boolean): Promise<{ error?: string }> {
+  async function handleSwitchWorkflow(
+    agentId: string,
+    on: boolean,
+  ): Promise<{ error?: string; code?: string }> {
     const result = await updateAgent(agentId, userAgentSwitchBody(on));
     if (result.error === 'AUTH_EXPIRED') {
       router.replace(`/${resolvedLocale}/login`);
     }
-    if (result.agent) {
+    // WORKFLOW-STATUS-02: a refused switch-on also reloads the tested state, so the
+    // panel can show "Run a test first" when the server says the version is untested.
+    if (result.agent || (on && result.error && result.error !== 'AUTH_EXPIRED')) {
       workflowSummaries.refetch();
     }
-    return result.error ? { error: result.error } : {};
+    if (!result.error) return {};
+    return result.code ? { error: result.error, code: result.code } : { error: result.error };
   }
 
   function handleWorkflowSaved(agent: UserAgent, kind: WorkflowSaveRequest['kind']) {
@@ -854,7 +870,7 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
                         name={ua.name}
                         role={ua.role}
                         description={ua.description}
-                        status={ua.status === 'active' ? 'active' : 'disabled'}
+                        status={userAgentCardStatus(ua.status)}
                         enabled={ua.status === 'active'}
                         statusLabel={getUserAgentStatusLabel(ua.status, messages)}
                         selected={selectedUserAgentId === ua.id}

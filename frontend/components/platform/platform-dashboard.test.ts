@@ -10,7 +10,9 @@ import type { AgentDetailViewModel } from '@/components/platform/agent-detail-pa
 import {
   ResultsUnreadPill,
   countStationsByStatus,
+  getUserAgentStatusLabel,
   stationCountsForLoad,
+  userAgentCardStatus,
   staticAgentProfileContent,
   SystemAgentStationArea,
 } from '@/components/platform/platform-dashboard';
@@ -964,5 +966,35 @@ describe('platform persisted user-agent Delete control — AGENT-PLATFORM-CREATE
     assert.match(dashboardSource, /platform\.agentCreate\.deleteError/);
     assert.doesNotMatch(dashboardSource, /body\.message/);
     assert.doesNotMatch(panelSource, /deleted_at|soft delete|NotFoundException/i);
+  });
+});
+
+describe('WORKFLOW-STATUS-02 user agent card status', () => {
+  test('a draft keeps its own card status; an unknown status reads as disabled', () => {
+    assert.equal(userAgentCardStatus('active'), 'active');
+    assert.equal(userAgentCardStatus('draft'), 'draft');
+    assert.equal(userAgentCardStatus('disabled'), 'disabled');
+    assert.equal(userAgentCardStatus('gone'), 'disabled');
+  });
+
+  test('the user agent cards pass the draft through and keep the Draft label in three languages', () => {
+    const source = readFileSync(new URL('./platform-dashboard.tsx', import.meta.url), 'utf8');
+    assert.match(source, /status=\{userAgentCardStatus\(ua\.status\)\}/);
+    assert.doesNotMatch(source, /status=\{ua\.status === 'active' \? 'active' : 'disabled'\}/);
+    const expected: Record<string, string> = { en: 'Draft', 'zh-TW': '草稿', 'zh-CN': '草稿' };
+    for (const locale of ALL_LOCALES) {
+      assert.equal(getUserAgentStatusLabel('draft', locale.messages), expected[locale.code]);
+    }
+  });
+
+  test('a refused switch-on reloads the tested state and passes the server code on', () => {
+    const source = readFileSync(new URL('./platform-dashboard.tsx', import.meta.url), 'utf8');
+    const handler = source.slice(
+      source.indexOf('async function handleSwitchWorkflow'),
+      source.indexOf('function handleWorkflowSaved'),
+    );
+    assert.match(handler, /result\.agent \|\| \(on && result\.error && result\.error !== 'AUTH_EXPIRED'\)/);
+    assert.match(handler, /workflowSummaries\.refetch\(\)/);
+    assert.match(handler, /code: result\.code/);
   });
 });

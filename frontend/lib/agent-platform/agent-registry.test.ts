@@ -5,6 +5,7 @@ import enMessages from '../../messages/en.json';
 import zhTWMessages from '../../messages/zh-TW.json';
 import zhCNMessages from '../../messages/zh-CN.json';
 import {
+  AGENT_STATUSES,
   BUILDER_FALLBACK_AGENT,
   getAgentById,
   listAgentsByStatus,
@@ -217,3 +218,11 @@ describe('system agent parser', () => {
 function VERSION_LIKE(value: string): boolean {
   return /^[0-9a-f]{64}$/.test(value);
 }
+
+describe('WORKFLOW-STATUS-02 draft badge state', () => {
+  test('draft is a card status, but a system agent payload with draft is still rejected', () => {
+    assert.ok((AGENT_STATUSES as readonly string[]).includes('draft'));
+    assert.deepEqual([...AGENT_STATUSES], ['active', 'coming_soon', 'draft', 'disabled']);
+    assert.equal(parseSystemAgents({ agents: [agent({ status: 'draft' })] }), null);
+  });
+});

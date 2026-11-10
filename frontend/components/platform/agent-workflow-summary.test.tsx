@@ -5,15 +5,17 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 import type { UserAgentOptions, UserWorkflowSummaryItem } from '@/hooks/useUserAgents';
 import { userAgentSwitchBody } from '@/hooks/useUserAgents';
-import AgentStationCard from '@/components/platform/agent-station-card';
+import AgentStationCard, { getStatusBadgeClasses } from '@/components/platform/agent-station-card';
 import type { WorkflowUsageView } from '@/components/platform/agent-workflow-fields';
 import CreateAgentForm from '@/components/platform/create-agent-form';
 import type { CreateAgentFormLabels } from '@/components/platform/create-agent-form';
 import AgentDetailPanel from '@/components/platform/agent-detail-panel';
 import AgentWorkflowSummary, {
+  WORKFLOW_NOT_TESTED_CODE,
   nextWorkflowSwitchPhase,
   openOnTeamHref,
   workflowSummaryLines,
+  workflowSwitchFailureKind,
   workflowSwitchGate,
   workflowTestedNote,
   workflowUsageLine,
@@ -539,5 +541,132 @@ describe('WORKFLOW-CREATE-01 a new workflow is a draft', () => {
       assert.ok(html.includes(`data-testid="agent-switch-state">${t('summary.switchOff')}<`));
       assert.match(t('summary.switchOff'), /[一-鿿]/);
     }
+  });
+});
+
+describe('WORKFLOW-STATUS-02 the server refusal of an untested switch-on', () => {
+  test('a failed switch-on reads as "Run a test first" by its code or once known untested', () => {
+    assert.equal(workflowSwitchFailureKind(null, false), 'none');
+    assert.equal(workflowSwitchFailureKind({ on: true, code: WORKFLOW_NOT_TESTED_CODE }, true), 'needsTest');
+    assert.equal(workflowSwitchFailureKind({ on: true, code: WORKFLOW_NOT_TESTED_CODE }, null), 'needsTest');
+    assert.equal(workflowSwitchFailureKind({ on: true }, false), 'needsTest');
+    assert.equal(workflowSwitchFailureKind({ on: true }, true), 'generic');
+    assert.equal(workflowSwitchFailureKind({ on: true }, null), 'generic');
+    assert.equal(workflowSwitchFailureKind({ on: true, code: 'OTHER' }, true), 'generic');
+    assert.equal(workflowSwitchFailureKind({ on: false }, false), 'generic');
+    assert.equal(workflowSwitchFailureKind({ on: false, code: WORKFLOW_NOT_TESTED_CODE }, false), 'generic');
+    assert.equal(WORKFLOW_NOT_TESTED_CODE, 'WORKFLOW_NOT_TESTED');
+  });
+
+  test('the refusal code shows the "Run a test first" line as the alert, with Open on Team, even on a stale tested summary', () => {
+    const html = render({
+      status: 'draft',
+      item: item({ status: 'draft', tested: true }),
+      initialFailure: { on: true, code: WORKFLOW_NOT_TESTED_CODE },
+    });
+    const line = /<p[^>]*data-testid="agent-switch-needs-test"[^>]*>/.exec(html)?.[0] ?? '';
+    assert.ok(line.includes('role="alert"'));
+    assert.ok(line.includes('data-refused="true"'));
+    assert.ok(html.includes('Run a test first'));
+    assert.match(html, /<a [^>]*data-testid="agent-open-on-team"[^>]*href="\/en\/collaboration\?workflowId=agent-1"/);
+    assert.ok(!html.includes('data-testid="agent-switch-error"'));
+    assert.ok(!html.includes('Could not change the switch'));
+  });
+
+  test('a refused switch-on without a code shows the same alert once the reloaded summary says untested', () => {
+    const html = render({
+      status: 'draft',
+      item: item({ status: 'draft', tested: false }),
+      initialFailure: { on: true },
+    });
+    const line = /<p[^>]*data-testid="agent-switch-needs-test"[^>]*>/.exec(html)?.[0] ?? '';
+    assert.ok(line.includes('role="alert"'));
+    assert.equal(html.split('Run a test first').length - 1, 1);
+    assert.ok(!html.includes('data-testid="agent-switch-error"'));
+  });
+
+  test('an untested off workflow without a failed switch keeps the plain hint, not an alert', () => {
+    const html = render({ status: 'draft', item: item({ status: 'draft', tested: false }) });
+    const line = /<p[^>]*data-testid="agent-switch-needs-test"[^>]*>/.exec(html)?.[0] ?? '';
+    assert.ok(line.length > 0);
+    assert.ok(!line.includes('role="alert"'));
+    assert.ok(!line.includes('data-refused'));
+  });
+
+  test('any other failed switch keeps the generic translated error', () => {
+    const on = render({ status: 'draft', item: item({ status: 'draft', tested: true }), initialFailure: { on: true } });
+    assert.match(on, /data-testid="agent-switch-error"[^>]*>Could not change the switch/);
+    const off = render({ initialFailure: { on: false } });
+    assert.match(off, /data-testid="agent-switch-error"[^>]*>Could not change the switch/);
+    assert.ok(!off.includes('data-refused'));
+  });
+
+  test('the refusal reads in Chinese', () => {
+    for (const messages of [zhTwMessages, zhCnMessages] as Messages[]) {
+      const t = (key: string) => resolve(messages, `platform.agentWorkflow.${key}`) ?? `MISSING:${key}`;
+      const html = render({
+        t,
+        status: 'draft',
+        item: item({ status: 'draft', tested: true }),
+        initialFailure: { on: true, code: WORKFLOW_NOT_TESTED_CODE },
+      });
+      const hint = t('summary.needsTestHint');
+      assert.match(hint, /[一-鿿]/);
+      assert.ok(html.includes(`<span>${hint}</span>`));
+      assert.ok(!html.includes('MISSING:'));
+    }
+  });
+});
+
+describe('WORKFLOW-STATUS-02 the Draft badge', () => {
+  function card(status: 'active' | 'draft' | 'disabled', label: string): string {
+    return renderToStaticMarkup(
+      <AgentStationCard
+        id="user-agent-1"
+        name="Digest"
+        role="Helper"
+        description="Does things"
+        status={status}
+        enabled={status === 'active'}
+        statusLabel={label}
+        actionHint="Open"
+        selected={false}
+        onSelect={() => {}}
+      />,
+    );
+  }
+
+  function badge(html: string): string {
+    return /<span[^>]*data-testid="agent-station-status-user-agent-1"[^>]*>/.exec(html)?.[0] ?? '';
+  }
+
+  test('a draft card has its own amber in-progress badge with a pencil icon and the Draft label', () => {
+    const html = card('draft', 'Draft');
+    assert.match(html, /data-testid="agent-station-card-user-agent-1"[^>]*data-status="draft"/);
+    const draftBadge = badge(html);
+    assert.ok(draftBadge.includes('bg-amber-50'));
+    assert.ok(draftBadge.includes('text-amber-800'));
+    assert.ok(draftBadge.includes('border-amber-200'));
+    assert.ok(!draftBadge.includes('bg-gray-100'));
+    assert.match(html, /data-testid="agent-station-status-user-agent-1"[^>]*><svg[^>]*aria-hidden="true"/);
+    assert.match(html, /<\/svg>Draft<\/span>/);
+  });
+
+  test('Draft, Off and Active badges are distinct', () => {
+    const draftBadge = badge(card('draft', 'Draft'));
+    const offBadge = badge(card('disabled', 'Disabled'));
+    const activeBadge = badge(card('active', 'Active'));
+    assert.ok(offBadge.includes('bg-gray-100'));
+    assert.ok(activeBadge.includes('bg-emerald-100'));
+    assert.notEqual(draftBadge, offBadge);
+    assert.notEqual(draftBadge, activeBadge);
+    assert.ok(!card('disabled', 'Disabled').includes('<svg'));
+  });
+
+  test('every badge state has its own classes', () => {
+    const classes = (['active', 'coming_soon', 'draft', 'disabled'] as const).map((status) =>
+      getStatusBadgeClasses(status),
+    );
+    assert.equal(new Set(classes).size, 4);
   });
 });

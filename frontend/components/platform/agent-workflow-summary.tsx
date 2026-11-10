@@ -27,7 +27,36 @@ import type { WorkflowT } from './agent-workflow-fields';
  * On means status `active`; off means `disabled` (PATCH /api/agents/:id accepts
  * active, draft and disabled). Switching on needs a test run at the workflow's current
  * version, read from GET /api/collaboration/workflows.
+ *
+ * WORKFLOW-STATUS-02: the server checks the same rule and refuses an untested switch-on
+ * with 409 WORKFLOW_NOT_TESTED. When that refusal arrives (by its code, or because the
+ * refreshed summary now says not tested), the panel shows the "Run a test first" line
+ * as the alert instead of the generic switch error.
  */
+
+/** The server's refusal code for switching on an untested workflow. */
+export const WORKFLOW_NOT_TESTED_CODE = 'WORKFLOW_NOT_TESTED';
+
+/** A failed switch: whether it tried to switch on, and the server's code when known. */
+export interface WorkflowSwitchFailure {
+  on: boolean;
+  code?: string;
+}
+
+/**
+ * Which text a failed switch shows. A refused switch-on reads as "Run a test first"
+ * when the code says not tested, or when the workflow is now known to be untested.
+ */
+export function workflowSwitchFailureKind(
+  failure: WorkflowSwitchFailure | null,
+  tested: boolean | null,
+): 'none' | 'needsTest' | 'generic' {
+  if (!failure) return 'none';
+  if (failure.on && (failure.code === WORKFLOW_NOT_TESTED_CODE || tested === false)) {
+    return 'needsTest';
+  }
+  return 'generic';
+}
 
 export type WorkflowSwitchPhase = 'idle' | 'confirmingOff' | 'saving';
 export type WorkflowSwitchEvent = 'askOff' | 'cancel' | 'confirm' | 'settled';
@@ -141,11 +170,13 @@ export interface AgentWorkflowSummaryProps {
   item: UserWorkflowSummaryItem | null;
   models: readonly UserAgentPlatformModel[] | null;
   onRetry: () => void;
-  /** Sets the status through PATCH. Resolves with an error code when it failed. */
-  onSwitch: (agentId: string, on: boolean) => Promise<{ error?: string }>;
+  /** Sets the status through PATCH. Resolves with an error (and the server's code when known) when it failed. */
+  onSwitch: (agentId: string, on: boolean) => Promise<{ error?: string; code?: string }>;
   /** Test seam: render a given step of the switch flow. */
   initialPhase?: WorkflowSwitchPhase;
   initialError?: boolean;
+  /** Test seam: render after a given failed switch. */
+  initialFailure?: WorkflowSwitchFailure;
 }
 
 const rowLabel = 'text-xs font-semibold uppercase tracking-wide text-gray-600';
@@ -157,12 +188,14 @@ export default function AgentWorkflowSummary(props: AgentWorkflowSummaryProps) {
   const { t, scopeName, localePrefix, agentId, status, summaryState, item, models, onRetry, onSwitch } = props;
   const [phase, setPhase] = React.useState<WorkflowSwitchPhase>(props.initialPhase ?? 'idle');
   const [switching, setSwitching] = React.useState(false);
-  const [failed, setFailed] = React.useState(props.initialError === true);
+  const [failure, setFailure] = React.useState<WorkflowSwitchFailure | null>(
+    props.initialFailure ?? (props.initialError === true ? { on: false } : null),
+  );
 
   React.useEffect(() => {
     setPhase('idle');
     setSwitching(false);
-    setFailed(false);
+    setFailure(null);
   }, [agentId]);
 
   const tested = summaryState === 'loaded' && item ? item.tested : null;
@@ -171,12 +204,12 @@ export default function AgentWorkflowSummary(props: AgentWorkflowSummaryProps) {
 
   async function run(on: boolean) {
     if (busy) return;
-    setFailed(false);
+    setFailure(null);
     setSwitching(true);
     const result = await onSwitch(agentId, on);
     setSwitching(false);
     setPhase((current) => nextWorkflowSwitchPhase(current, 'settled'));
-    if (result.error) setFailed(true);
+    if (result.error) setFailure({ on, code: result.code });
   }
 
   function handleSwitchClick() {
@@ -196,6 +229,8 @@ export default function AgentWorkflowSummary(props: AgentWorkflowSummaryProps) {
 
   const testedNote = workflowTestedNote(t, tested);
   const switchDisabled = busy || (!gate.isOn && !gate.canSwitchOn);
+  const failureKind = workflowSwitchFailureKind(failure, tested);
+  const refusedNotTested = failureKind === 'needsTest';
 
   return (
     <section
@@ -317,8 +352,13 @@ export default function AgentWorkflowSummary(props: AgentWorkflowSummaryProps) {
           </button>
         </div>
 
-        {gate.showNeedsTest ? (
-          <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-amber-800" data-testid="agent-switch-needs-test">
+        {gate.showNeedsTest || refusedNotTested ? (
+          <p
+            className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-amber-800"
+            data-testid="agent-switch-needs-test"
+            role={refusedNotTested ? 'alert' : undefined}
+            data-refused={refusedNotTested ? 'true' : undefined}
+          >
             <span>{t('summary.needsTestHint')}</span>
             <Link href={openOnTeamHref(localePrefix, agentId)} className={linkClasses} data-testid="agent-open-on-team">
               <span>{t('summary.openOnTeam')}</span>
@@ -369,7 +409,7 @@ export default function AgentWorkflowSummary(props: AgentWorkflowSummaryProps) {
           </p>
         ) : null}
 
-        {failed ? (
+        {failureKind === 'generic' ? (
           <p className="mt-3 text-sm text-red-700" role="alert" data-testid="agent-switch-error">
             {t('summary.switchError')}
           </p>

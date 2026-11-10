@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { PencilSquareIcon } from '@heroicons/react/24/outline';
 import type { AgentStatus } from '@/lib/agent-platform/agent-registry';
 
 export interface AgentStationCardProps {
@@ -18,14 +19,23 @@ export interface AgentStationCardProps {
   onSelect: (agentId: string) => void;
 }
 
-function getStatusBadgeClasses(status: AgentStatus): string {
-  if (status === 'active') {
-    return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+/** DESIGN.md badge tokens: active, coming soon, draft (in progress) and neutral for off. */
+export function getStatusBadgeClasses(status: AgentStatus): string {
+  switch (status) {
+    case 'active':
+      return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+    case 'coming_soon':
+      return 'bg-amber-50 text-amber-700 border-amber-200';
+    case 'draft':
+      return 'bg-amber-50 text-amber-800 border-amber-200';
+    case 'disabled':
+      return 'bg-gray-100 text-gray-500 border-gray-200';
+    default: {
+      const unhandled: never = status;
+      void unhandled;
+      return 'bg-gray-100 text-gray-500 border-gray-200';
+    }
   }
-  if (status === 'coming_soon') {
-    return 'bg-amber-50 text-amber-700 border-amber-200';
-  }
-  return 'bg-gray-100 text-gray-500 border-gray-200';
 }
 
 function getCardClasses(enabled: boolean, selected: boolean): string {
@@ -76,9 +86,13 @@ export default function AgentStationCard(props: AgentStationCardProps) {
             </h3>
             <span
               className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium leading-tight ${getStatusBadgeClasses(status)}`}
+              data-testid={`agent-station-status-${props.id}`}
             >
               {status === 'active' && (
                 <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              )}
+              {status === 'draft' && (
+                <PencilSquareIcon className="mr-1 h-3 w-3 shrink-0" aria-hidden="true" />
               )}
               {statusLabel}
             </span>

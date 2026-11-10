@@ -8,6 +8,10 @@ import { PLATFORM_MODELS } from '../../system-agents/platform-models';
 import { renderAgentInstructions } from '../../system-agents/system-agent-registry';
 import { SessionCookieGuard } from '../../auth/session-cookie.guard';
 import {
+  WORKFLOW_REFUSAL_CODES,
+  workflowRefusal,
+} from '../../orchestration/collaboration-workflow';
+import {
   INestApplication,
   NotFoundException,
   UnauthorizedException,
@@ -986,6 +990,26 @@ describe('UserAgentController', () => {
           name: 'Taken',
         });
         expect(response.status).not.toBe(403);
+      });
+
+      it('PATCH /api/agents/:id passes the 409 WORKFLOW_NOT_TESTED refusal through (WORKFLOW-STATUS-02)', async () => {
+        await buildApp();
+        service.update.mockRejectedValue(workflowRefusal(WORKFLOW_REFUSAL_CODES.notTested));
+
+        const response = await request(app!.getHttpServer())
+          .patch('/api/agents/agent-uuid-001')
+          .send({ status: 'active' })
+          .expect(409);
+
+        expect(service.update).toHaveBeenCalledWith('agent-uuid-001', mockUserA.userId, {
+          status: 'active',
+        });
+        expect(response.body).toMatchObject({
+          statusCode: 409,
+          error: 'Conflict',
+          code: 'WORKFLOW_NOT_TESTED',
+        });
+        expect(service.ownerConnectionKinds).not.toHaveBeenCalled();
       });
 
       it.each([[{ name: null }], [{ purpose: null }], [{ toolProfile: null }], [{ status: 'gone' }]])(
