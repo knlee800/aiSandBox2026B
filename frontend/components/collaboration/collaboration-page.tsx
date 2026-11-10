@@ -14,6 +14,7 @@ import {
   collaborationWorkflowSpentLine,
   collaborationWorkflowStartBody,
   collaborationWorkflowSummary,
+  preselectWorkflowId,
   readRunWorkflow,
   useCollaborationWorkflowList,
   type CollaborationWorkflowList,
@@ -116,8 +117,11 @@ export function useCollaborationScreen(input: {
   timeZone?: string;
   /** BIZ-USER-01C: the owner's workflows. Absent: the page offers the three teams only. */
   workflows?: CollaborationWorkflowList;
+  /** TEAM-PRESELECT-01: the workflowId query parameter, if any. */
+  queryWorkflowId?: string;
 }) {
   const { t, locale, sessionId, queryProjectId } = input;
+  const queryWorkflowId = input.queryWorkflowId?.trim() || '';
   const translateScope = input.translateScope ?? ((scopeId: string) => scopeId);
   // useTranslations returns a new function every render. Reading it through a ref
   // keeps the latest copy without reloading when that identity changes.
@@ -127,6 +131,27 @@ export function useCollaborationScreen(input: {
   const [task, setTask] = useState('');
   const [selectedTeam, setSelectedTeam] = useState<CollaborationTeamId>('coding');
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
+  // TEAM-PRESELECT-01: apply ?workflowId once, when the list has loaded. A missing match or a
+  // failed list preselects nothing and shows nothing; later refreshes never override the user.
+  const preselectDoneRef = useRef(false);
+  const preselectState = input.workflows?.state;
+  const preselectItems = input.workflows?.items;
+  useEffect(() => {
+    if (preselectDoneRef.current || queryWorkflowId === '') {
+      return;
+    }
+    if (preselectState === 'failed') {
+      preselectDoneRef.current = true;
+      return;
+    }
+    if (preselectState !== 'loaded') {
+      return;
+    }
+    preselectDoneRef.current = true;
+    if (preselectWorkflowId(preselectItems ?? [], queryWorkflowId) !== null) {
+      setSelectedWorkflowId(queryWorkflowId);
+    }
+  }, [preselectState, preselectItems, queryWorkflowId]);
   const [notice, setNotice] = useState<string | null>(null);
   const [conversationCreated, setConversationCreated] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -897,6 +922,7 @@ export default function CollaborationPageClient() {
   const locale = typeof params?.locale === 'string' ? params.locale : 'en';
   const sessionId = searchParams.get('sessionId')?.trim() || '';
   const queryProjectId = searchParams.get('projectId')?.trim() || '';
+  const queryWorkflowId = searchParams.get('workflowId')?.trim() || '';
   const workflows = useCollaborationWorkflowList(sessionId.length > 0);
   const viewProps = useCollaborationScreen({
     t,
@@ -906,6 +932,7 @@ export default function CollaborationPageClient() {
     sessionId,
     queryProjectId,
     workflows,
+    queryWorkflowId,
   });
   return <CollaborationView {...viewProps} />;
 }

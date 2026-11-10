@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { after, afterEach, before, beforeEach, describe, test } from 'node:test';
 import React, { act, createElement } from 'react';
 import type { Root } from 'react-dom/client';
@@ -20,6 +22,7 @@ import {
   collaborationWorkflowSpentLine,
   collaborationWorkflowStartBody,
   collaborationWorkflowSummary,
+  preselectWorkflowId,
   readCollaborationWorkflows,
   readRunWorkflow,
   type CollaborationWorkflowItem,
@@ -515,6 +518,22 @@ function jsonResponse(status: number, body: unknown): Response {
   } as Response;
 }
 
+describe('TEAM-PRESELECT-01 preselectWorkflowId and the query', () => {
+  test('returns the id only when the list has that workflow', () => {
+    const items = [item(), item({ id: 'other' })];
+    assert.equal(preselectWorkflowId(items, WORKFLOW_ID), WORKFLOW_ID);
+    assert.equal(preselectWorkflowId(items, 'nope'), null);
+    assert.equal(preselectWorkflowId(items, ''), null);
+    assert.equal(preselectWorkflowId([], WORKFLOW_ID), null);
+  });
+
+  test('the page client reads workflowId from the query next to sessionId and projectId', () => {
+    const source = readFileSync(join(process.cwd(), 'components', 'collaboration', 'collaboration-page.tsx'), 'utf8');
+    assert.match(source, /searchParams\.get\('workflowId'\)/);
+    assert.match(source, /queryWorkflowId,\n  \}\);/);
+  });
+});
+
 describe('BIZ-USER-01C Team page with workflows', () => {
   let createRoot: (typeof import('react-dom/client'))['createRoot'];
   let originalDocument: Document | undefined;
@@ -536,13 +555,17 @@ describe('BIZ-USER-01C Team page with workflows', () => {
     onStale: () => {},
   };
 
+  let probeWorkflows: CollaborationWorkflowList = workflows;
+  let probeWorkflowId = '';
+
   function Probe(props: { catalog: Catalog }) {
     latest = useCollaborationScreen({
       t: (key: string) => props.catalog[key] ?? key,
       locale: 'en',
       sessionId: 'session-1',
       queryProjectId: '',
-      workflows,
+      workflows: probeWorkflows,
+      queryWorkflowId: probeWorkflowId,
     });
     return createElement('div');
   }
@@ -579,6 +602,8 @@ describe('BIZ-USER-01C Team page with workflows', () => {
     posts = [];
     detailBody = null;
     latest = null;
+    probeWorkflows = workflows;
+    probeWorkflowId = '';
     originalFetch = globalThis.fetch;
     globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
@@ -608,6 +633,50 @@ describe('BIZ-USER-01C Team page with workflows', () => {
       root = null;
     }
     globalThis.fetch = originalFetch;
+  });
+
+  test('TEAM-PRESELECT-01: a matching workflowId is preselected once the list has loaded', async () => {
+    probeWorkflowId = WORKFLOW_ID;
+    await renderProbe();
+    assert.equal(latest?.workflowPicker?.items.find((entry) => entry.id === WORKFLOW_ID)?.selected, true);
+    assert.deepEqual(latest?.team.map((member) => member.name), ['Morning brief']);
+    assert.equal(latest?.workflowStart?.canRun, true);
+    // picking a team afterwards still clears it, and a refresh does not bring it back
+    await act(async () => {
+      latest!.onTeamChange('chief-of-staff');
+    });
+    probeWorkflows = { ...workflows, items: [...workflows.items] };
+    await renderProbe();
+    assert.equal(latest?.workflowPicker?.items.some((entry) => entry.selected), false);
+  });
+
+  test('TEAM-PRESELECT-01: waits for the list, then preselects', async () => {
+    probeWorkflowId = WORKFLOW_ID;
+    probeWorkflows = { ...workflows, state: 'loading', items: [] };
+    await renderProbe();
+    assert.equal(latest?.workflowStart ?? null, null);
+    probeWorkflows = workflows;
+    await renderProbe();
+    assert.equal(latest?.workflowPicker?.items.find((entry) => entry.id === WORKFLOW_ID)?.selected, true);
+  });
+
+  test('TEAM-PRESELECT-01: an unknown workflowId, a failed list or no parameter preselects nothing and shows no error', async () => {
+    probeWorkflowId = 'not-a-workflow';
+    await renderProbe();
+    assert.equal(latest?.workflowPicker?.items.some((entry) => entry.selected), false);
+    assert.equal(latest?.workflowStart ?? null, null);
+    assert.equal(latest?.notice ?? null, null);
+
+    probeWorkflowId = WORKFLOW_ID;
+    probeWorkflows = { ...workflows, state: 'failed', items: [] };
+    await renderProbe();
+    assert.equal(latest?.workflowStart ?? null, null);
+    assert.equal(latest?.notice ?? null, null);
+
+    probeWorkflowId = '';
+    probeWorkflows = workflows;
+    await renderProbe();
+    assert.equal(latest?.workflowPicker?.items.some((entry) => entry.selected), false);
   });
 
   test('picking a workflow clears the team and picking a team clears the workflow', async () => {

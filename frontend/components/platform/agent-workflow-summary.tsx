@@ -61,9 +61,10 @@ export function workflowSwitchGate(
   return { isOn, canSwitchOn, showNeedsTest: !isOn && tested === false };
 }
 
-/** The Team page reads no workflow parameter today, so the link opens the page without preselection. */
-export function openOnTeamHref(localePrefix: string): string {
-  return `${localePrefix}/collaboration`;
+/** TEAM-PRESELECT-01: the Team page reads workflowId and preselects that workflow. */
+export function openOnTeamHref(localePrefix: string, workflowId?: string): string {
+  const base = `${localePrefix}/collaboration`;
+  return workflowId ? `${base}?workflowId=${encodeURIComponent(workflowId)}` : base;
 }
 
 export function creditsText(t: WorkflowT, count: number): string {
@@ -319,14 +320,14 @@ export default function AgentWorkflowSummary(props: AgentWorkflowSummaryProps) {
         {gate.showNeedsTest ? (
           <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-amber-800" data-testid="agent-switch-needs-test">
             <span>{t('summary.needsTestHint')}</span>
-            <Link href={openOnTeamHref(localePrefix)} className={linkClasses} data-testid="agent-open-on-team">
+            <Link href={openOnTeamHref(localePrefix, agentId)} className={linkClasses} data-testid="agent-open-on-team">
               <span>{t('summary.openOnTeam')}</span>
               <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
             </Link>
           </p>
         ) : (
           <p className="mt-3 text-sm">
-            <Link href={openOnTeamHref(localePrefix)} className={linkClasses} data-testid="agent-open-on-team">
+            <Link href={openOnTeamHref(localePrefix, agentId)} className={linkClasses} data-testid="agent-open-on-team">
               <span>{t('summary.openOnTeam')}</span>
               <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
             </Link>

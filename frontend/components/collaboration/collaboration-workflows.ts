@@ -235,6 +235,14 @@ export function collaborationWorkflowRefusal(
  * Loads the owner's workflows once the page has a session. Kept out of
  * useCollaborationScreen so the screen's own requests are unchanged.
  */
+/** TEAM-PRESELECT-01: the id to preselect, or null when the list has no such workflow. */
+export function preselectWorkflowId(
+  items: readonly CollaborationWorkflowItem[],
+  workflowId: string,
+): string | null {
+  return workflowId !== '' && items.some((entry) => entry.id === workflowId) ? workflowId : null;
+}
+
 export function useCollaborationWorkflowList(enabled: boolean): CollaborationWorkflowList {
   const [state, setState] = useState<CollaborationWorkflowListState>('loading');
   const [items, setItems] = useState<CollaborationWorkflowItem[]>([]);

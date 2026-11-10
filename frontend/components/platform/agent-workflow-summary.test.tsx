@@ -188,7 +188,7 @@ describe('workflow switch gating', () => {
     const button = /<button[^>]*role="switch"[^>]*>/.exec(html)?.[0] ?? '';
     assert.ok(button.includes('aria-checked="false"'));
     assert.ok(button.includes('disabled=""'));
-    assert.match(html, /<a [^>]*data-testid="agent-open-on-team"[^>]*href="\/en\/collaboration"/);
+    assert.match(html, /<a [^>]*data-testid="agent-open-on-team"[^>]*href="\/en\/collaboration\?workflowId=agent-1"/);
   });
 
   test('a tested off workflow has an enabled switch and no hint', () => {
@@ -243,14 +243,16 @@ describe('switching off asks first', () => {
 });
 
 describe('Open on Team link', () => {
-  test('points at the Team page under the locale prefix without a preselection (the page reads none)', () => {
+  test('points at the Team page under the locale prefix, with the workflow id when given', () => {
     assert.equal(openOnTeamHref('/en'), '/en/collaboration');
+    assert.equal(openOnTeamHref('/en', 'wf-1'), '/en/collaboration?workflowId=wf-1');
+    assert.equal(openOnTeamHref('/zh-TW', 'a b'), '/zh-TW/collaboration?workflowId=a%20b');
     assert.equal(openOnTeamHref('/zh-TW'), '/zh-TW/collaboration');
     assert.equal(openOnTeamHref(''), '/collaboration');
   });
 
   test('the link is present on a tested workflow too', () => {
-    assert.match(render(), /<a [^>]*data-testid="agent-open-on-team"[^>]*href="\/en\/collaboration"/);
+    assert.match(render(), /<a [^>]*data-testid="agent-open-on-team"[^>]*href="\/en\/collaboration\?workflowId=agent-1"/);
   });
 });
 
