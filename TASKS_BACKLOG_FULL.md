@@ -86065,7 +86065,7 @@ taskId=BIZ-LIVE-03
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — Keith admitted it ("Start BIZ-LIVE-03"). Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING, ENV, PROVIDER-LIVE and CREDIT released; stagingAuthorized, providerLiveAuthorized and creditAuthorized false. Keith connected mail (Gmail app password) and calendar (iCal) on staging and ran the morning briefing and one plain Knowledge question on his own account, claude-opus-5-5: 2 runs, 26,184 tokens (briefing 10,372 with two connector calls, question 15,812 with none), 34.3 s of run time, 27 credits, measured from the host. Screen checks: Keith's report, nothing wrong; the AGENT-WRITE-UI-01 write-off half checked in the deployed build from the host (no account with harness on and write off exists). Runs off: env files restored to the baseline hashes, AI_PROVIDER stub, GLOBAL_EXECUTION_ENABLED false; staging runs 8e0bc55. Checkpoint: docs/BIZ-LIVE-03-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
 **Task ID:** BIZ-LIVE-03
 **Title:** First live briefing and its cost
 **Workstream:** AGENT (taxonomy only; zero admission weight)
