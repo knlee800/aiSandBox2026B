@@ -86387,24 +86387,50 @@ taskId=TEAM-NO-SESSION-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the TEAM-PRESELECT-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the TEAM-PRESELECT-01 LOCK — not admitted.
 **Task ID:** TEAM-NO-SESSION-01
 **Title:** The Team page without a workspace session
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides what the Team page offers without a session. Keith decides.
+**Start condition:** READY (Keith's instruction 2026-11-10). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction). Keith decided 2026-11-10 ("Yes, list them"): the Team page lists the owner's workflows without a session.
 **Depends on:** TEAM-PRESELECT-01.
-**Primary write scope:** PROVISIONAL: frontend/components/collaboration/, frontend/messages/ (I18N), possibly services/api-gateway/src/orchestration/ if workflow runs stop needing a project session.
-**Mutexes / resources:** set at admission (expected FRONTEND, I18N; GATEWAY if the start route changes).
+**Primary write scope:** frontend/components/collaboration/, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json (set 2026-11-10; running without a session is TEAM-NO-SESSION-02).
+**Mutexes / resources:** FRONTEND, I18N.
 **Hot-file leases:** none.
 **Shared contracts:** none known.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** the no-session state.
 **saturationClass:** OPTIONAL (Keith may change it).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** The Team page takes its session only from the URL (collaboration-page.tsx:923) and, without one, shows only "Open Team from a workspace session." and never loads workflows (collaboration-page.tsx:926, collaboration-view.tsx:281-284), so the agent panel's Open on Team link (which has no session) cannot preselect a workflow. Keith decides: either the Team page lists the owner's workflows without a session (run buttons off until a session exists, or business workflows that run without a project session), or the panel link opens a session first. Found by TEAM-PRESELECT-01.
+**Decision 2026-11-10 (Keith, "Yes, list them"):** without a session the Team page loads and lists the owner's workflows (GET /api/collaboration/workflows is owner-scoped), honours ?workflowId= preselection, and keeps Start and Start test run off with a translated hint to open Team from a workspace session to run. Running without a session is TEAM-NO-SESSION-02.
+
+### TEAM-NO-SESSION-02 — Run business workflows without a project session
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=TEAM-NO-SESSION-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 from Keith's decision ("Yes, list them") — not admitted.
+**Task ID:** TEAM-NO-SESSION-02
+**Title:** Run business workflows without a project session
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: TEAM-NO-SESSION-01 LOCKED, GATEWAY free and a stage-start approved. Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** TEAM-NO-SESSION-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/orchestration/ (the start route's session requirement for read-only workflows), frontend/components/collaboration/, the three message files.
+**Mutexes / resources:** set at admission (expected GATEWAY, FRONTEND, I18N).
+**Hot-file leases:** none.
+**Shared contracts:** HARNESS_ENTITLEMENT_PROOF_V1 read only (checked at the stage-start).
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** the no-session start branch.
+**saturationClass:** OPTIONAL (Keith may change it).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** A user workflow with the read-only profile (business workflows, which write no project files) starts from the Team page without a workspace session: the stage-start decides what replaces the session (a per-owner business session, as BIZ-NOPROJECT-01 explored, or none), keeps grants and budgets as BIZ-USER-01C built them, and keeps write-capable runs session-bound.
 
 ### RESULTS-01 — Results list, unread badge and run history
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
