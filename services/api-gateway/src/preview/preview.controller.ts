@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import axios from 'axios';
 import { SessionCookieGuard } from '../auth/session-cookie.guard';
 import { PreviewOwnershipGuard } from './preview-ownership.guard';
+import { filterProxyResponseHeaders } from './preview-response-headers';
 
 const PROXY_HEADER_DENYLIST = new Set([
   'host',
@@ -247,16 +248,20 @@ export class PreviewController {
         validateStatus: () => true, // Don't throw on any status
       });
 
-      // Copy response headers
-      Object.keys(response.headers).forEach(key => {
-        res.setHeader(key, response.headers[key]);
+      const streamed = Boolean(isProxy && response.data && response.data.pipe);
+
+      // Copy response headers, minus hop-by-hop headers (and, when Express
+      // re-serialises the body, content-length / content-encoding).
+      const forwardedHeaders = filterProxyResponseHeaders(response.headers, { streamed });
+      Object.keys(forwardedHeaders).forEach(key => {
+        res.setHeader(key, forwardedHeaders[key]);
       });
 
       // Set status code
       res.status(response.status);
 
       // Handle streaming response for proxy
-      if (isProxy && response.data.pipe) {
+      if (streamed) {
         response.data.pipe(res);
       } else {
         res.send(response.data);
