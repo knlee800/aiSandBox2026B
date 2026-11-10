@@ -87923,7 +87923,7 @@ taskId=CM-HISTORY-LINK-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the CM-GIT-HOST-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 1 and its mutexes released. Result: passed. saveProjectHistory: size probe refusing links, sliced dd|base64 reads with strict length checks, O_CREAT|O_EXCL temp file, same rename; restoreProjectHistory: unlink then O_WRONLY|O_CREAT|O_EXCL(|O_NOFOLLOW) staging, same restore steps and cleanups; copyFile gone; 15 new passing tests and 3 Linux-only symlink tests skipped on Windows, mutation check 13 failures; opus subagent a8d3ac9, fast-forwarded onto main; control-plane rerun: container-manager 19 suites, 586 passed, 3 skipped, build 0. Not deployed. FOLLOWUPS: 1 registered (CM-EXEC-01) / 1 superseded (checkpoint live smoke, into STAGING-DEPLOY-CMSEC-01) / 0 dropped / 0 undisposed. Was admitted 2026-11-10. Checkpoint: docs/CM-HISTORY-LINK-01-CHECKPOINT.md.
 **Task ID:** CM-HISTORY-LINK-01
 **Title:** Checkpoint history copies follow symlinks in the workspace
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -87940,6 +87940,30 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set at admission 2026-11-10).
 **Scope:** From the CM-GIT-HOST-01 worker, checked by the control plane: GitService.restoreProjectHistory (git.service.ts:583) copies the stored history bundle with fs.copyFile to <workspace>/.aisb-history-restore.bundle, so a symlink the sandbox planted there can make container-manager overwrite a host file; GitService.saveProjectHistory (:551) copies <workspace>/.git/aisb-history.bundle out after git bundle create, so a symlink swapped in can read a host file into stored history, which a later restore hands to the sandbox. The gateway calls both (checkpoint-history save and restore), so a sandbox owner can reach them. Fix: refuse a symlink (lstat, O_NOFOLLOW or COPYFILE_EXCL on a freshly created path) or stream the bundle through docker exec instead of the host filesystem; tests with real symlinks; checkpoint save and restore behaviour otherwise unchanged (FLOWS list applies).
+
+### CM-EXEC-01 — Container exec helper: output cap, binary-safe stdout, stdin
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CM-EXEC-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the CM-HISTORY-LINK-01 LOCK — not admitted.
+**Task ID:** CM-EXEC-01
+**Title:** Container exec helper: output cap, binary-safe stdout, stdin
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** CM-HISTORY-LINK-01.
+**Primary write scope:** PROVISIONAL: services/container-manager/src/ (docker runtime, sessions service, git service, tests).
+**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the CM-HISTORY-LINK-01 worker: execInContainerBySessionId collects stdout as one unbounded string (a very large output, for example readFileFromContainer on a huge sandbox file, can throw RangeError: Invalid string length inside a stream callback and crash container-manager) and decodes it as UTF-8 (binary reads through readFileFromContainer are corrupted). Add an output cap with a clear error, binary-safe stdout (Buffer), and a stdin variant (AttachStdin, hijack) with a SessionsService wrapper carrying the same governance checks; then restore can pipe the history bundle into the container so the host never writes into the workspace. Tests for each.
 
 ### STAGING-DEPLOY-CMSEC-01 — Deploy the container-manager security fixes
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -87964,6 +87988,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** Deploy main to staging from the host with runs off (8e1f8d3 to the current main): CM-PATH-01, CM-SYMLINK-01, CM-GIT-HOST-01. No migration expected. Host checks: the standard set and the earlier route and security checks; with the key, POST /api/sessions, POST /api/git/x/init, GET /api/git/x/history and the six /api/files routes answer 404 (stale dist files not loaded); a %2E%2E session id answers 400; no simple-git in the compiled container-manager services; the gateway still starts sessions (a session start and stop through the gateway only if Keith wants a live check).
+**Acceptance (added 2026-11-10 by the CM-HISTORY-LINK-01 LOCK):** the deploy also carries CM-HISTORY-LINK-01 (checkpoint history streamed out of the container on save, exclusive no-follow staging on restore). Checkpoint live smoke (Keith in a workspace session, no AI runs needed): a checkpoint stores projects/_checkpoint-history/<projectId>.bundle and git bundle verify passes on it, with no aisb-history.bundle left in .git; reopening the project in a new session restores the same HEAD and checkpoint list with no .aisb-history-restore.bundle left; a bundle over 8 MiB still saves and restores; optionally a link planted at /workspace/.aisb-history-restore.bundle leaves its target unchanged. Ready when also CM-HISTORY-LINK-01 LOCKED.
 
 ### BROWSER-SMOKE-01 — Browser smoke never finds a preview target
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
