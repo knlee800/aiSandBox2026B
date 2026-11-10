@@ -87503,7 +87503,7 @@ taskId=STAGING-DEPLOY-CMAUTH-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — Keith approved the deploy ("Yes, deploy it"). Registered 2026-11-10 by the CM-AUTH-01 LOCK.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. Result: passed. Lane 1 and STAGING released; stagingAuthorized false. 9d56779 -> 2052c36 (rc 0, no migration, configuration unchanged, standard checks pass); key match across three env files; container-manager guard (health open; six routes 403/403 and 200 with the key); WebSocket upgrade without the key 403; traversal URLs never 200; no ws: true in the build; ports on 127.0.0.1; no key text in the journal. The deploy script exited 1 after its last passing check because a no-match grep under pipefail stopped it silently; the remaining checks were rerun read-only and passed. Logged-in owner checks through Caddy superseded by STAGING-DEPLOY-WF-01 / BIZ-LIVE-04. Checkpoint: docs/STAGING-DEPLOY-CMAUTH-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 1 superseded / 0 dropped / 0 undisposed. Registered 2026-11-10 by the CM-AUTH-01 LOCK.
 **Task ID:** STAGING-DEPLOY-CMAUTH-01
 **Title:** Deploy the container-manager key guard and the preview traversal fix
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)

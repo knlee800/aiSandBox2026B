@@ -32,7 +32,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 | 22 | OFFICE-04 | Office animation |
 | 24 | OFFICE-02 | Push updates, only if polling proves costly |
 | 25 | GOV-PRD-SYNC-01 | PRD office note and the no-scheduler principle, in Keith's words (GOV-ARCH-SYNC-01 done 2026-11-10) |
-| 26 | DRIFT-FIX-01, STAGING-DEPLOY-CMAUTH-01, CM-PREFIX-01, CM-CLEANUP-01 | Fix the briefing drift check (admitted 2026-11-10, Lane 2), then deploy CM-AUTH-01 (container-manager key guard and preview traversal fix), then the /api/api prefix and the cleanups (CM-AUTH-01 done 2026-11-10) |
+| 26 | CM-PREFIX-01, CM-CLEANUP-01 | The /api/api prefix and the container-manager cleanups (DRIFT-FIX-01 and STAGING-DEPLOY-CMAUTH-01 done 2026-11-10; staging runs 2052c36) (CM-AUTH-01 done 2026-11-10) |
 
 **Stage 3 — user workflows (section 4, phase 1 continued)**
 
