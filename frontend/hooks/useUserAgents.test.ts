@@ -470,3 +470,89 @@ describe('useUserAgents workflow routes — BIZ-USER-01B', () => {
     assert.equal((await fetchUserAgentOptionsRequest()).error, 'AUTH_EXPIRED');
   });
 });
+
+describe('useUserAgents workflow summary and switch — BIZ-USER-01D', () => {
+  beforeEach(() => {
+    fetchCalls.length = 0;
+  });
+
+  afterEach(() => {
+    restoreFetch();
+  });
+
+  test('userAgentSwitchBody maps on to active and off to disabled', async () => {
+    const { userAgentSwitchBody } = await import('./useUserAgents');
+    assert.deepEqual(userAgentSwitchBody(true), { status: 'active' });
+    assert.deepEqual(userAgentSwitchBody(false), { status: 'disabled' });
+  });
+
+  test('switching sends a PATCH whose body is only the status', async () => {
+    const { updateUserAgentRequest, userAgentSwitchBody } = await import('./useUserAgents');
+    installMockFetch(async () => mockResponse(200, { id: 'agent-1', status: 'disabled' }));
+
+    const result = await updateUserAgentRequest('agent-1', userAgentSwitchBody(false));
+
+    assert.equal(fetchCalls[0].url, '/api/agents/agent-1');
+    assert.equal(fetchCalls[0].init?.method, 'PATCH');
+    assert.deepEqual(JSON.parse(fetchCalls[0].init!.body as string), { status: 'disabled' });
+    assert.equal(result.error, undefined);
+  });
+
+  test('readWorkflowSummaries keeps the tested flag, spend and budgets, and drops entries without an id', async () => {
+    const { readWorkflowSummaries } = await import('./useUserAgents');
+    const items = readWorkflowSummaries({
+      workflows: [
+        {
+          id: 'w1',
+          status: 'active',
+          tested: true,
+          knowledgeScopeIds: ['policies', 7],
+          model: { choice: 'platform', id: 'claude-sonnet-5-5' },
+          budgetPerRunCredits: 20,
+          budgetPerDayCredits: 100,
+          spentTodayCredits: 12,
+          lastRunCredits: 5,
+        },
+        { id: 'w2', status: 'weird', tested: 'yes', model: { choice: 'nope' }, spentTodayCredits: -3 },
+        { name: 'no id' },
+        'junk',
+      ],
+    });
+    assert.equal(items.length, 2);
+    assert.deepEqual(items[0], {
+      id: 'w1',
+      status: 'active',
+      tested: true,
+      knowledgeScopeIds: ['policies'],
+      model: { choice: 'platform', id: 'claude-sonnet-5-5' },
+      budgetPerRunCredits: 20,
+      budgetPerDayCredits: 100,
+      spentTodayCredits: 12,
+      lastRunCredits: 5,
+    });
+    assert.equal(items[1].status, 'disabled');
+    assert.equal(items[1].tested, false);
+    assert.equal(items[1].model, null);
+    assert.equal(items[1].spentTodayCredits, 0);
+    assert.equal(items[1].lastRunCredits, null);
+    assert.deepEqual(readWorkflowSummaries(null), []);
+  });
+
+  test('fetchWorkflowSummariesRequest reads GET /api/collaboration/workflows and reports failures', async () => {
+    const { fetchWorkflowSummariesRequest } = await import('./useUserAgents');
+    installMockFetch(async () => mockResponse(200, { workflows: [{ id: 'w1', status: 'draft', tested: false }] }));
+    const ok = await fetchWorkflowSummariesRequest();
+    assert.equal(fetchCalls[0].url, '/api/collaboration/workflows');
+    assert.equal(fetchCalls[0].init?.credentials, 'include');
+    assert.equal(ok.items?.[0].id, 'w1');
+
+    installMockFetch(async () => mockResponse(401, {}));
+    assert.equal((await fetchWorkflowSummariesRequest()).error, 'AUTH_EXPIRED');
+    installMockFetch(async () => mockResponse(403, {}));
+    assert.equal((await fetchWorkflowSummariesRequest()).error, 'SUMMARY_FAILED');
+    installMockFetch(async () => {
+      throw new Error('offline');
+    });
+    assert.equal((await fetchWorkflowSummariesRequest()).error, 'SUMMARY_FAILED');
+  });
+});

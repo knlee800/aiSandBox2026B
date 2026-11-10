@@ -60,6 +60,8 @@ export interface AgentDetailPanelProps {
   /** BIZ-USER-01B: opens the workflow editor for a user-created agent. */
   editButtonLabel?: string;
   onEdit?: (agentId: string) => void;
+  /** BIZ-USER-01D: the workflow summary, switch and Open on Team link for a user-created agent. */
+  workflowSummary?: React.ReactNode;
   onClose: () => void;
 }
 
@@ -89,6 +91,7 @@ export default function AgentDetailPanel(props: AgentDetailPanelProps) {
     onDelete,
     editButtonLabel,
     onEdit,
+    workflowSummary,
     onClose,
   } = props;
   const [deletePhase, setDeletePhase] = useState<UserAgentDeletePhase>('idle');
@@ -158,6 +161,8 @@ export default function AgentDetailPanel(props: AgentDetailPanelProps) {
         )}
         <span>{agent.statusLabel}</span>
       </div>
+
+      {agent.isUserCreated && workflowSummary ? workflowSummary : null}
 
       <div className="mt-5 rounded-xl border border-gray-200 bg-gray-50/70 p-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-600">{intentLabel}</p>

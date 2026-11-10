@@ -361,8 +361,16 @@ export function modelCostText(t: WorkflowT, creditsPer1kTokens: number): string 
   });
 }
 
-export function WorkflowAdvancedFields(props: CommonProps & { options: UserAgentOptions }) {
-  const { t, draft, onChange, errors, disabled, options } = props;
+/** What the editor shows under the budget fields for a saved workflow (BIZ-USER-01D). */
+export type WorkflowUsageView =
+  | { state: 'loading' }
+  | { state: 'failed' }
+  | { state: 'loaded'; line: string };
+
+export function WorkflowAdvancedFields(
+  props: CommonProps & { options: UserAgentOptions; usage?: WorkflowUsageView | null },
+) {
+  const { t, draft, onChange, errors, disabled, options, usage } = props;
   const open = draft.modelChoice !== 'server' || draft.budgetPerRun !== '' || draft.budgetPerDay !== '';
   const selectedModel = options.models.find((model) => model.id === draft.modelChoice);
   const maxBudget = options.limits.maxBudgetCredits;
@@ -450,6 +458,15 @@ export function WorkflowAdvancedFields(props: CommonProps & { options: UserAgent
           {t('budgetHint')}{' '}
           {fillTemplate(t('budgetPlatformDaily'), { count: options.limits.platformDailyCreditsPerUser })}
         </p>
+        {usage ? (
+          <p className={hintClasses} role="status" data-testid="agent-workflow-budget-usage">
+            {usage.state === 'loaded'
+              ? usage.line
+              : usage.state === 'loading'
+                ? t('summary.usageLoading')
+                : t('summary.usageFailed')}
+          </p>
+        ) : null}
         <FieldError id="agent-workflow-budget-error" message={errors.budget ? t(errors.budget) : undefined} field="budget" />
       </div>
     </details>

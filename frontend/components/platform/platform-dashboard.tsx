@@ -17,11 +17,18 @@ import {
 } from '@heroicons/react/24/outline';
 import type { AgentStatus, PublicSystemAgent } from '@/lib/agent-platform/agent-registry';
 import { useSystemAgents, type SystemAgentsError } from '@/lib/agent-platform/use-system-agents';
-import { useUserAgentOptions, useUserAgents } from '@/hooks/useUserAgents';
+import {
+  useUserAgentOptions,
+  useUserAgents,
+  useWorkflowSummaries,
+  userAgentSwitchBody,
+} from '@/hooks/useUserAgents';
 import type { UserAgent } from '@/hooks/useUserAgents';
 import { nextSelectedUserAgentIdAfterDelete } from '@/hooks/useUserAgents';
 import AgentStationCard from './agent-station-card';
 import AgentDetailPanel from './agent-detail-panel';
+import AgentWorkflowSummary, { workflowTestedNote, workflowUsageLine } from './agent-workflow-summary';
+import type { WorkflowUsageView } from './agent-workflow-fields';
 import type { AgentDetailViewModel } from './agent-detail-panel';
 import CreateAgentForm from './create-agent-form';
 import type { CreateAgentFormLabels, WorkflowSaveRequest } from './create-agent-form';
@@ -280,7 +287,10 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
     deleteAgent,
     refetch: refetchUserAgents,
   } = useUserAgents();
-  const agentOptions = useUserAgentOptions(showCreateForm || editingUserAgentId !== null);
+  const agentOptions = useUserAgentOptions(
+    showCreateForm || editingUserAgentId !== null || selectedUserAgentId !== null,
+  );
+  const workflowSummaries = useWorkflowSummaries(userAgents.length > 0);
 
   const title = resolveNestedMessage(messages, 'platform.title');
   const subtitle = resolveNestedMessage(messages, 'platform.subtitle');
@@ -456,7 +466,22 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
     if (result.error === 'AUTH_EXPIRED') {
       router.replace(`/${resolvedLocale}/login`);
     }
+    if (result.agent) {
+      // A saved change can move the workflow to a new version: read the tested flag again.
+      workflowSummaries.refetch();
+    }
     return result;
+  }
+
+  async function handleSwitchWorkflow(agentId: string, on: boolean): Promise<{ error?: string }> {
+    const result = await updateAgent(agentId, userAgentSwitchBody(on));
+    if (result.error === 'AUTH_EXPIRED') {
+      router.replace(`/${resolvedLocale}/login`);
+    }
+    if (result.agent) {
+      workflowSummaries.refetch();
+    }
+    return result.error ? { error: result.error } : {};
   }
 
   function handleWorkflowSaved(agent: UserAgent, kind: WorkflowSaveRequest['kind']) {
@@ -536,6 +561,19 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
   const editingUserAgent: UserAgent | null = editingUserAgentId
     ? userAgents.find((ua) => ua.id === editingUserAgentId) ?? null
     : null;
+
+  const editingSummary = editingUserAgent
+    ? (workflowSummaries.items.find((entry) => entry.id === editingUserAgent.id) ?? null)
+    : null;
+  const editingUsage: WorkflowUsageView | null = !editingUserAgent
+    ? null
+    : workflowSummaries.state === 'failed'
+      ? { state: 'failed' }
+      : workflowSummaries.state === 'loaded' && editingSummary
+        ? { state: 'loaded', line: workflowUsageLine(workflowT, editingSummary) }
+        : workflowSummaries.state === 'loaded'
+          ? null
+          : { state: 'loading' };
 
   const displaySelectedName = selectedStaticAgent
     ? resolveNestedMessage(messages, selectedStaticAgent.nameKey)
@@ -745,6 +783,12 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
                         enabled={ua.status === 'active'}
                         statusLabel={getUserAgentStatusLabel(ua.status, messages)}
                         selected={selectedUserAgentId === ua.id}
+                        workflowNote={workflowTestedNote(
+                          workflowT,
+                          workflowSummaries.state === 'loaded'
+                            ? (workflowSummaries.items.find((entry) => entry.id === ua.id)?.tested ?? null)
+                            : null,
+                        )}
                         onSelect={() => handleSelectUserAgent(ua.id)}
                         actionHint={openAgentDetailActive}
                       />
@@ -776,6 +820,7 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
                     onRetryOptions: agentOptions.retry,
                     agent: editingUserAgent,
                     createdNotice: copiedAgentId === editingUserAgent.id,
+                    usage: editingUsage,
                     onSave: handleSaveWorkflow,
                   }}
                 />
@@ -824,6 +869,22 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
                   onDelete={handleDeleteAgent}
                   editButtonLabel={detailEditButton}
                   onEdit={handleEditUserAgent}
+                  workflowSummary={
+                    selectedUserAgent ? (
+                      <AgentWorkflowSummary
+                        t={workflowT}
+                        scopeName={workflowScopeName}
+                        localePrefix={localePrefix}
+                        agentId={selectedUserAgent.id}
+                        status={selectedUserAgent.status}
+                        summaryState={workflowSummaries.state}
+                        item={workflowSummaries.items.find((entry) => entry.id === selectedUserAgent.id) ?? null}
+                        models={agentOptions.options?.models ?? null}
+                        onRetry={workflowSummaries.retry}
+                        onSwitch={handleSwitchWorkflow}
+                      />
+                    ) : null
+                  }
                   onClose={handleCloseDetail}
                 />
               )}

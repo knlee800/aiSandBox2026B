@@ -91,7 +91,7 @@ export interface CreateAgentFromTemplateDto {
 
 /** Body of PATCH /api/agents/:id. An absent field keeps the stored value. */
 export type UpdateAgentDto = Partial<
-  Pick<UserAgent, 'name' | 'role' | 'description'> &
+  Pick<UserAgent, 'name' | 'role' | 'description' | 'status'> &
     Omit<UserAgentWorkflowFields, 'toolProfile' | 'templateId'>
 >;
 
@@ -135,6 +135,136 @@ export interface UseUserAgentsResult {
   updateAgent: (agentId: string, dto: UpdateAgentDto) => Promise<UserAgentSaveResult>;
   deleteAgent: (agentId: string) => Promise<{ error?: string }>;
   refetch: () => Promise<void>;
+}
+
+/** One workflow from GET /api/collaboration/workflows (BIZ-USER-01C), as the summary needs it. */
+export interface UserWorkflowSummaryItem {
+  id: string;
+  status: 'active' | 'draft' | 'disabled';
+  /** True when a test run passed at the workflow's current version. */
+  tested: boolean;
+  knowledgeScopeIds: string[];
+  model: UserAgentModel | null;
+  budgetPerRunCredits: number | null;
+  budgetPerDayCredits: number | null;
+  spentTodayCredits: number;
+  lastRunCredits: number | null;
+}
+
+function summaryRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+function summaryCount(value: unknown): number | null {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 0 ? value : null;
+}
+
+/** Reads the workflows list. Entries without an id are left out; an unknown status reads as disabled. */
+export function readWorkflowSummaries(body: unknown): UserWorkflowSummaryItem[] {
+  if (!summaryRecord(body) || !Array.isArray(body.workflows)) {
+    return [];
+  }
+  const items: UserWorkflowSummaryItem[] = [];
+  for (const entry of body.workflows) {
+    if (!summaryRecord(entry) || typeof entry.id !== 'string' || entry.id.length === 0) {
+      continue;
+    }
+    let model: UserAgentModel | null = null;
+    if (summaryRecord(entry.model)) {
+      if (entry.model.choice === 'server') {
+        model = { choice: 'server' };
+      } else if (
+        entry.model.choice === 'platform' &&
+        typeof entry.model.id === 'string' &&
+        entry.model.id.length > 0
+      ) {
+        model = { choice: 'platform', id: entry.model.id };
+      }
+    }
+    items.push({
+      id: entry.id,
+      status: entry.status === 'active' || entry.status === 'draft' ? entry.status : 'disabled',
+      tested: entry.tested === true,
+      knowledgeScopeIds: Array.isArray(entry.knowledgeScopeIds)
+        ? entry.knowledgeScopeIds.filter((id): id is string => typeof id === 'string')
+        : [],
+      model,
+      budgetPerRunCredits: summaryCount(entry.budgetPerRunCredits),
+      budgetPerDayCredits: summaryCount(entry.budgetPerDayCredits),
+      spentTodayCredits: summaryCount(entry.spentTodayCredits) ?? 0,
+      lastRunCredits: summaryCount(entry.lastRunCredits),
+    });
+  }
+  return items;
+}
+
+export async function fetchWorkflowSummariesRequest(): Promise<{
+  items?: UserWorkflowSummaryItem[];
+  error?: string;
+}> {
+  try {
+    const response = await fetch('/api/collaboration/workflows', { credentials: 'include' });
+    if (response.status === 401) {
+      return { error: 'AUTH_EXPIRED' };
+    }
+    if (!response.ok) {
+      return { error: 'SUMMARY_FAILED' };
+    }
+    return { items: readWorkflowSummaries(await response.json()) };
+  } catch {
+    return { error: 'SUMMARY_FAILED' };
+  }
+}
+
+export type UserWorkflowSummaryState = 'loading' | 'failed' | 'loaded';
+
+export interface UseWorkflowSummariesResult {
+  state: UserWorkflowSummaryState;
+  items: UserWorkflowSummaryItem[];
+  retry: () => void;
+  refetch: () => void;
+}
+
+/** Loads the workflow summaries once `enabled` is true (the owner has at least one workflow). */
+export function useWorkflowSummaries(enabled: boolean): UseWorkflowSummariesResult {
+  const [state, setState] = useState<UserWorkflowSummaryState>('loading');
+  const [items, setItems] = useState<UserWorkflowSummaryItem[]>([]);
+  const [attempt, setAttempt] = useState(0);
+
+  useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+    let active = true;
+    void fetchWorkflowSummariesRequest().then((result) => {
+      if (!active) {
+        return;
+      }
+      if (result.items) {
+        setItems(result.items);
+        setState('loaded');
+      } else {
+        setState('failed');
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [enabled, attempt]);
+
+  // A retry shows the loading text again; a refetch after a save keeps the last answer on screen.
+  const retry = useCallback(() => {
+    setState('loading');
+    setAttempt((current) => current + 1);
+  }, []);
+  const refetch = useCallback(() => setAttempt((current) => current + 1), []);
+
+  return { state, items, retry, refetch };
+}
+
+/** The PATCH body that switches a workflow on (active) or off (disabled). */
+export function userAgentSwitchBody(on: boolean): { status: 'active' | 'disabled' } {
+  return { status: on ? 'active' : 'disabled' };
 }
 
 export type UserAgentDeletePhase = 'idle' | 'confirming' | 'pending';

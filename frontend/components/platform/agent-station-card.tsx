@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import type { AgentStatus } from '@/lib/agent-platform/agent-registry';
 
 export interface AgentStationCardProps {
@@ -12,6 +13,8 @@ export interface AgentStationCardProps {
   statusLabel: string;
   actionHint: string;
   selected: boolean;
+  /** BIZ-USER-01D: for a user workflow, whether it was tested at its current version. */
+  workflowNote?: { text: string; tone: 'ok' | 'warn' } | null;
   onSelect: (agentId: string) => void;
 }
 
@@ -89,6 +92,15 @@ export default function AgentStationCard(props: AgentStationCardProps) {
       <p className="mt-3 line-clamp-2 text-xs leading-relaxed text-gray-600">
         {description}
       </p>
+
+      {props.workflowNote ? (
+        <p
+          className={`mt-2 text-xs font-medium ${props.workflowNote.tone === 'ok' ? 'text-emerald-700' : 'text-amber-700'}`}
+          data-testid={`agent-station-tested-${props.id}`}
+        >
+          {props.workflowNote.text}
+        </p>
+      ) : null}
 
       <p className="mt-4 text-xs font-medium text-indigo-700">
         {actionHint}

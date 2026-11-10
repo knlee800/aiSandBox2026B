@@ -25,6 +25,7 @@ import {
   WorkflowShownPanel,
   WorkflowStartChooser,
   type WorkflowT,
+  type WorkflowUsageView,
 } from './agent-workflow-fields';
 import {
   DEFAULT_WORKFLOW_LIMITS,
@@ -84,6 +85,8 @@ export interface AgentWorkflowConfig {
   agent?: UserAgent | null;
   /** True when this editor opened straight after a copy from a template. */
   createdNotice?: boolean;
+  /** Last run and spend today for the workflow being edited (BIZ-USER-01D). */
+  usage?: WorkflowUsageView | null;
   onSave: (request: WorkflowSaveRequest) => Promise<UserAgentSaveResult>;
   /** Called after a successful save with the saved row and the kind of save. */
   onSaved?: (agent: UserAgent, kind: WorkflowSaveRequest['kind']) => void;
@@ -399,6 +402,7 @@ export default function CreateAgentForm({ labels, onSubmit, onCancel, workflow }
             errors={workflowErrors}
             disabled={submitting}
             options={options}
+            usage={editing ? workflow.usage : null}
           />
           <WorkflowShownPanel t={t} saved={saved} scopeName={workflow.scopeName} />
         </>
