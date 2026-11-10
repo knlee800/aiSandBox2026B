@@ -2,8 +2,11 @@ import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { constants as fsConstants } from 'fs';
 import {
   GitService,
+  HISTORY_BUNDLE_CHUNK_COMMAND,
+  HISTORY_BUNDLE_SIZE_COMMAND,
   WORKTREE_DIFF_MAX_CHARS,
   WORKTREE_DIFF_TRUNCATED_MARKER,
 } from './git.service';
@@ -14,6 +17,7 @@ jest.mock('fs/promises', () => {
     ...actual,
     mkdir: jest.fn(),
     copyFile: jest.fn(),
+    open: jest.fn(),
     rename: jest.fn(),
     stat: jest.fn(),
     unlink: jest.fn(),
@@ -495,6 +499,69 @@ function enoent(): NodeJS.ErrnoException {
   return error;
 }
 
+// CM-HISTORY-LINK-01: host files are created exclusively and never follow a link.
+const EXCLUSIVE_CREATE_FLAGS =
+  fsConstants.O_WRONLY |
+  fsConstants.O_CREAT |
+  fsConstants.O_EXCL |
+  (typeof fsConstants.O_NOFOLLOW === 'number' ? fsConstants.O_NOFOLLOW : 0);
+const SAVED_BUNDLE_BYTES = Buffer.from('# v2 git bundle\nsaved-bytes\u0000ÿ\u0080end\n', 'latin1');
+const STORED_BUNDLE_BYTES = Buffer.from('# v2 git bundle\nstored-bytes\u0000þ\n', 'latin1');
+const STORED_BUNDLE_PATH = path.join(
+  __dirname,
+  '../../../..',
+  'projects',
+  '_checkpoint-history',
+  `${PROJECT_ID}.bundle`,
+);
+
+interface HostFiles {
+  written: Map<string, Buffer[]>;
+}
+
+let hostFiles: HostFiles = { written: new Map() };
+
+function fakeHostOpen() {
+  hostFiles = { written: new Map() };
+  return async (filePath: string, flags: string | number) => {
+    if (flags === 'r') {
+      let position = 0;
+      return {
+        read: jest.fn(async (buffer: Buffer, offset: number, length: number) => {
+          const count = Math.min(length, STORED_BUNDLE_BYTES.length - position);
+          STORED_BUNDLE_BYTES.copy(buffer, offset, position, position + count);
+          position += count;
+          return { bytesRead: count, buffer };
+        }),
+        close: jest.fn(async () => undefined),
+      };
+    }
+    const sink: Buffer[] = [];
+    hostFiles.written.set(String(filePath), sink);
+    return {
+      write: jest.fn(async (buffer: Buffer, offset: number, length: number) => {
+        sink.push(Buffer.from(buffer.subarray(offset, offset + length)));
+        return { bytesWritten: length, buffer };
+      }),
+      close: jest.fn(async () => undefined),
+    };
+  };
+}
+
+function writtenTo(filePath: string): Buffer {
+  return Buffer.concat(hostFiles.written.get(filePath) ?? []);
+}
+
+function saveBundleExec(command: string) {
+  if (command === HISTORY_BUNDLE_SIZE_COMMAND) {
+    return { exitCode: 0, stdout: `${SAVED_BUNDLE_BYTES.length}\n`, stderr: '' };
+  }
+  if (command === HISTORY_BUNDLE_CHUNK_COMMAND) {
+    return { exitCode: 0, stdout: `${SAVED_BUNDLE_BYTES.toString('base64')}\n`, stderr: '' };
+  }
+  return null;
+}
+
 function historyHarness(execInContainer: jest.Mock) {
   return Object.assign(Object.create(GitService.prototype), {
     sessionsService: {
@@ -630,6 +697,7 @@ describe('GitService checkpoint history', () => {
   beforeEach(() => {
     fsFn(fs.mkdir).mockReset().mockResolvedValue(undefined);
     fsFn(fs.copyFile).mockReset().mockResolvedValue(undefined);
+    fsFn(fs.open).mockReset().mockImplementation(fakeHostOpen());
     fsFn(fs.rename).mockReset().mockResolvedValue(undefined);
     fsFn(fs.unlink).mockReset().mockResolvedValue(undefined);
     fsFn(fs.stat).mockReset().mockResolvedValue({ size: 4096, isFile: () => true });
@@ -659,6 +727,7 @@ describe('GitService checkpoint history', () => {
     expect(execInContainer).toHaveBeenCalledTimes(1);
     expect(fs.mkdir).not.toHaveBeenCalled();
     expect(fs.copyFile).not.toHaveBeenCalled();
+    expect(fs.open).not.toHaveBeenCalled();
     expect(fs.rename).not.toHaveBeenCalled();
   });
 
@@ -688,6 +757,7 @@ describe('GitService checkpoint history', () => {
       '/workspace',
     );
     expect(fs.copyFile).not.toHaveBeenCalled();
+    expect(fs.open).not.toHaveBeenCalled();
   });
 
   it('saves a bundle through a temporary file in the history directory', async () => {
@@ -702,6 +772,10 @@ describe('GitService checkpoint history', () => {
       if (command === `git bundle create ${CONTAINER_HISTORY_BUNDLE} --all`) {
         return { exitCode: 0, stdout: '', stderr: '' };
       }
+      const bundle = saveBundleExec(command);
+      if (bundle) {
+        return bundle;
+      }
       if (command === `rm -f ${CONTAINER_HISTORY_BUNDLE}`) {
         return { exitCode: 0, stdout: '', stderr: '' };
       }
@@ -715,7 +789,6 @@ describe('GitService checkpoint history', () => {
       PROJECT_ID,
     );
 
-    const hostBundle = path.join(workspaceFor(SESSION_ID), '.git', 'aisb-history.bundle');
     const historyDir = path.join(__dirname, '../../../..', 'projects', '_checkpoint-history');
     const [tempPath, destPath] = fsFn(fs.rename).mock.calls[0];
     expect(result).toEqual({ status: 'saved', bytes: 4096 });
@@ -725,7 +798,22 @@ describe('GitService checkpoint history', () => {
     expect(String(tempPath)).toContain(PROJECT_ID);
     expect(destPath).toBe(path.join(historyDir, `${PROJECT_ID}.bundle`));
     expect(fs.mkdir).toHaveBeenCalledWith(path.dirname(String(destPath)), { recursive: true });
-    expect(fs.copyFile).toHaveBeenCalledWith(hostBundle, tempPath);
+    // CM-HISTORY-LINK-01: the bytes come through docker exec, not a host copy.
+    expect(fs.copyFile).not.toHaveBeenCalled();
+    expect(fs.open).toHaveBeenCalledTimes(1);
+    expect(fs.open).toHaveBeenCalledWith(tempPath, EXCLUSIVE_CREATE_FLAGS, 0o644);
+    expect(writtenTo(String(tempPath)).equals(SAVED_BUNDLE_BYTES)).toBe(true);
+    expect(execInContainer).toHaveBeenCalledWith(
+      SESSION_ID,
+      ['sh', '-lc', HISTORY_BUNDLE_SIZE_COMMAND],
+      '/workspace',
+    );
+    expect(execInContainer).toHaveBeenCalledWith(
+      SESSION_ID,
+      ['sh', '-lc', HISTORY_BUNDLE_CHUNK_COMMAND],
+      '/workspace',
+      { SKIP_BLOCKS: '0', COUNT_BLOCKS: '8' },
+    );
     expect(fs.stat).toHaveBeenCalledWith(tempPath);
     expect(fs.unlink).not.toHaveBeenCalled();
     expect(execInContainer).toHaveBeenCalledWith(
@@ -758,6 +846,7 @@ describe('GitService checkpoint history', () => {
     ).rejects.toThrow('fatal: bundle create failed');
 
     expect(fs.copyFile).not.toHaveBeenCalled();
+    expect(fs.open).not.toHaveBeenCalled();
     expect(fs.rename).not.toHaveBeenCalled();
     expect(fs.unlink).not.toHaveBeenCalled();
     expect(execInContainer).toHaveBeenCalledWith(
@@ -783,6 +872,7 @@ describe('GitService checkpoint history', () => {
     expect(result).toEqual({ status: 'none' });
     expect(execInContainer).not.toHaveBeenCalled();
     expect(fs.copyFile).not.toHaveBeenCalled();
+    expect(fs.open).not.toHaveBeenCalled();
     expect(fs.unlink).not.toHaveBeenCalled();
   });
 
@@ -799,10 +889,19 @@ describe('GitService checkpoint history', () => {
     );
 
     expect(result).toEqual({ status: 'restored', head: BRANCH_HEAD });
-    expect(fs.copyFile).toHaveBeenCalledWith(
-      path.join(__dirname, '../../../..', 'projects', '_checkpoint-history', `${PROJECT_ID}.bundle`),
-      path.join(workspaceFor(SESSION_ID), '.aisb-history-restore.bundle'),
+    // CM-HISTORY-LINK-01: any existing entry is unlinked, then the restore
+    // bundle is created exclusively and filled from the stored bundle.
+    const hostRestore = path.join(workspaceFor(SESSION_ID), '.aisb-history-restore.bundle');
+    expect(fs.copyFile).not.toHaveBeenCalled();
+    expect(fsFn(fs.unlink).mock.calls[0]).toEqual([hostRestore]);
+    expect(fsFn(fs.open).mock.calls).toEqual([
+      [hostRestore, EXCLUSIVE_CREATE_FLAGS, 0o644],
+      [STORED_BUNDLE_PATH, 'r'],
+    ]);
+    expect(fsFn(fs.unlink).mock.invocationCallOrder[0]).toBeLessThan(
+      fsFn(fs.open).mock.invocationCallOrder[0],
     );
+    expect(writtenTo(hostRestore).equals(STORED_BUNDLE_BYTES)).toBe(true);
     expect(execInContainer).toHaveBeenNthCalledWith(
       1,
       SESSION_ID,
@@ -902,6 +1001,7 @@ describe('GitService checkpoint history', () => {
       fsFn(fs.stat).mockClear();
       fsFn(fs.mkdir).mockClear();
       fsFn(fs.copyFile).mockClear();
+      fsFn(fs.open).mockClear();
       const execInContainer = jest.fn(async () => {
         throw new Error('exec should not run');
       });
@@ -914,7 +1014,165 @@ describe('GitService checkpoint history', () => {
       expect(fs.stat).not.toHaveBeenCalled();
       expect(fs.mkdir).not.toHaveBeenCalled();
       expect(fs.copyFile).not.toHaveBeenCalled();
+      expect(fs.open).not.toHaveBeenCalled();
     }
+  });
+
+  describe('CM-HISTORY-LINK-01: the bundle crosses through docker exec, checked', () => {
+    function saveExec(overrides: Record<string, { exitCode: number; stdout: string; stderr: string }>) {
+      return jest.fn(async (_sessionId: string, cmd: string[]) => {
+        const command = cmd[2];
+        if (overrides[command]) {
+          return overrides[command];
+        }
+        if (command === 'git rev-parse --is-inside-work-tree') {
+          return { exitCode: 0, stdout: 'true\n', stderr: '' };
+        }
+        if (command === 'git rev-parse --verify HEAD') {
+          return { exitCode: 0, stdout: `${BRANCH_HEAD}\n`, stderr: '' };
+        }
+        if (command === `git bundle create ${CONTAINER_HISTORY_BUNDLE} --all`) {
+          return { exitCode: 0, stdout: '', stderr: '' };
+        }
+        const bundle = saveBundleExec(command);
+        if (bundle) {
+          return bundle;
+        }
+        if (command === `rm -f ${CONTAINER_HISTORY_BUNDLE}`) {
+          return { exitCode: 0, stdout: '', stderr: '' };
+        }
+        throw new Error(`Unexpected command: ${command}`);
+      });
+    }
+
+    it('pins the container commands: a symlink or non-file bundle is refused, slices are bounded', () => {
+      expect(HISTORY_BUNDLE_SIZE_COMMAND).toBe(
+        `[ -f ${CONTAINER_HISTORY_BUNDLE} ] && [ ! -L ${CONTAINER_HISTORY_BUNDLE} ] && wc -c < ${CONTAINER_HISTORY_BUNDLE}`,
+      );
+      expect(HISTORY_BUNDLE_CHUNK_COMMAND).toBe(
+        `dd if=${CONTAINER_HISTORY_BUNDLE} bs=1048576 skip="$SKIP_BLOCKS" count="$COUNT_BLOCKS" 2>/dev/null | base64`,
+      );
+    });
+
+    it('never opens, stats or copies a path inside the workspace while saving', async () => {
+      const execInContainer = saveExec({});
+      await callHistory('saveProjectHistory', historyHarness(execInContainer), SESSION_ID, PROJECT_ID);
+
+      const workspace = workspaceFor(SESSION_ID);
+      const touched = [fs.open, fs.stat, fs.copyFile, fs.mkdir, fs.rename, fs.unlink].flatMap((fn) =>
+        fsFn(fn).mock.calls.flatMap((call) => call.filter((arg) => typeof arg === 'string')),
+      );
+      expect(touched.length).toBeGreaterThan(0);
+      for (const filePath of touched) {
+        expect(String(filePath).startsWith(workspace)).toBe(false);
+      }
+    });
+
+    it('reads a large bundle in bounded slices and keeps every byte', async () => {
+      const size = 8 * 1024 * 1024 * 2 + 5;
+      const bytes = Buffer.alloc(size);
+      for (let index = 0; index < size; index += 1) {
+        bytes[index] = (index * 31 + 7) & 0xff;
+      }
+      const execInContainer = jest.fn(async (_sessionId: string, cmd: string[], _cwd: string, env?: any) => {
+        const command = cmd[2];
+        if (command === HISTORY_BUNDLE_SIZE_COMMAND) {
+          return { exitCode: 0, stdout: `${size}\n`, stderr: '' };
+        }
+        if (command === HISTORY_BUNDLE_CHUNK_COMMAND) {
+          const start = Number(env.SKIP_BLOCKS) * 1024 * 1024;
+          const slice = bytes.subarray(start, start + Number(env.COUNT_BLOCKS) * 1024 * 1024);
+          // base64 wraps lines at 76 characters, as busybox and coreutils do.
+          const wrapped = slice.toString('base64').replace(/(.{76})/g, '$1\n');
+          return { exitCode: 0, stdout: `${wrapped}\n`, stderr: '' };
+        }
+        return saveExec({})(_sessionId, cmd);
+      });
+
+      await callHistory('saveProjectHistory', historyHarness(execInContainer), SESSION_ID, PROJECT_ID);
+
+      const [tempPath] = fsFn(fs.rename).mock.calls[0];
+      expect(writtenTo(String(tempPath)).equals(bytes)).toBe(true);
+      const slices = execInContainer.mock.calls
+        .filter((call) => call[1][2] === HISTORY_BUNDLE_CHUNK_COMMAND)
+        .map((call) => call[3]);
+      expect(slices).toEqual([
+        { SKIP_BLOCKS: '0', COUNT_BLOCKS: '8' },
+        { SKIP_BLOCKS: '8', COUNT_BLOCKS: '8' },
+        { SKIP_BLOCKS: '16', COUNT_BLOCKS: '8' },
+      ]);
+    });
+
+    it('refuses the save when the container refuses the bundle (symlink or not a file), and cleans up', async () => {
+      const execInContainer = saveExec({
+        [HISTORY_BUNDLE_SIZE_COMMAND]: { exitCode: 1, stdout: '', stderr: '' },
+      });
+      await expect(
+        callHistory('saveProjectHistory', historyHarness(execInContainer), SESSION_ID, PROJECT_ID),
+      ).rejects.toThrow('Failed to read history bundle');
+      expect(fs.open).not.toHaveBeenCalled();
+      expect(fs.rename).not.toHaveBeenCalled();
+      expect(execInContainer).toHaveBeenCalledWith(
+        SESSION_ID,
+        ['sh', '-lc', `rm -f ${CONTAINER_HISTORY_BUNDLE}`],
+        '/workspace',
+      );
+    });
+
+    it.each([
+      ['a short slice', Buffer.from('short').toString('base64')],
+      ['a long slice', Buffer.concat([SAVED_BUNDLE_BYTES, Buffer.from('x')]).toString('base64')],
+      ['text that is not base64', 'not base64 at all!'],
+    ])('refuses %s, removes the temporary file and stores nothing', async (_name, stdout) => {
+      const execInContainer = saveExec({
+        [HISTORY_BUNDLE_CHUNK_COMMAND]: { exitCode: 0, stdout, stderr: '' },
+      });
+      await expect(
+        callHistory('saveProjectHistory', historyHarness(execInContainer), SESSION_ID, PROJECT_ID),
+      ).rejects.toThrow('History bundle changed while it was read');
+      const [tempPath] = fsFn(fs.open).mock.calls[0];
+      expect(fs.rename).not.toHaveBeenCalled();
+      expect(fs.unlink).toHaveBeenCalledWith(tempPath);
+    });
+
+    it('fails the restore without writing when the restore path cannot be created exclusively', async () => {
+      const eexist = Object.assign(new Error('EEXIST: file already exists'), { code: 'EEXIST' });
+      fsFn(fs.open).mockImplementation(async (_filePath: string, flags: string | number) => {
+        if (flags === 'r') {
+          throw new Error('the stored bundle must not be opened');
+        }
+        throw eexist;
+      });
+      const execInContainer = restoreExec({ heads: `${BRANCH_HEAD} HEAD\n` });
+
+      await expect(
+        callHistory('restoreProjectHistory', historyHarness(execInContainer), SESSION_ID, PROJECT_ID),
+      ).rejects.toThrow('EEXIST');
+      expect(execInContainer).not.toHaveBeenCalledWith(
+        SESSION_ID,
+        ['sh', '-lc', FETCH_COMMAND],
+        '/workspace',
+      );
+      assertRestoreBundlesRemoved(execInContainer);
+    });
+
+    it('refuses the restore when the existing entry cannot be removed (a directory)', async () => {
+      const eisdir = Object.assign(new Error('EISDIR: illegal operation on a directory'), {
+        code: 'EISDIR',
+      });
+      fsFn(fs.unlink).mockRejectedValueOnce(eisdir);
+      const execInContainer = restoreExec({ heads: `${BRANCH_HEAD} HEAD\n` });
+
+      await expect(
+        callHistory('restoreProjectHistory', historyHarness(execInContainer), SESSION_ID, PROJECT_ID),
+      ).rejects.toThrow('EISDIR');
+      expect(fs.open).not.toHaveBeenCalled();
+    });
+
+    it('keeps the stored history path', () => {
+      const plain = Object.create(GitService.prototype) as { historyBundlePath(id: string): string };
+      expect(plain.historyBundlePath(PROJECT_ID)).toBe(STORED_BUNDLE_PATH);
+    });
   });
 });
 

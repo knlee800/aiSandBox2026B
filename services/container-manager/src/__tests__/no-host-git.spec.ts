@@ -42,6 +42,14 @@ jest.mock('fs/promises', () => {
     ...actual,
     mkdir: jest.fn(async () => undefined),
     copyFile: jest.fn(async () => undefined),
+    // CM-HISTORY-LINK-01: history files are opened and written, not copied.
+    open: jest.fn(async () => ({
+      read: jest.fn(async () => ({ bytesRead: 0 })),
+      write: jest.fn(async (_buffer: unknown, _offset: number, length: number) => ({
+        bytesWritten: length,
+      })),
+      close: jest.fn(async () => undefined),
+    })),
     rename: jest.fn(async () => undefined),
     stat: jest.fn(async () => ({ size: 1024, isFile: () => true })),
     unlink: jest.fn(async () => undefined),
@@ -50,7 +58,11 @@ jest.mock('fs/promises', () => {
 
 import * as fsSync from 'fs';
 import * as path from 'path';
-import { GitService } from '../git/git.service';
+import {
+  GitService,
+  HISTORY_BUNDLE_CHUNK_COMMAND,
+  HISTORY_BUNDLE_SIZE_COMMAND,
+} from '../git/git.service';
 import { GitController } from '../git/git.controller';
 import { SessionsService } from '../sessions/sessions.service';
 import { SessionsController } from '../sessions/sessions.controller';
@@ -115,6 +127,13 @@ describe('CM-GIT-HOST-01: every checkpoint git path runs inside the container', 
   let service: GitService;
 
   function commandFor(command: string): { exitCode: number; stdout: string; stderr: string } {
+    // CM-HISTORY-LINK-01: the saved bundle's size, then its bytes as base64.
+    if (command === HISTORY_BUNDLE_SIZE_COMMAND) {
+      return { exitCode: 0, stdout: '4\n', stderr: '' };
+    }
+    if (command === HISTORY_BUNDLE_CHUNK_COMMAND) {
+      return { exitCode: 0, stdout: `${Buffer.from('PACK').toString('base64')}\n`, stderr: '' };
+    }
     if (command.includes('rev-parse --is-inside-work-tree')) {
       return { exitCode: 0, stdout: 'true\n', stderr: '' };
     }

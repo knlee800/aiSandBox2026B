@@ -5,6 +5,7 @@ import { SessionsService } from '../sessions/sessions.service';
 import { ApiGatewayHttpClient } from '../clients/api-gateway-http.client';
 import Database from 'better-sqlite3';
 import { randomBytes } from 'crypto';
+import { constants as fsConstants } from 'fs';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -13,6 +14,35 @@ const UUID_PATTERN =
 const COMMIT_HASH_PATTERN = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/i;
 const CONTAINER_HISTORY_BUNDLE = '/workspace/.git/aisb-history.bundle';
 const CONTAINER_RESTORE_BUNDLE = '/workspace/.aisb-history-restore.bundle';
+
+// CM-HISTORY-LINK-01: the saved bundle leaves the container through docker exec
+// as base64 text (exec stdout is decoded as UTF-8, so raw bytes would not
+// survive), read in bounded slices so container-manager never holds the whole
+// bundle in memory. The size is read once, after git bundle create; the copy
+// never reads past it.
+export const HISTORY_BUNDLE_BLOCK_BYTES = 1024 * 1024;
+export const HISTORY_BUNDLE_CHUNK_BLOCKS = 8;
+export const HISTORY_BUNDLE_SIZE_COMMAND = `[ -f ${CONTAINER_HISTORY_BUNDLE} ] && [ ! -L ${CONTAINER_HISTORY_BUNDLE} ] && wc -c < ${CONTAINER_HISTORY_BUNDLE}`;
+export const HISTORY_BUNDLE_CHUNK_COMMAND = `dd if=${CONTAINER_HISTORY_BUNDLE} bs=${HISTORY_BUNDLE_BLOCK_BYTES} skip="$SKIP_BLOCKS" count="$COUNT_BLOCKS" 2>/dev/null | base64`;
+const HOST_COPY_BUFFER_BYTES = 1024 * 1024;
+
+// O_CREAT | O_EXCL never follows a symlink and fails on any existing entry
+// (symlink, device node, FIFO, directory or file), atomically. O_NOFOLLOW is
+// added where the platform defines it (Linux, macOS); Windows has none, and
+// O_EXCL alone already refuses an existing entry there.
+const HOST_CREATE_EXCLUSIVE_FLAGS =
+  fsConstants.O_WRONLY |
+  fsConstants.O_CREAT |
+  fsConstants.O_EXCL |
+  (typeof fsConstants.O_NOFOLLOW === 'number' ? fsConstants.O_NOFOLLOW : 0);
+
+function decodeStrictBase64(text: string): Buffer | null {
+  const compact = text.replace(/\s+/g, '');
+  if (compact.length % 4 !== 0 || !/^[A-Za-z0-9+/]*={0,2}$/.test(compact)) {
+    return null;
+  }
+  return Buffer.from(compact, 'base64');
+}
 
 export const WORKTREE_DIFF_MAX_CHARS = 65536;
 export const WORKTREE_DIFF_TRUNCATED_MARKER = '\n[diff truncated]\n';
@@ -487,11 +517,6 @@ export class GitService {
       throw new Error(head.stderr || 'Failed to resolve HEAD');
     }
 
-    const hostBundlePath = path.join(
-      this.sessionsService.getWorkspacePath(sessionId),
-      '.git',
-      'aisb-history.bundle',
-    );
     const historyDir = this.checkpointHistoryDir();
     const finalPath = this.historyBundlePath(projectId);
     const tempPath = path.join(historyDir, `${projectId}.${randomBytes(8).toString('hex')}.tmp`);
@@ -508,9 +533,19 @@ export class GitService {
         throw new Error(created.stderr || 'Failed to create history bundle');
       }
 
+      // CM-HISTORY-LINK-01: the bundle is read out of the container through
+      // docker exec, never through the host path of the bind-mounted
+      // workspace, where the sandbox could swap in a symlink (to the file or to
+      // .git itself) or a device node after git bundle create.
+      const size = await this.readContainerBundleSize(sessionId);
       await fs.mkdir(historyDir, { recursive: true });
-      await fs.copyFile(hostBundlePath, tempPath);
+      const handle = await fs.open(tempPath, HOST_CREATE_EXCLUSIVE_FLAGS, 0o644);
       removeTemp = true;
+      try {
+        await this.copyContainerBundleTo(sessionId, size, handle);
+      } finally {
+        await handle.close();
+      }
       const stat = await fs.stat(tempPath);
       await fs.rename(tempPath, finalPath);
       removeTemp = false;
@@ -541,7 +576,7 @@ export class GitService {
     );
 
     try {
-      await fs.copyFile(this.historyBundlePath(projectId), hostRestorePath);
+      await this.stageRestoreBundle(this.historyBundlePath(projectId), hostRestorePath);
       await this.ensureGitInitializedInContainer(sessionId);
 
       const listed = await this.execWorkspace(
@@ -626,6 +661,100 @@ export class GitService {
         return false;
       }
       throw error;
+    }
+  }
+
+  /**
+   * CM-HISTORY-LINK-01: size of the bundle git just wrote, read inside the
+   * container. A symlink or anything but a regular file there is refused.
+   */
+  private async readContainerBundleSize(sessionId: string): Promise<number> {
+    const sized = await this.execWorkspace(sessionId, HISTORY_BUNDLE_SIZE_COMMAND);
+    const text = sized.stdout.trim();
+    if (sized.exitCode !== 0 || !/^\d+$/.test(text)) {
+      throw new Error(sized.stderr || 'Failed to read history bundle');
+    }
+    const size = Number(text);
+    if (!Number.isSafeInteger(size)) {
+      throw new Error('Failed to read history bundle');
+    }
+    return size;
+  }
+
+  /**
+   * CM-HISTORY-LINK-01: copy exactly `size` bytes of the container's bundle to
+   * an already-open host file, in slices of HISTORY_BUNDLE_CHUNK_BLOCKS blocks,
+   * each sent as base64 through docker exec. The host opens no path inside the
+   * workspace. A slice that is short, long or not strict base64 fails the save.
+   */
+  private async copyContainerBundleTo(
+    sessionId: string,
+    size: number,
+    handle: fs.FileHandle,
+  ): Promise<void> {
+    const chunkBytes = HISTORY_BUNDLE_BLOCK_BYTES * HISTORY_BUNDLE_CHUNK_BLOCKS;
+    for (let offset = 0; offset < size; offset += chunkBytes) {
+      const expected = Math.min(chunkBytes, size - offset);
+      const read = await this.execWorkspace(sessionId, HISTORY_BUNDLE_CHUNK_COMMAND, {
+        SKIP_BLOCKS: String(offset / HISTORY_BUNDLE_BLOCK_BYTES),
+        COUNT_BLOCKS: String(HISTORY_BUNDLE_CHUNK_BLOCKS),
+      });
+      if (read.exitCode !== 0) {
+        throw new Error(read.stderr || 'Failed to read history bundle');
+      }
+      const bytes = decodeStrictBase64(read.stdout);
+      if (!bytes || bytes.length !== expected) {
+        throw new Error('History bundle changed while it was read');
+      }
+      await this.writeAll(handle, bytes);
+    }
+  }
+
+  /**
+   * CM-HISTORY-LINK-01: put the stored bundle at the host path the container
+   * reads as CONTAINER_RESTORE_BUNDLE without following anything the sandbox
+   * planted there. The parent is the bind-mount root, which the sandbox cannot
+   * replace; the entry itself is removed (unlink removes a symlink, never its
+   * target) and created fresh with O_CREAT | O_EXCL, which fails rather than
+   * follow a symlink or open a device node that appears in between.
+   */
+  private async stageRestoreBundle(storedPath: string, hostRestorePath: string): Promise<void> {
+    try {
+      await fs.unlink(hostRestorePath);
+    } catch (error) {
+      if (error.code !== 'ENOENT') {
+        throw error;
+      }
+    }
+
+    const target = await fs.open(hostRestorePath, HOST_CREATE_EXCLUSIVE_FLAGS, 0o644);
+    try {
+      const source = await fs.open(storedPath, 'r');
+      try {
+        const buffer = Buffer.allocUnsafe(HOST_COPY_BUFFER_BYTES);
+        for (;;) {
+          const { bytesRead } = await source.read(buffer, 0, buffer.length, null);
+          if (bytesRead === 0) {
+            break;
+          }
+          await this.writeAll(target, buffer.subarray(0, bytesRead));
+        }
+      } finally {
+        await source.close();
+      }
+    } finally {
+      await target.close();
+    }
+  }
+
+  private async writeAll(handle: fs.FileHandle, bytes: Buffer): Promise<void> {
+    let written = 0;
+    while (written < bytes.length) {
+      const result = await handle.write(bytes, written, bytes.length - written, null);
+      if (result.bytesWritten <= 0) {
+        throw new Error('Failed to write history bundle');
+      }
+      written += result.bytesWritten;
     }
   }
 
