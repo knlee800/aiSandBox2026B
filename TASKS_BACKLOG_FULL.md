@@ -88325,14 +88325,14 @@ taskId=STAGING-DEPLOY-FD-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-ONE-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-11 — Keith approved the deploy ("Yes, deploy it"). Was: READY — registered 2026-11-09 by GOV-ONE-PLAN-01 — not admitted.
 **Task ID:** STAGING-DEPLOY-FD-01
 **Title:** Deploy the front door (phase 2)
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP
-**Start condition:** NOT_READY. Ready when: COS-DRAFTS-01 LOCKED. Keith decides.
-**Depends on:** COS-DRAFTS-01.
+**Start condition:** READY (COS-FRONTDOOR-01C LOCKED; Keith approved 2026-11-11). Was: NOT_READY. Ready when: COS-DRAFTS-01 LOCKED.
+**Depends on:** COS-FRONTDOOR-01C (re-scoped 2026-11-11; was COS-DRAFTS-01, which now deploys with STAGING-DEPLOY-FD-02).
 **Primary write scope:** records; host state.
 **Mutexes / resources:** STAGING, ENV.
 **Hot-file leases:** none.
@@ -88342,9 +88342,33 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
-**Scope:** Deploy the front door (phase 2).
+**Scope:** Deploy the front door (phase 2). Re-scoped 2026-11-11 (Keith "Yes, deploy it"): deploy main to staging from the host with runs off, carrying COS-FRONTDOOR-01, -01B and -01C (roster table and routes, roster-driven hand-offs with report-back, the Team page picker); USER-TEAMS-01, APPROVAL-SET-01 and COS-DRAFTS-01 deploy with STAGING-DEPLOY-FD-02.
 **Also (added 2026-11-10 by the COS-FRONTDOOR-01B LOCK):** a migrating deploy: it carries migration 1805000000000-CreateCollaborationRostersTable (collaboration_rosters); the deploy tool takes a pre-migration backup and stores the new migration hash; the down path drops the table, losing only saved rosters.
 **Plan:** docs/AGENT-OPS-PLAN.md section 0 item 38
+
+### STAGING-DEPLOY-FD-02 — Deploy the rest of Stage 4
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-FD-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the STAGING-DEPLOY-FD-01 re-scope — not admitted.
+**Task ID:** STAGING-DEPLOY-FD-02
+**Title:** Deploy the rest of Stage 4
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: COS-DRAFTS-01 LOCKED. Keith decides.
+**Depends on:** COS-DRAFTS-01.
+**Primary write scope:** records; host state.
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** redeploy.
+**saturationClass:** OPTIONAL. **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy USER-TEAMS-01, APPROVAL-SET-01 and COS-DRAFTS-01 (the rest of Stage 4) after STAGING-DEPLOY-FD-01 deployed the front door.
 
 ### FRONTDOOR-LIVE-01 — Live check: Keith gives the Chief of Staff a job; it passes work on and answers with the results
 <!-- AISB_MACHINE_REG_V1_BEGIN -->

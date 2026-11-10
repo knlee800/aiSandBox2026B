@@ -53,7 +53,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 | 35 | USER-TEAMS-01 | User teams and who hands off to whom |
 | 36 | APPROVAL-SET-01 | Approval setting |
 | 37 | COS-DRAFTS-01 | Chief of Staff drafts agents and workflows for approval |
-| 38 | STAGING-DEPLOY-FD-01, FRONTDOOR-LIVE-01 | Deploy; live check of the front door |
+| 38 | STAGING-DEPLOY-FD-01, FRONTDOOR-LIVE-01, STAGING-DEPLOY-FD-02 | Deploy the front door (admitted 2026-11-11, re-scoped to deploy before USER-TEAMS-01, APPROVAL-SET-01 and COS-DRAFTS-01); live check of the front door; the rest of Stage 4 deploys with STAGING-DEPLOY-FD-02 |
 
 **Stage 5 — chat (phase 3)**
 
