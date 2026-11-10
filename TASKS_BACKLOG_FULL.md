@@ -86690,7 +86690,7 @@ taskId=STAGING-DEPLOY-WFC-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — registered and admitted in one record; Keith approved the deploy ("Yes, deploy it").
+**Status:** COMPLETE AND LOCKED — 2026-11-10. Result: passed. Lane 1, STAGING and ENV released; stagingAuthorized false. 324ccca -> 678d511 (rc 0): WORKFLOW-CREATE-01 and WORKFLOW-STATUS-02; migration hash unchanged (976a9358); configuration unchanged; runs off; key match across three env files; standard checks, ai-service and container-manager guards, removed routes 404, CORS off, traversal URLs never 200, ports on 127.0.0.1; USER_WORKFLOW_SWITCH_ON_CHECK and NEW_USER_AGENT_STATUS in the gateway build, the Draft badge test id in the frontend build; no key text in outputs or journals. Logged-in checks superseded by the WORKFLOW-CREATE-01 and WORKFLOW-STATUS-02 live-check lists. Checkpoint: docs/STAGING-DEPLOY-WFC-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 1 superseded / 0 dropped / 0 undisposed. Registered and admitted 2026-11-10 in one record.
 **Task ID:** STAGING-DEPLOY-WFC-01
 **Title:** Deploy the workflow draft and switch-on fixes
 **Workstream:** AGENT (taxonomy only; zero admission weight)
