@@ -320,3 +320,153 @@ describe('useUserAgents deleteUserAgentRequest — AGENT-PLATFORM-CREATE-01F', (
     assert.deepEqual(remaining.map((agent) => agent.id), ['a', 'c']);
   });
 });
+
+describe('useUserAgents workflow routes — BIZ-USER-01B', () => {
+  beforeEach(() => {
+    fetchCalls.length = 0;
+  });
+
+  afterEach(() => {
+    restoreFetch();
+  });
+
+  const created = {
+    id: 'new-1',
+    name: 'Digest',
+    role: 'Helper',
+    description: 'Does things',
+    status: 'active',
+    initials: 'D',
+    createdAt: '2026-11-10T10:00:00.000Z',
+    updatedAt: '2026-11-10T10:00:00.000Z',
+    neverDo: [{ code: 'FILES_NO_CHANGE' }],
+    instructionsChars: 900,
+    maxInstructionsChars: 4000,
+  };
+
+  test('createUserAgentRequest posts the body as given to /api/agents with credentials', async () => {
+    const { createUserAgentRequest } = await import('./useUserAgents');
+    installMockFetch(async () => mockResponse(201, created));
+
+    const dto = { name: 'Digest', role: 'Helper', description: 'Does things' };
+    const result = await createUserAgentRequest(dto);
+
+    assert.equal(fetchCalls[0].url, '/api/agents');
+    assert.equal(fetchCalls[0].init?.method, 'POST');
+    assert.equal(fetchCalls[0].init?.credentials, 'include');
+    assert.deepEqual(JSON.parse(fetchCalls[0].init!.body as string), dto);
+    assert.equal(result.agent?.id, 'new-1');
+    assert.equal(result.agent?.instructionsChars, 900);
+  });
+
+  test('createUserAgentFromTemplateRequest posts to /api/agents/from-template', async () => {
+    const { createUserAgentFromTemplateRequest } = await import('./useUserAgents');
+    installMockFetch(async () => mockResponse(201, created));
+
+    const result = await createUserAgentFromTemplateRequest({
+      templateId: 'chief-of-staff',
+      name: 'Digest',
+      role: 'Helper',
+    });
+
+    assert.equal(fetchCalls[0].url, '/api/agents/from-template');
+    assert.equal(fetchCalls[0].init?.method, 'POST');
+    assert.deepEqual(JSON.parse(fetchCalls[0].init!.body as string), {
+      templateId: 'chief-of-staff',
+      name: 'Digest',
+      role: 'Helper',
+    });
+    assert.equal(result.agent?.id, 'new-1');
+  });
+
+  test('updateUserAgentRequest sends PATCH to /api/agents/:id with the encoded id', async () => {
+    const { updateUserAgentRequest } = await import('./useUserAgents');
+    installMockFetch(async () => mockResponse(200, created));
+
+    const result = await updateUserAgentRequest('a/b', { name: 'New', tone: null, budgetPerRunCredits: null });
+
+    assert.equal(fetchCalls[0].url, '/api/agents/a%2Fb');
+    assert.equal(fetchCalls[0].init?.method, 'PATCH');
+    assert.equal(fetchCalls[0].init?.credentials, 'include');
+    assert.deepEqual(JSON.parse(fetchCalls[0].init!.body as string), {
+      name: 'New',
+      tone: null,
+      budgetPerRunCredits: null,
+    });
+    assert.equal(result.error, undefined);
+  });
+
+  test('a 400 with a refusal code returns the code and message', async () => {
+    const { updateUserAgentRequest } = await import('./useUserAgents');
+    installMockFetch(async () =>
+      mockResponse(400, { statusCode: 400, message: 'The workflow budget is invalid.', code: 'BUDGET_INVALID' }),
+    );
+
+    const result = await updateUserAgentRequest('agent-1', { budgetPerDayCredits: 1 });
+
+    assert.equal(result.agent, undefined);
+    assert.equal(result.code, 'BUDGET_INVALID');
+    assert.equal(result.error, 'The workflow budget is invalid.');
+  });
+
+  test('a 400 without a code returns the message only', async () => {
+    const { createUserAgentRequest } = await import('./useUserAgents');
+    installMockFetch(async () => mockResponse(400, { message: ['name must be shorter', 'role is empty'] }));
+
+    const result = await createUserAgentRequest({ name: 'x', role: 'y', description: 'z' });
+
+    assert.equal(result.code, undefined);
+    assert.equal(result.error, 'name must be shorter; role is empty');
+  });
+
+  test('401, 404, 500 and a network error map to stable error values', async () => {
+    const { updateUserAgentRequest, createUserAgentRequest } = await import('./useUserAgents');
+
+    installMockFetch(async () => mockResponse(401, {}));
+    assert.equal((await updateUserAgentRequest('a', { name: 'n' })).error, 'AUTH_EXPIRED');
+
+    installMockFetch(async () => mockResponse(404, {}));
+    assert.equal((await updateUserAgentRequest('a', { name: 'n' })).error, 'NOT_FOUND');
+
+    installMockFetch(async () => mockResponse(500, {}));
+    assert.equal((await updateUserAgentRequest('a', { name: 'n' })).error, 'UPDATE_FAILED');
+    assert.equal((await createUserAgentRequest({ name: 'n', role: 'r', description: 'd' })).error, 'CREATE_FAILED');
+
+    installMockFetch(async () => {
+      throw new Error('offline');
+    });
+    assert.equal((await updateUserAgentRequest('a', { name: 'n' })).error, 'UPDATE_FAILED');
+  });
+
+  test('fetchUserAgentOptionsRequest reads /api/agents/options', async () => {
+    const { fetchUserAgentOptionsRequest } = await import('./useUserAgents');
+    const body = {
+      replyLanguages: ['owner'],
+      toolProfiles: ['read'],
+      knowledgeScopes: [{ id: 'policies', type: 'shared' }],
+      connectorTools: [{ id: 'mail_list_unread_metadata', kind: 'imap' }],
+      connectedKinds: ['imap'],
+      models: [{ id: 'claude-sonnet-5-5', provider: 'anthropic', creditsPer1kTokens: 1 }],
+      templates: ['chief-of-staff'],
+      limits: {
+        maxInstructionsChars: 4000,
+        maxToneChars: 120,
+        maxKnowledgeScopes: 9,
+        maxBudgetCredits: 1000000,
+        platformDailyCreditsPerUser: 500,
+      },
+    };
+    installMockFetch(async () => mockResponse(200, body));
+
+    const result = await fetchUserAgentOptionsRequest();
+
+    assert.equal(fetchCalls[0].url, '/api/agents/options');
+    assert.equal(fetchCalls[0].init?.credentials, 'include');
+    assert.deepEqual(result.options, body);
+
+    installMockFetch(async () => mockResponse(500, {}));
+    assert.equal((await fetchUserAgentOptionsRequest()).error, 'OPTIONS_FAILED');
+    installMockFetch(async () => mockResponse(401, {}));
+    assert.equal((await fetchUserAgentOptionsRequest()).error, 'AUTH_EXPIRED');
+  });
+});

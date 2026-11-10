@@ -3,10 +3,42 @@
 import React from 'react';
 import {
   PlusIcon,
+  PencilSquareIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
+import type {
+  CreateAgentDto,
+  CreateAgentFromTemplateDto,
+  UpdateAgentDto,
+  UserAgent,
+  UserAgentOptions,
+  UserAgentSaveResult,
+} from '@/hooks/useUserAgents';
+import Spinner from '@/components/ui/Spinner';
+import {
+  WorkflowAccessFields,
+  WorkflowAdvancedFields,
+  WorkflowBasicFields,
+  WorkflowOptionsStatus,
+  WorkflowShownPanel,
+  WorkflowStartChooser,
+  type WorkflowT,
+} from './agent-workflow-fields';
+import {
+  DEFAULT_WORKFLOW_LIMITS,
+  buildBlankBody,
+  buildPatchBody,
+  buildTemplateBody,
+  checkWorkflowDraft,
+  emptyWorkflowDraft,
+  liveInstructionsCount,
+  mapRefusal,
+  workflowDraftFromAgent,
+  type WorkflowDraft,
+  type WorkflowErrors,
+} from './agent-workflow-model';
 
 export interface CreateAgentFormLabels {
   formTitle: string;
@@ -29,10 +61,39 @@ export interface CreateAgentFormLabels {
   createSuccess: string;
 }
 
+
+/** What the editor asks its owner to save. The dashboard maps each kind to a hook call. */
+export type WorkflowSaveRequest =
+  | { kind: 'blank'; body: CreateAgentDto }
+  | { kind: 'template'; body: CreateAgentFromTemplateDto }
+  | { kind: 'update'; agentId: string; body: UpdateAgentDto };
+
+/** Present when the form runs as the workflow editor (BIZ-USER-01B). Absent: the plain three-field create. */
+export interface AgentWorkflowConfig {
+  mode: 'create' | 'edit';
+  /** Looks up platform.agentWorkflow.<key>. */
+  t: WorkflowT;
+  /** The display name of a Knowledge folder. */
+  scopeName: (id: string) => string;
+  localePrefix: string;
+  options: UserAgentOptions | null;
+  optionsLoading: boolean;
+  optionsError: boolean;
+  onRetryOptions: () => void;
+  /** The workflow being edited (mode 'edit'). */
+  agent?: UserAgent | null;
+  /** True when this editor opened straight after a copy from a template. */
+  createdNotice?: boolean;
+  onSave: (request: WorkflowSaveRequest) => Promise<UserAgentSaveResult>;
+  /** Called after a successful save with the saved row and the kind of save. */
+  onSaved?: (agent: UserAgent, kind: WorkflowSaveRequest['kind']) => void;
+}
+
 export interface CreateAgentFormProps {
   labels: CreateAgentFormLabels;
   onSubmit: (data: { name: string; role: string; description: string }) => Promise<{ error?: string }>;
   onCancel: () => void;
+  workflow?: AgentWorkflowConfig;
 }
 
 interface FieldErrors {
@@ -41,42 +102,112 @@ interface FieldErrors {
   description?: string;
 }
 
-export default function CreateAgentForm({ labels, onSubmit, onCancel }: CreateAgentFormProps) {
-  const [name, setName] = React.useState('');
-  const [role, setRole] = React.useState('');
-  const [description, setDescription] = React.useState('');
+export default function CreateAgentForm({ labels, onSubmit, onCancel, workflow }: CreateAgentFormProps) {
+  const editing = workflow?.mode === 'edit';
+  const [draft, setDraft] = React.useState<WorkflowDraft>(() =>
+    editing && workflow?.agent ? workflowDraftFromAgent(workflow.agent) : emptyWorkflowDraft(),
+  );
+  const [saved, setSaved] = React.useState<UserAgent | null>(workflow?.agent ?? null);
+  const [start, setStart] = React.useState<string>('blank');
   const [fieldErrors, setFieldErrors] = React.useState<FieldErrors>({});
+  const [workflowErrors, setWorkflowErrors] = React.useState<WorkflowErrors>({});
   const [submitError, setSubmitError] = React.useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
 
+  const t: WorkflowT = workflow?.t ?? (() => '');
+  const options = workflow?.options ?? null;
+  const limits = options?.limits ?? DEFAULT_WORKFLOW_LIMITS;
+  const templateMode = !editing && start !== 'blank';
+  // The full workflow fields need the options route; without it the form falls back to the plain create.
+  const showWorkflowFields = Boolean(workflow && options && !templateMode);
+  const count = liveInstructionsCount(draft, saved, limits.maxInstructionsChars);
+  const optionsPending = Boolean(workflow && !options && workflow.optionsLoading);
+  const editBlocked = Boolean(editing && !options);
+
+  const failureText =
+    editing && workflow ? t('errors.saveFailed') : labels.createError;
+
+  function patchDraft(patch: Partial<WorkflowDraft>) {
+    setDraft((current) => ({ ...current, ...patch }));
+    setSubmitSuccess(false);
+  }
+
   function validate(): FieldErrors {
     const errors: FieldErrors = {};
-    if (!name.trim()) errors.name = labels.nameRequired;
-    else if (name.length > 100) errors.name = labels.nameTooLong;
-    if (!role.trim()) errors.role = labels.roleRequired;
-    else if (role.length > 200) errors.role = labels.roleTooLong;
-    if (!description.trim()) errors.description = labels.descriptionRequired;
-    else if (description.length > 2000) errors.description = labels.descriptionTooLong;
+    if (!draft.name.trim()) errors.name = labels.nameRequired;
+    else if (draft.name.length > 100) errors.name = labels.nameTooLong;
+    if (!draft.role.trim()) errors.role = labels.roleRequired;
+    else if (draft.role.length > 200) errors.role = labels.roleTooLong;
+    if (!draft.description.trim()) errors.description = labels.descriptionRequired;
+    else if (draft.description.length > 2000) errors.description = labels.descriptionTooLong;
     return errors;
+  }
+
+  function requestFor(): WorkflowSaveRequest {
+    if (editing && workflow?.agent) {
+      return { kind: 'update', agentId: workflow.agent.id, body: buildPatchBody(draft) };
+    }
+    if (templateMode) {
+      return { kind: 'template', body: buildTemplateBody(start, draft) };
+    }
+    return { kind: 'blank', body: buildBlankBody(draft) };
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitError(null);
     setSubmitSuccess(false);
+    setWorkflowErrors({});
 
     const errors = validate();
     setFieldErrors(errors);
-    if (Object.keys(errors).length > 0) return;
+    const workflowChecks = workflow
+      ? checkWorkflowDraft({
+          draft,
+          limits,
+          instructions: count,
+          scope: showWorkflowFields || editing ? 'workflow' : 'basic',
+        })
+      : {};
+    setWorkflowErrors(workflowChecks);
+    if (Object.keys(errors).length > 0 || Object.keys(workflowChecks).length > 0) return;
 
     setSubmitting(true);
     try {
-      const result = await onSubmit({ name: name.trim(), role: role.trim(), description: description.trim() });
-      if (result.error) {
-        setSubmitError(result.error);
-      } else {
-        setSubmitSuccess(true);
+      if (!workflow) {
+        const result = await onSubmit({
+          name: draft.name.trim(),
+          role: draft.role.trim(),
+          description: draft.description.trim(),
+        });
+        if (result.error) {
+          setSubmitError(labels.createError);
+        } else {
+          setSubmitSuccess(true);
+          setTimeout(() => {
+            onCancel();
+          }, 1200);
+        }
+        return;
+      }
+
+      const request = requestFor();
+      const result = await workflow.onSave(request);
+      if (result.error || !result.agent) {
+        const refusal = mapRefusal(result.code);
+        if (refusal.field === 'form') {
+          setSubmitError(result.code ? t(refusal.messageKey) : failureText);
+        } else {
+          setWorkflowErrors({ [refusal.field]: refusal.messageKey });
+          setSubmitError(null);
+        }
+        return;
+      }
+      setSubmitSuccess(true);
+      setSaved(result.agent);
+      workflow.onSaved?.(result.agent, request.kind);
+      if (request.kind === 'blank') {
         setTimeout(() => {
           onCancel();
         }, 1200);
@@ -91,6 +222,12 @@ export default function CreateAgentForm({ labels, onSubmit, onCancel }: CreateAg
   const labelClasses = 'block text-sm font-medium text-slate-200';
   const errorClasses = 'mt-1 text-xs text-red-400';
 
+  const title = editing && workflow ? t('editTitle') : labels.formTitle;
+  const TitleIcon = editing ? PencilSquareIcon : PlusIcon;
+  const submitLabel = editing && workflow ? t('saveButton') : labels.submitButton;
+  const submittingLabel = editing && workflow ? t('saving') : labels.submitting;
+  const successText = editing && workflow ? t('saved') : labels.createSuccess;
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -100,9 +237,9 @@ export default function CreateAgentForm({ labels, onSubmit, onCancel }: CreateAg
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <PlusIcon className="h-4 w-4 text-indigo-300" aria-hidden="true" />
+          <TitleIcon className="h-4 w-4 text-indigo-300" aria-hidden="true" />
           <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-200">
-            {labels.formTitle}
+            {title}
           </h3>
         </div>
         <button
@@ -116,6 +253,40 @@ export default function CreateAgentForm({ labels, onSubmit, onCancel }: CreateAg
         </button>
       </div>
 
+      {workflow?.createdNotice && !submitSuccess && (
+        <div
+          className="flex items-center gap-2 rounded-lg border border-emerald-700/50 bg-emerald-950/50 px-3 py-2 text-sm text-emerald-300"
+          role="status"
+          data-testid="agent-workflow-copied"
+        >
+          <CheckCircleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span>{t('templateCopied')}</span>
+        </div>
+      )}
+
+      {workflow ? (
+        <WorkflowOptionsStatus
+          t={t}
+          loading={optionsPending}
+          error={workflow.optionsError && !options}
+          onRetry={workflow.onRetryOptions}
+        />
+      ) : null}
+
+      {workflow && !editing && options && options.templates.length > 0 ? (
+        <WorkflowStartChooser
+          t={t}
+          templates={options.templates}
+          value={start}
+          onChange={(value) => {
+            setStart(value);
+            setWorkflowErrors({});
+          }}
+          disabled={submitting}
+          error={workflowErrors.start ? t(workflowErrors.start) : undefined}
+        />
+      ) : null}
+
       <div>
         <label htmlFor="agent-name" className={labelClasses}>
           {labels.nameLabel}
@@ -123,8 +294,8 @@ export default function CreateAgentForm({ labels, onSubmit, onCancel }: CreateAg
         <input
           id="agent-name"
           type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={draft.name}
+          onChange={(e) => patchDraft({ name: e.target.value })}
           placeholder={labels.namePlaceholder}
           maxLength={100}
           required
@@ -148,8 +319,8 @@ export default function CreateAgentForm({ labels, onSubmit, onCancel }: CreateAg
         <input
           id="agent-role"
           type="text"
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
+          value={draft.role}
+          onChange={(e) => patchDraft({ role: e.target.value })}
           placeholder={labels.rolePlaceholder}
           maxLength={200}
           required
@@ -172,8 +343,8 @@ export default function CreateAgentForm({ labels, onSubmit, onCancel }: CreateAg
         </label>
         <textarea
           id="agent-description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          value={draft.description}
+          onChange={(e) => patchDraft({ description: e.target.value })}
           placeholder={labels.descriptionPlaceholder}
           maxLength={2000}
           rows={4}
@@ -191,6 +362,48 @@ export default function CreateAgentForm({ labels, onSubmit, onCancel }: CreateAg
         )}
       </div>
 
+      {workflow && templateMode ? (
+        <p
+          className="rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2 text-xs text-slate-300"
+          data-testid="agent-workflow-template-note"
+        >
+          {t('templateNote')}
+        </p>
+      ) : null}
+
+      {workflow && options && !templateMode ? (
+        <>
+          <WorkflowBasicFields
+            t={t}
+            draft={draft}
+            onChange={patchDraft}
+            errors={workflowErrors}
+            disabled={submitting}
+            maxToneChars={limits.maxToneChars}
+            count={count}
+          />
+          <WorkflowAccessFields
+            t={t}
+            draft={draft}
+            onChange={patchDraft}
+            errors={workflowErrors}
+            disabled={submitting}
+            options={options}
+            scopeName={workflow.scopeName}
+            localePrefix={workflow.localePrefix}
+          />
+          <WorkflowAdvancedFields
+            t={t}
+            draft={draft}
+            onChange={patchDraft}
+            errors={workflowErrors}
+            disabled={submitting}
+            options={options}
+          />
+          <WorkflowShownPanel t={t} saved={saved} scopeName={workflow.scopeName} />
+        </>
+      ) : null}
+
       {submitError && (
         <div
           className="flex items-center gap-2 rounded-lg border border-red-700/50 bg-red-950/50 px-3 py-2 text-sm text-red-300"
@@ -198,28 +411,29 @@ export default function CreateAgentForm({ labels, onSubmit, onCancel }: CreateAg
           data-testid="create-agent-error"
         >
           <ExclamationTriangleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
-          <span>{labels.createError}</span>
+          <span>{submitError}</span>
         </div>
       )}
 
       {submitSuccess && (
         <div
           className="flex items-center gap-2 rounded-lg border border-emerald-700/50 bg-emerald-950/50 px-3 py-2 text-sm text-emerald-300"
-          role="alert"
-          data-testid="create-agent-success"
+          role="status"
+          data-testid={editing ? 'agent-workflow-saved' : 'create-agent-success'}
         >
           <CheckCircleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
-          <span>{labels.createSuccess}</span>
+          <span>{successText}</span>
         </div>
       )}
 
       <button
         type="submit"
-        disabled={submitting}
+        disabled={submitting || optionsPending || editBlocked}
         className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 disabled:opacity-50"
         data-testid="create-agent-submit"
       >
-        {submitting ? labels.submitting : labels.submitButton}
+        {submitting ? <Spinner className="h-4 w-4" /> : null}
+        {submitting ? submittingLabel : submitLabel}
       </button>
     </form>
   );

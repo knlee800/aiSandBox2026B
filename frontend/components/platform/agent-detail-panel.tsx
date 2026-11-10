@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import {
   ArrowRightIcon,
   ClockIcon,
+  PencilSquareIcon,
   RocketLaunchIcon,
   SparklesIcon,
   TrashIcon,
@@ -56,6 +57,9 @@ export interface AgentDetailPanelProps {
   deleteErrorMessage: string | null;
   deletePending: boolean;
   onDelete: (agentId: string) => void;
+  /** BIZ-USER-01B: opens the workflow editor for a user-created agent. */
+  editButtonLabel?: string;
+  onEdit?: (agentId: string) => void;
   onClose: () => void;
 }
 
@@ -83,6 +87,8 @@ export default function AgentDetailPanel(props: AgentDetailPanelProps) {
     deleteErrorMessage,
     deletePending,
     onDelete,
+    editButtonLabel,
+    onEdit,
     onClose,
   } = props;
   const [deletePhase, setDeletePhase] = useState<UserAgentDeletePhase>('idle');
@@ -192,6 +198,17 @@ export default function AgentDetailPanel(props: AgentDetailPanelProps) {
             <span>{askButtonLabel}</span>
             <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
           </Link>
+          {onEdit && editButtonLabel ? (
+            <button
+              type="button"
+              className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition-[transform,background-color] duration-150 ease-out hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 active:scale-[0.97]"
+              onClick={() => onEdit(agent.id)}
+              data-testid="agent-detail-edit"
+            >
+              <PencilSquareIcon className="h-4 w-4" aria-hidden="true" />
+              <span>{editButtonLabel}</span>
+            </button>
+          ) : null}
           {shouldShowUserAgentDeleteControl(agent.isUserCreated) ? (
             <div className="mt-3">
               {deletePhase === 'idle' ? (

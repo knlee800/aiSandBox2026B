@@ -17,14 +17,14 @@ import {
 } from '@heroicons/react/24/outline';
 import type { AgentStatus, PublicSystemAgent } from '@/lib/agent-platform/agent-registry';
 import { useSystemAgents, type SystemAgentsError } from '@/lib/agent-platform/use-system-agents';
-import { useUserAgents } from '@/hooks/useUserAgents';
+import { useUserAgentOptions, useUserAgents } from '@/hooks/useUserAgents';
 import type { UserAgent } from '@/hooks/useUserAgents';
 import { nextSelectedUserAgentIdAfterDelete } from '@/hooks/useUserAgents';
 import AgentStationCard from './agent-station-card';
 import AgentDetailPanel from './agent-detail-panel';
 import type { AgentDetailViewModel } from './agent-detail-panel';
 import CreateAgentForm from './create-agent-form';
-import type { CreateAgentFormLabels } from './create-agent-form';
+import type { CreateAgentFormLabels, WorkflowSaveRequest } from './create-agent-form';
 
 import enMessages from '@/messages/en.json';
 import zhTwMessages from '@/messages/zh-TW.json';
@@ -262,6 +262,8 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
   const [selectedAgentId, setSelectedAgentId] = React.useState<string | null>(null);
   const [selectedUserAgentId, setSelectedUserAgentId] = React.useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = React.useState(false);
+  const [editingUserAgentId, setEditingUserAgentId] = React.useState<string | null>(null);
+  const [copiedAgentId, setCopiedAgentId] = React.useState<string | null>(null);
   const [authReady, setAuthReady] = React.useState(false);
   const [deletePending, setDeletePending] = React.useState(false);
   const [deleteError, setDeleteError] = React.useState<string | null>(null);
@@ -273,9 +275,12 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
     loading: userAgentsLoading,
     error: userAgentsError,
     createAgent,
+    createAgentFromTemplate,
+    updateAgent,
     deleteAgent,
     refetch: refetchUserAgents,
   } = useUserAgents();
+  const agentOptions = useUserAgentOptions(showCreateForm || editingUserAgentId !== null);
 
   const title = resolveNestedMessage(messages, 'platform.title');
   const subtitle = resolveNestedMessage(messages, 'platform.subtitle');
@@ -346,6 +351,10 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
     createSuccess: resolveNestedMessage(messages, 'platform.agentCreate.createSuccess'),
   };
 
+  const workflowT = (key: string) => resolveNestedMessage(messages, `platform.agentWorkflow.${key}`);
+  const workflowScopeName = (id: string) => resolveNestedMessage(messages, `knowledge.scopes.${id}`);
+  const detailEditButton = workflowT('editButton');
+
   React.useEffect(() => {
     let isMounted = true;
 
@@ -402,6 +411,7 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
     setSelectedAgentId(id);
     setSelectedUserAgentId(null);
     setShowCreateForm(false);
+    setEditingUserAgentId(null);
     setDeleteError(null);
   }
 
@@ -409,11 +419,13 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
     setSelectedUserAgentId(id);
     setSelectedAgentId(null);
     setShowCreateForm(false);
+    setEditingUserAgentId(null);
     setDeleteError(null);
   }
 
   function handleOpenCreateForm() {
     setShowCreateForm(true);
+    setEditingUserAgentId(null);
     setSelectedAgentId(null);
     setSelectedUserAgentId(null);
     setDeleteError(null);
@@ -423,7 +435,38 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
     setSelectedAgentId(null);
     setSelectedUserAgentId(null);
     setShowCreateForm(false);
+    setEditingUserAgentId(null);
     setDeleteError(null);
+  }
+
+  function handleEditUserAgent(id: string) {
+    setEditingUserAgentId(id);
+    setCopiedAgentId(null);
+    setShowCreateForm(false);
+    setDeleteError(null);
+  }
+
+  async function handleSaveWorkflow(request: WorkflowSaveRequest) {
+    const result =
+      request.kind === 'update'
+        ? await updateAgent(request.agentId, request.body)
+        : request.kind === 'template'
+          ? await createAgentFromTemplate(request.body)
+          : await createAgent(request.body);
+    if (result.error === 'AUTH_EXPIRED') {
+      router.replace(`/${resolvedLocale}/login`);
+    }
+    return result;
+  }
+
+  function handleWorkflowSaved(agent: UserAgent, kind: WorkflowSaveRequest['kind']) {
+    if (kind === 'template') {
+      // A copy opens straight in the editor so the owner can adjust it.
+      setShowCreateForm(false);
+      setSelectedUserAgentId(agent.id);
+      setEditingUserAgentId(agent.id);
+      setCopiedAgentId(agent.id);
+    }
   }
 
   async function handleCreateAgent(data: { name: string; role: string; description: string }) {
@@ -489,6 +532,10 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
       isUserCreated: true,
     };
   }
+
+  const editingUserAgent: UserAgent | null = editingUserAgentId
+    ? userAgents.find((ua) => ua.id === editingUserAgentId) ?? null
+    : null;
 
   const displaySelectedName = selectedStaticAgent
     ? resolveNestedMessage(messages, selectedStaticAgent.nameKey)
@@ -712,11 +759,44 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
                 <UserCircleIcon className="h-5 w-5 text-indigo-300" aria-hidden="true" />
                 <h2 className="text-sm font-semibold uppercase tracking-wide">{detailLabel}</h2>
               </div>
-              {showCreateForm ? (
+              {editingUserAgent ? (
                 <CreateAgentForm
+                  key={`edit-${editingUserAgent.id}`}
+                  labels={formLabels}
+                  onSubmit={handleCreateAgent}
+                  onCancel={() => setEditingUserAgentId(null)}
+                  workflow={{
+                    mode: 'edit',
+                    t: workflowT,
+                    scopeName: workflowScopeName,
+                    localePrefix,
+                    options: agentOptions.options,
+                    optionsLoading: agentOptions.loading,
+                    optionsError: agentOptions.error !== null,
+                    onRetryOptions: agentOptions.retry,
+                    agent: editingUserAgent,
+                    createdNotice: copiedAgentId === editingUserAgent.id,
+                    onSave: handleSaveWorkflow,
+                  }}
+                />
+              ) : showCreateForm ? (
+                <CreateAgentForm
+                  key="create"
                   labels={formLabels}
                   onSubmit={handleCreateAgent}
                   onCancel={() => setShowCreateForm(false)}
+                  workflow={{
+                    mode: 'create',
+                    t: workflowT,
+                    scopeName: workflowScopeName,
+                    localePrefix,
+                    options: agentOptions.options,
+                    optionsLoading: agentOptions.loading,
+                    optionsError: agentOptions.error !== null,
+                    onRetryOptions: agentOptions.retry,
+                    onSave: handleSaveWorkflow,
+                    onSaved: handleWorkflowSaved,
+                  }}
                 />
               ) : (
                 <AgentDetailPanel
@@ -742,6 +822,8 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
                   deleteErrorMessage={deleteError}
                   deletePending={deletePending}
                   onDelete={handleDeleteAgent}
+                  editButtonLabel={detailEditButton}
+                  onEdit={handleEditUserAgent}
                   onClose={handleCloseDetail}
                 />
               )}
