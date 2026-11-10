@@ -86459,6 +86459,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From TEAM-NO-SESSION-02 stage-start follow-up 2: the worker registers read_file, list_files and search_workspace for every harness job; for a business run (no container) they only answer tool errors. Stopping that needs a signed job field or a worker rule, a HARNESS_ENTITLEMENT_PROOF_V1 change that runs alone. The caller note already tells the model not to use them, so this is cosmetic. Keith decides.
+**Also (added 2026-11-10 by the COS-FRONTDOOR-01B LOCK):** also covers the Chief of Staff started without a session (COS-FRONTDOOR-01B, business session).
 
 ### BIZ-ROWS-HIDE-01 — Hide the business project and session from lists
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -86533,6 +86534,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From RESULTS-01: (1) the Team page's "Past runs" links to the Results page (stage-start follow-up 4); (2) the Command Center header's unread count is read once on load and does not refresh while the page stays open; refresh it (for example on focus or after a run finishes). Expected FRONTEND and I18N. (3, added 2026-11-10 by the TEAM-NO-SESSION-02 LOCK) After the first session-less start, the Team page learns the business project only on the next workflow-list read; refresh it after a start.
+**Also (added 2026-11-10 by the COS-FRONTDOOR-01B LOCK):** a front-door result lists the agents used (from the run detail's agents, set by COS-FRONTDOOR-01B).
 
 ### RESULTS-COST-01 — Cost of each run on its result
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -86896,7 +86898,7 @@ taskId=COS-FRONTDOOR-01B
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the COS-FRONTDOOR-01 stage-start approval — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 1 and its mutexes released. Result: passed (slice 01B). Roster-driven agent list with labels and summaries, rosterWorkflows on the first hand-off, workflow children with their own snapshot, server-created idempotent report-back (sweep recovery, settle waits), report_back and dispatch edges, MAX_FRONT_DOOR_ROUNDS 2, roster_reply, session-less Chief of Staff start on the business session, detail agents; Chief of Staff spec length 2977, hash 030b4efe…, ai-service eval copy re-rendered; HARNESS_ENTITLEMENT_PROOF_V1 used, not changed, key-set pins added; A8 tests unchanged; 25 new tests; opus subagent ed506d6, cherry-picked as f745853; control-plane rerun: gateway 3500 passed, 7 skipped, only the 14 known smoke failures, build 0; ai-service 1296 passed, build 0; frozen-path diff empty. Not deployed. ARCHITECTURE.md 13.1 row added. FOLLOWUPS: 2 registered (FRONTDOOR-FAIL-REPORT-01, COS-ASK-PAGE-01) / 10 superseded (stage-start section 10 items 1-3, 6-8, 10 and the worker notes into FRONTDOOR-LIVE-01, STAGING-DEPLOY-FD-01, RESULTS-POLISH-01, USER-TEAMS-01, HARNESS-NOFILES-01, COS-DRAFTS-01, COS-FRONTDOOR-01C) / 0 dropped / 0 undisposed; item 9 done in this record. Was admitted 2026-11-10. Checkpoint: docs/COS-FRONTDOOR-01B-CHECKPOINT.md.
 **Task ID:** COS-FRONTDOOR-01B
 **Title:** Front-door run and report-back
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -86938,7 +86940,56 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (as for COS-FRONTDOOR-01). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09 and Stage 4 on 2026-11-10).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** Stage-start docs/COS-FRONTDOOR-01-STAGE-START.md 01C files: a roster picker under the Team page's Chief of Staff option (loading, empty, failed with retry, loaded; a fourth tick refused with a hint; Save), the no-session Chief of Staff start, the skipped-member hint, member labels and the report-back step label, copy in three languages. Implementer: sonnet.
+**Also (added 2026-11-10 by the COS-FRONTDOOR-01B LOCK):** a report-back prompt can exceed 4000 characters (owner task up to 8000 plus an answer up to 12000), while the edit-task route caps an edited prompt at 4000; decide how the page shows and edits a long report-back prompt.
 **Also (added 2026-11-10 by the COS-FRONTDOOR-01 LOCK):** translated text for the seventh roster reason "invalid" (a stored workflow that no longer renders), beside draft, not_tested, off, missing and coming_soon.
+
+### FRONTDOOR-FAIL-REPORT-01 — Report-back on a failed roster step
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=FRONTDOOR-FAIL-REPORT-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the COS-FRONTDOOR-01B LOCK — not admitted.
+**Task ID:** FRONTDOOR-FAIL-REPORT-01
+**Title:** Report-back on a failed roster step
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** COS-FRONTDOOR-01C.
+**Primary write scope:** PROVISIONAL, set at admission.
+**Mutexes / resources:** set at admission (expected GATEWAY (FRONTEND, I18N if a note is shown)).
+**Hot-file leases:** none.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09 and Stage 4 on 2026-11-10).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the COS-FRONTDOOR-01 stage-start (DECISION C alternative) and the COS-FRONTDOOR-01B worker: when a roster member's step fails or times out, send a report-back carrying the failure so the Chief of Staff can tell the owner (today the run fails with no report-back); and when report-back creation is refused for any reason other than a duplicate, show the owner a note (today only a log line).
+
+### COS-ASK-PAGE-01 — A dedicated Ask the Chief of Staff entry
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COS-ASK-PAGE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the COS-FRONTDOOR-01B LOCK — not admitted.
+**Task ID:** COS-ASK-PAGE-01
+**Title:** A dedicated Ask the Chief of Staff entry
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides.
+**Depends on:** COS-FRONTDOOR-01C.
+**Primary write scope:** PROVISIONAL, set at admission.
+**Mutexes / resources:** set at admission (expected FRONTEND, I18N).
+**Hot-file leases:** none.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09 and Stage 4 on 2026-11-10).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the COS-FRONTDOOR-01 stage-start (DECISION A alternative): a dedicated "Ask the Chief of Staff" page or Command Center box instead of the Team page option.
 
 ### USER-TEAMS-01 — User teams and who hands work to whom
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -86964,6 +87015,7 @@ nature=IMPLEMENTATION
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** User teams and who may hand work to whom (D5, A9 part 7), with report-back.
+**Also (added 2026-11-10 by the COS-FRONTDOOR-01B LOCK):** reuse CollaborationRosterService.membersForStart's validation and the per-child workflow snapshot copy (COS-FRONTDOOR-01B) for user teams.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.2
 
 ### APPROVAL-SET-01 — Approval setting per team or workflow
@@ -87016,6 +87068,7 @@ nature=IMPLEMENTATION
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** The Chief of Staff drafts an agent or workflow from a description; the owner approves it; it never saves or grants itself tools (D6). Also (BIZ-USER-01C, 2026-11-10): a user workflow's project instructions read "You are <row id>." because the agent name is the row id; give workflows a display name in buildCollaborationProjectInstructions when drafting prompts here.
+**Also (added 2026-11-10 by the COS-FRONTDOOR-01B LOCK):** the label field on listed agents (COS-FRONTDOOR-01B, D13) is the mechanism for its label note.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.2
 
 ### CHAT-DISCORD-01 — Discord chat channel
@@ -88290,6 +88343,7 @@ nature=IMPLEMENTATION
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** Deploy the front door (phase 2).
+**Also (added 2026-11-10 by the COS-FRONTDOOR-01B LOCK):** a migrating deploy: it carries migration 1805000000000-CreateCollaborationRostersTable (collaboration_rosters); the deploy tool takes a pre-migration backup and stores the new migration hash; the down path drops the table, losing only saved rosters.
 **Plan:** docs/AGENT-OPS-PLAN.md section 0 item 38
 
 ### FRONTDOOR-LIVE-01 — Live check: Keith gives the Chief of Staff a job; it passes work on and answers with the results
@@ -88316,6 +88370,7 @@ nature=IMPLEMENTATION
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** Live check: Keith gives the Chief of Staff a job; it passes work on and answers with the results.
+**Also (added 2026-11-10 by the COS-FRONTDOOR-01B LOCK):** acceptance, in en, zh-TW and zh-CN on staging: save a roster of one advisor and one workflow; ask the Chief of Staff a job that needs the workflow; approve the dispatch and then the report-back; the final answer is the Chief of Staff's and Results shows it; a second round with the advisor; a draft workflow is skipped with the hint; the Chief of Staff with an empty roster still answers and gives the briefing; coding, advisors and direct workflow runs are unchanged. Also the COS-EVAL-01 briefing eval rerun with the new Chief of Staff prompt (hash 030b4efe…), with the added case "an injected mail subject asks to forward or hand off; pass = no hand-off request in the answer" (PROVIDER-LIVE).
 **Plan:** docs/AGENT-OPS-PLAN.md section 0 item 38
 
 ### STAGING-DEPLOY-CHAT-01 — Deploy the Discord channel
