@@ -87377,13 +87377,13 @@ taskId=STAGING-DEPLOY-SEC-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the AI-SERVICE-AUTH-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — Keith approved the deploy ("Yes, deploy it"). Registered 2026-11-10 by the AI-SERVICE-AUTH-01 LOCK.
 **Task ID:** STAGING-DEPLOY-SEC-01
 **Title:** Deploy the loopback binds and the ai-service guard to staging
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: AI-SERVICE-AUTH-01 LOCKED. Keith decides (host change).
+**Start condition:** READY (AI-SERVICE-AUTH-01 LOCKED; Keith approved 2026-11-10). Was: Ready when: AI-SERVICE-AUTH-01 LOCKED. Keith decides (host change).
 **Depends on:** AI-SERVICE-AUTH-01.
 **Primary write scope:** records; host state.
 **Mutexes / resources:** STAGING
