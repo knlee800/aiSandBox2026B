@@ -84492,15 +84492,15 @@ taskId=FE-TEST-COVERAGE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY / NOT ADMITTED — startCondition NOT_READY — 2026-11-05. Registered by GOV-OS-05 as a parked follow-up; not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! we need to keep going since we are months behind. keep looking for the next task to start"). Registered 2026-11-05 by GOV-OS-05.
 **Task ID:** FE-TEST-COVERAGE-01
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition (human):** NOT_READY. Ready when: Keith chooses it. Keith decides.
+**Start condition (human):** READY (Keith's instruction 2026-11-10). Was: Ready when: Keith chooses it. Keith decides.
 **Depends on:** none recorded; see the ready condition.
-**Primary write scope:** not set; PROVISIONAL until admission (sidecar write set empty, admissionUncertain true).
-**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** set at admission (sidecar placeholder LOCAL-TESTS). **Revert isolation:** assessed at admission.
+**Primary write scope:** set at admission 2026-11-10: frontend/package.json (test script only) and, only to fix stale tests, the test files in frontend/app/ ([locale]/login), frontend/components/admin/, frontend/components/billing/, frontend/components/connections/, frontend/components/knowledge/, frontend/components/platform/ and frontend/lib/agent-platform/.
+**Mutexes / resources:** FRONTEND, PACKAGE (set at admission 2026-11-10). **Hot-file leases:** none. **Shared contracts:** none frozen. **Evidence class:** LOCAL-TESTS. **Revert isolation:** one script line plus test-only fixes. **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **saturationClass:** OPTIONAL (Keith, 2026-11-05). **productClass:** CURRENT per PRD.md.
 
 **Holds:** Close the frontend platform test coverage gaps found in the reviews. The missing frontend/lib/ai tests in npm test are item 1 of HARNESS-FIXES-01. Scope is set at admission. Also (OFFICE-06, 2026-11-09): frontend npm test does not run components/office, lib/office or hooks tests; add them to the script. Also (CONN-UI-01, 2026-11-09): npm test does not run components/connections, components/knowledge or the platform tests either.
@@ -86117,16 +86117,16 @@ taskId=AGENT-SPEC-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! we need to keep going since we are months behind. keep looking for the next task to start"). Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
 **Task ID:** AGENT-SPEC-01
 **Title:** Typed agent spec fields
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP
-**Start condition:** NOT_READY. Ready when: LOCKED. Keith decides.
+**Start condition:** READY (BIZ-LIVE-03 LOCKED 2026-11-10; Keith's instruction the same day). Was: Ready when: LOCKED. Keith decides.
 **Depends on:** BIZ-LIVE-03.
-**Primary write scope:** services/api-gateway/src/system-agents/, services/api-gateway/src/orchestration/collaboration-teams.ts.
-**Mutexes / resources:** GATEWAY.
+**Primary write scope:** services/api-gateway/src/system-agents/, services/api-gateway/src/orchestration/collaboration-teams.ts, services/ai-service/src/agent-harness/eval/ (added at admission 2026-11-10: the drift check and the eval's instruction copy).
+**Mutexes / resources:** GATEWAY, AI-SERVICE (AI-SERVICE added at admission 2026-11-10).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
