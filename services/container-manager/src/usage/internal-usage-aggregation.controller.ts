@@ -21,7 +21,7 @@ import { InternalServiceAuthGuard } from '../guards/internal-service-auth.guard'
  * - No billing integration
  * - Internal service authentication required
  */
-@Controller('api/internal/usage-aggregations')
+@Controller('internal/usage-aggregations')
 @UseGuards(InternalServiceAuthGuard)
 export class InternalUsageAggregationController {
   constructor(private usageAggregationService: UsageAggregationService) {}

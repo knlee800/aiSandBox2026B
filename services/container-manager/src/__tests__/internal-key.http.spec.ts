@@ -168,27 +168,27 @@ const EXPECTED_INVENTORY = [
   'DELETE /api/preview/:sessionId/stop',
   'GET /api/preview/:sessionId/status',
   'GET /api/preview/:sessionId/proxy*',
-  // F2: these four controllers declare 'api/internal/...' under the global
-  // prefix 'api', so they really serve at /api/api/internal/...
-  'GET /api/api/internal/usage-aggregations/tokens/session/:sessionId',
-  'GET /api/api/internal/usage-aggregations/tokens/user/:userId',
-  'GET /api/api/internal/usage-aggregations/tokens/user/:userId/by-provider',
-  'GET /api/api/internal/usage-aggregations/governance-events/by-reason',
-  'GET /api/api/internal/usage-aggregations/governance-events/by-user',
-  'GET /api/api/internal/usage-aggregations/sessions/terminations',
-  'GET /api/api/internal/usage-aggregations/user/:userId/summary',
-  'GET /api/api/internal/quota-evaluations/user/:userId',
-  'GET /api/api/internal/quota-evaluations/user/:userId/current-month',
-  'GET /api/api/internal/quota-evaluations/user/:userId/detailed',
-  'GET /api/api/internal/quota-evaluations/user/:userId/exceeded',
-  'GET /api/api/internal/quota-evaluations/user/:userId/approaching-limit',
-  'GET /api/api/internal/quota-evaluations/limits/:userId',
-  'GET /api/api/internal/quota-visibility/user/:userId',
-  'GET /api/api/internal/quota-visibility/user/:userId/limits',
-  'GET /api/api/internal/quota-visibility/user/:userId/status',
-  'GET /api/api/internal/billing-export/user/:userId/usage',
-  'GET /api/api/internal/billing-export/user/:userId/monthly',
-  'GET /api/api/internal/billing-export/limits',
+  // F2 (fixed by CM-PREFIX-01): these four controllers now declare 'internal/...' under the global
+  // prefix 'api' and serve at /api/internal/...
+  'GET /api/internal/usage-aggregations/tokens/session/:sessionId',
+  'GET /api/internal/usage-aggregations/tokens/user/:userId',
+  'GET /api/internal/usage-aggregations/tokens/user/:userId/by-provider',
+  'GET /api/internal/usage-aggregations/governance-events/by-reason',
+  'GET /api/internal/usage-aggregations/governance-events/by-user',
+  'GET /api/internal/usage-aggregations/sessions/terminations',
+  'GET /api/internal/usage-aggregations/user/:userId/summary',
+  'GET /api/internal/quota-evaluations/user/:userId',
+  'GET /api/internal/quota-evaluations/user/:userId/current-month',
+  'GET /api/internal/quota-evaluations/user/:userId/detailed',
+  'GET /api/internal/quota-evaluations/user/:userId/exceeded',
+  'GET /api/internal/quota-evaluations/user/:userId/approaching-limit',
+  'GET /api/internal/quota-evaluations/limits/:userId',
+  'GET /api/internal/quota-visibility/user/:userId',
+  'GET /api/internal/quota-visibility/user/:userId/limits',
+  'GET /api/internal/quota-visibility/user/:userId/status',
+  'GET /api/internal/billing-export/user/:userId/usage',
+  'GET /api/internal/billing-export/user/:userId/monthly',
+  'GET /api/internal/billing-export/limits',
   'GET /api/internal/stats',
   'GET /api/health',
 ];
@@ -457,29 +457,36 @@ describe('container-manager internal key over HTTP (CM-AUTH-01)', () => {
     expect(allCalls()).toBe(0);
   });
 
-  it('F2: the api/internal controllers do not serve at /api/internal/... (route not found even with the key)', async () => {
-    for (const path of [
-      '/api/internal/billing-export/limits',
-      '/api/internal/billing-export/user/u1/usage',
-      '/api/internal/quota-visibility/user/u1',
-      '/api/internal/quota-evaluations/user/u1',
-      '/api/internal/usage-aggregations/tokens/user/u1',
-    ]) {
-      const response = await send('GET', path, internalKey);
-      expect(isRouteNotFound(response)).toBe(true);
-    }
-  });
+  const GATEWAY_CALLED_PATHS = [
+    // services/api-gateway/src/clients/container-manager-http.client.ts:272
+    '/api/internal/billing-export/user/u1/usage',
+    // services/api-gateway/src/admin/admin.service.ts:77
+    '/api/internal/quota-visibility/user/u1',
+    // same controllers, no gateway caller today
+    '/api/internal/billing-export/limits',
+    '/api/internal/billing-export/user/u1/monthly',
+    '/api/internal/quota-visibility/user/u1/limits',
+    '/api/internal/quota-visibility/user/u1/status',
+    '/api/internal/quota-evaluations/user/u1',
+    '/api/internal/quota-evaluations/limits/u1',
+    '/api/internal/usage-aggregations/tokens/user/u1',
+    '/api/internal/usage-aggregations/user/u1/summary',
+  ];
 
-  it('F2: they serve at /api/api/internal/... and need the key there', async () => {
-    for (const path of [
-      '/api/api/internal/billing-export/limits',
-      '/api/api/internal/quota-visibility/user/u1',
-    ]) {
+  it('CM-PREFIX-01: every gateway-called path resolves to a real handler with the key and needs the key', async () => {
+    for (const path of GATEWAY_CALLED_PATHS) {
       const refused = await send('GET', path);
       expect(refused.status).toBe(403);
       const allowed = await send('GET', path, internalKey);
       expect(allowed.status).not.toBe(403);
       expect(isRouteNotFound(allowed)).toBe(false);
+    }
+  });
+
+  it('CM-PREFIX-01: the old /api/api/internal/... paths now return 404', async () => {
+    for (const path of GATEWAY_CALLED_PATHS.map((p) => p.replace('/api/internal/', '/api/api/internal/'))) {
+      const response = await send('GET', path, internalKey);
+      expect(isRouteNotFound(response)).toBe(true);
     }
   });
 });

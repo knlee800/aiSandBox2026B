@@ -29,7 +29,7 @@ import { InternalServiceAuthGuard } from '../guards/internal-service-auth.guard'
  * - No 5xx errors unless auth fails
  * - Do NOT block billing export
  */
-@Controller('api/internal/billing-export')
+@Controller('internal/billing-export')
 @UseGuards(InternalServiceAuthGuard)
 export class BillingExportController {
   constructor(

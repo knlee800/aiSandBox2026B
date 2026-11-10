@@ -21,7 +21,7 @@ import { InternalServiceAuthGuard } from '../guards/internal-service-auth.guard'
  * - Calculation and exposure only
  * - Internal service authentication required
  */
-@Controller('api/internal/quota-evaluations')
+@Controller('internal/quota-evaluations')
 @UseGuards(InternalServiceAuthGuard)
 export class InternalQuotaEvaluationController {
   constructor(private quotaEvaluationService: QuotaEvaluationService) {}

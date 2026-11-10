@@ -27,7 +27,7 @@ import { InternalServiceAuthGuard } from '../guards/internal-service-auth.guard'
  * - Evaluation failures → status = "UNKNOWN"
  * - No 5xx errors unless auth fails
  */
-@Controller('api/internal/quota-visibility')
+@Controller('internal/quota-visibility')
 @UseGuards(InternalServiceAuthGuard)
 export class InternalQuotaVisibilityController {
   constructor(private quotaEvaluationService: QuotaEvaluationService) {}
