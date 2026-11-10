@@ -84389,15 +84389,15 @@ taskId=HARNESS-FIXES-01C
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by the HARNESS-FIXES-01 split — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-10 — Keith admitted it ("yes"). Registered 2026-11-09 by the HARNESS-FIXES-01 split.
 **Task ID:** HARNESS-FIXES-01C
 **Title:** Frontend harness fixes: the test script and a keyless provider after reload
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith admits it (PACKAGE free). Keith decides.
+**Start condition:** READY (Keith admitted it 2026-11-10; PACKAGE free). Was: Ready when: Keith admits it (PACKAGE free). Keith decides.
 **Depends on:** HARNESS-FIXES-01 (umbrella).
-**Primary write scope:** frontend/package.json (test script only), the frontend model selector and its tests, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json; exact files set at admission.
+**Primary write scope:** frontend/package.json (test script only), frontend/app/ (the workspace page that restores the model selection), frontend/components/workspace/ (the selector, the run-failure message and their tests), frontend/lib/ai/ (the provider and model catalogue and its tests), frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json. Set at admission 2026-11-10.
 **Mutexes / resources:** FRONTEND, I18N, PACKAGE.
 **Hot-file leases:** none.
 **Shared contracts:** none; services/ai-service/src/worker/worker.processor.ts and services/ai-service/src/queue/job.types.ts (HARNESS_ENTITLEMENT_PROOF_V1) are not touched.
@@ -84405,7 +84405,7 @@ nature=IMPLEMENTATION
 **Revert isolation:** each item is a small separate change with its own test.
 **saturationClass:** OPTIONAL (Keith, 2026-11-05, inherited from HARNESS-FIXES-01).
 **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set at admission 2026-11-10).
 **Scope:** HARNESS-FIXES-01 items 1 and 6. (1) frontend npm test also runs frontend/lib/ai/*.test.ts and the office, lib/office and hooks tests (FE-TEST-COVERAGE-01's OFFICE-06 note). (6) After a reload the model selector does not return to a provider with no key, and a run refused for a missing key says so in en, zh-TW and zh-CN instead of only 'Execution ended with status: failed'.
 **Plan:** docs/AGENT-OPS-PLAN.md section 0 item 16
 
@@ -86324,24 +86324,24 @@ taskId=CONN-03
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-10 — Keith approved the corrected record and admission ("yes"). Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
 **Task ID:** CONN-03
 **Title:** Mail body reads after the injection eval
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
-**Lifecycle:** 3-STEP
-**Start condition:** NOT_READY. Ready when: body cases pass. Keith decides.
+**Lifecycle:** 4-STEP (corrected 2026-11-10: mail bodies reach the model, three services; was 3-STEP)
+**Start condition:** READY (2026-11-10: the planted mail-body case inject-mail-body passed on claude-opus-5-5 in COS-EVAL-LIVE-02; BIZ-LIVE-03 LOCKED; Keith decided). Was: Ready when: body cases pass. Keith decides.
 **Depends on:** COS-EVAL-01, BIZ-LIVE-03.
-**Primary write scope:** services/connectors-mcp/src/tools/mail-read.ts, services/connectors-mcp/src/clients/imap-client.ts, services/api-gateway/src/connectors/connector-servers.ts.
-**Mutexes / resources:** GATEWAY.
-**Hot-file leases:** services/connectors-mcp/src/tools/mail-read.ts, services/connectors-mcp/src/clients/imap-client.ts.
+**Primary write scope:** services/connectors-mcp/src/ (the IMAP client, server, limits, mail tool and their tests), services/api-gateway/src/connectors/ (the mail tool description in connector-servers.ts and its tests), services/ai-service/src/agent-harness/tools/ (connector-tool-definitions.ts and its tests), services/ai-service/src/agent-harness/eval/ (only if the body case needs the live tool's field shape). Corrected 2026-11-10: the registered mail-read.ts does not exist; the tool's description is copied in three places.
+**Mutexes / resources:** GATEWAY, AI-SERVICE.
+**Hot-file leases:** services/connectors-mcp/src/clients/imap-client.ts, services/connectors-mcp/src/server.ts, services/connectors-mcp/src/limits.ts, services/connectors-mcp/src/tools/mail-list-unread.ts.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** one tool.
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
-**Scope:** Mail bodies after the eval's body cases pass (C16). Bodies are stripped to text and byte-capped. Tool text is data, never instructions.
+**Scope:** Mail bodies after the eval's body cases pass (C16). Bodies are stripped to text and byte-capped. Tool text is data, never instructions. Design (Keith, 2026-11-10): a bodyText field on each message from the existing mail_list_unread_metadata tool, the shape the passing eval case models; the tool id stays, so grants and the Chief of Staff version hash do not change. Read with BODY.PEEK so nothing is marked read; prefer the text/plain part, strip HTML to text; cap each body (about 2,000 bytes) and keep the whole result under the 64 KB connector cap; the forbidden IMAP verbs stay. No new dependency without asking. The three tool descriptions that say "Does not return bodies" change together. ARCHITECTURE.md's "read-only mail headers" lines are updated by the control plane at LOCK. The stage-start fixes the details and is approved by Keith before implementation.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.1
 
 ### COS-FRONTDOOR-01 — Chief of Staff front door and report-back
