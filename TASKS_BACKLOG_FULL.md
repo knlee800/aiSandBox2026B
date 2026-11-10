@@ -86561,7 +86561,7 @@ taskId=STAGING-DEPLOY-WF-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-10 — Keith approved the deploy ("Yes, deploy it"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. Result: passed. Lane 1, STAGING and ENV released; stagingAuthorized false. 2052c36 -> 324ccca (rc 0; code of eed33f9). Migration 1804000000000 applied after the pre-migration backup /var/backups/aisandbox/20261110T081546Z (hash c4265632 -> 976a9358; down drops result_seen_at, losing only seen marks). Configuration unchanged; runs off; key match across three env files; Results page 200 in three languages; results and workflows routes 401 without login; container-manager corrected routes 403/403 and 200 with the key, removed routes 404 with the key, CORS off, WebSocket upgrade 403; ai-service chat routes 404; traversal URLs never 200; ports on 127.0.0.1; no key text in outputs or journals. Logged-in checks superseded by BIZ-LIVE-04. Checkpoint: docs/STAGING-DEPLOY-WF-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 1 superseded / 0 dropped / 0 undisposed. Registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01.
 **Task ID:** STAGING-DEPLOY-WF-01
 **Title:** Deploy user workflows
 **Workstream:** AGENT (taxonomy only; zero admission weight)
