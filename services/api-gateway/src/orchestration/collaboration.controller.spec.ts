@@ -45,6 +45,13 @@ import { KillSwitchConfig } from '../safety/kill-switch.config';
 import { systemAgentById } from '../system-agents/system-agent-registry';
 import { UserAgentService } from '../user-agent/user-agent.service';
 import { CollaborationWorkflowService, renderWorkflow } from './collaboration-workflow';
+import { randomUUID } from 'crypto';
+import { Project } from '../entities/project.entity';
+import { Session } from '../entities/session.entity';
+import {
+  COLLABORATION_BUSINESS_RUN_NOTE,
+  CollaborationBusinessSessionService,
+} from './collaboration-business-session';
 
 const OWNER_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const OTHER_ID = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
@@ -161,6 +168,52 @@ function createOrchestrationRepoFakes() {
   return { runRepo, referralRepo, runs, referrals };
 }
 
+type BusinessRow = Record<string, unknown> & { id: string };
+
+/** TEAM-NO-SESSION-02: a small projects or sessions repository with IsNull and order. */
+function createBusinessRepo(rows: BusinessRow[]) {
+  const matches = (row: BusinessRow, where: Record<string, unknown>) =>
+    Object.entries(where).every(([key, expected]) =>
+      expected instanceof FindOperator && expected.type === 'isNull'
+        ? row[key] === null || row[key] === undefined
+        : row[key] === expected,
+    );
+  return {
+    create: (input: Record<string, unknown>) => ({ ...input }),
+    save: jest.fn(async (input: Record<string, unknown>) => {
+      const row = {
+        createdAt: new Date(),
+        ...input,
+        id: typeof input.id === 'string' ? input.id : randomUUID(),
+      } as BusinessRow;
+      rows.push(row);
+      return { ...row };
+    }),
+    findOne: jest.fn(
+      async (opts: { where: Record<string, unknown>; order?: Record<string, 'ASC' | 'DESC'> }) => {
+        const found = rows
+          .filter((row) => matches(row, opts.where))
+          .sort(
+            (a, b) =>
+              (a.createdAt as Date).getTime() - (b.createdAt as Date).getTime() ||
+              a.id.localeCompare(b.id),
+          );
+        return found[0] ? { ...found[0] } : null;
+      },
+    ),
+    update: jest.fn(async (criteria: Record<string, unknown>, partial: Record<string, unknown>) => {
+      let affected = 0;
+      for (const row of rows) {
+        if (matches(row, criteria)) {
+          Object.assign(row, partial);
+          affected += 1;
+        }
+      }
+      return { affected, raw: [], generatedMaps: [] };
+    }),
+  };
+}
+
 function usableSession(overrides: Partial<FakeSession> = {}): FakeSession {
   return {
     id: SESSION_ID,
@@ -192,6 +245,8 @@ describe('CollaborationController login routes', () => {
   let workTree: { getWorkingTreeDiff: jest.Mock };
   let workflowRows: Map<string, Record<string, unknown>>;
   let deductionRows: Array<Record<string, unknown>>;
+  let projectRows: BusinessRow[];
+  let businessSessionRows: BusinessRow[];
 
   beforeEach(async () => {
     process.env.GLOBAL_EXECUTION_ENABLED = 'true';
@@ -223,6 +278,8 @@ describe('CollaborationController login routes', () => {
     findActiveOwnedByIds = jest.fn(async () => []);
     workflowRows = new Map();
     deductionRows = [];
+    projectRows = [];
+    businessSessionRows = [];
     sessionReads = jest.fn(async (sessionId: string) => {
       const session = sessions.get(sessionId);
       if (!session) {
@@ -274,6 +331,9 @@ describe('CollaborationController login routes', () => {
         { provide: SessionService, useValue: { getSessionById: sessionReads } },
         { provide: KnowledgeService, useValue: { findActiveOwnedByIds } },
         CollaborationWorkflowService,
+        CollaborationBusinessSessionService,
+        { provide: getRepositoryToken(Project), useValue: createBusinessRepo(projectRows) },
+        { provide: getRepositoryToken(Session), useValue: createBusinessRepo(businessSessionRows) },
         {
           provide: UserAgentService,
           useValue: {
@@ -325,6 +385,10 @@ describe('CollaborationController login routes', () => {
       .useValue({
         canActivate: (context: ExecutionContext) => {
           const req = context.switchToHttp().getRequest();
+          if (req.header('x-test-anonymous') === '1') {
+            req.apiKeyIdentity = undefined;
+            return true;
+          }
           const headerUser = req.header('x-test-user');
           const entitled = req.header('x-test-entitled');
           req.apiKeyIdentity = {
@@ -2026,6 +2090,296 @@ describe('CollaborationController login routes', () => {
         .get(`/api/collaboration/runs/${started.collaborationRunId}`)
         .expect(200);
       expect(detail.body.workflow).toBeNull();
+    });
+
+    describe('TEAM-NO-SESSION-02 start a workflow without a session', () => {
+      const OTHER_WORKFLOW_ID = 'f0f0f0f0-0000-4000-8000-0000000000aa';
+
+      function sessionless(overrides: Record<string, unknown> = {}) {
+        return workflowBody({ sessionId: undefined, ...overrides });
+      }
+
+      async function startSessionless(
+        overrides: Record<string, unknown> = {},
+        expected = 201,
+        userId = OWNER_ID,
+      ) {
+        return http(userId)
+          .post('/api/collaboration/runs')
+          .send(sessionless(overrides))
+          .expect(expected);
+      }
+
+      it('starts on the business project and session, created on first use and reused after', async () => {
+        const first = await startSessionless({ testRun: true });
+        expect(projectRows).toHaveLength(1);
+        expect(businessSessionRows).toHaveLength(1);
+        const project = projectRows[0];
+        const session = businessSessionRows[0];
+        expect(first.body.projectId).toBe(project.id);
+        expect(first.body.projectId).not.toBe(PROJECT_ID);
+        expect(first.body.handoffStatus).toBe('pending_approval');
+        expect(first.body.target).toBe(WORKFLOW_ID);
+        expect(first.body.conversationCreated).toBe(true);
+        expect(runs.get(first.body.collaborationRunId)?.projectId).toBe(project.id);
+        expect(referrals.get(first.body.referralId)?.pendingJob?.sessionId).toBe(session.id);
+        expect(referrals.get(first.body.referralId)?.pendingJob?.conversationId).toBe(
+          first.body.conversationId,
+        );
+        expect(sessionReads).not.toHaveBeenCalled();
+
+        const activityBefore = (session.lastActivityAt as Date).getTime();
+        await new Promise((resolve) => setTimeout(resolve, 5));
+        const second = await startSessionless({ testRun: true });
+        expect(projectRows).toHaveLength(1);
+        expect(businessSessionRows).toHaveLength(1);
+        expect(second.body.projectId).toBe(project.id);
+        expect(second.body.conversationCreated).toBe(false);
+        expect(second.body.conversationId).toBe(first.body.conversationId);
+        expect(referrals.get(second.body.referralId)?.pendingJob?.sessionId).toBe(session.id);
+        expect((businessSessionRows[0].lastActivityAt as Date).getTime()).toBeGreaterThan(
+          activityBefore,
+        );
+      });
+
+      it('writes the exact business rows: stopped, expired at creation, no container, no workspace', async () => {
+        await startSessionless({ testRun: true });
+        const project = projectRows[0];
+        const session = businessSessionRows[0];
+        expect(project).toMatchObject({
+          userId: OWNER_ID,
+          name: 'Business workflows',
+          slug: `business-${OWNER_ID}`,
+          visibility: 'private',
+          workspaceId: null,
+        });
+        expect(session).toMatchObject({
+          userId: OWNER_ID,
+          projectId: project.id,
+          status: 'stopped',
+          containerId: null,
+          terminatedAt: null,
+        });
+        expect((session.expiresAt as Date).getTime()).toBeLessThanOrEqual(
+          (session.createdAt as Date).getTime(),
+        );
+      });
+
+      it('gives another owner their own business rows', async () => {
+        workflowRows.set(
+          OTHER_WORKFLOW_ID,
+          cosRow({ id: OTHER_WORKFLOW_ID, userId: OTHER_ID, name: 'Their brief' }),
+        );
+        const mine = await startSessionless({ testRun: true });
+        const theirs = await startSessionless(
+          { testRun: true, workflowId: OTHER_WORKFLOW_ID },
+          201,
+          OTHER_ID,
+        );
+        expect(projectRows).toHaveLength(2);
+        expect(businessSessionRows).toHaveLength(2);
+        expect(theirs.body.projectId).not.toBe(mine.body.projectId);
+        const theirProject = projectRows.find((row) => row.id === theirs.body.projectId);
+        const theirSession = businessSessionRows.find((row) => row.userId === OTHER_ID);
+        expect(theirProject).toMatchObject({ userId: OTHER_ID, slug: `business-${OTHER_ID}` });
+        expect(theirSession).toMatchObject({ userId: OTHER_ID, projectId: theirs.body.projectId });
+        expect(referrals.get(theirs.body.referralId)?.pendingJob?.sessionId).toBe(theirSession?.id);
+
+        // Another owner's workflow is still 404 without a session, and creates nothing more.
+        const foreign = await startSessionless({ testRun: true, workflowId: OTHER_WORKFLOW_ID }, 404);
+        expect(foreign.body.code).toBe('WORKFLOW_NOT_FOUND');
+        expect(projectRows).toHaveLength(2);
+        expect(businessSessionRows).toHaveLength(2);
+      });
+
+      it('still refuses a team start without a session with 400 and creates nothing', async () => {
+        for (const team of [undefined, 'coding', 'chief-of-staff', 'advisors']) {
+          const body: Record<string, unknown> = { task: TASK };
+          if (team !== undefined) {
+            body.team = team;
+          }
+          const response = await http().post('/api/collaboration/runs').send(body).expect(400);
+          expect(response.body.message).toBe('sessionId must be a valid UUID');
+        }
+        await http()
+          .post('/api/collaboration/runs')
+          .send(startBody({ sessionId: undefined, team: 'chief-of-staff' }))
+          .expect(400);
+        // A sessionId that is present but not a UUID is still refused on a workflow body.
+        await startSessionless({ testRun: true, sessionId: 'not-a-uuid' }, 400);
+        await startSessionless({ testRun: true, sessionId: null }, 400);
+        expect(projectRows).toHaveLength(0);
+        expect(businessSessionRows).toHaveLength(0);
+        expect(runs.size).toBe(0);
+        expect(referrals.size).toBe(0);
+      });
+
+      it('keeps the workspace path when a workflow start has a sessionId and creates no business rows', async () => {
+        const started = await startWorkflow({ testRun: true });
+        expect(started.body.projectId).toBe(PROJECT_ID);
+        expect(started.body.conversationId).toBe(CONVERSATION_ID);
+        expect(referrals.get(started.body.referralId)?.pendingJob?.sessionId).toBe(SESSION_ID);
+        expect(projectRows).toHaveLength(0);
+        expect(businessSessionRows).toHaveLength(0);
+
+        // An unusable workspace session is still 409, not a silent fall back to the business session.
+        sessions.set(SESSION_ID, usableSession({ terminatedAt: new Date() }));
+        await startWorkflow({ testRun: true }, 409);
+        sessions.set(SESSION_ID, usableSession({ projectId: null }));
+        await startWorkflow({ testRun: true }, 409);
+        expect(projectRows).toHaveLength(0);
+        expect(businessSessionRows).toHaveLength(0);
+      });
+
+      it('creates no business rows when the start is refused (404, 409, 429, 503)', async () => {
+        workflowRows.set(WORKFLOW_ID, cosRow({ userId: OTHER_ID }));
+        expect((await startSessionless({ testRun: true }, 404)).body.code).toBe('WORKFLOW_NOT_FOUND');
+
+        workflowRows.set(WORKFLOW_ID, cosRow({ status: 'disabled' }));
+        expect((await startSessionless({ testRun: true }, 409)).body.code).toBe('WORKFLOW_DISABLED');
+
+        workflowRows.set(WORKFLOW_ID, cosRow({ purpose: 'x'.repeat(4001) }));
+        expect((await startSessionless({ testRun: true }, 409)).body.code).toBe('WORKFLOW_INVALID');
+
+        workflowRows.set(WORKFLOW_ID, cosRow());
+        expect((await startSessionless({}, 409)).body.code).toBe('WORKFLOW_NOT_TESTED');
+
+        workflowRows.set(WORKFLOW_ID, cosRow({ model: { choice: 'platform', id: 'claude-haiku-5-5' } }));
+        const spy = jest.spyOn(KillSwitchConfig, 'isProviderEnabled').mockReturnValue(false);
+        try {
+          await startSessionless({ testRun: true }, 503);
+        } finally {
+          spy.mockRestore();
+        }
+
+        // The day budget: a test run through the workspace session spends 12 credits.
+        workflowRows.set(WORKFLOW_ID, cosRow({ budgetPerDayCredits: 12 }));
+        const test = await startWorkflow({ testRun: true });
+        const executionId = await completeRun(test.body);
+        deductionRows.push({
+          ownerId: OWNER_ID,
+          sourceEventId: executionId,
+          requestedCredits: 12,
+          createdAt: new Date(),
+        });
+        const day = await startSessionless({}, 429);
+        expect(day.body).toMatchObject({ code: 'WORKFLOW_BUDGET_DAY', budget: 12, spent: 12 });
+
+        expect(projectRows).toHaveLength(0);
+        expect(businessSessionRows).toHaveLength(0);
+        expect(runs.size).toBe(1);
+      });
+
+      it('refuses a plan whose signed profile is not read with 409 and creates nothing', async () => {
+        const original = CollaborationWorkflowService.prototype.prepareStart;
+        const spy = jest
+          .spyOn(CollaborationWorkflowService.prototype, 'prepareStart')
+          .mockImplementation(async function (
+            this: CollaborationWorkflowService,
+            input: Parameters<CollaborationWorkflowService['prepareStart']>[0],
+          ) {
+            const prepared = await original.call(this, input);
+            return { ...prepared, builderProfileId: 'writer' };
+          });
+        try {
+          const response = await startSessionless({ testRun: true }, 409);
+          expect(response.body.code).toBe('WORKFLOW_INVALID');
+        } finally {
+          spy.mockRestore();
+        }
+        expect(projectRows).toHaveLength(0);
+        expect(businessSessionRows).toHaveLength(0);
+        expect(runs.size).toBe(0);
+        expect(referrals.size).toBe(0);
+      });
+
+      it('puts the caller note on projectInstructions only for a session-less run, and keeps the version', async () => {
+        const without = await startSessionless({ testRun: true });
+        const job = referrals.get(without.body.referralId)?.pendingJob;
+        expect(job?.callerProjectInstructions).toBe(COLLABORATION_BUSINESS_RUN_NOTE);
+        expect(
+          String(job?.projectInstructions).startsWith(`${COLLABORATION_BUSINESS_RUN_NOTE}\n\n`),
+        ).toBe(true);
+        expect(job?.projectInstructions).toContain(`You are ${WORKFLOW_ID}.`);
+        expect(job?.workflow?.version).toBe(currentVersion());
+
+        const withSession = await startWorkflow({ testRun: true });
+        const sessionJob = referrals.get(withSession.body.referralId)?.pendingJob;
+        expect(sessionJob?.callerProjectInstructions ?? null).toBeNull();
+        expect(String(sessionJob?.projectInstructions)).not.toContain(
+          COLLABORATION_BUSINESS_RUN_NOTE,
+        );
+
+        await http().post(approvePath(without.body)).send({}).expect(200);
+        const payload = queue.enqueueExecution.mock.calls.at(-1)?.[0] as Record<string, unknown>;
+        expect(payload.sessionId).toBe(businessSessionRows[0].id);
+        expect(payload.harnessToolProfile).toBe('read');
+        expect(payload.harnessReadOnly).toBe(true);
+        expect(String(payload.projectInstructions).startsWith(COLLABORATION_BUSINESS_RUN_NOTE)).toBe(
+          true,
+        );
+        const intent = ledger.writeExecutionIntent.mock.calls.at(-1)?.[0];
+        expect(intent.sessionId).toBe(businessSessionRows[0].id);
+        expect(intent.metadata.agentDefinitionVersion).toBe(currentVersion());
+        expect(intent.metadata.workflowTestRun).toBe(true);
+      });
+
+      it('signs a session-less workflow job with the same key set as one with a session', async () => {
+        const withSession = await startWorkflow({ testRun: true });
+        await http().post(approvePath(withSession.body)).send({}).expect(200);
+        const sessionJob = queue.enqueueExecution.mock.calls.at(-1)?.[0] as Record<string, unknown>;
+        const without = await startSessionless({ testRun: true });
+        await http().post(approvePath(without.body)).send({}).expect(200);
+        const businessJob = queue.enqueueExecution.mock.calls.at(-1)?.[0] as Record<string, unknown>;
+        expect(Object.keys(businessJob).sort()).toEqual(Object.keys(sessionJob).sort());
+      });
+
+      it('lists the business project on the workflows route only once it exists, without creating it', async () => {
+        const before = await http().get('/api/collaboration/workflows').expect(200);
+        expect(before.body.business).toBeNull();
+        expect(projectRows).toHaveLength(0);
+        expect(businessSessionRows).toHaveLength(0);
+
+        const started = await startSessionless({ testRun: true });
+        const after = await http().get('/api/collaboration/workflows').expect(200);
+        expect(after.body.business).toEqual({ projectId: started.body.projectId });
+        expect(Object.keys(after.body).sort()).toEqual(['business', 'workflows']);
+
+        const other = await http(OTHER_ID).get('/api/collaboration/workflows').expect(200);
+        expect(other.body.business).toBeNull();
+        expect(projectRows).toHaveLength(1);
+
+        const list = await http()
+          .get(`/api/collaboration/runs?projectId=${started.body.projectId}`)
+          .expect(200);
+        expect(list.body.runs).toHaveLength(1);
+        expect(list.body.runs[0]).toMatchObject({
+          collaborationRunId: started.body.collaborationRunId,
+          teamId: 'workflow',
+        });
+      });
+
+      it('keeps 401 and 403 on both routes and creates nothing', async () => {
+        const anonymous = request(app.getHttpServer());
+        await anonymous
+          .post('/api/collaboration/runs')
+          .set('x-test-anonymous', '1')
+          .send(sessionless({ testRun: true }))
+          .expect(401);
+        await anonymous
+          .get('/api/collaboration/workflows')
+          .set('x-test-anonymous', '1')
+          .expect(401);
+        const denied = await http(OWNER_ID, false)
+          .post('/api/collaboration/runs')
+          .send(sessionless({ testRun: true }))
+          .expect(403);
+        expect(denied.body.code).toBeUndefined();
+        await http(OWNER_ID, false).get('/api/collaboration/workflows').expect(403);
+        expect(projectRows).toHaveLength(0);
+        expect(businessSessionRows).toHaveLength(0);
+        expect(runs.size).toBe(0);
+      });
     });
   });
 });

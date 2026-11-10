@@ -9,6 +9,10 @@ import { fillTemplate } from '@/lib/collaboration/logic';
  * them from GET /api/collaboration/workflows, starts a test run or a normal
  * run with { sessionId, task, workflowId, testRun }, and translates the
  * WORKFLOW_* refusal codes. Nothing of the spec is sent from the browser.
+ *
+ * TEAM-NO-SESSION-02: without a session the body has no sessionId and the
+ * server runs the workflow on the owner's business project; the list's
+ * `business` field names that project for "Past runs".
  */
 
 export type CollaborationWorkflowStatus = 'active' | 'draft' | 'disabled';
@@ -40,9 +44,16 @@ export interface CollaborationRunWorkflow {
 
 export type CollaborationWorkflowListState = 'loading' | 'failed' | 'loaded';
 
+/** TEAM-NO-SESSION-02 D10: the owner's business project, once a session-less run created it. */
+export interface CollaborationBusinessProject {
+  projectId: string;
+}
+
 export interface CollaborationWorkflowList {
   state: CollaborationWorkflowListState;
   items: CollaborationWorkflowItem[];
+  /** TEAM-NO-SESSION-02: null until the first session-less run; absent when not read. */
+  business?: CollaborationBusinessProject | null;
   onRetry: () => void;
   /** Called when a run ends, so tested flags and spend are read again. */
   onStale: () => void;
@@ -105,6 +116,17 @@ export function readCollaborationWorkflows(body: unknown): CollaborationWorkflow
   return items;
 }
 
+/** TEAM-NO-SESSION-02 D10: `business` from GET /api/collaboration/workflows, or null. */
+export function readCollaborationBusiness(body: unknown): CollaborationBusinessProject | null {
+  if (!isRecord(body) || !isRecord(body.business)) {
+    return null;
+  }
+  const projectId = body.business.projectId;
+  return typeof projectId === 'string' && projectId.trim().length > 0
+    ? { projectId: projectId.trim() }
+    : null;
+}
+
 /** The workflow a listed or opened run ran, or null for a team run. */
 export function readRunWorkflow(value: unknown): CollaborationRunWorkflow | null {
   if (!isRecord(value) || typeof value.id !== 'string' || typeof value.name !== 'string') {
@@ -116,14 +138,16 @@ export function readRunWorkflow(value: unknown): CollaborationRunWorkflow | null
   return { id: value.id, name: value.name, testRun: value.testRun === true };
 }
 
+/** TEAM-NO-SESSION-02 D11: an empty or missing sessionId is left out of the body. */
 export function collaborationWorkflowStartBody(input: {
-  sessionId: string;
+  sessionId?: string;
   task: string;
   workflowId: string;
   testRun: boolean;
-}): { sessionId: string; task: string; workflowId: string; testRun: boolean } {
+}): { sessionId?: string; task: string; workflowId: string; testRun: boolean } {
+  const sessionId = input.sessionId?.trim() ?? '';
   return {
-    sessionId: input.sessionId,
+    ...(sessionId.length > 0 ? { sessionId } : {}),
     task: input.task.trim(),
     workflowId: input.workflowId,
     testRun: input.testRun,
@@ -246,6 +270,7 @@ export function preselectWorkflowId(
 export function useCollaborationWorkflowList(enabled: boolean): CollaborationWorkflowList {
   const [state, setState] = useState<CollaborationWorkflowListState>('loading');
   const [items, setItems] = useState<CollaborationWorkflowItem[]>([]);
+  const [business, setBusiness] = useState<CollaborationBusinessProject | null>(null);
   const [generation, setGeneration] = useState(0);
   const quiet = useRef(false);
 
@@ -271,6 +296,7 @@ export function useCollaborationWorkflowList(enabled: boolean): CollaborationWor
           return;
         }
         setItems(readCollaborationWorkflows(body));
+        setBusiness(readCollaborationBusiness(body));
         setState('loaded');
       })
       .catch(() => {
@@ -295,5 +321,5 @@ export function useCollaborationWorkflowList(enabled: boolean): CollaborationWor
     setGeneration((value) => value + 1);
   }, []);
 
-  return { state, items, onRetry, onStale };
+  return { state, items, business, onRetry, onStale };
 }

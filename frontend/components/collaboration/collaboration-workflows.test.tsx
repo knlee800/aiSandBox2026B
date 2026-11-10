@@ -23,8 +23,10 @@ import {
   collaborationWorkflowStartBody,
   collaborationWorkflowSummary,
   preselectWorkflowId,
+  readCollaborationBusiness,
   readCollaborationWorkflows,
   readRunWorkflow,
+  useCollaborationWorkflowList,
   type CollaborationWorkflowItem,
   type CollaborationWorkflowList,
 } from './collaboration-workflows';
@@ -228,6 +230,30 @@ describe('BIZ-USER-01C workflow helpers', () => {
       }),
       { sessionId: 's-1', task: 'Brief me', workflowId: WORKFLOW_ID, testRun: true },
     );
+  });
+
+  test('TEAM-NO-SESSION-02: leaves sessionId out of the workflow body when there is none', () => {
+    for (const sessionId of [undefined, '', '   ']) {
+      const body = collaborationWorkflowStartBody({
+        sessionId,
+        task: ' Brief me ',
+        workflowId: WORKFLOW_ID,
+        testRun: false,
+      });
+      assert.deepEqual(body, { task: 'Brief me', workflowId: WORKFLOW_ID, testRun: false });
+      assert.equal(Object.prototype.hasOwnProperty.call(body, 'sessionId'), false);
+    }
+  });
+
+  test('TEAM-NO-SESSION-02: reads the business project from the workflow list, or null', () => {
+    assert.deepEqual(readCollaborationBusiness({ workflows: [], business: { projectId: 'p-9' } }), {
+      projectId: 'p-9',
+    });
+    assert.equal(readCollaborationBusiness({ workflows: [], business: null }), null);
+    assert.equal(readCollaborationBusiness({ workflows: [] }), null);
+    assert.equal(readCollaborationBusiness({ business: { projectId: '' } }), null);
+    assert.equal(readCollaborationBusiness({ business: { projectId: 7 } }), null);
+    assert.equal(readCollaborationBusiness('junk'), null);
   });
 
   test('offers Start only when on and tested, and the test run unless off', () => {
@@ -567,6 +593,118 @@ describe('TEAM-NO-SESSION-01 Team page without a session', () => {
   });
 });
 
+describe('TEAM-NO-SESSION-02 Team page view without a session', () => {
+  const selected = [
+    { id: 'w1', name: 'Morning brief', statusLabel: 'On', testedLabel: 'Tested', selected: true },
+  ];
+  const notSelected = [{ ...selected[0], selected: false }];
+
+  function noSession(overrides: Record<string, unknown>): string {
+    return render({ sessionReady: false, workflowPicker: picker('loaded', selected), ...overrides });
+  }
+
+  test('a selected workflow shows the task box, Start and Start test run, and no team picker', () => {
+    const markup = noSession({ workflowStart: startView({ canTest: true, canRun: true }) });
+    assert.match(markup, /data-testid="collaboration-no-session"/);
+    assert.match(markup, /data-testid="collaboration-task"/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-team-picker"/);
+    assert.match(markup, /data-testid="collaboration-workflow-picker"/);
+    assert.match(markup, /<button[^>]*type="submit"[^>]*data-testid="collaboration-start"/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-start"[^>]*disabled=""/);
+    assert.match(markup, /data-testid="collaboration-start-test"/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-start-test"[^>]*disabled=""/);
+    assert.doesNotMatch(markup, /collaboration-missing-session/);
+  });
+
+  test('follows workflowStart: test only with its hint, neither when off, and the spend line', () => {
+    const testOnly = noSession({
+      workflowStart: startView({ canTest: true, canRun: false, hint: EN.workflowNeedsTest }),
+    });
+    assert.doesNotMatch(testOnly, /data-testid="collaboration-start"/);
+    assert.match(testOnly, /<button[^>]*type="submit"[^>]*data-testid="collaboration-start-test"/);
+    assert.match(testOnly, /data-testid="collaboration-workflow-hint"/);
+    assert.ok(testOnly.includes(EN.workflowNeedsTest));
+
+    const off = noSession({
+      workflowStart: startView({ canTest: false, canRun: false, hint: EN.workflowOffHint }),
+    });
+    assert.doesNotMatch(off, /data-testid="collaboration-start"/);
+    assert.doesNotMatch(off, /data-testid="collaboration-start-test"/);
+    assert.ok(off.includes(EN.workflowOffHint));
+
+    const spent = fillTemplate(EN.workflowSpentToday, { spent: '3', budget: '10' });
+    const withSpend = noSession({ workflowStart: startView({ spentLine: spent }) });
+    assert.match(withSpend, /data-testid="collaboration-workflow-spent"/);
+    assert.ok(withSpend.includes(spent));
+  });
+
+  test('a start with an empty task box stays disabled, and deciding shows Starting', () => {
+    const empty = noSession({ task: '   ', workflowStart: startView({}) });
+    assert.match(empty, /data-testid="collaboration-start"[^>]*disabled=""/);
+    const deciding = noSession({ deciding: true, workflowStart: startView({}) });
+    assert.ok(deciding.includes(EN.starting));
+  });
+
+  for (const [locale, catalog] of CATALOGS) {
+    test(`no workflow selected: no task box, no team picker, disabled buttons and the reworded hint (${locale})`, () => {
+      const markup = render({
+        labels: catalog as unknown as CollaborationViewLabels,
+        sessionReady: false,
+        workflowPicker: picker('loaded', notSelected),
+        workflowStart: null,
+      });
+      assert.match(markup, /data-testid="collaboration-no-session"/);
+      assert.doesNotMatch(markup, /data-testid="collaboration-task"/);
+      assert.doesNotMatch(markup, /data-testid="collaboration-team-picker"/);
+      assert.match(markup, /<button[^>]*data-testid="collaboration-start"[^>]*disabled=""/);
+      assert.match(markup, /<button[^>]*data-testid="collaboration-start-test"[^>]*disabled=""/);
+      assert.match(markup, /data-testid="collaboration-missing-session"/);
+      assert.ok(markup.includes(catalog.missingSession), locale);
+    });
+  }
+
+  test('the reworded hint says workflows run without a workspace and teams need one', () => {
+    assert.equal(
+      EN.missingSession,
+      'Your workflows run here without a workspace. The coding team starts from a workspace session: open Team from a workspace for that.',
+    );
+    for (const [locale, catalog] of CATALOGS) {
+      assert.doesNotMatch(catalog.missingSession, /\u2014/, locale);
+      assert.ok(catalog.pastRunsBusiness.length > 0, locale);
+    }
+    for (const [locale, catalog] of CATALOGS.slice(1)) {
+      for (const key of ['missingSession', 'pastRunsBusiness']) {
+        assert.notEqual(catalog[key], EN[key], `${locale} ${key}`);
+        assert.match(catalog[key], /\p{Script=Han}/u, `${locale} ${key}`);
+      }
+    }
+  });
+
+  test('with a session the team picker shows next to the workflows, as before', () => {
+    const markup = render({
+      sessionReady: true,
+      workflowPicker: picker('loaded', selected),
+      workflowStart: startView({}),
+    });
+    assert.match(markup, /data-testid="collaboration-team-picker"/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-no-session"/);
+  });
+
+  test('past runs: the business note shows, and an empty list says so instead of needing a project', () => {
+    const markup = render({
+      sessionReady: false,
+      projectReady: true,
+      pastRunsNote: EN.pastRunsBusiness,
+      workflowPicker: picker('loaded', notSelected),
+    });
+    assert.match(markup, /data-testid="collaboration-past-runs-note"/);
+    assert.ok(markup.includes(EN.pastRunsBusiness));
+    assert.ok(markup.includes(EN.pastRunsEmpty));
+    assert.doesNotMatch(markup, /collaboration-missing-project/);
+    assert.doesNotMatch(render({}), /collaboration-past-runs-note/);
+  });
+});
+
 describe('TEAM-PRESELECT-01 preselectWorkflowId and the query', () => {
   test('returns the id only when the list has that workflow', () => {
     const items = [item(), item({ id: 'other' })];
@@ -607,13 +745,16 @@ describe('BIZ-USER-01C Team page with workflows', () => {
   let probeWorkflows: CollaborationWorkflowList = workflows;
   let probeWorkflowId = '';
   let probeSessionId = 'session-1';
+  let probeProjectId = '';
+  let gets: string[] = [];
+  let workflowsBody: unknown = null;
 
   function Probe(props: { catalog: Catalog }) {
     latest = useCollaborationScreen({
       t: (key: string) => props.catalog[key] ?? key,
       locale: 'en',
       sessionId: probeSessionId,
-      queryProjectId: '',
+      queryProjectId: probeProjectId,
       workflows: probeWorkflows,
       queryWorkflowId: probeWorkflowId,
     });
@@ -655,6 +796,9 @@ describe('BIZ-USER-01C Team page with workflows', () => {
     probeWorkflows = workflows;
     probeWorkflowId = '';
     probeSessionId = 'session-1';
+    probeProjectId = '';
+    gets = [];
+    workflowsBody = null;
     originalFetch = globalThis.fetch;
     globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
@@ -663,6 +807,12 @@ describe('BIZ-USER-01C Team page with workflows', () => {
         const body = init?.body ? JSON.parse(String(init.body)) : null;
         posts.push(body);
         return onPost(body);
+      }
+      if (method === 'GET') {
+        gets.push(url);
+      }
+      if (url === '/api/collaboration/workflows' && workflowsBody) {
+        return jsonResponse(200, workflowsBody);
       }
       if (url.startsWith('/api/collaboration/runs?')) {
         return jsonResponse(200, { runs: [] });
@@ -860,6 +1010,152 @@ describe('BIZ-USER-01C Team page with workflows', () => {
     });
     await flush();
     assert.equal(latest?.notice, (enMessages.collaboration as Catalog).refusalOff);
+  });
+
+  function startedBody(overrides: Record<string, unknown> = {}) {
+    return jsonResponse(201, {
+      collaborationRunId: 'run-1',
+      projectId: 'biz-project',
+      status: 'active',
+      referralId: 'ref-1',
+      handoffStatus: 'pending_approval',
+      source: 'user',
+      target: WORKFLOW_ID,
+      conversationId: 'c-1',
+      conversationCreated: true,
+      ...overrides,
+    });
+  }
+
+  test('TEAM-NO-SESSION-02: without a session a workflow starts with no sessionId and a team does not start', async () => {
+    probeSessionId = '';
+    onPost = () => startedBody();
+    await renderProbe();
+    assert.equal(latest?.sessionReady, false);
+    // No workflow selected: Start sends nothing.
+    await act(async () => {
+      latest!.onTaskChange('Fix it');
+    });
+    await act(async () => {
+      latest!.onStart();
+    });
+    await flush();
+    assert.deepEqual(posts, []);
+
+    await act(async () => {
+      latest!.workflowPicker!.onSelect(WORKFLOW_ID);
+      latest!.onTaskChange('  Brief me  ');
+    });
+    assert.equal(latest?.workflowStart?.canRun, true);
+    await act(async () => {
+      latest!.onStartTest();
+    });
+    await flush();
+    await act(async () => {
+      latest!.onTaskChange('Brief me again');
+    });
+    await act(async () => {
+      latest!.onStart();
+    });
+    await flush();
+    assert.deepEqual(posts, [
+      { task: 'Brief me', workflowId: WORKFLOW_ID, testRun: true },
+      { task: 'Brief me again', workflowId: WORKFLOW_ID, testRun: false },
+    ]);
+    // The run's project becomes the past-runs list; the conversation notice is for sessions only.
+    assert.ok(gets.includes('/api/collaboration/runs?projectId=biz-project'));
+    assert.equal(latest?.projectReady, true);
+    assert.equal(latest?.conversationCreated, false);
+    assert.equal(latest?.pastRunsNote, (enMessages.collaboration as Catalog).pastRunsBusiness);
+    assert.equal(latest?.task, '');
+  });
+
+  test('TEAM-NO-SESSION-02: the start hint and spend line show without a session', async () => {
+    probeSessionId = '';
+    probeWorkflows = {
+      ...workflows,
+      items: [
+        item({ budgetPerDayCredits: 10, spentTodayCredits: 4 }),
+        ...workflows.items.slice(1),
+      ],
+    };
+    await renderProbe();
+    await act(async () => {
+      latest!.workflowPicker!.onSelect(WORKFLOW_ID);
+    });
+    assert.equal(
+      latest?.workflowStart?.spentLine,
+      fillTemplate((enMessages.collaboration as Catalog).workflowSpentToday, { spent: '4', budget: '10' }),
+    );
+    await act(async () => {
+      latest!.workflowPicker!.onSelect('f0f0f0f0-0000-4000-8000-000000000002');
+    });
+    assert.deepEqual(
+      { canTest: latest?.workflowStart?.canTest, canRun: latest?.workflowStart?.canRun },
+      { canTest: true, canRun: false },
+    );
+    assert.equal(latest?.workflowStart?.hint, (enMessages.collaboration as Catalog).workflowNeedsTest);
+  });
+
+  test('TEAM-NO-SESSION-02: the business project is the past-runs list without a session and ignored with one', async () => {
+    probeSessionId = '';
+    probeWorkflows = { ...workflows, business: { projectId: 'biz-project' } };
+    await renderProbe();
+    await flush();
+    assert.deepEqual(gets, ['/api/collaboration/runs?projectId=biz-project']);
+    assert.equal(latest?.projectReady, true);
+
+    // The URL's project wins over the business project.
+    gets = [];
+    probeProjectId = 'url-project';
+    await renderProbe();
+    await flush();
+    assert.deepEqual(gets, ['/api/collaboration/runs?projectId=url-project']);
+  });
+
+  test('TEAM-NO-SESSION-02: with a session the business project is ignored and the bodies keep sessionId', async () => {
+    probeWorkflows = { ...workflows, business: { projectId: 'biz-project' } };
+    onPost = () => startedBody({ projectId: 'p-1', conversationCreated: true });
+    await renderProbe();
+    await flush();
+    assert.equal(gets.length, 0);
+    assert.equal(latest?.pastRunsNote, undefined);
+    await act(async () => {
+      latest!.workflowPicker!.onSelect(WORKFLOW_ID);
+      latest!.onTaskChange('Brief me');
+    });
+    await act(async () => {
+      latest!.onStartTest();
+    });
+    await flush();
+    assert.deepEqual(posts, [
+      { sessionId: 'session-1', task: 'Brief me', workflowId: WORKFLOW_ID, testRun: true },
+    ]);
+    assert.equal(latest?.conversationCreated, true);
+    assert.ok(gets.includes('/api/collaboration/runs?projectId=p-1'));
+    assert.ok(!gets.some((url) => url.includes('biz-project')));
+  });
+
+  test('TEAM-NO-SESSION-02: the workflow list hook reads the business project', async () => {
+    let listed: CollaborationWorkflowList | null = null;
+    function ListProbe() {
+      listed = useCollaborationWorkflowList(true);
+      return createElement('div');
+    }
+    workflowsBody = { workflows: [], business: { projectId: 'biz-project' } };
+    await act(async () => {
+      root!.render(createElement(ListProbe));
+    });
+    await flush();
+    assert.equal(listed!.state, 'loaded');
+    assert.deepEqual(listed!.business, { projectId: 'biz-project' });
+
+    workflowsBody = { workflows: [], business: null };
+    await act(async () => {
+      listed!.onRetry();
+    });
+    await flush();
+    assert.equal(listed!.business, null);
   });
 
   test("shows the workflow's name and the Test run badge on the opened run's chain", async () => {

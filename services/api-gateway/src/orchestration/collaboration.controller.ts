@@ -45,9 +45,16 @@ import {
 import {
   CollaborationWorkflowService,
   resolveServerProviderModel,
+  workflowRefusal,
+  WORKFLOW_REFUSAL_CODES,
   type CollaborationWorkflowListItem,
   type PreparedWorkflowStart,
 } from './collaboration-workflow';
+import {
+  COLLABORATION_BUSINESS_RUN_NOTE,
+  CollaborationBusinessSessionService,
+} from './collaboration-business-session';
+import { collaborationHarnessToolProfile } from './collaboration-tool-profile';
 import type {
   CollaborationReferral,
   CollaborationRun,
@@ -169,6 +176,9 @@ export interface CollaborationStartResponse {
  * BIZ-USER-01C: workflowId (with optional testRun) runs the owner's workflow
  * instead; team and workflowId together are refused. Everything a workflow
  * run uses comes from the stored row.
+ * TEAM-NO-SESSION-02: with workflowId, sessionId is optional. Without it the
+ * run uses the owner's business project and session (read profile only).
+ * A team start still requires sessionId.
  * Provider, model, instructions, scopes, tool profile, and decidedBy are not taken from the body.
  */
 @Controller('collaboration')
@@ -180,6 +190,7 @@ export class CollaborationController {
     private readonly conversationService: ConversationService,
     private readonly knowledgeService: KnowledgeService,
     @Optional() private readonly workflowService?: CollaborationWorkflowService,
+    @Optional() private readonly businessSessions?: CollaborationBusinessSessionService,
   ) {}
 
   @Post('runs')
@@ -190,21 +201,21 @@ export class CollaborationController {
   ): Promise<CollaborationStartResponse> {
     const caller = this.assertEntitled(identity);
     const input = this.readStartBody(body);
-    const session = await this.loadOwnedSession(input.sessionId, caller.userId);
-    if (!this.sessionIsUsable(session)) {
-      throw new ConflictException('Session is not usable');
-    }
-    const projectId = typeof session.projectId === 'string' ? session.projectId.trim() : '';
-    if (projectId.length === 0) {
-      throw new ConflictException('Session has no project');
-    }
+    const workspace =
+      input.sessionId !== undefined
+        ? await this.loadUsableSession(input.sessionId, caller.userId)
+        : null;
 
     // BIZ-USER-01C D2: every workflow refusal comes before the conversation and the run exist.
     const workflowPlan =
       'workflowId' in input
         ? this.workflowStartPlan(await this.prepareWorkflow(input, caller.userId))
         : null;
-    const conversation = await this.reuseOrCreateConversation(session.id);
+    // TEAM-NO-SESSION-02 D5, D6: only a read-profile workflow may start without a
+    // session; the business rows are created after every refusal above.
+    const anchor = workspace ?? (await this.businessAnchor(workflowPlan, caller.userId));
+    const projectId = anchor.projectId;
+    const conversation = await this.reuseOrCreateConversation(anchor.sessionId);
     const plan = workflowPlan ?? this.teamStartPlan(input as { teamId: CollaborationServerTeamId });
     const run = await this.orchestrationService.createCollaborationRun({
       userId: caller.userId,
@@ -221,7 +232,7 @@ export class CollaborationController {
           builderProfileId: plan.builderProfileId,
         },
         idempotencyKey: `screen:${randomUUID()}`,
-        sessionId: session.id,
+        sessionId: anchor.sessionId,
         conversationId: conversation.conversation.id,
         apiKeyId: caller.apiKeyId,
         prompt: input.task,
@@ -231,6 +242,8 @@ export class CollaborationController {
         agents: plan.agents,
         fileAccess: true,
         ...(plan.workflow ? { workflow: plan.workflow } : {}),
+        // D7 (DECISION D): a run with no session has no files to read.
+        ...(workspace ? {} : { projectInstructions: COLLABORATION_BUSINESS_RUN_NOTE }),
       });
       return {
         collaborationRunId: run.collaborationRunId,
@@ -260,10 +273,17 @@ export class CollaborationController {
   @Get('workflows')
   async listWorkflows(
     @AuthenticatedUser() identity: ApiKeyIdentity,
-  ): Promise<{ workflows: CollaborationWorkflowListItem[] }> {
+  ): Promise<{
+    workflows: CollaborationWorkflowListItem[];
+    business: { projectId: string } | null;
+  }> {
     const caller = this.assertEntitled(identity);
     const workflows = await this.requireWorkflowService().listForOwner(caller.userId);
-    return { workflows };
+    // TEAM-NO-SESSION-02 D10: read only; never creates the business rows.
+    const business = this.businessSessions
+      ? await this.businessSessions.findForOwner(caller.userId)
+      : null;
+    return { workflows, business };
   }
 
   @Get('runs')
@@ -475,6 +495,42 @@ export class CollaborationController {
     return identity;
   }
 
+  private async loadUsableSession(
+    sessionId: string,
+    userId: string,
+  ): Promise<{ sessionId: string; projectId: string }> {
+    const session = await this.loadOwnedSession(sessionId, userId);
+    if (!this.sessionIsUsable(session)) {
+      throw new ConflictException('Session is not usable');
+    }
+    const projectId = typeof session.projectId === 'string' ? session.projectId.trim() : '';
+    if (projectId.length === 0) {
+      throw new ConflictException('Session has no project');
+    }
+    return { sessionId: session.id, projectId };
+  }
+
+  /**
+   * TEAM-NO-SESSION-02 D5, D6: the business session for a start with no session.
+   * readStartBody lets only a workflow body omit sessionId; this refuses anything
+   * else, and any plan whose signed profile would not be read.
+   */
+  private async businessAnchor(
+    workflowPlan: { builderProfileId: string } | null,
+    userId: string,
+  ): Promise<{ sessionId: string; projectId: string }> {
+    if (!workflowPlan) {
+      throw new BadRequestException('sessionId must be a valid UUID');
+    }
+    if (collaborationHarnessToolProfile(workflowPlan.builderProfileId) !== 'read') {
+      throw workflowRefusal(WORKFLOW_REFUSAL_CODES.invalid);
+    }
+    if (!this.businessSessions) {
+      throw new ServiceUnavailableException('Workflows are unavailable');
+    }
+    return this.businessSessions.ensureForOwner(userId);
+  }
+
   private async loadOwnedSession(sessionId: string, userId: string) {
     let session;
     try {
@@ -610,7 +666,7 @@ export class CollaborationController {
 
   private readStartBody(body: unknown):
     | { sessionId: string; task: string; teamId: CollaborationServerTeamId }
-    | { sessionId: string; task: string; workflowId: string; testRun: boolean } {
+    | { sessionId?: string; task: string; workflowId: string; testRun: boolean } {
     const record = this.asRecord(body);
     if (record.workflowId !== undefined) {
       if (record.team !== undefined) {
@@ -619,8 +675,11 @@ export class CollaborationController {
       if (record.testRun !== undefined && typeof record.testRun !== 'boolean') {
         throw new BadRequestException('testRun must be a boolean');
       }
+      // TEAM-NO-SESSION-02 D5: absent means the business session; present is checked as before.
       return {
-        sessionId: this.readUuid(record.sessionId, 'sessionId'),
+        ...(record.sessionId !== undefined
+          ? { sessionId: this.readUuid(record.sessionId, 'sessionId') }
+          : {}),
         task: this.readTask(record.task),
         workflowId: this.readUuid(record.workflowId, 'workflowId').toLowerCase(),
         testRun: record.testRun === true,

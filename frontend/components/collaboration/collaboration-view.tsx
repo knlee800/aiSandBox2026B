@@ -203,6 +203,8 @@ export default function CollaborationView(props: {
   workflowPicker?: CollaborationWorkflowPickerView | null;
   workflowStart?: CollaborationWorkflowStartView | null;
   onStartTest?: () => void;
+  /** TEAM-NO-SESSION-02: a line under "Past runs" when the list is the business project's. */
+  pastRunsNote?: string;
   accessNote?: string;
   chainEmptyText?: string;
   runTeam?: CollaborationRunTeamView | null;
@@ -236,12 +238,15 @@ export default function CollaborationView(props: {
   onConfirmCancel: () => void;
 }) {
   const { labels } = props;
-  const canStart = props.sessionReady && props.task.trim().length > 0 && !props.deciding;
-  const teamChoices = props.teamChoices ?? [];
-  const selectedTeam = props.selectedTeam ?? 'coding';
-  const taskPresets = props.taskPresets ?? [];
   const workflowPicker = props.workflowPicker ?? null;
   const workflowStart = props.workflowStart ?? null;
+  // TEAM-NO-SESSION-02 D11: without a session the form shows for a selected workflow only,
+  // and the team picker stays hidden (teams start from a workspace session).
+  const formReady = props.sessionReady || workflowStart !== null;
+  const canStart = formReady && props.task.trim().length > 0 && !props.deciding;
+  const teamChoices = props.sessionReady ? (props.teamChoices ?? []) : [];
+  const selectedTeam = props.selectedTeam ?? 'coding';
+  const taskPresets = props.taskPresets ?? [];
   const workflowSelected = workflowPicker?.items.some((item) => item.selected) === true;
   // With a workflow selected, the form's submit runs a normal run only when allowed;
   // otherwise it runs the test (the only primary action shown).
@@ -344,7 +349,7 @@ export default function CollaborationView(props: {
       ) : null}
       {props.loading ? <p className="mt-4 text-sm text-gray-500">{labels.loading}</p> : null}
 
-      {!props.sessionReady ? (
+      {!formReady ? (
         <div className="mt-4 min-w-0" data-testid="collaboration-no-session">
           {pickerBlock}
           <div className="mt-4 flex min-w-0 flex-wrap items-center gap-2">
@@ -377,6 +382,7 @@ export default function CollaborationView(props: {
       ) : (
         <form
           className="mt-4 min-w-0"
+          data-testid={props.sessionReady ? undefined : 'collaboration-no-session'}
           onSubmit={(event) => {
             event.preventDefault();
             if (!canStart) {
@@ -426,7 +432,7 @@ export default function CollaborationView(props: {
           {pickerBlock}
           <label
             htmlFor="collaboration-task"
-            className={`text-sm font-medium text-gray-800 ${teamChoices.length > 0 ? 'mt-4 block' : ''}`}
+            className={`text-sm font-medium text-gray-800 ${teamChoices.length > 0 || workflowPicker ? 'mt-4 block' : ''}`}
           >
             {labels.taskLabel}
           </label>
@@ -1021,6 +1027,11 @@ export default function CollaborationView(props: {
 
       <section className="mt-6 min-w-0">
         <h2 className="text-sm font-semibold text-gray-800">{labels.pastRuns}</h2>
+        {props.pastRunsNote ? (
+          <p className="mt-1 break-words text-sm text-gray-600" data-testid="collaboration-past-runs-note">
+            {props.pastRunsNote}
+          </p>
+        ) : null}
         {!props.projectReady ? (
           <p className="mt-2 text-sm text-gray-600" data-testid="collaboration-missing-project">
             {labels.missingProject}

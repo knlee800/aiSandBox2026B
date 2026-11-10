@@ -120,8 +120,13 @@ export function useCollaborationScreen(input: {
   /** TEAM-PRESELECT-01: the workflowId query parameter, if any. */
   queryWorkflowId?: string;
 }) {
-  const { t, locale, sessionId, queryProjectId } = input;
+  const { t, locale, sessionId } = input;
   const queryWorkflowId = input.queryWorkflowId?.trim() || '';
+  // TEAM-NO-SESSION-02 D10 (DECISION E): without a session, "Past runs" lists the
+  // owner's business project unless the URL names a project. With a session it is ignored.
+  const businessProjectId = input.workflows?.business?.projectId ?? '';
+  const queryProjectId =
+    sessionId.length > 0 ? input.queryProjectId : input.queryProjectId || businessProjectId;
   const translateScope = input.translateScope ?? ((scopeId: string) => scopeId);
   // useTranslations returns a new function every render. Reading it through a ref
   // keeps the latest copy without reloading when that identity changes.
@@ -630,8 +635,12 @@ export function useCollaborationScreen(input: {
     if (startInFlight.current) {
       return;
     }
-    startInFlight.current = true;
     const workflowId = selectedWorkflow?.id ?? null;
+    // TEAM-NO-SESSION-02 D6: only a workflow starts without a session.
+    if (sessionId.length === 0 && workflowId === null) {
+      return;
+    }
+    startInFlight.current = true;
     void (async () => {
       try {
         await runDecision(async () => {
@@ -652,7 +661,8 @@ export function useCollaborationScreen(input: {
             return;
           }
           const started = (await response.json()) as CollaborationStartResult;
-          setConversationCreated(started.conversationCreated === true);
+          // The notice names the workspace session; a session-less run has none to name.
+          setConversationCreated(started.conversationCreated === true && sessionId.length > 0);
           setSelectedRunId(started.collaborationRunId);
           setRejectReferralId(null);
           setRejectReason('');
@@ -677,7 +687,9 @@ export function useCollaborationScreen(input: {
     labels,
     backHref: `/${locale}/app`,
     sessionReady: sessionId.length > 0,
-    projectReady: listProjectId.length > 0,
+    // Without a session the list is the business project's, which exists once a run started.
+    projectReady: listProjectId.length > 0 || sessionId.length === 0,
+    pastRunsNote: sessionId.length === 0 ? t('pastRunsBusiness') : undefined,
     loading,
     notice,
     conversationCreated,

@@ -28,6 +28,9 @@ import { CreditDeductionRecord } from '../entities/credit-deduction-record.entit
 import { CollaborationWorkflowService } from './collaboration-workflow';
 import { CollaborationResultsService } from './collaboration-results';
 import { CollaborationResultsController } from './collaboration-results.controller';
+import { CollaborationBusinessSessionService } from './collaboration-business-session';
+import { Project } from '../entities/project.entity';
+import { Session } from '../entities/session.entity';
 
 @Module({
   imports: [
@@ -49,6 +52,9 @@ import { CollaborationResultsController } from './collaboration-results.controll
       ConnectorConnection,
       // BIZ-USER-01C D8: read only, for a workflow's own credit sums.
       CreditDeductionRecord,
+      // TEAM-NO-SESSION-02 D4: the per-owner business project and session.
+      Project,
+      Session,
     ]),
   ],
   controllers: [
@@ -61,6 +67,7 @@ import { CollaborationResultsController } from './collaboration-results.controll
     OrchestrationService,
     CollaborationWorkflowService,
     CollaborationResultsService,
+    CollaborationBusinessSessionService,
     ExecutionResultService,
     CollaborationSweepWorker,
     {
