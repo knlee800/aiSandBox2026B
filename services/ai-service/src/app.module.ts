@@ -3,7 +3,6 @@ import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { ConversationsModule } from './conversations/conversations.module';
-import { MessagesModule } from './messages/messages.module';
 import { AIExecutionModule } from './ai-execution/ai-execution.module';
 import { QueueModule } from './queue/queue.module';
 import { WorkerModule } from './worker/worker.module';
@@ -35,7 +34,6 @@ import { InternalServiceAuthGuard } from './guards/internal-service-auth.guard';
     }),
     HttpModule,
     ConversationsModule,
-    MessagesModule,
     AIExecutionModule,
     QueueModule,
     WorkerModule,

@@ -92,7 +92,6 @@ async function bootstrap() {
   console.log(`🧠 AI Provider: ${aiProvider}`);
   console.log(`💚 Health Check: http://${host}:${port}/api/conversations`);
   console.log(`📈 Metrics: http://${host}:${port}/metrics`);
-  console.log(`💬 Chat: http://${host}:${port}/api/messages/chat (needs X-Internal-Service-Key)`);
 }
 
 bootstrap();

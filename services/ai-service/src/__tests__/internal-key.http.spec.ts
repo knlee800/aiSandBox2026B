@@ -11,8 +11,6 @@ import { ConversationsService } from '../conversations/conversations.service';
 import { INTERNAL_KEY_EXEMPT } from '../guards/internal-key-exempt.decorator';
 import { InternalServiceAuthGuard } from '../guards/internal-service-auth.guard';
 import { QueueController } from '../internal/queue.controller';
-import { MessagesController } from '../messages/messages.controller';
-import { MessagesService } from '../messages/messages.service';
 import { MetricsController } from '../metrics/metrics.controller';
 import { PrometheusMetricsController } from '../observability/metrics.controller';
 import { QuotaService } from '../quota/quota.service';
@@ -47,10 +45,6 @@ describe('ai-service internal key over HTTP (AI-SERVICE-AUTH-01)', () => {
     getTokenUsage: jest.fn(),
   };
   const quotaService = { getQuotaStatus: jest.fn() };
-  const messagesService = {
-    handleUserMessage: jest.fn(),
-    streamUserMessage: jest.fn(),
-  };
   const worker = { getMetrics: jest.fn() };
   const queue = { getJobCounts: jest.fn() };
 
@@ -61,19 +55,6 @@ describe('ai-service internal key over HTTP (AI-SERVICE-AUTH-01)', () => {
       path: '/api/execute',
       body: { sessionId: 's1', conversationId: 'c1', userId: 'u1', prompt: 'hi' },
       mock: () => aiExecutionService.execute,
-    },
-    {
-      name: 'POST /api/messages/chat',
-      method: 'POST',
-      path: '/api/messages/chat',
-      body: { sessionId: 's1', userId: 'u1', message: 'hi', provider: 'stub' },
-      mock: () => messagesService.handleUserMessage,
-    },
-    {
-      name: 'GET /api/messages/chat/stream (SSE)',
-      method: 'GET',
-      path: '/api/messages/chat/stream',
-      mock: () => messagesService.streamUserMessage,
     },
     {
       name: 'GET /api/conversations/:sessionId',
@@ -142,8 +123,6 @@ describe('ai-service internal key over HTTP (AI-SERVICE-AUTH-01)', () => {
     conversationsService.clearConversation.mockResolvedValue({ cleared: true });
     conversationsService.getTokenUsage.mockResolvedValue({ total: 0 });
     quotaService.getQuotaStatus.mockResolvedValue({ ok: true });
-    messagesService.handleUserMessage.mockResolvedValue({ reply: 'ok' });
-    messagesService.streamUserMessage.mockResolvedValue({ tokensUsed: 0 });
     worker.getMetrics.mockReturnValue({ jobs: 0 });
     queue.getJobCounts.mockResolvedValue({
       waiting: 0,
@@ -161,7 +140,6 @@ describe('ai-service internal key over HTTP (AI-SERVICE-AUTH-01)', () => {
       controllers: [
         AIExecutionController,
         ConversationsController,
-        MessagesController,
         MetricsController,
         QueueController,
         PrometheusMetricsController,
@@ -170,7 +148,6 @@ describe('ai-service internal key over HTTP (AI-SERVICE-AUTH-01)', () => {
         { provide: AIExecutionService, useValue: aiExecutionService },
         { provide: ConversationsService, useValue: conversationsService },
         { provide: QuotaService, useValue: quotaService },
-        { provide: MessagesService, useValue: messagesService },
         { provide: WorkerProcessor, useValue: worker },
         { provide: 'AI_EXECUTION_QUEUE', useValue: queue },
         // Same registration as AppModule.
@@ -261,11 +238,21 @@ describe('ai-service internal key over HTTP (AI-SERVICE-AUTH-01)', () => {
     expect(await response.json()).toMatchObject({ status: 'ok', service: 'conversations' });
   });
 
-  it('POST /api/messages/health is open without the key', async () => {
-    const response = await fetch(`${baseUrl}/api/messages/health`, { method: 'POST' });
-    // Nest's default status for a POST handler.
-    expect(response.status).toBe(201);
-    expect(await response.json()).toMatchObject({ status: 'ok', service: 'messages' });
+  it('CM-CLEANUP-01: POST /api/messages/chat (legacy chat path, removed) is route-not-found with the key', async () => {
+    const response = await send(
+      {
+        method: 'POST',
+        path: '/api/messages/chat',
+        body: { sessionId: 's1', userId: 'u1', message: 'hi', provider: 'stub' },
+      },
+      internalKey,
+    );
+    expect(response.status).toBe(404);
+    expect(await response.json()).toMatchObject({
+      statusCode: 404,
+      message: 'Cannot POST /api/messages/chat',
+    });
+    expect(aiExecutionService.execute).not.toHaveBeenCalled();
   });
 
   it('GET /metrics is open without the key', async () => {
@@ -370,12 +357,12 @@ describe('ai-service route inventory (AI-SERVICE-AUTH-01)', () => {
     expect(providers).toContainEqual({ provide: APP_GUARD, useClass: InternalServiceAuthGuard });
   });
 
-  it('opens exactly the three exempt handlers', () => {
+  it('opens exactly the two exempt handlers', () => {
     expect(
       inventory()
         .filter((r) => r.exempt)
         .map((r) => r.route),
-    ).toEqual(['GET /api/conversations', 'GET /metrics', 'POST /api/messages/health']);
+    ).toEqual(['GET /api/conversations', 'GET /metrics']);
   });
 
   it('guards every other route in AppModule', () => {
@@ -392,9 +379,7 @@ describe('ai-service route inventory (AI-SERVICE-AUTH-01)', () => {
         'GET /api/conversations/:sessionId/usage',
         'GET /api/internal/metrics',
         'GET /api/internal/queue/stats',
-        'GET /api/messages/chat/stream',
         'POST /api/execute',
-        'POST /api/messages/chat',
       ].sort((a, b) => a.localeCompare(b)),
     );
   });
