@@ -88417,7 +88417,7 @@ taskId=DESIGN-GAPS-01B
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! ... keep looking for the next task to start"). Was: READY — registered 2026-11-10 by the DESIGN-GAPS-01 split — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 2 and its mutexes released. Primary bg-brand, success emerald, one focus-visible brand ring, Spinner, collaboration selection in brand, slice A leftovers and loading sentences translated; sonnet subagent in worktree lane/DESIGN-GAPS-01B, cherry-picked as 24cc010 and d6bccb4; frontend 1297 passed, tsc and build clean; not deployed. FOLLOWUPS: 1 registered (DESIGN-CONTRAST-01) / 1 superseded (live check at the next deploy) / 0 dropped / 0 undisposed. Checkpoint: docs/DESIGN-GAPS-01B-CHECKPOINT.md.
 **Task ID:** DESIGN-GAPS-01B
 **Title:** One primary color, one success color, one focus ring, one spinner
 **Workstream:** PRODUCT (taxonomy only; zero admission weight)
@@ -88434,6 +88434,31 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (as for DESIGN-GAPS-01). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** DESIGN.md Known gaps 1, 7, 8, 9 and 13, using the tokens DESIGN.md already declares: primary actions use bg-brand / hover:bg-brand-hover instead of bg-blue-600 and bg-indigo-500/600; success uses emerald instead of green-500/600; focus uses one focus-visible ring in the brand color, and textareas keep a visible ring; one shared loading spinner (Heroicons-compatible SVG, translated label); the collaboration selection and its primary button in the brand color. Also (DESIGN-GAPS-01 slice A, 2026-11-10): the readiness chip's emoji status glyphs become Heroicons and the stray '✓ text-green-600' class in StatusItem is fixed; the tab bar toggle's title ('Horizontal tabs' / 'Vertical tabs') and the 'Open sidebar' aria-label move into the three message files; ConfigurationControl.tsx's visible English moves into the three message files. Existing test IDs kept; UI checklist and the design skills apply. Live check at the next staging deploy, with slice A's items: the four auth cards and titles, the mobile Bars3 button, the tab orientation icons, and the readiness chip in zh-TW and zh-CN (dev tools on).
+
+### DESIGN-CONTRAST-01 — Readable text on the dark-mode brand color
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=DESIGN-CONTRAST-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the DESIGN-GAPS-01B LOCK — not admitted.
+**Task ID:** DESIGN-CONTRAST-01
+**Title:** Readable text on the dark-mode brand color
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction to keep starting the next tasks).
+**Depends on:** DESIGN-GAPS-01B.
+**Primary write scope:** frontend/app/globals.css (the dark brand variables), frontend/components/ (only if a button needs a text-color class), DESIGN.md.
+**Mutexes / resources:** FRONTEND.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** variables only.
+**saturationClass:** OPTIONAL (as for DESIGN-GAPS-01B; Keith may change it).
+**productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** In dark mode the brand is #818cf8 and primary buttons put white text on it, which is below WCAG AA contrast. Pick a dark-mode brand (or button text color) that reaches 4.5:1 for button text, keep the light-mode brand, update DESIGN.md's tokens and known gap 1, and add a test that computes the contrast of the declared pair.
 
 ### DESIGN-GAPS-01C — Fonts: a CJK font for zh-TW and zh-CN, and a mono family
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
