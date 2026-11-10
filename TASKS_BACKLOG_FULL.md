@@ -84492,7 +84492,7 @@ taskId=FE-TEST-COVERAGE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-10 — under Keith's instruction to keep starting the next tasks ("do not stop!!! we need to keep going since we are months behind. keep looking for the next task to start"). Registered 2026-11-05 by GOV-OS-05.
+**Status:** COMPLETE AND LOCKED — 2026-11-10. LANE-DONE and LOCKED by the control plane; Lane 2, FRONTEND and PACKAGE released. npm test also runs the nine skipped test files: 1251 passed (1041 before), 0 failed; one test-only fix (login page test sets globalThis.React); app/*/login used because Node 22 reads [locale] as a character class. Sonnet subagent in worktree lane/FE-TEST-COVERAGE-01, cherry-picked as 2615989; tsc and build clean. Checkpoint: docs/FE-TEST-COVERAGE-01-CHECKPOINT.md. FOLLOWUPS: 1 registered / 0 superseded / 0 dropped / 0 undisposed (FE-TEST-GLOB-01). Registered 2026-11-05 by GOV-OS-05.
 **Task ID:** FE-TEST-COVERAGE-01
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
@@ -84512,6 +84512,31 @@ nature=IMPLEMENTATION
 
 - [ ] Scope, write set, mutexes and evidence class are set, split into bounded slices where needed, and approved by Keith before admission
 - [ ] Not LOCKED by an implementer
+
+### FE-TEST-GLOB-01 — Fail when a frontend test file is not in npm test
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=FE-TEST-GLOB-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-10 by the FE-TEST-COVERAGE-01 LOCK — not admitted.
+**Task ID:** FE-TEST-GLOB-01
+**Title:** Fail when a frontend test file is not in npm test
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction to keep starting the next tasks).
+**Depends on:** FE-TEST-COVERAGE-01.
+**Primary write scope:** frontend/lib/test-script-coverage.test.ts (new), frontend/package.json (only if the guard finds a gap).
+**Mutexes / resources:** FRONTEND, PACKAGE.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** one test file.
+**saturationClass:** OPTIONAL (as for the task it came from; Keith may change it).
+**productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** A test, run by npm test itself, that lists every *.test.ts and *.test.tsx file under frontend/ (not node_modules or .next) and fails if any is matched by none of the test script's globs, using the same glob rules as Node 22's test runner (so a literal [locale] path counts as unmatched). Found by FE-TEST-COVERAGE-01: three test folders and a bracketed path had been skipped silently.
 
 ### HARNESS-REOPEN-01 — Opening a project does not overwrite a running Agent run
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
