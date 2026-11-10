@@ -1,5 +1,4 @@
-import { CALENDAR_TOOL_ID, MAIL_TOOL_ID } from '../connectors/connector-servers';
-import { systemAgentById } from '../system-agents/system-agent-registry';
+import { SYSTEM_AGENT_DEFINITIONS, systemAgentById } from '../system-agents/system-agent-registry';
 
 export { knowledgeScopesJobFields } from '../knowledge/knowledge-scopes';
 
@@ -78,11 +77,22 @@ export function collaborationHarnessJobFields(targetProfileId: string): {
  *
  * BIZ-BRIEF-01: only the Chief of Staff lists tools, for the morning briefing.
  * No other role (advisors included) lists any.
+ *
+ * AGENT-SPEC-01: built from each system agent's connectorToolIds, the one
+ * source for access. Roles with no connector tools are left out.
  */
+function roleConnectorTools(): Readonly<Record<string, readonly string[]>> {
+  const byRole: Record<string, readonly string[]> = {};
+  for (const definition of SYSTEM_AGENT_DEFINITIONS) {
+    if (definition.connectorToolIds.length > 0) {
+      byRole[definition.id] = Object.freeze([...definition.connectorToolIds]);
+    }
+  }
+  return Object.freeze(byRole);
+}
+
 export const COLLABORATION_ROLE_CONNECTOR_TOOLS: Readonly<Record<string, readonly string[]>> =
-  Object.freeze({
-    'chief-of-staff': Object.freeze([MAIL_TOOL_ID, CALENDAR_TOOL_ID]),
-  });
+  roleConnectorTools();
 
 export function collaborationRoleConnectorToolIds(targetProfileId: string): readonly string[] {
   if (!Object.prototype.hasOwnProperty.call(COLLABORATION_ROLE_CONNECTOR_TOOLS, targetProfileId)) {

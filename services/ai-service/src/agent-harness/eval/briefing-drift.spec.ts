@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as ts from 'typescript';
 import {
   briefingOwnerRequest,
+  chiefOfStaffPartsFor,
   chiefOfStaffProjectInstructions,
   chiefOfStaffVersionFor,
   COS_EVAL_BRIEFING_REQUEST_TEMPLATE,
@@ -17,10 +18,12 @@ import {
  *
  * It reads gateway and frontend files with fs only. No gateway code is
  * imported or run: ai-service builds with tsc over src/**, and an import
- * would pull gateway sources into this service's build. The constant is
+ * would pull gateway sources into this service's build. Since AGENT-SPEC-01
+ * the gateway renders the text from CHIEF_OF_STAFF_SPEC. Each part is
  * evaluated from the TypeScript syntax tree, which accepts only string
- * literals joined with +, so a gateway refactor that builds the text some
- * other way also fails here (and the eval copy must be revisited).
+ * literals joined with +, then re-rendered with the gateway's join rule
+ * (whose source lines are pinned), so a gateway refactor that builds the
+ * text some other way also fails here (and the eval copy must be revisited).
  */
 const REPO_ROOT = path.join(__dirname, '..', '..', '..', '..', '..');
 const GATEWAY_SRC = path.join(REPO_ROOT, 'services', 'api-gateway', 'src');
@@ -33,7 +36,8 @@ function readRepoFile(...parts: string[]): string {
   return fs.readFileSync(filePath, 'utf8').replace(/\r\n/g, '\n');
 }
 
-function gatewayStringConstant(source: string, name: string): string {
+/** The properties of a gateway object literal constant, by name, from the syntax tree. */
+function gatewayObjectLiteral(source: string, name: string): Map<string, ts.Expression> {
   const file = ts.createSourceFile('registry.ts', source, ts.ScriptTarget.ES2021, true);
   let found: ts.Expression | undefined;
   const visit = (node: ts.Node): void => {
@@ -48,10 +52,34 @@ function gatewayStringConstant(source: string, name: string): string {
     ts.forEachChild(node, visit);
   };
   visit(file);
-  if (!found) {
-    throw new Error(`${name} was not found`);
+  if (!found || !ts.isObjectLiteralExpression(found)) {
+    throw new Error(`${name} is not an object literal`);
   }
-  return evaluateLiteral(found, name);
+  const properties = new Map<string, ts.Expression>();
+  for (const property of found.properties) {
+    if (!ts.isPropertyAssignment(property) || !ts.isIdentifier(property.name)) {
+      throw new Error(`${name} has a property that is not a plain assignment`);
+    }
+    properties.set(property.name.text, property.initializer);
+  }
+  return properties;
+}
+
+/**
+ * The D2 join rule of the gateway's renderAgentInstructions, restated here:
+ * the identity part (empty when tone and reply language are null), purpose,
+ * procedure, result and rules; the non-empty ones joined by one blank line.
+ * The renderer's source lines are pinned below.
+ */
+function renderChiefOfStaffSpec(parts: {
+  purpose: string;
+  procedure: string;
+  result: string;
+  rules: string;
+}): string {
+  return ['', parts.purpose, parts.procedure, parts.result, parts.rules]
+    .filter((part) => part.length > 0)
+    .join('\n\n');
 }
 
 function evaluateLiteral(node: ts.Expression, name: string): string {
@@ -76,11 +104,56 @@ describe('COS-EVAL-01 drift check on the gateway Chief of Staff instructions', (
     'system-agent-registry.ts',
   );
 
-  it('the eval copy is exactly the gateway CHIEF_OF_STAFF_INSTRUCTIONS', () => {
-    const gateway = gatewayStringConstant(registry, 'CHIEF_OF_STAFF_INSTRUCTIONS');
+  it('the eval copy is exactly the gateway CHIEF_OF_STAFF_INSTRUCTIONS, re-rendered from CHIEF_OF_STAFF_SPEC', () => {
+    const spec = gatewayObjectLiteral(registry, 'CHIEF_OF_STAFF_SPEC');
+    expect([...spec.keys()]).toEqual([
+      'tone',
+      'replyLanguage',
+      'purpose',
+      'procedure',
+      'result',
+      'rules',
+    ]);
+    expect(spec.get('tone')?.kind).toBe(ts.SyntaxKind.NullKeyword);
+    expect(spec.get('replyLanguage')?.kind).toBe(ts.SyntaxKind.NullKeyword);
+    const part = (key: string): string => {
+      const node = spec.get(key);
+      if (!node) {
+        throw new Error(`CHIEF_OF_STAFF_SPEC.${key} is missing`);
+      }
+      return evaluateLiteral(node, `CHIEF_OF_STAFF_SPEC.${key}`);
+    };
+    const parts = {
+      purpose: part('purpose'),
+      procedure: part('procedure'),
+      result: part('result'),
+      rules: part('rules'),
+    };
+    const gateway = renderChiefOfStaffSpec(parts);
     expect(gateway.length).toBe(2576);
     expect(gateway.length).toBeLessThan(4000);
     expect(COS_EVAL_CHIEF_OF_STAFF_INSTRUCTIONS).toBe(gateway);
+    // The copy splits back into the same parts the gateway spec holds.
+    expect(chiefOfStaffPartsFor(COS_EVAL_CHIEF_OF_STAFF_INSTRUCTIONS)).toEqual(parts);
+    // The exported constant is the rendered spec.
+    expect(registry).toContain(
+      'export const CHIEF_OF_STAFF_INSTRUCTIONS = renderAgentInstructions(CHIEF_OF_STAFF_SPEC);',
+    );
+  });
+
+  it('the gateway renderer keeps the part order and the blank-line join', () => {
+    expect(registry).toContain(
+      'export function renderAgentInstructions(spec: SystemAgentPromptSpec): string {\n' +
+        '  const parts = [identityPart(spec), spec.purpose, spec.procedure, spec.result, spec.rules];\n' +
+        "  return parts.filter((part) => part.length > 0).join('\\n\\n');\n" +
+        '}',
+    );
+    // Null tone and reply language add nothing to the identity part.
+    expect(registry).toContain('  if (spec.tone !== null) {\n');
+    expect(registry).toContain('  if (spec.replyLanguage !== null) {\n');
+    expect(registry).toContain("  return sentences.join(' ');\n");
+    // The definition's instructions are the rendered spec.
+    expect(registry).toContain('  const instructions = renderAgentInstructions(draft);\n');
   });
 
   it('the copy carries the BRIEF-FLAG-01 flag label and briefing source rule', () => {
@@ -111,8 +184,15 @@ describe('COS-EVAL-01 drift check on the gateway Chief of Staff instructions', (
 
   it('the hash material the copy uses matches the gateway draft for chief-of-staff', () => {
     expect(registry).toContain(
-      "knowledgeScopes: scopes({ id: 'contract-templates', type: 'specialist' }),\n    instructions: CHIEF_OF_STAFF_INSTRUCTIONS,\n    toolProfile: 'read',\n    modelChoice: 'server',\n    teamRole: { teamId: 'chief-of-staff', roleName: 'chief-of-staff' },",
+      "knowledgeScopes: scopes({ id: 'contract-templates', type: 'specialist' }),\n    ...CHIEF_OF_STAFF_SPEC,\n    toolProfile: 'read',\n    connectorToolIds: [MAIL_TOOL_ID, CALENDAR_TOOL_ID],\n    model: { choice: 'server' },\n    teamRole: { teamId: 'chief-of-staff', roleName: 'chief-of-staff' },",
     );
+    // The hash material's key order and the connector ids the copy hashes.
+    expect(registry).toContain(
+      '    id: draft.id,\n    tone: draft.tone,\n    replyLanguage: draft.replyLanguage,\n    purpose: draft.purpose,\n    procedure: draft.procedure,\n    result: draft.result,\n    rules: draft.rules,\n    instructions,\n    toolProfile: draft.toolProfile,\n    scopes: draft.knowledgeScopes.map((scope) => ({ id: scope.id, type: scope.type })),\n    connectorToolIds: [...draft.connectorToolIds],\n    model: modelMaterial(draft.model),\n    teamRole: draft.teamRole\n',
+    );
+    const connectors = readRepoFile('services', 'api-gateway', 'src', 'connectors', 'connector-servers.ts');
+    expect(connectors).toContain("export const MAIL_TOOL_ID = 'mail_list_unread_metadata';");
+    expect(connectors).toContain("export const CALENDAR_TOOL_ID = 'calendar_list_today';");
     // Only one role is on the chief-of-staff team, so the brief lists no other agents.
     expect(registry.split("teamId: 'chief-of-staff'").length - 1).toBe(1);
   });
