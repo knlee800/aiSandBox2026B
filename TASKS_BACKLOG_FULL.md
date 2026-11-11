@@ -88346,7 +88346,7 @@ taskId=CM-CONTENT-TYPE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-11 — under Keith's "do not stop!!! ... keep looking for the next task to start". Was: READY — registered 2026-11-11 by the CM-BINARY-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-11. LANE-DONE and LOCKED by the control plane; Lane 2 and CONTAINER-MANAGER released. Preview static files get standard content types for woff, woff2, ttf, otf, gif, webp, ico, avif, wasm, mjs, map and xml (existing mappings unchanged; text/plain fallback kept); the stale base64 slice comment in docker-runtime.service.ts corrected; 22 new tests; sonnet subagent, cherry-picked as 2e88d39; control-plane rerun on the branch and main: container-manager 753 passed, 3 skipped, build 0. Not deployed (rides STAGING-DEPLOY-FD-02). Checkpoint: docs/CM-CONTENT-TYPE-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (CM-CONTENT-TYPE-02) / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 2 — 2026-11-11 — under Keith's "do not stop!!! ... keep looking for the next task to start". Was: READY — registered 2026-11-11 by the CM-BINARY-01 LOCK — not admitted.
 **Task ID:** CM-CONTENT-TYPE-01
 **Title:** Preview content types for fonts, images and modules
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -88363,6 +88363,30 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** From the CM-BINARY-01 worker: resolveContentType has no entries for woff, woff2, ttf, gif, webp, ico, wasm and mjs, so they go out as text/plain; charset=utf-8 and browsers may refuse fonts or modules; add the standard types with tests. Also fix the stale docker-runtime.service.ts cap comment that still describes base64 history slices.
+
+### CM-CONTENT-TYPE-02 — More preview content types
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CM-CONTENT-TYPE-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the CM-CONTENT-TYPE-01 LOCK — not admitted.
+**Task ID:** CM-CONTENT-TYPE-02
+**Title:** More preview content types
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** CM-CONTENT-TYPE-01.
+**Primary write scope:** PROVISIONAL: services/container-manager/src/preview/preview.service.ts and its spec.
+**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the CM-CONTENT-TYPE-01 worker: add .pdf, .mp3, .mp4, .webm, .webmanifest and similar types where previews need them (they still fall back to text/plain, which is wrong for .pdf), and decide whether .js moves from application/javascript to text/javascript to match .mjs (both are valid today).
 
 ### CM-DIFF-CAP-01 — Large diffs come back truncated, not failed
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
