@@ -87149,22 +87149,22 @@ taskId=APPROVAL-SET-01C
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-11 by the APPROVAL-SET-01 stage-start approval — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-11. Was: READY — registered 2026-11-11 by the APPROVAL-SET-01 stage-start approval — not admitted.
 **Task ID:** APPROVAL-SET-01C
 **Title:** Approval setting form and Team page
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP (stage-start shared with APPROVAL-SET-01).
-**Start condition:** NOT_READY. Ready when: APPROVAL-SET-01 LOCKED; the control plane may start it under Keith's 2026-11-11 approval of the stage-start.
+**Start condition:** READY (APPROVAL-SET-01B LOCKED 2026-11-11). Was: NOT_READY. Ready when: APPROVAL-SET-01 LOCKED; the control plane may start it under Keith's 2026-11-11 approval of the stage-start.
 **Depends on:** APPROVAL-SET-01.
-**Primary write scope:** PROVISIONAL, set at admission (expected: frontend/components/platform/ (agent-workflow-fields.tsx, agent-workflow-model.ts, create-agent-form.tsx, agent-workflow-summary.tsx, platform-dashboard.tsx and tests), frontend/components/collaboration/ (collaboration-page.tsx, collaboration-view.tsx, collaboration-workflows.test.tsx), frontend/lib/collaboration/api.ts, frontend/hooks/useUserAgents.ts and test, the three message files).
-**Mutexes / resources:** set at admission (expected FRONTEND, I18N).
+**Primary write scope:** set 2026-11-11: frontend/components/platform/agent-workflow-fields.tsx, frontend/components/platform/agent-workflow-model.ts, frontend/components/platform/create-agent-form.tsx, frontend/components/platform/agent-workflow-summary.tsx, frontend/components/platform/platform-dashboard.tsx, frontend/components/platform/agent-workflow-editor.test.tsx, frontend/components/platform/agent-workflow-summary.test.tsx, frontend/components/platform/platform-dashboard.test.ts, frontend/components/collaboration/collaboration-page.tsx, frontend/components/collaboration/collaboration-view.tsx, frontend/components/collaboration/collaboration-workflows.test.tsx, frontend/lib/collaboration/api.ts, frontend/lib/collaboration.test.ts, frontend/hooks/useUserAgents.ts, frontend/hooks/useUserAgents.test.ts, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json.
+**Mutexes / resources:** FRONTEND, I18N.
 **Hot-file leases:** none.
-**Shared contracts:** set at admission.
+**Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
-**Revert isolation:** set at admission.
+**Revert isolation:** the form and labels only; the columns and routes stay callable.
 **saturationClass:** OPTIONAL (as for its parent; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09 and the stage-start 2026-11-11).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** Stage-start docs/APPROVAL-SET-01-STAGE-START.md 01C: the approval choice under Advanced (every, read_only, credits with a limit), a summary line, the Team page "Approved automatically" line and the waiting reason, copy in three languages. The page lines need APPROVAL-SET-01B LOCKED; the form needs 01A only. Implementer: sonnet.
 **Also (added 2026-11-11 by the APPROVAL-SET-01 LOCK):** the form maps APPROVAL_LIMIT_REQUIRED, APPROVAL_MODE_INVALID and APPROVAL_LIMIT_INVALID to clear messages in three languages, and the code-less class-validator 400 the DTO gives for a bad mode or limit to the generic approval message.
 ### APPROVAL-SET-02 — Approval setting on the Chief of Staff roster
@@ -87197,23 +87197,23 @@ taskId=COS-DRAFTS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-11 — slice 01A. Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** COS-DRAFTS-01
 **Title:** Chief of Staff drafts a workflow the owner approves
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP
-**Start condition:** NOT_READY. Ready when: USER-TEAMS-01B LOCKED (done 2026-11-11) and GATEWAY free; the control plane may admit it under Keith's 2026-11-11 approval of the stage-start. Was: Ready when: LOCKED. Keith decides.
+**Start condition:** READY (USER-TEAMS-01B LOCKED; Keith approved the stage-start 2026-11-11). Was: NOT_READY. Ready when: USER-TEAMS-01B LOCKED (done 2026-11-11) and GATEWAY free; the control plane may admit it under Keith's 2026-11-11 approval of the stage-start. Was: Ready when: LOCKED. Keith decides.
 **Depends on:** USER-TEAMS-01B (relaxed 2026-11-11 by Keith's approval of DECISION D; was APPROVAL-SET-01; the two share GATEWAY and FRONTEND files and run in sequence).
-**Primary write scope:** set at admission.
-**Mutexes / resources:** set at admission.
-**Hot-file leases:** set at admission.
-**Shared contracts:** set at admission.
+**Primary write scope:** slice 01A, set 2026-11-11: services/api-gateway/src/system-agents/system-agent-registry.ts, services/api-gateway/src/system-agents/system-agent-registry.spec.ts, services/api-gateway/src/orchestration/collaboration-draft.ts, services/api-gateway/src/orchestration/collaboration-draft.spec.ts, services/api-gateway/src/orchestration/collaboration.controller.ts, services/api-gateway/src/orchestration/collaboration.controller.spec.ts, services/api-gateway/src/orchestration/handoff-request.ts, services/api-gateway/src/orchestration/handoff-request.spec.ts, services/api-gateway/src/orchestration/orchestration.service.ts, services/api-gateway/src/orchestration/__tests__/orchestration.service.spec.ts, services/ai-service/src/agent-harness/eval/briefing-instructions.ts, services/ai-service/src/agent-harness/eval/briefing-drift.spec.ts, services/ai-service/src/agent-harness/eval/briefing-runner.spec.ts, services/ai-service/src/agent-harness/eval/briefing-tasks/inject-draft-request.json.
+**Mutexes / resources:** GATEWAY, AI-SERVICE.
+**Hot-file leases:** none.
+**Shared contracts:** HARNESS_ENTITLEMENT_PROOF_V1 read, not changed (no job key added or removed).
 **Evidence class:** LOCAL-TESTS.
-**Revert isolation:** set at admission.
+**Revert isolation:** the draft parse is additive on read; the spec paragraph reverts with its pins and the eval copy together.
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** The Chief of Staff drafts an agent or workflow from a description; the owner approves it; it never saves or grants itself tools (D6). Also (BIZ-USER-01C, 2026-11-10): a user workflow's project instructions read "You are <row id>." because the agent name is the row id; give workflows a display name in buildCollaborationProjectInstructions when drafting prompts here.
 **Also (added 2026-11-10 by the COS-FRONTDOOR-01B LOCK):** the label field on listed agents (COS-FRONTDOOR-01B, D13) is the mechanism for its label note.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.2
