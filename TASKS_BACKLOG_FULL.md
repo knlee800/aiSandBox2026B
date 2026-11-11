@@ -88590,13 +88590,13 @@ taskId=STAGING-DEPLOY-SNAP-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-11 by the SNAPSHOT-BINARY-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-11 — Keith approved the deploy ("Yes, fix then deploy"). Was: READY — registered 2026-11-11 by the SNAPSHOT-BINARY-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-SNAP-01
 **Title:** Deploy binary-safe snapshots and Keith reopens a project with an image
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: SNAPSHOT-BINARY-01 LOCKED (and SNAPSHOT-SIZE-01 if it is ready, in the same deploy). Keith approves the deploy.
+**Start condition:** READY (SNAPSHOT-BINARY-01 and SNAPSHOT-SIZE-01 LOCKED; Keith approved 2026-11-11). Was: NOT_READY. Ready when: SNAPSHOT-BINARY-01 LOCKED (and SNAPSHOT-SIZE-01 if it is ready, in the same deploy). Keith approves the deploy.
 **Depends on:** SNAPSHOT-BINARY-01.
 **Primary write scope:** records; host state (deploy).
 **Mutexes / resources:** STAGING, ENV.
