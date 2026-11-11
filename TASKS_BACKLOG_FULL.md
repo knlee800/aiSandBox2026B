@@ -88590,7 +88590,7 @@ taskId=STAGING-DEPLOY-SNAP-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-11 — Keith approved the deploy ("Yes, fix then deploy"). Was: READY — registered 2026-11-11 by the SNAPSHOT-BINARY-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-11. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING and ENV released; stagingAuthorized false. Deployed 7ac9084 to 7399830 with runs off (rc 0, 15:37:38Z): no migration (hash 9cfde25f unchanged), configuration unchanged, standard and security checks pass, the new snapshot code is in the builds, and a 1 MB body without the key gets 403. Keith's reopen check passed: his CL2 test project, which gave Internal server error before, opened; the save point d2 test was restored; a new version saved with an image stores it as base64 (70 bytes, the source hash); after Stop and reopen Preview showed the image. The image in the snapshot saved before the fix stays damaged (stored as replacement text), so Keith added it again. Checkpoint: docs/STAGING-DEPLOY-SNAP-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-11 — Keith approved the deploy ("Yes, fix then deploy"). Was: READY — registered 2026-11-11 by the SNAPSHOT-BINARY-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-SNAP-01
 **Title:** Deploy binary-safe snapshots and Keith reopens a project with an image
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
