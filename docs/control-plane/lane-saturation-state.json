@@ -49,7 +49,9 @@
         "frontend/hooks/useUserAgents.test.ts",
         "frontend/messages/en.json",
         "frontend/messages/zh-TW.json",
-        "frontend/messages/zh-CN.json"
+        "frontend/messages/zh-CN.json",
+        "frontend/components/platform/platform-dashboard.tsx",
+        "frontend/components/platform/platform-dashboard.test.ts"
       ],
       "hotfiles": [],
       "i18n": true,
@@ -4862,7 +4864,9 @@
         "frontend/hooks/useUserAgents.test.ts",
         "frontend/messages/en.json",
         "frontend/messages/zh-TW.json",
-        "frontend/messages/zh-CN.json"
+        "frontend/messages/zh-CN.json",
+        "frontend/components/platform/platform-dashboard.tsx",
+        "frontend/components/platform/platform-dashboard.test.ts"
       ],
       "hotfiles": [],
       "i18n": true,

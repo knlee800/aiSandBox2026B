@@ -824,7 +824,7 @@ ACTIVE — USER-TEAMS-01B — 2026-11-11.
 
 ## USER-TEAMS-01C — ADMITTED / Lane 2 ACTIVE — 2026-11-11
 
-**Current status:** ADMITTED, Lane 2, with FRONTEND and I18N, as slice 01C (the Team block in the workflow form, the summary line, the report-back step label for a workflow lead, skipped names, ROSTER_MEMBER_SELF copy, three languages); sonnet. Admitted under Keith's "do not stop!!! ... keep looking for the next task to start" and the approved USER-TEAMS-01 stage-start ("Yes, approve"). Implementer works in worktree lane/USER-TEAMS-01C. Scope in TASKS_BACKLOG_FULL.md.
+**Current status:** ADMITTED, Lane 2, with FRONTEND and I18N, as slice 01C, write set widened 2026-11-11 by platform-dashboard.tsx and its test for the summary team line (the Team block in the workflow form, the summary line, the report-back step label for a workflow lead, skipped names, ROSTER_MEMBER_SELF copy, three languages); sonnet. Admitted under Keith's "do not stop!!! ... keep looking for the next task to start" and the approved USER-TEAMS-01 stage-start ("Yes, approve"). Implementer works in worktree lane/USER-TEAMS-01C. Scope in TASKS_BACKLOG_FULL.md.
 
 ## Lane 2
 ACTIVE — USER-TEAMS-01C — 2026-11-11.
