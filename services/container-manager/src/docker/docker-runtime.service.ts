@@ -747,17 +747,22 @@ export class DockerRuntimeService implements OnModuleInit {
   /**
    * Write a file to container filesystem by session ID
    * Task 7.2B: Container File Write (Create / Overwrite)
+   * SNAPSHOT-BINARY-01: the content goes to the command's stdin through the
+   * CM-EXEC-01 stdin exec, never through an environment variable (which
+   * cannot hold NUL bytes), so any bytes are written exactly. A string is
+   * written as its UTF-8 bytes, the same bytes the old printf path wrote; a
+   * Buffer is written as-is. Only the path is passed in the environment.
    *
    * @param sessionId - Session identifier
    * @param filePath - Relative path from /workspace (e.g., "index.js", "src/app.ts")
-   * @param content - File content as UTF-8 string
+   * @param content - File content as a UTF-8 string, or the exact bytes
    * @throws BadRequestException if path is invalid
    * @throws Error if container not found, not running, or file write fails
    */
   async writeFileToContainer(
     sessionId: string,
     filePath: string,
-    content: string,
+    content: string | Buffer,
   ): Promise<void> {
     try {
       // Validate path safety (throws BadRequestException on invalid path)
@@ -775,15 +780,15 @@ export class DockerRuntimeService implements OnModuleInit {
       // Resolve full path as /workspace/{path}
       const fullPath = `/workspace/${filePath}`;
 
-      // Create parent directories and write file using printf (safe for any content)
-      // Pass FILE and CONTENT as env vars to avoid shell escaping issues
-      const result = await this.execInContainerBySessionId(
+      // Create parent directories, then copy stdin into the file. FILE is the
+      // only env var (a path, never content), so nothing needs shell escaping.
+      const result = await this.execInContainerWithStdinBySessionId(
         sessionId,
-        ['sh', '-c', 'mkdir -p "$(dirname "$FILE")" && printf "%s" "$CONTENT" > "$FILE"'],
+        ['sh', '-c', 'mkdir -p "$(dirname "$FILE")" && cat > "$FILE"'],
+        this.toWriteBytes(content),
         '/workspace',
         {
           FILE: fullPath,
-          CONTENT: content,
         },
         30000, // 30 second timeout for file write
       );
@@ -803,6 +808,21 @@ export class DockerRuntimeService implements OnModuleInit {
         `Failed to write file to container for session ${sessionId}: ${error.message}`,
       );
     }
+  }
+
+  /**
+   * SNAPSHOT-BINARY-01: the bytes a write sends. A Buffer is sent as-is and a
+   * string as UTF-8. Any other value used to reach the old env-var path, which
+   * dropped non-string values and wrote an empty file; that result is kept.
+   */
+  private toWriteBytes(content: unknown): Buffer {
+    if (Buffer.isBuffer(content)) {
+      return content;
+    }
+    if (typeof content === 'string') {
+      return Buffer.from(content, 'utf8');
+    }
+    return Buffer.alloc(0);
   }
 
   /**

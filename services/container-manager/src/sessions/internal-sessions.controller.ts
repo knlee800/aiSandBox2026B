@@ -17,6 +17,22 @@ import { InternalServiceAuthGuard } from '../guards/internal-service-auth.guard'
 import { ExecCommandDto, ExecResultDto } from './dto/exec.dto';
 import { BrowserSmokeService, BrowserSmokeResult } from '../browser-smoke/browser-smoke.service';
 
+const BASE64_PATTERN = /^[A-Za-z0-9+/]*={0,2}$/;
+
+/**
+ * SNAPSHOT-BINARY-01: decode standard padded base64, or return null when the
+ * value is not exactly that (wrong type, bad characters, missing padding, or
+ * non-zero padding bits). Node's own decoder skips bad characters silently,
+ * so a value is accepted only when it re-encodes to itself.
+ */
+export function decodeStrictBase64(value: unknown): Buffer | null {
+  if (typeof value !== 'string' || value.length % 4 !== 0 || !BASE64_PATTERN.test(value)) {
+    return null;
+  }
+  const bytes = Buffer.from(value, 'base64');
+  return bytes.toString('base64') === value ? bytes : null;
+}
+
 /**
  * InternalSessionsController
  * Task 6.5: Explicit Container Deletion
@@ -196,9 +212,15 @@ export class InternalSessionsController {
    * Request body:
    * - path (required): Relative path from /workspace (e.g., "index.js", "src/app.ts")
    * - content (required): File content as UTF-8 string
+   * - encoding (optional, SNAPSHOT-BINARY-01): "base64" means `content` is
+   *   the file's exact bytes in base64; they are decoded and written byte for
+   *   byte. Absent, `content` is written as UTF-8 text, as before. Any other
+   *   value is a 400. Either way the bytes reach the file through the
+   *   container's stdin, never an environment variable.
    *
    * Errors:
-   * - 400 Bad Request: Missing or invalid path or content
+   * - 400 Bad Request: Missing or invalid path or content, an unsupported
+   *   encoding, or content that is not valid base64 when encoding is base64
    * - 403 Forbidden: Missing or invalid X-Internal-Service-Key
    * - 500 Internal Server Error: Container not found, not running, or file write failed
    */
@@ -208,6 +230,7 @@ export class InternalSessionsController {
     @Param('id', SessionIdPipe) sessionId: string,
     @Body('path') filePath?: string,
     @Body('content') content?: string,
+    @Body('encoding') encoding?: unknown,
   ): Promise<void> {
     if (!filePath) {
       throw new BadRequestException('Request body field "path" is required');
@@ -215,6 +238,19 @@ export class InternalSessionsController {
 
     if (content === undefined || content === null) {
       throw new BadRequestException('Request body field "content" is required');
+    }
+
+    if (encoding !== undefined && encoding !== 'base64') {
+      throw new BadRequestException('Request body field "encoding" must be "base64" when given');
+    }
+
+    if (encoding === 'base64') {
+      const bytes = decodeStrictBase64(content);
+      if (bytes === null) {
+        throw new BadRequestException('Request body field "content" must be valid base64');
+      }
+      await this.sessionsService.writeFileToContainer(sessionId, filePath, bytes);
+      return;
     }
 
     await this.sessionsService.writeFileToContainer(

@@ -1,6 +1,7 @@
 import {
   ForbiddenException,
   GoneException,
+  HttpException,
   Injectable,
   Logger,
   NotFoundException,
@@ -234,12 +235,36 @@ export class ProjectsService {
       };
     }
 
+    // SNAPSHOT-BINARY-01: a snapshot restore problem never skips the history
+    // restore below. Files that could not be written are reported by
+    // restoreSnapshot (failedPaths) and the open still succeeds. If the
+    // restore throws, the history is still restored; a client error (4xx,
+    // such as an unknown snapshot or a terminated session) is then thrown as
+    // before, any other failure is logged and the open resolves with no
+    // restored snapshot.
+    let restoredSnapshotId: string | null = snapshotIdToRestore ?? null;
+    let snapshotRestoreError: unknown;
     if (snapshotIdToRestore) {
-      await this.snapshotPersistenceService.restoreSnapshot({
-        userId: args.userId,
-        sessionId: args.sessionId,
-        snapshotId: snapshotIdToRestore,
-      });
+      try {
+        const restoreResult = await this.snapshotPersistenceService.restoreSnapshot({
+          userId: args.userId,
+          sessionId: args.sessionId,
+          snapshotId: snapshotIdToRestore,
+        });
+        const failedCount = restoreResult?.failedPaths?.length ?? 0;
+        if (failedCount > 0) {
+          this.logger.warn(
+            `Snapshot ${snapshotIdToRestore} restored into session ${args.sessionId} with ${failedCount} file(s) not written`,
+          );
+        }
+      } catch (error: unknown) {
+        snapshotRestoreError = error;
+        restoredSnapshotId = null;
+        const detail = error instanceof Error ? error.message : String(error);
+        this.logger.error(
+          `Failed to restore snapshot ${snapshotIdToRestore} into session ${args.sessionId}: ${detail}`,
+        );
+      }
     }
 
     try {
@@ -254,10 +279,17 @@ export class ProjectsService {
       );
     }
 
+    if (
+      snapshotRestoreError instanceof HttpException &&
+      snapshotRestoreError.getStatus() < 500
+    ) {
+      throw snapshotRestoreError;
+    }
+
     return {
       projectId: args.projectId,
       sessionId: args.sessionId,
-      restoredSnapshotId: snapshotIdToRestore ?? null,
+      restoredSnapshotId,
     };
   }
 }

@@ -16,6 +16,12 @@ export function encodePathParam(value: string): string {
   return encodeURIComponent(value);
 }
 
+/**
+ * SNAPSHOT-BINARY-01: the one non-text encoding the container-manager file
+ * routes accept (CM-BINARY-01 read, SNAPSHOT-BINARY-01 write).
+ */
+export type SessionFileEncoding = 'base64';
+
 export interface WorkspaceSearchMatch {
   path: string;
   line: number;
@@ -377,10 +383,17 @@ export class ContainerManagerHttpClient implements OnModuleInit {
     }
   }
 
+  /**
+   * Read a workspace file. Without options the body is the UTF-8 text read,
+   * unchanged. SNAPSHOT-BINARY-01: `{ encoding: 'base64' }` asks for the
+   * CM-BINARY-01 binary read, whose body carries the exact bytes in base64
+   * with `encoding: 'base64'`.
+   */
   async readSessionFile(
     sessionId: string,
     path: string,
-  ): Promise<{ path: string; content: string }> {
+    options?: { encoding?: SessionFileEncoding },
+  ): Promise<{ path: string; content: string; encoding?: SessionFileEncoding }> {
     if (this.isDisabled) {
       throw new ServiceUnavailableException(
         'ContainerManager file read is unavailable (INTERNAL_SERVICE_KEY not configured in api-gateway)',
@@ -391,7 +404,7 @@ export class ContainerManagerHttpClient implements OnModuleInit {
       const response = await this.axiosInstance.get(
         `/api/internal/sessions/${encodePathParam(sessionId)}/files`,
         {
-          params: { path },
+          params: options?.encoding ? { path, encoding: options.encoding } : { path },
           headers: {
             'X-Internal-Service-Key': this.internalServiceKey,
           },
@@ -407,10 +420,17 @@ export class ContainerManagerHttpClient implements OnModuleInit {
     }
   }
 
+  /**
+   * Write a workspace file. Without an encoding `content` is UTF-8 text and
+   * the request body is `{ path, content }`, unchanged. SNAPSHOT-BINARY-01:
+   * with `'base64'`, `content` is the file's exact bytes in base64 and the
+   * body adds `encoding: 'base64'`; container-manager writes the bytes.
+   */
   async writeSessionFile(
     sessionId: string,
     path: string,
     content: string,
+    encoding?: SessionFileEncoding,
   ): Promise<void> {
     if (this.isDisabled) {
       throw new ServiceUnavailableException(
@@ -421,7 +441,7 @@ export class ContainerManagerHttpClient implements OnModuleInit {
     try {
       await this.axiosInstance.post(
         `/api/internal/sessions/${encodePathParam(sessionId)}/files`,
-        { path, content },
+        encoding ? { path, content, encoding } : { path, content },
         {
           headers: {
             'X-Internal-Service-Key': this.internalServiceKey,

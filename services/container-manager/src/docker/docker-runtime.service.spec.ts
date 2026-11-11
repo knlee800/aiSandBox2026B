@@ -43,9 +43,11 @@ describe('DockerRuntimeService file operations', () => {
       jest.spyOn(service, 'findContainerBySessionId').mockResolvedValue({
         inspect: jest.fn().mockImplementation(async () => ({ State: { Running: true } })),
       } as any);
+      // SNAPSHOT-BINARY-01: the content goes through stdin, not a CONTENT env var.
       const execSpy = jest
-        .spyOn(service, 'execInContainerBySessionId')
+        .spyOn(service, 'execInContainerWithStdinBySessionId')
         .mockResolvedValue({ exitCode: 0, stdout: '', stderr: '' });
+      const envExecSpy = jest.spyOn(service, 'execInContainerBySessionId');
 
       await expect(
         service.writeFileToContainer('session-123', filePath, 'file-content'),
@@ -53,14 +55,15 @@ describe('DockerRuntimeService file operations', () => {
 
       expect(execSpy).toHaveBeenCalledWith(
         'session-123',
-        ['sh', '-c', 'mkdir -p "$(dirname "$FILE")" && printf "%s" "$CONTENT" > "$FILE"'],
+        ['sh', '-c', 'mkdir -p "$(dirname "$FILE")" && cat > "$FILE"'],
+        Buffer.from('file-content', 'utf8'),
         '/workspace',
         {
           FILE: `/workspace/${filePath}`,
-          CONTENT: 'file-content',
         },
         30000,
       );
+      expect(envExecSpy).not.toHaveBeenCalled();
     });
 
     it.each([
@@ -72,12 +75,46 @@ describe('DockerRuntimeService file operations', () => {
       '',
     ])('rejects unsafe path before exec: %s', async (filePath) => {
       const execSpy = jest.spyOn(service, 'execInContainerBySessionId');
+      const stdinExecSpy = jest.spyOn(service, 'execInContainerWithStdinBySessionId');
 
       await expect(service.writeFileToContainer('session-123', filePath, 'file-content')).rejects.toThrow(
         BadRequestException,
       );
+      // SNAPSHOT-BINARY-01: bytes are refused the same way.
+      await expect(
+        service.writeFileToContainer('session-123', filePath, Buffer.from([0x00, 0xff])),
+      ).rejects.toThrow(BadRequestException);
 
       expect(execSpy).not.toHaveBeenCalled();
+      expect(stdinExecSpy).not.toHaveBeenCalled();
+    });
+
+    it('fails with the same message when the write command exits non-zero (SNAPSHOT-BINARY-01)', async () => {
+      jest.spyOn(service, 'findContainerBySessionId').mockResolvedValue({
+        inspect: jest.fn().mockImplementation(async () => ({ State: { Running: true } })),
+      } as any);
+      jest
+        .spyOn(service, 'execInContainerWithStdinBySessionId')
+        .mockResolvedValue({ exitCode: 1, stdout: '', stderr: 'Permission denied' });
+
+      await expect(
+        service.writeFileToContainer('session-123', 'img/red.png', Buffer.from([0x89, 0x00])),
+      ).rejects.toThrow(
+        'Failed to write file to container for session session-123: Failed to write file: img/red.png',
+      );
+    });
+
+    it('keeps the old result for a non-string, non-Buffer content: an empty file (SNAPSHOT-BINARY-01)', async () => {
+      jest.spyOn(service, 'findContainerBySessionId').mockResolvedValue({
+        inspect: jest.fn().mockImplementation(async () => ({ State: { Running: true } })),
+      } as any);
+      const execSpy = jest
+        .spyOn(service, 'execInContainerWithStdinBySessionId')
+        .mockResolvedValue({ exitCode: 0, stdout: '', stderr: '' });
+
+      await service.writeFileToContainer('session-123', 'n.txt', 42 as unknown as string);
+
+      expect((execSpy.mock.calls[0][2] as Buffer).length).toBe(0);
     });
   });
 
@@ -750,6 +787,52 @@ describe('DockerRuntimeService exec output cap, binary stdout and stdin (CM-EXEC
     await expect(pending).rejects.toThrow(
       'Failed to execute command in container for session sess-1: socket hang up',
     );
+  });
+
+  it('writeFileToContainer sends binary bytes (NUL, 0xFF) to stdin byte for byte; content is never in env or argv (SNAPSHOT-BINARY-01)', async () => {
+    const fake = fakeExec({ exitCode: 0 });
+    const bytes = Buffer.concat([
+      Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d]),
+      Buffer.from(Array.from({ length: 256 }, (_value, index) => 255 - index)),
+      Buffer.from([0x00, 0xff, 0x00, 0xff]),
+    ]);
+    const pending = service.writeFileToContainer('sess-1', 'img/red.png', bytes);
+    await fake.sinksReady;
+    await stdinFinished(fake.stream);
+    expect(fake.written().equals(bytes)).toBe(true);
+    expect(fake.stream.writableEnded).toBe(true);
+    fake.finish();
+
+    await expect(pending).resolves.toBeUndefined();
+    expect(fake.container.exec).toHaveBeenCalledWith({
+      Cmd: ['sh', '-c', 'mkdir -p "$(dirname "$FILE")" && cat > "$FILE"'],
+      AttachStdin: true,
+      AttachStdout: true,
+      AttachStderr: true,
+      WorkingDir: '/workspace',
+      Env: ['FILE=/workspace/img/red.png'],
+    });
+    expect(fake.exec.start).toHaveBeenCalledWith({ hijack: true, stdin: true, Detach: false, Tty: false });
+    const execArgs = JSON.stringify(fake.container.exec.mock.calls[0]);
+    expect(execArgs).not.toContain('CONTENT');
+    expect(execArgs).not.toContain(bytes.toString('base64'));
+    expect(execArgs).not.toContain(bytes.toString('latin1'));
+  });
+
+  it('writeFileToContainer sends a text string as its UTF-8 bytes, the bytes the old printf path wrote (SNAPSHOT-BINARY-01)', async () => {
+    const fake = fakeExec({ exitCode: 0 });
+    const text = 'line one\n\u00e9t\u00e9 \u20ac %s %d \\n $HOME `id`\n\ufeffend';
+    const pending = service.writeFileToContainer('sess-1', 'src/notes.md', text);
+    await fake.sinksReady;
+    await stdinFinished(fake.stream);
+    expect(fake.written().equals(Buffer.from(text, 'utf8'))).toBe(true);
+    fake.finish();
+
+    await expect(pending).resolves.toBeUndefined();
+    expect(fake.container.exec).toHaveBeenCalledWith(
+      expect.objectContaining({ Env: ['FILE=/workspace/src/notes.md'] }),
+    );
+    expect(JSON.stringify(fake.container.exec.mock.calls[0])).not.toContain('line one');
   });
 
   it('stdin variant: attaches stdin, starts hijacked, writes a Buffer input whole and ends stdin', async () => {

@@ -746,20 +746,102 @@ describe('ProjectsService (PR-03-01)', () => {
     }
   });
 
-  it('does not restore checkpoint history when snapshot restore fails', async () => {
+  // SNAPSHOT-BINARY-01: this case used to assert the defect found live by
+  // CHECKPOINT-LIVE-02 (a failed snapshot restore skipped the history restore
+  // and the open failed with a 500). The task requires the opposite.
+  it('still restores checkpoint history and opens the project when snapshot restore throws (SNAPSHOT-BINARY-01)', async () => {
+    const errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
     mockOpenableSession();
-    snapshotPersistenceService.restoreSnapshot.mockRejectedValue(new Error('restore failed'));
+    snapshotPersistenceService.restoreSnapshot.mockRejectedValue(
+      new Error('Failed to write file to container for session session-1: Failed to write file: red.png'),
+    );
 
-    await expect(
-      service.openProjectIntoSession({
+    try {
+      const result = await service.openProjectIntoSession({
         userId: 'user-1',
         projectId: 'project-1',
         sessionId: 'session-1',
         snapshotId: 'snapshot-1',
-      }),
-    ).rejects.toThrow('restore failed');
-    expect(containerManagerHttpClient.restoreCheckpointHistory).not.toHaveBeenCalled();
+      });
+
+      expect(result).toEqual({
+        projectId: 'project-1',
+        sessionId: 'session-1',
+        restoredSnapshotId: null,
+      });
+      expect(containerManagerHttpClient.restoreCheckpointHistory).toHaveBeenCalledTimes(1);
+      expect(containerManagerHttpClient.restoreCheckpointHistory).toHaveBeenCalledWith(
+        'session-1',
+        'project-1',
+      );
+      expect(
+        snapshotPersistenceService.restoreSnapshot.mock.invocationCallOrder[0],
+      ).toBeLessThan(
+        containerManagerHttpClient.restoreCheckpointHistory.mock.invocationCallOrder[0],
+      );
+      expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('snapshot-1'));
+    } finally {
+      errorSpy.mockRestore();
+    }
   });
+
+  it('opens the project with the snapshot id and restores history when restoreSnapshot reports failed files (SNAPSHOT-BINARY-01)', async () => {
+    const warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+    mockOpenableSession();
+    snapshotPersistenceService.restoreSnapshot.mockResolvedValue({
+      id: 'snapshot-1',
+      userId: 'user-1',
+      label: null,
+      createdAt: '2026-04-04T00:00:00.000Z',
+      fileCount: 2,
+      failedPaths: ['img/red.png'],
+    });
+
+    try {
+      const result = await service.openProjectIntoSession({
+        userId: 'user-1',
+        projectId: 'project-1',
+        sessionId: 'session-1',
+        snapshotId: 'snapshot-1',
+      });
+
+      expect(result).toEqual({
+        projectId: 'project-1',
+        sessionId: 'session-1',
+        restoredSnapshotId: 'snapshot-1',
+      });
+      expect(containerManagerHttpClient.restoreCheckpointHistory).toHaveBeenCalledTimes(1);
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('1 file(s) not written'));
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
+  it.each([
+    ['an unknown snapshot', new NotFoundException('Snapshot snapshot-1 not found'), 404],
+    ['a terminated session', new GoneException('Session session-1 is terminated'), 410],
+  ])(
+    'restores checkpoint history, then keeps the client error for %s (SNAPSHOT-BINARY-01)',
+    async (_case, error, status) => {
+      const errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+      mockOpenableSession();
+      snapshotPersistenceService.restoreSnapshot.mockRejectedValue(error);
+
+      try {
+        await expect(
+          service.openProjectIntoSession({
+            userId: 'user-1',
+            projectId: 'project-1',
+            sessionId: 'session-1',
+            snapshotId: 'snapshot-1',
+          }),
+        ).rejects.toMatchObject({ status });
+        expect(containerManagerHttpClient.restoreCheckpointHistory).toHaveBeenCalledTimes(1);
+      } finally {
+        errorSpy.mockRestore();
+      }
+    },
+  );
 
   it.each(['pending', 'running', 'cancel_requested'] as const)(
     'skips snapshot and checkpoint restore when the caller has an active %s run in the session',

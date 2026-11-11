@@ -704,7 +704,8 @@ export class SessionsService {
    *
    * @param sessionId - Session UUID
    * @param filePath - Relative path from /workspace
-   * @param content - File content as UTF-8 string
+   * @param content - File content as a UTF-8 string, or (SNAPSHOT-BINARY-01)
+   *   the exact bytes; both are written through the container's stdin
    * @throws NotFoundException if session does not exist
    * @throws GoneException if session is terminated, max lifetime exceeded, or idle timeout exceeded
    * @throws Error if container not found, not running, path invalid, or file write fails
@@ -712,7 +713,7 @@ export class SessionsService {
   async writeFileToContainer(
     sessionId: string,
     filePath: string,
-    content: string,
+    content: string | Buffer,
   ): Promise<void> {
     // Task 8.4A: Check termination FIRST (DB-backed, survives restarts)
     this.assertSessionUsableOrThrow(sessionId);

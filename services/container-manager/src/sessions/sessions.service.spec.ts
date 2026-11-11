@@ -567,6 +567,32 @@ describe('SessionsService idle-timeout response semantics (PRIVATE-BETA-BLOCKER-
     ).toBeGreaterThan(0);
   });
 
+  it('passes binary bytes through the governed write unchanged (SNAPSHOT-BINARY-01)', async () => {
+    const sessionId = 'sess-fresh-binary-write';
+    markFresh(sessionId);
+    const bytes = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x00, 0xff, 0x00, 0xfe]);
+
+    await service.writeFileToContainer(sessionId, 'img/red.png', bytes);
+
+    expect(mockWriteFileToContainer).toHaveBeenCalledTimes(1);
+    const passed = (mockWriteFileToContainer.mock.calls[0] as unknown[])[2];
+    expect(Buffer.isBuffer(passed)).toBe(true);
+    expect((passed as Buffer).equals(bytes)).toBe(true);
+    expect(mockTerminateSessionRun).not.toHaveBeenCalled();
+  });
+
+  it('refuses a binary write on an expired session before Docker (SNAPSHOT-BINARY-01)', async () => {
+    const sessionId = 'sess-idle-expired-binary';
+    expireIdle(sessionId);
+
+    await expect(
+      service.writeFileToContainer(sessionId, 'img/red.png', Buffer.from([0x00, 0xff])),
+    ).rejects.toBeInstanceOf(GoneException);
+    expect(mockWriteFileToContainer).not.toHaveBeenCalled();
+
+    await flushScheduledCleanup();
+  });
+
   it('returns the same deterministic 410 from a shared idle-guard read path', async () => {
     const sessionId = 'sess-idle-read';
     expireIdle(sessionId);

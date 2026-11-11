@@ -67,6 +67,68 @@ describe('ContainerManagerHttpClient file operations', () => {
       },
     );
   });
+
+  describe('file read and write encoding (SNAPSHOT-BINARY-01)', () => {
+    const headers = { 'X-Internal-Service-Key': 'test-internal-key' };
+
+    beforeEach(() => {
+      (mockAxiosInstance as unknown as { get: jest.Mock }).get = jest.fn();
+    });
+
+    it('a text write keeps the body exactly { path, content }', async () => {
+      mockAxiosInstance.post.mockResolvedValue({ data: undefined });
+
+      await client.writeSessionFile('session-123', 'README.md', 'hello');
+
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        '/api/internal/sessions/session-123/files',
+        { path: 'README.md', content: 'hello' },
+        { headers },
+      );
+      expect(Object.keys(mockAxiosInstance.post.mock.calls[0][1])).toEqual(['path', 'content']);
+    });
+
+    it('a base64 write sends encoding base64 with the content as given', async () => {
+      mockAxiosInstance.post.mockResolvedValue({ data: undefined });
+      const base64 = Buffer.from([0x89, 0x50, 0x00, 0xff]).toString('base64');
+
+      await client.writeSessionFile('session-123', 'img/red.png', base64, 'base64');
+
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        '/api/internal/sessions/session-123/files',
+        { path: 'img/red.png', content: base64, encoding: 'base64' },
+        { headers },
+      );
+    });
+
+    it('a text read keeps the query exactly { path }', async () => {
+      const get = (mockAxiosInstance as unknown as { get: jest.Mock }).get;
+      get.mockResolvedValue({ data: { path: 'README.md', content: 'hello' } });
+
+      await expect(client.readSessionFile('session-123', 'README.md')).resolves.toEqual({
+        path: 'README.md',
+        content: 'hello',
+      });
+      expect(get).toHaveBeenCalledWith('/api/internal/sessions/session-123/files', {
+        params: { path: 'README.md' },
+        headers,
+      });
+    });
+
+    it('a base64 read asks for encoding=base64 and returns the body as given', async () => {
+      const get = (mockAxiosInstance as unknown as { get: jest.Mock }).get;
+      const body = { path: 'img/red.png', content: 'iVAA/w==', encoding: 'base64' };
+      get.mockResolvedValue({ data: body });
+
+      await expect(
+        client.readSessionFile('session-123', 'img/red.png', { encoding: 'base64' }),
+      ).resolves.toEqual(body);
+      expect(get).toHaveBeenCalledWith('/api/internal/sessions/session-123/files', {
+        params: { path: 'img/red.png', encoding: 'base64' },
+        headers,
+      });
+    });
+  });
 });
 
 describe('ContainerManagerHttpClient 410 lazy reconciliation (PRIVATE-BETA-BLOCKER-03E-B)', () => {

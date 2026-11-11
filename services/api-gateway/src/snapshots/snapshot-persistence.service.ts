@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
@@ -12,9 +12,27 @@ export interface WorkspaceSnapshotMetadata {
   fileCount: number;
 }
 
+/**
+ * SNAPSHOT-BINARY-01: one file in a snapshot payload. A text file is stored as
+ * before: `content` is its UTF-8 text and there is no `encoding` (snapshots
+ * written before this task never have one; `'utf8'` is read the same way). A
+ * file whose bytes are not plain UTF-8 text (an image, a font, anything with a
+ * NUL) is stored as `content: <base64>` with `encoding: 'base64'`.
+ */
 interface WorkspaceSnapshotFile {
   path: string;
   content: string;
+  encoding?: 'base64' | 'utf8';
+}
+
+/**
+ * SNAPSHOT-BINARY-01: what restoreSnapshot returns: the snapshot's metadata
+ * plus the paths of files that could not be written (empty when all were).
+ * restoreSnapshot always sets it; it is optional in the type so callers and
+ * typed test doubles that return plain metadata stay valid.
+ */
+export interface WorkspaceSnapshotRestoreResult extends WorkspaceSnapshotMetadata {
+  failedPaths?: string[];
 }
 
 interface WorkspaceSnapshotPayload {
@@ -29,6 +47,22 @@ interface WorkspaceSnapshotPayload {
 // HTTP 500. The git-checkpoint subsystem owns `.git/` itself, so excluding it
 // here is also semantically correct.
 const SNAPSHOT_EXCLUDED_PATH_PREFIXES: readonly string[] = ['.git'];
+
+/**
+ * SNAPSHOT-BINARY-01: bytes are stored as text only when they are exactly the
+ * UTF-8 encoding of their own decoding (so the text write restores the same
+ * bytes, a BOM included) and contain no NUL byte.
+ */
+function isStorableAsText(bytes: Buffer): boolean {
+  if (bytes.includes(0)) {
+    return false;
+  }
+  return Buffer.from(bytes.toString('utf8'), 'utf8').equals(bytes);
+}
+
+function describeError(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
 
 function isPathExcludedFromSnapshot(workspaceRelativePath: string): boolean {
   if (!workspaceRelativePath) {
@@ -47,6 +81,7 @@ function isPathExcludedFromSnapshot(workspaceRelativePath: string): boolean {
 
 @Injectable()
 export class SnapshotPersistenceService {
+  private readonly logger = new Logger(SnapshotPersistenceService.name);
   private readonly snapshotsRootPath = path.join(
     __dirname,
     '../../../..',
@@ -111,13 +146,25 @@ export class SnapshotPersistenceService {
     return snapshots.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 
+  /**
+   * Clear the session workspace and write every file of the snapshot back.
+   *
+   * SNAPSHOT-BINARY-01: a file stored with `encoding: 'base64'` is written as
+   * its exact bytes; a text file (no encoding, as in every older snapshot) is
+   * written with the same text write as before. A file that cannot be written
+   * no longer stops the restore: the other files are still written, and the
+   * failed paths are logged (never their content) and returned in
+   * `failedPaths`. A 410 (the session is gone) still stops the restore, since
+   * no further write can succeed.
+   */
   async restoreSnapshot(args: {
     userId: string;
     sessionId: string;
     snapshotId: string;
-  }): Promise<WorkspaceSnapshotMetadata> {
+  }): Promise<WorkspaceSnapshotRestoreResult> {
     const payload = await this.loadSnapshotPayload(args.userId, args.snapshotId);
     await this.clearWorkspace(args.sessionId);
+    const failedPaths: string[] = [];
     for (const file of payload.files) {
       // PROJ-02-03: Defensively skip `.git/` entries that exist in older
       // snapshots created before exclusion was added. Restoring them would
@@ -126,13 +173,47 @@ export class SnapshotPersistenceService {
       if (isPathExcludedFromSnapshot(file.path)) {
         continue;
       }
-      await this.containerManagerHttpClient.writeSessionFile(
-        args.sessionId,
-        file.path,
-        file.content,
+      try {
+        await this.writeSnapshotFile(args.sessionId, file);
+      } catch (error: unknown) {
+        if (error instanceof HttpException && error.getStatus() === 410) {
+          throw error;
+        }
+        failedPaths.push(file.path);
+        this.logger.warn(
+          `Snapshot ${args.snapshotId}: could not write ${file.path} into session ${args.sessionId}: ${describeError(error)}`,
+        );
+      }
+    }
+    if (failedPaths.length > 0) {
+      this.logger.warn(
+        `Snapshot ${args.snapshotId} restored into session ${args.sessionId} with ${failedPaths.length} file(s) not written`,
       );
     }
-    return payload.metadata;
+    return { ...payload.metadata, failedPaths };
+  }
+
+  private async writeSnapshotFile(
+    sessionId: string,
+    file: WorkspaceSnapshotFile,
+  ): Promise<void> {
+    if (file.encoding === 'base64') {
+      await this.containerManagerHttpClient.writeSessionFile(
+        sessionId,
+        file.path,
+        file.content,
+        'base64',
+      );
+      return;
+    }
+    if (file.encoding !== undefined && file.encoding !== 'utf8') {
+      throw new Error(`Unsupported snapshot file encoding for ${file.path}`);
+    }
+    await this.containerManagerHttpClient.writeSessionFile(
+      sessionId,
+      file.path,
+      file.content,
+    );
   }
 
   private async clearWorkspace(sessionId: string): Promise<void> {
@@ -152,16 +233,31 @@ export class SnapshotPersistenceService {
     );
     const files: WorkspaceSnapshotFile[] = [];
     for (const filePath of collectedFilePaths) {
+      // SNAPSHOT-BINARY-01: read the exact bytes (CM-BINARY-01 base64 read)
+      // and keep text files as text, binary files as base64.
       const response = await this.containerManagerHttpClient.readSessionFile(
         sessionId,
         filePath,
+        { encoding: 'base64' },
       );
-      files.push({
-        path: filePath,
-        content: response.content,
-      });
+      files.push(this.toSnapshotFile(filePath, response));
     }
     return files;
+  }
+
+  private toSnapshotFile(
+    filePath: string,
+    response: { content: string; encoding?: string },
+  ): WorkspaceSnapshotFile {
+    if (response.encoding !== 'base64') {
+      // A container-manager without the base64 read answers with text.
+      return { path: filePath, content: response.content };
+    }
+    const bytes = Buffer.from(response.content, 'base64');
+    if (isStorableAsText(bytes)) {
+      return { path: filePath, content: bytes.toString('utf8') };
+    }
+    return { path: filePath, content: bytes.toString('base64'), encoding: 'base64' };
   }
 
   private async collectFilePathsRecursively(
