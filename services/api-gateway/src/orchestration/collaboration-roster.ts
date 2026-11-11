@@ -1,14 +1,21 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { validate as uuidValidate } from 'uuid';
 import type { UserAgent } from '../entities/user-agent.entity';
-import {
-  SYSTEM_AGENT_DEFINITIONS,
-  systemAgentById,
-  type SystemAgentDefinition,
-} from '../system-agents/system-agent-registry';
+import { systemAgentById } from '../system-agents/system-agent-registry';
 import { UserAgentService } from '../user-agent/user-agent.service';
+import {
+  ROSTER_REFUSAL_CODES,
+  assertRosterMemberIds,
+  isRosterSystemCandidate,
+  readRosterMemberIds,
+  readStoredRosterMemberIds,
+  rosterMemberKind,
+  rosterRefusal,
+  rosterSystemChoices,
+  rosterSystemMemberText,
+  type RosterMemberKind,
+} from '../user-agent/user-workflow-rules';
 import { CollaborationRosterEntity } from './collaboration-roster.entity';
 import {
   CollaborationWorkflowService,
@@ -16,7 +23,26 @@ import {
   workflowNormalRunAllowed,
   workflowStatus,
 } from './collaboration-workflow';
+import { MAX_AGENT_LABEL_CHARS, MAX_AGENT_SUMMARY_CHARS } from './handoff-request';
 import type { CollaborationListedAgent, ReferralPendingWorkflow } from './orchestration.contracts';
+
+// USER-TEAMS-01 D2: the member rule moved to user-agent/user-workflow-rules.ts so
+// UserAgentService can share it without an import cycle; the names are unchanged.
+export {
+  MAX_ROSTER_MEMBERS,
+  ROSTER_MEMBER_ID_MAX_CHARS,
+  ROSTER_REFUSAL_CODES,
+  ROSTER_SYSTEM_MEMBER_TEXT,
+  assertRosterMemberIds,
+  isRosterSystemCandidate,
+  readRosterMemberIds,
+  readStoredRosterMemberIds,
+  rosterRefusal,
+  rosterSystemChoices,
+  type RosterMemberCheck,
+  type RosterMemberKind,
+  type RosterRefusalCode,
+} from '../user-agent/user-workflow-rules';
 
 /**
  * COS-FRONTDOOR-01 slice 01A: the owner's Chief of Staff roster.
@@ -31,25 +57,9 @@ import type { CollaborationListedAgent, ReferralPendingWorkflow } from './orches
  * D10: membersForStart re-checks every stored member and turns the usable
  * ones into agent-list entries (and workflow snapshots); the others are
  * left out and reported (DECISION F). Nothing calls it until slice 01B.
+ * USER-TEAMS-01 D6: evaluateMembers runs the same checks on any list of ids
+ * (a workflow's team); membersForStart is evaluateMembers on the stored roster.
  */
-
-export const MAX_ROSTER_MEMBERS = 3;
-/** Longer than any system id (40) or UUID (36). */
-export const ROSTER_MEMBER_ID_MAX_CHARS = 64;
-
-/** Stable refusal codes for PUT /api/collaboration/roster. Every one is a 400. */
-export const ROSTER_REFUSAL_CODES = {
-  invalidBody: 'ROSTER_INVALID_BODY',
-  tooMany: 'ROSTER_TOO_MANY',
-  duplicate: 'ROSTER_DUPLICATE',
-  unknown: 'ROSTER_MEMBER_UNKNOWN',
-  notAllowed: 'ROSTER_MEMBER_NOT_ALLOWED',
-  notFound: 'ROSTER_MEMBER_NOT_FOUND',
-} as const;
-
-export type RosterRefusalCode = (typeof ROSTER_REFUSAL_CODES)[keyof typeof ROSTER_REFUSAL_CODES];
-
-export type RosterMemberKind = 'system' | 'workflow';
 
 /**
  * Why a member cannot run now. `invalid` is a workflow that cannot run as
@@ -96,128 +106,6 @@ export interface RosterStartMembers {
   readonly skipped: Array<{ id: string; reason: RosterMemberReason }>;
 }
 
-/** Leads that are never members: the Chief of Staff itself and the advisors lead. */
-const ROSTER_EXCLUDED_SYSTEM_IDS: ReadonlySet<string> = new Set(['chief-of-staff', 'advisors-lead']);
-
-/**
- * What the Chief of Staff reads about a system member (D13) and the name the
- * page shows. Every system candidate has an entry (the spec pins it).
- */
-export const ROSTER_SYSTEM_MEMBER_TEXT: Readonly<Record<string, { label: string; summary: string }>> = {
-  'product-strategy': {
-    label: 'Product Strategy',
-    summary: "Answers product and market questions from the owner's market documents.",
-  },
-  'technology-advisor': {
-    label: 'Technology Advisor',
-    summary:
-      "Answers technology questions from the owner's technology landscape documents and the project files.",
-  },
-};
-
-/** D6, the structural part: read profile, a team role outside coding, not a lead. */
-export function isRosterSystemCandidate(definition: SystemAgentDefinition): boolean {
-  return (
-    definition.teamRole !== null &&
-    definition.teamRole.teamId !== 'coding' &&
-    !ROSTER_EXCLUDED_SYSTEM_IDS.has(definition.id) &&
-    definition.toolProfile === 'read'
-  );
-}
-
-/** The system agents a roster may hold today: candidates whose status is active. */
-export function rosterSystemChoices(): SystemAgentDefinition[] {
-  return SYSTEM_AGENT_DEFINITIONS.filter(
-    (definition) => isRosterSystemCandidate(definition) && definition.status === 'active',
-  );
-}
-
-function systemMemberText(definition: SystemAgentDefinition): { label: string; summary: string } {
-  return ROSTER_SYSTEM_MEMBER_TEXT[definition.id] ?? { label: definition.id, summary: definition.purpose };
-}
-
-function isUuid(value: string): boolean {
-  return uuidValidate(value);
-}
-
-/** UUIDs are compared lower-case; system ids are matched exactly. */
-function normalizeMemberId(value: string): string {
-  return isUuid(value) ? value.toLowerCase() : value;
-}
-
-function memberKind(id: string): RosterMemberKind {
-  return isUuid(id) ? 'workflow' : 'system';
-}
-
-export function rosterRefusal(
-  code: RosterRefusalCode,
-  message: string,
-  memberId?: string,
-): BadRequestException {
-  return new BadRequestException({
-    statusCode: 400,
-    message,
-    error: 'Bad Request',
-    code,
-    ...(memberId !== undefined ? { memberId } : {}),
-  });
-}
-
-/**
- * A stored member_ids value read fail-closed: strings only, normalised,
- * without repeats, at most MAX_ROSTER_MEMBERS. Anything else reads as empty.
- */
-export function readStoredRosterMemberIds(value: unknown): string[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-  const ids: string[] = [];
-  for (const entry of value) {
-    if (typeof entry !== 'string' || entry.length === 0 || entry.length > ROSTER_MEMBER_ID_MAX_CHARS) {
-      continue;
-    }
-    const id = normalizeMemberId(entry);
-    if (!ids.includes(id)) {
-      ids.push(id);
-    }
-    if (ids.length === MAX_ROSTER_MEMBERS) {
-      break;
-    }
-  }
-  return ids;
-}
-
-/**
- * D9 shape check of a PUT memberIds value: a list of at most 3 non-empty
- * strings, without repeats. Returns the normalised ids in the given order.
- */
-export function readRosterMemberIds(value: unknown): string[] {
-  if (!Array.isArray(value)) {
-    throw rosterRefusal(ROSTER_REFUSAL_CODES.invalidBody, 'memberIds must be a list of member ids');
-  }
-  if (value.length > MAX_ROSTER_MEMBERS) {
-    throw rosterRefusal(
-      ROSTER_REFUSAL_CODES.tooMany,
-      `A roster holds at most ${MAX_ROSTER_MEMBERS} members`,
-    );
-  }
-  const ids: string[] = [];
-  for (const entry of value) {
-    if (typeof entry !== 'string' || entry.length === 0 || entry.length > ROSTER_MEMBER_ID_MAX_CHARS) {
-      throw rosterRefusal(
-        ROSTER_REFUSAL_CODES.invalidBody,
-        `Each member id must be text of 1 to ${ROSTER_MEMBER_ID_MAX_CHARS} characters`,
-      );
-    }
-    const id = normalizeMemberId(entry);
-    if (ids.includes(id)) {
-      throw rosterRefusal(ROSTER_REFUSAL_CODES.duplicate, 'A member is listed twice', entry);
-    }
-    ids.push(id);
-  }
-  return ids;
-}
-
 /** A body for PUT /api/collaboration/roster: exactly `{ memberIds }`. */
 export function readRosterPutBody(body: unknown): unknown {
   if (body === null || typeof body !== 'object' || Array.isArray(body)) {
@@ -228,6 +116,23 @@ export function readRosterPutBody(body: unknown): unknown {
     throw rosterRefusal(ROSTER_REFUSAL_CODES.invalidBody, 'The body must be { memberIds }');
   }
   return (body as { memberIds: unknown }).memberIds;
+}
+
+/**
+ * USER-TEAMS-01 D15: an agent-list text cut to the list's limit, so a long
+ * workflow description never makes readCollaborationAgents refuse the list.
+ * A cut never leaves half of a surrogate pair at the end.
+ */
+export function cutAgentListText(value: string, max: number): string {
+  if (value.length <= max) {
+    return value;
+  }
+  let cut = value.slice(0, max);
+  const last = cut.charCodeAt(cut.length - 1);
+  if (last >= 0xd800 && last <= 0xdbff) {
+    cut = cut.slice(0, -1);
+  }
+  return cut;
 }
 
 function budgetOf(value: unknown): number | null {
@@ -285,7 +190,7 @@ export class CollaborationRosterService {
     const members: RosterMemberView[] = [];
     for (const id of memberIds) {
       const member =
-        memberKind(id) === 'workflow' ? await evaluateWorkflowOnce(id) : this.evaluateSystem(id);
+        rosterMemberKind(id) === 'workflow' ? await evaluateWorkflowOnce(id) : this.evaluateSystem(id);
       members.push(member.view);
     }
 
@@ -304,26 +209,11 @@ export class CollaborationRosterService {
    */
   async put(userId: string, memberIds: unknown): Promise<RosterView> {
     const ids = readRosterMemberIds(memberIds);
-    for (const id of ids) {
-      if (memberKind(id) === 'workflow') {
-        const row = await this.userAgents.findOneByIdAndUserId(id, userId);
-        if (!row || row.userId !== userId) {
-          throw rosterRefusal(ROSTER_REFUSAL_CODES.notFound, 'Workflow not found', id);
-        }
-        continue;
-      }
-      const definition = systemAgentById(id);
-      if (!definition) {
-        throw rosterRefusal(ROSTER_REFUSAL_CODES.unknown, 'Unknown member', id);
-      }
-      if (!isRosterSystemCandidate(definition) || definition.status !== 'active') {
-        throw rosterRefusal(
-          ROSTER_REFUSAL_CODES.notAllowed,
-          'This agent cannot be on the Chief of Staff roster',
-          id,
-        );
-      }
-    }
+    await assertRosterMemberIds(ids, {
+      userId,
+      ownerRow: (id) => this.userAgents.findOneByIdAndUserId(id, userId),
+      notAllowedMessage: 'This agent cannot be on the Chief of Staff roster',
+    });
     await this.rosters.upsert({ userId, memberIds: ids, updatedAt: new Date() }, ['userId']);
     return this.view(userId);
   }
@@ -336,13 +226,23 @@ export class CollaborationRosterService {
    * approve checks them for each step (D19).
    */
   async membersForStart(userId: string): Promise<RosterStartMembers> {
+    return this.evaluateMembers(userId, await this.get(userId));
+  }
+
+  /**
+   * USER-TEAMS-01 D6: the checks of membersForStart on a given list of member
+   * ids (a workflow's team, for slice 01B's start). The list is read
+   * fail-closed first (strings, normalised, no repeats, at most 3); order is
+   * kept. Same checks, same reasons; nothing is written.
+   */
+  async evaluateMembers(userId: string, memberIds: unknown): Promise<RosterStartMembers> {
     const agents: RosterListedAgent[] = [];
     const rosterWorkflows: ReferralPendingWorkflow[] = [];
     const used: string[] = [];
     const skipped: Array<{ id: string; reason: RosterMemberReason }> = [];
-    for (const id of await this.get(userId)) {
+    for (const id of readStoredRosterMemberIds(memberIds)) {
       let member: EvaluatedMember;
-      if (memberKind(id) === 'workflow') {
+      if (rosterMemberKind(id) === 'workflow') {
         const row = await this.userAgents.findOneByIdAndUserId(id, userId);
         member = await this.evaluateWorkflow(userId, id, row);
       } else {
@@ -366,7 +266,7 @@ export class CollaborationRosterService {
     if (!definition || !isRosterSystemCandidate(definition)) {
       return unusable(id, 'system', null, 'missing');
     }
-    const text = systemMemberText(definition);
+    const text = rosterSystemMemberText(definition);
     if (definition.status !== 'active') {
       return unusable(
         id,
@@ -420,8 +320,12 @@ export class CollaborationRosterService {
       agent: {
         name: row.id,
         instructions: rendered.instructions,
-        label: row.name,
-        summary: typeof row.description === 'string' ? row.description : '',
+        // D15: cut to the agent list's limits (a description may hold 2000 characters).
+        label: cutAgentListText(row.name, MAX_AGENT_LABEL_CHARS),
+        summary: cutAgentListText(
+          typeof row.description === 'string' ? row.description : '',
+          MAX_AGENT_SUMMARY_CHARS,
+        ),
       },
       workflow: {
         id: row.id,

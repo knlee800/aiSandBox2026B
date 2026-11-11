@@ -653,6 +653,54 @@ describe('BIZ-USER-01C CollaborationWorkflowService', () => {
     expect(text).not.toContain('instructions');
     expect(text).not.toContain('Token');
   });
+
+  describe('USER-TEAMS-01 01A: the stored team at start (D6, D14)', () => {
+    const TEAM_WF = 'f0f0f0f0-0000-4000-8000-000000000002';
+
+    it('prepareStart returns the stored team as ids only, and the run is still a team of one', async () => {
+      const plain = await service.prepareStart({ userId: OWNER, workflowId: WORKFLOW_ID, testRun: true });
+      expect(plain.teamMemberIds).toEqual([]);
+
+      rowsById.set(
+        WORKFLOW_ID,
+        copiedRow({ teamMemberIds: ['product-strategy', TEAM_WF.toUpperCase()] }),
+      );
+      const withTeam = await service.prepareStart({ userId: OWNER, workflowId: WORKFLOW_ID, testRun: true });
+      expect(withTeam.teamMemberIds).toEqual(['product-strategy', TEAM_WF]);
+      // Nothing evaluated, nothing added: the agent list and the snapshot are today's.
+      const { teamMemberIds: _plainTeam, ...plainRest } = plain;
+      const { teamMemberIds: _team, ...rest } = withTeam;
+      expect(rest).toEqual(plainRest);
+      expect(withTeam.agents).toHaveLength(1);
+      expect(JSON.stringify(withTeam.workflow)).not.toContain('product-strategy');
+    });
+
+    it('reads a damaged stored team fail-closed', async () => {
+      rowsById.set(
+        WORKFLOW_ID,
+        copiedRow({ teamMemberIds: { 0: 'product-strategy' } as unknown as string[] }),
+      );
+      await expect(
+        service.prepareStart({ userId: OWNER, workflowId: WORKFLOW_ID, testRun: true }),
+      ).resolves.toMatchObject({ teamMemberIds: [] });
+      rowsById.set(
+        WORKFLOW_ID,
+        copiedRow({
+          teamMemberIds: ['product-strategy', 7, 'product-strategy', 'technology-advisor', TEAM_WF, 'x'] as never,
+        }),
+      );
+      await expect(
+        service.prepareStart({ userId: OWNER, workflowId: WORKFLOW_ID, testRun: true }),
+      ).resolves.toMatchObject({ teamMemberIds: ['product-strategy', 'technology-advisor', TEAM_WF] });
+    });
+
+    it('the team is not part of the render or the version (DECISION C)', () => {
+      const plain = renderWorkflow(copiedRow())!;
+      const withTeam = renderWorkflow(copiedRow({ teamMemberIds: ['product-strategy', TEAM_WF] }))!;
+      expect(withTeam).toEqual(plain);
+      expect(withTeam.version).toBe(plain.version);
+    });
+  });
 });
 
 describe('BIZ-USER-01C workflow jobs (frozen HARNESS_ENTITLEMENT_PROOF_V1)', () => {

@@ -87,6 +87,12 @@ export class UserAgent {
   @Column({ type: 'varchar', length: 64, name: 'template_id', nullable: true })
   templateId: string | null;
 
+  // USER-TEAMS-01 D1: the workflow's team, the ids of up to 3 agents it may
+  // hand one question to (migration 1806000000000-AddUserAgentTeamColumn).
+  // Saved with the form; checked at save and again at start.
+  @Column({ type: 'jsonb', name: 'team_member_ids', default: () => "'[]'" })
+  teamMemberIds: string[];
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

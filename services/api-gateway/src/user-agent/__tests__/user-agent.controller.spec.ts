@@ -11,6 +11,7 @@ import {
   WORKFLOW_REFUSAL_CODES,
   workflowRefusal,
 } from '../../orchestration/collaboration-workflow';
+import { ROSTER_REFUSAL_CODES, rosterRefusal } from '../user-workflow-rules';
 import {
   INestApplication,
   NotFoundException,
@@ -685,6 +686,7 @@ describe('UserAgentController', () => {
         'result',
         'role',
         'status',
+        'teamMemberIds',
         'templateId',
         'tone',
         'toolProfile',
@@ -818,6 +820,7 @@ describe('UserAgentController', () => {
       it('GET /api/agents/options returns the editor options and is not shadowed by :id', async () => {
         await buildApp();
         service.ownerConnectionKinds.mockResolvedValue(new Set(['ical', 'imap']));
+        service.listByUserId.mockResolvedValue([]);
 
         const response = await request(app!.getHttpServer())
           .get('/api/agents/options')
@@ -836,6 +839,10 @@ describe('UserAgentController', () => {
           connectedKinds: ['ical', 'imap'],
           models: PLATFORM_MODELS.map((model) => ({ ...model })),
           templates: ['chief-of-staff'],
+          teamChoices: [
+            { id: 'product-strategy', kind: 'system', name: 'Product Strategy', status: 'active' },
+            { id: 'technology-advisor', kind: 'system', name: 'Technology Advisor', status: 'active' },
+          ],
           limits: {
             maxInstructionsChars: 4000,
             maxToneChars: 120,
@@ -1038,6 +1045,136 @@ describe('UserAgentController', () => {
         expect(service.ownerConnectionKinds).not.toHaveBeenCalled();
         expect(service.createFromTemplate).not.toHaveBeenCalled();
         expect(service.update).not.toHaveBeenCalled();
+      });
+    });
+
+    // -------------------------------------------------------------------------
+    // USER-TEAMS-01 slice 01A: the team on responses and the team choices
+    // -------------------------------------------------------------------------
+
+    describe('USER-TEAMS-01 team field and choices (D2, D3)', () => {
+      const WF_A = 'a0a0a0a0-0000-4000-8000-00000000000a';
+      const WF_B = 'a0a0a0a0-0000-4000-8000-00000000000b';
+
+      it('GET /api/agents/:id and GET /api/agents carry the stored team', async () => {
+        await buildApp();
+        const stored = makeAgent({ teamMemberIds: ['product-strategy', WF_A] });
+        service.findOneByIdAndUserId.mockResolvedValue(stored);
+        service.listByUserId.mockResolvedValue([stored]);
+
+        const one = await request(app!.getHttpServer()).get('/api/agents/agent-uuid-001').expect(200);
+        expect(one.body.teamMemberIds).toEqual(['product-strategy', WF_A]);
+
+        const list = await request(app!.getHttpServer()).get('/api/agents').expect(200);
+        expect(list.body.agents[0].teamMemberIds).toEqual(['product-strategy', WF_A]);
+      });
+
+      it('a row with no stored team, or a damaged one, answers an empty or cleaned team', async () => {
+        await buildApp();
+        service.create.mockResolvedValue(makeAgent());
+        const created = await request(app!.getHttpServer())
+          .post('/api/agents')
+          .send({ name: 'A', role: 'B', description: 'C' })
+          .expect(201);
+        expect(created.body.teamMemberIds).toEqual([]);
+
+        service.findOneByIdAndUserId.mockResolvedValue(
+          makeAgent({ teamMemberIds: [WF_A.toUpperCase(), 7, WF_A, 'technology-advisor'] }),
+        );
+        const one = await request(app!.getHttpServer()).get('/api/agents/agent-uuid-001').expect(200);
+        expect(one.body.teamMemberIds).toEqual([WF_A, 'technology-advisor']);
+      });
+
+      it('POST and PATCH pass teamMemberIds to the service and answer the saved team', async () => {
+        await buildApp();
+        service.create.mockResolvedValue(makeAgent({ teamMemberIds: ['product-strategy'] }));
+        const created = await request(app!.getHttpServer())
+          .post('/api/agents')
+          .send({ name: 'A', role: 'B', description: 'C', teamMemberIds: ['product-strategy'] })
+          .expect(201);
+        expect(service.create.mock.calls[0][1]).toEqual({
+          name: 'A',
+          role: 'B',
+          description: 'C',
+          teamMemberIds: ['product-strategy'],
+        });
+        expect(created.body.teamMemberIds).toEqual(['product-strategy']);
+
+        service.update.mockResolvedValue(makeAgent({ teamMemberIds: [] }));
+        const patched = await request(app!.getHttpServer())
+          .patch('/api/agents/agent-uuid-001')
+          .send({ teamMemberIds: [] })
+          .expect(200);
+        expect(service.update).toHaveBeenCalledWith('agent-uuid-001', mockUserA.userId, {
+          teamMemberIds: [],
+        });
+        expect(patched.body.teamMemberIds).toEqual([]);
+      });
+
+      it.each([
+        [{ teamMemberIds: ['a', 'b', 'c', 'd'] }],
+        [{ teamMemberIds: [''] }],
+        [{ teamMemberIds: ['x'.repeat(65)] }],
+        [{ teamMemberIds: [7] }],
+        [{ teamMemberIds: 'product-strategy' }],
+      ])('POST /api/agents returns 400 for the team shape %j', async (extra) => {
+        await buildApp();
+        await request(app!.getHttpServer())
+          .post('/api/agents')
+          .send({ name: 'A', role: 'B', description: 'C', ...extra })
+          .expect(400);
+        expect(service.create).not.toHaveBeenCalled();
+      });
+
+      it.each([[{ teamMemberIds: null }], [{ teamMemberIds: ['a', 'b', 'c', 'd'] }], [{ teamMemberIds: [''] }]])(
+        'PATCH /api/agents/:id returns 400 for the team shape %j',
+        async (body) => {
+          await buildApp();
+          await request(app!.getHttpServer())
+            .patch('/api/agents/agent-uuid-001')
+            .send(body)
+            .expect(400);
+          expect(service.update).not.toHaveBeenCalled();
+        },
+      );
+
+      it('PATCH passes a service team refusal code through', async () => {
+        await buildApp();
+        service.update.mockRejectedValue(
+          rosterRefusal(ROSTER_REFUSAL_CODES.self, 'A workflow cannot be on its own team', WF_A),
+        );
+        const response = await request(app!.getHttpServer())
+          .patch('/api/agents/agent-uuid-001')
+          .send({ teamMemberIds: [WF_A] })
+          .expect(400);
+        expect(response.body).toMatchObject({ code: 'ROSTER_MEMBER_SELF', memberId: WF_A });
+      });
+
+      it('GET /api/agents/options lists the two advisors and only the owner rows as team choices', async () => {
+        await buildApp();
+        service.listByUserId.mockResolvedValue([
+          makeAgent({ id: WF_A, name: 'Morning brief', status: 'active' }),
+          makeAgent({ id: WF_B.toUpperCase(), name: 'Draft helper', status: 'draft' }),
+          makeAgent({ id: 'c0c0c0c0-0000-4000-8000-00000000000c', userId: mockUserB.userId, name: 'Theirs' }),
+        ]);
+
+        const response = await request(app!.getHttpServer())
+          .get('/api/agents/options')
+          .expect(200);
+
+        expect(service.listByUserId).toHaveBeenCalledWith(mockUserA.userId);
+        expect(response.body.teamChoices).toEqual([
+          { id: 'product-strategy', kind: 'system', name: 'Product Strategy', status: 'active' },
+          { id: 'technology-advisor', kind: 'system', name: 'Technology Advisor', status: 'active' },
+          { id: WF_A, kind: 'workflow', name: 'Morning brief', status: 'active' },
+          { id: WF_B, kind: 'workflow', name: 'Draft helper', status: 'draft' },
+        ]);
+        const ids = response.body.teamChoices.map((choice: { id: string }) => choice.id);
+        for (const excluded of ['chief-of-staff', 'advisors-lead', 'lead', 'writer', 'reviewer', 'builder']) {
+          expect(ids).not.toContain(excluded);
+        }
+        expect(JSON.stringify(response.body.teamChoices)).not.toContain('Theirs');
+        expect(JSON.stringify(response.body.teamChoices)).not.toContain('instructions');
       });
     });
   });

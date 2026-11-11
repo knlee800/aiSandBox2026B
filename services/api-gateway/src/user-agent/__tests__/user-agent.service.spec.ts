@@ -897,4 +897,218 @@ describe('UserAgentService', () => {
       expect(switchOnCheck.assertCanSwitchOn).not.toHaveBeenCalled();
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // USER-TEAMS-01 slice 01A: the workflow team, saved with the form
+  // ---------------------------------------------------------------------------
+
+  describe('USER-TEAMS-01 workflow team (D2, D14)', () => {
+    const SELF = 'd0d0d0d0-0000-4000-8000-000000000001';
+    const WF_ACTIVE = 'd0d0d0d0-0000-4000-8000-000000000002';
+    const WF_DRAFT = 'd0d0d0d0-0000-4000-8000-000000000003';
+    const WF_OFF = 'd0d0d0d0-0000-4000-8000-000000000004';
+    const WF_DELETED = 'd0d0d0d0-0000-4000-8000-000000000005';
+    const WF_OTHER = 'e0e0e0e0-0000-4000-8000-000000000001';
+    const WF_NONE = 'f0f0f0f0-0000-4000-8000-000000000009';
+
+    type StoredRow = UserAgent & { deleted?: boolean };
+    let rows: Map<string, StoredRow>;
+
+    const row = (id: string, overrides: Record<string, unknown> = {}): StoredRow =>
+      ({
+        id,
+        userId: ownerUserId,
+        name: `Workflow ${id.slice(-1)}`,
+        role: 'Helps',
+        description: 'Card text',
+        status: 'active',
+        initials: 'WF',
+        tone: null,
+        replyLanguage: null,
+        purpose: 'Help me.',
+        procedure: 'Read the folder.',
+        result: 'A short note.',
+        toolProfile: 'read',
+        knowledgeScopeIds: ['policies'],
+        connectorToolIds: [],
+        model: { choice: 'server' },
+        budgetPerRunCredits: null,
+        budgetPerDayCredits: null,
+        templateId: null,
+        teamMemberIds: [],
+        ...overrides,
+      }) as unknown as StoredRow;
+
+    const body = { name: 'Lead', role: 'Leads', description: 'Asks the team.' };
+
+    async function refusal(promise: Promise<unknown>): Promise<Record<string, unknown>> {
+      try {
+        await promise;
+      } catch (error) {
+        expect(error).toBeInstanceOf(BadRequestException);
+        expect((error as BadRequestException).getStatus()).toBe(400);
+        return (error as BadRequestException).getResponse() as Record<string, unknown>;
+      }
+      throw new Error('expected a 400');
+    }
+
+    beforeEach(() => {
+      rows = new Map();
+      for (const stored of [
+        row(SELF),
+        row(WF_ACTIVE),
+        row(WF_DRAFT, { status: 'draft' }),
+        row(WF_OFF, { status: 'disabled' }),
+        row(WF_DELETED, { deleted: true }),
+        row(WF_OTHER, { userId: otherUserId, name: 'Theirs' }),
+      ]) {
+        rows.set(stored.id, stored);
+      }
+      userAgentRepository.create.mockImplementation((value) => ({ ...value }));
+      userAgentRepository.save.mockImplementation(async (value) => {
+        const saved = { ...value, id: value.id ?? 'd0d0d0d0-0000-4000-8000-0000000000ff' } as StoredRow;
+        rows.set(saved.id, saved);
+        return { ...saved };
+      });
+      // TypeORM's findOne leaves soft-deleted rows out.
+      userAgentRepository.findOne.mockImplementation(
+        async ({ where }: { where: { id: string; userId: string } }) => {
+          const stored = rows.get(where.id);
+          return stored && stored.userId === where.userId && !stored.deleted ? { ...stored } : null;
+        },
+      );
+    });
+
+    it('create saves the team in order with UUIDs lower-cased; without one it saves an empty team', async () => {
+      const saved = await service.create(ownerUserId, {
+        ...body,
+        teamMemberIds: [WF_ACTIVE.toUpperCase(), 'product-strategy'],
+      });
+      expect(saved.teamMemberIds).toEqual([WF_ACTIVE, 'product-strategy']);
+      expect(userAgentRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({ teamMemberIds: [WF_ACTIVE, 'product-strategy'] }),
+      );
+
+      const plain = await service.create(ownerUserId, body);
+      expect(plain.teamMemberIds).toEqual([]);
+    });
+
+    it('a copy from the template starts with an empty team', async () => {
+      const copy = await service.createFromTemplate(ownerUserId, {
+        templateId: 'chief-of-staff',
+        name: 'My briefing',
+        role: 'Chief of Staff',
+      });
+      expect(copy.teamMemberIds).toEqual([]);
+    });
+
+    it('accepts a draft or an off workflow at save time (usability is checked at start)', async () => {
+      const saved = await service.update(SELF, ownerUserId, {
+        teamMemberIds: [WF_DRAFT, WF_OFF, 'technology-advisor'],
+      });
+      expect(saved.teamMemberIds).toEqual([WF_DRAFT, WF_OFF, 'technology-advisor']);
+      expect(rows.get(SELF)!.teamMemberIds).toEqual([WF_DRAFT, WF_OFF, 'technology-advisor']);
+    });
+
+    it('PATCH with [] empties the team; a PATCH without teamMemberIds keeps it unchecked', async () => {
+      rows.set(SELF, row(SELF, { teamMemberIds: [WF_ACTIVE, WF_DELETED] }));
+
+      const renamed = await service.update(SELF, ownerUserId, { name: 'Renamed' });
+      expect(renamed.teamMemberIds).toEqual([WF_ACTIVE, WF_DELETED]);
+      const lookedUp = userAgentRepository.findOne.mock.calls.map((call) => call[0].where.id);
+      expect(lookedUp).toEqual([SELF]);
+
+      const emptied = await service.update(SELF, ownerUserId, { teamMemberIds: [] });
+      expect(emptied.teamMemberIds).toEqual([]);
+      expect(rows.get(SELF)!.teamMemberIds).toEqual([]);
+    });
+
+    it('a team-only PATCH on an active row runs no switch-on check and keeps the version', async () => {
+      const before = rows.get(SELF)!;
+      const versionBefore = renderWorkflow(before)!.version;
+
+      const saved = await service.update(SELF, ownerUserId, {
+        status: 'active',
+        teamMemberIds: ['product-strategy', WF_ACTIVE],
+      });
+
+      expect(saved.status).toBe('active');
+      expect(saved.teamMemberIds).toEqual(['product-strategy', WF_ACTIVE]);
+      expect(switchOnCheck.assertCanSwitchOn).not.toHaveBeenCalled();
+      expect(renderWorkflow(saved)!.version).toBe(versionBefore);
+      expect(renderWorkflow({ ...saved, teamMemberIds: [] })!.version).toBe(versionBefore);
+    });
+
+    it('a team change on a draft that switches on is checked like any switch-on', async () => {
+      rows.set(SELF, row(SELF, { status: 'draft' }));
+      await service.update(SELF, ownerUserId, { status: 'active', teamMemberIds: [WF_ACTIVE] });
+      expect(switchOnCheck.assertCanSwitchOn).toHaveBeenCalledTimes(1);
+      expect(switchOnCheck.assertCanSwitchOn.mock.calls[0][1]).toMatchObject({
+        id: SELF,
+        teamMemberIds: [WF_ACTIVE],
+      });
+    });
+
+    const refusals: Array<[string, unknown, string, string | undefined]> = [
+      ['a fourth member', ['product-strategy', 'technology-advisor', WF_ACTIVE, WF_DRAFT], 'ROSTER_TOO_MANY', undefined],
+      ['a repeat', [WF_ACTIVE, WF_ACTIVE.toUpperCase()], 'ROSTER_DUPLICATE', WF_ACTIVE.toUpperCase()],
+      ['an unknown system id', ['product-strategy', 'nobody'], 'ROSTER_MEMBER_UNKNOWN', 'nobody'],
+      ['the Chief of Staff', ['chief-of-staff'], 'ROSTER_MEMBER_NOT_ALLOWED', 'chief-of-staff'],
+      ['the advisors lead', ['advisors-lead'], 'ROSTER_MEMBER_NOT_ALLOWED', 'advisors-lead'],
+      ['a coding lead', ['lead'], 'ROSTER_MEMBER_NOT_ALLOWED', 'lead'],
+      ['a coding writer', ['writer'], 'ROSTER_MEMBER_NOT_ALLOWED', 'writer'],
+      ['a coding reviewer', ['reviewer'], 'ROSTER_MEMBER_NOT_ALLOWED', 'reviewer'],
+      ['the builder', ['builder'], 'ROSTER_MEMBER_NOT_ALLOWED', 'builder'],
+      ['another owner row', [WF_ACTIVE, WF_OTHER], 'ROSTER_MEMBER_NOT_FOUND', WF_OTHER],
+      ['a deleted row', [WF_DELETED], 'ROSTER_MEMBER_NOT_FOUND', WF_DELETED],
+      ['a UUID with no row', [WF_NONE], 'ROSTER_MEMBER_NOT_FOUND', WF_NONE],
+      ['not a list', 'product-strategy', 'ROSTER_INVALID_BODY', undefined],
+      ['an empty id', [''], 'ROSTER_INVALID_BODY', undefined],
+    ];
+
+    it.each(refusals)('refuses %s on create with 400 and saves nothing', async (_label, ids, code, memberId) => {
+      const response = await refusal(
+        service.create(ownerUserId, { ...body, teamMemberIds: ids } as never),
+      );
+      expect(response.code).toBe(code);
+      expect(response.memberId).toBe(memberId);
+      expect(userAgentRepository.save).not.toHaveBeenCalled();
+    });
+
+    it.each(refusals)('refuses %s on PATCH with 400 and saves nothing', async (_label, ids, code, memberId) => {
+      rows.set(SELF, row(SELF, { teamMemberIds: ['technology-advisor'] }));
+      const response = await refusal(
+        service.update(SELF, ownerUserId, { name: 'Renamed', teamMemberIds: ids } as never),
+      );
+      expect(response.code).toBe(code);
+      expect(response.memberId).toBe(memberId);
+      expect(userAgentRepository.save).not.toHaveBeenCalled();
+      expect(rows.get(SELF)!.teamMemberIds).toEqual(['technology-advisor']);
+      expect(rows.get(SELF)!.name).toBe('Workflow 1');
+    });
+
+    it.each([SELF, SELF.toUpperCase()])('refuses the row itself (%s) with ROSTER_MEMBER_SELF and saves nothing', async (id) => {
+      const response = await refusal(
+        service.update(SELF, ownerUserId, { teamMemberIds: ['product-strategy', id] }),
+      );
+      expect(response).toMatchObject({ statusCode: 400, code: 'ROSTER_MEMBER_SELF', memberId: SELF });
+      expect(userAgentRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('answers another owner row exactly as a UUID that does not exist', async () => {
+      const theirs = await refusal(service.update(SELF, ownerUserId, { teamMemberIds: [WF_OTHER] }));
+      const none = await refusal(service.update(SELF, ownerUserId, { teamMemberIds: [WF_NONE] }));
+      expect({ ...theirs, memberId: 'x' }).toEqual({ ...none, memberId: 'x' });
+      expect(userAgentRepository.findOne).toHaveBeenCalledWith({
+        where: { id: WF_OTHER, userId: ownerUserId },
+      });
+    });
+
+    it('another owner cannot edit the row, so the team is never checked for them', async () => {
+      await expect(
+        service.update(SELF, otherUserId, { teamMemberIds: [WF_OTHER] }),
+      ).rejects.toBeInstanceOf(NotFoundException);
+      expect(userAgentRepository.save).not.toHaveBeenCalled();
+    });
+  });
 });

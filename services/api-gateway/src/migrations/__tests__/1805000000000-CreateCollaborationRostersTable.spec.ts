@@ -56,7 +56,7 @@ describe('CreateCollaborationRostersTable1805000000000 (COS-FRONTDOOR-01, mocked
   const forbidden =
     /\bDELETE FROM\b|\bTRUNCATE\b|\bUPDATE\b|\bINSERT\b|\bALTER\b|\bINDEX\b|\bRENAME\b|\bIF (NOT )?EXISTS\b/i;
 
-  it('uses a timestamp after 1804000000000-AddCollaborationRunResultSeenAt, the latest before it, and is the latest', () => {
+  it('uses a timestamp after 1804000000000-AddCollaborationRunResultSeenAt, the latest before it', () => {
     const names = readdirSync(join(__dirname, '..')).filter(
       (name) => /^\d+-/.test(name) && name.endsWith('.ts'),
     );
@@ -67,7 +67,7 @@ describe('CreateCollaborationRostersTable1805000000000 (COS-FRONTDOOR-01, mocked
     ]);
     expect(timestamp).toBeGreaterThan(1804000000000);
     expect(Math.max(...stamps.filter((stamp) => stamp < timestamp))).toBe(1804000000000);
-    expect(Math.max(...stamps)).toBe(timestamp);
+    expect(Math.max(...stamps.filter((stamp) => stamp <= timestamp))).toBe(timestamp);
   });
 
   it('the entity maps the same table and the same three columns', () => {

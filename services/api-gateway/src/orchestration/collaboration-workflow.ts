@@ -28,6 +28,7 @@ import {
 } from '../system-agents/system-agent-registry';
 import { UserAgentService, userWorkflowPromptSpec } from '../user-agent/user-agent.service';
 import { allowlistedConnectorToolIds } from '../user-agent/user-workflow-grants';
+import { readStoredRosterMemberIds } from '../user-agent/user-workflow-rules';
 import { CollaborationReferralEntity } from './collaboration-referral.entity';
 import { CollaborationRunEntity } from './collaboration-run.entity';
 import type { CollaborationListedAgent, ReferralPendingWorkflow } from './orchestration.contracts';
@@ -103,24 +104,29 @@ export function workflowStatus(value: unknown): WorkflowStatus {
   return value === 'active' || value === 'draft' ? value : 'disabled';
 }
 
-/** The row fields a workflow run reads. */
-export type WorkflowRow = Pick<
-  UserAgent,
-  | 'id'
-  | 'name'
-  | 'role'
-  | 'status'
-  | 'tone'
-  | 'replyLanguage'
-  | 'purpose'
-  | 'procedure'
-  | 'result'
-  | 'knowledgeScopeIds'
-  | 'connectorToolIds'
-  | 'model'
-  | 'budgetPerRunCredits'
-  | 'budgetPerDayCredits'
->;
+/**
+ * The row fields a workflow run reads. USER-TEAMS-01 D1: `teamMemberIds`, the
+ * stored team, is optional here so a caller without it reads as an empty
+ * team; it is not part of the render or the version (D14, DECISION C).
+ */
+export type WorkflowRow = Partial<Pick<UserAgent, 'teamMemberIds'>> &
+  Pick<
+    UserAgent,
+    | 'id'
+    | 'name'
+    | 'role'
+    | 'status'
+    | 'tone'
+    | 'replyLanguage'
+    | 'purpose'
+    | 'procedure'
+    | 'result'
+    | 'knowledgeScopeIds'
+    | 'connectorToolIds'
+    | 'model'
+    | 'budgetPerRunCredits'
+    | 'budgetPerDayCredits'
+  >;
 
 /** Catalogue scope ids of the row, deduplicated, in catalogue order. */
 export function workflowKnowledgeScopeIds(value: unknown): string[] {
@@ -332,6 +338,11 @@ export interface PreparedWorkflowStart {
   readonly adapter: string;
   readonly model: string;
   readonly workflow: ReferralPendingWorkflow;
+  /**
+   * USER-TEAMS-01 D6: the row's stored team, ids only, read fail-closed and
+   * not evaluated. Slice 01B's start evaluates it; until then no caller uses it.
+   */
+  readonly teamMemberIds: string[];
 }
 
 export interface CollaborationWorkflowListItem {
@@ -432,6 +443,7 @@ export class CollaborationWorkflowService {
         testRun: input.testRun,
         ...budgets,
       },
+      teamMemberIds: readStoredRosterMemberIds(row.teamMemberIds),
     };
   }
 

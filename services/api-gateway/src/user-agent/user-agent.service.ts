@@ -23,7 +23,12 @@ import { MAX_AGENT_INSTRUCTIONS_CHARS } from '../orchestration/handoff-request';
 import { CreateAgentDto, MAX_USER_WORKFLOW_BUDGET_CREDITS } from './dto/create-agent.dto';
 import { UpdateAgentDto } from './dto/update-agent.dto';
 import { CreateAgentFromTemplateDto } from './dto/create-agent-from-template.dto';
-import { USER_WORKFLOW_RULES, isUserWorkflowTemplateId } from './user-workflow-rules';
+import {
+  USER_WORKFLOW_RULES,
+  assertRosterMemberIds,
+  isUserWorkflowTemplateId,
+  readRosterMemberIds,
+} from './user-workflow-rules';
 import {
   allowlistedConnectorToolIds,
   userWorkflowGrants,
@@ -89,6 +94,16 @@ interface WorkflowFields {
   budgetPerDayCredits: unknown;
 }
 
+/**
+ * USER-TEAMS-01 D2: a team to check on this save. `ids` is the body's list;
+ * `selfId` is the row being edited (null on create). Absent (null) keeps the
+ * stored team and checks nothing.
+ */
+interface TeamInput {
+  ids: unknown;
+  selfId: string | null;
+}
+
 /** The validated fields, ready to store. */
 interface ValidWorkflowFields {
   tone: string | null;
@@ -102,6 +117,8 @@ interface ValidWorkflowFields {
   model: SystemAgentModel;
   budgetPerRunCredits: number | null;
   budgetPerDayCredits: number | null;
+  /** Present only when the save carries a team. */
+  teamMemberIds?: string[];
 }
 
 /** The prompt spec a stored workflow renders: its parts plus the platform rules. */
@@ -174,6 +191,7 @@ export class UserAgentService {
         budgetPerDayCredits: dto.budgetPerDayCredits ?? null,
       },
       [],
+      { ids: dto.teamMemberIds ?? [], selfId: null },
     );
 
     const agent = this.userAgentRepository.create({
@@ -228,6 +246,7 @@ export class UserAgentService {
         budgetPerDayCredits: null,
       },
       template.connectorToolIds,
+      { ids: [], selfId: null },
     );
 
     const agent = this.userAgentRepository.create({
@@ -254,6 +273,11 @@ export class UserAgentService {
    * the row, as it will be saved, has a completed test run at its version.
    * Switching off, to draft, an edit that keeps the status and a PATCH to
    * active on an active row are not checked.
+   *
+   * USER-TEAMS-01 D2: a body with `teamMemberIds` replaces the team ([]
+   * empties it) after the member rule; without it the stored team is kept and
+   * not re-checked (start re-checks every member). The team is not part of the
+   * workflow version (D14), so a team-only edit never needs a new test.
    */
   async update(id: string, userId: string, dto: UpdateAgentDto): Promise<UserAgent> {
     const agent = await this.findOneByIdAndUserId(id, userId);
@@ -283,6 +307,7 @@ export class UserAgentService {
         budgetPerDayCredits: pick('budgetPerDayCredits', agent.budgetPerDayCredits),
       },
       storedToolIds,
+      dto.teamMemberIds !== undefined ? { ids: dto.teamMemberIds, selfId: agent.id } : null,
     );
 
     const switchingOn = dto.status === 'active' && agent.status !== 'active';
@@ -358,6 +383,7 @@ export class UserAgentService {
     userId: string,
     fields: WorkflowFields,
     keptToolIds: readonly string[],
+    team: TeamInput | null,
   ): Promise<ValidWorkflowFields> {
     const spec = {
       tone: fields.tone,
@@ -450,6 +476,8 @@ export class UserAgentService {
       );
     }
 
+    const teamMemberIds = team ? await this.validateTeam(userId, team) : undefined;
+
     return {
       tone: spec.tone,
       replyLanguage: spec.replyLanguage,
@@ -462,7 +490,25 @@ export class UserAgentService {
       model: copyModel(fields.model),
       budgetPerRunCredits: perRun,
       budgetPerDayCredits: perDay,
+      ...(teamMemberIds !== undefined ? { teamMemberIds } : {}),
     };
+  }
+
+  /**
+   * USER-TEAMS-01 D2 (DECISION D): the Chief of Staff roster rule on a
+   * workflow's team. The two advisors or the owner's own rows (any status at
+   * save time; another owner's or a deleted row is not found), at most 3, no
+   * repeats, never the row itself. A refusal is a 400 with a ROSTER_* code.
+   */
+  private async validateTeam(userId: string, team: TeamInput): Promise<string[]> {
+    const ids = readRosterMemberIds(team.ids);
+    await assertRosterMemberIds(ids, {
+      userId,
+      ownerRow: (id) => this.findOneByIdAndUserId(id, userId),
+      selfId: team.selfId,
+      notAllowedMessage: 'This agent cannot be on a workflow team',
+    });
+    return ids;
   }
 
   private computeInitials(name: string): string {

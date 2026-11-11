@@ -23,6 +23,7 @@ import {
 import { MAX_AGENT_INSTRUCTIONS_CHARS } from '../../orchestration/handoff-request';
 import { CONNECTOR_SERVERS } from '../../connectors/connector-servers';
 import { KNOWLEDGE_SCOPES } from '../../knowledge/knowledge-scopes';
+import { MAX_ROSTER_MEMBERS, ROSTER_MEMBER_ID_MAX_CHARS } from '../user-workflow-rules';
 
 /** BIZ-USER-01A D3: the largest per-run or per-day workflow budget, in credits. */
 export const MAX_USER_WORKFLOW_BUDGET_CREDITS = 1_000_000;
@@ -129,4 +130,16 @@ export class CreateAgentDto {
   @Min(1)
   @Max(MAX_USER_WORKFLOW_BUDGET_CREDITS)
   budgetPerDayCredits?: number | null;
+
+  /**
+   * USER-TEAMS-01 D2: the workflow's team. Shape only here; the service
+   * checks each id against the roster rule on every save.
+   */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAX_ROSTER_MEMBERS)
+  @IsString({ each: true })
+  @MinLength(1, { each: true })
+  @MaxLength(ROSTER_MEMBER_ID_MAX_CHARS, { each: true })
+  teamMemberIds?: string[];
 }

@@ -27,6 +27,7 @@ import {
   MAX_USER_WORKFLOW_BUDGET_CREDITS,
   MAX_USER_WORKFLOW_CONNECTOR_TOOLS,
 } from './create-agent.dto';
+import { MAX_ROSTER_MEMBERS, ROSTER_MEMBER_ID_MAX_CHARS } from '../user-workflow-rules';
 
 const provided = (_object: object, value: unknown): boolean => value !== undefined;
 
@@ -125,4 +126,16 @@ export class UpdateAgentDto {
   @Min(1)
   @Max(MAX_USER_WORKFLOW_BUDGET_CREDITS)
   budgetPerDayCredits?: number | null;
+
+  /**
+   * USER-TEAMS-01 D2: the workflow's team, replaced whole when present; [] empties
+   * it. Absent keeps the stored team. Shape only here; the service checks each id.
+   */
+  @ValidateIf(provided)
+  @IsArray()
+  @ArrayMaxSize(MAX_ROSTER_MEMBERS)
+  @IsString({ each: true })
+  @MinLength(1, { each: true })
+  @MaxLength(ROSTER_MEMBER_ID_MAX_CHARS, { each: true })
+  teamMemberIds?: string[];
 }

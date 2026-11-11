@@ -17,6 +17,13 @@ import {
   rosterSystemChoices,
 } from './collaboration-roster';
 import { renderWorkflow, type WorkflowRow } from './collaboration-workflow';
+import * as memberRule from '../user-agent/user-workflow-rules';
+import {
+  MAX_AGENT_LABEL_CHARS,
+  MAX_AGENT_SUMMARY_CHARS,
+  readCollaborationAgents,
+} from './handoff-request';
+import { cutAgentListText } from './collaboration-roster';
 import { DEFAULT_MAX_AGENTS_PER_COLLABORATION } from './orchestration.contracts';
 
 const OWNER = '11111111-1111-4111-8111-111111111111';
@@ -497,6 +504,109 @@ describe('COS-FRONTDOOR-01 CollaborationRosterService', () => {
         rosterWorkflows: [],
         used: [],
         skipped: [],
+      });
+    });
+  });
+
+  describe('USER-TEAMS-01 01A: evaluateMembers and the shared member rule (D2, D6)', () => {
+    it('evaluateMembers runs the start checks on an explicit list, not the stored roster', async () => {
+      fakes.store(OWNER, ['technology-advisor']);
+      const start = await fakes.service.evaluateMembers(OWNER, [
+        WF_DRAFT,
+        'product-strategy',
+        WF_TESTED.toUpperCase(),
+      ]);
+      expect(start.used).toEqual(['product-strategy', WF_TESTED]);
+      expect(start.skipped).toEqual([{ id: WF_DRAFT, reason: 'draft' }]);
+      expect(start.agents.map((agent) => agent.name)).toEqual(['product-strategy', WF_TESTED]);
+      expect(start.rosterWorkflows.map((workflow) => workflow.id)).toEqual([WF_TESTED]);
+      expect(start.rosterWorkflows[0].testRun).toBe(false);
+      expect(fakes.rosterRepo.findOne).not.toHaveBeenCalled();
+    });
+
+    it('evaluateMembers gives the same answer as membersForStart for the stored roster', async () => {
+      const ids = [WF_UNTESTED, WF_TESTED, 'product-strategy'];
+      fakes.store(OWNER, ids);
+      await expect(fakes.service.evaluateMembers(OWNER, ids)).resolves.toEqual(
+        await fakes.service.membersForStart(OWNER),
+      );
+    });
+
+    it('evaluateMembers reads its list fail-closed and never resolves another owner row', async () => {
+      await expect(fakes.service.evaluateMembers(OWNER, 'product-strategy')).resolves.toEqual({
+        agents: [],
+        rosterWorkflows: [],
+        used: [],
+        skipped: [],
+      });
+      const start = await fakes.service.evaluateMembers(OWNER, [
+        WF_OTHER,
+        3,
+        'technology-advisor',
+        'technology-advisor',
+        WF_TESTED,
+        'product-strategy',
+      ]);
+      expect(start.used).toEqual(['technology-advisor', WF_TESTED]);
+      expect(start.skipped).toEqual([{ id: WF_OTHER, reason: 'missing' }]);
+      expect(fakes.userAgents.findOneByIdAndUserId).toHaveBeenCalledWith(WF_OTHER, OWNER);
+    });
+
+    it('D15: a 2000-character description becomes a 300-character summary the agent list accepts', async () => {
+      const long = 'd'.repeat(2000);
+      const name = 'n'.repeat(120);
+      fakes.agentRows.set(WF_TESTED, { ...fakes.agentRows.get(WF_TESTED)!, description: long, name });
+      fakes.markTested(fakes.agentRows.get(WF_TESTED)!);
+      fakes.store(OWNER, [WF_TESTED, 'product-strategy']);
+
+      const start = await fakes.service.membersForStart(OWNER);
+      expect(start.used).toEqual([WF_TESTED, 'product-strategy']);
+      const member = start.agents[0];
+      expect(member.summary).toBe(long.slice(0, MAX_AGENT_SUMMARY_CHARS));
+      expect(member.summary).toHaveLength(300);
+      expect(member.label).toHaveLength(MAX_AGENT_LABEL_CHARS);
+      // The workflow snapshot keeps the full name; only the list text is cut.
+      expect(start.rosterWorkflows[0].name).toBe(name);
+
+      const list = readCollaborationAgents([
+        { name: 'chief-of-staff', instructions: 'Lead.' },
+        ...start.agents,
+      ]);
+      expect(list.ok).toBe(true);
+      const uncut = readCollaborationAgents([
+        { name: 'chief-of-staff', instructions: 'Lead.' },
+        { ...member, summary: long },
+      ]);
+      expect(uncut).toEqual({ ok: false, message: 'agents[1].summary is invalid' });
+    });
+
+    it('cutAgentListText keeps short text and never ends on half a surrogate pair', () => {
+      expect(cutAgentListText('short', 300)).toBe('short');
+      expect(cutAgentListText('x'.repeat(300), 300)).toHaveLength(300);
+      const cut = cutAgentListText('a'.repeat(299) + '\u{1F600}tail', 300);
+      expect(cut).toBe('a'.repeat(299));
+      expect(cutAgentListText('a'.repeat(298) + '\u{1F600}tail', 300)).toBe('a'.repeat(298) + '\u{1F600}');
+    });
+
+    it('collaboration-roster re-exports the member rule unchanged', () => {
+      expect(MAX_ROSTER_MEMBERS).toBe(memberRule.MAX_ROSTER_MEMBERS);
+      expect(ROSTER_REFUSAL_CODES).toBe(memberRule.ROSTER_REFUSAL_CODES);
+      expect(ROSTER_SYSTEM_MEMBER_TEXT).toBe(memberRule.ROSTER_SYSTEM_MEMBER_TEXT);
+      expect(isRosterSystemCandidate).toBe(memberRule.isRosterSystemCandidate);
+      expect(readRosterMemberIds).toBe(memberRule.readRosterMemberIds);
+      expect(readStoredRosterMemberIds).toBe(memberRule.readStoredRosterMemberIds);
+      expect(rosterSystemChoices).toBe(memberRule.rosterSystemChoices);
+      expect(ROSTER_REFUSAL_CODES.self).toBe('ROSTER_MEMBER_SELF');
+    });
+
+    it('put still refuses a non-member with the roster message and its code', async () => {
+      const body = await refusal(fakes.service.put(OWNER, ['writer']));
+      expect(body).toEqual({
+        statusCode: 400,
+        message: 'This agent cannot be on the Chief of Staff roster',
+        error: 'Bad Request',
+        code: ROSTER_REFUSAL_CODES.notAllowed,
+        memberId: 'writer',
       });
     });
   });

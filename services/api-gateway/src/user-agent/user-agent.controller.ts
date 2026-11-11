@@ -32,7 +32,13 @@ import { PLATFORM_MODELS, type PlatformModel } from '../system-agents/platform-m
 import { MAX_AGENT_INSTRUCTIONS_CHARS } from '../orchestration/handoff-request';
 import { KNOWLEDGE_SCOPES, findKnowledgeScope, type KnowledgeScope } from '../knowledge/knowledge-scopes';
 import { connectorToolCatalog } from '../connectors/connector-servers';
-import { USER_WORKFLOW_TEMPLATE_IDS } from './user-workflow-rules';
+import {
+  USER_WORKFLOW_TEMPLATE_IDS,
+  readStoredRosterMemberIds,
+  rosterSystemChoices,
+  rosterSystemMemberText,
+  type RosterMemberKind,
+} from './user-workflow-rules';
 import {
   MAX_USER_WORKFLOW_KNOWLEDGE_SCOPES,
   USER_WORKFLOW_TOOL_PROFILES,
@@ -63,11 +69,25 @@ export interface AgentResponseDto {
   budgetPerRunCredits: number | null;
   budgetPerDayCredits: number | null;
   templateId: string | null;
+  // USER-TEAMS-01 D3: the stored team, read fail-closed.
+  teamMemberIds: string[];
   // Derived, never stored.
   neverDo: readonly NeverDoItem[];
   grants: UserWorkflowGrants;
   instructionsChars: number;
   maxInstructionsChars: number;
+}
+
+/**
+ * USER-TEAMS-01 D3: an agent the workflow form may put on a team: the active
+ * system candidates (the two advisors) and the owner's own rows. Whether a
+ * member can run is decided at start (D7), not here.
+ */
+export interface AgentTeamChoiceDto {
+  id: string;
+  kind: RosterMemberKind;
+  name: string;
+  status: string;
 }
 
 export interface AgentOptionsResponseDto {
@@ -78,6 +98,7 @@ export interface AgentOptionsResponseDto {
   connectedKinds: string[];
   models: readonly PlatformModel[];
   templates: readonly string[];
+  teamChoices: AgentTeamChoiceDto[];
   limits: {
     maxInstructionsChars: number;
     maxToneChars: number;
@@ -129,6 +150,7 @@ function toAgentResponse(agent: UserAgent, connectionKinds: Set<string>): AgentR
     budgetPerRunCredits: agent.budgetPerRunCredits ?? null,
     budgetPerDayCredits: agent.budgetPerDayCredits ?? null,
     templateId: agent.templateId ?? null,
+    teamMemberIds: readStoredRosterMemberIds(agent.teamMemberIds),
     neverDo,
     grants,
     instructionsChars,
@@ -169,6 +191,23 @@ export class UserAgentController {
   @HttpCode(HttpStatus.OK)
   async options(@Request() req): Promise<AgentOptionsResponseDto> {
     const kinds = await this.userAgentService.ownerConnectionKinds(req.user.userId);
+    const rows = (await this.userAgentService.listByUserId(req.user.userId)).filter(
+      (row) => row.userId === req.user.userId,
+    );
+    const teamChoices: AgentTeamChoiceDto[] = [
+      ...rosterSystemChoices().map((definition) => ({
+        id: definition.id,
+        kind: 'system' as const,
+        name: rosterSystemMemberText(definition).label,
+        status: definition.status,
+      })),
+      ...rows.map((row) => ({
+        id: row.id.toLowerCase(),
+        kind: 'workflow' as const,
+        name: row.name,
+        status: row.status,
+      })),
+    ];
     return {
       replyLanguages: [...SYSTEM_AGENT_REPLY_LANGUAGES],
       toolProfiles: [...USER_WORKFLOW_TOOL_PROFILES],
@@ -177,6 +216,7 @@ export class UserAgentController {
       connectedKinds: [...kinds].sort(),
       models: PLATFORM_MODELS.map((model) => ({ ...model })),
       templates: [...USER_WORKFLOW_TEMPLATE_IDS],
+      teamChoices,
       limits: {
         maxInstructionsChars: MAX_AGENT_INSTRUCTIONS_CHARS,
         maxToneChars: MAX_AGENT_TONE_CHARS,
