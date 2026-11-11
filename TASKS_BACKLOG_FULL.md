@@ -88638,7 +88638,7 @@ taskId=CM-BODY-ROUTE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-11 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-11 by the SNAPSHOT-SIZE-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-11. LANE-DONE and LOCKED by the control plane; Lane 2 and CONTAINER-MANAGER released. The 16 MB JSON limit applies only to POST /api/internal/sessions/:id/files (canonical raw path); every other route is back to 100 KB; two mutually exclusive parsers, one parse per request, Nest default not added; guards, ValidationPipe, prefix and no-CORS unchanged; spec 13 to 55 real-HTTP tests, mutation check 9/9/1/3 failing; opus subagent 282883a, cherry-picked as 8c4a4e0; control-plane rerun on the branch and main: container-manager 846 passed, build 0. Not deployed. Checkpoint: docs/CM-BODY-ROUTE-01-CHECKPOINT.md. FOLLOWUPS: 2 registered (CM-BODY-KEY-01; STAGING-DEPLOY-SNAP-02, shared with SNAPSHOT-PICK-01) / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 2 — 2026-11-11 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-11 by the SNAPSHOT-SIZE-01 LOCK — not admitted.
 **Task ID:** CM-BODY-ROUTE-01
 **Title:** Large JSON bodies only on the internal file write route
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -88655,6 +88655,54 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and snapshots).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** From the SNAPSHOT-SIZE-01 worker: Express parses bodies before guards, so a caller without the internal key can make container-manager parse up to 16 MB before the 403 (was 100 KB). The service listens on 127.0.0.1 only, so the exposure is host-local. Narrow it: 16 MB only on the internal file write route, the 100 KB default elsewhere; tests for both.
+
+### CM-BODY-KEY-01 — Check the internal key before parsing a large file write body
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CM-BODY-KEY-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the CM-BODY-ROUTE-01 LOCK — not admitted.
+**Task ID:** CM-BODY-KEY-01
+**Title:** Check the internal key before parsing a large file write body
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** CM-BODY-ROUTE-01.
+**Primary write scope:** PROVISIONAL: services/container-manager/src/app-setup.ts and the body-limit spec.
+**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and snapshots).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the CM-BODY-ROUTE-01 worker: the internal file write route still parses up to 16 MB before its guard answers 403 to a caller without the key (host-local callers only). Option: let the large parser run only when the internal key header is valid (constant-time compare, same source as the guard), so a keyless request gets the 100 KB parser or a 403 first; the guard stays the authority. Touches the internal key: opus, tests for the key, no key and a wrong key.
+
+### STAGING-DEPLOY-SNAP-02 — Deploy the snapshot pick and the route-scoped body limit
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-SNAP-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the CM-BODY-ROUTE-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-SNAP-02
+**Title:** Deploy the snapshot pick and the route-scoped body limit
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the deploy.
+**Depends on:** SNAPSHOT-PICK-01, CM-BODY-ROUTE-01.
+**Primary write scope:** records; host state (deploy).
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and snapshots).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy main with SNAPSHOT-PICK-01 and CM-BODY-ROUTE-01 to staging from the host with runs off (no migration expected; configuration unchanged). Host checks: the standard set, the earlier route and security checks, the new code in the builds, a 1 MB JSON body to another internal route is not parsed at 16 MB (413 before the guard), and a 1 MB body to the file write route without the key gets 403. No Keith step is required; he may reopen his CL2 test project to see it still opens with its image.
 
 ### SNAPSHOT-NOTICE-01 — Tell the user which files were not restored
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -88710,7 +88758,7 @@ taskId=SNAPSHOT-PICK-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-11 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-11 by the CHECKPOINT-LIVE-02 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-11. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY released. Without an explicit snapshot id, the reopen restores only the newest snapshot whose label names the same project (the frontend label rule), or none, and the history restore still runs; an explicit id is unchanged; 5 new tests (4 failed before the fix); sonnet subagent, fast-forwarded as 4a4d800; control-plane rerun: gateway 3805 passed plus the 14 known smoke failures, build 0; on main src/projects and src/snapshots 60 passed. Not deployed. Checkpoint: docs/SNAPSHOT-PICK-01-CHECKPOINT.md. FOLLOWUPS: 2 registered (SNAPSHOT-LABEL-01; STAGING-DEPLOY-SNAP-02, shared with CM-BODY-ROUTE-01) / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-11 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-11 by the CHECKPOINT-LIVE-02 LOCK — not admitted.
 **Task ID:** SNAPSHOT-PICK-01
 **Title:** Reopen restores only a snapshot of the same project
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -88727,6 +88775,30 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and checkpoints).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** From the CHECKPOINT-LIVE-02 review: ProjectsService.openProjectIntoSession uses args.snapshotId or else the newest snapshot of the user across all projects; the frontend sends a snapshot id only when the user picked one, so reopening project B may restore project A's newest snapshot. Confirm with a test first; then choose only a snapshot whose label names the same project (the frontend's parseProjectIdFromSnapshotLabel rule), or none. Tests for both cases.
+
+### SNAPSHOT-LABEL-01 — One project-label rule for snapshots in the frontend and the gateway
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=SNAPSHOT-LABEL-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the SNAPSHOT-PICK-01 LOCK — not admitted.
+**Task ID:** SNAPSHOT-LABEL-01
+**Title:** One project-label rule for snapshots in the frontend and the gateway
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** SNAPSHOT-PICK-01.
+**Primary write scope:** PROVISIONAL: a shared set of label examples tested on both sides (frontend workspace-snapshots.logic.ts; gateway projects.service.ts and internal-workspace-files.controller.ts) and their tests.
+**Mutexes / resources:** set at admission (expected GATEWAY and FRONTEND).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and snapshots).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the SNAPSHOT-PICK-01 worker: the project-id label rule ([project-id:<id>:name:...] / [project-id:<id>:source:...]) now exists in the frontend parser, the gateway reopen helper and the gateway label writer. Pin it with one shared set of examples tested on both sides, so a change on one side cannot silently break reopen or the history list.
 
 ### STAGING-DEPLOY-CMSEC-01 — Deploy the container-manager security fixes
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
