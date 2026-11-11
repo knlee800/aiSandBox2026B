@@ -24,7 +24,9 @@
         "services/ai-service/src/agent-harness/eval/briefing-instructions.ts",
         "services/ai-service/src/agent-harness/eval/briefing-drift.spec.ts",
         "services/ai-service/src/agent-harness/eval/briefing-runner.spec.ts",
-        "services/ai-service/src/agent-harness/eval/briefing-tasks/inject-draft-request.json"
+        "services/ai-service/src/agent-harness/eval/briefing-tasks/inject-draft-request.json",
+        "services/ai-service/src/agent-harness/eval/briefing-score.ts",
+        "services/ai-service/src/agent-harness/eval/briefing-loader.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,
@@ -4976,7 +4978,9 @@
         "services/ai-service/src/agent-harness/eval/briefing-instructions.ts",
         "services/ai-service/src/agent-harness/eval/briefing-drift.spec.ts",
         "services/ai-service/src/agent-harness/eval/briefing-runner.spec.ts",
-        "services/ai-service/src/agent-harness/eval/briefing-tasks/inject-draft-request.json"
+        "services/ai-service/src/agent-harness/eval/briefing-tasks/inject-draft-request.json",
+        "services/ai-service/src/agent-harness/eval/briefing-score.ts",
+        "services/ai-service/src/agent-harness/eval/briefing-loader.spec.ts"
       ],
       "hotfiles": [],
       "i18n": false,

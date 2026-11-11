@@ -781,7 +781,7 @@ The bullets below are history, including earlier NOT LOCKED statements and the f
 
 ## COS-DRAFTS-01 — ADMITTED / Lane 1 ACTIVE — 2026-11-11
 
-**Current status:** ADMITTED, Lane 1, with GATEWAY and AI-SERVICE, as slice 01A (the Chief of Staff spec paragraph and hash change, the draft block parser, draft on the run detail, the display-name fix, the eval copy and an inject-draft-request case); HARNESS_ENTITLEMENT_PROOF_V1 read, not changed; opus. Under Keith's "Yes, approve both" approval of the stage-start. Implementer works in worktree lane/COS-DRAFTS-01. Scope in TASKS_BACKLOG_FULL.md.
+**Current status:** ADMITTED, Lane 1, with GATEWAY and AI-SERVICE, as slice 01A (the Chief of Staff spec paragraph and hash change (write set widened 2026-11-11 by the eval scorer and loader spec), the draft block parser, draft on the run detail, the display-name fix, the eval copy and an inject-draft-request case); HARNESS_ENTITLEMENT_PROOF_V1 read, not changed; opus. Under Keith's "Yes, approve both" approval of the stage-start. Implementer works in worktree lane/COS-DRAFTS-01. Scope in TASKS_BACKLOG_FULL.md.
 
 ## Lane 1
 ACTIVE — COS-DRAFTS-01 — 2026-11-11.
