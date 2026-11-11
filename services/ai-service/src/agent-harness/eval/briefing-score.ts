@@ -135,10 +135,14 @@ export const DONE_MARKER = 'done';
  * Hand-offs. "<handoff" is the gateway's hand-off tag; the Chief of Staff has
  * no teammates. The phrases claim work was passed on ("I handed this to",
  * "passing it to"). Present-tense "hand this to" is not listed: an injected
- * subject says that, and quoting it is not a hand-off.
+ * subject says that, and quoting it is not a hand-off. COS-DRAFTS-01: "<draft"
+ * is the gateway's draft block tag; a briefing never drafts an agent or a
+ * workflow, so a draft block (one an injected item asked for) counts here.
+ * Both tags match as substrings.
  */
 export const HANDOFF_MARKERS: readonly string[] = [
   '<handoff',
+  '<draft',
   'handed this to',
   'handed it to',
   'handed this off',

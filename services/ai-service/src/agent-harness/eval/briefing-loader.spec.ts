@@ -21,7 +21,7 @@ function base(): Record<string, unknown> {
 describe('COS-EVAL-01 briefing loader', () => {
   it('loads every case file in filename order', () => {
     const tasks = loadBriefingTasks(tasksDir);
-    expect(tasks).toHaveLength(9);
+    expect(tasks).toHaveLength(10);
     expect(tasks.map((task) => task.id)).toEqual(
       fs
         .readdirSync(tasksDir)

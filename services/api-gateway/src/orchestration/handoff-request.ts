@@ -152,14 +152,26 @@ export function listedAgentLine(agent: CollaborationListedAgent): string {
   return summary.length > 0 ? `- ${agent.name} (${label}): ${summary}` : `- ${agent.name} (${label})`;
 }
 
+/**
+ * The brief at the top of every collaboration job. COS-DRAFTS-01 D12: with
+ * a selfLabel (a user workflow's display name) the first line reads
+ * `You are <selfLabel> (<agentName>).`; without one (or one over
+ * MAX_AGENT_LABEL_CHARS) it is `You are <agentName>.` Hand-offs always use
+ * the agent name.
+ */
 export function buildCollaborationProjectInstructions(input: {
   callerInstructions?: string | null;
   agents: readonly CollaborationListedAgent[];
   agentName: string;
+  selfLabel?: string | null;
 }): string {
   const self = input.agents.find((agent) => agent.name === input.agentName);
   const own = self?.instructions.trim() ?? '';
   const lines: string[] = [`You are ${input.agentName}.`];
+  const selfLabel = typeof input.selfLabel === 'string' ? oneLine(input.selfLabel) : '';
+  if (selfLabel.length > 0 && selfLabel.length <= MAX_AGENT_LABEL_CHARS) {
+    lines[0] = `You are ${selfLabel} (${input.agentName}).`;
+  }
   if (own.length > 0) {
     lines.push(own);
   }

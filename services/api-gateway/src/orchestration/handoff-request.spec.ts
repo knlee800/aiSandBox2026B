@@ -175,6 +175,36 @@ describe('collaboration agent list and job instructions', () => {
     expect(text).toContain('Other agents:\nnone');
   });
 
+  it('COS-DRAFTS-01 D12: a selfLabel names the agent by its display name and keeps the id', () => {
+    const id = '6f1c2c1e-1d2b-4c1a-9a43-2f7f8a3e4b5c';
+    const listed = [
+      { name: id, instructions: 'Sum up the sales mail.' },
+      { name: 'product-strategy', instructions: 'Market.', label: 'Product Strategy', summary: 'Answers.' },
+    ];
+    const text = buildCollaborationProjectInstructions({
+      agents: listed,
+      agentName: id,
+      selfLabel: 'Weekly sales\ndigest',
+    });
+    expect(text).toBe(
+      [
+        `You are Weekly sales digest (${id}).`,
+        'Sum up the sales mail.',
+        '',
+        'Other agents:',
+        '- product-strategy (Product Strategy): Answers.',
+        '',
+        'Ask another agent only when you genuinely need them. At most one request, alone at the very end of the answer, exactly <handoff to="name">task</handoff>. Otherwise no request.',
+      ].join('\n'),
+    );
+    // Without a label, an empty one or one over 100 characters: today's line, byte for byte.
+    const plain = buildCollaborationProjectInstructions({ agents: listed, agentName: id });
+    for (const selfLabel of [null, '', '   ', 'x'.repeat(101)]) {
+      expect(buildCollaborationProjectInstructions({ agents: listed, agentName: id, selfLabel })).toBe(plain);
+    }
+    expect(plain.startsWith(`You are ${id}.\n`)).toBe(true);
+  });
+
   it('accepts four valid agents and rejects an invalid list', () => {
     const four = Array.from({ length: DEFAULT_MAX_AGENTS_PER_COLLABORATION }, (_, index) => ({
       name: `agent-${index}`,

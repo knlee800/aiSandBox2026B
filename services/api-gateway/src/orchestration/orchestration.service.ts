@@ -2970,20 +2970,6 @@ export class OrchestrationService {
       input.projectInstructions !== undefined
         ? input.projectInstructions
         : (parent?.pendingJob?.callerProjectInstructions ?? null);
-    let projectInstructions = agents
-      ? buildCollaborationProjectInstructions({
-          callerInstructions: callerProjectInstructions,
-          agents,
-          agentName: input.targetBuilder.builderProfileId,
-        })
-      : callerProjectInstructions;
-    if (
-      projectInstructions &&
-      input.targetBuilder.builderProfileId === COLLABORATION_WRITER_PROFILE_ID &&
-      input.sourceBuilder.builderProfileId === COLLABORATION_REVIEWER_PROFILE_ID
-    ) {
-      projectInstructions = `${projectInstructions}\n\n${COLLABORATION_SEND_BACK_WRITER_INSTRUCTION}`;
-    }
     const fileAccess = parent
       ? parent.pendingJob?.fileAccess === true
       : input.fileAccess === true;
@@ -3052,6 +3038,24 @@ export class OrchestrationService {
         }
         stepWorkflow = snapshot;
       }
+    }
+
+    // COS-DRAFTS-01 D12: a user workflow step names itself by its display name.
+    let projectInstructions = agents
+      ? buildCollaborationProjectInstructions({
+          callerInstructions: callerProjectInstructions,
+          agents,
+          agentName: input.targetBuilder.builderProfileId,
+          selfLabel:
+            stepWorkflow?.id === input.targetBuilder.builderProfileId ? stepWorkflow.name : null,
+        })
+      : callerProjectInstructions;
+    if (
+      projectInstructions &&
+      input.targetBuilder.builderProfileId === COLLABORATION_WRITER_PROFILE_ID &&
+      input.sourceBuilder.builderProfileId === COLLABORATION_REVIEWER_PROFILE_ID
+    ) {
+      projectInstructions = `${projectInstructions}\n\n${COLLABORATION_SEND_BACK_WRITER_INSTRUCTION}`;
     }
 
     return {

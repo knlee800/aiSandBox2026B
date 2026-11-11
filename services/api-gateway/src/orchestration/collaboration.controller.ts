@@ -94,6 +94,11 @@ import {
   MAX_HANDOFF_TASK_CHARS,
 } from './handoff-request';
 import { OrchestrationService } from './orchestration.service';
+import {
+  parseDraftBlock,
+  stepMayDraft,
+  type CollaborationDraftView,
+} from './collaboration-draft';
 
 const USABLE_SESSION_STATUSES: readonly SessionStatus[] = [
   SessionStatus.ACTIVE,
@@ -159,6 +164,13 @@ export interface CollaborationHandoffView {
   } | null;
   /** APPROVAL-SET-01B D12: why a waiting step waits although the setting is not every; else null. */
   autoApprovalWaiting: AutoApprovalWaitReason | null;
+  /**
+   * COS-DRAFTS-01 D5: the draft block at the end of a completed Chief of
+   * Staff answer, parsed on read (never stored); null for any other step,
+   * a step that is not completed, or an answer without a draft tag. A
+   * proposal only: nothing is saved and no access is ever carried.
+   */
+  draft: CollaborationDraftView | null;
 }
 
 export interface CollaborationRunDetail {
@@ -1096,6 +1108,10 @@ export class CollaborationController {
       unsourced: citations.unsourced,
       showUnsourced: citations.showUnsourced,
       ...this.autoApprovalView(referral),
+      draft:
+        referral.status === 'completed' && stepMayDraft(referral.targetBuilder.builderProfileId)
+          ? parseDraftBlock(summary)
+          : null,
     };
   }
 

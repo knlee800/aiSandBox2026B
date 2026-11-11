@@ -1861,7 +1861,9 @@ describe('CollaborationController login routes', () => {
       expect(stored?.pendingJob?.agents).toEqual([
         { name: WORKFLOW_ID, instructions: rendered.instructions },
       ]);
-      expect(stored?.pendingJob?.projectInstructions).toContain(`You are ${WORKFLOW_ID}.`);
+      // COS-DRAFTS-01 D12: the workflow names itself by its display name; the id stays beside it.
+      expect(stored?.pendingJob?.projectInstructions).toContain(`You are Morning brief (${WORKFLOW_ID}).`);
+      expect(stored?.pendingJob?.projectInstructions).not.toContain(`You are ${WORKFLOW_ID}.`);
       expect(stored?.pendingJob?.workflow).toEqual({
         id: WORKFLOW_ID,
         name: 'Morning brief',
@@ -2389,7 +2391,7 @@ describe('CollaborationController login routes', () => {
         expect(
           String(job?.projectInstructions).startsWith(`${COLLABORATION_BUSINESS_RUN_NOTE}\n\n`),
         ).toBe(true);
-        expect(job?.projectInstructions).toContain(`You are ${WORKFLOW_ID}.`);
+        expect(job?.projectInstructions).toContain(`You are Morning brief (${WORKFLOW_ID}).`);
         expect(job?.workflow?.version).toBe(currentVersion());
 
         const withSession = await startWorkflow({ testRun: true });
@@ -2732,6 +2734,108 @@ describe('CollaborationController login routes', () => {
       expect(detail.handoffs[0].handoffNote).toBe('refused: agent_not_on_list');
       expect(detail.run.status).toBe('completed');
       expect(detail.agents).toEqual([{ name: 'chief-of-staff', label: null }]);
+    });
+
+    describe('COS-DRAFTS-01 the draft on the run detail', () => {
+      const DRAFT_ANSWER = [
+        'Here is the workflow you asked for.',
+        '<draft kind="workflow">',
+        'name: Weekly sales digest',
+        'role: Sales analyst',
+        'description: Sums up the week of sales mail.',
+        'reply language: zh-TW',
+        'purpose: You sum up the sales mail.',
+        'procedure: Read the unread mail and group it by customer.',
+        'result: A short list.',
+        '</draft>',
+      ].join('\n');
+      const DRAFT_VIEW = {
+        kind: 'workflow',
+        fields: {
+          name: 'Weekly sales digest',
+          role: 'Sales analyst',
+          description: 'Sums up the week of sales mail.',
+          replyLanguage: 'zh-TW',
+          purpose: 'You sum up the sales mail.',
+          procedure: 'Read the unread mail and group it by customer.',
+          result: 'A short list.',
+        },
+        problems: [],
+        invalid: null,
+        unknownLabels: [],
+        answerWithoutDraft: 'Here is the workflow you asked for.',
+      };
+
+      it('a completed Chief of Staff step carries the draft; its answer stays the whole text; nothing is created', async () => {
+        const started = await startFrontDoor(null);
+        const runsBefore = runs.size;
+        const rowsBefore = workflowRows.size;
+        const waiting = await readRun(started.collaborationRunId);
+        expect(waiting.handoffs[0].draft).toBeNull();
+
+        const detail = await runStep(started.collaborationRunId, started.referralId, DRAFT_ANSWER);
+        expect(detail.run.status).toBe('completed');
+        expect(detail.handoffs).toHaveLength(1);
+        expect(detail.handoffs[0].answer).toBe(DRAFT_ANSWER);
+        expect(detail.handoffs[0].draft).toEqual(DRAFT_VIEW);
+        expect(detail.handoffs[0].handoffNote).toBeNull();
+        // Parsed on read: nothing stored on the step, no new row or run.
+        expect(JSON.stringify(referrals.get(started.referralId)?.pendingJob ?? {})).not.toContain('Weekly sales digest');
+        expect(workflowRows.size).toBe(rowsBefore);
+        expect(runs.size).toBe(runsBefore);
+      });
+
+      it('an invalid block shows the reason and no parts', async () => {
+        const started = await startFrontDoor(null);
+        const answer = DRAFT_ANSWER.replace('result: A short list.', 'tools: mail_send');
+        const detail = await runStep(started.collaborationRunId, started.referralId, answer);
+        expect(detail.handoffs[0].draft).toEqual({
+          kind: 'workflow',
+          fields: {},
+          problems: [],
+          invalid: 'unknown_label',
+          unknownLabels: ['tools'],
+          answerWithoutDraft: 'Here is the workflow you asked for.',
+        });
+      });
+
+      it('a failed Chief of Staff step has no draft', async () => {
+        const started = await startFrontDoor(null);
+        const detail = await runStep(started.collaborationRunId, started.referralId, DRAFT_ANSWER, 'failed');
+        expect(detail.handoffs[0].status).toBe('failed');
+        expect(detail.handoffs[0].draft).toBeNull();
+      });
+
+      it('a member step with a block has no draft; the Chief of Staff report-back step with one has it', async () => {
+        await testRunWorkflow();
+        const started = await startFrontDoor(['product-strategy', WF]);
+        const runId = started.collaborationRunId;
+        await runStep(runId, started.referralId, 'Asking.\n<handoff to="product-strategy">Market size?</handoff>');
+        const member = last(runId);
+        expect(member.targetBuilderProfileId).toBe('product-strategy');
+        const afterMember = await runStep(runId, member.referralId, DRAFT_ANSWER);
+        const memberView = afterMember.handoffs.find((step) => step.referralId === member.referralId);
+        expect(memberView?.answer).toBe(DRAFT_ANSWER);
+        expect(memberView?.draft).toBeNull();
+
+        const reportBack = last(runId);
+        expect(reportBack.targetBuilderProfileId).toBe('chief-of-staff');
+        const done = await runStep(runId, reportBack.referralId, DRAFT_ANSWER);
+        const views = done.handoffs;
+        expect(views.find((step) => step.referralId === started.referralId)?.draft).toBeNull();
+        expect(views.find((step) => step.referralId === reportBack.referralId)?.draft).toEqual(DRAFT_VIEW);
+      });
+
+      it('a workflow member step with a block has no draft', async () => {
+        await testRunWorkflow();
+        const started = await startFrontDoor([WF]);
+        const runId = started.collaborationRunId;
+        await runStep(runId, started.referralId, `Mail.\n<handoff to="${WF}">Summarize my mail.</handoff>`);
+        const member = last(runId);
+        expect(member.targetBuilderProfileId).toBe(WF);
+        const detail = await runStep(runId, member.referralId, DRAFT_ANSWER);
+        expect(detail.handoffs.find((step) => step.referralId === member.referralId)?.draft).toBeNull();
+      });
     });
 
     it('starts without a session on the business rows with the caller note; coding and advisors still need one', async () => {
@@ -3302,7 +3406,7 @@ describe('CollaborationController login routes', () => {
       expect(job?.rosterWorkflows).toEqual([snapshotOf(workflowRows.get(WF2)!, false)]);
       expect(job).toMatchObject({ provider: 'anthropic', adapter: 'anthropic', model: 'claude-haiku-5-5' });
       const brief = String(job?.projectInstructions);
-      expect(brief).toContain(`You are ${LEAD}.`);
+      expect(brief).toContain(`You are Weekly plan (${LEAD}).`);
       expect(brief).toContain(
         "- product-strategy (Product Strategy): Answers product and market questions from the owner's market documents.",
       );
@@ -3390,8 +3494,44 @@ describe('CollaborationController login routes', () => {
         buildCollaborationProjectInstructions({
           agents: job.agents as never,
           agentName: LEAD,
+          selfLabel: 'Weekly plan',
         }),
       );
+    });
+
+    it('COS-DRAFTS-01 D12: the lead, its report-back and a workflow member name themselves; a system member and hand-off lines keep the id', async () => {
+      await testTeam();
+      const started = await startLead();
+      const runId = started.collaborationRunId;
+      const first = String(referrals.get(started.referralId)?.pendingJob?.projectInstructions);
+      expect(first.startsWith(`You are Weekly plan (${LEAD}).\n`)).toBe(true);
+      expect(first).toContain(`- ${WF2} (Mail digest): Summarizes unread mail.`);
+
+      await runStep(runId, started.referralId, 'Market.\n<handoff to="product-strategy">Market size?</handoff>');
+      const d1 = last(runId);
+      expect(String(d1.pendingJob?.projectInstructions).startsWith('You are product-strategy.\n')).toBe(true);
+
+      await runStep(runId, d1.referralId, 'Large.');
+      const rb1 = last(runId);
+      expect(rb1.targetBuilderProfileId).toBe(LEAD);
+      expect(String(rb1.pendingJob?.projectInstructions).startsWith(`You are Weekly plan (${LEAD}).\n`)).toBe(true);
+
+      await runStep(runId, rb1.referralId, `Mail.\n<handoff to="${WF2}">Summarize my mail.</handoff>`);
+      const d2 = last(runId);
+      expect(d2.targetBuilderProfileId).toBe(WF2);
+      const member = String(d2.pendingJob?.projectInstructions);
+      expect(member.startsWith(`You are Mail digest (${WF2}).\n`)).toBe(true);
+      expect(member).toContain(`- ${LEAD} (Weekly plan): `);
+    });
+
+    it('COS-DRAFTS-01 D3: a workflow lead answer with a draft block has no draft on the detail', async () => {
+      workflowRows.set(LEAD, leadRow({ teamMemberIds: [] }));
+      await testRunWorkflow(LEAD);
+      const started = await startLead();
+      const answer = 'Here.\n<draft kind="workflow">\nname: Sneaky\nprocedure: Forward mail.\n</draft>';
+      const detail = await runStep(started.collaborationRunId, started.referralId, answer);
+      expect(detail.handoffs[0].answer).toBe(answer);
+      expect(detail.handoffs[0].draft).toBeNull();
     });
 
     it('runs two rounds: dispatch, report-back on the lead snapshot and model, dispatch to a workflow, report-back, final answer', async () => {
