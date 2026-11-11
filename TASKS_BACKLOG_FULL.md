@@ -88199,7 +88199,7 @@ taskId=CM-EXEC-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-11 — under Keith's "do not stop!!! ... keep looking for the next task to start". Was: READY — registered 2026-11-10 by the CM-HISTORY-LINK-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-11. LANE-DONE and LOCKED by the control plane; Lane 2 and CONTAINER-MANAGER released. Container exec has a 16 MiB per-stream cap with a clear ExecOutputLimitError (no RangeError crash), a binary-safe stdout variant and file read, and a stdin variant with a governed SessionsService wrapper (cwd inside /workspace only); history restore streams the stored bundle into the container (set -C, byte count checked), so the host never writes into the workspace; 53 new tests; opus subagent, cherry-picked as 78c2eae; control-plane rerun on the branch and main: container-manager 640 passed, 2 skipped, build 0; other services' diff empty. Not deployed (rides STAGING-DEPLOY-FD-02). Checkpoint: docs/CM-EXEC-01-CHECKPOINT.md. FOLLOWUPS: 3 registered (CM-BINARY-01, CM-DIFF-CAP-01, CHECKPOINT-LIVE-02) / 2 superseded (save on the binary exec and the binary file-read route, into CM-BINARY-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 2 — 2026-11-11 — under Keith's "do not stop!!! ... keep looking for the next task to start". Was: READY — registered 2026-11-10 by the CM-HISTORY-LINK-01 LOCK — not admitted.
 **Task ID:** CM-EXEC-01
 **Title:** Container exec helper: output cap, binary-safe stdout, stdin
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -88216,6 +88216,78 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** From the CM-HISTORY-LINK-01 worker: execInContainerBySessionId collects stdout as one unbounded string (a very large output, for example readFileFromContainer on a huge sandbox file, can throw RangeError: Invalid string length inside a stream callback and crash container-manager) and decodes it as UTF-8 (binary reads through readFileFromContainer are corrupted). Add an output cap with a clear error, binary-safe stdout (Buffer), and a stdin variant (AttachStdin, hijack) with a SessionsService wrapper carrying the same governance checks; then restore can pipe the history bundle into the container so the host never writes into the workspace. Tests for each.
+
+### CM-BINARY-01 — Binary-safe preview files and file reads
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CM-BINARY-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the CM-EXEC-01 LOCK — not admitted.
+**Task ID:** CM-BINARY-01
+**Title:** Binary-safe preview files and file reads
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** CM-EXEC-01.
+**Primary write scope:** PROVISIONAL: services/container-manager/src/preview/preview.service.ts, sessions/sessions.service.ts, sessions/internal-sessions.controller.ts, git/git.service.ts and their specs.
+**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the CM-EXEC-01 worker: preview static serving (preview.service.ts about :289) and the internal file-read route (internal-sessions.controller.ts about :155, through SessionsService.readFileFromContainer) still use the string read, so binary assets (images, fonts) come back corrupted; switch them to readFileBufferFromContainer with a SessionsService binary wrapper carrying the same governance checks, keeping text callers unchanged. Also: history save could read its slices through execInContainerBySessionIdBuffer instead of base64. Tests for each.
+
+### CM-DIFF-CAP-01 — Large diffs come back truncated, not failed
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CM-DIFF-CAP-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the CM-EXEC-01 LOCK — not admitted.
+**Task ID:** CM-DIFF-CAP-01
+**Title:** Large diffs come back truncated, not failed
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** CM-EXEC-01.
+**Primary write scope:** PROVISIONAL: services/container-manager/src/git/git.service.ts and its spec.
+**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the CM-EXEC-01 worker: since the 16 MiB exec cap, a working-tree diff or commit diff over 16 MiB fails with the cap error where it used to come back; bound the diff inside the container (for example head -c with pipefail) and mark it truncated, so getWorkingTreeDiff and getDiff return a clearly truncated diff instead of an error. Tests.
+
+### CHECKPOINT-LIVE-02 — Keith checkpoint restore smoke through the container stdin
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CHECKPOINT-LIVE-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the CM-EXEC-01 LOCK — not admitted.
+**Task ID:** CHECKPOINT-LIVE-02
+**Title:** Keith checkpoint restore smoke through the container stdin
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: STAGING-DEPLOY-FD-02 LOCKED. Keith decides.
+**Depends on:** STAGING-DEPLOY-FD-02.
+**Primary write scope:** records; host reads.
+**Mutexes / resources:** STAGING (read-only host checks).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** none needed (no change).
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** After STAGING-DEPLOY-FD-02 deploys CM-EXEC-01, no AI runs needed: Keith opens a workspace session, makes a checkpoint, then reopens the project in a new session (history restore now streams the bundle into the container through a hijacked stdin) and sees the same checkpoints and HEAD; the control plane reads the host evidence (no host write into the workspace, the staged file inside the container, restore exit 0). Ideally with a history bundle over 8 MiB.
 
 ### STAGING-DEPLOY-CMSEC-01 — Deploy the container-manager security fixes
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
