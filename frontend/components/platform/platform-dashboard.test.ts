@@ -997,4 +997,15 @@ describe('WORKFLOW-STATUS-02 user agent card status', () => {
     assert.match(handler, /workflowSummaries\.refetch\(\)/);
     assert.match(handler, /code: result\.code/);
   });
+
+  test('USER-TEAMS-01C: the workflow summary gets the selected agent team and the options choices, and the options load with a selection', () => {
+    const source = readFileSync(new URL('./platform-dashboard.tsx', import.meta.url), 'utf8');
+    const summary = /<AgentWorkflowSummary[\s\S]*?\/>/.exec(source)?.[0] ?? '';
+    assert.match(summary, /teamMemberIds=\{selectedUserAgent\.teamMemberIds \?\? \[\]\}/);
+    assert.match(summary, /teamChoices=\{agentOptions\.options\?\.teamChoices \?\? null\}/);
+    assert.match(
+      source,
+      /useUserAgentOptions\(\s*showCreateForm \|\| editingUserAgentId !== null \|\| selectedUserAgentId !== null/,
+    );
+  });
 });

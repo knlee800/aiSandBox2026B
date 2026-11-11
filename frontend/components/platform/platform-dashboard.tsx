@@ -973,6 +973,8 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
                         summaryState={workflowSummaries.state}
                         item={workflowSummaries.items.find((entry) => entry.id === selectedUserAgent.id) ?? null}
                         models={agentOptions.options?.models ?? null}
+                        teamMemberIds={selectedUserAgent.teamMemberIds ?? []}
+                        teamChoices={agentOptions.options?.teamChoices ?? null}
                         onRetry={workflowSummaries.retry}
                         onSwitch={handleSwitchWorkflow}
                       />
