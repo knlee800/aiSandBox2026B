@@ -9,7 +9,8 @@ async function bootstrap() {
     logger: ['log', 'error', 'warn', 'debug'],
   });
 
-  // JSON body limit (SNAPSHOT-SIZE-01), validation pipe and the 'api' prefix.
+  // JSON body limits (CM-BODY-ROUTE-01: 16 MB only on the internal file write
+  // route, 100 KB elsewhere), validation pipe and the 'api' prefix.
   // CM-CLEANUP-01 (F5): no CORS.
   configureApp(app);
 
