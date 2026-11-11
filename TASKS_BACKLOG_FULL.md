@@ -88541,7 +88541,7 @@ taskId=CHECKPOINT-LIVE-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-11 — Keith admitted it ("Yes, start it"). Was: READY — registered 2026-11-11 by the CM-EXEC-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-11. LANE-DONE and LOCKED by the control plane; Lane 1 and STAGING released; stagingAuthorized false. Result: partial. On 7ac9084 with runs off, in a new empty project: the binary preview showed red.png (bytes identical); the save point stored its history bundle from raw slices (716 bytes, mode 640, 1 ref); an untracked file showed in the working-tree diff on the Alpine image (busybox sh); the history restore through the container stdin, run host-driven through the same internal route, restored HEAD and the checkpoint ref with no leftover bundle. Reopening the project in the browser failed with a 500: the older text-only snapshot path cannot write red.png back (content passed in an env var), and the failed snapshot restore stops the history restore. Registered SNAPSHOT-BINARY-01 (binary-safe snapshots; the browser reopen check moves there) and SNAPSHOT-PICK-01 (reopen falls back to the newest snapshot of any project). Not exercised: the browser sandbox image (no user path starts it), a bundle over 8 MiB. Checkpoint: docs/CHECKPOINT-LIVE-02-CHECKPOINT.md. FOLLOWUPS: 2 registered (SNAPSHOT-BINARY-01, SNAPSHOT-PICK-01) / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-11 — Keith admitted it ("Yes, start it"). Was: READY — registered 2026-11-11 by the CM-EXEC-01 LOCK — not admitted.
 **Task ID:** CHECKPOINT-LIVE-02
 **Title:** Keith checkpoint restore smoke through the container stdin
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -88560,6 +88560,54 @@ nature=IMPLEMENTATION
 **Scope:** After STAGING-DEPLOY-FD-02 deploys CM-EXEC-01, no AI runs needed: Keith opens a workspace session, makes a checkpoint, then reopens the project in a new session (history restore now streams the bundle into the container through a hijacked stdin) and sees the same checkpoints and HEAD; the control plane reads the host evidence (no host write into the workspace, the staged file inside the container, restore exit 0). Ideally with a history bundle over 8 MiB.
 **Also (added 2026-11-11 by the CM-BINARY-01 LOCK):** in the same session, open a static HTML preview with an image or font and see it render (binary preview files); the host evidence also shows the checkpoint save stored the bundle from raw slices byte for byte.
 **Also (added 2026-11-11 by the CM-UNTRACKED-DASH-01 LOCK):** in a session on each sandbox image (the default Alpine image and the browser image), create an untracked file and see it in the working-tree diff on the History page.
+### SNAPSHOT-BINARY-01 — Binary-safe workspace snapshots so projects with images reopen
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=SNAPSHOT-BINARY-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the CHECKPOINT-LIVE-02 LOCK — not admitted.
+**Task ID:** SNAPSHOT-BINARY-01
+**Title:** Binary-safe workspace snapshots so projects with images reopen
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** CHECKPOINT-LIVE-02.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/snapshots and its specs, services/api-gateway/src/projects/projects.service.ts, services/api-gateway/src/clients/container-manager-http.client.ts, services/container-manager/src/docker/docker-runtime.service.ts, services/container-manager/src/sessions and their specs.
+**Mutexes / resources:** set at admission (expected GATEWAY, CONTAINER-MANAGER).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS (then a deploy and Keith's browser check).
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and checkpoints).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the CHECKPOINT-LIVE-02 live check: a project with an image cannot be reopened. SnapshotPersistenceService.collectWorkspaceFiles reads files through the text file-read route and restoreSnapshot writes them through writeSessionFile, whose container-manager writeFileToContainer passes the content in an environment variable to printf (no NUL bytes), so red.png fails with a 500 and the reopen stops before restoreCheckpointHistory. Fix: read binary files with the CM-BINARY-01 base64 opt-in and store the encoding per file (existing text snapshots still restore unchanged); write through a binary-safe path (the CM-EXEC-01 stdin exec, not an env var); one file that cannot be written is reported, not a 500 that skips the history restore. Tests: a PNG and a font round-trip byte for byte; an old snapshot restores as before; a failing file still runs the history restore. Live check after the deploy: Keith reopens a project with an image (his CL2 test project) and sees the image in Preview and his save points in History.
+
+### SNAPSHOT-PICK-01 — Reopen restores only a snapshot of the same project
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=SNAPSHOT-PICK-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the CHECKPOINT-LIVE-02 LOCK — not admitted.
+**Task ID:** SNAPSHOT-PICK-01
+**Title:** Reopen restores only a snapshot of the same project
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** CHECKPOINT-LIVE-02.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/projects/projects.service.ts and its spec.
+**Mutexes / resources:** set at admission (expected GATEWAY).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS (then a deploy and Keith's browser check).
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and checkpoints).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the CHECKPOINT-LIVE-02 review: ProjectsService.openProjectIntoSession uses args.snapshotId or else the newest snapshot of the user across all projects; the frontend sends a snapshot id only when the user picked one, so reopening project B may restore project A's newest snapshot. Confirm with a test first; then choose only a snapshot whose label names the same project (the frontend's parseProjectIdFromSnapshotLabel rule), or none. Tests for both cases.
+
 ### STAGING-DEPLOY-CMSEC-01 — Deploy the container-manager security fixes
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=STAGING-DEPLOY-CMSEC-01

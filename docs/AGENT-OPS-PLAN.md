@@ -53,7 +53,7 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 | 35 | USER-TEAMS-01, USER-TEAMS-01B, USER-TEAMS-01C, USER-TEAMS-LIVE-01 | User teams and who hands off to whom (stage-start approved 2026-11-11; 01A team column and validation done 2026-11-11, 01A, 01B and 01C done 2026-11-11; deployed 7ac9084; Keith's live check USER-TEAMS-LIVE-01 passed 2026-11-11; USER-TEAMS-LIVE-02 (the Chief of Staff reads a drafted workflow by name) NOT_READY) |
 | 36 | APPROVAL-SET-01, APPROVAL-SET-01B, APPROVAL-SET-01C, APPROVAL-SET-02 | Approval setting (stage-start approved 2026-11-11; 01A, 01B and 01C done 2026-11-11; deployed 7ac9084; passed USER-TEAMS-LIVE-01 2026-11-11; the Chief of Staff roster setting is APPROVAL-SET-02) |
 | 37 | COS-DRAFTS-01, COS-DRAFTS-01B | Chief of Staff drafts agents and workflows for approval (stage-start approved 2026-11-11; 01A and 01B done 2026-11-11; deployed 7ac9084; passed USER-TEAMS-LIVE-01 2026-11-11, briefing eval 10 of 10) |
-| 38 | STAGING-DEPLOY-FD-02, USER-TEAMS-LIVE-01, CHECKPOINT-LIVE-02 | Stage 4 deployed 2026-11-11 (staging runs 7ac9084 with user teams, approval settings, Chief of Staff drafts and the container-manager fixes; migrations 1806 and 1807); USER-TEAMS-LIVE-01 passed 2026-11-11; next: CHECKPOINT-LIVE-02 (no AI) |
+| 38 | STAGING-DEPLOY-FD-02, USER-TEAMS-LIVE-01, CHECKPOINT-LIVE-02 | Stage 4 deployed 2026-11-11 (staging runs 7ac9084 with user teams, approval settings, Chief of Staff drafts and the container-manager fixes; migrations 1806 and 1807); USER-TEAMS-LIVE-01 passed 2026-11-11; CHECKPOINT-LIVE-02 partial 2026-11-11 (new container-manager paths pass; projects with images do not reopen); next: SNAPSHOT-BINARY-01, then SNAPSHOT-PICK-01 |
 
 **Stage 5 — chat (phase 3)**
 
