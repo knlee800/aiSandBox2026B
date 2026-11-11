@@ -8,6 +8,7 @@ import { randomBytes } from 'crypto';
 import { constants as fsConstants } from 'fs';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { Readable } from 'stream';
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -16,9 +17,9 @@ const CONTAINER_HISTORY_BUNDLE = '/workspace/.git/aisb-history.bundle';
 const CONTAINER_RESTORE_BUNDLE = '/workspace/.aisb-history-restore.bundle';
 
 // CM-HISTORY-LINK-01: the saved bundle leaves the container through docker exec
-// as base64 text (exec stdout is decoded as UTF-8, so raw bytes would not
-// survive), read in bounded slices so container-manager never holds the whole
-// bundle in memory. The size is read once, after git bundle create; the copy
+// as base64 text (SessionsService.execInContainer returns stdout as UTF-8
+// text, so raw bytes would not survive), read in bounded slices so
+// container-manager never holds the whole bundle in memory. The size is read once, after git bundle create; the copy
 // never reads past it.
 export const HISTORY_BUNDLE_BLOCK_BYTES = 1024 * 1024;
 export const HISTORY_BUNDLE_CHUNK_BLOCKS = 8;
@@ -26,8 +27,20 @@ export const HISTORY_BUNDLE_SIZE_COMMAND = `[ -f ${CONTAINER_HISTORY_BUNDLE} ] &
 export const HISTORY_BUNDLE_CHUNK_COMMAND = `dd if=${CONTAINER_HISTORY_BUNDLE} bs=${HISTORY_BUNDLE_BLOCK_BYTES} skip="$SKIP_BLOCKS" count="$COUNT_BLOCKS" 2>/dev/null | base64`;
 const HOST_COPY_BUFFER_BYTES = 1024 * 1024;
 
-// O_CREAT | O_EXCL never follows a symlink and fails on any existing entry
-// (symlink, device node, FIFO, directory or file), atomically. O_NOFOLLOW is
+// CM-EXEC-01: restore stages the stored bundle by piping its bytes into the
+// container's stdin; the host never writes into the bind-mounted workspace.
+// Inside the container: rm -f removes whatever entry is there (a symlink
+// itself, never its target; a directory makes it fail), set -C (noclobber)
+// makes the redirect refuse an existing regular file and create a missing one
+// with O_CREAT|O_EXCL, so a file or link planted after the rm fails the
+// restore instead of being overwritten; cat copies stdin, and wc -c reports
+// what landed, which must equal the bytes sent. Whatever the shell resolves
+// there resolves inside the container's own filesystem, never on the host.
+export const HISTORY_RESTORE_STAGE_COMMAND = `rm -f ${CONTAINER_RESTORE_BUNDLE} && set -C && cat > ${CONTAINER_RESTORE_BUNDLE} && wc -c < ${CONTAINER_RESTORE_BUNDLE}`;
+
+// Save's temporary file in the history directory (host side, outside the
+// workspace). O_CREAT | O_EXCL never follows a symlink and fails on any
+// existing entry (symlink, device node, FIFO, directory or file), atomically. O_NOFOLLOW is
 // added where the platform defines it (Linux, macOS); Windows has none, and
 // O_EXCL alone already refuses an existing entry there.
 const HOST_CREATE_EXCLUSIVE_FLAGS =
@@ -570,13 +583,8 @@ export class GitService {
       return { status: 'none' };
     }
 
-    const hostRestorePath = path.join(
-      this.sessionsService.getWorkspacePath(sessionId),
-      '.aisb-history-restore.bundle',
-    );
-
     try {
-      await this.stageRestoreBundle(this.historyBundlePath(projectId), hostRestorePath);
+      await this.stageRestoreBundle(sessionId, this.historyBundlePath(projectId));
       await this.ensureGitInitializedInContainer(sessionId);
 
       const listed = await this.execWorkspace(
@@ -623,7 +631,6 @@ export class GitService {
 
       return { status: 'restored', head: head.hash };
     } finally {
-      await this.removeHostFile(hostRestorePath);
       await this.removeContainerFile(sessionId, CONTAINER_RESTORE_BUNDLE);
     }
   }
@@ -711,39 +718,47 @@ export class GitService {
   }
 
   /**
-   * CM-HISTORY-LINK-01: put the stored bundle at the host path the container
-   * reads as CONTAINER_RESTORE_BUNDLE without following anything the sandbox
-   * planted there. The parent is the bind-mount root, which the sandbox cannot
-   * replace; the entry itself is removed (unlink removes a symlink, never its
-   * target) and created fresh with O_CREAT | O_EXCL, which fails rather than
-   * follow a symlink or open a device node that appears in between.
+   * CM-EXEC-01: put the stored bundle at CONTAINER_RESTORE_BUNDLE by streaming
+   * it into the container (HISTORY_RESTORE_STAGE_COMMAND), in
+   * HOST_COPY_BUFFER_BYTES reads, so memory stays bounded. The host only reads
+   * the stored bundle in the history directory; it opens no workspace path.
+   * The container must report exactly the number of bytes sent.
    */
-  private async stageRestoreBundle(storedPath: string, hostRestorePath: string): Promise<void> {
+  private async stageRestoreBundle(sessionId: string, storedPath: string): Promise<void> {
+    const source = await fs.open(storedPath, 'r');
     try {
-      await fs.unlink(hostRestorePath);
-    } catch (error) {
-      if (error.code !== 'ENOENT') {
-        throw error;
+      const sent = { bytes: 0 };
+      const staged = await this.sessionsService.execInContainerWithStdin(
+        sessionId,
+        ['sh', '-lc', HISTORY_RESTORE_STAGE_COMMAND],
+        Readable.from(this.readStoredBundle(source, sent), { objectMode: false }),
+        '/workspace',
+      );
+      if (staged.exitCode !== 0) {
+        throw new Error(staged.stderr || 'Failed to stage history bundle');
       }
-    }
-
-    const target = await fs.open(hostRestorePath, HOST_CREATE_EXCLUSIVE_FLAGS, 0o644);
-    try {
-      const source = await fs.open(storedPath, 'r');
-      try {
-        const buffer = Buffer.allocUnsafe(HOST_COPY_BUFFER_BYTES);
-        for (;;) {
-          const { bytesRead } = await source.read(buffer, 0, buffer.length, null);
-          if (bytesRead === 0) {
-            break;
-          }
-          await this.writeAll(target, buffer.subarray(0, bytesRead));
-        }
-      } finally {
-        await source.close();
+      const landed = staged.stdout.trim();
+      if (!/^\d+$/.test(landed) || Number(landed) !== sent.bytes) {
+        throw new Error('History bundle was not staged in full');
       }
     } finally {
-      await target.close();
+      await source.close();
+    }
+  }
+
+  private async *readStoredBundle(
+    source: fs.FileHandle,
+    sent: { bytes: number },
+  ): AsyncGenerator<Buffer> {
+    for (;;) {
+      // A fresh buffer per read: the exec stream may still hold the last one.
+      const buffer = Buffer.allocUnsafe(HOST_COPY_BUFFER_BYTES);
+      const { bytesRead } = await source.read(buffer, 0, buffer.length, null);
+      if (bytesRead === 0) {
+        return;
+      }
+      sent.bytes += bytesRead;
+      yield buffer.subarray(0, bytesRead);
     }
   }
 

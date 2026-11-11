@@ -11,10 +11,14 @@ import * as path from 'path';
 import * as fs from 'fs/promises';
 import * as fsSync from 'fs';
 import { ApiGatewayHttpClient } from '../clients/api-gateway-http.client';
-import { DockerRuntimeService } from '../docker/docker-runtime.service';
+import {
+  DockerRuntimeService,
+  ExecOptions,
+  ExecStdinInput,
+} from '../docker/docker-runtime.service';
 import { GovernanceConfig } from '../config/governance.config';
 import { GovernanceEventsService } from '../governance/governance-events.service';
-import { isSinglePathSegment } from '../files/path-containment';
+import { isPathInside, isSinglePathSegment } from '../files/path-containment';
 
 @Injectable()
 export class SessionsService {
@@ -466,6 +470,83 @@ export class SessionsService {
     env?: Record<string, string>,
     timeoutMs?: number,
   ): Promise<{ exitCode: number; stdout: string; stderr: string }> {
+    return this.runGovernedExec(sessionId, () =>
+      // Execute command (existing logic)
+      this.dockerRuntimeService.execInContainerBySessionId(
+        sessionId,
+        cmd,
+        cwd,
+        env,
+        timeoutMs,
+      ),
+    );
+  }
+
+  /**
+   * CM-EXEC-01: execute a command with `input` streamed into its stdin. The
+   * same governance checks as execInContainer apply, in the same order
+   * (termination, max lifetime, idle timeout, concurrent exec limit), plus a
+   * working directory that must stay inside /workspace. The output cap and
+   * timeout of the docker exec apply.
+   *
+   * @param sessionId - Session UUID
+   * @param cmd - Command array
+   * @param input - Bytes, or a readable stream, for the command's stdin
+   * @param cwd - Working directory inside /workspace (default: /workspace)
+   * @param env - Environment variables
+   * @param timeoutMs - Execution timeout in milliseconds
+   * @param options - Optional smaller output cap
+   * @throws BadRequestException if cwd is outside /workspace
+   * @throws NotFoundException, GoneException, HttpException(429) as execInContainer
+   */
+  async execInContainerWithStdin(
+    sessionId: string,
+    cmd: string[],
+    input: ExecStdinInput,
+    cwd?: string,
+    env?: Record<string, string>,
+    timeoutMs?: number,
+    options?: ExecOptions,
+  ): Promise<{ exitCode: number; stdout: string; stderr: string }> {
+    this.assertWorkspaceWorkingDir(cwd);
+    return this.runGovernedExec(sessionId, () =>
+      this.dockerRuntimeService.execInContainerWithStdinBySessionId(
+        sessionId,
+        cmd,
+        input,
+        cwd,
+        env,
+        timeoutMs,
+        options,
+      ),
+    );
+  }
+
+  /**
+   * CM-EXEC-01: a working directory passed to a governed exec is an absolute
+   * POSIX path at or below /workspace, without `..`, backslashes or NUL.
+   * Undefined keeps the exec default (/workspace).
+   */
+  private assertWorkspaceWorkingDir(cwd: string | undefined): void {
+    if (cwd === undefined) {
+      return;
+    }
+    if (
+      typeof cwd !== 'string' ||
+      !cwd.startsWith('/') ||
+      /[\\\u0000]/.test(cwd) ||
+      cwd.split('/').includes('..') ||
+      !isPathInside('/workspace', cwd, path.posix)
+    ) {
+      throw new BadRequestException('Working directory must be inside /workspace');
+    }
+  }
+
+  /**
+   * The governance checks every exec wrapper runs, in order, around one
+   * docker exec (Tasks 8.2A, 8.3A, 8.3B, 8.4A; SESSION-STALE-01).
+   */
+  private async runGovernedExec<T>(sessionId: string, run: () => Promise<T>): Promise<T> {
     // Task 8.4A: Check termination FIRST (DB-backed, survives restarts)
     this.assertSessionUsableOrThrow(sessionId);
 
@@ -490,14 +571,7 @@ export class SessionsService {
     this.activeExecs.set(sessionId, currentActive + 1);
 
     try {
-      // Execute command (existing logic)
-      const result = await this.dockerRuntimeService.execInContainerBySessionId(
-        sessionId,
-        cmd,
-        cwd,
-        env,
-        timeoutMs,
-      );
+      const result = await run();
 
       // Task 8.3A: Update activity after success
       this.updateLastActivity(sessionId);

@@ -9,6 +9,12 @@ import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals
  * link, and restore must not write through one. The container side is a fake
  * that answers each docker exec the way the real script would; the host side
  * is the real GitService on real temporary directories.
+ *
+ * CM-EXEC-01: restore no longer writes on the host at all. The stored bundle
+ * is piped into the container (a stdin exec running
+ * HISTORY_RESTORE_STAGE_COMMAND), so the tests check that the host touches
+ * no workspace path and that the container-side staging refuses what the
+ * real command refuses.
  */
 
 jest.mock('fs/promises', () => {
@@ -30,11 +36,13 @@ import * as fsSync from 'fs';
 import * as fs from 'fs/promises';
 import * as os from 'os';
 import * as path from 'path';
+import { Readable } from 'stream';
 import {
   GitService,
   HISTORY_BUNDLE_BLOCK_BYTES,
   HISTORY_BUNDLE_CHUNK_COMMAND,
   HISTORY_BUNDLE_SIZE_COMMAND,
+  HISTORY_RESTORE_STAGE_COMMAND,
 } from './git.service';
 
 const SESSION_ID = '11111111-1111-4111-8111-111111111111';
@@ -46,9 +54,12 @@ const SECRET = Buffer.from('host-only secret: must never reach stored history\n'
 const VICTIM = Buffer.from('host-only file: must never be overwritten\n');
 
 type ExecResult = { exitCode: number; stdout: string; stderr: string };
+type StdinExec = jest.Mock<
+  (sessionId: string, cmd: string[], input: Readable, cwd?: string) => Promise<ExecResult>
+>;
 type Exec = jest.Mock<
   (sessionId: string, cmd: string[], cwd?: string, env?: Record<string, string>) => Promise<ExecResult>
->;
+> & { withStdin: StdinExec };
 
 function fsFn(fn: unknown): jest.Mock<any> {
   return fn as jest.Mock<any>;
@@ -135,6 +146,7 @@ describe('CM-HISTORY-LINK-01: checkpoint history on real files and links', () =>
     return Object.assign(Object.create(GitService.prototype), {
       sessionsService: {
         execInContainer,
+        execInContainerWithStdin: execInContainer.withStdin,
         getWorkspacePath: (id: string) => path.join(root, 'workspaces', id),
       },
       checkpointHistoryDir: () => historyDir,
@@ -154,8 +166,10 @@ describe('CM-HISTORY-LINK-01: checkpoint history on real files and links', () =>
     bundle?: Buffer;
     afterBundleCreate?: () => void;
     onListHeads?: (hostRestorePath: string) => void;
+    /** Runs between the staging command's rm -f and its exclusive create. */
+    beforeStageCreate?: (hostRestorePath: string) => void;
   }): Exec {
-    return jest.fn(async (_sessionId: string, cmd: string[], _cwd?: string, env?: Record<string, string>) => {
+    const exec = jest.fn(async (_sessionId: string, cmd: string[], _cwd?: string, env?: Record<string, string>) => {
       const command = cmd[2];
       const ok = (stdout = ''): ExecResult => ({ exitCode: 0, stdout, stderr: '' });
       if (command.includes('git rev-parse --is-inside-work-tree')) {
@@ -203,7 +217,44 @@ describe('CM-HISTORY-LINK-01: checkpoint history on real files and links', () =>
         return ok();
       }
       throw new Error(`Unexpected command: ${command}`);
-    }) as Exec;
+    }) as unknown as Exec;
+
+    // CM-EXEC-01: HISTORY_RESTORE_STAGE_COMMAND as the container shell runs
+    // it: rm -f (a directory makes it fail), then an exclusive create (set -C:
+    // an existing entry fails it), cat of stdin, and wc -c of what landed.
+    exec.withStdin = jest.fn(async (_sessionId: string, cmd: string[], input: Readable) => {
+      const fail = (stderr: string): ExecResult => ({ exitCode: 1, stdout: '', stderr });
+      if (cmd[2] !== HISTORY_RESTORE_STAGE_COMMAND) {
+        throw new Error(`Unexpected stdin command: ${cmd[2]}`);
+      }
+      const chunks: Buffer[] = [];
+      for await (const chunk of input) {
+        chunks.push(Buffer.from(chunk as Buffer));
+      }
+      const file = containerPath(CONTAINER_RESTORE_BUNDLE);
+      if (isLink(file)) {
+        fsSync.unlinkSync(file);
+      } else if (fsSync.existsSync(file)) {
+        if (fsSync.statSync(file).isDirectory()) {
+          return fail(`rm: can't remove '${CONTAINER_RESTORE_BUNDLE}': Is a directory`);
+        }
+        fsSync.rmSync(file);
+      }
+      options.beforeStageCreate?.(file);
+      let fd: number;
+      try {
+        fd = fsSync.openSync(file, 'wx');
+      } catch {
+        return fail(`sh: can't create ${CONTAINER_RESTORE_BUNDLE}: File exists`);
+      }
+      try {
+        fsSync.writeSync(fd, Buffer.concat(chunks));
+      } finally {
+        fsSync.closeSync(fd);
+      }
+      return { exitCode: 0, stdout: `${fsSync.statSync(file).size}\n`, stderr: '' };
+    }) as StdinExec;
+    return exec;
   }
 
   function hostPathsTouched(): string[] {
@@ -218,7 +269,7 @@ describe('CM-HISTORY-LINK-01: checkpoint history on real files and links', () =>
     return fsSync.existsSync(historyDir) ? fsSync.readdirSync(historyDir) : [];
   }
 
-  it('save then restore round trip keeps the bytes, and the host never opens a workspace path on save', async () => {
+  it('save then restore round trip keeps the bytes, and the host never opens a workspace path', async () => {
     const original = bundleBytes(3 * 1024 * 1024 + 17, 5);
     const saved = await service(fakeContainer({ bundle: original })).saveProjectHistory(
       SESSION_ID,
@@ -234,20 +285,26 @@ describe('CM-HISTORY-LINK-01: checkpoint history on real files and links', () =>
     expect(touched.filter((filePath) => filePath.startsWith(path.resolve(workspace)))).toEqual([]);
     expect(fsSync.existsSync(path.join(workspace, '.git', 'aisb-history.bundle'))).toBe(false);
 
-    fsFn(fs.unlink).mockClear();
+    for (const fn of [fs.copyFile, fs.mkdir, fs.open, fs.rename, fs.stat, fs.unlink]) {
+      fsFn(fn).mockClear();
+    }
     let staged: Buffer | null = null;
     let stagedWasPlainFile = false;
-    const restored = await service(
-      fakeContainer({
-        onListHeads: (hostRestorePath) => {
-          const stat = fsSync.lstatSync(hostRestorePath);
-          stagedWasPlainFile = stat.isFile() && !stat.isSymbolicLink();
-          staged = fsSync.readFileSync(hostRestorePath);
-        },
-      }),
-    ).restoreProjectHistory(SESSION_ID, PROJECT_ID);
+    const restoreContainer = fakeContainer({
+      onListHeads: (hostRestorePath) => {
+        const stat = fsSync.lstatSync(hostRestorePath);
+        stagedWasPlainFile = stat.isFile() && !stat.isSymbolicLink();
+        staged = fsSync.readFileSync(hostRestorePath);
+      },
+    });
+    const restored = await service(restoreContainer).restoreProjectHistory(SESSION_ID, PROJECT_ID);
 
     expect(restored).toEqual({ status: 'restored', head: HEAD });
+    expect(restoreContainer.withStdin).toHaveBeenCalledTimes(1);
+    const restoreTouched = hostPathsTouched();
+    expect(restoreTouched).toContain(path.resolve(historyDir, `${PROJECT_ID}.bundle`));
+    expect(restoreTouched.filter((filePath) => filePath.startsWith(path.resolve(workspace)))).toEqual([]);
+    expect(fs.unlink).not.toHaveBeenCalled();
     expect(stagedWasPlainFile).toBe(true);
     expect(staged).not.toBeNull();
     expect((staged as unknown as Buffer).equals(original)).toBe(true);
@@ -298,12 +355,20 @@ describe('CM-HISTORY-LINK-01: checkpoint history on real files and links', () =>
     },
   );
 
+  function writeStored(bytes: Buffer): void {
+    fsSync.mkdirSync(historyDir, { recursive: true });
+    fsSync.writeFileSync(path.join(historyDir, `${PROJECT_ID}.bundle`), bytes);
+  }
+
+  function workspacePathsTouched(): string[] {
+    return hostPathsTouched().filter((filePath) => filePath.startsWith(path.resolve(workspace)));
+  }
+
   itFileLink(
     'restore does not overwrite a host file through a symlink planted at .aisb-history-restore.bundle (needs file symlinks)',
     async () => {
       const stored = bundleBytes(2048, 3);
-      fsSync.mkdirSync(historyDir, { recursive: true });
-      fsSync.writeFileSync(path.join(historyDir, `${PROJECT_ID}.bundle`), stored);
+      writeStored(stored);
       const planted = path.join(workspace, '.aisb-history-restore.bundle');
       fsSync.symlinkSync(path.join(outside, 'victim.txt'), planted, 'file');
 
@@ -323,72 +388,56 @@ describe('CM-HISTORY-LINK-01: checkpoint history on real files and links', () =>
       expect((staged as unknown as Buffer).equals(stored)).toBe(true);
       expect(fsSync.readFileSync(path.join(outside, 'victim.txt')).equals(VICTIM)).toBe(true);
       expect(fsSync.existsSync(planted)).toBe(false);
-    },
-  );
-
-  itFileLink(
-    'restore fails rather than follow a symlink that appears after the old entry is removed (needs file symlinks)',
-    async () => {
-      const stored = bundleBytes(2048, 4);
-      fsSync.mkdirSync(historyDir, { recursive: true });
-      fsSync.writeFileSync(path.join(historyDir, `${PROJECT_ID}.bundle`), stored);
-      const restorePath = path.join(workspace, '.aisb-history-restore.bundle');
-      const actual = jest.requireActual('fs/promises') as typeof import('fs/promises');
-      fsFn(fs.unlink).mockImplementationOnce(async (filePath: string) => {
-        await actual.unlink(filePath).catch(() => undefined);
-        fsSync.symlinkSync(path.join(outside, 'victim.txt'), restorePath, 'file');
-      });
-
-      await expect(
-        service(fakeContainer({})).restoreProjectHistory(SESSION_ID, PROJECT_ID),
-      ).rejects.toMatchObject({ code: 'EEXIST' });
-      expect(fsSync.readFileSync(path.join(outside, 'victim.txt')).equals(VICTIM)).toBe(true);
+      expect(workspacePathsTouched()).toEqual([]);
     },
   );
 
   it('restore fails rather than reuse an entry that appears after the old one is removed', async () => {
-    const stored = bundleBytes(2048, 6);
-    fsSync.mkdirSync(historyDir, { recursive: true });
-    fsSync.writeFileSync(path.join(historyDir, `${PROJECT_ID}.bundle`), stored);
-    const restorePath = path.join(workspace, '.aisb-history-restore.bundle');
+    writeStored(bundleBytes(2048, 6));
     const planted = Buffer.from('entry planted by the sandbox\n');
     let plantedSeen: Buffer | null = null;
-    const actual = jest.requireActual('fs/promises') as typeof import('fs/promises');
-    fsFn(fs.unlink)
-      .mockImplementationOnce(async (filePath: string) => {
-        await actual.unlink(filePath).catch(() => undefined);
-        fsSync.writeFileSync(restorePath, planted);
-      })
-      .mockImplementationOnce(async (filePath: string) => {
-        plantedSeen = fsSync.readFileSync(filePath);
-        await actual.unlink(filePath);
-      });
-    const container = fakeContainer({});
-
-    await expect(service(container).restoreProjectHistory(SESSION_ID, PROJECT_ID)).rejects.toMatchObject({
-      code: 'EEXIST',
+    const container = fakeContainer({
+      beforeStageCreate: (hostRestorePath) => fsSync.writeFileSync(hostRestorePath, planted),
     });
+    const removeRestore = container.getMockImplementation()!;
+    container.mockImplementation(async (sessionId, cmd, cwd, env) => {
+      if (cmd[2] === `rm -f ${CONTAINER_RESTORE_BUNDLE}`) {
+        plantedSeen = fsSync.readFileSync(containerPath(CONTAINER_RESTORE_BUNDLE));
+      }
+      return removeRestore(sessionId, cmd, cwd, env);
+    });
+
+    await expect(service(container).restoreProjectHistory(SESSION_ID, PROJECT_ID)).rejects.toThrow(
+      'File exists',
+    );
+    // The planted entry was neither overwritten nor read as the bundle; the
+    // cleanup removed it inside the container.
     expect((plantedSeen as unknown as Buffer).equals(planted)).toBe(true);
     expect(container.mock.calls.map((call) => call[1][2])).toEqual([`rm -f ${CONTAINER_RESTORE_BUNDLE}`]);
+    expect(fsSync.existsSync(path.join(workspace, '.aisb-history-restore.bundle'))).toBe(false);
+    expect(workspacePathsTouched()).toEqual([]);
   });
 
   it('restore refuses a directory at the restore path and leaves it as it was', async () => {
-    fsSync.mkdirSync(historyDir, { recursive: true });
-    fsSync.writeFileSync(path.join(historyDir, `${PROJECT_ID}.bundle`), bundleBytes(512, 2));
+    writeStored(bundleBytes(512, 2));
     const restorePath = path.join(workspace, '.aisb-history-restore.bundle');
     fsSync.mkdirSync(restorePath);
     fsSync.writeFileSync(path.join(restorePath, 'inside.txt'), 'kept');
 
-    await expect(
-      service(fakeContainer({})).restoreProjectHistory(SESSION_ID, PROJECT_ID),
-    ).rejects.toThrow();
+    const container = fakeContainer({});
+    await expect(service(container).restoreProjectHistory(SESSION_ID, PROJECT_ID)).rejects.toThrow(
+      'Is a directory',
+    );
     expect(fsSync.readFileSync(path.join(restorePath, 'inside.txt'), 'utf8')).toBe('kept');
+    expect(container.mock.calls.map((call) => call[1][2])).not.toContain(
+      `git bundle list-heads ${CONTAINER_RESTORE_BUNDLE}`,
+    );
+    expect(workspacePathsTouched()).toEqual([]);
   });
 
   it('restore replaces a stale regular file left at the restore path', async () => {
     const stored = bundleBytes(4096, 8);
-    fsSync.mkdirSync(historyDir, { recursive: true });
-    fsSync.writeFileSync(path.join(historyDir, `${PROJECT_ID}.bundle`), stored);
+    writeStored(stored);
     fsSync.writeFileSync(path.join(workspace, '.aisb-history-restore.bundle'), 'stale');
 
     let staged: Buffer | null = null;
@@ -398,5 +447,21 @@ describe('CM-HISTORY-LINK-01: checkpoint history on real files and links', () =>
 
     expect(result).toEqual({ status: 'restored', head: HEAD });
     expect((staged as unknown as Buffer).equals(stored)).toBe(true);
+    expect(fsSync.existsSync(path.join(workspace, '.aisb-history-restore.bundle'))).toBe(false);
+    expect(workspacePathsTouched()).toEqual([]);
+  });
+
+  it('restore of a bundle over 8 MiB streams every byte through stdin', async () => {
+    const stored = bundleBytes(9 * 1024 * 1024 + 3, 12);
+    writeStored(stored);
+
+    let staged: Buffer | null = null;
+    const result = await service(
+      fakeContainer({ onListHeads: (hostRestorePath) => (staged = fsSync.readFileSync(hostRestorePath)) }),
+    ).restoreProjectHistory(SESSION_ID, PROJECT_ID);
+
+    expect(result).toEqual({ status: 'restored', head: HEAD });
+    expect((staged as unknown as Buffer).equals(stored)).toBe(true);
+    expect(workspacePathsTouched()).toEqual([]);
   });
 });

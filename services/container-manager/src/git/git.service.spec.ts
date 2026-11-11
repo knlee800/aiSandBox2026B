@@ -3,10 +3,15 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { constants as fsConstants } from 'fs';
+import { Readable } from 'stream';
+import { EXEC_OUTPUT_MAX_BYTES } from '../docker/docker-runtime.service';
 import {
   GitService,
+  HISTORY_BUNDLE_BLOCK_BYTES,
+  HISTORY_BUNDLE_CHUNK_BLOCKS,
   HISTORY_BUNDLE_CHUNK_COMMAND,
   HISTORY_BUNDLE_SIZE_COMMAND,
+  HISTORY_RESTORE_STAGE_COMMAND,
   WORKTREE_DIFF_MAX_CHARS,
   WORKTREE_DIFF_TRUNCATED_MARKER,
 } from './git.service';
@@ -562,10 +567,37 @@ function saveBundleExec(command: string) {
   return null;
 }
 
-function historyHarness(execInContainer: jest.Mock) {
+type StageExec = jest.Mock<any> & { received: () => Buffer };
+
+/**
+ * CM-EXEC-01: the stdin exec the restore stages its bundle through. It reads
+ * the input to the end, as cat would, and answers like
+ * HISTORY_RESTORE_STAGE_COMMAND: the byte count that landed (or a refusal).
+ */
+function stageExec(
+  options: { exitCode?: number; stderr?: string; landed?: (sent: number) => number } = {},
+): StageExec {
+  const received: Buffer[] = [];
+  const fn = jest.fn(async (_sessionId: string, _cmd: string[], input: Readable) => {
+    for await (const chunk of input) {
+      received.push(Buffer.from(chunk as Buffer));
+    }
+    const sent = Buffer.concat(received).length;
+    if (options.exitCode && options.exitCode !== 0) {
+      return { exitCode: options.exitCode, stdout: '', stderr: options.stderr ?? '' };
+    }
+    const landed = options.landed ? options.landed(sent) : sent;
+    return { exitCode: 0, stdout: `${landed}\n`, stderr: '' };
+  }) as StageExec;
+  fn.received = () => Buffer.concat(received);
+  return fn;
+}
+
+function historyHarness(execInContainer: jest.Mock, execInContainerWithStdin: jest.Mock = stageExec()) {
   return Object.assign(Object.create(GitService.prototype), {
     sessionsService: {
       execInContainer,
+      execInContainerWithStdin,
       getWorkspacePath: (sessionId: string) => workspaceFor(sessionId),
     },
   });
@@ -881,27 +913,33 @@ describe('GitService checkpoint history', () => {
       heads: `${BRANCH_HEAD} refs/heads/main\n${BRANCH_HEAD} HEAD\n`,
     });
 
+    const execInContainerWithStdin = stageExec();
+
     const result = await callHistory(
       'restoreProjectHistory',
-      historyHarness(execInContainer),
+      historyHarness(execInContainer, execInContainerWithStdin),
       SESSION_ID,
       PROJECT_ID,
     );
 
     expect(result).toEqual({ status: 'restored', head: BRANCH_HEAD });
-    // CM-HISTORY-LINK-01: any existing entry is unlinked, then the restore
-    // bundle is created exclusively and filled from the stored bundle.
-    const hostRestore = path.join(workspaceFor(SESSION_ID), '.aisb-history-restore.bundle');
+    // CM-EXEC-01: the stored bundle is only read on the host and piped into
+    // the container, which stages it; the host writes nothing.
     expect(fs.copyFile).not.toHaveBeenCalled();
-    expect(fsFn(fs.unlink).mock.calls[0]).toEqual([hostRestore]);
-    expect(fsFn(fs.open).mock.calls).toEqual([
-      [hostRestore, EXCLUSIVE_CREATE_FLAGS, 0o644],
-      [STORED_BUNDLE_PATH, 'r'],
-    ]);
-    expect(fsFn(fs.unlink).mock.invocationCallOrder[0]).toBeLessThan(
-      fsFn(fs.open).mock.invocationCallOrder[0],
+    expect(fs.unlink).not.toHaveBeenCalled();
+    expect(fsFn(fs.open).mock.calls).toEqual([[STORED_BUNDLE_PATH, 'r']]);
+    expect(hostFiles.written.size).toBe(0);
+    expect(execInContainerWithStdin).toHaveBeenCalledTimes(1);
+    expect(execInContainerWithStdin).toHaveBeenCalledWith(
+      SESSION_ID,
+      ['sh', '-lc', HISTORY_RESTORE_STAGE_COMMAND],
+      expect.any(Readable),
+      '/workspace',
     );
-    expect(writtenTo(hostRestore).equals(STORED_BUNDLE_BYTES)).toBe(true);
+    expect(execInContainerWithStdin.received().equals(STORED_BUNDLE_BYTES)).toBe(true);
+    expect(execInContainerWithStdin.mock.invocationCallOrder[0]).toBeLessThan(
+      execInContainer.mock.invocationCallOrder[0],
+    );
     expect(execInContainer).toHaveBeenNthCalledWith(
       1,
       SESSION_ID,
@@ -1135,38 +1173,149 @@ describe('GitService checkpoint history', () => {
       expect(fs.unlink).toHaveBeenCalledWith(tempPath);
     });
 
-    it('fails the restore without writing when the restore path cannot be created exclusively', async () => {
-      const eexist = Object.assign(new Error('EEXIST: file already exists'), { code: 'EEXIST' });
-      fsFn(fs.open).mockImplementation(async (_filePath: string, flags: string | number) => {
-        if (flags === 'r') {
-          throw new Error('the stored bundle must not be opened');
-        }
-        throw eexist;
-      });
+    it('pins the restore staging command: remove the old entry, create exclusively, report the size', () => {
+      expect(HISTORY_RESTORE_STAGE_COMMAND).toBe(
+        `rm -f ${CONTAINER_RESTORE_BUNDLE} && set -C && cat > ${CONTAINER_RESTORE_BUNDLE} && wc -c < ${CONTAINER_RESTORE_BUNDLE}`,
+      );
+    });
+
+    it('keeps every save slice, in base64 with line breaks, under the exec output cap', () => {
+      const sliceBytes = HISTORY_BUNDLE_BLOCK_BYTES * HISTORY_BUNDLE_CHUNK_BLOCKS;
+      const base64Chars = Math.ceil(sliceBytes / 3) * 4;
+      const withNewlines = base64Chars + Math.ceil(base64Chars / 76);
+      expect(withNewlines).toBeLessThan(EXEC_OUTPUT_MAX_BYTES);
+    });
+
+    it.each([
+      [
+        'an entry planted after the rm (noclobber)',
+        "sh: can't create /workspace/.aisb-history-restore.bundle: File exists",
+      ],
+      [
+        'a directory at the restore path',
+        "rm: can't remove '/workspace/.aisb-history-restore.bundle': Is a directory",
+      ],
+    ])('fails the restore when the container refuses to stage the bundle: %s', async (_name, stderr) => {
       const execInContainer = restoreExec({ heads: `${BRANCH_HEAD} HEAD\n` });
 
       await expect(
-        callHistory('restoreProjectHistory', historyHarness(execInContainer), SESSION_ID, PROJECT_ID),
-      ).rejects.toThrow('EEXIST');
+        callHistory(
+          'restoreProjectHistory',
+          historyHarness(execInContainer, stageExec({ exitCode: 1, stderr })),
+          SESSION_ID,
+          PROJECT_ID,
+        ),
+      ).rejects.toThrow(stderr);
       expect(execInContainer).not.toHaveBeenCalledWith(
         SESSION_ID,
-        ['sh', '-lc', FETCH_COMMAND],
+        ['sh', '-lc', `git bundle list-heads ${CONTAINER_RESTORE_BUNDLE}`],
         '/workspace',
       );
+      expect(execInContainer).not.toHaveBeenCalledWith(SESSION_ID, ['sh', '-lc', FETCH_COMMAND], '/workspace');
+      expect(hostFiles.written.size).toBe(0);
       assertRestoreBundlesRemoved(execInContainer);
     });
 
-    it('refuses the restore when the existing entry cannot be removed (a directory)', async () => {
-      const eisdir = Object.assign(new Error('EISDIR: illegal operation on a directory'), {
-        code: 'EISDIR',
-      });
-      fsFn(fs.unlink).mockRejectedValueOnce(eisdir);
+    it('fails with a fallback message when the staging refusal has no stderr', async () => {
       const execInContainer = restoreExec({ heads: `${BRANCH_HEAD} HEAD\n` });
+      await expect(
+        callHistory(
+          'restoreProjectHistory',
+          historyHarness(execInContainer, stageExec({ exitCode: 2 })),
+          SESSION_ID,
+          PROJECT_ID,
+        ),
+      ).rejects.toThrow('Failed to stage history bundle');
+      assertRestoreBundlesRemoved(execInContainer);
+    });
+
+    it.each([
+      ['fewer bytes', (sent: number) => sent - 1],
+      ['more bytes', (sent: number) => sent + 1],
+    ])('fails the restore when the container reports %s than were sent', async (_name, landed) => {
+      const execInContainer = restoreExec({ heads: `${BRANCH_HEAD} HEAD\n` });
+      await expect(
+        callHistory(
+          'restoreProjectHistory',
+          historyHarness(execInContainer, stageExec({ landed })),
+          SESSION_ID,
+          PROJECT_ID,
+        ),
+      ).rejects.toThrow('History bundle was not staged in full');
+      expect(execInContainer).not.toHaveBeenCalledWith(SESSION_ID, ['sh', '-lc', FETCH_COMMAND], '/workspace');
+      assertRestoreBundlesRemoved(execInContainer);
+    });
+
+    it('fails the restore, closes the stored bundle and cleans up when the stdin exec throws', async () => {
+      const close = jest.fn(async () => undefined);
+      fsFn(fs.open).mockImplementation(async () => ({
+        read: jest.fn(async () => ({ bytesRead: 0 })),
+        close,
+      }));
+      const execInContainer = restoreExec({ heads: `${BRANCH_HEAD} HEAD\n` });
+      const failing = jest.fn(async () => {
+        throw new Error('exec stdout output exceeded 16777216 bytes');
+      });
 
       await expect(
-        callHistory('restoreProjectHistory', historyHarness(execInContainer), SESSION_ID, PROJECT_ID),
-      ).rejects.toThrow('EISDIR');
-      expect(fs.open).not.toHaveBeenCalled();
+        callHistory('restoreProjectHistory', historyHarness(execInContainer, failing), SESSION_ID, PROJECT_ID),
+      ).rejects.toThrow('exec stdout output exceeded 16777216 bytes');
+      expect(close).toHaveBeenCalledTimes(1);
+      assertRestoreBundlesRemoved(execInContainer);
+    });
+
+    it('streams a large stored bundle in bounded reads and every byte reaches the container', async () => {
+      const size = 3 * 1024 * 1024 + 7;
+      const stored = Buffer.alloc(size);
+      for (let index = 0; index < size; index += 1) {
+        stored[index] = (index * 13 + 1) & 0xff;
+      }
+      const readLengths: number[] = [];
+      let position = 0;
+      fsFn(fs.open).mockImplementation(async (_filePath: string, flags: string | number) => {
+        expect(flags).toBe('r');
+        return {
+          read: jest.fn(async (buffer: Buffer, offset: number, length: number) => {
+            readLengths.push(length);
+            const count = Math.min(length, size - position);
+            stored.copy(buffer, offset, position, position + count);
+            position += count;
+            return { bytesRead: count, buffer };
+          }),
+          close: jest.fn(async () => undefined),
+        };
+      });
+      const execInContainerWithStdin = stageExec();
+
+      await expect(
+        callHistory(
+          'restoreProjectHistory',
+          historyHarness(restoreExec({ heads: `${BRANCH_HEAD} HEAD\n` }), execInContainerWithStdin),
+          SESSION_ID,
+          PROJECT_ID,
+        ),
+      ).resolves.toEqual({ status: 'restored', head: BRANCH_HEAD });
+      expect(execInContainerWithStdin.received().equals(stored)).toBe(true);
+      expect(Math.max(...readLengths)).toBe(1024 * 1024);
+      expect(readLengths).toHaveLength(5);
+    });
+
+    it('opens, creates or removes no path inside the workspace on the host while restoring', async () => {
+      await callHistory(
+        'restoreProjectHistory',
+        historyHarness(restoreExec({ heads: `${BRANCH_HEAD} refs/heads/main\n${BRANCH_HEAD} HEAD\n` })),
+        SESSION_ID,
+        PROJECT_ID,
+      );
+      const workspace = workspaceFor(SESSION_ID);
+      const touched = [fs.open, fs.stat, fs.copyFile, fs.mkdir, fs.rename, fs.unlink].flatMap((fn) =>
+        fsFn(fn).mock.calls.flatMap((call) => call.filter((arg) => typeof arg === 'string')),
+      );
+      // fs.open(stored, 'r'), then fs.stat(stored): the history directory only.
+      expect(touched).toEqual([STORED_BUNDLE_PATH, 'r', STORED_BUNDLE_PATH]);
+      for (const filePath of touched) {
+        expect(String(filePath).startsWith(workspace)).toBe(false);
+      }
     });
 
     it('keeps the stored history path', () => {
@@ -1504,10 +1653,9 @@ describe('GitService.getWorkingTreeDiff', () => {
 });
 
 function assertRestoreBundlesRemoved(execInContainer: jest.Mock) {
-  const hostRestore = path.join(workspaceFor(SESSION_ID), '.aisb-history-restore.bundle');
-  expect(fs.unlink).toHaveBeenCalledWith(hostRestore);
-  const removed = fsFn(fs.unlink).mock.calls.map((call) => String(call[0]));
-  expect(removed.every((filePath) => filePath.endsWith('.aisb-history-restore.bundle'))).toBe(true);
+  // CM-EXEC-01: the staged bundle lives only in the container; the host never
+  // creates or removes it.
+  expect(fs.unlink).not.toHaveBeenCalled();
   expect(execInContainer).toHaveBeenCalledWith(
     SESSION_ID,
     ['sh', '-lc', `rm -f ${CONTAINER_RESTORE_BUNDLE}`],

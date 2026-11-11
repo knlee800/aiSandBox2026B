@@ -1,6 +1,11 @@
-import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { DockerRuntimeService } from './docker-runtime.service';
+import { Readable, Writable } from 'stream';
+import {
+  DockerRuntimeService,
+  EXEC_OUTPUT_MAX_BYTES,
+  ExecOutputLimitError,
+} from './docker-runtime.service';
 
 const DEFAULT_GOVERNANCE_MOCK = {
   getContainerMemoryLimitBytes: jest.fn().mockReturnValue(256 * 1024 * 1024),
@@ -508,5 +513,341 @@ describe('DockerRuntimeService.getSessionContainerState (SESSION-STALE-01)', () 
     await expect(service.getSessionContainerState('sess-1')).rejects.toBe(dockerError);
     expect(listContainers).toHaveBeenCalledWith({ all: true });
     expect(getContainer).toHaveBeenCalledWith('abc');
+  });
+});
+
+/**
+ * CM-EXEC-01: the exec core on a fake dockerode container. demuxStream hands
+ * the service's stdout and stderr sinks to the test, which writes into them as
+ * the daemon would; emitting 'end' on the exec stream finishes the command.
+ */
+describe('DockerRuntimeService exec output cap, binary stdout and stdin (CM-EXEC-01)', () => {
+  let service: DockerRuntimeService;
+
+  type Sinks = { stdout: Writable; stderr: Writable };
+
+  function fakeExec(options: { exitCode?: number } = {}) {
+    let resolveSinks: (sinks: Sinks) => void = () => undefined;
+    const sinksReady = new Promise<Sinks>((resolve) => {
+      resolveSinks = resolve;
+    });
+    const written: Buffer[] = [];
+    const stream = new Writable({
+      write(chunk: Buffer, _encoding: BufferEncoding, callback: () => void) {
+        written.push(Buffer.from(chunk));
+        callback();
+      },
+    });
+    const destroy = jest.spyOn(stream, 'destroy');
+    const exec = {
+      start: jest.fn(async () => stream),
+      inspect: jest.fn(async () => ({ ExitCode: options.exitCode ?? 0 })),
+    };
+    const container = {
+      inspect: jest.fn(async () => ({ State: { Running: true } })),
+      exec: jest.fn(async () => exec),
+      modem: {
+        demuxStream: jest.fn((_stream: unknown, stdout: Writable, stderr: Writable) => {
+          resolveSinks({ stdout, stderr });
+        }),
+      },
+    };
+    jest.spyOn(service, 'findContainerBySessionId').mockResolvedValue(container as any);
+    return {
+      container,
+      exec,
+      stream,
+      destroy,
+      sinksReady,
+      written: () => Buffer.concat(written),
+      finish: () => stream.emit('end'),
+    };
+  }
+
+  function stdinFinished(stream: Writable): Promise<void> {
+    return stream.writableFinished
+      ? Promise.resolve()
+      : new Promise((resolve) => stream.once('finish', () => resolve()));
+  }
+
+  function writeAcknowledged(sink: Writable, bytes: Buffer): Promise<boolean> {
+    return new Promise((resolve) => {
+      sink.write(bytes, (error?: Error | null) => resolve(!error));
+    });
+  }
+
+  beforeEach(() => {
+    service = new DockerRuntimeService({ ...DEFAULT_GOVERNANCE_MOCK } as any);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('collects stdout and stderr as bytes and decodes them once, keeping a character split across chunks', async () => {
+    const fake = fakeExec({ exitCode: 3 });
+    const pending = service.execInContainerBySessionId('sess-1', ['node', '-v'], '/workspace/app', {
+      A: '1',
+    });
+    const sinks = await fake.sinksReady;
+    const euro = Buffer.from('price: €\n', 'utf8');
+    sinks.stdout.write(euro.subarray(0, 8));
+    sinks.stdout.write(euro.subarray(8));
+    sinks.stderr.write(Buffer.from('warn\n'));
+    fake.finish();
+
+    await expect(pending).resolves.toEqual({ exitCode: 3, stdout: 'price: €\n', stderr: 'warn\n' });
+    // The existing exec contract is unchanged: no stdin, not hijacked.
+    expect(fake.container.exec).toHaveBeenCalledWith({
+      Cmd: ['node', '-v'],
+      AttachStdout: true,
+      AttachStderr: true,
+      WorkingDir: '/workspace/app',
+      Env: ['A=1'],
+    });
+    expect(fake.exec.start).toHaveBeenCalledWith({ Detach: false });
+  });
+
+  it('returns stdout as the exact bytes from the buffer variant (non-UTF-8 bytes survive)', async () => {
+    const fake = fakeExec();
+    const bytes = Buffer.from(Array.from({ length: 256 }, (_value, index) => index));
+    const pending = service.execInContainerBySessionIdBuffer('sess-1', ['cat', '/workspace/a.bin']);
+    const sinks = await fake.sinksReady;
+    sinks.stdout.write(bytes.subarray(0, 100));
+    sinks.stdout.write(bytes.subarray(100));
+    fake.finish();
+
+    const result = await pending;
+    expect(Buffer.isBuffer(result.stdout)).toBe(true);
+    expect(result.stdout.equals(bytes)).toBe(true);
+    expect(result).toMatchObject({ exitCode: 0, stderr: '' });
+    // The string variant would not round-trip the same bytes.
+    expect(Buffer.from(result.stdout.toString('utf8'), 'utf8').equals(bytes)).toBe(false);
+  });
+
+  it('reads a binary file with readFileBufferFromContainer, with the same command, timeout and path checks', async () => {
+    const bytes = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x00, 0xff, 0xfe, 0x80]);
+    jest.spyOn(service, 'findContainerBySessionId').mockResolvedValue({
+      inspect: jest.fn(async () => ({ State: { Running: true } })),
+    } as any);
+    const execSpy = jest
+      .spyOn(service, 'execInContainerBySessionIdBuffer')
+      .mockResolvedValue({ exitCode: 0, stdout: bytes, stderr: '' });
+
+    const result = await service.readFileBufferFromContainer('sess-1', 'public/logo.png');
+
+    expect(result.equals(bytes)).toBe(true);
+    expect(execSpy).toHaveBeenCalledWith(
+      'sess-1',
+      ['cat', '/workspace/public/logo.png'],
+      '/workspace',
+      undefined,
+      30000,
+      undefined,
+    );
+
+    execSpy.mockResolvedValue({ exitCode: 1, stdout: Buffer.alloc(0), stderr: 'No such file' });
+    await expect(service.readFileBufferFromContainer('sess-1', 'missing.png')).rejects.toThrow(
+      'File not found or cannot be read: missing.png',
+    );
+
+    execSpy.mockClear();
+    await expect(service.readFileBufferFromContainer('sess-1', '../etc/passwd')).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+    expect(execSpy).not.toHaveBeenCalled();
+  });
+
+  it('accepts output exactly at the default cap', async () => {
+    const fake = fakeExec();
+    const pending = service.execInContainerBySessionIdBuffer('sess-1', ['cat', 'big']);
+    const sinks = await fake.sinksReady;
+    sinks.stdout.write(Buffer.alloc(EXEC_OUTPUT_MAX_BYTES - 1));
+    sinks.stdout.write(Buffer.alloc(1));
+    fake.finish();
+
+    const result = await pending;
+    expect(result.stdout.length).toBe(EXEC_OUTPUT_MAX_BYTES);
+    expect(fake.destroy).not.toHaveBeenCalled();
+  });
+
+  it('rejects stdout past the cap with ExecOutputLimitError, cuts the stream and never throws from a stream callback', async () => {
+    expect(EXEC_OUTPUT_MAX_BYTES).toBe(16 * 1024 * 1024);
+    const fake = fakeExec();
+    // A larger per-call cap is clamped to the default.
+    const pending = service.execInContainerBySessionId('sess-1', ['cat', 'huge'], '/workspace', undefined, 300000, {
+      maxOutputBytes: EXEC_OUTPUT_MAX_BYTES * 4,
+    });
+    const sinks = await fake.sinksReady;
+    sinks.stdout.write(Buffer.alloc(EXEC_OUTPUT_MAX_BYTES));
+    sinks.stdout.write(Buffer.alloc(1));
+
+    const error = await pending.catch((caught: unknown) => caught);
+    expect(error).toBeInstanceOf(ExecOutputLimitError);
+    expect((error as Error).message).toBe('exec stdout output exceeded 16777216 bytes');
+    expect(error).toMatchObject({ stream: 'stdout', limitBytes: EXEC_OUTPUT_MAX_BYTES });
+    expect(fake.destroy).toHaveBeenCalled();
+
+    // Data still arriving after the cut is acknowledged and dropped: no throw.
+    await expect(writeAcknowledged(sinks.stdout, Buffer.alloc(1024))).resolves.toBe(true);
+    expect(() => fake.finish()).not.toThrow();
+    expect(fake.exec.inspect).not.toHaveBeenCalled();
+  });
+
+  it('rejects stderr past a smaller per-call cap', async () => {
+    const fake = fakeExec();
+    const pending = service.execInContainerBySessionId('sess-1', ['sh', '-c', 'noisy'], '/workspace', undefined, 300000, {
+      maxOutputBytes: 10,
+    });
+    const sinks = await fake.sinksReady;
+    sinks.stdout.write(Buffer.alloc(10));
+    sinks.stderr.write(Buffer.from('0123456789'));
+    sinks.stderr.write(Buffer.from('!'));
+
+    await expect(pending).rejects.toThrow(new ExecOutputLimitError('stderr', 10));
+    expect(fake.destroy).toHaveBeenCalled();
+  });
+
+  it('keeps the cap message through readFileFromContainer on a file over the cap', async () => {
+    const fake = fakeExec();
+    const pending = service.readFileFromContainer('sess-1', 'data/huge.json');
+    const sinks = await fake.sinksReady;
+    sinks.stdout.write(Buffer.alloc(EXEC_OUTPUT_MAX_BYTES + 1));
+
+    await expect(pending).rejects.toThrow(
+      'Failed to read file from container for session sess-1: exec stdout output exceeded 16777216 bytes',
+    );
+  });
+
+  it.each([0, -1, 1.5, Number.NaN])('refuses an invalid per-call cap (%s) before creating an exec', async (cap) => {
+    const fake = fakeExec();
+    await expect(
+      service.execInContainerBySessionId('sess-1', ['true'], '/workspace', undefined, 1000, { maxOutputBytes: cap }),
+    ).rejects.toThrow('Invalid exec output cap');
+    expect(fake.container.exec).not.toHaveBeenCalled();
+  });
+
+  it('times out as before, leaves the stream to drain and keeps nothing more', async () => {
+    const fake = fakeExec();
+    const pending = service.execInContainerBySessionId('sess-1', ['sleep', '10'], '/workspace', undefined, 30);
+    const sinks = await fake.sinksReady;
+    sinks.stdout.write(Buffer.from('partial'));
+
+    await expect(pending).rejects.toThrow(
+      'Failed to execute command in container for session sess-1: Execution timeout after 30ms',
+    );
+    expect(fake.destroy).not.toHaveBeenCalled();
+    await expect(writeAcknowledged(sinks.stdout, Buffer.alloc(EXEC_OUTPUT_MAX_BYTES + 1))).resolves.toBe(true);
+    expect(() => fake.finish()).not.toThrow();
+  });
+
+  it('wraps a stream error as before', async () => {
+    const fake = fakeExec();
+    const pending = service.execInContainerBySessionId('sess-1', ['true']);
+    await fake.sinksReady;
+    fake.stream.emit('error', new Error('socket hang up'));
+
+    await expect(pending).rejects.toThrow(
+      'Failed to execute command in container for session sess-1: socket hang up',
+    );
+  });
+
+  it('stdin variant: attaches stdin, starts hijacked, writes a Buffer input whole and ends stdin', async () => {
+    const fake = fakeExec({ exitCode: 0 });
+    const input = Buffer.from([0x00, 0x01, 0xfe, 0xff, 0x0a, 0x80]);
+    const pending = service.execInContainerWithStdinBySessionId(
+      'sess-1',
+      ['sh', '-c', 'cat > /workspace/x && wc -c < /workspace/x'],
+      input,
+      '/workspace',
+      { K: 'v' },
+    );
+    const sinks = await fake.sinksReady;
+    await stdinFinished(fake.stream);
+    expect(fake.written().equals(input)).toBe(true);
+    expect(fake.stream.writableEnded).toBe(true);
+    sinks.stdout.write(Buffer.from('6\n'));
+    fake.finish();
+
+    await expect(pending).resolves.toEqual({ exitCode: 0, stdout: '6\n', stderr: '' });
+    expect(fake.container.exec).toHaveBeenCalledWith({
+      Cmd: ['sh', '-c', 'cat > /workspace/x && wc -c < /workspace/x'],
+      AttachStdin: true,
+      AttachStdout: true,
+      AttachStderr: true,
+      WorkingDir: '/workspace',
+      Env: ['K=v'],
+    });
+    expect(fake.exec.start).toHaveBeenCalledWith({ hijack: true, stdin: true, Detach: false, Tty: false });
+  });
+
+  it('stdin variant: pipes a readable input with every byte and ends stdin when the input ends', async () => {
+    const fake = fakeExec();
+    const parts = [Buffer.alloc(70_000, 1), Buffer.alloc(3, 2), Buffer.alloc(200_000, 3)];
+    const pending = service.execInContainerWithStdinBySessionId(
+      'sess-1',
+      ['sh', '-c', 'cat > /workspace/y'],
+      Readable.from(parts, { objectMode: false }),
+    );
+    await fake.sinksReady;
+    await stdinFinished(fake.stream);
+    expect(fake.written().equals(Buffer.concat(parts))).toBe(true);
+    fake.finish();
+
+    await expect(pending).resolves.toEqual({ exitCode: 0, stdout: '', stderr: '' });
+  });
+
+  it('stdin variant: the output cap applies and the input is released', async () => {
+    const fake = fakeExec();
+    const input = new Readable({ read() {} });
+    const pending = service.execInContainerWithStdinBySessionId('sess-1', ['cat'], input, '/workspace', undefined, 300000, {
+      maxOutputBytes: 4,
+    });
+    const sinks = await fake.sinksReady;
+    sinks.stdout.write(Buffer.from('12345'));
+
+    await expect(pending).rejects.toThrow('exec stdout output exceeded 4 bytes');
+    expect(input.destroyed).toBe(true);
+    expect(fake.destroy).toHaveBeenCalled();
+  });
+
+  it('stdin variant: the timeout applies and the input is released', async () => {
+    const fake = fakeExec();
+    const input = new Readable({ read() {} });
+    const pending = service.execInContainerWithStdinBySessionId('sess-1', ['cat'], input, '/workspace', undefined, 30);
+    await fake.sinksReady;
+
+    await expect(pending).rejects.toThrow('Execution timeout after 30ms');
+    expect(input.destroyed).toBe(true);
+  });
+
+  it('stdin variant: an input error fails the call', async () => {
+    const fake = fakeExec();
+    const input = new Readable({ read() {} });
+    const pending = service.execInContainerWithStdinBySessionId('sess-1', ['cat'], input);
+    await fake.sinksReady;
+    input.destroy(new Error('stored bundle unreadable'));
+
+    await expect(pending).rejects.toThrow(
+      'Failed to execute command in container for session sess-1: stored bundle unreadable',
+    );
+    expect(fake.destroy).toHaveBeenCalled();
+  });
+
+  it('stdin variant: refuses an input that is neither bytes nor a stream before any exec', async () => {
+    const fake = fakeExec();
+    await expect(
+      service.execInContainerWithStdinBySessionId('sess-1', ['cat'], 'text' as unknown as Buffer),
+    ).rejects.toThrow('Invalid exec input');
+    expect(fake.container.exec).not.toHaveBeenCalled();
+  });
+
+  it('stdin variant: refuses a stopped container before any exec', async () => {
+    const fake = fakeExec();
+    fake.container.inspect.mockResolvedValue({ State: { Running: false } });
+    await expect(
+      service.execInContainerWithStdinBySessionId('sess-1', ['cat'], Buffer.from('x')),
+    ).rejects.toThrow('Container for session sess-1 is not running');
+    expect(fake.container.exec).not.toHaveBeenCalled();
   });
 });

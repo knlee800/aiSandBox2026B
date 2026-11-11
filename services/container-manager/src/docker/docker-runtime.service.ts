@@ -1,7 +1,43 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import Docker from 'dockerode';
+import { Duplex, Readable, Writable } from 'stream';
 import { GovernanceConfig } from '../config/governance.config';
+
+/**
+ * CM-EXEC-01: the most bytes one exec keeps per stream (stdout and stderr
+ * each). Past it the exec is cut off and fails with ExecOutputLimitError,
+ * instead of building an unbounded string (which can throw "Invalid string
+ * length" inside a stream callback and take container-manager down). 16 MiB
+ * holds the largest planned output, an 8 MiB history-bundle slice in base64
+ * (about 10.8 MiB with line breaks), with room to spare. A call may ask for a
+ * smaller cap, never a larger one.
+ */
+export const EXEC_OUTPUT_MAX_BYTES = 16 * 1024 * 1024;
+
+export class ExecOutputLimitError extends Error {
+  constructor(
+    readonly stream: 'stdout' | 'stderr',
+    readonly limitBytes: number,
+  ) {
+    super(`exec ${stream} output exceeded ${limitBytes} bytes`);
+    this.name = 'ExecOutputLimitError';
+  }
+}
+
+export interface ExecOptions {
+  /** Per-stream byte cap for this call; at most EXEC_OUTPUT_MAX_BYTES. */
+  maxOutputBytes?: number;
+}
+
+/** CM-EXEC-01: bytes to stream into an exec's stdin. */
+export type ExecStdinInput = Buffer | Readable;
+
+interface RawExecResult {
+  exitCode: number;
+  stdout: Buffer;
+  stderr: Buffer;
+}
 
 const SANDBOX_IMAGE = process.env.SANDBOX_IMAGE?.trim() || 'node:24-alpine';
 const BROWSER_SANDBOX_IMAGE = 'aisandbox-workspace-browser:local';
@@ -318,13 +354,18 @@ export class DockerRuntimeService implements OnModuleInit {
    * Execute a command inside a container by session ID
    * Task 7.1A: Internal Container Exec Primitive
    * Task 7.1B: Exec Parity & Hardening
+   * CM-EXEC-01: output is collected as bytes, capped per stream at
+   * EXEC_OUTPUT_MAX_BYTES (or a smaller per-call cap), and decoded as UTF-8
+   * once at the end, so a character split across chunks survives.
    *
    * @param sessionId - Session identifier
    * @param cmd - Command array (e.g., ["node", "-v"])
    * @param cwd - Working directory (default: /workspace)
    * @param env - Environment variables as key-value pairs
    * @param timeoutMs - Execution timeout in milliseconds (default: 300000)
+   * @param options - Optional per-call output cap
    * @returns Object with exitCode, stdout, stderr
+   * @throws ExecOutputLimitError if stdout or stderr passes the cap
    * @throws Error if container not found, not running, or exec fails
    */
   async execInContainerBySessionId(
@@ -333,8 +374,87 @@ export class DockerRuntimeService implements OnModuleInit {
     cwd: string = '/workspace',
     env?: Record<string, string>,
     timeoutMs: number = 300000,
+    options?: ExecOptions,
   ): Promise<{ exitCode: number; stdout: string; stderr: string }> {
+    const raw = await this.runExecBySessionId(sessionId, cmd, cwd, env, timeoutMs, options);
+    return {
+      exitCode: raw.exitCode,
+      stdout: raw.stdout.toString('utf8'),
+      stderr: raw.stderr.toString('utf8'),
+    };
+  }
+
+  /**
+   * CM-EXEC-01: same as execInContainerBySessionId, but stdout comes back as
+   * the exact bytes the command wrote (binary safe). stderr stays text.
+   */
+  async execInContainerBySessionIdBuffer(
+    sessionId: string,
+    cmd: string[],
+    cwd: string = '/workspace',
+    env?: Record<string, string>,
+    timeoutMs: number = 300000,
+    options?: ExecOptions,
+  ): Promise<{ exitCode: number; stdout: Buffer; stderr: string }> {
+    const raw = await this.runExecBySessionId(sessionId, cmd, cwd, env, timeoutMs, options);
+    return {
+      exitCode: raw.exitCode,
+      stdout: raw.stdout,
+      stderr: raw.stderr.toString('utf8'),
+    };
+  }
+
+  /**
+   * CM-EXEC-01: run a command with `input` streamed into its stdin (exec with
+   * AttachStdin, started hijacked). A Buffer is written whole; a readable
+   * stream is piped with backpressure. Stdin is ended when the input ends, so
+   * the command sees EOF. The same output cap and timeout apply.
+   */
+  async execInContainerWithStdinBySessionId(
+    sessionId: string,
+    cmd: string[],
+    input: ExecStdinInput,
+    cwd: string = '/workspace',
+    env?: Record<string, string>,
+    timeoutMs: number = 300000,
+    options?: ExecOptions,
+  ): Promise<{ exitCode: number; stdout: string; stderr: string }> {
+    if (!Buffer.isBuffer(input) && typeof (input as Readable)?.pipe !== 'function') {
+      throw new Error(
+        `Failed to execute command in container for session ${sessionId}: Invalid exec input`,
+      );
+    }
+    const raw = await this.runExecBySessionId(sessionId, cmd, cwd, env, timeoutMs, options, input);
+    return {
+      exitCode: raw.exitCode,
+      stdout: raw.stdout.toString('utf8'),
+      stderr: raw.stderr.toString('utf8'),
+    };
+  }
+
+  private resolveExecOutputCap(options?: ExecOptions): number {
+    const requested = options?.maxOutputBytes;
+    if (requested === undefined) {
+      return EXEC_OUTPUT_MAX_BYTES;
+    }
+    if (!Number.isSafeInteger(requested) || requested <= 0) {
+      throw new Error('Invalid exec output cap');
+    }
+    return Math.min(requested, EXEC_OUTPUT_MAX_BYTES);
+  }
+
+  private async runExecBySessionId(
+    sessionId: string,
+    cmd: string[],
+    cwd: string,
+    env: Record<string, string> | undefined,
+    timeoutMs: number,
+    options: ExecOptions | undefined,
+    stdin?: ExecStdinInput,
+  ): Promise<RawExecResult> {
     try {
+      const maxOutputBytes = this.resolveExecOutputCap(options);
+
       // Find container by session ID
       const container = await this.findContainerBySessionId(sessionId);
 
@@ -358,113 +478,163 @@ export class DockerRuntimeService implements OnModuleInit {
       // Create exec instance
       const exec = await container.exec({
         Cmd: cmd,
+        ...(stdin !== undefined ? { AttachStdin: true } : {}),
         AttachStdout: true,
         AttachStderr: true,
         WorkingDir: workingDir,
         Env: envArray,
       });
 
-      // Track timeout ID for cleanup
-      let timeoutId: NodeJS.Timeout | undefined;
-
-      // Execute with timeout
-      const execPromise = new Promise<{
-        exitCode: number;
-        stdout: string;
-        stderr: string;
-      }>(async (resolve, reject) => {
-        // Guard against duplicate resolve/reject calls
-        let settled = false;
-
-        const safeResolve = (result: {
-          exitCode: number;
-          stdout: string;
-          stderr: string;
-        }) => {
-          if (!settled) {
-            settled = true;
-            if (timeoutId) {
-              clearTimeout(timeoutId);
-            }
-            resolve(result);
-          }
-        };
-
-        const safeReject = (error: Error) => {
-          if (!settled) {
-            settled = true;
-            if (timeoutId) {
-              clearTimeout(timeoutId);
-            }
-            reject(error);
-          }
-        };
-
-        try {
-          const stream = await exec.start({ Detach: false });
-
-          let stdout = '';
-          let stderr = '';
-
-          // Dockerode returns a multiplexed stream for exec
-          // We need to demultiplex it
-          const stdoutStream = new (require('stream').Writable)();
-          const stderrStream = new (require('stream').Writable)();
-
-          stdoutStream._write = (
-            chunk: Buffer,
-            encoding: string,
-            callback: () => void,
-          ) => {
-            stdout += chunk.toString();
-            callback();
-          };
-
-          stderrStream._write = (
-            chunk: Buffer,
-            encoding: string,
-            callback: () => void,
-          ) => {
-            stderr += chunk.toString();
-            callback();
-          };
-
-          // Demultiplex the stream
-          container.modem.demuxStream(stream, stdoutStream, stderrStream);
-
-          stream.on('end', async () => {
-            try {
-              // Inspect exec to get exit code
-              const execInspect = await exec.inspect();
-              safeResolve({
-                exitCode: execInspect.ExitCode ?? 0,
-                stdout,
-                stderr,
-              });
-            } catch (error) {
-              safeReject(error);
-            }
-          });
-
-          stream.on('error', safeReject);
-        } catch (error) {
-          safeReject(error);
-        }
+      return await this.collectExecOutput(container, exec, {
+        timeoutMs,
+        maxOutputBytes,
+        stdin,
       });
-
-      // Enforce timeout with cleanup
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        timeoutId = setTimeout(() => {
-          reject(new Error(`Execution timeout after ${timeoutMs}ms`));
-        }, timeoutMs);
-      });
-
-      return await Promise.race([execPromise, timeoutPromise]);
     } catch (error) {
+      if (error instanceof ExecOutputLimitError) {
+        throw error;
+      }
       throw new Error(
         `Failed to execute command in container for session ${sessionId}: ${error.message}`,
       );
     }
+  }
+
+  /**
+   * CM-EXEC-01: start the exec, demultiplex its stream into byte sinks and
+   * settle once. Every stream callback is guarded: nothing it does can throw
+   * (no string is ever built from unbounded output, so no RangeError), and
+   * after settling the sinks drop further data. Past the cap the stream is
+   * destroyed and the call rejects with ExecOutputLimitError. On timeout the
+   * stream is left to drain, as before (the sinks still consume it, so the
+   * command is never blocked on a full pipe), but nothing more is kept.
+   */
+  private collectExecOutput(
+    container: Docker.Container,
+    exec: Docker.Exec,
+    options: { timeoutMs: number; maxOutputBytes: number; stdin?: ExecStdinInput },
+  ): Promise<RawExecResult> {
+    const { timeoutMs, maxOutputBytes, stdin } = options;
+
+    return new Promise<RawExecResult>((resolve, reject) => {
+      let settled = false;
+      let stream: Duplex | undefined;
+      let timeoutId: NodeJS.Timeout | undefined;
+      const sinks = {
+        stdout: { chunks: [] as Buffer[], bytes: 0 },
+        stderr: { chunks: [] as Buffer[], bytes: 0 },
+      };
+
+      const releaseInput = () => {
+        if (stdin && !Buffer.isBuffer(stdin)) {
+          try {
+            if (stream) {
+              stdin.unpipe(stream);
+            }
+            stdin.destroy();
+          } catch {
+            // best effort: the input is no longer needed
+          }
+        }
+      };
+
+      const settle = (error: Error | null, result?: RawExecResult) => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        clearTimeout(timeoutId);
+        sinks.stdout.chunks = [];
+        sinks.stderr.chunks = [];
+        releaseInput();
+        if (error) {
+          reject(error);
+        } else {
+          resolve(result as RawExecResult);
+        }
+      };
+
+      const destroyStream = () => {
+        try {
+          stream?.destroy();
+        } catch {
+          // best effort: the call has already failed
+        }
+      };
+
+      const sink = (name: 'stdout' | 'stderr') =>
+        new Writable({
+          write(chunk: Buffer | string, _encoding: BufferEncoding, callback: () => void) {
+            try {
+              if (!settled) {
+                const bytes = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+                const target = sinks[name];
+                if (target.bytes + bytes.length > maxOutputBytes) {
+                  settle(new ExecOutputLimitError(name, maxOutputBytes));
+                  destroyStream();
+                } else {
+                  target.bytes += bytes.length;
+                  target.chunks.push(bytes);
+                }
+              }
+            } catch (error) {
+              settle(error instanceof Error ? error : new Error(String(error)));
+            }
+            callback();
+          },
+        });
+
+      timeoutId = setTimeout(() => {
+        settle(new Error(`Execution timeout after ${timeoutMs}ms`));
+      }, timeoutMs);
+
+      const startOptions =
+        stdin !== undefined
+          ? { hijack: true, stdin: true, Detach: false, Tty: false }
+          : { Detach: false };
+
+      exec
+        .start(startOptions)
+        .then((started) => {
+          stream = started;
+
+          // Dockerode returns a multiplexed stream for exec
+          // We need to demultiplex it
+          container.modem.demuxStream(started, sink('stdout'), sink('stderr'));
+
+          started.on('end', () => {
+            if (settled) {
+              return;
+            }
+            exec.inspect().then(
+              (execInspect) => {
+                settle(null, {
+                  exitCode: execInspect.ExitCode ?? 0,
+                  stdout: Buffer.concat(sinks.stdout.chunks, sinks.stdout.bytes),
+                  stderr: Buffer.concat(sinks.stderr.chunks, sinks.stderr.bytes),
+                });
+              },
+              (error) => settle(error),
+            );
+          });
+
+          started.on('error', (error: Error) => settle(error));
+
+          if (stdin !== undefined) {
+            if (Buffer.isBuffer(stdin)) {
+              started.end(stdin);
+            } else {
+              stdin.on('error', (error: Error) => {
+                settle(error);
+                destroyStream();
+              });
+              // pipe() ends stdin on the exec when the input ends.
+              stdin.pipe(started);
+            }
+          }
+        })
+        .catch((error) => settle(error));
+    });
   }
 
   /**
@@ -520,6 +690,54 @@ export class DockerRuntimeService implements OnModuleInit {
       }
 
       // Wrap other errors (file-not-found, Docker failures) as HTTP 500
+      throw new Error(
+        `Failed to read file from container for session ${sessionId}: ${error.message}`,
+      );
+    }
+  }
+
+  /**
+   * CM-EXEC-01: binary-safe file read. Same path checks, command, timeout and
+   * errors as readFileFromContainer, but the file comes back as its exact
+   * bytes. A file larger than the output cap fails with the cap's message.
+   *
+   * @param sessionId - Session identifier
+   * @param filePath - Relative path from /workspace
+   * @param options - Optional smaller output cap
+   * @returns File content as a Buffer
+   */
+  async readFileBufferFromContainer(
+    sessionId: string,
+    filePath: string,
+    options?: ExecOptions,
+  ): Promise<Buffer> {
+    try {
+      this.validateWorkspacePath(filePath);
+
+      const container = await this.findContainerBySessionId(sessionId);
+      const inspect = await container.inspect();
+      if (!inspect.State.Running) {
+        throw new Error(`Container for session ${sessionId} is not running`);
+      }
+
+      const result = await this.execInContainerBySessionIdBuffer(
+        sessionId,
+        ['cat', `/workspace/${filePath}`],
+        '/workspace',
+        undefined,
+        30000,
+        options,
+      );
+
+      if (result.exitCode !== 0) {
+        throw new Error(`File not found or cannot be read: ${filePath}`);
+      }
+
+      return result.stdout;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
       throw new Error(
         `Failed to read file from container for session ${sessionId}: ${error.message}`,
       );

@@ -57,11 +57,14 @@ jest.mock('fs/promises', () => {
 });
 
 import * as fsSync from 'fs';
+import * as fsPromises from 'fs/promises';
 import * as path from 'path';
+import { Readable } from 'stream';
 import {
   GitService,
   HISTORY_BUNDLE_CHUNK_COMMAND,
   HISTORY_BUNDLE_SIZE_COMMAND,
+  HISTORY_RESTORE_STAGE_COMMAND,
 } from '../git/git.service';
 import { GitController } from '../git/git.controller';
 import { SessionsService } from '../sessions/sessions.service';
@@ -120,10 +123,18 @@ describe('CM-GIT-HOST-01: no host-side git or process call in container-manager 
   it('the projects module (host tar snapshots, reached only from create) is gone', () => {
     expect(fsSync.existsSync(path.join(SRC_ROOT, 'projects'))).toBe(false);
   });
+
+  it('CM-EXEC-01: git.service.ts never resolves a host workspace path (restore stages through stdin)', () => {
+    const source = fsSync.readFileSync(path.join(SRC_ROOT, 'git', 'git.service.ts'), 'utf8');
+    expect(source).not.toMatch(/getWorkspacePath/);
+    expect(source).not.toMatch(/['"]\.aisb-history-restore\.bundle['"]/);
+    expect(source).toMatch(/execInContainerWithStdin\(/);
+  });
 });
 
 describe('CM-GIT-HOST-01: every checkpoint git path runs inside the container', () => {
   let execInContainer: jest.Mock<any>;
+  let execInContainerWithStdin: jest.Mock<any>;
   let service: GitService;
 
   function commandFor(command: string): { exitCode: number; stdout: string; stderr: string } {
@@ -159,8 +170,20 @@ describe('CM-GIT-HOST-01: every checkpoint git path runs inside the container', 
     childProcessCalls.length = 0;
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
     execInContainer = jest.fn(async (_sessionId: string, cmd: string[]) => commandFor(String(cmd[2])));
+    // CM-EXEC-01: restore pipes the stored bundle into the container.
+    execInContainerWithStdin = jest.fn(async (_sessionId: string, cmd: string[], input: Readable) => {
+      if (cmd[2] !== HISTORY_RESTORE_STAGE_COMMAND) {
+        throw new Error(`unexpected stdin command ${cmd[2]}`);
+      }
+      let bytes = 0;
+      for await (const chunk of input) {
+        bytes += (chunk as Buffer).length;
+      }
+      return { exitCode: 0, stdout: `${bytes}\n`, stderr: '' };
+    });
     const sessionsService = {
       execInContainer,
+      execInContainerWithStdin,
       getSession: jest.fn(async () => ({ id: SESSION_ID })),
       getWorkspacePath: (id: string) => path.join(SRC_ROOT, '..', 'workspaces-test', id),
     };
@@ -178,6 +201,11 @@ describe('CM-GIT-HOST-01: every checkpoint git path runs inside the container', 
       expect(call[0]).toBe(SESSION_ID);
       expect((call[1] as string[]).slice(0, 2)).toEqual(['sh', '-lc']);
       expect(call[2]).toBe('/workspace');
+    }
+    for (const call of execInContainerWithStdin.mock.calls) {
+      expect(call[0]).toBe(SESSION_ID);
+      expect((call[1] as string[]).slice(0, 2)).toEqual(['sh', '-lc']);
+      expect(call[3]).toBe('/workspace');
     }
   }
 
@@ -208,10 +236,24 @@ describe('CM-GIT-HOST-01: every checkpoint git path runs inside the container', 
       status: 'saved',
       bytes: 1024,
     });
+    const fsMocks = [fsPromises.open, fsPromises.unlink, fsPromises.rename, fsPromises.mkdir, fsPromises.copyFile];
+    for (const fn of fsMocks) {
+      (fn as unknown as jest.Mock).mockClear();
+    }
     expect(await service.restoreProjectHistory(SESSION_ID, PROJECT_ID)).toEqual({
       status: 'restored',
       head: HEAD,
     });
     expectContainerOnly();
+    // CM-EXEC-01: restore only reads the stored bundle on the host; it opens
+    // nothing for writing and creates, renames or removes nothing.
+    expect(execInContainerWithStdin).toHaveBeenCalledTimes(1);
+    const opens = (fsPromises.open as unknown as jest.Mock).mock.calls;
+    expect(opens).toHaveLength(1);
+    expect(opens[0][1]).toBe('r');
+    expect(String(opens[0][0])).toContain('_checkpoint-history');
+    for (const fn of [fsPromises.unlink, fsPromises.rename, fsPromises.mkdir, fsPromises.copyFile]) {
+      expect(fn).not.toHaveBeenCalled();
+    }
   });
 });

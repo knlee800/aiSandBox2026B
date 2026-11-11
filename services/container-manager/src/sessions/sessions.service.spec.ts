@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { GoneException } from '@nestjs/common';
+import { BadRequestException, GoneException, HttpException } from '@nestjs/common';
 
 const mockPrepare = jest.fn();
 
@@ -856,6 +856,7 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
   const maxLifetimeMs = 60 * 60 * 1000;
   const allOperations = [
     'execInContainer',
+    'execInContainerWithStdin',
     'readFileFromContainer',
     'writeFileToContainer',
     'deleteFileFromContainer',
@@ -865,6 +866,7 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
   ] as const;
   const coveredOperations = [
     'execInContainer',
+    'execInContainerWithStdin',
     'writeFileToContainer',
     'listDirectoryInContainer',
   ] as const;
@@ -873,6 +875,7 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
 
   let service: SessionsService;
   let mockExecInContainerBySessionId: jest.Mock<any>;
+  let mockExecInContainerWithStdinBySessionId: jest.Mock<any>;
   let mockReadFileFromContainer: jest.Mock<any>;
   let mockWriteFileToContainer: jest.Mock<any>;
   let mockDeleteFileFromContainer: jest.Mock<any>;
@@ -907,6 +910,8 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
     switch (name) {
       case 'execInContainer':
         return mockExecInContainerBySessionId;
+      case 'execInContainerWithStdin':
+        return mockExecInContainerWithStdinBySessionId;
       case 'readFileFromContainer':
         return mockReadFileFromContainer;
       case 'writeFileToContainer':
@@ -930,6 +935,8 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
     switch (name) {
       case 'execInContainer':
         return service.execInContainer(sessionId, ['echo', 'hi']);
+      case 'execInContainerWithStdin':
+        return service.execInContainerWithStdin(sessionId, ['cat'], Buffer.from('hi'));
       case 'readFileFromContainer':
         return service.readFileFromContainer(sessionId, 'README.md');
       case 'writeFileToContainer':
@@ -984,6 +991,11 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
     mockExecInContainerBySessionId = jest.fn<any>().mockResolvedValue({
       exitCode: 0,
       stdout: 'ok',
+      stderr: '',
+    });
+    mockExecInContainerWithStdinBySessionId = jest.fn<any>().mockResolvedValue({
+      exitCode: 0,
+      stdout: '2\n',
       stderr: '',
     });
     mockReadFileFromContainer = jest.fn<any>().mockResolvedValue('file-content');
@@ -1069,6 +1081,7 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
       } as any,
       {
         execInContainerBySessionId: mockExecInContainerBySessionId,
+        execInContainerWithStdinBySessionId: mockExecInContainerWithStdinBySessionId,
         readFileFromContainer: mockReadFileFromContainer,
         writeFileToContainer: mockWriteFileToContainer,
         deleteFileFromContainer: mockDeleteFileFromContainer,
@@ -1103,7 +1116,7 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
       const sessionId = `sess-missing-${name}`;
       dockerMock(name).mockRejectedValue(new Error(`${name} failed`));
       mockGetSessionContainerState.mockResolvedValue('missing');
-      if (name === 'execInContainer') {
+      if (name === 'execInContainer' || name === 'execInContainerWithStdin') {
         tracking().activeExecs.set(sessionId, 1);
       }
 
@@ -1136,7 +1149,7 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
       const sessionId = `sess-stopped-${name}`;
       dockerMock(name).mockRejectedValue(new Error(`${name} failed`));
       mockGetSessionContainerState.mockResolvedValue('stopped');
-      if (name === 'execInContainer') {
+      if (name === 'execInContainer' || name === 'execInContainerWithStdin') {
         tracking().activeExecs.set(sessionId, 1);
       }
 
@@ -1205,7 +1218,7 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
       const original = new Error(`${name} failed while running`);
       dockerMock(name).mockRejectedValue(original);
       mockGetSessionContainerState.mockResolvedValue('running');
-      if (name === 'execInContainer') {
+      if (name === 'execInContainer' || name === 'execInContainerWithStdin') {
         tracking().activeExecs.set(sessionId, 1);
       }
 
@@ -1218,7 +1231,7 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
       expect(mockNotifySessionStopped).not.toHaveBeenCalled();
       expect(tracking().scheduledContainerCleanups.has(sessionId)).toBe(false);
       expect(tracking().lastActivity.has(sessionId)).toBe(true);
-      if (name === 'execInContainer') {
+      if (name === 'execInContainer' || name === 'execInContainerWithStdin') {
         expect(tracking().activeExecs.get(sessionId)).toBe(1);
       } else {
         expect(tracking().activeExecs.has(sessionId)).toBe(false);
@@ -1234,7 +1247,7 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
       const stateError = new Error('docker daemon unavailable');
       dockerMock(name).mockRejectedValue(original);
       mockGetSessionContainerState.mockRejectedValue(stateError);
-      if (name === 'execInContainer') {
+      if (name === 'execInContainer' || name === 'execInContainerWithStdin') {
         tracking().activeExecs.set(sessionId, 1);
       }
 
@@ -1246,7 +1259,7 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
       expect(mockNotifySessionStopped).not.toHaveBeenCalled();
       expect(tracking().scheduledContainerCleanups.has(sessionId)).toBe(false);
       expect(tracking().lastActivity.has(sessionId)).toBe(true);
-      if (name === 'execInContainer') {
+      if (name === 'execInContainer' || name === 'execInContainerWithStdin') {
         expect(tracking().activeExecs.get(sessionId)).toBe(1);
       }
     },
@@ -1299,7 +1312,7 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
       expect(mockFindContainerBySessionId).not.toHaveBeenCalled();
       expect(mockNotifySessionStopped).not.toHaveBeenCalled();
       expect(tracking().lastActivity.has(sessionId)).toBe(true);
-      if (name === 'execInContainer') {
+      if (name === 'execInContainer' || name === 'execInContainerWithStdin') {
         expect(tracking().activeExecs.has(sessionId)).toBe(false);
       }
     },
@@ -1322,5 +1335,106 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
       undefined,
       undefined,
     );
+  });
+
+  describe('execInContainerWithStdin (CM-EXEC-01)', () => {
+    it('passes the command, input, cwd, env, timeout and cap through and returns the result', async () => {
+      const sessionId = 'sess-stdin-ok';
+      const input = Buffer.from([0x00, 0xff]);
+
+      const result = await service.execInContainerWithStdin(
+        sessionId,
+        ['sh', '-lc', 'cat > /workspace/x'],
+        input,
+        '/workspace/app',
+        { K: 'v' },
+        5000,
+        { maxOutputBytes: 64 },
+      );
+
+      expect(result).toEqual({ exitCode: 0, stdout: '2\n', stderr: '' });
+      expect(mockExecInContainerWithStdinBySessionId).toHaveBeenCalledWith(
+        sessionId,
+        ['sh', '-lc', 'cat > /workspace/x'],
+        input,
+        '/workspace/app',
+        { K: 'v' },
+        5000,
+        { maxOutputBytes: 64 },
+      );
+      expect(mockExecInContainerBySessionId).not.toHaveBeenCalled();
+      expect(tracking().lastActivity.has(sessionId)).toBe(true);
+      expect(tracking().activeExecs.has(sessionId)).toBe(false);
+    });
+
+    it.each([undefined, '/workspace', '/workspace/', '/workspace/app/src', '/workspace/..config'])(
+      'accepts the working directory %s',
+      async (cwd) => {
+        await expect(
+          service.execInContainerWithStdin('sess-stdin-cwd-ok', ['cat'], Buffer.from('x'), cwd),
+        ).resolves.toMatchObject({ exitCode: 0 });
+      },
+    );
+
+    it.each([
+      '',
+      'workspace',
+      '/',
+      '/etc',
+      '/workspacex',
+      '/workspace/../etc',
+      '/workspace/a/../../etc',
+      '/workspace\\..\\etc',
+      '/workspace/a\u0000b',
+    ])('refuses the working directory %j before any session check or exec', async (cwd) => {
+      await expect(
+        service.execInContainerWithStdin('sess-stdin-cwd-bad', ['cat'], Buffer.from('x'), cwd),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(mockAssertSessionGet).not.toHaveBeenCalled();
+      expect(mockExecInContainerWithStdinBySessionId).not.toHaveBeenCalled();
+    });
+
+    it('refuses an unknown session before any exec', async () => {
+      mockAssertSessionGet.mockReturnValue(undefined);
+      await expect(
+        service.execInContainerWithStdin('sess-stdin-unknown', ['cat'], Buffer.from('x')),
+      ).rejects.toThrow('Session sess-stdin-unknown not found');
+      expect(mockExecInContainerWithStdinBySessionId).not.toHaveBeenCalled();
+    });
+
+    it('enforces the concurrent exec limit with 429 and leaves the counter as it was', async () => {
+      const sessionId = 'sess-stdin-busy';
+      tracking().activeExecs.set(sessionId, 3);
+
+      let caught: unknown;
+      try {
+        await service.execInContainerWithStdin(sessionId, ['cat'], Buffer.from('x'));
+      } catch (error) {
+        caught = error;
+      }
+
+      expect(caught).toBeInstanceOf(HttpException);
+      expect((caught as HttpException).getStatus()).toBe(429);
+      expect(mockExecInContainerWithStdinBySessionId).not.toHaveBeenCalled();
+      expect(tracking().activeExecs.get(sessionId)).toBe(3);
+    });
+
+    it('shares the exec counter with execInContainer while it runs', async () => {
+      const sessionId = 'sess-stdin-shared';
+      tracking().activeExecs.set(sessionId, 2);
+      let release: (value: unknown) => void = () => undefined;
+      mockExecInContainerWithStdinBySessionId.mockImplementation(
+        () => new Promise((resolve) => (release = resolve)),
+      );
+
+      const running = service.execInContainerWithStdin(sessionId, ['cat'], Buffer.from('x'));
+      await new Promise<void>((resolve) => setImmediate(resolve));
+      expect(tracking().activeExecs.get(sessionId)).toBe(3);
+      await expect(service.execInContainer(sessionId, ['echo', 'hi'])).rejects.toBeInstanceOf(HttpException);
+
+      release({ exitCode: 0, stdout: '', stderr: '' });
+      await running;
+      expect(tracking().activeExecs.get(sessionId)).toBe(2);
+    });
   });
 });
