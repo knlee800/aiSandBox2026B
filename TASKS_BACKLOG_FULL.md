@@ -88370,7 +88370,7 @@ taskId=CM-DIFF-CAP-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-11 — under Keith's "do not stop!!! ... keep looking for the next task to start". Was: READY — registered 2026-11-11 by the CM-EXEC-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-11. LANE-DONE and LOCKED by the control plane; Lane 2 and CONTAINER-MANAGER released. A commit diff over 8 MiB (and a working-tree diff over 1 MiB) is bounded inside the container with head -c and git's own exit status kept (dash-safe), cut at the last newline and marked truncated with diffLimitBytes; under the limit byte-identical; commitHash and the parent hash validated as full hex and passed as quoted variables (was interpolated); 17 new tests; opus subagent, cherry-picked as 22819cd; control-plane rerun on the branch and main: container-manager 719 passed, 2 skipped, build 0. Not deployed (rides STAGING-DEPLOY-FD-02). Checkpoint: docs/CM-DIFF-CAP-01-CHECKPOINT.md. FOLLOWUPS: 2 registered (CM-DIFF-NOTICE-01, CM-UNTRACKED-DASH-01) / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 2 — 2026-11-11 — under Keith's "do not stop!!! ... keep looking for the next task to start". Was: READY — registered 2026-11-11 by the CM-EXEC-01 LOCK — not admitted.
 **Task ID:** CM-DIFF-CAP-01
 **Title:** Large diffs come back truncated, not failed
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -88387,6 +88387,54 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** From the CM-EXEC-01 worker: since the 16 MiB exec cap, a working-tree diff or commit diff over 16 MiB fails with the cap error where it used to come back; bound the diff inside the container (for example head -c with pipefail) and mark it truncated, so getWorkingTreeDiff and getDiff return a clearly truncated diff instead of an error. Tests.
+
+### CM-DIFF-NOTICE-01 — Show when a checkpoint diff was cut
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CM-DIFF-NOTICE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the CM-DIFF-CAP-01 LOCK — not admitted.
+**Task ID:** CM-DIFF-NOTICE-01
+**Title:** Show when a checkpoint diff was cut
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** CM-DIFF-CAP-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway (the checkpoint diff mapping in getCheckpointDiff and its spec), frontend History diff view and its test, the three message files.
+**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the CM-DIFF-CAP-01 worker: container-manager's getDiff now returns optional truncated: true and diffLimitBytes when a commit diff was cut at 8 MiB, but the gateway's getCheckpointDiff copies only commitHash, parentHash and files, so nobody sees it; pass the two fields through and show a translated notice on the History diff view (en, zh-TW, zh-CN). Mutexes expected GATEWAY, FRONTEND, I18N.
+
+### CM-UNTRACKED-DASH-01 — Untracked files in the working-tree diff under dash
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CM-UNTRACKED-DASH-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the CM-DIFF-CAP-01 LOCK — not admitted.
+**Task ID:** CM-UNTRACKED-DASH-01
+**Title:** Untracked files in the working-tree diff under dash
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** CM-DIFF-CAP-01.
+**Primary write scope:** PROVISIONAL: services/container-manager/src/git/git.service.ts and its spec.
+**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the CM-DIFF-CAP-01 worker: WORKTREE_UNTRACKED_DIFF_SCRIPT uses set -o pipefail and read -d '', which dash (the /bin/sh of the Debian browser image) rejects, so in browser-image sessions untracked files are probably left out of the working-tree diff silently (the failure is non-fatal by design); rewrite it POSIX-sh safe and test it under dash and busybox sh.
 
 ### CHECKPOINT-LIVE-02 — Keith checkpoint restore smoke through the container stdin
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
