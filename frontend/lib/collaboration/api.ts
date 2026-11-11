@@ -154,9 +154,11 @@ export function collaborationAutoApprovedText(
   if (!approved || handoff.decidedBy === null) return null;
   if (approved.mode === 'credits') {
     if (typeof approved.estimateCredits === 'number' && typeof approved.creditLimit === 'number') {
+      const amount = (count: number): string =>
+        fillTemplate(t(count === 1 ? 'creditAmountOne' : 'creditAmountMany'), { count: String(count) });
       return fillTemplate(t('autoApprovedCredits'), {
-        estimate: String(approved.estimateCredits),
-        limit: String(approved.creditLimit),
+        estimate: amount(approved.estimateCredits),
+        limit: amount(approved.creditLimit),
       });
     }
     return t('autoApprovedCreditsShort');

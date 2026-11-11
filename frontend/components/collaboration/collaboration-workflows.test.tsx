@@ -2443,7 +2443,21 @@ describe('APPROVAL-SET-01C automatic approval on the Team page', () => {
       { decidedBy: owner, autoApproved: { mode: 'credits', estimateCredits: 6, creditLimit: 20 } },
       tEn,
     );
-    assert.equal(credits, 'Approved automatically: the last step used about 6 credits, under your limit of 20');
+    assert.equal(credits, 'Approved automatically: the last step used about 6 credits, under your limit of 20 credits');
+    const amounts = (estimate: number, limit: number) =>
+      collaborationAutoApprovedText(
+        { decidedBy: owner, autoApproved: { mode: 'credits', estimateCredits: estimate, creditLimit: limit } },
+        tEn,
+      );
+    assert.equal(amounts(1, 2), 'Approved automatically: the last step used about 1 credit, under your limit of 2 credits');
+    assert.equal(amounts(2, 1), 'Approved automatically: the last step used about 2 credits, under your limit of 1 credit');
+    for (const catalog of [CATALOGS[1][1], CATALOGS[2][1]]) {
+      const zh = collaborationAutoApprovedText(
+        { decidedBy: owner, autoApproved: { mode: 'credits', estimateCredits: 1, creditLimit: 20 } },
+        tFor(catalog),
+      );
+      assert.ok(zh && zh.includes('1 ') && zh.includes('20 ') && !zh.includes('{') && !zh.includes('MISSING'));
+    }
     assert.equal(
       collaborationAutoApprovedText(
         { decidedBy: owner, autoApproved: { mode: 'credits', estimateCredits: null, creditLimit: null } },
@@ -2516,6 +2530,8 @@ describe('APPROVAL-SET-01C automatic approval on the Team page', () => {
       'autoApprovedReadOnly',
       'autoApprovedCredits',
       'autoApprovedCreditsShort',
+      'creditAmountOne',
+      'creditAmountMany',
       'autoApprovalWaitingWrites',
       'autoApprovalWaitingUnknownCost',
       'autoApprovalWaitingOverLimit',

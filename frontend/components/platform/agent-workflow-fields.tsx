@@ -558,7 +558,9 @@ export function WorkflowAdvancedFields(
               return (
                 <label
                   key={mode}
-                  className="flex cursor-pointer items-center gap-2 text-sm text-slate-200"
+                  className={`flex items-center gap-2 py-0.5 text-sm text-slate-200 ${
+                    disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                  }`}
                   data-testid={`agent-workflow-approval-option-${mode}`}
                 >
                   <input
@@ -589,6 +591,7 @@ export function WorkflowAdvancedFields(
                 onChange={(e) => onChange({ approvalCreditLimit: e.target.value })}
                 placeholder={t('approvalLimitPlaceholder')}
                 disabled={disabled}
+                aria-invalid={errors.approval ? true : undefined}
                 aria-describedby={errors.approval ? 'agent-workflow-approval-error' : undefined}
                 className={workflowInputClasses}
                 data-testid="agent-workflow-approval-limit"
@@ -596,7 +599,10 @@ export function WorkflowAdvancedFields(
             </div>
           ) : null}
           <p className={hintClasses} data-testid="agent-workflow-approval-never">
-            {t('approvalNever')} {t('approvalHint')}
+            {t('approvalNever')}
+          </p>
+          <p className={hintClasses} data-testid="agent-workflow-approval-first">
+            {t('approvalHint')}
           </p>
           {draft.approvalMode !== 'every' && draft.teamMemberIds.length === 0 ? (
             <p className="mt-1 flex items-start gap-2 text-xs text-amber-200" role="status" data-testid="agent-workflow-approval-no-team">

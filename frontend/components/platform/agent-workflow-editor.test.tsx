@@ -1082,6 +1082,7 @@ describe('APPROVAL-SET-01C approval fieldset rendering', () => {
     assert.doesNotMatch(inputTag(html, 'agent-workflow-approval-credits'), /checked=""/);
     assert.doesNotMatch(html, /data-testid="agent-workflow-approval-limit"/);
     assert.ok(html.includes(enT('approvalNever')));
+    assert.match(html, /data-testid="agent-workflow-approval-first"[^>]*>The first step/);
     assert.ok(html.includes(enT('approvalHint')));
     assert.ok(html.includes(enT('teamApprovalHint')));
     assert.ok(!html.includes(enT('teamApprovalHintAuto')));
