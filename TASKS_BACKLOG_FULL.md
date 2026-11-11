@@ -87025,22 +87025,22 @@ taskId=USER-TEAMS-01B
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-11 by the USER-TEAMS-01 stage-start approval — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-11. Was: READY — registered 2026-11-11 by the USER-TEAMS-01 stage-start approval — not admitted.
 **Task ID:** USER-TEAMS-01B
 **Title:** User-team runs with report-back
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP (stage-start shared with USER-TEAMS-01).
-**Start condition:** NOT_READY. Ready when: USER-TEAMS-01 LOCKED; the control plane may start it under Keith's 2026-11-11 approval of the stage-start.
+**Start condition:** READY (USER-TEAMS-01 LOCKED 2026-11-11). Was: NOT_READY. Ready when: USER-TEAMS-01 LOCKED; the control plane may start it under Keith's 2026-11-11 approval of the stage-start.
 **Depends on:** USER-TEAMS-01.
-**Primary write scope:** PROVISIONAL, set at admission from the stage-start (expected: services/api-gateway/src/orchestration/ (orchestration.contracts.ts, collaboration-front-door.ts, orchestration.service.ts, collaboration.controller.ts and their specs, orchestration/__tests__ key-set pins)).
-**Mutexes / resources:** set at admission (expected GATEWAY).
+**Primary write scope:** set 2026-11-11: services/api-gateway/src/orchestration/orchestration.contracts.ts, services/api-gateway/src/orchestration/collaboration-front-door.ts, services/api-gateway/src/orchestration/collaboration-front-door.spec.ts, services/api-gateway/src/orchestration/orchestration.service.ts, services/api-gateway/src/orchestration/collaboration.controller.ts, services/api-gateway/src/orchestration/collaboration.controller.spec.ts, services/api-gateway/src/orchestration/internal-collaboration.controller.spec.ts, services/api-gateway/src/orchestration/__tests__/orchestration.service.spec.ts, services/api-gateway/src/orchestration/__tests__/orchestration.persistence.spec.ts, services/api-gateway/src/orchestration/__tests__/orchestration.canary.spec.ts.
+**Mutexes / resources:** GATEWAY.
 **Hot-file leases:** none.
-**Shared contracts:** set at admission.
+**Shared contracts:** HARNESS_ENTITLEMENT_PROOF_V1 read, not changed (no job key added or removed).
 **Evidence class:** LOCAL-TESTS.
-**Revert isolation:** set at admission.
+**Revert isolation:** with an empty team the old path runs; revert the commit.
 **saturationClass:** OPTIONAL (as for USER-TEAMS-01; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09 and this stage-start 2026-11-11).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** Stage-start docs/USER-TEAMS-01-STAGE-START.md D4 to D16 and the 01B files: teamLeadId on pending_job (server-set, copied with agents); the front-door code takes the lead as a parameter; a workflow start with a team builds the agent list, rosterWorkflows and roster.used/skipped; the report-back child of a workflow lead copies the lead's first-step snapshot; members' tags refused as roster_reply; members' own teams never read at run time; limits unchanged. HARNESS_ENTITLEMENT_PROOF_V1 read, not changed. With an empty team the run is today's run; the Chief of Staff path is unchanged. Implementer: opus.
 
 ### USER-TEAMS-01C — User-team form and Team page
@@ -87049,22 +87049,22 @@ taskId=USER-TEAMS-01C
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-11 by the USER-TEAMS-01 stage-start approval — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-11. Was: READY — registered 2026-11-11 by the USER-TEAMS-01 stage-start approval — not admitted.
 **Task ID:** USER-TEAMS-01C
 **Title:** User-team form and Team page
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP (stage-start shared with USER-TEAMS-01).
-**Start condition:** NOT_READY. Ready when: USER-TEAMS-01 LOCKED; the control plane may start it under Keith's 2026-11-11 approval of the stage-start.
+**Start condition:** READY (USER-TEAMS-01 LOCKED 2026-11-11). Was: NOT_READY. Ready when: USER-TEAMS-01 LOCKED; the control plane may start it under Keith's 2026-11-11 approval of the stage-start.
 **Depends on:** USER-TEAMS-01.
-**Primary write scope:** PROVISIONAL, set at admission from the stage-start (expected: frontend/components/platform/ (agent-workflow-fields.tsx, agent-workflow-model.ts, create-agent-form.tsx, agent-workflow-summary.tsx and tests), frontend/components/collaboration/ (collaboration-roster.ts, collaboration-page.tsx, collaboration-workflows.test.tsx), frontend/hooks/useUserAgents.ts, the three message files).
-**Mutexes / resources:** set at admission (expected FRONTEND, I18N).
+**Primary write scope:** set 2026-11-11: frontend/components/platform/agent-workflow-fields.tsx, frontend/components/platform/agent-workflow-model.ts, frontend/components/platform/create-agent-form.tsx, frontend/components/platform/agent-workflow-summary.tsx, frontend/components/platform/agent-workflow-editor.test.tsx, frontend/components/platform/agent-workflow-summary.test.tsx, frontend/components/collaboration/collaboration-roster.ts, frontend/components/collaboration/collaboration-page.tsx, frontend/components/collaboration/collaboration-view.tsx, frontend/components/collaboration/collaboration-workflows.test.tsx, frontend/hooks/useUserAgents.ts, frontend/hooks/useUserAgents.test.ts, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json.
+**Mutexes / resources:** FRONTEND, I18N.
 **Hot-file leases:** none.
-**Shared contracts:** set at admission.
+**Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
-**Revert isolation:** set at admission.
+**Revert isolation:** the form and labels only; the column and routes stay callable.
 **saturationClass:** OPTIONAL (as for USER-TEAMS-01; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09 and this stage-start 2026-11-11).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** Stage-start docs/USER-TEAMS-01-STAGE-START.md D17 to D20: a Team block under Advanced in the workflow form (checkbox list from teamChoices, count of 3, a fourth tick refused, approval hint), a team line in the summary, the report-back step label for a workflow lead, skipped-member names after a workflow start, copy in three languages. Implementer: sonnet.
 **Also (added 2026-11-11 by the USER-TEAMS-01 LOCK):** the form maps the new ROSTER_MEMBER_SELF refusal to a clear message in three languages (frontend/components/collaboration/collaboration-roster.ts mirrors the ROSTER codes), and a fourth id refused by the DTO (a 400 without a code) shows the generic team-limit message; the form already refuses a fourth tick.
 ### USER-TEAMS-LIVE-01 — Live check: a user workflow with a team
