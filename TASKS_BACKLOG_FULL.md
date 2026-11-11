@@ -88614,22 +88614,22 @@ taskId=SNAPSHOT-SIZE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-11 by the SNAPSHOT-BINARY-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-11 — Keith approved ("Yes, fix then deploy"). Was: READY — registered 2026-11-11 by the SNAPSHOT-BINARY-01 LOCK — not admitted.
 **Task ID:** SNAPSHOT-SIZE-01
 **Title:** Larger files survive a snapshot restore
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 2-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (Keith approved 2026-11-11). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** SNAPSHOT-BINARY-01.
-**Primary write scope:** PROVISIONAL: services/container-manager/src/app-setup.ts (body size limit for the internal file write route) and its spec.
-**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Primary write scope:** set 2026-11-11: services/container-manager/src/app-setup.ts, services/container-manager/src/main.ts, services/container-manager/src/__tests__/body-limit.http.spec.ts.
+**Mutexes / resources:** CONTAINER-MANAGER.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and snapshots).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** From the SNAPSHOT-BINARY-01 LOCK: container-manager uses the Nest default JSON body limit (about 100 KB), so a binary file over about 75 KB (base64) or a text file over about 100 KB is not restored on reopen (listed in failedPaths). Raise the limit for the internal file write route to a bounded value that covers ordinary images and fonts (for example a few MB), keep it internal-only, and test a file just under and over the new limit.
 
 ### SNAPSHOT-NOTICE-01 — Tell the user which files were not restored
