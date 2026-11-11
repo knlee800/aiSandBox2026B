@@ -9,7 +9,8 @@ async function bootstrap() {
     logger: ['log', 'error', 'warn', 'debug'],
   });
 
-  // Validation pipe and the 'api' prefix. CM-CLEANUP-01 (F5): no CORS.
+  // JSON body limit (SNAPSHOT-SIZE-01), validation pipe and the 'api' prefix.
+  // CM-CLEANUP-01 (F5): no CORS.
   configureApp(app);
 
   const port = process.env.PORT || 4002;
