@@ -135,7 +135,7 @@ describe('PreviewService readStaticPreviewContent', () => {
 
     it.each([
       ['/photo.jpg', 'image/jpeg'],
-      ['/font.woff2', 'text/plain; charset=utf-8'],
+      ['/font.woff2', 'font/woff2'],
       ['/data.json', 'application/json; charset=utf-8'],
     ])('leaves %s unchanged and keeps its content type', async (requestPath, contentType) => {
       dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(PNG_LIKE);
@@ -143,6 +143,36 @@ describe('PreviewService readStaticPreviewContent', () => {
       const result = await service.readStaticPreviewContent('session-123', requestPath);
 
       expect(result.content.equals(PNG_LIKE)).toBe(true);
+      expect(result.contentType).toBe(contentType);
+    });
+
+    it.each([
+      ['/a.woff', 'font/woff'],
+      ['/a.WOFF2', 'font/woff2'],
+      ['/a.ttf', 'font/ttf'],
+      ['/a.otf', 'font/otf'],
+      ['/a.gif', 'image/gif'],
+      ['/a.webp', 'image/webp'],
+      ['/favicon.ICO', 'image/x-icon'],
+      ['/a.avif', 'image/avif'],
+      ['/a.wasm', 'application/wasm'],
+      ['/a.mjs', 'text/javascript; charset=utf-8'],
+      ['/a.map', 'application/json; charset=utf-8'],
+      ['/a.xml', 'application/xml; charset=utf-8'],
+      ['/a.txt', 'text/plain; charset=utf-8'],
+      ['/a.svg', 'image/svg+xml'],
+      ['/a.png', 'image/png'],
+      ['/a.jpeg', 'image/jpeg'],
+      ['/a.js', 'application/javascript; charset=utf-8'],
+      ['/a.css', 'text/css; charset=utf-8'],
+      ['/a.json', 'application/json; charset=utf-8'],
+      ['/a.unknownext', 'text/plain; charset=utf-8'],
+      ['/noextension', 'text/plain; charset=utf-8'],
+    ])('CM-CONTENT-TYPE-01: %s is typed %s', async (requestPath, contentType) => {
+      dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(PNG_LIKE);
+
+      const result = await service.readStaticPreviewContent('session-123', requestPath);
+
       expect(result.contentType).toBe(contentType);
     });
 

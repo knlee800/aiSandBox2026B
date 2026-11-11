@@ -9,9 +9,9 @@ import { GovernanceConfig } from '../config/governance.config';
  * each). Past it the exec is cut off and fails with ExecOutputLimitError,
  * instead of building an unbounded string (which can throw "Invalid string
  * length" inside a stream callback and take container-manager down). 16 MiB
- * holds the largest planned output, an 8 MiB history-bundle slice in base64
- * (about 10.8 MiB with line breaks), with room to spare. A call may ask for a
- * smaller cap, never a larger one.
+ * holds the largest planned output, an 8 MiB history-bundle slice, with room
+ * to spare. Since CM-BINARY-01 history slices are read raw through the binary
+ * exec, not in base64. A call may ask for a smaller cap, never a larger one.
  */
 export const EXEC_OUTPUT_MAX_BYTES = 16 * 1024 * 1024;
 

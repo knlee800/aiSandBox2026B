@@ -14,6 +14,23 @@ interface PreviewProcess {
   startedAt: Date;
 }
 
+// CM-CONTENT-TYPE-01: standard types for preview fonts, images and modules.
+const STANDARD_CONTENT_TYPES: Record<string, string> = {
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf',
+  '.otf': 'font/otf',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.ico': 'image/x-icon',
+  '.avif': 'image/avif',
+  '.wasm': 'application/wasm',
+  '.mjs': 'text/javascript; charset=utf-8',
+  '.map': 'application/json; charset=utf-8',
+  '.xml': 'application/xml; charset=utf-8',
+  '.txt': 'text/plain; charset=utf-8',
+};
+
 @Injectable()
 export class PreviewService {
   private activePreviews: Map<string, PreviewProcess> = new Map();
@@ -508,6 +525,11 @@ export class PreviewService {
     }
     if (lowercase.endsWith('.jpg') || lowercase.endsWith('.jpeg')) {
       return 'image/jpeg';
+    }
+    const extension = lowercase.includes('.') ? lowercase.slice(lowercase.lastIndexOf('.')) : '';
+    const standardType = STANDARD_CONTENT_TYPES[extension];
+    if (standardType) {
+      return standardType;
     }
     return 'text/plain; charset=utf-8';
   }

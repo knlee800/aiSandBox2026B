@@ -113,6 +113,17 @@ describe('PreviewController static preview over HTTP (CM-BINARY-01)', () => {
     );
   });
 
+  it('serves a .woff2 font as bytes with Content-Type font/woff2', async () => {
+    dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(PNG_LIKE);
+
+    const reply = await get(`/api/preview/${SESSION}/proxy/fonts/inter.woff2`);
+
+    expect(reply.status).toBe(200);
+    expect(reply.contentType).toBe('font/woff2');
+    expect(reply.contentLength).toBe(String(PNG_LIKE.length));
+    expect(reply.body.equals(PNG_LIKE)).toBe(true);
+  });
+
   it('serves HTML with the base tag, UTF-8 encoded', async () => {
     dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(
       Buffer.from('<html><head><title>Café 😀</title></head></html>', 'utf8'),
