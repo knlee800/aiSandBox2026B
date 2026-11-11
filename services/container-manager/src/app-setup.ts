@@ -1,6 +1,7 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import type { IncomingMessage } from 'http';
+import { INTERNAL_SERVICE_KEY_HEADER, internalKeyMatches } from './guards/internal-service-auth.guard';
 
 /** The global route prefix set in configureApp. */
 export const API_PREFIX = 'api';
@@ -21,7 +22,8 @@ export const JSON_BODY_LIMIT = '16mb';
 export const DEFAULT_JSON_BODY_LIMIT = '100kb';
 
 /**
- * CM-BODY-ROUTE-01: the one request that gets JSON_BODY_LIMIT.
+ * CM-BODY-ROUTE-01: the one request path that can get JSON_BODY_LIMIT (only
+ * with the valid internal key since CM-BODY-KEY-01).
  *
  * Matched against the raw (still percent-encoded) path without the query
  * string, which is what Express matches routes against. Only the canonical
@@ -57,6 +59,33 @@ function requestIsFileWrite(req: ExpressRequestLike): boolean {
 }
 
 /**
+ * CM-BODY-KEY-01: true only when the request carries the valid internal key.
+ *
+ * The same check the guard makes (InternalServiceAuthGuard): the
+ * `x-internal-service-key` header compared in constant time with
+ * INTERNAL_SERVICE_KEY by the guard's own internalKeyMatches. A missing,
+ * empty or duplicated header (Node joins a repeated header into one longer
+ * string; an array is refused) and a key of another length never match. With
+ * no expected key (unset or empty) nothing matches. The guard stays the
+ * authority: this only decides which body limit applies, never access.
+ */
+function requestHasInternalKey(req: ExpressRequestLike, expectedKey: string | undefined): boolean {
+  if (!expectedKey) {
+    return false;
+  }
+  return internalKeyMatches(req.headers[INTERNAL_SERVICE_KEY_HEADER], expectedKey);
+}
+
+/**
+ * CM-BODY-KEY-01: the one request that gets JSON_BODY_LIMIT: the canonical
+ * file write (isFileWriteRequest) with the valid internal key. Everything
+ * else, including a file write without a valid key, gets the default limit.
+ */
+function requestGetsLargeLimit(req: ExpressRequestLike, expectedKey: string | undefined): boolean {
+  return requestIsFileWrite(req) && requestHasInternalKey(req, expectedKey);
+}
+
+/**
  * App-wide setup shared by main.ts and the HTTP tests.
  *
  * CM-CLEANUP-01 (F5): CORS is off. Only host processes (the gateway and
@@ -72,20 +101,27 @@ function requestIsFileWrite(req: ExpressRequestLike): boolean {
  * only by the 16 MB parser, every other JSON request only by the 100 KB
  * parser. body-parser also skips a request already parsed (req._body), so a
  * body is never parsed twice. The urlencoded parser stays at Nest's default.
- * Call this before listen/init.
+ *
+ * CM-BODY-KEY-01: the 16 MB parser also requires the valid internal key
+ * (requestHasInternalKey), so a caller without it cannot make the service
+ * parse a large body before the guard answers: its file write falls to the
+ * 100 KB parser (413 when larger, the guard's 403 otherwise). The expected
+ * key is read here once, like the guard reads it once when it is built;
+ * main.ts loads the environment before either. Call this before listen/init.
  */
 export function configureApp(app: INestApplication): void {
   const expressApp = app as NestExpressApplication;
+  const expectedKey = process.env.INTERNAL_SERVICE_KEY;
 
   expressApp.useBodyParser('json', {
     limit: JSON_BODY_LIMIT,
     type: (req: IncomingMessage) =>
-      requestIsFileWrite(req as ExpressRequestLike) && isJsonContent(req as ExpressRequestLike),
+      isJsonContent(req as ExpressRequestLike) && requestGetsLargeLimit(req as ExpressRequestLike, expectedKey),
   });
   expressApp.useBodyParser('json', {
     limit: DEFAULT_JSON_BODY_LIMIT,
     type: (req: IncomingMessage) =>
-      !requestIsFileWrite(req as ExpressRequestLike) && isJsonContent(req as ExpressRequestLike),
+      isJsonContent(req as ExpressRequestLike) && !requestGetsLargeLimit(req as ExpressRequestLike, expectedKey),
   });
 
   app.useGlobalPipes(

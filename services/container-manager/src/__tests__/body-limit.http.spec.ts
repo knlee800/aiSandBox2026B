@@ -3,6 +3,7 @@ import { Body, Controller, INestApplication, Module, Post } from '@nestjs/common
 import { APP_GUARD, NestFactory } from '@nestjs/core';
 import { IsString } from 'class-validator';
 import { randomBytes } from 'crypto';
+import { request as httpRequest } from 'http';
 import { AddressInfo } from 'net';
 
 // SessionsService is never constructed here (it is mocked), but its module
@@ -20,6 +21,8 @@ import { SessionsService } from '../sessions/sessions.service';
  * up to 16 MB only on POST /api/internal/sessions/:id/files (snapshot
  * restores write images and fonts through it); every other route keeps the
  * 100 KB default, because Express parses bodies before the guard runs.
+ * CM-BODY-KEY-01: the 16 MB parser also needs the valid internal key, so a
+ * file write without it gets the 100 KB parser (413 when larger, else 403).
  *
  * Real HTTP over a Nest app on a random loopback port, using Node's built-in
  * fetch (no supertest, no @nestjs/testing), like the other HTTP specs.
@@ -67,8 +70,26 @@ const sessionsServiceMock = {
 })
 class BodyLimitTestModule {}
 
-async function startApp(withConfigureApp: boolean): Promise<{ app: INestApplication; baseUrl: string }> {
+const KEEP_ENV = Symbol('keep the environment key at configureApp');
+
+/**
+ * `keyAtSetup` (CM-BODY-KEY-01): what INTERNAL_SERVICE_KEY holds when
+ * configureApp runs (null = unset). The guard is built before that with
+ * the test key, so only the body parsers see the other value. The caller
+ * restores the environment.
+ */
+async function startApp(
+  withConfigureApp: boolean,
+  keyAtSetup: string | null | typeof KEEP_ENV = KEEP_ENV,
+): Promise<{ app: INestApplication; baseUrl: string }> {
   const app = await NestFactory.create(BodyLimitTestModule, { logger: false });
+  if (keyAtSetup !== KEEP_ENV) {
+    if (keyAtSetup === null) {
+      delete process.env.INTERNAL_SERVICE_KEY;
+    } else {
+      process.env.INTERNAL_SERVICE_KEY = keyAtSetup;
+    }
+  }
   if (withConfigureApp) {
     configureApp(app);
   } else {
@@ -106,6 +127,38 @@ function postRaw(baseUrl: string, path: string, body: string, key?: string): Pro
   return sendRaw(baseUrl, 'POST', path, body, key);
 }
 
+/**
+ * POST with the key header sent once per entry of `keyLines`, as separate
+ * header lines on the wire (fetch would fold them into one value first).
+ */
+function postWithKeyLines(baseUrl: string, path: string, body: string, keyLines: string[]): Promise<Reply> {
+  return new Promise((resolve, reject) => {
+    const request = httpRequest(
+      new URL(path, baseUrl),
+      {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'content-length': Buffer.byteLength(body),
+          'x-internal-service-key': keyLines,
+        },
+        timeout: 20000,
+      },
+      (response) => {
+        const chunks: Buffer[] = [];
+        response.on('data', (chunk: Buffer) => chunks.push(chunk));
+        response.on('end', () =>
+          resolve({ status: response.statusCode ?? 0, text: Buffer.concat(chunks).toString('utf8') }),
+        );
+        response.on('error', reject);
+      },
+    );
+    request.on('timeout', () => request.destroy(new Error('timeout')));
+    request.on('error', reject);
+    request.end(body);
+  });
+}
+
 /** A JSON body `{"data":"aaa..."}` of exactly `bytes` bytes. */
 function jsonBodyOfSize(bytes: number): string {
   const overhead = Buffer.byteLength('{"data":""}');
@@ -138,7 +191,7 @@ function jsonParserLayers(app: INestApplication): StackLayer[] {
   return stack.filter((layer) => layer.handle?.name === 'jsonParser');
 }
 
-describe('container-manager JSON body limits (SNAPSHOT-SIZE-01, CM-BODY-ROUTE-01)', () => {
+describe('container-manager JSON body limits (SNAPSHOT-SIZE-01, CM-BODY-ROUTE-01, CM-BODY-KEY-01)', () => {
   const originalKey = process.env.INTERNAL_SERVICE_KEY;
   let app: INestApplication;
   let baseUrl: string;
@@ -286,15 +339,15 @@ describe('container-manager JSON body limits (SNAPSHOT-SIZE-01, CM-BODY-ROUTE-01
       expect(sessionsServiceMock.writeFileToContainer.mock.calls[0][0]).toBe(id);
     });
 
-    it('without the key, still answers 403 and the handler is not reached', async () => {
+    it('without the key, the 2 MB body gets 413 (CM-BODY-KEY-01: not parsed at 16 MB) and the handler is not reached', async () => {
       const reply = await postRaw(baseUrl, FILE_ROUTE, fileBody);
-      expect(reply.status).toBe(403);
+      expect(reply.status).toBe(413);
       expect(sessionsServiceMock.writeFileToContainer).not.toHaveBeenCalled();
     });
 
-    it('with a wrong key, answers 403 and the handler is not reached', async () => {
+    it('with a wrong key, the 2 MB body gets 413 (CM-BODY-KEY-01) and the handler is not reached', async () => {
       const reply = await postRaw(baseUrl, FILE_ROUTE, fileBody, 'cm-body-route-01-http-kez');
-      expect(reply.status).toBe(403);
+      expect(reply.status).toBe(413);
       expect(sessionsServiceMock.writeFileToContainer).not.toHaveBeenCalled();
     });
 
@@ -302,6 +355,116 @@ describe('container-manager JSON body limits (SNAPSHOT-SIZE-01, CM-BODY-ROUTE-01
       const reply = await postRaw(baseUrl, '/api/internal/sessions/a%2Fb/files', '{"path":"x","content":"y"}', internalKey);
       expect(reply.status).toBe(400);
       expect(sessionsServiceMock.writeFileToContainer).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('the file write route without a valid key gets the 100 KB parser (CM-BODY-KEY-01)', () => {
+    const smallWrite = '{"path":"x","content":"y"}';
+
+    it.each([
+      ['no key', undefined],
+      ['an empty key', ''],
+      ['a wrong key of the same length', 'cm-body-route-01-http-kez'],
+      ['a wrong key that is one character shorter', internalKey.slice(0, -1)],
+      ['a wrong key that is one character longer', `${internalKey}x`],
+      ['the key with other letter case', internalKey.toUpperCase()],
+    ])('%s: a 1 MB body gives 413, a small body gives 403, the handler is never reached', async (_label, key) => {
+      expect(key === undefined || key !== internalKey).toBe(true);
+
+      const big = await postRaw(baseUrl, FILE_ROUTE, fileBodyOfSize(ONE_MB).body, key);
+      expect(big.status).toBe(413);
+
+      const overDefault = await postRaw(baseUrl, FILE_ROUTE, fileBodyOfSize(DEFAULT_LIMIT_BYTES + 1).body, key);
+      expect(overDefault.status).toBe(413);
+
+      const small = await postRaw(baseUrl, FILE_ROUTE, smallWrite, key);
+      expect(small.status).toBe(403);
+
+      expect(sessionsServiceMock.writeFileToContainer).not.toHaveBeenCalled();
+    });
+
+    it('a body of exactly 100 KB without the key reaches the guard and gets 403', async () => {
+      const reply = await postRaw(baseUrl, FILE_ROUTE, fileBodyOfSize(DEFAULT_LIMIT_BYTES).body);
+      expect(reply.status).toBe(403);
+      expect(sessionsServiceMock.writeFileToContainer).not.toHaveBeenCalled();
+    });
+
+    it('control: the key sent once as its own header line gets the 16 MB parser', async () => {
+      const big = await postWithKeyLines(baseUrl, FILE_ROUTE, fileBodyOfSize(ONE_MB).body, [internalKey]);
+      expect(big.status).toBe(204);
+      expect(sessionsServiceMock.writeFileToContainer).toHaveBeenCalledTimes(1);
+    });
+
+    it('the key header sent twice (both lines the right key): a 1 MB body gives 413, a small body gives 403', async () => {
+      const big = await postWithKeyLines(baseUrl, FILE_ROUTE, fileBodyOfSize(ONE_MB).body, [internalKey, internalKey]);
+      expect(big.status).toBe(413);
+      const small = await postWithKeyLines(baseUrl, FILE_ROUTE, smallWrite, [internalKey, internalKey]);
+      expect(small.status).toBe(403);
+      expect(sessionsServiceMock.writeFileToContainer).not.toHaveBeenCalled();
+    });
+
+    it('the key header sent twice (a wrong line, then the right key): a 1 MB body gives 413, a small body gives 403', async () => {
+      const big = await postWithKeyLines(baseUrl, FILE_ROUTE, fileBodyOfSize(ONE_MB).body, ['wrong', internalKey]);
+      expect(big.status).toBe(413);
+      const small = await postWithKeyLines(baseUrl, FILE_ROUTE, smallWrite, ['wrong', internalKey]);
+      expect(small.status).toBe(403);
+      expect(sessionsServiceMock.writeFileToContainer).not.toHaveBeenCalled();
+    });
+  });
+
+  describe.each([
+    ['unset', null],
+    ['empty', ''],
+  ])('INTERNAL_SERVICE_KEY %s when configureApp runs: the 16 MB parser never applies (CM-BODY-KEY-01)', (_label, keyAtSetup) => {
+    let noKeyApp: { app: INestApplication; baseUrl: string };
+
+    beforeAll(async () => {
+      try {
+        noKeyApp = await startApp(true, keyAtSetup);
+      } catch (error) {
+        process.env.INTERNAL_SERVICE_KEY = internalKey;
+        throw error;
+      }
+      // The environment stays as configureApp saw it while these tests run.
+    });
+
+    afterAll(async () => {
+      await noKeyApp?.app.close();
+      process.env.INTERNAL_SERVICE_KEY = internalKey;
+    });
+
+    it('the environment holds no usable key during these tests', () => {
+      expect(process.env.INTERNAL_SERVICE_KEY || undefined).toBeUndefined();
+    });
+
+    it('with the header the guard accepts, a 1 MB file write gives 413', async () => {
+      const reply = await postRaw(noKeyApp.baseUrl, FILE_ROUTE, fileBodyOfSize(ONE_MB).body, internalKey);
+      expect(reply.status).toBe(413);
+      expect(sessionsServiceMock.writeFileToContainer).not.toHaveBeenCalled();
+    });
+
+    it('with the header the guard accepts, a small file write still passes the guard (only the limit changed)', async () => {
+      const reply = await postRaw(noKeyApp.baseUrl, FILE_ROUTE, '{"path":"x","content":"y"}', internalKey);
+      expect(reply.status).toBe(204);
+      expect(sessionsServiceMock.writeFileToContainer).toHaveBeenCalledWith('p1', 'x', 'y');
+    });
+
+    it.each([
+      ['an empty header', ''],
+      ['no header', undefined],
+    ])('with %s, a 1 MB file write gives 413 and a small one 403', async (_headerLabel, key) => {
+      const big = await postRaw(noKeyApp.baseUrl, FILE_ROUTE, fileBodyOfSize(ONE_MB).body, key);
+      expect(big.status).toBe(413);
+      const small = await postRaw(noKeyApp.baseUrl, FILE_ROUTE, '{"path":"x","content":"y"}', key);
+      expect(small.status).toBe(403);
+      expect(sessionsServiceMock.writeFileToContainer).not.toHaveBeenCalled();
+    });
+
+    it('another route keeps 100 KB', async () => {
+      const reply = await postRaw(noKeyApp.baseUrl, SEARCH_ROUTE, searchBodyOfSize(DEFAULT_LIMIT_BYTES + 1), internalKey);
+      expect(reply.status).toBe(413);
+      const ok = await postRaw(noKeyApp.baseUrl, SEARCH_ROUTE, searchBodyOfSize(DEFAULT_LIMIT_BYTES), internalKey);
+      expect(ok.status).toBe(200);
     });
   });
 
@@ -357,6 +520,12 @@ describe('container-manager JSON body limits (SNAPSHOT-SIZE-01, CM-BODY-ROUTE-01
       expect(reply.status).toBe(413);
     });
 
+    it('with the key, a 1 MB body gives 413 too (the key does not raise the limit off the file write route)', async () => {
+      const reply = await postRaw(baseUrl, SEARCH_ROUTE, searchBodyOfSize(ONE_MB), internalKey);
+      expect(reply.status).toBe(413);
+      expect(sessionsServiceMock.searchFilesInContainer).not.toHaveBeenCalled();
+    });
+
     it('without the key, a small body gives 403', async () => {
       const reply = await postRaw(baseUrl, SEARCH_ROUTE, '{"query":"needle"}');
       expect(reply.status).toBe(403);
@@ -370,6 +539,13 @@ describe('container-manager JSON body limits (SNAPSHOT-SIZE-01, CM-BODY-ROUTE-01
       expect(big.status).toBe(413);
       const small = await postRaw(baseUrl, '/api/body-limit-probe/size', jsonBodyOfSize(DEFAULT_LIMIT_BYTES - 1024), internalKey);
       expect(small.status).toBe(201);
+    });
+
+    it('a guarded probe route without the key: 1 MB gives 413, a small body gives 403', async () => {
+      const big = await postRaw(baseUrl, '/api/body-limit-probe/size', jsonBodyOfSize(ONE_MB));
+      expect(big.status).toBe(413);
+      const small = await postRaw(baseUrl, '/api/body-limit-probe/size', '{"data":"a"}');
+      expect(small.status).toBe(403);
     });
 
     it('an unknown path: a 1 MB body without the key gives 413 (the 100 KB parser runs before routing)', async () => {
@@ -440,6 +616,59 @@ describe('container-manager JSON body limits (SNAPSHOT-SIZE-01, CM-BODY-ROUTE-01
       expect(reply.status).toBe(403);
       expect(parsedBy).toHaveLength(1);
     });
+
+    describe('CM-BODY-KEY-01: a file write without a valid key is parsed once, by the 100 KB parser', () => {
+      let fileParser: number;
+      let defaultParser: number;
+
+      beforeEach(async () => {
+        // Learn which wrapped parser is which from two requests with the key.
+        const write = await postRaw(counted.baseUrl, FILE_ROUTE, '{"path":"x","content":"y"}', internalKey);
+        expect(write.status).toBe(204);
+        const search = await postRaw(counted.baseUrl, SEARCH_ROUTE, '{"query":"needle"}', internalKey);
+        expect(search.status).toBe(200);
+        expect(parsedBy).toHaveLength(2);
+        [fileParser, defaultParser] = parsedBy;
+        expect(fileParser).not.toBe(defaultParser);
+        parsedBy.length = 0;
+        sessionsServiceMock.writeFileToContainer.mockClear();
+      });
+
+      it.each([
+        ['no key', undefined],
+        ['an empty key', ''],
+        ['a wrong key of the same length', 'cm-body-route-01-http-kez'],
+        ['a wrong key of another length', `${internalKey}x`],
+      ])('%s: a small body (403) and a 1 MB body (413) each by the default parser only', async (_label, key) => {
+        const small = await postRaw(counted.baseUrl, FILE_ROUTE, '{"path":"x","content":"y"}', key);
+        expect(small.status).toBe(403);
+        expect(parsedBy).toEqual([defaultParser]);
+
+        parsedBy.length = 0;
+        const big = await postRaw(counted.baseUrl, FILE_ROUTE, fileBodyOfSize(ONE_MB).body, key);
+        expect(big.status).toBe(413);
+        expect(parsedBy).toEqual([defaultParser]);
+        expect(sessionsServiceMock.writeFileToContainer).not.toHaveBeenCalled();
+      });
+
+      it('the key header sent twice: parsed once, by the default parser', async () => {
+        const big = await postWithKeyLines(counted.baseUrl, FILE_ROUTE, fileBodyOfSize(ONE_MB).body, [internalKey, internalKey]);
+        expect(big.status).toBe(413);
+        expect(parsedBy).toEqual([defaultParser]);
+      });
+
+      it('with the valid key: a 1 MB body parsed once, by the 16 MB parser', async () => {
+        const big = await postRaw(counted.baseUrl, FILE_ROUTE, fileBodyOfSize(ONE_MB).body, internalKey);
+        expect(big.status).toBe(204);
+        expect(parsedBy).toEqual([fileParser]);
+      });
+
+      it('another route with the key: parsed once, by the default parser', async () => {
+        const big = await postRaw(counted.baseUrl, SEARCH_ROUTE, searchBodyOfSize(ONE_MB), internalKey);
+        expect(big.status).toBe(413);
+        expect(parsedBy).toEqual([defaultParser]);
+      });
+    });
   });
 
   describe('the scoping does not depend on the parser order', () => {
@@ -462,6 +691,14 @@ describe('container-manager JSON body limits (SNAPSHOT-SIZE-01, CM-BODY-ROUTE-01
       const reply = await postRaw(swapped.baseUrl, FILE_ROUTE, fileBodyOfSize(ONE_MB).body, internalKey);
       expect(reply.status).toBe(204);
       expect(sessionsServiceMock.writeFileToContainer).toHaveBeenCalledTimes(1);
+    });
+
+    it('a 1 MB file write without the key still gives 413 (CM-BODY-KEY-01)', async () => {
+      const reply = await postRaw(swapped.baseUrl, FILE_ROUTE, fileBodyOfSize(ONE_MB).body);
+      expect(reply.status).toBe(413);
+      const small = await postRaw(swapped.baseUrl, FILE_ROUTE, '{"path":"x","content":"y"}');
+      expect(small.status).toBe(403);
+      expect(sessionsServiceMock.writeFileToContainer).not.toHaveBeenCalled();
     });
 
     it('another route still gives 413 one byte over 100 KB', async () => {
