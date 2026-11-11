@@ -87098,7 +87098,7 @@ taskId=APPROVAL-SET-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-11 — slice 01A; Keith approved the stage-start ("Yes, approve both"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-11. LANE-DONE and LOCKED by the control plane; Lane 1, GATEWAY and MIGRATION released. Slice 01A: migration 1807 (user_agents.approval_mode varchar default every with a CHECK for every, credits, read_only; approval_credit_limit integer null or >= 1), entity, DTOs, fail-closed readApprovalSetting, validation on create, template copy and PATCH (APPROVAL_LIMIT_REQUIRED, APPROVAL_MODE_INVALID, APPROVAL_LIMIT_INVALID; no switch-on check, no version change), both fields on responses, a required readOnly flag on connector tools (mail and calendar true); 123 new tests; opus subagent, cherry-picked as e3af907; control-plane rerun on the branch and main: gateway 3724 passed (14 known smoke failures), build 0; orchestration.service.ts and the frozen paths diff empty. Not deployed. Checkpoint: docs/APPROVAL-SET-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 1 superseded (the form's mapping of the three approval refusal codes and the code-less DTO 400, into APPROVAL-SET-01C) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-11 — slice 01A; Keith approved the stage-start ("Yes, approve both"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** APPROVAL-SET-01
 **Title:** Approval setting per team or workflow
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -87166,7 +87166,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (as for its parent; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09 and the stage-start 2026-11-11).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** Stage-start docs/APPROVAL-SET-01-STAGE-START.md 01C: the approval choice under Advanced (every, read_only, credits with a limit), a summary line, the Team page "Approved automatically" line and the waiting reason, copy in three languages. The page lines need APPROVAL-SET-01B LOCKED; the form needs 01A only. Implementer: sonnet.
-
+**Also (added 2026-11-11 by the APPROVAL-SET-01 LOCK):** the form maps APPROVAL_LIMIT_REQUIRED, APPROVAL_MODE_INVALID and APPROVAL_LIMIT_INVALID to clear messages in three languages, and the code-less class-validator 400 the DTO gives for a bad mode or limit to the generic approval message.
 ### APPROVAL-SET-02 — Approval setting on the Chief of Staff roster
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=APPROVAL-SET-02
