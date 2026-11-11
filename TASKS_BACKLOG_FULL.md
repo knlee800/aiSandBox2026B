@@ -88199,22 +88199,22 @@ taskId=CM-EXEC-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-10 by the CM-HISTORY-LINK-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-11 — under Keith's "do not stop!!! ... keep looking for the next task to start". Was: READY — registered 2026-11-10 by the CM-HISTORY-LINK-01 LOCK — not admitted.
 **Task ID:** CM-EXEC-01
 **Title:** Container exec helper: output cap, binary-safe stdout, stdin
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (control plane under Keith's 2026-11-10 instruction, 2026-11-11). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** CM-HISTORY-LINK-01.
-**Primary write scope:** PROVISIONAL: services/container-manager/src/ (docker runtime, sessions service, git service, tests).
-**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Primary write scope:** set 2026-11-11: services/container-manager/src/docker/docker-runtime.service.ts, services/container-manager/src/docker/docker-runtime.service.spec.ts, services/container-manager/src/sessions/sessions.service.ts, services/container-manager/src/sessions/sessions.service.spec.ts, services/container-manager/src/git/git.service.ts, services/container-manager/src/git/git.service.spec.ts, services/container-manager/src/git/git.service.history-links.spec.ts, services/container-manager/src/__tests__/no-host-git.spec.ts.
+**Mutexes / resources:** CONTAINER-MANAGER.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** From the CM-HISTORY-LINK-01 worker: execInContainerBySessionId collects stdout as one unbounded string (a very large output, for example readFileFromContainer on a huge sandbox file, can throw RangeError: Invalid string length inside a stream callback and crash container-manager) and decodes it as UTF-8 (binary reads through readFileFromContainer are corrupted). Add an output cap with a clear error, binary-safe stdout (Buffer), and a stdin variant (AttachStdin, hijack) with a SessionsService wrapper carrying the same governance checks; then restore can pipe the history bundle into the container so the host never writes into the workspace. Tests for each.
 
 ### STAGING-DEPLOY-CMSEC-01 — Deploy the container-manager security fixes
