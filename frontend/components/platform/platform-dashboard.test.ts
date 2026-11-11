@@ -1009,3 +1009,55 @@ describe('WORKFLOW-STATUS-02 user agent card status', () => {
     );
   });
 });
+
+describe('COS-DRAFTS-01B dashboard draft prefill', () => {
+  const dashboardSource = readFileSync(new URL('./platform-dashboard.tsx', import.meta.url), 'utf8');
+
+  test('the query is read in a client effect from window.location.search, not useSearchParams', () => {
+    assert.match(dashboardSource, /readDraftQuery\(window\.location\.search\)/);
+    assert.doesNotMatch(dashboardSource, /useSearchParams/);
+  });
+
+  test('the draft goes to the create form only as initialDraft and draftNotice, never saved from here', () => {
+    assert.match(dashboardSource, /initialDraft: draftPrefill\.status === 'ready' \? draftPrefill\.draft : undefined/);
+    assert.match(dashboardSource, /draftNotice: draftPrefill\.status === 'ready' \? workflowT\('draftNotice'\)/);
+    // The only save path is the form's own onSave (handleSaveWorkflow); the prefill effect makes no write.
+    const effect = dashboardSource.slice(
+      dashboardSource.indexOf('COS-DRAFTS-01B: ?draftRun='),
+      dashboardSource.indexOf('function finishDraftPrefill'),
+    );
+    assert.ok(effect.length > 0);
+    assert.doesNotMatch(effect, /createAgent|updateAgent|method:\s*'(POST|PATCH|PUT|DELETE)'/);
+  });
+
+  test('a missing, invalid or failed draft shows its message, with a retry for a failure', () => {
+    assert.match(dashboardSource, /data-testid="platform-draft-problem"/);
+    assert.match(dashboardSource, /data-testid="platform-draft-retry"/);
+    assert.match(dashboardSource, /data-testid="platform-draft-loading"/);
+  });
+
+  test('the new platform.agentWorkflow keys exist in every language, with real Chinese', () => {
+    const keys = ['draftNotice', 'draftLoading', 'draftLoadError', 'draftRetry', 'draftMissing', 'draftInvalid'];
+    for (const locale of ALL_LOCALES) {
+      for (const key of keys) {
+        const text = resolveNestedString(locale.messages, `platform.agentWorkflow.${key}`);
+        assert.ok(text && text.length > 0, `${locale.code} ${key}`);
+        if (locale.code !== 'en') {
+          assert.match(text, /[一-鿿]/, `${locale.code} ${key}`);
+        }
+      }
+    }
+  });
+
+  test('the three message files carry the same keys', () => {
+    const flatten = (value: unknown, prefix = ''): string[] =>
+      typeof value === 'object' && value !== null
+        ? Object.entries(value as Record<string, unknown>).flatMap(([key, inner]) =>
+            flatten(inner, prefix ? `${prefix}.${key}` : key),
+          )
+        : [prefix];
+    const en = flatten(enMessages).sort();
+    assert.deepEqual(flatten(zhTwMessages).sort(), en);
+    assert.deepEqual(flatten(zhCnMessages).sort(), en);
+  });
+});

@@ -6,6 +6,7 @@ import {
   PencilSquareIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
+  InformationCircleIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import type {
@@ -103,6 +104,13 @@ export interface AgentWorkflowConfig {
   templatePrefill?: (templateId: string) => TemplatePrefill | null;
   /** Test seam: open the create form with this start already picked. */
   initialStart?: string;
+  /**
+   * COS-DRAFTS-01B: the text parts of a Chief of Staff draft, to start the create form with.
+   * Nothing is saved until the owner saves; the row is the plain blank create.
+   */
+  initialDraft?: WorkflowDraft;
+  /** COS-DRAFTS-01B: the line shown above the form while it holds a prefilled draft. */
+  draftNotice?: string;
 }
 
 export interface CreateAgentFormProps {
@@ -125,6 +133,7 @@ export default function CreateAgentForm({ labels, onSubmit, onCancel, workflow }
     startId === 'blank' ? null : (workflow?.templatePrefill?.(startId) ?? null);
   const [draft, setDraft] = React.useState<WorkflowDraft>(() => {
     if (editing && workflow?.agent) return workflowDraftFromAgent(workflow.agent);
+    if (!editing && workflow?.initialDraft) return { ...workflow.initialDraft };
     const empty = emptyWorkflowDraft();
     return { ...empty, ...templatePrefillPatch(empty, null, prefillFor(initialStart)) };
   });
@@ -288,6 +297,17 @@ export default function CreateAgentForm({ labels, onSubmit, onCancel, workflow }
           <XMarkIcon className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
+
+      {!editing && workflow?.initialDraft && workflow.draftNotice && !submitSuccess && (
+        <div
+          className="flex items-start gap-2 rounded-lg border border-indigo-700/50 bg-indigo-950/50 px-3 py-2 text-sm text-indigo-200"
+          role="status"
+          data-testid="agent-workflow-draft-notice"
+        >
+          <InformationCircleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          <span className="min-w-0 break-words">{workflow.draftNotice}</span>
+        </div>
+      )}
 
       {workflow?.createdNotice && !submitSuccess && (
         <div

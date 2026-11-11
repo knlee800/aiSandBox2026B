@@ -1,9 +1,11 @@
 import React from 'react';
 import {
   ArrowPathIcon,
+  ArrowRightIcon,
   ArrowUturnLeftIcon,
   BeakerIcon,
   CheckIcon,
+  ClipboardDocumentListIcon,
   CodeBracketIcon,
   ExclamationTriangleIcon,
   InformationCircleIcon,
@@ -21,6 +23,7 @@ import {
   formatCollaborationSource,
   type CollaborationTeamId,
 } from '@/lib/collaboration/logic';
+import type { CollaborationDraftCardView } from './collaboration-draft';
 
 export interface CollaborationViewLabels {
   title: string;
@@ -133,6 +136,10 @@ export interface CollaborationHandoffViewModel {
   droppedSourceCount: number;
   /** COS-FRONTDOOR-01C: an agent's step back to the chief-of-staff; the server writes its prompt. */
   reportBack?: boolean;
+  /** COS-DRAFTS-01B: the chief-of-staff's draft as a card; null or absent for every other step. */
+  draft?: CollaborationDraftCardView | null;
+  /** COS-DRAFTS-01B: the answer shown when a draft is present (the answer without the block). */
+  answerShown?: string | null;
 }
 
 export interface CollaborationPastRunView {
@@ -229,6 +236,92 @@ export interface CollaborationRosterView {
 export interface CollaborationTaskPreset {
   id: string;
   label: string;
+}
+
+/**
+ * COS-DRAFTS-01B: the chief-of-staff's draft. Read-only: the parts are listed, nothing is saved,
+ * and the one link opens the create form where the owner checks every part and saves it.
+ * An invalid draft shows its reason and no link.
+ */
+function DraftCard({ draft, referralId }: { draft: CollaborationDraftCardView; referralId: string }) {
+  return (
+    <section
+      className="mt-3 min-w-0 rounded-lg border border-amber-200 bg-amber-50/60 px-3 py-3"
+      aria-label={draft.title}
+      data-testid={`collaboration-draft-${referralId}`}
+    >
+      <h3
+        className="flex min-w-0 items-start gap-2 break-words text-sm font-semibold text-gray-900"
+        data-testid={`collaboration-draft-title-${referralId}`}
+      >
+        <ClipboardDocumentListIcon className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" aria-hidden="true" />
+        <span className="min-w-0 break-words">{draft.title}</span>
+      </h3>
+      {draft.invalidText ? (
+        <p
+          className="mt-2 flex min-w-0 items-start gap-1.5 break-words text-sm text-amber-900"
+          role="status"
+          data-testid={`collaboration-draft-invalid-${referralId}`}
+        >
+          <ExclamationTriangleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          <span className="min-w-0 break-words">{draft.invalidText}</span>
+        </p>
+      ) : null}
+      {draft.unknownLabelsText ? (
+        <p
+          className="mt-1 break-words text-sm text-gray-700"
+          data-testid={`collaboration-draft-unknown-labels-${referralId}`}
+        >
+          {draft.unknownLabelsText}
+        </p>
+      ) : null}
+      {draft.valid && draft.parts.length > 0 ? (
+        <details className="mt-2 min-w-0" data-testid={`collaboration-draft-parts-${referralId}`}>
+          <summary className="cursor-pointer text-sm text-gray-700">{draft.partsSummary}</summary>
+          <dl className="mt-1 min-w-0 space-y-2">
+            {draft.parts.map((part) => (
+              <div key={part.part} className="min-w-0" data-testid={`collaboration-draft-part-${referralId}-${part.part}`}>
+                <dt className="text-xs font-medium uppercase tracking-wide text-gray-500">{part.label}</dt>
+                <dd className="mt-0.5 max-w-full whitespace-pre-wrap break-words text-sm text-gray-800">
+                  {part.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </details>
+      ) : null}
+      {draft.droppedText ? (
+        <p
+          className="mt-2 flex min-w-0 items-start gap-1.5 break-words text-sm text-amber-900"
+          data-testid={`collaboration-draft-dropped-${referralId}`}
+        >
+          <ExclamationTriangleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          <span className="min-w-0 break-words">{draft.droppedText}</span>
+        </p>
+      ) : null}
+      <p
+        className="mt-2 break-words text-xs text-gray-600"
+        data-testid={`collaboration-draft-not-saved-${referralId}`}
+      >
+        {draft.notSavedText}
+      </p>
+      {draft.ownerSetsText ? (
+        <p className="mt-1 break-words text-xs text-gray-600" data-testid={`collaboration-draft-owner-sets-${referralId}`}>
+          {draft.ownerSetsText}
+        </p>
+      ) : null}
+      {draft.reviewHref ? (
+        <a
+          href={draft.reviewHref}
+          className="mt-3 inline-flex max-w-full items-center gap-1.5 break-words rounded-lg bg-brand px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+          data-testid={`collaboration-draft-review-${referralId}`}
+        >
+          {draft.reviewLabel}
+          <ArrowRightIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+        </a>
+      ) : null}
+    </section>
+  );
 }
 
 export default function CollaborationView(props: {
@@ -817,6 +910,8 @@ export default function CollaborationView(props: {
               const reportBack = handoff.reportBack === true;
               const canEditTask =
                 !reportBack && handoff.prompt !== null && handoff.prompt.length > 0;
+              // COS-DRAFTS-01B: with a draft the answer is shown without the block, which the card shows.
+              const shownAnswer = handoff.draft ? (handoff.answerShown ?? handoff.answer) : handoff.answer;
               const showWork =
                 !handoff.waiting &&
                 (handoff.canChangeFiles ||
@@ -874,19 +969,24 @@ export default function CollaborationView(props: {
                     </details>
                   ) : null}
                   {handoff.answer !== null ? (
-                    <div className="mt-2 min-w-0">
-                      <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
-                        {labels.answer}
-                      </p>
-                      <pre
-                        className="mt-1 max-w-full whitespace-pre-wrap break-words font-sans text-sm text-gray-800"
-                        data-testid={`collaboration-answer-${handoff.referralId}`}
-                      >
-                        {handoff.answer}
-                      </pre>
-                    </div>
+                    shownAnswer !== null && (shownAnswer.length > 0 || !handoff.draft) ? (
+                      <div className="mt-2 min-w-0">
+                        <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                          {labels.answer}
+                        </p>
+                        <pre
+                          className="mt-1 max-w-full whitespace-pre-wrap break-words font-sans text-sm text-gray-800"
+                          data-testid={`collaboration-answer-${handoff.referralId}`}
+                        >
+                          {shownAnswer}
+                        </pre>
+                      </div>
+                    ) : null
                   ) : !handoff.waiting && !handoff.failureReason ? (
                     <p className="mt-2 text-sm text-gray-500">{labels.noAnswerYet}</p>
+                  ) : null}
+                  {handoff.draft ? (
+                    <DraftCard draft={handoff.draft} referralId={handoff.referralId} />
                   ) : null}
                   {!handoff.waiting &&
                   handoff.answer !== null &&

@@ -33,6 +33,7 @@ import {
   type RosterSkipped,
 } from '@/components/collaboration/collaboration-roster';
 import { useTranslations } from '@/hooks/useTranslations';
+import { buildDraftCard, readHandoffDraft } from './collaboration-draft';
 import {
   collaborationAutoApprovalWaitingText,
   collaborationAutoApprovedText,
@@ -715,6 +716,16 @@ export function useCollaborationScreen(input: {
           ? (forced ?? readTestsBlockReason(handoff.testsBlockReason) ?? 'none')
           : null;
       const reportBack = isReportBackHandoff(handoff.source, handoff.target, reportBackLead);
+      // COS-DRAFTS-01B: the server sets draft on completed chief-of-staff steps only.
+      const draftView = readHandoffDraft(handoff.draft);
+      const draftCard = draftView
+        ? buildDraftCard(draftView, {
+            t,
+            locale,
+            runId: detail?.run.collaborationRunId ?? selectedRunId ?? '',
+            referralId: handoff.referralId,
+          })
+        : null;
       return {
         referralId: handoff.referralId,
         statusLabel: statusLabel(handoff.status),
@@ -732,6 +743,8 @@ export function useCollaborationScreen(input: {
         decidedBy: handoff.decidedBy,
         autoApprovedText: collaborationAutoApprovedText(handoff, t),
         autoApprovalWaitingText: collaborationAutoApprovalWaitingText(handoff, t),
+        draft: draftCard,
+        answerShown: draftView ? draftView.answerWithoutDraft : null,
         rejectReason: handoff.rejectReason,
         waiting: handoffIsWaiting(handoff.status),
         canChangeFiles: handoff.canChangeFiles === true,

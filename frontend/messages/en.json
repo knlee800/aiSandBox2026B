@@ -886,7 +886,13 @@
       "teamNames": {
         "product-strategy": "Product Strategy",
         "technology-advisor": "Technology Advisor"
-      }
+      },
+      "draftNotice": "Prefilled from the Chief of Staff's draft. Check every part before you save.",
+      "draftLoading": "Loading the Chief of Staff's draft…",
+      "draftLoadError": "The draft could not be loaded. You can try again, or fill in the form yourself.",
+      "draftRetry": "Try again",
+      "draftMissing": "That draft could not be found. The form below is empty.",
+      "draftInvalid": "That draft cannot be used. The form below is empty."
     }
   },
   "billing": {
@@ -1384,7 +1390,42 @@
     "rosterSkippedItem": "{name} ({reason})",
     "reportBackStep": "{source} → {target} (report-back)",
     "reportBackNoEdit": "The system wrote this step from your task and the agent’s answer, so it cannot be edited. Approve it or reject it.",
-    "reportBackStepLead": "{agent} → {lead} (report-back)"
+    "reportBackStepLead": "{agent} → {lead} (report-back)",
+    "draftTitle": "Draft {kind}: {name}",
+    "draftTitleInvalid": "A draft that cannot be used",
+    "draftKindAgent": "agent",
+    "draftKindWorkflow": "workflow",
+    "draftParts": "Parts of the draft",
+    "draftNotSaved": "Nothing is saved yet. The Chief of Staff cannot create agents or grant access. You review every part and save it yourself.",
+    "draftOwnerSets": "Folders, connected tools, model, budget, team and approval are yours to set in the form.",
+    "draftDropped": "These parts did not fit the form and were left empty: {parts}.",
+    "draftProblemItem": "{part} ({reason})",
+    "draftProblemTooLong": "too long",
+    "draftProblemControlCharacters": "has characters that are not allowed",
+    "draftProblemNotAllowedValue": "not an allowed value",
+    "draftProblemNotForAgent": "only a workflow has this part",
+    "draftProblemPromptTooLong": "the instructions would be too long with it",
+    "draftUnknownLabels": "Labels a draft may not use: {labels}.",
+    "draftReview": "Review and save",
+    "draftFieldName": "Name",
+    "draftFieldRole": "Role",
+    "draftFieldDescription": "Description",
+    "draftFieldTone": "Tone",
+    "draftFieldReplyLanguage": "Reply language",
+    "draftFieldPurpose": "Purpose",
+    "draftFieldProcedure": "Procedure",
+    "draftFieldResult": "Result",
+    "draftInvalidMalformedTag": "The draft's opening tag could not be read.",
+    "draftInvalidInvalidKind": "The draft is neither a workflow nor an agent.",
+    "draftInvalidNotAtEnd": "The draft is not at the very end of the answer.",
+    "draftInvalidInsideCodeFence": "The draft sits inside a code block.",
+    "draftInvalidMultipleBlocks": "The answer holds more than one draft.",
+    "draftInvalidNested": "One draft sits inside another.",
+    "draftInvalidTextBeforeLabel": "There is text before the first part of the draft.",
+    "draftInvalidUnknownLabel": "The draft names a part that a draft may not carry, such as tools, folders, model, budget, team or approval.",
+    "draftInvalidDuplicateLabel": "The same part appears twice in the draft.",
+    "draftInvalidMissingName": "The draft has no name.",
+    "draftInvalidInvalidName": "The draft's name is too long or runs over more than one line."
   },
   "office": {
     "title": "Office",

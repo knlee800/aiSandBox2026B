@@ -49,6 +49,62 @@ export interface CollaborationHandoff {
   autoApproved?: CollaborationAutoApproved | null;
   /** APPROVAL-SET-01B: why a waiting step waits although the setting is not "every"; else null. */
   autoApprovalWaiting?: CollaborationAutoApprovalWaiting | null;
+  /**
+   * COS-DRAFTS-01: the draft block parsed from a completed Chief of Staff answer; null or absent
+   * for every other step. Read it with readHandoffDraft, never trust the shape.
+   */
+  draft?: CollaborationDraftView | null;
+}
+
+/** The eight text parts a draft can carry, in the order of the create form. */
+export const DRAFT_PARTS = [
+  'name',
+  'role',
+  'description',
+  'tone',
+  'replyLanguage',
+  'purpose',
+  'procedure',
+  'result',
+] as const;
+export type CollaborationDraftPart = (typeof DRAFT_PARTS)[number];
+
+export const DRAFT_KINDS = ['workflow', 'agent'] as const;
+export type CollaborationDraftKind = (typeof DRAFT_KINDS)[number];
+
+/** Why the whole draft is refused; each has translated copy. */
+export const DRAFT_INVALID_REASONS = [
+  'malformed_tag',
+  'invalid_kind',
+  'not_at_end',
+  'inside_code_fence',
+  'multiple_blocks',
+  'nested',
+  'text_before_label',
+  'unknown_label',
+  'duplicate_label',
+  'missing_name',
+  'invalid_name',
+] as const;
+export type CollaborationDraftInvalidReason = (typeof DRAFT_INVALID_REASONS)[number];
+
+/** Why one part was left out of a usable draft; each has translated copy. */
+export const DRAFT_PROBLEM_REASONS = [
+  'too_long',
+  'control_characters',
+  'not_allowed_value',
+  'not_for_agent',
+  'prompt_too_long',
+] as const;
+export type CollaborationDraftProblemReason = (typeof DRAFT_PROBLEM_REASONS)[number];
+
+export interface CollaborationDraftView {
+  kind: CollaborationDraftKind | null;
+  fields: Partial<Record<CollaborationDraftPart, string>>;
+  problems: Array<{ part: CollaborationDraftPart; reason: CollaborationDraftProblemReason }>;
+  invalid: CollaborationDraftInvalidReason | null;
+  unknownLabels: string[];
+  answerWithoutDraft: string;
 }
 
 export interface CollaborationAutoApproved {

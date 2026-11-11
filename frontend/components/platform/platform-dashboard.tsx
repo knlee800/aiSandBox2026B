@@ -35,7 +35,9 @@ import CreateAgentForm from './create-agent-form';
 import { loadUnreadCount } from '@/components/results/results-api';
 import { unreadBadgeText } from '@/components/results/results.logic';
 import type { CreateAgentFormLabels, WorkflowSaveRequest } from './create-agent-form';
-import type { TemplatePrefill } from './agent-workflow-model';
+import { loadChiefDraft, readDraftQuery, type TemplatePrefill, type WorkflowDraft } from './agent-workflow-model';
+import { collaborationFetch } from '@/lib/collaboration/api';
+import Spinner from '@/components/ui/Spinner';
 
 import enMessages from '@/messages/en.json';
 import zhTwMessages from '@/messages/zh-TW.json';
@@ -317,6 +319,27 @@ export function ResultsUnreadPill({ count, template }: { count: number | null; t
   );
 }
 
+/** COS-DRAFTS-01B: where a Chief of Staff draft handed to the create form stands. */
+export type DraftPrefillState =
+  | { status: 'none' }
+  | { status: 'loading' }
+  | { status: 'ready'; draft: WorkflowDraft; stepId: string }
+  | { status: 'missing' }
+  | { status: 'invalid' }
+  | { status: 'error' };
+
+/** Drops draftRun and draftStep from the address bar, keeping any other query value. */
+export function clearDraftQuery(): void {
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('draftRun');
+    url.searchParams.delete('draftStep');
+    window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+  } catch {
+    // The address bar is a convenience only.
+  }
+}
+
 export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
   const router = useRouter();
   const messages = getLocaleMessages(locale);
@@ -332,6 +355,8 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
   const [unreadResults, setUnreadResults] = React.useState<number | null>(null);
   const deleteInFlightRef = React.useRef(false);
   const resolvedLocale = locale ?? 'en';
+  const [draftPrefill, setDraftPrefill] = React.useState<DraftPrefillState>({ status: 'none' });
+  const [draftAttempt, setDraftAttempt] = React.useState(0);
 
   const {
     agents: userAgents,
@@ -471,6 +496,43 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
     };
   }, [authReady]);
 
+  // COS-DRAFTS-01B: ?draftRun=&draftStep= opens the create form with the Chief of Staff's draft.
+  // Read in an effect so the route file needs no Suspense wrapper. Without both values nothing
+  // happens; nothing is saved from here, the owner saves through the form.
+  React.useEffect(() => {
+    if (!authReady) {
+      return;
+    }
+    const query = readDraftQuery(window.location.search);
+    if (!query) {
+      return;
+    }
+    let isMounted = true;
+    setDraftPrefill({ status: 'loading' });
+    setShowCreateForm(true);
+    setEditingUserAgentId(null);
+    setSelectedAgentId(null);
+    setSelectedUserAgentId(null);
+    void loadChiefDraft(collaborationFetch, query).then((result) => {
+      if (!isMounted) {
+        return;
+      }
+      setDraftPrefill(
+        result.state === 'ready'
+          ? { status: 'ready', draft: result.draft, stepId: query.stepId }
+          : { status: result.state },
+      );
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [authReady, draftAttempt]);
+
+  function finishDraftPrefill() {
+    clearDraftQuery();
+    setDraftPrefill({ status: 'none' });
+  }
+
   React.useEffect(() => {
     if (userAgentsError === 'AUTH_EXPIRED' || systemAgents.error === 'AUTH_EXPIRED') {
       router.replace(`/${resolvedLocale}/login`);
@@ -567,6 +629,10 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
   }
 
   function handleWorkflowSaved(agent: UserAgent, kind: WorkflowSaveRequest['kind']) {
+    if (kind === 'blank') {
+      // A saved draft no longer needs its query string; the form closes itself after its success line.
+      clearDraftQuery();
+    }
     if (kind === 'template') {
       // A copy opens straight in the editor so the owner can adjust it.
       setShowCreateForm(false);
@@ -915,14 +981,61 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
                     onSave: handleSaveWorkflow,
                   }}
                 />
+              ) : draftPrefill.status === 'loading' ? (
+                <div
+                  className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800/60 px-4 py-6 text-sm text-slate-400"
+                  role="status"
+                  data-testid="platform-draft-loading"
+                >
+                  <Spinner />
+                  <span>{workflowT('draftLoading')}</span>
+                </div>
               ) : showCreateForm ? (
+                <>
+                {draftPrefill.status === 'missing' ||
+                draftPrefill.status === 'invalid' ||
+                draftPrefill.status === 'error' ? (
+                  <div
+                    className="mb-4 flex flex-wrap items-start gap-2 rounded-lg border border-amber-700/50 bg-amber-950/40 px-3 py-2 text-sm text-amber-200"
+                    role="alert"
+                    data-testid="platform-draft-problem"
+                  >
+                    <ExclamationTriangleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                    <span className="min-w-0 flex-1 break-words">
+                      {workflowT(
+                        draftPrefill.status === 'error'
+                          ? 'draftLoadError'
+                          : draftPrefill.status === 'invalid'
+                            ? 'draftInvalid'
+                            : 'draftMissing',
+                      )}
+                    </span>
+                    {draftPrefill.status === 'error' ? (
+                      <button
+                        type="button"
+                        onClick={() => setDraftAttempt((count) => count + 1)}
+                        className="rounded-md border border-amber-700/60 px-2 py-0.5 text-xs font-medium text-amber-100 transition-colors hover:bg-amber-900/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                        data-testid="platform-draft-retry"
+                      >
+                        {workflowT('draftRetry')}
+                      </button>
+                    ) : null}
+                  </div>
+                ) : null}
                 <CreateAgentForm
-                  key="create"
+                  key={draftPrefill.status === 'ready' ? `create-draft-${draftPrefill.stepId}` : 'create'}
                   labels={formLabels}
                   onSubmit={handleCreateAgent}
-                  onCancel={() => setShowCreateForm(false)}
+                  onCancel={() => {
+                    setShowCreateForm(false);
+                    if (draftPrefill.status !== 'none') {
+                      finishDraftPrefill();
+                    }
+                  }}
                   workflow={{
                     mode: 'create',
+                    initialDraft: draftPrefill.status === 'ready' ? draftPrefill.draft : undefined,
+                    draftNotice: draftPrefill.status === 'ready' ? workflowT('draftNotice') : undefined,
                     t: workflowT,
                     scopeName: workflowScopeName,
                     localePrefix,
@@ -936,6 +1049,7 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
                       templatePrefillFor(templateId, systemAgents.agents, profileText),
                   }}
                 />
+                </>
               ) : (
                 <AgentDetailPanel
                   agent={detailPanelContent}

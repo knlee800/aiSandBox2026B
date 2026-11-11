@@ -9,6 +9,8 @@ import type {
   UserAgentOptions,
   UserAgentReplyLanguage,
 } from '@/hooks/useUserAgents';
+import type { CollaborationDraftView } from '@/lib/collaboration/api';
+import { readHandoffDraft } from '@/components/collaboration/collaboration-draft';
 
 /**
  * BIZ-USER-01B: the pure part of the workflow editor. Field mapping to request
@@ -579,4 +581,89 @@ export function teamNamesFor(
 
 export function toggleId(ids: readonly string[], id: string): string[] {
   return ids.includes(id) ? ids.filter((item) => item !== id) : [...ids, id];
+}
+
+/**
+ * COS-DRAFTS-01B (D10, D11): a Chief of Staff draft as the create form's start. Only the eight
+ * text parts are read; folders, connected tools, model, budgets, team and approval stay at their
+ * defaults. Nothing here saves: the owner checks every part and saves through the form.
+ */
+export function draftToWorkflowDraft(draft: CollaborationDraftView): WorkflowDraft {
+  const fields = draft.fields;
+  const replyLanguage = fields.replyLanguage;
+  return {
+    ...emptyWorkflowDraft(),
+    name: fields.name ?? '',
+    role: fields.role ?? '',
+    description: fields.description ?? '',
+    tone: fields.tone ?? '',
+    replyLanguage:
+      replyLanguage !== undefined && (REPLY_LANGUAGE_CHOICES as readonly string[]).includes(replyLanguage)
+        ? (replyLanguage as UserAgentReplyLanguage)
+        : '',
+    purpose: fields.purpose ?? '',
+    procedure: fields.procedure ?? '',
+    result: fields.result ?? '',
+  };
+}
+
+export interface DraftQuery {
+  runId: string;
+  stepId: string;
+}
+
+/** The draftRun and draftStep query values; null unless both are present and non-empty. */
+export function readDraftQuery(search: string): DraftQuery | null {
+  let params: URLSearchParams;
+  try {
+    params = new URLSearchParams(search);
+  } catch {
+    return null;
+  }
+  const runId = (params.get('draftRun') ?? '').trim();
+  const stepId = (params.get('draftStep') ?? '').trim();
+  return runId !== '' && stepId !== '' ? { runId, stepId } : null;
+}
+
+export type ChiefDraftLoad =
+  | { state: 'ready'; draft: WorkflowDraft }
+  | { state: 'missing' }
+  | { state: 'invalid' }
+  | { state: 'error' };
+
+/**
+ * Reads the run detail and takes that step's draft. A run that is not the owner's (the server
+ * answers 404), a step without a draft and a refused draft each give a state with its own
+ * message; a failed request gives 'error' so the page can offer a retry.
+ */
+export async function loadChiefDraft(
+  fetcher: (path: string) => Promise<Response>,
+  query: DraftQuery,
+): Promise<ChiefDraftLoad> {
+  let response: Response;
+  try {
+    response = await fetcher(`/api/collaboration/runs/${encodeURIComponent(query.runId)}`);
+  } catch {
+    return { state: 'error' };
+  }
+  if (response.status === 404) return { state: 'missing' };
+  if (!response.ok) return { state: 'error' };
+  let body: unknown;
+  try {
+    body = await response.json();
+  } catch {
+    return { state: 'error' };
+  }
+  const handoffs =
+    typeof body === 'object' && body !== null && Array.isArray((body as { handoffs?: unknown }).handoffs)
+      ? ((body as { handoffs: unknown[] }).handoffs)
+      : [];
+  const step = handoffs.find(
+    (item): item is Record<string, unknown> =>
+      typeof item === 'object' && item !== null && (item as { referralId?: unknown }).referralId === query.stepId,
+  );
+  const draft = step ? readHandoffDraft(step.draft) : null;
+  if (!draft) return { state: 'missing' };
+  if (draft.invalid !== null) return { state: 'invalid' };
+  return { state: 'ready', draft: draftToWorkflowDraft(draft) };
 }

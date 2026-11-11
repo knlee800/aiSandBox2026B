@@ -886,7 +886,13 @@
       "teamNames": {
         "product-strategy": "产品策略",
         "technology-advisor": "技术顾问"
-      }
+      },
+      "draftNotice": "已根据幕僚长的草稿预先填入。保存前请检查每个部分。",
+      "draftLoading": "正在加载幕僚长的草稿…",
+      "draftLoadError": "无法加载草稿。您可以再试一次，或自行填写表单。",
+      "draftRetry": "再试一次",
+      "draftMissing": "找不到该草稿。下方表单为空白。",
+      "draftInvalid": "该草稿无法使用。下方表单为空白。"
     }
   },
   "billing": {
@@ -1384,7 +1390,42 @@
     "rosterSkippedItem": "{name}（原因：{reason}）",
     "reportBackStep": "{source} → {target}（回报）",
     "reportBackNoEdit": "这一步是系统根据你的任务和代理的答复写成的，无法编辑。请批准或拒绝。",
-    "reportBackStepLead": "{agent} → {lead}（回报）"
+    "reportBackStepLead": "{agent} → {lead}（回报）",
+    "draftTitle": "草稿{kind}：{name}",
+    "draftTitleInvalid": "无法使用的草稿",
+    "draftKindAgent": "代理",
+    "draftKindWorkflow": "工作流程",
+    "draftParts": "草稿内容",
+    "draftNotSaved": "尚未保存任何内容。幕僚长无法创建代理或授予访问权限。每个部分都由您自己检查并保存。",
+    "draftOwnerSets": "文件夹、已连接的工具、模型、预算、团队与审批方式，请您在表单中自行设置。",
+    "draftDropped": "以下部分不符合表单限制，已留空：{parts}。",
+    "draftProblemItem": "{part}（原因：{reason}）",
+    "draftProblemTooLong": "太长",
+    "draftProblemControlCharacters": "含有不允许的字符",
+    "draftProblemNotAllowedValue": "不是允许的值",
+    "draftProblemNotForAgent": "只有工作流程才有这个部分",
+    "draftProblemPromptTooLong": "加上它之后指示会太长",
+    "draftUnknownLabels": "草稿不可使用的标签：{labels}。",
+    "draftReview": "检查并保存",
+    "draftFieldName": "名称",
+    "draftFieldRole": "角色",
+    "draftFieldDescription": "说明",
+    "draftFieldTone": "语气",
+    "draftFieldReplyLanguage": "回复语言",
+    "draftFieldPurpose": "目的",
+    "draftFieldProcedure": "流程",
+    "draftFieldResult": "结果",
+    "draftInvalidMalformedTag": "无法读取草稿的开头标签。",
+    "draftInvalidInvalidKind": "草稿既不是工作流程，也不是代理。",
+    "draftInvalidNotAtEnd": "草稿不在答复的最后面。",
+    "draftInvalidInsideCodeFence": "草稿位于代码块内。",
+    "draftInvalidMultipleBlocks": "答复中有不止一份草稿。",
+    "draftInvalidNested": "一份草稿位于另一份草稿之内。",
+    "draftInvalidTextBeforeLabel": "草稿的第一个部分之前还有其他文字。",
+    "draftInvalidUnknownLabel": "草稿提到了草稿不可包含的部分，例如工具、文件夹、模型、预算、团队或审批。",
+    "draftInvalidDuplicateLabel": "草稿中同一个部分出现了两次。",
+    "draftInvalidMissingName": "草稿没有名称。",
+    "draftInvalidInvalidName": "草稿的名称太长，或超过一行。"
   },
   "office": {
     "title": "办公室",

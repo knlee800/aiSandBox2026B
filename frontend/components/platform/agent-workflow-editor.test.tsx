@@ -16,6 +16,9 @@ import {
   buildPatchBody,
   buildTemplateBody,
   checkWorkflowDraft,
+  draftToWorkflowDraft,
+  loadChiefDraft,
+  readDraftQuery,
   parseApprovalLimit,
   emptyWorkflowDraft,
   liveInstructionsCount,
@@ -1139,5 +1142,233 @@ describe('APPROVAL-SET-01C approval fieldset rendering', () => {
         assert.notEqual(own, english, `${locale.code} ${key}`);
       }
     }
+  });
+});
+
+describe('COS-DRAFTS-01B prefilled create form', () => {
+  const draftView = (fields: Record<string, string>) => ({
+    kind: 'workflow' as const,
+    fields,
+    problems: [],
+    invalid: null,
+    unknownLabels: [],
+    answerWithoutDraft: '',
+  });
+  const FULL = {
+    name: 'Weekly sales digest',
+    role: 'Sales analyst',
+    description: 'Sums up the sales mail.',
+    tone: 'calm',
+    replyLanguage: 'zh-TW',
+    purpose: 'Keep the owner informed.',
+    procedure: 'Read the mail. Add it up.',
+    result: 'One short report.',
+  };
+
+  test('draftToWorkflowDraft fills the eight text parts and nothing else', () => {
+    const draft = draftToWorkflowDraft(draftView(FULL));
+    assert.deepEqual(draft, {
+      ...emptyWorkflowDraft(),
+      name: 'Weekly sales digest',
+      role: 'Sales analyst',
+      description: 'Sums up the sales mail.',
+      tone: 'calm',
+      replyLanguage: 'zh-TW',
+      purpose: 'Keep the owner informed.',
+      procedure: 'Read the mail. Add it up.',
+      result: 'One short report.',
+    });
+    assert.deepEqual(draft.knowledgeScopeIds, []);
+    assert.deepEqual(draft.connectorToolIds, []);
+    assert.equal(draft.modelChoice, 'server');
+    assert.equal(draft.budgetPerRun, '');
+    assert.equal(draft.budgetPerDay, '');
+    assert.deepEqual(draft.teamMemberIds, []);
+    assert.equal(draft.approvalMode, 'every');
+  });
+
+  test('extra fields in a draft never reach access, model, budget, team or approval', () => {
+    const draft = draftToWorkflowDraft(
+      draftView({
+        ...FULL,
+        knowledgeScopeIds: 'policies',
+        connectorToolIds: 'shell',
+        modelChoice: 'big',
+        teamMemberIds: 'x',
+        approvalMode: 'credits',
+      }),
+    );
+    assert.deepEqual(draft.knowledgeScopeIds, []);
+    assert.deepEqual(draft.connectorToolIds, []);
+    assert.equal(draft.modelChoice, 'server');
+    assert.deepEqual(draft.teamMemberIds, []);
+    assert.equal(draft.approvalMode, 'every');
+  });
+
+  test('the body sent on save is the plain blank create body with those parts', () => {
+    const body = buildBlankBody(draftToWorkflowDraft(draftView(FULL)));
+    assert.deepEqual(body, {
+      name: 'Weekly sales digest',
+      role: 'Sales analyst',
+      description: 'Sums up the sales mail.',
+      tone: 'calm',
+      replyLanguage: 'zh-TW',
+      purpose: 'Keep the owner informed.',
+      procedure: 'Read the mail. Add it up.',
+      result: 'One short report.',
+    });
+  });
+
+  test('an agent draft with three parts sends the three-field body', () => {
+    const body = buildBlankBody(
+      draftToWorkflowDraft(draftView({ name: 'Helper', role: 'Support', description: 'Answers mail.' })),
+    );
+    assert.deepEqual(body, { name: 'Helper', role: 'Support', description: 'Answers mail.' });
+  });
+
+  test('readDraftQuery needs both values', () => {
+    assert.deepEqual(readDraftQuery('?draftRun=r1&draftStep=s1'), { runId: 'r1', stepId: 's1' });
+    assert.deepEqual(readDraftQuery('draftRun=r1&draftStep=s1&x=1'), { runId: 'r1', stepId: 's1' });
+    assert.equal(readDraftQuery(''), null);
+    assert.equal(readDraftQuery('?draftRun=r1'), null);
+    assert.equal(readDraftQuery('?draftStep=s1'), null);
+    assert.equal(readDraftQuery('?draftRun=%20&draftStep=s1'), null);
+  });
+
+  test('the form opens prefilled with the text parts and the notice, access empty', () => {
+    const html = render(
+      config({
+        initialDraft: draftToWorkflowDraft(draftView(FULL)),
+        draftNotice: enT('draftNotice'),
+      }),
+    );
+    assert.ok(html.includes('data-testid="agent-workflow-draft-notice"'));
+    assert.ok(html.includes("Prefilled from the Chief of Staff&#x27;s draft. Check every part before you save."));
+    for (const text of [
+      'Weekly sales digest',
+      'Sales analyst',
+      'Sums up the sales mail.',
+      'calm',
+      'Keep the owner informed.',
+      'Read the mail. Add it up.',
+      'One short report.',
+    ]) {
+      assert.ok(html.includes(text), text);
+    }
+    const checkedBoxes = (html.match(/<input[^>]*type="checkbox"[^>]*>/g) ?? []).filter((input) => input.includes('checked=""'));
+    assert.equal(checkedBoxes.length, 0, 'no folder, tool or team is ticked');
+    // The ordinary IDs are all still there.
+    for (const id of ['create-agent-name', 'create-agent-role', 'create-agent-description', 'create-agent-submit']) {
+      assert.ok(html.includes(`data-testid="${id}"`), id);
+    }
+  });
+
+  test('without a draft the form has no notice and starts empty', () => {
+    const html = render(config());
+    assert.ok(!html.includes('agent-workflow-draft-notice'));
+    assert.ok(!html.includes('Weekly sales digest'));
+  });
+
+  test('an edit never takes a draft', () => {
+    const html = render(
+      config({
+        mode: 'edit',
+        agent: userAgentForDraftTest(),
+        initialDraft: draftToWorkflowDraft(draftView(FULL)),
+        draftNotice: 'notice',
+      }),
+    );
+    assert.ok(!html.includes('agent-workflow-draft-notice'));
+    assert.ok(!html.includes('Weekly sales digest'));
+  });
+});
+
+function userAgentForDraftTest(): UserAgent {
+  return {
+    id: 'agent-draft-test',
+    name: 'Existing',
+    role: 'Existing role',
+    description: 'Existing description',
+    status: 'draft',
+    tone: null,
+    replyLanguage: null,
+    purpose: null,
+    procedure: null,
+    result: null,
+    knowledgeScopeIds: [],
+    connectorToolIds: [],
+    model: { choice: 'server' },
+    budgetPerRunCredits: null,
+    budgetPerDayCredits: null,
+    teamMemberIds: [],
+    approvalMode: 'every',
+    approvalCreditLimit: null,
+  } as unknown as UserAgent;
+}
+
+describe('COS-DRAFTS-01B loading a draft for the form', () => {
+  const QUERY = { runId: 'run-1', stepId: 'ref-9' };
+  const respond = (status: number, body: unknown) => async (path: string) => {
+    calls.push(path);
+    return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+  };
+  const calls: string[] = [];
+  const detail = (draft: unknown) => ({
+    run: { collaborationRunId: 'run-1' },
+    handoffs: [{ referralId: 'other', draft: null }, { referralId: 'ref-9', draft }],
+  });
+  const good = {
+    kind: 'workflow',
+    fields: { name: 'Digest', role: 'Analyst', description: 'Sums up.' },
+    problems: [],
+    invalid: null,
+    unknownLabels: [],
+    answerWithoutDraft: '',
+  };
+
+  test('a usable draft is read from the run detail of that run only', async () => {
+    calls.length = 0;
+    const result = await loadChiefDraft(respond(200, detail(good)), QUERY);
+    assert.deepEqual(calls, ['/api/collaboration/runs/run-1']);
+    assert.equal(result.state, 'ready');
+    if (result.state === 'ready') {
+      assert.equal(result.draft.name, 'Digest');
+      assert.deepEqual(result.draft.knowledgeScopeIds, []);
+    }
+  });
+
+  test('another owner (404), a missing step and a step without a draft are all "missing"', async () => {
+    assert.deepEqual(await loadChiefDraft(respond(404, {}), QUERY), { state: 'missing' });
+    assert.deepEqual(
+      await loadChiefDraft(respond(200, { handoffs: [{ referralId: 'x', draft: good }] }), QUERY),
+      { state: 'missing' },
+    );
+    assert.deepEqual(await loadChiefDraft(respond(200, detail(null)), QUERY), { state: 'missing' });
+    assert.deepEqual(await loadChiefDraft(respond(200, { handoffs: 'nope' }), QUERY), { state: 'missing' });
+  });
+
+  test('an invalid draft gives the invalid state and no prefill', async () => {
+    const bad = { ...good, fields: {}, invalid: 'unknown_label', unknownLabels: ['tools'] };
+    assert.deepEqual(await loadChiefDraft(respond(200, detail(bad)), QUERY), { state: 'invalid' });
+  });
+
+  test('a failed request or a bad body gives the error state, so the page can offer a retry', async () => {
+    assert.deepEqual(await loadChiefDraft(respond(500, {}), QUERY), { state: 'error' });
+    assert.deepEqual(
+      await loadChiefDraft(async () => {
+        throw new Error('network');
+      }, QUERY),
+      { state: 'error' },
+    );
+    assert.deepEqual(
+      await loadChiefDraft(async () => new Response('not json', { status: 200 }), QUERY),
+      { state: 'error' },
+    );
+  });
+
+  test('the step id is matched exactly; the run id is encoded', async () => {
+    calls.length = 0;
+    await loadChiefDraft(respond(200, detail(good)), { runId: 'a/b c', stepId: 'ref-9' });
+    assert.deepEqual(calls, ['/api/collaboration/runs/a%2Fb%20c']);
   });
 });

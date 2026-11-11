@@ -13,8 +13,19 @@ import {
   collaborationAutoApprovalWaitingText,
   collaborationAutoApprovedText,
   AUTO_APPROVAL_WAIT_REASONS,
+  DRAFT_INVALID_REASONS,
+  DRAFT_PARTS,
+  DRAFT_PROBLEM_REASONS,
 } from '../../lib/collaboration/api';
 import { useCollaborationScreen } from './collaboration-page';
+import {
+  buildDraftCard,
+  draftFieldKey,
+  draftInvalidKey,
+  draftProblemKey,
+  draftReviewHref,
+  readHandoffDraft,
+} from './collaboration-draft';
 import CollaborationView, {
   type CollaborationRosterRowView,
   type CollaborationRosterView,
@@ -2548,5 +2559,231 @@ describe('APPROVAL-SET-01C automatic approval on the Team page', () => {
       }
     }
     assert.deepEqual(holders(EN.autoApprovedCredits), ['{estimate}', '{limit}']);
+  });
+});
+
+describe('COS-DRAFTS-01B draft card on the Team page', () => {
+  const tFor = (catalog: Catalog) => (key: string): string => catalog[key] ?? `MISSING:${key}`;
+  const tEn = tFor(EN);
+  const RUN = 'run-1';
+  const STEP = 'ref-9';
+
+  const validDraft = (overrides: Record<string, unknown> = {}) => ({
+    kind: 'workflow',
+    fields: {
+      name: 'Weekly sales digest',
+      role: 'Sales analyst',
+      description: 'Sums up the sales mail.',
+      tone: 'calm',
+      replyLanguage: 'zh-TW',
+      purpose: 'Keep the owner informed.',
+      procedure: 'Read the mail. Add it up.',
+      result: 'One short report.',
+    },
+    problems: [],
+    invalid: null,
+    unknownLabels: [],
+    answerWithoutDraft: 'Here is a draft for you.',
+    ...overrides,
+  });
+
+  const step = (extra: Record<string, unknown>) => ({
+    referralId: STEP,
+    statusLabel: 'Completed',
+    asked: 'x',
+    prompt: null,
+    answer: 'Here is a draft for you.',
+    handoffNote: null,
+    failureReason: null,
+    decidedBy: null,
+    rejectReason: null,
+    waiting: false,
+    canChangeFiles: false,
+    changedPaths: [],
+    savePoint: null,
+    tests: [],
+    roundLabel: null,
+    diff: null,
+    diffUnavailable: false,
+    testsGate: 'not_required' as const,
+    testsBlockReason: null,
+    approveWithoutTests: false,
+    sources: [],
+    showUnsourced: false,
+    droppedSourceCount: 0,
+    ...extra,
+  });
+
+  const cardFor = (value: unknown, locale = 'en', t = tEn) => {
+    const draft = readHandoffDraft(value);
+    assert.ok(draft);
+    return buildDraftCard(draft, { t, locale, runId: RUN, referralId: STEP });
+  };
+
+  test('a valid draft shows its title, parts, the not-saved sentences and one Review and save link', () => {
+    const markup = render({
+      handoffs: [step({ draft: cardFor(validDraft()), answerShown: 'Here is a draft for you.' })],
+    });
+    assert.match(markup, /data-testid="collaboration-draft-ref-9"/);
+    assert.ok(markup.includes('Draft workflow: Weekly sales digest'));
+    for (const text of ['Sales analyst', 'Sums up the sales mail.', 'calm', 'zh-TW', 'One short report.']) {
+      assert.ok(markup.includes(text), text);
+    }
+    assert.match(markup, /<details[^>]*data-testid="collaboration-draft-parts-ref-9"/);
+    assert.ok(markup.includes(EN.draftNotSaved));
+    assert.ok(markup.includes(EN.draftOwnerSets));
+    assert.ok(markup.includes(EN.draftReview));
+    assert.match(markup, /href="\/en\/platform\?draftRun=run-1&amp;draftStep=ref-9"/);
+    assert.doesNotMatch(markup, /collaboration-draft-invalid-/);
+    assert.match(markup, /data-testid="collaboration-answer-ref-9"/);
+    assert.ok(markup.includes('Here is a draft for you.'));
+  });
+
+  test('the link carries the locale prefix and encodes both ids', () => {
+    assert.equal(draftReviewHref('zh-TW', 'a b', 'c/d'), '/zh-TW/platform?draftRun=a%20b&draftStep=c%2Fd');
+    const card = cardFor(validDraft(), 'zh-CN');
+    assert.equal(card.reviewHref, '/zh-CN/platform?draftRun=run-1&draftStep=ref-9');
+  });
+
+  test('an agent draft names the agent kind and lists its three parts', () => {
+    const card = cardFor(validDraft({ kind: 'agent', fields: { name: 'Helper', role: 'r', description: 'd' } }));
+    assert.equal(card.title, 'Draft agent: Helper');
+    assert.deepEqual(
+      card.parts.map((part) => part.part),
+      ['name', 'role', 'description'],
+    );
+  });
+
+  test('dropped parts and their reasons are named', () => {
+    const card = cardFor(
+      validDraft({
+        problems: [
+          { part: 'role', reason: 'too_long' },
+          { part: 'procedure', reason: 'prompt_too_long' },
+        ],
+      }),
+    );
+    assert.ok(card.droppedText);
+    assert.ok(card.droppedText.includes(`Role (${EN.draftProblemTooLong})`));
+    assert.ok(card.droppedText.includes(`Procedure (${EN.draftProblemPromptTooLong})`));
+    const markup = render({ handoffs: [step({ draft: card })] });
+    assert.match(markup, /data-testid="collaboration-draft-dropped-ref-9"/);
+    assert.match(markup, /collaboration-draft-review-ref-9/);
+  });
+
+  test('an invalid draft shows its translated reason, names unknown labels and has no link', () => {
+    const card = cardFor({
+      kind: 'workflow',
+      fields: { name: 'Leak' },
+      problems: [],
+      invalid: 'unknown_label',
+      unknownLabels: ['tools', 'budget'],
+      answerWithoutDraft: 'Text',
+    });
+    assert.equal(card.reviewHref, null);
+    assert.equal(card.valid, false);
+    // An invalid draft carries no parts, whatever the server sent.
+    assert.deepEqual(card.parts, []);
+    const markup = render({ handoffs: [step({ draft: card })] });
+    assert.match(markup, /data-testid="collaboration-draft-invalid-ref-9"/);
+    assert.ok(markup.includes(EN.draftInvalidUnknownLabel));
+    assert.match(markup, /data-testid="collaboration-draft-unknown-labels-ref-9"/);
+    assert.ok(markup.includes('tools, budget'));
+    assert.doesNotMatch(markup, /collaboration-draft-review-/);
+    assert.doesNotMatch(markup, /collaboration-draft-parts-/);
+    assert.ok(markup.includes(EN.draftNotSaved));
+  });
+
+  test('every invalid and problem reason has copy in all three languages', () => {
+    for (const [locale, catalog] of CATALOGS) {
+      const t = tFor(catalog);
+      for (const reason of DRAFT_INVALID_REASONS) {
+        const text = t(draftInvalidKey(reason));
+        assert.ok(text && !text.startsWith('MISSING:'), `${locale} ${reason}`);
+        const card = buildDraftCard(
+          { kind: 'workflow', fields: {}, problems: [], invalid: reason, unknownLabels: [], answerWithoutDraft: '' },
+          { t, locale, runId: RUN, referralId: STEP },
+        );
+        assert.equal(card.invalidText, text, `${locale} ${reason}`);
+        assert.equal(card.reviewHref, null);
+      }
+      for (const reason of DRAFT_PROBLEM_REASONS) {
+        const text = t(draftProblemKey(reason));
+        assert.ok(text && !text.startsWith('MISSING:'), `${locale} ${reason}`);
+      }
+    }
+  });
+
+  test('the reader fails closed on a bad shape', () => {
+    assert.equal(readHandoffDraft(null), null);
+    assert.equal(readHandoffDraft(undefined), null);
+    assert.equal(readHandoffDraft('draft'), null);
+    assert.equal(readHandoffDraft([]), null);
+    assert.equal(readHandoffDraft({ kind: 'team', fields: { name: 'x' }, invalid: null })?.invalid, 'invalid_kind');
+    assert.equal(readHandoffDraft({ kind: 'agent', fields: { role: 'r' }, invalid: null })?.invalid, 'missing_name');
+    assert.equal(readHandoffDraft({ kind: 'agent', fields: { name: 'x' }, invalid: 'weird' })?.invalid, 'malformed_tag');
+    const read = readHandoffDraft({
+      kind: 'workflow',
+      fields: { name: 'x', tools: 'shell', model: 'big', budget: '9', role: 5, replyLanguage: 'fr' },
+      problems: [
+        { part: 'role', reason: 'nope' },
+        { part: 'tools', reason: 'too_long' },
+      ],
+      invalid: null,
+    });
+    assert.deepEqual(read?.fields, { name: 'x' });
+    assert.deepEqual(read?.problems, []);
+  });
+
+  test('a step without a draft renders as before, with the answer whole', () => {
+    const markup = render({ handoffs: [step({ draft: null, answer: 'Plain answer' })] });
+    assert.doesNotMatch(markup, /collaboration-draft-/);
+    assert.match(markup, /data-testid="collaboration-answer-ref-9"/);
+    assert.ok(markup.includes('Plain answer'));
+  });
+
+  test('a draft with no text before it shows the card without an empty answer box', () => {
+    const markup = render({
+      handoffs: [step({ draft: cardFor(validDraft()), answerShown: '' })],
+    });
+    assert.match(markup, /collaboration-draft-ref-9/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-answer-ref-9"/);
+    assert.ok(!markup.includes(EN.noAnswerYet));
+  });
+
+  test('the new keys exist in all three languages, with the same placeholders and real Chinese', () => {
+    const keys = [
+      'draftTitle',
+      'draftTitleInvalid',
+      'draftKindAgent',
+      'draftKindWorkflow',
+      'draftParts',
+      'draftNotSaved',
+      'draftOwnerSets',
+      'draftDropped',
+      'draftProblemItem',
+      'draftUnknownLabels',
+      'draftReview',
+      ...DRAFT_PARTS.map(draftFieldKey),
+      ...DRAFT_INVALID_REASONS.map(draftInvalidKey),
+      ...DRAFT_PROBLEM_REASONS.map(draftProblemKey),
+    ];
+    const holders = (text: string) => (text.match(/\{[a-zA-Z]+\}/g) ?? []).sort();
+    for (const key of keys) {
+      assert.equal(typeof EN[key], 'string', `en ${key}`);
+      for (const [locale, catalog] of CATALOGS.slice(1)) {
+        assert.equal(typeof catalog[key], 'string', `${locale} ${key}`);
+        assert.deepEqual(holders(catalog[key]), holders(EN[key]), `${locale} ${key}`);
+        assert.match(catalog[key], /[一-鿿]/, `${locale} ${key}`);
+      }
+    }
+  });
+
+  test('the page maps the server draft into the card, and the card only links and reads', () => {
+    const source = readFileSync(join(process.cwd(), 'components/collaboration/collaboration-page.tsx'), 'utf8');
+    assert.match(source, /readHandoffDraft\(handoff\.draft\)/);
+    assert.match(source, /answerShown: draftView \? draftView\.answerWithoutDraft : null/);
+    const draftSource = readFileSync(join(process.cwd(), 'components/collaboration/collaboration-draft.ts'), 'utf8');
+    assert.doesNotMatch(draftSource, /fetch\(|collaborationFetch|method:/);
   });
 });
