@@ -87226,22 +87226,22 @@ taskId=COS-DRAFTS-01B
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-11 by the COS-DRAFTS-01 stage-start approval — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-11. Was: READY — registered 2026-11-11 by the COS-DRAFTS-01 stage-start approval — not admitted.
 **Task ID:** COS-DRAFTS-01B
 **Title:** Chief of Staff draft card and prefilled form
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP (stage-start shared with COS-DRAFTS-01).
-**Start condition:** NOT_READY. Ready when: COS-DRAFTS-01 LOCKED; the control plane may start it under Keith's 2026-11-11 approval of the stage-start.
+**Start condition:** READY (COS-DRAFTS-01 LOCKED 2026-11-11). Was: NOT_READY. Ready when: COS-DRAFTS-01 LOCKED; the control plane may start it under Keith's 2026-11-11 approval of the stage-start.
 **Depends on:** COS-DRAFTS-01.
-**Primary write scope:** PROVISIONAL, set at admission (expected: frontend/components/collaboration/ (collaboration-view.tsx, collaboration-page.tsx, collaboration-roster.ts or a new collaboration-draft.ts, collaboration-workflows.test.tsx), frontend/components/platform/ (platform-dashboard.tsx and test, create-agent-form.tsx, agent-workflow-model.ts, agent-workflow-editor.test.tsx), frontend/app/[locale]/platform/page.tsx only if useSearchParams needs a Suspense wrapper, the three message files).
-**Mutexes / resources:** set at admission (expected FRONTEND, I18N).
+**Primary write scope:** set 2026-11-11: frontend/components/collaboration/collaboration-view.tsx, frontend/components/collaboration/collaboration-page.tsx, frontend/components/collaboration/collaboration-draft.ts, frontend/components/collaboration/collaboration-workflows.test.tsx, frontend/components/platform/platform-dashboard.tsx, frontend/components/platform/platform-dashboard.test.ts, frontend/components/platform/create-agent-form.tsx, frontend/components/platform/agent-workflow-model.ts, frontend/components/platform/agent-workflow-editor.test.tsx, frontend/lib/collaboration/api.ts, frontend/lib/collaboration.test.ts, frontend/messages/en.json, frontend/messages/zh-TW.json, frontend/messages/zh-CN.json.
+**Mutexes / resources:** FRONTEND, I18N.
 **Hot-file leases:** none.
-**Shared contracts:** set at admission.
+**Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
-**Revert isolation:** set at admission.
+**Revert isolation:** the card renders only when draft is present; the dashboard without the query string is unchanged.
 **saturationClass:** OPTIONAL (as for its parent; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09 and the stage-start 2026-11-11).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** Stage-start docs/COS-DRAFTS-01-STAGE-START.md 01B: the draft card on the Team page with Review and save (read-only like a report-back when long), /platform?draftRun=&draftStep= opens the create form prefilled with the text parts only and a notice; nothing is saved until the owner saves, always as a draft; copy in three languages. Implementer: sonnet.
 **Also (added 2026-11-11 by the COS-DRAFTS-01 LOCK):** the card translates the invalid reasons malformed_tag, invalid_kind, not_at_end, inside_code_fence, multiple_blocks, nested, text_before_label, unknown_label, duplicate_label, missing_name, invalid_name, the part problems too_long, control_characters, not_allowed_value, not_for_agent, prompt_too_long, and names unknownLabels; draft is on the run detail's handoff view for completed chief-of-staff steps only.
 ### COS-DRAFTS-TEMPLATE-01 — Template copies without the Drafting paragraph
