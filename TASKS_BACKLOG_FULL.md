@@ -88346,22 +88346,22 @@ taskId=CM-CONTENT-TYPE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-11 by the CM-BINARY-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-11 — under Keith's "do not stop!!! ... keep looking for the next task to start". Was: READY — registered 2026-11-11 by the CM-BINARY-01 LOCK — not admitted.
 **Task ID:** CM-CONTENT-TYPE-01
 **Title:** Preview content types for fonts, images and modules
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (control plane under Keith's 2026-11-10 instruction, 2026-11-11). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** CM-BINARY-01.
-**Primary write scope:** PROVISIONAL: services/container-manager/src/preview/preview.service.ts and its spec, services/container-manager/src/docker/docker-runtime.service.ts (one comment).
-**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Primary write scope:** set 2026-11-11: services/container-manager/src/preview/preview.service.ts, services/container-manager/src/preview/preview.service.spec.ts, services/container-manager/src/preview/preview.controller.spec.ts, services/container-manager/src/docker/docker-runtime.service.ts.
+**Mutexes / resources:** CONTAINER-MANAGER.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** From the CM-BINARY-01 worker: resolveContentType has no entries for woff, woff2, ttf, gif, webp, ico, wasm and mjs, so they go out as text/plain; charset=utf-8 and browsers may refuse fonts or modules; add the standard types with tests. Also fix the stale docker-runtime.service.ts cap comment that still describes base64 history slices.
 
 ### CM-DIFF-CAP-01 — Large diffs come back truncated, not failed

@@ -37,13 +37,18 @@
       "runtimeNeeds": []
     },
     "lane2": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "CM-CONTENT-TYPE-01",
+      "mutexes": ["CONTAINER-MANAGER"],
+      "writePaths": [
+        "services/container-manager/src/preview/preview.service.ts",
+        "services/container-manager/src/preview/preview.service.spec.ts",
+        "services/container-manager/src/preview/preview.controller.spec.ts",
+        "services/container-manager/src/docker/docker-runtime.service.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -6070,14 +6075,19 @@
       "taskId": "CM-CONTENT-TYPE-01",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "OPTIONAL",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
       "dependsOn": ["CM-BINARY-01"],
-      "mutexes": [],
-      "writePaths": [],
+      "mutexes": ["CONTAINER-MANAGER"],
+      "writePaths": [
+        "services/container-manager/src/preview/preview.service.ts",
+        "services/container-manager/src/preview/preview.service.spec.ts",
+        "services/container-manager/src/preview/preview.controller.spec.ts",
+        "services/container-manager/src/docker/docker-runtime.service.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
       "sharedContractIds": [],
@@ -6085,8 +6095,8 @@
       "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "runtimeNeeds": [],
-      "admissionUncertain": true,
-      "writeSetPrecision": "PROVISIONAL"
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
     },
     {
       "taskId": "CM-DIFF-CAP-01",
