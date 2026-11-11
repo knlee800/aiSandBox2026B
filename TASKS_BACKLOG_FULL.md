@@ -88743,13 +88743,13 @@ taskId=STAGING-DEPLOY-FD-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-11 by the STAGING-DEPLOY-FD-01 re-scope — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-11 — Keith approved the deploy ("Yes, deploy it"). Was: READY — registered 2026-11-11 by the STAGING-DEPLOY-FD-01 re-scope — not admitted.
 **Task ID:** STAGING-DEPLOY-FD-02
 **Title:** Deploy the rest of Stage 4
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: COS-DRAFTS-01 LOCKED. Keith decides.
+**Start condition:** READY (COS-DRAFTS-01 and -01B LOCKED; Keith approved 2026-11-11). Was: NOT_READY. Ready when: COS-DRAFTS-01 LOCKED. Keith decides.
 **Depends on:** COS-DRAFTS-01.
 **Primary write scope:** records; host state.
 **Mutexes / resources:** STAGING, ENV.
