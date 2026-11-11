@@ -87125,22 +87125,22 @@ taskId=APPROVAL-SET-01B
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-11 by the APPROVAL-SET-01 stage-start approval — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-11. Was: READY — registered 2026-11-11 by the APPROVAL-SET-01 stage-start approval — not admitted.
 **Task ID:** APPROVAL-SET-01B
 **Title:** The server auto-approve path
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP (stage-start shared with APPROVAL-SET-01).
-**Start condition:** NOT_READY. Ready when: APPROVAL-SET-01 LOCKED; the control plane may start it under Keith's 2026-11-11 approval of the stage-start.
+**Start condition:** READY (APPROVAL-SET-01 LOCKED 2026-11-11). Was: NOT_READY. Ready when: APPROVAL-SET-01 LOCKED; the control plane may start it under Keith's 2026-11-11 approval of the stage-start.
 **Depends on:** APPROVAL-SET-01.
-**Primary write scope:** PROVISIONAL, set at admission (expected: services/api-gateway/src/orchestration/ (orchestration.contracts.ts, orchestration.service.ts, collaboration-workflow.ts, collaboration.controller.ts and their specs, internal-collaboration.controller.spec.ts, orchestration/__tests__ key-set pins)).
-**Mutexes / resources:** set at admission (expected GATEWAY).
+**Primary write scope:** set 2026-11-11: services/api-gateway/src/orchestration/orchestration.contracts.ts, services/api-gateway/src/orchestration/orchestration.service.ts, services/api-gateway/src/orchestration/collaboration-workflow.ts, services/api-gateway/src/orchestration/collaboration-workflow.spec.ts, services/api-gateway/src/orchestration/collaboration.controller.ts, services/api-gateway/src/orchestration/collaboration.controller.spec.ts, services/api-gateway/src/orchestration/internal-collaboration.controller.spec.ts, services/api-gateway/src/orchestration/__tests__/orchestration.service.spec.ts, services/api-gateway/src/orchestration/__tests__/orchestration.persistence.spec.ts, services/api-gateway/src/orchestration/__tests__/orchestration.canary.spec.ts.
+**Mutexes / resources:** GATEWAY.
 **Hot-file leases:** none.
-**Shared contracts:** set at admission.
+**Shared contracts:** HARNESS_ENTITLEMENT_PROOF_V1 read, not changed (no job key added or removed).
 **Evidence class:** LOCAL-TESTS.
-**Revert isolation:** set at admission.
+**Revert isolation:** revert the commit; with every stored, the path is a no-op.
 **saturationClass:** OPTIONAL (as for its parent; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09 and the stage-start 2026-11-11).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** Stage-start docs/APPROVAL-SET-01-STAGE-START.md 01B: maybeAutoApprove after createPendingReferral in the dispatch and report-back paths only (never the first hand-off, internal-route referrals, coding or advisors runs); auto only when the target is positively read-only (registry toolProfile read, or a workflow with its snapshot in the run) and every connector tool it may hold carries readOnly true; the credits mode uses lastStepCreditsFor (unknown waits); it calls the existing approveReferral so every check still runs, and any refusal leaves the step waiting with a reason in pending_job.autoApproval and an audit event; decidedBy = owner with decisionReason auto:...; the handoff view gains autoApproved and autoApprovalWaiting. HARNESS_ENTITLEMENT_PROOF_V1 read, not changed. With every stored, the path is a no-op. Implementer: opus.
 
 ### APPROVAL-SET-01C — Approval setting form and Team page
