@@ -15,6 +15,7 @@ import type {
   SystemAgentReplyLanguage,
   SystemAgentToolProfile,
 } from '../system-agents/system-agent-registry';
+import type { UserWorkflowApprovalMode } from '../user-agent/user-workflow-rules';
 
 export const USER_AGENT_STATUSES = ['active', 'draft', 'disabled'] as const;
 export type UserAgentStatus = (typeof USER_AGENT_STATUSES)[number];
@@ -92,6 +93,16 @@ export class UserAgent {
   // Saved with the form; checked at save and again at start.
   @Column({ type: 'jsonb', name: 'team_member_ids', default: () => "'[]'" })
   teamMemberIds: string[];
+
+  // APPROVAL-SET-01 D1, D2: how the workflow's hand-offs are approved
+  // (migration 1807000000000-AddUserAgentApprovalColumns). 'every' waits for
+  // the owner on every hand-off; the limit is set only for 'credits'. Not part
+  // of the workflow version (D3). Read fail-closed with readApprovalSetting.
+  @Column({ type: 'varchar', length: 16, name: 'approval_mode', default: 'every' })
+  approvalMode: UserWorkflowApprovalMode;
+
+  @Column({ type: 'integer', name: 'approval_credit_limit', nullable: true })
+  approvalCreditLimit: number | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

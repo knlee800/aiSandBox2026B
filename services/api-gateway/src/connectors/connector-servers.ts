@@ -26,6 +26,14 @@ export const CALENDAR_TOOL_ID = 'calendar_list_today';
 export interface ConnectorToolDefinition {
   id: typeof MAIL_TOOL_ID | typeof CALENDAR_TOOL_ID;
   kind: ConnectorKind;
+  /**
+   * APPROVAL-SET-01 D6: true only for a tool that cannot send, write or
+   * delete. APPROVAL-SET-01B lets a hand-off run without waiting only when
+   * every connector tool its target may hold carries true; a tool that sends
+   * or writes is registered with false. A constant: nothing reads it at run
+   * time in slice 01A.
+   */
+  readonly readOnly: boolean;
   description: string;
   inputSchema: {
     type: 'object';
@@ -38,6 +46,7 @@ export interface ConnectorToolDefinition {
 export const MAIL_TOOL: ConnectorToolDefinition = {
   id: MAIL_TOOL_ID,
   kind: 'imap',
+  readOnly: true,
   description:
     'List unread Inbox messages for the connected mailbox: message id, sender, recipient count, subject, date, and a short plain-text excerpt of the body (at most 800 characters). At most 25 messages. Does not mark messages read and does not change the mailbox.',
   inputSchema: {
@@ -57,6 +66,7 @@ export const MAIL_TOOL: ConnectorToolDefinition = {
 export const CALENDAR_TOOL: ConnectorToolDefinition = {
   id: CALENDAR_TOOL_ID,
   kind: 'ical',
+  readOnly: true,
   description:
     "List today's events on the connected calendar in an IANA time zone: title, start, end, organizer, attendee count, and response status. Does not change the calendar.",
   inputSchema: {

@@ -24,10 +24,15 @@ import { CreateAgentDto, MAX_USER_WORKFLOW_BUDGET_CREDITS } from './dto/create-a
 import { UpdateAgentDto } from './dto/update-agent.dto';
 import { CreateAgentFromTemplateDto } from './dto/create-agent-from-template.dto';
 import {
+  DEFAULT_USER_WORKFLOW_APPROVAL_MODE,
+  USER_WORKFLOW_APPROVAL_MODES,
   USER_WORKFLOW_RULES,
   assertRosterMemberIds,
+  isApprovalCreditLimit,
+  isUserWorkflowApprovalMode,
   isUserWorkflowTemplateId,
   readRosterMemberIds,
+  type UserWorkflowApprovalMode,
 } from './user-workflow-rules';
 import {
   allowlistedConnectorToolIds,
@@ -50,6 +55,12 @@ export const USER_WORKFLOW_ERROR_CODES = {
   modelInvalid: 'MODEL_INVALID',
   budgetInvalid: 'BUDGET_INVALID',
   templateNotAllowed: 'TEMPLATE_NOT_ALLOWED',
+  /** APPROVAL-SET-01 D2: the mode is not one of USER_WORKFLOW_APPROVAL_MODES. */
+  approvalModeInvalid: 'APPROVAL_MODE_INVALID',
+  /** APPROVAL-SET-01 D2: the limit is not a whole number from 1 to the budget maximum. */
+  approvalLimitInvalid: 'APPROVAL_LIMIT_INVALID',
+  /** APPROVAL-SET-01 D2: 'credits' without a limit. */
+  approvalLimitRequired: 'APPROVAL_LIMIT_REQUIRED',
 } as const;
 
 export type UserWorkflowErrorCode =
@@ -119,6 +130,12 @@ interface ValidWorkflowFields {
   budgetPerDayCredits: number | null;
   /** Present only when the save carries a team. */
   teamMemberIds?: string[];
+}
+
+/** APPROVAL-SET-01 D2: the validated approval setting, ready to store. */
+interface ValidApprovalFields {
+  approvalMode: UserWorkflowApprovalMode;
+  approvalCreditLimit: number | null;
 }
 
 /** The prompt spec a stored workflow renders: its parts plus the platform rules. */
@@ -193,6 +210,10 @@ export class UserAgentService {
       [],
       { ids: dto.teamMemberIds ?? [], selfId: null },
     );
+    const approval = this.validateApproval(
+      dto.approvalMode ?? DEFAULT_USER_WORKFLOW_APPROVAL_MODE,
+      dto.approvalCreditLimit ?? null,
+    );
 
     const agent = this.userAgentRepository.create({
       userId,
@@ -202,6 +223,7 @@ export class UserAgentService {
       status: NEW_USER_AGENT_STATUS,
       initials,
       ...fields,
+      ...approval,
       templateId: null,
     });
 
@@ -257,6 +279,9 @@ export class UserAgentService {
       status: NEW_USER_AGENT_STATUS,
       initials: this.computeInitials(dto.name),
       ...fields,
+      // APPROVAL-SET-01 D2: a copy starts with the default, every hand-off waits.
+      approvalMode: DEFAULT_USER_WORKFLOW_APPROVAL_MODE,
+      approvalCreditLimit: null,
       templateId: template.id,
     });
 
@@ -278,6 +303,12 @@ export class UserAgentService {
    * empties it) after the member rule; without it the stored team is kept and
    * not re-checked (start re-checks every member). The team is not part of the
    * workflow version (D14), so a team-only edit never needs a new test.
+   *
+   * APPROVAL-SET-01 D2, D3: a body with `approvalMode` or `approvalCreditLimit`
+   * merges them with the stored setting (an absent one keeps its stored value)
+   * and saves both after validation; without either the stored setting is kept
+   * and not re-checked. The setting is not part of the workflow version, so a
+   * setting-only edit never needs a new test and runs no switch-on check.
    */
   async update(id: string, userId: string, dto: UpdateAgentDto): Promise<UserAgent> {
     const agent = await this.findOneByIdAndUserId(id, userId);
@@ -309,6 +340,21 @@ export class UserAgentService {
       storedToolIds,
       dto.teamMemberIds !== undefined ? { ids: dto.teamMemberIds, selfId: agent.id } : null,
     );
+    const approval =
+      dto.approvalMode !== undefined || dto.approvalCreditLimit !== undefined
+        ? this.validateApproval(
+            dto.approvalMode !== undefined
+              ? dto.approvalMode
+              : isUserWorkflowApprovalMode(agent.approvalMode)
+                ? agent.approvalMode
+                : DEFAULT_USER_WORKFLOW_APPROVAL_MODE,
+            dto.approvalCreditLimit !== undefined
+              ? dto.approvalCreditLimit
+              : isApprovalCreditLimit(agent.approvalCreditLimit)
+                ? agent.approvalCreditLimit
+                : null,
+          )
+        : null;
 
     const switchingOn = dto.status === 'active' && agent.status !== 'active';
 
@@ -318,6 +364,7 @@ export class UserAgentService {
     if (dto.status !== undefined) agent.status = dto.status;
     if (dto.initials !== undefined) agent.initials = dto.initials;
     Object.assign(agent, fields);
+    if (approval) Object.assign(agent, approval);
 
     if (switchingOn) {
       await this.switchOnCheck.assertCanSwitchOn(userId, agent);
@@ -509,6 +556,41 @@ export class UserAgentService {
       notAllowedMessage: 'This agent cannot be on a workflow team',
     });
     return ids;
+  }
+
+  /**
+   * APPROVAL-SET-01 D2: the approval setting on a save. The mode must be one of
+   * USER_WORKFLOW_APPROVAL_MODES; a limit, when given, a whole number from 1 to
+   * the budget maximum; 'credits' needs a limit (APPROVAL_LIMIT_REQUIRED). A
+   * limit with any other mode is stored as null. A refusal is a 400 with a
+   * stable code; the caller writes nothing.
+   */
+  private validateApproval(mode: unknown, limit: unknown): ValidApprovalFields {
+    if (!isUserWorkflowApprovalMode(mode)) {
+      throw userWorkflowBadRequest(
+        USER_WORKFLOW_ERROR_CODES.approvalModeInvalid,
+        'The approval setting is not available.',
+        { allowed: [...USER_WORKFLOW_APPROVAL_MODES] },
+      );
+    }
+    if (limit !== undefined && limit !== null && !isApprovalCreditLimit(limit)) {
+      throw userWorkflowBadRequest(
+        USER_WORKFLOW_ERROR_CODES.approvalLimitInvalid,
+        'The approval credit limit is invalid.',
+        { max: MAX_USER_WORKFLOW_BUDGET_CREDITS },
+      );
+    }
+    const creditLimit = isApprovalCreditLimit(limit) ? limit : null;
+    if (mode === 'credits' && creditLimit === null) {
+      throw userWorkflowBadRequest(
+        USER_WORKFLOW_ERROR_CODES.approvalLimitRequired,
+        'Set a credit limit for this approval setting.',
+      );
+    }
+    return {
+      approvalMode: mode,
+      approvalCreditLimit: mode === 'credits' ? creditLimit : null,
+    };
   }
 
   private computeInitials(name: string): string {

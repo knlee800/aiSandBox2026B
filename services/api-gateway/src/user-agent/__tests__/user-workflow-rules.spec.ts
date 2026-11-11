@@ -4,14 +4,21 @@ import {
 } from '../../system-agents/system-agent-registry';
 import { BadRequestException } from '@nestjs/common';
 import {
+  DEFAULT_USER_WORKFLOW_APPROVAL_MODE,
   MAX_ROSTER_MEMBERS,
+  MAX_USER_WORKFLOW_BUDGET_CREDITS,
   ROSTER_REFUSAL_CODES,
+  USER_WORKFLOW_APPROVAL_MODES,
+  isApprovalCreditLimit,
+  isUserWorkflowApprovalMode,
+  readApprovalSetting,
   USER_WORKFLOW_RULES,
   USER_WORKFLOW_TEMPLATE_IDS,
   assertRosterMemberIds,
   isUserWorkflowTemplateId,
   readRosterMemberIds,
 } from '../user-workflow-rules';
+import { MAX_USER_WORKFLOW_BUDGET_CREDITS as DTO_MAX_BUDGET } from '../dto/create-agent.dto';
 
 describe('user workflow rules and templates (BIZ-USER-01A D4, DECISION B)', () => {
   it('USER_WORKFLOW_RULES equals the Chief of Staff rules part', () => {
@@ -98,5 +105,82 @@ describe('USER-TEAMS-01 shared member rule (D2, DECISION D)', () => {
     await expect(messageOf('This agent cannot be on a workflow team')).resolves.toBe(
       'This agent cannot be on a workflow team',
     );
+  });
+});
+
+describe('approval setting (APPROVAL-SET-01 D2, fail-closed read)', () => {
+  it('lists exactly every, credits and read_only, with every as the default', () => {
+    expect([...USER_WORKFLOW_APPROVAL_MODES]).toEqual(['every', 'credits', 'read_only']);
+    expect(DEFAULT_USER_WORKFLOW_APPROVAL_MODE).toBe('every');
+  });
+
+  it('the budget maximum is one constant, re-exported unchanged by the DTO', () => {
+    expect(MAX_USER_WORKFLOW_BUDGET_CREDITS).toBe(1_000_000);
+    expect(DTO_MAX_BUDGET).toBe(MAX_USER_WORKFLOW_BUDGET_CREDITS);
+  });
+
+  it.each(['every', 'credits', 'read_only'])('isUserWorkflowApprovalMode accepts %s', (mode) => {
+    expect(isUserWorkflowApprovalMode(mode)).toBe(true);
+  });
+
+  it.each(['EVERY', 'readOnly', 'read-only', 'auto', '', ' every', null, undefined, 1, {}, ['every']])(
+    'isUserWorkflowApprovalMode refuses %p',
+    (mode) => {
+      expect(isUserWorkflowApprovalMode(mode)).toBe(false);
+    },
+  );
+
+  it.each([1, 50, MAX_USER_WORKFLOW_BUDGET_CREDITS])('isApprovalCreditLimit accepts %p', (limit) => {
+    expect(isApprovalCreditLimit(limit)).toBe(true);
+  });
+
+  it.each([0, -1, 1.5, MAX_USER_WORKFLOW_BUDGET_CREDITS + 1, NaN, Infinity, '50', null, undefined])(
+    'isApprovalCreditLimit refuses %p',
+    (limit) => {
+      expect(isApprovalCreditLimit(limit)).toBe(false);
+    },
+  );
+
+  it('reads a valid stored setting as stored', () => {
+    expect(readApprovalSetting({ approvalMode: 'every', approvalCreditLimit: null })).toEqual({
+      mode: 'every',
+      creditLimit: null,
+    });
+    expect(readApprovalSetting({ approvalMode: 'credits', approvalCreditLimit: 40 })).toEqual({
+      mode: 'credits',
+      creditLimit: 40,
+    });
+    expect(readApprovalSetting({ approvalMode: 'read_only', approvalCreditLimit: null })).toEqual({
+      mode: 'read_only',
+      creditLimit: null,
+    });
+  });
+
+  it('ignores a limit stored beside every or read_only', () => {
+    expect(readApprovalSetting({ approvalMode: 'every', approvalCreditLimit: 40 })).toEqual({
+      mode: 'every',
+      creditLimit: null,
+    });
+    expect(readApprovalSetting({ approvalMode: 'read_only', approvalCreditLimit: 40 })).toEqual({
+      mode: 'read_only',
+      creditLimit: null,
+    });
+  });
+
+  it.each([
+    ['a missing row', null],
+    ['an undefined row', undefined],
+    ['a row without the columns', {}],
+    ['an unknown mode', { approvalMode: 'auto', approvalCreditLimit: null }],
+    ['a mode in the wrong case', { approvalMode: 'READ_ONLY', approvalCreditLimit: null }],
+    ['a non-string mode', { approvalMode: 1, approvalCreditLimit: 5 }],
+    ['credits without a limit', { approvalMode: 'credits', approvalCreditLimit: null }],
+    ['credits with a zero limit', { approvalMode: 'credits', approvalCreditLimit: 0 }],
+    ['credits with a negative limit', { approvalMode: 'credits', approvalCreditLimit: -5 }],
+    ['credits with a fractional limit', { approvalMode: 'credits', approvalCreditLimit: 2.5 }],
+    ['credits with a text limit', { approvalMode: 'credits', approvalCreditLimit: '40' }],
+    ['credits over the maximum', { approvalMode: 'credits', approvalCreditLimit: MAX_USER_WORKFLOW_BUDGET_CREDITS + 1 }],
+  ])('reads %s as every with no limit', (_label, row) => {
+    expect(readApprovalSetting(row as never)).toEqual({ mode: 'every', creditLimit: null });
   });
 });

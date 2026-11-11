@@ -33,6 +33,79 @@ export function isUserWorkflowTemplateId(value: unknown): value is UserWorkflowT
 }
 
 /**
+ * BIZ-USER-01A D3: the largest per-run or per-day workflow budget, in credits.
+ * Also the largest approval credit limit (APPROVAL-SET-01 D2). Defined here so
+ * this module needs no import from the DTOs (they import from it);
+ * dto/create-agent.dto.ts re-exports it under the same name.
+ */
+export const MAX_USER_WORKFLOW_BUDGET_CREDITS = 1_000_000;
+
+/**
+ * APPROVAL-SET-01 D2: how a workflow's hand-offs are approved.
+ * - every: every hand-off waits for the owner (the default; today's behaviour).
+ * - credits: a hand-off whose estimate is at or under the credit limit may run
+ *   without waiting.
+ * - read_only: a hand-off to a read-only agent may run without waiting.
+ * Nothing that can write, send or delete is ever automatic, whatever the
+ * setting says (decided by APPROVAL-SET-01B, never by this setting alone).
+ */
+export const USER_WORKFLOW_APPROVAL_MODES = ['every', 'credits', 'read_only'] as const;
+export type UserWorkflowApprovalMode = (typeof USER_WORKFLOW_APPROVAL_MODES)[number];
+export const DEFAULT_USER_WORKFLOW_APPROVAL_MODE: UserWorkflowApprovalMode = 'every';
+
+export interface UserWorkflowApprovalSetting {
+  readonly mode: UserWorkflowApprovalMode;
+  /** Set only when mode is 'credits'; null otherwise. */
+  readonly creditLimit: number | null;
+}
+
+export function isUserWorkflowApprovalMode(value: unknown): value is UserWorkflowApprovalMode {
+  return (
+    typeof value === 'string' &&
+    (USER_WORKFLOW_APPROVAL_MODES as readonly string[]).includes(value)
+  );
+}
+
+/** An approval credit limit: a whole number of credits from 1 to the budget maximum. */
+export function isApprovalCreditLimit(value: unknown): value is number {
+  return (
+    typeof value === 'number' &&
+    Number.isInteger(value) &&
+    value >= 1 &&
+    value <= MAX_USER_WORKFLOW_BUDGET_CREDITS
+  );
+}
+
+const EVERY_HAND_OFF: UserWorkflowApprovalSetting = Object.freeze({
+  mode: 'every',
+  creditLimit: null,
+});
+
+/**
+ * A stored approval setting read fail-closed: an unknown or malformed mode,
+ * or 'credits' without a valid limit, reads as 'every' with no limit. A
+ * limit beside 'every' or 'read_only' is ignored (null). A missing row reads
+ * as 'every'.
+ */
+export function readApprovalSetting(
+  row: { readonly approvalMode?: unknown; readonly approvalCreditLimit?: unknown } | null | undefined,
+): UserWorkflowApprovalSetting {
+  if (!row || typeof row !== 'object') {
+    return EVERY_HAND_OFF;
+  }
+  const mode = row.approvalMode;
+  if (!isUserWorkflowApprovalMode(mode) || mode === 'every') {
+    return EVERY_HAND_OFF;
+  }
+  if (mode === 'credits') {
+    return isApprovalCreditLimit(row.approvalCreditLimit)
+      ? { mode, creditLimit: row.approvalCreditLimit }
+      : EVERY_HAND_OFF;
+  }
+  return { mode, creditLimit: null };
+}
+
+/**
  * Who may be a member: the Chief of Staff roster rule (COS-FRONTDOOR-01 D6, D7,
  * D9), shared with a user workflow's team (USER-TEAMS-01 D2, DECISION D).
  *

@@ -27,7 +27,12 @@ import {
   MAX_USER_WORKFLOW_BUDGET_CREDITS,
   MAX_USER_WORKFLOW_CONNECTOR_TOOLS,
 } from './create-agent.dto';
-import { MAX_ROSTER_MEMBERS, ROSTER_MEMBER_ID_MAX_CHARS } from '../user-workflow-rules';
+import {
+  MAX_ROSTER_MEMBERS,
+  ROSTER_MEMBER_ID_MAX_CHARS,
+  USER_WORKFLOW_APPROVAL_MODES,
+  type UserWorkflowApprovalMode,
+} from '../user-workflow-rules';
 
 const provided = (_object: object, value: unknown): boolean => value !== undefined;
 
@@ -138,4 +143,21 @@ export class UpdateAgentDto {
   @MinLength(1, { each: true })
   @MaxLength(ROSTER_MEMBER_ID_MAX_CHARS, { each: true })
   teamMemberIds?: string[];
+
+  /**
+   * APPROVAL-SET-01 D2: the approval setting. Absent keeps the stored value;
+   * present replaces it (null is refused for the mode). The limit accepts null
+   * to clear it. The service merges both with the stored row, requires a
+   * limit for 'credits' and stores the limit as null for any other mode. Not
+   * part of the workflow version (D3): a setting-only edit needs no new test.
+   */
+  @ValidateIf(provided)
+  @IsIn([...USER_WORKFLOW_APPROVAL_MODES])
+  approvalMode?: UserWorkflowApprovalMode;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(MAX_USER_WORKFLOW_BUDGET_CREDITS)
+  approvalCreditLimit?: number | null;
 }

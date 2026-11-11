@@ -49,7 +49,7 @@ describe('AddUserAgentTeamColumn1806000000000 (USER-TEAMS-01 01A, mocked)', () =
   const forbidden =
     /\bDELETE\b|\bTRUNCATE\b|\bUPDATE\b|\bINSERT\b|\bDROP TABLE\b|\bINDEX\b|\bCREATE TABLE\b|\bRENAME\b|\bIF (NOT )?EXISTS\b/i;
 
-  it('uses a timestamp after 1805000000000-CreateCollaborationRostersTable and is the latest', () => {
+  it('uses a timestamp after 1805000000000-CreateCollaborationRostersTable, the latest before it', () => {
     const names = readdirSync(join(__dirname, '..')).filter(
       (name) => /^\d+-/.test(name) && name.endsWith('.ts'),
     );
@@ -60,7 +60,7 @@ describe('AddUserAgentTeamColumn1806000000000 (USER-TEAMS-01 01A, mocked)', () =
     ]);
     expect(timestamp).toBeGreaterThan(1805000000000);
     expect(Math.max(...stamps.filter((stamp) => stamp < timestamp))).toBe(1805000000000);
-    expect(Math.max(...stamps)).toBe(timestamp);
+    expect(Math.max(...stamps.filter((stamp) => stamp <= timestamp))).toBe(timestamp);
   });
 
   it('the entity maps team_member_ids as jsonb, not null, default an empty list', () => {

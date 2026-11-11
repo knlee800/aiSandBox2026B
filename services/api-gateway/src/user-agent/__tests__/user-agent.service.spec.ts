@@ -1111,4 +1111,268 @@ describe('UserAgentService', () => {
       expect(userAgentRepository.save).not.toHaveBeenCalled();
     });
   });
+
+  describe('APPROVAL-SET-01 approval setting (D2, D3)', () => {
+    const SELF = 'a5a5a5a5-0000-4000-8000-000000000001';
+    let rows: Map<string, UserAgent>;
+
+    const row = (overrides: Record<string, unknown> = {}): UserAgent =>
+      ({
+        id: SELF,
+        userId: ownerUserId,
+        name: 'Lead',
+        role: 'Leads',
+        description: 'Asks the team.',
+        status: 'active',
+        initials: 'LE',
+        tone: null,
+        replyLanguage: null,
+        purpose: 'Help me.',
+        procedure: 'Read the folder.',
+        result: 'A short note.',
+        toolProfile: 'read',
+        knowledgeScopeIds: ['policies'],
+        connectorToolIds: [],
+        model: { choice: 'server' },
+        budgetPerRunCredits: null,
+        budgetPerDayCredits: null,
+        templateId: null,
+        teamMemberIds: ['product-strategy'],
+        approvalMode: 'every',
+        approvalCreditLimit: null,
+        ...overrides,
+      }) as unknown as UserAgent;
+
+    const body = { name: 'Lead', role: 'Leads', description: 'Asks the team.' };
+
+    async function refusal(promise: Promise<unknown>): Promise<Record<string, unknown>> {
+      try {
+        await promise;
+      } catch (error) {
+        expect(error).toBeInstanceOf(BadRequestException);
+        expect((error as BadRequestException).getStatus()).toBe(400);
+        return (error as BadRequestException).getResponse() as Record<string, unknown>;
+      }
+      throw new Error('expected a 400');
+    }
+
+    const stored = () => {
+      const value = rows.get(SELF)!;
+      return { approvalMode: value.approvalMode, approvalCreditLimit: value.approvalCreditLimit };
+    };
+
+    beforeEach(() => {
+      rows = new Map([[SELF, row()]]);
+      userAgentRepository.create.mockImplementation((value) => ({ ...value }));
+      userAgentRepository.save.mockImplementation(async (value) => {
+        const saved = { ...value, id: value.id ?? 'a5a5a5a5-0000-4000-8000-0000000000ff' } as UserAgent;
+        rows.set(saved.id, saved);
+        return { ...saved };
+      });
+      userAgentRepository.findOne.mockImplementation(
+        async ({ where }: { where: { id: string; userId: string } }) => {
+          const value = rows.get(where.id);
+          return value && value.userId === where.userId ? { ...value } : null;
+        },
+      );
+    });
+
+    it('a create without the fields stores every with no limit', async () => {
+      const saved = await service.create(ownerUserId, body);
+      expect(saved).toMatchObject({ approvalMode: 'every', approvalCreditLimit: null });
+      expect(userAgentRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({ approvalMode: 'every', approvalCreditLimit: null }),
+      );
+    });
+
+    it('a create with null fields stores every with no limit', async () => {
+      const saved = await service.create(ownerUserId, {
+        ...body,
+        approvalMode: null,
+        approvalCreditLimit: null,
+      } as never);
+      expect(saved).toMatchObject({ approvalMode: 'every', approvalCreditLimit: null });
+    });
+
+    it.each([1, 40, 1_000_000])('a create with credits and a limit of %p stores both', async (limit) => {
+      const saved = await service.create(ownerUserId, {
+        ...body,
+        approvalMode: 'credits',
+        approvalCreditLimit: limit,
+      });
+      expect(saved).toMatchObject({ approvalMode: 'credits', approvalCreditLimit: limit });
+    });
+
+    it.each(['every', 'read_only'] as const)(
+      'a create with %s and a limit stores the limit as null',
+      async (mode) => {
+        const saved = await service.create(ownerUserId, {
+          ...body,
+          approvalMode: mode,
+          approvalCreditLimit: 40,
+        });
+        expect(saved).toMatchObject({ approvalMode: mode, approvalCreditLimit: null });
+      },
+    );
+
+    it('a copy from the template stores the default, every with no limit', async () => {
+      const copy = await service.createFromTemplate(ownerUserId, {
+        templateId: 'chief-of-staff',
+        name: 'My briefing',
+        role: 'Chief of Staff',
+        approvalMode: 'read_only',
+        approvalCreditLimit: 40,
+      } as never);
+      expect(copy).toMatchObject({ approvalMode: 'every', approvalCreditLimit: null });
+    });
+
+    it('credits without a limit is 400 APPROVAL_LIMIT_REQUIRED on create and nothing is saved', async () => {
+      const response = await refusal(
+        service.create(ownerUserId, { ...body, approvalMode: 'credits' }),
+      );
+      expect(response).toMatchObject({ statusCode: 400, code: 'APPROVAL_LIMIT_REQUIRED' });
+      expect(response.code).toBe(USER_WORKFLOW_ERROR_CODES.approvalLimitRequired);
+      expect(userAgentRepository.save).not.toHaveBeenCalled();
+    });
+
+    it.each(['auto', 'READ_ONLY', '', 7])(
+      'an unknown mode %p is 400 APPROVAL_MODE_INVALID on create and PATCH, and nothing is saved',
+      async (mode) => {
+        const created = await refusal(
+          service.create(ownerUserId, { ...body, approvalMode: mode } as never),
+        );
+        expect(created).toMatchObject({
+          code: 'APPROVAL_MODE_INVALID',
+          allowed: ['every', 'credits', 'read_only'],
+        });
+        const patched = await refusal(
+          service.update(SELF, ownerUserId, { name: 'Renamed', approvalMode: mode } as never),
+        );
+        expect(patched.code).toBe('APPROVAL_MODE_INVALID');
+        expect(userAgentRepository.save).not.toHaveBeenCalled();
+        expect(rows.get(SELF)!.name).toBe('Lead');
+      },
+    );
+
+    it('a null mode on PATCH is 400 APPROVAL_MODE_INVALID', async () => {
+      const response = await refusal(
+        service.update(SELF, ownerUserId, { approvalMode: null } as never),
+      );
+      expect(response.code).toBe('APPROVAL_MODE_INVALID');
+      expect(userAgentRepository.save).not.toHaveBeenCalled();
+    });
+
+    it.each([0, -1, 1.5, 1_000_001, '40', NaN])(
+      'a limit of %p is 400 APPROVAL_LIMIT_INVALID on create and PATCH, and nothing is saved',
+      async (limit) => {
+        const created = await refusal(
+          service.create(ownerUserId, {
+            ...body,
+            approvalMode: 'credits',
+            approvalCreditLimit: limit,
+          } as never),
+        );
+        expect(created).toMatchObject({ code: 'APPROVAL_LIMIT_INVALID', max: 1_000_000 });
+        const patched = await refusal(
+          service.update(SELF, ownerUserId, {
+            approvalMode: 'credits',
+            approvalCreditLimit: limit,
+          } as never),
+        );
+        expect(patched.code).toBe('APPROVAL_LIMIT_INVALID');
+        expect(userAgentRepository.save).not.toHaveBeenCalled();
+        expect(stored()).toEqual({ approvalMode: 'every', approvalCreditLimit: null });
+      },
+    );
+
+    it('a PATCH without either field keeps the stored setting', async () => {
+      rows.set(SELF, row({ approvalMode: 'credits', approvalCreditLimit: 40 }));
+      const saved = await service.update(SELF, ownerUserId, { name: 'Renamed' });
+      expect(saved).toMatchObject({ name: 'Renamed', approvalMode: 'credits', approvalCreditLimit: 40 });
+      expect(stored()).toEqual({ approvalMode: 'credits', approvalCreditLimit: 40 });
+    });
+
+    it('a PATCH with both fields replaces the setting', async () => {
+      const saved = await service.update(SELF, ownerUserId, {
+        approvalMode: 'credits',
+        approvalCreditLimit: 25,
+      });
+      expect(saved).toMatchObject({ approvalMode: 'credits', approvalCreditLimit: 25 });
+      expect(stored()).toEqual({ approvalMode: 'credits', approvalCreditLimit: 25 });
+    });
+
+    it('a PATCH with the mode only keeps a stored limit for credits and clears it for another mode', async () => {
+      rows.set(SELF, row({ approvalMode: 'read_only', approvalCreditLimit: null }));
+      await refusal(service.update(SELF, ownerUserId, { approvalMode: 'credits' }));
+      expect(stored()).toEqual({ approvalMode: 'read_only', approvalCreditLimit: null });
+
+      rows.set(SELF, row({ approvalMode: 'credits', approvalCreditLimit: 40 }));
+      const toReadOnly = await service.update(SELF, ownerUserId, { approvalMode: 'read_only' });
+      expect(toReadOnly).toMatchObject({ approvalMode: 'read_only', approvalCreditLimit: null });
+
+      const toEvery = await service.update(SELF, ownerUserId, { approvalMode: 'every' });
+      expect(toEvery).toMatchObject({ approvalMode: 'every', approvalCreditLimit: null });
+    });
+
+    it('a PATCH with the limit only replaces it under credits and is stored as null under another mode', async () => {
+      rows.set(SELF, row({ approvalMode: 'credits', approvalCreditLimit: 40 }));
+      const raised = await service.update(SELF, ownerUserId, { approvalCreditLimit: 90 });
+      expect(raised).toMatchObject({ approvalMode: 'credits', approvalCreditLimit: 90 });
+
+      rows.set(SELF, row({ approvalMode: 'every', approvalCreditLimit: null }));
+      const ignored = await service.update(SELF, ownerUserId, { approvalCreditLimit: 90 });
+      expect(ignored).toMatchObject({ approvalMode: 'every', approvalCreditLimit: null });
+    });
+
+    it('clearing the limit under credits is 400 APPROVAL_LIMIT_REQUIRED and keeps the stored setting', async () => {
+      rows.set(SELF, row({ approvalMode: 'credits', approvalCreditLimit: 40 }));
+      const response = await refusal(
+        service.update(SELF, ownerUserId, { approvalCreditLimit: null }),
+      );
+      expect(response.code).toBe('APPROVAL_LIMIT_REQUIRED');
+      expect(userAgentRepository.save).not.toHaveBeenCalled();
+      expect(stored()).toEqual({ approvalMode: 'credits', approvalCreditLimit: 40 });
+    });
+
+    it('a setting-only PATCH on an active row runs no switch-on check and keeps the version', async () => {
+      const before = rows.get(SELF)!;
+      const versionBefore = renderWorkflow(before)!.version;
+
+      const toCredits = await service.update(SELF, ownerUserId, {
+        status: 'active',
+        approvalMode: 'credits',
+        approvalCreditLimit: 30,
+      });
+      expect(toCredits).toMatchObject({ status: 'active', approvalMode: 'credits', approvalCreditLimit: 30 });
+      expect(renderWorkflow(toCredits)!.version).toBe(versionBefore);
+
+      const toReadOnly = await service.update(SELF, ownerUserId, { approvalMode: 'read_only' });
+      expect(toReadOnly).toMatchObject({ status: 'active', approvalMode: 'read_only' });
+      expect(renderWorkflow(toReadOnly)!.version).toBe(versionBefore);
+      expect(
+        renderWorkflow({ ...toReadOnly, approvalMode: 'every', approvalCreditLimit: null } as UserAgent)!.version,
+      ).toBe(versionBefore);
+
+      expect(switchOnCheck.assertCanSwitchOn).not.toHaveBeenCalled();
+    });
+
+    it('a setting change on a draft that switches on is checked like any switch-on', async () => {
+      rows.set(SELF, row({ status: 'draft' }));
+      await service.update(SELF, ownerUserId, { status: 'active', approvalMode: 'read_only' });
+      expect(switchOnCheck.assertCanSwitchOn).toHaveBeenCalledTimes(1);
+      expect(switchOnCheck.assertCanSwitchOn.mock.calls[0][1]).toMatchObject({
+        id: SELF,
+        approvalMode: 'read_only',
+        approvalCreditLimit: null,
+      });
+    });
+
+    it('another owner cannot change the setting', async () => {
+      await expect(
+        service.update(SELF, otherUserId, { approvalMode: 'read_only' }),
+      ).rejects.toBeInstanceOf(NotFoundException);
+      expect(userAgentRepository.save).not.toHaveBeenCalled();
+      expect(stored()).toEqual({ approvalMode: 'every', approvalCreditLimit: null });
+    });
+  });
 });

@@ -34,10 +34,12 @@ import { KNOWLEDGE_SCOPES, findKnowledgeScope, type KnowledgeScope } from '../kn
 import { connectorToolCatalog } from '../connectors/connector-servers';
 import {
   USER_WORKFLOW_TEMPLATE_IDS,
+  readApprovalSetting,
   readStoredRosterMemberIds,
   rosterSystemChoices,
   rosterSystemMemberText,
   type RosterMemberKind,
+  type UserWorkflowApprovalMode,
 } from './user-workflow-rules';
 import {
   MAX_USER_WORKFLOW_KNOWLEDGE_SCOPES,
@@ -71,6 +73,9 @@ export interface AgentResponseDto {
   templateId: string | null;
   // USER-TEAMS-01 D3: the stored team, read fail-closed.
   teamMemberIds: string[];
+  // APPROVAL-SET-01 D2: the stored approval setting, read fail-closed.
+  approvalMode: UserWorkflowApprovalMode;
+  approvalCreditLimit: number | null;
   // Derived, never stored.
   neverDo: readonly NeverDoItem[];
   grants: UserWorkflowGrants;
@@ -128,6 +133,7 @@ function toAgentResponse(agent: UserAgent, connectionKinds: Set<string>): AgentR
     connectorToolIds: allowlistedConnectorToolIds(agent.connectorToolIds),
   });
   const instructionsChars = renderAgentInstructions(userWorkflowPromptSpec(agent)).length;
+  const approval = readApprovalSetting(agent);
 
   return {
     id: agent.id,
@@ -151,6 +157,8 @@ function toAgentResponse(agent: UserAgent, connectionKinds: Set<string>): AgentR
     budgetPerDayCredits: agent.budgetPerDayCredits ?? null,
     templateId: agent.templateId ?? null,
     teamMemberIds: readStoredRosterMemberIds(agent.teamMemberIds),
+    approvalMode: approval.mode,
+    approvalCreditLimit: approval.creditLimit,
     neverDo,
     grants,
     instructionsChars,

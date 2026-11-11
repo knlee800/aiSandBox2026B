@@ -664,8 +664,11 @@ describe('UserAgentController', () => {
         .expect(201);
 
       // BIZ-USER-01A D9: today's eight keys plus the workflow keys, nothing else.
+      // USER-TEAMS-01 D3 added teamMemberIds; APPROVAL-SET-01 D2 the two approval keys.
       const keys = Object.keys(response.body).sort();
       expect(keys).toEqual([
+        'approvalCreditLimit',
+        'approvalMode',
         'budgetPerDayCredits',
         'budgetPerRunCredits',
         'connectorToolIds',
@@ -1175,6 +1178,115 @@ describe('UserAgentController', () => {
         }
         expect(JSON.stringify(response.body.teamChoices)).not.toContain('Theirs');
         expect(JSON.stringify(response.body.teamChoices)).not.toContain('instructions');
+      });
+    });
+
+    describe('APPROVAL-SET-01 approval setting (D2)', () => {
+      it('GET /api/agents/:id and GET /api/agents carry the stored setting', async () => {
+        await buildApp();
+        const stored = makeAgent({ approvalMode: 'credits', approvalCreditLimit: 40 });
+        service.findOneByIdAndUserId.mockResolvedValue(stored);
+        service.listByUserId.mockResolvedValue([stored]);
+
+        const one = await request(app!.getHttpServer()).get('/api/agents/agent-uuid-001').expect(200);
+        expect(one.body).toMatchObject({ approvalMode: 'credits', approvalCreditLimit: 40 });
+
+        const list = await request(app!.getHttpServer()).get('/api/agents').expect(200);
+        expect(list.body.agents[0]).toMatchObject({ approvalMode: 'credits', approvalCreditLimit: 40 });
+      });
+
+      it.each([
+        [{}],
+        [{ approvalMode: 'auto', approvalCreditLimit: 40 }],
+        [{ approvalMode: 'credits', approvalCreditLimit: null }],
+        [{ approvalMode: 'credits', approvalCreditLimit: 0 }],
+        [{ approvalMode: 'every', approvalCreditLimit: 40 }],
+      ])('a row stored as %j answers every with no limit (fail-closed read)', async (overrides) => {
+        await buildApp();
+        service.findOneByIdAndUserId.mockResolvedValue(makeAgent(overrides));
+        const one = await request(app!.getHttpServer()).get('/api/agents/agent-uuid-001').expect(200);
+        expect(one.body.approvalMode).toBe('every');
+        expect(one.body.approvalCreditLimit).toBeNull();
+      });
+
+      it('a read_only row answers read_only with no limit', async () => {
+        await buildApp();
+        service.findOneByIdAndUserId.mockResolvedValue(
+          makeAgent({ approvalMode: 'read_only', approvalCreditLimit: null }),
+        );
+        const one = await request(app!.getHttpServer()).get('/api/agents/agent-uuid-001').expect(200);
+        expect(one.body).toMatchObject({ approvalMode: 'read_only', approvalCreditLimit: null });
+      });
+
+      it('POST and PATCH pass the setting to the service and answer the saved setting', async () => {
+        await buildApp();
+        service.create.mockResolvedValue(makeAgent({ approvalMode: 'credits', approvalCreditLimit: 25 }));
+        const created = await request(app!.getHttpServer())
+          .post('/api/agents')
+          .send({ name: 'A', role: 'B', description: 'C', approvalMode: 'credits', approvalCreditLimit: 25 })
+          .expect(201);
+        expect(service.create.mock.calls[0][1]).toEqual({
+          name: 'A',
+          role: 'B',
+          description: 'C',
+          approvalMode: 'credits',
+          approvalCreditLimit: 25,
+        });
+        expect(created.body).toMatchObject({ approvalMode: 'credits', approvalCreditLimit: 25 });
+
+        service.update.mockResolvedValue(makeAgent({ approvalMode: 'read_only', approvalCreditLimit: null }));
+        const patched = await request(app!.getHttpServer())
+          .patch('/api/agents/agent-uuid-001')
+          .send({ approvalMode: 'read_only', approvalCreditLimit: null })
+          .expect(200);
+        expect(service.update).toHaveBeenCalledWith('agent-uuid-001', mockUserA.userId, {
+          approvalMode: 'read_only',
+          approvalCreditLimit: null,
+        });
+        expect(patched.body).toMatchObject({ approvalMode: 'read_only', approvalCreditLimit: null });
+      });
+
+      it.each([
+        [{ approvalMode: 'auto' }],
+        [{ approvalMode: 'READ_ONLY' }],
+        [{ approvalMode: 7 }],
+        [{ approvalMode: 'credits', approvalCreditLimit: 0 }],
+        [{ approvalMode: 'credits', approvalCreditLimit: 1_000_001 }],
+        [{ approvalMode: 'credits', approvalCreditLimit: 1.5 }],
+        [{ approvalMode: 'credits', approvalCreditLimit: '40' }],
+      ])('POST /api/agents returns 400 for the approval shape %j', async (extra) => {
+        await buildApp();
+        await request(app!.getHttpServer())
+          .post('/api/agents')
+          .send({ name: 'A', role: 'B', description: 'C', ...extra })
+          .expect(400);
+        expect(service.create).not.toHaveBeenCalled();
+      });
+
+      it.each([
+        [{ approvalMode: null }],
+        [{ approvalMode: 'auto' }],
+        [{ approvalCreditLimit: 0 }],
+        [{ approvalCreditLimit: 1_000_001 }],
+      ])('PATCH /api/agents/:id returns 400 for the approval shape %j', async (body) => {
+        await buildApp();
+        await request(app!.getHttpServer())
+          .patch('/api/agents/agent-uuid-001')
+          .send(body)
+          .expect(400);
+        expect(service.update).not.toHaveBeenCalled();
+      });
+
+      it('PATCH passes the service APPROVAL_LIMIT_REQUIRED refusal through', async () => {
+        await buildApp();
+        service.update.mockRejectedValue(
+          userWorkflowBadRequest('APPROVAL_LIMIT_REQUIRED', 'Set a credit limit for this approval setting.'),
+        );
+        const response = await request(app!.getHttpServer())
+          .patch('/api/agents/agent-uuid-001')
+          .send({ approvalMode: 'credits' })
+          .expect(400);
+        expect(response.body).toMatchObject({ statusCode: 400, code: 'APPROVAL_LIMIT_REQUIRED' });
       });
     });
   });

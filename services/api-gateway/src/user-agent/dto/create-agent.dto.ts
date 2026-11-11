@@ -23,10 +23,20 @@ import {
 import { MAX_AGENT_INSTRUCTIONS_CHARS } from '../../orchestration/handoff-request';
 import { CONNECTOR_SERVERS } from '../../connectors/connector-servers';
 import { KNOWLEDGE_SCOPES } from '../../knowledge/knowledge-scopes';
-import { MAX_ROSTER_MEMBERS, ROSTER_MEMBER_ID_MAX_CHARS } from '../user-workflow-rules';
+import {
+  MAX_ROSTER_MEMBERS,
+  MAX_USER_WORKFLOW_BUDGET_CREDITS,
+  ROSTER_MEMBER_ID_MAX_CHARS,
+  USER_WORKFLOW_APPROVAL_MODES,
+  type UserWorkflowApprovalMode,
+} from '../user-workflow-rules';
 
-/** BIZ-USER-01A D3: the largest per-run or per-day workflow budget, in credits. */
-export const MAX_USER_WORKFLOW_BUDGET_CREDITS = 1_000_000;
+/**
+ * BIZ-USER-01A D3: the largest per-run or per-day workflow budget, in credits.
+ * Defined in user-workflow-rules.ts (APPROVAL-SET-01 shares it there without
+ * an import cycle) and re-exported here under the same name.
+ */
+export { MAX_USER_WORKFLOW_BUDGET_CREDITS };
 
 export const MAX_USER_WORKFLOW_CONNECTOR_TOOLS = CONNECTOR_SERVERS.reduce(
   (count, server) => count + server.tools.length,
@@ -142,4 +152,20 @@ export class CreateAgentDto {
   @MinLength(1, { each: true })
   @MaxLength(ROSTER_MEMBER_ID_MAX_CHARS, { each: true })
   teamMemberIds?: string[];
+
+  /**
+   * APPROVAL-SET-01 D2: how the workflow's hand-offs are approved. Absent
+   * stores 'every'. Shape only here; the service requires a limit for
+   * 'credits' (400 APPROVAL_LIMIT_REQUIRED) and stores the limit as null for
+   * any other mode.
+   */
+  @IsOptional()
+  @IsIn([...USER_WORKFLOW_APPROVAL_MODES])
+  approvalMode?: UserWorkflowApprovalMode;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(MAX_USER_WORKFLOW_BUDGET_CREDITS)
+  approvalCreditLimit?: number | null;
 }
