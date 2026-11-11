@@ -86997,7 +86997,7 @@ taskId=USER-TEAMS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-11 — slice 01A; Keith approved the stage-start ("Yes, approve"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-11. LANE-DONE and LOCKED by the control plane; Lane 1, GATEWAY and MIGRATION released. Slice 01A: migration 1806 (user_agents.team_member_ids jsonb, default empty), entity field, DTOs (at most 3 ids), the save-time team rule shared with the Chief of Staff roster (assertRosterMemberIds; new ROSTER_MEMBER_SELF), teamMemberIds on agent responses, teamChoices on options, evaluateMembers under membersForStart, the 300-character summary and 100-character label cut (fixes a Chief of Staff start with a long workflow description); 82 new tests; opus subagent, fast-forwarded as 7b31a77; control-plane rerun: gateway 3582 passed, 7 skipped, only the 14 known smoke failures, build 0; orchestration.service.ts, collaboration.controller.ts, collaboration-front-door.ts, src/ai, ai-service and frontend diff empty. Not deployed. Checkpoint: docs/USER-TEAMS-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 3 superseded (the DTO's fourth-id 400 without a code and the missing ROSTER_MEMBER_SELF copy into USER-TEAMS-01C; migration 1806 in STAGING-DEPLOY-FD-02, already in its body) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-11 — slice 01A; Keith approved the stage-start ("Yes, approve"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** USER-TEAMS-01
 **Title:** User teams and who hands work to whom
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -87066,7 +87066,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (as for USER-TEAMS-01; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09 and this stage-start 2026-11-11).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** Stage-start docs/USER-TEAMS-01-STAGE-START.md D17 to D20: a Team block under Advanced in the workflow form (checkbox list from teamChoices, count of 3, a fourth tick refused, approval hint), a team line in the summary, the report-back step label for a workflow lead, skipped-member names after a workflow start, copy in three languages. Implementer: sonnet.
-
+**Also (added 2026-11-11 by the USER-TEAMS-01 LOCK):** the form maps the new ROSTER_MEMBER_SELF refusal to a clear message in three languages (frontend/components/collaboration/collaboration-roster.ts mirrors the ROSTER codes), and a fourth id refused by the DTO (a 400 without a code) shows the generic team-limit message; the form already refuses a fourth tick.
 ### USER-TEAMS-LIVE-01 — Live check: a user workflow with a team
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=USER-TEAMS-LIVE-01
