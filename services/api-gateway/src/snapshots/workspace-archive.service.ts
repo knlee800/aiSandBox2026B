@@ -12,7 +12,7 @@ const MAX_IMPORTED_FILE_BYTES = 512 * 1024;
 
 interface WorkspaceFileRecord {
   path: string;
-  content: string;
+  content: Buffer;
 }
 
 interface ZipDecodedEntry {
@@ -28,12 +28,7 @@ export class WorkspaceArchiveService {
 
   async exportWorkspaceArchive(sessionId: string): Promise<Buffer> {
     const files = await this.collectWorkspaceFiles(sessionId);
-    return createZipArchive(
-      files.map((file) => ({
-        path: file.path,
-        content: Buffer.from(file.content, 'utf8'),
-      })),
-    );
+    return createZipArchive(files);
   }
 
   async importWorkspaceArchive(sessionId: string, zipBuffer: Buffer): Promise<{
@@ -56,9 +51,10 @@ export class WorkspaceArchiveService {
       throw new BadRequestException('Archive contains no importable files.');
     }
 
+    // ARCHIVE-BINARY-01: every entry is written as exact bytes (base64).
     const importableFiles = decodedEntries.map((entry) => ({
       path: entry.path,
-      content: decodeUtf8Text(entry.content),
+      content: entry.content.toString('base64'),
     }));
 
     await this.containerManagerHttpClient.execInSession(sessionId, [
@@ -72,6 +68,7 @@ export class WorkspaceArchiveService {
         sessionId,
         file.path,
         file.content,
+        'base64',
       );
     }
 
@@ -87,8 +84,14 @@ export class WorkspaceArchiveService {
       const response = await this.containerManagerHttpClient.readSessionFile(
         sessionId,
         filePath,
+        { encoding: 'base64' },
       );
-      files.push({ path: filePath, content: response.content });
+      // A container-manager without the base64 read answers with text.
+      const content =
+        response.encoding === 'base64'
+          ? Buffer.from(response.content, 'base64')
+          : Buffer.from(response.content, 'utf8');
+      files.push({ path: filePath, content });
     }
     return files;
   }
@@ -118,14 +121,6 @@ export class WorkspaceArchiveService {
     }
     return filePaths;
   }
-}
-
-function decodeUtf8Text(buffer: Buffer): string {
-  const asText = buffer.toString('utf8');
-  if (!Buffer.from(asText, 'utf8').equals(buffer)) {
-    throw new BadRequestException('Archive contains non-UTF8 file content.');
-  }
-  return asText;
 }
 
 function ensureSafeRelativePath(rawPath: string): string {
