@@ -88566,22 +88566,22 @@ taskId=SNAPSHOT-BINARY-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-11 by the CHECKPOINT-LIVE-02 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-11 — under Keith's "do not stop!!! ... keep looking for the next task to start". Was: READY — registered 2026-11-11 by the CHECKPOINT-LIVE-02 LOCK — not admitted.
 **Task ID:** SNAPSHOT-BINARY-01
 **Title:** Binary-safe workspace snapshots so projects with images reopen
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (control plane under Keith's 2026-11-10 instruction, 2026-11-11). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** CHECKPOINT-LIVE-02.
-**Primary write scope:** PROVISIONAL: services/api-gateway/src/snapshots and its specs, services/api-gateway/src/projects/projects.service.ts, services/api-gateway/src/clients/container-manager-http.client.ts, services/container-manager/src/docker/docker-runtime.service.ts, services/container-manager/src/sessions and their specs.
-**Mutexes / resources:** set at admission (expected GATEWAY, CONTAINER-MANAGER).
+**Primary write scope:** set 2026-11-11: services/api-gateway/src/snapshots/snapshot-persistence.service.ts, services/api-gateway/src/snapshots/snapshot-persistence.service.spec.ts, services/api-gateway/src/projects/projects.service.ts, services/api-gateway/src/projects/projects.service.spec.ts, services/api-gateway/src/clients/container-manager-http.client.ts, services/api-gateway/src/clients/container-manager-http.client.spec.ts, services/container-manager/src/docker/docker-runtime.service.ts, services/container-manager/src/docker/docker-runtime.service.spec.ts, services/container-manager/src/sessions/sessions.service.ts, services/container-manager/src/sessions/sessions.service.spec.ts, services/container-manager/src/sessions/internal-sessions.controller.ts, services/container-manager/src/sessions/internal-sessions.controller.spec.ts.
+**Mutexes / resources:** GATEWAY, CONTAINER-MANAGER.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS (then a deploy and Keith's browser check).
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and checkpoints).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** From the CHECKPOINT-LIVE-02 live check: a project with an image cannot be reopened. SnapshotPersistenceService.collectWorkspaceFiles reads files through the text file-read route and restoreSnapshot writes them through writeSessionFile, whose container-manager writeFileToContainer passes the content in an environment variable to printf (no NUL bytes), so red.png fails with a 500 and the reopen stops before restoreCheckpointHistory. Fix: read binary files with the CM-BINARY-01 base64 opt-in and store the encoding per file (existing text snapshots still restore unchanged); write through a binary-safe path (the CM-EXEC-01 stdin exec, not an env var); one file that cannot be written is reported, not a 500 that skips the history restore. Tests: a PNG and a font round-trip byte for byte; an old snapshot restores as before; a failing file still runs the history restore. Live check after the deploy: Keith reopens a project with an image (his CL2 test project) and sees the image in Preview and his save points in History.
 
 ### SNAPSHOT-PICK-01 — Reopen restores only a snapshot of the same project
