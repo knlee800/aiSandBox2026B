@@ -24,6 +24,7 @@ import { CollaborationRunEntity } from './collaboration-run.entity';
 import { knowledgeScopesJobFields } from './collaboration-tool-profile';
 import {
   CollaborationWorkflowService,
+  LAST_STEP_ESTIMATE_RUN_WINDOW,
   WORKFLOW_REFUSAL_CODES,
   autoApprovalDecisionReason,
   autoApprovalTargetIsReadOnly,
@@ -85,25 +86,67 @@ function matches(row: unknown, where?: Record<string, unknown>): boolean {
     return true;
   }
   const record = row as Record<string, unknown>;
-  return Object.entries(where).every(([key, expected]) => {
-    if (expected instanceof FindOperator) {
-      const values = expected.value as unknown[];
-      return expected.type === 'in' && values.includes(record[key]);
+  return Object.entries(where).every(([key, expected]) => operatorMatches(record[key], expected));
+}
+
+/** The TypeORM operators the code under test uses: In, IsNull and Not. */
+function operatorMatches(actual: unknown, expected: unknown): boolean {
+  if (expected instanceof FindOperator) {
+    if (expected.type === 'in') {
+      return (expected.value as unknown[]).includes(actual);
     }
-    return record[key] === expected;
+    if (expected.type === 'isNull') {
+      return actual === null || actual === undefined;
+    }
+    if (expected.type === 'not') {
+      return !operatorMatches(actual, expected.child ?? expected.value);
+    }
+    throw new Error(`unsupported operator ${expected.type}`);
+  }
+  return actual === expected;
+}
+
+type FindOpts = {
+  where?: Record<string, unknown>;
+  order?: Record<string, 'ASC' | 'DESC'>;
+  take?: number;
+};
+
+function ordered<T>(rows: T[], order?: Record<string, 'ASC' | 'DESC'>): T[] {
+  if (!order) {
+    return rows;
+  }
+  const value = (row: T, key: string) => {
+    const raw = (row as Record<string, unknown>)[key];
+    // As in Postgres, a NULL sorts above every value (first in DESC).
+    if (raw === null || raw === undefined) {
+      return Number.POSITIVE_INFINITY;
+    }
+    return raw instanceof Date ? raw.getTime() : typeof raw === 'string' ? Date.parse(raw) : Number(raw);
+  };
+  return [...rows].sort((a, b) => {
+    for (const [key, direction] of Object.entries(order)) {
+      const diff = value(a, key) - value(b, key);
+      if (diff !== 0) {
+        return direction === 'DESC' ? -diff : diff;
+      }
+    }
+    return 0;
   });
 }
 
 function mapRepo<T>(store: Map<string, T>, pk: string) {
   const copy = (row: T): T => structuredClone(row);
+  const select = (opts: FindOpts = {}) => {
+    const rows = ordered(
+      [...store.values()].filter((row) => matches(row, opts.where)),
+      opts.order,
+    );
+    return (typeof opts.take === 'number' ? rows.slice(0, opts.take) : rows).map(copy);
+  };
   const repo = {
-    findOne: async ({ where }: { where: Record<string, unknown> }) => {
-      for (const row of store.values()) if (matches(row, where)) return copy(row);
-      return null;
-    },
-    find: jest.fn(async (opts: { where?: Record<string, unknown> } = {}) =>
-      [...store.values()].filter((row) => matches(row, opts.where)).map(copy),
-    ),
+    findOne: jest.fn(async (opts: FindOpts) => select(opts)[0] ?? null),
+    find: jest.fn(async (opts: FindOpts = {}) => select(opts)),
     save: async (entity: T) => {
       store.set(String((entity as Record<string, unknown>)[pk]), copy(entity));
       return copy(entity);
@@ -1059,6 +1102,8 @@ describe('APPROVAL-SET-01B CollaborationWorkflowService reads', () => {
   let referrals: Map<string, Record<string, unknown>>;
   let deductions: Map<string, Record<string, unknown>>;
   let service: CollaborationWorkflowService;
+  let runRepo: ReturnType<typeof mapRepo<Record<string, unknown>>>;
+  let referralRepo: ReturnType<typeof mapRepo<Record<string, unknown>>>;
 
   beforeEach(() => {
     rowsById = new Map([
@@ -1073,13 +1118,19 @@ describe('APPROVAL-SET-01B CollaborationWorkflowService reads', () => {
         return row && row.userId === userId ? { ...row } : null;
       },
     };
+    runRepo = mapRepo(runs, 'collaborationRunId');
+    referralRepo = mapRepo(referrals, 'referralId');
     service = new CollaborationWorkflowService(
       userAgents as unknown as UserAgentService,
-      mapRepo(runs, 'collaborationRunId') as never,
-      mapRepo(referrals, 'referralId') as never,
+      runRepo as never,
+      referralRepo as never,
       mapRepo(deductions, 'id') as never,
     );
   });
+
+  function addRun(id: string, userId: string, createdAt: string) {
+    runs.set(id, { collaborationRunId: id, userId, createdAt });
+  }
 
   function step(input: {
     id: string;
@@ -1087,16 +1138,18 @@ describe('APPROVAL-SET-01B CollaborationWorkflowService reads', () => {
     target: string;
     status?: string;
     executionId?: string | null;
-    completedAt?: string;
+    completedAt?: string | null;
   }) {
+    const completedAt =
+      input.completedAt === undefined ? '2026-11-10T01:00:00.000Z' : input.completedAt;
     referrals.set(input.id, {
       referralId: input.id,
       collaborationRunId: input.runId,
       targetBuilderProfileId: input.target,
       status: input.status ?? 'completed',
       executionId: input.executionId === undefined ? `exec-${input.id}` : input.executionId,
-      completedAt: input.completedAt ?? '2026-11-10T01:00:00.000Z',
-      updatedAt: input.completedAt ?? '2026-11-10T01:00:00.000Z',
+      completedAt,
+      updatedAt: completedAt ?? '2026-11-10T01:00:00.000Z',
       pendingJob: {},
     });
   }
@@ -1155,9 +1208,9 @@ describe('APPROVAL-SET-01B CollaborationWorkflowService reads', () => {
   });
 
   it("estimates from the target's latest completed step in the owner's runs, summed and rounded up", async () => {
-    runs.set('run-1', { collaborationRunId: 'run-1', userId: OWNER });
-    runs.set('run-2', { collaborationRunId: 'run-2', userId: OWNER });
-    runs.set('run-other', { collaborationRunId: 'run-other', userId: OTHER });
+    addRun('run-1', OWNER, '2026-11-09T00:00:00.000Z');
+    addRun('run-2', OWNER, '2026-11-10T00:00:00.000Z');
+    addRun('run-other', OTHER, '2026-11-11T00:00:00.000Z');
     step({ id: 'old', runId: 'run-1', target: 'product-strategy', completedAt: '2026-11-09T01:00:00.000Z' });
     step({ id: 'new', runId: 'run-2', target: 'product-strategy', completedAt: '2026-11-10T05:00:00.000Z' });
     // Later, but another owner's run, unfinished, or without an execution: not counted.
@@ -1191,7 +1244,7 @@ describe('APPROVAL-SET-01B CollaborationWorkflowService reads', () => {
   });
 
   it('is unknown with no completed step, no deduction row, or a malformed amount', async () => {
-    runs.set('run-1', { collaborationRunId: 'run-1', userId: OWNER });
+    addRun('run-1', OWNER, '2026-11-09T00:00:00.000Z');
     expect(await service.lastStepCreditsFor(OWNER, 'product-strategy')).toBeNull();
     step({ id: 'a', runId: 'run-1', target: 'product-strategy' });
     expect(await service.lastStepCreditsFor(OWNER, 'product-strategy')).toBeNull();
@@ -1204,5 +1257,90 @@ describe('APPROVAL-SET-01B CollaborationWorkflowService reads', () => {
     // The latest owned step counts even with no deduction yet: unknown, not the older cost.
     step({ id: 'b', runId: 'run-1', target: 'product-strategy', completedAt: '2026-11-10T09:00:00.000Z' });
     expect(await service.lastStepCreditsFor(OWNER, 'product-strategy')).toBeNull();
+  });
+
+  it("is owner-scoped in the database: another owner's newer step is never loaded or used", async () => {
+    addRun('run-own', OWNER, '2026-11-09T00:00:00.000Z');
+    addRun('run-other', OTHER, '2026-11-11T00:00:00.000Z');
+    step({ id: 'own', runId: 'run-own', target: 'product-strategy', completedAt: '2026-11-09T01:00:00.000Z' });
+    step({ id: 'theirs', runId: 'run-other', target: 'product-strategy', completedAt: '2026-11-11T01:00:00.000Z' });
+    deduct('d-own', 'exec-own', 4);
+    deduct('d-theirs', 'exec-theirs', 900, OTHER);
+    referralRepo.find.mockClear();
+    referralRepo.findOne.mockClear();
+    runRepo.find.mockClear();
+    runRepo.findOne.mockClear();
+
+    expect(await service.lastStepCreditsFor(OWNER, 'product-strategy')).toBe(4);
+
+    // One bounded read of the owner's own runs, one row read, no scan and no N+1.
+    expect(runRepo.find).toHaveBeenCalledTimes(1);
+    expect(runRepo.find).toHaveBeenCalledWith({
+      where: { userId: OWNER },
+      select: ['collaborationRunId', 'userId'],
+      order: { createdAt: 'DESC' },
+      take: LAST_STEP_ESTIMATE_RUN_WINDOW,
+    });
+    expect(runRepo.findOne).not.toHaveBeenCalled();
+    expect(referralRepo.find).not.toHaveBeenCalled();
+    expect(referralRepo.findOne).toHaveBeenCalledTimes(1);
+    const [{ where, order }] = referralRepo.findOne.mock.calls[0] as [
+      { where: Record<string, unknown>; order: unknown },
+    ];
+    expect(order).toEqual({ completedAt: 'DESC' });
+    expect(where.targetBuilderProfileId).toBe('product-strategy');
+    expect(where.status).toBe('completed');
+    const runIds = where.collaborationRunId as FindOperator<unknown>;
+    expect(runIds).toBeInstanceOf(FindOperator);
+    expect(runIds.type).toBe('in');
+    expect(runIds.value).toEqual(['run-own']);
+    for (const key of ['executionId', 'completedAt']) {
+      const operator = where[key] as FindOperator<unknown>;
+      expect(operator).toBeInstanceOf(FindOperator);
+      expect(operator.type).toBe('not');
+      expect(operator.child?.type).toBe('isNull');
+    }
+    const loaded = await (referralRepo.findOne.mock.results[0].value as Promise<
+      Record<string, unknown> | null
+    >);
+    expect(loaded?.referralId).toBe('own');
+
+    // An owner with no runs reads nothing else at all.
+    referralRepo.findOne.mockClear();
+    expect(await service.lastStepCreditsFor('33333333-3333-4333-8333-333333333333', 'product-strategy')).toBeNull();
+    expect(referralRepo.findOne).not.toHaveBeenCalled();
+  });
+
+  it('looks only in the owner\'s most recent runs (the take bound): an older step reads as unknown', async () => {
+    expect(LAST_STEP_ESTIMATE_RUN_WINDOW).toBe(200);
+    const base = Date.parse('2026-01-01T00:00:00.000Z');
+    for (let index = 0; index <= LAST_STEP_ESTIMATE_RUN_WINDOW; index += 1) {
+      addRun(`run-${index}`, OWNER, new Date(base + index * 60_000).toISOString());
+    }
+    // The only product-strategy step sits in the oldest run, outside the window.
+    step({ id: 'oldest', runId: 'run-0', target: 'product-strategy', completedAt: '2026-11-10T01:00:00.000Z' });
+    deduct('d-oldest', 'exec-oldest', 3);
+    referralRepo.findOne.mockClear();
+    expect(await service.lastStepCreditsFor(OWNER, 'product-strategy')).toBeNull();
+    const [{ where }] = referralRepo.findOne.mock.calls[0] as [{ where: Record<string, unknown> }];
+    const ids = (where.collaborationRunId as FindOperator<unknown>).value as string[];
+    expect(ids).toHaveLength(LAST_STEP_ESTIMATE_RUN_WINDOW);
+    expect(ids).not.toContain('run-0');
+    expect(ids[0]).toBe(`run-${LAST_STEP_ESTIMATE_RUN_WINDOW}`);
+
+    // Inside the window it counts.
+    step({ id: 'recent', runId: 'run-1', target: 'product-strategy', completedAt: '2026-11-09T01:00:00.000Z' });
+    deduct('d-recent', 'exec-recent', 6);
+    expect(await service.lastStepCreditsFor(OWNER, 'product-strategy')).toBe(6);
+  });
+
+  it('skips a completed step with no execution id or no completedAt instead of sorting it first', async () => {
+    addRun('run-1', OWNER, '2026-11-09T00:00:00.000Z');
+    step({ id: 'counted', runId: 'run-1', target: 'product-strategy', completedAt: '2026-11-09T01:00:00.000Z' });
+    step({ id: 'noexec', runId: 'run-1', target: 'product-strategy', executionId: null, completedAt: '2026-11-10T01:00:00.000Z' });
+    step({ id: 'nodate', runId: 'run-1', target: 'product-strategy', completedAt: null });
+    deduct('d-counted', 'exec-counted', 2);
+    deduct('d-nodate', 'exec-nodate', 99);
+    expect(await service.lastStepCreditsFor(OWNER, 'product-strategy')).toBe(2);
   });
 });

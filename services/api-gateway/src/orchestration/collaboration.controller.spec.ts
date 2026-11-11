@@ -102,7 +102,51 @@ function matchesWhere(row: unknown, where?: Record<string, unknown>): boolean {
     return true;
   }
   const record = row as Record<string, unknown>;
-  return Object.entries(where).every(([key, expected]) => record[key] === expected);
+  return Object.entries(where).every(([key, expected]) => operatorMatches(record[key], expected));
+}
+
+/** Plain equality, plus the TypeORM operators In, IsNull and Not (APPROVAL-SET-01B). */
+function operatorMatches(actual: unknown, expected: unknown): boolean {
+  if (expected instanceof FindOperator) {
+    if (expected.type === 'in') {
+      return (expected.value as unknown[]).includes(actual);
+    }
+    if (expected.type === 'isNull') {
+      return actual === null || actual === undefined;
+    }
+    if (expected.type === 'not') {
+      return !operatorMatches(actual, expected.child ?? expected.value);
+    }
+    throw new Error(`unsupported operator ${expected.type}`);
+  }
+  return actual === expected;
+}
+
+/** `order` and `take` as the database applies them; a NULL sorts above every value. */
+function orderAndTake<T>(
+  rows: T[],
+  order?: Record<string, 'ASC' | 'DESC'>,
+  take?: number,
+): T[] {
+  const value = (row: T, key: string) => {
+    const raw = (row as Record<string, unknown>)[key];
+    if (raw === null || raw === undefined) {
+      return Number.POSITIVE_INFINITY;
+    }
+    return raw instanceof Date ? raw.getTime() : Number(new Date(String(raw)).getTime());
+  };
+  const sorted = order
+    ? [...rows].sort((a, b) => {
+        for (const [key, direction] of Object.entries(order)) {
+          const diff = value(a, key) - value(b, key);
+          if (diff !== 0 && !Number.isNaN(diff)) {
+            return direction === 'DESC' ? -diff : diff;
+          }
+        }
+        return 0;
+      })
+    : rows;
+  return typeof take === 'number' ? sorted.slice(0, take) : sorted;
 }
 
 function createOrchestrationRepoFakes() {
@@ -110,9 +154,14 @@ function createOrchestrationRepoFakes() {
   const referrals = new Map<string, CollaborationReferralEntity>();
 
   const createRepo = <T>(store: Map<string, T>, pk: string) => {
+    type FindOpts = {
+      where?: Record<string, unknown>;
+      order?: Record<string, 'ASC' | 'DESC'>;
+      take?: number;
+    };
     const repo: {
-      findOne: (opts: { where: Record<string, unknown> }) => Promise<T | null>;
-      find: (opts?: { where?: Record<string, unknown> }) => Promise<T[]>;
+      findOne: (opts: FindOpts & { where: Record<string, unknown> }) => Promise<T | null>;
+      find: (opts?: FindOpts) => Promise<T[]>;
       save: (entity: T) => Promise<T>;
       update: (
         criteria: Record<string, unknown>,
@@ -123,18 +172,20 @@ function createOrchestrationRepoFakes() {
         getRepository: (entity: unknown) => unknown;
       };
     } = {
-      findOne: async ({ where }) => {
-        for (const row of store.values()) {
-          if (matchesWhere(row, where)) {
-            return cloneRow(row);
-          }
-        }
-        return null;
+      findOne: async ({ where, order }) => {
+        const [found] = orderAndTake(
+          [...store.values()].filter((row) => matchesWhere(row, where)),
+          order,
+          1,
+        );
+        return found ? cloneRow(found) : null;
       },
       find: async (opts = {}) =>
-        [...store.values()]
-          .filter((row) => matchesWhere(row, opts.where))
-          .map((row) => cloneRow(row)),
+        orderAndTake(
+          [...store.values()].filter((row) => matchesWhere(row, opts.where)),
+          opts.order,
+          opts.take,
+        ).map((row) => cloneRow(row)),
       save: async (entity) => {
         const copy = cloneRow(entity);
         store.set(String((copy as Record<string, unknown>)[pk]), copy);
@@ -4258,6 +4309,26 @@ describe('CollaborationController login routes', () => {
         autoApproved: { mode: 'credits', estimateCredits: 10, creditLimit: 10 },
         autoApprovalWaiting: null,
       });
+
+      // Another owner's newer, cheaper product-strategy step is never used.
+      const later = new Date(Date.now() + 60_000);
+      runs.set('foreign-run', {
+        ...runs.get(one.runId)!,
+        collaborationRunId: 'foreign-run',
+        userId: OTHER_ID,
+        status: 'completed',
+        referralIds: ['foreign-step'],
+        createdAt: later,
+      });
+      referrals.set('foreign-step', {
+        ...referrals.get(one.child.referralId)!,
+        referralId: 'foreign-step',
+        collaborationRunId: 'foreign-run',
+        idempotencyKey: 'foreign-step',
+        executionId: 'foreign-exec',
+        completedAt: later,
+      });
+      deductionRows.push({ ownerId: OTHER_ID, sourceEventId: 'foreign-exec', requestedCredits: 1, createdAt: new Date() });
 
       // One over: waits.
       workflowRows.set(LEAD, leadRow({ approvalMode: 'credits', approvalCreditLimit: 9 }));

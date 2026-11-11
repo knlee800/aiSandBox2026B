@@ -6,7 +6,7 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, IsNull, Not, Repository } from 'typeorm';
 import {
   GatewayProviderModelValidationError,
   resolveGatewayProviderModelSelection,
@@ -495,6 +495,12 @@ export function readPendingAutoApproval(value: unknown): ReferralPendingAutoAppr
   return { outcome: 'waiting', reason: reason as ReferralPendingAutoApproval['reason'] };
 }
 
+/**
+ * APPROVAL-SET-01B D7: how many of the owner's most recent runs the estimate
+ * looks in. A target last seen further back reads as unknown (fail-closed).
+ */
+export const LAST_STEP_ESTIMATE_RUN_WINDOW = 200;
+
 /** APPROVAL-SET-01B D5: the lead's stored setting, read live. */
 export type LeadApprovalSetting =
   | { readonly found: false }
@@ -627,42 +633,50 @@ export class CollaborationWorkflowService {
   /**
    * APPROVAL-SET-01B D7: the estimate for a step to `targetProfileId` = the
    * requested credits of that target's latest completed step (with an
-   * execution) in the owner's runs, summed over its deduction rows, rounded
-   * up. Like usageFor's last run, without the workflow-snapshot filter. Null
-   * when there is no such step, no deduction row, or a malformed amount.
+   * execution) in the owner's most recent LAST_STEP_ESTIMATE_RUN_WINDOW runs,
+   * summed over its deduction rows, rounded up. Like usageFor's last run,
+   * without the workflow-snapshot filter. Null (the step waits, unknown_cost)
+   * when there is no such step in the window, no deduction row, or a
+   * malformed amount.
    */
   async lastStepCreditsFor(userId: string, targetProfileId: string): Promise<number | null> {
-    const candidates = await this.referralRepo.find({
-      where: { targetBuilderProfileId: targetProfileId, status: 'completed' },
+    // Owner-scoped and bounded in the database: the owner's most recent runs
+    // only, then one row. No other owner's referral is ever loaded.
+    const ownedRuns = await this.runRepo.find({
+      where: { userId },
+      select: ['collaborationRunId', 'userId'],
+      order: { createdAt: 'DESC' },
+      take: LAST_STEP_ESTIMATE_RUN_WINDOW,
     });
-    const completed = candidates
-      .filter(
-        (referral) =>
-          referral.targetBuilderProfileId === targetProfileId &&
-          referral.status === 'completed' &&
-          typeof referral.executionId === 'string' &&
-          referral.executionId.length > 0,
-      )
-      .sort(
-        (a, b) => timeMs(b.completedAt ?? b.updatedAt) - timeMs(a.completedAt ?? a.updatedAt),
-      );
-    const runOwner = new Map<string, boolean>();
-    let latest: CollaborationReferralEntity | null = null;
-    for (const referral of completed) {
-      let ownedRun = runOwner.get(referral.collaborationRunId);
-      if (ownedRun === undefined) {
-        const run = await this.runRepo.findOne({
-          where: { collaborationRunId: referral.collaborationRunId },
-        });
-        ownedRun = run?.userId === userId;
-        runOwner.set(referral.collaborationRunId, ownedRun);
-      }
-      if (ownedRun) {
-        latest = referral;
-        break;
-      }
+    const runIds = ownedRuns
+      .filter((run) => run.userId === userId)
+      .map((run) => run.collaborationRunId)
+      .filter((id): id is string => typeof id === 'string' && id.length > 0);
+    if (runIds.length === 0) {
+      return null;
     }
-    const executionId = latest?.executionId;
+    // completeReferral is the only write path to status 'completed' and always
+    // sets completedAt; the column is nullable, so a null is excluded rather
+    // than sorted (Postgres puts NULLs first in DESC).
+    const latest = await this.referralRepo.findOne({
+      where: {
+        collaborationRunId: In(runIds),
+        targetBuilderProfileId: targetProfileId,
+        status: 'completed',
+        executionId: Not(IsNull()),
+        completedAt: Not(IsNull()),
+      },
+      order: { completedAt: 'DESC' },
+    });
+    if (
+      !latest ||
+      latest.targetBuilderProfileId !== targetProfileId ||
+      latest.status !== 'completed' ||
+      !runIds.includes(latest.collaborationRunId)
+    ) {
+      return null;
+    }
+    const executionId = latest.executionId;
     if (typeof executionId !== 'string' || executionId.length === 0) {
       return null;
     }
