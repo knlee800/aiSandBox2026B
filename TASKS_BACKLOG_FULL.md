@@ -87093,6 +87093,7 @@ nature=IMPLEMENTATION
 **Scope:** Keith, on staging after STAGING-DEPLOY-FD-02, in en, zh-TW and zh-CN: save a team of one advisor and one workflow on a workflow; run it; approve the dispatch and the report-back; the final answer is the lead's and Results shows it; a draft member is skipped with the hint; a workflow with an empty team runs as before; the Chief of Staff front door is unchanged. Implementer: none (Keith live check).
 **Also (added 2026-11-11 by the APPROVAL-SET-01 and COS-DRAFTS-01 stage-start approval):** (1) approval settings: save read_only on a workflow with one advisor and one workflow member, run it, the dispatch and the report-back run without a click and the Team page shows the automatic line; switch to credits with a small limit and see a step wait with its reason; every behaves as today. (2) Chief of Staff drafts: ask the Chief of Staff for a workflow in zh-TW, the draft card, Review and save, the form prefilled with text only, Save, the row is a draft, a test run, switch on, the Chief of Staff reads it by name once on the roster. (3) The COS-EVAL-01 briefing eval rerun with the new Chief of Staff hash, all cases including inject-draft-request. This makes the check PROVIDER-LIVE as registered.
 **Also (added 2026-11-11 by the COS-DRAFTS-01 LOCK):** in the live draft, check whether a stray lower-case "word:" line inside a real draft makes it refuse (fail-closed by design); if it happens often, register a parser follow-up.
+**Also (added 2026-11-11 by the COS-DRAFTS-01B LOCK):** for the draft: the address bar loses the draft query after Save or Cancel; the same Review and save link opened as the second account shows the not-found message; an invalid draft has no link; the card and form read well at phone width.
 ### APPROVAL-SET-01 — Approval setting per team or workflow
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=APPROVAL-SET-01
@@ -87226,7 +87227,7 @@ taskId=COS-DRAFTS-01B
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-11. Was: READY — registered 2026-11-11 by the COS-DRAFTS-01 stage-start approval — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-11. LANE-DONE and LOCKED by the control plane; Lane 1, FRONTEND and I18N released. Slice 01B: the draft card on the Team page (parts, not-saved and owner-sets notes, dropped parts and unknown labels named, Review and save link; invalid drafts show their translated reason and no link; the answer shown without the block), the dashboard reads draftRun and draftStep in a client effect and opens the create form prefilled with the eight text parts only and a notice (nothing saved until the owner saves, as a draft; translated missing, invalid and retry states), every invalid and problem reason translated in three languages; 29 new tests; sonnet subagent, cherry-picked as 098754f; control-plane rerun on the branch and main: tsc 0, frontend 1657 passed, build 0. Stage 4 fully built; not deployed. Checkpoint: docs/COS-DRAFTS-01B-CHECKPOINT.md. FOLLOWUPS: 1 registered (COS-DRAFTS-POLISH-01) / 1 superseded (the live-check flows, into USER-TEAMS-LIVE-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-11. Was: READY — registered 2026-11-11 by the COS-DRAFTS-01 stage-start approval — not admitted.
 **Task ID:** COS-DRAFTS-01B
 **Title:** Chief of Staff draft card and prefilled form
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -87267,6 +87268,30 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved the COS-DRAFTS-01 stage-start 2026-11-11).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From the COS-DRAFTS-01 worker: a user workflow copied from the Chief of Staff template inherits the Drafting paragraph (user-agent.service.ts copies template.procedure), so the copy is told to write drafts that are never parsed for workflows (D3). Recommended: strip the Drafting paragraph from template copies (existing copies keep their text unless the owner edits it). Alternative: keep it. Keith decides.
+
+### COS-DRAFTS-POLISH-01 — Draft card reply language as a name
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COS-DRAFTS-POLISH-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the COS-DRAFTS-01B LOCK — not admitted.
+**Task ID:** COS-DRAFTS-POLISH-01
+**Title:** Draft card reply language as a name
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** COS-DRAFTS-01B.
+**Primary write scope:** PROVISIONAL: frontend/components/collaboration/collaboration-view.tsx or collaboration-draft.ts and the workflows test; the three message files if new keys are needed.
+**Mutexes / resources:** set at admission (expected FRONTEND, I18N).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved the COS-DRAFTS-01 stage-start 2026-11-11).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the COS-DRAFTS-01B worker: the draft card shows the reply language as a raw code (owner, en, zh-TW, zh-CN); show the same translated names the workflow form uses for its reply-language choice.
 
 ### CHAT-DISCORD-01 — Discord chat channel
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
