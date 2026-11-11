@@ -88418,22 +88418,22 @@ taskId=CM-UNTRACKED-DASH-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-11 by the CM-DIFF-CAP-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-11 — under Keith's "do not stop!!! ... keep looking for the next task to start". Was: READY — registered 2026-11-11 by the CM-DIFF-CAP-01 LOCK — not admitted.
 **Task ID:** CM-UNTRACKED-DASH-01
 **Title:** Untracked files in the working-tree diff under dash
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (control plane under Keith's 2026-11-10 instruction, 2026-11-11). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** CM-DIFF-CAP-01.
-**Primary write scope:** PROVISIONAL: services/container-manager/src/git/git.service.ts and its spec.
-**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Primary write scope:** set 2026-11-11: services/container-manager/src/git/git.service.ts, services/container-manager/src/git/git.service.spec.ts, services/container-manager/src/__tests__/no-host-git.spec.ts.
+**Mutexes / resources:** CONTAINER-MANAGER.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** From the CM-DIFF-CAP-01 worker: WORKTREE_UNTRACKED_DIFF_SCRIPT uses set -o pipefail and read -d '', which dash (the /bin/sh of the Debian browser image) rejects, so in browser-image sessions untracked files are probably left out of the working-tree diff silently (the failure is non-fatal by design); rewrite it POSIX-sh safe and test it under dash and busybox sh.
 
 ### CHECKPOINT-LIVE-02 — Keith checkpoint restore smoke through the container stdin
