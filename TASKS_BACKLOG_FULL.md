@@ -85675,6 +85675,7 @@ nature=GOVERNANCE
 **Holds:** (1) PRD.md line 625's office note says "approved FUTURE; not current; not scheduled" while OFFICE-01, OFFICE-05, OFFICE-06 and OFFICE-07 are built and the first slices are live on staging: Keith decides how PRD.md classifies the office now. (2) ARCHITECTURE.md section 2 keeps the principle "no cron / no platform schedulers" while the gateway runs a 5-minute in-process CollaborationSweepWorker (stated in section 15) and TRIGGER-01 plans schedules: Keith decides whether the principle is reworded.
 **Also (added 2026-11-10, Keith, 2026-11-10, RPG office review window):** fold in the office decisions, in Keith's words: the office is an isometric 16-bit scene in our own art (the reference picture is mood only; no outside assets; AI exploration plus hand-redrawn final pieces with provenance notes); the characters walk, as decoration only, and agent status still comes from server data; the first release is one fixed room; a user-built office and selling paid pieces are later features (OFFICE-BUILD-01, OFFICE-SHOP-01). This means reclassifying PRD.md line 482 ("RPG walking-town / moving-character simulation ... not the current or next committed product"), which OFFICE-SCENE-01 waits for. PRD.md is not edited until this task runs.
 **Also (added 2026-11-11 by the USER-TEAMS-01B LOCK):** PRD.md wording for the Chief of Staff front door (deployed to staging 537ebfb, Keith's live check FRONTDOOR-LIVE-01 passed: moves from APPROVED FUTURE to GATED; this was due at the FRONTDOOR-LIVE-01 lock and missed there) and for user teams (USER-TEAMS-01, -01B, -01C built, not deployed: stays APPROVED FUTURE until USER-TEAMS-LIVE-01). ARCHITECTURE.md 13.1 already carries both rows.
+**Also (added 2026-11-11 by the APPROVAL-SET-01 and COS-DRAFTS-01 stage-start approval):** PRD.md wording for approval settings per workflow and for Chief of Staff drafts moves at USER-TEAMS-LIVE-01 (plan section 7 pattern).
 ### COLLAB-GATE-TESTS-01 — Validation gate: no writer-to-reviewer approval on failing or missing tests
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=COLLAB-GATE-TESTS-01
@@ -86990,7 +86991,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09 and Stage 4 on 2026-11-10).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From the COS-FRONTDOOR-01 stage-start (DECISION A alternative): a dedicated "Ask the Chief of Staff" page or Command Center box instead of the Team page option.
-
+**Also (added 2026-11-11 by the COS-DRAFTS-01 stage-start approval):** a "Draft with the Chief of Staff" entry from the dashboard, without first opening the Team page, belongs here.
 ### USER-TEAMS-01 — User teams and who hands work to whom
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=USER-TEAMS-01
@@ -87090,33 +87091,106 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (as for USER-TEAMS-01; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09 and this stage-start 2026-11-11).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** Keith, on staging after STAGING-DEPLOY-FD-02, in en, zh-TW and zh-CN: save a team of one advisor and one workflow on a workflow; run it; approve the dispatch and the report-back; the final answer is the lead's and Results shows it; a draft member is skipped with the hint; a workflow with an empty team runs as before; the Chief of Staff front door is unchanged. Implementer: none (Keith live check).
-
+**Also (added 2026-11-11 by the APPROVAL-SET-01 and COS-DRAFTS-01 stage-start approval):** (1) approval settings: save read_only on a workflow with one advisor and one workflow member, run it, the dispatch and the report-back run without a click and the Team page shows the automatic line; switch to credits with a small limit and see a step wait with its reason; every behaves as today. (2) Chief of Staff drafts: ask the Chief of Staff for a workflow in zh-TW, the draft card, Review and save, the form prefilled with text only, Save, the row is a draft, a test run, switch on, the Chief of Staff reads it by name once on the roster. (3) The COS-EVAL-01 briefing eval rerun with the new Chief of Staff hash, all cases including inject-draft-request. This makes the check PROVIDER-LIVE as registered.
 ### APPROVAL-SET-01 — Approval setting per team or workflow
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=APPROVAL-SET-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-11 — slice 01A; Keith approved the stage-start ("Yes, approve both"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** APPROVAL-SET-01
 **Title:** Approval setting per team or workflow
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP
-**Start condition:** NOT_READY. Ready when: LOCKED. Keith decides.
+**Start condition:** READY (USER-TEAMS-01 LOCKED; Keith approved the stage-start 2026-11-11). Was: NOT_READY. Ready when: LOCKED. Keith decides.
 **Depends on:** USER-TEAMS-01.
-**Primary write scope:** set at admission (orchestration approve path, user_agents and teams columns, Team page).
-**Mutexes / resources:** set at admission.
-**Hot-file leases:** set at admission.
+**Primary write scope:** slice 01A, set 2026-11-11: services/api-gateway/src/migrations/1807000000000-AddUserAgentApprovalColumns.ts, services/api-gateway/src/migrations/__tests__/1807000000000-AddUserAgentApprovalColumns.spec.ts, services/api-gateway/src/migrations/__tests__/1806000000000-AddUserAgentTeamColumn.spec.ts, services/api-gateway/src/entities/user-agent.entity.ts, services/api-gateway/src/user-agent/user-workflow-rules.ts, services/api-gateway/src/user-agent/__tests__/user-workflow-rules.spec.ts, services/api-gateway/src/user-agent/dto/create-agent.dto.ts, services/api-gateway/src/user-agent/dto/update-agent.dto.ts, services/api-gateway/src/user-agent/user-agent.service.ts, services/api-gateway/src/user-agent/__tests__/user-agent.service.spec.ts, services/api-gateway/src/user-agent/user-agent.controller.ts, services/api-gateway/src/user-agent/__tests__/user-agent.controller.spec.ts, services/api-gateway/src/connectors/connector-servers.ts, services/api-gateway/src/connectors/connector-servers.spec.ts.
+**Mutexes / resources:** GATEWAY, MIGRATION (slice 01A).
+**Hot-file leases:** none.
+**Shared contracts:** none touched by 01A (orchestration.service.ts and the frozen paths: empty diff); 01B reads HARNESS_ENTITLEMENT_PROOF_V1 without changing it.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** 01A: migration down (loses settings only); nothing reads the columns until 01B.
+**saturationClass:** OPTIONAL (Keith, 2026-11-09).
+**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
+**Scope:** The approval setting per team or workflow (A5, D4, A9 part 8): every hand-off (default), only over a credit amount, or automatic for read-only agents. Nothing that writes, sends or deletes is ever automatic. Depth, agent and daily limits stay.
+**Plan:** docs/AGENT-OPS-PLAN.md section 3.2
+**Stage-start (approved 2026-11-11):** docs/APPROVAL-SET-01-STAGE-START.md. This task is **01A, columns and validation**; APPROVAL-SET-01B (the server's auto-approve path) and APPROVAL-SET-01C (form, summary and Team page) are registered; APPROVAL-SET-02 (the same setting on the Chief of Staff roster) is registered NOT_READY. Keith's live check is folded into USER-TEAMS-LIVE-01. Implementer: opus.
+**Also (added 2026-11-11 by the USER-TEAMS-01 stage-start approval):** the approval setting is a column beside team_member_ids on user_agents, and the approve path reads it by the run's lead (pending_job.teamLeadId).
+### APPROVAL-SET-01B — The server auto-approve path
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=APPROVAL-SET-01B
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the APPROVAL-SET-01 stage-start approval — not admitted.
+**Task ID:** APPROVAL-SET-01B
+**Title:** The server auto-approve path
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP (stage-start shared with APPROVAL-SET-01).
+**Start condition:** NOT_READY. Ready when: APPROVAL-SET-01 LOCKED; the control plane may start it under Keith's 2026-11-11 approval of the stage-start.
+**Depends on:** APPROVAL-SET-01.
+**Primary write scope:** PROVISIONAL, set at admission (expected: services/api-gateway/src/orchestration/ (orchestration.contracts.ts, orchestration.service.ts, collaboration-workflow.ts, collaboration.controller.ts and their specs, internal-collaboration.controller.spec.ts, orchestration/__tests__ key-set pins)).
+**Mutexes / resources:** set at admission (expected GATEWAY).
+**Hot-file leases:** none.
 **Shared contracts:** set at admission.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** set at admission.
-**saturationClass:** OPTIONAL (Keith, 2026-11-09).
-**productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
+**saturationClass:** OPTIONAL (as for its parent; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09 and the stage-start 2026-11-11).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
-**Scope:** The approval setting per team or workflow (A5, D4, A9 part 8): every hand-off (default), only over a credit amount, or automatic for read-only agents. Nothing that writes, sends or deletes is ever automatic. Depth, agent and daily limits stay.
-**Plan:** docs/AGENT-OPS-PLAN.md section 3.2
-**Also (added 2026-11-11 by the USER-TEAMS-01 stage-start approval):** the approval setting is a column beside team_member_ids on user_agents, and the approve path reads it by the run's lead (pending_job.teamLeadId).
+**Scope:** Stage-start docs/APPROVAL-SET-01-STAGE-START.md 01B: maybeAutoApprove after createPendingReferral in the dispatch and report-back paths only (never the first hand-off, internal-route referrals, coding or advisors runs); auto only when the target is positively read-only (registry toolProfile read, or a workflow with its snapshot in the run) and every connector tool it may hold carries readOnly true; the credits mode uses lastStepCreditsFor (unknown waits); it calls the existing approveReferral so every check still runs, and any refusal leaves the step waiting with a reason in pending_job.autoApproval and an audit event; decidedBy = owner with decisionReason auto:...; the handoff view gains autoApproved and autoApprovalWaiting. HARNESS_ENTITLEMENT_PROOF_V1 read, not changed. With every stored, the path is a no-op. Implementer: opus.
+
+### APPROVAL-SET-01C — Approval setting form and Team page
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=APPROVAL-SET-01C
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the APPROVAL-SET-01 stage-start approval — not admitted.
+**Task ID:** APPROVAL-SET-01C
+**Title:** Approval setting form and Team page
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP (stage-start shared with APPROVAL-SET-01).
+**Start condition:** NOT_READY. Ready when: APPROVAL-SET-01 LOCKED; the control plane may start it under Keith's 2026-11-11 approval of the stage-start.
+**Depends on:** APPROVAL-SET-01.
+**Primary write scope:** PROVISIONAL, set at admission (expected: frontend/components/platform/ (agent-workflow-fields.tsx, agent-workflow-model.ts, create-agent-form.tsx, agent-workflow-summary.tsx, platform-dashboard.tsx and tests), frontend/components/collaboration/ (collaboration-page.tsx, collaboration-view.tsx, collaboration-workflows.test.tsx), frontend/lib/collaboration/api.ts, frontend/hooks/useUserAgents.ts and test, the three message files).
+**Mutexes / resources:** set at admission (expected FRONTEND, I18N).
+**Hot-file leases:** none.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (as for its parent; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09 and the stage-start 2026-11-11).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Stage-start docs/APPROVAL-SET-01-STAGE-START.md 01C: the approval choice under Advanced (every, read_only, credits with a limit), a summary line, the Team page "Approved automatically" line and the waiting reason, copy in three languages. The page lines need APPROVAL-SET-01B LOCKED; the form needs 01A only. Implementer: sonnet.
+
+### APPROVAL-SET-02 — Approval setting on the Chief of Staff roster
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=APPROVAL-SET-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the APPROVAL-SET-01 stage-start approval — not admitted.
+**Task ID:** APPROVAL-SET-02
+**Title:** Approval setting on the Chief of Staff roster
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP.
+**Start condition:** NOT_READY. Ready when: APPROVAL-SET-01B LOCKED and its stage-start approved. Keith decides.
+**Depends on:** APPROVAL-SET-01B.
+**Primary write scope:** PROVISIONAL, set at admission (expected: collaboration_rosters columns (a migration), the roster routes, the approve path when leadIdOf is chief-of-staff, the roster picker).
+**Mutexes / resources:** set at admission (expected GATEWAY, MIGRATION, FRONTEND, I18N).
+**Hot-file leases:** none.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (as for its parent; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09 and the stage-start 2026-11-11).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the APPROVAL-SET-01 stage-start DECISION D (Keith "Yes, approve both"): the same approval setting on the Chief of Staff roster, read when the run lead is chief-of-staff; the same fail-closed rules. Needs its own stage-start. Implementer: set at its stage-start.
+
 ### COS-DRAFTS-01 — Chief of Staff drafts a workflow the owner approves
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=COS-DRAFTS-01
@@ -87129,8 +87203,8 @@ nature=IMPLEMENTATION
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP
-**Start condition:** NOT_READY. Ready when: LOCKED. Keith decides.
-**Depends on:** APPROVAL-SET-01.
+**Start condition:** NOT_READY. Ready when: USER-TEAMS-01B LOCKED (done 2026-11-11) and GATEWAY free; the control plane may admit it under Keith's 2026-11-11 approval of the stage-start. Was: Ready when: LOCKED. Keith decides.
+**Depends on:** USER-TEAMS-01B (relaxed 2026-11-11 by Keith's approval of DECISION D; was APPROVAL-SET-01; the two share GATEWAY and FRONTEND files and run in sequence).
 **Primary write scope:** set at admission.
 **Mutexes / resources:** set at admission.
 **Hot-file leases:** set at admission.
@@ -87143,6 +87217,31 @@ nature=IMPLEMENTATION
 **Scope:** The Chief of Staff drafts an agent or workflow from a description; the owner approves it; it never saves or grants itself tools (D6). Also (BIZ-USER-01C, 2026-11-10): a user workflow's project instructions read "You are <row id>." because the agent name is the row id; give workflows a display name in buildCollaborationProjectInstructions when drafting prompts here.
 **Also (added 2026-11-10 by the COS-FRONTDOOR-01B LOCK):** the label field on listed agents (COS-FRONTDOOR-01B, D13) is the mechanism for its label note.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.2
+**Stage-start (approved 2026-11-11):** docs/COS-DRAFTS-01-STAGE-START.md. This task is **01A, gateway and eval** (the Chief of Staff spec paragraph, the draft block parser, draft on the run detail, the display-name fix, the eval copy and an inject-draft-request case; GATEWAY, AI-SERVICE; opus); COS-DRAFTS-01B (Team page card and prefilled create form; FRONTEND, I18N; sonnet) is registered. Keith's live check is folded into USER-TEAMS-LIVE-01.
+
+### COS-DRAFTS-01B — Chief of Staff draft card and prefilled form
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COS-DRAFTS-01B
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the COS-DRAFTS-01 stage-start approval — not admitted.
+**Task ID:** COS-DRAFTS-01B
+**Title:** Chief of Staff draft card and prefilled form
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP (stage-start shared with COS-DRAFTS-01).
+**Start condition:** NOT_READY. Ready when: COS-DRAFTS-01 LOCKED; the control plane may start it under Keith's 2026-11-11 approval of the stage-start.
+**Depends on:** COS-DRAFTS-01.
+**Primary write scope:** PROVISIONAL, set at admission (expected: frontend/components/collaboration/ (collaboration-view.tsx, collaboration-page.tsx, collaboration-roster.ts or a new collaboration-draft.ts, collaboration-workflows.test.tsx), frontend/components/platform/ (platform-dashboard.tsx and test, create-agent-form.tsx, agent-workflow-model.ts, agent-workflow-editor.test.tsx), frontend/app/[locale]/platform/page.tsx only if useSearchParams needs a Suspense wrapper, the three message files).
+**Mutexes / resources:** set at admission (expected FRONTEND, I18N).
+**Hot-file leases:** none.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (as for its parent; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09 and the stage-start 2026-11-11).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Stage-start docs/COS-DRAFTS-01-STAGE-START.md 01B: the draft card on the Team page with Review and save (read-only like a report-back when long), /platform?draftRun=&draftStep= opens the create form prefilled with the text parts only and a notice; nothing is saved until the owner saves, always as a draft; copy in three languages. Implementer: sonnet.
 
 ### CHAT-DISCORD-01 — Discord chat channel
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -87301,7 +87400,7 @@ nature=IMPLEMENTATION
 **Note (added 2026-11-10 by the RESULTS-01 LOCK):** trigger-started runs appear in Results (RESULTS-01) with no change; this task's stage-start names the Results unread badge as the owner's notice of a finished scheduled run.
 **Note (added 2026-11-10 by the TEAM-NO-SESSION-02 LOCK):** a trigger-started workflow run has no session; it reuses CollaborationBusinessSessionService.ensureForOwner (services/api-gateway/src/orchestration/collaboration-business-session.ts) for its project and session.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.4
-
+**Also (added 2026-11-11 by the APPROVAL-SET-01 stage-start approval):** decide here whether an unattended start may auto-approve its first step under the APPROVAL-SET-01 setting (today the first hand-off never auto-approves).
 ### TRIGGER-UI-01 — Schedules page
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=TRIGGER-UI-01
@@ -87509,7 +87608,7 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** Drafts the owner can review and that are never sent (G3), after Connect Google.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.5
-
+**Also (added 2026-11-11 by the APPROVAL-SET-01 stage-start approval):** a draft-writing connector tool is registered with readOnly false (or without the flag), so APPROVAL-SET-01's auto-approval never applies to it.
 ### ACTIONS-APPROVAL-01 — Send and change only behind approval
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=ACTIONS-APPROVAL-01
@@ -87535,7 +87634,7 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** Send and change actions only behind the owner's approval (G4). Nothing that writes, sends or deletes is automatic.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.5
-
+**Also (added 2026-11-11 by the APPROVAL-SET-01 stage-start approval):** a new tool that sends or writes is registered on ConnectorToolDefinition with readOnly false (or without the flag), so APPROVAL-SET-01's auto-approval never applies to it.
 ### RESULTS-MAIL-01 — Results by email
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=RESULTS-MAIL-01
@@ -88515,6 +88614,7 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** Deploy USER-TEAMS-01, APPROVAL-SET-01 and COS-DRAFTS-01 (the rest of Stage 4) after STAGING-DEPLOY-FD-01 deployed the front door.
 **Also (added 2026-11-11 by the USER-TEAMS-01 stage-start approval):** a migrating deploy: it carries migration 1806000000000-AddUserAgentTeamColumn (pre-migration backup, new migration hash) and USER-TEAMS-01, -01B and -01C.
+**Also (added 2026-11-11 by the APPROVAL-SET-01 and COS-DRAFTS-01 stage-start approval):** it also carries migration 1807000000000-AddUserAgentApprovalColumns (with 1806) and the Chief of Staff spec hash change from COS-DRAFTS-01 in both the gateway and ai-service, plus CM-EXEC-01 and CM-BINARY-01 in container-manager.
 ### FRONTDOOR-LIVE-01 — Live check: Keith gives the Chief of Staff a job; it passes work on and answers with the results
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=FRONTDOOR-LIVE-01

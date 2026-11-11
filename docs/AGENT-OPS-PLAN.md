@@ -51,8 +51,8 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 |---|---|---|
 | 34 | COS-FRONTDOOR-01, COS-FRONTDOOR-01B, COS-FRONTDOOR-01C | Owner talks only to the Chief of Staff; results return to it (01A roster store done 2026-11-10; 01B run and report-back done 2026-11-10; 01C Team page done 2026-11-10; the front door is built, deploy STAGING-DEPLOY-FD-01 next; Keith approved Stage 4 on 2026-11-10; the Team page's Chief of Staff option, roster of advisors and workflows up to 3; 01A roster store, 01B run and report-back, 01C Team page) |
 | 35 | USER-TEAMS-01, USER-TEAMS-01B, USER-TEAMS-01C, USER-TEAMS-LIVE-01 | User teams and who hands off to whom (stage-start approved 2026-11-11; 01A team column and validation done 2026-11-11, 01A, 01B and 01C done 2026-11-11 (built, not deployed), then Keith's live check after STAGING-DEPLOY-FD-02) |
-| 36 | APPROVAL-SET-01 | Approval setting |
-| 37 | COS-DRAFTS-01 | Chief of Staff drafts agents and workflows for approval |
+| 36 | APPROVAL-SET-01, APPROVAL-SET-01B, APPROVAL-SET-01C, APPROVAL-SET-02 | Approval setting (stage-start approved 2026-11-11; 01A columns and validation admitted; 01B auto-approve path, 01C form and Team page; the Chief of Staff roster setting is APPROVAL-SET-02) |
+| 37 | COS-DRAFTS-01, COS-DRAFTS-01B | Chief of Staff drafts agents and workflows for approval (stage-start approved 2026-11-11; 01A gateway and eval next after APPROVAL-SET-01's GATEWAY use, 01B card and prefilled form; depends on USER-TEAMS-01B) |
 | 38 | STAGING-DEPLOY-FD-02 | Deploy the rest of Stage 4 (USER-TEAMS-01, APPROVAL-SET-01, COS-DRAFTS-01). Done 2026-11-11: STAGING-DEPLOY-FD-01 deployed the front door (537ebfb) and FRONTDOOR-LIVE-01 passed Keith's live check and the briefing eval (9 of 9) |
 
 **Stage 5 — chat (phase 3)**
