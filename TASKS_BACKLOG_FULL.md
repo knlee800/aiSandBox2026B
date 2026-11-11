@@ -87049,7 +87049,7 @@ taskId=USER-TEAMS-01C
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-11. Was: READY — registered 2026-11-11 by the USER-TEAMS-01 stage-start approval — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-11. LANE-DONE and LOCKED by the control plane; Lane 2, FRONTEND and I18N released. Slice 01C: the Team block in the workflow form (choices, count of 3, fourth tick refused, approval hint, translated refusals incl. ROSTER_MEMBER_SELF), the summary's team line wired from the dashboard, the report-back label for a workflow lead on the Team page, copy in three languages; 31 new tests; sonnet subagent, cherry-picked as 2adfbae and e12f99b; control-plane rerun on the branch and on main: tsc 0, frontend 1604 passed, build 0; out-of-slice diff empty. Not deployed. Checkpoint: docs/USER-TEAMS-01C-CHECKPOINT.md. FOLLOWUPS: 0 registered / 1 superseded (the live-check flows into USER-TEAMS-LIVE-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 2 — 2026-11-11. Was: READY — registered 2026-11-11 by the USER-TEAMS-01 stage-start approval — not admitted.
 **Task ID:** USER-TEAMS-01C
 **Title:** User-team form and Team page
 **Workstream:** AGENT (taxonomy only; zero admission weight)
