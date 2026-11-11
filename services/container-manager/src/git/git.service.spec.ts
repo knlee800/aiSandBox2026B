@@ -561,10 +561,25 @@ function saveBundleExec(command: string) {
   if (command === HISTORY_BUNDLE_SIZE_COMMAND) {
     return { exitCode: 0, stdout: `${SAVED_BUNDLE_BYTES.length}\n`, stderr: '' };
   }
-  if (command === HISTORY_BUNDLE_CHUNK_COMMAND) {
-    return { exitCode: 0, stdout: `${SAVED_BUNDLE_BYTES.toString('base64')}\n`, stderr: '' };
-  }
   return null;
+}
+
+/**
+ * CM-BINARY-01: the governed binary exec (SessionsService.execInContainerBuffer)
+ * the save reads its slices through. It answers HISTORY_BUNDLE_CHUNK_COMMAND
+ * like dd would: the raw bytes of the requested blocks, as a Buffer.
+ */
+function sliceExec(bytes: Buffer = SAVED_BUNDLE_BYTES): jest.Mock<any> {
+  return jest.fn(
+    async (_sessionId: string, cmd: string[], _cwd?: string, env?: Record<string, string>) => {
+      if (cmd[2] !== HISTORY_BUNDLE_CHUNK_COMMAND) {
+        throw new Error(`Unexpected binary command: ${cmd[2]}`);
+      }
+      const start = Number(env?.SKIP_BLOCKS) * HISTORY_BUNDLE_BLOCK_BYTES;
+      const end = start + Number(env?.COUNT_BLOCKS) * HISTORY_BUNDLE_BLOCK_BYTES;
+      return { exitCode: 0, stdout: Buffer.from(bytes.subarray(start, end)), stderr: '' };
+    },
+  );
 }
 
 type StageExec = jest.Mock<any> & { received: () => Buffer };
@@ -593,11 +608,16 @@ function stageExec(
   return fn;
 }
 
-function historyHarness(execInContainer: jest.Mock, execInContainerWithStdin: jest.Mock = stageExec()) {
+function historyHarness(
+  execInContainer: jest.Mock,
+  execInContainerWithStdin: jest.Mock = stageExec(),
+  execInContainerBuffer: jest.Mock = sliceExec(),
+) {
   return Object.assign(Object.create(GitService.prototype), {
     sessionsService: {
       execInContainer,
       execInContainerWithStdin,
+      execInContainerBuffer,
       getWorkspacePath: (sessionId: string) => workspaceFor(sessionId),
     },
   });
@@ -813,10 +833,11 @@ describe('GitService checkpoint history', () => {
       }
       throw new Error(`Unexpected command: ${command}`);
     });
+    const execInContainerBuffer = sliceExec();
 
     const result = await callHistory(
       'saveProjectHistory',
-      historyHarness(execInContainer),
+      historyHarness(execInContainer, stageExec(), execInContainerBuffer),
       SESSION_ID,
       PROJECT_ID,
     );
@@ -840,11 +861,19 @@ describe('GitService checkpoint history', () => {
       ['sh', '-lc', HISTORY_BUNDLE_SIZE_COMMAND],
       '/workspace',
     );
-    expect(execInContainer).toHaveBeenCalledWith(
+    // CM-BINARY-01: the slice comes through the governed binary exec.
+    expect(execInContainerBuffer).toHaveBeenCalledTimes(1);
+    expect(execInContainerBuffer).toHaveBeenCalledWith(
       SESSION_ID,
       ['sh', '-lc', HISTORY_BUNDLE_CHUNK_COMMAND],
       '/workspace',
       { SKIP_BLOCKS: '0', COUNT_BLOCKS: '8' },
+    );
+    expect(execInContainer).not.toHaveBeenCalledWith(
+      SESSION_ID,
+      ['sh', '-lc', HISTORY_BUNDLE_CHUNK_COMMAND],
+      expect.anything(),
+      expect.anything(),
     );
     expect(fs.stat).toHaveBeenCalledWith(tempPath);
     expect(fs.unlink).not.toHaveBeenCalled();
@@ -1087,8 +1116,9 @@ describe('GitService checkpoint history', () => {
       expect(HISTORY_BUNDLE_SIZE_COMMAND).toBe(
         `[ -f ${CONTAINER_HISTORY_BUNDLE} ] && [ ! -L ${CONTAINER_HISTORY_BUNDLE} ] && wc -c < ${CONTAINER_HISTORY_BUNDLE}`,
       );
+      // CM-BINARY-01: raw bytes through the binary exec, no base64 framing.
       expect(HISTORY_BUNDLE_CHUNK_COMMAND).toBe(
-        `dd if=${CONTAINER_HISTORY_BUNDLE} bs=1048576 skip="$SKIP_BLOCKS" count="$COUNT_BLOCKS" 2>/dev/null | base64`,
+        `dd if=${CONTAINER_HISTORY_BUNDLE} bs=1048576 skip="$SKIP_BLOCKS" count="$COUNT_BLOCKS" 2>/dev/null`,
       );
     });
 
@@ -1112,26 +1142,26 @@ describe('GitService checkpoint history', () => {
       for (let index = 0; index < size; index += 1) {
         bytes[index] = (index * 31 + 7) & 0xff;
       }
-      const execInContainer = jest.fn(async (_sessionId: string, cmd: string[], _cwd: string, env?: any) => {
+      const execInContainer = jest.fn(async (_sessionId: string, cmd: string[]) => {
         const command = cmd[2];
         if (command === HISTORY_BUNDLE_SIZE_COMMAND) {
           return { exitCode: 0, stdout: `${size}\n`, stderr: '' };
         }
-        if (command === HISTORY_BUNDLE_CHUNK_COMMAND) {
-          const start = Number(env.SKIP_BLOCKS) * 1024 * 1024;
-          const slice = bytes.subarray(start, start + Number(env.COUNT_BLOCKS) * 1024 * 1024);
-          // base64 wraps lines at 76 characters, as busybox and coreutils do.
-          const wrapped = slice.toString('base64').replace(/(.{76})/g, '$1\n');
-          return { exitCode: 0, stdout: `${wrapped}\n`, stderr: '' };
-        }
         return saveExec({})(_sessionId, cmd);
       });
+      // CM-BINARY-01: each slice arrives as raw bytes through the binary exec.
+      const execInContainerBuffer = sliceExec(bytes);
 
-      await callHistory('saveProjectHistory', historyHarness(execInContainer), SESSION_ID, PROJECT_ID);
+      await callHistory(
+        'saveProjectHistory',
+        historyHarness(execInContainer, stageExec(), execInContainerBuffer),
+        SESSION_ID,
+        PROJECT_ID,
+      );
 
       const [tempPath] = fsFn(fs.rename).mock.calls[0];
       expect(writtenTo(String(tempPath)).equals(bytes)).toBe(true);
-      const slices = execInContainer.mock.calls
+      const slices = execInContainerBuffer.mock.calls
         .filter((call) => call[1][2] === HISTORY_BUNDLE_CHUNK_COMMAND)
         .map((call) => call[3]);
       expect(slices).toEqual([
@@ -1158,19 +1188,108 @@ describe('GitService checkpoint history', () => {
     });
 
     it.each([
-      ['a short slice', Buffer.from('short').toString('base64')],
-      ['a long slice', Buffer.concat([SAVED_BUNDLE_BYTES, Buffer.from('x')]).toString('base64')],
-      ['text that is not base64', 'not base64 at all!'],
+      ['a short slice', Buffer.from('short')],
+      ['a long slice', Buffer.concat([SAVED_BUNDLE_BYTES, Buffer.from('x')])],
+      ['an empty slice', Buffer.alloc(0)],
     ])('refuses %s, removes the temporary file and stores nothing', async (_name, stdout) => {
-      const execInContainer = saveExec({
-        [HISTORY_BUNDLE_CHUNK_COMMAND]: { exitCode: 0, stdout, stderr: '' },
-      });
+      const execInContainer = saveExec({});
+      const execInContainerBuffer = jest.fn(async () => ({ exitCode: 0, stdout, stderr: '' }));
       await expect(
-        callHistory('saveProjectHistory', historyHarness(execInContainer), SESSION_ID, PROJECT_ID),
+        callHistory(
+          'saveProjectHistory',
+          historyHarness(execInContainer, stageExec(), execInContainerBuffer),
+          SESSION_ID,
+          PROJECT_ID,
+        ),
       ).rejects.toThrow('History bundle changed while it was read');
       const [tempPath] = fsFn(fs.open).mock.calls[0];
       expect(fs.rename).not.toHaveBeenCalled();
       expect(fs.unlink).toHaveBeenCalledWith(tempPath);
+      expect(execInContainer).toHaveBeenCalledWith(
+        SESSION_ID,
+        ['sh', '-lc', `rm -f ${CONTAINER_HISTORY_BUNDLE}`],
+        '/workspace',
+      );
+    });
+
+    it('CM-BINARY-01: refuses a slice read that exits non-zero, with its stderr, and cleans up', async () => {
+      const execInContainer = saveExec({});
+      const execInContainerBuffer = jest.fn(async () => ({
+        exitCode: 1,
+        stdout: Buffer.alloc(0),
+        stderr: 'dd: can\'t open',
+      }));
+      await expect(
+        callHistory(
+          'saveProjectHistory',
+          historyHarness(execInContainer, stageExec(), execInContainerBuffer),
+          SESSION_ID,
+          PROJECT_ID,
+        ),
+      ).rejects.toThrow("dd: can't open");
+      const [tempPath] = fsFn(fs.open).mock.calls[0];
+      expect(fs.rename).not.toHaveBeenCalled();
+      expect(fs.unlink).toHaveBeenCalledWith(tempPath);
+    });
+
+    it('CM-BINARY-01: falls back to a clear message when a failed slice read has no stderr', async () => {
+      const execInContainerBuffer = jest.fn(async () => ({ exitCode: 2, stdout: Buffer.alloc(0), stderr: '' }));
+      await expect(
+        callHistory(
+          'saveProjectHistory',
+          historyHarness(saveExec({}), stageExec(), execInContainerBuffer),
+          SESSION_ID,
+          PROJECT_ID,
+        ),
+      ).rejects.toThrow('Failed to read history bundle');
+      expect(fs.rename).not.toHaveBeenCalled();
+    });
+
+    it('CM-BINARY-01: a slice read that throws (for example the governed exec refusing) fails the save and cleans up', async () => {
+      const execInContainer = saveExec({});
+      const execInContainerBuffer = jest.fn(async () => {
+        throw new Error('exec stdout output exceeded 16777216 bytes');
+      });
+      await expect(
+        callHistory(
+          'saveProjectHistory',
+          historyHarness(execInContainer, stageExec(), execInContainerBuffer),
+          SESSION_ID,
+          PROJECT_ID,
+        ),
+      ).rejects.toThrow('exec stdout output exceeded 16777216 bytes');
+      const [tempPath] = fsFn(fs.open).mock.calls[0];
+      expect(fs.rename).not.toHaveBeenCalled();
+      expect(fs.unlink).toHaveBeenCalledWith(tempPath);
+      expect(execInContainer).toHaveBeenCalledWith(
+        SESSION_ID,
+        ['sh', '-lc', `rm -f ${CONTAINER_HISTORY_BUNDLE}`],
+        '/workspace',
+      );
+    });
+
+    it('CM-BINARY-01: keeps every byte value through the binary slice, including invalid UTF-8', async () => {
+      const bytes = Buffer.concat([
+        Buffer.from('# v2 git bundle\n'),
+        Buffer.from(Array.from({ length: 256 }, (_, index) => index)),
+        Buffer.from([0x80, 0xc3, 0xff, 0xe2, 0x82]),
+      ]);
+      const execInContainer = jest.fn(async (_sessionId: string, cmd: string[]) => {
+        if (cmd[2] === HISTORY_BUNDLE_SIZE_COMMAND) {
+          return { exitCode: 0, stdout: `${bytes.length}\n`, stderr: '' };
+        }
+        return saveExec({})(_sessionId, cmd);
+      });
+
+      await callHistory(
+        'saveProjectHistory',
+        historyHarness(execInContainer, stageExec(), sliceExec(bytes)),
+        SESSION_ID,
+        PROJECT_ID,
+      );
+
+      const [tempPath] = fsFn(fs.rename).mock.calls[0];
+      expect(writtenTo(String(tempPath)).equals(bytes)).toBe(true);
     });
 
     it('pins the restore staging command: remove the old entry, create exclusively, report the size', () => {
@@ -1179,11 +1298,10 @@ describe('GitService checkpoint history', () => {
       );
     });
 
-    it('keeps every save slice, in base64 with line breaks, under the exec output cap', () => {
+    it('keeps every save slice, as raw bytes, under the exec output cap', () => {
       const sliceBytes = HISTORY_BUNDLE_BLOCK_BYTES * HISTORY_BUNDLE_CHUNK_BLOCKS;
-      const base64Chars = Math.ceil(sliceBytes / 3) * 4;
-      const withNewlines = base64Chars + Math.ceil(base64Chars / 76);
-      expect(withNewlines).toBeLessThan(EXEC_OUTPUT_MAX_BYTES);
+      expect(sliceBytes).toBe(8 * 1024 * 1024);
+      expect(sliceBytes).toBeLessThan(EXEC_OUTPUT_MAX_BYTES);
     });
 
     it.each([

@@ -15,7 +15,7 @@ describe('PreviewService readStaticPreviewContent', () => {
   };
 
   const dockerRuntimeService = {
-    readFileFromContainer: jest.fn<(sessionId: string, filePath: string) => Promise<string>>(),
+    readFileBufferFromContainer: jest.fn<(sessionId: string, filePath: string) => Promise<Buffer>>(),
   };
 
   const previewStrategyResolver = {};
@@ -30,68 +30,68 @@ describe('PreviewService readStaticPreviewContent', () => {
   });
 
   it('injects a base tag immediately after a plain head tag', async () => {
-    dockerRuntimeService.readFileFromContainer.mockResolvedValue(
-      '<html><head><title>Preview</title></head><body><a href="page2.html">Next</a></body></html>',
+    dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(
+      Buffer.from('<html><head><title>Preview</title></head><body><a href="page2.html">Next</a></body></html>'),
     );
 
     const result = await service.readStaticPreviewContent('session-123', '/index.html');
 
     expect(result.contentType).toBe('text/html; charset=utf-8');
-    expect(result.content).toContain(
+    expect(result.content.toString('utf8')).toContain(
       '<head><base href="/api/preview/session-123/proxy/"><title>Preview</title></head>',
     );
   });
 
   it('injects a base tag immediately after a head tag with attributes', async () => {
-    dockerRuntimeService.readFileFromContainer.mockResolvedValue(
-      '<html><head data-test="preview"><title>Preview</title></head></html>',
+    dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(
+      Buffer.from('<html><head data-test="preview"><title>Preview</title></head></html>'),
     );
 
     const result = await service.readStaticPreviewContent('session-123', '/index.html');
 
-    expect(result.content).toContain(
+    expect(result.content.toString('utf8')).toContain(
       '<head data-test="preview"><base href="/api/preview/session-123/proxy/"><title>Preview</title></head>',
     );
   });
 
   it('prepends a base tag when no head tag is present', async () => {
-    dockerRuntimeService.readFileFromContainer.mockResolvedValue(
-      '<html><body><a href="./page2.html">Next</a></body></html>',
+    dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(
+      Buffer.from('<html><body><a href="./page2.html">Next</a></body></html>'),
     );
 
     const result = await service.readStaticPreviewContent('session-123', '/index.html');
 
-    expect(result.content.startsWith('<base href="/api/preview/session-123/proxy/">')).toBe(true);
+    expect(result.content.toString('utf8').startsWith('<base href="/api/preview/session-123/proxy/">')).toBe(true);
   });
 
   it('does not double inject when a base tag already exists', async () => {
-    dockerRuntimeService.readFileFromContainer.mockResolvedValue(
-      '<html><head><base href="/custom/"><title>Preview</title></head></html>',
+    dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(
+      Buffer.from('<html><head><base href="/custom/"><title>Preview</title></head></html>'),
     );
 
     const result = await service.readStaticPreviewContent('session-123', '/index.html');
 
-    expect(result.content).toBe(
+    expect(result.content.toString('utf8')).toBe(
       '<html><head><base href="/custom/"><title>Preview</title></head></html>',
     );
-    expect(result.content.match(/<base\b/gi)).toHaveLength(1);
+    expect(result.content.toString('utf8').match(/<base\b/gi)).toHaveLength(1);
   });
 
   it('leaves non-html content unchanged', async () => {
-    dockerRuntimeService.readFileFromContainer.mockResolvedValue('body { color: red; }');
+    dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(Buffer.from('body { color: red; }'));
 
     const result = await service.readStaticPreviewContent('session-123', '/styles.css');
 
     expect(result.contentType).toBe('text/css; charset=utf-8');
-    expect(result.content).toBe('body { color: red; }');
+    expect(result.content.toString('utf8')).toBe('body { color: red; }');
   });
 
   it('url-encodes the session id in the injected href', async () => {
-    dockerRuntimeService.readFileFromContainer.mockResolvedValue('<html><head></head></html>');
+    dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(Buffer.from('<html><head></head></html>'));
 
     const result = await service.readStaticPreviewContent('session with spaces', '/index.html');
 
-    expect(result.content).toContain(
+    expect(result.content.toString('utf8')).toContain(
       '<base href="/api/preview/session%20with%20spaces/proxy/">',
     );
   });
@@ -107,6 +107,85 @@ describe('PreviewService readStaticPreviewContent', () => {
       service.readStaticPreviewContent('session-123', '/assets/../../etc/passwd'),
     ).rejects.toThrow('Invalid static preview path');
   });
+
+  describe('CM-BINARY-01: static files are served as bytes', () => {
+    // Every byte value, plus sequences that are invalid UTF-8 (a lone
+    // continuation byte, a truncated multi-byte lead, 0xFF), after a PNG
+    // signature. A string read would turn these into U+FFFD.
+    const PNG_LIKE = Buffer.concat([
+      Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+      Buffer.from(Array.from({ length: 256 }, (_, index) => index)),
+      Buffer.from([0x80, 0xc3, 0xff, 0xfe, 0x00, 0xe2, 0x82]),
+    ]);
+
+    it('returns a binary file byte for byte, as the very Buffer that was read', async () => {
+      dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(PNG_LIKE);
+
+      const result = await service.readStaticPreviewContent('session-123', '/images/logo.png');
+
+      expect(dockerRuntimeService.readFileBufferFromContainer).toHaveBeenCalledWith(
+        'session-123',
+        'images/logo.png',
+      );
+      expect(Buffer.isBuffer(result.content)).toBe(true);
+      expect(result.content.equals(PNG_LIKE)).toBe(true);
+      expect(result.content).toBe(PNG_LIKE);
+      expect(result.contentType).toBe('image/png');
+    });
+
+    it.each([
+      ['/photo.jpg', 'image/jpeg'],
+      ['/font.woff2', 'text/plain; charset=utf-8'],
+      ['/data.json', 'application/json; charset=utf-8'],
+    ])('leaves %s unchanged and keeps its content type', async (requestPath, contentType) => {
+      dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(PNG_LIKE);
+
+      const result = await service.readStaticPreviewContent('session-123', requestPath);
+
+      expect(result.content.equals(PNG_LIKE)).toBe(true);
+      expect(result.contentType).toBe(contentType);
+    });
+
+    it('decodes HTML as UTF-8, injects the base tag and re-encodes it as UTF-8', async () => {
+      const html = '<html><head><title>Café 日本 😀</title></head><body>ü</body></html>';
+      dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(Buffer.from(html, 'utf8'));
+
+      const result = await service.readStaticPreviewContent('session-123', '/index.html');
+
+      const expected =
+        '<html><head><base href="/api/preview/session-123/proxy/"><title>Café 日本 😀</title></head><body>ü</body></html>';
+      expect(Buffer.isBuffer(result.content)).toBe(true);
+      expect(result.content.equals(Buffer.from(expected, 'utf8'))).toBe(true);
+      expect(result.contentType).toBe('text/html; charset=utf-8');
+    });
+
+    it('treats .htm as HTML too', async () => {
+      dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(Buffer.from('<p>x</p>'));
+
+      const result = await service.readStaticPreviewContent('session-123', '/page.htm');
+
+      expect(result.content.toString('utf8')).toBe(
+        '<base href="/api/preview/session-123/proxy/"><p>x</p>',
+      );
+    });
+
+    it('refuses a traversal path before any read', async () => {
+      await expect(
+        service.readStaticPreviewContent('session-123', '/img/../../secret.png'),
+      ).rejects.toThrow('Invalid static preview path');
+      expect(dockerRuntimeService.readFileBufferFromContainer).not.toHaveBeenCalled();
+    });
+
+    it('passes a read failure through unchanged', async () => {
+      dockerRuntimeService.readFileBufferFromContainer.mockRejectedValue(
+        new Error('Failed to read file from container for session session-123: exec stdout output exceeded 16777216 bytes'),
+      );
+
+      await expect(
+        service.readStaticPreviewContent('session-123', '/huge.png'),
+      ).rejects.toThrow('exec stdout output exceeded 16777216 bytes');
+    });
+  });
 });
 
 describe('PreviewService subdirectory appRoot routing', () => {
@@ -117,7 +196,7 @@ describe('PreviewService subdirectory appRoot routing', () => {
   };
 
   const dockerRuntimeService = {
-    readFileFromContainer: jest.fn<(sessionId: string, filePath: string) => Promise<string>>(),
+    readFileBufferFromContainer: jest.fn<(sessionId: string, filePath: string) => Promise<Buffer>>(),
   };
 
   const previewStrategyResolver = {
@@ -144,37 +223,37 @@ describe('PreviewService subdirectory appRoot routing', () => {
   });
 
   it('resolves index from subdirectory appRoot', async () => {
-    dockerRuntimeService.readFileFromContainer.mockResolvedValue(
-      '<html><head></head><body>Index</body></html>',
+    dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(
+      Buffer.from('<html><head></head><body>Index</body></html>'),
     );
 
     await service.readStaticPreviewContent('session-sub', '/');
 
-    expect(dockerRuntimeService.readFileFromContainer).toHaveBeenCalledWith(
+    expect(dockerRuntimeService.readFileBufferFromContainer).toHaveBeenCalledWith(
       'session-sub',
       'WorkspaceA/index.html',
     );
   });
 
   it('resolves page2.html from subdirectory appRoot', async () => {
-    dockerRuntimeService.readFileFromContainer.mockResolvedValue(
-      '<html><head></head><body>Page 2</body></html>',
+    dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(
+      Buffer.from('<html><head></head><body>Page 2</body></html>'),
     );
 
     await service.readStaticPreviewContent('session-sub', '/page2.html');
 
-    expect(dockerRuntimeService.readFileFromContainer).toHaveBeenCalledWith(
+    expect(dockerRuntimeService.readFileBufferFromContainer).toHaveBeenCalledWith(
       'session-sub',
       'WorkspaceA/page2.html',
     );
   });
 
   it('resolves style.css from subdirectory appRoot', async () => {
-    dockerRuntimeService.readFileFromContainer.mockResolvedValue('body { color: red; }');
+    dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(Buffer.from('body { color: red; }'));
 
     const result = await service.readStaticPreviewContent('session-sub', '/style.css');
 
-    expect(dockerRuntimeService.readFileFromContainer).toHaveBeenCalledWith(
+    expect(dockerRuntimeService.readFileBufferFromContainer).toHaveBeenCalledWith(
       'session-sub',
       'WorkspaceA/style.css',
     );
@@ -182,11 +261,11 @@ describe('PreviewService subdirectory appRoot routing', () => {
   });
 
   it('resolves script.js from subdirectory appRoot', async () => {
-    dockerRuntimeService.readFileFromContainer.mockResolvedValue('console.log("ok");');
+    dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(Buffer.from('console.log("ok");'));
 
     const result = await service.readStaticPreviewContent('session-sub', '/script.js');
 
-    expect(dockerRuntimeService.readFileFromContainer).toHaveBeenCalledWith(
+    expect(dockerRuntimeService.readFileBufferFromContainer).toHaveBeenCalledWith(
       'session-sub',
       'WorkspaceA/script.js',
     );
@@ -194,11 +273,11 @@ describe('PreviewService subdirectory appRoot routing', () => {
   });
 
   it('resolves nested asset paths from subdirectory appRoot', async () => {
-    dockerRuntimeService.readFileFromContainer.mockResolvedValue('PNG_DATA');
+    dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(Buffer.from('PNG_DATA'));
 
     const result = await service.readStaticPreviewContent('session-sub', '/images/logo.png');
 
-    expect(dockerRuntimeService.readFileFromContainer).toHaveBeenCalledWith(
+    expect(dockerRuntimeService.readFileBufferFromContainer).toHaveBeenCalledWith(
       'session-sub',
       'WorkspaceA/images/logo.png',
     );
@@ -206,13 +285,13 @@ describe('PreviewService subdirectory appRoot routing', () => {
   });
 
   it('injects base tag into subdirectory HTML responses', async () => {
-    dockerRuntimeService.readFileFromContainer.mockResolvedValue(
-      '<html><head><title>Sub</title></head><body>Hello</body></html>',
+    dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(
+      Buffer.from('<html><head><title>Sub</title></head><body>Hello</body></html>'),
     );
 
     const result = await service.readStaticPreviewContent('session-sub', '/');
 
-    expect(result.content).toContain(
+    expect(result.content.toString('utf8')).toContain(
       '<base href="/api/preview/session-sub/proxy/">',
     );
   });
@@ -226,7 +305,7 @@ describe('PreviewService root appRoot routing', () => {
   };
 
   const dockerRuntimeService = {
-    readFileFromContainer: jest.fn<(sessionId: string, filePath: string) => Promise<string>>(),
+    readFileBufferFromContainer: jest.fn<(sessionId: string, filePath: string) => Promise<Buffer>>(),
   };
 
   const previewStrategyResolver = {
@@ -253,35 +332,35 @@ describe('PreviewService root appRoot routing', () => {
   });
 
   it('resolves index from workspace root', async () => {
-    dockerRuntimeService.readFileFromContainer.mockResolvedValue(
-      '<html><head></head><body>Root</body></html>',
+    dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(
+      Buffer.from('<html><head></head><body>Root</body></html>'),
     );
 
     await service.readStaticPreviewContent('session-root', '/');
 
-    expect(dockerRuntimeService.readFileFromContainer).toHaveBeenCalledWith(
+    expect(dockerRuntimeService.readFileBufferFromContainer).toHaveBeenCalledWith(
       'session-root',
       'index.html',
     );
   });
 
   it('resolves assets from workspace root without subdir prefix', async () => {
-    dockerRuntimeService.readFileFromContainer.mockResolvedValue('body { margin: 0; }');
+    dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(Buffer.from('body { margin: 0; }'));
 
     await service.readStaticPreviewContent('session-root', '/style.css');
 
-    expect(dockerRuntimeService.readFileFromContainer).toHaveBeenCalledWith(
+    expect(dockerRuntimeService.readFileBufferFromContainer).toHaveBeenCalledWith(
       'session-root',
       'style.css',
     );
   });
 
   it('resolves nested assets from workspace root', async () => {
-    dockerRuntimeService.readFileFromContainer.mockResolvedValue('JPEG_DATA');
+    dockerRuntimeService.readFileBufferFromContainer.mockResolvedValue(Buffer.from('JPEG_DATA'));
 
     await service.readStaticPreviewContent('session-root', '/assets/photo.jpg');
 
-    expect(dockerRuntimeService.readFileFromContainer).toHaveBeenCalledWith(
+    expect(dockerRuntimeService.readFileBufferFromContainer).toHaveBeenCalledWith(
       'session-root',
       'assets/photo.jpg',
     );

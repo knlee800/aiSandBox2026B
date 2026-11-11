@@ -136,9 +136,12 @@ export class InternalSessionsController {
    *
    * Query params:
    * - path (required): Relative path from /workspace (e.g., "index.js", "src/app.ts")
+   * - encoding (optional, CM-BINARY-01): "base64" returns the file's exact
+   *   bytes as base64 with `encoding: 'base64'` in the body. Absent, the
+   *   response is the UTF-8 text body, unchanged. Any other value is a 400.
    *
    * Errors:
-   * - 400 Bad Request: Missing or invalid path
+   * - 400 Bad Request: Missing or invalid path, or an unsupported encoding
    * - 403 Forbidden: Missing or invalid X-Internal-Service-Key
    * - 500 Internal Server Error: Container not found, not running, or file read failed
    */
@@ -147,9 +150,23 @@ export class InternalSessionsController {
   async readFile(
     @Param('id', SessionIdPipe) sessionId: string,
     @Query('path') filePath?: string,
-  ): Promise<{ path: string; content: string }> {
+    @Query('encoding') encoding?: unknown,
+  ): Promise<{ path: string; content: string } | { path: string; content: string; encoding: 'base64' }> {
     if (!filePath) {
       throw new BadRequestException('Query parameter "path" is required');
+    }
+
+    if (encoding !== undefined && encoding !== 'base64') {
+      throw new BadRequestException('Query parameter "encoding" must be "base64" when given');
+    }
+
+    if (encoding === 'base64') {
+      const bytes = await this.sessionsService.readFileBufferFromContainer(sessionId, filePath);
+      return {
+        path: filePath,
+        content: bytes.toString('base64'),
+        encoding: 'base64',
+      };
     }
 
     const content = await this.sessionsService.readFileFromContainer(

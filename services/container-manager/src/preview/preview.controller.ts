@@ -130,6 +130,8 @@ export class PreviewController {
         sessionId,
         requestPath,
       );
+      // CM-BINARY-01: the content is a Buffer, sent as is (express does not
+      // re-encode a Buffer), so binary files arrive byte for byte.
       return res
         .status(200)
         .setHeader('Content-Type', staticPreview.contentType)

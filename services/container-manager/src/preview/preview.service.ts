@@ -273,10 +273,16 @@ export class PreviewService {
     return `http://${ipAddress}:${preview.port}`;
   }
 
+  /**
+   * CM-BINARY-01: static files are read as their exact bytes, so images,
+   * fonts and other binary assets reach the browser uncorrupted. Only HTML is
+   * decoded (UTF-8, as before), gets the preview base tag, and is re-encoded
+   * as UTF-8; every other type is the raw Buffer.
+   */
   async readStaticPreviewContent(
     sessionId: string,
     requestPath: string,
-  ): Promise<{ content: string; contentType: string }> {
+  ): Promise<{ content: Buffer; contentType: string }> {
     const preview = this.activePreviews.get(sessionId);
     const sanitizedPath = this.sanitizeStaticPath(requestPath);
 
@@ -286,7 +292,7 @@ export class PreviewService {
       containerRelativePath = `${subdir}/${sanitizedPath}`;
     }
 
-    const content = await this.dockerRuntimeService.readFileFromContainer(
+    const bytes = await this.dockerRuntimeService.readFileBufferFromContainer(
       sessionId,
       containerRelativePath,
     );
@@ -294,8 +300,8 @@ export class PreviewService {
 
     return {
       content: contentType.startsWith('text/html')
-        ? this.injectPreviewBaseTag(content, sessionId)
-        : content,
+        ? Buffer.from(this.injectPreviewBaseTag(bytes.toString('utf8'), sessionId), 'utf8')
+        : bytes,
       contentType,
     };
   }

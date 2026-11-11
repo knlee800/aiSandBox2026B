@@ -523,6 +523,37 @@ export class SessionsService {
   }
 
   /**
+   * CM-BINARY-01: execInContainer with stdout returned as the exact bytes the
+   * command wrote (binary safe); stderr stays text. The same governance checks
+   * apply, in the same order (termination, max lifetime, idle timeout,
+   * concurrent exec limit), plus a working directory that must stay inside
+   * /workspace, as for execInContainerWithStdin.
+   *
+   * @throws BadRequestException if cwd is outside /workspace
+   * @throws NotFoundException, GoneException, HttpException(429) as execInContainer
+   */
+  async execInContainerBuffer(
+    sessionId: string,
+    cmd: string[],
+    cwd?: string,
+    env?: Record<string, string>,
+    timeoutMs?: number,
+    options?: ExecOptions,
+  ): Promise<{ exitCode: number; stdout: Buffer; stderr: string }> {
+    this.assertWorkspaceWorkingDir(cwd);
+    return this.runGovernedExec(sessionId, () =>
+      this.dockerRuntimeService.execInContainerBySessionIdBuffer(
+        sessionId,
+        cmd,
+        cwd,
+        env,
+        timeoutMs,
+        options,
+      ),
+    );
+  }
+
+  /**
    * CM-EXEC-01: a working directory passed to a governed exec is an absolute
    * POSIX path at or below /workspace, without `..`, backslashes or NUL.
    * Undefined keeps the exec default (/workspace).
@@ -612,6 +643,36 @@ export class SessionsService {
     sessionId: string,
     filePath: string,
   ): Promise<string> {
+    return this.runGovernedFileRead(sessionId, () =>
+      this.dockerRuntimeService.readFileFromContainer(sessionId, filePath),
+    );
+  }
+
+  /**
+   * CM-BINARY-01: binary-safe file read. The same governance checks as
+   * readFileFromContainer, in the same order; the file comes back as its exact
+   * bytes (DockerRuntimeService.readFileBufferFromContainer: same path checks,
+   * command and timeout as the text read).
+   *
+   * @param sessionId - Session UUID
+   * @param filePath - Relative path from /workspace
+   * @returns File content as a Buffer
+   * @throws NotFoundException, GoneException as readFileFromContainer
+   */
+  async readFileBufferFromContainer(
+    sessionId: string,
+    filePath: string,
+  ): Promise<Buffer> {
+    return this.runGovernedFileRead(sessionId, () =>
+      this.dockerRuntimeService.readFileBufferFromContainer(sessionId, filePath),
+    );
+  }
+
+  /**
+   * The governance checks both file reads run, in order, around one read
+   * (Tasks 8.4A, 8.3B, 8.3A).
+   */
+  private async runGovernedFileRead<T>(sessionId: string, read: () => Promise<T>): Promise<T> {
     // Task 8.4A: Check termination FIRST (DB-backed, survives restarts)
     this.assertSessionUsableOrThrow(sessionId);
 
@@ -622,10 +683,7 @@ export class SessionsService {
     await this.checkAndEnforceIdleTimeout(sessionId);
 
     try {
-      const result = await this.dockerRuntimeService.readFileFromContainer(
-        sessionId,
-        filePath,
-      );
+      const result = await read();
 
       // Task 8.3A: Update activity after success
       this.updateLastActivity(sessionId);

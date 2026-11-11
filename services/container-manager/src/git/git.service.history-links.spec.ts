@@ -57,9 +57,17 @@ type ExecResult = { exitCode: number; stdout: string; stderr: string };
 type StdinExec = jest.Mock<
   (sessionId: string, cmd: string[], input: Readable, cwd?: string) => Promise<ExecResult>
 >;
+type BufferExec = jest.Mock<
+  (
+    sessionId: string,
+    cmd: string[],
+    cwd?: string,
+    env?: Record<string, string>,
+  ) => Promise<{ exitCode: number; stdout: Buffer; stderr: string }>
+>;
 type Exec = jest.Mock<
   (sessionId: string, cmd: string[], cwd?: string, env?: Record<string, string>) => Promise<ExecResult>
-> & { withStdin: StdinExec };
+> & { withStdin: StdinExec; buffer: BufferExec };
 
 function fsFn(fn: unknown): jest.Mock<any> {
   return fn as jest.Mock<any>;
@@ -147,6 +155,7 @@ describe('CM-HISTORY-LINK-01: checkpoint history on real files and links', () =>
       sessionsService: {
         execInContainer,
         execInContainerWithStdin: execInContainer.withStdin,
+        execInContainerBuffer: execInContainer.buffer,
         getWorkspacePath: (id: string) => path.join(root, 'workspaces', id),
       },
       checkpointHistoryDir: () => historyDir,
@@ -169,7 +178,7 @@ describe('CM-HISTORY-LINK-01: checkpoint history on real files and links', () =>
     /** Runs between the staging command's rm -f and its exclusive create. */
     beforeStageCreate?: (hostRestorePath: string) => void;
   }): Exec {
-    const exec = jest.fn(async (_sessionId: string, cmd: string[], _cwd?: string, env?: Record<string, string>) => {
+    const exec = jest.fn(async (_sessionId: string, cmd: string[], _cwd?: string, _env?: Record<string, string>) => {
       const command = cmd[2];
       const ok = (stdout = ''): ExecResult => ({ exitCode: 0, stdout, stderr: '' });
       if (command.includes('git rev-parse --is-inside-work-tree')) {
@@ -189,12 +198,6 @@ describe('CM-HISTORY-LINK-01: checkpoint history on real files and links', () =>
           return { exitCode: 1, stdout: '', stderr: '' };
         }
         return ok(`${fsSync.statSync(file).size}\n`);
-      }
-      if (command === HISTORY_BUNDLE_CHUNK_COMMAND) {
-        const bytes = fsSync.readFileSync(containerPath(CONTAINER_HISTORY_BUNDLE));
-        const start = Number(env?.SKIP_BLOCKS) * HISTORY_BUNDLE_BLOCK_BYTES;
-        const end = start + Number(env?.COUNT_BLOCKS) * HISTORY_BUNDLE_BLOCK_BYTES;
-        return ok(`${bytes.subarray(start, end).toString('base64')}\n`);
       }
       if (command === `git bundle list-heads ${CONTAINER_RESTORE_BUNDLE}`) {
         options.onListHeads?.(containerPath(CONTAINER_RESTORE_BUNDLE));
@@ -218,6 +221,20 @@ describe('CM-HISTORY-LINK-01: checkpoint history on real files and links', () =>
       }
       throw new Error(`Unexpected command: ${command}`);
     }) as unknown as Exec;
+
+    // CM-BINARY-01: save reads its slices as raw bytes through the governed
+    // binary exec; dd's view is the real bundle file.
+    exec.buffer = jest.fn(
+      async (_sessionId: string, cmd: string[], _cwd?: string, env?: Record<string, string>) => {
+        if (cmd[2] !== HISTORY_BUNDLE_CHUNK_COMMAND) {
+          throw new Error(`Unexpected binary command: ${cmd[2]}`);
+        }
+        const bytes = fsSync.readFileSync(containerPath(CONTAINER_HISTORY_BUNDLE));
+        const start = Number(env?.SKIP_BLOCKS) * HISTORY_BUNDLE_BLOCK_BYTES;
+        const end = start + Number(env?.COUNT_BLOCKS) * HISTORY_BUNDLE_BLOCK_BYTES;
+        return { exitCode: 0, stdout: Buffer.from(bytes.subarray(start, end)), stderr: '' };
+      },
+    ) as BufferExec;
 
     // CM-EXEC-01: HISTORY_RESTORE_STAGE_COMMAND as the container shell runs
     // it: rm -f (a directory makes it fail), then an exclusive create (set -C:
@@ -463,5 +480,21 @@ describe('CM-HISTORY-LINK-01: checkpoint history on real files and links', () =>
     expect(result).toEqual({ status: 'restored', head: HEAD });
     expect((staged as unknown as Buffer).equals(stored)).toBe(true);
     expect(workspacePathsTouched()).toEqual([]);
+  });
+
+  it('CM-BINARY-01: save of a bundle over 8 MiB reads raw slices through the binary exec only', async () => {
+    const original = bundleBytes(8 * 1024 * 1024 + 9, 21);
+    const container = fakeContainer({ bundle: original });
+
+    const saved = await service(container).saveProjectHistory(SESSION_ID, PROJECT_ID);
+
+    expect(saved).toEqual({ status: 'saved', bytes: original.length });
+    expect(fsSync.readFileSync(path.join(historyDir, `${PROJECT_ID}.bundle`)).equals(original)).toBe(true);
+    expect(container.buffer).toHaveBeenCalledTimes(2);
+    expect(container.buffer.mock.calls.map((call) => call[3])).toEqual([
+      { SKIP_BLOCKS: '0', COUNT_BLOCKS: '8' },
+      { SKIP_BLOCKS: '8', COUNT_BLOCKS: '8' },
+    ]);
+    expect(container.mock.calls.some((call) => call[1][2] === HISTORY_BUNDLE_CHUNK_COMMAND)).toBe(false);
   });
 });

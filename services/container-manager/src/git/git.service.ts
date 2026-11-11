@@ -16,15 +16,16 @@ const COMMIT_HASH_PATTERN = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/i;
 const CONTAINER_HISTORY_BUNDLE = '/workspace/.git/aisb-history.bundle';
 const CONTAINER_RESTORE_BUNDLE = '/workspace/.aisb-history-restore.bundle';
 
-// CM-HISTORY-LINK-01: the saved bundle leaves the container through docker exec
-// as base64 text (SessionsService.execInContainer returns stdout as UTF-8
-// text, so raw bytes would not survive), read in bounded slices so
-// container-manager never holds the whole bundle in memory. The size is read once, after git bundle create; the copy
-// never reads past it.
+// CM-HISTORY-LINK-01: the saved bundle leaves the container through docker exec,
+// read in bounded slices so container-manager never holds the whole bundle in
+// memory. The size is read once, after git bundle create; the copy never reads
+// past it. CM-BINARY-01: each slice is read as raw bytes through the
+// binary-safe governed exec (SessionsService.execInContainerBuffer), no longer
+// as base64 text; every slice must still be exactly the expected length.
 export const HISTORY_BUNDLE_BLOCK_BYTES = 1024 * 1024;
 export const HISTORY_BUNDLE_CHUNK_BLOCKS = 8;
 export const HISTORY_BUNDLE_SIZE_COMMAND = `[ -f ${CONTAINER_HISTORY_BUNDLE} ] && [ ! -L ${CONTAINER_HISTORY_BUNDLE} ] && wc -c < ${CONTAINER_HISTORY_BUNDLE}`;
-export const HISTORY_BUNDLE_CHUNK_COMMAND = `dd if=${CONTAINER_HISTORY_BUNDLE} bs=${HISTORY_BUNDLE_BLOCK_BYTES} skip="$SKIP_BLOCKS" count="$COUNT_BLOCKS" 2>/dev/null | base64`;
+export const HISTORY_BUNDLE_CHUNK_COMMAND = `dd if=${CONTAINER_HISTORY_BUNDLE} bs=${HISTORY_BUNDLE_BLOCK_BYTES} skip="$SKIP_BLOCKS" count="$COUNT_BLOCKS" 2>/dev/null`;
 const HOST_COPY_BUFFER_BYTES = 1024 * 1024;
 
 // CM-EXEC-01: restore stages the stored bundle by piping its bytes into the
@@ -48,14 +49,6 @@ const HOST_CREATE_EXCLUSIVE_FLAGS =
   fsConstants.O_CREAT |
   fsConstants.O_EXCL |
   (typeof fsConstants.O_NOFOLLOW === 'number' ? fsConstants.O_NOFOLLOW : 0);
-
-function decodeStrictBase64(text: string): Buffer | null {
-  const compact = text.replace(/\s+/g, '');
-  if (compact.length % 4 !== 0 || !/^[A-Za-z0-9+/]*={0,2}$/.test(compact)) {
-    return null;
-  }
-  return Buffer.from(compact, 'base64');
-}
 
 export const WORKTREE_DIFF_MAX_CHARS = 65536;
 export const WORKTREE_DIFF_TRUNCATED_MARKER = '\n[diff truncated]\n';
@@ -691,8 +684,9 @@ export class GitService {
   /**
    * CM-HISTORY-LINK-01: copy exactly `size` bytes of the container's bundle to
    * an already-open host file, in slices of HISTORY_BUNDLE_CHUNK_BLOCKS blocks,
-   * each sent as base64 through docker exec. The host opens no path inside the
-   * workspace. A slice that is short, long or not strict base64 fails the save.
+   * each read as raw bytes through the governed binary exec (CM-BINARY-01).
+   * The host opens no path inside the workspace. A slice that is short or long
+   * fails the save.
    */
   private async copyContainerBundleTo(
     sessionId: string,
@@ -702,15 +696,20 @@ export class GitService {
     const chunkBytes = HISTORY_BUNDLE_BLOCK_BYTES * HISTORY_BUNDLE_CHUNK_BLOCKS;
     for (let offset = 0; offset < size; offset += chunkBytes) {
       const expected = Math.min(chunkBytes, size - offset);
-      const read = await this.execWorkspace(sessionId, HISTORY_BUNDLE_CHUNK_COMMAND, {
-        SKIP_BLOCKS: String(offset / HISTORY_BUNDLE_BLOCK_BYTES),
-        COUNT_BLOCKS: String(HISTORY_BUNDLE_CHUNK_BLOCKS),
-      });
+      const read = await this.sessionsService.execInContainerBuffer(
+        sessionId,
+        ['sh', '-lc', HISTORY_BUNDLE_CHUNK_COMMAND],
+        '/workspace',
+        {
+          SKIP_BLOCKS: String(offset / HISTORY_BUNDLE_BLOCK_BYTES),
+          COUNT_BLOCKS: String(HISTORY_BUNDLE_CHUNK_BLOCKS),
+        },
+      );
       if (read.exitCode !== 0) {
         throw new Error(read.stderr || 'Failed to read history bundle');
       }
-      const bytes = decodeStrictBase64(read.stdout);
-      if (!bytes || bytes.length !== expected) {
+      const bytes = read.stdout;
+      if (!Buffer.isBuffer(bytes) || bytes.length !== expected) {
         throw new Error('History bundle changed while it was read');
       }
       await this.writeAll(handle, bytes);

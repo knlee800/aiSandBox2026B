@@ -130,20 +130,27 @@ describe('CM-GIT-HOST-01: no host-side git or process call in container-manager 
     expect(source).not.toMatch(/['"]\.aisb-history-restore\.bundle['"]/);
     expect(source).toMatch(/execInContainerWithStdin\(/);
   });
+
+  it('CM-BINARY-01: git.service.ts reads save slices through the binary exec, with no base64 framing', () => {
+    const source = fsSync.readFileSync(path.join(SRC_ROOT, 'git', 'git.service.ts'), 'utf8');
+    expect(source).toMatch(/execInContainerBuffer\(/);
+    expect(source).not.toMatch(/\|\s*base64/);
+    expect(source).not.toMatch(/['"]base64['"]/);
+    expect(HISTORY_BUNDLE_CHUNK_COMMAND).not.toMatch(/base64/);
+  });
 });
 
 describe('CM-GIT-HOST-01: every checkpoint git path runs inside the container', () => {
   let execInContainer: jest.Mock<any>;
   let execInContainerWithStdin: jest.Mock<any>;
+  let execInContainerBuffer: jest.Mock<any>;
   let service: GitService;
 
   function commandFor(command: string): { exitCode: number; stdout: string; stderr: string } {
-    // CM-HISTORY-LINK-01: the saved bundle's size, then its bytes as base64.
+    // CM-HISTORY-LINK-01: the saved bundle's size (its bytes come through the
+    // binary exec, CM-BINARY-01).
     if (command === HISTORY_BUNDLE_SIZE_COMMAND) {
       return { exitCode: 0, stdout: '4\n', stderr: '' };
-    }
-    if (command === HISTORY_BUNDLE_CHUNK_COMMAND) {
-      return { exitCode: 0, stdout: `${Buffer.from('PACK').toString('base64')}\n`, stderr: '' };
     }
     if (command.includes('rev-parse --is-inside-work-tree')) {
       return { exitCode: 0, stdout: 'true\n', stderr: '' };
@@ -170,6 +177,13 @@ describe('CM-GIT-HOST-01: every checkpoint git path runs inside the container', 
     childProcessCalls.length = 0;
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
     execInContainer = jest.fn(async (_sessionId: string, cmd: string[]) => commandFor(String(cmd[2])));
+    // CM-BINARY-01: save reads its slices as raw bytes through the binary exec.
+    execInContainerBuffer = jest.fn(async (_sessionId: string, cmd: string[]) => {
+      if (cmd[2] !== HISTORY_BUNDLE_CHUNK_COMMAND) {
+        throw new Error(`unexpected binary command ${cmd[2]}`);
+      }
+      return { exitCode: 0, stdout: Buffer.from('PACK'), stderr: '' };
+    });
     // CM-EXEC-01: restore pipes the stored bundle into the container.
     execInContainerWithStdin = jest.fn(async (_sessionId: string, cmd: string[], input: Readable) => {
       if (cmd[2] !== HISTORY_RESTORE_STAGE_COMMAND) {
@@ -184,6 +198,7 @@ describe('CM-GIT-HOST-01: every checkpoint git path runs inside the container', 
     const sessionsService = {
       execInContainer,
       execInContainerWithStdin,
+      execInContainerBuffer,
       getSession: jest.fn(async () => ({ id: SESSION_ID })),
       getWorkspacePath: (id: string) => path.join(SRC_ROOT, '..', 'workspaces-test', id),
     };
@@ -206,6 +221,11 @@ describe('CM-GIT-HOST-01: every checkpoint git path runs inside the container', 
       expect(call[0]).toBe(SESSION_ID);
       expect((call[1] as string[]).slice(0, 2)).toEqual(['sh', '-lc']);
       expect(call[3]).toBe('/workspace');
+    }
+    for (const call of execInContainerBuffer.mock.calls) {
+      expect(call[0]).toBe(SESSION_ID);
+      expect((call[1] as string[]).slice(0, 2)).toEqual(['sh', '-lc']);
+      expect(call[2]).toBe('/workspace');
     }
   }
 
@@ -236,6 +256,7 @@ describe('CM-GIT-HOST-01: every checkpoint git path runs inside the container', 
       status: 'saved',
       bytes: 1024,
     });
+    expect(execInContainerBuffer).toHaveBeenCalledTimes(1);
     const fsMocks = [fsPromises.open, fsPromises.unlink, fsPromises.rename, fsPromises.mkdir, fsPromises.copyFile];
     for (const fn of fsMocks) {
       (fn as unknown as jest.Mock).mockClear();

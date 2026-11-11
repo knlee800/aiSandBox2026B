@@ -857,7 +857,9 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
   const allOperations = [
     'execInContainer',
     'execInContainerWithStdin',
+    'execInContainerBuffer',
     'readFileFromContainer',
+    'readFileBufferFromContainer',
     'writeFileToContainer',
     'deleteFileFromContainer',
     'searchFilesInContainer',
@@ -867,16 +869,29 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
   const coveredOperations = [
     'execInContainer',
     'execInContainerWithStdin',
+    'execInContainerBuffer',
+    'readFileBufferFromContainer',
     'writeFileToContainer',
     'listDirectoryInContainer',
   ] as const;
 
   type OperationName = (typeof allOperations)[number];
 
+  /** The operations that run through runGovernedExec and its exec counter. */
+  function countsExec(name: OperationName): boolean {
+    return (
+      name === 'execInContainer' ||
+      name === 'execInContainerWithStdin' ||
+      name === 'execInContainerBuffer'
+    );
+  }
+
   let service: SessionsService;
   let mockExecInContainerBySessionId: jest.Mock<any>;
   let mockExecInContainerWithStdinBySessionId: jest.Mock<any>;
+  let mockExecInContainerBySessionIdBuffer: jest.Mock<any>;
   let mockReadFileFromContainer: jest.Mock<any>;
+  let mockReadFileBufferFromContainer: jest.Mock<any>;
   let mockWriteFileToContainer: jest.Mock<any>;
   let mockDeleteFileFromContainer: jest.Mock<any>;
   let mockSearchFilesInContainer: jest.Mock<any>;
@@ -912,8 +927,12 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
         return mockExecInContainerBySessionId;
       case 'execInContainerWithStdin':
         return mockExecInContainerWithStdinBySessionId;
+      case 'execInContainerBuffer':
+        return mockExecInContainerBySessionIdBuffer;
       case 'readFileFromContainer':
         return mockReadFileFromContainer;
+      case 'readFileBufferFromContainer':
+        return mockReadFileBufferFromContainer;
       case 'writeFileToContainer':
         return mockWriteFileToContainer;
       case 'deleteFileFromContainer':
@@ -937,8 +956,12 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
         return service.execInContainer(sessionId, ['echo', 'hi']);
       case 'execInContainerWithStdin':
         return service.execInContainerWithStdin(sessionId, ['cat'], Buffer.from('hi'));
+      case 'execInContainerBuffer':
+        return service.execInContainerBuffer(sessionId, ['cat', '/workspace/logo.png']);
       case 'readFileFromContainer':
         return service.readFileFromContainer(sessionId, 'README.md');
+      case 'readFileBufferFromContainer':
+        return service.readFileBufferFromContainer(sessionId, 'logo.png');
       case 'writeFileToContainer':
         return service.writeFileToContainer(sessionId, 'README.md', 'hello');
       case 'deleteFileFromContainer':
@@ -998,7 +1021,13 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
       stdout: '2\n',
       stderr: '',
     });
+    mockExecInContainerBySessionIdBuffer = jest.fn<any>().mockResolvedValue({
+      exitCode: 0,
+      stdout: Buffer.from([0x89, 0x00, 0xff]),
+      stderr: '',
+    });
     mockReadFileFromContainer = jest.fn<any>().mockResolvedValue('file-content');
+    mockReadFileBufferFromContainer = jest.fn<any>().mockResolvedValue(Buffer.from([0x89, 0x00, 0xff]));
     mockWriteFileToContainer = jest.fn<any>().mockResolvedValue(undefined);
     mockDeleteFileFromContainer = jest.fn<any>().mockResolvedValue(undefined);
     mockSearchFilesInContainer = jest.fn<any>().mockResolvedValue({
@@ -1082,7 +1111,9 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
       {
         execInContainerBySessionId: mockExecInContainerBySessionId,
         execInContainerWithStdinBySessionId: mockExecInContainerWithStdinBySessionId,
+        execInContainerBySessionIdBuffer: mockExecInContainerBySessionIdBuffer,
         readFileFromContainer: mockReadFileFromContainer,
+        readFileBufferFromContainer: mockReadFileBufferFromContainer,
         writeFileToContainer: mockWriteFileToContainer,
         deleteFileFromContainer: mockDeleteFileFromContainer,
         searchFilesInContainer: mockSearchFilesInContainer,
@@ -1116,7 +1147,7 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
       const sessionId = `sess-missing-${name}`;
       dockerMock(name).mockRejectedValue(new Error(`${name} failed`));
       mockGetSessionContainerState.mockResolvedValue('missing');
-      if (name === 'execInContainer' || name === 'execInContainerWithStdin') {
+      if (countsExec(name)) {
         tracking().activeExecs.set(sessionId, 1);
       }
 
@@ -1149,7 +1180,7 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
       const sessionId = `sess-stopped-${name}`;
       dockerMock(name).mockRejectedValue(new Error(`${name} failed`));
       mockGetSessionContainerState.mockResolvedValue('stopped');
-      if (name === 'execInContainer' || name === 'execInContainerWithStdin') {
+      if (countsExec(name)) {
         tracking().activeExecs.set(sessionId, 1);
       }
 
@@ -1218,7 +1249,7 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
       const original = new Error(`${name} failed while running`);
       dockerMock(name).mockRejectedValue(original);
       mockGetSessionContainerState.mockResolvedValue('running');
-      if (name === 'execInContainer' || name === 'execInContainerWithStdin') {
+      if (countsExec(name)) {
         tracking().activeExecs.set(sessionId, 1);
       }
 
@@ -1231,7 +1262,7 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
       expect(mockNotifySessionStopped).not.toHaveBeenCalled();
       expect(tracking().scheduledContainerCleanups.has(sessionId)).toBe(false);
       expect(tracking().lastActivity.has(sessionId)).toBe(true);
-      if (name === 'execInContainer' || name === 'execInContainerWithStdin') {
+      if (countsExec(name)) {
         expect(tracking().activeExecs.get(sessionId)).toBe(1);
       } else {
         expect(tracking().activeExecs.has(sessionId)).toBe(false);
@@ -1247,7 +1278,7 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
       const stateError = new Error('docker daemon unavailable');
       dockerMock(name).mockRejectedValue(original);
       mockGetSessionContainerState.mockRejectedValue(stateError);
-      if (name === 'execInContainer' || name === 'execInContainerWithStdin') {
+      if (countsExec(name)) {
         tracking().activeExecs.set(sessionId, 1);
       }
 
@@ -1259,7 +1290,7 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
       expect(mockNotifySessionStopped).not.toHaveBeenCalled();
       expect(tracking().scheduledContainerCleanups.has(sessionId)).toBe(false);
       expect(tracking().lastActivity.has(sessionId)).toBe(true);
-      if (name === 'execInContainer' || name === 'execInContainerWithStdin') {
+      if (countsExec(name)) {
         expect(tracking().activeExecs.get(sessionId)).toBe(1);
       }
     },
@@ -1312,7 +1343,7 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
       expect(mockFindContainerBySessionId).not.toHaveBeenCalled();
       expect(mockNotifySessionStopped).not.toHaveBeenCalled();
       expect(tracking().lastActivity.has(sessionId)).toBe(true);
-      if (name === 'execInContainer' || name === 'execInContainerWithStdin') {
+      if (countsExec(name)) {
         expect(tracking().activeExecs.has(sessionId)).toBe(false);
       }
     },
@@ -1435,6 +1466,117 @@ describe('SessionsService container-lost termination (SESSION-STALE-01)', () => 
       release({ exitCode: 0, stdout: '', stderr: '' });
       await running;
       expect(tracking().activeExecs.get(sessionId)).toBe(2);
+    });
+  });
+
+  describe('binary-safe wrappers (CM-BINARY-01)', () => {
+    const BYTES = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x00, 0x80, 0xc3, 0xff]);
+
+    it('execInContainerBuffer passes everything through and returns stdout as the same Buffer', async () => {
+      const sessionId = 'sess-buffer-ok';
+      const raw = { exitCode: 0, stdout: BYTES, stderr: 'warn' };
+      mockExecInContainerBySessionIdBuffer.mockResolvedValue(raw);
+
+      const result = await service.execInContainerBuffer(
+        sessionId,
+        ['sh', '-lc', 'dd if=/workspace/x'],
+        '/workspace',
+        { SKIP_BLOCKS: '0' },
+        5000,
+        { maxOutputBytes: 64 },
+      );
+
+      expect(result.stdout).toBe(BYTES);
+      expect(result).toEqual(raw);
+      expect(mockExecInContainerBySessionIdBuffer).toHaveBeenCalledWith(
+        sessionId,
+        ['sh', '-lc', 'dd if=/workspace/x'],
+        '/workspace',
+        { SKIP_BLOCKS: '0' },
+        5000,
+        { maxOutputBytes: 64 },
+      );
+      expect(mockExecInContainerBySessionId).not.toHaveBeenCalled();
+      expect(tracking().lastActivity.has(sessionId)).toBe(true);
+      expect(tracking().activeExecs.has(sessionId)).toBe(false);
+    });
+
+    it('execInContainerBuffer keeps the exec defaults when no cwd, env, timeout or cap is given', async () => {
+      await service.execInContainerBuffer('sess-buffer-defaults', ['cat', '/workspace/a.png']);
+
+      expect(mockExecInContainerBySessionIdBuffer).toHaveBeenCalledWith(
+        'sess-buffer-defaults',
+        ['cat', '/workspace/a.png'],
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+      );
+    });
+
+    it.each(['/', '/etc', '/workspacex', '/workspace/../etc', 'workspace', '/workspace\\..\\etc'])(
+      'execInContainerBuffer refuses the working directory %j before any session check or exec',
+      async (cwd) => {
+        await expect(
+          service.execInContainerBuffer('sess-buffer-cwd-bad', ['cat'], cwd),
+        ).rejects.toBeInstanceOf(BadRequestException);
+        expect(mockAssertSessionGet).not.toHaveBeenCalled();
+        expect(mockExecInContainerBySessionIdBuffer).not.toHaveBeenCalled();
+      },
+    );
+
+    it('execInContainerBuffer enforces the concurrent exec limit shared with execInContainer', async () => {
+      const sessionId = 'sess-buffer-busy';
+      tracking().activeExecs.set(sessionId, 3);
+
+      let caught: unknown;
+      try {
+        await service.execInContainerBuffer(sessionId, ['cat']);
+      } catch (error) {
+        caught = error;
+      }
+
+      expect(caught).toBeInstanceOf(HttpException);
+      expect((caught as HttpException).getStatus()).toBe(429);
+      expect(mockExecInContainerBySessionIdBuffer).not.toHaveBeenCalled();
+      expect(tracking().activeExecs.get(sessionId)).toBe(3);
+    });
+
+    it('execInContainerBuffer refuses an unknown session before any exec', async () => {
+      mockAssertSessionGet.mockReturnValue(undefined);
+      await expect(service.execInContainerBuffer('sess-buffer-unknown', ['cat'])).rejects.toThrow(
+        'Session sess-buffer-unknown not found',
+      );
+      expect(mockExecInContainerBySessionIdBuffer).not.toHaveBeenCalled();
+    });
+
+    it('readFileBufferFromContainer returns the docker Buffer unchanged and never uses the text read', async () => {
+      const sessionId = 'sess-read-buffer';
+      mockReadFileBufferFromContainer.mockResolvedValue(BYTES);
+
+      const result = await service.readFileBufferFromContainer(sessionId, 'img/logo.png');
+
+      expect(result).toBe(BYTES);
+      expect(mockReadFileBufferFromContainer).toHaveBeenCalledWith(sessionId, 'img/logo.png');
+      expect(mockReadFileFromContainer).not.toHaveBeenCalled();
+      expect(tracking().lastActivity.has(sessionId)).toBe(true);
+      expect(tracking().activeExecs.has(sessionId)).toBe(false);
+    });
+
+    it('readFileBufferFromContainer refuses an unknown session before any read', async () => {
+      mockAssertSessionGet.mockReturnValue(undefined);
+      await expect(
+        service.readFileBufferFromContainer('sess-read-unknown', 'logo.png'),
+      ).rejects.toThrow('Session sess-read-unknown not found');
+      expect(mockReadFileBufferFromContainer).not.toHaveBeenCalled();
+    });
+
+    it('readFileFromContainer still uses the text read', async () => {
+      await expect(service.readFileFromContainer('sess-read-text', 'README.md')).resolves.toBe(
+        'file-content',
+      );
+      expect(mockReadFileFromContainer).toHaveBeenCalledWith('sess-read-text', 'README.md');
+      expect(mockReadFileBufferFromContainer).not.toHaveBeenCalled();
     });
   });
 });
