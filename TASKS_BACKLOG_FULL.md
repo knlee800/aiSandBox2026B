@@ -88686,7 +88686,7 @@ taskId=STAGING-DEPLOY-SNAP-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-11 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-11 by the CM-BODY-ROUTE-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-11. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING and ENV released; stagingAuthorized false. Deployed 7399830 to a64c82d with runs off (rc 0, 17:21:37Z): no migration (hash 9cfde25f unchanged), configuration unchanged, standard and security checks pass, the new code is in the builds (parseProjectIdFromSnapshotLabel; isFileWriteRequest and the 100kb default); a 1 MB body without the key gets 403 on the file write route and 413 on files/search, and a small body without the key gets 403. Checkpoint: docs/STAGING-DEPLOY-SNAP-02-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-11 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-11 by the CM-BODY-ROUTE-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-SNAP-02
 **Title:** Deploy the snapshot pick and the route-scoped body limit
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
