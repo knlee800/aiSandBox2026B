@@ -626,6 +626,61 @@ describe('AGENT-PLATFORM-07C2: startReferralExecution', () => {
     expect(payload.builderProfileId).toBe('builder-b');
   });
 
+  it('USER-TEAMS-01B: a teamLeadId stored in pending_job never reaches the job', async () => {
+    const plain = await setupReferral();
+    await service.startReferralExecution(baseExecutionInput(plain.referralId));
+
+    await service.createCollaborationRun({
+      collaborationRunId: 'collab-team-01',
+      userId: 'user-01',
+      projectId: 'project-01',
+      initiatorAgent: { agentRole: 'builder', builderProfileId: 'builder-a' },
+    });
+    const team = await service.createReferral({
+      referralId: 'ref-team-01',
+      referralTraceId: 'trace-ref-team-01',
+      collaborationRunId: 'collab-team-01',
+      parentReferralTraceId: 'parent-trace-001',
+      sourceBuilder: { agentRole: 'builder', builderProfileId: 'builder-a' },
+      targetBuilder: { agentRole: 'chief-of-staff', builderProfileId: 'builder-b' },
+      idempotencyKey: 'key-ref-team-01',
+      referralChain: ['builder-a'],
+      visitedBuilderProfileIds: ['builder-a'],
+      depth: 1,
+      pendingJob: {
+        sessionId: 'session-001',
+        conversationId: 'conv-001',
+        apiKeyId: 'apikey-01',
+        prompt: 'analyze workspace',
+        provider: 'stub',
+        adapter: 'stub',
+        model: 'test-model',
+        workspaceContext: null,
+        globalInstructions: null,
+        projectInstructions: null,
+        orchestrationPriority: 10,
+        decidedBy: null,
+        decisionReason: null,
+        agents: [
+          { name: 'builder-b', instructions: 'Lead.' },
+          { name: 'product-strategy', instructions: 'Market.' },
+        ],
+        teamLeadId: 'builder-b',
+      },
+    } as never);
+    await service.startReferralExecution({
+      ...baseExecutionInput(team.referralId),
+      executionId: 'exec-002',
+    });
+
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(2);
+    const plainJob = mockQueueService.enqueueExecution.mock.calls[0][0] as Record<string, unknown>;
+    const teamJob = mockQueueService.enqueueExecution.mock.calls[1][0] as Record<string, unknown>;
+    expect(Object.keys(teamJob).sort()).toEqual(Object.keys(plainJob).sort());
+    expect(teamJob).not.toHaveProperty('teamLeadId');
+    expect(JSON.stringify(teamJob)).not.toContain('teamLeadId');
+  });
+
   it('transitions referral to in_progress', async () => {
     const referral = await setupReferral();
     await service.startReferralExecution(baseExecutionInput(referral.referralId));

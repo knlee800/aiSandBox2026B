@@ -8,8 +8,12 @@ import {
   classifyFrontDoorEdge,
   frontDoorAgentList,
   isFrontDoorRun,
+  isTeamRun,
+  leadIdOf,
   reportBackIdempotencyKey,
   rosterMemberToListedAgent,
+  teamAgentList,
+  teamLeadSummary,
 } from './collaboration-front-door';
 import {
   DEFAULT_MAX_AGENTS_PER_COLLABORATION,
@@ -124,5 +128,92 @@ describe('COS-FRONTDOOR-01B front door (pure)', () => {
       expect(classifyFrontDoorEdge(COS, COS, afterReport, COS, 3)).toBe('ordinary');
       expect(classifyFrontDoorEdge('product-strategy', WF, afterReport, COS, 3)).toBe('ordinary');
     });
+  });
+});
+
+describe('USER-TEAMS-01B the lead as a parameter (pure)', () => {
+  const LEAD = 'f0f0f0f0-0000-4000-8000-0000000000a1';
+  const lead = {
+    name: LEAD,
+    instructions: 'lead text',
+    label: 'Weekly plan',
+    summary: teamLeadSummary('Weekly plan'),
+  };
+
+  it('is a team run only with the given lead first and at least one member', () => {
+    expect(isTeamRun([{ name: LEAD }, { name: WF }], LEAD)).toBe(true);
+    expect(isTeamRun([{ name: LEAD }], LEAD)).toBe(false);
+    expect(isTeamRun([{ name: WF }, { name: LEAD }], LEAD)).toBe(false);
+    expect(isTeamRun([{ name: LEAD }, { name: WF }], null)).toBe(false);
+    expect(isTeamRun([{ name: LEAD }, { name: WF }], '')).toBe(false);
+    expect(isTeamRun(null, LEAD)).toBe(false);
+    expect(isTeamRun([{ name: COS }, { name: WF }], COS)).toBe(
+      isFrontDoorRun([{ name: COS }, { name: WF }]),
+    );
+  });
+
+  it('reads the lead from teamLeadId, falls back to the Chief of Staff rule, else null', () => {
+    const team = [{ name: LEAD }, { name: 'product-strategy' }];
+    expect(leadIdOf({ agents: team, teamLeadId: LEAD })).toBe(LEAD);
+    // A teamLeadId that is not the first listed agent does not count.
+    expect(leadIdOf({ agents: team, teamLeadId: 'product-strategy' })).toBeNull();
+    expect(leadIdOf({ agents: [{ name: LEAD }], teamLeadId: LEAD })).toBeNull();
+    expect(leadIdOf({ agents: team })).toBeNull();
+    expect(leadIdOf({ agents: team, teamLeadId: 7 })).toBeNull();
+    // A front-door row stored before teamLeadId existed still reads as a front-door run.
+    expect(leadIdOf({ agents: [{ name: COS }, { name: WF }] })).toBe(COS);
+    expect(leadIdOf({ agents: [{ name: COS }, { name: WF }], teamLeadId: COS })).toBe(COS);
+    expect(leadIdOf({ agents: [{ name: COS }, { name: WF }], teamLeadId: WF })).toBe(COS);
+    expect(leadIdOf({ agents: [{ name: COS }] })).toBeNull();
+    expect(leadIdOf({ agents: [{ name: 'advisors-lead' }, { name: 'product-strategy' }] })).toBeNull();
+    expect(leadIdOf({ agents: [{ name: 'lead' }, { name: 'writer' }, { name: 'reviewer' }] })).toBeNull();
+    expect(leadIdOf(null)).toBeNull();
+    expect(leadIdOf(undefined)).toBeNull();
+  });
+
+  it('writes the lead summary, which is the Chief of Staff summary for the Chief of Staff', () => {
+    expect(teamLeadSummary('Weekly plan')).toBe(
+      'Leads this run for the owner. Your answer goes back to Weekly plan, who writes the final answer.',
+    );
+    expect(teamLeadSummary('the Chief of Staff')).toBe(FRONT_DOOR_LEAD_SUMMARY);
+  });
+
+  it('builds one bare entry with no members, and the labelled lead first with members', () => {
+    expect(teamAgentList(lead, [])).toEqual([{ name: LEAD, instructions: 'lead text' }]);
+    expect(Object.keys(teamAgentList(lead, [])[0])).toEqual(['name', 'instructions']);
+    expect(teamAgentList(lead, [member('product-strategy'), member(WF)])).toEqual([
+      lead,
+      member('product-strategy'),
+      member(WF),
+    ]);
+    expect(frontDoorAgentList('x', [member(WF)])).toEqual(
+      teamAgentList(
+        { name: COS, instructions: 'x', label: FRONT_DOOR_LEAD_LABEL, summary: FRONT_DOOR_LEAD_SUMMARY },
+        [member(WF)],
+      ),
+    );
+  });
+
+  it("classifies a workflow lead's edges like the Chief of Staff's, and nothing without a lead", () => {
+    const start = edge('user', LEAD, 1);
+    expect(classifyFrontDoorEdge(LEAD, 'product-strategy', [start], LEAD, 3)).toBe('ordinary');
+    const afterFirst = [start, edge(LEAD, 'product-strategy', 2)];
+    expect(classifyFrontDoorEdge('product-strategy', LEAD, afterFirst, LEAD, 3)).toBe('report_back');
+    const afterReport = [...afterFirst, edge('product-strategy', LEAD, 3)];
+    expect(classifyFrontDoorEdge('product-strategy', LEAD, afterReport, LEAD, 3)).toBe('ordinary');
+    expect(classifyFrontDoorEdge(LEAD, WF, afterReport, LEAD, 3)).toBe('dispatch');
+    const afterSecond = [...afterReport, edge(LEAD, WF, 4)];
+    expect(classifyFrontDoorEdge(WF, LEAD, afterSecond, LEAD, 3)).toBe('report_back');
+    const afterSecondReport = [...afterSecond, edge(WF, LEAD, 5)];
+    expect(classifyFrontDoorEdge(LEAD, 'technology-advisor', afterSecondReport, LEAD, 4)).toBe(
+      'capped',
+    );
+    // The Chief of Staff is an ordinary agent in a run led by a workflow.
+    expect(classifyFrontDoorEdge('product-strategy', COS, afterFirst, LEAD, 3)).toBe('ordinary');
+    for (const none of [null, undefined, '', 'user']) {
+      expect(classifyFrontDoorEdge('product-strategy', LEAD, afterFirst, none, 3)).toBe('ordinary');
+      expect(classifyFrontDoorEdge(LEAD, WF, afterReport, none, 3)).toBe('ordinary');
+    }
+    expect(classifyFrontDoorEdge('product-strategy', LEAD, afterFirst, LEAD, 1)).toBe('ordinary');
   });
 });

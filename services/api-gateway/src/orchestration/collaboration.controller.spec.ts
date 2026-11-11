@@ -58,6 +58,7 @@ import {
   FRONT_DOOR_LEAD_LABEL,
   buildReportBackPrompt,
   reportBackIdempotencyKey,
+  teamLeadSummary,
 } from './collaboration-front-door';
 import { finalAnswerOf } from './collaboration-results';
 import { buildCollaborationProjectInstructions } from './handoff-request';
@@ -3015,6 +3016,695 @@ describe('CollaborationController login routes', () => {
       expect(Object.keys(jobOf(started.referralId)).sort()).toEqual(cosKeys);
       expect(Object.keys(jobOf(child.referralId)).sort()).toEqual(cosKeys);
       expect(Object.keys(jobOf(rb.referralId)).sort()).toEqual(cosKeys);
+    });
+  });
+
+  describe('USER-TEAMS-01B user-team runs with report-back', () => {
+    const LEAD = 'f0f0f0f0-0000-4000-8000-0000000000a1';
+    const WF2 = 'f0f0f0f0-0000-4000-8000-0000000000a2';
+    const DRAFT_WF = 'f0f0f0f0-0000-4000-8000-0000000000a3';
+    const OFF_WF = 'f0f0f0f0-0000-4000-8000-0000000000a4';
+    const UNTESTED_WF = 'f0f0f0f0-0000-4000-8000-0000000000a5';
+    const GONE_WF = 'f0f0f0f0-0000-4000-8000-00000000dead';
+    const OWNER_TASK = 'Plan my week around the market and my mail.';
+    const outputs = new Map<string, { status: string; output: string }>();
+
+    function leadRow(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+      return {
+        id: LEAD,
+        userId: OWNER_ID,
+        name: 'Weekly plan',
+        role: 'Assistant',
+        description: 'Plans the week.',
+        status: 'active',
+        tone: null,
+        replyLanguage: null,
+        purpose: 'You plan the owner\'s week.',
+        procedure: 'Ask the team when you need facts, then write the plan.',
+        result: 'A short plan.',
+        toolProfile: 'read',
+        knowledgeScopeIds: ['market-data'],
+        connectorToolIds: [],
+        model: { choice: 'platform', id: 'claude-haiku-5-5' },
+        budgetPerRunCredits: null,
+        budgetPerDayCredits: null,
+        templateId: null,
+        teamMemberIds: ['product-strategy', WF2],
+        ...overrides,
+      };
+    }
+
+    function memberRow(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+      return {
+        id: WF2,
+        userId: OWNER_ID,
+        name: 'Mail digest',
+        role: 'Assistant',
+        description: 'Summarizes unread mail.',
+        status: 'active',
+        tone: null,
+        replyLanguage: null,
+        purpose: 'You summarize the owner\'s unread mail.',
+        procedure: 'Call mail_list_unread_metadata and list each message in one line.',
+        result: 'A short list.',
+        toolProfile: 'read',
+        knowledgeScopeIds: ['policies'],
+        connectorToolIds: ['mail_list_unread_metadata'],
+        model: { choice: 'server' },
+        budgetPerRunCredits: null,
+        budgetPerDayCredits: null,
+        templateId: null,
+        // D12: the member's own team; never read in a run it does not lead.
+        teamMemberIds: [LEAD, 'technology-advisor'],
+        ...overrides,
+      };
+    }
+
+    function service(): OrchestrationService {
+      return app.get(OrchestrationService);
+    }
+
+    function steps(runId: string): CollaborationReferralEntity[] {
+      return (runs.get(runId)?.referralIds ?? []).map((id) => referrals.get(id)!);
+    }
+
+    function last(runId: string): CollaborationReferralEntity {
+      const all = steps(runId);
+      return all[all.length - 1];
+    }
+
+    function jobOf(referralId: string): Record<string, unknown> {
+      const executionId = referrals.get(referralId)?.executionId;
+      const call = queue.enqueueExecution.mock.calls.find(
+        (args) => (args[0] as { executionId: string }).executionId === executionId,
+      );
+      if (!call) {
+        throw new Error(`no job for ${referralId}`);
+      }
+      return call[0] as Record<string, unknown>;
+    }
+
+    function intentOf(referralId: string): Record<string, unknown> {
+      const executionId = referrals.get(referralId)?.executionId;
+      const call = ledger.writeExecutionIntent.mock.calls.find(
+        (args) => (args[0] as { executionId: string }).executionId === executionId,
+      );
+      if (!call) {
+        throw new Error(`no intent for ${referralId}`);
+      }
+      return call[0] as Record<string, unknown>;
+    }
+
+    async function approve(runId: string, referralId: string, expected = 200) {
+      return http()
+        .post(`/api/collaboration/runs/${runId}/referrals/${referralId}/approve`)
+        .send({})
+        .expect(expected);
+    }
+
+    function finish(referralId: string, output: string, status = 'completed'): void {
+      const executionId = referrals.get(referralId)?.executionId;
+      if (!executionId) {
+        throw new Error(`no execution for ${referralId}`);
+      }
+      outputs.set(executionId, { status, output });
+    }
+
+    async function readRun(runId: string) {
+      return (await http().get(`/api/collaboration/runs/${runId}`).expect(200)).body as {
+        run: { status: string };
+        teamId: string;
+        team: string[];
+        workflow: { id: string; name: string; testRun: boolean } | null;
+        agents: Array<{ name: string; label: string | null }>;
+        handoffs: Array<Record<string, unknown>>;
+      };
+    }
+
+    async function runStep(runId: string, referralId: string, output: string, status = 'completed') {
+      await approve(runId, referralId);
+      finish(referralId, output, status);
+      return readRun(runId);
+    }
+
+    type StartBody = {
+      collaborationRunId: string;
+      referralId: string;
+      roster?: { used: string[]; skipped: Array<{ id: string; reason: string }> };
+    } & Record<string, unknown>;
+
+    async function startLead(body: Record<string, unknown> = {}): Promise<StartBody> {
+      const started = await http()
+        .post('/api/collaboration/runs')
+        .send({ sessionId: SESSION_ID, task: OWNER_TASK, workflowId: LEAD, ...body })
+        .expect(201);
+      return started.body as StartBody;
+    }
+
+    /** A completed test run of `id`, so a normal run (or a member) is allowed. */
+    async function testRunWorkflow(id: string): Promise<void> {
+      const started = await http()
+        .post('/api/collaboration/runs')
+        .send({ sessionId: SESSION_ID, task: 'Test it.', workflowId: id, testRun: true })
+        .expect(201);
+      await runStep(started.body.collaborationRunId, started.body.referralId, 'Tested.');
+      expect(referrals.get(started.body.referralId)?.status).toBe('completed');
+    }
+
+    async function testTeam(): Promise<void> {
+      await testRunWorkflow(WF2);
+      await testRunWorkflow(LEAD);
+    }
+
+    function snapshotOf(row: Record<string, unknown>, testRun: boolean) {
+      const rendered = renderWorkflow(row as never)!;
+      return {
+        id: row.id,
+        name: row.name,
+        version: rendered.version,
+        knowledgeScopeIds: rendered.knowledgeScopeIds,
+        connectorToolIds: rendered.connectorToolIds,
+        model: row.model,
+        testRun,
+        budgetPerRunCredits: row.budgetPerRunCredits ?? null,
+        budgetPerDayCredits: row.budgetPerDayCredits ?? null,
+      };
+    }
+
+    beforeEach(() => {
+      outputs.clear();
+      workflowRows.set(LEAD, leadRow());
+      workflowRows.set(WF2, memberRow());
+      workflowRows.set(DRAFT_WF, memberRow({ id: DRAFT_WF, name: 'Draft flow', status: 'draft' }));
+      workflowRows.set(OFF_WF, memberRow({ id: OFF_WF, name: 'Off flow', status: 'disabled' }));
+      workflowRows.set(UNTESTED_WF, memberRow({ id: UNTESTED_WF, name: 'New flow' }));
+      executionResults.getExecution.mockImplementation(async (executionId: string) => {
+        const stored = outputs.get(executionId);
+        return stored
+          ? {
+              execution_status: stored.status,
+              metadata: { aiExecutionResult: { output: stored.output } },
+            }
+          : null;
+      });
+    });
+
+    it('starts a workflow with its team: the labelled lead, the members, teamLeadId and the snapshots, none from the body', async () => {
+      await testTeam();
+      const started = await startLead({
+        agents: [{ name: 'hacker', instructions: 'pwn' }],
+        rosterWorkflows: [{ id: 'hacker' }],
+        teamLeadId: 'hacker',
+        teamMemberIds: ['technology-advisor'],
+      });
+      const stored = referrals.get(started.referralId);
+      const job = stored?.pendingJob;
+      const lead = renderWorkflow(workflowRows.get(LEAD) as never)!;
+      const member = renderWorkflow(workflowRows.get(WF2) as never)!;
+      const ps = systemAgentById('product-strategy')!;
+
+      expect(started.roster).toEqual({ used: ['product-strategy', WF2], skipped: [] });
+      expect(started.target).toBe(LEAD);
+      expect(stored?.targetBuilderProfileId).toBe(LEAD);
+      expect(job?.agents).toEqual([
+        {
+          name: LEAD,
+          instructions: lead.instructions,
+          label: 'Weekly plan',
+          summary: teamLeadSummary('Weekly plan'),
+        },
+        {
+          name: 'product-strategy',
+          instructions: ps.instructions,
+          label: 'Product Strategy',
+          summary: "Answers product and market questions from the owner's market documents.",
+        },
+        {
+          name: WF2,
+          instructions: member.instructions,
+          label: 'Mail digest',
+          summary: 'Summarizes unread mail.',
+        },
+      ]);
+      expect(job?.teamLeadId).toBe(LEAD);
+      expect(job?.workflow).toEqual(snapshotOf(workflowRows.get(LEAD)!, false));
+      expect(job?.rosterWorkflows).toEqual([snapshotOf(workflowRows.get(WF2)!, false)]);
+      expect(job).toMatchObject({ provider: 'anthropic', adapter: 'anthropic', model: 'claude-haiku-5-5' });
+      const brief = String(job?.projectInstructions);
+      expect(brief).toContain(`You are ${LEAD}.`);
+      expect(brief).toContain(
+        "- product-strategy (Product Strategy): Answers product and market questions from the owner's market documents.",
+      );
+      expect(brief).toContain(`- ${WF2} (Mail digest): Summarizes unread mail.`);
+      expect(brief).not.toContain(ps.instructions);
+      const text = JSON.stringify(job);
+      for (const leaked of ['pwn', 'hacker', 'technology-advisor']) {
+        expect(text).not.toContain(leaked);
+      }
+    });
+
+    it('leaves out a draft, an off, an untested and a missing member, and drops the lead itself silently', async () => {
+      await testRunWorkflow(LEAD);
+      workflowRows.set(LEAD, leadRow({ teamMemberIds: [LEAD, DRAFT_WF, OFF_WF] }));
+      const none = await startLead();
+      expect(none.roster).toEqual({
+        used: [],
+        skipped: [
+          { id: DRAFT_WF, reason: 'draft' },
+          { id: OFF_WF, reason: 'off' },
+        ],
+      });
+      const alone = referrals.get(none.referralId)?.pendingJob as unknown as Record<string, unknown>;
+      expect(alone.agents).toEqual([
+        { name: LEAD, instructions: renderWorkflow(workflowRows.get(LEAD) as never)!.instructions },
+      ]);
+      expect(alone).not.toHaveProperty('teamLeadId');
+      expect(alone).not.toHaveProperty('rosterWorkflows');
+
+      workflowRows.set(LEAD, leadRow({ teamMemberIds: [UNTESTED_WF, GONE_WF, 'technology-advisor'] }));
+      const some = await startLead();
+      expect(some.roster).toEqual({
+        used: ['technology-advisor'],
+        skipped: [
+          { id: UNTESTED_WF, reason: 'not_tested' },
+          { id: GONE_WF, reason: 'missing' },
+        ],
+      });
+      const job = referrals.get(some.referralId)?.pendingJob;
+      expect(job?.agents?.map((agent) => agent.name)).toEqual([LEAD, 'technology-advisor']);
+      expect(job?.teamLeadId).toBe(LEAD);
+      expect(job).not.toHaveProperty('rosterWorkflows');
+    });
+
+    it('with an empty team is today\'s team of one, byte for byte, and has no roster', async () => {
+      await testRunWorkflow(LEAD);
+      const jobs: string[] = [];
+      for (const team of [undefined, [], [LEAD]]) {
+        const row = leadRow({ teamMemberIds: team });
+        if (team === undefined) {
+          delete row.teamMemberIds;
+        }
+        workflowRows.set(LEAD, row);
+        const started = await startLead();
+        expect(started).not.toHaveProperty('roster');
+        const job = referrals.get(started.referralId)?.pendingJob as unknown as Record<string, unknown>;
+        expect(Object.keys(job).sort()).toEqual(
+          [
+            'adapter',
+            'agents',
+            'apiKeyId',
+            'callerProjectInstructions',
+            'conversationId',
+            'decidedBy',
+            'decisionReason',
+            'fileAccess',
+            'globalInstructions',
+            'handoffNote',
+            'model',
+            'orchestrationPriority',
+            'projectInstructions',
+            'prompt',
+            'provider',
+            'sessionId',
+            'workflow',
+            'workspaceContext',
+          ].sort(),
+        );
+        expect(Object.keys((job.agents as object[])[0])).toEqual(['name', 'instructions']);
+        jobs.push(JSON.stringify(job));
+      }
+      expect(new Set(jobs).size).toBe(1);
+      const job = JSON.parse(jobs[0]) as Record<string, unknown>;
+      expect(job.projectInstructions).toBe(
+        buildCollaborationProjectInstructions({
+          agents: job.agents as never,
+          agentName: LEAD,
+        }),
+      );
+    });
+
+    it('runs two rounds: dispatch, report-back on the lead snapshot and model, dispatch to a workflow, report-back, final answer', async () => {
+      await testTeam();
+      const started = await startLead();
+      const runId = started.collaborationRunId;
+      const leadSnapshot = referrals.get(started.referralId)?.pendingJob?.workflow;
+      const memberSnapshot = referrals.get(started.referralId)?.pendingJob?.rosterWorkflows?.[0];
+
+      await runStep(
+        runId,
+        started.referralId,
+        'I need market data.\n<handoff to="product-strategy">What is the market size?</handoff>',
+      );
+      const d1 = last(runId);
+      expect(d1).toMatchObject({
+        sourceBuilderProfileId: LEAD,
+        targetBuilderProfileId: 'product-strategy',
+        status: 'pending_approval',
+        depth: 1,
+      });
+      expect(d1.pendingJob?.workflow ?? null).toBeNull();
+      expect(d1.pendingJob?.teamLeadId).toBe(LEAD);
+      // A system member runs on the step's provider, as in a Chief of Staff run.
+      expect(d1.pendingJob).toMatchObject({ provider: 'anthropic', model: 'claude-haiku-5-5' });
+
+      const afterD1 = await runStep(runId, d1.referralId, 'The market is large.');
+      const rb1 = last(runId);
+      expect(rb1).toMatchObject({
+        sourceBuilderProfileId: 'product-strategy',
+        targetBuilderProfileId: LEAD,
+        status: 'pending_approval',
+        idempotencyKey: reportBackIdempotencyKey(d1.referralId),
+        depth: 2,
+        parentReferralTraceId: d1.referralTraceId,
+      });
+      expect(rb1.pendingJob?.prompt).toBe(
+        buildReportBackPrompt({ ownerTask: OWNER_TASK, label: 'Product Strategy', answer: 'The market is large.' }),
+      );
+      // D10: the report-back step carries the lead's own snapshot and runs on its model.
+      expect(rb1.pendingJob?.workflow).toEqual(leadSnapshot);
+      expect(rb1.pendingJob).toMatchObject({
+        provider: 'anthropic',
+        adapter: 'anthropic',
+        model: 'claude-haiku-5-5',
+        teamLeadId: LEAD,
+        decidedBy: null,
+      });
+      expect(afterD1.run.status).toBe('active');
+      await readRun(runId);
+      await service().sweepCollaborations();
+      expect(
+        steps(runId).filter((row) => row.idempotencyKey === reportBackIdempotencyKey(d1.referralId)),
+      ).toHaveLength(1);
+
+      await approve(runId, rb1.referralId);
+      expect(intentOf(rb1.referralId)).toMatchObject({
+        builderProfileId: LEAD,
+        metadata: expect.objectContaining({
+          agentDefinitionId: LEAD,
+          agentDefinitionVersion: leadSnapshot?.version,
+          requestedProvider: 'anthropic',
+          requestedModel: 'claude-haiku-5-5',
+        }),
+      });
+      expect(intentOf(rb1.referralId).metadata).not.toHaveProperty('workflowTestRun');
+      expect(jobOf(rb1.referralId)).toMatchObject({
+        builderProfileId: LEAD,
+        harnessToolProfile: 'read',
+        harnessReadOnly: true,
+        knowledgeScopes: jobOf(started.referralId).knowledgeScopes,
+      });
+      finish(rb1.referralId, `Now the mail.\n<handoff to="${WF2}">Summarize my unread mail.</handoff>`);
+      await readRun(runId);
+      expect(referrals.get(rb1.referralId)?.pendingJob?.handoffNote ?? null).toBeNull();
+
+      const d2 = last(runId);
+      expect(d2).toMatchObject({
+        sourceBuilderProfileId: LEAD,
+        targetBuilderProfileId: WF2,
+        status: 'pending_approval',
+        depth: 3,
+      });
+      expect(d2.pendingJob?.workflow).toEqual(memberSnapshot);
+      expect(d2.pendingJob).toMatchObject({ provider: 'stub', model: 'stub', teamLeadId: LEAD });
+      await approve(runId, d2.referralId);
+      expect(intentOf(d2.referralId)).toMatchObject({
+        builderProfileId: WF2,
+        metadata: expect.objectContaining({
+          agentDefinitionId: WF2,
+          agentDefinitionVersion: memberSnapshot?.version,
+        }),
+      });
+      // D12: the member's own team (the lead and technology-advisor) is never read; its tag is refused.
+      finish(d2.referralId, 'Two unread mails.\n<handoff to="technology-advisor">Check the stack.</handoff>');
+      await readRun(runId);
+      expect(referrals.get(d2.referralId)?.pendingJob?.handoffNote).toBe('refused: roster_reply');
+      const rb2 = last(runId);
+      expect(rb2).toMatchObject({
+        sourceBuilderProfileId: WF2,
+        targetBuilderProfileId: LEAD,
+        status: 'pending_approval',
+        depth: 4,
+      });
+      expect(rb2.pendingJob?.prompt).toContain('Mail digest answered:\nTwo unread mails.\n\n');
+      expect(rb2.pendingJob?.prompt).not.toContain('<handoff');
+      expect(rb2.pendingJob?.workflow).toEqual(leadSnapshot);
+
+      const done = await runStep(runId, rb2.referralId, 'Here is your week.');
+      expect(done.run.status).toBe('completed');
+      expect(steps(runId)).toHaveLength(5);
+      expect(finalAnswerOf(steps(runId))).toBe('Here is your week.');
+      expect(done.teamId).toBe('workflow');
+      expect(done.workflow).toEqual({ id: LEAD, name: 'Weekly plan', testRun: false });
+      expect(done.agents).toEqual([
+        { name: LEAD, label: 'Weekly plan' },
+        { name: 'product-strategy', label: 'Product Strategy' },
+        { name: WF2, label: 'Mail digest' },
+      ]);
+      // A member workflow's unsourced answer is labelled like the lead's.
+      expect(done.handoffs.find((step) => step.referralId === d2.referralId)).toMatchObject({
+        unsourced: true,
+        showUnsourced: true,
+      });
+      for (const step of steps(runId)) {
+        expect(step.pendingJob?.decidedBy).toBe(OWNER_ID);
+        expect(step.pendingJob?.teamLeadId).toBe(LEAD);
+        expect(step.pendingJob?.agents).toEqual(referrals.get(started.referralId)?.pendingJob?.agents);
+      }
+
+      // HARNESS_ENTITLEMENT_PROOF_V1 used, not changed: the lead's first step, the
+      // dispatches and the report-backs are signed with the chief-of-staff key set.
+      const cos = await http()
+        .post('/api/collaboration/runs')
+        .send({ sessionId: SESSION_ID, task: OWNER_TASK, team: 'chief-of-staff' })
+        .expect(201);
+      await approve(cos.body.collaborationRunId, cos.body.referralId);
+      const cosKeys = Object.keys(jobOf(cos.body.referralId)).sort();
+      expect(cosKeys).toContain('harnessEntitlementProof');
+      expect(cosKeys).not.toContain('teamLeadId');
+      for (const step of steps(runId)) {
+        expect(Object.keys(jobOf(step.referralId)).sort()).toEqual(cosKeys);
+      }
+    });
+
+    it('refuses a second dispatch to the same member and a tag to an agent off the team', async () => {
+      await testRunWorkflow(LEAD);
+      workflowRows.set(LEAD, leadRow({ teamMemberIds: ['product-strategy', 'technology-advisor'] }));
+      const started = await startLead();
+      const runId = started.collaborationRunId;
+      await runStep(runId, started.referralId, 'Q.\n<handoff to="product-strategy">Market?</handoff>');
+      await runStep(runId, last(runId).referralId, 'Large.');
+      const rb1 = last(runId);
+      await runStep(runId, rb1.referralId, 'Q.\n<handoff to="product-strategy">Again?</handoff>');
+      expect(referrals.get(rb1.referralId)?.pendingJob?.handoffNote).toBe('refused: loop');
+      expect(steps(runId)).toHaveLength(3);
+
+      const off = await startLead();
+      await runStep(off.collaborationRunId, off.referralId, 'Q.\n<handoff to="writer">Write it.</handoff>');
+      expect(referrals.get(off.referralId)?.pendingJob?.handoffNote).toBe('refused: agent_not_on_list');
+      expect(steps(off.collaborationRunId)).toHaveLength(1);
+    });
+
+    it('caps the rounds at two with an audit event', async () => {
+      await testTeam();
+      workflowRows.set(LEAD, leadRow({ teamMemberIds: ['product-strategy', 'technology-advisor', WF2] }));
+      const started = await startLead();
+      const runId = started.collaborationRunId;
+      await runStep(runId, started.referralId, 'Q.\n<handoff to="product-strategy">Market?</handoff>');
+      await runStep(runId, last(runId).referralId, 'Large.');
+      await runStep(runId, last(runId).referralId, 'Q.\n<handoff to="technology-advisor">Stack?</handoff>');
+      await runStep(runId, last(runId).referralId, 'Modern.');
+      const rb2 = last(runId);
+      expect(rb2.targetBuilderProfileId).toBe(LEAD);
+      service().clearAuditEvents();
+      const done = await runStep(runId, rb2.referralId, `Final.\n<handoff to="${WF2}">Mail?</handoff>`);
+      expect(referrals.get(rb2.referralId)?.pendingJob?.handoffNote).toBe('refused: front_door_rounds');
+      expect(
+        service()
+          .getAuditEvents()
+          .some((event) => event.payload.lifecycleEvent === 'referral_front_door_rounds_blocked'),
+      ).toBe(true);
+      expect(steps(runId)).toHaveLength(5);
+      expect(done.run.status).toBe('completed');
+    });
+
+    it("checks the lead's own snapshot at the report-back approve: the day budget and an off lead", async () => {
+      workflowRows.set(LEAD, leadRow({ budgetPerDayCredits: 5, teamMemberIds: ['product-strategy'] }));
+      await testRunWorkflow(LEAD);
+      const started = await startLead();
+      const runId = started.collaborationRunId;
+      await runStep(runId, started.referralId, 'Q.\n<handoff to="product-strategy">Market?</handoff>');
+      await runStep(runId, last(runId).referralId, 'Large.');
+      const rb = last(runId);
+      expect(rb.pendingJob?.workflow?.budgetPerDayCredits).toBe(5);
+
+      deductionRows.push({
+        ownerId: OWNER_ID,
+        sourceEventId: referrals.get(started.referralId)?.executionId,
+        requestedCredits: 5,
+        createdAt: new Date(),
+      });
+      const calls = queue.enqueueExecution.mock.calls.length;
+      const overBudget = await approve(runId, rb.referralId, 429);
+      expect(overBudget.body.code).toBe('WORKFLOW_BUDGET_DAY');
+      deductionRows.length = 0;
+      workflowRows.set(
+        LEAD,
+        leadRow({ budgetPerDayCredits: 5, teamMemberIds: ['product-strategy'], status: 'disabled' }),
+      );
+      const off = await approve(runId, rb.referralId, 409);
+      expect(off.body.code).toBe('WORKFLOW_DISABLED');
+      expect(queue.enqueueExecution.mock.calls.length).toBe(calls);
+      expect(referrals.get(rb.referralId)?.status).toBe('pending_approval');
+
+      workflowRows.set(LEAD, leadRow({ budgetPerDayCredits: 5, teamMemberIds: ['product-strategy'] }));
+      await approve(runId, rb.referralId);
+      expect(referrals.get(rb.referralId)?.status).not.toBe('pending_approval');
+      expect(queue.enqueueExecution.mock.calls.length).toBe(calls + 1);
+    });
+
+    it("a test run runs the team: the lead's snapshot is a test run, the members' are not, and a draft lead reports back", async () => {
+      await testRunWorkflow(WF2);
+      workflowRows.set(LEAD, leadRow({ status: 'draft', teamMemberIds: ['product-strategy', WF2, DRAFT_WF] }));
+      const started = await startLead({ testRun: true });
+      const runId = started.collaborationRunId;
+      expect(started.roster).toEqual({
+        used: ['product-strategy', WF2],
+        skipped: [{ id: DRAFT_WF, reason: 'draft' }],
+      });
+      const job = referrals.get(started.referralId)?.pendingJob;
+      expect(job?.workflow?.testRun).toBe(true);
+      expect(job?.rosterWorkflows?.map((snapshot) => snapshot.testRun)).toEqual([false]);
+
+      await runStep(runId, started.referralId, `Q.\n<handoff to="${WF2}">Mail?</handoff>`);
+      const d1 = last(runId);
+      expect(d1.pendingJob?.workflow?.testRun).toBe(false);
+      await runStep(runId, d1.referralId, 'Mail.');
+      const rb = last(runId);
+      expect(rb.targetBuilderProfileId).toBe(LEAD);
+      expect(rb.pendingJob?.workflow).toEqual(job?.workflow);
+      await approve(runId, rb.referralId);
+      expect((intentOf(rb.referralId).metadata as Record<string, unknown>).workflowTestRun).toBe(true);
+      finish(rb.referralId, 'The plan.');
+      const done = await readRun(runId);
+      expect(done.run.status).toBe('completed');
+      expect(done.workflow).toEqual({ id: LEAD, name: 'Weekly plan', testRun: true });
+      expect(finalAnswerOf(steps(runId))).toBe('The plan.');
+    });
+
+    it("completes on the member's answer when the report-back is rejected, and fails with no report-back when the member fails", async () => {
+      await testRunWorkflow(LEAD);
+      workflowRows.set(LEAD, leadRow({ teamMemberIds: ['product-strategy'] }));
+      const started = await startLead();
+      const runId = started.collaborationRunId;
+      await runStep(runId, started.referralId, 'Q.\n<handoff to="product-strategy">Market?</handoff>');
+      await runStep(runId, last(runId).referralId, 'The agent answer.');
+      const rb = last(runId);
+      await http()
+        .post(`/api/collaboration/runs/${runId}/referrals/${rb.referralId}/reject`)
+        .send({ reason: 'enough' })
+        .expect(200);
+      const detail = await readRun(runId);
+      expect(detail.run.status).toBe('completed');
+      expect(finalAnswerOf(steps(runId))).toBe('The agent answer.');
+      expect(steps(runId)).toHaveLength(3);
+
+      const failing = await startLead();
+      const failId = failing.collaborationRunId;
+      await runStep(failId, failing.referralId, 'Q.\n<handoff to="product-strategy">Market?</handoff>');
+      const d1 = last(failId);
+      const failed = await runStep(failId, d1.referralId, '', 'failed');
+      expect(referrals.get(d1.referralId)?.status).toBe('failed');
+      expect(failed.run.status).toBe('failed');
+      await service().sweepCollaborations();
+      expect(steps(failId)).toHaveLength(2);
+    });
+
+    it("waits to settle while a workflow lead's report-back is missing, and the sweep recovers it", async () => {
+      await testRunWorkflow(LEAD);
+      workflowRows.set(LEAD, leadRow({ teamMemberIds: ['product-strategy'] }));
+      const started = await startLead();
+      const runId = started.collaborationRunId;
+      await runStep(runId, started.referralId, 'Q.\n<handoff to="product-strategy">Market?</handoff>');
+      const d1 = last(runId);
+      await runStep(runId, d1.referralId, 'Large.');
+      const rb = last(runId);
+      referrals.delete(rb.referralId);
+      const run = runs.get(runId)!;
+      run.referralIds = run.referralIds.filter((id) => id !== rb.referralId);
+      const member = referrals.get(d1.referralId)!;
+      member.pendingJob = { ...member.pendingJob!, reportBackChecked: undefined };
+
+      const settle = (
+        service() as unknown as {
+          settleCollaborationRun: (id: string, rows: Array<{ status: string }>) => Promise<{ status: string }>;
+        }
+      ).settleCollaborationRun.bind(service());
+      const settled = await settle(runId, steps(runId).map((row) => ({ status: row.status })));
+      expect(settled.status).toBe('active');
+
+      await service().sweepCollaborations();
+      const recovered = steps(runId).filter(
+        (row) => row.idempotencyKey === reportBackIdempotencyKey(d1.referralId),
+      );
+      expect(recovered).toHaveLength(1);
+      expect(recovered[0]).toMatchObject({ status: 'pending_approval', targetBuilderProfileId: LEAD });
+      expect(recovered[0].pendingJob?.workflow).toEqual(referrals.get(started.referralId)?.pendingJob?.workflow);
+    });
+
+    it('starts a team without a session on the business rows with the caller note', async () => {
+      await testRunWorkflow(LEAD);
+      workflowRows.set(LEAD, leadRow({ teamMemberIds: ['product-strategy'] }));
+      const started = await http()
+        .post('/api/collaboration/runs')
+        .send({ task: OWNER_TASK, workflowId: LEAD })
+        .expect(201);
+      const body = started.body as StartBody;
+      expect(body.roster).toEqual({ used: ['product-strategy'], skipped: [] });
+      const job = referrals.get(body.referralId)?.pendingJob;
+      expect(job?.sessionId).toBe(businessSessionRows[0].id);
+      expect(job?.callerProjectInstructions).toBe(COLLABORATION_BUSINESS_RUN_NOTE);
+      expect(job?.teamLeadId).toBe(LEAD);
+      await runStep(body.collaborationRunId, body.referralId, 'Q.\n<handoff to="product-strategy">Market?</handoff>');
+      const child = last(body.collaborationRunId);
+      expect(child.pendingJob?.sessionId).toBe(businessSessionRows[0].id);
+      await runStep(body.collaborationRunId, child.referralId, 'Large.');
+      const rb = last(body.collaborationRunId);
+      expect(rb.targetBuilderProfileId).toBe(LEAD);
+      expect(rb.pendingJob?.sessionId).toBe(businessSessionRows[0].id);
+      expect(String(rb.pendingJob?.projectInstructions).startsWith(COLLABORATION_BUSINESS_RUN_NOTE)).toBe(true);
+    });
+
+    it('sets teamLeadId on a Chief of Staff team start, and a front-door row stored without it still runs as one', async () => {
+      rosterRows.set(OWNER_ID, { userId: OWNER_ID, memberIds: ['product-strategy'], updatedAt: new Date() });
+      const started = await http()
+        .post('/api/collaboration/runs')
+        .send({ sessionId: SESSION_ID, task: OWNER_TASK, team: 'chief-of-staff', teamLeadId: LEAD })
+        .expect(201);
+      const runId = started.body.collaborationRunId as string;
+      const first = referrals.get(started.body.referralId)!;
+      expect(first.pendingJob?.teamLeadId).toBe('chief-of-staff');
+
+      // A row stored before USER-TEAMS-01B has no teamLeadId.
+      const legacy = { ...first.pendingJob! } as Record<string, unknown>;
+      delete legacy.teamLeadId;
+      first.pendingJob = legacy as never;
+      await runStep(runId, first.referralId, 'Q.\n<handoff to="product-strategy">Market?</handoff>');
+      const d1 = last(runId);
+      expect(d1.targetBuilderProfileId).toBe('product-strategy');
+      expect(d1.pendingJob).not.toHaveProperty('teamLeadId');
+      await runStep(runId, d1.referralId, 'Large.\n<handoff to="technology-advisor">Stack?</handoff>');
+      expect(referrals.get(d1.referralId)?.pendingJob?.handoffNote).toBe('refused: roster_reply');
+      const rb = last(runId);
+      expect(rb).toMatchObject({
+        sourceBuilderProfileId: 'product-strategy',
+        targetBuilderProfileId: 'chief-of-staff',
+        idempotencyKey: reportBackIdempotencyKey(d1.referralId),
+        depth: 2,
+      });
+      expect(rb.pendingJob?.workflow ?? null).toBeNull();
+      const done = await runStep(runId, rb.referralId, 'Final.');
+      expect(done.run.status).toBe('completed');
+      expect(finalAnswerOf(steps(runId))).toBe('Final.');
     });
   });
 });

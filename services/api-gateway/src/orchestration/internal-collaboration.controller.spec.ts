@@ -2470,4 +2470,70 @@ describe('InternalCollaborationController', () => {
     expect(refused.body.referrals).toHaveLength(1);
     expect(refused.body.referrals[0].handoffNote).toBe('refused: roster_reply');
   });
+  it('USER-TEAMS-01B: never takes teamLeadId from a body, on a first hand-off or a child', async () => {
+    const LEAD = 'f0f0f0f0-0000-4000-8000-0000000000a1';
+    const teamAgents = [
+      { name: LEAD, instructions: 'Lead.', label: 'Weekly plan', summary: 'Leads.' },
+      { name: 'product-strategy', instructions: 'Market.', label: 'Product Strategy', summary: 'Market.' },
+    ];
+    // A workflow-shaped list with no server-built workflow snapshot is no team run.
+    const runId = await createRun();
+    const lead = await postReferral(runId, {
+      idempotencyKey: 'team-lead',
+      targetBuilder: { agentRole: 'builder', builderProfileId: LEAD },
+      agents: teamAgents,
+      teamLeadId: LEAD,
+    }).expect(201);
+    const leadRow = referrals.get(lead.body.referral.referralId as string);
+    expect(leadRow?.pendingJob).not.toHaveProperty('teamLeadId');
+    expect(leadRow?.pendingJob).not.toHaveProperty('workflow');
+    const child = await postReferral(runId, {
+      idempotencyKey: 'team-child',
+      sourceBuilder: { agentRole: 'builder', builderProfileId: LEAD },
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'product-strategy' },
+      parentReferralTraceId: lead.body.referral.referralTraceId,
+      teamLeadId: LEAD,
+    }).expect(201);
+    const childId = child.body.referral.referralId as string;
+    expect(referrals.get(childId)?.pendingJob).not.toHaveProperty('teamLeadId');
+    await approve(runId, childId).expect(200);
+    executionResults.getExecution.mockResolvedValue(
+      completedExecution(`Done.
+<handoff to="${LEAD}">Back.</handoff>`),
+    );
+    const detail = await http().get(`/api/internal/collaboration/runs/${runId}`).expect(200);
+    const answered = detail.body.referrals.find(
+      (referral: { referralId: string }) => referral.referralId === childId,
+    );
+    expect(answered.handoffNote).not.toBe('refused: roster_reply');
+    expect(
+      [...referrals.values()].some((row) => String(row.idempotencyKey).startsWith('report-back:')),
+    ).toBe(false);
+
+    // A Chief of Staff child keeps the lead the server set, whatever the body says.
+    const cosAgents = [
+      { name: 'chief-of-staff', instructions: 'Lead.', label: 'Chief of Staff', summary: 'Leads.' },
+      { name: 'product-strategy', instructions: 'Market.', label: 'Product Strategy', summary: 'Market.' },
+    ];
+    const cosRun = await createRun();
+    const cos = await postReferral(cosRun, {
+      idempotencyKey: 'cos-lead',
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'chief-of-staff' },
+      agents: cosAgents,
+      teamLeadId: 'product-strategy',
+    }).expect(201);
+    expect(referrals.get(cos.body.referral.referralId as string)?.pendingJob?.teamLeadId).toBe(
+      'chief-of-staff',
+    );
+    const cosChild = await postReferral(cosRun, {
+      idempotencyKey: 'cos-child',
+      sourceBuilder: { agentRole: 'builder', builderProfileId: 'chief-of-staff' },
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'product-strategy' },
+      parentReferralTraceId: cos.body.referral.referralTraceId,
+      teamLeadId: 'product-strategy',
+    }).expect(201);
+    expect(referrals.get(cosChild.body.referral.referralId as string)?.pendingJob?.teamLeadId).toBe(
+      'chief-of-staff',
+    );
+  });
 });

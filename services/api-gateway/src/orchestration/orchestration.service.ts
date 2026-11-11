@@ -42,7 +42,7 @@ import {
   FRONT_DOOR_LEAD_ID,
   buildReportBackPrompt,
   classifyFrontDoorEdge,
-  isFrontDoorRun,
+  leadIdOf,
   reportBackIdempotencyKey,
 } from './collaboration-front-door';
 import {
@@ -1085,6 +1085,7 @@ export class OrchestrationService {
         ...(prepared.fileAccess ? { fileAccess: true } : {}),
         ...(prepared.workflow ? { workflow: prepared.workflow } : {}),
         ...(prepared.rosterWorkflows ? { rosterWorkflows: prepared.rosterWorkflows } : {}),
+        ...(prepared.teamLeadId ? { teamLeadId: prepared.teamLeadId } : {}),
       },
     });
     const stored = await this.referralRepo.findOne({
@@ -1505,16 +1506,24 @@ export class OrchestrationService {
       graphEdges,
     );
     // COS-FRONTDOOR-01B D15/D16: the run's first step decides whether it is a front-door run.
+    // USER-TEAMS-01B D5: its lead is the first target when that is the stored lead
+    // (teamLeadId, or the Chief of Staff for rows stored before it), else none.
     const firstStepId = runEntity.referralIds?.[0];
     const firstStep = firstStepId
       ? existingEdges.find((edge) => edge.referralId === firstStepId)
       : undefined;
     const firstAgents = firstStep?.pendingJob?.agents;
+    const firstTarget = firstStep?.targetBuilderProfileId;
+    const runLeadId =
+      firstTarget &&
+      (firstTarget === FRONT_DOOR_LEAD_ID || leadIdOf(firstStep?.pendingJob) === firstTarget)
+        ? firstTarget
+        : null;
     const frontDoorEdge = classifyFrontDoorEdge(
       input.sourceBuilderProfileId,
       input.targetBuilderProfileId,
       graphEdges,
-      firstStep?.targetBuilderProfileId,
+      runLeadId,
       Array.isArray(firstAgents) ? firstAgents.length : 0,
     );
     if (sendBackEdge !== 'ordinary' || frontDoorEdge !== 'ordinary') {
@@ -2613,14 +2622,19 @@ export class OrchestrationService {
     }
   }
 
-  /** D14: an agent step of a front-door run that the Chief of Staff dispatched to. */
+  /**
+   * D14: an agent step of a front-door run that the Chief of Staff dispatched to.
+   * USER-TEAMS-01B D10: of any team run, that the run's lead dispatched to.
+   */
   private needsReportBack(referral: CollaborationReferralEntity): boolean {
+    if (referral.status !== 'completed' || !referral.pendingJob) {
+      return false;
+    }
+    const leadId = leadIdOf(referral.pendingJob);
     return (
-      referral.status === 'completed' &&
-      !!referral.pendingJob &&
-      referral.sourceBuilderProfileId === FRONT_DOOR_LEAD_ID &&
-      referral.targetBuilderProfileId !== FRONT_DOOR_LEAD_ID &&
-      isFrontDoorRun(referral.pendingJob.agents)
+      leadId !== null &&
+      referral.sourceBuilderProfileId === leadId &&
+      referral.targetBuilderProfileId !== leadId
     );
   }
 
@@ -2683,9 +2697,10 @@ export class OrchestrationService {
       await this.rememberReportBackChecked(referralId);
       return;
     }
+    const leadId = leadIdOf(entity.pendingJob);
     const firstId = run.referralIds?.[0];
     const first = firstId ? rows.find((row) => row.referralId === firstId) : undefined;
-    if (!first?.pendingJob || first.targetBuilderProfileId !== FRONT_DOOR_LEAD_ID) {
+    if (!leadId || !first?.pendingJob || first.targetBuilderProfileId !== leadId) {
       await this.rememberReportBackChecked(referralId);
       return;
     }
@@ -2712,14 +2727,16 @@ export class OrchestrationService {
         },
         targetBuilder: {
           agentRole: first.targetAgentRole,
-          builderProfileId: FRONT_DOOR_LEAD_ID,
+          builderProfileId: leadId,
         },
         idempotencyKey,
         sessionId: job.sessionId,
         conversationId: job.conversationId,
         apiKeyId: job.apiKeyId,
         prompt,
-        // The Chief of Staff's step runs on the Chief of Staff's provider and model.
+        // The lead's step runs on the lead's provider and model (the Chief of
+        // Staff's, or a workflow lead's own; its snapshot is copied in
+        // preparePendingReferral by rosterWorkflowFor, USER-TEAMS-01B D10).
         provider: lead.provider,
         adapter: lead.adapter,
         model: lead.model ?? undefined,
@@ -2759,13 +2776,20 @@ export class OrchestrationService {
     await this.referralRepo.save(entity);
   }
 
-  /** D12: the roster snapshot of a workflow member, when the run is a front-door run. */
+  /**
+   * D12: the roster snapshot of a workflow member, when the run is a front-door run.
+   * USER-TEAMS-01B D10: of any team run with the given lead. When the target is
+   * the lead itself and the first step holds the lead's own workflow snapshot
+   * (a workflow lead), a copy of that snapshot, so the lead's report-back step
+   * keeps its grants, budgets, tested state and version stamp. A Chief of Staff
+   * lead has no snapshot and gets null, as before.
+   */
   private async rosterWorkflowFor(
     collaborationRunId: CollaborationRunId,
     targetProfileId: string,
-    agents: readonly CollaborationListedAgent[] | null,
+    leadId: string | null,
   ): Promise<ReferralPendingWorkflow | null> {
-    if (!isFrontDoorRun(agents) || targetProfileId === FRONT_DOOR_LEAD_ID) {
+    if (!leadId) {
       return null;
     }
     const run = await this.runRepo.findOne({ where: { collaborationRunId } });
@@ -2774,8 +2798,14 @@ export class OrchestrationService {
       return null;
     }
     const first = await this.referralRepo.findOne({ where: { referralId: firstId } });
-    if (!first || first.targetBuilderProfileId !== FRONT_DOOR_LEAD_ID) {
+    if (!first || first.targetBuilderProfileId !== leadId) {
       return null;
+    }
+    if (targetProfileId === leadId) {
+      const leadWorkflow = first.pendingJob?.workflow;
+      return leadWorkflow && typeof leadWorkflow === 'object' && leadWorkflow.id === leadId
+        ? this.copyWorkflowSnapshot(leadWorkflow)
+        : null;
     }
     const snapshots = first.pendingJob?.rosterWorkflows;
     if (!Array.isArray(snapshots)) {
@@ -2825,6 +2855,7 @@ export class OrchestrationService {
     fileAccess: boolean;
     workflow: ReferralPendingWorkflow | null;
     rosterWorkflows: ReferralPendingWorkflow[] | null;
+    teamLeadId: string | null;
   }> {
     const parentId = input.parentReferralTraceId?.trim() || null;
     if (input.agents !== undefined && parentId) {
@@ -2904,22 +2935,45 @@ export class OrchestrationService {
       ? parent.pendingJob?.fileAccess === true
       : input.fileAccess === true;
 
+    // USER-TEAMS-01B D4: the run's lead, set by the server on the first hand-off
+    // only when the list holds the lead first and at least one member: the
+    // Chief of Staff, or the workflow whose own snapshot this step carries.
+    // Children copy it with the agent list. Never read from the input.
+    let teamLeadId: string | null = null;
+    if (!parent) {
+      const target = input.targetBuilder.builderProfileId;
+      if (
+        agents &&
+        agents.length > 1 &&
+        agents[0]?.name === target &&
+        (target === FRONT_DOOR_LEAD_ID || workflow?.id === target)
+      ) {
+        teamLeadId = target;
+      }
+    } else if (agents) {
+      const inherited = parent.pendingJob?.teamLeadId;
+      teamLeadId = typeof inherited === 'string' && inherited.length > 0 ? inherited : null;
+    }
+    const leadId = leadIdOf({ agents, teamLeadId });
+
     // COS-FRONTDOOR-01B D10: the members' snapshots, on a front-door start only.
+    // USER-TEAMS-01B D8: on a team start whose first target is the lead: the
+    // Chief of Staff with no workflow snapshot, or a workflow lead with its own.
     let rosterWorkflows: ReferralPendingWorkflow[] | null = null;
     if (!parent && input.rosterWorkflows !== undefined && input.rosterWorkflows.length > 0) {
       if (
-        !isFrontDoorRun(agents) ||
-        input.targetBuilder.builderProfileId !== FRONT_DOOR_LEAD_ID ||
+        !leadId ||
+        input.targetBuilder.builderProfileId !== leadId ||
         !fileAccess ||
-        workflow
+        (leadId === FRONT_DOOR_LEAD_ID ? !!workflow : workflow?.id !== leadId)
       ) {
-        throw new BadRequestException('rosterWorkflows need a Chief of Staff start with a roster');
+        throw new BadRequestException('rosterWorkflows need a team start with members');
       }
       rosterWorkflows = [];
       for (const snapshot of input.rosterWorkflows) {
         const copy = this.copyWorkflowSnapshot(snapshot);
         if (
-          copy.id === FRONT_DOOR_LEAD_ID ||
+          copy.id === leadId ||
           copy.testRun ||
           rosterWorkflows.some((entry) => entry.id === copy.id) ||
           !agents?.some((agent) => agent.name === copy.id)
@@ -2937,7 +2991,7 @@ export class OrchestrationService {
       const snapshot = await this.rosterWorkflowFor(
         input.collaborationRunId,
         input.targetBuilder.builderProfileId,
-        agents,
+        leadId,
       );
       if (snapshot) {
         if (!fileAccess) {
@@ -2954,6 +3008,7 @@ export class OrchestrationService {
       fileAccess,
       workflow: stepWorkflow,
       rosterWorkflows,
+      teamLeadId,
     };
   }
 
@@ -3185,7 +3240,9 @@ export class OrchestrationService {
     }
     // COS-FRONTDOOR-01B D11: in a front-door run only the Chief of Staff hands off.
     // A member's answer goes back to it by the server's report-back instead.
-    if (isFrontDoorRun(agents) && entity.targetBuilderProfileId !== FRONT_DOOR_LEAD_ID) {
+    // USER-TEAMS-01B D9: in any team run only the run's lead hands off.
+    const runLeadId = leadIdOf(entity.pendingJob);
+    if (runLeadId !== null && entity.targetBuilderProfileId !== runLeadId) {
       await this.rememberHandoffNote(referralId, 'refused: roster_reply');
       return;
     }
@@ -3230,7 +3287,7 @@ export class OrchestrationService {
       const memberWorkflow = await this.rosterWorkflowFor(
         entity.collaborationRunId,
         parsed.to,
-        agents,
+        runLeadId,
       );
       if (memberWorkflow) {
         if (!isSystemAgentModel(memberWorkflow.model)) {

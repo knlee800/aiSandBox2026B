@@ -55,8 +55,17 @@ import {
   CollaborationBusinessSessionService,
 } from './collaboration-business-session';
 import { collaborationHarnessToolProfile } from './collaboration-tool-profile';
-import { CollaborationRosterService, type RosterMemberReason } from './collaboration-roster';
-import { FRONT_DOOR_LEAD_ID, frontDoorAgentList } from './collaboration-front-door';
+import {
+  CollaborationRosterService,
+  cutAgentListText,
+  type RosterMemberReason,
+} from './collaboration-roster';
+import {
+  FRONT_DOOR_LEAD_ID,
+  frontDoorAgentList,
+  teamAgentList,
+  teamLeadSummary,
+} from './collaboration-front-door';
 import type {
   CollaborationListedAgent,
   CollaborationReferral,
@@ -77,7 +86,11 @@ import {
   parseCollaborationSourceMarkers,
   type CitationDocument,
 } from './collaboration-citations';
-import { MAX_HANDOFF_TASK_CHARS } from './handoff-request';
+import {
+  MAX_AGENT_LABEL_CHARS,
+  MAX_AGENT_SUMMARY_CHARS,
+  MAX_HANDOFF_TASK_CHARS,
+} from './handoff-request';
 import { OrchestrationService } from './orchestration.service';
 
 const USABLE_SESSION_STATUSES: readonly SessionStatus[] = [
@@ -206,6 +219,8 @@ interface CollaborationStartPlan {
  * chief-of-staff team, which then also uses the business session.
  * COS-FRONTDOOR-01B D10: a chief-of-staff start lists the owner's stored
  * roster (usable members only) after the Chief of Staff.
+ * USER-TEAMS-01B D6: a workflow start lists the row's stored team (usable
+ * members only) after the workflow, which leads the run and gets report-backs.
  * Provider, model, instructions, scopes, tool profile, and decidedBy are not taken from the body.
  */
 @Controller('collaboration')
@@ -237,7 +252,10 @@ export class CollaborationController {
     // BIZ-USER-01C D2: every workflow refusal comes before the conversation and the run exist.
     const workflowPlan =
       'workflowId' in input
-        ? this.workflowStartPlan(await this.prepareWorkflow(input, caller.userId))
+        ? await this.workflowStartPlan(
+            await this.prepareWorkflow(input, caller.userId),
+            caller.userId,
+          )
         : null;
     // TEAM-NO-SESSION-02 D5, D6: only a read-profile workflow (and, COS-FRONTDOOR-01B
     // D4, the Chief of Staff) may start without a session; the business rows are
@@ -689,8 +707,18 @@ export class CollaborationController {
     };
   }
 
-  private workflowStartPlan(prepared: PreparedWorkflowStart): CollaborationStartPlan {
-    return {
+  /**
+   * BIZ-USER-01C: a workflow start. USER-TEAMS-01B D6, D7: the row's stored team
+   * (ids from prepareStart, the row's own id dropped) is checked now by the
+   * roster's rules; usable members follow the lead on the agent list, the
+   * others are reported as skipped. The body never carries the team. With no
+   * team this is today's team of one, byte for byte, and roster is null.
+   */
+  private async workflowStartPlan(
+    prepared: PreparedWorkflowStart,
+    userId: string,
+  ): Promise<CollaborationStartPlan> {
+    const plan: CollaborationStartPlan = {
       builderProfileId: prepared.builderProfileId,
       agents: prepared.agents.map((agent) => ({ ...agent })),
       provider: prepared.provider,
@@ -699,6 +727,33 @@ export class CollaborationController {
       workflow: prepared.workflow,
       rosterWorkflows: [],
       roster: null,
+    };
+    const leadId = prepared.builderProfileId.toLowerCase();
+    const memberIds = (prepared.teamMemberIds ?? []).filter(
+      (id) => id.toLowerCase() !== leadId,
+    );
+    const lead = prepared.agents[0];
+    if (memberIds.length === 0 || !this.rosterService || !lead) {
+      return plan;
+    }
+    const members = await this.rosterService.evaluateMembers(userId, memberIds);
+    const label = cutAgentListText(prepared.workflow.name, MAX_AGENT_LABEL_CHARS);
+    return {
+      ...plan,
+      agents: teamAgentList(
+        {
+          name: lead.name,
+          instructions: lead.instructions,
+          label,
+          summary: cutAgentListText(teamLeadSummary(label), MAX_AGENT_SUMMARY_CHARS),
+        },
+        members.agents,
+      ),
+      rosterWorkflows: members.rosterWorkflows.map((workflow) => ({ ...workflow })),
+      roster: {
+        used: [...members.used],
+        skipped: members.skipped.map((entry) => ({ id: entry.id, reason: entry.reason })),
+      },
     };
   }
 
@@ -886,9 +941,12 @@ export class CollaborationController {
     const team = collaborationTeamForTarget(first?.targetBuilder.builderProfileId, workflow);
     const agents = first ? await this.orchestrationService.readReferralAgents(first.referralId) : [];
     // COS-FRONTDOOR-01B: a front-door run labels its workflow members' unsourced answers too.
+    // USER-TEAMS-01B: a workflow lead's team run labels its members' unsourced answers too.
     const labelled =
       team.id === 'workflow' && workflow
-        ? [...businessRoleProfileIds(), workflow.id]
+        ? agents.length > 1
+          ? [...businessRoleProfileIds(), workflow.id, ...agents.map((agent) => agent.name)]
+          : [...businessRoleProfileIds(), workflow.id]
         : team.id === FRONT_DOOR_LEAD_ID && agents.length > 1
           ? [...businessRoleProfileIds(), ...agents.map((agent) => agent.name)]
           : undefined;

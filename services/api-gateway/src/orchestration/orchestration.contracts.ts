@@ -230,6 +230,13 @@ export interface ReferralPendingJob {
   readonly rosterWorkflows?: readonly ReferralPendingWorkflow[] | null;
   /** COS-FRONTDOOR-01B D14: set once the report-back for this agent step was decided. */
   readonly reportBackChecked?: boolean;
+  /**
+   * USER-TEAMS-01B D4: the run's lead in a team run (`chief-of-staff` or the
+   * lead workflow's row id). Set by the server on the first hand-off when the
+   * agent list holds the lead and at least one member, copied to every child.
+   * Never read from a request body. Orchestration-internal; not a job field.
+   */
+  readonly teamLeadId?: string;
 }
 
 export interface ReferralResult {
