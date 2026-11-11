@@ -87149,7 +87149,7 @@ taskId=APPROVAL-SET-01C
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-11. Was: READY — registered 2026-11-11 by the APPROVAL-SET-01 stage-start approval — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-11. LANE-DONE and LOCKED by the control plane; Lane 2, FRONTEND and I18N released. Slice 01C: the Approval fieldset under Advanced (every, read-only automatic, automatic under N credits; hints that anything that writes, sends or deletes and the first step always wait; translated refusals), the summary line, the Team page Approved automatically line and waiting reasons, singular and plural credit wording, three languages; design review applied after the control-plane review; 24 new tests; sonnet subagent, cherry-picked as f48c847 and b032399; control-plane rerun on the branch and main: tsc 0, frontend 1628 passed, build 0. Approval settings built, not deployed. Checkpoint: docs/APPROVAL-SET-01C-CHECKPOINT.md. FOLLOWUPS: 0 registered / 1 superseded (the live-check points into USER-TEAMS-LIVE-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 2 — 2026-11-11. Was: READY — registered 2026-11-11 by the APPROVAL-SET-01 stage-start approval — not admitted.
 **Task ID:** APPROVAL-SET-01C
 **Title:** Approval setting form and Team page
 **Workstream:** AGENT (taxonomy only; zero admission weight)
