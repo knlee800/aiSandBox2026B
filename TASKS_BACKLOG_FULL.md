@@ -87074,13 +87074,13 @@ taskId=USER-TEAMS-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-11 by the USER-TEAMS-01 stage-start approval — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-11 — Keith admitted it ("Yes, start it"). Was: READY — registered 2026-11-11 by the USER-TEAMS-01 stage-start approval — not admitted.
 **Task ID:** USER-TEAMS-LIVE-01
 **Title:** Live check: a user workflow with a team
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: STAGING-DEPLOY-FD-02 LOCKED (it deploys USER-TEAMS-01C). Keith decides.
+**Start condition:** READY (STAGING-DEPLOY-FD-02 LOCKED; Keith decided 2026-11-11). Was: NOT_READY. Ready when: STAGING-DEPLOY-FD-02 LOCKED.
 **Depends on:** USER-TEAMS-01C.
 **Primary write scope:** records; host state.
 **Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT.
