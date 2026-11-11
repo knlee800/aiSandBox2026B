@@ -179,10 +179,15 @@ describe('CM-GIT-HOST-01: every checkpoint git path runs inside the container', 
     execInContainer = jest.fn(async (_sessionId: string, cmd: string[]) => commandFor(String(cmd[2])));
     // CM-BINARY-01: save reads its slices as raw bytes through the binary exec.
     execInContainerBuffer = jest.fn(async (_sessionId: string, cmd: string[]) => {
-      if (cmd[2] !== HISTORY_BUNDLE_CHUNK_COMMAND) {
-        throw new Error(`unexpected binary command ${cmd[2]}`);
+      if (cmd[2] === HISTORY_BUNDLE_CHUNK_COMMAND) {
+        return { exitCode: 0, stdout: Buffer.from('PACK'), stderr: '' };
       }
-      return { exitCode: 0, stdout: Buffer.from('PACK'), stderr: '' };
+      // CM-DIFF-CAP-01: diffs come back as bytes through the bounded binary exec.
+      if (String(cmd[2]).includes('head -c')) {
+        const text = commandFor(String(cmd[2]));
+        return { ...text, stdout: Buffer.from(text.stdout) };
+      }
+      throw new Error(`unexpected binary command ${cmd[2]}`);
     });
     // CM-EXEC-01: restore pipes the stored bundle into the container.
     execInContainerWithStdin = jest.fn(async (_sessionId: string, cmd: string[], input: Readable) => {

@@ -90,10 +90,91 @@ const WORKTREE_UNTRACKED_DIFF_SCRIPT = [
   'exit 0',
 ].join('\n');
 
+// CM-DIFF-CAP-01: since CM-EXEC-01 an exec whose stdout passes the 16 MiB
+// per-stream cap (EXEC_OUTPUT_MAX_BYTES) fails with ExecOutputLimitError, so a
+// diff over 16 MiB failed where it used to come back. Each diff is now bounded
+// inside the container: git's stdout goes through head -c, which reads at most
+// one byte past the limit, so more than the limit coming back means the diff
+// was longer and was cut.
+//
+// A commit diff keeps 8 MiB of diff text: half the exec cap, so the bounded
+// read (limit + 1 byte) never reaches it, and small enough that the parsed
+// JSON response (diff text plus escaping) stays a size the gateway and the
+// browser handle.
+export const COMMIT_DIFF_MAX_BYTES = 8 * 1024 * 1024;
+// The working-tree diff is cut to WORKTREE_DIFF_MAX_CHARS UTF-16 characters
+// afterwards anyway. Any bytes decode to at least one UTF-16 unit per 3 bytes
+// (a 3-byte character, or a 3-byte invalid run replaced by U+FFFD, is the
+// worst case), so 1 MiB decodes to far more than WORKTREE_DIFF_MAX_CHARS and a
+// bounded tracked diff is capped and marked exactly as the whole diff would be.
+export const WORKTREE_TRACKED_DIFF_MAX_BYTES = 1024 * 1024;
+// 128 + SIGPIPE: git stopped by head closing the pipe after its bound.
+const SIGPIPE_EXIT_CODE = 141;
+
+/**
+ * Wraps one git command so its stdout passes through `head -c <maxBytes + 1>`
+ * while the script still exits with git's own status (no pipefail: dash, the
+ * /bin/sh of the Debian browser image, has none). Git's status is written to fd
+ * 3, captured by the command substitution; head writes to the original stdout
+ * (fd 4). A git that head stopped early exits 141 (SIGPIPE), or 0 when its last
+ * write already fit in the pipe; the caller tells both apart from a short
+ * output by the byte count. `gitCommand` is a constant; every interpolated
+ * value reaches it as a quoted environment variable.
+ */
+export function boundedDiffCommand(gitCommand: string, maxBytes: number): string {
+  if (!Number.isSafeInteger(maxBytes) || maxBytes <= 0) {
+    throw new Error('Invalid diff bound');
+  }
+  return [
+    'exec 4>&1',
+    `ec=$( { { ${gitCommand}; printf '%s' "$?" >&3; } | head -c ${maxBytes + 1} >&4; } 3>&1 )`,
+    'exec 4>&-',
+    'case "$ec" in',
+    "  ''|*[!0-9]*) exit 1 ;;",
+    'esac',
+    'exit "$ec"',
+  ].join('\n');
+}
+
+/**
+ * The first `maxBytes` bytes of a diff that was longer, cut after the last
+ * complete line (the last newline byte). A newline byte never occurs inside a
+ * multi-byte UTF-8 character, so the cut never splits one.
+ */
+export function cutDiffAtLine(bytes: Buffer, maxBytes: number): Buffer {
+  const head = bytes.subarray(0, maxBytes);
+  const lastNewline = head.lastIndexOf(0x0a);
+  return lastNewline >= 0 ? head.subarray(0, lastNewline + 1) : head.subarray(0, 0);
+}
+
+// ok: git succeeded (or head stopped it after its bound); stdout and
+// truncated are meaningful only then, stderr only when not.
+type BoundedDiffResult = { ok: boolean; stdout: Buffer; truncated: boolean; stderr: string };
+
 export interface WorkingTreeDiffResult {
   commitHash: string;
   diff: string;
   truncated: boolean;
+}
+
+export interface CommitDiffFile {
+  path: string;
+  status: 'added' | 'modified' | 'deleted';
+  diff: string;
+}
+
+/**
+ * The commit diff. `truncated` and `diffLimitBytes` are present only when the
+ * diff was longer than COMMIT_DIFF_MAX_BYTES: `files` then holds the first
+ * diffLimitBytes bytes cut at the last complete line, so the last file may be
+ * partial. Under the limit the result is unchanged (no new fields).
+ */
+export interface CommitDiffResult {
+  commitHash: string;
+  parentHash: string | null;
+  files: CommitDiffFile[];
+  truncated?: true;
+  diffLimitBytes?: number;
 }
 
 export function isFullCommitHash(value: string): boolean {
@@ -280,46 +361,63 @@ export class GitService {
     };
   }
 
-  async getDiff(sessionId: string, commitHash: string) {
+  async getDiff(sessionId: string, commitHash: string): Promise<CommitDiffResult> {
+    // CM-DIFF-CAP-01: the hash was interpolated into the shell command; it is
+    // now checked to be a full hex hash and reaches git as a quoted variable.
+    if (!isFullCommitHash(commitHash)) {
+      throw new BadRequestException('Invalid commit');
+    }
     try {
-      const parentResult = await this.sessionsService.execInContainer(
+      const parentResult = await this.execWorkspace(
         sessionId,
-        ['sh', '-lc', `git rev-list --parents -n 1 ${commitHash}`],
-        '/workspace',
+        'git rev-list --parents -n 1 "$COMMIT_HASH"',
+        { COMMIT_HASH: commitHash },
       );
       if (parentResult.exitCode !== 0) {
         throw new Error(parentResult.stderr || `Failed to resolve parent for commit ${commitHash}`);
       }
       const parentHash = parentResult.stdout.trim().split(/\s+/)[1] || null;
-
-      let diffOutput: string;
-      if (parentHash) {
-        const diffResult = await this.sessionsService.execInContainer(
-          sessionId,
-          ['sh', '-lc', `git diff ${parentHash}..${commitHash}`],
-          '/workspace',
-        );
-        if (diffResult.exitCode !== 0) {
-          throw new Error(diffResult.stderr || `Failed to compute diff for commit ${commitHash}`);
-        }
-        diffOutput = diffResult.stdout;
-      } else {
-        const showResult = await this.sessionsService.execInContainer(
-          sessionId,
-          ['sh', '-lc', `git show ${commitHash}`],
-          '/workspace',
-        );
-        if (showResult.exitCode !== 0) {
-          throw new Error(showResult.stderr || `Failed to show commit ${commitHash}`);
-        }
-        diffOutput = showResult.stdout;
+      if (parentHash !== null && !isFullCommitHash(parentHash)) {
+        throw new Error(`Failed to resolve parent for commit ${commitHash}`);
       }
 
-      const files = this.parseDiffOutput(diffOutput);
+      let diff: BoundedDiffResult;
+      if (parentHash) {
+        diff = await this.execBoundedDiff(
+          sessionId,
+          'git diff "$PARENT_HASH..$COMMIT_HASH"',
+          { PARENT_HASH: parentHash, COMMIT_HASH: commitHash },
+          COMMIT_DIFF_MAX_BYTES,
+        );
+        if (!diff.ok) {
+          throw new Error(diff.stderr || `Failed to compute diff for commit ${commitHash}`);
+        }
+      } else {
+        diff = await this.execBoundedDiff(
+          sessionId,
+          'git show "$COMMIT_HASH"',
+          { COMMIT_HASH: commitHash },
+          COMMIT_DIFF_MAX_BYTES,
+        );
+        if (!diff.ok) {
+          throw new Error(diff.stderr || `Failed to show commit ${commitHash}`);
+        }
+      }
+
+      if (!diff.truncated) {
+        return {
+          commitHash,
+          parentHash,
+          files: this.parseDiffOutput(diff.stdout.toString('utf8')),
+        };
+      }
+      const kept = cutDiffAtLine(diff.stdout, COMMIT_DIFF_MAX_BYTES);
       return {
         commitHash,
         parentHash,
-        files,
+        files: this.parseDiffOutput(kept.toString('utf8')),
+        truncated: true,
+        diffLimitBytes: COMMIT_DIFF_MAX_BYTES,
       };
     } catch (error) {
       console.error(`Failed to get diff for commit ${commitHash}:`, error);
@@ -350,16 +448,23 @@ export class GitService {
       throw new BadRequestException('Invalid commit');
     }
 
-    const diff = await this.execWorkspace(
+    const diff = await this.execBoundedDiff(
       sessionId,
       'git --no-pager diff --no-color --no-ext-diff "$COMMIT_HASH"',
       { COMMIT_HASH: commitHash },
+      WORKTREE_TRACKED_DIFF_MAX_BYTES,
     );
-    if (diff.exitCode !== 0) {
+    if (!diff.ok) {
       throw new BadRequestException('Invalid commit');
     }
+    // CM-DIFF-CAP-01: a bounded tracked diff is still far longer than
+    // WORKTREE_DIFF_MAX_CHARS, so the untracked listing is skipped and the
+    // cap below cuts and marks it as before.
+    const tracked = diff.truncated
+      ? diff.stdout.subarray(0, WORKTREE_TRACKED_DIFF_MAX_BYTES).toString('utf8')
+      : diff.stdout.toString('utf8');
 
-    const combined = await this.collectUntrackedAdditions(sessionId, diff.stdout);
+    const combined = await this.collectUntrackedAdditions(sessionId, tracked);
     const capped = capWorktreeDiff(combined);
     return {
       commitHash: verifiedHash,
@@ -837,6 +942,31 @@ export class GitService {
 
   private isSafeBranchRef(ref: string): boolean {
     return /^refs\/heads\/[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(ref) && !ref.includes('..');
+  }
+
+  /**
+   * CM-DIFF-CAP-01: one git diff command, bounded inside the container to
+   * maxBytes + 1 bytes of stdout (boundedDiffCommand), read through the
+   * binary-safe exec so the byte count and the cut are exact. More than
+   * maxBytes back means the diff was longer: it is truncated, whether git
+   * exited 0 or 141 (SIGPIPE from head). Exit 141 with no more than maxBytes
+   * back, or any other non-zero exit, is a git failure as before.
+   */
+  private async execBoundedDiff(
+    sessionId: string,
+    gitCommand: string,
+    env: Record<string, string>,
+    maxBytes: number,
+  ): Promise<BoundedDiffResult> {
+    const result = await this.sessionsService.execInContainerBuffer(
+      sessionId,
+      ['sh', '-lc', boundedDiffCommand(gitCommand, maxBytes)],
+      '/workspace',
+      env,
+    );
+    const truncated = result.stdout.length > maxBytes;
+    const ok = result.exitCode === 0 || (result.exitCode === SIGPIPE_EXIT_CODE && truncated);
+    return { ok, stdout: result.stdout, truncated, stderr: result.stderr };
   }
 
   private async execWorkspace(

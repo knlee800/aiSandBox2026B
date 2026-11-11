@@ -14,6 +14,11 @@ import {
   HISTORY_RESTORE_STAGE_COMMAND,
   WORKTREE_DIFF_MAX_CHARS,
   WORKTREE_DIFF_TRUNCATED_MARKER,
+  WORKTREE_TRACKED_DIFF_MAX_BYTES,
+  COMMIT_DIFF_MAX_BYTES,
+  boundedDiffCommand,
+  capWorktreeDiff,
+  cutDiffAtLine,
 } from './git.service';
 
 jest.mock('fs/promises', () => {
@@ -1482,6 +1487,23 @@ function assertIndexOnlyReset(execInContainer: jest.Mock) {
   expect(execInContainer).toHaveBeenCalledWith(SESSION_ID, ['sh', '-lc', 'git reset -q'], '/workspace');
 }
 
+/**
+ * CM-DIFF-CAP-01: diffs are read through the binary exec. This adapter sends
+ * each binary call through the text mock (so its calls and commands stay in
+ * one list) and hands the stdout back as bytes.
+ */
+function bufferExecFrom(execInContainer: jest.Mock): jest.Mock {
+  return jest.fn(async (...args: unknown[]) => {
+    const result = (await (execInContainer as unknown as (...a: unknown[]) => Promise<unknown>)(
+      ...args,
+    )) as { exitCode: number; stdout: string | Buffer; stderr: string };
+    return {
+      ...result,
+      stdout: Buffer.isBuffer(result.stdout) ? result.stdout : Buffer.from(result.stdout),
+    };
+  });
+}
+
 const WORKTREE_SESSION = '33333333-3333-4333-8333-333333333333';
 const WORKTREE_HASH = 'abc123abc123abc123abc123abc123abc123abcd';
 
@@ -1496,7 +1518,11 @@ describe('GitService.getWorkingTreeDiff', () => {
 
   function serviceWith(execInContainer: jest.Mock, getSession: jest.Mock): WorktreeDiffService {
     const serviceLike = Object.create(GitService.prototype);
-    serviceLike.sessionsService = { execInContainer, getSession };
+    serviceLike.sessionsService = {
+      execInContainer,
+      execInContainerBuffer: bufferExecFrom(execInContainer),
+      getSession,
+    };
     serviceLike.createCheckpoint = jest.fn();
     return serviceLike as WorktreeDiffService;
   }
@@ -1554,7 +1580,10 @@ describe('GitService.getWorkingTreeDiff', () => {
     const commands = execInContainer.mock.calls.map((call) => String(call[1][2]));
     expect(commands.slice(0, 2)).toEqual([
       'git rev-parse --verify --quiet "$COMMIT_HASH^{commit}"',
-      'git --no-pager diff --no-color --no-ext-diff "$COMMIT_HASH"',
+      boundedDiffCommand(
+        'git --no-pager diff --no-color --no-ext-diff "$COMMIT_HASH"',
+        WORKTREE_TRACKED_DIFF_MAX_BYTES,
+      ),
     ]);
     expect(commands[2]).toContain('git ls-files --others --exclude-standard -z');
     expectWorktreeDiffReadOnly(execInContainer);
@@ -1780,3 +1809,414 @@ function assertRestoreBundlesRemoved(execInContainer: jest.Mock) {
     '/workspace',
   );
 }
+
+const DIFF_SESSION = '44444444-4444-4444-8444-444444444444';
+const DIFF_COMMIT = 'c'.repeat(40);
+const DIFF_PARENT = 'd'.repeat(40);
+const PARENT_DIFF_COMMAND = boundedDiffCommand(
+  'git diff "$PARENT_HASH..$COMMIT_HASH"',
+  COMMIT_DIFF_MAX_BYTES,
+);
+const SHOW_COMMAND = boundedDiffCommand('git show "$COMMIT_HASH"', COMMIT_DIFF_MAX_BYTES);
+
+/** A diff of `targetBytes` or more: one file header, then 100-byte added lines. */
+function longDiff(targetBytes: number, path = 'big.txt'): string {
+  const header = `diff --git a/${path} b/${path}\nnew file mode 100644\n--- /dev/null\n+++ b/${path}\n@@ -0,0 +1 @@\n`;
+  const line = `+${'x'.repeat(98)}\n`;
+  return header + line.repeat(Math.ceil((targetBytes - header.length) / line.length) + 1);
+}
+
+/** What `head -c <limit + 1>` lets through. */
+function headBytes(text: string | Buffer, maxBytes: number): Buffer {
+  const bytes = Buffer.isBuffer(text) ? text : Buffer.from(text);
+  return bytes.subarray(0, maxBytes + 1);
+}
+
+describe('CM-DIFF-CAP-01: diffs are bounded inside the container', () => {
+  interface DiffService {
+    getDiff: (
+      sessionId: string,
+      commitHash: string,
+    ) => Promise<{
+      commitHash: string;
+      parentHash: string | null;
+      files: Array<{ path: string; status: string; diff: string }>;
+      truncated?: true;
+      diffLimitBytes?: number;
+    }>;
+    getWorkingTreeDiff: (
+      sessionId: string,
+      commitHash: string,
+    ) => Promise<{ commitHash: string; diff: string; truncated: boolean }>;
+  }
+
+  type BufferReply = { exitCode: number; stdout: Buffer; stderr: string };
+
+  function diffService(options: {
+    parents?: string;
+    parentExit?: number;
+    diff: BufferReply;
+  }): { service: DiffService; execInContainer: jest.Mock; execInContainerBuffer: jest.Mock } {
+    const execInContainer = jest.fn(async (_sessionId: string, cmd: string[]) => {
+      const command = String(cmd[2]);
+      if (command.includes('rev-list --parents')) {
+        return {
+          exitCode: options.parentExit ?? 0,
+          stdout: options.parents ?? `${DIFF_COMMIT} ${DIFF_PARENT}\n`,
+          stderr: options.parentExit ? 'fatal: bad object' : '',
+        };
+      }
+      throw new Error(`unexpected text command ${command}`);
+    });
+    const execInContainerBuffer = jest.fn(async () => options.diff);
+    const serviceLike = Object.create(GitService.prototype);
+    serviceLike.sessionsService = {
+      execInContainer,
+      execInContainerBuffer,
+      getSession: jest.fn(async () => ({ id: DIFF_SESSION })),
+    };
+    return { service: serviceLike as DiffService, execInContainer, execInContainerBuffer };
+  }
+
+  beforeEach(() => {
+    jest.spyOn(console, 'error').mockImplementation(() => undefined);
+  });
+
+  describe('the bound', () => {
+    it('stays well below the exec cap and keeps the working-tree cap exact', () => {
+      expect(COMMIT_DIFF_MAX_BYTES).toBe(8 * 1024 * 1024);
+      expect(COMMIT_DIFF_MAX_BYTES + 1).toBeLessThanOrEqual(EXEC_OUTPUT_MAX_BYTES / 2 + 1);
+      expect(WORKTREE_TRACKED_DIFF_MAX_BYTES + 1).toBeLessThan(EXEC_OUTPUT_MAX_BYTES);
+      // Any bytes decode to at least one UTF-16 unit per 3 bytes, so a bounded
+      // tracked diff is always longer than the working-tree character cap.
+      expect(Math.floor(WORKTREE_TRACKED_DIFF_MAX_BYTES / 3) - 1).toBeGreaterThan(
+        WORKTREE_DIFF_MAX_CHARS,
+      );
+    });
+
+    it('reads one byte past the limit through head and exits with git status, without pipefail', () => {
+      const command = boundedDiffCommand('git show "$COMMIT_HASH"', 1000);
+      expect(command).toContain(
+        '{ { git show "$COMMIT_HASH"; printf \'%s\' "$?" >&3; } | head -c 1001 >&4; } 3>&1',
+      );
+      expect(command).toContain('exit "$ec"');
+      expect(command).not.toContain('pipefail');
+      expect(() => boundedDiffCommand('git show', 0)).toThrow('Invalid diff bound');
+      expect(() => boundedDiffCommand('git show', 1.5)).toThrow('Invalid diff bound');
+    });
+
+    it('cuts after the last complete line and never splits a character', () => {
+      expect(cutDiffAtLine(Buffer.from('ab\ncd\nef'), 7).toString()).toBe('ab\ncd\n');
+      expect(cutDiffAtLine(Buffer.from('ab\ncd\n'), 6).toString()).toBe('ab\ncd\n');
+      expect(cutDiffAtLine(Buffer.from('abcdef'), 4).length).toBe(0);
+      // "€" is 3 bytes; a limit inside it keeps only the complete line before.
+      expect(cutDiffAtLine(Buffer.from('a\n€€\n'), 4).toString()).toBe('a\n');
+    });
+  });
+
+  describe('GitService.getDiff', () => {
+    it('returns a diff under the limit exactly as before, with no new field', async () => {
+      const text =
+        'diff --git a/src/a.ts b/src/a.ts\nindex 1..2 100644\n--- a/src/a.ts\n+++ b/src/a.ts\n@@ -1 +1 @@\n-old\n+new\n' +
+        'diff --git a/gone.ts b/gone.ts\ndeleted file mode 100644\n--- a/gone.ts\n+++ /dev/null\n@@ -1 +0,0 @@\n-bye\n';
+      const split = text.indexOf('diff --git a/gone.ts');
+      const { service, execInContainer, execInContainerBuffer } = diffService({
+        diff: { exitCode: 0, stdout: Buffer.from(text), stderr: '' },
+      });
+
+      const result = await service.getDiff(DIFF_SESSION, DIFF_COMMIT);
+
+      expect(result).toEqual({
+        commitHash: DIFF_COMMIT,
+        parentHash: DIFF_PARENT,
+        files: [
+          { path: 'src/a.ts', status: 'modified', diff: text.slice(0, split) },
+          { path: 'gone.ts', status: 'deleted', diff: text.slice(split) },
+        ],
+      });
+      expect(Object.keys(result)).toEqual(['commitHash', 'parentHash', 'files']);
+      expect(result.files.map((file) => file.diff).join('')).toBe(text);
+      expect(execInContainer).toHaveBeenCalledWith(
+        DIFF_SESSION,
+        ['sh', '-lc', 'git rev-list --parents -n 1 "$COMMIT_HASH"'],
+        '/workspace',
+        { COMMIT_HASH: DIFF_COMMIT },
+      );
+      expect(execInContainerBuffer).toHaveBeenCalledTimes(1);
+      expect(execInContainerBuffer).toHaveBeenCalledWith(
+        DIFF_SESSION,
+        ['sh', '-lc', PARENT_DIFF_COMMAND],
+        '/workspace',
+        { PARENT_HASH: DIFF_PARENT, COMMIT_HASH: DIFF_COMMIT },
+      );
+      for (const call of [...execInContainer.mock.calls, ...execInContainerBuffer.mock.calls]) {
+        const command = String((call[1] as string[])[2]);
+        expect(command).not.toContain(DIFF_COMMIT);
+        expect(command).not.toContain(DIFF_PARENT);
+      }
+    });
+
+    it('shows a root commit through git show, bounded the same way', async () => {
+      const text = `commit ${DIFF_COMMIT}\nAuthor: a <a@a>\n\n    first\n\ndiff --git a/r.txt b/r.txt\nnew file mode 100644\n--- /dev/null\n+++ b/r.txt\n@@ -0,0 +1 @@\n+r\n`;
+      const { service, execInContainerBuffer } = diffService({
+        parents: `${DIFF_COMMIT}\n`,
+        diff: { exitCode: 0, stdout: Buffer.from(text), stderr: '' },
+      });
+
+      const result = await service.getDiff(DIFF_SESSION, DIFF_COMMIT);
+
+      expect(result).toEqual({
+        commitHash: DIFF_COMMIT,
+        parentHash: null,
+        files: [{ path: 'r.txt', status: 'added', diff: text.slice(text.indexOf('diff --git')) }],
+      });
+      expect(execInContainerBuffer).toHaveBeenCalledWith(
+        DIFF_SESSION,
+        ['sh', '-lc', SHOW_COMMAND],
+        '/workspace',
+        { COMMIT_HASH: DIFF_COMMIT },
+      );
+    });
+
+    it('returns a diff of exactly the limit whole, with no new field', async () => {
+      const full = longDiff(COMMIT_DIFF_MAX_BYTES);
+      const exact = full.slice(0, COMMIT_DIFF_MAX_BYTES - 1) + '\n';
+      expect(Buffer.byteLength(exact)).toBe(COMMIT_DIFF_MAX_BYTES);
+      const { service } = diffService({
+        diff: { exitCode: 0, stdout: Buffer.from(exact), stderr: '' },
+      });
+
+      const result = await service.getDiff(DIFF_SESSION, DIFF_COMMIT);
+
+      expect(result.truncated).toBeUndefined();
+      expect(Object.keys(result)).toEqual(['commitHash', 'parentHash', 'files']);
+      expect(result.files).toHaveLength(1);
+      expect(result.files[0].diff).toBe(exact);
+    });
+
+    it('cuts a diff over the limit at the last complete line and marks it, when head stopped git (SIGPIPE)', async () => {
+      const full = longDiff(COMMIT_DIFF_MAX_BYTES + 5000);
+      const { service } = diffService({
+        diff: { exitCode: 141, stdout: headBytes(full, COMMIT_DIFF_MAX_BYTES), stderr: '' },
+      });
+
+      const result = await service.getDiff(DIFF_SESSION, DIFF_COMMIT);
+
+      const prefix = full.slice(0, COMMIT_DIFF_MAX_BYTES);
+      const expected = prefix.slice(0, prefix.lastIndexOf('\n') + 1);
+      expect(result.truncated).toBe(true);
+      expect(result.diffLimitBytes).toBe(COMMIT_DIFF_MAX_BYTES);
+      expect(result.commitHash).toBe(DIFF_COMMIT);
+      expect(result.parentHash).toBe(DIFF_PARENT);
+      expect(result.files).toHaveLength(1);
+      expect(result.files[0].path).toBe('big.txt');
+      expect(result.files[0].status).toBe('added');
+      expect(result.files[0].diff).toBe(expected);
+      expect(result.files[0].diff.endsWith('\n')).toBe(true);
+      expect(Buffer.byteLength(result.files[0].diff)).toBeLessThanOrEqual(COMMIT_DIFF_MAX_BYTES);
+      expect(Buffer.byteLength(result.files[0].diff)).toBeGreaterThan(COMMIT_DIFF_MAX_BYTES - 100);
+    });
+
+    it('marks one byte over the limit truncated when git finished before head closed (exit 0)', async () => {
+      const full = longDiff(COMMIT_DIFF_MAX_BYTES + 1);
+      const { service } = diffService({
+        diff: { exitCode: 0, stdout: headBytes(full, COMMIT_DIFF_MAX_BYTES), stderr: '' },
+      });
+
+      const result = await service.getDiff(DIFF_SESSION, DIFF_COMMIT);
+
+      expect(result.truncated).toBe(true);
+      expect(result.diffLimitBytes).toBe(COMMIT_DIFF_MAX_BYTES);
+      expect(Buffer.byteLength(result.files[0].diff)).toBeLessThanOrEqual(COMMIT_DIFF_MAX_BYTES);
+    });
+
+    it('parses a truncated diff that ends in a half file, without splitting a character', async () => {
+      const first = longDiff(COMMIT_DIFF_MAX_BYTES - 200, 'first.txt');
+      const firstPart = first.slice(0, COMMIT_DIFF_MAX_BYTES - 200);
+      const whole = firstPart.slice(0, firstPart.lastIndexOf('\n') + 1);
+      // The second file starts just before the limit; its 3-byte characters
+      // straddle the limit.
+      const second = `diff --git a/second.txt b/second.txt\nnew file mode 100644\n--- /dev/null\n+++ b/second.txt\n@@ -0,0 +1,3 @@\n+${'€'.repeat(20)}\n+${'€'.repeat(200)}\n+tail\n`;
+      const bytes = Buffer.from(whole + second);
+      expect(bytes.length).toBeGreaterThan(COMMIT_DIFF_MAX_BYTES + 1);
+      const { service } = diffService({
+        diff: { exitCode: 141, stdout: headBytes(bytes, COMMIT_DIFF_MAX_BYTES), stderr: '' },
+      });
+
+      const result = await service.getDiff(DIFF_SESSION, DIFF_COMMIT);
+
+      expect(result.truncated).toBe(true);
+      expect(result.files.map((file) => file.path)).toEqual(['first.txt', 'second.txt']);
+      expect(result.files[0].diff).toBe(whole);
+      const half = result.files[1];
+      expect(half.status).toBe('added');
+      expect(half.diff.startsWith('diff --git a/second.txt b/second.txt\n')).toBe(true);
+      expect(half.diff).toContain(`+${'€'.repeat(20)}\n`);
+      expect(half.diff).not.toContain('+tail');
+      expect(half.diff).not.toContain('�');
+      expect(half.diff.endsWith('\n')).toBe(true);
+    });
+
+    it('drops a file header cut mid-line instead of returning half a header', async () => {
+      const first = longDiff(COMMIT_DIFF_MAX_BYTES - 10, 'first.txt');
+      const firstPart = first.slice(0, COMMIT_DIFF_MAX_BYTES - 10);
+      const whole = firstPart.slice(0, firstPart.lastIndexOf('\n') + 1);
+      // A 159-byte header line that starts under 110 bytes before the limit.
+      const name = `second-${'n'.repeat(60)}.txt`;
+      const second = `diff --git a/${name} b/${name}\n+more\n`;
+      expect(whole.length + second.indexOf('\n')).toBeGreaterThan(COMMIT_DIFF_MAX_BYTES);
+      const { service } = diffService({
+        diff: { exitCode: 141, stdout: headBytes(whole + second, COMMIT_DIFF_MAX_BYTES), stderr: '' },
+      });
+
+      const result = await service.getDiff(DIFF_SESSION, DIFF_COMMIT);
+
+      expect(result.truncated).toBe(true);
+      expect(result.files.map((file) => file.path)).toEqual(['first.txt']);
+      expect(result.files[0].diff).toBe(whole);
+    });
+
+    it('still fails with the git error when the parent lookup, diff or show fails', async () => {
+      const failed = diffService({
+        diff: { exitCode: 128, stdout: Buffer.alloc(0), stderr: 'fatal: bad object' },
+      });
+      await expect(failed.service.getDiff(DIFF_SESSION, DIFF_COMMIT)).rejects.toThrow('fatal: bad object');
+
+      const silent = diffService({ diff: { exitCode: 128, stdout: Buffer.alloc(0), stderr: '' } });
+      await expect(silent.service.getDiff(DIFF_SESSION, DIFF_COMMIT)).rejects.toThrow(
+        `Failed to compute diff for commit ${DIFF_COMMIT}`,
+      );
+
+      const show = diffService({
+        parents: `${DIFF_COMMIT}\n`,
+        diff: { exitCode: 128, stdout: Buffer.alloc(0), stderr: '' },
+      });
+      await expect(show.service.getDiff(DIFF_SESSION, DIFF_COMMIT)).rejects.toThrow(
+        `Failed to show commit ${DIFF_COMMIT}`,
+      );
+
+      const parent = diffService({
+        parentExit: 128,
+        diff: { exitCode: 0, stdout: Buffer.alloc(0), stderr: '' },
+      });
+      await expect(parent.service.getDiff(DIFF_SESSION, DIFF_COMMIT)).rejects.toThrow('fatal: bad object');
+      expect(parent.execInContainerBuffer).not.toHaveBeenCalled();
+    });
+
+    it('treats exit 141 without a full bound as a failure, not a truncation', async () => {
+      const { service } = diffService({
+        diff: { exitCode: 141, stdout: Buffer.from('diff --git a/x b/x\n+x\n'), stderr: '' },
+      });
+      await expect(service.getDiff(DIFF_SESSION, DIFF_COMMIT)).rejects.toThrow(
+        `Failed to compute diff for commit ${DIFF_COMMIT}`,
+      );
+    });
+
+    it('refuses a hash that is not a full hex hash before any exec', async () => {
+      const { service, execInContainer, execInContainerBuffer } = diffService({
+        diff: { exitCode: 0, stdout: Buffer.alloc(0), stderr: '' },
+      });
+      for (const bad of ['abc123', 'HEAD', '$(touch /tmp/x)', `${DIFF_COMMIT};id`, '--output=/tmp/x']) {
+        await expect(service.getDiff(DIFF_SESSION, bad)).rejects.toBeInstanceOf(BadRequestException);
+      }
+      expect(execInContainer).not.toHaveBeenCalled();
+      expect(execInContainerBuffer).not.toHaveBeenCalled();
+    });
+
+    it('refuses a parent that is not a full hex hash before the diff', async () => {
+      const { service, execInContainerBuffer } = diffService({
+        parents: `${DIFF_COMMIT} --output=/tmp/x\n`,
+        diff: { exitCode: 0, stdout: Buffer.alloc(0), stderr: '' },
+      });
+      await expect(service.getDiff(DIFF_SESSION, DIFF_COMMIT)).rejects.toThrow(
+        `Failed to resolve parent for commit ${DIFF_COMMIT}`,
+      );
+      expect(execInContainerBuffer).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('GitService.getWorkingTreeDiff', () => {
+    function worktreeService(diff: BufferReply): {
+      service: DiffService;
+      execInContainer: jest.Mock;
+      execInContainerBuffer: jest.Mock;
+    } {
+      const execInContainer = jest.fn(async (_sessionId: string, cmd: string[]) => {
+        const command = String(cmd[2]);
+        if (command.includes('rev-parse')) {
+          return { exitCode: 0, stdout: `${DIFF_COMMIT}\n`, stderr: '' };
+        }
+        throw new Error(`unexpected text command ${command}`);
+      });
+      const execInContainerBuffer = jest.fn(async () => diff);
+      const serviceLike = Object.create(GitService.prototype);
+      serviceLike.sessionsService = {
+        execInContainer,
+        execInContainerBuffer,
+        getSession: jest.fn(async () => ({ id: DIFF_SESSION })),
+      };
+      return { service: serviceLike as DiffService, execInContainer, execInContainerBuffer };
+    }
+
+    it('caps a tracked diff over the bound exactly as the whole diff would be, without the untracked listing', async () => {
+      // 3-byte characters: the fewest UTF-16 units per byte.
+      const line = `+${'€'.repeat(60)}\n`;
+      const full = `diff --git a/w.txt b/w.txt\n${line.repeat(
+        Math.ceil(WORKTREE_TRACKED_DIFF_MAX_BYTES / Buffer.byteLength(line)) + 50,
+      )}`;
+      expect(Buffer.byteLength(full)).toBeGreaterThan(WORKTREE_TRACKED_DIFF_MAX_BYTES + 1);
+      const { service, execInContainer, execInContainerBuffer } = worktreeService({
+        exitCode: 141,
+        stdout: headBytes(full, WORKTREE_TRACKED_DIFF_MAX_BYTES),
+        stderr: '',
+      });
+
+      const result = await service.getWorkingTreeDiff(DIFF_SESSION, DIFF_COMMIT);
+
+      const whole = capWorktreeDiff(full);
+      expect(whole.truncated).toBe(true);
+      expect(result).toEqual({ commitHash: DIFF_COMMIT, diff: whole.text, truncated: true });
+      expect(Object.keys(result)).toEqual(['commitHash', 'diff', 'truncated']);
+      // rev-parse only: the listing of untracked files is skipped.
+      expect(execInContainer).toHaveBeenCalledTimes(1);
+      expect(execInContainerBuffer).toHaveBeenCalledWith(
+        DIFF_SESSION,
+        [
+          'sh',
+          '-lc',
+          boundedDiffCommand(
+            'git --no-pager diff --no-color --no-ext-diff "$COMMIT_HASH"',
+            WORKTREE_TRACKED_DIFF_MAX_BYTES,
+          ),
+        ],
+        '/workspace',
+        { COMMIT_HASH: DIFF_COMMIT },
+      );
+    });
+
+    it('accepts one byte over the bound with exit 0 as truncated', async () => {
+      const full = 'z'.repeat(WORKTREE_TRACKED_DIFF_MAX_BYTES + 1);
+      const { service } = worktreeService({ exitCode: 0, stdout: Buffer.from(full), stderr: '' });
+
+      const result = await service.getWorkingTreeDiff(DIFF_SESSION, DIFF_COMMIT);
+
+      expect(result).toEqual({
+        commitHash: DIFF_COMMIT,
+        diff: capWorktreeDiff(full).text,
+        truncated: true,
+      });
+    });
+
+    it('still refuses with Invalid commit when git fails, including exit 141 without a full bound', async () => {
+      for (const reply of [
+        { exitCode: 128, stdout: Buffer.alloc(0), stderr: 'fatal: bad revision' },
+        { exitCode: 141, stdout: Buffer.from('diff --git a/x b/x\n'), stderr: '' },
+      ]) {
+        const { service } = worktreeService(reply);
+        const outcome = service.getWorkingTreeDiff(DIFF_SESSION, DIFF_COMMIT);
+        await expect(outcome).rejects.toBeInstanceOf(BadRequestException);
+        await expect(outcome).rejects.toThrow('Invalid commit');
+      }
+    });
+  });
+});
