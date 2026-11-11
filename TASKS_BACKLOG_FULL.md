@@ -87092,6 +87092,7 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** Keith, on staging after STAGING-DEPLOY-FD-02, in en, zh-TW and zh-CN: save a team of one advisor and one workflow on a workflow; run it; approve the dispatch and the report-back; the final answer is the lead's and Results shows it; a draft member is skipped with the hint; a workflow with an empty team runs as before; the Chief of Staff front door is unchanged. Implementer: none (Keith live check).
 **Also (added 2026-11-11 by the APPROVAL-SET-01 and COS-DRAFTS-01 stage-start approval):** (1) approval settings: save read_only on a workflow with one advisor and one workflow member, run it, the dispatch and the report-back run without a click and the Team page shows the automatic line; switch to credits with a small limit and see a step wait with its reason; every behaves as today. (2) Chief of Staff drafts: ask the Chief of Staff for a workflow in zh-TW, the draft card, Review and save, the form prefilled with text only, Save, the row is a draft, a test run, switch on, the Chief of Staff reads it by name once on the roster. (3) The COS-EVAL-01 briefing eval rerun with the new Chief of Staff hash, all cases including inject-draft-request. This makes the check PROVIDER-LIVE as registered.
+**Also (added 2026-11-11 by the COS-DRAFTS-01 LOCK):** in the live draft, check whether a stray lower-case "word:" line inside a real draft makes it refuse (fail-closed by design); if it happens often, register a parser follow-up.
 ### APPROVAL-SET-01 — Approval setting per team or workflow
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=APPROVAL-SET-01
@@ -87197,7 +87198,7 @@ taskId=COS-DRAFTS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-11 — slice 01A. Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-11. LANE-DONE and LOCKED by the control plane; Lane 1, GATEWAY and AI-SERVICE released. Slice 01A: one Drafting paragraph in the Chief of Staff spec (2977 -> 3565 characters, hash 030b4efe... -> 8f655afb...; registry pins, eval copy and drift spec re-rendered), collaboration-draft.ts (one <draft kind> block at the end of the answer, eight labelled text parts, unknown labels refuse the draft, limit breaches dropped and listed, never stored, never access), draft on the run detail for completed Chief of Staff steps only, the display name (You are <name> (<id>).) for user workflow steps, the inject-draft-request eval case with '<draft' as a hand-off marker; HARNESS_ENTITLEMENT_PROOF_V1 used, not changed; 38 new tests; opus subagent, cherry-picked as 5dca4a9; control-plane rerun on the branch and main: gateway 3786 passed (14 known smoke failures), ai-service 1297 passed, both builds 0. Not deployed. ARCHITECTURE.md 13.1: Chief of Staff drafts row added. Checkpoint: docs/COS-DRAFTS-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (COS-DRAFTS-TEMPLATE-01) / 2 superseded (a stray label line in a real draft, into USER-TEAMS-LIVE-01; the invalid and problem reasons to translate, into COS-DRAFTS-01B) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-11 — slice 01A. Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** COS-DRAFTS-01
 **Title:** Chief of Staff drafts a workflow the owner approves
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -87242,6 +87243,30 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (as for its parent; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09 and the stage-start 2026-11-11).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** Stage-start docs/COS-DRAFTS-01-STAGE-START.md 01B: the draft card on the Team page with Review and save (read-only like a report-back when long), /platform?draftRun=&draftStep= opens the create form prefilled with the text parts only and a notice; nothing is saved until the owner saves, always as a draft; copy in three languages. Implementer: sonnet.
+**Also (added 2026-11-11 by the COS-DRAFTS-01 LOCK):** the card translates the invalid reasons malformed_tag, invalid_kind, not_at_end, inside_code_fence, multiple_blocks, nested, text_before_label, unknown_label, duplicate_label, missing_name, invalid_name, the part problems too_long, control_characters, not_allowed_value, not_for_agent, prompt_too_long, and names unknownLabels; draft is on the run detail's handoff view for completed chief-of-staff steps only.
+### COS-DRAFTS-TEMPLATE-01 — Template copies without the Drafting paragraph
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=COS-DRAFTS-TEMPLATE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the COS-DRAFTS-01 LOCK — not admitted.
+**Task ID:** COS-DRAFTS-TEMPLATE-01
+**Title:** Template copies without the Drafting paragraph
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides whether a workflow copied from the Chief of Staff template keeps the Drafting paragraph.
+**Depends on:** COS-DRAFTS-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/user-agent/user-agent.service.ts (template copy) and its spec.
+**Mutexes / resources:** set at admission (expected GATEWAY).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved the COS-DRAFTS-01 stage-start 2026-11-11).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the COS-DRAFTS-01 worker: a user workflow copied from the Chief of Staff template inherits the Drafting paragraph (user-agent.service.ts copies template.procedure), so the copy is told to write drafts that are never parsed for workflows (D3). Recommended: strip the Drafting paragraph from template copies (existing copies keep their text unless the owner edits it). Alternative: keep it. Keith decides.
 
 ### CHAT-DISCORD-01 — Discord chat channel
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
