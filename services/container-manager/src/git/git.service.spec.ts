@@ -1,8 +1,11 @@
-import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { constants as fsConstants } from 'fs';
+import * as fsSync from 'fs';
+import * as os from 'os';
+import { spawnSync } from 'child_process';
 import { Readable } from 'stream';
 import { EXEC_OUTPUT_MAX_BYTES } from '../docker/docker-runtime.service';
 import {
@@ -15,6 +18,8 @@ import {
   WORKTREE_DIFF_MAX_CHARS,
   WORKTREE_DIFF_TRUNCATED_MARKER,
   WORKTREE_TRACKED_DIFF_MAX_BYTES,
+  WORKTREE_UNTRACKED_BATCH_SCRIPT,
+  WORKTREE_UNTRACKED_DIFF_SCRIPT,
   COMMIT_DIFF_MAX_BYTES,
   boundedDiffCommand,
   capWorktreeDiff,
@@ -1727,7 +1732,10 @@ describe('GitService.getWorkingTreeDiff', () => {
     expect(result.diff).toBe(TRACKED_DIFF + added);
     expect(result.diff.indexOf('my file.txt')).toBeGreaterThan(result.diff.indexOf('+fixed'));
     expect(result.diff.indexOf('-new.txt')).toBeGreaterThan(result.diff.indexOf('my file.txt'));
-    expect(script).toContain("while IFS= read -r -d '' path");
+    // CM-UNTRACKED-DASH-01: xargs -0 hands each NUL-separated path to the batch
+    // script as one argv entry (was: bash's read -d '').
+    expect(script).toContain('| xargs -0 sh -c "$each" sh');
+    expect(script).toContain('for path in "$@"; do');
     expect(script).toContain('-- /dev/null "./$path"');
     expect(script).not.toContain('my file.txt');
     expect(script).not.toContain('-new.txt');
@@ -2219,4 +2227,598 @@ describe('CM-DIFF-CAP-01: diffs are bounded inside the container', () => {
       }
     });
   });
+});
+
+/**
+ * CM-UNTRACKED-DASH-01: the untracked-file part of the working-tree diff runs
+ * under POSIX sh (dash in the Debian browser image, busybox ash in the Alpine
+ * image) as well as bash.
+ */
+describe('CM-UNTRACKED-DASH-01: untracked files in the working-tree diff under POSIX sh', () => {
+  /** The script before CM-UNTRACKED-DASH-01 (bash only): the reference for byte-identical output. */
+  const LEGACY_BASH_UNTRACKED_SCRIPT = [
+    'set +e',
+    'set -f',
+    'if ! git ls-files --others --exclude-standard -z >/dev/null 2>&1; then',
+    '  exit 1',
+    'fi',
+    'case "$DIFF_BUDGET" in',
+    "  ''|*[!0-9]*) exit 1 ;;",
+    'esac',
+    'tmp=/tmp/aisb-wtd.$$',
+    "trap 'rm -f \"$tmp\"' EXIT",
+    'emitted=0',
+    "git ls-files --others --exclude-standard -z | while IFS= read -r -d '' path; do",
+    '  [ -n "$path" ] || continue',
+    '  remain=$((DIFF_BUDGET - emitted))',
+    '  if [ "$remain" -le 0 ]; then',
+    '    break',
+    '  fi',
+    '  set -o pipefail',
+    '  git --no-pager diff --no-color --no-ext-diff --no-index -- /dev/null "./$path" 2>/dev/null | head -c "$remain" >"$tmp"',
+    '  ec=$?',
+    '  set +o pipefail',
+    '  case "$ec" in',
+    '    0|1|141) ;;',
+    '    *) continue ;;',
+    '  esac',
+    '  cat "$tmp"',
+    '  emitted=$((emitted + $(wc -c <"$tmp")))',
+    'done',
+    'exit 0',
+  ].join('\n');
+
+  const BASH_ONLY: Array<[string, RegExp]> = [
+    ['pipefail', /pipefail/],
+    ['read -d', /\bread\b[^\n]*\s-d\b/],
+    ['[[ ]]', /\[\[|\]\]/],
+    ['an array', /\w=\(|\$\{#?\w+\[/],
+    ['a here-string', /<<</],
+    ["$'...' quoting", /\$'/],
+    ['local', /\blocal\s/],
+    ['the function keyword', /\bfunction\s/],
+    ['source', /\bsource\s/],
+    ['&> or |&', /&>|\|&/],
+    ['== in a test', /\[\s[^\]\n]*==/],
+    ['process substitution', /[<>]\(/],
+    ['PIPESTATUS', /PIPESTATUS/],
+    ['$RANDOM', /\$RANDOM/],
+    ['brace expansion', /\{[^}\s]*(,|\.\.)[^}\s]*\}/],
+    ['let', /\blet\s/],
+    ['declare or typeset', /\b(declare|typeset)\s/],
+    ['a (( )) command', /(^|[^$])\(\(/m],
+  ];
+
+  describe('the script text', () => {
+    it('has no pipefail, no read -d and no other bash-only syntax', () => {
+      for (const script of [
+        WORKTREE_UNTRACKED_DIFF_SCRIPT,
+        WORKTREE_UNTRACKED_BATCH_SCRIPT,
+        boundedDiffCommand('git --no-pager diff --no-color --no-ext-diff "$COMMIT_HASH"', 1024),
+      ]) {
+        for (const [label, pattern] of BASH_ONLY) {
+          expect({ label, found: pattern.test(script) }).toEqual({ label, found: false });
+        }
+      }
+      // The legacy script trips the same check, so the check can see it.
+      expect(BASH_ONLY.filter(([, p]) => p.test(LEGACY_BASH_UNTRACKED_SCRIPT)).map(([l]) => l)).toEqual([
+        'pipefail',
+        'read -d',
+      ]);
+    });
+
+    it('splits the listing on NUL with xargs -0 and never parses a path in the shell', () => {
+      const script = WORKTREE_UNTRACKED_DIFF_SCRIPT;
+      expect(WORKTREE_UNTRACKED_BATCH_SCRIPT).not.toContain("'");
+      expect(script).toContain(`each='${WORKTREE_UNTRACKED_BATCH_SCRIPT}'`);
+      expect(script).toContain(
+        '{ { git ls-files --others --exclude-standard -z 2>/dev/null 3>&-; printf \'%s\' "$?" >&3; } | xargs -0 sh -c "$each" sh "$DIFF_BUDGET" "$out" "$tmp" >/dev/null 3>&-; } 3>&1',
+      );
+      // The listing's and xargs' own status both decide; nothing printed before both pass.
+      expect(script).toContain('[ "$listed" = 0 ] || exit 1');
+      expect(script).toContain('[ "$xec" -eq 0 ] || exit 1');
+      expect(script.indexOf('cat "$out"')).toBeGreaterThan(script.indexOf('[ "$xec" -eq 0 ] || exit 1'));
+      expect(script).toContain("trap 'rm -f \"$tmp\" \"$out\"' EXIT");
+      expect(script).toContain(': >"$out" || exit 1');
+      // Paths only as a quoted "$@" item, after --, behind ./
+      const batch = WORKTREE_UNTRACKED_BATCH_SCRIPT;
+      expect(batch).toContain('set -f');
+      expect(batch).toContain('for path in "$@"; do');
+      expect(batch).toContain('-- /dev/null "./$path" 2>/dev/null 3>&-');
+      expect(batch).not.toMatch(/\beval\b|\bIFS=/);
+      expect(batch.match(/\$path/g)).toHaveLength(2);
+      expect(batch.match(/"\$path"|"\.\/\$path"/g)).toHaveLength(2);
+      // The same per-file bound and accepted statuses as before; head's status as pipefail reported it.
+      expect(batch).toContain('remain=$((budget - $(wc -c <"$out")))');
+      expect(batch).toContain('head -c "$remain" >"$tmp" 3>&-');
+      expect(batch).toContain('[ "$hc" -eq 0 ] || ec=$hc');
+      expect(batch).toContain('    0|1|141) ;;');
+      expect(batch).toContain('cat "$tmp" >>"$out"');
+    });
+  });
+
+  describe('through the mocked exec', () => {
+    function serviceFor(untracked: { exitCode: number; stdout: string; stderr: string }, tracked: string) {
+      const execInContainer = jest.fn(async (_sessionId: string, cmd: string[]) => {
+        const command = String(cmd[2]);
+        if (command.includes('rev-parse')) {
+          return { exitCode: 0, stdout: `${WORKTREE_HASH}\n`, stderr: '' };
+        }
+        if (command === WORKTREE_UNTRACKED_DIFF_SCRIPT) {
+          return untracked;
+        }
+        return { exitCode: 0, stdout: tracked, stderr: '' };
+      });
+      const serviceLike = Object.create(GitService.prototype);
+      serviceLike.sessionsService = {
+        execInContainer,
+        execInContainerBuffer: bufferExecFrom(execInContainer),
+        getSession: jest.fn(async () => ({ id: WORKTREE_SESSION })),
+      };
+      return { serviceLike, execInContainer };
+    }
+
+    const TRACKED = 'diff --git a/src/form.ts b/src/form.ts\n+fixed\n';
+
+    it('sends the script unchanged with only DIFF_BUDGET and appends its bytes as they come', async () => {
+      const added =
+        'diff --git "a/./new\\nline" "b/./new\\nline"\nnew file mode 100644\n--- /dev/null\n+++ "b/./new\\nline"\n+n\n' +
+        "diff --git a/./it's b/./it's\nnew file mode 100644\n--- /dev/null\n+++ b/./it's\n+q\n";
+      const { serviceLike, execInContainer } = serviceFor({ exitCode: 0, stdout: added, stderr: '' }, TRACKED);
+
+      const result = await serviceLike.getWorkingTreeDiff(WORKTREE_SESSION, WORKTREE_HASH);
+
+      expect(result).toEqual({ commitHash: WORKTREE_HASH, diff: TRACKED + added, truncated: false });
+      expect(execInContainer).toHaveBeenNthCalledWith(
+        3,
+        WORKTREE_SESSION,
+        ['sh', '-lc', WORKTREE_UNTRACKED_DIFF_SCRIPT],
+        '/workspace',
+        { DIFF_BUDGET: String(WORKTREE_DIFF_MAX_CHARS - TRACKED.length + 1) },
+      );
+    });
+
+    it('keeps only the tracked diff when the script exits 1 (listing or xargs failed)', async () => {
+      const { serviceLike } = serviceFor({ exitCode: 1, stdout: '', stderr: 'xargs: invalid option' }, TRACKED);
+
+      await expect(serviceLike.getWorkingTreeDiff(WORKTREE_SESSION, WORKTREE_HASH)).resolves.toEqual({
+        commitHash: WORKTREE_HASH,
+        diff: TRACKED,
+        truncated: false,
+      });
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Real shells. Each test runs only where the shell is installed (like the
+  // Windows symlink skips). On Windows only Git for Windows' own dash and bash
+  // are used, never a bare `bash` (that can be the WSL launcher). The script
+  // runs with -c, not -lc as in the container: a login shell under Git for
+  // Windows changes to the home directory.
+  // -------------------------------------------------------------------------
+
+  interface PosixShell {
+    name: string;
+    exe: string;
+    pre: string[];
+  }
+
+  const IS_WINDOWS = process.platform === 'win32';
+  const SLOW = 120000;
+
+  function systemPath(): string {
+    return process.env.PATH ?? process.env.Path ?? '';
+  }
+
+  function onPath(file: string): string | null {
+    for (const dir of systemPath().split(path.delimiter)) {
+      if (!dir) continue;
+      const candidate = path.join(dir, file);
+      try {
+        if (fsSync.statSync(candidate).isFile()) return candidate;
+      } catch {
+        // not here
+      }
+    }
+    return null;
+  }
+
+  function gitForWindowsUsrBin(): string | null {
+    const found = spawnSync('git', ['--exec-path'], { encoding: 'utf8', timeout: 15000 });
+    if (found.status !== 0 || !found.stdout) return null;
+    // <root>/mingw64/libexec/git-core
+    const usrBin = path.resolve(found.stdout.trim(), '..', '..', '..', 'usr', 'bin');
+    return fsSync.existsSync(usrBin) ? usrBin : null;
+  }
+
+  const USR_BIN = IS_WINDOWS ? gitForWindowsUsrBin() : null;
+  const HAS_GIT = spawnSync('git', ['--version'], { timeout: 15000 }).status === 0;
+
+  function works(shell: PosixShell): boolean {
+    const probe = spawnSync(shell.exe, [...shell.pre, '-c', 'printf ok'], {
+      encoding: 'utf8',
+      timeout: 15000,
+    });
+    return probe.status === 0 && probe.stdout === 'ok';
+  }
+
+  function findShell(name: string): PosixShell | null {
+    let shell: PosixShell | null = null;
+    if (IS_WINDOWS) {
+      const file = ({ dash: 'dash.exe', bash: 'bash.exe' } as Record<string, string>)[name];
+      const exe = USR_BIN && file ? path.join(USR_BIN, file) : null;
+      shell = exe && fsSync.existsSync(exe) ? { name, exe, pre: [] } : null;
+    } else if (name === 'busybox sh') {
+      const exe = onPath('busybox');
+      shell = exe ? { name, exe, pre: ['sh'] } : null;
+    } else {
+      const exe = onPath(name);
+      shell = exe ? { name, exe, pre: [] } : null;
+    }
+    if (!shell || shell.exe.includes("'") || !works(shell)) return null;
+    return shell;
+  }
+
+  const SHELLS: Array<[string, PosixShell | null]> = ['dash', 'busybox sh', 'bash'].map((name) => [
+    name,
+    findShell(name),
+  ]);
+  const BASH = SHELLS.find(([name]) => name === 'bash')?.[1] ?? null;
+
+  const FAKE_GIT = [
+    '#!/bin/sh',
+    '# Test stand-in: ls-files prints $FAKE_LISTING raw; a diff prints the path it got',
+    '# (or the part before the first dash with FAKE_SHORT), then FAKE_PAD bytes.',
+    'case "$1" in',
+    '  ls-files)',
+    '    if [ -n "$FAKE_LS_FAIL_SECOND" ]; then',
+    '      if [ -f "$FAKE_LS_FAIL_SECOND" ]; then cat "$FAKE_LISTING"; exit 2; fi',
+    '      : >"$FAKE_LS_FAIL_SECOND"',
+    '    fi',
+    '    cat "$FAKE_LISTING"',
+    '    exit 0',
+    '    ;;',
+    'esac',
+    'for last in "$@"; do :; done',
+    'if [ -n "$FAKE_SHORT" ]; then',
+    '  printf \'diff [%s]\\n\' "${last%%-*}"',
+    'else',
+    '  printf \'diff [%s]\\n\' "$last"',
+    'fi',
+    'if [ -n "$FAKE_PAD" ]; then',
+    "  head -c \"$FAKE_PAD\" /dev/zero | tr '\\000' p",
+    "  printf '\\n'",
+    'fi',
+    'case "$last" in',
+    '  *FAIL*) exit 128 ;;',
+    'esac',
+    'exit 1',
+    '',
+  ].join('\n');
+
+  let root = '';
+
+  function slug(text: string): string {
+    return text.replace(/\W+/g, '-');
+  }
+
+  function scratch(name: string): string {
+    const dir = path.join(root, name);
+    fsSync.mkdirSync(dir, { recursive: true });
+    return dir;
+  }
+
+  function writeExecutable(file: string, text: string): void {
+    fsSync.writeFileSync(file, text);
+    fsSync.chmodSync(file, 0o755);
+  }
+
+  /** A bin directory whose `sh` is the shell under test, so the xargs batches run in it too. */
+  function shellBin(shell: PosixShell): string {
+    const dir = scratch(`bin-${slug(shell.name)}`);
+    const exe = shell.exe.split(path.sep).join('/');
+    writeExecutable(
+      path.join(dir, 'sh'),
+      [
+        '#!/bin/sh',
+        '[ -z "$AISB_SH_LOG" ] || echo batch >>"$AISB_SH_LOG"',
+        `exec '${exe}' ${shell.pre.join(' ')} "$@"`,
+        '',
+      ].join('\n'),
+    );
+    return dir;
+  }
+
+  function fakeGitBin(): string {
+    const dir = scratch('fake-git');
+    writeExecutable(path.join(dir, 'git'), FAKE_GIT);
+    return dir;
+  }
+
+  function run(
+    shell: PosixShell,
+    script: string,
+    cwd: string,
+    env: Record<string, string>,
+    binDirs: string[],
+  ): { status: number | null; stdout: Buffer; stderr: string } {
+    const base: Record<string, string> = {};
+    for (const [key, value] of Object.entries(process.env)) {
+      if (key.toUpperCase() !== 'PATH' && value !== undefined) base[key] = value;
+    }
+    const result = spawnSync(shell.exe, [...shell.pre, '-c', script], {
+      cwd,
+      env: {
+        ...base,
+        GIT_CEILING_DIRECTORIES: os.tmpdir(),
+        ...env,
+        PATH: [...binDirs, ...(USR_BIN ? [USR_BIN] : []), systemPath()].join(path.delimiter),
+      },
+      timeout: SLOW,
+      maxBuffer: 16 * 1024 * 1024,
+    });
+    return { status: result.status, stdout: result.stdout, stderr: String(result.stderr) };
+  }
+
+  /** What the script prints for the stand-in git: every kept path's output, cut at the budget. */
+  function expectedFake(names: Buffer[], budget: number, pad = 0, short = false): Buffer {
+    const parts: Buffer[] = [];
+    for (const name of names) {
+      if (name.includes('FAIL')) continue;
+      const shown = short
+        ? Buffer.from(`./${name.toString('latin1').split('-')[0]}`, 'latin1')
+        : Buffer.concat([Buffer.from('./'), name]);
+      parts.push(
+        Buffer.concat([
+          Buffer.from('diff ['),
+          shown,
+          Buffer.from(']\n'),
+          pad ? Buffer.from(`${'p'.repeat(pad)}\n`) : Buffer.alloc(0),
+        ]),
+      );
+    }
+    return Buffer.concat(parts).subarray(0, budget);
+  }
+
+  const AWKWARD_NAMES: Buffer[] = [
+    'plain.txt',
+    'a b',
+    "it's",
+    'q"uote',
+    'back\\slash',
+    '$(touch PWNED)',
+    '`touch PWNED2`',
+    '*',
+    '-rf',
+    '--help',
+    '-',
+    'line\nbreak',
+    'trail\n',
+    '\nlead',
+    ' lead space',
+    'trail space ',
+    'tab\there',
+    'cr\rhere',
+    'semi;colon|pipe&amp>x<y',
+    '%s%n%d',
+    "'",
+    '"',
+    '\\',
+    'ünï',
+    'FAIL-skipped',
+    'after-fail',
+  ]
+    .map((name) => Buffer.from(name))
+    .concat([Buffer.from([0xff, 0xfe, 0x41])]);
+
+  function listingOf(names: Buffer[]): Buffer {
+    return Buffer.concat(names.flatMap((name) => [name, Buffer.from([0])]));
+  }
+
+  beforeAll(() => {
+    root = fsSync.mkdtempSync(path.join(os.tmpdir(), 'aisb-untracked-dash-'));
+  });
+
+  afterAll(() => {
+    if (root) fsSync.rmSync(root, { recursive: true, force: true });
+  });
+
+  for (const [name, shell] of SHELLS) {
+    if (!shell) {
+      it.skip(`${name} is not installed here`, () => undefined);
+      continue;
+    }
+
+    describe(`under ${name}`, () => {
+      it(
+        'passes every awkward name to git byte for byte, skips a failing file, runs nothing',
+        () => {
+          const cwd = scratch(`awkward-${slug(name)}`);
+          const listing = path.join(root, `listing-awkward-${slug(name)}.bin`);
+          fsSync.writeFileSync(listing, listingOf(AWKWARD_NAMES));
+          const bins = [shellBin(shell), fakeGitBin()];
+          const env = { DIFF_BUDGET: String(WORKTREE_DIFF_MAX_CHARS + 1), FAKE_LISTING: listing };
+
+          const result = run(shell, WORKTREE_UNTRACKED_DIFF_SCRIPT, cwd, env, bins);
+
+          expect(result.status).toBe(0);
+          expect(result.stdout.equals(expectedFake(AWKWARD_NAMES, WORKTREE_DIFF_MAX_CHARS + 1))).toBe(true);
+          expect(fsSync.readdirSync(cwd)).toEqual([]);
+          if (BASH) {
+            const legacy = run(BASH, LEGACY_BASH_UNTRACKED_SCRIPT, cwd, env, bins);
+            expect(legacy.status).toBe(0);
+            expect(result.stdout.equals(legacy.stdout)).toBe(true);
+          }
+          if (name === 'dash') {
+            // The bug this task fixes: under dash the old script printed nothing and exited 0.
+            const legacy = run(shell, LEGACY_BASH_UNTRACKED_SCRIPT, cwd, env, bins);
+            expect(legacy.status).toBe(0);
+            expect(legacy.stdout.length).toBe(0);
+            expect(legacy.stderr).toMatch(/read/);
+          }
+        },
+        SLOW,
+      );
+
+      it(
+        'carries the budget across xargs batches and cuts the last file at it',
+        () => {
+          const cwd = scratch(`batches-${slug(name)}`);
+          const names = Array.from({ length: 50 }, (_, i) =>
+            Buffer.from(`${String(i).padStart(3, '0')}-${'n'.repeat(8000)}`),
+          );
+          const listing = path.join(root, `listing-batches-${slug(name)}.bin`);
+          fsSync.writeFileSync(listing, listingOf(names));
+          const log = path.join(root, `batches-${slug(name)}.log`);
+          fsSync.writeFileSync(log, '');
+          const pad = 1200;
+          // Each file prints 13 + 1201 bytes; the budget runs out inside the 46th of 50.
+          const budget = 1214 * 45 + 500;
+
+          const result = run(
+            shell,
+            WORKTREE_UNTRACKED_DIFF_SCRIPT,
+            cwd,
+            {
+              DIFF_BUDGET: String(budget),
+              FAKE_LISTING: listing,
+              FAKE_SHORT: '1',
+              FAKE_PAD: String(pad),
+              AISB_SH_LOG: log,
+            },
+            [shellBin(shell), fakeGitBin()],
+          );
+
+          expect(result.status).toBe(0);
+          expect(result.stdout.length).toBe(budget);
+          expect(result.stdout.equals(expectedFake(names, budget, pad, true))).toBe(true);
+          const batches = fsSync.readFileSync(log, 'utf8').split('\n').filter(Boolean).length;
+          expect(batches).toBeGreaterThanOrEqual(2);
+        },
+        SLOW,
+      );
+
+      it(
+        'exits 1 and prints nothing when the listing, xargs or the budget fails',
+        () => {
+          const cwd = scratch(`fail-${slug(name)}`);
+          const listing = path.join(root, `listing-fail-${slug(name)}.bin`);
+          fsSync.writeFileSync(listing, listingOf([Buffer.from('a.txt')]));
+          const bins = [shellBin(shell), fakeGitBin()];
+          const env = { DIFF_BUDGET: '100', FAKE_LISTING: listing };
+
+          const good = run(shell, WORKTREE_UNTRACKED_DIFF_SCRIPT, cwd, env, bins);
+          expect(good.status).toBe(0);
+          expect(good.stdout.toString()).toBe('diff [./a.txt]\n');
+
+          for (const budget of ['', 'x', '-1', '1 2']) {
+            const bad = run(shell, WORKTREE_UNTRACKED_DIFF_SCRIPT, cwd, { ...env, DIFF_BUDGET: budget }, bins);
+            expect({ budget, status: bad.status, out: bad.stdout.length }).toEqual({ budget, status: 1, out: 0 });
+          }
+
+          // The listing fails after the check passed: git's own status comes out through fd 3.
+          const marker = path.join(root, `ls-second-${slug(name)}`);
+          const secondFails = run(
+            shell,
+            WORKTREE_UNTRACKED_DIFF_SCRIPT,
+            cwd,
+            { ...env, FAKE_LS_FAIL_SECOND: marker },
+            bins,
+          );
+          expect(secondFails.status).toBe(1);
+          expect(secondFails.stdout.length).toBe(0);
+
+          // xargs fails (missing, or without -0).
+          const brokenXargs = scratch(`broken-xargs-${slug(name)}`);
+          writeExecutable(
+            path.join(brokenXargs, 'xargs'),
+            '#!/bin/sh\necho "xargs: unknown option -- 0" >&2\nexit 1\n',
+          );
+          const noXargs = run(shell, WORKTREE_UNTRACKED_DIFF_SCRIPT, cwd, env, [brokenXargs, ...bins]);
+          expect(noXargs.status).toBe(1);
+          expect(noXargs.stdout.length).toBe(0);
+
+          // The temporary files are gone.
+          const left = run(shell, 'ls /tmp/aisb-wtd.* 2>/dev/null; exit 0', cwd, {}, bins);
+          expect(left.stdout.toString()).toBe('');
+        },
+        SLOW,
+      );
+
+      const itGit = HAS_GIT ? it : it.skip;
+
+      itGit(
+        'diffs real untracked files with git, skips ignored ones, matches the bash script',
+        () => {
+          const repo = scratch(`repo-${slug(name)}`);
+          expect(spawnSync('git', ['init', '-q'], { cwd: repo, timeout: 30000 }).status).toBe(0);
+          fsSync.mkdirSync(path.join(repo, 'sub dir'));
+          const files: Array<[string, string]> = [
+            ['a b.txt', 'alpha'],
+            ["it's.txt", 'beta'],
+            ['-lead.txt', 'gamma'],
+            ['$(touch PWNED).txt', 'delta'],
+            [path.join('sub dir', 'inner.txt'), 'epsilon'],
+            ['.gitignore', '*.log'],
+          ];
+          for (const [file, content] of files) {
+            fsSync.writeFileSync(path.join(repo, file), `${content}\n`);
+          }
+          // Names Windows refuses; used only where the file system allows them.
+          for (const [file, content] of [
+            ['new\nline.txt', 'zeta'],
+            ['q"uote.txt', 'eta'],
+            ['back\\slash.txt', 'theta'],
+          ] as Array<[string, string]>) {
+            try {
+              fsSync.writeFileSync(path.join(repo, file), `${content}\n`);
+              files.push([file, content]);
+            } catch {
+              // not on this file system
+            }
+          }
+          fsSync.writeFileSync(path.join(repo, 'secret.log'), 'SECRET\n');
+          const bins = [shellBin(shell)];
+          const wide = { DIFF_BUDGET: String(WORKTREE_DIFF_MAX_CHARS + 1) };
+
+          const result = run(shell, WORKTREE_UNTRACKED_DIFF_SCRIPT, repo, wide, bins);
+
+          expect(result.status).toBe(0);
+          const text = result.stdout.toString('utf8');
+          expect(text.match(/^diff --git /gm)).toHaveLength(files.length);
+          for (const [, content] of files) {
+            expect(text).toContain(`\n+${content}\n`);
+          }
+          expect(text).not.toContain('SECRET');
+          expect(fsSync.existsSync(path.join(repo, 'PWNED'))).toBe(false);
+          if (BASH) {
+            const legacy = run(BASH, LEGACY_BASH_UNTRACKED_SCRIPT, repo, wide, bins);
+            expect(legacy.status).toBe(0);
+            expect(result.stdout.equals(legacy.stdout)).toBe(true);
+          }
+
+          // A large new file is cut by head at the budget, exactly as before.
+          fsSync.writeFileSync(path.join(repo, 'big.txt'), `${'z'.repeat(99)}\n`.repeat(3000));
+          const small = { DIFF_BUDGET: '1000' };
+          const cut = run(shell, WORKTREE_UNTRACKED_DIFF_SCRIPT, repo, small, bins);
+          expect(cut.status).toBe(0);
+          expect(cut.stdout.length).toBe(1000);
+          const full = run(shell, WORKTREE_UNTRACKED_DIFF_SCRIPT, repo, wide, bins);
+          expect(full.status).toBe(0);
+          expect(full.stdout.length).toBe(WORKTREE_DIFF_MAX_CHARS + 1);
+          expect(cut.stdout.equals(full.stdout.subarray(0, 1000))).toBe(true);
+          if (BASH) {
+            expect(cut.stdout.equals(run(BASH, LEGACY_BASH_UNTRACKED_SCRIPT, repo, small, bins).stdout)).toBe(true);
+            expect(full.stdout.equals(run(BASH, LEGACY_BASH_UNTRACKED_SCRIPT, repo, wide, bins).stdout)).toBe(true);
+          }
+
+          // Outside a repository the listing check fails: exit 1, nothing printed.
+          const outside = run(shell, WORKTREE_UNTRACKED_DIFF_SCRIPT, scratch(`not-a-repo-${slug(name)}`), wide, bins);
+          expect(outside.status).toBe(1);
+          expect(outside.stdout.length).toBe(0);
+        },
+        SLOW,
+      );
+    });
+  }
 });

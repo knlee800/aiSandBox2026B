@@ -65,6 +65,7 @@ import {
   HISTORY_BUNDLE_CHUNK_COMMAND,
   HISTORY_BUNDLE_SIZE_COMMAND,
   HISTORY_RESTORE_STAGE_COMMAND,
+  WORKTREE_UNTRACKED_DIFF_SCRIPT,
 } from '../git/git.service';
 import { GitController } from '../git/git.controller';
 import { SessionsService } from '../sessions/sessions.service';
@@ -254,6 +255,16 @@ describe('CM-GIT-HOST-01: every checkpoint git path runs inside the container', 
   it('working-tree diff', async () => {
     await service.getWorkingTreeDiff(SESSION_ID, HEAD);
     expectContainerOnly();
+    // CM-UNTRACKED-DASH-01: the untracked listing, its xargs batches and their
+    // git diffs all run in the one container shell; no host path is named.
+    expect(execInContainer).toHaveBeenCalledWith(
+      SESSION_ID,
+      ['sh', '-lc', WORKTREE_UNTRACKED_DIFF_SCRIPT],
+      '/workspace',
+      { DIFF_BUDGET: expect.any(String) },
+    );
+    expect(WORKTREE_UNTRACKED_DIFF_SCRIPT).toContain('xargs -0 sh -c');
+    expect(WORKTREE_UNTRACKED_DIFF_SCRIPT).not.toMatch(/workspaces|_checkpoint-history|[A-Za-z]:\\/);
   });
 
   it('save and restore the history bundle', async () => {

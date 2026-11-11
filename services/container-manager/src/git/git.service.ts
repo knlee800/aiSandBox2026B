@@ -58,7 +58,56 @@ export const WORKTREE_DIFF_TRUNCATED_MARKER = '\n[diff truncated]\n';
 // file from streaming without a bound. Exit 141 is SIGPIPE from that bound.
 // Exit 0 from the whole script means the listing worked; any other exit means
 // the caller keeps the tracked diff and does not fail the route.
-const WORKTREE_UNTRACKED_DIFF_SCRIPT = [
+//
+// CM-UNTRACKED-DASH-01: POSIX sh only (dash, the /bin/sh of the Debian browser
+// image, and busybox ash in the Alpine image, as well as bash). There is no
+// pipefail and no read -d there; the old script used both, so under dash read
+// failed, the loop never ran and untracked files were left out silently.
+//
+// Quoting: a POSIX shell cannot split on NUL, and a path may hold any byte but
+// NUL (spaces, quotes, backslashes, newlines, a leading dash, $( ) and globs).
+// So the shell never parses the listing: `xargs -0` splits git's -z output on
+// NUL and hands each path to `sh -c` as one argv entry, byte for byte; the
+// batch script reads it only as a quoted "$@" item (set -f, never eval'd or
+// re-split) and gives it to git as "./$path" after --, so a leading dash is
+// never an option. xargs may split a long listing into several batches, so
+// the bytes kept so far live in one file ($out) that every batch appends to
+// and measures; the budget and the per-file head -c bound are exactly as
+// before. git's status (and head's, as pipefail would report it) comes out
+// through fd 3, as in boundedDiffCommand. The listing's own status and xargs'
+// status are checked too: either failing exits 1, and nothing is printed
+// unless the whole listing went through.
+export const WORKTREE_UNTRACKED_BATCH_SCRIPT = [
+  'set +e',
+  'set -f',
+  'budget=$1',
+  'out=$2',
+  'tmp=$3',
+  'shift 3',
+  'for path in "$@"; do',
+  '  [ -n "$path" ] || continue',
+  '  remain=$((budget - $(wc -c <"$out")))',
+  '  if [ "$remain" -le 0 ]; then',
+  '    break',
+  '  fi',
+  '  ec=$( { { git --no-pager diff --no-color --no-ext-diff --no-index -- /dev/null "./$path" 2>/dev/null 3>&-; printf "%s" "$?" >&3; } | head -c "$remain" >"$tmp" 3>&-; } 3>&1 )',
+  '  hc=$?',
+  '  [ "$hc" -eq 0 ] || ec=$hc',
+  '  case "$ec" in',
+  '    0|1|141) ;;',
+  '    *) continue ;;',
+  '  esac',
+  '  cat "$tmp" >>"$out"',
+  'done',
+  'exit 0',
+].join('\n');
+
+if (WORKTREE_UNTRACKED_BATCH_SCRIPT.includes("'")) {
+  // It is embedded below in single quotes.
+  throw new Error('WORKTREE_UNTRACKED_BATCH_SCRIPT must not contain a single quote');
+}
+
+export const WORKTREE_UNTRACKED_DIFF_SCRIPT = [
   'set +e',
   'set -f',
   'if ! git ls-files --others --exclude-standard -z >/dev/null 2>&1; then',
@@ -68,25 +117,15 @@ const WORKTREE_UNTRACKED_DIFF_SCRIPT = [
   "  ''|*[!0-9]*) exit 1 ;;",
   'esac',
   'tmp=/tmp/aisb-wtd.$$',
-  "trap 'rm -f \"$tmp\"' EXIT",
-  'emitted=0',
-  "git ls-files --others --exclude-standard -z | while IFS= read -r -d '' path; do",
-  '  [ -n "$path" ] || continue',
-  '  remain=$((DIFF_BUDGET - emitted))',
-  '  if [ "$remain" -le 0 ]; then',
-  '    break',
-  '  fi',
-  '  set -o pipefail',
-  '  git --no-pager diff --no-color --no-ext-diff --no-index -- /dev/null "./$path" 2>/dev/null | head -c "$remain" >"$tmp"',
-  '  ec=$?',
-  '  set +o pipefail',
-  '  case "$ec" in',
-  '    0|1|141) ;;',
-  '    *) continue ;;',
-  '  esac',
-  '  cat "$tmp"',
-  '  emitted=$((emitted + $(wc -c <"$tmp")))',
-  'done',
+  'out=/tmp/aisb-wtd.$$.out',
+  "trap 'rm -f \"$tmp\" \"$out\"' EXIT",
+  ': >"$out" || exit 1',
+  `each='${WORKTREE_UNTRACKED_BATCH_SCRIPT}'`,
+  "listed=$( { { git ls-files --others --exclude-standard -z 2>/dev/null 3>&-; printf '%s' \"$?\" >&3; } | xargs -0 sh -c \"$each\" sh \"$DIFF_BUDGET\" \"$out\" \"$tmp\" >/dev/null 3>&-; } 3>&1 )",
+  'xec=$?',
+  '[ "$listed" = 0 ] || exit 1',
+  '[ "$xec" -eq 0 ] || exit 1',
+  'cat "$out"',
   'exit 0',
 ].join('\n');
 
