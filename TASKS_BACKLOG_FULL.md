@@ -88418,7 +88418,7 @@ taskId=CM-UNTRACKED-DASH-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-11 — under Keith's "do not stop!!! ... keep looking for the next task to start". Was: READY — registered 2026-11-11 by the CM-DIFF-CAP-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-11. LANE-DONE and LOCKED by the control plane; Lane 2 and CONTAINER-MANAGER released. WORKTREE_UNTRACKED_DIFF_SCRIPT rewritten for POSIX sh (no pipefail, no read -d): the listing goes NUL-separated through xargs -0 to a quoted batch script with set -f, the budget is shared across batches, git's exit status is kept through fd 3; byte-identical to the old script under bash; untracked files now show under dash (they were silently missing); 12 new tests incl. real dash and bash runs; opus subagent, cherry-picked as a443762; control-plane rerun on the branch and main: container-manager 731 passed, 3 skipped, build 0. Not deployed (rides STAGING-DEPLOY-FD-02). Checkpoint: docs/CM-UNTRACKED-DASH-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 1 superseded (the check inside both sandbox images, into CHECKPOINT-LIVE-02) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 2 — 2026-11-11 — under Keith's "do not stop!!! ... keep looking for the next task to start". Was: READY — registered 2026-11-11 by the CM-DIFF-CAP-01 LOCK — not admitted.
 **Task ID:** CM-UNTRACKED-DASH-01
 **Title:** Untracked files in the working-tree diff under dash
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -88460,6 +88460,7 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** After STAGING-DEPLOY-FD-02 deploys CM-EXEC-01, no AI runs needed: Keith opens a workspace session, makes a checkpoint, then reopens the project in a new session (history restore now streams the bundle into the container through a hijacked stdin) and sees the same checkpoints and HEAD; the control plane reads the host evidence (no host write into the workspace, the staged file inside the container, restore exit 0). Ideally with a history bundle over 8 MiB.
 **Also (added 2026-11-11 by the CM-BINARY-01 LOCK):** in the same session, open a static HTML preview with an image or font and see it render (binary preview files); the host evidence also shows the checkpoint save stored the bundle from raw slices byte for byte.
+**Also (added 2026-11-11 by the CM-UNTRACKED-DASH-01 LOCK):** in a session on each sandbox image (the default Alpine image and the browser image), create an untracked file and see it in the working-tree diff on the History page.
 ### STAGING-DEPLOY-CMSEC-01 — Deploy the container-manager security fixes
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=STAGING-DEPLOY-CMSEC-01
