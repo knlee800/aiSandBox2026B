@@ -88614,7 +88614,7 @@ taskId=SNAPSHOT-SIZE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-11 — Keith approved ("Yes, fix then deploy"). Was: READY — registered 2026-11-11 by the SNAPSHOT-BINARY-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-11. LANE-DONE and LOCKED by the control plane; Lane 1 and CONTAINER-MANAGER released. container-manager accepts JSON bodies up to 16 MB (useBodyParser in configureApp; the default 100 KB parser is no longer added), so snapshot files up to about 12 MB of binary restore; guards, ValidationPipe, the api prefix and no-CORS unchanged; 13 new real-HTTP tests (1 MB and exactly 16 MB accepted, one byte over is 413, the 2 MB base64 write is byte-exact, no key or a wrong key is still 403); opus subagent, fast-forwarded as f9f3aea; control-plane rerun on the branch and main: container-manager 804 passed, build 0. The gateway axios client has no body limit (axios default). Not deployed. Checkpoint: docs/SNAPSHOT-SIZE-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (CM-BODY-ROUTE-01) / 1 superseded (files over 16 MB of JSON still left out, into SNAPSHOT-NOTICE-01) / 0 dropped / 0 undisposed; the worker's gateway axios question was checked: no limit. Was: ADMITTED — Lane 1 — 2026-11-11 — Keith approved ("Yes, fix then deploy"). Was: READY — registered 2026-11-11 by the SNAPSHOT-BINARY-01 LOCK — not admitted.
 **Task ID:** SNAPSHOT-SIZE-01
 **Title:** Larger files survive a snapshot restore
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -88631,6 +88631,30 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and snapshots).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** From the SNAPSHOT-BINARY-01 LOCK: container-manager uses the Nest default JSON body limit (about 100 KB), so a binary file over about 75 KB (base64) or a text file over about 100 KB is not restored on reopen (listed in failedPaths). Raise the limit for the internal file write route to a bounded value that covers ordinary images and fonts (for example a few MB), keep it internal-only, and test a file just under and over the new limit.
+
+### CM-BODY-ROUTE-01 — Large JSON bodies only on the internal file write route
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CM-BODY-ROUTE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the SNAPSHOT-SIZE-01 LOCK — not admitted.
+**Task ID:** CM-BODY-ROUTE-01
+**Title:** Large JSON bodies only on the internal file write route
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** SNAPSHOT-SIZE-01.
+**Primary write scope:** PROVISIONAL: services/container-manager/src/app-setup.ts, a route-scoped parser for POST /api/internal/sessions/:id/files, and their specs.
+**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and snapshots).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the SNAPSHOT-SIZE-01 worker: Express parses bodies before guards, so a caller without the internal key can make container-manager parse up to 16 MB before the 403 (was 100 KB). The service listens on 127.0.0.1 only, so the exposure is host-local. Narrow it: 16 MB only on the internal file write route, the 100 KB default elsewhere; tests for both.
 
 ### SNAPSHOT-NOTICE-01 — Tell the user which files were not restored
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
