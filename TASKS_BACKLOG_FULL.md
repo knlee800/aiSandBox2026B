@@ -86966,7 +86966,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09 and Stage 4 on 2026-11-10).
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** From the COS-FRONTDOOR-01 stage-start (DECISION C alternative) and the COS-FRONTDOOR-01B worker: when a roster member's step fails or times out, send a report-back carrying the failure so the Chief of Staff can tell the owner (today the run fails with no report-back); and when report-back creation is refused for any reason other than a duplicate, show the owner a note (today only a log line).
-
+**Also (added 2026-11-11 by the USER-TEAMS-01 stage-start approval):** the failed member's report-back applies to a workflow lead (USER-TEAMS-01B) as well as to the Chief of Staff.
 ### COS-ASK-PAGE-01 — A dedicated Ask the Chief of Staff entry
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=COS-ASK-PAGE-01
@@ -86997,26 +86997,99 @@ taskId=USER-TEAMS-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-11 — slice 01A; Keith approved the stage-start ("Yes, approve"). Was: READY — registered 2026-11-09 by GOV-BIZ-AGENT-OPS-PLAN-01 — not admitted.
 **Task ID:** USER-TEAMS-01
 **Title:** User teams and who hands work to whom
 **Workstream:** AGENT (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 4-STEP
-**Start condition:** NOT_READY. Ready when: LOCKED. Keith decides.
+**Start condition:** READY (COS-FRONTDOOR-01 LOCKED; Keith approved the stage-start 2026-11-11). Was: NOT_READY. Ready when: LOCKED. Keith decides.
 **Depends on:** COS-FRONTDOOR-01.
-**Primary write scope:** set at admission.
-**Mutexes / resources:** set at admission.
-**Hot-file leases:** set at admission.
-**Shared contracts:** set at admission.
+**Primary write scope:** slice 01A, set 2026-11-11: services/api-gateway/src/migrations/1806000000000-AddUserAgentTeamColumn.ts, services/api-gateway/src/migrations/__tests__/1806000000000-AddUserAgentTeamColumn.spec.ts, services/api-gateway/src/migrations/__tests__/1805000000000-CreateCollaborationRostersTable.spec.ts, services/api-gateway/src/entities/user-agent.entity.ts, services/api-gateway/src/user-agent/dto/create-agent.dto.ts, services/api-gateway/src/user-agent/dto/update-agent.dto.ts, services/api-gateway/src/user-agent/user-agent.service.ts, services/api-gateway/src/user-agent/__tests__/user-agent.service.spec.ts, services/api-gateway/src/user-agent/user-agent.controller.ts, services/api-gateway/src/user-agent/__tests__/user-agent.controller.spec.ts, services/api-gateway/src/user-agent/user-workflow-rules.ts, services/api-gateway/src/user-agent/__tests__/user-workflow-rules.spec.ts, services/api-gateway/src/orchestration/collaboration-roster.ts, services/api-gateway/src/orchestration/collaboration-roster.spec.ts, services/api-gateway/src/orchestration/collaboration-workflow.ts, services/api-gateway/src/orchestration/collaboration-workflow.spec.ts.
+**Mutexes / resources:** GATEWAY, MIGRATION (slice 01A).
+**Hot-file leases:** none.
+**Shared contracts:** none touched by 01A (orchestration.service.ts and the frozen paths: empty diff); 01B reads HARNESS_ENTITLEMENT_PROOF_V1 without changing it.
 **Evidence class:** LOCAL-TESTS.
-**Revert isolation:** set at admission.
+**Revert isolation:** 01A: migration down (loses teams only); nothing runs a team until 01B.
 **saturationClass:** OPTIONAL (Keith, 2026-11-09).
 **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** User teams and who may hand work to whom (D5, A9 part 7), with report-back.
 **Also (added 2026-11-10 by the COS-FRONTDOOR-01B LOCK):** reuse CollaborationRosterService.membersForStart's validation and the per-child workflow snapshot copy (COS-FRONTDOOR-01B) for user teams.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.2
+**Stage-start (approved 2026-11-11):** docs/USER-TEAMS-01-STAGE-START.md. Keith: a team_member_ids column on user_agents (migration 1806); a test run runs the team; the team is not part of the workflow version; members follow the Chief of Staff roster rule (two advisors and the owner's other workflows, at most 3). Control plane: teamLeadId on pending_job; the 300-character summary cut in 01A (it also fixes a Chief of Staff start with a long workflow description, live today). This task is **01A, team column and validation**; USER-TEAMS-01B (team runs with report-back) and USER-TEAMS-01C (form and Team page) are registered, and USER-TEAMS-LIVE-01 for Keith's live check (stage-start follow-up 2). Implementer: opus.
+
+### USER-TEAMS-01B — User-team runs with report-back
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=USER-TEAMS-01B
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the USER-TEAMS-01 stage-start approval — not admitted.
+**Task ID:** USER-TEAMS-01B
+**Title:** User-team runs with report-back
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP (stage-start shared with USER-TEAMS-01).
+**Start condition:** NOT_READY. Ready when: USER-TEAMS-01 LOCKED; the control plane may start it under Keith's 2026-11-11 approval of the stage-start.
+**Depends on:** USER-TEAMS-01.
+**Primary write scope:** PROVISIONAL, set at admission from the stage-start (expected: services/api-gateway/src/orchestration/ (orchestration.contracts.ts, collaboration-front-door.ts, orchestration.service.ts, collaboration.controller.ts and their specs, orchestration/__tests__ key-set pins)).
+**Mutexes / resources:** set at admission (expected GATEWAY).
+**Hot-file leases:** none.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (as for USER-TEAMS-01; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09 and this stage-start 2026-11-11).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Stage-start docs/USER-TEAMS-01-STAGE-START.md D4 to D16 and the 01B files: teamLeadId on pending_job (server-set, copied with agents); the front-door code takes the lead as a parameter; a workflow start with a team builds the agent list, rosterWorkflows and roster.used/skipped; the report-back child of a workflow lead copies the lead's first-step snapshot; members' tags refused as roster_reply; members' own teams never read at run time; limits unchanged. HARNESS_ENTITLEMENT_PROOF_V1 read, not changed. With an empty team the run is today's run; the Chief of Staff path is unchanged. Implementer: opus.
+
+### USER-TEAMS-01C — User-team form and Team page
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=USER-TEAMS-01C
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the USER-TEAMS-01 stage-start approval — not admitted.
+**Task ID:** USER-TEAMS-01C
+**Title:** User-team form and Team page
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 4-STEP (stage-start shared with USER-TEAMS-01).
+**Start condition:** NOT_READY. Ready when: USER-TEAMS-01 LOCKED; the control plane may start it under Keith's 2026-11-11 approval of the stage-start.
+**Depends on:** USER-TEAMS-01.
+**Primary write scope:** PROVISIONAL, set at admission from the stage-start (expected: frontend/components/platform/ (agent-workflow-fields.tsx, agent-workflow-model.ts, create-agent-form.tsx, agent-workflow-summary.tsx and tests), frontend/components/collaboration/ (collaboration-roster.ts, collaboration-page.tsx, collaboration-workflows.test.tsx), frontend/hooks/useUserAgents.ts, the three message files).
+**Mutexes / resources:** set at admission (expected FRONTEND, I18N).
+**Hot-file leases:** none.
+**Shared contracts:** set at admission.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** set at admission.
+**saturationClass:** OPTIONAL (as for USER-TEAMS-01; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09 and this stage-start 2026-11-11).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** Stage-start docs/USER-TEAMS-01-STAGE-START.md D17 to D20: a Team block under Advanced in the workflow form (checkbox list from teamChoices, count of 3, a fourth tick refused, approval hint), a team line in the summary, the report-back step label for a workflow lead, skipped-member names after a workflow start, copy in three languages. Implementer: sonnet.
+
+### USER-TEAMS-LIVE-01 — Live check: a user workflow with a team
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=USER-TEAMS-LIVE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the USER-TEAMS-01 stage-start approval — not admitted.
+**Task ID:** USER-TEAMS-LIVE-01
+**Title:** Live check: a user workflow with a team
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: STAGING-DEPLOY-FD-02 LOCKED (it deploys USER-TEAMS-01C). Keith decides.
+**Depends on:** USER-TEAMS-01C.
+**Primary write scope:** records; host state.
+**Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** runs off.
+**saturationClass:** OPTIONAL (as for USER-TEAMS-01; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09 and this stage-start 2026-11-11).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Keith, on staging after STAGING-DEPLOY-FD-02, in en, zh-TW and zh-CN: save a team of one advisor and one workflow on a workflow; run it; approve the dispatch and the report-back; the final answer is the lead's and Results shows it; a draft member is skipped with the hint; a workflow with an empty team runs as before; the Chief of Staff front door is unchanged. Implementer: none (Keith live check).
 
 ### APPROVAL-SET-01 — Approval setting per team or workflow
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -87043,7 +87116,7 @@ nature=IMPLEMENTATION
 **writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
 **Scope:** The approval setting per team or workflow (A5, D4, A9 part 8): every hand-off (default), only over a credit amount, or automatic for read-only agents. Nothing that writes, sends or deletes is ever automatic. Depth, agent and daily limits stay.
 **Plan:** docs/AGENT-OPS-PLAN.md section 3.2
-
+**Also (added 2026-11-11 by the USER-TEAMS-01 stage-start approval):** the approval setting is a column beside team_member_ids on user_agents, and the approve path reads it by the run's lead (pending_job.teamLeadId).
 ### COS-DRAFTS-01 — Chief of Staff drafts a workflow the owner approves
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=COS-DRAFTS-01
@@ -88369,7 +88442,7 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL. **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved docs/AGENT-OPS-PLAN.md 2026-11-09).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** Deploy USER-TEAMS-01, APPROVAL-SET-01 and COS-DRAFTS-01 (the rest of Stage 4) after STAGING-DEPLOY-FD-01 deployed the front door.
-
+**Also (added 2026-11-11 by the USER-TEAMS-01 stage-start approval):** a migrating deploy: it carries migration 1806000000000-AddUserAgentTeamColumn (pre-migration backup, new migration hash) and USER-TEAMS-01, -01B and -01C.
 ### FRONTDOOR-LIVE-01 — Live check: Keith gives the Chief of Staff a job; it passes work on and answers with the results
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=FRONTDOOR-LIVE-01
