@@ -88638,22 +88638,22 @@ taskId=CM-BODY-ROUTE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-11 by the SNAPSHOT-SIZE-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-11 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-11 by the SNAPSHOT-SIZE-01 LOCK — not admitted.
 **Task ID:** CM-BODY-ROUTE-01
 **Title:** Large JSON bodies only on the internal file write route
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 2-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (control plane under Keith's 2026-11-10 instruction, 2026-11-11). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** SNAPSHOT-SIZE-01.
-**Primary write scope:** PROVISIONAL: services/container-manager/src/app-setup.ts, a route-scoped parser for POST /api/internal/sessions/:id/files, and their specs.
-**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Primary write scope:** set 2026-11-11: services/container-manager/src/app-setup.ts, services/container-manager/src/main.ts, services/container-manager/src/__tests__/body-limit.http.spec.ts.
+**Mutexes / resources:** CONTAINER-MANAGER.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and snapshots).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** From the SNAPSHOT-SIZE-01 worker: Express parses bodies before guards, so a caller without the internal key can make container-manager parse up to 16 MB before the 403 (was 100 KB). The service listens on 127.0.0.1 only, so the exposure is host-local. Narrow it: 16 MB only on the internal file write route, the 100 KB default elsewhere; tests for both.
 
 ### SNAPSHOT-NOTICE-01 — Tell the user which files were not restored
@@ -88710,22 +88710,22 @@ taskId=SNAPSHOT-PICK-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-11 by the CHECKPOINT-LIVE-02 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-11 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-11 by the CHECKPOINT-LIVE-02 LOCK — not admitted.
 **Task ID:** SNAPSHOT-PICK-01
 **Title:** Reopen restores only a snapshot of the same project
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 2-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (control plane under Keith's 2026-11-10 instruction, 2026-11-11). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** CHECKPOINT-LIVE-02.
-**Primary write scope:** PROVISIONAL: services/api-gateway/src/projects/projects.service.ts and its spec.
-**Mutexes / resources:** set at admission (expected GATEWAY).
+**Primary write scope:** set 2026-11-11: services/api-gateway/src/projects/projects.service.ts, services/api-gateway/src/projects/projects.service.spec.ts.
+**Mutexes / resources:** GATEWAY.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS (then a deploy and Keith's browser check).
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and checkpoints).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** From the CHECKPOINT-LIVE-02 review: ProjectsService.openProjectIntoSession uses args.snapshotId or else the newest snapshot of the user across all projects; the frontend sends a snapshot id only when the user picked one, so reopening project B may restore project A's newest snapshot. Confirm with a test first; then choose only a snapshot whose label names the same project (the frontend's parseProjectIdFromSnapshotLabel rule), or none. Tests for both cases.
 
 ### STAGING-DEPLOY-CMSEC-01 — Deploy the container-manager security fixes
