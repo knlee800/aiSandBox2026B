@@ -88566,7 +88566,7 @@ taskId=SNAPSHOT-BINARY-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-11 — under Keith's "do not stop!!! ... keep looking for the next task to start". Was: READY — registered 2026-11-11 by the CHECKPOINT-LIVE-02 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-11. LANE-DONE and LOCKED by the control plane; Lane 1, GATEWAY and CONTAINER-MANAGER released. Container file writes go through the CM-EXEC-01 stdin exec (only the path in env; text bytes unchanged); the internal write route takes an optional strict base64 encoding; snapshots store binary files as base64 with a marker (text and old snapshots unchanged); a file that cannot be written is reported in failedPaths instead of failing the reopen, and the history restore always runs. 52 new tests; opus subagent, fast-forwarded as 689fc26; control-plane rerun on the branch and main: container-manager 791 passed, gateway 3800 passed (14 known smoke failures), builds 0. Not deployed. Checkpoint: docs/SNAPSHOT-BINARY-01-CHECKPOINT.md. FOLLOWUPS: 4 registered (STAGING-DEPLOY-SNAP-01, SNAPSHOT-SIZE-01, SNAPSHOT-NOTICE-01, ARCHIVE-BINARY-01) / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-11 — under Keith's "do not stop!!! ... keep looking for the next task to start". Was: READY — registered 2026-11-11 by the CHECKPOINT-LIVE-02 LOCK — not admitted.
 **Task ID:** SNAPSHOT-BINARY-01
 **Title:** Binary-safe workspace snapshots so projects with images reopen
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -88583,6 +88583,102 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and checkpoints).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** From the CHECKPOINT-LIVE-02 live check: a project with an image cannot be reopened. SnapshotPersistenceService.collectWorkspaceFiles reads files through the text file-read route and restoreSnapshot writes them through writeSessionFile, whose container-manager writeFileToContainer passes the content in an environment variable to printf (no NUL bytes), so red.png fails with a 500 and the reopen stops before restoreCheckpointHistory. Fix: read binary files with the CM-BINARY-01 base64 opt-in and store the encoding per file (existing text snapshots still restore unchanged); write through a binary-safe path (the CM-EXEC-01 stdin exec, not an env var); one file that cannot be written is reported, not a 500 that skips the history restore. Tests: a PNG and a font round-trip byte for byte; an old snapshot restores as before; a failing file still runs the history restore. Live check after the deploy: Keith reopens a project with an image (his CL2 test project) and sees the image in Preview and his save points in History.
+
+### STAGING-DEPLOY-SNAP-01 — Deploy binary-safe snapshots and Keith reopens a project with an image
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-SNAP-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the SNAPSHOT-BINARY-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-SNAP-01
+**Title:** Deploy binary-safe snapshots and Keith reopens a project with an image
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: SNAPSHOT-BINARY-01 LOCKED (and SNAPSHOT-SIZE-01 if it is ready, in the same deploy). Keith approves the deploy.
+**Depends on:** SNAPSHOT-BINARY-01.
+**Primary write scope:** records; host state (deploy).
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and snapshots).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy main with SNAPSHOT-BINARY-01 to staging from the host with runs off (no migration expected; configuration unchanged). Live check: Keith reopens his CL2 test project (a 70-byte PNG) and sees the red square in Preview and his save point d2 test in History; the host evidence shows no write errors and the checkpoint refs restored.
+
+### SNAPSHOT-SIZE-01 — Larger files survive a snapshot restore
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=SNAPSHOT-SIZE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the SNAPSHOT-BINARY-01 LOCK — not admitted.
+**Task ID:** SNAPSHOT-SIZE-01
+**Title:** Larger files survive a snapshot restore
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** SNAPSHOT-BINARY-01.
+**Primary write scope:** PROVISIONAL: services/container-manager/src/app-setup.ts (body size limit for the internal file write route) and its spec.
+**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and snapshots).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the SNAPSHOT-BINARY-01 LOCK: container-manager uses the Nest default JSON body limit (about 100 KB), so a binary file over about 75 KB (base64) or a text file over about 100 KB is not restored on reopen (listed in failedPaths). Raise the limit for the internal file write route to a bounded value that covers ordinary images and fonts (for example a few MB), keep it internal-only, and test a file just under and over the new limit.
+
+### SNAPSHOT-NOTICE-01 — Tell the user which files were not restored
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=SNAPSHOT-NOTICE-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the SNAPSHOT-BINARY-01 LOCK — not admitted.
+**Task ID:** SNAPSHOT-NOTICE-01
+**Title:** Tell the user which files were not restored
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** SNAPSHOT-BINARY-01.
+**Primary write scope:** PROVISIONAL: the gateway project open response (failed file paths) and the workspace page notice; the three message files.
+**Mutexes / resources:** set at admission (expected GATEWAY, FRONTEND, I18N).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and snapshots).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the SNAPSHOT-BINARY-01 LOCK: restoreSnapshot now returns failedPaths and the reopen succeeds without them, but the user is not told. Return the failed paths from the project open (and the manual restore) and show a short translated notice naming them, in en, zh-TW and zh-CN.
+
+### ARCHIVE-BINARY-01 — Binary-safe zip export and import
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=ARCHIVE-BINARY-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the SNAPSHOT-BINARY-01 LOCK — not admitted.
+**Task ID:** ARCHIVE-BINARY-01
+**Title:** Binary-safe zip export and import
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** SNAPSHOT-BINARY-01.
+**Primary write scope:** PROVISIONAL: services/api-gateway/src/snapshots/workspace-archive.service.ts and its spec.
+**Mutexes / resources:** set at admission (expected GATEWAY).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and snapshots).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the SNAPSHOT-BINARY-01 worker: workspace-archive.service.ts (zip export and import) still reads and writes files as text, so images and fonts are mangled. Reuse the base64 read and write added by SNAPSHOT-BINARY-01; tests that a PNG round-trips through export and import byte for byte.
 
 ### SNAPSHOT-PICK-01 — Reopen restores only a snapshot of the same project
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
