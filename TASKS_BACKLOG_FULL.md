@@ -88662,22 +88662,22 @@ taskId=CM-BODY-KEY-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-11 by the CM-BODY-ROUTE-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 2 — 2026-11-11 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-11 by the CM-BODY-ROUTE-01 LOCK — not admitted.
 **Task ID:** CM-BODY-KEY-01
 **Title:** Check the internal key before parsing a large file write body
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 2-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (control plane under Keith's 2026-11-10 instruction, 2026-11-11). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** CM-BODY-ROUTE-01.
-**Primary write scope:** PROVISIONAL: services/container-manager/src/app-setup.ts and the body-limit spec.
-**Mutexes / resources:** set at admission (expected CONTAINER-MANAGER).
+**Primary write scope:** set 2026-11-11: services/container-manager/src/app-setup.ts, services/container-manager/src/__tests__/body-limit.http.spec.ts.
+**Mutexes / resources:** CONTAINER-MANAGER.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and snapshots).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** From the CM-BODY-ROUTE-01 worker: the internal file write route still parses up to 16 MB before its guard answers 403 to a caller without the key (host-local callers only). Option: let the large parser run only when the internal key header is valid (constant-time compare, same source as the guard), so a keyless request gets the 100 KB parser or a 403 first; the guard stays the authority. Touches the internal key: opus, tests for the key, no key and a wrong key.
 
 ### STAGING-DEPLOY-SNAP-02 — Deploy the snapshot pick and the route-scoped body limit
@@ -88734,22 +88734,22 @@ taskId=ARCHIVE-BINARY-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-11 by the SNAPSHOT-BINARY-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-11 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-11 by the SNAPSHOT-BINARY-01 LOCK — not admitted.
 **Task ID:** ARCHIVE-BINARY-01
 **Title:** Binary-safe zip export and import
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 2-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (control plane under Keith's 2026-11-10 instruction, 2026-11-11). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** SNAPSHOT-BINARY-01.
-**Primary write scope:** PROVISIONAL: services/api-gateway/src/snapshots/workspace-archive.service.ts and its spec.
-**Mutexes / resources:** set at admission (expected GATEWAY).
+**Primary write scope:** set 2026-11-11: services/api-gateway/src/snapshots/workspace-archive.service.ts, services/api-gateway/src/snapshots/workspace-archive.service.spec.ts.
+**Mutexes / resources:** GATEWAY.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and snapshots).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** From the SNAPSHOT-BINARY-01 worker: workspace-archive.service.ts (zip export and import) still reads and writes files as text, so images and fonts are mangled. Reuse the base64 read and write added by SNAPSHOT-BINARY-01; tests that a PNG round-trips through export and import byte for byte.
 
 ### SNAPSHOT-PICK-01 — Reopen restores only a snapshot of the same project
