@@ -87125,7 +87125,7 @@ taskId=APPROVAL-SET-01B
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-11. Was: READY — registered 2026-11-11 by the APPROVAL-SET-01 stage-start approval — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-11. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY released. Slice 01B: maybeAutoApprove after createPendingReferral in the dispatch and report-back paths of workflow-led team runs only, fail-closed (eligible only for the two read advisors and workflows with their own snapshot whose connector tools are all readOnly; credits mode from the owner's last completed step cost, owner-scoped and bounded to 200 runs, unknown waits); approval through the existing approveReferral with decidedBy owner and decisionReason auto:...; waiting reasons in pending_job.autoApproval with an audit event; autoApproved and autoApprovalWaiting on the handoff view; HARNESS_ENTITLEMENT_PROOF_V1 used, not changed (key sets pinned); 25 new tests; opus subagent, cherry-picked as dceaf2d and 9dad768; control-plane rerun on the branch and main: gateway 3749 passed (14 known smoke failures), build 0. Not deployed. ARCHITECTURE.md 13.1: approval-settings row added. Checkpoint: docs/APPROVAL-SET-01B-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-11. Was: READY — registered 2026-11-11 by the APPROVAL-SET-01 stage-start approval — not admitted.
 **Task ID:** APPROVAL-SET-01B
 **Title:** The server auto-approve path
 **Workstream:** AGENT (taxonomy only; zero admission weight)
