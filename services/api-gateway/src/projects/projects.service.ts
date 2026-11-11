@@ -198,6 +198,30 @@ export class ProjectsService {
     return { projectId: args.projectId, sessionId: args.sessionId };
   }
 
+  /**
+   * Project id of a project-scoped snapshot label, or null. Mirrors
+   * parseProjectScopedSnapshotLabelParts in
+   * frontend/components/workspace/workspace-snapshots.logic.ts: the label is
+   * trimmed, must be `[project-id:<id>...]`, and the id runs up to the first
+   * `:name:` or `:source:` separator and is trimmed; an empty id is null.
+   */
+  private static parseProjectIdFromSnapshotLabel(label: string | null | undefined): string | null {
+    if (!label) {
+      return null;
+    }
+    const trimmed = label.trim();
+    const prefix = '[project-id:';
+    if (!trimmed.startsWith(prefix) || !trimmed.endsWith(']')) {
+      return null;
+    }
+    const body = trimmed.slice(prefix.length, trimmed.length - 1);
+    const nameIndex = body.indexOf(':name:');
+    const sourceIndex = body.indexOf(':source:');
+    const firstSeparatorIndex = nameIndex >= 0 ? nameIndex : sourceIndex;
+    const projectId = (firstSeparatorIndex >= 0 ? body.slice(0, firstSeparatorIndex) : body).trim();
+    return projectId || null;
+  }
+
   async openProjectIntoSession(args: {
     userId: string;
     projectId: string;
@@ -208,8 +232,15 @@ export class ProjectsService {
     sessionId: string;
     restoredSnapshotId: string | null;
   }> {
+    // SNAPSHOT-PICK-01: without an explicit snapshot id, restore only the
+    // newest snapshot labelled for this project (listSnapshots is newest
+    // first); never another project's files.
     const snapshotIdToRestore =
-      args.snapshotId ?? (await this.snapshotPersistenceService.listSnapshots(args.userId))[0]?.id;
+      args.snapshotId ??
+      (await this.snapshotPersistenceService.listSnapshots(args.userId)).find(
+        (snapshot) =>
+          ProjectsService.parseProjectIdFromSnapshotLabel(snapshot.label) === args.projectId.trim(),
+      )?.id;
 
     await this.associateSessionWithProject({
       userId: args.userId,

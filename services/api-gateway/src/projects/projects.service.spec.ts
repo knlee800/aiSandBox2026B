@@ -468,14 +468,14 @@ describe('ProjectsService (PR-03-01)', () => {
       {
         id: 'snapshot-latest',
         userId: 'user-1',
-        label: null,
+        label: '[project-id:project-1:source:manual]',
         createdAt: '2026-04-06T00:00:00.000Z',
         fileCount: 1,
       },
       {
         id: 'snapshot-older',
         userId: 'user-1',
-        label: null,
+        label: '[project-id:project-1:source:manual]',
         createdAt: '2026-04-05T00:00:00.000Z',
         fileCount: 1,
       },
@@ -686,6 +686,106 @@ describe('ProjectsService (PR-03-01)', () => {
       projectId: 'project-1',
       sessionId: 'session-1',
       restoredSnapshotId: 'snapshot-1',
+    });
+  });
+
+  describe('SNAPSHOT-PICK-01: default snapshot is scoped to the project', () => {
+    const snap = (id: string, label: string | null, createdAt: string) => ({
+      id,
+      userId: 'user-1',
+      label,
+      createdAt,
+      fileCount: 1,
+    });
+    const open = (snapshotId?: string) =>
+      service.openProjectIntoSession({
+        userId: 'user-1',
+        projectId: 'project-B',
+        sessionId: 'session-1',
+        snapshotId,
+      });
+
+    beforeEach(() => {
+      mockOpenableSession();
+      snapshotPersistenceService.restoreSnapshot.mockResolvedValue({
+        failedPaths: [],
+      });
+    });
+
+    it('restores this project older snapshot when the newest belongs to another project', async () => {
+      snapshotPersistenceService.listSnapshots.mockResolvedValue([
+        snap('snap-a-new', '[project-id:project-A:source:manual]', '2026-04-06T00:00:00.000Z'),
+        snap(
+          'snap-b-old',
+          '[project-id:project-B:source:auto:hint:x]',
+          '2026-04-05T00:00:00.000Z',
+        ),
+        snap('snap-b-older', '[project-id:project-B:name:Mine]', '2026-04-04T00:00:00.000Z'),
+      ]);
+
+      const result = await open();
+
+      expect(snapshotPersistenceService.restoreSnapshot).toHaveBeenCalledTimes(1);
+      expect(snapshotPersistenceService.restoreSnapshot).toHaveBeenCalledWith({
+        userId: 'user-1',
+        sessionId: 'session-1',
+        snapshotId: 'snap-b-old',
+      });
+      expect(result.restoredSnapshotId).toBe('snap-b-old');
+    });
+
+    it('restores no snapshot but still restores checkpoint history when none belongs to this project', async () => {
+      snapshotPersistenceService.listSnapshots.mockResolvedValue([
+        snap('snap-a', '[project-id:project-A:source:manual]', '2026-04-06T00:00:00.000Z'),
+      ]);
+
+      const result = await open();
+
+      expect(snapshotPersistenceService.restoreSnapshot).not.toHaveBeenCalled();
+      expect(result.restoredSnapshotId).toBeNull();
+      expect(containerManagerHttpClient.restoreCheckpointHistory).toHaveBeenCalledWith(
+        'session-1',
+        'project-B',
+      );
+    });
+
+    it('never chooses labels without a project id or malformed labels', async () => {
+      snapshotPersistenceService.listSnapshots.mockResolvedValue([
+        snap('null-label', null, '2026-04-09T00:00:00.000Z'),
+        snap('plain', 'my backup', '2026-04-08T00:00:00.000Z'),
+        snap('empty-id', '[project-id::source:manual]', '2026-04-07T00:00:00.000Z'),
+        snap('no-suffix', '[project-id:project-B:source:manual', '2026-04-06T00:00:00.000Z'),
+        snap('no-prefix', 'project-id:project-B]', '2026-04-05T00:00:00.000Z'),
+        snap('prefix-match', '[project-id:project-B2:source:manual]', '2026-04-04T00:00:00.000Z'),
+      ]);
+
+      const result = await open();
+
+      expect(snapshotPersistenceService.restoreSnapshot).not.toHaveBeenCalled();
+      expect(result.restoredSnapshotId).toBeNull();
+    });
+
+    it('matches the project id the way the frontend does (trimmed, case-sensitive)', async () => {
+      snapshotPersistenceService.listSnapshots.mockResolvedValue([
+        snap('upper', '[project-id:PROJECT-B:source:manual]', '2026-04-07T00:00:00.000Z'),
+        snap('spaced', '  [project-id: project-B :source:manual]  ', '2026-04-06T00:00:00.000Z'),
+      ]);
+
+      const result = await open();
+
+      expect(result.restoredSnapshotId).toBe('spaced');
+    });
+
+    it('uses an explicit snapshotId unchanged even when it belongs to another project', async () => {
+      const result = await open('snap-a-explicit');
+
+      expect(snapshotPersistenceService.listSnapshots).not.toHaveBeenCalled();
+      expect(snapshotPersistenceService.restoreSnapshot).toHaveBeenCalledWith({
+        userId: 'user-1',
+        sessionId: 'session-1',
+        snapshotId: 'snap-a-explicit',
+      });
+      expect(result.restoredSnapshotId).toBe('snap-a-explicit');
     });
   });
 
