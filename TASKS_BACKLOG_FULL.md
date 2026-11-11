@@ -85674,7 +85674,7 @@ nature=GOVERNANCE
 **Mutexes / resources:** GOVERNANCE.
 **Holds:** (1) PRD.md line 625's office note says "approved FUTURE; not current; not scheduled" while OFFICE-01, OFFICE-05, OFFICE-06 and OFFICE-07 are built and the first slices are live on staging: Keith decides how PRD.md classifies the office now. (2) ARCHITECTURE.md section 2 keeps the principle "no cron / no platform schedulers" while the gateway runs a 5-minute in-process CollaborationSweepWorker (stated in section 15) and TRIGGER-01 plans schedules: Keith decides whether the principle is reworded.
 **Also (added 2026-11-10, Keith, 2026-11-10, RPG office review window):** fold in the office decisions, in Keith's words: the office is an isometric 16-bit scene in our own art (the reference picture is mood only; no outside assets; AI exploration plus hand-redrawn final pieces with provenance notes); the characters walk, as decoration only, and agent status still comes from server data; the first release is one fixed room; a user-built office and selling paid pieces are later features (OFFICE-BUILD-01, OFFICE-SHOP-01). This means reclassifying PRD.md line 482 ("RPG walking-town / moving-character simulation ... not the current or next committed product"), which OFFICE-SCENE-01 waits for. PRD.md is not edited until this task runs.
-
+**Also (added 2026-11-11 by the USER-TEAMS-01B LOCK):** PRD.md wording for the Chief of Staff front door (deployed to staging 537ebfb, Keith's live check FRONTDOOR-LIVE-01 passed: moves from APPROVED FUTURE to GATED; this was due at the FRONTDOOR-LIVE-01 lock and missed there) and for user teams (USER-TEAMS-01, -01B, -01C built, not deployed: stays APPROVED FUTURE until USER-TEAMS-LIVE-01). ARCHITECTURE.md 13.1 already carries both rows.
 ### COLLAB-GATE-TESTS-01 — Validation gate: no writer-to-reviewer approval on failing or missing tests
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=COLLAB-GATE-TESTS-01
@@ -87025,7 +87025,7 @@ taskId=USER-TEAMS-01B
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-11. Was: READY — registered 2026-11-11 by the USER-TEAMS-01 stage-start approval — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-11. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY released. Slice 01B: teamLeadId on pending_job (server-set on the first hand-off, inherited by children), the front-door mechanics with the lead as a parameter, a workflow start with its team (labelled list, rosterWorkflows, roster used/skipped; an empty team is today's run byte for byte), the report-back child of a workflow lead with the lead's own snapshot, only the lead hands off, 2 rounds; HARNESS_ENTITLEMENT_PROOF_V1 used, not changed (key sets pinned); 19 new tests; opus subagent, cherry-picked as e468bce; control-plane rerun on the branch and main: gateway 3601 passed (14 known smoke failures), build 0; frozen-path diff empty. User teams (01, 01B, 01C) built, not deployed. ARCHITECTURE.md 13.1: user-teams row added, front-door row set to STAGING. Checkpoint: docs/USER-TEAMS-01B-CHECKPOINT.md. FOLLOWUPS: 0 registered / 1 superseded (the PRD.md wording for the front door, missed at the FRONTDOOR-LIVE-01 lock, and for user teams, into GOV-PRD-SYNC-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-11. Was: READY — registered 2026-11-11 by the USER-TEAMS-01 stage-start approval — not admitted.
 **Task ID:** USER-TEAMS-01B
 **Title:** User-team runs with report-back
 **Workstream:** AGENT (taxonomy only; zero admission weight)
