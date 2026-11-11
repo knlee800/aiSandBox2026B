@@ -752,7 +752,7 @@
       "instructionsCounterNote": "Counts your text and the platform rules that are added to every workflow.",
       "instructionsCounterNoteNew": "The platform rules that are added to every workflow count too. The exact number shows after you save.",
       "sectionAccess": "Access",
-      "sectionAdvanced": "Advanced: model and budget",
+      "sectionAdvanced": "Advanced: model, budget and team",
       "knowledgeLabel": "Knowledge folders",
       "knowledgeHint": "Tick the folders this workflow may read.",
       "connectorsLabel": "Connected tools",
@@ -814,7 +814,10 @@
         "connectionMissing": "Connect this account on the Connections page before you add its tool.",
         "modelInvalid": "This model is not available. Choose another one.",
         "budgetInvalid": "The budget is not valid. Use whole numbers, and keep the daily budget at or above the per-run budget.",
-        "templateNotAllowed": "This template cannot be copied. Choose another way to start."
+        "templateNotAllowed": "This template cannot be copied. Choose another way to start.",
+        "teamTooMany": "A team can have at most 3 members. Untick one and save again.",
+        "teamMemberRefused": "One of the team members cannot be used. Untick it and save again.",
+        "teamMemberSelf": "A workflow cannot be on its own team. Untick it and save again."
       },
       "summary": {
         "title": "Workflow summary",
@@ -847,7 +850,24 @@
         "usageLine": "Last run: {last}. Spent today: {spent}.",
         "usageNoRun": "no run yet",
         "usageLoading": "Loading last run and spend...",
-        "usageFailed": "Could not load last run and spend."
+        "usageFailed": "Could not load last run and spend.",
+        "team": "Team",
+        "teamNone": "None"
+      },
+      "teamLabel": "Team",
+      "teamHint": "Agents this workflow can hand work to. Pick up to 3: the two advisors and your other workflows.",
+      "teamApprovalHint": "Every hand-off waits for your approval before it runs, and each member reports back to this workflow.",
+      "teamCount": "{count} of {max} picked",
+      "teamLimit": "You can pick at most {max} agents. Untick one first.",
+      "teamEmpty": "No other agents to pick yet.",
+      "teamKindSystem": "Advisor",
+      "teamKindWorkflow": "Your workflow",
+      "teamNoteDraft": "still a draft, test it first",
+      "teamNoteOff": "switched off",
+      "teamUnknown": "An agent that is no longer available",
+      "teamNames": {
+        "product-strategy": "Product Strategy",
+        "technology-advisor": "Technology Advisor"
       }
     }
   },
@@ -1335,7 +1355,8 @@
     "rosterSkippedHint": "These agents were left out of this run: {members}.",
     "rosterSkippedItem": "{name} ({reason})",
     "reportBackStep": "{source} → {target} (report-back)",
-    "reportBackNoEdit": "The system wrote this step from your task and the agent’s answer, so it cannot be edited. Approve it or reject it."
+    "reportBackNoEdit": "The system wrote this step from your task and the agent’s answer, so it cannot be edited. Approve it or reject it.",
+    "reportBackStepLead": "{agent} → {lead} (report-back)"
   },
   "office": {
     "title": "Office",

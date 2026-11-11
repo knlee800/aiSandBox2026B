@@ -46,7 +46,12 @@ export interface WorkflowDraft {
   modelChoice: string;
   budgetPerRun: string;
   budgetPerDay: string;
+  /** USER-TEAMS-01: the ticked team members, in order; at most WORKFLOW_TEAM_MAX. */
+  teamMemberIds: string[];
 }
+
+/** At most three members; the workflow itself is the lead. Same limit as the Chief of Staff roster. */
+export const WORKFLOW_TEAM_MAX = 3;
 
 export function emptyWorkflowDraft(): WorkflowDraft {
   return {
@@ -63,6 +68,7 @@ export function emptyWorkflowDraft(): WorkflowDraft {
     modelChoice: 'server',
     budgetPerRun: '',
     budgetPerDay: '',
+    teamMemberIds: [],
   };
 }
 
@@ -105,6 +111,7 @@ export function workflowDraftFromAgent(agent: UserAgent): WorkflowDraft {
     modelChoice: agent.model?.choice === 'platform' ? agent.model.id : 'server',
     budgetPerRun: agent.budgetPerRunCredits == null ? '' : String(agent.budgetPerRunCredits),
     budgetPerDay: agent.budgetPerDayCredits == null ? '' : String(agent.budgetPerDayCredits),
+    teamMemberIds: [...(agent.teamMemberIds ?? [])],
   };
 }
 
@@ -226,6 +233,8 @@ export function buildBlankBody(draft: WorkflowDraft): CreateAgentDto {
   const perDay = parseBudgetInput(draft.budgetPerDay);
   if (perRun !== null && !Number.isNaN(perRun)) body.budgetPerRunCredits = perRun;
   if (perDay !== null && !Number.isNaN(perDay)) body.budgetPerDayCredits = perDay;
+  // A blank create with no team stays byte-compatible; the team goes only when one is ticked.
+  if (draft.teamMemberIds.length > 0) body.teamMemberIds = [...draft.teamMemberIds];
   return body;
 }
 
@@ -262,6 +271,8 @@ export function buildPatchBody(draft: WorkflowDraft): UpdateAgentDto {
     model: buildModel(draft.modelChoice),
     budgetPerRunCredits: perRun === null || Number.isNaN(perRun) ? null : perRun,
     budgetPerDayCredits: perDay === null || Number.isNaN(perDay) ? null : perDay,
+    // Always sent, so an emptied team saves as [].
+    teamMemberIds: [...draft.teamMemberIds],
   };
 }
 
@@ -280,6 +291,7 @@ export type WorkflowErrorField =
   | 'budgetPerRun'
   | 'budgetPerDay'
   | 'budget'
+  | 'team'
   | 'start'
   | 'form';
 
@@ -317,6 +329,7 @@ export function checkWorkflowDraft(input: DraftCheckInput): WorkflowErrors {
     if (problems.includes('perRunInvalid')) errors.budgetPerRun = WORKFLOW_ERROR_KEYS.budgetPerRunInvalid;
     if (problems.includes('perDayInvalid')) errors.budgetPerDay = WORKFLOW_ERROR_KEYS.budgetPerDayInvalid;
     if (problems.includes('order')) errors.budgetPerDay = WORKFLOW_ERROR_KEYS.budgetOrder;
+    if (draft.teamMemberIds.length > WORKFLOW_TEAM_MAX) errors.team = 'errors.teamTooMany';
   }
   return errors;
 }
@@ -340,14 +353,29 @@ export const REFUSAL_CODE_MAP: Readonly<Record<string, RefusalMapping>> = {
   MODEL_INVALID: { field: 'model', messageKey: 'errors.modelInvalid' },
   BUDGET_INVALID: { field: 'budget', messageKey: 'errors.budgetInvalid' },
   TEMPLATE_NOT_ALLOWED: { field: 'start', messageKey: 'errors.templateNotAllowed' },
+  // USER-TEAMS-01: the team rule is the Chief of Staff roster rule, so its codes come back as ROSTER_*.
+  ROSTER_TOO_MANY: { field: 'team', messageKey: 'errors.teamTooMany' },
+  ROSTER_DUPLICATE: { field: 'team', messageKey: 'errors.teamMemberRefused' },
+  ROSTER_INVALID_BODY: { field: 'team', messageKey: 'errors.teamMemberRefused' },
+  ROSTER_MEMBER_UNKNOWN: { field: 'team', messageKey: 'errors.teamMemberRefused' },
+  ROSTER_MEMBER_NOT_ALLOWED: { field: 'team', messageKey: 'errors.teamMemberRefused' },
+  ROSTER_MEMBER_NOT_FOUND: { field: 'team', messageKey: 'errors.teamMemberRefused' },
+  ROSTER_MEMBER_SELF: { field: 'team', messageKey: 'errors.teamMemberSelf' },
 };
 
 /** Any other failure (network, 500, a 400 without a known code) gets the generic message. */
 export const GENERIC_REFUSAL: RefusalMapping = { field: 'form', messageKey: WORKFLOW_ERROR_KEYS.generic };
 
-export function mapRefusal(code: string | undefined): RefusalMapping {
+/**
+ * `message` is the gateway's text for a 400 without a code: the DTO's refusal of a
+ * fourth team id (class-validator names `teamMemberIds`) reads as the team limit.
+ */
+export function mapRefusal(code: string | undefined, message?: string): RefusalMapping {
   if (code && Object.prototype.hasOwnProperty.call(REFUSAL_CODE_MAP, code)) {
     return REFUSAL_CODE_MAP[code];
+  }
+  if (!code && message && /teamMemberIds/.test(message)) {
+    return { field: 'team', messageKey: 'errors.teamTooMany' };
   }
   return GENERIC_REFUSAL;
 }
@@ -415,6 +443,88 @@ export function fillTemplate(text: string, values: Record<string, string | numbe
   return text.replace(/\{(\w+)\}/g, (match, key: string) =>
     Object.prototype.hasOwnProperty.call(values, key) ? String(values[key]) : match,
   );
+}
+
+/**
+ * Ticks or unticks a team member. A fourth tick is refused: the list stays as it was
+ * and `limitHit` is true so the form can say why (the roster picker's rule).
+ */
+export function toggleTeamMember(
+  ids: readonly string[],
+  id: string,
+  max: number = WORKFLOW_TEAM_MAX,
+): { ids: string[]; limitHit: boolean } {
+  if (ids.includes(id)) return { ids: ids.filter((item) => item !== id), limitHit: false };
+  if (ids.length >= max) return { ids: [...ids], limitHit: true };
+  return { ids: [...ids, id], limitHit: false };
+}
+
+export interface TeamChoiceRow {
+  id: string;
+  name: string;
+  kind: 'system' | 'workflow';
+  /** A draft or switched-off workflow can be saved on the team, but it is skipped at start. */
+  note: 'draft' | 'off' | null;
+}
+
+/**
+ * The rows of the Team block: every choice except the row being edited, then any saved
+ * member that is no longer a choice (name ''), so the owner can untick it.
+ */
+export function teamChoiceRows(
+  options: Pick<UserAgentOptions, 'teamChoices'>,
+  selectedIds: readonly string[],
+  selfId: string | null,
+): TeamChoiceRow[] {
+  const own = selfId === null ? null : selfId.toLowerCase();
+  const rows: TeamChoiceRow[] = [];
+  for (const choice of options.teamChoices ?? []) {
+    if (own !== null && choice.id.toLowerCase() === own) continue;
+    rows.push({
+      id: choice.id,
+      name: choice.name,
+      kind: choice.kind,
+      note:
+        choice.kind !== 'workflow' || choice.status === 'active'
+          ? null
+          : choice.status === 'draft'
+            ? 'draft'
+            : 'off',
+    });
+  }
+  const known = new Set(rows.map((row) => row.id));
+  for (const id of selectedIds) {
+    if (!known.has(id)) rows.push({ id, name: '', kind: 'workflow', note: null });
+  }
+  return rows;
+}
+
+/** The two advisors a team may hold; their names are translated, not read from the server. */
+export const TEAM_SYSTEM_MEMBER_IDS: readonly string[] = ['product-strategy', 'technology-advisor'];
+
+/** The name shown for a team member: a translated advisor name, the workflow's own name, or the unknown text. */
+export function teamMemberName(
+  t: (key: string) => string,
+  member: { id: string; kind: 'system' | 'workflow'; name: string },
+): string {
+  if (member.kind === 'system' && TEAM_SYSTEM_MEMBER_IDS.includes(member.id)) {
+    return t(`teamNames.${member.id}`);
+  }
+  return member.name.trim() !== '' ? member.name : t('teamUnknown');
+}
+
+/** The names of a saved team, in order, for the summary line. */
+export function teamNamesFor(
+  t: (key: string) => string,
+  ids: readonly string[],
+  choices: UserAgentOptions['teamChoices'],
+): string[] {
+  return ids.map((id) => {
+    const choice = (choices ?? []).find((entry) => entry.id.toLowerCase() === id.toLowerCase());
+    if (choice) return teamMemberName(t, choice);
+    if (TEAM_SYSTEM_MEMBER_IDS.includes(id)) return t(`teamNames.${id}`);
+    return t('teamUnknown');
+  });
 }
 
 export function toggleId(ids: readonly string[], id: string): string[] {

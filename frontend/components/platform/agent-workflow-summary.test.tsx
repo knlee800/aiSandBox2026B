@@ -498,7 +498,7 @@ describe('summary copy in three languages', () => {
       'budgetPerRun', 'budgetPerDay', 'noLimit', 'creditsOne', 'creditsMany', 'testedYes', 'testedNo',
       'switchLabel', 'switchOn', 'switchOff', 'needsTestHint', 'openOnTeam', 'switchOffTitle', 'switchOffBody',
       'switchOffConfirm', 'switchOffCancel', 'switching', 'switchError', 'usageLine', 'usageNoRun',
-      'usageLoading', 'usageFailed',
+      'usageLoading', 'usageFailed', 'team', 'teamNone',
     ];
     for (const key of used) {
       for (const messages of [enMessages, zhTwMessages, zhCnMessages]) {
@@ -668,5 +668,46 @@ describe('WORKFLOW-STATUS-02 the Draft badge', () => {
       getStatusBadgeClasses(status),
     );
     assert.equal(new Set(classes).size, 4);
+  });
+});
+
+describe('USER-TEAMS-01C the team line', () => {
+  const WF_A = 'f0f0f0f0-0000-4000-8000-00000000000a';
+  const teamChoices = [
+    { id: 'product-strategy', kind: 'system' as const, name: 'Product Strategy', status: 'active' },
+    { id: WF_A, kind: 'workflow' as const, name: 'Tax helper', status: 'active' },
+  ];
+
+  test('names the team in order, advisors by their translated name', () => {
+    const html = render({ teamMemberIds: ['product-strategy', WF_A], teamChoices });
+    assert.match(html, /<dt[^>]*>Team<\/dt><dd[^>]*data-testid="agent-summary-team">Product Strategy, Tax helper</);
+  });
+
+  test('an empty team reads "None"', () => {
+    const html = render({ teamMemberIds: [], teamChoices });
+    assert.match(html, /data-testid="agent-summary-team">None</);
+  });
+
+  test('without a team list the line is left out', () => {
+    const html = render();
+    assert.ok(!html.includes('agent-summary-team'));
+  });
+
+  test('a member that is no longer a choice reads as unavailable, not as an id', () => {
+    const html = render({ teamMemberIds: ['f0f0f0f0-0000-4000-8000-0000000000ff'], teamChoices });
+    assert.ok(html.includes(enT('teamUnknown')));
+    assert.ok(!html.includes('f0f0f0f0-0000-4000-8000-0000000000ff'));
+  });
+
+  test('the line reads in Traditional and Simplified Chinese', () => {
+    for (const messages of [zhTwMessages, zhCnMessages]) {
+      const t = (key: string): string => resolve(messages as Messages, `platform.agentWorkflow.${key}`) ?? `MISSING:${key}`;
+      const lines = workflowSummaryLines(item(), t, enScope, models, { ids: ['product-strategy'], choices: teamChoices });
+      assert.equal(lines.team, t('teamNames.product-strategy'));
+      assert.notEqual(lines.team, 'Product Strategy');
+      const none = workflowSummaryLines(item(), t, enScope, models, { ids: [], choices: teamChoices });
+      assert.equal(none.team, t('summary.teamNone'));
+      assert.match(t('summary.team'), /[一-鿿]/);
+    }
   });
 });

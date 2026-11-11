@@ -25,6 +25,7 @@ import {
   readRoster,
   readRunAgents,
   readStartSkipped,
+  reportBackStepKey,
   rosterPickerRows,
   rosterSaveBody,
   rosterSaveErrorKey,
@@ -2225,5 +2226,170 @@ describe('COS-FRONTDOOR-01C Team page with the roster', () => {
     assert.match(markup, /data-testid="collaboration-report-back-note-r3"/);
     assert.doesNotMatch(markup, /data-testid="collaboration-edit-task"/);
     assert.match(markup, /data-testid="collaboration-approve-r3"/);
+  });
+  // ---- USER-TEAMS-01C ----------------------------------------------------
+
+  function teamRunDetail() {
+    const base = {
+      status: 'completed',
+      prompt: 'p',
+      handoffNote: null,
+      failureReason: null,
+      decidedBy: null,
+      rejectReason: null,
+    };
+    return {
+      run: {
+        collaborationRunId: 'run-1',
+        projectId: 'p-1',
+        status: 'active',
+        createdAt: '2026-11-11T00:00:00.000Z',
+        updatedAt: '2026-11-11T00:00:00.000Z',
+        completedAt: null,
+        failedAt: null,
+      },
+      teamId: null,
+      team: [WORKFLOW_ID, 'product-strategy', WF2],
+      workflow: { id: WORKFLOW_ID, name: 'Morning brief', testRun: false },
+      agents: [
+        { name: WORKFLOW_ID, label: 'Morning brief' },
+        { name: 'product-strategy', label: 'Product Strategy' },
+        { name: WF2, label: 'Tax helper' },
+      ],
+      handoffs: [
+        { ...base, referralId: 't1', source: 'user', target: WORKFLOW_ID, answer: 'Ask tax.' },
+        { ...base, referralId: 't2', source: WORKFLOW_ID, target: WF2, answer: 'Due in April.' },
+        {
+          ...base,
+          referralId: 't3',
+          status: 'pending_approval',
+          source: WF2,
+          target: WORKFLOW_ID,
+          answer: null,
+          prompt: 'x'.repeat(5000),
+        },
+        {
+          ...base,
+          referralId: 't4',
+          status: 'pending_approval',
+          source: 'product-strategy',
+          target: WORKFLOW_ID,
+          answer: null,
+        },
+        { ...base, referralId: 't5', source: WORKFLOW_ID, target: 'product-strategy', answer: 'Yes.' },
+      ],
+    };
+  }
+
+  test('isReportBackHandoff takes the lead: a user workflow lead gets report-backs, others keep their rules', () => {
+    assert.equal(isReportBackHandoff(WF2, WORKFLOW_ID, WORKFLOW_ID), true);
+    assert.equal(isReportBackHandoff('product-strategy', WORKFLOW_ID, WORKFLOW_ID), true);
+    assert.equal(isReportBackHandoff('user', WORKFLOW_ID, WORKFLOW_ID), false);
+    assert.equal(isReportBackHandoff(WORKFLOW_ID, WF2, WORKFLOW_ID), false);
+    assert.equal(isReportBackHandoff(WORKFLOW_ID, WORKFLOW_ID, WORKFLOW_ID), false);
+    // A step to the Chief of Staff is not a report-back on a run led by a workflow.
+    assert.equal(isReportBackHandoff(WF2, 'chief-of-staff', WORKFLOW_ID), false);
+    // The default lead is the Chief of Staff, as before.
+    assert.equal(isReportBackHandoff(WF2, 'chief-of-staff'), true);
+    assert.equal(isReportBackHandoff(WF2, 'chief-of-staff', 'chief-of-staff'), true);
+    // A fixed team lead never has report-back steps (a coding writer sending work to the lead).
+    for (const lead of ['lead', 'writer', 'reviewer', 'advisors-lead', 'product-strategy']) {
+      assert.equal(isReportBackHandoff('writer', lead, lead), false, lead);
+      assert.equal(isReportBackHandoff('reviewer', 'lead', lead), false, lead);
+    }
+    assert.equal(reportBackStepKey('chief-of-staff'), 'reportBackStep');
+    assert.equal(reportBackStepKey(WORKFLOW_ID), 'reportBackStepLead');
+  });
+
+  test('a report-back to a workflow lead reads "{agent} → {lead} (report-back)" with no Edit; the rest read as asked', async () => {
+    detailBody = teamRunDetail();
+    await renderProbe();
+    await act(async () => {
+      latest!.onOpenRun('run-1');
+    });
+    await flush();
+    const handoffs = latest!.handoffs;
+    assert.deepEqual(
+      handoffs.map((entry) => entry.reportBack),
+      [false, false, true, true, false],
+    );
+    assert.equal(
+      handoffs[2].asked,
+      fillTemplate(EN.reportBackStepLead, { agent: 'Tax helper', lead: 'Morning brief' }),
+    );
+    assert.equal(handoffs[2].asked, 'Tax helper → Morning brief (report-back)');
+    assert.equal(
+      handoffs[3].asked,
+      fillTemplate(EN.reportBackStepLead, { agent: EN.productStrategy, lead: 'Morning brief' }),
+    );
+    assert.equal(
+      handoffs[1].asked,
+      fillTemplate(EN.asked, { source: 'Morning brief', target: 'Tax helper' }),
+    );
+    assert.ok(!handoffs.some((entry) => entry.asked.includes(WF2)));
+    const markup = viewMarkup();
+    assert.match(markup, /data-testid="collaboration-report-back-note-t3"/);
+    assert.match(markup, /data-testid="collaboration-report-back-note-t4"/);
+    assert.doesNotMatch(markup, /data-testid="collaboration-edit-task"/);
+    assert.match(markup, /data-testid="collaboration-approve-t3"/);
+  });
+
+  test('after a workflow start the skipped members are named from the workflow list and the advisor labels', async () => {
+    startBody = {
+      ...startBody,
+      target: WORKFLOW_ID,
+      roster: {
+        used: [],
+        skipped: [
+          { id: 'product-strategy', reason: 'off' },
+          { id: WORKFLOW_ID, reason: 'draft' },
+          { id: WF3, reason: 'missing' },
+        ],
+      },
+    };
+    await renderProbe();
+    await act(async () => {
+      latest!.workflowPicker!.onSelect(WORKFLOW_ID);
+    });
+    await act(async () => {
+      latest!.onTaskChange('Do it');
+    });
+    await act(async () => {
+      latest!.onStart();
+    });
+    await flush();
+    assert.equal(posts.length, 1);
+    assert.equal((posts[0] as { workflowId?: string }).workflowId, WORKFLOW_ID);
+    // The roster view is not loaded for a workflow start.
+    assert.deepEqual(gets, []);
+    assert.equal(
+      latest!.rosterSkippedHint,
+      fillTemplate(EN.rosterSkippedHint, {
+        members: [
+          `${EN.productStrategy} (${EN.rosterReasonOff})`,
+          `Morning brief (${EN.rosterReasonDraft})`,
+          `${EN.rosterMemberUnknown} (${EN.rosterReasonMissing})`,
+        ].join(' · '),
+      }),
+    );
+    assert.match(viewMarkup(), /data-testid="collaboration-roster-skipped"/);
+  });
+});
+
+describe('USER-TEAMS-01C copy and codes', () => {
+  test('reportBackStepLead exists in all three languages, with agent and lead, and is translated', () => {
+    for (const [locale, catalog] of CATALOGS) {
+      const value = catalog.reportBackStepLead;
+      assert.equal(typeof value, 'string', locale);
+      assert.deepEqual((value.match(/\{[a-zA-Z]+\}/g) ?? []).sort(), ['{agent}', '{lead}'], locale);
+    }
+    assert.equal(EN.reportBackStepLead, '{agent} → {lead} (report-back)');
+    for (const [locale, catalog] of CATALOGS.slice(1)) {
+      assert.match(catalog.reportBackStepLead, /回[報报]/, locale);
+    }
+  });
+
+  test('a ROSTER_MEMBER_SELF refusal reads as a refused member, never as a generic failure', () => {
+    assert.equal(rosterSaveErrorKey(400, { code: 'ROSTER_MEMBER_SELF' }), 'rosterSaveMemberRefused');
   });
 });

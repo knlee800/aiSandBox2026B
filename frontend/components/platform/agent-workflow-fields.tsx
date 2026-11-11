@@ -16,9 +16,13 @@ import {
   budgetProblems,
   fillTemplate,
   neverDoLines,
+  teamChoiceRows,
+  teamMemberName,
   toggleId,
+  toggleTeamMember,
   visibleConnectorTools,
   type InstructionsCount,
+  WORKFLOW_TEAM_MAX,
   type WorkflowDraft,
   type WorkflowErrors,
 } from './agent-workflow-model';
@@ -368,10 +372,26 @@ export type WorkflowUsageView =
   | { state: 'loaded'; line: string };
 
 export function WorkflowAdvancedFields(
-  props: CommonProps & { options: UserAgentOptions; usage?: WorkflowUsageView | null },
+  props: CommonProps & {
+    options: UserAgentOptions;
+    usage?: WorkflowUsageView | null;
+    /** The workflow being edited, left out of the Team list; null on create. */
+    selfId?: string | null;
+  },
 ) {
-  const { t, draft, onChange, errors, disabled, options, usage } = props;
-  const open = draft.modelChoice !== 'server' || draft.budgetPerRun !== '' || draft.budgetPerDay !== '';
+  const { t, draft, onChange, errors, disabled, options, usage, selfId = null } = props;
+  const [teamLimitHit, setTeamLimitHit] = React.useState(false);
+  const teamRows = teamChoiceRows(options, draft.teamMemberIds, selfId);
+  const open =
+    draft.modelChoice !== 'server' ||
+    draft.budgetPerRun !== '' ||
+    draft.budgetPerDay !== '' ||
+    draft.teamMemberIds.length > 0;
+  const toggleTeam = (id: string) => {
+    const next = toggleTeamMember(draft.teamMemberIds, id);
+    setTeamLimitHit(next.limitHit);
+    if (!next.limitHit) onChange({ teamMemberIds: next.ids });
+  };
   const selectedModel = options.models.find((model) => model.id === draft.modelChoice);
   const maxBudget = options.limits.maxBudgetCredits;
   const budget = budgetProblems(draft, maxBudget);
@@ -468,6 +488,63 @@ export function WorkflowAdvancedFields(
           </p>
         ) : null}
         <FieldError id="agent-workflow-budget-error" message={errors.budget ? t(errors.budget) : undefined} field="budget" />
+
+        <fieldset data-testid="agent-workflow-team">
+          <legend className={workflowLabelClasses}>{t('teamLabel')}</legend>
+          <p className={hintClasses}>{t('teamHint')}</p>
+          {teamRows.length > 0 ? (
+            <div className="mt-2 space-y-2">
+              {teamRows.map((row) => {
+                const checked = draft.teamMemberIds.includes(row.id);
+                return (
+                  <label
+                    key={row.id}
+                    className="flex cursor-pointer flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-200"
+                    data-testid={`agent-workflow-team-option-${row.id}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleTeam(row.id)}
+                      disabled={disabled}
+                      className={checkboxClasses}
+                      data-testid={`agent-workflow-team-${row.id}`}
+                    />
+                    <span className="min-w-0 break-words">{teamMemberName(t, row)}</span>
+                    <span className="text-xs text-slate-400">
+                      {row.kind === 'workflow' ? t('teamKindWorkflow') : t('teamKindSystem')}
+                    </span>
+                    {row.note ? (
+                      <span
+                        className="rounded-full border border-amber-700/60 px-2 py-0.5 text-[11px] font-medium text-amber-200"
+                        data-testid={`agent-workflow-team-note-${row.id}`}
+                      >
+                        {row.note === 'draft' ? t('teamNoteDraft') : t('teamNoteOff')}
+                      </span>
+                    ) : null}
+                  </label>
+                );
+              })}
+            </div>
+          ) : (
+            <p className={hintClasses} data-testid="agent-workflow-team-empty">
+              {t('teamEmpty')}
+            </p>
+          )}
+          <p className={hintClasses} role="status" data-testid="agent-workflow-team-count">
+            {fillTemplate(t('teamCount'), { count: draft.teamMemberIds.length, max: WORKFLOW_TEAM_MAX })}
+          </p>
+          {teamLimitHit ? (
+            <p className="mt-1 flex items-start gap-2 text-xs text-amber-200" role="status" data-testid="agent-workflow-team-limit">
+              <InformationCircleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>{fillTemplate(t('teamLimit'), { max: WORKFLOW_TEAM_MAX })}</span>
+            </p>
+          ) : null}
+          <p className={hintClasses} data-testid="agent-workflow-team-approval">
+            {t('teamApprovalHint')}
+          </p>
+          <FieldError id="agent-workflow-team-error" message={errors.team ? t(errors.team) : undefined} field="team" />
+        </fieldset>
       </div>
     </details>
   );

@@ -230,7 +230,7 @@ export default function CreateAgentForm({ labels, onSubmit, onCancel, workflow }
       const request = requestFor();
       const result = await workflow.onSave(request);
       if (result.error || !result.agent) {
-        const refusal = mapRefusal(result.code);
+        const refusal = mapRefusal(result.code, result.error);
         if (refusal.field === 'form') {
           setSubmitError(result.code ? t(refusal.messageKey) : failureText);
         } else {
@@ -449,6 +449,7 @@ export default function CreateAgentForm({ labels, onSubmit, onCancel, workflow }
             disabled={submitting}
             options={options}
             usage={editing ? workflow.usage : null}
+            selfId={editing ? (workflow.agent?.id ?? null) : null}
           />
           <WorkflowShownPanel t={t} saved={saved} scopeName={workflow.scopeName} />
         </>

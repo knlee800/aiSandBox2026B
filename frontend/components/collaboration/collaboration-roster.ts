@@ -138,7 +138,8 @@ export function rosterSaveErrorKey(status: number, body: unknown): RosterSaveErr
   if (
     code === 'ROSTER_MEMBER_NOT_FOUND' ||
     code === 'ROSTER_MEMBER_NOT_ALLOWED' ||
-    code === 'ROSTER_MEMBER_UNKNOWN'
+    code === 'ROSTER_MEMBER_UNKNOWN' ||
+    code === 'ROSTER_MEMBER_SELF'
   ) {
     return 'rosterSaveMemberRefused';
   }
@@ -198,18 +199,46 @@ export function readRunAgents(value: unknown): Array<{ name: string; label: stri
   return out;
 }
 
+/** Agents that are never a user-workflow lead: the fixed team ids and the two advisors. */
+const NON_WORKFLOW_LEAD_IDS: ReadonlySet<string> = new Set([
+  'chief-of-staff',
+  'advisors-lead',
+  'lead',
+  'writer',
+  'reviewer',
+  'user',
+  'product-strategy',
+  'technology-advisor',
+]);
+
 /**
- * A step from an agent to the Chief of Staff is a report-back. The server writes its
- * prompt from the owner's task and the agent's answer.
+ * A step from an agent back to the run's lead is a report-back. The server writes its
+ * prompt from the owner's task and the agent's answer. `leadId` is the run's lead (the
+ * first entry of the run detail's agents): the Chief of Staff by default, or a user
+ * workflow on a user-team run (USER-TEAMS-01C). Any other lead has no report-back steps.
  */
-export function isReportBackHandoff(source: string, target: string): boolean {
+export function isReportBackHandoff(
+  source: string,
+  target: string,
+  leadId: string = 'chief-of-staff',
+): boolean {
+  const leadIsChief = leadId === 'chief-of-staff';
+  if (!leadIsChief && NON_WORKFLOW_LEAD_IDS.has(leadId)) {
+    return false;
+  }
   return (
-    target === 'chief-of-staff' &&
-    source !== 'chief-of-staff' &&
+    target === leadId &&
+    source !== leadId &&
     source !== 'advisors-lead' &&
+    source !== 'chief-of-staff' &&
     source !== 'user' &&
     source.length > 0
   );
+}
+
+/** The step label key (collaboration namespace): the Chief of Staff keeps its own wording. */
+export function reportBackStepKey(leadId: string): 'reportBackStep' | 'reportBackStepLead' {
+  return leadId === 'chief-of-staff' ? 'reportBackStep' : 'reportBackStepLead';
 }
 
 /**

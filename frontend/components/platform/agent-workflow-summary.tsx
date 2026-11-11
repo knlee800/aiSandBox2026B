@@ -13,10 +13,11 @@ import Spinner from '@/components/ui/Spinner';
 import type {
   UserAgent,
   UserAgentPlatformModel,
+  UserAgentTeamChoice,
   UserWorkflowSummaryItem,
   UserWorkflowSummaryState,
 } from '@/hooks/useUserAgents';
-import { fillTemplate } from './agent-workflow-model';
+import { fillTemplate, teamNamesFor } from './agent-workflow-model';
 import type { WorkflowT } from './agent-workflow-fields';
 
 /**
@@ -103,6 +104,8 @@ export function creditsText(t: WorkflowT, count: number): string {
 export interface WorkflowSummaryLines {
   folders: string;
   model: string;
+  /** USER-TEAMS-01: "Team: ..." value; null when the team is not known. */
+  team: string | null;
   perRun: string;
   perDay: string;
 }
@@ -112,6 +115,7 @@ export function workflowSummaryLines(
   t: WorkflowT,
   scopeName: (id: string) => string,
   models: readonly UserAgentPlatformModel[] | null,
+  team?: { ids: readonly string[] | null | undefined; choices: readonly UserAgentTeamChoice[] | null | undefined },
 ): WorkflowSummaryLines {
   const folders =
     item.knowledgeScopeIds.length > 0
@@ -128,9 +132,16 @@ export function workflowSummaryLines(
         )})`
       : platformId;
   }
+  const teamIds = team?.ids ?? null;
   return {
     folders,
     model,
+    team:
+      teamIds === null
+        ? null
+        : teamIds.length > 0
+          ? teamNamesFor(t, teamIds, [...(team?.choices ?? [])]).join(', ')
+          : t('summary.teamNone'),
     perRun:
       item.budgetPerRunCredits !== null ? creditsText(t, item.budgetPerRunCredits) : t('summary.noLimit'),
     perDay:
@@ -169,6 +180,12 @@ export interface AgentWorkflowSummaryProps {
   /** The workflow's entry in the list; null when the list has none for it. */
   item: UserWorkflowSummaryItem | null;
   models: readonly UserAgentPlatformModel[] | null;
+  /**
+   * USER-TEAMS-01: the workflow's saved team and the names to show for it (options.teamChoices).
+   * Without a team list the Team line is left out; an empty list reads "none".
+   */
+  teamMemberIds?: readonly string[] | null;
+  teamChoices?: readonly UserAgentTeamChoice[] | null;
   onRetry: () => void;
   /** Sets the status through PATCH. Resolves with an error (and the server's code when known) when it failed. */
   onSwitch: (agentId: string, on: boolean) => Promise<{ error?: string; code?: string }>;
@@ -186,6 +203,7 @@ const linkClasses =
 
 export default function AgentWorkflowSummary(props: AgentWorkflowSummaryProps) {
   const { t, scopeName, localePrefix, agentId, status, summaryState, item, models, onRetry, onSwitch } = props;
+  const { teamMemberIds, teamChoices } = props;
   const [phase, setPhase] = React.useState<WorkflowSwitchPhase>(props.initialPhase ?? 'idle');
   const [switching, setSwitching] = React.useState(false);
   const [failure, setFailure] = React.useState<WorkflowSwitchFailure | null>(
@@ -277,7 +295,10 @@ export default function AgentWorkflowSummary(props: AgentWorkflowSummaryProps) {
       {summaryState === 'loaded' && item ? (
         <dl className="mt-3 grid gap-3 sm:grid-cols-2" data-testid="agent-summary-lines">
           {(() => {
-            const lines = workflowSummaryLines(item, t, scopeName, models);
+            const lines = workflowSummaryLines(item, t, scopeName, models, {
+              ids: teamMemberIds,
+              choices: teamChoices,
+            });
             return (
               <>
                 <div className="sm:col-span-2">
@@ -288,6 +309,12 @@ export default function AgentWorkflowSummary(props: AgentWorkflowSummaryProps) {
                   <dt className={rowLabel}>{t('summary.model')}</dt>
                   <dd className={rowValue} data-testid="agent-summary-model">{lines.model}</dd>
                 </div>
+                {lines.team !== null ? (
+                  <div className="sm:col-span-2">
+                    <dt className={rowLabel}>{t('summary.team')}</dt>
+                    <dd className={`${rowValue} break-words`} data-testid="agent-summary-team">{lines.team}</dd>
+                  </div>
+                ) : null}
                 <div>
                   <dt className={rowLabel}>{t('summary.budgetPerRun')}</dt>
                   <dd className={rowValue} data-testid="agent-summary-budget-run">{lines.perRun}</dd>

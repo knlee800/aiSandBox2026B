@@ -752,7 +752,7 @@
       "instructionsCounterNote": "计入您的文字，以及添加到每个工作流的平台规则。",
       "instructionsCounterNoteNew": "添加到每个工作流的平台规则也会计入。保存后会显示确切数字。",
       "sectionAccess": "访问权限",
-      "sectionAdvanced": "高级：模型与预算",
+      "sectionAdvanced": "高级：模型、预算与团队",
       "knowledgeLabel": "知识文件夹",
       "knowledgeHint": "勾选这个工作流可以读取的文件夹。",
       "connectorsLabel": "已连接的工具",
@@ -814,7 +814,10 @@
         "connectionMissing": "请先在连接页面连接此账号，再添加它的工具。",
         "modelInvalid": "无法使用这个模型，请选择其他模型。",
         "budgetInvalid": "预算无效。请使用整数，且每日预算不得低于每次运行的预算。",
-        "templateNotAllowed": "无法复制这个模板，请选择其他开始方式。"
+        "templateNotAllowed": "无法复制这个模板，请选择其他开始方式。",
+        "teamTooMany": "团队最多只能有 3 位成员。请取消一个后再保存。",
+        "teamMemberRefused": "团队中有一位成员无法使用。请取消勾选后再保存。",
+        "teamMemberSelf": "工作流不能加入自己的团队。请取消勾选后再保存。"
       },
       "summary": {
         "title": "工作流摘要",
@@ -847,7 +850,24 @@
         "usageLine": "上次运行：{last}。今日已用：{spent}。",
         "usageNoRun": "尚未运行",
         "usageLoading": "正在加载上次运行与用量…",
-        "usageFailed": "无法加载上次运行与用量。"
+        "usageFailed": "无法加载上次运行与用量。",
+        "team": "团队",
+        "teamNone": "无"
+      },
+      "teamLabel": "团队",
+      "teamHint": "这个工作流可以交办工作的代理。最多选 3 个：两位顾问和你的其他工作流。",
+      "teamApprovalHint": "每一次交办都要等你批准才会执行，每位成员完成后会回报给这个工作流。",
+      "teamCount": "已选 {count} / {max} 个",
+      "teamLimit": "最多只能选 {max} 个代理。请先取消一个。",
+      "teamEmpty": "目前没有其他可选的代理。",
+      "teamKindSystem": "顾问",
+      "teamKindWorkflow": "你的工作流",
+      "teamNoteDraft": "仍是草稿，请先测试",
+      "teamNoteOff": "已关闭",
+      "teamUnknown": "已无法使用的代理",
+      "teamNames": {
+        "product-strategy": "产品策略",
+        "technology-advisor": "技术顾问"
       }
     }
   },
@@ -1335,7 +1355,8 @@
     "rosterSkippedHint": "这次运行略过了这些代理：{members}。",
     "rosterSkippedItem": "{name}（原因：{reason}）",
     "reportBackStep": "{source} → {target}（回报）",
-    "reportBackNoEdit": "这一步是系统根据你的任务和代理的答复写成的，无法编辑。请批准或拒绝。"
+    "reportBackNoEdit": "这一步是系统根据你的任务和代理的答复写成的，无法编辑。请批准或拒绝。",
+    "reportBackStepLead": "{agent} → {lead}（回报）"
   },
   "office": {
     "title": "办公室",

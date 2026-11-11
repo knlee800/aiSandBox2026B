@@ -396,6 +396,35 @@ describe('useUserAgents workflow routes — BIZ-USER-01B', () => {
     assert.equal(result.error, undefined);
   });
 
+  test('USER-TEAMS-01C: create and PATCH carry teamMemberIds as given, and [] empties a team', async () => {
+    const { createUserAgentRequest, updateUserAgentRequest } = await import('./useUserAgents');
+    installMockFetch(async () => mockResponse(201, { ...created, teamMemberIds: ['product-strategy'] }));
+
+    const made = await createUserAgentRequest({
+      name: 'Digest',
+      role: 'Helper',
+      description: 'Does things',
+      teamMemberIds: ['product-strategy'],
+    });
+    assert.deepEqual(JSON.parse(fetchCalls[0].init!.body as string).teamMemberIds, ['product-strategy']);
+    assert.deepEqual(made.agent?.teamMemberIds, ['product-strategy']);
+
+    installMockFetch(async () => mockResponse(200, { ...created, teamMemberIds: [] }));
+    const emptied = await updateUserAgentRequest('new-1', { teamMemberIds: [] });
+    assert.deepEqual(JSON.parse(fetchCalls[fetchCalls.length - 1].init!.body as string), { teamMemberIds: [] });
+    assert.deepEqual(emptied.agent?.teamMemberIds, []);
+  });
+
+  test('USER-TEAMS-01C: a ROSTER_MEMBER_SELF refusal returns its code', async () => {
+    const { updateUserAgentRequest } = await import('./useUserAgents');
+    installMockFetch(async () =>
+      mockResponse(400, { message: 'A workflow cannot list itself', code: 'ROSTER_MEMBER_SELF' }),
+    );
+    const result = await updateUserAgentRequest('new-1', { teamMemberIds: ['new-1'] });
+    assert.equal(result.code, 'ROSTER_MEMBER_SELF');
+    assert.ok(result.error);
+  });
+
   test('a 400 with a refusal code returns the code and message', async () => {
     const { updateUserAgentRequest } = await import('./useUserAgents');
     installMockFetch(async () =>
@@ -499,6 +528,13 @@ describe('useUserAgents workflow routes — BIZ-USER-01B', () => {
     assert.equal(fetchCalls[0].url, '/api/agents/options');
     assert.equal(fetchCalls[0].init?.credentials, 'include');
     assert.deepEqual(result.options, body);
+
+    const withTeam = {
+      ...body,
+      teamChoices: [{ id: 'product-strategy', kind: 'system', name: 'Product Strategy', status: 'active' }],
+    };
+    installMockFetch(async () => mockResponse(200, withTeam));
+    assert.deepEqual((await fetchUserAgentOptionsRequest()).options?.teamChoices, withTeam.teamChoices);
 
     installMockFetch(async () => mockResponse(500, {}));
     assert.equal((await fetchUserAgentOptionsRequest()).error, 'OPTIONS_FAILED');

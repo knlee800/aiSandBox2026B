@@ -752,7 +752,7 @@
       "instructionsCounterNote": "計入您的文字，以及加到每個工作流程的平台規則。",
       "instructionsCounterNoteNew": "加到每個工作流程的平台規則也會計入。儲存後會顯示確切數字。",
       "sectionAccess": "存取權限",
-      "sectionAdvanced": "進階：模型與預算",
+      "sectionAdvanced": "進階：模型、預算與團隊",
       "knowledgeLabel": "知識資料夾",
       "knowledgeHint": "勾選這個工作流程可以讀取的資料夾。",
       "connectorsLabel": "已連線的工具",
@@ -814,7 +814,10 @@
         "connectionMissing": "請先在連線頁面連接此帳號，再加入它的工具。",
         "modelInvalid": "無法使用這個模型，請選擇其他模型。",
         "budgetInvalid": "預算無效。請使用整數，且每日預算不得低於每次執行的預算。",
-        "templateNotAllowed": "無法複製這個範本，請選擇其他開始方式。"
+        "templateNotAllowed": "無法複製這個範本，請選擇其他開始方式。",
+        "teamTooMany": "團隊最多只能有 3 位成員。請取消一個後再儲存。",
+        "teamMemberRefused": "團隊中有一位成員無法使用。請取消勾選後再儲存。",
+        "teamMemberSelf": "工作流程不能加入自己的團隊。請取消勾選後再儲存。"
       },
       "summary": {
         "title": "工作流程摘要",
@@ -847,7 +850,24 @@
         "usageLine": "上次執行：{last}。今日已用：{spent}。",
         "usageNoRun": "尚未執行",
         "usageLoading": "正在載入上次執行與用量⋯",
-        "usageFailed": "無法載入上次執行與用量。"
+        "usageFailed": "無法載入上次執行與用量。",
+        "team": "團隊",
+        "teamNone": "無"
+      },
+      "teamLabel": "團隊",
+      "teamHint": "這個工作流程可以交辦工作的代理。最多選 3 個：兩位顧問和你的其他工作流程。",
+      "teamApprovalHint": "每一次交辦都要等你核准才會執行，每位成員完成後會回報給這個工作流程。",
+      "teamCount": "已選 {count} / {max} 個",
+      "teamLimit": "最多只能選 {max} 個代理。請先取消一個。",
+      "teamEmpty": "目前沒有其他可選的代理。",
+      "teamKindSystem": "顧問",
+      "teamKindWorkflow": "你的工作流程",
+      "teamNoteDraft": "仍是草稿，請先測試",
+      "teamNoteOff": "已關閉",
+      "teamUnknown": "已無法使用的代理",
+      "teamNames": {
+        "product-strategy": "產品策略",
+        "technology-advisor": "技術顧問"
       }
     }
   },
@@ -1335,7 +1355,8 @@
     "rosterSkippedHint": "這次執行略過了這些代理：{members}。",
     "rosterSkippedItem": "{name}（原因：{reason}）",
     "reportBackStep": "{source} → {target}（回報）",
-    "reportBackNoEdit": "這一步是系統根據你的任務和代理的答覆寫成的，無法編輯。請批准或拒絕。"
+    "reportBackNoEdit": "這一步是系統根據你的任務和代理的答覆寫成的，無法編輯。請批准或拒絕。",
+    "reportBackStepLead": "{agent} → {lead}（回報）"
   },
   "office": {
     "title": "辦公室",

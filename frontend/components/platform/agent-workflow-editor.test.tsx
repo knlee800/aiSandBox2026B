@@ -21,7 +21,11 @@ import {
   mapRefusal,
   neverDoLines,
   parseBudgetInput,
+  teamChoiceRows,
+  teamMemberName,
+  teamNamesFor,
   templatePrefillPatch,
+  toggleTeamMember,
   visibleConnectorTools,
   workflowDraftFromAgent,
 } from '@/components/platform/agent-workflow-model';
@@ -333,6 +337,14 @@ describe('workflow editor refusal-code mapping', () => {
     MODEL_INVALID: { field: 'model', key: 'errors.modelInvalid' },
     BUDGET_INVALID: { field: 'budget', key: 'errors.budgetInvalid' },
     TEMPLATE_NOT_ALLOWED: { field: 'start', key: 'errors.templateNotAllowed' },
+    // USER-TEAMS-01C: the team rule shares the Chief of Staff roster codes.
+    ROSTER_TOO_MANY: { field: 'team', key: 'errors.teamTooMany' },
+    ROSTER_DUPLICATE: { field: 'team', key: 'errors.teamMemberRefused' },
+    ROSTER_INVALID_BODY: { field: 'team', key: 'errors.teamMemberRefused' },
+    ROSTER_MEMBER_UNKNOWN: { field: 'team', key: 'errors.teamMemberRefused' },
+    ROSTER_MEMBER_NOT_ALLOWED: { field: 'team', key: 'errors.teamMemberRefused' },
+    ROSTER_MEMBER_NOT_FOUND: { field: 'team', key: 'errors.teamMemberRefused' },
+    ROSTER_MEMBER_SELF: { field: 'team', key: 'errors.teamMemberSelf' },
   };
 
   test('each gateway refusal code maps to a field and a message key', () => {
@@ -762,5 +774,208 @@ describe('WORKFLOW-CREATE-01 draft badge', () => {
       );
     }
     assert.equal(getUserAgentStatusLabel('draft', enMessages as Messages), 'Draft');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// USER-TEAMS-01C: the Team block in the workflow form
+// ---------------------------------------------------------------------------
+
+const WF_A = 'f0f0f0f0-0000-4000-8000-00000000000a';
+const WF_B = 'f0f0f0f0-0000-4000-8000-00000000000b';
+const WF_C = 'f0f0f0f0-0000-4000-8000-00000000000c';
+const WF_GONE = 'f0f0f0f0-0000-4000-8000-0000000000ff';
+
+const teamOptions: UserAgentOptions = {
+  ...options,
+  teamChoices: [
+    { id: 'product-strategy', kind: 'system', name: 'Product Strategy', status: 'active' },
+    { id: 'technology-advisor', kind: 'system', name: 'Technology Advisor', status: 'active' },
+    { id: WF_A, kind: 'workflow', name: 'Tax helper', status: 'active' },
+    { id: WF_B, kind: 'workflow', name: 'Draft helper', status: 'draft' },
+    { id: WF_C, kind: 'workflow', name: 'Paused helper', status: 'disabled' },
+  ],
+};
+
+describe('USER-TEAMS-01C team request bodies', () => {
+  test('a blank create with no team sends no teamMemberIds, so it stays as before', () => {
+    const body = buildBlankBody({ ...emptyWorkflowDraft(), name: 'D', role: 'R', description: 'x' });
+    assert.equal('teamMemberIds' in body, false);
+  });
+
+  test('a blank create sends the ticked team in order', () => {
+    const body = buildBlankBody({
+      ...emptyWorkflowDraft(),
+      name: 'D',
+      role: 'R',
+      description: 'x',
+      teamMemberIds: ['product-strategy', WF_A],
+    });
+    assert.deepEqual(body.teamMemberIds, ['product-strategy', WF_A]);
+  });
+
+  test('a PATCH always sends teamMemberIds, and [] when the team was emptied', () => {
+    const draft = workflowDraftFromAgent(savedAgent({ teamMemberIds: [WF_A] }));
+    assert.deepEqual(buildPatchBody(draft).teamMemberIds, [WF_A]);
+    assert.deepEqual(buildPatchBody({ ...draft, teamMemberIds: [] }).teamMemberIds, []);
+    assert.deepEqual(buildPatchBody(workflowDraftFromAgent(savedAgent())).teamMemberIds, []);
+  });
+
+  test('the draft keeps a copy of the saved team', () => {
+    const agent = savedAgent({ teamMemberIds: ['technology-advisor'] });
+    const draft = workflowDraftFromAgent(agent);
+    assert.deepEqual(draft.teamMemberIds, ['technology-advisor']);
+    draft.teamMemberIds.push(WF_A);
+    assert.deepEqual(agent.teamMemberIds, ['technology-advisor']);
+  });
+});
+
+describe('USER-TEAMS-01C team ticks and rows', () => {
+  test('a fourth tick is refused and the list stays as it was', () => {
+    const three = ['product-strategy', 'technology-advisor', WF_A];
+    const refused = toggleTeamMember(three, WF_B);
+    assert.deepEqual(refused, { ids: three, limitHit: true });
+    assert.notEqual(refused.ids, three);
+    assert.deepEqual(toggleTeamMember(three, WF_A), {
+      ids: ['product-strategy', 'technology-advisor'],
+      limitHit: false,
+    });
+    assert.deepEqual(toggleTeamMember([], WF_B), { ids: [WF_B], limitHit: false });
+  });
+
+  test('the rows leave out the workflow being edited, in any letter case', () => {
+    const rows = teamChoiceRows(teamOptions, [], WF_A.toUpperCase());
+    assert.deepEqual(
+      rows.map((row) => row.id),
+      ['product-strategy', 'technology-advisor', WF_B, WF_C],
+    );
+    assert.equal(teamChoiceRows(teamOptions, [], null).length, 5);
+  });
+
+  test('a draft or switched-off workflow carries a note; advisors and active rows do not', () => {
+    const rows = teamChoiceRows(teamOptions, [], null);
+    const note = (id: string) => rows.find((row) => row.id === id)?.note;
+    assert.equal(note('product-strategy'), null);
+    assert.equal(note(WF_A), null);
+    assert.equal(note(WF_B), 'draft');
+    assert.equal(note(WF_C), 'off');
+  });
+
+  test('a saved member that is no longer a choice stays listed so it can be unticked', () => {
+    const rows = teamChoiceRows(teamOptions, [WF_GONE], null);
+    const gone = rows[rows.length - 1];
+    assert.equal(gone.id, WF_GONE);
+    assert.equal(gone.name, '');
+    assert.equal(teamMemberName(enT, gone), enT('teamUnknown'));
+  });
+
+  test('options from an older gateway without teamChoices give no rows', () => {
+    assert.deepEqual(teamChoiceRows(options, [], null), []);
+  });
+
+  test('names: advisors are translated, workflows keep their own name, a missing one reads unknown', () => {
+    assert.deepEqual(teamNamesFor(enT, ['product-strategy', WF_A, WF_GONE], teamOptions.teamChoices), [
+      'Product Strategy',
+      'Tax helper',
+      enT('teamUnknown'),
+    ]);
+    const zhTw = (key: string) => resolve(zhTwMessages as Messages, `platform.agentWorkflow.${key}`) ?? key;
+    assert.deepEqual(teamNamesFor(zhTw, ['technology-advisor', WF_A], teamOptions.teamChoices), [
+      zhTw('teamNames.technology-advisor'),
+      'Tax helper',
+    ]);
+  });
+});
+
+describe('USER-TEAMS-01C team refusals', () => {
+  test('a 400 without a code that names teamMemberIds reads as the team limit', () => {
+    const mapped = mapRefusal(undefined, 'teamMemberIds must contain no more than 3 elements');
+    assert.deepEqual(mapped, { field: 'team', messageKey: 'errors.teamTooMany' });
+    assert.equal(mapRefusal(undefined, 'something else').messageKey, 'errors.generic');
+    assert.equal(mapRefusal(undefined).messageKey, 'errors.generic');
+  });
+
+  test('the client check refuses more than three members on the team field', () => {
+    const draft = { ...emptyWorkflowDraft(), teamMemberIds: ['a', 'b', 'c', 'd'] };
+    const errors = checkWorkflowDraft({
+      draft,
+      limits: DEFAULT_WORKFLOW_LIMITS,
+      instructions: liveInstructionsCount(draft, null, 4000),
+      scope: 'workflow',
+    });
+    assert.equal(errors.team, 'errors.teamTooMany');
+  });
+});
+
+describe('USER-TEAMS-01C team block rendering', () => {
+  test('the form lists the choices with kind text, notes, a count and the approval hint', () => {
+    const html = render(config({ options: teamOptions }));
+    assert.ok(html.includes('data-testid="agent-workflow-team"'));
+    for (const id of ['product-strategy', 'technology-advisor', WF_A, WF_B, WF_C]) {
+      assert.ok(html.includes(`data-testid="agent-workflow-team-${id}"`), id);
+    }
+    assert.ok(html.includes('Tax helper'));
+    assert.ok(html.includes('Product Strategy'));
+    assert.ok(html.includes(enT('teamKindSystem')));
+    assert.ok(html.includes(enT('teamKindWorkflow')));
+    assert.ok(html.includes(`data-testid="agent-workflow-team-note-${WF_B}"`));
+    assert.ok(html.includes(`data-testid="agent-workflow-team-note-${WF_C}"`));
+    assert.ok(!html.includes(`data-testid="agent-workflow-team-note-${WF_A}"`));
+    assert.ok(html.includes('0 of 3 picked'));
+    assert.ok(html.includes(enT('teamApprovalHint')));
+    assert.ok(!html.includes('agent-workflow-team-limit'));
+  });
+
+  test('the Advanced details stay closed with no team and open when a team is saved', () => {
+    const closed = render(config({ options: teamOptions }));
+    const detailsTag = (html: string) => /<details[^>]*data-testid="agent-workflow-advanced"[^>]*>/.exec(html)![0];
+    assert.doesNotMatch(detailsTag(closed), / open=/);
+    const open = render(
+      config({ mode: 'edit', agent: savedAgent({ id: WF_C, teamMemberIds: [WF_A] }), options: teamOptions }),
+    );
+    assert.match(detailsTag(open), / open=/);
+    assert.ok(open.includes('1 of 3 picked'));
+    assert.match(open, new RegExp(`<input[^>]*data-testid="agent-workflow-team-${WF_A}" checked=""`));
+  });
+
+  test('editing leaves the row itself out of the list', () => {
+    const html = render(config({ mode: 'edit', agent: savedAgent({ id: WF_A }), options: teamOptions }));
+    assert.ok(!html.includes(`data-testid="agent-workflow-team-${WF_A}"`));
+    assert.ok(html.includes(`data-testid="agent-workflow-team-${WF_B}"`));
+  });
+
+  test('with no other agents the block says so instead of showing an empty list', () => {
+    const html = render(config({ options }));
+    assert.ok(html.includes('data-testid="agent-workflow-team-empty"'));
+    assert.ok(html.includes(enT('teamEmpty')));
+  });
+
+  test('the Advanced heading names the team in every language', () => {
+    assert.equal(enT('sectionAdvanced'), 'Advanced: model, budget and team');
+    for (const locale of LOCALES.slice(1)) {
+      const text = resolve(locale.messages, 'platform.agentWorkflow.sectionAdvanced')!;
+      assert.match(text, /團隊|团队/, locale.code);
+    }
+  });
+
+  test('every new Team key exists in all three languages with the same placeholders', () => {
+    const wanted = [
+      'teamLabel', 'teamHint', 'teamApprovalHint', 'teamCount', 'teamLimit', 'teamEmpty',
+      'teamKindSystem', 'teamKindWorkflow', 'teamNoteDraft', 'teamNoteOff', 'teamUnknown',
+      'teamNames.product-strategy', 'teamNames.technology-advisor',
+      'summary.team', 'summary.teamNone',
+      'errors.teamTooMany', 'errors.teamMemberRefused', 'errors.teamMemberSelf',
+    ];
+    const holders = (text: string) => (text.match(/\{\w+\}/g) ?? []).sort();
+    for (const key of wanted) {
+      const english = resolve(enMessages as Messages, `platform.agentWorkflow.${key}`);
+      assert.ok(english && english.length > 0, `en ${key}`);
+      for (const locale of LOCALES.slice(1)) {
+        const own = resolve(locale.messages, `platform.agentWorkflow.${key}`);
+        assert.ok(own && own.length > 0, `${locale.code} ${key}`);
+        assert.match(own, /[一-鿿]/, `${locale.code} ${key}`);
+        assert.deepEqual(holders(own), holders(english), `${locale.code} ${key}`);
+      }
+    }
   });
 });

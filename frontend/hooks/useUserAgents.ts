@@ -41,6 +41,8 @@ export interface UserAgentWorkflowFields {
   budgetPerRunCredits: number | null;
   budgetPerDayCredits: number | null;
   templateId: string | null;
+  /** USER-TEAMS-01: the ids of the team this workflow leads (at most 3); empty is no team. */
+  teamMemberIds: string[];
 }
 
 export interface UserAgent extends Partial<UserAgentWorkflowFields> {
@@ -74,6 +76,7 @@ export interface CreateAgentDto
       | 'model'
       | 'budgetPerRunCredits'
       | 'budgetPerDayCredits'
+      | 'teamMemberIds'
     >
   > {
   name: string;
@@ -101,6 +104,14 @@ export interface UserAgentPlatformModel {
   creditsPer1kTokens: number;
 }
 
+/** USER-TEAMS-01: one agent the workflow form may put on a team (GET /api/agents/options). */
+export interface UserAgentTeamChoice {
+  id: string;
+  kind: 'system' | 'workflow';
+  name: string;
+  status: string;
+}
+
 /** GET /api/agents/options. */
 export interface UserAgentOptions {
   replyLanguages: string[];
@@ -110,6 +121,8 @@ export interface UserAgentOptions {
   connectedKinds: string[];
   models: UserAgentPlatformModel[];
   templates: string[];
+  /** USER-TEAMS-01: absent from an older gateway; read as no choices. */
+  teamChoices?: UserAgentTeamChoice[];
   limits: {
     maxInstructionsChars: number;
     maxToneChars: number;

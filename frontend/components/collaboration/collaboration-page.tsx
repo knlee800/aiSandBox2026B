@@ -25,6 +25,7 @@ import {
   ROSTER_REASON_KEYS,
   collaborationChiefStartBody,
   isReportBackHandoff,
+  reportBackStepKey,
   readRunAgents,
   readStartSkipped,
   rosterPickerRows,
@@ -508,7 +509,13 @@ export function useCollaborationScreen(input: {
   // COS-FRONTDOOR-01C: the run's stored agent list names each member; a translated
   // system label or a workflow's own name wins, the stored label comes next.
   const agentLabels = new Map<string, string>();
-  for (const agent of readRunAgents((detail as { agents?: unknown } | null)?.agents)) {
+  const runAgents = readRunAgents((detail as { agents?: unknown } | null)?.agents);
+  // USER-TEAMS-01C: a run of a user workflow has that workflow as its lead (the first agent);
+  // every other run keeps the chief-of-staff rule.
+  const reportBackLead = detailWorkflow
+    ? (runAgents[0]?.name ?? detailWorkflow.id)
+    : 'chief-of-staff';
+  for (const agent of runAgents) {
     if (agent.label !== null) {
       agentLabels.set(agent.name, agent.label);
     }
@@ -705,14 +712,16 @@ export function useCollaborationScreen(input: {
         testsGate === 'blocked'
           ? (forced ?? readTestsBlockReason(handoff.testsBlockReason) ?? 'none')
           : null;
-      const reportBack = isReportBackHandoff(handoff.source, handoff.target);
+      const reportBack = isReportBackHandoff(handoff.source, handoff.target, reportBackLead);
       return {
         referralId: handoff.referralId,
         statusLabel: statusLabel(handoff.status),
         reportBack,
-        asked: fillTemplate(t(reportBack ? 'reportBackStep' : 'asked'), {
+        asked: fillTemplate(t(reportBack ? reportBackStepKey(reportBackLead) : 'asked'), {
           source: memberLabel(handoff.source),
           target: memberLabel(handoff.target),
+          agent: memberLabel(handoff.source),
+          lead: memberLabel(handoff.target),
         }),
         prompt: handoff.prompt,
         answer: handoff.answer,
