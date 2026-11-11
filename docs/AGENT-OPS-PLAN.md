@@ -50,10 +50,10 @@ Lane 1 is the main path. Lane 2 takes pieces that do not clash with Lane 1. "No 
 | # | Item | What it does |
 |---|---|---|
 | 34 | COS-FRONTDOOR-01, COS-FRONTDOOR-01B, COS-FRONTDOOR-01C | Owner talks only to the Chief of Staff; results return to it (01A roster store done 2026-11-10; 01B run and report-back done 2026-11-10; 01C Team page done 2026-11-10; the front door is built, deploy STAGING-DEPLOY-FD-01 next; Keith approved Stage 4 on 2026-11-10; the Team page's Chief of Staff option, roster of advisors and workflows up to 3; 01A roster store, 01B run and report-back, 01C Team page) |
-| 35 | USER-TEAMS-01, USER-TEAMS-01B, USER-TEAMS-01C, USER-TEAMS-LIVE-01 | User teams and who hands off to whom (stage-start approved 2026-11-11; 01A team column and validation done 2026-11-11, 01A, 01B and 01C done 2026-11-11 (built, not deployed), then Keith's live check after STAGING-DEPLOY-FD-02) |
-| 36 | APPROVAL-SET-01, APPROVAL-SET-01B, APPROVAL-SET-01C, APPROVAL-SET-02 | Approval setting (stage-start approved 2026-11-11; 01A, 01B and 01C done 2026-11-11 (built, not deployed);, 01C form and Team page; the Chief of Staff roster setting is APPROVAL-SET-02) |
-| 37 | COS-DRAFTS-01, COS-DRAFTS-01B | Chief of Staff drafts agents and workflows for approval (stage-start approved 2026-11-11; 01A and 01B done 2026-11-11 (built, not deployed); depends on USER-TEAMS-01B) |
-| 38 | STAGING-DEPLOY-FD-02, USER-TEAMS-LIVE-01, CHECKPOINT-LIVE-02 | Stage 4 deployed 2026-11-11 (staging runs 7ac9084 with user teams, approval settings, Chief of Staff drafts and the container-manager fixes; migrations 1806 and 1807); next: the live checks USER-TEAMS-LIVE-01 (runs on) and CHECKPOINT-LIVE-02 (no AI) |
+| 35 | USER-TEAMS-01, USER-TEAMS-01B, USER-TEAMS-01C, USER-TEAMS-LIVE-01 | User teams and who hands off to whom (stage-start approved 2026-11-11; 01A team column and validation done 2026-11-11, 01A, 01B and 01C done 2026-11-11; deployed 7ac9084; Keith's live check USER-TEAMS-LIVE-01 passed 2026-11-11; USER-TEAMS-LIVE-02 (the Chief of Staff reads a drafted workflow by name) NOT_READY) |
+| 36 | APPROVAL-SET-01, APPROVAL-SET-01B, APPROVAL-SET-01C, APPROVAL-SET-02 | Approval setting (stage-start approved 2026-11-11; 01A, 01B and 01C done 2026-11-11; deployed 7ac9084; passed USER-TEAMS-LIVE-01 2026-11-11; the Chief of Staff roster setting is APPROVAL-SET-02) |
+| 37 | COS-DRAFTS-01, COS-DRAFTS-01B | Chief of Staff drafts agents and workflows for approval (stage-start approved 2026-11-11; 01A and 01B done 2026-11-11; deployed 7ac9084; passed USER-TEAMS-LIVE-01 2026-11-11, briefing eval 10 of 10) |
+| 38 | STAGING-DEPLOY-FD-02, USER-TEAMS-LIVE-01, CHECKPOINT-LIVE-02 | Stage 4 deployed 2026-11-11 (staging runs 7ac9084 with user teams, approval settings, Chief of Staff drafts and the container-manager fixes; migrations 1806 and 1807); USER-TEAMS-LIVE-01 passed 2026-11-11; next: CHECKPOINT-LIVE-02 (no AI) |
 
 **Stage 5 — chat (phase 3)**
 

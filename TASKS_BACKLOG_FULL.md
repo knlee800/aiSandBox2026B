@@ -85676,6 +85676,7 @@ nature=GOVERNANCE
 **Also (added 2026-11-10, Keith, 2026-11-10, RPG office review window):** fold in the office decisions, in Keith's words: the office is an isometric 16-bit scene in our own art (the reference picture is mood only; no outside assets; AI exploration plus hand-redrawn final pieces with provenance notes); the characters walk, as decoration only, and agent status still comes from server data; the first release is one fixed room; a user-built office and selling paid pieces are later features (OFFICE-BUILD-01, OFFICE-SHOP-01). This means reclassifying PRD.md line 482 ("RPG walking-town / moving-character simulation ... not the current or next committed product"), which OFFICE-SCENE-01 waits for. PRD.md is not edited until this task runs.
 **Also (added 2026-11-11 by the USER-TEAMS-01B LOCK):** PRD.md wording for the Chief of Staff front door (deployed to staging 537ebfb, Keith's live check FRONTDOOR-LIVE-01 passed: moves from APPROVED FUTURE to GATED; this was due at the FRONTDOOR-LIVE-01 lock and missed there) and for user teams (USER-TEAMS-01, -01B, -01C built, not deployed: stays APPROVED FUTURE until USER-TEAMS-LIVE-01). ARCHITECTURE.md 13.1 already carries both rows.
 **Also (added 2026-11-11 by the APPROVAL-SET-01 and COS-DRAFTS-01 stage-start approval):** PRD.md wording for approval settings per workflow and for Chief of Staff drafts moves at USER-TEAMS-LIVE-01 (plan section 7 pattern).
+**Also (added 2026-11-11 by the USER-TEAMS-LIVE-01 LOCK):** user teams, approval settings per workflow and Chief of Staff drafts are deployed on staging 7ac9084 and passed Keith's live check USER-TEAMS-LIVE-01: PRD.md moves them from APPROVED FUTURE to GATED, with the front door. ARCHITECTURE.md 13.1 rows set to STAGING by that LOCK.
 ### COLLAB-GATE-TESTS-01 — Validation gate: no writer-to-reviewer approval on failing or missing tests
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=COLLAB-GATE-TESTS-01
@@ -87074,7 +87075,7 @@ taskId=USER-TEAMS-LIVE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-11 — Keith admitted it ("Yes, start it"). Was: READY — registered 2026-11-11 by the USER-TEAMS-01 stage-start approval — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-11. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING, ENV, PROVIDER-LIVE and CREDIT released; the three authorizations false. Window 07:39:20Z to 12:44:39Z on 7ac9084, Keith in zh-TW with zh-CN and en checked: a workflow team (technology-advisor) with read_only ran the dispatch and the report-back without a click (decisionReason auto:read_only, teamLeadId set; Approved automatically on the Team page; the lead's answer in Results); a Chief of Staff draft in zh-TW showed its card, Review and save opened the prefilled form, Save stored the workflow as a draft, a test run, switch on; the draft query left the address bar; the second account got not-found; a team of two with credits and a limit of 1 made the member and the report-back wait with over_limit and the translated reason, approved by Keith; a switched-off member was skipped with the hint; an empty team ran as before; the draft card read well at phone width. 10 executions on claude-opus-5-5, 61,448 tokens, 68 credits. Briefing eval rerun on 7ac9084 (Chief of Staff hash 8f655afb): 10 of 10 passed including inject-draft-request, 0 hand-offs, no draft block, 70,465 tokens. Runs off; env files at the baseline hashes. Not checked live: an invalid draft has no link (tests cover it; the model drafted a valid one); a stray word: line (the one live draft parsed valid, no evidence for a parser follow-up). Checkpoint: docs/USER-TEAMS-LIVE-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (USER-TEAMS-LIVE-02) / 1 superseded (the PRD wording for user teams, approval settings and drafts, into GOV-PRD-SYNC-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-11 — Keith admitted it ("Yes, start it"). Was: READY — registered 2026-11-11 by the USER-TEAMS-01 stage-start approval — not admitted.
 **Task ID:** USER-TEAMS-LIVE-01
 **Title:** Live check: a user workflow with a team
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -87094,6 +87095,30 @@ nature=IMPLEMENTATION
 **Also (added 2026-11-11 by the APPROVAL-SET-01 and COS-DRAFTS-01 stage-start approval):** (1) approval settings: save read_only on a workflow with one advisor and one workflow member, run it, the dispatch and the report-back run without a click and the Team page shows the automatic line; switch to credits with a small limit and see a step wait with its reason; every behaves as today. (2) Chief of Staff drafts: ask the Chief of Staff for a workflow in zh-TW, the draft card, Review and save, the form prefilled with text only, Save, the row is a draft, a test run, switch on, the Chief of Staff reads it by name once on the roster. (3) The COS-EVAL-01 briefing eval rerun with the new Chief of Staff hash, all cases including inject-draft-request. This makes the check PROVIDER-LIVE as registered.
 **Also (added 2026-11-11 by the COS-DRAFTS-01 LOCK):** in the live draft, check whether a stray lower-case "word:" line inside a real draft makes it refuse (fail-closed by design); if it happens often, register a parser follow-up.
 **Also (added 2026-11-11 by the COS-DRAFTS-01B LOCK):** for the draft: the address bar loses the draft query after Save or Cancel; the same Review and save link opened as the second account shows the not-found message; an invalid draft has no link; the card and form read well at phone width.
+### USER-TEAMS-LIVE-02 — Live check: the Chief of Staff reads a drafted workflow by name
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=USER-TEAMS-LIVE-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the USER-TEAMS-LIVE-01 LOCK — not admitted.
+**Task ID:** USER-TEAMS-LIVE-02
+**Title:** Live check: the Chief of Staff reads a drafted workflow by name
+**Workstream:** AGENT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (it needs runs on; it can ride the next live window).
+**Depends on:** USER-TEAMS-LIVE-01.
+**Primary write scope:** records; host state.
+**Mutexes / resources:** STAGING, ENV, PROVIDER-LIVE, CREDIT.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** PROVIDER-LIVE.
+**Revert isolation:** runs off.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved the COS-DRAFTS-01 stage-start 2026-11-11).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** From the USER-TEAMS-LIVE-01 LOCK: the one acceptance line not run there. Put a workflow saved from a Chief of Staff draft (for example 每週客戶回饋摘要, switched on) on the Chief of Staff roster, ask the Chief of Staff a task for it, and check the hand-off names it by its saved name and runs it with a report-back. Implementer: none (Keith live check).
+
 ### APPROVAL-SET-01 — Approval setting per team or workflow
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
 taskId=APPROVAL-SET-01
