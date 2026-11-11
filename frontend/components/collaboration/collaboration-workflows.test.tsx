@@ -9,6 +9,11 @@ import enMessages from '../../messages/en.json';
 import zhCnMessages from '../../messages/zh-CN.json';
 import zhTwMessages from '../../messages/zh-TW.json';
 import { fillTemplate } from '../../lib/collaboration/logic';
+import {
+  collaborationAutoApprovalWaitingText,
+  collaborationAutoApprovedText,
+  AUTO_APPROVAL_WAIT_REASONS,
+} from '../../lib/collaboration/api';
 import { useCollaborationScreen } from './collaboration-page';
 import CollaborationView, {
   type CollaborationRosterRowView,
@@ -2391,5 +2396,141 @@ describe('USER-TEAMS-01C copy and codes', () => {
 
   test('a ROSTER_MEMBER_SELF refusal reads as a refused member, never as a generic failure', () => {
     assert.equal(rosterSaveErrorKey(400, { code: 'ROSTER_MEMBER_SELF' }), 'rosterSaveMemberRefused');
+  });
+});
+
+describe('APPROVAL-SET-01C automatic approval on the Team page', () => {
+  const tFor = (catalog: Catalog) => (key: string): string => catalog[key] ?? `MISSING:${key}`;
+  const tEn = tFor(EN);
+
+  const step = (overrides: Record<string, unknown>) => ({
+    referralId: 'ap-1',
+    statusLabel: 'Waiting for you',
+    asked: 'x',
+    prompt: 'Look this up',
+    answer: null,
+    handoffNote: null,
+    failureReason: null,
+    decidedBy: null,
+    rejectReason: null,
+    waiting: true,
+    canChangeFiles: false,
+    changedPaths: [],
+    savePoint: null,
+    tests: [],
+    roundLabel: null,
+    diff: null,
+    diffUnavailable: false,
+    testsGate: 'not_required' as const,
+    testsBlockReason: null,
+    approveWithoutTests: false,
+    sources: [],
+    showUnsourced: false,
+    droppedSourceCount: 0,
+    ...overrides,
+  });
+
+  test('read-only and credits approvals read as words, with the estimate and the limit', () => {
+    const owner = '11111111-2222-4333-8444-555555555555';
+    assert.equal(
+      collaborationAutoApprovedText(
+        { decidedBy: owner, autoApproved: { mode: 'read_only', estimateCredits: null, creditLimit: null } },
+        tEn,
+      ),
+      EN.autoApprovedReadOnly,
+    );
+    const credits = collaborationAutoApprovedText(
+      { decidedBy: owner, autoApproved: { mode: 'credits', estimateCredits: 6, creditLimit: 20 } },
+      tEn,
+    );
+    assert.equal(credits, 'Approved automatically: the last step used about 6 credits, under your limit of 20');
+    assert.equal(
+      collaborationAutoApprovedText(
+        { decidedBy: owner, autoApproved: { mode: 'credits', estimateCredits: null, creditLimit: null } },
+        tEn,
+      ),
+      EN.autoApprovedCreditsShort,
+    );
+    assert.equal(collaborationAutoApprovedText({ decidedBy: owner, autoApproved: null }, tEn), null);
+    assert.equal(collaborationAutoApprovedText({ decidedBy: owner }, tEn), null);
+  });
+
+  test('a waiting reason shows only while the step waits, and only for a known reason', () => {
+    for (const reason of AUTO_APPROVAL_WAIT_REASONS) {
+      const text = collaborationAutoApprovalWaitingText({ status: 'pending_approval', autoApprovalWaiting: reason }, tEn);
+      assert.ok(text && !text.startsWith('MISSING'), reason);
+    }
+    assert.equal(collaborationAutoApprovalWaitingText({ status: 'pending_approval', autoApprovalWaiting: null }, tEn), null);
+    assert.equal(collaborationAutoApprovalWaitingText({ status: 'completed', autoApprovalWaiting: 'writes' }, tEn), null);
+    assert.equal(
+      collaborationAutoApprovalWaitingText(
+        { status: 'pending_approval', autoApprovalWaiting: 'toString' as unknown as 'writes' },
+        tEn,
+      ),
+      null,
+    );
+  });
+
+  test('an approved step shows the automatic line and not the raw decidedBy id', () => {
+    const owner = '11111111-2222-4333-8444-555555555555';
+    const markup = render({
+      handoffs: [
+        step({
+          waiting: false,
+          statusLabel: 'Completed',
+          decidedBy: owner,
+          autoApprovedText: EN.autoApprovedReadOnly,
+        }),
+      ],
+    });
+    assert.match(markup, /data-testid="collaboration-auto-approved-ap-1"/);
+    assert.ok(markup.includes(EN.autoApprovedReadOnly));
+    assert.ok(!markup.includes(owner));
+    assert.ok(!markup.includes(`${EN.decidedBy}:`));
+  });
+
+  test('a person-decided step keeps the decidedBy line', () => {
+    const markup = render({ handoffs: [step({ waiting: false, statusLabel: 'Completed', decidedBy: 'user-7' })] });
+    assert.ok(markup.includes(`${EN.decidedBy}: user-7`));
+    assert.doesNotMatch(markup, /collaboration-auto-approved-/);
+  });
+
+  test('a waiting step shows the reason and keeps the Approve and Reject buttons', () => {
+    const markup = render({
+      handoffs: [step({ autoApprovalWaitingText: EN.autoApprovalWaitingOverLimit })],
+    });
+    assert.match(markup, /data-testid="collaboration-auto-waiting-ap-1"/);
+    assert.ok(markup.includes(EN.autoApprovalWaitingOverLimit));
+    assert.match(markup, /data-testid="collaboration-approve-ap-1"/);
+    assert.match(markup, /data-testid="collaboration-reject-ap-1"/);
+  });
+
+  test('a waiting step without a reason shows no reason line', () => {
+    const markup = render({ handoffs: [step({})] });
+    assert.doesNotMatch(markup, /collaboration-auto-waiting-/);
+    assert.match(markup, /data-testid="collaboration-approve-ap-1"/);
+  });
+
+  test('every new key exists in all three languages, with the same placeholders and real Chinese', () => {
+    const keys = [
+      'autoApprovedReadOnly',
+      'autoApprovedCredits',
+      'autoApprovedCreditsShort',
+      'autoApprovalWaitingWrites',
+      'autoApprovalWaitingUnknownCost',
+      'autoApprovalWaitingOverLimit',
+      'autoApprovalWaitingChecksFailed',
+      'autoApprovalWaitingLeadMissing',
+    ];
+    const holders = (text: string) => (text.match(/\{[a-zA-Z]+\}/g) ?? []).sort();
+    for (const key of keys) {
+      assert.equal(typeof EN[key], 'string', `en ${key}`);
+      for (const [locale, catalog] of CATALOGS.slice(1)) {
+        assert.equal(typeof catalog[key], 'string', `${locale} ${key}`);
+        assert.deepEqual(holders(catalog[key]), holders(EN[key]), `${locale} ${key}`);
+        assert.match(catalog[key], /[一-鿿]/, `${locale} ${key}`);
+      }
+    }
+    assert.deepEqual(holders(EN.autoApprovedCredits), ['{estimate}', '{limit}']);
   });
 });

@@ -27,6 +27,9 @@ export interface UserAgentGrants {
   };
 }
 
+/** APPROVAL-SET-01: every hand-off waits, read-only agents run on their own, or any step under a credit limit. */
+export type UserAgentApprovalMode = 'every' | 'credits' | 'read_only';
+
 /** The editable workflow fields of a user agent (BIZ-USER-01A). */
 export interface UserAgentWorkflowFields {
   tone: string | null;
@@ -43,6 +46,10 @@ export interface UserAgentWorkflowFields {
   templateId: string | null;
   /** USER-TEAMS-01: the ids of the team this workflow leads (at most 3); empty is no team. */
   teamMemberIds: string[];
+  /** APPROVAL-SET-01: how this workflow's hand-offs are approved; absent reads as 'every'. */
+  approvalMode: UserAgentApprovalMode;
+  /** The credit limit for 'credits'; null for the other modes. */
+  approvalCreditLimit: number | null;
 }
 
 export interface UserAgent extends Partial<UserAgentWorkflowFields> {
@@ -77,6 +84,8 @@ export interface CreateAgentDto
       | 'budgetPerRunCredits'
       | 'budgetPerDayCredits'
       | 'teamMemberIds'
+      | 'approvalMode'
+      | 'approvalCreditLimit'
     >
   > {
   name: string;

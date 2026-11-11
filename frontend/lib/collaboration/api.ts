@@ -1,5 +1,7 @@
 import {
   collaborationRefusal,
+  fillTemplate,
+  handoffIsWaiting,
   readErrorMessage,
   type CollaborationRefusal,
 } from './logic';
@@ -43,7 +45,27 @@ export interface CollaborationHandoff {
   diffUnavailable?: boolean;
   testsGate?: 'passed' | 'not_required' | 'blocked';
   testsBlockReason?: 'failed' | 'none' | null;
+  /** APPROVAL-SET-01B: set when the server approved this step under the lead's setting. */
+  autoApproved?: CollaborationAutoApproved | null;
+  /** APPROVAL-SET-01B: why a waiting step waits although the setting is not "every"; else null. */
+  autoApprovalWaiting?: CollaborationAutoApprovalWaiting | null;
 }
+
+export interface CollaborationAutoApproved {
+  mode: 'read_only' | 'credits';
+  estimateCredits: number | null;
+  creditLimit: number | null;
+}
+
+/** The reasons a waiting step still waits under an automatic setting; each has a translated line. */
+export const AUTO_APPROVAL_WAIT_REASONS = [
+  'writes',
+  'unknown_cost',
+  'over_limit',
+  'checks_failed',
+  'lead_missing',
+] as const;
+export type CollaborationAutoApprovalWaiting = (typeof AUTO_APPROVAL_WAIT_REASONS)[number];
 
 export interface CollaborationRunDetail {
   run: {
@@ -110,4 +132,47 @@ export async function readCollaborationFailure(response: Response): Promise<Coll
     message = '';
   }
   return collaborationRefusal(response.status, message);
+}
+
+const AUTO_APPROVAL_WAIT_KEYS: Record<CollaborationAutoApprovalWaiting, string> = {
+  writes: 'autoApprovalWaitingWrites',
+  unknown_cost: 'autoApprovalWaitingUnknownCost',
+  over_limit: 'autoApprovalWaitingOverLimit',
+  checks_failed: 'autoApprovalWaitingChecksFailed',
+  lead_missing: 'autoApprovalWaitingLeadMissing',
+};
+
+/**
+ * APPROVAL-SET-01C: the "Approved automatically: ..." line for a step the server approved
+ * under the lead's setting, or null when a person decided it. `t` reads the collaboration catalog.
+ */
+export function collaborationAutoApprovedText(
+  handoff: Pick<CollaborationHandoff, 'autoApproved' | 'decidedBy'>,
+  t: (key: string) => string,
+): string | null {
+  const approved = handoff.autoApproved;
+  if (!approved || handoff.decidedBy === null) return null;
+  if (approved.mode === 'credits') {
+    if (typeof approved.estimateCredits === 'number' && typeof approved.creditLimit === 'number') {
+      return fillTemplate(t('autoApprovedCredits'), {
+        estimate: String(approved.estimateCredits),
+        limit: String(approved.creditLimit),
+      });
+    }
+    return t('autoApprovedCreditsShort');
+  }
+  return approved.mode === 'read_only' ? t('autoApprovedReadOnly') : null;
+}
+
+/** APPROVAL-SET-01C: why a waiting step still waits under an automatic setting; null when it has no reason. */
+export function collaborationAutoApprovalWaitingText(
+  handoff: Pick<CollaborationHandoff, 'autoApprovalWaiting' | 'status'>,
+  t: (key: string) => string,
+): string | null {
+  const reason = handoff.autoApprovalWaiting;
+  if (!reason || !handoffIsWaiting(handoff.status)) return null;
+  const key = Object.prototype.hasOwnProperty.call(AUTO_APPROVAL_WAIT_KEYS, reason)
+    ? AUTO_APPROVAL_WAIT_KEYS[reason]
+    : null;
+  return key ? t(key) : null;
 }

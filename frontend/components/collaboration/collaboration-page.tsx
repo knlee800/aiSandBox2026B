@@ -34,6 +34,8 @@ import {
 } from '@/components/collaboration/collaboration-roster';
 import { useTranslations } from '@/hooks/useTranslations';
 import {
+  collaborationAutoApprovalWaitingText,
+  collaborationAutoApprovedText,
   collaborationFetch,
   type CollaborationHandoff,
   type CollaborationRunDetail,
@@ -728,6 +730,8 @@ export function useCollaborationScreen(input: {
         handoffNote: handoff.handoffNote,
         failureReason: handoff.failureReason,
         decidedBy: handoff.decidedBy,
+        autoApprovedText: collaborationAutoApprovedText(handoff, t),
+        autoApprovalWaitingText: collaborationAutoApprovalWaitingText(handoff, t),
         rejectReason: handoff.rejectReason,
         waiting: handoffIsWaiting(handoff.status),
         canChangeFiles: handoff.canChangeFiles === true,

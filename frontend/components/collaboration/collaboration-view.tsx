@@ -107,6 +107,10 @@ export interface CollaborationHandoffViewModel {
   handoffNote: string | null;
   failureReason: string | null;
   decidedBy: string | null;
+  /** APPROVAL-SET-01C: the translated "Approved automatically: ..." line; null when a person decided. */
+  autoApprovedText?: string | null;
+  /** APPROVAL-SET-01C: the translated reason a waiting step still waits under an automatic setting. */
+  autoApprovalWaitingText?: string | null;
   rejectReason: string | null;
   waiting: boolean;
   canChangeFiles: boolean;
@@ -1017,9 +1021,26 @@ export default function CollaborationView(props: {
                       </a>
                     </div>
                   ) : null}
-                  {handoff.decidedBy ? (
+                  {handoff.autoApprovedText ? (
+                    <p
+                      className="mt-2 flex min-w-0 items-start gap-1.5 break-words text-xs text-gray-500"
+                      data-testid={`collaboration-auto-approved-${handoff.referralId}`}
+                    >
+                      <CheckIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                      <span>{handoff.autoApprovedText}</span>
+                    </p>
+                  ) : handoff.decidedBy ? (
                     <p className="mt-2 break-all text-xs text-gray-500">
                       {labels.decidedBy}: {handoff.decidedBy}
+                    </p>
+                  ) : null}
+                  {handoff.waiting && handoff.autoApprovalWaitingText ? (
+                    <p
+                      className="mt-2 flex min-w-0 items-start gap-1.5 break-words text-xs text-gray-600"
+                      data-testid={`collaboration-auto-waiting-${handoff.referralId}`}
+                    >
+                      <InformationCircleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                      <span>{handoff.autoApprovalWaitingText}</span>
                     </p>
                   ) : null}
                   {handoff.waiting && handoff.canChangeFiles ? (

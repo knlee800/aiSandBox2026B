@@ -975,6 +975,8 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
                         models={agentOptions.options?.models ?? null}
                         teamMemberIds={selectedUserAgent.teamMemberIds ?? []}
                         teamChoices={agentOptions.options?.teamChoices ?? null}
+                        approvalMode={selectedUserAgent.approvalMode ?? 'every'}
+                        approvalCreditLimit={selectedUserAgent.approvalCreditLimit ?? null}
                         onRetry={workflowSummaries.retry}
                         onSwitch={handleSwitchWorkflow}
                       />

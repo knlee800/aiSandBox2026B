@@ -12,6 +12,7 @@ import {
 import type { UserAgent, UserAgentOptions } from '@/hooks/useUserAgents';
 import Spinner from '@/components/ui/Spinner';
 import {
+  APPROVAL_MODES,
   REPLY_LANGUAGE_CHOICES,
   budgetProblems,
   fillTemplate,
@@ -386,7 +387,8 @@ export function WorkflowAdvancedFields(
     draft.modelChoice !== 'server' ||
     draft.budgetPerRun !== '' ||
     draft.budgetPerDay !== '' ||
-    draft.teamMemberIds.length > 0;
+    draft.teamMemberIds.length > 0 ||
+    draft.approvalMode !== 'every';
   const toggleTeam = (id: string) => {
     const next = toggleTeamMember(draft.teamMemberIds, id);
     setTeamLimitHit(next.limitHit);
@@ -541,9 +543,72 @@ export function WorkflowAdvancedFields(
             </p>
           ) : null}
           <p className={hintClasses} data-testid="agent-workflow-team-approval">
-            {t('teamApprovalHint')}
+            {t(draft.approvalMode === 'every' ? 'teamApprovalHint' : 'teamApprovalHintAuto')}
           </p>
           <FieldError id="agent-workflow-team-error" message={errors.team ? t(errors.team) : undefined} field="team" />
+        </fieldset>
+
+        <fieldset data-testid="agent-workflow-approval">
+          <legend className={workflowLabelClasses}>{t('approvalLabel')}</legend>
+          <div className="mt-2 space-y-2">
+            {APPROVAL_MODES.map((mode) => {
+              const selected = draft.approvalMode === mode;
+              const text =
+                mode === 'every' ? t('approvalEvery') : mode === 'read_only' ? t('approvalReadOnly') : t('approvalCredits');
+              return (
+                <label
+                  key={mode}
+                  className="flex cursor-pointer items-center gap-2 text-sm text-slate-200"
+                  data-testid={`agent-workflow-approval-option-${mode}`}
+                >
+                  <input
+                    type="radio"
+                    name="agent-workflow-approval"
+                    value={mode}
+                    checked={selected}
+                    onChange={() => onChange({ approvalMode: mode })}
+                    disabled={disabled}
+                    className="h-4 w-4 shrink-0 accent-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                    data-testid={`agent-workflow-approval-${mode}`}
+                  />
+                  <span className="min-w-0 break-words">{text}</span>
+                </label>
+              );
+            })}
+          </div>
+          {draft.approvalMode === 'credits' ? (
+            <div className="mt-2 sm:max-w-xs">
+              <label htmlFor="agent-workflow-approval-limit" className={workflowLabelClasses}>
+                {t('approvalCreditsLimit')}
+              </label>
+              <input
+                id="agent-workflow-approval-limit"
+                type="text"
+                inputMode="numeric"
+                value={draft.approvalCreditLimit}
+                onChange={(e) => onChange({ approvalCreditLimit: e.target.value })}
+                placeholder={t('approvalLimitPlaceholder')}
+                disabled={disabled}
+                aria-describedby={errors.approval ? 'agent-workflow-approval-error' : undefined}
+                className={workflowInputClasses}
+                data-testid="agent-workflow-approval-limit"
+              />
+            </div>
+          ) : null}
+          <p className={hintClasses} data-testid="agent-workflow-approval-never">
+            {t('approvalNever')} {t('approvalHint')}
+          </p>
+          {draft.approvalMode !== 'every' && draft.teamMemberIds.length === 0 ? (
+            <p className="mt-1 flex items-start gap-2 text-xs text-amber-200" role="status" data-testid="agent-workflow-approval-no-team">
+              <InformationCircleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>{t('approvalNoTeam')}</span>
+            </p>
+          ) : null}
+          <FieldError
+            id="agent-workflow-approval-error"
+            message={errors.approval ? t(errors.approval) : undefined}
+            field="approval"
+          />
         </fieldset>
       </div>
     </details>

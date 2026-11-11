@@ -106,6 +106,8 @@ export interface WorkflowSummaryLines {
   model: string;
   /** USER-TEAMS-01: "Team: ..." value; null when the team is not known. */
   team: string | null;
+  /** APPROVAL-SET-01: the "Approval" value; null when the setting is not known. */
+  approval: string | null;
   perRun: string;
   perDay: string;
 }
@@ -116,6 +118,7 @@ export function workflowSummaryLines(
   scopeName: (id: string) => string,
   models: readonly UserAgentPlatformModel[] | null,
   team?: { ids: readonly string[] | null | undefined; choices: readonly UserAgentTeamChoice[] | null | undefined },
+  approval?: { mode: string | null | undefined; creditLimit: number | null | undefined },
 ): WorkflowSummaryLines {
   const folders =
     item.knowledgeScopeIds.length > 0
@@ -133,6 +136,14 @@ export function workflowSummaryLines(
       : platformId;
   }
   const teamIds = team?.ids ?? null;
+  const approvalText =
+    approval === undefined || approval.mode === undefined || approval.mode === null
+      ? null
+      : approval.mode === 'read_only'
+        ? t('summary.approvalReadOnly')
+        : approval.mode === 'credits' && typeof approval.creditLimit === 'number'
+          ? fillTemplate(t('summary.approvalCredits'), { count: approval.creditLimit })
+          : t('summary.approvalEvery');
   return {
     folders,
     model,
@@ -142,6 +153,7 @@ export function workflowSummaryLines(
         : teamIds.length > 0
           ? teamNamesFor(t, teamIds, [...(team?.choices ?? [])]).join(', ')
           : t('summary.teamNone'),
+    approval: approvalText,
     perRun:
       item.budgetPerRunCredits !== null ? creditsText(t, item.budgetPerRunCredits) : t('summary.noLimit'),
     perDay:
@@ -186,6 +198,9 @@ export interface AgentWorkflowSummaryProps {
    */
   teamMemberIds?: readonly string[] | null;
   teamChoices?: readonly UserAgentTeamChoice[] | null;
+  /** APPROVAL-SET-01: the saved approval setting; without a mode the Approval line is left out. */
+  approvalMode?: string | null;
+  approvalCreditLimit?: number | null;
   onRetry: () => void;
   /** Sets the status through PATCH. Resolves with an error (and the server's code when known) when it failed. */
   onSwitch: (agentId: string, on: boolean) => Promise<{ error?: string; code?: string }>;
@@ -203,7 +218,7 @@ const linkClasses =
 
 export default function AgentWorkflowSummary(props: AgentWorkflowSummaryProps) {
   const { t, scopeName, localePrefix, agentId, status, summaryState, item, models, onRetry, onSwitch } = props;
-  const { teamMemberIds, teamChoices } = props;
+  const { teamMemberIds, teamChoices, approvalMode, approvalCreditLimit } = props;
   const [phase, setPhase] = React.useState<WorkflowSwitchPhase>(props.initialPhase ?? 'idle');
   const [switching, setSwitching] = React.useState(false);
   const [failure, setFailure] = React.useState<WorkflowSwitchFailure | null>(
@@ -295,10 +310,14 @@ export default function AgentWorkflowSummary(props: AgentWorkflowSummaryProps) {
       {summaryState === 'loaded' && item ? (
         <dl className="mt-3 grid gap-3 sm:grid-cols-2" data-testid="agent-summary-lines">
           {(() => {
-            const lines = workflowSummaryLines(item, t, scopeName, models, {
-              ids: teamMemberIds,
-              choices: teamChoices,
-            });
+            const lines = workflowSummaryLines(
+              item,
+              t,
+              scopeName,
+              models,
+              { ids: teamMemberIds, choices: teamChoices },
+              { mode: approvalMode, creditLimit: approvalCreditLimit },
+            );
             return (
               <>
                 <div className="sm:col-span-2">
@@ -313,6 +332,12 @@ export default function AgentWorkflowSummary(props: AgentWorkflowSummaryProps) {
                   <div className="sm:col-span-2">
                     <dt className={rowLabel}>{t('summary.team')}</dt>
                     <dd className={`${rowValue} break-words`} data-testid="agent-summary-team">{lines.team}</dd>
+                  </div>
+                ) : null}
+                {lines.approval !== null ? (
+                  <div className="sm:col-span-2">
+                    <dt className={rowLabel}>{t('summary.approval')}</dt>
+                    <dd className={`${rowValue} break-words`} data-testid="agent-summary-approval">{lines.approval}</dd>
                   </div>
                 ) : null}
                 <div>

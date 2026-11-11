@@ -3,6 +3,7 @@ import type {
   CreateAgentFromTemplateDto,
   UpdateAgentDto,
   UserAgent,
+  UserAgentApprovalMode,
   UserAgentModel,
   UserAgentNeverDoItem,
   UserAgentOptions,
@@ -48,6 +49,21 @@ export interface WorkflowDraft {
   budgetPerDay: string;
   /** USER-TEAMS-01: the ticked team members, in order; at most WORKFLOW_TEAM_MAX. */
   teamMemberIds: string[];
+  /** APPROVAL-SET-01: how hand-offs are approved. */
+  approvalMode: UserAgentApprovalMode;
+  /** The credit limit as typed, for 'credits'; '' otherwise. */
+  approvalCreditLimit: string;
+}
+
+/** The three approval choices, in the order the form shows them. */
+export const APPROVAL_MODES: readonly UserAgentApprovalMode[] = ['every', 'read_only', 'credits'];
+
+/** The server's limit range for the approval credit amount: 1 up to 1,000,000. */
+export const APPROVAL_CREDIT_LIMIT_MAX = 1_000_000;
+
+/** A stored mode we do not know reads as 'every', the safe default. */
+export function readApprovalMode(value: unknown): UserAgentApprovalMode {
+  return value === 'credits' || value === 'read_only' ? value : 'every';
 }
 
 /** At most three members; the workflow itself is the lead. Same limit as the Chief of Staff roster. */
@@ -69,6 +85,8 @@ export function emptyWorkflowDraft(): WorkflowDraft {
     budgetPerRun: '',
     budgetPerDay: '',
     teamMemberIds: [],
+    approvalMode: 'every',
+    approvalCreditLimit: '',
   };
 }
 
@@ -112,7 +130,18 @@ export function workflowDraftFromAgent(agent: UserAgent): WorkflowDraft {
     budgetPerRun: agent.budgetPerRunCredits == null ? '' : String(agent.budgetPerRunCredits),
     budgetPerDay: agent.budgetPerDayCredits == null ? '' : String(agent.budgetPerDayCredits),
     teamMemberIds: [...(agent.teamMemberIds ?? [])],
+    approvalMode: readApprovalMode(agent.approvalMode),
+    approvalCreditLimit:
+      readApprovalMode(agent.approvalMode) === 'credits' && typeof agent.approvalCreditLimit === 'number'
+        ? String(agent.approvalCreditLimit)
+        : '',
   };
+}
+
+/** The limit as a number: 1 to APPROVAL_CREDIT_LIMIT_MAX, whole; null when empty or not valid. */
+export function parseApprovalLimit(raw: string): number | null {
+  const value = parseBudgetInput(raw);
+  return value === null || Number.isNaN(value) || value > APPROVAL_CREDIT_LIMIT_MAX ? null : value;
 }
 
 // ---- Budgets -------------------------------------------------------------
@@ -235,6 +264,11 @@ export function buildBlankBody(draft: WorkflowDraft): CreateAgentDto {
   if (perDay !== null && !Number.isNaN(perDay)) body.budgetPerDayCredits = perDay;
   // A blank create with no team stays byte-compatible; the team goes only when one is ticked.
   if (draft.teamMemberIds.length > 0) body.teamMemberIds = [...draft.teamMemberIds];
+  // The default 'every' is left out so a blank create stays byte-compatible.
+  if (draft.approvalMode !== 'every') {
+    body.approvalMode = draft.approvalMode;
+    body.approvalCreditLimit = draft.approvalMode === 'credits' ? parseApprovalLimit(draft.approvalCreditLimit) : null;
+  }
   return body;
 }
 
@@ -273,6 +307,9 @@ export function buildPatchBody(draft: WorkflowDraft): UpdateAgentDto {
     budgetPerDayCredits: perDay === null || Number.isNaN(perDay) ? null : perDay,
     // Always sent, so an emptied team saves as [].
     teamMemberIds: [...draft.teamMemberIds],
+    // Always sent, so a switch back to 'every' saves; the limit is null unless the mode is 'credits'.
+    approvalMode: draft.approvalMode,
+    approvalCreditLimit: draft.approvalMode === 'credits' ? parseApprovalLimit(draft.approvalCreditLimit) : null,
   };
 }
 
@@ -292,6 +329,7 @@ export type WorkflowErrorField =
   | 'budgetPerDay'
   | 'budget'
   | 'team'
+  | 'approval'
   | 'start'
   | 'form';
 
@@ -330,6 +368,10 @@ export function checkWorkflowDraft(input: DraftCheckInput): WorkflowErrors {
     if (problems.includes('perDayInvalid')) errors.budgetPerDay = WORKFLOW_ERROR_KEYS.budgetPerDayInvalid;
     if (problems.includes('order')) errors.budgetPerDay = WORKFLOW_ERROR_KEYS.budgetOrder;
     if (draft.teamMemberIds.length > WORKFLOW_TEAM_MAX) errors.team = 'errors.teamTooMany';
+    if (draft.approvalMode === 'credits') {
+      if (draft.approvalCreditLimit.trim() === '') errors.approval = 'errors.approvalLimitRequired';
+      else if (parseApprovalLimit(draft.approvalCreditLimit) === null) errors.approval = 'errors.approvalLimitInvalid';
+    }
   }
   return errors;
 }
@@ -361,6 +403,10 @@ export const REFUSAL_CODE_MAP: Readonly<Record<string, RefusalMapping>> = {
   ROSTER_MEMBER_NOT_ALLOWED: { field: 'team', messageKey: 'errors.teamMemberRefused' },
   ROSTER_MEMBER_NOT_FOUND: { field: 'team', messageKey: 'errors.teamMemberRefused' },
   ROSTER_MEMBER_SELF: { field: 'team', messageKey: 'errors.teamMemberSelf' },
+  // APPROVAL-SET-01: the approval setting's refusals.
+  APPROVAL_LIMIT_REQUIRED: { field: 'approval', messageKey: 'errors.approvalLimitRequired' },
+  APPROVAL_LIMIT_INVALID: { field: 'approval', messageKey: 'errors.approvalLimitInvalid' },
+  APPROVAL_MODE_INVALID: { field: 'approval', messageKey: 'errors.approvalModeInvalid' },
 };
 
 /** Any other failure (network, 500, a 400 without a known code) gets the generic message. */
@@ -376,6 +422,10 @@ export function mapRefusal(code: string | undefined, message?: string): RefusalM
   }
   if (!code && message && /teamMemberIds/.test(message)) {
     return { field: 'team', messageKey: 'errors.teamTooMany' };
+  }
+  // The DTO's refusal of a bad mode or limit has no code; class-validator names the field.
+  if (!code && message && /approval(Mode|CreditLimit)/.test(message)) {
+    return { field: 'approval', messageKey: 'errors.approvalInvalid' };
   }
   return GENERIC_REFUSAL;
 }

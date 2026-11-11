@@ -499,6 +499,7 @@ describe('summary copy in three languages', () => {
       'switchLabel', 'switchOn', 'switchOff', 'needsTestHint', 'openOnTeam', 'switchOffTitle', 'switchOffBody',
       'switchOffConfirm', 'switchOffCancel', 'switching', 'switchError', 'usageLine', 'usageNoRun',
       'usageLoading', 'usageFailed', 'team', 'teamNone',
+      'approval', 'approvalEvery', 'approvalCredits', 'approvalReadOnly',
     ];
     for (const key of used) {
       for (const messages of [enMessages, zhTwMessages, zhCnMessages]) {
@@ -708,6 +709,38 @@ describe('USER-TEAMS-01C the team line', () => {
       const none = workflowSummaryLines(item(), t, enScope, models, { ids: [], choices: teamChoices });
       assert.equal(none.team, t('summary.teamNone'));
       assert.match(t('summary.team'), /[一-鿿]/);
+    }
+  });
+});
+
+describe('APPROVAL-SET-01C the approval line', () => {
+  test('reads every hand-off, read-only agents automatic, or automatic under N credits', () => {
+    assert.match(render({ approvalMode: 'every' }), /<dt[^>]*>Approval<\/dt><dd[^>]*data-testid="agent-summary-approval">Every hand-off</);
+    assert.match(render({ approvalMode: 'read_only' }), /data-testid="agent-summary-approval">Read-only agents automatic</);
+    assert.match(
+      render({ approvalMode: 'credits', approvalCreditLimit: 25 }),
+      /data-testid="agent-summary-approval">Automatic under 25 credits</,
+    );
+  });
+
+  test('credits without a saved limit reads as every hand-off, the safe reading', () => {
+    assert.match(render({ approvalMode: 'credits', approvalCreditLimit: null }), /agent-summary-approval">Every hand-off</);
+  });
+
+  test('without a setting the line is left out', () => {
+    assert.ok(!render().includes('agent-summary-approval'));
+  });
+
+  test('the line reads in Traditional and Simplified Chinese', () => {
+    for (const messages of [zhTwMessages, zhCnMessages]) {
+      const t = (key: string): string => resolve(messages as Messages, `platform.agentWorkflow.${key}`) ?? `MISSING:${key}`;
+      assert.equal(
+        workflowSummaryLines(item(), t, enScope, models, undefined, { mode: 'read_only', creditLimit: null }).approval,
+        t('summary.approvalReadOnly'),
+      );
+      const credits = workflowSummaryLines(item(), t, enScope, models, undefined, { mode: 'credits', creditLimit: 7 }).approval;
+      assert.ok(credits && credits.includes('7') && /[一-鿿]/.test(credits));
+      assert.match(t('summary.approval'), /[一-鿿]/);
     }
   });
 });

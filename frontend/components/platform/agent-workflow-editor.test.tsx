@@ -16,6 +16,7 @@ import {
   buildPatchBody,
   buildTemplateBody,
   checkWorkflowDraft,
+  parseApprovalLimit,
   emptyWorkflowDraft,
   liveInstructionsCount,
   mapRefusal,
@@ -345,6 +346,10 @@ describe('workflow editor refusal-code mapping', () => {
     ROSTER_MEMBER_NOT_ALLOWED: { field: 'team', key: 'errors.teamMemberRefused' },
     ROSTER_MEMBER_NOT_FOUND: { field: 'team', key: 'errors.teamMemberRefused' },
     ROSTER_MEMBER_SELF: { field: 'team', key: 'errors.teamMemberSelf' },
+    // APPROVAL-SET-01C: the approval setting's refusals.
+    APPROVAL_LIMIT_REQUIRED: { field: 'approval', key: 'errors.approvalLimitRequired' },
+    APPROVAL_LIMIT_INVALID: { field: 'approval', key: 'errors.approvalLimitInvalid' },
+    APPROVAL_MODE_INVALID: { field: 'approval', key: 'errors.approvalModeInvalid' },
   };
 
   test('each gateway refusal code maps to a field and a message key', () => {
@@ -951,10 +956,11 @@ describe('USER-TEAMS-01C team block rendering', () => {
   });
 
   test('the Advanced heading names the team in every language', () => {
-    assert.equal(enT('sectionAdvanced'), 'Advanced: model, budget and team');
+    assert.equal(enT('sectionAdvanced'), 'Advanced: model, budget, team and approval');
     for (const locale of LOCALES.slice(1)) {
       const text = resolve(locale.messages, 'platform.agentWorkflow.sectionAdvanced')!;
       assert.match(text, /團隊|团队/, locale.code);
+      assert.match(text, /核准|批准/, locale.code);
     }
   });
 
@@ -975,6 +981,161 @@ describe('USER-TEAMS-01C team block rendering', () => {
         assert.ok(own && own.length > 0, `${locale.code} ${key}`);
         assert.match(own, /[一-鿿]/, `${locale.code} ${key}`);
         assert.deepEqual(holders(own), holders(english), `${locale.code} ${key}`);
+      }
+    }
+  });
+});
+
+describe('APPROVAL-SET-01C approval request bodies', () => {
+  const base = { ...emptyWorkflowDraft(), name: 'D', role: 'R', description: 'x' };
+
+  test('a blank create left at "every" sends neither approval field, so it stays as before', () => {
+    const body = buildBlankBody(base);
+    assert.equal('approvalMode' in body, false);
+    assert.equal('approvalCreditLimit' in body, false);
+  });
+
+  test('a blank create sends the mode and the limit for credits', () => {
+    const body = buildBlankBody({ ...base, approvalMode: 'credits', approvalCreditLimit: ' 25 ' });
+    assert.equal(body.approvalMode, 'credits');
+    assert.equal(body.approvalCreditLimit, 25);
+  });
+
+  test('a blank create with read_only sends a null limit', () => {
+    const body = buildBlankBody({ ...base, approvalMode: 'read_only', approvalCreditLimit: '99' });
+    assert.equal(body.approvalMode, 'read_only');
+    assert.equal(body.approvalCreditLimit, null);
+  });
+
+  test('a PATCH always sends the mode; the limit is a number only for credits', () => {
+    const draft = workflowDraftFromAgent(savedAgent());
+    assert.equal(draft.approvalMode, 'every');
+    assert.equal(draft.approvalCreditLimit, '');
+    const every = buildPatchBody(draft);
+    assert.equal(every.approvalMode, 'every');
+    assert.equal(every.approvalCreditLimit, null);
+    const credits = buildPatchBody({ ...draft, approvalMode: 'credits', approvalCreditLimit: '40' });
+    assert.equal(credits.approvalMode, 'credits');
+    assert.equal(credits.approvalCreditLimit, 40);
+    const readOnly = buildPatchBody({ ...draft, approvalMode: 'read_only', approvalCreditLimit: '40' });
+    assert.equal(readOnly.approvalMode, 'read_only');
+    assert.equal(readOnly.approvalCreditLimit, null);
+  });
+
+  test('the draft reads the saved setting; an unknown stored mode reads as every', () => {
+    const credits = workflowDraftFromAgent(savedAgent({ approvalMode: 'credits', approvalCreditLimit: 12 }));
+    assert.equal(credits.approvalMode, 'credits');
+    assert.equal(credits.approvalCreditLimit, '12');
+    const odd = workflowDraftFromAgent(savedAgent({ approvalMode: 'sometimes' as unknown as 'every' }));
+    assert.equal(odd.approvalMode, 'every');
+  });
+
+  test('the limit is a whole number from 1 to 1,000,000', () => {
+    assert.equal(parseApprovalLimit('1'), 1);
+    assert.equal(parseApprovalLimit('1000000'), 1_000_000);
+    for (const bad of ['', '0', '-3', '1.5', 'abc', '1000001']) assert.equal(parseApprovalLimit(bad), null, bad);
+  });
+});
+
+describe('APPROVAL-SET-01C approval checks and refusals', () => {
+  const check = (draft: ReturnType<typeof emptyWorkflowDraft>) =>
+    checkWorkflowDraft({
+      draft,
+      limits: DEFAULT_WORKFLOW_LIMITS,
+      instructions: { used: 0, max: 4000, exact: false, over: false },
+      scope: 'workflow',
+    });
+
+  test('credits needs a number: empty and bad values get their own message', () => {
+    assert.equal(check({ ...emptyWorkflowDraft(), approvalMode: 'credits' }).approval, 'errors.approvalLimitRequired');
+    assert.equal(
+      check({ ...emptyWorkflowDraft(), approvalMode: 'credits', approvalCreditLimit: '0' }).approval,
+      'errors.approvalLimitInvalid',
+    );
+    assert.equal(check({ ...emptyWorkflowDraft(), approvalMode: 'credits', approvalCreditLimit: '5' }).approval, undefined);
+    assert.equal(check({ ...emptyWorkflowDraft(), approvalMode: 'read_only' }).approval, undefined);
+    assert.equal(check(emptyWorkflowDraft()).approval, undefined);
+  });
+
+  test('a 400 without a code that names the approval fields reads as the approval message', () => {
+    assert.deepEqual(mapRefusal(undefined, 'approvalMode must be one of the following values: every, credits, read_only'), {
+      field: 'approval',
+      messageKey: 'errors.approvalInvalid',
+    });
+    assert.equal(mapRefusal(undefined, 'approvalCreditLimit must not be greater than 1000000').field, 'approval');
+    assert.equal(mapRefusal('SOMETHING_NEW', 'approvalMode is bad').field, 'form');
+  });
+});
+
+describe('APPROVAL-SET-01C approval fieldset rendering', () => {
+  const detailsTag = (html: string) => /<details[^>]*data-testid="agent-workflow-advanced"[^>]*>/.exec(html)![0];
+  const inputTag = (html: string, id: string) =>
+    new RegExp(`<input[^>]*data-testid="${id}"[^>]*>`).exec(html)?.[0] ?? '';
+
+  test('three choices render, "every" is checked by default and no limit input shows', () => {
+    const html = render(config({ options: teamOptions }));
+    assert.ok(html.includes('data-testid="agent-workflow-approval"'));
+    for (const mode of ['every', 'read_only', 'credits']) {
+      assert.ok(html.includes(`data-testid="agent-workflow-approval-${mode}"`), mode);
+    }
+    assert.match(inputTag(html, 'agent-workflow-approval-every'), /checked=""/);
+    assert.doesNotMatch(inputTag(html, 'agent-workflow-approval-credits'), /checked=""/);
+    assert.doesNotMatch(html, /data-testid="agent-workflow-approval-limit"/);
+    assert.ok(html.includes(enT('approvalNever')));
+    assert.ok(html.includes(enT('approvalHint')));
+    assert.ok(html.includes(enT('teamApprovalHint')));
+    assert.ok(!html.includes(enT('teamApprovalHintAuto')));
+    assert.doesNotMatch(detailsTag(html), / open=/);
+  });
+
+  test('a saved credits setting opens the details, shows the limit and the automatic team hint', () => {
+    const html = render(
+      config({
+        mode: 'edit',
+        agent: savedAgent({ id: WF_C, teamMemberIds: [WF_A], approvalMode: 'credits', approvalCreditLimit: 30 }),
+        options: teamOptions,
+      }),
+    );
+    assert.match(detailsTag(html), / open=/);
+    assert.match(inputTag(html, 'agent-workflow-approval-limit'), /value="30"/);
+    assert.match(inputTag(html, 'agent-workflow-approval-credits'), /checked=""/);
+    assert.ok(html.includes(enT('teamApprovalHintAuto')));
+    assert.ok(!html.includes('agent-workflow-approval-no-team'));
+  });
+
+  test('a read-only setting with no team says it has no effect yet', () => {
+    const html = render(config({ mode: 'edit', agent: savedAgent({ approvalMode: 'read_only' }), options: teamOptions }));
+    assert.match(detailsTag(html), / open=/);
+    assert.ok(html.includes('data-testid="agent-workflow-approval-no-team"'));
+    assert.ok(html.includes(enT('approvalNoTeam')));
+    assert.doesNotMatch(html, /data-testid="agent-workflow-approval-limit"/);
+  });
+
+  test('the existing Team and budget test ids are kept', () => {
+    const html = render(config({ options: teamOptions }));
+    for (const id of ['agent-workflow-team', 'agent-workflow-team-count', 'agent-workflow-team-approval', 'agent-workflow-budget-run']) {
+      assert.ok(html.includes(`data-testid="${id}"`), id);
+    }
+  });
+
+  test('every approval key exists in all three languages with the same placeholders and real Chinese', () => {
+    const wanted = [
+      'approvalLabel', 'approvalHint', 'approvalEvery', 'approvalReadOnly', 'approvalCredits',
+      'approvalCreditsLimit', 'approvalLimitPlaceholder', 'approvalNever', 'approvalNoTeam',
+      'teamApprovalHintAuto', 'summary.approval', 'summary.approvalEvery', 'summary.approvalCredits',
+      'summary.approvalReadOnly', 'errors.approvalLimitInvalid', 'errors.approvalLimitRequired',
+      'errors.approvalModeInvalid', 'errors.approvalInvalid',
+    ];
+    const holders = (text: string) => (text.match(/\{\w+\}/g) ?? []).sort();
+    for (const key of wanted) {
+      const english = resolve(enMessages as Messages, `platform.agentWorkflow.${key}`);
+      assert.ok(english && english.length > 0, `en ${key}`);
+      for (const locale of LOCALES.slice(1)) {
+        const own = resolve(locale.messages, `platform.agentWorkflow.${key}`);
+        assert.ok(own && own.length > 0, `${locale.code} ${key}`);
+        assert.deepEqual(holders(own), holders(english), `${locale.code} ${key}`);
+        assert.match(own, /[一-鿿]/, `${locale.code} ${key}`);
+        assert.notEqual(own, english, `${locale.code} ${key}`);
       }
     }
   });
