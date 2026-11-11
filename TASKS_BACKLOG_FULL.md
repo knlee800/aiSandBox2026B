@@ -88662,7 +88662,7 @@ taskId=CM-BODY-KEY-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-11 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-11 by the CM-BODY-ROUTE-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-11. LANE-DONE and LOCKED by the control plane; Lane 2 and CONTAINER-MANAGER released. The 16 MB file write parser now also requires the valid internal key (the guard's own internalKeyMatches, constant time); a keyless large body gets 413, a keyless small body still the guard's 403; key read once at setup, unset key never gets 16 MB; spec 55 to 87 real-HTTP tests; opus subagent 78f1f1b, cherry-picked as 5d472ee; control-plane rerun on the branch and main: container-manager 878 passed, build 0. Not deployed. Checkpoint: docs/CM-BODY-KEY-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (STAGING-DEPLOY-SNAP-03, shared with ARCHIVE-BINARY-01) / 1 superseded (the 413 host check, into the STAGING-DEPLOY-SNAP-03 scope) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 2 — 2026-11-11 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-11 by the CM-BODY-ROUTE-01 LOCK — not admitted.
 **Task ID:** CM-BODY-KEY-01
 **Title:** Check the internal key before parsing a large file write body
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -88679,6 +88679,30 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and snapshots).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** From the CM-BODY-ROUTE-01 worker: the internal file write route still parses up to 16 MB before its guard answers 403 to a caller without the key (host-local callers only). Option: let the large parser run only when the internal key header is valid (constant-time compare, same source as the guard), so a keyless request gets the 100 KB parser or a 403 first; the guard stays the authority. Touches the internal key: opus, tests for the key, no key and a wrong key.
+
+### STAGING-DEPLOY-SNAP-03 — Deploy binary-safe zip export and import and the keyed body limit
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-SNAP-03
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-11 by the CM-BODY-KEY-01 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-SNAP-03
+**Title:** Deploy binary-safe zip export and import and the keyed body limit
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the deploy.
+**Depends on:** ARCHIVE-BINARY-01, CM-BODY-KEY-01.
+**Primary write scope:** records; host state (deploy).
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and snapshots).
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy main with ARCHIVE-BINARY-01 and CM-BODY-KEY-01 to staging from the host with runs off (no migration expected; configuration unchanged). Host checks: the standard set, the earlier route and security checks, the new code in the builds; without the key a 1 MB body to the file write route now gets 413 (was 403) and a small body 403; files/search 1 MB gets 413; with the key a 1 MB file write to a nonexistent session is not refused for size (not 413). No Keith step required; optionally he exports and imports a project with an image.
 
 ### STAGING-DEPLOY-SNAP-02 — Deploy the snapshot pick and the route-scoped body limit
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -88734,7 +88758,7 @@ taskId=ARCHIVE-BINARY-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-11 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-11 by the SNAPSHOT-BINARY-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-11. LANE-DONE and LOCKED by the control plane; Lane 1 and GATEWAY released. Zip export reads each file as base64 bytes and import writes every entry as base64, so images and fonts round-trip byte for byte and entries that are not UTF-8 are no longer refused; limits, path safety and errors unchanged; 3 new tests; sonnet subagent, fast-forwarded as 502fe70; control-plane rerun: gateway 3808 passed plus the 14 known smoke failures, build 0; on main src/snapshots 19 passed. Not deployed. Checkpoint: docs/ARCHIVE-BINARY-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (STAGING-DEPLOY-SNAP-03, shared with CM-BODY-KEY-01) / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-11 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-11 by the SNAPSHOT-BINARY-01 LOCK — not admitted.
 **Task ID:** ARCHIVE-BINARY-01
 **Title:** Binary-safe zip export and import
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
