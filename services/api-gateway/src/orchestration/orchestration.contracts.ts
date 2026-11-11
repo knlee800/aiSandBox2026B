@@ -161,6 +161,57 @@ export interface CollaborationReferral {
   readonly decidedBy: string | null;
   readonly handoffNote: string | null;
   readonly result: ReferralResult | null;
+  /**
+   * APPROVAL-SET-01B D12: present only on a step the server approved under the
+   * lead's stored setting (decisionReason `auto:...`). Absent otherwise.
+   */
+  readonly autoApproved?: ReferralAutoApproved;
+  /**
+   * APPROVAL-SET-01B D12: present only on a step that waits although the
+   * lead's setting is not `every`, with the reason. Absent otherwise.
+   */
+  readonly autoApprovalWaiting?: AutoApprovalWaitReason;
+}
+
+// ---------------------------------------------------------------------------
+// APPROVAL-SET-01B: the server's auto-approve path
+// ---------------------------------------------------------------------------
+
+/** The two approval modes that can approve a step without the owner's click. */
+export type AutoApprovalMode = 'read_only' | 'credits';
+
+/**
+ * D11: why a step waits although the lead's setting is not `every`.
+ * - writes: the target is not positively read-only (any profile but `read`,
+ *   an unknown target, or a connector tool without `readOnly: true`).
+ * - unknown_cost: `credits` mode and no completed step cost is known.
+ * - over_limit: `credits` mode and the estimate is above the limit.
+ * - checks_failed: approveReferral refused (budget, kill switch, safety,
+ *   abort, credit balance, token quota, or any other error).
+ * - lead_missing: the lead's row is missing, another owner's, or off.
+ */
+export const AUTO_APPROVAL_WAIT_REASONS = [
+  'writes',
+  'unknown_cost',
+  'over_limit',
+  'checks_failed',
+  'lead_missing',
+] as const;
+export type AutoApprovalWaitReason = (typeof AUTO_APPROVAL_WAIT_REASONS)[number];
+
+/** D11: stored in pending_job when a step waits under a non-`every` setting. */
+export interface ReferralPendingAutoApproval {
+  readonly outcome: 'waiting';
+  readonly reason: AutoApprovalWaitReason;
+}
+
+/** D12: what the page reads about a step the server approved. */
+export interface ReferralAutoApproved {
+  readonly mode: AutoApprovalMode;
+  /** The `credits` estimate; null under `read_only`. */
+  readonly estimateCredits: number | null;
+  /** The `credits` limit at approval; null under `read_only`. */
+  readonly creditLimit: number | null;
 }
 
 export interface CollaborationListedAgent {
@@ -237,6 +288,12 @@ export interface ReferralPendingJob {
    * Never read from a request body. Orchestration-internal; not a job field.
    */
   readonly teamLeadId?: string;
+  /**
+   * APPROVAL-SET-01B D11: set by the server only when the lead's setting is
+   * not `every` and the step waits anyway. Never read from a request body.
+   * Orchestration-internal; not a job field.
+   */
+  readonly autoApproval?: ReferralPendingAutoApproval;
 }
 
 export interface ReferralResult {

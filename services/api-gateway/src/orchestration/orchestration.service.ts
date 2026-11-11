@@ -36,6 +36,10 @@ import { ConnectorConnection } from '../entities/connector-connection.entity';
 import { userWorkflowGrants } from '../user-agent/user-workflow-grants';
 import {
   CollaborationWorkflowService,
+  autoApprovalDecisionReason,
+  autoApprovalTargetIsReadOnly,
+  readAutoApprovalDecision,
+  readPendingAutoApproval,
   resolveWorkflowProviderModel,
 } from './collaboration-workflow';
 import {
@@ -50,6 +54,8 @@ import {
   type ConnectorGrantJobFields,
 } from './collaboration-connector-grants';
 import {
+  type AutoApprovalMode,
+  type AutoApprovalWaitReason,
   type OrchestrationAuditEvent,
   type OrchestrationAuditEventType,
   type BuilderProfileId,
@@ -255,6 +261,12 @@ export interface DecideReferralInput {
   readonly referralId: ReferralId;
   readonly decidedBy: string;
   readonly reason?: string;
+  /**
+   * APPROVAL-SET-01B D8: set by maybeAutoApprove only (`auto:read_only` or
+   * `auto:credits:<estimate>/<limit>`); no route passes it. approveReferral
+   * writes it to pending_job only when it is such a value.
+   */
+  readonly decisionReason?: string;
   /** Login approve only. Internal approve leaves this unset. */
   readonly enforceTestsGate?: boolean;
   readonly approveWithoutPassingTests?: boolean;
@@ -1147,6 +1159,13 @@ export class OrchestrationService {
       }
     }
 
+    // APPROVAL-SET-01B D8, D11: an automatic decision is written only when it
+    // is one of the server's own `auto:` values; anything else is ignored.
+    const autoDecision =
+      input.decisionReason !== undefined ? readAutoApprovalDecision(input.decisionReason) : null;
+    const decidedJob: ReferralPendingJob = autoDecision
+      ? { ...job, decidedBy: input.decidedBy, decisionReason: input.decisionReason ?? null }
+      : { ...job, decidedBy: input.decidedBy };
     const now = new Date();
     const claimed = await this.referralRepo.update(
       {
@@ -1156,10 +1175,7 @@ export class OrchestrationService {
       },
       {
         status: 'approved',
-        pendingJob: {
-          ...job,
-          decidedBy: input.decidedBy,
-        },
+        pendingJob: decidedJob,
         updatedAt: now,
       },
     );
@@ -1183,12 +1199,21 @@ export class OrchestrationService {
         status: 'approved',
         userId: loaded.run.userId,
         projectId: loaded.run.projectId,
+        ...(autoDecision
+          ? {
+              autoApproval: {
+                mode: autoDecision.mode,
+                estimateCredits: autoDecision.estimateCredits,
+                creditLimit: autoDecision.creditLimit,
+              },
+            }
+          : {}),
       },
     });
 
     const executionId = await this.enqueueApprovedReferral(
       input.referralId,
-      { ...job, decidedBy: input.decidedBy },
+      decidedJob,
       loaded.run.userId,
     );
     const started = await this.getReferral(input.referralId);
@@ -2256,7 +2281,33 @@ export class OrchestrationService {
             timedOutAt: this.toIso(entity.timedOutAt),
           }
         : null,
+      ...this.autoApprovalViewOf(entity),
     });
+  }
+
+  /**
+   * APPROVAL-SET-01B D12: the two view facts, present only when the server
+   * decided or declined under the lead's setting. A step the owner rejected
+   * (whose decisionReason is the owner's text) or one still waiting is never
+   * shown as approved automatically; a waiting reason is shown only while the
+   * step waits.
+   */
+  private autoApprovalViewOf(
+    entity: Pick<CollaborationReferralEntity, 'status' | 'pendingJob'>,
+  ): Pick<CollaborationReferral, 'autoApproved' | 'autoApprovalWaiting'> {
+    const job = entity.pendingJob;
+    if (!job) {
+      return {};
+    }
+    if (entity.status === 'pending_approval') {
+      const waiting = readPendingAutoApproval(job.autoApproval);
+      return waiting ? { autoApprovalWaiting: waiting.reason } : {};
+    }
+    if (entity.status === 'rejected' || typeof job.decidedBy !== 'string') {
+      return {};
+    }
+    const decision = readAutoApprovalDecision(job.decisionReason);
+    return decision ? { autoApproved: decision } : {};
   }
 
   private fromCreateRunInput(
@@ -2719,7 +2770,7 @@ export class OrchestrationService {
     const prompt = buildReportBackPrompt({ ownerTask: lead.prompt, label, answer });
 
     try {
-      await this.createPendingReferral({
+      const created = await this.createPendingReferral({
         collaborationRunId: entity.collaborationRunId,
         sourceBuilder: {
           agentRole: entity.targetAgentRole,
@@ -2754,6 +2805,8 @@ export class OrchestrationService {
           allowedTools: [...(entity.constraintAllowedTools ?? [])],
         },
       });
+      // APPROVAL-SET-01B D4: the report-back path; never throws.
+      await this.maybeAutoApprove(created.referral.referralId);
       await this.rememberReportBackChecked(referralId);
     } catch (error) {
       if (!this.isIdempotencyUniqueViolation(error)) {
@@ -3298,7 +3351,7 @@ export class OrchestrationService {
         adapter = selection.provider;
         model = selection.model;
       }
-      await this.createPendingReferral({
+      const created = await this.createPendingReferral({
         collaborationRunId: entity.collaborationRunId,
         sourceBuilder: {
           agentRole: entity.targetAgentRole,
@@ -3330,6 +3383,8 @@ export class OrchestrationService {
           allowedTools: [...(entity.constraintAllowedTools ?? [])],
         },
       });
+      // APPROVAL-SET-01B D4: the dispatch path; never throws.
+      await this.maybeAutoApprove(created.referral.referralId);
       await this.rememberHandoffChecked(referralId);
     } catch (error) {
       if (this.isIdempotencyUniqueViolation(error)) {
@@ -3367,6 +3422,217 @@ export class OrchestrationService {
         limitType: reason,
         referralId: entity.referralId,
         targetBuilderProfileId: targetName,
+      },
+    });
+  }
+
+  /**
+   * APPROVAL-SET-01B D4-D11: called only right after createPendingReferral in
+   * the dispatch path (requestHandoffFromAnswer) and the report-back path
+   * (reportBackFromAnswer). It acts only on a waiting child step of a team run
+   * led by a user workflow; the first hand-off, internal-route referrals,
+   * coding, advisors and Chief of Staff runs never reach a decision. With the
+   * lead's stored setting `every` it changes nothing. Otherwise the step runs
+   * without waiting only when its target is positively read-only (and, under
+   * `credits`, its estimate is known and within the limit), through the
+   * existing approveReferral, so every check a click runs still runs. Any
+   * refusal leaves the step waiting with a reason. Never throws.
+   */
+  private async maybeAutoApprove(referralId: ReferralId): Promise<void> {
+    try {
+      await this.autoApproveIfAllowed(referralId);
+    } catch (error) {
+      this.logWithoutContents('collaboration.auto_approval_failed', error);
+    }
+  }
+
+  private async autoApproveIfAllowed(referralId: ReferralId): Promise<void> {
+    const workflowService = this.workflowService;
+    if (
+      !workflowService ||
+      typeof workflowService.leadApprovalSetting !== 'function' ||
+      typeof workflowService.lastStepCreditsFor !== 'function'
+    ) {
+      return;
+    }
+    const entity = await this.referralRepo.findOne({ where: { referralId } });
+    const job = entity?.pendingJob;
+    if (
+      !entity ||
+      !job ||
+      entity.status !== 'pending_approval' ||
+      !entity.parentReferralTraceId ||
+      (job.decidedBy !== null && job.decidedBy !== undefined) ||
+      job.autoApproval !== undefined
+    ) {
+      return;
+    }
+    // D5: a workflow lead only. The Chief of Staff lead keeps every hand-off
+    // (APPROVAL-SET-02); a run with no lead (coding, advisors) is never here.
+    const leadId = leadIdOf(job);
+    if (!leadId || leadId === FRONT_DOOR_LEAD_ID) {
+      return;
+    }
+    const run = await this.runRepo.findOne({
+      where: { collaborationRunId: entity.collaborationRunId },
+    });
+    if (!run || run.status !== 'active') {
+      return;
+    }
+    const firstId = run.referralIds?.[0];
+    if (!firstId || firstId === referralId) {
+      return;
+    }
+    const first = await this.referralRepo.findOne({ where: { referralId: firstId } });
+    if (
+      !first ||
+      first.collaborationRunId !== entity.collaborationRunId ||
+      first.targetBuilderProfileId !== leadId ||
+      first.pendingJob?.workflow?.id !== leadId
+    ) {
+      return;
+    }
+    const source = entity.sourceBuilderProfileId;
+    const target = entity.targetBuilderProfileId;
+    const dispatch = source === leadId && target !== leadId;
+    const reportBack = target === leadId && source !== leadId && source !== 'user';
+    if (!dispatch && !reportBack) {
+      return;
+    }
+
+    const decline = (
+      reason: AutoApprovalWaitReason,
+      mode: AutoApprovalMode | null,
+      estimateCredits: number | null,
+      creditLimit: number | null,
+    ) =>
+      this.recordAutoApprovalWaiting(entity, run, { reason, mode, estimateCredits, creditLimit });
+    // D5: read live from the lead's own row, fail-closed. `every` (also an
+    // unknown or malformed stored value) changes nothing and records nothing.
+    const lead = await workflowService.leadApprovalSetting(run.userId, leadId);
+    if (!lead.found) {
+      await decline('lead_missing', null, null, null);
+      return;
+    }
+    const storedMode = lead.setting.mode;
+    if (storedMode === 'every') {
+      return;
+    }
+    if (lead.off) {
+      await decline('lead_missing', storedMode, null, null);
+      return;
+    }
+    const mode: AutoApprovalMode = storedMode;
+    const creditLimit = mode === 'credits' ? lead.setting.creditLimit : null;
+
+    // D6: fail-closed. The step's constraints must still be read-only, and the
+    // target positively read-only with read-only connector tools only.
+    if (
+      entity.constraintReadOnly !== true ||
+      entity.constraintAllowWriteTools !== false ||
+      !autoApprovalTargetIsReadOnly(target, this.workflowOfEntity(entity))
+    ) {
+      await decline('writes', mode, null, creditLimit);
+      return;
+    }
+
+    // D7: the last completed step's cost; unknown waits.
+    let estimateCredits: number | null = null;
+    if (mode === 'credits') {
+      if (typeof creditLimit !== 'number') {
+        await decline('unknown_cost', mode, null, null);
+        return;
+      }
+      estimateCredits = await workflowService.lastStepCreditsFor(run.userId, target);
+      if (typeof estimateCredits !== 'number' || !Number.isFinite(estimateCredits)) {
+        await decline('unknown_cost', mode, null, creditLimit);
+        return;
+      }
+      if (estimateCredits > creditLimit) {
+        await decline('over_limit', mode, estimateCredits, creditLimit);
+        return;
+      }
+    }
+
+    // D8: the existing approve, with every check a click runs.
+    try {
+      await this.approveReferral({
+        collaborationRunId: entity.collaborationRunId,
+        referralId,
+        decidedBy: run.userId,
+        decisionReason: autoApprovalDecisionReason(mode, estimateCredits, creditLimit),
+        enforceTestsGate: true,
+      });
+    } catch (error) {
+      this.logWithoutContents('collaboration.auto_approval_refused', error);
+      await decline('checks_failed', mode, estimateCredits, creditLimit);
+    }
+  }
+
+  /**
+   * D11: the step keeps waiting. pending_job.autoApproval records why (only
+   * while the step still waits, once), and one safety_limit_breached audit
+   * event says so. No contents are logged.
+   */
+  private async recordAutoApprovalWaiting(
+    entity: CollaborationReferralEntity,
+    run: CollaborationRunEntity,
+    detail: {
+      reason: AutoApprovalWaitReason;
+      mode: AutoApprovalMode | null;
+      estimateCredits: number | null;
+      creditLimit: number | null;
+    },
+  ): Promise<void> {
+    const current = await this.referralRepo.findOne({
+      where: { referralId: entity.referralId },
+    });
+    if (
+      !current?.pendingJob ||
+      current.status !== 'pending_approval' ||
+      current.pendingJob.autoApproval !== undefined
+    ) {
+      return;
+    }
+    const updated = await this.referralRepo.update(
+      {
+        referralId: entity.referralId,
+        collaborationRunId: entity.collaborationRunId,
+        status: 'pending_approval',
+      },
+      {
+        pendingJob: {
+          ...current.pendingJob,
+          autoApproval: { outcome: 'waiting', reason: detail.reason },
+        },
+        updatedAt: new Date(),
+      },
+    );
+    if ((updated.affected ?? 0) < 1) {
+      return;
+    }
+    this.emitAuditEvent({
+      eventType: 'orchestration.safety_limit_breached',
+      collaborationRunId: entity.collaborationRunId,
+      referralTraceId: entity.referralTraceId,
+      sourceBuilder: {
+        agentRole: entity.sourceAgentRole,
+        builderProfileId: entity.sourceBuilderProfileId,
+      },
+      targetBuilder: {
+        agentRole: entity.targetAgentRole,
+        builderProfileId: entity.targetBuilderProfileId,
+      },
+      payload: {
+        lifecycleEvent: 'auto_approval_declined',
+        reason: detail.reason,
+        limitType: 'auto_approval',
+        referralId: entity.referralId,
+        mode: detail.mode,
+        estimateCredits: detail.estimateCredits,
+        creditLimit: detail.creditLimit,
+        userId: run.userId,
+        projectId: run.projectId,
       },
     });
   }

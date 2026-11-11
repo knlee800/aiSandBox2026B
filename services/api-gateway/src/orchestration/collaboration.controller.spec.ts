@@ -3707,6 +3707,681 @@ describe('CollaborationController login routes', () => {
       expect(finalAnswerOf(steps(runId))).toBe('Final.');
     });
   });
+
+  describe('APPROVAL-SET-01B the server auto-approve path', () => {
+    const LEAD = 'f0f0f0f0-0000-4000-8000-0000000001b1';
+    const WF2 = 'f0f0f0f0-0000-4000-8000-0000000001b2';
+    const GHOST = 'f0f0f0f0-0000-4000-8000-0000000001bf';
+    const OWNER_TASK = 'Plan my week around the market and my mail.';
+    const outputs = new Map<string, { status: string; output: string }>();
+
+    function leadRow(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+      return {
+        id: LEAD,
+        userId: OWNER_ID,
+        name: 'Weekly plan',
+        role: 'Assistant',
+        description: 'Plans the week.',
+        status: 'active',
+        tone: null,
+        replyLanguage: null,
+        purpose: "You plan the owner's week.",
+        procedure: 'Ask the team when you need facts, then write the plan.',
+        result: 'A short plan.',
+        toolProfile: 'read',
+        knowledgeScopeIds: ['market-data'],
+        connectorToolIds: [],
+        model: { choice: 'platform', id: 'claude-haiku-5-5' },
+        budgetPerRunCredits: null,
+        budgetPerDayCredits: null,
+        templateId: null,
+        teamMemberIds: ['product-strategy', WF2, 'technology-advisor'],
+        approvalMode: 'read_only',
+        approvalCreditLimit: null,
+        ...overrides,
+      };
+    }
+
+    function memberRow(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+      return {
+        id: WF2,
+        userId: OWNER_ID,
+        name: 'Mail digest',
+        role: 'Assistant',
+        description: 'Summarizes unread mail.',
+        status: 'active',
+        tone: null,
+        replyLanguage: null,
+        purpose: "You summarize the owner's unread mail.",
+        procedure: 'Call mail_list_unread_metadata and list each message in one line.',
+        result: 'A short list.',
+        toolProfile: 'read',
+        knowledgeScopeIds: ['policies'],
+        connectorToolIds: ['mail_list_unread_metadata'],
+        model: { choice: 'server' },
+        budgetPerRunCredits: null,
+        budgetPerDayCredits: null,
+        templateId: null,
+        teamMemberIds: [],
+        // A member's own setting is never read in a run it does not lead.
+        approvalMode: 'every',
+        approvalCreditLimit: null,
+        ...overrides,
+      };
+    }
+
+    function service(): OrchestrationService {
+      return app.get(OrchestrationService);
+    }
+
+    function steps(runId: string): CollaborationReferralEntity[] {
+      return (runs.get(runId)?.referralIds ?? []).map((id) => referrals.get(id)!);
+    }
+
+    function last(runId: string): CollaborationReferralEntity {
+      const all = steps(runId);
+      return all[all.length - 1];
+    }
+
+    function row(referralId: string): CollaborationReferralEntity {
+      return referrals.get(referralId)!;
+    }
+
+    function jobOf(referralId: string): Record<string, unknown> {
+      const executionId = referrals.get(referralId)?.executionId;
+      const calls = queue.enqueueExecution.mock.calls.filter(
+        (args) => (args[0] as { executionId: string }).executionId === executionId,
+      );
+      if (calls.length !== 1) {
+        throw new Error(`expected one job for ${referralId}, got ${calls.length}`);
+      }
+      return calls[0][0] as Record<string, unknown>;
+    }
+
+    async function approve(runId: string, referralId: string, expected = 200, body: object = {}) {
+      return http()
+        .post(`/api/collaboration/runs/${runId}/referrals/${referralId}/approve`)
+        .send(body)
+        .expect(expected);
+    }
+
+    async function readRun(runId: string) {
+      return (await http().get(`/api/collaboration/runs/${runId}`).expect(200)).body as {
+        run: { status: string };
+        handoffs: Array<Record<string, unknown> & { referralId: string }>;
+      };
+    }
+
+    /** The step's job finishes with `output`; the next read processes it. */
+    async function answer(runId: string, referralId: string, output: string, status = 'completed') {
+      const executionId = referrals.get(referralId)?.executionId;
+      if (!executionId) {
+        throw new Error(`no execution for ${referralId}`);
+      }
+      outputs.set(executionId, { status, output });
+      return readRun(runId);
+    }
+
+    /** The owner's click, then the step's answer. */
+    async function runStep(runId: string, referralId: string, output: string) {
+      await approve(runId, referralId);
+      return answer(runId, referralId, output);
+    }
+
+    function viewOf(detail: { handoffs: Array<Record<string, unknown> & { referralId: string }> }, id: string) {
+      return detail.handoffs.find((handoff) => handoff.referralId === id);
+    }
+
+    async function startLead(body: Record<string, unknown> = {}) {
+      const started = await http()
+        .post('/api/collaboration/runs')
+        .send({ sessionId: SESSION_ID, task: OWNER_TASK, workflowId: LEAD, ...body })
+        .expect(201);
+      return started.body as { collaborationRunId: string; referralId: string };
+    }
+
+    async function testRunWorkflow(id: string): Promise<void> {
+      const started = await http()
+        .post('/api/collaboration/runs')
+        .send({ sessionId: SESSION_ID, task: 'Test it.', workflowId: id, testRun: true })
+        .expect(201);
+      await runStep(started.body.collaborationRunId, started.body.referralId, 'Tested.');
+      expect(referrals.get(started.body.referralId)?.status).toBe('completed');
+    }
+
+    async function testTeam(): Promise<void> {
+      await testRunWorkflow(WF2);
+      await testRunWorkflow(LEAD);
+    }
+
+    function declined(): Array<Record<string, unknown>> {
+      return service()
+        .getAuditEvents()
+        .filter((event) => event.payload.lifecycleEvent === 'auto_approval_declined')
+        .map((event) => ({ ...event.payload }));
+    }
+
+    function approvedPayloads(): Array<Record<string, unknown>> {
+      return service()
+        .getAuditEvents()
+        .filter((event) => event.eventType === 'orchestration.referral_approved')
+        .map((event) => ({ ...event.payload }));
+    }
+
+    /** The lead dispatches to `to`: the owner clicks the lead's first step and it answers. */
+    async function dispatchFromFirst(to: string) {
+      const started = await startLead();
+      const runId = started.collaborationRunId;
+      await runStep(runId, started.referralId, `Q.\n<handoff to="${to}">Look into it.</handoff>`);
+      const child = last(runId);
+      expect(child.referralId).not.toBe(started.referralId);
+      expect(child.targetBuilderProfileId).toBe(to);
+      return { started, runId, child };
+    }
+
+    async function cosKeys(): Promise<string[]> {
+      const cos = await http()
+        .post('/api/collaboration/runs')
+        .send({ sessionId: SESSION_ID, task: OWNER_TASK, team: 'chief-of-staff' })
+        .expect(201);
+      await approve(cos.body.collaborationRunId, cos.body.referralId);
+      return Object.keys(jobOf(cos.body.referralId)).sort();
+    }
+
+    beforeEach(() => {
+      outputs.clear();
+      workflowRows.set(LEAD, leadRow());
+      workflowRows.set(WF2, memberRow());
+      executionResults.getExecution.mockImplementation(async (executionId: string) => {
+        const stored = outputs.get(executionId);
+        return stored
+          ? {
+              execution_status: stored.status,
+              metadata: { aiExecutionResult: { output: stored.output } },
+            }
+          : null;
+      });
+    });
+
+    it('with every, no column or a malformed setting, the dispatch and report-back wait byte for byte and record nothing', async () => {
+      await testTeam();
+      const shapes = new Set<string>();
+      const settings: Array<Record<string, unknown> | null> = [
+        { approvalMode: 'every', approvalCreditLimit: null },
+        null,
+        { approvalMode: 'sometimes', approvalCreditLimit: 5 },
+        { approvalMode: 'credits', approvalCreditLimit: null },
+        { approvalMode: 'every', approvalCreditLimit: 50 },
+      ];
+      for (const setting of settings) {
+        const stored = leadRow(setting ?? {});
+        if (setting === null) {
+          delete stored.approvalMode;
+          delete stored.approvalCreditLimit;
+        }
+        workflowRows.set(LEAD, stored);
+        service().clearAuditEvents();
+        const before = queue.enqueueExecution.mock.calls.length;
+        const { runId, child: d1 } = await dispatchFromFirst('product-strategy');
+        expect(d1.status).toBe('pending_approval');
+        expect(queue.enqueueExecution.mock.calls.length).toBe(before + 1);
+        const d1Job = JSON.stringify(d1.pendingJob);
+        await runStep(runId, d1.referralId, 'The market is large.');
+        const rb1 = last(runId);
+        expect(rb1.targetBuilderProfileId).toBe(LEAD);
+        expect(rb1.status).toBe('pending_approval');
+        expect(queue.enqueueExecution.mock.calls.length).toBe(before + 2);
+        for (const step of [d1, rb1]) {
+          expect(step.pendingJob).not.toHaveProperty('autoApproval');
+          expect(step.pendingJob?.decisionReason).toBeNull();
+          expect(step.pendingJob?.decidedBy).toBeNull();
+        }
+        const detail = await readRun(runId);
+        for (const handoff of detail.handoffs) {
+          expect(handoff.autoApproved).toBeNull();
+          expect(handoff.autoApprovalWaiting).toBeNull();
+        }
+        expect(declined()).toEqual([]);
+        for (const payload of approvedPayloads()) {
+          expect(payload).not.toHaveProperty('autoApproval');
+        }
+        shapes.add(`${d1Job}|${JSON.stringify(rb1.pendingJob)}`);
+      }
+      expect(shapes.size).toBe(1);
+    });
+
+    it('read_only: dispatches to an advisor and a workflow and both report-backs run without a click; the first hand-off waits; a third round is refused', async () => {
+      await testTeam();
+      const started = await startLead();
+      const runId = started.collaborationRunId;
+      const first = row(started.referralId);
+      expect(first.status).toBe('pending_approval');
+      expect(first.pendingJob).not.toHaveProperty('autoApproval');
+      const leadSnapshot = first.pendingJob?.workflow;
+      const memberSnapshot = first.pendingJob?.rosterWorkflows?.[0];
+      service().clearAuditEvents();
+      const before = queue.enqueueExecution.mock.calls.length;
+
+      await runStep(runId, started.referralId, 'Q.\n<handoff to="product-strategy">Market?</handoff>');
+      const d1 = row(last(runId).referralId);
+      expect(d1).toMatchObject({
+        sourceBuilderProfileId: LEAD,
+        targetBuilderProfileId: 'product-strategy',
+        status: 'in_progress',
+      });
+      expect(d1.pendingJob).toMatchObject({ decidedBy: OWNER_ID, decisionReason: 'auto:read_only' });
+      expect(d1.pendingJob).not.toHaveProperty('autoApproval');
+      expect(queue.enqueueExecution.mock.calls.length).toBe(before + 2);
+      // The owner's click on a step already approved is refused by the conditional claim.
+      await approve(runId, d1.referralId, 409);
+
+      await answer(runId, d1.referralId, 'The market is large.');
+      const rb1 = row(last(runId).referralId);
+      expect(rb1).toMatchObject({
+        sourceBuilderProfileId: 'product-strategy',
+        targetBuilderProfileId: LEAD,
+        status: 'in_progress',
+        idempotencyKey: reportBackIdempotencyKey(d1.referralId),
+      });
+      expect(rb1.pendingJob?.workflow).toEqual(leadSnapshot);
+      expect(rb1.pendingJob).toMatchObject({ decidedBy: OWNER_ID, decisionReason: 'auto:read_only' });
+
+      await answer(runId, rb1.referralId, `Now the mail.\n<handoff to="${WF2}">Summarize my unread mail.</handoff>`);
+      const d2 = row(last(runId).referralId);
+      expect(d2).toMatchObject({ sourceBuilderProfileId: LEAD, targetBuilderProfileId: WF2, status: 'in_progress' });
+      expect(d2.pendingJob?.workflow).toEqual(memberSnapshot);
+      expect(d2.pendingJob).toMatchObject({ decidedBy: OWNER_ID, decisionReason: 'auto:read_only' });
+
+      await answer(runId, d2.referralId, 'Two unread mails.');
+      const rb2 = row(last(runId).referralId);
+      expect(rb2).toMatchObject({ sourceBuilderProfileId: WF2, targetBuilderProfileId: LEAD, status: 'in_progress' });
+      expect(rb2.pendingJob?.workflow).toEqual(leadSnapshot);
+
+      const done = await answer(runId, rb2.referralId, 'Final.\n<handoff to="technology-advisor">Stack?</handoff>');
+      expect(row(rb2.referralId).pendingJob?.handoffNote).toBe('refused: front_door_rounds');
+      expect(steps(runId)).toHaveLength(5);
+      expect(done.run.status).toBe('completed');
+      expect(queue.enqueueExecution.mock.calls.length).toBe(before + 5);
+
+      // D12: the view says which steps ran without a click.
+      expect(viewOf(done, started.referralId)).toMatchObject({
+        decidedBy: OWNER_ID,
+        autoApproved: null,
+        autoApprovalWaiting: null,
+      });
+      for (const step of [d1, rb1, d2, rb2]) {
+        expect(viewOf(done, step.referralId)).toMatchObject({
+          decidedBy: OWNER_ID,
+          autoApproved: { mode: 'read_only', estimateCredits: null, creditLimit: null },
+          autoApprovalWaiting: null,
+        });
+      }
+      // D11: the approved events; only the automatic ones carry autoApproval.
+      const approvals = approvedPayloads();
+      expect(approvals).toHaveLength(5);
+      expect(approvals[0]).toMatchObject({ referralId: started.referralId, decidedBy: OWNER_ID });
+      expect(approvals[0]).not.toHaveProperty('autoApproval');
+      for (const payload of approvals.slice(1)) {
+        expect(payload).toMatchObject({
+          decidedBy: OWNER_ID,
+          autoApproval: { mode: 'read_only', estimateCredits: null, creditLimit: null },
+        });
+      }
+      expect(declined()).toEqual([]);
+
+      // HARNESS_ENTITLEMENT_PROOF_V1 used, not changed: every automatic job has
+      // exactly the key set of a clicked Chief of Staff job.
+      const keys = await cosKeys();
+      expect(keys).toContain('harnessEntitlementProof');
+      for (const step of steps(runId)) {
+        const job = jobOf(step.referralId);
+        expect(Object.keys(job).sort()).toEqual(keys);
+        const text = JSON.stringify(job);
+        for (const leaked of ['decisionReason', 'autoApproval', 'auto:read_only', 'teamLeadId']) {
+          expect(text).not.toContain(leaked);
+        }
+      }
+    });
+
+    it('applies in a test run (DECISION C): a draft lead test run dispatches without a click', async () => {
+      await testRunWorkflow(WF2);
+      workflowRows.set(LEAD, leadRow({ status: 'draft' }));
+      const started = await startLead({ testRun: true });
+      const runId = started.collaborationRunId;
+      expect(row(started.referralId).pendingJob?.workflow?.testRun).toBe(true);
+      await runStep(runId, started.referralId, 'Q.\n<handoff to="product-strategy">Market?</handoff>');
+      const d1 = row(last(runId).referralId);
+      expect(d1.status).toBe('in_progress');
+      expect(d1.pendingJob?.decisionReason).toBe('auto:read_only');
+      await answer(runId, d1.referralId, 'Large.');
+      // The report-back runs on the lead's test-run snapshot; the draft lead may test-run.
+      const rb = row(last(runId).referralId);
+      expect(rb.targetBuilderProfileId).toBe(LEAD);
+      expect(rb.status).toBe('in_progress');
+      expect(rb.pendingJob?.workflow?.testRun).toBe(true);
+    });
+
+    it('fail-closed: a write, review, null-profile or unknown target waits with writes, and the click still works', async () => {
+      await testTeam();
+      for (const target of ['writer', 'reviewer', 'builder', GHOST]) {
+        service().clearAuditEvents();
+        const started = await startLead();
+        const runId = started.collaborationRunId;
+        // A tampered stored list (the server never builds one like this).
+        const first = referrals.get(started.referralId)!;
+        first.pendingJob = {
+          ...first.pendingJob!,
+          agents: [
+            ...(first.pendingJob!.agents ?? []),
+            { name: target, instructions: 'x', label: 'X', summary: 'x' },
+          ],
+        };
+        const before = queue.enqueueExecution.mock.calls.length;
+        await runStep(runId, started.referralId, `Q.\n<handoff to="${target}">Do it.</handoff>`);
+        const child = row(last(runId).referralId);
+        expect(child.targetBuilderProfileId).toBe(target);
+        expect(child.status).toBe('pending_approval');
+        expect(child.pendingJob).toMatchObject({
+          decidedBy: null,
+          decisionReason: null,
+          autoApproval: { outcome: 'waiting', reason: 'writes' },
+        });
+        expect(queue.enqueueExecution.mock.calls.length).toBe(before + 1);
+        expect(declined()).toEqual([
+          expect.objectContaining({
+            reason: 'writes',
+            limitType: 'auto_approval',
+            referralId: child.referralId,
+            mode: 'read_only',
+            userId: OWNER_ID,
+          }),
+        ]);
+        const detail = await readRun(runId);
+        expect(viewOf(detail, child.referralId)).toMatchObject({
+          status: 'pending_approval',
+          autoApproved: null,
+          autoApprovalWaiting: 'writes',
+        });
+        // A second read does not record it twice.
+        expect(declined()).toHaveLength(1);
+        if (target === 'writer') {
+          await approve(runId, child.referralId);
+          expect(row(child.referralId).status).toBe('in_progress');
+          expect(row(child.referralId).pendingJob?.decisionReason).toBeNull();
+          const after = await readRun(runId);
+          expect(viewOf(after, child.referralId)).toMatchObject({
+            autoApproved: null,
+            autoApprovalWaiting: null,
+          });
+        }
+      }
+    });
+
+    it('fail-closed: a workflow member whose connector tool is not flagged readOnly waits with writes', async () => {
+      await testTeam();
+      const started = await startLead();
+      const first = referrals.get(started.referralId)!;
+      const [snapshot] = first.pendingJob!.rosterWorkflows!;
+      first.pendingJob = {
+        ...first.pendingJob!,
+        rosterWorkflows: [{ ...snapshot, connectorToolIds: ['mail_list_unread_metadata', 'mail_send_message'] }],
+      };
+      await runStep(started.collaborationRunId, started.referralId, `Q.\n<handoff to="${WF2}">Mail?</handoff>`);
+      const d1 = row(last(started.collaborationRunId).referralId);
+      expect(d1.targetBuilderProfileId).toBe(WF2);
+      expect(d1.status).toBe('pending_approval');
+      expect(d1.pendingJob?.autoApproval).toEqual({ outcome: 'waiting', reason: 'writes' });
+    });
+
+    it('a lead row deleted or switched off mid-run waits with lead_missing, and the click still works', async () => {
+      await testTeam();
+      for (const change of ['deleted', 'off'] as const) {
+        service().clearAuditEvents();
+        const started = await startLead();
+        const runId = started.collaborationRunId;
+        await approve(runId, started.referralId);
+        if (change === 'deleted') {
+          workflowRows.delete(LEAD);
+        } else {
+          workflowRows.set(LEAD, leadRow({ status: 'disabled' }));
+        }
+        await answer(runId, started.referralId, 'Q.\n<handoff to="product-strategy">Market?</handoff>');
+        const d1 = row(last(runId).referralId);
+        expect(d1.status).toBe('pending_approval');
+        expect(d1.pendingJob?.autoApproval).toEqual({ outcome: 'waiting', reason: 'lead_missing' });
+        expect(declined()).toEqual([
+          expect.objectContaining({
+            reason: 'lead_missing',
+            mode: change === 'deleted' ? null : 'read_only',
+            referralId: d1.referralId,
+          }),
+        ]);
+        const detail = await readRun(runId);
+        expect(viewOf(detail, d1.referralId)?.autoApprovalWaiting).toBe('lead_missing');
+        await approve(runId, d1.referralId);
+        expect(row(d1.referralId).status).toBe('in_progress');
+        workflowRows.set(LEAD, leadRow());
+      }
+    });
+
+    it('a refused check leaves the step waiting with checks_failed and the run alive; the click works once it passes', async () => {
+      await testTeam();
+      // The credit balance is exhausted.
+      const dispatched = await startLead();
+      const runId = dispatched.collaborationRunId;
+      await approve(runId, dispatched.referralId);
+      const credit = jest.spyOn(app.get(CreditBalanceGuard), 'canActivate').mockResolvedValue(false);
+      try {
+        await answer(runId, dispatched.referralId, 'Q.\n<handoff to="product-strategy">Market?</handoff>');
+      } finally {
+        credit.mockRestore();
+      }
+      const d1 = row(last(runId).referralId);
+      expect(d1.targetBuilderProfileId).toBe('product-strategy');
+      expect(d1.status).toBe('pending_approval');
+      expect(d1.pendingJob?.autoApproval).toEqual({ outcome: 'waiting', reason: 'checks_failed' });
+      expect(runs.get(runId)?.status).toBe('active');
+      const waiting = await readRun(runId);
+      expect(viewOf(waiting, d1.referralId)?.autoApprovalWaiting).toBe('checks_failed');
+      await approve(runId, d1.referralId);
+      expect(row(d1.referralId).status).toBe('in_progress');
+
+      // The provider is switched off.
+      const started = await startLead();
+      await approve(started.collaborationRunId, started.referralId);
+      const killed = jest.spyOn(KillSwitchConfig, 'isProviderEnabled').mockReturnValue(false);
+      try {
+        await answer(started.collaborationRunId, started.referralId, 'Q.\n<handoff to="product-strategy">Market?</handoff>');
+      } finally {
+        killed.mockRestore();
+      }
+      const off = row(last(started.collaborationRunId).referralId);
+      expect(off.status).toBe('pending_approval');
+      expect(off.pendingJob?.autoApproval).toEqual({ outcome: 'waiting', reason: 'checks_failed' });
+
+      // The lead's own day budget at the report-back (its snapshot is checked, USER-TEAMS-01B D10).
+      workflowRows.set(LEAD, leadRow({ budgetPerDayCredits: 5 }));
+      const budget = await startLead();
+      const budgetRun = budget.collaborationRunId;
+      await runStep(budgetRun, budget.referralId, 'Q.\n<handoff to="product-strategy">Market?</handoff>');
+      const bd1 = row(last(budgetRun).referralId);
+      expect(bd1.status).toBe('in_progress');
+      deductionRows.push({
+        ownerId: OWNER_ID,
+        sourceEventId: referrals.get(budget.referralId)?.executionId,
+        requestedCredits: 5,
+        createdAt: new Date(),
+      });
+      await answer(budgetRun, bd1.referralId, 'Large.');
+      const rb = row(last(budgetRun).referralId);
+      expect(rb.targetBuilderProfileId).toBe(LEAD);
+      expect(rb.status).toBe('pending_approval');
+      expect(rb.pendingJob?.autoApproval).toEqual({ outcome: 'waiting', reason: 'checks_failed' });
+      expect(runs.get(budgetRun)?.status).toBe('active');
+      expect(declined().filter((payload) => payload.reason === 'checks_failed')).toHaveLength(3);
+      deductionRows.length = 0;
+      await approve(budgetRun, rb.referralId);
+      expect(row(rb.referralId).status).toBe('in_progress');
+    });
+
+    it('credits: the last completed step cost decides; at the limit runs, one over and unknown wait', async () => {
+      await testTeam();
+      workflowRows.set(LEAD, leadRow({ approvalMode: 'credits', approvalCreditLimit: 10 }));
+      service().clearAuditEvents();
+
+      // No product-strategy step yet: unknown.
+      const one = await dispatchFromFirst('product-strategy');
+      expect(one.child.status).toBe('pending_approval');
+      expect(one.child.pendingJob?.autoApproval).toEqual({ outcome: 'waiting', reason: 'unknown_cost' });
+      await runStep(one.runId, one.child.referralId, 'Large.');
+      // The lead's last completed step has no deduction row: unknown as well.
+      const rb = row(last(one.runId).referralId);
+      expect(rb.targetBuilderProfileId).toBe(LEAD);
+      expect(rb.pendingJob?.autoApproval).toEqual({ outcome: 'waiting', reason: 'unknown_cost' });
+      deductionRows.push({
+        ownerId: OWNER_ID,
+        sourceEventId: referrals.get(one.child.referralId)?.executionId,
+        requestedCredits: 10,
+        createdAt: new Date(),
+      });
+
+      // At the limit: runs, with the estimate recorded.
+      const two = await dispatchFromFirst('product-strategy');
+      const atLimit = row(two.child.referralId);
+      expect(atLimit.status).toBe('in_progress');
+      expect(atLimit.pendingJob).toMatchObject({ decidedBy: OWNER_ID, decisionReason: 'auto:credits:10/10' });
+      expect(approvedPayloads().find((payload) => payload.referralId === atLimit.referralId)).toMatchObject({
+        autoApproval: { mode: 'credits', estimateCredits: 10, creditLimit: 10 },
+      });
+      const detail = await readRun(two.runId);
+      expect(viewOf(detail, atLimit.referralId)).toMatchObject({
+        autoApproved: { mode: 'credits', estimateCredits: 10, creditLimit: 10 },
+        autoApprovalWaiting: null,
+      });
+
+      // One over: waits.
+      workflowRows.set(LEAD, leadRow({ approvalMode: 'credits', approvalCreditLimit: 9 }));
+      const three = await dispatchFromFirst('product-strategy');
+      expect(three.child.status).toBe('pending_approval');
+      expect(three.child.pendingJob?.autoApproval).toEqual({ outcome: 'waiting', reason: 'over_limit' });
+      expect(declined().find((payload) => payload.referralId === three.child.referralId)).toMatchObject({
+        reason: 'over_limit',
+        mode: 'credits',
+        estimateCredits: 10,
+        creditLimit: 9,
+      });
+      // credits still needs a read-only target.
+      workflowRows.set(LEAD, leadRow({ approvalMode: 'credits', approvalCreditLimit: 1000 }));
+      const four = await startLead();
+      const first = referrals.get(four.referralId)!;
+      first.pendingJob = {
+        ...first.pendingJob!,
+        agents: [...(first.pendingJob!.agents ?? []), { name: 'writer', instructions: 'x' }],
+      };
+      await runStep(four.collaborationRunId, four.referralId, 'Q.\n<handoff to="writer">Write.</handoff>');
+      expect(last(four.collaborationRunId).pendingJob?.autoApproval).toEqual({
+        outcome: 'waiting',
+        reason: 'writes',
+      });
+    });
+
+    it('never reads decisionReason or autoApproval from a body, on start, approve or reject', async () => {
+      await testTeam();
+      workflowRows.set(LEAD, leadRow({ approvalMode: 'every' }));
+      const started = await startLead({
+        decisionReason: 'auto:read_only',
+        autoApproval: { outcome: 'waiting', reason: 'writes' },
+        approvalMode: 'read_only',
+      });
+      const runId = started.collaborationRunId;
+      expect(row(started.referralId).pendingJob).not.toHaveProperty('autoApproval');
+      expect(row(started.referralId).pendingJob?.decisionReason).toBeNull();
+      const body = {
+        decisionReason: 'auto:read_only',
+        autoApproval: { mode: 'read_only' },
+        autoApproved: { mode: 'read_only' },
+      };
+      const clicked = await approve(runId, started.referralId, 200, body);
+      expect(clicked.body.autoApproved).toBeNull();
+      expect(row(started.referralId).pendingJob?.decisionReason).toBeNull();
+      expect(approvedPayloads().pop()).not.toHaveProperty('autoApproval');
+      await answer(runId, started.referralId, 'Q.\n<handoff to="product-strategy">Market?</handoff>');
+      const d1 = last(runId);
+      expect(d1.status).toBe('pending_approval');
+      // A reject reason that looks automatic is the owner's text, never shown as automatic.
+      const rejected = await http()
+        .post(`/api/collaboration/runs/${runId}/referrals/${d1.referralId}/reject`)
+        .send({ reason: 'auto:read_only', ...body })
+        .expect(200);
+      expect(rejected.body).toMatchObject({ status: 'rejected', autoApproved: null, autoApprovalWaiting: null });
+      expect(row(d1.referralId).pendingJob?.decisionReason).toBe('auto:read_only');
+      expect(row(d1.referralId).pendingJob).not.toHaveProperty('autoApproval');
+
+      // approveReferral writes only the server's own auto: values.
+      const other = await startLead();
+      await service().approveReferral({
+        collaborationRunId: other.collaborationRunId,
+        referralId: other.referralId,
+        decidedBy: OWNER_ID,
+        decisionReason: 'the owner said so',
+      });
+      expect(row(other.referralId).status).toBe('in_progress');
+      expect(row(other.referralId).pendingJob?.decisionReason).toBeNull();
+    });
+
+    it('the sweep recovers a lost report-back and approves it once', async () => {
+      await testTeam();
+      const { runId, child: d1 } = await dispatchFromFirst('product-strategy');
+      expect(row(d1.referralId).status).toBe('in_progress');
+      await answer(runId, d1.referralId, 'Large.');
+      const lost = last(runId);
+      expect(lost.status).toBe('in_progress');
+      // Lose the report-back, as if the Gateway stopped before it was stored.
+      referrals.delete(lost.referralId);
+      const run = runs.get(runId)!;
+      run.referralIds = run.referralIds.filter((id) => id !== lost.referralId);
+      const member = referrals.get(d1.referralId)!;
+      member.pendingJob = { ...member.pendingJob!, reportBackChecked: undefined };
+
+      const before = queue.enqueueExecution.mock.calls.length;
+      await service().sweepCollaborations();
+      const recovered = steps(runId).filter(
+        (step) => step.idempotencyKey === reportBackIdempotencyKey(d1.referralId),
+      );
+      expect(recovered).toHaveLength(1);
+      expect(recovered[0]).toMatchObject({ status: 'in_progress', targetBuilderProfileId: LEAD });
+      expect(recovered[0].pendingJob?.decisionReason).toBe('auto:read_only');
+      expect(queue.enqueueExecution.mock.calls.length).toBe(before + 1);
+      await service().sweepCollaborations();
+      await readRun(runId);
+      expect(
+        steps(runId).filter((step) => step.idempotencyKey === reportBackIdempotencyKey(d1.referralId)),
+      ).toHaveLength(1);
+      expect(queue.enqueueExecution.mock.calls.length).toBe(before + 1);
+      expect(jobOf(recovered[0].referralId)).toMatchObject({ builderProfileId: LEAD });
+    });
+
+    it('a Chief of Staff run keeps every hand-off, whatever the workflow rows say', async () => {
+      rosterRows.set(OWNER_ID, { userId: OWNER_ID, memberIds: ['product-strategy', WF2], updatedAt: new Date() });
+      await testRunWorkflow(WF2);
+      service().clearAuditEvents();
+      const started = await http()
+        .post('/api/collaboration/runs')
+        .send({ sessionId: SESSION_ID, task: OWNER_TASK, team: 'chief-of-staff' })
+        .expect(201);
+      const runId = started.body.collaborationRunId as string;
+      await runStep(runId, started.body.referralId, 'Q.\n<handoff to="product-strategy">Market?</handoff>');
+      const d1 = last(runId);
+      expect(d1.status).toBe('pending_approval');
+      expect(d1.pendingJob).not.toHaveProperty('autoApproval');
+      await runStep(runId, d1.referralId, 'Large.');
+      const rb = last(runId);
+      expect(rb.targetBuilderProfileId).toBe('chief-of-staff');
+      expect(rb.status).toBe('pending_approval');
+      expect(rb.pendingJob).not.toHaveProperty('autoApproval');
+      expect(declined()).toEqual([]);
+    });
+  });
 });
 
 function restoreEnv(name: string, value: string | undefined): void {

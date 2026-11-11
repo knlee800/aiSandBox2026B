@@ -681,6 +681,65 @@ describe('AGENT-PLATFORM-07C2: startReferralExecution', () => {
     expect(JSON.stringify(teamJob)).not.toContain('teamLeadId');
   });
 
+  it('APPROVAL-SET-01B: an automatic decision and a waiting record in pending_job never reach the job', async () => {
+    const plain = await setupReferral();
+    await service.startReferralExecution(baseExecutionInput(plain.referralId));
+
+    await service.createCollaborationRun({
+      collaborationRunId: 'collab-auto-01',
+      userId: 'user-01',
+      projectId: 'project-01',
+      initiatorAgent: { agentRole: 'builder', builderProfileId: 'builder-a' },
+    });
+    const pendingJob = {
+      sessionId: 'session-001',
+      conversationId: 'conv-001',
+      apiKeyId: 'apikey-01',
+      prompt: 'analyze workspace',
+      provider: 'stub',
+      adapter: 'stub',
+      model: 'test-model',
+      workspaceContext: null,
+      globalInstructions: null,
+      projectInstructions: null,
+      orchestrationPriority: 10,
+      decidedBy: 'user-01',
+      decisionReason: 'auto:credits:3/10',
+      agents: [
+        { name: 'builder-b', instructions: 'Lead.' },
+        { name: 'product-strategy', instructions: 'Market.' },
+      ],
+      teamLeadId: 'builder-b',
+      autoApproval: { outcome: 'waiting', reason: 'over_limit' },
+    };
+    const auto = await service.createReferral({
+      referralId: 'ref-auto-01',
+      referralTraceId: 'trace-ref-auto-01',
+      collaborationRunId: 'collab-auto-01',
+      parentReferralTraceId: 'parent-trace-001',
+      sourceBuilder: { agentRole: 'builder', builderProfileId: 'builder-a' },
+      targetBuilder: { agentRole: 'chief-of-staff', builderProfileId: 'builder-b' },
+      idempotencyKey: 'key-ref-auto-01',
+      referralChain: ['builder-a'],
+      visitedBuilderProfileIds: ['builder-a'],
+      depth: 1,
+      pendingJob,
+    } as never);
+    await service.startReferralExecution({
+      ...baseExecutionInput(auto.referralId),
+      executionId: 'exec-auto-02',
+    });
+
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(2);
+    const plainJob = mockQueueService.enqueueExecution.mock.calls[0][0] as Record<string, unknown>;
+    const autoJob = mockQueueService.enqueueExecution.mock.calls[1][0] as Record<string, unknown>;
+    expect(Object.keys(autoJob).sort()).toEqual(Object.keys(plainJob).sort());
+    const text = JSON.stringify(autoJob);
+    for (const leaked of ['decisionReason', 'autoApproval', 'auto:credits', 'over_limit', 'teamLeadId']) {
+      expect(text).not.toContain(leaked);
+    }
+  });
+
   it('transitions referral to in_progress', async () => {
     const referral = await setupReferral();
     await service.startReferralExecution(baseExecutionInput(referral.referralId));

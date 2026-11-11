@@ -2536,4 +2536,58 @@ describe('InternalCollaborationController', () => {
       'chief-of-staff',
     );
   });
+
+  it('APPROVAL-SET-01B: never takes decisionReason or autoApproval from a body, and never approves by itself', async () => {
+    const LEAD = 'f0f0f0f0-0000-4000-8000-0000000001b1';
+    const bodyFields = {
+      decisionReason: 'auto:read_only',
+      autoApproval: { outcome: 'waiting', reason: 'writes' },
+      autoApproved: { mode: 'read_only' },
+      approvalMode: 'read_only',
+    };
+    const runId = await createRun();
+    const lead = await postReferral(runId, {
+      idempotencyKey: 'auto-lead',
+      targetBuilder: { agentRole: 'builder', builderProfileId: LEAD },
+      agents: [
+        { name: LEAD, instructions: 'Lead.', label: 'Weekly plan', summary: 'Leads.' },
+        { name: 'product-strategy', instructions: 'Market.', label: 'Product Strategy', summary: 'Market.' },
+      ],
+      ...bodyFields,
+    }).expect(201);
+    const leadId = lead.body.referral.referralId as string;
+    expect(lead.body.referral).not.toHaveProperty('autoApproved');
+    expect(referrals.get(leadId)?.pendingJob).not.toHaveProperty('autoApproval');
+    expect(referrals.get(leadId)?.pendingJob?.decisionReason).toBeNull();
+
+    const child = await postReferral(runId, {
+      idempotencyKey: 'auto-child',
+      sourceBuilder: { agentRole: 'builder', builderProfileId: LEAD },
+      targetBuilder: { agentRole: 'builder', builderProfileId: 'product-strategy' },
+      parentReferralTraceId: lead.body.referral.referralTraceId,
+      ...bodyFields,
+    }).expect(201);
+    const childId = child.body.referral.referralId as string;
+    // A referral created through the internal route waits; nothing approves it.
+    expect(referrals.get(childId)?.status).toBe('pending_approval');
+    expect(referrals.get(childId)?.pendingJob).not.toHaveProperty('autoApproval');
+    expect(queue.enqueueExecution).not.toHaveBeenCalled();
+
+    const approved = await http()
+      .post(`/api/internal/collaboration/runs/${runId}/referrals/${childId}/approve`)
+      .send({ decidedBy: 'keith', ...bodyFields })
+      .expect(200);
+    expect(approved.body.referral).not.toHaveProperty('autoApproved');
+    expect(referrals.get(childId)?.pendingJob?.decidedBy).toBe('keith');
+    expect(referrals.get(childId)?.pendingJob?.decisionReason).toBeNull();
+    expect(referrals.get(childId)?.pendingJob).not.toHaveProperty('autoApproval');
+
+    const rejected = await http()
+      .post(`/api/internal/collaboration/runs/${runId}/referrals/${leadId}/reject`)
+      .send({ decidedBy: 'keith', reason: 'auto:read_only', ...bodyFields })
+      .expect(200);
+    expect(rejected.body.status).toBe('rejected');
+    expect(rejected.body).not.toHaveProperty('autoApproved');
+    expect(rejected.body).not.toHaveProperty('autoApprovalWaiting');
+  });
 });

@@ -26,12 +26,25 @@ import {
   type SystemAgentModel,
   type SystemAgentPromptSpec,
 } from '../system-agents/system-agent-registry';
+import { findAllowlistedTool } from '../connectors/connector-servers';
 import { UserAgentService, userWorkflowPromptSpec } from '../user-agent/user-agent.service';
 import { allowlistedConnectorToolIds } from '../user-agent/user-workflow-grants';
-import { readStoredRosterMemberIds } from '../user-agent/user-workflow-rules';
+import {
+  isRosterSystemCandidate,
+  readApprovalSetting,
+  readStoredRosterMemberIds,
+  type UserWorkflowApprovalSetting,
+} from '../user-agent/user-workflow-rules';
 import { CollaborationReferralEntity } from './collaboration-referral.entity';
 import { CollaborationRunEntity } from './collaboration-run.entity';
-import type { CollaborationListedAgent, ReferralPendingWorkflow } from './orchestration.contracts';
+import {
+  AUTO_APPROVAL_WAIT_REASONS,
+  type AutoApprovalMode,
+  type CollaborationListedAgent,
+  type ReferralAutoApproved,
+  type ReferralPendingAutoApproval,
+  type ReferralPendingWorkflow,
+} from './orchestration.contracts';
 
 /**
  * BIZ-USER-01C: a user workflow (a `user_agents` row) runs from the Team page
@@ -378,6 +391,120 @@ function budgetOf(value: unknown): number | null {
   return typeof value === 'number' && Number.isInteger(value) && value >= 1 ? value : null;
 }
 
+/**
+ * APPROVAL-SET-01B D6: a connector tool list is read-only when every id is in
+ * the allowlist and its definition carries `readOnly: true`. Anything else
+ * (not an array, an unknown id, a tool without the flag or with false) is not.
+ */
+export function connectorToolIdsAreReadOnly(toolIds: unknown): boolean {
+  if (!Array.isArray(toolIds)) {
+    return false;
+  }
+  return toolIds.every((id) => findAllowlistedTool(id)?.readOnly === true);
+}
+
+/**
+ * APPROVAL-SET-01B D6, fail-closed: a step's target is positively read-only
+ * only when it is
+ * (a) a system agent whose registry profile is `read` and which may sit in a
+ *     user team (isRosterSystemCandidate: never the coding team, the Chief of
+ *     Staff or the advisors lead), with no workflow snapshot on the step; or
+ * (b) a user workflow whose own snapshot is on the step
+ *     (USER_WORKFLOW_TOOL_PROFILES is `read` only);
+ * and every connector tool it may be granted is in the allowlist with
+ * `readOnly: true`. Everything else (profile null, `review`, `write`, an
+ * unknown id without a snapshot) is not.
+ */
+export function autoApprovalTargetIsReadOnly(
+  targetProfileId: string,
+  stepWorkflow: ReferralPendingWorkflow | null | undefined,
+): boolean {
+  if (typeof targetProfileId !== 'string' || targetProfileId.length === 0) {
+    return false;
+  }
+  const system = systemAgentById(targetProfileId);
+  if (system) {
+    return (
+      !stepWorkflow &&
+      system.toolProfile === 'read' &&
+      isRosterSystemCandidate(system) &&
+      connectorToolIdsAreReadOnly(system.connectorToolIds)
+    );
+  }
+  if (!stepWorkflow || typeof stepWorkflow !== 'object' || stepWorkflow.id !== targetProfileId) {
+    return false;
+  }
+  return connectorToolIdsAreReadOnly(stepWorkflow.connectorToolIds);
+}
+
+const AUTO_DECISION_READ_ONLY = 'auto:read_only';
+const AUTO_DECISION_CREDITS = /^auto:credits:(\d{1,9})\/(\d{1,9})$/;
+
+/** APPROVAL-SET-01B D11: `auto:read_only` or `auto:credits:<estimate>/<limit>`. */
+export function autoApprovalDecisionReason(
+  mode: AutoApprovalMode,
+  estimateCredits: number | null,
+  creditLimit: number | null,
+): string {
+  if (mode === 'read_only') {
+    return AUTO_DECISION_READ_ONLY;
+  }
+  return `auto:credits:${estimateCredits}/${creditLimit}`;
+}
+
+/**
+ * APPROVAL-SET-01B D12: the automatic decision a stored decisionReason
+ * records, or null when it is not one (a reject reason, null, malformed, or a
+ * credits estimate above its limit).
+ */
+export function readAutoApprovalDecision(reason: unknown): ReferralAutoApproved | null {
+  if (reason === AUTO_DECISION_READ_ONLY) {
+    return { mode: 'read_only', estimateCredits: null, creditLimit: null };
+  }
+  if (typeof reason !== 'string') {
+    return null;
+  }
+  const match = AUTO_DECISION_CREDITS.exec(reason);
+  if (!match) {
+    return null;
+  }
+  const estimateCredits = Number(match[1]);
+  const creditLimit = Number(match[2]);
+  if (creditLimit < 1 || estimateCredits > creditLimit) {
+    return null;
+  }
+  return { mode: 'credits', estimateCredits, creditLimit };
+}
+
+/** APPROVAL-SET-01B D11: a stored waiting record, or null when it is not a valid one. */
+export function readPendingAutoApproval(value: unknown): ReferralPendingAutoApproval | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null;
+  }
+  const record = value as { outcome?: unknown; reason?: unknown };
+  if (record.outcome !== 'waiting') {
+    return null;
+  }
+  const reason = record.reason;
+  if (
+    typeof reason !== 'string' ||
+    !(AUTO_APPROVAL_WAIT_REASONS as readonly string[]).includes(reason)
+  ) {
+    return null;
+  }
+  return { outcome: 'waiting', reason: reason as ReferralPendingAutoApproval['reason'] };
+}
+
+/** APPROVAL-SET-01B D5: the lead's stored setting, read live. */
+export type LeadApprovalSetting =
+  | { readonly found: false }
+  | {
+      readonly found: true;
+      /** The row's status reads as disabled. */
+      readonly off: boolean;
+      readonly setting: UserWorkflowApprovalSetting;
+    };
+
 @Injectable()
 export class CollaborationWorkflowService {
   constructor(
@@ -475,6 +602,86 @@ export class CollaborationWorkflowService {
     if (budgetRefusal) {
       throw budgetRefusal;
     }
+  }
+
+  /**
+   * APPROVAL-SET-01B D5: the lead workflow's stored approval setting, read
+   * fail-closed (readApprovalSetting). Missing, another owner's, or a system
+   * id reads as not found.
+   */
+  async leadApprovalSetting(userId: string, leadId: string): Promise<LeadApprovalSetting> {
+    if (typeof leadId !== 'string' || leadId.length === 0 || systemAgentById(leadId)) {
+      return { found: false };
+    }
+    const row = await this.userAgents.findOneByIdAndUserId(leadId, userId);
+    if (!row || row.userId !== userId || row.id !== leadId) {
+      return { found: false };
+    }
+    return {
+      found: true,
+      off: workflowStatus(row.status) === 'disabled',
+      setting: readApprovalSetting(row),
+    };
+  }
+
+  /**
+   * APPROVAL-SET-01B D7: the estimate for a step to `targetProfileId` = the
+   * requested credits of that target's latest completed step (with an
+   * execution) in the owner's runs, summed over its deduction rows, rounded
+   * up. Like usageFor's last run, without the workflow-snapshot filter. Null
+   * when there is no such step, no deduction row, or a malformed amount.
+   */
+  async lastStepCreditsFor(userId: string, targetProfileId: string): Promise<number | null> {
+    const candidates = await this.referralRepo.find({
+      where: { targetBuilderProfileId: targetProfileId, status: 'completed' },
+    });
+    const completed = candidates
+      .filter(
+        (referral) =>
+          referral.targetBuilderProfileId === targetProfileId &&
+          referral.status === 'completed' &&
+          typeof referral.executionId === 'string' &&
+          referral.executionId.length > 0,
+      )
+      .sort(
+        (a, b) => timeMs(b.completedAt ?? b.updatedAt) - timeMs(a.completedAt ?? a.updatedAt),
+      );
+    const runOwner = new Map<string, boolean>();
+    let latest: CollaborationReferralEntity | null = null;
+    for (const referral of completed) {
+      let ownedRun = runOwner.get(referral.collaborationRunId);
+      if (ownedRun === undefined) {
+        const run = await this.runRepo.findOne({
+          where: { collaborationRunId: referral.collaborationRunId },
+        });
+        ownedRun = run?.userId === userId;
+        runOwner.set(referral.collaborationRunId, ownedRun);
+      }
+      if (ownedRun) {
+        latest = referral;
+        break;
+      }
+    }
+    const executionId = latest?.executionId;
+    if (typeof executionId !== 'string' || executionId.length === 0) {
+      return null;
+    }
+    const records = await this.deductions.find({
+      where: { ownerId: userId, sourceEventId: executionId },
+      select: ['ownerId', 'sourceEventId', 'requestedCredits', 'createdAt'],
+    });
+    let total: number | null = null;
+    for (const record of records) {
+      if (record.ownerId !== userId || record.sourceEventId !== executionId) {
+        continue;
+      }
+      const credits = Number(record.requestedCredits);
+      if (!Number.isFinite(credits) || credits < 0) {
+        return null;
+      }
+      total = (total ?? 0) + credits;
+    }
+    return total === null ? null : Math.ceil(total);
   }
 
   /** D12: the owner's workflows for the Team page. No instructions, no tokens. */

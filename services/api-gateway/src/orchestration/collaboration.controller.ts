@@ -67,6 +67,8 @@ import {
   teamLeadSummary,
 } from './collaboration-front-door';
 import type {
+  AutoApprovalMode,
+  AutoApprovalWaitReason,
   CollaborationListedAgent,
   CollaborationReferral,
   CollaborationRun,
@@ -146,6 +148,17 @@ export interface CollaborationHandoffView {
   droppedSourceCount: number;
   unsourced: boolean;
   showUnsourced: boolean;
+  /**
+   * APPROVAL-SET-01B D12: set when the server approved this step under the
+   * lead's stored setting (decidedBy is then the owner); null otherwise.
+   */
+  autoApproved: {
+    mode: AutoApprovalMode;
+    estimateCredits: number | null;
+    creditLimit: number | null;
+  } | null;
+  /** APPROVAL-SET-01B D12: why a waiting step waits although the setting is not every; else null. */
+  autoApprovalWaiting: AutoApprovalWaitReason | null;
 }
 
 export interface CollaborationRunDetail {
@@ -1082,7 +1095,36 @@ export class CollaborationController {
       droppedSourceCount: citations.droppedSourceCount,
       unsourced: citations.unsourced,
       showUnsourced: citations.showUnsourced,
+      ...this.autoApprovalView(referral),
     };
+  }
+
+  /**
+   * APPROVAL-SET-01B D12: from the referral's server-derived facts (the
+   * stored decisionReason and pending_job.autoApproval), never from a body.
+   * A waiting reason shows only while the step waits; an automatic approval
+   * never shows on a waiting or rejected step.
+   */
+  private autoApprovalView(
+    referral: CollaborationReferral,
+  ): Pick<CollaborationHandoffView, 'autoApproved' | 'autoApprovalWaiting'> {
+    const approved = referral.autoApproved;
+    const autoApproved =
+      approved &&
+      referral.status !== 'pending_approval' &&
+      referral.status !== 'rejected' &&
+      referral.decidedBy !== null
+        ? {
+            mode: approved.mode,
+            estimateCredits: approved.estimateCredits,
+            creditLimit: approved.creditLimit,
+          }
+        : null;
+    const autoApprovalWaiting =
+      referral.status === 'pending_approval' && referral.autoApprovalWaiting
+        ? referral.autoApprovalWaiting
+        : null;
+    return { autoApproved, autoApprovalWaiting };
   }
 
   private raise(error: unknown): never {

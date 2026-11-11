@@ -6,7 +6,7 @@ import { FindOperator } from 'typeorm';
 import { createHarnessEntitlementProof } from '../ai/ai-execution.controller';
 import { ExecutionResultService } from '../ai/execution-result.service';
 import { isConnectorCallGranted } from '../connectors/connector-grant-token';
-import { CALENDAR_TOOL_ID, MAIL_TOOL_ID } from '../connectors/connector-servers';
+import { CALENDAR_TOOL_ID, MAIL_TOOL, MAIL_TOOL_ID } from '../connectors/connector-servers';
 import { ConnectorConnection } from '../entities/connector-connection.entity';
 import { CreditDeductionRecord } from '../entities/credit-deduction-record.entity';
 import { QueueService } from '../queue/queue.service';
@@ -25,6 +25,11 @@ import { knowledgeScopesJobFields } from './collaboration-tool-profile';
 import {
   CollaborationWorkflowService,
   WORKFLOW_REFUSAL_CODES,
+  autoApprovalDecisionReason,
+  autoApprovalTargetIsReadOnly,
+  connectorToolIdsAreReadOnly,
+  readAutoApprovalDecision,
+  readPendingAutoApproval,
   renderWorkflow,
   resolveWorkflowProviderModel,
   workflowBudgetRefusal,
@@ -915,5 +920,289 @@ describe('BIZ-USER-01C workflow jobs (frozen HARNESS_ENTITLEMENT_PROOF_V1)', () 
     expect(job.builderProfileId).toBe('lead');
     expect(job).not.toHaveProperty('connectorGrants');
     expect(job.knowledgeScopes).toEqual(knowledgeScopesJobFields('lead').knowledgeScopes);
+  });
+});
+
+describe('APPROVAL-SET-01B auto-approval helpers', () => {
+  const memberSnapshot = (overrides: Partial<ReferralPendingWorkflow> = {}): ReferralPendingWorkflow => ({
+    id: WORKFLOW_ID,
+    name: 'Mail digest',
+    version: 'v-1',
+    knowledgeScopeIds: [],
+    connectorToolIds: [MAIL_TOOL_ID, CALENDAR_TOOL_ID],
+    model: { choice: 'server' },
+    testRun: false,
+    budgetPerRunCredits: null,
+    budgetPerDayCredits: null,
+    ...overrides,
+  });
+
+  it('treats only allowlisted connector tools flagged readOnly as read-only', () => {
+    expect(connectorToolIdsAreReadOnly([])).toBe(true);
+    expect(connectorToolIdsAreReadOnly([MAIL_TOOL_ID, CALENDAR_TOOL_ID])).toBe(true);
+    expect(connectorToolIdsAreReadOnly(['mail_send_message'])).toBe(false);
+    expect(connectorToolIdsAreReadOnly([MAIL_TOOL_ID, 'calendar_create_event'])).toBe(false);
+    expect(connectorToolIdsAreReadOnly(undefined)).toBe(false);
+    expect(connectorToolIdsAreReadOnly(MAIL_TOOL_ID)).toBe(false);
+  });
+
+  it('a tool whose readOnly flag is not true is refused by the flag, not by a list', () => {
+    const tool = MAIL_TOOL as { readOnly: boolean };
+    tool.readOnly = false;
+    try {
+      expect(connectorToolIdsAreReadOnly([MAIL_TOOL_ID])).toBe(false);
+      expect(autoApprovalTargetIsReadOnly(WORKFLOW_ID, memberSnapshot())).toBe(false);
+      expect(
+        autoApprovalTargetIsReadOnly(WORKFLOW_ID, memberSnapshot({ connectorToolIds: [CALENDAR_TOOL_ID] })),
+      ).toBe(true);
+    } finally {
+      tool.readOnly = true;
+    }
+  });
+
+  it('positively read-only targets: the read team advisors and a workflow with its own snapshot', () => {
+    expect(autoApprovalTargetIsReadOnly('product-strategy', null)).toBe(true);
+    expect(autoApprovalTargetIsReadOnly('technology-advisor', null)).toBe(true);
+    expect(autoApprovalTargetIsReadOnly(WORKFLOW_ID, memberSnapshot())).toBe(true);
+    expect(autoApprovalTargetIsReadOnly(WORKFLOW_ID, memberSnapshot({ connectorToolIds: [] }))).toBe(
+      true,
+    );
+  });
+
+  it('everything else waits: write, review, null profiles, leads, unknown ids and foreign snapshots', () => {
+    for (const id of ['writer', 'reviewer', 'builder', 'lead', 'chief-of-staff', 'advisors-lead']) {
+      expect(autoApprovalTargetIsReadOnly(id, null)).toBe(false);
+    }
+    // A system id never carries a workflow snapshot.
+    expect(
+      autoApprovalTargetIsReadOnly('product-strategy', memberSnapshot({ id: 'product-strategy' })),
+    ).toBe(false);
+    // An id outside the registry without its own snapshot.
+    expect(autoApprovalTargetIsReadOnly(WORKFLOW_ID, null)).toBe(false);
+    expect(autoApprovalTargetIsReadOnly(WORKFLOW_ID, memberSnapshot({ id: OTHER }))).toBe(false);
+    expect(autoApprovalTargetIsReadOnly('', null)).toBe(false);
+    expect(
+      autoApprovalTargetIsReadOnly(
+        WORKFLOW_ID,
+        memberSnapshot({ connectorToolIds: ['mail_send_message'] }),
+      ),
+    ).toBe(false);
+    expect(
+      autoApprovalTargetIsReadOnly(
+        WORKFLOW_ID,
+        memberSnapshot({ connectorToolIds: 'mail_list_unread_metadata' as never }),
+      ),
+    ).toBe(false);
+  });
+
+  it('writes and reads the automatic decision reason; anything else is not one', () => {
+    expect(autoApprovalDecisionReason('read_only', null, null)).toBe('auto:read_only');
+    expect(autoApprovalDecisionReason('credits', 7, 10)).toBe('auto:credits:7/10');
+    expect(readAutoApprovalDecision('auto:read_only')).toEqual({
+      mode: 'read_only',
+      estimateCredits: null,
+      creditLimit: null,
+    });
+    expect(readAutoApprovalDecision('auto:credits:7/10')).toEqual({
+      mode: 'credits',
+      estimateCredits: 7,
+      creditLimit: 10,
+    });
+    expect(readAutoApprovalDecision('auto:credits:10/10')).toEqual({
+      mode: 'credits',
+      estimateCredits: 10,
+      creditLimit: 10,
+    });
+    for (const value of [
+      null,
+      undefined,
+      '',
+      'auto:',
+      'auto:every',
+      'auto:credits',
+      'auto:credits:11/10',
+      'auto:credits:1/0',
+      'auto:credits:-1/10',
+      'auto:credits:1.5/10',
+      'auto:read_only ',
+      'not good enough',
+      42,
+    ]) {
+      expect(readAutoApprovalDecision(value)).toBeNull();
+    }
+  });
+
+  it('reads a waiting record only with a known reason', () => {
+    for (const reason of ['writes', 'unknown_cost', 'over_limit', 'checks_failed', 'lead_missing']) {
+      expect(readPendingAutoApproval({ outcome: 'waiting', reason })).toEqual({
+        outcome: 'waiting',
+        reason,
+      });
+    }
+    for (const value of [
+      null,
+      undefined,
+      'waiting',
+      [],
+      { outcome: 'approved', reason: 'writes' },
+      { outcome: 'waiting', reason: 'nope' },
+      { outcome: 'waiting' },
+    ]) {
+      expect(readPendingAutoApproval(value)).toBeNull();
+    }
+  });
+});
+
+describe('APPROVAL-SET-01B CollaborationWorkflowService reads', () => {
+  let rowsById: Map<string, Record<string, unknown>>;
+  let runs: Map<string, Record<string, unknown>>;
+  let referrals: Map<string, Record<string, unknown>>;
+  let deductions: Map<string, Record<string, unknown>>;
+  let service: CollaborationWorkflowService;
+
+  beforeEach(() => {
+    rowsById = new Map([
+      [WORKFLOW_ID, { ...copiedRow(), approvalMode: 'read_only', approvalCreditLimit: null }],
+    ]);
+    runs = new Map();
+    referrals = new Map();
+    deductions = new Map();
+    const userAgents = {
+      findOneByIdAndUserId: async (id: string, userId: string) => {
+        const row = rowsById.get(id);
+        return row && row.userId === userId ? { ...row } : null;
+      },
+    };
+    service = new CollaborationWorkflowService(
+      userAgents as unknown as UserAgentService,
+      mapRepo(runs, 'collaborationRunId') as never,
+      mapRepo(referrals, 'referralId') as never,
+      mapRepo(deductions, 'id') as never,
+    );
+  });
+
+  function step(input: {
+    id: string;
+    runId: string;
+    target: string;
+    status?: string;
+    executionId?: string | null;
+    completedAt?: string;
+  }) {
+    referrals.set(input.id, {
+      referralId: input.id,
+      collaborationRunId: input.runId,
+      targetBuilderProfileId: input.target,
+      status: input.status ?? 'completed',
+      executionId: input.executionId === undefined ? `exec-${input.id}` : input.executionId,
+      completedAt: input.completedAt ?? '2026-11-10T01:00:00.000Z',
+      updatedAt: input.completedAt ?? '2026-11-10T01:00:00.000Z',
+      pendingJob: {},
+    });
+  }
+
+  function deduct(id: string, executionId: string, credits: unknown, ownerId = OWNER) {
+    deductions.set(id, {
+      id,
+      ownerId,
+      sourceEventId: executionId,
+      requestedCredits: credits,
+      createdAt: '2026-11-10T01:00:00.000Z',
+    });
+  }
+
+  it("reads the lead's stored setting fail-closed, and a missing, foreign or system row as not found", async () => {
+    expect(await service.leadApprovalSetting(OWNER, WORKFLOW_ID)).toEqual({
+      found: true,
+      off: false,
+      setting: { mode: 'read_only', creditLimit: null },
+    });
+    rowsById.set(WORKFLOW_ID, { ...copiedRow(), approvalMode: 'credits', approvalCreditLimit: 12 });
+    expect(await service.leadApprovalSetting(OWNER, WORKFLOW_ID)).toEqual({
+      found: true,
+      off: false,
+      setting: { mode: 'credits', creditLimit: 12 },
+    });
+    // Malformed or absent reads as every.
+    for (const stored of [
+      { approvalMode: 'credits', approvalCreditLimit: null },
+      { approvalMode: 'always' },
+      {},
+    ]) {
+      rowsById.set(WORKFLOW_ID, { ...copiedRow(), ...stored });
+      expect(await service.leadApprovalSetting(OWNER, WORKFLOW_ID)).toEqual({
+        found: true,
+        off: false,
+        setting: { mode: 'every', creditLimit: null },
+      });
+    }
+    rowsById.set(WORKFLOW_ID, { ...copiedRow({ status: 'disabled' }), approvalMode: 'read_only' });
+    expect(await service.leadApprovalSetting(OWNER, WORKFLOW_ID)).toMatchObject({
+      found: true,
+      off: true,
+    });
+    rowsById.set(WORKFLOW_ID, { ...copiedRow({ status: 'draft' }), approvalMode: 'read_only' });
+    expect(await service.leadApprovalSetting(OWNER, WORKFLOW_ID)).toMatchObject({
+      found: true,
+      off: false,
+    });
+    expect(await service.leadApprovalSetting(OTHER, WORKFLOW_ID)).toEqual({ found: false });
+    expect(
+      await service.leadApprovalSetting(OWNER, 'f0f0f0f0-0000-4000-8000-00000000dead'),
+    ).toEqual({ found: false });
+    expect(await service.leadApprovalSetting(OWNER, 'chief-of-staff')).toEqual({ found: false });
+    expect(await service.leadApprovalSetting(OWNER, '')).toEqual({ found: false });
+  });
+
+  it("estimates from the target's latest completed step in the owner's runs, summed and rounded up", async () => {
+    runs.set('run-1', { collaborationRunId: 'run-1', userId: OWNER });
+    runs.set('run-2', { collaborationRunId: 'run-2', userId: OWNER });
+    runs.set('run-other', { collaborationRunId: 'run-other', userId: OTHER });
+    step({ id: 'old', runId: 'run-1', target: 'product-strategy', completedAt: '2026-11-09T01:00:00.000Z' });
+    step({ id: 'new', runId: 'run-2', target: 'product-strategy', completedAt: '2026-11-10T05:00:00.000Z' });
+    // Later, but another owner's run, unfinished, or without an execution: not counted.
+    step({ id: 'foreign', runId: 'run-other', target: 'product-strategy', completedAt: '2026-11-11T01:00:00.000Z' });
+    step({
+      id: 'waiting',
+      runId: 'run-2',
+      target: 'product-strategy',
+      status: 'pending_approval',
+      completedAt: '2026-11-11T02:00:00.000Z',
+    });
+    step({
+      id: 'noexec',
+      runId: 'run-2',
+      target: 'product-strategy',
+      executionId: null,
+      completedAt: '2026-11-11T03:00:00.000Z',
+    });
+    step({ id: 'otherTarget', runId: 'run-2', target: 'technology-advisor', completedAt: '2026-11-11T04:00:00.000Z' });
+    deduct('d-old', 'exec-old', 50);
+    deduct('d-new-1', 'exec-new', 3);
+    deduct('d-new-2', 'exec-new', 1.5);
+    deduct('d-new-foreign', 'exec-new', 100, OTHER);
+    deduct('d-foreign', 'exec-foreign', 1);
+    deduct('d-other', 'exec-otherTarget', 1);
+
+    expect(await service.lastStepCreditsFor(OWNER, 'product-strategy')).toBe(5);
+    expect(await service.lastStepCreditsFor(OWNER, 'technology-advisor')).toBe(1);
+    // The other owner's own latest step is their foreign run's, with no deduction of theirs.
+    expect(await service.lastStepCreditsFor(OTHER, 'product-strategy')).toBeNull();
+  });
+
+  it('is unknown with no completed step, no deduction row, or a malformed amount', async () => {
+    runs.set('run-1', { collaborationRunId: 'run-1', userId: OWNER });
+    expect(await service.lastStepCreditsFor(OWNER, 'product-strategy')).toBeNull();
+    step({ id: 'a', runId: 'run-1', target: 'product-strategy' });
+    expect(await service.lastStepCreditsFor(OWNER, 'product-strategy')).toBeNull();
+    deduct('d-a', 'exec-a', 'lots');
+    expect(await service.lastStepCreditsFor(OWNER, 'product-strategy')).toBeNull();
+    deduct('d-a', 'exec-a', -2);
+    expect(await service.lastStepCreditsFor(OWNER, 'product-strategy')).toBeNull();
+    deduct('d-a', 'exec-a', 0);
+    expect(await service.lastStepCreditsFor(OWNER, 'product-strategy')).toBe(0);
+    // The latest owned step counts even with no deduction yet: unknown, not the older cost.
+    step({ id: 'b', runId: 'run-1', target: 'product-strategy', completedAt: '2026-11-10T09:00:00.000Z' });
+    expect(await service.lastStepCreditsFor(OWNER, 'product-strategy')).toBeNull();
   });
 });
