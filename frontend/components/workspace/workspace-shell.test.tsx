@@ -20,6 +20,7 @@ import WorkspaceShell, {
   formatRestoreFailedNotice,
   WorkspaceRestoreFailedNotice,
   RESTORE_FAILED_NOTICE_MAX_PATHS,
+  parseProjectIdFromProjectScopedSnapshotLabel,
 } from './workspace-shell';
 import WorkspaceAccountMenu, {
   GLOBAL_AI_INSTRUCTIONS_MAX_LENGTH,
@@ -10981,6 +10982,51 @@ describe('page status messages are translated (PAGE-STATUS-I18N-01)', () => {
     assert.match(pageSource, /getPageStatusMessages\(locale\)/);
     for (const key of PAGE_STATUS_KEYS) {
       assert.ok(pageSource.includes(`pageStatusMessages.${key}`), `page.tsx uses ${key}`);
+    }
+  });
+});
+
+describe('SNAPSHOT-LABEL-01: history list label parser against the shared examples', () => {
+  // The history list has its own project-id parser. It cuts the id at the
+  // earliest of :name:, :source: and :hint:, so for a few labels no writer
+  // produces it differs from the reference parser; the shared file pins those
+  // as historyListProjectId.
+  const examples = JSON.parse(
+    readFileSync(
+      new URL('../../../services/api-gateway/src/snapshots/snapshot-label-examples.json', import.meta.url),
+      'utf8',
+    ),
+  ) as {
+    parseCases: Array<{
+      id: string;
+      label: string | null;
+      projectId: string | null;
+      historyListProjectId?: string | null;
+    }>;
+    writerCases: Array<{ projectId: string; label: string }>;
+  };
+
+  test('the shared file has parse cases', () => {
+    assert.ok(examples.parseCases.length > 30);
+  });
+
+  for (const example of examples.parseCases) {
+    test(`history list parser reads ${example.id}`, () => {
+      const expected =
+        example.historyListProjectId !== undefined
+          ? example.historyListProjectId
+          : example.projectId;
+      assert.equal(parseProjectIdFromProjectScopedSnapshotLabel(example.label), expected);
+    });
+  }
+
+  test('every writer label is listed under the project it was written for', () => {
+    for (const example of examples.writerCases) {
+      assert.equal(
+        parseProjectIdFromProjectScopedSnapshotLabel(example.label),
+        example.projectId.trim(),
+        example.label,
+      );
     }
   });
 });

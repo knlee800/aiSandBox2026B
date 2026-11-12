@@ -225,7 +225,7 @@ export function buildProjectScopedSnapshotLabelWithName(
   return `${PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX}${projectId.trim()}${PROJECT_SCOPED_SNAPSHOT_NAME_SEPARATOR}${normalizedName}${PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX}`;
 }
 
-function parseProjectIdFromSnapshotLabel(label: string | null): string | null {
+export function parseProjectIdFromSnapshotLabel(label: string | null): string | null {
   return parseProjectScopedSnapshotLabelParts(label)?.projectId ?? null;
 }
 

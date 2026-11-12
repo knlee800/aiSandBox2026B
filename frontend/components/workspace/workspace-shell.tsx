@@ -9239,7 +9239,7 @@ const PROJECT_SCOPED_SNAPSHOT_SOURCE_SEPARATOR = ':source:';
 const PROJECT_SCOPED_SNAPSHOT_HINT_SEPARATOR = ':hint:';
 const PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX = ']';
 
-function parseProjectIdFromProjectScopedSnapshotLabel(label: string | null): string | null {
+export function parseProjectIdFromProjectScopedSnapshotLabel(label: string | null): string | null {
   if (!label) {
     return null;
   }

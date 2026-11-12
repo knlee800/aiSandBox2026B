@@ -4,6 +4,9 @@ import { InternalWorkspaceFilesController } from './internal-workspace-files.con
 import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
 import { SessionService } from './session.service';
 import { SnapshotPersistenceService } from '../snapshots/snapshot-persistence.service';
+import { ProjectsService } from '../projects/projects.service';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 describe('InternalWorkspaceFilesController', () => {
   let controller: InternalWorkspaceFilesController;
@@ -441,6 +444,43 @@ describe('InternalWorkspaceFilesController', () => {
 
       expect(result).toEqual({ saved: false });
       expect(mockSnapshotPersistence.saveSnapshot).not.toHaveBeenCalled();
+    });
+
+    describe('SNAPSHOT-LABEL-01: shared snapshot label examples', () => {
+      type ParseCase = { id: string; label: string | null; projectId: string | null };
+      type WriterCase = { writer: string; projectId: string; label: string };
+      const examples = JSON.parse(
+        readFileSync(join(__dirname, '../snapshots/snapshot-label-examples.json'), 'utf8'),
+      ) as { parseCases: ParseCase[]; writerCases: WriterCase[] };
+      const gatewayWriterCases = examples.writerCases.filter(
+        (example) => example.writer === 'gateway-ai',
+      );
+
+      it('has gateway writer cases', () => {
+        expect(gatewayWriterCases.length).toBeGreaterThan(0);
+      });
+
+      it.each(gatewayWriterCases.map((example) => [JSON.stringify(example.projectId), example] as const))(
+        'writes the example label for project id %s and it parses back to that project',
+        async (_projectId, example) => {
+          mockSessionService.getSessionById.mockResolvedValue({
+            userId: 'user-1',
+            projectId: example.projectId,
+            terminatedAt: null,
+          });
+          mockSnapshotPersistence.saveSnapshot.mockResolvedValue({ id: 'snap-1' });
+
+          await controller.saveProjectSnapshot('session-1');
+
+          const written = mockSnapshotPersistence.saveSnapshot.mock.calls[0][0].label;
+          expect(written).toBe(example.label);
+          const parseCase = examples.parseCases.find((candidate) => candidate.label === written);
+          expect(parseCase?.projectId).toBe(example.projectId.trim());
+          expect(ProjectsService['parseProjectIdFromSnapshotLabel'](written)).toBe(
+            example.projectId.trim(),
+          );
+        },
+      );
     });
   });
 });

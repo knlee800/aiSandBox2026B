@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { In } from 'typeorm';
 import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
 import { Project } from '../entities/project.entity';
@@ -794,6 +796,68 @@ describe('ProjectsService (PR-03-01)', () => {
         snapshotId: 'snap-a-explicit',
       });
       expect(result.restoredSnapshotId).toBe('snap-a-explicit');
+    });
+  });
+
+  describe('SNAPSHOT-LABEL-01: shared snapshot label examples', () => {
+    type ParseCase = { id: string; label: string | null; projectId: string | null };
+    type WriterCase = { writer: string; projectId: string; label: string };
+    const examples = JSON.parse(
+      readFileSync(join(__dirname, '../snapshots/snapshot-label-examples.json'), 'utf8'),
+    ) as { parseCases: ParseCase[]; writerCases: WriterCase[] };
+    // The reopen helper is a private static; element access reaches it without
+    // changing the service.
+    const parseProjectId = (label: string | null): string | null =>
+      ProjectsService['parseProjectIdFromSnapshotLabel'](label);
+
+    it('has parse and writer cases', () => {
+      expect(examples.parseCases.length).toBeGreaterThan(30);
+      expect(examples.writerCases.length).toBeGreaterThan(0);
+    });
+
+    it.each(examples.parseCases.map((example) => [example.id, example] as const))(
+      'reopen helper parses %s',
+      (_id, example) => {
+        expect(parseProjectId(example.label)).toBe(example.projectId);
+      },
+    );
+
+    it('every writer label parses to the trimmed project id it was written for', () => {
+      for (const example of examples.writerCases) {
+        expect(parseProjectId(example.label)).toBe(example.projectId.trim());
+      }
+    });
+
+    it('reopen restores the newest example labelled for the project and nothing else', async () => {
+      mockOpenableSession();
+      snapshotPersistenceService.restoreSnapshot.mockResolvedValue({ failedPaths: [] });
+      // Newest first: every example that is not project-B's comes before the
+      // first one that is, so a wrong match would be picked first.
+      const ordered = [
+        ...examples.parseCases.filter((example) => example.projectId !== 'project-B'),
+        ...examples.parseCases.filter((example) => example.projectId === 'project-B'),
+      ];
+      snapshotPersistenceService.listSnapshots.mockResolvedValue(
+        ordered.map((example) => ({
+          id: example.id,
+          userId: 'user-1',
+          label: example.label,
+          createdAt: '2026-04-06T00:00:00.000Z',
+          fileCount: 1,
+        })),
+      );
+      const expected = examples.parseCases.find(
+        (example) => example.projectId === 'project-B',
+      );
+      expect(expected).toBeDefined();
+
+      const result = await service.openProjectIntoSession({
+        userId: 'user-1',
+        projectId: 'project-B',
+        sessionId: 'session-1',
+      });
+
+      expect(result.restoredSnapshotId).toBe(expected!.id);
     });
   });
 

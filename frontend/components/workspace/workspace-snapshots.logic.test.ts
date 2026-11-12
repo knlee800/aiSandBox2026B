@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { describe, test } from 'node:test';
 import enMessages from '@/messages/en.json';
 import zhTwMessages from '@/messages/zh-TW.json';
@@ -9,6 +10,7 @@ import {
   exportWorkspaceArchive,
   importWorkspaceArchive,
   loadWorkspaceSnapshots,
+  parseProjectIdFromSnapshotLabel,
   parseProjectScopedSnapshotHint,
   parseProjectScopedSnapshotName,
   parseProjectScopedSnapshotSource,
@@ -17,6 +19,94 @@ import {
   restoreWorkspaceSnapshot,
   saveWorkspaceSnapshot,
 } from './workspace-snapshots.logic';
+import type { ProjectScopedSnapshotSource } from './workspace-snapshots.logic';
+
+// SNAPSHOT-LABEL-01: the label examples shared with the gateway tests.
+type SnapshotLabelParseCase = {
+  id: string;
+  label: string | null;
+  projectId: string | null;
+  name: string | null;
+  source: string | null;
+  hint: string | null;
+};
+type SnapshotLabelWriterCase = {
+  writer: string;
+  projectId: string;
+  source?: string;
+  hint?: string | null;
+  name?: string;
+  label: string;
+};
+const snapshotLabelExamples = JSON.parse(
+  readFileSync(
+    new URL('../../../services/api-gateway/src/snapshots/snapshot-label-examples.json', import.meta.url),
+    'utf8',
+  ),
+) as { parseCases: SnapshotLabelParseCase[]; writerCases: SnapshotLabelWriterCase[] };
+
+describe('SNAPSHOT-LABEL-01: shared snapshot label examples', () => {
+  test('the shared file has parse and writer cases for every frontend writer', () => {
+    assert.ok(snapshotLabelExamples.parseCases.length > 30);
+    for (const writer of ['frontend-plain', 'frontend-source', 'frontend-name']) {
+      assert.ok(
+        snapshotLabelExamples.writerCases.some((example) => example.writer === writer),
+        writer,
+      );
+    }
+  });
+
+  for (const example of snapshotLabelExamples.parseCases) {
+    test(`frontend parser reads ${example.id}`, () => {
+      assert.equal(parseProjectIdFromSnapshotLabel(example.label), example.projectId);
+      assert.equal(parseProjectScopedSnapshotName(example.label), example.name);
+      assert.equal(parseProjectScopedSnapshotSource(example.label), example.source);
+      assert.equal(parseProjectScopedSnapshotHint(example.label), example.hint);
+      if (example.projectId !== null) {
+        assert.equal(
+          resolveProjectScopedLatestSnapshotId({
+            snapshots: [
+              {
+                id: example.id,
+                userId: 'user-1',
+                label: example.label,
+                createdAt: '2026-04-06T00:00:00.000Z',
+                fileCount: 1,
+              },
+            ],
+            projectId: example.projectId,
+          }),
+          example.id,
+        );
+      }
+    });
+  }
+
+  for (const [index, example] of snapshotLabelExamples.writerCases.entries()) {
+    if (!example.writer.startsWith('frontend-')) {
+      continue;
+    }
+    test(`frontend writer case ${index} (${example.writer}) builds the example label and parses back`, () => {
+      const built =
+        example.writer === 'frontend-name'
+          ? buildProjectScopedSnapshotLabelWithName(example.projectId, example.name ?? '')
+          : example.writer === 'frontend-source'
+            ? buildProjectScopedSnapshotLabel(
+                example.projectId,
+                example.source as ProjectScopedSnapshotSource,
+                example.hint ?? undefined,
+              )
+            : buildProjectScopedSnapshotLabel(example.projectId);
+      assert.equal(built, example.label);
+      assert.equal(parseProjectIdFromSnapshotLabel(built), example.projectId.trim());
+      const parseCase = snapshotLabelExamples.parseCases.find(
+        (candidate) => candidate.label === built,
+      );
+      assert.ok(parseCase, `a parse case exists for ${built}`);
+      assert.equal(parseCase.projectId, example.projectId.trim());
+    });
+  }
+});
 
 describe('workspace-snapshots.logic', () => {
   test('saveWorkspaceSnapshot posts snapshot request and returns metadata', async () => {
