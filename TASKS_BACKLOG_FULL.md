@@ -84466,7 +84466,7 @@ taskId=COOKIE-PREFIX-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 2 (stage-start) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted. Step 2 stage-start drafted 2026-11-12 (docs/COOKIE-PREFIX-01-STAGE-START.md, 32cef0f); waiting for Keith's approval.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 2 (stage-start) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted. Step 2 stage-start drafted 2026-11-12 (docs/COOKIE-PREFIX-01-STAGE-START.md, 32cef0f); approved by Keith 2026-11-12 ("Yes, all four"); Step 3 (implementation) admitted with FRONTEND and GATEWAY.
 **Task ID:** COOKIE-PREFIX-01
 **Title:** Harden platform cookies against a sibling host (__Host- prefix)
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -84474,8 +84474,8 @@ nature=IMPLEMENTATION
 **Lifecycle:** 4-STEP.
 **Start condition:** READY (Keith, 2026-11-12, "Yes, start it"). Was: NOT_READY. Ready when: Keith decides.
 **Depends on:** PREVIEW-ORIGIN-01.
-**Primary write scope:** set 2026-11-12 for Step 2: docs/COOKIE-PREFIX-01-STAGE-START.md (the stage-start); the implementation write set is set when Keith approves it. Was: PROVISIONAL: gateway cookie setters and readers (auth, main.ts CSRF middleware) and frontend readers of aisandbox_csrf, with tests; a migration path for signed-in users.
-**Mutexes / resources:** none for Step 2 (set 2026-11-12; a stage-start document only); expected GATEWAY and FRONTEND for Step 3.
+**Primary write scope:** set 2026-11-12 for Step 3 (Keith approved the stage-start): services/api-gateway/src/auth/platform-cookies.ts, services/api-gateway/src/main.ts, services/api-gateway/src/auth/auth.controller.ts, services/api-gateway/src/auth/session-cookie.guard.ts, services/api-gateway/src/auth/session-or-api-key.guard.ts, services/api-gateway/src/auth/csrf.guard.ts, services/api-gateway/src/guards/same-origin-write.guard.ts, services/api-gateway/src/websocket/websocket.gateway.ts, services/api-gateway/src/preview/preview-response-headers.ts, services/api-gateway/src/preview/preview.controller.ts, services/api-gateway/src/preview/preview-entry.controller.ts, services/api-gateway/src/auth/__tests__/platform-cookies.spec.ts, services/api-gateway/src/auth/__tests__/platform-cookies.http.spec.ts, services/api-gateway/src/auth/__tests__/csrf.guard.spec.ts, services/api-gateway/src/auth/__tests__/session-or-api-key.guard.spec.ts, services/api-gateway/src/auth/auth.controller.spec.ts, services/api-gateway/src/guards/same-origin-write.guard.spec.ts, services/api-gateway/src/websocket/__tests__/websocket.gateway.spec.ts, services/api-gateway/src/preview/__tests__/preview.response-headers.spec.ts, services/api-gateway/src/preview/__tests__/preview.isolation.spec.ts, frontend/lib/csrf-cookie.ts, frontend/lib/csrf-cookie.test.ts, frontend/app/[locale]/app/page.tsx, frontend/components/auth/logout-button.tsx, frontend/components/knowledge/knowledge-api.ts, frontend/lib/collaboration/api.ts, frontend/lib/build-apply-confirm-proxy.server.ts, frontend/lib/build-apply-confirm-proxy.server.test.ts, e2e/builder-golden-path/lib/auth.ts (5 new; the sidecar lists frontend/app/ as a directory because the validator refuses brackets; only app/[locale]/app/page.tsx under it may change). Step 2 wrote docs/COOKIE-PREFIX-01-STAGE-START.md.
+**Mutexes / resources:** GATEWAY, FRONTEND (set 2026-11-12 for Step 3).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
@@ -84483,6 +84483,8 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From PREVIEW-ORIGIN-01: a sibling host such as the preview host can set cookies for the parent domain that shadow platform cookies; the __Host- prefix (Secure, Path=/, no Domain) prevents that. Also: with PREVIEW_BASE_URL unset (fail-safe mode), an upstream Set-Cookie from a dev-server preview still passes through on the platform host; strip it. Auth-sensitive: 4-step.
+
+**Decided (Keith, 2026-11-12, "Yes, all four"; docs/COOKIE-PREFIX-01-STAGE-START.md section 9):** (1) two modes: __Host- names in secure mode (https APP_BASE_URL or NODE_ENV production), today's names for local http and Jest; (2) one forced sign-in, no dual-accept window; (3) upstream Set-Cookie dropped on every preview response on the platform host; on the preview host host-only app cookies kept, lines with a Domain attribute or a name containing aisandbox_ dropped; Clear-Site-Data dropped on both; (4) the OAuth state cookie renamed now, its proxy problem left to a follow-up.
 
 ### CSRF-AUDIT-01 — Cookie-authenticated write routes without CsrfGuard
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
