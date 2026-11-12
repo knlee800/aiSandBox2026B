@@ -118,6 +118,20 @@ export function draftProblemKey(reason: CollaborationDraftProblemReason): string
   return `draftProblem${camel(reason)}`;
 }
 
+const REPLY_LANGUAGE_KEYS: Record<(typeof REPLY_LANGUAGES)[number], string> = {
+  owner: 'draftReplyLanguageOwner',
+  en: 'draftReplyLanguageEn',
+  'zh-TW': 'draftReplyLanguageZhTw',
+  'zh-CN': 'draftReplyLanguageZhCn',
+};
+
+/** The translated name of a reply-language code; an unknown code is shown as it is. */
+export function draftReplyLanguageName(code: string, t: (key: string) => string): string {
+  return Object.prototype.hasOwnProperty.call(REPLY_LANGUAGE_KEYS, code)
+    ? t(REPLY_LANGUAGE_KEYS[code as (typeof REPLY_LANGUAGES)[number]])
+    : code;
+}
+
 export interface CollaborationDraftCardView {
   title: string;
   kindLabel: string;
@@ -145,7 +159,14 @@ export function buildDraftCard(
   const parts = valid
     ? DRAFT_PARTS.flatMap((part) => {
         const value = draft.fields[part];
-        return value ? [{ part, label: t(draftFieldKey(part)), value }] : [];
+        if (!value) return [];
+        return [
+          {
+            part,
+            label: t(draftFieldKey(part)),
+            value: part === 'replyLanguage' ? draftReplyLanguageName(value, t) : value,
+          },
+        ];
       })
     : [];
   const droppedItems = draft.problems.map((problem) =>

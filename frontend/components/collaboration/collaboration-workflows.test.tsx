@@ -23,6 +23,7 @@ import {
   draftFieldKey,
   draftInvalidKey,
   draftProblemKey,
+  draftReplyLanguageName,
   draftReviewHref,
   readHandoffDraft,
 } from './collaboration-draft';
@@ -2626,7 +2627,7 @@ describe('COS-DRAFTS-01B draft card on the Team page', () => {
     });
     assert.match(markup, /data-testid="collaboration-draft-ref-9"/);
     assert.ok(markup.includes('Draft workflow: Weekly sales digest'));
-    for (const text of ['Sales analyst', 'Sums up the sales mail.', 'calm', 'zh-TW', 'One short report.']) {
+    for (const text of ['Sales analyst', 'Sums up the sales mail.', 'calm', 'Traditional Chinese', 'One short report.']) {
       assert.ok(markup.includes(text), text);
     }
     assert.match(markup, /<details[^>]*data-testid="collaboration-draft-parts-ref-9"/);
@@ -2637,6 +2638,43 @@ describe('COS-DRAFTS-01B draft card on the Team page', () => {
     assert.doesNotMatch(markup, /collaboration-draft-invalid-/);
     assert.match(markup, /data-testid="collaboration-answer-ref-9"/);
     assert.ok(markup.includes('Here is a draft for you.'));
+  });
+
+  test('the draft card shows the reply language as a translated name, and an unknown code as it is', () => {
+    const codes = ['owner', 'en', 'zh-TW', 'zh-CN'] as const;
+    const replyValue = (card: ReturnType<typeof cardFor>) =>
+      card.parts.find((part) => part.part === 'replyLanguage')?.value;
+    const expectedEn = {
+      owner: 'The language I write in',
+      en: 'English',
+      'zh-TW': 'Traditional Chinese',
+      'zh-CN': 'Simplified Chinese',
+    };
+    for (const code of codes) {
+      const card = cardFor(validDraft({ fields: { name: 'N', replyLanguage: code } }));
+      assert.equal(replyValue(card), expectedEn[code], code);
+      const markup = render({ handoffs: [step({ draft: card })] });
+      assert.ok(markup.includes(expectedEn[code]), code);
+    }
+    const expectedZh: Record<string, Record<(typeof codes)[number], string>> = {
+      'zh-TW': { owner: '與我書寫的語言相同', en: '英文', 'zh-TW': '繁體中文', 'zh-CN': '簡體中文' },
+      'zh-CN': { owner: '与我书写的语言相同', en: '英文', 'zh-TW': '繁体中文', 'zh-CN': '简体中文' },
+    };
+    for (const locale of ['zh-TW', 'zh-CN']) {
+      const catalog = CATALOGS.find(([name]) => name === locale)![1];
+      for (const code of codes) {
+        const card = cardFor(validDraft({ fields: { name: 'N', replyLanguage: code } }), locale, tFor(catalog));
+        assert.equal(replyValue(card), expectedZh[locale][code], `${locale} ${code}`);
+      }
+    }
+    // The reader drops an unknown code, so an unknown code reaches the card only through the helper.
+    assert.equal(draftReplyLanguageName('fr', tEn), 'fr');
+    assert.equal(draftReplyLanguageName('toString', tEn), 'toString');
+    const unknown = buildDraftCard(
+      { kind: 'workflow', fields: { name: 'N', replyLanguage: 'fr' }, problems: [], invalid: null, unknownLabels: [], answerWithoutDraft: '' },
+      { t: tEn, locale: 'en', runId: RUN, referralId: STEP },
+    );
+    assert.equal(replyValue(unknown), 'fr');
   });
 
   test('the link carries the locale prefix and encodes both ids', () => {
