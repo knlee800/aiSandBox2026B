@@ -89367,7 +89367,7 @@ taskId=STAGING-DEPLOY-CLEANUP-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the CM-CLEANUP-02 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING and ENV released; stagingAuthorized false. Deployed 8427c2f to 7a5bf0c with runs off (rc 0, 2026-11-12T07:37:48Z): no migration (hash 9cfde25f unchanged), configuration unchanged, container-manager started (unit active, keyed stats 200), standard, security and body-limit checks pass; DELETE /api/internal/sessions/<id>/container and POST /api/internal/sessions/<id>/previews answer 404 with and without the key (two ids each); the build has no removeSessionContainer and no :id/container route. No Keith step. Checkpoint: docs/STAGING-DEPLOY-CLEANUP-02-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the CM-CLEANUP-02 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-CLEANUP-02
 **Title:** Deploy CM-CLEANUP-02 (and later locked work)
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
