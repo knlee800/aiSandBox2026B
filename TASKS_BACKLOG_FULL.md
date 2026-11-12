@@ -87308,7 +87308,7 @@ taskId=COS-DRAFTS-POLISH-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-11 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-11 by the COS-DRAFTS-01B LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. LANE-DONE and LOCKED by the control plane; Lane 1 and FRONTEND and I18N released. The Chief of Staff draft card shows the reply language as a translated name (draftReplyLanguageName; four collaboration keys in en, zh-TW and zh-CN copying the workflow form's names; unknown codes as they are); sonnet subagent, fast-forwarded as b836dcd; control-plane rerun: frontend 1800 of 1800, tsc and build 0. Not deployed. The admission record's date (2026-11-11) came from a stale template; admitted 2026-11-12. Checkpoint: docs/COS-DRAFTS-POLISH-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (REPLY-LANG-KEYS-01) / 0 superseded / 0 dropped / 0 undisposed; the deploy STAGING-DEPLOY-POLISH-01 is registered by CM-CONTENT-TYPE-02. Was: ADMITTED — Lane 1 — 2026-11-11 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-11 by the COS-DRAFTS-01B LOCK — not admitted.
 **Task ID:** COS-DRAFTS-POLISH-01
 **Title:** Draft card reply language as a name
 **Workstream:** AGENT (taxonomy only; zero admission weight)
@@ -87325,6 +87325,30 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** APPROVED_FUTURE, futureAuthorization AUTHORIZED (Keith approved the COS-DRAFTS-01 stage-start 2026-11-11).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** From the COS-DRAFTS-01B worker: the draft card shows the reply language as a raw code (owner, en, zh-TW, zh-CN); show the same translated names the workflow form uses for its reply-language choice.
+
+### REPLY-LANG-KEYS-01 — One source for the reply-language names
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=REPLY-LANG-KEYS-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the COS-DRAFTS-POLISH-01 LOCK — not admitted.
+**Task ID:** REPLY-LANG-KEYS-01
+**Title:** One source for the reply-language names
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction). Low value; Keith may drop it.
+**Depends on:** COS-DRAFTS-POLISH-01.
+**Primary write scope:** PROVISIONAL: frontend/components/collaboration/ (collaboration-page.tsx, collaboration-draft.ts), the workflow form, the three message files and tests.
+**Mutexes / resources:** set at admission (expected FRONTEND, I18N).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the COS-DRAFTS-POLISH-01 worker: the same four reply-language names now live in platform.agentWorkflow.replyLanguage and in collaboration.draftReplyLanguage*. Use one source (for example pass the platform translator to the draft card) and remove the duplicate keys; tests; no visible change.
 
 ### CHAT-DISCORD-01 — Discord chat channel
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -88501,7 +88525,7 @@ taskId=CM-CONTENT-TYPE-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 2 — 2026-11-11 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-11 by the CM-CONTENT-TYPE-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. LANE-DONE and LOCKED by the control plane; Lane 2 and CONTAINER-MANAGER released. Preview content types added for .pdf, .mp3, .wav, .ogg, .mp4, .webm, .webmanifest and .csv; .js moves to text/javascript to match .mjs (no code compares it); fallback and headers unchanged; 8 new test rows; sonnet subagent 209c1d7, cherry-picked as 9669695; control-plane rerun: container-manager 886 passed, build 0. Not deployed. The admission record's date (2026-11-11) came from a stale template; admitted 2026-11-12. Checkpoint: docs/CM-CONTENT-TYPE-02-CHECKPOINT.md. FOLLOWUPS: 1 registered (STAGING-DEPLOY-POLISH-01, shared with COS-DRAFTS-POLISH-01) / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 2 — 2026-11-11 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-11 by the CM-CONTENT-TYPE-01 LOCK — not admitted.
 **Task ID:** CM-CONTENT-TYPE-02
 **Title:** More preview content types
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -88518,6 +88542,30 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-11).
 **Scope:** From the CM-CONTENT-TYPE-01 worker: add .pdf, .mp3, .mp4, .webm, .webmanifest and similar types where previews need them (they still fall back to text/plain, which is wrong for .pdf), and decide whether .js moves from application/javascript to text/javascript to match .mjs (both are valid today).
+
+### STAGING-DEPLOY-POLISH-01 — Deploy the draft card language names and the preview content types (and later locked work)
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=STAGING-DEPLOY-POLISH-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the CM-CONTENT-TYPE-02 LOCK — not admitted.
+**Task ID:** STAGING-DEPLOY-POLISH-01
+**Title:** Deploy the draft card language names and the preview content types (and later locked work)
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith approves the deploy (it may wait for more locked work).
+**Depends on:** COS-DRAFTS-POLISH-01, CM-CONTENT-TYPE-02.
+**Primary write scope:** records; host state (deploy).
+**Mutexes / resources:** STAGING, ENV.
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** STAGING-RUNTIME.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false.
+**Scope:** Deploy main with COS-DRAFTS-POLISH-01 and CM-CONTENT-TYPE-02 (and any later locked work) to staging from the host with runs off (no migration expected; configuration unchanged; host checks as in STAGING-DEPLOY-I18N-02, keyed checks before the header file is removed). No Keith step required.
 
 ### CM-DIFF-CAP-01 — Large diffs come back truncated, not failed
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
