@@ -88549,7 +88549,7 @@ taskId=STAGING-DEPLOY-POLISH-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the CM-CONTENT-TYPE-02 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING and ENV released; stagingAuthorized false. Deployed 884110c to d610df8 with runs off (rc 0, 2026-11-12T06:21:09Z): no migration (hash 9cfde25f unchanged), configuration unchanged, the lockfile change (CM-DEPS-01) installed cleanly, standard and security checks pass, body-limit checks pass; in the builds: the zh-TW draft-card language name, the cut-diff notice test id, diffLimitBytes in the gateway, application/pdf in the preview service, and no jsonwebtoken line left in container-manager package.json. No Keith step was required. Checkpoint: docs/STAGING-DEPLOY-POLISH-01-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-12 by the CM-CONTENT-TYPE-02 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-POLISH-01
 **Title:** Deploy the draft card language names and the preview content types (and later locked work)
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
