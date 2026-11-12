@@ -88782,22 +88782,22 @@ taskId=SNAPSHOT-NOTICE-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-12 by the SNAPSHOT-NOTICE-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-12 by the SNAPSHOT-NOTICE-01 LOCK — not admitted.
 **Task ID:** SNAPSHOT-NOTICE-02
 **Title:** Clear the not-restored files notice when the user switches session
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 2-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (control plane under Keith's 2026-11-10 instruction, 2026-11-12). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** SNAPSHOT-NOTICE-01.
-**Primary write scope:** PROVISIONAL: frontend/app/ (page.tsx) and its tests.
-**Mutexes / resources:** set at admission (expected FRONTEND).
+**Primary write scope:** set 2026-11-12: frontend/app/, frontend/components/workspace/workspace-shell.test.tsx (frontend/app/ is listed as a directory for frontend/app/[locale]/app/page.tsx only).
+**Mutexes / resources:** FRONTEND.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects, snapshots and multilingual UI).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From the SNAPSHOT-NOTICE-01 worker: the notice is not cleared when the user switches to another session without opening a project (it can be dismissed). Clear it on a session switch; test.
 
 ### STAGING-DEPLOY-SNAP-04 — Deploy the not-restored files notice and Keith checks it
