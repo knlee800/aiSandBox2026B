@@ -89074,22 +89074,22 @@ taskId=SNAPSHOT-LABEL-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-12 by the SNAPSHOT-LABEL-01 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-12 by the SNAPSHOT-LABEL-01 LOCK — not admitted.
 **Task ID:** SNAPSHOT-LABEL-02
 **Title:** One label parser for the project history list
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 2-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Start condition:** READY (control plane under Keith's 2026-11-10 instruction, 2026-11-12). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
 **Depends on:** SNAPSHOT-LABEL-01.
-**Primary write scope:** PROVISIONAL: frontend/components/workspace/workspace-shell.tsx and workspace-shell.test.tsx, the shared examples file.
-**Mutexes / resources:** set at admission (expected FRONTEND; GATEWAY only if the examples file changes).
+**Primary write scope:** set 2026-11-12: services/api-gateway/src/snapshots/snapshot-label-examples.json, frontend/components/workspace/workspace-shell.tsx, frontend/components/workspace/workspace-shell.test.tsx.
+**Mutexes / resources:** GATEWAY (examples file only), FRONTEND.
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects, snapshots and multilingual UI).
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From the SNAPSHOT-LABEL-01 worker: workspace-shell.tsx keeps its own label parser (parseProjectIdFromProjectScopedSnapshotLabel), used by computeProjectHistoryRows to choose which versions a project's history list shows; it cuts the id at the first of :name:, :source: or :hint:, while the shared parser cuts at :name: if present, else :source:. They differ on 4 hand-built labels no writer produces (pinned with historyListProjectId in the examples). Replace it with the shared parser from workspace-snapshots.logic.ts (or decide to keep it), update the 4 pinned cases, and drop the unreachable :name: fallback in computeProjectHistoryRows if it stays unreachable for UUID ids.
 
 ### STAGING-DEPLOY-CMSEC-01 — Deploy the container-manager security fixes

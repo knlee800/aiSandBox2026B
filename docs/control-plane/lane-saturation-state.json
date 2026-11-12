@@ -7,13 +7,17 @@
   "governance": {"owner": "NONE", "state": "UNOWNED"},
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "SNAPSHOT-LABEL-02",
+      "mutexes": ["GATEWAY", "FRONTEND"],
+      "writePaths": [
+        "services/api-gateway/src/snapshots/snapshot-label-examples.json",
+        "frontend/components/workspace/workspace-shell.tsx",
+        "frontend/components/workspace/workspace-shell.test.tsx"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -6827,14 +6831,18 @@
       "taskId": "SNAPSHOT-LABEL-02",
       "nature": "IMPLEMENTATION",
       "lifecycle": "2-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "OPTIONAL",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
       "dependsOn": ["SNAPSHOT-LABEL-01"],
-      "mutexes": [],
-      "writePaths": [],
+      "mutexes": ["GATEWAY", "FRONTEND"],
+      "writePaths": [
+        "services/api-gateway/src/snapshots/snapshot-label-examples.json",
+        "frontend/components/workspace/workspace-shell.tsx",
+        "frontend/components/workspace/workspace-shell.test.tsx"
+      ],
       "hotfiles": [],
       "i18n": false,
       "sharedContractIds": [],
@@ -6842,8 +6850,8 @@
       "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "runtimeNeeds": [],
-      "admissionUncertain": true,
-      "writeSetPrecision": "PROVISIONAL"
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
     },
     {
       "taskId": "STAGING-DEPLOY-CMSEC-01",
