@@ -88686,7 +88686,7 @@ taskId=STAGING-DEPLOY-SNAP-03
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-11 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-11 by the CM-BODY-KEY-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING and ENV released; stagingAuthorized false. Deployed a64c82d to 7c2a401 with runs off (rc 0, 2026-11-12T01:21:17Z): no migration (hash 9cfde25f unchanged), configuration unchanged, standard and security checks pass, the new code is in the builds (internalKeyMatches in app-setup.js; base64 in workspace-archive.service.js, the non-UTF8 refusal gone); without the key a 1 MB body gets 413 on the file write route (was 403) and on files/search, a small body 403; with the key a 1 MB file write reaches the handler (404 for an unknown session), with a wrong key 413. The keyed check in the deploy script did not run (its key file was already removed) and was rerun correctly by snap3-keycheck.sh. Checkpoint: docs/STAGING-DEPLOY-SNAP-03-CHECKPOINT.md. FOLLOWUPS: 0 registered / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-11 — Keith approved the deploy ("Yes, deploy"). Was: READY — registered 2026-11-11 by the CM-BODY-KEY-01 LOCK — not admitted.
 **Task ID:** STAGING-DEPLOY-SNAP-03
 **Title:** Deploy binary-safe zip export and import and the keyed body limit
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
