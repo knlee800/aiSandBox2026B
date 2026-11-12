@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
+import { readSessionCookie } from './platform-cookies';
 
 type AuthenticatedRequest = Request & {
   user?: {
@@ -22,7 +23,8 @@ export class SessionCookieGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
-    const rawToken = request.cookies?.aisandbox_session;
+    // COOKIE-PREFIX-01: the current mode's name only (__Host- in secure mode).
+    const rawToken = readSessionCookie(request);
 
     if (typeof rawToken !== 'string' || rawToken.trim().length === 0) {
       throw new UnauthorizedException('Authentication required');

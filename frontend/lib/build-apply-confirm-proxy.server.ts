@@ -1,4 +1,7 @@
-const SESSION_COOKIE_NAME = 'aisandbox_session';
+// COOKIE-PREFIX-01: the gateway uses __Host-aisandbox_session in secure mode
+// (https or production) and aisandbox_session on local http. The prefixed
+// name is tried first; the token is re-sent under the name it was found by.
+export const SESSION_COOKIE_NAMES = ['__Host-aisandbox_session', 'aisandbox_session'] as const;
 const INTERNAL_SERVICE_KEY_HEADER = 'X-Internal-Service-Key';
 const DEFAULT_API_GATEWAY_URL = 'http://localhost:4000';
 
@@ -41,22 +44,43 @@ export function readInternalServiceKeyFromEnv(): string | null {
   return key;
 }
 
-export function readSessionTokenFromCookieHeader(cookieHeader: string | null): string | null {
+export interface SessionCookieFromHeader {
+  name: (typeof SESSION_COOKIE_NAMES)[number];
+  token: string;
+}
+
+/**
+ * The session cookie from a Cookie header: the prefixed name first, then the
+ * old one; exact-name match; the first pair with that name. Null when absent
+ * or empty.
+ */
+export function readSessionCookieFromCookieHeader(
+  cookieHeader: string | null,
+): SessionCookieFromHeader | null {
   if (typeof cookieHeader !== 'string' || cookieHeader.trim().length === 0) {
     return null;
   }
 
   const parts = cookieHeader.split(';');
-  for (const part of parts) {
-    const trimmed = part.trim();
-    if (!trimmed.startsWith(`${SESSION_COOKIE_NAME}=`)) {
-      continue;
+  for (const name of SESSION_COOKIE_NAMES) {
+    for (const part of parts) {
+      const separator = part.indexOf('=');
+      if (separator < 0 || part.slice(0, separator).trim() !== name) {
+        continue;
+      }
+      const value = part.slice(separator + 1).trim();
+      if (value.length > 0) {
+        return { name, token: value };
+      }
+      break;
     }
-    const value = trimmed.slice(`${SESSION_COOKIE_NAME}=`.length).trim();
-    return value.length > 0 ? value : null;
   }
 
   return null;
+}
+
+export function readSessionTokenFromCookieHeader(cookieHeader: string | null): string | null {
+  return readSessionCookieFromCookieHeader(cookieHeader)?.token ?? null;
 }
 
 export function parseBuildApplyConfirmationProxyPayload(
@@ -136,8 +160,8 @@ export async function proxyConfirmBuildApply(
     return { status: 400, body: { error: 'invalid_execution_id' } };
   }
 
-  const sessionToken = readSessionTokenFromCookieHeader(args.cookieHeader);
-  if (!sessionToken) {
+  const sessionCookie = readSessionCookieFromCookieHeader(args.cookieHeader);
+  if (!sessionCookie) {
     return { status: 401, body: { error: 'unauthenticated' } };
   }
 
@@ -153,7 +177,7 @@ export async function proxyConfirmBuildApply(
 
   const fetchImpl = args.fetchImpl ?? fetch;
   const gatewayBaseUrl = getApiGatewayBaseUrl();
-  const sessionCookieHeader = `${SESSION_COOKIE_NAME}=${sessionToken}`;
+  const sessionCookieHeader = `${sessionCookie.name}=${sessionCookie.token}`;
 
   const authResponse = await fetchImpl(`${gatewayBaseUrl}/api/auth/me`, {
     method: 'GET',

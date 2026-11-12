@@ -26,6 +26,11 @@ import { SessionCookieGuard } from './session-cookie.guard';
 import { EntitlementService } from './entitlement.service';
 import { CsrfGuard } from './csrf.guard';
 import { EmailThrottlerGuard } from './email-throttler.guard';
+import {
+  clearSessionCookies,
+  readSessionCookie,
+  setSessionCookie as writeSessionCookie,
+} from './platform-cookies';
 import * as acceptLanguageParser from 'accept-language-parser';
 import passport from 'passport';
 import { Request as ExpressRequest, Response } from 'express';
@@ -90,14 +95,9 @@ export class AuthController {
     return errorCode ? `${redirectPath}?error=${errorCode}` : redirectPath;
   }
 
+  /** COOKIE-PREFIX-01: name and attributes from platform-cookies.ts. */
   private setSessionCookie(response: Response, sessionToken: string): void {
-    response.cookie('aisandbox_session', sessionToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    writeSessionCookie(response, sessionToken);
   }
 
   private clearOauthState(request: OAuthSessionRequest): void {
@@ -395,10 +395,8 @@ export class AuthController {
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   async logout(@Request() req, @Res({ passthrough: true }) response: Response) {
-    await this.authService.revokeSession(req.cookies?.aisandbox_session);
-    response.clearCookie('aisandbox_session', {
-      path: '/',
-    });
+    await this.authService.revokeSession(readSessionCookie(req) as string);
+    clearSessionCookies(response);
     return { ok: true };
   }
 }

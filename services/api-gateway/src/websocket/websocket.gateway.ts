@@ -8,9 +8,8 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { AuthService } from '../auth/auth.service';
+import { platformCookieNames } from '../auth/platform-cookies';
 import { SessionService } from '../sessions/session.service';
-
-const SESSION_COOKIE_NAME = 'aisandbox_session';
 
 type CorsOriginCallback = (
   err: Error | null,
@@ -186,7 +185,8 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const token = readHandshakeCookie(
         client.handshake?.headers?.cookie,
-        SESSION_COOKIE_NAME,
+        // COOKIE-PREFIX-01: the current mode's name only (__Host- in secure mode).
+        platformCookieNames().session,
       );
       if (!token || token.trim().length === 0) {
         client.disconnect(true);

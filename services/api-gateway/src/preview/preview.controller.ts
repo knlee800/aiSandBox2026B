@@ -13,7 +13,9 @@ import {
 } from './preview-host';
 import {
   filterProxyResponseHeaders,
+  limitPreviewCookieHeaders,
   PREVIEW_CSP_HEADER,
+  PreviewCookieHost,
   PREVIEW_SANDBOX_CSP,
   withPreviewSandboxPolicy,
 } from './preview-response-headers';
@@ -96,7 +98,10 @@ export function previewInternalKeyHeaders(internalServiceKey: string): Record<st
  * answer back. Shared by the platform-host catch-all and the preview-host
  * proxy route, so the container-manager request is the same on both: same
  * path, same stripped headers, same internal key. With failSafe the CSP
- * sandbox policy is added to the response headers.
+ * sandbox policy is added to the response headers. COOKIE-PREFIX-01:
+ * cookieHost says which host serves the answer; on the platform host every
+ * upstream Set-Cookie is dropped, on the preview host only host-only app
+ * cookies pass, and Clear-Site-Data is dropped on both.
  */
 export async function forwardPreviewRequest(args: {
   req: Request;
@@ -105,8 +110,9 @@ export async function forwardPreviewRequest(args: {
   url: string;
   keyHeaders: Record<string, string>;
   failSafe: boolean;
+  cookieHost: PreviewCookieHost;
 }): Promise<void> {
-  const { req, res, forward, url, keyHeaders, failSafe } = args;
+  const { req, res, forward, url, keyHeaders, failSafe, cookieHost } = args;
   const isProxy = isPreviewProxySuffix(forward.suffix);
   try {
     console.log(`[Preview Proxy] ${req.method} ${req.path} -> ${url}`);
@@ -127,7 +133,10 @@ export async function forwardPreviewRequest(args: {
 
     // Copy response headers, minus hop-by-hop headers (and, when Express
     // re-serialises the body, content-length / content-encoding).
-    const filteredHeaders = filterProxyResponseHeaders(response.headers, { streamed });
+    const filteredHeaders = limitPreviewCookieHeaders(
+      filterProxyResponseHeaders(response.headers, { streamed }),
+      cookieHost,
+    );
     const forwardedHeaders = failSafe ? withPreviewSandboxPolicy(filteredHeaders) : filteredHeaders;
     Object.keys(forwardedHeaders).forEach(key => {
       res.setHeader(key, forwardedHeaders[key]);
@@ -300,6 +309,8 @@ export class PreviewController {
       url,
       keyHeaders: this.internalKeyHeaders(),
       failSafe: isProxy,
+      // COOKIE-PREFIX-01: answers here are on the platform host.
+      cookieHost: 'platform',
     });
   }
 }

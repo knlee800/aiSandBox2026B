@@ -2,6 +2,8 @@ import axios from 'axios';
 import { PreviewController } from '../preview.controller';
 import {
   filterProxyResponseHeaders,
+  isAllowedPreviewSetCookie,
+  limitPreviewCookieHeaders,
   PREVIEW_SANDBOX_CSP,
   withPreviewSandboxPolicy,
 } from '../preview-response-headers';
@@ -213,5 +215,69 @@ describe('PREVIEW-ORIGIN-01 sandbox fail-safe (PREVIEW_BASE_URL unset)', () => {
       res as never,
     );
     expect(lastPolicy(res)).toBeUndefined();
+  });
+});
+
+// COOKIE-PREFIX-01 section 5.
+describe('limitPreviewCookieHeaders', () => {
+  const appCookie = 'app_session=a1; Path=/; HttpOnly; SameSite=Lax';
+
+  it('drops every Set-Cookie on the platform host, as an array or a single string, in any case', () => {
+    expect(limitPreviewCookieHeaders({ 'set-cookie': [appCookie, 'b=2'], 'x-a': '1' }, 'platform')).toEqual({
+      'x-a': '1',
+    });
+    expect(limitPreviewCookieHeaders({ 'Set-Cookie': appCookie }, 'platform')).toEqual({});
+    expect(limitPreviewCookieHeaders({ 'SET-COOKIE': [appCookie] }, 'platform')).toEqual({});
+  });
+
+  it('keeps host-only app cookies on the preview host', () => {
+    expect(limitPreviewCookieHeaders({ 'set-cookie': [appCookie, 'theme=dark'] }, 'preview')).toEqual({
+      'set-cookie': [appCookie, 'theme=dark'],
+    });
+    expect(limitPreviewCookieHeaders({ 'Set-Cookie': appCookie }, 'preview')).toEqual({
+      'Set-Cookie': [appCookie],
+    });
+  });
+
+  it.each([
+    ['Domain', 'a=1; Domain=staging.ainow.biz; Path=/'],
+    ['domain in lower case', 'a=1; path=/; domain=ainow.biz'],
+    ['DOMAIN with spaces', 'a=1;  DOMAIN = .ainow.biz'],
+    ['an empty Domain', 'a=1; Domain='],
+    ['the old session name', 'aisandbox_session=x; Path=/api'],
+    ['the prefixed session name', '__Host-aisandbox_session=x; Path=/; Secure'],
+    ['the CSRF name in upper case', 'AISANDBOX_CSRF=x'],
+    ['the OAuth state signature', 'aisandbox_oauth_state.sig=x'],
+    ['the preview cookie name', 'aisandbox_preview=x; Path=/api/preview/s/'],
+    ['a platform name with no value separator', 'aisandbox_session'],
+  ])('drops a preview-host line with %s', (_label, line) => {
+    expect(isAllowedPreviewSetCookie(line)).toBe(false);
+    expect(limitPreviewCookieHeaders({ 'set-cookie': [appCookie, line] }, 'preview')).toEqual({
+      'set-cookie': [appCookie],
+    });
+  });
+
+  it('keeps a line whose value or path only mentions a reserved word', () => {
+    expect(isAllowedPreviewSetCookie('a=aisandbox_session; Path=/domain')).toBe(true);
+  });
+
+  it('removes the header when no preview-host line is left', () => {
+    expect(
+      limitPreviewCookieHeaders({ 'set-cookie': ['aisandbox_csrf=x'], 'content-type': 'text/html' }, 'preview'),
+    ).toEqual({ 'content-type': 'text/html' });
+  });
+
+  it('drops Clear-Site-Data on both hosts, in any case', () => {
+    for (const host of ['platform', 'preview'] as const) {
+      expect(
+        limitPreviewCookieHeaders({ 'Clear-Site-Data': '"cookies"', 'clear-site-data': '"*"', 'x-a': '1' }, host),
+      ).toEqual({ 'x-a': '1' });
+    }
+  });
+
+  it('does not change its input', () => {
+    const input = { 'set-cookie': [appCookie, 'aisandbox_csrf=x'], 'clear-site-data': '"cookies"' };
+    limitPreviewCookieHeaders(input, 'preview');
+    expect(input).toEqual({ 'set-cookie': [appCookie, 'aisandbox_csrf=x'], 'clear-site-data': '"cookies"' });
   });
 });

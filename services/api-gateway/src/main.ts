@@ -3,13 +3,8 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import cookieSession from 'cookie-session';
 import cookieParser from 'cookie-parser';
-import { randomBytes } from 'crypto';
-import type {
-  NextFunction,
-  Request as ExpressRequest,
-  Response as ExpressResponse,
-} from 'express';
 import { AppModule } from './app.module';
+import { csrfCookieMiddleware, oauthStateSessionOptions } from './auth/platform-cookies';
 import { resolveHttpCorsOrigin } from './cors/http-cors-origin';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { resolveListenHost } from './startup/listen-host';
@@ -33,29 +28,10 @@ async function bootstrap() {
     'change_this_in_production_use_a_long_random_string';
 
   // Short-lived OAuth state cookie only; this is separate from the auth session cookie.
-  app.use(
-    cookieSession({
-      name: 'aisandbox_oauth_state',
-      keys: [oauthStateSecret],
-      maxAge: 10 * 60 * 1000,
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-    }),
-  );
+  // COOKIE-PREFIX-01: names and attributes come from auth/platform-cookies.ts.
+  app.use(cookieSession(oauthStateSessionOptions(oauthStateSecret)));
   app.use(cookieParser());
-  app.use((req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
-    if (!req.cookies?.aisandbox_csrf) {
-      res.cookie('aisandbox_csrf', randomBytes(32).toString('hex'), {
-        httpOnly: false,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-      });
-    }
-
-    next();
-  });
+  app.use(csrfCookieMiddleware);
 
   // Enable global exception filter (PHASE-42A-4: Preserve quota error body shape)
   app.useGlobalFilters(new HttpExceptionFilter());

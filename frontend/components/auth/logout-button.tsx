@@ -3,18 +3,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from '../../hooks/useTranslations';
+import { readCsrfCookie } from '../../lib/csrf-cookie';
 
 type AuthMeResponse = {
   email?: unknown;
 };
 
 function getCsrfTokenFromCookie(): string | null {
-  const csrfCookie = document.cookie
-    .split(';')
-    .map((cookie) => cookie.trim())
-    .find((cookie) => cookie.startsWith('aisandbox_csrf='));
-
-  return csrfCookie?.slice('aisandbox_csrf='.length) || null;
+  // COOKIE-PREFIX-01: the shared reader (__Host-aisandbox_csrf first).
+  return readCsrfCookie();
 }
 
 export default function LogoutButton() {

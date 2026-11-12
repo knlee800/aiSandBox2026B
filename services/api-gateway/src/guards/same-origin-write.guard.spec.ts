@@ -284,3 +284,69 @@ describe('app.module.ts registers SameOriginWriteGuard as a global guard', () =>
     expect(source).toMatch(/provide:\s*APP_GUARD,\s*useClass:\s*SameOriginWriteGuard,/);
   });
 });
+
+// COOKIE-PREFIX-01 test 6: rule 3 for either session cookie name, exact name.
+describe('SameOriginWriteGuard rule 3 with either session cookie name (COOKIE-PREFIX-01)', () => {
+  const ENV_NAMES = ['APP_BASE_URL', 'NODE_ENV'] as const;
+  const saved: Record<string, string | undefined> = {};
+  const guard = new SameOriginWriteGuard();
+
+  beforeEach(() => {
+    for (const name of ENV_NAMES) saved[name] = process.env[name];
+    process.env.APP_BASE_URL = APP_ORIGIN;
+  });
+
+  afterEach(() => {
+    for (const name of ENV_NAMES) {
+      if (saved[name] === undefined) delete process.env[name];
+      else process.env[name] = saved[name];
+    }
+  });
+
+  function noOrigin(cookies: Record<string, string> | undefined, header?: string): FakeRequest {
+    const req: FakeRequest = { method: 'POST', path: '/api/sessions', headers: {} };
+    if (cookies) req.cookies = cookies;
+    if (header !== undefined) req.headers.cookie = header;
+    return req;
+  }
+
+  function refused(req: FakeRequest): boolean {
+    try {
+      guard.canActivate(contextFor(req));
+      return false;
+    } catch (error) {
+      return error instanceof ForbiddenException;
+    }
+  }
+
+  it.each([
+    ['secure mode', 'https://staging.ainow.biz', 'test'],
+    ['local http', 'http://localhost:3000', 'development'],
+  ])('in %s refuses a write without Origin when either name is present', (_label, base, nodeEnv) => {
+    process.env.APP_BASE_URL = base;
+    process.env.NODE_ENV = nodeEnv;
+    for (const name of ['aisandbox_session', '__Host-aisandbox_session']) {
+      // parsed cookies
+      expect(refused(noOrigin({ [name]: 't' }))).toBe(true);
+      // raw header only, any position, spaces around the name
+      expect(refused(noOrigin(undefined, `${name}=t`))).toBe(true);
+      expect(refused(noOrigin(undefined, `a=1;  ${name} =t; b=2`))).toBe(true);
+      // empty value still counts as a session cookie being sent
+      expect(refused(noOrigin(undefined, `${name}=`))).toBe(true);
+    }
+  });
+
+  it('does not treat names that only contain or extend the session name as the session cookie', () => {
+    for (const name of [
+      'x__Host-aisandbox_session',
+      '__Host-aisandbox_session2',
+      '__host-aisandbox_session',
+      '__Secure-aisandbox_session',
+      'aisandbox_sessionx',
+    ]) {
+      expect(refused(noOrigin({ [name]: 't' }, `${name}=t`))).toBe(false);
+    }
+    // a value that contains the name is not a name
+    expect(refused(noOrigin(undefined, 'other=__Host-aisandbox_session=t'))).toBe(false);
+  });
+});

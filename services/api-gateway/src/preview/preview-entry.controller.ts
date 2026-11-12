@@ -156,6 +156,8 @@ export class PreviewEntryController {
       url,
       keyHeaders: previewInternalKeyHeaders(this.internalServiceKey),
       failSafe: false,
+      // COOKIE-PREFIX-01: host-only app cookies pass; Domain or platform names do not.
+      cookieHost: 'preview',
     });
   }
 }

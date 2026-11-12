@@ -248,3 +248,125 @@ describe('AuthController getProfile harness entitlement', () => {
     });
   });
 });
+
+describe('AuthController session cookie (COOKIE-PREFIX-01)', () => {
+  const ENV_NAMES = ['APP_BASE_URL', 'NODE_ENV'] as const;
+  const saved: Record<string, string | undefined> = {};
+  const authService = {
+    login: jest.fn(async () => ({ sessionToken: 'new-token', user: { id: 'user-1' } })),
+    revokeSession: jest.fn(async () => undefined),
+  };
+  let controller: AuthController;
+
+  function recordingResponse() {
+    const calls: Array<{ kind: 'set' | 'clear'; name: string; value?: string; options: any }> = [];
+    const response = {
+      cookie: jest.fn((name: string, value: string, options: any) => {
+        calls.push({ kind: 'set', name, value, options });
+      }),
+      clearCookie: jest.fn((name: string, options: any) => {
+        calls.push({ kind: 'clear', name, options });
+      }),
+    } as unknown as Response;
+    return { response, calls };
+  }
+
+  beforeEach(() => {
+    for (const name of ENV_NAMES) saved[name] = process.env[name];
+    jest.clearAllMocks();
+    controller = new AuthController(authService as any, {} as any);
+  });
+
+  afterEach(() => {
+    for (const name of ENV_NAMES) {
+      if (saved[name] === undefined) delete process.env[name];
+      else process.env[name] = saved[name];
+    }
+  });
+
+  describe('secure mode', () => {
+    beforeEach(() => {
+      process.env.APP_BASE_URL = 'https://staging.ainow.biz';
+      process.env.NODE_ENV = 'test';
+    });
+
+    it('login sets __Host-aisandbox_session and clears the old name', async () => {
+      const { response, calls } = recordingResponse();
+      await controller.login({ email: 'a@example.com', password: 'x' } as any, response);
+      expect(calls).toEqual([
+        {
+          kind: 'clear',
+          name: 'aisandbox_session',
+          options: { httpOnly: true, secure: true, sameSite: 'lax', path: '/' },
+        },
+        {
+          kind: 'set',
+          name: '__Host-aisandbox_session',
+          value: 'new-token',
+          options: {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'lax',
+            path: '/',
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+          },
+        },
+      ]);
+      expect(calls.some((call) => 'domain' in (call.options ?? {}))).toBe(false);
+    });
+
+    it('logout revokes the __Host- token and clears both names with Secure and Path=/', async () => {
+      const { response, calls } = recordingResponse();
+      await controller.logout(
+        { cookies: { '__Host-aisandbox_session': 'real-token', aisandbox_session: 'old-token' } },
+        response,
+      );
+      expect(authService.revokeSession).toHaveBeenCalledWith('real-token');
+      expect(calls).toEqual([
+        {
+          kind: 'clear',
+          name: '__Host-aisandbox_session',
+          options: { httpOnly: true, secure: true, sameSite: 'lax', path: '/' },
+        },
+        {
+          kind: 'clear',
+          name: 'aisandbox_session',
+          options: { httpOnly: true, secure: true, sameSite: 'lax', path: '/' },
+        },
+      ]);
+    });
+  });
+
+  describe('local http (today unchanged)', () => {
+    beforeEach(() => {
+      process.env.APP_BASE_URL = 'http://localhost:3000';
+      process.env.NODE_ENV = 'development';
+    });
+
+    it('login sets aisandbox_session exactly as before and clears nothing', async () => {
+      const { response, calls } = recordingResponse();
+      await controller.login({ email: 'a@example.com', password: 'x' } as any, response);
+      expect(calls).toEqual([
+        {
+          kind: 'set',
+          name: 'aisandbox_session',
+          value: 'new-token',
+          options: {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+            path: '/',
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+          },
+        },
+      ]);
+    });
+
+    it('logout clears aisandbox_session with path / only, as before', async () => {
+      const { response, calls } = recordingResponse();
+      await controller.logout({ cookies: { aisandbox_session: 'local-token' } }, response);
+      expect(authService.revokeSession).toHaveBeenCalledWith('local-token');
+      expect(calls).toEqual([{ kind: 'clear', name: 'aisandbox_session', options: { path: '/' } }]);
+    });
+  });
+});

@@ -181,6 +181,7 @@ import {
   resolveFrontendProviderModelSelection,
 } from '@/lib/ai/provider-model.catalogue';
 import { isNetworkFailure } from '@/lib/network-error';
+import { readCsrfCookie } from '@/lib/csrf-cookie';
 import enMessages from '@/messages/en.json';
 import zhTwMessages from '@/messages/zh-TW.json';
 import zhCnMessages from '@/messages/zh-CN.json';
@@ -188,12 +189,8 @@ import zhCnMessages from '@/messages/zh-CN.json';
 const EMPTY_RESTORE_FAILED_PATHS: string[] = [];
 
 function getCsrfTokenFromCookie(): string | null {
-  const csrfCookie = document.cookie
-    .split(';')
-    .map((cookie) => cookie.trim())
-    .find((cookie) => cookie.startsWith('aisandbox_csrf='));
-
-  return csrfCookie?.slice('aisandbox_csrf='.length) || null;
+  // COOKIE-PREFIX-01: the shared reader (__Host-aisandbox_csrf first).
+  return readCsrfCookie();
 }
 
 const HIDDEN_UNUSABLE_SESSIONS_STORAGE_KEY = 'workspace_hidden_unusable_sessions';

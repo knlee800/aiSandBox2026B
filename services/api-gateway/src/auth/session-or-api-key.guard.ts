@@ -10,6 +10,7 @@ import { ApiKeyIdentity } from './api-key.config';
 import { ApiKeyAuthGuard } from './api-key-auth.guard';
 import { AuthService } from './auth.service';
 import { EntitlementService } from './entitlement.service';
+import { readSessionCookie } from './platform-cookies';
 
 /**
  * SessionOrApiKeyAuthGuard
@@ -18,7 +19,8 @@ import { EntitlementService } from './entitlement.service';
  *
  * Priority:
  *  1. Authorization header (Bearer) → delegates to API key validation.
- *  2. Session cookie (aisandbox_session) → validates session, synthesizes ApiKeyIdentity.
+ *  2. Session cookie (aisandbox_session; __Host-aisandbox_session in secure mode,
+ *     COOKIE-PREFIX-01) → validates session, synthesizes ApiKeyIdentity.
  *  3. Neither → 401.
  *
  * Header path wins when both header and cookie are present.
@@ -39,7 +41,7 @@ export class SessionOrApiKeyAuthGuard implements CanActivate {
       return this.apiKeyAuthGuard.canActivate(context);
     }
 
-    const rawToken = (request as any).cookies?.aisandbox_session;
+    const rawToken = readSessionCookie(request);
 
     if (typeof rawToken !== 'string' || rawToken.trim().length === 0) {
       throw new UnauthorizedException('Missing authentication credentials');

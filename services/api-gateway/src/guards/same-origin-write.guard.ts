@@ -5,14 +5,13 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Request } from 'express';
+import { requestHasSessionCookie } from '../auth/platform-cookies';
 import { resolveHttpCorsOrigin } from '../cors/http-cors-origin';
 
 const READ_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
 /** Apple posts its sign-in form from its own origin by design (OAuth state protects it). */
 export const SAME_ORIGIN_WRITE_EXEMPT_PATH = '/api/auth/apple/callback';
-
-const SESSION_COOKIE_NAME = 'aisandbox_session';
 
 export const CROSS_ORIGIN_REFUSED_MESSAGE = 'Cross-origin request refused';
 
@@ -30,26 +29,13 @@ function isAppOrigin(origin: string): boolean {
   return allowed;
 }
 
-function hasSessionCookie(request: Request): boolean {
-  const parsed = (request as Request & { cookies?: Record<string, unknown> }).cookies;
-  if (parsed && Object.prototype.hasOwnProperty.call(parsed, SESSION_COOKIE_NAME)) {
-    return true;
-  }
-  const header = request.headers?.cookie;
-  if (typeof header !== 'string' || header.length === 0) {
-    return false;
-  }
-  return header
-    .split(';')
-    .some((part) => part.trim().startsWith(`${SESSION_COOKIE_NAME}=`));
-}
-
 /**
  * SameOriginWriteGuard (CSRF-AUDIT-01).
  * Global guard for every write (any method other than GET, HEAD, OPTIONS):
  * 1. POST /api/auth/apple/callback (exact path): allowed.
  * 2. Origin present: must be the APP_BASE_URL origin (resolveHttpCorsOrigin), else 403.
- * 3. Origin absent and the aisandbox_session cookie present: 403.
+ * 3. Origin absent and a session cookie present under either name
+ *    (aisandbox_session or __Host-aisandbox_session, exact name; COOKIE-PREFIX-01): 403.
  * 4. Origin absent and no session cookie (internal services, Stripe, API-key
  *    clients): allowed; the route's own guards decide.
  * Never logs cookies or headers.
@@ -79,7 +65,7 @@ export class SameOriginWriteGuard implements CanActivate {
       throw new ForbiddenException(CROSS_ORIGIN_REFUSED_MESSAGE);
     }
 
-    if (hasSessionCookie(request)) {
+    if (requestHasSessionCookie(request)) {
       throw new ForbiddenException(CROSS_ORIGIN_REFUSED_MESSAGE);
     }
 

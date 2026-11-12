@@ -27,7 +27,10 @@ import { SameOriginWriteGuard } from './same-origin-write.guard';
 const APP_ORIGIN = 'https://staging.ainow.biz';
 const PREVIEW_ORIGIN = 'https://preview.staging.ainow.biz';
 const INTERNAL_KEY = 'csrf-audit-01-internal-key';
-const GOOD_SESSION = 'aisandbox_session=good-session-token';
+// COOKIE-PREFIX-01: APP_BASE_URL is https here, so the gateway is in secure
+// mode and reads the session cookie only under its __Host- name.
+const GOOD_SESSION = '__Host-aisandbox_session=good-session-token';
+const OLD_NAME_SESSION = 'aisandbox_session=good-session-token';
 
 const handlers = {
   createSession: jest.fn(),
@@ -232,6 +235,24 @@ describe('SameOriginWriteGuard over HTTP (CSRF-AUDIT-01)', () => {
 
   it('a same-origin POST without a session still gets the session check (401)', async () => {
     await http().post('/api/sessions').set('Origin', APP_ORIGIN).expect(401);
+    expect(handlers.createSession).not.toHaveBeenCalled();
+  });
+
+  // COOKIE-PREFIX-01: in secure mode the old name alone authenticates nothing.
+  it('a same-origin POST with only the old session cookie name gets 401 in secure mode', async () => {
+    await http()
+      .post('/api/sessions')
+      .set('Origin', APP_ORIGIN)
+      .set('Cookie', OLD_NAME_SESSION)
+      .send({ name: 'x' })
+      .expect(401);
+    expect(authService.validateSessionToken).not.toHaveBeenCalled();
+    expect(handlers.createSession).not.toHaveBeenCalled();
+  });
+
+  // COOKIE-PREFIX-01: rule 3 still refuses the old name without Origin.
+  it('the old session cookie name without Origin is still refused by rule 3 (403)', async () => {
+    await http().post('/api/sessions').set('Cookie', OLD_NAME_SESSION).expect(403);
     expect(handlers.createSession).not.toHaveBeenCalled();
   });
 

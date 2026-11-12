@@ -5,18 +5,14 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Request } from 'express';
-
-type CsrfRequest = Request & {
-  cookies?: {
-    aisandbox_csrf?: string;
-  };
-};
+import { readCsrfCookie } from './platform-cookies';
 
 @Injectable()
 export class CsrfGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
-    const request = context.switchToHttp().getRequest<CsrfRequest>();
-    const csrfCookie = request.cookies?.aisandbox_csrf;
+    const request = context.switchToHttp().getRequest<Request>();
+    // COOKIE-PREFIX-01: the current mode's name only (__Host- in secure mode).
+    const csrfCookie = readCsrfCookie(request);
     const csrfHeader = request.headers['x-csrf-token'];
     const csrfToken = Array.isArray(csrfHeader) ? csrfHeader[0] : csrfHeader;
 

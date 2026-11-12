@@ -69,12 +69,19 @@ export function loginUsesApplicationContract(): {
   method: 'POST';
   path: '/api/auth/login';
   fields: ['email', 'password'];
-  cookiesEstablishedByBrowser: ['aisandbox_session', 'aisandbox_csrf'];
+  /** COOKIE-PREFIX-01: secure mode (https or production) uses the __Host- names; local http the plain ones. */
+  cookiesEstablishedByBrowser: {
+    secure: ['__Host-aisandbox_session', '__Host-aisandbox_csrf'];
+    localHttp: ['aisandbox_session', 'aisandbox_csrf'];
+  };
 } {
   return {
     method: 'POST',
     path: '/api/auth/login',
     fields: ['email', 'password'],
-    cookiesEstablishedByBrowser: ['aisandbox_session', 'aisandbox_csrf'],
+    cookiesEstablishedByBrowser: {
+      secure: ['__Host-aisandbox_session', '__Host-aisandbox_csrf'],
+      localHttp: ['aisandbox_session', 'aisandbox_csrf'],
+    },
   };
 }

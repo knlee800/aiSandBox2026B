@@ -148,7 +148,21 @@ const SERVER_KEY = 'preview-origin-01-internal-key';
 const SID = 'session-1';
 const onPreview = { host: PREVIEW, 'x-forwarded-host': PREVIEW };
 const onPlatform = { host: PLATFORM, 'x-forwarded-host': PLATFORM };
-const sessionCookie = 'aisandbox_session=platform-session-token';
+// COOKIE-PREFIX-01: APP_BASE_URL is https here (secure mode), so the platform
+// session cookie is read only under its __Host- name.
+const sessionCookie = '__Host-aisandbox_session=platform-session-token';
+// COOKIE-PREFIX-01 section 5: upstream answers carry these when the query has
+// setcookies=1.
+const UPSTREAM_SET_COOKIES = [
+  'app_session=a1; Path=/; HttpOnly; SameSite=Lax',
+  'theme=dark',
+  'tracker=t; Domain=staging.ainow.biz; Path=/api',
+  'wide=w; path=/; domain=ainow.biz',
+  'aisandbox_session=planted; Path=/api',
+  '__Host-aisandbox_session=planted; Path=/; Secure',
+  'AISANDBOX_CSRF=planted; Path=/',
+];
+const KEPT_ON_PREVIEW_HOST = ['app_session=a1; Path=/; HttpOnly; SameSite=Lax', 'theme=dark'];
 
 describe('preview isolation over HTTP (PREVIEW-ORIGIN-01)', () => {
   const ENV_NAMES = [
@@ -182,18 +196,26 @@ describe('preview isolation over HTTP (PREVIEW-ORIGIN-01)', () => {
     }
     upstream = http.createServer((req, res) => {
       received.push({ method: req.method ?? '', url: req.url ?? '', headers: req.headers });
+      const cookieHeaders: http.OutgoingHttpHeaders = (req.url ?? '').includes('setcookies=1')
+        ? { 'set-cookie': UPSTREAM_SET_COOKIES, 'Clear-Site-Data': '"cookies", "storage"' }
+        : {};
       if ((req.url ?? '').includes('/proxy')) {
         const html = '<!doctype html><title>app</title><script src="app.js"></script>';
         res.writeHead(200, {
           'content-type': 'text/html; charset=utf-8',
           'content-length': Buffer.byteLength(html),
           'content-security-policy': "default-src 'self'",
+          ...cookieHeaders,
         });
         res.end(req.method === 'HEAD' ? undefined : html);
         return;
       }
       const body = JSON.stringify({ ok: true });
-      res.writeHead(200, { 'content-type': 'application/json', 'content-length': Buffer.byteLength(body) });
+      res.writeHead(200, {
+        'content-type': 'application/json',
+        'content-length': Buffer.byteLength(body),
+        ...cookieHeaders,
+      });
       res.end(req.method === 'HEAD' ? undefined : body);
     });
     await new Promise<void>((resolve) => upstream.listen(0, '127.0.0.1', resolve));
@@ -444,6 +466,40 @@ describe('preview isolation over HTTP (PREVIEW-ORIGIN-01)', () => {
       expect(reply.body).toContain('platform-data');
     });
 
+    // COOKIE-PREFIX-01 section 5.
+    it('preview host: host-only app cookies pass; Domain and platform-name lines and Clear-Site-Data do not', async () => {
+      for (const method of ['GET', 'HEAD']) {
+        const reply = await rawRequest(port, method, `/api/preview/${SID}/proxy/index.html?setcookies=1`, {
+          ...onPreview,
+          cookie: previewCookie(),
+        });
+        expect(reply.status).toBe(200);
+        expect(reply.headers['set-cookie']).toEqual(KEPT_ON_PREVIEW_HOST);
+        expect(reply.headers['clear-site-data']).toBeUndefined();
+      }
+    });
+
+    it('platform host: status carries no upstream Set-Cookie or Clear-Site-Data', async () => {
+      const reply = await rawRequest(port, 'GET', `/api/preview/${SID}/status?setcookies=1`, {
+        ...onPlatform,
+        cookie: sessionCookie,
+      });
+      expect(reply.status).toBe(200);
+      expect(reply.headers['set-cookie']).toBeUndefined();
+      expect(reply.headers['clear-site-data']).toBeUndefined();
+      expect(received).toHaveLength(1);
+    });
+
+    it('enter still sets the gateway aisandbox_preview cookie', async () => {
+      const ticket = tickets.issueTicket(SID, 'user-1', 'proxy')!;
+      const reply = await rawRequest(port, 'GET', `/api/preview/${SID}/enter?ticket=${ticket}`, onPreview);
+      expect(reply.status).toBe(302);
+      const lines = (reply.headers['set-cookie'] ?? []) as string[];
+      expect(lines).toHaveLength(1);
+      expect(lines[0].startsWith('aisandbox_preview=')).toBe(true);
+      expect(lines[0]).toContain(`Path=/api/preview/${SID}/`);
+    });
+
     it('behind the local Next rewrite a request counts as the platform host', async () => {
       const reply = await rawRequest(port, 'GET', `/api/preview/${SID}/proxy`, {
         host: PREVIEW,
@@ -503,6 +559,26 @@ describe('preview isolation over HTTP (PREVIEW-ORIGIN-01)', () => {
         `DELETE /api/preview/${SID}/stop ${SERVER_KEY}`,
         `GET /api/preview/${SID}/status ${SERVER_KEY}`,
       ]);
+    });
+
+    // COOKIE-PREFIX-01 section 5: on the platform host no upstream cookie passes.
+    it('proxy, start and status on the platform host carry no upstream Set-Cookie or Clear-Site-Data', async () => {
+      for (const [method, path] of [
+        ['GET', `/api/preview/${SID}/proxy?setcookies=1`],
+        ['GET', `/api/preview/${SID}/proxy/assets/app.js?setcookies=1`],
+        ['HEAD', `/api/preview/${SID}/proxy?setcookies=1`],
+        ['POST', `/api/preview/${SID}/start?setcookies=1`],
+        ['GET', `/api/preview/${SID}/status?setcookies=1`],
+      ]) {
+        for (const hosts of [onPlatform, onPreview]) {
+          received.length = 0;
+          const reply = await rawRequest(port, method, path, { ...hosts, cookie: sessionCookie });
+          expect(reply.status).toBe(200);
+          expect(received).toHaveLength(1);
+          expect(reply.headers['set-cookie']).toBeUndefined();
+          expect(reply.headers['clear-site-data']).toBeUndefined();
+        }
+      }
     });
 
     it('enter does not exist and nothing is redirected', async () => {

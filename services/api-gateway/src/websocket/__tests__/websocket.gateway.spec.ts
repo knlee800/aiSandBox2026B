@@ -255,3 +255,70 @@ describe('WebSocketModule imports', () => {
     expect(imports).toEqual(expect.arrayContaining([AuthModule, SessionModule]));
   });
 });
+
+// COOKIE-PREFIX-01 test 7: the handshake reads the current mode's name.
+describe('EventsGateway handshake cookie names (COOKIE-PREFIX-01)', () => {
+  const ENV_NAMES = ['APP_BASE_URL', 'NODE_ENV'] as const;
+  const saved: Record<string, string | undefined> = {};
+
+  beforeEach(() => {
+    for (const name of ENV_NAMES) saved[name] = process.env[name];
+  });
+
+  afterEach(() => {
+    for (const name of ENV_NAMES) {
+      if (saved[name] === undefined) delete process.env[name];
+      else process.env[name] = saved[name];
+    }
+  });
+
+  async function connect(cookie: string) {
+    const { gateway, authService } = createGateway();
+    authService.validateSessionToken.mockImplementation(async (token: string) =>
+      token === 'good-token' ? { id: 'user-1' } : null,
+    );
+    const client = createClient(cookie);
+    await gateway.handleConnection(client);
+    return { client, authService };
+  }
+
+  describe('secure mode', () => {
+    beforeEach(() => {
+      process.env.APP_BASE_URL = 'https://staging.ainow.biz';
+      process.env.NODE_ENV = 'test';
+    });
+
+    it('accepts __Host-aisandbox_session', async () => {
+      const { client } = await connect('__Host-aisandbox_session=good-token');
+      expect(client.disconnect).not.toHaveBeenCalled();
+      expect(client.data.userId).toBe('user-1');
+    });
+
+    it('refuses the old name alone without validating it', async () => {
+      const { client, authService } = await connect('aisandbox_session=good-token');
+      expect(client.disconnect).toHaveBeenCalledWith(true);
+      expect(client.data.userId).toBeUndefined();
+      expect(authService.validateSessionToken).not.toHaveBeenCalled();
+    });
+
+    it('uses the new name when a planted old name comes first', async () => {
+      const { client, authService } = await connect(
+        'aisandbox_session=planted; __Host-aisandbox_session=good-token',
+      );
+      expect(authService.validateSessionToken).toHaveBeenCalledWith('good-token');
+      expect(client.data.userId).toBe('user-1');
+    });
+
+    it('ignores a name that only ends with the session name', async () => {
+      const { client } = await connect('x__Host-aisandbox_session=good-token');
+      expect(client.disconnect).toHaveBeenCalledWith(true);
+    });
+  });
+
+  it('on local http accepts the old name and refuses the prefixed one', async () => {
+    process.env.APP_BASE_URL = 'http://localhost:3000';
+    process.env.NODE_ENV = 'development';
+    expect((await connect('aisandbox_session=good-token')).client.data.userId).toBe('user-1');
+    expect((await connect('__Host-aisandbox_session=good-token')).client.disconnect).toHaveBeenCalledWith(true);
+  });
+});

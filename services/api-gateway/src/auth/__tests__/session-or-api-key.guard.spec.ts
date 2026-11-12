@@ -269,3 +269,89 @@ describe('SessionOrApiKeyAuthGuard', () => {
     });
   });
 });
+
+describe('SessionOrApiKeyAuthGuard cookie names (COOKIE-PREFIX-01)', () => {
+  const ENV_NAMES = ['APP_BASE_URL', 'NODE_ENV'] as const;
+  const saved: Record<string, string | undefined> = {};
+  let validateSessionToken: jest.Mock;
+  let guard: SessionOrApiKeyAuthGuard;
+
+  beforeEach(() => {
+    for (const name of ENV_NAMES) saved[name] = process.env[name];
+    validateSessionToken = jest.fn(async (token: string) =>
+      token === 'good-token'
+        ? ({ id: 'user-1', email: 'u@example.com', role: 'user', planType: 'free' } as any)
+        : null,
+    );
+    guard = new SessionOrApiKeyAuthGuard(
+      { canActivate: jest.fn() } as any,
+      { validateSessionToken } as any,
+    );
+  });
+
+  afterEach(() => {
+    for (const name of ENV_NAMES) {
+      if (saved[name] === undefined) delete process.env[name];
+      else process.env[name] = saved[name];
+    }
+  });
+
+  function contextWith(cookies: Record<string, string>) {
+    const request: any = { headers: {}, cookies };
+    return {
+      request,
+      context: { switchToHttp: () => ({ getRequest: () => request }) } as ExecutionContext,
+    };
+  }
+
+  describe('secure mode (https APP_BASE_URL)', () => {
+    beforeEach(() => {
+      process.env.APP_BASE_URL = 'https://staging.ainow.biz';
+      process.env.NODE_ENV = 'test';
+    });
+
+    it('refuses a request that carries only the old name', async () => {
+      const { context } = contextWith({ aisandbox_session: 'good-token' });
+      await expect(guard.canActivate(context)).rejects.toThrow(UnauthorizedException);
+      expect(validateSessionToken).not.toHaveBeenCalled();
+    });
+
+    it('accepts the same token under __Host-aisandbox_session', async () => {
+      const { context, request } = contextWith({ '__Host-aisandbox_session': 'good-token' });
+      await expect(guard.canActivate(context)).resolves.toBe(true);
+      expect(request.apiKeyIdentity.userId).toBe('user-1');
+    });
+
+    it('uses only the new name when both are present and differ', async () => {
+      const { context } = contextWith({
+        aisandbox_session: 'planted-token',
+        '__Host-aisandbox_session': 'good-token',
+      });
+      await expect(guard.canActivate(context)).resolves.toBe(true);
+      expect(validateSessionToken).toHaveBeenCalledTimes(1);
+      expect(validateSessionToken).toHaveBeenCalledWith('good-token');
+    });
+  });
+
+  it('in production with no APP_BASE_URL reads only the new name', async () => {
+    delete process.env.APP_BASE_URL;
+    process.env.NODE_ENV = 'production';
+    await expect(
+      guard.canActivate(contextWith({ aisandbox_session: 'good-token' }).context),
+    ).rejects.toThrow(UnauthorizedException);
+    await expect(
+      guard.canActivate(contextWith({ '__Host-aisandbox_session': 'good-token' }).context),
+    ).resolves.toBe(true);
+  });
+
+  it('on local http reads only the old name, as before', async () => {
+    process.env.APP_BASE_URL = 'http://localhost:3000';
+    process.env.NODE_ENV = 'development';
+    await expect(
+      guard.canActivate(contextWith({ aisandbox_session: 'good-token' }).context),
+    ).resolves.toBe(true);
+    await expect(
+      guard.canActivate(contextWith({ '__Host-aisandbox_session': 'good-token' }).context),
+    ).rejects.toThrow(UnauthorizedException);
+  });
+});

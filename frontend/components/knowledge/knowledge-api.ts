@@ -1,3 +1,5 @@
+import { readCsrfCookie } from '../../lib/csrf-cookie';
+
 export interface KnowledgeScopeItem {
   id: string;
   type: 'shared' | 'specialist';
@@ -39,14 +41,8 @@ export function knowledgeDeleteErrorKey(code: string | null): string {
 }
 
 function readCsrfToken(): string | null {
-  if (typeof document === 'undefined') {
-    return null;
-  }
-  const csrfCookie = document.cookie
-    .split(';')
-    .map((cookie) => cookie.trim())
-    .find((cookie) => cookie.startsWith('aisandbox_csrf='));
-  return csrfCookie ? csrfCookie.slice('aisandbox_csrf='.length) : null;
+  // COOKIE-PREFIX-01: the shared reader (__Host-aisandbox_csrf first).
+  return readCsrfCookie();
 }
 
 export async function knowledgeFetch(path: string, init: RequestInit = {}): Promise<Response> {

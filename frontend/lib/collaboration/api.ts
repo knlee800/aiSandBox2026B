@@ -5,6 +5,7 @@ import {
   readErrorMessage,
   type CollaborationRefusal,
 } from './logic';
+import { readCsrfCookie } from '../csrf-cookie';
 
 export interface CollaborationRunListItem {
   collaborationRunId: string;
@@ -151,14 +152,8 @@ export interface CollaborationStartResult {
 }
 
 export function readCsrfToken(): string | null {
-  if (typeof document === 'undefined') {
-    return null;
-  }
-  const csrfCookie = document.cookie
-    .split(';')
-    .map((cookie) => cookie.trim())
-    .find((cookie) => cookie.startsWith('aisandbox_csrf='));
-  return csrfCookie?.slice('aisandbox_csrf='.length) || null;
+  // COOKIE-PREFIX-01: the shared reader (__Host-aisandbox_csrf first).
+  return readCsrfCookie();
 }
 
 export async function collaborationFetch(path: string, init: RequestInit = {}): Promise<Response> {

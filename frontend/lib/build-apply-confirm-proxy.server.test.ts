@@ -7,6 +7,7 @@ import {
   parseBuildApplyConfirmationProxyPayload,
   proxyConfirmBuildApply,
   readInternalServiceKeyFromEnv,
+  readSessionCookieFromCookieHeader,
   readSessionTokenFromCookieHeader,
 } from './build-apply-confirm-proxy.server';
 
@@ -413,5 +414,55 @@ describe('PRIVATE-BETA-BLOCKER-03D-B confirm-build-apply proxy', () => {
     assert.doesNotMatch(helperSource, /NEXT_PUBLIC_INTERNAL_SERVICE_KEY/);
     assert.doesNotMatch(routeSource, /NEXT_PUBLIC_INTERNAL_SERVICE_KEY/);
     assert.match(helperSource, /process\.env\.INTERNAL_SERVICE_KEY/);
+  });
+});
+
+// COOKIE-PREFIX-01: secure mode uses __Host-aisandbox_session.
+describe('COOKIE-PREFIX-01 confirm-build-apply session cookie names', () => {
+  test('reads the prefixed name first, then the old one; exact names only', () => {
+    assert.deepEqual(readSessionCookieFromCookieHeader('__Host-aisandbox_session=new-tok'), {
+      name: '__Host-aisandbox_session',
+      token: 'new-tok',
+    });
+    assert.deepEqual(
+      readSessionCookieFromCookieHeader('aisandbox_session=old-tok; __Host-aisandbox_session=new-tok'),
+      { name: '__Host-aisandbox_session', token: 'new-tok' },
+    );
+    assert.deepEqual(readSessionCookieFromCookieHeader('a=1; aisandbox_session=old-tok'), {
+      name: 'aisandbox_session',
+      token: 'old-tok',
+    });
+    assert.deepEqual(
+      readSessionCookieFromCookieHeader('__Host-aisandbox_session=; aisandbox_session=old-tok'),
+      { name: 'aisandbox_session', token: 'old-tok' },
+    );
+    assert.equal(readSessionCookieFromCookieHeader('x__Host-aisandbox_session=t'), null);
+    assert.equal(readSessionCookieFromCookieHeader('x_aisandbox_session=t'), null);
+    assert.equal(readSessionCookieFromCookieHeader('__Host-aisandbox_session='), null);
+    assert.equal(readSessionTokenFromCookieHeader('__Host-aisandbox_session=new-tok'), 'new-tok');
+  });
+
+  test('re-sends the token to the gateway under the name it was found by', async () => {
+    process.env.INTERNAL_SERVICE_KEY = TEST_INTERNAL_KEY;
+    process.env.API_GATEWAY_URL = 'http://gateway.test';
+    for (const [cookieHeader, expected] of [
+      ['aisandbox_session=stale; __Host-aisandbox_session=session-owner', '__Host-aisandbox_session=session-owner'],
+      ['aisandbox_session=session-owner', 'aisandbox_session=session-owner'],
+    ] as const) {
+      const { fetchImpl, calls } = createFetchMock(ownerFetchHandler);
+      const result = await proxyConfirmBuildApply({
+        executionId: 'exec-owned',
+        cookieHeader,
+        incomingInternalServiceKeyHeader: null,
+        payload: QUALIFYING_PAYLOAD,
+        fetchImpl,
+      });
+      assert.equal(result.status, 200);
+      const gatewayGets = calls.filter((call) => call.init?.method === 'GET');
+      assert.equal(gatewayGets.length, 2);
+      for (const call of gatewayGets) {
+        assert.equal(new Headers(call.init?.headers).get('Cookie'), expected);
+      }
+    }
   });
 });

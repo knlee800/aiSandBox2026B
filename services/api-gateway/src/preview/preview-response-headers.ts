@@ -82,3 +82,64 @@ export function withPreviewSandboxPolicy(headers: Record<string, any>): Record<s
   result[PREVIEW_CSP_HEADER] = upstream.length > 0 ? [...upstream, PREVIEW_SANDBOX_CSP] : PREVIEW_SANDBOX_CSP;
   return result;
 }
+
+/**
+ * Which host a forwarded preview response is served on (COOKIE-PREFIX-01).
+ * - 'platform': the platform host (PreviewController: proxy in fail-safe
+ *   mode, start, status). Nothing there needs a cookie from a preview or
+ *   from container-manager, and on the platform host even a __Host- cookie
+ *   could be set, so every upstream Set-Cookie is dropped.
+ * - 'preview': the preview host (PreviewEntryController). Host-only app
+ *   cookies pass, so a generated app's own sign-in works in the preview.
+ */
+export type PreviewCookieHost = 'platform' | 'preview';
+
+const SET_COOKIE_HEADER = 'set-cookie';
+const CLEAR_SITE_DATA_HEADER = 'clear-site-data';
+const RESERVED_COOKIE_NAME_PART = 'aisandbox_';
+
+/**
+ * True when a preview-host app may keep this Set-Cookie line: no Domain
+ * attribute (in any case, even empty), and a name that does not contain
+ * aisandbox_ (in any case). A line without '=' in its first pair is judged
+ * by that whole pair.
+ */
+export function isAllowedPreviewSetCookie(line: unknown): boolean {
+  if (typeof line !== 'string') return false;
+  const parts = line.split(';');
+  const pair = parts[0] ?? '';
+  const separator = pair.indexOf('=');
+  const name = (separator < 0 ? pair : pair.slice(0, separator)).trim();
+  if (name.toLowerCase().includes(RESERVED_COOKIE_NAME_PART)) return false;
+  for (const attribute of parts.slice(1)) {
+    const equals = attribute.indexOf('=');
+    const key = (equals < 0 ? attribute : attribute.slice(0, equals)).trim().toLowerCase();
+    if (key === 'domain') return false;
+  }
+  return true;
+}
+
+/**
+ * Applies the COOKIE-PREFIX-01 cookie rule to forwarded upstream headers:
+ * Clear-Site-Data is dropped on both hosts; Set-Cookie is dropped on the
+ * platform host and limited to allowed lines on the preview host. Header
+ * names match in any case. The input is not changed.
+ */
+export function limitPreviewCookieHeaders(
+  headers: Record<string, any>,
+  host: PreviewCookieHost,
+): Record<string, any> {
+  const result: Record<string, any> = {};
+  for (const [key, value] of Object.entries(headers)) {
+    const lower = key.toLowerCase();
+    if (lower === CLEAR_SITE_DATA_HEADER) continue;
+    if (lower === SET_COOKIE_HEADER) {
+      if (host !== 'preview') continue;
+      const kept = (Array.isArray(value) ? value : [value]).filter(isAllowedPreviewSetCookie);
+      if (kept.length > 0) result[key] = kept;
+      continue;
+    }
+    result[key] = value;
+  }
+  return result;
+}
