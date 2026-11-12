@@ -84394,20 +84394,20 @@ taskId=BACKUP-RETENTION-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-13 from Keith's privacy answers (ACCESS-READY-01, Q2) — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-13 — by the control plane on Keith's "Start BACKUP-RETENTION-01". Was: READY — registered 2026-11-13 from Keith's privacy answers (ACCESS-READY-01, Q2) — not admitted.
 **Task ID:** BACKUP-RETENTION-01
 **Title:** Keep backup copies 30 days or less (prune by date)
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides; needed before anyone but Keith uses the platform.
+**Start condition:** READY (Keith, 2026-11-13, "Start BACKUP-RETENTION-01"). Was: NOT_READY. Ready when: Keith decides; needed before anyone but Keith uses the platform.
 **Depends on:** none.
-**Primary write scope:** PROVISIONAL: ops/clean-baseline/bin/aisandbox-backup (and ops/clean-baseline/lib/ops-lib.sh if needed), with tests under ops/clean-baseline/tests; the host install of the changed script is a separate deploy step.
-**Mutexes / resources:** set at admission. **Hot-file leases:** none. **Shared contracts:** none.
-**Evidence class:** set at admission (expected LOCAL-TESTS, then a host install with STAGING).
+**Primary write scope:** set 2026-11-13: ops/clean-baseline/bin/aisandbox-backup, ops/clean-baseline/lib/ops-lib.sh, ops/clean-baseline/tests/regression/backup-retention.sh, ops/clean-baseline/tests/static/t2.6-backup-callgraph.sh, ops/clean-baseline/README.md (the static test and README only if needed). Was: PROVISIONAL: ops/clean-baseline/bin/aisandbox-backup (and ops/clean-baseline/lib/ops-lib.sh if needed), with tests under ops/clean-baseline/tests; the host install of the changed script is a separate deploy step.
+**Mutexes / resources:** none; HOTFILE leases on the five write-set files (set 2026-11-13). **Hot-file leases:** the write set. **Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS (set 2026-11-13; mocked regression tests in Git Bash). The host install goes to a separate deploy task registered at LOCK, which Keith approves; its before-listing also answers why 15 sets were on the host (PRIVACY-HOST-CHECK-01 counted 0 pre-migration sets, but the deploy records name pre-migration sets from 2026-11-10 and 2026-11-11, which the 7-set rule skips).
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-13).
 **Scope:** Keith decided 2026-11-13 that every backup copy is kept 30 days or less. PRIVACY-HOST-CHECK-01 found 15 sets in /var/backups/aisandbox although the nightly script keeps 7 (find out why; probably deploy-time sets made after the last nightly run) and 46 encrypted off-host bundles in /var/backups/aisandbox-offhost back to 2026-10-29 that are never pruned. Prune off-host bundles (and their .identity files) to the last 4 weekly bundles, at most 30 days old, without ever deleting the newest bundle or one being written; keep pre-migration sets within 30 days; tests for the pruning. At stage-start, say whether the C3 acceptance set 20261029T040824Z on Keith's PC is kept as an exception (Keith decides). The weekly copy to Keith's PC keeps the last 4 copies there (Keith's own step).
 
 ### PREVIEW-ORIGIN-01 — Generated-app previews run on the platform origin: isolate them

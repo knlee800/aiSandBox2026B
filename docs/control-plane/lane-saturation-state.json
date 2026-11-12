@@ -7,13 +7,25 @@
   "governance": {"owner": "NONE", "state": "UNOWNED"},
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
+      "state": "ACTIVE",
+      "taskId": "BACKUP-RETENTION-01",
       "mutexes": [],
-      "writePaths": [],
-      "hotfiles": [],
+      "writePaths": [
+        "ops/clean-baseline/bin/aisandbox-backup",
+        "ops/clean-baseline/lib/ops-lib.sh",
+        "ops/clean-baseline/tests/regression/backup-retention.sh",
+        "ops/clean-baseline/tests/static/t2.6-backup-callgraph.sh",
+        "ops/clean-baseline/README.md"
+      ],
+      "hotfiles": [
+        "ops/clean-baseline/bin/aisandbox-backup",
+        "ops/clean-baseline/lib/ops-lib.sh",
+        "ops/clean-baseline/tests/regression/backup-retention.sh",
+        "ops/clean-baseline/tests/static/t2.6-backup-callgraph.sh",
+        "ops/clean-baseline/README.md"
+      ],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -2838,23 +2850,35 @@
       "taskId": "BACKUP-RETENTION-01",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "OPTIONAL",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
       "dependsOn": [],
       "mutexes": [],
-      "writePaths": [],
-      "hotfiles": [],
+      "writePaths": [
+        "ops/clean-baseline/bin/aisandbox-backup",
+        "ops/clean-baseline/lib/ops-lib.sh",
+        "ops/clean-baseline/tests/regression/backup-retention.sh",
+        "ops/clean-baseline/tests/static/t2.6-backup-callgraph.sh",
+        "ops/clean-baseline/README.md"
+      ],
+      "hotfiles": [
+        "ops/clean-baseline/bin/aisandbox-backup",
+        "ops/clean-baseline/lib/ops-lib.sh",
+        "ops/clean-baseline/tests/regression/backup-retention.sh",
+        "ops/clean-baseline/tests/static/t2.6-backup-callgraph.sh",
+        "ops/clean-baseline/README.md"
+      ],
       "i18n": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
       "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "runtimeNeeds": [],
-      "admissionUncertain": true,
-      "writeSetPrecision": "PROVISIONAL"
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
     },
     {
       "taskId": "STAGING-DEPLOY-COOKIE-01",
