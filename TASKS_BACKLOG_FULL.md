@@ -88978,7 +88978,7 @@ taskId=SNAPSHOT-LABEL-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-11 by the SNAPSHOT-PICK-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. LANE-DONE and LOCKED by the control plane; Lane 1, GATEWAY and FRONTEND released. One shared set of snapshot label examples (services/api-gateway/src/snapshots/snapshot-label-examples.json: 44 parse cases, 20 writer cases) is tested against the gateway reopen helper and AI writer and the frontend parser, builders and history-list parser; no behaviour change (two exports only); the gateway helper and the frontend parser agree on every case; the history-list parser in workspace-shell.tsx differs on 4 hand-built labels no writer produces (pinned); opus subagent dfa9b4d, cherry-picked as 4202647; control-plane rerun: gateway 3865 passed plus the 14 known smoke failures, frontend 1783 of 1783, tsc and builds 0. Not deployed. Checkpoint: docs/SNAPSHOT-LABEL-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (SNAPSHOT-LABEL-02) / 1 superseded (the unreachable :name: fallback in computeProjectHistoryRows, into SNAPSHOT-LABEL-02) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — admitted by the control plane under Keith's 2026-11-10 instruction. Was: READY — registered 2026-11-11 by the SNAPSHOT-PICK-01 LOCK — not admitted.
 **Task ID:** SNAPSHOT-LABEL-01
 **Title:** One project-label rule for snapshots in the frontend and the gateway
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -88995,6 +88995,30 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects and snapshots).
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From the SNAPSHOT-PICK-01 worker: the project-id label rule ([project-id:<id>:name:...] / [project-id:<id>:source:...]) now exists in the frontend parser, the gateway reopen helper and the gateway label writer. Pin it with one shared set of examples tested on both sides, so a change on one side cannot silently break reopen or the history list.
+
+### SNAPSHOT-LABEL-02 — One label parser for the project history list
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=SNAPSHOT-LABEL-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the SNAPSHOT-LABEL-01 LOCK — not admitted.
+**Task ID:** SNAPSHOT-LABEL-02
+**Title:** One label parser for the project history list
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction).
+**Depends on:** SNAPSHOT-LABEL-01.
+**Primary write scope:** PROVISIONAL: frontend/components/workspace/workspace-shell.tsx and workspace-shell.test.tsx, the shared examples file.
+**Mutexes / resources:** set at admission (expected FRONTEND; GATEWAY only if the examples file changes).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md (workspace projects, snapshots and multilingual UI).
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the SNAPSHOT-LABEL-01 worker: workspace-shell.tsx keeps its own label parser (parseProjectIdFromProjectScopedSnapshotLabel), used by computeProjectHistoryRows to choose which versions a project's history list shows; it cuts the id at the first of :name:, :source: or :hint:, while the shared parser cuts at :name: if present, else :source:. They differ on 4 hand-built labels no writer produces (pinned with historyListProjectId in the examples). Replace it with the shared parser from workspace-snapshots.logic.ts (or decide to keep it), update the 4 pinned cases, and drop the unreachable :name: fallback in computeProjectHistoryRows if it stays unreachable for UUID ids.
 
 ### STAGING-DEPLOY-CMSEC-01 — Deploy the container-manager security fixes
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
