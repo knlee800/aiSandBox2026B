@@ -10740,3 +10740,247 @@ describe('SNAPSHOT-NOTICE-01: files a restore could not write', () => {
     assert.equal((pageSource.match(openFlow) ?? []).length, 4);
   });
 });
+
+describe('page status messages are translated (PAGE-STATUS-I18N-01)', () => {
+  const PAGE_STATUS_KEYS = [
+    "sessionCreateQuotaBlocked",
+    "checkpointsLoadFailed",
+    "workspaceNameRequired",
+    "workspaceSelectToRename",
+    "workspaceSelectToDelete",
+    "workspaceNoLongerExists",
+    "workspaceDefaultCannotDelete",
+    "projectSelectToMove",
+    "projectSelectTargetWorkspace",
+    "projectMoved",
+    "projectNameRequired",
+    "projectCreated",
+    "projectSelectToOpen",
+    "projectOpened",
+    "projectSelect",
+    "projectVisibilitySetPrivate",
+    "projectVisibilitySetPublic",
+    "publicProjectLoaded",
+    "publicProjectSelect",
+    "publicProjectForked",
+    "snapshotSaveNoSession",
+    "snapshotSaved",
+    "snapshotSelectToRestore",
+    "snapshotRestored",
+    "archiveExportNoSession",
+    "archiveDownloaded",
+    "archiveImportNoSession",
+    "archiveImported",
+    "revertNoSession",
+    "checkpointUnavailable",
+    "revertNoSessionOrCheckpoint",
+    "revertConfirmRequired",
+    "revertTerminatedSession",
+    "revertFailed",
+    "diffNoSession",
+    "diffTerminatedSession",
+    "diffLoadFailed",
+    "checkpointSnapshotNoSession",
+    "checkpointSnapshotTerminatedSession",
+    "checkpointSnapshotLoadFailed",
+    "liveOpenEmptyPath",
+    "liveOpenNoSession",
+    "liveOpenTerminatedSession",
+    "liveTreeNotReady",
+    "liveOpenFailed",
+    "compareSelectSession",
+    "compareNoSession",
+    "compareTerminatedSession",
+    "compareSelectBoth",
+    "compareMustDiffer",
+    "comparePairUnavailable",
+    "compareNotDirectlyComparable",
+    "compareFailed",
+    "dashboardLoadFailed",
+    "buildSelectSession",
+    "buildSessionUnavailable",
+    "buildTerminatedSession",
+    "buildRunning",
+    "buildToolchainUnavailable",
+    "buildFailed",
+    "chatResponseReceived",
+    "orchestrationRunningStep",
+    "orchestrationCompleted",
+    "chatPromptRequired",
+    "chatSubmitting",
+    "chatNoRecognizedStatus",
+    "chatRequestQueued",
+    "chatRequestRunning",
+    "chatStatusCheckFailedCode",
+    "chatStatusCheckFailed",
+    "chatExecutionFailedCode",
+    "orchestrationStepFailedCode",
+    "orchestrationStepNoExecutionId",
+    "orchestrationStepStatusCheckFailed",
+    "orchestrationStepEndedWithStatus",
+    "workspaceFilesLoadFailed",
+    "fileContentLoadFailed",
+    "fileSaveNoSessionOrFile",
+    "fileSaveFailed",
+    "workspacesLoadFailed",
+    "projectHistoryLoadFailed",
+    "projectsLoadFailed",
+    "workspaceCreateFailed",
+    "workspaceRenameFailed",
+    "workspaceDeleteFailed",
+    "projectMoveFailed",
+    "projectCreateFailed",
+    "projectOpenFailed",
+    "projectVisibilityUpdateFailed",
+    "publicProjectsLoadFailed",
+    "publicProjectLoadFailed",
+    "projectForkFailed",
+    "snapshotSaveFailed",
+    "snapshotRestoreFailed",
+    "archiveExportFailed",
+    "archiveImportFailed",
+    "chatExecutionFailed",
+    "buildRequestFailedEarly",
+    "executionNoResponseText",
+  ];
+  const MOVED_PAGE_LITERALS = [
+    "'Session creation blocked by quota limits (403).'",
+    "'Failed to load checkpoints.'",
+    "'Workspace name is required.'",
+    "'Select a workspace to rename.'",
+    "'Select a workspace to delete.'",
+    "'Selected workspace no longer exists.'",
+    "'Default workspace cannot be deleted.'",
+    "'Select a project to move.'",
+    "'Select a target workspace.'",
+    "'Project moved.'",
+    "'Project name is required.'",
+    "'Project created.'",
+    "'Select a project to open.'",
+    "'Project opened.'",
+    "'Select a project.'",
+    "'Loaded read-only public project view.'",
+    "'Select a public project.'",
+    "'Project forked to your private project list.'",
+    "'Cannot save snapshot without an active session.'",
+    "'Workspace snapshot saved.'",
+    "'Select a snapshot to restore.'",
+    "'Workspace snapshot restored.'",
+    "'Cannot export without an active session.'",
+    "'Workspace archive downloaded.'",
+    "'Cannot import without an active session.'",
+    "'Workspace archive imported.'",
+    "'Cannot revert without an active session.'",
+    "'Selected checkpoint is no longer available.'",
+    "'Cannot revert without an active session and selected checkpoint.'",
+    "'Revert confirmation step is required before submission.'",
+    "'Cannot revert a terminated session.'",
+    "'Failed to revert workspace to selected checkpoint.'",
+    "'Cannot load diff without an active session.'",
+    "'Cannot load diff for a terminated session.'",
+    "'Failed to load checkpoint diff.'",
+    "'Cannot load snapshot without an active session.'",
+    "'Cannot load snapshot for a terminated session.'",
+    "'Failed to load checkpoint snapshot.'",
+    "'Cannot open an empty file path.'",
+    "'Cannot open live workspace file without an active session.'",
+    "'Cannot open live workspace file for a terminated session.'",
+    "'Live workspace file tree is not ready.'",
+    "'Failed to open selected file in live workspace.'",
+    "'Select an active session to compare checkpoints.'",
+    "'Cannot compare checkpoints without an active session.'",
+    "'Cannot compare checkpoints for a terminated session.'",
+    "'Select both base and target checkpoints to compare.'",
+    "'Base and target checkpoints must be different.'",
+    "'Selected checkpoint pair is no longer available.'",
+    "'Selected pair is not directly comparable. Choose a target checkpoint whose parent matches the selected base checkpoint.'",
+    "'Failed to compare selected checkpoints.'",
+    "'Failed to load dashboard summary.'",
+    "'Select an active session to run a build target.'",
+    "'Selected session is unavailable.'",
+    "'Cannot run build for a terminated session.'",
+    "`Running ${resolved.target} build via existing session exec path...`",
+    "`${resolved.target} build toolchain is unavailable in this runtime. Use a compatible build agent/session.`",
+    "`${resolved.target} build failed (exit ${nextState.result.exitCode}). Review build output for details.`",
+    "'Assistant response received.'",
+    "`Running orchestration step ${index + 1}/${orchestrationPlan.length}...`",
+    "'Orchestration completed.'",
+    "'Enter a prompt before sending.'",
+    "'Submitting prompt...'",
+    "'Execution response did not include a recognized status.'",
+    "'Request accepted and queued.'",
+    "'Request is running.'",
+    "`Chat status check failed (${response.status}).`",
+    "'Chat status check failed.'",
+    "`Chat execution failed (${response.status}).`",
+    "`Orchestration step ${index + 1} failed (${executeResponse.status}).`",
+    "`Orchestration step ${index + 1} did not return an execution id.`",
+    "`Orchestration step ${index + 1} status check failed (${statusResponse.status}).`",
+    "`Orchestration step ${index + 1} ended with status: ${terminalStatus}.`",
+    "'Failed to load workspace files.'",
+    "'Failed to load selected file content.'",
+    "'Cannot save without an active session and selected file.'",
+    "'Failed to save file changes.'",
+    "'Failed to load workspaces.'",
+    "'Failed to load project history.'",
+    "'Failed to load projects.'",
+    "'Failed to create workspace.'",
+    "'Failed to rename workspace.'",
+    "'Failed to delete workspace.'",
+    "'Failed to move project.'",
+    "'Failed to create project.'",
+    "'Failed to open project.'",
+    "'Failed to update project visibility.'",
+    "'Failed to load public projects.'",
+    "'Failed to load public project.'",
+    "'Failed to fork project.'",
+    "'Failed to save workspace snapshot.'",
+    "'Failed to restore workspace snapshot.'",
+    "'Failed to export workspace archive.'",
+    "'Failed to import workspace archive.'",
+    "'Chat execution failed.'",
+    "'Build request failed before execution completed.'",
+    "'Execution completed with no response text.'",
+    "`Project visibility set to ${updatedProject.visibility}.`",
+  ];
+  const readMessages = (name: string) =>
+    JSON.parse(readFileSync(new URL(`../../messages/${name}.json`, import.meta.url), 'utf8')).pageStatus as Record<string, string>;
+  const placeholders = (value: string) => (value.match(/\{\w+\}/g) ?? []).sort();
+
+  test('every key exists in en, zh-TW and zh-CN with real translations', () => {
+    const en = readMessages('en');
+    const zhTw = readMessages('zh-TW');
+    const zhCn = readMessages('zh-CN');
+    assert.deepEqual(Object.keys(en).sort(), [...PAGE_STATUS_KEYS].sort());
+    assert.deepEqual(Object.keys(zhTw).sort(), Object.keys(en).sort());
+    assert.deepEqual(Object.keys(zhCn).sort(), Object.keys(en).sort());
+    for (const key of PAGE_STATUS_KEYS) {
+      assert.ok(en[key]?.trim(), `en ${key}`);
+      assert.ok(zhTw[key]?.trim(), `zh-TW ${key}`);
+      assert.ok(zhCn[key]?.trim(), `zh-CN ${key}`);
+      assert.notEqual(zhTw[key], en[key], `zh-TW ${key} is translated`);
+      assert.notEqual(zhCn[key], en[key], `zh-CN ${key} is translated`);
+    }
+  });
+
+  test('placeholders in en are present in zh-TW and zh-CN', () => {
+    const en = readMessages('en');
+    const zhTw = readMessages('zh-TW');
+    const zhCn = readMessages('zh-CN');
+    for (const key of PAGE_STATUS_KEYS) {
+      assert.deepEqual(placeholders(zhTw[key]), placeholders(en[key]), `zh-TW ${key}`);
+      assert.deepEqual(placeholders(zhCn[key]), placeholders(en[key]), `zh-CN ${key}`);
+    }
+  });
+
+  test('page.tsx no longer contains the moved English literals and uses every key', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    for (const literal of MOVED_PAGE_LITERALS) {
+      assert.equal(pageSource.includes(literal), false, literal);
+    }
+    assert.match(pageSource, /getPageStatusMessages\(locale\)/);
+    for (const key of PAGE_STATUS_KEYS) {
+      assert.ok(pageSource.includes(`pageStatusMessages.${key}`), `page.tsx uses ${key}`);
+    }
+  });
+});

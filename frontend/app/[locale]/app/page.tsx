@@ -252,6 +252,18 @@ function getWorkspaceMessages(locale: string): typeof enMessages.workspace {
   return enMessages.workspace;
 }
 
+function getPageStatusMessages(locale: string): typeof enMessages.pageStatus {
+  if (locale === 'zh-TW') return zhTwMessages.pageStatus;
+  if (locale === 'zh-CN') return zhCnMessages.pageStatus;
+  return enMessages.pageStatus;
+}
+
+function fill(template: string, values: Record<string, string>): string {
+  return template.replace(/\{(\w+)\}/g, (match, name: string) =>
+    Object.prototype.hasOwnProperty.call(values, name) ? values[name] : match,
+  );
+}
+
 type WorkspaceChatMessageKind = 'ai' | 'system';
 type WorkspaceChatThreadUiMessage = WorkspaceChatThreadMessage & {
   messageKind?: WorkspaceChatMessageKind;
@@ -967,6 +979,7 @@ export default function AppPage() {
   const authModuleMessages = getAuthModuleMessages(locale);
   const aiMessages = getAiMessages(locale);
   const workspaceMessages = getWorkspaceMessages(locale);
+  const pageStatusMessages = getPageStatusMessages(locale);
   const [authLoading, setAuthLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -2114,7 +2127,7 @@ export default function AppPage() {
       setProjectActionError(
         error instanceof Error && error.message.trim()
           ? error.message
-          : 'Failed to load workspaces.',
+          : pageStatusMessages.workspacesLoadFailed,
       );
     }
   }
@@ -2133,7 +2146,7 @@ export default function AppPage() {
 
       if (!response.ok) {
         if (response.status === 403) {
-          setSessionCreateError('Session creation blocked by quota limits (403).');
+          setSessionCreateError(pageStatusMessages.sessionCreateQuotaBlocked);
           return;
         }
         throw new Error(`Session create failed (${response.status})`);
@@ -2230,7 +2243,7 @@ export default function AppPage() {
       );
     } catch (error) {
       console.error('Failed to load checkpoints:', error);
-      setHistoryError('Failed to load checkpoints.');
+      setHistoryError(pageStatusMessages.checkpointsLoadFailed);
       setCheckpoints([]);
     } finally {
       setIsLoadingHistory(false);
@@ -2257,7 +2270,7 @@ export default function AppPage() {
       setSnapshotActionError(
         error instanceof Error && error.message.trim()
           ? error.message
-          : 'Failed to load project history.',
+          : pageStatusMessages.projectHistoryLoadFailed,
       );
     }
   }
@@ -2305,7 +2318,7 @@ export default function AppPage() {
       setProjectActionError(
         error instanceof Error && error.message.trim()
           ? error.message
-          : 'Failed to load projects.',
+          : pageStatusMessages.projectsLoadFailed,
       );
     }
   }
@@ -2372,7 +2385,7 @@ export default function AppPage() {
 
     const trimmedName = name.trim();
     if (!trimmedName) {
-      setWorkspaceActionError('Workspace name is required.');
+      setWorkspaceActionError(pageStatusMessages.workspaceNameRequired);
       setWorkspaceActionState('idle');
       return;
     }
@@ -2390,7 +2403,7 @@ export default function AppPage() {
       setWorkspaceActionError(
         error instanceof Error && error.message.trim()
           ? error.message
-          : 'Failed to create workspace.',
+          : pageStatusMessages.workspaceCreateFailed,
       );
     } finally {
       setWorkspaceActionState('idle');
@@ -2408,14 +2421,14 @@ export default function AppPage() {
     const normalizedWorkspaceId =
       typeof workspaceId === 'string' && workspaceId.trim() ? workspaceId.trim() : null;
     if (!normalizedWorkspaceId) {
-      setWorkspaceActionError('Select a workspace to rename.');
+      setWorkspaceActionError(pageStatusMessages.workspaceSelectToRename);
       setWorkspaceActionState('idle');
       return;
     }
 
     const trimmedName = name.trim();
     if (!trimmedName) {
-      setWorkspaceActionError('Workspace name is required.');
+      setWorkspaceActionError(pageStatusMessages.workspaceNameRequired);
       setWorkspaceActionState('idle');
       return;
     }
@@ -2433,7 +2446,7 @@ export default function AppPage() {
       setWorkspaceActionError(
         error instanceof Error && error.message.trim()
           ? error.message
-          : 'Failed to rename workspace.',
+          : pageStatusMessages.workspaceRenameFailed,
       );
     } finally {
       setWorkspaceActionState('idle');
@@ -2448,7 +2461,7 @@ export default function AppPage() {
     const normalizedWorkspaceId =
       typeof workspaceId === 'string' && workspaceId.trim() ? workspaceId.trim() : null;
     if (!normalizedWorkspaceId) {
-      setWorkspaceActionError('Select a workspace to delete.');
+      setWorkspaceActionError(pageStatusMessages.workspaceSelectToDelete);
       setWorkspaceActionState('idle');
       return;
     }
@@ -2456,13 +2469,13 @@ export default function AppPage() {
     const selectedWorkspace =
       workspaces.find((workspace) => workspace.id === normalizedWorkspaceId) ?? null;
     if (!selectedWorkspace) {
-      setWorkspaceActionError('Selected workspace no longer exists.');
+      setWorkspaceActionError(pageStatusMessages.workspaceNoLongerExists);
       setWorkspaceActionState('idle');
       return;
     }
 
     if (selectedWorkspace.isDefault) {
-      setWorkspaceActionError('Default workspace cannot be deleted.');
+      setWorkspaceActionError(pageStatusMessages.workspaceDefaultCannotDelete);
       setWorkspaceActionState('idle');
       return;
     }
@@ -2479,7 +2492,7 @@ export default function AppPage() {
       setWorkspaceActionError(
         error instanceof Error && error.message.trim()
           ? error.message
-          : 'Failed to delete workspace.',
+          : pageStatusMessages.workspaceDeleteFailed,
       );
     } finally {
       setWorkspaceActionState('idle');
@@ -2499,7 +2512,7 @@ export default function AppPage() {
     if (!normalizedProjectId) {
       setProjectActionState('error');
       setProjectActionMessage(null);
-      setProjectActionError('Select a project to move.');
+      setProjectActionError(pageStatusMessages.projectSelectToMove);
       return;
     }
 
@@ -2510,7 +2523,7 @@ export default function AppPage() {
     if (!normalizedTargetWorkspaceId) {
       setProjectActionState('error');
       setProjectActionMessage(null);
-      setProjectActionError('Select a target workspace.');
+      setProjectActionError(pageStatusMessages.projectSelectTargetWorkspace);
       return;
     }
 
@@ -2536,7 +2549,7 @@ export default function AppPage() {
       }
       setProjectMoveTargetWorkspaceId(null);
       setProjectActionState('success');
-      setProjectActionMessage('Project moved.');
+      setProjectActionMessage(pageStatusMessages.projectMoved);
       setProjectActionError(null);
     } catch (error) {
       setProjectActionState('error');
@@ -2544,7 +2557,7 @@ export default function AppPage() {
       setProjectActionError(
         error instanceof Error && error.message.trim()
           ? error.message
-          : 'Failed to move project.',
+          : pageStatusMessages.projectMoveFailed,
       );
     }
   }
@@ -2557,7 +2570,7 @@ export default function AppPage() {
     if (!trimmedName) {
       setProjectActionState('error');
       setProjectActionMessage(null);
-      setProjectActionError('Project name is required.');
+      setProjectActionError(pageStatusMessages.projectNameRequired);
       return false;
     }
 
@@ -2603,7 +2616,7 @@ export default function AppPage() {
         setSelectedProjectVisibility(createdProject.visibility === 'public' ? 'public' : 'private');
         setProjectNameInput('');
         setProjectActionState('success');
-        setProjectActionMessage('Project created.');
+        setProjectActionMessage(pageStatusMessages.projectCreated);
         setProjectActionError(null);
         return true;
       } finally {
@@ -2616,7 +2629,7 @@ export default function AppPage() {
       setProjectActionError(
         error instanceof Error && error.message.trim()
           ? error.message
-          : 'Failed to create project.',
+          : pageStatusMessages.projectCreateFailed,
       );
       return false;
     }
@@ -2700,7 +2713,7 @@ export default function AppPage() {
     if (!selectedProjectId) {
       setProjectActionState('error');
       setProjectActionMessage(null);
-      setProjectActionError('Select a project to open.');
+      setProjectActionError(pageStatusMessages.projectSelectToOpen);
       return;
     }
 
@@ -2738,7 +2751,7 @@ export default function AppPage() {
 
       setWorkspaceView('project');
       setProjectActionState('success');
-      setProjectActionMessage('Project opened.');
+      setProjectActionMessage(pageStatusMessages.projectOpened);
       setProjectActionError(null);
     } catch (error) {
       setProjectActionState('error');
@@ -2746,7 +2759,7 @@ export default function AppPage() {
       setProjectActionError(
         error instanceof Error && error.message.trim()
           ? error.message
-          : 'Failed to open project.',
+          : pageStatusMessages.projectOpenFailed,
       );
     } finally {
       projectOpenInProgressRef.current = false;
@@ -2796,7 +2809,7 @@ export default function AppPage() {
 
       setWorkspaceView('project');
       setProjectActionState('success');
-      setProjectActionMessage('Project opened.');
+      setProjectActionMessage(pageStatusMessages.projectOpened);
       setProjectActionError(null);
     } catch (error) {
       setProjectActionState('error');
@@ -2804,7 +2817,7 @@ export default function AppPage() {
       setProjectActionError(
         error instanceof Error && error.message.trim()
           ? error.message
-          : 'Failed to open project.',
+          : pageStatusMessages.projectOpenFailed,
       );
     } finally {
       projectOpenInProgressRef.current = false;
@@ -2861,7 +2874,7 @@ export default function AppPage() {
 
       setWorkspaceView('project');
       setProjectActionState('success');
-      setProjectActionMessage('Project opened.');
+      setProjectActionMessage(pageStatusMessages.projectOpened);
       setProjectActionError(null);
     } catch (error) {
       setProjectActionState('error');
@@ -2869,7 +2882,7 @@ export default function AppPage() {
       setProjectActionError(
         error instanceof Error && error.message.trim()
           ? error.message
-          : 'Failed to open project.',
+          : pageStatusMessages.projectOpenFailed,
       );
     } finally {
       projectOpenInProgressRef.current = false;
@@ -2914,7 +2927,7 @@ export default function AppPage() {
     if (!selectedProjectId) {
       setProjectActionState('error');
       setProjectActionMessage(null);
-      setProjectActionError('Select a project.');
+      setProjectActionError(pageStatusMessages.projectSelect);
       return;
     }
     setProjectActionState('opening');
@@ -2929,14 +2942,16 @@ export default function AppPage() {
       await loadWorkspaceProjectsForUser();
       await loadPublicWorkspaceProjectsList();
       setProjectActionState('success');
-      setProjectActionMessage(`Project visibility set to ${updatedProject.visibility}.`);
+      setProjectActionMessage((updatedProject.visibility === 'public'
+          ? pageStatusMessages.projectVisibilitySetPublic
+          : pageStatusMessages.projectVisibilitySetPrivate));
     } catch (error) {
       setProjectActionState('error');
       setProjectActionMessage(null);
       setProjectActionError(
         error instanceof Error && error.message.trim()
           ? error.message
-          : 'Failed to update project visibility.',
+          : pageStatusMessages.projectVisibilityUpdateFailed,
       );
     }
   }
@@ -2974,7 +2989,7 @@ export default function AppPage() {
       setPublicProjectActionError(
         error instanceof Error && error.message.trim()
           ? error.message
-          : 'Failed to load public projects.',
+          : pageStatusMessages.publicProjectsLoadFailed,
       );
     }
   }
@@ -2987,7 +3002,7 @@ export default function AppPage() {
     if (!selectedPublicProjectId) {
       setPublicProjectActionState('error');
       setPublicProjectActionMessage(null);
-      setPublicProjectActionError('Select a public project.');
+      setPublicProjectActionError(pageStatusMessages.publicProjectSelect);
       return;
     }
     setPublicProjectActionState('viewing');
@@ -2999,14 +3014,14 @@ export default function AppPage() {
       });
       setSelectedPublicProjectDetail(detail);
       setPublicProjectActionState('success');
-      setPublicProjectActionMessage('Loaded read-only public project view.');
+      setPublicProjectActionMessage(pageStatusMessages.publicProjectLoaded);
     } catch (error) {
       setPublicProjectActionState('error');
       setPublicProjectActionMessage(null);
       setPublicProjectActionError(
         error instanceof Error && error.message.trim()
           ? error.message
-          : 'Failed to load public project.',
+          : pageStatusMessages.publicProjectLoadFailed,
       );
     }
   }
@@ -3018,7 +3033,7 @@ export default function AppPage() {
     if (!selectedPublicProjectId) {
       setPublicProjectActionState('error');
       setPublicProjectActionMessage(null);
-      setPublicProjectActionError('Select a public project.');
+      setPublicProjectActionError(pageStatusMessages.publicProjectSelect);
       return;
     }
     setPublicProjectActionState('forking');
@@ -3032,7 +3047,7 @@ export default function AppPage() {
       setSelectedProjectId(forked.id);
       setSelectedProjectVisibility('private');
       setPublicProjectActionState('success');
-      setPublicProjectActionMessage('Project forked to your private project list.');
+      setPublicProjectActionMessage(pageStatusMessages.publicProjectForked);
       setPublicProjectActionError(null);
     } catch (error) {
       setPublicProjectActionState('error');
@@ -3040,7 +3055,7 @@ export default function AppPage() {
       setPublicProjectActionError(
         error instanceof Error && error.message.trim()
           ? error.message
-          : 'Failed to fork project.',
+          : pageStatusMessages.projectForkFailed,
       );
     }
   }
@@ -3066,7 +3081,7 @@ export default function AppPage() {
       await loadWorkspaceProjectsForUser();
       await loadPublicWorkspaceProjectsList();
       setPublicProjectActionState('success');
-      setPublicProjectActionMessage('Project forked to your private project list.');
+      setPublicProjectActionMessage(pageStatusMessages.publicProjectForked);
       setPublicProjectActionError(null);
       await handleResumeWorkspaceProjectById(forked.id);
     } catch (error) {
@@ -3075,7 +3090,7 @@ export default function AppPage() {
       setPublicProjectActionError(
         error instanceof Error && error.message.trim()
           ? error.message
-          : 'Failed to fork project.',
+          : pageStatusMessages.projectForkFailed,
       );
     }
   }
@@ -3170,7 +3185,7 @@ export default function AppPage() {
     if (!selectedSessionId) {
       setSnapshotActionState('error');
       setSnapshotActionMessage(null);
-      setSnapshotActionError('Cannot save snapshot without an active session.');
+      setSnapshotActionError(pageStatusMessages.snapshotSaveNoSession);
       return;
     }
 
@@ -3185,7 +3200,7 @@ export default function AppPage() {
       await loadWorkspaceSnapshotsForUser();
       setSelectedSnapshotId(savedSnapshot.id);
       setSnapshotActionState('success');
-      setSnapshotActionMessage('Workspace snapshot saved.');
+      setSnapshotActionMessage(pageStatusMessages.snapshotSaved);
       setSnapshotActionError(null);
     } catch (error) {
       setSnapshotActionState('error');
@@ -3193,7 +3208,7 @@ export default function AppPage() {
       setSnapshotActionError(
         error instanceof Error && error.message.trim()
           ? error.message
-          : 'Failed to save workspace snapshot.',
+          : pageStatusMessages.snapshotSaveFailed,
       );
     }
   }
@@ -3205,7 +3220,7 @@ export default function AppPage() {
     if (!selectedSessionId || !selectedSnapshotId) {
       setSnapshotActionState('error');
       setSnapshotActionMessage(null);
-      setSnapshotActionError('Select a snapshot to restore.');
+      setSnapshotActionError(pageStatusMessages.snapshotSelectToRestore);
       return;
     }
 
@@ -3231,7 +3246,7 @@ export default function AppPage() {
       await loadCheckpoints(selectedSessionId);
       await loadWorkspaceSnapshotsForUser();
       setSnapshotActionState('success');
-      setSnapshotActionMessage('Workspace snapshot restored.');
+      setSnapshotActionMessage(pageStatusMessages.snapshotRestored);
       setSnapshotActionError(null);
     } catch (error) {
       setSnapshotActionState('error');
@@ -3239,7 +3254,7 @@ export default function AppPage() {
       setSnapshotActionError(
         error instanceof Error && error.message.trim()
           ? error.message
-          : 'Failed to restore workspace snapshot.',
+          : pageStatusMessages.snapshotRestoreFailed,
       );
     }
   }
@@ -3251,7 +3266,7 @@ export default function AppPage() {
     if (!selectedSessionId) {
       setSnapshotActionState('error');
       setSnapshotActionMessage(null);
-      setSnapshotActionError('Cannot export without an active session.');
+      setSnapshotActionError(pageStatusMessages.archiveExportNoSession);
       return;
     }
 
@@ -3271,7 +3286,7 @@ export default function AppPage() {
       anchor.remove();
       URL.revokeObjectURL(downloadUrl);
       setSnapshotActionState('success');
-      setSnapshotActionMessage('Workspace archive downloaded.');
+      setSnapshotActionMessage(pageStatusMessages.archiveDownloaded);
       setSnapshotActionError(null);
     } catch (error) {
       setSnapshotActionState('error');
@@ -3279,7 +3294,7 @@ export default function AppPage() {
       setSnapshotActionError(
         error instanceof Error && error.message.trim()
           ? error.message
-          : 'Failed to export workspace archive.',
+          : pageStatusMessages.archiveExportFailed,
       );
     }
   }
@@ -3291,7 +3306,7 @@ export default function AppPage() {
     if (!selectedSessionId) {
       setSnapshotActionState('error');
       setSnapshotActionMessage(null);
-      setSnapshotActionError('Cannot import without an active session.');
+      setSnapshotActionError(pageStatusMessages.archiveImportNoSession);
       return;
     }
 
@@ -3307,7 +3322,7 @@ export default function AppPage() {
       await refreshPreviewForSession(selectedSessionId);
       await loadCheckpoints(selectedSessionId);
       setSnapshotActionState('success');
-      setSnapshotActionMessage('Workspace archive imported.');
+      setSnapshotActionMessage(pageStatusMessages.archiveImported);
       setSnapshotActionError(null);
     } catch (error) {
       setSnapshotActionState('error');
@@ -3315,7 +3330,7 @@ export default function AppPage() {
       setSnapshotActionError(
         error instanceof Error && error.message.trim()
           ? error.message
-          : 'Failed to import workspace archive.',
+          : pageStatusMessages.archiveImportFailed,
       );
     }
   }
@@ -3324,14 +3339,14 @@ export default function AppPage() {
     const selectedSession = sessions.find((session) => session.id === selectedSessionId);
     if (!selectedSessionId || !selectedSession || selectedSession.terminatedAt) {
       setCheckpointRevertState('revert-error');
-      setCheckpointRevertError('Cannot revert without an active session.');
+      setCheckpointRevertError(pageStatusMessages.revertNoSession);
       setCheckpointRevertTargetId(null);
       return;
     }
 
     if (!checkpoints.some((checkpoint) => checkpoint.id === checkpointId)) {
       setCheckpointRevertState('revert-error');
-      setCheckpointRevertError('Selected checkpoint is no longer available.');
+      setCheckpointRevertError(pageStatusMessages.checkpointUnavailable);
       setCheckpointRevertTargetId(null);
       return;
     }
@@ -3405,26 +3420,26 @@ export default function AppPage() {
 
     if (!selectedSessionId || !userId || !checkpointRevertTargetId) {
       setCheckpointRevertState('revert-error');
-      setCheckpointRevertError('Cannot revert without an active session and selected checkpoint.');
+      setCheckpointRevertError(pageStatusMessages.revertNoSessionOrCheckpoint);
       return;
     }
     if (checkpointRevertState !== 'confirming') {
       setCheckpointRevertState('revert-error');
-      setCheckpointRevertError('Revert confirmation step is required before submission.');
+      setCheckpointRevertError(pageStatusMessages.revertConfirmRequired);
       return;
     }
 
     const selectedSession = sessions.find((session) => session.id === selectedSessionId);
     if (!selectedSession || selectedSession.terminatedAt) {
       setCheckpointRevertState('revert-error');
-      setCheckpointRevertError('Cannot revert a terminated session.');
+      setCheckpointRevertError(pageStatusMessages.revertTerminatedSession);
       return;
     }
 
     const targetCheckpoint = checkpoints.find((checkpoint) => checkpoint.id === checkpointRevertTargetId);
     if (!targetCheckpoint) {
       setCheckpointRevertState('revert-error');
-      setCheckpointRevertError('Selected checkpoint is no longer available.');
+      setCheckpointRevertError(pageStatusMessages.checkpointUnavailable);
       setCheckpointRevertTargetId(null);
       return;
     }
@@ -3498,7 +3513,7 @@ export default function AppPage() {
         return;
       }
       setCheckpointRevertState('revert-error');
-      setCheckpointRevertError('Failed to revert workspace to selected checkpoint.');
+      setCheckpointRevertError(pageStatusMessages.revertFailed);
     }
   }
 
@@ -3509,7 +3524,7 @@ export default function AppPage() {
 
     if (!selectedSessionId) {
       setCheckpointDiffState('diff-error');
-      setCheckpointDiffError('Cannot load diff without an active session.');
+      setCheckpointDiffError(pageStatusMessages.diffNoSession);
       setCheckpointDiffTargetId(null);
       setCheckpointDiffResponse(null);
       return;
@@ -3518,7 +3533,7 @@ export default function AppPage() {
     const selectedSession = sessions.find((session) => session.id === selectedSessionId);
     if (!selectedSession || selectedSession.terminatedAt) {
       setCheckpointDiffState('diff-error');
-      setCheckpointDiffError('Cannot load diff for a terminated session.');
+      setCheckpointDiffError(pageStatusMessages.diffTerminatedSession);
       setCheckpointDiffTargetId(null);
       setCheckpointDiffResponse(null);
       return;
@@ -3527,7 +3542,7 @@ export default function AppPage() {
     const targetCheckpoint = checkpoints.find((checkpoint) => checkpoint.id === checkpointId);
     if (!targetCheckpoint) {
       setCheckpointDiffState('diff-error');
-      setCheckpointDiffError('Selected checkpoint is no longer available.');
+      setCheckpointDiffError(pageStatusMessages.checkpointUnavailable);
       setCheckpointDiffTargetId(null);
       setCheckpointDiffResponse(null);
       return;
@@ -3567,7 +3582,7 @@ export default function AppPage() {
         return;
       }
       setCheckpointDiffState('diff-error');
-      setCheckpointDiffError('Failed to load checkpoint diff.');
+      setCheckpointDiffError(pageStatusMessages.diffLoadFailed);
       setCheckpointDiffResponse(null);
     }
   }
@@ -3579,7 +3594,7 @@ export default function AppPage() {
 
     if (!selectedSessionId) {
       setCheckpointSnapshotState('snapshot-error');
-      setCheckpointSnapshotError('Cannot load snapshot without an active session.');
+      setCheckpointSnapshotError(pageStatusMessages.checkpointSnapshotNoSession);
       setCheckpointSnapshotTargetId(null);
       setCheckpointSnapshotResponse(null);
       return;
@@ -3588,7 +3603,7 @@ export default function AppPage() {
     const selectedSession = sessions.find((session) => session.id === selectedSessionId);
     if (!selectedSession || selectedSession.terminatedAt) {
       setCheckpointSnapshotState('snapshot-error');
-      setCheckpointSnapshotError('Cannot load snapshot for a terminated session.');
+      setCheckpointSnapshotError(pageStatusMessages.checkpointSnapshotTerminatedSession);
       setCheckpointSnapshotTargetId(null);
       setCheckpointSnapshotResponse(null);
       return;
@@ -3597,7 +3612,7 @@ export default function AppPage() {
     const targetCheckpoint = checkpoints.find((checkpoint) => checkpoint.id === checkpointId);
     if (!targetCheckpoint) {
       setCheckpointSnapshotState('snapshot-error');
-      setCheckpointSnapshotError('Selected checkpoint is no longer available.');
+      setCheckpointSnapshotError(pageStatusMessages.checkpointUnavailable);
       setCheckpointSnapshotTargetId(null);
       setCheckpointSnapshotResponse(null);
       return;
@@ -3637,7 +3652,7 @@ export default function AppPage() {
         return;
       }
       setCheckpointSnapshotState('snapshot-error');
-      setCheckpointSnapshotError('Failed to load checkpoint snapshot.');
+      setCheckpointSnapshotError(pageStatusMessages.checkpointSnapshotLoadFailed);
       setCheckpointSnapshotResponse(null);
     }
   }
@@ -3670,14 +3685,14 @@ export default function AppPage() {
     const normalizedPath = filePath.trim();
     if (!normalizedPath) {
       setCheckpointLiveOpenState('open-error');
-      setCheckpointLiveOpenError('Cannot open an empty file path.');
+      setCheckpointLiveOpenError(pageStatusMessages.liveOpenEmptyPath);
       setCheckpointLiveOpenTargetPath(null);
       return;
     }
 
     if (!selectedSessionId) {
       setCheckpointLiveOpenState('open-error');
-      setCheckpointLiveOpenError('Cannot open live workspace file without an active session.');
+      setCheckpointLiveOpenError(pageStatusMessages.liveOpenNoSession);
       setCheckpointLiveOpenTargetPath(normalizedPath);
       return;
     }
@@ -3685,14 +3700,14 @@ export default function AppPage() {
     const selectedSession = sessions.find((session) => session.id === selectedSessionId);
     if (!selectedSession || selectedSession.terminatedAt) {
       setCheckpointLiveOpenState('open-error');
-      setCheckpointLiveOpenError('Cannot open live workspace file for a terminated session.');
+      setCheckpointLiveOpenError(pageStatusMessages.liveOpenTerminatedSession);
       setCheckpointLiveOpenTargetPath(normalizedPath);
       return;
     }
 
     if (fileSurfaceState !== 'ready') {
       setCheckpointLiveOpenState('open-error');
-      setCheckpointLiveOpenError('Live workspace file tree is not ready.');
+      setCheckpointLiveOpenError(pageStatusMessages.liveTreeNotReady);
       setCheckpointLiveOpenTargetPath(normalizedPath);
       return;
     }
@@ -3720,7 +3735,7 @@ export default function AppPage() {
 
       if (!opened) {
         setCheckpointLiveOpenState('open-error');
-        setCheckpointLiveOpenError('Failed to open selected file in live workspace.');
+        setCheckpointLiveOpenError(pageStatusMessages.liveOpenFailed);
         setCheckpointLiveOpenTargetPath(normalizedPath);
         return;
       }
@@ -3734,7 +3749,7 @@ export default function AppPage() {
         return;
       }
       setCheckpointLiveOpenState('open-error');
-      setCheckpointLiveOpenError('Failed to open selected file in live workspace.');
+      setCheckpointLiveOpenError(pageStatusMessages.liveOpenFailed);
       setCheckpointLiveOpenTargetPath(normalizedPath);
     }
   }
@@ -3742,7 +3757,7 @@ export default function AppPage() {
   function handleStartCheckpointCompare(): void {
     if (!selectedSessionId) {
       setCheckpointCompareState('compare-error');
-      setCheckpointCompareError('Select an active session to compare checkpoints.');
+      setCheckpointCompareError(pageStatusMessages.compareSelectSession);
       setCheckpointCompareBaseId(null);
       setCheckpointCompareTargetId(null);
       setCheckpointCompareResponse(null);
@@ -3795,7 +3810,7 @@ export default function AppPage() {
 
     if (!selectedSessionId) {
       setCheckpointCompareState('compare-error');
-      setCheckpointCompareError('Cannot compare checkpoints without an active session.');
+      setCheckpointCompareError(pageStatusMessages.compareNoSession);
       setCheckpointCompareResponse(null);
       return;
     }
@@ -3803,21 +3818,21 @@ export default function AppPage() {
     const selectedSession = sessions.find((session) => session.id === selectedSessionId);
     if (!selectedSession || selectedSession.terminatedAt) {
       setCheckpointCompareState('compare-error');
-      setCheckpointCompareError('Cannot compare checkpoints for a terminated session.');
+      setCheckpointCompareError(pageStatusMessages.compareTerminatedSession);
       setCheckpointCompareResponse(null);
       return;
     }
 
     if (!checkpointCompareBaseId || !checkpointCompareTargetId) {
       setCheckpointCompareState('compare-error');
-      setCheckpointCompareError('Select both base and target checkpoints to compare.');
+      setCheckpointCompareError(pageStatusMessages.compareSelectBoth);
       setCheckpointCompareResponse(null);
       return;
     }
 
     if (checkpointCompareBaseId === checkpointCompareTargetId) {
       setCheckpointCompareState('compare-error');
-      setCheckpointCompareError('Base and target checkpoints must be different.');
+      setCheckpointCompareError(pageStatusMessages.compareMustDiffer);
       setCheckpointCompareResponse(null);
       return;
     }
@@ -3826,7 +3841,7 @@ export default function AppPage() {
     const targetCheckpoint = checkpoints.find((checkpoint) => checkpoint.id === checkpointCompareTargetId);
     if (!baseCheckpoint || !targetCheckpoint) {
       setCheckpointCompareState('compare-error');
-      setCheckpointCompareError('Selected checkpoint pair is no longer available.');
+      setCheckpointCompareError(pageStatusMessages.comparePairUnavailable);
       setCheckpointCompareResponse(null);
       return;
     }
@@ -3851,7 +3866,7 @@ export default function AppPage() {
       if (response.parentHash !== baseCheckpoint.commitHash) {
         setCheckpointCompareState('compare-error');
         setCheckpointCompareError(
-          'Selected pair is not directly comparable. Choose a target checkpoint whose parent matches the selected base checkpoint.',
+          pageStatusMessages.compareNotDirectlyComparable,
         );
         setCheckpointCompareResponse(null);
         return;
@@ -3866,7 +3881,7 @@ export default function AppPage() {
         return;
       }
       setCheckpointCompareState('compare-error');
-      setCheckpointCompareError('Failed to compare selected checkpoints.');
+      setCheckpointCompareError(pageStatusMessages.compareFailed);
       setCheckpointCompareResponse(null);
     }
   }
@@ -3934,7 +3949,7 @@ export default function AppPage() {
       setQuotaSummary(quotaData);
     } catch (error) {
       console.error('Failed to load dashboard slice data:', error);
-      setDashboardError('Failed to load dashboard summary.');
+      setDashboardError(pageStatusMessages.dashboardLoadFailed);
       setUserSummary(null);
       setUsageSummary(null);
       setQuotaSummary(null);
@@ -4022,7 +4037,7 @@ export default function AppPage() {
     if (!selectedSessionId) {
       setBuildRequestState('failed');
       setBuildStatusMessage(null);
-      setBuildError('Select an active session to run a build target.');
+      setBuildError(pageStatusMessages.buildSelectSession);
       return;
     }
 
@@ -4030,21 +4045,21 @@ export default function AppPage() {
     if (!selectedSession) {
       setBuildRequestState('failed');
       setBuildStatusMessage(null);
-      setBuildError('Selected session is unavailable.');
+      setBuildError(pageStatusMessages.buildSessionUnavailable);
       return;
     }
 
     if (selectedSession.terminatedAt || selectedSession.status === 'terminated') {
       setBuildRequestState('failed');
       setBuildStatusMessage(null);
-      setBuildError('Cannot run build for a terminated session.');
+      setBuildError(pageStatusMessages.buildTerminatedSession);
       return;
     }
 
     const resolved = resolveWorkspaceBuildCommand(selectedBuildTarget);
     setSelectedBuildTarget(resolved.target);
     setBuildRequestState('submitting');
-    setBuildStatusMessage(`Running ${resolved.target} build via existing session exec path...`);
+    setBuildStatusMessage(fill(pageStatusMessages.buildRunning, { target: resolved.target }));
     setBuildError(null);
     setBuildOutput('');
 
@@ -4057,7 +4072,7 @@ export default function AppPage() {
     if (nextState.status !== 'result' || !nextState.result) {
       setBuildRequestState('failed');
       setBuildStatusMessage(null);
-      setBuildError(nextState.errorMessage ?? 'Build request failed before execution completed.');
+      setBuildError(nextState.errorMessage ?? pageStatusMessages.buildRequestFailedEarly);
       await loadDashboardSlice();
       return;
     }
@@ -4087,11 +4102,11 @@ export default function AppPage() {
       })
     ) {
       setBuildError(
-        `${resolved.target} build toolchain is unavailable in this runtime. Use a compatible build agent/session.`,
+        fill(pageStatusMessages.buildToolchainUnavailable, { target: resolved.target }),
       );
     } else {
       setBuildError(
-        `${resolved.target} build failed (exit ${nextState.result.exitCode}). Review build output for details.`,
+        fill(pageStatusMessages.buildFailed, { target: resolved.target, exitCode: String(nextState.result.exitCode) }),
       );
     }
     await loadDashboardSlice();
@@ -4281,7 +4296,7 @@ export default function AppPage() {
       if (!response.ok) {
         const failureMessage = toChatAssistantFailureMessage({
           rawMessage: await readResponseErrorMessage(response),
-          fallbackMessage: `Chat status check failed (${response.status}).`,
+          fallbackMessage: fill(pageStatusMessages.chatStatusCheckFailedCode, { status: String(response.status) }),
           statusCode: response.status,
           retryAfterHeader: response.headers.get('Retry-After'),
           copies: quotaRateLimitCopies,
@@ -4314,7 +4329,7 @@ export default function AppPage() {
         const resolvedResponse =
           chatResponseTextRef.current.trim().length > 0
             ? chatResponseTextRef.current
-            : nextOutput || 'Execution completed with no response text.';
+            : nextOutput || pageStatusMessages.executionNoResponseText;
         chatResponseTextRef.current = resolvedResponse;
         setChatResponseText(resolvedResponse);
         const recoveredMode = recoveredExecutionModesRef.current.get(executionId);
@@ -4353,7 +4368,7 @@ export default function AppPage() {
           pendingAssistantMessageIdRef.current = null;
         }
         clearPendingRunForExecution(executionId);
-        setChatStatusMessage('Assistant response received.');
+        setChatStatusMessage(pageStatusMessages.chatResponseReceived);
         setChatError(null);
         if (shouldRefreshDashboardForChatStatus(nextStatus)) {
           await loadDashboardSlice();
@@ -4420,8 +4435,8 @@ export default function AppPage() {
         setChatRequestState(nextStatus);
         setChatStatusMessage(
           nextStatus === 'queued'
-            ? 'Request accepted and queued.'
-            : 'Request is running.',
+            ? pageStatusMessages.chatRequestQueued
+            : pageStatusMessages.chatRequestRunning,
         );
         setChatError(null);
       }
@@ -4429,7 +4444,7 @@ export default function AppPage() {
       const detail = error instanceof Error ? error.message : String(error);
       const failureMessage = toChatAssistantFailureMessage({
         rawMessage: detail,
-        fallbackMessage: 'Chat status check failed.',
+        fallbackMessage: pageStatusMessages.chatStatusCheckFailed,
         copies: quotaRateLimitCopies,
       });
       setChatRequestState('failed');
@@ -4506,7 +4521,7 @@ export default function AppPage() {
     for (let index = 0; index < orchestrationPlan.length; index += 1) {
       const step = orchestrationPlan[index];
       progress[index] = { ...progress[index], status: 'running' };
-      setChatStatusMessage(`Running orchestration step ${index + 1}/${orchestrationPlan.length}...`);
+      setChatStatusMessage(fill(pageStatusMessages.orchestrationRunningStep, { step: String(index + 1), total: String(orchestrationPlan.length) }));
       updateAssistantMessageContent(
         input.assistantMessageId,
         formatWorkspaceChatOrchestrationProgress({
@@ -4569,7 +4584,7 @@ export default function AppPage() {
           mappedMessage ??
           toChatAssistantFailureMessage({
           rawMessage,
-          fallbackMessage: `Orchestration step ${index + 1} failed (${executeResponse.status}).`,
+          fallbackMessage: fill(pageStatusMessages.orchestrationStepFailedCode, { step: String(index + 1), status: String(executeResponse.status) }),
           statusCode: executeResponse.status,
           retryAfterHeader: executeResponse.headers.get('Retry-After'),
           payload,
@@ -4600,7 +4615,7 @@ export default function AppPage() {
       const queuedPayload = (await executeResponse.json()) as WorkspaceChatExecutionResponse;
       const executionId = typeof queuedPayload.executionId === 'string' ? queuedPayload.executionId : null;
       if (!executionId) {
-        const failureMessage = `Orchestration step ${index + 1} did not return an execution id.`;
+        const failureMessage = fill(pageStatusMessages.orchestrationStepNoExecutionId, { step: String(index + 1) });
         progress[index] = { ...progress[index], status: 'failed', summary: failureMessage };
         const finalFailureContent = formatWorkspaceChatOrchestrationProgress({
           steps: orchestrationPlan,
@@ -4642,7 +4657,7 @@ export default function AppPage() {
         if (!statusResponse.ok) {
           const failureMessage = toChatAssistantFailureMessage({
             rawMessage: await readResponseErrorMessage(statusResponse),
-            fallbackMessage: `Orchestration step ${index + 1} status check failed (${statusResponse.status}).`,
+            fallbackMessage: fill(pageStatusMessages.orchestrationStepStatusCheckFailed, { step: String(index + 1), status: String(statusResponse.status) }),
             statusCode: statusResponse.status,
             retryAfterHeader: statusResponse.headers.get('Retry-After'),
             copies: quotaRateLimitCopies,
@@ -4695,7 +4710,7 @@ export default function AppPage() {
       if (terminalStatus !== 'completed') {
         const failureMessage = toChatAssistantFailureMessage({
           rawMessage: terminalOutput,
-          fallbackMessage: `Orchestration step ${index + 1} ended with status: ${terminalStatus}.`,
+          fallbackMessage: fill(pageStatusMessages.orchestrationStepEndedWithStatus, { step: String(index + 1), status: String(terminalStatus) }),
           copies: quotaRateLimitCopies,
         });
         progress[index] = { ...progress[index], status: 'failed', summary: failureMessage };
@@ -4746,7 +4761,7 @@ export default function AppPage() {
     ].join('\n');
 
     setChatRequestState('completed');
-    setChatStatusMessage('Orchestration completed.');
+    setChatStatusMessage(pageStatusMessages.orchestrationCompleted);
     setChatError(null);
     setChatResponseText(combinedStepOutput.trim());
     chatResponseTextRef.current = combinedStepOutput.trim();
@@ -4805,7 +4820,7 @@ export default function AppPage() {
     if (!trimmedPrompt) {
       setChatRequestState('failed');
       setChatStatusMessage(null);
-      setChatError('Enter a prompt before sending.');
+      setChatError(pageStatusMessages.chatPromptRequired);
       return;
     }
     if (detectAuthModuleIntent(trimmedPrompt)) {
@@ -4851,7 +4866,7 @@ export default function AppPage() {
     chatResponseTextRef.current = '';
     setChatResponseText('');
     setChatExecutionId(null);
-    setChatStatusMessage('Submitting prompt...');
+    setChatStatusMessage(pageStatusMessages.chatSubmitting);
     setChatError(null);
     const chosenModel = resolveFrontendProviderModelPayload({
       providerId: selectedChatModelProviderId,
@@ -4964,7 +4979,7 @@ export default function AppPage() {
           mappedMessage ??
           toChatAssistantFailureMessage({
           rawMessage,
-          fallbackMessage: `Chat execution failed (${response.status}).`,
+          fallbackMessage: fill(pageStatusMessages.chatExecutionFailedCode, { status: String(response.status) }),
           statusCode: response.status,
           retryAfterHeader: response.headers.get('Retry-After'),
           payload,
@@ -5041,7 +5056,7 @@ export default function AppPage() {
         const completedResponse =
           chatResponseTextRef.current.trim().length > 0
             ? chatResponseTextRef.current
-            : nextOutput || 'Execution completed with no response text.';
+            : nextOutput || pageStatusMessages.executionNoResponseText;
         chatResponseTextRef.current = completedResponse;
         setChatResponseText(completedResponse);
         const pendingAssistantId = pendingAssistantMessageIdRef.current;
@@ -5069,7 +5084,7 @@ export default function AppPage() {
           }
           pendingAssistantMessageIdRef.current = null;
         }
-        setChatStatusMessage('Assistant response received.');
+        setChatStatusMessage(pageStatusMessages.chatResponseReceived);
         if (shouldRefreshDashboardForChatStatus(nextStatus)) {
           await loadDashboardSlice();
         }
@@ -5136,8 +5151,8 @@ export default function AppPage() {
         setChatRequestState(nextStatus);
         setChatStatusMessage(
           nextStatus === 'queued'
-            ? 'Request accepted and queued.'
-            : 'Request is running.',
+            ? pageStatusMessages.chatRequestQueued
+            : pageStatusMessages.chatRequestRunning,
         );
         if (nextExecutionId) {
           await refreshChatExecutionStatus(nextExecutionId);
@@ -5147,12 +5162,12 @@ export default function AppPage() {
 
       setChatRequestState('failed');
       setChatStatusMessage(null);
-      setChatError('Execution response did not include a recognized status.');
+      setChatError(pageStatusMessages.chatNoRecognizedStatus);
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
       const failureMessage = toChatAssistantFailureMessage({
         rawMessage: detail,
-        fallbackMessage: 'Chat execution failed.',
+        fallbackMessage: pageStatusMessages.chatExecutionFailed,
         copies: quotaRateLimitCopies,
       });
       setChatRequestState('failed');
@@ -5993,7 +6008,7 @@ export default function AppPage() {
       setFileSaveState('clean');
       setFileSaveError(null);
       setFileSurfaceState('error');
-      setFileSurfaceError('Failed to load workspace files.');
+      setFileSurfaceError(pageStatusMessages.workspaceFilesLoadFailed);
       return false;
     }
   }
@@ -6051,7 +6066,7 @@ export default function AppPage() {
       setFileSaveState('clean');
       setFileSaveError(null);
       setFileSurfaceState('error');
-      setFileSurfaceError('Failed to load selected file content.');
+      setFileSurfaceError(pageStatusMessages.fileContentLoadFailed);
       return false;
     }
   }
@@ -6069,7 +6084,7 @@ export default function AppPage() {
 
     if (!selectedSessionId || !selectedFilePath || fileSurfaceState !== 'ready') {
       setFileSaveState('save-error');
-      setFileSaveError('Cannot save without an active session and selected file.');
+      setFileSaveError(pageStatusMessages.fileSaveNoSessionOrFile);
       return;
     }
 
@@ -6125,7 +6140,7 @@ export default function AppPage() {
         return;
       }
       setFileSaveState('save-error');
-      setFileSaveError('Failed to save file changes.');
+      setFileSaveError(pageStatusMessages.fileSaveFailed);
     }
   }
 
