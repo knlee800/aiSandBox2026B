@@ -506,8 +506,11 @@ export async function createLiveAdapters(
       let cleanup = 'session-stop-not-attempted';
       if (ids.sessionId) {
         try {
+          // CSRF-AUDIT-01: the gateway refuses a session-cookie write without the
+          // app Origin; page.request sends none on its own, so send it as a browser would.
           const stop = await page.request.post(
             `${baseURL}${buildSessionStopPath(ids.sessionId)}`,
+            { headers: { Origin: new URL(baseURL).origin } },
           );
           cleanup = stop.ok() ? 'session-stopped' : `session-stop-http-${stop.status()}`;
         } catch (error) {

@@ -39,6 +39,7 @@ import { ConnectorsModule } from './connectors/connectors.module';
 import { SystemAgentsModule } from './system-agents/system-agents.module';
 import { databaseConfig } from './config/database.config';
 import { InternalServiceAuthGuard } from './guards/internal-service-auth.guard';
+import { SameOriginWriteGuard } from './guards/same-origin-write.guard';
 import { IdempotentReplayExceptionFilter } from './filters/idempotent-replay-exception.filter';
 
 @Module({
@@ -101,6 +102,13 @@ import { IdempotentReplayExceptionFilter } from './filters/idempotent-replay-exc
     {
       provide: APP_GUARD,
       useClass: InternalServiceAuthGuard,
+    },
+    // Global guard for cross-origin writes (CSRF-AUDIT-01): a non-GET request
+    // whose Origin is not the APP_BASE_URL origin, or that carries the session
+    // cookie without an Origin, is refused with 403 before any route guard.
+    {
+      provide: APP_GUARD,
+      useClass: SameOriginWriteGuard,
     },
     // Global exception filter for idempotent replay
     // Catches IdempotentReplayException and returns HTTP 200 with cached result

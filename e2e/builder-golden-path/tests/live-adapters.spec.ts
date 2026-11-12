@@ -1,6 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { EventEmitter } from 'node:events';
+import { createServer, type IncomingHttpHeaders } from 'node:http';
+import type { AddressInfo } from 'node:net';
 import { test, expect, type Browser, type Page } from '@playwright/test';
 import liveConfig from '../playwright.live.config';
 import {
@@ -2582,5 +2584,41 @@ test.describe('AUTO-01K DEDUCTION database connection adapter', () => {
     expect(GOLDEN_PATH_PHASES.indexOf('BALANCE')).toBe(
       GOLDEN_PATH_PHASES.indexOf('DEDUCTION') + 1,
     );
+  });
+});
+
+test.describe('CSRF-AUDIT-01 cleanup session stop', () => {
+  test('the session-stop POST sends the app Origin, as a browser would', async ({ browser }) => {
+    const stops: Array<{ method: string; url: string; headers: IncomingHttpHeaders }> = [];
+    const server = createServer((req, res) => {
+      if (req.method === 'POST' && req.url === '/api/sessions/session-csrf-1/stop') {
+        stops.push({ method: req.method, url: req.url, headers: req.headers });
+        res.writeHead(201, { 'Content-Type': 'application/json' });
+        res.end('{"ok":true}');
+        return;
+      }
+      res.writeHead(404);
+      res.end();
+    });
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const baseURL = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+    const live = await createLiveAdapters({
+      browser,
+      env: { ...liveEnvWithCreds, E2E_BASE_URL: `${baseURL}/` },
+      staging: fastReadyHelper({ env: liveEnvWithCreds, execute: async () => '' }),
+      readLocalHead: async () => DYNAMIC_HEAD_B,
+    });
+    try {
+      const result = await live.adapters.cleanup({
+        ids: { sessionId: 'session-csrf-1' },
+        gateTracker: live.gateTracker,
+      });
+      expect(result.cleanup).toBe('session-stopped');
+      expect(stops).toHaveLength(1);
+      expect(stops[0].headers.origin).toBe(baseURL);
+    } finally {
+      await live.context.close().catch(() => undefined);
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
   });
 });
