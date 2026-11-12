@@ -88565,7 +88565,7 @@ nature=IMPLEMENTATION
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
-**Scope:** Deploy main with COS-DRAFTS-POLISH-01 and CM-CONTENT-TYPE-02 (and any later locked work; CM-DEPS-01 added 2026-11-12, a lockfile change, so the deploy's install step must succeed) to staging from the host with runs off (no migration expected; configuration unchanged; host checks as in STAGING-DEPLOY-I18N-02, keyed checks before the header file is removed). No Keith step required.
+**Scope:** Deploy main with COS-DRAFTS-POLISH-01 and CM-CONTENT-TYPE-02 (and any later locked work; CM-DEPS-01 added 2026-11-12, a lockfile change, so the deploy's install step must succeed; CM-DIFF-NOTICE-01 added 2026-11-12) to staging from the host with runs off (no migration expected; configuration unchanged; host checks as in STAGING-DEPLOY-I18N-02, keyed checks before the header file is removed). No Keith step required.
 
 ### CM-DIFF-CAP-01 — Large diffs come back truncated, not failed
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
@@ -88597,7 +88597,7 @@ taskId=CM-DIFF-NOTICE-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — admitted by the control plane on Keith's "Keep working". Was: READY — registered 2026-11-11 by the CM-DIFF-CAP-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. LANE-DONE and LOCKED by the control plane; Lane 1, GATEWAY, FRONTEND and I18N released. The gateway passes truncated and diffLimitBytes through getCheckpointDiff only when container-manager cut the diff (whole diffs keep their old shape); the History diff view shows a translated amber notice with the readable limit (en, zh-TW, zh-CN); checkpoint creation, listing and revert unchanged; 17 new tests; opus subagent ead4462, cherry-picked as 3add40d; control-plane rerun: gateway 3870 passed plus the 14 known smoke failures, frontend 1812 of 1812, tsc and builds 0. Not deployed; it goes out with STAGING-DEPLOY-POLISH-01. Checkpoint: docs/CM-DIFF-NOTICE-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (CM-DIFF-NOTICE-02) / 4 superseded (snapshot viewer notice, empty cut case, client type and working-tree diff into CM-DIFF-NOTICE-02; the deploy into STAGING-DEPLOY-POLISH-01) / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — admitted by the control plane on Keith's "Keep working". Was: READY — registered 2026-11-11 by the CM-DIFF-CAP-01 LOCK — not admitted.
 **Task ID:** CM-DIFF-NOTICE-01
 **Title:** Show when a checkpoint diff was cut
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -88614,6 +88614,30 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From the CM-DIFF-CAP-01 worker: container-manager's getDiff now returns optional truncated: true and diffLimitBytes when a commit diff was cut at 8 MiB, but the gateway's getCheckpointDiff copies only commitHash, parentHash and files, so nobody sees it; pass the two fields through and show a translated notice on the History diff view (en, zh-TW, zh-CN). Mutexes expected GATEWAY, FRONTEND, I18N.
+
+### CM-DIFF-NOTICE-02 — Cut-diff notice in the snapshot viewer and the remaining diff cases
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=CM-DIFF-NOTICE-02
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the CM-DIFF-NOTICE-01 LOCK — not admitted.
+**Task ID:** CM-DIFF-NOTICE-02
+**Title:** Cut-diff notice in the snapshot viewer and the remaining diff cases
+**Workstream:** RELIABILITY (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 2-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction). Low value; Keith may drop it.
+**Depends on:** CM-DIFF-NOTICE-01.
+**Primary write scope:** PROVISIONAL: frontend/components/workspace/ (workspace-shell.tsx snapshot viewer, diff logic) and tests; services/api-gateway/src/clients/container-manager-http.client.ts (GitDiffResult type) and the working-tree diff path; the three message files if needed.
+**Mutexes / resources:** set at admission (expected FRONTEND, GATEWAY, I18N).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** per change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the CM-DIFF-NOTICE-01 worker: (a) HistoryCheckpointSnapshotViewer reads the same diff endpoint but shows no cut notice; (b) a cut diff with no complete file sets the state to empty and shows No diff changes, hiding the notice; (c) GitDiffResult in the gateway client could name truncated and diffLimitBytes so the service's local widening can go; (d) the working-tree diff's truncated flag (WorkingTreeDiffResult) is not surfaced. Decide each; tests; no change to checkpoint creation, listing or revert.
 
 ### CM-UNTRACKED-DASH-01 — Untracked files in the working-tree diff under dash
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
