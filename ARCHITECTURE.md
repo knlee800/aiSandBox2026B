@@ -519,14 +519,20 @@ Node-dev-server / framework preview via `package.json` is implemented in the res
 ### Preview Proxy Path
 
 ```
-Browser iframe
-  src=/api/preview/:sessionId/proxy?refresh=
+Browser iframe (sandbox without allow-top-navigation)
+  src=/api/preview/:sessionId/proxy?refresh=            (platform host)
     → Caddy /api/* (staging) or Next rewrite (local)
-    → API Gateway PreviewController
+    → API Gateway PreviewController (session cookie and ownership)
+    → 302 to <PREVIEW_BASE_URL>/api/preview/:sessionId/enter?ticket=…
+Preview host (staging: preview.staging.ainow.biz; Caddy site with basic_auth; Host passed through)
+    → API Gateway PreviewEntryController: enter checks the ticket, sets aisandbox_preview, 302 to the proxy path
+    → proxy GET/HEAD with the preview cookie and ownership
     → container-manager :4002
 ```
 
 The proxy target is container-manager. Preview does not route to AI Service.
+
+Origin isolation (PREVIEW-ORIGIN-01, deployed by PREVIEW-ORIGIN-DEPLOY-01): generated-app code runs on the preview host, never on the platform origin. The ticket is an HMAC over session, user, expiry, nonce and target, lives 60 seconds and is single use; the signing key is random per gateway process. The `aisandbox_preview` cookie is httpOnly, host-only, scoped to `/api/preview/:sessionId/` and lives 12 hours. The preview host serves only `enter` and the proxy (everything else 404) and never reads the platform session cookie. Host detection is fail-closed: a request is on the preview host only when Host and every X-Forwarded-Host equal the `PREVIEW_BASE_URL` host. Off the preview host every proxy response carries `Content-Security-Policy: sandbox` without `allow-same-origin`, also when `PREVIEW_BASE_URL` is unset (then multi-file previews do not render). The Select Element picker is hidden until it is rebuilt over postMessage (PREVIEW-PICKER-01).
 
 ---
 

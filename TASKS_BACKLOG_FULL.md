@@ -84538,7 +84538,7 @@ taskId=PREVIEW-ORIGIN-DEPLOY-01
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("DNS record added"). Was: READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted.
+**Status:** COMPLETE AND LOCKED — 2026-11-12. Result: passed. LANE-DONE and LOCKED by the control plane; Lane 1, STAGING and ENV released; stagingAuthorized false. Deployed 7a5bf0c to 91c0c33 with runs off (rc 0, 2026-11-12T09:20:03Z) with the preview host: gateway.env gained PREVIEW_BASE_URL=https://preview.staging.ainow.biz (new baseline e07672862e84e00493d1864cb9c18f05a2f1b9129557c7412b3ad9590bd0944a), the Caddy template with the preview site (basic_auth, Host passed through) installed, validated and reloaded (new baseline 205770cfa1043312d749dbf9e0b31ebc94d2c8b5a0ed6c703c18639042342ba8); Let's Encrypt certificate obtained; no migration (hash 9cfde25f); all units active; 12 preview-host checks passed (TLS and basic_auth; preview host 404 for other routes; 403 without the preview cookie, with only a session cookie or a bad ticket; platform enter 404; spoofed X-Forwarded-Host counts as platform; the CSP sandbox on the platform proxy). Keith's browser check passed in a new project: the CSS applied, the script ran with localStorage, Select Element is gone; the gateway log shows the redirect to the preview host, one ticket used, and the page and style.css fetched through the preview host. ARCHITECTURE.md section 6 Preview Proxy Path updated. Checkpoint: docs/PREVIEW-ORIGIN-DEPLOY-01-CHECKPOINT.md. FOLLOWUPS: 1 registered (PREVIEW-REASON-01, the refusal reason for Start preview) / 0 superseded / 0 dropped / 0 undisposed. Was: ADMITTED — Lane 1 — 2026-11-12 — Keith approved the deploy ("DNS record added"). Was: READY — registered 2026-11-12 by the PREVIEW-ORIGIN-01 LOCK — not admitted.
 **Task ID:** PREVIEW-ORIGIN-DEPLOY-01
 **Title:** Deploy the preview host and PREVIEW-ORIGIN-01
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
@@ -84555,6 +84555,30 @@ nature=IMPLEMENTATION
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
 **writeSetPrecision:** EXACT. **admissionUncertain:** false.
 **Scope:** From PREVIEW-ORIGIN-01 (docs/PREVIEW-ORIGIN-01-STAGE-START.md sections 4.5 and the worker's report): add a Caddy site for preview.staging.ainow.biz with basic_auth and reverse_proxy to the gateway passing Host through (no header_up Host); the host Caddyfile is installed only by aisandbox-prepare, so a manual approved edit plus the template and t-caddy-site.sh; set PREVIEW_BASE_URL in the gateway env (new env hashes recorded); deploy with runs off. Host checks with curl and a stored test session: platform proxy URL 302 to the preview host enter; enter 302 with Set-Cookie aisandbox_preview HttpOnly, the session path and no Domain; preview host proxy 200 with the app's HTML and assets, refused without the cookie or with only the session cookie; preview host /en and /api/keys 404; the platform host never answers 200 with preview HTML; Refresh mints a new ticket. Keith's browser check: a multi-file app renders with CSS and JS, an app using localStorage works, the iframe address is on the preview host, Select Element is gone, and how the basic_auth prompt behaves inside the iframe (a ticket lives 60 s; a slow prompt means Refresh). Do not deploy PREVIEW-ORIGIN-01 before the preview host exists. At its LOCK: update ARCHITECTURE.md section 6 (Preview Proxy Path).
+
+### PREVIEW-REASON-01 — Say why Start preview was refused
+<!-- AISB_MACHINE_REG_V1_BEGIN -->
+taskId=PREVIEW-REASON-01
+nature=IMPLEMENTATION
+<!-- AISB_MACHINE_REG_V1_END -->
+
+**Status:** READY — registered 2026-11-12 by the PREVIEW-ORIGIN-DEPLOY-01 LOCK — not admitted.
+**Task ID:** PREVIEW-REASON-01
+**Title:** Say why Start preview was refused
+**Workstream:** PRODUCT (taxonomy only; zero admission weight)
+**Nature:** IMPLEMENTATION
+**Lifecycle:** 3-STEP.
+**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction). Optional.
+**Depends on:** none.
+**Primary write scope:** PROVISIONAL: frontend/app/[locale]/app/page.tsx preview start handling and the workspace preview state message, the three message files, tests; possibly the container-manager start response.
+**Mutexes / resources:** set at admission (expected FRONTEND and I18N).
+**Hot-file leases:** none.
+**Shared contracts:** none.
+**Evidence class:** LOCAL-TESTS.
+**Revert isolation:** no code change.
+**saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
+**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**Scope:** From the PREVIEW-ORIGIN-DEPLOY-01 live check: in a project with a package.json that has no dev or start script, Start preview is refused (the resolver chooses a Node app and finds no command), and the workspace shows only Preview unavailable with no reason; Keith could not tell why. Show the refusal reason from the start response (for example the missing script, or that index.html is needed) as translated text in en, zh-TW and zh-CN; tests.
 
 ### HARNESS-FIXES-01 — Harness fixes from the live runs and reviews
 <!-- AISB_MACHINE_REG_V1_BEGIN -->
