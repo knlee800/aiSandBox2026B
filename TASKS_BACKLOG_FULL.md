@@ -89343,22 +89343,22 @@ taskId=CM-CLEANUP-02
 nature=IMPLEMENTATION
 <!-- AISB_MACHINE_REG_V1_END -->
 
-**Status:** READY — registered 2026-11-12 by the BROWSER-SMOKE-02 LOCK — not admitted.
+**Status:** ADMITTED — Lane 1 — 2026-11-12 — Step 1 (registration and activation) by the control plane on Keith's "Yes, start it". Was: READY — registered 2026-11-12 by the BROWSER-SMOKE-02 LOCK — not admitted.
 **Task ID:** CM-CLEANUP-02
 **Title:** Remove the uncalled internal route DELETE /api/internal/sessions/:id/container
 **Workstream:** RELIABILITY (taxonomy only; zero admission weight)
 **Nature:** IMPLEMENTATION
 **Lifecycle:** 3-STEP.
-**Start condition:** NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction). Optional.
+**Start condition:** READY (Keith, 2026-11-12, "Yes, start it"). Was: NOT_READY. Ready when: Keith decides (or the control plane under his 2026-11-10 instruction). Optional.
 **Depends on:** BROWSER-SMOKE-02.
-**Primary write scope:** PROVISIONAL: services/container-manager/src/sessions/internal-sessions.controller.ts and its spec, services/container-manager/src/__tests__/internal-key.http.spec.ts.
-**Mutexes / resources:** CONTAINER-MANAGER (expected).
+**Primary write scope:** set 2026-11-12: services/container-manager/src/sessions/internal-sessions.controller.ts, services/container-manager/src/sessions/sessions.service.ts, services/container-manager/src/sessions/sessions.service.spec.ts, services/container-manager/src/__tests__/internal-key.http.spec.ts.
+**Mutexes / resources:** CONTAINER-MANAGER (set 2026-11-12).
 **Hot-file leases:** none.
 **Shared contracts:** none.
 **Evidence class:** LOCAL-TESTS.
 **Revert isolation:** per change.
 **saturationClass:** OPTIONAL (control-plane default; Keith may change it). **productClass:** CURRENT per PRD.md.
-**writeSetPrecision:** PROVISIONAL. **admissionUncertain:** true.
+**writeSetPrecision:** EXACT. **admissionUncertain:** false (set 2026-11-12).
 **Scope:** From the BROWSER-SMOKE-02 worker, confirmed by the control plane: no service calls DELETE /api/internal/sessions/:id/container (searches of the gateway client and ai-service found none). Remove the route as CM-CLEANUP-01 and BROWSER-SMOKE-02 did (404 with and without the key; inventory counts updated; no guard change). SessionsService.removeSessionContainer stays if anything else uses it; otherwise decide. Tests.
 
 ### STAGING-DEPLOY-SMOKE-02 — Deploy BROWSER-SMOKE-02 (and later locked work)

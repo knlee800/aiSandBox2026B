@@ -7,13 +7,18 @@
   "governance": {"owner": "NONE", "state": "UNOWNED"},
   "occupancy": {
     "lane1": {
-      "state": "EMPTY",
-      "taskId": "NONE",
-      "mutexes": [],
-      "writePaths": [],
+      "state": "ACTIVE",
+      "taskId": "CM-CLEANUP-02",
+      "mutexes": ["CONTAINER-MANAGER"],
+      "writePaths": [
+        "services/container-manager/src/sessions/internal-sessions.controller.ts",
+        "services/container-manager/src/sessions/sessions.service.ts",
+        "services/container-manager/src/sessions/sessions.service.spec.ts",
+        "services/container-manager/src/__tests__/internal-key.http.spec.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
-      "evidenceClass": "NONE",
+      "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "sharedContractIds": [],
       "mutatesSharedContractIds": [],
@@ -7127,14 +7132,19 @@
       "taskId": "CM-CLEANUP-02",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
-      "status": "READY",
-      "startCondition": "NOT_READY",
+      "status": "ADMITTED",
+      "startCondition": "READY",
       "saturationClass": "OPTIONAL",
       "productClass": "CURRENT",
       "futureAuthorization": "NONE",
       "dependsOn": ["BROWSER-SMOKE-02"],
       "mutexes": ["CONTAINER-MANAGER"],
-      "writePaths": [],
+      "writePaths": [
+        "services/container-manager/src/sessions/internal-sessions.controller.ts",
+        "services/container-manager/src/sessions/sessions.service.ts",
+        "services/container-manager/src/sessions/sessions.service.spec.ts",
+        "services/container-manager/src/__tests__/internal-key.http.spec.ts"
+      ],
       "hotfiles": [],
       "i18n": false,
       "sharedContractIds": [],
@@ -7142,8 +7152,8 @@
       "evidenceClass": "LOCAL-TESTS",
       "exclusiveCapacity": false,
       "runtimeNeeds": [],
-      "admissionUncertain": true,
-      "writeSetPrecision": "PROVISIONAL"
+      "admissionUncertain": false,
+      "writeSetPrecision": "EXACT"
     },
     {
       "taskId": "STAGING-DEPLOY-SMOKE-02",
