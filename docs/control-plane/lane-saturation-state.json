@@ -2835,6 +2835,28 @@
       "writeSetPrecision": "PROVISIONAL"
     },
     {
+      "taskId": "BACKUP-RETENTION-01",
+      "nature": "IMPLEMENTATION",
+      "lifecycle": "3-STEP",
+      "status": "READY",
+      "startCondition": "NOT_READY",
+      "saturationClass": "OPTIONAL",
+      "productClass": "CURRENT",
+      "futureAuthorization": "NONE",
+      "dependsOn": [],
+      "mutexes": [],
+      "writePaths": [],
+      "hotfiles": [],
+      "i18n": false,
+      "sharedContractIds": [],
+      "mutatesSharedContractIds": [],
+      "evidenceClass": "LOCAL-TESTS",
+      "exclusiveCapacity": false,
+      "runtimeNeeds": [],
+      "admissionUncertain": true,
+      "writeSetPrecision": "PROVISIONAL"
+    },
+    {
       "taskId": "STAGING-DEPLOY-COOKIE-01",
       "nature": "IMPLEMENTATION",
       "lifecycle": "3-STEP",
